@@ -95,7 +95,7 @@ void CXFA_FFPushButton::UpdateWidgetProperty() {
     default:
       break;
   }
-  GetNormalWidget()->ModifyStylesEx(dwStyleEx, 0xFFFFFFFF);
+  GetNormalWidget()->ModifyStyleExts(dwStyleEx, 0xFFFFFFFF);
 }
 
 bool CXFA_FFPushButton::PerformLayout() {
@@ -146,7 +146,7 @@ void CXFA_FFPushButton::LoadHighlightCaption() {
     if (!m_pRollProvider) {
       m_pRollProvider = cppgc::MakeGarbageCollected<CXFA_TextProvider>(
           GetDoc()->GetHeap()->GetAllocationHandle(), m_pNode.Get(),
-          XFA_TEXTPROVIDERTYPE_Rollover);
+          CXFA_TextProvider::Type::kRollover);
     }
     m_pRolloverTextLayout = cppgc::MakeGarbageCollected<CXFA_TextLayout>(
         GetDoc()->GetHeap()->GetAllocationHandle(), GetDoc(), m_pRollProvider);
@@ -155,7 +155,7 @@ void CXFA_FFPushButton::LoadHighlightCaption() {
     if (!m_pDownProvider) {
       m_pDownProvider = cppgc::MakeGarbageCollected<CXFA_TextProvider>(
           GetDoc()->GetHeap()->GetAllocationHandle(), m_pNode.Get(),
-          XFA_TEXTPROVIDERTYPE_Down);
+          CXFA_TextProvider::Type::kDown);
     }
     m_pDownTextLayout = cppgc::MakeGarbageCollected<CXFA_TextLayout>(
         GetDoc()->GetHeap()->GetAllocationHandle(), GetDoc(), m_pDownProvider);
@@ -213,7 +213,7 @@ void CXFA_FFPushButton::OnProcessEvent(CFWL_Event* pEvent) {
 void CXFA_FFPushButton::OnDrawWidget(CFGAS_GEGraphics* pGraphics,
                                      const CFX_Matrix& matrix) {
   auto* pWidget = GetNormalWidget();
-  if (pWidget->GetStylesEx() & XFA_FWL_PSBSTYLEEXT_HiliteInverted) {
+  if (pWidget->GetStyleExts() & XFA_FWL_PSBSTYLEEXT_HiliteInverted) {
     if ((pWidget->GetStates() & FWL_STATE_PSB_Pressed) &&
         (pWidget->GetStates() & FWL_STATE_PSB_Hovered)) {
       CFX_RectF rtFill(0, 0, pWidget->GetWidgetRect().Size());
@@ -228,7 +228,7 @@ void CXFA_FFPushButton::OnDrawWidget(CFGAS_GEGraphics* pGraphics,
     return;
   }
 
-  if (pWidget->GetStylesEx() & XFA_FWL_PSBSTYLEEXT_HiliteOutLine) {
+  if (pWidget->GetStyleExts() & XFA_FWL_PSBSTYLEEXT_HiliteOutLine) {
     if ((pWidget->GetStates() & FWL_STATE_PSB_Pressed) &&
         (pWidget->GetStates() & FWL_STATE_PSB_Hovered)) {
       float fLineWidth = GetLineWidth();

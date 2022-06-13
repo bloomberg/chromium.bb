@@ -23,7 +23,9 @@ class QuotaDatabaseMigrations {
   static bool UpgradeSchema(QuotaDatabase& quota_database);
 
  private:
-  static bool MigrateToVersion6(QuotaDatabase& quota_database);
+  static bool MigrateFromVersion5ToVersion7(QuotaDatabase& quota_database);
+  static bool MigrateFromVersion6ToVersion7(QuotaDatabase& quota_database);
+  static bool MigrateFromVersion7ToVersion8(QuotaDatabase& quota_database);
 };
 
 }  // namespace storage

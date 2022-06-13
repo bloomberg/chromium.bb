@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/containers/adapters.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/containers/queue.h"
 #include "base/logging.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -30,7 +31,7 @@
 namespace viz {
 namespace {
 
-constexpr base::TimeDelta kExpireInterval = base::TimeDelta::FromSeconds(10);
+constexpr base::TimeDelta kExpireInterval = base::Seconds(10);
 
 }  // namespace
 

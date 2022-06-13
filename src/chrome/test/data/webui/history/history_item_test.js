@@ -6,7 +6,7 @@ import {BrowserService, ensureLazyLoaded} from 'chrome://history/history.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {TestBrowserService} from 'chrome://test/history/test_browser_service.js';
 import {createHistoryEntry, createSearchEntry} from 'chrome://test/history/test_util.js';
-import {flushTasks} from 'chrome://test/test_util.m.js';
+import {flushTasks} from 'chrome://test/test_util.js';
 
 const TEST_HISTORY_RESULTS = [
   createHistoryEntry('2016-03-16 10:00', 'http://www.google.com'),
@@ -143,8 +143,6 @@ suite('<history-item> integration test', function() {
           items[1].$$('#bookmark-star').focus();
           items[1].$$('#bookmark-star').click();
 
-          // Check that focus is shifted to overflow menu icon.
-          assertEquals(items[1].root.activeElement, items[1].$['menu-button']);
           // Check that all items matching this url are unstarred.
           assertEquals(element.historyData_[1].starred, false);
           assertEquals(element.historyData_[5].starred, false);

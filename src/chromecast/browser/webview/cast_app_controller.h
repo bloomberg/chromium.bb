@@ -7,13 +7,15 @@
 
 #include "chromecast/browser/webview/web_content_controller.h"
 
-#include "base/macros.h"
-
 namespace chromecast {
 
 class CastAppController : public WebContentController {
  public:
   CastAppController(Client* client, content::WebContents* contents);
+
+  CastAppController(const CastAppController&) = delete;
+  CastAppController& operator=(const CastAppController&) = delete;
+
   ~CastAppController() override;
 
   void Destroy() override;
@@ -26,8 +28,6 @@ class CastAppController : public WebContentController {
   void WebContentsDestroyed() override;
 
   content::WebContents* contents_;
-
-  DISALLOW_COPY_AND_ASSIGN(CastAppController);
 };
 
 }  // namespace chromecast

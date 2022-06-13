@@ -16,6 +16,7 @@ import org.chromium.payments.mojom.PaymentItem;
 import org.chromium.payments.mojom.PaymentMethodData;
 import org.chromium.payments.mojom.PaymentOptions;
 import org.chromium.payments.mojom.PaymentRequestDetailsUpdate;
+import org.chromium.payments.mojom.PaymentResponse;
 import org.chromium.payments.mojom.PaymentShippingOption;
 
 import java.util.List;
@@ -272,20 +273,6 @@ public abstract class PaymentApp extends EditableOption {
     /** Cleans up any resources held by the payment app. For example, closes server connections. */
     public abstract void dismissInstrument();
 
-    /** @return Whether the payment app is ready for a minimal UI flow. */
-    public boolean isReadyForMinimalUI() {
-        return false;
-    }
-
-    /** @return Account balance for minimal UI flow. */
-    @Nullable
-    public String accountBalance() {
-        return null;
-    }
-
-    /** Disable opening a window for this payment app. */
-    public void disableShowingOwnUI() {}
-
     /**
      * @return The identifier for another payment app that should be hidden when this payment app is
      * present.
@@ -329,5 +316,16 @@ public abstract class PaymentApp extends EditableOption {
      */
     public boolean isPreferred() {
         return false;
+    }
+
+    /**
+     * Updates the response IPC structure with the fields that are unique to this type of payment
+     * app. Used when JSON serialization of payment method specific data is not being used. The
+     * payment apps who need to set the fields should override this method.
+     * @param response The PaymentResponse to whom the fields are set.
+     * @return The PaymentResponse whose fields has been set.
+     */
+    public PaymentResponse setAppSpecificResponseFields(PaymentResponse response) {
+        return response;
     }
 }

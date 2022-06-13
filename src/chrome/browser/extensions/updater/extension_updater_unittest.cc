@@ -19,13 +19,14 @@
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/files/file_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
-#include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread.h"
@@ -56,6 +57,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/blocklist_extension_prefs.h"
 #include "extensions/browser/blocklist_state.h"
 #include "extensions/browser/disable_reason.h"
 #include "extensions/browser/extension_prefs.h"
@@ -83,6 +85,7 @@
 #include "net/http/http_request_headers.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "services/network/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -100,7 +103,6 @@
 #endif
 
 using base::Time;
-using base::TimeDelta;
 using content::BrowserThread;
 using extensions::mojom::ManifestLocation;
 using testing::_;
@@ -296,6 +298,9 @@ class MockService : public TestExtensionService {
         downloader_delegate_override_(nullptr),
         test_shared_url_loader_factory_(url_loader_factory) {}
 
+  MockService(const MockService&) = delete;
+  MockService& operator=(const MockService&) = delete;
+
   ~MockService() override = default;
 
   PendingExtensionManager* pending_extension_manager() override {
@@ -358,7 +363,7 @@ class MockService : public TestExtensionService {
   }
 
  protected:
-  TestExtensionPrefs* const prefs_;
+  const raw_ptr<TestExtensionPrefs> prefs_;
   PendingExtensionManager pending_extension_manager_;
 
  private:
@@ -367,7 +372,7 @@ class MockService : public TestExtensionService {
     std::unique_ptr<ExtensionDownloader> downloader =
         ChromeExtensionDownloaderFactory::CreateForURLLoaderFactory(
             test_shared_url_loader_factory_,
-            downloader_delegate_override_ ? downloader_delegate_override_
+            downloader_delegate_override_ ? downloader_delegate_override_.get()
                                           : delegate,
             GetTestVerifierFormat());
     return downloader;
@@ -377,7 +382,7 @@ class MockService : public TestExtensionService {
       ExtensionDownloaderDelegate* delegate) {
     identity_test_env_ = std::make_unique<signin::IdentityTestEnvironment>();
     account_info_ = identity_test_env_->MakePrimaryAccountAvailable(
-        "bobloblaw@lawblog.example.com");
+        "bobloblaw@lawblog.example.com", signin::ConsentLevel::kSync);
 
     std::unique_ptr<ExtensionDownloader> downloader(
         CreateExtensionDownloader(delegate));
@@ -388,12 +393,10 @@ class MockService : public TestExtensionService {
   AccountInfo account_info_;
   std::unique_ptr<signin::IdentityTestEnvironment> identity_test_env_;
 
-  ExtensionDownloaderDelegate* downloader_delegate_override_;
+  raw_ptr<ExtensionDownloaderDelegate> downloader_delegate_override_;
 
   scoped_refptr<network::SharedURLLoaderFactory>
       test_shared_url_loader_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockService);
 };
 
 bool ShouldInstallExtensionsOnly(const Extension* extension,
@@ -474,7 +477,7 @@ class ServiceForManifestTests : public MockService {
   }
 
  private:
-  ExtensionRegistry* registry_;
+  raw_ptr<ExtensionRegistry> registry_;
 };
 
 class ServiceForDownloadTests : public MockService {
@@ -1731,7 +1734,7 @@ class ExtensionUpdaterTest : public testing::Test {
         tmp_path.Append(LocalExtensionCache::ExtensionFileName(
             kTestExtensionId, version, "" /* hash */));
     // Create a small file of zeroes, e.g. 100 bytes size.
-    CreateFile(filename, 100, now - base::TimeDelta::FromSeconds(3));
+    CreateFile(filename, 100, now - base::Seconds(3));
 
     // Add crx file entry in the cache.
     base::RunLoop put_extension_run_loop;
@@ -1850,11 +1853,12 @@ class ExtensionUpdaterTest : public testing::Test {
     base::Version version("0.0.1");
     std::set<int> requests;
     requests.insert(0);
-    std::unique_ptr<ExtensionDownloader::ExtensionFetch> fetch =
+    std::unique_ptr<ExtensionDownloader::ExtensionFetch> extension_fetch =
         std::make_unique<ExtensionDownloader::ExtensionFetch>(
             id, test_url, hash, version.GetString(), requests,
             ManifestFetchData::FetchPriority::BACKGROUND);
-    updater.downloader_->FetchUpdatedExtension(std::move(fetch), absl::nullopt);
+    updater.downloader_->FetchUpdatedExtension(std::move(extension_fetch),
+                                               absl::nullopt);
 
     EXPECT_EQ(
         kExpectedLoadFlags,
@@ -2217,21 +2221,19 @@ class ExtensionUpdaterTest : public testing::Test {
     const std::string& id = tmp[0]->id();
     Time now = Time::Now();
     if (rollcall_ping_days == 0) {
-      prefs->SetLastPingDay(id, now - TimeDelta::FromSeconds(15));
+      prefs->SetLastPingDay(id, now - base::Seconds(15));
     } else if (rollcall_ping_days > 0) {
-      Time last_ping_day = now -
-                           TimeDelta::FromDays(rollcall_ping_days) -
-                           TimeDelta::FromSeconds(15);
+      Time last_ping_day =
+          now - base::Days(rollcall_ping_days) - base::Seconds(15);
       prefs->SetLastPingDay(id, last_ping_day);
     }
 
     // Store a value for the last day we sent an active ping.
     if (active_ping_days == 0) {
-      prefs->SetLastActivePingDay(id, now - TimeDelta::FromSeconds(15));
+      prefs->SetLastActivePingDay(id, now - base::Seconds(15));
     } else if (active_ping_days > 0) {
-      Time last_active_ping_day = now -
-                                  TimeDelta::FromDays(active_ping_days) -
-                                  TimeDelta::FromSeconds(15);
+      Time last_active_ping_day =
+          now - base::Days(active_ping_days) - base::Seconds(15);
       prefs->SetLastActivePingDay(id, last_active_ping_day);
     }
     if (active_bit)
@@ -2678,10 +2680,12 @@ TEST_F(ExtensionUpdaterTest, TestUpdatingRemotelyDisabledExtensions) {
   ASSERT_EQ(1u, enabled_extensions.size());
   ASSERT_EQ(2u, blocklisted_extensions.size());
   const std::string& remotely_blocklisted_id = blocklisted_extensions[0]->id();
-  service.extension_prefs()->SetExtensionBlocklistState(remotely_blocklisted_id,
-                                                        BLOCKLISTED_MALWARE);
-  service.extension_prefs()->AddDisableReason(
-      remotely_blocklisted_id, disable_reason::DISABLE_REMOTELY_FOR_MALWARE);
+  blocklist_prefs::SetSafeBrowsingExtensionBlocklistState(
+      remotely_blocklisted_id, BitMapBlocklistState::BLOCKLISTED_MALWARE,
+      service.extension_prefs());
+  blocklist_prefs::AddOmahaBlocklistState(
+      remotely_blocklisted_id, BitMapBlocklistState::BLOCKLISTED_MALWARE,
+      service.extension_prefs());
 
   // We expect that both enabled and remotely blocklisted extensions are
   // auto-updated.

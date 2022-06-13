@@ -7,15 +7,16 @@
 #include "base/run_loop.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "build/build_config.h"
 #include "media/base/video_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
 #include "third_party/blink/public/web/web_heap.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_tester.h"
+#include "third_party/blink/renderer/bindings/core/v8/to_v8_traits.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_stream_track_generator_init.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_media_stream_track_signal.h"
 #include "third_party/blink/renderer/core/streams/readable_stream.h"
 #include "third_party/blink/renderer/core/streams/readable_stream_default_reader.h"
 #include "third_party/blink/renderer/core/streams/writable_stream.h"
@@ -45,13 +46,14 @@ namespace {
 std::unique_ptr<PushableMediaStreamAudioSource> CreatePushableAudioSource() {
   // Use the IO thread for testing purposes.
   return std::make_unique<PushableMediaStreamAudioSource>(
-      Thread::MainThread()->GetTaskRunner(),
+      scheduler::GetSingleThreadTaskRunnerForTesting(),
       Platform::Current()->GetIOTaskRunner());
 }
 
 PushableMediaStreamVideoSource* CreatePushableVideoSource() {
   PushableMediaStreamVideoSource* pushable_video_source =
-      new PushableMediaStreamVideoSource();
+      new PushableMediaStreamVideoSource(
+          scheduler::GetSingleThreadTaskRunnerForTesting());
   MediaStreamSource* media_stream_source =
       MakeGarbageCollected<MediaStreamSource>(
           "source_id", MediaStreamSource::kTypeVideo, "source_name",
@@ -78,32 +80,6 @@ MediaStreamTrack* CreateAudioMediaStreamTrack(
   source_ptr->ConnectToTrack(component);
 
   return MakeGarbageCollected<MediaStreamTrack>(context, component);
-}
-
-ScriptValue CreateRequestFrameChunk(ScriptState* script_state) {
-  MediaStreamTrackSignal* signal = MediaStreamTrackSignal::Create();
-  signal->setSignalType("request-frame");
-  return ScriptValue(script_state->GetIsolate(),
-                     ToV8(signal, script_state->GetContext()->Global(),
-                          script_state->GetIsolate()));
-}
-
-ScriptValue CreateSetMinFrameRateChunk(ScriptState* script_state,
-                                       double frame_rate) {
-  MediaStreamTrackSignal* signal = MediaStreamTrackSignal::Create();
-  signal->setSignalType("set-min-frame-rate");
-  signal->setFrameRate(frame_rate);
-  return ScriptValue(script_state->GetIsolate(),
-                     ToV8(signal, script_state->GetContext()->Global(),
-                          script_state->GetIsolate()));
-}
-
-ScriptValue CreateInvalidSignalChunk(ScriptState* script_state) {
-  MediaStreamTrackSignal* signal = MediaStreamTrackSignal::Create();
-  signal->setSignalType("set-min-frame-rate");
-  return ScriptValue(script_state->GetIsolate(),
-                     ToV8(signal, script_state->GetContext()->Global(),
-                          script_state->GetIsolate()));
 }
 
 }  // namespace
@@ -205,7 +181,7 @@ TEST_F(MediaStreamTrackProcessorTest, AudioDataAreExposed) {
   pushable_source_ptr->PushAudioData(media::AudioBuffer::CreateEmptyBuffer(
       media::ChannelLayout::CHANNEL_LAYOUT_STEREO, /*channel_count=*/2,
       /*sample_rate=*/8000,
-      /*frame_count=*/100, base::TimeDelta::FromSeconds(1)));
+      /*frame_count=*/100, base::Seconds(1)));
 
   ScriptPromiseTester read_tester(script_state,
                                   reader->read(script_state, exception_state));
@@ -221,84 +197,6 @@ TEST_F(MediaStreamTrackProcessorTest, AudioDataAreExposed) {
   histogram_tester.ExpectUniqueSample("Media.BreakoutBox.Usage",
                                       BreakoutBoxUsage::kReadableAudio, 1);
   histogram_tester.ExpectTotalCount("Media.BreakoutBox.Usage", 1);
-}
-
-TEST_F(MediaStreamTrackProcessorTest, VideoControlSignalsAreForwarded) {
-  base::HistogramTester histogram_tester;
-  V8TestingScope v8_scope;
-  ScriptState* script_state = v8_scope.GetScriptState();
-  ExceptionState& exception_state = v8_scope.GetExceptionState();
-  MockMediaStreamVideoSource* mock_video_source = CreateMockVideoSource();
-  MediaStreamTrackProcessor* track_processor =
-      MediaStreamTrackProcessor::Create(
-          script_state,
-          CreateVideoMediaStreamTrack(v8_scope.GetExecutionContext(),
-                                      mock_video_source),
-          exception_state);
-  EXPECT_FALSE(exception_state.HadException());
-  EXPECT_EQ(
-      track_processor->InputTrack()->Component()->Source()->GetPlatformSource(),
-      mock_video_source);
-  mock_video_source->StartMockedSource();
-
-  EXPECT_CALL(*mock_video_source, OnRequestRefreshFrame());
-  auto* writer = track_processor->writableControl(script_state)
-                     ->getWriter(script_state, exception_state);
-  ScriptPromiseTester request_frame_tester(
-      script_state,
-      writer->write(script_state, CreateRequestFrameChunk(script_state),
-                    exception_state));
-  request_frame_tester.WaitUntilSettled();
-  EXPECT_TRUE(request_frame_tester.IsFulfilled());
-  EXPECT_FALSE(exception_state.HadException());
-
-  MediaStreamVideoTrack* platform_track =
-      MediaStreamVideoTrack::From(track_processor->InputTrack()->Component());
-  EXPECT_FALSE(platform_track->min_frame_rate().has_value());
-  const double min_frame_rate = 15.0;
-  ScriptPromiseTester set_min_frame_rate_tester(
-      script_state,
-      writer->write(script_state,
-                    CreateSetMinFrameRateChunk(script_state, min_frame_rate),
-                    exception_state));
-  set_min_frame_rate_tester.WaitUntilSettled();
-  EXPECT_TRUE(set_min_frame_rate_tester.IsFulfilled());
-  EXPECT_FALSE(exception_state.HadException());
-  EXPECT_TRUE(platform_track->min_frame_rate().has_value());
-  EXPECT_EQ(platform_track->min_frame_rate().value(), min_frame_rate);
-
-  ScriptPromiseTester invalid_signal_tester(
-      script_state,
-      writer->write(script_state, CreateInvalidSignalChunk(script_state),
-                    exception_state));
-  invalid_signal_tester.WaitUntilSettled();
-  EXPECT_TRUE(invalid_signal_tester.IsRejected());
-  histogram_tester.ExpectUniqueSample(
-      "Media.BreakoutBox.Usage", BreakoutBoxUsage::kWritableControlVideo, 1);
-  histogram_tester.ExpectTotalCount("Media.BreakoutBox.Usage", 1);
-}
-
-TEST_F(MediaStreamTrackProcessorTest, AudioControlSignalsAreRejected) {
-  V8TestingScope v8_scope;
-  ScriptState* script_state = v8_scope.GetScriptState();
-  ExceptionState& exception_state = v8_scope.GetExceptionState();
-  MediaStreamTrackProcessor* track_processor =
-      MediaStreamTrackProcessor::Create(
-          script_state,
-          CreateAudioMediaStreamTrack(v8_scope.GetExecutionContext(),
-                                      std::make_unique<MediaStreamAudioSource>(
-                                          Thread::MainThread()->GetTaskRunner(),
-                                          /*is_local=*/true)),
-          exception_state);
-
-  auto* writer = track_processor->writableControl(script_state)
-                     ->getWriter(script_state, exception_state);
-  ScriptPromiseTester tester(
-      script_state,
-      writer->write(script_state, CreateRequestFrameChunk(script_state),
-                    exception_state));
-  tester.WaitUntilSettled();
-  EXPECT_TRUE(tester.IsRejected());
 }
 
 TEST_F(MediaStreamTrackProcessorTest, CanceledReadableDisconnects) {
@@ -446,7 +344,15 @@ TEST_F(MediaStreamTrackProcessorTest, VideoCloseOnTrackEnd) {
   EXPECT_TRUE(readable->IsClosed());
 }
 
-TEST_F(MediaStreamTrackProcessorTest, VideoNoCloseOnTrackDisable) {
+#if defined(OS_FUCHSIA)
+// TODO(https://crbug.com/1234343): Test seems flaky on Fuchsia, enable once
+// flakiness has been investigated.
+#define MAYBE_VideoNoCloseOnTrackDisable DISABLED_VideoNoCloseOnTrackDisable
+#else
+#define MAYBE_VideoNoCloseOnTrackDisable VideoNoCloseOnTrackDisable
+#endif
+
+TEST_F(MediaStreamTrackProcessorTest, MAYBE_VideoNoCloseOnTrackDisable) {
   V8TestingScope v8_scope;
   ScriptState* script_state = v8_scope.GetScriptState();
   ExceptionState& exception_state = v8_scope.GetExceptionState();

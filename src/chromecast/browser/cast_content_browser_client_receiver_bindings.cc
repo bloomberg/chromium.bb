@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/no_destructor.h"
 #include "base/threading/sequence_local_storage_slot.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -19,6 +18,7 @@
 #include "chromecast/browser/cast_browser_main_parts.h"
 #include "chromecast/browser/cast_browser_process.h"
 #include "chromecast/browser/media/media_caps_impl.h"
+#include "chromecast/browser/metrics/metrics_helper_impl.h"
 #include "chromecast/browser/service_connector.h"
 #include "chromecast/chromecast_buildflags.h"
 #include "chromecast/media/cdm/cast_cdm_factory.h"
@@ -95,6 +95,12 @@ void CastContentBrowserClient::ExposeInterfacesToRenderer(
           base::Unretained(cast_browser_main_parts_->media_caps())),
       base::ThreadTaskRunnerHandle::Get());
 
+  registry->AddInterface(
+      base::BindRepeating(
+          &metrics::MetricsHelperImpl::AddReceiver,
+          base::Unretained(cast_browser_main_parts_->metrics_helper())),
+      base::ThreadTaskRunnerHandle::Get());
+
 #if !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
   if (!memory_pressure_controller_) {
     memory_pressure_controller_.reset(new MemoryPressureControllerImpl());
@@ -167,14 +173,13 @@ void CastContentBrowserClient::CreateMediaService(
       GetCmaBackendFactory(),
       base::BindRepeating(&CastContentBrowserClient::CreateCdmFactory,
                           base::Unretained(this)),
-      GetVideoModeSwitcher(), GetVideoResolutionPolicy());
+      GetVideoModeSwitcher(), GetVideoResolutionPolicy(),
+      browser_main_parts()->media_connector());
   mojo_media_client->SetVideoGeometrySetterService(
       video_geometry_setter_service_.get());
 
-  static base::NoDestructor<
-      base::SequenceLocalStorageSlot<::media::MediaService>>
-      service;
-  service->emplace(std::move(mojo_media_client), std::move(receiver));
+  static base::SequenceLocalStorageSlot<::media::MediaService> service;
+  service.emplace(std::move(mojo_media_client), std::move(receiver));
 }
 
 void CastContentBrowserClient::CreateVideoGeometrySetterServiceOnMediaThread() {

@@ -48,6 +48,11 @@ class IncompatibleApplicationsObserver {
                             base::Unretained(this)));
   }
 
+  IncompatibleApplicationsObserver(const IncompatibleApplicationsObserver&) =
+      delete;
+  IncompatibleApplicationsObserver& operator=(
+      const IncompatibleApplicationsObserver&) = delete;
+
   ~IncompatibleApplicationsObserver() = default;
 
   // Wait until the kIncompatibleApplications preference is modified.
@@ -74,11 +79,15 @@ class IncompatibleApplicationsObserver {
   PrefChangeRegistrar pref_change_registrar_;
 
   base::RepeatingClosure run_loop_quit_closure_;
-
-  DISALLOW_COPY_AND_ASSIGN(IncompatibleApplicationsObserver);
 };
 
 class IncompatibleApplicationsBrowserTest : public InProcessBrowserTest {
+ public:
+  IncompatibleApplicationsBrowserTest(
+      const IncompatibleApplicationsBrowserTest&) = delete;
+  IncompatibleApplicationsBrowserTest& operator=(
+      const IncompatibleApplicationsBrowserTest&) = delete;
+
  protected:
   // The name of the application deemed incompatible.
   static constexpr wchar_t kApplicationName[] = L"FooBar123";
@@ -183,8 +192,6 @@ class IncompatibleApplicationsBrowserTest : public InProcessBrowserTest {
 
   // Enables the IncompatibleApplicationsWarning feature.
   base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(IncompatibleApplicationsBrowserTest);
 };
 
 // static
@@ -215,7 +222,7 @@ IN_PROC_BROWSER_TEST_F(IncompatibleApplicationsBrowserTest,
         ModuleDatabase* module_database = ModuleDatabase::GetInstance();
 
         // Speed up the test.
-        module_database->IncreaseInspectionPriority();
+        module_database->ForceStartInspection();
 
         // Simulate the download of the module list component.
         module_database->third_party_conflicts_manager()->LoadModuleList(

@@ -22,7 +22,8 @@ class TestPrintBackend : public PrintBackend {
 
   // PrintBackend overrides
   mojom::ResultCode EnumeratePrinters(PrinterList* printer_list) override;
-  std::string GetDefaultPrinterName() override;
+  mojom::ResultCode GetDefaultPrinterName(
+      std::string& default_printer) override;
   mojom::ResultCode GetPrinterBasicInfo(
       const std::string& printer_name,
       PrinterBasicInfo* printer_info) override;
@@ -52,6 +53,9 @@ class TestPrintBackend : public PrintBackend {
   void AddValidPrinter(const std::string& printer_name,
                        std::unique_ptr<PrinterSemanticCapsAndDefaults> caps,
                        std::unique_ptr<PrinterBasicInfo> info);
+
+  // Adds a printer which will cause a Mojom data validation error.
+  void AddInvalidDataPrinter(const std::string& printer_name);
 
   // Adds a printer which will fail with an access-denied permission error for
   // calls specific to a particular `printer_name`.

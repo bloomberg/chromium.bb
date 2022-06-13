@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -49,7 +50,7 @@ const int kThumbnailSizeInDP = 64;
 // The delay to wait after loading history and before starting the check for
 // externally removed downloads.
 const base::TimeDelta kCheckExternallyRemovedDownloadsDelay =
-    base::TimeDelta::FromMilliseconds(100);
+    base::Milliseconds(100);
 
 #if defined(OS_ANDROID)
 // Invalid system download Id.
@@ -82,6 +83,10 @@ class AllDownloadObserver
     : public download::AllDownloadEventNotifier::Observer {
  public:
   explicit AllDownloadObserver(DownloadOfflineContentProvider* provider);
+
+  AllDownloadObserver(const AllDownloadObserver&) = delete;
+  AllDownloadObserver& operator=(const AllDownloadObserver&) = delete;
+
   ~AllDownloadObserver() override;
 
   void OnDownloadUpdated(SimpleDownloadManagerCoordinator* manager,
@@ -93,10 +98,8 @@ class AllDownloadObserver
   void DeleteDownloadItem(SimpleDownloadManagerCoordinator* manager,
                           const std::string& guid);
 
-  DownloadOfflineContentProvider* provider_;
+  raw_ptr<DownloadOfflineContentProvider> provider_;
   base::WeakPtrFactory<AllDownloadObserver> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(AllDownloadObserver);
 };
 
 AllDownloadObserver::AllDownloadObserver(

@@ -34,15 +34,15 @@ TEST_F(ParserImplTest, DecorationList_Parses) {
   ASSERT_NE(deco_1, nullptr);
 
   ASSERT_TRUE(deco_0->Is<ast::WorkgroupDecoration>());
-  ast::Expression* x = deco_0->As<ast::WorkgroupDecoration>()->values()[0];
+  const ast::Expression* x = deco_0->As<ast::WorkgroupDecoration>()->x;
   ASSERT_NE(x, nullptr);
-  auto* x_scalar = x->As<ast::ScalarConstructorExpression>();
-  ASSERT_NE(x_scalar, nullptr);
-  ASSERT_TRUE(x_scalar->literal()->Is<ast::IntLiteral>());
-  EXPECT_EQ(x_scalar->literal()->As<ast::IntLiteral>()->value_as_u32(), 2u);
+  auto* x_literal = x->As<ast::LiteralExpression>();
+  ASSERT_NE(x_literal, nullptr);
+  ASSERT_TRUE(x_literal->Is<ast::IntLiteralExpression>());
+  EXPECT_EQ(x_literal->As<ast::IntLiteralExpression>()->ValueAsU32(), 2u);
 
   ASSERT_TRUE(deco_1->Is<ast::StageDecoration>());
-  EXPECT_EQ(deco_1->As<ast::StageDecoration>()->value(),
+  EXPECT_EQ(deco_1->As<ast::StageDecoration>()->stage,
             ast::PipelineStage::kCompute);
 }
 

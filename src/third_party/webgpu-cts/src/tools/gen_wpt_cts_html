@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 
-// Generate a top-level cts.html file for WPT.
+// Generate a top-level cts.https.html file for WPT.
 //
-// In the default invocation (used by grunt), just generates a cts.html with one "variant" per test
-// spec file (.spec.ts).
+// In the default invocation (used by grunt), just generates a cts.https.html with one "variant"
+// per test spec file (.spec.ts).
 //
 // In the advanced invocation, generate a list of variants, which are broken down as much as needed
 // to accommodate a provided list of suppressions, and no further. This reduces the total runtime of
 // the test suite by not generating an entire page load for every single test case.
-// The resulting cts.html can be checked in and used to run tests within browser harnesses.
+// The resulting cts.https.html can be checked in and used to run tests within browser harnesses.
 //
 // For example, for the following 9 cases:
 //

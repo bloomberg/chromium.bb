@@ -5,7 +5,7 @@
 #ifndef NET_QUIC_PROPERTIES_BASED_QUIC_SERVER_INFO_H_
 #define NET_QUIC_PROPERTIES_BASED_QUIC_SERVER_INFO_H_
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "net/base/network_isolation_key.h"
 #include "net/quic/quic_server_info.h"
@@ -25,18 +25,20 @@ class QUIC_EXPORT_PRIVATE PropertiesBasedQuicServerInfo
       const quic::QuicServerId& server_id,
       const NetworkIsolationKey& network_isolation_key,
       HttpServerProperties* http_server_properties);
+
+  PropertiesBasedQuicServerInfo(const PropertiesBasedQuicServerInfo&) = delete;
+  PropertiesBasedQuicServerInfo& operator=(
+      const PropertiesBasedQuicServerInfo&) = delete;
+
   ~PropertiesBasedQuicServerInfo() override;
 
   // QuicServerInfo implementation.
   bool Load() override;
   void Persist() override;
-  size_t EstimateMemoryUsage() const override;
 
  private:
   const NetworkIsolationKey network_isolation_key_;
-  HttpServerProperties* const http_server_properties_;
-
-  DISALLOW_COPY_AND_ASSIGN(PropertiesBasedQuicServerInfo);
+  const raw_ptr<HttpServerProperties> http_server_properties_;
 };
 
 }  // namespace net

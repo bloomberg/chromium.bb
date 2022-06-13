@@ -4,8 +4,6 @@
 
 #include "gpu/command_buffer/service/gpu_switches.h"
 
-#include "base/macros.h"
-
 namespace switches {
 
 // Always return success when compiling a shader. Linking will still fail.
@@ -64,10 +62,6 @@ const char kEnableThreadedTextureMailboxes[] =
 // Include ANGLE's intermediate representation (AST) output in shader
 // compilation info logs.
 const char kGLShaderIntermOutput[] = "gl-shader-interm-output";
-
-// Emulate ESSL lowp and mediump float precisions by mutating the shaders to
-// round intermediate values in ANGLE.
-const char kEmulateShaderPrecision[] = "emulate-shader-precision";
 
 // Enable Vulkan support and select Vulkan implementation, must also have
 // ENABLE_VULKAN defined. This only initializes Vulkan, the flag

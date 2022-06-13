@@ -10,18 +10,20 @@ import android.text.TextUtils;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
-import com.google.protobuf.ByteString;
-import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.flatbuffers.FlatBufferBuilder;
 
 import org.chromium.base.Callback;
-import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
+import org.chromium.chrome.browser.tab.TabUserAgent;
 import org.chromium.chrome.browser.tab.WebContentsState;
 import org.chromium.chrome.browser.tab.WebContentsStateBridge;
+import org.chromium.chrome.browser.tab.flatbuffer.CriticalPersistedTabDataFlatBuffer;
+import org.chromium.chrome.browser.tab.flatbuffer.LaunchTypeAtCreation;
+import org.chromium.chrome.browser.tab.flatbuffer.UserAgentType;
 import org.chromium.chrome.browser.tab.proto.CriticalPersistedTabData.CriticalPersistedTabDataProto;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.embedder_support.util.UrlUtilities;
@@ -30,7 +32,6 @@ import org.chromium.content_public.common.Referrer;
 import org.chromium.url.GURL;
 
 import java.nio.ByteBuffer;
-import java.util.Locale;
 
 /**
  * Data which is core to the app and must be retrieved as quickly as possible on startup.
@@ -41,6 +42,7 @@ public class CriticalPersistedTabData extends PersistedTabData {
             CriticalPersistedTabData.class;
 
     private static final int UNSPECIFIED_THEME_COLOR = Color.TRANSPARENT;
+    private static final String NULL_OPENER_APP_ID = " ";
     public static final long INVALID_TIMESTAMP = -1;
 
     /**
@@ -75,6 +77,8 @@ public class CriticalPersistedTabData extends PersistedTabData {
     private ObserverList<CriticalPersistedTabDataObserver> mObservers =
             new ObserverList<CriticalPersistedTabDataObserver>();
     private boolean mShouldSaveForTesting;
+    /** Tab level Request Desktop Site setting. */
+    private @TabUserAgent int mUserAgent;
 
     @VisibleForTesting
     protected CriticalPersistedTabData(Tab tab) {
@@ -90,19 +94,17 @@ public class CriticalPersistedTabData extends PersistedTabData {
      * @param parentId parent identiifer for the {@link Tab}
      * @param rootId root identifier for the {@link Tab}
      * @param timestampMillis creation timestamp for the {@link Tab}
-     * @param contentStateBytes content state bytes for the {@link Tab}
      * @param contentStateVersion content state version for the {@link Tab}
      * @param openerAppId identifier for app opener
      * @param themeColor theme color
      * @param launchTypeAtCreation launch type at creation
-     * @param persistedTabDataStorage storage for {@link PersistedTabData}
-     * @param persistedTabDataId identifier for {@link PersistedTabData} in storage
+     * @param userAgent user agent for the {@link Tab}
      */
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     CriticalPersistedTabData(Tab tab, String url, String title, int parentId, int rootId,
             long timestampMillis, WebContentsState webContentsState, int contentStateVersion,
             String openerAppId, int themeColor,
-            @Nullable @TabLaunchType Integer launchTypeAtCreation) {
+            @Nullable @TabLaunchType Integer launchTypeAtCreation, @TabUserAgent int userAgent) {
         this(tab);
         mUrl = url == null || url.isEmpty() ? GURL.emptyGURL() : new GURL(url);
         mTitle = title;
@@ -114,6 +116,7 @@ public class CriticalPersistedTabData extends PersistedTabData {
         mOpenerAppId = openerAppId;
         mThemeColor = themeColor;
         mTabLaunchTypeAtCreation = launchTypeAtCreation;
+        mUserAgent = userAgent;
     }
 
     /**
@@ -142,8 +145,10 @@ public class CriticalPersistedTabData extends PersistedTabData {
      */
     public static void from(Tab tab, Callback<CriticalPersistedTabData> callback) {
         PersistedTabData.from(tab,
-                (data, storage, id)
-                        -> { return new CriticalPersistedTabData(tab, data, storage, id); },
+                (data, storage, id, factoryCallback)
+                        -> {
+                    factoryCallback.onResult(new CriticalPersistedTabData(tab, data, storage, id));
+                },
                 (supplierCallback)
                         -> supplierCallback.onResult(
                                 tab.isInitialized() ? CriticalPersistedTabData.build(tab) : null),
@@ -192,17 +197,17 @@ public class CriticalPersistedTabData extends PersistedTabData {
      * as the storage/retrieval method
      */
     public static void build(Tab tab, ByteBuffer serialized, boolean isStorageRetrievalEnabled) {
-        CriticalPersistedTabData res = PersistedTabData.build(tab, (data, storage, id) -> {
-            return new CriticalPersistedTabData(tab, data, storage, id);
-        }, serialized, CriticalPersistedTabData.class);
+        PersistedTabData.build(tab, (data, storage, id, callback) -> {
+            callback.onResult(new CriticalPersistedTabData(tab, data, storage, id));
+        }, serialized, CriticalPersistedTabData.class, (res) -> {});
     }
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     public static CriticalPersistedTabData build(Tab tab) {
         // CriticalPersistedTabData is initialized with default values
-        CriticalPersistedTabData criticalPersistedTabData =
-                new CriticalPersistedTabData(tab, "", "", Tab.INVALID_TAB_ID, tab.getId(),
-                        INVALID_TIMESTAMP, null, -1, "", UNSPECIFIED_THEME_COLOR, null);
+        CriticalPersistedTabData criticalPersistedTabData = new CriticalPersistedTabData(tab, "",
+                "", Tab.INVALID_TAB_ID, tab.getId(), INVALID_TIMESTAMP, null, -1, "",
+                UNSPECIFIED_THEME_COLOR, null, TabUserAgent.DEFAULT);
         criticalPersistedTabData.save();
         return criticalPersistedTabData;
     }
@@ -210,36 +215,28 @@ public class CriticalPersistedTabData extends PersistedTabData {
     @Override
     boolean deserialize(@Nullable ByteBuffer bytes) {
         try (TraceEvent e = TraceEvent.scoped("CriticalPersistedTabData.Deserialize")) {
-            CriticalPersistedTabDataProto criticalPersistedTabDataProto =
-                    CriticalPersistedTabDataProto.parseFrom(bytes);
-            mParentId = criticalPersistedTabDataProto.getParentId();
-            mRootId = criticalPersistedTabDataProto.getRootId();
-            mTimestampMillis = criticalPersistedTabDataProto.getTimestampMillis();
-            ByteString webContentsStateByteString =
-                    criticalPersistedTabDataProto.getWebContentsStateBytes();
-            mWebContentsState = new WebContentsState(
-                    ByteBuffer.allocateDirect(webContentsStateByteString.size()));
-            webContentsStateByteString.copyTo(mWebContentsState.buffer());
+            CriticalPersistedTabDataFlatBuffer deserialized =
+                    CriticalPersistedTabDataFlatBuffer.getRootAsCriticalPersistedTabDataFlatBuffer(
+                            bytes);
+            mParentId = deserialized.parentId();
+            mRootId = deserialized.rootId();
+            mTimestampMillis = deserialized.timestampMillis();
+            mWebContentsState =
+                    new WebContentsState(deserialized.webContentsStateBytesAsByteBuffer().slice());
             mWebContentsState.setVersion(WebContentsState.CONTENTS_STATE_CURRENT_VERSION);
             mUrl = mWebContentsState.getVirtualUrlFromState() == null
                     ? GURL.emptyGURL()
                     : new GURL(mWebContentsState.getVirtualUrlFromState());
             mTitle = mWebContentsState.getDisplayTitleFromState();
-            mContentStateVersion = criticalPersistedTabDataProto.getContentStateVersion();
-            mOpenerAppId = TextUtils.isEmpty(criticalPersistedTabDataProto.getOpenerAppId())
+            mContentStateVersion = deserialized.contentStateVersion();
+            mOpenerAppId = NULL_OPENER_APP_ID.equals(deserialized.openerAppId())
                     ? null
-                    : criticalPersistedTabDataProto.getOpenerAppId();
-            mThemeColor = criticalPersistedTabDataProto.getThemeColor();
-            mTabLaunchTypeAtCreation =
-                    getLaunchType(criticalPersistedTabDataProto.getLaunchTypeAtCreation());
+                    : deserialized.openerAppId();
+            mThemeColor = deserialized.themeColor();
+            mTabLaunchTypeAtCreation = getLaunchType(deserialized.launchTypeAtCreation());
+            mUserAgent = getTabUserAgentType(deserialized.userAgent());
             return true;
-        } catch (InvalidProtocolBufferException e) {
-            Log.e(TAG,
-                    String.format(Locale.ENGLISH,
-                            "There was a problem deserializing Tab %d. Details: %s", mTab.getId(),
-                            e.getMessage()));
         }
-        return false;
     }
 
     @Override
@@ -248,96 +245,135 @@ public class CriticalPersistedTabData extends PersistedTabData {
     }
 
     @VisibleForTesting
-    static @Nullable @TabLaunchType Integer getLaunchType(
-            CriticalPersistedTabDataProto.LaunchTypeAtCreation protoLaunchType) {
-        switch (protoLaunchType) {
-            case FROM_LINK:
+    static @Nullable @TabLaunchType Integer getLaunchType(int flatBufferLaunchType) {
+        switch (flatBufferLaunchType) {
+            case LaunchTypeAtCreation.FROM_LINK:
                 return TabLaunchType.FROM_LINK;
-            case FROM_EXTERNAL_APP:
+            case LaunchTypeAtCreation.FROM_EXTERNAL_APP:
                 return TabLaunchType.FROM_EXTERNAL_APP;
-            case FROM_CHROME_UI:
+            case LaunchTypeAtCreation.FROM_CHROME_UI:
                 return TabLaunchType.FROM_CHROME_UI;
-            case FROM_RESTORE:
+            case LaunchTypeAtCreation.FROM_RESTORE:
                 return TabLaunchType.FROM_RESTORE;
-            case FROM_LONGPRESS_FOREGROUND:
+            case LaunchTypeAtCreation.FROM_LONGPRESS_FOREGROUND:
                 return TabLaunchType.FROM_LONGPRESS_FOREGROUND;
-            case FROM_LONGPRESS_BACKGROUND:
+            case LaunchTypeAtCreation.FROM_LONGPRESS_BACKGROUND:
                 return TabLaunchType.FROM_LONGPRESS_BACKGROUND;
-            case FROM_REPARENTING:
+            case LaunchTypeAtCreation.FROM_REPARENTING:
                 return TabLaunchType.FROM_REPARENTING;
-            case FROM_LAUNCHER_SHORTCUT:
+            case LaunchTypeAtCreation.FROM_LAUNCHER_SHORTCUT:
                 return TabLaunchType.FROM_LAUNCHER_SHORTCUT;
-            case FROM_SPECULATIVE_BACKGROUND_CREATION:
+            case LaunchTypeAtCreation.FROM_SPECULATIVE_BACKGROUND_CREATION:
                 return TabLaunchType.FROM_SPECULATIVE_BACKGROUND_CREATION;
-            case FROM_BROWSER_ACTIONS:
+            case LaunchTypeAtCreation.FROM_BROWSER_ACTIONS:
                 return TabLaunchType.FROM_BROWSER_ACTIONS;
-            case FROM_LAUNCH_NEW_INCOGNITO_TAB:
+            case LaunchTypeAtCreation.FROM_LAUNCH_NEW_INCOGNITO_TAB:
                 return TabLaunchType.FROM_LAUNCH_NEW_INCOGNITO_TAB;
-            case FROM_STARTUP:
+            case LaunchTypeAtCreation.FROM_STARTUP:
                 return TabLaunchType.FROM_STARTUP;
-            case FROM_START_SURFACE:
+            case LaunchTypeAtCreation.FROM_START_SURFACE:
                 return TabLaunchType.FROM_START_SURFACE;
-            case FROM_TAB_GROUP_UI:
+            case LaunchTypeAtCreation.FROM_TAB_GROUP_UI:
                 return TabLaunchType.FROM_TAB_GROUP_UI;
-            case FROM_LONGPRESS_BACKGROUND_IN_GROUP:
+            case LaunchTypeAtCreation.FROM_LONGPRESS_BACKGROUND_IN_GROUP:
                 return TabLaunchType.FROM_LONGPRESS_BACKGROUND_IN_GROUP;
-            case SIZE:
+            case LaunchTypeAtCreation.FROM_APP_WIDGET:
+                return TabLaunchType.FROM_APP_WIDGET;
+            case LaunchTypeAtCreation.SIZE:
                 return TabLaunchType.SIZE;
             default:
                 assert false : "Unexpected deserialization of LaunchAtCreationType: "
-                               + protoLaunchType;
+                               + flatBufferLaunchType;
                 // shouldn't happen
                 return null;
         }
     }
 
     @VisibleForTesting
-    static CriticalPersistedTabDataProto.LaunchTypeAtCreation getLaunchType(
-            @Nullable @TabLaunchType Integer protoLaunchType) {
-        if (protoLaunchType == null) {
-            return CriticalPersistedTabDataProto.LaunchTypeAtCreation.UNKNOWN;
+    static int getLaunchType(@Nullable @TabLaunchType Integer tabLaunchType) {
+        if (tabLaunchType == null) {
+            return LaunchTypeAtCreation.UNKNOWN;
         }
-        switch (protoLaunchType) {
+        switch (tabLaunchType) {
             case TabLaunchType.FROM_LINK:
-                return CriticalPersistedTabDataProto.LaunchTypeAtCreation.FROM_LINK;
+                return LaunchTypeAtCreation.FROM_LINK;
             case TabLaunchType.FROM_EXTERNAL_APP:
-                return CriticalPersistedTabDataProto.LaunchTypeAtCreation.FROM_EXTERNAL_APP;
+                return LaunchTypeAtCreation.FROM_EXTERNAL_APP;
             case TabLaunchType.FROM_CHROME_UI:
-                return CriticalPersistedTabDataProto.LaunchTypeAtCreation.FROM_CHROME_UI;
+                return LaunchTypeAtCreation.FROM_CHROME_UI;
             case TabLaunchType.FROM_RESTORE:
-                return CriticalPersistedTabDataProto.LaunchTypeAtCreation.FROM_RESTORE;
+                return LaunchTypeAtCreation.FROM_RESTORE;
             case TabLaunchType.FROM_LONGPRESS_FOREGROUND:
-                return CriticalPersistedTabDataProto.LaunchTypeAtCreation.FROM_LONGPRESS_FOREGROUND;
+                return LaunchTypeAtCreation.FROM_LONGPRESS_FOREGROUND;
             case TabLaunchType.FROM_LONGPRESS_BACKGROUND:
-                return CriticalPersistedTabDataProto.LaunchTypeAtCreation.FROM_LONGPRESS_BACKGROUND;
+                return LaunchTypeAtCreation.FROM_LONGPRESS_BACKGROUND;
             case TabLaunchType.FROM_REPARENTING:
-                return CriticalPersistedTabDataProto.LaunchTypeAtCreation.FROM_REPARENTING;
+                return LaunchTypeAtCreation.FROM_REPARENTING;
             case TabLaunchType.FROM_LAUNCHER_SHORTCUT:
-                return CriticalPersistedTabDataProto.LaunchTypeAtCreation.FROM_LAUNCHER_SHORTCUT;
+                return LaunchTypeAtCreation.FROM_LAUNCHER_SHORTCUT;
             case TabLaunchType.FROM_SPECULATIVE_BACKGROUND_CREATION:
-                return CriticalPersistedTabDataProto.LaunchTypeAtCreation
-                        .FROM_SPECULATIVE_BACKGROUND_CREATION;
+                return LaunchTypeAtCreation.FROM_SPECULATIVE_BACKGROUND_CREATION;
             case TabLaunchType.FROM_BROWSER_ACTIONS:
-                return CriticalPersistedTabDataProto.LaunchTypeAtCreation.FROM_BROWSER_ACTIONS;
+                return LaunchTypeAtCreation.FROM_BROWSER_ACTIONS;
             case TabLaunchType.FROM_LAUNCH_NEW_INCOGNITO_TAB:
-                return CriticalPersistedTabDataProto.LaunchTypeAtCreation
-                        .FROM_LAUNCH_NEW_INCOGNITO_TAB;
+                return LaunchTypeAtCreation.FROM_LAUNCH_NEW_INCOGNITO_TAB;
             case TabLaunchType.FROM_STARTUP:
-                return CriticalPersistedTabDataProto.LaunchTypeAtCreation.FROM_STARTUP;
+                return LaunchTypeAtCreation.FROM_STARTUP;
             case TabLaunchType.FROM_START_SURFACE:
-                return CriticalPersistedTabDataProto.LaunchTypeAtCreation.FROM_START_SURFACE;
+                return LaunchTypeAtCreation.FROM_START_SURFACE;
             case TabLaunchType.FROM_TAB_GROUP_UI:
-                return CriticalPersistedTabDataProto.LaunchTypeAtCreation.FROM_TAB_GROUP_UI;
+                return LaunchTypeAtCreation.FROM_TAB_GROUP_UI;
             case TabLaunchType.FROM_LONGPRESS_BACKGROUND_IN_GROUP:
-                return CriticalPersistedTabDataProto.LaunchTypeAtCreation
-                        .FROM_LONGPRESS_BACKGROUND_IN_GROUP;
+                return LaunchTypeAtCreation.FROM_LONGPRESS_BACKGROUND_IN_GROUP;
+            case TabLaunchType.FROM_APP_WIDGET:
+                return LaunchTypeAtCreation.FROM_APP_WIDGET;
             case TabLaunchType.SIZE:
-                return CriticalPersistedTabDataProto.LaunchTypeAtCreation.SIZE;
+                return LaunchTypeAtCreation.SIZE;
             default:
-                assert false : "Unexpected serialization of LaunchAtCreationType: "
-                               + protoLaunchType;
+                assert false : "Unexpected serialization of LaunchAtCreationType: " + tabLaunchType;
                 // shouldn't happen
-                return CriticalPersistedTabDataProto.LaunchTypeAtCreation.UNKNOWN;
+                return LaunchTypeAtCreation.UNKNOWN;
+        }
+    }
+
+    @VisibleForTesting
+    static @TabUserAgent int getTabUserAgentType(int flatbufferUserAgentType) {
+        switch (flatbufferUserAgentType) {
+            case UserAgentType.DEFAULT:
+                return TabUserAgent.DEFAULT;
+            case UserAgentType.MOBILE:
+                return TabUserAgent.MOBILE;
+            case UserAgentType.DESKTOP:
+                return TabUserAgent.DESKTOP;
+            case UserAgentType.UNSET:
+                return TabUserAgent.UNSET;
+            case UserAgentType.USER_AGENT_SIZE:
+                return TabUserAgent.SIZE;
+            default:
+                assert false : "Unexpected deserialization of UserAgentType: "
+                               + flatbufferUserAgentType;
+                // shouldn't happen
+                return TabUserAgent.DEFAULT;
+        }
+    }
+
+    @VisibleForTesting
+    static int getUserAgentType(@TabUserAgent int userAgent) {
+        switch (userAgent) {
+            case TabUserAgent.DEFAULT:
+                return UserAgentType.DEFAULT;
+            case TabUserAgent.MOBILE:
+                return UserAgentType.MOBILE;
+            case TabUserAgent.DESKTOP:
+                return UserAgentType.DESKTOP;
+            case TabUserAgent.UNSET:
+                return UserAgentType.UNSET;
+            case TabUserAgent.SIZE:
+                return UserAgentType.USER_AGENT_SIZE;
+            default:
+                assert false : "Unexpected serialization of UserAgentType: " + userAgent;
+                // shouldn't happen
+                return UserAgentType.USER_AGENT_UNKNOWN;
         }
     }
 
@@ -373,31 +409,54 @@ public class CriticalPersistedTabData extends PersistedTabData {
         CriticalPersistedTabDataProto.Builder builder;
         final WebContentsState webContentsState;
         final ByteBuffer byteBuffer;
+        final String openerAppId;
+        final int parentId;
+        final int rootId;
+        final long timestampMillis;
+        final int webContentsStateVersion;
+        final int themeColor;
+        final int launchType;
+        final int userAgentType;
+        FlatBufferBuilder fbb = new FlatBufferBuilder();
         try (TraceEvent e = TraceEvent.scoped("CriticalPersistedTabData.PreSerialize")) {
             webContentsState = mWebContentsState == null ? getWebContentsStateFromTab(mTab)
                                                          : mWebContentsState;
             byteBuffer = webContentsState == null ? null : webContentsState.buffer();
-            builder = CriticalPersistedTabDataProto.newBuilder()
-                              .setParentId(mParentId)
-                              .setRootId(mRootId)
-                              .setTimestampMillis(mTimestampMillis)
-                              .setContentStateVersion(mContentStateVersion)
-                              .setOpenerAppId(mOpenerAppId == null ? "" : mOpenerAppId)
-                              .setThemeColor(mThemeColor)
-                              .setLaunchTypeAtCreation(getLaunchType(mTabLaunchTypeAtCreation));
+            if (byteBuffer != null) {
+                byteBuffer.rewind();
+            }
+            openerAppId = mOpenerAppId;
+            parentId = mParentId;
+            rootId = mRootId;
+            timestampMillis = mTimestampMillis;
+            webContentsStateVersion = mContentStateVersion;
+            themeColor = mThemeColor;
+            launchType = getLaunchType(mTabLaunchTypeAtCreation);
+            userAgentType = getUserAgentType(mUserAgent);
         }
         return () -> {
             try (TraceEvent e = TraceEvent.scoped("CriticalPersistedTabData.Serialize")) {
-                // TODO(crbug.com/1203298) migrate to ByteString.copyFrom(ByteBuffer ...)
-                // in a thread safe way to avoid intermediate ByteBuffer -> byte[]. Be careful as
-                // this has caused crashes in the past crbug.com/1195550.
-                return builder
-                        .setWebContentsStateBytes(byteBuffer == null
-                                        ? ByteString.EMPTY
-                                        : ByteString.copyFrom(getContentStateByteArray(byteBuffer)))
-                        .build()
-                        .toByteString()
-                        .asReadOnlyByteBuffer();
+                int wcs = CriticalPersistedTabDataFlatBuffer.createWebContentsStateBytesVector(fbb,
+                        byteBuffer == null ? ByteBuffer.allocate(0).put(new byte[] {})
+                                           : byteBuffer);
+                int oaid =
+                        fbb.createString(mOpenerAppId == null ? NULL_OPENER_APP_ID : mOpenerAppId);
+                CriticalPersistedTabDataFlatBuffer.startCriticalPersistedTabDataFlatBuffer(fbb);
+                CriticalPersistedTabDataFlatBuffer.addParentId(fbb, parentId);
+                CriticalPersistedTabDataFlatBuffer.addRootId(fbb, rootId);
+                CriticalPersistedTabDataFlatBuffer.addTimestampMillis(fbb, timestampMillis);
+                CriticalPersistedTabDataFlatBuffer.addWebContentsStateBytes(fbb, wcs);
+                CriticalPersistedTabDataFlatBuffer.addContentStateVersion(
+                        fbb, webContentsStateVersion);
+                CriticalPersistedTabDataFlatBuffer.addOpenerAppId(fbb, oaid);
+                CriticalPersistedTabDataFlatBuffer.addThemeColor(fbb, themeColor);
+                CriticalPersistedTabDataFlatBuffer.addLaunchTypeAtCreation(fbb, launchType);
+                CriticalPersistedTabDataFlatBuffer.addUserAgent(fbb, userAgentType);
+                int r = CriticalPersistedTabDataFlatBuffer.endCriticalPersistedTabDataFlatBuffer(
+                        fbb);
+                fbb.finish(r);
+
+                return fbb.dataBuffer();
             }
         };
     }
@@ -609,6 +668,24 @@ public class CriticalPersistedTabData extends PersistedTabData {
             return;
         }
         mTabLaunchTypeAtCreation = launchTypeAtCreation;
+        save();
+    }
+
+    /**
+     * @return user agent type for the {@link Tab}
+     */
+    public @TabUserAgent int getUserAgent() {
+        return mUserAgent;
+    }
+
+    /**
+     * Set user agent type for the {@link Tab}
+     */
+    public void setUserAgent(@TabUserAgent int userAgent) {
+        if (mUserAgent == userAgent) {
+            return;
+        }
+        mUserAgent = userAgent;
         save();
     }
 

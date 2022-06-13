@@ -8,11 +8,16 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_desktop_util.h"
 #include "chrome/browser/sharing_hub/sharing_hub_features.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/send_tab_to_self/send_tab_to_self_bubble_view.h"
+#include "chrome/browser/ui/sharing_hub/sharing_hub_bubble_controller.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/send_tab_to_self/metrics_util.h"
@@ -20,8 +25,12 @@
 #include "components/send_tab_to_self/send_tab_to_self_model.h"
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
 #include "components/send_tab_to_self/target_device_info.h"
+#include "components/signin/public/base/consent_level.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "content/public/browser/web_contents.h"
-#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/page_transition_types.h"
+#include "ui/base/window_open_disposition.h"
+#include "ui/events/event.h"
 
 namespace send_tab_to_self {
 
@@ -48,10 +57,17 @@ void SendTabToSelfBubbleController::HideBubble() {
   }
 }
 
-void SendTabToSelfBubbleController::ShowBubble() {
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
+void SendTabToSelfBubbleController::ShowBubble(bool show_back_button) {
+  show_back_button_ = show_back_button;
+  bubble_shown_ = true;
+  Browser* browser = chrome::FindBrowserWithWebContents(&GetWebContents());
   send_tab_to_self_bubble_view_ =
-      browser->window()->ShowSendTabToSelfBubble(web_contents_, this, true);
+      browser->window()->ShowSendTabToSelfBubble(&GetWebContents(), this, true);
+
+  if (sharing_hub::SharingHubOmniboxEnabled(
+          GetWebContents().GetBrowserContext())) {
+    UpdateIcon();
+  }
 }
 
 SendTabToSelfBubbleView*
@@ -59,12 +75,7 @@ SendTabToSelfBubbleController::send_tab_to_self_bubble_view() const {
   return send_tab_to_self_bubble_view_;
 }
 
-std::u16string SendTabToSelfBubbleController::GetWindowTitle() const {
-  return l10n_util::GetStringUTF16(IDS_CONTEXT_MENU_SEND_TAB_TO_SELF);
-}
-
-std::vector<TargetDeviceInfo> SendTabToSelfBubbleController::GetValidDevices()
-    const {
+std::vector<TargetDeviceInfo> SendTabToSelfBubbleController::GetValidDevices() {
   SendTabToSelfSyncService* const service =
       SendTabToSelfSyncServiceFactory::GetForProfile(GetProfile());
   SendTabToSelfModel* const model =
@@ -73,23 +84,50 @@ std::vector<TargetDeviceInfo> SendTabToSelfBubbleController::GetValidDevices()
                : std::vector<TargetDeviceInfo>();
 }
 
-Profile* SendTabToSelfBubbleController::GetProfile() const {
-  return Profile::FromBrowserContext(web_contents_->GetBrowserContext());
+AccountInfo SendTabToSelfBubbleController::GetSharingAccountInfo() {
+  signin::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(GetProfile());
+  return identity_manager->FindExtendedAccountInfo(
+      identity_manager->GetPrimaryAccountInfo(signin::ConsentLevel::kSignin));
+}
+
+Profile* SendTabToSelfBubbleController::GetProfile() {
+  return Profile::FromBrowserContext(GetWebContents().GetBrowserContext());
 }
 
 void SendTabToSelfBubbleController::OnDeviceSelected(
     const std::string& target_device_name,
     const std::string& target_device_guid) {
   send_tab_to_self::RecordDeviceClicked(ShareEntryPoint::kOmniboxIcon);
-  CreateNewEntry(web_contents_, target_device_name, target_device_guid, GURL());
+  CreateNewEntry(&GetWebContents(), target_device_name, target_device_guid,
+                 GURL());
+}
+
+void SendTabToSelfBubbleController::OnManageDevicesClicked(
+    const ui::Event& event) {
+  NavigateParams params(GetProfile(),
+                        GURL(chrome::kGoogleAccountDeviceActivityURL),
+                        ui::PageTransition::PAGE_TRANSITION_LINK);
+  // NEW_FOREGROUND_TAB is passed as the default below to avoid exiting the
+  // current page, which the user possibly wants to share (maybe they just
+  // clicked "Manage devices" by mistake). Still, DispositionFromEventFlags()
+  // ensures that any modifier keys are respected, e.g. to open a new window
+  // instead.
+  params.disposition = ui::DispositionFromEventFlags(
+      event.flags(), WindowOpenDisposition::NEW_FOREGROUND_TAB);
+  Navigate(&params);
 }
 
 void SendTabToSelfBubbleController::OnBubbleClosed() {
+  bubble_shown_ = false;
   send_tab_to_self_bubble_view_ = nullptr;
+}
 
-  if (base::FeatureList::IsEnabled(sharing_hub::kSharingHubDesktopOmnibox)) {
-    UpdateIcon();
-  }
+void SendTabToSelfBubbleController::OnBackButtonPressed() {
+  sharing_hub::SharingHubBubbleController* controller =
+      sharing_hub::SharingHubBubbleController::CreateOrGetFromWebContents(
+          &GetWebContents());
+  controller->ShowBubble();
 }
 
 void SendTabToSelfBubbleController::ShowConfirmationMessage() {
@@ -97,7 +135,7 @@ void SendTabToSelfBubbleController::ShowConfirmationMessage() {
   UpdateIcon();
 }
 
-bool SendTabToSelfBubbleController::InitialSendAnimationShown() const {
+bool SendTabToSelfBubbleController::InitialSendAnimationShown() {
   return GetProfile()->GetPrefs()->GetBoolean(
       prefs::kInitialSendAnimationShown);
 }
@@ -108,8 +146,17 @@ void SendTabToSelfBubbleController::SetInitialSendAnimationShown(bool shown) {
 }
 
 void SendTabToSelfBubbleController::UpdateIcon() {
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
-  browser->window()->UpdatePageActionIcon(PageActionIconType::kSendTabToSelf);
+  Browser* browser = chrome::FindBrowserWithWebContents(&GetWebContents());
+  // UpdateIcon() can be called during browser teardown.
+  if (!browser)
+    return;
+
+  if (sharing_hub::SharingHubOmniboxEnabled(
+          GetWebContents().GetBrowserContext())) {
+    browser->window()->UpdatePageActionIcon(PageActionIconType::kSharingHub);
+  } else {
+    browser->window()->UpdatePageActionIcon(PageActionIconType::kSendTabToSelf);
+  }
 }
 
 // Static:
@@ -118,14 +165,11 @@ void SendTabToSelfBubbleController::RegisterProfilePrefs(
   user_prefs->RegisterBooleanPref(prefs::kInitialSendAnimationShown, false);
 }
 
-SendTabToSelfBubbleController::SendTabToSelfBubbleController() = default;
-
 SendTabToSelfBubbleController::SendTabToSelfBubbleController(
     content::WebContents* web_contents)
-    : web_contents_(web_contents) {
-  DCHECK(web_contents);
-}
+    : content::WebContentsUserData<SendTabToSelfBubbleController>(
+          *web_contents) {}
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(SendTabToSelfBubbleController)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(SendTabToSelfBubbleController);
 
 }  // namespace send_tab_to_self

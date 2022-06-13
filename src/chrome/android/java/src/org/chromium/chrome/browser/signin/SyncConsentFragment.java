@@ -18,7 +18,7 @@ import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.services.SigninManager;
 import org.chromium.chrome.browser.signin.services.UnifiedConsentServiceBridge;
-import org.chromium.chrome.browser.sync.ProfileSyncService;
+import org.chromium.chrome.browser.sync.SyncService;
 import org.chromium.chrome.browser.sync.settings.ManageSyncSettings;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
@@ -31,7 +31,7 @@ import java.lang.annotation.RetentionPolicy;
 /** Implementation of {@link SyncConsentFragmentBase} for {@link SyncConsentActivity}. */
 public class SyncConsentFragment extends SyncConsentFragmentBase {
     private static final String ARGUMENT_PERSONALIZED_PROMO_ACTION =
-            "SigninFragment.PersonalizedPromoAction";
+            "SyncConsentFragment.PersonalizedPromoAction";
 
     @IntDef({PromoAction.NONE, PromoAction.WITH_DEFAULT, PromoAction.NOT_DEFAULT,
             PromoAction.NEW_ACCOUNT})
@@ -90,51 +90,52 @@ public class SyncConsentFragment extends SyncConsentFragmentBase {
     }
 
     @Override
-    protected void onSigninRefused() {
+    protected void onSyncRefused() {
         getActivity().finish();
     }
 
     @Override
-    protected void onSigninAccepted(String accountName, boolean isDefaultAccount,
-            boolean settingsClicked, Runnable callback) {
-        // TODO(https://crbug.com/1002056): Change onSigninAccepted to get CoreAccountInfo.
-        Account account = AccountUtils.findAccountByName(
-                AccountManagerFacadeProvider.getInstance().tryGetGoogleAccounts(), accountName);
-        if (account == null) {
-            callback.run();
-            return;
-        }
-        SigninManager signinManager = IdentityServicesProvider.get().getSigninManager(
-                Profile.getLastUsedRegularProfile());
-        signinManager.signinAndEnableSync(
-                mSigninAccessPoint, account, new SigninManager.SignInCallback() {
-                    @Override
-                    public void onSignInComplete() {
-                        UnifiedConsentServiceBridge.setUrlKeyedAnonymizedDataCollectionEnabled(
-                                Profile.getLastUsedRegularProfile(), true);
-                        SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
-                        if (settingsClicked) {
-                            settingsLauncher.launchSettingsActivity(getActivity(),
-                                    ManageSyncSettings.class,
-                                    ManageSyncSettings.createArguments(true));
-                        } else {
-                            ProfileSyncService.get().setFirstSetupComplete(
-                                    SyncFirstSetupCompleteSource.BASIC_FLOW);
+    protected void onSyncAccepted(String accountName, boolean settingsClicked, Runnable callback) {
+        // TODO(https://crbug.com/1002056): Change onSyncAccepted to get CoreAccountInfo.
+        AccountManagerFacadeProvider.getInstance().getAccounts().then(accounts -> {
+            @Nullable
+            Account account = AccountUtils.findAccountByName(accounts, accountName);
+            if (account == null) {
+                callback.run();
+                return;
+            }
+            SigninManager signinManager = IdentityServicesProvider.get().getSigninManager(
+                    Profile.getLastUsedRegularProfile());
+            signinManager.signinAndEnableSync(
+                    mSigninAccessPoint, account, new SigninManager.SignInCallback() {
+                        @Override
+                        public void onSignInComplete() {
+                            UnifiedConsentServiceBridge.setUrlKeyedAnonymizedDataCollectionEnabled(
+                                    Profile.getLastUsedRegularProfile(), true);
+                            SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
+                            if (settingsClicked) {
+                                settingsLauncher.launchSettingsActivity(getActivity(),
+                                        ManageSyncSettings.class,
+                                        ManageSyncSettings.createArguments(true));
+                            } else {
+                                SyncService.get().setFirstSetupComplete(
+                                        SyncFirstSetupCompleteSource.BASIC_FLOW);
+                            }
+
+                            recordSigninCompletedHistogramAccountInfo();
+
+                            Activity activity = getActivity();
+                            if (activity != null) activity.finish();
+
+                            callback.run();
                         }
 
-                        recordSigninCompletedHistogramAccountInfo();
-
-                        Activity activity = getActivity();
-                        if (activity != null) activity.finish();
-
-                        callback.run();
-                    }
-
-                    @Override
-                    public void onSignInAborted() {
-                        callback.run();
-                    }
-                });
+                        @Override
+                        public void onSignInAborted() {
+                            callback.run();
+                        }
+                    });
+        });
     }
 
     private void recordSigninCompletedHistogramAccountInfo() {

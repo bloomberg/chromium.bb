@@ -21,7 +21,7 @@ enum class WindowType {
 
 // A report about a JavaScript error that we might want to send back to Google
 // so it can be fixed. Fill in the fields and then call
-// SendJavaScriptErrorReport.
+// JsErrorReportProcessor::SendErrorReport().
 struct COMPONENT_EXPORT(JS_ERROR_REPORTING) JavaScriptErrorReport {
   JavaScriptErrorReport();
   JavaScriptErrorReport(const JavaScriptErrorReport& rhs);
@@ -74,6 +74,11 @@ struct COMPONENT_EXPORT(JS_ERROR_REPORTING) JavaScriptErrorReport {
   // protocol (e.g. http://www.example.com) but not query, fragment, or other
   // privacy-sensitive details we don't want to send.
   absl::optional<std::string> page_url;
+
+  // Some type of debug_id used to tie the JavaScript back to a source map in
+  // the crash reporting backend. Matches the debug_id in the symbol upload
+  // system.
+  absl::optional<std::string> debug_id;
 
   // Uptime of the renderer process in milliseconds. 0 if the callee
   // |web_contents| is null (shouldn't really happen as this is caled from a JS

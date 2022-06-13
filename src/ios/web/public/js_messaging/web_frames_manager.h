@@ -8,8 +8,6 @@
 #include <set>
 #include <string>
 
-#include "base/macros.h"
-
 namespace web {
 
 class WebFrame;
@@ -23,6 +21,9 @@ class WebFrame;
 // process crashed, etc.).
 class WebFramesManager {
  public:
+  WebFramesManager(const WebFramesManager&) = delete;
+  WebFramesManager& operator=(const WebFramesManager&) = delete;
+
   virtual ~WebFramesManager() {}
 
   // Returns a list of all the web frames associated with WebState.
@@ -42,8 +43,6 @@ class WebFramesManager {
 
  protected:
   WebFramesManager() {}
-
-  DISALLOW_COPY_AND_ASSIGN(WebFramesManager);
 };
 
 }  // namespace web

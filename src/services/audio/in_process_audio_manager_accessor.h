@@ -5,7 +5,7 @@
 #ifndef SERVICES_AUDIO_IN_PROCESS_AUDIO_MANAGER_ACCESSOR_H_
 #define SERVICES_AUDIO_IN_PROCESS_AUDIO_MANAGER_ACCESSOR_H_
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "services/audio/service.h"
 
 namespace media {
@@ -22,6 +22,11 @@ class InProcessAudioManagerAccessor final
     : public Service::AudioManagerAccessor {
  public:
   explicit InProcessAudioManagerAccessor(media::AudioManager* audio_manager);
+
+  InProcessAudioManagerAccessor(const InProcessAudioManagerAccessor&) = delete;
+  InProcessAudioManagerAccessor& operator=(
+      const InProcessAudioManagerAccessor&) = delete;
+
   ~InProcessAudioManagerAccessor() final;
 
   void Shutdown() final {}  // AudioManager must be shut down by its owner.
@@ -31,8 +36,7 @@ class InProcessAudioManagerAccessor final
   void SetAudioLogFactory(media::AudioLogFactory* factory) final;
 
  private:
-  media::AudioManager* const audio_manager_;
-  DISALLOW_COPY_AND_ASSIGN(InProcessAudioManagerAccessor);
+  const raw_ptr<media::AudioManager> audio_manager_;
 };
 
 }  // namespace audio

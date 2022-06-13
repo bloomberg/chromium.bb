@@ -46,7 +46,7 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
-#include "third_party/blink/renderer/platform/geometry/int_rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace blink {
 
@@ -184,7 +184,7 @@ FloatRect RectInViewport(const Node& node) {
 
   // RootFrameToViewport doesn't clip so manually apply the viewport clip here.
   FloatRect viewport_rect =
-      FloatRect(FloatPoint(), FloatSize(visual_viewport.Size()));
+      FloatRect(gfx::PointF(), FloatSize(visual_viewport.Size()));
   rect_in_viewport.Intersect(viewport_rect);
 
   return rect_in_viewport;
@@ -387,21 +387,21 @@ bool CanScrollInDirection(const Node* container,
     case SpatialNavigationDirection::kLeft:
       return (container->GetLayoutObject()->Style()->OverflowX() !=
                   EOverflow::kHidden &&
-              scrollable_area->ScrollPosition().X() > 0);
+              scrollable_area->ScrollPosition().x() > 0);
     case SpatialNavigationDirection::kUp:
       return (container->GetLayoutObject()->Style()->OverflowY() !=
                   EOverflow::kHidden &&
-              scrollable_area->ScrollPosition().Y() > 0);
+              scrollable_area->ScrollPosition().y() > 0);
     case SpatialNavigationDirection::kRight:
       return (container->GetLayoutObject()->Style()->OverflowX() !=
                   EOverflow::kHidden &&
-              LayoutUnit(scrollable_area->ScrollPosition().X()) +
+              LayoutUnit(scrollable_area->ScrollPosition().x()) +
                       container->GetLayoutBox()->ClientWidth() <
                   container->GetLayoutBox()->ScrollWidth());
     case SpatialNavigationDirection::kDown:
       return (container->GetLayoutObject()->Style()->OverflowY() !=
                   EOverflow::kHidden &&
-              LayoutUnit(scrollable_area->ScrollPosition().Y()) +
+              LayoutUnit(scrollable_area->ScrollPosition().y()) +
                       container->GetLayoutBox()->ClientHeight() <
                   container->GetLayoutBox()->ScrollHeight());
     default:

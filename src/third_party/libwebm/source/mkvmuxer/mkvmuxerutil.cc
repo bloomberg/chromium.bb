@@ -508,7 +508,7 @@ bool WriteEbmlElement(IMkvWriter* writer, uint64 type, const char* value) {
   if (WriteUInt(writer, length))
     return false;
 
-  if (writer->Write(value, static_cast<const uint32>(length)))
+  if (writer->Write(value, static_cast<uint32>(length)))
     return false;
 
   return true;
@@ -562,10 +562,10 @@ uint64 WriteFrame(IMkvWriter* writer, const Frame* const frame,
   if (relative_timecode < 0 || relative_timecode > kMaxBlockTimecode)
     return 0;
 
-  return frame->CanBeSimpleBlock() ?
-             WriteSimpleBlock(writer, frame, relative_timecode) :
-             WriteBlock(writer, frame, relative_timecode,
-                        cluster->timecode_scale());
+  return frame->CanBeSimpleBlock()
+             ? WriteSimpleBlock(writer, frame, relative_timecode)
+             : WriteBlock(writer, frame, relative_timecode,
+                          cluster->timecode_scale());
 }
 
 uint64 WriteVoidElement(IMkvWriter* writer, uint64 size) {
@@ -606,8 +606,8 @@ uint64 WriteVoidElement(IMkvWriter* writer, uint64 size) {
 
 void GetVersion(int32* major, int32* minor, int32* build, int32* revision) {
   *major = 0;
-  *minor = 2;
-  *build = 1;
+  *minor = 3;
+  *build = 0;
   *revision = 0;
 }
 

@@ -9,7 +9,6 @@
 #include <cstdint>
 #include <utility>
 
-#include "base/macros.h"
 #include "mojo/public/cpp/bindings/lib/pending_remote_state.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 
@@ -33,6 +32,9 @@ class InterfacePtrInfo {
 
   InterfacePtrInfo(InterfacePtrInfo&& other) = default;
 
+  InterfacePtrInfo(const InterfacePtrInfo&) = delete;
+  InterfacePtrInfo& operator=(const InterfacePtrInfo&) = delete;
+
   ~InterfacePtrInfo() {}
 
   InterfacePtrInfo& operator=(InterfacePtrInfo&& other) = default;
@@ -55,8 +57,6 @@ class InterfacePtrInfo {
 
  private:
   internal::PendingRemoteState state_;
-
-  DISALLOW_COPY_AND_ASSIGN(InterfacePtrInfo);
 };
 
 }  // namespace mojo

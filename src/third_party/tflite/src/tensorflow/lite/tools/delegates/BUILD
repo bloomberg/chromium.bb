@@ -1,13 +1,13 @@
-load("//tensorflow/lite:build_def.bzl", "tflite_copts")
+load("//tensorflow/lite:build_def.bzl", "tflite_copts", "tflite_copts_warnings")
 
 package(
     default_visibility = [
         "//visibility:public",
     ],
-    licenses = ["notice"],  # Apache 2.0
+    licenses = ["notice"],
 )
 
-common_copts = ["-Wall"] + tflite_copts()
+common_copts = tflite_copts() + tflite_copts_warnings()
 
 cc_library(
     name = "delegate_provider_hdr",
@@ -23,6 +23,17 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "delegate_provider_lib",
+    srcs = [
+        "delegate_provider.cc",
+    ],
+    copts = common_copts,
+    deps = [
+        ":delegate_provider_hdr",
+    ],
+)
+
 # A convenient library for all inference execution providers.
 cc_library(
     name = "tflite_execution_providers",
@@ -30,6 +41,7 @@ cc_library(
     deps = [
         ":coreml_delegate_provider",
         ":default_execution_provider",
+        ":delegate_provider_lib",
         ":external_delegate_provider",
         ":gpu_delegate_provider",
         ":hexagon_delegate_provider",
@@ -58,16 +70,24 @@ cc_library(
         "//tensorflow:ios": [
             "-xobjective-c++",
         ],
+        "//tensorflow:macos_arm64": [
+            "-xobjective-c++",
+        ],
         "//conditions:default": [],
     }),
     deps = [
         ":delegate_provider_hdr",
         "//tensorflow/lite/tools/evaluation:utils",
     ] + select({
-        "//tensorflow:android": [
+        "//tensorflow/lite/delegates/gpu:supports_gpu_delegate": [
             "//tensorflow/lite/delegates/gpu:delegate",
         ],
+        "//conditions:default": [],
+    }) + select({
         "//tensorflow:ios": [
+            "//tensorflow/lite/delegates/gpu:metal_delegate",
+        ],
+        "//tensorflow:macos_arm64": [
             "//tensorflow/lite/delegates/gpu:metal_delegate",
         ],
         "//conditions:default": [],
@@ -81,7 +101,11 @@ cc_library(
     copts = common_copts,
     deps = [
         ":delegate_provider_hdr",
-        "//tensorflow/lite/tools/evaluation:utils",
+        "//tensorflow/lite/delegates/nnapi:nnapi_delegate",
+        "//tensorflow/lite/nnapi:nnapi_implementation",
+        "//tensorflow/lite/nnapi:nnapi_util",
+        "//tensorflow/lite/nnapi/sl:nnapi_support_library",
+        "//tensorflow/lite/nnapi/sl:nnapi_support_library_headers",
     ],
     alwayslink = 1,
 )
@@ -94,10 +118,7 @@ cc_library(
         ":delegate_provider_hdr",
         "//tensorflow/lite/tools/evaluation:utils",
     ] + select({
-        "//tensorflow:android_arm": [
-            "//tensorflow/lite/delegates/hexagon:hexagon_delegate",
-        ],
-        "//tensorflow:android_arm64": [
+        "//tensorflow:arm_any": [
             "//tensorflow/lite/delegates/hexagon:hexagon_delegate",
         ],
         "//conditions:default": [],
@@ -112,6 +133,9 @@ cc_library(
         "//tensorflow:ios": [
             "-xobjective-c++",
         ],
+        "//tensorflow:macos_arm64": [
+            "-xobjective-c++",
+        ],
         "//conditions:default": [],
     }),
     deps = [
@@ -119,7 +143,10 @@ cc_library(
         "//tensorflow/lite/tools/evaluation:utils",
     ] + select({
         "//tensorflow:ios": [
-            "//tensorflow/lite/experimental/delegates/coreml:coreml_delegate",
+            "//tensorflow/lite/delegates/coreml:coreml_delegate",
+        ],
+        "//tensorflow:macos_arm64": [
+            "//tensorflow/lite/delegates/coreml:coreml_delegate",
         ],
         "//conditions:default": [],
     }),
@@ -151,6 +178,29 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":delegate_provider_hdr",
+        "//tensorflow/lite/delegates/external:external_delegate",
     ],
     alwayslink = 1,
+)
+
+cc_test(
+    name = "delegate_provider_lib_test",
+    size = "small",
+    srcs = ["delegate_provider_test.cc"],
+    # See details in https://github.com/bazelbuild/bazel/issues/11552 to avoid
+    # lazy symbol binding failure on macOS.
+    linkstatic = select({
+        "//tensorflow:macos": True,
+        "//conditions:default": False,
+    }),
+    deps = [
+        ":default_execution_provider",
+        ":delegate_provider_hdr",
+        ":delegate_provider_lib",
+        ":nnapi_delegate_provider",
+        ":xnnpack_delegate_provider",
+        "//tensorflow/lite/delegates/utils/dummy_delegate:dummy_delegate_provider",
+        "//tensorflow/lite/tools:tool_params",
+        "@com_google_googletest//:gtest_main",
+    ],
 )

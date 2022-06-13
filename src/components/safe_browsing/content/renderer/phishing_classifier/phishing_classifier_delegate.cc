@@ -19,7 +19,7 @@
 #include "components/safe_browsing/content/renderer/phishing_classifier/flatbuffer_scorer.h"
 #include "components/safe_browsing/content/renderer/phishing_classifier/phishing_classifier.h"
 #include "components/safe_browsing/content/renderer/phishing_classifier/protobuf_scorer.h"
-#include "components/safe_browsing/core/proto/csd.pb.h"
+#include "components/safe_browsing/core/common/proto/csd.pb.h"
 #include "content/public/renderer/document_state.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
@@ -84,9 +84,9 @@ void PhishingClassifierDelegate::SetPhishingModel(
     const std::string& model,
     base::File tflite_visual_model) {
   safe_browsing::Scorer* scorer = nullptr;
-  // An empty model string and invalid model file means we should disable
-  // client-side phishing detection.
-  if (!model.empty() || tflite_visual_model.IsValid()) {
+  // An empty model string means we should disable client-side phishing
+  // detection.
+  if (!model.empty()) {
     scorer = safe_browsing::ProtobufModelScorer::Create(
         model, std::move(tflite_visual_model));
     if (!scorer)
@@ -101,9 +101,8 @@ void PhishingClassifierDelegate::SetPhishingFlatBufferModel(
     base::ReadOnlySharedMemoryRegion flatbuffer_region,
     base::File tflite_visual_model) {
   safe_browsing::Scorer* scorer = nullptr;
-  // An invalid region or invalid model file means we should disable
-  // client-side phishing detection.
-  if (flatbuffer_region.IsValid() || tflite_visual_model.IsValid()) {
+  // An invalid region means we should disable client-side phishing detection.
+  if (flatbuffer_region.IsValid()) {
     scorer = safe_browsing::FlatBufferModelScorer::Create(
         std::move(flatbuffer_region), std::move(tflite_visual_model));
     if (!scorer)

@@ -7,8 +7,8 @@
 #include <string>
 #include <vector>
 
+#include "ash/constants/ash_features.h"
 #include "ash/power/hid_battery_util.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/system_tray_client.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -40,8 +40,7 @@ namespace {
 const uint8_t kLowBatteryLevel = 16;
 
 // Don't show 2 low battery notification within |kNotificationInterval|.
-constexpr base::TimeDelta kNotificationInterval =
-    base::TimeDelta::FromSeconds(60);
+constexpr base::TimeDelta kNotificationInterval = base::Seconds(60);
 
 constexpr char kNotifierStylusBattery[] = "ash.stylus-battery";
 
@@ -154,7 +153,7 @@ void PeripheralBatteryNotifier::OnRemovingBattery(
 
 void PeripheralBatteryNotifier::UpdateBattery(
     const PeripheralBatteryListener::BatteryInfo& battery_info) {
-  if (!battery_info.level) {
+  if (!battery_info.level || !battery_info.battery_report_eligible) {
     CancelNotification(battery_info);
     return;
   }

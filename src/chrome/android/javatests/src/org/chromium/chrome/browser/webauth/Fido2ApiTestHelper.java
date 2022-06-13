@@ -18,11 +18,14 @@ import com.google.common.io.BaseEncoding;
 
 import org.junit.Assert;
 
+import org.chromium.base.test.util.JniMocker;
 import org.chromium.blink.mojom.AuthenticatorAttachment;
 import org.chromium.blink.mojom.AuthenticatorSelectionCriteria;
 import org.chromium.blink.mojom.CableAuthentication;
 import org.chromium.blink.mojom.GetAssertionAuthenticatorResponse;
 import org.chromium.blink.mojom.MakeCredentialAuthenticatorResponse;
+import org.chromium.blink.mojom.PaymentCredentialInstrument;
+import org.chromium.blink.mojom.PaymentOptions;
 import org.chromium.blink.mojom.PrfValues;
 import org.chromium.blink.mojom.PublicKeyCredentialCreationOptions;
 import org.chromium.blink.mojom.PublicKeyCredentialDescriptor;
@@ -32,11 +35,18 @@ import org.chromium.blink.mojom.PublicKeyCredentialRpEntity;
 import org.chromium.blink.mojom.PublicKeyCredentialType;
 import org.chromium.blink.mojom.PublicKeyCredentialUserEntity;
 import org.chromium.blink.mojom.UvmEntry;
+import org.chromium.components.payments.PaymentFeatureList;
+import org.chromium.components.payments.PaymentFeatureListJni;
+import org.chromium.content.browser.ClientDataJsonImpl;
+import org.chromium.content.browser.ClientDataJsonImplJni;
 import org.chromium.mojo_base.mojom.TimeDelta;
+import org.chromium.payments.mojom.PaymentCurrencyAmount;
+import org.chromium.url.internal.mojom.Origin;
 import org.chromium.url.mojom.Url;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.concurrent.TimeUnit;
 
 /* NO_BUILDER:
@@ -500,5 +510,53 @@ public class Fido2ApiTestHelper {
         intent.putExtra(
                 Fido.FIDO2_KEY_ERROR_EXTRA, constructErrorResponseBytes(errorCode, errorMsg));
         return intent;
+    }
+
+    /** Creates a PaymentOptions object with normal values. */
+    public static PaymentOptions createPaymentOptions() {
+        PaymentOptions options = new PaymentOptions();
+        options.total = new PaymentCurrencyAmount();
+        options.total.currency = "USD";
+        options.total.value = "888";
+        options.instrument = new PaymentCredentialInstrument();
+        options.instrument.displayName = "MaxPay";
+        options.instrument.icon = new Url();
+        options.instrument.icon.url = "https://www.google.com/icon.png";
+        options.payeeOrigin = new Origin();
+        options.payeeOrigin.scheme = "https";
+        options.payeeOrigin.host = "test.example";
+        options.payeeOrigin.port = 443;
+        return options;
+    }
+
+    /**
+     * Mocks PaymentFeatureList so that the Security Payment Confirmation flag has been enabled.
+     * @param mocker The mocker used to mock the PaymentFeatureListJni.
+     */
+    public static void setSecurePaymentConfirmationEnabled(JniMocker mocker) {
+        PaymentFeatureList.Natives paymentFeatureListJni = new PaymentFeatureList.Natives() {
+            @Override
+            public boolean isEnabled(String featureName) {
+                return featureName.equals(PaymentFeatureList.SECURE_PAYMENT_CONFIRMATION);
+            }
+        };
+        mocker.mock(PaymentFeatureListJni.TEST_HOOKS, paymentFeatureListJni);
+    }
+
+    /**
+     * Mocks ClientDataJson so that it returns the provided result.
+     * @param mocker The mocker used to mock the PaymentFeatureListJni.
+     * @param mockResult The mock value for {@link ClientDataJson#buildClientDataJson} to return.
+     */
+    public static void mockClientDataJson(JniMocker mocker, String mockResult) {
+        ClientDataJsonImpl.Natives clientDataJsonJni = new ClientDataJsonImpl.Natives() {
+            @Override
+            public String buildClientDataJson(int clientDataRequestType, String callerOrigin,
+                    byte[] challenge, boolean isCrossOrigin, ByteBuffer optionsByteBuffer,
+                    String relyingPartyId, String topOrigin) {
+                return mockResult;
+            }
+        };
+        mocker.mock(ClientDataJsonImplJni.TEST_HOOKS, clientDataJsonJni);
     }
 }

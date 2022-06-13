@@ -4,18 +4,14 @@
 
 import codecs
 import gzip
+import io
 import os
 import shutil
-import sys
 import tempfile
 import unittest
 
-if sys.version_info < (3,):
-  from tracing_build import trace2html
+from tracing_build import trace2html
 
-
-@unittest.skipIf(sys.version_info >= (3,),
-                 'py_vulcanize is not ported to python3')
 class Trace2HTMLTests(unittest.TestCase):
   SIMPLE_TRACE_PATH = os.path.join(
       os.path.dirname(__file__),
@@ -50,15 +46,16 @@ class Trace2HTMLTests(unittest.TestCase):
 
     # Hash the contents of the output file that was generated from an unzipped
     # json input file.
-    unzipped_hash = hash(open(output_filename).read())
+    unzipped_hash = hash(
+        io.open(output_filename, 'r', encoding='utf-8').read())
 
     os.unlink(output_filename)
 
     # Gzip SIMPLE_TRACE into |input_filename|.
     # trace2html should automatically gunzip it and start building the html from
     # the same input as if the input weren't gzipped.
-    with gzip.GzipFile(input_filename, mode='w') as input_gzipfile:
-      input_gzipfile.write(open(self.SIMPLE_TRACE_PATH).read())
+    with gzip.GzipFile(input_filename, mode='wb') as input_gzipfile:
+      input_gzipfile.write(open(self.SIMPLE_TRACE_PATH).read().encode('utf-8'))
 
     # trace2html-ify the zipped version of SIMPLE_TRACE from the same input
     # filename as the unzipped version so that the gzipping process is stable.
@@ -67,7 +64,7 @@ class Trace2HTMLTests(unittest.TestCase):
 
     # Hash the contents of the output file that was generated from the zipped
     # json input file.
-    zipped_hash = hash(open(output_filename).read())
+    zipped_hash = hash(io.open(output_filename, 'r', encoding='utf-8').read())
 
     # Compare the hashes, not the file contents directly so that, if they are
     # different, python shouldn't try to print megabytes of html.

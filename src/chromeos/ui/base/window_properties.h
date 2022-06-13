@@ -34,6 +34,17 @@ extern const ui::ClassProperty<bool>* const kAutoMaximizeXdgShellEnabled;
 COMPONENT_EXPORT(CHROMEOS_UI_BASE)
 extern const ui::ClassProperty<bool>* const kBlockedForAssistantSnapshotKey;
 
+// If true, the window can attach into another window.
+COMPONENT_EXPORT(CHROMEOS_UI_BASE)
+extern const ui::ClassProperty<bool>* const kCanAttachToAnotherWindowKey;
+
+// If true, the window is the target window for the tab-dragged window. The key
+// is used by overview to show a highlight indication to indicate which overview
+// window the dragged tabs will merge into when the user releases the pointer.
+COMPONENT_EXPORT(CHROMEOS_UI_BASE)
+extern const ui::ClassProperty<bool>* const
+    kIsDeferredTabDraggingTargetWindowKey;
+
 // Whether holding esc should exit fullscreen. Used by Borealis and Plugin VM.
 COMPONENT_EXPORT(CHROMEOS_UI_BASE)
 extern const ui::ClassProperty<bool>* const kEscHoldToExitFullscreen;
@@ -88,14 +99,6 @@ extern const ui::ClassProperty<bool>* const kWindowManagerManagesOpacityKey;
 // A property key to indicate ash's extended window state.
 COMPONENT_EXPORT(CHROMEOS_UI_BASE)
 extern const ui::ClassProperty<WindowStateType>* const kWindowStateTypeKey;
-
-// A property key to store ash::WindowPinType for a window.
-// When setting this property to PINNED or TRUSTED_PINNED, the window manager
-// will try to fullscreen the window and pin it on the top of the screen. If the
-// window manager failed to do it, the property will be restored to NONE. When
-// setting this property to NONE, the window manager will restore the window.
-COMPONENT_EXPORT(CHROMEOS_UI_BASE)
-extern const ui::ClassProperty<WindowPinType>* const kWindowPinTypeKey;
 
 // A property key whose value is shown in alt-tab/overview mode. If non-value
 // is set, the window's title is used.

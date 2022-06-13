@@ -7,8 +7,6 @@
 #ifndef REMOTING_PROTOCOL_CURSOR_SHAPE_STUB_H_
 #define REMOTING_PROTOCOL_CURSOR_SHAPE_STUB_H_
 
-#include "base/macros.h"
-
 namespace remoting {
 namespace protocol {
 
@@ -17,12 +15,13 @@ class CursorShapeInfo;
 class CursorShapeStub {
  public:
   CursorShapeStub() {}
+
+  CursorShapeStub(const CursorShapeStub&) = delete;
+  CursorShapeStub& operator=(const CursorShapeStub&) = delete;
+
   virtual ~CursorShapeStub() {}
 
   virtual void SetCursorShape(const CursorShapeInfo& cursor_shape) = 0;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CursorShapeStub);
 };
 
 }  // namespace protocol

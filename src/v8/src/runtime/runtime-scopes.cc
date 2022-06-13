@@ -11,6 +11,7 @@
 #include "src/execution/arguments-inl.h"
 #include "src/execution/frames-inl.h"
 #include "src/execution/isolate-inl.h"
+#include "src/execution/isolate.h"
 #include "src/heap/heap-inl.h"  // For ToBoolean. TODO(jkummerow): Drop.
 #include "src/init/bootstrapper.h"
 #include "src/logging/counters.h"
@@ -52,7 +53,7 @@ Object DeclareGlobal(Isolate* isolate, Handle<JSGlobalObject> global,
                      RedeclarationType redeclaration_type) {
   Handle<ScriptContextTable> script_contexts(
       global->native_context().script_context_table(), isolate);
-  ScriptContextTable::LookupResult lookup;
+  VariableLookupResult lookup;
   if (ScriptContextTable::Lookup(isolate, *script_contexts, *name, &lookup) &&
       IsLexicalVariableMode(lookup.mode)) {
     // ES#sec-globaldeclarationinstantiation 6.a:
@@ -295,7 +296,7 @@ Object DeclareEvalHelper(Isolate* isolate, Handle<String> name,
   } else if (context->has_extension()) {
     object = handle(context->extension_object(), isolate);
     DCHECK(object->IsJSContextExtensionObject());
-  } else {
+  } else if (context->scope_info().HasContextExtensionSlot()) {
     // Sloppy varblock and function contexts might not have an extension object
     // yet. Sloppy eval will never have an extension object, as vars are hoisted
     // out, and lets are known statically.
@@ -306,6 +307,10 @@ Object DeclareEvalHelper(Isolate* isolate, Handle<String> name,
         isolate->factory()->NewJSObject(isolate->context_extension_function());
 
     context->set_extension(*object);
+  } else {
+    THROW_NEW_ERROR_RETURN_FAILURE(
+        isolate,
+        NewEvalError(MessageTemplate::kVarNotAllowedInEvalScope, name));
   }
 
   RETURN_FAILURE_ON_EXCEPTION(isolate, JSObject::SetOwnPropertyIgnoreAttributes(
@@ -401,7 +406,8 @@ Handle<JSObject> NewSloppyArguments(Isolate* isolate, Handle<JSFunction> callee,
       isolate->factory()->NewArgumentsObject(callee, argument_count);
 
   // Allocate the elements if needed.
-  int parameter_count = callee->shared().internal_formal_parameter_count();
+  int parameter_count =
+      callee->shared().internal_formal_parameter_count_without_receiver();
   if (argument_count > 0) {
     if (parameter_count > 0) {
       int mapped_count = std::min(argument_count, parameter_count);
@@ -526,7 +532,8 @@ RUNTIME_FUNCTION(Runtime_NewRestParameter) {
   HandleScope scope(isolate);
   DCHECK_EQ(1, args.length());
   CONVERT_ARG_HANDLE_CHECKED(JSFunction, callee, 0)
-  int start_index = callee->shared().internal_formal_parameter_count();
+  int start_index =
+      callee->shared().internal_formal_parameter_count_without_receiver();
   // This generic runtime function can also be used when the caller has been
   // inlined, we use the slow but accurate {GetCallerArguments}.
   int argument_count = 0;
@@ -869,7 +876,7 @@ RUNTIME_FUNCTION(Runtime_StoreGlobalNoHoleCheckForReplLetOrConst) {
   Handle<ScriptContextTable> script_contexts(
       native_context->script_context_table(), isolate);
 
-  ScriptContextTable::LookupResult lookup_result;
+  VariableLookupResult lookup_result;
   bool found = ScriptContextTable::Lookup(isolate, *script_contexts, *name,
                                           &lookup_result);
   CHECK(found);

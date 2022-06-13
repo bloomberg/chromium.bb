@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/* eslint-disable rulesdir/no_underscored_properties, @typescript-eslint/no-unused-vars */
+import type * as Platform from '../platform/platform.js';
 
-export interface EventDescriptor {
-  eventTarget: EventTarget;
-  eventType: string|symbol;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export interface EventDescriptor<Events = any, T extends keyof Events = any> {
+  eventTarget: EventTarget<Events>;
+  eventType: T;
   thisObject?: Object;
-  listener: (arg0: EventTargetEvent) => void;
+  listener: EventListener<Events, T>;
 }
 
 export function removeEventListeners(eventList: EventDescriptor[]): void {
@@ -18,39 +19,34 @@ export function removeEventListeners(eventList: EventDescriptor[]): void {
   // Do not hold references on unused event descriptors.
   eventList.splice(0);
 }
-export class EventTarget {
-  addEventListener(eventType: string|symbol, listener: (arg0: EventTargetEvent) => void, thisObject?: Object):
-      EventDescriptor {
-    throw new Error('not implemented');
-  }
-  // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  once(eventType: string|symbol): Promise<any> {
-    throw new Error('not implemented');
-  }
-  removeEventListener(eventType: string|symbol, listener: (arg0: EventTargetEvent) => void, thisObject?: Object): void {
-    throw new Error('not implemented');
-  }
-  hasEventListeners(eventType: string|symbol): boolean {
-    throw new Error('not implemented');
-  }
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  dispatchEventToListeners(eventType: string|symbol, eventData?: any): void {
-  }
 
-  static removeEventListeners = removeEventListeners;
+// This type can be used as the type parameter for `EventTarget`/`ObjectWrapper`
+// when the set of events is not known at compile time.
+export type GenericEvents = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [eventName: string]: any,
+};
+
+export type EventPayloadToRestParameters<Events, T extends keyof Events> = Events[T] extends void ? [] : [Events[T]];
+export type EventListener<Events, T extends keyof Events> = (arg0: EventTargetEvent<Events[T]>) => void;
+
+export interface EventTarget<Events> {
+  addEventListener<T extends keyof Events>(eventType: T, listener: EventListener<Events, T>, thisObject?: Object):
+      EventDescriptor<Events, T>;
+  once<T extends keyof Events>(eventType: T): Promise<Events[T]>;
+  removeEventListener<T extends keyof Events>(eventType: T, listener: EventListener<Events, T>, thisObject?: Object):
+      void;
+  hasEventListeners(eventType: keyof Events): boolean;
+  dispatchEventToListeners<T extends keyof Events>(
+      eventType: Platform.TypeScriptUtilities.NoUnion<T>,
+      ...[eventData]: EventPayloadToRestParameters<Events, T>): void;
 }
 
-// TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function fireEvent(name: string, detail: any = {}, target: HTMLElement|Window = window): void {
+export function fireEvent(name: string, detail: unknown = {}, target: HTMLElement|Window = window): void {
   const evt = new CustomEvent(name, {bubbles: true, cancelable: true, detail});
   target.dispatchEvent(evt);
 }
-// TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export interface EventTargetEvent<T = any> {
+
+export interface EventTargetEvent<T> {
   data: T;
 }

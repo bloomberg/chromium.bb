@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/raw_ptr.h"
 #include "content/browser/media/session/audio_focus_delegate.h"
 
 #include "base/bind.h"
-#include "base/no_destructor.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "content/browser/media/session/media_session_impl.h"
@@ -32,9 +32,8 @@ base::UnguessableToken GetAudioFocusGroupId(MediaSessionImpl* session) {
   // Use a shared audio focus group id for the whole browser. This will means
   // that tabs will share audio focus if the enforcement mode is set to
   // kSingleGroup.
-  static const base::NoDestructor<base::UnguessableToken> token(
-      base::UnguessableToken::Create());
-  return *token;
+  static const base::UnguessableToken token(base::UnguessableToken::Create());
+  return token;
 }
 
 // AudioFocusDelegateDefault is the default implementation of
@@ -54,6 +53,7 @@ class AudioFocusDelegateDefault : public AudioFocusDelegate {
   const base::UnguessableToken& request_id() const override {
     return request_id_;
   }
+  void ReleaseRequestId() override;
 
  private:
   // Finishes an async audio focus request.
@@ -74,7 +74,7 @@ class AudioFocusDelegateDefault : public AudioFocusDelegate {
       request_client_remote_;
 
   // Weak pointer because |this| is owned by |media_session_|.
-  MediaSessionImpl* media_session_;
+  raw_ptr<MediaSessionImpl> media_session_;
 
   // The last requested AudioFocusType by the associated |media_session_|.
   absl::optional<AudioFocusType> audio_focus_type_;
@@ -156,6 +156,19 @@ void AudioFocusDelegateDefault::MediaSessionInfoChanged(
     request_client_remote_->MediaSessionInfoChanged(session_info.Clone());
 
   session_info_ = session_info.Clone();
+}
+
+void AudioFocusDelegateDefault::ReleaseRequestId() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  if (!base::FeatureList::IsEnabled(
+          media_session::features::kMediaSessionService)) {
+    return;
+  }
+
+  EnsureServiceConnection();
+
+  audio_focus_->RequestIdReleased(request_id_);
 }
 
 void AudioFocusDelegateDefault::FinishAudioFocusRequest(AudioFocusType type,

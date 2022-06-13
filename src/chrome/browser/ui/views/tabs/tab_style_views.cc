@@ -7,10 +7,13 @@
 #include <algorithm>
 #include <utility>
 
-#include "base/numerics/ranges.h"
+#include "base/cxx17_backports.h"
+#include "base/i18n/rtl.h"
+#include "base/memory/raw_ptr.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "cc/paint/paint_record.h"
+#include "cc/paint/paint_shader.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/tabs/tab_types.h"
@@ -28,9 +31,9 @@
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gfx/scoped_canvas.h"
-#include "ui/gfx/skia_util.h"
-#include "ui/views/style/platform_style.h"
+#include "ui/views/controls/focus_ring.h"
 #include "ui/views/style/typography.h"
 #include "ui/views/widget/widget.h"
 
@@ -152,7 +155,7 @@ class GM2TabStyle : public TabStyleViews {
                                         float scale,
                                         int stroke_thickness);
 
-  const Tab* const tab_;
+  const raw_ptr<const Tab> tab_;
 
   std::unique_ptr<GlowHoverController> hover_controller_;
   gfx::FontList normal_font_;
@@ -291,8 +294,8 @@ SkPath GM2TabStyle::GetPath(PathType path_type,
   } else if (path_type == PathType::kHighlight) {
     // The path is a round rect inset by the focus ring thickness. The
     // radius is also adjusted by the inset.
-    const float inset = views::PlatformStyle::kFocusHaloThickness +
-                        views::PlatformStyle::kFocusHaloInset;
+    const float inset = views::FocusRing::kDefaultHaloThickness +
+                        views::FocusRing::kDefaultHaloInset;
     SkRRect rrect = SkRRect::MakeRectXY(
         SkRect::MakeLTRB(tab_left + inset, tab_top + inset, tab_right - inset,
                          tab_bottom - inset),
@@ -503,7 +506,10 @@ void GM2TabStyle::PaintTab(gfx::Canvas* canvas) const {
 }
 
 void GM2TabStyle::SetHoverLocation(const gfx::Point& location) {
-  if (hover_controller_)
+  // There's a "glow" that gets drawn over inactive tabs based on the mouse's
+  // location. There is no glow for the active tab so don't update the hover
+  // controller and incur a redraw.
+  if (hover_controller_ && !tab_->IsActive())
     hover_controller_->SetLocation(location);
 }
 
@@ -583,8 +589,8 @@ float GM2TabStyle::GetSeparatorOpacity(bool for_layout, bool leading) const {
   const Tab* adjacent_tab =
       tab_->controller()->GetAdjacentTab(tab_, leading ? -1 : 1);
 
-  const Tab* left_tab = leading ? adjacent_tab : tab_;
-  const Tab* right_tab = leading ? tab_ : adjacent_tab;
+  const Tab* left_tab = leading ? adjacent_tab : tab_.get();
+  const Tab* right_tab = leading ? tab_.get() : adjacent_tab;
   const bool adjacent_to_header =
       right_tab && right_tab->group().has_value() &&
       (!left_tab || left_tab->group() != right_tab->group());
@@ -675,7 +681,7 @@ float GM2TabStyle::GetHoverInterpolatedSeparatorOpacity(
     if (for_layout || !other_tab || other_tab->IsActive())
       return 0.0f;
     auto* tab_style = static_cast<const GM2TabStyle*>(other_tab->tab_style());
-    return float{tab_style->GetHoverAnimationValue()};
+    return static_cast<float>(tab_style->GetHoverAnimationValue());
   };
   const float hover_value = GetHoverAnimationValue();
   return 1.0f - std::max(hover_value, adjacent_hover_value(other_tab));
@@ -692,7 +698,8 @@ float GM2TabStyle::GetBoundsInterpolatedSeparatorOpacity() const {
   const gfx::Rect target_bounds =
       tab_->controller()->GetTabAnimationTargetBounds(tab_);
   const int tab_width = std::max(tab_->width(), target_bounds.width());
-  return float{std::min(std::abs(tab_->x() - target_bounds.x()), tab_width)} /
+  return static_cast<float>(
+             std::min(std::abs(tab_->x() - target_bounds.x()), tab_width)) /
          tab_width;
 }
 
@@ -717,11 +724,12 @@ float GM2TabStyle::GetHoverOpacity() const {
   // Opacity boost varies on tab width.  The interpolation is nonlinear so
   // that most tabs will fall on the low end of the opacity range, but very
   // narrow tabs will still stand out on the high end.
-  const float range_start = float{GetStandardWidth()};
-  const float range_end = float{GetMinimumInactiveWidth()};
-  const float value_in_range = float{tab_->width()};
-  const float t = base::ClampToRange(
-      (value_in_range - range_start) / (range_end - range_start), 0.0f, 1.0f);
+  const float range_start = static_cast<float>(GetStandardWidth());
+  constexpr float kWidthForMaxHoverOpacity = 32.0f;
+  const float value_in_range = static_cast<float>(tab_->width());
+  const float t = base::clamp(
+      (value_in_range - range_start) / (kWidthForMaxHoverOpacity - range_start),
+      0.0f, 1.0f);
   return tab_->controller()->GetHoverOpacityForTab(t * t);
 }
 
@@ -915,7 +923,7 @@ float GM2TabStyle::GetTopCornerRadiusForWidth(int width) {
   // To maintain a round-rect appearance, ensure at least one third of the top
   // of the tab is flat.
   const float radius = top_width / 3.f;
-  return base::ClampToRange<float>(radius, 0, ideal_radius);
+  return base::clamp<float>(radius, 0, ideal_radius);
 }
 
 // static

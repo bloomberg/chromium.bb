@@ -23,7 +23,7 @@
 #include "third_party/blink/renderer/platform/fonts/font_description.h"
 #include "third_party/blink/renderer/platform/fonts/font_selector.h"
 #include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_priority.h"
 #include "third_party/blink/renderer/platform/network/network_state_notifier.h"
@@ -104,12 +104,7 @@ RemoteFontFaceSource::DisplayPeriod RemoteFontFaceSource::ComputePeriod()
       }
 
     case FontDisplay::kOptional: {
-      const bool use_phase_value =
-          !base::FeatureList::IsEnabled(
-              features::kFontPreloadingDelaysRendering) ||
-          !GetDocument();
-
-      if (use_phase_value) {
+      if (!GetDocument()) {
         switch (phase_) {
           case kNoLimitExceeded:
             return kBlockPeriod;
@@ -125,7 +120,7 @@ RemoteFontFaceSource::DisplayPeriod RemoteFontFaceSource::ComputePeriod()
       if (GetDocument()->GetFontPreloadManager().RenderingHasBegun()) {
         if (FinishedFromMemoryCache() ||
             finished_before_document_rendering_begin_ ||
-            !has_been_requested_while_pending_)
+            !paint_requested_while_pending_)
           return kSwapPeriod;
         return kFailurePeriod;
       }
@@ -150,7 +145,7 @@ RemoteFontFaceSource::RemoteFontFaceSource(CSSFontFace* css_font_face,
       phase_(kNoLimitExceeded),
       is_intervention_triggered_(ShouldTriggerWebFontsIntervention()),
       finished_before_document_rendering_begin_(false),
-      has_been_requested_while_pending_(false),
+      paint_requested_while_pending_(false),
       finished_before_lcp_limit_(false) {
   DCHECK(face_);
   period_ = ComputePeriod();
@@ -162,11 +157,6 @@ Document* RemoteFontFaceSource::GetDocument() const {
   auto* window =
       DynamicTo<LocalDOMWindow>(font_selector_->GetExecutionContext());
   return window ? window->document() : nullptr;
-}
-
-void RemoteFontFaceSource::Dispose() {
-  ClearResource();
-  PruneTable();
 }
 
 bool RemoteFontFaceSource::IsLoading() const {
@@ -204,7 +194,7 @@ void RemoteFontFaceSource::NotifyFinished(Resource* resource) {
         mojom::ConsoleMessageSource::kOther,
         mojom::ConsoleMessageLevel::kWarning,
         "Failed to decode downloaded font: " + font->Url().ElidedString()));
-    if (font->OtsParsingMessage().length() > 1) {
+    if (!font->OtsParsingMessage().IsEmpty()) {
       execution_context->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
           mojom::ConsoleMessageSource::kOther,
           mojom::ConsoleMessageLevel::kWarning,
@@ -333,8 +323,10 @@ scoped_refptr<SimpleFontData> RemoteFontFaceSource::CreateFontData(
   return SimpleFontData::Create(
       custom_font_data_->GetFontPlatformData(
           font_description.EffectiveFontSize(),
-          font_description.IsSyntheticBold(),
-          font_description.IsSyntheticItalic(),
+          font_description.IsSyntheticBold() &&
+              font_description.SyntheticBoldAllowed(),
+          font_description.IsSyntheticItalic() &&
+              font_description.SyntheticItalicAllowed(),
           font_description.GetFontSelectionRequest(),
           font_selection_capabilities, font_description.FontOpticalSizing(),
           font_description.Orientation(), font_description.VariationSettings()),
@@ -356,7 +348,6 @@ RemoteFontFaceSource::CreateLoadingFallbackFontData(
   scoped_refptr<CSSCustomFontData> css_font_data = CSSCustomFontData::Create(
       this, period_ == kBlockPeriod ? CSSCustomFontData::kInvisibleFallback
                                     : CSSCustomFontData::kVisibleFallback);
-  has_been_requested_while_pending_ = true;
   return SimpleFontData::Create(temporary_font->PlatformData(), css_font_data);
 }
 
@@ -421,6 +412,17 @@ void RemoteFontFaceSource::FontLoadHistograms::FallbackFontPainted(
 void RemoteFontFaceSource::FontLoadHistograms::LongLimitExceeded() {
   is_long_limit_exceeded_ = true;
   MaySetDataSource(kFromNetwork);
+}
+
+bool RemoteFontFaceSource::IsPendingDataUrl() const {
+  return GetResource() && GetResource()->Url().ProtocolIsData();
+}
+
+void RemoteFontFaceSource::PaintRequested() {
+  // The function must not be called after the font is loaded.
+  DCHECK(!IsLoaded());
+  paint_requested_while_pending_ = true;
+  histograms_.FallbackFontPainted(period_);
 }
 
 void RemoteFontFaceSource::FontLoadHistograms::RecordFallbackTime() {

@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/callback.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/frame_timing_details_map.h"
@@ -47,6 +47,9 @@ class RootFrameSink : public base::RefCounted<RootFrameSink>,
  public:
   using SetNeedsBeginFrameCallback = base::RepeatingCallback<void(bool)>;
   RootFrameSink(RootFrameSinkClient* client);
+
+  RootFrameSink(const RootFrameSink&) = delete;
+  RootFrameSink& operator=(const RootFrameSink&) = delete;
 
   const viz::FrameSinkId& root_frame_sink_id() const {
     return root_frame_sink_id_;
@@ -106,11 +109,9 @@ class RootFrameSink : public base::RefCounted<RootFrameSink>,
 
   bool needs_begin_frames_ = false;
   bool needs_draw_ = false;
-  RootFrameSinkClient* client_;
+  raw_ptr<RootFrameSinkClient> client_;
 
   THREAD_CHECKER(thread_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(RootFrameSink);
 };
 
 using RootFrameSinkGetter =

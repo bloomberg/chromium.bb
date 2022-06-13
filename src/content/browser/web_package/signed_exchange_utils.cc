@@ -6,7 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/feature_list.h"
-#include "base/no_destructor.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -23,14 +23,20 @@
 #include "net/http/http_util.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 
 namespace content {
 namespace signed_exchange_utils {
 
 namespace {
+constexpr char kLoadResultHistogram[] = "SignedExchange.LoadResult2";
 absl::optional<base::Time> g_verification_time_for_testing;
 }  // namespace
+
+void RecordLoadResultHistogram(SignedExchangeLoadResult result) {
+  base::UmaHistogramEnumeration(kLoadResultHistogram, result);
+}
 
 void ReportErrorAndTraceEvent(
     SignedExchangeDevToolsProxy* devtools_proxy,
@@ -254,9 +260,9 @@ int MakeRequestID() {
   // uninitialized variables.) This way, we no longer have the unlikely (but
   // observed in the real world!) event where we have two requests with the same
   // request_id_.
-  static base::NoDestructor<std::atomic_int> request_id(-1);
+  static std::atomic_int request_id(-1);
 
-  return --*request_id;
+  return --request_id;
 }
 
 base::Time GetVerificationTime() {
@@ -268,6 +274,16 @@ base::Time GetVerificationTime() {
 void SetVerificationTimeForTesting(
     absl::optional<base::Time> verification_time_for_testing) {
   g_verification_time_for_testing = verification_time_for_testing;
+}
+
+bool IsCookielessOnlyExchange(const net::HttpResponseHeaders& inner_headers) {
+  std::string value;
+  size_t iter = 0;
+  while (inner_headers.EnumerateHeader(&iter, "Vary", &value)) {
+    if (base::EqualsCaseInsensitiveASCII(value, "cookie"))
+      return true;
+  }
+  return false;
 }
 
 }  // namespace signed_exchange_utils

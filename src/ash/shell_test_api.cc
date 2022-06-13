@@ -11,6 +11,7 @@
 #include "ash/accelerators/accelerator_controller_impl.h"
 #include "ash/accelerometer/accelerometer_reader.h"
 #include "ash/app_list/app_list_controller_impl.h"
+#include "ash/app_list/app_list_presenter_impl.h"
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/hud_display/hud_display.h"
 #include "ash/keyboard/keyboard_controller_impl.h"
@@ -26,6 +27,7 @@
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/workspace_controller.h"
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "components/prefs/testing_pref_service.h"
 #include "ui/aura/window_tree_host.h"
@@ -47,6 +49,9 @@ class PointerMoveLoopWaiter : public ui::CompositorObserver {
       : window_tree_host_(window_tree_host) {
     window_tree_host_->compositor()->AddObserver(this);
   }
+
+  PointerMoveLoopWaiter(const PointerMoveLoopWaiter&) = delete;
+  PointerMoveLoopWaiter& operator=(const PointerMoveLoopWaiter&) = delete;
 
   ~PointerMoveLoopWaiter() override {
     window_tree_host_->compositor()->RemoveObserver(this);
@@ -72,8 +77,6 @@ class PointerMoveLoopWaiter : public ui::CompositorObserver {
  private:
   aura::WindowTreeHost* window_tree_host_;
   std::unique_ptr<base::RunLoop> run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(PointerMoveLoopWaiter);
 };
 
 class WindowAnimationWaiter : public ui::LayerAnimationObserver {
@@ -274,8 +277,9 @@ bool ShellTestApi::IsContextMenuShown() const {
 
 bool ShellTestApi::IsActionForAcceleratorEnabled(
     const ui::Accelerator& accelerator) const {
-  return Shell::Get()->accelerator_controller()->IsActionForAcceleratorEnabled(
-      accelerator);
+  auto* controller = Shell::Get()->accelerator_controller();
+  return AcceleratorControllerImpl::TestApi(controller)
+      .IsActionForAcceleratorEnabled(accelerator);
 }
 
 bool ShellTestApi::PressAccelerator(const ui::Accelerator& accelerator) {

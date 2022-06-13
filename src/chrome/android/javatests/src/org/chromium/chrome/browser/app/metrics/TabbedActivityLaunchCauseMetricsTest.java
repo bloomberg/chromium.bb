@@ -44,7 +44,9 @@ import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.JniMocker;
+import org.chromium.base.test.util.RequiresRestart;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.LauncherShortcutActivity;
@@ -58,6 +60,7 @@ import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeApplicationTestUtils;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.network.mojom.ReferrerPolicy;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 import org.chromium.url.GURL;
@@ -72,6 +75,8 @@ import java.util.List;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 @Batch(Batch.PER_CLASS)
 public final class TabbedActivityLaunchCauseMetricsTest {
+    private static final long CHROME_LAUNCH_TIMEOUT = 10000L;
+
     @Rule
     public final ChromeTabbedActivityTestRule mActivityTestRule =
             new ChromeTabbedActivityTestRule();
@@ -103,7 +108,7 @@ public final class TabbedActivityLaunchCauseMetricsTest {
             Criteria.checkThat(
                     histogramCountForValue(LaunchCauseMetrics.LaunchCause.MAIN_LAUNCHER_ICON),
                     Matchers.is(count + 1));
-        });
+        }, CHROME_LAUNCH_TIMEOUT, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
         ChromeApplicationTestUtils.fireHomeScreenIntent(mActivityTestRule.getActivity());
         mActivityTestRule.resumeMainActivityFromLauncher();
         CriteriaHelper.pollInstrumentationThread(() -> {
@@ -132,7 +137,8 @@ public final class TabbedActivityLaunchCauseMetricsTest {
                         }
                     };
                 };
-        ApplicationStatus.registerStateListenerForAllActivities(listener);
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> ApplicationStatus.registerStateListenerForAllActivities(listener));
 
         final int mainCount =
                 histogramCountForValue(LaunchCauseMetrics.LaunchCause.MAIN_LAUNCHER_ICON);
@@ -142,10 +148,11 @@ public final class TabbedActivityLaunchCauseMetricsTest {
         CriteriaHelper.pollInstrumentationThread(() -> {
             Criteria.checkThat(histogramCountForValue(LaunchCauseMetrics.LaunchCause.RECENTS),
                     Matchers.is(recentsCount + 1));
-        });
+        }, CHROME_LAUNCH_TIMEOUT, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
         Assert.assertEquals(mainCount,
                 histogramCountForValue(LaunchCauseMetrics.LaunchCause.MAIN_LAUNCHER_ICON));
-        ApplicationStatus.unregisterActivityStateListener(listener);
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> ApplicationStatus.unregisterActivityStateListener(listener));
     }
 
     @Test
@@ -161,7 +168,7 @@ public final class TabbedActivityLaunchCauseMetricsTest {
             Criteria.checkThat(histogramCountForValue(
                                        LaunchCauseMetrics.LaunchCause.MAIN_LAUNCHER_ICON_SHORTCUT),
                     Matchers.is(count));
-        });
+        }, CHROME_LAUNCH_TIMEOUT, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
     }
 
     @Test
@@ -179,7 +186,7 @@ public final class TabbedActivityLaunchCauseMetricsTest {
             Criteria.checkThat(
                     histogramCountForValue(LaunchCauseMetrics.LaunchCause.HOME_SCREEN_WIDGET),
                     Matchers.is(count));
-        }, 5000L, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+        }, CHROME_LAUNCH_TIMEOUT, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
     }
 
     private static class TestContext extends ContextWrapper {
@@ -205,6 +212,7 @@ public final class TabbedActivityLaunchCauseMetricsTest {
 
     @Test
     @MediumTest
+    @RequiresRestart("crbug.com/1223068")
     public void testExternalSearchIntentNoResolvers() throws Throwable {
         final int count = 1
                 + histogramCountForValue(
@@ -229,7 +237,7 @@ public final class TabbedActivityLaunchCauseMetricsTest {
                     histogramCountForValue(
                             LaunchCauseMetrics.LaunchCause.EXTERNAL_SEARCH_ACTION_INTENT),
                     Matchers.is(count));
-        }, 5000L, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+        }, CHROME_LAUNCH_TIMEOUT, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
 
         ApplicationTestUtils.finishActivity(cta);
         ApplicationTestUtils.finishActivity(searchActivity);
@@ -238,6 +246,7 @@ public final class TabbedActivityLaunchCauseMetricsTest {
 
     @Test
     @MediumTest
+    @FlakyTest(message = "https://crbug.com/1224738")
     public void testServiceWorkerTabLaunch() throws Throwable {
         final int count = 1 + histogramCountForValue(LaunchCauseMetrics.LaunchCause.NOTIFICATION);
         mJniMocker.mock(ServiceTabLauncherJni.TEST_HOOKS, mServiceTabLauncherJni);
@@ -250,6 +259,6 @@ public final class TabbedActivityLaunchCauseMetricsTest {
         CriteriaHelper.pollInstrumentationThread(() -> {
             Criteria.checkThat(histogramCountForValue(LaunchCauseMetrics.LaunchCause.NOTIFICATION),
                     Matchers.is(count));
-        }, 5000L, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+        }, CHROME_LAUNCH_TIMEOUT, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
     }
 }

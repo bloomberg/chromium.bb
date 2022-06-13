@@ -12,9 +12,10 @@
 #include "base/command_line.h"
 #include "base/containers/queue.h"
 #include "base/feature_list.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/no_destructor.h"
+#include "build/build_config.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 // Necessary to convert async media::VideoDecoder to sync CdmVideoDecoder.
 // Typically not recommended for production code, but is ok here since
@@ -149,8 +150,17 @@ void SetupGlobalEnvironmentIfNeeded() {
     static base::NoDestructor<base::SingleThreadTaskExecutor> task_executor;
   }
 
-  if (!base::CommandLine::InitializedForCurrentProcess())
+  // Initialize CommandLine if not already initialized. Since this is a DLL,
+  // just use empty arguments.
+  if (!base::CommandLine::InitializedForCurrentProcess()) {
+#if defined(OS_WIN)
+    // Use InitUsingArgvForTesting() instead of Init() to avoid dependency on
+    // shell32 API which might not work in the sandbox. See crbug.com/1242710.
+    base::CommandLine::InitUsingArgvForTesting(0, nullptr);
+#else
     base::CommandLine::Init(0, nullptr);
+#endif
+  }
 }
 
 // Adapts a media::VideoDecoder to a CdmVideoDecoder. Media VideoDecoders
@@ -169,6 +179,9 @@ class VideoDecoderAdapter final : public CdmVideoDecoder {
         video_decoder_(std::move(video_decoder)) {
     DCHECK(cdm_host_proxy_);
   }
+
+  VideoDecoderAdapter(const VideoDecoderAdapter&) = delete;
+  VideoDecoderAdapter& operator=(const VideoDecoderAdapter&) = delete;
 
   ~VideoDecoderAdapter() final = default;
 
@@ -275,7 +288,7 @@ class VideoDecoderAdapter final : public CdmVideoDecoder {
     std::move(quit_closure).Run();
   }
 
-  CdmHostProxy* const cdm_host_proxy_;
+  const raw_ptr<CdmHostProxy> cdm_host_proxy_;
   std::unique_ptr<VideoDecoder> video_decoder_;
 
   // Results of |video_decoder_| operations. Set iff the callback of the
@@ -288,8 +301,6 @@ class VideoDecoderAdapter final : public CdmVideoDecoder {
   VideoFrameQueue decoded_video_frames_;
 
   base::WeakPtrFactory<VideoDecoderAdapter> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(VideoDecoderAdapter);
 };
 
 }  // namespace

@@ -7,11 +7,11 @@
 #include "base/bind.h"
 #include "base/guid.h"
 #include "base/values.h"
-#include "chrome/browser/download/download_service_factory.h"
+#include "chrome/browser/download/background_download_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_key.h"
+#include "components/download/public/background_service/background_download_service.h"
 #include "components/download/public/background_service/download_params.h"
-#include "components/download/public/background_service/download_service.h"
 #include "content/public/browser/web_ui.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
@@ -26,17 +26,17 @@ DownloadInternalsUIMessageHandler::~DownloadInternalsUIMessageHandler() {
 }
 
 void DownloadInternalsUIMessageHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getServiceStatus",
       base::BindRepeating(
           &DownloadInternalsUIMessageHandler::HandleGetServiceStatus,
           weak_ptr_factory_.GetWeakPtr()));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getServiceDownloads",
       base::BindRepeating(
           &DownloadInternalsUIMessageHandler::HandleGetServiceDownloads,
           weak_ptr_factory_.GetWeakPtr()));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "startDownload",
       base::BindRepeating(
           &DownloadInternalsUIMessageHandler::HandleStartDownload,
@@ -44,7 +44,7 @@ void DownloadInternalsUIMessageHandler::RegisterMessages() {
 
   Profile* profile = Profile::FromWebUI(web_ui());
   download_service_ =
-      DownloadServiceFactory::GetForKey(profile->GetProfileKey());
+      BackgroundDownloadServiceFactory::GetForKey(profile->GetProfileKey());
   download_service_->GetLogger()->AddObserver(this);
 }
 
@@ -91,21 +91,17 @@ void DownloadInternalsUIMessageHandler::OnServiceRequestMade(
 void DownloadInternalsUIMessageHandler::HandleGetServiceStatus(
     const base::ListValue* args) {
   AllowJavascript();
-  const base::Value* callback_id;
-  CHECK(args->Get(0, &callback_id));
-
-  ResolveJavascriptCallback(*callback_id,
+  const base::Value& callback_id = args->GetList()[0];
+  ResolveJavascriptCallback(callback_id,
                             download_service_->GetLogger()->GetServiceStatus());
 }
 
 void DownloadInternalsUIMessageHandler::HandleGetServiceDownloads(
     const base::ListValue* args) {
   AllowJavascript();
-  const base::Value* callback_id;
-  CHECK(args->Get(0, &callback_id));
-
+  const base::Value& callback_id = args->GetList()[0];
   ResolveJavascriptCallback(
-      *callback_id, download_service_->GetLogger()->GetServiceDownloads());
+      callback_id, download_service_->GetLogger()->GetServiceDownloads());
 }
 
 void DownloadInternalsUIMessageHandler::HandleStartDownload(

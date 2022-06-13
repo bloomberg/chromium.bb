@@ -36,9 +36,9 @@ TEST_F(MslGeneratorImplTest, Emit_Function) {
   gen.increment_indent();
 
   ASSERT_TRUE(gen.Generate()) << gen.error();
-  EXPECT_EQ(gen.result(), R"(#include <metal_stdlib>
+  EXPECT_EQ(gen.result(), R"(  #include <metal_stdlib>
 
-using namespace metal;
+  using namespace metal;
   void my_func() {
     return;
   }
@@ -62,9 +62,9 @@ TEST_F(MslGeneratorImplTest, Emit_Function_WithParams) {
   gen.increment_indent();
 
   ASSERT_TRUE(gen.Generate()) << gen.error();
-  EXPECT_EQ(gen.result(), R"(#include <metal_stdlib>
+  EXPECT_EQ(gen.result(), R"(  #include <metal_stdlib>
 
-using namespace metal;
+  using namespace metal;
   void my_func(float a, int b) {
     return;
   }
@@ -111,14 +111,18 @@ struct tint_symbol_2 {
   float value [[color(1)]];
 };
 
+float frag_main_inner(float foo) {
+  return foo;
+}
+
 fragment tint_symbol_2 frag_main(tint_symbol_1 tint_symbol [[stage_in]]) {
-  float const foo = tint_symbol.foo;
-  return {foo};
+  float const inner_result = frag_main_inner(tint_symbol.foo);
+  tint_symbol_2 wrapper_result = {};
+  wrapper_result.value = inner_result;
+  return wrapper_result;
 }
 
 )");
-
-  Validate();
 }
 
 TEST_F(MslGeneratorImplTest, Emit_Decoration_EntryPoint_WithInOut_Builtins) {
@@ -138,21 +142,22 @@ TEST_F(MslGeneratorImplTest, Emit_Decoration_EntryPoint_WithInOut_Builtins) {
   EXPECT_EQ(gen.result(), R"(#include <metal_stdlib>
 
 using namespace metal;
-struct tint_symbol_1 {
-  float4 coord [[position]];
-};
-struct tint_symbol_2 {
+struct tint_symbol {
   float value [[depth(any)]];
 };
 
-fragment tint_symbol_2 frag_main(tint_symbol_1 tint_symbol [[stage_in]]) {
-  float4 const coord = tint_symbol.coord;
-  return {coord.x};
+float frag_main_inner(float4 coord) {
+  return coord[0];
+}
+
+fragment tint_symbol frag_main(float4 coord [[position]]) {
+  float const inner_result = frag_main_inner(coord);
+  tint_symbol wrapper_result = {};
+  wrapper_result.value = inner_result;
+  return wrapper_result;
 }
 
 )");
-
-  Validate();
 }
 
 TEST_F(MslGeneratorImplTest,
@@ -177,12 +182,12 @@ TEST_F(MslGeneratorImplTest,
           Member("pos", ty.vec4<f32>(), {Builtin(ast::Builtin::kPosition)}),
       });
 
-  Func("vert_main", {}, interface_struct,
-       {Return(Construct(interface_struct, Expr(0.5f), Expr(0.25f),
+  Func("vert_main", {}, ty.Of(interface_struct),
+       {Return(Construct(ty.Of(interface_struct), Expr(0.5f), Expr(0.25f),
                          Construct(ty.vec4<f32>())))},
        {Stage(ast::PipelineStage::kVertex)});
 
-  Func("frag_main", {Param("colors", interface_struct)}, ty.void_(),
+  Func("frag_main", {Param("colors", ty.Of(interface_struct))}, ty.void_(),
        {
            WrapInStatement(
                Const("r", ty.f32(), MemberAccessor("colors", "col1"))),
@@ -207,27 +212,37 @@ struct tint_symbol {
   float col2 [[user(locn2)]];
   float4 pos [[position]];
 };
-struct tint_symbol_3 {
+struct tint_symbol_2 {
   float col1 [[user(locn1)]];
   float col2 [[user(locn2)]];
-  float4 pos [[position]];
 };
 
-vertex tint_symbol vert_main() {
-  Interface const tint_symbol_1 = {0.5f, 0.25f, float4()};
-  return {tint_symbol_1.col1, tint_symbol_1.col2, tint_symbol_1.pos};
+Interface vert_main_inner() {
+  Interface const tint_symbol_3 = {.col1=0.5f, .col2=0.25f, .pos=float4()};
+  return tint_symbol_3;
 }
 
-fragment void frag_main(tint_symbol_3 tint_symbol_2 [[stage_in]]) {
-  Interface const colors = {tint_symbol_2.col1, tint_symbol_2.col2, tint_symbol_2.pos};
+vertex tint_symbol vert_main() {
+  Interface const inner_result = vert_main_inner();
+  tint_symbol wrapper_result = {};
+  wrapper_result.col1 = inner_result.col1;
+  wrapper_result.col2 = inner_result.col2;
+  wrapper_result.pos = inner_result.pos;
+  return wrapper_result;
+}
+
+void frag_main_inner(Interface colors) {
   float const r = colors.col1;
   float const g = colors.col2;
+}
+
+fragment void frag_main(float4 pos [[position]], tint_symbol_2 tint_symbol_1 [[stage_in]]) {
+  Interface const tint_symbol_4 = {.col1=tint_symbol_1.col1, .col2=tint_symbol_1.col2, .pos=pos};
+  frag_main_inner(tint_symbol_4);
   return;
 }
 
 )");
-
-  Validate();
 }
 
 TEST_F(MslGeneratorImplTest,
@@ -248,19 +263,18 @@ TEST_F(MslGeneratorImplTest,
       "VertexOutput",
       {Member("pos", ty.vec4<f32>(), {Builtin(ast::Builtin::kPosition)})});
 
-  Func("foo", {Param("x", ty.f32())}, vertex_output_struct,
-       {Return(Construct(vertex_output_struct,
+  Func("foo", {Param("x", ty.f32())}, ty.Of(vertex_output_struct),
+       {Return(Construct(ty.Of(vertex_output_struct),
                          Construct(ty.vec4<f32>(), "x", "x", "x", Expr(1.f))))},
        {});
 
-  Func("vert_main1", {}, vertex_output_struct,
-       {Return(Construct(vertex_output_struct, Expr(Call("foo", Expr(0.5f)))))},
+  Func("vert_main1", {}, ty.Of(vertex_output_struct),
+       {Return(Expr(Call("foo", Expr(0.5f))))},
        {Stage(ast::PipelineStage::kVertex)});
 
-  Func(
-      "vert_main2", {}, vertex_output_struct,
-      {Return(Construct(vertex_output_struct, Expr(Call("foo", Expr(0.25f)))))},
-      {Stage(ast::PipelineStage::kVertex)});
+  Func("vert_main2", {}, ty.Of(vertex_output_struct),
+       {Return(Expr(Call("foo", Expr(0.25f))))},
+       {Stage(ast::PipelineStage::kVertex)});
 
   GeneratorImpl& gen = SanitizeAndBuild();
 
@@ -274,27 +288,38 @@ struct VertexOutput {
 struct tint_symbol {
   float4 pos [[position]];
 };
-struct tint_symbol_2 {
+struct tint_symbol_1 {
   float4 pos [[position]];
 };
 
 VertexOutput foo(float x) {
-  return {float4(x, x, x, 1.0f)};
+  VertexOutput const tint_symbol_2 = {.pos=float4(x, x, x, 1.0f)};
+  return tint_symbol_2;
+}
+
+VertexOutput vert_main1_inner() {
+  return foo(0.5f);
 }
 
 vertex tint_symbol vert_main1() {
-  VertexOutput const tint_symbol_1 = {foo(0.5f)};
-  return {tint_symbol_1.pos};
+  VertexOutput const inner_result = vert_main1_inner();
+  tint_symbol wrapper_result = {};
+  wrapper_result.pos = inner_result.pos;
+  return wrapper_result;
 }
 
-vertex tint_symbol_2 vert_main2() {
-  VertexOutput const tint_symbol_3 = {foo(0.25f)};
-  return {tint_symbol_3.pos};
+VertexOutput vert_main2_inner() {
+  return foo(0.25f);
+}
+
+vertex tint_symbol_1 vert_main2() {
+  VertexOutput const inner_result_1 = vert_main2_inner();
+  tint_symbol_1 wrapper_result_1 = {};
+  wrapper_result_1.pos = inner_result_1.pos;
+  return wrapper_result_1;
 }
 
 )");
-
-  Validate();
 }
 
 TEST_F(MslGeneratorImplTest,
@@ -306,10 +331,12 @@ TEST_F(MslGeneratorImplTest,
                       },
                       {create<ast::StructBlockDecoration>()});
 
-  auto* ac = ty.access(ast::AccessControl::kReadWrite, s);
-
-  Global("coord", ac, ast::StorageClass::kStorage, nullptr,
-         {create<ast::BindingDecoration>(0), create<ast::GroupDecoration>(1)});
+  Global("coord", ty.Of(s), ast::StorageClass::kStorage,
+         ast::Access::kReadWrite,
+         ast::DecorationList{
+             create<ast::BindingDecoration>(0),
+             create<ast::GroupDecoration>(0),
+         });
 
   auto* var = Var("v", ty.f32(), ast::StorageClass::kNone,
                   MemberAccessor("coord", "b"));
@@ -323,7 +350,7 @@ TEST_F(MslGeneratorImplTest,
            Stage(ast::PipelineStage::kFragment),
        });
 
-  GeneratorImpl& gen = Build();
+  GeneratorImpl& gen = SanitizeAndBuild();
 
   ASSERT_TRUE(gen.Generate()) << gen.error();
   EXPECT_EQ(gen.result(), R"(#include <metal_stdlib>
@@ -334,8 +361,8 @@ struct Data {
   /* 0x0004 */ float b;
 };
 
-fragment void frag_main(device Data& coord [[buffer(0)]]) {
-  float v = coord.b;
+fragment void frag_main(device Data* tint_symbol [[buffer(0)]]) {
+  float v = (*(tint_symbol)).b;
   return;
 }
 
@@ -351,10 +378,11 @@ TEST_F(MslGeneratorImplTest,
                       },
                       {create<ast::StructBlockDecoration>()});
 
-  auto* ac = ty.access(ast::AccessControl::kReadOnly, s);
-
-  Global("coord", ac, ast::StorageClass::kStorage, nullptr,
-         {create<ast::BindingDecoration>(0), create<ast::GroupDecoration>(1)});
+  Global("coord", ty.Of(s), ast::StorageClass::kStorage, ast::Access::kRead,
+         ast::DecorationList{
+             create<ast::BindingDecoration>(0),
+             create<ast::GroupDecoration>(0),
+         });
 
   auto* var = Var("v", ty.f32(), ast::StorageClass::kNone,
                   MemberAccessor("coord", "b"));
@@ -368,7 +396,7 @@ TEST_F(MslGeneratorImplTest,
            Stage(ast::PipelineStage::kFragment),
        });
 
-  GeneratorImpl& gen = Build();
+  GeneratorImpl& gen = SanitizeAndBuild();
 
   ASSERT_TRUE(gen.Generate()) << gen.error();
   EXPECT_EQ(gen.result(), R"(#include <metal_stdlib>
@@ -379,169 +407,9 @@ struct Data {
   /* 0x0004 */ float b;
 };
 
-fragment void frag_main(const device Data& coord [[buffer(0)]]) {
-  float v = coord.b;
+fragment void frag_main(const device Data* tint_symbol [[buffer(0)]]) {
+  float v = (*(tint_symbol)).b;
   return;
-}
-
-)");
-}
-
-// TODO(crbug.com/tint/697): Remove this test
-TEST_F(
-    MslGeneratorImplTest,
-    Emit_Decoration_Called_By_EntryPoints_WithLocationGlobals_And_Params) {  // NOLINT
-  Global("foo", ty.f32(), ast::StorageClass::kInput, nullptr, {Location(0)});
-
-  Global("bar", ty.f32(), ast::StorageClass::kOutput, nullptr, {Location(1)});
-
-  Global("val", ty.f32(), ast::StorageClass::kOutput, nullptr, {Location(0)});
-
-  ast::VariableList params;
-  params.push_back(Param("param", ty.f32()));
-
-  auto body = ast::StatementList{Assign("bar", "foo"), Assign("val", "param"),
-                                 Return("foo")};
-
-  Func("sub_func", params, ty.f32(), body, {});
-
-  body = ast::StatementList{
-      Assign("bar", Call("sub_func", 1.0f)),
-      Return(),
-  };
-
-  Func("ep_1", ast::VariableList{}, ty.void_(), body,
-       {
-           Stage(ast::PipelineStage::kFragment),
-       });
-
-  GeneratorImpl& gen = Build();
-
-  ASSERT_TRUE(gen.Generate()) << gen.error();
-  EXPECT_EQ(gen.result(), R"(#include <metal_stdlib>
-
-using namespace metal;
-struct ep_1_in {
-  float foo [[user(locn0)]];
-};
-
-struct ep_1_out {
-  float bar [[color(1)]];
-  float val [[color(0)]];
-};
-
-float sub_func_ep_1(thread ep_1_in& _tint_in, thread ep_1_out& _tint_out, float param) {
-  _tint_out.bar = _tint_in.foo;
-  _tint_out.val = param;
-  return _tint_in.foo;
-}
-
-fragment ep_1_out ep_1(ep_1_in _tint_in [[stage_in]]) {
-  ep_1_out _tint_out = {};
-  _tint_out.bar = sub_func_ep_1(_tint_in, _tint_out, 1.0f);
-  return _tint_out;
-}
-
-)");
-}
-
-// TODO(crbug.com/tint/697): Remove this test
-TEST_F(MslGeneratorImplTest,
-       Emit_Decoration_Called_By_EntryPoints_NoUsedGlobals) {
-  Global("depth", ty.f32(), ast::StorageClass::kOutput, nullptr,
-         {Builtin(ast::Builtin::kFragDepth)});
-
-  ast::VariableList params;
-  params.push_back(Param("param", ty.f32()));
-
-  Func("sub_func", params, ty.f32(),
-       ast::StatementList{
-           Return("param"),
-       },
-       {});
-
-  auto body = ast::StatementList{
-      Assign("depth", Call("sub_func", 1.0f)),
-      Return(),
-  };
-
-  Func("ep_1", ast::VariableList{}, ty.void_(), body,
-       {
-           Stage(ast::PipelineStage::kFragment),
-       });
-
-  GeneratorImpl& gen = Build();
-
-  ASSERT_TRUE(gen.Generate()) << gen.error();
-  EXPECT_EQ(gen.result(), R"(#include <metal_stdlib>
-
-using namespace metal;
-struct ep_1_out {
-  float depth [[depth(any)]];
-};
-
-float sub_func(float param) {
-  return param;
-}
-
-fragment ep_1_out ep_1() {
-  ep_1_out _tint_out = {};
-  _tint_out.depth = sub_func(1.0f);
-  return _tint_out;
-}
-
-)");
-}
-
-// TODO(crbug.com/tint/697): Remove this test
-TEST_F(
-    MslGeneratorImplTest,
-    Emit_Decoration_Called_By_EntryPoints_WithBuiltinGlobals_And_Params) {  // NOLINT
-  Global("coord", ty.vec4<f32>(), ast::StorageClass::kInput, nullptr,
-         {Builtin(ast::Builtin::kPosition)});
-
-  Global("depth", ty.f32(), ast::StorageClass::kOutput, nullptr,
-         {Builtin(ast::Builtin::kFragDepth)});
-
-  ast::VariableList params;
-  params.push_back(Param("param", ty.f32()));
-
-  auto body = ast::StatementList{
-      Assign("depth", MemberAccessor("coord", "x")),
-      Return("param"),
-  };
-
-  Func("sub_func", params, ty.f32(), body, {});
-
-  body = ast::StatementList{
-      Assign("depth", Call("sub_func", 1.0f)),
-      Return(),
-  };
-
-  Func("ep_1", ast::VariableList{}, ty.void_(), body,
-       {
-           Stage(ast::PipelineStage::kFragment),
-       });
-
-  GeneratorImpl& gen = Build();
-
-  ASSERT_TRUE(gen.Generate()) << gen.error();
-  EXPECT_EQ(gen.result(), R"(#include <metal_stdlib>
-
-using namespace metal;
-struct ep_1_out {
-  float depth [[depth(any)]];
-};
-
-float sub_func_ep_1(thread ep_1_out& _tint_out, thread float4& coord, float param) {
-  _tint_out.depth = coord.x;
-  return param;
-}
-
-fragment ep_1_out ep_1(float4 coord [[position]]) {
-  ep_1_out _tint_out = {};
-  _tint_out.depth = sub_func_ep_1(_tint_out, coord, 1.0f);
-  return _tint_out;
 }
 
 )");
@@ -551,9 +419,11 @@ TEST_F(MslGeneratorImplTest,
        Emit_Decoration_Called_By_EntryPoint_With_Uniform) {
   auto* ubo_ty = Structure("UBO", {Member("coord", ty.vec4<f32>())},
                            {create<ast::StructBlockDecoration>()});
-  auto* ubo = Global(
-      "ubo", ubo_ty, ast::StorageClass::kUniform, nullptr,
-      {create<ast::BindingDecoration>(0), create<ast::GroupDecoration>(1)});
+  auto* ubo = Global("ubo", ty.Of(ubo_ty), ast::StorageClass::kUniform,
+                     ast::DecorationList{
+                         create<ast::BindingDecoration>(0),
+                         create<ast::GroupDecoration>(0),
+                     });
 
   Func("sub_func",
        {
@@ -576,22 +446,22 @@ TEST_F(MslGeneratorImplTest,
            Stage(ast::PipelineStage::kFragment),
        });
 
-  GeneratorImpl& gen = Build();
+  GeneratorImpl& gen = SanitizeAndBuild();
 
   ASSERT_TRUE(gen.Generate()) << gen.error();
   EXPECT_EQ(gen.result(), R"(#include <metal_stdlib>
 
 using namespace metal;
 struct UBO {
-  /* 0x0000 */ packed_float4 coord;
+  /* 0x0000 */ float4 coord;
 };
 
-float sub_func(constant UBO& ubo, float param) {
-  return ubo.coord.x;
+float sub_func(float param, const constant UBO* const tint_symbol) {
+  return (*(tint_symbol)).coord[0];
 }
 
-fragment void frag_main(constant UBO& ubo [[buffer(0)]]) {
-  float v = sub_func(ubo, 1.0f);
+fragment void frag_main(const constant UBO* tint_symbol_1 [[buffer(0)]]) {
+  float v = sub_func(1.0f, tint_symbol_1);
   return;
 }
 
@@ -607,10 +477,12 @@ TEST_F(MslGeneratorImplTest,
                       },
                       {create<ast::StructBlockDecoration>()});
 
-  auto* ac = ty.access(ast::AccessControl::kReadWrite, s);
-
-  Global("coord", ac, ast::StorageClass::kStorage, nullptr,
-         {create<ast::BindingDecoration>(0), create<ast::GroupDecoration>(1)});
+  Global("coord", ty.Of(s), ast::StorageClass::kStorage,
+         ast::Access::kReadWrite,
+         ast::DecorationList{
+             create<ast::BindingDecoration>(0),
+             create<ast::GroupDecoration>(0),
+         });
 
   ast::VariableList params;
   params.push_back(Param("param", ty.f32()));
@@ -631,7 +503,7 @@ TEST_F(MslGeneratorImplTest,
            Stage(ast::PipelineStage::kFragment),
        });
 
-  GeneratorImpl& gen = Build();
+  GeneratorImpl& gen = SanitizeAndBuild();
 
   ASSERT_TRUE(gen.Generate()) << gen.error();
   EXPECT_EQ(gen.result(), R"(#include <metal_stdlib>
@@ -642,12 +514,12 @@ struct Data {
   /* 0x0004 */ float b;
 };
 
-float sub_func(device Data& coord, float param) {
-  return coord.b;
+float sub_func(float param, device Data* const tint_symbol) {
+  return (*(tint_symbol)).b;
 }
 
-fragment void frag_main(device Data& coord [[buffer(0)]]) {
-  float v = sub_func(coord, 1.0f);
+fragment void frag_main(device Data* tint_symbol_1 [[buffer(0)]]) {
+  float v = sub_func(1.0f, tint_symbol_1);
   return;
 }
 
@@ -663,10 +535,11 @@ TEST_F(MslGeneratorImplTest,
                       },
                       {create<ast::StructBlockDecoration>()});
 
-  auto* ac = ty.access(ast::AccessControl::kReadOnly, s);
-
-  Global("coord", ac, ast::StorageClass::kStorage, nullptr,
-         {create<ast::BindingDecoration>(0), create<ast::GroupDecoration>(1)});
+  Global("coord", ty.Of(s), ast::StorageClass::kStorage, ast::Access::kRead,
+         ast::DecorationList{
+             create<ast::BindingDecoration>(0),
+             create<ast::GroupDecoration>(0),
+         });
 
   ast::VariableList params;
   params.push_back(Param("param", ty.f32()));
@@ -687,7 +560,7 @@ TEST_F(MslGeneratorImplTest,
            Stage(ast::PipelineStage::kFragment),
        });
 
-  GeneratorImpl& gen = Build();
+  GeneratorImpl& gen = SanitizeAndBuild();
 
   ASSERT_TRUE(gen.Generate()) << gen.error();
   EXPECT_EQ(gen.result(), R"(#include <metal_stdlib>
@@ -698,55 +571,13 @@ struct Data {
   /* 0x0004 */ float b;
 };
 
-float sub_func(const device Data& coord, float param) {
-  return coord.b;
+float sub_func(float param, const device Data* const tint_symbol) {
+  return (*(tint_symbol)).b;
 }
 
-fragment void frag_main(const device Data& coord [[buffer(0)]]) {
-  float v = sub_func(coord, 1.0f);
+fragment void frag_main(const device Data* tint_symbol_1 [[buffer(0)]]) {
+  float v = sub_func(1.0f, tint_symbol_1);
   return;
-}
-
-)");
-}
-
-// TODO(crbug.com/tint/697): Remove this test
-TEST_F(MslGeneratorImplTest,
-       Emit_Decoration_EntryPoints_WithGlobal_Nested_Return) {
-  Global("bar", ty.f32(), ast::StorageClass::kOutput, nullptr, {Location(1)});
-
-  auto* list = Block(Return());
-
-  auto body = ast::StatementList{
-      Assign("bar", Expr(1.f)),
-      create<ast::IfStatement>(create<ast::BinaryExpression>(
-                                   ast::BinaryOp::kEqual, Expr(1), Expr(1)),
-                               list, ast::ElseStatementList{}),
-      Return(),
-  };
-
-  Func("ep_1", ast::VariableList{}, ty.void_(), body,
-       {
-           Stage(ast::PipelineStage::kFragment),
-       });
-
-  GeneratorImpl& gen = Build();
-
-  ASSERT_TRUE(gen.Generate()) << gen.error();
-  EXPECT_EQ(gen.result(), R"(#include <metal_stdlib>
-
-using namespace metal;
-struct ep_1_out {
-  float bar [[color(1)]];
-};
-
-fragment ep_1_out ep_1() {
-  ep_1_out _tint_out = {};
-  _tint_out.bar = 1.0f;
-  if ((1 == 1)) {
-    return _tint_out;
-  }
-  return _tint_out;
 }
 
 )");
@@ -757,21 +588,50 @@ TEST_F(MslGeneratorImplTest, Emit_Function_WithArrayParams) {
   params.push_back(Param("a", ty.array<f32, 5>()));
 
   Func("my_func", params, ty.void_(),
-       ast::StatementList{
+       {
            Return(),
-       },
-       {});
+       });
 
-  GeneratorImpl& gen = Build();
+  GeneratorImpl& gen = SanitizeAndBuild();
 
   gen.increment_indent();
 
   ASSERT_TRUE(gen.Generate()) << gen.error();
-  EXPECT_EQ(gen.result(), R"(#include <metal_stdlib>
+  EXPECT_EQ(gen.result(), R"(  #include <metal_stdlib>
 
-using namespace metal;
-  void my_func(float a[5]) {
+  using namespace metal;
+  struct tint_array_wrapper {
+    float arr[5];
+  };
+
+  void my_func(tint_array_wrapper a) {
     return;
+  }
+
+)");
+}
+
+TEST_F(MslGeneratorImplTest, Emit_Function_WithArrayReturn) {
+  Func("my_func", {}, ty.array<f32, 5>(),
+       {
+           Return(Construct(ty.array<f32, 5>())),
+       });
+
+  GeneratorImpl& gen = SanitizeAndBuild();
+
+  gen.increment_indent();
+
+  ASSERT_TRUE(gen.Generate()) << gen.error();
+  EXPECT_EQ(gen.result(), R"(  #include <metal_stdlib>
+
+  using namespace metal;
+  struct tint_array_wrapper {
+    float arr[5];
+  };
+
+  tint_array_wrapper my_func() {
+    tint_array_wrapper const tint_symbol = {.arr={}};
+    return tint_symbol;
   }
 
 )");
@@ -785,12 +645,12 @@ TEST_F(MslGeneratorImplTest,
   // };
   // [[binding(0), group(0)]] var<storage> data : Data;
   //
-  // [[stage(compute)]]
+  // [[stage(compute), workgroup_size(1)]]
   // fn a() {
   //   return;
   // }
   //
-  // [[stage(compute)]]
+  // [[stage(compute), workgroup_size(1)]]
   // fn b() {
   //   return;
   // }
@@ -798,10 +658,11 @@ TEST_F(MslGeneratorImplTest,
   auto* s = Structure("Data", {Member("d", ty.f32())},
                       {create<ast::StructBlockDecoration>()});
 
-  auto* ac = ty.access(ast::AccessControl::kReadWrite, s);
-
-  Global("data", ac, ast::StorageClass::kStorage, nullptr,
-         {create<ast::BindingDecoration>(0), create<ast::GroupDecoration>(0)});
+  Global("data", ty.Of(s), ast::StorageClass::kStorage, ast::Access::kReadWrite,
+         ast::DecorationList{
+             create<ast::BindingDecoration>(0),
+             create<ast::GroupDecoration>(0),
+         });
 
   {
     auto* var = Var("v", ty.f32(), ast::StorageClass::kNone,
@@ -814,6 +675,7 @@ TEST_F(MslGeneratorImplTest,
          },
          {
              Stage(ast::PipelineStage::kCompute),
+             WorkgroupSize(1),
          });
   }
 
@@ -823,10 +685,13 @@ TEST_F(MslGeneratorImplTest,
 
     Func("b", ast::VariableList{}, ty.void_(),
          ast::StatementList{Decl(var), Return()},
-         {Stage(ast::PipelineStage::kCompute)});
+         {
+             Stage(ast::PipelineStage::kCompute),
+             WorkgroupSize(1),
+         });
   }
 
-  GeneratorImpl& gen = Build();
+  GeneratorImpl& gen = SanitizeAndBuild();
 
   ASSERT_TRUE(gen.Generate()) << gen.error();
   EXPECT_EQ(gen.result(), R"(#include <metal_stdlib>
@@ -836,13 +701,13 @@ struct Data {
   /* 0x0000 */ float d;
 };
 
-kernel void a(device Data& data [[buffer(0)]]) {
-  float v = data.d;
+kernel void a(device Data* tint_symbol [[buffer(0)]]) {
+  float v = (*(tint_symbol)).d;
   return;
 }
 
-kernel void b(device Data& data [[buffer(0)]]) {
-  float v = data.d;
+kernel void b(device Data* tint_symbol_1 [[buffer(0)]]) {
+  float v = (*(tint_symbol_1)).d;
   return;
 }
 

@@ -24,8 +24,9 @@ std::string PlatformScreen::GetCurrentWorkspace() {
   return {};
 }
 
-void PlatformScreen::SetScreenSaverSuspended(bool suspend) {
+bool PlatformScreen::SetScreenSaverSuspended(bool suspend) {
   NOTIMPLEMENTED_LOG_ONCE();
+  return false;
 }
 
 bool PlatformScreen::IsScreenSaverActive() const {
@@ -35,23 +36,23 @@ bool PlatformScreen::IsScreenSaverActive() const {
 
 base::TimeDelta PlatformScreen::CalculateIdleTime() const {
   NOTIMPLEMENTED_LOG_ONCE();
-  return base::TimeDelta::FromSeconds(0);
+  return base::Seconds(0);
 }
 
-base::Value PlatformScreen::GetGpuExtraInfoAsListValue(
+std::vector<base::Value> PlatformScreen::GetGpuExtraInfo(
     const gfx::GpuExtraInfo& gpu_extra_info) {
-  return base::Value(base::Value::Type::LIST);
+  return std::vector<base::Value>();
 }
 
 void PlatformScreen::SetDeviceScaleFactor(float scale) {}
 
-void PlatformScreen::StorePlatformNameIntoListValue(
-    base::Value& list_value,
+void PlatformScreen::StorePlatformNameIntoListOfValues(
+    std::vector<base::Value>& values,
     const std::string& platform_name) {
   base::Value dict(base::Value::Type::DICTIONARY);
   dict.SetKey("description", base::Value("Ozone platform"));
   dict.SetKey("value", base::Value(platform_name));
-  list_value.Append(std::move(dict));
+  values.push_back(std::move(dict));
 }
 
 }  // namespace ui

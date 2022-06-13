@@ -9,7 +9,7 @@
 #include <type_traits>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/values.h"
@@ -81,8 +81,13 @@ struct Tr {};
 class LogBuffer {
  public:
   LogBuffer();
-  LogBuffer(LogBuffer&& other) noexcept;
   ~LogBuffer();
+
+  LogBuffer(LogBuffer&& other) noexcept;
+  LogBuffer& operator=(LogBuffer&& other);
+
+  LogBuffer(const LogBuffer& other) = delete;
+  LogBuffer& operator=(const LogBuffer& other) = delete;
 
   // Returns the contents of the buffer and empties it.
   base::Value RetrieveResult();
@@ -112,8 +117,6 @@ class LogBuffer {
   std::vector<base::Value> buffer_;
 
   bool active_ = true;
-
-  DISALLOW_COPY_AND_ASSIGN(LogBuffer);
 };
 
 // Enable streaming numbers of all types.
@@ -184,7 +187,7 @@ class LogTableRowBuffer {
   friend LogTableRowBuffer&& operator<<(LogTableRowBuffer&& buf,
                                         Attrib&& attrib);
 
-  LogBuffer* parent_ = nullptr;
+  raw_ptr<LogBuffer> parent_ = nullptr;
 };
 
 LogTableRowBuffer operator<<(LogBuffer& buf, Tr&& tr);

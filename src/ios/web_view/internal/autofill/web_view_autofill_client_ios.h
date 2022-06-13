@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/autofill/core/browser/autocomplete_history_manager.h"
 #include "components/autofill/core/browser/autofill_client.h"
@@ -43,6 +42,10 @@ class WebViewAutofillClientIOS : public AutofillClient {
       StrikeDatabase* strike_database,
       syncer::SyncService* sync_service,
       std::unique_ptr<autofill::LogManager> log_manager);
+
+  WebViewAutofillClientIOS(const WebViewAutofillClientIOS&) = delete;
+  WebViewAutofillClientIOS& operator=(const WebViewAutofillClientIOS&) = delete;
+
   ~WebViewAutofillClientIOS() override;
 
   // AutofillClient:
@@ -137,8 +140,6 @@ class WebViewAutofillClientIOS : public AutofillClient {
   StrikeDatabase* strike_database_;
   syncer::SyncService* sync_service_ = nullptr;
   std::unique_ptr<LogManager> log_manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebViewAutofillClientIOS);
 };
 
 }  // namespace autofill

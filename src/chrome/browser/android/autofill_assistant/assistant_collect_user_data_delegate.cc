@@ -38,9 +38,10 @@ AssistantCollectUserDataDelegate::~AssistantCollectUserDataDelegate() {
 void AssistantCollectUserDataDelegate::OnContactInfoChanged(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller,
-    const base::android::JavaParamRef<jobject>& jcontact_profile) {
+    const base::android::JavaParamRef<jobject>& jcontact_profile,
+    jint event_type) {
   if (!jcontact_profile) {
-    ui_controller_->OnContactInfoChanged(nullptr);
+    NOTREACHED() << "Selected contact is null";
     return;
   }
 
@@ -48,35 +49,41 @@ void AssistantCollectUserDataDelegate::OnContactInfoChanged(
   autofill::PersonalDataManagerAndroid::PopulateNativeProfileFromJava(
       jcontact_profile, env, contact_profile.get());
 
-  ui_controller_->OnContactInfoChanged(std::move(contact_profile));
+  ui_controller_->OnContactInfoChanged(
+      std::move(contact_profile), static_cast<UserDataEventType>(event_type));
 }
 
 void AssistantCollectUserDataDelegate::OnShippingAddressChanged(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller,
-    const base::android::JavaParamRef<jobject>& jaddress) {
+    const base::android::JavaParamRef<jobject>& jaddress,
+    jint event_type) {
   if (!jaddress) {
-    ui_controller_->OnShippingAddressChanged(nullptr);
+    NOTREACHED() << "Selected address is null";
     return;
   }
 
   auto shipping_address = std::make_unique<autofill::AutofillProfile>();
   autofill::PersonalDataManagerAndroid::PopulateNativeProfileFromJava(
       jaddress, env, shipping_address.get());
-  ui_controller_->OnShippingAddressChanged(std::move(shipping_address));
+  ui_controller_->OnShippingAddressChanged(
+      std::move(shipping_address), static_cast<UserDataEventType>(event_type));
 }
 
 void AssistantCollectUserDataDelegate::OnCreditCardChanged(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller,
     const base::android::JavaParamRef<jobject>& jcard,
-    const base::android::JavaParamRef<jobject>& jbilling_profile) {
-  std::unique_ptr<autofill::CreditCard> card;
-  if (jcard) {
-    card = std::make_unique<autofill::CreditCard>();
-    autofill::PersonalDataManagerAndroid::PopulateNativeCreditCardFromJava(
-        jcard, env, card.get());
+    const base::android::JavaParamRef<jobject>& jbilling_profile,
+    jint event_type) {
+  if (!jcard) {
+    NOTREACHED() << "Selected credit card is null";
+    return;
   }
+
+  auto card = std::make_unique<autofill::CreditCard>();
+  autofill::PersonalDataManagerAndroid::PopulateNativeCreditCardFromJava(
+      jcard, env, card.get());
 
   std::unique_ptr<autofill::AutofillProfile> billing_profile;
   if (jbilling_profile) {
@@ -85,8 +92,9 @@ void AssistantCollectUserDataDelegate::OnCreditCardChanged(
         jbilling_profile, env, billing_profile.get());
   }
 
-  ui_controller_->OnCreditCardChanged(std::move(card),
-                                      std::move(billing_profile));
+  ui_controller_->OnCreditCardChanged(
+      std::move(card), std::move(billing_profile),
+      static_cast<UserDataEventType>(event_type));
 }
 
 void AssistantCollectUserDataDelegate::OnTermsAndConditionsChanged(
@@ -107,7 +115,8 @@ void AssistantCollectUserDataDelegate::OnTextLinkClicked(
 void AssistantCollectUserDataDelegate::OnLoginChoiceChanged(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller,
-    const base::android::JavaParamRef<jstring>& jidentifier) {
+    const base::android::JavaParamRef<jstring>& jidentifier,
+    jint event_type) {
   std::string identifier =
       ui_controller_android_utils::SafeConvertJavaStringToNative(env,
                                                                  jidentifier);
@@ -190,60 +199,6 @@ void AssistantCollectUserDataDelegate::OnInputTextFocusChanged(
 base::android::ScopedJavaGlobalRef<jobject>
 AssistantCollectUserDataDelegate::GetJavaObject() {
   return java_assistant_collect_user_data_delegate_;
-}
-
-bool AssistantCollectUserDataDelegate::IsContactComplete(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& jcaller,
-    const base::android::JavaParamRef<jobject>& jcontact_profile) {
-  if (!jcontact_profile) {
-    return ui_controller_->IsContactComplete(nullptr);
-  }
-
-  autofill::AutofillProfile contact;
-  autofill::PersonalDataManagerAndroid::PopulateNativeProfileFromJava(
-      jcontact_profile, env, &contact);
-
-  return ui_controller_->IsContactComplete(&contact);
-}
-
-bool AssistantCollectUserDataDelegate::IsShippingAddressComplete(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& jcaller,
-    const base::android::JavaParamRef<jobject>& jaddress) {
-  if (!jaddress) {
-    return ui_controller_->IsShippingAddressComplete(nullptr);
-  }
-
-  autofill::AutofillProfile address;
-  autofill::PersonalDataManagerAndroid::PopulateNativeProfileFromJava(
-      jaddress, env, &address);
-
-  return ui_controller_->IsShippingAddressComplete(&address);
-}
-
-bool AssistantCollectUserDataDelegate::IsPaymentInstrumentComplete(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& jcaller,
-    const base::android::JavaParamRef<jobject>& jcard,
-    const base::android::JavaParamRef<jobject>& jaddress) {
-  if (!jcard) {
-    return ui_controller_->IsPaymentInstrumentComplete(nullptr, nullptr);
-  }
-
-  autofill::CreditCard card;
-  autofill::PersonalDataManagerAndroid::PopulateNativeCreditCardFromJava(
-      jcard, env, &card);
-
-  if (jaddress) {
-    autofill::AutofillProfile address;
-    autofill::PersonalDataManagerAndroid::PopulateNativeProfileFromJava(
-        jaddress, env, &address);
-
-    return ui_controller_->IsPaymentInstrumentComplete(&card, &address);
-  }
-
-  return ui_controller_->IsPaymentInstrumentComplete(&card, nullptr);
 }
 
 }  // namespace autofill_assistant

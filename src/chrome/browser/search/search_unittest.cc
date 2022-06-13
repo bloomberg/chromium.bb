@@ -11,16 +11,20 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/signin/chrome_signin_client_factory.h"
+#include "chrome/browser/signin/chrome_signin_client_test_util.h"
+#include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/search_test_utils.h"
+#include "chrome/test/base/testing_profile.h"
 #include "components/search_engines/template_url_service.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_frame_host.h"
@@ -97,6 +101,46 @@ class SearchTest : public BrowserWithTestWindowTest {
     return instant_service->IsInstantProcess(
         contents->GetMainFrame()->GetProcess()->GetID());
   }
+
+  // Each test case represents a navigation to |start_url| followed by a
+  // navigation to |end_url|. We will check whether each navigation lands in an
+  // Instant process, and also whether the navigation from start to end re-uses
+  // the same SiteInstance (and hence the same RenderViewHost, etc.).
+  // Note that we need to define this here because the flags needed to check
+  // content::CanSameSiteMainFrameNavigationsChangeSiteInstances() might not
+  // be set yet if we define this immediately (e.g. outside of the test class).
+  const struct ProcessIsolationTestCase {
+    const char* description;
+    const char* start_url;
+    bool start_in_instant_process;
+    const char* end_url;
+    bool end_in_instant_process;
+    bool same_site_instance;
+    bool same_process;
+  } kProcessIsolationTestCases[5] = {
+      {"Remote NTP -> SRP", "https://foo.com/newtab", true,
+       "https://foo.com/url", false, false, false},
+      {"Remote NTP -> Regular", "https://foo.com/newtab", true,
+       "https://foo.com/other", false, false, false},
+      {"SRP -> SRP", "https://foo.com/url", false, "https://foo.com/url", false,
+       true, true},
+      // Same-site (but not same URL) navigations might switch site instances
+      // but keep the same process when ProactivelySwapBrowsingInstance is
+      // enabled on same-site navigations.
+      {"SRP -> Regular", "https://foo.com/url", false, "https://foo.com/other",
+       false, !content::CanSameSiteMainFrameNavigationsChangeSiteInstances(),
+       true},
+      {"Regular -> SRP", "https://foo.com/other", false, "https://foo.com/url",
+       false, !content::CanSameSiteMainFrameNavigationsChangeSiteInstances(),
+       true},
+  };
+
+  // BrowserWithTestWindowTest:
+  TestingProfile::TestingFactories GetTestingFactories() override {
+    return {{ChromeSigninClientFactory::GetInstance(),
+             base::BindRepeating(&BuildChromeSigninClientWithURLLoader,
+                                 test_url_loader_factory())}};
+  }
 };
 
 struct SearchTestCase {
@@ -150,36 +194,6 @@ TEST_F(SearchTest, ShouldUseProcessPerSiteForInstantSiteURL) {
         << test.url << " " << test.comment;
   }
 }
-
-// Each test case represents a navigation to |start_url| followed by a
-// navigation to |end_url|. We will check whether each navigation lands in an
-// Instant process, and also whether the navigation from start to end re-uses
-// the same SiteInstance (and hence the same RenderViewHost, etc.).
-const struct ProcessIsolationTestCase {
-  const char* description;
-  const char* start_url;
-  bool start_in_instant_process;
-  const char* end_url;
-  bool end_in_instant_process;
-  bool same_site_instance;
-  bool same_process;
-} kProcessIsolationTestCases[] = {
-    {"Remote NTP -> SRP", "https://foo.com/newtab", true, "https://foo.com/url",
-     false, false, false},
-    {"Remote NTP -> Regular", "https://foo.com/newtab", true,
-     "https://foo.com/other", false, false, false},
-    {"SRP -> SRP", "https://foo.com/url", false, "https://foo.com/url", false,
-     true, true},
-    // Same-site (but not same URL) navigations might switch site instances but
-    // keep the same process when ProactivelySwapBrowsingInstance is enabled on
-    // same-site navigations.
-    {"SRP -> Regular", "https://foo.com/url", false, "https://foo.com/other",
-     false, !content::CanSameSiteMainFrameNavigationsChangeSiteInstances(),
-     true},
-    {"Regular -> SRP", "https://foo.com/other", false, "https://foo.com/url",
-     false, !content::CanSameSiteMainFrameNavigationsChangeSiteInstances(),
-     true},
-};
 
 TEST_F(SearchTest, ProcessIsolation) {
   for (size_t i = 0; i < base::size(kProcessIsolationTestCases); ++i) {
@@ -347,7 +361,7 @@ TEST_F(SearchTest, UseLocalNTPIfNTPURLIsNotSet) {
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 TEST_F(SearchTest, UseLocalNTPIfNTPURLIsBlockedForSupervisedUser) {
   // Mark the profile as supervised, otherwise the URL filter won't be checked.
-  profile()->SetSupervisedUserId("supervised");
+  profile()->SetSupervisedUserId(supervised_users::kChildAccountSUID);
   // Block access to foo.com in the URL filter.
   SupervisedUserService* supervised_user_service =
       SupervisedUserServiceFactory::GetForProfile(profile());

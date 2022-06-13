@@ -5,7 +5,6 @@
 #ifndef SERVICES_DEVICE_GENERIC_SENSOR_ORIENTATION_EULER_ANGLES_FUSION_ALGORITHM_USING_QUATERNION_H_
 #define SERVICES_DEVICE_GENERIC_SENSOR_ORIENTATION_EULER_ANGLES_FUSION_ALGORITHM_USING_QUATERNION_H_
 
-#include "base/macros.h"
 #include "services/device/generic_sensor/platform_sensor_fusion_algorithm.h"
 
 namespace device {
@@ -16,15 +15,17 @@ class OrientationEulerAnglesFusionAlgorithmUsingQuaternion
     : public PlatformSensorFusionAlgorithm {
  public:
   explicit OrientationEulerAnglesFusionAlgorithmUsingQuaternion(bool absolute);
+
+  OrientationEulerAnglesFusionAlgorithmUsingQuaternion(
+      const OrientationEulerAnglesFusionAlgorithmUsingQuaternion&) = delete;
+  OrientationEulerAnglesFusionAlgorithmUsingQuaternion& operator=(
+      const OrientationEulerAnglesFusionAlgorithmUsingQuaternion&) = delete;
+
   ~OrientationEulerAnglesFusionAlgorithmUsingQuaternion() override;
 
  protected:
   bool GetFusedDataInternal(mojom::SensorType which_sensor_changed,
                             SensorReading* fused_reading) override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(
-      OrientationEulerAnglesFusionAlgorithmUsingQuaternion);
 };
 
 }  // namespace device

@@ -9,7 +9,7 @@
   <release seq="1">
     <includes>
       <!-- GRIT minimizes all CSS and Javascript -->
-      <include name="IDR_UASTYLE_HTML_CSS" file="../renderer/core/html/resources/html.css" type="BINDATA" compress="gzip"/>
+      <include name="IDR_UASTYLE_HTML_CSS" file="../renderer/core/html/resources/html.css" flattenhtml="true" type="BINDATA" compress="gzip"/>
       <include name="IDR_UASTYLE_QUIRKS_CSS" file="../renderer/core/html/resources/quirks.css" type="BINDATA" compress="gzip"/>
       <include name="IDR_UASTYLE_VIEW_SOURCE_CSS" file="../renderer/core/css/view-source.css" type="BINDATA" compress="gzip"/>
       <include name="IDR_UASTYLE_THEME_CHROMIUM_ANDROID_CSS" file="../renderer/core/html/resources/android.css" type="BINDATA" compress="gzip"/>
@@ -19,9 +19,7 @@
         <include name="IDR_UASTYLE_THEME_MAC_CSS" file="../renderer/core/html/resources/mac.css" type="BINDATA" compress="gzip"/>
       </if>
       <include name="IDR_UASTYLE_THEME_INPUT_MULTIPLE_FIELDS_CSS" file="../renderer/core/html/resources/input_multiple_fields.css" type="BINDATA" compress="gzip"/>
-      <include name="IDR_UASTYLE_THEME_WIN_CSS" file="../renderer/core/html/resources/win.css" type="BINDATA" compress="gzip"/>
       <include name="IDR_UASTYLE_THEME_WIN_QUIRKS_CSS" file="../renderer/core/html/resources/win_quirks.css" type="BINDATA" compress="gzip"/>
-      <include name="IDR_UASTYLE_THEME_CONTROLS_REFRESH_CSS" file="../renderer/core/html/resources/controls_refresh.css" flattenhtml="true" type="BINDATA" compress="gzip"/>
       <include name="IDR_UASTYLE_THEME_FORCED_COLORS_CSS" file="../renderer/core/html/resources/forced_colors.css" type="BINDATA" compress="gzip"/>
       <include name="IDR_UASTYLE_POPUP_CSS" file="../renderer/core/css/popup.css" type="BINDATA" compress="gzip"/>
       <include name="IDR_UASTYLE_SVG_CSS" file="../renderer/core/css/svg.css" type="BINDATA" compress="gzip"/>
@@ -41,13 +39,11 @@
         <include name="IDR_PICKER_COMMON_JS" file="../renderer/core/html/forms/resources/pickerCommon.js" type="BINDATA" compress="gzip"/>
         <include name="IDR_PICKER_COMMON_CSS" file="../renderer/core/html/forms/resources/pickerCommon.css" type="BINDATA" compress="gzip"/>
         <include name="IDR_CALENDAR_PICKER_CSS" file="../renderer/core/html/forms/resources/calendarPicker.css" type="BINDATA" compress="gzip"/>
-        <include name="IDR_CALENDAR_PICKER_REFRESH_CSS" file="../renderer/core/html/forms/resources/calendar_picker_refresh.css" type="BINDATA" compress="gzip"/>
         <include name="IDR_CALENDAR_PICKER_JS" file="../renderer/core/html/forms/resources/calendarPicker.js" type="BINDATA" compress="gzip"/>
         <include name="IDR_MONTH_PICKER_JS" file="../renderer/core/html/forms/resources/month_picker.js" type="BINDATA" compress="gzip"/>
         <include name="IDR_TIME_PICKER_CSS" file="../renderer/core/html/forms/resources/time_picker.css" type="BINDATA" compress="gzip"/>
         <include name="IDR_TIME_PICKER_JS" file="../renderer/core/html/forms/resources/time_picker.js" type="BINDATA" compress="gzip"/>
         <include name="IDR_DATETIMELOCAL_PICKER_JS" file="../renderer/core/html/forms/resources/datetimelocal_picker.js" type="BINDATA" compress="gzip"/>
-        <include name="IDR_PICKER_BUTTON_CSS" file="../renderer/core/html/forms/resources/pickerButton.css" type="BINDATA" compress="gzip"/>
         <include name="IDR_SUGGESTION_PICKER_CSS" file="../renderer/core/html/forms/resources/suggestionPicker.css" type="BINDATA" compress="gzip"/>
         <include name="IDR_SUGGESTION_PICKER_JS" file="../renderer/core/html/forms/resources/suggestionPicker.js" type="BINDATA" compress="gzip"/>
         <include name="IDR_COLOR_PICKER_COMMON_JS" file="../renderer/core/html/forms/resources/color_picker_common.js" type="BINDATA" compress="gzip"/>

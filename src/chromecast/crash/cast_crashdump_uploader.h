@@ -9,8 +9,6 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
-
 namespace google_breakpad {
 class LibcurlWrapper;
 }
@@ -33,6 +31,7 @@ struct CastCrashdumpData {
   std::string crash_server;
   std::string proxy_host;
   std::string proxy_userpassword;
+  std::string upload_filename;
 };
 
 class CastCrashdumpUploader {
@@ -41,6 +40,10 @@ class CastCrashdumpUploader {
       const CastCrashdumpData& data,
       std::unique_ptr<google_breakpad::LibcurlWrapper> http_layer);
   explicit CastCrashdumpUploader(const CastCrashdumpData& data);
+
+  CastCrashdumpUploader(const CastCrashdumpUploader&) = delete;
+  CastCrashdumpUploader& operator=(const CastCrashdumpUploader&) = delete;
+
   virtual ~CastCrashdumpUploader();
 
   virtual bool AddAttachment(const std::string& label,
@@ -59,8 +62,6 @@ class CastCrashdumpUploader {
 
   // Holds the following mapping for HTTP request params: <key, value>
   std::map<std::string, std::string> parameters_;
-
-  DISALLOW_COPY_AND_ASSIGN(CastCrashdumpUploader);
 };
 
 }  // namespace chromecast

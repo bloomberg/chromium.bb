@@ -8,10 +8,8 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
-#include "base/scoped_observer.h"
 #include "base/test/task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -81,6 +79,9 @@ class ThumbnailImageTest : public testing::Test,
  public:
   ThumbnailImageTest() = default;
 
+  ThumbnailImageTest(const ThumbnailImageTest&) = delete;
+  ThumbnailImageTest& operator=(const ThumbnailImageTest&) = delete;
+
  protected:
   static SkBitmap CreateBitmap(int width, int height) {
     SkBitmap bitmap;
@@ -102,7 +103,6 @@ class ThumbnailImageTest : public testing::Test,
 
   bool is_being_observed_ = false;
   base::test::TaskEnvironment task_environment_;
-  DISALLOW_COPY_AND_ASSIGN(ThumbnailImageTest);
 };
 
 using Subscription = ThumbnailImage::Subscription;

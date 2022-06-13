@@ -10,6 +10,10 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
+namespace gfx {
+class Vector2d;
+}
+
 namespace blink {
 
 class LayoutObject;
@@ -44,6 +48,7 @@ class CORE_EXPORT ScrollAnchor final {
   ScrollAnchor();
   explicit ScrollAnchor(ScrollableArea*);
   ~ScrollAnchor();
+  void Trace(Visitor* visitor) const;
 
   // The scroller that is scrolled to componsate for layout movements. Note
   // that the scroller can only be initialized once.
@@ -99,12 +104,23 @@ class CORE_EXPORT ScrollAnchor final {
   // Notifies us that an object will be removed from the layout tree.
   void NotifyRemoved(LayoutObject*);
 
-  void Trace(Visitor* visitor) const { visitor->Trace(scroller_); }
-
  private:
+  enum WalkStatus { kSkip = 0, kConstrain, kContinue, kReturn };
+
+  static bool IsViable(WalkStatus status) {
+    return status == kConstrain || status == kReturn;
+  }
+
   void FindAnchor();
-  // Returns true if searching should stop. Stores result in m_anchorObject.
-  bool FindAnchorRecursive(LayoutObject*);
+  // Search for an anchor inside the specified object. The result is stored in
+  // anchor_object_. The status returned indicates whether it found something
+  // viable or not, in which case we may stop searching. Note that if kConstrain
+  // is returned, which is generally considered viable, we may need to take an
+  // additional look for OOFs inside enclosing NG fragmentation contexts. OOFs
+  // are direct children of fragmentainers, rather than being a child of their
+  // actual containing block.
+  WalkStatus FindAnchorRecursive(LayoutObject*);
+  WalkStatus FindAnchorInOOFs(LayoutObject*);
   bool ComputeScrollAnchorDisablingStyleChanged();
 
   // Find viable anchor among the priority candidates. Returns true if anchor
@@ -115,16 +131,16 @@ class CORE_EXPORT ScrollAnchor final {
   // non-atomic inline and is not anonymous.
   LayoutObject* PriorityCandidateFromNode(const Node*) const;
 
-  enum WalkStatus { kSkip = 0, kConstrain, kContinue, kReturn };
   struct ExamineResult {
-    ExamineResult(WalkStatus s)
-        : status(s), viable(false), corner(Corner::kTopLeft) {}
+    explicit ExamineResult(WalkStatus s) : status(s), corner(Corner::kTopLeft) {
+      DCHECK(!IsViable(status));
+    }
 
-    ExamineResult(WalkStatus s, Corner c)
-        : status(s), viable(true), corner(c) {}
+    ExamineResult(WalkStatus s, Corner c) : status(s), corner(c) {
+      DCHECK(IsViable(status));
+    }
 
     WalkStatus status;
-    bool viable;
     Corner corner;
   };
 
@@ -135,7 +151,7 @@ class CORE_EXPORT ScrollAnchor final {
   // given object and the scroller.
   ExamineResult ExaminePriorityCandidate(const LayoutObject*) const;
 
-  IntSize ComputeAdjustment() const;
+  gfx::Vector2d ComputeAdjustment() const;
 
   // The scroller to be adjusted by this ScrollAnchor. This is also the scroller
   // that owns us, unless it is the RootFrameViewport in which case we are owned
@@ -143,7 +159,7 @@ class CORE_EXPORT ScrollAnchor final {
   Member<ScrollableArea> scroller_;
 
   // The LayoutObject we should anchor to.
-  LayoutObject* anchor_object_;
+  Member<LayoutObject> anchor_object_;
 
   // Which corner of m_anchorObject's bounding box to anchor to.
   Corner corner_;

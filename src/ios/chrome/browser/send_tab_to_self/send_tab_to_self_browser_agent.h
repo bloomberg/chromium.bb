@@ -5,10 +5,11 @@
 #ifndef IOS_CHROME_BROWSER_SEND_TAB_TO_SELF_SEND_TAB_TO_SELF_BROWSER_AGENT_H_
 #define IOS_CHROME_BROWSER_SEND_TAB_TO_SELF_SEND_TAB_TO_SELF_BROWSER_AGENT_H_
 
+#include <CoreFoundation/CoreFoundation.h>
+
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "components/send_tab_to_self/send_tab_to_self_model_observer.h"
 #import "ios/chrome/browser/main/browser_observer.h"
 #import "ios/chrome/browser/main/browser_user_data.h"

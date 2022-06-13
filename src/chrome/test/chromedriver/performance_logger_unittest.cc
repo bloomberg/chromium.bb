@@ -13,6 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/format_macros.h"
 #include "base/json/json_reader.h"
+#include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome/devtools_client_impl.h"
@@ -83,7 +84,8 @@ class FakeDevToolsClient : public StubDevToolsClient {
   const std::string id_;  // WebView id.
   std::vector<std::unique_ptr<DevToolsCommand>>
       sent_commands_;                // Commands that were sent.
-  DevToolsEventListener* listener_;  // The fake allows only one event listener.
+  raw_ptr<DevToolsEventListener>
+      listener_;  // The fake allows only one event listener.
   size_t command_index_;
 };
 
@@ -297,12 +299,11 @@ TEST(PerformanceLogger, TracingStartStop) {
   base::ListValue* categories;
   EXPECT_TRUE(cmd->params->GetList("traceConfig.includedCategories",
                                    &categories));
-  EXPECT_EQ(2u, categories->GetSize());
-  std::string category;
-  EXPECT_TRUE(categories->GetString(0, &category));
-  EXPECT_EQ("benchmark", category);
-  EXPECT_TRUE(categories->GetString(1, &category));
-  EXPECT_EQ("blink.console", category);
+  ASSERT_EQ(2u, categories->GetList().size());
+  ASSERT_TRUE(categories->GetList()[0].is_string());
+  EXPECT_EQ("benchmark", categories->GetList()[0].GetString());
+  ASSERT_TRUE(categories->GetList()[1].is_string());
+  EXPECT_EQ("blink.console", categories->GetList()[1].GetString());
   int expected_interval = 0;
   EXPECT_TRUE(cmd->params->GetInteger("bufferUsageReportingInterval",
                                       &expected_interval));
@@ -329,14 +330,14 @@ TEST(PerformanceLogger, RecordTraceEvents) {
   client.AddListener(&logger);
   logger.OnConnected(&client);
   base::DictionaryValue params;
-  auto trace_events = std::make_unique<base::ListValue>();
+  base::ListValue trace_events;
   auto event1 = std::make_unique<base::DictionaryValue>();
   event1->SetString("cat", "foo");
-  trace_events->Append(event1->Clone());
+  trace_events.Append(event1->Clone());
   auto event2 = std::make_unique<base::DictionaryValue>();
   event2->SetString("cat", "bar");
-  trace_events->Append(event2->Clone());
-  params.Set("value", std::move(trace_events));
+  trace_events.Append(event2->Clone());
+  params.SetKey("value", std::move(trace_events));
   ASSERT_EQ(kOk, client.TriggerEvent("Tracing.dataCollected", params).code());
 
   ASSERT_EQ(2u, log.GetEntries().size());
@@ -380,7 +381,7 @@ TEST(PerformanceLogger, WarnWhenTraceBufferFull) {
   client.AddListener(&logger);
   logger.OnConnected(&client);
   base::DictionaryValue params;
-  params.SetDouble("percentFull", 1.0);
+  params.SetDoubleKey("percentFull", 1.0);
   ASSERT_EQ(kOk, client.TriggerEvent("Tracing.bufferUsage", params).code());
 
   ASSERT_EQ(1u, log.GetEntries().size());

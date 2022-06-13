@@ -5,8 +5,10 @@
 #include "chrome/browser/enterprise/connectors/file_system/box_api_call_test_helper.h"
 
 #include "base/check_op.h"
+#include "base/strings/stringprintf.h"
 
 namespace enterprise_connectors {
+const char kFileSystemBoxGetFileFolderUrl[] = "https://api.box.com/2.0/files";
 const char kFileSystemBoxFindFolderUrl[] =
     "https://api.box.com/2.0/search?type=folder&query=ChromeDownloads";
 const char kFileSystemBoxCreateFolderUrl[] = "https://api.box.com/2.0/folders";
@@ -14,8 +16,40 @@ const char kFileSystemBoxPreflightCheckUrl[] =
     "https://api.box.com/2.0/files/content";
 const char kFileSystemBoxDirectUploadUrl[] =
     "https://upload.box.com/api/2.0/files/content";
+const char kFileSystemBoxGetUserUrl[] =
+    "https://api.box.com/2.0/users/me?fields=enterprise,login,name";
 
 const char kEmptyResponseBody[] = R"({})";
+
+const char kFileSystemBoxClientErrorResponseBodyFormat[] = R"({
+  "type": "error",
+  "code": "%s",
+  "help_url": "http://developers.box.com/docs/#errors",
+  "message": "Dummy message",
+  "request_id": "abcdef123456",
+  "status": %d
+})";
+
+// Request id extracted from the generic error response body above.
+const char kFileSystemBoxClientErrorResponseRequestId[] = "abcdef123456";
+
+std::string CreateFailureResponse(int http_code, const char* box_error) {
+  return base::StringPrintf(kFileSystemBoxClientErrorResponseBodyFormat,
+                            box_error, http_code);
+}
+
+// For box Get File Folder
+const char kFileSystemBoxGetFileFolderFileId[] = "123";
+const char kFileSystemBoxGetFileFolderResponseBody[] = R"({
+    "id": 12345,
+    "parent": {
+      "id": 23456
+    }
+  })";
+const char kFileSystemBoxGetFileFolderResponseFolderId[] = "23456";
+
+// For Box Pre-Upload Steps/////////////////////////////////////////////////////
+
 const char kFileSystemBoxFindFolderResponseBody[] = R"({
     "entries": [
       {
@@ -37,6 +71,8 @@ const char kFileSystemBoxFindFolderResponseFolderId[] = "12345";
 // intentionally distinct from kFileSystemBoxFindFolderResponseFolderId above
 // to identify where the test flow gets the folder_id from.
 const char kFileSystemBoxFolderIdInPref[] = "1337";
+const char kFileSystemBoxFolderIdInPrefUrl[] =
+    "https://app.box.com/folder/1337";
 
 const char kFileSystemBoxFindFolderResponseEmptyEntriesList[] = R"({
     "entries": [
@@ -78,6 +114,24 @@ const char kFileSystemBoxCreateFolderResponseBody[] = R"({
     }
   })";
 
+const char kFileSystemBoxCreateFolderConflictResponseBody[] = R"({
+  "type": "error",
+  "status": 409,
+  "code": "item_name_in_use",
+  "context_info":{
+    "conflicts":[{
+      "type": "folder",
+      "id": "67890",
+      "sequence_id": "0",
+      "etag": "0",
+      "name": "ChromeDownloads"
+    }]
+  },
+  "help_url": "http:\/\/developers.box.com\/docs\/#errors",
+  "message": "Item with the same name already exists",
+  "request_id": "2i8lbtgtdld0mle3"
+})";
+
 // Should match id in kFileSystemBoxCreateFolderResponseBody, as it's used to
 // verify extracted folder_id from body above.
 const char kFileSystemBoxCreateFolderResponseFolderId[] = "67890";
@@ -116,6 +170,20 @@ const char kFileSystemBoxChunkedUploadCreateSessionResponseBody[] = R"({
 // kFileSystemBoxChunkedUploadCreateSessionResponseBody, as it's used to verify
 // extracted part_size from body above.
 const size_t kFileSystemBoxChunkedUploadCreateSessionResponsePartSize = 7340032;
+
+const char kFileSystemBoxChunkedUploadPartResponseBodyFormat[] = R"({
+  "part": {
+    "offset": %d,
+    "part_id": "6F2D3486",
+    "sha1": "134b65991ed521fcfe4724b7d814ab8ded5185dc",
+    "size": %d
+  }
+})";
+
+std::string CreateChunkedUploadPartResponse(int offset, int size) {
+  return base::StringPrintf(kFileSystemBoxChunkedUploadPartResponseBodyFormat,
+                            offset, size);
+}
 
 void GenerateFileContent(size_t part_size,
                          size_t total_size,
@@ -224,10 +292,8 @@ const char kFileSystemBoxUploadResponseBody[] = R"({
 })";
 
 // File id should match up id extracted from above.
+const char kFileSystemBoxUploadResponseFileId[] = "314159";
 const char kFileSystemBoxUploadResponseFileUrl[] =
     "https://app.box.com/file/314159";
-
-const char kFileSystemBoxUploadResponseFolderUrl[] =
-    "https://app.box.com/folder/1337";
 
 }  // namespace enterprise_connectors

@@ -2,7 +2,6 @@ export const description = `
 Tests for capability checking for features enabling optional query types.
 `;
 
-import { params, pbool, poptions } from '../../../../../common/framework/params_builder.js';
 import { makeTestGroup } from '../../../../../common/framework/test_group.js';
 import { ValidationTest } from '../../validation_test.js';
 
@@ -21,24 +20,24 @@ TODO: This test should expect *synchronous* exceptions, not validation errors, p
 As of this writing, the spec needs to be fixed as well.
   `
   )
-  .params(
-    params()
-      .combine(poptions('type', ['occlusion', 'pipeline-statistics', 'timestamp'] as const))
-      .combine(pbool('pipelineStatisticsQueryEnable'))
-      .combine(pbool('timestampQueryEnable'))
+  .params(u =>
+    u
+      .combine('type', ['occlusion', 'pipeline-statistics', 'timestamp'] as const)
+      .combine('pipelineStatisticsQueryEnable', [false, true])
+      .combine('timestampQueryEnable', [false, true])
   )
   .fn(async t => {
     const { type, pipelineStatisticsQueryEnable, timestampQueryEnable } = t.params;
 
-    const nonGuaranteedFeatures: GPUFeatureName[] = [];
+    const requiredFeatures: GPUFeatureName[] = [];
     if (pipelineStatisticsQueryEnable) {
-      nonGuaranteedFeatures.push('pipeline-statistics-query');
+      requiredFeatures.push('pipeline-statistics-query');
     }
     if (timestampQueryEnable) {
-      nonGuaranteedFeatures.push('timestamp-query');
+      requiredFeatures.push('timestamp-query');
     }
 
-    await t.selectDeviceOrSkipTestCase({ nonGuaranteedFeatures });
+    await t.selectDeviceOrSkipTestCase({ requiredFeatures });
 
     const count = 1;
     const pipelineStatistics =

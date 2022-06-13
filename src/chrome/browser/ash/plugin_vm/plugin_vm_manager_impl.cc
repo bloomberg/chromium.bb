@@ -137,14 +137,6 @@ void PluginVmManagerImpl::OnPrimaryUserSessionStarted() {
   request.set_owner_id(owner_id_);
   request.set_vm_name_uuid(kPluginVmName);
 
-  // We need to reset these permissions unless we have permission
-  // indicators/notifications enabled.
-  if (!base::FeatureList::IsEnabled(
-          chromeos::features::kVmCameraMicIndicatorsAndNotifications)) {
-    profile_->GetPrefs()->SetBoolean(prefs::kPluginVmCameraAllowed, false);
-    profile_->GetPrefs()->SetBoolean(prefs::kPluginVmMicAllowed, false);
-  }
-
   // Probe the dispatcher.
   chromeos::DBusThreadManager::Get()->GetVmPluginDispatcherClient()->ListVms(
       std::move(request),
@@ -214,11 +206,11 @@ void PluginVmManagerImpl::LaunchPluginVm(LaunchPluginVmCallback callback) {
 }
 
 void PluginVmManagerImpl::AddVmStartingObserver(
-    chromeos::VmStartingObserver* observer) {
+    ash::VmStartingObserver* observer) {
   vm_starting_observers_.AddObserver(observer);
 }
 void PluginVmManagerImpl::RemoveVmStartingObserver(
-    chromeos::VmStartingObserver* observer) {
+    ash::VmStartingObserver* observer) {
   vm_starting_observers_.RemoveObserver(observer);
 }
 
@@ -752,7 +744,7 @@ void PluginVmManagerImpl::DestroyDiskImage() {
 
   vm_tools::concierge::DestroyDiskImageRequest request;
   request.set_cryptohome_id(owner_id_);
-  request.set_disk_path(kPluginVmName);
+  request.set_vm_name(kPluginVmName);
 
   chromeos::ConciergeClient::Get()->DestroyDiskImage(
       std::move(request),

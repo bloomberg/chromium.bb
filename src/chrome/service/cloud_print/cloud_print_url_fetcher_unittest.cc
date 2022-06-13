@@ -8,10 +8,11 @@
 
 #include "base/command_line.h"
 #include "base/location.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -27,7 +28,6 @@
 #include "url/gurl.h"
 
 using base::Time;
-using base::TimeDelta;
 
 namespace cloud_print {
 
@@ -62,7 +62,7 @@ class TrackingTestURLRequestContextGetter
 
  private:
   // Not owned here.
-  net::URLRequestThrottlerManager* throttler_manager_;
+  raw_ptr<net::URLRequestThrottlerManager> throttler_manager_;
   std::unique_ptr<net::TestURLRequestContext> context_;
 };
 
@@ -99,6 +99,9 @@ class CloudPrintURLFetcherTest : public testing::Test,
       : max_retries_(0),
         fetcher_(nullptr),
         quit_run_loop_(run_loop_.QuitClosure()) {}
+
+  CloudPrintURLFetcherTest(const CloudPrintURLFetcherTest&) = delete;
+  CloudPrintURLFetcherTest& operator=(const CloudPrintURLFetcherTest&) = delete;
 
   // Creates a URLFetcher, using the program's main thread to do IO.
   virtual void CreateFetcher(const GURL& url, int max_retries);
@@ -153,8 +156,6 @@ class CloudPrintURLFetcherTest : public testing::Test,
   scoped_refptr<TestCloudPrintURLFetcher> fetcher_;
   base::RunLoop run_loop_;
   base::OnceClosure quit_run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(CloudPrintURLFetcherTest);
 };
 
 class CloudPrintURLFetcherBasicTest : public CloudPrintURLFetcherTest {
@@ -242,8 +243,7 @@ void CloudPrintURLFetcherTest::CreateFetcher(const GURL& url, int max_retries) {
 
   max_retries_ = max_retries;
   start_time_ = Time::Now();
-  fetcher_->StartGetRequest(CloudPrintURLFetcher::REQUEST_MAX, url, this,
-                            max_retries_);
+  fetcher_->StartGetRequest(url, this, max_retries_);
 }
 
 CloudPrintURLFetcher::ResponseAction
@@ -311,11 +311,10 @@ CloudPrintURLFetcherOverloadTest::HandleRawData(
     const net::URLFetcher* source,
     const GURL& url,
     const std::string& data) {
-  const TimeDelta one_second = TimeDelta::FromMilliseconds(1000);
+  const base::TimeDelta one_second = base::Milliseconds(1000);
   response_count_++;
   if (response_count_ < 20) {
-    fetcher_->StartGetRequest(CloudPrintURLFetcher::REQUEST_MAX, url, this,
-                              max_retries_);
+    fetcher_->StartGetRequest(url, this, max_retries_);
   } else {
     // We have already sent 20 requests continuously. And we expect that
     // it takes more than 1 second due to the overload protection settings.
@@ -338,7 +337,7 @@ CloudPrintURLFetcherRetryBackoffTest::HandleRawData(
 
 void CloudPrintURLFetcherRetryBackoffTest::OnRequestGiveUp() {
   // It takes more than 200 ms to finish all 11 requests.
-  EXPECT_TRUE(Time::Now() - start_time_ >= TimeDelta::FromMilliseconds(200));
+  EXPECT_TRUE(Time::Now() - start_time_ >= base::Milliseconds(200));
   std::move(quit_run_loop_).Run();
 }
 

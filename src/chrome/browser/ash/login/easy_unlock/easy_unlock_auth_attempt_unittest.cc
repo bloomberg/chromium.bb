@@ -8,11 +8,11 @@
 
 #include <memory>
 
+#include "ash/components/proximity_auth/screenlock_bridge.h"
 #include "base/command_line.h"
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "build/build_config.h"
 #include "chrome/browser/ash/login/easy_unlock/easy_unlock_key_manager.h"
-#include "chromeos/components/proximity_auth/screenlock_bridge.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace ash {
@@ -69,6 +69,9 @@ class TestLockHandler : public proximity_auth::ScreenlockBridge::LockHandler {
         auth_type_(proximity_auth::mojom::AuthType::USER_CLICK),
         account_id_(account_id) {}
 
+  TestLockHandler(const TestLockHandler&) = delete;
+  TestLockHandler& operator=(const TestLockHandler&) = delete;
+
   ~TestLockHandler() override {}
 
   void set_state(AuthState value) { state_ = value; }
@@ -92,7 +95,7 @@ class TestLockHandler : public proximity_auth::ScreenlockBridge::LockHandler {
 
   void ShowUserPodCustomIcon(
       const AccountId& account_id,
-      const proximity_auth::ScreenlockBridge::UserPodCustomIconOptions& icon)
+      const proximity_auth::ScreenlockBridge::UserPodCustomIconInfo& icon_info)
       override {
     ADD_FAILURE() << "Should not be reached.";
   }
@@ -147,18 +150,32 @@ class TestLockHandler : public proximity_auth::ScreenlockBridge::LockHandler {
     }
   }
 
+  void SetSmartLockState(const AccountId& account_id,
+                         ash::SmartLockState state) override {
+    GTEST_FAIL();
+  }
+
+  void NotifySmartLockAuthResult(const AccountId& account_id,
+                                 bool successful) override {
+    GTEST_FAIL();
+  }
+
  private:
   AuthState state_;
   proximity_auth::mojom::AuthType auth_type_;
   const AccountId account_id_;
   std::string expected_secret_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestLockHandler);
 };
 
 class EasyUnlockAuthAttemptUnlockTest : public testing::Test {
  public:
   EasyUnlockAuthAttemptUnlockTest() {}
+
+  EasyUnlockAuthAttemptUnlockTest(const EasyUnlockAuthAttemptUnlockTest&) =
+      delete;
+  EasyUnlockAuthAttemptUnlockTest& operator=(
+      const EasyUnlockAuthAttemptUnlockTest&) = delete;
+
   ~EasyUnlockAuthAttemptUnlockTest() override {}
 
   void SetUp() override {
@@ -184,9 +201,6 @@ class EasyUnlockAuthAttemptUnlockTest : public testing::Test {
 
   const AccountId test_account_id1_ = AccountId::FromUserEmail(kTestUser1);
   const AccountId test_account_id2_ = AccountId::FromUserEmail(kTestUser2);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(EasyUnlockAuthAttemptUnlockTest);
 };
 
 TEST_F(EasyUnlockAuthAttemptUnlockTest, StartWhenNotLocked) {
@@ -291,6 +305,12 @@ TEST_F(EasyUnlockAuthAttemptUnlockTest, FinalizeUnlockCalledForWrongUser) {
 class EasyUnlockAuthAttemptSigninTest : public testing::Test {
  public:
   EasyUnlockAuthAttemptSigninTest() {}
+
+  EasyUnlockAuthAttemptSigninTest(const EasyUnlockAuthAttemptSigninTest&) =
+      delete;
+  EasyUnlockAuthAttemptSigninTest& operator=(
+      const EasyUnlockAuthAttemptSigninTest&) = delete;
+
   ~EasyUnlockAuthAttemptSigninTest() override {}
 
   void SetUp() override {
@@ -316,9 +336,6 @@ class EasyUnlockAuthAttemptSigninTest : public testing::Test {
 
   const AccountId test_account_id1_ = AccountId::FromUserEmail(kTestUser1);
   const AccountId test_account_id2_ = AccountId::FromUserEmail(kTestUser2);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(EasyUnlockAuthAttemptSigninTest);
 };
 
 TEST_F(EasyUnlockAuthAttemptSigninTest, StartWhenNotLocked) {

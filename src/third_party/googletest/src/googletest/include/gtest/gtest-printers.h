@@ -95,8 +95,6 @@
 // being defined as many user-defined container types don't have
 // value_type.
 
-// GOOGLETEST_CM0001 DO NOT DELETE
-
 #ifndef GOOGLETEST_INCLUDE_GTEST_GTEST_PRINTERS_H_
 #define GOOGLETEST_INCLUDE_GTEST_GTEST_PRINTERS_H_
 
@@ -112,11 +110,6 @@
 
 #include "gtest/internal/gtest-internal.h"
 #include "gtest/internal/gtest-port.h"
-
-#if GTEST_HAS_RTTI
-#include <typeindex>
-#include <typeinfo>
-#endif  // GTEST_HAS_RTTI
 
 namespace testing {
 
@@ -365,7 +358,7 @@ GTEST_IMPL_FORMAT_C_STRING_AS_POINTER_(char);
 GTEST_IMPL_FORMAT_C_STRING_AS_POINTER_(const char);
 GTEST_IMPL_FORMAT_C_STRING_AS_POINTER_(wchar_t);
 GTEST_IMPL_FORMAT_C_STRING_AS_POINTER_(const wchar_t);
-#ifdef __cpp_char8_t
+#ifdef __cpp_lib_char8_t
 GTEST_IMPL_FORMAT_C_STRING_AS_POINTER_(char8_t);
 GTEST_IMPL_FORMAT_C_STRING_AS_POINTER_(const char8_t);
 #endif
@@ -484,6 +477,12 @@ inline void PrintTo(char8_t c, ::std::ostream* os) {
 }
 #endif
 
+// gcc/clang __{u,}int128_t
+#if defined(__SIZEOF_INT128__)
+GTEST_API_ void PrintTo(__uint128_t v, ::std::ostream* os);
+GTEST_API_ void PrintTo(__int128_t v, ::std::ostream* os);
+#endif  // __SIZEOF_INT128__
+
 // Overloads for C strings.
 GTEST_API_ void PrintTo(const char* s, ::std::ostream* os);
 inline void PrintTo(char* s, ::std::ostream* os) {
@@ -506,18 +505,18 @@ inline void PrintTo(unsigned char* s, ::std::ostream* os) {
 }
 #ifdef __cpp_char8_t
 // Overloads for u8 strings.
-void PrintTo(const char8_t* s, ::std::ostream* os);
+GTEST_API_ void PrintTo(const char8_t* s, ::std::ostream* os);
 inline void PrintTo(char8_t* s, ::std::ostream* os) {
   PrintTo(ImplicitCast_<const char8_t*>(s), os);
 }
 #endif
 // Overloads for u16 strings.
-void PrintTo(const char16_t* s, ::std::ostream* os);
+GTEST_API_ void PrintTo(const char16_t* s, ::std::ostream* os);
 inline void PrintTo(char16_t* s, ::std::ostream* os) {
   PrintTo(ImplicitCast_<const char16_t*>(s), os);
 }
 // Overloads for u32 strings.
-void PrintTo(const char32_t* s, ::std::ostream* os);
+GTEST_API_ void PrintTo(const char32_t* s, ::std::ostream* os);
 inline void PrintTo(char32_t* s, ::std::ostream* os) {
   PrintTo(ImplicitCast_<const char32_t*>(s), os);
 }
@@ -591,6 +590,12 @@ inline void PrintTo(internal::StringView sp, ::std::ostream* os) {
 #endif  // GTEST_INTERNAL_HAS_STRING_VIEW
 
 inline void PrintTo(std::nullptr_t, ::std::ostream* os) { *os << "(nullptr)"; }
+
+#if GTEST_HAS_RTTI
+inline void PrintTo(const std::type_info& info, std::ostream* os) {
+  *os << internal::GetTypeName(info);
+}
+#endif  // GTEST_HAS_RTTI
 
 template <typename T>
 void PrintTo(std::reference_wrapper<T> ref, ::std::ostream* os) {
@@ -672,18 +677,6 @@ void PrintTo(const ::std::pair<T1, T2>& value, ::std::ostream* os) {
   *os << ')';
 }
 
-#if GTEST_HAS_RTTI
-inline void PrintTo(const ::std::type_info& value, ::std::ostream* os) {
-  internal::PrintTo<::std::type_info>(value, os);
-  *os << " (\"" << value.name() << "\")";
-}
-
-inline void PrintTo(const ::std::type_index& value, ::std::ostream* os) {
-  internal::PrintTo<::std::type_index>(value, os);
-  *os << " (\"" << value.name() << "\")";
-}
-#endif  // GTEST_HAS_RTTI
-
 // Implements printing a non-reference type T by letting the compiler
 // pick the right overload of PrintTo() for T.
 template <typename T>
@@ -758,6 +751,14 @@ class UniversalPrinter<Optional<T>> {
       UniversalPrint(*value, os);
     }
     *os << ')';
+  }
+};
+
+template <>
+class UniversalPrinter<decltype(Nullopt())> {
+ public:
+  static void Print(decltype(Nullopt()), ::std::ostream* os) {
+    *os << "(nullopt)";
   }
 };
 

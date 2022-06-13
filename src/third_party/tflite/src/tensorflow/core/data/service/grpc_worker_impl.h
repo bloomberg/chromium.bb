@@ -16,41 +16,53 @@ limitations under the License.
 #ifndef TENSORFLOW_CORE_DATA_SERVICE_GRPC_WORKER_IMPL_H_
 #define TENSORFLOW_CORE_DATA_SERVICE_GRPC_WORKER_IMPL_H_
 
+#include <memory>
+#include <string>
+
 #include "grpcpp/server_builder.h"
 #include "tensorflow/core/data/service/worker.grpc.pb.h"
+#include "tensorflow/core/data/service/worker.pb.h"
 #include "tensorflow/core/data/service/worker_impl.h"
+#include "tensorflow/core/platform/status.h"
+#include "tensorflow/core/protobuf/service_config.pb.h"
 
 namespace tensorflow {
 namespace data {
 
 // This class is a wrapper that handles communication for gRPC.
-//
-// Example usage:
-//
-// ::grpc::ServerBuilder builder;
-// // configure builder
-// GrpcWorkerImpl data_service(&builder);
-// builder.BuildAndStart()
-//
 class GrpcWorkerImpl : public WorkerService::Service {
  public:
-  explicit GrpcWorkerImpl(grpc::ServerBuilder* server_builder,
-                          const std::string& dispatcher_address,
-                          const std::string& protocol);
-  ~GrpcWorkerImpl() override {}
+  // Constructs a GrpcWorkerImpl with the given config, and registers it with
+  // `server_builder`.
+  explicit GrpcWorkerImpl(const experimental::WorkerConfig& config,
+                          ::grpc::ServerBuilder& server_builder);
+  ~GrpcWorkerImpl() override { Stop(); }
 
-  void Start(const std::string& worker_address);
+  Status Start(const std::string& worker_address,
+               const std::string& transfer_address);
+  void Stop();
 
-#define HANDLER(method)                               \
-  grpc::Status method(grpc::ServerContext* context,   \
-                      const method##Request* request, \
-                      method##Response* response) override;
+  std::function<Status(const GetElementRequest*, GetElementResult*)>
+  get_element_getter() {
+    return [this](const GetElementRequest* request, GetElementResult* result) {
+      return impl_->GetElementResult(request, result);
+    };
+  }
+
+#define HANDLER(method)                                 \
+  ::grpc::Status method(::grpc::ServerContext* context, \
+                        const method##Request* request, \
+                        method##Response* response) override;
   HANDLER(ProcessTask);
   HANDLER(GetElement);
+  HANDLER(GetWorkerTasks);
 #undef HANDLER
 
  private:
-  DataServiceWorkerImpl impl_;
+  std::string worker_address_;
+  // A std::shared_ptr allows clients to access local servers and directly call
+  // the servers' methods to avoid RPC calls and data copy.
+  std::shared_ptr<DataServiceWorkerImpl> impl_;
 
   TF_DISALLOW_COPY_AND_ASSIGN(GrpcWorkerImpl);
 };

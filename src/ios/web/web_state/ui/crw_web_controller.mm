@@ -26,10 +26,8 @@
 #import "ios/web/find_in_page/find_in_page_manager_impl.h"
 #include "ios/web/history_state_util.h"
 #include "ios/web/js_features/scroll_helper/scroll_helper_java_script_feature.h"
-#import "ios/web/js_messaging/crw_js_injector.h"
-#import "ios/web/js_messaging/crw_wk_script_message_router.h"
+#import "ios/web/js_messaging/crw_js_window_id_manager.h"
 #include "ios/web/js_messaging/java_script_feature_util_impl.h"
-#import "ios/web/js_messaging/web_frames_manager_impl.h"
 #import "ios/web/js_messaging/web_view_js_utils.h"
 #import "ios/web/js_messaging/web_view_web_state_map.h"
 #import "ios/web/navigation/crw_error_page_helper.h"
@@ -42,6 +40,8 @@
 #import "ios/web/navigation/navigation_context_impl.h"
 #import "ios/web/navigation/wk_back_forward_list_item_holder.h"
 #import "ios/web/navigation/wk_navigation_util.h"
+#import "ios/web/public/deprecated/crw_js_injection_evaluator.h"
+#import "ios/web/public/deprecated/crw_js_injection_receiver.h"
 #include "ios/web/public/js_messaging/web_frame_util.h"
 #import "ios/web/public/ui/crw_web_view_scroll_view_proxy.h"
 #import "ios/web/public/ui/page_display_state.h"
@@ -50,16 +50,13 @@
 #import "ios/web/security/crw_ssl_status_updater.h"
 #import "ios/web/text_fragments/text_fragments_manager_impl.h"
 #import "ios/web/web_state/page_viewport_state.h"
-#import "ios/web/web_state/ui/cookie_blocking_error_logger.h"
 #import "ios/web/web_state/ui/crw_context_menu_controller.h"
-#import "ios/web/web_state/ui/crw_legacy_context_menu_controller.h"
 #import "ios/web/web_state/ui/crw_swipe_recognizer_provider.h"
 #import "ios/web/web_state/ui/crw_web_controller_container_view.h"
 #import "ios/web/web_state/ui/crw_web_request_controller.h"
 #import "ios/web/web_state/ui/crw_web_view_proxy_impl.h"
 #import "ios/web/web_state/ui/crw_wk_ui_handler.h"
 #import "ios/web/web_state/ui/crw_wk_ui_handler_delegate.h"
-#import "ios/web/web_state/ui/webkit_session_restore_buildflags.h"
 #import "ios/web/web_state/ui/wk_web_view_configuration_provider.h"
 #import "ios/web/web_state/user_interaction_state.h"
 #import "ios/web/web_state/web_state_impl.h"
@@ -79,35 +76,25 @@ using web::NavigationManagerImpl;
 using web::WebState;
 using web::WebStateImpl;
 
-using web::wk_navigation_util::IsPlaceholderUrl;
-using web::wk_navigation_util::ExtractUrlFromPlaceholderUrl;
 using web::wk_navigation_util::IsRestoreSessionUrl;
 using web::wk_navigation_util::IsWKInternalUrl;
 
-namespace {
-
-// Keys for JavaScript command handlers context.
-NSString* const kUserIsInteractingKey = @"userIsInteracting";
-NSString* const kOriginURLKey = @"originURL";
-NSString* const kIsMainFrame = @"isMainFrame";
-
-// URL scheme for messages sent from javascript for asynchronous processing.
-NSString* const kScriptMessageName = @"crwebinvoke";
-
-// URL scheme for session restore.
-NSString* const kSessionRestoreScriptMessageName = @"session_restore";
-
-}  // namespace
+// TODO(crbug.com/1174560): Allow usage of iOS15 interactionState on iOS 14 SDK
+// based builds.
+#if !defined(__IPHONE_15_0) || __IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_15_0
+@interface WKWebView (Additions)
+@property(nonatomic, nullable, copy) id interactionState;
+@end
+#endif
 
 @interface CRWWebController () <CRWWKNavigationHandlerDelegate,
                                 CRWInputViewProvider,
-                                CRWJSInjectorDelegate,
+                                CRWJSInjectionEvaluator,
                                 CRWSSLStatusUpdaterDataSource,
                                 CRWSSLStatusUpdaterDelegate,
                                 CRWWebControllerContainerViewDelegate,
                                 CRWWebViewNavigationObserverDelegate,
                                 CRWWebRequestControllerDelegate,
-                                CRWJSNavigationHandlerDelegate,
                                 CRWWebViewScrollViewProxyObserver,
                                 CRWWKNavigationHandlerDelegate,
                                 CRWWKUIHandlerDelegate,
@@ -151,16 +138,13 @@ NSString* const kSessionRestoreScriptMessageName = @"session_restore";
 
   // State of user interaction with web content.
   web::UserInteractionState _userInteractionState;
-
-  // Logger for cookie;.error message.
-  std::unique_ptr<web::CookieBlockingErrorLogger> _cookieBlockingErrorLogger;
 }
 
 // The WKNavigationDelegate handler class.
 @property(nonatomic, readonly, strong)
     CRWWKNavigationHandler* navigationHandler;
 @property(nonatomic, readonly, strong)
-    CRWJSNavigationHandler* JSNavigationHandler;
+    CRWJSNavigationHandler* jsNavigationHandler;
 // The WKUIDelegate handler class.
 @property(nonatomic, readonly, strong) CRWWKUIHandler* UIHandler;
 
@@ -228,6 +212,11 @@ NSString* const kSessionRestoreScriptMessageName = @"session_restore";
 @property(nonatomic, strong)
     CRWContextMenuController* contextMenuController API_AVAILABLE(ios(13.0));
 
+// Script manager for setting the windowID.
+@property(nonatomic, strong) CRWJSWindowIDManager* windowIDJSManager;
+
+@property(strong, nonatomic) CRWJSInjectionReceiver* jsInjectionReceiver;
+
 // Returns the current URL of the web view, and sets |trustLevel| accordingly
 // based on the confidence in the verification.
 - (GURL)webURLWithTrustLevel:(web::URLVerificationTrustLevel*)trustLevel;
@@ -241,10 +230,6 @@ NSString* const kSessionRestoreScriptMessageName = @"session_restore";
 // may be called multiple times and thus must be idempotent.
 - (void)loadCompleteWithSuccess:(BOOL)loadSuccess
                      forContext:(web::NavigationContextImpl*)context;
-// Called when web controller receives a new message from the web page.
-- (void)didReceiveScriptMessage:(WKScriptMessage*)message;
-// Attempts to handle a script message. Returns YES on success, NO otherwise.
-- (BOOL)respondToWKScriptMessage:(WKScriptMessage*)scriptMessage;
 
 // Restores the state for this page from session history.
 - (void)restoreStateFromHistory;
@@ -299,7 +284,8 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     DCHECK(_webStateImpl);
     // Content area is lazily instantiated.
     _defaultURL = GURL(url::kAboutBlankURL);
-    _jsInjector = [[CRWJSInjector alloc] initWithDelegate:self];
+    _jsInjectionReceiver =
+        [[CRWJSInjectionReceiver alloc] initWithEvaluator:self];
     _requestController = [[CRWWebRequestController alloc] init];
     _requestController.delegate = self;
     _webViewProxy = [[CRWWebViewProxyImpl alloc] initWithWebController:self];
@@ -310,13 +296,10 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
         initWithBrowserState:browserState];
     web::FindInPageManagerImpl::CreateForWebState(_webStateImpl);
     web::TextFragmentsManagerImpl::CreateForWebState(_webStateImpl);
-    _cookieBlockingErrorLogger =
-        std::make_unique<web::CookieBlockingErrorLogger>(_webStateImpl);
 
     _navigationHandler = [[CRWWKNavigationHandler alloc] initWithDelegate:self];
 
-    _JSNavigationHandler =
-        [[CRWJSNavigationHandler alloc] initWithDelegate:self];
+    _jsNavigationHandler = [[CRWJSNavigationHandler alloc] init];
 
     _UIHandler = [[CRWWKUIHandler alloc] init];
     _UIHandler.delegate = self;
@@ -418,15 +401,13 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   }
   self.webViewNavigationObserver.webView = nil;
 
-  CRWWKScriptMessageRouter* messageRouter =
-      [self webViewConfigurationProvider].GetScriptMessageRouter();
-  self.webStateImpl->GetWebFramesManagerImpl().OnWebViewUpdated(
-      _webView, webView, messageRouter);
   web::WebViewWebStateMap::FromBrowserState(
       self.webStateImpl->GetBrowserState())
       ->SetAssociatedWebViewForWebState(webView, self.webStateImpl);
 
   if (_webView) {
+    self.webStateImpl->RemoveAllWebFrames();
+
     [_webView stopLoading];
     [_webView removeFromSuperview];
   }
@@ -441,31 +422,13 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
       [_webView addObserver:self forKeyPath:keyPath options:0 context:nullptr];
     }
 
-    __weak CRWWebController* weakSelf = self;
-    [messageRouter
-        setScriptMessageHandler:^(WKScriptMessage* message) {
-          [weakSelf didReceiveScriptMessage:message];
-        }
-                           name:kScriptMessageName
-                        webView:_webView];
-
-    if (self.webStateImpl->GetNavigationManager()
-            ->IsRestoreSessionInProgress()) {
-      // The session restoration script needs to use IPC to notify the app of
-      // the last step of the session restoration. See the restore_session.html
-      // file or crbug.com/1127521.
-      [messageRouter
-          setScriptMessageHandler:^(WKScriptMessage* message) {
-            [weakSelf didReceiveSessionRestoreScriptMessage:message];
-          }
-                             name:kSessionRestoreScriptMessageName
-                          webView:_webView];
-    }
-
     _webView.allowsBackForwardNavigationGestures =
         _allowsBackForwardNavigationGestures;
+    self.windowIDJSManager =
+        [[CRWJSWindowIDManager alloc] initWithWebView:_webView];
+  } else {
+    self.windowIDJSManager = nil;
   }
-  [_jsInjector setWebView:_webView];
   self.webViewNavigationObserver.webView = _webView;
 
   [self setDocumentURL:_defaultURL context:nullptr];
@@ -564,24 +527,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   return context->GetItem();
 }
 
-- (void)showTransientContentView:(UIView<CRWScrollableContent>*)contentView {
-  DCHECK(contentView);
-  DCHECK(contentView.scrollView);
-  // TODO(crbug.com/556848) Reenable DCHECK when |CRWWebControllerContainerView|
-  // is restructured so that subviews are not added during |layoutSubviews|.
-  // DCHECK([contentView.scrollView isDescendantOfView:contentView]);
-  [_containerView displayTransientContent:contentView];
-}
-
-- (void)clearTransientContentView {
-  // Early return if there is no transient content view.
-  if (![_containerView transientContentView])
-    return;
-
-  // Remove the transient content view from the hierarchy.
-  [_containerView clearTransientContentView];
-}
-
 // Caller must reset the delegate before calling.
 - (void)close {
   self.webStateImpl->CancelDialogs();
@@ -589,7 +534,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   _SSLStatusUpdater = nil;
   [self.navigationHandler close];
   [self.UIHandler close];
-  [self.JSNavigationHandler close];
+  [self.jsNavigationHandler close];
   [self.requestController close];
   self.swipeRecognizerProvider = nil;
   [self.requestController close];
@@ -711,6 +656,9 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
 - (void)loadCurrentURLIfNecessary {
   if (self.navigationHandler.webProcessCrashed) {
+    // Log a user reloading a previously crashed renderer.
+    base::RecordAction(
+        base::UserMetricsAction("IOSMobileReloadCrashedRenderer"));
     [self loadCurrentURLWithRendererInitiatedNavigation:NO];
   } else if (!_currentURLLoadWasTrigerred) {
     [self ensureContainerViewCreated];
@@ -776,12 +724,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   WKNavigation* navigation = [self.webView goToBackForwardListItem:wk_item];
 
   GURL URL = net::GURLWithNSURL(wk_item.URL);
-  if (!base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage) &&
-      IsPlaceholderUrl(URL)) {
-    // No need to create navigation context for placeholder back forward
-    // navigations. Future callbacks do not expect that context will exist.
-    return;
-  }
 
   self.webStateImpl->ClearWebUI();
 
@@ -831,6 +773,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     dispatch_async(dispatch_get_main_queue(), ^{
       completion(nil);
     });
+    return;
   }
 
   WKSnapshotConfiguration* configuration =
@@ -907,77 +850,132 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   [self displayWebView];
 }
 
-// TODO(crbug.com/1174560) This depends on iOS TBA logic landed in WebKit's
-// opensource repository, and currently includes not-to-be-shipped logic to use
-// private APIs, so the rest of the Chromium logic can be tested. When iOS TBA
-// is released with the necessary logic, the private implementation can be
-// removed. See https://bugs.webkit.org/show_bug.cgi?id=220958 for details.
 - (BOOL)setSessionStateData:(NSData*)data {
-#if BUILDFLAG(CHROMIUM_BRANDING)
-  [self ensureWebViewCreated];
-  self.navigationHandler.blockUniversalLinksOnNextDecidePolicy = true;
-#if BUILDFLAG(WEBKIT_SESSION_RESTORE)
-  if (@available(iOS TBA, *)) {
-    NSError* error = nil;
-    id interactionState = [NSKeyedUnarchiver
-        unarchivedObjectOfClass:[(id)[self.webView interactionState] class]
-                       fromData:data
-                          error:&error];
-    if (error)
-      return NO;
+  if (@available(iOS 15, *)) {
+    NSData* interactionState = data;
+
+    // Old versions of chrome wrapped interactionState in a keyed unarchiver.
+    // This step was unnecessary. Rather than migrate all blobs over, simply
+    // check for an unarchiver here. NSKeyed data will start with 'bplist00',
+    // which differs from the header of a WebKit session coding (0x00000002).
+    // This logic can be removed after this change has gone live for a while.
+    constexpr char kArchiveHeader[] = "bplist00";
+    if (data.length > strlen(kArchiveHeader) &&
+        memcmp(data.bytes, kArchiveHeader, strlen(kArchiveHeader)) == 0) {
+      NSError* error = nil;
+      NSKeyedUnarchiver* unarchiver =
+          [[NSKeyedUnarchiver alloc] initForReadingFromData:data error:&error];
+      if (!unarchiver || error) {
+        DLOG(WARNING) << "Error creating unarchiver for session state data: "
+                      << base::SysNSStringToUTF8([error description]);
+        return NO;
+      }
+      unarchiver.requiresSecureCoding = NO;
+      interactionState =
+          [unarchiver decodeObjectForKey:NSKeyedArchiveRootObjectKey];
+      if (!interactionState) {
+        DLOG(WARNING) << "Error decoding interactionState.";
+        return NO;
+      }
+    }
+    [self ensureWebViewCreated];
+    DCHECK_EQ(self.webView.backForwardList.currentItem, nil);
+    self.navigationHandler.blockUniversalLinksOnNextDecidePolicy = true;
     [self.webView setInteractionState:interactionState];
     return YES;
-#else  // BUILDFLAG(WEBKIT_SESSION_RESTORE)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wundeclared-selector"
-  Class SessionStateClass = NSClassFromString(@"_WKSessionState");
-  id sessionState = [[SessionStateClass alloc] initWithData:data];
-  if (!sessionState)
-    return NO;
-  SEL selector = @selector(_restoreSessionState:andNavigate:);
-  NSMethodSignature* method_signature =
-      [self.webView methodSignatureForSelector:selector];
-  NSInvocation* invocation =
-      [NSInvocation invocationWithMethodSignature:method_signature];
-  invocation.target = self.webView;
-  invocation.selector = selector;
-  [invocation setArgument:&sessionState atIndex:2];
-  BOOL navigate = YES;
-  [invocation setArgument:&navigate atIndex:3];
-  [invocation invoke];
-  return YES;
-#pragma clang diagnostic pop
-#endif  // BUILDFLAG(WEBKIT_SESSION_RESTORE)
-#else   // BUILDFLAG(CHROMIUM_BRANDING)
+  }
   return NO;
-#endif  // BUILDFLAG(CHROMIUM_BRANDING)
 }
 
-// TODO(crbug.com/1174560) This depends on iOS TBA logic landed in WebKit's
-// opensource repository, and currently includes not-to-be-shipped logic to use
-// private APIs, so the rest of the Chromium logic can be tested. When iOS TBA
-// is released with the necessary logic, the private implementation can be
-// removed. See https://bugs.webkit.org/show_bug.cgi?id=220958 for details.
 - (NSData*)sessionStateData {
-#if BUILDFLAG(CHROMIUM_BRANDING)
-#if BUILDFLAG(WEBKIT_SESSION_RESTORE)
-  if (@available(iOS TBA, *)) {
-    NSError* error = nil;
-    return [NSKeyedArchiver
-        archivedDataWithRootObject:self.webView.interactionState
-             requiringSecureCoding:YES
-                             error:&error];
+  if (@available(iOS 15, *)) {
+    return self.webView.interactionState;
   }
   return nil;
-#else  // #BUILDFLAG(WEBKIT_SESSION_RESTORE)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wundeclared-selector"
-  return [[self.webView performSelector:@selector(_sessionState)] data];
-#pragma clang diagnostic pop
-#endif  // BUILDFLAG(WEBKIT_SESSION_RESTORE)
-#else
-  return nil;
-#endif  // BUILDFLAG(CHROMIUM_BRANDING)
+}
+
+- (void)handleNavigationHashChange {
+  self.navigationManagerImpl->GetCurrentItemImpl()->SetIsCreatedFromHashChange(
+      true);
+}
+
+- (void)handleNavigationWillChangeState {
+  [self.jsNavigationHandler handleNavigationWillChangeState];
+}
+
+- (void)handleNavigationDidPushStateMessage:(base::Value*)message {
+  [self.jsNavigationHandler
+      handleNavigationDidPushStateMessage:message
+                                 webState:_webStateImpl
+                           hasUserGesture:self.isUserInteracting
+                     userInteractionState:&_userInteractionState
+                               currentURL:self.currentURL];
+  [self updateSSLStatusForCurrentNavigationItem];
+}
+
+- (void)handleNavigationDidReplaceStateMessage:(base::Value*)message {
+  [self.jsNavigationHandler
+      handleNavigationDidReplaceStateMessage:message
+                                    webState:_webStateImpl
+                              hasUserGesture:self.isUserInteracting
+                        userInteractionState:&_userInteractionState
+                                  currentURL:self.currentURL];
+}
+
+#pragma mark - JavaScript
+
+- (void)injectWindowID {
+  [_windowIDJSManager inject];
+}
+
+- (void)executeJavaScript:(NSString*)javascript
+        completionHandler:(void (^)(id result, NSError* error))completion {
+  __block void (^stack_completion_block)(id result, NSError* error) =
+      [completion copy];
+  NSString* safeScript = [self scriptByAddingWindowIDCheckForScript:javascript];
+  web::ExecuteJavaScript(self.webView, safeScript, ^(id value, NSError* error) {
+    if (error) {
+      DLOG(WARNING) << "Script execution failed with error: "
+                    << base::SysNSStringToUTF16(
+                           error.userInfo[NSLocalizedDescriptionKey]);
+    }
+    if (stack_completion_block) {
+      stack_completion_block(value, error);
+    }
+  });
+}
+
+- (void)executeUserJavaScript:(NSString*)javascript
+            completionHandler:(void (^)(id result, NSError* error))completion {
+  // For security reasons, executing JavaScript on pages with app-specific URLs
+  // is not allowed, because those pages may have elevated privileges.
+  if (web::GetWebClient()->IsAppSpecificURL(
+          self.webStateImpl->GetLastCommittedURL())) {
+    if (completion) {
+      dispatch_async(dispatch_get_main_queue(), ^{
+        NSError* error = [[NSError alloc]
+            initWithDomain:web::kJSEvaluationErrorDomain
+                      code:web::JS_EVALUATION_ERROR_CODE_REJECTED
+                  userInfo:nil];
+        completion(nil, error);
+      });
+    }
+    return;
+  }
+
+  [self touched:YES];
+
+  [self executeJavaScript:javascript completionHandler:completion];
+}
+
+#pragma mark - JavaScript Helpers (Private)
+
+// Returns a new script which wraps |script| with windowID check so |script| is
+// not evaluated on windowID mismatch.
+- (NSString*)scriptByAddingWindowIDCheckForScript:(NSString*)script {
+  NSString* kTemplate = @"if (__gCrWeb['windowId'] === '%@') { %@; }";
+  return [NSString
+      stringWithFormat:kTemplate, [_windowIDJSManager windowID], script];
 }
 
 #pragma mark - CRWTouchTrackingDelegate (Public)
@@ -1014,7 +1012,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     // opening a new tab and then writing to it, e.g.
     // window.open('javascript:document.write(1)').  This URL is never commited,
     // so it should be OK to ignore this URL change.
-    if (base::ios::IsRunningOnIOS13OrLater() && oldDocumentURL.IsAboutBlank() &&
+    if (oldDocumentURL.IsAboutBlank() &&
         !self.webStateImpl->GetNavigationManager()->GetLastCommittedItem() &&
         !self.webView.loading) {
       return;
@@ -1026,16 +1024,12 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
       return;
     }
 
-    GURL documentOrigin = newURL.GetOrigin();
+    GURL documentOrigin = newURL.DeprecatedGetOriginAsURL();
     web::NavigationItem* committedItem =
         self.webStateImpl->GetNavigationManager()->GetLastCommittedItem();
     GURL committedURL =
         committedItem ? committedItem->GetURL() : GURL::EmptyGURL();
-    if (!base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage) &&
-        IsPlaceholderUrl(committedURL)) {
-      committedURL = ExtractUrlFromPlaceholderUrl(committedURL);
-    }
-    GURL committedOrigin = committedURL.GetOrigin();
+    GURL committedOrigin = committedURL.DeprecatedGetOriginAsURL();
     DCHECK_EQ(documentOrigin, committedOrigin)
         << "Old and new URL detection system have a mismatch";
 
@@ -1052,11 +1046,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 - (GURL)webURLWithTrustLevel:(web::URLVerificationTrustLevel*)trustLevel {
   DCHECK(trustLevel);
   *trustLevel = web::URLVerificationTrustLevel::kAbsolute;
-  // Placeholder URL is an implementation detail. Don't expose it to users of
-  // web layer.
-  if (!base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage) &&
-      IsPlaceholderUrl(_documentURL))
-    return ExtractUrlFromPlaceholderUrl(_documentURL);
   return _documentURL;
 }
 
@@ -1187,75 +1176,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   [web::GetWebClient()->GetWindowedContainer() addSubview:viewToStash];
 }
 
-#pragma mark - JavaScript message Helpers (Private)
-
-- (void)didReceiveScriptMessage:(WKScriptMessage*)message {
-  // Broken out into separate method to catch errors.
-  if (![self respondToWKScriptMessage:message]) {
-    DLOG(WARNING) << "Message from JS not handled due to invalid format";
-  }
-}
-
-- (void)didReceiveSessionRestoreScriptMessage:(WKScriptMessage*)message {
-  if ([message.name isEqualToString:kSessionRestoreScriptMessageName] &&
-      [message.body[@"offset"] isKindOfClass:[NSNumber class]]) {
-    NSString* method =
-        [NSString stringWithFormat:@"_crFinishSessionRestoration('%@')",
-                                   message.body[@"offset"]];
-    // Don't use |_jsInjector| -executeJavaScript here, as it relies on
-    // |windowID| being injected before window.onload starts.
-    web::ExecuteJavaScript(self.webView, method, nil);
-
-    // Removes the script as it is no longer needed.
-    CRWWKScriptMessageRouter* messageRouter =
-        [self webViewConfigurationProvider].GetScriptMessageRouter();
-    [messageRouter
-        removeScriptMessageHandlerForName:kSessionRestoreScriptMessageName
-                                  webView:_webView];
-  } else {
-    DLOG(WARNING) << "Invalid session restore JS message name.";
-  }
-}
-
-- (BOOL)respondToWKScriptMessage:(WKScriptMessage*)scriptMessage {
-  if (![scriptMessage.name isEqualToString:kScriptMessageName]) {
-    return NO;
-  }
-
-  std::unique_ptr<base::Value> messageAsValue =
-      web::ValueResultFromWKResult(scriptMessage.body);
-  base::DictionaryValue* message = nullptr;
-  if (!messageAsValue || !messageAsValue->GetAsDictionary(&message)) {
-    return NO;
-  }
-
-  web::WebFrame* senderFrame = nullptr;
-  std::string frameID;
-  if (message->GetString("crwFrameId", &frameID)) {
-    senderFrame = web::GetWebFrameWithId([self webState], frameID);
-  }
-  // Message must be associated with a current frame.
-  if (!senderFrame) {
-    return NO;
-  }
-
-  base::DictionaryValue* crwCommand = nullptr;
-  if (!message->GetDictionary("crwCommand", &crwCommand)) {
-    return NO;
-  }
-
-  std::string command;
-  if (!crwCommand->GetString("command", &command)) {
-    DLOG(WARNING) << "JS message parameter not found: command";
-    return NO;
-  }
-
-  self.webStateImpl->OnScriptCommandReceived(
-      command, *crwCommand, net::GURLWithNSURL(self.webView.URL),
-      self.isUserInteracting, senderFrame);
-  return YES;
-}
-
 #pragma mark - CRWWebViewScrollViewProxyObserver
 
 - (void)webViewScrollViewDidZoom:
@@ -1336,17 +1256,17 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
        "viewport ? viewport.content : '';";
   __weak CRWWebController* weakSelf = self;
   int itemID = currentItem->GetUniqueID();
-  [_jsInjector executeJavaScript:kViewportContentQuery
-               completionHandler:^(id viewportContent, NSError*) {
-                 web::NavigationItem* item = [weakSelf currentNavItem];
-                 if (item && item->GetUniqueID() == itemID) {
-                   web::PageViewportState viewportState(
-                       base::mac::ObjCCast<NSString>(viewportContent));
-                   completion(&viewportState);
-                 } else {
-                   completion(nullptr);
-                 }
-               }];
+  [self executeJavaScript:kViewportContentQuery
+        completionHandler:^(id viewportContent, NSError* error) {
+          web::NavigationItem* item = [weakSelf currentNavItem];
+          if (item && item->GetUniqueID() == itemID) {
+            web::PageViewportState viewportState(
+                base::mac::ObjCCast<NSString>(viewportContent));
+            completion(&viewportState);
+          } else {
+            completion(nullptr);
+          }
+        }];
 }
 
 - (void)surfaceSizeChanged {
@@ -1591,21 +1511,11 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
           requireGestureRecognizerToFail:swipeRecognizer];
     }
 
-    BOOL usingNewContextMenu = NO;
-    if (web::GetWebClient()->EnableLongPressUIContextMenu()) {
-      if (@available(iOS 13, *)) {
-        usingNewContextMenu = YES;
-        self.contextMenuController = [[CRWContextMenuController alloc]
-            initWithWebView:self.webView
-                   webState:self.webStateImpl];
-      }
-    }
-    if (!usingNewContextMenu) {
-      // Default to legacy implementation.
-      self.UIHandler.contextMenuController =
-          [[CRWLegacyContextMenuController alloc]
-              initWithWebView:self.webView
-                     webState:self.webStateImpl];
+    if (web::GetWebClient()->EnableLongPressUIContextMenu() &&
+        web::GetWebClient()->EnableLongPressAndForceTouchHandling()) {
+      self.contextMenuController =
+          [[CRWContextMenuController alloc] initWithWebView:self.webView
+                                                   webState:self.webStateImpl];
     }
 
     // WKWebViews with invalid or empty frames have exhibited rendering bugs, so
@@ -1627,10 +1537,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 - (WKWebView*)webViewWithConfiguration:(WKWebViewConfiguration*)config {
   // Do not attach the context menu controller immediately as the JavaScript
   // delegate must be specified.
-  web::UserAgentType defaultUserAgent =
-      web::features::UseWebClientDefaultUserAgent()
-          ? web::UserAgentType::AUTOMATIC
-          : web::UserAgentType::MOBILE;
+  web::UserAgentType defaultUserAgent = web::UserAgentType::AUTOMATIC;
   web::NavigationItem* item = self.currentNavItem;
   web::UserAgentType userAgentType =
       item ? item->GetUserAgentType() : defaultUserAgent;
@@ -1735,16 +1642,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     self.webStateImpl->DidChangeVisibleSecurityState();
 }
 
-#pragma mark - CRWJSInjectorDelegate methods
-
-- (GURL)lastCommittedURLForJSInjector:(CRWJSInjector*)injector {
-  return self.webState->GetLastCommittedURL();
-}
-
-- (void)willExecuteUserScriptForJSInjector:(CRWJSInjector*)injector {
-  [self touched:YES];
-}
-
 #pragma mark - KVO Observation
 
 - (void)observeValueForKeyPath:(NSString*)keyPath
@@ -1805,9 +1702,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
       lastNavigationState == web::WKNavigationState::STARTED ||
       lastNavigationState == web::WKNavigationState::REDIRECTED;
 
-  if (!hasPendingNavigation &&
-      (base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage) ||
-       !IsPlaceholderUrl(net::GURLWithNSURL(self.webView.URL)))) {
+  if (!hasPendingNavigation) {
     // Do not update the title if there is a navigation in progress because
     // there is no way to tell if KVO change fired for new or previous page.
     [self.navigationHandler
@@ -1871,16 +1766,11 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 - (void)navigationObserver:(CRWWebViewNavigationObserver*)navigationObserver
                 didLoadNewURL:(const GURL&)webViewURL
     forSameDocumentNavigation:(BOOL)isSameDocumentNavigation {
-  BOOL isPlaceholderURL =
-      base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage)
-          ? NO
-          : IsPlaceholderUrl(webViewURL);
   std::unique_ptr<web::NavigationContextImpl> newContext =
       [_requestController registerLoadRequestForURL:webViewURL
                              sameDocumentNavigation:isSameDocumentNavigation
                                      hasUserGesture:NO
-                                  rendererInitiated:YES
-                              placeholderNavigation:isPlaceholderURL];
+                                  rendererInitiated:YES];
   [self.navigationHandler webPageChangedWithContext:newContext.get()
                                             webView:self.webView];
   newContext->SetHasCommitted(!isSameDocumentNavigation);
@@ -1900,7 +1790,8 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
   if (base::FeatureList::IsEnabled(
           web::features::kCrashOnUnexpectedURLChange)) {
-    if (_documentURL.GetOrigin() != newURL.GetOrigin()) {
+    if (_documentURL.DeprecatedGetOriginAsURL() !=
+        newURL.DeprecatedGetOriginAsURL()) {
       if (!_documentURL.host().empty() &&
           (newURL.username().find(_documentURL.host()) != std::string::npos ||
            newURL.password().find(_documentURL.host()) != std::string::npos)) {
@@ -1913,8 +1804,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   if (!IsRestoreSessionUrl(_documentURL) && !IsRestoreSessionUrl(newURL)) {
     bool ignore_host_change =
         // On iOS13 document.write() can change URL origin for about:blank page.
-        (_documentURL.IsAboutBlank() && base::ios::IsRunningOnIOS13OrLater() &&
-         !self.webView.loading);
+        (_documentURL.IsAboutBlank() && !self.webView.loading);
     if (!ignore_host_change) {
       DCHECK_EQ(_documentURL.host(), newURL.host());
     }
@@ -1939,7 +1829,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   // |newNavigationContext| only exists if this method has to create a new
   // context object.
   std::unique_ptr<web::NavigationContextImpl> newNavigationContext;
-  if (!self.JSNavigationHandler.changingHistoryState) {
+  if (!self.jsNavigationHandler.changingHistoryState) {
     if ([self.navigationHandler
             contextForPendingMainFrameNavigationWithURL:newURL]) {
       // NavigationManager::LoadURLWithParams() was called with URL that has
@@ -1954,14 +1844,13 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
           [_requestController registerLoadRequestForURL:newURL
                                  sameDocumentNavigation:YES
                                          hasUserGesture:NO
-                                      rendererInitiated:YES
-                                  placeholderNavigation:NO];
+                                      rendererInitiated:YES];
     }
   }
 
   [self setDocumentURL:newURL context:newNavigationContext.get()];
 
-  if (!self.JSNavigationHandler.changingHistoryState) {
+  if (!self.jsNavigationHandler.changingHistoryState) {
     // Pass either newly created context (if it exists) or context that already
     // existed before.
     web::NavigationContextImpl* navigationContext = newNavigationContext.get();
@@ -1983,11 +1872,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 }
 
 #pragma mark - CRWWKNavigationHandlerDelegate
-
-- (CRWJSInjector*)JSInjectorForNavigationHandler:
-    (CRWWKNavigationHandler*)navigationHandler {
-  return self.jsInjector;
-}
 
 - (CRWCertVerificationController*)
     certVerificationControllerForNavigationHandler:
@@ -2011,13 +1895,11 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     registerLoadRequestForURL:(const GURL&)URL
        sameDocumentNavigation:(BOOL)sameDocumentNavigation
                hasUserGesture:(BOOL)hasUserGesture
-            rendererInitiated:(BOOL)renderedInitiated
-        placeholderNavigation:(BOOL)placeholderNavigation {
+            rendererInitiated:(BOOL)renderedInitiated {
   return [_requestController registerLoadRequestForURL:URL
                                 sameDocumentNavigation:sameDocumentNavigation
                                         hasUserGesture:hasUserGesture
-                                     rendererInitiated:renderedInitiated
-                                 placeholderNavigation:placeholderNavigation];
+                                     rendererInitiated:renderedInitiated];
 }
 
 - (void)navigationHandlerDisplayWebView:
@@ -2085,23 +1967,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     return webState->GetDelegate()->GetResponderInputView(webState);
   }
   return nil;
-}
-
-#pragma mark - CRWJSNavigationHandlerDelegate
-
-- (GURL)currentURLForJSNavigationHandler:
-    (CRWJSNavigationHandler*)navigationHandler {
-  return self.currentURL;
-}
-
-- (void)JSNavigationHandlerUpdateSSLStatusForCurrentNavigationItem:
-    (CRWJSNavigationHandler*)navigationHandler {
-  [self updateSSLStatusForCurrentNavigationItem];
-}
-
-- (void)JSNavigationHandlerOptOutScrollsToTopForSubviews:
-    (CRWJSNavigationHandler*)navigationHandler {
-  return [self optOutScrollsToTopForSubviews];
 }
 
 #pragma mark - UIDropInteractionDelegate

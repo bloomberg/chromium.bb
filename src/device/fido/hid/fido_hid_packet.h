@@ -13,7 +13,6 @@
 
 #include "base/component_export.h"
 #include "base/containers/span.h"
-#include "base/macros.h"
 #include "device/fido/fido_constants.h"
 
 namespace device {
@@ -27,6 +26,10 @@ namespace device {
 class COMPONENT_EXPORT(DEVICE_FIDO) FidoHidPacket {
  public:
   FidoHidPacket(std::vector<uint8_t> data, uint32_t channel_id);
+
+  FidoHidPacket(const FidoHidPacket&) = delete;
+  FidoHidPacket& operator=(const FidoHidPacket&) = delete;
+
   virtual ~FidoHidPacket();
 
   virtual std::vector<uint8_t> GetSerializedData() const = 0;
@@ -41,8 +44,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoHidPacket {
 
  private:
   friend class HidMessage;
-
-  DISALLOW_COPY_AND_ASSIGN(FidoHidPacket);
 };
 
 // FidoHidInitPacket, based on the CTAP specification consists of a header with
@@ -66,6 +67,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoHidInitPacket final
                     FidoHidDeviceCommand cmd,
                     std::vector<uint8_t> data,
                     uint16_t payload_length);
+
+  FidoHidInitPacket(const FidoHidInitPacket&) = delete;
+  FidoHidInitPacket& operator=(const FidoHidInitPacket&) = delete;
+
   ~FidoHidInitPacket() final;
 
   std::vector<uint8_t> GetSerializedData() const final;
@@ -75,8 +80,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoHidInitPacket final
  private:
   FidoHidDeviceCommand command_;
   uint16_t payload_length_;
-
-  DISALLOW_COPY_AND_ASSIGN(FidoHidInitPacket);
 };
 
 // FidoHidContinuationPacket, based on the CTAP Specification consists of a
@@ -98,6 +101,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoHidContinuationPacket final
   FidoHidContinuationPacket(uint32_t channel_id,
                             uint8_t sequence,
                             std::vector<uint8_t> data);
+
+  FidoHidContinuationPacket(const FidoHidContinuationPacket&) = delete;
+  FidoHidContinuationPacket& operator=(const FidoHidContinuationPacket&) =
+      delete;
+
   ~FidoHidContinuationPacket() final;
 
   std::vector<uint8_t> GetSerializedData() const final;
@@ -105,8 +113,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoHidContinuationPacket final
 
  private:
   uint8_t sequence_;
-
-  DISALLOW_COPY_AND_ASSIGN(FidoHidContinuationPacket);
 };
 
 }  // namespace device

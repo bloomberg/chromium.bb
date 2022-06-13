@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_LAYOUT_OVERFLOW_CALCULATOR_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_LAYOUT_OVERFLOW_CALCULATOR_H_
 
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/geometry/logical_rect.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_items_builder.h"
@@ -45,14 +46,15 @@ class CORE_EXPORT NGLayoutOverflowCalculator {
   }
 
   // Adds layout-overflow from fragment-items.
-  void AddItems(const NGFragmentItems&);
-  void AddItems(const NGFragmentItemsBuilder::ItemWithOffsetList&);
+  void AddItems(const NGPhysicalBoxFragment&, const NGFragmentItems&);
+  void AddItems(const LayoutObject*,
+                const NGFragmentItemsBuilder::ItemWithOffsetList&);
 
   void AddTableCollapsedBorders(const NGTableBorders&);
 
  private:
   template <typename Items>
-  void AddItemsInternal(const Items& items);
+  void AddItemsInternal(const LayoutObject* layout_object, const Items& items);
 
   PhysicalRect AdjustOverflowForHanging(const PhysicalRect& line_box_rect,
                                         PhysicalRect overflow);

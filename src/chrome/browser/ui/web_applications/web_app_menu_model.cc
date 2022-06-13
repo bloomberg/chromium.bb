@@ -7,6 +7,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/media/router/media_router_feature.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/extensions_container.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/common/chrome_features.h"
@@ -28,9 +30,9 @@
 #include "url/gurl.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ash/public/cpp/move_to_desks_menu_delegate.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
-#include "chromeos/ui/frame/move_to_desks_menu_model.h"
+#include "chromeos/ui/frame/desks/move_to_desks_menu_delegate.h"
+#include "chromeos/ui/frame/desks/move_to_desks_menu_model.h"
 #include "ui/views/widget/widget.h"
 #endif
 
@@ -54,7 +56,8 @@ bool WebAppMenuModel::IsCommandIdEnabled(int command_id) const {
              browser()->window()->GetExtensionsContainer()->HasAnyExtensions();
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     case chromeos::MoveToDesksMenuModel::kMenuCommandId:
-      return ash::MoveToDesksMenuDelegate::ShouldShowMoveToDesksMenu();
+      return chromeos::MoveToDesksMenuDelegate::ShouldShowMoveToDesksMenu(
+          browser()->window()->GetNativeWindow());
 #endif
     default:
       return AppMenuModel::IsCommandIdEnabled(command_id);
@@ -63,8 +66,10 @@ bool WebAppMenuModel::IsCommandIdEnabled(int command_id) const {
 
 bool WebAppMenuModel::IsCommandIdVisible(int command_id) const {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (command_id == chromeos::MoveToDesksMenuModel::kMenuCommandId)
-    return ash::MoveToDesksMenuDelegate::ShouldShowMoveToDesksMenu();
+  if (command_id == chromeos::MoveToDesksMenuModel::kMenuCommandId) {
+    return chromeos::MoveToDesksMenuDelegate::ShouldShowMoveToDesksMenu(
+        browser()->window()->GetNativeWindow());
+  }
 #endif
   return AppMenuModel::IsCommandIdVisible(command_id);
 }
@@ -107,10 +112,11 @@ void WebAppMenuModel::Build() {
   AddItemWithStringId(IDC_OPEN_IN_CHROME, IDS_OPEN_IN_CHROME);
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (ash::MoveToDesksMenuDelegate::ShouldShowMoveToDesksMenu()) {
+  if (chromeos::MoveToDesksMenuDelegate::ShouldShowMoveToDesksMenu(
+          browser()->window()->GetNativeWindow())) {
     AddSeparator(ui::NORMAL_SEPARATOR);
     move_to_desks_submenu_ = std::make_unique<chromeos::MoveToDesksMenuModel>(
-        std::make_unique<ash::MoveToDesksMenuDelegate>(
+        std::make_unique<chromeos::MoveToDesksMenuDelegate>(
             views::Widget::GetWidgetForNativeWindow(
                 browser()->window()->GetNativeWindow())));
     AddSubMenuWithStringId(chromeos::MoveToDesksMenuModel::kMenuCommandId,
@@ -121,7 +127,7 @@ void WebAppMenuModel::Build() {
 
 // Chrome OS's app list is prominent enough to not need a separate uninstall
 // option in the app menu.
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
+#if !defined(OS_CHROMEOS)
   DCHECK(browser()->app_controller());
   if (browser()->app_controller()->IsInstalled()) {
     AddSeparator(ui::NORMAL_SEPARATOR);
@@ -131,7 +137,7 @@ void WebAppMenuModel::Build() {
                 ui::EscapeMenuLabelAmpersands(
                     browser()->app_controller()->GetAppShortName())));
   }
-#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // !defined(OS_CHROMEOS)
   AddSeparator(ui::LOWER_SEPARATOR);
 
   CreateZoomMenu();

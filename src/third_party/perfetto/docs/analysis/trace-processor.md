@@ -49,7 +49,7 @@ The trace processor is embedded in a wide variety of trace analysis tools, inclu
 * [trace_processor](/docs/analysis/trace-processor.md), a standalone binary
    providing a shell interface (and the reference embedder).
 * [Perfetto UI](https://ui.perfetto.dev), in the form of a WebAssembly module.
-* [Android Graphics Inspector](https://gpuinspector.dev/).
+* [Android GPU Inspector](https://gpuinspector.dev/).
 * [Android Studio](https://developer.android.com/studio/).
 
 ## Concepts
@@ -184,7 +184,7 @@ greater than 1000
 ```sql
 SELECT upid
 FROM counter
-JOIN process_counter_track ON process_counter_track.id = slice.track_id
+JOIN process_counter_track ON process_counter_track.id = counter.track_id
 WHERE process_counter_track.name = 'mem.swap' AND value > 1000
 ```
 
@@ -299,26 +299,27 @@ partitions before computing the intersection.
 -- Get all the scheduling slices
 CREATE VIEW sp_sched AS
 SELECT ts, dur, cpu, utid
-FROM sched
+FROM sched;
 
 -- Get all the cpu frequency slices
 CREATE VIEW sp_frequency AS
 SELECT
   ts,
-  lead(ts) OVER (PARTITION BY cpu ORDER BY ts) - ts as dur,
+  lead(ts) OVER (PARTITION BY track_id ORDER BY ts) - ts as dur,
   cpu,
   value as freq
 FROM counter
+JOIN cpu_counter_track ON counter.track_id = cpu_counter_track.id;
 
 -- Create the span joined table which combines cpu frequency with
 -- scheduling slices.
 CREATE VIRTUAL TABLE sched_with_frequency
-USING SPAN_JOIN(sp_sched PARTITIONED cpu, sp_frequency PARTITIONED cpu)
+USING SPAN_JOIN(sp_sched PARTITIONED cpu, sp_frequency PARTITIONED cpu);
 
 -- This span joined table can be queried as normal and has the columns from both
 -- tables.
 SELECT ts, dur, cpu, utid, freq
-FROM sched_with_frequency
+FROM sched_with_frequency;
 ```
 
 NOTE: A partition can be specified on neither, either or both tables. If
@@ -328,6 +329,24 @@ WARNING: An important restriction on span joined tables is that spans from
 the same table in the same partition *cannot* overlap. For performance
 reasons, span join does not attempt to detect and error out in this situation;
 instead, incorrect rows will silently be produced.
+
+Left and outer span joins are also supported; both function analogously to
+the left and outer joins from SQL.
+```sql
+-- Left table partitioned + right table unpartitioned.
+CREATE VIRTUAL TABLE left_join
+USING SPAN_LEFT_JOIN(table_a PARTITIONED a, table_b);
+
+-- Both tables unpartitioned.
+CREATE VIRTUAL TABLE outer_join
+USING SPAN_OUTER_JOIN(table_x, table_y);
+```
+
+NOTE: there is a subtlety if the partitioned table is empty and is
+either a) part of an outer join b) on the right side of a left join.
+In this case, *no* slices will be emitted even if the other table is
+non-empty. This approach was decided as being the most natural
+after considering how span joins are used in practice.
 
 ### Ancestor slice
 ancestor_slice is a custom operator table that takes a
@@ -352,6 +371,32 @@ SELECT
 FROM
   interesting_slices LEFT JOIN
   ancestor_slice(interesting_slices.id) AS ancestor ON ancestor.depth = 0
+```
+
+### Ancestor slice by stack
+ancestor_slice_by_stack is a custom operator table that takes a
+[slice table's stack_id column](/docs/analysis/sql-tables.autogen#slice) and
+finds all slice ids with that stack_id, then, for each id it computes
+all the ancestor slices similarly to
+[ancestor_slice](/docs/analysis/trace-processor#ancestor-slice).
+
+The returned format is the same as the
+[slice table](/docs/analysis/sql-tables.autogen#slice)
+
+For example, the following finds the top level slice of all slices with the
+given name.
+
+```sql
+CREATE VIEW interesting_stack_ids AS
+SELECT stack_id
+FROM slice WHERE name LIKE "%interesting slice name%";
+
+SELECT
+  *
+FROM
+  interesting_stack_ids LEFT JOIN
+  ancestor_slice_by_stack(interesting_stack_ids.stack_id) AS ancestor
+  ON ancestor.depth = 0
 ```
 
 ### Descendant slice
@@ -380,6 +425,32 @@ SELECT
     FROM descendant_slice(interesting_slice.id)
   )
 FROM interesting_slices
+```
+
+### Descendant slice by stack
+descendant_slice_by_stack is a custom operator table that takes a
+[slice table's stack_id column](/docs/analysis/sql-tables.autogen#slice) and
+finds all slice ids with that stack_id, then, for each id it computes
+all the descendant slices similarly to
+[descendant_slice](/docs/analysis/trace-processor#descendant-slice).
+
+The returned format is the same as the
+[slice table](/docs/analysis/sql-tables.autogen#slice)
+
+For example, the following finds the next level descendant of all slices with
+the given name.
+
+```sql
+CREATE VIEW interesting_stacks AS
+SELECT stack_id, depth
+FROM slice WHERE name LIKE "%interesting slice name%";
+
+SELECT
+  *
+FROM
+  interesting_stacks LEFT JOIN
+  descendant_slice_by_stack(interesting_stacks.stack_id) AS descendant
+  ON descendant.depth = interesting_stacks.depth + 1
 ```
 
 ### Connected/Following/Preceding flows
@@ -473,7 +544,7 @@ Creating derived events is tied very closely to
 create higher-level abstractions from raw events as intermediate artifacts.
 
 From previous example, the
-[startup metric](/src/trace_processor/metrics/android/android_startup.sql)
+[startup metric](/src/trace_processor/metrics/sql/android/android_startup.sql)
 creates the exact `launching` slice we want to display in the UI.
 
 The other benefit of aligning the two is that changes in metrics are

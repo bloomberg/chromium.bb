@@ -10,6 +10,8 @@
 #ifndef EIGEN_CXX11_TENSOR_TENSOR_CONVERSION_H
 #define EIGEN_CXX11_TENSOR_TENSOR_CONVERSION_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 /** \class TensorConversionOp
@@ -195,14 +197,14 @@ class TensorConversionOp : public TensorBase<TensorConversionOp<TargetType, XprT
 };
 
 template <bool SameType, typename Eval, typename EvalPointerType> struct ConversionSubExprEval {
-  static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE bool run(Eval& impl, EvalPointerType) {
+  static EIGEN_STRONG_INLINE bool run(Eval& impl, EvalPointerType) {
     impl.evalSubExprsIfNeeded(NULL);
     return true;
   }
 };
 
 template <typename Eval, typename EvalPointerType> struct ConversionSubExprEval<true, Eval, EvalPointerType> {
-  static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE bool run(Eval& impl, EvalPointerType data) {
+  static EIGEN_STRONG_INLINE bool run(Eval& impl, EvalPointerType data) {
     return impl.evalSubExprsIfNeeded(data);
   }
 };
@@ -211,8 +213,7 @@ template <typename Eval, typename EvalPointerType> struct ConversionSubExprEval<
 template <bool SameType, typename Eval, typename EvalPointerType,
           typename EvalSubExprsCallback>
 struct ConversionSubExprEvalAsync {
-  static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE void run(
-      Eval& impl, EvalPointerType, EvalSubExprsCallback done) {
+  static EIGEN_STRONG_INLINE void run(Eval& impl, EvalPointerType, EvalSubExprsCallback done) {
     impl.evalSubExprsIfNeededAsync(nullptr, std::move(done));
   }
 };
@@ -221,8 +222,7 @@ template <typename Eval, typename EvalPointerType,
           typename EvalSubExprsCallback>
 struct ConversionSubExprEvalAsync<true, Eval, EvalPointerType,
                                   EvalSubExprsCallback> {
-  static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE void run(
-      Eval& impl, EvalPointerType data, EvalSubExprsCallback done) {
+  static EIGEN_STRONG_INLINE void run(Eval& impl, EvalPointerType data, EvalSubExprsCallback done) {
     impl.evalSubExprsIfNeededAsync(data, std::move(done));
   }
 };
@@ -363,21 +363,21 @@ struct TensorEvaluator<const TensorConversionOp<TargetType, ArgType>, Device>
       TensorBlock;
   //===--------------------------------------------------------------------===//
 
-  EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE TensorEvaluator(const XprType& op, const Device& device)
+  EIGEN_STRONG_INLINE TensorEvaluator(const XprType& op, const Device& device)
     : m_impl(op.expression(), device)
   {
   }
 
   EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE const Dimensions& dimensions() const { return m_impl.dimensions(); }
 
-  EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE bool evalSubExprsIfNeeded(EvaluatorPointerType data)
+  EIGEN_STRONG_INLINE bool evalSubExprsIfNeeded(EvaluatorPointerType data)
   {
     return ConversionSubExprEval<IsSameType, TensorEvaluator<ArgType, Device>, EvaluatorPointerType>::run(m_impl, data);
   }
 
 #ifdef EIGEN_USE_THREADS
   template <typename EvalSubExprsCallback>
-  EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE void evalSubExprsIfNeededAsync(
+  EIGEN_STRONG_INLINE void evalSubExprsIfNeededAsync(
       EvaluatorPointerType data, EvalSubExprsCallback done) {
     ConversionSubExprEvalAsync<IsSameType, TensorEvaluator<ArgType, Device>,
                                EvaluatorPointerType,
@@ -385,7 +385,7 @@ struct TensorEvaluator<const TensorConversionOp<TargetType, ArgType>, Device>
   }
 #endif
 
-  EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE void cleanup()
+  EIGEN_STRONG_INLINE void cleanup()
   {
     m_impl.cleanup();
   }
@@ -404,8 +404,8 @@ struct TensorEvaluator<const TensorConversionOp<TargetType, ArgType>, Device>
     const bool Vectorizable =
         IsSameType
         ? TensorEvaluator<ArgType, Device>::PacketAccess
-        : TensorEvaluator<ArgType, Device>::PacketAccess &
-          internal::type_casting_traits<SrcType, TargetType>::VectorizedCast;
+        : int(TensorEvaluator<ArgType, Device>::PacketAccess) &
+          int(internal::type_casting_traits<SrcType, TargetType>::VectorizedCast);
 
     return internal::PacketConv<PacketSourceType, PacketReturnType, LoadMode,
                                 Vectorizable, IsSameType>::run(m_impl, index);

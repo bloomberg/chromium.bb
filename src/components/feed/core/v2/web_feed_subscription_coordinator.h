@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/callback_forward.h"
+#include "base/memory/raw_ptr.h"
 #include "components/feed/core/proto/v2/store.pb.h"
 #include "components/feed/core/v2/public/web_feed_subscriptions.h"
 #include "components/feed/core/v2/web_feed_subscriptions/fetch_recommended_web_feeds_task.h"
@@ -17,7 +18,6 @@
 #include "components/feed/core/v2/web_feed_subscriptions/unsubscribe_from_web_feed_task.h"
 #include "components/feed/core/v2/web_feed_subscriptions/web_feed_index.h"
 
-class PrefService;
 namespace feed {
 namespace internal {
 class WebFeedSubscriptionModel;
@@ -29,7 +29,13 @@ class FeedStream;
 // Coordinates the state of subscription to web feeds.
 class WebFeedSubscriptionCoordinator : public WebFeedSubscriptions {
  public:
-  explicit WebFeedSubscriptionCoordinator(PrefService* profile_prefs,
+  class Delegate {
+   public:
+    virtual void RegisterFollowingFeedFollowCountFieldTrial(
+        size_t follow_count) = 0;
+  };
+
+  explicit WebFeedSubscriptionCoordinator(Delegate* delegate,
                                           FeedStream* feed_stream);
   virtual ~WebFeedSubscriptionCoordinator();
   WebFeedSubscriptionCoordinator(const WebFeedSubscriptionCoordinator&) =
@@ -63,7 +69,11 @@ class WebFeedSubscriptionCoordinator : public WebFeedSubscriptions {
       base::OnceCallback<void(std::vector<WebFeedMetadata>)> callback) override;
   void RefreshSubscriptions(
       base::OnceCallback<void(RefreshResult)> callback) override;
-  bool IsWebFeedSubscriber() override;
+  void IsWebFeedSubscriber(base::OnceCallback<void(bool)> callback) override;
+  void SubscribedWebFeedCount(base::OnceCallback<void(int)> callback) override;
+  void DumpStateForDebugging(std::ostream& ss) override;
+  void RefreshRecommendedFeeds(
+      base::OnceCallback<void(RefreshResult)> callback) override;
 
   // Types / functions exposed for task implementations.
 
@@ -128,6 +138,7 @@ class WebFeedSubscriptionCoordinator : public WebFeedSubscriptions {
 
   void FollowWebFeedComplete(
       base::OnceCallback<void(FollowWebFeedResult)> callback,
+      bool followed_with_id,
       SubscribeToWebFeedTask::Result result);
 
   void UnfollowWebFeedStart(
@@ -150,20 +161,23 @@ class WebFeedSubscriptionCoordinator : public WebFeedSubscriptions {
   void FetchRecommendedWebFeedsStart();
   void FetchRecommendedWebFeedsComplete(
       FetchRecommendedWebFeedsTask::Result result);
+  void CallRefreshRecommendedFeedsCompleteCallbacks(RefreshResult result);
 
-  void FetchSubscribedWebFeedsIfStale();
+  void FetchSubscribedWebFeedsIfStale(base::OnceClosure callback);
   void FetchSubscribedWebFeedsStart();
   void FetchSubscribedWebFeedsComplete(
       FetchSubscribedWebFeedsTask::Result result);
-  void CallRefreshCompleteCallbacks(RefreshResult);
-  void UpdateIsSubscriberPref();
+  void CallRefreshCompleteCallbacks(RefreshResult result);
+  void IsWebFeedSubscriberDone(base::OnceCallback<void(bool)> callback);
+  void SubscribedWebFeedCountDone(base::OnceCallback<void(int)> callback);
 
-  FeedStream* feed_stream_;  // Always non-null, it owns this.
-  PrefService* profile_prefs_;
-
+  raw_ptr<Delegate> delegate_;       // Always non-null.
+  raw_ptr<FeedStream> feed_stream_;  // Always non-null, it owns this.
   WebFeedIndex index_;
   // Whether `Populate()` has been called.
   bool populated_ = false;
+  std::vector<base::OnceClosure> on_populated_;
+
   // A model of subscriptions. In memory only while needed.
   // TODO(harringtond): Unload the model eventually.
   std::unique_ptr<WebFeedSubscriptionModel> model_;
@@ -179,8 +193,11 @@ class WebFeedSubscriptionCoordinator : public WebFeedSubscriptions {
   std::vector<base::OnceClosure> when_model_loads_;
   std::vector<base::OnceCallback<void(RefreshResult)>>
       on_refresh_subscriptions_;
+  std::vector<base::OnceCallback<void(RefreshResult)>>
+      on_refresh_recommended_feeds_;
   bool fetching_recommended_web_feeds_ = false;
   bool fetching_subscribed_web_feeds_ = false;
+  bool fetching_subscribed_web_feeds_because_stale_ = false;
 
   base::WeakPtrFactory<WebFeedSubscriptionCoordinator> weak_ptr_factory_{this};
 };

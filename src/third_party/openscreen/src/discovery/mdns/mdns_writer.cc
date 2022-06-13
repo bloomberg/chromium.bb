@@ -21,9 +21,7 @@ namespace {
 
 std::vector<uint64_t> ComputeDomainNameSubhashes(const DomainName& name) {
   const std::vector<std::string>& labels = name.labels();
-  // Use a large prime between 2^63 and 2^64 as a starting value.
-  // This is taken from absl::Hash implementation.
-  uint64_t hash_value = UINT64_C(0xc3a5c85c97cb3127);
+  uint64_t hash_value = openscreen::kDefaultSeed;
   std::vector<uint64_t> subhashes(labels.size());
   for (size_t i = labels.size(); i-- > 0;) {
     hash_value =
@@ -269,8 +267,7 @@ bool MdnsWriter::Write(const IPAddress& address) {
 }
 
 bool MdnsWriter::Write(const Rdata& rdata) {
-  return absl::visit([this](const auto& rdata) { return this->Write(rdata); },
-                     rdata);
+  return absl::visit([this](const auto& r) { return this->Write(r); }, rdata);
 }
 
 bool MdnsWriter::Write(const Header& header) {

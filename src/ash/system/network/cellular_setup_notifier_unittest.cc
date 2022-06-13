@@ -4,15 +4,13 @@
 
 #include "ash/system/network/cellular_setup_notifier.h"
 
-#include "ash/constants/ash_features.h"
-#include "ash/public/cpp/ash_pref_names.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/system/system_notification_controller.h"
 #include "ash/test/ash_test_base.h"
 #include "base/bind.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/timer/mock_timer.h"
 #include "chromeos/dbus/hermes/hermes_clients.h"
 #include "chromeos/dbus/shill/shill_clients.h"
@@ -20,6 +18,7 @@
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/system_token_cert_db_storage.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_test_helper.h"
+#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "components/prefs/pref_service.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 #include "ui/message_center/message_center.h"
@@ -44,10 +43,6 @@ class CellularSetupNotifierTest : public NoSessionAshTestBase {
   ~CellularSetupNotifierTest() override = default;
 
   void SetUp() override {
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeature(
-        chromeos::features::kUpdatedCellularActivationUi);
-
     chromeos::SystemTokenCertDbStorage::Initialize();
     chromeos::NetworkCertLoader::Initialize();
     chromeos::shill_clients::InitializeFakes();
@@ -221,6 +216,39 @@ TEST_F(CellularSetupNotifierTest, LogInAgainAfterCheckingNonCellularDevice) {
   LogOut();
   LogIn();
 
+  ASSERT_FALSE(mock_notification_timer_->IsRunning());
+}
+
+TEST_F(CellularSetupNotifierTest, RemoveNotificationAfterAddingNetwork) {
+  network_config_helper_->network_state_helper().AddDevice(
+      kShillManagerClientStubCellularDevice, shill::kTypeCellular,
+      kShillManagerClientStubCellularDeviceName);
+
+  LogInAndFireTimer();
+
+  message_center::Notification* notification = GetCellularSetupNotification();
+  EXPECT_TRUE(notification);
+  EXPECT_FALSE(GetCanCellularSetupNotificationBeShown());
+
+  const std::string& cellular_path_ =
+      network_config_helper_->network_state_helper().ConfigureService(
+          R"({"GUID": "cellular_guid", "Type": "cellular", "Technology": "LTE",
+            "State": "idle"})");
+
+  base::RunLoop().RunUntilIdle();
+
+  // Notification is not removed after adding unactivated network.
+  notification = GetCellularSetupNotification();
+  EXPECT_TRUE(notification);
+
+  network_config_helper_->network_state_helper().SetServiceProperty(
+      cellular_path_, shill::kActivationStateProperty,
+      base::Value(shill::kActivationStateActivated));
+
+  base::RunLoop().RunUntilIdle();
+
+  notification = GetCellularSetupNotification();
+  EXPECT_FALSE(notification);
   ASSERT_FALSE(mock_notification_timer_->IsRunning());
 }
 

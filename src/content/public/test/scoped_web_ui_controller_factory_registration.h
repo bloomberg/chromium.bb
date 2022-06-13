@@ -5,6 +5,9 @@
 #ifndef CONTENT_PUBLIC_TEST_SCOPED_WEB_UI_CONTROLLER_FACTORY_REGISTRATION_H_
 #define CONTENT_PUBLIC_TEST_SCOPED_WEB_UI_CONTROLLER_FACTORY_REGISTRATION_H_
 
+#include "base/memory/raw_ptr.h"
+#include "testing/gtest/include/gtest/gtest.h"
+
 namespace content {
 
 class WebUIControllerFactory;
@@ -23,8 +26,23 @@ class ScopedWebUIControllerFactoryRegistration {
   ~ScopedWebUIControllerFactoryRegistration();
 
  private:
-  content::WebUIControllerFactory* factory_;
-  content::WebUIControllerFactory* factory_to_replace_;
+  raw_ptr<content::WebUIControllerFactory> factory_;
+  raw_ptr<content::WebUIControllerFactory> factory_to_replace_;
+};
+
+// A class used in tests to ensure that registered WebUIControllerFactory
+// instances are unregistered. This should be enforced on unit-test suites
+// with tests that register WebUIControllerFactory instances, to prevent those
+// tests from causing flakiness in later tests run in the same process. This is
+// not needed for browser tests, which are each run in their own process.
+class CheckForLeakedWebUIControllerFactoryRegistrations
+    : public testing::EmptyTestEventListener {
+ public:
+  void OnTestStart(const testing::TestInfo& test_info) override;
+  void OnTestEnd(const testing::TestInfo& test_info) override;
+
+ private:
+  int initial_num_registered_;
 };
 
 }  // namespace content

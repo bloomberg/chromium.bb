@@ -7,7 +7,7 @@
 
 #include <stddef.h>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "sandbox/win/src/nt_internals.h"
 #include "sandbox/win/src/resolver.h"
 
@@ -17,6 +17,10 @@ namespace sandbox {
 class EatResolverThunk : public ResolverThunk {
  public:
   EatResolverThunk() : eat_entry_(nullptr) {}
+
+  EatResolverThunk(const EatResolverThunk&) = delete;
+  EatResolverThunk& operator=(const EatResolverThunk&) = delete;
+
   ~EatResolverThunk() override {}
 
   // Implementation of Resolver::Setup.
@@ -39,9 +43,7 @@ class EatResolverThunk : public ResolverThunk {
 
  private:
   // The entry to patch.
-  DWORD* eat_entry_;
-
-  DISALLOW_COPY_AND_ASSIGN(EatResolverThunk);
+  raw_ptr<DWORD> eat_entry_;
 };
 
 }  // namespace sandbox

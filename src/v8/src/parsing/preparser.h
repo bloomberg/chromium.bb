@@ -310,7 +310,6 @@ class PreParserExpression {
 
   // More dummy implementations of things PreParser doesn't need to track:
   void SetShouldEagerCompile() {}
-  void mark_as_oneshot_iife() {}
 
   int position() const { return kNoSourcePosition; }
   void set_function_token_position(int position) {}
@@ -538,7 +537,7 @@ class PreParserFactory {
   PreParserExpression NewTheHoleLiteral() {
     return PreParserExpression::Default();
   }
-  PreParserExpression NewRegExpLiteral(const PreParserIdentifier& js_pattern,
+  PreParserExpression NewRegExpLiteral(const AstRawString* js_pattern,
                                        int js_flags, int pos) {
     return PreParserExpression::Default();
   }
@@ -936,10 +935,9 @@ class PreParser : public ParserBase<PreParser> {
             PendingCompilationErrorHandler* pending_error_handler,
             RuntimeCallStats* runtime_call_stats, Logger* logger,
             UnoptimizedCompileFlags flags, bool parsing_on_main_thread = true)
-      : ParserBase<PreParser>(zone, scanner, stack_limit, nullptr,
-                              ast_value_factory, pending_error_handler,
-                              runtime_call_stats, logger, flags,
-                              parsing_on_main_thread),
+      : ParserBase<PreParser>(zone, scanner, stack_limit, ast_value_factory,
+                              pending_error_handler, runtime_call_stats, logger,
+                              flags, parsing_on_main_thread),
         use_counts_(nullptr),
         preparse_data_builder_(nullptr),
         preparse_data_builder_buffer_() {
@@ -1327,6 +1325,14 @@ class PreParser : public ParserBase<PreParser> {
     return false;
   }
 
+  V8_INLINE bool ParsingExtension() const {
+    // Preparsing is disabled for extensions (because the extension
+    // details aren't passed to lazily compiled functions), so we
+    // don't accept "native function" in the preparser and there is
+    // no need to keep track of "native".
+    return false;
+  }
+
   V8_INLINE bool IsNative(const PreParserExpression& expr) const {
     // Preparsing is disabled for extensions (because the extension
     // details aren't passed to lazily compiled functions), so we
@@ -1449,29 +1455,13 @@ class PreParser : public ParserBase<PreParser> {
     return PreParserExpression::Default();
   }
 
-  // Reporting errors.
-  void ReportMessageAt(Scanner::Location source_location,
-                       MessageTemplate message, const char* arg = nullptr) {
-    pending_error_handler()->ReportMessageAt(
-        source_location.beg_pos, source_location.end_pos, message, arg);
-    scanner()->set_parser_error();
+  V8_INLINE const AstRawString* PreParserIdentifierToAstRawString(
+      const PreParserIdentifier& x) {
+    return x.string_;
   }
 
   V8_INLINE void ReportUnidentifiableError() {
     pending_error_handler()->set_unidentifiable_error();
-    scanner()->set_parser_error();
-  }
-
-  V8_INLINE void ReportMessageAt(Scanner::Location source_location,
-                                 MessageTemplate message,
-                                 const PreParserIdentifier& arg) {
-    ReportMessageAt(source_location, message, arg.string_);
-  }
-
-  void ReportMessageAt(Scanner::Location source_location,
-                       MessageTemplate message, const AstRawString* arg) {
-    pending_error_handler()->ReportMessageAt(
-        source_location.beg_pos, source_location.end_pos, message, arg);
     scanner()->set_parser_error();
   }
 

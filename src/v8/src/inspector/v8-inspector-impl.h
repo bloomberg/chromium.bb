@@ -36,12 +36,11 @@
 #include <memory>
 #include <unordered_map>
 
+#include "include/v8-inspector.h"
 #include "src/base/macros.h"
 #include "src/base/platform/mutex.h"
 #include "src/inspector/injected-script.h"
 #include "src/inspector/protocol/Protocol.h"
-
-#include "include/v8-inspector.h"
 
 namespace v8_inspector {
 
@@ -57,7 +56,7 @@ class V8StackTraceImpl;
 
 class V8InspectorImpl : public V8Inspector {
  public:
-  V8InspectorImpl(v8::Isolate*, V8InspectorClient*);
+  V8_EXPORT_PRIVATE V8InspectorImpl(v8::Isolate*, V8InspectorClient*);
   ~V8InspectorImpl() override;
   V8InspectorImpl(const V8InspectorImpl&) = delete;
   V8InspectorImpl& operator=(const V8InspectorImpl&) = delete;
@@ -76,6 +75,7 @@ class V8InspectorImpl : public V8Inspector {
                                            const String16& code,
                                            const String16& fileName);
   v8::MaybeLocal<v8::Context> regexContext();
+  v8::MaybeLocal<v8::Context> exceptionMetaDataContext();
 
   // V8Inspector implementation.
   std::unique_ptr<V8InspectorSession> connect(int contextGroupId,
@@ -110,7 +110,9 @@ class V8InspectorImpl : public V8Inspector {
   void externalAsyncTaskStarted(const V8StackTraceId& parent) override;
   void externalAsyncTaskFinished(const V8StackTraceId& parent) override;
 
-  std::shared_ptr<Counters> enableCounters() override;
+  V8_EXPORT_PRIVATE bool associateExceptionData(
+      v8::Local<v8::Context>, v8::Local<v8::Value> exception,
+      v8::Local<v8::Name> key, v8::Local<v8::Value> value) override;
 
   unsigned nextExceptionId() { return ++m_lastExceptionId; }
   void enableStackCapturingIfNeeded();
@@ -131,6 +133,8 @@ class V8InspectorImpl : public V8Inspector {
       int contextGroupId,
       const std::function<void(V8InspectorSessionImpl*)>& callback);
   int64_t generateUniqueId();
+  V8_EXPORT_PRIVATE v8::MaybeLocal<v8::Object> getAssociatedExceptionData(
+      v8::Local<v8::Value> exception);
 
   class EvaluateScope {
    public:
@@ -150,12 +154,12 @@ class V8InspectorImpl : public V8Inspector {
   };
 
  private:
-  friend class Counters;
-
   v8::Isolate* m_isolate;
   V8InspectorClient* m_client;
   std::unique_ptr<V8Debugger> m_debugger;
   v8::Global<v8::Context> m_regexContext;
+  v8::Global<v8::Context> m_exceptionMetaDataContext;
+  v8::Global<v8::debug::EphemeronTable> m_exceptionMetaData;
   int m_capturingStackTracesCount;
   unsigned m_lastExceptionId;
   int m_lastContextId;
@@ -182,8 +186,6 @@ class V8InspectorImpl : public V8Inspector {
   std::map<std::pair<int64_t, int64_t>, int> m_uniqueIdToContextId;
 
   std::unique_ptr<V8Console> m_console;
-
-  Counters* m_counters = nullptr;
 };
 
 }  // namespace v8_inspector

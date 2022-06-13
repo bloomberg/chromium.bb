@@ -19,6 +19,8 @@
 #include "components/autofill_assistant/browser/user_data_util.h"
 #include "components/autofill_assistant/browser/user_model.h"
 #include "components/autofill_assistant/browser/value_util.h"
+#include "components/autofill_assistant/browser/web/element_action_util.h"
+#include "components/autofill_assistant/browser/web/web_controller.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace autofill_assistant {
@@ -70,7 +72,7 @@ void UseAddressAction::InternalProcessAction(
         EndAction(ClientStatus(PRECONDITION_FAILED));
         return;
       }
-      profile_ = MakeUniqueFromProfile(*profile);
+      profile_ = user_data::MakeUniqueFromProfile(*profile);
       break;
     }
     case UseAddressProto::kModelIdentifier: {
@@ -103,7 +105,7 @@ void UseAddressAction::InternalProcessAction(
         EndAction(ClientStatus(PRECONDITION_FAILED));
         return;
       }
-      profile_ = MakeUniqueFromProfile(*profile);
+      profile_ = user_data::MakeUniqueFromProfile(*profile);
       break;
     }
     case UseAddressProto::ADDRESS_SOURCE_NOT_SET:
@@ -144,20 +146,27 @@ void UseAddressAction::OnWaitForElement(const ClientStatus& element_status) {
     return;
   }
 
+  DCHECK(profile_);
+  InitFallbackHandler(*profile_);
+
   if (proto_.use_address().skip_autofill()) {
     ExecuteFallback(OkClientStatus());
     return;
   }
 
   DCHECK(!selector_.empty());
-  DCHECK(profile_ != nullptr);
-  delegate_->FillAddressForm(profile_.get(), selector_,
-                             base::BindOnce(&UseAddressAction::ExecuteFallback,
-                                            weak_ptr_factory_.GetWeakPtr()));
+  delegate_->FindElement(
+      selector_,
+      base::BindOnce(&element_action_util::TakeElementAndPerform,
+                     base::BindOnce(&WebController::FillAddressForm,
+                                    delegate_->GetWebController()->GetWeakPtr(),
+                                    std::move(profile_)),
+                     base::BindOnce(&UseAddressAction::ExecuteFallback,
+                                    weak_ptr_factory_.GetWeakPtr())));
 }
 
-void UseAddressAction::ExecuteFallback(const ClientStatus& status) {
-  DCHECK(profile_ != nullptr);
+void UseAddressAction::InitFallbackHandler(
+    const autofill::AutofillProfile& profile) {
   std::vector<RequiredField> required_fields;
   for (const auto& required_field_proto :
        proto_.use_address().required_fields()) {
@@ -173,10 +182,13 @@ void UseAddressAction::ExecuteFallback(const ClientStatus& status) {
   DCHECK(fallback_handler_ == nullptr);
   fallback_handler_ = std::make_unique<RequiredFieldsFallbackHandler>(
       required_fields,
-      field_formatter::CreateAutofillMappings(*profile_,
+      field_formatter::CreateAutofillMappings(profile,
                                               /* locale = */ "en-US"),
       delegate_);
+}
 
+void UseAddressAction::ExecuteFallback(const ClientStatus& status) {
+  DCHECK(fallback_handler_ != nullptr);
   fallback_handler_->CheckAndFallbackRequiredFields(
       status, base::BindOnce(&UseAddressAction::EndAction,
                              weak_ptr_factory_.GetWeakPtr()));

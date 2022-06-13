@@ -6,7 +6,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_MEDIA_STREAM_DEVICE_OBSERVER_H_
 
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -26,6 +25,10 @@ class MODULES_EXPORT MediaStreamDeviceObserver
     : public mojom::blink::MediaStreamDeviceObserver {
  public:
   explicit MediaStreamDeviceObserver(LocalFrame* frame);
+
+  MediaStreamDeviceObserver(const MediaStreamDeviceObserver&) = delete;
+  MediaStreamDeviceObserver& operator=(const MediaStreamDeviceObserver&) =
+      delete;
 
   ~MediaStreamDeviceObserver() override;
 
@@ -103,8 +106,6 @@ class MODULES_EXPORT MediaStreamDeviceObserver
 
   using LabelStreamMap = HashMap<String, Stream>;
   LabelStreamMap label_stream_map_;
-
-  DISALLOW_COPY_AND_ASSIGN(MediaStreamDeviceObserver);
 };
 
 }  // namespace blink

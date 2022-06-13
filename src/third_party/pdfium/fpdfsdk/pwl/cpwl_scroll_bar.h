@@ -91,6 +91,9 @@ struct PWL_SCROLL_PRIVATEDATA {
 
 class CPWL_ScrollBar final : public CPWL_Wnd, public CFX_Timer::CallbackIface {
  public:
+  static constexpr float kWidth = 12.0f;
+  static constexpr uint8_t kTransparency = 150;
+
   CPWL_ScrollBar(
       const CreateParams& cp,
       std::unique_ptr<IPWL_SystemHandler::PerWindowData> pAttachedData);
@@ -101,8 +104,9 @@ class CPWL_ScrollBar final : public CPWL_Wnd, public CFX_Timer::CallbackIface {
   bool RePosChildWnd() override;
   void DrawThisAppearance(CFX_RenderDevice* pDevice,
                           const CFX_Matrix& mtUser2Device) override;
-  bool OnLButtonDown(uint32_t nFlag, const CFX_PointF& point) override;
-  bool OnLButtonUp(uint32_t nFlag, const CFX_PointF& point) override;
+  bool OnLButtonDown(Mask<FWL_EVENTFLAG> nFlag,
+                     const CFX_PointF& point) override;
+  bool OnLButtonUp(Mask<FWL_EVENTFLAG> nFlag, const CFX_PointF& point) override;
   void SetScrollInfo(const PWL_SCROLL_INFO& info) override;
   void SetScrollPosition(float pos) override;
   void NotifyLButtonDown(CPWL_Wnd* child, const CFX_PointF& pos) override;

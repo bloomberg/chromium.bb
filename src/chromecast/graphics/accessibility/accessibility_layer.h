@@ -10,7 +10,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/time/time.h"
 #include "ui/compositor/compositor_animation_observer.h"
 #include "ui/compositor/layer_delegate.h"
@@ -45,6 +44,10 @@ class AccessibilityLayer : public ui::LayerDelegate,
  public:
   AccessibilityLayer(aura::Window* root_window,
                      AccessibilityLayerDelegate* delegate);
+
+  AccessibilityLayer(const AccessibilityLayer&) = delete;
+  AccessibilityLayer& operator=(const AccessibilityLayer&) = delete;
+
   ~AccessibilityLayer() override;
 
   // Move the accessibility layer to the given bounds in the coordinates of
@@ -96,8 +99,6 @@ class AccessibilityLayer : public ui::LayerDelegate,
 
   // The object that owns this layer.
   AccessibilityLayerDelegate* delegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(AccessibilityLayer);
 };
 
 }  // namespace chromecast

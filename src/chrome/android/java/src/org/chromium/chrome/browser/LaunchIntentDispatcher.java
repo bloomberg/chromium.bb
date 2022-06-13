@@ -6,10 +6,9 @@ package org.chromium.chrome.browser;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.ActivityManager;
+import android.app.ActivityManager.RecentTaskInfo;
 import android.app.Notification;
 import android.app.SearchManager;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -48,16 +47,17 @@ import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomiza
 import org.chromium.chrome.browser.searchwidget.SearchActivity;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.translate.TranslateIntentHandler;
+import org.chromium.chrome.browser.util.AndroidTaskUtils;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.chrome.browser.webapps.WebappLauncherActivity;
 import org.chromium.components.browser_ui.media.MediaNotificationUma;
 import org.chromium.components.embedder_support.util.UrlConstants;
+import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.widget.Toast;
-import org.chromium.url.Origin;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.List;
+import java.util.Set;
 
 /**
  * Dispatches incoming intents to the appropriate activity based on the current configuration and
@@ -72,17 +72,8 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
 
     private static final String TAG = "ActivitiyDispatcher";
 
-    // Typically the number of tasks returned by getRecentTasks will be around 3 or less - the
-    // Chrome Launcher Activity, a Tabbed Activity task, and the home screen on older Android
-    // versions. However, theoretically this task list could be unbounded, so limit it to a number
-    // that won't cause Chrome to blow up in degenerate cases.
-    private static final int MAX_NUM_TASKS = 100;
-
     private final Activity mActivity;
     private Intent mIntent;
-    private final boolean mIsCustomTabIntent;
-    private final boolean mIsVrIntent;
-    private final AttributionIntentHandler mAttributionIntentHandler;
 
     @IntDef({Action.CONTINUE, Action.FINISH_ACTIVITY, Action.FINISH_ACTIVITY_REMOVE_TASK})
     @Retention(RetentionPolicy.SOURCE)
@@ -125,7 +116,7 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
      */
     public static @Action int dispatchToCustomTabActivity(Activity currentActivity, Intent intent) {
         LaunchIntentDispatcher dispatcher = new LaunchIntentDispatcher(currentActivity, intent);
-        if (!dispatcher.mIsCustomTabIntent) return Action.CONTINUE;
+        if (!isCustomTabIntent(dispatcher.mIntent)) return Action.CONTINUE;
         dispatcher.launchCustomTabActivity();
         return Action.FINISH_ACTIVITY;
     }
@@ -133,7 +124,6 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
     private LaunchIntentDispatcher(Activity activity, Intent intent) {
         mActivity = activity;
         mIntent = IntentUtils.sanitizeIntent(intent);
-        mAttributionIntentHandler = AttributionIntentHandlerFactory.create();
 
         // Needs to be called as early as possible, to accurately capture the
         // time at which the intent was received.
@@ -142,9 +132,6 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
         }
 
         recordIntentMetrics();
-
-        mIsVrIntent = VrModuleProvider.getIntentDelegate().isVrIntent(mIntent);
-        mIsCustomTabIntent = isCustomTabIntent(mIntent);
     }
 
     /**
@@ -162,6 +149,8 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
         // Must come before processing other intents, as we may un-wrap |mIntent| to another type of
         // Intent.
         if (handleAppAttributionIntent()) return Action.FINISH_ACTIVITY;
+
+        boolean isCustomTabIntent = isCustomTabIntent(mIntent);
 
         int tabId = IntentHandler.getBringTabToFrontId(mIntent);
         boolean incognito =
@@ -198,7 +187,7 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
 
         // Check if we should launch an Instant App to handle the intent.
         if (InstantAppsHandler.getInstance().handleIncomingIntent(
-                    mActivity, mIntent, mIsCustomTabIntent, false)) {
+                    mActivity, mIntent, isCustomTabIntent, false)) {
             return Action.FINISH_ACTIVITY;
         }
 
@@ -209,7 +198,7 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
         }
 
         // Check if we should launch a Custom Tab.
-        if (mIsCustomTabIntent) {
+        if (isCustomTabIntent) {
             launchCustomTabActivity();
             return Action.FINISH_ACTIVITY;
         }
@@ -248,11 +237,15 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
     }
 
     @Override
-    public void processUrlViewIntent(String url, String referer, String headers,
-            @IntentHandler.TabOpenType int tabOpenType, String externalAppId,
-            int tabIdToBringToFront, boolean hasUserGesture, boolean isRendererInitiated,
-            @Nullable Origin initiatorOrigin, Intent intent) {
+    public void processUrlViewIntent(LoadUrlParams loadUrlParams, int tabOpenType,
+            String externalAppId, int tabIdToBringToFront, Intent intent) {
         assert false;
+    }
+
+    @Override
+    public long getIntentHandlingTimeMs() {
+        assert false;
+        return 0;
     }
 
     /** When started with an intent, maybe pre-resolve the domain. */
@@ -277,7 +270,7 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
         if (intent != null && TranslateIntentHandler.ACTION_TRANSLATE_TAB.equals(intent.getAction())
                 && TranslateIntentHandler.COMPONENT_TRANSLATE_DISPATCHER.equals(
                         intent.getComponent().getClassName())) {
-            IntentHandler.addTrustedIntentExtras(intent);
+            IntentUtils.addTrustedIntentExtras(intent);
         }
     }
 
@@ -305,6 +298,11 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
         newIntent.setData(uri);
         newIntent.setClassName(context, CustomTabActivity.class.getName());
 
+        // Since configureIntentForResizableCustomTab() might change the componenet/class
+        // associated with the passed intent, it needs to be called after #setClassName(context,
+        // CustomTabActivity.class.getName());
+        CustomTabIntentDataProvider.configureIntentForResizableCustomTab(context, newIntent);
+
         if (clearTopIntentsForCustomTabsEnabled(intent)) {
             // Ensure the new intent is routed into the instance of CustomTabActivity in this task.
             // If the existing CustomTabActivity can't handle the intent, it will re-launch
@@ -321,8 +319,6 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
                         Intent.FLAG_ACTIVITY_CLEAR_TOP);
             }
         }
-
-        boolean isIntentSenderChrome = IntentHandler.wasIntentSenderChrome(intent);
 
         // If |uri| is a content:// URI, we want to propagate the URI permissions. This can't be
         // achieved by simply adding the FLAG_GRANT_READ_URI_PERMISSION to the Intent, since the
@@ -351,14 +347,6 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
             newIntent.addFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
             // Force a new document to ensure the proper task/stack creation.
             newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
-        }
-
-        // If the previous caller was not Chrome, but added EXTRA_IS_OPENED_BY_CHROME
-        // for malicious purpose, remove it. The new intent will be sent by Chrome, but was not
-        // sent by Chrome initially.
-        if (!isIntentSenderChrome) {
-            IntentUtils.safeRemoveExtra(
-                    newIntent, CustomTabIntentDataProvider.EXTRA_IS_OPENED_BY_CHROME);
         }
 
         return newIntent;
@@ -404,11 +392,12 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
     @SuppressLint("InlinedApi")
     @SuppressWarnings("checkstyle:SystemExitCheck") // Allowed due to https://crbug.com/847921#c17.
     private @Action int dispatchToTabbedActivity() {
-        if (mIsVrIntent) {
+        boolean isVrIntent = VrModuleProvider.getIntentDelegate().isVrIntent(mIntent);
+        if (isVrIntent) {
             for (Activity activity : ApplicationStatus.getRunningActivities()) {
                 if (activity instanceof ChromeTabbedActivity) {
                     if (VrModuleProvider.getDelegate().willChangeDensityInVr(
-                                (ChromeActivity) activity)) {
+                                ((ChromeActivity) activity).getWindowAndroid())) {
                         // In the rare case that entering VR will trigger a density change (and
                         // hence an Activity recreation), just return to Daydream home and kill the
                         // process, as there's no good way to recreate without showing 2D UI
@@ -467,7 +456,7 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
 
         // This system call is often modified by OEMs and not actionable. http://crbug.com/619646.
         try {
-            Bundle options = mIsVrIntent
+            Bundle options = isVrIntent
                     ? VrModuleProvider.getIntentDelegate().getVrIntentOptions(mActivity)
                     : null;
             mActivity.startActivity(newIntent, options);
@@ -491,35 +480,16 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
             if (activity instanceof ChromeTabbedActivity) return true;
         }
         // Slightly slower check for an existing task (One IPC, usually ~2ms).
-        final ActivityManager activityManager =
-                (ActivityManager) mActivity.getSystemService(Context.ACTIVITY_SERVICE);
         try {
-            boolean chromeTaskExists = false;
-            // getRecentTasks is deprecated, but still returns your app's tasks, and does so
-            // without needing an extra IPC for each task you want to get the info for. It also
-            // includes some known-safe tasks like the home screen on older Android versions, but
-            // that's fine for this purpose.
-            List<ActivityManager.RecentTaskInfo> tasks =
-                    activityManager.getRecentTasks(MAX_NUM_TASKS, 0);
-            if (tasks != null) {
-                for (ActivityManager.RecentTaskInfo task : tasks) {
-                    // Note that Android documentation lies, and TaskInfo#origActivity does not
-                    // actually return the target of an alias, so we have to explicitly check
-                    // for the target component of the base intent, which will have been set to
-                    // the Activity that launched, in order to make this check more robust.
-                    ComponentName component = task.baseIntent.getComponent();
-                    if (component == null) continue;
-                    if (ChromeTabbedActivity.isTabbedModeComponentName(component.getClassName())) {
-                        return true;
-                    }
-                }
-            }
+            Set<RecentTaskInfo> recentTaskInfos =
+                    AndroidTaskUtils.getRecentTaskInfosMatchingComponentNames(
+                            mActivity, ChromeTabbedActivity.TABBED_MODE_COMPONENT_NAMES);
+            return !recentTaskInfos.isEmpty();
         } catch (SecurityException ex) {
             // If we can't query task status, assume a Chrome task exists so this doesn't
             // mistakenly lead to a Chrome task being removed.
             return true;
         }
-        return false;
     }
 
     /**
@@ -544,9 +514,10 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
     }
 
     private boolean handleAppAttributionIntent() {
-        if (mAttributionIntentHandler.handleOuterAttributionIntent(mIntent)) return true;
+        AttributionIntentHandler intentHandler = AttributionIntentHandlerFactory.getInstance();
+        if (intentHandler.handleOuterAttributionIntent(mIntent)) return true;
 
-        Intent launchIntent = mAttributionIntentHandler.handleInnerAttributionIntent(mIntent);
+        Intent launchIntent = intentHandler.handleInnerAttributionIntent(mIntent);
         if (launchIntent != null) mIntent = IntentUtils.sanitizeIntent(launchIntent);
         return false;
     }

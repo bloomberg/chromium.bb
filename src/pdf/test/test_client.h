@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "pdf/pdf_engine.h"
 
 namespace chrome_pdf {
@@ -34,8 +35,7 @@ class TestClient : public PDFEngine::Client {
   std::vector<SearchStringResult> SearchString(const char16_t* string,
                                                const char16_t* term,
                                                bool case_sensitive) override;
-  pp::Instance* GetPluginInstance() override;
-  bool IsPrintPreview() override;
+  bool IsPrintPreview() const override;
   SkColor GetBackgroundColor() override;
   void SetSelectedText(const std::string& selected_text) override;
   void SetLinkUnderCursor(const std::string& link_under_cursor) override;
@@ -48,7 +48,7 @@ class TestClient : public PDFEngine::Client {
  private:
   // Not owned. Expected to dangle briefly, as the engine usually is destroyed
   // before the client.
-  PDFEngine* engine_ = nullptr;
+  raw_ptr<PDFEngine> engine_ = nullptr;
 };
 
 }  // namespace chrome_pdf

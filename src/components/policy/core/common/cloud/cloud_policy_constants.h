@@ -34,14 +34,17 @@ POLICY_EXPORT extern const char kEnrollmentTokenAuthHeaderPrefix[];
 
 // String extern constants for the device and app type we report to the server.
 POLICY_EXPORT extern const char kValueAppType[];
+POLICY_EXPORT extern const char kValueBrowserUploadPublicKey[];
 POLICY_EXPORT extern const char kValueDeviceType[];
 POLICY_EXPORT extern const char kValueRequestAutoEnrollment[];
 POLICY_EXPORT extern const char kValueRequestPsmHasDeviceState[];
+POLICY_EXPORT extern const char kValueCheckUserAccount[];
 POLICY_EXPORT extern const char kValueRequestPolicy[];
 POLICY_EXPORT extern const char kValueRequestRegister[];
 POLICY_EXPORT extern const char kValueRequestApiAuthorization[];
 POLICY_EXPORT extern const char kValueRequestUnregister[];
 POLICY_EXPORT extern const char kValueRequestUploadCertificate[];
+POLICY_EXPORT extern const char kValueRequestUploadEuiccInfo[];
 POLICY_EXPORT extern const char kValueRequestDeviceStateRetrieval[];
 POLICY_EXPORT extern const char kValueRequestUploadStatus[];
 POLICY_EXPORT extern const char kValueRequestRemoteCommands[];
@@ -68,6 +71,7 @@ POLICY_EXPORT extern const char kChromePublicAccountPolicyType[];
 POLICY_EXPORT extern const char kChromeExtensionPolicyType[];
 POLICY_EXPORT extern const char kChromeSigninExtensionPolicyType[];
 POLICY_EXPORT extern const char kChromeMachineLevelUserCloudPolicyType[];
+POLICY_EXPORT extern const char kChromeMachineLevelUserCloudPolicyAndroidType[];
 POLICY_EXPORT extern const char kChromeMachineLevelUserCloudPolicyIOSType[];
 POLICY_EXPORT extern const char kChromeMachineLevelExtensionCloudPolicyType[];
 POLICY_EXPORT extern const char kChromeRemoteCommandPolicyType[];

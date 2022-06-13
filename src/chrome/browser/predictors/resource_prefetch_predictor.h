@@ -14,7 +14,7 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
 #include "base/task/cancelable_task_tracker.h"
@@ -164,6 +164,11 @@ class ResourcePrefetchPredictor : public history::HistoryServiceObserver {
 
   ResourcePrefetchPredictor(const LoadingPredictorConfig& config,
                             Profile* profile);
+
+  ResourcePrefetchPredictor(const ResourcePrefetchPredictor&) = delete;
+  ResourcePrefetchPredictor& operator=(const ResourcePrefetchPredictor&) =
+      delete;
+
   ~ResourcePrefetchPredictor() override;
 
   // Starts initialization by posting a task to the DB sequence of the
@@ -302,8 +307,8 @@ class ResourcePrefetchPredictor : public history::HistoryServiceObserver {
     tables_ = tables;
   }
 
-  Profile* const profile_;
-  TestObserver* observer_;
+  const raw_ptr<Profile> profile_;
+  raw_ptr<TestObserver> observer_;
   const LoadingPredictorConfig config_;
   InitializationState initialization_state_;
   scoped_refptr<ResourcePrefetchPredictorTables> tables_;
@@ -321,14 +326,15 @@ class ResourcePrefetchPredictor : public history::HistoryServiceObserver {
   bool delete_all_data_requested_ = false;
 
   base::WeakPtrFactory<ResourcePrefetchPredictor> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ResourcePrefetchPredictor);
 };
 
 // An interface used to notify that data in the ResourcePrefetchPredictor
 // has changed. All methods are invoked on the UI thread.
 class TestObserver {
  public:
+  TestObserver(const TestObserver&) = delete;
+  TestObserver& operator=(const TestObserver&) = delete;
+
   // De-registers itself from |predictor_| on destruction.
   virtual ~TestObserver();
 
@@ -342,9 +348,7 @@ class TestObserver {
   explicit TestObserver(ResourcePrefetchPredictor* predictor);
 
  private:
-  ResourcePrefetchPredictor* predictor_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestObserver);
+  raw_ptr<ResourcePrefetchPredictor> predictor_;
 };
 
 }  // namespace predictors

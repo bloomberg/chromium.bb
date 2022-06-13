@@ -82,6 +82,9 @@ config("vulkan_layer_config") {
 
 core_validation_sources = [
   "layers/android_ndk_types.h",
+  "layers/base_node.h",
+  "layers/buffer_state.cpp",
+  "layers/buffer_state.h",
   "layers/buffer_validation.cpp",
   "layers/buffer_validation.h",
   "layers/convert_to_renderpass2.cpp",
@@ -89,8 +92,23 @@ core_validation_sources = [
   "layers/core_validation.cpp",
   "layers/core_validation.h",
   "layers/core_validation_error_enums.h",
-  "layers/core_validation_types.h",
-  "layers/base_node.h",
+  "layers/cmd_buffer_state.h",
+  "layers/cmd_buffer_state.cpp",
+  "layers/device_memory_state.h",
+  "layers/device_memory_state.cpp",
+  "layers/device_state.h",
+  "layers/image_state.h",
+  "layers/image_state.cpp",
+  "layers/pipeline_state.h",
+  "layers/pipeline_state.cpp",
+  "layers/qfo_transfer.h",
+  "layers/query_state.h",
+  "layers/queue_state.cpp",
+  "layers/queue_state.h",
+  "layers/ray_tracing_state.h",
+  "layers/render_pass_state.h",
+  "layers/render_pass_state.cpp",
+  "layers/sampler_state.h",
   "layers/core_error_location.cpp",
   "layers/core_error_location.h",
   "layers/descriptor_sets.cpp",
@@ -99,6 +117,8 @@ core_validation_sources = [
   "layers/generated/corechecks_optick_instrumentation.cpp",
   "layers/generated/corechecks_optick_instrumentation.h",
   "layers/generated/spirv_validation_helper.cpp",
+  "layers/generated/spirv_grammar_helper.cpp",
+  "layers/generated/spirv_grammar_helper.h",
   "layers/generated/command_validation.cpp",
   "layers/generated/command_validation.h",
   "layers/generated/gpu_pre_draw_shader.h",
@@ -320,7 +340,7 @@ foreach(layer_info, layers) {
     if (is_linux || is_android) {
       ldflags = [ "-Wl,-Bsymbolic,--exclude-libs,ALL" ]
     }
-    if (use_x11) {
+    if (ozone_platform_x11) {
       defines += [ "VK_USE_PLATFORM_XLIB_KHR" ]
     }
     if (is_android) {

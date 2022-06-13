@@ -8,7 +8,7 @@
 #include <map>
 #include <string>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "components/translate/content/common/translate.mojom.h"
@@ -22,7 +22,6 @@
 #include "services/metrics/public/cpp/ukm_source_id.h"
 
 namespace content {
-class NavigationController;
 class WebContents;
 }  // namespace content
 
@@ -56,9 +55,13 @@ class ContentTranslateDriver : public TranslateDriver,
     }
   };
 
-  ContentTranslateDriver(content::NavigationController* nav_controller,
+  ContentTranslateDriver(content::WebContents& web_contents,
                          language::UrlLanguageHistogram* url_language_histogram,
                          TranslateModelService* translate_model_service);
+
+  ContentTranslateDriver(const ContentTranslateDriver&) = delete;
+  ContentTranslateDriver& operator=(const ContentTranslateDriver&) = delete;
+
   ~ContentTranslateDriver() override;
 
   // Adds or removes observers.
@@ -138,15 +141,16 @@ class ContentTranslateDriver : public TranslateDriver,
   void InitiateTranslationIfReload(
       content::NavigationHandle* navigation_handle);
 
-  // Runs the provided callback with the loaded model file
-  // to pass it to the connected translate agent.
-  void OnLanguageDetectionModelFile(GetLanguageDetectionModelCallback callback,
-                                    base::File model_file);
+  // Notifies |this| that the translate model service is available for model
+  // requests or is invalidating existing requests specified by |is_available|.
+  //  |callback| will be either forwarded to a request to get the actual model
+  // file or will be run with an empty file if the translate model service is
+  // rejecting requests.
+  void OnLanguageModelFileAvailabilityChanged(
+      GetLanguageDetectionModelCallback callback,
+      bool is_available);
 
-  // The navigation controller of the tab we are associated with.
-  content::NavigationController* navigation_controller_;
-
-  TranslateManager* translate_manager_;
+  raw_ptr<TranslateManager> translate_manager_;
 
   base::ObserverList<TranslationObserver, true> translation_observers_;
 
@@ -162,7 +166,7 @@ class ContentTranslateDriver : public TranslateDriver,
 
   // Histogram to be notified about detected language of every page visited. Not
   // owned here.
-  language::UrlLanguageHistogram* const language_histogram_;
+  const raw_ptr<language::UrlLanguageHistogram> language_histogram_;
 
   // ContentTranslateDriver is a singleton per web contents but multiple render
   // frames may be contained in a single web contents. TranslateAgents get the
@@ -176,11 +180,9 @@ class ContentTranslateDriver : public TranslateDriver,
 
   // The service that provides the model files needed for translate. Not owned
   // but guaranteed to outlive |this|.
-  TranslateModelService* const translate_model_service_;
+  const raw_ptr<TranslateModelService> translate_model_service_;
 
   base::WeakPtrFactory<ContentTranslateDriver> weak_pointer_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ContentTranslateDriver);
 };
 
 }  // namespace translate

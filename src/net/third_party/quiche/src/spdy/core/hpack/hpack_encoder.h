@@ -49,9 +49,8 @@ class QUICHE_EXPORT_PRIVATE HpackEncoder {
   HpackEncoder& operator=(const HpackEncoder&) = delete;
   ~HpackEncoder();
 
-  // Encodes the given header set into the given string. Returns
-  // whether or not the encoding was successful.
-  bool EncodeHeaderSet(const SpdyHeaderBlock& header_set, std::string* output);
+  // Encodes and returns the given header set as a string.
+  std::string EncodeHeaderBlock(const SpdyHeaderBlock& header_set);
 
   class QUICHE_EXPORT_PRIVATE ProgressiveEncoder {
    public:
@@ -60,9 +59,8 @@ class QUICHE_EXPORT_PRIVATE HpackEncoder {
     // Returns true iff more remains to encode.
     virtual bool HasNext() const = 0;
 
-    // Encodes up to max_encoded_bytes of the current header block into the
-    // given output string.
-    virtual void Next(size_t max_encoded_bytes, std::string* output) = 0;
+    // Encodes and returns up to max_encoded_bytes of the current header block.
+    virtual std::string Next(size_t max_encoded_bytes) = 0;
   };
 
   // Returns a ProgressiveEncoder which must be outlived by both the given
@@ -81,6 +79,7 @@ class QUICHE_EXPORT_PRIVATE HpackEncoder {
   // SETTINGS_HEADER_TABLE_SIZE update from the remote decoding endpoint.
   void ApplyHeaderTableSizeSetting(size_t size_setting);
 
+  // TODO(birenroy): Rename this GetDynamicTableCapacity().
   size_t CurrentHeaderTableSizeSetting() const {
     return header_table_.settings_size_bound();
   }
@@ -95,8 +94,9 @@ class QUICHE_EXPORT_PRIVATE HpackEncoder {
 
   void DisableCompression() { enable_compression_ = false; }
 
-  // Returns the estimate of dynamically allocated memory in bytes.
-  size_t EstimateMemoryUsage() const;
+  // Returns the current dynamic table size, including the 32 bytes per entry
+  // overhead mentioned in RFC 7541 section 4.1.
+  size_t GetDynamicTableSize() const { return header_table_.size(); }
 
  private:
   friend class test::HpackEncoderPeer;
@@ -105,7 +105,7 @@ class QUICHE_EXPORT_PRIVATE HpackEncoder {
   class Encoderator;
 
   // Encodes a sequence of header name-value pairs as a single header block.
-  void EncodeRepresentations(RepresentationIterator* iter, std::string* output);
+  std::string EncodeRepresentations(RepresentationIterator* iter);
 
   // Emits a static/dynamic indexed representation (Section 7.1).
   void EmitIndex(size_t index);

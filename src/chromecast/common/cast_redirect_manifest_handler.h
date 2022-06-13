@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/macros.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handler.h"
 #include "extensions/common/user_script.h"
@@ -19,6 +18,10 @@ namespace chromecast {
 class CastRedirectHandler : public extensions::ManifestHandler {
  public:
   CastRedirectHandler();
+
+  CastRedirectHandler(const CastRedirectHandler&) = delete;
+  CastRedirectHandler& operator=(const CastRedirectHandler&) = delete;
+
   ~CastRedirectHandler() override;
 
   bool Parse(extensions::Extension* extension, std::u16string* error) override;
@@ -33,8 +36,6 @@ class CastRedirectHandler : public extensions::ManifestHandler {
 
  private:
   base::span<const char* const> Keys() const override;
-
-  DISALLOW_COPY_AND_ASSIGN(CastRedirectHandler);
 };
 
 }  // namespace chromecast

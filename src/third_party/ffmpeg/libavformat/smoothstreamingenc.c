@@ -283,7 +283,7 @@ static int ism_write_header(AVFormatContext *s)
 {
     SmoothStreamingContext *c = s->priv_data;
     int ret = 0, i;
-    ff_const59 AVOutputFormat *oformat;
+    const AVOutputFormat *oformat;
 
     if (mkdir(s->url, 0777) == -1 && errno != EEXIST) {
         av_log(s, AV_LOG_ERROR, "mkdir failed\n");
@@ -295,7 +295,7 @@ static int ism_write_header(AVFormatContext *s)
         return AVERROR_MUXER_NOT_FOUND;
     }
 
-    c->streams = av_mallocz_array(s->nb_streams, sizeof(*c->streams));
+    c->streams = av_calloc(s->nb_streams, sizeof(*c->streams));
     if (!c->streams) {
         return AVERROR(ENOMEM);
     }
@@ -582,15 +582,16 @@ static int ism_write_packet(AVFormatContext *s, AVPacket *pkt)
 {
     SmoothStreamingContext *c = s->priv_data;
     AVStream *st = s->streams[pkt->stream_index];
+    FFStream *const sti = ffstream(st);
     OutputStream *os = &c->streams[pkt->stream_index];
     int64_t end_dts = (c->nb_fragments + 1) * (int64_t) c->min_frag_duration;
     int ret;
 
-    if (st->first_dts == AV_NOPTS_VALUE)
-        st->first_dts = pkt->dts;
+    if (sti->first_dts == AV_NOPTS_VALUE)
+        sti->first_dts = pkt->dts;
 
     if ((!c->has_video || st->codecpar->codec_type == AVMEDIA_TYPE_VIDEO) &&
-        av_compare_ts(pkt->dts - st->first_dts, st->time_base,
+        av_compare_ts(pkt->dts - sti->first_dts, st->time_base,
                       end_dts, AV_TIME_BASE_Q) >= 0 &&
         pkt->flags & AV_PKT_FLAG_KEY && os->packets_written) {
 
@@ -637,7 +638,7 @@ static const AVClass ism_class = {
 };
 
 
-AVOutputFormat ff_smoothstreaming_muxer = {
+const AVOutputFormat ff_smoothstreaming_muxer = {
     .name           = "smoothstreaming",
     .long_name      = NULL_IF_CONFIG_SMALL("Smooth Streaming Muxer"),
     .priv_data_size = sizeof(SmoothStreamingContext),

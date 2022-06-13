@@ -11,7 +11,7 @@
 
 #include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "components/metrics/metrics_provider.h"
@@ -34,6 +34,10 @@ class PluginMetricsProvider : public metrics::MetricsProvider,
                               public content::BrowserChildProcessObserver {
  public:
   explicit PluginMetricsProvider(PrefService* local_state);
+
+  PluginMetricsProvider(const PluginMetricsProvider&) = delete;
+  PluginMetricsProvider& operator=(const PluginMetricsProvider&) = delete;
+
   ~PluginMetricsProvider() override;
 
   // metrics::MetricsDataProvider:
@@ -78,7 +82,7 @@ class PluginMetricsProvider : public metrics::MetricsProvider,
   void RecordCurrentState();
 
   // content::BrowserChildProcessObserver:
-  void BrowserChildProcessHostConnected(
+  void BrowserChildProcessLaunchedAndConnected(
       const content::ChildProcessData& data) override;
   void BrowserChildProcessCrashed(
       const content::ChildProcessData& data,
@@ -98,7 +102,7 @@ class PluginMetricsProvider : public metrics::MetricsProvider,
   // Records the delay used internally by RecordCurrentStateWithDelay().
   static base::TimeDelta GetRecordStateDelay();
 
-  PrefService* local_state_;
+  raw_ptr<PrefService> local_state_;
 
   // The list of plugins which was retrieved on the file thread.
   std::vector<content::WebPluginInfo> plugins_;
@@ -107,8 +111,6 @@ class PluginMetricsProvider : public metrics::MetricsProvider,
   std::map<std::u16string, ChildProcessStats> child_process_stats_buffer_;
 
   base::WeakPtrFactory<PluginMetricsProvider> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(PluginMetricsProvider);
 };
 
 #endif  // CHROME_BROWSER_METRICS_PLUGIN_METRICS_PROVIDER_H_

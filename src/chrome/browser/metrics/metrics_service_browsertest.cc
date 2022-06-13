@@ -87,9 +87,13 @@ class MetricsServiceBrowserTest : public InProcessBrowserTest {
  public:
   MetricsServiceBrowserTest() {}
 
+  MetricsServiceBrowserTest(const MetricsServiceBrowserTest&) = delete;
+  MetricsServiceBrowserTest& operator=(const MetricsServiceBrowserTest&) =
+      delete;
+
   void SetUpCommandLine(base::CommandLine* command_line) override {
     // Enable the metrics service for testing (in recording-only mode).
-    command_line->AppendSwitch(metrics::switches::kMetricsRecordingOnly);
+    metrics::EnableMetricsRecordingOnlyForTesting(command_line);
   }
 
   void SetUp() override {
@@ -109,7 +113,7 @@ class MetricsServiceBrowserTest : public InProcessBrowserTest {
         browser()->tab_strip_model()->GetActiveWebContents(),
         content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
     // Opens one tab.
-    ui_test_utils::NavigateToURL(browser(), GURL(crashy_url));
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL(crashy_url)));
     observer.Wait();
 
     // The MetricsService listens for the same notification, so the |observer|
@@ -151,8 +155,6 @@ class MetricsServiceBrowserTest : public InProcessBrowserTest {
 
  private:
   bool metrics_consent_ = true;
-
-  DISALLOW_COPY_AND_ASSIGN(MetricsServiceBrowserTest);
 };
 
 IN_PROC_BROWSER_TEST_F(MetricsServiceBrowserTest, CloseRenderersNormally) {
@@ -203,14 +205,12 @@ IN_PROC_BROWSER_TEST_F(MetricsServiceBrowserTest, MAYBE_CrashRenderers) {
 // Test is disabled on Windows AMR64 because
 // TerminateWithHeapCorruption() isn't expected to work there.
 // See: https://crbug.com/1054423
+//
+// This test is disabled on Windows because it flakes.
+// See: https://crbug.com/1277825
 #if defined(OS_WIN)
-#if defined(ARCH_CPU_ARM64)
-#define MAYBE_HeapCorruptionInRenderer DISABLED_HeapCorruptionInRenderer
-#else
-#define MAYBE_HeapCorruptionInRenderer HeapCorruptionInRenderer
-#endif
 IN_PROC_BROWSER_TEST_F(MetricsServiceBrowserTest,
-                       MAYBE_HeapCorruptionInRenderer) {
+                       DISABLED_HeapCorruptionInRenderer) {
   base::HistogramTester histogram_tester;
 
   OpenTabsAndNavigateToCrashyUrl(blink::kChromeUIHeapCorruptionCrashURL);
@@ -308,6 +308,11 @@ class MetricsServiceBrowserFilesTest : public InProcessBrowserTest {
  public:
   MetricsServiceBrowserFilesTest() {}
 
+  MetricsServiceBrowserFilesTest(const MetricsServiceBrowserFilesTest&) =
+      delete;
+  MetricsServiceBrowserFilesTest& operator=(
+      const MetricsServiceBrowserFilesTest&) = delete;
+
   bool SetUpUserDataDirectory() override {
     if (!super::SetUpUserDataDirectory())
       return false;
@@ -379,8 +384,6 @@ class MetricsServiceBrowserFilesTest : public InProcessBrowserTest {
  private:
   bool metrics_consent_ = true;
   base::FilePath upload_dir_;
-
-  DISALLOW_COPY_AND_ASSIGN(MetricsServiceBrowserFilesTest);
 };
 
 // Specific class for testing when metrics upload is fully enabled.
@@ -388,6 +391,11 @@ class MetricsServiceBrowserDoUploadTest
     : public MetricsServiceBrowserFilesTest {
  public:
   MetricsServiceBrowserDoUploadTest() {}
+
+  MetricsServiceBrowserDoUploadTest(const MetricsServiceBrowserDoUploadTest&) =
+      delete;
+  MetricsServiceBrowserDoUploadTest& operator=(
+      const MetricsServiceBrowserDoUploadTest&) = delete;
 
   void SetUp() override {
     set_metrics_consent(true);
@@ -398,8 +406,6 @@ class MetricsServiceBrowserDoUploadTest
 
  private:
   base::test::ScopedFeatureList feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(MetricsServiceBrowserDoUploadTest);
 };
 
 IN_PROC_BROWSER_TEST_F(MetricsServiceBrowserDoUploadTest, FilesRemain) {
@@ -413,6 +419,11 @@ class MetricsServiceBrowserNoUploadTest
  public:
   MetricsServiceBrowserNoUploadTest() {}
 
+  MetricsServiceBrowserNoUploadTest(const MetricsServiceBrowserNoUploadTest&) =
+      delete;
+  MetricsServiceBrowserNoUploadTest& operator=(
+      const MetricsServiceBrowserNoUploadTest&) = delete;
+
   void SetUp() override {
     set_metrics_consent(false);
     feature_list_.InitAndEnableFeature(
@@ -422,8 +433,6 @@ class MetricsServiceBrowserNoUploadTest
 
  private:
   base::test::ScopedFeatureList feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(MetricsServiceBrowserNoUploadTest);
 };
 
 IN_PROC_BROWSER_TEST_F(MetricsServiceBrowserNoUploadTest, FilesRemoved) {
@@ -437,6 +446,11 @@ class MetricsServiceBrowserSampledOutTest
  public:
   MetricsServiceBrowserSampledOutTest() {}
 
+  MetricsServiceBrowserSampledOutTest(
+      const MetricsServiceBrowserSampledOutTest&) = delete;
+  MetricsServiceBrowserSampledOutTest& operator=(
+      const MetricsServiceBrowserSampledOutTest&) = delete;
+
   void SetUp() override {
     set_metrics_consent(true);
     feature_list_.InitAndDisableFeature(
@@ -446,8 +460,6 @@ class MetricsServiceBrowserSampledOutTest
 
  private:
   base::test::ScopedFeatureList feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(MetricsServiceBrowserSampledOutTest);
 };
 
 IN_PROC_BROWSER_TEST_F(MetricsServiceBrowserSampledOutTest, FilesRemoved) {

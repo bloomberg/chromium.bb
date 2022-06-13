@@ -7,15 +7,18 @@
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
 #include "chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
-#include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/send_tab_to_self_helper.h"
 #include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
+#include "chrome/browser/sync/test/integration/sync_service_impl_harness.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/ui/browser.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/send_tab_to_self/send_tab_to_self_model.h"
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
+#include "components/sync/base/time.h"
+#include "components/sync/protocol/entity_specifics.pb.h"
+#include "components/sync/protocol/send_tab_to_self_specifics.pb.h"
 #include "content/public/test/browser_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "url/gurl.h"
@@ -24,15 +27,17 @@ namespace {
 
 class SingleClientSendTabToSelfSyncTest : public SyncTest {
  public:
-  SingleClientSendTabToSelfSyncTest() : SyncTest(SINGLE_CLIENT) {
-  }
+  SingleClientSendTabToSelfSyncTest() : SyncTest(SINGLE_CLIENT) {}
+
+  SingleClientSendTabToSelfSyncTest(const SingleClientSendTabToSelfSyncTest&) =
+      delete;
+  SingleClientSendTabToSelfSyncTest& operator=(
+      const SingleClientSendTabToSelfSyncTest&) = delete;
 
   ~SingleClientSendTabToSelfSyncTest() override {}
 
  private:
   base::test::ScopedFeatureList scoped_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(SingleClientSendTabToSelfSyncTest);
 };
 
 IN_PROC_BROWSER_TEST_F(SingleClientSendTabToSelfSyncTest,
@@ -50,8 +55,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientSendTabToSelfSyncTest,
   fake_server_->InjectEntity(
       syncer::PersistentUniqueClientEntity::CreateFromSpecificsForTesting(
           "non_unique_name", kGuid, specifics,
-          /*creation_time=*/base::Time::Now().ToTimeT(),
-          /*last_modified_time=*/base::Time::Now().ToTimeT()));
+          /*creation_time=*/syncer::TimeToProtoTime(base::Time::Now()),
+          /*last_modified_time=*/syncer::TimeToProtoTime(base::Time::Now())));
 
   ASSERT_TRUE(SetupSync());
 
@@ -67,14 +72,15 @@ IN_PROC_BROWSER_TEST_F(SingleClientSendTabToSelfSyncTest, IsActive) {
   EXPECT_TRUE(send_tab_to_self_helper::SendTabToSelfActiveChecker(
                   SendTabToSelfSyncServiceFactory::GetForProfile(GetProfile(0)))
                   .Wait());
-  EXPECT_TRUE(send_tab_to_self::IsUserSyncTypeActive(GetProfile(0)));
 }
 
 IN_PROC_BROWSER_TEST_F(SingleClientSendTabToSelfSyncTest,
                        HasValidTargetDevice) {
   ASSERT_TRUE(SetupSync());
 
-  EXPECT_FALSE(send_tab_to_self::HasValidTargetDevice(GetProfile(0)));
+  EXPECT_FALSE(SendTabToSelfSyncServiceFactory::GetForProfile(GetProfile(0))
+                   ->GetSendTabToSelfModel()
+                   ->HasValidTargetDevice());
 }
 
 IN_PROC_BROWSER_TEST_F(SingleClientSendTabToSelfSyncTest, ShouldOfferFeature) {
@@ -103,8 +109,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientSendTabToSelfSyncTest,
   fake_server_->InjectEntity(
       syncer::PersistentUniqueClientEntity::CreateFromSpecificsForTesting(
           "non_unique_name", kGuid, specifics,
-          /*creation_time=*/base::Time::Now().ToTimeT(),
-          /*last_modified_time=*/base::Time::Now().ToTimeT()));
+          /*creation_time=*/syncer::TimeToProtoTime(base::Time::Now()),
+          /*last_modified_time=*/syncer::TimeToProtoTime(base::Time::Now())));
 
   ASSERT_TRUE(SetupSync());
 

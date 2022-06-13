@@ -12,6 +12,7 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/menu_util.h"
+#include "chrome/browser/ash/app_restore/full_restore_service.h"
 #include "chrome/browser/ash/arc/app_shortcuts/arc_app_shortcuts_menu_builder.h"
 #include "chrome/browser/ash/crosapi/browser_manager.h"
 #include "chrome/browser/ash/crostini/crostini_manager.h"
@@ -39,9 +40,6 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/views/crostini/crostini_app_restart_dialog.h"
 #include "chrome/browser/ui/webui/settings/chromeos/app_management/app_management_uma.h"
-#include "chrome/browser/web_applications/components/app_registrar.h"
-#include "chrome/browser/web_applications/components/app_registry_controller.h"
-#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/context_menu_params.h"
 #include "extensions/browser/extension_prefs.h"
@@ -54,14 +52,16 @@ bool MenuItemHasLauncherContext(const extensions::MenuItem* item) {
   return item->contexts().Contains(extensions::MenuItem::LAUNCHER);
 }
 
-web_app::DisplayMode ConvertLaunchTypeCommandToDisplayMode(int command_id) {
+apps::mojom::WindowMode ConvertLaunchTypeCommandToWindowMode(int command_id) {
   switch (command_id) {
     case ash::LAUNCH_TYPE_REGULAR_TAB:
-      return web_app::DisplayMode::kBrowser;
+      return apps::mojom::WindowMode::kBrowser;
     case ash::LAUNCH_TYPE_WINDOW:
-      return web_app::DisplayMode::kStandalone;
+      return apps::mojom::WindowMode::kWindow;
+    case ash::LAUNCH_TYPE_TABBED_WINDOW:
+      return apps::mojom::WindowMode::kTabbedWindow;
     default:
-      return web_app::DisplayMode::kUndefined;
+      return apps::mojom::WindowMode::kUnknown;
   }
 }
 
@@ -125,6 +125,8 @@ void AppServiceShelfContextMenu::ExecuteCommand(int command_id,
   switch (command_id) {
     case ash::SHOW_APP_INFO:
       ShowAppInfo();
+      ash::full_restore::FullRestoreService::MaybeCloseNotification(
+          controller()->profile());
       break;
 
     case ash::MENU_NEW_WINDOW:
@@ -133,16 +135,24 @@ void AppServiceShelfContextMenu::ExecuteCommand(int command_id,
       } else if (app_type_ == apps::mojom::AppType::kStandaloneBrowser) {
         crosapi::BrowserManager::Get()->NewWindow(/*incongnito=*/false);
       } else {
-        ash::NewWindowDelegate::GetInstance()->NewWindow(/*incognito=*/false);
+        ash::NewWindowDelegate::GetInstance()->NewWindow(
+            /*incognito=*/false,
+            /*should_trigger_session_restore=*/false);
       }
+      ash::full_restore::FullRestoreService::MaybeCloseNotification(
+          controller()->profile());
       break;
 
     case ash::MENU_NEW_INCOGNITO_WINDOW:
       if (app_type_ == apps::mojom::AppType::kStandaloneBrowser) {
         crosapi::BrowserManager::Get()->NewWindow(/*incognito=*/true);
       } else {
-        ash::NewWindowDelegate::GetInstance()->NewWindow(/*incognito=*/true);
+        ash::NewWindowDelegate::GetInstance()->NewWindow(
+            /*incognito=*/true,
+            /*should_trigger_session_restore=*/false);
       }
+      ash::full_restore::FullRestoreService::MaybeCloseNotification(
+          controller()->profile());
       break;
 
     case ash::SHUTDOWN_GUEST_OS:
@@ -160,13 +170,7 @@ void AppServiceShelfContextMenu::ExecuteCommand(int command_id,
       break;
 
     case ash::LAUNCH_TYPE_TABBED_WINDOW:
-      if (app_type_ == apps::mojom::AppType::kWeb) {
-        auto* provider = web_app::WebAppProvider::Get(controller()->profile());
-        DCHECK(provider);
-        provider->registry_controller().SetExperimentalTabbedWindowMode(
-            item().id.app_id, true, /*is_user_action=*/true);
-      }
-      return;
+      FALLTHROUGH;
     case ash::LAUNCH_TYPE_PINNED_TAB:
       FALLTHROUGH;
     case ash::LAUNCH_TYPE_REGULAR_TAB:
@@ -190,8 +194,11 @@ void AppServiceShelfContextMenu::ExecuteCommand(int command_id,
     }
 
     case ash::SETTINGS:
-      if (item().id.app_id == crostini::kCrostiniTerminalSystemAppId)
+      if (item().id.app_id == crostini::kCrostiniTerminalSystemAppId) {
         crostini::LaunchTerminalSettings(controller()->profile(), display_id());
+        ash::full_restore::FullRestoreService::MaybeCloseNotification(
+            controller()->profile());
+      }
       return;
 
     default:
@@ -216,24 +223,23 @@ bool AppServiceShelfContextMenu::IsCommandIdChecked(int command_id) const {
   switch (app_type_) {
     case apps::mojom::AppType::kWeb:
     case apps::mojom::AppType::kSystemWeb: {
-      auto* provider = web_app::WebAppProvider::Get(controller()->profile());
-      DCHECK(provider);
       if ((command_id >= ash::LAUNCH_TYPE_PINNED_TAB &&
            command_id <= ash::LAUNCH_TYPE_WINDOW) ||
           command_id == ash::LAUNCH_TYPE_TABBED_WINDOW) {
-        if (provider->registrar().IsInExperimentalTabbedWindowMode(
-                item().id.app_id)) {
-          return command_id == ash::LAUNCH_TYPE_TABBED_WINDOW;
-        }
-        web_app::DisplayMode user_display_mode =
-            provider->registrar().GetAppUserDisplayMode(item().id.app_id);
-        return user_display_mode != web_app::DisplayMode::kUndefined &&
-               user_display_mode ==
-                   ConvertLaunchTypeCommandToDisplayMode(command_id);
+        auto user_window_mode = apps::mojom::WindowMode::kUnknown;
+        apps::AppServiceProxyFactory::GetForProfile(controller()->profile())
+            ->AppRegistryCache()
+            .ForOneApp(item().id.app_id,
+                       [&user_window_mode](const apps::AppUpdate& update) {
+                         user_window_mode = update.WindowMode();
+                       });
+        return user_window_mode != apps::mojom::WindowMode::kUnknown &&
+               user_window_mode ==
+                   ConvertLaunchTypeCommandToWindowMode(command_id);
       }
       return ShelfContextMenu::IsCommandIdChecked(command_id);
     }
-    case apps::mojom::AppType::kExtension:
+    case apps::mojom::AppType::kChromeApp:
       if (command_id >= ash::LAUNCH_TYPE_PINNED_TAB &&
           command_id <= ash::LAUNCH_TYPE_WINDOW) {
         return GetExtensionLaunchType() ==
@@ -281,17 +287,25 @@ void AppServiceShelfContextMenu::OnGetMenuModel(
           menu_items->items, menu_model.get(), submenu_.get(),
           base::BindOnce(&AppServiceShelfContextMenu::GetCommandIdVectorIcon,
                          base::Unretained(this)))) {
-    index = 1;
+    ++index;
   }
 
   // The special rule to ensure that FilesManager's first menu item is "New
   // window".
   const bool build_extension_menu_before_pin =
-      (app_type_ == apps::mojom::AppType::kExtension &&
+      (app_type_ == apps::mojom::AppType::kChromeApp &&
        item().id.app_id == extension_misc::kFilesManagerAppId);
 
   if (build_extension_menu_before_pin)
     BuildExtensionAppShortcutsMenu(menu_model.get());
+
+  // "New Window" should go above "Pin".
+  if (menu_items->items.size() > index &&
+      menu_items->items[index]->command_id == ash::MENU_NEW_WINDOW) {
+    AddContextMenuOption(menu_model.get(), ash::MENU_NEW_WINDOW,
+                         menu_items->items[index]->string_id);
+    ++index;
+  }
 
   if (ShouldAddPinMenu())
     AddPinMenu(menu_model.get());
@@ -325,7 +339,9 @@ void AppServiceShelfContextMenu::OnGetMenuModel(
     return;
   }
 
-  if (app_type_ == apps::mojom::AppType::kWeb) {
+  if (app_type_ == apps::mojom::AppType::kWeb ||
+      app_type_ == apps::mojom::AppType::kSystemWeb ||
+      app_type_ == apps::mojom::AppType::kCrostini) {
     BuildAppShortcutsMenu(std::move(menu_items), std::move(menu_model),
                           std::move(callback), shortcut_index);
     return;
@@ -452,20 +468,16 @@ void AppServiceShelfContextMenu::SetLaunchType(int command_id) {
   switch (app_type_) {
     case apps::mojom::AppType::kWeb:
     case apps::mojom::AppType::kSystemWeb: {
-      // Web apps can only toggle between kStandalone and kBrowser.
-      web_app::DisplayMode user_display_mode =
-          ConvertLaunchTypeCommandToDisplayMode(command_id);
-      if (user_display_mode != web_app::DisplayMode::kUndefined) {
-        auto* provider = web_app::WebAppProvider::Get(controller()->profile());
-        DCHECK(provider);
-        provider->registry_controller().SetExperimentalTabbedWindowMode(
-            item().id.app_id, false, /*is_user_action=*/true);
-        provider->registry_controller().SetAppUserDisplayMode(
-            item().id.app_id, user_display_mode, /*is_user_action=*/true);
+      // Web apps can only toggle between kWindow, kTabbed and kBrowser.
+      apps::mojom::WindowMode user_window_mode =
+          ConvertLaunchTypeCommandToWindowMode(command_id);
+      if (user_window_mode != apps::mojom::WindowMode::kUnknown) {
+        apps::AppServiceProxyFactory::GetForProfile(controller()->profile())
+            ->SetWindowMode(item().id.app_id, user_window_mode);
       }
       return;
     }
-    case apps::mojom::AppType::kExtension:
+    case apps::mojom::AppType::kChromeApp:
       SetExtensionLaunchType(command_id);
       return;
     case apps::mojom::AppType::kArc:
@@ -554,9 +566,11 @@ bool AppServiceShelfContextMenu::ShouldAddPinMenu() {
       return show_in_launcher;
     }
     case apps::mojom::AppType::kCrostini:
-    case apps::mojom::AppType::kExtension:
+    case apps::mojom::AppType::kBorealis:
+    case apps::mojom::AppType::kChromeApp:
     case apps::mojom::AppType::kWeb:
     case apps::mojom::AppType::kSystemWeb:
+    case apps::mojom::AppType::kStandaloneBrowserChromeApp:
       return true;
     case apps::mojom::AppType::kStandaloneBrowser:
       // Lacros behaves like the Chrome browser icon and cannot be unpinned.
@@ -567,7 +581,7 @@ bool AppServiceShelfContextMenu::ShouldAddPinMenu() {
       return false;
     case apps::mojom::AppType::kMacOs:
     case apps::mojom::AppType::kRemote:
-    case apps::mojom::AppType::kBorealis:
+    case apps::mojom::AppType::kExtension:
       NOTREACHED() << "Type " << app_type_ << " should not appear in shelf.";
       return false;
   }

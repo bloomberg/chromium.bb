@@ -8,8 +8,10 @@
 #include "components/feed/core/v2/public/types.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 namespace feed {
 
@@ -60,12 +62,13 @@ ImageFetchId ImageFetcher::Fetch(const GURL& url, ImageCallback callback) {
   simple_loader_ptr->DownloadToString(
       url_loader_factory_.get(),
       base::BindOnce(&ImageFetcher::OnFetchComplete, weak_factory_.GetWeakPtr(),
-                     id),
+                     id, url),
       network::SimpleURLLoader::kMaxBoundedStringDownloadSize);
   return id;
 }
 
 void ImageFetcher::OnFetchComplete(ImageFetchId id,
+                                   const GURL& url,
                                    std::unique_ptr<std::string> response_data) {
   absl::optional<PendingRequest> request = RemovePending(id);
   if (!request)
@@ -79,7 +82,7 @@ void ImageFetcher::OnFetchComplete(ImageFetchId id,
   } else {
     response.status_code = request->loader->NetError();
   }
-  MetricsReporter::OnImageFetched(response.status_code);
+  MetricsReporter::OnImageFetched(url, response.status_code);
 
   if (response_data)
     response.response_bytes = std::move(*response_data);

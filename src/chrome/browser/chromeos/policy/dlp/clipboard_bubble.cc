@@ -4,8 +4,8 @@
 
 #include "chrome/browser/chromeos/policy/dlp/clipboard_bubble.h"
 
-#include "ash/public/cpp/ash_features.h"
-#include "ash/public/cpp/style/color_provider.h"
+#include "base/bind.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_clipboard_bubble_constants.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
@@ -16,6 +16,18 @@
 #include "ui/gfx/text_utils.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/link.h"
+#include "ui/views/controls/styled_label.h"
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_features.h"
+#include "ash/public/cpp/new_window_delegate.h"
+#include "ash/public/cpp/style/color_provider.h"
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chrome/browser/lacros/browser_service_lacros.h"
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 namespace policy {
 
@@ -25,8 +37,11 @@ namespace {
 constexpr int kBubbleCornerRadius = 8;
 constexpr gfx::RoundedCornersF kCornerRadii(kBubbleCornerRadius);
 
+// TODO(crbug.com/1261496) Enable dynamic UI color & theme in lacros
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // The blur radius for the bubble background.
 constexpr int kBubbleBlurRadius = 80;
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // The size of the managed icon.
 constexpr int kManagedIconSize = 20;
@@ -75,10 +90,14 @@ class Button : public views::LabelButton {
     const gfx::FontList font_list = GetFontList();
     label()->SetFontList(font_list);
 
-    SetTextColor(
-        ButtonState::STATE_NORMAL,
-        ash::ColorProvider::Get()->GetContentLayerColor(
-            ash::ColorProvider::ContentLayerType::kButtonLabelColorBlue));
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    const SkColor text_color = ash::ColorProvider::Get()->GetContentLayerColor(
+        ash::ColorProvider::ContentLayerType::kButtonLabelColorBlue);
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+    // TODO(crbug.com/1261496) Enable dynamic UI color & theme in lacros
+    const SkColor text_color = SK_ColorBLUE;
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+    SetTextColor(ButtonState::STATE_NORMAL, text_color);
     SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_CENTER);
     SetSize({gfx::GetStringWidth(button_label, font_list) + 2 * kButtonPadding,
              kButtonHeight});
@@ -96,6 +115,16 @@ class Button : public views::LabelButton {
   }
 };
 
+void OnLearnMoreLinkClicked() {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  ash::NewWindowDelegate::GetInstance()->OpenUrl(
+      GURL(kDlpLearnMoreUrl), /*from_user_interaction=*/true);
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+  auto browser_service = std::make_unique<BrowserServiceLacros>();
+  browser_service->OpenUrl(GURL(kDlpLearnMoreUrl), base::DoNothing());
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+}
+
 }  // namespace
 
 BEGIN_METADATA(Button, views::LabelButton)
@@ -104,16 +133,25 @@ END_METADATA
 
 ClipboardBubbleView::ClipboardBubbleView(const std::u16string& text) {
   SetPaintToLayer(ui::LAYER_SOLID_COLOR);
+// TODO(crbug.com/1261496) Enable dynamic UI color & theme in lacros
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   ash::ColorProvider* color_provider = ash::ColorProvider::Get();
-  layer()->SetColor(color_provider->GetBaseLayerColor(
-      ash::ColorProvider::BaseLayerType::kTransparent80));
+  SkColor background_color = color_provider->GetBaseLayerColor(
+      ash::ColorProvider::BaseLayerType::kTransparent80);
+  layer()->SetColor(background_color);
   if (ash::features::IsBackgroundBlurEnabled())
     layer()->SetBackgroundBlur(kBubbleBlurRadius);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   layer()->SetRoundedCornerRadius(kCornerRadii);
 
   // Add the managed icon.
-  SkColor icon_color = color_provider->GetContentLayerColor(
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  const SkColor icon_color = color_provider->GetContentLayerColor(
       ash::ColorProvider::ContentLayerType::kIconColorPrimary);
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+  // TODO(crbug.com/1261496) Enable dynamic UI color & theme in lacros
+  const SkColor icon_color = SK_ColorGRAY;
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   managed_icon_ = AddChildView(std::make_unique<views::ImageView>());
   managed_icon_->SetPaintToLayer();
   managed_icon_->layer()->SetFillsBoundsOpaquely(false);
@@ -123,25 +161,49 @@ ClipboardBubbleView::ClipboardBubbleView(const std::u16string& text) {
                                                 kManagedIconSize, icon_color));
 
   // Add the bubble text.
-  label_ = AddChildView(std::make_unique<views::Label>());
+  label_ = AddChildView(std::make_unique<views::StyledLabel>());
   label_->SetPaintToLayer();
   label_->layer()->SetFillsBoundsOpaquely(false);
   label_->SetPosition(gfx::Point(
       kBubblePadding + kManagedIconSize + kIconLabelSpacing, kBubblePadding));
+  label_->SetTextContext(views::style::CONTEXT_DIALOG_BODY_TEXT);
 
-  // Set the styling of the text.
+  std::u16string learn_more_link_text =
+      l10n_util::GetStringUTF16(IDS_LEARN_MORE);
+  std::u16string full_text = l10n_util::GetStringFUTF16(
+      IDS_POLICY_DLP_CLIPBOARD_BUBBLE_MESSAGE, text, learn_more_link_text);
+  const int main_message_length =
+      full_text.size() - learn_more_link_text.size();
+
+  // Set the styling of the main text.
   // TODO(crbug.com/1150741): Handle RTL.
-  label_->SetText(text);
-  label_->SetFontList(gfx::FontList({kTextFontName}, gfx::Font::NORMAL,
-                                    kTextFontSize, gfx::Font::Weight::NORMAL));
-  label_->SetEnabledColor(color_provider->GetContentLayerColor(
-      ash::ColorProvider::ContentLayerType::kTextColorPrimary));
+  views::StyledLabel::RangeStyleInfo message_style;
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // TODO(crbug.com/1261496) Enable dynamic UI color & theme in lacros
+  message_style.override_color = color_provider->GetContentLayerColor(
+      ash::ColorProvider::ContentLayerType::kTextColorPrimary);
+  label_->SetDisplayedOnBackgroundColor(background_color);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+  label_->SetText(full_text);
+  label_->AddStyleRange(gfx::Range(0, main_message_length), message_style);
+
+  // Add "Learn more" link.
+  views::StyledLabel::RangeStyleInfo link_style =
+      views::StyledLabel::RangeStyleInfo::CreateForLink(
+          base::BindRepeating(&OnLearnMoreLinkClicked));
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // TODO(crbug.com/1261496) Enable dynamic UI color & theme in lacros
+  link_style.override_color = color_provider->GetContentLayerColor(
+      ash::ColorProvider::ContentLayerType::kTextColorURL);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+  label_->AddStyleRange(gfx::Range(main_message_length, full_text.size()),
+                        link_style);
   label_->SetLineHeight(kLineHeight);
-  label_->SetMultiLine(true);
   label_->SizeToFit(kBubbleWidth - 2 * kBubblePadding - kManagedIconSize -
                     kIconLabelSpacing);
   label_->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
-  label_->SetAutoColorReadabilityEnabled(false);
 
   // Bubble borders
   border_ = AddChildView(std::make_unique<views::ImageView>());
@@ -155,6 +217,7 @@ ClipboardBubbleView::ClipboardBubbleView(const std::u16string& text) {
   shadow_border->set_insets(kBubbleBorderInsets);
   border_->SetSize({kBubbleWidth, INT_MAX});
   border_->SetBorder(std::move(shadow_border));
+  border_->SetCanProcessEventsWithinSubtree(false);
 }
 
 ClipboardBubbleView::~ClipboardBubbleView() = default;

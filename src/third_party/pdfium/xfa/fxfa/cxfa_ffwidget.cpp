@@ -7,7 +7,6 @@
 #include "xfa/fxfa/cxfa_ffwidget.h"
 
 #include <algorithm>
-#include <cmath>
 #include <memory>
 #include <utility>
 
@@ -15,7 +14,7 @@
 #include "core/fxcodec/progressive_decoder.h"
 #include "core/fxcrt/maybe_owned.h"
 #include "core/fxge/cfx_fillrenderoptions.h"
-#include "core/fxge/cfx_pathdata.h"
+#include "core/fxge/cfx_path.h"
 #include "core/fxge/cfx_renderdevice.h"
 #include "core/fxge/dib/cfx_dibitmap.h"
 #include "third_party/base/check.h"
@@ -64,15 +63,6 @@ FXDIB_Format XFA_GetDIBFormat(FXCODEC_IMAGE_TYPE type,
       break;
   }
   return dibFormat;
-}
-
-bool IsFXCodecErrorStatus(FXCODEC_STATUS status) {
-  return (status == FXCODEC_STATUS_ERROR ||
-          status == FXCODEC_STATUS_ERR_MEMORY ||
-          status == FXCODEC_STATUS_ERR_READ ||
-          status == FXCODEC_STATUS_ERR_FLUSH ||
-          status == FXCODEC_STATUS_ERR_FORMAT ||
-          status == FXCODEC_STATUS_ERR_PARAMS);
 }
 
 }  // namespace
@@ -135,9 +125,9 @@ void XFA_DrawImage(CFGAS_GEGraphics* pGS,
 
   CFX_RenderDevice* pRenderDevice = pGS->GetRenderDevice();
   CFX_RenderDevice::StateRestorer restorer(pRenderDevice);
-  CFX_PathData path;
+  CFX_Path path;
   path.AppendRect(rtImage.left, rtImage.bottom(), rtImage.right(), rtImage.top);
-  pRenderDevice->SetClip_PathFill(&path, &matrix,
+  pRenderDevice->SetClip_PathFill(path, &matrix,
                                   CFX_FillRenderOptions::WindingOptions());
 
   CFX_Matrix mtImage(1, 0, 0, -1, 0, 1);
@@ -195,17 +185,17 @@ RetainPtr<CFX_DIBitmap> XFA_LoadImageFromBuffer(
   size_t nFrames;
   FXCODEC_STATUS status;
   std::tie(status, nFrames) = pProgressiveDecoder->GetFrames();
-  if (status != FXCODEC_STATUS_DECODE_READY || nFrames == 0)
+  if (status != FXCODEC_STATUS::kDecodeReady || nFrames == 0)
     return nullptr;
 
   status = pProgressiveDecoder->StartDecode(pBitmap, 0, 0, pBitmap->GetWidth(),
                                             pBitmap->GetHeight());
-  if (IsFXCodecErrorStatus(status))
+  if (status == FXCODEC_STATUS::kError)
     return nullptr;
 
-  while (status == FXCODEC_STATUS_DECODE_TOBECONTINUE) {
+  while (status == FXCODEC_STATUS::kDecodeToBeContinued) {
     status = pProgressiveDecoder->ContinueDecode();
-    if (IsFXCodecErrorStatus(status))
+    if (status == FXCODEC_STATUS::kError)
       return nullptr;
   }
 
@@ -232,8 +222,6 @@ CXFA_FFWidget::CXFA_FFWidget(CXFA_Node* node) : m_pNode(node) {}
 
 CXFA_FFWidget::~CXFA_FFWidget() = default;
 
-void CXFA_FFWidget::PreFinalize() {}
-
 void CXFA_FFWidget::Trace(cppgc::Visitor* visitor) const {
   visitor->Trace(m_pLayoutItem);
   visitor->Trace(m_pDocView);
@@ -250,14 +238,14 @@ CXFA_FFWidget* CXFA_FFWidget::GetNextFFWidget() const {
 }
 
 const CFX_RectF& CXFA_FFWidget::GetWidgetRect() const {
-  if (!GetLayoutItem()->TestStatusBits(XFA_WidgetStatus_RectCached))
+  if (!GetLayoutItem()->TestStatusBits(XFA_WidgetStatus::kRectCached))
     RecacheWidgetRect();
   return m_WidgetRect;
 }
 
 const CFX_RectF& CXFA_FFWidget::RecacheWidgetRect() const {
-  GetLayoutItem()->SetStatusBits(XFA_WidgetStatus_RectCached);
-  m_WidgetRect = GetLayoutItem()->GetRect(false);
+  GetLayoutItem()->SetStatusBits(XFA_WidgetStatus::kRectCached);
+  m_WidgetRect = GetLayoutItem()->GetAbsoluteRect();
   return m_WidgetRect;
 }
 
@@ -285,7 +273,8 @@ CFX_RectF CXFA_FFWidget::GetRectWithoutRotate() {
   return rtWidget;
 }
 
-void CXFA_FFWidget::ModifyStatus(uint32_t dwAdded, uint32_t dwRemoved) {
+void CXFA_FFWidget::ModifyStatus(Mask<XFA_WidgetStatus> dwAdded,
+                                 Mask<XFA_WidgetStatus> dwRemoved) {
   GetLayoutItem()->ClearStatusBits(dwRemoved);
   GetLayoutItem()->SetStatusBits(dwAdded);
 }
@@ -384,43 +373,51 @@ bool CXFA_FFWidget::OnMouseExit() {
   return false;
 }
 
-bool CXFA_FFWidget::AcceptsFocusOnButtonDown(uint32_t dwFlags,
-                                             const CFX_PointF& point,
-                                             FWL_MouseCommand command) {
+bool CXFA_FFWidget::AcceptsFocusOnButtonDown(
+    Mask<XFA_FWL_KeyFlag> dwFlags,
+    const CFX_PointF& point,
+    CFWL_MessageMouse::MouseCommand command) {
   return false;
 }
 
-bool CXFA_FFWidget::OnLButtonDown(uint32_t dwFlags, const CFX_PointF& point) {
+bool CXFA_FFWidget::OnLButtonDown(Mask<XFA_FWL_KeyFlag> dwFlags,
+                                  const CFX_PointF& point) {
   return false;
 }
 
-bool CXFA_FFWidget::OnLButtonUp(uint32_t dwFlags, const CFX_PointF& point) {
+bool CXFA_FFWidget::OnLButtonUp(Mask<XFA_FWL_KeyFlag> dwFlags,
+                                const CFX_PointF& point) {
   return false;
 }
 
-bool CXFA_FFWidget::OnLButtonDblClk(uint32_t dwFlags, const CFX_PointF& point) {
+bool CXFA_FFWidget::OnLButtonDblClk(Mask<XFA_FWL_KeyFlag> dwFlags,
+                                    const CFX_PointF& point) {
   return false;
 }
 
-bool CXFA_FFWidget::OnMouseMove(uint32_t dwFlags, const CFX_PointF& point) {
+bool CXFA_FFWidget::OnMouseMove(Mask<XFA_FWL_KeyFlag> dwFlags,
+                                const CFX_PointF& point) {
   return false;
 }
 
-bool CXFA_FFWidget::OnMouseWheel(uint32_t dwFlags,
+bool CXFA_FFWidget::OnMouseWheel(Mask<XFA_FWL_KeyFlag> dwFlags,
                                  const CFX_PointF& point,
                                  const CFX_Vector& delta) {
   return false;
 }
 
-bool CXFA_FFWidget::OnRButtonDown(uint32_t dwFlags, const CFX_PointF& point) {
+bool CXFA_FFWidget::OnRButtonDown(Mask<XFA_FWL_KeyFlag> dwFlags,
+                                  const CFX_PointF& point) {
   return false;
 }
 
-bool CXFA_FFWidget::OnRButtonUp(uint32_t dwFlags, const CFX_PointF& point) {
+bool CXFA_FFWidget::OnRButtonUp(Mask<XFA_FWL_KeyFlag> dwFlags,
+                                const CFX_PointF& point) {
   return false;
 }
 
-bool CXFA_FFWidget::OnRButtonDblClk(uint32_t dwFlags, const CFX_PointF& point) {
+bool CXFA_FFWidget::OnRButtonDblClk(Mask<XFA_FWL_KeyFlag> dwFlags,
+                                    const CFX_PointF& point) {
   return false;
 }
 
@@ -430,7 +427,7 @@ bool CXFA_FFWidget::OnSetFocus(CXFA_FFWidget* pOldWidget) {
     if (!pParent->OnSetFocus(pOldWidget))
       return false;
   }
-  GetLayoutItem()->SetStatusBits(XFA_WidgetStatus_Focused);
+  GetLayoutItem()->SetStatusBits(XFA_WidgetStatus::kFocused);
 
   CXFA_EventParam eParam;
   eParam.m_eType = XFA_EVENT_Enter;
@@ -440,7 +437,7 @@ bool CXFA_FFWidget::OnSetFocus(CXFA_FFWidget* pOldWidget) {
 }
 
 bool CXFA_FFWidget::OnKillFocus(CXFA_FFWidget* pNewWidget) {
-  GetLayoutItem()->ClearStatusBits(XFA_WidgetStatus_Focused);
+  GetLayoutItem()->ClearStatusBits(XFA_WidgetStatus::kFocused);
   EventKillFocus();
   if (!pNewWidget)
     return true;
@@ -453,15 +450,17 @@ bool CXFA_FFWidget::OnKillFocus(CXFA_FFWidget* pNewWidget) {
   return true;
 }
 
-bool CXFA_FFWidget::OnKeyDown(uint32_t dwKeyCode, uint32_t dwFlags) {
+bool CXFA_FFWidget::OnKeyDown(XFA_FWL_VKEYCODE dwKeyCode,
+                              Mask<XFA_FWL_KeyFlag> dwFlags) {
   return false;
 }
 
-bool CXFA_FFWidget::OnKeyUp(uint32_t dwKeyCode, uint32_t dwFlags) {
+bool CXFA_FFWidget::OnKeyUp(XFA_FWL_VKEYCODE dwKeyCode,
+                            Mask<XFA_FWL_KeyFlag> dwFlags) {
   return false;
 }
 
-bool CXFA_FFWidget::OnChar(uint32_t dwChar, uint32_t dwFlags) {
+bool CXFA_FFWidget::OnChar(uint32_t dwChar, Mask<XFA_FWL_KeyFlag> dwFlags) {
   return false;
 }
 
@@ -509,12 +508,12 @@ bool CXFA_FFWidget::Redo() {
   return false;
 }
 
-Optional<WideString> CXFA_FFWidget::Copy() {
-  return {};
+absl::optional<WideString> CXFA_FFWidget::Copy() {
+  return absl::nullopt;
 }
 
-Optional<WideString> CXFA_FFWidget::Cut() {
-  return {};
+absl::optional<WideString> CXFA_FFWidget::Cut() {
+  return absl::nullopt;
 }
 
 bool CXFA_FFWidget::Paste(const WideString& wsPaste) {
@@ -637,18 +636,18 @@ CXFA_FFApp* CXFA_FFWidget::GetApp() {
   return GetDoc()->GetApp();
 }
 
-IXFA_AppProvider* CXFA_FFWidget::GetAppProvider() {
+CXFA_FFApp::CallbackIface* CXFA_FFWidget::GetAppProvider() {
   return GetApp()->GetAppProvider();
 }
 
 bool CXFA_FFWidget::HasVisibleStatus() const {
-  return GetLayoutItem()->TestStatusBits(XFA_WidgetStatus_Visible);
+  return GetLayoutItem()->TestStatusBits(XFA_WidgetStatus::kVisible);
 }
 
 void CXFA_FFWidget::EventKillFocus() {
   CXFA_ContentLayoutItem* pItem = GetLayoutItem();
-  if (pItem->TestStatusBits(XFA_WidgetStatus_Access)) {
-    pItem->ClearStatusBits(XFA_WidgetStatus_Access);
+  if (pItem->TestStatusBits(XFA_WidgetStatus::kAccess)) {
+    pItem->ClearStatusBits(XFA_WidgetStatus::kAccess);
     return;
   }
   CXFA_EventParam eParam;
@@ -658,13 +657,13 @@ void CXFA_FFWidget::EventKillFocus() {
 }
 
 bool CXFA_FFWidget::IsButtonDown() {
-  return GetLayoutItem()->TestStatusBits(XFA_WidgetStatus_ButtonDown);
+  return GetLayoutItem()->TestStatusBits(XFA_WidgetStatus::kButtonDown);
 }
 
 void CXFA_FFWidget::SetButtonDown(bool bSet) {
   CXFA_ContentLayoutItem* pItem = GetLayoutItem();
   if (bSet)
-    pItem->SetStatusBits(XFA_WidgetStatus_ButtonDown);
+    pItem->SetStatusBits(XFA_WidgetStatus::kButtonDown);
   else
-    pItem->ClearStatusBits(XFA_WidgetStatus_ButtonDown);
+    pItem->ClearStatusBits(XFA_WidgetStatus::kButtonDown);
 }

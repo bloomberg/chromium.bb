@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/win/scoped_variant.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/accessibility/uia_accessibility_event_waiter.h"
@@ -34,6 +35,11 @@ namespace autofill {
 class AutofillAccessibilityWinBrowserTest : public InProcessBrowserTest {
  public:
   AutofillAccessibilityWinBrowserTest() = default;
+
+  AutofillAccessibilityWinBrowserTest(
+      const AutofillAccessibilityWinBrowserTest&) = delete;
+  AutofillAccessibilityWinBrowserTest& operator=(
+      const AutofillAccessibilityWinBrowserTest&) = delete;
 
  protected:
   void SetUpOnMainThread() override {
@@ -73,18 +79,21 @@ class AutofillAccessibilityWinBrowserTest : public InProcessBrowserTest {
     SimulateKeyPress(web_contents, key, code, key_code, false, false, false,
                      false);
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AutofillAccessibilityWinBrowserTest);
 };
 
+// The test is flaky on Windows. See https://crbug.com/1221273
+#if defined(OS_WIN)
+#define MAYBE_AutofillPopupControllerFor DISABLED_AutofillPopupControllerFor
+#else
+#define MAYBE_AutofillPopupControllerFor AutofillPopupControllerFor
+#endif
 IN_PROC_BROWSER_TEST_F(AutofillAccessibilityWinBrowserTest,
-                       AutofillPopupControllerFor) {
+                       MAYBE_AutofillPopupControllerFor) {
   content::AccessibilityNotificationWaiter waiter(
       GetWebContents(), ui::kAXModeComplete, ax::mojom::Event::kLoadComplete);
-  ui_test_utils::NavigateToURL(
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(),
-      embedded_test_server()->GetURL("/accessibility/input_datalist.html"));
+      embedded_test_server()->GetURL("/accessibility/input_datalist.html")));
   waiter.WaitForNotification();
 
   base::win::ScopedVariant result_variant;

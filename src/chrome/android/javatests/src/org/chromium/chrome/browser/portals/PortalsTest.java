@@ -40,6 +40,7 @@ import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.app.ChromeActivity;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.history.BrowsingHistoryBridge;
 import org.chromium.chrome.browser.history.HistoryItem;
@@ -50,6 +51,7 @@ import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.webapps.WebappTestPage;
 import org.chromium.components.location.LocationUtils;
 import org.chromium.components.permissions.PermissionDialogController;
@@ -124,7 +126,7 @@ public class PortalsTest {
         private final CallbackHelper mCallbackHelper;
 
         public LayoutAfterTabContentsSwappedObserver(Tab tab) {
-            tab.addObserver(this);
+            TestThreadUtils.runOnUiThreadBlocking(() -> tab.addObserver(this));
             mCallbackHelper = new CallbackHelper();
         }
 
@@ -148,7 +150,7 @@ public class PortalsTest {
     private void executeScriptAndAwaitSwap(Tab tab, String code) throws Exception {
         TabContentsSwapObserver swapObserver = new TabContentsSwapObserver();
         CallbackHelper swapWaiter = swapObserver.getCallbackHelper();
-        tab.addObserver(swapObserver);
+        TestThreadUtils.runOnUiThreadBlocking(() -> tab.addObserver(swapObserver));
 
         int currSwapCount = swapWaiter.getCallCount();
         JavaScriptUtils.executeJavaScript(tab.getWebContents(), code);
@@ -403,7 +405,7 @@ public class PortalsTest {
 
         TabContentsSwapObserver swapObserver = new TabContentsSwapObserver();
         CallbackHelper swapWaiter = swapObserver.getCallbackHelper();
-        tab.addObserver(swapObserver);
+        TestThreadUtils.runOnUiThreadBlocking(() -> tab.addObserver(swapObserver));
         int currSwapCount = swapWaiter.getCallCount();
 
         int dragStartX = 30;
@@ -457,6 +459,9 @@ public class PortalsTest {
     @Test
     @MediumTest
     @Feature({"Portals"})
+    // See https://crbug.com/1278223#c19. Remove this feature flag once
+    // portals are migrated off the multiple webcontents architecture.
+    @DisableFeatures({ChromeFeatureList.MESSAGES_FOR_ANDROID_INFRASTRUCTURE})
     public void testHttpBasicAuthenticationInPortal() throws Exception {
         mActivityTestRule.startMainActivityWithURL(
                 mTestServer.getURL("/chrome/test/data/android/about.html"));

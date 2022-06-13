@@ -5,6 +5,7 @@
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 
 #include "base/memory/singleton.h"
+#include "chrome/browser/autofill/autofill_image_fetcher_factory.h"
 #include "chrome/browser/autofill/strike_database_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -17,6 +18,7 @@
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/sync/driver/sync_driver_switches.h"
 #include "components/variations/service/variations_service.h"
 
 namespace autofill {
@@ -61,6 +63,8 @@ PersonalDataManagerFactory::PersonalDataManagerFactory()
   DependsOn(IdentityManagerFactory::GetInstance());
   DependsOn(HistoryServiceFactory::GetInstance());
   DependsOn(WebDataServiceFactory::GetInstance());
+  DependsOn(StrikeDatabaseFactory::GetInstance());
+  DependsOn(AutofillImageFetcherFactory::GetInstance());
 }
 
 PersonalDataManagerFactory::~PersonalDataManagerFactory() = default;
@@ -79,12 +83,17 @@ KeyedService* PersonalDataManagerFactory::BuildPersonalDataManager(
   auto* history_service = HistoryServiceFactory::GetForProfile(
       profile, ServiceAccessType::EXPLICIT_ACCESS);
   auto* strike_database = StrikeDatabaseFactory::GetForProfile(profile);
+  auto* image_fetcher = AutofillImageFetcherFactory::GetForProfile(profile);
 
   service->Init(local_storage, account_storage, profile->GetPrefs(),
                 g_browser_process->local_state(),
                 IdentityManagerFactory::GetForProfile(profile),
                 autofill_validator, history_service, strike_database,
-                profile->IsOffTheRecord());
+                image_fetcher, profile->IsOffTheRecord());
+
+  if (!switches::IsSyncAllowedByFlag())
+    service->OnSyncServiceInitialized(nullptr);
+
   return service;
 }
 

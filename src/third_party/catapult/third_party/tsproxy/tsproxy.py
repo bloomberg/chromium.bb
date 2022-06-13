@@ -48,12 +48,35 @@ last_client_disconnected = None
 REMOVE_TCP_OVERHEAD = 1460.0 / 1500.0
 lock = threading.Lock()
 background_activity_count = 0
-current_time = time.clock if sys.platform == "win32" else time.time
+if sys.platform == "win32":
+  try:
+    current_time = time.perf_counter
+  except AttributeError:
+    current_time = time.clock
+else:
+  current_time = time.time
 try:
   import monotonic
   current_time = monotonic.monotonic
 except Exception:
   pass
+
+
+if sys.version_info.major == 3:
+  # In Python 2, data from/to the socket are stored in character strings,
+  # and the built-in ord() and chr() functions are used to convert between
+  # characters and integers.
+  #
+  # In Python 3, data are stored in bytes, and we need to redefine ord and
+  # chr functions to make it work.
+
+  def ord(x):
+    # In Python 3, indexing a byte string returns an int, no conversion needed.
+    return x
+
+  def chr(x):
+    # Convert a byte into bytes of length 1.
+    return bytes([x])
 
 
 def PrintMessage(msg):
@@ -234,7 +257,7 @@ class TCPConnection(asyncore.dispatcher):
     asyncore.dispatcher.__init__(self)
     self.client_id = client_id
     self.state = self.STATE_IDLE
-    self.buffer = ''
+    self.buffer = b''
     self.addr = None
     self.dns_thread = None
     self.hostname = None
@@ -336,9 +359,9 @@ class TCPConnection(asyncore.dispatcher):
     if 'port' in message:
       self.port = message['port']
     logging.info('[{0:d}] Resolving {1}:{2:d}'.format(self.client_id, self.hostname, self.port))
-    if self.hostname == 'localhost':
-      self.hostname = '127.0.0.1'
-    if self.hostname == '127.0.0.1':
+    if self.hostname == b'localhost':
+      self.hostname = b'127.0.0.1'
+    if self.hostname == b'127.0.0.1':
       logging.info('[{0:d}] Connection to localhost detected'.format(self.client_id))
       is_localhost = True
     if (dest_addresses is not None) and (not is_localhost or map_localhost):
@@ -427,7 +450,7 @@ class Socks5Connection(asyncore.dispatcher):
     self.hostname = None
     self.port = None
     self.requested_address = None
-    self.buffer = ''
+    self.buffer = b''
     self.socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
     self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 128 * 1024)
     self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 128 * 1024)

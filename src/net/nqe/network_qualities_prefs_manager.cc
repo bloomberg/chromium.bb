@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/metrics/histogram_macros_local.h"
 #include "base/rand_util.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/nqe/network_quality_estimator.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -35,17 +35,12 @@ ParsedPrefs ConvertDictionaryValueToMap(const base::DictionaryValue* value) {
   DCHECK_GE(kMaxCacheSize, value->DictSize());
 
   ParsedPrefs read_prefs;
-  for (const auto& it : value->DictItems()) {
+  for (auto it : value->DictItems()) {
     nqe::internal::NetworkID network_id =
         nqe::internal::NetworkID::FromString(it.first);
 
-    std::string effective_connection_type_string;
-    const bool effective_connection_type_available =
-        it.second.GetAsString(&effective_connection_type_string);
-    DCHECK(effective_connection_type_available);
-
     absl::optional<EffectiveConnectionType> effective_connection_type =
-        GetEffectiveConnectionTypeForName(effective_connection_type_string);
+        GetEffectiveConnectionTypeForName(it.second.GetString());
     DCHECK(effective_connection_type.has_value());
 
     nqe::internal::CachedNetworkQuality cached_network_quality(
@@ -104,7 +99,7 @@ void NetworkQualitiesPrefsManager::ClearPrefs() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   LOCAL_HISTOGRAM_COUNTS_100("NQE.PrefsSizeOnClearing", prefs_->DictSize());
-  prefs_->Clear();
+  prefs_->DictClear();
   DCHECK_EQ(0u, prefs_->DictSize());
   pref_delegate_->SetDictionaryValue(*prefs_);
 }
@@ -135,7 +130,7 @@ void NetworkQualitiesPrefsManager::OnChangeInCachedNetworkQuality(
     // |kMaxCacheSize|.
     int index_to_delete = base::RandInt(0, kMaxCacheSize - 1);
 
-    for (const auto& it : prefs_->DictItems()) {
+    for (auto it : prefs_->DictItems()) {
       // Delete the kth element in the dictionary, not including the element
       // that represents the current network. k == |index_to_delete|.
       if (nqe::internal::NetworkID::FromString(it.first) == network_id)

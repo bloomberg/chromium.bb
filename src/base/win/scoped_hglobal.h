@@ -9,8 +9,6 @@
 
 #include <stddef.h>
 
-#include "base/macros.h"
-
 namespace base {
 namespace win {
 
@@ -21,6 +19,10 @@ class ScopedHGlobal {
   explicit ScopedHGlobal(HGLOBAL glob) : glob_(glob) {
     data_ = static_cast<T>(GlobalLock(glob_));
   }
+
+  ScopedHGlobal(const ScopedHGlobal&) = delete;
+  ScopedHGlobal& operator=(const ScopedHGlobal&) = delete;
+
   ~ScopedHGlobal() { GlobalUnlock(glob_); }
 
   T get() { return data_; }
@@ -42,8 +44,6 @@ class ScopedHGlobal {
   HGLOBAL glob_;
 
   T data_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedHGlobal);
 };
 
 }  // namespace win

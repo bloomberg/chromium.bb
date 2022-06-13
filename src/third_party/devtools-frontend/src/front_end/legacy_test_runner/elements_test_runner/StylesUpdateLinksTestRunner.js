@@ -35,7 +35,6 @@ function flattenRuleRanges(rule) {
     ranges.push({range: rule.style.range, name: 'style range'});
   }
 
-
   const properties = rule.style.allProperties();
 
   for (let i = 0; i < properties.length; ++i) {
@@ -120,7 +119,7 @@ ElementsTestRunner.validateRuleRanges = function(selector, rules, callback) {
 ElementsTestRunner.getMatchedRules = function() {
   const rules = [];
 
-  for (const block of UI.panels.elements._stylesWidget._sectionBlocks) {
+  for (const block of UI.panels.elements.stylesWidget.sectionBlocks) {
     for (const section of block.sections) {
       const rule = section.style().parentRule;
 

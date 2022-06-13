@@ -7,7 +7,7 @@
 #include <stdint.h>
 
 #include "base/check.h"
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "components/history/core/browser/url_database.h"
 #include "components/history/core/browser/visit_database.h"
 
@@ -123,7 +123,7 @@ bool VisitSQLHandler::AddVisit(URLID url_id, const Time& visit_time) {
                      ui::PAGE_TRANSITION_AUTO_BOOKMARK,
                      /*segment_id=*/0,
                      /*incremented_omnibox_typed_score=*/false,
-                     /*floc_allowed=*/false);
+                     /*opening_visit=*/0);
   return visit_db_->AddVisit(&visit_row, SOURCE_BROWSED);
 }
 

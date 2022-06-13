@@ -16,6 +16,10 @@ namespace ios_web_view {
 class WebViewWebClient : public web::WebClient {
  public:
   WebViewWebClient();
+
+  WebViewWebClient(const WebViewWebClient&) = delete;
+  WebViewWebClient& operator=(const WebViewWebClient&) = delete;
+
   ~WebViewWebClient() override;
 
   // WebClient implementation.
@@ -25,15 +29,13 @@ class WebViewWebClient : public web::WebClient {
   std::string GetUserAgent(web::UserAgentType type) const override;
   base::StringPiece GetDataResource(
       int resource_id,
-      ui::ScaleFactor scale_factor) const override;
+      ui::ResourceScaleFactor scale_factor) const override;
   base::RefCountedMemory* GetDataResourceBytes(int resource_id) const override;
   std::vector<web::JavaScriptFeature*> GetJavaScriptFeatures(
       web::BrowserState* browser_state) const override;
   NSString* GetDocumentStartScriptForMainFrame(
       web::BrowserState* browser_state) const override;
   std::u16string GetPluginNotSupportedText() const override;
-  bool IsLegacyTLSAllowedForHost(web::WebState* web_state,
-                                 const std::string& hostname) override;
   void PrepareErrorPage(web::WebState* web_state,
                         const GURL& url,
                         NSError* error,
@@ -42,10 +44,7 @@ class WebViewWebClient : public web::WebClient {
                         const absl::optional<net::SSLInfo>& info,
                         int64_t navigation_id,
                         base::OnceCallback<void(NSString*)> callback) override;
-  bool EnableLongPressAndForceTouchHandling() const override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WebViewWebClient);
+  bool EnableLongPressUIContextMenu() const override;
 };
 
 }  // namespace ios_web_view

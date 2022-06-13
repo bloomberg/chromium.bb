@@ -9,8 +9,8 @@
 #include "components/viz/common/surfaces/local_surface_id.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/common_export.h"
-#include "third_party/blink/public/common/widget/screen_infos.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
+#include "ui/display/screen_infos.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace blink {
@@ -51,7 +51,7 @@ namespace blink {
 
 struct BLINK_COMMON_EXPORT VisualProperties {
   // Info about all screens, including the one currently showing the widget.
-  ScreenInfos screen_infos;
+  display::ScreenInfos screen_infos;
 
   // Whether or not blink should be in auto-resize mode.
   bool auto_resize_enabled = false;
@@ -127,6 +127,13 @@ struct BLINK_COMMON_EXPORT VisualProperties {
   // Indicates whether a pinch gesture is currently active. Originates in the
   // main frame's renderer, and needs to be shared with subframes.
   bool is_pinch_gesture_active = false;
+
+  // The rect of the Windows Control Overlay, which contains system UX
+  // affordances (e.g. close), for installed desktop Progress Web Apps (PWAs),
+  // if the app specifies the 'window-controls-overlay' DisplayMode in its
+  // manifest. This is only valid and to be consumed by the outermost main
+  // frame.
+  gfx::Rect window_controls_overlay_rect;
 
   VisualProperties();
   VisualProperties(const VisualProperties& other);

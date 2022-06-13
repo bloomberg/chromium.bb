@@ -14,7 +14,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/observer_list.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
 
@@ -26,6 +26,10 @@ class COMPONENT_EXPORT(DEBUG_DAEMON) FakeDebugDaemonClient
     : public DebugDaemonClient {
  public:
   FakeDebugDaemonClient();
+
+  FakeDebugDaemonClient(const FakeDebugDaemonClient&) = delete;
+  FakeDebugDaemonClient& operator=(const FakeDebugDaemonClient&) = delete;
+
   ~FakeDebugDaemonClient() override;
 
   void Init(dbus::Bus* bus) override;
@@ -104,6 +108,13 @@ class COMPONENT_EXPORT(DEBUG_DAEMON) FakeDebugDaemonClient
   void KernelFeatureEnable(const std::string& name,
                            KernelFeatureEnableCallback callback) override;
 
+  void AddObserver(Observer* observer) override;
+  void RemoveObserver(Observer* observer) override;
+
+  void PacketCaptureStartSignalReceived(dbus::Signal* signal) override;
+  void PacketCaptureStopSignalReceived(dbus::Signal* signal) override;
+  void StopPacketCapture(const std::string& handle) override;
+
   // Sets debugging features mask for testing.
   virtual void SetDebuggingFeaturesStatus(int features_mask);
 
@@ -126,10 +137,14 @@ class COMPONENT_EXPORT(DEBUG_DAEMON) FakeDebugDaemonClient
   std::set<std::string> printers_;
   std::string scheduler_configuration_name_;
   std::set<std::string> u2f_flags_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeDebugDaemonClient);
+  base::ObserverList<Observer> observers_;
 };
 
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove when //chromeos/dbus moved to ash.
+namespace ash {
+using ::chromeos::FakeDebugDaemonClient;
+}  // namespace ash
 
 #endif  // CHROMEOS_DBUS_DEBUG_DAEMON_FAKE_DEBUG_DAEMON_CLIENT_H_

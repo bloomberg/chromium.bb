@@ -24,7 +24,6 @@
 #include "src/trace_processor/importers/ftrace/sched_event_tracker.h"
 #include "src/trace_processor/timestamped_trace_piece.h"
 #include "src/trace_processor/types/trace_processor_context.h"
-#include "src/trace_processor/util/trace_blob_view.h"
 
 namespace perfetto {
 namespace trace_processor {
@@ -49,8 +48,8 @@ class FtraceParser {
                              protozero::ConstBytes,
                              PacketSequenceStateGeneration*);
   void ParseSchedSwitch(uint32_t cpu, int64_t timestamp, protozero::ConstBytes);
-  void ParseSchedWakeup(int64_t timestamp, protozero::ConstBytes);
-  void ParseSchedWaking(int64_t timestamp, protozero::ConstBytes);
+  void ParseSchedWakeup(int64_t timestamp, uint32_t pid, protozero::ConstBytes);
+  void ParseSchedWaking(int64_t timestamp, uint32_t pid, protozero::ConstBytes);
   void ParseSchedProcessFree(int64_t timestamp, protozero::ConstBytes);
   void ParseCpuFreq(int64_t timestamp, protozero::ConstBytes);
   void ParseGpuFreq(int64_t timestamp, protozero::ConstBytes);
@@ -120,6 +119,12 @@ class FtraceParser {
                          uint32_t pid,
                          protozero::ConstBytes);
   void ParseScmCallEnd(int64_t timestamp, uint32_t pid, protozero::ConstBytes);
+  void ParseDirectReclaimBegin(int64_t timestamp,
+                               uint32_t pid,
+                               protozero::ConstBytes);
+  void ParseDirectReclaimEnd(int64_t timestamp,
+                             uint32_t pid,
+                             protozero::ConstBytes);
   void ParseWorkqueueExecuteStart(int64_t timestamp,
                                   uint32_t pid,
                                   protozero::ConstBytes,
@@ -147,6 +152,9 @@ class FtraceParser {
                            uint32_t pid,
                            protozero::ConstBytes);
   void ParseCpuhpPause(int64_t, uint32_t, protozero::ConstBytes);
+  void ParseNetifReceiveSkb(uint32_t cpu,
+                            int64_t timestamp,
+                            protozero::ConstBytes);
 
   TraceProcessorContext* context_;
   RssStatTracker rss_stat_tracker_;
@@ -174,6 +182,10 @@ class FtraceParser {
   const StringId workqueue_id_;
   const StringId irq_id_;
   const StringId ret_arg_id_;
+  const StringId direct_reclaim_nr_reclaimed_id_;
+  const StringId direct_reclaim_order_id_;
+  const StringId direct_reclaim_may_writepage_id_;
+  const StringId direct_reclaim_gfp_flags_id_;
   const StringId vec_arg_id_;
   const StringId gpu_mem_total_name_id_;
   const StringId gpu_mem_total_unit_id_;
@@ -182,6 +194,7 @@ class FtraceParser {
   const StringId sched_blocked_reason_id_;
   const StringId io_wait_id_;
   const StringId function_id_;
+  const StringId waker_utid_id_;
 
   struct FtraceMessageStrings {
     // The string id of name of the event field (e.g. sched_switch's id).
@@ -207,6 +220,9 @@ class FtraceParser {
   // Keep kMmEventCounterSize equal to mm_event_type::MM_TYPE_NUM in the kernel.
   static constexpr size_t kMmEventCounterSize = 7;
   std::array<MmEventCounterNames, kMmEventCounterSize> mm_event_counter_names_;
+
+  // Record number of received bytes from the network interface card.
+  std::unordered_map<StringId, uint64_t> nic_received_bytes_;
 
   bool has_seen_first_ftrace_packet_ = false;
 

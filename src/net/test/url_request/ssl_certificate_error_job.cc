@@ -7,7 +7,6 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/ssl/ssl_info.h"
@@ -24,6 +23,10 @@ const char kMockHostname[] = "mock.ssl.cert.error.request";
 class MockJobInterceptor : public URLRequestInterceptor {
  public:
   MockJobInterceptor() = default;
+
+  MockJobInterceptor(const MockJobInterceptor&) = delete;
+  MockJobInterceptor& operator=(const MockJobInterceptor&) = delete;
+
   ~MockJobInterceptor() override = default;
 
   // URLRequestJobFactory::ProtocolHandler implementation:
@@ -31,9 +34,6 @@ class MockJobInterceptor : public URLRequestInterceptor {
       URLRequest* request) const override {
     return std::make_unique<SSLCertificateErrorJob>(request);
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockJobInterceptor);
 };
 
 }  // namespace

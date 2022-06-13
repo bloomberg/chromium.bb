@@ -10,7 +10,6 @@
 #include <string>
 
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "extensions/browser/extension_registry.h"
@@ -35,6 +34,10 @@ class MimeHandlerStreamManager : public KeyedService,
                                  public ExtensionRegistryObserver {
  public:
   MimeHandlerStreamManager();
+
+  MimeHandlerStreamManager(const MimeHandlerStreamManager&) = delete;
+  MimeHandlerStreamManager& operator=(const MimeHandlerStreamManager&) = delete;
+
   ~MimeHandlerStreamManager() override;
   static MimeHandlerStreamManager* Get(content::BrowserContext* context);
 
@@ -72,8 +75,6 @@ class MimeHandlerStreamManager : public KeyedService,
   // Maps view id->EmbedderObserver for maintaining the lifetime of the
   // EmbedderObserver until it is removed.
   std::map<std::string, std::unique_ptr<EmbedderObserver>> embedder_observers_;
-
-  DISALLOW_COPY_AND_ASSIGN(MimeHandlerStreamManager);
 };
 
 }  // namespace extensions

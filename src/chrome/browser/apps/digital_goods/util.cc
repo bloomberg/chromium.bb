@@ -8,9 +8,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
-#include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
-#include "content/public/browser/render_document_host_user_data.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
+#include "content/public/browser/document_user_data.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -47,8 +47,8 @@ std::string GetTwaPackageName(content::RenderFrameHost* render_frame_host) {
 }
 
 std::string GetScope(content::RenderFrameHost* render_frame_host) {
-  web_app::AppRegistrar& registrar =
-      web_app::WebAppProvider::Get(
+  web_app::WebAppRegistrar& registrar =
+      web_app::WebAppProvider::GetForWebApps(
           Profile::FromBrowserContext(render_frame_host->GetBrowserContext()))
           ->registrar();
   absl::optional<web_app::AppId> app_id = registrar.FindAppWithUrlInScope(

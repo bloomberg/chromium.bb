@@ -11,6 +11,7 @@
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/assistant/ui/assistant_view_ids.h"
 #include "ash/assistant/ui/base/stack_layout.h"
+#include "ash/assistant/ui/colors/assistant_colors_util.h"
 #include "ash/assistant/ui/main_stage/assistant_footer_view.h"
 #include "ash/assistant/ui/main_stage/assistant_progress_indicator.h"
 #include "ash/assistant/ui/main_stage/assistant_query_view.h"
@@ -18,18 +19,23 @@
 #include "ash/assistant/ui/main_stage/ui_element_container_view.h"
 #include "ash/assistant/util/animation_util.h"
 #include "ash/assistant/util/assistant_util.h"
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/assistant/controller/assistant_interaction_controller.h"
 #include "ash/public/cpp/assistant/controller/assistant_ui_controller.h"
+#include "ash/public/cpp/style/color_provider.h"
 #include "base/bind.h"
 #include "base/time/time.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_element.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
+#include "ui/views/controls/separator.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/layout_manager.h"
@@ -48,58 +54,51 @@ constexpr int kSeparatorWidthDip = 64;
 
 // Footer entry animation.
 constexpr base::TimeDelta kFooterEntryAnimationFadeInDelay =
-    base::TimeDelta::FromMilliseconds(283);
+    base::Milliseconds(283);
 constexpr base::TimeDelta kFooterEntryAnimationFadeInDuration =
-    base::TimeDelta::FromMilliseconds(167);
+    base::Milliseconds(167);
 
 // Divider animation.
 constexpr base::TimeDelta kDividerAnimationFadeInDelay =
-    base::TimeDelta::FromMilliseconds(233);
+    base::Milliseconds(233);
 constexpr base::TimeDelta kDividerAnimationFadeInDuration =
-    base::TimeDelta::FromMilliseconds(167);
+    base::Milliseconds(167);
 constexpr base::TimeDelta kDividerAnimationFadeOutDuration =
-    base::TimeDelta::FromMilliseconds(83);
+    base::Milliseconds(83);
 
 // Zero state animation.
 constexpr base::TimeDelta kZeroStateAnimationFadeOutDuration =
-    base::TimeDelta::FromMilliseconds(83);
+    base::Milliseconds(83);
 constexpr int kZeroStateAnimationTranslationDip = 115;
 constexpr base::TimeDelta kZeroStateAnimationFadeInDelay =
-    base::TimeDelta::FromMilliseconds(33);
+    base::Milliseconds(33);
 constexpr base::TimeDelta kZeroStateAnimationFadeInDuration =
-    base::TimeDelta::FromMilliseconds(167);
+    base::Milliseconds(167);
 constexpr base::TimeDelta kZeroStateAnimationTranslateUpDuration =
-    base::TimeDelta::FromMilliseconds(250);
+    base::Milliseconds(250);
 
-// HorizontalSeparator ---------------------------------------------------------
+// Helpers ---------------------------------------------------------------------
 
-// A horizontal line to separate the dialog plate.
-class HorizontalSeparator : public views::View {
+// These classes exist to solely to provide a class name to UI devtools. They
+// don't follow the style guide so they can be shorter.
+class ContentContainer : public views::View {
  public:
-  explicit HorizontalSeparator(int preferred_width, int preferred_height)
-      : preferred_width_(preferred_width),
-        preferred_height_(preferred_height) {}
+  const char* GetClassName() const override { return "ContentContainer"; }
+};
 
-  ~HorizontalSeparator() override = default;
+class MainContentContainer : public views::View {
+ public:
+  const char* GetClassName() const override { return "MainContentContainer"; }
+};
 
-  // views::View overrides:
-  const char* GetClassName() const override { return "HorizontalSeparator"; }
+class DividerContainer : public views::View {
+ public:
+  const char* GetClassName() const override { return "DividerContainer"; }
+};
 
-  gfx::Size CalculatePreferredSize() const override {
-    return gfx::Size(preferred_width_, preferred_height_);
-  }
-
-  void OnPaint(gfx::Canvas* canvas) override {
-    gfx::Rect draw_bounds(GetContentsBounds());
-    draw_bounds.Inset(0, (draw_bounds.height() - kSeparatorThicknessDip) / 2);
-    canvas->FillRect(draw_bounds, gfx::kGoogleGrey300);
-  }
-
- private:
-  const int preferred_width_;
-  const int preferred_height_;
-
-  DISALLOW_COPY_AND_ASSIGN(HorizontalSeparator);
+class FooterContainer : public views::View {
+ public:
+  const char* GetClassName() const override { return "FooterContainer"; }
 };
 
 // A view is considered shown when it is visible and not in the process of
@@ -118,7 +117,8 @@ bool IsShown(const views::View* view) {
 
 AppListAssistantMainStage::AppListAssistantMainStage(
     AssistantViewDelegate* delegate)
-    : delegate_(delegate) {
+    : delegate_(delegate),
+      use_dark_light_mode_colors_(assistant::UseDarkLightModeColors()) {
   SetID(AssistantViewID::kMainStage);
   InitLayout();
 
@@ -135,12 +135,18 @@ AppListAssistantMainStage::~AppListAssistantMainStage() {
     AssistantInteractionController::Get()->GetModel()->RemoveObserver(this);
 }
 
-const char* AppListAssistantMainStage::GetClassName() const {
-  return "AppListAssistantMainStage";
-}
-
 void AppListAssistantMainStage::ChildPreferredSizeChanged(views::View* child) {
   PreferredSizeChanged();
+}
+
+void AppListAssistantMainStage::OnThemeChanged() {
+  views::View::OnThemeChanged();
+
+  if (!use_dark_light_mode_colors_)
+    return;
+
+  horizontal_separator_->SetColor(ColorProvider::Get()->GetContentLayerColor(
+      ColorProvider::ContentLayerType::kSeparatorColor));
 }
 
 void AppListAssistantMainStage::OnViewPreferredSizeChanged(views::View* view) {
@@ -176,7 +182,7 @@ AppListAssistantMainStage::CreateContentLayoutContainer() {
   // The |zero_state_view_| is laid out above of the main content container. As
   // such, it floats above and does not cause repositioning to any of content
   // layout's underlying views.
-  auto content_layout_container = std::make_unique<views::View>();
+  auto content_layout_container = std::make_unique<ContentContainer>();
 
   auto* stack_layout = content_layout_container->SetLayoutManager(
       std::make_unique<StackLayout>());
@@ -200,7 +206,7 @@ AppListAssistantMainStage::CreateContentLayoutContainer() {
 
 std::unique_ptr<views::View>
 AppListAssistantMainStage::CreateMainContentLayoutContainer() {
-  auto content_layout_container = std::make_unique<views::View>();
+  auto content_layout_container = std::make_unique<MainContentContainer>();
   views::BoxLayout* content_layout = content_layout_container->SetLayoutManager(
       std::make_unique<views::BoxLayout>(
           views::BoxLayout::Orientation::kVertical));
@@ -215,7 +221,7 @@ AppListAssistantMainStage::CreateMainContentLayoutContainer() {
   query_view_ = content_layout_container->AddChildView(
       std::make_unique<AssistantQueryView>());
   query_view_->SetPaintToLayer();
-  query_view_->SetBackground(views::CreateSolidBackground(SK_ColorWHITE));
+  query_view_->layer()->SetFillsBoundsOpaquely(false);
   query_view_->AddObserver(this);
 
   // UI element container.
@@ -232,7 +238,7 @@ std::unique_ptr<views::View>
 AppListAssistantMainStage::CreateDividerLayoutContainer() {
   // Dividers: the progress indicator and the horizontal separator will be the
   // separator when querying and showing the results, respectively.
-  auto divider_container = std::make_unique<views::View>();
+  auto divider_container = std::make_unique<DividerContainer>();
   divider_container->SetLayoutManager(std::make_unique<StackLayout>());
 
   // Progress indicator, which will be animated on its own layer.
@@ -243,9 +249,22 @@ AppListAssistantMainStage::CreateDividerLayoutContainer() {
 
   // Horizontal separator, which will be animated on its own layer.
   horizontal_separator_ =
-      divider_container->AddChildView(std::make_unique<HorizontalSeparator>(
-          kSeparatorWidthDip,
-          progress_indicator_->GetPreferredSize().height()));
+      divider_container->AddChildView(std::make_unique<views::Separator>());
+  horizontal_separator_->SetID(kHorizontalSeparator);
+  // views::Separator always secure at least 1px even if insets make separator
+  // drawable height to 0px.
+  int vertical_inset = (progress_indicator_->GetPreferredSize().height() -
+                        kSeparatorThicknessDip) /
+                       2;
+  horizontal_separator_->SetBorder(
+      views::CreateEmptyBorder(gfx::Insets(vertical_inset, 0)));
+  // We use default color of views::Separator if dark light mode flag is off.
+  if (use_dark_light_mode_colors_) {
+    horizontal_separator_->SetColor(ColorProvider::Get()->GetContentLayerColor(
+        ColorProvider::ContentLayerType::kSeparatorColor));
+  }
+  horizontal_separator_->SetPreferredSize(gfx::Size(
+      kSeparatorWidthDip, progress_indicator_->GetPreferredSize().height()));
   horizontal_separator_->SetPaintToLayer();
   horizontal_separator_->layer()->SetFillsBoundsOpaquely(false);
 
@@ -259,7 +278,7 @@ AppListAssistantMainStage::CreateFooterLayoutContainer() {
   // its visibility changes, its parent container will still reserve the same
   // layout space. This prevents jank that would otherwise occur due to
   // |ui_element_container_| claiming that empty space.
-  auto footer_container = std::make_unique<views::View>();
+  auto footer_container = std::make_unique<FooterContainer>();
   footer_container->SetLayoutManager(std::make_unique<views::FillLayout>());
 
   footer_ = footer_container->AddChildView(
@@ -358,7 +377,7 @@ void AppListAssistantMainStage::OnPendingQueryChanged(
   // Animate the opacity to 100% with delay equal to |zero_state_view_| fade out
   // animation duration to avoid the two views displaying at the same time.
   constexpr base::TimeDelta kQueryAnimationFadeInDuration =
-      base::TimeDelta::FromMilliseconds(433);
+      base::Milliseconds(433);
   query_view_->layer()->SetOpacity(0.f);
   query_view_->layer()->GetAnimator()->StartAnimation(
       CreateLayerAnimationSequence(
@@ -436,5 +455,8 @@ void AppListAssistantMainStage::MaybeHideZeroState() {
   assistant::util::FadeOutAndHide(zero_state_view_,
                                   kZeroStateAnimationFadeOutDuration);
 }
+
+BEGIN_METADATA(AppListAssistantMainStage, views::View)
+END_METADATA
 
 }  // namespace ash

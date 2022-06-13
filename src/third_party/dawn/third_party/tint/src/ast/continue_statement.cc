@@ -21,24 +21,17 @@ TINT_INSTANTIATE_TYPEINFO(tint::ast::ContinueStatement);
 namespace tint {
 namespace ast {
 
-ContinueStatement::ContinueStatement(ProgramID program_id, const Source& source)
-    : Base(program_id, source) {}
+ContinueStatement::ContinueStatement(ProgramID pid, const Source& src)
+    : Base(pid, src) {}
 
 ContinueStatement::ContinueStatement(ContinueStatement&&) = default;
 
 ContinueStatement::~ContinueStatement() = default;
 
-ContinueStatement* ContinueStatement::Clone(CloneContext* ctx) const {
+const ContinueStatement* ContinueStatement::Clone(CloneContext* ctx) const {
   // Clone arguments outside of create() call to have deterministic ordering
-  auto src = ctx->Clone(source());
+  auto src = ctx->Clone(source);
   return ctx->dst->create<ContinueStatement>(src);
-}
-
-void ContinueStatement::to_str(const sem::Info&,
-                               std::ostream& out,
-                               size_t indent) const {
-  make_indent(out, indent);
-  out << "Continue{}" << std::endl;
 }
 
 }  // namespace ast

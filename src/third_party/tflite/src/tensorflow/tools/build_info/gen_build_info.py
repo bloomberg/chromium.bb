@@ -14,10 +14,6 @@
 # limitations under the License.
 # ==============================================================================
 """Generates a Python module containing information about the build."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import argparse
 
 import six
@@ -27,6 +23,12 @@ try:
   from cuda.cuda import cuda_config  # pylint: disable=g-import-not-at-top
 except ImportError:
   cuda_config = None
+
+# tensorrt.tensorrt is only valid in OSS
+try:
+  from tensorrt.tensorrt import tensorrt_config  # pylint: disable=g-import-not-at-top
+except ImportError:
+  tensorrt_config = None
 
 
 def write_build_info(filename, key_value_list):
@@ -43,6 +45,9 @@ def write_build_info(filename, key_value_list):
   if cuda_config:
     build_info.update(cuda_config.config)
 
+  if tensorrt_config:
+    build_info.update(tensorrt_config.config)
+
   for arg in key_value_list:
     key, value = six.ensure_str(arg).split("=")
     if value.lower() == "true":
@@ -51,6 +56,9 @@ def write_build_info(filename, key_value_list):
       build_info[key] = False
     else:
       build_info[key] = value.format(**build_info)
+
+  # Sort the build info to ensure deterministic output.
+  sorted_build_info_pairs = sorted(build_info.items())
 
   contents = """
 # Copyright 2020 The TensorFlow Authors. All Rights Reserved.
@@ -68,12 +76,10 @@ def write_build_info(filename, key_value_list):
 # limitations under the License.
 # ==============================================================================
 \"\"\"Auto-generated module providing information about the build.\"\"\"
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+import collections
 
-build_info = {build_info}
-""".format(build_info=build_info)
+build_info = collections.OrderedDict(%s)
+""" % sorted_build_info_pairs
   open(filename, "w").write(contents)
 
 

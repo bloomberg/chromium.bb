@@ -88,20 +88,6 @@ class HashSet {
 };
 
 template <typename ValueArg,
-          typename HashArg = void,
-          typename TraitsArg = void,
-          typename Allocator = DefaultAllocator>
-class ListHashSet {
- public:
-  typedef ValueArg* iterator;
-  typedef const ValueArg* const_iterator;
-  typedef ValueArg* reverse_iterator;
-  typedef const ValueArg* const_reverse_iterator;
-
-  ~ListHashSet() {}
-};
-
-template <typename ValueArg,
           typename TraitsArg = void,
           typename Allocator = DefaultAllocator>
 class LinkedHashSet {
@@ -169,12 +155,12 @@ std::unique_ptr<T> WrapUnique(T* ptr) {
   return std::unique_ptr<T>();
 }
 
-template <typename T>
-class Optional {};
-
 }  // namespace base
 
 namespace absl {
+
+template <typename T>
+class optional {};
 
 template <class... Ts>
 class variant {};
@@ -195,13 +181,49 @@ class Visitor {
 };
 
 namespace internal {
-class GarbageCollectedBase {};
+class StrongMemberTag;
+class WeakMemberTag;
+
+class MemberBase {};
+
+template <typename T, typename Tag>
+class BasicMember : public MemberBase {
+ public:
+  operator T*() const { return 0; }
+  T* operator->() const { return 0; }
+  bool operator!() const { return false; }
+};
+
+class StrongPersistentPolicy;
+class WeakPersistentPolicy;
+
+class PersistentBase {};
+
+template <typename T, typename Tag>
+class BasicPersistent : public PersistentBase {
+ public:
+  operator T*() const { return 0; }
+  T* operator->() const { return 0; }
+  bool operator!() const { return false; }
+};
+
+class StrongCrossThreadPersistentPolicy;
+class WeakCrossThreadPersistentPolicy;
+
+template <typename T, typename Tag>
+class BasicCrossThreadPersistent : public PersistentBase {
+ public:
+  operator T*() const { return 0; }
+  T* operator->() const { return 0; }
+  bool operator!() const { return false; }
+};
+
 }  // namespace internal
 
 template <typename T>
-class GarbageCollected : public internal::GarbageCollectedBase {};
+class GarbageCollected {};
 
-class GarbageCollectedMixin : public internal::GarbageCollectedBase {
+class GarbageCollectedMixin {
  public:
   virtual void AdjustAndMark(Visitor*) const = 0;
   virtual bool IsHeapObjectAlive(Visitor*) const = 0;
@@ -209,54 +231,25 @@ class GarbageCollectedMixin : public internal::GarbageCollectedBase {
 };
 
 template <typename T>
-class Member {
- public:
-  operator T*() const { return 0; }
-  T* operator->() const { return 0; }
-  bool operator!() const { return false; }
-};
+using Member = internal::BasicMember<T, internal::StrongMemberTag>;
+template <typename T>
+using WeakMember = internal::BasicMember<T, internal::WeakMemberTag>;
 
 template <typename T>
-class WeakMember {
- public:
-  operator T*() const { return 0; }
-  T* operator->() const { return 0; }
-  bool operator!() const { return false; }
-};
-
+using Persistent =
+    internal::BasicPersistent<T, internal::StrongPersistentPolicy>;
 template <typename T>
-class Persistent {
- public:
-  operator T*() const { return 0; }
-  T* operator->() const { return 0; }
-  bool operator!() const { return false; }
-};
-
-template <typename T>
-class WeakPersistent {
- public:
-  operator T*() const { return 0; }
-  T* operator->() const { return 0; }
-  bool operator!() const { return false; }
-};
+using WeakPersistent =
+    internal::BasicPersistent<T, internal::WeakPersistentPolicy>;
 
 namespace subtle {
 
 template <typename T>
-class CrossThreadPersistent {
- public:
-  operator T*() const { return 0; }
-  T* operator->() const { return 0; }
-  bool operator!() const { return false; }
-};
-
+using CrossThreadPersistent = internal::
+    BasicCrossThreadPersistent<T, internal::StrongCrossThreadPersistentPolicy>;
 template <typename T>
-class CrossThreadWeakPersistent {
- public:
-  operator T*() const { return 0; }
-  T* operator->() const { return 0; }
-  bool operator!() const { return false; }
-};
+using CrossThreadWeakPersistent = internal::
+    BasicCrossThreadPersistent<T, internal::WeakCrossThreadPersistentPolicy>;
 
 }  // namespace subtle
 
@@ -357,10 +350,13 @@ using namespace WTF;
   void* operator new(size_t) = delete; \
   void* operator new(size_t, void*) = delete;
 
-#define STACK_ALLOCATED()                            \
- private:                                            \
-  __attribute__((annotate("blink_stack_allocated"))) \
-  void* operator new(size_t) = delete;               \
+#define STACK_ALLOCATED()                                                \
+ public:                                                                 \
+  using IsStackAllocatedTypeMarker [[maybe_unused]] = int;               \
+                                                                         \
+ private:                                                                \
+  __attribute__((annotate("blink_stack_allocated"))) void* operator new( \
+      size_t) = delete;                                                  \
   void* operator new(size_t, void*) = delete;
 
 #define DISALLOW_NEW_EXCEPT_PLACEMENT_NEW() \
@@ -389,28 +385,30 @@ public:
     static const bool isGarbageCollected = true;
 };
 
-template<typename T, size_t inlineCapacity = 0>
-class HeapVector : public Vector<T, inlineCapacity, HeapAllocator> { };
+template <typename T, size_t inlineCapacity = 0>
+class HeapVector : public GarbageCollected<HeapVector<T, inlineCapacity>>,
+                   public Vector<T, inlineCapacity, HeapAllocator> {};
 
-template<typename T, size_t inlineCapacity = 0>
-class HeapDeque : public Vector<T, inlineCapacity, HeapAllocator> { };
+template <typename T, size_t inlineCapacity = 0>
+class HeapDeque : public GarbageCollected<HeapDeque<T, inlineCapacity>>,
+                  public Vector<T, inlineCapacity, HeapAllocator> {};
 
-template<typename T>
-class HeapHashSet : public HashSet<T, void, void, HeapAllocator> { };
+template <typename T>
+class HeapHashSet : public GarbageCollected<HeapHashSet<T>>,
+                    public HashSet<T, void, void, HeapAllocator> {};
 
-template<typename T>
-class HeapListHashSet : public ListHashSet<T, void, void, HeapAllocator> { };
+template <typename T>
+class HeapLinkedHashSet : public GarbageCollected<HeapLinkedHashSet<T>>,
+                          public LinkedHashSet<T, void, HeapAllocator> {};
 
-template<typename T>
-class HeapLinkedHashSet : public LinkedHashSet<T, void, HeapAllocator> {
+template <typename T>
+class HeapHashCountedSet : public GarbageCollected<HeapHashCountedSet<T>>,
+                           public HashCountedSet<T, void, void, HeapAllocator> {
 };
 
-template<typename T>
-class HeapHashCountedSet : public HashCountedSet<T, void, void, HeapAllocator> {
-};
-
-template<typename K, typename V>
-class HeapHashMap : public HashMap<K, V, void, void, void, HeapAllocator> { };
+template <typename K, typename V>
+class HeapHashMap : public GarbageCollected<HeapHashMap<K, V>>,
+                    public HashMap<K, V, void, void, void, HeapAllocator> {};
 
 template<typename T>
 struct TraceIfNeeded {

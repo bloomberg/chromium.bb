@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/autofill/core/browser/autocomplete_history_manager.h"
 #include "components/autofill/core/browser/autofill_client.h"
@@ -44,6 +43,10 @@ class ChromeAutofillClientIOS : public AutofillClient {
                           infobars::InfoBarManager* infobar_manager,
                           id<AutofillClientIOSBridge> bridge,
                           password_manager::PasswordManager* password_manager);
+
+  ChromeAutofillClientIOS(const ChromeAutofillClientIOS&) = delete;
+  ChromeAutofillClientIOS& operator=(const ChromeAutofillClientIOS&) = delete;
+
   ~ChromeAutofillClientIOS() override;
 
   // Sets a weak reference to the view controller used to present UI.
@@ -152,8 +155,6 @@ class ChromeAutofillClientIOS : public AutofillClient {
 
   // A weak reference to the view controller used to present UI.
   __weak UIViewController* base_view_controller_;
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeAutofillClientIOS);
 };
 
 }  // namespace autofill

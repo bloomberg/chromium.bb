@@ -14,17 +14,7 @@ var LocalProfileCustomizationFocusTest =
     class extends PolymerInteractiveUITest {
   /** @override */
   get browsePreload() {
-    return 'chrome://profile-picker/test_loader.html?module=signin/local_profile_customization_focus_test.js';
-  }
-
-  /** @override */
-  get featureList() {
-    return {
-      enabled: [
-        'features::kSignInProfileCreation',
-        'features::kNewProfilePicker',
-      ]
-    };
+    return 'chrome://profile-picker/test_loader.html?module=signin/local_profile_customization_focus_test.js&host=webui-test';
   }
 };
 

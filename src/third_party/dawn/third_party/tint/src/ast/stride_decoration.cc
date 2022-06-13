@@ -14,6 +14,8 @@
 
 #include "src/ast/stride_decoration.h"
 
+#include <string>
+
 #include "src/program_builder.h"
 
 TINT_INSTANTIATE_TYPEINFO(tint::ast::StrideDecoration);
@@ -21,24 +23,19 @@ TINT_INSTANTIATE_TYPEINFO(tint::ast::StrideDecoration);
 namespace tint {
 namespace ast {
 
-StrideDecoration::StrideDecoration(ProgramID program_id,
-                                   const Source& source,
-                                   uint32_t stride)
-    : Base(program_id, source), stride_(stride) {}
+StrideDecoration::StrideDecoration(ProgramID pid, const Source& src, uint32_t s)
+    : Base(pid, src), stride(s) {}
 
 StrideDecoration::~StrideDecoration() = default;
 
-void StrideDecoration::to_str(const sem::Info&,
-                              std::ostream& out,
-                              size_t indent) const {
-  make_indent(out, indent);
-  out << "stride " << stride_;
+std::string StrideDecoration::Name() const {
+  return "stride";
 }
 
-StrideDecoration* StrideDecoration::Clone(CloneContext* ctx) const {
+const StrideDecoration* StrideDecoration::Clone(CloneContext* ctx) const {
   // Clone arguments outside of create() call to have deterministic ordering
-  auto src = ctx->Clone(source());
-  return ctx->dst->create<StrideDecoration>(src, stride_);
+  auto src = ctx->Clone(source);
+  return ctx->dst->create<StrideDecoration>(src, stride);
 }
 
 }  // namespace ast

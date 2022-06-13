@@ -30,19 +30,22 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_CANVAS2D_CANVAS_PATH_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_CANVAS2D_CANVAS_PATH_H_
 
-#include "third_party/blink/renderer/bindings/modules/v8/unrestricted_double_or_dom_point.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_dompointinit_unrestricteddouble.h"
+#include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context_host.h"
+#include "third_party/blink/renderer/modules/canvas/canvas2d/identifiability_study_helper.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/no_alloc_direct_call_host.h"
 #include "third_party/blink/renderer/platform/graphics/path.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
 #include "third_party/blink/renderer/platform/transforms/affine_transform.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {
 
 class ExceptionState;
-class V8UnionDOMPointOrUnrestrictedDouble;
 
-class MODULES_EXPORT CanvasPath : public NoAllocDirectCallHost {
+class MODULES_EXPORT CanvasPath : public GarbageCollectedMixin,
+                                  public NoAllocDirectCallHost {
   DISALLOW_NEW();
 
  public:
@@ -87,34 +90,59 @@ class MODULES_EXPORT CanvasPath : public NoAllocDirectCallHost {
             double double_y,
             double double_width,
             double double_height);
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   void roundRect(
       double double_x,
       double double_y,
       double double_width,
       double double_height,
-      const HeapVector<Member<V8UnionDOMPointOrUnrestrictedDouble>>& radii,
+      const HeapVector<Member<V8UnionDOMPointInitOrUnrestrictedDouble>>& radii,
       ExceptionState& exception_state);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  void roundRect(double double_x,
-                 double double_y,
-                 double double_width,
-                 double double_height,
-                 const HeapVector<UnrestrictedDoubleOrDOMPoint, 0> radii,
-                 ExceptionState&);
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
-  virtual bool IsTransformInvertible() const { return true; }
+  bool IsTransformInvertible() const;
+
   virtual TransformationMatrix GetTransform() const {
     // This will be the identity matrix
     return TransformationMatrix();
   }
 
+  IdentifiableToken GetIdentifiableToken() const {
+    return identifiability_study_helper_.GetToken();
+  }
+
+  virtual ExecutionContext* GetTopExecutionContext() const = 0;
+  virtual CanvasRenderingContextHost* GetCanvasRenderingContextHost() {
+    return nullptr;
+  }
+
+  void Trace(Visitor*) const override;
+
  protected:
   CanvasPath() { path_.SetIsVolatile(true); }
-  CanvasPath(const Path& path) : path_(path) { path_.SetIsVolatile(true); }
+  explicit CanvasPath(const Path& path) : path_(path) {
+    path_.SetIsVolatile(true);
+  }
+  ALWAYS_INLINE void SetIsTransformInvertible(bool val) {
+    is_transform_invertible_ = val;
+  }
   Path path_;
+
+  // This mirrors state that is stored in CanvasRenderingContext2DState.  We
+  // replicate it here so that IsTransformInvertible() can be a non-virtual
+  // inline-able call.  We do not replicate the whole CTM. Therefore
+  // GetTransform() remains virtual, which is okay because it is only called in
+  // code paths that handle non-invertible transforms.
+  bool is_transform_invertible_ = true;
+
+  IdentifiabilityStudyHelper identifiability_study_helper_;
 };
+
+ALWAYS_INLINE bool CanvasPath::IsTransformInvertible() const {
+  // Verify that the cached is_transform_invertible_ remains in sync with the
+  // ground truth state.
+  DCHECK(is_transform_invertible_ == GetTransform().IsInvertible());
+
+  return is_transform_invertible_;
+}
 
 }  // namespace blink
 

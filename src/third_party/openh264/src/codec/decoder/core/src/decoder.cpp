@@ -259,6 +259,7 @@ void DestroyPicBuff (PWelsDecoderContext pCtx, PPicBuff* ppPicBuf, CMemoryAlign*
   PPicBuff pPicBuf = NULL;
 
   ResetReorderingPictureBuffers (pCtx->pPictReoderingStatus, pCtx->pPictInfoList, false);
+  if (pCtx->pDstInfo) pCtx->pDstInfo->iBufferStatus = 0;
 
   if (NULL == ppPicBuf || NULL == *ppPicBuf)
     return;
@@ -303,6 +304,7 @@ void ResetReorderingPictureBuffers (PPictReoderingStatus pPictReoderingStatus, P
       pPictInfo[i].bLastGOP = false;
       pPictInfo[i].iPOC = IMinInt32;
     }
+    pPictInfo->sBufferInfo.iBufferStatus = 0;
   }
 }
 
@@ -438,8 +440,9 @@ static inline int32_t GetTargetRefListSize (PWelsDecoderContext pCtx) {
     iNumRefFrames = MAX_REF_PIC_COUNT + 2;
   } else {
     iNumRefFrames = pCtx->pSps->iNumRefFrames + 2;
-    if (GetThreadCount (pCtx) > 1) {
-      iNumRefFrames = MAX_REF_PIC_COUNT + 1;
+    int32_t  iThreadCount = GetThreadCount (pCtx);
+    if (iThreadCount > 1) {
+      iNumRefFrames = MAX_REF_PIC_COUNT;
     }
   }
 

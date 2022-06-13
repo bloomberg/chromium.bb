@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/sequence_checker.h"
 #include "build/build_config.h"
@@ -35,6 +34,10 @@ class SafeBrowsingService;
 class BrowserProcess {
  public:
   explicit BrowserProcess(std::unique_ptr<PrefService> local_state);
+
+  BrowserProcess(const BrowserProcess&) = delete;
+  BrowserProcess& operator=(const BrowserProcess&) = delete;
+
   ~BrowserProcess();
 
   static BrowserProcess* GetInstance();
@@ -83,8 +86,6 @@ class BrowserProcess {
 #endif
 
   SEQUENCE_CHECKER(sequence_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(BrowserProcess);
 };
 
 }  // namespace weblayer

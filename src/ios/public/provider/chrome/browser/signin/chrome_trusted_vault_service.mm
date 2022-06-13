@@ -22,11 +22,10 @@ void ChromeTrustedVaultService::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-void ChromeTrustedVaultService::GetIsRecoverabilityDegraded(
+void ChromeTrustedVaultService::ReauthenticationForOptIn(
     ChromeIdentity* chrome_identity,
-    base::OnceCallback<void(bool)> callback) {
-  std::move(callback).Run(false);
-}
+    UIViewController* presentingViewController,
+    void (^callback)(BOOL success, NSError* error)) {}
 
 void ChromeTrustedVaultService::NotifyKeysChanged() {
   for (Observer& observer : observer_list_) {

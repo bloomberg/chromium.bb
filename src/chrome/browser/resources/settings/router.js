@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import './i18n_setup.js';
+
 import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import './i18n_setup.js';
+import {dedupingMixin} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
   /**
    * @typedef {{
@@ -244,6 +246,30 @@ import './i18n_setup.js';
     }
 
     /**
+     * Updates the URL parameters of the current route via exchanging the
+     * window history state. This changes the Settings route path, but doesn't
+     * change the route itself, hence does not push a new route history entry.
+     * Notifies routeChangedObservers.
+     * @param {!URLSearchParams} params
+     */
+    updateRouteParams(params) {
+      let url = this.currentRoute.path;
+      const queryString = params.toString();
+      if (queryString) {
+        url += '?' + queryString;
+      }
+      window.history.replaceState(window.history.state, '', url);
+
+      // We can't call |setCurrentRoute()| for the following, as it would also
+      // update |oldRoute| and |currentRoute|, which should not happen when
+      // only the URL parameters are updated.
+      this.currentQueryParameters_ = params;
+      new Set(this.routeObservers_).forEach((observer) => {
+        observer.currentRouteChanged(this.currentRoute, this.currentRoute);
+      });
+    }
+
+    /**
      * Navigates to a canonical route and pushes a new history entry.
      * @param {!Route} route
      * @param {URLSearchParams=} opt_dynamicParameters Navigations to the same
@@ -345,28 +371,51 @@ import './i18n_setup.js';
     }
   }
 
-  /** @polymerBehavior */
-  export const RouteObserverBehavior = {
-    /** @override */
-    attached() {
-      routerInstance.addObserver(this);
-
-      // Emulating Polymer data bindings, the observer is called when the
-      // element starts observing the route.
-      this.currentRouteChanged(routerInstance.currentRoute, undefined);
-    },
-
-    /** @override */
-    detached() {
-      routerInstance.removeObserver(this);
-    },
-
+  /**
+   * @polymer
+   * @mixinFunction
+   */
+  export const RouteObserverMixin = dedupingMixin(superClass => {
     /**
-     * @param {!Route|undefined} opt_newRoute
-     * @param {!Route|undefined} opt_oldRoute
+     * @polymer
+     * @mixinClass
      */
-    currentRouteChanged(opt_newRoute, opt_oldRoute) {
-      assertNotReached();
-    },
-  };
+    class RouteObserverMixin extends superClass {
+      /** @override */
+      connectedCallback() {
+        super.connectedCallback();
 
+        routerInstance.addObserver(this);
+
+        // Emulating Polymer data bindings, the observer is called when the
+        // element starts observing the route.
+        this.currentRouteChanged(routerInstance.currentRoute, undefined);
+      }
+
+      /** @override */
+      disconnectedCallback() {
+        super.disconnectedCallback();
+
+        routerInstance.removeObserver(this);
+      }
+
+      /**
+       * @param {!Route} newRoute
+       * @param {!Route=} opt_oldRoute
+       */
+      currentRouteChanged(newRoute, opt_oldRoute) {
+        assertNotReached();
+      }
+    }
+
+    return /** @type {?} */ (RouteObserverMixin);
+  });
+
+  /** @interface */
+  export class RouteObserverMixinInterface {
+    /**
+     * @param {!Route} newRoute
+     * @param {!Route=} opt_oldRoute
+     */
+    currentRouteChanged(newRoute, opt_oldRoute) {}
+  }

@@ -16,7 +16,6 @@
 #include "config/av1_rtcd.h"
 
 #include "test/acm_random.h"
-#include "test/clear_system_state.h"
 #include "test/register_state_check.h"
 #include "test/util.h"
 #include "av1/common/enums.h"
@@ -59,7 +58,6 @@ class AV1FilterIntraPredTest : public ::testing::TestWithParam<PredParams> {
     delete[] alloc_;
     delete[] predRef_;
     delete[] pred_;
-    libaom_test::ClearSystemState();
   }
 
  protected:
@@ -71,7 +69,7 @@ class AV1FilterIntraPredTest : public ::testing::TestWithParam<PredParams> {
     while (tstIndex < MaxTestNum) {
       PrepareBuffer();
       predFuncRef_(predRef_, stride, txSize_, &above[1], left, mode_);
-      ASM_REGISTER_STATE_CHECK(
+      API_REGISTER_STATE_CHECK(
           predFunc_(pred_, stride, txSize_, &above[1], left, mode_));
       DiffPred(tstIndex);
       tstIndex += 1;

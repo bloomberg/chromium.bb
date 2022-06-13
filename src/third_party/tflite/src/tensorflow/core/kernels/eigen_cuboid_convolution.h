@@ -17,7 +17,6 @@ limitations under the License.
 #define TENSORFLOW_CORE_KERNELS_EIGEN_CUBOID_CONVOLUTION_H_
 
 #include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
-#include "tensorflow/core/kernels/eigen_volume_patch.h"
 
 #if defined(TENSORFLOW_USE_CUSTOM_CONTRACTION_KERNEL)
 #include "tensorflow/core/kernels/eigen_contraction_kernel.h"
@@ -29,6 +28,7 @@ namespace Eigen {
 
 namespace internal {
 
+#if !EIGEN_ALTIVEC_USE_CUSTOM_PACK
 // WARNING: Most of the code here implicitly assumes that the matrix is in
 // ColMajor layout. This is guaranteed by the tensor contraction (see
 // TensorContraction.h).
@@ -1625,6 +1625,7 @@ struct gemm_pack_rhs<
     }
   }
 };
+#endif
 
 #if defined(TENSORFLOW_USE_CUSTOM_CONTRACTION_KERNEL)
 // Pack a block of the right input matrix (in our case it's always a "virtual

@@ -12,9 +12,7 @@
 #include <utility>
 
 #include "base/check.h"
-// TODO(crbug.com/1010217) Remove once no #includers are getting base/macros.h
-// by including this header.
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 
 namespace base {
 
@@ -254,7 +252,7 @@ class ScopedGeneric {
 
    private:
     T value_ = Traits::InvalidValue();
-    ScopedGeneric* scoped_generic_;
+    raw_ptr<ScopedGeneric<T, Traits>> scoped_generic_;
     bool used_ = false;
   };
 

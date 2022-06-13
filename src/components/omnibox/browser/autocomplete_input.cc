@@ -6,14 +6,16 @@
 
 #include <vector>
 
+#include "base/cxx17_backports.h"
 #include "base/logging.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/memory_usage_estimator.h"
+#include "base/trace_event/typed_macros.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/omnibox/browser/autocomplete_scheme_classifier.h"
 #include "components/url_formatter/url_fixer.h"
 #include "components/url_formatter/url_formatter.h"
@@ -23,6 +25,13 @@
 #include "third_party/re2/src/re2/re2.h"
 #include "url/url_canon_ip.h"
 #include "url/url_util.h"
+
+#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chromeos/crosapi/cpp/lacros_startup_state.h"  // nogncheck
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chromeos/crosapi/cpp/gurl_os_handler_utils.h"  // nogncheck
+#endif                                                   // defined(OS_CHROMEOS)
 
 namespace {
 
@@ -249,6 +258,27 @@ metrics::OmniboxInputType AutocompleteInput::Parse(
       url_formatter::FixupURL(base::UTF16ToUTF8(text), desired_tld);
   if (!canonicalized_url->is_valid())
     return metrics::OmniboxInputType::QUERY;
+
+#if defined(OS_CHROMEOS)
+  const bool is_lacros_or_lacros_is_primary =
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+      true;
+#else
+      // ChromeOS's launcher is using the omnibox from Ash. As such we have to
+      // allow Ash to use the os scheme if Lacros is the primary browser.
+      crosapi::lacros_startup_state::IsLacrosPrimaryEnabled();
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+  if (is_lacros_or_lacros_is_primary &&
+      crosapi::gurl_os_handler_utils::IsAshOsAsciiScheme(parsed_scheme_utf8)) {
+    // Lacros and Ash have a different set of internal chrome:// pages.
+    // However - once Lacros is the primary browser, the Ash browser cannot be
+    // reached anymore and many internal status / information / ... pages
+    // become inaccessible (e.g. the flags page which allows to disable Lacros).
+    // The os:// scheme is able to forward a keyed set of pages to Ash, hence
+    // making them accessible again.
+    return metrics::OmniboxInputType::URL;
+  }
+#endif  // defined(OS_CHROMEOS)
 
   if (base::LowerCaseEqualsASCII(parsed_scheme_utf8, url::kFileScheme)) {
     // A user might or might not type a scheme when entering a file URL.  In
@@ -569,7 +599,7 @@ bool AutocompleteInput::ShouldUpgradeToHttps(const std::u16string& text,
       !base::StartsWith(text, base::ASCIIToUTF16(url.scheme()),
                         base::CompareCase::INSENSITIVE_ASCII) &&
       !url::HostIsIPAddress(url.host()) &&
-      !net::IsHostnameNonUnique(base::UTF16ToUTF8(text)) &&
+      !net::IsHostnameNonUnique(url.host()) &&
       (url.port().empty() || https_port_for_testing)) {
     // Use HTTPS as the default scheme for URLs that are typed without a scheme.
     // Inputs of type UNKNOWN can still be valid URLs, but these will be mainly
@@ -699,4 +729,9 @@ size_t AutocompleteInput::EstimateMemoryUsage() const {
              : 0u;
 
   return res;
+}
+
+void AutocompleteInput::WriteIntoTrace(perfetto::TracedValue context) const {
+  auto dict = std::move(context).WriteDictionary();
+  dict.Add("text", text_);
 }

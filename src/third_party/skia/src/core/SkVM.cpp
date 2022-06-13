@@ -7,16 +7,15 @@
 
 #include "include/core/SkStream.h"
 #include "include/core/SkString.h"
-#include "include/private/SkChecksum.h"
 #include "include/private/SkHalf.h"
-#include "include/private/SkSpinlock.h"
 #include "include/private/SkTFitsIn.h"
 #include "include/private/SkThreadID.h"
-#include "include/private/SkVx.h"
+#include "src/core/SkColorSpacePriv.h"
 #include "src/core/SkColorSpaceXformSteps.h"
 #include "src/core/SkCpu.h"
 #include "src/core/SkEnumerate.h"
 #include "src/core/SkOpts.h"
+#include "src/core/SkStreamPriv.h"
 #include "src/core/SkVM.h"
 #include <algorithm>
 #include <atomic>
@@ -29,12 +28,15 @@
     #include <llvm/IR/IRBuilder.h>
     #include <llvm/IR/Verifier.h>
     #include <llvm/Support/TargetSelect.h>
+    #include <llvm/Support/Host.h>
 
     // Platform-specific intrinsics got their own files in LLVM 10.
     #if __has_include(<llvm/IR/IntrinsicsX86.h>)
         #include <llvm/IR/IntrinsicsX86.h>
     #endif
 #endif
+
+// #define SKVM_LLVM_WAIT_FOR_COMPILATION
 
 bool gSkVMAllowJIT{false};
 bool gSkVMJITViaDylib{false};
@@ -47,17 +49,19 @@ bool gSkVMJITViaDylib{false};
         static void* alloc_jit_buffer(size_t* len) {
             return VirtualAlloc(NULL, *len, MEM_RESERVE|MEM_COMMIT, PAGE_READWRITE);
         }
-        static void unmap_jit_buffer(void* ptr, size_t len) {
-            VirtualFree(ptr, 0, MEM_RELEASE);
-        }
         static void remap_as_executable(void* ptr, size_t len) {
             DWORD old;
             VirtualProtect(ptr, len, PAGE_EXECUTE_READ, &old);
             SkASSERT(old == PAGE_READWRITE);
         }
+        #if !defined(SKVM_LLVM)
+        static void unmap_jit_buffer(void* ptr, size_t len) {
+            VirtualFree(ptr, 0, MEM_RELEASE);
+        }
         static void close_dylib(void* dylib) {
             SkASSERT(false);  // TODO?  For now just assert we never make one.
         }
+        #endif
     #else
         #include <dlfcn.h>
         #include <sys/mman.h>
@@ -69,17 +73,19 @@ bool gSkVMJITViaDylib{false};
             *len = ((*len + page - 1) / page) * page;
             return mmap(nullptr,*len, PROT_READ|PROT_WRITE, MAP_ANONYMOUS|MAP_PRIVATE, -1,0);
         }
-        static void unmap_jit_buffer(void* ptr, size_t len) {
-            munmap(ptr, len);
-        }
         static void remap_as_executable(void* ptr, size_t len) {
             mprotect(ptr, len, PROT_READ|PROT_EXEC);
             __builtin___clear_cache((char*)ptr,
                                     (char*)ptr + len);
         }
+        #if !defined(SKVM_LLVM)
+        static void unmap_jit_buffer(void* ptr, size_t len) {
+            munmap(ptr, len);
+        }
         static void close_dylib(void* dylib) {
             dlclose(dylib);
         }
+        #endif
     #endif
 
     #if defined(SKVM_JIT_VTUNE)
@@ -112,7 +118,20 @@ bool gSkVMJITViaDylib{false};
     #endif
 #endif
 
+#if defined(SKSL_STANDALONE)
+    // skslc needs to link against this module (for the VM code generator). This module pulls in
+    // color-space code, but attempting to add those transitive dependencies to skslc gets out of
+    // hand. So we terminate the chain here with stub functions. Note that skslc's usage of SkVM
+    // never cares about color management.
+    skvm::F32 sk_program_transfer_fn(
+        skvm::F32 v, TFKind tf_kind,
+        skvm::F32 G, skvm::F32 A, skvm::F32 B, skvm::F32 C, skvm::F32 D, skvm::F32 E, skvm::F32 F) {
+            return v;
+    }
 
+    const skcms_TransferFunction* skcms_sRGB_TransferFunction() { return nullptr; }
+    const skcms_TransferFunction* skcms_sRGB_Inverse_TransferFunction() { return nullptr; }
+#endif
 
 namespace skvm {
 
@@ -140,6 +159,7 @@ namespace skvm {
         int regs = 0;
         int loop = 0;
         std::vector<int> strides;
+        std::vector<TraceHook*> traceHooks;
 
         std::atomic<void*> jit_entry{nullptr};   // TODO: minimal std::memory_orders
         size_t jit_size = 0;
@@ -155,25 +175,18 @@ namespace skvm {
     // Debugging tools, mostly for printing various data structures out to a stream.
 
     namespace {
-        class SkDebugfStream final : public SkWStream {
-            size_t fBytesWritten = 0;
-
-            bool write(const void* buffer, size_t size) override {
-                SkDebugf("%.*s", size, buffer);
-                fBytesWritten += size;
-                return true;
-            }
-
-            size_t bytesWritten() const override {
-                return fBytesWritten;
-            }
-        };
-
         struct V { Val id; };
         struct R { Reg id; };
-        struct Shift { int bits; };
-        struct Splat { int bits; };
-        struct Hex   { int bits; };
+        struct Shift       { int bits; };
+        struct Splat       { int bits; };
+        struct Hex         { int bits; };
+        struct TraceHookID { int bits; };
+        // For op `trace_line`
+        struct Line  { int bits; };
+        // For op `trace_var`
+        struct VarSlot { int bits; };
+        // For op `trace_enter`/`trace_exit`
+        struct FnIdx { int bits; };
 
         static void write(SkWStream* o, const char* s) {
             o->writeText(s);
@@ -217,7 +230,21 @@ namespace skvm {
         static void write(SkWStream* o, Hex h) {
             o->writeHexAsText(h.bits);
         }
-
+        static void write(SkWStream* o, TraceHookID h) {
+            o->writeDecAsText(h.bits);
+        }
+        static void write(SkWStream* o, Line d) {
+            write(o, "L");
+            o->writeDecAsText(d.bits);
+        }
+        static void write(SkWStream* o, VarSlot s) {
+            write(o, "$");
+            o->writeDecAsText(s.bits);
+        }
+        static void write(SkWStream* o, FnIdx s) {
+            write(o, "F");
+            o->writeDecAsText(s.bits);
+        }
         template <typename T, typename... Ts>
         static void write(SkWStream* o, T first, Ts... rest) {
             write(o, first);
@@ -233,9 +260,16 @@ namespace skvm {
              z = inst.z,
              w = inst.w;
         int immA = inst.immA,
-            immB = inst.immB;
+            immB = inst.immB,
+            immC = inst.immC;
         switch (op) {
             case Op::assert_true: write(o, op, V{x}, V{y}); break;
+
+            case Op::trace_line:  write(o, op, TraceHookID{immA}, V{x}, V{y}, Line{immB}); break;
+            case Op::trace_var:   write(o, op, TraceHookID{immA}, V{x}, V{y},
+                                                                  VarSlot{immB}, "=", V{z}); break;
+            case Op::trace_enter: write(o, op, TraceHookID{immA}, V{x}, V{y}, FnIdx{immB}); break;
+            case Op::trace_exit:  write(o, op, TraceHookID{immA}, V{x}, V{y}, FnIdx{immB}); break;
 
             case Op::store8:   write(o, op, Ptr{immA}, V{x}               ); break;
             case Op::store16:  write(o, op, Ptr{immA}, V{x}               ); break;
@@ -256,6 +290,7 @@ namespace skvm {
             case Op::gather32: write(o, V{id}, "=", op, Ptr{immA}, Hex{immB}, V{x}); break;
 
             case Op::uniform32: write(o, V{id}, "=", op, Ptr{immA}, Hex{immB}); break;
+            case Op::array32:   write(o, V{id}, "=", op, Ptr{immA}, Hex{immB}, Hex{immC}); break;
 
             case Op::splat: write(o, V{id}, "=", op, Splat{immA}); break;
 
@@ -346,9 +381,19 @@ namespace skvm {
                   z = inst.z,
                   w = inst.w;
             int immA = inst.immA,
-                immB = inst.immB;
+                immB = inst.immB,
+                immC = inst.immC;
             switch (op) {
                 case Op::assert_true: write(o, op, R{x}, R{y}); break;
+
+                case Op::trace_line:  write(o, op, TraceHookID{immA},
+                                                   R{x}, R{y}, Line{immB}); break;
+                case Op::trace_var:   write(o, op, TraceHookID{immA}, R{x}, R{y},
+                                                   VarSlot{immB}, "=", R{z}); break;
+                case Op::trace_enter: write(o, op, TraceHookID{immA},
+                                                   R{x}, R{y}, FnIdx{immB}); break;
+                case Op::trace_exit:  write(o, op, TraceHookID{immA},
+                                                   R{x}, R{y}, FnIdx{immB}); break;
 
                 case Op::store8:   write(o, op, Ptr{immA}, R{x}                  ); break;
                 case Op::store16:  write(o, op, Ptr{immA}, R{x}                  ); break;
@@ -369,6 +414,7 @@ namespace skvm {
                 case Op::gather32: write(o, R{d}, "=", op, Ptr{immA}, Hex{immB}, R{x}); break;
 
                 case Op::uniform32: write(o, R{d}, "=", op, Ptr{immA}, Hex{immB}); break;
+                case Op::array32:   write(o, R{d}, "=", op, Ptr{immA}, Hex{immB}, Hex{immC}); break;
 
                 case Op::splat:     write(o, R{d}, "=", op, Splat{immA}); break;
 
@@ -423,18 +469,13 @@ namespace skvm {
     std::vector<Instruction> eliminate_dead_code(std::vector<Instruction> program) {
         // Determine which Instructions are live by working back from side effects.
         std::vector<bool> live(program.size(), false);
-        auto mark_live = [&](Val id, auto& recurse) -> void {
-            if (live[id] == false) {
-                live[id] =  true;
-                Instruction inst = program[id];
+        for (Val id = program.size(); id--;) {
+            if (live[id] || has_side_effect(program[id].op)) {
+                live[id] = true;
+                const Instruction& inst = program[id];
                 for (Val arg : {inst.x, inst.y, inst.z, inst.w}) {
-                    if (arg != NA) { recurse(arg, recurse); }
+                    if (arg != NA) { live[arg] = true; }
                 }
-            }
-        };
-        for (Val id = 0; id < (Val)program.size(); id++) {
-            if (has_side_effect(program[id].op)) {
-                mark_live(id, mark_live);
             }
         }
 
@@ -454,6 +495,8 @@ namespace skvm {
                 new_id[id] = next++;
             }
         }
+
+        // Eliminate any non-live ops.
         auto it = std::remove_if(program.begin(), program.end(), [&](const Instruction& inst) {
             Val id = (Val)(&inst - program.data());
             return !live[id];
@@ -467,7 +510,8 @@ namespace skvm {
         std::vector<OptimizedInstruction> optimized(program.size());
         for (Val id = 0; id < (Val)program.size(); id++) {
             Instruction inst = program[id];
-            optimized[id] = {inst.op, inst.x,inst.y,inst.z,inst.w, inst.immA,inst.immB,
+            optimized[id] = {inst.op, inst.x,inst.y,inst.z,inst.w,
+                             inst.immA,inst.immB,inst.immC,
                              /*death=*/id, /*can_hoist=*/true};
         }
 
@@ -483,7 +527,7 @@ namespace skvm {
         // Mark which values don't depend on the loop and can be hoisted.
         for (OptimizedInstruction& inst : optimized) {
             // Varying loads (and gathers) and stores cannot be hoisted out of the loop.
-            if (is_always_varying(inst.op)) {
+            if (is_always_varying(inst.op) || is_trace(inst.op)) {
                 inst.can_hoist = false;
             }
 
@@ -522,7 +566,7 @@ namespace skvm {
             debug_name = buf;
         }
 
-        return {this->optimize(), fStrides, debug_name, allow_jit};
+        return {this->optimize(), fStrides, fTraceHooks, debug_name, allow_jit};
     }
 
     uint64_t Builder::hash() const {
@@ -531,6 +575,8 @@ namespace skvm {
         return (uint64_t)lo | (uint64_t)hi << 32;
     }
 
+    bool operator!=(Ptr a, Ptr b) { return a.ix != b.ix; }
+
     bool operator==(const Instruction& a, const Instruction& b) {
         return a.op   == b.op
             && a.x    == b.x
@@ -538,7 +584,8 @@ namespace skvm {
             && a.z    == b.z
             && a.w    == b.w
             && a.immA == b.immA
-            && a.immB == b.immB;
+            && a.immB == b.immB
+            && a.immC == b.immC;
     }
 
     uint32_t InstructionHash::operator()(const Instruction& inst, uint32_t seed) const {
@@ -555,7 +602,7 @@ namespace skvm {
         // But we never dedup loads or stores: an intervening store could change that memory.
         // Uniforms and gathers touch only uniform memory, so they're fine to dedup,
         // and index is varying but doesn't touch memory, so it's fine to dedup too.
-        if (!touches_varying_memory(inst.op)) {
+        if (!touches_varying_memory(inst.op) && !is_trace(inst.op)) {
             if (Val* id = fIndex.find(inst)) {
                 return *id;
             }
@@ -580,6 +627,49 @@ namespace skvm {
     #endif
     }
 
+    int Builder::attachTraceHook(TraceHook* hook) {
+        int traceHookID = (int)fTraceHooks.size();
+        fTraceHooks.push_back(hook);
+        return traceHookID;
+    }
+
+    void Builder::trace_line(int traceHookID, I32 mask, I32 traceMask, int line) {
+        SkASSERT(traceHookID >= 0);
+        SkASSERT(traceHookID < (int)fTraceHooks.size());
+        if (this->isImm(mask.id,      0)) { return; }
+        if (this->isImm(traceMask.id, 0)) { return; }
+        if (this->isImm(mask.id,     ~0)) { mask = traceMask; }
+        if (this->isImm(traceMask.id,~0)) { traceMask = mask; }
+        (void)push(Op::trace_line, mask.id,traceMask.id,NA,NA, traceHookID, line);
+    }
+    void Builder::trace_var(int traceHookID, I32 mask, I32 traceMask, int slot, I32 val) {
+        SkASSERT(traceHookID >= 0);
+        SkASSERT(traceHookID < (int)fTraceHooks.size());
+        if (this->isImm(mask.id,      0)) { return; }
+        if (this->isImm(traceMask.id, 0)) { return; }
+        if (this->isImm(mask.id,     ~0)) { mask = traceMask; }
+        if (this->isImm(traceMask.id,~0)) { traceMask = mask; }
+        (void)push(Op::trace_var, mask.id,traceMask.id,val.id,NA, traceHookID, slot);
+    }
+    void Builder::trace_enter(int traceHookID, I32 mask, I32 traceMask, int fnIdx) {
+        SkASSERT(traceHookID >= 0);
+        SkASSERT(traceHookID < (int)fTraceHooks.size());
+        if (this->isImm(mask.id,      0)) { return; }
+        if (this->isImm(traceMask.id, 0)) { return; }
+        if (this->isImm(mask.id,     ~0)) { mask = traceMask; }
+        if (this->isImm(traceMask.id,~0)) { traceMask = mask; }
+        (void)push(Op::trace_enter, mask.id,traceMask.id,NA,NA, traceHookID, fnIdx);
+    }
+    void Builder::trace_exit(int traceHookID, I32 mask, I32 traceMask, int fnIdx) {
+        SkASSERT(traceHookID >= 0);
+        SkASSERT(traceHookID < (int)fTraceHooks.size());
+        if (this->isImm(mask.id,      0)) { return; }
+        if (this->isImm(traceMask.id, 0)) { return; }
+        if (this->isImm(mask.id,     ~0)) { mask = traceMask; }
+        if (this->isImm(traceMask.id,~0)) { traceMask = mask; }
+        (void)push(Op::trace_exit, mask.id,traceMask.id,NA,NA, traceHookID, fnIdx);
+    }
+
     void Builder::store8 (Ptr ptr, I32 val) { (void)push(Op::store8 , val.id,NA,NA,NA, ptr.ix); }
     void Builder::store16(Ptr ptr, I32 val) { (void)push(Op::store16, val.id,NA,NA,NA, ptr.ix); }
     void Builder::store32(Ptr ptr, I32 val) { (void)push(Op::store32, val.id,NA,NA,NA, ptr.ix); }
@@ -602,18 +692,23 @@ namespace skvm {
         return {this, push(Op::load128, NA,NA,NA,NA, ptr.ix,lane) };
     }
 
-    I32 Builder::gather8 (Ptr ptr, int offset, I32 index) {
+    I32 Builder::gather8 (UPtr ptr, int offset, I32 index) {
         return {this, push(Op::gather8 , index.id,NA,NA,NA, ptr.ix,offset)};
     }
-    I32 Builder::gather16(Ptr ptr, int offset, I32 index) {
+    I32 Builder::gather16(UPtr ptr, int offset, I32 index) {
         return {this, push(Op::gather16, index.id,NA,NA,NA, ptr.ix,offset)};
     }
-    I32 Builder::gather32(Ptr ptr, int offset, I32 index) {
+    I32 Builder::gather32(UPtr ptr, int offset, I32 index) {
         return {this, push(Op::gather32, index.id,NA,NA,NA, ptr.ix,offset)};
     }
 
-    I32 Builder::uniform32(Ptr ptr, int offset) {
+    I32 Builder::uniform32(UPtr ptr, int offset) {
         return {this, push(Op::uniform32, NA,NA,NA,NA, ptr.ix, offset)};
+    }
+
+    // Note: this converts the array index into a byte offset for the op.
+    I32 Builder::array32  (UPtr ptr, int offset, int index) {
+        return {this, push(Op::array32, NA,NA,NA,NA, ptr.ix, offset, index * sizeof(int))};
     }
 
     I32 Builder::splat(int n) { return {this, push(Op::splat, NA,NA,NA,NA, n) }; }
@@ -646,7 +741,7 @@ namespace skvm {
                 return {this, this->push(Op::fma_f32, fProgram[y.id].x, fProgram[y.id].y, x.id)};
             }
         }
-        return {this, this->push(Op::add_f32, x.id, y.id)};
+        return {this, this->push(Op::add_f32, std::min(x.id, y.id), std::max(x.id, y.id))};
     }
 
     F32 Builder::sub(F32 x, F32 y) {
@@ -667,7 +762,7 @@ namespace skvm {
         if (float X,Y; this->allImm(x.id,&X, y.id,&Y)) { return splat(X*Y); }
         if (this->isImm(y.id, 1.0f)) { return x; }  // x*1 == x
         if (this->isImm(x.id, 1.0f)) { return y; }  // 1*y == y
-        return {this, this->push(Op::mul_f32, x.id, y.id)};
+        return {this, this->push(Op::mul_f32, std::min(x.id, y.id), std::max(x.id, y.id))};
     }
 
     F32 Builder::fast_mul(F32 x, F32 y) {
@@ -853,26 +948,30 @@ namespace skvm {
         return {this, this->push(Op::max_f32, x.id, y.id)};
     }
 
+    SK_ATTRIBUTE(no_sanitize("signed-integer-overflow"))
     I32 Builder::add(I32 x, I32 y) {
         if (int X,Y; this->allImm(x.id,&X, y.id,&Y)) { return splat(X+Y); }
         if (this->isImm(x.id, 0)) { return y; }
         if (this->isImm(y.id, 0)) { return x; }
-        return {this, this->push(Op::add_i32, x.id, y.id)};
+        return {this, this->push(Op::add_i32, std::min(x.id, y.id), std::max(x.id, y.id))};
     }
+    SK_ATTRIBUTE(no_sanitize("signed-integer-overflow"))
     I32 Builder::sub(I32 x, I32 y) {
         if (int X,Y; this->allImm(x.id,&X, y.id,&Y)) { return splat(X-Y); }
         if (this->isImm(y.id, 0)) { return x; }
         return {this, this->push(Op::sub_i32, x.id, y.id)};
     }
+    SK_ATTRIBUTE(no_sanitize("signed-integer-overflow"))
     I32 Builder::mul(I32 x, I32 y) {
         if (int X,Y; this->allImm(x.id,&X, y.id,&Y)) { return splat(X*Y); }
         if (this->isImm(x.id, 0)) { return splat(0); }
         if (this->isImm(y.id, 0)) { return splat(0); }
         if (this->isImm(x.id, 1)) { return y; }
         if (this->isImm(y.id, 1)) { return x; }
-        return {this, this->push(Op::mul_i32, x.id, y.id)};
+        return {this, this->push(Op::mul_i32, std::min(x.id, y.id), std::max(x.id, y.id))};
     }
 
+    SK_ATTRIBUTE(no_sanitize("shift"))
     I32 Builder::shl(I32 x, int bits) {
         if (bits == 0) { return x; }
         if (int X; this->allImm(x.id,&X)) { return splat(X << bits); }
@@ -891,11 +990,11 @@ namespace skvm {
 
     I32 Builder:: eq(F32 x, F32 y) {
         if (float X,Y; this->allImm(x.id,&X, y.id,&Y)) { return splat(X==Y ? ~0 : 0); }
-        return {this, this->push(Op::eq_f32, x.id, y.id)};
+        return {this, this->push(Op::eq_f32, std::min(x.id, y.id), std::max(x.id, y.id))};
     }
     I32 Builder::neq(F32 x, F32 y) {
         if (float X,Y; this->allImm(x.id,&X, y.id,&Y)) { return splat(X!=Y ? ~0 : 0); }
-        return {this, this->push(Op::neq_f32, x.id, y.id)};
+        return {this, this->push(Op::neq_f32, std::min(x.id, y.id), std::max(x.id, y.id))};
     }
     I32 Builder::lt(F32 x, F32 y) {
         if (float X,Y; this->allImm(x.id,&X, y.id,&Y)) { return splat(Y> X ? ~0 : 0); }
@@ -917,7 +1016,7 @@ namespace skvm {
     I32 Builder:: eq(I32 x, I32 y) {
         if (x.id == y.id) { return splat(~0); }
         if (int X,Y; this->allImm(x.id,&X, y.id,&Y)) { return splat(X==Y ? ~0 : 0); }
-        return {this, this->push(Op:: eq_i32, x.id, y.id)};
+        return {this, this->push(Op:: eq_i32, std::min(x.id, y.id), std::max(x.id, y.id))};
     }
     I32 Builder::neq(I32 x, I32 y) {
         if (int X,Y; this->allImm(x.id,&X, y.id,&Y)) { return splat(X!=Y ? ~0 : 0); }
@@ -942,7 +1041,7 @@ namespace skvm {
         if (this->isImm(x.id, 0)) { return splat(0); }   // (false & y) == false
         if (this->isImm(y.id,~0)) { return x; }          // (x & true) == x
         if (this->isImm(x.id,~0)) { return y; }          // (true & y) == y
-        return {this, this->push(Op::bit_and, x.id, y.id)};
+        return {this, this->push(Op::bit_and, std::min(x.id, y.id), std::max(x.id, y.id))};
     }
     I32 Builder::bit_or(I32 x, I32 y) {
         if (x.id == y.id) { return x; }
@@ -951,14 +1050,14 @@ namespace skvm {
         if (this->isImm(x.id, 0)) { return y; }           // (false | y) == y
         if (this->isImm(y.id,~0)) { return splat(~0); }   // (x | true) == true
         if (this->isImm(x.id,~0)) { return splat(~0); }   // (true | y) == true
-        return {this, this->push(Op::bit_or, x.id, y.id)};
+        return {this, this->push(Op::bit_or, std::min(x.id, y.id), std::max(x.id, y.id))};
     }
     I32 Builder::bit_xor(I32 x, I32 y) {
         if (x.id == y.id) { return splat(0); }
         if (int X,Y; this->allImm(x.id,&X, y.id,&Y)) { return splat(X^Y); }
         if (this->isImm(y.id, 0)) { return x; }   // (x ^ false) == x
         if (this->isImm(x.id, 0)) { return y; }   // (false ^ y) == y
-        return {this, this->push(Op::bit_xor, x.id, y.id)};
+        return {this, this->push(Op::bit_xor, std::min(x.id, y.id), std::max(x.id, y.id))};
     }
 
     I32 Builder::bit_clear(I32 x, I32 y) {
@@ -1030,6 +1129,7 @@ namespace skvm {
 
     PixelFormat SkColorType_to_PixelFormat(SkColorType ct) {
         auto UNORM = PixelFormat::UNORM,
+             SRGB  = PixelFormat::SRGB,
              FLOAT = PixelFormat::FLOAT;
         switch (ct) {
             case kUnknown_SkColorType: break;
@@ -1052,6 +1152,7 @@ namespace skvm {
             case kRGBA_8888_SkColorType:  return {UNORM, 8,8,8,8,  0,8,16,24};
             case kRGB_888x_SkColorType:   return {UNORM, 8,8,8,0,  0,8,16,32};  // 32-bit
             case kBGRA_8888_SkColorType:  return {UNORM, 8,8,8,8, 16,8, 0,24};
+            case kSRGBA_8888_SkColorType: return { SRGB, 8,8,8,8,  0,8,16,24};
 
             case kRGBA_1010102_SkColorType: return {UNORM, 10,10,10,2,  0,10,20,30};
             case kBGRA_1010102_SkColorType: return {UNORM, 10,10,10,2, 20,10, 0,30};
@@ -1078,19 +1179,43 @@ namespace skvm {
 
     static Color unpack(PixelFormat f, I32 x) {
         SkASSERT(byte_size(f) <= 4);
-        auto unpack_channel = [=](int bits, int shift) {
+
+        auto from_srgb = [](int bits, I32 channel) -> F32 {
+            const skcms_TransferFunction* tf = skcms_sRGB_TransferFunction();
+            F32 v = from_unorm(bits, channel);
+            return sk_program_transfer_fn(v, sRGBish_TF,
+                                          v->splat(tf->g),
+                                          v->splat(tf->a),
+                                          v->splat(tf->b),
+                                          v->splat(tf->c),
+                                          v->splat(tf->d),
+                                          v->splat(tf->e),
+                                          v->splat(tf->f));
+        };
+
+        auto unpack_rgb = [=](int bits, int shift) -> F32 {
             I32 channel = extract(x, shift, (1<<bits)-1);
             switch (f.encoding) {
                 case PixelFormat::UNORM: return from_unorm(bits, channel);
+                case PixelFormat:: SRGB: return from_srgb (bits, channel);
+                case PixelFormat::FLOAT: return from_fp16 (      channel);
+            }
+            SkUNREACHABLE;
+        };
+        auto unpack_alpha = [=](int bits, int shift) -> F32 {
+            I32 channel = extract(x, shift, (1<<bits)-1);
+            switch (f.encoding) {
+                case PixelFormat::UNORM:
+                case PixelFormat:: SRGB: return from_unorm(bits, channel);
                 case PixelFormat::FLOAT: return from_fp16 (      channel);
             }
             SkUNREACHABLE;
         };
         return {
-            f.r_bits ? unpack_channel(f.r_bits, f.r_shift) : x->splat(0.0f),
-            f.g_bits ? unpack_channel(f.g_bits, f.g_shift) : x->splat(0.0f),
-            f.b_bits ? unpack_channel(f.b_bits, f.b_shift) : x->splat(0.0f),
-            f.a_bits ? unpack_channel(f.a_bits, f.a_shift) : x->splat(1.0f),
+            f.r_bits ? unpack_rgb  (f.r_bits, f.r_shift) : x->splat(0.0f),
+            f.g_bits ? unpack_rgb  (f.g_bits, f.g_shift) : x->splat(0.0f),
+            f.b_bits ? unpack_rgb  (f.b_bits, f.b_shift) : x->splat(0.0f),
+            f.a_bits ? unpack_alpha(f.a_bits, f.a_shift) : x->splat(1.0f),
         };
     }
 
@@ -1165,7 +1290,7 @@ namespace skvm {
         return {};
     }
 
-    Color Builder::gather(PixelFormat f, Ptr ptr, int offset, I32 index) {
+    Color Builder::gather(PixelFormat f, UPtr ptr, int offset, I32 index) {
         switch (byte_size(f)) {
             case 1: return unpack(f, gather8 (ptr, offset, index));
             case 2: return unpack(f, gather16(ptr, offset, index));
@@ -1198,19 +1323,42 @@ namespace skvm {
 
     static I32 pack32(PixelFormat f, Color c) {
         SkASSERT(byte_size(f) <= 4);
+
+        auto to_srgb = [](int bits, F32 v) {
+            const skcms_TransferFunction* tf = skcms_sRGB_Inverse_TransferFunction();
+            return to_unorm(bits, sk_program_transfer_fn(v, sRGBish_TF,
+                                                         v->splat(tf->g),
+                                                         v->splat(tf->a),
+                                                         v->splat(tf->b),
+                                                         v->splat(tf->c),
+                                                         v->splat(tf->d),
+                                                         v->splat(tf->e),
+                                                         v->splat(tf->f)));
+        };
+
         I32 packed = c->splat(0);
-        auto pack_channel = [&](F32 channel, int bits, int shift) {
+        auto pack_rgb = [&](F32 channel, int bits, int shift) {
             I32 encoded;
             switch (f.encoding) {
                 case PixelFormat::UNORM: encoded = to_unorm(bits, channel); break;
+                case PixelFormat:: SRGB: encoded = to_srgb (bits, channel); break;
                 case PixelFormat::FLOAT: encoded = to_fp16 (      channel); break;
             }
             packed = pack(packed, encoded, shift);
         };
-        if (f.r_bits) { pack_channel(c.r, f.r_bits, f.r_shift); }
-        if (f.g_bits) { pack_channel(c.g, f.g_bits, f.g_shift); }
-        if (f.b_bits) { pack_channel(c.b, f.b_bits, f.b_shift); }
-        if (f.a_bits) { pack_channel(c.a, f.a_bits, f.a_shift); }
+        auto pack_alpha = [&](F32 channel, int bits, int shift) {
+            I32 encoded;
+            switch (f.encoding) {
+                case PixelFormat::UNORM:
+                case PixelFormat:: SRGB: encoded = to_unorm(bits, channel); break;
+                case PixelFormat::FLOAT: encoded = to_fp16 (      channel); break;
+            }
+            packed = pack(packed, encoded, shift);
+        };
+        if (f.r_bits) { pack_rgb  (c.r, f.r_bits, f.r_shift); }
+        if (f.g_bits) { pack_rgb  (c.g, f.g_bits, f.g_shift); }
+        if (f.b_bits) { pack_rgb  (c.b, f.b_bits, f.b_shift); }
+        if (f.a_bits) { pack_alpha(c.a, f.a_bits, f.a_shift); }
         return packed;
     }
 
@@ -2361,7 +2509,6 @@ namespace skvm {
                     // Put it all back together, preserving the high 8 bits and low 5.
                     inst = ((disp << 5) &  (19_mask << 5))
                          | ((inst     ) & ~(19_mask << 5));
-
                     memcpy(fCode + ref, &inst, 4);
                 }
             }
@@ -2425,18 +2572,20 @@ namespace skvm {
                                 (n,a[0],a[1],a[2],a[3],a[4],a[5]);
                 case 7: return ((void(*)(int,void*,void*,void*,void*,void*,void*,void*))jit_entry)
                                 (n,a[0],a[1],a[2],a[3],a[4],a[5],a[6]);
-                default: SkASSERT(fImpl->strides.size() <= 7);
+                default: break; //SkASSERT(fImpl->strides.size() <= 7);
             }
         }
     #endif
 
         // So we'll sometimes use the interpreter here even if later calls will use the JIT.
         SkOpts::interpret_skvm(fImpl->instructions.data(), (int)fImpl->instructions.size(),
-                               this->nregs(), this->loop(), fImpl->strides.data(), this->nargs(),
-                               n, args);
+                               this->nregs(), this->loop(), fImpl->strides.data(),
+                               fImpl->traceHooks.data(), fImpl->traceHooks.size(),
+                               this->nargs(), n, args);
     }
 
-#if defined(SKVM_LLVM)
+    #if defined(SKVM_LLVM)
+    // -- SKVM_LLVM --------------------------------------------------------------------------------
     void Program::setupLLVM(const std::vector<OptimizedInstruction>& instructions,
                             const char* debug_name) {
         auto ctx = std::make_unique<llvm::LLVMContext>();
@@ -2479,29 +2628,37 @@ namespace skvm {
         std::vector<llvm::Value*> vals(instructions.size());
 
         auto emit = [&](size_t i, bool scalar, IRBuilder* b) {
-            auto [op, x,y,z,w, immA,immB, death,can_hoist] = instructions[i];
+            auto [op, x,y,z,w, immA,immB,immC, death,can_hoist] = instructions[i];
 
             llvm::Type *i1    = llvm::Type::getInt1Ty (*ctx),
                        *i8    = llvm::Type::getInt8Ty (*ctx),
                        *i16   = llvm::Type::getInt16Ty(*ctx),
                        *f32   = llvm::Type::getFloatTy(*ctx),
-                       *I1    = scalar ? i1    : llvm::VectorType::get(i1 , K  ),
-                       *I8    = scalar ? i8    : llvm::VectorType::get(i8 , K  ),
-                       *I16   = scalar ? i16   : llvm::VectorType::get(i16, K  ),
-                       *I32   = scalar ? i32   : llvm::VectorType::get(i32, K  ),
-                       *F32   = scalar ? f32   : llvm::VectorType::get(f32, K  );
+                       *I1    = scalar ? i1    : llvm::VectorType::get(i1 , K, false  ),
+                       *I8    = scalar ? i8    : llvm::VectorType::get(i8 , K, false  ),
+                       *I16   = scalar ? i16   : llvm::VectorType::get(i16, K, false  ),
+                       *I32   = scalar ? i32   : llvm::VectorType::get(i32, K, false  ),
+                       *F32   = scalar ? f32   : llvm::VectorType::get(f32, K, false  );
 
             auto I  = [&](llvm::Value* v) { return b->CreateBitCast(v, I32  ); };
             auto F  = [&](llvm::Value* v) { return b->CreateBitCast(v, F32  ); };
 
             auto S = [&](llvm::Type* dst, llvm::Value* v) { return b->CreateSExt(v, dst); };
 
+            llvm::Type* vt = nullptr;
             switch (llvm::Type* t = nullptr; op) {
                 default:
                     SkDebugf("can't llvm %s (%d)\n", name(op), op);
                     return false;
 
                 case Op::assert_true: /*TODO*/ break;
+
+                case Op::trace_line:
+                case Op::trace_var:
+                case Op::trace_enter:
+                case Op::trace_exit:
+                    /* Force this program to run in the interpreter. */
+                    return false;
 
                 case Op::index:
                     if (I32->isVectorTy()) {
@@ -2520,39 +2677,42 @@ namespace skvm {
                 case Op::load32: t = I32; goto load;
                 load: {
                     llvm::Value* ptr = b->CreateBitCast(args[immA], t->getPointerTo());
-                    vals[i] = b->CreateZExt(b->CreateAlignedLoad(ptr, 1), I32);
+                    vals[i] = b->CreateZExt(
+                            b->CreateAlignedLoad(t, ptr, llvm::MaybeAlign{1}), I32);
                 } break;
 
 
                 case Op::splat: vals[i] = llvm::ConstantInt::get(I32, immA); break;
 
                 case Op::uniform32: {
-                    llvm::Value* ptr = b->CreateBitCast(b->CreateConstInBoundsGEP1_32(nullptr,
-                                                                                      args[immA],
-                                                                                      immB),
-                                                        i32->getPointerTo());
-                    llvm::Value* val = b->CreateZExt(b->CreateAlignedLoad(ptr, 1), i32);
+                    llvm::Value* ptr = b->CreateBitCast(
+                            b->CreateConstInBoundsGEP1_32(i8, args[immA], immB),
+                            i32->getPointerTo());
+                    llvm::Value* val = b->CreateZExt(
+                            b->CreateAlignedLoad(i32, ptr, llvm::MaybeAlign{1}), i32);
                     vals[i] = I32->isVectorTy() ? b->CreateVectorSplat(K, val)
                                                 : val;
                 } break;
 
-                case Op::gather8:  t = i8 ; goto gather;
-                case Op::gather16: t = i16; goto gather;
-                case Op::gather32: t = i32; goto gather;
+                case Op::gather8:  t = i8 ; vt = I8; goto gather;
+                case Op::gather16: t = i16; vt = I16; goto gather;
+                case Op::gather32: t = i32; vt = I32; goto gather;
                 gather: {
                     // Our gather base pointer is immB bytes off of uniform immA.
                     llvm::Value* base =
-                        b->CreateLoad(b->CreateBitCast(b->CreateConstInBoundsGEP1_32(nullptr,
-                                                                                     args[immA],
-                                                                                     immB),
-                                                       t->getPointerTo()->getPointerTo()));
+                        b->CreateLoad(b->CreateBitCast(
+                                b->CreateConstInBoundsGEP1_32(i8, args[immA],immB),
+                                t->getPointerTo()->getPointerTo()));
 
-                    llvm::Value* ptr = b->CreateInBoundsGEP(nullptr, base, vals[x]);
+                    llvm::Value* ptr = b->CreateInBoundsGEP(t, base, vals[x]);
                     llvm::Value* gathered;
                     if (ptr->getType()->isVectorTy()) {
-                        gathered = b->CreateMaskedGather(ptr, 1);
+                        gathered = b->CreateMaskedGather(
+                                vt,
+                                ptr,
+                                llvm::Align{1});
                     } else {
-                        gathered = b->CreateAlignedLoad(ptr, 1);
+                        gathered = b->CreateAlignedLoad(vt, ptr, llvm::MaybeAlign{1});
                     }
                     vals[i] = b->CreateZExt(gathered, I32);
                 } break;
@@ -2564,7 +2724,7 @@ namespace skvm {
                     llvm::Value* val = b->CreateTrunc(vals[x], t);
                     llvm::Value* ptr = b->CreateBitCast(args[immA],
                                                         val->getType()->getPointerTo());
-                    vals[i] = b->CreateAlignedStore(val, ptr, 1);
+                    vals[i] = b->CreateAlignedStore(val, ptr, llvm::MaybeAlign{1});
                 } break;
 
                 case Op::bit_and:   vals[i] = b->CreateAnd(vals[x], vals[y]); break;
@@ -2645,7 +2805,8 @@ namespace skvm {
                     // Using b->CreateIntrinsic(..., {}, {...}) to avoid name mangling.
                     if (scalar) {
                         // cvtss2si is float x4 -> int, ignoring input lanes 1,2,3.  ¯\_(ツ)_/¯
-                        llvm::Value* v = llvm::UndefValue::get(llvm::VectorType::get(f32, 4));
+                        llvm::Value* v = llvm::UndefValue::get(
+                                llvm::VectorType::get(f32, 4, false));
                         v = b->CreateInsertElement(v, F(vals[x]), (uint64_t)0);
                         vals[i] = b->CreateIntrinsic(llvm::Intrinsic::x86_sse_cvtss2si, {}, {v});
                     } else {
@@ -2726,7 +2887,10 @@ namespace skvm {
             // Each arg ptr += K
             for (size_t i = 0; i < fImpl->strides.size(); i++) {
                 llvm::Value* arg_next
-                    = b.CreateConstInBoundsGEP1_32(nullptr, args[i], K*fImpl->strides[i]);
+                    = b.CreateConstInBoundsGEP1_32(
+                            llvm::Type::getInt8Ty (*ctx),
+                            args[i],
+                            K*fImpl->strides[i]);
                 args[i]->addIncoming(arg_next, loopK);
             }
             b.CreateBr(testK);
@@ -2774,10 +2938,11 @@ namespace skvm {
             llvm::Value* n_next = b.CreateSub(n, b.getInt32(1));
             n->addIncoming(n_next, loop1);
 
-            // Each arg ptr += K
+            // Each arg ptr += 1
             for (size_t i = 0; i < fImpl->strides.size(); i++) {
                 llvm::Value* arg_next
-                    = b.CreateConstInBoundsGEP1_32(nullptr, args[i], fImpl->strides[i]);
+                    = b.CreateConstInBoundsGEP1_32(
+                            llvm::Type::getInt8Ty (*ctx), args[i], fImpl->strides[i]);
                 args[i]->addIncoming(arg_next, loop1);
             }
             b.CreateBr(test1);
@@ -2814,9 +2979,14 @@ namespace skvm {
             fImpl->llvm_ctx = std::move(ctx);
             fImpl->llvm_ee.reset(ee);
 
+            #if defined(SKVM_LLVM_WAIT_FOR_COMPILATION)
+            // Wait for llvm to compile
+            void* function = (void*)ee->getFunctionAddress(debug_name);
+            fImpl->jit_entry.store(function);
             // We have to be careful here about what we close over and how, in case fImpl moves.
             // fImpl itself may change, but its pointee fields won't, so close over them by value.
             // Also, debug_name will almost certainly leave scope, so copy it.
+            #else
             fImpl->llvm_compiling = std::async(std::launch::async, [dst  = &fImpl->jit_entry,
                                                                     ee   =  fImpl->llvm_ee.get(),
                                                                     name = std::string(debug_name)]{
@@ -2825,16 +2995,22 @@ namespace skvm {
                 // std::string            name;
                 dst->store( (void*)ee->getFunctionAddress(name.c_str()) );
             });
+            #endif
         }
     }
-#endif
+    #endif  // SKVM_LLVM
 
     void Program::waitForLLVM() const {
-    #if defined(SKVM_LLVM)
+    #if defined(SKVM_LLVM) && !defined(SKVM_LLVM_WAIT_FOR_COMPILATION)
         if (fImpl->llvm_compiling.valid()) {
             fImpl->llvm_compiling.wait();
         }
     #endif
+    }
+
+    bool Program::hasTraceHooks() const {
+        // Identifies a program which has been instrumented for debugging.
+        return !fImpl->traceHooks.empty();
     }
 
     bool Program::hasJIT() const {
@@ -2883,8 +3059,10 @@ namespace skvm {
 
     Program::Program(const std::vector<OptimizedInstruction>& instructions,
                      const std::vector<int>& strides,
+                     const std::vector<TraceHook*>& traceHooks,
                      const char* debug_name, bool allow_jit) : Program() {
         fImpl->strides = strides;
+        fImpl->traceHooks = traceHooks;
         if (gSkVMAllowJIT && allow_jit) {
         #if 1 && defined(SKVM_LLVM)
             this->setupLLVM(instructions, debug_name);
@@ -2966,7 +3144,7 @@ namespace skvm {
         fImpl->loop = 0;
         fImpl->instructions.reserve(instructions.size());
 
-        // Add a dummy mapping for the N/A sentinel Val to any arbitrary register
+        // Add a mapping for the N/A sentinel Val to any arbitrary register
         // so lookups don't have to know which arguments are used by which Ops.
         auto lookup_register = [&](Val id) {
             return id == NA ? (Reg)0
@@ -2983,6 +3161,7 @@ namespace skvm {
                 lookup_register(inst.w),
                 inst.immA,
                 inst.immB,
+                inst.immC,
             };
             fImpl->instructions.push_back(pinst);
         };
@@ -3004,11 +3183,20 @@ namespace skvm {
 
 #if defined(SKVM_JIT)
 
+    namespace SkVMJitTypes {
+    #if defined(__x86_64__) || defined(_M_X64)
+        using Reg = Assembler::Ymm;
+    #elif defined(__aarch64__)
+        using Reg = Assembler::V;
+    #endif
+    }  // namespace SkVMJitTypes
+
     bool Program::jit(const std::vector<OptimizedInstruction>& instructions,
                       int* stack_hint,
                       uint32_t* registers_used,
                       Assembler* a) const {
         using A = Assembler;
+        using SkVMJitTypes::Reg;
 
         SkTHashMap<int, A::Label> constants;    // Constants (mostly splats) share the same pool.
         A::Label                  iota;         // Varies per lane, for Op::index.
@@ -3028,13 +3216,11 @@ namespace skvm {
 
         const int nstack_slots = *stack_hint >= 0 ? *stack_hint
                                                   : stack_slot.size();
-
     #if defined(__x86_64__) || defined(_M_X64)
         if (!SkCpu::Supports(SkCpu::HSW)) {
             return false;
         }
         const int K = 8;
-        using Reg = A::Ymm;
         #if defined(_M_X64)  // Important to check this first; clang-cl defines both.
             const A::GP64 N = A::rcx,
                         GP0 = A::rax,
@@ -3155,7 +3341,6 @@ namespace skvm {
         };
     #elif defined(__aarch64__)
         const int K = 4;
-        using Reg = A::V;
         const A::X N     = A::x0,
                    GP0   = A::x8,
                    GP1   = A::x9,
@@ -3207,7 +3392,8 @@ namespace skvm {
                       z = inst.z,
                       w = inst.w;
             const int immA = inst.immA,
-                      immB = inst.immB;
+                      immB = inst.immB,
+                      immC = inst.immC;
 
             // alloc_tmp() returns the first of N adjacent temporary registers,
             // each freed manually with free_tmp() or noted as our result with mark_tmp_as_dst().
@@ -3404,6 +3590,13 @@ namespace skvm {
                     a->int3();
                     a->label(&all_true);
                 } break;
+
+                case Op::trace_line:
+                case Op::trace_var:
+                case Op::trace_enter:
+                case Op::trace_exit:
+                    /* Force this program to run in the interpreter. */
+                    return false;
 
                 case Op::store8:
                     if (scalar) {
@@ -3611,6 +3804,10 @@ namespace skvm {
                 case Op::uniform32: a->vbroadcastss(dst(), A::Mem{arg[immA], immB});
                                     break;
 
+                case Op::array32: a->mov(GP0, A::Mem{arg[immA], immB});
+                                  a->vbroadcastss(dst(), A::Mem{GP0, immC});
+                                  break;
+
                 case Op::index: a->vmovd((A::Xmm)dst(), N);
                                 a->vbroadcastss(dst(), dst());
                                 a->vpsubd(dst(), dst(), &iota);
@@ -3765,6 +3962,13 @@ namespace skvm {
                     a->label(&all_true);
                 } break;
 
+                case Op::trace_line:
+                case Op::trace_var:
+                case Op::trace_enter:
+                case Op::trace_exit:
+                    /* Force this program to run in the interpreter. */
+                    return false;
+
                 case Op::index: {
                     A::V tmp = alloc_tmp();
                     a->ldrq (tmp, &iota);
@@ -3882,6 +4086,12 @@ namespace skvm {
                 case Op::uniform32: a->add(GP0, arg[immA], immB);
                                     a->ld1r4s(dst(), GP0);
                                     break;
+
+                case Op::array32: a->add(GP0, arg[immA], immB);
+                                  a->ldrd(GP0, GP0);
+                                  a->add(GP0, GP0, immC);
+                                  a->ld1r4s(dst(), GP0);
+                                  break;
 
                 case Op::gather8: {
                     // As usual, the gather base pointer is immB bytes off of uniform immA.
@@ -4185,6 +4395,57 @@ namespace skvm {
         }
     #endif
     }
+
+    void Program::disassemble(SkWStream* o) const {
+    #if !defined(SK_BUILD_FOR_WIN)
+        SkDebugfStream debug;
+        if (!o) { o = &debug; }
+
+        const void* jit_entry = fImpl->jit_entry.load();
+        size_t jit_size = fImpl->jit_size;
+
+        if (!jit_entry) {
+            o->writeText("Program not JIT'd. Did you pass --jit?\n");
+            return;
+        }
+
+        char path[] = "/tmp/skvm-jit.XXXXXX";
+        int fd = mkstemp(path);
+        ::write(fd, jit_entry, jit_size);
+        close(fd);
+
+        // Convert it in-place to a dynamic library with a single symbol "skvm_jit":
+        SkString cmd = SkStringPrintf(
+                "echo '.global _skvm_jit\n_skvm_jit: .incbin \"%s\"'"
+                " | clang -x assembler -shared - -o %s",
+                path, path);
+        system(cmd.c_str());
+
+        // Now objdump to disassemble our function:
+        // TODO: We could trim this down to just our code using '--disassemble=<symbol name>`,
+        // but the symbol name varies with OS, and that option may be missing from objdump on some
+        // machines? There also apears to be quite a bit of junk after the end of the JIT'd code.
+        // Trimming that would let us pass '--visualize-jumps' and get the loop annotated.
+        // With the junk, we tend to end up with a bunch of stray jumps that pollute the ASCII art.
+        cmd = SkStringPrintf("objdump -D %s", path);
+    #if defined(SK_BUILD_FOR_UNIX)
+        cmd.append(" --section=.text");
+    #endif
+        FILE* fp = popen(cmd.c_str(), "r");
+        if (!fp) {
+            o->writeText("objdump failed\n");
+            return;
+        }
+
+        char line[1024];
+        while (fgets(line, sizeof(line), fp)) {
+            o->writeText(line);
+        }
+
+        pclose(fp);
+    #endif
+    }
+
 #endif
 
 }  // namespace skvm

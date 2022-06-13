@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/arc_terms_of_service_screen_handler.h"
 
+#include "ash/components/arc/arc_prefs.h"
 #include "ash/constants/ash_switches.h"
 #include "base/command_line.h"
 #include "base/hash/sha1.h"
@@ -24,11 +25,10 @@
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
-#include "components/arc/arc_prefs.h"
 #include "components/consent_auditor/consent_auditor.h"
 #include "components/login/localized_values_builder.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/public/identity_manager/consent_level.h"
+#include "components/signin/public/base/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/web_contents.h"
@@ -114,8 +114,12 @@ void ArcTermsOfServiceScreenHandler::DefaultNetworkChanged(
 void ArcTermsOfServiceScreenHandler::DeclareLocalizedValues(
     ::login::LocalizedValuesBuilder* builder) {
   builder->Add("arcTermsOfServiceScreenHeading", IDS_ARC_OOBE_TERMS_HEADING);
+  builder->Add("arcTermsOfServiceScreenHeadingForChild",
+               IDS_ARC_OOBE_TERMS_HEADING_CHILD);
   builder->Add("arcTermsOfServiceScreenDescription",
       IDS_ARC_OOBE_TERMS_DESCRIPTION);
+  builder->Add("arcTermsOfServiceScreenDescriptionForChild",
+               IDS_ARC_OOBE_TERMS_DESCRIPTION_CHILD);
   builder->Add("arcTermsOfServiceLoading", IDS_ARC_OOBE_TERMS_LOADING);
   builder->Add("arcTermsOfServiceErrorTitle", IDS_OOBE_GENERIC_FATAL_ERROR_TITLE);
   builder->Add("arcTermsOfServiceErrorMessage", IDS_ARC_OOBE_TERMS_LOAD_ERROR);
@@ -338,8 +342,8 @@ void ArcTermsOfServiceScreenHandler::DoShow() {
   action_taken_ = false;
 
   ShowScreen(kScreenId);
-
   arc_managed_ = arc::IsArcPlayStoreEnabledPreferenceManagedForProfile(profile);
+  is_child_account_ = user_manager::UserManager::Get()->IsLoggedInAsChildUser();
   CallJS("login.ArcTermsOfServiceScreen.setArcManaged", arc_managed_,
          is_child_account_);
 

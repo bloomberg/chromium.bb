@@ -8,11 +8,13 @@
 #include <memory>
 #include <string>
 
+#include "base/memory/raw_ptr.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/image_decoder/image_decoder.h"
 #include "chrome/browser/sharing/shared_clipboard/remote_copy_handle_message_result.h"
 #include "chrome/browser/sharing/sharing_message_handler.h"
+#include "ui/base/clipboard/clipboard.h"
 #include "url/gurl.h"
 
 class Profile;
@@ -49,7 +51,7 @@ class RemoteCopyMessageHandler : public SharingMessageHandler,
   void OnURLLoadComplete(std::unique_ptr<std::string> content);
   void WriteImageAndShowNotification(const SkBitmap& image);
   void ShowNotification(const std::u16string& title, const SkBitmap& image);
-  void DetectWrite(uint64_t old_sequence_number,
+  void DetectWrite(const ui::ClipboardSequenceNumberToken& old_sequence_number,
                    base::TimeTicks start_ticks,
                    bool is_image);
   void Finish(RemoteCopyHandleMessageResult result);
@@ -59,7 +61,7 @@ class RemoteCopyMessageHandler : public SharingMessageHandler,
     allowed_origin_ = origin;
   }
 
-  Profile* profile_ = nullptr;
+  raw_ptr<Profile> profile_ = nullptr;
   std::unique_ptr<network::SimpleURLLoader> url_loader_;
   std::string device_name_;
   base::ElapsedTimer timer_;

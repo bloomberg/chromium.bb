@@ -9,7 +9,6 @@
 
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -39,6 +38,10 @@ class NonBlockingPushClient : public PushClient {
   explicit NonBlockingPushClient(
       const scoped_refptr<base::SingleThreadTaskRunner>& delegate_task_runner,
       CreateBlockingPushClientCallback create_blocking_push_client_callback);
+
+  NonBlockingPushClient(const NonBlockingPushClient&) = delete;
+  NonBlockingPushClient& operator=(const NonBlockingPushClient&) = delete;
+
   ~NonBlockingPushClient() override;
 
   // PushClient implementation.
@@ -67,8 +70,6 @@ class NonBlockingPushClient : public PushClient {
   base::ObserverList<PushClientObserver>::Unchecked observers_;
 
   base::WeakPtrFactory<NonBlockingPushClient> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(NonBlockingPushClient);
 };
 
 }  // namespace notifier

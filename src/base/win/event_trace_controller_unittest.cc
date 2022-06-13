@@ -12,7 +12,6 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/process/process_handle.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -37,6 +36,9 @@ class TestingProvider : public EtwTraceProvider {
     callback_event_.Set(::CreateEvent(nullptr, TRUE, FALSE, nullptr));
   }
 
+  TestingProvider(const TestingProvider&) = delete;
+  TestingProvider& operator=(const TestingProvider&) = delete;
+
   void WaitForCallback() {
     ::WaitForSingleObject(callback_event_.Get(), INFINITE);
     ::ResetEvent(callback_event_.Get());
@@ -47,8 +49,6 @@ class TestingProvider : public EtwTraceProvider {
   void PostEventsDisabled() override { ::SetEvent(callback_event_.Get()); }
 
   ScopedHandle callback_event_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestingProvider);
 };
 
 }  // namespace

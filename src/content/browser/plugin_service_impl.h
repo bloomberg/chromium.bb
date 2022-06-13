@@ -8,6 +8,7 @@
 #ifndef CONTENT_BROWSER_PLUGIN_SERVICE_IMPL_H_
 #define CONTENT_BROWSER_PLUGIN_SERVICE_IMPL_H_
 
+#include "base/memory/raw_ptr.h"
 #include "ppapi/buildflags/buildflags.h"
 
 #if !BUILDFLAG(ENABLE_PLUGINS)
@@ -17,13 +18,11 @@
 #include <map>
 #include <vector>
 
-#include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/sequence_checker.h"
-#include "base/sequenced_task_runner.h"
 #include "base/synchronization/waitable_event_watcher.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/browser/ppapi_plugin_process_host.h"
@@ -44,6 +43,9 @@ class CONTENT_EXPORT PluginServiceImpl : public PluginService {
   // Returns the PluginServiceImpl singleton.
   static PluginServiceImpl* GetInstance();
 
+  PluginServiceImpl(const PluginServiceImpl&) = delete;
+  PluginServiceImpl& operator=(const PluginServiceImpl&) = delete;
+
   // PluginService implementation:
   void Init() override;
   bool GetPluginInfoArray(const GURL& url,
@@ -52,9 +54,7 @@ class CONTENT_EXPORT PluginServiceImpl : public PluginService {
                           std::vector<WebPluginInfo>* info,
                           std::vector<std::string>* actual_mime_types) override;
   bool GetPluginInfo(int render_process_id,
-                     int render_frame_id,
                      const GURL& url,
-                     const url::Origin& main_frame_origin,
                      const std::string& mime_type,
                      bool allow_wildcard,
                      bool* is_stale,
@@ -136,7 +136,7 @@ class CONTENT_EXPORT PluginServiceImpl : public PluginService {
   int max_ppapi_processes_per_profile_ = kDefaultMaxPpapiProcessesPerProfile;
 
   // Weak pointer; set during the startup on UI thread and must outlive us.
-  PluginServiceFilter* filter_;
+  raw_ptr<PluginServiceFilter> filter_ = nullptr;
 
   // Used to load plugins from disk.
   scoped_refptr<base::SequencedTaskRunner> plugin_list_task_runner_;
@@ -145,9 +145,7 @@ class CONTENT_EXPORT PluginServiceImpl : public PluginService {
   base::SequenceChecker plugin_list_sequence_checker_;
 
   // Used to detect if a given plugin is crashing over and over.
-  std::map<base::FilePath, std::vector<base::Time> > crash_times_;
-
-  DISALLOW_COPY_AND_ASSIGN(PluginServiceImpl);
+  std::map<base::FilePath, std::vector<base::Time>> crash_times_;
 };
 
 }  // namespace content

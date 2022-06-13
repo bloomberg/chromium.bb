@@ -14,130 +14,32 @@
 # ==============================================================================
 """Tests for RaggedTensor operator dispatch."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 from absl.testing import parameterized
 import numpy as np
 
+from tensorflow.python import tf2
 from tensorflow.python.eager import context
 from tensorflow.python.framework import dtypes
 from tensorflow.python.framework import errors
 from tensorflow.python.framework import ops
+from tensorflow.python.framework import random_seed
 from tensorflow.python.framework import sparse_tensor
 from tensorflow.python.framework import test_util
 from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import clip_ops
 from tensorflow.python.ops import data_flow_ops
-from tensorflow.python.ops import gen_bitwise_ops
+from tensorflow.python.ops import image_ops_impl
 from tensorflow.python.ops import math_ops
+from tensorflow.python.ops import nn_impl
 from tensorflow.python.ops import nn_ops
-from tensorflow.python.ops import parsing_ops
 from tensorflow.python.ops import string_ops
+from tensorflow.python.ops import variables
 from tensorflow.python.ops.ragged import ragged_dispatch
 from tensorflow.python.ops.ragged import ragged_factory_ops
 from tensorflow.python.ops.ragged import ragged_tensor
+from tensorflow.python.ops.ragged import ragged_tensor_test_ops as test_ops
 from tensorflow.python.platform import googletest
-
-# Constants listing various op types to test.  Each operation
-# should be included in at least one list below, or tested separately if
-# necessary (e.g., because it expects additional arguments).
-UNARY_FLOAT_OPS = [
-    math_ops.abs,
-    math_ops.acos,
-    math_ops.acosh,
-    math_ops.angle,
-    math_ops.asin,
-    math_ops.asinh,
-    math_ops.atan,
-    math_ops.atanh,
-    math_ops.ceil,
-    math_ops.conj,
-    math_ops.cos,
-    math_ops.cosh,
-    math_ops.digamma,
-    math_ops.erf,
-    math_ops.erfc,
-    math_ops.erfinv,
-    math_ops.exp,
-    math_ops.expm1,
-    math_ops.floor,
-    math_ops.imag,
-    math_ops.is_finite,
-    math_ops.is_inf,
-    math_ops.is_nan,
-    math_ops.lgamma,
-    math_ops.log,
-    math_ops.log1p,
-    math_ops.log_sigmoid,
-    math_ops.ndtri,
-    math_ops.negative,
-    math_ops.real,
-    math_ops.reciprocal,
-    math_ops.rint,
-    math_ops.round,
-    math_ops.rsqrt,
-    math_ops.sign,
-    math_ops.sin,
-    math_ops.sinh,
-    math_ops.sqrt,
-    math_ops.square,
-    math_ops.tan,
-    array_ops.identity,
-    array_ops.ones_like,
-    array_ops.zeros_like,
-]
-UNARY_BOOL_OPS = [
-    math_ops.logical_not,
-]
-UNARY_STRING_OPS = [
-    string_ops.decode_base64,
-    string_ops.encode_base64,
-    string_ops.string_strip,
-    parsing_ops.decode_compressed,
-]
-BINARY_FLOAT_OPS = [
-    math_ops.add,
-    math_ops.atan2,
-    math_ops.complex,
-    math_ops.div_no_nan,
-    math_ops.divide,
-    math_ops.equal,
-    math_ops.floordiv,
-    math_ops.floormod,
-    math_ops.greater,
-    math_ops.greater_equal,
-    math_ops.less,
-    math_ops.less_equal,
-    math_ops.maximum,
-    math_ops.minimum,
-    math_ops.multiply,
-    math_ops.not_equal,
-    math_ops.pow,
-    math_ops.realdiv,
-    math_ops.squared_difference,
-    math_ops.subtract,
-    math_ops.truediv,
-]
-BINARY_BOOL_OPS = [
-    math_ops.logical_and,
-    math_ops.logical_or,
-    math_ops.logical_xor,
-]
-UNARY_INT_OPS = [
-    gen_bitwise_ops.invert,
-    string_ops.unicode_script,
-]
-BINARY_INT_OPS = [
-    gen_bitwise_ops.bitwise_and,
-    gen_bitwise_ops.bitwise_or,
-    gen_bitwise_ops.bitwise_xor,
-    gen_bitwise_ops.left_shift,
-    gen_bitwise_ops.right_shift,
-    math_ops.truncatediv,
-    math_ops.truncatemod,
-]
+from tensorflow.python.util import dispatch
 
 
 # pylint: disable=g-complex-comprehension
@@ -183,17 +85,17 @@ class RaggedDispatchTest(test_util.TensorFlowTestCase, parameterized.TestCase):
       # Test each unary op.
       #=========================================================================
       [{'x': ragged_factory_ops.constant_value([[-2.0, 3.0], [-3.0]]), 'op': op}
-       for op in UNARY_FLOAT_OPS] +
+       for op in test_ops.UNARY_FLOAT_OPS] +
       [{'x': ragged_factory_ops.constant_value([[True, False], [True]]),
         'op': op}
-       for op in UNARY_BOOL_OPS] +
+       for op in test_ops.UNARY_BOOL_OPS] +
       [{'x': ragged_factory_ops.constant_value([[18, 512], [12412]], np.int32),
         'op': op}
-       for op in UNARY_INT_OPS] +
+       for op in test_ops.UNARY_INT_OPS] +
       [{'x': ragged_factory_ops.constant_value([['abcd', 'efgh'],
                                                 ['aabbccdd']]),
         'op': op}
-       for op in UNARY_STRING_OPS] +
+       for op in test_ops.UNARY_STRING_OPS] +
       [
           {'op': clip_ops.clip_by_value,
            'x': ragged_factory_ops.constant_value([[-2.0, 3.0], [-3.0]]),
@@ -205,6 +107,10 @@ class RaggedDispatchTest(test_util.TensorFlowTestCase, parameterized.TestCase):
            'x': ragged_factory_ops.constant_value([[-2.0, 3.0], [-3.0]]),
            'dtype': dtypes.int32},
           {'op': string_ops.string_to_hash_bucket,
+           'x': ragged_factory_ops.constant_value(
+               [['abcd', 'efgh'], ['aabbccdd']]),
+           'num_buckets': 1000},
+          {'op': string_ops.string_to_hash_bucket_v1,
            'x': ragged_factory_ops.constant_value(
                [['abcd', 'efgh'], ['aabbccdd']]),
            'num_buckets': 1000},
@@ -229,6 +135,12 @@ class RaggedDispatchTest(test_util.TensorFlowTestCase, parameterized.TestCase):
           {'op': string_ops.substr,
            'x': ragged_factory_ops.constant_value([['hello', '123'], ['1+1']]),
            'pos': 2, 'len': 3},
+          {'op': string_ops.substr_deprecated,
+           'x': ragged_factory_ops.constant_value([['hello', '123'], ['1+1']]),
+           'pos': 2, 'len': 3},
+          {'op': string_ops.substr_v2,
+           'x': ragged_factory_ops.constant_value([['hello', '123'], ['1+1']]),
+           'pos': 2, 'len': 3},
           {'op': array_ops.check_numerics,
            'x': ragged_factory_ops.constant_value([[-2.0, 3.0], [-3.0]]),
            'message': 'check-numerics'},
@@ -236,13 +148,75 @@ class RaggedDispatchTest(test_util.TensorFlowTestCase, parameterized.TestCase):
            'x': ragged_factory_ops.constant_value([[-2.0, 3.0], [-3.0]]),
            'rate': 0.5,
            'seed': 1},
+          {'op': math_ops.nextafter,
+           'x': ragged_factory_ops.constant_value([[-2.0, 3.0], [-3.0]]),
+           'x2': 0},
+          {'op': math_ops.to_bfloat16,
+           'x': ragged_factory_ops.constant_value(
+               [[2.0, 3.0], [3.0]], dtype=dtypes.float32),
+           'expected_dtype': dtypes.bfloat16},
+          {'op': math_ops.to_complex128,
+           'x': ragged_factory_ops.constant_value(
+               [[2.0, 3.0], [3.0]], dtype=dtypes.float32),
+           'expected_dtype': dtypes.complex128},
+          {'op': math_ops.to_complex64,
+           'x': ragged_factory_ops.constant_value(
+               [[2.0, 3.0], [3.0]], dtype=dtypes.float32),
+           'expected_dtype': dtypes.complex64},
+          {'op': math_ops.to_double,
+           'x': ragged_factory_ops.constant_value(
+               [[2.0, 3.0], [3.0]], dtype=dtypes.float32),
+           'expected_dtype': dtypes.double},
+          {'op': math_ops.to_float,
+           'x': ragged_factory_ops.constant_value(
+               [[2.0, 3.0], [3.0]], dtype=dtypes.int32),
+           'expected_dtype': dtypes.float32},
+          {'op': math_ops.to_int32,
+           'x': ragged_factory_ops.constant_value(
+               [[2, 3], [3]], dtype=dtypes.int64),
+           'expected_dtype': dtypes.int32},
+          {'op': math_ops.to_int64,
+           'x': ragged_factory_ops.constant_value(
+               [[2, 3], [3]], dtype=dtypes.int32),
+           'expected_dtype': dtypes.int64},
+          {'op': image_ops_impl.convert_image_dtype,
+           'x': ragged_factory_ops.constant_value([[-2, 3], [-3]]),
+           'dtype': dtypes.float32,
+           'expected_dtype': dtypes.float32},
+          {'op': image_ops_impl.adjust_brightness,
+           'x': ragged_factory_ops.constant_value([[-2, 3], [-3]]),
+           'delta': 0.2},
+          {'op': image_ops_impl.adjust_gamma,
+           'x': ragged_factory_ops.constant_value([[-2.0, 3.0], [-3.0]]),
+           'gamma': 2,
+           'gain': 1.2},
+          {'op': image_ops_impl.stateless_random_brightness,
+           'x': ragged_factory_ops.constant_value([[-2, 3], [-3]]),
+           'max_delta': 0.2,
+           'seed': (1, 2)},
+          {'op': image_ops_impl.random_brightness,
+           'x': ragged_factory_ops.constant_value([[-2, 3], [-3]]),
+           'max_delta': 0.2,
+           'seed': 12},
+          {'op': string_ops.unicode_transcode,
+           'x': ragged_factory_ops.constant_value(
+               [['tensor', 'flower'], ['2.0']]),
+           'input_encoding': 'UTF-8',
+           'output_encoding': 'UTF-16-BE'},
       ]
       )  # pyformat: disable
-  def testUnaryElementwiseOp(self, x, op=math_ops.abs, **extra_args):
+  def testUnaryElementwiseOp(self,
+                             x,
+                             op=math_ops.abs,
+                             expected_dtype=None,
+                             **extra_args):
+    x = ragged_tensor.convert_to_tensor_or_ragged_tensor(x)
+    random_seed.set_random_seed(1234)
     result = op(x, **extra_args)
 
     # Run the wrapped op on the dense values, for comparison.
     dense_x = x.flat_values if ragged_tensor.is_ragged(x) else x
+    random_seed.set_random_seed(1234)
     expected_flat_values = array_ops.reshape(op(dense_x, **extra_args), [-1])
 
     # Check that the result has the expected shape.
@@ -254,6 +228,9 @@ class RaggedDispatchTest(test_util.TensorFlowTestCase, parameterized.TestCase):
     else:
       result_flat_values = array_ops.reshape(result, [-1])
     self.assertAllEqual(expected_flat_values, result_flat_values)
+
+    if expected_dtype is not None:
+      self.assertEqual(result.dtype, expected_dtype)
 
   @parameterized.parameters(
       [
@@ -320,52 +297,73 @@ class RaggedDispatchTest(test_util.TensorFlowTestCase, parameterized.TestCase):
               [[[1, 2], [3], [4]], [[], [5, 7, 8]]]),
            'y': ragged_factory_ops.constant_value(
                [[[3, 8], [2], [5]], [[], [1, 9, 8]]]),
-           'use_kwargs': ('x', 'y')},
+           'use_kwargs': {'x': 'x', 'y': 'y'}},
           {'x': ragged_factory_ops.constant_value(
               [[[1, 2]], [[3, 4], [5, 6], [7, 8]]],
               ragged_rank=1),
            'y': ragged_factory_ops.constant_value(
                [[[9, 3]], [[5, 2], [3, 4], [7, 6]]],
                ragged_rank=1),
-           'use_kwargs': ('x', 'y')},
+           'use_kwargs': {'x': 'x', 'y': 'y'}},
           {'x': ragged_factory_ops.constant_value(
               [[[1, 2]], [[3, 4], [5, 6], [7, 8]]],
               ragged_rank=1),
            'y': ragged_factory_ops.constant_value(
                [[[9, 3]], [[5, 2], [3, 4], [7, 6]]],
                ragged_rank=1),
-           'use_kwargs': ('x',)},
+           'use_kwargs': {'y': 'y'}},
       ] +
       #=========================================================================
-      # Test each unary op.
+      # Test each binary op.
       #=========================================================================
       [{'x': ragged_factory_ops.constant_value([[-2.0, 3.0], [-3.0]]),
         'y': ragged_factory_ops.constant_value([[5.0, 1.0], [12.0]]),
         'op': op}
-       for op in BINARY_FLOAT_OPS] +
+       for op in test_ops.BINARY_FLOAT_OPS] +
       [{'x': ragged_factory_ops.constant_value([[-2, 3], [-3]]),
         'y': ragged_factory_ops.constant_value([[5, 1], [12]]),
         'op': op}
-       for op in BINARY_INT_OPS] +
+       for op in test_ops.BINARY_INT_OPS] +
       [{'x': ragged_factory_ops.constant_value([[True, True], [False]]),
         'y': ragged_factory_ops.constant_value([[False, True], [False]]),
         'op': op}
-       for op in BINARY_BOOL_OPS]
-      )  # pyformat: disable
+       for op in test_ops.BINARY_BOOL_OPS] +
+      #=========================================================================
+      # Test each binary op.
+      #=========================================================================
+      [
+          {'x': 3,
+           'y': ragged_factory_ops.constant_value([[-2.0, 3.0], [-3.0]]),
+           'op': math_ops.scalar_mul},
+          {'x': 3,
+           'y': ragged_factory_ops.constant_value([[-2.0, 3.0], [-3.0]]),
+           'op': math_ops.scalar_mul_v2},
+          {'x': ragged_factory_ops.constant_value([[-2.0, 3.0], [-3.0]]),
+           'y': ragged_factory_ops.constant_value([[5.0, 1.0], [12.0]]),
+           'op': nn_impl.sigmoid_cross_entropy_with_logits_v2,
+           'use_kwargs': {'x': 'labels', 'y': 'logits'}},
+      ])  # pyformat: disable
   def testBinaryElementwiseOp(self, x, y, op=math_ops.add, **extra_args):
-    use_kwargs = extra_args.pop('use_kwargs', ())
-    if 'x' in use_kwargs and 'y' in use_kwargs:
-      result = op(x=x, y=y, **extra_args)
-    elif 'y' in use_kwargs:
-      result = op(x, y=y, **extra_args)
-    else:
-      result = op(x, y, **extra_args)
+    use_kwargs = extra_args.pop('use_kwargs', {})
+
+    def compute(x, y):
+      if 'x' in use_kwargs and 'y' in use_kwargs:
+        extra_args[use_kwargs['x']] = x
+        extra_args[use_kwargs['y']] = y
+        return op(**extra_args)
+      elif 'y' in use_kwargs:
+        extra_args[use_kwargs['y']] = y
+        return op(x, **extra_args)
+      else:
+        assert 'x' not in use_kwargs, use_kwargs
+        return op(x, y, **extra_args)
+
+    result = compute(x, y)
 
     # Run the wrapped op on the dense values, for comparison.
     dense_x = x.flat_values if ragged_tensor.is_ragged(x) else x
     dense_y = y.flat_values if ragged_tensor.is_ragged(y) else y
-    expected_flat_values = array_ops.reshape(
-        op(dense_x, dense_y, **extra_args), [-1])
+    expected_flat_values = array_ops.reshape(compute(dense_x, dense_y), [-1])
 
     # Check that the result has the expected shape.
     self.assertSameShape(y, result)
@@ -414,7 +412,9 @@ class RaggedDispatchTest(test_util.TensorFlowTestCase, parameterized.TestCase):
                ragged_factory_ops.constant_value([['foo', 'bar'], ['baz']]),
                ragged_factory_ops.constant_value([['2', '9'], ['12']]))},
       ])  # pyformat: disable
-  def testListValuedElementwiseOp(self, inputs, op=math_ops.add_n,
+  def testListValuedElementwiseOp(self,
+                                  inputs,
+                                  op=math_ops.add_n,
                                   **extra_args):
     use_kwargs = extra_args.pop('use_kwargs', False)
     if use_kwargs:
@@ -439,14 +439,63 @@ class RaggedDispatchTest(test_util.TensorFlowTestCase, parameterized.TestCase):
       result_flat_values = array_ops.reshape(result, [-1])
     self.assertAllEqual(expected_flat_values, result_flat_values)
 
+  def testAllElementwiseOpsAreIncludedInRaggedTensorTestOps(self):
+    other_tested_ops = [
+        # Elementwise ops that have explicit/bespoke test cases in this file.
+        string_ops.string_to_hash_bucket,
+        string_ops.string_to_hash_bucket_v1,
+        string_ops.string_to_hash_bucket_fast,
+        string_ops.string_to_hash_bucket_strong,
+        string_ops.string_to_number,
+        string_ops.regex_full_match,
+        string_ops.regex_replace,
+        string_ops.substr,
+        string_ops.substr_v2,
+        string_ops.substr_deprecated,
+        string_ops.unicode_transcode,
+        clip_ops.clip_by_value,
+        array_ops.check_numerics,
+        math_ops.cast,
+        math_ops.saturate_cast,
+        math_ops.nextafter,
+        math_ops.tensor_equals,
+        math_ops.tensor_not_equals,
+        math_ops.to_bfloat16,
+        math_ops.to_complex128,
+        math_ops.to_complex64,
+        math_ops.to_double,
+        math_ops.to_float,
+        math_ops.to_int32,
+        math_ops.to_int64,
+        math_ops.scalar_mul,
+        math_ops.scalar_mul_v2,
+        image_ops_impl.adjust_brightness,
+        image_ops_impl.adjust_gamma,
+        image_ops_impl.stateless_random_brightness,
+        image_ops_impl.random_brightness,
+        image_ops_impl.convert_image_dtype,
+        nn_impl.sigmoid_cross_entropy_with_logits_v2,
+    ]
+    untested_ops = (
+        set(dispatch.unary_elementwise_apis() +
+            dispatch.binary_elementwise_apis()) -
+        set(test_ops.UNARY_FLOAT_OPS + test_ops.UNARY_BOOL_OPS +
+            test_ops.UNARY_STRING_OPS + test_ops.UNARY_INT_OPS +
+            test_ops.BINARY_FLOAT_OPS + test_ops.BINARY_BOOL_OPS +
+            test_ops.BINARY_INT_OPS + other_tested_ops))
+    untested_ops = sorted(f'{x.__module__}.{x.__name__}' for x in untested_ops)
+    self.assertEmpty(
+        untested_ops, 'One or more ops elementwise are not tested; please'
+        ' add them to ragged_tensor_test_ops.py or ragged_dispatch_test.py')
+
   def testElementwiseOpUnknownRankError(self):
     if context.executing_eagerly():
       return
     x = ragged_factory_ops.constant([[1, 2], [3]])
     y = ragged_tensor.RaggedTensor.from_row_splits(
         array_ops.placeholder_with_default([1, 2, 3], shape=None), x.row_splits)
-    with self.assertRaisesRegexp(ValueError,
-                                 r'Unable to broadcast: unknown rank'):
+    with self.assertRaisesRegex(ValueError,
+                                r'Unable to broadcast: unknown rank'):
       math_ops.add(x, y)
 
   @parameterized.parameters([
@@ -582,6 +631,12 @@ class RaggedDispatchTest(test_util.TensorFlowTestCase, parameterized.TestCase):
           args=(ragged_factory_ops.constant_value([[True, False], [True]]),),
           expected=[[0, 0], [1, 0]]),
       dict(
+          op=array_ops.where_v2,
+          args=(ragged_factory_ops.constant_value([[True, False], [True]]),
+                ragged_factory_ops.constant_value([[b'A', b'B'], [b'C']]),
+                ragged_factory_ops.constant_value([[b'a', b'b'], [b'c']])),
+          expected=ragged_factory_ops.constant_value([[b'A', b'b'], [b'C']])),
+      dict(
           op=math_ops.unsorted_segment_sum,
           kwargs={
               'data': ragged_factory_ops.constant_value([[1, 2], [3]]),
@@ -679,6 +734,24 @@ class RaggedDispatchTest(test_util.TensorFlowTestCase, parameterized.TestCase):
           },
           expected=[2, 4]),
       dict(
+          op=math_ops.reduce_variance,
+          kwargs={
+              'input_tensor':
+                  ragged_factory_ops.constant_value([[1, 3], [3, 6, 9]]),
+              'axis':
+                  1
+          },
+          expected=[1., 6.]),
+      dict(
+          op=math_ops.reduce_std,
+          kwargs={
+              'input_tensor':
+                  ragged_factory_ops.constant_value([[1, 3], [1, 2, 2, 1]]),
+              'axis':
+                  1
+          },
+          expected=[1., 0.5]),
+      dict(
           op=math_ops.reduce_any,
           kwargs={
               'input_tensor':
@@ -688,6 +761,13 @@ class RaggedDispatchTest(test_util.TensorFlowTestCase, parameterized.TestCase):
                   1
           },
           expected=[True, True]),
+      dict(
+          op=math_ops.matmul,
+          kwargs={
+              'a': ragged_factory_ops.constant_value([[1, 2, 3], [4, 5, 6]]),
+              'b': ragged_factory_ops.constant_value([[5], [4], [3]])
+          },
+          expected=[[22], [58]]),
       dict(
           op=string_ops.reduce_join,
           kwargs={
@@ -765,33 +845,91 @@ class RaggedDispatchTest(test_util.TensorFlowTestCase, parameterized.TestCase):
           expected=ragged_factory_ops.constant_value([[5, 4], [3, 2, 1]])),
       dict(
           op=string_ops.string_format,
-          kwargs={'template': 'Hi {}',
-                  'inputs': [ragged_factory_ops.constant_value([[1, 2], [3]])]},
+          kwargs={
+              'template': 'Hi {}',
+              'inputs': [ragged_factory_ops.constant_value([[1, 2], [3]])]
+          },
           expected='Hi [[1, 2], [3]]'),
+      dict(
+          op=nn_ops.softmax_v2,
+          kwargs={
+              'logits':
+                  ragged_factory_ops.constant_value([[1., 2., 3.], [4., 5.]]),
+          },
+          expected=ragged_factory_ops.constant_value([
+              [
+                  np.exp(1) / (np.exp(1) + np.exp(2) + np.exp(3)),
+                  np.exp(2) / (np.exp(1) + np.exp(2) + np.exp(3)),
+                  np.exp(3) / (np.exp(1) + np.exp(2) + np.exp(3)),
+              ],
+              [
+                  np.exp(4) / (np.exp(4) + np.exp(5)),
+                  np.exp(5) / (np.exp(4) + np.exp(5)),
+              ],
+          ]),
+          rtol=1e-6,
+      ),
   ])
-  def testRaggedDispatch(self, op, expected, args=(), result_is_list=False,
+  def testRaggedDispatch(self,
+                         op,
+                         expected,
+                         args=(),
+                         result_is_list=False,
+                         rtol=None,
                          kwargs=None):
-    if kwargs is None: kwargs = {}
+    kwargs = kwargs or {}
+    if rtol is not None:
+      assert_fn = lambda x, y: self.assertAllClose(x, y, rtol=rtol)
+    else:
+      assert_fn = self.assertAllEqual
+
     result = op(*args, **kwargs)
     if result_is_list:
       self.assertLen(result, len(expected))
       for (r, e) in zip(result, expected):
-        self.assertAllEqual(r, e)
+        assert_fn(r, e)
     else:
-      self.assertAllEqual(result, expected)
+      assert_fn(result, expected)
+
+  def testTensorEquals(self):
+    a = ragged_factory_ops.constant([[1, 2], [3]])
+    b = ragged_factory_ops.constant([[4, 5], [3]])
+    c = 2
+    d = ragged_factory_ops.constant([[4, 5], [3, 2, 1]])
+
+    if tf2.enabled() and ops.executing_eagerly_outside_functions():
+      # Value-based equality:
+      self.assertAllEqual(
+          math_ops.tensor_equals(a, b), [[False, False], [True]])
+      self.assertAllEqual(
+          math_ops.tensor_not_equals(a, b), [[True, True], [False]])
+
+      # Value-based equality (w/ broadcasting):
+      self.assertAllEqual(
+          math_ops.tensor_equals(a, c), [[False, True], [False]])
+      self.assertAllEqual(
+          math_ops.tensor_not_equals(a, c), [[True, False], [True]])
+      self.assertEqual(
+          math_ops.tensor_equals(a, d), False)  # not broadcast-compatible
+      self.assertEqual(
+          math_ops.tensor_not_equals(a, d), True)  # not broadcast-compatible
+
+    else:
+      # Identity-based equality:
+      self.assertAllEqual(math_ops.tensor_equals(a, a), True)
+      self.assertAllEqual(math_ops.tensor_equals(a, b), False)
+      self.assertAllEqual(math_ops.tensor_not_equals(a, b), True)
 
   def testUnaryElementwiseOpsPreserveUniformRowLength(self):
     # Unary elementwise op
     rt = ragged_tensor.RaggedTensor.from_uniform_row_length(
-        ragged_factory_ops.constant([[1, 2], [3]]),
-        uniform_row_length=2)
+        ragged_factory_ops.constant([[1, 2], [3]]), uniform_row_length=2)
     self.assertAllEqual(rt.uniform_row_length,
                         array_ops.zeros_like(rt).uniform_row_length)
 
     # Unary-list elementwise op
     rt = ragged_tensor.RaggedTensor.from_uniform_row_length(
-        ragged_factory_ops.constant([[1, 2], [3]]),
-        uniform_row_length=2)
+        ragged_factory_ops.constant([[1, 2], [3]]), uniform_row_length=2)
     self.assertAllEqual(rt.uniform_row_length,
                         math_ops.add_n([rt, rt]).uniform_row_length)
 
@@ -802,24 +940,28 @@ class RaggedDispatchTest(test_util.TensorFlowTestCase, parameterized.TestCase):
         'bitwise.invert', 'bitwise.left_shift', 'bitwise.right_shift',
         'clip_by_value', 'concat', 'debugging.check_numerics', 'cast',
         'dtypes.complex', 'dtypes.saturate_cast', 'expand_dims', 'gather_nd',
-        'gather', 'identity', 'io.decode_base64', 'io.decode_compressed',
+        'gather', 'io.decode_base64', 'io.decode_compressed',
         'io.encode_base64', 'math.abs', 'math.acos', 'math.acosh', 'math.add_n',
         'math.add', 'math.angle', 'math.asin', 'math.asinh', 'math.atan2',
-        'math.atan', 'math.atanh', 'math.ceil', 'math.conj', 'math.cos',
-        'math.cosh', 'math.digamma', 'math.divide_no_nan', 'math.divide',
-        'math.equal', 'math.erf', 'math.erfc', 'math.exp', 'math.expm1',
-        'math.floor', 'math.floordiv', 'math.floormod', 'math.greater_equal',
-        'math.greater', 'math.imag', 'math.is_finite', 'math.is_inf',
-        'math.is_nan', 'math.less_equal', 'math.less', 'math.lgamma',
-        'math.log1p', 'math.log_sigmoid', 'math.log', 'math.logical_and',
-        'math.logical_not', 'math.logical_or', 'math.logical_xor',
-        'math.maximum', 'math.minimum', 'math.multiply', 'math.negative',
-        'math.not_equal', 'math.pow', 'math.real', 'math.reciprocal',
-        'math.reduce_any', 'math.reduce_max', 'math.reduce_mean',
-        'math.reduce_min', 'math.reduce_prod', 'math.reduce_sum', 'math.rint',
-        'math.round', 'math.rsqrt', 'math.sign', 'math.sin', 'math.sinh',
-        'math.sqrt', 'math.square', 'math.squared_difference', 'math.subtract',
-        'math.tan', 'math.truediv', 'math.unsorted_segment_max',
+        'math.atan', 'math.atanh', 'math.bessel_i0', 'math.bessel_i0e',
+        'math.bessel_i1', 'math.bessel_i1e', 'math.ceil', 'math.conj',
+        'math.cos', 'math.cosh', 'math.digamma', 'math.divide_no_nan',
+        'math.divide', 'math.equal', 'math.erf', 'math.erfc', 'math.erfcinv',
+        'math.erfinv', 'math.exp', 'math.expm1', 'math.floor', 'math.floordiv',
+        'math.floormod', 'math.greater_equal', 'math.greater', 'math.imag',
+        'math.is_finite', 'math.is_inf', 'math.is_nan', 'math.less_equal',
+        'math.less', 'math.lgamma', 'math.log1p', 'math.log_sigmoid',
+        'math.log', 'math.logical_and', 'math.logical_not', 'math.logical_or',
+        'math.logical_xor', 'math.maximum', 'math.minimum',
+        'math.multiply_no_nan', 'math.multiply', 'math.negative',
+        'math.nextafter', 'math.not_equal', 'math.pow', 'math.real',
+        'math.reciprocal', 'math.reciprocal_no_nan', 'math.reduce_any',
+        'math.reduce_max', 'math.reduce_mean', 'math.reduce_variance',
+        'math.reduce_std', 'math.reduce_min', 'math.reduce_prod',
+        'math.reduce_sum', 'math.rint', 'math.round', 'math.rsqrt', 'math.sign',
+        'math.sigmoid', 'math.sin', 'math.sinh', 'math.softplus', 'math.sqrt',
+        'math.square', 'math.squared_difference', 'math.subtract', 'math.tan',
+        'math.tanh', 'math.truediv', 'math.unsorted_segment_max',
         'math.unsorted_segment_mean', 'math.unsorted_segment_min',
         'math.unsorted_segment_prod', 'math.unsorted_segment_sqrt_n',
         'math.unsorted_segment_sum', 'one_hot', 'ones_like', 'rank', 'realdiv',
@@ -834,11 +976,10 @@ class RaggedDispatchTest(test_util.TensorFlowTestCase, parameterized.TestCase):
     ]
 
     # Ops that should be listed as supported in v1 only.
-    # TODO(edloper): Add a dispatch for where_v2.
-    supported_ops_v1 = ['batch_gather', 'where']
+    supported_ops_v1 = ['batch_gather']
 
     # Ops that should be listed as supported in v2 only.
-    supported_ops_v2 = []
+    supported_ops_v2 = ['nn.softmax']
 
     v1_ragged_ops = ragged_dispatch.ragged_op_list(tf_version=1)
     for element in supported_ops + supported_ops_v1:
@@ -851,6 +992,13 @@ class RaggedDispatchTest(test_util.TensorFlowTestCase, parameterized.TestCase):
       self.assertIn('`tf.' + element + '`', v2_ragged_ops)
     for element in supported_ops_v1:
       self.assertNotIn('`tf.' + element + '`', v2_ragged_ops)
+
+  def testDispatchWithVariable(self):
+    x = ragged_factory_ops.constant([[1, 2], [3, 4, 5]])
+    v = variables.Variable(10)
+    if not context.executing_eagerly():
+      self.evaluate(variables.global_variables_initializer())
+    self.assertAllEqual(math_ops.add(x, v), [[11, 12], [13, 14, 15]])
 
 
 if __name__ == '__main__':

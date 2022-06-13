@@ -4,52 +4,26 @@
 
 #include "chrome/browser/ash/login/quick_unlock/fingerprint_storage.h"
 
+#include "ash/constants/ash_pref_names.h"
 #include "base/metrics/histogram_functions.h"
 #include "chrome/browser/ash/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/pref_names.h"
 #include "chromeos/components/feature_usage/feature_usage_metrics.h"
 #include "chromeos/dbus/biod/biod_client.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/device_service.h"
 #include "services/device/public/mojom/fingerprint.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
-namespace chromeos {
+namespace ash {
 namespace quick_unlock {
-
 namespace {
 
 constexpr char kFingerprintUMAFeatureName[] = "Fingerprint";
 
 }
-
-class FingerprintMetricsReporter : public device::mojom::FingerprintObserver {
- public:
-  // device::mojom::FingerprintObserver:
-  void OnRestarted() override {}
-  void OnEnrollScanDone(device::mojom::ScanResult scan_result,
-                        bool is_complete,
-                        int32_t percent_complete) override {
-    base::UmaHistogramEnumeration("Fingerprint.Enroll.ScanResult", scan_result);
-  }
-  void OnAuthScanDone(
-      device::mojom::ScanResult scan_result,
-      const base::flat_map<std::string, std::vector<std::string>>& matches)
-      override {
-    base::UmaHistogramEnumeration("Fingerprint.Auth.ScanResult", scan_result);
-  }
-  void OnSessionFailed() override {}
-
-  mojo::PendingRemote<device::mojom::FingerprintObserver> GetRemote() {
-    return fingerprint_observer_receiver_.BindNewPipeAndPassRemote();
-  }
-
- private:
-  mojo::Receiver<device::mojom::FingerprintObserver>
-      fingerprint_observer_receiver_{this};
-};
 
 // static
 void FingerprintStorage::RegisterProfilePrefs(PrefRegistrySimple* registry) {
@@ -57,30 +31,40 @@ void FingerprintStorage::RegisterProfilePrefs(PrefRegistrySimple* registry) {
 }
 
 FingerprintStorage::FingerprintStorage(Profile* profile) : profile_(profile) {
-  if (!chromeos::BiodClient::Get())
+  if (!chromeos::BiodClient::Get()) {
+    // Could be nullptr in tests.
     return;
+  }
 
   content::GetDeviceService().BindFingerprint(
       fp_service_.BindNewPipeAndPassReceiver());
 
-  const std::string user_id =
-      ProfileHelper::Get()->GetUserIdHashFromProfile(profile_);
-  // Get actual records to update cached prefs::kQuickUnlockFingerprintRecord.
-  fp_service_->GetRecordsForUser(
-      user_id, base::BindOnce(&FingerprintStorage::OnGetRecords,
-                              weak_factory_.GetWeakPtr()));
+  fp_service_->AddFingerprintObserver(
+      fingerprint_observer_receiver_.BindNewPipeAndPassRemote());
 
-  metrics_reporter_ = std::make_unique<FingerprintMetricsReporter>();
-  fp_service_->AddFingerprintObserver(metrics_reporter_->GetRemote());
+  GetRecordsForUser();
+
   feature_usage_metrics_service_ =
       std::make_unique<feature_usage::FeatureUsageMetrics>(
           kFingerprintUMAFeatureName, this);
 }
 
-FingerprintStorage::~FingerprintStorage() {}
+FingerprintStorage::~FingerprintStorage() = default;
+
+void FingerprintStorage::GetRecordsForUser() {
+  const std::string user_id =
+      ProfileHelper::Get()->GetUserIdHashFromProfile(profile_);
+  fp_service_->GetRecordsForUser(
+      user_id, base::BindOnce(&FingerprintStorage::OnGetRecords,
+                              weak_factory_.GetWeakPtr()));
+}
 
 bool FingerprintStorage::IsEligible() const {
   return IsFingerprintSupported();
+}
+
+absl::optional<bool> FingerprintStorage::IsAccessible() const {
+  return IsFingerprintEnabled(profile_);
 }
 
 bool FingerprintStorage::IsEnabled() const {
@@ -122,6 +106,24 @@ bool FingerprintStorage::ExceededUnlockAttempts() const {
   return unlock_attempt_count() >= kMaximumUnlockAttempts;
 }
 
+void FingerprintStorage::OnRestarted() {
+  GetRecordsForUser();
+}
+
+void FingerprintStorage::OnEnrollScanDone(device::mojom::ScanResult scan_result,
+                                          bool is_complete,
+                                          int32_t percent_complete) {
+  base::UmaHistogramEnumeration("Fingerprint.Enroll.ScanResult", scan_result);
+}
+
+void FingerprintStorage::OnAuthScanDone(
+    device::mojom::ScanResult scan_result,
+    const base::flat_map<std::string, std::vector<std::string>>& matches) {
+  base::UmaHistogramEnumeration("Fingerprint.Auth.ScanResult", scan_result);
+}
+
+void FingerprintStorage::OnSessionFailed() {}
+
 void FingerprintStorage::OnGetRecords(
     const base::flat_map<std::string, std::string>& fingerprints_list_mapping) {
   if (!IsFingerprintDisabledByPolicy(profile_->GetPrefs())) {
@@ -143,4 +145,4 @@ void FingerprintStorage::OnGetRecords(
 }
 
 }  // namespace quick_unlock
-}  // namespace chromeos
+}  // namespace ash

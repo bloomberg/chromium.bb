@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/raw_ptr.h"
 #include "components/reporting/storage/storage_queue.h"
 
 #include <cstdint>
 #include <initializer_list>
 #include <utility>
-#include <vector>
 
 #include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
@@ -19,9 +19,11 @@
 #include "base/task/thread_pool.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "components/reporting/compression/compression_module.h"
+#include "components/reporting/compression/test_compression_module.h"
 #include "components/reporting/encryption/test_encryption_module.h"
-#include "components/reporting/proto/record.pb.h"
-#include "components/reporting/storage/resources/resource_interface.h"
+#include "components/reporting/proto/synced/record.pb.h"
+#include "components/reporting/resources/resource_interface.h"
 #include "components/reporting/storage/storage_configuration.h"
 #include "components/reporting/util/status.h"
 #include "components/reporting/util/statusor.h"
@@ -67,13 +69,12 @@ class TestUploadClient : public UploaderInterface {
     ASSERT_TRUE(wrapped_record.ParseFromString(
         encrypted_record.encrypted_wrapped_record()));
     // Verify generation match.
-    const auto& sequencing_information =
-        encrypted_record.sequencing_information();
+    const auto& sequence_information = encrypted_record.sequence_information();
     if (!generation_id_.has_value()) {
-      generation_id_ = sequencing_information.generation_id();
+      generation_id_ = sequence_information.generation_id();
     } else {
       ASSERT_THAT(generation_id_.value(),
-                  Eq(sequencing_information.generation_id()));
+                  Eq(sequence_information.generation_id()));
     }
 
     // Verify digest and its match.
@@ -87,18 +88,18 @@ class TestUploadClient : public UploaderInterface {
       ASSERT_THAT(record_digest, Eq(wrapped_record.record_digest()));
       // Store record digest for the next record in sequence to verify.
       last_record_digest_map_->emplace(
-          std::make_pair(sequencing_information.sequencing_id(),
-                         sequencing_information.generation_id()),
+          std::make_pair(sequence_information.sequencing_id(),
+                         sequence_information.generation_id()),
           record_digest);
       // If last record digest is present, match it and validate.
       if (wrapped_record.has_last_record_digest()) {
         auto it = last_record_digest_map_->find(
-            std::make_pair(sequencing_information.sequencing_id() - 1,
-                           sequencing_information.generation_id()));
+            std::make_pair(sequence_information.sequencing_id() - 1,
+                           sequence_information.generation_id()));
         if (it != last_record_digest_map_->end() && it->second.has_value()) {
           ASSERT_THAT(it->second.value(),
                       Eq(wrapped_record.last_record_digest()))
-              << "seq_id=" << sequencing_information.sequencing_id();
+              << "seq_id=" << sequence_information.sequencing_id();
         }
       }
     }
@@ -106,7 +107,7 @@ class TestUploadClient : public UploaderInterface {
     std::move(processed_cb).Run(true);
   }
 
-  void ProcessGap(SequencingInformation sequencing_information,
+  void ProcessGap(SequenceInformation sequence_information,
                   uint64_t count,
                   base::OnceCallback<void(bool)> processed_cb) override {
     ASSERT_TRUE(false) << "There should be no gaps";
@@ -116,7 +117,7 @@ class TestUploadClient : public UploaderInterface {
 
  private:
   absl::optional<int64_t> generation_id_;
-  LastRecordDigestMap* const last_record_digest_map_;
+  const raw_ptr<LastRecordDigestMap> last_record_digest_map_;
 
   Sequence test_upload_sequence_;
 };
@@ -124,13 +125,12 @@ class TestUploadClient : public UploaderInterface {
 class StorageQueueStressTest : public ::testing::TestWithParam<size_t> {
  public:
   void SetUp() override {
-    // Enable encryption.
+    // Enable compression.
     scoped_feature_list_.InitFromCommandLine(
-        {EncryptionModuleInterface::kEncryptedReporting}, {});
+        {CompressionModule::kCompressReportingFeature}, {});
 
     ASSERT_TRUE(location_.CreateUniqueTempDir());
-    options_.set_directory(base::FilePath(location_.GetPath()))
-        .set_single_file_size(GetParam());
+    options_.set_directory(base::FilePath(location_.GetPath()));
   }
 
   void TearDown() override {
@@ -146,6 +146,8 @@ class StorageQueueStressTest : public ::testing::TestWithParam<size_t> {
     ASSERT_FALSE(storage_queue_) << "StorageQueue already assigned";
     test_encryption_module_ =
         base::MakeRefCounted<test::TestEncryptionModule>();
+    test_compression_module_ =
+        base::MakeRefCounted<test::TestCompressionModule>();
     test::TestEvent<Status> key_update_event;
     test_encryption_module_->UpdateAsymmetricKey("DUMMY KEY", 0,
                                                  key_update_event.cb());
@@ -156,7 +158,8 @@ class StorageQueueStressTest : public ::testing::TestWithParam<size_t> {
         options,
         base::BindRepeating(&StorageQueueStressTest::AsyncStartTestUploader,
                             base::Unretained(this)),
-        test_encryption_module_, storage_queue_create_event.cb());
+        test_encryption_module_, test_compression_module_,
+        storage_queue_create_event.cb());
     StatusOr<scoped_refptr<StorageQueue>> storage_queue_result =
         storage_queue_create_event.result();
     ASSERT_OK(storage_queue_result) << "Failed to create StorageQueue, error="
@@ -176,11 +179,12 @@ class StorageQueueStressTest : public ::testing::TestWithParam<size_t> {
   QueueOptions BuildStorageQueueOptionsImmediate() const {
     return QueueOptions(options_)
         .set_subdirectory(FILE_PATH_LITERAL("D1"))
-        .set_file_prefix(FILE_PATH_LITERAL("F0001"));
+        .set_file_prefix(FILE_PATH_LITERAL("F0001"))
+        .set_max_single_file_size(GetParam());
   }
 
   QueueOptions BuildStorageQueueOptionsPeriodic(
-      base::TimeDelta upload_period = base::TimeDelta::FromSeconds(1)) const {
+      base::TimeDelta upload_period = base::Seconds(1)) const {
     return BuildStorageQueueOptionsImmediate().set_upload_period(upload_period);
   }
 
@@ -189,7 +193,9 @@ class StorageQueueStressTest : public ::testing::TestWithParam<size_t> {
   }
 
   void AsyncStartTestUploader(
+      UploaderInterface::UploadReason reason,
       UploaderInterface::UploaderInterfaceResultCb start_uploader_cb) {
+    // Ignore reason for stress test.
     std::move(start_uploader_cb)
         .Run(std::make_unique<TestUploadClient>(&last_record_digest_map_));
   }
@@ -211,6 +217,7 @@ class StorageQueueStressTest : public ::testing::TestWithParam<size_t> {
   base::ScopedTempDir location_;
   StorageOptions options_;
   scoped_refptr<test::TestEncryptionModule> test_encryption_module_;
+  scoped_refptr<test::TestCompressionModule> test_compression_module_;
   scoped_refptr<StorageQueue> storage_queue_;
 
   // Test-wide global mapping of <generation id, sequencing id> to record

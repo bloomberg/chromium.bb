@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_ANDROID_AUTOFILL_BROWSER_AUTOFILL_PROVIDER_H_
 #define COMPONENTS_ANDROID_AUTOFILL_BROWSER_AUTOFILL_PROVIDER_H_
 
+#include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom.h"
@@ -33,12 +34,12 @@ class AutofillProvider : public content::WebContentsUserData<AutofillProvider> {
   static bool is_download_manager_disabled_for_testing();
   static void set_is_download_manager_disabled_for_testing();
 
-  virtual void OnQueryFormFieldAutofill(AndroidAutofillManager* manager,
-                                        int32_t id,
-                                        const FormData& form,
-                                        const FormFieldData& field,
-                                        const gfx::RectF& bounding_box,
-                                        bool autoselect_first_suggestion) = 0;
+  virtual void OnAskForValuesToFill(AndroidAutofillManager* manager,
+                                    int32_t id,
+                                    const FormData& form,
+                                    const FormFieldData& field,
+                                    const gfx::RectF& bounding_box,
+                                    bool autoselect_first_suggestion) = 0;
 
   virtual void OnTextFieldDidChange(AndroidAutofillManager* manager,
                                     const FormData& form,
@@ -86,9 +87,9 @@ class AutofillProvider : public content::WebContentsUserData<AutofillProvider> {
 
   virtual void Reset(AndroidAutofillManager* manager) = 0;
 
-  void SendFormDataToRenderer(AndroidAutofillManager* manager,
-                              int requestId,
-                              const FormData& formData);
+  void FillOrPreviewForm(AndroidAutofillManager* manager,
+                         int requestId,
+                         const FormData& formData);
 
   // Notifies the renderer should accept the datalist suggestion given by
   // |value| and fill the input field indified by |field_id|.
@@ -101,16 +102,9 @@ class AutofillProvider : public content::WebContentsUserData<AutofillProvider> {
   explicit AutofillProvider(content::WebContents* web_contents);
   friend class content::WebContentsUserData<AutofillProvider>;
 
-#ifdef UNIT_TEST
-  // For the unit tests where WebContents isn't available.
-  AutofillProvider() = default;
-#endif  // UNIT_TEST
-
-  content::WebContents* web_contents() { return web_contents_; }
+  content::WebContents* web_contents() { return &GetWebContents(); }
 
  private:
-  content::WebContents* web_contents_;
-
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 };
 

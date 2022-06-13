@@ -73,11 +73,11 @@ void ExtensionDictionaryEventRouter::OnCustomDictionaryChanged(
 
   std::unique_ptr<base::ListValue> added_words(new base::ListValue());
   for (const std::string& word : dictionary_change.to_add())
-    added_words->AppendString(word);
+    added_words->Append(word);
 
   std::unique_ptr<base::ListValue> removed_words(new base::ListValue());
   for (const std::string& word : dictionary_change.to_remove())
-    removed_words->AppendString(word);
+    removed_words->Append(word);
 
   std::unique_ptr<base::ListValue> args(new base::ListValue());
   args->Append(std::move(added_words));
@@ -86,7 +86,7 @@ void ExtensionDictionaryEventRouter::OnCustomDictionaryChanged(
   // The router will only send the event to extensions that are listening.
   auto event = std::make_unique<extensions::Event>(
       extensions::events::INPUT_METHOD_PRIVATE_ON_DICTIONARY_CHANGED,
-      OnDictionaryChanged::kEventName, args->TakeList(), context_);
+      OnDictionaryChanged::kEventName, std::move(*args).TakeList(), context_);
   router->BroadcastEvent(std::move(event));
 }
 

@@ -8,13 +8,16 @@
 #include <stdint.h>
 #include <sys/utsname.h>
 
+#include "base/callback.h"
+#include "base/command_line.h"
+#include "base/cxx17_backports.h"
 #include "base/environment.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
-#include "base/stl_util.h"
+#include "base/process/launch.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -46,17 +49,13 @@ const char kLsbReleaseSourceKey[] = "lsb-release";
 const char kLsbReleaseSourceEnv[] = "env";
 const char kLsbReleaseSourceFile[] = "file";
 
+const char kSpacedCliPath[] = "/usr/sbin/spaced_cli";
+const char kSpacedGetFreeDiskSpaceAction[] = "get_free_disk_space";
+const char kSpacedGetTotalDiskSpaceAction[] = "get_total_disk_space";
+
 class ChromeOSVersionInfo {
  public:
-  ChromeOSVersionInfo() { Parse(); }
-
-  void Parse() {
-    lsb_release_map_.clear();
-    major_version_ = 0;
-    minor_version_ = 0;
-    bugfix_version_ = 0;
-    is_running_on_chromeos_ = false;
-
+  ChromeOSVersionInfo() {
     std::string lsb_release, lsb_release_time_str;
     std::unique_ptr<Environment> env(Environment::Create());
     bool parsed_from_env =
@@ -83,6 +82,11 @@ class ChromeOSVersionInfo {
         parsed_from_env ? kLsbReleaseSourceEnv : kLsbReleaseSourceFile;
   }
 
+  // The test-only instance should not parse the lsb-release file, because that
+  // file exists on the linux test bots, but contains irrelevant values.
+  enum ForTest { FOR_TEST };
+  explicit ChromeOSVersionInfo(ForTest for_test) {}
+
   bool GetLsbReleaseValue(const std::string& key, std::string* value) {
     LsbReleaseMap::const_iterator iter = lsb_release_map_.find(key);
     if (iter == lsb_release_map_.end())
@@ -100,9 +104,10 @@ class ChromeOSVersionInfo {
   }
 
   const Time& lsb_release_time() const { return lsb_release_time_; }
+  void set_lsb_release_time(const Time& time) { lsb_release_time_ = time; }
+
   bool is_running_on_chromeos() const { return is_running_on_chromeos_; }
 
- private:
   void ParseLsbRelease(const std::string& lsb_release) {
     // Parse and cache lsb_release key pairs. There should only be a handful
     // of entries so the overhead for this will be small, and it can be
@@ -147,27 +152,49 @@ class ChromeOSVersionInfo {
     }
   }
 
+ private:
   using LsbReleaseMap = std::map<std::string, std::string>;
   Time lsb_release_time_;
   LsbReleaseMap lsb_release_map_;
-  int32_t major_version_;
-  int32_t minor_version_;
-  int32_t bugfix_version_;
-  bool is_running_on_chromeos_;
+  int32_t major_version_ = 0;
+  int32_t minor_version_ = 0;
+  int32_t bugfix_version_ = 0;
+  bool is_running_on_chromeos_ = false;
 };
 
-bool g_use_chromeos_version_info_for_test = false;
+ChromeOSVersionInfo* g_chromeos_version_info_for_test = nullptr;
 
 ChromeOSVersionInfo& GetChromeOSVersionInfo() {
-  // ChromeOSVersionInfo only stores the parsed lsb-release values. We use a
-  // second instance for overrides in tests so we can cleanly restore the
-  // original lsb-release.
-  if (g_use_chromeos_version_info_for_test) {
-    static base::NoDestructor<ChromeOSVersionInfo> version_info_for_test;
-    return *version_info_for_test;
-  }
+  // ChromeOSVersionInfo only stores the parsed lsb-release values, not the full
+  // contents of the lsb-release file. Therefore, use a second instance for
+  // overrides in tests so we can cleanly restore the original lsb-release.
+  if (g_chromeos_version_info_for_test)
+    return *g_chromeos_version_info_for_test;
+
   static base::NoDestructor<ChromeOSVersionInfo> version_info;
   return *version_info;
+}
+
+SysInfo::GetAppOutputCallback* g_chromeos_get_app_output_for_test = nullptr;
+
+int64_t GetInfoFromSpaced(StringPiece action, const base::FilePath& path) {
+  CommandLine command((base::FilePath(kSpacedCliPath)));
+  command.AppendSwitchPath(action, path);
+
+  std::string output;
+  bool ret;
+  if (g_chromeos_get_app_output_for_test) {
+    ret = g_chromeos_get_app_output_for_test->Run(command, &output);
+  } else {
+    ret = GetAppOutput(command, &output);
+  }
+
+  int64_t result;
+  if (!ret || !StringToInt64(output, &result) || result < 0) {
+    return -1;
+  }
+
+  return result;
 }
 
 }  // namespace
@@ -236,18 +263,23 @@ bool SysInfo::IsRunningOnChromeOS() {
 // static
 void SysInfo::SetChromeOSVersionInfoForTest(const std::string& lsb_release,
                                             const Time& lsb_release_time) {
-  DCHECK(!g_use_chromeos_version_info_for_test) << "Nesting is not allowed";
-  g_use_chromeos_version_info_for_test = true;
-  std::unique_ptr<Environment> env(Environment::Create());
-  env->SetVar(kLsbReleaseKey, lsb_release);
-  env->SetVar(kLsbReleaseTimeKey, NumberToString(lsb_release_time.ToDoubleT()));
-  GetChromeOSVersionInfo().Parse();
+  DCHECK(!g_chromeos_version_info_for_test) << "Nesting is not allowed";
+  g_chromeos_version_info_for_test =
+      new ChromeOSVersionInfo(ChromeOSVersionInfo::FOR_TEST);
+  g_chromeos_version_info_for_test->ParseLsbRelease(lsb_release);
+  g_chromeos_version_info_for_test->set_lsb_release_time(lsb_release_time);
 }
 
 // static
 void SysInfo::ResetChromeOSVersionInfoForTest() {
-  DCHECK(g_use_chromeos_version_info_for_test);
-  g_use_chromeos_version_info_for_test = false;
+  DCHECK(g_chromeos_version_info_for_test);
+  delete g_chromeos_version_info_for_test;
+  g_chromeos_version_info_for_test = nullptr;
+}
+
+// static
+void SysInfo::SetChromeOSGetAppOutputForTest(GetAppOutputCallback* callback) {
+  g_chromeos_get_app_output_for_test = callback;
 }
 
 // static
@@ -265,6 +297,16 @@ void SysInfo::CrashIfChromeOSNonTestImage() {
 
   // Crash if can't find test-image marker in the release track.
   CHECK_NE(track.find(kTestImageRelease), std::string::npos);
+}
+
+// static
+int64_t SysInfo::GetFreeDiskSpaceFromSpaced(const base::FilePath& path) {
+  return GetInfoFromSpaced(kSpacedGetFreeDiskSpaceAction, path);
+}
+
+// static
+int64_t SysInfo::GetTotalDiskSpaceFromSpaced(const base::FilePath& path) {
+  return GetInfoFromSpaced(kSpacedGetTotalDiskSpaceAction, path);
 }
 
 }  // namespace base

@@ -12,9 +12,8 @@
 #include <vector>
 
 #include "base/containers/contains.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/logging.h"
-#include "base/numerics/ranges.h"
-#include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -138,13 +137,14 @@ class ConsumerHost::StreamWriter {
     }
   }
 
+  StreamWriter(const StreamWriter&) = delete;
+  StreamWriter& operator=(const StreamWriter&) = delete;
+
  private:
   mojo::ScopedDataPipeProducerHandle stream_;
   TracingSession::ReadBuffersCallback read_buffers_callback_;
   base::OnceClosure disconnect_callback_;
   scoped_refptr<base::SequencedTaskRunner> callback_task_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(StreamWriter);
 };
 
 ConsumerHost::TracingSession::TracingSession(
@@ -228,8 +228,8 @@ ConsumerHost::TracingSession::TracingSession(
     // ACK our EnableTracing request eventually, so we'll add a timeout for that
     // case.
     enable_tracing_ack_timer_.Start(
-        FROM_HERE, base::TimeDelta::FromSeconds(kEnableTracingTimeoutSeconds),
-        this, &ConsumerHost::TracingSession::OnEnableTracingTimeout);
+        FROM_HERE, base::Seconds(kEnableTracingTimeoutSeconds), this,
+        &ConsumerHost::TracingSession::OnEnableTracingTimeout);
   }
 }
 

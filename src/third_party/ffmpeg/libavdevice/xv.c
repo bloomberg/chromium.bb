@@ -296,7 +296,7 @@ static int write_picture(AVFormatContext *s, uint8_t *input_data[4],
 {
     XVContext *xv = s->priv_data;
     XvImage *img = xv->yuv_image;
-    uint8_t *data[3] = {
+    uint8_t *data[4] = {
         img->data + img->offsets[0],
         img->data + img->offsets[1],
         img->data + img->offsets[2]
@@ -376,7 +376,7 @@ static const AVClass xv_class = {
     .category   = AV_CLASS_CATEGORY_DEVICE_VIDEO_OUTPUT,
 };
 
-AVOutputFormat ff_xv_muxer = {
+const AVOutputFormat ff_xv_muxer = {
     .name           = "xv",
     .long_name      = NULL_IF_CONFIG_SMALL("XV (XVideo) output device"),
     .priv_data_size = sizeof(XVContext),

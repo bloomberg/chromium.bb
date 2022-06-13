@@ -29,6 +29,35 @@ class GerritApi(recipe_api.RecipeApi):
                            venv=True,
                            **kwargs)
 
+  def call_raw_api(self,
+                   host,
+                   path,
+                   method=None,
+                   body=None,
+                   accept_statuses=None,
+                   name=None,
+                   **kwargs):
+    """Call an arbitrary Gerrit API that returns a JSON response.
+
+    Returns:
+      The JSON response data.
+    """
+    args = [
+        'rawapi', '--host', host, '--path', path, '--json_file',
+        self.m.json.output()
+    ]
+    if method:
+      args.extend(['--method', method])
+    if body:
+      args.extend(['--body', self.m.json.dumps(body)])
+    if accept_statuses:
+      args.extend(
+          ['--accept_status', ','.join(str(i) for i in accept_statuses)])
+
+    step_name = name or 'call_raw_api (%s)' % path
+    step_result = self(step_name, args, **kwargs)
+    return step_result.json.output
+
   def create_gerrit_branch(self, host, project, branch, commit, **kwargs):
     """Creates a new branch from given project and commit
 
@@ -44,6 +73,25 @@ class GerritApi(recipe_api.RecipeApi):
         '--json_file', self.m.json.output()
     ]
     step_name = 'create_gerrit_branch (%s %s)' % (project, branch)
+    step_result = self(step_name, args, **kwargs)
+    ref = step_result.json.output.get('ref')
+    return ref
+
+  def create_gerrit_tag(self, host, project, tag, commit, **kwargs):
+    """Creates a new tag at the given commit.
+
+    Returns:
+      The ref of the tag created.
+    """
+    args = [
+        'tag',
+        '--host', host,
+        '--project', project,
+        '--tag', tag,
+        '--commit', commit,
+        '--json_file', self.m.json.output()
+    ]
+    step_name = 'create_gerrit_tag (%s %s)' % (project, tag)
     step_result = self(step_name, args, **kwargs)
     ref = step_result.json.output.get('ref')
     return ref
@@ -170,6 +218,42 @@ class GerritApi(recipe_api.RecipeApi):
         **kwargs
     ).json.output
 
+  def get_related_changes(self, host, change, revision='current', step_test_data=None):
+    """Queries related changes for a given host, change, and revision.
+
+    Args:
+      * host: URL of Gerrit host to query.
+      * change: The change-id of the change to get related changes for as
+          documented here:
+          https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#change-id
+      * revision: The revision-id of the revision to get related changes for as
+          documented here:
+          https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#revision-id
+          This defaults to current, which names the most recent patch set.
+      * step_test_data: Optional mock test data for the underlying gerrit client.
+
+    Returns:
+      A related changes dictionary as documented here:
+          https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#related-changes-info
+
+    """
+    args = [
+        'relatedchanges',
+        '--host',
+        host,
+        '--change',
+        change,
+        '--revision',
+        revision,
+        '--json_file',
+        self.m.json.output(),
+    ]
+    if not step_test_data:
+      step_test_data = lambda: self.test_api.get_related_changes_response_data()
+
+    return self('relatedchanges', args,
+                step_test_data=step_test_data).json.output
+
   def abandon_change(self, host, change, message=None, name=None,
                      step_test_data=None):
     args = [
@@ -186,6 +270,24 @@ class GerritApi(recipe_api.RecipeApi):
 
     return self(
         name or 'abandon',
+        args,
+        step_test_data=step_test_data,
+    ).json.output
+
+  def set_change_label(self,
+                       host,
+                       change,
+                       label_name,
+                       label_value,
+                       name=None,
+                       step_test_data=None):
+    args = [
+        'setlabel', '--host', host, '--change',
+        int(change), '--json_file',
+        self.m.json.output(), '-l', label_name, label_value
+    ]
+    return self(
+        name or 'setlabel',
         args,
         step_test_data=step_test_data,
     ).json.output
@@ -213,3 +315,102 @@ class GerritApi(recipe_api.RecipeApi):
         args,
         step_test_data=step_test_data,
     ).json.output
+
+  def update_files(self,
+                   host,
+                   project,
+                   branch,
+                   new_contents_by_file_path,
+                   commit_msg,
+                   params=frozenset(['status=NEW']),
+                   submit=False,
+                   submit_later=False):
+    """Update a set of files by creating and submitting a Gerrit CL.
+
+    Args:
+      * host: URL of Gerrit host to name.
+      * project: Gerrit project name, e.g. chromium/src.
+      * branch: The branch to land the change, e.g. main
+      * new_contents_by_file_path: Dict of the new contents with file path as
+          the key.
+      * commit_msg: Description to add to the CL.
+      * params: A list of additional ChangeInput specifiers, with format
+          'key=value'.
+      * submit: Should land this CL instantly.
+      * submit_later: If this change has related CLs, we may want to commit
+           them in a chain. So only set Bot-Commit+1, making it ready for
+           submit together. Ignored if submit is True.
+
+    Returns:
+      A ChangeInfo dictionary as documented here:
+          https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#create-change
+          Or if the change is submitted, here:
+          https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#submit-change
+    """
+    assert len(new_contents_by_file_path
+               ) > 0, 'The dict of file paths should not be empty.'
+    command = [
+        'createchange',
+        '--host',
+        host,
+        '--project',
+        project,
+        '--branch',
+        branch,
+        '--subject',
+        commit_msg,
+        '--json_file',
+        self.m.json.output(),
+    ]
+    for p in params:
+      command.extend(['-p', p])
+    step_result = self('create change at (%s %s)' % (project, branch), command)
+    change = int(step_result.json.output.get('_number'))
+    step_result.presentation.links['change %d' %
+                                   change] = '%s/#/q/%d' % (host, change)
+
+    with self.m.step.nest('update contents in CL %d' % change):
+      for path, content in new_contents_by_file_path.items():
+        _file = self.m.path.mkstemp()
+        self.m.file.write_raw('store the new content for %s' % path, _file,
+                              content)
+        self('edit file %s' % path, [
+            'changeedit',
+            '--host',
+            host,
+            '--change',
+            change,
+            '--path',
+            path,
+            '--file',
+            _file,
+        ])
+
+    self('publish edit', [
+        'publishchangeedit',
+        '--host',
+        host,
+        '--change',
+        change,
+    ])
+
+    if submit or submit_later:
+      self('set Bot-Commit+1 for change %d' % change, [
+          'setbotcommit',
+          '--host',
+          host,
+          '--change',
+          change,
+      ])
+    if submit:
+      submit_cmd = [
+          'submitchange',
+          '--host',
+          host,
+          '--change',
+          change,
+          '--json_file',
+          self.m.json.output(),
+      ]
+      step_result = self('submit change %d' % change, submit_cmd)
+    return step_result.json.output

@@ -4,12 +4,12 @@
 
 #include "ash/display/cros_display_config.h"
 
+#include "ash/constants/ash_features.h"
 #include "ash/display/display_alignment_controller.h"
 #include "ash/display/display_highlight_controller.h"
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/display/touch_calibrator_controller.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/mojom/cros_display_config.mojom.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -63,6 +63,9 @@ class TestObserver : public mojom::CrosDisplayConfigObserver {
  public:
   TestObserver() = default;
 
+  TestObserver(const TestObserver&) = delete;
+  TestObserver& operator=(const TestObserver&) = delete;
+
   // mojom::CrosDisplayConfigObserver:
   void OnDisplayConfigChanged() override { display_changes_++; }
 
@@ -71,8 +74,6 @@ class TestObserver : public mojom::CrosDisplayConfigObserver {
 
  private:
   int display_changes_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(TestObserver);
 };
 
 }  // namespace
@@ -80,11 +81,14 @@ class TestObserver : public mojom::CrosDisplayConfigObserver {
 class CrosDisplayConfigTest : public AshTestBase {
  public:
   CrosDisplayConfigTest() {}
+
+  CrosDisplayConfigTest(const CrosDisplayConfigTest&) = delete;
+  CrosDisplayConfigTest& operator=(const CrosDisplayConfigTest&) = delete;
+
   ~CrosDisplayConfigTest() override {}
 
   void SetUp() override {
-    scoped_feature_list_.InitWithFeatures(
-        {features::kDisplayIdentification, features::kDisplayAlignAssist}, {});
+    scoped_feature_list_.InitAndEnableFeature(features::kDisplayAlignAssist);
 
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kUseFirstDisplayAsInternal);
@@ -223,8 +227,6 @@ class CrosDisplayConfigTest : public AshTestBase {
   CrosDisplayConfig* cros_display_config_ = nullptr;
 
   base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(CrosDisplayConfigTest);
 };
 
 TEST_F(CrosDisplayConfigTest, OnDisplayConfigChanged) {

@@ -5,12 +5,9 @@
 #ifndef CONTENT_PUBLIC_BROWSER_BROWSER_ASSOCIATED_INTERFACE_H_
 #define CONTENT_PUBLIC_BROWSER_BROWSER_ASSOCIATED_INTERFACE_H_
 
-#include <string>
-
 #include "base/bind.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
-#include "content/common/content_export.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -62,6 +59,10 @@ class BrowserAssociatedInterface : public Interface {
         base::BindOnce(&InternalState::ClearReceivers, internal_state_));
   }
 
+  BrowserAssociatedInterface(const BrowserAssociatedInterface&) = delete;
+  BrowserAssociatedInterface& operator=(const BrowserAssociatedInterface&) =
+      delete;
+
   ~BrowserAssociatedInterface() { internal_state_->ClearReceivers(); }
 
  private:
@@ -71,6 +72,9 @@ class BrowserAssociatedInterface : public Interface {
    public:
     explicit InternalState(Interface* impl)
         : impl_(impl), receivers_(absl::in_place) {}
+
+    InternalState(const InternalState&) = delete;
+    InternalState& operator=(const InternalState&) = delete;
 
     void ClearReceivers() {
       if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
@@ -96,15 +100,11 @@ class BrowserAssociatedInterface : public Interface {
 
     ~InternalState() {}
 
-    Interface* impl_;
+    raw_ptr<Interface> impl_;
     absl::optional<mojo::AssociatedReceiverSet<Interface>> receivers_;
-
-    DISALLOW_COPY_AND_ASSIGN(InternalState);
   };
 
   scoped_refptr<InternalState> internal_state_;
-
-  DISALLOW_COPY_AND_ASSIGN(BrowserAssociatedInterface);
 };
 
 }  // namespace content

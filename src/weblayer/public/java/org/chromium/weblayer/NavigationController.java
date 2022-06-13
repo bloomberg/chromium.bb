@@ -334,10 +334,10 @@ public class NavigationController {
         }
 
         @Override
-        public void loadStateChanged(boolean isLoading, boolean toDifferentDocument) {
+        public void loadStateChanged(boolean isLoading, boolean shouldShowLoadingUi) {
             StrictModeWorkaround.apply();
             for (NavigationCallback callback : mCallbacks) {
-                callback.onLoadStateChanged(isLoading, toDifferentDocument);
+                callback.onLoadStateChanged(isLoading, shouldShowLoadingUi);
             }
         }
 
@@ -395,6 +395,14 @@ public class NavigationController {
             StrictModeWorkaround.apply();
             for (NavigationCallback callback : mCallbacks) {
                 callback.onPageDestroyed((Page) page);
+            }
+        }
+
+        @Override
+        public void onPageLanguageDetermined(IClientPage page, String language) {
+            StrictModeWorkaround.apply();
+            for (NavigationCallback callback : mCallbacks) {
+                callback.onPageLanguageDetermined((Page) page, language);
             }
         }
     }

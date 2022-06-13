@@ -15,9 +15,11 @@
 #include "base/callback_helpers.h"
 #include "base/containers/contains.h"
 #include "base/location.h"
-#include "base/single_thread_task_runner.h"
+#include "base/memory/raw_ptr.h"
 #include "base/synchronization/lock.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -37,6 +39,7 @@
 #include "cc/paint/image_animation_count.h"
 #include "cc/resources/ui_resource_manager.h"
 #include "cc/test/fake_content_layer_client.h"
+#include "cc/test/fake_frame_info.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/fake_paint_image_generator.h"
 #include "cc/test/fake_painted_scrollbar_layer.h"
@@ -46,9 +49,9 @@
 #include "cc/test/fake_recording_source.h"
 #include "cc/test/fake_scoped_ui_resource.h"
 #include "cc/test/fake_video_frame_provider.h"
-#include "cc/test/geometry_test_utils.h"
 #include "cc/test/layer_test_common.h"
 #include "cc/test/layer_tree_test.h"
+#include "cc/test/mock_latency_info_swap_promise_monitor.h"
 #include "cc/test/push_properties_counting_layer.h"
 #include "cc/test/push_properties_counting_layer_impl.h"
 #include "cc/test/render_pass_test_utils.h"
@@ -59,12 +62,14 @@
 #include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/layer_tree_impl.h"
+#include "cc/trees/paint_holding_reason.h"
 #include "cc/trees/scroll_node.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "cc/trees/swap_promise.h"
 #include "cc/trees/swap_promise_manager.h"
 #include "cc/trees/transform_node.h"
 #include "components/ukm/test_ukm_recorder.h"
+#include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
@@ -85,6 +90,7 @@
 #include "ui/gfx/animation/keyframe/timing_function.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
+#include "ui/gfx/geometry/test/geometry_util.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
 
 #define EXPECT_SCOPED(statements) \
@@ -97,6 +103,7 @@ using testing::_;
 using testing::AnyNumber;
 using testing::AtLeast;
 using testing::Mock;
+using testing::StrictMock;
 
 namespace cc {
 namespace {
@@ -110,6 +117,12 @@ bool LayerSubtreeHasCopyRequest(Layer* layer) {
   int index = layer->effect_tree_index();
   auto* node = host->property_trees()->effect_tree.Node(index);
   return node->subtree_has_copy_request;
+}
+
+FrameInfo CreateFakeImplDroppedFrameInfo() {
+  auto info = CreateFakeFrameInfo(FrameInfo::FrameFinalState::kDropped);
+  info.main_thread_response = FrameInfo::MainThreadResponse::kMissing;
+  return info;
 }
 
 using LayerTreeHostTest = LayerTreeTest;
@@ -158,8 +171,8 @@ class LayerTreeHostTestFrameOrdering : public LayerTreeHostTest {
   enum MainOrder : int {
     MAIN_START = 1,
     MAIN_LAYOUT,
-    MAIN_COMMIT_COMPLETE,
     MAIN_DID_BEGIN_FRAME,
+    MAIN_COMMIT_COMPLETE,
     MAIN_END,
   };
 
@@ -228,6 +241,34 @@ class LayerTreeHostTestFrameOrdering : public LayerTreeHostTest {
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestFrameOrdering);
 
+// This tests that the frame ordering is the same for an update-layers-only
+// frame as for a fully committed frame.
+class LayerTreeHostTestUpdateLayersFrameOrdering
+    : public LayerTreeHostTestFrameOrdering {
+  void DidCommit() override {
+    EXPECT_TRUE(CheckStep(MAIN_COMMIT_COMPLETE, &main_));
+    if (main_iteration_++ == 0) {
+      main_ = MAIN_START;
+    } else {
+      EndTest();
+    }
+  }
+  void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
+    EXPECT_TRUE(CheckStep(IMPL_DRAW, &impl_));
+    impl_ = IMPL_START;
+    if (impl_iteration_++ == 0) {
+      PostSetNeedsUpdateLayersToMainThread();
+    }
+  }
+  void AfterTest() override { EXPECT_TRUE(CheckStep(MAIN_END, &main_)); }
+
+ private:
+  int main_iteration_ = 0;
+  int impl_iteration_ = 0;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestUpdateLayersFrameOrdering);
+
 class LayerTreeHostTestRequestedMainFrame : public LayerTreeHostTest {
  public:
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
@@ -242,7 +283,7 @@ class LayerTreeHostTestRequestedMainFrame : public LayerTreeHostTest {
 
   void NextStep() {
     // The MainFrame request is cleared once a MainFrame happens.
-    EXPECT_FALSE(layer_tree_host()->RequestedMainFramePendingForTesting());
+    EXPECT_FALSE(layer_tree_host()->RequestedMainFramePending());
     switch (layer_tree_host()->SourceFrameNumber()) {
       case 0:
         ADD_FAILURE()
@@ -262,7 +303,7 @@ class LayerTreeHostTestRequestedMainFrame : public LayerTreeHostTest {
         return;
     }
     // SetNeeds{Animate,UpdateLayers,Commit}() will mean a MainFrame is pending.
-    EXPECT_TRUE(layer_tree_host()->RequestedMainFramePendingForTesting());
+    EXPECT_TRUE(layer_tree_host()->RequestedMainFramePending());
   }
 };
 
@@ -574,8 +615,8 @@ class LayerTreeHostContextCacheTest : public LayerTreeHostTest {
                  void(bool aggressively_free_resources));
   };
 
-  MockContextSupport* mock_main_context_support_;
-  MockContextSupport* mock_worker_context_support_;
+  raw_ptr<MockContextSupport> mock_main_context_support_;
+  raw_ptr<MockContextSupport> mock_worker_context_support_;
 };
 
 // Test if the LTH successfully frees resources on the main/worker
@@ -651,7 +692,8 @@ class LayerTreeHostFreeContextResourcesOnDestroy
     : public LayerTreeHostContextCacheTest {
  public:
   void WillBeginImplFrameOnThread(LayerTreeHostImpl* host_impl,
-                                  const viz::BeginFrameArgs& args) override {
+                                  const viz::BeginFrameArgs& args,
+                                  bool has_damage) override {
     if (!first_will_begin_impl_frame_)
       return;
 
@@ -681,7 +723,8 @@ class LayerTreeHostCacheBehaviorOnLayerTreeFrameSinkRecreated
     : public LayerTreeHostContextCacheTest {
  public:
   void WillBeginImplFrameOnThread(LayerTreeHostImpl* host_impl,
-                                  const viz::BeginFrameArgs& args) override {
+                                  const viz::BeginFrameArgs& args,
+                                  bool has_damage) override {
     // This code is run once, to trigger recreation of our LayerTreeFrameSink.
     if (test_state_ != TestState::INIT)
       return;
@@ -990,6 +1033,17 @@ class LayerTreeHostTestPushNodeOwnerToNodeIdMap : public LayerTreeHostTest {
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
+  void WillCommit(const CommitState&) override {
+    root_transform_index_ = root_->transform_tree_index();
+    child_transform_index_ = child_->transform_tree_index();
+    root_effect_index_ = root_->effect_tree_index();
+    child_effect_index_ = child_->effect_tree_index();
+    root_clip_index_ = root_->clip_tree_index();
+    child_clip_index_ = child_->clip_tree_index();
+    root_scroll_index_ = root_->scroll_tree_index();
+    child_scroll_index_ = child_->scroll_tree_index();
+  }
+
   void DidCommit() override {
     switch (layer_tree_host()->SourceFrameNumber()) {
       case 1:
@@ -1016,21 +1070,21 @@ class LayerTreeHostTestPushNodeOwnerToNodeIdMap : public LayerTreeHostTest {
   void CommitCompleteOnThread(LayerTreeHostImpl* impl) override {
     PropertyTrees* property_trees = impl->sync_tree()->property_trees();
     const TransformNode* root_transform_node =
-        property_trees->transform_tree.Node(root_->transform_tree_index());
+        property_trees->transform_tree.Node(root_transform_index_);
     const TransformNode* child_transform_node =
-        property_trees->transform_tree.Node(child_->transform_tree_index());
+        property_trees->transform_tree.Node(child_transform_index_);
     const EffectNode* root_effect_node =
-        property_trees->effect_tree.Node(root_->effect_tree_index());
+        property_trees->effect_tree.Node(root_effect_index_);
     const EffectNode* child_effect_node =
-        property_trees->effect_tree.Node(child_->effect_tree_index());
+        property_trees->effect_tree.Node(child_effect_index_);
     const ClipNode* root_clip_node =
-        property_trees->clip_tree.Node(root_->clip_tree_index());
+        property_trees->clip_tree.Node(root_clip_index_);
     const ClipNode* child_clip_node =
-        property_trees->clip_tree.Node(child_->clip_tree_index());
+        property_trees->clip_tree.Node(child_clip_index_);
     const ScrollNode* root_scroll_node =
-        property_trees->scroll_tree.Node(root_->scroll_tree_index());
+        property_trees->scroll_tree.Node(root_scroll_index_);
     const ScrollNode* child_scroll_node =
-        property_trees->scroll_tree.Node(child_->scroll_tree_index());
+        property_trees->scroll_tree.Node(child_scroll_index_);
     switch (impl->sync_tree()->source_frame_number()) {
       case 0:
         // root_ should create transform, scroll and effect tree nodes but not
@@ -1076,6 +1130,14 @@ class LayerTreeHostTestPushNodeOwnerToNodeIdMap : public LayerTreeHostTest {
  private:
   scoped_refptr<Layer> root_;
   scoped_refptr<Layer> child_;
+  int root_transform_index_ = TransformTree::kInvalidNodeId;
+  int child_transform_index_ = TransformTree::kInvalidNodeId;
+  int root_effect_index_ = EffectTree::kInvalidNodeId;
+  int child_effect_index_ = EffectTree::kInvalidNodeId;
+  int root_clip_index_ = ClipTree::kInvalidNodeId;
+  int child_clip_index_ = ClipTree::kInvalidNodeId;
+  int root_scroll_index_ = ScrollTree::kInvalidNodeId;
+  int child_scroll_index_ = ScrollTree::kInvalidNodeId;
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestPushNodeOwnerToNodeIdMap);
@@ -1410,7 +1472,7 @@ class LayerTreeHostTestLayerListSurfaceDamage : public LayerTreeHostTest {
   }
 
  private:
-  Layer* root_;
+  raw_ptr<Layer> root_;
   scoped_refptr<Layer> child_a_;
   scoped_refptr<Layer> child_b_;
   scoped_refptr<Layer> child_c_;
@@ -2004,9 +2066,14 @@ class LayerTreeHostTestEffectTreeSync : public LayerTreeHostTest {
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
+  void WillCommit(const CommitState&) override {
+    root_effect_tree_index_ =
+        layer_tree_host()->root_layer()->effect_tree_index();
+  }
+
   void DidCommit() override {
     EffectTree& effect_tree = layer_tree_host()->property_trees()->effect_tree;
-    EffectNode* node = effect_tree.Node(root_->effect_tree_index());
+    EffectNode* node = effect_tree.Node(root_effect_tree_index_);
     switch (layer_tree_host()->SourceFrameNumber()) {
       case 1:
         node->opacity = 0.5f;
@@ -2042,7 +2109,7 @@ class LayerTreeHostTestEffectTreeSync : public LayerTreeHostTest {
   void CommitCompleteOnThread(LayerTreeHostImpl* impl) override {
     EffectTree& effect_tree = impl->sync_tree()->property_trees()->effect_tree;
     LayerImpl* root = impl->sync_tree()->root_layer();
-    EffectNode* node = effect_tree.Node(root->effect_tree_index());
+    EffectNode* node = effect_tree.Node(root_effect_tree_index_);
     switch (impl->sync_tree()->source_frame_number()) {
       case 0:
         impl->sync_tree()->SetOpacityMutated(root->element_id(), 0.75f);
@@ -2090,6 +2157,7 @@ class LayerTreeHostTestEffectTreeSync : public LayerTreeHostTest {
 
  private:
   scoped_refptr<Layer> root_;
+  int root_effect_tree_index_ = EffectTree::kInvalidNodeId;
   FilterOperations blur_filter_;
   FilterOperations brightness_filter_;
   FilterOperations sepia_filter_;
@@ -2113,10 +2181,14 @@ class LayerTreeHostTestTransformTreeSync : public LayerTreeHostTest {
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
+  void WillCommit(const CommitState&) override {
+    transform_tree_index_ = layer_->transform_tree_index();
+  }
+
   void DidCommit() override {
     TransformTree& transform_tree =
         layer_tree_host()->property_trees()->transform_tree;
-    TransformNode* node = transform_tree.Node(layer_->transform_tree_index());
+    TransformNode* node = transform_tree.Node(transform_tree_index_);
     gfx::Transform rotate10;
     rotate10.Rotate(10.f);
     switch (layer_tree_host()->SourceFrameNumber()) {
@@ -2173,6 +2245,7 @@ class LayerTreeHostTestTransformTreeSync : public LayerTreeHostTest {
 
  private:
   scoped_refptr<Layer> layer_;
+  int transform_tree_index_ = TransformTree::kInvalidNodeId;
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestTransformTreeSync);
@@ -2680,6 +2753,225 @@ class LayerTreeHostTestDeviceScaleFactorChange : public LayerTreeHostTest {
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestDeviceScaleFactorChange);
 
+// Tests that when the LayerTreeHost has received an updated Viewport Rect and
+// viz::LocalSurfaceId that the Impl Frame does not begin until the new tree has
+// been either activated or pushed as the new pending tree.
+class LayerTreeHostTestViewportRectChangeBlockedMainThread
+    : public LayerTreeHostTest {
+ public:
+  LayerTreeHostTestViewportRectChangeBlockedMainThread() {
+    scoped_feature_list_.InitAndEnableFeature(features::kSurfaceSyncThrottling);
+  }
+
+  void SetupTree() override {
+    root_layer_ = Layer::Create();
+    root_layer_->SetBounds(initial_size_);
+
+    child_layer_ = FakePictureLayer::Create(&client_);
+    child_layer_->SetBounds(gfx::Size(10, 10));
+    root_layer_->AddChild(child_layer_);
+
+    layer_tree_host()->SetRootLayer(root_layer_);
+    LayerTreeHostTest::SetupTree();
+    client_.set_bounds(root_layer_->bounds());
+  }
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void StopDeferringCommits() { scoped_defer_main_frame_update_.reset(); }
+
+  void ChangeViewportRect() {
+    gfx::Rect rect = layer_tree_host()->device_viewport_rect();
+    rect.set_size(target_size_);
+    GenerateNewLocalSurfaceId();
+    target_local_surface_id_ = GetCurrentLocalSurfaceId();
+    layer_tree_host()->SetViewportRectAndScale(rect, 1.f,
+                                               GetCurrentLocalSurfaceId());
+    // Block Main to simulate it being busy with a long layout.
+    PostGetDeferMainFrameUpdateToMainThread(&scoped_defer_main_frame_update_);
+  }
+
+  void WillCommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
+    switch (host_impl->sync_tree()->source_frame_number()) {
+      case 0:
+        initial_local_surface_id_ = GetCurrentLocalSurfaceId();
+
+        // After we have committed the initial tree, enqueue the change to the
+        // viewport rect for the next stage of the test.
+        MainThreadTaskRunner()->PostTask(
+            FROM_HERE,
+            base::BindOnce(
+                &LayerTreeHostTestViewportRectChangeBlockedMainThread::
+                    ChangeViewportRect,
+                base::Unretained(this)));
+        break;
+    }
+  }
+
+  void WillBeginImplFrameOnThread(LayerTreeHostImpl* host_impl,
+                                  const viz::BeginFrameArgs& args,
+                                  bool has_damage) override {
+    switch (host_impl->active_tree()->source_frame_number()) {
+      case -1:
+        EXPECT_FALSE(host_impl->active_tree()
+                         ->local_surface_id_from_parent()
+                         .is_valid());
+        break;
+      case 0:
+        EXPECT_EQ(initial_local_surface_id_,
+                  host_impl->active_tree()->local_surface_id_from_parent());
+        // Main creates a new |target_local_surface_id_| and posts it back to
+        // the Compositor thread in ChangeViewportRect. However if it is
+        // possible for a new Impl frame to start before the queued setting of
+        // |target_local_surface_id_| has been processed. So ignore those.
+        //
+        // The |source_frame_number| will not advance until a new tree has
+        // been committed. Which will not occur until we've passed here and
+        // called StopDeferringCommits. If the test times out there there is a
+        // bug in syncing the id.
+        if (!host_impl->target_local_surface_id().is_valid())
+          return;
+        EXPECT_EQ(target_local_surface_id_,
+                  host_impl->target_local_surface_id());
+        // On slower configurations more than one frame at the original
+        // |source_frame_number| can be triggered between when we begin allowing
+        // commits again, and before the commit occurs.
+        //
+        // If so do not attempt to re-unblock. Once we have stopped the blocking
+        // the first time, all subsequent Commit/Activate/BeginMainFramme will
+        // be allowed to continue as normal.
+        //
+        // When this occurs there will be a new pending tree. We also expect
+        // there to be damage now, to unblock impl frame production ahead of the
+        // upcoming activation. CC is already build around Activations that can
+        // arrive mid-frame. It does this by delaying non-immediate mode
+        // painting until either Activation arrives, or an internal deadline is
+        // hit.
+        //
+        // The normal flow is:
+        //   Main hasn't committed yet, due to explicitly being blocked.
+        //   BeginImplFrame - we don't have damage
+        //   Main is unblocked by StopDeferringCommits
+        //   Main commits
+        //   Main activates
+        //   BeginImplFrame has new active_tree and starts
+        //
+        // The slower flow is:
+        //   Main hasn't committed yet, due to explicitly being blocked.
+        //   BeginImplFrame - we don't want have damage
+        //   Main is unblocked by StopDeferringCommits
+        //   Main commits
+        //   BeginImplFrame has new pending_tree and starts
+        //   Main activates
+        //   Impl receives activation
+        //   Painting.
+        if (host_impl->pending_tree()) {
+          EXPECT_TRUE(has_damage);
+          return;
+        }
+        // When the |active_tree| in the LayerTreeHostImpl is behind the new
+        // |target_local_surface_id| that the LayerTreeHost is processing,
+        // there should be no damage.
+        EXPECT_FALSE(has_damage)
+            << "target " << target_local_surface_id_.ToString();
+        // Unblock the main thread now to allow for activation of the new
+        // surface.
+        MainThreadTaskRunner()->PostTask(
+            FROM_HERE,
+            base::BindOnce(
+                &LayerTreeHostTestViewportRectChangeBlockedMainThread::
+                    StopDeferringCommits,
+                base::Unretained(this)));
+        break;
+      case 1:
+        // When the main thread has become unblocked and pushed the new tree,
+        // frame production should continue.
+        EXPECT_EQ(target_local_surface_id_,
+                  host_impl->active_tree()->local_surface_id_from_parent());
+        EXPECT_EQ(target_local_surface_id_,
+                  host_impl->target_local_surface_id());
+        EXPECT_TRUE(has_damage);
+        break;
+    }
+  }
+
+  void WillActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
+    switch (host_impl->active_tree()->source_frame_number()) {
+      case -1:
+        EXPECT_EQ(initial_local_surface_id_,
+                  host_impl->pending_tree()->local_surface_id_from_parent());
+        break;
+      case 0:
+        EXPECT_EQ(initial_local_surface_id_,
+                  host_impl->active_tree()->local_surface_id_from_parent());
+        // For single threaded compositing we will not have built a
+        // |pending_tree| yet.
+        if (host_impl->pending_tree()) {
+          EXPECT_EQ(target_local_surface_id_,
+                    host_impl->pending_tree()->local_surface_id_from_parent());
+        }
+        break;
+      case 1:
+        EXPECT_EQ(target_local_surface_id_,
+                  host_impl->active_tree()->local_surface_id_from_parent());
+        break;
+    }
+  }
+
+  DrawResult PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
+                                   LayerTreeHostImpl::FrameData* frame_data,
+                                   DrawResult draw_result) override {
+    // The damage rect will be set before drawing.
+    gfx::Rect root_damage_rect = frame_data->render_passes.back()->damage_rect;
+    switch (host_impl->active_tree()->source_frame_number()) {
+      case 0:
+        EXPECT_EQ(initial_size_, root_damage_rect.size());
+        break;
+      case 1:
+        EXPECT_EQ(target_size_, root_damage_rect.size());
+        PostSetNeedsRedrawToMainThread();
+        break;
+    }
+    return draw_result;
+  }
+
+  void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
+    // The viz::LocalSurfaceId is not associated with a frame until it is drawn.
+    switch (host_impl->active_tree()->source_frame_number()) {
+      case 0:
+        EXPECT_EQ(initial_local_surface_id_,
+                  host_impl->last_draw_local_surface_id());
+        break;
+      case 1:
+        EXPECT_EQ(target_local_surface_id_,
+                  host_impl->last_draw_local_surface_id());
+        EndTest();
+        break;
+    }
+  }
+
+ private:
+  std::unique_ptr<ScopedDeferMainFrameUpdate> scoped_defer_main_frame_update_;
+
+  viz::LocalSurfaceId initial_local_surface_id_;
+  viz::LocalSurfaceId target_local_surface_id_;
+
+  const gfx::Size initial_size_ = {10, 20};
+  const gfx::Size target_size_ = {20, 30};
+
+  FakeContentLayerClient client_;
+  scoped_refptr<Layer> root_layer_;
+  scoped_refptr<Layer> child_layer_;
+
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+// TODO(crbug.com/1223226): Disabled on Chrome OS due to flakiness.
+#if !defined(OS_CHROMEOS)
+SINGLE_AND_MULTI_THREAD_TEST_F(
+    LayerTreeHostTestViewportRectChangeBlockedMainThread);
+#endif
+
 class LayerTreeHostTestRasterColorSpaceChange : public LayerTreeHostTest {
  public:
   void SetupTree() override {
@@ -3154,7 +3446,8 @@ class LayerTreeHostTestFrameTimeUpdatesAfterActivationFails
   }
 
   void WillBeginImplFrameOnThread(LayerTreeHostImpl* impl,
-                                  const viz::BeginFrameArgs& args) override {
+                                  const viz::BeginFrameArgs& args,
+                                  bool has_damage) override {
     if (impl->pending_tree())
       frame_count_with_pending_tree_++;
 
@@ -3250,7 +3543,7 @@ class LayerTreeHostTestStartPageScaleAnimation : public LayerTreeHostTest {
 
     scroll_layer_->SetBounds(gfx::Size(2 * root_layer->bounds().width(),
                                        2 * root_layer->bounds().height()));
-    scroll_layer_->SetScrollOffset(gfx::ScrollOffset());
+    scroll_layer_->SetScrollOffset(gfx::PointF());
 
     SetupViewport(root_layer, scroll_layer_, root_layer->bounds());
 
@@ -3261,7 +3554,7 @@ class LayerTreeHostTestStartPageScaleAnimation : public LayerTreeHostTest {
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   void ApplyViewportChanges(const ApplyViewportChangesArgs& args) override {
-    gfx::ScrollOffset offset = CurrentScrollOffset(scroll_layer_.get());
+    gfx::PointF offset = CurrentScrollOffset(scroll_layer_.get());
     SetScrollOffset(scroll_layer_.get(), offset + args.inner_delta);
     layer_tree_host()->SetPageScaleFactorAndLimits(args.page_scale_delta, 0.5f,
                                                    2.f);
@@ -3293,8 +3586,8 @@ class LayerTreeHostTestStartPageScaleAnimation : public LayerTreeHostTest {
   void DidCommitAndDrawFrame() override {
     switch (layer_tree_host()->SourceFrameNumber()) {
       case 1:
-        layer_tree_host()->StartPageScaleAnimation(gfx::Vector2d(), false,
-                                                   1.25f, base::TimeDelta());
+        layer_tree_host()->StartPageScaleAnimation(gfx::Point(), false, 1.25f,
+                                                   base::TimeDelta());
         break;
     }
   }
@@ -3336,28 +3629,28 @@ class ViewportDeltasAppliedDuringPinch : public LayerTreeHostTest,
 
   void ApplyViewportChanges(const ApplyViewportChangesArgs& args) override {
     EXPECT_TRUE(sent_gesture_);
-    EXPECT_EQ(gfx::ScrollOffset(50, 50), args.inner_delta);
+    EXPECT_EQ(gfx::Vector2dF(50, 50), args.inner_delta);
     EXPECT_EQ(2, args.page_scale_delta);
 
     auto* scroll_layer =
         layer_tree_host()->InnerViewportScrollLayerForTesting();
     EXPECT_EQ(scroll_layer->element_id(), last_scrolled_element_id_);
-    EXPECT_EQ(gfx::ScrollOffset(50, 50), last_scrolled_offset_);
+    EXPECT_EQ(gfx::PointF(50, 50), last_scrolled_offset_);
     // The scroll offset in the scroll tree is typically updated from blink
     // which doesn't exist in this test. Because we preemptively apply the
     // scroll offset in LayerTreeHost::UpdateScrollOffsetFromImpl, the current
     // scroll offset will still be updated.
-    EXPECT_EQ(gfx::ScrollOffset(50, 50), CurrentScrollOffset(scroll_layer));
+    EXPECT_EQ(gfx::PointF(50, 50), CurrentScrollOffset(scroll_layer));
     EndTest();
   }
 
   void AfterTest() override { EXPECT_TRUE(sent_gesture_); }
 
   // ScrollCallbacks
-  void DidScroll(ElementId element_id,
-                 const gfx::ScrollOffset& scroll_offset,
-                 const absl::optional<TargetSnapAreaElementIds>&
-                     snap_target_ids) override {
+  void DidCompositorScroll(ElementId element_id,
+                           const gfx::PointF& scroll_offset,
+                           const absl::optional<TargetSnapAreaElementIds>&
+                               snap_target_ids) override {
     last_scrolled_element_id_ = element_id;
     last_scrolled_offset_ = scroll_offset;
   }
@@ -3366,7 +3659,7 @@ class ViewportDeltasAppliedDuringPinch : public LayerTreeHostTest,
  private:
   bool sent_gesture_;
   ElementId last_scrolled_element_id_;
-  gfx::ScrollOffset last_scrolled_offset_;
+  gfx::PointF last_scrolled_offset_;
   base::WeakPtrFactory<ViewportDeltasAppliedDuringPinch> weak_ptr_factory_{
       this};
 };
@@ -3381,7 +3674,7 @@ class LayerTreeHostTestSetVisible : public LayerTreeHostTest {
     PostSetNeedsCommitToMainThread();
   }
 
-  void WillCommit() override {
+  void WillCommit(const CommitState&) override {
     PostSetVisibleToMainThread(false);
     // This is suppressed while we're invisible.
     PostSetNeedsRedrawToMainThread();
@@ -3484,9 +3777,8 @@ class LayerTreeHostTestDeviceScaleFactorScalesViewportAndLayers
     child_transform.Scale(child->MaximumTilingContentsScale(),
                           child->MaximumTilingContentsScale());
 
-    EXPECT_TRANSFORMATION_MATRIX_EQ(child_transform, child->DrawTransform());
-    EXPECT_TRANSFORMATION_MATRIX_EQ(child_transform,
-                                    child->ScreenSpaceTransform());
+    EXPECT_TRANSFORM_EQ(child_transform, child->DrawTransform());
+    EXPECT_TRANSFORM_EQ(child_transform, child->ScreenSpaceTransform());
 
     EndTest();
   }
@@ -3561,7 +3853,8 @@ class LayerTreeHostTestDeferMainFrameUpdate : public LayerTreeHostTest {
   }
 
   void WillBeginImplFrameOnThread(LayerTreeHostImpl* host_impl,
-                                  const viz::BeginFrameArgs& args) override {
+                                  const viz::BeginFrameArgs& args,
+                                  bool has_damage) override {
     // Impl frames happen while commits are deferred.
     num_will_begin_impl_frame_++;
     switch (num_will_begin_impl_frame_) {
@@ -3661,7 +3954,7 @@ class LayerTreeHostTestDeferMainFrameUpdateInsideBeginMainFrame
         FROM_HERE,
         // Unretained because the test doesn't end before this runs.
         base::BindOnce(&LayerTreeTest::EndTest, base::Unretained(this)),
-        base::TimeDelta::FromMilliseconds(100));
+        base::Milliseconds(100));
   }
 
   void DidCommit() override { ++commit_count_; }
@@ -3706,7 +3999,7 @@ class LayerTreeHostTestDeferInsideBeginMainFrameWithCommitAfter
             &LayerTreeHostTestDeferInsideBeginMainFrameWithCommitAfter::
                 AllowCommits,
             base::Unretained(this)),
-        base::TimeDelta::FromMilliseconds(100));
+        base::Milliseconds(100));
   }
 
   void AllowCommits() {
@@ -3819,7 +4112,8 @@ class LayerTreeHostTestAnimateOnlyBeginFrames
   }
 
   void WillBeginImplFrameOnThread(LayerTreeHostImpl* host_impl,
-                                  const viz::BeginFrameArgs& args) override {
+                                  const viz::BeginFrameArgs& args,
+                                  bool has_damage) override {
     EXPECT_EQ(args.animate_only,
               (begin_frame_count_ >= 2 && begin_frame_count_ <= 4));
   }
@@ -3932,7 +4226,8 @@ class LayerTreeHostTestCompositeImmediatelyStateTransitions
   }
 
   void WillBeginImplFrameOnThread(LayerTreeHostImpl* host_impl,
-                                  const viz::BeginFrameArgs& args) override {
+                                  const viz::BeginFrameArgs& args,
+                                  bool has_damage) override {
     EXPECT_EQ(current_state_, kStartedTest);
     current_state_ = kStartedImplFrame;
 
@@ -4012,8 +4307,10 @@ class LayerTreeHostTestAbortedCommitDoesntStall : public LayerTreeHostTest {
     }
   }
 
-  void BeginMainFrameAbortedOnThread(LayerTreeHostImpl* host_impl,
-                                     CommitEarlyOutReason reason) override {
+  void BeginMainFrameAbortedOnThread(
+      LayerTreeHostImpl* host_impl,
+      CommitEarlyOutReason reason,
+      bool /* did_sync_scroll_and_viewport */) override {
     commit_abort_count_++;
     // Initiate another abortable commit.
     host_impl->SetNeedsCommit();
@@ -4115,7 +4412,7 @@ class LayerTreeHostTestAbortedCommitDoesntStallSynchronousCompositor
     }
   }
 
-  OnDrawLayerTreeFrameSink* layer_tree_frame_sink_ = nullptr;
+  raw_ptr<OnDrawLayerTreeFrameSink> layer_tree_frame_sink_ = nullptr;
 };
 
 // TODO(crbug.com/1121690): Test is flaky.
@@ -4395,36 +4692,49 @@ class LayerTreeHostTestLayersPushProperties : public LayerTreeHostTest {
     // The scrollbar layer always needs to be pushed.
     if (root_->layer_tree_host()) {
       EXPECT_FALSE(base::Contains(
-          root_->layer_tree_host()->LayersThatShouldPushProperties(),
+          static_cast<const LayerTreeHost*>(root_->layer_tree_host())
+              ->thread_unsafe_commit_state()
+              .layers_that_should_push_properties,
           root_.get()));
     }
     if (child2_->layer_tree_host()) {
       EXPECT_FALSE(base::Contains(
-          child2_->layer_tree_host()->LayersThatShouldPushProperties(),
+          static_cast<const LayerTreeHost*>(child2_->layer_tree_host())
+              ->thread_unsafe_commit_state()
+              .layers_that_should_push_properties,
           child2_.get()));
     }
     if (leaf_always_pushing_layer_->layer_tree_host()) {
       leaf_always_pushing_layer_->SetNeedsPushProperties();
-      EXPECT_TRUE(base::Contains(leaf_always_pushing_layer_->layer_tree_host()
-                                     ->LayersThatShouldPushProperties(),
-                                 leaf_always_pushing_layer_.get()));
+      EXPECT_TRUE(
+          base::Contains(static_cast<const LayerTreeHost*>(
+                             leaf_always_pushing_layer_->layer_tree_host())
+                             ->thread_unsafe_commit_state()
+                             .layers_that_should_push_properties,
+                         leaf_always_pushing_layer_.get()));
     }
 
     // child_ and grandchild_ don't persist their need to push properties.
     if (child_->layer_tree_host()) {
       EXPECT_FALSE(base::Contains(
-          child_->layer_tree_host()->LayersThatShouldPushProperties(),
+          static_cast<const LayerTreeHost*>(child_->layer_tree_host())
+              ->thread_unsafe_commit_state()
+              .layers_that_should_push_properties,
           child_.get()));
     }
     if (grandchild_->layer_tree_host()) {
       EXPECT_FALSE(base::Contains(
-          grandchild_->layer_tree_host()->LayersThatShouldPushProperties(),
+          static_cast<const LayerTreeHost*>(grandchild_->layer_tree_host())
+              ->thread_unsafe_commit_state()
+              .layers_that_should_push_properties,
           grandchild_.get()));
     }
 
     if (other_root_->layer_tree_host()) {
       EXPECT_FALSE(base::Contains(
-          other_root_->layer_tree_host()->LayersThatShouldPushProperties(),
+          static_cast<const LayerTreeHost*>(other_root_->layer_tree_host())
+              ->thread_unsafe_commit_state()
+              .layers_that_should_push_properties,
           other_root_.get()));
     }
 
@@ -4775,7 +5085,9 @@ class LayerTreeHostTestPropertyChangesDuringUpdateArePushed
         scrollbar_layer_->SetBounds(gfx::Size(30, 30));
 
         EXPECT_TRUE(
-            base::Contains(layer_tree_host()->LayersThatShouldPushProperties(),
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
                            scrollbar_layer_.get()));
         layer_tree_host()->SetNeedsCommit();
 
@@ -4818,10 +5130,16 @@ class LayerTreeHostTestSetDrawableCausesCommit : public LayerTreeHostTest {
         // avoid causing a second commit to be scheduled. If a property change
         // is made during this, however, it needs to be pushed in the upcoming
         // commit.
-        EXPECT_FALSE(base::Contains(
-            layer_tree_host()->LayersThatShouldPushProperties(), root_.get()));
-        EXPECT_FALSE(base::Contains(
-            layer_tree_host()->LayersThatShouldPushProperties(), child_.get()));
+        EXPECT_FALSE(
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
+                           root_.get()));
+        EXPECT_FALSE(
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
+                           child_.get()));
         EXPECT_EQ(0, root_->NumDescendantsThatDrawContent());
         root_->reset_push_properties_count();
         child_->reset_push_properties_count();
@@ -4829,19 +5147,31 @@ class LayerTreeHostTestSetDrawableCausesCommit : public LayerTreeHostTest {
         EXPECT_EQ(1, root_->NumDescendantsThatDrawContent());
         EXPECT_EQ(0u, root_->push_properties_count());
         EXPECT_EQ(0u, child_->push_properties_count());
-        EXPECT_TRUE(base::Contains(
-            layer_tree_host()->LayersThatShouldPushProperties(), root_.get()));
-        EXPECT_TRUE(base::Contains(
-            layer_tree_host()->LayersThatShouldPushProperties(), child_.get()));
+        EXPECT_TRUE(
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
+                           root_.get()));
+        EXPECT_TRUE(
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
+                           child_.get()));
         break;
       }
       case 2:
         EXPECT_EQ(1u, root_->push_properties_count());
         EXPECT_EQ(1u, child_->push_properties_count());
-        EXPECT_FALSE(base::Contains(
-            layer_tree_host()->LayersThatShouldPushProperties(), root_.get()));
-        EXPECT_FALSE(base::Contains(
-            layer_tree_host()->LayersThatShouldPushProperties(), child_.get()));
+        EXPECT_FALSE(
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
+                           root_.get()));
+        EXPECT_FALSE(
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
+                           child_.get()));
         EndTest();
         break;
     }
@@ -4904,18 +5234,30 @@ class LayerTreeHostTestPushPropertiesAddingToTreeRequiresPush
       case 0:
         // All layers will need push properties as we set their layer tree host
         layer_tree_host()->SetRootLayer(root_);
-        EXPECT_TRUE(base::Contains(
-            layer_tree_host()->LayersThatShouldPushProperties(), root_.get()));
-        EXPECT_TRUE(base::Contains(
-            layer_tree_host()->LayersThatShouldPushProperties(), child_.get()));
         EXPECT_TRUE(
-            base::Contains(layer_tree_host()->LayersThatShouldPushProperties(),
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
+                           root_.get()));
+        EXPECT_TRUE(
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
+                           child_.get()));
+        EXPECT_TRUE(
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
                            grandchild1_.get()));
         EXPECT_TRUE(
-            base::Contains(layer_tree_host()->LayersThatShouldPushProperties(),
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
                            grandchild2_.get()));
         EXPECT_TRUE(
-            base::Contains(layer_tree_host()->LayersThatShouldPushProperties(),
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
                            grandchild3_.get()));
         break;
       case 1:
@@ -4937,82 +5279,140 @@ class LayerTreeHostTestPushPropertiesRemovingChildStopsRecursion
         layer_tree_host()->SetRootLayer(root_);
         break;
       case 1:
-        EXPECT_FALSE(base::Contains(
-            layer_tree_host()->LayersThatShouldPushProperties(), root_.get()));
-        EXPECT_FALSE(base::Contains(
-            layer_tree_host()->LayersThatShouldPushProperties(), child_.get()));
         EXPECT_FALSE(
-            base::Contains(layer_tree_host()->LayersThatShouldPushProperties(),
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
+                           root_.get()));
+        EXPECT_FALSE(
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
+                           child_.get()));
+        EXPECT_FALSE(
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
                            grandchild1_.get()));
         EXPECT_FALSE(
-            base::Contains(layer_tree_host()->LayersThatShouldPushProperties(),
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
                            grandchild2_.get()));
         EXPECT_FALSE(
-            base::Contains(layer_tree_host()->LayersThatShouldPushProperties(),
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
                            grandchild3_.get()));
 
         grandchild1_->RemoveFromParent();
         grandchild1_->SetPosition(gfx::PointF(1.f, 1.f));
 
-        EXPECT_FALSE(base::Contains(
-            layer_tree_host()->LayersThatShouldPushProperties(), root_.get()));
-        EXPECT_FALSE(base::Contains(
-            layer_tree_host()->LayersThatShouldPushProperties(), child_.get()));
         EXPECT_FALSE(
-            base::Contains(layer_tree_host()->LayersThatShouldPushProperties(),
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
+                           root_.get()));
+        EXPECT_FALSE(
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
+                           child_.get()));
+        EXPECT_FALSE(
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
                            grandchild2_.get()));
         EXPECT_FALSE(
-            base::Contains(layer_tree_host()->LayersThatShouldPushProperties(),
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
                            grandchild3_.get()));
 
         child_->AddChild(grandchild1_);
 
-        EXPECT_FALSE(base::Contains(
-            layer_tree_host()->LayersThatShouldPushProperties(), root_.get()));
-        EXPECT_FALSE(base::Contains(
-            layer_tree_host()->LayersThatShouldPushProperties(), child_.get()));
+        EXPECT_FALSE(
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
+                           root_.get()));
+        EXPECT_FALSE(
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
+                           child_.get()));
         EXPECT_TRUE(
-            base::Contains(layer_tree_host()->LayersThatShouldPushProperties(),
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
                            grandchild1_.get()));
         EXPECT_FALSE(
-            base::Contains(layer_tree_host()->LayersThatShouldPushProperties(),
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
                            grandchild2_.get()));
         EXPECT_FALSE(
-            base::Contains(layer_tree_host()->LayersThatShouldPushProperties(),
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
                            grandchild3_.get()));
 
         grandchild2_->SetPosition(gfx::PointF(1.f, 1.f));
 
-        EXPECT_FALSE(base::Contains(
-            layer_tree_host()->LayersThatShouldPushProperties(), root_.get()));
-        EXPECT_FALSE(base::Contains(
-            layer_tree_host()->LayersThatShouldPushProperties(), child_.get()));
+        EXPECT_FALSE(
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
+                           root_.get()));
+        EXPECT_FALSE(
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
+                           child_.get()));
         EXPECT_TRUE(
-            base::Contains(layer_tree_host()->LayersThatShouldPushProperties(),
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
                            grandchild1_.get()));
         EXPECT_TRUE(
-            base::Contains(layer_tree_host()->LayersThatShouldPushProperties(),
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
                            grandchild2_.get()));
         EXPECT_FALSE(
-            base::Contains(layer_tree_host()->LayersThatShouldPushProperties(),
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
                            grandchild3_.get()));
 
         // grandchild2_ will still need a push properties.
         grandchild1_->RemoveFromParent();
 
-        EXPECT_FALSE(base::Contains(
-            layer_tree_host()->LayersThatShouldPushProperties(), root_.get()));
-        EXPECT_FALSE(base::Contains(
-            layer_tree_host()->LayersThatShouldPushProperties(), child_.get()));
+        EXPECT_FALSE(
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
+                           root_.get()));
+        EXPECT_FALSE(
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
+                           child_.get()));
 
         // grandchild3_ does not need a push properties, so recursing should
         // no longer be needed.
         grandchild2_->RemoveFromParent();
 
-        EXPECT_FALSE(base::Contains(
-            layer_tree_host()->LayersThatShouldPushProperties(), root_.get()));
-        EXPECT_FALSE(base::Contains(
-            layer_tree_host()->LayersThatShouldPushProperties(), child_.get()));
+        EXPECT_FALSE(
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
+                           root_.get()));
+        EXPECT_FALSE(
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
+                           child_.get()));
         EndTest();
         break;
     }
@@ -5036,36 +5436,60 @@ class LayerTreeHostTestPushPropertiesRemovingChildStopsRecursionWithPersistence
         layer_tree_host()->SetRootLayer(root_);
         break;
       case 1:
-        EXPECT_FALSE(base::Contains(
-            layer_tree_host()->LayersThatShouldPushProperties(), root_.get()));
-        EXPECT_FALSE(base::Contains(
-            layer_tree_host()->LayersThatShouldPushProperties(), child_.get()));
+        EXPECT_FALSE(
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
+                           root_.get()));
+        EXPECT_FALSE(
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
+                           child_.get()));
         EXPECT_TRUE(
-            base::Contains(layer_tree_host()->LayersThatShouldPushProperties(),
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
                            grandchild1_.get()));
         EXPECT_TRUE(
-            base::Contains(layer_tree_host()->LayersThatShouldPushProperties(),
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
                            grandchild2_.get()));
         EXPECT_FALSE(
-            base::Contains(layer_tree_host()->LayersThatShouldPushProperties(),
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
                            grandchild3_.get()));
 
         // grandchild2_ will still need a push properties.
         grandchild1_->RemoveFromParent();
 
-        EXPECT_FALSE(base::Contains(
-            layer_tree_host()->LayersThatShouldPushProperties(), root_.get()));
-        EXPECT_FALSE(base::Contains(
-            layer_tree_host()->LayersThatShouldPushProperties(), child_.get()));
+        EXPECT_FALSE(
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
+                           root_.get()));
+        EXPECT_FALSE(
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
+                           child_.get()));
 
         // grandchild3_ does not need a push properties, so recursing should
         // no longer be needed.
         grandchild2_->RemoveFromParent();
 
-        EXPECT_FALSE(base::Contains(
-            layer_tree_host()->LayersThatShouldPushProperties(), root_.get()));
-        EXPECT_FALSE(base::Contains(
-            layer_tree_host()->LayersThatShouldPushProperties(), child_.get()));
+        EXPECT_FALSE(
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
+                           root_.get()));
+        EXPECT_FALSE(
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
+                           child_.get()));
         EndTest();
         break;
     }
@@ -5085,18 +5509,30 @@ class LayerTreeHostTestPushPropertiesSetPropertiesWhileOutsideTree
         layer_tree_host()->SetRootLayer(root_);
         break;
       case 1:
-        EXPECT_FALSE(base::Contains(
-            layer_tree_host()->LayersThatShouldPushProperties(), root_.get()));
-        EXPECT_FALSE(base::Contains(
-            layer_tree_host()->LayersThatShouldPushProperties(), child_.get()));
         EXPECT_FALSE(
-            base::Contains(layer_tree_host()->LayersThatShouldPushProperties(),
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
+                           root_.get()));
+        EXPECT_FALSE(
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
+                           child_.get()));
+        EXPECT_FALSE(
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
                            grandchild1_.get()));
         EXPECT_FALSE(
-            base::Contains(layer_tree_host()->LayersThatShouldPushProperties(),
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
                            grandchild2_.get()));
         EXPECT_FALSE(
-            base::Contains(layer_tree_host()->LayersThatShouldPushProperties(),
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
                            grandchild3_.get()));
 
         // Change grandchildren while their parent is not in the tree.
@@ -5105,40 +5541,70 @@ class LayerTreeHostTestPushPropertiesSetPropertiesWhileOutsideTree
         grandchild2_->SetPosition(gfx::PointF(1.f, 1.f));
         root_->AddChild(child_);
 
-        EXPECT_FALSE(base::Contains(
-            layer_tree_host()->LayersThatShouldPushProperties(), root_.get()));
-        EXPECT_TRUE(base::Contains(
-            layer_tree_host()->LayersThatShouldPushProperties(), child_.get()));
+        EXPECT_FALSE(
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
+                           root_.get()));
         EXPECT_TRUE(
-            base::Contains(layer_tree_host()->LayersThatShouldPushProperties(),
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
+                           child_.get()));
+        EXPECT_TRUE(
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
                            grandchild1_.get()));
         EXPECT_TRUE(
-            base::Contains(layer_tree_host()->LayersThatShouldPushProperties(),
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
                            grandchild2_.get()));
         EXPECT_TRUE(
-            base::Contains(layer_tree_host()->LayersThatShouldPushProperties(),
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
                            grandchild3_.get()));
 
         grandchild1_->RemoveFromParent();
 
-        EXPECT_FALSE(base::Contains(
-            layer_tree_host()->LayersThatShouldPushProperties(), root_.get()));
-        EXPECT_TRUE(base::Contains(
-            layer_tree_host()->LayersThatShouldPushProperties(), child_.get()));
+        EXPECT_FALSE(
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
+                           root_.get()));
+        EXPECT_TRUE(
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
+                           child_.get()));
 
         grandchild2_->RemoveFromParent();
 
-        EXPECT_FALSE(base::Contains(
-            layer_tree_host()->LayersThatShouldPushProperties(), root_.get()));
-        EXPECT_TRUE(base::Contains(
-            layer_tree_host()->LayersThatShouldPushProperties(), child_.get()));
+        EXPECT_FALSE(
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
+                           root_.get()));
+        EXPECT_TRUE(
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
+                           child_.get()));
 
         grandchild3_->RemoveFromParent();
 
-        EXPECT_FALSE(base::Contains(
-            layer_tree_host()->LayersThatShouldPushProperties(), root_.get()));
-        EXPECT_TRUE(base::Contains(
-            layer_tree_host()->LayersThatShouldPushProperties(), child_.get()));
+        EXPECT_FALSE(
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
+                           root_.get()));
+        EXPECT_TRUE(
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
+                           child_.get()));
 
         EndTest();
         break;
@@ -5159,56 +5625,95 @@ class LayerTreeHostTestPushPropertiesSetPropertyInParentThenChild
         layer_tree_host()->SetRootLayer(root_);
         break;
       case 1:
-        EXPECT_FALSE(base::Contains(
-            layer_tree_host()->LayersThatShouldPushProperties(), root_.get()));
-        EXPECT_FALSE(base::Contains(
-            layer_tree_host()->LayersThatShouldPushProperties(), child_.get()));
         EXPECT_FALSE(
-            base::Contains(layer_tree_host()->LayersThatShouldPushProperties(),
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
+                           root_.get()));
+        EXPECT_FALSE(
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
+                           child_.get()));
+        EXPECT_FALSE(
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
                            grandchild1_.get()));
         EXPECT_FALSE(
-            base::Contains(layer_tree_host()->LayersThatShouldPushProperties(),
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
                            grandchild2_.get()));
         EXPECT_FALSE(
-            base::Contains(layer_tree_host()->LayersThatShouldPushProperties(),
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
                            grandchild3_.get()));
 
         child_->SetPosition(gfx::PointF(1.f, 1.f));
         grandchild1_->SetPosition(gfx::PointF(1.f, 1.f));
         grandchild2_->SetPosition(gfx::PointF(1.f, 1.f));
 
-        EXPECT_FALSE(base::Contains(
-            layer_tree_host()->LayersThatShouldPushProperties(), root_.get()));
-        EXPECT_TRUE(base::Contains(
-            layer_tree_host()->LayersThatShouldPushProperties(), child_.get()));
+        EXPECT_FALSE(
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
+                           root_.get()));
         EXPECT_TRUE(
-            base::Contains(layer_tree_host()->LayersThatShouldPushProperties(),
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
+                           child_.get()));
+        EXPECT_TRUE(
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
                            grandchild1_.get()));
         EXPECT_TRUE(
-            base::Contains(layer_tree_host()->LayersThatShouldPushProperties(),
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
                            grandchild2_.get()));
         EXPECT_FALSE(
-            base::Contains(layer_tree_host()->LayersThatShouldPushProperties(),
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
                            grandchild3_.get()));
 
         grandchild1_->RemoveFromParent();
 
-        EXPECT_FALSE(base::Contains(
-            layer_tree_host()->LayersThatShouldPushProperties(), root_.get()));
-        EXPECT_TRUE(base::Contains(
-            layer_tree_host()->LayersThatShouldPushProperties(), child_.get()));
+        EXPECT_FALSE(
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
+                           root_.get()));
+        EXPECT_TRUE(
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
+                           child_.get()));
 
         grandchild2_->RemoveFromParent();
 
-        EXPECT_FALSE(base::Contains(
-            layer_tree_host()->LayersThatShouldPushProperties(), root_.get()));
-        EXPECT_TRUE(base::Contains(
-            layer_tree_host()->LayersThatShouldPushProperties(), child_.get()));
+        EXPECT_FALSE(
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
+                           root_.get()));
+        EXPECT_TRUE(
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
+                           child_.get()));
 
         child_->RemoveFromParent();
 
-        EXPECT_FALSE(base::Contains(
-            layer_tree_host()->LayersThatShouldPushProperties(), root_.get()));
+        EXPECT_FALSE(
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
+                           root_.get()));
 
         EndTest();
         break;
@@ -5229,56 +5734,95 @@ class LayerTreeHostTestPushPropertiesSetPropertyInChildThenParent
         layer_tree_host()->SetRootLayer(root_);
         break;
       case 1:
-        EXPECT_FALSE(base::Contains(
-            layer_tree_host()->LayersThatShouldPushProperties(), root_.get()));
-        EXPECT_FALSE(base::Contains(
-            layer_tree_host()->LayersThatShouldPushProperties(), child_.get()));
         EXPECT_FALSE(
-            base::Contains(layer_tree_host()->LayersThatShouldPushProperties(),
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
+                           root_.get()));
+        EXPECT_FALSE(
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
+                           child_.get()));
+        EXPECT_FALSE(
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
                            grandchild1_.get()));
         EXPECT_FALSE(
-            base::Contains(layer_tree_host()->LayersThatShouldPushProperties(),
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
                            grandchild2_.get()));
         EXPECT_FALSE(
-            base::Contains(layer_tree_host()->LayersThatShouldPushProperties(),
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
                            grandchild3_.get()));
 
         grandchild1_->SetPosition(gfx::PointF(1.f, 1.f));
         grandchild2_->SetPosition(gfx::PointF(1.f, 1.f));
         child_->SetPosition(gfx::PointF(1.f, 1.f));
 
-        EXPECT_FALSE(base::Contains(
-            layer_tree_host()->LayersThatShouldPushProperties(), root_.get()));
-        EXPECT_TRUE(base::Contains(
-            layer_tree_host()->LayersThatShouldPushProperties(), child_.get()));
+        EXPECT_FALSE(
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
+                           root_.get()));
         EXPECT_TRUE(
-            base::Contains(layer_tree_host()->LayersThatShouldPushProperties(),
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
+                           child_.get()));
+        EXPECT_TRUE(
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
                            grandchild1_.get()));
         EXPECT_TRUE(
-            base::Contains(layer_tree_host()->LayersThatShouldPushProperties(),
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
                            grandchild2_.get()));
         EXPECT_FALSE(
-            base::Contains(layer_tree_host()->LayersThatShouldPushProperties(),
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
                            grandchild3_.get()));
 
         grandchild1_->RemoveFromParent();
 
-        EXPECT_FALSE(base::Contains(
-            layer_tree_host()->LayersThatShouldPushProperties(), root_.get()));
-        EXPECT_TRUE(base::Contains(
-            layer_tree_host()->LayersThatShouldPushProperties(), child_.get()));
+        EXPECT_FALSE(
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
+                           root_.get()));
+        EXPECT_TRUE(
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
+                           child_.get()));
 
         grandchild2_->RemoveFromParent();
 
-        EXPECT_FALSE(base::Contains(
-            layer_tree_host()->LayersThatShouldPushProperties(), root_.get()));
-        EXPECT_TRUE(base::Contains(
-            layer_tree_host()->LayersThatShouldPushProperties(), child_.get()));
+        EXPECT_FALSE(
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
+                           root_.get()));
+        EXPECT_TRUE(
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
+                           child_.get()));
 
         child_->RemoveFromParent();
 
-        EXPECT_FALSE(base::Contains(
-            layer_tree_host()->LayersThatShouldPushProperties(), root_.get()));
+        EXPECT_FALSE(
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
+                           root_.get()));
 
         EndTest();
         break;
@@ -5440,7 +5984,9 @@ class LayerTreeHostTestPushHiddenLayer : public LayerTreeHostTest {
       case 1:
         // The layer type used does not need to push properties every frame.
         EXPECT_FALSE(
-            base::Contains(layer_tree_host()->LayersThatShouldPushProperties(),
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
                            child_layer_.get()));
 
         // Change the bounds of the child layer, but make it skipped
@@ -5451,7 +5997,9 @@ class LayerTreeHostTestPushHiddenLayer : public LayerTreeHostTest {
       case 2:
         // The bounds of the child layer were pushed to the impl side.
         EXPECT_FALSE(
-            base::Contains(layer_tree_host()->LayersThatShouldPushProperties(),
+            base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
+                               ->thread_unsafe_commit_state()
+                               .layers_that_should_push_properties,
                            child_layer_.get()));
 
         EndTest();
@@ -5543,34 +6091,57 @@ class LayerTreeHostTestElasticOverscroll : public LayerTreeHostTest {
     }
   }
 
+  void VerifyOverscroll(const gfx::Vector2dF& stretch_amount,
+                        const gfx::Transform& transform) {
+#if defined(OS_ANDROID)
+    gfx::Vector2dF scale = transform.Scale2d();
+    // On android, overscroll stretches the content. We don't assert the amount
+    // of stretch but there should be some stretch for overscroll and no stretch
+    // without it.
+    if (stretch_amount.x() == 0.f)
+      EXPECT_EQ(1.f, scale.x());
+    else
+      EXPECT_GT(scale.x(), 1.f);
+    if (stretch_amount.y() == 0.f)
+      EXPECT_EQ(1.f, scale.y());
+    else
+      EXPECT_GT(scale.y(), 1.f);
+#else   // defined(OS_ANDROID)
+    gfx::Transform expected_draw_transform;
+    expected_draw_transform.Translate(-stretch_amount);
+    EXPECT_EQ(expected_draw_transform, transform);
+#endif  // defined(OS_ANDROID)
+  }
+
   void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
     num_draws_++;
     LayerImpl* content_layer_impl =
         host_impl->active_tree()->LayerById(content_layer_id_);
-    gfx::Transform expected_draw_transform;
     switch (num_draws_) {
       case 1:
         // Initially, there's no overscroll.
-        EXPECT_EQ(expected_draw_transform, content_layer_impl->DrawTransform());
+        VerifyOverscroll(gfx::Vector2dF(), content_layer_impl->DrawTransform());
 
         // Begin overscrolling. This should be reflected in the draw transform
         // the next time we draw.
         scroll_elasticity_helper_->SetStretchAmount(gfx::Vector2dF(5.f, 6.f));
         break;
       case 2:
-        expected_draw_transform.Translate(-5.0, -6.0);
-        EXPECT_EQ(expected_draw_transform, content_layer_impl->DrawTransform());
+        // We should have some overscroll.
+        VerifyOverscroll(gfx::Vector2dF(5.f, 6.f),
+                         content_layer_impl->DrawTransform());
 
         scroll_elasticity_helper_->SetStretchAmount(gfx::Vector2dF(3.f, 2.f));
         break;
       case 3:
-        expected_draw_transform.Translate(-3.0, -2.0);
-        EXPECT_EQ(expected_draw_transform, content_layer_impl->DrawTransform());
+        VerifyOverscroll(gfx::Vector2dF(3.f, 2.f),
+                         content_layer_impl->DrawTransform());
 
         scroll_elasticity_helper_->SetStretchAmount(gfx::Vector2dF());
         break;
       case 4:
-        EXPECT_EQ(expected_draw_transform, content_layer_impl->DrawTransform());
+        // In the final frame there is no more overscroll.
+        VerifyOverscroll(gfx::Vector2dF(), content_layer_impl->DrawTransform());
         EndTest();
         break;
       default:
@@ -5580,8 +6151,8 @@ class LayerTreeHostTestElasticOverscroll : public LayerTreeHostTest {
 
  private:
   FakeContentLayerClient client_;
-  Layer* root_layer_;
-  ScrollElasticityHelper* scroll_elasticity_helper_;
+  raw_ptr<Layer> root_layer_;
+  raw_ptr<ScrollElasticityHelper> scroll_elasticity_helper_;
   int content_layer_id_;
   int num_draws_;
 };
@@ -5645,11 +6216,11 @@ class TestSwapPromise : public SwapPromise {
 
   void set_action(DidNotSwapAction action) { action_ = action; }
 
-  int64_t TraceId() const override { return 0; }
+  int64_t GetTraceId() const override { return 0; }
 
  private:
   // Not owned.
-  TestSwapPromiseResult* result_;
+  raw_ptr<TestSwapPromiseResult> result_;
   DidNotSwapAction action_ = DidNotSwapAction::BREAK_PROMISE;
 };
 
@@ -5746,8 +6317,8 @@ class LayerTreeHostTestBreakSwapPromise : public LayerTreeHostTest {
   }
 
   void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
-    int frame = host_impl->active_tree()->source_frame_number();
-    if (frame == 2) {
+    int frame_num = host_impl->active_tree()->source_frame_number();
+    if (frame_num == 2) {
       EndTest();
     }
   }
@@ -5906,8 +6477,7 @@ class LayerTreeHostTestKeepSwapPromiseMFBA : public LayerTreeHostTest {
   }
 
   void BeginCommitOnThread(LayerTreeHostImpl* host_impl) override {
-    // Safe to check frame number here because main thread is blocked.
-    if (layer_tree_host()->SourceFrameNumber() == 0) {
+    if (host_impl->sync_tree()->source_frame_number() == 0) {
       host_impl->BlockNotifyReadyToActivateForTesting(true);
     } else {
       NOTREACHED();
@@ -5921,8 +6491,10 @@ class LayerTreeHostTestKeepSwapPromiseMFBA : public LayerTreeHostTest {
                        base::Unretained(this)));
   }
 
-  void BeginMainFrameAbortedOnThread(LayerTreeHostImpl* host_impl,
-                                     CommitEarlyOutReason reason) override {
+  void BeginMainFrameAbortedOnThread(
+      LayerTreeHostImpl* host_impl,
+      CommitEarlyOutReason reason,
+      bool /* did_sync_scroll_and_viewport */) override {
     base::AutoLock lock(swap_promise_result_.lock);
     EXPECT_FALSE(swap_promise_result_.did_not_swap_called);
     EXPECT_FALSE(swap_promise_result_.did_activate_called);
@@ -6016,7 +6588,8 @@ class LayerTreeHostTestDeferSwapPromiseForVisibility
   }
 
   void WillBeginImplFrameOnThread(LayerTreeHostImpl* impl,
-                                  const viz::BeginFrameArgs& args) override {
+                                  const viz::BeginFrameArgs& args,
+                                  bool has_damage) override {
     if (!sent_queue_request_) {
       sent_queue_request_ = true;
       MainThreadTaskRunner()->PostTask(
@@ -6027,8 +6600,10 @@ class LayerTreeHostTestDeferSwapPromiseForVisibility
     }
   }
 
-  void BeginMainFrameAbortedOnThread(LayerTreeHostImpl* host_impl,
-                                     CommitEarlyOutReason reason) override {
+  void BeginMainFrameAbortedOnThread(
+      LayerTreeHostImpl* host_impl,
+      CommitEarlyOutReason reason,
+      bool /* did_sync_scroll_and_viewport */) override {
     MainThreadTaskRunner()->PostTask(
         FROM_HERE,
         base::BindOnce(&LayerTreeHostTestDeferSwapPromiseForVisibility::
@@ -6064,28 +6639,6 @@ class LayerTreeHostTestDeferSwapPromiseForVisibility
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestDeferSwapPromiseForVisibility);
 
-class SimpleSwapPromiseMonitor : public SwapPromiseMonitor {
- public:
-  SimpleSwapPromiseMonitor(LayerTreeHost* layer_tree_host,
-                           int* set_needs_commit_count,
-                           int* set_needs_redraw_count)
-      : SwapPromiseMonitor(layer_tree_host
-                               ? layer_tree_host->GetSwapPromiseManager()
-                               : nullptr),
-        set_needs_commit_count_(set_needs_commit_count) {}
-
-  ~SimpleSwapPromiseMonitor() override = default;
-
-  void OnSetNeedsCommitOnMain() override { (*set_needs_commit_count_)++; }
-
-  void OnSetNeedsRedrawOnImpl() override {
-    ADD_FAILURE() << "Should not get called on main thread.";
-  }
-
- private:
-  int* set_needs_commit_count_;
-};
-
 class LayerTreeHostTestSwapPromiseDuringCommit : public LayerTreeHostTest {
  protected:
   LayerTreeHostTestSwapPromiseDuringCommit() = default;
@@ -6094,20 +6647,19 @@ class LayerTreeHostTestSwapPromiseDuringCommit : public LayerTreeHostTest {
     if (TestEnded())
       return;
 
-    std::unique_ptr<SwapPromise> swap_promise(
-        new TestSwapPromise(&swap_promise_result_[0]));
-    int set_needs_commit_count = 0;
-    int set_needs_redraw_count = 0;
+    std::unique_ptr<SwapPromise> swap_promise =
+        std::make_unique<TestSwapPromise>(&swap_promise_result_[0]);
 
     {
-      std::unique_ptr<SimpleSwapPromiseMonitor> swap_promise_monitor(
-          new SimpleSwapPromiseMonitor(layer_tree_host(),
-                                       &set_needs_commit_count,
-                                       &set_needs_redraw_count));
-      layer_tree_host()->QueueSwapPromise(std::move(swap_promise));
+      StrictMock<MockLatencyInfoSwapPromiseMonitor> monitor(
+          layer_tree_host()->GetSwapPromiseManager());
+
       // Queueing a swap promise from WillBeginMainFrame should not cause
       // another commit to be scheduled.
-      EXPECT_EQ(0, set_needs_commit_count);
+      EXPECT_CALL(monitor, OnSetNeedsCommitOnMain()).Times(0);
+      EXPECT_CALL(monitor, OnSetNeedsRedrawOnImpl()).Times(0);
+
+      layer_tree_host()->QueueSwapPromise(std::move(swap_promise));
     }
   }
 
@@ -6117,20 +6669,19 @@ class LayerTreeHostTestSwapPromiseDuringCommit : public LayerTreeHostTest {
     if (TestEnded())
       return;
 
-    std::unique_ptr<SwapPromise> swap_promise(
-        new TestSwapPromise(&swap_promise_result_[1]));
-    int set_needs_commit_count = 0;
-    int set_needs_redraw_count = 0;
+    std::unique_ptr<SwapPromise> swap_promise =
+        std::make_unique<TestSwapPromise>(&swap_promise_result_[1]);
 
     {
-      std::unique_ptr<SimpleSwapPromiseMonitor> swap_promise_monitor(
-          new SimpleSwapPromiseMonitor(layer_tree_host(),
-                                       &set_needs_commit_count,
-                                       &set_needs_redraw_count));
-      layer_tree_host()->QueueSwapPromise(std::move(swap_promise));
+      StrictMock<MockLatencyInfoSwapPromiseMonitor> monitor(
+          layer_tree_host()->GetSwapPromiseManager());
+
       // Queueing a swap promise from DidBeginMainFrame should not cause a
       // subsequent main frame to be scheduled.
-      EXPECT_EQ(0, set_needs_commit_count);
+      EXPECT_CALL(monitor, OnSetNeedsCommitOnMain()).Times(0);
+      EXPECT_CALL(monitor, OnSetNeedsRedrawOnImpl()).Times(0);
+
+      layer_tree_host()->QueueSwapPromise(std::move(swap_promise));
     }
 
     EndTest();
@@ -6141,7 +6692,8 @@ class LayerTreeHostTestSwapPromiseDuringCommit : public LayerTreeHostTest {
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestSwapPromiseDuringCommit);
 
-class LayerTreeHostTestSimpleSwapPromiseMonitor : public LayerTreeHostTest {
+class LayerTreeHostTestLatencyInfoSwapPromiseMonitor
+    : public LayerTreeHostTest {
  public:
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
@@ -6149,50 +6701,41 @@ class LayerTreeHostTestSimpleSwapPromiseMonitor : public LayerTreeHostTest {
     if (TestEnded())
       return;
 
-    int set_needs_commit_count = 0;
-    int set_needs_redraw_count = 0;
-
     {
-      std::unique_ptr<SimpleSwapPromiseMonitor> swap_promise_monitor(
-          new SimpleSwapPromiseMonitor(layer_tree_host(),
-                                       &set_needs_commit_count,
-                                       &set_needs_redraw_count));
+      StrictMock<MockLatencyInfoSwapPromiseMonitor> monitor(
+          layer_tree_host()->GetSwapPromiseManager());
+
+      EXPECT_CALL(monitor, OnSetNeedsCommitOnMain()).Times(1);
+      EXPECT_CALL(monitor, OnSetNeedsRedrawOnImpl()).Times(0);
+
       layer_tree_host()->SetNeedsCommit();
-      EXPECT_EQ(1, set_needs_commit_count);
-      EXPECT_EQ(0, set_needs_redraw_count);
     }
 
-    // Now the monitor is destroyed, SetNeedsCommit() is no longer being
-    // monitored.
-    layer_tree_host()->SetNeedsCommit();
-    EXPECT_EQ(1, set_needs_commit_count);
-    EXPECT_EQ(0, set_needs_redraw_count);
-
     {
-      std::unique_ptr<SimpleSwapPromiseMonitor> swap_promise_monitor(
-          new SimpleSwapPromiseMonitor(layer_tree_host(),
-                                       &set_needs_commit_count,
-                                       &set_needs_redraw_count));
+      StrictMock<MockLatencyInfoSwapPromiseMonitor> monitor(
+          layer_tree_host()->GetSwapPromiseManager());
+
+      EXPECT_CALL(monitor, OnSetNeedsCommitOnMain()).Times(1);
+      EXPECT_CALL(monitor, OnSetNeedsRedrawOnImpl()).Times(0);
+
       layer_tree_host()->SetNeedsUpdateLayers();
-      EXPECT_EQ(2, set_needs_commit_count);
-      EXPECT_EQ(0, set_needs_redraw_count);
     }
 
     {
-      std::unique_ptr<SimpleSwapPromiseMonitor> swap_promise_monitor(
-          new SimpleSwapPromiseMonitor(layer_tree_host(),
-                                       &set_needs_commit_count,
-                                       &set_needs_redraw_count));
+      StrictMock<MockLatencyInfoSwapPromiseMonitor> monitor(
+          layer_tree_host()->GetSwapPromiseManager());
+
+      EXPECT_CALL(monitor, OnSetNeedsCommitOnMain()).Times(1);
+      EXPECT_CALL(monitor, OnSetNeedsRedrawOnImpl()).Times(0);
+
       layer_tree_host()->SetNeedsAnimate();
-      EXPECT_EQ(3, set_needs_commit_count);
-      EXPECT_EQ(0, set_needs_redraw_count);
     }
 
     EndTest();
   }
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestSimpleSwapPromiseMonitor);
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestLatencyInfoSwapPromiseMonitor);
 
 class LayerTreeHostTestHighResRequiredAfterEvictingUIResources
     : public LayerTreeHostTest {
@@ -6284,8 +6827,8 @@ class LayerTreeHostTestGpuRasterizationDisabled : public LayerTreeHostTest {
   }
 
   FakeContentLayerClient layer_client_;
-  FakePictureLayer* layer_;
-  FakeRecordingSource* recording_source_;
+  raw_ptr<FakePictureLayer> layer_;
+  raw_ptr<FakeRecordingSource> recording_source_;
 };
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestGpuRasterizationDisabled);
@@ -6336,8 +6879,8 @@ class LayerTreeHostTestGpuRasterizationSupportedButDisabled
   }
 
   FakeContentLayerClient layer_client_;
-  FakePictureLayer* layer_;
-  FakeRecordingSource* recording_source_;
+  raw_ptr<FakePictureLayer> layer_;
+  raw_ptr<FakeRecordingSource> recording_source_;
 };
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestGpuRasterizationSupportedButDisabled);
@@ -6385,8 +6928,8 @@ class LayerTreeHostTestGpuRasterizationEnabled : public LayerTreeHostTest {
   }
 
   FakeContentLayerClient layer_client_;
-  FakePictureLayer* layer_;
-  FakeRecordingSource* recording_source_;
+  raw_ptr<FakePictureLayer> layer_;
+  raw_ptr<FakeRecordingSource> recording_source_;
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestGpuRasterizationEnabled);
@@ -6453,8 +6996,8 @@ class LayerTreeHostTestGpuRasterizationEnabledWithMSAA : public LayerTreeTest {
   }
 
   FakeContentLayerClient layer_client_;
-  FakePictureLayer* layer_;
-  FakeRecordingSource* recording_source_;
+  raw_ptr<FakePictureLayer> layer_;
+  raw_ptr<FakeRecordingSource> recording_source_;
 };
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestGpuRasterizationEnabledWithMSAA);
@@ -6472,7 +7015,8 @@ class LayerTreeHostTestWillBeginImplFrameHasDidFinishImplFrame
   }
 
   void WillBeginImplFrameOnThread(LayerTreeHostImpl* host_impl,
-                                  const viz::BeginFrameArgs& args) override {
+                                  const viz::BeginFrameArgs& args,
+                                  bool has_damage) override {
     EXPECT_EQ(will_begin_impl_frame_count_, did_finish_impl_frame_count_);
     EXPECT_FALSE(TestEnded());
     will_begin_impl_frame_count_++;
@@ -6545,7 +7089,8 @@ class LayerTreeHostTestBeginMainFrameTimeIsAlsoImplTime
   }
 
   void WillBeginImplFrameOnThread(LayerTreeHostImpl* impl,
-                                  const viz::BeginFrameArgs& args) override {
+                                  const viz::BeginFrameArgs& args,
+                                  bool has_damage) override {
     impl_frame_args_.push_back(args);
 
     will_begin_impl_frame_count_++;
@@ -6971,7 +7516,7 @@ class LayerTreeHostTestCrispUpAfterPinchEnds : public LayerTreeHostTest {
         // Use a delay to allow raster/upload to happen in between frames. This
         // should cause flakiness if we fail to block raster/upload when
         // desired.
-        base::TimeDelta::FromMilliseconds(16 * 4));
+        base::Milliseconds(16 * 4));
   }
 
   void Next(LayerTreeHostImpl* host_impl) {
@@ -7436,7 +7981,7 @@ class LayerTreeHostTestNoTasksBetweenWillAndDidCommit
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
-  void WillCommit() override {
+  void WillCommit(const CommitState&) override {
     MainThreadTaskRunner()->PostTask(
         FROM_HERE,
         base::BindOnce(&LayerTreeHostTestNoTasksBetweenWillAndDidCommit::
@@ -7474,8 +8019,8 @@ class LayerTreeHostTestUpdateCopyRequests : public LayerTreeHostTest {
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
-  void WillCommit() override {
-    switch (layer_tree_host()->SourceFrameNumber()) {
+  void WillCommit(const CommitState& commit_state) override {
+    switch (commit_state.source_frame_number) {
       case 1:
         EXPECT_TRUE(LayerSubtreeHasCopyRequest(root.get()));
         break;
@@ -7938,7 +8483,8 @@ class LayerTreeHostTestBeginFrameAcks : public LayerTreeHostTest {
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   void WillBeginImplFrameOnThread(LayerTreeHostImpl* impl,
-                                  const viz::BeginFrameArgs& args) override {
+                                  const viz::BeginFrameArgs& args,
+                                  bool has_damage) override {
     EXPECT_TRUE(args.IsValid());
     current_begin_frame_args_ = args;
   }
@@ -7978,7 +8524,7 @@ class LayerTreeHostTestBeginFrameAcks : public LayerTreeHostTest {
   bool compositor_frame_submitted_ = false;
   bool layers_drawn_ = false;
   viz::BeginFrameArgs current_begin_frame_args_;
-  LayerTreeHostImpl::FrameData* frame_data_;
+  raw_ptr<LayerTreeHostImpl::FrameData> frame_data_;
 };
 
 MULTI_THREAD_BLOCKNOTIFY_TEST_F(LayerTreeHostTestBeginFrameAcks);
@@ -7999,8 +8545,8 @@ class LayerTreeHostTestQueueImageDecode : public LayerTreeHostTest {
 
     image_ =
         DrawImage(CreateDiscardablePaintImage(gfx::Size(400, 400)), false,
-                  SkIRect::MakeWH(400, 400), kNone_SkFilterQuality, SkM44(),
-                  PaintImage::kDefaultFrameIndex, gfx::ColorSpace());
+                  SkIRect::MakeWH(400, 400), PaintFlags::FilterQuality::kNone,
+                  SkM44(), PaintImage::kDefaultFrameIndex, gfx::ColorSpace());
     auto callback = base::BindRepeating(
         &LayerTreeHostTestQueueImageDecode::ImageDecodeFinished,
         base::Unretained(this));
@@ -8196,10 +8742,9 @@ class LayerTreeHostTestImageAnimation : public LayerTreeHostTest {
     gfx::Size layer_size(1000, 500);
     content_layer_client_.set_bounds(layer_size);
     content_layer_client_.set_fill_with_nonsolid_color(true);
-    std::vector<FrameMetadata> frames = {
-        FrameMetadata(true, base::TimeDelta::FromSeconds(1)),
-        FrameMetadata(true, base::TimeDelta::FromSeconds(1)),
-        FrameMetadata(true, base::TimeDelta::FromSeconds(1))};
+    std::vector<FrameMetadata> frames = {FrameMetadata(true, base::Seconds(1)),
+                                         FrameMetadata(true, base::Seconds(1)),
+                                         FrameMetadata(true, base::Seconds(1))};
     generator_ = sk_make_sp<FakePaintImageGenerator>(
         SkImageInfo::MakeN32Premul(500, 500, SkColorSpace::MakeSRGB()), frames);
     PaintImage image =
@@ -8350,8 +8895,9 @@ class LayerTreeHostTestImageAnimationSynchronousSchedulingSoftwareDraw
   }
 };
 
-MULTI_THREAD_TEST_F(
-    LayerTreeHostTestImageAnimationSynchronousSchedulingSoftwareDraw);
+// TODO(crbug.com/1092110): Flaky on TSan bot.
+// MULTI_THREAD_TEST_F(
+//     LayerTreeHostTestImageAnimationSynchronousSchedulingSoftwareDraw);
 
 class LayerTreeHostTestImageDecodingHints : public LayerTreeHostTest {
  public:
@@ -8642,7 +9188,7 @@ class LayerTreeHostTestRequestForceSendMetadata
     }
 
    private:
-    RenderFrameMetadataObserver* target_ = nullptr;
+    raw_ptr<RenderFrameMetadataObserver> target_ = nullptr;
   };
 
   LayerTreeHostTestRequestForceSendMetadata() = default;
@@ -8880,7 +9426,7 @@ class LayerTreeHostTestDelegatedInkMetadataOnAndOff
     }
 
    private:
-    RenderFrameMetadataObserver* target_ = nullptr;
+    raw_ptr<RenderFrameMetadataObserver> target_ = nullptr;
   };
 
   void BeginTest() override {
@@ -9007,22 +9553,24 @@ class LayerTreeHostTestEventsMetrics : public LayerTreeHostTest {
  private:
   void SimulateEventOnMain() {
     base::SimpleTestTickClock tick_clock;
-    tick_clock.Advance(base::TimeDelta::FromMicroseconds(10));
+    tick_clock.Advance(base::Microseconds(10));
     base::TimeTicks event_time = tick_clock.NowTicks();
-    tick_clock.Advance(base::TimeDelta::FromMicroseconds(10));
+    tick_clock.Advance(base::Microseconds(10));
     std::unique_ptr<EventMetrics> metrics = EventMetrics::CreateForTesting(
         ui::ET_GESTURE_SCROLL_UPDATE,
-        EventMetrics::ScrollUpdateType::kContinued, ui::ScrollInputType::kWheel,
+        EventMetrics::GestureParams(ui::ScrollInputType::kWheel,
+                                    /*scroll_is_inertial=*/false,
+                                    EventMetrics::ScrollUpdateType::kContinued),
         event_time, &tick_clock);
     DCHECK_NE(metrics, nullptr);
     {
-      tick_clock.Advance(base::TimeDelta::FromMicroseconds(10));
+      tick_clock.Advance(base::Microseconds(10));
       metrics->SetDispatchStageTimestamp(
           EventMetrics::DispatchStage::kRendererCompositorStarted);
       auto done_callback = base::BindOnce(
           [](std::unique_ptr<EventMetrics> metrics,
              base::SimpleTestTickClock* tick_clock, bool handled) {
-            tick_clock->Advance(base::TimeDelta::FromMicroseconds(10));
+            tick_clock->Advance(base::Microseconds(10));
             metrics->SetDispatchStageTimestamp(
                 EventMetrics::DispatchStage::kRendererCompositorFinished);
             std::unique_ptr<EventMetrics> result =
@@ -9051,7 +9599,8 @@ class LayerTreeHostTestKeepEventsMetricsForVisibility
     : public LayerTreeHostTestEventsMetrics {
  protected:
   void WillBeginImplFrameOnThread(LayerTreeHostImpl* impl,
-                                  const viz::BeginFrameArgs& args) override {
+                                  const viz::BeginFrameArgs& args,
+                                  bool has_damage) override {
     // Skip if we have already received a begin-impl-frame and acted on it.
     if (received_will_begin_impl_frame_)
       return;
@@ -9070,8 +9619,10 @@ class LayerTreeHostTestKeepEventsMetricsForVisibility
     PostSetLayerTreeHostVisible(false);
   }
 
-  void BeginMainFrameAbortedOnThread(LayerTreeHostImpl* impl,
-                                     CommitEarlyOutReason reason) override {
+  void BeginMainFrameAbortedOnThread(
+      LayerTreeHostImpl* impl,
+      CommitEarlyOutReason reason,
+      bool /* did_sync_scroll_and_viewport */) override {
     EXPECT_EQ(reason, CommitEarlyOutReason::ABORTED_NOT_VISIBLE);
 
     // Since the main frame is aborted due to invisibility, events metrics
@@ -9117,7 +9668,8 @@ class LayerTreeHostTestKeepEventsMetricsForDeferredMainFrameUpdate
     : public LayerTreeHostTestEventsMetrics {
  protected:
   void WillBeginImplFrameOnThread(LayerTreeHostImpl* impl,
-                                  const viz::BeginFrameArgs& args) override {
+                                  const viz::BeginFrameArgs& args,
+                                  bool has_damage) override {
     // Skip if we have already received a begin-impl-frame and acted on it.
     if (received_will_begin_impl_frame_)
       return;
@@ -9136,8 +9688,10 @@ class LayerTreeHostTestKeepEventsMetricsForDeferredMainFrameUpdate
     PostDeferMainFrameUpdate();
   }
 
-  void BeginMainFrameAbortedOnThread(LayerTreeHostImpl* impl,
-                                     CommitEarlyOutReason reason) override {
+  void BeginMainFrameAbortedOnThread(
+      LayerTreeHostImpl* impl,
+      CommitEarlyOutReason reason,
+      bool /* did_sync_scroll_and_viewport */) override {
     EXPECT_EQ(reason, CommitEarlyOutReason::ABORTED_DEFERRED_MAIN_FRAME_UPDATE);
 
     // Since the main frame is aborted due to deferred main frame updates,
@@ -9198,7 +9752,8 @@ class LayerTreeHostTestKeepEventsMetricsForDeferredCommit
     : public LayerTreeHostTestEventsMetrics {
  protected:
   void WillBeginImplFrameOnThread(LayerTreeHostImpl* impl,
-                                  const viz::BeginFrameArgs& args) override {
+                                  const viz::BeginFrameArgs& args,
+                                  bool has_damage) override {
     // Skip if we have already received a begin-impl-frame and acted on it.
     if (received_will_begin_impl_frame_)
       return;
@@ -9216,8 +9771,10 @@ class LayerTreeHostTestKeepEventsMetricsForDeferredCommit
     PostDeferCommit();
   }
 
-  void BeginMainFrameAbortedOnThread(LayerTreeHostImpl* impl,
-                                     CommitEarlyOutReason reason) override {
+  void BeginMainFrameAbortedOnThread(
+      LayerTreeHostImpl* impl,
+      CommitEarlyOutReason reason,
+      bool /* did_sync_scroll_and_viewport */) override {
     EXPECT_EQ(reason, CommitEarlyOutReason::ABORTED_DEFERRED_COMMIT);
 
     // Since the main frame is aborted due to deferred commits, events metrics
@@ -9240,7 +9797,8 @@ class LayerTreeHostTestKeepEventsMetricsForDeferredCommit
 
  private:
   void DeferCommitOnMain() {
-    layer_tree_host()->StartDeferringCommits(base::TimeDelta::FromDays(1));
+    layer_tree_host()->StartDeferringCommits(
+        base::Days(1), PaintHoldingReason::kFirstContentfulPaint);
   }
 
   void PostDeferCommit() {
@@ -9276,7 +9834,8 @@ class LayerTreeHostTestIgnoreEventsMetricsForNoUpdate
     : public LayerTreeHostTestEventsMetrics {
  protected:
   void WillBeginImplFrameOnThread(LayerTreeHostImpl* impl,
-                                  const viz::BeginFrameArgs& args) override {
+                                  const viz::BeginFrameArgs& args,
+                                  bool has_damage) override {
     // Continue only if we are waiting for the second frame's being-impl-frame.
     // The first frame will end up in a commit which is not what we want.
     if (state_ != State::kWaitingForSecondFrameBeginImpl)
@@ -9291,8 +9850,10 @@ class LayerTreeHostTestIgnoreEventsMetricsForNoUpdate
     PostSimulateEvent();
   }
 
-  void BeginMainFrameAbortedOnThread(LayerTreeHostImpl* impl,
-                                     CommitEarlyOutReason reason) override {
+  void BeginMainFrameAbortedOnThread(
+      LayerTreeHostImpl* impl,
+      CommitEarlyOutReason reason,
+      bool /* did_sync_scroll_and_viewport */) override {
     EXPECT_EQ(reason, CommitEarlyOutReason::FINISHED_NO_UPDATES);
 
     // We should reach here only for the second frame.
@@ -9376,8 +9937,13 @@ class LayerTreeHostUkmSmoothnessMetric : public LayerTreeTest {
   }
 
   void WillBeginImplFrameOnThread(LayerTreeHostImpl* host_impl,
-                                  const viz::BeginFrameArgs& args) override {
-    host_impl->dropped_frame_counter()->OnFcpReceived();
+                                  const viz::BeginFrameArgs& args,
+                                  bool has_damage) override {
+    last_args_ = args;
+    if (!fcp_sent_) {
+      host_impl->dropped_frame_counter()->OnFcpReceived();
+      fcp_sent_ = true;
+    }
   }
 
   void DidFinishImplFrameOnThread(LayerTreeHostImpl* host_impl) override {
@@ -9390,7 +9956,8 @@ class LayerTreeHostUkmSmoothnessMetric : public LayerTreeTest {
     }
 
     // Mark every frame as a dropped frame affecting smoothness.
-    host_impl->dropped_frame_counter()->OnEndFrame(viz::BeginFrameArgs(), true);
+    host_impl->dropped_frame_counter()->OnEndFrame(
+        last_args_, CreateFakeImplDroppedFrameInfo());
     host_impl->SetNeedsRedraw();
     --frames_counter_;
   }
@@ -9398,6 +9965,8 @@ class LayerTreeHostUkmSmoothnessMetric : public LayerTreeTest {
  private:
   const uint32_t kTotalFramesForTest = 5;
   uint32_t frames_counter_ = kTotalFramesForTest;
+  bool fcp_sent_ = false;
+  viz::BeginFrameArgs last_args_;
   base::ReadOnlySharedMemoryRegion shmem_region_;
 };
 
@@ -9421,8 +9990,13 @@ class LayerTreeHostUkmSmoothnessMemoryOwnership : public LayerTreeTest {
   }
 
   void WillBeginImplFrameOnThread(LayerTreeHostImpl* host_impl,
-                                  const viz::BeginFrameArgs& args) override {
-    host_impl->dropped_frame_counter()->OnFcpReceived();
+                                  const viz::BeginFrameArgs& args,
+                                  bool has_damage) override {
+    last_args_ = args;
+    if (!fcp_sent_) {
+      host_impl->dropped_frame_counter()->OnFcpReceived();
+      fcp_sent_ = true;
+    }
     host_impl->SetNeedsCommit();
   }
 
@@ -9435,8 +10009,11 @@ class LayerTreeHostUkmSmoothnessMemoryOwnership : public LayerTreeTest {
       return;
     }
 
-    // Mark every frame as a dropped frame affecting smoothness.
-    host_impl->dropped_frame_counter()->OnEndFrame(viz::BeginFrameArgs(), true);
+    // Mark every frame as a dropped frame affecting smoothness. This happens
+    // entirely on the compositor thread, so mark it as not including
+    // main-thread update.
+    host_impl->dropped_frame_counter()->OnEndFrame(
+        last_args_, CreateFakeImplDroppedFrameInfo());
     host_impl->SetNeedsRedraw();
     --frames_counter_;
   }
@@ -9449,6 +10026,8 @@ class LayerTreeHostUkmSmoothnessMemoryOwnership : public LayerTreeTest {
  private:
   const uint32_t kTotalFramesForTest = 50;
   uint32_t frames_counter_ = kTotalFramesForTest;
+  bool fcp_sent_ = false;
+  viz::BeginFrameArgs last_args_;
   base::ReadOnlySharedMemoryRegion shmem_region_;
 };
 
@@ -9466,7 +10045,8 @@ class LayerTreeHostTestDocumentTransitionsPropagatedToMetadata
     layer_tree_host()->AddDocumentTransitionRequest(
         DocumentTransitionRequest::CreatePrepare(
             DocumentTransitionRequest::Effect::kExplode,
-            /*document_tag=*/0, /*shared_element_count=*/0,
+            /*document_tag=*/0, DocumentTransitionRequest::TransitionConfig(),
+            /*shared_elements=*/{},
             base::BindLambdaForTesting([this]() { CommitLambdaCalled(); })));
     layer_tree_host()->AddDocumentTransitionRequest(
         DocumentTransitionRequest::CreateStart(
@@ -9527,5 +10107,34 @@ class LayerTreeHostTestDebugStateDowngrade : public LayerTreeHostTest {
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestDebugStateDowngrade);
 
+class LayerTreeHostTestClearCaches : public LayerTreeHostTest {
+ protected:
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void WillCommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
+    if (host_impl->sync_tree()->source_frame_number() == 1) {
+      EXPECT_TRUE(host_impl->image_animation_controller()->did_navigate());
+      EXPECT_EQ(1u, host_impl->CommitDurationSampleCountForTesting());
+    }
+  }
+
+  void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
+    EXPECT_FALSE(host_impl->image_animation_controller()->did_navigate());
+  }
+
+  void DidCommit() override {
+    switch (layer_tree_host()->SourceFrameNumber()) {
+      case 1:
+        layer_tree_host()->SetNeedsCommit();
+        layer_tree_host()->SetSourceURL(123, GURL("https://example.com"));
+        break;
+      case 2:
+        EndTest();
+        break;
+    }
+  }
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestClearCaches);
 }  // namespace
 }  // namespace cc

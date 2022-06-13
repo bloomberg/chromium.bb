@@ -18,8 +18,6 @@
 #include "third_party/blink/renderer/modules/webcodecs/decoder_template.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
 
 namespace media {
@@ -97,7 +95,8 @@ class MODULES_EXPORT AudioDecoder : public DecoderTemplate<AudioDecoderTraits> {
                                   MediaConfigType* out_media_config,
                                   String* out_console_message) override;
   media::StatusOr<scoped_refptr<media::DecoderBuffer>> MakeDecoderBuffer(
-      const InputType& chunk) override;
+      const InputType& chunk,
+      bool verify_key_frame) override;
 };
 
 }  // namespace blink

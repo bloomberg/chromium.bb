@@ -5,7 +5,6 @@
 #ifndef CHROMECAST_GRAPHICS_GESTURES_CAST_SYSTEM_GESTURE_EVENT_HANDLER_H_
 #define CHROMECAST_GRAPHICS_GESTURES_CAST_SYSTEM_GESTURE_EVENT_HANDLER_H_
 
-#include "base/macros.h"
 #include "chromecast/graphics/gestures/cast_system_gesture_dispatcher.h"
 #include "ui/events/event_handler.h"
 
@@ -23,6 +22,10 @@ class CastSystemGestureEventHandler : public ui::EventHandler {
       CastSystemGestureDispatcher* dispatcher,
       aura::Window* root_window);
 
+  CastSystemGestureEventHandler(const CastSystemGestureEventHandler&) = delete;
+  CastSystemGestureEventHandler& operator=(
+      const CastSystemGestureEventHandler&) = delete;
+
   ~CastSystemGestureEventHandler() override;
 
   // ui::EventHandler implementation.
@@ -32,8 +35,6 @@ class CastSystemGestureEventHandler : public ui::EventHandler {
  private:
   CastSystemGestureDispatcher* dispatcher_;
   aura::Window* root_window_;
-
-  DISALLOW_COPY_AND_ASSIGN(CastSystemGestureEventHandler);
 };
 
 }  // namespace chromecast

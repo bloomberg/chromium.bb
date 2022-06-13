@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/raw_ptr.h"
 #include "base/test/bind.h"
 #include "chrome/browser/federated_learning/floc_eligibility_observer.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -32,8 +33,6 @@ class FlocEligibilityUnitTest : public ChromeRenderViewHostTestHarness {
     TestingBrowserProcess::GetGlobal()->SetFlocSortingLshClustersService(
         std::make_unique<federated_learning::FlocSortingLshClustersService>());
 
-    ASSERT_TRUE(profile()->CreateHistoryService());
-
     InitWebContents();
 
     tester_ =
@@ -41,6 +40,11 @@ class FlocEligibilityUnitTest : public ChromeRenderViewHostTestHarness {
             GetWebContents(), this,
             base::BindRepeating(&FlocEligibilityUnitTest::RegisterObservers,
                                 base::Unretained(this)));
+  }
+
+  TestingProfile::TestingFactories GetTestingFactories() const override {
+    return {{HistoryServiceFactory::GetInstance(),
+             HistoryServiceFactory::GetDefaultFactory()}};
   }
 
   // Can be overridden in child class to initialize an incognito web_contents.
@@ -138,7 +142,7 @@ class FlocEligibilityUnitTest : public ChromeRenderViewHostTestHarness {
     tracker->AddObserver(std::move(floc_plm_observer));
   }
 
-  FlocPageLoadMetricsObserver* floc_plm_observer_;
+  raw_ptr<FlocPageLoadMetricsObserver> floc_plm_observer_;
   std::unique_ptr<page_load_metrics::PageLoadMetricsObserverTester> tester_;
 };
 

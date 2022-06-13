@@ -20,53 +20,24 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "content/public/browser/ax_inspect_factory.h"
+#include "ui/accessibility/platform/inspect/ax_inspect_scenario.h"
 
 using ui::AXTreeFormatter;
 using ui::AXTreeSelector;
 
 namespace content {
 
-constexpr char kAllowOptEmptyStr[] = "@ALLOW-EMPTY:";
-constexpr char kAllowOptStr[] = "@ALLOW:";
-constexpr char kDenyOptStr[] = "@DENY:";
-
-base::Value BuildTreeForSelector(const AXTreeSelector& selector,
-                                 const AXTreeFormatter* formatter) {
-  return formatter->BuildTreeForSelector(selector);
-}
-
-base::Value BuildTreeForWindow(gfx::AcceleratedWidget widget,
-                               const AXTreeFormatter* formatter) {
-  return formatter->BuildTreeForWindow(widget);
-}
-
 AXTreeServer::AXTreeServer(const AXTreeSelector& selector,
-                           const base::FilePath& filters_path) {
-  Run(base::BindOnce(&BuildTreeForSelector, selector), filters_path);
-}
-
-AXTreeServer::AXTreeServer(gfx::AcceleratedWidget widget,
-                           const base::FilePath& filters_path) {
-  Run(base::BindOnce(&BuildTreeForWindow, widget), filters_path);
-}
-
-void AXTreeServer::Run(BuildTree build_tree,
-                       const base::FilePath& filters_path) {
+                           const ui::AXInspectScenario& scenario) {
   std::unique_ptr<AXTreeFormatter> formatter(
       AXInspectFactory::CreatePlatformFormatter());
 
-  // Set filters.
-  absl::optional<std::vector<ui::AXPropertyFilter>> filters =
-      GetPropertyFilters(filters_path);
-  if (!filters) {
-    LOG(ERROR) << "Failed to parse filters2";
-    return;
-  }
-  formatter->SetPropertyFilters(*filters,
-                                ui::AXTreeFormatter::kFiltersDefaultSet);
+  // Use optional filters with the default filter set
+  formatter->SetPropertyFilters(scenario.property_filters,
+                                AXTreeFormatter::kFiltersDefaultSet);
 
   // Get accessibility tree as a nested dictionary.
-  base::Value dict = std::move(build_tree).Run(formatter.get());
+  base::Value dict = formatter->BuildTreeForSelector(selector);
   if (dict.DictEmpty()) {
     LOG(ERROR) << "Failed to get accessibility tree";
     return;
@@ -74,45 +45,6 @@ void AXTreeServer::Run(BuildTree build_tree,
 
   // Write to console.
   printf("%s", formatter->FormatTree(dict).c_str());
-}
-
-absl::optional<std::vector<ui::AXPropertyFilter>>
-AXTreeServer::GetPropertyFilters(const base::FilePath& filters_path) {
-  std::vector<ui::AXPropertyFilter> filters;
-  if (filters_path.empty()) {
-    return filters;
-  }
-
-  std::string raw_filters_text;
-  base::ScopedAllowBlockingForTesting allow_io_for_test_setup;
-  if (!base::ReadFileToString(filters_path, &raw_filters_text)) {
-    LOG(ERROR) << "Failed to open filters file " << filters_path
-               << ". Note: path traversal components ('..') are not allowed "
-                  "for security reasons";
-    return absl::nullopt;
-  }
-
-  for (const std::string& line :
-       base::SplitString(raw_filters_text, "\n", base::TRIM_WHITESPACE,
-                         base::SPLIT_WANT_ALL)) {
-    if (base::StartsWith(line, kAllowOptEmptyStr,
-                         base::CompareCase::SENSITIVE)) {
-      filters.emplace_back(line.substr(strlen(kAllowOptEmptyStr)),
-                           ui::AXPropertyFilter::ALLOW_EMPTY);
-    } else if (base::StartsWith(line, kAllowOptStr,
-                                base::CompareCase::SENSITIVE)) {
-      filters.emplace_back(line.substr(strlen(kAllowOptStr)),
-                           ui::AXPropertyFilter::ALLOW);
-    } else if (base::StartsWith(line, kDenyOptStr,
-                                base::CompareCase::SENSITIVE)) {
-      filters.emplace_back(line.substr(strlen(kDenyOptStr)),
-                           ui::AXPropertyFilter::DENY);
-    } else if (!line.empty()) {
-      LOG(ERROR) << "Unrecognized filter instruction at line: " << line;
-      return absl::nullopt;
-    }
-  }
-  return filters;
 }
 
 }  // namespace content

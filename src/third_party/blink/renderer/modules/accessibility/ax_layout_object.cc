@@ -35,10 +35,12 @@
 #include "third_party/blink/renderer/core/aom/accessible_node.h"
 #include "third_party/blink/renderer/core/css/counter_style_map.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
+#include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/range.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/events/event_util.h"
 #include "third_party/blink/renderer/core/frame/frame_owner.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -80,6 +82,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
 #include "third_party/blink/renderer/core/loader/progress_tracker.h"
+#include "third_party/blink/renderer/core/mathml/mathml_element.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
@@ -114,6 +117,11 @@ AXLayoutObject::~AXLayoutObject() {
   DCHECK(IsDetached());
 }
 
+void AXLayoutObject::Trace(Visitor* visitor) const {
+  visitor->Trace(layout_object_);
+  AXNodeObject::Trace(visitor);
+}
+
 LayoutObject* AXLayoutObject::GetLayoutObject() const {
   return layout_object_;
 }
@@ -134,7 +142,7 @@ ScrollableArea* AXLayoutObject::GetScrollableAreaIfScrollable() const {
   if (!layout_object_ || !layout_object_->IsBox())
     return nullptr;
 
-  auto* box = To<LayoutBox>(layout_object_);
+  auto* box = To<LayoutBox>(layout_object_.Get());
 
   // This should possibly use box->CanBeScrolledAndHasScrollableArea() as it
   // used to; however, accessibility must consider any kind of non-visible
@@ -216,14 +224,19 @@ ax::mojom::blink::Role AXLayoutObject::RoleFromLayoutObjectOrNode() const {
   // the screen reader determine what to do for CSS tables. If this line
   // is reached, then it is not an HTML table, and therefore will only be
   // considered a data table if ARIA markup indicates it is a table.
-  if (layout_object_->IsTable() && node)
-    return ax::mojom::blink::Role::kLayoutTable;
-  if (layout_object_->IsTableSection())
-    return DetermineTableSectionRole();
-  if (layout_object_->IsTableRow() && node)
-    return DetermineTableRowRole();
-  if (layout_object_->IsTableCell() && node)
-    return DetermineTableCellRole();
+  // Additionally, as pseudo elements don't have any structure it doesn't make
+  // sense to report their table-related layout roles that could be set via the
+  // display property.
+  if (node && !node->IsPseudoElement()) {
+    if (layout_object_->IsTable())
+      return ax::mojom::blink::Role::kLayoutTable;
+    if (layout_object_->IsTableSection())
+      return DetermineTableSectionRole();
+    if (layout_object_->IsTableRow())
+      return DetermineTableRowRole();
+    if (layout_object_->IsTableCell())
+      return DetermineTableCellRole();
+  }
 
   if (IsImageOrAltText(layout_object_, node)) {
     if (IsA<HTMLInputElement>(node))
@@ -234,13 +247,28 @@ ax::mojom::blink::Role AXLayoutObject::RoleFromLayoutObjectOrNode() const {
   if (IsA<HTMLCanvasElement>(node))
     return ax::mojom::blink::Role::kCanvas;
 
-  if (IsA<LayoutView>(layout_object_))
+  if (IsA<LayoutView>(*layout_object_))
     return ax::mojom::blink::Role::kRootWebArea;
 
-  if (layout_object_->IsSVGImage())
-    return ax::mojom::blink::Role::kImage;
-  if (layout_object_->IsSVGRoot())
-    return ax::mojom::blink::Role::kSvgRoot;
+  if (node && node->IsSVGElement()) {
+    if (layout_object_->IsSVGImage())
+      return ax::mojom::blink::Role::kImage;
+    if (IsA<SVGSVGElement>(node)) {
+      // Exposing a nested <svg> as a group (rather than a generic container)
+      // increases the likelihood that an author-provided name will be presented
+      // by assistive technologies. Note that this mapping is not yet in the
+      // SVG-AAM, which currently maps all <svg> elements as graphics-document.
+      // See https://github.com/w3c/svg-aam/issues/18.
+      return layout_object_->IsSVGRoot() ? ax::mojom::blink::Role::kSvgRoot
+                                         : ax::mojom::blink::Role::kGroup;
+    }
+    if (layout_object_->IsSVGShape())
+      return ax::mojom::blink::Role::kGraphicsSymbol;
+    if (layout_object_->IsSVGForeignObject() || IsA<SVGGElement>(node))
+      return ax::mojom::blink::Role::kGroup;
+    if (IsA<SVGUseElement>(node))
+      return ax::mojom::blink::Role::kGraphicsObject;
+  }
 
   if (layout_object_->IsHR())
     return ax::mojom::blink::Role::kSplitter;
@@ -309,31 +337,6 @@ static bool IsLinkable(const AXObject& object) {
          object.GetLayoutObject()->IsText();
 }
 
-bool AXLayoutObject::IsLineBreakingObject() const {
-  if (IsDetached())
-    return false;
-
-  // Presentational objects should not contribute any of their remove semantic
-  // meaning to the accessibility tree, including to its text representation.
-  if (IsPresentational())
-    return false;
-
-  // Without this condition, LayoutNG reports list markers as line breaking
-  // objects (legacy layout does not).
-  if (RoleValue() == ax::mojom::blink::Role::kListMarker)
-    return false;
-
-  const LayoutObject* layout_object = GetLayoutObject();
-  if (layout_object->IsBR() || layout_object->IsLayoutBlock() ||
-      layout_object->IsTableSection() || layout_object->IsAnonymousBlock() ||
-      (layout_object->IsLayoutBlockFlow() &&
-       layout_object->StyleRef().IsDisplayBlockContainer())) {
-    return true;
-  }
-
-  return AXNodeObject::IsLineBreakingObject();
-}
-
 bool AXLayoutObject::IsLinked() const {
   if (!IsLinkable(*this))
     return false;
@@ -345,10 +348,10 @@ bool AXLayoutObject::IsLinked() const {
 
 bool AXLayoutObject::IsOffScreen() const {
   DCHECK(layout_object_);
-  IntRect content_rect =
-      PixelSnappedIntRect(layout_object_->VisualRectInDocument());
+  gfx::Rect content_rect =
+      ToPixelSnappedRect(layout_object_->VisualRectInDocument());
   LocalFrameView* view = layout_object_->GetFrame()->View();
-  IntRect view_rect(IntPoint(), view->Size());
+  gfx::Rect view_rect(gfx::Point(), view->Size());
   view_rect.Intersect(content_rect);
   return view_rect.IsEmpty();
 }
@@ -404,11 +407,19 @@ AXObjectInclusion AXLayoutObject::DefaultObjectInclusion(
 }
 
 static bool HasLineBox(const LayoutBlockFlow& block_flow) {
-  if (!block_flow.IsLayoutNGMixin())
+  if (!block_flow.IsLayoutNGObject())
     return block_flow.FirstLineBox();
-  if (block_flow.HasNGInlineNodeData())
-    return !block_flow.GetNGInlineNodeData()->IsEmptyInline();
+
   // TODO(layout-dev): We should call this function after layout completion.
+  NGInlineCursor cursor(block_flow);
+  if (!cursor.HasRoot())
+    return false;
+
+  for (cursor.MoveToFirstLine(); cursor; cursor.MoveToNextLine()) {
+    if (!cursor.CurrentItem()->IsEmptyLineBox())
+      return true;
+  }
+
   return false;
 }
 
@@ -469,6 +480,26 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
   if (semantic_inclusion == kIgnoreObject)
     return true;
 
+  // Inner editor element of editable area with empty text provides bounds
+  // used to compute the character extent for index 0. This is the same as
+  // what the caret's bounds would be if the editable area is focused.
+  if (node) {
+    const TextControlElement* text_control = EnclosingTextControl(node);
+    if (text_control) {
+      // Keep only the inner editor element and it's children.
+      // If inline textboxes are being loaded, then the inline textbox for the
+      // text wil be included by AXNodeObject::AddInlineTextboxChildren().
+      // By only keeping the inner editor and its text, it makes finding the
+      // inner editor simpler on the browser side.
+      // See BrowserAccessibility::GetTextFieldInnerEditorElement().
+      // TODO(accessibility) In the future, we may want to keep all descendants
+      // of the inner text element -- right now we only include one internally
+      // used container, it's text, and possibly the text's inlinext text box.
+      return text_control->InnerEditorElement() != node &&
+             text_control->InnerEditorElement() != NodeTraversal::Parent(*node);
+    }
+  }
+
   // A LayoutEmbeddedContent is an iframe element or embedded object element or
   // something like that. We don't want to ignore those.
   if (layout_object_->IsLayoutEmbeddedContent())
@@ -482,18 +513,16 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
     }
   }
 
+  // The SVG-AAM says the foreignObject element is normally presentational.
+  if (layout_object_->IsSVGForeignObject()) {
+    if (ignored_reasons)
+      ignored_reasons->push_back(IgnoredReason(kAXPresentational));
+    return true;
+  }
+
   // Make sure renderers with layers stay in the tree.
   if (GetLayoutObject() && GetLayoutObject()->HasLayer() && node &&
       node->hasChildren()) {
-    if (IsPlaceholder()) {
-      // Placeholder is already exposed via AX attributes, do not expose as
-      // child of text input. Therefore, if there is a child of a text input,
-      // it will contain the value.
-      if (ignored_reasons)
-        ignored_reasons->push_back(IgnoredReason(kAXPresentational));
-      return true;
-    }
-
     return false;
   }
 
@@ -517,15 +546,26 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
     return false;
 
   if (layout_object_->IsText()) {
-    // Ignore TextAlternative of the list marker for SUMMARY because:
-    //  - TextAlternatives for disclosure-* are triangle symbol characters used
-    //    to visually indicate the expansion state.
-    //  - It's redundant. The host DETAILS exposes the expansion state.
-    if (layout_object_->Parent()->IsListMarkerForSummary()) {
-      if (ignored_reasons)
-        ignored_reasons->push_back(IgnoredReason(kAXPresentational));
-      return true;
+    if (layout_object_->IsInListMarker()) {
+      // Ignore TextAlternative of the list marker for SUMMARY because:
+      //  - TextAlternatives for disclosure-* are triangle symbol characters
+      //  used to visually indicate the expansion state.
+      //  - It's redundant. The host DETAILS exposes the expansion state.
+      // Also ignore text descendants of any non-ignored list marker because the
+      // text descendants do not provide any extra information than the
+      // TextAlternative on the list marker. Besides, with 'speak-as', they will
+      // be inconsistent with the list marker.
+      const AXObject* list_marker_object =
+          ContainerListMarkerIncludingIgnored();
+      if (list_marker_object &&
+          (list_marker_object->GetLayoutObject()->IsListMarkerForSummary() ||
+           !list_marker_object->AccessibilityIsIgnored())) {
+        if (ignored_reasons)
+          ignored_reasons->push_back(IgnoredReason(kAXPresentational));
+        return true;
+      }
     }
+
     // Ignore text inside of an ignored <label>.
     // To save processing, only walk up the ignored objects.
     // This means that other interesting objects inside the <label> will
@@ -568,15 +608,6 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
     if (IsScrollableContainer())
       return false;
     if (layout_object_->IsPositioned())
-      return false;
-  }
-
-  // Inner editor element of editable area with empty text provides bounds
-  // used to compute the character extent for index 0. This is the same as
-  // what the caret's bounds would be if the editable area is focused.
-  if (node) {
-    const TextControlElement* text_control = EnclosingTextControl(node);
-    if (text_control && text_control->InnerEditorElement() == node)
       return false;
   }
 
@@ -632,14 +663,47 @@ ax::mojom::blink::ListStyle AXLayoutObject::GetListStyle() const {
   if (style_image && !style_image->ErrorOccurred())
     return ax::mojom::blink::ListStyle::kImage;
 
-  // TODO(crbug.com/1166766): Use the 'speak-as' descriptor value following
-  // https://drafts.csswg.org/css-counter-styles-3/#counter-style-speak-as
+  if (RuntimeEnabledFeatures::CSSAtRuleCounterStyleSpeakAsDescriptorEnabled()) {
+    if (!computed_style->ListStyleType())
+      return ax::mojom::blink::ListStyle::kNone;
+    if (computed_style->ListStyleType()->IsString())
+      return ax::mojom::blink::ListStyle::kOther;
+
+    DCHECK(computed_style->ListStyleType()->IsCounterStyle());
+    const CounterStyle& counter_style =
+        ListMarker::GetCounterStyle(*GetDocument(), *computed_style);
+    switch (counter_style.EffectiveSpeakAs()) {
+      case CounterStyleSpeakAs::kBullets: {
+        // See |ua_counter_style_map.cc| for predefined symbolic counter styles.
+        UChar symbol = counter_style.GenerateTextAlternative(0)[0];
+        switch (symbol) {
+          case 0x2022:
+            return ax::mojom::blink::ListStyle::kDisc;
+          case 0x25E6:
+            return ax::mojom::blink::ListStyle::kCircle;
+          case 0x25A0:
+            return ax::mojom::blink::ListStyle::kSquare;
+          default:
+            return ax::mojom::blink::ListStyle::kOther;
+        }
+      }
+      case CounterStyleSpeakAs::kNumbers:
+        return ax::mojom::blink::ListStyle::kNumeric;
+      case CounterStyleSpeakAs::kWords:
+        return ax::mojom::blink::ListStyle::kOther;
+      case CounterStyleSpeakAs::kAuto:
+      case CounterStyleSpeakAs::kReference:
+        NOTREACHED();
+        return ax::mojom::blink::ListStyle::kOther;
+    }
+  }
+
   switch (ListMarker::GetListStyleCategory(*GetDocument(), *computed_style)) {
     case ListMarker::ListStyleCategory::kNone:
       return ax::mojom::blink::ListStyle::kNone;
     case ListMarker::ListStyleCategory::kSymbol: {
       const AtomicString& counter_style_name =
-          computed_style->GetListStyleType()->GetCounterStyleName();
+          computed_style->ListStyleType()->GetCounterStyleName();
       if (counter_style_name == "disc")
         return ax::mojom::blink::ListStyle::kDisc;
       if (counter_style_name == "circle")
@@ -650,14 +714,13 @@ ax::mojom::blink::ListStyle AXLayoutObject::GetListStyle() const {
     }
     case ListMarker::ListStyleCategory::kLanguage: {
       const AtomicString& counter_style_name =
-          computed_style->GetListStyleType()->GetCounterStyleName();
+          computed_style->ListStyleType()->GetCounterStyleName();
       if (counter_style_name == "decimal")
         return ax::mojom::blink::ListStyle::kNumeric;
       if (counter_style_name == "decimal-leading-zero") {
         // 'decimal-leading-zero' may be overridden by custom counter styles. We
         // return kNumeric only when we are using the predefined counter style.
-        if (!RuntimeEnabledFeatures::CSSAtRuleCounterStyleEnabled() ||
-            ListMarker::GetCounterStyle(*GetDocument(), *computed_style)
+        if (ListMarker::GetCounterStyle(*GetDocument(), *computed_style)
                 .IsPredefined())
           return ax::mojom::blink::ListStyle::kNumeric;
       }
@@ -755,6 +818,7 @@ static AXObject* NextOnLineInternalNG(const AXObject& ax_object) {
     cursor.MoveToNextInlineLeafOnLine();
     if (cursor) {
       LayoutObject* runner_layout_object = cursor.CurrentMutableLayoutObject();
+      DCHECK(runner_layout_object);
       AXObject* result =
           ax_object.AXObjectCache().GetOrCreate(runner_layout_object);
       result = GetDeepestAXChildInLayoutTree(result, true);
@@ -779,16 +843,15 @@ static AXObject* NextOnLineInternalNG(const AXObject& ax_object) {
   if (!ax_result)
     return nullptr;
 
-#if DCHECK_IS_ON()
-  if (!ax_object.AXObjectCache().IsAriaOwned(&ax_object)) {
-    DCHECK_NE(ax_result->ParentObject(), &ax_object)
-        << "NextOnLine() must not point to a child of the current object. "
-           "Because inline objects without try to return a result from their "
-           "parents, using a descendant can cause a previous position to be "
-           "reused, which appears as a loop in the nextOnLine data, and "
-           "can cause an infinite loop in consumers of the nextOnLine data";
+  if (!ax_object.AXObjectCache().IsAriaOwned(&ax_object) &&
+      ax_result->ParentObject() == &ax_object) {
+    // NextOnLine() must not point to a child of the current object.
+    // Because inline objects try to return a result from their
+    // parents, using a descendant can cause a previous position to be
+    // reused, which appears as a loop in the nextOnLine data, and
+    // can cause an infinite loop in consumers of the nextOnLine data.
+    return nullptr;
   }
-#endif
 
   return ax_result;
 }
@@ -802,6 +865,8 @@ AXObject* AXLayoutObject::NextOnLine() const {
     NOTREACHED();
     return nullptr;
   }
+
+  DCHECK(GetLayoutObject());
 
   if (GetLayoutObject()->IsBoxListMarkerIncludingNG()) {
     // A list marker should be followed by a list item on the same line.
@@ -904,6 +969,7 @@ static AXObject* PreviousOnLineInlineNG(const AXObject& ax_object) {
     cursor.MoveToPreviousInlineLeafOnLine();
     if (cursor) {
       LayoutObject* runner_layout_object = cursor.CurrentMutableLayoutObject();
+      DCHECK(runner_layout_object);
       AXObject* result =
           ax_object.AXObjectCache().GetOrCreate(runner_layout_object);
       result = GetDeepestAXChildInLayoutTree(result, false);
@@ -929,16 +995,15 @@ static AXObject* PreviousOnLineInlineNG(const AXObject& ax_object) {
   if (!ax_result)
     return nullptr;
 
-#if DCHECK_IS_ON()
-  if (!ax_object.AXObjectCache().IsAriaOwned(&ax_object)) {
-    DCHECK_NE(ax_result->ParentObject(), &ax_object)
-        << "PreviousOnLine() must not point to a child of the current object. "
-           "Because inline objects without try to return a result from their "
-           "parents, using a descendant can cause a previous position to be "
-           "reused, which appears as a loop in the previousOnLine data, and "
-           "can cause an infinite loop in consumers of the previousOnLine data";
+  if (!ax_object.AXObjectCache().IsAriaOwned(&ax_object) &&
+      ax_result->ParentObject() == &ax_object) {
+    // PreviousOnLine() must not point to a child of the current object.
+    // Because inline objects without try to return a result from their
+    // parents, using a descendant can cause a previous position to be
+    // reused, which appears as a loop in the previousOnLine data, and
+    // can cause an infinite loop in consumers of the previousOnLine data.
+    return nullptr;
   }
-#endif
 
   return ax_result;
 }
@@ -953,12 +1018,14 @@ AXObject* AXLayoutObject::PreviousOnLine() const {
     return nullptr;
   }
 
+  DCHECK(GetLayoutObject());
+
   AXObject* previous_sibling = AccessibilityIsIncludedInTree()
                                    ? PreviousSiblingIncludingIgnored()
                                    : nullptr;
   if (previous_sibling && previous_sibling->GetLayoutObject() &&
       previous_sibling->GetLayoutObject()->IsLayoutNGOutsideListMarker()) {
-    // A list item should be proceeded by a list marker on the same line.
+    // A list item should be preceded by a list marker on the same line.
     return GetDeepestAXChildInLayoutTree(previous_sibling, false);
   }
 
@@ -1020,12 +1087,13 @@ AXObject* AXLayoutObject::PreviousOnLine() const {
 // Properties of interactive elements.
 //
 
-String AXLayoutObject::TextAlternative(bool recursive,
-                                       bool in_aria_labelled_by_traversal,
-                                       AXObjectSet& visited,
-                                       ax::mojom::blink::NameFrom& name_from,
-                                       AXRelatedObjectVector* related_objects,
-                                       NameSources* name_sources) const {
+String AXLayoutObject::TextAlternative(
+    bool recursive,
+    const AXObject* aria_label_or_description_root,
+    AXObjectSet& visited,
+    ax::mojom::blink::NameFrom& name_from,
+    AXRelatedObjectVector* related_objects,
+    NameSources* name_sources) const {
   if (layout_object_) {
     absl::optional<String> text_alternative = GetCSSAltText(GetNode());
     bool found_text_alternative = false;
@@ -1042,7 +1110,7 @@ String AXLayoutObject::TextAlternative(bool recursive,
       found_text_alternative = true;
     } else if (layout_object_->IsText() &&
                (!recursive || !layout_object_->IsCounter())) {
-      auto* layout_text = To<LayoutText>(layout_object_);
+      auto* layout_text = To<LayoutText>(layout_object_.Get());
       String visible_text = layout_text->PlainText();  // Actual rendered text.
       // If no text boxes we assume this is unrendered end-of-line whitespace.
       // TODO find robust way to deterministically detect end-of-line space.
@@ -1063,7 +1131,7 @@ String AXLayoutObject::TextAlternative(bool recursive,
       found_text_alternative = true;
     } else if (layout_object_->IsListMarkerForNormalContent() && !recursive) {
       text_alternative =
-          To<LayoutListMarker>(layout_object_)->TextAlternative();
+          To<LayoutListMarker>(layout_object_.Get())->TextAlternative();
       found_text_alternative = true;
     } else if (!recursive) {
       if (ListMarker* marker = ListMarker::Get(layout_object_)) {
@@ -1083,30 +1151,29 @@ String AXLayoutObject::TextAlternative(bool recursive,
     }
   }
 
-  return AXNodeObject::TextAlternative(recursive, in_aria_labelled_by_traversal,
-                                       visited, name_from, related_objects,
-                                       name_sources);
+  return AXNodeObject::TextAlternative(
+      recursive, aria_label_or_description_root, visited, name_from,
+      related_objects, name_sources);
 }
 
 //
 // Hit testing.
 //
 
-AXObject* AXLayoutObject::AccessibilityHitTest(const IntPoint& point) const {
-  if (!layout_object_ || !layout_object_->HasLayer() ||
-      !layout_object_->IsBox())
+AXObject* AXLayoutObject::AccessibilityHitTest(const gfx::Point& point) const {
+  // Must be called for the document.
+  if (!IsRoot() || !layout_object_)
     return nullptr;
 
-    // Must be called with lifecycle >= pre-paint clean
-#if DCHECK_IS_ON()
+  // Must be called with lifecycle >= pre-paint clean
   DCHECK_GE(GetDocument()->Lifecycle().GetState(),
             DocumentLifecycle::kPrePaintClean);
-#endif
 
-  PaintLayer* layer = To<LayoutBox>(layout_object_)->Layer();
+  DCHECK(layout_object_->IsLayoutView());
+  PaintLayer* layer = To<LayoutBox>(layout_object_.Get())->Layer();
+  DCHECK(layer);
 
-  HitTestRequest request(HitTestRequest::kReadOnly | HitTestRequest::kActive |
-                         HitTestRequest::kRetargetForInert);
+  HitTestRequest request(HitTestRequest::kReadOnly | HitTestRequest::kActive);
   HitTestLocation location(point);
   HitTestResult hit_test_result = HitTestResult(request, location);
   layer->HitTest(location, hit_test_result,
@@ -1170,49 +1237,6 @@ Document* AXLayoutObject::GetDocument() const {
   if (!GetLayoutObject())
     return nullptr;
   return &GetLayoutObject()->GetDocument();
-}
-
-Element* AXLayoutObject::AnchorElement() const {
-  if (!layout_object_)
-    return nullptr;
-
-  AXObjectCacheImpl& cache = AXObjectCache();
-  LayoutObject* curr_layout_object;
-
-  // Search up the layout tree for a LayoutObject with a DOM node. Defer to an
-  // earlier continuation, though.
-  for (curr_layout_object = layout_object_;
-       curr_layout_object && !curr_layout_object->GetNode();
-       curr_layout_object = curr_layout_object->Parent()) {
-    auto* curr_block_flow = DynamicTo<LayoutBlockFlow>(curr_layout_object);
-    if (!curr_block_flow || !curr_block_flow->IsAnonymousBlock())
-      continue;
-
-    if (LayoutObject* continuation = curr_block_flow->Continuation())
-      return cache.GetOrCreate(continuation)->AnchorElement();
-  }
-  // bail if none found
-  if (!curr_layout_object)
-    return nullptr;
-
-  // Search up the DOM tree for an anchor element.
-  // NOTE: this assumes that any non-image with an anchor is an
-  // HTMLAnchorElement
-  Node* node = curr_layout_object->GetNode();
-  if (!node)
-    return nullptr;
-  for (Node& runner : NodeTraversal::InclusiveAncestorsOf(*node)) {
-    if (IsA<HTMLAnchorElement>(runner))
-      return To<Element>(&runner);
-
-    if (LayoutObject* layout_object = runner.GetLayoutObject()) {
-      AXObject* ax_object = cache.GetOrCreate(layout_object);
-      if (ax_object && ax_object->IsAnchor())
-        return To<Element>(&runner);
-    }
-  }
-
-  return nullptr;
 }
 
 void AXLayoutObject::HandleAutofillStateChanged(WebAXAutofillState state) {
@@ -1689,13 +1713,38 @@ AXObject* AXLayoutObject::HeaderObject() const {
   return nullptr;
 }
 
+void AXLayoutObject::GetWordBoundaries(Vector<int>& word_starts,
+                                       Vector<int>& word_ends) const {
+  if (!layout_object_ || !layout_object_->IsListMarkerIncludingAll())
+    return;
+
+  String text_alternative;
+  if (layout_object_->IsListMarkerForNormalContent()) {
+    text_alternative =
+        To<LayoutListMarker>(layout_object_.Get())->TextAlternative();
+  } else if (ListMarker* marker = ListMarker::Get(layout_object_)) {
+    text_alternative = marker->TextAlternative(*layout_object_);
+  }
+  if (text_alternative.ContainsOnlyWhitespaceOrEmpty())
+    return;
+
+  Vector<AbstractInlineTextBox::WordBoundaries> boundaries;
+  AbstractInlineTextBox::GetWordBoundariesForText(boundaries, text_alternative);
+  word_starts.ReserveCapacity(boundaries.size());
+  word_ends.ReserveCapacity(boundaries.size());
+  for (const auto& boundary : boundaries) {
+    word_starts.push_back(boundary.start_index);
+    word_ends.push_back(boundary.end_index);
+  }
+}
+
 //
 // Private.
 //
 
 AXObject* AXLayoutObject::AccessibilityImageMapHitTest(
     HTMLAreaElement* area,
-    const IntPoint& point) const {
+    const gfx::Point& point) const {
   if (!area)
     return nullptr;
 
@@ -1704,7 +1753,7 @@ AXObject* AXLayoutObject::AccessibilityImageMapHitTest(
     return nullptr;
 
   for (const auto& child : parent->ChildrenIncludingIgnored()) {
-    if (child->GetBoundsInFrameCoordinates().Contains(point))
+    if (child->GetBoundsInFrameCoordinates().Contains(LayoutPoint(point)))
       return child.Get();
   }
 

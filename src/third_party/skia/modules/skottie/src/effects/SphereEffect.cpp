@@ -19,6 +19,8 @@
 
 namespace skottie::internal {
 
+#ifdef SK_ENABLE_SKSL
+
 namespace  {
 
 // This shader maps its child shader onto a sphere.  To simplify things, we set it up such that:
@@ -75,7 +77,7 @@ static constexpr char gSphereSkSL[] = R"(
             0.5 + kRPI * asin(RN.y)
         );
 
-        return apply_light(EYE, N, sample(child, UV*child_scale));
+        return apply_light(EYE, N, child.eval(UV*child_scale));
     }
 )";
 
@@ -413,11 +415,18 @@ private:
 
 } // namespace
 
+#endif  // SK_ENABLE_SKSL
+
 sk_sp<sksg::RenderNode> EffectBuilder::attachSphereEffect(
         const skjson::ArrayValue& jprops, sk_sp<sksg::RenderNode> layer) const {
+#ifdef SK_ENABLE_SKSL
     auto sphere = sk_make_sp<SphereNode>(std::move(layer), fLayerSize);
 
     return fBuilder->attachDiscardableAdapter<SphereAdapter>(jprops, fBuilder, std::move(sphere));
+#else
+    // TODO(skia:12197)
+    return layer;
+#endif
 }
 
 } // namespace skottie::internal

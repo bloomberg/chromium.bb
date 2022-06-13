@@ -18,33 +18,6 @@
 
 #include <spirv/unified1/spirv.hpp>
 
-#define CONCAT(a, b) a##b
-#define CONCAT2(a, b) CONCAT(a, b)
-
-namespace {
-
-// checkForNoMissingOps() is an unused function that simply exists to try and
-// detect missing opcodes in "SpirvShaderInstructions.inl".
-// If there are missing opcodes, then some compilers will warn that not all
-// enum values are handled by the switch case below.
-constexpr void checkForNoMissingOps(spv::Op op)
-{
-	// self-reference to avoid unused-function warnings.
-	(void)&checkForNoMissingOps;
-
-	switch(op)
-	{
-#define DECORATE_OP(isStatement, op) \
-	case spv::op:                    \
-		return;
-#include "SpirvShaderInstructions.inl"
-#undef DECORATE_OP
-	case spv::OpMax: return;
-	}
-}
-
-}  // anonymous namespace
-
 namespace sw {
 
 const char *SpirvShader::OpcodeName(spv::Op op)
@@ -52,23 +25,69 @@ const char *SpirvShader::OpcodeName(spv::Op op)
 	return spvOpcodeString(op);
 }
 
+// This function is used by the shader debugger to determine whether an instruction is steppable.
 bool SpirvShader::IsStatement(spv::Op op)
 {
 	switch(op)
 	{
-#define IS_STATEMENT_T(op) case spv::op:
-#define IS_STATEMENT_F(op)
-#define DECORATE_OP(isStatement, op)    \
-	CONCAT2(IS_STATEMENT_, isStatement) \
-	(op)
-#include "SpirvShaderInstructions.inl"
-#undef IS_STATEMENT_T
-#undef IS_STATEMENT_F
-#undef DECORATE_OP
-		return true;
-
 	default:
-		return false;
+		// Most statement-like instructions produce a result which has a type.
+		// Note OpType* instructions have a result but it is a type itself.
+		{
+			bool hasResult = false;
+			bool hasResultType = false;
+			spv::HasResultAndType(op, &hasResult, &hasResultType);
+
+			return hasResult && hasResultType;
+		}
+		break;
+
+	// Instructions without a result but potential side-effects.
+	case spv::OpNop:
+	case spv::OpStore:
+	case spv::OpCopyMemory:
+	case spv::OpCopyMemorySized:
+	case spv::OpImageWrite:
+	case spv::OpEmitVertex:
+	case spv::OpEndPrimitive:
+	case spv::OpEmitStreamVertex:
+	case spv::OpEndStreamPrimitive:
+	case spv::OpControlBarrier:
+	case spv::OpMemoryBarrier:
+	case spv::OpAtomicStore:
+	case spv::OpBranch:
+	case spv::OpBranchConditional:
+	case spv::OpSwitch:
+	case spv::OpKill:
+	case spv::OpReturn:
+	case spv::OpReturnValue:
+	case spv::OpLifetimeStart:
+	case spv::OpLifetimeStop:
+	case spv::OpGroupWaitEvents:
+	case spv::OpCommitReadPipe:
+	case spv::OpCommitWritePipe:
+	case spv::OpGroupCommitReadPipe:
+	case spv::OpGroupCommitWritePipe:
+	case spv::OpRetainEvent:
+	case spv::OpReleaseEvent:
+	case spv::OpSetUserEventStatus:
+	case spv::OpCaptureEventProfilingInfo:
+	case spv::OpAtomicFlagClear:
+	case spv::OpMemoryNamedBarrier:
+	case spv::OpTerminateInvocation:
+	case spv::OpTraceRayKHR:
+	case spv::OpExecuteCallableKHR:
+	case spv::OpIgnoreIntersectionKHR:
+	case spv::OpTerminateRayKHR:
+	case spv::OpRayQueryInitializeKHR:
+	case spv::OpRayQueryTerminateKHR:
+	case spv::OpRayQueryGenerateIntersectionKHR:
+	case spv::OpRayQueryConfirmIntersectionKHR:
+	case spv::OpBeginInvocationInterlockEXT:
+	case spv::OpEndInvocationInterlockEXT:
+	case spv::OpDemoteToHelperInvocationEXT:
+	case spv::OpAssumeTrueKHR:
+		return true;
 	}
 }
 

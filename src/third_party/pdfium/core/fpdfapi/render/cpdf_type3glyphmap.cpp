@@ -6,9 +6,12 @@
 
 #include "core/fpdfapi/render/cpdf_type3glyphmap.h"
 
+#include <math.h>
+
 #include <algorithm>
 #include <utility>
 
+#include "core/fxcrt/fx_system.h"
 #include "core/fxge/cfx_glyphbitmap.h"
 #include "core/fxge/fx_font.h"
 

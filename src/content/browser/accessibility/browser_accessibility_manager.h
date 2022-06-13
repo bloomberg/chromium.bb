@@ -14,7 +14,9 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
+#include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
 #include "build/build_config.h"
 #include "content/browser/accessibility/browser_accessibility.h"
@@ -36,6 +38,7 @@
 #include "ui/accessibility/ax_tree_observer.h"
 #include "ui/accessibility/ax_tree_update.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
+#include "ui/accessibility/platform/ax_platform_tree_manager.h"
 #include "ui/base/buildflags.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -52,6 +55,7 @@ class BrowserAccessibilityManagerAuraLinux;
 #elif defined(OS_MAC)
 class BrowserAccessibilityManagerMac;
 #endif
+class RenderFrameHostImpl;
 class WebContentsAccessibility;
 
 // To be called when a BrowserAccessibilityManager fires a generated event.
@@ -98,7 +102,7 @@ class CONTENT_EXPORT BrowserAccessibilityDelegate {
   virtual gfx::NativeViewAccessible AccessibilityGetNativeViewAccessible() = 0;
   virtual gfx::NativeViewAccessible
   AccessibilityGetNativeViewAccessibleForWindow() = 0;
-  virtual WebContents* AccessibilityWebContents() = 0;
+  virtual RenderFrameHostImpl* AccessibilityRenderFrameHost() = 0;
   virtual void AccessibilityHitTest(
       const gfx::Point& point_in_frame_pixels,
       ax::mojom::Event opt_event_to_fire,
@@ -134,9 +138,10 @@ struct BrowserAccessibilityFindInPageInfo {
 };
 
 // Manages a tree of BrowserAccessibility objects.
-class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
-                                                   public ui::AXTreeManager,
-                                                   public WebContentsObserver {
+class CONTENT_EXPORT BrowserAccessibilityManager
+    : public ui::AXTreeObserver,
+      public ui::AXPlatformTreeManager,
+      public WebContentsObserver {
  public:
   // Creates the platform-specific BrowserAccessibilityManager.
   static BrowserAccessibilityManager* Create(
@@ -146,6 +151,20 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
       BrowserAccessibilityDelegate* delegate);
 
   static BrowserAccessibilityManager* FromID(ui::AXTreeID ax_tree_id);
+
+  // Ensure that any accessibility fatal error crashes the renderer. Once this
+  // is turned on, it stays on all renderers, because at this point it is
+  // assumed that the user is a developer.
+  // TODO(accessibility) This behavior should also be observed by Views when the
+  // Accessibility Inspector is used to inspect the Views layer after we unify
+  // Views and Web. Therefore, this flag and its accessor methods should be
+  // moved to UI, e.g. to AXTreeManager under ui/accessibility.
+  static void AlwaysFailFast() { is_fail_fast_mode_ = true; }
+  static bool IsFailFastMode() { return is_fail_fast_mode_; }
+
+  BrowserAccessibilityManager(const BrowserAccessibilityManager&) = delete;
+  BrowserAccessibilityManager& operator=(const BrowserAccessibilityManager&) =
+      delete;
 
   ~BrowserAccessibilityManager() override;
 
@@ -236,10 +255,6 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
     return hidden_by_interstitial_page_;
   }
 
-  // Pretend that the given node has focus, for testing only. Doesn't
-  // communicate with the renderer and doesn't fire any events.
-  void SetFocusLocallyForTesting(BrowserAccessibility* node);
-
   // For testing only, register a function to be called when focus changes
   // in any BrowserAccessibilityManager.
   static void SetFocusChangeCallbackForTesting(base::RepeatingClosure callback);
@@ -248,6 +263,11 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   // a generated event is fired from this BrowserAccessibilityManager.
   void SetGeneratedEventCallbackForTesting(
       const GeneratedEventCallbackForTesting& callback);
+
+  // For testing only, register a function to be called when nodes
+  // change location / bounding box in this BrowserAccessibilityManager.
+  void SetLocationChangeCallbackForTesting(
+      const base::RepeatingClosure& callback);
 
   // Normally we avoid firing accessibility focus events when the containing
   // native window isn't focused, and we also delay some other events like
@@ -295,7 +315,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   void SignalEndOfTest();
 
   // Retrieve the bounds of the parent View in screen coordinates.
-  virtual gfx::Rect GetViewBoundsInScreenCoordinates() const;
+  gfx::Rect GetViewBoundsInScreenCoordinates() const;
 
   // Fire an event telling native assistive technology to move focus to the
   // given find in page result.
@@ -440,6 +460,9 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   ui::AXTree* ax_tree() const { return tree_.get(); }
 
   // AXTreeObserver implementation.
+  void OnTreeDataChanged(ui::AXTree* tree,
+                         const ui::AXTreeData& old_data,
+                         const ui::AXTreeData& new_data) override;
   void OnNodeWillBeDeleted(ui::AXTree* tree, ui::AXNode* node) override;
   void OnSubtreeWillBeDeleted(ui::AXTree* tree, ui::AXNode* node) override;
   void OnNodeCreated(ui::AXTree* tree, ui::AXNode* node) override;
@@ -458,6 +481,9 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   ui::AXNode* GetNodeFromTree(ui::AXTreeID tree_id,
                               ui::AXNodeID node_id) const override;
   ui::AXNode* GetNodeFromTree(ui::AXNodeID node_id) const override;
+  ui::AXPlatformNode* GetPlatformNodeFromTree(
+      const ui::AXNodeID node_id) const override;
+  ui::AXPlatformNode* GetPlatformNodeFromTree(const ui::AXNode&) const override;
   void AddObserver(ui::AXTreeObserver* observer) override;
   void RemoveObserver(ui::AXTreeObserver* observer) override;
   ui::AXTreeID GetTreeID() const override;
@@ -531,10 +557,10 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   static BrowserAccessibility* GetLastFocusedNode();
 
   // The object that can perform actions on our behalf.
-  BrowserAccessibilityDelegate* delegate_;
+  raw_ptr<BrowserAccessibilityDelegate> delegate_;
 
   // A mapping from a node id to its wrapper of type BrowserAccessibility.
-  std::map<int32_t, BrowserAccessibility*> id_wrapper_map_;
+  std::map<ui::AXNodeID, std::unique_ptr<BrowserAccessibility>> id_wrapper_map_;
 
   // True if the user has initiated a navigation to another page.
   bool user_is_navigating_away_;
@@ -581,6 +607,9 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   // For testing only: A function to call when a generated event is fired.
   GeneratedEventCallbackForTesting generated_event_callback_for_testing_;
 
+  // For testing only; A function to call when locations change.
+  base::RepeatingClosure location_change_callback_for_testing_;
+
   // Keeps track of the nested popup root's id, if it exists. See GetPopupRoot()
   // for details.
   std::set<int32_t> popup_root_ids_;
@@ -602,6 +631,9 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   // SetLastFocusedNode and GetLastFocusedNode methods instead.
   static absl::optional<int32_t> last_focused_node_id_;
   static absl::optional<ui::AXTreeID> last_focused_node_tree_id_;
+
+  // A flag to ensure that accessibility fatal errors crash immediately.
+  static bool is_fail_fast_mode_;
 
   // For debug only: True when handling OnAccessibilityEvents.
 #if DCHECK_IS_ON()
@@ -626,8 +658,6 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   // declaration, do not move this member above other members.
   base::ScopedObservation<ui::AXTree, ui::AXTreeObserver> tree_observation_{
       this};
-
-  DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityManager);
 };
 
 }  // namespace content

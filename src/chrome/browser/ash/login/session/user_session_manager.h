@@ -12,9 +12,10 @@
 #include <string>
 #include <vector>
 
+#include "ash/components/arc/net/always_on_vpn_manager.h"
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
-#include "base/macros.h"
+#include "base/containers/flat_set.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
@@ -31,14 +32,13 @@
 #include "chrome/browser/ash/login/signin/token_handle_util.h"
 // TODO(https://crbug.com/1164001): move to forward declaration.
 #include "chrome/browser/ash/login/ui/input_events_blocker.h"
-// TODO(https://crbug.com/1164001): move to forward declaration.
-#include "chrome/browser/ash/login/ui/login_display_host.h"
 #include "chrome/browser/ash/net/secure_dns_manager.h"
 #include "chrome/browser/ash/release_notes/release_notes_notification.h"
 // TODO(https://crbug.com/1164001): move to forward declaration.
+#include "chrome/browser/ash/eol_notification.h"
+// TODO(https://crbug.com/1164001): move to forward declaration.
+#include "chrome/browser/ash/u2f_notification.h"
 #include "chrome/browser/ash/web_applications/help_app/help_app_notification_controller.h"
-#include "chrome/browser/chromeos/eol_notification.h"
-#include "chrome/browser/chromeos/u2f_notification.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager.pb.h"
 // TODO(https://crbug.com/1164001): move to forward declaration.
@@ -47,28 +47,27 @@
 // TODO(https://crbug.com/1164001): move to forward declaration.
 #include "chromeos/login/auth/stub_authenticator_builder.h"
 #include "chromeos/login/auth/user_context.h"
-#include "components/arc/net/always_on_vpn_manager.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
 // TODO(https://crbug.com/1164001): move to forward declaration.
-#include "ui/base/ime/chromeos/input_method_manager.h"
+#include "ui/base/ime/ash/input_method_manager.h"
 
 class AccountId;
+class AshTurnSyncOnHelper;
 class GURL;
 class PrefRegistrySimple;
 class PrefService;
 class Profile;
-class TokenHandleFetcher;
-class TurnSyncOnHelper;
 
 namespace user_manager {
 class User;
 }  // namespace user_manager
 
 namespace ash {
-
+class LoginDisplayHost;
 class OnboardingUserActivityCounter;
+class TokenHandleFetcher;
 
 namespace test {
 class UserSessionManagerTestApi;
@@ -92,6 +91,12 @@ class UserSessionStateObserver {
 
  protected:
   virtual ~UserSessionStateObserver();
+};
+
+class UserAuthenticatorObserver : public base::CheckedObserver {
+ public:
+  // Called when authentication is started.
+  virtual void OnAuthAttemptStarted() {}
 };
 
 // UserSessionManager is responsible for starting user session which includes:
@@ -158,6 +163,9 @@ class UserSessionManager
 
   // Returns UserSessionManager instance.
   static UserSessionManager* GetInstance();
+
+  UserSessionManager(const UserSessionManager&) = delete;
+  UserSessionManager& operator=(const UserSessionManager&) = delete;
 
   // Called when user is logged in to override base::DIR_HOME path.
   static void OverrideHomedir();
@@ -278,6 +286,10 @@ class UserSessionManager
   void AddSessionStateObserver(ash::UserSessionStateObserver* observer);
   void RemoveSessionStateObserver(ash::UserSessionStateObserver* observer);
 
+  void AddUserAuthenticatorObserver(ash::UserAuthenticatorObserver* observer);
+  void RemoveUserAuthenticatorObserver(
+      ash::UserAuthenticatorObserver* observer);
+
   void ActiveUserChanged(user_manager::User* active_user) override;
 
   // Returns default IME state for user session.
@@ -287,9 +299,6 @@ class UserSessionManager
   // Check to see if given profile should show EndOfLife Notification
   // and show the message accordingly.
   void CheckEolInfo(Profile* profile);
-
-  // Starts migrating accounts to Chrome OS Account Manager.
-  void StartAccountManagerMigration(Profile* profile);
 
   // Note this could return NULL if not enabled.
   EasyUnlockKeyManager* GetEasyUnlockKeyManager();
@@ -350,11 +359,13 @@ class UserSessionManager
   // Shows U2F notification if necessary.
   void MaybeShowU2FNotification();
 
-  // Shows Help App notification if necessary.
-  void MaybeShowHelpAppNotification(Profile* profile);
+  // Shows Help App release notes notification, if a notification for the help
+  // app has not yet been shown in the current milestone.
+  void MaybeShowHelpAppReleaseNotesNotification(Profile* profile);
 
-  // Shows Help App discover notification if necessary. Must be called after
-  // MaybeShowHelpAppNotification() which constructs a notification controller.
+  // Shows Help App discover notification if the profile meets the criteria and
+  // if a notification for the help app has not yet been shown in the current
+  // milestone.
   void MaybeShowHelpAppDiscoverNotification(Profile* profile);
 
  protected:
@@ -394,7 +405,7 @@ class UserSessionManager
 
   void CreateUserSession(const UserContext& user_context,
                          bool has_auth_cookies);
-  void PreStartSession();
+  void PreStartSession(StartSessionType start_session_type);
 
   // Store any useful UserContext data early on when profile has not been
   // created yet and user services were not yet initialized. Can store
@@ -418,7 +429,6 @@ class UserSessionManager
 
   // Callback for asynchronous profile creation.
   void OnProfileCreated(const UserContext& user_context,
-                        bool is_incognito_profile,
                         Profile* profile,
                         Profile::CreateStatus status);
 
@@ -432,7 +442,6 @@ class UserSessionManager
   // Callback for Profile::CREATE_STATUS_INITIALIZED profile state.
   // Profile is created, extensions and promo resources are initialized.
   void UserProfileInitialized(Profile* profile,
-                              bool is_incognito_profile,
                               const AccountId& account_id);
 
   // Callback to resume profile creation after transferring auth data from
@@ -486,7 +495,7 @@ class UserSessionManager
   void NotifyPendingUserSessionsRestoreFinished();
 
   // Callback invoked when Easy unlock key operations are finished.
-  void OnEasyUnlockKeyOpsFinished(const std::string& user_id, bool success);
+  void OnEasyUnlockKeyOpsFinished(const AccountId& account_id, bool success);
 
   // Callback invoked when child policy is ready and the session for child user
   // can be started.
@@ -588,6 +597,9 @@ class UserSessionManager
   base::ObserverList<ash::UserSessionStateObserver>::Unchecked
       session_state_observer_list_;
 
+  base::ObserverList<ash::UserAuthenticatorObserver>
+      authenticator_observer_list_;
+
   // Set of user_id for those users that we should restore authentication
   // session when notified about online state change.
   SigninSessionRestoreStateSet pending_signin_restore_sessions_;
@@ -651,9 +663,11 @@ class UserSessionManager
   // Mapped to `chrome::AttemptRestart`, except in tests.
   base::RepeatingClosure attempt_restart_closure_;
 
+  base::flat_set<Profile*> user_profile_initialized_called_;
+
   std::unique_ptr<arc::AlwaysOnVpnManager> always_on_vpn_manager_;
 
-  std::unique_ptr<net::SecureDnsManager> secure_dns_manager_;
+  std::unique_ptr<SecureDnsManager> secure_dns_manager_;
 
   std::unique_ptr<ChildPolicyObserver> child_policy_observer_;
 
@@ -662,7 +676,7 @@ class UserSessionManager
   std::unique_ptr<HelpAppNotificationController>
       help_app_notification_controller_;
 
-  std::unique_ptr<TurnSyncOnHelper> turn_sync_on_helper_;
+  std::unique_ptr<AshTurnSyncOnHelper> ash_turn_sync_on_helper_;
 
   bool token_handle_backfill_tried_for_testing_ = false;
 
@@ -670,8 +684,6 @@ class UserSessionManager
       onboarding_user_activity_counter_;
 
   base::WeakPtrFactory<UserSessionManager> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(UserSessionManager);
 };
 
 }  // namespace ash

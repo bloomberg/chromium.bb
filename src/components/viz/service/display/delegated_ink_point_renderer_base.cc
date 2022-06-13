@@ -104,8 +104,7 @@ DelegatedInkPointRendererBase::FilterPoints() {
   for (auto it : trail_data.GetPoints())
     points_to_draw.emplace_back(it.second, it.first, pointer_id_.value());
 
-  DCHECK(points_to_draw.front().point() == metadata_->point() &&
-         points_to_draw.front().timestamp() == metadata_->timestamp());
+  DCHECK(points_to_draw.front().MatchesDelegatedInkMetadata(metadata_.get()));
 
   return points_to_draw;
 }

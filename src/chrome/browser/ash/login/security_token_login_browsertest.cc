@@ -56,10 +56,7 @@
 #include "ui/views/test/widget_test.h"
 #include "ui/views/widget/any_widget_observer.h"
 
-using ash::LoginScreenTestApi;
-
-namespace chromeos {
-
+namespace ash {
 namespace {
 
 // The PIN code that the test certificate provider extension is configured to
@@ -85,7 +82,7 @@ constexpr char kChallengeData[] = "challenge";
 
 // Returns the profile into which login-screen extensions are force-installed.
 Profile* GetOriginalSigninProfile() {
-  return chromeos::ProfileHelper::GetSigninProfile()->GetOriginalProfile();
+  return ProfileHelper::GetSigninProfile()->GetOriginalProfile();
 }
 
 // Custom implementation of the UserDataAuthClient that triggers the
@@ -175,22 +172,22 @@ class AuthFailureWaiter final : public AuthStatusConsumer {
 };
 
 // A helper class that blocks execution until Chrome is locking or terminating.
-class ChromeSessionObserver : public ash::SessionObserver {
+class ChromeSessionObserver : public SessionObserver {
  public:
-  ChromeSessionObserver() { ash::SessionController::Get()->AddObserver(this); }
+  ChromeSessionObserver() { SessionController::Get()->AddObserver(this); }
 
   ChromeSessionObserver(const ChromeSessionObserver&) = delete;
   ChromeSessionObserver& operator=(const ChromeSessionObserver&) = delete;
 
   ~ChromeSessionObserver() override {
-    ash::SessionController::Get()->RemoveObserver(this);
+    SessionController::Get()->RemoveObserver(this);
   }
 
   void WaitForSessionLocked() { session_locked_loop_.Run(); }
 
   void WaitForChromeTerminating() { termination_loop_.Run(); }
 
-  // ash::SessionObserver
+  // SessionObserver
   void OnChromeTerminating() override { termination_loop_.Quit(); }
 
   void OnSessionStateChanged(session_manager::SessionState state) override {
@@ -230,22 +227,20 @@ class SecurityTokenLoginTest : public MixinBasedInProcessBrowserTest,
   void SetUpCommandLine(base::CommandLine* command_line) override {
     MixinBasedInProcessBrowserTest::SetUpCommandLine(command_line);
 
-    command_line->AppendSwitch(chromeos::switches::kLoginManager);
-    command_line->AppendSwitch(chromeos::switches::kForceLoginManagerInTests);
+    command_line->AppendSwitch(switches::kLoginManager);
+    command_line->AppendSwitch(switches::kForceLoginManagerInTests);
 
     // Avoid aborting the user sign-in due to the user policy requests not being
     // faked in the test.
-    command_line->AppendSwitch(
-        chromeos::switches::kAllowFailedPolicyFetchForTest);
+    command_line->AppendSwitch(switches::kAllowFailedPolicyFetchForTest);
   }
 
   void SetUpInProcessBrowserTestFixture() override {
     MixinBasedInProcessBrowserTest::SetUpInProcessBrowserTestFixture();
     // Init the user policy provider.
-    EXPECT_CALL(policy_provider_, IsInitializationComplete(testing::_))
-        .WillRepeatedly(testing::Return(true));
-    EXPECT_CALL(policy_provider_, IsFirstPolicyLoadComplete(testing::_))
-        .WillRepeatedly(testing::Return(true));
+    policy_provider_.SetDefaultReturns(
+        /*is_initialization_complete_return=*/true,
+        /*is_first_policy_load_complete_return=*/true);
     policy_provider_.SetAutoRefresh();
     policy::BrowserPolicyConnector::SetPolicyProviderForTesting(
         &policy_provider_);
@@ -363,7 +358,7 @@ class SecurityTokenLoginTest : public MixinBasedInProcessBrowserTest,
   LoginManagerMixin login_manager_mixin_{&mixin_host_};
   LocalStateMixin local_state_mixin_{&mixin_host_, this};
   ExtensionForceInstallMixin extension_force_install_mixin_{&mixin_host_};
-  policy::MockConfigurationPolicyProvider policy_provider_;
+  testing::NiceMock<policy::MockConfigurationPolicyProvider> policy_provider_;
 
   std::unique_ptr<TestCertificateProviderExtension>
       certificate_provider_extension_;
@@ -509,7 +504,7 @@ class SecurityTokenSessionBehaviorTest : public SecurityTokenLoginTest {
     StartLoginAndWaitForPinDialog();
     LoginScreenTestApi::SubmitPinRequestWidget(kCorrectPin);
     WaitForActiveSession();
-    profile_ = chromeos::ProfileHelper::Get()->GetProfileByAccountId(
+    profile_ = ProfileHelper::Get()->GetProfileByAccountId(
         GetChallengeResponseAccountId());
   }
 
@@ -628,15 +623,12 @@ IN_PROC_BROWSER_TEST_F(SecurityTokenSessionBehaviorTest, NotificationSeconds) {
   SimulateSecurityTokenRemoval();
 
   views::Widget* notification = notification_waiter.WaitIfNeededAndGet();
-  views::test::WidgetClosingObserver notification_closing_observer(
+  views::test::WidgetDestroyedWaiter notification_closing_observer(
       notification);
   notification_closing_observer.Wait();
 
   // After the notification expires, the device gets locked.
   chrome_session_observer.WaitForSessionLocked();
-
-  // The notification no longer exists.
-  EXPECT_TRUE(notification_closing_observer.widget_closed());
 }
 
-}  // namespace chromeos
+}  // namespace ash

@@ -5,7 +5,6 @@
 package org.chromium.components.browser_ui.widget.highlight;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.ColorFilter;
 import android.graphics.Paint;
@@ -25,6 +24,7 @@ import androidx.core.view.animation.PathInterpolatorCompat;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.MathUtils;
+import org.chromium.components.browser_ui.styles.SemanticColorUtils;
 import org.chromium.components.browser_ui.widget.R;
 import org.chromium.components.browser_ui.widget.animation.Interpolators;
 
@@ -136,11 +136,13 @@ public class PulseDrawable extends Drawable implements Animatable {
      * @param context The {@link Context} under which the drawable is created.
      * @param cornerRadius The corner radius in pixels of the highlight rectangle, 0 may be passed
      *         if the rectangle should not be rounded.
+     * @param highlightExtension How far in pixels the highlight should be extended past the bounds
+     *         of the view. 0 should be passed if there should be no extension.
      * @param pulseEndAuthority The {@link PulseEndAuthority} associated with this drawable.
      * @return A new {@link PulseDrawable} instance.
      */
-    public static PulseDrawable createRoundedRectangle(
-            Context context, @Px int cornerRadius, PulseEndAuthority pulseEndAuthority) {
+    public static PulseDrawable createRoundedRectangle(Context context, @Px int cornerRadius,
+            @Px int highlightExtension, PulseEndAuthority pulseEndAuthority) {
         Painter painter = new Painter() {
             @Override
             public void modifyDrawable(PulseDrawable drawable, float interpolation) {
@@ -150,8 +152,13 @@ public class PulseDrawable extends Drawable implements Animatable {
             @Override
             public void draw(
                     PulseDrawable drawable, Paint paint, Canvas canvas, float interpolation) {
-                canvas.drawRoundRect(
-                        new RectF(drawable.getBounds()), cornerRadius, cornerRadius, paint);
+                Rect bounds = drawable.getBounds();
+                if (highlightExtension != 0) {
+                    bounds = new Rect(bounds.left - highlightExtension,
+                            bounds.top - highlightExtension, bounds.right + highlightExtension,
+                            bounds.bottom + highlightExtension);
+                }
+                canvas.drawRoundRect(new RectF(bounds), cornerRadius, cornerRadius, paint);
             }
         };
 
@@ -165,10 +172,14 @@ public class PulseDrawable extends Drawable implements Animatable {
      * {@link PulseEndAuthority}).
      * @param context The {@link Context} under which the drawable is created.
      * @param cornerRadius The corner radius in pixels of the highlight rectangle.
+     * @param highlightExtension How far in pixels the highlight should be extended past the bounds
+     *         of the view. 0 should be passed if there should be no extension.
      * @return A new {@link PulseDrawable} instance.
      */
-    public static PulseDrawable createRoundedRectangle(Context context, @Px int cornerRadius) {
-        return createRoundedRectangle(context, cornerRadius, new EndlessPulser());
+    public static PulseDrawable createRoundedRectangle(
+            Context context, @Px int cornerRadius, @Px int highlightExtension) {
+        return createRoundedRectangle(
+                context, cornerRadius, highlightExtension, new EndlessPulser());
     }
 
     /**
@@ -179,7 +190,7 @@ public class PulseDrawable extends Drawable implements Animatable {
      * @return A new {@link PulseDrawable} instance.
      */
     public static PulseDrawable createRectangle(Context context) {
-        return createRoundedRectangle(context, 0);
+        return createRoundedRectangle(context, 0, /*highlightExtension=*/0);
     }
 
     /**
@@ -279,7 +290,7 @@ public class PulseDrawable extends Drawable implements Animatable {
     private PulseDrawable(Context context, Interpolator interpolator, Painter painter,
             PulseEndAuthority pulseEndAuthority) {
         this(new PulseState(interpolator, painter), pulseEndAuthority);
-        setUseLightPulseColor(context.getResources(), false);
+        setUseLightPulseColor(context, false);
     }
 
     private PulseDrawable(PulseState state, PulseEndAuthority pulseEndAuthority) {
@@ -292,14 +303,14 @@ public class PulseDrawable extends Drawable implements Animatable {
     }
 
     /**
-     * @param resources The {@link Resources} for accessing colors.
+     * @param context The {@link Context} for accessing colors.
      * @param useLightPulseColor Whether or not to use a light or dark color for the pulse.
      * */
-    public void setUseLightPulseColor(Resources resources, boolean useLightPulseColor) {
+    public void setUseLightPulseColor(Context context, boolean useLightPulseColor) {
         @ColorInt
-        int color = ApiCompatibilityUtils.getColor(resources,
-                useLightPulseColor ? R.color.default_icon_color_blue_light
-                                   : R.color.default_icon_color_blue);
+        int color = useLightPulseColor ? ApiCompatibilityUtils.getColor(
+                            context.getResources(), R.color.default_icon_color_blue_light)
+                                       : SemanticColorUtils.getDefaultIconColorAccent1(context);
         if (mState.color == color) return;
 
         int alpha = getAlpha();

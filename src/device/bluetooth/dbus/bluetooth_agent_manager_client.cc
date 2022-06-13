@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/check.h"
-#include "base/macros.h"
 #include "base/observer_list.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -25,6 +24,11 @@ class BluetoothAgentManagerClientImpl : public BluetoothAgentManagerClient,
                                         public dbus::ObjectManager::Interface {
  public:
   BluetoothAgentManagerClientImpl() {}
+
+  BluetoothAgentManagerClientImpl(const BluetoothAgentManagerClientImpl&) =
+      delete;
+  BluetoothAgentManagerClientImpl& operator=(
+      const BluetoothAgentManagerClientImpl&) = delete;
 
   ~BluetoothAgentManagerClientImpl() override = default;
 
@@ -180,8 +184,6 @@ class BluetoothAgentManagerClientImpl : public BluetoothAgentManagerClient,
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
   base::WeakPtrFactory<BluetoothAgentManagerClientImpl> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(BluetoothAgentManagerClientImpl);
 };
 
 BluetoothAgentManagerClient::BluetoothAgentManagerClient() = default;

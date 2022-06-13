@@ -10,11 +10,17 @@
 #include "ash/assistant/model/assistant_query.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_ids.h"
+#include "ash/assistant/ui/colors/assistant_colors.h"
+#include "ash/assistant/ui/colors/assistant_colors_util.h"
+#include "ash/constants/ash_features.h"
+#include "ash/public/cpp/style/color_provider.h"
+#include "ash/public/cpp/style/scoped_light_mode_as_default.h"
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/escape.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/chromeos/styles/cros_styles.h"
 #include "ui/views/accessibility/view_accessibility.h"
-#include "ui/views/background.h"
 #include "ui/views/layout/flex_layout.h"
 
 namespace ash {
@@ -28,14 +34,12 @@ constexpr int kHeightDip = 32;
 
 // Helpers ---------------------------------------------------------------------
 
-std::unique_ptr<views::Label> CreateLabel(SkColor color) {
+std::unique_ptr<views::Label> CreateLabel() {
   auto label = std::make_unique<views::Label>();
   label->SetAutoColorReadabilityEnabled(false);
   label->SetLineHeight(kLineHeightDip);
-  label->SetBackground(views::CreateSolidBackground(SK_ColorWHITE));
   label->SetFontList(
       assistant::ui::GetDefaultFontList().DeriveWithSizeDelta(2));
-  label->SetEnabledColor(color);
   label->SetElideBehavior(gfx::ElideBehavior::ELIDE_HEAD);
   return label;
 }
@@ -64,6 +68,19 @@ int AssistantQueryView::GetHeightForWidth(int width) const {
   return kHeightDip;
 }
 
+void AssistantQueryView::OnThemeChanged() {
+  views::View::OnThemeChanged();
+
+  ScopedAssistantLightModeAsDefault scoped_light_mode_as_default;
+
+  high_confidence_label_->SetEnabledColor(
+      ColorProvider::Get()->GetContentLayerColor(
+          ColorProvider::ContentLayerType::kTextColorPrimary));
+  low_confidence_label_->SetEnabledColor(
+      ColorProvider::Get()->GetContentLayerColor(
+          ColorProvider::ContentLayerType::kTextColorSecondary));
+}
+
 void AssistantQueryView::InitLayout() {
   views::FlexLayout* layout_manager =
       SetLayoutManager(std::make_unique<views::FlexLayout>());
@@ -73,15 +90,16 @@ void AssistantQueryView::InitLayout() {
   layout_manager->SetCrossAxisAlignment(views::LayoutAlignment::kCenter);
 
   // Labels
-  high_confidence_label_ = AddChildView(CreateLabel(kTextColorPrimary));
-
+  high_confidence_label_ = AddChildView(CreateLabel());
+  high_confidence_label_->SetID(AssistantViewID::kHighConfidenceLabel);
   high_confidence_label_->SetProperty(
       views::kFlexBehaviorKey,
       views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
                                views::MaximumFlexSizeRule::kPreferred)
           .WithOrder(2));
 
-  low_confidence_label_ = AddChildView(CreateLabel(kTextColorSecondary));
+  low_confidence_label_ = AddChildView(CreateLabel());
+  low_confidence_label_->SetID(AssistantViewID::kLowConfidenceLabel);
   low_confidence_label_->SetProperty(
       views::kFlexBehaviorKey,
       views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,

@@ -5,7 +5,6 @@
 #include "headless/lib/browser/headless_request_context_manager.h"
 
 #include "base/bind.h"
-#include "base/logging.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -26,7 +25,7 @@
 #include "services/network/url_request_context_builder_mojo.h"
 
 #if defined(HEADLESS_USE_PREFS)
-#include "components/os_crypt/os_crypt.h"
+#include "components/os_crypt/os_crypt.h"  // nogncheck
 #include "content/public/common/network_service_util.h"
 #endif
 
@@ -121,6 +120,10 @@ class HeadlessProxyConfigMonitor
                                   base::Unretained(this)));
   }
 
+  HeadlessProxyConfigMonitor(const HeadlessProxyConfigMonitor&) = delete;
+  HeadlessProxyConfigMonitor& operator=(const HeadlessProxyConfigMonitor&) =
+      delete;
+
   ~HeadlessProxyConfigMonitor() override {
     DCHECK(task_runner_->RunsTasksInCurrentSequence());
     proxy_config_service_->RemoveObserver(this);
@@ -174,8 +177,6 @@ class HeadlessProxyConfigMonitor
   mojo::Receiver<::network::mojom::ProxyConfigPollerClient> poller_receiver_{
       this};
   mojo::Remote<::network::mojom::ProxyConfigClient> proxy_config_client_;
-
-  DISALLOW_COPY_AND_ASSIGN(HeadlessProxyConfigMonitor);
 };
 
 // static
@@ -188,19 +189,9 @@ HeadlessRequestContextManager::CreateSystemContext(
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   auto auth_params = ::network::mojom::HttpAuthDynamicParams::New();
 
-  // Support both current and deprecated switches for now, with the current
-  // switch value overriding the deprecated one. Expect the deprecated switch
-  // support to be removed soon, see crbug/1142696.
   if (command_line->HasSwitch(switches::kAuthServerAllowlist)) {
     auth_params->server_allowlist =
         command_line->GetSwitchValueASCII(switches::kAuthServerAllowlist);
-  } else if (command_line->HasSwitch(
-                 switches::kAuthServerAllowlistDeprecated)) {
-    LOG(ERROR) << "'" << switches::kAuthServerAllowlistDeprecated
-               << "' is deprecated and will be removed soon. Please use '"
-               << switches::kAuthServerAllowlist << "' instead.";
-    auth_params->server_allowlist = command_line->GetSwitchValueASCII(
-        switches::kAuthServerAllowlistDeprecated);
   }
 
   auto* network_service = content::GetNetworkService();
@@ -215,7 +206,7 @@ HeadlessRequestContextManager::CreateSystemContext(
       network_context_params.get(), cert_verifier_creation_params.get());
   network_context_params->cert_verifier_params =
       content::GetCertVerifierParams(std::move(cert_verifier_creation_params));
-  network_service->CreateNetworkContext(
+  content::CreateNetworkContextInNetworkService(
       manager->system_context_.InitWithNewPipeAndPassReceiver(),
       std::move(network_context_params));
 
@@ -286,8 +277,11 @@ void HeadlessRequestContextManager::ConfigureNetworkContextParamsInternal(
 
   if (!user_data_path_.empty()) {
     context_params->enable_encrypted_cookies = cookie_encryption_enabled_;
-    context_params->cookie_path =
-        user_data_path_.Append(FILE_PATH_LITERAL("Cookies"));
+    context_params->file_paths =
+        ::network::mojom::NetworkContextFilePaths::New();
+    context_params->file_paths->data_path = user_data_path_;
+    context_params->file_paths->cookie_database_name =
+        base::FilePath(FILE_PATH_LITERAL("Cookies"));
   }
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kDiskCacheDir)) {

@@ -19,6 +19,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import org.chromium.base.FeatureList;
 import org.chromium.base.test.BaseActivityTestRule;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -35,6 +36,7 @@ import org.chromium.ui.test.util.DummyUiActivity;
 public class LongScreenshotsMediatorTest {
     private Activity mActivity;
     private Bitmap mBitmap;
+    private FeatureList.TestValues mTestValues;
     private LongScreenshotsMediator mMediator;
 
     @Rule
@@ -57,6 +59,11 @@ public class LongScreenshotsMediatorTest {
         MockitoAnnotations.initMocks(this);
 
         mBitmap = Bitmap.createBitmap(800, 600, Bitmap.Config.ARGB_8888);
+
+        mTestValues = new FeatureList.TestValues();
+        mTestValues.addFieldTrialParamOverride(
+                ChromeFeatureList.CHROME_SHARE_LONG_SCREENSHOT, "autoscroll", "0");
+        FeatureList.setTestValues(mTestValues);
 
         // Instantiate the object under test.
         mMediator = new LongScreenshotsMediator(mActivity, mManager);

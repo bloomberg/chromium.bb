@@ -202,9 +202,12 @@ Macro* Declarations::DeclareMacro(
     base::Optional<std::string> external_assembler_name,
     const Signature& signature, base::Optional<Statement*> body,
     base::Optional<std::string> op, bool is_user_defined) {
-  if (TryLookupMacro(name, signature.GetExplicitTypes())) {
-    ReportError("cannot redeclare macro ", name,
-                " with identical explicit parameters");
+  if (Macro* existing_macro =
+          TryLookupMacro(name, signature.GetExplicitTypes())) {
+    if (existing_macro->ParentScope() == CurrentScope::Get()) {
+      ReportError("cannot redeclare macro ", name,
+                  " with identical explicit parameters");
+    }
   }
   Macro* macro;
   if (external_assembler_name) {
@@ -277,11 +280,12 @@ RuntimeFunction* Declarations::DeclareRuntimeFunction(
                            new RuntimeFunction(name, signature))));
 }
 
-void Declarations::DeclareExternConstant(Identifier* name, const Type* type,
-                                         std::string value) {
+ExternConstant* Declarations::DeclareExternConstant(Identifier* name,
+                                                    const Type* type,
+                                                    std::string value) {
   CheckAlreadyDeclared<Value>(name->value, "constant");
-  Declare(name->value, std::unique_ptr<ExternConstant>(
-                           new ExternConstant(name, type, value)));
+  return Declare(name->value, std::unique_ptr<ExternConstant>(
+                                  new ExternConstant(name, type, value)));
 }
 
 NamespaceConstant* Declarations::DeclareNamespaceConstant(Identifier* name,

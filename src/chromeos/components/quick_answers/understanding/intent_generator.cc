@@ -6,25 +6,27 @@
 
 #include <map>
 
-#include "ash/constants/ash_features.h"
 #include "base/i18n/case_conversion.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chromeos/components/quick_answers/public/cpp/quick_answers_state.h"
 #include "chromeos/components/quick_answers/quick_answers_model.h"
 #include "chromeos/components/quick_answers/utils/quick_answers_utils.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/services/machine_learning/public/cpp/service_connection.h"
 #include "chromeos/services/machine_learning/public/mojom/machine_learning_service.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 
-namespace chromeos {
+namespace ash {
 namespace quick_answers {
 namespace {
 
-using chromeos::machine_learning::mojom::LoadModelResult;
-using machine_learning::mojom::TextAnnotationPtr;
-using machine_learning::mojom::TextAnnotationRequestPtr;
-using machine_learning::mojom::TextClassifier;
+using ::chromeos::machine_learning::mojom::LoadModelResult;
+using ::chromeos::machine_learning::mojom::TextAnnotationPtr;
+using ::chromeos::machine_learning::mojom::TextAnnotationRequest;
+using ::chromeos::machine_learning::mojom::TextAnnotationRequestPtr;
+using ::chromeos::machine_learning::mojom::TextClassifier;
 
 // TODO(llin): Finalize on the threshold based on user feedback.
 constexpr int kUnitConversionIntentAndSelectionLengthDiffThreshold = 5;
@@ -135,8 +137,7 @@ IntentGenerator::~IntentGenerator() {
 }
 
 void IntentGenerator::GenerateIntent(const QuickAnswersRequest& request) {
-  if (features::ShouldUseQuickAnswersTextAnnotator() ||
-      use_text_annotator_for_testing_) {
+  if (ash::QuickAnswersState::Get()->ShouldUseQuickAnswersTextAnnotator()) {
     // Load text classifier.
     chromeos::machine_learning::ServiceConnection::GetInstance()
         ->GetMachineLearningService()
@@ -151,10 +152,6 @@ void IntentGenerator::GenerateIntent(const QuickAnswersRequest& request) {
       .Run(IntentInfo(request.selected_text, IntentType::kUnknown));
 }
 
-void IntentGenerator::UseTextAnnotatorForTesting() {
-  use_text_annotator_for_testing_ = true;
-}
-
 void IntentGenerator::LoadModelCallback(const QuickAnswersRequest& request,
                                         LoadModelResult result) {
   if (result != LoadModelResult::OK) {
@@ -166,7 +163,7 @@ void IntentGenerator::LoadModelCallback(const QuickAnswersRequest& request,
 
   if (text_classifier_) {
     TextAnnotationRequestPtr text_annotation_request =
-        machine_learning::mojom::TextAnnotationRequest::New();
+        TextAnnotationRequest::New();
 
     // TODO(b/159664194): There is a issue with text classifier that some
     // capitalized words are not annotated properly. Convert the text to lower
@@ -193,6 +190,17 @@ void IntentGenerator::AnnotationCallback(
     auto intent_type_map = GetIntentTypeMap();
     auto it = intent_type_map.find(type);
     if (it != intent_type_map.end()) {
+      // Skip the entity if the corresponding intent type is disabled.
+      bool definition_disabled =
+          !ash::QuickAnswersState::Get()->definition_enabled();
+      bool unit_conversion_disabled =
+          !ash::QuickAnswersState::Get()->unit_conversion_enabled();
+      if ((it->second == IntentType::kDictionary && definition_disabled) ||
+          (it->second == IntentType::kUnit && unit_conversion_disabled)) {
+        // Fallback to language detection for generating translation intent.
+        MaybeGenerateTranslationIntent(request);
+        return;
+      }
       // Skip the entity for definition annonation.
       if (it->second == IntentType::kDictionary &&
           ShouldSkipDefinition(request.selected_text)) {
@@ -214,7 +222,8 @@ void IntentGenerator::MaybeGenerateTranslationIntent(
     const QuickAnswersRequest& request) {
   DCHECK(complete_callback_);
 
-  if (!features::IsQuickAnswersTranslationEnabled()) {
+  if (!ash::QuickAnswersState::Get()->translation_enabled() ||
+      chromeos::features::IsQuickAnswersV2TranslationDisabled()) {
     std::move(complete_callback_)
         .Run(IntentInfo(request.selected_text, IntentType::kUnknown));
     return;
@@ -262,4 +271,4 @@ void IntentGenerator::LanguageDetectorCallback(
 }
 
 }  // namespace quick_answers
-}  // namespace chromeos
+}  // namespace ash

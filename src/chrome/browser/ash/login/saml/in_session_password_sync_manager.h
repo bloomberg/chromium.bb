@@ -8,13 +8,17 @@
 #include <memory>
 #include <string>
 
-#include "base/observer_list.h"
+#include "ash/components/proximity_auth/screenlock_bridge.h"
 #include "base/time/clock.h"
 #include "chrome/browser/ash/login/saml/password_sync_token_fetcher.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/in_session_password_change/lock_screen_reauth_dialogs.h"
-#include "chromeos/components/proximity_auth/screenlock_bridge.h"
 #include "chromeos/login/auth/auth_status_consumer.h"
+// TODO(https://crbug.com/1164001): move to forward declaration.
+#include "chromeos/login/auth/cryptohome_authenticator.h"
+// TODO(https://crbug.com/1164001): move to forward declaration.
+#include "base/callback_forward.h"
+#include "chromeos/login/auth/extended_authenticator.h"
 #include "chromeos/login/auth/user_context.h"
 #include "components/account_id/account_id.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -25,11 +29,9 @@ namespace user_manager {
 class User;
 }
 
-namespace chromeos {
-class CryptohomeAuthenticator;
-class ExtendedAuthenticator;
+namespace ash {
 
-using PasswordChangedCallback = base::RepeatingClosure;
+using PasswordChangedCallback = ::base::RepeatingClosure;
 
 // Manages SAML password sync for multiple customer devices. Handles online
 // re-auth requests triggered by online signin policy or by checking validity
@@ -113,6 +115,19 @@ class InSessionPasswordSyncManager
   // Reset lockscreen re-authentication dialog.
   void ResetDialog();
 
+  // Get lockscreen reauth dialog width.
+  int GetDialogWidth();
+
+  // Check if reauth dialog is loaded and ready for testing.
+  bool IsReauthDialogLoadedForTesting(base::OnceClosure callback);
+
+  // Notify test that the reauth dialog is ready for testing.
+  void OnReauthDialogReadyForTesting();
+
+  LockScreenStartReauthDialog* get_reauth_dialog_for_testing() {
+    return lock_screen_start_reauth_dialog_.get();
+  }
+
  private:
   void UpdateOnlineAuth();
   void OnCookiesTransfered();
@@ -138,12 +153,22 @@ class InSessionPasswordSyncManager
 
   PasswordChangedCallback password_changed_callback_;
 
+  // A callback that is used to notify test that the reauth dialog is loaded.
+  base::OnceClosure on_dialog_loaded_callback_for_testing_;
+  bool is_dialog_loaded_for_testing_ = false;
+
   friend class InSessionPasswordSyncManagerTest;
   friend class InSessionPasswordSyncManagerFactory;
 
   base::WeakPtrFactory<InSessionPasswordSyncManager> weak_factory_{this};
 };
 
-}  // namespace chromeos
+}  // namespace ash
+
+// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
+// source migration is finished.
+namespace chromeos {
+using ::ash::InSessionPasswordSyncManager;
+}
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_SAML_IN_SESSION_PASSWORD_SYNC_MANAGER_H_

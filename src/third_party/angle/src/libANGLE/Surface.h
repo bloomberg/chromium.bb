@@ -49,6 +49,8 @@ struct SurfaceState final : private angle::NonCopyable
     ~SurfaceState();
 
     bool isRobustResourceInitEnabled() const;
+    bool hasProtectedContent() const;
+    EGLint getPreferredSwapInterval() const;
 
     EGLLabelKHR label;
     const egl::Config *config;
@@ -132,6 +134,23 @@ class Surface : public LabeledObject, public gl::FramebufferAttachmentObject
     EGLint getHorizontalResolution() const;
     EGLint getVerticalResolution() const;
     EGLenum getMultisampleResolve() const;
+    bool hasProtectedContent() const override;
+
+    // For lock surface buffer
+    EGLint getBitmapPitch() const;
+    EGLint getBitmapOrigin() const;
+    EGLint getRedOffset() const;
+    EGLint getGreenOffset() const;
+    EGLint getBlueOffset() const;
+    EGLint getAlphaOffset() const;
+    EGLint getLuminanceOffset() const;
+    EGLint getBitmapPixelSize() const;
+    EGLAttribKHR getBitmapPointer() const;
+    egl::Error lockSurfaceKHR(const egl::Display *display, const AttributeMap &attributes);
+    egl::Error unlockSurfaceKHR(const egl::Display *display);
+
+    bool isLocked() const;
+    bool isCurrentOnAnyContext() const { return mIsCurrentOnAnyContext; }
 
     gl::Texture *getBoundTexture() const { return mTexture; }
 
@@ -150,10 +169,6 @@ class Surface : public LabeledObject, public gl::FramebufferAttachmentObject
     void onDetach(const gl::Context *context, rx::Serial framebufferSerial) override {}
     GLuint getId() const override;
 
-    bool flexibleSurfaceCompatibilityRequested() const
-    {
-        return mFlexibleSurfaceCompatibilityRequested;
-    }
     EGLint getOrientation() const { return mOrientation; }
 
     bool directComposition() const { return mState.directComposition; }
@@ -188,10 +203,13 @@ class Surface : public LabeledObject, public gl::FramebufferAttachmentObject
 
     Error getBufferAge(const gl::Context *context, EGLint *age) const;
 
+    Error setRenderBuffer(EGLint renderBuffer);
+
   protected:
     Surface(EGLint surfaceType,
             const egl::Config *config,
             const AttributeMap &attributes,
+            bool forceRobustResourceInit,
             EGLenum buftype = EGL_NONE);
     ~Surface() override;
     rx::FramebufferAttachmentObjectImpl *getAttachmentImpl() const override;
@@ -211,7 +229,6 @@ class Surface : public LabeledObject, public gl::FramebufferAttachmentObject
     EGLenum mBuftype;
 
     bool mPostSubBufferRequested;
-    bool mFlexibleSurfaceCompatibilityRequested;
 
     bool mLargestPbuffer;
     EGLenum mGLColorspace;
@@ -247,6 +264,10 @@ class Surface : public LabeledObject, public gl::FramebufferAttachmentObject
 
     gl::Offset mTextureOffset;
 
+    bool mIsCurrentOnAnyContext;  // The surface is current to a context/client API
+    uint8_t *mLockBufferPtr;      // Memory owned by backend.
+    EGLint mLockBufferPitch;
+
   private:
     Error destroyImpl(const Display *display);
 
@@ -266,7 +287,8 @@ class WindowSurface final : public Surface
     WindowSurface(rx::EGLImplFactory *implFactory,
                   const Config *config,
                   EGLNativeWindowType window,
-                  const AttributeMap &attribs);
+                  const AttributeMap &attribs,
+                  bool robustResourceInit);
     ~WindowSurface() override;
 };
 
@@ -275,12 +297,14 @@ class PbufferSurface final : public Surface
   public:
     PbufferSurface(rx::EGLImplFactory *implFactory,
                    const Config *config,
-                   const AttributeMap &attribs);
+                   const AttributeMap &attribs,
+                   bool robustResourceInit);
     PbufferSurface(rx::EGLImplFactory *implFactory,
                    const Config *config,
                    EGLenum buftype,
                    EGLClientBuffer clientBuffer,
-                   const AttributeMap &attribs);
+                   const AttributeMap &attribs,
+                   bool robustResourceInit);
 
   protected:
     ~PbufferSurface() override;
@@ -292,7 +316,8 @@ class PixmapSurface final : public Surface
     PixmapSurface(rx::EGLImplFactory *implFactory,
                   const Config *config,
                   NativePixmapType nativePixmap,
-                  const AttributeMap &attribs);
+                  const AttributeMap &attribs,
+                  bool robustResourceInit);
 
   protected:
     ~PixmapSurface() override;

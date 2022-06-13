@@ -1,16 +1,7 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 #include "lib/jxl/dec_patch_dictionary.h"
 
@@ -44,7 +35,7 @@
 
 namespace jxl {
 
-constexpr int kMaxPatches = 1 << 24;
+constexpr size_t kMaxPatches = 1 << 24;
 
 Status PatchDictionary::Decode(BitReader* br, size_t xsize, size_t ysize,
                                bool* uses_extra_channels) {
@@ -65,6 +56,9 @@ Status PatchDictionary::Decode(BitReader* br, size_t xsize, size_t ysize,
   if (num_ref_patch > kMaxPatches) {
     return JXL_FAILURE("Too many patches in dictionary");
   }
+
+  size_t total_patches = 0;
+  size_t next_size = 1;
 
   for (size_t id = 0; id < num_ref_patch; id++) {
     PatchReferencePosition ref_pos;
@@ -89,10 +83,15 @@ Status PatchDictionary::Decode(BitReader* br, size_t xsize, size_t ysize,
       return JXL_FAILURE("Invalid position specified in reference frame");
     }
     size_t id_count = read_num(kPatchCountContext) + 1;
-    if (id_count > kMaxPatches) {
+    total_patches += id_count;
+    if (total_patches > kMaxPatches) {
       return JXL_FAILURE("Too many patches in dictionary");
     }
-    positions_.reserve(positions_.size() + id_count);
+    if (next_size < total_patches) {
+      next_size *= 2;
+      next_size = std::min<size_t>(next_size, kMaxPatches);
+    }
+    positions_.reserve(next_size);
     for (size_t i = 0; i < id_count; i++) {
       PatchPosition pos;
       pos.ref_pos = ref_pos;
@@ -150,6 +149,7 @@ Status PatchDictionary::Decode(BitReader* br, size_t xsize, size_t ysize,
       positions_.push_back(std::move(pos));
     }
   }
+  positions_.shrink_to_fit();
 
   if (!decoder.CheckANSFinalState()) {
     return JXL_FAILURE("ANS checksum failure.");
@@ -160,6 +160,14 @@ Status PatchDictionary::Decode(BitReader* br, size_t xsize, size_t ysize,
 
   ComputePatchCache();
   return true;
+}
+
+int PatchDictionary::GetReferences() const {
+  int result = 0;
+  for (size_t i = 0; i < positions_.size(); ++i) {
+    result |= (1 << static_cast<int>(positions_[i].ref_pos.ref));
+  }
+  return result;
 }
 
 void PatchDictionary::ComputePatchCache() {
@@ -193,6 +201,7 @@ Status PatchDictionary::AddTo(Image3F* opsin, const Rect& opsin_rect,
                               float* const* extra_channels,
                               const Rect& image_rect) const {
   JXL_CHECK(SameSize(opsin_rect, image_rect));
+  if (patch_starts_.empty()) return true;
   size_t num_ec = shared_->metadata->m.num_extra_channels;
   std::vector<const float*> fg_ptrs(3 + num_ec);
   std::vector<float*> bg_ptrs(3 + num_ec);

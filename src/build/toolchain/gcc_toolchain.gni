@@ -5,6 +5,7 @@
 import("//build/config/clang/clang.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/coverage/coverage.gni")
+import("//build/config/rust.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/v8_target_cpu.gni")
 import("//build/toolchain/cc_wrapper.gni")
@@ -25,8 +26,7 @@ declare_args() {
   # builds. Requires debug info.
   enable_resource_allowlist_generation =
       is_official_build &&
-      # Don't enable for Android-on-Chrome OS so that they can build with
-      # symbol_level=0 without this failing (crbug.com/891164).
+      # Don't enable for Android-on-Chrome OS.
       (target_os == "android" || target_os == "win")
 }
 
@@ -38,8 +38,6 @@ if ((is_linux || is_chromeos) && target_os == "android") {
 
 # Ensure enable_resource_allowlist_generation is enabled only when it will work.
 if (enable_resource_allowlist_generation) {
-  assert(symbol_level >= 1,
-         "enable_resource_allowlist_generation=true requires symbol_level >= 1")
   assert(
       !strip_debug_info,
       "enable_resource_allowlist_generation=true requires strip_debug_info=false")
@@ -146,16 +144,21 @@ template("gcc_toolchain") {
       if (!defined(invoker_toolchain_args.v8_current_cpu)) {
         v8_current_cpu = invoker_toolchain_args.current_cpu
       }
+
+      # Whether rustc can successfully link binaries. (If not, rust code
+      # can still be linked by our C++ toolchain). See
+      # //build/config/rust.gni
+      rustc_can_link = current_os != "android"
     }
 
-    # When the invoker has explicitly overridden user_rbe, use_goma or
+    # When the invoker has explicitly overridden use_remoteexec, use_goma or
     # cc_wrapper in the toolchain args, use those values, otherwise default
     # to the global one.  This works because the only reasonable override
     # that toolchains might supply for these values are to force-disable them.
-    if (defined(toolchain_args.use_rbe)) {
-      toolchain_uses_rbe = toolchain_args.use_rbe
+    if (defined(toolchain_args.use_remoteexec)) {
+      toolchain_uses_remoteexec = toolchain_args.use_remoteexec
     } else {
-      toolchain_uses_rbe = use_rbe
+      toolchain_uses_remoteexec = use_remoteexec
     }
     if (defined(toolchain_args.use_goma)) {
       toolchain_uses_goma = toolchain_args.use_goma
@@ -175,10 +178,10 @@ template("gcc_toolchain") {
     } else {
       toolchain_cc_wrapper = cc_wrapper
     }
-    assert(!(toolchain_uses_rbe && toolchain_uses_goma),
-           "Goma and RBE can't be used together.")
-    assert(!(toolchain_cc_wrapper != "" && toolchain_uses_rbe),
-           "RBE and cc_wrapper can't be used together.")
+    assert(!(toolchain_uses_remoteexec && toolchain_uses_goma),
+           "Goma and re-client can't be used together.")
+    assert(!(toolchain_cc_wrapper != "" && toolchain_uses_remoteexec),
+           "re-client and cc_wrapper can't be used together.")
     assert(!(toolchain_cc_wrapper != "" && toolchain_uses_goma),
            "Goma and cc_wrapper can't be used together.")
 
@@ -190,32 +193,38 @@ template("gcc_toolchain") {
     # wrapper will have picked up gomacc via cmd-line arg. So need to prepend
     # gomacc in that case.
     goma_path = "$goma_dir/gomacc"
-    if (toolchain_uses_rbe) {
+    if (toolchain_uses_remoteexec &&
+        (!defined(invoker_toolchain_args.needs_gomacc_path_arg) ||
+         !invoker_toolchain_args.needs_gomacc_path_arg)) {
       if (defined(toolchain_args.rbe_cc_cfg_file)) {
         toolchain_rbe_cc_cfg_file = toolchain_args.rbe_cc_cfg_file
       } else {
         toolchain_rbe_cc_cfg_file = rbe_cc_cfg_file
       }
 
-      # C/C++ (clang) rewrapper prefix to use when use_rbe is true.
+      # C/C++ (clang) rewrapper prefix to use when use_remoteexec is true.
       compiler_prefix = "${rbe_bin_dir}/rewrapper -cfg=${toolchain_rbe_cc_cfg_file} -exec_root=${rbe_exec_root} "
     } else if (toolchain_uses_goma &&
                (!defined(invoker_toolchain_args.needs_gomacc_path_arg) ||
                 !invoker_toolchain_args.needs_gomacc_path_arg)) {
       compiler_prefix = "${goma_path} "
+      if (use_goma_rust) {
+        rust_compiler_prefix = compiler_prefix
+      }
     } else {
       compiler_prefix = "${toolchain_cc_wrapper} "
     }
+
     if (use_goma_thin_lto && toolchain_uses_goma && use_thin_lto) {
       # goma_ld.py uses autoninja in an attempt to set a reasonable
       # number of jobs, but this results in too low a value on
       # Chrome OS builders. So we pass in an explicit value.
-      goma_ld =
+      link_prefix =
           "$python_path " +
           rebase_path("//tools/clang/scripts/goma_ld.py", root_build_dir) +
           " --gomacc ${goma_path} --jobs 200 -- "
     } else {
-      goma_ld = ""
+      link_prefix = ""
       not_needed([ "goma_path" ])
     }
 
@@ -250,7 +259,8 @@ template("gcc_toolchain") {
 
       # The wrapper needs to know what OS we target because it uses that to
       # select a list of files that should not be instrumented.
-      _coverage_wrapper = _coverage_wrapper + " --target-os=" + target_os
+      _coverage_wrapper = _coverage_wrapper + " --target-os=" +
+                          invoker_toolchain_args.current_os
 
       # We want to instrument everything if there is no input file set.
       # If there is a file we need to give it to the wrapper script so it can
@@ -268,7 +278,7 @@ template("gcc_toolchain") {
     cxx = compiler_prefix + invoker.cxx
     asm = asm_prefix + invoker.cc
     ar = invoker.ar
-    ld = "$goma_ld${invoker.ld}"
+    ld = link_prefix + invoker.ld
     if (defined(invoker.readelf)) {
       readelf = invoker.readelf
     } else {
@@ -408,6 +418,7 @@ template("gcc_toolchain") {
       soname = "{{target_output_name}}{{output_extension}}"  # e.g. "libfoo.so".
       sofile = "{{output_dir}}/$soname"  # Possibly including toolchain dir.
       rspfile = sofile + ".rsp"
+
       pool = "//build/toolchain:link_pool($default_toolchain)"
 
       if (defined(invoker.strip)) {
@@ -422,7 +433,12 @@ template("gcc_toolchain") {
       # .TOC file, overwrite it, otherwise, don't change it.
       tocfile = sofile + ".TOC"
 
-      link_command = "$ld -shared -Wl,-soname=\"$soname\" {{ldflags}}${extra_ldflags} -o \"$unstripped_sofile\" @\"$rspfile\""
+      soname_flag = ""
+      if (current_os != "aix") {
+        # -soname flag is not available on aix ld
+        soname_flag = "-Wl,-soname=\"$soname\""
+      }
+      link_command = "$ld -shared $soname_flag {{ldflags}}${extra_ldflags} -o \"$unstripped_sofile\" @\"$rspfile\""
 
       # Generate a map file to be used for binary size analysis.
       # Map file adds ~10% to the link time on a z620.
@@ -445,12 +461,16 @@ template("gcc_toolchain") {
       # The host might not have a POSIX shell and utilities (e.g. Windows).
       solink_wrapper =
           rebase_path("//build/toolchain/gcc_solink_wrapper.py", root_build_dir)
-      command = "$python_path \"$solink_wrapper\" --readelf=\"$readelf\" --nm=\"$nm\" $strip_switch$dwp_switch --sofile=\"$unstripped_sofile\" --tocfile=\"$tocfile\"$map_switch --output=\"$sofile\" -- $link_command"
+      solink_extra_flags = ""
+      command = "$python_path \"$solink_wrapper\" --readelf=\"$readelf\" --nm=\"$nm\" $strip_switch$dwp_switch --sofile=\"$unstripped_sofile\" --tocfile=\"$tocfile\"$map_switch --output=\"$sofile\" -- $link_command $solink_extra_flags"
 
       if (target_cpu == "mipsel" && is_component_build && is_android) {
-        rspfile_content = "-Wl,--start-group -Wl,--whole-archive {{inputs}} {{solibs}} -Wl,--no-whole-archive {{libs}} -Wl,--end-group"
+        rspfile_content = "-Wl,--start-group -Wl,--whole-archive {{inputs}} {{solibs}} -Wl,--no-whole-archive {{libs}} -Wl,--end-group {{rlibs}}"
+      } else if (current_os == "aix") {
+        # --whole-archive, --no-whole-archive flags are not available on the aix ld.
+        rspfile_content = "{{inputs}} {{solibs}} {{libs}} {{rlibs}}"
       } else {
-        rspfile_content = "-Wl,--whole-archive {{inputs}} {{solibs}} -Wl,--no-whole-archive {{libs}}"
+        rspfile_content = "-Wl,--whole-archive {{inputs}} {{solibs}} -Wl,--no-whole-archive {{libs}} {{rlibs}}"
       }
 
       description = "SOLINK $sofile"
@@ -504,6 +524,7 @@ template("gcc_toolchain") {
       soname = "{{target_output_name}}{{output_extension}}"  # e.g. "libfoo.so".
       sofile = "{{output_dir}}/$soname"
       rspfile = sofile + ".rsp"
+
       pool = "//build/toolchain:link_pool($default_toolchain)"
 
       if (defined(invoker.strip)) {
@@ -512,13 +533,22 @@ template("gcc_toolchain") {
         unstripped_sofile = sofile
       }
 
-      command = "$ld -shared {{ldflags}}${extra_ldflags} -o \"$unstripped_sofile\" -Wl,-soname=\"$soname\" @\"$rspfile\""
+      soname_flag = ""
+      whole_archive_flag = ""
+      no_whole_archive_flag = ""
+      if (current_os != "aix") {
+        # -soname, --whole-archive, --no-whole-archive flags are not available on aix ld
+        soname_flag = "-Wl,-soname=\"$soname\""
+        whole_archive_flag = "-Wl,--whole-archive"
+        no_whole_archive_flag = "-Wl,--no-whole-archive"
+      }
+      command = "$ld -shared {{ldflags}}${extra_ldflags} -o \"$unstripped_sofile\" $soname_flag @\"$rspfile\""
 
       if (defined(invoker.strip)) {
         strip_command = "${invoker.strip} -o \"$sofile\" \"$unstripped_sofile\""
         command += " && " + strip_command
       }
-      rspfile_content = "-Wl,--whole-archive {{inputs}} {{solibs}} -Wl,--no-whole-archive {{libs}}"
+      rspfile_content = "$whole_archive_flag {{inputs}} {{solibs}} $no_whole_archive_flag {{libs}} {{rlibs}}"
 
       description = "SOLINK_MODULE $sofile"
 
@@ -550,6 +580,7 @@ template("gcc_toolchain") {
       outfile = "{{output_dir}}/$exename"
       rspfile = "$outfile.rsp"
       unstripped_outfile = outfile
+
       pool = "//build/toolchain:link_pool($default_toolchain)"
 
       # Use this for {{output_extension}} expansions unless a target manually
@@ -591,7 +622,7 @@ template("gcc_toolchain") {
       command = "$python_path \"$link_wrapper\" --output=\"$outfile\"$strip_switch$map_switch$dwp_switch -- $link_command"
 
       description = "LINK $outfile"
-      rspfile_content = "{{inputs}}"
+      rspfile_content = "{{inputs}} {{rlibs}}"
       outputs = [ outfile ]
       if (outfile != unstripped_outfile) {
         outputs += [ unstripped_outfile ]
@@ -635,6 +666,64 @@ template("gcc_toolchain") {
       pool = "//build/toolchain:action_pool($default_toolchain)"
     }
 
+    if (toolchain_has_rust) {
+      if (!defined(rust_compiler_prefix)) {
+        rust_compiler_prefix = ""
+      }
+      rustc_bin = rebase_path("${rust_sysroot}/bin/rustc", root_build_dir)
+      rustc = "$rust_compiler_prefix${rustc_bin}"
+      rust_sysroot_relative_to_out = rebase_path(rust_sysroot, root_out_dir)
+      rustc_wrapper = rebase_path("//build/rust/rustc_wrapper.py")
+
+      # RSP files not used due to https://bugs.chromium.org/p/gn/issues/detail?id=249
+      tool("rust_staticlib") {
+        rust_outfile = "{{target_out_dir}}/{{crate_name}}.a"
+        depfile = "{{output}}.d"
+        command = "$python_path \"$rustc_wrapper\" --rustc=$rustc --depfile=$depfile -- -Clinker=\"${invoker.cc}\" $rustc_common_args --emit=dep-info=$depfile,link -o $rust_outfile LDFLAGS RUSTENV {{rustenv}}"
+        description = "RUST $rust_outfile"
+        rust_sysroot = rust_sysroot_relative_to_out
+        outputs = [ rust_outfile ]
+      }
+
+      tool("rust_rlib") {
+        rust_outfile = "{{target_out_dir}}/lib{{crate_name}}.rlib"
+        depfile = "{{output}}.d"
+        command = "$python_path \"$rustc_wrapper\" --rustc=$rustc --depfile=$depfile -- -Clinker=\"${invoker.cc}\" $rustc_common_args --emit=dep-info=$depfile,link -o $rust_outfile LDFLAGS RUSTENV {{rustenv}}"
+        description = "RUST $rust_outfile"
+        rust_sysroot = rust_sysroot_relative_to_out
+        outputs = [ rust_outfile ]
+      }
+
+      if (toolchain_args.rustc_can_link) {
+        tool("rust_bin") {
+          rust_outfile = "{{root_out_dir}}/{{crate_name}}"
+          depfile = "{{output}}.d"
+          command = "$python_path \"$rustc_wrapper\" --rustc=$rustc --depfile=$depfile -- -Clinker=\"${invoker.cc}\" $rustc_common_args --emit=dep-info=$depfile,link -o $rust_outfile LDFLAGS {{ldflags}} ${extra_ldflags} RUSTENV {{rustenv}}"
+          description = "RUST $rust_outfile"
+          rust_sysroot = rust_sysroot_relative_to_out
+          outputs = [ rust_outfile ]
+        }
+
+        tool("rust_cdylib") {
+          rust_outfile = "{{target_out_dir}}/lib{{crate_name}}.so"
+          depfile = "{{output}}.d"
+          command = "$python_path \"$rustc_wrapper\" --rustc=$rustc --depfile=$depfile -- -Clinker=\"${invoker.cc}\" $rustc_common_args --emit=dep-info=$depfile,link -o $rust_outfile LDFLAGS {{ldflags}} ${extra_ldflags} RUSTENV {{rustenv}}"
+          description = "RUST $rust_outfile"
+          rust_sysroot = rust_sysroot_relative_to_out
+          outputs = [ rust_outfile ]
+        }
+
+        tool("rust_macro") {
+          rust_outfile = "{{target_out_dir}}/lib{{crate_name}}.so"
+          depfile = "{{output}}.d"
+          command = "$python_path \"$rustc_wrapper\" --rustc=$rustc --depfile=$depfile -- -Clinker=\"${invoker.cc}\" $rustc_common_args --emit=dep-info=$depfile,link -o $rust_outfile LDFLAGS {{ldflags}} ${extra_ldflags} RUSTENV {{rustenv}}"
+          description = "RUST $rust_outfile"
+          rust_sysroot = rust_sysroot_relative_to_out
+          outputs = [ rust_outfile ]
+        }
+      }
+    }
+
     forward_variables_from(invoker, [ "deps" ])
   }
 }
@@ -647,18 +736,12 @@ template("gcc_toolchain") {
 # actually just be doing a native compile. The invoker can optionally override
 # use_gold too.
 template("clang_toolchain") {
-  if (defined(invoker.toolprefix)) {
-    toolprefix = invoker.toolprefix
-  } else {
-    toolprefix = ""
-  }
-
   gcc_toolchain(target_name) {
     prefix = rebase_path("$clang_base_path/bin", root_build_dir)
-    cc = "$prefix/clang"
-    cxx = "$prefix/clang++"
+    cc = "${prefix}/clang"
+    cxx = "${prefix}/clang++"
     ld = cxx
-    readelf = "${toolprefix}readelf"
+    readelf = "${prefix}/llvm-readelf"
     ar = "${prefix}/llvm-ar"
     nm = "${prefix}/llvm-nm"
 
@@ -666,7 +749,9 @@ template("clang_toolchain") {
                            [
                              "strip",
                              "default_shlib_subdir",
+                             "dwp",
                              "enable_linker_map",
+                             "loadable_module_extension",
                              "use_unstripped_as_runtime_outputs",
                            ])
 

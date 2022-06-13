@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher_delegate.h"
 #include "chrome/browser/extensions/active_install_data.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
@@ -50,8 +51,11 @@ class WebstorePrivateApi {
       Profile* profile,
       const std::string& extension_id);
 
-  // Clear the pending approvals. This should be used for testing only.
+  // Clear the pending approvals. This should only be used for testing.
   static void ClearPendingApprovalsForTesting();
+
+  // Get the count of pending approvals. This should only be used for testing.
+  static int GetPendingApprovalsCountForTesting();
 };
 
 class WebstorePrivateBeginInstallWithManifest3Function
@@ -102,8 +106,8 @@ class WebstorePrivateBeginInstallWithManifest3Function
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
   void OnFrictionPromptDone(bool result);
-  void OnInstallPromptDone(ExtensionInstallPrompt::Result result);
-  void OnRequestPromptDone(ExtensionInstallPrompt::Result result);
+  void OnInstallPromptDone(ExtensionInstallPrompt::DoneCallbackPayload payload);
+  void OnRequestPromptDone(ExtensionInstallPrompt::DoneCallbackPayload payload);
   void OnBlockByPolicyPromptDone();
 
   void HandleInstallProceed();
@@ -135,7 +139,7 @@ class WebstorePrivateBeginInstallWithManifest3Function
 
   std::unique_ptr<Params> params_;
 
-  Profile* profile_ = nullptr;
+  raw_ptr<Profile> profile_ = nullptr;
 
   std::unique_ptr<ScopedActiveInstall> scoped_active_install_;
 
@@ -351,13 +355,16 @@ class WebstorePrivateGetReferrerChainFunction : public ExtensionFunction {
 
   WebstorePrivateGetReferrerChainFunction();
 
+  WebstorePrivateGetReferrerChainFunction(
+      const WebstorePrivateGetReferrerChainFunction&) = delete;
+  WebstorePrivateGetReferrerChainFunction& operator=(
+      const WebstorePrivateGetReferrerChainFunction&) = delete;
+
  private:
   ~WebstorePrivateGetReferrerChainFunction() override;
 
   // ExtensionFunction:
   ExtensionFunction::ResponseAction Run() override;
-
-  DISALLOW_COPY_AND_ASSIGN(WebstorePrivateGetReferrerChainFunction);
 };
 
 class WebstorePrivateGetExtensionStatusFunction : public ExtensionFunction {
@@ -366,6 +373,11 @@ class WebstorePrivateGetExtensionStatusFunction : public ExtensionFunction {
                              WEBSTOREPRIVATE_GETEXTENSIONSTATUS)
 
   WebstorePrivateGetExtensionStatusFunction();
+
+  WebstorePrivateGetExtensionStatusFunction(
+      const WebstorePrivateGetExtensionStatusFunction&) = delete;
+  WebstorePrivateGetExtensionStatusFunction& operator=(
+      const WebstorePrivateGetExtensionStatusFunction&) = delete;
 
  private:
   ~WebstorePrivateGetExtensionStatusFunction() override;
@@ -377,8 +389,6 @@ class WebstorePrivateGetExtensionStatusFunction : public ExtensionFunction {
 
   // ExtensionFunction:
   ExtensionFunction::ResponseAction Run() override;
-
-  DISALLOW_COPY_AND_ASSIGN(WebstorePrivateGetExtensionStatusFunction);
 };
 
 class WebstorePrivateRequestExtensionFunction : public ExtensionFunction {
@@ -387,13 +397,16 @@ class WebstorePrivateRequestExtensionFunction : public ExtensionFunction {
                              WEBSTOREPRIVATE_REQUESTEXTENSION)
   WebstorePrivateRequestExtensionFunction();
 
+  WebstorePrivateRequestExtensionFunction(
+      const WebstorePrivateRequestExtensionFunction&) = delete;
+  WebstorePrivateRequestExtensionFunction& operator=(
+      const WebstorePrivateRequestExtensionFunction&) = delete;
+
  private:
   ~WebstorePrivateRequestExtensionFunction() override;
 
   // Extensionfunction:
   ExtensionFunction::ResponseAction Run() override;
-
-  DISALLOW_COPY_AND_ASSIGN(WebstorePrivateRequestExtensionFunction);
 };
 
 }  // namespace extensions

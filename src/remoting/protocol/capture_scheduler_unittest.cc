@@ -10,8 +10,9 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/cxx17_backports.h"
 #include "base/memory/ptr_util.h"
-#include "base/stl_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/task_environment.h"
 #include "base/timer/mock_timer.h"
@@ -32,10 +33,10 @@ class CaptureSchedulerTest : public testing::Test {
     scheduler_ = std::make_unique<CaptureScheduler>(base::BindRepeating(
         &CaptureSchedulerTest::DoCapture, base::Unretained(this)));
     scheduler_->set_minimum_interval(
-        base::TimeDelta::FromMilliseconds(kMinumumFrameIntervalMs));
+        base::Milliseconds(kMinumumFrameIntervalMs));
     scheduler_->SetTickClockForTest(&tick_clock_);
     capture_timer_ = new base::MockOneShotTimer();
-    scheduler_->SetTimerForTest(base::WrapUnique(capture_timer_));
+    scheduler_->SetTimerForTest(base::WrapUnique(capture_timer_.get()));
     scheduler_->Start();
   }
 
@@ -81,7 +82,7 @@ class CaptureSchedulerTest : public testing::Test {
   base::SimpleTestTickClock tick_clock_;
 
   // Owned by |scheduler_|.
-  base::MockOneShotTimer* capture_timer_;
+  raw_ptr<base::MockOneShotTimer> capture_timer_;
 
   bool capture_called_;
 };
@@ -99,10 +100,9 @@ TEST_F(CaptureSchedulerTest, SingleSampleSameTimes) {
       InitScheduler();
       scheduler_->SetNumOfProcessorsForTest(1 << i);
 
-      SimulateSingleFrameCapture(
-          base::TimeDelta::FromMilliseconds(kTestInputs[j]),
-          base::TimeDelta::FromMilliseconds(kTestInputs[j]),
-          base::TimeDelta::FromMilliseconds(kTestResults[i][j]));
+      SimulateSingleFrameCapture(base::Milliseconds(kTestInputs[j]),
+                                 base::Milliseconds(kTestInputs[j]),
+                                 base::Milliseconds(kTestResults[i][j]));
     }
   }
 }
@@ -121,20 +121,19 @@ TEST_F(CaptureSchedulerTest, SingleSampleDifferentTimes) {
       scheduler_->SetNumOfProcessorsForTest(1 << i);
 
       SimulateSingleFrameCapture(
-          base::TimeDelta::FromMilliseconds(kTestInputs[j]),
-          base::TimeDelta::FromMilliseconds(
-              kTestInputs[base::size(kTestInputs) - 1 - j]),
-          base::TimeDelta::FromMilliseconds(kTestResults[i][j]));
+          base::Milliseconds(kTestInputs[j]),
+          base::Milliseconds(kTestInputs[base::size(kTestInputs) - 1 - j]),
+          base::Milliseconds(kTestResults[i][j]));
     }
   }
 }
 
 TEST_F(CaptureSchedulerTest, RollingAverageDifferentTimes) {
-  const int kTestResults[][base::size(kTestInputs)] = {
-      {360, 290, 233, 133, 80, 80, 133, 233},  // One core.
-      {180, 145, 116, 66, 50, 50, 66, 116},    // Two cores.
-      {90, 72, 58, 50, 50, 50, 50, 58},        // Four cores.
-      {50, 50, 50, 50, 50, 50, 50, 50}         // Eight cores.
+  const double kTestResults[][base::size(kTestInputs)] = {
+      {360, 290, 233.333, 133.333, 80, 80, 133.333, 233.333},  // One core.
+      {180, 145, 116.666, 66.666, 50, 50, 66.666, 116.666},    // Two cores.
+      {90, 72.5, 58.333, 50, 50, 50, 50, 58.333},              // Four cores.
+      {50, 50, 50, 50, 50, 50, 50, 50}                         // Eight cores.
   };
 
   for (size_t i = 0; i < base::size(kTestResults); ++i) {
@@ -142,10 +141,9 @@ TEST_F(CaptureSchedulerTest, RollingAverageDifferentTimes) {
     scheduler_->SetNumOfProcessorsForTest(1 << i);
     for (size_t j = 0; j < base::size(kTestInputs); ++j) {
       SimulateSingleFrameCapture(
-          base::TimeDelta::FromMilliseconds(kTestInputs[j]),
-          base::TimeDelta::FromMilliseconds(
-              kTestInputs[base::size(kTestInputs) - 1 - j]),
-          base::TimeDelta::FromMilliseconds(kTestResults[i][j]));
+          base::Milliseconds(kTestInputs[j]),
+          base::Milliseconds(kTestInputs[base::size(kTestInputs) - 1 - j]),
+          base::Milliseconds(kTestResults[i][j]));
     }
   }
 }
@@ -156,9 +154,8 @@ TEST_F(CaptureSchedulerTest, MaximumEncodingFrames) {
 
   // Process the first frame to let the scheduler know that receiver supports
   // ACKs.
-  SimulateSingleFrameCapture(
-      base::TimeDelta(), base::TimeDelta(),
-      base::TimeDelta::FromMilliseconds(kMinumumFrameIntervalMs));
+  SimulateSingleFrameCapture(base::TimeDelta(), base::TimeDelta(),
+                             base::Milliseconds(kMinumumFrameIntervalMs));
 
   capture_timer_->Fire();
   CheckCaptureCalled();
@@ -180,9 +177,8 @@ TEST_F(CaptureSchedulerTest, MaximumPendingFrames) {
 
   // Process the first frame to let the scheduler know that receiver supports
   // ACKs.
-  SimulateSingleFrameCapture(
-      base::TimeDelta(), base::TimeDelta(),
-      base::TimeDelta::FromMilliseconds(kMinumumFrameIntervalMs));
+  SimulateSingleFrameCapture(base::TimeDelta(), base::TimeDelta(),
+                             base::Milliseconds(kMinumumFrameIntervalMs));
 
   // Queue some frames until the sender is blocked.
   while (capture_timer_->IsRunning()) {

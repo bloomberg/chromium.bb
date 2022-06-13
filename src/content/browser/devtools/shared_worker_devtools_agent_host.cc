@@ -37,6 +37,8 @@ SharedWorkerDevToolsAgentHost::SharedWorkerDevToolsAgentHost(
     SharedWorkerHost* worker_host,
     const base::UnguessableToken& devtools_worker_token)
     : DevToolsAgentHostImpl(devtools_worker_token.ToString()),
+      auto_attacher_(std::make_unique<protocol::RendererAutoAttacherBase>(
+          GetRendererChannel())),
       state_(WORKER_NOT_READY),
       worker_host_(worker_host),
       devtools_worker_token_(devtools_worker_token),
@@ -66,7 +68,7 @@ GURL SharedWorkerDevToolsAgentHost::GetURL() {
   return instance_.url();
 }
 
-storage::StorageKey SharedWorkerDevToolsAgentHost::GetStorageKey() const {
+blink::StorageKey SharedWorkerDevToolsAgentHost::GetStorageKey() const {
   return instance_.storage_key();
 }
 
@@ -98,7 +100,7 @@ bool SharedWorkerDevToolsAgentHost::AttachSession(DevToolsSession* session,
   session->AddHandler(std::make_unique<protocol::SchemaHandler>());
   session->AddHandler(std::make_unique<protocol::TargetHandler>(
       protocol::TargetHandler::AccessMode::kAutoAttachOnly, GetId(),
-      GetRendererChannel(), session->GetRootSession()));
+      auto_attacher_.get(), session->GetRootSession()));
   return true;
 }
 
@@ -155,6 +157,10 @@ SharedWorkerDevToolsAgentHost::CreateNetworkFactoryParamsForDevTools() {
 RenderProcessHost* SharedWorkerDevToolsAgentHost::GetProcessHost() {
   DCHECK(worker_host_);
   return worker_host_->GetProcessHost();
+}
+
+protocol::TargetAutoAttacher* SharedWorkerDevToolsAgentHost::auto_attacher() {
+  return auto_attacher_.get();
 }
 
 }  // namespace content

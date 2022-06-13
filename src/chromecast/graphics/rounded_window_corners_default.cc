@@ -4,8 +4,6 @@
 
 #include "chromecast/graphics/rounded_window_corners.h"
 
-#include "base/macros.h"
-
 namespace chromecast {
 
 namespace {
@@ -14,14 +12,16 @@ namespace {
 class RoundedWindowCornersDefault : public RoundedWindowCorners {
  public:
   RoundedWindowCornersDefault() {}
+
+  RoundedWindowCornersDefault(const RoundedWindowCornersDefault&) = delete;
+  RoundedWindowCornersDefault& operator=(const RoundedWindowCornersDefault&) =
+      delete;
+
   ~RoundedWindowCornersDefault() override {}
 
   void SetEnabled(bool enable) override {}
   bool IsEnabled() const override { return false; }
   void SetColorInversion(bool enable) override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(RoundedWindowCornersDefault);
 };
 
 }  // namespace

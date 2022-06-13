@@ -9,7 +9,6 @@
 
 #import <Foundation/Foundation.h>
 
-#include "base/macros.h"
 #include "ios/web/public/download/download_task_observer.h"
 #include "ios/web/public/web_state_observer.h"
 #import "ios/web/public/web_state_user_data.h"
@@ -26,6 +25,9 @@ class DownloadManagerTabHelper
       public web::WebStateObserver,
       public web::DownloadTaskObserver {
  public:
+  DownloadManagerTabHelper(const DownloadManagerTabHelper&) = delete;
+  DownloadManagerTabHelper& operator=(const DownloadManagerTabHelper&) = delete;
+
   ~DownloadManagerTabHelper() override;
 
   // Creates TabHelper. |delegate| is not retained by TabHelper. |web_state|
@@ -68,8 +70,6 @@ class DownloadManagerTabHelper
   std::unique_ptr<web::DownloadTask> task_;
 
   WEB_STATE_USER_DATA_KEY_DECL();
-
-  DISALLOW_COPY_AND_ASSIGN(DownloadManagerTabHelper);
 };
 
 #endif  // IOS_CHROME_BROWSER_DOWNLOAD_DOWNLOAD_MANAGER_TAB_HELPER_H_

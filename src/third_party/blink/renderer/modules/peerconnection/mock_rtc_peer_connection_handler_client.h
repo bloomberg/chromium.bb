@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_ice_candidate_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_peer_connection_handler_client.h"
@@ -22,6 +21,12 @@ class MockRTCPeerConnectionHandlerClient
     : public RTCPeerConnectionHandlerClient {
  public:
   MockRTCPeerConnectionHandlerClient();
+
+  MockRTCPeerConnectionHandlerClient(
+      const MockRTCPeerConnectionHandlerClient&) = delete;
+  MockRTCPeerConnectionHandlerClient& operator=(
+      const MockRTCPeerConnectionHandlerClient&) = delete;
+
   ~MockRTCPeerConnectionHandlerClient() override;
 
   // RTCPeerConnectionHandlerClient implementation.
@@ -99,8 +104,6 @@ class MockRTCPeerConnectionHandlerClient
   std::string candidate_sdp_;
   absl::optional<uint16_t> candidate_mline_index_;
   std::string candidate_mid_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockRTCPeerConnectionHandlerClient);
 };
 
 }  // namespace blink

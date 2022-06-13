@@ -8,6 +8,9 @@
 
 #include <ctype.h>
 
+#include <utility>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/check_op.h"
 #include "base/location.h"
@@ -58,7 +61,7 @@ void RendererDnsPrefetch::Resolve(const char* name, size_t length) {
           FROM_HERE,
           base::BindOnce(&RendererDnsPrefetch::SubmitHostnames,
                          weak_factory_.GetWeakPtr()),
-          base::TimeDelta::FromMilliseconds(10));
+          base::Milliseconds(10));
     }
     return;
   }
@@ -97,7 +100,7 @@ void RendererDnsPrefetch::SubmitHostnames() {
         FROM_HERE,
         base::BindOnce(&RendererDnsPrefetch::SubmitHostnames,
                        weak_factory_.GetWeakPtr()),
-        base::TimeDelta::FromMilliseconds(10));
+        base::Milliseconds(10));
   } else {
     // TODO(JAR): Should we only clear the map when we navigate, or reload?
     domain_map_.clear();

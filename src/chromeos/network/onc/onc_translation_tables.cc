@@ -24,6 +24,7 @@ const FieldTranslationEntry eap_fields[] = {
     {::onc::eap::kAnonymousIdentity, shill::kEapAnonymousIdentityProperty},
     // This field is converted during translation, see onc_translator_*.
     // { ::onc::client_cert::kClientCertPKCS11Id, shill::kEapCertIdProperty },
+    {::onc::eap::kDomainSuffixMatch, shill::kEapDomainSuffixMatchProperty},
     {::onc::eap::kIdentity, shill::kEapIdentityProperty},
     // This field is converted during translation, see onc_translator_*.
     // { ::onc::eap::kInner, shill::kEapPhase2AuthProperty },
@@ -117,6 +118,21 @@ const FieldTranslationEntry openvpn_fields[] = {
     {::onc::openvpn::kVerifyHash, shill::kOpenVPNVerifyHashProperty},
     {nullptr}};
 
+const FieldTranslationEntry wireguard_fields[] = {
+    {::onc::wireguard::kPublicKey, shill::kWireGuardPublicKey},
+    {::onc::wireguard::kPrivateKey, shill::kWireGuardPrivateKey},
+    {::onc::wireguard::kPeers, shill::kWireGuardPeers},
+    {nullptr}};
+
+const FieldTranslationEntry wireguard_peer_fields[] = {
+    {::onc::wireguard::kPublicKey, shill::kWireGuardPeerPublicKey},
+    {::onc::wireguard::kPresharedKey, shill::kWireGuardPeerPresharedKey},
+    {::onc::wireguard::kEndpoint, shill::kWireGuardPeerEndpoint},
+    {::onc::wireguard::kAllowedIPs, shill::kWireGuardPeerAllowedIPs},
+    {::onc::wireguard::kPersistentKeepalive,
+     shill::kWireGuardPeerPersistentKeepalive},
+    {nullptr}};
+
 const FieldTranslationEntry arc_vpn_fields[] = {
     {::onc::arc_vpn::kTunnelChrome, shill::kArcVpnTunnelChromeProperty},
     {nullptr}};
@@ -198,6 +214,7 @@ const FieldTranslationEntry cellular_fields[] = {
     {::onc::cellular::kActivationType, shill::kActivationTypeProperty},
     // This field is converted during translation, see onc_translator_*.
     // { ::onc::cellular::kActivationState, shill::kActivationStateProperty},
+    {::onc::cellular::kAllowRoaming, shill::kCellularAllowRoamingProperty},
     {::onc::cellular::kAutoConnect, shill::kAutoConnectProperty},
     {::onc::cellular::kEID, shill::kEidProperty},
     {::onc::cellular::kICCID, shill::kIccidProperty},
@@ -234,6 +251,8 @@ const FieldTranslationEntry network_fields[] = {
     // {::onc::network_config::kRestrictedConnectivity, shill::kStateProperty },
     // {::onc::network_config::kSource, shill::kProfileProperty },
     // {::onc::network_config::kMacAddress, shill::kAddressProperty },
+    // {::onc::network_config::kTrafficCounterResetTime,
+    // shill::kTrafficCountersResetTime },
     {nullptr}};
 
 const FieldTranslationEntry ipconfig_fields[] = {
@@ -269,6 +288,8 @@ const OncValueTranslationEntry onc_value_translation_table[] = {
     {&kL2TPSignature, l2tp_fields},
     {&kXAUTHSignature, xauth_fields},
     {&kOpenVPNSignature, openvpn_fields},
+    {&kWireGuardSignature, wireguard_fields},
+    {&kWireGuardPeerSignature, wireguard_peer_fields},
     {&kARCVPNSignature, arc_vpn_fields},
     {&kVerifyX509Signature, verify_x509_fields},
     {&kVPNSignature, vpn_fields},
@@ -312,7 +333,7 @@ const NestedShillDictionaryEntry nested_shill_dictionaries[] = {
 const StringTranslationEntry kNetworkTypeTable[] = {
     {::onc::network_type::kEthernet, shill::kTypeEthernet},
     // kTypeEthernetEap is set in onc_translator_onc_to_shill.cc.
-    //  { ::onc::network_type::kEthernet, shill::kTypeEthernetEap },
+    // {::onc::network_type::kEthernet, shill::kTypeEthernetEap},
     {::onc::network_type::kWiFi, shill::kTypeWifi},
     // wimax entries are ignored in onc_translator_onc_to_shill.cc.
     // {::onc::network_type::kWimax, shill::kTypeWimax},
@@ -324,6 +345,7 @@ const StringTranslationEntry kNetworkTypeTable[] = {
 const StringTranslationEntry kVPNTypeTable[] = {
     {::onc::vpn::kTypeL2TP_IPsec, shill::kProviderL2tpIpsec},
     {::onc::vpn::kOpenVPN, shill::kProviderOpenVpn},
+    {::onc::vpn::kWireGuard, shill::kProviderWireGuard},
     {::onc::vpn::kThirdPartyVpn, shill::kProviderThirdPartyVpn},
     {::onc::vpn::kArcVpn, shill::kProviderArcVpn},
     {nullptr}};
@@ -379,6 +401,7 @@ const StringTranslationEntry kNetworkTechnologyTable[] = {
     {::onc::cellular::kTechnologyLteAdvanced,
      shill::kNetworkTechnologyLteAdvanced},
     {::onc::cellular::kTechnologyUmts, shill::kNetworkTechnologyUmts},
+    {::onc::cellular::kTechnology5gNr, shill::kNetworkTechnology5gNr},
     {nullptr}};
 
 const StringTranslationEntry kRoamingStateTable[] = {
@@ -400,7 +423,6 @@ const StringTranslationEntry kOpenVpnCompressionAlgorithmTable[] = {
 const FieldTranslationEntry kCellularDeviceTable[] = {
     // This field is converted during translation, see onc_translator_*.
     // { ::onc::cellular::kAPNList, shill::kCellularApnListProperty},
-    {::onc::cellular::kAllowRoaming, shill::kCellularAllowRoamingProperty},
     {::onc::cellular::kESN, shill::kEsnProperty},
     {::onc::cellular::kFamily, shill::kTechnologyFamilyProperty},
     {::onc::cellular::kFirmwareRevision, shill::kFirmwareRevisionProperty},

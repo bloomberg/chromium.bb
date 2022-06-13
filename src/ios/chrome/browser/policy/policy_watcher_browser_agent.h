@@ -5,21 +5,27 @@
 #ifndef IOS_CHROME_BROWSER_POLICY_POLICY_WATCHER_BROWSER_AGENT_H_
 #define IOS_CHROME_BROWSER_POLICY_POLICY_WATCHER_BROWSER_AGENT_H_
 
-#include <memory>
+#include <CoreFoundation/CoreFoundation.h>
 
-#include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#import "components/prefs/pref_change_registrar.h"
 #import "ios/chrome/browser/main/browser_user_data.h"
+#import "ios/chrome/browser/signin/authentication_service.h"
+#import "ios/chrome/browser/signin/authentication_service_observer.h"
 
 class Browser;
-@protocol PolicySignoutPromptCommands;
+@protocol PolicyChangeCommands;
 class PolicyWatcherBrowserAgentObserver;
-class PrefChangeRegistrar;
+
+// NSUserDefault global key to track if the sync disable alert was shown.
+extern NSString* kSyncDisabledAlertShownKey;
 
 // Service that listens for policy-controlled prefs changes and sends commands
 // to update the UI accordingly.
 class PolicyWatcherBrowserAgent
-    : public BrowserUserData<PolicyWatcherBrowserAgent> {
+    : public AuthenticationServiceObserver,
+      public BrowserUserData<PolicyWatcherBrowserAgent> {
  public:
   ~PolicyWatcherBrowserAgent() override;
 
@@ -33,7 +39,7 @@ class PolicyWatcherBrowserAgent
   // Starts observing the kSigninAllowed pref and trigger a SignOut if the pref
   // has changed before the BrowserAgent start the observation. |handler| is
   // used to send UI commands when the SignOut is done.
-  void Initialize(id<PolicySignoutPromptCommands> handler);
+  void Initialize(id<PolicyChangeCommands> handler);
 
  private:
   explicit PolicyWatcherBrowserAgent(Browser* browser);
@@ -45,11 +51,27 @@ class PolicyWatcherBrowserAgent
   // UI.
   void ForceSignOutIfSigninDisabled();
 
-  // The owning Browser.
-  Browser* browser_;
+  // Handler for change to kSyncManaged. When the pref changes to |true|,
+  // sends a command to the handler to show an alert.
+  void ShowSyncDisabledAlertIfNeeded();
 
-  // Registrar for pref change notifications.
-  std::unique_ptr<PrefChangeRegistrar> prefs_change_observer_;
+  // Callback called when the sign out is complete.
+  void OnSignOutComplete();
+
+  // AuthenticationServiceObserver implementation.
+  void OnPrimaryAccountRestricted() override;
+
+  // The owning Browser.
+  Browser* browser_ = nullptr;
+
+  // The AuthenticationService.
+  AuthenticationService* auth_service_ = nullptr;
+
+  // Registrar for local state pref change notifications.
+  PrefChangeRegistrar prefs_change_observer_;
+
+  // Registrar for browser state pref change notifications.
+  PrefChangeRegistrar browser_prefs_change_observer_;
 
   // List of observers notified of changes to the policy.
   base::ObserverList<PolicyWatcherBrowserAgentObserver, true> observers_;
@@ -58,7 +80,14 @@ class PolicyWatcherBrowserAgent
   bool sign_out_in_progress_ = false;
 
   // Handler to send commands.
-  id<PolicySignoutPromptCommands> handler_ = nil;
+  id<PolicyChangeCommands> handler_ = nil;
+
+  // AuthenticationService observer.
+  base::ScopedObservation<AuthenticationService, AuthenticationServiceObserver>
+      auth_service_observation_{this};
+
+  // WeakPtrFactory should be last.
+  base::WeakPtrFactory<PolicyWatcherBrowserAgent> weak_factory_{this};
 };
 
 #endif  // IOS_CHROME_BROWSER_POLICY_POLICY_WATCHER_BROWSER_AGENT_H_

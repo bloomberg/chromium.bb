@@ -54,18 +54,6 @@ void ObservableWebView::DidFinishLoad(
     delegate_->OnWebContentsFinishedLoad();
 }
 
-void ObservableWebView::ResourceLoadComplete(
-    content::RenderFrameHost* render_frame_host,
-    const content::GlobalRequestID& request_id,
-    const blink::mojom::ResourceLoadInfo& resource_load_info) {
-  // Only listen to the main frame.
-  if (render_frame_host->GetParent())
-    return;
-
-  if (delegate_)
-    delegate_->OnMainFrameResourceLoadComplete(resource_load_info);
-}
-
 void ObservableWebView::ResetDelegate() {
   delegate_ = nullptr;
 }
@@ -87,7 +75,7 @@ WebDialogView::WebDialogView(content::BrowserContext* context,
   SetCanResize(!delegate_ || delegate_->can_resize());
   SetModalType(GetDialogModalType());
   web_view_->set_allow_accelerators(true);
-  AddChildView(web_view_);
+  AddChildView(web_view_.get());
   set_contents_view(web_view_);
   SetLayoutManager(std::make_unique<views::FillLayout>());
   // Pressing the Escape key will close the dialog.
@@ -109,6 +97,15 @@ content::WebContents* WebDialogView::web_contents() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // WebDialogView, views::View implementation:
+
+void WebDialogView::AddedToWidget() {
+  gfx::RoundedCornersF corner_radii(
+      delegate_ && delegate_->GetWebDialogFrameKind() ==
+                       WebDialogDelegate::FrameKind::kDialog
+          ? GetCornerRadius()
+          : 0);
+  web_view_->holder()->SetCornerRadii(corner_radii);
+}
 
 gfx::Size WebDialogView::CalculatePreferredSize() const {
   gfx::Size out;
@@ -350,7 +347,7 @@ bool WebDialogView::ShouldShowCloseButton() const {
 }
 
 bool WebDialogView::HandleContextMenu(
-    content::RenderFrameHost* render_frame_host,
+    content::RenderFrameHost& render_frame_host,
     const content::ContextMenuParams& params) {
   if (delegate_)
     return delegate_->HandleContextMenu(render_frame_host, params);
@@ -413,7 +410,7 @@ void WebDialogView::AddNewContents(
 }
 
 void WebDialogView::LoadingStateChanged(content::WebContents* source,
-                                        bool to_different_document) {
+                                        bool should_show_loading_ui) {
   if (delegate_)
     delegate_->OnLoadingStateChanged(source);
 }

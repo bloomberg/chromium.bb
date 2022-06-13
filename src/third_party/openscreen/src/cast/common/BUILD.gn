@@ -6,18 +6,14 @@ import("//build_overrides/build.gni")
 import("//third_party/protobuf/proto_library.gni")
 import("../../testing/libfuzzer/fuzzer_test.gni")
 
+# TODO(jophba): remove if checks once Chrome uses the cast.gni file
 if (!build_with_chromium) {
-  declare_args() {
-    # Whether or not self-signed certificates are enabled for the receiver
-    # and sender implementations.
-    cast_allow_developer_certificate = false
-  }
+  import("../../build/config/cast.gni")
 }
 
 config("certificate_config") {
   defines = []
 
-  # TODO(jophba): remove once arg is in Chrome.
   if (!build_with_chromium) {
     if (cast_allow_developer_certificate) {
       defines += [ "CAST_ALLOW_DEVELOPER_CERTIFICATE" ]
@@ -82,16 +78,18 @@ source_set("channel") {
 source_set("public") {
   sources = [
     "public/cast_socket.h",
+    "public/cast_streaming_app_ids.cc",
+    "public/cast_streaming_app_ids.h",
     "public/message_port.h",
-    "public/service_info.cc",
-    "public/service_info.h",
+    "public/receiver_info.cc",
+    "public/receiver_info.h",
   ]
 
   deps = [
-    "../../discovery:dnssd",
     "../../discovery:public",
     "../../platform",
     "../../third_party/abseil",
+    "../../util",
   ]
 }
 
@@ -107,6 +105,7 @@ if (!build_with_chromium) {
       ":public",
       "../../discovery:dnssd",
       "../../discovery:public",
+      "../../platform:standalone_impl",
       "../../testing/util",
       "../../third_party/googletest:gtest",
     ]
@@ -129,7 +128,7 @@ source_set("test_helpers") {
     ":certificate",
     ":channel",
     ":public",
-    "../../discovery:dnssd",
+    "../../discovery:public",
     "../../platform:test",
     "../../testing/util",
     "../../third_party/abseil",
@@ -153,7 +152,8 @@ source_set("unittests") {
     "channel/message_framer_unittest.cc",
     "channel/namespace_router_unittest.cc",
     "channel/virtual_connection_router_unittest.cc",
-    "public/service_info_unittest.cc",
+    "public/cast_streaming_app_ids_unittest.cc",
+    "public/receiver_info_unittest.cc",
   ]
 
   deps = [

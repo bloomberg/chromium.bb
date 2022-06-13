@@ -4,10 +4,10 @@
 
 #include "chrome/browser/chromeos/extensions/file_manager/device_event_router.h"
 
+#include "ash/components/disks/disk.h"
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/browser/chromeos/file_manager/volume_manager.h"
-#include "chromeos/disks/disk.h"
+#include "chrome/browser/ash/file_manager/volume_manager.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace file_manager {
@@ -16,14 +16,19 @@ namespace file_manager_private = extensions::api::file_manager_private;
 using content::BrowserThread;
 }  // namespace
 
-DeviceEventRouter::DeviceEventRouter()
-    : resume_time_delta_(base::TimeDelta::FromSeconds(10)),
-      startup_time_delta_(base::TimeDelta::FromSeconds(10)),
+DeviceEventRouter::DeviceEventRouter(
+    SystemNotificationManager* notification_manager)
+    : notification_manager_(notification_manager),
+      resume_time_delta_(base::Seconds(10)),
+      startup_time_delta_(base::Seconds(10)),
       is_starting_up_(false),
       is_resuming_(false) {}
 
-DeviceEventRouter::DeviceEventRouter(base::TimeDelta overriding_time_delta)
-    : resume_time_delta_(overriding_time_delta),
+DeviceEventRouter::DeviceEventRouter(
+    SystemNotificationManager* notification_manager,
+    base::TimeDelta overriding_time_delta)
+    : notification_manager_(notification_manager),
+      resume_time_delta_(overriding_time_delta),
       startup_time_delta_(overriding_time_delta),
       is_starting_up_(false),
       is_resuming_(false) {}
@@ -62,12 +67,12 @@ void DeviceEventRouter::OnDeviceRemoved(const std::string& device_path) {
                 "");
 }
 
-void DeviceEventRouter::OnDiskAdded(const chromeos::disks::Disk& disk,
+void DeviceEventRouter::OnDiskAdded(const ash::disks::Disk& disk,
                                     bool mounting) {
   // Do nothing.
 }
 
-void DeviceEventRouter::OnDiskRemoved(const chromeos::disks::Disk& disk) {
+void DeviceEventRouter::OnDiskRemoved(const ash::disks::Disk& disk) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (is_resuming_ || is_starting_up_)

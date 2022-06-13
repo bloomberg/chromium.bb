@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_ACTIVE_SCRIPT_WRAPPABLE_BASE_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_ACTIVE_SCRIPT_WRAPPABLE_BASE_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "v8/include/v8.h"
@@ -19,6 +18,9 @@ namespace blink {
  */
 class PLATFORM_EXPORT ActiveScriptWrappableBase : public GarbageCollectedMixin {
  public:
+  ActiveScriptWrappableBase(const ActiveScriptWrappableBase&) = delete;
+  ActiveScriptWrappableBase& operator=(const ActiveScriptWrappableBase&) =
+      delete;
   virtual ~ActiveScriptWrappableBase() = default;
 
   virtual bool IsContextDestroyed() const = 0;
@@ -36,14 +38,9 @@ class PLATFORM_EXPORT ActiveScriptWrappableBase : public GarbageCollectedMixin {
 
  protected:
   ActiveScriptWrappableBase() = default;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ActiveScriptWrappableBase);
 };
 
 }  // namespace blink
-
-#if BUILDFLAG(USE_V8_OILPAN)
 
 namespace cppgc {
 template <typename T, typename Unused>
@@ -62,25 +59,5 @@ struct PostConstructionCallbackTrait<
   }
 };
 }  // namespace cppgc
-
-#else  // !USE_V8_OILPAN
-
-namespace blink {
-template <typename T>
-struct PostConstructionHookTrait<
-    T,
-    base::void_t<decltype(
-        std::declval<T>().ActiveScriptWrappableBaseConstructed())>> {
-  static void Call(T* object) {
-    static_assert(std::is_base_of<ActiveScriptWrappableBase, T>::value,
-                  "Only ActiveScriptWrappableBase should use the "
-                  "post-construction hook.");
-    object->ActiveScriptWrappableBaseConstructed();
-  }
-};
-
-}  // namespace blink
-
-#endif  // !USE_V8_OILPAN
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_ACTIVE_SCRIPT_WRAPPABLE_BASE_H_

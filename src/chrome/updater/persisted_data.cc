@@ -6,7 +6,6 @@
 
 #include "base/check_op.h"
 #include "base/files/file_path.h"
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/version.h"
@@ -24,7 +23,8 @@ constexpr char kPV[] = "pv";    // Key for storing product version.
 constexpr char kFP[] = "fp";    // Key for storing fingerprint.
 constexpr char kECP[] = "ecp";  // Key for storing existence checker path.
 constexpr char kBC[] = "bc";    // Key for storing brand code.
-constexpr char kTG[] = "tg";    // Key for storing tag.
+constexpr char kBP[] = "bp";    // Key for storing brand path.
+constexpr char kAP[] = "ap";    // Key for storing ap.
 
 }  // namespace
 
@@ -66,14 +66,7 @@ void PersistedData::SetFingerprint(const std::string& id,
 base::FilePath PersistedData::GetExistenceCheckerPath(
     const std::string& id) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-#if defined(OS_WIN)
-  base::FilePath::StringType ecp;
-  const std::string str = GetString(id, kECP);
-  return base::UTF8ToWide(str.c_str(), str.size(), &ecp) ? base::FilePath(ecp)
-                                                         : base::FilePath();
-#else
-  return base::FilePath(GetString(id, kECP));
-#endif  // OS_WIN
+  return base::FilePath::FromUTF8Unsafe(GetString(id, kECP));
 }
 
 void PersistedData::SetExistenceCheckerPath(const std::string& id,
@@ -92,21 +85,33 @@ void PersistedData::SetBrandCode(const std::string& id, const std::string& bc) {
   SetString(id, kBC, bc);
 }
 
-std::string PersistedData::GetTag(const std::string& id) const {
+base::FilePath PersistedData::GetBrandPath(const std::string& id) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return GetString(id, kTG);
+  return base::FilePath::FromUTF8Unsafe(GetString(id, kBP));
 }
 
-void PersistedData::SetTag(const std::string& id, const std::string& tag) {
+void PersistedData::SetBrandPath(const std::string& id,
+                                 const base::FilePath& bp) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  SetString(id, kTG, tag);
+  SetString(id, kBP, bp.AsUTF8Unsafe());
+}
+
+std::string PersistedData::GetAP(const std::string& id) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return GetString(id, kAP);
+}
+
+void PersistedData::SetAP(const std::string& id, const std::string& ap) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  SetString(id, kAP, ap);
 }
 
 void PersistedData::RegisterApp(const RegistrationRequest& rq) {
   SetProductVersion(rq.app_id, rq.version);
   SetExistenceCheckerPath(rq.app_id, rq.existence_checker_path);
   SetBrandCode(rq.app_id, rq.brand_code);
-  SetTag(rq.app_id, rq.tag);
+  SetBrandPath(rq.app_id, rq.brand_path);
+  SetAP(rq.app_id, rq.ap);
 }
 
 bool PersistedData::RemoveApp(const std::string& id) {
@@ -133,7 +138,7 @@ std::vector<std::string> PersistedData::GetAppIds() const {
   if (!apps || !apps->is_dict())
     return {};
   std::vector<std::string> app_ids;
-  for (const auto& kv : apps->DictItems()) {
+  for (auto kv : apps->DictItems()) {
     const auto& app_id = kv.first;
     const auto pv = GetProductVersion(app_id);
     if (pv.IsValid())

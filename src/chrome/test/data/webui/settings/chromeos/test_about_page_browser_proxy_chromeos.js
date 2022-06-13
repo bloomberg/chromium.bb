@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import {TestBrowserProxy} from '../../test_browser_proxy.m.js';
+// #import {TestBrowserProxy} from '../../test_browser_proxy.js';
 // #import {BrowserChannel,UpdateStatus} from 'chrome://os-settings/chromeos/os_settings.js';
 // clang-format on
 
@@ -25,7 +25,9 @@
       'openOsHelpPage',
       'openDiagnostics',
       'refreshTPMFirmwareUpdateStatus',
+      'requestUpdate',
       'setChannel',
+      'openFirmwareUpdatesPage',
     ]);
 
     /** @private {!UpdateStatus} */
@@ -196,6 +198,13 @@
   }
 
   /** @override */
+  requestUpdate() {
+    this.setUpdateStatus(UpdateStatus.UPDATING);
+    this.refreshUpdateStatus();
+    this.methodCalled('requestUpdate');
+  }
+
+  /** @override */
   openOsHelpPage() {
     this.methodCalled('openOsHelpPage');
   }
@@ -208,5 +217,10 @@
   /** @override */
   launchReleaseNotes() {
     this.methodCalled('launchReleaseNotes');
+  }
+
+  /** @override */
+  openFirmwareUpdatesPage() {
+    this.methodCalled('openFirmwareUpdatesPage');
   }
 }

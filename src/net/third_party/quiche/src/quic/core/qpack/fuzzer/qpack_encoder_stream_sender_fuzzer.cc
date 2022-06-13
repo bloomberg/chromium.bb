@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <fuzzer/FuzzedDataProvider.h>
+
 #include <cstddef>
 #include <cstdint>
 #include <limits>
 #include <string>
 
 #include "quic/core/qpack/qpack_encoder_stream_sender.h"
-#include "quic/platform/api/quic_fuzzed_data_provider.h"
 #include "quic/test_tools/qpack/qpack_encoder_test_utils.h"
 #include "quic/test_tools/qpack/qpack_test_utils.h"
 
@@ -16,20 +17,17 @@ namespace quic {
 namespace test {
 
 // This fuzzer exercises QpackEncoderStreamSender.
-// TODO(bnc): Encoded data could be fed into QpackEncoderStreamReceiver and
-// decoded instructions directly compared to input.  Figure out how to get gMock
-// enabled for cc_fuzz_target target types.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   NoopQpackStreamSenderDelegate delegate;
   QpackEncoderStreamSender sender;
   sender.set_qpack_stream_sender_delegate(&delegate);
 
-  QuicFuzzedDataProvider provider(data, size);
+  FuzzedDataProvider provider(data, size);
   // Limit string literal length to 2 kB for efficiency.
   const uint16_t kMaxStringLength = 2048;
 
   while (provider.remaining_bytes() != 0) {
-    switch (provider.ConsumeIntegral<uint8_t>() % 4) {
+    switch (provider.ConsumeIntegral<uint8_t>() % 5) {
       case 0: {
         bool is_static = provider.ConsumeBool();
         uint64_t name_index = provider.ConsumeIntegral<uint64_t>();
@@ -60,9 +58,14 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
         sender.SendSetDynamicTableCapacity(capacity);
         break;
       }
+      case 4: {
+        sender.Flush();
+        break;
+      }
     }
   }
 
+  sender.Flush();
   return 0;
 }
 

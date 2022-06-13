@@ -2,6 +2,10 @@
   :host {
     --avatar-size: 100px;
     --banner-height: 244px;
+    --banner-size: auto;
+    --confirmation-description-margin-inline: auto;
+    --content-container-margin-bottom: calc(32px + 2 * var(--footer-margin));
+    --content-container-margin-top: 104px;
     --footer-margin: 40px;
     --text-font-size: 1.16em;
     color: var(--cr-primary-text-color);
@@ -19,6 +23,8 @@
     width: 100%;
   }
 
+<if expr="not lacros">
+  /* The settings button is right next to the action button on Lacros. */
   .action-container #settingsButton {
     left: var(--action-container-padding);
     position: absolute;
@@ -28,6 +34,7 @@
     left: auto;
     right: var(--action-container-padding);
   }
+</if>
 
   /* Old design */
   #illustration-container {
@@ -92,6 +99,28 @@
   }
 
   /* New design */
+  :host([is-new-design-modal-dialog_]) {
+    --avatar-size: 76px;
+    --banner-height: 128px;
+    --banner-size: 90% 90%;
+    --content-container-margin-bottom: 0;
+    --content-container-margin-top: 96px;
+    --confirmation-description-margin-inline: 32px;
+    --footer-margin: 16px;
+    --text-font-size: unset;
+    min-height: 468px;
+    position: relative;
+    width: 512px;
+  }
+
+  /* Makes the absolutely positioned footer relative to confirmationContainer
+     which may be larger than the window. */
+  #confirmationContainer {
+    min-height: 100%;
+    position: absolute;
+    width: 100%;
+  }
+
   #headerContainer {
     background-color: var(--theme-frame-color);
     height: var(--banner-height);
@@ -103,6 +132,7 @@
     background-image: url(images/sync_confirmation_refreshed_illustration.svg);
     background-position: center;
     background-repeat: no-repeat;
+    background-size: var(--banner-size);
     height: 100%;
     position: absolute;
     top: 0;
@@ -140,6 +170,11 @@
     width: var(--badge-width);
   }
 
+  :host([is-new-design-modal-dialog_]) .work-badge {
+    --badge-width: 26px;
+    --badge-offset: -8px;
+  }
+
   .work-badge > iron-icon {
     --work-icon-size: 20px;
     background-color: var(--md-background-color);
@@ -152,8 +187,8 @@
   }
 
   #contentContainer {
-    margin-bottom: calc(48px + var(--footer-margin));
-    margin-top: 104px;
+    margin-bottom: var(--content-container-margin-bottom);
+    margin-top: var(--content-container-margin-top);
     text-align: center;
   }
 
@@ -164,7 +199,7 @@
 
   #confirmationDescription {
     font-size: var(--text-font-size);
-    margin-inline: auto;
+    margin-inline: var(--confirmation-description-margin-inline);
     margin-top: 16px;
     max-width: 516px;
   }
@@ -212,7 +247,7 @@
   which user clicks to indicate consent.
 -->
 
-<template is="dom-if" if="[[!isProfileCreationFlow_]]">
+<template is="dom-if" if="[[!isNewDesign_]]">
   <div id="illustration-container">
     <div id="grey-banner"></div>
     <div id="illustration"></div>
@@ -242,9 +277,11 @@
           $i18n{syncConfirmationSettingsLabel}
         </cr-button>
       </if>
-      <cr-button id="cancelButton" on-click="onUndo_">
-        $i18n{syncConfirmationUndoLabel}
-      </cr-button>
+      <if expr="not lacros">
+        <cr-button id="cancelButton" on-click="onUndo_">
+          $i18n{syncConfirmationUndoLabel}
+        </cr-button>
+      </if>
       <if expr="not is_macosx and not is_linux">
         <cr-button id="settingsButton" on-click="onGoToSettings_"
             consent-confirmation>
@@ -255,52 +292,52 @@
   </div>
 </template>
 
-<template is="dom-if" if="[[isProfileCreationFlow_]]">
-  <div id="headerContainer" style$="--theme-frame-color:[[highlightColor_]]">
-    <div id="syncPromoBanner"></div>
-    <div id="avatarContainer">
-      <img id="avatar" alt="" src="[[accountImageSrc_]]">
-      <div class="work-badge" hidden="[[!showEnterpriseBadge_]]">
-        <iron-icon class="icon" icon="cr:domain"></iron-icon>
+<template is="dom-if" if="[[isNewDesign_]]">
+  <div id="confirmationContainer">
+    <div id="headerContainer" style$="--theme-frame-color:[[highlightColor_]]">
+      <div id="syncPromoBanner"></div>
+      <div id="avatarContainer">
+        <img id="avatar" alt="" src="[[accountImageSrc_]]">
+        <div class="work-badge" hidden="[[!showEnterpriseBadge_]]">
+          <iron-icon class="icon" icon="cr:domain"></iron-icon>
+        </div>
       </div>
     </div>
-  </div>
 
-  <div id="contentContainer">
-    <h2 consent-description id="syncConfirmationHeading">
-      $i18n{syncConfirmationTitle}
-    </h2>
-    <div id="confirmationDescription" class="secondary">
-      <span consent-description>
-        $i18n{syncConfirmationSyncInfoTitle}.
-      </span>
-      <span>
-        $i18n{syncConfirmationSettingsInfo}
-      </span>
-      <span consent-description>
-        $i18n{syncConfirmationSyncInfoDesc}.
-      </span>
+    <div id="contentContainer">
+      <h2 consent-description id="syncConfirmationHeading">
+        $i18n{syncConfirmationTitle}
+      </h2>
+      <div id="confirmationDescription" class="secondary">
+        <span consent-description>$i18n{syncConfirmationSyncInfoTitle}</span>.
+        <span>
+          $i18n{syncConfirmationSettingsInfo}
+        </span>
+        <span consent-description>$i18n{syncConfirmationSyncInfoDesc}</span>.
+      </div>
     </div>
-  </div>
-  <div id="buttonsContainer" class="action-container">
-    <cr-button class="action-button" id="confirmButton"
-        on-click="onConfirm_" consent-confirmation>
-      $i18n{syncConfirmationConfirmLabel}
-    </cr-button>
-    <if expr="is_macosx or is_linux">
-      <cr-button id="settingsButton" on-click="onGoToSettings_"
-          consent-confirmation>
-        $i18n{syncConfirmationSettingsLabel}
+    <div id="buttonsContainer" class="action-container">
+      <cr-button class="action-button" id="confirmButton"
+          on-click="onConfirm_" consent-confirmation>
+        $i18n{syncConfirmationConfirmLabel}
       </cr-button>
-    </if>
-    <cr-button id="notNowButton" on-click="onUndo_">
-      $i18n{syncConfirmationUndoLabel}
-    </cr-button>
-    <if expr="not is_macosx and not is_linux">
-      <cr-button id="settingsButton" on-click="onGoToSettings_"
-          consent-confirmation>
-        $i18n{syncConfirmationSettingsLabel}
-      </cr-button>
-    </if>
+      <if expr="is_macosx or is_linux">
+        <cr-button id="settingsButton" on-click="onGoToSettings_"
+            consent-confirmation>
+          $i18n{syncConfirmationSettingsLabel}
+        </cr-button>
+      </if>
+      <if expr="not lacros">
+        <cr-button id="notNowButton" on-click="onUndo_">
+          $i18n{syncConfirmationUndoLabel}
+        </cr-button>
+      </if>
+      <if expr="not is_macosx and not is_linux">
+        <cr-button id="settingsButton" on-click="onGoToSettings_"
+            consent-confirmation>
+          $i18n{syncConfirmationSettingsLabel}
+        </cr-button>
+      </if>
+    </div>
   </div>
 </template>

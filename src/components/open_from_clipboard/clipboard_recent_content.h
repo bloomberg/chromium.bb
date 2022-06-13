@@ -6,11 +6,12 @@
 #define COMPONENTS_OPEN_FROM_CLIPBOARD_CLIPBOARD_RECENT_CONTENT_H_
 
 #include <memory>
+#include <set>
 #include <string>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/time/time.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
 
@@ -22,6 +23,10 @@ enum class ClipboardContentType { URL, Text, Image };
 class ClipboardRecentContent {
  public:
   ClipboardRecentContent();
+
+  ClipboardRecentContent(const ClipboardRecentContent&) = delete;
+  ClipboardRecentContent& operator=(const ClipboardRecentContent&) = delete;
+
   virtual ~ClipboardRecentContent();
 
   // Returns the global instance of the ClipboardRecentContent singleton. This
@@ -45,6 +50,23 @@ class ClipboardRecentContent {
   // Return if system's clipboard contains an image that will not trigger a
   // system notification that the clipboard has been accessed.
   virtual bool HasRecentImageFromClipboard() = 0;
+
+  // Returns current clipboard content type(s) if it is recent enough and has
+  // not been suppressed. This value will be nullopt during the brief period
+  // when the clipboard is updating its cache. More succintly, this value will
+  // be nullopt when the app is not sure what the latest clipboard contents are,
+  // or when the value should not be returned due to the clipboard content's age
+  // being too old. Differently, this value will be the non-nullopt empty set
+  // when nothing is copied on the clipboard.
+  //
+  // Finally, this synchronous method slightly differs from the asynchronous
+  // method HasRecentContentFromClipboard. This method synchronously returns the
+  // ContentTypes being used given current pasteboard contents. Whereas
+  // HasRecentContentFromClipboard exposes functionality to ask the application
+  // if certain ContentTypes are being used on the clipboard, and retrieve a
+  // response with the results.
+  virtual absl::optional<std::set<ClipboardContentType>>
+  GetCachedClipboardContentTypes() = 0;
 
   /*
    On iOS, iOS 14 introduces new clipboard APIs that are async. The asynchronous
@@ -91,9 +113,6 @@ class ClipboardRecentContent {
   // GetRecentURLFromClipboard() should never return a URL from a clipboard
   // older than this.
   static base::TimeDelta MaximumAgeOfClipboard();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ClipboardRecentContent);
 };
 
 #endif  // COMPONENTS_OPEN_FROM_CLIPBOARD_CLIPBOARD_RECENT_CONTENT_H_

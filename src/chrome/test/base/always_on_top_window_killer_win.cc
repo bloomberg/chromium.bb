@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/test/base/always_on_top_window_killer_win.h"
+#include "base/memory/raw_ptr.h"
 
 #include <Windows.h>
 
@@ -10,9 +11,9 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/stl_util.h"
 #include "chrome/test/base/process_lineage_win.h"
 #include "chrome/test/base/save_desktop_snapshot_win.h"
 #include "ui/display/win/screen_win.h"
@@ -73,7 +74,7 @@ class WindowEnumerator {
 
   const base::FilePath output_dir_;
   const RunType run_type_;
-  const base::CommandLine* const child_command_line_;
+  const raw_ptr<const base::CommandLine> child_command_line_;
   bool saved_snapshot_ = false;
 };
 

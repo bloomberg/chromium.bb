@@ -14,10 +14,6 @@
 # ==============================================================================
 """Test that we can connect to a real Cloud TPU."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 from absl import flags
 from absl.testing import absltest
 
@@ -36,7 +32,6 @@ DEVICES_PER_TASK = 8
 
 EXPECTED_DEVICES_PRE_CONNECT = [
     '/device:CPU:0',
-    '/device:XLA_CPU:0',
 ]
 EXPECTED_NEW_DEVICES_AFTER_CONNECT_TEMPLATES = [
     '/job:worker/replica:0/task:{task}/device:CPU:0',

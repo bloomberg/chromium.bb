@@ -13,7 +13,7 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "components/url_matcher/url_matcher.h"
@@ -72,6 +72,9 @@ class WebRequestRulesRegistry : public RulesRegistry {
   WebRequestRulesRegistry(content::BrowserContext* browser_context,
                           RulesCacheDelegate* cache_delegate,
                           int rules_registry_id);
+
+  WebRequestRulesRegistry(const WebRequestRulesRegistry&) = delete;
+  WebRequestRulesRegistry& operator=(const WebRequestRulesRegistry&) = delete;
 
   // TODO(battre): This will become an implementation detail, because we need
   // a way to also execute the actions of the rules.
@@ -171,9 +174,7 @@ class WebRequestRulesRegistry : public RulesRegistry {
 
   url_matcher::URLMatcher url_matcher_;
 
-  content::BrowserContext* browser_context_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebRequestRulesRegistry);
+  raw_ptr<content::BrowserContext> browser_context_;
 };
 
 }  // namespace extensions

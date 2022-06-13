@@ -47,6 +47,10 @@ void SharedImageBacking::OnContextLost() {
   have_context_ = false;
 }
 
+bool SharedImageBacking::CopyToGpuMemoryBuffer() {
+  return false;
+}
+
 bool SharedImageBacking::PresentSwapChain() {
   return false;
 }
@@ -79,7 +83,8 @@ std::unique_ptr<SharedImageRepresentationSkia> SharedImageBacking::ProduceSkia(
 std::unique_ptr<SharedImageRepresentationDawn> SharedImageBacking::ProduceDawn(
     SharedImageManager* manager,
     MemoryTypeTracker* tracker,
-    WGPUDevice device) {
+    WGPUDevice device,
+    WGPUBackendType backend_type) {
   return nullptr;
 }
 
@@ -98,6 +103,12 @@ SharedImageBacking::ProduceVASurface(SharedImageManager* manager,
 
 std::unique_ptr<SharedImageRepresentationMemory>
 SharedImageBacking::ProduceMemory(SharedImageManager* manager,
+                                  MemoryTypeTracker* tracker) {
+  return nullptr;
+}
+
+std::unique_ptr<SharedImageRepresentationRaster>
+SharedImageBacking::ProduceRaster(SharedImageManager* manager,
                                   MemoryTypeTracker* tracker) {
   return nullptr;
 }

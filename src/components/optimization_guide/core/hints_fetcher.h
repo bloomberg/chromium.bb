@@ -11,7 +11,7 @@
 
 #include "base/callback.h"
 #include "base/containers/flat_set.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/sequence_checker.h"
 #include "base/time/clock.h"
@@ -72,6 +72,10 @@ class HintsFetcher {
       const GURL& optimization_guide_service_url,
       PrefService* pref_service,
       network::NetworkConnectionTracker* network_connection_tracker);
+
+  HintsFetcher(const HintsFetcher&) = delete;
+  HintsFetcher& operator=(const HintsFetcher&) = delete;
+
   virtual ~HintsFetcher();
 
   // Requests hints from the Optimization Guide Service if a request for them is
@@ -159,17 +163,17 @@ class HintsFetcher {
   optimization_guide::proto::RequestContext request_context_;
 
   // A reference to the PrefService for this profile. Not owned.
-  PrefService* pref_service_ = nullptr;
+  raw_ptr<PrefService> pref_service_ = nullptr;
 
   // Listens to changes around the network connection. Not owned. Guaranteed to
   // outlive |this|.
-  network::NetworkConnectionTracker* network_connection_tracker_;
+  raw_ptr<network::NetworkConnectionTracker> network_connection_tracker_;
 
   // Holds the hosts being requested by the hints fetcher.
   std::vector<std::string> hosts_fetched_;
 
   // Clock used for recording time that the hints fetch occurred.
-  const base::Clock* time_clock_;
+  raw_ptr<const base::Clock> time_clock_;
 
   // Used for creating an |active_url_loader_| when needed for request hints.
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
@@ -179,8 +183,6 @@ class HintsFetcher {
   base::TimeTicks hints_fetch_start_time_;
 
   SEQUENCE_CHECKER(sequence_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(HintsFetcher);
 };
 
 }  // namespace optimization_guide

@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/containers/circular_deque.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/scoped_multi_source_observation.h"
@@ -25,7 +26,7 @@
 #include "components/no_state_prefetch/browser/no_state_prefetch_contents.h"
 #include "components/no_state_prefetch/browser/no_state_prefetch_contents_delegate.h"
 #include "components/no_state_prefetch/browser/no_state_prefetch_manager.h"
-#include "components/safe_browsing/core/db/fake_database_manager.h"
+#include "components/safe_browsing/core/browser/db/fake_database_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_widget_host_observer.h"
 #include "url/gurl.h"
@@ -46,6 +47,10 @@ class TestNoStatePrefetchContents : public NoStatePrefetchContents,
       Origin origin,
       FinalStatus expected_final_status,
       bool ignore_final_status);
+
+  TestNoStatePrefetchContents(const TestNoStatePrefetchContents&) = delete;
+  TestNoStatePrefetchContents& operator=(const TestNoStatePrefetchContents&) =
+      delete;
 
   ~TestNoStatePrefetchContents() override;
 
@@ -75,12 +80,10 @@ class TestNoStatePrefetchContents : public NoStatePrefetchContents,
       observations_{this};
 
   // The main frame created for the prerender, if any.
-  content::RenderFrameHost* new_main_frame_ = nullptr;
+  raw_ptr<content::RenderFrameHost> new_main_frame_ = nullptr;
 
   // If true, |expected_final_status_| and other shutdown checks are skipped.
   bool skip_final_checks_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestNoStatePrefetchContents);
 };
 
 // A handle to a TestNoStatePrefetchContents whose lifetime is under the
@@ -90,6 +93,10 @@ class TestPrerender : public NoStatePrefetchContents::Observer,
                       public base::SupportsWeakPtr<TestPrerender> {
  public:
   TestPrerender();
+
+  TestPrerender(const TestPrerender&) = delete;
+  TestPrerender& operator=(const TestPrerender&) = delete;
+
   ~TestPrerender() override;
 
   TestNoStatePrefetchContents* contents() const { return contents_; }
@@ -116,7 +123,7 @@ class TestPrerender : public NoStatePrefetchContents::Observer,
   void OnPrefetchStop(NoStatePrefetchContents* contents) override;
 
  private:
-  TestNoStatePrefetchContents* contents_;
+  raw_ptr<TestNoStatePrefetchContents> contents_;
   FinalStatus final_status_;
   int number_of_loads_;
 
@@ -129,8 +136,6 @@ class TestPrerender : public NoStatePrefetchContents::Observer,
   base::RunLoop create_loop_;
   base::RunLoop start_loop_;
   base::RunLoop stop_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestPrerender);
 };
 
 // Blocks until a TestNoStatePrefetchContents has been destroyed with the given
@@ -142,6 +147,9 @@ class DestructionWaiter {
   // WaitForDestroy().
   DestructionWaiter(TestNoStatePrefetchContents* no_state_prefetch_contents,
                     FinalStatus expected_final_status);
+
+  DestructionWaiter(const DestructionWaiter&) = delete;
+  DestructionWaiter& operator=(const DestructionWaiter&) = delete;
 
   ~DestructionWaiter();
 
@@ -158,14 +166,15 @@ class DestructionWaiter {
     // TestNoStatePrefetchContents.
     explicit DestructionMarker(DestructionWaiter* waiter);
 
+    DestructionMarker(const DestructionMarker&) = delete;
+    DestructionMarker& operator=(const DestructionMarker&) = delete;
+
     ~DestructionMarker() override;
 
     void OnPrefetchStop(NoStatePrefetchContents* contents) override;
 
    private:
-    DestructionWaiter* waiter_;
-
-    DISALLOW_COPY_AND_ASSIGN(DestructionMarker);
+    raw_ptr<DestructionWaiter> waiter_;
   };
 
   // To be called by a DestructionMarker.
@@ -175,8 +184,6 @@ class DestructionWaiter {
   FinalStatus expected_final_status_;
   bool saw_correct_status_;
   std::unique_ptr<DestructionMarker> marker_;
-
-  DISALLOW_COPY_AND_ASSIGN(DestructionWaiter);
 };
 
 // Wait until a NoStatePrefetchManager has seen a first contentful paint.
@@ -187,6 +194,11 @@ class FirstContentfulPaintManagerWaiter
   // instance is owned by the |NoStatePrefetchManager|.
   static FirstContentfulPaintManagerWaiter* Create(
       NoStatePrefetchManager* manager);
+
+  FirstContentfulPaintManagerWaiter(const FirstContentfulPaintManagerWaiter&) =
+      delete;
+  FirstContentfulPaintManagerWaiter& operator=(
+      const FirstContentfulPaintManagerWaiter&) = delete;
 
   ~FirstContentfulPaintManagerWaiter() override;
 
@@ -200,8 +212,6 @@ class FirstContentfulPaintManagerWaiter
 
   std::unique_ptr<base::RunLoop> waiter_;
   bool saw_fcp_;
-
-  DISALLOW_COPY_AND_ASSIGN(FirstContentfulPaintManagerWaiter);
 };
 
 // NoStatePrefetchContentsFactory that uses TestNoStatePrefetchContents.
@@ -209,6 +219,11 @@ class TestNoStatePrefetchContentsFactory
     : public NoStatePrefetchContents::Factory {
  public:
   TestNoStatePrefetchContentsFactory();
+
+  TestNoStatePrefetchContentsFactory(
+      const TestNoStatePrefetchContentsFactory&) = delete;
+  TestNoStatePrefetchContentsFactory& operator=(
+      const TestNoStatePrefetchContentsFactory&) = delete;
 
   ~TestNoStatePrefetchContentsFactory() override;
 
@@ -241,13 +256,15 @@ class TestNoStatePrefetchContentsFactory
   };
 
   base::circular_deque<ExpectedContents> expected_contents_queue_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestNoStatePrefetchContentsFactory);
 };
 
 class PrerenderInProcessBrowserTest : virtual public InProcessBrowserTest {
  public:
   PrerenderInProcessBrowserTest();
+
+  PrerenderInProcessBrowserTest(const PrerenderInProcessBrowserTest&) = delete;
+  PrerenderInProcessBrowserTest& operator=(
+      const PrerenderInProcessBrowserTest&) = delete;
 
   ~PrerenderInProcessBrowserTest() override;
 
@@ -297,7 +314,7 @@ class PrerenderInProcessBrowserTest : virtual public InProcessBrowserTest {
   void set_browser(Browser* browser) { explicitly_set_browser_ = browser; }
 
   Browser* current_browser() const {
-    return explicitly_set_browser_ ? explicitly_set_browser_ : browser();
+    return explicitly_set_browser_ ? explicitly_set_browser_.get() : browser();
   }
 
   const base::HistogramTester& histogram_tester() { return histogram_tester_; }
@@ -348,8 +365,9 @@ class PrerenderInProcessBrowserTest : virtual public InProcessBrowserTest {
       external_protocol_handler_delegate_;
   std::unique_ptr<safe_browsing::TestSafeBrowsingServiceFactory>
       safe_browsing_factory_;
-  TestNoStatePrefetchContentsFactory* no_state_prefetch_contents_factory_;
-  Browser* explicitly_set_browser_;
+  raw_ptr<TestNoStatePrefetchContentsFactory>
+      no_state_prefetch_contents_factory_;
+  raw_ptr<Browser> explicitly_set_browser_;
   bool autostart_test_server_;
   base::HistogramTester histogram_tester_;
   std::unique_ptr<net::EmbeddedTestServer> https_src_server_;
@@ -360,8 +378,6 @@ class PrerenderInProcessBrowserTest : virtual public InProcessBrowserTest {
   uint32_t waiting_count_ = 0;
   base::OnceClosure waiting_closure_;
   base::Lock lock_;
-
-  DISALLOW_COPY_AND_ASSIGN(PrerenderInProcessBrowserTest);
 };
 
 }  // namespace test_utils

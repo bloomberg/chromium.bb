@@ -54,12 +54,6 @@ void TestTabStripModelDelegate::MoveToExistingWindow(
     const std::vector<int>& indices,
     int browser_index) {}
 
-std::vector<std::u16string>
-TestTabStripModelDelegate::GetExistingWindowsForMoveMenu() {
-  std::vector<std::u16string> existing_windows;
-  return existing_windows;
-}
-
 bool TestTabStripModelDelegate::CanMoveTabsToWindow(
     const std::vector<int>& indices) {
   return false;
@@ -96,3 +90,14 @@ bool TestTabStripModelDelegate::ShouldDisplayFavicon(
     content::WebContents* web_contents) const {
   return true;
 }
+
+bool TestTabStripModelDelegate::CanReload() const {
+  return true;
+}
+
+void TestTabStripModelDelegate::AddToReadLater(
+    content::WebContents* web_contents) {}
+
+void TestTabStripModelDelegate::CacheWebContents(
+    const std::vector<std::unique_ptr<TabStripModel::DetachedWebContents>>&
+        web_contents) {}

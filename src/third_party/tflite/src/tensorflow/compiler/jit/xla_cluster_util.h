@@ -21,8 +21,8 @@ limitations under the License.
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/types/optional.h"
-#include "tensorflow/compiler/jit/graphcycles/graphcycles.h"
 #include "tensorflow/compiler/jit/xla_activity.pb.h"
+#include "tensorflow/compiler/xla/service/graphcycles/graphcycles.h"
 #include "tensorflow/compiler/xla/statusor.h"
 #include "tensorflow/core/common_runtime/optimization_registry.h"
 #include "tensorflow/core/graph/algorithm.h"
@@ -58,8 +58,8 @@ bool HasForwardedRefInput(const Node& node);
 //
 // Returns true for success and false for valid graphs that we can't handle yet
 // (b/127521408).
-xla::StatusOr<bool> CreateCycleDetectionGraph(const Graph* graph,
-                                              GraphCycles* cycles);
+StatusOr<bool> CreateCycleDetectionGraph(const Graph* graph,
+                                         GraphCycles* cycles);
 
 // Returns the XLA cluster in which `node` is placed if it is in an XLA cluster,
 // otherwise returns nullopt.
@@ -100,7 +100,7 @@ XlaAutoClusteringSummary GetXlaAutoClusteringSummary(const Graph& graph);
 //
 // We assume each node has a trivial path to itself so the returned set includes
 // all of the nodes that have ref variables as input or output.
-xla::StatusOr<absl::flat_hash_set<Node*>> GetNodesRelatedToRefVariables(
+StatusOr<absl::flat_hash_set<Node*>> GetNodesRelatedToRefVariables(
     const Graph& graph, FunctionLibraryRuntime* lib_runtime);
 
 }  // namespace tensorflow

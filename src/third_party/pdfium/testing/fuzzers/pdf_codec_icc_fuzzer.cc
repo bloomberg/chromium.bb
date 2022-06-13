@@ -4,20 +4,18 @@
 
 #include <cstdint>
 
-#include "core/fxcodec/icc/iccmodule.h"
+#include "core/fxcodec/icc/icc_transform.h"
 #include "third_party/base/span.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  std::unique_ptr<CLcmsCmm> transform =
-      IccModule::CreateTransformSRGB(pdfium::make_span(data, size));
+  std::unique_ptr<fxcodec::IccTransform> transform =
+      fxcodec::IccTransform::CreateTransformSRGB(pdfium::make_span(data, size));
+  if (!transform)
+    return 0;
 
-  if (transform) {
-    float src[4];
-    float dst[4];
-    for (int i = 0; i < 4; i++)
-      src[i] = 0.5f;
-    IccModule::Translate(transform.get(), transform->components(), src, dst);
-  }
-
+  const float src[4] = {0.5f, 0.5f, 0.5f, 0.5f};
+  float dst[4];
+  transform->Translate(pdfium::make_span(src).first(transform->components()),
+                       pdfium::make_span(dst));
   return 0;
 }

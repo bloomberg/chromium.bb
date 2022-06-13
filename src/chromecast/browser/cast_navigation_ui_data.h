@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/macros.h"
 #include "content/public/browser/navigation_ui_data.h"
 
 namespace content {
@@ -27,14 +26,15 @@ class CastNavigationUIData : public content::NavigationUIData {
 
   explicit CastNavigationUIData(const std::string& session_id);
 
+  CastNavigationUIData(const CastNavigationUIData&) = delete;
+  CastNavigationUIData& operator=(const CastNavigationUIData&) = delete;
+
   const std::string& session_id() const { return session_id_; }
 
   std::unique_ptr<content::NavigationUIData> Clone() override;
 
  private:
   std::string session_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(CastNavigationUIData);
 };
 
 }  // namespace shell

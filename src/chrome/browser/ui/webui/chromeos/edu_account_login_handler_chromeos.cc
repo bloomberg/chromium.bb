@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "ash/components/account_manager/account_manager.h"
 #include "ash/components/account_manager/account_manager_factory.h"
 #include "base/bind.h"
 #include "base/callback.h"
@@ -20,6 +19,7 @@
 #include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
+#include "components/account_manager_core/chromeos/account_manager.h"
 #include "components/image_fetcher/core/image_fetcher_service.h"
 #include "components/image_fetcher/core/request_metadata.h"
 #include "components/signin/public/base/avatar_icon_util.h"
@@ -142,53 +142,52 @@ void EduAccountLoginHandler::OnJavascriptDisallowed() {
   parent_signin_callback_id_.clear();
 }
 
-void EduAccountLoginHandler::HandleIsNetworkReady(const base::ListValue* args) {
+void EduAccountLoginHandler::HandleIsNetworkReady(
+    base::Value::ConstListView args) {
   AllowJavascript();
 
   bool is_network_ready =
       network_state_informer_->state() == NetworkStateInformer::ONLINE;
-  ResolveJavascriptCallback(args->GetList()[0], base::Value(is_network_ready));
+  ResolveJavascriptCallback(args[0], base::Value(is_network_ready));
 }
 
-void EduAccountLoginHandler::HandleGetParents(const base::ListValue* args) {
+void EduAccountLoginHandler::HandleGetParents(base::Value::ConstListView args) {
   AllowJavascript();
 
-  CHECK_EQ(args->GetList().size(), 1u);
+  CHECK_EQ(args.size(), 1u);
 
   if (!get_parents_callback_id_.empty()) {
     // HandleGetParents call is already in progress, reject the callback.
-    RejectJavascriptCallback(args->GetList()[0], base::Value());
+    RejectJavascriptCallback(args[0], base::Value());
     return;
   }
-  get_parents_callback_id_ = args->GetList()[0].GetString();
+  get_parents_callback_id_ = args[0].GetString();
 
   FetchFamilyMembers();
 }
 
-void EduAccountLoginHandler::HandleParentSignin(const base::ListValue* args) {
-  const base::Value::ConstListView& args_list = args->GetList();
-  CHECK_EQ(args_list.size(), 3u);
-  CHECK(args_list[0].is_string());
+void EduAccountLoginHandler::HandleParentSignin(
+    base::Value::ConstListView args) {
+  CHECK_EQ(args.size(), 3u);
+  CHECK(args[0].is_string());
 
   if (!parent_signin_callback_id_.empty()) {
     // HandleParentSignin call is already in progress, reject the callback.
-    RejectJavascriptCallback(args_list[0], base::Value());
+    RejectJavascriptCallback(args[0], base::Value());
     return;
   }
-  parent_signin_callback_id_ = args_list[0].GetString();
+  parent_signin_callback_id_ = args[0].GetString();
 
   const base::DictionaryValue* parent = nullptr;
-  args_list[1].GetAsDictionary(&parent);
+  args[1].GetAsDictionary(&parent);
   CHECK(parent);
   const base::Value* obfuscated_gaia_id_value =
       parent->FindKey(kObfuscatedGaiaIdKey);
   DCHECK(obfuscated_gaia_id_value);
   std::string obfuscated_gaia_id = obfuscated_gaia_id_value->GetString();
 
-  std::string password;
-  args_list[2].GetAsString(&password);
-
-  FetchAccessToken(obfuscated_gaia_id, password);
+  const std::string* password = args[2].GetIfString();
+  FetchAccessToken(obfuscated_gaia_id, password ? *password : std::string());
 }
 
 void EduAccountLoginHandler::FetchFamilyMembers() {

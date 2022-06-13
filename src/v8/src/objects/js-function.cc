@@ -19,19 +19,10 @@ namespace v8 {
 namespace internal {
 
 CodeKinds JSFunction::GetAttachedCodeKinds() const {
-  // Note: There's a special case when bytecode has been aged away. After
-  // flushing the bytecode, the JSFunction will still have the interpreter
-  // entry trampoline attached, but the bytecode is no longer available.
-  Code code = this->code(kAcquireLoad);
-  if (code.is_interpreter_trampoline_builtin()) {
-    return CodeKindFlag::INTERPRETED_FUNCTION;
-  }
-
-  const CodeKind kind = code.kind();
+  const CodeKind kind = code().kind();
   if (!CodeKindIsJSFunction(kind)) return {};
-
-  if (CodeKindIsOptimizedJSFunction(kind) && code.marked_for_deoptimization()) {
-    // Nothing is attached.
+  if (CodeKindIsOptimizedJSFunction(kind) &&
+      code().marked_for_deoptimization()) {
     return {};
   }
   return CodeKindToCodeKindFlag(kind);
@@ -49,7 +40,7 @@ CodeKinds JSFunction::GetAvailableCodeKinds() const {
 
   if ((result & CodeKindFlag::BASELINE) == 0) {
     // The SharedFunctionInfo could have attached baseline code.
-    if (shared().HasBaselineData()) {
+    if (shared().HasBaselineCode()) {
       result |= CodeKindFlag::BASELINE;
     }
   }
@@ -90,7 +81,8 @@ namespace {
 
 // Returns false if no highest tier exists (i.e. the function is not compiled),
 // otherwise returns true and sets highest_tier.
-bool HighestTierOf(CodeKinds kinds, CodeKind* highest_tier) {
+V8_WARN_UNUSED_RESULT bool HighestTierOf(CodeKinds kinds,
+                                         CodeKind* highest_tier) {
   DCHECK_EQ((kinds & ~kJSFunctionCodeKindsMask), 0);
   if ((kinds & CodeKindFlag::TURBOFAN) != 0) {
     *highest_tier = CodeKind::TURBOFAN;
@@ -111,33 +103,43 @@ bool HighestTierOf(CodeKinds kinds, CodeKind* highest_tier) {
 
 }  // namespace
 
-bool JSFunction::ActiveTierIsIgnition() const {
-  if (!shared().HasBytecodeArray()) return false;
-  bool result = (GetActiveTier() == CodeKind::INTERPRETED_FUNCTION);
-#ifdef DEBUG
-  Code code = this->code(kAcquireLoad);
-  DCHECK_IMPLIES(result, code.is_interpreter_trampoline_builtin() ||
-                             (CodeKindIsOptimizedJSFunction(code.kind()) &&
-                              code.marked_for_deoptimization()) ||
-                             (code.builtin_index() == Builtins::kCompileLazy &&
-                              shared().IsInterpreted()));
-#endif  // DEBUG
-  return result;
-}
+base::Optional<CodeKind> JSFunction::GetActiveTier() const {
+#if V8_ENABLE_WEBASSEMBLY
+  // Asm/Wasm functions are currently not supported. For simplicity, this
+  // includes invalid asm.js functions whose code hasn't yet been updated to
+  // CompileLazy but is still the InstantiateAsmJs builtin.
+  if (shared().HasAsmWasmData() ||
+      code().builtin_id() == Builtin::kInstantiateAsmJs) {
+    return {};
+  }
+#endif  // V8_ENABLE_WEBASSEMBLY
 
-CodeKind JSFunction::GetActiveTier() const {
   CodeKind highest_tier;
-  DCHECK(shared().is_compiled());
-  HighestTierOf(GetAvailableCodeKinds(), &highest_tier);
-  DCHECK(highest_tier == CodeKind::TURBOFAN ||
-         highest_tier == CodeKind::BASELINE ||
-         highest_tier == CodeKind::TURBOPROP ||
-         highest_tier == CodeKind::INTERPRETED_FUNCTION);
+  if (!HighestTierOf(GetAvailableCodeKinds(), &highest_tier)) return {};
+
+#ifdef DEBUG
+  CHECK(highest_tier == CodeKind::TURBOFAN ||
+        highest_tier == CodeKind::BASELINE ||
+        highest_tier == CodeKind::TURBOPROP ||
+        highest_tier == CodeKind::INTERPRETED_FUNCTION);
+
+  if (highest_tier == CodeKind::INTERPRETED_FUNCTION) {
+    CHECK(code().is_interpreter_trampoline_builtin() ||
+          (CodeKindIsOptimizedJSFunction(code().kind()) &&
+           code().marked_for_deoptimization()) ||
+          (code().builtin_id() == Builtin::kCompileLazy &&
+           shared().IsInterpreted()));
+  }
+#endif  // DEBUG
+
   return highest_tier;
 }
 
+bool JSFunction::ActiveTierIsIgnition() const {
+  return GetActiveTier() == CodeKind::INTERPRETED_FUNCTION;
+}
+
 bool JSFunction::ActiveTierIsTurbofan() const {
-  if (!shared().HasBytecodeArray()) return false;
   return GetActiveTier() == CodeKind::TURBOFAN;
 }
 
@@ -145,27 +147,20 @@ bool JSFunction::ActiveTierIsBaseline() const {
   return GetActiveTier() == CodeKind::BASELINE;
 }
 
-bool JSFunction::ActiveTierIsIgnitionOrBaseline() const {
-  return ActiveTierIsIgnition() || ActiveTierIsBaseline();
-}
-
 bool JSFunction::ActiveTierIsToptierTurboprop() const {
-  if (!FLAG_turboprop_as_toptier) return false;
-  if (!shared().HasBytecodeArray()) return false;
-  return GetActiveTier() == CodeKind::TURBOPROP && FLAG_turboprop_as_toptier;
+  return FLAG_turboprop_as_toptier && GetActiveTier() == CodeKind::TURBOPROP;
 }
 
 bool JSFunction::ActiveTierIsMidtierTurboprop() const {
-  if (!FLAG_turboprop) return false;
-  if (!shared().HasBytecodeArray()) return false;
-  return GetActiveTier() == CodeKind::TURBOPROP && !FLAG_turboprop_as_toptier;
+  return FLAG_turboprop && !FLAG_turboprop_as_toptier &&
+         GetActiveTier() == CodeKind::TURBOPROP;
 }
 
 CodeKind JSFunction::NextTier() const {
   if (V8_UNLIKELY(FLAG_turboprop) && ActiveTierIsMidtierTurboprop()) {
     return CodeKind::TURBOFAN;
   } else if (V8_UNLIKELY(FLAG_turboprop)) {
-    DCHECK(ActiveTierIsIgnitionOrBaseline());
+    DCHECK(ActiveTierIsIgnition() || ActiveTierIsBaseline());
     return CodeKind::TURBOPROP;
   }
   return CodeKind::TURBOFAN;
@@ -184,14 +179,6 @@ bool JSFunction::CanDiscardCompiled() const {
   if (CodeKindIsOptimizedJSFunction(code().kind())) return true;
   CodeKinds result = GetAvailableCodeKinds();
   return (result & kJSFunctionCodeKindsMask) != 0;
-}
-
-// static
-MaybeHandle<NativeContext> JSBoundFunction::GetFunctionRealm(
-    Handle<JSBoundFunction> function) {
-  DCHECK(function->map().is_constructor());
-  return JSReceiver::GetFunctionRealm(
-      handle(function->bound_target_function(), function->GetIsolate()));
 }
 
 // static
@@ -259,13 +246,6 @@ Handle<Object> JSFunction::GetName(Isolate* isolate,
     return isolate->factory()->anonymous_string();
   }
   return handle(function->shared().Name(), isolate);
-}
-
-// static
-Handle<NativeContext> JSFunction::GetFunctionRealm(
-    Handle<JSFunction> function) {
-  DCHECK(function->map().is_constructor());
-  return handle(function->context().native_context(), function->GetIsolate());
 }
 
 // static
@@ -352,6 +332,14 @@ void JSFunction::InitializeFeedbackCell(
     Handle<JSFunction> function, IsCompiledScope* is_compiled_scope,
     bool reset_budget_for_feedback_allocation) {
   Isolate* const isolate = function->GetIsolate();
+#if V8_ENABLE_WEBASSEMBLY
+  // The following checks ensure that the feedback vectors are compatible with
+  // the feedback metadata. For Asm / Wasm functions we never allocate / use
+  // feedback vectors, so a mismatch between the metadata and feedback vector is
+  // harmless. The checks could fail for functions that has has_asm_wasm_broken
+  // set at runtime (for ex: failed instantiation).
+  if (function->shared().HasAsmWasmData()) return;
+#endif  // V8_ENABLE_WEBASSEMBLY
 
   if (function->has_feedback_vector()) {
     CHECK_EQ(function->feedback_vector().length(),
@@ -420,7 +408,7 @@ void SetInstancePrototype(Isolate* isolate, Handle<JSFunction> function,
 
     // Deoptimize all code that embeds the previous initial map.
     initial_map->dependent_code().DeoptimizeDependentCodeGroup(
-        DependentCode::kInitialMapChangedGroup);
+        isolate, DependentCode::kInitialMapChangedGroup);
   } else {
     // Put the value in the initial map field until an initial map is
     // needed.  At that point, a new initial map is created and the
@@ -561,6 +549,7 @@ bool CanSubclassHaveInobjectProperties(InstanceType instance_type) {
     case JS_DATE_TYPE:
     case JS_GENERATOR_OBJECT_TYPE:
     case JS_FUNCTION_TYPE:
+    case JS_CLASS_CONSTRUCTOR_TYPE:
     case JS_PROMISE_CONSTRUCTOR_TYPE:
     case JS_REG_EXP_CONSTRUCTOR_TYPE:
     case JS_ARRAY_CONSTRUCTOR_TYPE:
@@ -605,6 +594,16 @@ bool CanSubclassHaveInobjectProperties(InstanceType instance_type) {
     case JS_SPECIAL_API_OBJECT_TYPE:
     case JS_TYPED_ARRAY_TYPE:
     case JS_PRIMITIVE_WRAPPER_TYPE:
+    case JS_TEMPORAL_CALENDAR_TYPE:
+    case JS_TEMPORAL_DURATION_TYPE:
+    case JS_TEMPORAL_INSTANT_TYPE:
+    case JS_TEMPORAL_PLAIN_DATE_TYPE:
+    case JS_TEMPORAL_PLAIN_DATE_TIME_TYPE:
+    case JS_TEMPORAL_PLAIN_MONTH_DAY_TYPE:
+    case JS_TEMPORAL_PLAIN_TIME_TYPE:
+    case JS_TEMPORAL_PLAIN_YEAR_MONTH_TYPE:
+    case JS_TEMPORAL_TIME_ZONE_TYPE:
+    case JS_TEMPORAL_ZONED_DATE_TIME_TYPE:
     case JS_WEAK_MAP_TYPE:
     case JS_WEAK_REF_TYPE:
     case JS_WEAK_SET_TYPE:
@@ -796,49 +795,55 @@ MaybeHandle<Map> JSFunction::GetDerivedMap(Isolate* isolate,
   return map;
 }
 
+namespace {
+
+// Assert that the computations in TypedArrayElementsKindToConstructorIndex and
+// TypedArrayElementsKindToRabGsabCtorIndex are sound.
+#define TYPED_ARRAY_CASE(Type, type, TYPE, ctype)                         \
+  STATIC_ASSERT(Context::TYPE##_ARRAY_FUN_INDEX ==                        \
+                Context::FIRST_FIXED_TYPED_ARRAY_FUN_INDEX +              \
+                    ElementsKind::TYPE##_ELEMENTS -                       \
+                    ElementsKind::FIRST_FIXED_TYPED_ARRAY_ELEMENTS_KIND); \
+  STATIC_ASSERT(Context::RAB_GSAB_##TYPE##_ARRAY_MAP_INDEX ==             \
+                Context::FIRST_RAB_GSAB_TYPED_ARRAY_MAP_INDEX +           \
+                    ElementsKind::TYPE##_ELEMENTS -                       \
+                    ElementsKind::FIRST_FIXED_TYPED_ARRAY_ELEMENTS_KIND);
+
+TYPED_ARRAYS(TYPED_ARRAY_CASE)
+#undef TYPED_ARRAY_CASE
+
+int TypedArrayElementsKindToConstructorIndex(ElementsKind elements_kind) {
+  return Context::FIRST_FIXED_TYPED_ARRAY_FUN_INDEX + elements_kind -
+         ElementsKind::FIRST_FIXED_TYPED_ARRAY_ELEMENTS_KIND;
+}
+
+int TypedArrayElementsKindToRabGsabCtorIndex(ElementsKind elements_kind) {
+  return Context::FIRST_RAB_GSAB_TYPED_ARRAY_MAP_INDEX + elements_kind -
+         ElementsKind::FIRST_FIXED_TYPED_ARRAY_ELEMENTS_KIND;
+}
+
+}  // namespace
+
 Handle<Map> JSFunction::GetDerivedRabGsabMap(Isolate* isolate,
                                              Handle<JSFunction> constructor,
                                              Handle<JSReceiver> new_target) {
+  Handle<Map> map =
+      GetDerivedMap(isolate, constructor, new_target).ToHandleChecked();
   {
     DisallowHeapAllocation no_alloc;
     NativeContext context = isolate->context().native_context();
-    if (*new_target == context.uint8_array_fun()) {
-      return handle(context.rab_gsab_uint8_array_map(), isolate);
-    }
-    if (*new_target == context.int8_array_fun()) {
-      return handle(context.rab_gsab_int8_array_map(), isolate);
-    }
-    if (*new_target == context.uint16_array_fun()) {
-      return handle(context.rab_gsab_uint16_array_map(), isolate);
-    }
-    if (*new_target == context.int16_array_fun()) {
-      return handle(context.rab_gsab_int16_array_map(), isolate);
-    }
-    if (*new_target == context.uint32_array_fun()) {
-      return handle(context.rab_gsab_uint32_array_map(), isolate);
-    }
-    if (*new_target == context.int32_array_fun()) {
-      return handle(context.rab_gsab_int32_array_map(), isolate);
-    }
-    if (*new_target == context.float32_array_fun()) {
-      return handle(context.rab_gsab_float32_array_map(), isolate);
-    }
-    if (*new_target == context.float64_array_fun()) {
-      return handle(context.rab_gsab_float64_array_map(), isolate);
-    }
-    if (*new_target == context.biguint64_array_fun()) {
-      return handle(context.rab_gsab_biguint64_array_map(), isolate);
-    }
-    if (*new_target == context.bigint64_array_fun()) {
-      return handle(context.rab_gsab_bigint64_array_map(), isolate);
+    int ctor_index =
+        TypedArrayElementsKindToConstructorIndex(map->elements_kind());
+    if (*new_target == context.get(ctor_index)) {
+      ctor_index =
+          TypedArrayElementsKindToRabGsabCtorIndex(map->elements_kind());
+      return handle(Map::cast(context.get(ctor_index)), isolate);
     }
   }
 
   // This only happens when subclassing TypedArrays. Create a new map with the
   // corresponding RAB / GSAB ElementsKind. Note: the map is not cached and
   // reused -> every array gets a unique map, making ICs slow.
-  Handle<Map> map =
-      GetDerivedMap(isolate, constructor, new_target).ToHandleChecked();
   Handle<Map> rab_gsab_map = Map::Copy(isolate, map, "RAB / GSAB");
   rab_gsab_map->set_elements_kind(
       GetCorrespondingRabGsabElementsKind(map->elements_kind()));
@@ -932,9 +937,9 @@ Handle<String> NativeCodeFunctionSourceString(
     Handle<SharedFunctionInfo> shared_info) {
   Isolate* const isolate = shared_info->GetIsolate();
   IncrementalStringBuilder builder(isolate);
-  builder.AppendCString("function ");
+  builder.AppendCStringLiteral("function ");
   builder.AppendString(handle(shared_info->Name(), isolate));
-  builder.AppendCString("() { [native code] }");
+  builder.AppendCStringLiteral("() { [native code] }");
   return builder.Finish().ToHandleChecked();
 }
 
@@ -1079,7 +1084,7 @@ void JSFunction::CalculateInstanceSizeHelper(InstanceType instance_type,
 }
 
 void JSFunction::ClearTypeFeedbackInfo() {
-  ResetIfBytecodeFlushed();
+  ResetIfCodeFlushed();
   if (has_feedback_vector()) {
     FeedbackVector vector = feedback_vector();
     Isolate* isolate = GetIsolate();

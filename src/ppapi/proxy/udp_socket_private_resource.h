@@ -8,7 +8,6 @@
 #include <stdint.h>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
 #include "ppapi/proxy/udp_socket_resource_base.h"
 #include "ppapi/thunk/ppb_udp_socket_private_api.h"
@@ -21,6 +20,10 @@ class PPAPI_PROXY_EXPORT UDPSocketPrivateResource
       public thunk::PPB_UDPSocket_Private_API {
  public:
   UDPSocketPrivateResource(Connection connection, PP_Instance instance);
+
+  UDPSocketPrivateResource(const UDPSocketPrivateResource&) = delete;
+  UDPSocketPrivateResource& operator=(const UDPSocketPrivateResource&) = delete;
+
   ~UDPSocketPrivateResource() override;
 
   // PluginResource implementation.
@@ -41,9 +44,6 @@ class PPAPI_PROXY_EXPORT UDPSocketPrivateResource
                  const PP_NetAddress_Private* addr,
                  scoped_refptr<TrackedCallback> callback) override;
   void Close() override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(UDPSocketPrivateResource);
 };
 
 }  // namespace proxy

@@ -13,7 +13,7 @@ namespace blink {
 CSSAnimation::CSSAnimation(ExecutionContext* execution_context,
                            AnimationTimeline* timeline,
                            AnimationEffect* content,
-                           int animation_index,
+                           wtf_size_t animation_index,
                            const String& animation_name)
     : Animation(execution_context, timeline, content),
       animation_index_(animation_index),
@@ -60,19 +60,11 @@ void CSSAnimation::setTimeline(AnimationTimeline* timeline) {
   ignore_css_timeline_ = true;
 }
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 void CSSAnimation::setStartTime(const V8CSSNumberish* start_time,
                                 ExceptionState& exception_state) {
   PlayStateTransitionScope scope(*this);
   Animation::setStartTime(start_time, exception_state);
 }
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-void CSSAnimation::setStartTime(CSSNumberish start_time_ms,
-                                ExceptionState& exception_state) {
-  PlayStateTransitionScope scope(*this);
-  Animation::setStartTime(start_time_ms, exception_state);
-}
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 AnimationEffect::EventDelegate* CSSAnimation::CreateEventDelegate(
     Element* target,

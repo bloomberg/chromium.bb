@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_PERFORMANCE_MANAGER_PUBLIC_DECORATORS_PROCESS_METRICS_DECORATOR_H_
 #define COMPONENTS_PERFORMANCE_MANAGER_PUBLIC_DECORATORS_PROCESS_METRICS_DECORATOR_H_
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "components/performance_manager/public/graph/graph.h"
@@ -23,6 +24,10 @@ class ProcessMetricsDecorator
       public GraphRegisteredImpl<ProcessMetricsDecorator> {
  public:
   ProcessMetricsDecorator();
+
+  ProcessMetricsDecorator(const ProcessMetricsDecorator&) = delete;
+  ProcessMetricsDecorator& operator=(const ProcessMetricsDecorator&) = delete;
+
   ~ProcessMetricsDecorator() override;
 
   // A token used to express an interest for process metrics. Process metrics
@@ -94,7 +99,7 @@ class ProcessMetricsDecorator
   base::RetainingOneShotTimer refresh_timer_;
 
   // The Graph instance owning this decorator.
-  Graph* graph_;
+  raw_ptr<Graph> graph_;
 
   // The number of clients currently interested by the metrics tracked by this
   // class.
@@ -103,7 +108,6 @@ class ProcessMetricsDecorator
   SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<ProcessMetricsDecorator> weak_factory_{this};
-  DISALLOW_COPY_AND_ASSIGN(ProcessMetricsDecorator);
 };
 
 }  // namespace performance_manager

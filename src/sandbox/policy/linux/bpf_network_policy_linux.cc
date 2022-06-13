@@ -8,7 +8,6 @@
 #include <unistd.h>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "build/build_config.h"
 #include "sandbox/linux/bpf_dsl/bpf_dsl.h"
 #include "sandbox/linux/seccomp-bpf-helpers/syscall_parameters_restrictions.h"
@@ -35,7 +34,7 @@ NetworkProcessPolicy::~NetworkProcessPolicy() {}
 ResultExpr NetworkProcessPolicy::EvaluateSyscall(int sysno) const {
   auto* sandbox_linux = SandboxLinux::GetInstance();
   if (sandbox_linux->ShouldBrokerHandleSyscall(sysno))
-    return sandbox_linux->HandleViaBroker();
+    return sandbox_linux->HandleViaBroker(sysno);
 
   // TODO(mpdenton): FIX this.
   return Allow();

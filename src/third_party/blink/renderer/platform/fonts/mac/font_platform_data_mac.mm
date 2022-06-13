@@ -26,9 +26,9 @@
 #import <AppKit/NSFont.h>
 #import <AvailabilityMacros.h>
 
+#include "base/cxx17_backports.h"
 #import "base/mac/foundation_util.h"
 #import "base/mac/scoped_nsobject.h"
-#include "base/stl_util.h"
 #include "third_party/blink/public/platform/mac/web_sandbox_support.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/fonts/font.h"
@@ -165,6 +165,7 @@ static sk_sp<SkTypeface> LoadFromBrowserProcess(NSFont* ns_font,
 std::unique_ptr<FontPlatformData> FontPlatformDataFromNSFont(
     NSFont* ns_font,
     float size,
+    float specified_size,
     bool synthetic_bold,
     bool synthetic_italic,
     FontOrientation orientation,
@@ -218,11 +219,13 @@ std::unique_ptr<FontPlatformData> FontPlatformDataFromNSFont(
   // settings, special case 'opsz', track the number of axes reconfigured.
   bool axes_reconfigured = false;
   for (auto& coordinate : coordinates_to_set) {
-    // Set 'opsz' to font size but allow having it overridden by
-    // font-variation-settings in case it has 'opsz'.
+    // Set 'opsz' to specified size but allow having it overridden by
+    // font-variation-settings in case it has 'opsz'. Do not use font size here,
+    // but specified size in order to account for zoom.
     if (coordinate.axis == kOpszTag && optical_sizing == kAutoOpticalSizing) {
-      if (VariableAxisChangeEffective(typeface.get(), coordinate.axis, size)) {
-        coordinate.value = SkFloatToScalar(size);
+      if (VariableAxisChangeEffective(typeface.get(), coordinate.axis,
+                                      specified_size)) {
+        coordinate.value = SkFloatToScalar(specified_size);
         axes_reconfigured = true;
       }
     }
@@ -243,7 +246,7 @@ std::unique_ptr<FontPlatformData> FontPlatformDataFromNSFont(
   }
 
   SkFontArguments::VariationPosition variation_design_position{
-      coordinates_to_set.data(), coordinates_to_set.size()};
+      coordinates_to_set.data(), static_cast<int>(coordinates_to_set.size())};
 
   sk_sp<SkTypeface> cloned_typeface(typeface->makeClone(
       SkFontArguments().setVariationDesignPosition(variation_design_position)));

@@ -46,9 +46,7 @@ QuicStreamSequencerBuffer::QuicStreamSequencerBuffer(size_t max_capacity_bytes)
       current_blocks_count_(0u),
       total_bytes_read_(0),
       blocks_(nullptr) {
-  if (allocate_blocks_on_demand_) {
-    QUICHE_DCHECK_GE(max_blocks_count_, kInitialBlockCount);
-  }
+  QUICHE_DCHECK_GE(max_blocks_count_, kInitialBlockCount);
   Clear();
 }
 
@@ -58,9 +56,7 @@ QuicStreamSequencerBuffer::~QuicStreamSequencerBuffer() {
 
 void QuicStreamSequencerBuffer::Clear() {
   if (blocks_ != nullptr) {
-    size_t blocks_to_clear =
-        allocate_blocks_on_demand_ ? current_blocks_count_ : max_blocks_count_;
-    for (size_t i = 0; i < blocks_to_clear; ++i) {
+    for (size_t i = 0; i < current_blocks_count_; ++i) {
       if (blocks_[i] != nullptr) {
         RetireBlock(i);
       }
@@ -129,9 +125,7 @@ QuicErrorCode QuicStreamSequencerBuffer::OnStreamData(
     *error_details = "Received data beyond available range.";
     return QUIC_INTERNAL_ERROR;
   }
-  if (allocate_blocks_on_demand_) {
-    QUIC_RELOADABLE_FLAG_COUNT(
-        quic_allocate_stream_sequencer_buffer_blocks_on_demand);
+  if (!delay_allocation_until_new_data_) {
     MaybeAddMoreBlocks(starting_offset + size);
   }
 
@@ -147,6 +141,11 @@ QuicErrorCode QuicStreamSequencerBuffer::OnStreamData(
       // processing.
       *error_details = "Too many data intervals received for this stream.";
       return QUIC_TOO_MANY_STREAM_DATA_INTERVALS;
+    }
+    if (delay_allocation_until_new_data_) {
+      QUIC_RELOADABLE_FLAG_COUNT_N(
+          quic_delay_sequencer_buffer_allocation_until_new_data, 1, 2);
+      MaybeAddMoreBlocks(starting_offset + size);
     }
 
     size_t bytes_copy = 0;
@@ -170,6 +169,11 @@ QuicErrorCode QuicStreamSequencerBuffer::OnStreamData(
     // processing.
     *error_details = "Too many data intervals received for this stream.";
     return QUIC_TOO_MANY_STREAM_DATA_INTERVALS;
+  }
+  if (delay_allocation_until_new_data_) {
+    QUIC_RELOADABLE_FLAG_COUNT_N(
+        quic_delay_sequencer_buffer_allocation_until_new_data, 2, 2);
+    MaybeAddMoreBlocks(starting_offset + size);
   }
   for (const auto& interval : newly_received) {
     const QuicStreamOffset copy_offset = interval.min();
@@ -202,8 +206,7 @@ bool QuicStreamSequencerBuffer::CopyStreamData(QuicStreamOffset offset,
   while (source_remaining > 0) {
     const size_t write_block_num = GetBlockIndex(offset);
     const size_t write_block_offset = GetInBlockOffset(offset);
-    size_t current_blocks_count =
-        allocate_blocks_on_demand_ ? current_blocks_count_ : max_blocks_count_;
+    size_t current_blocks_count = current_blocks_count_;
     QUICHE_DCHECK_GT(current_blocks_count, write_block_num);
 
     size_t block_capacity = GetBlockCapacity(write_block_num);
@@ -213,15 +216,6 @@ bool QuicStreamSequencerBuffer::CopyStreamData(QuicStreamOffset offset,
     // reduce the available free bytes.
     if (offset + bytes_avail > total_bytes_read_ + max_buffer_capacity_bytes_) {
       bytes_avail = total_bytes_read_ + max_buffer_capacity_bytes_ - offset;
-    }
-
-    if (!allocate_blocks_on_demand_) {
-      if (blocks_ == nullptr) {
-        blocks_.reset(new BufferBlock*[max_blocks_count_]());
-        for (size_t i = 0; i < max_blocks_count_; ++i) {
-          blocks_[i] = nullptr;
-        }
-      }
     }
 
     if (write_block_num >= current_blocks_count) {

@@ -8,17 +8,20 @@
 #include <map>
 #include <string>
 
-#include "content/common/content_export.h"
 #include "content/public/browser/desktop_media_id.h"
 #include "content/public/browser/desktop_streams_registry.h"
 #include "url/origin.h"
 
 namespace content {
 
-class CONTENT_EXPORT DesktopStreamsRegistryImpl
-    : public DesktopStreamsRegistry {
+class DesktopStreamsRegistryImpl : public DesktopStreamsRegistry {
  public:
   DesktopStreamsRegistryImpl();
+
+  DesktopStreamsRegistryImpl(const DesktopStreamsRegistryImpl&) = delete;
+  DesktopStreamsRegistryImpl& operator=(const DesktopStreamsRegistryImpl&) =
+      delete;
+
   ~DesktopStreamsRegistryImpl() override;
 
   // Returns the DesktopStreamRegistryImpl singleton.
@@ -57,8 +60,6 @@ class CONTENT_EXPORT DesktopStreamsRegistryImpl
   void CleanupStream(const std::string& id);
 
   StreamsMap approved_streams_;
-
-  DISALLOW_COPY_AND_ASSIGN(DesktopStreamsRegistryImpl);
 };
 
 }  // namespace content

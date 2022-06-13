@@ -10,11 +10,13 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/metrics/ukm_background_recorder_service.h"
@@ -25,6 +27,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -52,6 +55,9 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/web_applications/web_app_icon_manager.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -91,15 +97,14 @@ static bool ShouldDisplayWebNotificationOnFullScreen(Profile* profile,
     //      notification.
     //  (b) the browser is fullscreen
     //  (c) the browser has focus.
-    if (active_contents->GetURL().GetOrigin() == origin &&
+    if (active_contents->GetURL().DeprecatedGetOriginAsURL() == origin &&
         browser->exclusive_access_manager()->context()->IsFullscreen() &&
         browser->window()->IsActive()) {
       return true;
     }
   }
-#endif
-
   return false;
+#endif
 }
 
 // Records the total number of deleted notifications after all storage
@@ -166,10 +171,10 @@ void PlatformNotificationServiceImpl::Shutdown() {
 void PlatformNotificationServiceImpl::OnContentSettingChanged(
     const ContentSettingsPattern& primary_pattern,
     const ContentSettingsPattern& secondary_pattern,
-    ContentSettingsType content_type) {
+    ContentSettingsTypeSet content_type_set) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (content_type != ContentSettingsType::NOTIFICATIONS)
+  if (!content_type_set.Contains(ContentSettingsType::NOTIFICATIONS))
     return;
 
   auto recorder = base::MakeRefCounted<RevokeDeleteCountRecorder>();
@@ -207,8 +212,9 @@ void PlatformNotificationServiceImpl::DisplayNotification(
   DCHECK_EQ(0u, notification_data.actions.size());
   DCHECK_EQ(0u, notification_resources.action_icons.size());
 
-  message_center::Notification notification = CreateNotificationFromData(
-      origin, notification_id, notification_data, notification_resources);
+  message_center::Notification notification =
+      CreateNotificationFromData(origin, notification_id, notification_data,
+                                 notification_resources, document_url);
   auto metadata = std::make_unique<NonPersistentNotificationMetadata>();
   metadata->document_url = document_url;
 
@@ -234,13 +240,14 @@ void PlatformNotificationServiceImpl::DisplayPersistentNotification(
   // Posted tasks can request notifications to be added, which would cause a
   // crash (see |ScopedKeepAlive|). We just do nothing here, the user would not
   // see the notification anyway, since we are shutting down.
-  // TODO(knollr): IsShuttingDown check should not be required anymore, but some
+  // Note that the IsShuttingDown() check should not be required here, but some
   // tests try to display a notification during shutdown.
   if (g_browser_process->IsShuttingDown() || !profile_)
     return;
 
-  message_center::Notification notification = CreateNotificationFromData(
-      origin, notification_id, notification_data, notification_resources);
+  message_center::Notification notification =
+      CreateNotificationFromData(origin, notification_id, notification_data,
+                                 notification_resources, service_worker_scope);
   auto metadata = std::make_unique<PersistentNotificationMetadata>();
   metadata->service_worker_scope = service_worker_scope;
 
@@ -413,7 +420,8 @@ PlatformNotificationServiceImpl::CreateNotificationFromData(
     const GURL& origin,
     const std::string& notification_id,
     const blink::PlatformNotificationData& notification_data,
-    const blink::NotificationResources& notification_resources) const {
+    const blink::NotificationResources& notification_resources,
+    const GURL& web_app_hint_url) const {
   // Blink always populates action icons to match the actions, even if no icon
   // was fetched, so this indicates a compromised renderer.
   CHECK_EQ(notification_data.actions.size(),
@@ -424,14 +432,33 @@ PlatformNotificationServiceImpl::CreateNotificationFromData(
   optional_fields.settings_button_handler =
       message_center::SettingsButtonHandler::INLINE;
 
+  absl::optional<WebAppIconAndTitle> web_app_icon_and_title;
+
+  if (base::FeatureList::IsEnabled(
+          features::kDesktopPWAsNotificationIconAndTitle)) {
+    web_app_icon_and_title = FindWebAppIconAndTitle(web_app_hint_url);
+    if (web_app_icon_and_title && notification_resources.badge.isNull()) {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+      // ChromeOS: Enables web app theme color only if monochrome web app icon
+      // has been specified. `badge` Notifications API icons must be masked with
+      // the accent color.
+      optional_fields.ignore_accent_color_for_small_image = true;
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+    }
+  }
+
+  message_center::NotifierId notifier_id(
+      origin, web_app_icon_and_title
+                  ? absl::make_optional(web_app_icon_and_title->title)
+                  : absl::nullopt);
+
   // TODO(peter): Handle different screen densities instead of always using the
   // 1x bitmap - crbug.com/585815.
   message_center::Notification notification(
       message_center::NOTIFICATION_TYPE_SIMPLE, notification_id,
       notification_data.title, notification_data.body,
       gfx::Image::CreateFrom1xBitmap(notification_resources.notification_icon),
-      base::UTF8ToUTF16(origin.host()), origin,
-      message_center::NotifierId(origin), optional_fields,
+      base::UTF8ToUTF16(origin.host()), origin, notifier_id, optional_fields,
       nullptr /* delegate */);
 
   notification.set_context_message(DisplayNameForContextMessage(origin));
@@ -450,10 +477,15 @@ PlatformNotificationServiceImpl::CreateNotificationFromData(
         gfx::Image::CreateFrom1xBitmap(notification_resources.image));
   }
 
+  if (web_app_icon_and_title && !web_app_icon_and_title->icon.isNull())
+    notification.set_small_image(gfx::Image(web_app_icon_and_title->icon));
+
   // TODO(peter): Handle different screen densities instead of always using the
   // 1x bitmap - crbug.com/585815.
-  notification.set_small_image(
-      gfx::Image::CreateFrom1xBitmap(notification_resources.badge));
+  if (!notification_resources.badge.isNull()) {
+    notification.set_small_image(
+        gfx::Image::CreateFrom1xBitmap(notification_resources.badge));
+  }
 
   // Developer supplied action buttons.
   std::vector<message_center::ButtonInfo> buttons;
@@ -496,4 +528,29 @@ std::u16string PlatformNotificationServiceImpl::DisplayNameForContextMessage(
 #endif
 
   return std::u16string();
+}
+
+absl::optional<PlatformNotificationServiceImpl::WebAppIconAndTitle>
+PlatformNotificationServiceImpl::FindWebAppIconAndTitle(
+    const GURL& web_app_hint_url) const {
+#if !defined(OS_ANDROID)
+  web_app::WebAppProvider* web_app_provider =
+      web_app::WebAppProvider::GetForLocalAppsUnchecked(profile_);
+  if (web_app_provider) {
+    const absl::optional<web_app::AppId> app_id =
+        web_app_provider->registrar().FindAppWithUrlInScope(web_app_hint_url);
+    if (app_id) {
+      absl::optional<WebAppIconAndTitle> icon_and_title;
+      icon_and_title.emplace();
+
+      icon_and_title->title = base::UTF8ToUTF16(
+          web_app_provider->registrar().GetAppShortName(*app_id));
+      icon_and_title->icon =
+          web_app_provider->icon_manager().GetMonochromeFavicon(*app_id);
+      return icon_and_title;
+    }
+  }
+#endif
+
+  return absl::nullopt;
 }

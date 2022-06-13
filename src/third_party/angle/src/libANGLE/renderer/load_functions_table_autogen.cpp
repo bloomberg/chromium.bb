@@ -1486,6 +1486,20 @@ LoadImageFunctionInfo DEPTH_COMPONENT16_to_D16_UNORM(GLenum type)
     }
 }
 
+LoadImageFunctionInfo DEPTH_COMPONENT16_to_D32_FLOAT(GLenum type)
+{
+    switch (type)
+    {
+        case GL_UNSIGNED_INT:
+            return LoadImageFunctionInfo(LoadUNorm32To32F, true);
+        case GL_UNSIGNED_SHORT:
+            return LoadImageFunctionInfo(LoadUNorm16To32F, true);
+        default:
+            UNREACHABLE();
+            return LoadImageFunctionInfo(UnreachableLoadFunction, true);
+    }
+}
+
 LoadImageFunctionInfo DEPTH_COMPONENT24_to_D24_UNORM_S8_UINT(GLenum type)
 {
     switch (type)
@@ -1504,6 +1518,18 @@ LoadImageFunctionInfo DEPTH_COMPONENT24_to_D24_UNORM_X8_UINT(GLenum type)
     {
         case GL_UNSIGNED_INT:
             return LoadImageFunctionInfo(LoadR32ToR24G8, true);
+        default:
+            UNREACHABLE();
+            return LoadImageFunctionInfo(UnreachableLoadFunction, true);
+    }
+}
+
+LoadImageFunctionInfo DEPTH_COMPONENT24_to_D32_FLOAT(GLenum type)
+{
+    switch (type)
+    {
+        case GL_UNSIGNED_INT:
+            return LoadImageFunctionInfo(LoadD24S8ToD32F, true);
         default:
             UNREACHABLE();
             return LoadImageFunctionInfo(UnreachableLoadFunction, true);
@@ -1608,19 +1634,19 @@ LoadImageFunctionInfo ETC1_RGB8_OES_to_R8G8B8A8_UNORM(GLenum type)
     }
 }
 
-LoadImageFunctionInfo G8_B8R8_2PLANE_420_UNORM_ANGLEX_to_default(GLenum type)
+LoadImageFunctionInfo G8_B8R8_2PLANE_420_UNORM_ANGLE_to_default(GLenum type)
 {
     switch (type)
     {
         case GL_UNSIGNED_BYTE:
-            return LoadImageFunctionInfo(UnimplementedLoadFunction, true);
+            return LoadImageFunctionInfo(LoadYuvToNative, true);
         default:
             UNREACHABLE();
             return LoadImageFunctionInfo(UnreachableLoadFunction, true);
     }
 }
 
-LoadImageFunctionInfo G8_B8_R8_3PLANE_420_UNORM_ANGLEX_to_default(GLenum type)
+LoadImageFunctionInfo G8_B8_R8_3PLANE_420_UNORM_ANGLE_to_default(GLenum type)
 {
     switch (type)
     {
@@ -3114,12 +3140,48 @@ LoadImageFunctionInfo RGBA8_USCALED_ANGLEX_to_default(GLenum type)
     }
 }
 
+LoadImageFunctionInfo RGBX8_ANGLE_to_R8G8B8A8_UNORM(GLenum type)
+{
+    switch (type)
+    {
+        case GL_UNSIGNED_BYTE:
+            return LoadImageFunctionInfo(LoadToNative<GLubyte, 4>, false);
+        default:
+            UNREACHABLE();
+            return LoadImageFunctionInfo(UnreachableLoadFunction, true);
+    }
+}
+
+LoadImageFunctionInfo RGBX8_ANGLE_to_R8G8B8X8_UNORM(GLenum type)
+{
+    switch (type)
+    {
+        case GL_UNSIGNED_BYTE:
+            return LoadImageFunctionInfo(LoadToNative<GLubyte, 4>, false);
+        default:
+            UNREACHABLE();
+            return LoadImageFunctionInfo(UnreachableLoadFunction, true);
+    }
+}
+
 LoadImageFunctionInfo SR8_EXT_to_R8_UNORM_SRGB(GLenum type)
 {
     switch (type)
     {
         case GL_UNSIGNED_BYTE:
             return LoadImageFunctionInfo(LoadToNative<GLbyte, 1>, false);
+        default:
+            UNREACHABLE();
+            return LoadImageFunctionInfo(UnreachableLoadFunction, true);
+    }
+}
+
+LoadImageFunctionInfo SRG8_EXT_to_R8G8_UNORM_SRGB(GLenum type)
+{
+    switch (type)
+    {
+        case GL_UNSIGNED_BYTE:
+            return LoadImageFunctionInfo(LoadToNative<GLbyte, 2>, false);
         default:
             UNREACHABLE();
             return LoadImageFunctionInfo(UnreachableLoadFunction, true);
@@ -3647,6 +3709,8 @@ LoadFunctionMap GetLoadFunctionsMap(GLenum internalFormat, FormatID angleFormat)
             {
                 case FormatID::D16_UNORM:
                     return DEPTH_COMPONENT16_to_D16_UNORM;
+                case FormatID::D32_FLOAT:
+                    return DEPTH_COMPONENT16_to_D32_FLOAT;
                 default:
                     break;
             }
@@ -3660,6 +3724,8 @@ LoadFunctionMap GetLoadFunctionsMap(GLenum internalFormat, FormatID angleFormat)
                     return DEPTH_COMPONENT24_to_D24_UNORM_S8_UINT;
                 case FormatID::D24_UNORM_X8_UINT:
                     return DEPTH_COMPONENT24_to_D24_UNORM_X8_UINT;
+                case FormatID::D32_FLOAT:
+                    return DEPTH_COMPONENT24_to_D32_FLOAT;
                 case FormatID::D32_FLOAT_S8X24_UINT:
                     return DEPTH_COMPONENT24_to_D32_FLOAT_S8X24_UINT;
                 default:
@@ -3714,10 +3780,10 @@ LoadFunctionMap GetLoadFunctionsMap(GLenum internalFormat, FormatID angleFormat)
             }
             break;
         }
-        case GL_G8_B8R8_2PLANE_420_UNORM_ANGLEX:
-            return G8_B8R8_2PLANE_420_UNORM_ANGLEX_to_default;
-        case GL_G8_B8_R8_3PLANE_420_UNORM_ANGLEX:
-            return G8_B8_R8_3PLANE_420_UNORM_ANGLEX_to_default;
+        case GL_G8_B8R8_2PLANE_420_UNORM_ANGLE:
+            return G8_B8R8_2PLANE_420_UNORM_ANGLE_to_default;
+        case GL_G8_B8_R8_3PLANE_420_UNORM_ANGLE:
+            return G8_B8_R8_3PLANE_420_UNORM_ANGLE_to_default;
         case GL_LUMINANCE:
         {
             switch (angleFormat)
@@ -4526,12 +4592,36 @@ LoadFunctionMap GetLoadFunctionsMap(GLenum internalFormat, FormatID angleFormat)
             return RGBA8_SSCALED_ANGLEX_to_default;
         case GL_RGBA8_USCALED_ANGLEX:
             return RGBA8_USCALED_ANGLEX_to_default;
+        case GL_RGBX8_ANGLE:
+        {
+            switch (angleFormat)
+            {
+                case FormatID::R8G8B8A8_UNORM:
+                    return RGBX8_ANGLE_to_R8G8B8A8_UNORM;
+                case FormatID::R8G8B8X8_UNORM:
+                    return RGBX8_ANGLE_to_R8G8B8X8_UNORM;
+                default:
+                    break;
+            }
+            break;
+        }
         case GL_SR8_EXT:
         {
             switch (angleFormat)
             {
                 case FormatID::R8_UNORM_SRGB:
                     return SR8_EXT_to_R8_UNORM_SRGB;
+                default:
+                    break;
+            }
+            break;
+        }
+        case GL_SRG8_EXT:
+        {
+            switch (angleFormat)
+            {
+                case FormatID::R8G8_UNORM_SRGB:
+                    return SRG8_EXT_to_R8G8_UNORM_SRGB;
                 default:
                     break;
             }

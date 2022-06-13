@@ -11,7 +11,6 @@
 #include "base/containers/contains.h"
 #include "base/strings/string_piece.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 #include "url/scheme_host_port.h"
@@ -371,6 +370,7 @@ TYPED_TEST_P(AbstractOriginTest, TupleOrigins) {
       {"file:///etc/passwd", {"file", "", 0}},
       {"file://example.com/etc/passwd", {"file", "example.com", 0}},
       {"file:///", {"file", "", 0}},
+      {"file://hostname/C:/dir/file.txt", {"file", "hostname", 0}},
 
       // HTTP URLs
       {"http://example.com/", {"http", "example.com", 80}},

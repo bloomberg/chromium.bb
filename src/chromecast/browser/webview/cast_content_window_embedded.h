@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/macros.h"
 #include "chromecast/browser/cast_content_window.h"
 #include "chromecast/browser/webview/cast_window_embedder.h"
 #include "chromecast/ui/back_gesture_router.h"
@@ -43,20 +42,17 @@ class CastContentWindowEmbedded
   // listens on incoming window events. Must outlive |this|.
   // |force_720p_resolution|: Whether 720p resolution is enabled/forced for
   // this window's hosted web page (i.e. a CastWebView).
-  explicit CastContentWindowEmbedded(
-      const CastContentWindow::CreateParams& params,
-      CastWindowEmbedder* cast_window_embedder,
-      bool force_720p_resolution);
+  CastContentWindowEmbedded(mojom::CastWebViewParamsPtr params,
+                            CastWindowEmbedder* cast_window_embedder,
+                            bool force_720p_resolution);
   ~CastContentWindowEmbedded() override;
   CastContentWindowEmbedded(const CastContentWindowEmbedded&) = delete;
   CastContentWindowEmbedded& operator=(const CastContentWindowEmbedded&) =
       delete;
 
   // CastContentWindow implementation:
-  void CreateWindowForWebContents(
-      CastWebContents* cast_web_contents,
-      ::chromecast::mojom::ZOrder z_order,
-      VisibilityPriority visibility_priority) override;
+  void CreateWindow(::chromecast::mojom::ZOrder z_order,
+                    VisibilityPriority visibility_priority) override;
   void GrantScreenAccess() override;
   void RevokeScreenAccess() override;
   void RequestVisibility(VisibilityPriority visibility_priority) override;
@@ -121,7 +117,6 @@ class CastContentWindowEmbedded
   std::string session_id_;
   int window_id_ = -1;
   bool is_remote_control_ = false;
-  const bool is_touch_enabled_ = false;
   CastWindowEmbedder* cast_window_embedder_ = nullptr;
   const bool force_720p_resolution_ = false;
 

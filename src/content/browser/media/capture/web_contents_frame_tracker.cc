@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -47,9 +47,7 @@ class WebContentsContext : public WebContentsFrameTracker::Context {
     if (auto* view = GetCurrentView()) {
       // If we know the available size of the screen, we don't want to exceed
       // it as it may result in strange capture behavior in some cases.
-      blink::ScreenInfo info;
-      view->GetScreenInfo(&info);
-      return info.rect;
+      return view->GetScreenInfo().rect;
     }
     return absl::nullopt;
   }
@@ -82,7 +80,7 @@ class WebContentsContext : public WebContentsFrameTracker::Context {
   base::ScopedClosureRunner capture_handle_;
 
   // The backing WebContents.
-  WebContents* contents_;
+  raw_ptr<WebContents> contents_;
 };
 
 }  // namespace
@@ -200,11 +198,42 @@ void WebContentsFrameTracker::CaptureTargetChanged() {
 }
 
 void WebContentsFrameTracker::SetWebContentsAndContextFromRoutingId(
-    const GlobalFrameRoutingId& id) {
+    const GlobalRenderFrameHostId& id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   Observe(WebContents::FromRenderFrameHost(RenderFrameHost::FromID(id)));
   context_ = std::make_unique<WebContentsContext>(web_contents());
   OnPossibleTargetChange();
+}
+
+void WebContentsFrameTracker::Crop(
+    const base::Token& crop_id,
+    base::OnceCallback<void(media::mojom::CropRequestResult)> callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(callback);
+
+  crop_id_ = crop_id;
+
+  // If we don't have a target yet, we can store the crop ID but cannot actually
+  // crop yet.
+  if (!target_frame_sink_id_.is_valid())
+    return;
+
+  const viz::VideoCaptureTarget target(target_frame_sink_id_, crop_id_);
+  device_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](const viz::VideoCaptureTarget& target,
+             base::OnceCallback<void(media::mojom::CropRequestResult)> callback,
+             base::WeakPtr<WebContentsVideoCaptureDevice> device) {
+            if (!device) {
+              std::move(callback).Run(
+                  media::mojom::CropRequestResult::kErrorGeneric);
+              return;
+            }
+            device->OnTargetChanged(target);
+            std::move(callback).Run(media::mojom::CropRequestResult::kSuccess);
+          },
+          target, std::move(callback), device_));
 }
 
 void WebContentsFrameTracker::SetWebContentsAndContextForTesting(
@@ -230,12 +259,22 @@ void WebContentsFrameTracker::OnPossibleTargetChange() {
   if (context_) {
     frame_sink_id = context_->GetFrameSinkIdForCapture();
   }
+
+  // TODO(crbug.com/1247761): Clear |crop_id_| when share-this-tab-instead
+  // is clicked.
   if (frame_sink_id != target_frame_sink_id_) {
     target_frame_sink_id_ = frame_sink_id;
+    absl::optional<viz::VideoCaptureTarget> target;
+    if (frame_sink_id.is_valid()) {
+      target = viz::VideoCaptureTarget(frame_sink_id, crop_id_);
+    }
+
+    // The target may change to an invalid one, but we don't consider it
+    // permanently lost here yet.
     device_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&WebContentsVideoCaptureDevice::OnTargetChanged, device_,
-                       frame_sink_id));
+                       std::move(target)));
   }
 
   SetTargetView(web_contents()->GetNativeView());

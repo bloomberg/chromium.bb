@@ -6,8 +6,11 @@
 
 #include "base/run_loop.h"
 #include "base/test/gtest_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "media/base/media_content_type.h"
+#include "media/base/media_switches.h"
 #include "media/mojo/mojom/media_player.mojom-blink.h"
+#include "services/media_session/public/mojom/media_session.mojom-blink.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/autoplay/autoplay.mojom-blink.h"
@@ -24,7 +27,8 @@
 #include "third_party/blink/renderer/core/html/track/video_track_list.h"
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
+#include "third_party/blink/renderer/platform/heap/thread_state_scopes.h"
 #include "third_party/blink/renderer/platform/network/network_state_notifier.h"
 #include "third_party/blink/renderer/platform/testing/empty_web_media_player.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
@@ -82,6 +86,7 @@ class MockWebMediaPlayer : public EmptyWebMediaPlayer {
   MOCK_CONST_METHOD0(GetNetworkState, NetworkState());
   MOCK_CONST_METHOD0(WouldTaintOrigin, bool());
   MOCK_METHOD1(SetLatencyHint, void(double));
+  MOCK_METHOD1(SetAutoplayInitiated, void(bool));
   MOCK_METHOD1(EnabledAudioTracksChanged, void(const WebVector<TrackId>&));
   MOCK_METHOD1(SelectedVideoTrackChanged, void(TrackId*));
   MOCK_METHOD4(
@@ -173,14 +178,12 @@ class TestMediaPlayerObserver final
 
   void OnAudioOutputSinkChanged(const WTF::String& hashed_device_id) override {}
 
-  void OnAudioOutputSinkChangingDisabled() override {}
-
-  void OnBufferUnderflow() override {
-    received_buffer_underflow_ = true;
+  void OnUseAudioServiceChanged(bool uses_audio_service) override {
+    received_uses_audio_service_ = uses_audio_service;
     run_loop_->Quit();
   }
 
-  void OnSeek() override {}
+  void OnAudioOutputSinkChangingDisabled() override {}
 
   // Getters used from HTMLMediaElementTest.
   bool received_media_playing() const { return received_media_playing_; }
@@ -200,7 +203,9 @@ class TestMediaPlayerObserver final
 
   gfx::Size received_media_size() const { return received_media_size_; }
 
-  bool received_buffer_underflow() const { return received_buffer_underflow_; }
+  bool received_use_audio_service_changed(bool uses_audio_service) const {
+    return received_uses_audio_service_.value() == uses_audio_service;
+  }
 
  private:
   std::unique_ptr<base::RunLoop> run_loop_;
@@ -209,7 +214,7 @@ class TestMediaPlayerObserver final
   absl::optional<bool> received_muted_status_type_;
   absl::optional<OnMetadataChangedResult> received_metadata_changed_result_;
   gfx::Size received_media_size_{0, 0};
-  bool received_buffer_underflow_{false};
+  absl::optional<bool> received_uses_audio_service_;
 };
 
 class TestMediaPlayerHost final : public media::mojom::blink::MediaPlayerHost {
@@ -245,6 +250,7 @@ class HTMLMediaElementTest : public testing::TestWithParam<MediaTestParam> {
   void SetUp() override {
     // Sniff the media player pointer to facilitate mocking.
     auto mock_media_player = std::make_unique<MockWebMediaPlayer>();
+    media_player_weak_ = mock_media_player->AsWeakPtr();
     media_player_ = mock_media_player.get();
 
     // Most tests do not care about this call, nor its return value. Those that
@@ -266,7 +272,7 @@ class HTMLMediaElementTest : public testing::TestWithParam<MediaTestParam> {
     EXPECT_CALL(*mock_media_player, SetLatencyHint(_)).Times(AnyNumber());
 
     dummy_page_holder_ = std::make_unique<DummyPageHolder>(
-        IntSize(), nullptr,
+        gfx::Size(), nullptr,
         MakeGarbageCollected<WebMediaStubLocalFrameClient>(
             std::move(mock_media_player)));
 
@@ -327,7 +333,15 @@ class HTMLMediaElementTest : public testing::TestWithParam<MediaTestParam> {
 
   bool ControlsVisible() const { return Media()->ShouldShowControls(); }
 
+  bool MediaShouldShowAllControls() const {
+    return Media()->ShouldShowAllControls();
+  }
+
   ExecutionContext* GetExecutionContext() const {
+    return dummy_page_holder_->GetFrame().DomWindow();
+  }
+
+  LocalDOMWindow* GetDomWindow() const {
     return dummy_page_holder_->GetFrame().DomWindow();
   }
 
@@ -387,13 +401,60 @@ class HTMLMediaElementTest : public testing::TestWithParam<MediaTestParam> {
     return media_player_observer().received_media_size() == size;
   }
 
-  void NotifyBufferUnderflowEvent() {
-    media_->DidBufferUnderflow();
+  void NotifyUseAudioServiceChanged(bool uses_audio_service) {
+    media_->DidUseAudioServiceChange(uses_audio_service);
     media_player_observer().WaitUntilReceivedMessage();
   }
 
-  bool ReceivedMessageBufferUnderflowEvent() {
-    return media_player_observer().received_buffer_underflow();
+  bool ReceivedMessageUseAudioServiceChanged(bool uses_audio_service) {
+    return media_player_observer().received_use_audio_service_changed(
+        uses_audio_service);
+  }
+
+  bool WasPlayerDestroyed() const { return !media_player_weak_; }
+
+  // Create a dummy page holder with the given security origin.
+  std::unique_ptr<DummyPageHolder> CreatePageWithSecurityOrigin(
+      const char* origin) {
+    // Make another document with the same security origin.
+
+    auto dummy_page_holder = std::make_unique<DummyPageHolder>(
+        gfx::Size(), nullptr,
+        MakeGarbageCollected<WebMediaStubLocalFrameClient>(
+            /*player=*/nullptr));
+    Document& document = dummy_page_holder->GetDocument();
+    document.domWindow()->GetSecurityContext().SetSecurityOriginForTesting(
+        SecurityOrigin::CreateFromString(origin));
+
+    return dummy_page_holder;
+  }
+
+  // Set the security origin of our window.
+  void SetSecurityOrigin(const char* origin) {
+    Media()
+        ->GetDocument()
+        .domWindow()
+        ->GetSecurityContext()
+        .SetSecurityOriginForTesting(SecurityOrigin::CreateFromString(origin));
+  }
+
+  // Move Media() from a document in `old_origin` to  one in `new_origin`, and
+  // expect that `should_destroy` matches whether the player is destroyed.
+  void MoveElementAndTestPlayerDestruction(const char* old_origin,
+                                           const char* new_origin,
+                                           bool should_destroy) {
+    SetSecurityOrigin(old_origin);
+    WaitForPlayer();
+    // Player should not be destroyed yet.
+    EXPECT_FALSE(WasPlayerDestroyed());
+
+    // Make another document with the correct security origin.
+    auto new_dummy_page_holder = CreatePageWithSecurityOrigin(new_origin);
+    Document& new_document = new_dummy_page_holder->GetDocument();
+
+    // Move the element.
+    new_document.adoptNode(Media(), ASSERT_NO_EXCEPTION);
+    EXPECT_EQ(should_destroy, WasPlayerDestroyed());
   }
 
  private:
@@ -406,6 +467,7 @@ class HTMLMediaElementTest : public testing::TestWithParam<MediaTestParam> {
 
   // Owned by WebMediaStubLocalFrameClient.
   MockWebMediaPlayer* media_player_;
+  base::WeakPtr<WebMediaPlayer> media_player_weak_;
 
   TestMediaPlayerHost media_player_host_;
   mojo::AssociatedReceiver<media::mojom::blink::MediaPlayerHost>
@@ -502,6 +564,7 @@ TEST_P(HTMLMediaElementTest, CouldPlayIfEnoughDataRespondsToEnded) {
   EXPECT_TRUE(CouldPlayIfEnoughData());
 
   // Playback can only end once the ready state is above kHaveMetadata.
+  EXPECT_CALL(*MockMediaPlayer(), SetAutoplayInitiated(true));
   SetReadyState(HTMLMediaElement::kHaveFutureData);
   EXPECT_FALSE(Media()->paused());
   EXPECT_FALSE(Media()->ended());
@@ -527,6 +590,7 @@ TEST_P(HTMLMediaElementTest, CouldPlayIfEnoughDataRespondsToError) {
   EXPECT_NE(mock_wmpi, nullptr);
   EXPECT_TRUE(CouldPlayIfEnoughData());
 
+  EXPECT_CALL(*MockMediaPlayer(), SetAutoplayInitiated(true));
   SetReadyState(HTMLMediaElement::kHaveMetadata);
   EXPECT_FALSE(Media()->paused());
   EXPECT_FALSE(Media()->ended());
@@ -569,6 +633,7 @@ TEST_P(HTMLMediaElementTest, CouldPlayIfEnoughDataInfiniteStreamNeverEnds) {
   EXPECT_CALL(*MockMediaPlayer(), CurrentTime())
       .WillRepeatedly(Return(std::numeric_limits<double>::infinity()));
 
+  EXPECT_CALL(*MockMediaPlayer(), SetAutoplayInitiated(true));
   SetReadyState(HTMLMediaElement::kHaveMetadata);
   EXPECT_FALSE(Media()->paused());
   EXPECT_FALSE(Media()->ended());
@@ -717,6 +782,7 @@ TEST_P(HTMLMediaElementTest, DefaultTracksAreEnabled) {
 
   Media()->SetSrc(SrcSchemeToURL(TestURLScheme::kHttp));
   test::RunPendingTasks();
+  EXPECT_CALL(*MockMediaPlayer(), SetAutoplayInitiated(false));
   SetReadyState(HTMLMediaElement::kHaveFutureData);
 
   ASSERT_EQ(1u, Media()->audioTracks().length());
@@ -732,6 +798,7 @@ TEST_P(HTMLMediaElementTest, VisibilityObserverCreatedForLazyLoad) {
 
   EXPECT_CALL(*MockMediaPlayer(), DidLazyLoad()).WillRepeatedly(Return(true));
 
+  EXPECT_CALL(*MockMediaPlayer(), SetAutoplayInitiated(false));
   SetReadyState(HTMLMediaElement::kHaveFutureData);
   EXPECT_EQ(HasLazyLoadObserver(), GetParam() == MediaTestParam::kVideo);
 }
@@ -745,6 +812,7 @@ TEST_P(HTMLMediaElementTest, ContextPaused) {
   Media()->Play();
 
   test::RunPendingTasks();
+  EXPECT_CALL(*MockMediaPlayer(), SetAutoplayInitiated(true));
   SetReadyState(HTMLMediaElement::kHaveFutureData);
 
   EXPECT_FALSE(Media()->paused());
@@ -782,6 +850,7 @@ TEST_P(HTMLMediaElementTest, GcMarkingNoAllocHasActivity) {
   Media()->Play();
 
   test::RunPendingTasks();
+  EXPECT_CALL(*MockMediaPlayer(), SetAutoplayInitiated(true));
   SetReadyState(HTMLMediaElement::kHaveFutureData);
   SetError(MakeGarbageCollected<MediaError>(MediaError::kMediaErrDecode, ""));
 
@@ -805,6 +874,7 @@ TEST_P(HTMLMediaElementTest, CapturesRedirectedSrc) {
   GURL redirected_url("https://redirected.com");
   EXPECT_CALL(*MockMediaPlayer(), GetSrcAfterRedirects())
       .WillRepeatedly(Return(redirected_url));
+  EXPECT_CALL(*MockMediaPlayer(), SetAutoplayInitiated(true));
   SetReadyState(HTMLMediaElement::kHaveFutureData);
 
   EXPECT_EQ(Media()->downloadURL(), redirected_url);
@@ -817,6 +887,7 @@ TEST_P(HTMLMediaElementTest, EmptyRedirectedSrcUsesOriginal) {
   Media()->Play();
   test::RunPendingTasks();
   EXPECT_EQ(Media()->downloadURL(), Media()->currentSrc());
+  EXPECT_CALL(*MockMediaPlayer(), SetAutoplayInitiated(true));
   SetReadyState(HTMLMediaElement::kHaveFutureData);
   EXPECT_EQ(Media()->downloadURL(), Media()->currentSrc());
 }
@@ -891,9 +962,11 @@ TEST_P(HTMLMediaElementTest, OnTimeUpdate_ReadyState) {
   EXPECT_CALL(*MockMediaPlayer(), GetSrcAfterRedirects)
       .WillRepeatedly(Return(GURL()));
   EXPECT_CALL(*MockMediaPlayer(), OnTimeUpdate());
+  EXPECT_CALL(*MockMediaPlayer(), SetAutoplayInitiated(false));
   SetReadyState(HTMLMediaElement::kHaveCurrentData);
   testing::Mock::VerifyAndClearExpectations(MockMediaPlayer());
 
+  EXPECT_CALL(*MockMediaPlayer(), SetAutoplayInitiated(false));
   EXPECT_CALL(*MockMediaPlayer(), OnTimeUpdate());
   SetReadyState(HTMLMediaElement::kHaveFutureData);
 }
@@ -908,6 +981,7 @@ TEST_P(HTMLMediaElementTest, OnTimeUpdate_Seeking) {
   EXPECT_CALL(*MockMediaPlayer(), OnTimeUpdate());
   Media()->SetSrc(SrcSchemeToURL(TestURLScheme::kHttp));
   test::RunPendingTasks();
+  EXPECT_CALL(*MockMediaPlayer(), SetAutoplayInitiated(false));
   SetReadyState(HTMLMediaElement::kHaveCurrentData);
 
   EXPECT_CALL(*MockMediaPlayer(), OnTimeUpdate());
@@ -928,6 +1002,7 @@ TEST_P(HTMLMediaElementTest, ShowPosterFlag_InitiallyTrue) {
 
   EXPECT_TRUE(Media()->IsShowPosterFlagSet());
 
+  EXPECT_CALL(*MockMediaPlayer(), SetAutoplayInitiated(false));
   SetReadyState(HTMLMediaElement::kHaveEnoughData);
   test::RunPendingTasks();
 
@@ -939,6 +1014,7 @@ TEST_P(HTMLMediaElementTest, ShowPosterFlag_FalseAfterPlay) {
   Media()->SetSrc(SrcSchemeToURL(TestURLScheme::kHttp));
   test::RunPendingTasks();
 
+  EXPECT_CALL(*MockMediaPlayer(), SetAutoplayInitiated(false));
   SetReadyState(HTMLMediaElement::kHaveEnoughData);
   test::RunPendingTasks();
 
@@ -954,6 +1030,7 @@ TEST_P(HTMLMediaElementTest, ShowPosterFlag_FalseAfterSeek) {
   Media()->SetSrc(SrcSchemeToURL(TestURLScheme::kHttp));
   test::RunPendingTasks();
 
+  EXPECT_CALL(*MockMediaPlayer(), SetAutoplayInitiated(false));
   SetReadyState(HTMLMediaElement::kHaveEnoughData);
   test::RunPendingTasks();
 
@@ -971,6 +1048,7 @@ TEST_P(HTMLMediaElementTest, ShowPosterFlag_FalseAfterAutoPlay) {
   Media()->SetBooleanAttribute(html_names::kAutoplayAttr, true);
   test::RunPendingTasks();
 
+  EXPECT_CALL(*MockMediaPlayer(), SetAutoplayInitiated(true));
   SetReadyState(HTMLMediaElement::kHaveEnoughData);
   test::RunPendingTasks();
 
@@ -1001,6 +1079,7 @@ TEST_P(HTMLMediaElementTest, ShowPosterFlag_FalseAfterPlayBeforeReady) {
   EXPECT_FALSE(Media()->IsShowPosterFlagSet());
 
   // Pretend we have data to begin playback
+  EXPECT_CALL(*MockMediaPlayer(), SetAutoplayInitiated(true));
   SetReadyState(HTMLMediaElement::kHaveFutureData);
 
   // We should have data, be playing, and the show poster flag should be unset
@@ -1065,11 +1144,14 @@ TEST_P(HTMLMediaElementTest, SendMediaSizeChangeToObserver) {
   EXPECT_TRUE(ReceivedMessageMediaSizeChange(kTestMediaSizeChangedValue));
 }
 
-TEST_P(HTMLMediaElementTest, SendBufferOverflowToObserver) {
+TEST_P(HTMLMediaElementTest, SendUseAudioServiceChangedToObserver) {
   WaitForPlayer();
 
-  NotifyBufferUnderflowEvent();
-  EXPECT_TRUE(ReceivedMessageBufferUnderflowEvent());
+  NotifyUseAudioServiceChanged(false);
+  EXPECT_TRUE(ReceivedMessageUseAudioServiceChanged(false));
+
+  NotifyUseAudioServiceChanged(true);
+  EXPECT_TRUE(ReceivedMessageUseAudioServiceChanged(true));
 }
 
 TEST_P(HTMLMediaElementTest,
@@ -1102,6 +1184,130 @@ TEST_P(HTMLMediaElementTest,
   // So setting the controls attribute to true should not show the controls.
   Media()->SetBooleanAttribute(html_names::kControlsAttr, true);
   EXPECT_FALSE(ControlsVisible());
+}
+
+TEST_P(HTMLMediaElementTest,
+       MediaShouldShowAllControlsDependsOnControlslistAttr) {
+  // Enable scripts to prevent controls being shown due to no scripts.
+  Media()->GetDocument().GetSettings()->SetScriptEnabled(true);
+
+  // Setting the controls attribute to true should show the controls.
+  Media()->SetBooleanAttribute(html_names::kControlsAttr, true);
+  EXPECT_TRUE(MediaShouldShowAllControls());
+
+  // Setting the controlsList attribute to a valid value should not show the
+  // controls.
+  Media()->setAttribute(blink::html_names::kControlslistAttr, "nofullscreen");
+  EXPECT_FALSE(MediaShouldShowAllControls());
+
+  // Removing the controlsList attribute should show the controls.
+  Media()->removeAttribute(blink::html_names::kControlslistAttr);
+  EXPECT_TRUE(MediaShouldShowAllControls());
+
+  // Setting the controlsList attribute to an invalid value should still show
+  // the controls.
+  Media()->setAttribute(blink::html_names::kControlslistAttr, "foo");
+  EXPECT_TRUE(MediaShouldShowAllControls());
+
+  // Setting the controlsList attribute to another valid value should not show
+  // the controls.
+  Media()->setAttribute(blink::html_names::kControlslistAttr, "noplaybackrate");
+  EXPECT_FALSE(MediaShouldShowAllControls());
+
+  // If the user explicitly shows them, that should override the controlsList
+  // attribute.
+  Media()->SetUserWantsControlsVisible(true);
+  EXPECT_TRUE(MediaShouldShowAllControls());
+}
+
+TEST_P(HTMLMediaElementTest,
+       DestroyMediaPlayerWhenSwitchingSameOriginDocumentsIfReuseIsNotEnabled) {
+  // Ensure that the WebMediaPlayer is destroyed when moving to a same-origin
+  // document, if `kReuseMediaPlayer` is not enabled.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(media::kReuseMediaPlayer);
+  MoveElementAndTestPlayerDestruction("https://a.com", "https://a.com",
+                                      /*should_destroy=*/true);
+}
+
+TEST_P(
+    HTMLMediaElementTest,
+    DestroyMediaPlayerWhenSwitchingDifferentOriginDocumentsIfReuseIsNotEnabled) {
+  // Ensure that the WebMediaPlayer is destroyed when moving to a new origin
+  // document, if `kReuseMediaPlayer` is not enabled.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(media::kReuseMediaPlayer);
+  MoveElementAndTestPlayerDestruction("https://a.com", "https://b.com",
+                                      /*should_destroy=*/true);
+}
+
+TEST_P(
+    HTMLMediaElementTest,
+    DoNotDestroyMediaPlayerWhenSwitchingSameOriginDocumentsIfReuseIsEnabled) {
+  // Ensure that the WebMediaPlayer is re-used when moving to a same-origin
+  // document, if `kReuseMediaPlayer` is enabled.
+  base::test::ScopedFeatureList scoped_feature_list(media::kReuseMediaPlayer);
+  MoveElementAndTestPlayerDestruction("https://a.com", "https://a.com",
+                                      /*should_destroy=*/false);
+}
+
+TEST_P(
+    HTMLMediaElementTest,
+    DestroyMediaPlayerWhenSwitchingDifferentOriginDocumentsIfReuseIsEnabled) {
+  // Ensure that the WebMediaPlayer is destroyed when moving to a new origin
+  // document, if `kReuseMediaPlayer` is enabled.  Re-use should only occur if
+  // it's a same-orign document.
+  base::test::ScopedFeatureList scoped_feature_list(media::kReuseMediaPlayer);
+  MoveElementAndTestPlayerDestruction("https://a.com", "https://b.com",
+                                      /*should_destroy=*/true);
+}
+
+TEST_P(HTMLMediaElementTest,
+       DestroyMediaPlayerWhenUnloadingOpenerIfReuseIsEnabled) {
+  // Ensure that the WebMediaPlayer is re-used, that navigating the opener away
+  // causes the player to be destroyed.
+  base::test::ScopedFeatureList scoped_feature_list(media::kReuseMediaPlayer);
+
+  const char* origin = "https://a.com";
+  SetSecurityOrigin(origin);
+  WaitForPlayer();
+  auto new_dummy_page_holder = CreatePageWithSecurityOrigin(origin);
+  new_dummy_page_holder->GetDocument().adoptNode(Media(), ASSERT_NO_EXCEPTION);
+
+  EXPECT_FALSE(WasPlayerDestroyed());
+  GetDomWindow()->FrameDestroyed();
+  EXPECT_TRUE(WasPlayerDestroyed());
+}
+
+TEST_P(HTMLMediaElementTest,
+       CreateMediaPlayerAfterMovingElementUsesOpenerFrameIfReuseIsEnabled) {
+  base::test::ScopedFeatureList scoped_feature_list(media::kReuseMediaPlayer);
+  // Move the element before creating the player.
+  const char* origin = "https://a.com";
+  SetSecurityOrigin(origin);
+  auto new_dummy_page_holder = CreatePageWithSecurityOrigin(origin);
+  Document& new_document = new_dummy_page_holder->GetDocument();
+  LocalFrame* old_frame = Media()->GetDocument().GetFrame();
+  EXPECT_EQ(old_frame, Media()->LocalFrameForPlayer());
+  new_document.adoptNode(Media(), ASSERT_NO_EXCEPTION);
+  // The element should still use the original frame.
+  EXPECT_EQ(old_frame, Media()->LocalFrameForPlayer());
+}
+
+TEST_P(HTMLMediaElementTest,
+       CreateMediaPlayerAfterMovingElementUsesNewFrameIfReuseIsNotEnabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(media::kReuseMediaPlayer);
+  // Move the element before creating the player.
+  const char* origin = "https://a.com";
+  SetSecurityOrigin(origin);
+  auto new_dummy_page_holder = CreatePageWithSecurityOrigin(origin);
+  Document& new_document = new_dummy_page_holder->GetDocument();
+  LocalFrame* old_frame = Media()->GetDocument().GetFrame();
+  EXPECT_EQ(old_frame, Media()->LocalFrameForPlayer());
+  new_document.adoptNode(Media(), ASSERT_NO_EXCEPTION);
+  // The element should no longer use the original frame.
+  EXPECT_NE(old_frame, Media()->LocalFrameForPlayer());
 }
 
 }  // namespace blink

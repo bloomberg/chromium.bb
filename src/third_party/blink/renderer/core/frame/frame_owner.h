@@ -4,9 +4,9 @@
 
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_FRAME_OWNER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_FRAME_OWNER_H_
-#include "third_party/blink/public/mojom/frame/color_scheme.mojom-shared.h"
 
 #include "third_party/blink/public/common/frame/frame_policy.h"
+#include "third_party/blink/public/mojom/frame/color_scheme.mojom-blink.h"
 #include "third_party/blink/public/mojom/scroll/scrollbar_mode.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -68,7 +68,7 @@ class CORE_EXPORT FrameOwner : public GarbageCollectedMixin {
 
  protected:
   virtual void FrameOwnerPropertiesChanged() {}
-  virtual void CSPAttributeChanged() {}
+  virtual void DidChangeAttributes() {}
 
  private:
   virtual void SetIsSwappingFrames(bool) {}
@@ -97,7 +97,7 @@ class FrameSwapScope {
     if (frame_owner_) {
       frame_owner_->SetIsSwappingFrames(false);
       frame_owner_->FrameOwnerPropertiesChanged();
-      frame_owner_->CSPAttributeChanged();
+      frame_owner_->DidChangeAttributes();
     }
   }
 

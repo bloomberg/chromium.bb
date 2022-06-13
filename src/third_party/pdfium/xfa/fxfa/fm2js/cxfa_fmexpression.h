@@ -9,26 +9,19 @@
 
 #include <vector>
 
-#include "core/fxcrt/fx_string.h"
+#include "core/fxcrt/widestring.h"
 #include "fxjs/gc/heap.h"
-#include "third_party/base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "v8/include/cppgc/garbage-collected.h"
 #include "v8/include/cppgc/member.h"
 #include "xfa/fxfa/fm2js/cxfa_fmlexer.h"
 
 class CFX_WideTextBuf;
 
-enum XFA_FM_AccessorIndex {
-  ACCESSOR_NO_INDEX,
-  ACCESSOR_NO_RELATIVEINDEX,
-  ACCESSOR_POSITIVE_INDEX,
-  ACCESSOR_NEGATIVE_INDEX
-};
-
-enum class ReturnType { kImplied, kInfered };
-
 class CXFA_FMExpression : public cppgc::GarbageCollected<CXFA_FMExpression> {
  public:
+  enum class ReturnType { kImplied, kInferred };
+
   virtual ~CXFA_FMExpression();
   virtual void Trace(cppgc::Visitor* visitor) const;
 
@@ -364,6 +357,13 @@ class CXFA_FMDotAccessorExpression final : public CXFA_FMChainableExpression {
 
 class CXFA_FMIndexExpression final : public CXFA_FMSimpleExpression {
  public:
+  enum class AccessorIndex : uint8_t {
+    kNoIndex,
+    kNoRelativeIndex,
+    kPositiveIndex,
+    kNegativeIndex
+  };
+
   CONSTRUCT_VIA_MAKE_GARBAGE_COLLECTED;
   ~CXFA_FMIndexExpression() override;
 
@@ -371,12 +371,12 @@ class CXFA_FMIndexExpression final : public CXFA_FMSimpleExpression {
   bool ToJavaScript(CFX_WideTextBuf* js, ReturnType type) const override;
 
  private:
-  CXFA_FMIndexExpression(XFA_FM_AccessorIndex accessorIndex,
+  CXFA_FMIndexExpression(AccessorIndex accessorIndex,
                          CXFA_FMSimpleExpression* pIndexExp,
                          bool bIsStarIndex);
 
   cppgc::Member<CXFA_FMSimpleExpression> m_pExp;
-  XFA_FM_AccessorIndex m_accessorIndex;
+  AccessorIndex m_accessorIndex;
   bool m_bIsStarIndex;
 };
 
@@ -595,7 +595,7 @@ class CXFA_FMAST : public cppgc::GarbageCollected<CXFA_FMAST> {
   ~CXFA_FMAST();
 
   void Trace(cppgc::Visitor* visitor) const;
-  Optional<CFX_WideTextBuf> ToJavaScript() const;
+  absl::optional<CFX_WideTextBuf> ToJavaScript() const;
 
  private:
   explicit CXFA_FMAST(

@@ -19,7 +19,7 @@
 #include "chrome/browser/safe_browsing/incident_reporting/binary_integrity_incident.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident_receiver.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
-#include "components/safe_browsing/core/proto/csd.pb.h"
+#include "components/safe_browsing/core/common/proto/csd.pb.h"
 
 namespace safe_browsing {
 
@@ -30,8 +30,7 @@ void RecordSignatureVerificationTime(size_t file_index,
   base::HistogramBase* signature_verification_time_histogram =
       base::Histogram::FactoryTimeGet(
           std::string(kHistogramName) + base::NumberToString(file_index),
-          base::TimeDelta::FromMilliseconds(1),
-          base::TimeDelta::FromSeconds(20), 50,
+          base::Milliseconds(1), base::Seconds(20), 50,
           base::Histogram::kUmaTargetedHistogramFlag);
 
   signature_verification_time_histogram->AddTime(verification_time);

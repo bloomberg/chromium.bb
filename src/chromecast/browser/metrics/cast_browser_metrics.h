@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
 #include "build/build_config.h"
 #include "chromecast/metrics/cast_metrics_service_client.h"
 
@@ -21,6 +20,10 @@ class CastBrowserMetrics {
  public:
   explicit CastBrowserMetrics(
       std::unique_ptr<CastMetricsServiceClient> metrics_service_client);
+
+  CastBrowserMetrics(const CastBrowserMetrics&) = delete;
+  CastBrowserMetrics& operator=(const CastBrowserMetrics&) = delete;
+
   ~CastBrowserMetrics();
   void Initialize();
   void Finalize();
@@ -42,8 +45,6 @@ class CastBrowserMetrics {
   ExternalMetrics* external_metrics_ = nullptr;
   ExternalMetrics* platform_metrics_ = nullptr;
 #endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
-
-  DISALLOW_COPY_AND_ASSIGN(CastBrowserMetrics);
 };
 
 }  // namespace metrics

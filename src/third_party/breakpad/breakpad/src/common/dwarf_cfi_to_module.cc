@@ -147,7 +147,7 @@ bool DwarfCFIToModule::Entry(size_t offset, uint64_t address, uint64_t length,
                              unsigned return_address) {
   assert(!entry_);
 
-  // If dwarf2reader::CallFrameInfo can handle this version and
+  // If CallFrameInfo can handle this version and
   // augmentation, then we should be okay with that, so there's no
   // need to check them here.
 

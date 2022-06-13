@@ -7,12 +7,13 @@
 #ifndef CORE_FPDFAPI_PARSER_CPDF_LINEARIZED_HEADER_H_
 #define CORE_FPDFAPI_PARSER_CPDF_LINEARIZED_HEADER_H_
 
+#include <stdint.h>
+
 #include <memory>
 
-#include "core/fxcrt/fx_system.h"
+#include "core/fxcrt/fx_types.h"
 
 class CPDF_Dictionary;
-class CPDF_Object;
 class CPDF_SyntaxParser;
 
 class CPDF_LinearizedHeader {

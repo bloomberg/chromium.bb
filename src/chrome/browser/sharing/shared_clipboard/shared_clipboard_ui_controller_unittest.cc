@@ -8,6 +8,7 @@
 
 #include "base/guid.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/sharing/fake_device_info.h"
@@ -18,7 +19,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/gcm_driver/fake_gcm_driver.h"
 #include "components/gcm_driver/instance_id/instance_id_driver.h"
-#include "components/sync/protocol/sync.pb.h"
+#include "components/sync/protocol/device_info_specifics.pb.h"
 #include "components/sync_device_info/fake_device_info_tracker.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/browser_task_environment.h"
@@ -67,7 +68,7 @@ class SharedClipboardUiControllerTest : public testing::Test {
   content::RenderViewHostTestEnabler test_render_host_factories_;
   TestingProfile profile_;
   std::unique_ptr<content::WebContents> web_contents_;
-  SharedClipboardUiController* controller_ = nullptr;
+  raw_ptr<SharedClipboardUiController> controller_ = nullptr;
 };
 }  // namespace
 
@@ -87,10 +88,9 @@ TEST_F(SharedClipboardUiControllerTest, OnDeviceChosen) {
   sharing_message.mutable_shared_clipboard_message()->set_text(kExpectedText);
   EXPECT_CALL(
       *service(),
-      SendMessageToDevice(
-          Property(&syncer::DeviceInfo::guid, kReceiverGuid),
-          Eq(base::TimeDelta::FromSeconds(kSharingMessageTTLSeconds.Get())),
-          ProtoEquals(sharing_message), testing::_));
+      SendMessageToDevice(Property(&syncer::DeviceInfo::guid, kReceiverGuid),
+                          Eq(kSharingMessageTTL), ProtoEquals(sharing_message),
+                          testing::_));
   controller_->OnDeviceChosen(*device_info.get());
 }
 

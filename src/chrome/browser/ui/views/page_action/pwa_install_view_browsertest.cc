@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/page_action/pwa_install_view.h"
 
 #include "base/files/file_path.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -21,19 +22,20 @@
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 #include "chrome/browser/ui/views/user_education/feature_promo_controller_views.h"
 #include "chrome/browser/ui/web_applications/web_app_dialog_utils.h"
-#include "chrome/browser/web_applications/components/app_registry_controller.h"
-#include "chrome/browser/web_applications/components/install_bounce_metric.h"
-#include "chrome/browser/web_applications/components/install_finalizer.h"
-#include "chrome/browser/web_applications/components/os_integration_manager.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
-#include "chrome/browser/web_applications/components/web_app_prefs_utils.h"
+#include "chrome/browser/web_applications/install_bounce_metric.h"
+#include "chrome/browser/web_applications/os_integration_manager.h"
+#include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
+#include "chrome/browser/web_applications/web_app_helpers.h"
+#include "chrome/browser/web_applications/web_app_install_finalizer.h"
+#include "chrome/browser/web_applications/web_app_prefs_utils.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/feature_engagement/public/feature_list.h"
-#include "components/omnibox/browser/omnibox_popup_model.h"
+#include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_view.h"
 #include "components/site_engagement/content/site_engagement_service.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
@@ -48,18 +50,24 @@
 #include "ui/views/view_observer.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/components/arc/test/arc_util_test_support.h"
+#include "ash/components/arc/test/connection_holder_util.h"
+#include "ash/components/arc/test/fake_app_instance.h"
+#include "ash/constants/ash_features.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/arc/session/arc_session_manager.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
-#include "components/arc/arc_util.h"
-#include "components/arc/test/connection_holder_util.h"
-#include "components/arc/test/fake_app_instance.h"
+#include "chrome/common/chrome_features.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace {
 
 class PwaInstallIconChangeWaiter : public views::ViewObserver {
  public:
+  PwaInstallIconChangeWaiter(const PwaInstallIconChangeWaiter&) = delete;
+  PwaInstallIconChangeWaiter& operator=(const PwaInstallIconChangeWaiter&) =
+      delete;
+
   static void VerifyIconVisibility(views::View* iconView, bool visible);
 
  private:
@@ -77,8 +85,6 @@ class PwaInstallIconChangeWaiter : public views::ViewObserver {
   base::RunLoop run_loop_;
 
   base::ScopedObservation<views::View, views::ViewObserver> observation_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(PwaInstallIconChangeWaiter);
 };
 
 // static
@@ -92,6 +98,8 @@ void PwaInstallIconChangeWaiter::VerifyIconVisibility(views::View* iconView,
 
 }  // namespace
 
+// Tests various cases that effect the visibility of the install icon in the
+// omnibox.
 class PwaInstallViewBrowserTest : public extensions::ExtensionBrowserTest {
  public:
   PwaInstallViewBrowserTest()
@@ -109,8 +117,20 @@ class PwaInstallViewBrowserTest : public extensions::ExtensionBrowserTest {
           {{feature_engagement::kIPHDemoModeFeatureChoiceParam,
             feature_engagement::kIPHDesktopPwaInstallFeature.name}}},
          {feature_engagement::kIPHDesktopPwaInstallFeature, {}}},
-        {});
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+        {
+          {features::kWebAppsCrosapi, chromeos::features::kLacrosPrimary}, {}
+        }
+#else
+        {}
+#endif
+    );
   }
+
+  PwaInstallViewBrowserTest(const PwaInstallViewBrowserTest&) = delete;
+  PwaInstallViewBrowserTest& operator=(const PwaInstallViewBrowserTest&) =
+      delete;
+
   ~PwaInstallViewBrowserTest() override = default;
 
   void SetUp() override {
@@ -133,7 +153,7 @@ class PwaInstallViewBrowserTest : public extensions::ExtensionBrowserTest {
 
     command_line->AppendSwitchASCII(
         network::switches::kUnsafelyTreatInsecureOriginAsSecure,
-        GetInstallableAppURL().GetOrigin().spec());
+        GetInstallableAppURL().DeprecatedGetOriginAsURL().spec());
   }
 
   void SetUpInProcessBrowserTestFixture() override {
@@ -157,6 +177,8 @@ class PwaInstallViewBrowserTest : public extensions::ExtensionBrowserTest {
     web_contents_ = GetCurrentTab();
     app_banner_manager_ =
         webapps::TestAppBannerManagerDesktop::FromWebContents(web_contents_);
+    web_app::test::WaitUntilReady(
+        web_app::WebAppProvider::GetForTest(browser()->profile()));
   }
 
   std::unique_ptr<net::test_server::HttpResponse> RequestInterceptor(
@@ -175,8 +197,8 @@ class PwaInstallViewBrowserTest : public extensions::ExtensionBrowserTest {
   }
 
   struct OpenTabResult {
-    content::WebContents* web_contents;
-    webapps::TestAppBannerManagerDesktop* app_banner_manager;
+    raw_ptr<content::WebContents> web_contents;
+    raw_ptr<webapps::TestAppBannerManagerDesktop> app_banner_manager;
     bool installable;
   };
 
@@ -187,7 +209,7 @@ class PwaInstallViewBrowserTest : public extensions::ExtensionBrowserTest {
         webapps::TestAppBannerManagerDesktop::FromWebContents(web_contents);
     DCHECK(!app_banner_manager->WaitForInstallableCheck());
 
-    ui_test_utils::NavigateToURL(browser(), url);
+    EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
     bool installable = app_banner_manager->WaitForInstallableCheck();
 
     return OpenTabResult{web_contents, app_banner_manager, installable};
@@ -250,7 +272,7 @@ class PwaInstallViewBrowserTest : public extensions::ExtensionBrowserTest {
     web_app::SetInstallBounceMetricTimeForTesting(test_time + install_duration);
 
     base::RunLoop run_loop;
-    web_app::WebAppProvider::Get(browser()->profile())
+    web_app::WebAppProvider::GetForTest(browser()->profile())
         ->install_finalizer()
         .UninstallWebApp(app_id, webapps::WebappUninstallSource::kAppMenu,
                          base::BindLambdaForTesting([&](bool uninstalled) {
@@ -276,11 +298,9 @@ class PwaInstallViewBrowserTest : public extensions::ExtensionBrowserTest {
   std::string intercept_request_path_;
   std::string intercept_request_response_;
 
-  PageActionIconView* pwa_install_view_ = nullptr;
-  content::WebContents* web_contents_ = nullptr;
-  webapps::TestAppBannerManagerDesktop* app_banner_manager_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(PwaInstallViewBrowserTest);
+  raw_ptr<PageActionIconView> pwa_install_view_ = nullptr;
+  raw_ptr<content::WebContents> web_contents_ = nullptr;
+  raw_ptr<webapps::TestAppBannerManagerDesktop> app_banner_manager_ = nullptr;
 
  private:
   web_app::ScopedOsHooksSuppress os_hooks_suppress_;
@@ -301,7 +321,7 @@ IN_PROC_BROWSER_TEST_F(PwaInstallViewBrowserTest,
   EXPECT_EQ(
       result.app_banner_manager->GetInstallableWebAppCheckResultForTesting(),
       webapps::AppBannerManager::InstallableWebAppCheckResult::
-          kNoAlreadyInstalled);
+          kNo_AlreadyInstalled);
   EXPECT_FALSE(pwa_install_view_->GetVisible());
 }
 
@@ -325,7 +345,7 @@ IN_PROC_BROWSER_TEST_F(PwaInstallViewBrowserTest,
   EXPECT_EQ(
       result.app_banner_manager->GetInstallableWebAppCheckResultForTesting(),
       webapps::AppBannerManager::InstallableWebAppCheckResult::
-          kNoAlreadyInstalled);
+          kNo_AlreadyInstalled);
   EXPECT_FALSE(pwa_install_view_->GetVisible());
 }
 
@@ -338,8 +358,8 @@ IN_PROC_BROWSER_TEST_F(PwaInstallViewBrowserTest,
   web_app::AppId app_id = ExecutePwaInstallIcon();
 
   // Change launch container to open in tab.
-  web_app::WebAppProvider::Get(browser()->profile())
-      ->registry_controller()
+  web_app::WebAppProvider::GetForTest(browser()->profile())
+      ->sync_bridge()
       .SetAppUserDisplayMode(app_id, web_app::DisplayMode::kBrowser,
                              /*is_user_action=*/false);
 
@@ -348,7 +368,7 @@ IN_PROC_BROWSER_TEST_F(PwaInstallViewBrowserTest,
 
   EXPECT_EQ(
       result.app_banner_manager->GetInstallableWebAppCheckResultForTesting(),
-      webapps::AppBannerManager::InstallableWebAppCheckResult::kPromotable);
+      webapps::AppBannerManager::InstallableWebAppCheckResult::kYes_Promotable);
   EXPECT_TRUE(pwa_install_view_->GetVisible());
 }
 
@@ -577,11 +597,11 @@ IN_PROC_BROWSER_TEST_F(PwaInstallViewBrowserTest, TextContrast) {
 }
 
 IN_PROC_BROWSER_TEST_F(PwaInstallViewBrowserTest, BouncedInstallMeasured) {
-  TestInstallBounce(base::TimeDelta::FromMinutes(50), 1);
+  TestInstallBounce(base::Minutes(50), 1);
 }
 
 IN_PROC_BROWSER_TEST_F(PwaInstallViewBrowserTest, BouncedInstallIgnored) {
-  TestInstallBounce(base::TimeDelta::FromMinutes(70), 0);
+  TestInstallBounce(base::Minutes(70), 0);
 }
 
 // Omnibox install promotion should show if there are no viable related apps
@@ -651,7 +671,8 @@ IN_PROC_BROWSER_TEST_F(PwaInstallViewBrowserTest,
       "Manifest listing related chrome app"));
 }
 
-IN_PROC_BROWSER_TEST_F(PwaInstallViewBrowserTest, PwaIntallIphSiteEngagement) {
+// TODO(crbug.com/1258062): Flaky.
+IN_PROC_BROWSER_TEST_F(PwaInstallViewBrowserTest, DISABLED_PwaIntallIphSiteEngagement) {
   GURL app_url = GetInstallableAppURL();
   bool installable = OpenTab(app_url).installable;
   ASSERT_TRUE(installable);
@@ -678,7 +699,8 @@ IN_PROC_BROWSER_TEST_F(PwaInstallViewBrowserTest, PwaIntallIphIgnored) {
   // shown once in an user session.
   web_app::RecordInstallIphIgnored(
       profile()->GetPrefs(),
-      web_app::GenerateAppIdFromURL(app_banner_manager_->GetManifestStartUrl()),
+      web_app::GenerateAppId(/*manifest_id=*/absl::nullopt,
+                             app_banner_manager_->GetManifestStartUrl()),
       base::Time::Now());
   bool installable = OpenTab(app_url).installable;
   ASSERT_TRUE(installable);

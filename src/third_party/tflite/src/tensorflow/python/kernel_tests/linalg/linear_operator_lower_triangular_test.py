@@ -13,10 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 from tensorflow.python.framework import test_util
 from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import math_ops
@@ -86,7 +82,7 @@ class LinearOperatorLowerTriangularTest(
     self.assertFalse(operator.is_self_adjoint)
 
   def test_tril_must_have_at_least_two_dims_or_raises(self):
-    with self.assertRaisesRegexp(ValueError, "at least 2 dimensions"):
+    with self.assertRaisesRegex(ValueError, "at least 2 dimensions"):
       linalg.LinearOperatorLowerTriangular([1.])
 
   def test_triangular_diag_matmul(self):

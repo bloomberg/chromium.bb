@@ -10,8 +10,15 @@
 #include "chromecast/common/extensions_api/accessibility_private.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/render_frame_host.h"
-#include "extensions/common/image_util.h"
+#include "content/public/common/color_parser.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "ui/aura/window.h"
+#include "ui/aura/window_tree_host.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
+#include "ui/events/base_event_utils.h"
+#include "ui/events/event.h"
+#include "ui/events/event_constants.h"
 
 namespace {
 
@@ -25,8 +32,9 @@ namespace api {
 
 ExtensionFunction::ResponseAction
 AccessibilityPrivateSetNativeAccessibilityEnabledFunction::Run() {
-  bool enabled = false;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetBoolean(0, &enabled));
+  EXTENSION_FUNCTION_VALIDATE(args().size() >= 1);
+  EXTENSION_FUNCTION_VALIDATE(args()[0].is_bool());
+  bool enabled = args()[0].GetBool();
   if (enabled) {
     content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
   } else {
@@ -38,7 +46,7 @@ AccessibilityPrivateSetNativeAccessibilityEnabledFunction::Run() {
 ExtensionFunction::ResponseAction
 AccessibilityPrivateSetFocusRingsFunction::Run() {
   std::unique_ptr<accessibility_private::SetFocusRings::Params> params(
-      accessibility_private::SetFocusRings::Params::Create(*args_));
+      accessibility_private::SetFocusRings::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   auto* accessibility_manager =
@@ -55,8 +63,7 @@ AccessibilityPrivateSetFocusRingsFunction::Run() {
 
     if (focus_ring_info.color.length() > 0) {
       SkColor color;
-      if (!extensions::image_util::ParseHexColorString(focus_ring_info.color,
-                                                       &color))
+      if (!content::ParseHexColorString(focus_ring_info.color, &color))
         return RespondNow(Error("Could not parse hex color"));
       accessibility_manager->SetFocusRingColor(color);
     } else {
@@ -85,7 +92,7 @@ AccessibilityPrivateSetHighlightsFunction::Run() {
           ->accessibility_manager();
 
   std::unique_ptr<accessibility_private::SetHighlights::Params> params(
-      accessibility_private::SetHighlights::Params::Create(*args_));
+      accessibility_private::SetHighlights::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   std::vector<gfx::Rect> rects;
@@ -94,7 +101,7 @@ AccessibilityPrivateSetHighlightsFunction::Run() {
   }
 
   SkColor color;
-  if (!extensions::image_util::ParseHexColorString(params->color, &color))
+  if (!content::ParseHexColorString(params->color, &color))
     return RespondNow(Error("Could not parse hex color"));
 
   // Set the highlights to cover all of these rects.
@@ -130,8 +137,48 @@ AccessibilityPrivateSendSyntheticKeyEventFunction::Run() {
 
 ExtensionFunction::ResponseAction
 AccessibilityPrivateSendSyntheticMouseEventFunction::Run() {
-  // Chromecast's touch exploration controller still generates synthetic
-  // mouse events on its own. Do nothing.
+  // Translate the mouse event to touch event so that touch exploration
+  // controller can handle them.
+  std::unique_ptr<accessibility_private::SendSyntheticMouseEvent::Params>
+      params = accessibility_private::SendSyntheticMouseEvent::Params::Create(
+          args());
+  EXTENSION_FUNCTION_VALIDATE(params);
+  accessibility_private::SyntheticMouseEvent* mouse_data = &params->mouse_event;
+
+  ui::EventType type = ui::ET_UNKNOWN;
+  switch (mouse_data->type) {
+    case accessibility_private::SYNTHETIC_MOUSE_EVENT_TYPE_PRESS:
+      type = ui::ET_TOUCH_PRESSED;
+      break;
+    case accessibility_private::SYNTHETIC_MOUSE_EVENT_TYPE_RELEASE:
+      type = ui::ET_TOUCH_RELEASED;
+      break;
+    default:
+      // skip other gestures.
+      return RespondNow(NoArguments());
+  }
+
+  // Locations are assumed to be in screen coordinates.
+  gfx::Point location_in_screen(mouse_data->x, mouse_data->y);
+  auto* host = chromecast::shell::CastBrowserProcess::GetInstance()
+                   ->accessibility_manager()
+                   ->window_tree_host();
+  DCHECK(host);
+
+  ui::PointerDetails pointer_details;
+  pointer_details.pointer_type = ui::EventPointerType::kTouch;
+  gfx::Point location(mouse_data->x, mouse_data->y);
+
+  std::unique_ptr<ui::TouchEvent> touch_event =
+      std::make_unique<ui::TouchEvent>(type, gfx::Point(),
+                                       ui::EventTimeForNow(), pointer_details);
+  touch_event->set_location(location);
+  touch_event->set_root_location(location);
+  touch_event->UpdateForRootTransform(
+      host->GetRootTransform(),
+      host->GetRootTransformForLocalEventCoordinates());
+  // Still go through the event rewriters.
+  host->SendEventToSink(touch_event.get());
   return RespondNow(NoArguments());
 }
 

@@ -17,7 +17,9 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Promise;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.browserservices.constants.QualityEnforcementViolationType;
 import org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider;
+import org.chromium.chrome.browser.browserservices.metrics.TrustedWebActivityUmaRecorder;
 import org.chromium.chrome.browser.browserservices.ui.controller.Verifier;
 import org.chromium.chrome.browser.browserservices.ui.controller.trustedwebactivity.ClientPackageNameProvider;
 import org.chromium.chrome.browser.browserservices.verification.OriginVerifierStatics;
@@ -68,7 +70,7 @@ public class QualityEnforcer {
     private final CustomTabTabObserver mTabObserver = new CustomTabTabObserver() {
         @Override
         public void onDidFinishNavigation(Tab tab, NavigationHandle navigation) {
-            if (!navigation.hasCommitted() || !navigation.isInMainFrame()
+            if (!navigation.hasCommitted() || !navigation.isInPrimaryMainFrame()
                     || navigation.isSameDocument()) {
                 return;
             }
@@ -127,7 +129,7 @@ public class QualityEnforcer {
 
     private void trigger(
             Tab tab, @QualityEnforcementViolationType int type, String url, int httpStatusCode) {
-        mUmaRecorder.recordQualityEnforcementViolation(tab, type);
+        mUmaRecorder.recordQualityEnforcementViolation(tab.getWebContents(), type);
 
         if (ChromeFeatureList.isEnabled(
                     ChromeFeatureList.TRUSTED_WEB_ACTIVITY_QUALITY_ENFORCEMENT_WARNING)) {

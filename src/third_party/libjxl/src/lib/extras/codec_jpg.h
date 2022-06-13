@@ -1,16 +1,7 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 #ifndef LIB_EXTRAS_CODEC_JPG_H_
 #define LIB_EXTRAS_CODEC_JPG_H_
@@ -20,6 +11,7 @@
 #include <stdint.h>
 
 #include "lib/extras/codec.h"
+#include "lib/extras/color_hints.h"
 #include "lib/jxl/base/data_parallel.h"
 #include "lib/jxl/base/padded_bytes.h"
 #include "lib/jxl/base/span.h"
@@ -27,6 +19,7 @@
 #include "lib/jxl/codec_in_out.h"
 
 namespace jxl {
+namespace extras {
 
 enum class JpegEncoder {
   kLibJpeg,
@@ -39,18 +32,29 @@ static inline bool IsJPG(const Span<const uint8_t> bytes) {
   return true;
 }
 
-// Decodes `bytes` into `io`. io->dec_hints are ignored.
+// Decodes `bytes` into `io`. color_hints are ignored.
 // `elapsed_deinterleave`, if non-null, will be set to the time (in seconds)
 // that it took to deinterleave the raw JSAMPLEs to planar floats.
-Status DecodeImageJPG(Span<const uint8_t> bytes, ThreadPool* pool,
-                      CodecInOut* io, double* elapsed_deinterleave = nullptr);
+Status DecodeImageJPG(Span<const uint8_t> bytes, const ColorHints& color_hints,
+                      ThreadPool* pool, CodecInOut* io,
+                      double* elapsed_deinterleave = nullptr);
 
 // Encodes into `bytes`.
 Status EncodeImageJPG(const CodecInOut* io, JpegEncoder encoder, size_t quality,
                       YCbCrChromaSubsampling chroma_subsampling,
-                      ThreadPool* pool, PaddedBytes* bytes,
-                      DecodeTarget target = DecodeTarget::kPixels);
+                      ThreadPool* pool, PaddedBytes* bytes);
 
+// Temporary wrappers to load the JPEG coefficients to a CodecInOut. This should
+// be replaced by calling the corresponding JPEG input and output functions on
+// the API.
+
+// Decodes the JPEG image coefficients to a CodecIO for lossless recompression.
+Status DecodeImageJPGCoefficients(Span<const uint8_t> bytes, CodecInOut* io);
+
+// Reconstructs the JPEG from the coefficients and metadata in CodecInOut.
+Status EncodeImageJPGCoefficients(const CodecInOut* io, PaddedBytes* bytes);
+
+}  // namespace extras
 }  // namespace jxl
 
 #endif  // LIB_EXTRAS_CODEC_JPG_H_

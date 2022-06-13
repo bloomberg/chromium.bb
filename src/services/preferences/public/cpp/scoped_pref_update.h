@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/string_piece.h"
 
 class PrefService;
@@ -41,6 +41,10 @@ class ScopedDictionaryPrefUpdate {
  public:
   ScopedDictionaryPrefUpdate(PrefService* service, base::StringPiece path);
 
+  ScopedDictionaryPrefUpdate(const ScopedDictionaryPrefUpdate&) = delete;
+  ScopedDictionaryPrefUpdate& operator=(const ScopedDictionaryPrefUpdate&) =
+      delete;
+
   // Notifies if necessary.
   virtual ~ScopedDictionaryPrefUpdate();
 
@@ -58,14 +62,12 @@ class ScopedDictionaryPrefUpdate {
   void RecordPath(const std::vector<std::string>& path);
 
   // Weak pointer.
-  PrefService* const service_;
+  const raw_ptr<PrefService> service_;
   // Path of the preference being updated.
   const std::string path_;
 
   // The paths that have been modified.
   std::set<std::vector<std::string>> updated_paths_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedDictionaryPrefUpdate);
 };
 
 }  // namespace prefs

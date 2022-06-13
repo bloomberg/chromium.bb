@@ -5,7 +5,6 @@
 #ifndef DEVICE_GAMEPAD_GAMEPAD_HAPTICS_MANAGER_H_
 #define DEVICE_GAMEPAD_GAMEPAD_HAPTICS_MANAGER_H_
 
-#include "base/macros.h"
 #include "device/gamepad/gamepad_export.h"
 #include "device/gamepad/public/mojom/gamepad.mojom.h"
 
@@ -15,6 +14,10 @@ class DEVICE_GAMEPAD_EXPORT GamepadHapticsManager
     : public mojom::GamepadHapticsManager {
  public:
   GamepadHapticsManager();
+
+  GamepadHapticsManager(const GamepadHapticsManager&) = delete;
+  GamepadHapticsManager& operator=(const GamepadHapticsManager&) = delete;
+
   ~GamepadHapticsManager() override;
 
   static void Create(
@@ -27,9 +30,6 @@ class DEVICE_GAMEPAD_EXPORT GamepadHapticsManager
                                PlayVibrationEffectOnceCallback) override;
   void ResetVibrationActuator(uint32_t pad_index,
                               ResetVibrationActuatorCallback) override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(GamepadHapticsManager);
 };
 
 }  // namespace device

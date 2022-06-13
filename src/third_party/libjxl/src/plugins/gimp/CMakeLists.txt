@@ -1,16 +1,7 @@
-# Copyright (c) the JPEG XL Project
+# Copyright (c) the JPEG XL Project Authors. All rights reserved.
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
 
 find_package(PkgConfig)
 pkg_check_modules(Gimp IMPORTED_TARGET gimp-2.0>=2.10 gimpui-2.0>=2.10)
@@ -20,19 +11,18 @@ if (NOT Gimp_FOUND)
   return ()
 endif ()
 
-option(JPEGXL_ENABLE_GIMP_SAVING "Enable saving to JPEG XL from GIMP" OFF)
-
 add_executable(file-jxl WIN32
   common.h
+  common.cc
   file-jxl-load.cc
   file-jxl-load.h
   file-jxl-save.cc
   file-jxl-save.h
   file-jxl.cc)
-if (JPEGXL_ENABLE_GIMP_SAVING)
-  target_compile_definitions(file-jxl PRIVATE -DJPEGXL_ENABLE_GIMP_SAVING=1)
-endif ()
-target_link_libraries(file-jxl jxl-static jxl_threads-static PkgConfig::Gimp)
+target_link_libraries(file-jxl jxl jxl_threads PkgConfig::Gimp)
+
+target_include_directories(file-jxl PUBLIC
+    ${PROJECT_SOURCE_DIR})  # for plugins/gimp absolute paths.
 
 pkg_get_variable(GIMP_LIB_DIR gimp-2.0 gimplibdir)
 install(TARGETS file-jxl RUNTIME DESTINATION "${GIMP_LIB_DIR}/plug-ins/file-jxl/")

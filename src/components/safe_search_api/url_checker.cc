@@ -14,7 +14,6 @@
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
@@ -61,8 +60,7 @@ URLChecker::URLChecker(std::unique_ptr<URLCheckerClient> async_checker,
                        size_t cache_size)
     : async_checker_(std::move(async_checker)),
       cache_(cache_size),
-      cache_timeout_(
-          base::TimeDelta::FromSeconds(kDefaultCacheTimeoutSeconds)) {}
+      cache_timeout_(base::Seconds(kDefaultCacheTimeoutSeconds)) {}
 
 URLChecker::~URLChecker() = default;
 

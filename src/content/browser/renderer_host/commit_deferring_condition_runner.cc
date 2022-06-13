@@ -11,17 +11,38 @@
 
 namespace content {
 
+namespace {
+
+std::map<int, CommitDeferringConditionRunner::ConditionGenerator>&
+GetConditionGenerators() {
+  static base::NoDestructor<
+      std::map<int, CommitDeferringConditionRunner::ConditionGenerator>>
+      generators;
+  return *generators;
+}
+
+}  // namespace
+
 // static
 std::unique_ptr<CommitDeferringConditionRunner>
-CommitDeferringConditionRunner::Create(NavigationRequest& navigation_request) {
-  auto runner =
-      base::WrapUnique(new CommitDeferringConditionRunner(navigation_request));
+CommitDeferringConditionRunner::Create(
+    NavigationRequest& navigation_request,
+    CommitDeferringCondition::NavigationType navigation_type,
+    absl::optional<int> candidate_prerender_frame_tree_node_id) {
+  auto runner = base::WrapUnique(new CommitDeferringConditionRunner(
+      navigation_request, navigation_type,
+      candidate_prerender_frame_tree_node_id));
   return runner;
 }
 
 CommitDeferringConditionRunner::CommitDeferringConditionRunner(
-    Delegate& delegate)
-    : delegate_(delegate) {}
+    Delegate& delegate,
+    CommitDeferringCondition::NavigationType navigation_type,
+    absl::optional<int> candidate_prerender_frame_tree_node_id)
+    : delegate_(delegate),
+      navigation_type_(navigation_type),
+      candidate_prerender_frame_tree_node_id_(
+          candidate_prerender_frame_tree_node_id) {}
 
 CommitDeferringConditionRunner::~CommitDeferringConditionRunner() = default;
 
@@ -52,6 +73,20 @@ void CommitDeferringConditionRunner::ResumeProcessing() {
 
 void CommitDeferringConditionRunner::RegisterDeferringConditions(
     NavigationRequest& navigation_request) {
+  switch (navigation_type_) {
+    case CommitDeferringCondition::NavigationType::kPrerenderedPageActivation:
+      // For prerendered page activation, conditions should run before start
+      // navigation.
+      DCHECK_LT(navigation_request.state(),
+                NavigationRequest::WILL_START_NAVIGATION);
+      break;
+    case CommitDeferringCondition::NavigationType::kOther:
+      // For other navigations, conditions should run before navigation commit.
+      DCHECK_EQ(navigation_request.state(),
+                NavigationRequest::WILL_PROCESS_RESPONSE);
+      break;
+  }
+
   // Let WebContents add deferring conditions.
   std::vector<std::unique_ptr<CommitDeferringCondition>> delegate_conditions =
       navigation_request.GetDelegate()
@@ -61,10 +96,32 @@ void CommitDeferringConditionRunner::RegisterDeferringConditions(
     AddCondition(std::move(condition));
   }
 
+  AddCondition(PrerenderCommitDeferringCondition::MaybeCreate(
+      navigation_request, navigation_type_,
+      candidate_prerender_frame_tree_node_id_));
+
   // The BFCache deferring condition should run after all other conditions
   // since it'll disable eviction on a cached renderer.
   AddCondition(BackForwardCacheCommitDeferringCondition::MaybeCreate(
       navigation_request));
+
+  // Run condition generators for testing.
+  for (auto& iter : GetConditionGenerators())
+    AddCondition(iter.second.Run());
+}
+
+// static
+int CommitDeferringConditionRunner::InstallConditionGeneratorForTesting(
+    ConditionGenerator generator) {
+  static int generator_id = 0;
+  GetConditionGenerators().emplace(generator_id, std::move(generator));
+  return generator_id++;
+}
+
+// static
+void CommitDeferringConditionRunner::UninstallConditionGeneratorForTesting(
+    int generator_id) {
+  GetConditionGenerators().erase(generator_id);
 }
 
 void CommitDeferringConditionRunner::ProcessConditions() {
@@ -75,8 +132,9 @@ void CommitDeferringConditionRunner::ProcessConditions() {
     auto resume_closure =
         base::BindOnce(&CommitDeferringConditionRunner::ResumeProcessing,
                        weak_factory_.GetWeakPtr());
-    if (!(*conditions_.begin())
-             ->WillCommitNavigation(std::move(resume_closure))) {
+    CommitDeferringCondition* condition = (*conditions_.begin()).get();
+    if (condition->WillCommitNavigation(std::move(resume_closure)) ==
+        CommitDeferringCondition::Result::kDefer) {
       is_deferred_ = true;
       return;
     }
@@ -88,7 +146,8 @@ void CommitDeferringConditionRunner::ProcessConditions() {
 
   // All checks are completed, proceed with the commit in the
   // NavigationRequest.
-  delegate_.OnCommitDeferringConditionChecksComplete();
+  delegate_.OnCommitDeferringConditionChecksComplete(
+      navigation_type_, candidate_prerender_frame_tree_node_id_);
 }
 
 void CommitDeferringConditionRunner::AddCondition(

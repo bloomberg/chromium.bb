@@ -31,8 +31,6 @@
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
-#include "third_party/blink/renderer/bindings/modules/v8/offscreen_rendering_context.h"
-#include "third_party/blink/renderer/bindings/modules/v8/rendering_context.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_union_canvasrenderingcontext2d_gpucanvascontext_imagebitmaprenderingcontext_webgl2renderingcontext_webglrenderingcontext.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_union_gpucanvascontext_imagebitmaprenderingcontext_offscreencanvasrenderingcontext2d_webgl2renderingcontext_webglrenderingcontext.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -136,8 +134,6 @@ CanvasRenderingContext* WebGLRenderingContext::Factory::Create(
   }
   rendering_context->InitializeNewContext();
   rendering_context->RegisterContextExtensions();
-  rendering_context->RecordUKMCanvasRenderingAPI(
-      CanvasRenderingContext::CanvasRenderingAPI::kWebgl);
   return rendering_context;
 }
 
@@ -158,8 +154,6 @@ WebGLRenderingContext::WebGLRenderingContext(
                                 requested_attributes,
                                 Platform::kWebGL1ContextType) {}
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-
 V8RenderingContext* WebGLRenderingContext::AsV8RenderingContext() {
   return MakeGarbageCollected<V8RenderingContext>(this);
 }
@@ -168,20 +162,6 @@ V8OffscreenRenderingContext*
 WebGLRenderingContext::AsV8OffscreenRenderingContext() {
   return MakeGarbageCollected<V8OffscreenRenderingContext>(this);
 }
-
-#else  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-
-void WebGLRenderingContext::SetCanvasGetContextResult(
-    RenderingContext& result) {
-  result.SetWebGLRenderingContext(this);
-}
-
-void WebGLRenderingContext::SetOffscreenCanvasGetContextResult(
-    OffscreenRenderingContext& result) {
-  result.SetWebGLRenderingContext(this);
-}
-
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 ImageBitmap* WebGLRenderingContext::TransferToImageBitmap(
     ScriptState* script_state) {
@@ -197,7 +177,9 @@ void WebGLRenderingContext::RegisterContextExtensions() {
   RegisterExtension(angle_instanced_arrays_);
   RegisterExtension(ext_blend_min_max_);
   RegisterExtension(ext_color_buffer_half_float_);
-  RegisterExtension(ext_disjoint_timer_query_);
+  RegisterExtension(ext_disjoint_timer_query_, TimerQueryExtensionsEnabled()
+                                                   ? kApprovedExtension
+                                                   : kDeveloperExtension);
   RegisterExtension(ext_float_blend_);
   RegisterExtension(ext_frag_depth_);
   RegisterExtension(ext_shader_texture_lod_);

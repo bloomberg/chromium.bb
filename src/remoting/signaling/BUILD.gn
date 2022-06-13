@@ -44,7 +44,6 @@ static_library("signaling") {
   ]
 
   configs += [
-    "//build/config/compiler:no_size_t_to_int_warning",
     "//build/config/compiler:wexit_time_destructors",
     "//remoting/build/config:version",
   ]
@@ -65,6 +64,7 @@ static_library("signaling") {
     "//net",
     "//remoting/base",
     "//remoting/base:authorization",
+    "//remoting/base:logging",
     "//remoting/proto/ftl/v1:ftl_messages",
     "//services/network/public/cpp:cpp",
   ]

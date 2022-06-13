@@ -41,22 +41,6 @@ const char kShellExecutableName[] = "content_shell";
 const char kMojoCoreLibraryName[] = "libmojo_core.so";
 #endif
 
-const char* kSwitchesToCopy[] = {
-#if defined(USE_OZONE)
-    // Keep the kOzonePlatform switch that the Ozone must use.
-    switches::kOzonePlatform,
-#endif
-    // Some tests use custom cmdline that doesn't hold switches from previous
-    // cmdline. Only a couple of switches are copied. That can result in
-    // incorrect initialization of a process. For example, the work that we do
-    // to have use_x11 && use_ozone, requires UseOzonePlatform feature flag to
-    // be passed to all the process to ensure correct path is chosen.
-    // TODO(https://crbug.com/1096425): update this comment once USE_X11 goes
-    // away.
-    switches::kEnableFeatures,
-    switches::kDisableFeatures,
-};
-
 base::FilePath GetCurrentDirectory() {
   base::FilePath current_directory;
   CHECK(base::GetCurrentDirectory(&current_directory));
@@ -81,9 +65,15 @@ class LaunchAsMojoClientBrowserTest : public ContentBrowserTest {
         GetFilePathNextToCurrentExecutable(kShellExecutableName));
     command_line.AppendSwitchPath(switches::kContentShellDataPath,
                                   temp_dir_.GetPath());
+#if defined(USE_OZONE)
     const base::CommandLine& cmdline = *base::CommandLine::ForCurrentProcess();
+    const char* kSwitchesToCopy[] = {
+        // Keep the kOzonePlatform switch that the Ozone must use.
+        switches::kOzonePlatform,
+    };
     command_line.CopySwitchesFrom(cmdline, kSwitchesToCopy,
                                   base::size(kSwitchesToCopy));
+#endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     command_line.AppendSwitchASCII(switches::kUseGL,
@@ -165,21 +155,14 @@ IN_PROC_BROWSER_TEST_F(LaunchAsMojoClientBrowserTest, LaunchAndBindInterface) {
   shell_controller->ShutDown();
 }
 
-// Running a Content embedder with a dynamically loaded Mojo Core library is
-// currently only supported on Linux and Chrome OS.
-//
-// TODO(crbug.com/1096899): Re-enable on MSan if possible. MSan complains about
-// spurious uninitialized memory reads inside base::PlatformThread due to what
-// appears to be poor interaction among MSan, PlatformThread's thread_local
-// storage, and Mojo's use of dlopen().
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)
-#if defined(MEMORY_SANITIZER) || BUILDFLAG(CFI_ICALL_CHECK)
-#define MAYBE_WithMojoCoreLibrary DISABLED_WithMojoCoreLibrary
-#else
-#define MAYBE_WithMojoCoreLibrary WithMojoCoreLibrary
-#endif
+// TODO(crbug.com/1259557): This test implementation fundamentally conflicts
+// with a fix for the linked bug because it causes a browser process to behave
+// partially as a broker and partially as a non-broker. This can be re-enabled
+// when we migrate away from the current Mojo implementation. It's OK to disable
+// for now because no production code relies on this feature.
 IN_PROC_BROWSER_TEST_F(LaunchAsMojoClientBrowserTest,
-                       MAYBE_WithMojoCoreLibrary) {
+                       DISABLED_WithMojoCoreLibrary) {
   // Instructs a newly launched Content Shell browser to initialize Mojo Core
   // dynamically from a shared library, rather than using the version linked
   // into the Content Shell binary.

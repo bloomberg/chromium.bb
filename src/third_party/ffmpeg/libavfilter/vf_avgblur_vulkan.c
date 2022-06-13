@@ -333,7 +333,7 @@ static int avgblur_vulkan_filter_frame(AVFilterLink *link, AVFrame *in)
     }
 
     tmp = ff_get_video_buffer(outlink, outlink->w, outlink->h);
-    if (!out) {
+    if (!tmp) {
         err = AVERROR(ENOMEM);
         goto fail;
     }
@@ -386,7 +386,6 @@ static const AVFilterPad avgblur_vulkan_inputs[] = {
         .filter_frame = &avgblur_vulkan_filter_frame,
         .config_props = &ff_vk_filter_config_input,
     },
-    { NULL }
 };
 
 static const AVFilterPad avgblur_vulkan_outputs[] = {
@@ -395,18 +394,17 @@ static const AVFilterPad avgblur_vulkan_outputs[] = {
         .type = AVMEDIA_TYPE_VIDEO,
         .config_props = &ff_vk_filter_config_output,
     },
-    { NULL }
 };
 
-AVFilter ff_vf_avgblur_vulkan = {
+const AVFilter ff_vf_avgblur_vulkan = {
     .name           = "avgblur_vulkan",
     .description    = NULL_IF_CONFIG_SMALL("Apply avgblur mask to input video"),
     .priv_size      = sizeof(AvgBlurVulkanContext),
     .init           = &ff_vk_filter_init,
     .uninit         = &avgblur_vulkan_uninit,
-    .query_formats  = &ff_vk_filter_query_formats,
-    .inputs         = avgblur_vulkan_inputs,
-    .outputs        = avgblur_vulkan_outputs,
+    FILTER_INPUTS(avgblur_vulkan_inputs),
+    FILTER_OUTPUTS(avgblur_vulkan_outputs),
+    FILTER_SINGLE_PIXFMT(AV_PIX_FMT_VULKAN),
     .priv_class     = &avgblur_vulkan_class,
     .flags_internal = FF_FILTER_FLAG_HWFRAME_AWARE,
 };

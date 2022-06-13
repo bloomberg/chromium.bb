@@ -10,7 +10,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/net_export.h"
@@ -40,6 +39,9 @@ class NET_EXPORT_PRIVATE BidirectionalStreamImpl {
   class NET_EXPORT_PRIVATE Delegate {
    public:
     Delegate();
+
+    Delegate(const Delegate&) = delete;
+    Delegate& operator=(const Delegate&) = delete;
 
     // Called when the stream is ready for reading and writing.
     // The delegate may call BidirectionalStreamImpl::ReadData to start reading,
@@ -85,12 +87,12 @@ class NET_EXPORT_PRIVATE BidirectionalStreamImpl {
 
    protected:
     virtual ~Delegate();
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(Delegate);
   };
 
   BidirectionalStreamImpl();
+
+  BidirectionalStreamImpl(const BidirectionalStreamImpl&) = delete;
+  BidirectionalStreamImpl& operator=(const BidirectionalStreamImpl&) = delete;
 
   // |this| should not be destroyed during Delegate::OnHeadersSent or
   // Delegate::OnDataSent.
@@ -160,9 +162,6 @@ class NET_EXPORT_PRIVATE BidirectionalStreamImpl {
   // Fills in |details| if it is available; leaves |details| unchanged if it
   // is unavailable.
   virtual void PopulateNetErrorDetails(NetErrorDetails* details) = 0;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BidirectionalStreamImpl);
 };
 
 }  // namespace net

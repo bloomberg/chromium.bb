@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/macros.h"
 #include "gin/wrappable.h"
 #include "v8/include/v8.h"
 
@@ -24,6 +23,10 @@ class APIBindingBridge final : public gin::Wrappable<APIBindingBridge> {
                    v8::Local<v8::Value> api_object,
                    const std::string& extension_id,
                    const std::string& context_type);
+
+  APIBindingBridge(const APIBindingBridge&) = delete;
+  APIBindingBridge& operator=(const APIBindingBridge&) = delete;
+
   ~APIBindingBridge() override;
 
   static gin::WrapperInfo kWrapperInfo;
@@ -49,8 +52,6 @@ class APIBindingBridge final : public gin::Wrappable<APIBindingBridge> {
 
   // The type of context this belongs to.
   std::string context_type_;
-
-  DISALLOW_COPY_AND_ASSIGN(APIBindingBridge);
 };
 
 }  // namespace extensions

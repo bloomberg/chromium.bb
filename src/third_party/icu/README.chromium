@@ -1,16 +1,16 @@
 Name: icu
 URL: https://github.com/unicode-org/icu
-Version: 69-1
-CPEPrefix: cpe:/a:icu-project:international_components_for_unicode:69.1
+Version: 70-1
+CPEPrefix: cpe:/a:icu-project:international_components_for_unicode:70.1
 License: MIT
 Security Critical: yes
 
 Description:
-This directory contains the source code of ICU 69.1 for C/C++.
+This directory contains the source code of ICU 70.1 for C/C++.
 
 A. How to update ICU
 
-1. Run "scripts/update.sh <version>" (e.g. 69-1).
+1. Run "scripts/update.sh <version>" (e.g. 70-1).
    This will download ICU from the upstream git repository.
    It does preserve Chrome-specific build files and
    converter files. (see section C)
@@ -139,6 +139,8 @@ them when updating ICU.
 2. source/data/brkitr
   - dictionaries/khmerdict.txt: Abridged Khmer dictionary. See
     https://unicode-org.atlassian.net/browse/ICU-9451
+  - dictionaries/laodict.txt: Abridged Lao dictionary. We keep using the smaller
+    old version from ICU69-1.
   - rules/word_ja.txt (used only on Android)
     Added for Japanese-specific word-breaking without the C+J dictionary.
   - rules/{root,zh,zh_Hant}.txt
@@ -193,8 +195,8 @@ D. Local Modifications
      windowsZones.txt
      zoneinfo64.txt
 
-  As of Janurary 27, 2021, the latest version is 2021a and the above files
-  are available at the ICU github repos.
+  As of October 6, 2021, the latest version is 2021a1 (a reduced version of 2021b)
+  and the above files are available at the ICU github repos.
 
 4. Build-related changes
 
@@ -209,6 +211,10 @@ D. Local Modifications
   - patches/data_symb.patch :
       Put ICU_DATA_ENTRY_POINT(icudtXX_dat) in common when we use
       the icu data file or icudt.dll
+
+  - patches/unused-var.patch:
+    upstream bug: https://unicode-org.atlassian.net/browse/ICU-21664
+    fix: https://github.com/unicode-org/icu/commit/1d560c37e559b36f951c79c48af03679f6831b7a
 
 5. ISO-2022-JP encoding (fromUnicode) change per WHATWG encoding spec.
   - patches/iso2022jp.patch
@@ -243,9 +249,18 @@ D. Local Modifications
     patches/fuchsia.patch
   - context bug: https://bugs.chromium.org/p/chromium/issues/detail?id=1184527
 
-10. Patch locale to fix assign and assing move operators:
-    patches/locid_operators.patch
-  - upstream bug:
-    https://unicode-org.atlassian.net/browse/ICU-21587
+10. Rename the following file due to path conflict.
+    mv source/common/BUILD source/common/BUILD.unused
+    mv source/data/unidata/norm2/BUILD source/data/unidata/norm2/BUILD.unused
+    mv source/i18n/BUILD source/i18n/BUILD.unused
+    mv source/stubdata/BUILD source/stubdata/BUILD.unused
+    mv source/tools/gennorm2/BUILD source/tools/gennorm2/BUILD.unused
+    mv source/tools/toolutil/BUILD source/tools/toolutil/BUILD.unused
+
+11. Remove deprecated ctgmath header
+    patches/lstmbe-header.patch
   - upstream PR:
-    https://github.com/unicode-org/icu/pull/1698
+    https://github.com/unicode-org/icu/pull/1948
+  - upstream bug:
+    https://unicode-org.atlassian.net/browse/ICU-21865
+

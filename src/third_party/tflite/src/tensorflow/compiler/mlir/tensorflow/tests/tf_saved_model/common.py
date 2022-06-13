@@ -18,10 +18,6 @@ There is a fair amount of setup needed to initialize tensorflow and get it
 into a proper TF2 execution mode. This hides that boilerplate.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import tempfile
 
 from absl import app
@@ -79,7 +75,7 @@ def do_test(create_module_fn, exported_names=None, show_debug_info=False):
     if FLAGS.save_model_path:
       save_model_path = FLAGS.save_model_path
     else:
-      save_model_path = tempfile.mktemp(suffix='.saved_model')
+      save_model_path = tempfile.mkdtemp(suffix='.saved_model')
     save_options = tf.saved_model.SaveOptions(save_debug_info=show_debug_info)
     tf.saved_model.save(
         create_module_fn(), save_model_path, options=save_options)

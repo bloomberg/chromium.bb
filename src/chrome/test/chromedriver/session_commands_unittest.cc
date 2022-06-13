@@ -68,14 +68,14 @@ TEST(SessionCommandsTest, ExecuteSetTimeouts) {
   status = ExecuteSetTimeouts(&session, params, &value);
   ASSERT_EQ(kInvalidArgument, status.code());
 
-  params.Clear();
+  params.DictClear();
   params.SetInteger("unknown", 5000);
   status = ExecuteSetTimeouts(&session, params, &value);
   ASSERT_EQ(kOk, status.code());
 
   // Old pre-W3C format.
-  params.Clear();
-  params.SetDouble("ms", 5000.0);
+  params.DictClear();
+  params.SetDoubleKey("ms", 5000.0);
   params.SetString("type", "page load");
   status = ExecuteSetTimeouts(&session, params, &value);
   ASSERT_EQ(kOk, status.code());
@@ -98,7 +98,7 @@ TEST(SessionCommandsTest, MergeCapabilities) {
   // non key collision should return true
   ASSERT_TRUE(MergeCapabilities(&primary, &secondary, &merged));
 
-  merged.Clear();
+  merged.DictClear();
   MergeCapabilities(&primary, &secondary, &merged);
   primary.MergeDictionary(&secondary);
 
@@ -338,8 +338,8 @@ TEST(SessionCommandsTest, FileUpload) {
   params.SetString("file", kBase64ZipEntry);
   Status status = ExecuteUploadFile(&session, params, &value);
   ASSERT_EQ(kOk, status.code()) << status.message();
-  std::string path;
-  ASSERT_TRUE(value->GetAsString(&path));
+  ASSERT_TRUE(value->is_string());
+  std::string path = value->GetString();
   ASSERT_TRUE(base::PathExists(base::FilePath::FromUTF8Unsafe(path)));
   std::string data;
   ASSERT_TRUE(
@@ -371,7 +371,7 @@ TEST(SessionCommandsTest, MatchCapabilities) {
 
   ASSERT_FALSE(MatchCapabilities(&merged));
 
-  merged.Clear();
+  merged.DictClear();
   merged.SetString("browserName", "chrome");
 
   ASSERT_TRUE(MatchCapabilities(&merged));
@@ -388,7 +388,7 @@ TEST(SessionCommandsTest, MatchCapabilitiesVirtualAuthenticators) {
   EXPECT_FALSE(MatchCapabilities(&merged));
 
   // Don't match values other than bools.
-  merged.Clear();
+  merged.DictClear();
   merged.SetStringPath("webauthn:virtualAuthenticators", "not a bool");
   EXPECT_FALSE(MatchCapabilities(&merged));
 }
@@ -404,7 +404,7 @@ TEST(SessionCommandsTest, MatchCapabilitiesVirtualAuthenticatorsLargeBlob) {
   EXPECT_FALSE(MatchCapabilities(&merged));
 
   // Don't match values other than bools.
-  merged.Clear();
+  merged.DictClear();
   merged.SetStringPath("webauthn:extension:largeBlob", "not a bool");
   EXPECT_FALSE(MatchCapabilities(&merged));
 }
@@ -616,9 +616,9 @@ TEST(SessionCommandsTest, ConfigureSession_allSet) {
   ASSERT_TRUE(capabilities_out.logging_prefs["driver"]);
   // Verify session settings are correct
   ASSERT_EQ(kAccept, session.unhandled_prompt_behavior);
-  ASSERT_EQ(base::TimeDelta::FromSeconds(57), session.implicit_wait);
-  ASSERT_EQ(base::TimeDelta::FromSeconds(29), session.page_load_timeout);
-  ASSERT_EQ(base::TimeDelta::FromSeconds(21), session.script_timeout);
+  ASSERT_EQ(base::Seconds(57), session.implicit_wait);
+  ASSERT_EQ(base::Seconds(29), session.page_load_timeout);
+  ASSERT_EQ(base::Seconds(21), session.script_timeout);
   ASSERT_TRUE(session.strict_file_interactability);
   ASSERT_EQ(Log::Level::kDebug, session.driver_log.get()->min_level());
 }
@@ -648,9 +648,9 @@ TEST(SessionCommandsTest, ConfigureSession_defaults) {
   ASSERT_TRUE(desired_caps_out->is_dict());
   ASSERT_TRUE(merged_out.is_dict());
   // Testing specific values could be fragile, but want to verify they are set
-  ASSERT_EQ(base::TimeDelta::FromSeconds(0), session.implicit_wait);
-  ASSERT_EQ(base::TimeDelta::FromSeconds(300), session.page_load_timeout);
-  ASSERT_EQ(base::TimeDelta::FromSeconds(30), session.script_timeout);
+  ASSERT_EQ(base::Seconds(0), session.implicit_wait);
+  ASSERT_EQ(base::Seconds(300), session.page_load_timeout);
+  ASSERT_EQ(base::Seconds(30), session.script_timeout);
   ASSERT_FALSE(session.strict_file_interactability);
   ASSERT_EQ(Log::Level::kWarning, session.driver_log.get()->min_level());
   // w3c values:

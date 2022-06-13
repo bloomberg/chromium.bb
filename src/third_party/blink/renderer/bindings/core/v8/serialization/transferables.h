@@ -5,10 +5,10 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SERIALIZATION_TRANSFERABLES_H_
 #define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SERIALIZATION_TRANSFERABLES_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_map.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 
 namespace blink {
 
@@ -36,6 +36,10 @@ class CORE_EXPORT Transferables final {
 
  public:
   Transferables() = default;
+
+  Transferables(const Transferables&) = delete;
+  Transferables& operator=(const Transferables&) = delete;
+
   ~Transferables();
 
   ArrayBufferArray array_buffers;
@@ -70,9 +74,6 @@ class CORE_EXPORT Transferables final {
       return nullptr;
     return static_cast<T*>(it->value.Get());
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(Transferables);
 };
 
 // Along with extending |Transferables| to hold a new kind of transferable

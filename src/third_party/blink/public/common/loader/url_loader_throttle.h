@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "base/strings/string_piece.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -130,11 +131,6 @@ class BLINK_COMMON_EXPORT URLLoaderThrottle {
     // Restarting is only valid before BeforeWillProcessResponse() is called.
     virtual void RestartWithURLResetAndFlagsNow(int additional_load_flags);
 
-    // Restarts the URL loader immediately after adding the provided headers to
-    // the new request.
-    virtual void RestartWithModifiedHeadersNow(
-        const net::HttpRequestHeaders& modified_headers);
-
    protected:
     virtual ~Delegate();
   };
@@ -216,11 +212,6 @@ class BLINK_COMMON_EXPORT URLLoaderThrottle {
       const network::URLLoaderCompletionStatus& status,
       bool* defer);
 
-  // Called when an ACCEPT_CH frame is observed.
-  virtual void HandleAcceptCHFrameReceived(
-      const GURL& url,
-      const std::vector<network::mojom::WebClientHintsType>& accept_ch_frame);
-
   // Must return true if the throttle may make cross-scheme redirects
   // (which is usually considered unsafe, so allowed only if the setting
   // is made very explicitly).
@@ -231,7 +222,7 @@ class BLINK_COMMON_EXPORT URLLoaderThrottle {
  protected:
   URLLoaderThrottle();
 
-  Delegate* delegate_ = nullptr;
+  raw_ptr<Delegate> delegate_ = nullptr;
 };
 
 }  // namespace blink

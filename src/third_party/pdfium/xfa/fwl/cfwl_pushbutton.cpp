@@ -27,8 +27,8 @@ FWL_Type CFWL_PushButton::GetClassID() const {
 }
 
 void CFWL_PushButton::SetStates(uint32_t dwStates) {
-  if (dwStates & FWL_WGTSTATE_Disabled) {
-    m_Properties.m_dwStates = FWL_WGTSTATE_Disabled;
+  if (dwStates & FWL_STATE_WGT_Disabled) {
+    m_Properties.m_dwStates = FWL_STATE_WGT_Disabled;
     return;
   }
   CFWL_Widget::SetStates(dwStates);
@@ -48,7 +48,7 @@ void CFWL_PushButton::DrawWidget(CFGAS_GEGraphics* pGraphics,
     return;
 
   if (HasBorder())
-    DrawBorder(pGraphics, CFWL_Part::Border, matrix);
+    DrawBorder(pGraphics, CFWL_ThemePart::Part::kBorder, matrix);
 
   DrawBkground(pGraphics, matrix);
 }
@@ -56,25 +56,25 @@ void CFWL_PushButton::DrawWidget(CFGAS_GEGraphics* pGraphics,
 void CFWL_PushButton::DrawBkground(CFGAS_GEGraphics* pGraphics,
                                    const CFX_Matrix& matrix) {
   CFWL_ThemeBackground param(this, pGraphics);
-  param.m_iPart = CFWL_Part::Background;
+  param.m_iPart = CFWL_ThemePart::Part::kBackground;
   param.m_dwStates = GetPartStates();
   param.m_matrix = matrix;
   param.m_PartRect = m_ClientRect;
-  if (m_Properties.m_dwStates & FWL_WGTSTATE_Focused)
+  if (m_Properties.m_dwStates & FWL_STATE_WGT_Focused)
     param.m_pRtData = &m_CaptionRect;
   GetThemeProvider()->DrawBackground(param);
 }
 
-uint32_t CFWL_PushButton::GetPartStates() {
-  uint32_t dwStates = CFWL_PartState_Normal;
-  if (m_Properties.m_dwStates & FWL_WGTSTATE_Focused)
-    dwStates |= CFWL_PartState_Focused;
-  if (m_Properties.m_dwStates & FWL_WGTSTATE_Disabled)
-    dwStates = CFWL_PartState_Disabled;
+Mask<CFWL_PartState> CFWL_PushButton::GetPartStates() {
+  Mask<CFWL_PartState> dwStates = CFWL_PartState::kNormal;
+  if (m_Properties.m_dwStates & FWL_STATE_WGT_Focused)
+    dwStates |= CFWL_PartState::kFocused;
+  if (m_Properties.m_dwStates & FWL_STATE_WGT_Disabled)
+    dwStates = CFWL_PartState::kDisabled;
   else if (m_Properties.m_dwStates & FWL_STATE_PSB_Pressed)
-    dwStates |= CFWL_PartState_Pressed;
+    dwStates |= CFWL_PartState::kPressed;
   else if (m_Properties.m_dwStates & FWL_STATE_PSB_Hovered)
-    dwStates |= CFWL_PartState_Hovered;
+    dwStates |= CFWL_PartState::kHovered;
   return dwStates;
 }
 
@@ -84,24 +84,24 @@ void CFWL_PushButton::OnProcessMessage(CFWL_Message* pMessage) {
 
   switch (pMessage->GetType()) {
     case CFWL_Message::Type::kSetFocus:
-      OnFocusChanged(pMessage, true);
+      OnFocusGained();
       break;
     case CFWL_Message::Type::kKillFocus:
-      OnFocusChanged(pMessage, false);
+      OnFocusLost();
       break;
     case CFWL_Message::Type::kMouse: {
       CFWL_MessageMouse* pMsg = static_cast<CFWL_MessageMouse*>(pMessage);
       switch (pMsg->m_dwCmd) {
-        case FWL_MouseCommand::LeftButtonDown:
+        case CFWL_MessageMouse::MouseCommand::kLeftButtonDown:
           OnLButtonDown(pMsg);
           break;
-        case FWL_MouseCommand::LeftButtonUp:
+        case CFWL_MessageMouse::MouseCommand::kLeftButtonUp:
           OnLButtonUp(pMsg);
           break;
-        case FWL_MouseCommand::Move:
+        case CFWL_MessageMouse::MouseCommand::kMove:
           OnMouseMove(pMsg);
           break;
-        case FWL_MouseCommand::Leave:
+        case CFWL_MessageMouse::MouseCommand::kLeave:
           OnMouseLeave(pMsg);
           break;
         default:
@@ -111,7 +111,7 @@ void CFWL_PushButton::OnProcessMessage(CFWL_Message* pMessage) {
     }
     case CFWL_Message::Type::kKey: {
       CFWL_MessageKey* pKey = static_cast<CFWL_MessageKey*>(pMessage);
-      if (pKey->m_dwCmd == CFWL_MessageKey::Type::kKeyDown)
+      if (pKey->m_dwCmd == CFWL_MessageKey::KeyCommand::kKeyDown)
         OnKeyDown(pKey);
       break;
     }
@@ -128,12 +128,13 @@ void CFWL_PushButton::OnDrawWidget(CFGAS_GEGraphics* pGraphics,
   DrawWidget(pGraphics, matrix);
 }
 
-void CFWL_PushButton::OnFocusChanged(CFWL_Message* pMsg, bool bSet) {
-  if (bSet)
-    m_Properties.m_dwStates |= FWL_WGTSTATE_Focused;
-  else
-    m_Properties.m_dwStates &= ~FWL_WGTSTATE_Focused;
+void CFWL_PushButton::OnFocusGained() {
+  m_Properties.m_dwStates |= FWL_STATE_WGT_Focused;
+  RepaintRect(m_ClientRect);
+}
 
+void CFWL_PushButton::OnFocusLost() {
+  m_Properties.m_dwStates &= ~FWL_STATE_WGT_Focused;
   RepaintRect(m_ClientRect);
 }
 
@@ -202,10 +203,11 @@ void CFWL_PushButton::OnMouseLeave(CFWL_MessageMouse* pMsg) {
 }
 
 void CFWL_PushButton::OnKeyDown(CFWL_MessageKey* pMsg) {
-  if (pMsg->m_dwKeyCode != XFA_FWL_VKEY_Return)
+  if (pMsg->m_dwKeyCodeOrChar != XFA_FWL_VKEY_Return)
     return;
 
-  CFWL_EventMouse wmMouse(this, nullptr, FWL_MouseCommand::LeftButtonUp);
+  CFWL_EventMouse wmMouse(this, nullptr,
+                          CFWL_MessageMouse::MouseCommand::kLeftButtonUp);
   DispatchEvent(&wmMouse);
   if (!wmMouse.GetSrcTarget())
     return;

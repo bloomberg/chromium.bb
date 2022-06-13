@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {eventToPromise} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/_test_resources/webui/test_util.m.js';
+import {eventToPromise} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/_test_resources/webui/test_util.js';
 import {PDFViewerElement, ViewerPropertiesDialogElement} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/pdf_viewer_wrapper.js';
 
 const viewer = /** @type {!PDFViewerElement} */ (
@@ -59,7 +59,7 @@ const tests = [
      ['pdf-producer', 'fixup_pdf_template.py'],
      ['pdf-version', '1.7'],
      ['page-count', '1'],
-     ['page-size', '2.78 × 2.78 in (portrait)'],
+     ['page-size', '2.78 × 2.78 in (square)'],
      ['fast-web-view', 'No'],
     ].forEach(([field, expectedValue]) => assertField(field, expectedValue));
 

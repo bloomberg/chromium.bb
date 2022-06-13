@@ -11,30 +11,28 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
 #include "components/invalidation/public/invalidation.h"
 #include "components/invalidation/public/invalidator_state.h"
 #include "components/invalidation/public/topic_invalidation_map.h"
-#include "components/sync/base/system_encryptor.h"
+#include "components/sync/driver/active_devices_provider.h"
 #include "components/sync/engine/cancelation_signal.h"
 #include "components/sync/engine/model_type_configurer.h"
 #include "components/sync/engine/shutdown_reason.h"
 #include "components/sync/engine/sync_encryption_handler.h"
 #include "components/sync/engine/sync_engine.h"
 #include "components/sync/engine/sync_manager.h"
-#include "components/sync/engine/sync_status_observer.h"
 #include "google_apis/gaia/core_account_id.h"
 
 namespace syncer {
 
 class ModelTypeController;
+class Nigori;
 class SyncEngineImpl;
 
 class SyncEngineBackend : public base::RefCountedThreadSafe<SyncEngineBackend>,
-                          public SyncManager::Observer,
-                          public SyncStatusObserver {
+                          public SyncManager::Observer {
  public:
   using AllNodesCallback =
       base::OnceCallback<void(const ModelType,
@@ -49,7 +47,6 @@ class SyncEngineBackend : public base::RefCountedThreadSafe<SyncEngineBackend>,
     RestoredLocalTransportData(const RestoredLocalTransportData&) = delete;
     ~RestoredLocalTransportData();
 
-    std::string keystore_encryption_bootstrap_token;
     std::map<ModelType, int64_t> invalidation_versions;
 
     // Initial authoritative values (usually read from prefs).
@@ -65,6 +62,9 @@ class SyncEngineBackend : public base::RefCountedThreadSafe<SyncEngineBackend>,
                     const base::FilePath& sync_data_folder,
                     const base::WeakPtr<SyncEngineImpl>& host);
 
+  SyncEngineBackend(const SyncEngineBackend&) = delete;
+  SyncEngineBackend& operator=(const SyncEngineBackend&) = delete;
+
   // SyncManager::Observer implementation.  The Backend just acts like an air
   // traffic controller here, forwarding incoming messages to appropriate
   // landing threads.
@@ -73,8 +73,6 @@ class SyncEngineBackend : public base::RefCountedThreadSafe<SyncEngineBackend>,
   void OnActionableError(const SyncProtocolError& sync_error) override;
   void OnMigrationRequested(ModelTypeSet types) override;
   void OnProtocolEvent(const ProtocolEvent& event) override;
-
-  // SyncStatusObserver implementation.
   void OnSyncStatusChanged(const SyncStatus& status) override;
 
   // Note:
@@ -115,8 +113,9 @@ class SyncEngineBackend : public base::RefCountedThreadSafe<SyncEngineBackend>,
   // Called to set the passphrase for encryption.
   void DoSetEncryptionPassphrase(const std::string& passphrase);
 
-  // Called to decrypt the pending keys using user-entered passphrases.
-  void DoSetDecryptionPassphrase(const std::string& passphrase);
+  // Called to decrypt the pending keys using the |key| derived from
+  // user-entered passphrase.
+  void DoSetExplicitPassphraseDecryptionKey(std::unique_ptr<Nigori> key);
 
   // Called to decrypt the pending keys using trusted vault keys.
   void DoAddTrustedVaultDecryptionKeys(
@@ -148,8 +147,7 @@ class SyncEngineBackend : public base::RefCountedThreadSafe<SyncEngineBackend>,
   void DisableProtocolEventForwarding();
 
   // Notify the syncer that the cookie jar has changed.
-  void DoOnCookieJarChanged(bool account_mismatch,
-                            base::OnceClosure callback);
+  void DoOnCookieJarChanged(bool account_mismatch, base::OnceClosure callback);
 
   // Notify about change in client id.
   void DoOnInvalidatorClientIdChange(const std::string& client_id);
@@ -168,8 +166,7 @@ class SyncEngineBackend : public base::RefCountedThreadSafe<SyncEngineBackend>,
   // tokens for all known active devices (if available and excluding the local
   // device if reflections are disabled).
   void DoOnActiveDevicesChanged(
-      size_t active_devices,
-      std::vector<std::string> fcm_registration_tokens);
+      ActiveDevicesInvalidationInfo active_devices_invalidation_info);
 
  private:
   friend class base::RefCountedThreadSafe<SyncEngineBackend>;
@@ -190,9 +187,6 @@ class SyncEngineBackend : public base::RefCountedThreadSafe<SyncEngineBackend>,
 
   // Our parent SyncEngineImpl.
   WeakHandle<SyncEngineImpl> host_;
-
-  // Our encryptor, which uses Chrome's encryption functions.
-  SystemEncryptor encryptor_;
 
   // Should outlive |sync_manager_|.
   std::unique_ptr<SyncEncryptionHandler> sync_encryption_handler_;
@@ -226,8 +220,6 @@ class SyncEngineBackend : public base::RefCountedThreadSafe<SyncEngineBackend>,
   SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<SyncEngineBackend> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(SyncEngineBackend);
 };
 
 }  // namespace syncer

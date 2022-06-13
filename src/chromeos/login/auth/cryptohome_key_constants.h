@@ -16,6 +16,9 @@ COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH)
 extern const char kCryptohomePinLabel[];
 
 COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH)
+extern const char kCryptohomePublicMountLabel[];
+
+COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH)
 extern const char kCryptohomeWildcardLabel[];
 
 }  // namespace chromeos
@@ -24,6 +27,7 @@ extern const char kCryptohomeWildcardLabel[];
 // source code migration is finished.
 namespace ash {
 using ::chromeos::kCryptohomeGaiaKeyLabel;
+using ::chromeos::kCryptohomePinLabel;
 }
 
 #endif  // CHROMEOS_LOGIN_AUTH_CRYPTOHOME_KEY_CONSTANTS_H_

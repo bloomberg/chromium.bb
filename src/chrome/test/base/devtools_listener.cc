@@ -35,7 +35,7 @@ base::StringPiece SpanToStringPiece(const base::span<const uint8_t>& s) {
 std::string EncodeURIComponent(const std::string& component) {
   url::RawCanonOutputT<char> encoded;
   url::EncodeURIComponent(component.c_str(), component.size(), &encoded);
-  return {encoded.data(), encoded.length()};
+  return {encoded.data(), static_cast<size_t>(encoded.length())};
 }
 
 }  // namespace
@@ -152,7 +152,7 @@ void DevToolsListener::StopAndStoreJSCoverage(content::DevToolsAgentHost* host,
   CHECK(result->GetList("result", &coverage_entries));
 
   auto entries = std::make_unique<base::ListValue>();
-  for (size_t i = 0; i != coverage_entries->GetSize(); ++i) {
+  for (size_t i = 0; i != coverage_entries->GetList().size(); ++i) {
     base::DictionaryValue* entry = nullptr;
     CHECK(coverage_entries->GetDictionary(i, &entry));
 

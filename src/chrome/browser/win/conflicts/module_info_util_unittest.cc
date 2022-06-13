@@ -10,16 +10,16 @@
 #include <string>
 
 #include "base/base_paths.h"
+#include "base/cxx17_backports.h"
 #include "base/environment.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
+#include "base/scoped_environment_variable_override.h"
 #include "base/scoped_native_library.h"
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_environment_variable_override.h"
 #include "base/win/pe_image.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -79,8 +79,7 @@ TEST(ModuleInfoUtilTest, GetCertificateInfoSigned) {
 }
 
 TEST(ModuleInfoUtilTest, GetEnvironmentVariablesMapping) {
-  base::test::ScopedEnvironmentVariableOverride scoped_override("foo",
-                                                                "C:\\bar\\");
+  base::ScopedEnvironmentVariableOverride scoped_override("foo", "C:\\bar\\");
 
   // The mapping for these variables will be retrieved.
   std::vector<std::wstring> environment_variables = {

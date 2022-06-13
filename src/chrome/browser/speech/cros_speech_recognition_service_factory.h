@@ -5,18 +5,10 @@
 #ifndef CHROME_BROWSER_SPEECH_CROS_SPEECH_RECOGNITION_SERVICE_FACTORY_H_
 #define CHROME_BROWSER_SPEECH_CROS_SPEECH_RECOGNITION_SERVICE_FACTORY_H_
 
+#include "base/no_destructor.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
 class Profile;
-
-namespace ash {
-class DictationTest;
-}
-
-namespace base {
-template <class T>
-class NoDestructor;
-}  // namespace base
 
 namespace speech {
 class SpeechRecognitionService;
@@ -28,11 +20,10 @@ class CrosSpeechRecognitionServiceFactory
     : public BrowserContextKeyedServiceFactory {
  public:
   static speech::SpeechRecognitionService* GetForProfile(Profile* profile);
+  static CrosSpeechRecognitionServiceFactory* GetInstanceForTest();
 
  private:
   friend class base::NoDestructor<CrosSpeechRecognitionServiceFactory>;
-  friend class OnDeviceSpeechRecognizerTest;
-  friend class ::ash::DictationTest;
   static CrosSpeechRecognitionServiceFactory* GetInstance();
 
   CrosSpeechRecognitionServiceFactory();

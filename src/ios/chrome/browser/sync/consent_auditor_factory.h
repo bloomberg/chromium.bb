@@ -10,7 +10,6 @@
 // UserEventService anymore. Currently this is not possible due to a BUILD.gn
 // dependency.
 
-#include "base/macros.h"
 #include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
@@ -30,6 +29,9 @@ class ConsentAuditorFactory : public BrowserStateKeyedServiceFactory {
       ChromeBrowserState* browser_state);
   static ConsentAuditorFactory* GetInstance();
 
+  ConsentAuditorFactory(const ConsentAuditorFactory&) = delete;
+  ConsentAuditorFactory& operator=(const ConsentAuditorFactory&) = delete;
+
  private:
   friend class base::NoDestructor<ConsentAuditorFactory>;
 
@@ -41,8 +43,6 @@ class ConsentAuditorFactory : public BrowserStateKeyedServiceFactory {
       web::BrowserState* context) const override;
   void RegisterBrowserStatePrefs(
       user_prefs::PrefRegistrySyncable* registry) override;
-
-  DISALLOW_COPY_AND_ASSIGN(ConsentAuditorFactory);
 };
 
 #endif  // IOS_CHROME_BROWSER_SYNC_CONSENT_AUDITOR_FACTORY_H_

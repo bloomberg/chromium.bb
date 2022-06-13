@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_CLOSE_BUBBLE_ON_TAB_ACTIVATION_HELPER_H_
 #define CHROME_BROWSER_UI_VIEWS_CLOSE_BUBBLE_ON_TAB_ACTIVATION_HELPER_H_
 
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 
 class Browser;
@@ -23,6 +24,12 @@ class CloseBubbleOnTabActivationHelper : public TabStripModelObserver {
   CloseBubbleOnTabActivationHelper(
       views::BubbleDialogDelegateView* owner_bubble,
       Browser* browser);
+
+  CloseBubbleOnTabActivationHelper(const CloseBubbleOnTabActivationHelper&) =
+      delete;
+  CloseBubbleOnTabActivationHelper& operator=(
+      const CloseBubbleOnTabActivationHelper&) = delete;
+
   ~CloseBubbleOnTabActivationHelper() override;
 
   // TabStripModelObserver:
@@ -32,10 +39,8 @@ class CloseBubbleOnTabActivationHelper : public TabStripModelObserver {
       const TabStripSelectionChange& selection) override;
 
  private:
-  views::BubbleDialogDelegateView* owner_bubble_;  // weak, owns me.
-  Browser* browser_;
-
-  DISALLOW_COPY_AND_ASSIGN(CloseBubbleOnTabActivationHelper);
+  raw_ptr<views::BubbleDialogDelegateView> owner_bubble_;  // weak, owns me.
+  raw_ptr<Browser> browser_;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_CLOSE_BUBBLE_ON_TAB_ACTIVATION_HELPER_H_

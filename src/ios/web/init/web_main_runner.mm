@@ -6,7 +6,6 @@
 
 #include "base/check.h"
 #include "base/i18n/icu_util.h"
-#include "base/macros.h"
 #include "ios/web/init/web_main_loop.h"
 #include "ios/web/public/init/ios_global_state.h"
 #include "ios/web/public/navigation/url_schemes.h"
@@ -28,6 +27,9 @@ class WebMainRunnerImpl : public WebMainRunner {
         is_shutdown_(false),
         completed_basic_startup_(false),
         delegate_(nullptr) {}
+
+  WebMainRunnerImpl(const WebMainRunnerImpl&) = delete;
+  WebMainRunnerImpl& operator=(const WebMainRunnerImpl&) = delete;
 
   ~WebMainRunnerImpl() override {
     if (is_initialized_ && !is_shutdown_) {
@@ -121,8 +123,6 @@ class WebMainRunnerImpl : public WebMainRunner {
   WebClient empty_web_client_;
 
   std::unique_ptr<WebMainLoop> main_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebMainRunnerImpl);
 };
 
 // static

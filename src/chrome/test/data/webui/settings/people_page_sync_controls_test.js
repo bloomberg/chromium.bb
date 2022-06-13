@@ -9,9 +9,10 @@ import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {Router, StatusAction,SyncBrowserProxyImpl} from 'chrome://settings/settings.js';
-import {getSyncAllPrefs, setupRouterWithSyncRoutes} from 'chrome://test/settings/sync_test_util.js';
-import {TestSyncBrowserProxy} from 'chrome://test/settings/test_sync_browser_proxy.js';
-import {waitBeforeNextRender} from 'chrome://test/test_util.m.js';
+import {waitBeforeNextRender} from 'chrome://webui-test/test_util.js';
+
+import {getSyncAllPrefs, setupRouterWithSyncRoutes} from './sync_test_util.js';
+import {TestSyncBrowserProxy} from './test_sync_browser_proxy.js';
 
 // clang-format on
 
@@ -24,7 +25,7 @@ suite('SyncControlsTest', async function() {
   setup(async function() {
     setupRouterWithSyncRoutes();
     browserProxy = new TestSyncBrowserProxy();
-    SyncBrowserProxyImpl.instance_ = browserProxy;
+    SyncBrowserProxyImpl.setInstance(browserProxy);
 
     PolymerTest.clearBody();
     syncControls = document.createElement('settings-sync-controls');
@@ -35,8 +36,10 @@ suite('SyncControlsTest', async function() {
     flush();
 
     await waitBeforeNextRender();
-    syncEverything = syncControls.$$('cr-radio-button[name="sync-everything"]');
-    customizeSync = syncControls.$$('cr-radio-button[name="customize-sync"]');
+    syncEverything = syncControls.shadowRoot.querySelector(
+        'cr-radio-button[name="sync-everything"]');
+    customizeSync = syncControls.shadowRoot.querySelector(
+        'cr-radio-button[name="customize-sync"]');
     assertTrue(!!syncEverything);
     assertTrue(!!customizeSync);
   });
@@ -68,7 +71,9 @@ suite('SyncControlsTest', async function() {
   test('SettingIndividualDatatypes', async function() {
     assertTrue(syncEverything.checked);
     assertFalse(customizeSync.checked);
-    assertEquals(syncControls.$$('#syncAllDataTypesControl'), null);
+    assertEquals(
+        syncControls.shadowRoot.querySelector('#syncAllDataTypesControl'),
+        null);
 
     // Assert that all the individual datatype controls are disabled.
     const datatypeControls = syncControls.shadowRoot.querySelectorAll(
@@ -128,7 +133,7 @@ suite('SyncControlsSubpageTest', function() {
 
   setup(function() {
     browserProxy = new TestSyncBrowserProxy();
-    SyncBrowserProxyImpl.instance_ = browserProxy;
+    SyncBrowserProxyImpl.setInstance(browserProxy);
 
     PolymerTest.clearBody();
 

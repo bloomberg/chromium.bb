@@ -12,9 +12,10 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/android/webapk/webapk_install_service.h"
 #include "chrome/common/chrome_switches.h"
@@ -22,7 +23,9 @@
 #include "components/webapk/webapk.pb.h"
 #include "components/webapps/browser/android/shortcut_info.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_task_environment.h"
+#include "content/public/test/test_web_contents_factory.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -77,6 +80,9 @@ class TestWebApkInstaller : public WebApkInstaller {
                                SpaceStatus status)
       : WebApkInstaller(browser_context), test_space_status_(status) {}
 
+  TestWebApkInstaller(const TestWebApkInstaller&) = delete;
+  TestWebApkInstaller& operator=(const TestWebApkInstaller&) = delete;
+
   void InstallOrUpdateWebApk(const std::string& package_name,
                              const std::string& token) override {
     PostTaskToRunSuccessCallback();
@@ -97,8 +103,6 @@ class TestWebApkInstaller : public WebApkInstaller {
 
   // The space status used in tests.
   SpaceStatus test_space_status_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestWebApkInstaller);
 };
 
 // Runs the WebApkInstaller installation process/update and blocks till done.
@@ -106,16 +110,20 @@ class WebApkInstallerRunner {
  public:
   WebApkInstallerRunner() {}
 
+  WebApkInstallerRunner(const WebApkInstallerRunner&) = delete;
+  WebApkInstallerRunner& operator=(const WebApkInstallerRunner&) = delete;
+
   ~WebApkInstallerRunner() {}
 
   void RunInstallWebApk(std::unique_ptr<WebApkInstaller> installer,
+                        content::WebContents* web_contents,
                         const webapps::ShortcutInfo& info) {
     base::RunLoop run_loop;
     on_completed_callback_ = run_loop.QuitClosure();
 
     // WebApkInstaller owns itself.
     WebApkInstaller::InstallAsyncForTesting(
-        installer.release(), info, SkBitmap(), false,
+        installer.release(), web_contents, info, SkBitmap(), false,
         base::BindOnce(&WebApkInstallerRunner::OnCompleted,
                        base::Unretained(this)));
 
@@ -151,8 +159,6 @@ class WebApkInstallerRunner {
 
   // The result of the installation process.
   WebApkInstallResult result_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebApkInstallerRunner);
 };
 
 // Helper class for calling WebApkInstaller::StoreUpdateRequestToFile()
@@ -161,13 +167,17 @@ class UpdateRequestStorer {
  public:
   UpdateRequestStorer() {}
 
+  UpdateRequestStorer(const UpdateRequestStorer&) = delete;
+  UpdateRequestStorer& operator=(const UpdateRequestStorer&) = delete;
+
   void StoreSync(const base::FilePath& update_request_path) {
     base::RunLoop run_loop;
     quit_closure_ = run_loop.QuitClosure();
     WebApkInstaller::StoreUpdateRequestToFile(
         update_request_path, webapps::ShortcutInfo((GURL())), SkBitmap(), false,
-        SkBitmap(), "", "", std::map<std::string, WebApkIconHasher::Icon>(),
-        false, {WebApkUpdateReason::PRIMARY_ICON_HASH_DIFFERS},
+        SkBitmap(), "", "",
+        std::map<std::string, webapps::WebApkIconHasher::Icon>(), false, false,
+        {webapps::WebApkUpdateReason::PRIMARY_ICON_HASH_DIFFERS},
         base::BindOnce(&UpdateRequestStorer::OnComplete,
                        base::Unretained(this)));
     run_loop.Run();
@@ -177,8 +187,6 @@ class UpdateRequestStorer {
   void OnComplete(bool success) { std::move(quit_closure_).Run(); }
 
   base::OnceClosure quit_closure_;
-
-  DISALLOW_COPY_AND_ASSIGN(UpdateRequestStorer);
 };
 
 // Builds a webapk::WebApkResponse with |token| as the token from the WebAPK
@@ -203,14 +211,19 @@ std::unique_ptr<net::test_server::HttpResponse> BuildValidWebApkResponse(
 class BuildProtoRunner {
  public:
   BuildProtoRunner() {}
+
+  BuildProtoRunner(const BuildProtoRunner&) = delete;
+  BuildProtoRunner& operator=(const BuildProtoRunner&) = delete;
+
   ~BuildProtoRunner() {}
 
-  void BuildSync(
-      const GURL& best_primary_icon_url,
-      const GURL& splash_image_url,
-      std::map<std::string, WebApkIconHasher::Icon> icon_url_to_murmur2_hash,
-      bool is_manifest_stale,
-      const std::vector<GURL>& best_shortcut_icon_urls) {
+  void BuildSync(const GURL& best_primary_icon_url,
+                 const GURL& splash_image_url,
+                 std::map<std::string, webapps::WebApkIconHasher::Icon>
+                     icon_url_to_murmur2_hash,
+                 bool is_manifest_stale,
+                 bool is_app_identity_update_supported,
+                 const std::vector<GURL>& best_shortcut_icon_urls) {
     webapps::ShortcutInfo info(GURL::EmptyGURL());
     info.best_primary_icon_url = best_primary_icon_url;
     info.splash_image_url = splash_image_url;
@@ -230,6 +243,7 @@ class BuildProtoRunner {
         info, primary_icon, false /* is_primary_icon_maskable */, splash_icon,
         "" /* package_name */, "" /* version */,
         std::move(icon_url_to_murmur2_hash), is_manifest_stale,
+        is_app_identity_update_supported,
         base::BindOnce(&BuildProtoRunner::OnBuiltWebApkProto,
                        base::Unretained(this)));
 
@@ -253,13 +267,14 @@ class BuildProtoRunner {
 
   // Called after the |webapk_request_| is built.
   base::OnceClosure on_completed_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(BuildProtoRunner);
 };
 
 class ScopedTempFile {
  public:
   ScopedTempFile() { CHECK(base::CreateTemporaryFile(&file_path_)); }
+
+  ScopedTempFile(const ScopedTempFile&) = delete;
+  ScopedTempFile& operator=(const ScopedTempFile&) = delete;
 
   ~ScopedTempFile() { base::DeleteFile(file_path_); }
 
@@ -267,8 +282,6 @@ class ScopedTempFile {
 
  private:
   base::FilePath file_path_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedTempFile);
 };
 
 }  // anonymous namespace
@@ -281,6 +294,10 @@ class WebApkInstallerTest : public ::testing::Test {
 
   WebApkInstallerTest()
       : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP) {}
+
+  WebApkInstallerTest(const WebApkInstallerTest&) = delete;
+  WebApkInstallerTest& operator=(const WebApkInstallerTest&) = delete;
+
   ~WebApkInstallerTest() override {}
 
   void SetUp() override {
@@ -289,19 +306,16 @@ class WebApkInstallerTest : public ::testing::Test {
         &WebApkInstallerTest::HandleWebApkRequest, base::Unretained(this)));
     ASSERT_TRUE(test_server_.Start());
 
-    profile_ = std::make_unique<TestingProfile>();
+    web_contents_ = web_contents_factory_.CreateWebContents(&profile_);
 
     SetDefaults();
   }
 
-  void TearDown() override {
-    profile_.reset();
-    base::RunLoop().RunUntilIdle();
-  }
+  void TearDown() override { base::RunLoop().RunUntilIdle(); }
 
   std::unique_ptr<WebApkInstaller> CreateDefaultWebApkInstaller() {
     auto installer = std::unique_ptr<WebApkInstaller>(
-        new TestWebApkInstaller(profile_.get(), SpaceStatus::ENOUGH_SPACE));
+        new TestWebApkInstaller(&profile_, SpaceStatus::ENOUGH_SPACE));
     installer->SetTimeoutMs(kWebApkServerRequestTimeoutMs);
     return installer;
   }
@@ -332,7 +346,8 @@ class WebApkInstallerTest : public ::testing::Test {
     return std::make_unique<BuildProtoRunner>();
   }
 
-  Profile* profile() { return profile_.get(); }
+  Profile* profile() { return &profile_; }
+  content::WebContents* web_contents() { return web_contents_; }
   net::test_server::EmbeddedTestServer* test_server() { return &test_server_; }
 
  private:
@@ -350,20 +365,21 @@ class WebApkInstallerTest : public ::testing::Test {
                : std::unique_ptr<net::test_server::HttpResponse>();
   }
 
-  std::unique_ptr<TestingProfile> profile_;
   content::BrowserTaskEnvironment task_environment_;
+  TestingProfile profile_;
   net::EmbeddedTestServer test_server_;
+  content::TestWebContentsFactory web_contents_factory_;
+  raw_ptr<content::WebContents>
+      web_contents_;  // Owned by `web_contents_factory_`.
 
   // Builds response to the WebAPK creation request.
   WebApkResponseBuilder webapk_response_builder_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebApkInstallerTest);
 };
 
 // Test installation succeeding.
 TEST_F(WebApkInstallerTest, Success) {
   WebApkInstallerRunner runner;
-  runner.RunInstallWebApk(CreateDefaultWebApkInstaller(),
+  runner.RunInstallWebApk(CreateDefaultWebApkInstaller(), web_contents(),
                           DefaultShortcutInfo());
   EXPECT_EQ(WebApkInstallResult::SUCCESS, runner.result());
 }
@@ -374,7 +390,8 @@ TEST_F(WebApkInstallerTest, FailOnLowSpace) {
       new TestWebApkInstaller(profile(), SpaceStatus::NOT_ENOUGH_SPACE));
   installer->SetTimeoutMs(kWebApkServerRequestTimeoutMs);
   WebApkInstallerRunner runner;
-  runner.RunInstallWebApk(std::move(installer), DefaultShortcutInfo());
+  runner.RunInstallWebApk(std::move(installer), web_contents(),
+                          DefaultShortcutInfo());
   EXPECT_EQ(WebApkInstallResult::FAILURE, runner.result());
 }
 
@@ -387,7 +404,8 @@ TEST_F(WebApkInstallerTest, CrossOriginResourcePolicySameOriginIconSuccess) {
       test_server()->GetURL(kBestPrimaryIconCorpUrl);
 
   WebApkInstallerRunner runner;
-  runner.RunInstallWebApk(CreateDefaultWebApkInstaller(), shortcut_info);
+  runner.RunInstallWebApk(CreateDefaultWebApkInstaller(), web_contents(),
+                          shortcut_info);
   EXPECT_EQ(WebApkInstallResult::SUCCESS, runner.result());
 }
 
@@ -399,7 +417,8 @@ TEST_F(WebApkInstallerTest, BestPrimaryIconUrlDownloadTimesOut) {
   shortcut_info.best_primary_icon_url = test_server()->GetURL("/nocontent");
 
   WebApkInstallerRunner runner;
-  runner.RunInstallWebApk(CreateDefaultWebApkInstaller(), shortcut_info);
+  runner.RunInstallWebApk(CreateDefaultWebApkInstaller(), web_contents(),
+                          shortcut_info);
   EXPECT_EQ(WebApkInstallResult::FAILURE, runner.result());
 }
 
@@ -411,7 +430,8 @@ TEST_F(WebApkInstallerTest, BestSplashIconUrlDownloadTimesOut) {
   shortcut_info.splash_image_url = test_server()->GetURL("/nocontent");
 
   WebApkInstallerRunner runner;
-  runner.RunInstallWebApk(CreateDefaultWebApkInstaller(), shortcut_info);
+  runner.RunInstallWebApk(CreateDefaultWebApkInstaller(), web_contents(),
+                          shortcut_info);
   EXPECT_EQ(WebApkInstallResult::FAILURE, runner.result());
 }
 
@@ -423,7 +443,8 @@ TEST_F(WebApkInstallerTest, CreateWebApkRequestTimesOut) {
   installer->SetTimeoutMs(100);
 
   WebApkInstallerRunner runner;
-  runner.RunInstallWebApk(std::move(installer), DefaultShortcutInfo());
+  runner.RunInstallWebApk(std::move(installer), web_contents(),
+                          DefaultShortcutInfo());
   EXPECT_EQ(WebApkInstallResult::FAILURE, runner.result());
 }
 
@@ -447,7 +468,7 @@ TEST_F(WebApkInstallerTest, UnparsableCreateWebApkResponse) {
   SetWebApkResponseBuilder(base::BindRepeating(&BuildUnparsableWebApkResponse));
 
   WebApkInstallerRunner runner;
-  runner.RunInstallWebApk(CreateDefaultWebApkInstaller(),
+  runner.RunInstallWebApk(CreateDefaultWebApkInstaller(), web_contents(),
                           DefaultShortcutInfo());
   EXPECT_EQ(WebApkInstallResult::FAILURE, runner.result());
 }
@@ -530,13 +551,15 @@ TEST_F(WebApkInstallerTest, StoreUpdateRequestToFileCreatesDirectories) {
 TEST_F(WebApkInstallerTest, BuildWebApkProtoWhenManifestIsObsolete) {
   std::string icon_url_1 = test_server()->GetURL("/icon1.png").spec();
   std::string icon_url_2 = test_server()->GetURL("/icon2.png").spec();
-  std::map<std::string, WebApkIconHasher::Icon> icon_url_to_murmur2_hash;
+  std::map<std::string, webapps::WebApkIconHasher::Icon>
+      icon_url_to_murmur2_hash;
   icon_url_to_murmur2_hash[icon_url_1] = {"data1", "1"};
   icon_url_to_murmur2_hash[icon_url_2] = {"data2", "2"};
 
   std::unique_ptr<BuildProtoRunner> runner = CreateBuildProtoRunner();
   runner->BuildSync(GURL(), GURL(), std::move(icon_url_to_murmur2_hash),
-                    true /* is_manifest_stale*/, {});
+                    true /* is_manifest_stale */,
+                    true /* is_app_identity_update_supported */, {});
   webapk::WebApk* webapk_request = runner->GetWebApkRequest();
   ASSERT_NE(nullptr, webapk_request);
 
@@ -574,7 +597,8 @@ TEST_F(WebApkInstallerTest, BuildWebApkProtoWhenManifestIsAvailable) {
       test_server()->GetURL(kBestSplashIconUrl).spec();
   std::string best_shortcut_icon_url =
       test_server()->GetURL(kBestShortcutIconUrl).spec();
-  std::map<std::string, WebApkIconHasher::Icon> icon_url_to_murmur2_hash;
+  std::map<std::string, webapps::WebApkIconHasher::Icon>
+      icon_url_to_murmur2_hash;
   icon_url_to_murmur2_hash[icon_url_1] = {"data0", "0"};
   icon_url_to_murmur2_hash[best_primary_icon_url] = {"data1", "1"};
   icon_url_to_murmur2_hash[best_splash_icon_url] = {"data2", "2"};
@@ -583,6 +607,7 @@ TEST_F(WebApkInstallerTest, BuildWebApkProtoWhenManifestIsAvailable) {
   std::unique_ptr<BuildProtoRunner> runner = CreateBuildProtoRunner();
   runner->BuildSync(GURL(best_primary_icon_url), GURL(best_splash_icon_url),
                     icon_url_to_murmur2_hash, false /* is_manifest_stale*/,
+                    false /* is_app_identity_update_supported */,
                     {GURL(best_shortcut_icon_url)});
   webapk::WebApk* webapk_request = runner->GetWebApkRequest();
   ASSERT_NE(nullptr, webapk_request);
@@ -604,8 +629,7 @@ TEST_F(WebApkInstallerTest, BuildWebApkProtoWhenManifestIsAvailable) {
             manifest.icons(1).hash());
   EXPECT_THAT(manifest.icons(1).usages(),
               testing::ElementsAre(webapk::Image::SPLASH_ICON));
-  EXPECT_EQ(icon_url_to_murmur2_hash[best_splash_icon_url].unsafe_data,
-            manifest.icons(1).image_data());
+  EXPECT_TRUE(manifest.icons(1).has_image_data());
 
   // Check protobuf fields for unused icon.
   EXPECT_EQ(kUnusedIconPath, manifest.icons(2).src());
@@ -628,13 +652,15 @@ TEST_F(WebApkInstallerTest, BuildWebApkProtoWhenManifestIsAvailable) {
 TEST_F(WebApkInstallerTest, BuildWebApkProtoPrimaryIconAndSplashIconSameUrl) {
   std::string icon_url_1 = test_server()->GetURL("/icon.png").spec();
   std::string best_icon_url = test_server()->GetURL(kBestPrimaryIconUrl).spec();
-  std::map<std::string, WebApkIconHasher::Icon> icon_url_to_murmur2_hash;
+  std::map<std::string, webapps::WebApkIconHasher::Icon>
+      icon_url_to_murmur2_hash;
   icon_url_to_murmur2_hash[icon_url_1] = {"data1", "1"};
   icon_url_to_murmur2_hash[best_icon_url] = {"data0", "0"};
 
   std::unique_ptr<BuildProtoRunner> runner = CreateBuildProtoRunner();
   runner->BuildSync(GURL(best_icon_url), GURL(best_icon_url),
                     icon_url_to_murmur2_hash, false /* is_manifest_stale*/,
+                    false /* is_app_identity_update_supported */,
                     {GURL(best_icon_url)});
   webapk::WebApk* webapk_request = runner->GetWebApkRequest();
   ASSERT_NE(nullptr, webapk_request);
@@ -679,13 +705,15 @@ TEST_F(WebApkInstallerTest, BuildWebApkProtoWhenWithMultipleShortcuts) {
       test_server()->GetURL(kBestShortcutIconUrl).spec();
   std::string best_shortcut_icon_url2 =
       test_server()->GetURL(kBestPrimaryIconUrl).spec();
-  std::map<std::string, WebApkIconHasher::Icon> icon_url_to_murmur2_hash;
+  std::map<std::string, webapps::WebApkIconHasher::Icon>
+      icon_url_to_murmur2_hash;
   icon_url_to_murmur2_hash[best_shortcut_icon_url1] = {"data1", "1"};
   icon_url_to_murmur2_hash[best_shortcut_icon_url2] = {"data2", "2"};
 
   std::unique_ptr<BuildProtoRunner> runner = CreateBuildProtoRunner();
   runner->BuildSync(
       GURL(), GURL(), icon_url_to_murmur2_hash, false /* is_manifest_stale*/,
+      false /* is_app_identity_update_supported */,
       {GURL(best_shortcut_icon_url1), GURL(best_shortcut_icon_url2)});
   webapk::WebApk* webapk_request = runner->GetWebApkRequest();
   ASSERT_NE(nullptr, webapk_request);
@@ -713,12 +741,14 @@ TEST_F(WebApkInstallerTest,
        BuildWebApkProtoWhenWithMultipleShortcutsAndSameIcons) {
   std::string best_shortcut_icon_url =
       test_server()->GetURL(kBestShortcutIconUrl).spec();
-  std::map<std::string, WebApkIconHasher::Icon> icon_url_to_murmur2_hash;
+  std::map<std::string, webapps::WebApkIconHasher::Icon>
+      icon_url_to_murmur2_hash;
   icon_url_to_murmur2_hash[best_shortcut_icon_url] = {"data1", "1"};
 
   std::unique_ptr<BuildProtoRunner> runner = CreateBuildProtoRunner();
   runner->BuildSync(
       GURL(), GURL(), icon_url_to_murmur2_hash, false /* is_manifest_stale*/,
+      false /* is_app_identity_update_supported */,
       {GURL(best_shortcut_icon_url), GURL(best_shortcut_icon_url)});
   webapk::WebApk* webapk_request = runner->GetWebApkRequest();
   ASSERT_NE(nullptr, webapk_request);
@@ -745,13 +775,15 @@ TEST_F(WebApkInstallerTest,
 TEST_F(WebApkInstallerTest, BuildWebApkProtoSplashIconAndShortcutIconSameUrl) {
   std::string icon_url_1 = test_server()->GetURL("/icon.png").spec();
   std::string best_icon_url = test_server()->GetURL(kBestPrimaryIconUrl).spec();
-  std::map<std::string, WebApkIconHasher::Icon> icon_url_to_murmur2_hash;
+  std::map<std::string, webapps::WebApkIconHasher::Icon>
+      icon_url_to_murmur2_hash;
   icon_url_to_murmur2_hash[icon_url_1] = {"data1", "1"};
   icon_url_to_murmur2_hash[best_icon_url] = {"data0", "0"};
 
   std::unique_ptr<BuildProtoRunner> runner = CreateBuildProtoRunner();
   runner->BuildSync(GURL(icon_url_1), GURL(best_icon_url),
                     icon_url_to_murmur2_hash, false /* is_manifest_stale*/,
+                    true /* is_app_identity_update_supported */,
                     {GURL(best_icon_url)});
   webapk::WebApk* webapk_request = runner->GetWebApkRequest();
   ASSERT_NE(nullptr, webapk_request);
@@ -775,8 +807,6 @@ TEST_F(WebApkInstallerTest, BuildWebApkProtoSplashIconAndShortcutIconSameUrl) {
   EXPECT_THAT(manifest.icons(1).usages(),
               testing::ElementsAre(webapk::Image::SPLASH_ICON));
   EXPECT_TRUE(manifest.icons(1).has_image_data());
-  EXPECT_EQ(manifest.icons(1).image_data(),
-            icon_url_to_murmur2_hash[best_icon_url].unsafe_data);
 
   // Check protobuf fields for unused icon.
   EXPECT_EQ(kUnusedIconPath, manifest.icons(2).src());

@@ -9,7 +9,7 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "remoting/protocol/ice_config.h"
@@ -25,6 +25,8 @@ class NetworkManager;
 }  // namespace rtc
 
 namespace remoting {
+
+class OAuthTokenGetter;
 
 namespace protocol {
 
@@ -44,8 +46,12 @@ class TransportContext : public base::RefCountedThreadSafe<TransportContext> {
   TransportContext(
       std::unique_ptr<PortAllocatorFactory> port_allocator_factory,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      OAuthTokenGetter* oauth_token_getter,
       const NetworkSettings& network_settings,
       TransportRole role);
+
+  TransportContext(const TransportContext&) = delete;
+  TransportContext& operator=(const TransportContext&) = delete;
 
   void set_turn_ice_config(const IceConfig& ice_config) {
     DCHECK(!ice_config.is_null());
@@ -96,10 +102,11 @@ class TransportContext : public base::RefCountedThreadSafe<TransportContext> {
 
   std::unique_ptr<PortAllocatorFactory> port_allocator_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
+  raw_ptr<OAuthTokenGetter> oauth_token_getter_ = nullptr;
   NetworkSettings network_settings_;
   TransportRole role_;
 
-  rtc::NetworkManager* network_manager_ = nullptr;
+  raw_ptr<rtc::NetworkManager> network_manager_ = nullptr;
 
   IceConfig ice_config_;
 
@@ -108,8 +115,6 @@ class TransportContext : public base::RefCountedThreadSafe<TransportContext> {
 
   // Called once |ice_config_request_| completes.
   std::list<GetIceConfigCallback> pending_ice_config_callbacks_;
-
-  DISALLOW_COPY_AND_ASSIGN(TransportContext);
 };
 
 }  // namespace protocol

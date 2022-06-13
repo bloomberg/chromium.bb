@@ -7,7 +7,6 @@
 
 #include "gm/gm.h"
 #include "include/core/SkCanvas.h"
-#include "include/core/SkFilterQuality.h"
 #include "include/core/SkImage.h"
 #include "include/core/SkMatrix.h"
 #include "include/core/SkPaint.h"
@@ -122,7 +121,7 @@ protected:
     }
 
 private:
-    static constexpr int kNumImages = 4;
+    inline static constexpr int kNumImages = 4;
     SkTArray<sk_sp<SkImage>> fImages;
 
     using INHERITED = GM;

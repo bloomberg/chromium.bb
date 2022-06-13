@@ -4,8 +4,8 @@
 
 #include "ash/media/media_controller_impl.h"
 
-#include "ash/public/cpp/ash_features.h"
-#include "ash/public/cpp/ash_pref_names.h"
+#include "ash/constants/ash_features.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/media_client.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
@@ -25,7 +25,7 @@ namespace ash {
 namespace {
 
 constexpr base::TimeDelta kDefaultSeekTime =
-    base::TimeDelta::FromSeconds(media_session::mojom::kDefaultSeekTimeSeconds);
+    base::Seconds(media_session::mojom::kDefaultSeekTimeSeconds);
 
 bool IsMediaSessionActionEligibleForKeyControl(
     media_session::mojom::MediaSessionAction action) {

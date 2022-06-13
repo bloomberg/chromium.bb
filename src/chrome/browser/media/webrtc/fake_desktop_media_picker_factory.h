@@ -8,11 +8,11 @@
 #include <memory>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/media/webrtc/desktop_media_list.h"
 #include "chrome/browser/media/webrtc/desktop_media_picker.h"
 #include "chrome/browser/media/webrtc/desktop_media_picker_factory.h"
 #include "content/public/browser/desktop_media_id.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class FakeDesktopMediaPicker;
 
@@ -36,6 +36,11 @@ class FakeDesktopMediaPickerFactory : public DesktopMediaPickerFactory {
   };
 
   FakeDesktopMediaPickerFactory();
+
+  FakeDesktopMediaPickerFactory(const FakeDesktopMediaPickerFactory&) = delete;
+  FakeDesktopMediaPickerFactory& operator=(
+      const FakeDesktopMediaPickerFactory&) = delete;
+
   ~FakeDesktopMediaPickerFactory() override;
 
   //  |test_flags| are expected to outlive the factory.
@@ -46,21 +51,25 @@ class FakeDesktopMediaPickerFactory : public DesktopMediaPickerFactory {
       const content::MediaStreamRequest* request) override;
   std::vector<std::unique_ptr<DesktopMediaList>> CreateMediaList(
       const std::vector<DesktopMediaList::Type>& types,
-      content::WebContents* web_contents) override;
+      content::WebContents* web_contents,
+      DesktopMediaList::WebContentsFilter includable_web_contents_filter)
+      override;
 
  private:
-  FakeDesktopMediaPicker* picker_;
-  TestFlags* test_flags_;
+  raw_ptr<FakeDesktopMediaPicker> picker_;
+  raw_ptr<TestFlags> test_flags_;
   int tests_count_;
   int current_test_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeDesktopMediaPickerFactory);
 };
 
 class FakeDesktopMediaPicker : public DesktopMediaPicker {
  public:
   explicit FakeDesktopMediaPicker(
       FakeDesktopMediaPickerFactory::TestFlags* expectation);
+
+  FakeDesktopMediaPicker(const FakeDesktopMediaPicker&) = delete;
+  FakeDesktopMediaPicker& operator=(const FakeDesktopMediaPicker&) = delete;
+
   ~FakeDesktopMediaPicker() override;
 
   // DesktopMediaPicker interface.
@@ -73,13 +82,11 @@ class FakeDesktopMediaPicker : public DesktopMediaPicker {
  private:
   void CallCallback(DoneCallback done_callback);
 
-  FakeDesktopMediaPickerFactory::TestFlags* expectation_;
+  raw_ptr<FakeDesktopMediaPickerFactory::TestFlags> expectation_;
   DoneCallback done_callback_;
   DesktopMediaPicker::Params picker_params_;
 
   base::WeakPtrFactory<FakeDesktopMediaPicker> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(FakeDesktopMediaPicker);
 };
 
 #endif  // CHROME_BROWSER_MEDIA_WEBRTC_FAKE_DESKTOP_MEDIA_PICKER_FACTORY_H_

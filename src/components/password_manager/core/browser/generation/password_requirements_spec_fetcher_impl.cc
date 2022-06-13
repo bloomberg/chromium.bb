@@ -20,6 +20,7 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "url/url_canon.h"
 
 namespace autofill {
@@ -180,7 +181,7 @@ void PasswordRequirementsSpecFetcherImpl::Fetch(GURL origin,
                      base::Unretained(this), hash_prefix));
 
   lookup->download_timer.Start(
-      FROM_HERE, base::TimeDelta::FromMilliseconds(timeout_),
+      FROM_HERE, base::Milliseconds(timeout_),
       base::BindOnce(&PasswordRequirementsSpecFetcherImpl::OnFetchTimeout,
                      base::Unretained(this), hash_prefix));
 

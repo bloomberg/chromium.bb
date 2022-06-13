@@ -16,7 +16,7 @@ PointerHandler::PointerHandler() {}
 PointerHandler::~PointerHandler() {}
 
 void PointerHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "initializePointerSettings",
       base::BindRepeating(&PointerHandler::HandleInitialize,
                           base::Unretained(this)));
@@ -38,6 +38,10 @@ void PointerHandler::OnJavascriptDisallowed() {
 
 void PointerHandler::TouchpadExists(bool exists) {
   FireWebUIListener("has-touchpad-changed", base::Value(exists));
+}
+
+void PointerHandler::HapticTouchpadExists(bool exists) {
+  FireWebUIListener("has-haptic-touchpad-changed", base::Value(exists));
 }
 
 void PointerHandler::MouseExists(bool exists) {

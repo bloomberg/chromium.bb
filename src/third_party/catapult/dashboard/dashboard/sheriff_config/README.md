@@ -12,7 +12,7 @@ in isolation from the rest of the dashboard to let us determine a small scope.
 ## Testing
 
 We recommend using Docker to build an isolated environment for testing the
-sheriff-config service in isolation. Follow [steps](/tests/README.md) in tests/
+sheriff-config service in isolation. Follow [steps](tests/README.md) in tests/
 to run the integration test for the sheriff-config service. The associated
 `Dockerfile` and `docker-compose.yml` in tests/ contains the steps required to
 develop an isolated version of the service, which can be tested locally.
@@ -44,9 +44,16 @@ or through the dashboard test runner:
 
 ## Deployment
 
-We'll use the `sheriff-config.yaml` file in this directory along with the
-`requirements.txt` file for deployment.
+After new commits are submitted in the `dashboard` directory, all dashboard
+services are automatically deployed, including the sheriff-config service.
+You can check the status of the deployment on the Cloud Build
+[Build history](https://pantheon.corp.google.com/cloud-build/builds?project=chromeperf)
+page. Look for builds with Trigger Name `catapult-sheriff-config-push-on-green`.
+
+If you need to do a manual deployment, run the following commands from
+this directory.
 
 ```
-gcloud app deploy sheriff-config.yaml
+gcloud config set project chromeperf
+gcloud app deploy app.yaml
 ```

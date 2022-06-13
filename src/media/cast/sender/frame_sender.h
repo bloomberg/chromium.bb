@@ -9,7 +9,7 @@
 
 #include <stdint.h>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
@@ -30,6 +30,10 @@ class FrameSender {
               CastTransport* const transport_sender,
               const FrameSenderConfig& config,
               CongestionControl* congestion_control);
+
+  FrameSender(const FrameSender&) = delete;
+  FrameSender& operator=(const FrameSender&) = delete;
+
   virtual ~FrameSender();
 
   int rtp_timebase() const { return rtp_timebase_; }
@@ -89,7 +93,7 @@ class FrameSender {
   // process to the browser process over IPC, with the browser process being
   // responsible for "packetizing" the frames and pushing packets into the
   // network layer.
-  CastTransport* const transport_sender_;
+  const raw_ptr<CastTransport> transport_sender_;
 
   const uint32_t ssrc_;
 
@@ -202,8 +206,6 @@ class FrameSender {
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<FrameSender> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(FrameSender);
 };
 
 }  // namespace cast

@@ -11,7 +11,6 @@
 
 #include "common/bitset_utils.h"
 #include "compiler/translator/ImmutableStringBuilder.h"
-#include "compiler/translator/StaticType.h"
 #include "compiler/translator/SymbolTable.h"
 #include "compiler/translator/tree_util/BuiltIn.h"
 #include "compiler/translator/tree_util/IntermNode_util.h"
@@ -26,23 +25,9 @@ namespace
 {
 
 using InputAttachmentIdxSet = angle::BitSet<32>;
-using MapForReplacement     = const std::map<const TVariable *, const TIntermTyped *>;
 
 constexpr unsigned int kInputAttachmentZero = 0;
 constexpr unsigned int kArraySizeZero       = 0;
-
-enum class InputType
-{
-    SubpassInput = 0,
-    SubpassInputMS,
-    ISubpassInput,
-    ISubpassInputMS,
-    USubpassInput,
-    USubpassInputMS,
-
-    InvalidEnum,
-    EnumCount = InvalidEnum,
-};
 
 class InputAttachmentReferenceTraverser : public TIntermTraverser
 {
@@ -103,15 +88,10 @@ void InputAttachmentReferenceTraverser::setInputAttachmentIndex(unsigned int inp
 
 bool InputAttachmentReferenceTraverser::visitDeclaration(Visit visit, TIntermDeclaration *node)
 {
-    const TIntermSequence &sequence = *(node->getSequence());
+    const TIntermSequence &sequence = *node->getSequence();
+    ASSERT(sequence.size() == 1);
 
-    if (sequence.size() != 1)
-    {
-        return true;
-    }
-
-    TIntermTyped *variable = sequence.front()->getAsTyped();
-    TIntermSymbol *symbol  = variable->getAsSymbolNode();
+    TIntermSymbol *symbol = sequence.front()->getAsSymbolNode();
     if (symbol == nullptr)
     {
         return true;
@@ -238,51 +218,7 @@ void ReplaceVariableTraverser::visitSymbol(TIntermSymbol *node)
     }
 }
 
-InputType GetInputTypeOfSubpassInput(const TBasicType &basicType)
-{
-    switch (basicType)
-    {
-        case TBasicType::EbtSubpassInput:
-            return InputType::SubpassInput;
-        case TBasicType::EbtSubpassInputMS:
-            return InputType::SubpassInputMS;
-        case TBasicType::EbtISubpassInput:
-            return InputType::ISubpassInput;
-        case TBasicType::EbtISubpassInputMS:
-            return InputType::ISubpassInputMS;
-        case TBasicType::EbtUSubpassInput:
-            return InputType::USubpassInput;
-        case TBasicType::EbtUSubpassInputMS:
-            return InputType::USubpassInputMS;
-        default:
-            UNREACHABLE();
-            return InputType::InvalidEnum;
-    }
-}
-
-TBasicType GetBasicTypeOfSubpassInput(const InputType &inputType)
-{
-    switch (inputType)
-    {
-        case InputType::SubpassInput:
-            return EbtSubpassInput;
-        case InputType::SubpassInputMS:
-            return EbtSubpassInputMS;
-        case InputType::ISubpassInput:
-            return EbtISubpassInput;
-        case InputType::ISubpassInputMS:
-            return EbtISubpassInputMS;
-        case InputType::USubpassInput:
-            return EbtUSubpassInput;
-        case InputType::USubpassInputMS:
-            return EbtUSubpassInputMS;
-        default:
-            UNREACHABLE();
-            return TBasicType::EbtVoid;
-    }
-}
-
-TBasicType GetBasicTypeForSubpassInput(const TBasicType &inputType)
+TBasicType GetBasicTypeForSubpassInput(TBasicType inputType)
 {
     switch (inputType)
     {
@@ -308,67 +244,11 @@ TBasicType GetBasicTypeForSubpassInput(const TIntermSymbol *originSymbol)
     return GetBasicTypeForSubpassInput(originSymbol->getBasicType());
 }
 
-ImmutableString GetTypeNameOfSubpassInput(const InputType &inputType)
+TIntermTyped *CreateSubpassLoadFuncCall(TSymbolTable *symbolTable,
+                                        TBasicType inputType,
+                                        TIntermSequence *arguments)
 {
-    switch (inputType)
-    {
-        case InputType::SubpassInput:
-            return ImmutableString("subpassInput");
-        case InputType::SubpassInputMS:
-            return ImmutableString("subpassInputMS");
-        case InputType::ISubpassInput:
-            return ImmutableString("isubpassInput");
-        case InputType::ISubpassInputMS:
-            return ImmutableString("isubpassInputMS");
-        case InputType::USubpassInput:
-            return ImmutableString("usubpassInput");
-        case InputType::USubpassInputMS:
-            return ImmutableString("usubpassInputMS");
-        default:
-            UNREACHABLE();
-            return kEmptyImmutableString;
-    }
-}
-
-ImmutableString GetFunctionNameOfSubpassLoad(const InputType &inputType)
-{
-    switch (inputType)
-    {
-        case InputType::SubpassInput:
-        case InputType::ISubpassInput:
-        case InputType::USubpassInput:
-            return ImmutableString("subpassLoad");
-        case InputType::SubpassInputMS:
-        case InputType::ISubpassInputMS:
-        case InputType::USubpassInputMS:
-            return ImmutableString("subpassLoadMS");
-        default:
-            UNREACHABLE();
-            return kEmptyImmutableString;
-    }
-}
-
-TIntermAggregate *CreateSubpassLoadFuncCall(TSymbolTable *symbolTable,
-                                            std::map<InputType, TFunction *> *functionMap,
-                                            const InputType &inputType,
-                                            TIntermSequence *arguments)
-{
-    TBasicType subpassInputType = GetBasicTypeOfSubpassInput(inputType);
-    ASSERT(subpassInputType != TBasicType::EbtVoid);
-
-    TFunction **currentFunc = &(*functionMap)[inputType];
-    if (*currentFunc == nullptr)
-    {
-        TType *inputAttachmentType = new TType(subpassInputType, EbpUndefined, EvqUniform, 1);
-        *currentFunc = new TFunction(symbolTable, GetFunctionNameOfSubpassLoad(inputType),
-                                     SymbolType::AngleInternal,
-                                     new TType(EbtFloat, EbpUndefined, EvqGlobal, 4, 1), true);
-        (*currentFunc)
-            ->addParameter(new TVariable(symbolTable, GetTypeNameOfSubpassInput(inputType),
-                                         inputAttachmentType, SymbolType::AngleInternal));
-    }
-
-    return TIntermAggregate::CreateFunctionCall(**currentFunc, arguments);
+    return CreateBuiltInFunctionCallNode("subpassLoad", arguments, *symbolTable, kESSLVulkanOnly);
 }
 
 class ReplaceSubpassInputUtils
@@ -393,7 +273,6 @@ class ReplaceSubpassInputUtils
         mInputAttachmentArrayIdSeq = 0;
         mInputAttachmentVarList.clear();
         mDataLoadVarList.clear();
-        mFunctionMap.clear();
     }
     virtual ~ReplaceSubpassInputUtils() = default;
 
@@ -447,7 +326,6 @@ class ReplaceSubpassInputUtils
 
     TIntermSequence mDeclareVariables;
     unsigned int mInputAttachmentArrayIdSeq;
-    std::map<InputType, TFunction *> mFunctionMap;
     std::map<unsigned int, TVariable *> mInputAttachmentVarList;
     std::map<unsigned int, const TVariable *> mDataLoadVarList;
 };
@@ -519,19 +397,25 @@ TIntermNode *ReplaceSubpassInputUtils::assignSubpassLoad(TIntermTyped *resultVar
     TIntermSequence *subpassArguments = new TIntermSequence();
     subpassArguments->push_back(inputAttachmentSymbol);
 
-    TIntermAggregate *subpassLoadFuncCall = CreateSubpassLoadFuncCall(
-        mSymbolTable, &mFunctionMap,
-        GetInputTypeOfSubpassInput(inputAttachmentSymbol->getBasicType()), subpassArguments);
+    // TODO: support interaction with multisampled framebuffers.  For example, the sample ID needs
+    // to be provided to the built-in call here.  http://anglebug.com/6195
 
-    TVector<int> fieldOffsets(targetVecSize);
-    for (int i = 0; i < targetVecSize; i++)
+    TIntermTyped *subpassLoadFuncCall = CreateSubpassLoadFuncCall(
+        mSymbolTable, inputAttachmentSymbol->getBasicType(), subpassArguments);
+
+    TIntermTyped *result = subpassLoadFuncCall;
+    if (targetVecSize < 4)
     {
-        fieldOffsets[i] = i;
+        TVector<int> fieldOffsets(targetVecSize);
+        for (int i = 0; i < targetVecSize; i++)
+        {
+            fieldOffsets[i] = i;
+        }
+
+        result = new TIntermSwizzle(subpassLoadFuncCall, fieldOffsets);
     }
 
-    TIntermTyped *right = new TIntermSwizzle(subpassLoadFuncCall, fieldOffsets);
-
-    return new TIntermBinary(EOpAssign, resultVar, right);
+    return new TIntermBinary(EOpAssign, resultVar, result);
 }
 
 TIntermNode *ReplaceSubpassInputUtils::loadInputAttachmentDataImpl(
@@ -765,15 +649,9 @@ ANGLE_NO_DISCARD bool ReplaceLastFragData(TCompiler *compiler,
         return false;
     }
 
-    const TBasicType loadVarBasicType = glLastFragDataVar->getType().getBasicType();
-    const TPrecision loadVarPrecision = glLastFragDataVar->getType().getPrecision();
-    const unsigned int loadVarVecSize = glLastFragDataVar->getType().getNominalSize();
-    const int loadVarArraySize        = glLastFragDataVar->getType().getOutermostArraySize();
-
     ImmutableString loadVarName("ANGLELastFragData");
-    TType *loadVarType = new TType(loadVarBasicType, loadVarPrecision, EvqGlobal,
-                                   static_cast<unsigned char>(loadVarVecSize));
-    loadVarType->makeArray(loadVarArraySize);
+    TType *loadVarType = new TType(glLastFragDataVar->getType());
+    loadVarType->setQualifier(EvqGlobal);
 
     TVariable *loadVar =
         new TVariable(symbolTable, loadVarName, loadVarType, SymbolType::AngleInternal);
@@ -835,23 +713,11 @@ ANGLE_NO_DISCARD bool ReplaceInOutVariables(TCompiler *compiler,
         const unsigned int inputAttachmentIndex = originInOutVarIter.first;
         const TIntermSymbol *originInOutVar     = originInOutVarIter.second;
 
-        const TBasicType loadVarBasicType = originInOutVar->getType().getBasicType();
-        const TPrecision loadVarPrecision = originInOutVar->getType().getPrecision();
-        const unsigned int loadVarVecSize = originInOutVar->getType().getNominalSize();
-        const unsigned int loadVarArraySize =
-            (originInOutVar->isArray() ? originInOutVar->getOutermostArraySize() : 0);
-
-        TType *newOutVarType = new TType(loadVarBasicType, loadVarPrecision, EvqGlobal,
-                                         static_cast<unsigned char>(loadVarVecSize));
+        TType *newOutVarType = new TType(originInOutVar->getType());
 
         // We just want to use the original variable decorated with a inout qualifier, except
         // the qualifier itself. The qualifier will be changed from inout to out.
-        newOutVarType->setQualifier(TQualifier::EvqFragmentOut);
-
-        if (loadVarArraySize > 0)
-        {
-            newOutVarType->makeArray(loadVarArraySize);
-        }
+        newOutVarType->setQualifier(EvqFragmentOut);
 
         TVariable *newOutVar = new TVariable(symbolTable, originInOutVar->getName(), newOutVarType,
                                              SymbolType::UserDefined);

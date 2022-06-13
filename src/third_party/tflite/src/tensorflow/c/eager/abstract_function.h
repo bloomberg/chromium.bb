@@ -15,8 +15,9 @@ limitations under the License.
 #ifndef TENSORFLOW_C_EAGER_ABSTRACT_FUNCTION_H_
 #define TENSORFLOW_C_EAGER_ABSTRACT_FUNCTION_H_
 
-#include "tensorflow/c/c_api.h"
 #include "tensorflow/core/framework/function.pb.h"
+#include "tensorflow/core/platform/intrusive_ptr.h"
+#include "tensorflow/core/platform/refcount.h"
 #include "tensorflow/core/platform/status.h"
 
 namespace tensorflow {
@@ -24,15 +25,14 @@ namespace tensorflow {
 // A traced function: this hides the complexity of converting the serialized
 // representation between various supported formats e.g. FunctionDef and Mlir
 // function.
-class AbstractFunction {
+class AbstractFunction : public core::RefCounted {
  protected:
-  enum AbstractFunctionKind { kGraphFunc, kMlirFunc };
+  enum AbstractFunctionKind { kGraph, kMlir };
   explicit AbstractFunction(AbstractFunctionKind kind) : kind_(kind) {}
 
  public:
   // Returns which subclass is this instance of.
   AbstractFunctionKind getKind() const { return kind_; }
-  virtual ~AbstractFunction() = default;
 
   // Returns the AbstractFunction as a FunctionDef.
   virtual Status GetFunctionDef(FunctionDef**) = 0;
@@ -40,6 +40,9 @@ class AbstractFunction {
  private:
   const AbstractFunctionKind kind_;
 };
+
+using AbstractFunctionPtr =
+    tensorflow::core::IntrusivePtr<tensorflow::AbstractFunction>;
 
 }  // namespace tensorflow
 

@@ -11,7 +11,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/simple_test_clock.h"
@@ -19,7 +19,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/history/web_history_service_factory.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/history/core/browser/browsing_history_service.h"
@@ -60,6 +60,11 @@ class BrowsingHistoryHandlerWithWebUIForTesting
     test_clock_.SetNow(PretendNow());
   }
 
+  BrowsingHistoryHandlerWithWebUIForTesting(
+      const BrowsingHistoryHandlerWithWebUIForTesting&) = delete;
+  BrowsingHistoryHandlerWithWebUIForTesting& operator=(
+      const BrowsingHistoryHandlerWithWebUIForTesting&) = delete;
+
   void SendHistoryQuery(int count, const std::u16string& query) override {
     if (postpone_query_results_) {
       return;
@@ -74,8 +79,6 @@ class BrowsingHistoryHandlerWithWebUIForTesting
  private:
   base::SimpleTestClock test_clock_;
   bool postpone_query_results_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(BrowsingHistoryHandlerWithWebUIForTesting);
 };
 
 }  // namespace
@@ -86,7 +89,7 @@ class BrowsingHistoryHandlerTest : public ChromeRenderViewHostTestHarness {
     ChromeRenderViewHostTestHarness::SetUp();
 
     sync_service_ = static_cast<syncer::TestSyncService*>(
-        ProfileSyncServiceFactory::GetForProfile(profile()));
+        SyncServiceFactory::GetForProfile(profile()));
     web_history_service_ = static_cast<history::FakeWebHistoryService*>(
         WebHistoryServiceFactory::GetForProfile(profile()));
     ASSERT_TRUE(web_history_service_);
@@ -102,7 +105,7 @@ class BrowsingHistoryHandlerTest : public ChromeRenderViewHostTestHarness {
 
   TestingProfile::TestingFactories GetTestingFactories() const override {
     return {
-        {ProfileSyncServiceFactory::GetInstance(),
+        {SyncServiceFactory::GetInstance(),
          base::BindRepeating(&BuildTestSyncService)},
         {WebHistoryServiceFactory::GetInstance(),
          base::BindRepeating(&BuildFakeWebHistoryService)},
@@ -146,8 +149,8 @@ class BrowsingHistoryHandlerTest : public ChromeRenderViewHostTestHarness {
     return service;
   }
 
-  syncer::TestSyncService* sync_service_ = nullptr;
-  history::FakeWebHistoryService* web_history_service_ = nullptr;
+  raw_ptr<syncer::TestSyncService> sync_service_ = nullptr;
+  raw_ptr<history::FakeWebHistoryService> web_history_service_ = nullptr;
   std::unique_ptr<content::TestWebUI> web_ui_;
 };
 

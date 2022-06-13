@@ -10,11 +10,8 @@
 #include "xfa/fxfa/cxfa_ffwidget.h"
 
 CPDFXFA_Widget::CPDFXFA_Widget(CXFA_FFWidget* pXFAFFWidget,
-                               CPDFSDK_PageView* pPageView,
-                               CPDFSDK_InteractiveForm* pInteractiveForm)
-    : CPDFSDK_Annot(pPageView),
-      m_pInteractiveForm(pInteractiveForm),
-      m_pXFAFFWidget(pXFAFFWidget) {}
+                               CPDFSDK_PageView* pPageView)
+    : CPDFSDK_Annot(pPageView), m_pXFAFFWidget(pXFAFFWidget) {}
 
 CPDFXFA_Widget::~CPDFXFA_Widget() = default;
 
@@ -27,5 +24,5 @@ CPDF_Annot::Subtype CPDFXFA_Widget::GetAnnotSubtype() const {
 }
 
 CFX_FloatRect CPDFXFA_Widget::GetRect() const {
-  return GetXFAFFWidget()->GetLayoutItem()->GetRect(false).ToFloatRect();
+  return GetXFAFFWidget()->GetLayoutItem()->GetAbsoluteRect().ToFloatRect();
 }

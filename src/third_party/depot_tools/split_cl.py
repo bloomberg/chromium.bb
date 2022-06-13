@@ -60,7 +60,7 @@ def AddUploadedByGitClSplitToDescription(description):
   """
   split_footers = git_footers.split_footers(description)
   lines = split_footers[0]
-  if not lines[-1] or lines[-1].isspace():
+  if lines[-1] and not lines[-1].isspace():
     lines = lines + ['']
   lines = lines + ['This CL was uploaded by git cl split.']
   if split_footers[1]:

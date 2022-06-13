@@ -10,7 +10,6 @@
 #include <stdint.h>
 #include <memory>
 
-#include "base/macros.h"
 #include "sandbox/win/src/nt_internals.h"
 #include "sandbox/win/src/sandbox_nt_types.h"
 
@@ -189,6 +188,9 @@ class AutoProtectMemory {
   AutoProtectMemory()
       : changed_(false), address_(nullptr), bytes_(0), old_protect_(0) {}
 
+  AutoProtectMemory(const AutoProtectMemory&) = delete;
+  AutoProtectMemory& operator=(const AutoProtectMemory&) = delete;
+
   ~AutoProtectMemory() { RevertProtection(); }
 
   // Sets the desired protection of a given memory range.
@@ -202,8 +204,6 @@ class AutoProtectMemory {
   void* address_;
   size_t bytes_;
   ULONG old_protect_;
-
-  DISALLOW_COPY_AND_ASSIGN(AutoProtectMemory);
 };
 
 // Returns true if the file_rename_information structure is supported by our

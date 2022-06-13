@@ -17,6 +17,8 @@
 
 #include "Device/QuadRasterizer.hpp"
 
+#include <vector>
+
 namespace sw {
 
 class PixelShader;
@@ -33,32 +35,27 @@ public:
 	virtual ~PixelRoutine();
 
 protected:
+	using SampleSet = std::vector<int>;
+
 	Float4 z[4];  // Multisampled z
 	Float4 w;     // Used as is
 	Float4 rhw;   // Reciprocal w
 
-	uint32_t outputMasks[RENDERTARGETS];  // TODO(b/162348737): Determine whether unwritten output should be left untouched
-
 	SpirvRoutine routine;
 	const vk::DescriptorSet::Bindings &descriptorSets;
 
-	// Depth output
-	Float4 oDepth;
-
-	virtual void setBuiltins(Int &x, Int &y, Float4 (&z)[4], Float4 &w, Int cMask[4], int sampleId) = 0;
-	virtual void applyShader(Int cMask[4], Int sMask[4], Int zMask[4], int sampleId) = 0;
-	virtual Bool alphaTest(Int cMask[4], int sampleId) = 0;
-	virtual void rasterOperation(Pointer<Byte> cBuffer[4], Int &x, Int sMask[4], Int zMask[4], Int cMask[4], int sampleId) = 0;
+	virtual void setBuiltins(Int &x, Int &y, Float4 (&z)[4], Float4 &w, Int cMask[4], const SampleSet &samples) = 0;
+	virtual void executeShader(Int cMask[4], Int sMask[4], Int zMask[4], const SampleSet &samples) = 0;
+	virtual Bool alphaTest(Int cMask[4], const SampleSet &samples) = 0;
+	virtual void blendColor(Pointer<Byte> cBuffer[4], Int &x, Int sMask[4], Int zMask[4], Int cMask[4], const SampleSet &samples) = 0;
 
 	void quad(Pointer<Byte> cBuffer[4], Pointer<Byte> &zBuffer, Pointer<Byte> &sBuffer, Int cMask[4], Int &x, Int &y) override;
 
 	void alphaTest(Int &aMask, const Short4 &alpha);
-	void alphaToCoverage(Int cMask[4], const Float4 &alpha, int sampleId);
+	void alphaToCoverage(Int cMask[4], const Float4 &alpha, const SampleSet &samples);
 
-	// Raster operations
-	void alphaBlend(int index, const Pointer<Byte> &cBuffer, Vector4s &current, const Int &x);
-	void writeColor(int index, const Pointer<Byte> &cBuffer, const Int &x, Vector4f &oC, const Int &sMask, const Int &zMask, const Int &cMask);
-	void alphaBlend(int index, const Pointer<Byte> &cBuffer, Vector4f &oC, const Int &x);
+	void writeColor(int index, const Pointer<Byte> &cBuffer, const Int &x, Vector4f &color, const Int &sMask, const Int &zMask, const Int &cMask);
+	Vector4f alphaBlend(int index, const Pointer<Byte> &cBuffer, const Vector4f &sourceColor, const Int &x);
 	void writeColor(int index, const Pointer<Byte> &cBuffer, const Int &x, Vector4s &current, const Int &sMask, const Int &zMask, const Int &cMask);
 
 	bool isSRGB(int index) const;
@@ -68,21 +65,36 @@ protected:
 
 private:
 	Byte8 stencilReplaceRef(bool isBack);
-	void stencilTest(const Pointer<Byte> &sBuffer, int q, const Int &x, Int &sMask, const Int &cMask);
+	void stencilTest(const Pointer<Byte> &sBuffer, const Int &x, Int sMask[4], const SampleSet &samples);
 	void stencilTest(Byte8 &value, VkCompareOp stencilCompareMode, bool isBack);
 	void stencilOperation(Byte8 &newValue, const Byte8 &bufferValue, const PixelProcessor::States::StencilOpState &ops, bool isBack, const Int &zMask, const Int &sMask);
 	void stencilOperation(Byte8 &output, const Byte8 &bufferValue, VkStencilOp operation, bool isBack);
+	Float4 clampDepth(const Float4 &z);
 	Bool depthTest(const Pointer<Byte> &zBuffer, int q, const Int &x, const Float4 &z, const Int &sMask, Int &zMask, const Int &cMask);
 	void depthBoundsTest(const Pointer<Byte> &zBuffer, int q, const Int &x, Int &zMask, Int &cMask);
 
-	// Raster operations
-	void blendFactor(Vector4s &blendFactor, const Vector4s &current, const Vector4s &pixel, VkBlendFactor blendFactorActive);
-	void blendFactorAlpha(Vector4s &blendFactor, const Vector4s &current, const Vector4s &pixel, VkBlendFactor blendFactorAlphaActive);
 	void readPixel(int index, const Pointer<Byte> &cBuffer, const Int &x, Vector4s &pixel);
-	void blendFactor(Vector4f &blendFactor, const Vector4f &oC, const Vector4f &pixel, VkBlendFactor blendFactorActive);
-	void blendFactorAlpha(Vector4f &blendFactor, const Vector4f &oC, const Vector4f &pixel, VkBlendFactor blendFactorAlphaActive);
-	void writeStencil(Pointer<Byte> &sBuffer, int q, const Int &x, const Int &sMask, const Int &zMask, const Int &cMask);
-	void writeDepth(Pointer<Byte> &zBuffer, int q, const Int &x, const Float4 &z, const Int &zMask);
+	enum BlendFactorModifier { None, OneMinus };
+	Float blendConstant(vk::Format format, int component, BlendFactorModifier modifier = None);
+	void blendFactorRGB(Vector4f &blendFactorRGB, const Vector4f &sourceColor, const Vector4f &destColor, VkBlendFactor colorBlendFactor, vk::Format format);
+	void blendFactorAlpha(Float4 &blendFactorAlpha, const Float4 &sourceAlpha, const Float4 &destAlpha, VkBlendFactor alphaBlendFactor, vk::Format format);
+	bool blendFactorCanExceedFormatRange(VkBlendFactor blendFactor, vk::Format format);
+	Vector4f computeAdvancedBlendMode(int index, const Vector4f &src, const Vector4f &dst, const Vector4f &srcFactor, const Vector4f &dstFactor);
+	Float4 blendOpOverlay(Float4 &src, Float4 &dst);
+	Float4 blendOpColorDodge(Float4 &src, Float4 &dst);
+	Float4 blendOpColorBurn(Float4 &src, Float4 &dst);
+	Float4 blendOpHardlight(Float4 &src, Float4 &dst);
+	Float4 blendOpSoftlight(Float4 &src, Float4 &dst);
+	void setLumSat(Vector4f &cbase, Vector4f &csat, Vector4f &clum, Float4 &x, Float4 &y, Float4 &z);
+	void setLum(Vector4f &cbase, Vector4f &clum, Float4 &x, Float4 &y, Float4 &z);
+	Float4 computeLum(Float4 &color, Float4 &lum, Float4 &mincol, Float4 &maxcol, Int4 &negative, Int4 &aboveOne);
+	Float4 maxRGB(Vector4f &c);
+	Float4 minRGB(Vector4f &c);
+	Float4 lumRGB(Vector4f &c);
+	void premultiply(Vector4f &c);
+	void writeStencil(Pointer<Byte> &sBuffer, const Int &x, const Int sMask[4], const Int zMask[4], const Int cMask[4], const SampleSet &samples);
+	void writeDepth(Pointer<Byte> &zBuffer, const Int &x, const Int zMask[4], const SampleSet &samples);
+	void occlusionSampleCount(const Int zMask[4], const Int sMask[4], const SampleSet &samples);
 
 	void sRGBtoLinear16_12_16(Vector4s &c);
 	void linearToSRGB16_12_16(Vector4s &c);
@@ -96,6 +108,14 @@ private:
 
 	Int4 depthBoundsTest32F(const Pointer<Byte> &zBuffer, int q, const Int &x);
 	Int4 depthBoundsTest16(const Pointer<Byte> &zBuffer, int q, const Int &x);
+
+	// Derived state parameters
+	const bool shaderContainsInterpolation;  // TODO(b/194714095)
+	const bool shaderContainsSampleQualifier;
+	const bool perSampleShading;
+	const int invocationCount;
+
+	SampleSet getSampleSet(int invocation) const;
 };
 
 }  // namespace sw

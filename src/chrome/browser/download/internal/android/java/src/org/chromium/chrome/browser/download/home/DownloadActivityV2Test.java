@@ -48,6 +48,7 @@ import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.Callback;
 import org.chromium.base.DiscardableReferencePool;
+import org.chromium.base.FeatureList;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.JniMocker;
@@ -143,10 +144,9 @@ public class DownloadActivityV2Test extends DummyUiActivityTestCase {
         doNothing().when(mPrefService).setInteger(anyString(), anyInt());
 
         Map<String, Boolean> features = new HashMap<>();
-        features.put(ChromeFeatureList.DOWNLOADS_LOCATION_CHANGE, true);
         features.put(ChromeFeatureList.OFFLINE_PAGES_PREFETCHING, true);
         features.put(ChromeFeatureList.DOWNLOAD_OFFLINE_CONTENT_PROVIDER, false);
-        ChromeFeatureList.setTestFeatures(features);
+        FeatureList.setTestFeatures(features);
 
         mStubbedOfflineContentProvider = new StubbedOfflineContentProvider() {
             @Override
@@ -177,8 +177,6 @@ public class DownloadActivityV2Test extends DummyUiActivityTestCase {
         DownloadManagerUiConfig config = DownloadManagerUiConfigHelper.fromFlags()
                                                  .setOTRProfileID(null)
                                                  .setIsSeparateActivity(true)
-                                                 .setUseNewDownloadPath(true)
-                                                 .setUseNewDownloadPathThumbnails(true)
                                                  .build();
 
         mAppModalPresenter = new AppModalPresenter(getActivity());
@@ -194,7 +192,7 @@ public class DownloadActivityV2Test extends DummyUiActivityTestCase {
         mDownloadCoordinator = new DownloadManagerCoordinatorImpl(getActivity(), config,
                 isPrefetchEnabledSupplier, settingsLauncher, mSnackbarManager, mModalDialogManager,
                 mPrefService, mTracker, faviconProvider, mStubbedOfflineContentProvider,
-                /* LegacyDownloadProvider */ null, mDiscardableReferencePool);
+                mDiscardableReferencePool);
         getActivity().setContentView(mDownloadCoordinator.getView());
 
         mDownloadCoordinator.updateForUrl(UrlConstants.DOWNLOADS_URL);
@@ -336,6 +334,11 @@ public class DownloadActivityV2Test extends DummyUiActivityTestCase {
         // Dismiss the menu by pressing back button.
         pressBack();
 
+        // The last item may be outside the view port, that recycler view won't create the view
+        // holder, so scroll to that view holder first.
+        onView(withId(R.id.download_home_recycler_view))
+                .perform(RecyclerViewActions.scrollToHolder(hasTextInViewHolder("page 1")));
+
         // Open menu for a page download, it should have share, delete, but no rename option.
         onView(allOf(withId(R.id.more), hasSibling(withText("page 1"))))
                 .check(matches(isDisplayed()))
@@ -360,6 +363,11 @@ public class DownloadActivityV2Test extends DummyUiActivityTestCase {
         onView(withId(R.id.selection_mode_share_menu_id)).check(doesNotExist());
         onView(withId(R.id.selection_mode_delete_menu_id)).check(doesNotExist());
 
+        // The last item may be outside the view port, that recycler view won't create the view
+        // holder, so scroll to that view holder first.
+        onView(withId(R.id.download_home_recycler_view))
+                .perform(RecyclerViewActions.scrollToHolder(hasTextInViewHolder("page 1")));
+
         // Select an item.
         onView(withText("page 1")).perform(ViewActions.longClick());
 
@@ -370,6 +378,11 @@ public class DownloadActivityV2Test extends DummyUiActivityTestCase {
         onView(withId(R.id.selection_mode_number)).check(matches(isDisplayed()));
         onView(withId(R.id.selection_mode_share_menu_id)).check(matches(isDisplayed()));
         onView(withId(R.id.selection_mode_delete_menu_id)).check(matches(isDisplayed()));
+
+        // The last item may be outside the view port, that recycler view won't create the view
+        // holder, so scroll to that view holder first.
+        onView(withId(R.id.download_home_recycler_view))
+                .perform(RecyclerViewActions.scrollToHolder(hasTextInViewHolder("page 1")));
 
         // Deselect the same item.
         onView(withText("page 1")).perform(ViewActions.longClick());
@@ -388,6 +401,11 @@ public class DownloadActivityV2Test extends DummyUiActivityTestCase {
     public void testDeleteItem() throws Exception {
         TestThreadUtils.runOnUiThreadBlocking(() -> { setUpUi(); });
         SnackbarManager.setDurationForTesting(1);
+
+        // The last item may be outside the view port, that recycler view won't create the view
+        // holder, so scroll to that view holder first.
+        onView(withId(R.id.download_home_recycler_view))
+                .perform(RecyclerViewActions.scrollToHolder(hasTextInViewHolder("page 1")));
 
         onView(withText("page 1")).check(matches(isDisplayed()));
 
@@ -451,9 +469,9 @@ public class DownloadActivityV2Test extends DummyUiActivityTestCase {
                 .perform(ViewActions.click());
 
         // Share an item. The share via android dialog should popup.
-        onView(withText("Share")).check(matches(isDisplayed())).perform(ViewActions.click());
+        onView(withText("Share")).check(matches(isDisplayed()));
 
-        // TODO(shaktisahu): Test content of the intent.
+        // TODO(shaktisahu): Perform a click, capture the Intent and check its contents.
     }
 
     @Test

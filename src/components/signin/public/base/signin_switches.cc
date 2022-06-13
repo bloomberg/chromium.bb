@@ -20,26 +20,14 @@ const char kDisableSigninScopedDeviceId[] = "disable-signin-scoped-device-id";
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 const base::Feature kAccountIdMigration{"AccountIdMigration",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
-#else
-const base::Feature kForceAccountIdMigration{"ForceAccountIdMigration",
+#endif
+
+#if defined(OS_ANDROID) || defined(OS_IOS)
+const base::Feature kForceStartupSigninPromo{"ForceStartupSigninPromo",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
-#if defined(OS_ANDROID)
-// This feature flag is for deprecating of the Android profile data
-// Menagerie API.
-const base::Feature kDeprecateMenagerieAPI{"DeprecateMenagerieAPI",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
-// This feature flag is used to wipe device data on child account signin.
-const base::Feature kWipeDataOnChildAccountSignin{
-    "WipeDataOnChildAccountSignin", base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
+const base::Feature kForceDisableExtendedSyncPromos{
+    "ForceDisableExtendedSyncPromos", base::FEATURE_DISABLED_BY_DEFAULT};
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-const base::Feature kUseAccountManagerFacade{"kUseAccountManagerFacade",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
-#endif
-
-const base::Feature kMinorModeSupport{"MinorModeSupport",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
 }  // namespace switches

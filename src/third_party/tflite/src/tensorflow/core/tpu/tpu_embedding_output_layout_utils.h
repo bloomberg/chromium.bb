@@ -23,12 +23,14 @@ limitations under the License.
 namespace tensorflow {
 namespace tpu {
 
-// Creates a default output layout for compatibility if none was provided by the
-// model.
-void AddDefaultEmbeddingOutputLayoutIfNeeded(TPUEmbeddingConfiguration* config);
-
-// Computes the shape of the output tensors from an output layout.
+// Computes the shape of the output tensors from an embedding configuration.
 Status ComputeOutputTensorShapes(
+    const TPUEmbeddingConfiguration& config,
+    std::vector<tensorflow::TensorShapeProto>* shapes);
+
+// Computes the shape of the output tensors based on the number of input
+// features.
+Status ComputeOutputTensorShapesFromFeature(
     const TPUEmbeddingConfiguration& config,
     std::vector<tensorflow::TensorShapeProto>* shapes);
 

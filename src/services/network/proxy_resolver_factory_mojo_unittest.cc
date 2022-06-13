@@ -14,8 +14,9 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/containers/queue.h"
+#include "base/ignore_result.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -25,6 +26,7 @@
 #include "net/base/network_isolation_key.h"
 #include "net/base/test_completion_callback.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/log/net_log.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_with_source.h"
 #include "net/log/test_net_log.h"
@@ -309,18 +311,19 @@ class Request {
 
   const net::ProxyInfo& results() const { return results_; }
   net::LoadState load_state() { return request_->GetLoadState(); }
-  net::RecordingBoundTestNetLog& net_log() { return net_log_; }
+  net::NetLogWithSource& net_log_with_source() { return net_log_with_source_; }
   const net::TestCompletionCallback& callback() const { return callback_; }
 
  private:
-  net::ProxyResolver* resolver_;
+  raw_ptr<net::ProxyResolver> resolver_;
   const GURL url_;
   const net::NetworkIsolationKey network_isolation_key_;
   net::ProxyInfo results_;
   std::unique_ptr<net::ProxyResolver::Request> request_;
   int error_;
   net::TestCompletionCallback callback_;
-  net::RecordingBoundTestNetLog net_log_;
+  net::NetLogWithSource net_log_with_source_{
+      net::NetLogWithSource::Make(net::NetLogSourceType::NONE)};
 };
 
 Request::Request(net::ProxyResolver* resolver,
@@ -334,7 +337,7 @@ Request::Request(net::ProxyResolver* resolver,
 int Request::Resolve() {
   error_ = resolver_->GetProxyForURL(url_, network_isolation_key_, &results_,
                                      callback_.callback(), &request_,
-                                     net_log_.bound());
+                                     net_log_with_source_);
   return error_;
 }
 
@@ -375,7 +378,7 @@ class MockMojoProxyResolverFactory
 
   void WakeWaiter();
 
-  MockMojoProxyResolver* resolver_;
+  raw_ptr<MockMojoProxyResolver> resolver_;
   base::queue<CreateProxyResolverAction> create_resolver_actions_;
 
   base::OnceClosure quit_closure_;
@@ -518,7 +521,7 @@ class ProxyResolverFactoryMojoTest : public testing::Test {
             factory_remote.InitWithNewPipeAndPassReceiver());
     proxy_resolver_factory_mojo_ = std::make_unique<ProxyResolverFactoryMojo>(
         std::move(factory_remote), &host_resolver_, base::NullCallback(),
-        &net_log_);
+        net::NetLog::Get());
   }
 
   std::unique_ptr<Request> MakeRequest(
@@ -558,7 +561,7 @@ class ProxyResolverFactoryMojoTest : public testing::Test {
 
   base::test::TaskEnvironment task_environment_;
   net::HangingHostResolver host_resolver_;
-  net::RecordingTestNetLog net_log_;
+  net::RecordingNetLogObserver net_log_observer_;
   std::unique_ptr<MockMojoProxyResolverFactory> mock_proxy_resolver_factory_;
   std::unique_ptr<net::ProxyResolverFactory> proxy_resolver_factory_mojo_;
 
@@ -568,7 +571,7 @@ class ProxyResolverFactoryMojoTest : public testing::Test {
 
 TEST_F(ProxyResolverFactoryMojoTest, CreateProxyResolver) {
   CreateProxyResolver();
-  CheckCapturedNetLogEntries(kScriptData, net_log_.GetEntries());
+  CheckCapturedNetLogEntries(kScriptData, net_log_observer_.GetEntries());
 }
 
 TEST_F(ProxyResolverFactoryMojoTest, CreateProxyResolver_Empty) {
@@ -776,16 +779,16 @@ TEST_F(ProxyResolverFactoryMojoTest, GetProxyForURL) {
   mock_proxy_resolver_.AddGetProxyAction(GetProxyForUrlAction::ReturnServers(
       url, ProxyServersFromPacString("DIRECT")));
   CreateProxyResolver();
-  net_log_.Clear();
+  net_log_observer_.Clear();
 
   std::unique_ptr<Request> request(MakeRequest(GURL(kExampleUrl)));
   EXPECT_THAT(request->Resolve(), IsError(net::ERR_IO_PENDING));
   EXPECT_THAT(request->WaitForResult(), IsOk());
 
   EXPECT_EQ("DIRECT", request->results().ToPacString());
-
-  CheckCapturedNetLogEntries(url.spec(), net_log_.GetEntries());
-  CheckCapturedNetLogEntries(url.spec(), request->net_log().GetEntries());
+  CheckCapturedNetLogEntries(url.spec(),
+                             net_log_observer_.GetEntriesForSource(
+                                 request->net_log_with_source().source()));
 }
 
 TEST_F(ProxyResolverFactoryMojoTest, GetProxyForURL_MultipleResults) {

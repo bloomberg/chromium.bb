@@ -56,7 +56,8 @@ void EvacuationAllocator::FreeLastInNewSpace(HeapObject object,
 
 void EvacuationAllocator::FreeLastInOldSpace(HeapObject object,
                                              int object_size) {
-  if (!compaction_spaces_.Get(OLD_SPACE)->TryFreeLast(object, object_size)) {
+  if (!compaction_spaces_.Get(OLD_SPACE)->TryFreeLast(object.address(),
+                                                      object_size)) {
     // We couldn't free the last object so we have to write a proper filler.
     heap_->CreateFillerObjectAt(object.address(), object_size,
                                 ClearRecordedSlots::kNo);
@@ -84,7 +85,7 @@ AllocationResult EvacuationAllocator::AllocateInLAB(
 bool EvacuationAllocator::NewLocalAllocationBuffer() {
   if (lab_allocation_will_fail_) return false;
   AllocationResult result =
-      new_space_->AllocateRawSynchronized(kLabSize, kWordAligned);
+      new_space_->AllocateRawSynchronized(kLabSize, kTaggedAligned);
   if (result.IsRetry()) {
     lab_allocation_will_fail_ = true;
     return false;

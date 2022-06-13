@@ -4,6 +4,10 @@
 
 package org.chromium.components.messages;
 
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+
 import androidx.annotation.DrawableRes;
 
 import org.chromium.base.annotations.CalledByNative;
@@ -110,6 +114,26 @@ public final class MessageWrapper {
     }
 
     @CalledByNative
+    boolean isValidIcon() {
+        return mMessageProperties.get(MessageBannerProperties.ICON) != null;
+    }
+
+    @CalledByNative
+    void setIcon(Bitmap iconBitmap) {
+        mMessageProperties.set(MessageBannerProperties.ICON, new BitmapDrawable(iconBitmap));
+    }
+
+    @CalledByNative
+    void setLargeIcon(boolean enabled) {
+        mMessageProperties.set(MessageBannerProperties.LARGE_ICON, enabled);
+    }
+
+    @CalledByNative
+    void setIconRoundedCornerRadius(int radius) {
+        mMessageProperties.set(MessageBannerProperties.ICON_ROUNDED_CORNER_RADIUS_PX, radius);
+    }
+
+    @CalledByNative
     void disableIconTint() {
         mMessageProperties.set(
                 MessageBannerProperties.ICON_TINT_COLOR, MessageBannerProperties.TINT_NONE);
@@ -134,6 +158,13 @@ public final class MessageWrapper {
     @CalledByNative
     void clearNativePtr() {
         mNativeMessageWrapper = 0;
+    }
+
+    @CalledByNative
+    Bitmap getIconBitmap() {
+        Drawable drawable = mMessageProperties.get(MessageBannerProperties.ICON);
+        assert drawable instanceof BitmapDrawable;
+        return ((BitmapDrawable) drawable).getBitmap();
     }
 
     private void handleActionClick() {

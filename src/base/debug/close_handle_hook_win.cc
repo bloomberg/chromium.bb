@@ -12,7 +12,7 @@
 #include <memory>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/win/iat_patch_function.h"
 #include "base/win/pe_image.h"
 #include "base/win/scoped_handle.h"
@@ -71,6 +71,9 @@ class AutoProtectMemory {
   AutoProtectMemory()
       : changed_(false), address_(nullptr), bytes_(0), old_protect_(0) {}
 
+  AutoProtectMemory(const AutoProtectMemory&) = delete;
+  AutoProtectMemory& operator=(const AutoProtectMemory&) = delete;
+
   ~AutoProtectMemory() {
     RevertProtection();
   }
@@ -83,11 +86,9 @@ class AutoProtectMemory {
 
  private:
   bool changed_;
-  void* address_;
+  raw_ptr<void> address_;
   size_t bytes_;
   DWORD old_protect_;
-
-  DISALLOW_COPY_AND_ASSIGN(AutoProtectMemory);
 };
 
 bool AutoProtectMemory::ChangeProtection(void* address, size_t bytes) {
@@ -188,6 +189,10 @@ base::win::IATPatchFunction* IATPatch(HMODULE module, const char* function_name,
 class HandleHooks {
  public:
   HandleHooks() {}
+
+  HandleHooks(const HandleHooks&) = delete;
+  HandleHooks& operator=(const HandleHooks&) = delete;
+
   ~HandleHooks() {}
 
   void AddIATPatch(HMODULE module);
@@ -195,7 +200,6 @@ class HandleHooks {
 
  private:
   std::vector<base::win::IATPatchFunction*> hooks_;
-  DISALLOW_COPY_AND_ASSIGN(HandleHooks);
 };
 
 void HandleHooks::AddIATPatch(HMODULE module) {

@@ -132,7 +132,6 @@ source_set("gbm") {
     "//third_party/minigbm",
     "//ui/base",
     "//ui/base/cursor",
-    "//ui/base/cursor:cursor_base",
     "//ui/base/cursor/mojom:cursor_type",
     "//ui/base/ime",
     "//ui/display",
@@ -163,7 +162,7 @@ source_set("gbm") {
   }
 
   if (is_chromeos_ash) {
-    deps += [ "//ui/base/ime/chromeos" ]
+    deps += [ "//ui/base/ime/ash" ]
   }
 
   if (enable_vulkan) {

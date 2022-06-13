@@ -11,7 +11,7 @@
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
@@ -35,6 +35,7 @@
 #include "content/browser/indexed_db/mock_indexed_db_database_callbacks.h"
 #include "content/browser/indexed_db/mock_indexed_db_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 
 using blink::IndexedDBDatabaseMetadata;
 using blink::IndexedDBIndexKeys;
@@ -101,7 +102,7 @@ class IndexedDBDatabaseTest : public ::testing::Test {
   std::unique_ptr<IndexedDBFakeBackingStore> backing_store_;
   std::unique_ptr<MockIndexedDBFactory> factory_;
   std::unique_ptr<IndexedDBDatabase> db_;
-  FakeIndexedDBMetadataCoding* metadata_coding_ = nullptr;
+  raw_ptr<FakeIndexedDBMetadataCoding> metadata_coding_ = nullptr;
   bool error_called_ = false;
 
  private:
@@ -121,7 +122,7 @@ TEST_F(IndexedDBDatabaseTest, ConnectionLifecycle) {
       request1, callbacks1, transaction_id1,
       IndexedDBDatabaseMetadata::DEFAULT_VERSION,
       std::move(create_transaction_callback1));
-  db_->ScheduleOpenConnection(IndexedDBOriginStateHandle(),
+  db_->ScheduleOpenConnection(IndexedDBStorageKeyStateHandle(),
                               std::move(connection1));
   RunPostedTasks();
 
@@ -134,7 +135,7 @@ TEST_F(IndexedDBDatabaseTest, ConnectionLifecycle) {
       request2, callbacks2, transaction_id2,
       IndexedDBDatabaseMetadata::DEFAULT_VERSION,
       std::move(create_transaction_callback2));
-  db_->ScheduleOpenConnection(IndexedDBOriginStateHandle(),
+  db_->ScheduleOpenConnection(IndexedDBStorageKeyStateHandle(),
                               std::move(connection2));
   RunPostedTasks();
 
@@ -161,7 +162,7 @@ TEST_F(IndexedDBDatabaseTest, ForcedClose) {
       request, callbacks, upgrade_transaction_id,
       IndexedDBDatabaseMetadata::DEFAULT_VERSION,
       std::move(create_transaction_callback));
-  db_->ScheduleOpenConnection(IndexedDBOriginStateHandle(),
+  db_->ScheduleOpenConnection(IndexedDBStorageKeyStateHandle(),
                               std::move(connection));
   RunPostedTasks();
 
@@ -189,9 +190,12 @@ class MockCallbacks : public IndexedDBCallbacks {
  public:
   MockCallbacks()
       : IndexedDBCallbacks(nullptr,
-                           url::Origin(),
+                           blink::StorageKey(),
                            mojo::NullAssociatedRemote(),
                            base::ThreadTaskRunnerHandle::Get()) {}
+
+  MockCallbacks(const MockCallbacks&) = delete;
+  MockCallbacks& operator=(const MockCallbacks&) = delete;
 
   void OnBlocked(int64_t existing_version) override { blocked_called_ = true; }
   void OnSuccess(int64_t result) override { success_called_ = true; }
@@ -209,8 +213,6 @@ class MockCallbacks : public IndexedDBCallbacks {
   bool blocked_called_ = false;
   bool success_called_ = false;
   bool error_called_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(MockCallbacks);
 };
 
 }  // namespace
@@ -225,7 +227,7 @@ TEST_F(IndexedDBDatabaseTest, PendingDelete) {
       request1, callbacks1, transaction_id1,
       IndexedDBDatabaseMetadata::DEFAULT_VERSION,
       std::move(create_transaction_callback1));
-  db_->ScheduleOpenConnection(IndexedDBOriginStateHandle(),
+  db_->ScheduleOpenConnection(IndexedDBStorageKeyStateHandle(),
                               std::move(connection));
   RunPostedTasks();
 
@@ -236,7 +238,7 @@ TEST_F(IndexedDBDatabaseTest, PendingDelete) {
   bool deleted = false;
   auto request2 = base::MakeRefCounted<MockCallbacks>();
   db_->ScheduleDeleteDatabase(
-      IndexedDBOriginStateHandle(), request2,
+      IndexedDBStorageKeyStateHandle(), request2,
       base::BindLambdaForTesting([&]() { deleted = true; }));
   RunPostedTasks();
   EXPECT_EQ(db_->ConnectionCount(), 1UL);
@@ -271,7 +273,7 @@ TEST_F(IndexedDBDatabaseTest, OpenDeleteClear) {
   auto connection1 = std::make_unique<IndexedDBPendingConnection>(
       request1, callbacks1, transaction_id1, kDatabaseVersion,
       std::move(create_transaction_callback1));
-  db_->ScheduleOpenConnection(IndexedDBOriginStateHandle(),
+  db_->ScheduleOpenConnection(IndexedDBStorageKeyStateHandle(),
                               std::move(connection1));
   RunPostedTasks();
 
@@ -288,7 +290,7 @@ TEST_F(IndexedDBDatabaseTest, OpenDeleteClear) {
   auto connection2 = std::make_unique<IndexedDBPendingConnection>(
       request2, callbacks2, transaction_id2, kDatabaseVersion,
       std::move(create_transaction_callback2));
-  db_->ScheduleOpenConnection(IndexedDBOriginStateHandle(),
+  db_->ScheduleOpenConnection(IndexedDBStorageKeyStateHandle(),
                               std::move(connection2));
   RunPostedTasks();
 
@@ -305,7 +307,7 @@ TEST_F(IndexedDBDatabaseTest, OpenDeleteClear) {
   auto connection3 = std::make_unique<IndexedDBPendingConnection>(
       request3, callbacks3, transaction_id3, kDatabaseVersion,
       std::move(create_transaction_callback3));
-  db_->ScheduleOpenConnection(IndexedDBOriginStateHandle(),
+  db_->ScheduleOpenConnection(IndexedDBStorageKeyStateHandle(),
                               std::move(connection3));
   RunPostedTasks();
 
@@ -337,7 +339,7 @@ TEST_F(IndexedDBDatabaseTest, ForceDelete) {
       request1, callbacks1, transaction_id1,
       IndexedDBDatabaseMetadata::DEFAULT_VERSION,
       std::move(create_transaction_callback1));
-  db_->ScheduleOpenConnection(IndexedDBOriginStateHandle(),
+  db_->ScheduleOpenConnection(IndexedDBStorageKeyStateHandle(),
                               std::move(connection));
   RunPostedTasks();
 
@@ -348,7 +350,7 @@ TEST_F(IndexedDBDatabaseTest, ForceDelete) {
   bool deleted = false;
   auto request2 = base::MakeRefCounted<MockCallbacks>();
   db_->ScheduleDeleteDatabase(
-      IndexedDBOriginStateHandle(), request2,
+      IndexedDBStorageKeyStateHandle(), request2,
       base::BindLambdaForTesting([&]() { deleted = true; }));
   RunPostedTasks();
   EXPECT_FALSE(deleted);
@@ -372,7 +374,7 @@ TEST_F(IndexedDBDatabaseTest, ForceCloseWhileOpenPending) {
       request1, callbacks1, transaction_id1,
       IndexedDBDatabaseMetadata::DEFAULT_VERSION,
       std::move(create_transaction_callback1));
-  db_->ScheduleOpenConnection(IndexedDBOriginStateHandle(),
+  db_->ScheduleOpenConnection(IndexedDBStorageKeyStateHandle(),
                               std::move(connection));
   RunPostedTasks();
 
@@ -389,7 +391,7 @@ TEST_F(IndexedDBDatabaseTest, ForceCloseWhileOpenPending) {
   auto connection2 = std::make_unique<IndexedDBPendingConnection>(
       request1, callbacks1, transaction_id2, 3,
       std::move(create_transaction_callback2));
-  db_->ScheduleOpenConnection(IndexedDBOriginStateHandle(),
+  db_->ScheduleOpenConnection(IndexedDBStorageKeyStateHandle(),
                               std::move(connection2));
   RunPostedTasks();
 
@@ -414,7 +416,7 @@ TEST_F(IndexedDBDatabaseTest, ForceCloseWhileOpenAndDeletePending) {
       request1, callbacks1, transaction_id1,
       IndexedDBDatabaseMetadata::DEFAULT_VERSION,
       std::move(create_transaction_callback1));
-  db_->ScheduleOpenConnection(IndexedDBOriginStateHandle(),
+  db_->ScheduleOpenConnection(IndexedDBStorageKeyStateHandle(),
                               std::move(connection));
   RunPostedTasks();
 
@@ -430,14 +432,14 @@ TEST_F(IndexedDBDatabaseTest, ForceCloseWhileOpenAndDeletePending) {
   auto connection2 = std::make_unique<IndexedDBPendingConnection>(
       request1, callbacks1, transaction_id2, 3,
       std::move(create_transaction_callback2));
-  db_->ScheduleOpenConnection(IndexedDBOriginStateHandle(),
+  db_->ScheduleOpenConnection(IndexedDBStorageKeyStateHandle(),
                               std::move(connection2));
   RunPostedTasks();
 
   bool deleted = false;
   auto request3 = base::MakeRefCounted<MockCallbacks>();
   db_->ScheduleDeleteDatabase(
-      IndexedDBOriginStateHandle(), request3,
+      IndexedDBStorageKeyStateHandle(), request3,
       base::BindLambdaForTesting([&]() { deleted = true; }));
   RunPostedTasks();
   EXPECT_FALSE(deleted);
@@ -463,6 +465,11 @@ class IndexedDBDatabaseOperationTest : public testing::Test {
         commit_success_(leveldb::Status::OK()),
         factory_(std::make_unique<MockIndexedDBFactory>()) {}
 
+  IndexedDBDatabaseOperationTest(const IndexedDBDatabaseOperationTest&) =
+      delete;
+  IndexedDBDatabaseOperationTest& operator=(
+      const IndexedDBDatabaseOperationTest&) = delete;
+
   void SetUp() override {
     backing_store_ = std::make_unique<IndexedDBFakeBackingStore>();
     std::unique_ptr<FakeIndexedDBMetadataCoding> metadata_coding =
@@ -487,7 +494,7 @@ class IndexedDBDatabaseOperationTest : public testing::Test {
         request_, callbacks_, transaction_id,
         IndexedDBDatabaseMetadata::DEFAULT_VERSION,
         std::move(create_transaction_callback1));
-    db_->ScheduleOpenConnection(IndexedDBOriginStateHandle(),
+    db_->ScheduleOpenConnection(IndexedDBStorageKeyStateHandle(),
                                 std::move(connection));
     RunPostedTasks();
     EXPECT_EQ(IndexedDBDatabaseMetadata::NO_VERSION, db_->metadata().version);
@@ -543,10 +550,10 @@ class IndexedDBDatabaseOperationTest : public testing::Test {
  protected:
   std::unique_ptr<IndexedDBFakeBackingStore> backing_store_;
   std::unique_ptr<IndexedDBDatabase> db_;
-  FakeIndexedDBMetadataCoding* metadata_coding_ = nullptr;
+  raw_ptr<FakeIndexedDBMetadataCoding> metadata_coding_ = nullptr;
   scoped_refptr<MockIndexedDBCallbacks> request_;
   scoped_refptr<MockIndexedDBDatabaseCallbacks> callbacks_;
-  IndexedDBTransaction* transaction_ = nullptr;
+  raw_ptr<IndexedDBTransaction> transaction_ = nullptr;
   DisjointRangeLockManager lock_manager_;
   bool error_called_ = false;
 
@@ -554,8 +561,6 @@ class IndexedDBDatabaseOperationTest : public testing::Test {
 
  private:
   std::unique_ptr<MockIndexedDBFactory> factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(IndexedDBDatabaseOperationTest);
 };
 
 TEST_F(IndexedDBDatabaseOperationTest, CreateObjectStore) {
@@ -603,8 +608,10 @@ class IndexedDBDatabaseOperationAbortTest
     commit_success_ = leveldb::Status::NotFound("Bummer.");
   }
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(IndexedDBDatabaseOperationAbortTest);
+  IndexedDBDatabaseOperationAbortTest(
+      const IndexedDBDatabaseOperationAbortTest&) = delete;
+  IndexedDBDatabaseOperationAbortTest& operator=(
+      const IndexedDBDatabaseOperationAbortTest&) = delete;
 };
 
 TEST_F(IndexedDBDatabaseOperationAbortTest, CreateObjectStore) {

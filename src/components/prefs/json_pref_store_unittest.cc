@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
@@ -18,12 +19,11 @@
 #include "base/metrics/histogram_samples.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -64,6 +64,10 @@ class InterceptingPrefFilter : public PrefFilter {
  public:
   InterceptingPrefFilter();
   InterceptingPrefFilter(OnWriteCallbackPair callback_pair);
+
+  InterceptingPrefFilter(const InterceptingPrefFilter&) = delete;
+  InterceptingPrefFilter& operator=(const InterceptingPrefFilter&) = delete;
+
   ~InterceptingPrefFilter() override;
 
   // PrefFilter implementation:
@@ -87,8 +91,6 @@ class InterceptingPrefFilter : public PrefFilter {
   PostFilterOnLoadCallback post_filter_on_load_callback_;
   std::unique_ptr<base::DictionaryValue> intercepted_prefs_;
   OnWriteCallbackPair on_write_callback_pair_;
-
-  DISALLOW_COPY_AND_ASSIGN(InterceptingPrefFilter);
 };
 
 InterceptingPrefFilter::InterceptingPrefFilter() {}
@@ -178,6 +180,9 @@ class JsonPrefStoreTest
       : task_environment_(base::test::TaskEnvironment::MainThreadType::DEFAULT,
                           GetExecutionMode(GetParam())) {}
 
+  JsonPrefStoreTest(const JsonPrefStoreTest&) = delete;
+  JsonPrefStoreTest& operator=(const JsonPrefStoreTest&) = delete;
+
  protected:
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -187,8 +192,6 @@ class JsonPrefStoreTest
   base::ScopedTempDir temp_dir_;
 
   base::test::TaskEnvironment task_environment_;
-
-  DISALLOW_COPY_AND_ASSIGN(JsonPrefStoreTest);
 };
 
 }  // namespace
@@ -574,6 +577,10 @@ class JsonPrefStoreLossyWriteTest : public JsonPrefStoreTest {
  public:
   JsonPrefStoreLossyWriteTest() = default;
 
+  JsonPrefStoreLossyWriteTest(const JsonPrefStoreLossyWriteTest&) = delete;
+  JsonPrefStoreLossyWriteTest& operator=(const JsonPrefStoreLossyWriteTest&) =
+      delete;
+
  protected:
   void SetUp() override {
     JsonPrefStoreTest::SetUp();
@@ -600,8 +607,6 @@ class JsonPrefStoreLossyWriteTest : public JsonPrefStoreTest {
 
  private:
   base::FilePath test_file_;
-
-  DISALLOW_COPY_AND_ASSIGN(JsonPrefStoreLossyWriteTest);
 };
 
 TEST_P(JsonPrefStoreLossyWriteTest, LossyWriteBasic) {
@@ -730,6 +735,10 @@ class SuccessfulWriteReplyObserver {
  public:
   SuccessfulWriteReplyObserver() = default;
 
+  SuccessfulWriteReplyObserver(const SuccessfulWriteReplyObserver&) = delete;
+  SuccessfulWriteReplyObserver& operator=(const SuccessfulWriteReplyObserver&) =
+      delete;
+
   // Returns true if a successful write was observed via on_successful_write()
   // and resets the observation state to false regardless.
   bool GetAndResetObservationState() {
@@ -748,8 +757,6 @@ class SuccessfulWriteReplyObserver {
 
  private:
   bool successful_write_reply_observed_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(SuccessfulWriteReplyObserver);
 };
 
 void SuccessfulWriteReplyObserver::ObserveNextWriteCallback(
@@ -768,6 +775,9 @@ enum WriteCallbackObservationState {
 class WriteCallbacksObserver {
  public:
   WriteCallbacksObserver() = default;
+
+  WriteCallbacksObserver(const WriteCallbacksObserver&) = delete;
+  WriteCallbacksObserver& operator=(const WriteCallbacksObserver&) = delete;
 
   // Register OnWrite() to be called on the next write of |json_pref_store|.
   void ObserveNextWriteCallback(JsonPrefStore* json_pref_store);
@@ -801,8 +811,6 @@ class WriteCallbacksObserver {
  private:
   bool pre_write_called_ = false;
   WriteCallbackObservationState post_write_observation_state_ = NOT_CALLED;
-
-  DISALLOW_COPY_AND_ASSIGN(WriteCallbacksObserver);
 };
 
 void WriteCallbacksObserver::ObserveNextWriteCallback(JsonPrefStore* writer) {
@@ -826,6 +834,10 @@ WriteCallbacksObserver::GetAndResetPostWriteObservationState() {
 class JsonPrefStoreCallbackTest : public testing::Test {
  public:
   JsonPrefStoreCallbackTest() = default;
+
+  JsonPrefStoreCallbackTest(const JsonPrefStoreCallbackTest&) = delete;
+  JsonPrefStoreCallbackTest& operator=(const JsonPrefStoreCallbackTest&) =
+      delete;
 
  protected:
   void SetUp() override {
@@ -863,8 +875,6 @@ class JsonPrefStoreCallbackTest : public testing::Test {
 
  private:
   base::FilePath test_file_;
-
-  DISALLOW_COPY_AND_ASSIGN(JsonPrefStoreCallbackTest);
 };
 
 TEST_F(JsonPrefStoreCallbackTest, TestSerializeDataCallbacks) {

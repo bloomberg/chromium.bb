@@ -5,11 +5,18 @@
 #ifndef CONTENT_BROWSER_ACCESSIBILITY_WEB_CONTENTS_ACCESSIBILITY_ANDROID_H_
 #define CONTENT_BROWSER_ACCESSIBILITY_WEB_CONTENTS_ACCESSIBILITY_ANDROID_H_
 
+#include "base/memory/raw_ptr.h"
 #include "content/browser/accessibility/web_contents_accessibility.h"
+#include "content/common/content_export.h"
 
+#include <unordered_map>
+
+#include "base/android/jni_string.h"
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/memory/weak_ptr.h"
+#include "base/strings/utf_string_conversions.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace ui {
 class MotionEventAndroid;
@@ -29,6 +36,9 @@ constexpr int kDefaultNumberOfTicksForSliders = 20;
 // The minimum amount a slider can move per increment/decement action as a
 // percentage of the total range, regardless of step value set on the element.
 constexpr float kMinimumPercentageMoveForSliders = 0.01f;
+
+// Max dimensions for the image data of a node.
+constexpr gfx::Size kMaxImageSize = gfx::Size(2000, 2000);
 }  // namespace
 
 class BrowserAccessibilityAndroid;
@@ -56,6 +66,12 @@ class CONTENT_EXPORT WebContentsAccessibilityAndroid
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       jlong ax_tree_update_ptr);
+
+  WebContentsAccessibilityAndroid(const WebContentsAccessibilityAndroid&) =
+      delete;
+  WebContentsAccessibilityAndroid& operator=(
+      const WebContentsAccessibilityAndroid&) = delete;
+
   ~WebContentsAccessibilityAndroid() override;
 
   // Notify the root BrowserAccessibilityManager that this is the
@@ -82,9 +98,10 @@ class CONTENT_EXPORT WebContentsAccessibilityAndroid
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
 
-  void SetIsRunningAsWebView(JNIEnv* env,
-                             const base::android::JavaParamRef<jobject>& obj,
-                             jboolean is_webview);
+  void SetAllowImageDescriptions(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jboolean allow_image_descriptions);
 
   // Tree methods.
   jint GetRootId(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
@@ -288,6 +305,15 @@ class CONTENT_EXPORT WebContentsAccessibilityAndroid
       jint start,
       jint len);
 
+  // Get the image data for a given node. If no image data is available, this
+  // will call through to |BrowserAccessibilityManager| to populate the data
+  // asynchronously so the next time the method is called the data is ready.
+  jboolean GetImageData(JNIEnv* env,
+                        const base::android::JavaParamRef<jobject>& obj,
+                        const base::android::JavaParamRef<jobject>& info,
+                        jint unique_id,
+                        jboolean has_sent_previous_request);
+
   void UpdateFrameInfo(float page_scale);
 
   // Set a new max for TYPE_WINDOW_CONTENT_CHANGED events to fire.
@@ -314,6 +340,31 @@ class CONTENT_EXPORT WebContentsAccessibilityAndroid
   // Call the BrowserAccessibilityManager to trigger an kEndOfTest event.
   void SignalEndOfTestForTesting(JNIEnv* env);
 
+  // Helper methods to wrap strings with a JNI-friendly cache.
+  // Note: This cache is only meant for common strings that might be shared
+  //       across many nodes (e.g. role or role description), which have a
+  //       finite number of possibilities. Do not use it for page content.
+  base::android::ScopedJavaGlobalRef<jstring> GetCanonicalJNIString(
+      JNIEnv* env,
+      std::string str) {
+    return GetCanonicalJNIString(env, base::UTF8ToUTF16(str));
+  }
+
+  base::android::ScopedJavaGlobalRef<jstring> GetCanonicalJNIString(
+      JNIEnv* env,
+      std::u16string str) {
+    // Check if this string has already been added to the cache.
+    if (common_string_cache_.find(str) != common_string_cache_.end()) {
+      return common_string_cache_[str];
+    }
+
+    // Otherwise, convert the string and add it to the cache, then return.
+    common_string_cache_[str] =
+        base::android::ConvertUTF16ToJavaString(env, str);
+    DCHECK(common_string_cache_.size() < 500);
+    return common_string_cache_[str];
+  }
+
   // --------------------------------------------------------------------------
   // Methods called from the BrowserAccessibilityManager
   // --------------------------------------------------------------------------
@@ -327,6 +378,7 @@ class CONTENT_EXPORT WebContentsAccessibilityAndroid
   void HandleClicked(int32_t unique_id);
   void HandleScrollPositionChanged(int32_t unique_id);
   void HandleScrolledToAnchor(int32_t unique_id);
+  void HandleDialogModalOpened(int32_t unique_id);
   void AnnounceLiveRegionText(const std::u16string& text);
   void HandleTextSelectionChanged(int32_t unique_id);
   void HandleEditableTextChanged(int32_t unique_id);
@@ -337,6 +389,7 @@ class CONTENT_EXPORT WebContentsAccessibilityAndroid
   void HandleNavigate();
   void ClearNodeInfoCacheForGivenId(int32_t unique_id);
   void HandleEndOfTestSignal();
+  std::u16string GenerateAccessibilityNodeInfoString(int32_t unique_id);
 
   base::WeakPtr<WebContentsAccessibilityAndroid> GetWeakPtr();
 
@@ -355,7 +408,7 @@ class CONTENT_EXPORT WebContentsAccessibilityAndroid
   // A weak reference to the Java WebContentsAccessibilityAndroid object.
   JavaObjectWeakGlobalRef java_ref_;
 
-  WebContentsImpl* const web_contents_;
+  const raw_ptr<WebContentsImpl> web_contents_;
 
   bool frame_info_initialized_;
 
@@ -370,11 +423,19 @@ class CONTENT_EXPORT WebContentsAccessibilityAndroid
   // fired during a single atomic update.
   int content_changed_events_ = 0;
 
+  // An unordered map of |jstring| objects for classname, role, role
+  // description, invalid error, and language strings that are a finite set of
+  // strings that need to regularly be converted to Java strings and passed
+  // over the JNI.
+  std::unordered_map<std::u16string,
+                     base::android::ScopedJavaGlobalRef<jstring>>
+      common_string_cache_;
+
   // Manages the connection between web contents and the RenderFrameHost that
   // receives accessibility events.
   // Owns itself, and destroyed upon WebContentsObserver::WebContentsDestroyed.
   class Connector;
-  Connector* connector_ = nullptr;
+  raw_ptr<Connector> connector_ = nullptr;
   // This isn't associated with a real WebContents and is only populated when
   // this class is constructed with a ui::AXTreeUpdate.
   std::unique_ptr<BrowserAccessibilityManagerAndroid> manager_;
@@ -382,8 +443,6 @@ class CONTENT_EXPORT WebContentsAccessibilityAndroid
   std::unique_ptr<TouchPassthroughManager> touch_passthrough_manager_;
 
   base::WeakPtrFactory<WebContentsAccessibilityAndroid> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(WebContentsAccessibilityAndroid);
 };
 
 }  // namespace content

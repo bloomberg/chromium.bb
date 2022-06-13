@@ -15,17 +15,18 @@
 #include <unordered_map>
 #include <utility>
 
+#include "base/cxx17_backports.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/pickle.h"
-#include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "net/base/escape.h"
 #include "net/base/parse_number.h"
@@ -36,7 +37,6 @@
 #include "net/log/net_log_values.h"
 
 using base::Time;
-using base::TimeDelta;
 
 namespace net {
 
@@ -150,6 +150,13 @@ struct HttpResponseHeaders::ParsedHeader {
   std::string::const_iterator name_end;
   std::string::const_iterator value_begin;
   std::string::const_iterator value_end;
+
+  // Write a representation of this object into a tracing proto.
+  void WriteIntoTrace(perfetto::TracedValue context) const {
+    auto dict = std::move(context).WriteDictionary();
+    dict.Add("name", base::MakeStringPiece(name_begin, name_end));
+    dict.Add("value", base::MakeStringPiece(value_begin, value_end));
+  }
 };
 
 //-----------------------------------------------------------------------------
@@ -751,26 +758,46 @@ size_t HttpResponseHeaders::FindHeader(size_t from,
   return std::string::npos;
 }
 
-bool HttpResponseHeaders::GetCacheControlDirective(base::StringPiece directive,
-                                                   TimeDelta* result) const {
-  base::StringPiece name("cache-control");
+bool HttpResponseHeaders::GetCacheControlDirective(
+    base::StringPiece directive,
+    base::TimeDelta* result) const {
+  static constexpr base::StringPiece name("cache-control");
   std::string value;
 
   size_t directive_size = directive.size();
 
   size_t iter = 0;
   while (EnumerateHeader(&iter, name, &value)) {
-    if (value.size() > directive_size + 1 &&
-        base::StartsWith(value, directive,
-                         base::CompareCase::INSENSITIVE_ASCII) &&
-        value[directive_size] == '=') {
-      int64_t seconds;
-      base::StringToInt64(base::MakeStringPiece(
-                              value.begin() + directive_size + 1, value.end()),
-                          &seconds);
-      *result = TimeDelta::FromSeconds(seconds);
-      return true;
+    if (!base::StartsWith(value, directive,
+                          base::CompareCase::INSENSITIVE_ASCII)) {
+      continue;
     }
+    if (value.size() == directive_size || value[directive_size] != '=')
+      continue;
+    // 1*DIGIT with leading and trailing spaces, as described at
+    // https://datatracker.ietf.org/doc/html/rfc7234#section-1.2.1.
+    auto start = value.cbegin() + directive_size + 1;
+    auto end = value.cend();
+    while (start < end && *start == ' ') {
+      // leading spaces
+      ++start;
+    }
+    while (start < end - 1 && *(end - 1) == ' ') {
+      // trailing spaces
+      --end;
+    }
+    if (start == end ||
+        !std::all_of(start, end, [](char c) { return '0' <= c && c <= '9'; })) {
+      continue;
+    }
+    int64_t seconds = 0;
+    base::StringToInt64(base::MakeStringPiece(start, end), &seconds);
+    // We ignore the return value because we've already checked the input
+    // string. For the overflow case we use
+    // base::TimeDelta::FiniteMax().InSeconds().
+    seconds = std::min(seconds, base::TimeDelta::FiniteMax().InSeconds());
+    *result = base::Seconds(seconds);
+    return true;
   }
 
   return false;
@@ -971,7 +998,8 @@ ValidationType HttpResponseHeaders::RequiresValidation(
   if (lifetimes.freshness.is_zero() && lifetimes.staleness.is_zero())
     return VALIDATION_SYNCHRONOUS;
 
-  TimeDelta age = GetCurrentAge(request_time, response_time, current_time);
+  base::TimeDelta age =
+      GetCurrentAge(request_time, response_time, current_time);
 
   if (lifetimes.freshness > age)
     return VALIDATION_NONE;
@@ -1021,7 +1049,7 @@ HttpResponseHeaders::GetFreshnessLifetimes(const Time& response_time) const {
   bool must_revalidate = HasHeaderValue("cache-control", "must-revalidate");
 
   if (must_revalidate || !GetStaleWhileRevalidateValue(&lifetimes.staleness)) {
-    DCHECK_EQ(TimeDelta(), lifetimes.staleness);
+    DCHECK_EQ(base::TimeDelta(), lifetimes.staleness);
   }
 
   // NOTE: "Cache-Control: max-age" overrides Expires, so we only check the
@@ -1045,7 +1073,7 @@ HttpResponseHeaders::GetFreshnessLifetimes(const Time& response_time) const {
       return lifetimes;
     }
 
-    DCHECK_EQ(TimeDelta(), lifetimes.freshness);
+    DCHECK_EQ(base::TimeDelta(), lifetimes.freshness);
     return lifetimes;
   }
 
@@ -1090,15 +1118,15 @@ HttpResponseHeaders::GetFreshnessLifetimes(const Time& response_time) const {
   // These responses are implicitly fresh (unless otherwise overruled):
   if (response_code_ == 300 || response_code_ == 301 || response_code_ == 308 ||
       response_code_ == 410) {
-    lifetimes.freshness = TimeDelta::Max();
-    lifetimes.staleness = TimeDelta();  // It should never be stale.
+    lifetimes.freshness = base::TimeDelta::Max();
+    lifetimes.staleness = base::TimeDelta();  // It should never be stale.
     return lifetimes;
   }
 
   // Our heuristic freshness estimate for this resource is 0 seconds, in
   // accordance with common browser behaviour. However, stale-while-revalidate
   // may still apply.
-  DCHECK_EQ(TimeDelta(), lifetimes.freshness);
+  DCHECK_EQ(base::TimeDelta(), lifetimes.freshness);
   return lifetimes;
 }
 
@@ -1145,9 +1173,10 @@ HttpResponseHeaders::GetFreshnessLifetimes(const Time& response_time) const {
 //     resident_time = now - response_time;
 //     current_age = corrected_initial_age + resident_time;
 //
-TimeDelta HttpResponseHeaders::GetCurrentAge(const Time& request_time,
-                                             const Time& response_time,
-                                             const Time& current_time) const {
+base::TimeDelta HttpResponseHeaders::GetCurrentAge(
+    const Time& request_time,
+    const Time& response_time,
+    const Time& current_time) const {
   // If there is no Date header, then assume that the server response was
   // generated at the time when we received the response.
   Time date_value;
@@ -1156,24 +1185,26 @@ TimeDelta HttpResponseHeaders::GetCurrentAge(const Time& request_time,
 
   // If there is no Age header, then assume age is zero.  GetAgeValue does not
   // modify its out param if the value does not exist.
-  TimeDelta age_value;
+  base::TimeDelta age_value;
   GetAgeValue(&age_value);
 
-  TimeDelta apparent_age = std::max(TimeDelta(), response_time - date_value);
-  TimeDelta response_delay = response_time - request_time;
-  TimeDelta corrected_age_value = age_value + response_delay;
-  TimeDelta corrected_initial_age = std::max(apparent_age, corrected_age_value);
-  TimeDelta resident_time = current_time - response_time;
-  TimeDelta current_age = corrected_initial_age + resident_time;
+  base::TimeDelta apparent_age =
+      std::max(base::TimeDelta(), response_time - date_value);
+  base::TimeDelta response_delay = response_time - request_time;
+  base::TimeDelta corrected_age_value = age_value + response_delay;
+  base::TimeDelta corrected_initial_age =
+      std::max(apparent_age, corrected_age_value);
+  base::TimeDelta resident_time = current_time - response_time;
+  base::TimeDelta current_age = corrected_initial_age + resident_time;
 
   return current_age;
 }
 
-bool HttpResponseHeaders::GetMaxAgeValue(TimeDelta* result) const {
+bool HttpResponseHeaders::GetMaxAgeValue(base::TimeDelta* result) const {
   return GetCacheControlDirective("max-age", result);
 }
 
-bool HttpResponseHeaders::GetAgeValue(TimeDelta* result) const {
+bool HttpResponseHeaders::GetAgeValue(base::TimeDelta* result) const {
   std::string value;
   if (!EnumerateHeader(nullptr, "Age", &value))
     return false;
@@ -1192,7 +1223,7 @@ bool HttpResponseHeaders::GetAgeValue(TimeDelta* result) const {
     }
   }
 
-  *result = TimeDelta::FromSeconds(seconds);
+  *result = base::Seconds(seconds);
   return true;
 }
 
@@ -1209,7 +1240,7 @@ bool HttpResponseHeaders::GetExpiresValue(Time* result) const {
 }
 
 bool HttpResponseHeaders::GetStaleWhileRevalidateValue(
-    TimeDelta* result) const {
+    base::TimeDelta* result) const {
   return GetCacheControlDirective("stale-while-revalidate", result);
 }
 
@@ -1362,6 +1393,12 @@ bool HttpResponseHeaders::IsCookieResponseHeader(base::StringPiece name) {
       return true;
   }
   return false;
+}
+
+void HttpResponseHeaders::WriteIntoTrace(perfetto::TracedValue context) const {
+  perfetto::TracedDictionary dict = std::move(context).WriteDictionary();
+  dict.Add("response_code", response_code_);
+  dict.Add("headers", parsed_);
 }
 
 }  // namespace net

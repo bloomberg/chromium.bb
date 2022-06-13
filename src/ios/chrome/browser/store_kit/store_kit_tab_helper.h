@@ -5,7 +5,6 @@
 #ifndef IOS_CHROME_BROWSER_STORE_KIT_STORE_KIT_TAB_HELPER_H_
 #define IOS_CHROME_BROWSER_STORE_KIT_STORE_KIT_TAB_HELPER_H_
 
-#include "base/macros.h"
 #import "ios/chrome/browser/store_kit/store_kit_launcher.h"
 #import "ios/web/public/web_state_user_data.h"
 
@@ -14,6 +13,10 @@
 class StoreKitTabHelper : public web::WebStateUserData<StoreKitTabHelper> {
  public:
   explicit StoreKitTabHelper(web::WebState* web_state);
+
+  StoreKitTabHelper(const StoreKitTabHelper&) = delete;
+  StoreKitTabHelper& operator=(const StoreKitTabHelper&) = delete;
+
   ~StoreKitTabHelper() override;
 
   void SetLauncher(id<StoreKitLauncher> launcher);
@@ -35,8 +38,6 @@ class StoreKitTabHelper : public web::WebStateUserData<StoreKitTabHelper> {
   __weak id<StoreKitLauncher> store_kit_launcher_ = nil;
 
   WEB_STATE_USER_DATA_KEY_DECL();
-
-  DISALLOW_COPY_AND_ASSIGN(StoreKitTabHelper);
 };
 
 #endif  // IOS_CHROME_BROWSER_STORE_KIT_STORE_KIT_TAB_HELPER_H_

@@ -37,6 +37,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.CriteriaNotSatisfiedException;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content_public.browser.WebContents;
@@ -212,6 +213,7 @@ public class ImeTest {
     @Test
     @SmallTest
     @Feature({"TextInput", "Main"})
+    @DisabledTest(message = "https://crbug.com/1223357")
     public void testDeleteSurroundingTextInCodePointsWithRangeSelection() throws Throwable {
         final String trophy = "\uD83C\uDFC6";
         mRule.commitText("ab" + trophy + "cdef" + trophy + "gh", 1);
@@ -229,6 +231,7 @@ public class ImeTest {
     @Test
     @SmallTest
     @Feature({"TextInput", "Main"})
+    @DisabledTest(message = "https://crbug.com/1222977")
     public void testDeleteSurroundingTextInCodePointsWithCursorSelection() throws Throwable {
         final String trophy = "\uD83C\uDFC6";
         mRule.commitText("ab" + trophy + "cd" + trophy, 1);
@@ -970,6 +973,7 @@ public class ImeTest {
     @Test
     @SmallTest
     @Feature({"TextInput", "Main"})
+    @DisabledTest(message = "https://crbug.com/1222342")
     public void testDeleteMultiCharacterCodepoint() throws Throwable {
         // This smiley is a multi character codepoint.
         final String smiley = "\uD83D\uDE0A";

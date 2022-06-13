@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_OMAHA_ATTRIBUTES_HANDLER_H_
 #define CHROME_BROWSER_EXTENSIONS_OMAHA_ATTRIBUTES_HANDLER_H_
 
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/extensions/blocklist.h"
 #include "extensions/browser/blocklist_state.h"
 #include "extensions/common/extension_id.h"
@@ -44,28 +45,17 @@ class OmahaAttributesHandler {
   OmahaAttributesHandler& operator=(const OmahaAttributesHandler&) = delete;
   ~OmahaAttributesHandler() = default;
 
-  // Logs UMA metrics when an extension is disabled remotely.
-  static void ReportExtensionDisabledRemotely(
-      bool should_be_remotely_disabled,
-      ExtensionUpdateCheckDataKey reason);
-
-  // Logs UMA metrics when the key is not found in Omaha attributes.
-  static void ReportNoUpdateCheckKeys();
-
-  // Logs UMA metrics when a remotely disabled extension is re-enabled.
-  static void ReportReenableExtension(ExtensionUpdateCheckDataKey reason);
-
-  // Checks whether the `state` is in the `attributes`.
-  static bool HasOmahaBlocklistStateInAttributes(const base::Value& attributes,
-                                                 BitMapBlocklistState state);
-
   // Performs action based on Omaha attributes for the extension.
-  // TODO(crbug.com/1193695): This function currently only handles greylist
-  // states. We should move blocklist handling into this class too.
   void PerformActionBasedOnOmahaAttributes(const ExtensionId& extension_id,
                                            const base::Value& attributes);
 
  private:
+  // Performs action based on `attributes` for the `extension_id`. If the
+  // extension does not have the _malware attribute, remove it from the Omaha
+  // malware blocklist state and maybe reload it. Otherwise, add it to the Omaha
+  // malware blocklist state and maybe unload it.
+  void HandleMalwareOmahaAttribute(const ExtensionId& extension_id,
+                                   const base::Value& attributes);
   // Performs action based on `attributes` for the `extension_id`. If the
   // extension is not in the `greylist_state` or the `feature_flag` is disabled,
   // remove it from the Omaha blocklist state and maybe re-enable it. Otherwise,
@@ -77,8 +67,8 @@ class OmahaAttributesHandler {
                                     BitMapBlocklistState greylist_state,
                                     ExtensionUpdateCheckDataKey reason);
 
-  ExtensionPrefs* extension_prefs_ = nullptr;
-  ExtensionService* extension_service_ = nullptr;
+  raw_ptr<ExtensionPrefs> extension_prefs_ = nullptr;
+  raw_ptr<ExtensionService> extension_service_ = nullptr;
 };
 
 }  // namespace extensions

@@ -1,7 +1,7 @@
 export const description = `API Operation Tests for RenderPass StoreOp.
 Tests a render pass with a resolveTarget resolves correctly for many combinations of:
   - number of color attachments, some with and some without a resolveTarget
-  - renderPass storeOp set to {'store', 'clear'}
+  - renderPass storeOp set to {'store', 'discard'}
   - resolveTarget mip level {0, >0} (TODO?: different mip level from colorAttachment)
   - resolveTarget {2d array layer, TODO: 3d slice} {0, >0} with {2d, TODO: 3d} resolveTarget
     (TODO?: different z from colorAttachment)
@@ -13,7 +13,6 @@ Tests a render pass with a resolveTarget resolves correctly for many combination
     (different z from colorAttachment)
 `;
 
-import { params, poptions } from '../../../../common/framework/params_builder.js';
 import { makeTestGroup } from '../../../../common/framework/test_group.js';
 import { GPUTest } from '../../../gpu_test.js';
 
@@ -29,13 +28,14 @@ const kFormat: GPUTextureFormat = 'rgba8unorm';
 export const g = makeTestGroup(GPUTest);
 
 g.test('render_pass_resolve')
-  .params(
-    params()
-      .combine(poptions('storeOperation', ['clear', 'store'] as const))
-      .combine(poptions('numColorAttachments', [2, 4] as const))
-      .combine(poptions('slotsToResolve', kSlotsToResolve))
-      .combine(poptions('resolveTargetBaseMipLevel', [0, 1] as const))
-      .combine(poptions('resolveTargetBaseArrayLayer', [0, 1] as const))
+  .params(u =>
+    u
+      .combine('storeOperation', ['discard', 'store'] as const)
+      .beginSubcases()
+      .combine('numColorAttachments', [2, 4] as const)
+      .combine('slotsToResolve', kSlotsToResolve)
+      .combine('resolveTargetBaseMipLevel', [0, 1] as const)
+      .combine('resolveTargetBaseArrayLayer', [0, 1] as const)
   )
   .fn(t => {
     const targets: GPUColorTargetState[] = [];
@@ -53,9 +53,9 @@ g.test('render_pass_resolve')
         module: t.device.createShaderModule({
           code: `
             [[stage(vertex)]] fn main(
-              [[builtin(vertex_index)]] VertexIndex : i32
+              [[builtin(vertex_index)]] VertexIndex : u32
               ) -> [[builtin(position)]] vec4<f32> {
-              let pos : array<vec2<f32>, 3> = array<vec2<f32>, 3>(
+              var pos : array<vec2<f32>, 3> = array<vec2<f32>, 3>(
                   vec2<f32>(-1.0, -1.0),
                   vec2<f32>(-1.0,  1.0),
                   vec2<f32>( 1.0,  1.0));

@@ -13,10 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 """Container for origin source code information before AutoGraph compilation."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import collections
 import difflib
 import os
@@ -188,25 +184,33 @@ class OriginResolver(gast.NodeVisitor):
 
     self._function_stack = []
 
-  def _absolute_lineno(self, node):
-    return node.lineno + self._lineno_offset
+  def _absolute_lineno(self, lineno):
+    return lineno + self._lineno_offset
 
-  def _absolute_col_offset(self, node):
-    return node.col_offset + self._col_offset
+  def _absolute_col_offset(self, col_offset):
+    if col_offset is None:
+      return 0
+    return col_offset + self._col_offset
 
   def _attach_origin_info(self, node):
+    lineno = getattr(node, 'lineno', None)
+    col_offset = getattr(node, 'col_offset', None)
+
+    if lineno is None:
+      return
+
     if self._function_stack:
       function_name = self._function_stack[-1].name
     else:
       function_name = None
 
-    source_code_line = self._source_lines[node.lineno - 1]
-    comment = self._comments_map.get(node.lineno)
+    source_code_line = self._source_lines[lineno - 1]
+    comment = self._comments_map.get(lineno)
 
-    loc = Location(self._filepath, self._absolute_lineno(node),
-                   self._absolute_col_offset(node))
+    loc = Location(self._filepath, self._absolute_lineno(lineno),
+                   self._absolute_col_offset(col_offset))
     origin = OriginInfo(loc, function_name, source_code_line, comment)
-    anno.setanno(node, 'lineno', node.lineno)
+    anno.setanno(node, 'lineno', lineno)
     anno.setanno(node, anno.Basic.ORIGIN, origin)
 
   def visit(self, node):
@@ -215,8 +219,7 @@ class OriginResolver(gast.NodeVisitor):
       entered_function = True
       self._function_stack.append(_Function(node.name))
 
-    if hasattr(node, 'lineno'):
-      self._attach_origin_info(node)
+    self._attach_origin_info(node)
     self.generic_visit(node)
 
     if entered_function:
@@ -247,11 +250,19 @@ def resolve(node, source, context_filepath, context_lineno, context_col_offset):
   # TODO(mdan): Pull this to a separate utility.
   code_reader = six.StringIO(source)
   comments_map = {}
-  for token in tokenize.generate_tokens(code_reader.readline):
-    tok_type, tok_string, loc, _, _ = token
-    srow, _ = loc
-    if tok_type == tokenize.COMMENT:
-      comments_map[srow] = tok_string.strip()[1:].strip()
+  try:
+    for token in tokenize.generate_tokens(code_reader.readline):
+      tok_type, tok_string, loc, _, _ = token
+      srow, _ = loc
+      if tok_type == tokenize.COMMENT:
+        comments_map[srow] = tok_string.strip()[1:].strip()
+  except tokenize.TokenError:
+    if isinstance(node, gast.Lambda):
+      # Source code resolution in older Python versions is brittle for
+      # lambda functions, and may contain garbage.
+      pass
+    else:
+      raise
 
   source_lines = source.split('\n')
   visitor = OriginResolver(node, source_lines, comments_map,
@@ -271,3 +282,15 @@ def resolve_entity(node, source, entity):
   col_offset = len(definition_line) - len(definition_line.lstrip())
 
   resolve(node, source, filepath, lineno, col_offset)
+
+
+def copy_origin(from_node, to_node):
+  """Copies the origin info from a node to another, recursively."""
+  origin = anno.Basic.ORIGIN.of(from_node, default=None)
+  if origin is None:
+    return
+  if not isinstance(to_node, (list, tuple)):
+    to_node = (to_node,)
+  for node in to_node:
+    for n in gast.walk(node):
+      anno.setanno(n, anno.Basic.ORIGIN, origin)

@@ -2,12 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import absolute_import
 import logging
 
 import dependency_manager
 
 
-class BinaryManager(object):
+class BinaryManager():
   """ This class is effectively a subclass of dependency_manager, but uses a
       different number of arguments for FetchPath and LocalPath.
   """
@@ -58,4 +59,3 @@ class BinaryManager(object):
             'Cannot find path for %s on platform %s. Falling back to %s.',
             binary_name, versioned_platform, platform)
     return function(binary_name, platform)
-

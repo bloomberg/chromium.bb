@@ -19,8 +19,7 @@ namespace blink {
 
 namespace {
 
-constexpr base::TimeDelta kMaxRafDelay =
-    base::TimeDelta::FromMilliseconds(5 * 1000);
+constexpr base::TimeDelta kMaxRafDelay = base::Milliseconds(5 * 1000);
 
 class QueuedClosure : public MainThreadEventQueueTask {
  public:
@@ -43,8 +42,7 @@ class QueuedClosure : public MainThreadEventQueueTask {
 
 // Time interval at which touchmove events during scroll will be skipped
 // during rAF signal.
-constexpr base::TimeDelta kAsyncTouchMoveInterval =
-    base::TimeDelta::FromMilliseconds(200);
+constexpr base::TimeDelta kAsyncTouchMoveInterval = base::Milliseconds(200);
 
 }  // namespace
 
@@ -74,7 +72,6 @@ class QueuedWebInputEvent : public MainThreadEventQueueTask {
     std::unique_ptr<cc::EventMetrics> metrics =
         cc::EventMetrics::CreateFromExisting(
             raw_event->Event().GetTypeAsUiEventType(), absl::nullopt,
-            raw_event->Event().GetScrollInputType(),
             cc::EventMetrics::DispatchStage::kRendererCompositorFinished,
             original_metrics);
     return std::make_unique<QueuedWebInputEvent>(
@@ -498,6 +495,9 @@ void MainThreadEventQueue::DispatchEvents() {
   }
 
   PossiblyScheduleMainFrame();
+
+  if (client_)
+    client_->InputEventsDispatched(/*raf_aligned=*/false);
 }
 
 static bool IsAsyncTouchMove(
@@ -565,6 +565,9 @@ void MainThreadEventQueue::DispatchRafAlignedInput(base::TimeTicks frame_time) {
   }
 
   PossiblyScheduleMainFrame();
+
+  if (client_)
+    client_->InputEventsDispatched(/*raf_aligned=*/true);
 }
 
 void MainThreadEventQueue::PostTaskToMainThread() {

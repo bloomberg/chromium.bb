@@ -11,7 +11,7 @@
 #include <iostream>
 #include <utility>
 
-#include "base/base_paths_fuchsia.h"
+#include "base/base_paths.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/fuchsia/file_utils.h"
@@ -165,7 +165,7 @@ int main(int argc, char** argv) {
   fuchsia::web::CreateContextParams create_context_params;
   fuchsia::web::ContentDirectoryProvider content_directory;
   base::FilePath pkg_path;
-  base::PathService::Get(base::DIR_ASSETS, &pkg_path);
+  base::PathService::Get(base::DIR_SRC_TEST_DATA_ROOT, &pkg_path);
   content_directory.set_directory(base::OpenDirectoryHandle(
       pkg_path.AppendASCII("fuchsia/engine/test/shell_data")));
   content_directory.set_name("shell-data");
@@ -184,7 +184,9 @@ int main(int argc, char** argv) {
   // Enable other WebEngine features.
   fuchsia::web::ContextFeatureFlags features =
       fuchsia::web::ContextFeatureFlags::AUDIO |
-      fuchsia::web::ContextFeatureFlags::HARDWARE_VIDEO_DECODER;
+      fuchsia::web::ContextFeatureFlags::HARDWARE_VIDEO_DECODER |
+      fuchsia::web::ContextFeatureFlags::KEYBOARD |
+      fuchsia::web::ContextFeatureFlags::VIRTUAL_KEYBOARD;
 #if defined(ARCH_CPU_ARM64)
   features |= fuchsia::web::ContextFeatureFlags::WIDEVINE_CDM;
 #endif
@@ -221,7 +223,6 @@ int main(int argc, char** argv) {
 
   // Create the browser |frame| which will contain the webpage.
   fuchsia::web::CreateFrameParams frame_params;
-  frame_params.set_autoplay_policy(fuchsia::web::AutoplayPolicy::ALLOW);
   if (remote_debugging_port)
     frame_params.set_enable_remote_debugging(true);
 
@@ -232,6 +233,10 @@ int main(int argc, char** argv) {
         ZX_LOG(ERROR, status) << "Frame connection lost:";
         quit_run_loop.Run();
       });
+
+  fuchsia::web::ContentAreaSettings settings;
+  settings.set_autoplay_policy(fuchsia::web::AutoplayPolicy::ALLOW);
+  frame->SetContentAreaSettings(std::move(settings));
 
   // Log the debugging port, if debugging is requested.
   if (remote_debugging_port) {
@@ -271,7 +276,7 @@ int main(int argc, char** argv) {
     protected_media_permission.set_type(
         fuchsia::web::PermissionType::PROTECTED_MEDIA_IDENTIFIER);
     frame->SetPermissionState(std::move(protected_media_permission),
-                              url.GetOrigin().spec(),
+                              url.DeprecatedGetOriginAsURL().spec(),
                               fuchsia::web::PermissionState::GRANTED);
   }
 

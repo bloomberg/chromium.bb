@@ -130,9 +130,9 @@ TEST_F(VirtualCtap2DeviceTest, ParseGetAssertionRequestForVirtualCtapKey) {
   EXPECT_FALSE(request->user_presence_required);
   ASSERT_EQ(2u, request->allow_list.size());
 
-  EXPECT_THAT(request->allow_list.at(0).id(),
+  EXPECT_THAT(request->allow_list.at(0).id,
               ::testing::ElementsAreArray(kAllowedCredentialOne));
-  EXPECT_THAT(request->allow_list.at(1).id(),
+  EXPECT_THAT(request->allow_list.at(1).id,
               ::testing::ElementsAreArray(kAllowedCredentialTwo));
 }
 
@@ -174,8 +174,7 @@ TEST_F(VirtualCtap2DeviceTest, AttestationCertificateIsValid) {
 
   base::span<const uint8_t> cert_bytes = *attestation.GetLeafCertificate();
   scoped_refptr<net::X509Certificate> cert =
-      net::X509Certificate::CreateFromBytes(
-          reinterpret_cast<const char*>(cert_bytes.data()), cert_bytes.size());
+      net::X509Certificate::CreateFromBytes(cert_bytes);
   ASSERT_TRUE(cert);
 
   const auto& subject = cert->subject();

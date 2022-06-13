@@ -2,21 +2,32 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/raw_ptr.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/time/time.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/sync/device_info_sync_service_factory.h"
 #include "chrome/browser/sync/sync_invalidations_service_factory.h"
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
 #include "chrome/browser/sync/test/integration/device_info_helper.h"
-#include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
+#include "chrome/browser/sync/test/integration/sync_service_impl_harness.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/time.h"
+#include "components/sync/driver/glue/sync_transport_data_prefs.h"
 #include "components/sync/invalidations/switches.h"
 #include "components/sync/invalidations/sync_invalidations_service.h"
+#include "components/sync/protocol/data_type_progress_marker.pb.h"
+#include "components/sync/protocol/device_info_specifics.pb.h"
+#include "components/sync/protocol/entity_specifics.pb.h"
 #include "components/sync/protocol/sync.pb.h"
+#include "components/sync/protocol/sync_entity.pb.h"
+#include "components/sync/protocol/sync_enums.pb.h"
 #include "components/sync/test/fake_server/bookmark_entity_builder.h"
 #include "components/sync/test/fake_server/entity_builder_factory.h"
+#include "components/sync_device_info/device_info_sync_service.h"
+#include "components/sync_device_info/device_info_tracker.h"
 #include "components/sync_device_info/device_info_util.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_launcher.h"
@@ -33,9 +44,15 @@ using testing::AllOf;
 using testing::ElementsAre;
 using testing::Not;
 using testing::NotNull;
+using testing::SizeIs;
 using testing::UnorderedElementsAre;
 
 const char kSyncedBookmarkURL[] = "http://www.mybookmark.com";
+
+MATCHER_P(HasBeenUpdatedAfter, last_updated_timestamp, "") {
+  return arg.specifics().device_info().last_updated_timestamp() >
+         last_updated_timestamp;
+}
 
 MATCHER_P(HasCacheGuid, expected_cache_guid, "") {
   return arg.specifics().device_info().cache_guid() == expected_cache_guid;
@@ -87,6 +104,51 @@ MATCHER_P(HasInstanceIdToken, expected_token, "") {
              .instance_id_token() == expected_token;
 }
 
+// This class helps to count the number of GU_TRIGGER events for the |type|
+// since the object has been created.
+class GetUpdatesTriggeredObserver : public fake_server::FakeServer::Observer {
+ public:
+  GetUpdatesTriggeredObserver(fake_server::FakeServer* fake_server,
+                              syncer::ModelType type)
+      : fake_server_(fake_server), type_(type) {
+    fake_server_->AddObserver(this);
+  }
+
+  ~GetUpdatesTriggeredObserver() override {
+    fake_server_->RemoveObserver(this);
+  }
+
+  void OnSuccessfulGetUpdates() override {
+    sync_pb::ClientToServerMessage message;
+    fake_server_->GetLastGetUpdatesMessage(&message);
+
+    if (message.get_updates().get_updates_origin() !=
+        sync_pb::SyncEnums::GU_TRIGGER) {
+      return;
+    }
+    for (const sync_pb::DataTypeProgressMarker& progress_marker :
+         message.get_updates().from_progress_marker()) {
+      if (progress_marker.data_type_id() !=
+          syncer::GetSpecificsFieldNumberFromModelType(type_)) {
+        continue;
+      }
+      if (progress_marker.get_update_triggers().datatype_refresh_nudges() > 0) {
+        num_nudged_get_updates_for_data_type_++;
+      }
+    }
+  }
+
+  size_t num_nudged_get_updates_for_data_type() const {
+    return num_nudged_get_updates_for_data_type_;
+  }
+
+ private:
+  const raw_ptr<fake_server::FakeServer> fake_server_;
+  const syncer::ModelType type_;
+
+  size_t num_nudged_get_updates_for_data_type_ = 0;
+};
+
 sync_pb::DeviceInfoSpecifics CreateDeviceInfoSpecifics(
     const std::string& cache_guid,
     const std::string& fcm_registration_token) {
@@ -113,12 +175,16 @@ class SingleClientWithSyncSendInterestedDataTypesTest : public SyncTest {
             switches::kUseSyncInvalidations,
             switches::kUseSyncInvalidationsForWalletAndOffer});
   }
+
+  SingleClientWithSyncSendInterestedDataTypesTest(
+      const SingleClientWithSyncSendInterestedDataTypesTest&) = delete;
+  SingleClientWithSyncSendInterestedDataTypesTest& operator=(
+      const SingleClientWithSyncSendInterestedDataTypesTest&) = delete;
+
   ~SingleClientWithSyncSendInterestedDataTypesTest() override = default;
 
  private:
   base::test::ScopedFeatureList override_features_;
-
-  DISALLOW_COPY_AND_ASSIGN(SingleClientWithSyncSendInterestedDataTypesTest);
 };
 
 IN_PROC_BROWSER_TEST_F(SingleClientWithSyncSendInterestedDataTypesTest,
@@ -160,6 +226,12 @@ class SingleClientWithUseSyncInvalidationsTest : public SyncTest {
         /*disabled_features=*/{
             switches::kUseSyncInvalidationsForWalletAndOffer});
   }
+
+  SingleClientWithUseSyncInvalidationsTest(
+      const SingleClientWithUseSyncInvalidationsTest&) = delete;
+  SingleClientWithUseSyncInvalidationsTest& operator=(
+      const SingleClientWithUseSyncInvalidationsTest&) = delete;
+
   ~SingleClientWithUseSyncInvalidationsTest() override = default;
 
   // Injects a test DeviceInfo entity to the fake server.
@@ -180,10 +252,13 @@ class SingleClientWithUseSyncInvalidationsTest : public SyncTest {
             specifics.device_info().last_updated_timestamp()));
   }
 
+  std::string GetLocalCacheGuid() {
+    syncer::SyncTransportDataPrefs prefs(GetProfile(0)->GetPrefs());
+    return prefs.GetCacheGuid();
+  }
+
  private:
   base::test::ScopedFeatureList override_features_;
-
-  DISALLOW_COPY_AND_ASSIGN(SingleClientWithUseSyncInvalidationsTest);
 };
 
 IN_PROC_BROWSER_TEST_F(SingleClientWithUseSyncInvalidationsTest,
@@ -245,6 +320,74 @@ IN_PROC_BROWSER_TEST_F(SingleClientWithUseSyncInvalidationsTest,
       ElementsAre(kRemoteFCMRegistrationToken));
 }
 
+IN_PROC_BROWSER_TEST_F(SingleClientWithUseSyncInvalidationsTest,
+                       PRE_ShouldNotSendAdditionalGetUpdates) {
+  ASSERT_TRUE(SetupSync());
+}
+
+IN_PROC_BROWSER_TEST_F(SingleClientWithUseSyncInvalidationsTest,
+                       ShouldNotSendAdditionalGetUpdates) {
+  const std::vector<sync_pb::SyncEntity> server_device_infos_before =
+      fake_server_->GetSyncEntitiesByModelType(syncer::DEVICE_INFO);
+
+  // Check here for size only, cache GUID will be verified after SetupcClients()
+  // call.
+  ASSERT_THAT(server_device_infos_before, SizeIs(1));
+  const int64_t last_updated_timestamp = server_device_infos_before.front()
+                                             .specifics()
+                                             .device_info()
+                                             .last_updated_timestamp();
+
+  GetUpdatesTriggeredObserver observer(GetFakeServer(),
+                                       syncer::ModelType::AUTOFILL);
+  ASSERT_TRUE(SetupClients());
+  ASSERT_THAT(server_device_infos_before,
+              ElementsAre(HasCacheGuid(GetLocalCacheGuid())));
+
+  // Trigger DeviceInfo reupload once it has been initialized. This is mimics
+  // the case when DeviceInfo is outdated on browser startup.
+  DeviceInfoSyncServiceFactory::GetForProfile(GetProfile(0))
+      ->GetDeviceInfoTracker()
+      ->ForcePulseForTest();
+  ASSERT_TRUE(GetClient(0)->AwaitEngineInitialization());
+  ASSERT_TRUE(GetClient(0)->AwaitSyncSetupCompletion());
+
+  // Wait until DeviceInfo is updated.
+  ASSERT_TRUE(ServerDeviceInfoMatchChecker(
+                  GetFakeServer(),
+                  ElementsAre(HasBeenUpdatedAfter(last_updated_timestamp)))
+                  .Wait());
+
+  // Perform an additional sync cycle to be sure that there will be at least one
+  // more GetUpdates request if it was triggered.
+  const std::string kTitle1 = "Title 1";
+  AddFolder(0, GetBookmarkBarNode(0), 0, kTitle1);
+  ASSERT_TRUE(ServerBookmarksEqualityChecker(GetSyncService(0), GetFakeServer(),
+                                             {{kTitle1, GURL()}},
+                                             /*cryptographer=*/nullptr)
+                  .Wait());
+
+  const std::string kTitle2 = "Title 2";
+  AddFolder(0, GetBookmarkBarNode(0), 0, kTitle2);
+  ASSERT_TRUE(
+      ServerBookmarksEqualityChecker(GetSyncService(0), GetFakeServer(),
+                                     {{kTitle1, GURL()}, {kTitle2, GURL()}},
+                                     /*cryptographer=*/nullptr)
+          .Wait());
+
+  // There will be one TriggerRefresh request in tests due to
+  // ConfigurationRefresher. There shouldn't be any additional GU_TRIGGER
+  // with nudge DeviceInfo data type.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // On ChromeOS tests data types are configured twice and hence there are two
+  // expected TriggerRefresh calls during initialization. It happens due to
+  // SyncArcPackageHelper which eventually triggers reconfiguration.
+  EXPECT_EQ(2u, observer.num_nudged_get_updates_for_data_type());
+#else
+  EXPECT_EQ(1u, observer.num_nudged_get_updates_for_data_type());
+#endif
+}
+
 class SingleClientWithUseSyncInvalidationsForWalletAndOfferTest
     : public SyncTest {
  public:
@@ -256,6 +399,14 @@ class SingleClientWithUseSyncInvalidationsForWalletAndOfferTest
                               switches::kUseSyncInvalidationsForWalletAndOffer},
         /*disabled_features=*/{});
   }
+
+  SingleClientWithUseSyncInvalidationsForWalletAndOfferTest(
+      const SingleClientWithUseSyncInvalidationsForWalletAndOfferTest&) =
+      delete;
+  SingleClientWithUseSyncInvalidationsForWalletAndOfferTest& operator=(
+      const SingleClientWithUseSyncInvalidationsForWalletAndOfferTest&) =
+      delete;
+
   ~SingleClientWithUseSyncInvalidationsForWalletAndOfferTest() override =
       default;
 
@@ -269,9 +420,6 @@ class SingleClientWithUseSyncInvalidationsForWalletAndOfferTest
  private:
   base::test::ScopedFeatureList override_features_;
   fake_server::EntityBuilderFactory entity_builder_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(
-      SingleClientWithUseSyncInvalidationsForWalletAndOfferTest);
 };
 
 IN_PROC_BROWSER_TEST_F(
@@ -347,9 +495,17 @@ IN_PROC_BROWSER_TEST_F(
 
 // ChromeOS doesn't have the concept of sign-out.
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
+
+// On Lacros, signout is not supported with Mirror account consistency.
+// TODO(https://crbug.com/1260291): Enable this test once signout is supported.
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#define MAYBE_SignoutAndSignin DISABLED_SignoutAndSignin
+#else
+#define MAYBE_SignoutAndSignin SignoutAndSignin
+#endif
 IN_PROC_BROWSER_TEST_F(
     SingleClientWithUseSyncInvalidationsForWalletAndOfferTest,
-    SignoutAndSignin) {
+    MAYBE_SignoutAndSignin) {
   ASSERT_TRUE(SetupSync());
 
   // The local device should eventually be committed to the server. The FCM
@@ -382,12 +538,13 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_FALSE(new_token.empty());
   // New device info should eventually be committed to the server (but the old
   // device info will remain on the server). The FCM token should be present.
-  EXPECT_TRUE(ServerDeviceInfoMatchChecker(
-                  GetFakeServer(), UnorderedElementsAre(HasInstanceIdToken(old_token),
-                                                        HasInstanceIdToken(new_token)))
-                  .Wait());
+  EXPECT_TRUE(
+      ServerDeviceInfoMatchChecker(
+          GetFakeServer(), UnorderedElementsAre(HasInstanceIdToken(old_token),
+                                                HasInstanceIdToken(new_token)))
+          .Wait());
 }
-#endif  // !OS_CHROMEOS
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
 class SingleClientSyncInvalidationsTestWithPreDisabledSendInterestedDataTypes
     : public SyncTest {

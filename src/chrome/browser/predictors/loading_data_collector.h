@@ -10,11 +10,14 @@
 #include <string>
 
 #include "base/containers/flat_set.h"
+#include "base/gtest_prod_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/util/type_safety/id_type.h"
+#include "base/types/id_type.h"
 #include "chrome/browser/predictors/loading_predictor_config.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/mojom/fetch_api.mojom-forward.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom-forward.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -28,7 +31,7 @@ namespace predictors {
 class LoadingStatsCollector;
 struct OptimizationGuidePrediction;
 class ResourcePrefetchPredictor;
-using NavigationId = util::IdType64<content::NavigationHandle>;
+using NavigationId = base::IdType64<content::NavigationHandle>;
 
 // Data collected for origin-based prediction, for a single origin during a
 // page load (see PageRequestSummary).
@@ -168,8 +171,8 @@ class LoadingDataCollector {
   // Cleanup inflight_navigations_ and call a cleanup for stats_collector_.
   void CleanupAbandonedNavigations(NavigationId navigation_id);
 
-  ResourcePrefetchPredictor* const predictor_;
-  LoadingStatsCollector* const stats_collector_;
+  const raw_ptr<ResourcePrefetchPredictor> predictor_;
+  const raw_ptr<LoadingStatsCollector> stats_collector_;
   const LoadingPredictorConfig config_;
 
   NavigationMap inflight_navigations_;

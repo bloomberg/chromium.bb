@@ -12,6 +12,9 @@ import filecmp
 import inspect
 import sys
 
+USE_PYTHON3 = True
+
+
 def _CheckTestharnessResults(input_api, output_api):
     """Checks for all-PASS generic baselines for testharness.js tests.
 
@@ -29,9 +32,11 @@ def _CheckTestharnessResults(input_api, output_api):
 
     args = [input_api.python_executable, checker_path]
     args.extend(baseline_files)
-    _, errs = input_api.subprocess.Popen(args,
+    _, errs = input_api.subprocess.Popen(
+        args,
         stdout=input_api.subprocess.PIPE,
-        stderr=input_api.subprocess.PIPE).communicate()
+        stderr=input_api.subprocess.PIPE,
+        universal_newlines=True).communicate()
     if errs:
         return [output_api.PresubmitError(errs)]
     return []
@@ -123,6 +128,7 @@ def _CheckForInvalidPreferenceError(input_api, output_api):
                 results.append(output_api.PresubmitError('Found an invalid preference %s in expected result %s:%s' % (error.group(1), f, line_num)))
     return results
 
+
 def _CheckRunAfterLayoutAndPaintJS(input_api, output_api):
     """Checks if resources/run-after-layout-and-paint.js and
        http/tests/resources/run-after-layout-and-paint.js are the same."""
@@ -140,6 +146,132 @@ def _CheckRunAfterLayoutAndPaintJS(input_api, output_api):
             break
     return []
 
+
+def _CheckForUnlistedTestFolder(input_api, output_api):
+    """Checks all the test folders under web_tests are listed in BUILD.gn.
+    """
+    this_dir = input_api.PresubmitLocalPath()
+    possible_new_dirs = []
+    for f in input_api.AffectedFiles():
+        if f.Action() == 'A':
+            # We only check added folders. For deleted folders, if BUILD.gn is
+            # not updated, the build will fail at upload step. The reason is that
+            # we can not know if the folder is deleted as there can be local
+            # unchecked in files.
+            path = f.AbsoluteLocalPath()
+            fns = path[len(this_dir)+1:].split('/')
+            if len(fns) > 1:
+                possible_new_dirs.append(fns[0])
+
+    if possible_new_dirs:
+        path_build_gn = input_api.os_path.join(input_api.change.RepositoryRoot(), 'BUILD.gn')
+        dirs_from_build_gn = []
+        start_line = '# === List Test Cases folders here ==='
+        end_line = '# === Test Case Folders Ends ==='
+        find_start_line  = False
+        for line in input_api.ReadFile(path_build_gn).splitlines():
+            line = line.strip()
+            if line.startswith(start_line):
+                find_start_line = True
+                continue
+            if find_start_line:
+                if line.startswith(end_line):
+                    break
+                if len(line.split('/')) > 1:
+                    dirs_from_build_gn.append(line.split('/')[-2])
+        dirs_from_build_gn.extend(['platform', 'FlagExpectations', 'flag-specific'])
+
+        new_dirs = [x for x in possible_new_dirs if x not in dirs_from_build_gn]
+        if new_dirs:
+            dir_plural = "directories" if len(new_dirs) > 1 else "directory"
+            error_message = (
+                'This CL adds new %s(%s) under //third_party/blink/web_tests/, but //BUILD.gn '
+                'is not updated. Please add the %s to BUILD.gn.' % (dir_plural, ', '.join(new_dirs), dir_plural))
+            if input_api.is_committing:
+                return [output_api.PresubmitError(error_message)]
+            else:
+                return [output_api.PresubmitPromptWarning(error_message)]
+    return []
+
+
+def _CheckForExtraVirtualBaselines(input_api, output_api):
+    """Checks that expectations in virtual test suites are for virtual test suites that exist
+    """
+
+    os_path = input_api.os_path
+
+    local_dir = os_path.relpath(
+        os_path.normpath('{0}/'.format(input_api.PresubmitLocalPath().replace(
+            os_path.sep, '/'))), input_api.change.RepositoryRoot())
+
+    check_all = False
+    check_files = []
+    for f in input_api.AffectedFiles(include_deletes=False):
+        local_path = f.LocalPath()
+        assert local_path.startswith(local_dir)
+        local_path = os_path.relpath(local_path, local_dir)
+        path_components = local_path.split(os_path.sep)
+        if f.Action() == 'A':
+            if len(path_components) > 2 and path_components[0] == 'virtual':
+                check_files.append((local_path, path_components[1]))
+            elif (len(path_components) > 4 and path_components[2] == 'virtual'
+                  and (path_components[0] == 'platform'
+                       or path_components[0] == 'flag-specific')):
+                check_files.append((local_path, path_components[3]))
+        elif local_path == 'VirtualTestSuites':
+            check_all = True
+
+    if not check_all and len(check_files) == 0:
+        return []
+
+    from blinkpy.common.host import Host
+    port_factory = Host().port_factory
+    known_virtual_suites = [
+        suite.full_prefix[8:-1] for suite in port_factory.get(
+            port_factory.all_port_names()[0]).virtual_test_suites()
+    ]
+
+    results = []
+    if check_all:
+        for f in input_api.change.AllFiles(
+                os_path.join(input_api.PresubmitLocalPath(), "virtual")):
+            suite = f.split(os_path.sep)[0]
+            if not suite in known_virtual_suites:
+                path = os_path.relpath(
+                    os_path.join(input_api.PresubmitLocalPath(), "virtual", f),
+                    input_api.change.RepositoryRoot())
+                results.append(
+                    output_api.PresubmitError(
+                        "Baseline %s exists, but %s is not a known virtual test suite."
+                        % (path, suite)))
+        for subdir in ["platform", "flag-specific"]:
+            for f in input_api.change.AllFiles(
+                    os_path.join(input_api.PresubmitLocalPath(), subdir)):
+                path_components = f.split(os_path.sep)
+                if len(path_components) < 3 or path_components[1] != 'virtual':
+                    continue
+                suite = path_components[2]
+                if not suite in known_virtual_suites:
+                    path = os_path.relpath(
+                        os_path.join(input_api.PresubmitLocalPath(), subdir,
+                                     f), input_api.change.RepositoryRoot())
+                    results.append(
+                        output_api.PresubmitError(
+                            "Baseline %s exists, but %s is not a known virtual test suite."
+                            % (path, suite)))
+    else:
+        for (f, suite) in check_files:
+            if not suite in known_virtual_suites:
+                path = os_path.relpath(
+                    os_path.join(input_api.PresubmitLocalPath(), f),
+                    input_api.change.RepositoryRoot())
+                results.append(
+                    output_api.PresubmitError(
+                        "This CL adds a new baseline %s, but %s is not a known virtual test suite."
+                        % (path, suite)))
+    return results
+
+
 def CheckChangeOnUpload(input_api, output_api):
     results = []
     results.extend(_CheckTestharnessResults(input_api, output_api))
@@ -148,6 +280,8 @@ def CheckChangeOnUpload(input_api, output_api):
     results.extend(_CheckForJSTest(input_api, output_api))
     results.extend(_CheckForInvalidPreferenceError(input_api, output_api))
     results.extend(_CheckRunAfterLayoutAndPaintJS(input_api, output_api))
+    results.extend(_CheckForUnlistedTestFolder(input_api, output_api))
+    results.extend(_CheckForExtraVirtualBaselines(input_api, output_api))
     return results
 
 
@@ -156,4 +290,6 @@ def CheckChangeOnCommit(input_api, output_api):
     results.extend(_CheckTestharnessResults(input_api, output_api))
     results.extend(_CheckFilesUsingEventSender(input_api, output_api))
     results.extend(_CheckTestExpectations(input_api, output_api))
+    results.extend(_CheckForUnlistedTestFolder(input_api, output_api))
+    results.extend(_CheckForExtraVirtualBaselines(input_api, output_api))
     return results

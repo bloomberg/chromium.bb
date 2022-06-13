@@ -10,7 +10,7 @@
 #include <memory>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/power_monitor/power_observer.h"
 #include "base/timer/timer.h"
@@ -71,6 +71,9 @@ class NET_EXPORT TCPClientSocket : public TransportClientSocket,
       const AddressList& addresses,
       const IPEndPoint& bound_address,
       NetworkQualityEstimator* network_quality_estimator);
+
+  TCPClientSocket(const TCPClientSocket&) = delete;
+  TCPClientSocket& operator=(const TCPClientSocket&) = delete;
 
   ~TCPClientSocket() override;
 
@@ -228,13 +231,11 @@ class NET_EXPORT TCPClientSocket : public TransportClientSocket,
 
   // The NetworkQualityEstimator for the context this socket is associated with.
   // Can be nullptr.
-  NetworkQualityEstimator* network_quality_estimator_;
+  raw_ptr<NetworkQualityEstimator> network_quality_estimator_;
 
   base::OneShotTimer connect_attempt_timer_;
 
   base::WeakPtrFactory<TCPClientSocket> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(TCPClientSocket);
 };
 
 }  // namespace net

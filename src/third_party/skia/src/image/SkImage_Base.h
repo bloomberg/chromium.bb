@@ -65,7 +65,7 @@ public:
                                              RescaleGamma,
                                              RescaleMode,
                                              ReadPixelsCallback,
-                                             ReadPixelsContext);
+                                             ReadPixelsContext) const;
     /**
      * Default implementation does a rescale/read/yuv conversion and then calls the callback.
      */
@@ -76,7 +76,7 @@ public:
                                                    RescaleGamma,
                                                    RescaleMode,
                                                    ReadPixelsCallback,
-                                                   ReadPixelsContext);
+                                                   ReadPixelsContext) const;
 
     virtual GrImageContext* context() const { return nullptr; }
 
@@ -84,7 +84,7 @@ public:
     GrDirectContext* directContext() const;
 
 #if SK_SUPPORT_GPU
-    virtual GrSemaphoresSubmitted onFlush(GrDirectContext*, const GrFlushInfo&) {
+    virtual GrSemaphoresSubmitted onFlush(GrDirectContext*, const GrFlushInfo&) const {
         return GrSemaphoresSubmitted::kNo;
     }
 
@@ -117,14 +117,14 @@ public:
     // If this image is the current cached image snapshot of a surface then this is called when the
     // surface is destroyed to indicate no further writes may happen to surface backing store.
     virtual void generatingSurfaceIsDeleted() {}
+
+    virtual GrBackendTexture onGetBackendTexture(bool flushPendingGrContextIO,
+                                                 GrSurfaceOrigin* origin) const;
 #endif
 
     virtual bool onPinAsTexture(GrRecordingContext*) const { return false; }
     virtual void onUnpinAsTexture(GrRecordingContext*) const {}
     virtual bool isPinnedOnContext(GrRecordingContext*) const { return false; }
-
-    virtual GrBackendTexture onGetBackendTexture(bool flushPendingGrContextIO,
-                                                 GrSurfaceOrigin* origin) const;
 
     // return a read-only copy of the pixels. We promise to not modify them,
     // but only inspect them (or encode them).

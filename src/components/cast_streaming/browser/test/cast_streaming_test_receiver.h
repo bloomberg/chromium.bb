@@ -7,7 +7,7 @@
 
 #include "base/callback.h"
 #include "components/cast/message_port/message_port.h"
-#include "components/cast_streaming/browser/public/cast_streaming_session.h"
+#include "components/cast_streaming/browser/cast_streaming_session.h"
 #include "media/mojo/common/mojo_decoder_buffer_converter.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -19,8 +19,8 @@ namespace cast_streaming {
 //
 // std::unique_ptr<cast_api_bindings::MessagePort> sender_message_port;
 // std::unique_ptr<cast_api_bindings::MessagePort> receiver_message_port;
-// cast_api_bindings::MessagePort::CreatePair(&sender_message_port,
-//                                            &receiver_message_port);
+// cast_api_bindings::CreatePlatformMessagePortPair(&sender_message_port,
+//                                                  &receiver_message_port);
 //
 // // Send |sender_message_port| to a Sender and start it.
 //
@@ -40,10 +40,10 @@ namespace cast_streaming {
 //
 // receiver.Stop();
 // receiver.RunUntilStopped();
-class CastStreamingTestReceiver : public CastStreamingSession::Client {
+class CastStreamingTestReceiver final : public CastStreamingSession::Client {
  public:
   CastStreamingTestReceiver();
-  ~CastStreamingTestReceiver() final;
+  ~CastStreamingTestReceiver() override;
 
   CastStreamingTestReceiver(const CastStreamingTestReceiver&) = delete;
   CastStreamingTestReceiver& operator=(const CastStreamingTestReceiver&) =
@@ -90,14 +90,14 @@ class CastStreamingTestReceiver : public CastStreamingSession::Client {
   void OnSessionInitialization(
       absl::optional<CastStreamingSession::AudioStreamInfo> audio_stream_info,
       absl::optional<CastStreamingSession::VideoStreamInfo> video_stream_info)
-      final;
-  void OnAudioBufferReceived(media::mojom::DecoderBufferPtr buffer) final;
-  void OnVideoBufferReceived(media::mojom::DecoderBufferPtr buffer) final;
+      override;
+  void OnAudioBufferReceived(media::mojom::DecoderBufferPtr buffer) override;
+  void OnVideoBufferReceived(media::mojom::DecoderBufferPtr buffer) override;
   void OnSessionReinitialization(
       absl::optional<CastStreamingSession::AudioStreamInfo> audio_stream_info,
       absl::optional<CastStreamingSession::VideoStreamInfo> video_stream_info)
-      final;
-  void OnSessionEnded() final;
+      override;
+  void OnSessionEnded() override;
 
   CastStreamingSession receiver_session_;
   bool is_active_ = false;

@@ -19,10 +19,14 @@ limitations under the License.
 #include <functional>
 #include <iosfwd>
 #include <memory>
+#include <set>
 #include <string>
+#include <unordered_map>
 
+#include "absl/types/optional.h"
 #include "tensorflow/core/platform/logging.h"
 #include "tensorflow/core/platform/macros.h"
+#include "tensorflow/core/platform/stack_frame.h"
 #include "tensorflow/core/platform/stringpiece.h"
 #include "tensorflow/core/platform/types.h"
 #include "tensorflow/core/protobuf/error_codes.pb.h"
@@ -43,7 +47,15 @@ class Status {
 
   /// \brief Create a status with the specified error code and msg as a
   /// human-readable string containing more detailed information.
-  Status(tensorflow::error::Code code, tensorflow::StringPiece msg);
+  Status(tensorflow::error::Code code, tensorflow::StringPiece msg)
+      : Status(code, msg, {}) {}
+
+  /// \brief Create a status with the specified error code, msg, and stack trace
+  /// as a human-readable string containing more detailed information.
+#ifndef SWIG
+  Status(tensorflow::error::Code code, tensorflow::StringPiece msg,
+         std::vector<StackFrame>&& stack_trace);
+#endif
 
   /// Copy the specified status.
   Status(const Status& s);
@@ -66,6 +78,10 @@ class Status {
     return ok() ? empty_string() : state_->msg;
   }
 
+  const std::vector<StackFrame>& stack_trace() const {
+    return ok() ? empty_stack_trace() : state_->stack_trace;
+  }
+
   bool operator==(const Status& x) const;
   bool operator!=(const Status& x) const;
 
@@ -82,6 +98,12 @@ class Status {
 
   /// \brief Return a string representation of this status suitable for
   /// printing. Returns the string `"OK"` for success.
+  ///
+  /// By default, it returns combination of the error code name, the message and
+  /// any associated payload messages. This string is designed simply to be
+  /// human readable and its exact format should not be load bearing. Do not
+  /// depend on the exact format of the result of `ToString()` which is subject
+  /// to change.
   std::string ToString() const;
 
   // Ignores any errors. This method does nothing except potentially suppress
@@ -89,12 +111,78 @@ class Status {
   // the floor.
   void IgnoreError() const;
 
+  //----------------------------------------------------------------------------
+  // Payload Management APIs (Cloned from absl::Status)
+  //----------------------------------------------------------------------------
+  // A payload may be attached to a status to provide additional context to an
+  // error that may not be satisfied by an existing `tensorflow::error::Code`.
+  // Typically, this payload serves one of several purposes:
+  //
+  //   * It may provide more fine-grained semantic information about the error
+  //     to facilitate actionable remedies.
+  //   * It may provide human-readable contexual information that is more
+  //     appropriate to display to an end user.
+  //
+  // A payload consists of a [key,value] pair, where the key is a string
+  // referring to a unique "type URL" and the value is an object of type
+  // `absl::Cord` to hold the contextual data.
+  //
+  // The "type URL" should be unique and follow the format of a URL
+  // (https://en.wikipedia.org/wiki/URL) and, ideally, provide some
+  // documentation or schema on how to interpret its associated data. For
+  // example, the default type URL for a protobuf message type is
+  // "type.googleapis.com/packagename.messagename". Other custom wire formats
+  // should define the format of type URL in a similar practice so as to
+  // minimize the chance of conflict between type URLs.
+  // Users should ensure that the type URL can be mapped to a concrete
+  // C++ type if they want to deserialize the payload and read it effectively.
+  //
+  // To attach a payload to a status object, call `Status::SetPayload()`,
+  // passing it the type URL and an `absl::Cord` of associated data. Similarly,
+  // to extract the payload from a status, call `Status::GetPayload()`. You
+  // may attach multiple payloads (with differing type URLs) to any given
+  // status object, provided that the status is currently exhibiting an error
+  // code (i.e. is not OK).
+  // TODO(b/197552541): Use absl::Cord for payload value type.
+
+  // The Payload-related APIs are cloned from absl::Status.
+  //
+  // Returns the payload of a status given its unique `type_url` key, if
+  // present.
+  absl::optional<tensorflow::StringPiece> GetPayload(
+      tensorflow::StringPiece type_url) const;
+
+  // Sets the payload for a non-ok status using a `type_url` key, overwriting
+  // any existing payload for that `type_url`.
+  //
+  // This function does nothing if the Status is ok.
+  void SetPayload(tensorflow::StringPiece type_url,
+                  tensorflow::StringPiece payload);
+
+  // Erases the payload corresponding to the `type_url` key.  Returns `true` if
+  // the payload was present.
+  bool ErasePayload(tensorflow::StringPiece type_url);
+
+  // Iterates over the stored payloads and calls the
+  // `visitor(type_key, payload)` callable for each one.
+  //
+  // The order of calls to `visitor()` is not specified and may change at
+  // any time and any mutation on the same Status object during visitation is
+  // forbidden and could result in undefined behavior.
+  void ForEachPayload(
+      const std::function<void(tensorflow::StringPiece,
+                               tensorflow::StringPiece)>& visitor) const;
+
  private:
   static const std::string& empty_string();
+  static const std::vector<StackFrame>& empty_stack_trace();
   struct State {
     tensorflow::error::Code code;
     std::string msg;
+    std::vector<StackFrame> stack_trace;
+    std::unordered_map<std::string, std::string> payloads;
   };
+
   // OK status has a `NULL` state_.  Otherwise, `state_` points to
   // a `State` structure containing the error code and message(s)
   std::unique_ptr<State> state_;
@@ -105,6 +193,11 @@ class Status {
 // Helper class to manage multiple child status values.
 class StatusGroup {
  public:
+  StatusGroup();
+  // Constructor to form a StatusGroup from any N set of Status arguments.
+  // Usage: StatusGroup({status_a, status_b, status_c});
+  StatusGroup(std::initializer_list<Status> statuses);
+
   // Utility function to mark a Status as derived. By marking derived status,
   // Derived status messages are ignored when reporting errors to end users.
   static Status MakeDerived(const Status& s);
@@ -113,6 +206,13 @@ class StatusGroup {
   // Enable warning and error log collection for appending to the aggregated
   // status. This function may be called more than once.
   static void ConfigureLogHistory();
+
+  // Returns merged payloads of all statuses. In case multiple statuses have the
+  // same payload key, non-derived statuses have priority over derived ones,
+  // otherwise one payload value will be chosen in an unspecified but
+  // deterministic order.
+  // NOTE: The payload marking derived statuses as derived will not be returned.
+  std::unordered_map<std::string, std::string> GetPayloads() const;
 
   // Return a merged status with combined child status messages with a summary.
   Status as_summary_status() const;
@@ -132,7 +232,18 @@ class StatusGroup {
  private:
   bool ok_ = true;
   size_t num_ok_ = 0;
-  std::vector<Status> children_;
+
+  // Maintain a sorted collection of statuses.
+  struct CompareStatus {
+    bool operator()(const Status& a, const Status& b) const {
+      return a.ToString() > b.ToString();
+    }
+  };
+  // Using std::set instead of absl::btree_set to keep size for certain
+  // dependent libraries under the limit.
+  std::set<Status, CompareStatus> derived_;
+  std::set<Status, CompareStatus> non_derived_;
+
   std::vector<std::string> recent_logs_;  // recent warning and error logs
 };
 

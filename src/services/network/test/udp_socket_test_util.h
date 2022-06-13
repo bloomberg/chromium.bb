@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/containers/span.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/ip_endpoint.h"
@@ -45,7 +45,7 @@ class UDPSocketTestHelper {
   int LeaveGroupSync(const net::IPAddress& group_address);
 
  private:
-  mojo::Remote<mojom::UDPSocket>* socket_;
+  raw_ptr<mojo::Remote<mojom::UDPSocket>> socket_;
 };
 
 // An implementation of mojom::UDPSocketListener that records received results.
@@ -64,6 +64,10 @@ class UDPSocketListenerImpl : public mojom::UDPSocketListener {
   };
 
   UDPSocketListenerImpl();
+
+  UDPSocketListenerImpl(const UDPSocketListenerImpl&) = delete;
+  UDPSocketListenerImpl& operator=(const UDPSocketListenerImpl&) = delete;
+
   ~UDPSocketListenerImpl() override;
 
   const std::vector<ReceivedResult>& results() const { return results_; }
@@ -77,8 +81,6 @@ class UDPSocketListenerImpl : public mojom::UDPSocketListener {
   std::unique_ptr<base::RunLoop> run_loop_;
   std::vector<ReceivedResult> results_;
   size_t expected_receive_count_;
-
-  DISALLOW_COPY_AND_ASSIGN(UDPSocketListenerImpl);
 };
 
 }  // namespace test

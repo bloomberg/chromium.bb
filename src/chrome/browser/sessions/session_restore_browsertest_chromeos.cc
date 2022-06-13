@@ -10,6 +10,7 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/ash/crostini/crostini_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -19,9 +20,9 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/system_web_apps/test/system_web_app_browsertest_base.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
+#include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -31,11 +32,12 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/wm/core/wm_core_switches.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/public/cpp/autotest_desks_api.h"
-#include "ash/public/cpp/desks_helper.h"
+#include "chromeos/ui/wm/desks/desks_helper.h"
 #endif
 
 #if defined(USE_AURA)
@@ -45,10 +47,38 @@
 namespace {
 const char* test_app_name1 = "TestApp1";
 const char* test_app_name2 = "TestApp2";
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+// Activates the desk at |index| and waits for its async operations to complete.
+void SwitchToDesk(int index) {
+  base::RunLoop run_loop;
+  ASSERT_TRUE(ash::AutotestDesksApi().ActivateDeskAtIndex(
+      index, run_loop.QuitClosure()));
+  run_loop.Run();
+}
+
+// Removes all the inactive desks and waits for their async operations to
+// complete.
+void RemoveInactiveDesks() {
+  const int kMaxDeskRemovalTries = 100;
+  for (int i = 0; i < kMaxDeskRemovalTries; ++i) {
+    base::RunLoop run_loop;
+    if (!ash::AutotestDesksApi().RemoveActiveDesk(run_loop.QuitClosure()))
+      return;
+    run_loop.Run();
+  }
+  // This should not be reached.
+  ADD_FAILURE();
+}
+#endif
+
 }  // namespace
 
 class SessionRestoreTestChromeOS : public InProcessBrowserTest {
  public:
+  SessionRestoreTestChromeOS()
+      : faster_animations_(
+            ui::ScopedAnimationDurationScaleMode::ZERO_DURATION) {}
   ~SessionRestoreTestChromeOS() override {}
 
  protected:
@@ -89,6 +119,9 @@ class SessionRestoreTestChromeOS : public InProcessBrowserTest {
   }
 
   Profile* profile() { return browser()->profile(); }
+
+ private:
+  ui::ScopedAnimationDurationScaleMode faster_animations_;
 };
 
 // Thse tests are in pairs. The PRE_ test creates some browser windows and
@@ -122,7 +155,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS, RestoreBrowserWindows) {
 
 // Assigns three browser windows to three different desks.
 IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS,
-                       DISABLED_PRE_RestoreBrowserWindowsToDesks) {
+                       PRE_RestoreBrowserWindowsToDesks) {
   // Create two more desks so we have three desks in total.
   ash::AutotestDesksApi().CreateNewDesk();
   ash::AutotestDesksApi().CreateNewDesk();
@@ -134,6 +167,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS,
 
   // Create a second normal browser window in the second desk by
   // setting window workspace property.
+  SwitchToDesk(1);
   Browser* browser_desk1 =
       CreateBrowserWithParams(Browser::CreateParams(profile(), true));
   browser_desk1->SetWindowUserTitle("1");
@@ -142,6 +176,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS,
 
   // Create a third normal browser window in the third desk
   // specified with params.initial_workspace.
+  SwitchToDesk(2);
   Browser::CreateParams browser_desk2_params =
       Browser::CreateParams(profile(), true);
   browser_desk2_params.initial_workspace = "2";
@@ -154,7 +189,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS,
 // Verifies that three windows restored to their right desk after restored. Also
 // verifies that the fourth window is visible on all desks after being restored.
 IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS,
-                       DISABLED_RestoreBrowserWindowsToDesks) {
+                       RestoreBrowserWindowsToDesks) {
   auto* browser_list = BrowserList::GetInstance();
   ASSERT_EQ(3u, browser_list->size());
 
@@ -175,8 +210,12 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS,
     int workspace = browser->window()->GetNativeWindow()->GetProperty(
         aura::client::kWindowWorkspaceKey);
     ASSERT_EQ(desk_index,
-              workspace == aura::client::kUnassignedWorkspace ? 0 : workspace);
+              workspace == aura::client::kWindowWorkspaceUnassignedWorkspace
+                  ? 0
+                  : workspace);
   }
+
+  RemoveInactiveDesks();
 }
 
 // Assigns a browser window to all desks.
@@ -198,9 +237,10 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS,
   auto* visible_on_all_desks_window =
       visible_on_all_desks_browser->window()->GetNativeWindow();
   ASSERT_TRUE(visible_on_all_desks_window->GetProperty(
-      aura::client::kVisibleOnAllWorkspacesKey));
-  ASSERT_TRUE(ash::DesksHelper::Get()->BelongsToActiveDesk(
-      visible_on_all_desks_window));
+                  aura::client::kWindowWorkspaceKey) ==
+              aura::client::kWindowWorkspaceVisibleOnAllWorkspaces);
+  ASSERT_TRUE(chromeos::DesksHelper::Get(visible_on_all_desks_window)
+                  ->BelongsToActiveDesk(visible_on_all_desks_window));
 
   // Check that there are two browsers, the default one and the visible on all
   // desks browser.
@@ -223,11 +263,14 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS,
   auto* visible_on_all_desks_window =
       visible_on_all_desks_browser->window()->GetNativeWindow();
   ASSERT_TRUE(visible_on_all_desks_window->GetProperty(
-      aura::client::kVisibleOnAllWorkspacesKey));
+                  aura::client::kWindowWorkspaceKey) ==
+              aura::client::kWindowWorkspaceVisibleOnAllWorkspaces);
   // Visible on all desks windows should always reside on the active desk,
   // even if there is a desk switch.
-  ASSERT_TRUE(ash::DesksHelper::Get()->BelongsToActiveDesk(
-      visible_on_all_desks_window));
+  ASSERT_TRUE(chromeos::DesksHelper::Get(visible_on_all_desks_window)
+                  ->BelongsToActiveDesk(visible_on_all_desks_window));
+
+  RemoveInactiveDesks();
 }
 #endif
 
@@ -338,7 +381,8 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS, PRE_RestoreMaximized) {
   TurnOnSessionRestore();
 }
 
-IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS, RestoreMaximized) {
+// https://crbug.com/1216209
+IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS, DISABLED_RestoreMaximized) {
   size_t total_count = 0;
   size_t app1_maximized_count = 0;
   size_t app2_maximized_count = 0;
@@ -375,7 +419,8 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS, PRE_RestoreMinimized) {
   TurnOnSessionRestore();
 }
 
-IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS, RestoreMinimized) {
+// https://crbug.com/1216209
+IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS, DISABLED_RestoreMinimized) {
   size_t total_count = 0;
   size_t minimized_count = 0;
   for (auto* browser : *BrowserList::GetInstance()) {
@@ -388,28 +433,6 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS, RestoreMinimized) {
   // users they have a browser running instead of just showing them an empty
   // desktop.
   EXPECT_NE(2u, minimized_count);
-}
-
-IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS, PRE_OmitTerminalApp) {
-  const std::string terminal_app_name =
-      web_app::GenerateApplicationNameFromAppId(
-          crostini::kCrostiniTerminalSystemAppId);
-  CreateBrowserWithParams(CreateParamsForApp(test_app_name1, true));
-  CreateBrowserWithParams(CreateParamsForApp(terminal_app_name, true));
-  TurnOnSessionRestore();
-}
-
-IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS, OmitTerminalApp) {
-  const std::string terminal_app_name =
-      web_app::GenerateApplicationNameFromAppId(
-          crostini::kCrostiniTerminalSystemAppId);
-  size_t total_count = 0;
-  for (auto* browser : *BrowserList::GetInstance()) {
-    ++total_count;
-    EXPECT_NE(terminal_app_name, browser->app_name());
-  }
-  // We should only count browser() and test_app_name1.
-  EXPECT_EQ(2u, total_count);
 }
 
 class SystemWebAppSessionRestoreTestChromeOS

@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
@@ -23,6 +22,7 @@
 #include "ui/message_center/message_center_types.h"
 #include "ui/message_center/notification_blocker.h"
 #include "ui/message_center/popup_timers_controller.h"
+#include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notifier_id.h"
 
 namespace message_center {
@@ -35,6 +35,10 @@ class MessageCenterImpl : public MessageCenter,
  public:
   explicit MessageCenterImpl(
       std::unique_ptr<LockScreenController> lock_screen_controller);
+
+  MessageCenterImpl(const MessageCenterImpl&) = delete;
+  MessageCenterImpl& operator=(const MessageCenterImpl&) = delete;
+
   ~MessageCenterImpl() override;
 
   // MessageCenter overrides:
@@ -50,6 +54,10 @@ class MessageCenterImpl : public MessageCenter,
   bool HasPopupNotifications() const override;
   bool IsQuietMode() const override;
   bool IsSpokenFeedbackEnabled() const override;
+  Notification* FindNotificationById(const std::string& id) override;
+  Notification* FindParentNotificationForOriginUrl(
+      const GURL& origin_url) override;
+  Notification* FindPopupNotificationById(const std::string& id) override;
   Notification* FindVisibleNotificationById(const std::string& id) override;
   NotificationList::Notifications FindNotificationsByAppId(
       const std::string& app_id) override;
@@ -77,6 +85,7 @@ class MessageCenterImpl : public MessageCenter,
   void DisableNotification(const std::string& id) override;
   void MarkSinglePopupAsShown(const std::string& id,
                               bool mark_notification_as_read) override;
+  void ResetSinglePopup(const std::string& id) override;
   void DisplayedNotification(const std::string& id,
                              const DisplaySource source) override;
   void SetQuietMode(bool in_quiet_mode) override;
@@ -119,12 +128,11 @@ class MessageCenterImpl : public MessageCenter,
   bool visible_ = false;
   bool has_message_center_view_ = true;
   bool spoken_feedback_enabled_ = false;
+  bool notifications_grouping_enabled_ = false;
 
   std::u16string system_notification_app_name_;
 
   MessageCenterStatsCollector stats_collector_;
-
-  DISALLOW_COPY_AND_ASSIGN(MessageCenterImpl);
 };
 
 }  // namespace message_center

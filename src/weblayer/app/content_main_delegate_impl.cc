@@ -8,9 +8,11 @@
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/containers/flat_set.h"
 #include "base/cpu.h"
 #include "base/files/file_util.h"
+#include "base/ignore_result.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/path_service.h"
@@ -19,9 +21,12 @@
 #include "build/chromeos_buildflags.h"
 #include "components/content_capture/common/content_capture_features.h"
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
+#include "components/translate/core/common/translate_util.h"
+#include "components/variations/variations_ids_provider.h"
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/main_function_params.h"
 #include "content/public/common/url_constants.h"
 #include "media/base/media_switches.h"
 #include "services/network/public/cpp/features.h"
@@ -161,25 +166,28 @@ bool ContentMainDelegateImpl::BasicStartupComplete(int* exit_code) {
   // This also turns off Push messaging.
   cl->AppendSwitch(::switches::kDisableNotifications);
 
-  std::vector<base::Feature> enabled_features = {};
+  std::vector<base::Feature> enabled_features = {
+#if defined(OS_ANDROID)
+    // Overlay promotion requires some guarantees we don't have on WebLayer
+    // (e.g. ensuring fullscreen, no movement of the parent view). Given that
+    // we're unsure about the benefits when used embedded in a parent app, we
+    // will only promote to overlays if needed for secure videos.
+    media::kUseAndroidOverlayForSecureOnly,
+#endif
+  };
+
   std::vector<base::Feature> disabled_features = {
-    // TODO(crbug.com/1177948): enable WebAR.
-    ::features::kWebXr,
-    ::features::kWebXrArModule,
-    ::features::kWebXrHitTest,
     // TODO(crbug.com/1091212): make Notification triggers work with
     // WebLayer.
     ::features::kNotificationTriggers,
     // TODO(crbug.com/1091211): Support PeriodicBackgroundSync on WebLayer.
     ::features::kPeriodicBackgroundSync,
-    // TODO(crbug.com/1131017): Support SurfaceViews on WebLayer.
-    media::kOverlayFullscreenVideo,
     // TODO(crbug.com/1174856): Support Portals.
     blink::features::kPortals,
-    // TODO(crbug.com/1174566): Enable by default after experiment.
-    content_capture::features::kContentCapture,
     // TODO(crbug.com/1144912): Support BackForwardCache on WebLayer.
     ::features::kBackForwardCache,
+    // TODO(crbug.com/1247836): Enable TFLite/Optimization Guide on WebLayer.
+    translate::kTFLiteLanguageDetectionEnabled,
 
 #if defined(OS_ANDROID)
     // TODO(crbug.com/1131016): Support Picture in Picture API on WebLayer.
@@ -188,14 +196,10 @@ bool ContentMainDelegateImpl::BasicStartupComplete(int* exit_code) {
     ::features::kDisableDeJelly,
     ::features::kDynamicColorGamut,
 #else
-    // TODO(crbug.com/1131021): Support WebOTP Service on WebLayer.
+    // WebOTP is supported only on Android in WebLayer.
     ::features::kWebOTP,
 #endif
   };
-
-  // TODO(crbug.com/1057770): make Background Fetch work with WebLayer.
-  if (!BackgroundFetchDelegateFactory::IsEnabled())
-    disabled_features.push_back(::features::kBackgroundFetch);
 
 #if defined(OS_ANDROID)
   if (base::android::BuildInfo::GetInstance()->sdk_int() >=
@@ -237,6 +241,14 @@ bool ContentMainDelegateImpl::ShouldCreateFeatureList() {
   // TODO(weblayer-dev): Support feature lists on desktop.
   return true;
 #endif
+}
+
+variations::VariationsIdsProvider*
+ContentMainDelegateImpl::CreateVariationsIdsProvider() {
+  // As the embedder supplies the set of ids, the signed-in state does not make
+  // sense and is ignored.
+  return variations::VariationsIdsProvider::Create(
+      variations::VariationsIdsProvider::Mode::kIgnoreSignedInState);
 }
 
 void ContentMainDelegateImpl::PreSandboxStartup() {
@@ -287,17 +299,18 @@ void ContentMainDelegateImpl::PostEarlyInitialization(bool is_running_tests) {
   browser_client_->CreateFeatureListAndFieldTrials();
 }
 
-int ContentMainDelegateImpl::RunProcess(
+absl::variant<int, content::MainFunctionParams>
+ContentMainDelegateImpl::RunProcess(
     const std::string& process_type,
-    const content::MainFunctionParams& main_function_params) {
+    content::MainFunctionParams main_function_params) {
   // For non-browser process, return and have the caller run the main loop.
   if (!process_type.empty())
-    return -1;
+    return std::move(main_function_params);
 
 #if !defined(OS_ANDROID)
-  // On non-Android, we can return -1 and have the caller run BrowserMain()
-  // normally.
-  return -1;
+  // On non-Android, we can return |main_function_params| back and have the
+  // caller run BrowserMain() normally.
+  return std::move(main_function_params);
 #else
   // On Android, we defer to the system message loop when the stack unwinds.
   // So here we only create (and leak) a BrowserMainRunner. The shutdown
@@ -307,7 +320,8 @@ int ContentMainDelegateImpl::RunProcess(
   // In browser tests, the |main_function_params| contains a |ui_task| which
   // will execute the testing. The task will be executed synchronously inside
   // Initialize() so we don't depend on the BrowserMainRunner being Run().
-  int initialize_exit_code = main_runner->Initialize(main_function_params);
+  int initialize_exit_code =
+      main_runner->Initialize(std::move(main_function_params));
   DCHECK_LT(initialize_exit_code, 0)
       << "BrowserMainRunner::Initialize failed in MainDelegate";
   ignore_result(main_runner.release());
@@ -379,9 +393,9 @@ void ContentMainDelegateImpl::InitializeResourceBundle() {
         .LoadSecondaryLocaleDataWithPakFileRegion(base::File(pak_fd),
                                                   pak_region);
 
-    std::vector<std::pair<int, ui::ScaleFactor>> extra_paks = {
-        {kWebLayerMainPakDescriptor, ui::SCALE_FACTOR_NONE},
-        {kWebLayer100PercentPakDescriptor, ui::SCALE_FACTOR_100P}};
+    std::vector<std::pair<int, ui::ResourceScaleFactor>> extra_paks = {
+        {kWebLayerMainPakDescriptor, ui::kScaleFactorNone},
+        {kWebLayer100PercentPakDescriptor, ui::k100Percent}};
 
     for (const auto& pak_info : extra_paks) {
       pak_fd = global_descriptors->Get(pak_info.first);

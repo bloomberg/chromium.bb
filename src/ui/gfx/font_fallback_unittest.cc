@@ -6,7 +6,7 @@
 
 #include <tuple>
 
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/task_environment.h"
@@ -57,6 +57,9 @@ class GetFallbackFontTest
     : public ::testing::TestWithParam<FallbackFontTestParamInfo> {
  public:
   GetFallbackFontTest() = default;
+
+  GetFallbackFontTest(const GetFallbackFontTest&) = delete;
+  GetFallbackFontTest& operator=(const GetFallbackFontTest&) = delete;
 
   static std::string ParamInfoToString(
       ::testing::TestParamInfo<FallbackFontTestParamInfo> param_info) {
@@ -142,8 +145,6 @@ class GetFallbackFontTest
   // Needed to bypass DCHECK in GetFallbackFont.
   base::test::TaskEnvironment task_environment_{
       base::test::TaskEnvironment::MainThreadType::UI};
-
-  DISALLOW_COPY_AND_ASSIGN(GetFallbackFontTest);
 };
 
 }  // namespace

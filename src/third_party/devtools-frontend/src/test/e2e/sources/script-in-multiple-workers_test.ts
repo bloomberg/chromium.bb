@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 import {assert} from 'chai';
-import type * as puppeteer from 'puppeteer';
 
 import {$$, click, getBrowserAndPages, goToResource, step, timeout, waitFor, waitForFunction} from '../../shared/helper.js';
 import {describe, it} from '../../shared/mocha-extensions.js';
@@ -26,7 +25,6 @@ async function validateSourceTabs() {
   });
 }
 
-
 describe('Multi-Workers', async function() {
   // The tests in this suite are particularly slow, as they perform a lot of actions
   this.timeout(10000);
@@ -45,9 +43,9 @@ describe('Multi-Workers', async function() {
       });
     }
 
-    async function validateBreakpoints(frontend: puppeteer.Page) {
-      assert.deepEqual(await getBreakpointDecorators(frontend), [6, 12]);
-      assert.deepEqual(await getBreakpointDecorators(frontend, true), [6]);
+    async function validateBreakpoints() {
+      assert.deepEqual(await getBreakpointDecorators(), [6, 12]);
+      assert.deepEqual(await getBreakpointDecorators(true), [6]);
     }
 
     it(`loads scripts exactly once on reload ${withOrWithout}`, async () => {
@@ -147,7 +145,7 @@ describe('Multi-Workers', async function() {
           const bpEntry = await waitFor('.breakpoint-entry');
           const bpCheckbox = await waitFor('input', bpEntry);
           await bpCheckbox.evaluate(n => (n as HTMLElement).click());
-          await frontend.waitForSelector('.cm-breakpoint-disabled');
+          await waitFor('.cm-breakpoint-disabled');
         });
 
         await step('Add another breakpoint', async () => {
@@ -155,7 +153,7 @@ describe('Multi-Workers', async function() {
         });
 
         await step('Check breakpoints', async () => {
-          await validateBreakpoints(frontend);
+          await validateBreakpoints();
         });
 
         await step('Close tab', async () => {
@@ -164,20 +162,18 @@ describe('Multi-Workers', async function() {
       });
 
       it('when opening different file in editor', async () => {
-        const {frontend} = getBrowserAndPages();
-
         // Open different worker
         await step('Open different worker', async () => {
           await openNestedWorkerFile(workerFileSelectors(3));
         });
 
         await step('Check breakpoints', async () => {
-          await validateBreakpoints(frontend);
+          await validateBreakpoints();
         });
       });
 
       it('after reloading', async () => {
-        const {target, frontend} = getBrowserAndPages();
+        const {target} = getBrowserAndPages();
 
         await step('Reload page', async () => {
           await target.reload();
@@ -191,7 +187,8 @@ describe('Multi-Workers', async function() {
         });
 
         await step('Check breakpoints', async () => {
-          await validateBreakpoints(frontend);
+          await waitFor('.cm-breakpoint');
+          await validateBreakpoints();
         });
       });
     });

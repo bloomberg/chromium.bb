@@ -13,7 +13,6 @@
 #include "base/dcheck_is_on.h"
 #include "base/gtest_prod_util.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "build/build_config.h"
 
 // TODO(rvargas): remove this with the rest of the verifier.
@@ -52,6 +51,9 @@ class GenericScopedHandle {
       : handle_(Traits::NullHandle()) {
     Set(other.Take());
   }
+
+  GenericScopedHandle(const GenericScopedHandle&) = delete;
+  GenericScopedHandle& operator=(const GenericScopedHandle&) = delete;
 
   ~GenericScopedHandle() { Close(); }
 
@@ -106,8 +108,6 @@ class GenericScopedHandle {
   FRIEND_TEST_ALL_PREFIXES(ScopedHandleTest, HandleVerifierWrongOwner);
   FRIEND_TEST_ALL_PREFIXES(ScopedHandleTest, HandleVerifierUntrackedHandle);
   Handle handle_;
-
-  DISALLOW_COPY_AND_ASSIGN(GenericScopedHandle);
 };
 
 #undef BASE_WIN_GET_CALLER
@@ -116,6 +116,10 @@ class GenericScopedHandle {
 class HandleTraits {
  public:
   using Handle = HANDLE;
+
+  HandleTraits() = delete;
+  HandleTraits(const HandleTraits&) = delete;
+  HandleTraits& operator=(const HandleTraits&) = delete;
 
   // Closes the handle.
   static bool BASE_EXPORT CloseHandle(HANDLE handle);
@@ -127,15 +131,16 @@ class HandleTraits {
 
   // Returns NULL handle value.
   static HANDLE NullHandle() { return nullptr; }
-
- private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(HandleTraits);
 };
 
 // Do-nothing verifier.
 class DummyVerifierTraits {
  public:
   using Handle = HANDLE;
+
+  DummyVerifierTraits() = delete;
+  DummyVerifierTraits(const DummyVerifierTraits&) = delete;
+  DummyVerifierTraits& operator=(const DummyVerifierTraits&) = delete;
 
   static void StartTracking(HANDLE handle,
                             const void* owner,
@@ -145,15 +150,16 @@ class DummyVerifierTraits {
                            const void* owner,
                            const void* pc1,
                            const void* pc2) {}
-
- private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(DummyVerifierTraits);
 };
 
 // Performs actual run-time tracking.
 class BASE_EXPORT VerifierTraits {
  public:
   using Handle = HANDLE;
+
+  VerifierTraits() = delete;
+  VerifierTraits(const VerifierTraits&) = delete;
+  VerifierTraits& operator=(const VerifierTraits&) = delete;
 
   static void StartTracking(HANDLE handle,
                             const void* owner,
@@ -163,9 +169,6 @@ class BASE_EXPORT VerifierTraits {
                            const void* owner,
                            const void* pc1,
                            const void* pc2);
-
- private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(VerifierTraits);
 };
 
 using UncheckedScopedHandle =

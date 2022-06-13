@@ -28,6 +28,9 @@ namespace network {
 
 namespace cors {
 
+using NonWildcardRequestHeadersSupport =
+    base::StrongAlias<class NonWildcardRequestHeadersSupportTag, bool>;
+
 // Holds CORS-preflight request results, and provides access check methods.
 // Each instance can be cached by CORS-preflight cache.
 // See https://fetch.spec.whatwg.org/#concept-cache.
@@ -36,13 +39,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) PreflightResult final {
   // Represents whether
   // https://fetch.spec.whatwg.org/#cors-non-wildcard-request-header-name
   // is supported.
-  using WithNonWildcardRequestHeadersSupport =
-      base::StrongAlias<class WithNonWildcardRequestHeadersSupportTag, bool>;
 
   static void SetTickClockForTesting(const base::TickClock* tick_clock);
 
   // Creates a PreflightResult instance from a CORS-preflight result. Returns
-  // nullptr and |detected_error| is populated with the failed reason if the
+  // nullptr and `detected_error` is populated with the failed reason if the
   // passed parameters contain an invalid entry, and the pointer is valid.
   static std::unique_ptr<PreflightResult> Create(
       const mojom::CredentialsMode credentials_mode,
@@ -50,13 +51,17 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) PreflightResult final {
       const absl::optional<std::string>& allow_headers_header,
       const absl::optional<std::string>& max_age_header,
       absl::optional<mojom::CorsError>* detected_error);
+
+  PreflightResult(const PreflightResult&) = delete;
+  PreflightResult& operator=(const PreflightResult&) = delete;
+
   ~PreflightResult();
 
-  // Checks if the given |method| is allowed by the CORS-preflight response.
+  // Checks if the given `method` is allowed by the CORS-preflight response.
   absl::optional<CorsErrorStatus> EnsureAllowedCrossOriginMethod(
       const std::string& method) const;
 
-  // Checks if the given all |headers| are allowed by the CORS-preflight
+  // Checks if the given all `headers` are allowed by the CORS-preflight
   // response.
   // This does not reject when the headers contain forbidden headers
   // (https://fetch.spec.whatwg.org/#forbidden-header-name) because they may be
@@ -65,14 +70,14 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) PreflightResult final {
   absl::optional<CorsErrorStatus> EnsureAllowedCrossOriginHeaders(
       const net::HttpRequestHeaders& headers,
       bool is_revalidating,
-      WithNonWildcardRequestHeadersSupport
+      NonWildcardRequestHeadersSupport
           with_non_wildcard_request_headers_support) const;
 
   // Checks if this entry is expired.
   bool IsExpired() const;
 
-  // Checks if the given combination of |credentials_mode|, |method|, and
-  // |headers| is allowed by the CORS-preflight response.
+  // Checks if the given combination of `credentials_mode`, `method`, and
+  // `headers` is allowed by the CORS-preflight response.
   // This also does not reject the forbidden headers as
   // EnsureAllowCrossOriginHeaders does not.
   bool EnsureAllowedRequest(
@@ -80,7 +85,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) PreflightResult final {
       const std::string& method,
       const net::HttpRequestHeaders& headers,
       bool is_revalidating,
-      WithNonWildcardRequestHeadersSupport
+      NonWildcardRequestHeadersSupport
           with_non_wildcard_request_headers_support) const;
 
   // Returns true when `headers` has "authorization" which is covered by the
@@ -92,6 +97,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) PreflightResult final {
 
   // Refers the cache expiry time.
   base::TimeTicks absolute_expiry_time() const { return absolute_expiry_time_; }
+
+  // Create a param for NetLog.
+  base::Value NetLogParams();
 
  protected:
   explicit PreflightResult(const mojom::CredentialsMode credentials_mode);
@@ -118,12 +126,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) PreflightResult final {
 
   // Corresponds to the fields of the CORS-preflight cache with the same name in
   // the fetch spec.
-  // |headers_| holds strings in lower case for case-insensitive search.
+  // `headers_` holds strings in lower case for case-insensitive search.
   bool credentials_;
   base::flat_set<std::string> methods_;
   base::flat_set<std::string> headers_;
-
-  DISALLOW_COPY_AND_ASSIGN(PreflightResult);
 };
 
 }  // namespace cors

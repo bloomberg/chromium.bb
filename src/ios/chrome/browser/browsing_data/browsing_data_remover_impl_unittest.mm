@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/check_op.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/scoped_observation.h"
 #import "base/test/ios/wait_util.h"
@@ -58,6 +57,12 @@ const char kTimeRangeDeletionHistogram[] =
 class TestBrowsingDataRemoverObserver : public BrowsingDataRemoverObserver {
  public:
   TestBrowsingDataRemoverObserver() = default;
+
+  TestBrowsingDataRemoverObserver(const TestBrowsingDataRemoverObserver&) =
+      delete;
+  TestBrowsingDataRemoverObserver& operator=(
+      const TestBrowsingDataRemoverObserver&) = delete;
+
   ~TestBrowsingDataRemoverObserver() override = default;
 
   // BrowsingDataRemoverObserver implementation.
@@ -71,8 +76,6 @@ class TestBrowsingDataRemoverObserver : public BrowsingDataRemoverObserver {
  private:
   BrowsingDataRemoveMask last_remove_mask_ =
       BrowsingDataRemoveMask::REMOVE_NOTHING;
-
-  DISALLOW_COPY_AND_ASSIGN(TestBrowsingDataRemoverObserver);
 };
 
 void TestBrowsingDataRemoverObserver::OnBrowsingDataRemoved(
@@ -94,6 +97,10 @@ class BrowsingDataRemoverImplTest : public PlatformTest {
         std::make_unique<FakeClipboardRecentContent>());
   }
 
+  BrowsingDataRemoverImplTest(const BrowsingDataRemoverImplTest&) = delete;
+  BrowsingDataRemoverImplTest& operator=(const BrowsingDataRemoverImplTest&) =
+      delete;
+
   ~BrowsingDataRemoverImplTest() override {
     DCHECK_NE(ClipboardRecentContent::GetInstance(), nullptr);
     ClipboardRecentContent::SetInstance(nullptr);
@@ -104,9 +111,6 @@ class BrowsingDataRemoverImplTest : public PlatformTest {
   web::WebTaskEnvironment task_environment_;
   std::unique_ptr<ChromeBrowserState> browser_state_;
   BrowsingDataRemoverImpl browsing_data_remover_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BrowsingDataRemoverImplTest);
 };
 
 // Tests that BrowsingDataRemoverImpl::Remove() invokes the observers.

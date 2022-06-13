@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "net/base/net_export.h"
 
 namespace net {
@@ -24,6 +23,9 @@ class NET_EXPORT AddressSorter {
   using CallbackType =
       base::OnceCallback<void(bool success, const AddressList& list)>;
 
+  AddressSorter(const AddressSorter&) = delete;
+  AddressSorter& operator=(const AddressSorter&) = delete;
+
   virtual ~AddressSorter() {}
 
   // Sorts |list|, which must include at least one IPv6 address.
@@ -36,9 +38,6 @@ class NET_EXPORT AddressSorter {
 
  protected:
   AddressSorter() {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AddressSorter);
 };
 
 }  // namespace net

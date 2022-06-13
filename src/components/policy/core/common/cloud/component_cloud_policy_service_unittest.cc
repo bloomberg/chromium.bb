@@ -14,16 +14,17 @@
 #include "base/callback.h"
 #include "base/containers/contains.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_store.h"
-#include "components/policy/core/common/cloud/policy_builder.h"
 #include "components/policy/core/common/cloud/resource_cache.h"
+#include "components/policy/core/common/cloud/test/policy_builder.h"
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_types.h"
@@ -141,9 +142,8 @@ class ComponentCloudPolicyServiceTest : public testing::Test {
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             &loader_factory_));
     service_ = std::make_unique<ComponentCloudPolicyService>(
-        dm_protocol::kChromeExtensionPolicyType, POLICY_SOURCE_CLOUD,
-        &delegate_, &registry_, &core_, client_, std::move(owned_cache_),
-        base::ThreadTaskRunnerHandle::Get());
+        dm_protocol::kChromeExtensionPolicyType, &delegate_, &registry_, &core_,
+        client_, std::move(owned_cache_), base::ThreadTaskRunnerHandle::Get());
 
     client_->SetDMToken(ComponentCloudPolicyBuilder::kFakeToken);
     EXPECT_EQ(1u, client_->types_to_fetch_.size());
@@ -160,12 +160,12 @@ class ComponentCloudPolicyServiceTest : public testing::Test {
   }
 
   void LoadStore() {
-    em::PolicyData* data = new em::PolicyData();
-    data->set_username(PolicyBuilder::kFakeUsername);
-    data->set_request_token(PolicyBuilder::kFakeToken);
-    data->set_device_id(PolicyBuilder::kFakeDeviceId);
-    data->set_public_key_version(PolicyBuilder::kFakePublicKeyVersion);
-    store_.policy_.reset(data);
+    auto policy_data = std::make_unique<em::PolicyData>();
+    policy_data->set_username(PolicyBuilder::kFakeUsername);
+    policy_data->set_request_token(PolicyBuilder::kFakeToken);
+    policy_data->set_device_id(PolicyBuilder::kFakeDeviceId);
+    policy_data->set_public_key_version(PolicyBuilder::kFakePublicKeyVersion);
+    store_.set_policy_data_for_testing(std::move(policy_data));
     store_.policy_signature_public_key_ = public_key_;
     store_.NotifyStoreLoaded();
     RunUntilIdle();
@@ -228,8 +228,8 @@ class ComponentCloudPolicyServiceTest : public testing::Test {
   // |cache_| is owned by the |service_| and is invalid once the |service_|
   // is destroyed.
   std::unique_ptr<ResourceCache> owned_cache_;
-  ResourceCache* cache_;
-  MockCloudPolicyClient* client_;
+  raw_ptr<ResourceCache> cache_;
+  raw_ptr<MockCloudPolicyClient> client_;
   MockCloudPolicyStore store_;
   CloudPolicyCore core_;
   SchemaRegistry registry_;
@@ -540,7 +540,7 @@ TEST_F(ComponentCloudPolicyServiceTest, SignOut) {
   // from the cache. It does not trigger a refresh.
   EXPECT_CALL(delegate_, OnComponentCloudPolicyUpdated());
   core_.Disconnect();
-  store_.policy_.reset();
+  store_.set_policy_data_for_testing(std::make_unique<em::PolicyData>());
   Mock::VerifyAndClearExpectations(&store_);
   store_.NotifyStoreLoaded();
   RunUntilIdle();
@@ -663,7 +663,9 @@ TEST_F(ComponentCloudPolicyServiceTest, KeyRotation) {
 
   // Update the signing key in the store.
   store_.policy_signature_public_key_ = builder_.GetPublicSigningKeyAsString();
-  store_.policy_->set_public_key_version(kNewPublicKeyVersion);
+  auto policy_data = std::make_unique<em::PolicyData>(*store_.policy());
+  policy_data->set_public_key_version(kNewPublicKeyVersion);
+  store_.set_policy_data_for_testing(std::move(policy_data));
   store_.NotifyStoreLoaded();
   RunUntilIdle();
 

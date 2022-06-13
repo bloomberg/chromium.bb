@@ -1,3 +1,36 @@
+# [5.4.0](https://github.com/wasdk/wasmparser/compare/v5.3.0...v5.4.0) (2021-10-12)
+
+
+### Bug Fixes
+
+* prevent negative name subsection entry length ([c9eeec7](https://github.com/wasdk/wasmparser/commit/c9eeec7a26d45cf436422a0f20c16dcf14c511bd))
+
+
+### Features
+
+* add tests for negative name subsection length ([b5d8d83](https://github.com/wasdk/wasmparser/commit/b5d8d83811785c8b3a0877e5e52c01cad4b4951e))
+
+# [5.3.0](https://github.com/wasdk/wasmparser/compare/v5.2.0...v5.3.0) (2021-09-20)
+
+
+### Bug Fixes
+
+* escape export name strings §6.3.3 ([1c0d874](https://github.com/wasdk/wasmparser/commit/1c0d874bde1544c03661ccfa63575be321eb6f73))
+
+
+### Features
+
+* add tests for escaped export name strings ([8c27bdf](https://github.com/wasdk/wasmparser/commit/8c27bdf516ab91d63595d0b283e57a9e7762d4fc))
+* update GC proposal support to "milestone 4" ([5d63bb6](https://github.com/wasdk/wasmparser/commit/5d63bb6b441ff064abf13559ca308b16c222c18f))
+
+# [5.2.0](https://github.com/wasdk/wasmparser/compare/v5.1.1...v5.2.0) (2021-05-31)
+
+
+### Features
+
+* implement br_on_non_null too ([e5415ae](https://github.com/wasdk/wasmparser/commit/e5415aed971a6fa1919498dbce5ac537dbf00582))
+* implement more instructions ([08c1f87](https://github.com/wasdk/wasmparser/commit/08c1f877d81cb2b7d603b8998e22840deebd1072))
+
 ## [5.1.1](https://github.com/wasdk/wasmparser/compare/v5.1.0...v5.1.1) (2021-04-26)
 
 

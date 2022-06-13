@@ -35,7 +35,10 @@ interface Range {
 
 function chooseLatest<T extends Timestamped<{}>>(current: T, next: T): T {
   if (next !== current && next.lastUpdate > current.lastUpdate) {
-    return next;
+    // |next| is from state. Callers may mutate the return value of
+    // this function so we need to clone |next| to prevent bad mutations
+    // of state:
+    return Object.assign({}, next);
   }
   return current;
 }
@@ -65,26 +68,14 @@ function calculateScrollbarWidth() {
 export class FrontendLocalState {
   visibleWindowTime = new TimeSpan(0, 10);
   timeScale = new TimeScale(this.visibleWindowTime, [0, 0]);
-  perfDebug = false;
-  hoveredUtid = -1;
-  hoveredPid = -1;
-  hoveredLogsTimestamp = -1;
-  hoveredNoteTimestamp = -1;
-  highlightedSliceId = -1;
-  focusedFlowIdLeft = -1;
-  focusedFlowIdRight = -1;
-  vidTimestamp = -1;
-  localOnlyMode = false;
-  sidebarVisible = true;
   showPanningHint = false;
   showCookieConsent = false;
   visibleTracks = new Set<string>();
   prevVisibleTracks = new Set<string>();
-  searchIndex = -1;
-  currentTab?: string;
   scrollToTrackId?: string|number;
   httpRpcState: HttpRpcState = {connected: false};
   newVersionAvailable = false;
+  showPivotTable = false;
 
   // This is used to calculate the tracks within a Y range for area selection.
   areaY: Range = {};
@@ -117,68 +108,13 @@ export class FrontendLocalState {
     return this.scrollBarWidth;
   }
 
-  togglePerfDebug() {
-    this.perfDebug = !this.perfDebug;
+  setHttpRpcState(httpRpcState: HttpRpcState) {
+    this.httpRpcState = httpRpcState;
     globals.rafScheduler.scheduleFullRedraw();
-  }
-
-  setHoveredUtidAndPid(utid: number, pid: number) {
-    this.hoveredUtid = utid;
-    this.hoveredPid = pid;
-    globals.rafScheduler.scheduleRedraw();
-  }
-
-  setHighlightedSliceId(sliceId: number) {
-    this.highlightedSliceId = sliceId;
-    globals.rafScheduler.scheduleRedraw();
-  }
-
-  setHighlightedFlowLeftId(flowId: number) {
-    this.focusedFlowIdLeft = flowId;
-    globals.rafScheduler.scheduleFullRedraw();
-  }
-
-  setHighlightedFlowRightId(flowId: number) {
-    this.focusedFlowIdRight = flowId;
-    globals.rafScheduler.scheduleFullRedraw();
-  }
-
-  // Sets the timestamp at which a vertical line will be drawn.
-  setHoveredLogsTimestamp(ts: number) {
-    if (this.hoveredLogsTimestamp === ts) return;
-    this.hoveredLogsTimestamp = ts;
-    globals.rafScheduler.scheduleRedraw();
-  }
-
-  setHoveredNoteTimestamp(ts: number) {
-    if (this.hoveredNoteTimestamp === ts) return;
-    this.hoveredNoteTimestamp = ts;
-    globals.rafScheduler.scheduleRedraw();
-  }
-
-  setVidTimestamp(ts: number) {
-    if (this.vidTimestamp === ts) return;
-    this.vidTimestamp = ts;
-    globals.rafScheduler.scheduleRedraw();
   }
 
   addVisibleTrack(trackId: string) {
     this.visibleTracks.add(trackId);
-  }
-
-  setSearchIndex(index: number) {
-    this.searchIndex = index;
-    globals.rafScheduler.scheduleRedraw();
-  }
-
-  toggleSidebar() {
-    this.sidebarVisible = !this.sidebarVisible;
-    globals.rafScheduler.scheduleFullRedraw();
-  }
-
-  setHttpRpcState(httpRpcState: HttpRpcState) {
-    this.httpRpcState = httpRpcState;
-    globals.rafScheduler.scheduleFullRedraw();
   }
 
   // Called when beginning a canvas redraw.
@@ -197,10 +133,24 @@ export class FrontendLocalState {
     }
   }
 
+  togglePivotTable() {
+    this.showPivotTable = !this.showPivotTable;
+    globals.rafScheduler.scheduleFullRedraw();
+  }
+
   mergeState(state: FrontendState): void {
+    // This is unfortunately subtle. This class mutates this._visibleState.
+    // Since we may not mutate |state| (in order to make immer's immutable
+    // updates work) this means that we have to make a copy of the visibleState.
+    // when updating it. We don't want to have to do that unnecessarily so
+    // chooseLatest returns a shallow clone of state.visibleState *only* when
+    // that is the newer state. All of these complications should vanish when
+    // we remove this class.
+    const previousVisibleState = this._visibleState;
     this._omniboxState = chooseLatest(this._omniboxState, state.omniboxState);
     this._visibleState = chooseLatest(this._visibleState, state.visibleState);
-    if (this._visibleState === state.visibleState) {
+    const visibleStateWasUpdated = previousVisibleState !== this._visibleState;
+    if (visibleStateWasUpdated) {
       this.updateLocalTime(
           new TimeSpan(this._visibleState.startSec, this._visibleState.endSec));
     }
@@ -225,7 +175,7 @@ export class FrontendLocalState {
   }
 
   private setOmniboxDebounced = debounce(() => {
-    globals.dispatch(Actions.setOmnibox(this._omniboxState));
+    globals.dispatch(Actions.setOmnibox({...this._omniboxState}));
   }, 20);
 
   setOmnibox(value: string, mode: 'SEARCH'|'COMMAND') {

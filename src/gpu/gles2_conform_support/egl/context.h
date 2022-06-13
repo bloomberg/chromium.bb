@@ -8,7 +8,7 @@
 #include <memory>
 
 #include <EGL/egl.h>
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/gpu_control.h"
@@ -46,6 +46,10 @@ class Context : public base::RefCountedThreadSafe<Context>,
                 public gpu::GpuControl {
  public:
   Context(Display* display, const Config* config);
+
+  Context(const Context&) = delete;
+  Context& operator=(const Context&) = delete;
+
   bool is_current_in_some_thread() const { return is_current_in_some_thread_; }
   void set_is_current_in_some_thread(bool flag) {
     is_current_in_some_thread_ = flag;
@@ -108,8 +112,8 @@ class Context : public base::RefCountedThreadSafe<Context>,
 
   static gpu::GpuFeatureInfo platform_gpu_feature_info_;
 
-  Display* display_;
-  const Config* config_;
+  raw_ptr<Display> display_;
+  raw_ptr<const Config> config_;
   bool is_current_in_some_thread_;
   bool is_destroyed_;
   const gpu::GpuDriverBugWorkarounds gpu_driver_bug_workarounds_;
@@ -132,8 +136,6 @@ class Context : public base::RefCountedThreadSafe<Context>,
   std::unique_ptr<gpu::gles2::GLES2Interface> client_gl_context_;
 
   gpu::Capabilities capabilities_;
-
-  DISALLOW_COPY_AND_ASSIGN(Context);
 };
 
 }  // namespace egl

@@ -4,7 +4,7 @@
 
 #include <string>
 
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/net_errors.h"
@@ -66,8 +66,8 @@ bool RespondToChallenge(HttpAuth::Target target,
   GURL url_origin(target == HttpAuth::AUTH_SERVER ? request_url : proxy_name);
   int rv_create = factory->CreateAuthHandlerFromString(
       challenge, target, null_ssl_info, NetworkIsolationKey(),
-      url_origin.GetOrigin(), NetLogWithSource(), host_resolver.get(),
-      &handler);
+      url_origin.DeprecatedGetOriginAsURL(), NetLogWithSource(),
+      host_resolver.get(), &handler);
   if (rv_create != OK || handler.get() == nullptr) {
     ADD_FAILURE() << "Unable to create auth handler.";
     return false;

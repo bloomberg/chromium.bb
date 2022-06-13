@@ -7,7 +7,7 @@
 .settings-window-main {
   color: var(--color-text-primary);
   background-color: var(--color-background);
-  padding: 11px 0 0 0;
+  padding: 11px 0 0;
 }
 
 .settings-content {
@@ -88,6 +88,11 @@ fieldset {
   padding-left: 30px;
 }
 
+.settings-select {
+  align-items: center;
+  display: flex;
+}
+
 .settings-experiments-warning-subsection-warning {
   color: var(--color-accent-red);
 }
@@ -96,7 +101,7 @@ fieldset {
   color: inherit;
 }
 
-.settings-content input[type=checkbox] {
+.settings-content input[type="checkbox"] {
   margin: 1px 7px 1px 2px;
 }
 
@@ -165,7 +170,44 @@ fieldset {
   margin-left: 10px;
 }
 
+.settings-experiment {
+  display: grid;
+  grid-template-columns: auto 1fr;
+}
+
+.settings-experiment .devtools-link {
+  display: flex !important; /* stylelint-disable-line declaration-no-important */
+  align-items: center;
+}
+
+.settings-experiment .link-icon {
+  margin-left: 4px;
+}
+
 .settings-experiment-unstable {
-  display: block;
   color: var(--color-text-secondary);
+}
+
+@media (forced-colors: active) {
+  .settings-window-title {
+    color: canvastext;
+  }
+
+  .tabbed-pane-header-tab {
+    background: ButtonFace;
+  }
+
+  .tabbed-pane-header-tab-title {
+    color: canvastext;
+  }
+}
+
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .tabbed-pane-header-tab.selected {
+    background: ButtonFace;
+  }
+
+  .tabbed-pane-header-tab.selected .tabbed-pane-header-tab-title {
+    color: HighlightText;
+  }
 }

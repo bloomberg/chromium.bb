@@ -5,11 +5,10 @@
 #ifndef CHROME_BROWSER_ASH_LOGIN_UI_MOCK_SIGNIN_UI_H_
 #define CHROME_BROWSER_ASH_LOGIN_UI_MOCK_SIGNIN_UI_H_
 
-#include "base/macros.h"
 #include "chrome/browser/ash/login/ui/signin_ui.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-namespace chromeos {
+namespace ash {
 
 class MockSigninUI : public SigninUI {
  public:
@@ -19,7 +18,9 @@ class MockSigninUI : public SigninUI {
   MockSigninUI& operator=(const SigninUI&) = delete;
 
   MOCK_METHOD(void, StartUserOnboarding, (), (override));
+  MOCK_METHOD(void, ResumeUserOnboarding, (OobeScreenId), (override));
   MOCK_METHOD(void, StartManagementTransition, (), (override));
+  MOCK_METHOD(void, ShowTosForExistingUser, (), (override));
   MOCK_METHOD(void,
               StartEncryptionMigration,
               (const UserContext&,
@@ -30,16 +31,24 @@ class MockSigninUI : public SigninUI {
               SetAuthSessionForOnboarding,
               (const UserContext&),
               (override));
+  MOCK_METHOD(void, ClearOnboardingAuthSession, (), (override));
   MOCK_METHOD(void,
               ShowPasswordChangedDialog,
               (const AccountId&, bool),
               (override));
   MOCK_METHOD(void,
               ShowSigninError,
-              (SigninError, const std::string&, int),
+              (SigninError, const std::string&),
               (override));
+  MOCK_METHOD(void, StartBrowserDataMigration, (), (override));
 };
 
-}  // namespace chromeos
+}  // namespace ash
+
+// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
+// source migration is finished.
+namespace chromeos {
+using ::ash::MockSigninUI;
+}
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_UI_MOCK_SIGNIN_UI_H_

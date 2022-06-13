@@ -13,7 +13,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "net/base/net_export.h"
 #include "net/dns/dns_config_service.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -33,6 +32,10 @@ namespace internal {
 class NET_EXPORT_PRIVATE DnsConfigServicePosix : public DnsConfigService {
  public:
   DnsConfigServicePosix();
+
+  DnsConfigServicePosix(const DnsConfigServicePosix&) = delete;
+  DnsConfigServicePosix& operator=(const DnsConfigServicePosix&) = delete;
+
   ~DnsConfigServicePosix() override;
 
   void RefreshConfig() override;
@@ -52,9 +55,7 @@ class NET_EXPORT_PRIVATE DnsConfigServicePosix : public DnsConfigService {
   class ConfigReader;
 
   std::unique_ptr<Watcher> watcher_;
-  scoped_refptr<ConfigReader> config_reader_;
-
-  DISALLOW_COPY_AND_ASSIGN(DnsConfigServicePosix);
+  std::unique_ptr<ConfigReader> config_reader_;
 };
 
 // Returns nullopt iff a valid config could not be determined.

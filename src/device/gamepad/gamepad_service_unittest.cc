@@ -8,7 +8,7 @@
 
 #include <memory>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "device/gamepad/gamepad_consumer.h"
@@ -32,8 +32,7 @@ class ConnectionListener : public GamepadConsumer {
   void OnGamepadDisconnected(uint32_t index, const Gamepad& gamepad) override {
     disconnected_counter_++;
   }
-  void OnGamepadButtonOrAxisChanged(uint32_t index,
-                                    const Gamepad& gamepad) override {}
+  void OnGamepadChanged(const mojom::GamepadChanges& change) override {}
 
   void ClearCounters() {
     connected_counter_ = 0;
@@ -49,6 +48,10 @@ class ConnectionListener : public GamepadConsumer {
 };
 
 class GamepadServiceTest : public testing::Test {
+ public:
+  GamepadServiceTest(const GamepadServiceTest&) = delete;
+  GamepadServiceTest& operator=(const GamepadServiceTest&) = delete;
+
  protected:
   GamepadServiceTest() {
     memset(&test_data_, 0, sizeof(test_data_));
@@ -113,12 +116,10 @@ class GamepadServiceTest : public testing::Test {
 
  private:
   base::test::SingleThreadTaskEnvironment task_environment_;
-  MockGamepadDataFetcher* fetcher_;
-  GamepadService* service_;
+  raw_ptr<MockGamepadDataFetcher> fetcher_;
+  raw_ptr<GamepadService> service_;
   std::vector<std::unique_ptr<ConnectionListener>> consumers_;
   Gamepads test_data_;
-
-  DISALLOW_COPY_AND_ASSIGN(GamepadServiceTest);
 };
 
 TEST_F(GamepadServiceTest, ConnectionsTest) {

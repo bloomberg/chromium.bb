@@ -14,17 +14,15 @@
 # ==============================================================================
 """Import a TF v1-style SavedModel when executing eagerly."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import functools
 
 from tensorflow.python.eager import context
 from tensorflow.python.eager import lift_to_graph
 from tensorflow.python.eager import wrap_function
+from tensorflow.python.framework import composite_tensor
 from tensorflow.python.framework import constant_op
 from tensorflow.python.framework import dtypes
+from tensorflow.python.framework import func_graph
 from tensorflow.python.framework import ops
 from tensorflow.python.framework import sparse_tensor
 from tensorflow.python.ops import array_ops
@@ -32,9 +30,14 @@ from tensorflow.python.platform import tf_logging as logging
 from tensorflow.python.saved_model import function_deserialization
 from tensorflow.python.saved_model import loader_impl
 from tensorflow.python.saved_model import signature_serialization
+from tensorflow.python.saved_model.pywrap_saved_model import metrics
 from tensorflow.python.training import monitored_session
 from tensorflow.python.training import saver as tf_saver
 from tensorflow.python.training.tracking import tracking
+from tensorflow.python.util import nest
+
+# API label for SavedModel metrics.
+_LOAD_V1_V2_LABEL = "load_v1_in_v2"
 
 
 class _Initializer(tracking.CapturableResource):
@@ -74,11 +77,11 @@ class _EagerSavedModelLoader(loader_impl.SavedModelLoader):
         tag_sets = [mg.meta_info_def.tags
                     for mg in self._saved_model.meta_graphs]
         raise ValueError(
-            ("Importing a SavedModel with tf.saved_model.load requires a "
-             "'tags=' argument if there is more than one MetaGraph. Got "
-             "'tags=None', but there are {} MetaGraphs in the SavedModel with "
-             "tag sets {}. Pass a 'tags=' argument to load this SavedModel.")
-            .format(len(self._saved_model.meta_graphs), tag_sets))
+            "Importing a SavedModel with `tf.saved_model.load` requires a "
+            "`tags=` argument if there is more than one MetaGraph. Got "
+            f"`tags=None`, but there are {len(self._saved_model.meta_graphs)} "
+            f"MetaGraphs in the SavedModel with tag sets: {tag_sets}. Pass a "
+            "`tags=` argument to load this SavedModel.")
       return self._saved_model.meta_graphs[0]
     return super(_EagerSavedModelLoader, self).get_meta_graph_def_from_tags(
         tags)
@@ -110,11 +113,11 @@ class _EagerSavedModelLoader(loader_impl.SavedModelLoader):
       initializer, _ = restore_from_saver(
           constant_op.constant(self._variables_path))
       if not ops.executing_eagerly_outside_functions():
-        # Add the initialization operation to the table initializers collection
-        # in case we don't have any lifted variables to attach it to. There
-        # isn't another great place to put it.
-        ops.add_to_collection(ops.GraphKeys.TABLE_INITIALIZERS, initializer)
+        # Add the initialization operation to the "saved_model_initializers"
+        # collection in case we don't have any lifted variables to attach it to.
+        ops.add_to_collection("saved_model_initializers", initializer)
         one_unlifted = False
+
         for variable in wrapped.graph.get_collection_ref(
             ops.GraphKeys.GLOBAL_VARIABLES):
           if variable.graph is wrapped.graph:
@@ -125,7 +128,8 @@ class _EagerSavedModelLoader(loader_impl.SavedModelLoader):
         if one_unlifted:
           logging.warning(
               "Some variables could not be lifted out of a loaded function. "
-              "Run the tf.initializers.tables_initializer() operation to "
+              "Please run "
+              "`sess.run(tf.get_collection(\"saved_model_initializers\"))`to "
               "restore these variables.")
 
   def _extract_signatures(self, wrapped, meta_graph_def):
@@ -133,16 +137,19 @@ class _EagerSavedModelLoader(loader_impl.SavedModelLoader):
     signature_functions = {}
     for signature_key, signature_def in meta_graph_def.signature_def.items():
       if signature_def.inputs:
-        original_input_names, input_specs = zip(*signature_def.inputs.items())
+        input_items = sorted(
+            signature_def.inputs.items(), key=lambda item: item[1].name)
+        original_input_names, input_specs = zip(*input_items)
       else:
         original_input_names = []
         input_specs = []
-      # TODO(allenl): Support optional arguments
+      # TODO(b/205015292): Support optional arguments
       feeds = [
           wrap_function._get_element_from_tensor_info(input_spec, wrapped.graph)  # pylint: disable=protected-access
           for input_spec in input_specs
       ]
       input_names = []
+      input_tensors = []
       for original_input_name, feed in zip(original_input_names, feeds):
         if isinstance(feed, sparse_tensor.SparseTensor):
           # We have to give explicit name for SparseTensor arguments, because
@@ -151,8 +158,15 @@ class _EagerSavedModelLoader(loader_impl.SavedModelLoader):
           values_name = "%s_values" % original_input_name
           dense_shape_name = "%s_dense_shape" % original_input_name
           input_names.extend([indices_name, values_name, dense_shape_name])
+          input_tensors.extend([feed.indices, feed.values, feed.dense_shape])
+        elif isinstance(feed, composite_tensor.CompositeTensor):
+          component_tensors = nest.flatten(feed, expand_composites=True)
+          input_names.extend("%s_component_%d" % (original_input_name, n)
+                             for n in range(len(component_tensors)))
+          input_tensors.extend(component_tensors)
         else:
           input_names.append(original_input_name)
+          input_tensors.append(feed)
       fetches = {name: out for name, out in signature_def.outputs.items()}
       try:
         signature_fn = wrapped.prune(feeds=feeds, fetches=fetches)
@@ -173,6 +187,11 @@ class _EagerSavedModelLoader(loader_impl.SavedModelLoader):
         raise
       # pylint: disable=protected-access
       signature_fn._arg_keywords = input_names
+      signature_fn._func_graph.structured_input_signature = (
+          (),
+          func_graph.convert_structure_to_signature(
+              dict(zip(input_names, input_tensors))))
+
       if len(input_names) == 1:
         # Allowing positional arguments does not create any ambiguity if there's
         # only one.
@@ -200,8 +219,7 @@ class _EagerSavedModelLoader(loader_impl.SavedModelLoader):
     # the GraphDef itself for consistency.
     for node_def in meta_graph_def.graph_def.node:
       function_deserialization.fix_node_def(node_def, functions,
-                                            load_shared_name_suffix,
-                                            debug_name="MetaGraph import")
+                                            load_shared_name_suffix)
 
     load_graph_returns = [None]
     wrapped = wrap_function.wrap_function(
@@ -259,5 +277,8 @@ class _EagerSavedModelLoader(loader_impl.SavedModelLoader):
 
 def load(export_dir, tags):
   """Load a v1-style SavedModel as an object."""
+  metrics.IncrementReadApi(_LOAD_V1_V2_LABEL)
   loader = _EagerSavedModelLoader(export_dir)
-  return loader.load(tags=tags)
+  result = loader.load(tags=tags)
+  metrics.IncrementRead(write_version="1")
+  return result

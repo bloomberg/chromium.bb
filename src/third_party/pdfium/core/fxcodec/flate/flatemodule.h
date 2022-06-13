@@ -7,10 +7,11 @@
 #ifndef CORE_FXCODEC_FLATE_FLATEMODULE_H_
 #define CORE_FXCODEC_FLATE_FLATEMODULE_H_
 
+#include <stdint.h>
+
 #include <memory>
 
 #include "core/fxcrt/fx_memory_wrappers.h"
-#include "core/fxcrt/fx_system.h"
 #include "third_party/base/span.h"
 
 namespace fxcodec {
@@ -42,8 +43,7 @@ class FlateModule {
       std::unique_ptr<uint8_t, FxFreeDeleter>* dest_buf,
       uint32_t* dest_size);
 
-  static bool Encode(const uint8_t* src_buf,
-                     uint32_t src_size,
+  static bool Encode(pdfium::span<const uint8_t> src_span,
                      std::unique_ptr<uint8_t, FxFreeDeleter>* dest_buf,
                      uint32_t* dest_size);
 

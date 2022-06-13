@@ -133,9 +133,7 @@ const gfIntervalParam gfTestParams[] = {
   { ::libaom_test::kTwoPassGood, 5, 10 },
   { ::libaom_test::kTwoPassGood, 8, 16 },
   { ::libaom_test::kTwoPassGood, 16, 32 },
-  // disabled below test case because it causes failure
-  // TODO(anyone): enable below test case once issue is fixed.
-  // { ::libaom_test::kTwoPassGood, 20, 32 },
+  { ::libaom_test::kTwoPassGood, 20, 32 },
 };
 
 // This class is used to test if the gf interval bounds configured by the user

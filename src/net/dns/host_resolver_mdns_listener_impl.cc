@@ -9,21 +9,21 @@
 #include "net/base/host_port_pair.h"
 #include "net/dns/host_cache.h"
 #include "net/dns/host_resolver_mdns_task.h"
+#include "net/dns/public/mdns_listener_update_type.h"
 #include "net/dns/record_parsed.h"
 
 namespace net {
 
 namespace {
 
-HostResolver::MdnsListener::Delegate::UpdateType ConvertUpdateType(
-    net::MDnsListener::UpdateType type) {
+MdnsListenerUpdateType ConvertUpdateType(net::MDnsListener::UpdateType type) {
   switch (type) {
     case net::MDnsListener::RECORD_ADDED:
-      return HostResolver::MdnsListener::Delegate::UpdateType::ADDED;
+      return MdnsListenerUpdateType::kAdded;
     case net::MDnsListener::RECORD_CHANGED:
-      return HostResolver::MdnsListener::Delegate::UpdateType::CHANGED;
+      return MdnsListenerUpdateType::kChanged;
     case net::MDnsListener::RECORD_REMOVED:
-      return HostResolver::MdnsListener::Delegate::UpdateType::REMOVED;
+      return MdnsListenerUpdateType::kRemoved;
   }
 }
 
@@ -75,6 +75,7 @@ void HostResolverMdnsListenerImpl::OnRecordUpdate(
     case DnsQueryType::UNSPECIFIED:
     case DnsQueryType::INTEGRITY:
     case DnsQueryType::HTTPS:
+    case DnsQueryType::HTTPS_EXPERIMENTAL:
       NOTREACHED();
       break;
     case DnsQueryType::A:

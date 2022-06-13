@@ -24,6 +24,7 @@ import org.chromium.base.library_loader.LibraryPrefetcher;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.memory.MemoryPressureUma;
 import org.chromium.base.task.AsyncTask;
+import org.chromium.base.task.ChainedTasks;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.browser.AppHooks;
@@ -33,7 +34,8 @@ import org.chromium.chrome.browser.app.flags.ChromeCachedFlags;
 import org.chromium.chrome.browser.crash.LogcatExtractionRunnable;
 import org.chromium.chrome.browser.download.DownloadManagerService;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
-import org.chromium.chrome.browser.signin.SigninHelperProvider;
+import org.chromium.chrome.browser.language.GlobalAppLocaleController;
+import org.chromium.chrome.browser.signin.SigninCheckerProvider;
 import org.chromium.chrome.browser.webapps.ChromeWebApkHost;
 import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerFactory;
 import org.chromium.components.crash.browser.ChildProcessCrashObserver;
@@ -337,7 +339,7 @@ public class ChromeBrowserInitializer {
             LibraryPrefetcher.asyncPrefetchLibrariesToMemory();
             getBrowserStartupController().startBrowserProcessesSync(
                     LibraryProcessType.PROCESS_BROWSER, /*singleProcess=*/false);
-            SigninHelperProvider.get();
+            SigninCheckerProvider.get();
         } finally {
             TraceEvent.end("ChromeBrowserInitializer.startChromeBrowserProcessesSync");
         }
@@ -424,6 +426,10 @@ public class ChromeBrowserInitializer {
             @Override
             public void onActivityStateChange(Activity activity, int newState) {
                 if (newState == ActivityState.CREATED || newState == ActivityState.DESTROYED) {
+                    // When the app locale is overridden a change in system locale will not effect
+                    // Chrome's UI language. There is race condition where the initial locale may
+                    // not equal the overridden default locale (https://crbug.com/1224756).
+                    if (GlobalAppLocaleController.getInstance().isOverridden()) return;
                     // Android destroys Activities at some point after a locale change, but doesn't
                     // kill the process.  This can lead to a bug where Chrome is halfway RTL, where
                     // stale natively-loaded resources are not reloaded (http://crbug.com/552618).

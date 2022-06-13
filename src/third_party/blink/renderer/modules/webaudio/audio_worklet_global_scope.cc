@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/auto_reset.h"
-#include "base/stl_util.h"
 #include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
@@ -17,6 +16,8 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_blink_audio_worklet_process_callback.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_blink_audio_worklet_processor_constructor.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_worklet_object_proxy.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_worklet_processor.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_worklet_processor_definition.h"
 #include "third_party/blink/renderer/modules/webaudio/cross_thread_audio_worklet_processor_info.h"
 #include "third_party/blink/renderer/platform/bindings/callback_method_retriever.h"
@@ -40,6 +41,7 @@ AudioWorkletGlobalScope::~AudioWorkletGlobalScope() = default;
 
 void AudioWorkletGlobalScope::Dispose() {
   DCHECK(IsContextThread());
+  object_proxy_ = nullptr;
   is_closing_ = true;
   WorkletGlobalScope::Dispose();
 }
@@ -52,19 +54,17 @@ void AudioWorkletGlobalScope::registerProcessor(
 
   // 1. If name is an empty string, throw a NotSupportedError.
   if (name.IsEmpty()) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kNotSupportedError,
-        "The processor name cannot be empty.");
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
+                                      "The processor name cannot be empty.");
     return;
   }
 
   // 2. If name already exists as a key in the node name to processor
   //    constructor map, throw a NotSupportedError.
   if (processor_definition_map_.Contains(name)) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kNotSupportedError,
-        "An AudioWorkletProcessor with name:\"" + name +
-        "\" is already registered.");
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
+                                      "An AudioWorkletProcessor with name:\"" +
+                                          name + "\" is already registered.");
     return;
   }
 
@@ -138,8 +138,8 @@ void AudioWorkletGlobalScope::registerProcessor(
         exception_state.ThrowDOMException(
             DOMExceptionCode::kNotSupportedError,
             "Found a duplicate name \"" + new_param_name +
-            "\" in parameterDescriptors() from the AudioWorkletProcessor " +
-            "definition of \"" + name + "\".");
+                "\" in parameterDescriptors() from the AudioWorkletProcessor " +
+                "definition of \"" + name + "\".");
         return;
       }
 
@@ -154,6 +154,17 @@ void AudioWorkletGlobalScope::registerProcessor(
   // 8. Append the key-value pair name → processorCtor to node name to
   //    processor constructor map of the associated AudioWorkletGlobalScope.
   processor_definition_map_.Set(name, definition);
+
+  // 9. Queue a media element task to append the key-value pair name →
+  // parameterDescriptorSequence to the node name to parameter descriptor map
+  // of the associated BaseAudioContext.
+  if (object_proxy_) {
+    // TODO(crbug.com/1223178): |object_proxy_| is designed to outlive the
+    // global scope, so we don't need to null check but the unit test is not
+    // able to replicate the cross-thread messaging logic yet, so we skip this
+    // call in unit tests.
+    object_proxy_->SynchronizeProcessorInfoList();
+  }
 }
 
 AudioWorkletProcessor* AudioWorkletGlobalScope::CreateProcessor(
@@ -208,7 +219,10 @@ AudioWorkletProcessor* AudioWorkletGlobalScope::CreateProcessor(
 
 AudioWorkletProcessorDefinition* AudioWorkletGlobalScope::FindDefinition(
     const String& name) {
-  return processor_definition_map_.at(name);
+  const auto it = processor_definition_map_.find(name);
+  if (it == processor_definition_map_.end())
+    return nullptr;
+  return it->value.Get();
 }
 
 unsigned AudioWorkletGlobalScope::NumberOfRegisteredDefinitions() {
@@ -241,9 +255,13 @@ void AudioWorkletGlobalScope::SetSampleRate(float sample_rate) {
 }
 
 double AudioWorkletGlobalScope::currentTime() const {
-  return sample_rate_ > 0.0
-        ? current_frame_ / static_cast<double>(sample_rate_)
-        : 0.0;
+  return sample_rate_ > 0.0 ? current_frame_ / static_cast<double>(sample_rate_)
+                            : 0.0;
+}
+
+void AudioWorkletGlobalScope::SetObjectProxy(
+    AudioWorkletObjectProxy& object_proxy) {
+  object_proxy_ = &object_proxy;
 }
 
 void AudioWorkletGlobalScope::Trace(Visitor* visitor) const {

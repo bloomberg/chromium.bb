@@ -4,7 +4,7 @@
 
 #include "extensions/renderer/bindings/api_binding_bridge.h"
 
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "base/values.h"
 #include "extensions/renderer/bindings/api_binding_hooks.h"
 #include "extensions/renderer/bindings/api_binding_util.h"
@@ -88,10 +88,6 @@ void APIBindingBridge::RegisterCustomHook(v8::Isolate* isolate,
       context, gin::StringToSymbol(isolate, "compiledApi"), api_object);
   if (!result.IsJust() || !result.FromJust())
     return;
-
-  // TODO(devlin): The binding.js version of these hooks also has a 'schema'
-  // property. I wonder if we can factor that out? If not, we'll need to add it
-  // here.
 
   result = hook_object->SetPrototype(context, v8::Null(isolate));
   if (!result.IsJust() || !result.FromJust())

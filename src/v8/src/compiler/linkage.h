@@ -15,6 +15,7 @@
 #include "src/common/globals.h"
 #include "src/compiler/frame.h"
 #include "src/compiler/operator.h"
+#include "src/execution/encoded-c-signature.h"
 #include "src/runtime/runtime.h"
 #include "src/zone/zone.h"
 
@@ -127,13 +128,8 @@ class LinkageLocation {
 
   MachineType GetType() const { return machine_type_; }
 
-  int GetSize() const {
-    return 1 << ElementSizeLog2Of(GetType().representation());
-  }
-
   int GetSizeInPointers() const {
-    // Round up
-    return (GetSize() + kSystemPointerSize - 1) / kSystemPointerSize;
+    return ElementSizeInPointers(GetType().representation());
   }
 
   int32_t GetLocation() const {
@@ -219,15 +215,13 @@ class V8_EXPORT_PRIVATE CallDescriptor final
     kInitializeRootRegister = 1u << 3,
     // Does not ever try to allocate space on our heap.
     kNoAllocate = 1u << 4,
-    // Use retpoline for this call if indirect.
-    kRetpoline = 1u << 5,
     // Use the kJavaScriptCallCodeStartRegister (fixed) register for the
     // indirect target address when calling.
-    kFixedTargetRegister = 1u << 6,
-    kCallerSavedRegisters = 1u << 7,
+    kFixedTargetRegister = 1u << 5,
+    kCallerSavedRegisters = 1u << 6,
     // The kCallerSavedFPRegisters only matters (and set) when the more general
     // flag for kCallerSavedRegisters above is also set.
-    kCallerSavedFPRegisters = 1u << 8,
+    kCallerSavedFPRegisters = 1u << 7,
     // Tail calls for tier up are special (in fact they are different enough
     // from normal tail calls to warrant a dedicated opcode; but they also have
     // enough similar aspects that reusing the TailCall opcode is pragmatic).
@@ -243,15 +237,15 @@ class V8_EXPORT_PRIVATE CallDescriptor final
     //
     // In other words, behavior is identical to a jmp instruction prior caller
     // frame construction.
-    kIsTailCallForTierUp = 1u << 9,
+    kIsTailCallForTierUp = 1u << 8,
+
+    // AIX has a function descriptor by default but it can be disabled for a
+    // certain CFunction call (only used for Kind::kCallAddress).
+    kNoFunctionDescriptor = 1u << 9,
 
     // Flags past here are *not* encoded in InstructionCode and are thus not
     // accessible from the code generator. See also
     // kFlagsBitsEncodedInInstructionCode.
-
-    // AIX has a function descriptor by default but it can be disabled for a
-    // certain CFunction call (only used for Kind::kCallAddress).
-    kNoFunctionDescriptor = 1u << 10,
   };
   using Flags = base::Flags<Flag>;
 
@@ -262,6 +256,9 @@ class V8_EXPORT_PRIVATE CallDescriptor final
                  RegList callee_saved_fp_registers, Flags flags,
                  const char* debug_name = "",
                  StackArgumentOrder stack_order = StackArgumentOrder::kDefault,
+#if V8_ENABLE_WEBASSEMBLY
+                 const wasm::FunctionSig* wasm_sig = nullptr,
+#endif
                  const RegList allocatable_registers = 0,
                  size_t return_slot_count = 0)
       : kind_(kind),
@@ -276,7 +273,11 @@ class V8_EXPORT_PRIVATE CallDescriptor final
         allocatable_registers_(allocatable_registers),
         flags_(flags),
         stack_order_(stack_order),
-        debug_name_(debug_name) {}
+#if V8_ENABLE_WEBASSEMBLY
+        wasm_sig_(wasm_sig),
+#endif
+        debug_name_(debug_name) {
+  }
 
   CallDescriptor(const CallDescriptor&) = delete;
   CallDescriptor& operator=(const CallDescriptor&) = delete;
@@ -299,6 +300,9 @@ class V8_EXPORT_PRIVATE CallDescriptor final
 
   // Returns {true} if this descriptor is a call to a Wasm C API function.
   bool IsWasmCapiFunction() const { return kind_ == kCallWasmCapiFunction; }
+
+  // Returns the wasm signature for this call based on the real parameter types.
+  const wasm::FunctionSig* wasm_sig() const { return wasm_sig_; }
 #endif  // V8_ENABLE_WEBASSEMBLY
 
   bool RequiresFrameAsIncoming() const {
@@ -312,8 +316,26 @@ class V8_EXPORT_PRIVATE CallDescriptor final
   // The number of return values from this call.
   size_t ReturnCount() const { return location_sig_->return_count(); }
 
-  // The number of C parameters to this call.
+  // The number of C parameters to this call. The following invariant
+  // should hold true:
+  // ParameterCount() == GPParameterCount() + FPParameterCount()
   size_t ParameterCount() const { return location_sig_->parameter_count(); }
+
+  // The number of general purpose C parameters to this call.
+  size_t GPParameterCount() const {
+    if (!gp_param_count_) {
+      ComputeParamCounts();
+    }
+    return gp_param_count_.value();
+  }
+
+  // The number of floating point C parameters to this call.
+  size_t FPParameterCount() const {
+    if (!fp_param_count_) {
+      ComputeParamCounts();
+    }
+    return fp_param_count_.value();
+  }
 
   // The number of stack parameter slots to the call.
   size_t ParameterSlotCount() const { return param_slot_count_; }
@@ -395,8 +417,8 @@ class V8_EXPORT_PRIVATE CallDescriptor final
 
   const char* debug_name() const { return debug_name_; }
 
-  bool UsesOnlyRegisters() const;
-
+  // Difference between the number of parameter slots of *this* and
+  // *tail_caller* (callee minus caller).
   int GetStackParameterDelta(const CallDescriptor* tail_caller) const;
 
   // Returns the offset to the area below the parameter slots on the stack,
@@ -410,7 +432,8 @@ class V8_EXPORT_PRIVATE CallDescriptor final
   // If there are no parameter slots, returns 0.
   int GetOffsetToReturns() const;
 
-  int GetTaggedParameterSlots() const;
+  // Returns two 16-bit numbers packed together: (first slot << 16) | num_slots.
+  uint32_t GetTaggedParameterSlots() const;
 
   bool CanTailCall(const CallDescriptor* callee) const;
 
@@ -422,14 +445,11 @@ class V8_EXPORT_PRIVATE CallDescriptor final
     return allocatable_registers_ != 0;
   }
 
-  // Stores the signature information for a fast API call - C++ functions
-  // that can be called directly from TurboFan.
-  void SetCFunctionInfo(const CFunctionInfo* c_function_info) {
-    c_function_info_ = c_function_info;
-  }
-  const CFunctionInfo* GetCFunctionInfo() const { return c_function_info_; }
+  EncodedCSignature ToEncodedCSignature() const;
 
  private:
+  void ComputeParamCounts() const;
+
   friend class Linkage;
 
   const Kind kind_;
@@ -446,8 +466,13 @@ class V8_EXPORT_PRIVATE CallDescriptor final
   const RegList allocatable_registers_;
   const Flags flags_;
   const StackArgumentOrder stack_order_;
+#if V8_ENABLE_WEBASSEMBLY
+  const wasm::FunctionSig* wasm_sig_;
+#endif
   const char* const debug_name_;
-  const CFunctionInfo* c_function_info_ = nullptr;
+
+  mutable base::Optional<size_t> gp_param_count_;
+  mutable base::Optional<size_t> fp_param_count_;
 };
 
 DEFINE_OPERATORS_FOR_FLAGS(CallDescriptor::Flags)

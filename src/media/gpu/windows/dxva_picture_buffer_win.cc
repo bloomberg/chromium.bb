@@ -45,15 +45,6 @@ class DummyGLImage : public gl::GLImage {
                        const gfx::Rect& rect) override {
     return false;
   }
-  bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
-                            int z_order,
-                            gfx::OverlayTransform transform,
-                            const gfx::Rect& bounds_rect,
-                            const gfx::RectF& crop_rect,
-                            bool enable_blend,
-                            std::unique_ptr<gfx::GpuFence> gpu_fence) override {
-    return false;
-  }
   void SetColorSpace(const gfx::ColorSpace& color_space) override {}
   void Flush() override {}
   void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
@@ -516,7 +507,9 @@ bool EGLStreamPictureBuffer::BindSampleToTexture(
   dxgi_buffer->GetSubresourceIndex(&subresource);
 
   EGLAttrib frame_attributes[] = {
-      EGL_D3D_TEXTURE_SUBRESOURCE_ID_ANGLE, subresource, EGL_NONE,
+      EGL_D3D_TEXTURE_SUBRESOURCE_ID_ANGLE,
+      static_cast<EGLAttrib>(subresource),
+      EGL_NONE,
   };
 
   EGLBoolean result = eglStreamPostD3DTextureANGLE(

@@ -6,8 +6,24 @@
   --oobe-adaptive-dialog-content-top-padding: 0;
 }
 
-#intro-text {
+.subtitle-text {
+  color: var(--google-grey-900);
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 24px;
+}
+
+.subtitle-message-text {
   padding: 0 8px 16px 0;
+}
+
+.subtitle-message-text-minor {
+  color: var(--google-grey-900);
+  padding: 0 8px 16px 0;
+}
+
+.username-text {
+  padding-bottom: 30px;
 }
 
 #footer-text {
@@ -31,57 +47,4 @@
   color: rgb(128, 134, 139);
   line-height: 20px;
   padding-top: 20px;
-}
-
-#overlay-close-button {
-  margin-inline-end: 0;
-}
-
-oobe-text-button[disabled] {
-  pointer-events: none;
-}
-
-oobe-adaptive-dialog {
-  --oobe-dialog-content-padding-top: 0;
-}
-
-#user-name {
-  color: #757575;
-  padding-inline-start: 8px;
-}
-
-#user-image {
-  border-radius: 50%;
-  height: 20px;
-}
-
-#value-prop-view-old {
-  display: block;
-  height: 232px;
-  margin: auto;
-  transform: translateX(-10px);
-}
-
-:host-context(html:not([new-layout])) #consents-container {
-  padding-inline-start: 24px;
-}
-
-#column-container {
-  flex-direction: column;
-}
-
-@media screen and (min-width: 600px) {
-  #column-container {
-    flex-direction: row;
-  }
-
-  #value-prop-container {
-    align-items: center;
-    border-inline-end: 1px solid var(--google-grey-300);
-    width: 50%;
-  }
-
-  :host-context(html:not([new-layout])) #consents-container {
-    width: 50%;
-  }
 }

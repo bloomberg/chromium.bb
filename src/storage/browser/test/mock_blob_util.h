@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 
 namespace storage {
 
@@ -21,6 +21,10 @@ class ScopedTextBlob {
   ScopedTextBlob(BlobStorageContext* context,
                  const std::string& blob_id,
                  const std::string& data);
+
+  ScopedTextBlob(const ScopedTextBlob&) = delete;
+  ScopedTextBlob& operator=(const ScopedTextBlob&) = delete;
+
   ~ScopedTextBlob();
 
   // Returns a BlobDataHandle referring to the scoped blob.
@@ -28,10 +32,8 @@ class ScopedTextBlob {
 
  private:
   const std::string blob_id_;
-  BlobStorageContext* context_;
+  raw_ptr<BlobStorageContext> context_;
   std::unique_ptr<BlobDataHandle> handle_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedTextBlob);
 };
 
 }  // namespace storage

@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/containers/span.h"
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/tabs/tab_group_theme.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
@@ -25,6 +26,7 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/favicon_size.h"
+#include "ui/views/animation/ink_drop.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/highlight_path_generator.h"
@@ -91,7 +93,7 @@ class ColorPickerElementView : public views::Button {
                              : gfx::Insets(padding);
     SetBorder(views::CreateEmptyBorder(insets));
 
-    ink_drop()->SetMode(views::InkDropHost::InkDropMode::OFF);
+    views::InkDrop::Get(this)->SetMode(views::InkDropHost::InkDropMode::OFF);
     SetAnimateOnStateChange(true);
   }
 
@@ -194,7 +196,7 @@ class ColorPickerElementView : public views::Button {
 
   const base::RepeatingCallback<void(ColorPickerElementView*)>
       selected_callback_;
-  const views::BubbleDialogDelegateView* bubble_view_;
+  raw_ptr<const views::BubbleDialogDelegateView> bubble_view_;
   const tab_groups::TabGroupColorId color_id_;
   const std::u16string color_name_;
   bool selected_ = false;
@@ -252,7 +254,7 @@ ColorPickerView::ColorPickerView(
 ColorPickerView::~ColorPickerView() {
   // Remove child views early since they have references to us through a
   // callback.
-  RemoveAllChildViews(true);
+  RemoveAllChildViews();
 }
 
 absl::optional<int> ColorPickerView::GetSelectedElement() const {

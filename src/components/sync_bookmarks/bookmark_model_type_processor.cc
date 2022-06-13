@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/trace_event/memory_usage_estimator.h"
@@ -22,6 +23,7 @@
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/time.h"
 #include "components/sync/engine/commit_queue.h"
+#include "components/sync/engine/data_type_activation_response.h"
 #include "components/sync/engine/model_type_processor_metrics.h"
 #include "components/sync/engine/model_type_processor_proxy.h"
 #include "components/sync/model/data_type_activation_request.h"
@@ -60,6 +62,10 @@ class ScopedRemoteUpdateBookmarks {
     bookmark_model_->RemoveObserver(observer_);
   }
 
+  ScopedRemoteUpdateBookmarks(const ScopedRemoteUpdateBookmarks&) = delete;
+  ScopedRemoteUpdateBookmarks& operator=(const ScopedRemoteUpdateBookmarks&) =
+      delete;
+
   ~ScopedRemoteUpdateBookmarks() {
     // Notify UI intensive observers of BookmarkModel that all updates have been
     // applied, and that they may now be consumed. This prevents issues like the
@@ -70,14 +76,12 @@ class ScopedRemoteUpdateBookmarks {
   }
 
  private:
-  bookmarks::BookmarkModel* const bookmark_model_;
+  const raw_ptr<bookmarks::BookmarkModel> bookmark_model_;
 
   // Changes made to the bookmark model due to sync should not be undoable.
   ScopedSuspendBookmarkUndo suspend_undo_;
 
-  bookmarks::BookmarkModelObserver* const observer_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedRemoteUpdateBookmarks);
+  const raw_ptr<bookmarks::BookmarkModelObserver> observer_;
 };
 
 std::string ComputeServerDefinedUniqueTagForDebugging(
@@ -148,19 +152,12 @@ void BookmarkModelTypeProcessor::OnCommitCompleted(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // |error_response_list| is ignored, because all errors are treated as
-  // transientand the processor with eventually retry.
-
+  // transient and the processor with eventually retry.
   for (const syncer::CommitResponseData& response : committed_response_list) {
-    // In order to save space, |response.id_in_request| is written when it's
-    // different from |response.id|. If it's empty, then there was no id change
-    // during the commit, and |response.id| carries both the old and new ids.
-    const std::string& old_sync_id =
-        response.id_in_request.empty() ? response.id : response.id_in_request;
     const SyncedBookmarkTracker::Entity* entity =
-        bookmark_tracker_->GetEntityForSyncId(old_sync_id);
+        bookmark_tracker_->GetEntityForClientTagHash(response.client_tag_hash);
     if (!entity) {
-      DLOG(WARNING) << "Received a commit response for an unknown entity: "
-                    << old_sync_id;
+      DLOG(WARNING) << "Received a commit response for an unknown entity.";
       continue;
     }
 
@@ -188,6 +185,12 @@ void BookmarkModelTypeProcessor::OnUpdateReceived(
   if (!bookmark_tracker_) {
     OnInitialUpdateReceived(model_type_state, std::move(updates));
     return;
+  }
+
+  // Before applying incremental updates, run a quirk to mitigate some data
+  // corruption issue introduced by crbug.com/1231450.
+  for (syncer::UpdateResponseData& update : updates) {
+    MaybeFixGuidInSpecificsDueToPastBug(*bookmark_tracker_, &update.entity);
   }
 
   // Incremental updates.
@@ -516,12 +519,9 @@ void BookmarkModelTypeProcessor::AppendNodeAndChildrenForDebugging(
   data.modification_time =
       syncer::ProtoTimeToTime(metadata->modification_time());
   data.name = base::UTF16ToUTF8(node->GetTitle());
-  data.is_folder = node->is_folder();
-  data.unique_position =
-      syncer::UniquePosition::FromProto(metadata->unique_position());
-  data.specifics =
-      CreateSpecificsFromBookmarkNode(node, bookmark_model_,
-                                      /*force_favicon_load=*/false);
+  data.specifics = CreateSpecificsFromBookmarkNode(
+      node, bookmark_model_, metadata->unique_position(),
+      /*force_favicon_load=*/false);
 
   if (node->is_permanent_node()) {
     data.server_defined_unique_tag =
@@ -555,8 +555,11 @@ void BookmarkModelTypeProcessor::AppendNodeAndChildrenForDebugging(
   }
   data_dictionary->SetInteger("LOCAL_EXTERNAL_ID", node->id());
   data_dictionary->SetInteger("positionIndex", index);
-  data_dictionary->Set("metadata", syncer::EntityMetadataToValue(*metadata));
+  data_dictionary->SetKey("metadata",
+                          base::Value::FromUniquePtrValue(
+                              syncer::EntityMetadataToValue(*metadata)));
   data_dictionary->SetString("modelType", "Bookmarks");
+  data_dictionary->SetBoolean("IS_DIR", node->is_folder());
   all_nodes->Append(std::move(data_dictionary));
 
   int i = 0;

@@ -237,7 +237,7 @@ def _GenerateBinarySizePluginDetails(metrics):
       binary_size_listings.insert(0, listing)
       continue
     # The main 'binary size' delta is always shown even if unchanged.
-    elif delta.actual == 0:
+    if delta.actual == 0:
       continue
     binary_size_listings.append(listing)
 
@@ -363,7 +363,7 @@ PASSING Checks:
 {}
 
 To understand what those checks are and how to pass them, see:
-https://chromium.googlesource.com/chromium/src/+/master/docs/speed/binary_size/android_binary_size_trybot.md
+https://chromium.googlesource.com/chromium/src/+/main/docs/speed/binary_size/android_binary_size_trybot.md
 
 """.format(failing_checks_text, passing_checks_text)
 

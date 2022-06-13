@@ -15,7 +15,7 @@
 #include "base/callback_helpers.h"
 #include "base/containers/contains.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -138,6 +138,10 @@ class ScopedCursorHider {
       hid_cursor_ = true;
     }
   }
+
+  ScopedCursorHider(const ScopedCursorHider&) = delete;
+  ScopedCursorHider& operator=(const ScopedCursorHider&) = delete;
+
   ~ScopedCursorHider() {
     if (!window_->IsRootWindow())
       return;
@@ -156,10 +160,8 @@ class ScopedCursorHider {
   }
 
  private:
-  Window* window_;
+  raw_ptr<Window> window_;
   bool hid_cursor_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedCursorHider);
 };
 
 }  // namespace
@@ -344,7 +346,7 @@ WindowTreeHost* Window::GetHost() {
 
 const WindowTreeHost* Window::GetHost() const {
   const Window* root_window = GetRootWindow();
-  return root_window ? root_window->host_ : nullptr;
+  return root_window ? root_window->host_.get() : nullptr;
 }
 
 void Window::Show() {
@@ -871,7 +873,8 @@ void Window::SetNativeWindowProperty(const char* key, void* value) {
 }
 
 void* Window::GetNativeWindowProperty(const char* key) const {
-  return reinterpret_cast<void*>(GetPropertyInternal(key, 0));
+  return reinterpret_cast<void*>(GetPropertyInternal(key, 0,
+                                                     /*search_parent=*/false));
 }
 
 void Window::OnDeviceScaleFactorChanged(float old_device_scale_factor,
@@ -1614,7 +1617,6 @@ void Window::OnFrameTokenChanged(uint32_t frame_token,
                                  base::TimeTicks activation_time) {}
 
 void Window::UpdateLayerName() {
-#if DCHECK_IS_ON()
   DCHECK(layer());
 
   std::string layer_name(GetName());
@@ -1625,7 +1627,6 @@ void Window::UpdateLayerName() {
     layer_name += " " + base::NumberToString(id_);
 
   layer()->SetName(layer_name);
-#endif
 }
 
 void Window::RegisterFrameSinkId() {
@@ -1748,9 +1749,6 @@ void Window::SetVisible(bool visible) {
     Hide();
   // Changed notification is handled in SetVisibleInternal().
 }
-
-// Under Windows this macro is defined.
-#undef GetClassName
 
 BEGIN_METADATA_BASE(Window)
 ADD_READONLY_PROPERTY_METADATA(gfx::Rect, ActualBoundsInRootWindow)

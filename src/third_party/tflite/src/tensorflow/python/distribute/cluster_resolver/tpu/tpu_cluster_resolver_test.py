@@ -14,10 +14,6 @@
 # ==============================================================================
 """Tests for TPUClusterResolver."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import os
 
 import six
@@ -140,8 +136,8 @@ class TPUClusterResolverTest(test.TestCase):
 
   @mock.patch.object(resolver, 'is_running_in_gce', mock_is_running_in_gce)
   def testCheckRunningInGceWithNoTpuName(self):
-    with self.assertRaisesRegexp(ValueError,
-                                 'Please provide a TPU Name to connect to.*'):
+    with self.assertRaisesRegex(ValueError,
+                                'Please provide a TPU Name to connect to.*'):
       resolver.TPUClusterResolver(tpu='')
 
   @mock.patch.object(six.moves.urllib.request, 'urlopen',
@@ -705,6 +701,10 @@ class TPUClusterResolverTest(test.TestCase):
         None, None, 'timeout')
     with self.assertRaises(RuntimeError):
       cluster_resolver.num_accelerators()
+
+  def testLocalTpuResolver(self):
+    cr = resolver.TPUClusterResolver(tpu='local')
+    self.assertEqual(cr.get_master(), '')
 
 
 if __name__ == '__main__':

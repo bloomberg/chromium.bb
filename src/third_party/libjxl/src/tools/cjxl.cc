@@ -1,16 +1,7 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 #include "tools/cjxl.h"
 
@@ -28,6 +19,7 @@
 #include "lib/extras/codec_jpg.h"
 #endif
 
+#include "lib/extras/time.h"
 #include "lib/jxl/aux_out.h"
 #include "lib/jxl/base/cache_aligned.h"
 #include "lib/jxl/base/compiler_specific.h"
@@ -36,7 +28,6 @@
 #include "lib/jxl/base/profiler.h"
 #include "lib/jxl/base/status.h"
 #include "lib/jxl/base/thread_pool_internal.h"
-#include "lib/jxl/base/time.h"
 #include "lib/jxl/codec_in_out.h"
 #include "lib/jxl/common.h"
 #include "lib/jxl/enc_cache.h"
@@ -69,6 +60,9 @@ static inline bool ParseColorTransform(const char* arg,
 static inline bool ParseIntensityTarget(const char* arg, float* out) {
   return ParseFloat(arg, out) && *out > 0;
 }
+static inline bool ParsePhotonNoiseParameter(const char* arg, float* out) {
+  return strncmp(arg, "ISO", 3) == 0 && ParseFloat(arg + 3, out) && *out > 0;
+}
 
 // Proposes a distance to try for a given bpp target. This could depend
 // on the entropy in the image, too, but let's start with something.
@@ -79,7 +73,7 @@ static double ApproximateDistanceForBPP(double bpp) {
 jxl::Status LoadSaliencyMap(const std::string& filename_heatmap,
                             jxl::ThreadPool* pool, jxl::ImageF* out_map) {
   jxl::CodecInOut io_heatmap;
-  if (!SetFromFile(filename_heatmap, &io_heatmap, pool)) {
+  if (!SetFromFile(filename_heatmap, jxl::ColorHints(), &io_heatmap, pool)) {
     return JXL_FAILURE("Could not load heatmap.");
   }
   *out_map = std::move(io_heatmap.Main().color()->Plane(0));
@@ -313,7 +307,7 @@ void CompressArgs::AddCommandLineOptions(CommandLineParser* cmdline) {
   // Target distance/size/bpp
   opt_distance_id = cmdline->AddOptionValue(
       'd', "distance", "maxError",
-      ("Max. butteraugli distance, lower = higher quality. Range: 0 .. 15.\n"
+      ("Max. butteraugli distance, lower = higher quality. Range: 0 .. 25.\n"
        "    0.0 = mathematically lossless. Default for already-lossy input "
        "(JPEG/GIF).\n"
        "    1.0 = visually lossless. Default for other input.\n"
@@ -340,12 +334,18 @@ void CompressArgs::AddCommandLineOptions(CommandLineParser* cmdline) {
       &quality, &ParseFloat);
 
   cmdline->AddOptionValue(
-      's', "speed", "EFFORT",
-      "Encoder effort/speed setting. Valid values are:\n"
-      "    3|falcon| 4|cheetah| 5|hare| 6|wombat| 7|squirrel| 8|kitten| "
-      "9|tortoise\n"
-      "    Default: squirrel (7). Values are in order from faster to slower.",
+      'e', "effort", "EFFORT",
+      "Encoder effort setting. Range: 1 .. 9.\n"
+      "    Default: 7. Higher number is more effort (slower).",
       &params.speed_tier, &ParseSpeedTier);
+
+  cmdline->AddOptionValue(
+      's', "speed", "ANIMAL",
+      "Deprecated synonym for --effort. Valid values are:\n"
+      "    lightning (1), thunder, falcon, cheetah, hare, wombat, squirrel, "
+      "kitten, tortoise (9)\n"
+      "    Default: squirrel. Values are in order from faster to slower.\n",
+      &params.speed_tier, &ParseSpeedTier, 2);
 
   cmdline->AddOptionValue('\0', "faster_decoding", "AMOUNT",
                           "Favour higher decoding speed. 0 = default, higher "
@@ -356,9 +356,24 @@ void CompressArgs::AddCommandLineOptions(CommandLineParser* cmdline) {
                          "Enable progressive/responsive decoding.",
                          &progressive, &SetBooleanTrue);
 
-  cmdline->AddOptionFlag('\0', "middleout",
+  cmdline->AddOptionFlag('\0', "premultiply",
+                         "Force premultiplied (associated) alpha.",
+                         &force_premultiplied, &SetBooleanTrue, 1);
+  cmdline->AddOptionValue('\0', "keep_invisible", "0|1",
+                          "force disable/enable preserving color of invisible "
+                          "pixels (default: 1 if lossless, 0 if lossy).",
+                          &params.keep_invisible, &ParseOverride, 1);
+
+  cmdline->AddOptionFlag('\0', "centerfirst",
                          "Put center groups first in the compressed file.",
-                         &params.middleout, &SetBooleanTrue, 1);
+                         &params.centerfirst, &SetBooleanTrue, 1);
+
+  cmdline->AddOptionValue('\0', "center_x", "0..XSIZE",
+                          "Put center groups first in the compressed file.",
+                          &params.center_x, &ParseUnsigned, 1);
+  cmdline->AddOptionValue('\0', "center_y", "0..YSIZE",
+                          "Put center groups first in the compressed file.",
+                          &params.center_y, &ParseUnsigned, 1);
 
   // Flags.
   cmdline->AddOptionFlag('\0', "progressive_ac",
@@ -390,30 +405,44 @@ void CompressArgs::AddCommandLineOptions(CommandLineParser* cmdline) {
                           &num_reps, &ParseUnsigned, 1);
 
   cmdline->AddOptionValue('\0', "noise", "0|1",
-                          "force enable/disable noise generation.",
+                          "force disable/enable noise generation.",
                           &params.noise, &ParseOverride, 1);
+  cmdline->AddOptionValue(
+      '\0', "photon_noise", "ISO3200",
+      "Set the noise to approximately what it would be at a given nominal "
+      "exposure on a 35mm camera. For formats other than 35mm, or when the "
+      "whole sensor was not used, you can multiply the ISO value by the "
+      "equivalence ratio squared, for example by 2.25 for an APS-C camera.",
+      &params.photon_noise_iso, &ParsePhotonNoiseParameter, 1);
   cmdline->AddOptionValue('\0', "dots", "0|1",
-                          "force enable/disable dots generation.", &params.dots,
+                          "force disable/enable dots generation.", &params.dots,
                           &ParseOverride, 1);
   cmdline->AddOptionValue('\0', "patches", "0|1",
-                          "force enable/disable patches generation.",
+                          "force disable/enable patches generation.",
                           &params.patches, &ParseOverride, 1);
-  cmdline->AddOptionValue('\0', "resampling", "1|2|4|8",
-                          "Subsample all color channels by this factor.",
-                          &params.resampling, &ParseUnsigned, 1);
+  cmdline->AddOptionValue(
+      '\0', "resampling", "0|1|2|4|8",
+      "Subsample all color channels by this factor, or use 0 to choose the "
+      "resampling factor based on distance.",
+      &params.resampling, &ParseUnsigned, 0);
   cmdline->AddOptionValue(
       '\0', "ec_resampling", "1|2|4|8",
       "Subsample all extra channels by this factor. If this value is smaller "
       "than the resampling of color channels, it will be increased to match.",
       &params.ec_resampling, &ParseUnsigned, 2);
+  cmdline->AddOptionFlag('\0', "already_downsampled",
+                         "Do not downsample the given input before encoding, "
+                         "but still signal that the decoder should upsample.",
+                         &params.already_downsampled, &SetBooleanTrue, 2);
 
   cmdline->AddOptionValue(
       '\0', "epf", "-1..3",
       "Edge preserving filter level (-1 = choose based on quality, default)",
       &params.epf, &ParseSigned, 1);
 
-  cmdline->AddOptionValue('\0', "gaborish", "0|1", "force disable gaborish.",
-                          &params.gaborish, &ParseOverride, 1);
+  cmdline->AddOptionValue('\0', "gaborish", "0|1",
+                          "force disable/enable gaborish.", &params.gaborish,
+                          &ParseOverride, 1);
 
   opt_intensity_target_id = cmdline->AddOptionValue(
       '\0', "intensity_target", "N",
@@ -435,7 +464,7 @@ void CompressArgs::AddCommandLineOptions(CommandLineParser* cmdline) {
       'x', "dec-hints", "key=value",
       "color_space indicates the ColorEncoding, see Description();\n"
       "icc_pathname refers to a binary file containing an ICC profile.",
-      &dec_hints, &ParseAndAppendKeyValue, 1);
+      &color_hints, &ParseAndAppendKeyValue, 1);
 
   cmdline->AddOptionValue(
       '\0', "override_bitdepth", "0=use from image, 1-32=override",
@@ -466,7 +495,7 @@ void CompressArgs::AddCommandLineOptions(CommandLineParser* cmdline) {
        "2-37=RCT (default: try several, depending on speed)"),
       &params.colorspace, &ParseSigned, 1);
 
-  m_group_size_id = cmdline->AddOptionValue(
+  opt_m_group_size_id = cmdline->AddOptionValue(
       'g', "group-size", "K",
       ("[modular encoding] set group size to 128 << K "
        "(default: 1 or 2)"),
@@ -486,11 +515,6 @@ void CompressArgs::AddCommandLineOptions(CommandLineParser* cmdline) {
       'E', "extra-properties", "K",
       "[modular encoding] number of extra MA tree properties to use",
       &params.options.max_properties, &ParseSigned, 2);
-
-  cmdline->AddOptionValue('N', "near-lossless", "max_d",
-                          "[modular encoding] apply near-lossless "
-                          "preprocessing with maximum delta = max_d",
-                          &params.near_lossless, &ParseSigned, 1);
 
   cmdline->AddOptionValue('\0', "palette", "K",
                           "[modular encoding] use a palette if image has at "
@@ -575,10 +599,11 @@ jxl::Status CompressArgs::ValidateArgs(const CommandLineParser& cmdline) {
       }
     }
   }
+  if (params.resampling > 1 && !params.already_downsampled)
+    jpeg_transcode = false;
 
   if (progressive) {
     params.qprogressive_mode = true;
-    params.progressive_dc = 1;
     params.responsive = 1;
     default_settings = false;
   }
@@ -594,7 +619,7 @@ jxl::Status CompressArgs::ValidateArgs(const CommandLineParser& cmdline) {
 
   if (got_distance) {
     constexpr float butteraugli_min_dist = 0.1f;
-    constexpr float butteraugli_max_dist = 15.0f;
+    constexpr float butteraugli_max_dist = 25.0f;
     if (!(0 <= params.butteraugli_distance &&
           params.butteraugli_distance <= butteraugli_max_dist)) {
       fprintf(stderr, "Invalid/out of range distance, try 0 to %g.\n",
@@ -609,6 +634,10 @@ jxl::Status CompressArgs::ValidateArgs(const CommandLineParser& cmdline) {
       params.butteraugli_distance = butteraugli_min_dist;
     }
     default_settings = false;
+  }
+
+  if (got_target_bpp || got_target_size) {
+    jpeg_transcode = false;
   }
 
   if (got_target_bpp + got_target_size + got_distance + got_quality > 1) {
@@ -646,11 +675,6 @@ jxl::Status CompressArgs::ValidateArgs(const CommandLineParser& cmdline) {
     }
   }
 
-  if (params.near_lossless) {
-    // Near-lossless assumes -R 0
-    params.responsive = 0;
-  }
-
   if (override_bitdepth > 32) {
     fprintf(stderr, "override_bitdepth must be <= 32\n");
     return false;
@@ -682,7 +706,7 @@ jxl::Status CompressArgs::ValidateArgs(const CommandLineParser& cmdline) {
 jxl::Status CompressArgs::ValidateArgsAfterLoad(
     const CommandLineParser& cmdline, const jxl::CodecInOut& io) {
   if (!ValidateArgs(cmdline)) return false;
-  bool got_m_group_size = cmdline.GetOption(m_group_size_id)->matched();
+  bool got_m_group_size = cmdline.GetOption(opt_m_group_size_id)->matched();
   if (params.modular_mode && !got_m_group_size) {
     // Default modular group size: set to 512 if 256 would be silly
     const size_t kThinImageThr = 256 + 64;
@@ -719,30 +743,20 @@ jxl::Status LoadAll(CompressArgs& args, jxl::ThreadPoolInternal* pool,
   const double t0 = jxl::Now();
 
   io->target_nits = args.intensity_target;
-  io->dec_hints = args.dec_hints;
   io->dec_target = (args.jpeg_transcode ? jxl::DecodeTarget::kQuantizedCoeffs
                                         : jxl::DecodeTarget::kPixels);
   jxl::Codec input_codec;
-  if (!SetFromFile(args.params.file_in, io, nullptr, &input_codec)) {
+  if (!SetFromFile(args.params.file_in, args.color_hints, io, nullptr,
+                   &input_codec)) {
     fprintf(stderr, "Failed to read image %s.\n", args.params.file_in);
     return false;
   }
   if (input_codec != jxl::Codec::kJPG) args.jpeg_transcode = false;
+  if (args.jpeg_transcode) args.params.butteraugli_distance = 0;
 
   if (input_codec == jxl::Codec::kGIF && args.default_settings) {
     args.params.modular_mode = true;
-    args.params.options.predictor = jxl::Predictor::Select;
-    args.params.responsive = 0;
-    args.params.colorspace = 0;
-    args.params.channel_colors_pre_transform_percent = 0;
-    args.params.channel_colors_percent = 0;
     args.params.quality_pair.first = args.params.quality_pair.second = 100;
-  }
-  if (args.params.modular_mode && args.params.quality_pair.first < 100) {
-    if (io->metadata.m.bit_depth.floating_point_sample) {
-      // for lossy modular, pretend pfm/exr is integer data
-      io->metadata.m.SetUintSamples(12);
-    }
   }
   if (args.override_bitdepth != 0) {
     if (args.override_bitdepth == 32) {
@@ -750,6 +764,9 @@ jxl::Status LoadAll(CompressArgs& args, jxl::ThreadPoolInternal* pool,
     } else {
       io->metadata.m.SetUintSamples(args.override_bitdepth);
     }
+  }
+  if (args.force_premultiplied) {
+    io->PremultiplyAlpha();
   }
 
   jxl::ImageF saliency_map;

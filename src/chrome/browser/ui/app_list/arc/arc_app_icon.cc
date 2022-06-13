@@ -15,7 +15,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
 #include "base/task/post_task.h"
@@ -51,7 +50,7 @@ data_decoder::DataDecoder& GetDataDecoder() {
 
 ArcAppIcon::ReadResult::ReadResult(bool error,
                                    bool request_to_install,
-                                   ui::ScaleFactor scale_factor,
+                                   ui::ResourceScaleFactor scale_factor,
                                    bool resize_allowed,
                                    std::vector<std::string> unsafe_icon_data)
     : error(error),
@@ -70,6 +69,10 @@ ArcAppIcon::ReadResult::~ReadResult() = default;
 class ArcAppIcon::Source : public gfx::ImageSkiaSource {
  public:
   Source(const base::WeakPtr<ArcAppIcon>& host, int resource_size_in_dip);
+
+  Source(const Source&) = delete;
+  Source& operator=(const Source&) = delete;
+
   ~Source() override;
 
  private:
@@ -86,8 +89,6 @@ class ArcAppIcon::Source : public gfx::ImageSkiaSource {
   // is a cache to avoid resizing IDR icons in GetImageForScale every time.
   static base::LazyInstance<std::map<std::pair<int, int>, gfx::ImageSkia>>::
       DestructorAtExit default_icons_cache_;
-
-  DISALLOW_COPY_AND_ASSIGN(Source);
 };
 
 base::LazyInstance<std::map<std::pair<int, int>, gfx::ImageSkia>>::
@@ -117,7 +118,7 @@ gfx::ImageSkiaRep ArcAppIcon::Source::GetImageForScale(float scale) {
                                             : IDR_ARC_SUPPORT_ICON_192;
   } else {
     if (host_)
-      host_->LoadForScaleFactor(ui::GetSupportedScaleFactor(scale));
+      host_->LoadForScaleFactor(ui::GetSupportedResourceScaleFactor(scale));
     resource_id = IDR_APP_DEFAULT_ICON;
   }
 
@@ -149,7 +150,11 @@ class ArcAppIcon::DecodeRequest : public ImageDecoder::ImageRequest {
       bool resize_allowed,
       bool retain_padding,
       gfx::ImageSkia& image_skia,
-      std::map<ui::ScaleFactor, base::Time>& incomplete_scale_factors);
+      std::map<ui::ResourceScaleFactor, base::Time>& incomplete_scale_factors);
+
+  DecodeRequest(const DecodeRequest&) = delete;
+  DecodeRequest& operator=(const DecodeRequest&) = delete;
+
   ~DecodeRequest() override;
 
   // ImageDecoder::ImageRequest
@@ -162,8 +167,7 @@ class ArcAppIcon::DecodeRequest : public ImageDecoder::ImageRequest {
   const bool resize_allowed_;
   const bool retain_padding_;
   gfx::ImageSkia& image_skia_;
-  std::map<ui::ScaleFactor, base::Time>& incomplete_scale_factors_;
-  DISALLOW_COPY_AND_ASSIGN(DecodeRequest);
+  std::map<ui::ResourceScaleFactor, base::Time>& incomplete_scale_factors_;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -175,7 +179,7 @@ ArcAppIcon::DecodeRequest::DecodeRequest(
     bool resize_allowed,
     bool retain_padding,
     gfx::ImageSkia& image_skia,
-    std::map<ui::ScaleFactor, base::Time>& incomplete_scale_factors)
+    std::map<ui::ResourceScaleFactor, base::Time>& incomplete_scale_factors)
     : ImageRequest(&GetDataDecoder()),
       host_(host),
       descriptor_(descriptor),
@@ -250,8 +254,8 @@ ArcAppIcon::ArcAppIcon(content::BrowserContext* context,
   CHECK(observer_);
 
   gfx::Size resource_size(resource_size_in_dip, resource_size_in_dip);
-  const std::vector<ui::ScaleFactor>& scale_factors =
-      ui::GetSupportedScaleFactors();
+  const std::vector<ui::ResourceScaleFactor>& scale_factors =
+      ui::GetSupportedResourceScaleFactors();
   switch (icon_type) {
     case IconType::kAdaptive:
       foreground_image_skia_ = gfx::ImageSkia(
@@ -306,11 +310,11 @@ void ArcAppIcon::LoadSupportedScaleFactors() {
     case IconType::kAdaptive:
       for (auto scale_factor : foreground_incomplete_scale_factors_) {
         foreground_image_skia_.GetRepresentation(
-            ui::GetScaleForScaleFactor(scale_factor.first));
+            ui::GetScaleForResourceScaleFactor(scale_factor.first));
       }
       for (auto scale_factor : background_incomplete_scale_factors_) {
         background_image_skia_.GetRepresentation(
-            ui::GetScaleForScaleFactor(scale_factor.first));
+            ui::GetScaleForResourceScaleFactor(scale_factor.first));
       }
       // Deliberately fall through to IconType::kCompressed to update
       // |image_skia_|.
@@ -321,7 +325,7 @@ void ArcAppIcon::LoadSupportedScaleFactors() {
       // IDR_APP_DEFAULT_ICON), via ArcAppIcon::Source::GetImageForScale.
       for (auto scale_factor : incomplete_scale_factors_) {
         image_skia_.GetRepresentation(
-            ui::GetScaleForScaleFactor(scale_factor.first));
+            ui::GetScaleForResourceScaleFactor(scale_factor.first));
       }
       break;
   }
@@ -358,7 +362,7 @@ bool ArcAppIcon::EverySupportedScaleFactorIsLoaded() {
         if (it->second &&
             !base::Contains(foreground_incomplete_scale_factors_, it->first)) {
           it->second = false;
-          float scale = ui::GetScaleForScaleFactor(it->first);
+          float scale = ui::GetScaleForResourceScaleFactor(it->first);
           image_skia_.RemoveRepresentation(scale);
           image_skia_.AddRepresentation(
               foreground_image_skia_.GetRepresentation(scale));
@@ -372,7 +376,7 @@ bool ArcAppIcon::EverySupportedScaleFactorIsLoaded() {
   }
 }
 
-void ArcAppIcon::LoadForScaleFactor(ui::ScaleFactor scale_factor) {
+void ArcAppIcon::LoadForScaleFactor(ui::ResourceScaleFactor scale_factor) {
   // We provide Play Store icon from Chrome resources and it is not expected
   // that we have external load request.
   DCHECK_NE(app_id(), arc::kPlayStoreAppId);
@@ -429,7 +433,7 @@ void ArcAppIcon::LoadForScaleFactor(ui::ScaleFactor scale_factor) {
       base::BindOnce(&ArcAppIcon::OnIconRead, weak_ptr_factory_.GetWeakPtr()));
 }
 
-void ArcAppIcon::MaybeRequestIcon(ui::ScaleFactor scale_factor) {
+void ArcAppIcon::MaybeRequestIcon(ui::ResourceScaleFactor scale_factor) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(context_);
   DCHECK(prefs);
@@ -446,7 +450,7 @@ void ArcAppIcon::MaybeRequestIcon(ui::ScaleFactor scale_factor) {
 // static
 std::unique_ptr<ArcAppIcon::ReadResult> ArcAppIcon::ReadOnBackgroundThread(
     ArcAppIcon::IconType icon_type,
-    ui::ScaleFactor scale_factor,
+    ui::ResourceScaleFactor scale_factor,
     const std::vector<base::FilePath>& paths,
     const std::vector<base::FilePath>& default_app_paths) {
   DCHECK(!paths.empty());
@@ -467,7 +471,7 @@ std::unique_ptr<ArcAppIcon::ReadResult> ArcAppIcon::ReadOnBackgroundThread(
 
 // static
 std::unique_ptr<ArcAppIcon::ReadResult> ArcAppIcon::ReadSingleIconFile(
-    ui::ScaleFactor scale_factor,
+    ui::ResourceScaleFactor scale_factor,
     const base::FilePath& path,
     const base::FilePath& default_app_path) {
   DCHECK(!path.empty());
@@ -496,7 +500,7 @@ std::unique_ptr<ArcAppIcon::ReadResult> ArcAppIcon::ReadSingleIconFile(
 
 // static
 std::unique_ptr<ArcAppIcon::ReadResult> ArcAppIcon::ReadAdaptiveIconFiles(
-    ui::ScaleFactor scale_factor,
+    ui::ResourceScaleFactor scale_factor,
     const std::vector<base::FilePath>& paths,
     const std::vector<base::FilePath>& default_app_paths) {
   DCHECK_EQ(3u, paths.size());
@@ -519,12 +523,10 @@ std::unique_ptr<ArcAppIcon::ReadResult> ArcAppIcon::ReadAdaptiveIconFiles(
   if (!base::PathExists(background_path)) {
     // For non-adaptive icon, there could be a |foreground_icon_path| file
     // only without a |background_icon_path| file.
-    base::UmaHistogramBoolean("Arc.AdaptiveIconLoad.FromArcAppIcon", false);
     return ArcAppIcon::ReadFile(false /* request_to_install */, scale_factor,
                                 false /* resize_allowed */, foreground_path);
   }
 
-  base::UmaHistogramBoolean("Arc.AdaptiveIconLoad.FromArcAppIcon", true);
   return ArcAppIcon::ReadFiles(false /* request_to_install */, scale_factor,
                                false /* resize_allowed */, foreground_path,
                                background_path);
@@ -533,7 +535,7 @@ std::unique_ptr<ArcAppIcon::ReadResult> ArcAppIcon::ReadAdaptiveIconFiles(
 // static
 std::unique_ptr<ArcAppIcon::ReadResult>
 ArcAppIcon::ReadDefaultAppAdaptiveIconFiles(
-    ui::ScaleFactor scale_factor,
+    ui::ResourceScaleFactor scale_factor,
     const std::vector<base::FilePath>& default_app_paths) {
   // Check the default app icon path, and read the icon files for the default
   // app if the files exist.
@@ -562,14 +564,11 @@ ArcAppIcon::ReadDefaultAppAdaptiveIconFiles(
       !base::PathExists(default_app_background_path)) {
     // For non-adaptive icon, there could be a |default_app_foreground_path|
     // file only without a |default_app_background_path| file.
-    base::UmaHistogramBoolean("Arc.AdaptiveIconLoad.FromArcDefaultAppIcon",
-                              false);
     return ArcAppIcon::ReadFile(true /* request_to_install */, scale_factor,
                                 true /* resize_allowed */,
                                 default_app_foreground_path);
   }
 
-  base::UmaHistogramBoolean("Arc.AdaptiveIconLoad.FromArcDefaultAppIcon", true);
   return ArcAppIcon::ReadFiles(
       true /* request_to_install */, scale_factor, true /* resize_allowed */,
       default_app_foreground_path, default_app_background_path);
@@ -578,7 +577,7 @@ ArcAppIcon::ReadDefaultAppAdaptiveIconFiles(
 // static
 std::unique_ptr<ArcAppIcon::ReadResult> ArcAppIcon::ReadFile(
     bool request_to_install,
-    ui::ScaleFactor scale_factor,
+    ui::ResourceScaleFactor scale_factor,
     bool resize_allowed,
     const base::FilePath& path) {
   // Read the file from disk. Sometimes, the file could be deleted, e.g. when
@@ -606,7 +605,7 @@ std::unique_ptr<ArcAppIcon::ReadResult> ArcAppIcon::ReadFile(
 // static
 std::unique_ptr<ArcAppIcon::ReadResult> ArcAppIcon::ReadFiles(
     bool request_to_install,
-    ui::ScaleFactor scale_factor,
+    ui::ResourceScaleFactor scale_factor,
     bool resize_allowed,
     const base::FilePath& foreground_path,
     const base::FilePath& background_path) {
@@ -665,7 +664,7 @@ void ArcAppIcon::OnIconRead(
   switch (icon_type_) {
     case IconType::kUncompressed: {
       DCHECK_EQ(1u, read_result->unsafe_icon_data.size());
-      DecodeImage(read_result->unsafe_icon_data[0],
+      DecodeImage(std::move(read_result->unsafe_icon_data[0]),
                   ArcAppIconDescriptor(resource_size_in_dip_,
                                        read_result->scale_factor),
                   read_result->resize_allowed, false /* retain_padding */,
@@ -684,7 +683,7 @@ void ArcAppIcon::OnIconRead(
       // element for |foreground_icon_path| only.
       if (read_result->unsafe_icon_data.size() == 1) {
         is_adaptive_icons_[read_result->scale_factor] = false;
-        DecodeImage(read_result->unsafe_icon_data[0],
+        DecodeImage(std::move(read_result->unsafe_icon_data[0]),
                     ArcAppIconDescriptor(resource_size_in_dip_,
                                          read_result->scale_factor),
                     read_result->resize_allowed, false /* retain_padding */,
@@ -693,12 +692,12 @@ void ArcAppIcon::OnIconRead(
       }
 
       DCHECK_EQ(2u, read_result->unsafe_icon_data.size());
-      DecodeImage(read_result->unsafe_icon_data[0],
+      DecodeImage(std::move(read_result->unsafe_icon_data[0]),
                   ArcAppIconDescriptor(resource_size_in_dip_,
                                        read_result->scale_factor),
                   read_result->resize_allowed, true /* retain_padding */,
                   foreground_image_skia_, foreground_incomplete_scale_factors_);
-      DecodeImage(read_result->unsafe_icon_data[1],
+      DecodeImage(std::move(read_result->unsafe_icon_data[1]),
                   ArcAppIconDescriptor(resource_size_in_dip_,
                                        read_result->scale_factor),
                   read_result->resize_allowed, true /* retain_padding */,
@@ -709,12 +708,12 @@ void ArcAppIcon::OnIconRead(
 }
 
 void ArcAppIcon::DecodeImage(
-    const std::string& unsafe_icon_data,
+    std::string unsafe_icon_data,
     const ArcAppIconDescriptor& descriptor,
     bool resize_allowed,
     bool retain_padding,
     gfx::ImageSkia& image_skia,
-    std::map<ui::ScaleFactor, base::Time>& incomplete_scale_factors) {
+    std::map<ui::ResourceScaleFactor, base::Time>& incomplete_scale_factors) {
   decode_requests_.emplace_back(std::make_unique<DecodeRequest>(
       *this, descriptor, resize_allowed, retain_padding, image_skia,
       incomplete_scale_factors));
@@ -729,18 +728,20 @@ void ArcAppIcon::DecodeImage(
       decode_requests_.back()->OnDecodeImageFailed();
     }
   } else {
-    ImageDecoder::Start(decode_requests_.back().get(), unsafe_icon_data);
+    ImageDecoder::Start(decode_requests_.back().get(),
+                        std::move(unsafe_icon_data));
   }
 }
 
 void ArcAppIcon::UpdateImageSkia(
-    ui::ScaleFactor scale_factor,
+    ui::ResourceScaleFactor scale_factor,
     const SkBitmap& bitmap,
     gfx::ImageSkia& image_skia,
-    std::map<ui::ScaleFactor, base::Time>& incomplete_scale_factors) {
+    std::map<ui::ResourceScaleFactor, base::Time>& incomplete_scale_factors) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  gfx::ImageSkiaRep image_rep(bitmap, ui::GetScaleForScaleFactor(scale_factor));
+  gfx::ImageSkiaRep image_rep(bitmap,
+                              ui::GetScaleForResourceScaleFactor(scale_factor));
   DCHECK(ui::IsSupportedScale(image_rep.scale()));
 
   image_skia.RemoveRepresentation(image_rep.scale());
@@ -762,7 +763,7 @@ void ArcAppIcon::UpdateImageSkia(
   observer_->OnIconUpdated(this);
 }
 
-void ArcAppIcon::UpdateCompressed(ui::ScaleFactor scale_factor,
+void ArcAppIcon::UpdateCompressed(ui::ResourceScaleFactor scale_factor,
                                   std::string data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   compressed_images_[scale_factor] = std::move(data);

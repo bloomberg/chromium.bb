@@ -10,51 +10,53 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/global_media_controls/cast_media_notification_item.h"
-#include "chrome/browser/ui/global_media_controls/media_notification_container_observer.h"
-#include "chrome/browser/ui/global_media_controls/media_notification_container_observer_set.h"
-#include "chrome/browser/ui/global_media_controls/media_notification_producer.h"
+#include "components/global_media_controls/public/media_item_producer.h"
+#include "components/global_media_controls/public/media_item_ui_observer.h"
+#include "components/global_media_controls/public/media_item_ui_observer_set.h"
 #include "components/media_router/browser/media_routes_observer.h"
 
-class Profile;
+namespace global_media_controls {
+class MediaItemManager;
+}  // namespace global_media_controls
 
-namespace media_message_center {
-class MediaNotificationController;
-}  // namespace media_message_center
+class Profile;
 
 // Manages media notifications shown in the Global Media Controls dialog for
 // active Cast sessions.
 class CastMediaNotificationProducer
-    : public MediaNotificationProducer,
+    : public global_media_controls::MediaItemProducer,
       public media_router::MediaRoutesObserver,
-      public MediaNotificationContainerObserver {
+      public global_media_controls::MediaItemUIObserver {
  public:
   CastMediaNotificationProducer(
       Profile* profile,
-      media_message_center::MediaNotificationController*
-          notification_controller,
+      global_media_controls::MediaItemManager* item_manager,
       base::RepeatingClosure items_changed_callback);
   CastMediaNotificationProducer(
       Profile* profile,
       media_router::MediaRouter* router,
-      media_message_center::MediaNotificationController*
-          notification_controller,
+      global_media_controls::MediaItemManager* item_manager,
       base::RepeatingClosure items_changed_callback_);
   CastMediaNotificationProducer(const CastMediaNotificationProducer&) = delete;
   CastMediaNotificationProducer& operator=(
       const CastMediaNotificationProducer&) = delete;
   ~CastMediaNotificationProducer() override;
 
-  // MediaNotificationProducer:
-  base::WeakPtr<media_message_center::MediaNotificationItem>
-  GetNotificationItem(const std::string& id) override;
-  std::set<std::string> GetActiveControllableNotificationIds() const override;
+  // global_media_controls::MediaItemProducer:
+  base::WeakPtr<media_message_center::MediaNotificationItem> GetMediaItem(
+      const std::string& id) override;
+  std::set<std::string> GetActiveControllableItemIds() override;
+  bool HasFrozenItems() override;
   void OnItemShown(const std::string& id,
-                   MediaNotificationContainerImpl* container) override;
+                   global_media_controls::MediaItemUI* item_ui) override;
+  void OnDialogDisplayed() override;
+  bool IsItemActivelyPlaying(const std::string& id) override;
 
-  // MediaNotificationContainerObserver:
-  void OnContainerDismissed(const std::string& id) override;
+  // global_media_controls::MediaItemUIObserver:
+  void OnMediaItemUIDismissed(const std::string& id) override;
 
   // media_router::MediaRoutesObserver:
   void OnRoutesUpdated(const std::vector<media_router::MediaRoute>& routes,
@@ -62,14 +64,14 @@ class CastMediaNotificationProducer
                            joinable_route_ids) override;
 
   size_t GetActiveItemCount() const;
+  bool HasLocalMediaRoute() const;
 
  private:
   bool HasActiveItems() const;
 
-  Profile* const profile_;
-  media_router::MediaRouter* const router_;
-  media_message_center::MediaNotificationController* const
-      notification_controller_;
+  const raw_ptr<Profile> profile_;
+  const raw_ptr<media_router::MediaRouter> router_;
+  const raw_ptr<global_media_controls::MediaItemManager> item_manager_;
 
   // Maps from notification item IDs to items.
   std::map<std::string, CastMediaNotificationItem> items_;
@@ -78,7 +80,7 @@ class CastMediaNotificationProducer
   // versa.
   base::RepeatingClosure items_changed_callback_;
 
-  MediaNotificationContainerObserverSet container_observer_set_;
+  global_media_controls::MediaItemUIObserverSet item_ui_observer_set_;
 };
 
 #endif  // CHROME_BROWSER_UI_GLOBAL_MEDIA_CONTROLS_CAST_MEDIA_NOTIFICATION_PRODUCER_H_

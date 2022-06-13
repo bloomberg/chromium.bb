@@ -1,16 +1,7 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 #include <stdint.h>
 #include <stdio.h>
@@ -54,10 +45,14 @@ int DecompressMain(int argc, const char* argv[]) {
   }
 
   if (args.version) {
-    fprintf(stdout, "djxl [%s]\n",
+    fprintf(stdout, "djxl %s\n",
             CodecConfigString(JxlDecoderVersion()).c_str());
     fprintf(stdout, "Copyright (c) the JPEG XL Project\n");
     return 0;
+  }
+  if (!args.quiet) {
+    fprintf(stderr, "JPEG XL decoder %s\n",
+            CodecConfigString(JxlDecoderVersion()).c_str());
   }
 
   if (cmdline.HelpFlagPassed()) {
@@ -72,10 +67,12 @@ int DecompressMain(int argc, const char* argv[]) {
   }
 
   jxl::PaddedBytes compressed;
-  if (!jxl::ReadFile(args.file_in, &compressed)) return 1;
+  if (!jxl::ReadFile(args.file_in, &compressed)) {
+    fprintf(stderr, "Failed to read file: %s.\n", args.file_in);
+    return 1;
+  }
   if (!args.quiet) {
-    fprintf(stderr, "Read %zu compressed bytes [%s]\n", compressed.size(),
-            CodecConfigString(JxlDecoderVersion()).c_str());
+    fprintf(stderr, "Read %zu compressed bytes.\n", compressed.size());
   }
 
   // If the file uses the box format container, unpack the boxes into
@@ -179,11 +176,15 @@ int DecompressMain(int argc, const char* argv[]) {
               jxl::Span<const uint8_t>(container.codestream,
                                        container.codestream_size),
               args.params, &pool, &io, &stats)) {
+        // Error is already reported by DecompressJxlToPixels.
         return 1;
       }
     }
     if (!args.quiet) fprintf(stderr, "Decoded to pixels.\n");
-    if (!WriteJxlOutput(args, args.file_out, io, &pool)) return 1;
+    if (!WriteJxlOutput(args, args.file_out, io, &pool)) {
+      // Error is already reported by WriteJxlOutput.
+      return 1;
+    }
 
     if (args.print_read_bytes) {
       fprintf(stderr, "Decoded bytes: %zu\n", io.Main().decoded_bytes());

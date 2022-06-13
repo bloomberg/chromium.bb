@@ -10,11 +10,12 @@
 #include "base/bind.h"
 #include "base/hash/hash.h"
 #include "base/message_loop/message_pump_type.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/media/webrtc/desktop_media_list.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -107,6 +108,10 @@ class NativeDesktopMediaList::Worker
          base::WeakPtr<NativeDesktopMediaList> media_list,
          DesktopMediaList::Type type,
          std::unique_ptr<webrtc::DesktopCapturer> capturer);
+
+  Worker(const Worker&) = delete;
+  Worker& operator=(const Worker&) = delete;
+
   ~Worker() override;
 
   void Start();
@@ -147,8 +152,6 @@ class NativeDesktopMediaList::Worker
   std::unique_ptr<RefreshThumbnailsState> refresh_thumbnails_state_;
 
   base::WeakPtrFactory<Worker> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(Worker);
 };
 
 NativeDesktopMediaList::Worker::Worker(
@@ -308,8 +311,8 @@ void NativeDesktopMediaList::Worker::OnCaptureResult(
 NativeDesktopMediaList::NativeDesktopMediaList(
     DesktopMediaList::Type type,
     std::unique_ptr<webrtc::DesktopCapturer> capturer)
-    : DesktopMediaListBase(base::TimeDelta::FromMilliseconds(
-          kDefaultNativeDesktopMediaListUpdatePeriod)),
+    : DesktopMediaListBase(
+          base::Milliseconds(kDefaultNativeDesktopMediaListUpdatePeriod)),
       thread_("DesktopMediaListCaptureThread") {
   type_ = type;
 
@@ -363,7 +366,14 @@ void NativeDesktopMediaList::RefreshForVizFrameSinkWindows(
     if (source.id.type != DesktopMediaID::TYPE_WINDOW)
       continue;
 
-#if defined(USE_AURA)
+// TODO(https://crbug.com/1270801): The capturer id to aura::Window mapping on
+// lacros is currently broken because they both separately use monotonically
+// increasing ints as ids. This causes collisions where we mistakenly try to
+// capture non-aura windows as aura windows. While the preview matches what is
+// ultimately captured, it does not match the title of the window in the preview
+// and is both unexpected for the user and means that the collided non-aura
+// window cannot be captured.
+#if defined(USE_AURA) && !BUILDFLAG(IS_CHROMEOS_LACROS)
     aura::WindowTreeHost* const host =
         aura::WindowTreeHost::GetForAcceleratedWidget(
             *reinterpret_cast<gfx::AcceleratedWidget*>(&source.id.id));

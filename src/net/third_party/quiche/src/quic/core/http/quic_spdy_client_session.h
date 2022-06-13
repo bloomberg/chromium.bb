@@ -61,6 +61,10 @@ class QUIC_EXPORT_PRIVATE QuicSpdyClientSession
   // than the number of round-trips needed for the handshake.
   int GetNumSentClientHellos() const;
 
+  // Return true if the handshake performed is a TLS resumption.
+  // Always return false for QUIC Crypto.
+  bool IsResumption() const;
+
   // Returns true if early data (0-RTT data) was sent and the server accepted
   // it.
   bool EarlyDataAccepted() const;
@@ -103,7 +107,7 @@ class QUIC_EXPORT_PRIVATE QuicSpdyClientSession
   // CreateOutgoingBidirectionalStream.
   virtual std::unique_ptr<QuicSpdyClientStream> CreateClientStream();
 
-  const QuicServerId& server_id() { return server_id_; }
+  const QuicServerId& server_id() const { return server_id_; }
   QuicCryptoClientConfig* crypto_config() { return crypto_config_; }
 
  private:

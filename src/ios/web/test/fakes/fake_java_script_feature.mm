@@ -4,6 +4,8 @@
 
 #import "ios/web/test/fakes/fake_java_script_feature.h"
 
+#include "base/time/time.h"
+
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
@@ -75,7 +77,7 @@ void FakeJavaScriptFeature::GetErrorCount(
     WebFrame* web_frame,
     base::OnceCallback<void(const base::Value*)> callback) {
   CallJavaScriptFunction(web_frame, kGetErrorCount, {}, std::move(callback),
-                         base::TimeDelta::FromSeconds(kGetErrorCountTimeout));
+                         base::Seconds(kGetErrorCountTimeout));
 }
 
 absl::optional<std::string> FakeJavaScriptFeature::GetScriptMessageHandlerName()

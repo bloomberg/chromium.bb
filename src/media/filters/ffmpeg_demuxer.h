@@ -31,9 +31,9 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/decoder_buffer_queue.h"
@@ -62,6 +62,10 @@ class FFmpegGlue;
 
 typedef std::unique_ptr<AVPacket, ScopedPtrAVFreePacket> ScopedAVPacket;
 
+// Use av_packet_alloc() to create a packet, which is scoped to delete with
+// av_packet_free at the end of it's lifetime.
+MEDIA_EXPORT ScopedAVPacket MakeScopedAVPacket();
+
 class MEDIA_EXPORT FFmpegDemuxerStream : public DemuxerStream {
  public:
   // Attempts to create FFmpegDemuxerStream form the given AVStream. Will return
@@ -72,6 +76,9 @@ class MEDIA_EXPORT FFmpegDemuxerStream : public DemuxerStream {
   static std::unique_ptr<FFmpegDemuxerStream> Create(FFmpegDemuxer* demuxer,
                                                      AVStream* stream,
                                                      MediaLog* media_log);
+
+  FFmpegDemuxerStream(const FFmpegDemuxerStream&) = delete;
+  FFmpegDemuxerStream& operator=(const FFmpegDemuxerStream&) = delete;
 
   ~FFmpegDemuxerStream() override;
 
@@ -171,13 +178,13 @@ class MEDIA_EXPORT FFmpegDemuxerStream : public DemuxerStream {
   // Create new bitstream converter, destroying active converter if present.
   void InitBitstreamConverter();
 
-  FFmpegDemuxer* demuxer_;
+  raw_ptr<FFmpegDemuxer> demuxer_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  AVStream* stream_;
+  raw_ptr<AVStream> stream_;
   base::TimeDelta start_time_;
   std::unique_ptr<AudioDecoderConfig> audio_config_;
   std::unique_ptr<VideoDecoderConfig> video_config_;
-  MediaLog* media_log_;
+  raw_ptr<MediaLog> media_log_;
   Type type_;
   Liveness liveness_;
   base::TimeDelta duration_;
@@ -203,8 +210,6 @@ class MEDIA_EXPORT FFmpegDemuxerStream : public DemuxerStream {
   int num_discarded_packet_warnings_;
   int64_t last_packet_pos_;
   int64_t last_packet_dts_;
-
-  DISALLOW_COPY_AND_ASSIGN(FFmpegDemuxerStream);
 };
 
 class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
@@ -215,6 +220,10 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
                 MediaTracksUpdatedCB media_tracks_updated_cb,
                 MediaLog* media_log,
                 bool is_local_file);
+
+  FFmpegDemuxer(const FFmpegDemuxer&) = delete;
+  FFmpegDemuxer& operator=(const FFmpegDemuxer&) = delete;
+
   ~FFmpegDemuxer() override;
 
   // Demuxer implementation.
@@ -339,7 +348,7 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
   // Executes |pending_seek_cb_| with |status| and closes out the async trace.
   void RunPendingSeekCB(PipelineStatus status);
 
-  DemuxerHost* host_ = nullptr;
+  raw_ptr<DemuxerHost> host_ = nullptr;
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
@@ -376,9 +385,9 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
 
   // Provides asynchronous IO to this demuxer. Consumed by |url_protocol_| to
   // integrate with libavformat.
-  DataSource* data_source_;
+  raw_ptr<DataSource> data_source_;
 
-  MediaLog* media_log_;
+  raw_ptr<MediaLog> media_log_;
 
   // Derived bitrate after initialization has completed.
   int bitrate_ = 0;
@@ -413,8 +422,6 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
   base::WeakPtr<FFmpegDemuxer> weak_this_;
   base::WeakPtrFactory<FFmpegDemuxer> cancel_pending_seek_factory_{this};
   base::WeakPtrFactory<FFmpegDemuxer> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(FFmpegDemuxer);
 };
 
 }  // namespace media

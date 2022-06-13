@@ -4,7 +4,6 @@
     export_symbol: "CORE_EXPORT",
     include_path: "third_party/blink/renderer/core/inspector",
     includes: [
-      "third_party/blink/renderer/bindings/core/v8/script_source_code.h",
       "third_party/blink/renderer/core/animation/animation.h",
       "third_party/blink/renderer/core/core_probe_sink.h",
       "third_party/blink/renderer/core/dom/character_data.h",
@@ -35,12 +34,6 @@
         "AnimationPlayStateChanged",
         "DidClearDocumentOfWindowObject",
         "DidCreateAnimation",
-      ]
-    },
-    InspectorApplicationCacheAgent: {
-      probes: [
-        "NetworkStateChanged",
-        "UpdateApplicationCacheStatus",
       ]
     },
     InspectorAuditsAgent: {
@@ -88,6 +81,7 @@
     InspectorDOMDebuggerAgent: {
       probes: [
         "BreakableLocation",
+        "CharacterDataModified",
         "DidCreateCanvasContext",
         "DidFireWebGLError",
         "DidFireWebGLErrorOrWarning",
@@ -99,7 +93,6 @@
         "UserCallback",
         "WillInsertDOMNode",
         "WillModifyDOMAttr",
-        "WillRemoveDOMNode",
         "WillSendXMLHttpOrFetchNetworkRequest",
         "DidCreateAudioContext",
         "DidCloseAudioContext",
@@ -151,7 +144,6 @@
         "DidChangeResourcePriority",
         "DidCloseWebSocket",
         "DidCommitLoad",
-        "DidCreateWebSocket",
         "DidFailLoading",
         "DidFinishLoading",
         "DidFinishXHR",
@@ -176,6 +168,7 @@
         "WebTransportCreated",
         "WebTransportConnectionEstablished",
         "WebTransportClosed",
+        "WillCreateWebSocket",
         "WillDispatchEventSourceEvent",
         "WillLoadXHR",
         "WillSendEventSourceRequest",

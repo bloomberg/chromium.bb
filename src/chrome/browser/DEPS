@@ -12,6 +12,7 @@ include_rules = [
   "-chrome/android/java/src/org/chromium/chrome/browser/ChromeTabbedActivity.java",
   "-chrome/android/java/src/org/chromium/chrome/browser/ChromeTabbedActivity2.java",
 
+  "+ash/components/arc",
   "+chrome/android/native_j_unittests_jni_headers",
   "+chrome/android/chrome_jni_headers",
   "+chrome/android/features/autofill_assistant/jni_headers",
@@ -39,10 +40,14 @@ include_rules = [
   "+components/about_ui",
   "+components/account_id",
   "+components/federated_learning",
+  # TODO(b/129295708): Remove after move is complete.
   "+components/arc",
+  "+components/accuracy_tips",
   "+components/account_manager_core",
   "+components/assist_ranker",
   "+components/autofill_assistant/browser",
+  "+components/autofill_assistant/content/browser",
+  "+components/autofill_assistant/content/common",
   "+components/autofill/content/browser",
   "+components/autofill/content/common",
   "+components/autofill/core/browser",
@@ -58,6 +63,7 @@ include_rules = [
   "+components/bookmarks/common",
   "+components/bookmarks/managed",
   "+components/bookmarks/test",
+  "+components/breadcrumbs/core",
   "+components/browser_sync",
   "+components/browser_ui/bottomsheet",
   "+components/browser_ui/modaldialog",
@@ -72,6 +78,7 @@ include_rules = [
   "+components/browser_watcher",
   "+components/browsing_data/content",
   "+components/browsing_data/core",
+  "+components/custom_handlers",
   "+components/captive_portal",
   "+components/cast_certificate",
   "+components/cast_channel",
@@ -83,12 +90,16 @@ include_rules = [
   "+components/chrome_cleaner/test",
   "+components/chromeos_camera",
   "+components/client_hints/browser",
+  "+components/client_hints/common",
   "+components/cloud_devices/common",
+  "+components/commerce",
   "+components/component_updater",
   "+components/component_updater/installer_policies",
   "+components/consent_auditor",
   "+components/constrained_window",
   "+components/content_capture/browser",
+  "+components/content_creation/notes/core",
+  "+components/content_creation/reactions/core",
   "+components/content_settings/browser",
   "+components/content_settings/core/browser",
   "+components/content_settings/core/test",
@@ -111,6 +122,7 @@ include_rules = [
   "+components/data_reduction_proxy/core/common",
   "+components/data_reduction_proxy/proto",
   "+components/data_use_measurement/core",
+  "+components/desks_storage",
   "+components/dbus",
   "+components/device_event_log",
   "+components/digital_asset_links",
@@ -141,7 +153,9 @@ include_rules = [
   "+components/feedback",
   "+components/find_in_page",
   "+components/flags_ui",
+  "+components/app_restore",
   "+components/gcm_driver",
+  "+components/global_media_controls",
   "+components/google/core/browser",
   "+components/google/core/common",
   "+components/grit",
@@ -168,6 +182,7 @@ include_rules = [
   "+components/language/content/browser",
   "+components/language/core/browser",
   "+components/language/core/common",
+  "+components/language/core/language_model",
   "+components/lens",
   "+components/leveldb_proto/content",
   "+components/leveldb_proto/public",
@@ -179,6 +194,7 @@ include_rules = [
   "+components/media_message_center",
   "+components/media_router/browser",
   "+components/history_clusters/core",
+  "+components/memory_pressure",
   "+components/messages/android",
   "+components/metal_util",
   "+components/metrics",
@@ -232,6 +248,7 @@ include_rules = [
   "+components/performance_manager/performance_manager_impl.h",
   "+components/permissions",
   "+components/pdf/browser",
+  "+components/pdf/common",
   "+components/policy",
   "+components/power_metrics",
   "+components/pref_registry",
@@ -255,7 +272,12 @@ include_rules = [
   "+components/reputation",
   "+components/reporting",
   "+components/rlz",
-  "+components/safe_browsing",
+  "+components/safe_browsing/android",
+  "+components/safe_browsing/buildflags.h",
+  "+components/safe_browsing/content/browser",
+  "+components/safe_browsing/content/common",
+  "+components/safe_browsing/core/browser",
+  "+components/safe_browsing/core/common",
   "+components/safe_search_api",
   "+components/schema_org",
   "+components/shared_highlighting/core/common",
@@ -300,7 +322,7 @@ include_rules = [
   "+components/subresource_filter/core/browser",
   "+components/subresource_filter/core/common",
   "+components/subresource_filter/core/mojom",
-  "+components/suggestions",
+  "+components/subresource_redirect/common",
   "+components/supervised_user_error_page",
   "+components/sync",
   "+components/sync_bookmarks",
@@ -328,6 +350,7 @@ include_rules = [
   "+components/url_pattern_index/proto",
   "+components/user_manager",
   "+components/user_prefs",
+  "+components/value_store",
   "+components/vector_icons",
   "+components/version_info",
   "+components/version_ui",
@@ -344,6 +367,7 @@ include_rules = [
   "+components/webrtc_logging/common",
   "+components/wifi",
   "+components/zoom",
+  "+content/public/android/java/src/org/chromium/content_public/browser",
   "+content/public/browser",
   "+content/public/common",
   "+courgette",
@@ -367,6 +391,7 @@ include_rules = [
   "+media/base",  # For media switches
   "+media/capabilities", # For InMemoryVideoDecodeStatsDB
   "+media/cdm/cdm_paths.h",
+  "+media/cdm/win/media_foundation_cdm.h",
   "+media/capture",
   "+media/midi",  # For midi switches
   "+media/mojo",  # For mojo media services.
@@ -398,6 +423,7 @@ include_rules = [
   "+services/proxy_resolver",  # Android runs the packaged proxy resolver
                                # service in process and needs impl access.
   "+services/proxy_resolver/public/mojom",
+  "+services/proxy_resolver_win/public/mojom",
   "+services/resource_coordinator/public/cpp",
   "+services/resource_coordinator/public/mojom",
   "+services/shape_detection/public/mojom",
@@ -417,11 +443,13 @@ include_rules = [
   "+chrome/services/speech",
   # Code under //ash should be accessed via its public API. See //ash/README.md.
   "-ash",
+  "+ash/components",
   "+ash/constants",
-  "+ash/content",
+  "+ash/webui",
   "+ash/public",
   "+ash/keyboard/ui/grit",
   "+ash/keyboard/ui/resources",
+  "+ash/services",
 
   # The message center should only be accessed through
   # //chrome/browser/notifications.
@@ -464,10 +492,6 @@ include_rules = [
   # sending synchronous IPC messages on non-UI threads.
   "-ipc/ipc_sync_message_filter.h",
 
-  # Allows in-process use of NetworkService for URLRequestContext configuration.
-  # Should be removed once the actual network service ships.
-  "+content/public/network",
-
   # ASK TEXT-TO-SPEECH content/browser/speech/OWNERS BEFORE OVERRIDING THIS IN A
   # SUBDIRECTORY.
   "-content/public/browser/tts_controller.h",
@@ -503,15 +527,14 @@ specific_include_rules = {
     "+chrome/android/java/src/org/chromium/chrome/browser/app/ChromeActivity.java",
     "+chrome/android/java/src/org/chromium/chrome/browser/ChromeTabbedActivity.java",
   ],
+  '.*TestUtils\.java': [
+      "+chrome/android/java/src/org/chromium/chrome/browser/searchwidget/SearchActivity.java",
+      "+chrome/android/java/src/org/chromium/chrome/browser/ChromeTabbedActivity.java",
+    ],
   "platform_util_linux.cc": [
     # The following is used to call the org.freedesktop.FileManager1
     # DBus interface to highlight a file within its parent folder
     "+dbus"
-  ],
-  "platform_util_mac.mm": [
-    # The following is used to forward methods to an NSWindow in another
-    # process, via the views::Widget API.
-    "+ui/views/widget/widget.h",
   ],
   "exo_parts\.cc": [
     "+ash/shell.h",
@@ -535,9 +558,6 @@ specific_include_rules = {
   "chrome_authenticator_request_delegate_unittest\.cc": [
     "+third_party/microsoft_webauthn/webauthn.h",
   ],
-  "chrome_find_request_manager_browsertest\.cc": [
-    "+pdf/document_loader_impl.h",
-  ],
   "chrome_content_browser_client_receiver_bindings\.cc" : [
     "+chrome/browser/performance_manager/mechanisms/userspace_swap_chromeos.h",
   ],
@@ -549,5 +569,11 @@ specific_include_rules = {
   ],
   "about_flags\.cc" : [
     "+mojo/core/embedder/features.h",
+  ],
+  "app_controller_mac_browsertest\.mm" : [
+    "+chrome/browser/ui/views/web_apps/web_app_url_handler_intent_picker_dialog_view.h",
+  ],
+  "dbus_memory_pressure_evaluator_linux(_unittest)?\.(cc|h)" : [
+    "+dbus",
   ]
 }

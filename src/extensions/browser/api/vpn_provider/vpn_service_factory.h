@@ -5,7 +5,6 @@
 #ifndef EXTENSIONS_BROWSER_API_VPN_PROVIDER_VPN_SERVICE_FACTORY_H_
 #define EXTENSIONS_BROWSER_API_VPN_PROVIDER_VPN_SERVICE_FACTORY_H_
 
-#include "base/macros.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
 namespace content {
@@ -26,6 +25,9 @@ class VpnService;
 // Factory to create VpnService.
 class VpnServiceFactory : public BrowserContextKeyedServiceFactory {
  public:
+  VpnServiceFactory(const VpnServiceFactory&) = delete;
+  VpnServiceFactory& operator=(const VpnServiceFactory&) = delete;
+
   static VpnService* GetForBrowserContext(content::BrowserContext* context);
   static VpnServiceFactory* GetInstance();
 
@@ -40,8 +42,6 @@ class VpnServiceFactory : public BrowserContextKeyedServiceFactory {
   bool ServiceIsNULLWhileTesting() const override;
   KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
-
-  DISALLOW_COPY_AND_ASSIGN(VpnServiceFactory);
 };
 
 }  // namespace chromeos

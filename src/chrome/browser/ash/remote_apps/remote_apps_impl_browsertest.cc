@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-#include "ash/app_list/app_list_controller_impl.h"
+#include "ash/app_list/app_list_model_provider.h"
 #include "ash/app_list/model/app_list_item.h"
 #include "ash/app_list/model/app_list_item_list.h"
 #include "ash/app_list/model/app_list_model.h"
@@ -19,12 +19,12 @@
 #include "chrome/browser/ash/login/test/local_policy_test_server_mixin.h"
 #include "chrome/browser/ash/login/test/session_manager_state_waiter.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
+#include "chrome/browser/ash/policy/core/device_policy_cros_browser_test.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/remote_apps/id_generator.h"
 #include "chrome/browser/ash/remote_apps/remote_apps_manager.h"
 #include "chrome/browser/ash/remote_apps/remote_apps_manager_factory.h"
 #include "chrome/browser/ash/remote_apps/remote_apps_model.h"
-#include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
@@ -42,7 +42,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace {
 
@@ -69,8 +69,8 @@ class RemoteAppsImplBrowsertest : public policy::DevicePolicyCrosBrowserTest {
   // DevicePolicyCrosBrowserTest:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     DevicePolicyCrosBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(chromeos::switches::kLoginManager);
-    command_line->AppendSwitch(chromeos::switches::kForceLoginManagerInTests);
+    command_line->AppendSwitch(switches::kLoginManager);
+    command_line->AppendSwitch(switches::kForceLoginManagerInTests);
     command_line->AppendSwitchASCII(
         extensions::switches::kAllowlistedExtensionID, kExtensionId);
   }
@@ -131,18 +131,13 @@ class RemoteAppsImplBrowsertest : public policy::DevicePolicyCrosBrowserTest {
     ASSERT_TRUE(loader.LoadExtension(extension_path));
   }
 
-  ash::AppListItem* GetAppListItem(const std::string& id) {
-    ash::AppListControllerImpl* controller =
-        ash::Shell::Get()->app_list_controller();
-    ash::AppListModel* model = controller->GetModel();
-    return model->FindItem(id);
+  AppListItem* GetAppListItem(const std::string& id) {
+    return AppListModelProvider::Get()->model()->FindItem(id);
   }
 
   bool IsAppListItemInFront(const std::string& id) {
-    ash::AppListControllerImpl* controller =
-        ash::Shell::Get()->app_list_controller();
-    ash::AppListModel* model = controller->GetModel();
-    ash::AppListItemList* item_list = model->top_level_item_list();
+    AppListModel* const model = AppListModelProvider::Get()->model();
+    AppListItemList* const item_list = model->top_level_item_list();
 
     size_t index;
     if (!item_list->FindItemIndex(id, &index))
@@ -153,7 +148,7 @@ class RemoteAppsImplBrowsertest : public policy::DevicePolicyCrosBrowserTest {
 
  private:
   base::DictionaryValue config_;
-  chromeos::LocalPolicyTestServerMixin local_policy_mixin_{&mixin_host_};
+  LocalPolicyTestServerMixin local_policy_mixin_{&mixin_host_};
 };
 
 IN_PROC_BROWSER_TEST_F(RemoteAppsImplBrowsertest, AddApp) {
@@ -203,6 +198,25 @@ IN_PROC_BROWSER_TEST_F(RemoteAppsImplBrowsertest, AddFolderToFront) {
   EXPECT_TRUE(IsAppListItemInFront(kId2));
 }
 
+IN_PROC_BROWSER_TEST_F(RemoteAppsImplBrowsertest, DeleteApp) {
+  extensions::ResultCatcher catcher;
+  LoadExtensionAndRunTest("DeleteApp");
+  ASSERT_TRUE(catcher.GetNextResult());
+
+  // Check that app is deleted.
+  EXPECT_FALSE(GetAppListItem(kId1));
+}
+
+IN_PROC_BROWSER_TEST_F(RemoteAppsImplBrowsertest, DeleteAppInFolder) {
+  extensions::ResultCatcher catcher;
+  LoadExtensionAndRunTest("DeleteAppInFolder");
+  ASSERT_TRUE(catcher.GetNextResult());
+
+  // Check that folder and app are not present.
+  EXPECT_FALSE(GetAppListItem(kId1));
+  EXPECT_FALSE(GetAppListItem(kId2));
+}
+
 IN_PROC_BROWSER_TEST_F(RemoteAppsImplBrowsertest, OnRemoteAppLaunched) {
   extensions::ResultCatcher catcher;
   ExtensionTestMessageListener listener("Remote app added",
@@ -217,4 +231,4 @@ IN_PROC_BROWSER_TEST_F(RemoteAppsImplBrowsertest, OnRemoteAppLaunched) {
   ASSERT_TRUE(catcher.GetNextResult());
 }
 
-}  // namespace chromeos
+}  // namespace ash

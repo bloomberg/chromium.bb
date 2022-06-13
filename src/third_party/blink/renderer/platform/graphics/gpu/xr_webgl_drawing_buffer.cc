@@ -28,7 +28,7 @@ namespace blink {
 
 XRWebGLDrawingBuffer::ColorBuffer::ColorBuffer(
     base::WeakPtr<XRWebGLDrawingBuffer> drawing_buffer,
-    const IntSize& size,
+    const gfx::Size& size,
     const gpu::Mailbox& mailbox,
     GLuint texture_id)
     : owning_thread_ref(base::PlatformThread::CurrentRef()),
@@ -62,7 +62,7 @@ XRWebGLDrawingBuffer::ColorBuffer::~ColorBuffer() {
 scoped_refptr<XRWebGLDrawingBuffer> XRWebGLDrawingBuffer::Create(
     DrawingBuffer* drawing_buffer,
     GLuint framebuffer,
-    const IntSize& size,
+    const gfx::Size& size,
     bool want_alpha_channel,
     bool want_depth_buffer,
     bool want_stencil_buffer,
@@ -145,7 +145,7 @@ void XRWebGLDrawingBuffer::BeginDestruction() {
 
 // TODO(bajones): The GL resources allocated in this function are leaking. Add
 // a way to clean up the buffers when the layer is GCed or the session ends.
-bool XRWebGLDrawingBuffer::Initialize(const IntSize& size,
+bool XRWebGLDrawingBuffer::Initialize(const gfx::Size& size,
                                       bool use_multisampling) {
   gpu::gles2::GLES2Interface* gl = drawing_buffer_->ContextGL();
 
@@ -196,10 +196,10 @@ bool XRWebGLDrawingBuffer::ContextLost() {
   return drawing_buffer_->destroyed();
 }
 
-IntSize XRWebGLDrawingBuffer::AdjustSize(const IntSize& new_size) {
+gfx::Size XRWebGLDrawingBuffer::AdjustSize(const gfx::Size& new_size) {
   // Ensure we always have at least a 1x1 buffer
-  float width = std::max(1, new_size.Width());
-  float height = std::max(1, new_size.Height());
+  float width = std::max(1, new_size.width());
+  float height = std::max(1, new_size.height());
 
   float adjusted_scale =
       std::min(static_cast<float>(max_texture_size_) / width,
@@ -212,7 +212,7 @@ IntSize XRWebGLDrawingBuffer::AdjustSize(const IntSize& new_size) {
     height *= adjusted_scale;
   }
 
-  return IntSize(width, height);
+  return gfx::Size(width, height);
 }
 
 void XRWebGLDrawingBuffer::UseSharedBuffer(
@@ -348,8 +348,8 @@ void XRWebGLDrawingBuffer::ClearBoundFramebuffer() {
   client->DrawingBufferClientRestoreMaskAndClearValues();
 }
 
-void XRWebGLDrawingBuffer::Resize(const IntSize& new_size) {
-  IntSize adjusted_size = AdjustSize(new_size);
+void XRWebGLDrawingBuffer::Resize(const gfx::Size& new_size) {
+  gfx::Size adjusted_size = AdjustSize(new_size);
 
   if (adjusted_size == size_)
     return;
@@ -380,14 +380,14 @@ void XRWebGLDrawingBuffer::Resize(const IntSize& new_size) {
     if (anti_aliasing_mode_ == kMSAAImplicitResolve) {
       gl->RenderbufferStorageMultisampleEXT(GL_RENDERBUFFER, sample_count_,
                                             GL_DEPTH24_STENCIL8_OES,
-                                            size_.Width(), size_.Height());
+                                            size_.width(), size_.height());
     } else if (anti_aliasing_mode_ == kMSAAExplicitResolve) {
       gl->RenderbufferStorageMultisampleCHROMIUM(GL_RENDERBUFFER, sample_count_,
                                                  GL_DEPTH24_STENCIL8_OES,
-                                                 size_.Width(), size_.Height());
+                                                 size_.width(), size_.height());
     } else {
       gl->RenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8_OES,
-                              size_.Width(), size_.Height());
+                              size_.width(), size_.height());
     }
 
     gl->FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT,
@@ -408,7 +408,7 @@ void XRWebGLDrawingBuffer::Resize(const IntSize& new_size) {
     gl->BindRenderbuffer(GL_RENDERBUFFER, multisample_renderbuffer_);
     gl->RenderbufferStorageMultisampleCHROMIUM(GL_RENDERBUFFER, sample_count_,
                                                multisample_format,
-                                               size_.Width(), size_.Height());
+                                               size_.width(), size_.height());
 
     gl->FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
                                 GL_RENDERBUFFER, multisample_renderbuffer_);
@@ -458,8 +458,8 @@ XRWebGLDrawingBuffer::CreateColorBuffer() {
                    gpu::SHARED_IMAGE_USAGE_GLES2 |
                    gpu::SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT;
   gpu::Mailbox mailbox = sii->CreateSharedImage(
-      alpha_ ? viz::RGBA_8888 : viz::RGBX_8888, gfx::Size(size_),
-      gfx::ColorSpace(), kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, usage,
+      alpha_ ? viz::RGBA_8888 : viz::RGBX_8888, size_, gfx::ColorSpace(),
+      kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, usage,
       gpu::kNullSurfaceHandle);
 
   gpu::gles2::GLES2Interface* gl = drawing_buffer_->ContextGL();
@@ -512,8 +512,8 @@ void XRWebGLDrawingBuffer::BindAndResolveDestinationFramebuffer() {
     gl->BindFramebuffer(GL_DRAW_FRAMEBUFFER_ANGLE, resolved_framebuffer_);
     gl->Disable(GL_SCISSOR_TEST);
 
-    int width = size_.Width();
-    int height = size_.Height();
+    int width = size_.width();
+    int height = size_.height();
     // Use NEAREST, because there is no scale performed during the blit.
     gl->BlitFramebufferCHROMIUM(0, 0, width, height, 0, 0, width, height,
                                 GL_COLOR_BUFFER_BIT, GL_NEAREST);
@@ -605,7 +605,7 @@ XRWebGLDrawingBuffer::TransferToStaticBitmapImage() {
     // incomplete (likely due to a failed buffer allocation), or when the
     // context gets lost.
     sk_sp<SkSurface> surface =
-        SkSurface::MakeRasterN32Premul(size_.Width(), size_.Height());
+        SkSurface::MakeRasterN32Premul(size_.width(), size_.height());
     return UnacceleratedStaticBitmapImage::Create(surface->makeImageSnapshot());
   }
 
@@ -614,7 +614,7 @@ XRWebGLDrawingBuffer::TransferToStaticBitmapImage() {
   viz::ReleaseCallback release_callback =
       base::BindOnce(&XRWebGLDrawingBuffer::NotifyMailboxReleased, buffer);
   const SkImageInfo sk_image_info =
-      SkImageInfo::MakeN32Premul(size_.Width(), size_.Height());
+      SkImageInfo::MakeN32Premul(size_.width(), size_.height());
 
   return AcceleratedStaticBitmapImage::CreateFromCanvasMailbox(
       buffer->mailbox, buffer->produce_sync_token,

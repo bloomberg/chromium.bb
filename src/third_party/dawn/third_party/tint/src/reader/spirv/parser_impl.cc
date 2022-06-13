@@ -21,6 +21,8 @@
 
 #include "source/opt/build_module.h"
 #include "src/ast/bitcast_expression.h"
+#include "src/ast/disable_validation_decoration.h"
+#include "src/ast/interpolate_decoration.h"
 #include "src/ast/override_decoration.h"
 #include "src/ast/struct_block_decoration.h"
 #include "src/ast/type_name.h"
@@ -232,6 +234,26 @@ bool AssumesResultSignednessMatchesFirstOperand(GLSLstd450 extended_opcode) {
   return false;
 }
 
+// @param a SPIR-V decoration
+// @return true when the given decoration is a pipeline decoration other than a
+// bulitin variable.
+bool IsPipelineDecoration(const Decoration& deco) {
+  if (deco.size() < 1) {
+    return false;
+  }
+  switch (deco[0]) {
+    case SpvDecorationLocation:
+    case SpvDecorationFlat:
+    case SpvDecorationNoPerspective:
+    case SpvDecorationCentroid:
+    case SpvDecorationSample:
+      return true;
+    default:
+      break;
+  }
+  return false;
+}
+
 }  // namespace
 
 TypedExpression::TypedExpression() = default;
@@ -240,7 +262,8 @@ TypedExpression::TypedExpression(const TypedExpression&) = default;
 
 TypedExpression& TypedExpression::operator=(const TypedExpression&) = default;
 
-TypedExpression::TypedExpression(const Type* type_in, ast::Expression* expr_in)
+TypedExpression::TypedExpression(const Type* type_in,
+                                 const ast::Expression* expr_in)
     : type(type_in), expr(expr_in) {}
 
 ParserImpl::ParserImpl(const std::vector<uint32_t>& spv_binary)
@@ -321,36 +344,27 @@ const Type* ParserImpl::ConvertType(uint32_t type_id, PtrAs ptr_as) {
     return nullptr;
   }
 
-  auto maybe_generate_alias = [this, type_id,
-                               spirv_type](const Type* type) -> const Type* {
-    if (type != nullptr) {
-      return MaybeGenerateAlias(type_id, spirv_type, type);
-    }
-    return type;
-  };
-
   switch (spirv_type->kind()) {
     case spvtools::opt::analysis::Type::kVoid:
-      return maybe_generate_alias(ty_.Void());
+      return ty_.Void();
     case spvtools::opt::analysis::Type::kBool:
-      return maybe_generate_alias(ty_.Bool());
+      return ty_.Bool();
     case spvtools::opt::analysis::Type::kInteger:
-      return maybe_generate_alias(ConvertType(spirv_type->AsInteger()));
+      return ConvertType(spirv_type->AsInteger());
     case spvtools::opt::analysis::Type::kFloat:
-      return maybe_generate_alias(ConvertType(spirv_type->AsFloat()));
+      return ConvertType(spirv_type->AsFloat());
     case spvtools::opt::analysis::Type::kVector:
-      return maybe_generate_alias(ConvertType(spirv_type->AsVector()));
+      return ConvertType(spirv_type->AsVector());
     case spvtools::opt::analysis::Type::kMatrix:
-      return maybe_generate_alias(ConvertType(spirv_type->AsMatrix()));
+      return ConvertType(spirv_type->AsMatrix());
     case spvtools::opt::analysis::Type::kRuntimeArray:
-      return maybe_generate_alias(ConvertType(spirv_type->AsRuntimeArray()));
+      return ConvertType(type_id, spirv_type->AsRuntimeArray());
     case spvtools::opt::analysis::Type::kArray:
-      return maybe_generate_alias(ConvertType(spirv_type->AsArray()));
+      return ConvertType(type_id, spirv_type->AsArray());
     case spvtools::opt::analysis::Type::kStruct:
-      return maybe_generate_alias(ConvertType(type_id, spirv_type->AsStruct()));
+      return ConvertType(type_id, spirv_type->AsStruct());
     case spvtools::opt::analysis::Type::kPointer:
-      return maybe_generate_alias(
-          ConvertType(type_id, ptr_as, spirv_type->AsPointer()));
+      return ConvertType(type_id, ptr_as, spirv_type->AsPointer());
     case spvtools::opt::analysis::Type::kFunction:
       // Tint doesn't have a Function type.
       // We need to convert the result type and parameter types.
@@ -362,7 +376,7 @@ const Type* ParserImpl::ConvertType(uint32_t type_id, PtrAs ptr_as) {
     case spvtools::opt::analysis::Type::kImage:
       // Fake it for sampler and texture types.  These are handled in an
       // entirely different way.
-      return maybe_generate_alias(ty_.Void());
+      return ty_.Void();
     default:
       break;
   }
@@ -418,13 +432,14 @@ std::string ParserImpl::ShowType(uint32_t type_id) {
   return "SPIR-V type " + std::to_string(type_id);
 }
 
-ast::Decoration* ParserImpl::ConvertMemberDecoration(
+ast::DecorationList ParserImpl::ConvertMemberDecoration(
     uint32_t struct_type_id,
     uint32_t member_index,
+    const Type* member_ty,
     const Decoration& decoration) {
   if (decoration.empty()) {
     Fail() << "malformed SPIR-V decoration: it's empty";
-    return nullptr;
+    return {};
   }
   switch (decoration[0]) {
     case SpvDecorationOffset:
@@ -433,35 +448,60 @@ ast::Decoration* ParserImpl::ConvertMemberDecoration(
             << "malformed Offset decoration: expected 1 literal operand, has "
             << decoration.size() - 1 << ": member " << member_index << " of "
             << ShowType(struct_type_id);
-        return nullptr;
+        return {};
       }
-      return create<ast::StructMemberOffsetDecoration>(Source{}, decoration[1]);
+      return {
+          create<ast::StructMemberOffsetDecoration>(Source{}, decoration[1]),
+      };
     case SpvDecorationNonReadable:
       // WGSL doesn't have a member decoration for this.  Silently drop it.
-      return nullptr;
+      return {};
     case SpvDecorationNonWritable:
       // WGSL doesn't have a member decoration for this.
-      return nullptr;
+      return {};
     case SpvDecorationColMajor:
       // WGSL only supports column major matrices.
-      return nullptr;
+      return {};
+    case SpvDecorationRelaxedPrecision:
+      // WGSL doesn't support relaxed precision.
+      return {};
     case SpvDecorationRowMajor:
       Fail() << "WGSL does not support row-major matrices: can't "
                 "translate member "
              << member_index << " of " << ShowType(struct_type_id);
-      return nullptr;
+      return {};
     case SpvDecorationMatrixStride: {
       if (decoration.size() != 2) {
         Fail() << "malformed MatrixStride decoration: expected 1 literal "
                   "operand, has "
                << decoration.size() - 1 << ": member " << member_index << " of "
                << ShowType(struct_type_id);
-        return nullptr;
+        return {};
       }
-      // TODO(dneto): Fail if the matrix stride is not allocation size of the
-      // column vector of the underlying matrix.  This would need to unpack
-      // any levels of array-ness.
-      return nullptr;
+      uint32_t stride = decoration[1];
+      auto* ty = member_ty->UnwrapAlias();
+      while (auto* arr = ty->As<Array>()) {
+        ty = arr->type->UnwrapAlias();
+      }
+      auto* mat = ty->As<Matrix>();
+      if (!mat) {
+        Fail() << "MatrixStride cannot be applied to type " << ty->String();
+        return {};
+      }
+      uint32_t natural_stride = (mat->rows == 2) ? 8 : 16;
+      if (stride == natural_stride) {
+        return {};  // Decoration matches the natural stride for the matrix
+      }
+      if (!member_ty->Is<Matrix>()) {
+        Fail() << "custom matrix strides not currently supported on array of "
+                  "matrices";
+        return {};
+      }
+      return {
+          create<ast::StrideDecoration>(Source{}, decoration[1]),
+          builder_.ASTNodes().Create<ast::DisableValidationDecoration>(
+              builder_.ID(), ast::DisabledValidation::kIgnoreStrideDecoration),
+      };
     }
     default:
       // TODO(dneto): Support the remaining member decorations.
@@ -469,7 +509,7 @@ ast::Decoration* ParserImpl::ConvertMemberDecoration(
   }
   Fail() << "unhandled member decoration: " << decoration[0] << " on member "
          << member_index << " of " << ShowType(struct_type_id);
-  return nullptr;
+  return {};
 }
 
 bool ParserImpl::BuildInternalModule() {
@@ -576,6 +616,9 @@ bool ParserImpl::ParseInternalModuleExceptFunctions() {
   if (!RegisterUserAndStructMemberNames()) {
     return false;
   }
+  if (!RegisterWorkgroupSizeBuiltin()) {
+    return false;
+  }
   if (!RegisterEntryPoints()) {
     return false;
   }
@@ -583,6 +626,9 @@ bool ParserImpl::ParseInternalModuleExceptFunctions() {
     return false;
   }
   if (!RegisterTypes()) {
+    return false;
+  }
+  if (!RejectInvalidPointerRoots()) {
     return false;
   }
   if (!EmitScalarSpecConstants()) {
@@ -716,34 +762,122 @@ bool ParserImpl::IsValidIdentifier(const std::string& str) {
   return true;
 }
 
+bool ParserImpl::RegisterWorkgroupSizeBuiltin() {
+  WorkgroupSizeInfo& info = workgroup_size_builtin_;
+  for (const spvtools::opt::Instruction& inst : module_->annotations()) {
+    if (inst.opcode() != SpvOpDecorate) {
+      continue;
+    }
+    if (inst.GetSingleWordInOperand(1) != SpvDecorationBuiltIn) {
+      continue;
+    }
+    if (inst.GetSingleWordInOperand(2) != SpvBuiltInWorkgroupSize) {
+      continue;
+    }
+    info.id = inst.GetSingleWordInOperand(0);
+  }
+  if (info.id == 0) {
+    return true;
+  }
+  // Gather the values.
+  const spvtools::opt::Instruction* composite_def =
+      def_use_mgr_->GetDef(info.id);
+  if (!composite_def) {
+    return Fail() << "Invalid WorkgroupSize builtin value";
+  }
+  // SPIR-V validation checks that the result is a 3-element vector of 32-bit
+  // integer scalars (signed or unsigned).  Rely on validation to check the
+  // type.  In theory the instruction could be OpConstantNull and still
+  // pass validation, but that would be non-sensical.  Be a little more
+  // stringent here and check for specific opcodes.  WGSL does not support
+  // const-expr yet, so avoid supporting OpSpecConstantOp here.
+  // TODO(dneto): See https://github.com/gpuweb/gpuweb/issues/1272 for WGSL
+  // const_expr proposals.
+  if ((composite_def->opcode() != SpvOpSpecConstantComposite &&
+       composite_def->opcode() != SpvOpConstantComposite)) {
+    return Fail() << "Invalid WorkgroupSize builtin.  Expected 3-element "
+                     "OpSpecConstantComposite or OpConstantComposite:  "
+                  << composite_def->PrettyPrint();
+  }
+  info.type_id = composite_def->type_id();
+  // Extract the component type from the vector type.
+  info.component_type_id =
+      def_use_mgr_->GetDef(info.type_id)->GetSingleWordInOperand(0);
+
+  /// Sets the ID and value of the index'th member of the composite constant.
+  /// Returns false and emits a diagnostic on error.
+  auto set_param = [this, composite_def](uint32_t* id_ptr, uint32_t* value_ptr,
+                                         int index) -> bool {
+    const auto id = composite_def->GetSingleWordInOperand(index);
+    const auto* def = def_use_mgr_->GetDef(id);
+    if (!def ||
+        (def->opcode() != SpvOpSpecConstant &&
+         def->opcode() != SpvOpConstant) ||
+        (def->NumInOperands() != 1)) {
+      return Fail() << "invalid component " << index << " of workgroupsize "
+                    << (def ? def->PrettyPrint()
+                            : std::string("no definition"));
+    }
+    *id_ptr = id;
+    // Use the default value of a spec constant.
+    *value_ptr = def->GetSingleWordInOperand(0);
+    return true;
+  };
+
+  return set_param(&info.x_id, &info.x_value, 0) &&
+         set_param(&info.y_id, &info.y_value, 1) &&
+         set_param(&info.z_id, &info.z_value, 2);
+}
+
 bool ParserImpl::RegisterEntryPoints() {
+  // Mapping from entry point ID to GridSize computed from LocalSize
+  // decorations.
+  std::unordered_map<uint32_t, GridSize> local_size;
+  for (const spvtools::opt::Instruction& inst : module_->execution_modes()) {
+    auto mode = static_cast<SpvExecutionMode>(inst.GetSingleWordInOperand(1));
+    if (mode == SpvExecutionModeLocalSize) {
+      if (inst.NumInOperands() != 5) {
+        // This won't even get past SPIR-V binary parsing.
+        return Fail() << "invalid LocalSize execution mode: "
+                      << inst.PrettyPrint();
+      }
+      uint32_t function_id = inst.GetSingleWordInOperand(0);
+      local_size[function_id] = GridSize{inst.GetSingleWordInOperand(2),
+                                         inst.GetSingleWordInOperand(3),
+                                         inst.GetSingleWordInOperand(4)};
+    }
+  }
+
   for (const spvtools::opt::Instruction& entry_point :
        module_->entry_points()) {
     const auto stage = SpvExecutionModel(entry_point.GetSingleWordInOperand(0));
     const uint32_t function_id = entry_point.GetSingleWordInOperand(1);
 
     const std::string ep_name = entry_point.GetOperand(2).AsString();
+    if (!IsValidIdentifier(ep_name)) {
+      return Fail() << "entry point name is not a valid WGSL identifier: "
+                    << ep_name;
+    }
 
     bool owns_inner_implementation = false;
     std::string inner_implementation_name;
 
-    if (hlsl_style_pipeline_io_) {
-      auto where = function_to_ep_info_.find(function_id);
-      if (where == function_to_ep_info_.end()) {
-        // If this is the first entry point to have function_id as its
-        // implementation, then this entry point is responsible for generating
-        // the inner implementation.
-        owns_inner_implementation = true;
-        inner_implementation_name = namer_.MakeDerivedName(ep_name);
-      } else {
-        // Reuse the inner implementation owned by the first entry point.
-        inner_implementation_name = where->second[0].inner_name;
-      }
+    auto where = function_to_ep_info_.find(function_id);
+    if (where == function_to_ep_info_.end()) {
+      // If this is the first entry point to have function_id as its
+      // implementation, then this entry point is responsible for generating
+      // the inner implementation.
+      owns_inner_implementation = true;
+      inner_implementation_name = namer_.MakeDerivedName(ep_name);
+    } else {
+      // Reuse the inner implementation owned by the first entry point.
+      inner_implementation_name = where->second[0].inner_name;
     }
-    TINT_ASSERT(ep_name != inner_implementation_name);
+    TINT_ASSERT(Reader, !inner_implementation_name.empty());
+    TINT_ASSERT(Reader, ep_name != inner_implementation_name);
 
-    tint::UniqueVector<uint32_t> inputs;
-    tint::UniqueVector<uint32_t> outputs;
+    utils::UniqueVector<uint32_t> inputs;
+    utils::UniqueVector<uint32_t> outputs;
     for (unsigned iarg = 3; iarg < entry_point.NumInOperands(); iarg++) {
       const uint32_t var_id = entry_point.GetSingleWordInOperand(iarg);
       if (const auto* var_inst = def_use_mgr_->GetDef(var_id)) {
@@ -760,16 +894,35 @@ bool ParserImpl::RegisterEntryPoints() {
       }
     }
     // Save the lists, in ID-sorted order.
-    std::vector<uint32_t> sorted_inputs(inputs.begin(), inputs.end());
+    std::vector<uint32_t> sorted_inputs(inputs);
     std::sort(sorted_inputs.begin(), sorted_inputs.end());
-    std::vector<uint32_t> sorted_outputs(outputs.begin(), outputs.end());
-    std::sort(sorted_inputs.begin(), sorted_inputs.end());
+    std::vector<uint32_t> sorted_outputs(outputs);
+    std::sort(sorted_outputs.begin(), sorted_outputs.end());
 
+    const auto ast_stage = enum_converter_.ToPipelineStage(stage);
+    GridSize wgsize;
+    if (ast_stage == ast::PipelineStage::kCompute) {
+      if (workgroup_size_builtin_.id) {
+        // Store the default values.
+        // WGSL allows specializing these, but this code doesn't support that
+        // yet. https://github.com/gpuweb/gpuweb/issues/1442
+        wgsize = GridSize{workgroup_size_builtin_.x_value,
+                          workgroup_size_builtin_.y_value,
+                          workgroup_size_builtin_.z_value};
+      } else {
+        // Use the LocalSize execution mode.  This is the second choice.
+        auto where_local_size = local_size.find(function_id);
+        if (where_local_size != local_size.end()) {
+          wgsize = where_local_size->second;
+        }
+      }
+    }
     function_to_ep_info_[function_id].emplace_back(
-        ep_name, enum_converter_.ToPipelineStage(stage),
-        owns_inner_implementation, inner_implementation_name,
-        std::move(sorted_inputs), std::move(sorted_outputs));
+        ep_name, ast_stage, owns_inner_implementation,
+        inner_implementation_name, std::move(sorted_inputs),
+        std::move(sorted_outputs), wgsize);
   }
+
   // The enum conversion could have failed, so return the existing status value.
   return success_;
 }
@@ -817,6 +970,7 @@ const Type* ParserImpl::ConvertType(
 }
 
 const Type* ParserImpl::ConvertType(
+    uint32_t type_id,
     const spvtools::opt::analysis::RuntimeArray* rtarr_ty) {
   auto* ast_elem_ty = ConvertType(type_mgr_->GetId(rtarr_ty->element_type()));
   if (ast_elem_ty == nullptr) {
@@ -826,16 +980,24 @@ const Type* ParserImpl::ConvertType(
   if (!ParseArrayDecorations(rtarr_ty, &array_stride)) {
     return nullptr;
   }
-  return ty_.Array(ast_elem_ty, 0, array_stride);
+  const Type* result = ty_.Array(ast_elem_ty, 0, array_stride);
+  return MaybeGenerateAlias(type_id, rtarr_ty, result);
 }
 
 const Type* ParserImpl::ConvertType(
+    uint32_t type_id,
     const spvtools::opt::analysis::Array* arr_ty) {
-  const auto elem_type_id = type_mgr_->GetId(arr_ty->element_type());
+  // Get the element type. The SPIR-V optimizer's types representation
+  // deduplicates array types that have the same parameterization.
+  // We don't want that deduplication, so get the element type from
+  // the SPIR-V type directly.
+  const auto* inst = def_use_mgr_->GetDef(type_id);
+  const auto elem_type_id = inst->GetSingleWordInOperand(0);
   auto* ast_elem_ty = ConvertType(elem_type_id);
   if (ast_elem_ty == nullptr) {
     return nullptr;
   }
+  // Get the length.
   const auto& length_info = arr_ty->length_info();
   if (length_info.words.empty()) {
     // The internal representation is invalid. The discriminant vector
@@ -870,13 +1032,16 @@ const Type* ParserImpl::ConvertType(
   if (remap_buffer_block_type_.count(elem_type_id)) {
     remap_buffer_block_type_.insert(type_mgr_->GetId(arr_ty));
   }
-  return ty_.Array(ast_elem_ty, static_cast<uint32_t>(num_elem), array_stride);
+  const Type* result =
+      ty_.Array(ast_elem_ty, static_cast<uint32_t>(num_elem), array_stride);
+  return MaybeGenerateAlias(type_id, arr_ty, result);
 }
 
 bool ParserImpl::ParseArrayDecorations(
     const spvtools::opt::analysis::Type* spv_type,
     uint32_t* array_stride) {
   bool has_array_stride = false;
+  *array_stride = 0;  // Implicit stride case.
   const auto type_id = type_mgr_->GetId(spv_type);
   for (auto& decoration : this->GetDecorationsFor(type_id)) {
     if (decoration.size() == 2 && decoration[0] == SpvDecorationArrayStride) {
@@ -928,6 +1093,11 @@ const Type* ParserImpl::ConvertType(
   // Compute members
   ast::StructMemberList ast_members;
   const auto members = struct_ty->element_types();
+  if (members.empty()) {
+    Fail() << "WGSL does not support empty structures. can't convert type: "
+           << def_use_mgr_->GetDef(type_id)->PrettyPrint();
+    return nullptr;
+  }
   TypeList ast_member_types;
   unsigned num_non_writable_members = 0;
   for (uint32_t member_index = 0; member_index < members.size();
@@ -980,19 +1150,22 @@ const Type* ParserImpl::ConvertType(
     bool is_non_writable = false;
     ast::DecorationList ast_member_decorations;
     for (auto& decoration : GetDecorationsForMember(type_id, member_index)) {
-      if (decoration[0] == SpvDecorationNonWritable) {
+      if (IsPipelineDecoration(decoration)) {
+        // IO decorations are handled when emitting the entry point.
+        continue;
+      } else if (decoration[0] == SpvDecorationNonWritable) {
         // WGSL doesn't represent individual members as non-writable. Instead,
         // apply the ReadOnly access control to the containing struct if all
         // the members are non-writable.
         is_non_writable = true;
       } else {
-        auto* ast_member_decoration =
-            ConvertMemberDecoration(type_id, member_index, decoration);
+        auto decos = ConvertMemberDecoration(type_id, member_index,
+                                             ast_member_ty, decoration);
+        for (auto* deco : decos) {
+          ast_member_decorations.emplace_back(deco);
+        }
         if (!success_) {
           return nullptr;
-        }
-        if (ast_member_decoration) {
-          ast_member_decorations.push_back(ast_member_decoration);
         }
       }
     }
@@ -1021,23 +1194,25 @@ const Type* ParserImpl::ConvertType(
   // Now make the struct.
   auto sym = builder_.Symbols().Register(name);
   ast::DecorationList ast_struct_decorations;
-  if (is_block_decorated) {
+  if (is_block_decorated && struct_types_for_buffers_.count(type_id)) {
     ast_struct_decorations.emplace_back(
         create<ast::StructBlockDecoration>(Source{}));
   }
   auto* ast_struct = create<ast::Struct>(Source{}, sym, std::move(ast_members),
                                          std::move(ast_struct_decorations));
   if (num_non_writable_members == members.size()) {
-    read_only_struct_types_.insert(ast_struct->name());
+    read_only_struct_types_.insert(ast_struct->name);
   }
-  AddConstructedType(sym, ast_struct);
-  return ty_.Struct(sym, std::move(ast_member_types));
+  AddTypeDecl(sym, ast_struct);
+  const auto* result = ty_.Struct(sym, std::move(ast_member_types));
+  struct_id_for_symbol_[sym] = type_id;
+  return result;
 }
 
-void ParserImpl::AddConstructedType(Symbol name, ast::NamedType* type) {
-  auto iter = constructed_types_.insert(name);
+void ParserImpl::AddTypeDecl(Symbol name, const ast::TypeDecl* decl) {
+  auto iter = declared_types_.insert(name);
   if (iter.second) {
-    builder_.AST().AddConstructedType(type);
+    builder_.AST().AddTypeDecl(decl);
   }
 }
 
@@ -1050,7 +1225,8 @@ const Type* ParserImpl::ConvertType(uint32_t type_id,
 
   if (pointee_type_id == builtin_position_.struct_type_id) {
     builtin_position_.pointer_type_id = type_id;
-    builtin_position_.storage_class = storage_class;
+    // Pipeline IO builtins map to private variables.
+    builtin_position_.storage_class = SpvStorageClassPrivate;
     return nullptr;
   }
   auto* ast_elem_ty = ConvertType(pointee_type_id, PtrAs::Ptr);
@@ -1073,13 +1249,10 @@ const Type* ParserImpl::ConvertType(uint32_t type_id,
     remap_buffer_block_type_.insert(type_id);
   }
 
-  if (hlsl_style_pipeline_io_) {
-    // When using HLSL-style pipeline IO, intput and output variables
-    // are mapped to private variables.
-    if (ast_storage_class == ast::StorageClass::kInput ||
-        ast_storage_class == ast::StorageClass::kOutput) {
-      ast_storage_class = ast::StorageClass::kPrivate;
-    }
+  // Pipeline input and output variables map to private variables.
+  if (ast_storage_class == ast::StorageClass::kInput ||
+      ast_storage_class == ast::StorageClass::kOutput) {
+    ast_storage_class = ast::StorageClass::kPrivate;
   }
   switch (ptr_as) {
     case PtrAs::Ref:
@@ -1095,6 +1268,37 @@ bool ParserImpl::RegisterTypes() {
   if (!success_) {
     return false;
   }
+
+  // First record the structure types that should have a `block` decoration
+  // in WGSL. In particular, exclude user-defined pipeline IO in a
+  // block-decorated struct.
+  for (const auto& type_or_value : module_->types_values()) {
+    if (type_or_value.opcode() != SpvOpVariable) {
+      continue;
+    }
+    const auto& var = type_or_value;
+    const auto spirv_storage_class =
+        SpvStorageClass(var.GetSingleWordInOperand(0));
+    if ((spirv_storage_class != SpvStorageClassStorageBuffer) &&
+        (spirv_storage_class != SpvStorageClassUniform)) {
+      continue;
+    }
+    const auto* ptr_type = def_use_mgr_->GetDef(var.type_id());
+    if (ptr_type->opcode() != SpvOpTypePointer) {
+      return Fail() << "OpVariable type expected to be a pointer: "
+                    << var.PrettyPrint();
+    }
+    const auto* store_type =
+        def_use_mgr_->GetDef(ptr_type->GetSingleWordInOperand(1));
+    if (store_type->opcode() == SpvOpTypeStruct) {
+      struct_types_for_buffers_.insert(store_type->result_id());
+    } else {
+      Fail() << "WGSL does not support arrays of buffers: "
+             << var.PrettyPrint();
+    }
+  }
+
+  // Now convert each type.
   for (auto& type_or_const : module_->types_values()) {
     const auto* type = type_mgr_->GetType(type_or_const.result_id());
     if (type == nullptr) {
@@ -1113,6 +1317,33 @@ bool ParserImpl::RegisterTypes() {
   return success_;
 }
 
+bool ParserImpl::RejectInvalidPointerRoots() {
+  if (!success_) {
+    return false;
+  }
+  for (auto& inst : module_->types_values()) {
+    if (const auto* result_type = type_mgr_->GetType(inst.type_id())) {
+      if (result_type->AsPointer()) {
+        switch (inst.opcode()) {
+          case SpvOpVariable:
+            // This is the only valid case.
+            break;
+          case SpvOpUndef:
+            return Fail() << "undef pointer is not valid: "
+                          << inst.PrettyPrint();
+          case SpvOpConstantNull:
+            return Fail() << "null pointer is not valid: "
+                          << inst.PrettyPrint();
+          default:
+            return Fail() << "module-scope pointer is not valid: "
+                          << inst.PrettyPrint();
+        }
+      }
+    }
+  }
+  return success();
+}
+
 bool ParserImpl::EmitScalarSpecConstants() {
   if (!success_) {
     return false;
@@ -1122,34 +1353,30 @@ bool ParserImpl::EmitScalarSpecConstants() {
   for (auto& inst : module_->types_values()) {
     // These will be populated for a valid scalar spec constant.
     const Type* ast_type = nullptr;
-    ast::ScalarConstructorExpression* ast_expr = nullptr;
+    ast::LiteralExpression* ast_expr = nullptr;
 
     switch (inst.opcode()) {
       case SpvOpSpecConstantTrue:
       case SpvOpSpecConstantFalse: {
         ast_type = ConvertType(inst.type_id());
-        ast_expr = create<ast::ScalarConstructorExpression>(
-            Source{}, create<ast::BoolLiteral>(
-                          Source{}, inst.opcode() == SpvOpSpecConstantTrue));
+        ast_expr = create<ast::BoolLiteralExpression>(
+            Source{}, inst.opcode() == SpvOpSpecConstantTrue);
         break;
       }
       case SpvOpSpecConstant: {
         ast_type = ConvertType(inst.type_id());
         const uint32_t literal_value = inst.GetSingleWordInOperand(0);
         if (ast_type->Is<I32>()) {
-          ast_expr = create<ast::ScalarConstructorExpression>(
-              Source{}, create<ast::SintLiteral>(
-                            Source{}, static_cast<int32_t>(literal_value)));
+          ast_expr = create<ast::SintLiteralExpression>(
+              Source{}, static_cast<int32_t>(literal_value));
         } else if (ast_type->Is<U32>()) {
-          ast_expr = create<ast::ScalarConstructorExpression>(
-              Source{}, create<ast::UintLiteral>(
-                            Source{}, static_cast<uint32_t>(literal_value)));
+          ast_expr = create<ast::UintLiteralExpression>(
+              Source{}, static_cast<uint32_t>(literal_value));
         } else if (ast_type->Is<F32>()) {
           float float_value;
           // Copy the bits so we can read them as a float.
           std::memcpy(&float_value, &literal_value, sizeof(float_value));
-          ast_expr = create<ast::ScalarConstructorExpression>(
-              Source{}, create<ast::FloatLiteral>(Source{}, float_value));
+          ast_expr = create<ast::FloatLiteralExpression>(Source{}, float_value);
         } else {
           return Fail() << " invalid result type for OpSpecConstant "
                         << inst.PrettyPrint();
@@ -1163,7 +1390,13 @@ bool ParserImpl::EmitScalarSpecConstants() {
       ast::DecorationList spec_id_decos;
       for (const auto& deco : GetDecorationsFor(inst.result_id())) {
         if ((deco.size() == 2) && (deco[0] == SpvDecorationSpecId)) {
-          auto* cid = create<ast::OverrideDecoration>(Source{}, deco[1]);
+          const uint32_t id = deco[1];
+          if (id > 65535) {
+            return Fail() << "SpecId too large. WGSL override IDs must be "
+                             "between 0 and 65535: ID %"
+                          << inst.result_id() << " has SpecId " << id;
+          }
+          auto* cid = create<ast::OverrideDecoration>(Source{}, id);
           spec_id_decos.push_back(cid);
           break;
         }
@@ -1217,7 +1450,7 @@ const Type* ParserImpl::MaybeGenerateAlias(
       builder_.ty.alias(sym, ast_underlying_type->Build(builder_));
 
   // Record this new alias as the AST type for this SPIR-V ID.
-  AddConstructedType(sym, ast_alias_type);
+  AddTypeDecl(sym, ast_alias_type);
 
   return ty_.Alias(sym, ast_underlying_type);
 }
@@ -1240,6 +1473,8 @@ bool ParserImpl::EmitModuleScopeVariables() {
          (spirv_storage_class == SpvStorageClassOutput))) {
       // Skip emitting gl_PerVertex.
       builtin_position_.per_vertex_var_id = var.result_id();
+      builtin_position_.per_vertex_var_init_id =
+          var.NumInOperands() > 1 ? var.GetSingleWordInOperand(1) : 0u;
       continue;
     }
     switch (enum_converter_.ToStorageClass(spirv_storage_class)) {
@@ -1283,7 +1518,7 @@ bool ParserImpl::EmitModuleScopeVariables() {
 
     auto* ast_store_type = ast_type->As<Pointer>()->type;
     auto ast_storage_class = ast_type->As<Pointer>()->storage_class;
-    ast::Expression* ast_constructor = nullptr;
+    const ast::Expression* ast_constructor = nullptr;
     if (var.NumInOperands() > 1) {
       // SPIR-V initializers are always constants.
       // (OpenCL also allows the ID of an OpVariable, but we don't handle that
@@ -1305,15 +1540,33 @@ bool ParserImpl::EmitModuleScopeVariables() {
     // Make sure the variable has a name.
     namer_.SuggestSanitizedName(builtin_position_.per_vertex_var_id,
                                 "gl_Position");
-    auto* var = MakeVariable(
+    const ast::Expression* ast_constructor = nullptr;
+    if (builtin_position_.per_vertex_var_init_id) {
+      // The initializer is complex.
+      const auto* init =
+          def_use_mgr_->GetDef(builtin_position_.per_vertex_var_init_id);
+      switch (init->opcode()) {
+        case SpvOpConstantComposite:
+        case SpvOpSpecConstantComposite:
+          ast_constructor = MakeConstantExpression(
+                                init->GetSingleWordInOperand(
+                                    builtin_position_.position_member_index))
+                                .expr;
+          break;
+        default:
+          return Fail() << "gl_PerVertex initializer too complex. only "
+                           "OpCompositeConstruct and OpSpecConstantComposite "
+                           "are supported: "
+                        << init->PrettyPrint();
+      }
+    }
+    auto* ast_var = MakeVariable(
         builtin_position_.per_vertex_var_id,
         enum_converter_.ToStorageClass(builtin_position_.storage_class),
-        ConvertType(builtin_position_.position_member_type_id), false, nullptr,
-        ast::DecorationList{
-            create<ast::BuiltinDecoration>(Source{}, ast::Builtin::kPosition),
-        });
+        ConvertType(builtin_position_.position_member_type_id), false,
+        ast_constructor, {});
 
-    builder_.AST().AddGlobalVariable(var);
+    builder_.AST().AddGlobalVariable(ast_var);
   }
   return success_;
 }
@@ -1347,13 +1600,14 @@ ast::Variable* ParserImpl::MakeVariable(uint32_t id,
                                         ast::StorageClass sc,
                                         const Type* storage_type,
                                         bool is_const,
-                                        ast::Expression* constructor,
+                                        const ast::Expression* constructor,
                                         ast::DecorationList decorations) {
   if (storage_type == nullptr) {
     Fail() << "internal error: can't make ast::Variable for null type";
     return nullptr;
   }
 
+  ast::Access access = ast::Access::kUndefined;
   if (sc == ast::StorageClass::kStorage) {
     bool read_only = false;
     if (auto* tn = storage_type->As<Named>()) {
@@ -1361,9 +1615,7 @@ ast::Variable* ParserImpl::MakeVariable(uint32_t id,
     }
 
     // Apply the access(read) or access(read_write) modifier.
-    auto access = read_only ? ast::AccessControl::kReadOnly
-                            : ast::AccessControl::kReadWrite;
-    storage_type = ty_.AccessControl(storage_type, access);
+    access = read_only ? ast::Access::kRead : ast::Access::kReadWrite;
   }
 
   // Handle variables (textures and samplers) are always in the handle
@@ -1372,12 +1624,9 @@ ast::Variable* ParserImpl::MakeVariable(uint32_t id,
     sc = ast::StorageClass::kNone;
   }
 
-  // In almost all cases, copy the decorations from SPIR-V to the variable.
-  // But avoid doing so when converting pipeline IO to private variables.
-  if (sc != ast::StorageClass::kPrivate) {
-    if (!ConvertDecorationsForVariable(id, &storage_type, &decorations)) {
-      return nullptr;
-    }
+  if (!ConvertDecorationsForVariable(id, &storage_type, &decorations,
+                                     sc != ast::StorageClass::kPrivate)) {
+    return nullptr;
   }
 
   std::string name = namer_.Name(id);
@@ -1387,14 +1636,15 @@ ast::Variable* ParserImpl::MakeVariable(uint32_t id,
   // `var` declarations will have a resolved type of ref<storage>, but at the
   // AST level both `var` and `let` are declared with the same type.
   return create<ast::Variable>(Source{}, builder_.Symbols().Register(name), sc,
-                               storage_type->Build(builder_), is_const,
+                               access, storage_type->Build(builder_), is_const,
                                constructor, decorations);
 }
 
-bool ParserImpl::ConvertDecorationsForVariable(
-    uint32_t id,
-    const Type** type,
-    ast::DecorationList* decorations) {
+bool ParserImpl::ConvertDecorationsForVariable(uint32_t id,
+                                               const Type** store_type,
+                                               ast::DecorationList* decorations,
+                                               bool transfer_pipeline_io) {
+  DecorationList non_builtin_pipeline_decorations;
   for (auto& deco : GetDecorationsFor(id)) {
     if (deco.empty()) {
       return Fail() << "malformed decoration on ID " << id << ": it is empty";
@@ -1412,13 +1662,20 @@ bool ParserImpl::ConvertDecorationsForVariable(
         case SpvBuiltInSampleId:
         case SpvBuiltInVertexIndex:
         case SpvBuiltInInstanceIndex:
-          // The SPIR-V variable is likely to be signed (because GLSL
-          // requires signed), but WGSL requires unsigned.  Handle specially
+        case SpvBuiltInLocalInvocationId:
+        case SpvBuiltInLocalInvocationIndex:
+        case SpvBuiltInGlobalInvocationId:
+        case SpvBuiltInWorkgroupId:
+        case SpvBuiltInNumWorkgroups:
+          // The SPIR-V variable may signed (because GLSL requires signed for
+          // some of these), but WGSL requires unsigned.  Handle specially
           // so we always perform the conversion at load and store.
-          if (auto* forced_type = UnsignedTypeFor(*type)) {
+          special_builtins_[id] = spv_builtin;
+          if (auto* forced_type = UnsignedTypeFor(*store_type)) {
             // Requires conversion and special handling in code generation.
-            special_builtins_[id] = spv_builtin;
-            *type = forced_type;
+            if (transfer_pipeline_io) {
+              *store_type = forced_type;
+            }
           }
           break;
         case SpvBuiltInSampleMask: {
@@ -1432,7 +1689,9 @@ bool ParserImpl::ConvertDecorationsForVariable(
                       "SampleMask must be an array of 1 element.";
           }
           special_builtins_[id] = spv_builtin;
-          *type = ty_.U32();
+          if (transfer_pipeline_io) {
+            *store_type = ty_.U32();
+          }
           break;
         }
         default:
@@ -1443,16 +1702,13 @@ bool ParserImpl::ConvertDecorationsForVariable(
         // A diagnostic has already been emitted.
         return false;
       }
-      decorations->emplace_back(
-          create<ast::BuiltinDecoration>(Source{}, ast_builtin));
-    }
-    if (deco[0] == SpvDecorationLocation) {
-      if (deco.size() != 2) {
-        return Fail() << "malformed Location decoration on ID " << id
-                      << ": requires one literal operand";
+      if (transfer_pipeline_io) {
+        decorations->emplace_back(
+            create<ast::BuiltinDecoration>(Source{}, ast_builtin));
       }
-      decorations->emplace_back(
-          create<ast::LocationDecoration>(Source{}, deco[1]));
+    }
+    if (transfer_pipeline_io && IsPipelineDecoration(deco)) {
+      non_builtin_pipeline_decorations.push_back(deco);
     }
     if (deco[0] == SpvDecorationDescriptorSet) {
       if (deco.size() == 1) {
@@ -1471,101 +1727,256 @@ bool ParserImpl::ConvertDecorationsForVariable(
           create<ast::BindingDecoration>(Source{}, deco[1]));
     }
   }
+
+  if (transfer_pipeline_io) {
+    if (!ConvertPipelineDecorations(
+            *store_type, non_builtin_pipeline_decorations, decorations)) {
+      return false;
+    }
+  }
+
   return success();
+}
+
+DecorationList ParserImpl::GetMemberPipelineDecorations(
+    const Struct& struct_type,
+    int member_index) {
+  // Yes, I could have used std::copy_if or std::copy_if.
+  DecorationList result;
+  for (const auto& deco : GetDecorationsForMember(
+           struct_id_for_symbol_[struct_type.name], member_index)) {
+    if (IsPipelineDecoration(deco)) {
+      result.emplace_back(deco);
+    }
+  }
+  return result;
+}
+
+const ast::Decoration* ParserImpl::SetLocation(
+    ast::DecorationList* decos,
+    const ast::Decoration* replacement) {
+  if (!replacement) {
+    return nullptr;
+  }
+  for (auto*& deco : *decos) {
+    if (deco->Is<ast::LocationDecoration>()) {
+      // Replace this location decoration with the replacement.
+      // The old one doesn't leak because it's kept in the builder's AST node
+      // list.
+      const ast::Decoration* result = nullptr;
+      result = deco;
+      deco = replacement;
+      return result;  // Assume there is only one such decoration.
+    }
+  }
+  // The list didn't have a location. Add it.
+  decos->push_back(replacement);
+  return nullptr;
+}
+
+bool ParserImpl::ConvertPipelineDecorations(const Type* store_type,
+                                            const DecorationList& decorations,
+                                            ast::DecorationList* ast_decos) {
+  // Vulkan defaults to perspective-correct interpolation.
+  ast::InterpolationType type = ast::InterpolationType::kPerspective;
+  ast::InterpolationSampling sampling = ast::InterpolationSampling::kNone;
+
+  for (const auto& deco : decorations) {
+    TINT_ASSERT(Reader, deco.size() > 0);
+    switch (deco[0]) {
+      case SpvDecorationLocation:
+        if (deco.size() != 2) {
+          return Fail() << "malformed Location decoration on ID requires one "
+                           "literal operand";
+        }
+        SetLocation(ast_decos,
+                    create<ast::LocationDecoration>(Source{}, deco[1]));
+        break;
+      case SpvDecorationFlat:
+        type = ast::InterpolationType::kFlat;
+        break;
+      case SpvDecorationNoPerspective:
+        if (store_type->IsIntegerScalarOrVector()) {
+          // This doesn't capture the array or struct case.
+          return Fail() << "NoPerspective is invalid on integral IO";
+        }
+        type = ast::InterpolationType::kLinear;
+        break;
+      case SpvDecorationCentroid:
+        if (store_type->IsIntegerScalarOrVector()) {
+          // This doesn't capture the array or struct case.
+          return Fail()
+                 << "Centroid interpolation sampling is invalid on integral IO";
+        }
+        sampling = ast::InterpolationSampling::kCentroid;
+        break;
+      case SpvDecorationSample:
+        if (store_type->IsIntegerScalarOrVector()) {
+          // This doesn't capture the array or struct case.
+          return Fail()
+                 << "Sample interpolation sampling is invalid on integral IO";
+        }
+        sampling = ast::InterpolationSampling::kSample;
+        break;
+      default:
+        break;
+    }
+  }
+
+  // Apply interpolation.
+  if (type == ast::InterpolationType::kPerspective &&
+      sampling == ast::InterpolationSampling::kNone) {
+    // This is the default. Don't add a decoration.
+  } else {
+    ast_decos->emplace_back(create<ast::InterpolateDecoration>(type, sampling));
+  }
+
+  return success();
+}
+
+bool ParserImpl::CanMakeConstantExpression(uint32_t id) {
+  if ((id == workgroup_size_builtin_.id) ||
+      (id == workgroup_size_builtin_.x_id) ||
+      (id == workgroup_size_builtin_.y_id) ||
+      (id == workgroup_size_builtin_.z_id)) {
+    return true;
+  }
+  const auto* inst = def_use_mgr_->GetDef(id);
+  if (!inst) {
+    return false;
+  }
+  if (inst->opcode() == SpvOpUndef) {
+    return true;
+  }
+  return nullptr != constant_mgr_->FindDeclaredConstant(id);
 }
 
 TypedExpression ParserImpl::MakeConstantExpression(uint32_t id) {
   if (!success_) {
     return {};
   }
+
+  // Handle the special cases for workgroup sizing.
+  if (id == workgroup_size_builtin_.id) {
+    auto x = MakeConstantExpression(workgroup_size_builtin_.x_id);
+    auto y = MakeConstantExpression(workgroup_size_builtin_.y_id);
+    auto z = MakeConstantExpression(workgroup_size_builtin_.z_id);
+    auto* ast_type = ty_.Vector(x.type, 3);
+    return {ast_type,
+            builder_.Construct(Source{}, ast_type->Build(builder_),
+                               ast::ExpressionList{x.expr, y.expr, z.expr})};
+  } else if (id == workgroup_size_builtin_.x_id) {
+    return MakeConstantExpressionForScalarSpirvConstant(
+        Source{}, ConvertType(workgroup_size_builtin_.component_type_id),
+        constant_mgr_->GetConstant(
+            type_mgr_->GetType(workgroup_size_builtin_.component_type_id),
+            {workgroup_size_builtin_.x_value}));
+  } else if (id == workgroup_size_builtin_.y_id) {
+    return MakeConstantExpressionForScalarSpirvConstant(
+        Source{}, ConvertType(workgroup_size_builtin_.component_type_id),
+        constant_mgr_->GetConstant(
+            type_mgr_->GetType(workgroup_size_builtin_.component_type_id),
+            {workgroup_size_builtin_.y_value}));
+  } else if (id == workgroup_size_builtin_.z_id) {
+    return MakeConstantExpressionForScalarSpirvConstant(
+        Source{}, ConvertType(workgroup_size_builtin_.component_type_id),
+        constant_mgr_->GetConstant(
+            type_mgr_->GetType(workgroup_size_builtin_.component_type_id),
+            {workgroup_size_builtin_.z_value}));
+  }
+
+  // Handle the general case where a constant is already registered
+  // with the SPIR-V optimizer's analysis framework.
   const auto* inst = def_use_mgr_->GetDef(id);
   if (inst == nullptr) {
     Fail() << "ID " << id << " is not a registered instruction";
     return {};
   }
+  auto source = GetSourceForInst(inst);
+
+  // TODO(dneto): Handle spec constants too?
+
   auto* original_ast_type = ConvertType(inst->type_id());
   if (original_ast_type == nullptr) {
     return {};
   }
 
-  if (inst->opcode() == SpvOpUndef) {
-    // Remap undef to null.
-    return {original_ast_type, MakeNullValue(original_ast_type)};
-  }
+  switch (inst->opcode()) {
+    case SpvOpUndef:  // Remap undef to null.
+    case SpvOpConstantNull:
+      return {original_ast_type, MakeNullValue(original_ast_type)};
+    case SpvOpConstantTrue:
+    case SpvOpConstantFalse:
+    case SpvOpConstant: {
+      const auto* spirv_const = constant_mgr_->FindDeclaredConstant(id);
+      if (spirv_const == nullptr) {
+        Fail() << "ID " << id << " is not a constant";
+        return {};
+      }
+      return MakeConstantExpressionForScalarSpirvConstant(
+          source, original_ast_type, spirv_const);
+    }
+    case SpvOpConstantComposite: {
+      // Handle vector, matrix, array, and struct
 
-  // TODO(dneto): Handle spec constants too?
-  const auto* spirv_const = constant_mgr_->FindDeclaredConstant(id);
-  if (spirv_const == nullptr) {
-    Fail() << "ID " << id << " is not a constant";
-    return {};
+      // Generate a composite from explicit components.
+      ast::ExpressionList ast_components;
+      if (!inst->WhileEachInId([&](const uint32_t* id_ref) -> bool {
+            auto component = MakeConstantExpression(*id_ref);
+            if (!component) {
+              this->Fail() << "invalid constant with ID " << *id_ref;
+              return false;
+            }
+            ast_components.emplace_back(component.expr);
+            return true;
+          })) {
+        // We've already emitted a diagnostic.
+        return {};
+      }
+      return {original_ast_type,
+              builder_.Construct(source, original_ast_type->Build(builder_),
+                                 std::move(ast_components))};
+    }
+    default:
+      break;
   }
+  Fail() << "unhandled constant instruction " << inst->PrettyPrint();
+  return {};
+}
 
-  auto source = GetSourceForInst(inst);
-  auto* ast_type = original_ast_type->UnwrapAliasAndAccess();
+TypedExpression ParserImpl::MakeConstantExpressionForScalarSpirvConstant(
+    Source source,
+    const Type* original_ast_type,
+    const spvtools::opt::analysis::Constant* spirv_const) {
+  auto* ast_type = original_ast_type->UnwrapAlias();
 
   // TODO(dneto): Note: NullConstant for int, uint, float map to a regular 0.
   // So canonicalization should map that way too.
   // Currently "null<type>" is missing from the WGSL parser.
   // See https://bugs.chromium.org/p/tint/issues/detail?id=34
   if (ast_type->Is<U32>()) {
-    return {ty_.U32(), create<ast::ScalarConstructorExpression>(
-                           Source{}, create<ast::UintLiteral>(
-                                         source, spirv_const->GetU32()))};
+    return {ty_.U32(),
+            create<ast::UintLiteralExpression>(source, spirv_const->GetU32())};
   }
   if (ast_type->Is<I32>()) {
-    return {ty_.I32(), create<ast::ScalarConstructorExpression>(
-                           Source{}, create<ast::SintLiteral>(
-                                         source, spirv_const->GetS32()))};
+    return {ty_.I32(),
+            create<ast::SintLiteralExpression>(source, spirv_const->GetS32())};
   }
   if (ast_type->Is<F32>()) {
-    return {ty_.F32(), create<ast::ScalarConstructorExpression>(
-                           Source{}, create<ast::FloatLiteral>(
-                                         source, spirv_const->GetFloat()))};
+    return {ty_.F32(), create<ast::FloatLiteralExpression>(
+                           source, spirv_const->GetFloat())};
   }
   if (ast_type->Is<Bool>()) {
     const bool value = spirv_const->AsNullConstant()
                            ? false
                            : spirv_const->AsBoolConstant()->value();
-    return {ty_.Bool(), create<ast::ScalarConstructorExpression>(
-                            Source{}, create<ast::BoolLiteral>(source, value))};
+    return {ty_.Bool(), create<ast::BoolLiteralExpression>(source, value)};
   }
-  auto* spirv_composite_const = spirv_const->AsCompositeConstant();
-  if (spirv_composite_const != nullptr) {
-    // Handle vector, matrix, array, and struct
-
-    // TODO(dneto): Handle the spirv_composite_const->IsZero() case specially.
-    // See https://github.com/gpuweb/gpuweb/issues/685
-
-    // Generate a composite from explicit components.
-    ast::ExpressionList ast_components;
-    for (const auto* component : spirv_composite_const->GetComponents()) {
-      auto* def = constant_mgr_->GetDefiningInstruction(component);
-      if (def == nullptr) {
-        Fail() << "internal error: SPIR-V constant doesn't have defining "
-                  "instruction";
-        return {};
-      }
-      auto ast_component = MakeConstantExpression(def->result_id());
-      if (!success_) {
-        // We've already emitted a diagnostic.
-        return {};
-      }
-      ast_components.emplace_back(ast_component.expr);
-    }
-    return {original_ast_type, create<ast::TypeConstructorExpression>(
-                                   Source{}, original_ast_type->Build(builder_),
-                                   std::move(ast_components))};
-  }
-  auto* spirv_null_const = spirv_const->AsNullConstant();
-  if (spirv_null_const != nullptr) {
-    return {original_ast_type, MakeNullValue(original_ast_type)};
-  }
-  Fail() << "Unhandled constant type " << inst->type_id() << " for value ID "
-         << id;
+  Fail() << "expected scalar constant";
   return {};
 }
 
-ast::Expression* ParserImpl::MakeNullValue(const Type* type) {
+const ast::Expression* ParserImpl::MakeNullValue(const Type* type) {
   // TODO(dneto): Use the no-operands constructor syntax when it becomes
   // available in Tint.
   // https://github.com/gpuweb/gpuweb/issues/685
@@ -1577,37 +1988,33 @@ ast::Expression* ParserImpl::MakeNullValue(const Type* type) {
   }
 
   auto* original_type = type;
-  type = type->UnwrapAliasAndAccess();
+  type = type->UnwrapAlias();
 
   if (type->Is<Bool>()) {
-    return create<ast::ScalarConstructorExpression>(
-        Source{}, create<ast::BoolLiteral>(Source{}, false));
+    return create<ast::BoolLiteralExpression>(Source{}, false);
   }
   if (type->Is<U32>()) {
-    return create<ast::ScalarConstructorExpression>(
-        Source{}, create<ast::UintLiteral>(Source{}, 0u));
+    return create<ast::UintLiteralExpression>(Source{}, 0u);
   }
   if (type->Is<I32>()) {
-    return create<ast::ScalarConstructorExpression>(
-        Source{}, create<ast::SintLiteral>(Source{}, 0));
+    return create<ast::SintLiteralExpression>(Source{}, 0);
   }
   if (type->Is<F32>()) {
-    return create<ast::ScalarConstructorExpression>(
-        Source{}, create<ast::FloatLiteral>(Source{}, 0.0f));
+    return create<ast::FloatLiteralExpression>(Source{}, 0.0f);
   }
   if (type->Is<Alias>()) {
     // TODO(amaiorano): No type constructor for TypeName (yet?)
     ast::ExpressionList ast_components;
-    return create<ast::TypeConstructorExpression>(
-        Source{}, original_type->Build(builder_), std::move(ast_components));
+    return builder_.Construct(Source{}, original_type->Build(builder_),
+                              std::move(ast_components));
   }
   if (auto* vec_ty = type->As<Vector>()) {
     ast::ExpressionList ast_components;
     for (size_t i = 0; i < vec_ty->size; ++i) {
       ast_components.emplace_back(MakeNullValue(vec_ty->type));
     }
-    return create<ast::TypeConstructorExpression>(
-        Source{}, type->Build(builder_), std::move(ast_components));
+    return builder_.Construct(Source{}, type->Build(builder_),
+                              std::move(ast_components));
   }
   if (auto* mat_ty = type->As<Matrix>()) {
     // Matrix components are columns
@@ -1616,24 +2023,24 @@ ast::Expression* ParserImpl::MakeNullValue(const Type* type) {
     for (size_t i = 0; i < mat_ty->columns; ++i) {
       ast_components.emplace_back(MakeNullValue(column_ty));
     }
-    return create<ast::TypeConstructorExpression>(
-        Source{}, type->Build(builder_), std::move(ast_components));
+    return builder_.Construct(Source{}, type->Build(builder_),
+                              std::move(ast_components));
   }
   if (auto* arr_ty = type->As<Array>()) {
     ast::ExpressionList ast_components;
     for (size_t i = 0; i < arr_ty->size; ++i) {
       ast_components.emplace_back(MakeNullValue(arr_ty->type));
     }
-    return create<ast::TypeConstructorExpression>(
-        Source{}, original_type->Build(builder_), std::move(ast_components));
+    return builder_.Construct(Source{}, original_type->Build(builder_),
+                              std::move(ast_components));
   }
   if (auto* struct_ty = type->As<Struct>()) {
     ast::ExpressionList ast_components;
     for (auto* member : struct_ty->members) {
       ast_components.emplace_back(MakeNullValue(member));
     }
-    return create<ast::TypeConstructorExpression>(
-        Source{}, original_type->Build(builder_), std::move(ast_components));
+    return builder_.Construct(Source{}, original_type->Build(builder_),
+                              std::move(ast_components));
   }
   Fail() << "can't make null value for type: " << type->TypeInfo().name;
   return nullptr;
@@ -1692,8 +2099,8 @@ TypedExpression ParserImpl::RectifyOperandSignedness(
   }
   auto* type = expr.type;
   if (!type) {
-    Fail() << "internal error: unmapped type for: " << builder_.str(expr.expr)
-           << "\n";
+    Fail() << "internal error: unmapped type for: "
+           << expr.expr->TypeInfo().name << "\n";
     return {};
   }
   if (requires_unsigned) {
@@ -2098,7 +2505,7 @@ const Pointer* ParserImpl::GetTypeForHandleVar(
 
     // WGSL textures are always formatted.  Unformatted textures are always
     // sampled.
-    if (usage.IsSampledTexture() ||
+    if (usage.IsSampledTexture() || usage.IsStorageReadTexture() ||
         (image_type->format() == SpvImageFormatUnknown)) {
       // Make a sampled texture type.
       auto* ast_sampled_component_type =
@@ -2109,7 +2516,11 @@ const Pointer* ParserImpl::GetTypeForHandleVar(
       // OpImage variable with an OpImage*Dref* instruction.  In WGSL we must
       // treat that as a depth texture.
       if (image_type->depth() || usage.IsDepthTexture()) {
-        ast_store_type = ty_.DepthTexture(dim);
+        if (image_type->is_multisampled()) {
+          ast_store_type = ty_.DepthMultisampledTexture(dim);
+        } else {
+          ast_store_type = ty_.DepthTexture(dim);
+        }
       } else if (image_type->is_multisampled()) {
         if (dim != ast::TextureDimension::k2d) {
           Fail() << "WGSL multisampled textures must be 2d and non-arrayed: "
@@ -2123,15 +2534,12 @@ const Pointer* ParserImpl::GetTypeForHandleVar(
         ast_store_type = ty_.SampledTexture(dim, ast_sampled_component_type);
       }
     } else {
-      const auto access = usage.IsStorageReadTexture()
-                              ? ast::AccessControl::kReadOnly
-                              : ast::AccessControl::kWriteOnly;
+      const auto access = ast::Access::kWrite;
       const auto format = enum_converter_.ToImageFormat(image_type->format());
       if (format == ast::ImageFormat::kNone) {
         return nullptr;
       }
-      ast_store_type =
-          ty_.AccessControl(ty_.StorageTexture(dim, format), access);
+      ast_store_type = ty_.StorageTexture(dim, format, access);
     }
   } else {
     Fail() << "unsupported: UniformConstant variable is not a recognized "
@@ -2418,6 +2826,20 @@ const spvtools::opt::Instruction* ParserImpl::GetInstructionForTest(
     uint32_t id) const {
   return def_use_mgr_ ? def_use_mgr_->GetDef(id) : nullptr;
 }
+
+std::string ParserImpl::GetMemberName(const Struct& struct_type,
+                                      int member_index) {
+  auto where = struct_id_for_symbol_.find(struct_type.name);
+  if (where == struct_id_for_symbol_.end()) {
+    Fail() << "no structure type registered for symbol";
+    return "";
+  }
+  return namer_.GetMemberName(where->second, member_index);
+}
+
+WorkgroupSizeInfo::WorkgroupSizeInfo() = default;
+
+WorkgroupSizeInfo::~WorkgroupSizeInfo() = default;
 
 }  // namespace spirv
 }  // namespace reader

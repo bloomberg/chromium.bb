@@ -12,7 +12,6 @@
 
 #include "base/callback.h"
 #include "base/containers/circular_deque.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "extensions/browser/api/serial/serial_connection.h"
 #include "extensions/browser/api/webcam_private/webcam.h"
@@ -24,6 +23,9 @@ namespace extensions {
 class ViscaWebcam : public Webcam {
  public:
   ViscaWebcam();
+
+  ViscaWebcam(const ViscaWebcam&) = delete;
+  ViscaWebcam& operator=(const ViscaWebcam&) = delete;
 
   using OpenCompleteCallback = base::RepeatingCallback<void(bool)>;
 
@@ -143,8 +145,6 @@ class ViscaWebcam : public Webcam {
   // store the current value of pan and tilt positions.
   int pan_ = 0;
   int tilt_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(ViscaWebcam);
 };
 
 }  // namespace extensions

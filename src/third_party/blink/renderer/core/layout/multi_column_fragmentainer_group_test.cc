@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/layout/multi_column_fragmentainer_group.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/layout/layout_multi_column_flow_thread.h"
 #include "third_party/blink/renderer/core/layout/layout_multi_column_set.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
@@ -27,8 +28,8 @@ class MultiColumnFragmentainerGroupTest : public RenderingTest {
   static int GroupCount(const MultiColumnFragmentainerGroupList&);
 
  private:
-  LayoutMultiColumnFlowThread* flow_thread_;
-  LayoutMultiColumnSet* column_set_;
+  Persistent<LayoutMultiColumnFlowThread> flow_thread_;
+  Persistent<LayoutMultiColumnSet> column_set_;
 };
 
 void MultiColumnFragmentainerGroupTest::SetUp() {

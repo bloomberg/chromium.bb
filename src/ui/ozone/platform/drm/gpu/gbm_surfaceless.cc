@@ -71,16 +71,11 @@ gfx::SwapResult GbmSurfaceless::SwapBuffers(PresentationCallback callback) {
 }
 
 bool GbmSurfaceless::ScheduleOverlayPlane(
-    int z_order,
-    gfx::OverlayTransform transform,
     gl::GLImage* image,
-    const gfx::Rect& bounds_rect,
-    const gfx::RectF& crop_rect,
-    bool enable_blend,
-    std::unique_ptr<gfx::GpuFence> gpu_fence) {
+    std::unique_ptr<gfx::GpuFence> gpu_fence,
+    const gfx::OverlayPlaneData& overlay_plane_data) {
   unsubmitted_frames_.back()->overlays.push_back(
-      gl::GLSurfaceOverlay(z_order, transform, image, bounds_rect, crop_rect,
-                           enable_blend, std::move(gpu_fence)));
+      gl::GLSurfaceOverlay(image, std::move(gpu_fence), overlay_plane_data));
   return true;
 }
 
@@ -299,6 +294,10 @@ void GbmSurfaceless::FenceRetired(PendingFrame* frame) {
 void GbmSurfaceless::OnSubmission(gfx::SwapResult result,
                                   gfx::GpuFenceHandle release_fence) {
   submitted_frame_->swap_result = result;
+  if (!release_fence.is_null()) {
+    std::move(submitted_frame_->completion_callback)
+        .Run(gfx::SwapCompletionResult(result, std::move(release_fence)));
+  }
 }
 
 void GbmSurfaceless::OnPresentation(const gfx::PresentationFeedback& feedback) {
@@ -312,8 +311,9 @@ void GbmSurfaceless::OnPresentation(const gfx::PresentationFeedback& feedback) {
   submitted_frame_->overlays.clear();
 
   gfx::SwapResult result = submitted_frame_->swap_result;
-  std::move(submitted_frame_->completion_callback)
-      .Run(gfx::SwapCompletionResult(result));
+  if (submitted_frame_->completion_callback)
+    std::move(submitted_frame_->completion_callback)
+        .Run(gfx::SwapCompletionResult(result));
   std::move(submitted_frame_->presentation_callback).Run(feedback_copy);
   submitted_frame_.reset();
 

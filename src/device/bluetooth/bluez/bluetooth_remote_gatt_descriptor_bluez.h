@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
@@ -28,6 +27,11 @@ class BluetoothRemoteGattDescriptorBlueZ
     : public BluetoothGattDescriptorBlueZ,
       public device::BluetoothRemoteGattDescriptor {
  public:
+  BluetoothRemoteGattDescriptorBlueZ(
+      const BluetoothRemoteGattDescriptorBlueZ&) = delete;
+  BluetoothRemoteGattDescriptorBlueZ& operator=(
+      const BluetoothRemoteGattDescriptorBlueZ&) = delete;
+
   // device::BluetoothRemoteGattDescriptor overrides.
   ~BluetoothRemoteGattDescriptorBlueZ() override;
   device::BluetoothUUID GetUUID() const override;
@@ -66,8 +70,6 @@ class BluetoothRemoteGattDescriptorBlueZ
   // invalidate its weak pointers before any other members are destroyed.
   base::WeakPtrFactory<BluetoothRemoteGattDescriptorBlueZ> weak_ptr_factory_{
       this};
-
-  DISALLOW_COPY_AND_ASSIGN(BluetoothRemoteGattDescriptorBlueZ);
 };
 
 }  // namespace bluez

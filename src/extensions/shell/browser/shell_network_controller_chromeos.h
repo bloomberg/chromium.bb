@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
@@ -23,6 +22,10 @@ class ShellNetworkController : public chromeos::NetworkStateHandlerObserver {
   // This class must be instantiated after chromeos::DBusThreadManager and
   // destroyed before it.
   explicit ShellNetworkController(const std::string& preferred_network_name);
+
+  ShellNetworkController(const ShellNetworkController&) = delete;
+  ShellNetworkController& operator=(const ShellNetworkController&) = delete;
+
   ~ShellNetworkController() override;
 
   // chromeos::NetworkStateHandlerObserver overrides:
@@ -30,7 +33,7 @@ class ShellNetworkController : public chromeos::NetworkStateHandlerObserver {
   void NetworkConnectionStateChanged(
       const chromeos::NetworkState* state) override;
 
-  // Control whether the cellular network connection allows roaming.
+  // Control whether roaming is enabled for cellular network connections.
   void SetCellularAllowRoaming(bool allow_roaming);
 
  private:
@@ -80,8 +83,6 @@ class ShellNetworkController : public chromeos::NetworkStateHandlerObserver {
   bool preferred_network_is_active_;
 
   base::WeakPtrFactory<ShellNetworkController> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ShellNetworkController);
 };
 
 }  // namespace extensions

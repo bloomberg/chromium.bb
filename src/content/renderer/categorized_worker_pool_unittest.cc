@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/renderer/categorized_worker_pool.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/sequenced_task_runner_test_template.h"
 #include "base/test/task_runner_test_template.h"
@@ -21,9 +21,7 @@ class CategorizedWorkerPoolTestDelegate {
  public:
   CategorizedWorkerPoolTestDelegate() = default;
 
-  void StartTaskRunner() {
-    categorized_worker_pool_->Start(kNumThreads, nullptr);
-  }
+  void StartTaskRunner() { categorized_worker_pool_->Start(kNumThreads); }
 
   scoped_refptr<CategorizedWorkerPool> GetTaskRunner() {
     return categorized_worker_pool_;
@@ -42,9 +40,7 @@ class CategorizedWorkerPoolSequencedTestDelegate {
  public:
   CategorizedWorkerPoolSequencedTestDelegate() = default;
 
-  void StartTaskRunner() {
-    categorized_worker_pool_->Start(kNumThreads, nullptr);
-  }
+  void StartTaskRunner() { categorized_worker_pool_->Start(kNumThreads); }
 
   scoped_refptr<base::SequencedTaskRunner> GetTaskRunner() {
     return categorized_worker_pool_->CreateSequencedTaskRunner();
@@ -66,9 +62,7 @@ class CategorizedWorkerPoolTaskGraphRunnerTestDelegate {
  public:
   CategorizedWorkerPoolTaskGraphRunnerTestDelegate() = default;
 
-  void StartTaskGraphRunner() {
-    categorized_worker_pool_->Start(NumThreads, nullptr);
-  }
+  void StartTaskGraphRunner() { categorized_worker_pool_->Start(NumThreads); }
 
   cc::TaskGraphRunner* GetTaskGraphRunner() {
     return categorized_worker_pool_->GetTaskGraphRunner();
@@ -87,9 +81,7 @@ class CategorizedWorkerPoolTaskGraphRunnerTestDelegate {
 
 class CategorizedWorkerPoolTest : public testing::Test {
  protected:
-  CategorizedWorkerPoolTest() {
-    categorized_worker_pool_->Start(kNumThreads, nullptr);
-  }
+  CategorizedWorkerPoolTest() { categorized_worker_pool_->Start(kNumThreads); }
 
   ~CategorizedWorkerPoolTest() override {
     cc::Task::Vector completed_tasks;
@@ -109,6 +101,9 @@ class ClosureTask : public cc::Task {
   explicit ClosureTask(base::OnceClosure closure)
       : closure_(std::move(closure)) {}
 
+  ClosureTask(const ClosureTask&) = delete;
+  ClosureTask& operator=(const ClosureTask&) = delete;
+
   // Overridden from cc::Task:
   void RunOnWorkerThread() override { std::move(closure_).Run(); }
 
@@ -117,8 +112,6 @@ class ClosureTask : public cc::Task {
 
  private:
   base::OnceClosure closure_;
-
-  DISALLOW_COPY_AND_ASSIGN(ClosureTask);
 };
 
 }  // namespace
@@ -138,7 +131,7 @@ TEST_F(CategorizedWorkerPoolTest, BackgroundTasksDontRunConcurrently) {
           // shouldn't if only one background task runs at a time.
           EXPECT_FALSE(is_running_task);
           is_running_task = true;
-          base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(10));
+          base::PlatformThread::Sleep(base::Milliseconds(10));
           is_running_task = false;
         })));
 

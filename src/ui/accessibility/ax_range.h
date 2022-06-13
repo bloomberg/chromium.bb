@@ -12,20 +12,26 @@
 #include <vector>
 
 #include "base/strings/utf_string_conversions.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/accessibility/ax_clipping_behavior.h"
+#include "ui/accessibility/ax_node.h"
+#include "ui/accessibility/ax_node_position.h"
 #include "ui/accessibility/ax_offscreen_result.h"
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/ax_tree_manager_map.h"
 
 namespace ui {
 
-// Specifies how AXRange::GetText treats line breaks introduced by layout.
-// For example, consider the following HTML snippet: "A<div>B</div>C".
+// Specifies how AXRange::GetText treats any formatting changes, such as
+// paragraph breaks, that have been introduced by layout. For example, consider
+// the following HTML snippet: "A<div>B</div>C".
 enum class AXTextConcatenationBehavior {
-  // Preserve any introduced line breaks, e.g. GetText = "A\nB\nC".
-  kAsInnerText,
-  // Ignore any introduced line breaks, e.g. GetText = "ABC".
-  kAsTextContent
+  // Preserve any introduced formatting, such as paragraph breaks, e.g. GetText
+  // = "A\nB\nC".
+  kWithParagraphBreaks,
+  // Ignore any introduced formatting, such as paragraph breaks, e.g. GetText =
+  // "ABC".
+  kWithoutParagraphBreaks
 };
 
 class AXRangeRectDelegate {
@@ -50,6 +56,15 @@ template <class AXPositionType>
 class AXRange {
  public:
   using AXPositionInstance = std::unique_ptr<AXPositionType>;
+
+  // Creates an `AXRange` encompassing the contents of the given `AXNode`.
+  static AXRange RangeOfContents(const AXNode& node) {
+    AXPositionInstance start_position = AXNodePosition::CreatePosition(
+        node, /* child_index_or_text_offset */ 0);
+    AXPositionInstance end_position =
+        start_position->CreatePositionAtEndOfAnchor();
+    return AXRange(std::move(start_position), std::move(end_position));
+  }
 
   AXRange()
       : anchor_(AXPositionType::CreateNullPosition()),
@@ -274,11 +289,12 @@ class AXRange {
   // Pass a |max_count| of -1 to retrieve all text in the AXRange.
   // Note that if this AXRange has its anchor or focus located at an ignored
   // position, we shrink the range to the closest unignored positions.
-  std::u16string GetText(AXTextConcatenationBehavior concatenation_behavior =
-                             AXTextConcatenationBehavior::kAsTextContent,
-                         int max_count = -1,
-                         bool include_ignored = false,
-                         size_t* appended_newlines_count = nullptr) const {
+  std::u16string GetText(
+      AXTextConcatenationBehavior concatenation_behavior =
+          AXTextConcatenationBehavior::kWithoutParagraphBreaks,
+      int max_count = -1,
+      bool include_ignored = false,
+      size_t* appended_newlines_count = nullptr) const {
     if (max_count == 0 || IsNull())
       return std::u16string();
 
@@ -307,15 +323,20 @@ class AXRange {
 
       if (include_ignored || !start->IsIgnored()) {
         if (concatenation_behavior ==
-                AXTextConcatenationBehavior::kAsInnerText &&
+                AXTextConcatenationBehavior::kWithParagraphBreaks &&
             !start->IsInWhiteSpace()) {
-          if (is_first_non_whitespace_leaf) {
+          if (is_first_non_whitespace_leaf && !is_first_unignored_leaf) {
             // The first non-whitespace leaf in the range could be preceded by
             // whitespace spanning even before the start of this range, we need
             // to check such positions in order to correctly determine if this
             // is a paragraph's start (see |AXPosition::AtStartOfParagraph|).
+            // However, if the first paragraph boundary in the range is ignored,
+            // e.g. <div aria-hidden="true"></div>, we do not take it into
+            // consideration even when `include_ignored` == true, because the
+            // beginning of the text range, as experienced by the user, is after
+            // any trailing ignored nodes.
             crossed_paragraph_boundary =
-                !is_first_unignored_leaf && start->AtStartOfParagraph();
+                !start->IsIgnored() && start->AtStartOfParagraph();
           }
 
           // When preserving layout line breaks, don't append `\n` next if the
@@ -336,7 +357,7 @@ class AXRange {
         if (current_end_offset > start->text_offset()) {
           int characters_to_append =
               (max_count > 0)
-                  ? std::min(max_count - int{range_text.length()},
+                  ? std::min(max_count - static_cast<int>(range_text.length()),
                              current_end_offset - start->text_offset())
                   : current_end_offset - start->text_offset();
 
@@ -345,23 +366,25 @@ class AXRange {
 
           // Collapse all whitespace following any line break.
           found_trailing_newline =
-              start->IsInLineBreak() ||
+              start->GetAnchor()->IsLineBreak() ||
               (found_trailing_newline && start->IsInWhiteSpace());
         }
 
-        DCHECK(max_count < 0 || int{range_text.length()} <= max_count);
+        DCHECK(max_count < 0 ||
+               static_cast<int>(range_text.length()) <= max_count);
         is_first_unignored_leaf = false;
       }
 
       if (start->GetAnchor() == end->GetAnchor() ||
-          int{range_text.length()} == max_count) {
+          static_cast<int>(range_text.length()) == max_count) {
         break;
-      } else if (concatenation_behavior ==
-                     AXTextConcatenationBehavior::kAsInnerText &&
-                 !crossed_paragraph_boundary && !is_first_non_whitespace_leaf) {
-        start = start->CreateNextLeafTextPosition(&crossed_paragraph_boundary);
       } else {
         start = start->CreateNextLeafTextPosition();
+        if (concatenation_behavior ==
+                AXTextConcatenationBehavior::kWithParagraphBreaks &&
+            !crossed_paragraph_boundary && !is_first_non_whitespace_leaf) {
+          crossed_paragraph_boundary = start->AtStartOfParagraph();
+        }
       }
     }
 
@@ -418,7 +441,7 @@ class AXRange {
       // want to directly retrieve their bounding rectangles.
       AXOffscreenResult offscreen_result;
       gfx::Rect current_rect =
-          (current_line_start->IsInLineBreak() ||
+          (current_line_start->GetAnchor()->IsLineBreak() ||
            current_line_start->IsInTextObject())
               ? delegate->GetInnerTextRangeBoundsRect(
                     current_line_start->tree_id(),

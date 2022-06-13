@@ -2,25 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// clang-format off
-// #import {FilesToast} from '../elements/files_toast.m.js';
-// #import {DirectoryTree} from './ui/directory_tree.m.js';
-// #import {DirectoryModel} from './directory_model.m.js';
-// #import {FilesMessage} from '../elements/files_message.m.js';
-// #import {Crostini} from '../../externs/background/crostini.m.js';
-// #import {CommandHandler} from './file_manager_commands.m.js';
-// #import {VolumeManagerCommon} from '../../common/js/volume_manager_types.m.js';
-// #import {FakeEntryImpl} from '../../common/js/files_app_entry_types.m.js';
-// #import {str, strf} from '../../common/js/util.m.js';
-// #import {NavigationModelFakeItem, NavigationModelItemType} from './navigation_list_model.m.js';
-// #import {constants} from './constants.m.js';
-// #import {assert} from 'chrome://resources/js/assert.m.js';
-// clang-format on
+import {assert} from 'chrome://resources/js/assert.m.js';
+
+import {FakeEntryImpl} from '../../common/js/files_app_entry_types.js';
+import {str, strf, util} from '../../common/js/util.js';
+import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
+import {Crostini} from '../../externs/background/crostini.js';
+import {FilesMessage} from '../elements/files_message.js';
+import {FilesToast} from '../elements/files_toast.js';
+
+import {constants} from './constants.js';
+import {DirectoryModel} from './directory_model.js';
+import {CommandHandler} from './file_manager_commands.js';
+import {NavigationModelFakeItem, NavigationModelItemType} from './navigation_list_model.js';
+import {DirectoryTree} from './ui/directory_tree.js';
 
 /**
  * CrostiniController handles the foreground UI relating to crostini.
  */
-/* #export */ class CrostiniController {
+export class CrostiniController {
   /**
    * @param {!Crostini} crostini Crostini background object.
    * @param {!FilesMessage} filesMessage FilesMessage.
@@ -46,8 +46,12 @@
     /** @private */
     this.entrySharedWithPluginVm_ = false;
 
-    directoryModel.addEventListener(
-        'directory-changed', () => this.maybeShowSharedMessage());
+    // TODO(crbug.com/1228128): Remove this once migrated to the new banner
+    // framework.
+    if (!util.isBannerFrameworkEnabled()) {
+      directoryModel.addEventListener(
+          'directory-changed', () => this.maybeShowSharedMessage());
+    }
   }
 
   /**
@@ -127,6 +131,8 @@
             .MANAGE_PLUGIN_VM_SHARING_TOAST_STARTUP);
   }
 
+  // TODO(crbug.com/1228128): Remove this once migrated to the new banner
+  // framework.
   maybeShowSharedMessage() {
     const entry =
         /** @type {Entry} */ (this.directoryModel_.getCurrentDirEntry());

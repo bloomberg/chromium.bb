@@ -60,6 +60,8 @@ class BrowserNonClientFrameViewChromeOS
   void UpdateThrobber(bool running) override;
   bool CanUserExitFullscreen() const override;
   SkColor GetCaptionColor(BrowserFrameActiveState active_state) const override;
+  TabSearchBubbleHost* GetTabSearchBubbleHost() override;
+  void UpdateMinimumSize() override;
 
   // views::NonClientFrameView:
   gfx::Rect GetBoundsForClientView() const override;
@@ -68,6 +70,7 @@ class BrowserNonClientFrameViewChromeOS
   int NonClientHitTest(const gfx::Point& point) override;
   void GetWindowMask(const gfx::Size& size, SkPath* window_mask) override;
   void ResetWindowControls() override;
+  void WindowControlsOverlayEnabledChanged() override;
   void UpdateWindowIcon() override;
   void UpdateWindowTitle() override;
   void SizeConstraintsChanged() override;
@@ -81,6 +84,7 @@ class BrowserNonClientFrameViewChromeOS
   void ChildPreferredSizeChanged(views::View* child) override;
   bool DoesIntersectRect(const views::View* target,
                          const gfx::Rect& rect) const override;
+  views::View::Views GetChildrenInZOrder() override;
 
   // BrowserFrameHeaderChromeOS::AppearanceProvider:
   SkColor GetTitleColor() override;
@@ -91,12 +95,14 @@ class BrowserNonClientFrameViewChromeOS
 
   // display::DisplayObserver:
   void OnDisplayTabletStateChanged(display::TabletState state) override;
+  void OnDisplayMetricsChanged(const display::Display& display,
+                               uint32_t changed_metrics) override;
 
   void OnTabletModeToggled(bool enabled);
 
   // TabIconViewModel:
   bool ShouldTabIconViewAnimate() const override;
-  gfx::ImageSkia GetFaviconForTabIconView() override;
+  ui::ImageModel GetFaviconForTabIconView() override;
 
   // aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override;
@@ -109,6 +115,11 @@ class BrowserNonClientFrameViewChromeOS
   void OnImmersiveRevealEnded() override;
   void OnImmersiveFullscreenExited() override;
 
+  chromeos::FrameCaptionButtonContainerView*
+  caption_button_container_for_testing() {
+    return caption_button_container_;
+  }
+
  protected:
   // BrowserNonClientFrameView:
   void PaintAsActiveChanged() override;
@@ -119,6 +130,8 @@ class BrowserNonClientFrameViewChromeOS
   // add this many friends
   FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewChromeOSTestNoWebUiTabStrip,
                            NonImmersiveFullscreen);
+  FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewChromeOSTestNoWebUiTabStrip,
+                           CaptionButtonsHiddenNonImmersiveFullscreen);
   FRIEND_TEST_ALL_PREFIXES(ImmersiveModeBrowserViewTestNoWebUiTabStrip,
                            ImmersiveFullscreen);
   FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewChromeOSTest,
@@ -148,11 +161,13 @@ class BrowserNonClientFrameViewChromeOS
                            TabletModeAppCaptionButtonVisibility);
   FRIEND_TEST_ALL_PREFIXES(NonHomeLauncherBrowserNonClientFrameViewChromeOSTest,
                            HeaderHeightForSnappedBrowserInSplitView);
+  FRIEND_TEST_ALL_PREFIXES(TabSearchFrameCaptionButtonTest,
+                           TabSearchBubbleHostTest);
 
   friend class WebAppNonClientFrameViewAshTest;
 
   // Returns true if GetShowCaptionButtonsWhenNotInOverview() returns true
-  // and this browser window is not showing in overview.
+  // and this browser window is not showing in overview or in fullscreen mode.
   bool GetShowCaptionButtons() const;
 
   // In tablet mode, to prevent accidental taps of the window controls, and to
@@ -198,8 +213,15 @@ class BrowserNonClientFrameViewChromeOS
 
   void LayoutProfileIndicator();
 
+  void LayoutWindowControlsOverlay();
+
   // Returns whether this window is currently in the overview list.
   bool GetOverviewMode() const;
+
+  // Returns whether this window is currently in, or is about to be in, tab
+  // fullscreen (not immersive fullscreen). Returns false for immersive
+  // fullscreen.
+  bool GetHideCaptionButtonsForFullscreen() const;
 
   // Called any time the frame color may have changed.
   void OnUpdateFrameColor();
@@ -212,6 +234,8 @@ class BrowserNonClientFrameViewChromeOS
   chromeos::FrameCaptionButtonContainerView* caption_button_container_ =
       nullptr;
 
+  TabSearchBubbleHost* tab_search_bubble_host_ = nullptr;
+
   // For popups, the window icon.
   TabIconView* window_icon_ = nullptr;
 
@@ -223,6 +247,10 @@ class BrowserNonClientFrameViewChromeOS
 
   base::ScopedObservation<aura::Window, aura::WindowObserver>
       window_observation_{this};
+
+  absl::optional<display::ScopedDisplayObserver> display_observer_;
+
+  gfx::Size last_minimum_size_;
 
   base::WeakPtrFactory<BrowserNonClientFrameViewChromeOS> weak_ptr_factory_{
       this};

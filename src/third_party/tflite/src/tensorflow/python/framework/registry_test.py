@@ -15,10 +15,6 @@
 
 """Tests for tensorflow.ops.registry."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 from absl.testing import parameterized
 
 from tensorflow.python.framework import registry
@@ -50,7 +46,7 @@ class RegistryTest(test.TestCase, parameterized.TestCase):
   def testDuplicate(self):
     myreg = registry.Registry('testbar')
     myreg.register(bar, 'Bar')
-    with self.assertRaisesRegexp(
+    with self.assertRaisesRegex(
         KeyError, r'Registering two testbar with name \'Bar\'! '
         r'\(Previous registration was in [^ ]+ .*.py:[0-9]+\)'):
       myreg.register(bar, 'Bar')

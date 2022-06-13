@@ -19,7 +19,7 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/rect_f.h"
-#include "ui/gfx/transform.h"
+#include "ui/gfx/geometry/transform.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/platform_window_init_properties.h"
@@ -56,8 +56,7 @@ AshWindowTreeHostPlatform::AshWindowTreeHostPlatform(
 AshWindowTreeHostPlatform::AshWindowTreeHostPlatform()
     : aura::WindowTreeHostPlatform(std::make_unique<aura::Window>(nullptr)),
       transformer_helper_(this) {
-  CreateCompositor(viz::FrameSinkId(),
-                   /* force_software_compositor */ false,
+  CreateCompositor(/* force_software_compositor */ false,
                    /* use_external_begin_frame_control */ false);
   CommonInit();
 }

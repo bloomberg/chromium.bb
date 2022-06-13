@@ -15,9 +15,9 @@
 #include "base/time/time.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
+#include "components/signin/public/base/consent_level.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
 #include "components/signin/public/identity_manager/account_info.h"
-#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/scope_set.h"
 #include "components/user_manager/user.h"
@@ -25,10 +25,11 @@
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
-namespace chromeos {
-
+namespace ash {
 namespace {
+
 // The scope that will be used to access the ChromebookEmailService API.
 const char kChromebookOAuth2Scope[] =
     "https://www.googleapis.com/auth/chromebook.email";
@@ -68,6 +69,7 @@ std::unique_ptr<network::ResourceRequest> GetResourceRequest() {
   resource_request->method = "POST";
   return resource_request;
 }
+
 }  // namespace
 
 // static
@@ -146,15 +148,15 @@ void MarketingBackendConnector::SetTokenAndStartRequest() {
       semantics {
         sender: "Chrome OS Marketing Opt-In Screen"
         description:
-          "Communication with the Chromebook Email API to change the user's"
-          "preference regarding marketing emails. It is only used on the"
-          "last screen of the Chrome OS OOBE - Marketing Opt-In Screen.
+          "Communication with the Chromebook Email API to change the user's "
+          "preference regarding marketing emails. It is only used on the "
+          "last screen of the Chrome OS OOBE - Marketing Opt-In Screen."
         trigger:
-          "The request is triggered when the user opts-in for marketing"
+          "The request is triggered when the user opts-in for marketing "
           "emails by enabling the toggle on the marketing opt-in screen."
         data:
-          "The only transmitted information is the country and the language"
-          "of the user's account. This information is used for delivering"
+          "The only transmitted information is the country and the language "
+          "of the user's account. This information is used for delivering "
           "emails to the user in the requested language."
         destination: GOOGLE_OWNED_SERVICE
       }
@@ -164,8 +166,8 @@ void MarketingBackendConnector::SetTokenAndStartRequest() {
         cookies_allowed: NO
         policy_exception_justification:
           "Managed users are not presented with the option to opt-in."
-        }
-      })");
+      }
+      )");
 
   auto resource_request = GetResourceRequest();
   resource_request->headers.SetHeader(net::HttpRequestHeaders::kAuthorization,
@@ -255,4 +257,4 @@ ScopedRequestCallbackSetter::~ScopedRequestCallbackSetter() {
   MarketingBackendConnector::request_finished_for_tests_ = nullptr;
 }
 
-}  // namespace chromeos
+}  // namespace ash

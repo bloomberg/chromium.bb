@@ -15,6 +15,8 @@ source_set("webui") {
     "autofill_and_password_manager_internals/password_manager_internals_ui_ios.mm",
     "crashes_ui.cc",
     "crashes_ui.h",
+    "download_internals_ui.cc",
+    "download_internals_ui.h",
     "flags_ui.cc",
     "flags_ui.h",
     "inspect/inspect_ui.h",
@@ -25,8 +27,6 @@ source_set("webui") {
     "ntp_tiles_internals_ui.h",
     "prefs_internals_ui.cc",
     "prefs_internals_ui.h",
-    "suggestions_ui.cc",
-    "suggestions_ui.h",
     "terms_ui.h",
     "terms_ui.mm",
     "ukm_internals_ui.cc",
@@ -47,6 +47,9 @@ source_set("webui") {
     "//build:branding_buildflags",
     "//components/autofill/core/browser",
     "//components/crash/core/browser",
+    "//components/crash/core/common:reporter_running_ios",
+    "//components/download/public/background_service:public",
+    "//components/download/resources/download_internals:resources",
     "//components/flags_ui",
     "//components/keyed_service/core",
     "//components/metrics_services_manager",
@@ -55,7 +58,6 @@ source_set("webui") {
     "//components/prefs",
     "//components/resources",
     "//components/strings",
-    "//components/suggestions",
     "//components/ukm",
     "//components/ukm/debug:util",
     "//components/version_info",
@@ -67,6 +69,7 @@ source_set("webui") {
     "//ios/chrome/browser/autofill",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/crash_report",
+    "//ios/chrome/browser/download/background_service:background_service",
     "//ios/chrome/browser/favicon:favicon",
     "//ios/chrome/browser/flags",
     "//ios/chrome/browser/main:public",
@@ -74,7 +77,6 @@ source_set("webui") {
     "//ios/chrome/browser/ntp_tiles",
     "//ios/chrome/browser/passwords",
     "//ios/chrome/browser/policy",
-    "//ios/chrome/browser/suggestions",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/browser/ui/util:terms_util",
     "//ios/chrome/browser/web/java_script_console",
@@ -130,7 +132,6 @@ source_set("webui_internal") {
 }
 
 source_set("eg2_tests") {
-  defines = [ "CHROME_EARL_GREY_2" ]
   configs += [
     "//build/config/compiler:enable_arc",
     "//build/config/ios:xctest_config",

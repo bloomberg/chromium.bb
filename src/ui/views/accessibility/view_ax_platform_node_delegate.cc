@@ -276,9 +276,9 @@ const ui::AXNodeData& ViewAXPlatformNodeDelegate::GetData() const {
   // View::IsDrawn is true if a View is visible and all of its ancestors are
   // visible too, since invisibility inherits.
   //
-  // TODO(dmazzoni): Maybe consider moving this to ViewAccessibility?
-  // This will require ensuring that Chrome OS invalidates the whole
-  // subtree when a View changes its visibility state.
+  // (We could try to move this logic to ViewAccessibility, but
+  // that would require ensuring that Chrome OS invalidates the whole
+  // subtree when a View changes its visibility state.)
   if (!view()->IsDrawn())
     data_.AddState(ax::mojom::State::kInvisible);
 
@@ -286,7 +286,7 @@ const ui::AXNodeData& ViewAXPlatformNodeDelegate::GetData() const {
   // focusable parent. All keyboard focusable elements should be leaf nodes.
   // Exceptions to this rule will themselves be accessibility focusable.
   //
-  // TODO(dmazzoni): this code was added to support MacViews acccessibility,
+  // Note: this code was added to support MacViews accessibility,
   // because we needed a way to mark a View as a leaf node in the
   // accessibility tree. We need to replace this with a cross-platform
   // solution that works for ChromeVox, too, and move it to ViewAccessibility.
@@ -349,7 +349,8 @@ int ViewAXPlatformNodeDelegate::GetChildCount() const {
     }
   }
 
-  return view_child_count + int{child_widgets_result.child_widgets.size()};
+  return view_child_count +
+         static_cast<int>(child_widgets_result.child_widgets.size());
 }
 
 gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::ChildAtIndex(int index) {
@@ -418,7 +419,7 @@ gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::ChildAtIndex(int index) {
     DCHECK_GE(index, 0);
   }
 
-  if (index < int{child_widgets_result.child_widgets.size()})
+  if (index < static_cast<int>(child_widgets_result.child_widgets.size()))
     return child_widgets[index]->GetRootView()->GetNativeViewAccessible();
 
   NOTREACHED() << "|index| should be less than the unignored child count.";
@@ -453,7 +454,7 @@ ViewAXPlatformNodeDelegate::GetNativeViewAccessible() {
   return view()->GetNativeViewAccessible();
 }
 
-gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::GetParent() {
+gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::GetParent() const {
   if (View* parent_view = view()->parent()) {
     ViewAccessibility& view_accessibility = parent_view->GetViewAccessibility();
     if (!view_accessibility.IsIgnored())
@@ -574,7 +575,7 @@ gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::HitTestSync(
       return false;
     ui::AXNodeData child_data;
     child->GetViewAccessibility().GetAccessibleNodeData(&child_data);
-    if (child_data.HasState(ax::mojom::State::kInvisible))
+    if (child_data.IsInvisible())
       return false;
     gfx::Point point_in_child_coords = point;
     v->ConvertPointToTarget(v, child, &point_in_child_coords);
@@ -673,7 +674,7 @@ std::vector<int32_t> ViewAXPlatformNodeDelegate::GetColHeaderNodeIds() const {
 std::vector<int32_t> ViewAXPlatformNodeDelegate::GetColHeaderNodeIds(
     int col_index) const {
   std::vector<int32_t> columns = GetColHeaderNodeIds();
-  if (columns.size() <= size_t{col_index}) {
+  if (columns.size() <= static_cast<size_t>(col_index)) {
     return {};
   }
   return {columns[col_index]};

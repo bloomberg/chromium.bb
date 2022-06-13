@@ -238,6 +238,8 @@ const char* QuicErrorCodeToString(QuicErrorCode error) {
     RETURN_STRING_LITERAL(QUIC_HTTP_GOAWAY_ID_LARGER_THAN_PREVIOUS);
     RETURN_STRING_LITERAL(QUIC_HTTP_RECEIVE_SPDY_SETTING);
     RETURN_STRING_LITERAL(QUIC_HTTP_RECEIVE_SPDY_FRAME);
+    RETURN_STRING_LITERAL(QUIC_HTTP_RECEIVE_SERVER_PUSH);
+    RETURN_STRING_LITERAL(QUIC_HTTP_INVALID_SETTING_VALUE);
     RETURN_STRING_LITERAL(QUIC_HPACK_INDEX_VARINT_ERROR);
     RETURN_STRING_LITERAL(QUIC_HPACK_NAME_LENGTH_VARINT_ERROR);
     RETURN_STRING_LITERAL(QUIC_HPACK_VALUE_LENGTH_VARINT_ERROR);
@@ -273,6 +275,10 @@ const char* QuicErrorCodeToString(QuicErrorCode error) {
     RETURN_STRING_LITERAL(QUIC_TLS_INTERNAL_ERROR);
     RETURN_STRING_LITERAL(QUIC_TLS_UNRECOGNIZED_NAME);
     RETURN_STRING_LITERAL(QUIC_TLS_CERTIFICATE_REQUIRED);
+    RETURN_STRING_LITERAL(QUIC_INVALID_CHARACTER_IN_FIELD_VALUE);
+    RETURN_STRING_LITERAL(QUIC_TLS_UNEXPECTED_KEYING_MATERIAL_EXPORT_LABEL);
+    RETURN_STRING_LITERAL(QUIC_TLS_KEYING_MATERIAL_EXPORTS_MISMATCH);
+    RETURN_STRING_LITERAL(QUIC_TLS_KEYING_MATERIAL_EXPORT_NOT_AVAILABLE);
 
     RETURN_STRING_LITERAL(QUIC_LAST_ERROR);
     // Intentionally have no default case, so we'll break the build
@@ -285,9 +291,6 @@ const char* QuicErrorCodeToString(QuicErrorCode error) {
 }
 
 std::string QuicIetfTransportErrorCodeString(QuicIetfTransportErrorCodes c) {
-  if (static_cast<uint64_t>(c) >= 0xff00u) {
-    return absl::StrCat("Private(", static_cast<uint64_t>(c), ")");
-  }
   if (c >= CRYPTO_ERROR_FIRST && c <= CRYPTO_ERROR_LAST) {
     const int tls_error = static_cast<int>(c - CRYPTO_ERROR_FIRST);
     const char* tls_error_description = SSL_alert_desc_string_long(tls_error);
@@ -678,6 +681,9 @@ QuicErrorCodeToIetfMapping QuicErrorCodeToTransportErrorCode(
     case QUIC_HTTP_STREAM_LIMIT_TOO_LOW:
       return {false, static_cast<uint64_t>(
                          QuicHttp3ErrorCode::GENERAL_PROTOCOL_ERROR)};
+    case QUIC_HTTP_RECEIVE_SERVER_PUSH:
+      return {false, static_cast<uint64_t>(
+                         QuicHttp3ErrorCode::GENERAL_PROTOCOL_ERROR)};
     case QUIC_HTTP_ZERO_RTT_RESUMPTION_SETTINGS_MISMATCH:
       return {false, static_cast<uint64_t>(QuicHttp3ErrorCode::SETTINGS_ERROR)};
     case QUIC_HTTP_ZERO_RTT_REJECTION_SETTINGS_MISMATCH:
@@ -687,6 +693,8 @@ QuicErrorCodeToIetfMapping QuicErrorCodeToTransportErrorCode(
     case QUIC_HTTP_GOAWAY_ID_LARGER_THAN_PREVIOUS:
       return {false, static_cast<uint64_t>(QuicHttp3ErrorCode::ID_ERROR)};
     case QUIC_HTTP_RECEIVE_SPDY_SETTING:
+      return {false, static_cast<uint64_t>(QuicHttp3ErrorCode::SETTINGS_ERROR)};
+    case QUIC_HTTP_INVALID_SETTING_VALUE:
       return {false, static_cast<uint64_t>(QuicHttp3ErrorCode::SETTINGS_ERROR)};
     case QUIC_HTTP_RECEIVE_SPDY_FRAME:
       return {false,
@@ -768,6 +776,14 @@ QuicErrorCodeToIetfMapping QuicErrorCodeToTransportErrorCode(
       return {true, static_cast<uint64_t>(CONNECTION_ID_LIMIT_ERROR)};
     case QUIC_TOO_MANY_CONNECTION_ID_WAITING_TO_RETIRE:
       return {true, static_cast<uint64_t>(INTERNAL_ERROR)};
+    case QUIC_INVALID_CHARACTER_IN_FIELD_VALUE:
+      return {false, static_cast<uint64_t>(QuicHttp3ErrorCode::MESSAGE_ERROR)};
+    case QUIC_TLS_UNEXPECTED_KEYING_MATERIAL_EXPORT_LABEL:
+      return {true, static_cast<uint64_t>(PROTOCOL_VIOLATION)};
+    case QUIC_TLS_KEYING_MATERIAL_EXPORTS_MISMATCH:
+      return {true, static_cast<uint64_t>(PROTOCOL_VIOLATION)};
+    case QUIC_TLS_KEYING_MATERIAL_EXPORT_NOT_AVAILABLE:
+      return {true, static_cast<uint64_t>(PROTOCOL_VIOLATION)};
     case QUIC_LAST_ERROR:
       return {false, static_cast<uint64_t>(QUIC_LAST_ERROR)};
   }
@@ -933,6 +949,19 @@ QuicRstStreamErrorCode IetfResetStreamErrorCodeToRstStreamErrorCode(
       return QUIC_STREAM_DECODER_STREAM_ERROR;
   }
   return QUIC_STREAM_UNKNOWN_APPLICATION_ERROR_CODE;
+}
+
+// static
+QuicResetStreamError QuicResetStreamError::FromInternal(
+    QuicRstStreamErrorCode code) {
+  return QuicResetStreamError(
+      code, RstStreamErrorCodeToIetfResetStreamErrorCode(code));
+}
+
+// static
+QuicResetStreamError QuicResetStreamError::FromIetf(uint64_t code) {
+  return QuicResetStreamError(
+      IetfResetStreamErrorCodeToRstStreamErrorCode(code), code);
 }
 
 #undef RETURN_STRING_LITERAL  // undef for jumbo builds

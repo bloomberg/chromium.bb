@@ -32,6 +32,8 @@
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_PERFORMANCE_H_
 
 #include "base/time/time.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/performance/largest_contentful_paint_type.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_private_ptr.h"
 #include "third_party/blink/public/platform/web_vector.h"
@@ -119,6 +121,8 @@ class WebPerformance {
   BLINK_EXPORT base::TimeTicks LargestContentfulPaintAsMonotonicTime() const;
   BLINK_EXPORT double ExperimentalLargestImagePaint() const;
   BLINK_EXPORT uint64_t ExperimentalLargestImagePaintSize() const;
+  BLINK_EXPORT LargestContentfulPaintTypeMask
+  LargestContentfulPaintType() const;
   BLINK_EXPORT double ExperimentalLargestTextPaint() const;
   BLINK_EXPORT uint64_t ExperimentalLargestTextPaintSize() const;
   BLINK_EXPORT double FirstEligibleToPaint() const;
@@ -138,6 +142,7 @@ class WebPerformance {
   BLINK_EXPORT double ParseBlockedOnScriptExecutionFromDocumentWriteDuration()
       const;
   BLINK_EXPORT absl::optional<base::TimeTicks> LastPortalActivatedPaint() const;
+  BLINK_EXPORT absl::optional<base::TimeDelta> PrerenderActivationStart() const;
   BLINK_EXPORT absl::optional<base::TimeTicks> UnloadStart() const;
   BLINK_EXPORT absl::optional<base::TimeTicks> UnloadEnd() const;
   BLINK_EXPORT absl::optional<base::TimeTicks> CommitNavigationEnd() const;

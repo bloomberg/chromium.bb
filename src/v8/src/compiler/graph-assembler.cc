@@ -378,8 +378,16 @@ Node* GraphAssembler::Int32Constant(int32_t value) {
   return AddClonedNode(mcgraph()->Int32Constant(value));
 }
 
+Node* GraphAssembler::Uint32Constant(uint32_t value) {
+  return AddClonedNode(mcgraph()->Uint32Constant(value));
+}
+
 Node* GraphAssembler::Int64Constant(int64_t value) {
   return AddClonedNode(mcgraph()->Int64Constant(value));
+}
+
+Node* GraphAssembler::Uint64Constant(uint64_t value) {
+  return AddClonedNode(mcgraph()->Uint64Constant(value));
 }
 
 Node* GraphAssembler::UniqueIntPtrConstant(intptr_t value) {
@@ -391,10 +399,6 @@ Node* GraphAssembler::UniqueIntPtrConstant(intptr_t value) {
 
 Node* JSGraphAssembler::SmiConstant(int32_t value) {
   return AddClonedNode(jsgraph()->SmiConstant(value));
-}
-
-Node* GraphAssembler::Uint32Constant(uint32_t value) {
-  return AddClonedNode(mcgraph()->Uint32Constant(value));
 }
 
 Node* GraphAssembler::Float64Constant(double value) {
@@ -599,6 +603,12 @@ TNode<Boolean> JSGraphAssembler::ReferenceEqual(TNode<Object> lhs,
                                                 TNode<Object> rhs) {
   return AddNode<Boolean>(
       graph()->NewNode(simplified()->ReferenceEqual(), lhs, rhs));
+}
+
+TNode<Boolean> JSGraphAssembler::NumberEqual(TNode<Number> lhs,
+                                             TNode<Number> rhs) {
+  return AddNode<Boolean>(
+      graph()->NewNode(simplified()->NumberEqual(), lhs, rhs));
 }
 
 TNode<Number> JSGraphAssembler::NumberMin(TNode<Number> lhs,
@@ -814,55 +824,48 @@ Node* GraphAssembler::BitcastMaybeObjectToWord(Node* value) {
                                   effect(), control()));
 }
 
-Node* GraphAssembler::Word32PoisonOnSpeculation(Node* value) {
-  return AddNode(graph()->NewNode(machine()->Word32PoisonOnSpeculation(), value,
-                                  effect(), control()));
-}
-
 Node* GraphAssembler::DeoptimizeIf(DeoptimizeReason reason,
                                    FeedbackSource const& feedback,
-                                   Node* condition, Node* frame_state,
-                                   IsSafetyCheck is_safety_check) {
-  return AddNode(
-      graph()->NewNode(common()->DeoptimizeIf(DeoptimizeKind::kEager, reason,
-                                              feedback, is_safety_check),
-                       condition, frame_state, effect(), control()));
+                                   Node* condition, Node* frame_state) {
+  return AddNode(graph()->NewNode(
+      common()->DeoptimizeIf(DeoptimizeKind::kEager, reason, feedback),
+      condition, frame_state, effect(), control()));
 }
 
 Node* GraphAssembler::DeoptimizeIf(DeoptimizeKind kind, DeoptimizeReason reason,
                                    FeedbackSource const& feedback,
-                                   Node* condition, Node* frame_state,
-                                   IsSafetyCheck is_safety_check) {
-  return AddNode(graph()->NewNode(
-      common()->DeoptimizeIf(kind, reason, feedback, is_safety_check),
-      condition, frame_state, effect(), control()));
+                                   Node* condition, Node* frame_state) {
+  return AddNode(
+      graph()->NewNode(common()->DeoptimizeIf(kind, reason, feedback),
+                       condition, frame_state, effect(), control()));
 }
 
 Node* GraphAssembler::DeoptimizeIfNot(DeoptimizeKind kind,
                                       DeoptimizeReason reason,
                                       FeedbackSource const& feedback,
-                                      Node* condition, Node* frame_state,
-                                      IsSafetyCheck is_safety_check) {
-  return AddNode(graph()->NewNode(
-      common()->DeoptimizeUnless(kind, reason, feedback, is_safety_check),
-      condition, frame_state, effect(), control()));
+                                      Node* condition, Node* frame_state) {
+  return AddNode(
+      graph()->NewNode(common()->DeoptimizeUnless(kind, reason, feedback),
+                       condition, frame_state, effect(), control()));
 }
 
 Node* GraphAssembler::DeoptimizeIfNot(DeoptimizeReason reason,
                                       FeedbackSource const& feedback,
-                                      Node* condition, Node* frame_state,
-                                      IsSafetyCheck is_safety_check) {
+                                      Node* condition, Node* frame_state) {
   return DeoptimizeIfNot(DeoptimizeKind::kEager, reason, feedback, condition,
-                         frame_state, is_safety_check);
+                         frame_state);
 }
 
 Node* GraphAssembler::DynamicCheckMapsWithDeoptUnless(Node* condition,
                                                       Node* slot_index,
                                                       Node* value, Node* map,
-                                                      Node* frame_state) {
-  return AddNode(graph()->NewNode(common()->DynamicCheckMapsWithDeoptUnless(),
-                                  condition, slot_index, value, map,
-                                  frame_state, effect(), control()));
+                                                      Node* feedback_vector,
+                                                      FrameState frame_state) {
+  return AddNode(graph()->NewNode(
+      common()->DynamicCheckMapsWithDeoptUnless(
+          frame_state.outer_frame_state()->opcode() == IrOpcode::kFrameState),
+      condition, slot_index, value, map, feedback_vector, frame_state, effect(),
+      control()));
 }
 
 TNode<Object> GraphAssembler::Call(const CallDescriptor* call_descriptor,
@@ -906,8 +909,7 @@ void GraphAssembler::BranchWithCriticalSafetyCheck(
     hint = if_false->IsDeferred() ? BranchHint::kTrue : BranchHint::kFalse;
   }
 
-  BranchImpl(condition, if_true, if_false, hint,
-             IsSafetyCheck::kCriticalSafetyCheck);
+  BranchImpl(condition, if_true, if_false, hint);
 }
 
 void GraphAssembler::RecordBranchInBlockUpdater(Node* branch,
@@ -1062,7 +1064,7 @@ void GraphAssembler::InitializeEffectControl(Node* effect, Node* control) {
 Operator const* JSGraphAssembler::PlainPrimitiveToNumberOperator() {
   if (!to_number_operator_.is_set()) {
     Callable callable =
-        Builtins::CallableFor(isolate(), Builtins::kPlainPrimitiveToNumber);
+        Builtins::CallableFor(isolate(), Builtin::kPlainPrimitiveToNumber);
     CallDescriptor::Flags flags = CallDescriptor::kNoFlags;
     auto call_descriptor = Linkage::GetStubCallDescriptor(
         graph()->zone(), callable.descriptor(),

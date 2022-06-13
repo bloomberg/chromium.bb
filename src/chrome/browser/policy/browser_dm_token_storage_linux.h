@@ -10,11 +10,10 @@
 #include <string>
 
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 
 namespace policy {
 
@@ -22,6 +21,9 @@ namespace policy {
 class BrowserDMTokenStorageLinux : public BrowserDMTokenStorage::Delegate {
  public:
   BrowserDMTokenStorageLinux();
+  BrowserDMTokenStorageLinux(const BrowserDMTokenStorageLinux&) = delete;
+  BrowserDMTokenStorageLinux& operator=(const BrowserDMTokenStorageLinux&) =
+      delete;
   ~BrowserDMTokenStorageLinux() override;
 
  private:
@@ -48,8 +50,6 @@ class BrowserDMTokenStorageLinux : public BrowserDMTokenStorage::Delegate {
   FRIEND_TEST_ALL_PREFIXES(BrowserDMTokenStorageLinuxTest,
                            InitDMTokenWithoutDirectory);
   FRIEND_TEST_ALL_PREFIXES(BrowserDMTokenStorageLinuxTest, SaveDMToken);
-
-  DISALLOW_COPY_AND_ASSIGN(BrowserDMTokenStorageLinux);
 };
 
 }  // namespace policy

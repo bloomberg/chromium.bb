@@ -628,8 +628,8 @@ LTLIBOBJS
 LIBOBJS
 TESTS_AS_ROOT_FALSE
 TESTS_AS_ROOT_TRUE
-RUST_DEMANGLE_LIBS
-RUST_DEMANGLE_CFLAGS
+RUSTC_DEMANGLE_LIBS
+RUSTC_DEMANGLE_CFLAGS
 SELFTEST_FALSE
 SELFTEST_TRUE
 GTEST_LIBS
@@ -781,7 +781,7 @@ enable_processor
 enable_tools
 enable_system_test_libs
 enable_selftest
-with_rust_demangle
+with_rustc_demangle
 with_tests_as_root
 '
       ac_precious_vars='build_alias
@@ -802,8 +802,8 @@ GMOCK_CFLAGS
 GMOCK_LIBS
 GTEST_CFLAGS
 GTEST_LIBS
-RUST_DEMANGLE_CFLAGS
-RUST_DEMANGLE_LIBS'
+RUSTC_DEMANGLE_CFLAGS
+RUSTC_DEMANGLE_LIBS'
 
 
 # Initialize some variables set by options.
@@ -1455,8 +1455,8 @@ Optional Features:
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
-  --with-rust-demangle=/path/to/rust-demangle-capi
-                          Link against the rust-demangle library to demangle
+  --with-rustc-demangle=/path/to/rustc-demangle
+                          Link against the rustc-demangle library to demangle
                           Rust language symbols during symbol dumping (default
                           is no) Pass the path to the crate root.
   --with-tests-as-root    Run the tests as root. Use this on platforms like
@@ -1482,10 +1482,10 @@ Some influential environment variables:
   GTEST_CFLAGS
               Compiler flags for gtest
   GTEST_LIBS  Linker flags for gtest
-  RUST_DEMANGLE_CFLAGS
-              Compiler flags for rust-demangle
-  RUST_DEMANGLE_LIBS
-              Linker flags for rust-demangle
+  RUSTC_DEMANGLE_CFLAGS
+              Compiler flags for rustc-demangle
+  RUSTC_DEMANGLE_LIBS
+              Linker flags for rustc-demangle
 
 Use these variables to override the choices made by `configure' or to help
 it to find libraries and programs with nonstandard names/locations.
@@ -7690,25 +7690,25 @@ fi
 
 
 
-# Check whether --with-rust-demangle was given.
-if test "${with_rust_demangle+set}" = set; then :
-  withval=$with_rust_demangle; case "${withval}" in
+# Check whether --with-rustc-demangle was given.
+if test "${with_rustc_demangle+set}" = set; then :
+  withval=$with_rustc_demangle; case "${withval}" in
                yes)
-                 as_fn_error $? "You must pass the path to the rust-demangle-capi crate for --with-rust-demangle" "$LINENO" 5
+                 as_fn_error $? "You must pass the path to the rustc-demangle crate for --with-rustc-demangle" "$LINENO" 5
                  ;;
                no)
-                 rust_demangle=false
+                 rustc_demangle=false
                  ;;
                *)
                  if ! test -f "${withval}/Cargo.toml"; then
-                   as_fn_error $? "You must pass the path to the rust-demangle-capi crate for --with-rust-demangle" "$LINENO" 5
+                   as_fn_error $? "You must pass the path to the rustc-demangle crate for --with-rustc-demangle" "$LINENO" 5
                  fi
-                 RUST_DEMANGLE_CFLAGS="-DHAVE_RUST_DEMANGLE -I${withval}/target/include"
-                 RUST_DEMANGLE_LIBS="-L${withval}/target/release -lrust_demangle -lpthread -ldl"
+                 RUSTC_DEMANGLE_CFLAGS="-DHAVE_RUSTC_DEMANGLE -I${withval}/crates/capi/include"
+                 RUSTC_DEMANGLE_LIBS="-L${withval}/target/release -lrustc_demangle -lpthread -ldl"
                  ;;
              esac
 else
-  rust_demangle=false
+  rustc_demangle=false
 fi
 
 

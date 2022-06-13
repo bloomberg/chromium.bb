@@ -9,11 +9,11 @@
 #include <string>
 #include <vector>
 
+#include "ash/components/arc/mojom/app.mojom.h"
 #include "ash/public/cpp/app_list/app_list_metrics.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/app_list/app_context_menu_delegate.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
-#include "components/arc/mojom/app.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 class AppListControllerDelegate;
@@ -33,6 +33,10 @@ class ArcPlayStoreSearchResult : public ChromeSearchResult,
                            Profile* profile,
                            AppListControllerDelegate* list_controller,
                            const std::u16string& query);
+
+  ArcPlayStoreSearchResult(const ArcPlayStoreSearchResult&) = delete;
+  ArcPlayStoreSearchResult& operator=(const ArcPlayStoreSearchResult&) = delete;
+
   ~ArcPlayStoreSearchResult() override;
 
   // ChromeSearchResult overrides:
@@ -59,6 +63,9 @@ class ArcPlayStoreSearchResult : public ChromeSearchResult,
   // ChromeSearchResult overrides:
   AppContextMenu* GetAppContextMenu() override;
 
+  // Callback passed to |icon_decode_request_|.
+  void OnIconDecoded(const gfx::ImageSkia&);
+
   arc::mojom::AppDiscoveryResultPtr data_;
   std::unique_ptr<arc::IconDecodeRequest> icon_decode_request_;
 
@@ -68,8 +75,6 @@ class ArcPlayStoreSearchResult : public ChromeSearchResult,
   std::unique_ptr<ArcPlayStoreAppContextMenu> context_menu_;
 
   base::WeakPtrFactory<ArcPlayStoreSearchResult> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ArcPlayStoreSearchResult);
 };
 
 }  // namespace app_list

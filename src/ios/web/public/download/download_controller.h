@@ -9,9 +9,9 @@
 
 #include <string>
 
-#include "base/macros.h"
 #include "ui/base/page_transition_types.h"
 
+@class DownloadNativeTaskBridge;
 class GURL;
 
 namespace web {
@@ -105,6 +105,19 @@ class DownloadController {
                                   int64_t total_bytes,
                                   const std::string& mime_type) = 0;
 
+  // Creates a new native download task. This method uses |download| which
+  // is used to perform downloads using WKDownload instead of NSURLSession
+  // and will be supported from iOS 15+.
+  virtual void CreateNativeDownloadTask(WebState* web_state,
+                                        NSString* identifier,
+                                        const GURL& original_url,
+                                        NSString* http_method,
+                                        const std::string& content_disposition,
+                                        int64_t total_bytes,
+                                        const std::string& mime_type,
+                                        DownloadNativeTaskBridge* download)
+      API_AVAILABLE(ios(15)) = 0;
+
   // Sets DownloadControllerDelegate. Clients must set the delegate to null in
   // DownloadControllerDelegate::OnDownloadControllerDestroyed().
   virtual void SetDelegate(DownloadControllerDelegate* delegate) = 0;
@@ -113,10 +126,11 @@ class DownloadController {
   virtual DownloadControllerDelegate* GetDelegate() const = 0;
 
   DownloadController() = default;
-  virtual ~DownloadController() = default;
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(DownloadController);
+  DownloadController(const DownloadController&) = delete;
+  DownloadController& operator=(const DownloadController&) = delete;
+
+  virtual ~DownloadController() = default;
 };
 
 }  // namespace web

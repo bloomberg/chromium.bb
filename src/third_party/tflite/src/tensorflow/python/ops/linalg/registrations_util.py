@@ -14,10 +14,6 @@
 # ==============================================================================
 """Common utilities for registering LinearOperator methods."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 
 # Note: only use this method in the commuting case.
 def combined_commuting_self_adjoint_hint(operator_a, operator_b):
@@ -56,7 +52,7 @@ def is_square(operator_a, operator_b):
       return m == l
 
   if (operator_a.is_square != operator_b.is_square) and (
-      operator_a.is_square is not None and operator_a.is_square is not None):
+      operator_a.is_square is not None and operator_b.is_square is not None):
     return False
 
   return None

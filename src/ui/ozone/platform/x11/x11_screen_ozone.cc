@@ -34,6 +34,7 @@ X11ScreenOzone::~X11ScreenOzone() {
 }
 
 void X11ScreenOzone::Init() {
+  initialized_ = true;
   if (x11_display_manager_->IsXrandrAvailable())
     x11::Connection::Get()->AddEventObserver(this);
   x11_display_manager_->Init();
@@ -53,7 +54,12 @@ display::Display X11ScreenOzone::GetDisplayForAcceleratedWidget(
     return GetPrimaryDisplay();
 
   X11Window* window = window_manager_->GetWindow(widget);
-  return window ? GetDisplayMatching(window->GetBounds()) : GetPrimaryDisplay();
+  if (window) {
+    gfx::Rect bounds_dip = gfx::ToEnclosingRect(
+        gfx::ConvertRectToDips(window->GetBounds(), GetXDisplayScaleFactor()));
+    return GetDisplayMatching(bounds_dip);
+  }
+  return GetPrimaryDisplay();
 }
 
 gfx::Point X11ScreenOzone::GetCursorScreenPoint() const {
@@ -75,16 +81,21 @@ gfx::Point X11ScreenOzone::GetCursorScreenPoint() const {
 
 gfx::AcceleratedWidget X11ScreenOzone::GetAcceleratedWidgetAtScreenPoint(
     const gfx::Point& point) const {
-  X11TopmostWindowFinder finder;
-  return static_cast<gfx::AcceleratedWidget>(finder.FindWindowAt(point));
+  gfx::Point point_in_pixels = gfx::ToFlooredPoint(
+      gfx::ConvertPointToPixels(point, GetXDisplayScaleFactor()));
+  X11TopmostWindowFinder finder({});
+  return static_cast<gfx::AcceleratedWidget>(
+      finder.FindWindowAt(point_in_pixels));
 }
 
 gfx::AcceleratedWidget X11ScreenOzone::GetLocalProcessWidgetAtPoint(
     const gfx::Point& point,
     const std::set<gfx::AcceleratedWidget>& ignore) const {
-  X11TopmostWindowFinder finder;
+  gfx::Point point_in_pixels = gfx::ToFlooredPoint(
+      gfx::ConvertPointToPixels(point, GetXDisplayScaleFactor()));
+  X11TopmostWindowFinder finder(ignore);
   return static_cast<gfx::AcceleratedWidget>(
-      finder.FindLocalProcessWindowAt(point, ignore));
+      finder.FindLocalProcessWindowAt(point_in_pixels));
 }
 
 display::Display X11ScreenOzone::GetDisplayNearestPoint(
@@ -96,17 +107,15 @@ display::Display X11ScreenOzone::GetDisplayNearestPoint(
 }
 
 display::Display X11ScreenOzone::GetDisplayMatching(
-    const gfx::Rect& match_rect_in_pixels) const {
-  gfx::Rect match_rect = gfx::ToEnclosingRect(
-      gfx::ConvertRectToDips(match_rect_in_pixels, GetXDisplayScaleFactor()));
+    const gfx::Rect& match_rect) const {
   const display::Display* matching_display =
       display::FindDisplayWithBiggestIntersection(
           x11_display_manager_->displays(), match_rect);
   return matching_display ? *matching_display : GetPrimaryDisplay();
 }
 
-void X11ScreenOzone::SetScreenSaverSuspended(bool suspend) {
-  SuspendX11ScreenSaver(suspend);
+bool X11ScreenOzone::SetScreenSaverSuspended(bool suspend) {
+  return SuspendX11ScreenSaver(suspend);
 }
 
 bool X11ScreenOzone::IsScreenSaverActive() const {
@@ -116,7 +125,7 @@ bool X11ScreenOzone::IsScreenSaverActive() const {
 
 base::TimeDelta X11ScreenOzone::CalculateIdleTime() const {
   IdleQueryX11 idle_query;
-  return base::TimeDelta::FromSeconds(idle_query.IdleTime());
+  return base::Seconds(idle_query.IdleTime());
 }
 
 void X11ScreenOzone::AddObserver(display::DisplayObserver* observer) {
@@ -131,10 +140,10 @@ std::string X11ScreenOzone::GetCurrentWorkspace() {
   return x11_display_manager_->GetCurrentWorkspace();
 }
 
-base::Value X11ScreenOzone::GetGpuExtraInfoAsListValue(
+std::vector<base::Value> X11ScreenOzone::GetGpuExtraInfo(
     const gfx::GpuExtraInfo& gpu_extra_info) {
-  auto result = GetDesktopEnvironmentInfoAsListValue();
-  StorePlatformNameIntoListValue(result, "x11");
+  auto result = GetDesktopEnvironmentInfo();
+  StorePlatformNameIntoListOfValues(result, "x11");
   return result;
 }
 
@@ -143,7 +152,10 @@ void X11ScreenOzone::SetDeviceScaleFactor(float scale) {
     return;
 
   device_scale_factor_ = scale;
-  x11_display_manager_->DispatchDelayedDisplayListUpdate();
+  // See DesktopScreenLinux, which sets the |device_scale_factor| before |this|
+  // is initialized.
+  if (initialized_)
+    x11_display_manager_->DispatchDelayedDisplayListUpdate();
 }
 
 void X11ScreenOzone::OnEvent(const x11::Event& xev) {

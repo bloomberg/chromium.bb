@@ -1,9 +1,0 @@
-{
-  "dependencies": [
-    "ui/legacy",
-    "ui/legacy/components/utils"
-  ],
-    "resources": [
-    "nodeConnectionsPanel.css"
-  ]
-}

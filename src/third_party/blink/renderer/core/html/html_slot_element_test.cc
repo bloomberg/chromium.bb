@@ -15,7 +15,7 @@ namespace blink {
 namespace {
 constexpr int kTableSize = 16;
 using Seq = Vector<char>;
-using Backtrack = std::pair<size_t, size_t>;
+using Backtrack = std::pair<wtf_size_t, wtf_size_t>;
 }
 
 class HTMLSlotElementTest : public testing::Test {
@@ -33,8 +33,8 @@ Vector<char> HTMLSlotElementTest::LongestCommonSubsequence(const Seq& seq1,
   HTMLSlotElement::FillLongestCommonSubsequenceDynamicProgrammingTable(
       seq1, seq2, lcs_table_, backtrack_table_);
   Seq lcs;
-  size_t r = seq1.size();
-  size_t c = seq2.size();
+  wtf_size_t r = seq1.size();
+  wtf_size_t c = seq2.size();
   while (r > 0 && c > 0) {
     Backtrack backtrack = backtrack_table_[r][c];
     if (backtrack == std::make_pair(r - 1, c - 1)) {
@@ -134,7 +134,7 @@ TEST_F(HTMLSlotElementTest, TableSizeLimit) {
 class HTMLSlotElementInDocumentTest : public testing::Test {
  protected:
   void SetUp() final {
-    dummy_page_holder_ = std::make_unique<DummyPageHolder>(IntSize(800, 600));
+    dummy_page_holder_ = std::make_unique<DummyPageHolder>(gfx::Size(800, 600));
   }
   Document& GetDocument() { return dummy_page_holder_->GetDocument(); }
   const HeapVector<Member<Node>>& GetFlatTreeChildren(HTMLSlotElement& slot) {

@@ -14,10 +14,6 @@
 # ==============================================================================
 """Tests for ragged_range op."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 from tensorflow.python.framework import errors
 from tensorflow.python.framework import test_util
 from tensorflow.python.ops.ragged import ragged_math_ops
@@ -108,8 +104,8 @@ class RaggedRangeOpTest(test_util.TensorFlowTestCase):
                       ragged_math_ops.range, [0], [1, 2])
 
   def testKernelErrors(self):
-    with self.assertRaisesRegexp(errors.InvalidArgumentError,
-                                 r'Requires delta != 0'):
+    with self.assertRaisesRegex(errors.InvalidArgumentError,
+                                r'Requires delta != 0'):
       self.evaluate(ragged_math_ops.range(0, 0, 0))
 
   def testShape(self):

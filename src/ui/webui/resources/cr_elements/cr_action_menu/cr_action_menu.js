@@ -2,6 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import '../shared_vars_css.m.js';
+
+import {dom, html, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {assert} from '../../js/assert.m.js';
+import {isMac, isWindows} from '../../js/cr.m.js';
+import {FocusOutlineManager} from '../../js/cr/ui/focus_outline_manager.m.js';
+import {FocusRow} from '../../js/cr/ui/focus_row.m.js';
+import {focusWithoutInk} from '../../js/cr/ui/focus_without_ink.m.js';
+import {getDeepActiveElement, hasKeyModifiers} from '../../js/util.m.js';
+
 /**
  * @typedef {{
  *   top: (number|undefined),
@@ -33,13 +44,13 @@ let ShowAtConfig;
  *   maxY: (number|undefined),
  * }}
  */
-/* #export */ let ShowAtPositionConfig;
+export let ShowAtPositionConfig;
 
 /**
  * @enum {number}
  * @const
  */
-/* #export */ const AnchorAlignment = {
+export const AnchorAlignment = {
   BEFORE_START: -2,
   AFTER_START: -1,
   CENTER: 0,
@@ -53,8 +64,6 @@ const DROPDOWN_ITEM_CLASS = 'dropdown-item';
 /** @const {string} */
 const SELECTABLE_DROPDOWN_ITEM_QUERY =
     `.${DROPDOWN_ITEM_CLASS}:not([hidden]):not([disabled])`;
-
-(function() {
 
 /** @const {number} */
 const AFTER_END_OFFSET = 10;
@@ -126,64 +135,83 @@ function getDefaultShowConfig() {
   };
 }
 
-Polymer({
-  is: 'cr-action-menu',
+/** @polymer */
+export class CrActionMenuElement extends PolymerElement {
+  static get is() {
+    return 'cr-action-menu';
+  }
 
-  /**
-   * The element which the action menu will be anchored to. Also the element
-   * where focus will be returned after the menu is closed. Only populated if
-   * menu is opened with showAt().
-   * @private {?Element}
-   */
-  anchorElement_: null,
+  static get template() {
+    return html`{__html_template__}`;
+  }
 
-  /**
-   * Bound reference to an event listener function such that it can be removed
-   * on detach.
-   * @private {?Function}
-   */
-  boundClose_: null,
+  static get properties() {
+    return {
+      // Setting this flag will make the menu listen for content size changes
+      // and reposition to its anchor accordingly.
+      autoReposition: {
+        type: Boolean,
+        value: false,
+      },
 
-  /** @private {boolean} */
-  hasMousemoveListener_: false,
+      open: {
+        type: Boolean,
+        notify: true,
+        value: false,
+      },
 
-  /** @private {?PolymerDomApi.ObserveHandle} */
-  contentObserver_: null,
+      // Descriptor of the menu. Should be something along the lines of "menu"
+      roleDescription: String,
+    };
+  }
 
-  /** @private {?ResizeObserver} */
-  resizeObserver_: null,
+  constructor() {
+    super();
 
-  /** @private {?ShowAtPositionConfig} */
-  lastConfig_: null,
+    /** @private {?Function} */
+    this.boundClose_ = null;
 
-  properties: {
-    // Setting this flag will make the menu listen for content size changes and
-    // reposition to its anchor accordingly.
-    autoReposition: {
-      type: Boolean,
-      value: false,
-    },
+    /** @private {?PolymerDomApi.ObserveHandle} */
+    this.contentObserver_ = null;
 
-    open: {
-      type: Boolean,
-      notify: true,
-      value: false,
-    },
+    /** @private {?ResizeObserver} */
+    this.resizeObserver_ = null;
 
-    /* Descriptor of the menu. Should be something along the lines of "menu" */
-    roleDescription: String,
-  },
+    /** @private {boolean} */
+    this.hasMousemoveListener_ = false;
 
-  listeners: {
-    'keydown': 'onKeyDown_',
-    'mouseover': 'onMouseover_',
-    'click': 'onClick_',
-  },
+    /** @private {?Element} */
+    this.anchorElement_ = null;
+
+    /** @private {?ShowAtPositionConfig} */
+    this.lastConfig_ = null;
+  }
+
+  ready() {
+    super.ready();
+
+    this.addEventListener(
+        'keydown', e => this.onKeyDown_(/** @type {!KeyboardEvent} */ (e)));
+    this.addEventListener('mouseover', this.onMouseover_);
+    this.addEventListener('click', this.onClick_);
+  }
 
   /** override */
-  detached() {
+  disconnectedCallback() {
+    super.disconnectedCallback();
+
     this.removeListeners_();
-  },
+  }
+
+  /**
+   * @param {string} eventName
+   * @param {*=} detail
+   * @private
+   */
+  fire_(eventName, detail) {
+    this.dispatchEvent(
+        new CustomEvent(eventName, {bubbles: true, composed: true, detail}));
+  }
 
   /**
    * Exposing internal <dialog> elements for tests.
@@ -191,14 +219,14 @@ Polymer({
    */
   getDialog() {
     return /** @type {!HTMLDialogElement} */ (this.$.dialog);
-  },
+  }
 
   /** @private */
   removeListeners_() {
     window.removeEventListener('resize', this.boundClose_);
     window.removeEventListener('popstate', this.boundClose_);
     if (this.contentObserver_) {
-      Polymer.dom(this.$.contentNode).unobserveNodes(this.contentObserver_);
+      dom(this.$.contentNode).unobserveNodes(this.contentObserver_);
       this.contentObserver_ = null;
     }
 
@@ -206,7 +234,7 @@ Polymer({
       this.resizeObserver_.disconnect();
       this.resizeObserver_ = null;
     }
-  },
+  }
 
   /**
    * @param {!Event} e
@@ -220,8 +248,8 @@ Polymer({
 
     // Catch and re-fire the 'close' event such that it bubbles across Shadow
     // DOM v1.
-    this.fire('close');
-  },
+    this.fire_('close');
+  }
 
   /**
    * @param {!Event} e
@@ -232,7 +260,7 @@ Polymer({
       this.close();
       e.stopPropagation();
     }
-  },
+  }
 
   /**
    * @param {!KeyboardEvent} e
@@ -244,7 +272,7 @@ Polymer({
     if (e.key === 'Tab' || e.key === 'Escape') {
       this.close();
       if (e.key === 'Tab') {
-        this.fire('tabkeyclose', {shiftKey: e.shiftKey});
+        this.fire_('tabkeyclose', {shiftKey: e.shiftKey});
       }
       e.preventDefault();
       return;
@@ -262,7 +290,7 @@ Polymer({
 
     const focused = getDeepActiveElement();
     const index = options.findIndex(
-        option => cr.ui.FocusRow.getFocusableElement(option) === focused);
+        option => FocusRow.getFocusableElement(option) === focused);
 
     if (e.key === 'Enter') {
       // If a menu item has focus, don't change focus or close menu on 'Enter'.
@@ -270,7 +298,7 @@ Polymer({
         return;
       }
 
-      if (cr.isWindows || cr.isMac) {
+      if (isWindows || isMac) {
         this.close();
         e.preventDefault();
         return;
@@ -287,7 +315,7 @@ Polymer({
         this.hasMousemoveListener_ = false;
       }, {once: true});
     }
-  },
+  }
 
   /**
    * @param {!Event} e
@@ -297,7 +325,7 @@ Polymer({
     const item = e.composedPath().find(
         el => el.matches && el.matches(SELECTABLE_DROPDOWN_ITEM_QUERY));
     (item || this.$.wrapper).focus();
-  },
+  }
 
   /**
    * @param {!Array<!HTMLElement>} options
@@ -316,7 +344,7 @@ Polymer({
       index = (numOptions + focusedIndex + delta) % numOptions;
     }
     options[index].focus();
-  },
+  }
 
   close() {
     // Removing 'resize' and 'popstate' listeners when dialog is closed.
@@ -324,13 +352,13 @@ Polymer({
     this.$.dialog.close();
     this.open = false;
     if (this.anchorElement_) {
-      cr.ui.focusWithoutInk(assert(this.anchorElement_));
+      focusWithoutInk(assert(this.anchorElement_));
       this.anchorElement_ = null;
     }
     if (this.lastConfig_) {
       this.lastConfig_ = null;
     }
-  },
+  }
 
   /**
    * Shows the menu anchored to the given element.
@@ -366,7 +394,7 @@ Polymer({
         },
         opt_config)));
     this.$.wrapper.focus();
-  },
+  }
 
   /**
    * Shows the menu anchored to the given box. The anchor alignment is
@@ -426,7 +454,7 @@ Polymer({
     this.addListeners_();
 
     // Focus the first selectable item.
-    const openedByKey = cr.ui.FocusOutlineManager.forDocument(document).visible;
+    const openedByKey = FocusOutlineManager.forDocument(document).visible;
     if (openedByKey) {
       const firstSelectableItem =
           this.querySelector(SELECTABLE_DROPDOWN_ITEM_QUERY);
@@ -437,14 +465,14 @@ Polymer({
         });
       }
     }
-  },
+  }
 
   /** @private */
   resetStyle_() {
     this.$.dialog.style.left = '';
     this.$.dialog.style.right = '';
     this.$.dialog.style.top = '0';
-  },
+  }
 
   /**
    * Position the dialog using the coordinates in config. Coordinates are
@@ -483,11 +511,9 @@ Polymer({
         top, bottom, this.$.dialog.offsetHeight, c.anchorAlignmentY, c.minY,
         c.maxY);
     this.$.dialog.style.top = menuTop + 'px';
-  },
+  }
 
-  /**
-   * @private
-   */
+  /** @private */
   addListeners_() {
     this.boundClose_ = this.boundClose_ || function() {
       if (this.$.dialog.open) {
@@ -498,7 +524,7 @@ Polymer({
     window.addEventListener('popstate', this.boundClose_);
 
     this.contentObserver_ =
-        Polymer.dom(this.$.contentNode).observeNodes((info) => {
+        dom(this.$.contentNode).observeNodes((info) => {
           info.addedNodes.forEach((node) => {
             if (node.classList &&
                 node.classList.contains(DROPDOWN_ITEM_CLASS) &&
@@ -512,13 +538,13 @@ Polymer({
       this.resizeObserver_ = new ResizeObserver(() => {
         if (this.lastConfig_) {
           this.positionDialog_(this.lastConfig_);
-          this.fire('cr-action-menu-repositioned');  // For easier testing.
+          this.fire_('cr-action-menu-repositioned');  // For easier testing.
         }
       });
 
       this.resizeObserver_.observe(this.$.dialog);
     }
-  },
-});
-/* #ignore */ console.warn('crbug/1173575, non-JS module files deprecated.');
-})();
+  }
+}
+
+customElements.define(CrActionMenuElement.is, CrActionMenuElement);

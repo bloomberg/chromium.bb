@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/message_loop/message_pump_for_io.h"
 #include "base/timer/timer.h"
 #include "chromecast/media/cma/backend/system_volume_control.h"
@@ -24,6 +23,10 @@ class AlsaVolumeControl : public SystemVolumeControl,
                           public base::MessagePumpForIO::FdWatcher {
  public:
   explicit AlsaVolumeControl(Delegate* delegate);
+
+  AlsaVolumeControl(const AlsaVolumeControl&) = delete;
+  AlsaVolumeControl& operator=(const AlsaVolumeControl&) = delete;
+
   ~AlsaVolumeControl() override;
 
   // SystemVolumeControl interface.
@@ -89,8 +92,6 @@ class AlsaVolumeControl : public SystemVolumeControl,
 
   std::vector<std::unique_ptr<base::MessagePumpForIO::FdWatchController>>
       file_descriptor_watchers_;
-
-  DISALLOW_COPY_AND_ASSIGN(AlsaVolumeControl);
 };
 
 }  // namespace media

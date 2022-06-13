@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 
 namespace remoting {
@@ -19,6 +18,10 @@ namespace remoting {
 class DesktopCapturerChecker : public webrtc::DesktopCapturer::Callback {
  public:
   DesktopCapturerChecker();
+
+  DesktopCapturerChecker(const DesktopCapturerChecker&) = delete;
+  DesktopCapturerChecker& operator=(const DesktopCapturerChecker&) = delete;
+
   ~DesktopCapturerChecker() override;
 
   void TriggerSingleCapture();
@@ -29,7 +32,6 @@ class DesktopCapturerChecker : public webrtc::DesktopCapturer::Callback {
                        std::unique_ptr<webrtc::DesktopFrame> frame) override;
 
   std::unique_ptr<webrtc::DesktopCapturer> capturer_;
-  DISALLOW_COPY_AND_ASSIGN(DesktopCapturerChecker);
 };
 
 }  // namespace remoting

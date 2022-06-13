@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
 import * as Common from '../../core/common/common.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
@@ -17,12 +15,12 @@ import {CSSOverviewUnusedDeclarations} from './CSSOverviewUnusedDeclarations.js'
 
 interface NodeStyleStats {
   elementCount: number;
-  backgroundColors: Map<string, Set<number>>;
-  textColors: Map<string, Set<number>>;
+  backgroundColors: Map<string, Set<Protocol.DOM.BackendNodeId>>;
+  textColors: Map<string, Set<Protocol.DOM.BackendNodeId>>;
   textColorContrastIssues: Map<string, ContrastIssue[]>;
-  fillColors: Map<string, Set<number>>;
-  borderColors: Map<string, Set<number>>;
-  fontInfo: Map<string, Map<string, Map<string, number[]>>>;
+  fillColors: Map<string, Set<Protocol.DOM.BackendNodeId>>;
+  borderColors: Map<string, Set<Protocol.DOM.BackendNodeId>>;
+  fontInfo: Map<string, Map<string, Map<string, Protocol.DOM.BackendNodeId[]>>>;
   unusedDeclarations: Map<string, UnusedDeclaration[]>;
 }
 
@@ -43,25 +41,22 @@ export interface GlobalStyleStats {
   };
 }
 
+export class CSSOverviewModel extends SDK.SDKModel.SDKModel<void> {
+  readonly #runtimeAgent: ProtocolProxyApi.RuntimeApi;
+  readonly #cssAgent: ProtocolProxyApi.CSSApi;
+  readonly #domSnapshotAgent: ProtocolProxyApi.DOMSnapshotApi;
+  readonly #overlayAgent: ProtocolProxyApi.OverlayApi;
 
-export class CSSOverviewModel extends SDK.SDKModel.SDKModel {
-  _runtimeAgent: ProtocolProxyApi.RuntimeApi;
-  _cssAgent: ProtocolProxyApi.CSSApi;
-  _domAgent: ProtocolProxyApi.DOMApi;
-  _domSnapshotAgent: ProtocolProxyApi.DOMSnapshotApi;
-  _overlayAgent: ProtocolProxyApi.OverlayApi;
-
-  constructor(target: SDK.SDKModel.Target) {
+  constructor(target: SDK.Target.Target) {
     super(target);
 
-    this._runtimeAgent = target.runtimeAgent();
-    this._cssAgent = target.cssAgent();
-    this._domAgent = target.domAgent();
-    this._domSnapshotAgent = target.domsnapshotAgent();
-    this._overlayAgent = target.overlayAgent();
+    this.#runtimeAgent = target.runtimeAgent();
+    this.#cssAgent = target.cssAgent();
+    this.#domSnapshotAgent = target.domsnapshotAgent();
+    this.#overlayAgent = target.overlayAgent();
   }
 
-  highlightNode(node: number): void {
+  highlightNode(node: Protocol.DOM.BackendNodeId): void {
     const highlightConfig = {
       contentColor: Common.Color.PageHighlight.Content.toProtocolRGBA(),
       showInfo: true,
@@ -69,8 +64,8 @@ export class CSSOverviewModel extends SDK.SDKModel.SDKModel {
                                                                       Protocol.Overlay.ContrastAlgorithm.Aa,
     };
 
-    this._overlayAgent.invoke_hideHighlight();
-    this._overlayAgent.invoke_highlightNode({backendNodeId: node, highlightConfig});
+    this.#overlayAgent.invoke_hideHighlight();
+    this.#overlayAgent.invoke_highlightNode({backendNodeId: node, highlightConfig});
   }
 
   async getNodeStyleStats(): Promise<NodeStyleStats> {
@@ -178,7 +173,7 @@ export class CSSOverviewModel extends SDK.SDKModel.SDKModel {
 
     let elementCount = 0;
 
-    const {documents, strings} = await this._domSnapshotAgent.invoke_captureSnapshot(snapshotConfig);
+    const {documents, strings} = await this.#domSnapshotAgent.invoke_captureSnapshot(snapshotConfig);
     for (const {nodes, layout} of documents) {
       // Track the number of elements in the documents.
       elementCount += layout.nodeIndex.length;
@@ -360,11 +355,11 @@ export class CSSOverviewModel extends SDK.SDKModel.SDKModel {
   }
 
   getComputedStyleForNode(nodeId: Protocol.DOM.NodeId): Promise<Protocol.CSS.GetComputedStyleForNodeResponse> {
-    return this._cssAgent.invoke_getComputedStyleForNode({nodeId});
+    return this.#cssAgent.invoke_getComputedStyleForNode({nodeId});
   }
 
   async getMediaQueries(): Promise<Map<string, Protocol.CSS.CSSMedia[]>> {
-    const queries = await this._cssAgent.invoke_getMediaQueries();
+    const queries = await this.#cssAgent.invoke_getMediaQueries();
     const queryMap = new Map<string, Protocol.CSS.CSSMedia[]>();
 
     if (!queries) {
@@ -472,7 +467,7 @@ export class CSSOverviewModel extends SDK.SDKModel.SDKModel {
         }
       }
     })()`;
-    const {result} = await this._runtimeAgent.invoke_evaluate({expression, returnByValue: true});
+    const {result} = await this.#runtimeAgent.invoke_evaluate({expression, returnByValue: true});
 
     // TODO(paullewis): Handle errors properly.
     if (result.type !== 'object') {
@@ -483,4 +478,4 @@ export class CSSOverviewModel extends SDK.SDKModel.SDKModel {
   }
 }
 
-SDK.SDKModel.SDKModel.register(CSSOverviewModel, {capabilities: SDK.SDKModel.Capability.DOM, autostart: false});
+SDK.SDKModel.SDKModel.register(CSSOverviewModel, {capabilities: SDK.Target.Capability.DOM, autostart: false});

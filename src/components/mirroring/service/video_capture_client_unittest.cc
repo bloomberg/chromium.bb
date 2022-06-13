@@ -12,6 +12,7 @@
 #include "components/mirroring/service/fake_video_capture_host.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_frame_metadata.h"
+#include "media/capture/mojom/video_capture_buffer.mojom.h"
 #include "media/capture/mojom/video_capture_types.mojom.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -49,6 +50,9 @@ class VideoCaptureClientTest : public ::testing::Test,
     client_ = std::make_unique<VideoCaptureClient>(media::VideoCaptureParams(),
                                                    std::move(host));
   }
+
+  VideoCaptureClientTest(const VideoCaptureClientTest&) = delete;
+  VideoCaptureClientTest& operator=(const VideoCaptureClientTest&) = delete;
 
   ~VideoCaptureClientTest() override {
     if (client_) {
@@ -117,8 +121,6 @@ class VideoCaptureClientTest : public ::testing::Test,
   base::MockCallback<base::OnceClosure> error_cb_;
   std::unique_ptr<FakeVideoCaptureHost> host_impl_;
   std::unique_ptr<VideoCaptureClient> client_;
-
-  DISALLOW_COPY_AND_ASSIGN(VideoCaptureClientTest);
 };
 
 TEST_P(VideoCaptureClientTest, Basic) {

@@ -5,9 +5,13 @@
 // https://github.com/WICG/ua-client-hints
 
 dictionary UADataValues {
+  sequence<NavigatorUABrandVersion> brands;
+  boolean mobile;
   DOMString platform;
   DOMString platformVersion;
   DOMString architecture;
   DOMString model;
   DOMString uaFullVersion;
+  DOMString bitness;
+  sequence<NavigatorUABrandVersion> fullVersionList;
 };

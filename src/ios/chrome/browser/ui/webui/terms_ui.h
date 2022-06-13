@@ -7,17 +7,17 @@
 
 #include <string>
 
-#include "base/macros.h"
 #include "ios/web/public/webui/web_ui_ios_controller.h"
 
 // The WebUI handler for chrome://terms.
 class TermsUI : public web::WebUIIOSController {
  public:
   TermsUI(web::WebUIIOS* web_ui, const std::string& name);
-  ~TermsUI() override;
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(TermsUI);
+  TermsUI(const TermsUI&) = delete;
+  TermsUI& operator=(const TermsUI&) = delete;
+
+  ~TermsUI() override;
 };
 
 #endif  // IOS_CHROME_BROWSER_UI_WEBUI_TERMS_UI_H_

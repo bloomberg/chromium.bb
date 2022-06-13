@@ -11,7 +11,7 @@
 #include "fpdfsdk/pwl/cpwl_combo_box.h"
 #include "fpdfsdk/pwl/cpwl_list_ctrl.h"
 #include "public/fpdf_fwlevent.h"
-#include "third_party/base/check.h"
+#include "third_party/base/notreached.h"
 
 CPWL_CBListBox::CPWL_CBListBox(
     const CreateParams& cp,
@@ -20,7 +20,8 @@ CPWL_CBListBox::CPWL_CBListBox(
 
 CPWL_CBListBox::~CPWL_CBListBox() = default;
 
-bool CPWL_CBListBox::OnLButtonUp(uint32_t nFlag, const CFX_PointF& point) {
+bool CPWL_CBListBox::OnLButtonUp(Mask<FWL_EVENTFLAG> nFlag,
+                                 const CFX_PointF& point) {
   CPWL_Wnd::OnLButtonUp(nFlag, point);
 
   if (!m_bMouseDown)
@@ -37,8 +38,8 @@ bool CPWL_CBListBox::OnLButtonUp(uint32_t nFlag, const CFX_PointF& point) {
   return !OnNotifySelectionChanged(false, nFlag);
 }
 
-bool CPWL_CBListBox::IsMovementKey(uint16_t nChar) const {
-  switch (nChar) {
+bool CPWL_CBListBox::IsMovementKey(FWL_VKEYCODE nKeyCode) const {
+  switch (nKeyCode) {
     case FWL_VKEY_Up:
     case FWL_VKEY_Down:
     case FWL_VKEY_Home:
@@ -51,38 +52,40 @@ bool CPWL_CBListBox::IsMovementKey(uint16_t nChar) const {
   }
 }
 
-bool CPWL_CBListBox::OnMovementKeyDown(uint16_t nChar, uint32_t nFlag) {
-  DCHECK(IsMovementKey(nChar));
-
-  switch (nChar) {
+bool CPWL_CBListBox::OnMovementKeyDown(FWL_VKEYCODE nKeyCode,
+                                       Mask<FWL_EVENTFLAG> nFlag) {
+  switch (nKeyCode) {
     case FWL_VKEY_Up:
-      m_pListCtrl->OnVK_UP(IsSHIFTpressed(nFlag), IsCTRLpressed(nFlag));
+      m_pListCtrl->OnVK_UP(IsSHIFTKeyDown(nFlag), IsCTRLKeyDown(nFlag));
       break;
     case FWL_VKEY_Down:
-      m_pListCtrl->OnVK_DOWN(IsSHIFTpressed(nFlag), IsCTRLpressed(nFlag));
+      m_pListCtrl->OnVK_DOWN(IsSHIFTKeyDown(nFlag), IsCTRLKeyDown(nFlag));
       break;
     case FWL_VKEY_Home:
-      m_pListCtrl->OnVK_HOME(IsSHIFTpressed(nFlag), IsCTRLpressed(nFlag));
+      m_pListCtrl->OnVK_HOME(IsSHIFTKeyDown(nFlag), IsCTRLKeyDown(nFlag));
       break;
     case FWL_VKEY_Left:
-      m_pListCtrl->OnVK_LEFT(IsSHIFTpressed(nFlag), IsCTRLpressed(nFlag));
+      m_pListCtrl->OnVK_LEFT(IsSHIFTKeyDown(nFlag), IsCTRLKeyDown(nFlag));
       break;
     case FWL_VKEY_End:
-      m_pListCtrl->OnVK_END(IsSHIFTpressed(nFlag), IsCTRLpressed(nFlag));
+      m_pListCtrl->OnVK_END(IsSHIFTKeyDown(nFlag), IsCTRLKeyDown(nFlag));
       break;
     case FWL_VKEY_Right:
-      m_pListCtrl->OnVK_RIGHT(IsSHIFTpressed(nFlag), IsCTRLpressed(nFlag));
+      m_pListCtrl->OnVK_RIGHT(IsSHIFTKeyDown(nFlag), IsCTRLKeyDown(nFlag));
+      break;
+    default:
+      NOTREACHED();
       break;
   }
   return OnNotifySelectionChanged(true, nFlag);
 }
 
-bool CPWL_CBListBox::IsChar(uint16_t nChar, uint32_t nFlag) const {
-  return m_pListCtrl->OnChar(nChar, IsSHIFTpressed(nFlag),
-                             IsCTRLpressed(nFlag));
+bool CPWL_CBListBox::IsChar(uint16_t nChar, Mask<FWL_EVENTFLAG> nFlag) const {
+  return m_pListCtrl->OnChar(nChar, IsSHIFTKeyDown(nFlag),
+                             IsCTRLKeyDown(nFlag));
 }
 
-bool CPWL_CBListBox::OnCharNotify(uint16_t nChar, uint32_t nFlag) {
+bool CPWL_CBListBox::OnCharNotify(uint16_t nChar, Mask<FWL_EVENTFLAG> nFlag) {
   if (auto* pComboBox = static_cast<CPWL_ComboBox*>(GetParentWindow()))
     pComboBox->SetSelectText();
 

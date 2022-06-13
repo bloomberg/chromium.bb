@@ -111,7 +111,6 @@ class CORE_EXPORT WorkerClassicScriptLoader final
   bool Failed() const { return failed_; }
   bool Canceled() const { return canceled_; }
   uint64_t Identifier() const { return identifier_; }
-  int64_t AppCacheID() const { return app_cache_id_; }
 
   std::unique_ptr<Vector<uint8_t>> ReleaseCachedMetadata() {
     return std::move(cached_metadata_);
@@ -137,8 +136,8 @@ class CORE_EXPORT WorkerClassicScriptLoader final
   void DidReceiveData(const char* data, unsigned data_length) override;
   void DidReceiveCachedMetadata(mojo_base::BigBuffer) override;
   void DidFinishLoading(uint64_t identifier) override;
-  void DidFail(const ResourceError&) override;
-  void DidFailRedirectCheck() override;
+  void DidFail(uint64_t, const ResourceError&) override;
+  void DidFailRedirectCheck(uint64_t) override;
 
   // WorkerMainScriptLoaderClient
   // These will be called for dedicated workers (when PlzDedicatedWorker is
@@ -180,7 +179,6 @@ class CORE_EXPORT WorkerClassicScriptLoader final
   bool is_top_level_script_ = false;
 
   uint64_t identifier_ = 0;
-  int64_t app_cache_id_ = 0;
   std::unique_ptr<Vector<uint8_t>> cached_metadata_;
   Member<ContentSecurityPolicy> content_security_policy_;
   network::mojom::IPAddressSpace response_address_space_;

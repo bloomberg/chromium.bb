@@ -11,10 +11,10 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/null_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
@@ -30,6 +30,7 @@
 #include "storage/browser/test/mock_quota_manager.h"
 #include "storage/browser/test/mock_quota_manager_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 
 namespace content {
 
@@ -44,7 +45,12 @@ class TestCacheStorageBlobToDiskCache : public CacheStorageBlobToDiskCache {
  public:
   explicit TestCacheStorageBlobToDiskCache(
       scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy)
-      : CacheStorageBlobToDiskCache(quota_manager_proxy, url::Origin()) {}
+      : CacheStorageBlobToDiskCache(quota_manager_proxy, blink::StorageKey()) {}
+
+  TestCacheStorageBlobToDiskCache(const TestCacheStorageBlobToDiskCache&) =
+      delete;
+  TestCacheStorageBlobToDiskCache& operator=(
+      const TestCacheStorageBlobToDiskCache&) = delete;
 
   ~TestCacheStorageBlobToDiskCache() override = default;
 
@@ -56,7 +62,9 @@ class TestCacheStorageBlobToDiskCache : public CacheStorageBlobToDiskCache {
     CacheStorageBlobToDiskCache::DidWriteDataToEntry(expected_bytes, rv);
   }
 
-  const url::Origin& origin() { return CacheStorageBlobToDiskCache::origin(); }
+  const blink::StorageKey& storage_key() {
+    return CacheStorageBlobToDiskCache::storage_key();
+  }
 
  protected:
   void ReadFromBlob() override {
@@ -67,8 +75,6 @@ class TestCacheStorageBlobToDiskCache : public CacheStorageBlobToDiskCache {
 
  private:
   bool delay_blob_reads_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(TestCacheStorageBlobToDiskCache);
 };
 
 class CacheStorageBlobToDiskCacheTest : public testing::Test {
@@ -182,7 +188,7 @@ class CacheStorageBlobToDiskCacheTest : public testing::Test {
 
   BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestBrowserContext> browser_context_;
-  storage::BlobStorageContext* blob_storage_context_;
+  raw_ptr<storage::BlobStorageContext> blob_storage_context_;
   std::unique_ptr<storage::BlobDataHandle> blob_handle_;
   std::unique_ptr<disk_cache::Backend> cache_backend_;
   ScopedWritableEntry disk_cache_entry_;
@@ -246,8 +252,8 @@ TEST_F(CacheStorageBlobToDiskCacheTest, NotifyQuotaAboutWriteErrors) {
   cache_storage_blob_to_disk_cache_->DidWriteDataToEntry(5, 2);
   auto write_error_tracker = quota_manager()->write_error_tracker();
   EXPECT_EQ(1U, write_error_tracker.size());
-  auto write_error_log =
-      write_error_tracker.find(cache_storage_blob_to_disk_cache_->origin());
+  auto write_error_log = write_error_tracker.find(
+      cache_storage_blob_to_disk_cache_->storage_key());
   EXPECT_NE(write_error_tracker.end(), write_error_log);
   EXPECT_EQ(1, write_error_log->second);
 }

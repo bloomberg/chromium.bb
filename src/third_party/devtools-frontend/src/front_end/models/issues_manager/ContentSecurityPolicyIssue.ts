@@ -10,7 +10,6 @@ import {Issue, IssueCategory, IssueKind} from './Issue.js';
 import type {LazyMarkdownIssueDescription, MarkdownIssueDescription} from './MarkdownIssueDescription.js';
 import {resolveLazyDescription} from './MarkdownIssueDescription.js';
 
-
 const UIStrings = {
   /**
   *@description Title for CSP url link
@@ -40,12 +39,13 @@ export class ContentSecurityPolicyIssue extends Issue {
   private issueDetails: Protocol.Audits.ContentSecurityPolicyIssueDetails;
 
   constructor(
-      issueDetails: Protocol.Audits.ContentSecurityPolicyIssueDetails, issuesModel: SDK.IssuesModel.IssuesModel) {
+      issueDetails: Protocol.Audits.ContentSecurityPolicyIssueDetails, issuesModel: SDK.IssuesModel.IssuesModel,
+      issueId?: Protocol.Audits.IssueId) {
     const issueCode = [
       Protocol.Audits.InspectorIssueCode.ContentSecurityPolicyIssue,
       issueDetails.contentSecurityPolicyViolationType,
     ].join('::');
-    super(issueCode, issuesModel);
+    super(issueCode, issuesModel, issueId);
     this.issueDetails = issueDetails;
   }
 
@@ -86,15 +86,14 @@ export class ContentSecurityPolicyIssue extends Issue {
     return IssueKind.PageError;
   }
 
-  static fromInsectorIssue(
-      issuesModel: SDK.IssuesModel.IssuesModel,
-      inspectorDetails: Protocol.Audits.InspectorIssueDetails): ContentSecurityPolicyIssue[] {
-    const cspDetails = inspectorDetails.contentSecurityPolicyIssueDetails;
+  static fromInspectorIssue(issuesModel: SDK.IssuesModel.IssuesModel, inspectorIssue: Protocol.Audits.InspectorIssue):
+      ContentSecurityPolicyIssue[] {
+    const cspDetails = inspectorIssue.details.contentSecurityPolicyIssueDetails;
     if (!cspDetails) {
       console.warn('Content security policy issue without details received.');
       return [];
     }
-    return [new ContentSecurityPolicyIssue(cspDetails, issuesModel)];
+    return [new ContentSecurityPolicyIssue(cspDetails, issuesModel, inspectorIssue.issueId)];
   }
 }
 

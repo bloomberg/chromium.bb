@@ -17,7 +17,7 @@ import android.media.MediaCodecInfo;
 import android.media.MediaCodecInfo.CodecCapabilities;
 import android.media.MediaCodecList;
 import android.os.Build;
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -110,7 +110,6 @@ class MediaCodecVideoDecoderFactory implements VideoDecoderFactory {
 
   // Returns true if the given MediaCodecInfo indicates a supported encoder for the given type.
   private boolean isSupportedCodec(MediaCodecInfo info, VideoCodecMimeType type) {
-    String name = info.getName();
     if (!MediaCodecUtils.codecSupportsType(info, type)) {
       return false;
     }

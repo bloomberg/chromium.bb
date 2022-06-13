@@ -9,13 +9,13 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.Build;
 
 import androidx.annotation.DrawableRes;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
@@ -40,6 +40,8 @@ public final class SharingNotificationUtil {
      * @param id The notification id.
      * @param contentIntent The notification content intent.
      * @param deleteIntent The notification delete intent.
+     * @param confirmIntent The notification confirm intent.
+     * @param cancelIntent The notification cancel intent.
      * @param contentTitle The notification title text.
      * @param contentText The notification content text.
      * @param largeIconId The large notification icon resource id, 0 if not used.
@@ -48,18 +50,19 @@ public final class SharingNotificationUtil {
      */
     public static void showNotification(@SystemNotificationType int type, String group, int id,
             PendingIntentProvider contentIntent, PendingIntentProvider deleteIntent,
+            PendingIntentProvider confirmIntent, PendingIntentProvider cancelIntent,
             String contentTitle, String contentText, @DrawableRes int smallIconId,
             @DrawableRes int largeIconId, int color, boolean startsActivity) {
         Context context = ContextUtils.getApplicationContext();
         Resources resources = context.getResources();
         NotificationWrapperBuilder builder =
                 NotificationWrapperBuilderFactory
-                        .createNotificationWrapperBuilder(/*preferCompat=*/true,
+                        .createNotificationWrapperBuilder(
                                 ChromeChannelDefinitions.ChannelId.SHARING,
-                                /*remoteAppPackageName=*/null,
                                 new NotificationMetadata(type, group, id))
                         .setContentTitle(contentTitle)
                         .setContentText(contentText)
+                        .setBigTextStyle(contentText)
                         .setColor(ApiCompatibilityUtils.getColor(context.getResources(), color))
                         .setGroup(group)
                         .setPriorityBeforeO(NotificationCompat.PRIORITY_HIGH)
@@ -67,16 +70,25 @@ public final class SharingNotificationUtil {
                         .setAutoCancel(true)
                         .setDefaults(Notification.DEFAULT_ALL);
 
-        if (startsActivity && BuildInfo.isAtLeastS()) {
-            // We can't use the NotificationIntentInterceptor to start Activities starting in
-            // Android S. Use the unmodified PendingIntent directly instead.
-            builder.setContentIntent(contentIntent.getPendingIntent());
-        } else {
-            builder.setContentIntent(contentIntent);
+        if (contentIntent != null) {
+            if (startsActivity && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                // We can't use the NotificationIntentInterceptor to start Activities starting in
+                // Android S. Use the unmodified PendingIntent directly instead.
+                builder.setContentIntent(contentIntent.getPendingIntent());
+            } else {
+                builder.setContentIntent(contentIntent);
+            }
         }
-
         if (deleteIntent != null) {
             builder.setDeleteIntent(deleteIntent);
+        }
+        if (confirmIntent != null) {
+            builder.addAction(R.drawable.ic_checkmark_24dp, resources.getString(R.string.submit),
+                    confirmIntent, NotificationUmaTracker.ActionType.SHARING_CONFIRM);
+        }
+        if (cancelIntent != null) {
+            builder.addAction(R.drawable.ic_cancel_circle, resources.getString(R.string.cancel),
+                    cancelIntent, NotificationUmaTracker.ActionType.SHARING_CANCEL);
         }
 
         if (largeIconId != 0) {
@@ -111,14 +123,13 @@ public final class SharingNotificationUtil {
                 resources.getString(R.string.sharing_sending_notification_title, targetName);
         NotificationWrapperBuilder builder =
                 NotificationWrapperBuilderFactory
-                        .createNotificationWrapperBuilder(/*preferCompat=*/true,
+                        .createNotificationWrapperBuilder(
                                 ChromeChannelDefinitions.ChannelId.SHARING,
-                                /*remoteAppPackageName=*/null,
                                 new NotificationMetadata(type, group, id))
                         .setContentTitle(contentTitle)
                         .setGroup(group)
-                        .setColor(ApiCompatibilityUtils.getColor(
-                                context.getResources(), R.color.default_icon_color_blue))
+                        .setColor(ApiCompatibilityUtils.getColor(context.getResources(),
+                                R.color.default_icon_color_accent1_baseline))
                         .setPriorityBeforeO(NotificationCompat.PRIORITY_HIGH)
                         .setSmallIcon(R.drawable.ic_devices_16dp)
                         .setProgress(/*max=*/0, /*percentage=*/0, true)
@@ -148,9 +159,8 @@ public final class SharingNotificationUtil {
         Resources resources = context.getResources();
         NotificationWrapperBuilder builder =
                 NotificationWrapperBuilderFactory
-                        .createNotificationWrapperBuilder(/*preferCompat=*/true,
+                        .createNotificationWrapperBuilder(
                                 ChromeChannelDefinitions.ChannelId.SHARING,
-                                /*remoteAppPackageName=*/null,
                                 new NotificationMetadata(type, group, id))
                         .setContentTitle(contentTitle)
                         .setGroup(group)

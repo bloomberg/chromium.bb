@@ -32,6 +32,9 @@ _SRC_DIR = pathlib.Path(__file__).parents[4].resolve()
 sys.path.append(str(_SRC_DIR / 'build' / 'android'))
 from pylib import constants
 
+# Import list_java_targets so that the dependency is found by print_python_deps.
+import list_java_targets
+
 
 def main():
   arg_parser = argparse.ArgumentParser(
@@ -99,10 +102,18 @@ def main():
 
 
 @dataclasses.dataclass(frozen=True)
+class TargetInfo:
+  """Container for information about a build target."""
+  target_name: str
+  low_classpath_priority: bool
+
+
+@dataclasses.dataclass(frozen=True)
 class ClassEntry:
   """An assignment of a Java class to a build target."""
   full_class_name: str
   target: str
+  low_classpath_priority: bool
 
 
 class ClassLookupIndex:
@@ -145,11 +156,12 @@ class ClassLookupIndex:
 
   def _entries_for(self, class_name) -> List[ClassEntry]:
     return [
-        ClassEntry(class_name, target)
-        for target in self._class_index.get(class_name)
+        ClassEntry(class_name, target_info.target_name,
+                   target_info.low_classpath_priority)
+        for target_info in self._class_index.get(class_name)
     ]
 
-  def _index_root(self) -> Dict[str, List[str]]:
+  def _index_root(self) -> Dict[str, List[TargetInfo]]:
     """Create the class to target index."""
     logging.debug('Running list_java_targets.py...')
     list_java_targets_command = [
@@ -193,10 +205,12 @@ class ClassLookupIndex:
         continue
 
       target = self._compute_toplevel_target(target)
+      low_classpath_priority = bool(deps_info.get('low_classpath_priority'))
+      target_info = TargetInfo(target, low_classpath_priority)
       full_class_names = self._compute_full_class_names_for_build_config(
           deps_info)
       for full_class_name in full_class_names:
-        class_index[full_class_name].append(target)
+        class_index[full_class_name].append(target_info)
 
     return class_index
 
@@ -276,13 +290,14 @@ class ClassLookupIndex:
 
   @staticmethod
   def _read_jar_namelist(abs_build_output_dir: pathlib.Path,
-                         abs_jar_path: pathlib.Path) -> list[str]:
+                         abs_jar_path: pathlib.Path) -> List[str]:
     """Returns list of jar members by name."""
 
     # Caching namelist speeds up lookup_dep.py runtime by 1.5s.
     cache_path = abs_jar_path.with_suffix(abs_jar_path.suffix +
                                           '.namelist_cache')
-    if not abs_jar_path.is_relative_to(abs_build_output_dir):
+    if (not ClassLookupIndex._is_path_relative_to(abs_jar_path,
+                                                  abs_build_output_dir)):
       cache_path = (abs_build_output_dir / 'gen' /
                     cache_path.relative_to(_SRC_DIR))
     if (cache_path.exists()
@@ -300,6 +315,13 @@ class ClassLookupIndex:
     return namelist
 
   @staticmethod
+  def _is_path_relative_to(path: pathlib.Path, other: pathlib.Path) -> bool:
+    # PurePath.is_relative_to() was introduced in Python 3.9
+    resolved_path = path.resolve()
+    resolved_other = other.resolve()
+    return str(resolved_path).startswith(str(resolved_other))
+
+  @staticmethod
   def _parse_full_java_class(source_path: pathlib.Path) -> str:
     """Guess the fully qualified class name from the path to the source file."""
     if source_path.suffix != '.java':
@@ -309,6 +331,8 @@ class ClassLookupIndex:
     directory_path: pathlib.Path = source_path.parent
     package_list_reversed = []
     for part in reversed(directory_path.parts):
+      if part == 'java':
+        break
       package_list_reversed.append(part)
       if part in ('com', 'org'):
         break

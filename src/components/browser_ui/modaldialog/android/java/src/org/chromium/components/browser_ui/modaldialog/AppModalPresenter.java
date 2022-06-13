@@ -54,10 +54,31 @@ public class AppModalPresenter extends ModalDialogManager.Presenter {
 
     @Override
     protected void addDialogView(PropertyModel model) {
-        int style = model.get(ModalDialogProperties.PRIMARY_BUTTON_FILLED)
-                ? R.style.Theme_Chromium_ModalDialog_FilledPrimaryButton
-                : R.style.Theme_Chromium_ModalDialog_TextPrimaryButton;
-        mDialog = new Dialog(mContext, style);
+        int styles[][] = {
+                {R.style.Theme_Chromium_ModalDialog_TextPrimaryButton,
+                        R.style.ThemeOverlay_Chromium_ModalDialog_TextPrimaryButton_Fullscreen,
+                        R.style.ThemeOverlay_Chromium_ModalDialog_TextPrimaryButton_DialogWhenLarge},
+                {R.style.Theme_Chromium_ModalDialog_FilledPrimaryButton,
+                        R.style.ThemeOverlay_Chromium_ModalDialog_FilledPrimaryButton_Fullscreen,
+                        R.style.ThemeOverlay_Chromium_ModalDialog_FilledPrimaryButton_DialogWhenLarge},
+                {R.style.Theme_Chromium_ModalDialog_FilledNegativeButton,
+                        R.style.ThemeOverlay_Chromium_ModalDialog_FilledNegativeButton_Fullscreen,
+                        R.style.ThemeOverlay_Chromium_ModalDialog_FilledNegativeButton_DialogWhenLarge}};
+        int index = 0;
+        if (model.get(ModalDialogProperties.FULLSCREEN_DIALOG)) {
+            index = 1;
+        } else if (model.get(ModalDialogProperties.DIALOG_WHEN_LARGE)) {
+            index = 2;
+        }
+        int buttonIndex = 0;
+        int buttonStyle = model.get(ModalDialogProperties.BUTTON_STYLES);
+        if (buttonStyle == ModalDialogProperties.ButtonStyles.PRIMARY_FILLED_NEGATIVE_OUTLINE) {
+            buttonIndex = 1;
+        } else if (buttonStyle
+                == ModalDialogProperties.ButtonStyles.PRIMARY_OUTLINE_NEGATIVE_FILLED) {
+            buttonIndex = 2;
+        }
+        mDialog = new Dialog(mContext, styles[buttonIndex][index]);
         mDialog.setOnCancelListener(dialogInterface
                 -> dismissCurrentDialog(DialogDismissalCause.NAVIGATE_BACK_OR_TOUCH_OUTSIDE));
         // Cancel on touch outside should be disabled by default. The ModelChangeProcessor wouldn't

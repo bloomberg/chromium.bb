@@ -12,6 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Ensure incompabilities with Windows macros (e.g. #define StoreFence) are
+// detected. Must come before Highway headers.
+#if defined(_WIN32) || defined(_WIN64)
+#include <Windows.h>
+#endif
+
 #include <stddef.h>
 #include <stdint.h>
 
@@ -199,13 +205,14 @@ struct TestLoadDup128 {
     for (size_t i = 0; i < N128; ++i) {
       lanes[i] = static_cast<T>(1 + i);
     }
-    const auto v = LoadDup128(d, lanes);
+
     const size_t N = Lanes(d);
-    auto out = AllocateAligned<T>(N);
-    Store(v, d, out.get());
+    auto expected = AllocateAligned<T>(N);
     for (size_t i = 0; i < N; ++i) {
-      HWY_ASSERT_EQ(T(i % N128 + 1), out[i]);
+      expected[i] = static_cast<T>(i % N128 + 1);
     }
+
+    HWY_ASSERT_VEC_EQ(d, expected.get(), LoadDup128(d, lanes));
 #else
     (void)d;
 #endif
@@ -391,6 +398,7 @@ HWY_NOINLINE void TestAllCache() {
   int test = 0;
   Prefetch(&test);
   FlushCacheline(&test);
+  Pause();
 }
 
 // NOLINTNEXTLINE(google-readability-namespace-comments)

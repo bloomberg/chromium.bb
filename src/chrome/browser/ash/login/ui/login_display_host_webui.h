@@ -12,10 +12,11 @@
 
 #include "ash/components/audio/cras_audio_handler.h"
 #include "ash/public/cpp/multi_user_window_manager_observer.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/scoped_observation.h"
 #include "base/timer/elapsed_timer.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/ash/login/existing_user_controller.h"
 #include "chrome/browser/ash/login/oobe_configuration.h"
 #include "chrome/browser/ash/login/ui/login_display.h"
@@ -23,8 +24,8 @@
 #include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_helper.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
+#include "components/session_manager/core/session_manager.h"
+#include "components/session_manager/core/session_manager_observer.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/display/display_observer.h"
@@ -35,10 +36,6 @@
 
 namespace ash {
 class FocusRingController;
-}
-
-namespace chromeos {
-
 class LoginDisplayWebUI;
 class WebUILoginView;
 
@@ -50,17 +47,22 @@ class WebUILoginView;
 // WebUI signals ready (via NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE) or there
 // is a network error (via NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN).
 class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
+                              public session_manager::SessionManagerObserver,
                               public content::WebContentsObserver,
                               public chromeos::SessionManagerClient::Observer,
-                              public chromeos::CrasAudioHandler::AudioObserver,
+                              public CrasAudioHandler::AudioObserver,
                               public chromeos::OobeConfiguration::Observer,
                               public display::DisplayObserver,
                               public ui::InputDeviceEventObserver,
                               public views::WidgetRemovalsObserver,
                               public views::WidgetObserver,
-                              public ash::MultiUserWindowManagerObserver {
+                              public MultiUserWindowManagerObserver {
  public:
   LoginDisplayHostWebUI();
+
+  LoginDisplayHostWebUI(const LoginDisplayHostWebUI&) = delete;
+  LoginDisplayHostWebUI& operator=(const LoginDisplayHostWebUI&) = delete;
+
   ~LoginDisplayHostWebUI() override;
 
   // LoginDisplayHost:
@@ -81,9 +83,11 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
   void OnStartAppLaunch() override;
   void OnBrowserCreated() override;
   void ShowGaiaDialog(const AccountId& prefilled_account) override;
+  void ShowOsInstallScreen() override;
+  void ShowGuestTosScreen() override;
   void HideOobeDialog() override;
   void SetShelfButtonsEnabled(bool enabled) override;
-  void UpdateOobeDialogState(ash::OobeDialogState state) override;
+  void UpdateOobeDialogState(OobeDialogState state) override;
   void HandleDisplayCaptivePortal() override;
   void UpdateAddUserButtonStatus() override;
   void RequestSystemInfoUpdate() override;
@@ -93,8 +97,18 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
   void VerifyOwnerForKiosk(base::OnceClosure) override;
   void ShowPasswordChangedDialog(const AccountId& account_id,
                                  bool show_password_error) override;
+  void StartBrowserDataMigration() override;
   void AddObserver(LoginDisplayHost::Observer* observer) override;
   void RemoveObserver(LoginDisplayHost::Observer* observer) override;
+  SigninUI* GetSigninUI() final;
+  bool IsWizardControllerCreated() const final;
+  bool GetKeyboardRemappedPrefValue(const std::string& pref_name,
+                                    int* value) const final;
+  bool IsWebUIStarted() const final;
+
+  // session_manager::SessionManagerObserver:
+  void OnNetworkErrorScreenShown() override;
+  void OnLoginOrLockScreenVisible() override;
 
   // Trace id for ShowLoginWebUI event (since there exists at most one login
   // WebUI at a time).
@@ -108,13 +122,9 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
  protected:
   class KeyboardDrivenOobeKeyHandler;
 
-  // LoginDisplayHost:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
-
   // content::WebContentsObserver:
-  void RenderProcessGone(base::TerminationStatus status) override;
+  void PrimaryMainFrameRenderProcessGone(
+      base::TerminationStatus status) override;
 
   // chromeos::SessionManagerClient::Observer:
   void EmitLoginPromptVisibleCalled() override;
@@ -122,7 +132,7 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
   // chromeos::OobeConfiguration::Observer:
   void OnOobeConfigurationChanged() override;
 
-  // chromeos::CrasAudioHandler::AudioObserver:
+  // CrasAudioHandler::AudioObserver:
   void OnActiveOutputNodeChanged() override;
 
   // display::DisplayObserver:
@@ -143,8 +153,10 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
 
   // TODO (crbug.com/1168114): remove whole observer hierarchy, it is not needed
   // anymore.
-  // ash::MultiUserWindowManagerObserver:
+  // MultiUserWindowManagerObserver:
   void OnUserSwitchAnimationFinished() override;
+
+  bool IsOobeUIDialogVisible() const override;
 
  private:
   // Way to restore if renderer have crashed.
@@ -203,6 +215,9 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
   // Updates default scaling for CfM devices.
   void UpScaleOobe();
 
+  // Show OOBE WebUI if signal from javascript side never came.
+  void OnShowWebUITimeout();
+
   // Sign in screen controller.
   std::unique_ptr<ExistingUserController> existing_user_controller_;
 
@@ -245,7 +260,7 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
 
   // A focus ring controller to draw focus ring around view for keyboard
   // driven oobe.
-  std::unique_ptr<ash::FocusRingController> focus_ring_controller_;
+  std::unique_ptr<FocusRingController> focus_ring_controller_;
 
   // Handles special keys for keyboard driven oobe.
   std::unique_ptr<KeyboardDrivenOobeKeyHandler>
@@ -271,13 +286,25 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
   // Measures OOBE WebUI load time.
   absl::optional<base::ElapsedTimer> oobe_load_timer_;
 
+  base::ScopedObservation<session_manager::SessionManager,
+                          session_manager::SessionManagerObserver>
+      session_observation_{this};
+
+  display::ScopedDisplayObserver display_observer_{this};
+
   base::ObserverList<LoginDisplayHost::Observer> observers_;
 
-  base::WeakPtrFactory<LoginDisplayHostWebUI> weak_factory_{this};
+  base::OneShotTimer show_webui_guard_;
 
-  DISALLOW_COPY_AND_ASSIGN(LoginDisplayHostWebUI);
+  base::WeakPtrFactory<LoginDisplayHostWebUI> weak_factory_{this};
 };
 
-}  // namespace chromeos
+}  // namespace ash
+
+// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
+// source code migration is finished.
+namespace chromeos {
+using ::ash::LoginDisplayHostWebUI;
+}
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_UI_LOGIN_DISPLAY_HOST_WEBUI_H_

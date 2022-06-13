@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/payments/payment_request.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_tester.h"
@@ -10,7 +9,7 @@
 #include "third_party/blink/renderer/modules/payments/payment_request.h"
 #include "third_party/blink/renderer/modules/payments/payment_test_helper.h"
 #include "third_party/blink/renderer/platform/bindings/exception_code.h"
-#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
+#include "third_party/blink/renderer/platform/bindings/v8_binding.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
@@ -23,12 +22,7 @@ class MockPaymentProvider : public payments::mojom::blink::PaymentRequest {
       mojo::PendingRemote<payments::mojom::blink::PaymentRequestClient> client,
       WTF::Vector<payments::mojom::blink::PaymentMethodDataPtr> method_data,
       payments::mojom::blink::PaymentDetailsPtr details,
-      payments::mojom::blink::PaymentOptionsPtr options
-#if defined(OS_ANDROID)
-      ,
-      bool google_pay_bridge_eligible
-#endif
-      ) override {
+      payments::mojom::blink::PaymentOptionsPtr options) override {
     client_.Bind(std::move(client));
     client_->OnError(payments::mojom::PaymentErrorReason::
                          NOT_SUPPORTED_FOR_INVALID_ORIGIN_OR_SSL,

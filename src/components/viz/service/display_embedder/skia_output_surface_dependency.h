@@ -6,7 +6,6 @@
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_SKIA_OUTPUT_SURFACE_DEPENDENCY_H_
 
 #include <memory>
-#include <vector>
 
 #include "base/callback.h"
 #include "base/callback_helpers.h"
@@ -19,7 +18,6 @@
 #include "gpu/command_buffer/service/sequence_id.h"
 #include "gpu/config/gpu_preferences.h"
 #include "gpu/ipc/common/surface_handle.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkSurfaceCharacterization.h"
 #include "ui/gl/gl_surface_format.h"
 

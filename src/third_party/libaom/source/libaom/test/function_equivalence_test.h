@@ -16,7 +16,6 @@
 
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 #include "test/acm_random.h"
-#include "test/clear_system_state.h"
 #include "test/util.h"
 
 using libaom_test::ACMRandom;
@@ -60,7 +59,7 @@ class FunctionEquivalenceTest : public ::testing::TestWithParam<FuncParam<T> > {
 
   virtual void SetUp() { params_ = this->GetParam(); }
 
-  virtual void TearDown() { libaom_test::ClearSystemState(); }
+  virtual void TearDown() {}
 
  protected:
   ACMRandom rng_;

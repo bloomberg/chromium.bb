@@ -7,7 +7,6 @@
 #include "http2/decoder/decode_buffer.h"
 #include "http2/decoder/decode_status.h"
 #include "common/platform/api/quiche_logging.h"
-#include "spdy/platform/api/spdy_estimate_memory_usage.h"
 
 using ::http2::DecodeBuffer;
 
@@ -28,6 +27,10 @@ HpackDecoderAdapter::~HpackDecoderAdapter() = default;
 void HpackDecoderAdapter::ApplyHeaderTableSizeSetting(size_t size_setting) {
   QUICHE_DVLOG(2) << "HpackDecoderAdapter::ApplyHeaderTableSizeSetting";
   hpack_decoder_.ApplyHeaderTableSizeSetting(size_setting);
+}
+
+size_t HpackDecoderAdapter::GetCurrentHeaderTableSizeSetting() const {
+  return hpack_decoder_.GetCurrentHeaderTableSizeSetting();
 }
 
 void HpackDecoderAdapter::HandleControlFrameHeadersStart(
@@ -86,12 +89,8 @@ bool HpackDecoderAdapter::HandleControlFrameHeadersData(
   return true;
 }
 
-bool HpackDecoderAdapter::HandleControlFrameHeadersComplete(
-    size_t* compressed_len) {
+bool HpackDecoderAdapter::HandleControlFrameHeadersComplete() {
   QUICHE_DVLOG(2) << "HpackDecoderAdapter::HandleControlFrameHeadersComplete";
-  if (compressed_len != nullptr) {
-    *compressed_len = listener_adapter_.total_hpack_bytes();
-  }
   if (!hpack_decoder_.EndDecodingBlock()) {
     QUICHE_DVLOG(3) << "EndDecodingBlock returned false";
     error_ = hpack_decoder_.error();
@@ -116,10 +115,6 @@ void HpackDecoderAdapter::set_max_decode_buffer_size_bytes(
 void HpackDecoderAdapter::set_max_header_block_bytes(
     size_t max_header_block_bytes) {
   max_header_block_bytes_ = max_header_block_bytes;
-}
-
-size_t HpackDecoderAdapter::EstimateMemoryUsage() const {
-  return SpdyEstimateMemoryUsage(hpack_decoder_);
 }
 
 HpackDecoderAdapter::ListenerAdapter::ListenerAdapter() : handler_(nullptr) {}

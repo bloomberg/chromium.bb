@@ -11,7 +11,7 @@ import decimal
 import ijson
 import json
 import logging
-import StringIO
+import six
 import sys
 import uuid
 import zlib
@@ -193,7 +193,8 @@ class AddHistogramsHandler(api_request_handler.ApiRequestHandler):
                  token_info['token'])
     return token, token_info
 
-  def Post(self):
+  def Post(self, *args, **kwargs):
+    del args, kwargs  # Unused.
     if utils.IsDevAppserver():
       # Don't require developers to zip the body.
       # In prod, the data will be written to cloud storage and processed on the
@@ -202,7 +203,7 @@ class AddHistogramsHandler(api_request_handler.ApiRequestHandler):
       # Also always create upload completion token for such requests.
       token, token_info = self._CreateUploadCompletionToken()
       ProcessHistogramSet(
-          _LoadHistogramList(StringIO.StringIO(self.request.body)), token)
+          _LoadHistogramList(six.StringIO(self.request.body)), token)
       token.UpdateState(upload_completion_token.State.COMPLETED)
       return token_info
 
@@ -236,10 +237,8 @@ class AddHistogramsHandler(api_request_handler.ApiRequestHandler):
     gcs_file.write(data_str)
     gcs_file.close()
 
-    token_info = None
-    if utils.ShouldTurnOnUploadCompletionTokenExperiment():
-      _, token_info = self._CreateUploadCompletionToken(params['gcs_file_path'])
-      params['upload_completion_token'] = token_info['token']
+    _, token_info = self._CreateUploadCompletionToken(params['gcs_file_path'])
+    params['upload_completion_token'] = token_info['token']
 
     retry_options = taskqueue.TaskRetryOptions(
         task_retry_limit=_TASK_RETRY_LIMIT)

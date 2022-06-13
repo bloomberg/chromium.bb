@@ -34,9 +34,7 @@
 #include "src/gpu/GrGpu.h"
 #include "src/gpu/GrRecordingContextPriv.h"
 #include "src/gpu/GrRenderTargetProxy.h"
-#include "src/gpu/GrSurfaceDrawContext.h"
 #include "src/gpu/GrTextureProxy.h"
-#include "src/gpu/SkGpuDevice.h"
 #include "src/gpu/gl/GrGLDefines.h"
 #include "src/image/SkImage_GpuBase.h"
 #include "src/image/SkSurface_Gpu.h"
@@ -302,13 +300,12 @@ public:
         SkImageInfo imageInfo = SkImageInfo::Make({fWidth, fHeight},
                                                   {fColorType, kPremul_SkAlphaType, fColorSpace});
         GrVkDrawableInfo vkInfo;
-        // putting in a bunch of dummy values here
+        // putting in a bunch of placeholder values here
         vkInfo.fSecondaryCommandBuffer = (VkCommandBuffer)1;
         vkInfo.fColorAttachmentIndex = 0;
         vkInfo.fCompatibleRenderPass = (VkRenderPass)1;
         vkInfo.fFormat = VK_FORMAT_R8G8B8A8_UNORM;
         vkInfo.fDrawBounds = nullptr;
-        vkInfo.fImage = (VkImage)1;
 
         return GrVkSecondaryCBDrawContext::Make(dContext, imageInfo, vkInfo, &fSurfaceProps);
     }
@@ -1168,7 +1165,7 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(DDLMultipleDDLs, reporter, ctxInfo) {
 
 #ifdef SK_GL
 
-static sk_sp<SkPromiseImageTexture> dummy_fulfill_proc(void*) {
+static sk_sp<SkPromiseImageTexture> noop_fulfill_proc(void*) {
     SkASSERT(0);
     return nullptr;
 }
@@ -1200,7 +1197,7 @@ DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(DDLTextureFlagsTest, reporter, ctxInfo) {
                     kRGBA_8888_SkColorType,
                     kPremul_SkAlphaType,
                     /*color space*/nullptr,
-                    dummy_fulfill_proc,
+                    noop_fulfill_proc,
                     /*release proc*/ nullptr,
                     /*context*/nullptr);
             if (GR_GL_TEXTURE_2D != target && mipMapped == GrMipmapped::kYes) {

@@ -7,12 +7,8 @@
 #import "base/metrics/histogram_functions.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
-#import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_scene_agent.h"
-#import "ios/chrome/browser/ui/main/scene_state_browser_agent.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/pasteboard_util.h"
-#import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
-#import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ui/base/l10n/l10n_util_mac.h"
 #import "url/gurl.h"
@@ -23,9 +19,6 @@
 
 @interface ActionFactory ()
 
-// Current browser instance.
-@property(nonatomic, assign) Browser* browser;
-
 // Histogram to record executed actions.
 @property(nonatomic, assign) const char* histogram;
 
@@ -33,12 +26,8 @@
 
 @implementation ActionFactory
 
-- (instancetype)initWithBrowser:(Browser*)browser
-                       scenario:(MenuScenario)scenario {
-  DCHECK(browser);
-
+- (instancetype)initWithScenario:(MenuScenario)scenario {
   if (self = [super init]) {
-    _browser = browser;
     _histogram = GetActionsHistogramName(scenario);
   }
   return self;
@@ -65,7 +54,7 @@
   return [self
       actionWithTitle:l10n_util::GetNSString(IDS_IOS_COPY_LINK_ACTION_TITLE)
                 image:[UIImage imageNamed:@"copy_link_url"]
-                 type:MenuActionType::Copy
+                 type:MenuActionType::CopyURL
                 block:^{
                   StoreURLInPasteboard(URL);
                 }];
@@ -89,19 +78,6 @@
   return action;
 }
 
-- (UIAction*)actionToOpenInNewTabWithURL:(const GURL)URL
-                              completion:(ProceduralBlock)completion {
-  UrlLoadParams params = UrlLoadParams::InNewTab(URL);
-  UrlLoadingBrowserAgent* loadingAgent =
-      UrlLoadingBrowserAgent::FromBrowser(self.browser);
-  return [self actionToOpenInNewTabWithBlock:^{
-    loadingAgent->Load(params);
-    if (completion) {
-      completion();
-    }
-  }];
-}
-
 - (UIAction*)actionToOpenInNewTabWithBlock:(ProceduralBlock)block {
   return [self actionWithTitle:l10n_util::GetNSString(
                                    IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWTAB)
@@ -116,60 +92,6 @@
                          image:[UIImage systemImageNamed:@"plus"]
                           type:MenuActionType::OpenAllInNewTabs
                          block:block];
-}
-
-- (UIAction*)actionToOpenInNewIncognitoTabWithURL:(const GURL)URL
-                                       completion:(ProceduralBlock)completion {
-  UrlLoadParams params = UrlLoadParams::InNewTab(URL);
-  params.in_incognito = YES;
-  UrlLoadingBrowserAgent* loadingAgent =
-      UrlLoadingBrowserAgent::FromBrowser(self.browser);
-  return [self actionToOpenInNewIncognitoTabWithBlock:^{
-    loadingAgent->Load(params);
-    if (completion) {
-      completion();
-    }
-  }];
-}
-
-- (UIAction*)actionToOpenInNewIncognitoTabWithBlock:(ProceduralBlock)block {
-  // Wrap the block with the incognito auth check, if necessary.
-  if (base::FeatureList::IsEnabled(kIncognitoAuthentication)) {
-    IncognitoReauthSceneAgent* reauthAgent = [IncognitoReauthSceneAgent
-        agentFromScene:SceneStateBrowserAgent::FromBrowser(self.browser)
-                           ->GetSceneState()];
-    if (reauthAgent.authenticationRequired) {
-      block = ^{
-        [reauthAgent
-            authenticateIncognitoContentWithCompletionBlock:^(BOOL success) {
-              if (success && block != nullptr) {
-                block();
-              }
-            }];
-      };
-    }
-  }
-
-  return [self actionWithTitle:l10n_util::GetNSString(
-                                   IDS_IOS_OPEN_IN_INCOGNITO_ACTION_TITLE)
-                         image:[UIImage imageNamed:@"open_in_incognito"]
-                          type:MenuActionType::OpenInNewIncognitoTab
-                         block:block];
-}
-
-- (UIAction*)actionToOpenInNewWindowWithURL:(const GURL)URL
-                             activityOrigin:
-                                 (WindowActivityOrigin)activityOrigin {
-  id<ApplicationCommands> windowOpener = HandlerForProtocol(
-      self.browser->GetCommandDispatcher(), ApplicationCommands);
-  NSUserActivity* activity = ActivityToLoadURL(activityOrigin, URL);
-  return [self actionWithTitle:l10n_util::GetNSString(
-                                   IDS_IOS_CONTENT_CONTEXT_OPENINNEWWINDOW)
-                         image:[UIImage imageNamed:@"open_new_window"]
-                          type:MenuActionType::OpenInNewWindow
-                         block:^{
-                           [windowOpener openNewWindowWithActivity:activity];
-                         }];
 }
 
 - (UIAction*)actionToRemoveWithBlock:(ProceduralBlock)block {
@@ -233,14 +155,6 @@
                          block:block];
 }
 
-- (UIAction*)actionToOpenJavascriptWithBlock:(ProceduralBlock)block {
-  return
-      [self actionWithTitle:l10n_util::GetNSString(IDS_IOS_CONTENT_CONTEXT_OPEN)
-                      image:[UIImage imageNamed:@"open"]
-                       type:MenuActionType::OpenJavascript
-                      block:block];
-}
-
 - (UIAction*)actionToAddToReadingListWithBlock:(ProceduralBlock)block {
   return [self actionWithTitle:l10n_util::GetNSString(
                                    IDS_IOS_CONTENT_CONTEXT_ADDTOREADINGLIST)
@@ -272,6 +186,66 @@
                  type:MenuActionType::CloseTab
                 block:block];
   action.attributes = UIMenuElementAttributesDestructive;
+  return action;
+}
+
+- (UIAction*)actionSaveImageWithBlock:(ProceduralBlock)block {
+  int title = IsContextMenuActionsRefreshEnabled()
+                  ? IDS_IOS_CONTENT_CONTEXT_ADDTOPHOTOS
+                  : IDS_IOS_CONTENT_CONTEXT_SAVEIMAGE;
+
+  UIAction* action = [self actionWithTitle:l10n_util::GetNSString(title)
+                                     image:[UIImage imageNamed:@"download"]
+                                      type:MenuActionType::SaveImage
+                                     block:block];
+  return action;
+}
+
+- (UIAction*)actionCopyImageWithBlock:(ProceduralBlock)block {
+  UIAction* action = [self
+      actionWithTitle:l10n_util::GetNSString(IDS_IOS_CONTENT_CONTEXT_COPYIMAGE)
+                image:[UIImage imageNamed:@"copy"]
+                 type:MenuActionType::CopyImage
+                block:block];
+  return action;
+}
+
+- (UIAction*)actionSearchImageWithTitle:(NSString*)title
+                                  Block:(ProceduralBlock)block {
+  UIAction* action = [self actionWithTitle:title
+                                     image:[UIImage imageNamed:@"search_image"]
+                                      type:MenuActionType::SearchImage
+                                     block:block];
+  return action;
+}
+
+- (UIAction*)actionToCloseAllTabsWithBlock:(ProceduralBlock)block {
+  UIAction* action =
+      [self actionWithTitle:l10n_util::GetNSString(
+                                IDS_IOS_CONTENT_CONTEXT_CLOSEALLTABS)
+                      image:[UIImage imageNamed:@"close"]
+                       type:MenuActionType::CloseAllTabs
+                      block:block];
+  action.attributes = UIMenuElementAttributesDestructive;
+  return action;
+}
+
+- (UIAction*)actionToSelectTabsWithBlock:(ProceduralBlock)block {
+  UIAction* action = [self
+      actionWithTitle:l10n_util::GetNSString(IDS_IOS_CONTENT_CONTEXT_SELECTTABS)
+                image:[UIImage imageNamed:@"select"]
+                 type:MenuActionType::SelectTabs
+                block:block];
+  return action;
+}
+
+- (UIAction*)actionToSearchImageUsingLensWithBlock:(ProceduralBlock)block {
+  UIAction* action =
+      [self actionWithTitle:l10n_util::GetNSString(
+                                IDS_IOS_CONTEXT_MENU_SEARCHIMAGEWITHLENS)
+                      image:[UIImage imageNamed:@"lens_icon"]
+                       type:MenuActionType::SearchImageWithLens
+                      block:block];
   return action;
 }
 

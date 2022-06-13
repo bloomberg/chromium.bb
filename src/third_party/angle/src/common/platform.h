@@ -46,7 +46,6 @@
 #    endif
 
 #    include <intrin.h>
-#    include <windows.h>
 
 #    if defined(WINAPI_FAMILY) && (WINAPI_FAMILY != WINAPI_FAMILY_DESKTOP_APP)
 #        define ANGLE_ENABLE_WINDOWS_UWP 1
@@ -140,10 +139,15 @@
 #    if defined(__arm64__) || defined(__aarch64__)
 #        define ANGLE_CPU_ARM64 1
 #    endif
-// EAGL should be enabled on iOS, but not Mac Catalyst unless it is running on Apple Silicon.
+#    // EAGL should be enabled on iOS, but not Mac Catalyst unless it is running on Apple Silicon.
 #    if (defined(ANGLE_PLATFORM_IOS) && !defined(ANGLE_PLATFORM_MACCATALYST)) || \
         (defined(ANGLE_PLATFORM_MACCATALYST) && defined(ANGLE_CPU_ARM64))
 #        define ANGLE_ENABLE_EAGL
+#    endif
+#    // Identify Metal API >= what shipped on macOS Catalina.
+#    if (defined(ANGLE_PLATFORM_MACOS) && __MAC_OS_X_VERSION_MAX_ALLOWED >= 101500) || \
+        (defined(ANGLE_PLATFORM_IOS) && __IPHONE_OS_VERSION_MAX_ALLOWED >= 130000)
+#        define ANGLE_WITH_MODERN_METAL_API 1
 #    endif
 #endif
 
@@ -152,6 +156,31 @@
 #    if __has_feature(address_sanitizer)
 #        define ANGLE_WITH_ASAN 1
 #    endif
+#endif
+
+// Define ANGLE_WITH_TSAN macro.
+#if defined(__has_feature)
+#    if __has_feature(thread_sanitizer)
+#        define ANGLE_WITH_TSAN 1
+#    endif
+#endif
+
+// Define ANGLE_WITH_UBSAN macro.
+#if defined(__has_feature)
+#    if __has_feature(undefined_behavior_sanitizer)
+#        define ANGLE_WITH_UBSAN 1
+#    endif
+#endif
+
+#if defined(ANGLE_WITH_ASAN) || defined(ANGLE_WITH_TSAN) || defined(ANGLE_WITH_UBSAN)
+#    define ANGLE_WITH_SANITIZER 1
+#endif  // defined(ANGLE_WITH_ASAN) || defined(ANGLE_WITH_TSAN) || defined(ANGLE_WITH_UBSAN)
+
+#include <cstdint>
+#if INTPTR_MAX == INT64_MAX
+#    define ANGLE_IS_64_BIT_CPU 1
+#else
+#    define ANGLE_IS_32_BIT_CPU 1
 #endif
 
 #endif  // COMMON_PLATFORM_H_

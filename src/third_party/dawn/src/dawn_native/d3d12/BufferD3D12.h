@@ -43,11 +43,15 @@ namespace dawn_native { namespace d3d12 {
         bool CheckIsResidentForTesting() const;
 
         MaybeError EnsureDataInitialized(CommandRecordingContext* commandContext);
-        MaybeError EnsureDataInitializedAsDestination(CommandRecordingContext* commandContext,
-                                                      uint64_t offset,
-                                                      uint64_t size);
+        ResultOrError<bool> EnsureDataInitializedAsDestination(
+            CommandRecordingContext* commandContext,
+            uint64_t offset,
+            uint64_t size);
         MaybeError EnsureDataInitializedAsDestination(CommandRecordingContext* commandContext,
                                                       const CopyTextureToBufferCmd* copy);
+
+        // Dawn API
+        void SetLabelImpl() override;
 
       private:
         Buffer(Device* device, const BufferDescriptor* descriptor);
@@ -68,7 +72,10 @@ namespace dawn_native { namespace d3d12 {
                                                   wgpu::BufferUsage newUsage);
 
         MaybeError InitializeToZero(CommandRecordingContext* commandContext);
-        MaybeError ClearBuffer(CommandRecordingContext* commandContext, uint8_t clearValue);
+        MaybeError ClearBuffer(CommandRecordingContext* commandContext,
+                               uint8_t clearValue,
+                               uint64_t offset = 0,
+                               uint64_t size = 0);
 
         ResourceHeapAllocation mResourceAllocation;
         bool mFixedResourceState = false;

@@ -11,14 +11,13 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/guid.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/task_environment.h"
 #include "base/win/atl.h"
 #include "base/win/scoped_com_initializer.h"
 #include "remoting/base/auto_thread_task_runner.h"
-#include "remoting/host/screen_resolution.h"
+#include "remoting/host/base/screen_resolution.h"
 #include "remoting/host/win/wts_terminal_monitor.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -42,13 +41,15 @@ const DWORD kDefaultRdpPort = 3389;
 class MockRdpClientEventHandler : public RdpClient::EventHandler {
  public:
   MockRdpClientEventHandler() {}
+
+  MockRdpClientEventHandler(const MockRdpClientEventHandler&) = delete;
+  MockRdpClientEventHandler& operator=(const MockRdpClientEventHandler&) =
+      delete;
+
   virtual ~MockRdpClientEventHandler() {}
 
   MOCK_METHOD0(OnRdpConnected, void());
   MOCK_METHOD0(OnRdpClosed, void());
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockRdpClientEventHandler);
 };
 
 // a14498c6-7f3b-4e42-9605-6c4a20d53c87

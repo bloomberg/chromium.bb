@@ -19,13 +19,13 @@
 
 class ShaderFloat16Tests : public DawnTest {
   protected:
-    std::vector<const char*> GetRequiredExtensions() override {
-        mIsShaderFloat16Supported = SupportsExtensions({"shader_float16"});
+    std::vector<const char*> GetRequiredFeatures() override {
+        mIsShaderFloat16Supported = SupportsFeatures({"shader-float16"});
         if (!mIsShaderFloat16Supported) {
             return {};
         }
 
-        return {"shader_float16"};
+        return {"shader-float16"};
     }
 
     bool IsShaderFloat16Supported() const {
@@ -36,11 +36,10 @@ class ShaderFloat16Tests : public DawnTest {
 };
 
 // Test basic 16bit float arithmetic and 16bit storage features.
-TEST_P(ShaderFloat16Tests, Basic16BitFloatFeaturesTest) {
+// TODO(crbug.com/tint/404): Implement float16 in Tint.
+TEST_P(ShaderFloat16Tests, DISABLED_Basic16BitFloatFeaturesTest) {
     DAWN_TEST_UNSUPPORTED_IF(!IsShaderFloat16Supported());
     DAWN_SUPPRESS_TEST_IF(IsD3D12() && IsIntel());  // Flaky crashes. crbug.com/dawn/586
-    // TODO(crbug.com/tint/404): Implement float16 in Tint.
-    DAWN_TEST_UNSUPPORTED_IF(HasToggleEnabled("use_tint_generator"));
 
     uint16_t uniformData[] = {Float32ToFloat16(1.23), Float32ToFloat16(0.0)};  // 0.0 is a padding.
     wgpu::Buffer uniformBuffer = utils::CreateBufferFromData(
@@ -50,12 +49,10 @@ TEST_P(ShaderFloat16Tests, Basic16BitFloatFeaturesTest) {
     wgpu::Buffer bufferIn = utils::CreateBufferFromData(device, &bufferInData, sizeof(bufferInData),
                                                         wgpu::BufferUsage::Storage);
 
-    // TODO(xinghua.cao@intel.com): the zero for padding is required now. No need to
-    // createBufferFromData once buffer lazy-zero-init is done.
-    uint16_t bufferOutData[] = {Float32ToFloat16(0.0), Float32ToFloat16(0.0)};
-    wgpu::Buffer bufferOut =
-        utils::CreateBufferFromData(device, &bufferOutData, sizeof(bufferOutData),
-                                    wgpu::BufferUsage::Storage | wgpu::BufferUsage::CopySrc);
+    wgpu::BufferDescriptor bufferDesc;
+    bufferDesc.size = 2 * sizeof(uint16_t);
+    bufferDesc.usage = wgpu::BufferUsage::Storage | wgpu::BufferUsage::CopySrc;
+    wgpu::Buffer bufferOut = device.CreateBuffer(&bufferDesc);
 
     // SPIR-V ASM produced by glslang for the following fragment shader:
     //
@@ -149,15 +146,15 @@ TEST_P(ShaderFloat16Tests, Basic16BitFloatFeaturesTest) {
     )");
 
     wgpu::ComputePipelineDescriptor csDesc;
-    csDesc.computeStage.module = module;
-    csDesc.computeStage.entryPoint = "main";
+    csDesc.compute.module = module;
+    csDesc.compute.entryPoint = "main";
     wgpu::ComputePipeline pipeline = device.CreateComputePipeline(&csDesc);
 
     wgpu::BindGroup bindGroup = utils::MakeBindGroup(device, pipeline.GetBindGroupLayout(0),
                                                      {
                                                          {0, uniformBuffer, 0, sizeof(uniformData)},
                                                          {1, bufferIn, 0, sizeof(bufferInData)},
-                                                         {2, bufferOut, 0, sizeof(bufferOutData)},
+                                                         {2, bufferOut},
                                                      });
 
     wgpu::CommandEncoder encoder = device.CreateCommandEncoder();

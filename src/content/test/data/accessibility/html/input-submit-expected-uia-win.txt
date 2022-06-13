@@ -1,12 +1,12 @@
 Document
-++Group IsControlElement=false
+++Group
 ++++Edit
 ++++Button Name='First submit in a form is a valid default button'
 ++++Button Name='Second submit in a form not a valid default button'
-++Group IsControlElement=false
+++Group
 ++++Edit
 ++++Button Name='First image button in a form is a valid default button'
-++++++Image
+++++++Image Name='To get missing image descriptions, open the context menu.'
 ++++++Text Name='First image button in a form is a valid default button' IsControlElement=false
 ++++Button Name='Second image button in a form not a valid default button'
 ++++++Image

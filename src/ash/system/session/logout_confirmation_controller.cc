@@ -8,8 +8,8 @@
 #include <utility>
 #include <vector>
 
+#include "ash/constants/ash_pref_names.h"
 #include "ash/login_status.h"
-#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
@@ -67,6 +67,9 @@ class LogoutConfirmationController::LastWindowClosedObserver
       ObserveForLastWindowClosed(root);
   }
 
+  LastWindowClosedObserver(const LastWindowClosedObserver&) = delete;
+  LastWindowClosedObserver& operator=(const LastWindowClosedObserver&) = delete;
+
   ~LastWindowClosedObserver() override {
     // Stop observing all displays.
     for (aura::Window* root : Shell::GetAllRootWindows()) {
@@ -115,7 +118,7 @@ class LogoutConfirmationController::LastWindowClosedObserver
     // No more windows except currently removing. Show logout time.
     Shell::Get()->logout_confirmation_controller()->ConfirmLogout(
         base::TimeTicks::Now() +
-            base::TimeDelta::FromSeconds(kLogoutConfirmationDelayInSeconds),
+            base::Seconds(kLogoutConfirmationDelayInSeconds),
         Source::kCloseAllWindows);
   }
 
@@ -137,8 +140,6 @@ class LogoutConfirmationController::LastWindowClosedObserver
     // Stop observing the container window when it closes.
     window->RemoveObserver(this);
   }
-
-  DISALLOW_COPY_AND_ASSIGN(LastWindowClosedObserver);
 };
 
 LogoutConfirmationController::LogoutConfirmationController()

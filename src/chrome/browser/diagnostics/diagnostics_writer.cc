@@ -9,9 +9,9 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/cxx17_backports.h"
 #include "base/logging.h"
 #include "base/notreached.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -71,6 +71,9 @@ class WinConsole : public SimpleConsole {
     ::AllocConsole();
   }
 
+  WinConsole(const WinConsole&) = delete;
+  WinConsole& operator=(const WinConsole&) = delete;
+
   ~WinConsole() override { ::FreeConsole(); }
 
   bool Init() override { return SetIOHandles(); }
@@ -123,8 +126,6 @@ class WinConsole : public SimpleConsole {
   // implemented as pipes but they have non-documented protocol.
   HANDLE std_out_;
   HANDLE std_in_;
-
-  DISALLOW_COPY_AND_ASSIGN(WinConsole);
 };
 
 }  // namespace
@@ -137,6 +138,9 @@ namespace {
 class PosixConsole : public SimpleConsole {
  public:
   PosixConsole() : use_color_(false) {}
+
+  PosixConsole(const PosixConsole&) = delete;
+  PosixConsole& operator=(const PosixConsole&) = delete;
 
   bool Init() override {
     // Technically, we should also check the terminal capabilities before using
@@ -179,8 +183,6 @@ class PosixConsole : public SimpleConsole {
 
  private:
   bool use_color_;
-
-  DISALLOW_COPY_AND_ASSIGN(PosixConsole);
 };
 
 }  // namespace

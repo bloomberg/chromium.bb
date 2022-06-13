@@ -10,6 +10,7 @@
 @protocol ApplicationCommands;
 class Browser;
 @class DiscoverFeedConfiguration;
+@class DiscoverFeedViewControllerConfiguration;
 
 // DiscoverFeedProvider allows embedders to provide functionality for a Discover
 // Feed.
@@ -44,10 +45,9 @@ class DiscoverFeedProvider {
   // Returns the Discover Feed ViewController.
   virtual UIViewController* NewFeedViewController(Browser* browser);
   // Returns the Discover Feed ViewController with a custom
-  // UIScrollViewDelegate.
-  virtual UIViewController* NewFeedViewControllerWithScrollDelegate(
-      Browser* browser,
-      id<UIScrollViewDelegate> scrollDelegate);
+  // DiscoverFeedViewControllerConfiguration.
+  virtual UIViewController* NewFeedViewControllerWithConfiguration(
+      DiscoverFeedViewControllerConfiguration* configuration);
   // Removes the Discover |feedViewController|. It should be called whenever
   // |feedViewController| will no longer be used.
   virtual void RemoveFeedViewController(UIViewController* feedViewController);

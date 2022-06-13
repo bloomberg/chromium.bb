@@ -5,8 +5,7 @@
 #ifndef UI_GFX_ANIMATION_ANIMATION_H_
 #define UI_GFX_ANIMATION_ANIMATION_H_
 
-#include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -40,6 +39,10 @@ class ANIMATION_EXPORT Animation : public AnimationContainerElement {
   };
 
   explicit Animation(base::TimeDelta timer_interval);
+
+  Animation(const Animation&) = delete;
+  Animation& operator=(const Animation&) = delete;
+
   ~Animation() override;
 
   // Starts the animation. Does nothing if the animation is already running.
@@ -125,7 +128,7 @@ class ANIMATION_EXPORT Animation : public AnimationContainerElement {
   bool is_animating_;
 
   // Our delegate; may be null.
-  AnimationDelegate* delegate_;
+  raw_ptr<AnimationDelegate> delegate_;
 
   // Container we're in. If non-null we're animating.
   scoped_refptr<AnimationContainer> container_;
@@ -136,8 +139,6 @@ class ANIMATION_EXPORT Animation : public AnimationContainerElement {
   // Obtaining the PrefersReducedMotion system setting can be expensive, so it
   // is cached in this boolean.
   static absl::optional<bool> prefers_reduced_motion_;
-
-  DISALLOW_COPY_AND_ASSIGN(Animation);
 };
 
 }  // namespace gfx

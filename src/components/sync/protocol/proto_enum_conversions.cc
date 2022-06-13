@@ -78,6 +78,17 @@ const char* ProtoEnumToString(
   return "";
 }
 
+const char* ProtoEnumToString(sync_pb::BookmarkSpecifics::Type type) {
+  ASSERT_ENUM_BOUNDS(sync_pb::BookmarkSpecifics, Type, UNSPECIFIED, FOLDER);
+  switch (type) {
+    ENUM_CASE(sync_pb::BookmarkSpecifics, UNSPECIFIED);
+    ENUM_CASE(sync_pb::BookmarkSpecifics, URL);
+    ENUM_CASE(sync_pb::BookmarkSpecifics, FOLDER);
+  }
+  NOTREACHED();
+  return "";
+}
+
 const char* ProtoEnumToString(
     sync_pb::CommitResponse::ResponseType response_type) {
   ASSERT_ENUM_BOUNDS(sync_pb::CommitResponse, ResponseType, SUCCESS,
@@ -140,6 +151,19 @@ const char* ProtoEnumToString(
     ENUM_CASE(sync_pb::ReadingListSpecifics, UNREAD);
     ENUM_CASE(sync_pb::ReadingListSpecifics, READ);
     ENUM_CASE(sync_pb::ReadingListSpecifics, UNSEEN);
+  }
+  NOTREACHED();
+  return "";
+}
+
+const char* ProtoEnumToString(
+    sync_pb::SearchEngineSpecifics::ActiveStatus is_active) {
+  ASSERT_ENUM_BOUNDS(sync_pb::SearchEngineSpecifics, ActiveStatus,
+                     ACTIVE_STATUS_UNSPECIFIED, ACTIVE_STATUS_FALSE);
+  switch (is_active) {
+    ENUM_CASE(sync_pb::SearchEngineSpecifics, ACTIVE_STATUS_UNSPECIFIED);
+    ENUM_CASE(sync_pb::SearchEngineSpecifics, ACTIVE_STATUS_TRUE);
+    ENUM_CASE(sync_pb::SearchEngineSpecifics, ACTIVE_STATUS_FALSE);
   }
   NOTREACHED();
   return "";
@@ -277,7 +301,7 @@ const char* ProtoEnumToString(
     ENUM_CASE(sync_pb::SyncEnums, ACTIONABLE_ERROR);
     ENUM_CASE(sync_pb::SyncEnums, ENCRYPTED_TYPES_CHANGED);
     ENUM_CASE(sync_pb::SyncEnums, PASSPHRASE_TYPE_CHANGED);
-    ENUM_CASE(sync_pb::SyncEnums, KEYSTORE_TOKEN_UPDATED);
+    ENUM_CASE(sync_pb::SyncEnums, DEPRECATED_KEYSTORE_TOKEN_UPDATED);
     ENUM_CASE(sync_pb::SyncEnums, CONFIGURE_COMPLETE);
     ENUM_CASE(sync_pb::SyncEnums, BOOTSTRAP_TOKEN_UPDATED);
     ENUM_CASE(sync_pb::SyncEnums, TRUSTED_VAULT_KEY_REQUIRED);
@@ -530,11 +554,12 @@ const char* ProtoEnumToString(sync_pb::WebAppIconInfo::Purpose purpose) {
 const char* ProtoEnumToString(
     sync_pb::WebAppSpecifics::UserDisplayMode user_display_mode) {
   ASSERT_ENUM_BOUNDS(sync_pb::WebAppSpecifics, UserDisplayMode, UNSPECIFIED,
-                     STANDALONE);
+                     TABBED);
   switch (user_display_mode) {
     ENUM_CASE(sync_pb::WebAppSpecifics, UNSPECIFIED);
     ENUM_CASE(sync_pb::WebAppSpecifics, BROWSER);
     ENUM_CASE(sync_pb::WebAppSpecifics, STANDALONE);
+    ENUM_CASE(sync_pb::WebAppSpecifics, TABBED);
   }
   NOTREACHED();
   return "";
@@ -625,15 +650,33 @@ const char* ProtoEnumToString(
 const char* ProtoEnumToString(
     sync_pb::WorkspaceDeskSpecifics::WindowState window_state) {
   ASSERT_ENUM_BOUNDS(sync_pb::WorkspaceDeskSpecifics, WindowState,
-                     UNKNOWN_WINDOW_STATE, RIGHT_SNAPPED);
+                     UNKNOWN_WINDOW_STATE, SECONDARY_SNAPPED);
   switch (window_state) {
     ENUM_CASE(sync_pb::WorkspaceDeskSpecifics, UNKNOWN_WINDOW_STATE);
     ENUM_CASE(sync_pb::WorkspaceDeskSpecifics, NORMAL);
     ENUM_CASE(sync_pb::WorkspaceDeskSpecifics, MINIMIZED);
     ENUM_CASE(sync_pb::WorkspaceDeskSpecifics, MAXIMIZED);
     ENUM_CASE(sync_pb::WorkspaceDeskSpecifics, FULLSCREEN);
-    ENUM_CASE(sync_pb::WorkspaceDeskSpecifics, LEFT_SNAPPED);
-    ENUM_CASE(sync_pb::WorkspaceDeskSpecifics, RIGHT_SNAPPED);
+    ENUM_CASE(sync_pb::WorkspaceDeskSpecifics, PRIMARY_SNAPPED);
+    ENUM_CASE(sync_pb::WorkspaceDeskSpecifics, SECONDARY_SNAPPED);
+  }
+  NOTREACHED();
+  return "";
+}
+
+const char* ProtoEnumToString(
+    sync_pb::UserConsentTypes::AssistantActivityControlConsent::SettingType
+        setting_type) {
+  ASSERT_ENUM_BOUNDS(sync_pb::UserConsentTypes::AssistantActivityControlConsent,
+                     SettingType, SETTING_TYPE_UNSPECIFIED, DEVICE_APPS);
+  switch (setting_type) {
+    ENUM_CASE(sync_pb::UserConsentTypes::AssistantActivityControlConsent,
+              SETTING_TYPE_UNSPECIFIED);
+    ENUM_CASE(sync_pb::UserConsentTypes::AssistantActivityControlConsent, ALL);
+    ENUM_CASE(sync_pb::UserConsentTypes::AssistantActivityControlConsent,
+              WEB_AND_APP_ACTIVITY);
+    ENUM_CASE(sync_pb::UserConsentTypes::AssistantActivityControlConsent,
+              DEVICE_APPS);
   }
   NOTREACHED();
   return "";

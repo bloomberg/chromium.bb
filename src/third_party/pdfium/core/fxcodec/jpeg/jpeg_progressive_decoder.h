@@ -7,7 +7,8 @@
 #ifndef CORE_FXCODEC_JPEG_JPEG_PROGRESSIVE_DECODER_H_
 #define CORE_FXCODEC_JPEG_JPEG_PROGRESSIVE_DECODER_H_
 
-#include <csetjmp>
+#include <setjmp.h>
+
 #include <memory>
 
 #include "core/fxcodec/progressive_decoder_iface.h"
@@ -37,8 +38,7 @@ class JpegProgressiveDecoder final : public ProgressiveDecoderIface {
   // ProgressiveDecoderIface:
   FX_FILESIZE GetAvailInput(Context* pContext) const override;
   bool Input(Context* pContext,
-             RetainPtr<CFX_CodecMemory> codec_memory,
-             CFX_DIBAttribute* pAttribute) override;
+             RetainPtr<CFX_CodecMemory> codec_memory) override;
 
  private:
   friend pdfium::base::NoDestructor<JpegProgressiveDecoder>;

@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "base/check_op.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/common/mailbox.h"
@@ -30,6 +30,9 @@ class GLES2DecoderHelperImpl : public GLES2DecoderHelper {
     mailbox_manager_ = group->mailbox_manager();
     DCHECK(mailbox_manager_);
   }
+
+  GLES2DecoderHelperImpl(const GLES2DecoderHelperImpl&) = delete;
+  GLES2DecoderHelperImpl& operator=(const GLES2DecoderHelperImpl&) = delete;
 
   bool MakeContextCurrent() override {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -92,11 +95,9 @@ class GLES2DecoderHelperImpl : public GLES2DecoderHelper {
   }
 
  private:
-  gpu::DecoderContext* decoder_;
-  gpu::MailboxManager* mailbox_manager_;
+  raw_ptr<gpu::DecoderContext> decoder_;
+  raw_ptr<gpu::MailboxManager> mailbox_manager_;
   THREAD_CHECKER(thread_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(GLES2DecoderHelperImpl);
 };
 
 // static

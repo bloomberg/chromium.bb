@@ -4,8 +4,9 @@
 
 #include "media/base/cdm_key_information.h"
 
+#include <ostream>
+
 #include "base/notreached.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 
 namespace media {

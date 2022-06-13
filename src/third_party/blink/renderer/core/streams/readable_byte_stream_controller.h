@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/streams/readable_stream_controller.h"
 #include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_deque.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "v8/include/v8.h"
 
@@ -90,6 +91,7 @@ class ReadableByteStreamController : public ReadableStreamController {
                                                         size_t);
 
     explicit PullIntoDescriptor(DOMArrayBuffer* buffer,
+                                size_t buffer_byte_length,
                                 size_t byte_offset,
                                 size_t byte_length,
                                 size_t bytes_filled,
@@ -98,6 +100,7 @@ class ReadableByteStreamController : public ReadableStreamController {
                                 ReaderType reader_type);
 
     Member<DOMArrayBuffer> buffer;
+    const size_t buffer_byte_length;
     size_t byte_offset;
     const size_t byte_length;
     size_t bytes_filled;
@@ -117,10 +120,10 @@ class ReadableByteStreamController : public ReadableStreamController {
                     v8::Local<v8::Value> e);
 
   // https://streams.spec.whatwg.org/#readable-byte-stream-controller-enqueue
-  void Enqueue(ScriptState*,
-               ReadableByteStreamController*,
-               NotShared<DOMArrayBufferView> chunk,
-               ExceptionState&);
+  static void Enqueue(ScriptState*,
+                      ReadableByteStreamController*,
+                      NotShared<DOMArrayBufferView> chunk,
+                      ExceptionState&);
 
   // https://streams.spec.whatwg.org/#readable-byte-stream-controller-enqueue-chunk-to-queue
   static void EnqueueChunkToQueue(ReadableByteStreamController*,
@@ -131,7 +134,8 @@ class ReadableByteStreamController : public ReadableStreamController {
   // https://streams.spec.whatwg.org/#readable-byte-stream-controller-process-pull-into-descriptors-using-queue
   static void ProcessPullIntoDescriptorsUsingQueue(
       ScriptState*,
-      ReadableByteStreamController*);
+      ReadableByteStreamController*,
+      ExceptionState&);
 
   // https://streams.spec.whatwg.org/#readable-byte-stream-controller-call-pull-if-needed
   static void CallPullIfNeeded(ScriptState*, ReadableByteStreamController*);
@@ -146,10 +150,13 @@ class ReadableByteStreamController : public ReadableStreamController {
   // https://streams.spec.whatwg.org/#readable-byte-stream-controller-commit-pull-into-descriptor
   static void CommitPullIntoDescriptor(ScriptState*,
                                        ReadableStream*,
-                                       PullIntoDescriptor*);
+                                       PullIntoDescriptor*,
+                                       ExceptionState&);
 
   // https://streams.spec.whatwg.org/#readable-byte-stream-controller-convert-pull-into-descriptor
-  static DOMArrayBufferView* ConvertPullIntoDescriptor(PullIntoDescriptor*);
+  static DOMArrayBufferView* ConvertPullIntoDescriptor(ScriptState*,
+                                                       PullIntoDescriptor*,
+                                                       ExceptionState&);
 
   // https://streams.spec.whatwg.org/#readable-byte-stream-controller-clear-pending-pull-intos
   static void ClearPendingPullIntos(ReadableByteStreamController*);
@@ -232,6 +239,9 @@ class ReadableByteStreamController : public ReadableStreamController {
                                  ReadableByteStreamController*,
                                  NotShared<DOMArrayBufferView> view,
                                  ExceptionState&);
+
+  // https://streams.spec.whatwg.org/#can-transfer-array-buffer
+  static bool CanTransferArrayBuffer(DOMArrayBuffer* buffer);
 
   // https://streams.spec.whatwg.org/#transfer-array-buffer
   static DOMArrayBuffer* TransferArrayBuffer(ScriptState*,

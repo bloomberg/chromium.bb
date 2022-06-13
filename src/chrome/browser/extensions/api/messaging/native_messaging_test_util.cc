@@ -9,6 +9,7 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/ignore_result.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
@@ -40,10 +41,10 @@ void WriteTestNativeHostManifest(const base::FilePath& target_dir,
   manifest->SetBoolean("supports_native_initiated_connections",
                        supports_native_initiated_connections);
 
-  std::unique_ptr<base::ListValue> origins(new base::ListValue());
-  origins->AppendString(base::StringPrintf(
+  base::Value origins(base::Value::Type::LIST);
+  origins.Append(base::StringPrintf(
       "chrome-extension://%s/", ScopedTestNativeMessagingHost::kExtensionId));
-  manifest->Set("allowed_origins", std::move(origins));
+  manifest->SetKey("allowed_origins", std::move(origins));
 
   base::FilePath manifest_path = target_dir.AppendASCII(host_name + ".json");
   JSONFileValueSerializer serializer(manifest_path);

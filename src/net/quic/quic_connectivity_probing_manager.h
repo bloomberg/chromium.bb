@@ -5,6 +5,7 @@
 #ifndef NET_QUIC_QUIC_CONNECTIVITY_PROBING_MANAGER_H_
 #define NET_QUIC_QUIC_CONNECTIVITY_PROBING_MANAGER_H_
 
+#include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "net/base/ip_endpoint.h"
@@ -52,6 +53,12 @@ class NET_EXPORT_PRIVATE QuicConnectivityProbingManager
 
   QuicConnectivityProbingManager(Delegate* delegate,
                                  base::SequencedTaskRunner* task_runner);
+
+  QuicConnectivityProbingManager(const QuicConnectivityProbingManager&) =
+      delete;
+  QuicConnectivityProbingManager& operator=(
+      const QuicConnectivityProbingManager&) = delete;
+
   ~QuicConnectivityProbingManager();
 
   // QuicChromiumPacketWriter::Delegate interface.
@@ -115,7 +122,7 @@ class NET_EXPORT_PRIVATE QuicConnectivityProbingManager
 
   void NotifyDelegateProbeFailed();
 
-  Delegate* delegate_;  // Unowned, must outlive |this|.
+  raw_ptr<Delegate> delegate_;  // Unowned, must outlive |this|.
   NetLogWithSource net_log_;
 
   // Current path: |peer_address_| on |network_|, that is under probing
@@ -135,7 +142,7 @@ class NET_EXPORT_PRIVATE QuicConnectivityProbingManager
   base::TimeDelta initial_timeout_;
   base::OneShotTimer retransmit_timer_;
 
-  base::SequencedTaskRunner* task_runner_;
+  raw_ptr<base::SequencedTaskRunner> task_runner_;
 
   // The cached local address set when probing is cancelled.
   IPEndPoint last_self_address_;
@@ -143,7 +150,6 @@ class NET_EXPORT_PRIVATE QuicConnectivityProbingManager
   bool stateless_reset_received_;
 
   base::WeakPtrFactory<QuicConnectivityProbingManager> weak_factory_{this};
-  DISALLOW_COPY_AND_ASSIGN(QuicConnectivityProbingManager);
 };
 
 }  // namespace net

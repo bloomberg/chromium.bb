@@ -3,14 +3,17 @@
 // CHECK: {
 // CHECK-NEXT:   version: 3,
 // CHECK-NEXT:   operator_codes: [ {
-// CHECK-NEXT:     builtin_code: WHILE,
-// CHECK-NEXT:     version: 1
+// CHECK-NEXT:     deprecated_builtin_code: 119,
+// CHECK-NEXT:     version: 1,
+// CHECK-NEXT:     builtin_code: WHILE
 // CHECK-NEXT:   }, {
-// CHECK-NEXT:     builtin_code: GREATER,
-// CHECK-NEXT:     version: 1
+// CHECK-NEXT:     deprecated_builtin_code: 61,
+// CHECK-NEXT:     version: 1,
+// CHECK-NEXT:     builtin_code: GREATER
 // CHECK-NEXT:   }, {
-// CHECK-NEXT:     builtin_code: SUB,
-// CHECK-NEXT:     version: 1
+// CHECK-NEXT:     deprecated_builtin_code: 41,
+// CHECK-NEXT:     version: 1,
+// CHECK-NEXT:     builtin_code: SUB
 // CHECK-NEXT:   }, {
 // CHECK-NEXT:     version: 1
 // CHECK-NEXT:   } ],
@@ -196,6 +199,7 @@
 // CHECK-NEXT:   name: "min_runtime_version",
 // CHECK-NEXT:   buffer: 14
 // CHECK-NEXT:   } ]
+// CHECK-NEXT:  signature_defs: [ ]
 // CHECK-NEXT: }
 
 func @main(%arg0: tensor<i32>, %arg1: tensor<1xf32>) -> tensor<1xf32> {
@@ -212,13 +216,13 @@ func @main(%arg0: tensor<i32>, %arg1: tensor<1xf32>) -> tensor<1xf32> {
 }
 
 func @cond(%arg0: tensor<*xi32>, %arg1: tensor<*xf32>) -> tensor<i1> {
-  %cst = constant dense<0> : tensor<i32> loc("Const")
+  %cst = arith.constant dense<0> : tensor<i32> loc("Const")
   %0 = "tfl.greater"(%arg0, %cst) : (tensor<*xi32>, tensor<i32>) -> tensor<i1>
   return %0 : tensor<i1>
 }
 
 func @body(%arg0: tensor<*xi32>, %arg1: tensor<*xf32>) -> (tensor<*xi32>, tensor<*xf32>) {
-  %cst = constant dense<1> : tensor<i32> loc("Const")
+  %cst = arith.constant dense<1> : tensor<i32> loc("Const")
   %0 = "tfl.sub"(%arg0, %cst) {fused_activation_function = "NONE"} : (tensor<*xi32>, tensor<i32>) -> tensor<*xi32>
   %1 = tfl.add %arg1, %arg1 {fused_activation_function = "NONE"} : tensor<*xf32>
   return %0, %1 : tensor<*xi32>, tensor<*xf32>

@@ -10,7 +10,6 @@
 #include "android_webview/browser/gfx/hardware_renderer.h"
 #include "android_webview/browser/gfx/output_surface_provider_webview.h"
 #include "android_webview/browser/gfx/root_frame_sink.h"
-#include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 
@@ -23,6 +22,10 @@ class HardwareRendererViz : public HardwareRenderer {
   HardwareRendererViz(RenderThreadManager* state,
                       RootFrameSinkGetter root_frame_sink_getter,
                       AwVulkanContextProvider* context_provider);
+
+  HardwareRendererViz(const HardwareRendererViz&) = delete;
+  HardwareRendererViz& operator=(const HardwareRendererViz&) = delete;
+
   ~HardwareRendererViz() override;
 
   // HardwareRenderer overrides.
@@ -30,6 +33,7 @@ class HardwareRendererViz : public HardwareRenderer {
                    const OverlaysParams& overlays_params) override;
   void RemoveOverlays(
       OverlaysParams::MergeTransactionFn merge_transaction) override;
+  void AbandonContext() override;
 
  private:
   class OnViz;
@@ -51,8 +55,6 @@ class HardwareRendererViz : public HardwareRenderer {
   std::unique_ptr<OnViz> on_viz_;
 
   THREAD_CHECKER(render_thread_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(HardwareRendererViz);
 };
 
 }  // namespace android_webview

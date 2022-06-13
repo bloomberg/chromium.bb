@@ -53,11 +53,14 @@ class QUIC_EXPORT_PRIVATE TlsHandshaker : public TlsConnection::Delegate,
   std::unique_ptr<QuicDecrypter> AdvanceKeysAndCreateCurrentOneRttDecrypter();
   std::unique_ptr<QuicEncrypter> CreateCurrentOneRttEncrypter();
   virtual HandshakeState GetHandshakeState() const = 0;
+  bool ExportKeyingMaterialForLabel(absl::string_view label,
+                                    absl::string_view context,
+                                    size_t result_len, std::string* result);
 
  protected:
   // Called when a new message is received on the crypto stream and is available
   // for the TLS stack to read.
-  void AdvanceHandshake();
+  virtual void AdvanceHandshake();
 
   void CloseConnection(QuicErrorCode error, const std::string& reason_phrase);
   // Closes the connection, specifying the wire error code |ietf_error|
@@ -71,12 +74,8 @@ class QUIC_EXPORT_PRIVATE TlsHandshaker : public TlsConnection::Delegate,
   bool is_connection_closed() const { return is_connection_closed_; }
 
   // Called when |SSL_do_handshake| returns 1, indicating that the handshake has
-  // finished. Note that due to 0-RTT, the handshake may "finish" twice;
-  // |SSL_in_early_data| can be used to determine whether the handshake is truly
-  // done.
-  // TODO(wub): When --quic_tls_retry_handshake_on_early_data is true, this
-  // function will only be called once when the handshake actually finishes.
-  // Update comment when deprecating the flag.
+  // finished. Note that a handshake only finishes once, entering early data
+  // does not count.
   virtual void FinishHandshake() = 0;
 
   // Called when |SSL_do_handshake| returns 1 and the connection is in early
@@ -84,7 +83,6 @@ class QUIC_EXPORT_PRIVATE TlsHandshaker : public TlsConnection::Delegate,
   // retry |SSL_do_handshake| once.
   virtual void OnEnterEarlyData() {
     // By default, do nothing but check the preconditions.
-    QUICHE_DCHECK(retry_handshake_on_early_data_);
     QUICHE_DCHECK(SSL_in_early_data(ssl()));
   }
 
@@ -102,12 +100,11 @@ class QUIC_EXPORT_PRIVATE TlsHandshaker : public TlsConnection::Delegate,
   }
   int expected_ssl_error() const { return expected_ssl_error_; }
 
-  // Called to verify a cert chain. This is a simple wrapper around
-  // ProofVerifier or ServerProofVerifier, which optionally gathers additional
-  // arguments to pass into their VerifyCertChain method. This class retains a
-  // non-owning pointer to |callback|; the callback must live until this
-  // function returns QUIC_SUCCESS or QUIC_FAILURE, or until the callback is
-  // run.
+  // Called to verify a cert chain. This can be implemented as a simple wrapper
+  // around ProofVerifier, which optionally gathers additional arguments to pass
+  // into their VerifyCertChain method. This class retains a non-owning pointer
+  // to |callback|; the callback must live until this function returns
+  // QUIC_SUCCESS or QUIC_FAILURE, or until the callback is run.
   //
   // If certificate verification fails, |*out_alert| may be set to a TLS alert
   // that will be sent when closing the connection; it defaults to
@@ -168,11 +165,10 @@ class QUIC_EXPORT_PRIVATE TlsHandshaker : public TlsConnection::Delegate,
   // error code corresponding to the TLS alert description |desc|.
   void SendAlert(EncryptionLevel level, uint8_t desc) override;
 
-  const bool add_packet_flusher_on_async_op_done_ =
-      GetQuicReloadableFlag(quic_add_packet_flusher_on_async_op_done);
-
-  const bool retry_handshake_on_early_data_ =
-      GetQuicReloadableFlag(quic_tls_retry_handshake_on_early_data);
+  // Informational callback from BoringSSL. Subclasses can override it to do
+  // logging, tracing, etc.
+  // See |SSL_CTX_set_info_callback| for the meaning of |type| and |value|.
+  void InfoCallback(int /*type*/, int /*value*/) override {}
 
  private:
   // ProofVerifierCallbackImpl handles the result of an asynchronous certificate

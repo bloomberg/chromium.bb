@@ -10,6 +10,7 @@
 
 #include "base/auto_reset.h"
 #include "base/check_op.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/i18n/rtl.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -169,7 +170,7 @@ bool FocusManager::RotatePaneFocus(Direction direction,
   // is initially focused.
   if (panes.empty())
     return false;
-  int count = int{panes.size()};
+  int count = static_cast<int>(panes.size());
 
   // Initialize |index| to an appropriate starting index if nothing is
   // focused initially.
@@ -265,7 +266,7 @@ View* FocusManager::GetNextFocusableView(View* original_starting_view,
       }
     }
   } else {
-    Widget* widget = starting_widget ? starting_widget : widget_;
+    Widget* widget = starting_widget ? starting_widget : widget_.get();
     focus_traversable = widget->GetFocusTraversable();
   }
 
@@ -389,9 +390,6 @@ void FocusManager::SetFocusedViewWithReason(View* view,
 
   for (FocusChangeListener& observer : focus_change_listeners_)
     observer.OnDidChangeFocus(old_focused_view, focused_view_);
-
-  if (delegate_)
-    delegate_->OnDidChangeFocus(old_focused_view, focused_view_);
 }
 
 void FocusManager::SetFocusedView(View* view) {
@@ -672,7 +670,7 @@ bool FocusManager::IsArrowKeyTraversalEnabledForWidget() const {
 
   Widget* const widget = (focused_view_ && focused_view_->GetWidget())
                              ? focused_view_->GetWidget()
-                             : widget_;
+                             : widget_.get();
   return widget && widget->widget_delegate() &&
          widget->widget_delegate()->enable_arrow_key_traversal();
 }

@@ -9,7 +9,6 @@
 
 #include "base/callback.h"
 #include "base/containers/queue.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "remoting/client/display/gl_cursor.h"
@@ -40,6 +39,10 @@ class GlRendererTest;
 class GlRenderer {
  public:
   explicit GlRenderer();
+
+  GlRenderer(const GlRenderer&) = delete;
+  GlRenderer& operator=(const GlRenderer&) = delete;
+
   ~GlRenderer();
 
   // The delegate can be set on any hread no more than once before calling any
@@ -147,8 +150,6 @@ class GlRenderer {
   base::ThreadChecker thread_checker_;
   base::WeakPtr<GlRenderer> weak_ptr_;
   base::WeakPtrFactory<GlRenderer> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(GlRenderer);
 };
 
 }  // namespace remoting

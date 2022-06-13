@@ -10,7 +10,6 @@
 #include <string>
 
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_piece.h"
 #include "extensions/common/manifest.h"
@@ -68,6 +67,9 @@ class ExtensionBuilder {
   // methods to automatically construct a manifest. |name| will be the name of
   // the extension and used to generate a stable ID.
   ExtensionBuilder(const std::string& name, Type type = Type::EXTENSION);
+
+  ExtensionBuilder(const ExtensionBuilder&) = delete;
+  ExtensionBuilder& operator=(const ExtensionBuilder&) = delete;
 
   ~ExtensionBuilder();
 
@@ -184,8 +186,6 @@ class ExtensionBuilder {
   mojom::ManifestLocation location_;
   int flags_;
   std::string id_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionBuilder);
 };
 
 }  // namespace extensions

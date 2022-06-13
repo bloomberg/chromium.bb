@@ -15,14 +15,14 @@
 
 #include "base/check_op.h"
 #include "base/command_line.h"
-#include "base/macros.h"
 #include "base/notreached.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
 #include "sandbox/linux/bpf_dsl/bpf_dsl.h"
 #include "sandbox/linux/bpf_dsl/trap_registry.h"
-#include "sandbox/policy/sandbox_type.h"
+#include "sandbox/policy/mojom/sandbox.mojom.h"
 #include "sandbox/policy/switches.h"
 #include "sandbox/sandbox_buildflags.h"
 
@@ -36,6 +36,7 @@
 #include "sandbox/linux/seccomp-bpf-helpers/syscall_sets.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 #include "sandbox/linux/system_headers/linux_syscalls.h"
+#include "sandbox/policy/chromecast_sandbox_allowlist_buildflags.h"
 #include "sandbox/policy/linux/bpf_audio_policy_linux.h"
 #include "sandbox/policy/linux/bpf_base_policy_linux.h"
 #include "sandbox/policy/linux/bpf_cdm_policy_linux.h"
@@ -51,19 +52,15 @@
 #include "sandbox/policy/linux/bpf_speech_recognition_policy_linux.h"
 #include "sandbox/policy/linux/bpf_utility_policy_linux.h"
 
-#if !defined(OS_NACL_NONSFI)
-#include "sandbox/policy/chromecast_sandbox_allowlist_buildflags.h"
-#endif  // !defined(OS_NACL_NONSFI)
-
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "sandbox/policy/features.h"
 #include "sandbox/policy/linux/bpf_ime_policy_linux.h"
 #include "sandbox/policy/linux/bpf_tts_policy_linux.h"
 
 #include "chromeos/assistant/buildflags.h"
-#if BUILDFLAG(ENABLE_LIBASSISTANT_SANDBOX)
+#if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
 #include "sandbox/policy/linux/bpf_libassistant_policy_linux.h"
-#endif  // BUILDFLAG(ENABLE_LIBASSISTANT_SANDBOX)
+#endif  // BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 using sandbox::bpf_dsl::Allow;
@@ -84,8 +81,6 @@ namespace policy {
 
 #if BUILDFLAG(USE_SECCOMP_BPF)
 namespace {
-
-#if !defined(OS_NACL_NONSFI)
 
 // nacl_helper needs to be tiny and includes only part of content/
 // in its dependencies. Make sure to not link things that are not needed.
@@ -128,7 +123,6 @@ std::unique_ptr<BPFBasePolicy> GetGpuProcessSandbox(
   return std::make_unique<GpuProcessPolicy>();
 }
 #endif  // !defined(IN_NACL_HELPER)
-#endif  // !defined(OS_NACL_NONSFI)
 
 }  // namespace
 
@@ -155,8 +149,6 @@ bool SandboxSeccompBPF::SupportsSandbox() {
 #endif
 }
 
-#if !defined(OS_NACL_NONSFI)
-
 bool SandboxSeccompBPF::SupportsSandboxWithTsync() {
 #if BUILDFLAG(USE_SECCOMP_BPF)
   return SandboxBPF::SupportsSeccompSandbox(
@@ -167,46 +159,52 @@ bool SandboxSeccompBPF::SupportsSandboxWithTsync() {
 }
 
 std::unique_ptr<BPFBasePolicy> SandboxSeccompBPF::PolicyForSandboxType(
-    SandboxType sandbox_type,
+    sandbox::mojom::Sandbox sandbox_type,
     const SandboxSeccompBPF::Options& options) {
   switch (sandbox_type) {
-    case SandboxType::kGpu:
+    case sandbox::mojom::Sandbox::kGpu:
       return GetGpuProcessSandbox(options.use_amd_specific_policies);
-    case SandboxType::kRenderer:
+    case sandbox::mojom::Sandbox::kRenderer:
       return std::make_unique<RendererProcessPolicy>();
-    case SandboxType::kPpapi:
+#if BUILDFLAG(ENABLE_PLUGINS)
+    case sandbox::mojom::Sandbox::kPpapi:
       return std::make_unique<PpapiProcessPolicy>();
-    case SandboxType::kUtility:
+#endif
+    case sandbox::mojom::Sandbox::kUtility:
       return std::make_unique<UtilityProcessPolicy>();
-    case SandboxType::kCdm:
+    case sandbox::mojom::Sandbox::kCdm:
       return std::make_unique<CdmProcessPolicy>();
-    case SandboxType::kPrintCompositor:
+    case sandbox::mojom::Sandbox::kPrintCompositor:
       return std::make_unique<PrintCompositorProcessPolicy>();
-#if BUILDFLAG(ENABLE_PRINTING)
-    case SandboxType::kPrintBackend:
+#if BUILDFLAG(ENABLE_OOP_PRINTING)
+    case sandbox::mojom::Sandbox::kPrintBackend:
       return std::make_unique<PrintBackendProcessPolicy>();
 #endif
-    case SandboxType::kNetwork:
+    case sandbox::mojom::Sandbox::kNetwork:
       return std::make_unique<NetworkProcessPolicy>();
-    case SandboxType::kAudio:
+    case sandbox::mojom::Sandbox::kAudio:
       return std::make_unique<AudioProcessPolicy>();
-    case SandboxType::kService:
+    case sandbox::mojom::Sandbox::kService:
       return std::make_unique<ServiceProcessPolicy>();
-    case SandboxType::kSpeechRecognition:
+    case sandbox::mojom::Sandbox::kSpeechRecognition:
       return std::make_unique<SpeechRecognitionProcessPolicy>();
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    case SandboxType::kIme:
+    case sandbox::mojom::Sandbox::kHardwareVideoDecoding:
+      // TODO(b/195769334): we're using the GPU process sandbox policy for now
+      // as a transition step. However, we should create a policy that's tighter
+      // just for hardware video decoding.
+      return GetGpuProcessSandbox(options.use_amd_specific_policies);
+    case sandbox::mojom::Sandbox::kIme:
       return std::make_unique<ImeProcessPolicy>();
-    case SandboxType::kTts:
+    case sandbox::mojom::Sandbox::kTts:
       return std::make_unique<TtsProcessPolicy>();
-#if BUILDFLAG(ENABLE_LIBASSISTANT_SANDBOX)
-    case SandboxType::kLibassistant:
+#if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
+    case sandbox::mojom::Sandbox::kLibassistant:
       return std::make_unique<LibassistantProcessPolicy>();
-#endif  // BUILDFLAG(ENABLE_LIBASSISTANT_SANDBOX)
+#endif  // BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-    case SandboxType::kZygoteIntermediateSandbox:
-    case SandboxType::kNoSandbox:
-    case SandboxType::kVideoCapture:
+    case sandbox::mojom::Sandbox::kZygoteIntermediateSandbox:
+    case sandbox::mojom::Sandbox::kNoSandbox:
       NOTREACHED();
       return nullptr;
   }
@@ -214,14 +212,16 @@ std::unique_ptr<BPFBasePolicy> SandboxSeccompBPF::PolicyForSandboxType(
 
 // If a BPF policy is engaged for |process_type|, run a few sanity checks.
 void SandboxSeccompBPF::RunSandboxSanityChecks(
-    SandboxType sandbox_type,
+    sandbox::mojom::Sandbox sandbox_type,
     const SandboxSeccompBPF::Options& options) {
   switch (sandbox_type) {
-    case SandboxType::kRenderer:
-    case SandboxType::kGpu:
-    case SandboxType::kPpapi:
-    case SandboxType::kPrintCompositor:
-    case SandboxType::kCdm: {
+    case sandbox::mojom::Sandbox::kRenderer:
+    case sandbox::mojom::Sandbox::kGpu:
+#if BUILDFLAG(ENABLE_PLUGINS)
+    case sandbox::mojom::Sandbox::kPpapi:
+#endif
+    case sandbox::mojom::Sandbox::kPrintCompositor:
+    case sandbox::mojom::Sandbox::kCdm: {
       int syscall_ret;
       errno = 0;
 
@@ -236,7 +236,12 @@ void SandboxSeccompBPF::RunSandboxSanityChecks(
       // open() must be restricted.
       syscall_ret = open("/etc/passwd", O_RDONLY);
       CHECK_EQ(-1, syscall_ret);
-      CHECK_EQ(BPFBasePolicy::GetFSDeniedErrno(), errno);
+      // The broker used with the GPU process sandbox uses EACCES for
+      // invalid filesystem access. See crbug.com/1233028 for more info.
+      CHECK_EQ(sandbox_type == sandbox::mojom::Sandbox::kGpu
+                   ? EACCES
+                   : BPFBasePolicy::GetFSDeniedErrno(),
+               errno);
 
       // We should never allow the creation of netlink sockets.
       syscall_ret = socket(AF_NETLINK, SOCK_DGRAM, 0);
@@ -245,28 +250,27 @@ void SandboxSeccompBPF::RunSandboxSanityChecks(
 #endif  // !defined(NDEBUG)
     } break;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    case SandboxType::kIme:
-    case SandboxType::kTts:
-#if BUILDFLAG(ENABLE_LIBASSISTANT_SANDBOX)
-    case SandboxType::kLibassistant:
-#endif  // BUILDFLAG(ENABLE_LIBASSISTANT_SANDBOX)
+    case sandbox::mojom::Sandbox::kHardwareVideoDecoding:
+    case sandbox::mojom::Sandbox::kIme:
+    case sandbox::mojom::Sandbox::kTts:
+#if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
+    case sandbox::mojom::Sandbox::kLibassistant:
+#endif  // BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-    case SandboxType::kAudio:
-    case SandboxType::kService:
-    case SandboxType::kSpeechRecognition:
-    case SandboxType::kNetwork:
-#if BUILDFLAG(ENABLE_PRINTING)
-    case SandboxType::kPrintBackend:
+    case sandbox::mojom::Sandbox::kAudio:
+    case sandbox::mojom::Sandbox::kService:
+    case sandbox::mojom::Sandbox::kSpeechRecognition:
+    case sandbox::mojom::Sandbox::kNetwork:
+#if BUILDFLAG(ENABLE_OOP_PRINTING)
+    case sandbox::mojom::Sandbox::kPrintBackend:
 #endif
-    case SandboxType::kUtility:
-    case SandboxType::kNoSandbox:
-    case SandboxType::kVideoCapture:
-    case SandboxType::kZygoteIntermediateSandbox:
+    case sandbox::mojom::Sandbox::kUtility:
+    case sandbox::mojom::Sandbox::kNoSandbox:
+    case sandbox::mojom::Sandbox::kZygoteIntermediateSandbox:
       // Otherwise, no checks required.
       break;
   }
 }
-#endif  // !defined(OS_NACL_NONSFI)
 
 bool SandboxSeccompBPF::StartSandboxWithExternalPolicy(
     std::unique_ptr<bpf_dsl::Policy> policy,
@@ -296,7 +300,6 @@ bool SandboxSeccompBPF::StartSandboxWithExternalPolicy(
   return false;
 }
 
-#if !defined(OS_NACL_NONSFI)
 std::unique_ptr<bpf_dsl::Policy> SandboxSeccompBPF::GetBaselinePolicy() {
 #if BUILDFLAG(USE_SECCOMP_BPF)
   return std::make_unique<BaselinePolicy>();
@@ -304,7 +307,6 @@ std::unique_ptr<bpf_dsl::Policy> SandboxSeccompBPF::GetBaselinePolicy() {
   return nullptr;
 #endif  // BUILDFLAG(USE_SECCOMP_BPF)
 }
-#endif  // !defined(OS_NACL_NONSFI)
 
 }  // namespace policy
 }  // namespace sandbox

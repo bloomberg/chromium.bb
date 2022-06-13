@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "extensions/browser/updater/extension_installer.h"
 #include "extensions/browser/updater/extension_update_data.h"
@@ -43,6 +43,9 @@ class UpdateDataProvider : public base::RefCounted<UpdateDataProvider> {
   // an update for an extension.
   explicit UpdateDataProvider(content::BrowserContext* browser_context);
 
+  UpdateDataProvider(const UpdateDataProvider&) = delete;
+  UpdateDataProvider& operator=(const UpdateDataProvider&) = delete;
+
   // Notify this object that the associated browser context is being shut down
   // the pointer to the context should be dropped and no more work should be
   // done.
@@ -64,9 +67,7 @@ class UpdateDataProvider : public base::RefCounted<UpdateDataProvider> {
                           bool install_immediately,
                           UpdateClientCallback update_client_callback);
 
-  content::BrowserContext* browser_context_;
-
-  DISALLOW_COPY_AND_ASSIGN(UpdateDataProvider);
+  raw_ptr<content::BrowserContext> browser_context_;
 };
 
 }  // namespace extensions

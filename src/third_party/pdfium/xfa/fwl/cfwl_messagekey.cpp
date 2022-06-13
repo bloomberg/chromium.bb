@@ -7,12 +7,12 @@
 #include "xfa/fwl/cfwl_messagekey.h"
 
 CFWL_MessageKey::CFWL_MessageKey(CFWL_Widget* pDstTarget,
-                                 Type cmd,
-                                 uint32_t flags,
-                                 uint32_t keycode)
-    : CFWL_Message(CFWL_Message::Type::kKey, nullptr, pDstTarget),
+                                 KeyCommand cmd,
+                                 Mask<XFA_FWL_KeyFlag> flags,
+                                 uint32_t dwKeyCodeOrChar)
+    : CFWL_Message(CFWL_Message::Type::kKey, pDstTarget),
       m_dwCmd(cmd),
       m_dwFlags(flags),
-      m_dwKeyCode(keycode) {}
+      m_dwKeyCodeOrChar(dwKeyCodeOrChar) {}
 
 CFWL_MessageKey::~CFWL_MessageKey() = default;

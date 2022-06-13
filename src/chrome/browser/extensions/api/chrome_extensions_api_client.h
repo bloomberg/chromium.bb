@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_CHROME_EXTENSIONS_API_CLIENT_H_
 #define CHROME_BROWSER_EXTENSIONS_API_CHROME_EXTENSIONS_API_CLIENT_H_
 
-#include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "build/chromeos_buildflags.h"
 #include "extensions/browser/api/extensions_api_client.h"
 
@@ -20,12 +18,17 @@ class ClipboardExtensionHelper;
 class ChromeExtensionsAPIClient : public ExtensionsAPIClient {
  public:
   ChromeExtensionsAPIClient();
+
+  ChromeExtensionsAPIClient(const ChromeExtensionsAPIClient&) = delete;
+  ChromeExtensionsAPIClient& operator=(const ChromeExtensionsAPIClient&) =
+      delete;
+
   ~ChromeExtensionsAPIClient() override;
 
   // ExtensionsApiClient implementation.
   void AddAdditionalValueStoreCaches(
       content::BrowserContext* context,
-      const scoped_refptr<ValueStoreFactory>& factory,
+      const scoped_refptr<value_store::ValueStoreFactory>& factory,
       const scoped_refptr<base::ObserverListThreadSafe<SettingsObserver>>&
           observers,
       std::map<settings_namespace::Namespace, ValueStoreCache*>* caches)
@@ -65,9 +68,9 @@ class ChromeExtensionsAPIClient : public ExtensionsAPIClient {
       RulesCacheDelegate* cache_delegate) const override;
   std::unique_ptr<DevicePermissionsPrompt> CreateDevicePermissionsPrompt(
       content::WebContents* web_contents) const override;
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
   bool ShouldAllowDetachingUsb(int vid, int pid) const override;
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
   std::unique_ptr<VirtualKeyboardDelegate> CreateVirtualKeyboardDelegate(
       content::BrowserContext* browser_context) const override;
   ManagementAPIDelegate* CreateManagementAPIDelegate() const override;
@@ -88,7 +91,7 @@ class ChromeExtensionsAPIClient : public ExtensionsAPIClient {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
   void SaveImageDataToClipboard(
-      const std::vector<char>& image_data,
+      std::vector<uint8_t> image_data,
       api::clipboard::ImageType type,
       AdditionalDataItemList additional_items,
       base::OnceClosure success_callback,
@@ -113,8 +116,6 @@ class ChromeExtensionsAPIClient : public ExtensionsAPIClient {
 #endif
   std::unique_ptr<extensions::ChromeAutomationInternalApiDelegate>
       extensions_automation_api_delegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeExtensionsAPIClient);
 };
 
 }  // namespace extensions

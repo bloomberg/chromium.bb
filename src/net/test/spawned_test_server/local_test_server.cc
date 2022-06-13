@@ -174,7 +174,6 @@ absl::optional<std::vector<base::FilePath>> LocalTestServer::GetPythonPath()
   third_party_dir = third_party_dir.AppendASCII("third_party");
 
   std::vector<base::FilePath> ret = {
-      third_party_dir.AppendASCII("tlslite"),
       third_party_dir.AppendASCII("pywebsocket3").AppendASCII("src"),
   };
 
@@ -204,10 +203,9 @@ bool LocalTestServer::AddCommandLineArguments(
 
     // Add arguments from a list.
     if (value.is_list()) {
-      const base::ListValue* list = nullptr;
-      if (!value.GetAsList(&list) || !list || list->empty())
+      if (value.GetList().empty())
         return false;
-      for (const auto& entry : list->GetList()) {
+      for (const auto& entry : value.GetList()) {
         if (!AppendArgumentFromJSONValue(key, entry, command_line))
           return false;
       }
@@ -220,15 +218,9 @@ bool LocalTestServer::AddCommandLineArguments(
   switch (type()) {
     case TYPE_HTTP:  // The default type is HTTP, no argument required.
       break;
-    case TYPE_HTTPS:
-      command_line->AppendArg("--https");
-      break;
     case TYPE_WS:
     case TYPE_WSS:
       command_line->AppendArg("--websocket");
-      break;
-    case TYPE_FTP:
-      command_line->AppendArg("--ftp");
       break;
     case TYPE_BASIC_AUTH_PROXY:
       command_line->AppendArg("--basic-auth-proxy");

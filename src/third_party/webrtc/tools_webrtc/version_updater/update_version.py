@@ -29,6 +29,8 @@ def FindSrcDirPath():
 UPDATE_BRANCH_NAME = 'webrtc_version_update'
 CHECKOUT_SRC_DIR = FindSrcDirPath()
 
+NOTIFY_EMAIL = 'mbonadei@webrtc.org'
+
 
 def _RemovePreviousUpdateBranch():
     active_branch, branches = _GetBranches()
@@ -109,12 +111,10 @@ def _LocalCommit():
 
     git_author = subprocess.check_output(['git', 'config',
                                           'user.email']).strip()
-    tbr_authors = git_author + ',' + 'mbonadei@webrtc.org'
-    tbr = 'TBR=%s' % tbr_authors
     commit_msg = ('Update WebRTC code version (%02d-%02d-%02dT%02d:%02d:%02d).'
-                  '\n\nTBR=%s\nBug: None')
+                  '\n\nBug: None')
     commit_msg = commit_msg % (d.year, d.month, d.day, d.hour, d.minute,
-                               d.second, tbr_authors)
+                               d.second)
     subprocess.check_call(['git', 'add', '--update', '.'])
     subprocess.check_call(['git', 'commit', '-m', commit_msg])
 
@@ -128,13 +128,15 @@ def _UploadCL(commit_queue_mode):
     - 0: Skip CQ, upload only.
   """
     cmd = ['git', 'cl', 'upload', '--force', '--bypass-hooks',
-           '--cc=""', '--bypass-watchlist']
+           '--bypass-watchlist']
     if commit_queue_mode >= 2:
         logging.info('Sending the CL to the CQ...')
-        cmd.extend(['--use-commit-queue'])
+        cmd.extend(['-o', 'label=Bot-Commit+1'])
+        cmd.extend(['-o', 'label=Commit-Queue+2'])
+        cmd.extend(['--send-mail', '--cc', NOTIFY_EMAIL])
     elif commit_queue_mode >= 1:
         logging.info('Starting CQ dry run...')
-        cmd.extend(['--cq-dry-run'])
+        cmd.extend(['-o', 'label=Commit-Queue+1'])
     subprocess.check_call(cmd)
 
 

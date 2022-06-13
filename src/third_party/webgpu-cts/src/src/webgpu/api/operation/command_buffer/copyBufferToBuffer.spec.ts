@@ -1,6 +1,5 @@
 export const description = 'copyBufferToBuffer operation tests';
 
-import { poptions, params } from '../../../../common/framework/params_builder.js';
 import { makeTestGroup } from '../../../../common/framework/test_group.js';
 import { GPUTest } from '../../../gpu_test.js';
 
@@ -17,17 +16,13 @@ g.test('single')
   - covers the end of the dstBuffer
   - covers neither the beginning nor the end of the dstBuffer`
   )
-  .subcases(() =>
-    params()
-      .combine(poptions('srcOffset', [0, 4, 8, 16]))
-      .combine(poptions('dstOffset', [0, 4, 8, 16]))
-      .combine(poptions('copySize', [0, 4, 8, 16]))
-      .expand(p =>
-        poptions('srcBufferSize', [p.srcOffset + p.copySize, p.srcOffset + p.copySize + 8])
-      )
-      .expand(p =>
-        poptions('dstBufferSize', [p.dstOffset + p.copySize, p.dstOffset + p.copySize + 8])
-      )
+  .paramsSubcasesOnly(u =>
+    u //
+      .combine('srcOffset', [0, 4, 8, 16])
+      .combine('dstOffset', [0, 4, 8, 16])
+      .combine('copySize', [0, 4, 8, 16])
+      .expand('srcBufferSize', p => [p.srcOffset + p.copySize, p.srcOffset + p.copySize + 8])
+      .expand('dstBufferSize', p => [p.dstOffset + p.copySize, p.dstOffset + p.copySize + 8])
   )
   .fn(async t => {
     const { srcOffset, dstOffset, copySize, srcBufferSize, dstBufferSize } = t.params;
@@ -37,13 +32,7 @@ g.test('single')
       srcData[i] = i + 1;
     }
 
-    const src = t.device.createBuffer({
-      mappedAtCreation: true,
-      size: srcBufferSize,
-      usage: GPUBufferUsage.COPY_SRC,
-    });
-    new Uint8Array(src.getMappedRange()).set(srcData);
-    src.unmap();
+    const src = t.makeBufferWithContents(srcData, GPUBufferUsage.COPY_SRC);
 
     const dst = t.device.createBuffer({
       size: dstBufferSize,
@@ -59,7 +48,7 @@ g.test('single')
       expectedDstData[dstOffset + i] = srcData[srcOffset + i];
     }
 
-    t.expectContents(dst, expectedDstData);
+    t.expectGPUBufferValuesEqual(dst, expectedDstData);
   });
 
 g.test('state_transitions')
@@ -71,21 +60,14 @@ g.test('state_transitions')
     const srcData = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8]);
     const dstData = new Uint8Array([10, 20, 30, 40, 50, 60, 70, 80]);
 
-    const src = t.device.createBuffer({
-      mappedAtCreation: true,
-      size: srcData.length,
-      usage: GPUBufferUsage.COPY_SRC | GPUBufferUsage.COPY_DST,
-    });
-    new Uint8Array(src.getMappedRange()).set(srcData);
-    src.unmap();
-
-    const dst = t.device.createBuffer({
-      mappedAtCreation: true,
-      size: dstData.length,
-      usage: GPUBufferUsage.COPY_SRC | GPUBufferUsage.COPY_DST,
-    });
-    new Uint8Array(dst.getMappedRange()).set(dstData);
-    dst.unmap();
+    const src = t.makeBufferWithContents(
+      srcData,
+      GPUBufferUsage.COPY_SRC | GPUBufferUsage.COPY_DST
+    );
+    const dst = t.makeBufferWithContents(
+      dstData,
+      GPUBufferUsage.COPY_SRC | GPUBufferUsage.COPY_DST
+    );
 
     const encoder = t.device.createCommandEncoder();
     encoder.copyBufferToBuffer(src, 0, dst, 4, 4);
@@ -94,8 +76,8 @@ g.test('state_transitions')
 
     const expectedSrcData = new Uint8Array([1, 2, 3, 4, 10, 20, 30, 40]);
     const expectedDstData = new Uint8Array([10, 20, 30, 40, 1, 2, 3, 4]);
-    t.expectContents(src, expectedSrcData);
-    t.expectContents(dst, expectedDstData);
+    t.expectGPUBufferValuesEqual(src, expectedSrcData);
+    t.expectGPUBufferValuesEqual(dst, expectedDstData);
   });
 
 g.test('copy_order')
@@ -107,13 +89,7 @@ g.test('copy_order')
   .fn(async t => {
     const srcData = new Uint32Array([1, 2, 3, 4, 5, 6, 7, 8]);
 
-    const src = t.device.createBuffer({
-      mappedAtCreation: true,
-      size: srcData.length * 4,
-      usage: GPUBufferUsage.COPY_SRC,
-    });
-    new Uint32Array(src.getMappedRange()).set(srcData);
-    src.unmap();
+    const src = t.makeBufferWithContents(srcData, GPUBufferUsage.COPY_SRC);
 
     const dst = t.device.createBuffer({
       size: srcData.length * 4,
@@ -126,5 +102,5 @@ g.test('copy_order')
     t.device.queue.submit([encoder.finish()]);
 
     const expectedDstData = new Uint32Array([1, 2, 5, 6, 7, 8, 0, 0]);
-    t.expectContents(dst, expectedDstData);
+    t.expectGPUBufferValuesEqual(dst, expectedDstData);
   });

@@ -7,7 +7,6 @@
 
 #include <stdint.h>
 
-#include "base/macros.h"
 #include "device/bluetooth/bluetooth_export.h"
 #include "device/bluetooth/bluetooth_gatt_descriptor.h"
 #include "device/bluetooth/bluetooth_local_gatt_characteristic.h"
@@ -50,14 +49,15 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLocalGattDescriptor
       BluetoothGattCharacteristic::Permissions permissions,
       BluetoothLocalGattCharacteristic* characteristic);
 
+  BluetoothLocalGattDescriptor(const BluetoothLocalGattDescriptor&) = delete;
+  BluetoothLocalGattDescriptor& operator=(const BluetoothLocalGattDescriptor&) =
+      delete;
+
   virtual BluetoothLocalGattCharacteristic* GetCharacteristic() const = 0;
 
  protected:
   BluetoothLocalGattDescriptor();
   ~BluetoothLocalGattDescriptor() override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BluetoothLocalGattDescriptor);
 };
 
 }  // namespace device

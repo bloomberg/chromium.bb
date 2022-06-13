@@ -18,6 +18,7 @@
 #include "base/strings/stringprintf.h"
 #include "components/services/storage/filesystem_proxy_factory.h"
 #include "components/services/storage/service_worker/service_worker_database.pb.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_database.mojom.h"
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
@@ -48,7 +49,11 @@
 //   Note: This has changed from `GURL origin` to StorageKey but the name will
 //   be updated in the future to avoid a migration.
 //   TODO(crbug.com/1199077): Update name during a migration to Version 3.
-//   key: "INITDATA_UNIQUE_ORIGIN:" + <StorageKey 'key'>
+//   key: "INITDATA_UNIQUE_ORIGIN:" + <StorageKey 'key'.origin> + "/" + [ "^0" +
+//   <StorageKey `key`.top_level_site> ]
+//   - or -
+//   key: "INITDATA_UNIQUE_ORIGIN:" + <StorageKey 'key'.origin> + "/" + "^1" +
+//   <StorageKey 'nonce'.High64Bits> + "^2" + <StorageKey 'nonce'.Low64Bits>
 //   value: <empty>
 //
 //   key: "PRES:" + <int64_t 'purgeable_resource_id'>
@@ -57,9 +62,15 @@
 //   Note: This has changed from `GURL origin` to StorageKey but the name will
 //   be updated in the future to avoid a migration.
 //   TODO(crbug.com/1199077): Update name during a migration to Version 3.
-//   key: "REG:" + <StorageKey 'key'> + '\x00' + <int64_t 'registration_id'>
-//     (ex. "REG:http://example.com\x00123456")
-//   value: <ServiceWorkerRegistrationData serialized as a string>
+//   key: "REG:" + <StorageKey 'key'.origin> + "/" + [ "^0" + <StorageKey
+//   `key`.top_level_site> ] + '\x00' + <int64_t 'registration_id'>
+//   - or -
+//   key: "REG:" + <StorageKey 'key'.origin> + "/" + "^1" + <StorageKey
+//   'nonce'.High64Bits> + "^2" + <StorageKey 'nonce'.Low64Bits> + '\x00' +
+//   <int64_t 'registration_id'>
+//    (ex. "REG:http://example.com\x00123456")
+//   value: <ServiceWorkerRegistrationData (except for the StorageKey)
+//   serialized as a string>
 //
 //   key: "REG_HAS_USER_DATA:" + <std::string 'user_data_name'> + '\x00'
 //            + <int64_t 'registration_id'>
@@ -83,7 +94,11 @@
 //   be updated in the future to avoid a migration.
 //   TODO(crbug.com/1199077): Update name during a migration to Version 3.
 //   key: "REGID_TO_ORIGIN:" + <int64_t 'registration_id'>
-//   value: <GURL 'origin'>
+//   value: <StorageKey 'key'.origin> + "/" + [ "^0" + <StorageKey
+//   `key`.top_level_site> ]
+//   - or -
+//   value: <StorageKey 'key'.origin> + "/" + "^1" + <StorageKey
+//   'nonce'.High64Bits> + "^2" + <StorageKey 'nonce'.Low64Bits>
 //
 //   OBSOLETE: https://crbug.com/539713
 //   key: "INITDATA_DISKCACHE_MIGRATION_NOT_NEEDED"
@@ -100,6 +115,46 @@
 //   OBSOLETE: https://crbug.com/788604
 //   key: "INITDATA_FOREIGN_FETCH_ORIGIN:" + <GURL 'origin'>
 //   value: <empty>
+namespace {
+
+// Returns true if the registration key string is partitioned by top-level site
+// but storage partitioning is currently disabled. Returns false if the key
+// string contains a serialized nonce.
+bool ShouldSkipKeyDueToPartitioning(const std::string& reg_key_string) {
+  // Don't skip anything if storage partitioning is enabled.
+  if (blink::StorageKey::IsThirdPartyStoragePartitioningEnabled())
+    return false;
+
+  // TODO(crbug.com/1246549) : This currently counts carets to tell the
+  // difference between nonce and top-level site schemes. When the ancestor bit
+  // is implemented this will need to be modified to handle that case (since it
+  // will also use 2 carets).
+  int number_of_carets =
+      std::count(reg_key_string.begin(), reg_key_string.end(), '^');
+
+  switch (number_of_carets) {
+    case 2: {
+      // Don't skip if a nonce serialization scheme is found.
+      return false;
+    }
+    case 1: {
+      // Do skip if partitioning is disabled and we detect a top-level site
+      // serialization scheme.
+      return true;
+    }
+    case 0: {
+      // Don't skip for a 1p context key.
+      return false;
+    }
+    default: {
+      NOTREACHED();
+      return true;
+    }
+  }
+}
+
+}  // namespace
+
 namespace storage {
 
 namespace service_worker_internals {
@@ -153,14 +208,14 @@ bool RemovePrefix(const std::string& str,
   return true;
 }
 
-std::string CreateRegistrationKeyPrefix(const StorageKey& key) {
+std::string CreateRegistrationKeyPrefix(const blink::StorageKey& key) {
   return base::StringPrintf("%s%s%c", service_worker_internals::kRegKeyPrefix,
                             key.Serialize().c_str(),
                             service_worker_internals::kKeySeparator);
 }
 
 std::string CreateRegistrationKey(int64_t registration_id,
-                                  const StorageKey& key) {
+                                  const blink::StorageKey& key) {
   return CreateRegistrationKeyPrefix(key).append(
       base::NumberToString(registration_id));
 }
@@ -176,7 +231,7 @@ std::string CreateResourceRecordKey(int64_t version_id, int64_t resource_id) {
       .append(base::NumberToString(resource_id));
 }
 
-std::string CreateUniqueOriginKey(const StorageKey& key) {
+std::string CreateUniqueOriginKey(const blink::StorageKey& key) {
   return base::StringPrintf("%s%s", service_worker_internals::kUniqueOriginKey,
                             key.Serialize().c_str());
 }
@@ -216,7 +271,8 @@ std::string CreateRegistrationIdToStorageKey(int64_t registration_id) {
                             base::NumberToString(registration_id).c_str());
 }
 
-void PutUniqueOriginToBatch(const StorageKey& key, leveldb::WriteBatch* batch) {
+void PutUniqueOriginToBatch(const blink::StorageKey& key,
+                            leveldb::WriteBatch* batch) {
   // Value should be empty.
   batch->Put(CreateUniqueOriginKey(key), "");
 }
@@ -349,7 +405,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::GetNextAvailableIds(
 
 ServiceWorkerDatabase::Status
 ServiceWorkerDatabase::GetStorageKeysWithRegistrations(
-    std::set<StorageKey>* keys) {
+    std::set<blink::StorageKey>* keys) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(keys->empty());
 
@@ -375,14 +431,18 @@ ServiceWorkerDatabase::GetStorageKeysWithRegistrations(
                         service_worker_internals::kUniqueOriginKey, &key_str))
         break;
 
-      StorageKey key = StorageKey::Deserialize(key_str);
-      if (key.opaque()) {
+      if (ShouldSkipKeyDueToPartitioning(key_str))
+        continue;
+
+      absl::optional<blink::StorageKey> key =
+          blink::StorageKey::Deserialize(key_str);
+      if (!key) {
         status = Status::kErrorCorrupted;
         keys->clear();
         break;
       }
 
-      keys->insert(key);
+      keys->insert(*key);
     }
   }
 
@@ -392,7 +452,7 @@ ServiceWorkerDatabase::GetStorageKeysWithRegistrations(
 
 ServiceWorkerDatabase::Status
 ServiceWorkerDatabase::GetRegistrationsForStorageKey(
-    const StorageKey& key,
+    const blink::StorageKey& key,
     std::vector<mojom::ServiceWorkerRegistrationDataPtr>* registrations,
     std::vector<std::vector<mojom::ServiceWorkerResourceRecordPtr>>*
         opt_resources_list) {
@@ -424,7 +484,8 @@ ServiceWorkerDatabase::GetRegistrationsForStorageKey(
         break;
 
       mojom::ServiceWorkerRegistrationDataPtr registration;
-      status = ParseRegistrationData(itr->value().ToString(), &registration);
+      status =
+          ParseRegistrationData(itr->value().ToString(), key, &registration);
       if (status != Status::kOk) {
         registrations->clear();
         if (opt_resources_list)
@@ -464,7 +525,7 @@ ServiceWorkerDatabase::GetRegistrationsForStorageKey(
 }
 
 ServiceWorkerDatabase::Status ServiceWorkerDatabase::GetUsageForStorageKey(
-    const StorageKey& key,
+    const blink::StorageKey& key,
     int64_t& out_usage) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -491,7 +552,8 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::GetUsageForStorageKey(
         break;
 
       mojom::ServiceWorkerRegistrationDataPtr registration;
-      status = ParseRegistrationData(itr->value().ToString(), &registration);
+      status =
+          ParseRegistrationData(itr->value().ToString(), key, &registration);
       if (status != Status::kOk)
         break;
       out_usage += registration->resources_total_size_bytes;
@@ -537,12 +599,41 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::GetAllRegistrations(
         break;
       }
 
+      // We need to extract the storage key from the registration key prefix so
+      // that we can pass it into ParseRegistrationData below.
+      //
+      // First remove the prefix and extract the serialized key + separator +
+      // registration ID string. (See ' key: "REG:" ' comment at the top of the
+      // file for more info).
+      std::string prefix_string;
       if (!RemovePrefix(itr->key().ToString(),
-                        service_worker_internals::kRegKeyPrefix, nullptr))
+                        service_worker_internals::kRegKeyPrefix,
+                        &prefix_string))
+        break;
+
+      // Now we need to remove the separator + registration ID from the end of
+      // the string or else the deserialize step will fail.
+      //
+      // Find the where the separator is.
+      size_t separator_pos =
+          prefix_string.find_first_of(service_worker_internals::kKeySeparator);
+      if (separator_pos == std::string::npos)
+        break;
+
+      // Get only the sub-string before the separator.
+      std::string reg_key_string = prefix_string.substr(0, separator_pos);
+
+      if (ShouldSkipKeyDueToPartitioning(reg_key_string))
+        continue;
+
+      absl::optional<blink::StorageKey> key =
+          blink::StorageKey::Deserialize(reg_key_string);
+      if (!key)
         break;
 
       mojom::ServiceWorkerRegistrationDataPtr registration;
-      status = ParseRegistrationData(itr->value().ToString(), &registration);
+      status =
+          ParseRegistrationData(itr->value().ToString(), *key, &registration);
       if (status != Status::kOk) {
         registrations->clear();
         break;
@@ -557,7 +648,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::GetAllRegistrations(
 
 ServiceWorkerDatabase::Status ServiceWorkerDatabase::ReadRegistration(
     int64_t registration_id,
-    const StorageKey& key,
+    const blink::StorageKey& key,
     mojom::ServiceWorkerRegistrationDataPtr* registration,
     std::vector<mojom::ServiceWorkerResourceRecordPtr>* resources) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -587,7 +678,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::ReadRegistration(
 
 ServiceWorkerDatabase::Status ServiceWorkerDatabase::ReadRegistrationStorageKey(
     int64_t registration_id,
-    StorageKey* key) {
+    blink::StorageKey* key) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(key);
 
@@ -607,14 +698,19 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::ReadRegistrationStorageKey(
     return status;
   }
 
-  StorageKey parsed = StorageKey::Deserialize(value);
-  if (parsed.opaque()) {
+  // If storage partitioning is disabled we shouldn't have any handles to
+  // registration IDs associated with partitioned entries.
+  DCHECK(!ShouldSkipKeyDueToPartitioning(value));
+
+  absl::optional<blink::StorageKey> parsed =
+      blink::StorageKey::Deserialize(value);
+  if (!parsed) {
     status = Status::kErrorCorrupted;
     HandleReadResult(FROM_HERE, status);
     return status;
   }
 
-  *key = std::move(parsed);
+  *key = std::move(*parsed);
   HandleReadResult(FROM_HERE, Status::kOk);
   return Status::kOk;
 }
@@ -635,8 +731,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::WriteRegistration(
   BumpNextRegistrationIdIfNeeded(registration.registration_id, &batch);
   BumpNextVersionIdIfNeeded(registration.version_id, &batch);
 
-  PutUniqueOriginToBatch(
-      StorageKey(url::Origin::Create(registration.scope.GetOrigin())), &batch);
+  PutUniqueOriginToBatch(registration.key, &batch);
 
   DCHECK_EQ(AccumulateResourceSizeInBytes(resources),
             registration.resources_total_size_bytes)
@@ -644,8 +739,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::WriteRegistration(
       << "sizes of the resources.";
 
   WriteRegistrationDataInBatch(registration, &batch);
-  // TODO(crbug.com/1199077): Update when RegistrationData uses StorageKey
-  StorageKey key(url::Origin::Create(registration.scope.GetOrigin()));
+  blink::StorageKey key = registration.key;
 
   batch.Put(CreateRegistrationIdToStorageKey(registration.registration_id),
             key.Serialize());
@@ -675,9 +769,8 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::WriteRegistration(
 
   // Retrieve a previous version to sweep purgeable resources.
   mojom::ServiceWorkerRegistrationDataPtr old_registration;
-  status = ReadRegistrationData(
-      registration.registration_id,
-      StorageKey(url::Origin::Create(registration.scope)), &old_registration);
+  status = ReadRegistrationData(registration.registration_id, registration.key,
+                                &old_registration);
   if (status != Status::kOk && status != Status::kErrorNotFound)
     return status;
   if (status == Status::kOk) {
@@ -708,14 +801,14 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::WriteRegistration(
 
 ServiceWorkerDatabase::Status ServiceWorkerDatabase::UpdateVersionToActive(
     int64_t registration_id,
-    const StorageKey& key) {
+    const blink::StorageKey& key) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   Status status = LazyOpen(false);
   if (IsNewOrNonexistentDatabase(status))
     return Status::kErrorNotFound;
   if (status != Status::kOk)
     return status;
-  if (key.opaque())
+  if (key.origin().opaque())
     return Status::kErrorFailed;
 
   mojom::ServiceWorkerRegistrationDataPtr registration;
@@ -732,7 +825,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::UpdateVersionToActive(
 
 ServiceWorkerDatabase::Status ServiceWorkerDatabase::UpdateLastCheckTime(
     int64_t registration_id,
-    const StorageKey& key,
+    const blink::StorageKey& key,
     const base::Time& time) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   Status status = LazyOpen(false);
@@ -740,7 +833,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::UpdateLastCheckTime(
     return Status::kErrorNotFound;
   if (status != Status::kOk)
     return status;
-  if (key.opaque())
+  if (key.origin().opaque())
     return Status::kErrorFailed;
 
   mojom::ServiceWorkerRegistrationDataPtr registration;
@@ -756,16 +849,17 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::UpdateLastCheckTime(
 }
 
 ServiceWorkerDatabase::Status
-ServiceWorkerDatabase::UpdateNavigationPreloadEnabled(int64_t registration_id,
-                                                      const StorageKey& key,
-                                                      bool enable) {
+ServiceWorkerDatabase::UpdateNavigationPreloadEnabled(
+    int64_t registration_id,
+    const blink::StorageKey& key,
+    bool enable) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   Status status = LazyOpen(false);
   if (IsNewOrNonexistentDatabase(status))
     return Status::kErrorNotFound;
   if (status != Status::kOk)
     return status;
-  if (key.opaque())
+  if (key.origin().opaque())
     return Status::kErrorFailed;
 
   mojom::ServiceWorkerRegistrationDataPtr registration;
@@ -781,16 +875,17 @@ ServiceWorkerDatabase::UpdateNavigationPreloadEnabled(int64_t registration_id,
 }
 
 ServiceWorkerDatabase::Status
-ServiceWorkerDatabase::UpdateNavigationPreloadHeader(int64_t registration_id,
-                                                     const StorageKey& key,
-                                                     const std::string& value) {
+ServiceWorkerDatabase::UpdateNavigationPreloadHeader(
+    int64_t registration_id,
+    const blink::StorageKey& key,
+    const std::string& value) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   Status status = LazyOpen(false);
   if (IsNewOrNonexistentDatabase(status))
     return Status::kErrorNotFound;
   if (status != Status::kOk)
     return status;
-  if (key.opaque())
+  if (key.origin().opaque())
     return Status::kErrorFailed;
 
   mojom::ServiceWorkerRegistrationDataPtr registration;
@@ -807,7 +902,7 @@ ServiceWorkerDatabase::UpdateNavigationPreloadHeader(int64_t registration_id,
 
 ServiceWorkerDatabase::Status ServiceWorkerDatabase::DeleteRegistration(
     int64_t registration_id,
-    const StorageKey& key,
+    const blink::StorageKey& key,
     DeletedVersion* deleted_version) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(deleted_version);
@@ -817,7 +912,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::DeleteRegistration(
     return Status::kOk;
   if (status != Status::kOk)
     return status;
-  if (key.opaque())
+  if (key.origin().opaque())
     return Status::kErrorFailed;
 
   leveldb::WriteBatch batch;
@@ -991,7 +1086,7 @@ ServiceWorkerDatabase::ReadUserKeysAndDataByKeyPrefix(
 
 ServiceWorkerDatabase::Status ServiceWorkerDatabase::WriteUserData(
     int64_t registration_id,
-    const StorageKey& key,
+    const blink::StorageKey& key,
     const std::vector<mojom::ServiceWorkerUserDataPtr>& user_data) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, registration_id);
@@ -1354,7 +1449,7 @@ ServiceWorkerDatabase::PurgeUncommittedResourceIds(
 
 ServiceWorkerDatabase::Status
 ServiceWorkerDatabase::DeleteAllDataForStorageKeys(
-    const std::set<StorageKey>& keys,
+    const std::set<blink::StorageKey>& keys,
     std::vector<int64_t>* newly_purgeable_resources) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   Status status = LazyOpen(false);
@@ -1364,8 +1459,8 @@ ServiceWorkerDatabase::DeleteAllDataForStorageKeys(
     return status;
   leveldb::WriteBatch batch;
 
-  for (const StorageKey& key : keys) {
-    if (key.opaque())
+  for (const blink::StorageKey& key : keys) {
+    if (key.origin().opaque())
       return Status::kErrorFailed;
 
     // Delete from the unique origin list.
@@ -1512,7 +1607,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::ReadNextAvailableId(
 
 ServiceWorkerDatabase::Status ServiceWorkerDatabase::ReadRegistrationData(
     int64_t registration_id,
-    const StorageKey& key,
+    const blink::StorageKey& key,
     mojom::ServiceWorkerRegistrationDataPtr* registration) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(registration);
@@ -1528,13 +1623,14 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::ReadRegistrationData(
     return status;
   }
 
-  status = ParseRegistrationData(value, registration);
+  status = ParseRegistrationData(value, key, registration);
   HandleReadResult(FROM_HERE, status);
   return status;
 }
 
 ServiceWorkerDatabase::Status ServiceWorkerDatabase::ParseRegistrationData(
     const std::string& serialized,
+    const blink::StorageKey& key,
     mojom::ServiceWorkerRegistrationDataPtr* out) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(out);
@@ -1545,10 +1641,12 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::ParseRegistrationData(
   GURL scope_url(data.scope_url());
   GURL script_url(data.script_url());
   if (!scope_url.is_valid() || !script_url.is_valid() ||
-      scope_url.GetOrigin() != script_url.GetOrigin()) {
+      scope_url.DeprecatedGetOriginAsURL() !=
+          script_url.DeprecatedGetOriginAsURL() ||
+      key.origin() != url::Origin::Create(scope_url)) {
     DLOG(ERROR) << "Scope URL '" << data.scope_url() << "' and/or script url '"
-                << data.script_url()
-                << "' are invalid or have mismatching origins.";
+                << data.script_url() << "' and/or the storage key's origin '"
+                << key.origin() << "' are invalid or have mismatching origins.";
     return Status::kErrorCorrupted;
   }
 
@@ -1567,11 +1665,12 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::ParseRegistrationData(
   (*out)->registration_id = data.registration_id();
   (*out)->scope = scope_url;
   (*out)->script = script_url;
+  (*out)->key = key;
   (*out)->version_id = data.version_id();
   (*out)->is_active = data.is_active();
   (*out)->has_fetch_handler = data.has_fetch_handler();
   (*out)->last_update_check = base::Time::FromDeltaSinceWindowsEpoch(
-      base::TimeDelta::FromMicroseconds(data.last_update_check_time()));
+      base::Microseconds(data.last_update_check_time()));
   (*out)->resources_total_size_bytes = data.resources_total_size_bytes();
   if (data.has_origin_trial_tokens()) {
     const ServiceWorkerOriginTrialInfo& info = data.origin_trial_tokens();
@@ -1615,7 +1714,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::ParseRegistrationData(
 
   if (data.has_script_response_time()) {
     (*out)->script_response_time = base::Time::FromDeltaSinceWindowsEpoch(
-        base::TimeDelta::FromMicroseconds(data.script_response_time()));
+        base::Microseconds(data.script_response_time()));
   }
 
   if (data.has_update_via_cache()) {
@@ -1689,6 +1788,8 @@ void ServiceWorkerDatabase::WriteRegistrationDataInBatch(
   data.set_registration_id(registration.registration_id);
   data.set_scope_url(registration.scope.spec());
   data.set_script_url(registration.script.spec());
+  // Do not store the StorageKey, it's already encoded in the registration key
+  // prefix.
   data.set_version_id(registration.version_id);
   data.set_is_active(registration.is_active);
   data.set_has_fetch_handler(registration.has_fetch_handler);
@@ -1768,7 +1869,7 @@ void ServiceWorkerDatabase::WriteRegistrationDataInBatch(
   std::string value;
   bool success = data.SerializeToString(&value);
   DCHECK(success);
-  StorageKey key(url::Origin::Create(registration.scope));
+  blink::StorageKey key = registration.key;
   batch->Put(CreateRegistrationKey(data.registration_id(), key), value);
 }
 

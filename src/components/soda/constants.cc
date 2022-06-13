@@ -17,6 +17,8 @@
 
 namespace speech {
 
+const char kUsEnglishLocale[] = "en-US";
+
 #ifdef OS_WIN
 constexpr base::FilePath::CharType kSodaBinaryRelativePath[] =
     FILE_PATH_LITERAL("SODAFiles/SODA.dll");
@@ -24,6 +26,12 @@ constexpr base::FilePath::CharType kSodaBinaryRelativePath[] =
 constexpr base::FilePath::CharType kSodaBinaryRelativePath[] =
     FILE_PATH_LITERAL("SODAFiles/libsoda.so");
 #endif
+
+constexpr base::FilePath::CharType kSodaTestBinaryRelativePath[] =
+    FILE_PATH_LITERAL("libsoda.so");
+
+constexpr base::FilePath::CharType kSodaTestResourcesRelativePath[] =
+    FILE_PATH_LITERAL("third_party/soda/resources/");
 
 constexpr base::FilePath::CharType kSodaInstallationRelativePath[] =
     FILE_PATH_LITERAL("SODA");
@@ -52,6 +60,15 @@ const base::FilePath GetSodaLanguagePacksDirectory() {
   return components_dir.empty()
              ? base::FilePath()
              : components_dir.Append(kSodaLanguagePacksRelativePath);
+}
+
+const base::FilePath GetSodaTestResourcesDirectory() {
+  base::FilePath test_data_root;
+  base::PathService::Get(base::DIR_SRC_TEST_DATA_ROOT, &test_data_root);
+  DCHECK(!test_data_root.empty());
+  return test_data_root.empty()
+             ? base::FilePath()
+             : test_data_root.Append(kSodaTestResourcesRelativePath);
 }
 
 const base::FilePath GetLatestSodaLanguagePackDirectory(
@@ -89,6 +106,12 @@ const base::FilePath GetSodaBinaryPath() {
   base::FilePath soda_dir = GetLatestSodaDirectory();
   return soda_dir.empty() ? base::FilePath()
                           : soda_dir.Append(kSodaBinaryRelativePath);
+}
+
+const base::FilePath GetSodaTestBinaryPath() {
+  base::FilePath test_dir = GetSodaTestResourcesDirectory();
+  return test_dir.empty() ? base::FilePath()
+                          : test_dir.Append(kSodaTestBinaryRelativePath);
 }
 
 absl::optional<SodaLanguagePackComponentConfig> GetLanguageComponentConfig(
@@ -130,15 +153,33 @@ LanguageCode GetLanguageCodeByComponentId(const std::string& component_id) {
 
 std::string GetLanguageName(LanguageCode language_code) {
   std::string language_name;
-  if (language_code != speech::LanguageCode::kNone) {
-    absl::optional<speech::SodaLanguagePackComponentConfig> language_config =
-        speech::GetLanguageComponentConfig(language_code);
+  if (language_code != LanguageCode::kNone) {
+    absl::optional<SodaLanguagePackComponentConfig> language_config =
+        GetLanguageComponentConfig(language_code);
     if (language_config.has_value()) {
       language_name = language_config.value().language_name;
     }
   }
 
   return language_name;
+}
+
+LanguageCode GetLanguageCode(const std::string& language_name) {
+  absl::optional<SodaLanguagePackComponentConfig> language_config =
+      GetLanguageComponentConfig(language_name);
+  if (language_config.has_value()) {
+    return language_config.value().language_code;
+  }
+  return LanguageCode::kNone;
+}
+
+int GetLanguageDisplayName(const std::string& language_name) {
+  absl::optional<SodaLanguagePackComponentConfig> language_config =
+      GetLanguageComponentConfig(language_name);
+  if (language_config.has_value()) {
+    return language_config.value().display_name;
+  }
+  return 0;
 }
 
 }  // namespace speech

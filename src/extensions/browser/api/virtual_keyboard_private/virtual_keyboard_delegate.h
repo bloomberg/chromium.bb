@@ -6,10 +6,10 @@
 #define EXTENSIONS_BROWSER_API_VIRTUAL_KEYBOARD_PRIVATE_VIRTUAL_KEYBOARD_DELEGATE_H_
 
 #include <memory>
+#include <set>
 #include <string>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/values.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/api/virtual_keyboard.h"

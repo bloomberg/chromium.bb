@@ -17,7 +17,7 @@
 #include "core/fpdfapi/parser/cpdf_object.h"
 #include "third_party/base/check.h"
 #include "third_party/base/check_op.h"
-#include "third_party/base/stl_util.h"
+#include "third_party/base/containers/contains.h"
 
 CPDF_Page::CPDF_Page(CPDF_Document* pDocument, CPDF_Dictionary* pPageDict)
     : CPDF_PageObjectHolder(pDocument, pPageDict, nullptr, nullptr),
@@ -99,7 +99,7 @@ CFX_FloatRect CPDF_Page::GetBox(const ByteString& name) const {
   return box;
 }
 
-Optional<CFX_PointF> CPDF_Page::DeviceToPage(
+absl::optional<CFX_PointF> CPDF_Page::DeviceToPage(
     const FX_RECT& rect,
     int rotate,
     const CFX_PointF& device_point) const {
@@ -107,7 +107,7 @@ Optional<CFX_PointF> CPDF_Page::DeviceToPage(
   return page2device.GetInverse().Transform(device_point);
 }
 
-Optional<CFX_PointF> CPDF_Page::PageToDevice(
+absl::optional<CFX_PointF> CPDF_Page::PageToDevice(
     const FX_RECT& rect,
     int rotate,
     const CFX_PointF& page_point) const {
@@ -178,6 +178,16 @@ int CPDF_Page::GetPageRotation() const {
   return (rotate < 0) ? (rotate + 4) : rotate;
 }
 
+void CPDF_Page::SetRenderContext(std::unique_ptr<RenderContextIface> pContext) {
+  DCHECK(!m_pRenderContext);
+  DCHECK(pContext);
+  m_pRenderContext = std::move(pContext);
+}
+
+void CPDF_Page::ClearRenderContext() {
+  m_pRenderContext.reset();
+}
+
 void CPDF_Page::UpdateDimensions() {
   CFX_FloatRect mediabox = GetBox(pdfium::page_object::kMediaBox);
   if (mediabox.IsEmpty())
@@ -215,5 +225,5 @@ CPDF_Page::RenderContextClearer::RenderContextClearer(CPDF_Page* pPage)
     : m_pPage(pPage) {}
 
 CPDF_Page::RenderContextClearer::~RenderContextClearer() {
-  m_pPage->SetRenderContext(nullptr);
+  m_pPage->ClearRenderContext();
 }

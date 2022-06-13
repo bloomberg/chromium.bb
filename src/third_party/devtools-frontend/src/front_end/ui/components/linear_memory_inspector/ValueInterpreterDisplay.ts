@@ -3,10 +3,12 @@
 // found in the LICENSE file.
 
 import * as i18n from '../../../core/i18n/i18n.js';
+import inspectorCommonStyles from '../../legacy/inspectorCommon.css.js';
 import * as LitHtml from '../../lit-html/lit-html.js';
 import * as ComponentHelpers from '../helpers/helpers.js';
 import * as IconButton from '../icon_button/icon_button.js';
 
+import valueInterpreterDisplayStyles from './valueInterpreterDisplay.css.js';
 import {Endianness, format, getDefaultValueTypeMapping, getPointerAddress, isNumber, isPointer, isValidMode, VALUE_TYPE_MODE_LIST, ValueType, ValueTypeMode} from './ValueInterpreterDisplayUtils.js';
 
 const UIStrings = {
@@ -36,7 +38,6 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('ui/components/linear_memory_inspector/ValueInterpreterDisplay.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const {render, html} = LitHtml;
-const getStyleSheets = ComponentHelpers.GetStylesheet.getStyleSheets;
 
 const SORTED_VALUE_TYPES = Array.from(getDefaultValueTypeMapping().keys());
 
@@ -49,10 +50,11 @@ export interface ValueDisplayData {
 }
 
 export class ValueTypeModeChangedEvent extends Event {
+  static readonly eventName = 'valuetypemodechanged';
   data: {type: ValueType, mode: ValueTypeMode};
 
   constructor(type: ValueType, mode: ValueTypeMode) {
-    super('valuetypemodechanged', {
+    super(ValueTypeModeChangedEvent.eventName, {
       composed: true,
     });
     this.data = {type, mode};
@@ -60,10 +62,11 @@ export class ValueTypeModeChangedEvent extends Event {
 }
 
 export class JumpToPointerAddressEvent extends Event {
+  static readonly eventName = 'jumptopointeraddress';
   data: number;
 
   constructor(address: number) {
-    super('jumptopointeraddress', {
+    super(JumpToPointerAddressEvent.eventName, {
       composed: true,
     });
     this.data = address;
@@ -71,32 +74,36 @@ export class JumpToPointerAddressEvent extends Event {
 }
 
 export class ValueInterpreterDisplay extends HTMLElement {
-  static litTagName = LitHtml.literal`devtools-linear-memory-inspector-interpreter-display`;
+  static readonly litTagName = LitHtml.literal`devtools-linear-memory-inspector-interpreter-display`;
 
-  private readonly shadow = this.attachShadow({mode: 'open'});
-  private endianness = Endianness.Little;
-  private buffer = new ArrayBuffer(0);
-  private valueTypes: Set<ValueType> = new Set();
-  private valueTypeModeConfig: Map<ValueType, ValueTypeMode> = getDefaultValueTypeMapping();
-  private memoryLength = 0;
+  readonly #shadow = this.attachShadow({mode: 'open'});
+  #endianness = Endianness.Little;
+  #buffer = new ArrayBuffer(0);
+  #valueTypes: Set<ValueType> = new Set();
+  #valueTypeModeConfig: Map<ValueType, ValueTypeMode> = getDefaultValueTypeMapping();
+  #memoryLength = 0;
 
   constructor() {
     super();
-    this.shadow.adoptedStyleSheets = [
-      ...getStyleSheets('ui/legacy/inspectorCommon.css', {enableLegacyPatching: false}),
+    this.#shadow.adoptedStyleSheets = [
+      inspectorCommonStyles,
     ];
   }
 
+  connectedCallback(): void {
+    this.#shadow.adoptedStyleSheets = [valueInterpreterDisplayStyles];
+  }
+
   set data(data: ValueDisplayData) {
-    this.buffer = data.buffer;
-    this.endianness = data.endianness;
-    this.valueTypes = data.valueTypes;
-    this.memoryLength = data.memoryLength;
+    this.#buffer = data.buffer;
+    this.#endianness = data.endianness;
+    this.#valueTypes = data.valueTypes;
+    this.#memoryLength = data.memoryLength;
 
     if (data.valueTypeModes) {
       data.valueTypeModes.forEach((mode, valueType) => {
         if (isValidMode(valueType, mode)) {
-          this.valueTypeModeConfig.set(valueType, mode);
+          this.#valueTypeModeConfig.set(valueType, mode);
         }
       });
     }
@@ -108,71 +115,10 @@ export class ValueInterpreterDisplay extends HTMLElement {
     // Disabled until https://crbug.com/1079231 is fixed.
     // clang-format off
     render(html`
-      <style>
-        :host {
-          flex: auto;
-          display: flex;
-        }
-
-        .mode-type {
-          color: var(--text-highlight-color); /* stylelint-disable-line plugin/use_theme_colors */
-          /* See: crbug.com/1152736 for color variable migration. */
-        }
-
-        .value-types {
-          width: 100%;
-          display: grid;
-          grid-template-columns: auto auto 1fr;
-          grid-column-gap: 24px;
-          grid-row-gap: 4px;
-          min-height: 24px;
-          overflow: hidden;
-          padding: 2px 12px;
-          align-items: baseline;
-          justify-content: start;
-        }
-
-        .value-type-cell {
-          text-overflow: ellipsis;
-          white-space: nowrap;
-          overflow: hidden;
-          display: flex;
-          flex-direction: column;
-          min-height: 24px;
-        }
-
-        .value-type-value-with-link {
-          display: flex;
-          align-items: center;
-        }
-
-        .value-type-cell-no-mode {
-          grid-column: 1 / 3;
-        }
-
-        .jump-to-button {
-          display: flex;
-          width: 20px;
-          height: 20px;
-          border: none;
-          padding: 0;
-          outline: none;
-          justify-content: center;
-          align-items: center;
-          cursor: pointer;
-        }
-
-        .signed-divider {
-          width: 1px;
-          height: 15px;
-          background-color: var(--color-details-hairline);
-          margin: 0 4px;
-        }
-      </style>
       <div class="value-types">
-        ${SORTED_VALUE_TYPES.map(type => this.valueTypes.has(type) ? this.showValue(type) : '')}
+        ${SORTED_VALUE_TYPES.map(type => this.#valueTypes.has(type) ? this.showValue(type) : '')}
       </div>
-    `, this.shadow, {host: this},
+    `, this.#shadow, {host: this},
     );
     // clang-format on
   }
@@ -189,8 +135,8 @@ export class ValueInterpreterDisplay extends HTMLElement {
 
   private renderPointerValue(type: ValueType): LitHtml.TemplateResult {
     const unsignedValue = this.parse({type, signed: false});
-    const address = getPointerAddress(type, this.buffer, this.endianness);
-    const jumpDisabled = Number.isNaN(address) || BigInt(address) >= BigInt(this.memoryLength);
+    const address = getPointerAddress(type, this.#buffer, this.#endianness);
+    const jumpDisabled = Number.isNaN(address) || BigInt(address) >= BigInt(this.#memoryLength);
     const buttonTitle = jumpDisabled ? i18nString(UIStrings.addressOutOfRange) : i18nString(UIStrings.jumpToPointer);
     const iconColor = jumpDisabled ? 'var(--color-text-secondary)' : 'var(--color-primary)';
     // Disabled until https://crbug.com/1079231 is fixed.
@@ -231,7 +177,7 @@ export class ValueInterpreterDisplay extends HTMLElement {
           @change=${this.onValueTypeModeChange.bind(this, type)}>
             ${VALUE_TYPE_MODE_LIST.filter(x => isValidMode(type, x)).map(mode => {
               return html`
-                <option value=${mode} .selected=${this.valueTypeModeConfig.get(type) === mode}>${
+                <option value=${mode} .selected=${this.#valueTypeModeConfig.get(type) === mode}>${
                   i18n.i18n.lockedString(mode)}
                 </option>`;
             })}
@@ -245,7 +191,7 @@ export class ValueInterpreterDisplay extends HTMLElement {
   private renderSignedAndUnsigned(type: ValueType): LitHtml.TemplateResult {
     const unsignedValue = this.parse({type, signed: false});
     const signedValue = this.parse({type, signed: true});
-    const mode = this.valueTypeModeConfig.get(type);
+    const mode = this.#valueTypeModeConfig.get(type);
     const showSignedAndUnsigned =
         signedValue !== unsignedValue && mode !== ValueTypeMode.Hexadecimal && mode !== ValueTypeMode.Octal;
 
@@ -286,9 +232,9 @@ export class ValueInterpreterDisplay extends HTMLElement {
   }
 
   private parse(data: {type: ValueType, signed?: boolean}): string {
-    const mode = this.valueTypeModeConfig.get(data.type);
+    const mode = this.#valueTypeModeConfig.get(data.type);
     return format(
-        {buffer: this.buffer, type: data.type, endianness: this.endianness, signed: data.signed || false, mode});
+        {buffer: this.#buffer, type: data.type, endianness: this.#endianness, signed: data.signed || false, mode});
   }
 }
 

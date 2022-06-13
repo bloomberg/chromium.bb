@@ -26,6 +26,9 @@
 #if defined(__GNUC__) && (__GNUC__ >=9)
   #pragma GCC diagnostic ignored "-Wdeprecated-copy"
 #endif
+#if defined(__clang__) && (__clang_major__ >= 10)
+  #pragma clang diagnostic ignored "-Wdeprecated-copy"
+#endif
 
 #endif
 
@@ -33,7 +36,12 @@
 #include <vector>
 #include "main.h"
 
+using Eigen::placeholders::all;
+using Eigen::placeholders::last;
+using Eigen::placeholders::lastp1;
+
 #if EIGEN_HAS_CXX11
+using Eigen::placeholders::lastN;
 #include <array>
 #endif
 
@@ -217,7 +225,7 @@ void check_indexed_view()
   VERIFY( is_same_seq_type( seqN(2,fix<5>(5),fix<-2>), seqN(2,fix<5>,fix<-2>()) ) );
 
   VERIFY( is_same_seq_type( seq(2,fix<5>), seqN(2,4) ) );
-#if EIGEN_HAS_CXX11
+  #if EIGEN_HAS_CXX11
   VERIFY( is_same_seq_type( seq(fix<2>,fix<5>), seqN(fix<2>,fix<4>) ) );
   VERIFY( is_same_seq( seqN(2,std::integral_constant<int,5>(),std::integral_constant<int,-2>()), seqN(2,fix<5>,fix<-2>()) ) );
   VERIFY( is_same_seq( seq(std::integral_constant<int,1>(),std::integral_constant<int,5>(),std::integral_constant<int,2>()),

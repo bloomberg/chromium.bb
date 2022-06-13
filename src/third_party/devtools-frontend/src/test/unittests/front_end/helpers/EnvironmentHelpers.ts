@@ -7,6 +7,9 @@ import * as Host from '../../../../front_end/core/host/host.js';
 import * as i18n from '../../../../front_end/core/i18n/i18n.js';
 import * as Root from '../../../../front_end/core/root/root.js';
 import * as SDK from '../../../../front_end/core/sdk/sdk.js';
+import type * as Protocol from '../../../../front_end/generated/protocol.js';
+import * as Bindings from '../../../../front_end/models/bindings/bindings.js';
+import * as Workspace from '../../../../front_end/models/workspace/workspace.js';
 
 import type * as UIModule from '../../../../front_end/ui/legacy/legacy.js';
 
@@ -35,14 +38,16 @@ try {
   console.warn('EnvironmentHelper: Loading en-US locale failed', error.message);
 }
 
-let targetManager: SDK.SDKModel.TargetManager;
+let targetManager: SDK.TargetManager.TargetManager;
 
 function initializeTargetManagerIfNecessary() {
   // Create the target manager.
-  targetManager = targetManager || SDK.SDKModel.TargetManager.instance({forceNew: true});
+  targetManager = targetManager || SDK.TargetManager.TargetManager.instance({forceNew: true});
 }
 
-export function createTarget({id = 'test', name = 'test', type = SDK.SDKModel.Type.Frame} = {}) {
+export function createTarget(
+    {id = 'test' as Protocol.Target.TargetID, name = 'test', type = SDK.Target.Type.Frame}:
+        {id?: Protocol.Target.TargetID, name?: string, type?: SDK.Target.Type} = {}) {
   initializeTargetManagerIfNecessary();
   return targetManager.createTarget(id, name, type, null);
 }
@@ -76,7 +81,13 @@ export async function initializeGlobalVars({reset = true} = {}) {
         Common.Settings.SettingCategory.RENDERING, 'emulatedCSSMediaFeaturePrefersColorScheme', '',
         Common.Settings.SettingType.ENUM),
     createSettingValue(
+        Common.Settings.SettingCategory.RENDERING, 'emulatedCSSMediaFeatureForcedColors', '',
+        Common.Settings.SettingType.ENUM),
+    createSettingValue(
         Common.Settings.SettingCategory.RENDERING, 'emulatedCSSMediaFeaturePrefersReducedMotion', '',
+        Common.Settings.SettingType.ENUM),
+    createSettingValue(
+        Common.Settings.SettingCategory.RENDERING, 'emulatedCSSMediaFeaturePrefersContrast', '',
         Common.Settings.SettingType.ENUM),
     createSettingValue(
         Common.Settings.SettingCategory.RENDERING, 'emulatedCSSMediaFeaturePrefersReducedData', '',
@@ -86,6 +97,8 @@ export async function initializeGlobalVars({reset = true} = {}) {
         Common.Settings.SettingType.ENUM),
     createSettingValue(
         Common.Settings.SettingCategory.RENDERING, 'emulatedVisionDeficiency', '', Common.Settings.SettingType.ENUM),
+    createSettingValue(
+        Common.Settings.SettingCategory.RENDERING, 'emulateAutoDarkMode', '', Common.Settings.SettingType.ENUM),
     createSettingValue(Common.Settings.SettingCategory.RENDERING, 'localFontsDisabled', false),
     createSettingValue(Common.Settings.SettingCategory.RENDERING, 'showPaintRects', false),
     createSettingValue(Common.Settings.SettingCategory.RENDERING, 'showLayoutShiftRegions', false),
@@ -93,12 +106,21 @@ export async function initializeGlobalVars({reset = true} = {}) {
     createSettingValue(Common.Settings.SettingCategory.RENDERING, 'showDebugBorders', false),
     createSettingValue(Common.Settings.SettingCategory.RENDERING, 'showFPSCounter', false),
     createSettingValue(Common.Settings.SettingCategory.RENDERING, 'showScrollBottleneckRects', false),
-    createSettingValue(Common.Settings.SettingCategory.RENDERING, 'showHitTestBorders', false),
     createSettingValue(Common.Settings.SettingCategory.RENDERING, 'showWebVitals', false),
     createSettingValue(Common.Settings.SettingCategory.RENDERING, 'webpFormatDisabled', false),
     createSettingValue(Common.Settings.SettingCategory.RENDERING, 'jpegXlFormatDisabled', false),
+    createSettingValue(Common.Settings.SettingCategory.SOURCES, 'allowScrollPastEof', true),
     createSettingValue(Common.Settings.SettingCategory.SOURCES, 'cssSourceMapsEnabled', true),
+    createSettingValue(Common.Settings.SettingCategory.SOURCES, 'inlineVariableValues', true),
     createSettingValue(Common.Settings.SettingCategory.SOURCES, 'jsSourceMapsEnabled', true),
+    createSettingValue(Common.Settings.SettingCategory.SOURCES, 'showWhitespacesInEditor', 'none'),
+    createSettingValue(Common.Settings.SettingCategory.SOURCES, 'textEditorAutocompletion', true),
+    createSettingValue(Common.Settings.SettingCategory.SOURCES, 'textEditorAutoDetectIndent', false),
+    createSettingValue(Common.Settings.SettingCategory.SOURCES, 'textEditorBracketMatching', true),
+    createSettingValue(Common.Settings.SettingCategory.SOURCES, 'textEditorCodeFolding', true),
+    createSettingValue(Common.Settings.SettingCategory.SOURCES, 'textEditorIndent', '    '),
+    createSettingValue(Common.Settings.SettingCategory.SOURCES, 'textEditorTabMovesFocus', false),
+    createSettingValue(Common.Settings.SettingCategory.SOURCES, 'domWordWrap', true),
     createSettingValue(
         Common.Settings.SettingCategory.EMULATION, 'emulation.touch', '', Common.Settings.SettingType.ENUM),
     createSettingValue(
@@ -112,16 +134,22 @@ export async function initializeGlobalVars({reset = true} = {}) {
     createSettingValue(
         Common.Settings.SettingCategory.APPEARANCE, 'help.show-release-note', true,
         Common.Settings.SettingType.BOOLEAN),
+    createSettingValue(Common.Settings.SettingCategory.NETWORK, 'requestBlockingEnabled', false),
+    createSettingValue(Common.Settings.SettingCategory.CONSOLE, 'monitoringXHREnabled', false),
+    createSettingValue(
+        Common.Settings.SettingCategory.NONE, 'customNetworkConditions', [], Common.Settings.SettingType.ARRAY),
+    createSettingValue(
+        Common.Settings.SettingCategory.APPEARANCE, 'uiTheme', 'systemPreferred', Common.Settings.SettingType.ENUM),
+    createSettingValue(
+        Common.Settings.SettingCategory.APPEARANCE, 'language', 'en-US', Common.Settings.SettingType.ENUM),
   ];
 
   Common.Settings.registerSettingsForTest(settings, reset);
 
   // Instantiate the storage.
-  const storageVals = new Map<string, string>();
-  const storage = new Common.Settings.SettingsStorage(
-      {}, (key, value) => storageVals.set(key, value), key => storageVals.delete(key), () => storageVals.clear(),
-      'test');
-  Common.Settings.Settings.instance({forceNew: reset, globalStorage: storage, localStorage: storage});
+  const storage = new Common.Settings.SettingsStorage({}, Common.Settings.NOOP_STORAGE, 'test');
+  Common.Settings.Settings.instance(
+      {forceNew: reset, syncedStorage: storage, globalStorage: storage, localStorage: storage});
 
   // Dynamically import UI after the rest of the environment is set up, otherwise it will fail.
   UI = await import('../../../../front_end/ui/legacy/legacy.js');
@@ -131,6 +159,8 @@ export async function initializeGlobalVars({reset = true} = {}) {
   // Needed for any context menus which may be created - either in a test or via
   // rendering a component in the component docs server.
   UI.GlassPane.GlassPane.setContainer(document.body);
+
+  initializeTargetManagerIfNecessary();
 }
 
 export async function deinitializeGlobalVars() {
@@ -141,9 +171,12 @@ export async function deinitializeGlobalVars() {
   delete globalObject.ls;
 
   // Remove instances.
-  SDK.SDKModel.TargetManager.removeInstance();
+  SDK.TargetManager.TargetManager.removeInstance();
   Root.Runtime.Runtime.removeInstance();
   Common.Settings.Settings.removeInstance();
+  Workspace.Workspace.WorkspaceImpl.removeInstance();
+  Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.removeInstance();
+  Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding.removeInstance();
   Common.Settings.resetSettings();
 
   // Protect against the dynamic import not having happened.
@@ -164,9 +197,10 @@ export function describeWithEnvironment(title: string, fn: (this: Mocha.Suite) =
 }
 
 export function createFakeSetting<T>(name: string, defaultValue: T): Common.Settings.Setting<T> {
-  const storageVals = new Map<string, string>();
-  const storage = new Common.Settings.SettingsStorage(
-      {}, (key, value) => storageVals.set(key, value), key => storageVals.delete(key), () => storageVals.clear(),
-      'test');
+  const storage = new Common.Settings.SettingsStorage({}, Common.Settings.NOOP_STORAGE, 'test');
   return new Common.Settings.Setting(name, defaultValue, new Common.ObjectWrapper.ObjectWrapper(), storage);
+}
+
+export function enableFeatureForTest(feature: string): void {
+  Root.Runtime.experiments.enableForTest(feature);
 }

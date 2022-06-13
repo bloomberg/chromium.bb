@@ -17,8 +17,9 @@
 
 #include "base/callback.h"
 #include "base/callback_helpers.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/quads/compositor_frame.h"
@@ -84,6 +85,10 @@ class VIZ_SERVICE_EXPORT Surface final {
    public:
     PresentationHelper(base::WeakPtr<SurfaceClient> surface_client,
                        uint32_t frame_token);
+
+    PresentationHelper(const PresentationHelper&) = delete;
+    PresentationHelper& operator=(const PresentationHelper&) = delete;
+
     ~PresentationHelper();
 
     void DidPresent(base::TimeTicks draw_start_timestamp,
@@ -93,8 +98,6 @@ class VIZ_SERVICE_EXPORT Surface final {
    private:
     base::WeakPtr<SurfaceClient> surface_client_;
     const uint32_t frame_token_;
-
-    DISALLOW_COPY_AND_ASSIGN(PresentationHelper);
   };
 
   using PresentedCallback =
@@ -105,6 +108,10 @@ class VIZ_SERVICE_EXPORT Surface final {
           SurfaceManager* surface_manager,
           SurfaceAllocationGroup* allocation_group,
           base::WeakPtr<SurfaceClient> surface_client);
+
+  Surface(const Surface&) = delete;
+  Surface& operator=(const Surface&) = delete;
+
   ~Surface();
 
   void SetDependencyDeadline(
@@ -116,6 +123,9 @@ class VIZ_SERVICE_EXPORT Surface final {
   }
   const gfx::Size& size_in_pixels() const {
     return surface_info_.size_in_pixels();
+  }
+  float device_scale_factor() const {
+    return surface_info_.device_scale_factor();
   }
 
   base::WeakPtr<SurfaceClient> client() { return surface_client_; }
@@ -203,6 +213,7 @@ class VIZ_SERVICE_EXPORT Surface final {
   // capture. We don't want to constantly switch between overlay and non-overlay
   // during video playback.
   bool IsVideoCaptureOnFromClient();
+  base::flat_set<base::PlatformThreadId> GetThreadIds();
 
   const base::flat_set<SurfaceId>& active_referenced_surfaces() const {
     return active_referenced_surfaces_;
@@ -348,7 +359,7 @@ class VIZ_SERVICE_EXPORT Surface final {
 
   const SurfaceInfo surface_info_;
   SurfaceId previous_frame_surface_id_;
-  SurfaceManager* const surface_manager_;
+  const raw_ptr<SurfaceManager> surface_manager_;
   base::WeakPtr<SurfaceClient> surface_client_;
   std::unique_ptr<SurfaceDependencyDeadline> deadline_;
 
@@ -385,15 +396,13 @@ class VIZ_SERVICE_EXPORT Surface final {
 
   bool is_latency_info_taken_ = false;
 
-  SurfaceAllocationGroup* const allocation_group_;
+  const raw_ptr<SurfaceAllocationGroup> allocation_group_;
 
   SurfaceSavedFrameStorage surface_saved_frame_storage_{this};
 
   bool has_damage_from_interpolated_frame_ = false;
 
   base::WeakPtrFactory<Surface> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(Surface);
 };
 
 }  // namespace viz

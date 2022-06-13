@@ -13,13 +13,13 @@
 #include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/location.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/extensions/api/web_authentication_proxy/web_authentication_proxy_service.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/device_info_sync_service_factory.h"
@@ -38,6 +38,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/sync_device_info/device_info.h"
+#include "components/sync_device_info/device_info_sync_service.h"
 #include "components/sync_device_info/device_info_tracker.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -297,11 +298,18 @@ absl::optional<bool> ChromeWebAuthenticationDelegate::
   // available (behind an additional interstitial) in Incognito mode.
   Profile* profile =
       Profile::FromBrowserContext(render_frame_host->GetBrowserContext());
-  if (profile->IsGuestSession() || profile->IsEphemeralGuestProfile()) {
+  if (profile->IsGuestSession()) {
     return false;
   }
 
   return absl::nullopt;
+}
+
+content::WebAuthenticationRequestProxy*
+ChromeWebAuthenticationDelegate::MaybeGetRequestProxy(
+    content::BrowserContext* browser_context) {
+  return extensions::WebAuthenticationProxyServiceFactory::GetForBrowserContext(
+      browser_context);
 }
 
 // ---------------------------------------------------------------------
@@ -321,7 +329,7 @@ void ChromeAuthenticatorRequestDelegate::RegisterProfilePrefs(
 
 ChromeAuthenticatorRequestDelegate::ChromeAuthenticatorRequestDelegate(
     content::RenderFrameHost* render_frame_host)
-    : render_frame_host_id_(render_frame_host->GetGlobalFrameRoutingId()) {
+    : render_frame_host_id_(render_frame_host->GetGlobalId()) {
   if (g_observer) {
     g_observer->Created(this);
   }
@@ -786,7 +794,18 @@ static std::string NameForDisplay(base::StringPiece raw_name) {
 // PairingFromSyncedDevice extracts the caBLEv2 information from Sync's
 // DeviceInfo (if any) into a caBLEv2 pairing. It may return nullptr.
 static std::unique_ptr<device::cablev2::Pairing> PairingFromSyncedDevice(
-    syncer::DeviceInfo* device) {
+    syncer::DeviceInfo* device,
+    const base::Time& now) {
+  if (device->last_updated_timestamp() < now) {
+    const base::TimeDelta age = now - device->last_updated_timestamp();
+    if (age.InHours() > 24 * 14) {
+      // Entries older than 14 days are dropped. If changing this, consider
+      // updating |cablev2::sync::IDIsValid| too so that the mobile-side is
+      // aligned.
+      return nullptr;
+    }
+  }
+
   const absl::optional<syncer::DeviceInfo::PhoneAsASecurityKeyInfo>&
       maybe_paask_info = device->paask_info();
   if (!maybe_paask_info) {
@@ -798,8 +817,17 @@ static std::unique_ptr<device::cablev2::Pairing> PairingFromSyncedDevice(
   auto pairing = std::make_unique<device::cablev2::Pairing>();
   pairing->name = NameForDisplay(device->client_name());
 
-  pairing->tunnel_server_domain = device::cablev2::tunnelserver::DecodeDomain(
-      paask_info.tunnel_server_domain);
+  const absl::optional<device::cablev2::tunnelserver::KnownDomainID>
+      tunnel_server_domain = device::cablev2::tunnelserver::ToKnownDomainID(
+          paask_info.tunnel_server_domain);
+  if (!tunnel_server_domain) {
+    // It's possible that a phone is running a more modern version of Chrome
+    // and uses an assigned tunnel server domain that is unknown to this code.
+    return nullptr;
+  }
+
+  pairing->tunnel_server_domain =
+      device::cablev2::tunnelserver::DecodeDomain(*tunnel_server_domain);
   pairing->contact_id = paask_info.contact_id;
   pairing->peer_public_key_x962 = paask_info.peer_public_key_x962;
   pairing->secret.assign(paask_info.secret.begin(), paask_info.secret.end());
@@ -833,29 +861,31 @@ static std::unique_ptr<device::cablev2::Pairing> PairingFromSyncedDevice(
 }
 
 static std::vector<std::unique_ptr<device::cablev2::Pairing>>
-GetCablePairingsFromSyncedDevices() {
+GetCablePairingsFromSyncedDevices(Profile* profile) {
   if (g_observer) {
     return g_observer->GetCablePairingsFromSyncedDevices();
   }
 
-  // Users may wish to sign into different profiles than the one syncing with
-  // the account that's on their phone. Therefore all known phones are
-  // considered:
-  std::vector<const syncer::DeviceInfoTracker*> trackers;
-  DeviceInfoSyncServiceFactory::GetAllDeviceInfoTrackers(&trackers);
-
   std::vector<std::unique_ptr<device::cablev2::Pairing>> ret;
-  for (const auto* tracker : trackers) {
-    std::vector<std::unique_ptr<syncer::DeviceInfo>> devices =
-        tracker->GetAllDeviceInfo();
-    for (const auto& device : devices) {
-      std::unique_ptr<device::cablev2::Pairing> pairing =
-          PairingFromSyncedDevice(device.get());
-      if (!pairing) {
-        continue;
-      }
-      ret.emplace_back(std::move(pairing));
+  syncer::DeviceInfoSyncService* const sync_service =
+      DeviceInfoSyncServiceFactory::GetForProfile(profile);
+  if (!sync_service) {
+    return ret;
+  }
+
+  syncer::DeviceInfoTracker* const tracker =
+      sync_service->GetDeviceInfoTracker();
+  std::vector<std::unique_ptr<syncer::DeviceInfo>> devices =
+      tracker->GetAllDeviceInfo();
+
+  const base::Time now = base::Time::Now();
+  for (const auto& device : devices) {
+    std::unique_ptr<device::cablev2::Pairing> pairing =
+        PairingFromSyncedDevice(device.get(), now);
+    if (!pairing) {
+      continue;
     }
+    ret.emplace_back(std::move(pairing));
   }
 
   return ret;
@@ -863,13 +893,20 @@ GetCablePairingsFromSyncedDevices() {
 
 std::vector<std::unique_ptr<device::cablev2::Pairing>>
 ChromeAuthenticatorRequestDelegate::GetCablePairings() {
+  Profile* profile = Profile::FromBrowserContext(GetBrowserContext());
+  if (profile->IsOffTheRecord()) {
+    // For Incognito windows we collect the devices from the parent profile.
+    // The |AuthenticatorRequestDialogModel| will notice that it's an OTR
+    // profile and display a confirmation interstitial for makeCredential calls.
+    profile = profile->GetOriginalProfile();
+  }
+
   std::vector<std::unique_ptr<device::cablev2::Pairing>> ret =
-      GetCablePairingsFromSyncedDevices();
+      GetCablePairingsFromSyncedDevices(profile);
   std::sort(ret.begin(), ret.end(),
             device::cablev2::Pairing::CompareByMostRecentFirst);
 
-  PrefService* prefs =
-      Profile::FromBrowserContext(GetBrowserContext())->GetPrefs();
+  PrefService* const prefs = profile->GetPrefs();
   const base::ListValue* pref_pairings =
       prefs->GetList(kWebAuthnCablePairingsPrefName);
 

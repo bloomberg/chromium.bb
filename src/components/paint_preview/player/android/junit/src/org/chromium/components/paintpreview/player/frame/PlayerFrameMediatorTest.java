@@ -12,6 +12,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
+import android.graphics.Point;
 import android.graphics.Rect;
 import android.os.Parcel;
 import android.util.Pair;
@@ -214,6 +215,11 @@ public class PlayerFrameMediatorTest {
             mClickedPoints.add(new ClickedPoint(frameGuid, x, y));
             return null;
         }
+
+        @Override
+        public Point getRootFrameOffsets() {
+            return new Point();
+        }
     }
 
     private class MatrixMatcher implements ArgumentMatcher<Matrix> {
@@ -237,8 +243,8 @@ public class PlayerFrameMediatorTest {
         mScroller = new OverScroller(ContextUtils.getApplicationContext());
         mGestureListener = new PlayerGestureListener(null, () -> mHasUserInteraction = true, null);
         Size contentSize = new Size(CONTENT_WIDTH, CONTENT_HEIGHT);
-        mMediator = new PlayerFrameMediator(
-                mModel, mCompositorDelegate, mGestureListener, mFrameGuid, contentSize, 0, 0, null);
+        mMediator = new PlayerFrameMediator(mModel, mCompositorDelegate, mGestureListener,
+                mFrameGuid, contentSize, 0, 0, 0f, null, true);
         mScaleController =
                 new PlayerFrameScaleController(mModel.get(PlayerFrameProperties.SCALE_MATRIX),
                         mMediator, null, mGestureListener::onScale);
@@ -553,27 +559,27 @@ public class PlayerFrameMediatorTest {
         Bitmap bitmap22 = Mockito.mock(Bitmap.class);
         SequencedTaskRunner mockTaskRunner = Mockito.mock(SequencedTaskRunner.class);
         CompressibleBitmap compressibleBitmap00 =
-                new CompressibleBitmap(bitmap00, mockTaskRunner, true);
+                new CompressibleBitmap(bitmap00, mockTaskRunner, true, true);
         CompressibleBitmap compressibleBitmap10 =
-                new CompressibleBitmap(bitmap10, mockTaskRunner, true);
+                new CompressibleBitmap(bitmap10, mockTaskRunner, true, true);
         CompressibleBitmap compressibleBitmap20 =
-                new CompressibleBitmap(bitmap20, mockTaskRunner, true);
+                new CompressibleBitmap(bitmap20, mockTaskRunner, true, true);
         CompressibleBitmap compressibleBitmap30 =
-                new CompressibleBitmap(bitmap30, mockTaskRunner, true);
+                new CompressibleBitmap(bitmap30, mockTaskRunner, true, true);
         CompressibleBitmap compressibleBitmap01 =
-                new CompressibleBitmap(bitmap01, mockTaskRunner, true);
+                new CompressibleBitmap(bitmap01, mockTaskRunner, true, true);
         CompressibleBitmap compressibleBitmap11 =
-                new CompressibleBitmap(bitmap11, mockTaskRunner, true);
+                new CompressibleBitmap(bitmap11, mockTaskRunner, true, true);
         CompressibleBitmap compressibleBitmap21 =
-                new CompressibleBitmap(bitmap21, mockTaskRunner, true);
+                new CompressibleBitmap(bitmap21, mockTaskRunner, true, true);
         CompressibleBitmap compressibleBitmap31 =
-                new CompressibleBitmap(bitmap31, mockTaskRunner, true);
+                new CompressibleBitmap(bitmap31, mockTaskRunner, true, true);
         CompressibleBitmap compressibleBitmap02 =
-                new CompressibleBitmap(bitmap02, mockTaskRunner, true);
+                new CompressibleBitmap(bitmap02, mockTaskRunner, true, true);
         CompressibleBitmap compressibleBitmap12 =
-                new CompressibleBitmap(bitmap12, mockTaskRunner, true);
+                new CompressibleBitmap(bitmap12, mockTaskRunner, true, true);
         CompressibleBitmap compressibleBitmap22 =
-                new CompressibleBitmap(bitmap22, mockTaskRunner, true);
+                new CompressibleBitmap(bitmap22, mockTaskRunner, true, true);
 
         CompressibleBitmap[][] expectedBitmapMatrix = new CompressibleBitmap[12][4];
         expectedBitmapMatrix[0][0] = compressibleBitmap00;
@@ -669,15 +675,19 @@ public class PlayerFrameMediatorTest {
         Pair<View, Rect> subFrame2 = new Pair<>(subFrame2View, new Rect(30, 130, 70, 160));
         Pair<View, Rect> subFrame3 = new Pair<>(subFrame3View, new Rect(120, 35, 150, 65));
 
-        mMediator.addSubFrame(
-                subFrame1.first, subFrame1.second, Mockito.mock(PlayerFrameMediator.class));
-        mMediator.addSubFrame(
-                subFrame2.first, subFrame2.second, Mockito.mock(PlayerFrameMediator.class));
-        mMediator.addSubFrame(
-                subFrame3.first, subFrame3.second, Mockito.mock(PlayerFrameMediator.class));
+        PlayerFrameMediator subFrame1Mediator = Mockito.mock(PlayerFrameMediator.class);
+        PlayerFrameMediator subFrame2Mediator = Mockito.mock(PlayerFrameMediator.class);
+        PlayerFrameMediator subFrame3Mediator = Mockito.mock(PlayerFrameMediator.class);
+        InOrder inOrder = inOrder(subFrame1Mediator, subFrame2Mediator, subFrame3Mediator);
+        mMediator.addSubFrame(subFrame1.first, subFrame1.second, subFrame1Mediator);
+        mMediator.addSubFrame(subFrame2.first, subFrame2.second, subFrame2Mediator);
+        mMediator.addSubFrame(subFrame3.first, subFrame3.second, subFrame3Mediator);
 
         // Initial view port setup.
         mMediator.updateViewportSize(100, 200, 1f);
+        inOrder.verify(subFrame1Mediator).setVisibleRegion(0, 0, 50, 100);
+        inOrder.verify(subFrame2Mediator).setVisibleRegion(0, 0, 40, 30);
+        inOrder.verify(subFrame3Mediator).setVisibleRegion(0, 0, 0, 0);
         List<View> expectedViews = new ArrayList<>();
         List<Rect> expectedRects = new ArrayList<>();
         List<Boolean> expectedVisibility = new ArrayList<>();
@@ -696,6 +706,9 @@ public class PlayerFrameMediatorTest {
                 getVisibilities(mModel.get(PlayerFrameProperties.SUBFRAME_VIEWS)));
 
         mScrollController.scrollBy(100, 0);
+        inOrder.verify(subFrame1Mediator).setVisibleRegion(0, 0, 0, 0);
+        inOrder.verify(subFrame2Mediator).setVisibleRegion(0, 0, 0, 0);
+        inOrder.verify(subFrame3Mediator).setVisibleRegion(0, 0, 30, 30);
         expectedRects.set(0, new Rect(0, 0, 0, 0));
         expectedRects.set(1, new Rect(0, 0, 0, 0));
         expectedRects.set(2, new Rect(20, 35, 50, 65));
@@ -709,6 +722,9 @@ public class PlayerFrameMediatorTest {
                 getVisibilities(mModel.get(PlayerFrameProperties.SUBFRAME_VIEWS)));
 
         mScrollController.scrollBy(-50, 0);
+        inOrder.verify(subFrame1Mediator).setVisibleRegion(40, 0, 50, 100);
+        inOrder.verify(subFrame2Mediator).setVisibleRegion(20, 0, 40, 30);
+        inOrder.verify(subFrame3Mediator).setVisibleRegion(0, 0, 30, 30);
         expectedRects.clear();
         expectedRects.add(new Rect(-40, 20, 10, 120));
         expectedRects.add(new Rect(-20, 130, 20, 160));
@@ -723,6 +739,9 @@ public class PlayerFrameMediatorTest {
                 getVisibilities(mModel.get(PlayerFrameProperties.SUBFRAME_VIEWS)));
 
         mScrollController.scrollBy(0, 200);
+        inOrder.verify(subFrame1Mediator).setVisibleRegion(0, 0, 0, 0);
+        inOrder.verify(subFrame2Mediator).setVisibleRegion(0, 0, 0, 0);
+        inOrder.verify(subFrame3Mediator).setVisibleRegion(0, 0, 0, 0);
         expectedRects.clear();
         expectedRects.add(new Rect(0, 0, 0, 0));
         expectedRects.add(new Rect(0, 0, 0, 0));
@@ -1370,15 +1389,15 @@ public class PlayerFrameMediatorTest {
         Bitmap bitmap11 = Mockito.mock(Bitmap.class);
         SequencedTaskRunner mockTaskRunner = Mockito.mock(SequencedTaskRunner.class);
         CompressibleBitmap compressibleBitmap00 =
-                new CompressibleBitmap(bitmap00, mockTaskRunner, true);
+                new CompressibleBitmap(bitmap00, mockTaskRunner, true, true);
         CompressibleBitmap compressibleBitmap10 =
-                new CompressibleBitmap(bitmap10, mockTaskRunner, true);
+                new CompressibleBitmap(bitmap10, mockTaskRunner, true, true);
         CompressibleBitmap compressibleBitmap20 =
-                new CompressibleBitmap(bitmap20, mockTaskRunner, true);
+                new CompressibleBitmap(bitmap20, mockTaskRunner, true, true);
         CompressibleBitmap compressibleBitmap01 =
-                new CompressibleBitmap(bitmap01, mockTaskRunner, true);
+                new CompressibleBitmap(bitmap01, mockTaskRunner, true, true);
         CompressibleBitmap compressibleBitmap11 =
-                new CompressibleBitmap(bitmap11, mockTaskRunner, true);
+                new CompressibleBitmap(bitmap11, mockTaskRunner, true, true);
 
         CompressibleBitmap[][] expectedBitmapMatrix = new CompressibleBitmap[12][4];
         expectedBitmapMatrix[0][0] = compressibleBitmap00;

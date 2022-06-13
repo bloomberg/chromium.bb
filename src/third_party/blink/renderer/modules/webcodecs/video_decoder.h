@@ -21,8 +21,6 @@
 #include "third_party/blink/renderer/modules/webcodecs/decoder_template.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
 
 namespace media {
@@ -115,7 +113,8 @@ class MODULES_EXPORT VideoDecoder : public DecoderTemplate<VideoDecoderTraits> {
                                   MediaConfigType* out_media_config,
                                   String* out_console_message) override;
   media::StatusOr<scoped_refptr<media::DecoderBuffer>> MakeDecoderBuffer(
-      const InputType& input) override;
+      const InputType& input,
+      bool verify_key_frame) override;
 
   static ScriptPromise IsAcceleratedConfigSupported(ScriptState* script_state,
                                                     const VideoDecoderConfig*,
@@ -125,6 +124,8 @@ class MODULES_EXPORT VideoDecoder : public DecoderTemplate<VideoDecoderTraits> {
   std::unique_ptr<media::H264ToAnnexBBitstreamConverter> h264_converter_;
   std::unique_ptr<media::mp4::AVCDecoderConfigurationRecord> h264_avcc_;
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
+
+  media::VideoCodec current_codec_ = media::VideoCodec::kUnknown;
 
  private:
   // DecoderTemplate implementation.

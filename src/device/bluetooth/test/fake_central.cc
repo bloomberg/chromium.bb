@@ -21,6 +21,10 @@
 #include "device/bluetooth/test/fake_remote_gatt_characteristic.h"
 #include "device/bluetooth/test/fake_remote_gatt_service.h"
 
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "device/bluetooth/bluetooth_low_energy_scan_filter.h"
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+
 namespace bluetooth {
 
 namespace {
@@ -610,13 +614,26 @@ device::BluetoothLocalGattService* FakeCentral::GetGattService(
   return nullptr;
 }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 void FakeCentral::SetServiceAllowList(const UUIDList& uuids,
                                       base::OnceClosure callback,
                                       ErrorCallback error_callback) {
   NOTREACHED();
 }
-#endif
+
+std::unique_ptr<device::BluetoothLowEnergyScanSession>
+FakeCentral::StartLowEnergyScanSession(
+    std::unique_ptr<device::BluetoothLowEnergyScanFilter> filter,
+    base::WeakPtr<device::BluetoothLowEnergyScanSession::Delegate> delegate) {
+  NOTREACHED();
+  return nullptr;
+}
+
+device::BluetoothAdapter::LowEnergyScanSessionHardwareOffloadingStatus
+FakeCentral::GetLowEnergyScanSessionHardwareOffloadingStatus() {
+  return LowEnergyScanSessionHardwareOffloadingStatus::kNotSupported;
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
 base::WeakPtr<device::BluetoothAdapter> FakeCentral::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();

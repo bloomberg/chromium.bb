@@ -30,13 +30,22 @@ class SyncedNetworkMetricsLoggerTest : public testing::Test {
       : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {
     network_test_helper_ = std::make_unique<NetworkTestHelper>();
   }
+
+  SyncedNetworkMetricsLoggerTest(const SyncedNetworkMetricsLoggerTest&) =
+      delete;
+  SyncedNetworkMetricsLoggerTest& operator=(
+      const SyncedNetworkMetricsLoggerTest&) = delete;
+
   ~SyncedNetworkMetricsLoggerTest() override = default;
 
   void SetUp() override {
     testing::Test::SetUp();
     network_test_helper_->SetUp();
     base::RunLoop().RunUntilIdle();
+    InitializeMetricsLogger();
+  }
 
+  void InitializeMetricsLogger() {
     synced_network_metrics_logger_ =
         std::make_unique<SyncedNetworkMetricsLogger>(
             network_test_helper_->network_state_test_helper()
@@ -52,6 +61,18 @@ class SyncedNetworkMetricsLoggerTest : public testing::Test {
     SetNetworkProperty(network->path(), shill::kErrorProperty, error);
     SetNetworkProperty(network->path(), shill::kStateProperty,
                        shill::kStateFailure);
+  }
+
+  void SimulateConnectionSuccess(bool include_connecting_state) {
+    const NetworkState* network = CreateNetwork(/*from_sync=*/true);
+
+    if (include_connecting_state) {
+      SetNetworkProperty(network->path(), shill::kStateProperty,
+                         shill::kStateConfiguration);
+    }
+
+    SetNetworkProperty(network->path(), shill::kStateProperty,
+                       shill::kStateOnline);
   }
 
  protected:
@@ -83,11 +104,12 @@ class SyncedNetworkMetricsLoggerTest : public testing::Test {
         ->GetNetworkStateFromGuid(guid);
   }
 
+  // Skips the system clock ahead by 10 seconds.
+  void SkipAhead() { task_environment_.FastForwardBy(base::Seconds(10)); }
+
  private:
   std::unique_ptr<NetworkTestHelper> network_test_helper_;
   std::unique_ptr<SyncedNetworkMetricsLogger> synced_network_metrics_logger_;
-
-  DISALLOW_COPY_AND_ASSIGN(SyncedNetworkMetricsLoggerTest);
 };
 
 TEST_F(SyncedNetworkMetricsLoggerTest,
@@ -158,6 +180,35 @@ TEST_F(SyncedNetworkMetricsLoggerTest,
   histogram_tester.ExpectBucketCount(kConnectionResultAllHistogram, false, 1);
   histogram_tester.ExpectBucketCount(kConnectionFailureReasonAllHistogram,
                                      ConnectionFailureReason::kUnknown, 1);
+}
+
+TEST_F(SyncedNetworkMetricsLoggerTest,
+       SuccessfulConnection_SyncedNetwork_AfterLogin) {
+  base::HistogramTester histogram_tester;
+  SimulateConnectionSuccess(/*include_connecting_state=*/false);
+
+  histogram_tester.ExpectBucketCount(kConnectionResultAllHistogram, true, 1);
+}
+
+TEST_F(SyncedNetworkMetricsLoggerTest,
+       SuccessfulConnection_SyncedNetwork_DuringLogin) {
+  const NetworkState* network = CreateNetwork(/*from_sync=*/true);
+  SetNetworkProperty(network->path(), shill::kStateProperty,
+                     shill::kStateOnline);
+
+  base::HistogramTester histogram_tester;
+  InitializeMetricsLogger();
+
+  histogram_tester.ExpectBucketCount(kConnectionResultAllHistogram, true, 1);
+}
+
+TEST_F(SyncedNetworkMetricsLoggerTest,
+       SuccessfulConnection_SyncedNetwork_Session) {
+  base::HistogramTester histogram_tester;
+  SkipAhead();
+  SimulateConnectionSuccess(/*include_connecting_state=*/true);
+
+  histogram_tester.ExpectBucketCount(kConnectionResultAllHistogram, true, 1);
 }
 
 TEST_F(SyncedNetworkMetricsLoggerTest,

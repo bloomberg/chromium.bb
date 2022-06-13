@@ -13,14 +13,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 #include <string>
+#include <utility>
 
 #include "tensorflow/lite/tools/delegates/delegate_provider.h"
 #include "tensorflow/lite/tools/evaluation/utils.h"
-
-#if (defined(ANDROID) || defined(__ANDROID__)) && \
-    (defined(__arm__) || defined(__aarch64__))
-#define TFLITE_ENABLE_HEXAGON
-#endif
 
 #if defined(TFLITE_ENABLE_HEXAGON)
 #include "tensorflow/lite/delegates/hexagon/hexagon_delegate.h"
@@ -43,9 +39,11 @@ class HexagonDelegateProvider : public DelegateProvider {
 
   std::vector<Flag> CreateFlags(ToolParams* params) const final;
 
-  void LogParams(const ToolParams& params) const final;
+  void LogParams(const ToolParams& params, bool verbose) const final;
 
   TfLiteDelegatePtr CreateTfLiteDelegate(const ToolParams& params) const final;
+  std::pair<TfLiteDelegatePtr, int> CreateRankedTfLiteDelegate(
+      const ToolParams& params) const final;
 
   std::string GetName() const final { return "Hexagon"; }
 };
@@ -67,14 +65,14 @@ std::vector<Flag> HexagonDelegateProvider::CreateFlags(
 #endif
 }
 
-void HexagonDelegateProvider::LogParams(const ToolParams& params) const {
+void HexagonDelegateProvider::LogParams(const ToolParams& params,
+                                        bool verbose) const {
 #if defined(TFLITE_ENABLE_HEXAGON)
-  TFLITE_LOG(INFO) << "Use Hexagon : [" << params.Get<bool>("use_hexagon")
-                   << "]";
-  TFLITE_LOG(INFO) << "Hexagon lib path : ["
-                   << params.Get<std::string>("hexagon_lib_path") << "]";
-  TFLITE_LOG(INFO) << "Hexagon Profiling : ["
-                   << params.Get<bool>("hexagon_profiling") << "]";
+  LOG_TOOL_PARAM(params, bool, "use_hexagon", "Use Hexagon", verbose);
+  LOG_TOOL_PARAM(params, std::string, "hexagon_lib_path", "Hexagon lib path",
+                 verbose);
+  LOG_TOOL_PARAM(params, bool, "hexagon_profiling", "Hexagon profiling",
+                 verbose);
 #endif
 }
 
@@ -100,6 +98,17 @@ TfLiteDelegatePtr HexagonDelegateProvider::CreateTfLiteDelegate(
   }
 #endif
   return delegate;
+}
+
+std::pair<TfLiteDelegatePtr, int>
+HexagonDelegateProvider::CreateRankedTfLiteDelegate(
+    const ToolParams& params) const {
+  auto ptr = CreateTfLiteDelegate(params);
+  int rank = 0;
+#if defined(TFLITE_ENABLE_HEXAGON)
+  rank = params.GetPosition<bool>("use_hexagon");
+#endif
+  return std::make_pair(std::move(ptr), rank);
 }
 
 }  // namespace tools

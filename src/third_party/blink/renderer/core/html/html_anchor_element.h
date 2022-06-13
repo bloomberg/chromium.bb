@@ -24,7 +24,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_ANCHOR_ELEMENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_ANCHOR_ELEMENT_H_
 
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/platform/web_impression.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -71,6 +70,7 @@ class CORE_EXPORT HTMLAnchorElement : public HTMLElement, public DOMURLUtils {
 
   KURL Href() const;
   void SetHref(const AtomicString&);
+  void setHref(const String&);
 
   const AtomicString& GetName() const;
 
@@ -82,7 +82,6 @@ class CORE_EXPORT HTMLAnchorElement : public HTMLElement, public DOMURLUtils {
   void SetURL(const KURL&) final;
 
   String Input() const final;
-  void SetInput(const String&) final;
 
   bool IsLiveLink() const final;
 

@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "base/notreached.h"
-#include "base/stl_util.h"
 #include "media/gpu/h264_dpb.h"
 
 namespace media {
@@ -34,6 +33,8 @@ H264Picture::H264Picture()
       idr(false),
       idr_pic_id(0),
       ref(false),
+      ref_pic_list_modification_flag_l0(0),
+      abs_diff_pic_num_minus1(0),
       long_term(false),
       outputted(false),
       mem_mgmt_5(false),

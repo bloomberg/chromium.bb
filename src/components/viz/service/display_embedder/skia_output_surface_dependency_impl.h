@@ -8,16 +8,12 @@
 #include <memory>
 
 #include "base/callback_helpers.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
 #include "components/viz/service/display_embedder/skia_output_surface_dependency.h"
 
 namespace base {
 class SingleThreadTaskRunner;
-}
-
-namespace gpu {
-class CommandBufferTaskExecutor;
 }
 
 namespace viz {
@@ -29,8 +25,13 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceDependencyImpl
  public:
   SkiaOutputSurfaceDependencyImpl(
       GpuServiceImpl* gpu_service_impl,
-      gpu::CommandBufferTaskExecutor* gpu_task_executor,
       gpu::SurfaceHandle surface_handle);
+
+  SkiaOutputSurfaceDependencyImpl(const SkiaOutputSurfaceDependencyImpl&) =
+      delete;
+  SkiaOutputSurfaceDependencyImpl& operator=(
+      const SkiaOutputSurfaceDependencyImpl&) = delete;
+
   ~SkiaOutputSurfaceDependencyImpl() override;
 
   std::unique_ptr<gpu::SingleTaskSequence> CreateSequence() override;
@@ -70,12 +71,9 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceDependencyImpl
   bool NeedsSupportForExternalStencil() override;
 
  private:
-  GpuServiceImpl* const gpu_service_impl_;
-  gpu::CommandBufferTaskExecutor* const gpu_task_executor_;
+  const raw_ptr<GpuServiceImpl> gpu_service_impl_;
   const gpu::SurfaceHandle surface_handle_;
   scoped_refptr<base::SingleThreadTaskRunner> client_thread_task_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(SkiaOutputSurfaceDependencyImpl);
 };
 
 }  // namespace viz

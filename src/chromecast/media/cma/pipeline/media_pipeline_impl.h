@@ -6,10 +6,8 @@
 #define CHROMECAST_MEDIA_CMA_PIPELINE_MEDIA_PIPELINE_IMPL_H_
 
 #include <memory>
-#include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
@@ -38,6 +36,10 @@ struct VideoPipelineClient;
 class MediaPipelineImpl {
  public:
   MediaPipelineImpl();
+
+  MediaPipelineImpl(const MediaPipelineImpl&) = delete;
+  MediaPipelineImpl& operator=(const MediaPipelineImpl&) = delete;
+
   ~MediaPipelineImpl();
 
   // Initialize the media pipeline: the pipeline is configured based on
@@ -133,8 +135,6 @@ class MediaPipelineImpl {
 
   base::WeakPtr<MediaPipelineImpl> weak_this_;
   base::WeakPtrFactory<MediaPipelineImpl> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(MediaPipelineImpl);
 };
 
 }  // namespace media

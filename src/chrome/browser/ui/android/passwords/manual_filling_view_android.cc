@@ -16,7 +16,6 @@
 #include "base/android/jni_string.h"
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/android/features/keyboard_accessory/jni_headers/ManualFillingComponentBridge_jni.h"
 #include "chrome/android/features/keyboard_accessory/jni_headers/UserInfoField_jni.h"
@@ -31,8 +30,10 @@
 #include "content/public/browser/web_contents.h"
 #include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
+#include "url/android/gurl_android.h"
 
 using autofill::AccessorySheetData;
+using autofill::AccessorySheetField;
 using autofill::FooterCommand;
 using autofill::UserInfo;
 using autofill::password_generation::PasswordGenerationUIData;
@@ -91,6 +92,14 @@ void ManualFillingViewAndroid::Hide() {
   if (auto obj = GetOrCreateJavaObject()) {
     Java_ManualFillingComponentBridge_hide(base::android::AttachCurrentThread(),
                                            obj);
+  }
+}
+
+void ManualFillingViewAndroid::ShowAccessorySheetTab(
+    const autofill::AccessoryTabType& tab_type) {
+  if (auto obj = GetOrCreateJavaObject()) {
+    Java_ManualFillingComponentBridge_showAccessorySheetTab(
+        base::android::AttachCurrentThread(), obj, static_cast<int>(tab_type));
   }
 }
 
@@ -173,16 +182,32 @@ ManualFillingViewAndroid::ConvertAccessorySheetDataToJavaObject(
         Java_ManualFillingComponentBridge_addUserInfoToAccessorySheetData(
             env, java_object_internal_, j_tab_data,
             ConvertUTF8ToJavaString(env, user_info.origin()),
-            user_info.is_psl_match().value());
-    for (const UserInfo::Field& field : user_info.fields()) {
+            user_info.is_exact_match().value(),
+            url::GURLAndroid::FromNativeGURL(env, user_info.icon_url()));
+    for (const AccessorySheetField& field : user_info.fields()) {
       Java_ManualFillingComponentBridge_addFieldToUserInfo(
           env, java_object_internal_, j_user_info,
           static_cast<int>(tab_data.get_sheet_type()),
           ConvertUTF16ToJavaString(env, field.display_text()),
+          ConvertUTF16ToJavaString(env, field.text_to_fill()),
           ConvertUTF16ToJavaString(env, field.a11y_description()),
           ConvertUTF8ToJavaString(env, field.id()), field.is_obfuscated(),
           field.selectable());
     }
+  }
+
+  for (const autofill::PromoCodeInfo& promo_code_info :
+       tab_data.promo_code_info_list()) {
+    const AccessorySheetField promo_code = promo_code_info.promo_code();
+    const std::u16string detailsText = promo_code_info.details_text();
+    Java_ManualFillingComponentBridge_addPromoCodeInfoToAccessorySheetData(
+        env, java_object_internal_, j_tab_data,
+        static_cast<int>(tab_data.get_sheet_type()),
+        ConvertUTF16ToJavaString(env, promo_code.display_text()),
+        ConvertUTF16ToJavaString(env, promo_code.text_to_fill()),
+        ConvertUTF16ToJavaString(env, promo_code.a11y_description()),
+        ConvertUTF8ToJavaString(env, promo_code.id()),
+        promo_code.is_obfuscated(), ConvertUTF16ToJavaString(env, detailsText));
   }
 
   for (const FooterCommand& footer_command : tab_data.footer_commands()) {
@@ -194,19 +219,21 @@ ManualFillingViewAndroid::ConvertAccessorySheetDataToJavaObject(
   return j_tab_data;
 }
 
-UserInfo::Field ManualFillingViewAndroid::ConvertJavaUserInfoField(
+AccessorySheetField ManualFillingViewAndroid::ConvertJavaUserInfoField(
     JNIEnv* env,
     const JavaRef<jobject>& j_field_to_convert) {
   std::u16string display_text = ConvertJavaStringToUTF16(
       env, Java_UserInfoField_getDisplayText(env, j_field_to_convert));
+  std::u16string text_to_fill = ConvertJavaStringToUTF16(
+      env, Java_UserInfoField_getTextToFill(env, j_field_to_convert));
   std::u16string a11y_description = ConvertJavaStringToUTF16(
       env, Java_UserInfoField_getA11yDescription(env, j_field_to_convert));
   std::string id = ConvertJavaStringToUTF8(
       env, Java_UserInfoField_getId(env, j_field_to_convert));
   bool is_obfuscated = Java_UserInfoField_isObfuscated(env, j_field_to_convert);
   bool selectable = Java_UserInfoField_isSelectable(env, j_field_to_convert);
-  return UserInfo::Field(display_text, a11y_description, id, is_obfuscated,
-                         selectable);
+  return AccessorySheetField(display_text, text_to_fill, a11y_description, id,
+                             is_obfuscated, selectable);
 }
 
 base::android::ScopedJavaGlobalRef<jobject>
@@ -234,7 +261,7 @@ void JNI_ManualFillingComponentBridge_CachePasswordSheetDataForTesting(
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(j_web_contents);
 
-  url::Origin origin = url::Origin::Create(web_contents->GetLastCommittedURL());
+  url::Origin origin = web_contents->GetMainFrame()->GetLastCommittedOrigin();
   std::vector<std::string> usernames;
   std::vector<std::string> passwords;
   base::android::AppendJavaStringArrayToStringVector(env, j_usernames,

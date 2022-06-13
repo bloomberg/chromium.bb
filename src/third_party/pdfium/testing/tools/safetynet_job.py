@@ -15,14 +15,13 @@ import json
 import os
 import sys
 
-# pylint: disable=relative-import
 from common import PrintWithTime
 from common import RunCommandPropagateErr
 from githelper import GitHelper
 from safetynet_conclusions import PrintConclusionsDictHumanReadable
 
 
-class JobContext(object):
+class JobContext:
   """Context for a single run, including name and directory paths."""
 
   def __init__(self, args):
@@ -36,7 +35,7 @@ class JobContext(object):
                                             '%s.log' % self.datetime)
 
 
-class JobRun(object):
+class JobRun:
   """A single run looking for regressions since the last one."""
 
   def __init__(self, args, context):
@@ -69,7 +68,7 @@ class JobRun(object):
 
     if not self.args.no_checkout:
       self.git.FetchOriginMaster()
-      self.git.Checkout('origin/master')
+      self.git.Checkout('origin/main')
 
     # Make sure results dir exists
     if not os.path.exists(self.context.results_dir):
@@ -200,7 +199,7 @@ def main():
   parser.add_argument(
       '--no-checkout',
       action='store_true',
-      help='whether to skip checking out origin/master. Use '
+      help='whether to skip checking out origin/main. Use '
       'for script debugging.')
   parser.add_argument(
       '--no-checkpoint',

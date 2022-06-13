@@ -34,10 +34,11 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
-namespace chromeos {
-
+namespace ash {
 namespace {
+
 // These values should not be renumbered and numeric values should never
 // be reused. This must be kept in sync with SamlInSessionPasswordSyncEvent
 // in tools/metrics/histogram/enums.xml
@@ -210,8 +211,7 @@ void PasswordSyncTokenFetcher::FetchSyncToken(const std::string& access_token) {
           "order to sync user's password and update the token."
         data: "Access token and token_type."
         destination: GOOGLE_OWNED_SERVICE
-        }
-  })");
+      })");
   auto resource_request = std::make_unique<network::ResourceRequest>();
   switch (request_type_) {
     case RequestType::kCreateToken:
@@ -385,4 +385,4 @@ void PasswordSyncTokenFetcher::ProcessValidTokenResponse(
   }
 }
 
-}  // namespace chromeos
+}  // namespace ash

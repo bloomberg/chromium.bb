@@ -1,5 +1,5 @@
 export const description = `
-Tests for GPUSwapChain.getCurrentTexture.
+Tests for GPUCanvasContext.getCurrentTexture.
 `;
 
 import { Fixture } from '../../../common/framework/fixture.js';

@@ -45,13 +45,19 @@ export class BrowserRunner {
         this._tempDirectory = tempDirectory;
     }
     start(options) {
-        const { handleSIGINT, handleSIGTERM, handleSIGHUP, dumpio, env, pipe, } = options;
-        let stdio = ['pipe', 'pipe', 'pipe'];
+        const { handleSIGINT, handleSIGTERM, handleSIGHUP, dumpio, env, pipe } = options;
+        let stdio;
         if (pipe) {
             if (dumpio)
                 stdio = ['ignore', 'pipe', 'pipe', 'pipe', 'pipe'];
             else
                 stdio = ['ignore', 'ignore', 'ignore', 'pipe', 'pipe'];
+        }
+        else {
+            if (dumpio)
+                stdio = ['pipe', 'pipe', 'pipe'];
+            else
+                stdio = ['pipe', 'ignore', 'pipe'];
         }
         assert(!this.proc, 'This process has previously been started.');
         debugLauncher(`Calling ${this._executablePath} ${this._processArguments.join(' ')}`);
@@ -69,14 +75,17 @@ export class BrowserRunner {
             this.proc.stdout.pipe(process.stdout);
         }
         this._closed = false;
-        this._processClosing = new Promise((fulfill) => {
+        this._processClosing = new Promise((fulfill, reject) => {
             this.proc.once('exit', () => {
                 this._closed = true;
                 // Cleanup as processes exit.
                 if (this._tempDirectory) {
                     removeFolderAsync(this._tempDirectory)
                         .then(() => fulfill())
-                        .catch((error) => console.error(error));
+                        .catch((error) => {
+                        console.error(error);
+                        reject(error);
+                    });
                 }
                 else {
                     fulfill();

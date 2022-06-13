@@ -4,19 +4,19 @@
 
 import {assertEquals, assertFalse, assertTrue} from 'chrome://test/chai_assert.js';
 
-import {MockVolumeManager} from '../../../background/js/mock_volume_manager.m.js';
-import {FakeEntryImpl} from '../../../common/js/files_app_entry_types.m.js';
-import {VolumeManagerCommon} from '../../../common/js/volume_manager_types.m.js';
-import {importerHistoryInterfaces} from '../../../externs/background/import_history.m.js';
-import {DirectoryModel} from '../directory_model.m.js';
-import {FileListModel} from '../file_list_model.m.js';
-import {MetadataModel} from '../metadata/metadata_model.m.js';
-import {MockMetadataModel} from '../metadata/mock_metadata.m.js';
+import {MockVolumeManager} from '../../../background/js/mock_volume_manager.js';
+import {FakeEntryImpl} from '../../../common/js/files_app_entry_types.js';
+import {VolumeManagerCommon} from '../../../common/js/volume_manager_types.js';
+import {importerHistoryInterfaces} from '../../../externs/background/import_history.js';
+import {DirectoryModel} from '../directory_model.js';
+import {FileListModel} from '../file_list_model.js';
+import {MetadataModel} from '../metadata/metadata_model.js';
+import {MockMetadataModel} from '../metadata/mock_metadata.js';
 
-import {A11yAnnounce} from './a11y_announce.m.js';
-import {FileListSelectionModel} from './file_list_selection_model.m.js';
-import {FileTable} from './file_table.m.js';
-import {FileTableList} from './file_table_list.m.js';
+import {A11yAnnounce} from './a11y_announce.js';
+import {FileListSelectionModel} from './file_list_selection_model.js';
+import {FileTable} from './file_table.js';
+import {FileTableList} from './file_table_list.js';
 
 /** @type {!MockVolumeManager} */
 let volumeManager;
@@ -40,7 +40,7 @@ let a11y;
 export function setUp() {
   // Mock LoadTimeData strings.
   window.loadTimeData.getString = id => id;
-  window.loadTimeData.resetForTesting();
+  window.loadTimeData.resetForTesting({});
 
   // Setup mock components.
   volumeManager = new MockVolumeManager();

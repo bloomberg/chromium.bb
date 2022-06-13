@@ -48,7 +48,6 @@ class TraceParser;
 class TraceSorter;
 class TraceStorage;
 class TrackTracker;
-class JsonTracker;
 class DescriptorPool;
 
 class TraceProcessorContext {
@@ -92,7 +91,6 @@ class TraceProcessorContext {
   std::unique_ptr<Destructible> binder_tracker;          // BinderTracker
   std::unique_ptr<Destructible> systrace_parser;         // SystraceParser
   std::unique_ptr<Destructible> heap_graph_tracker;      // HeapGraphTracker
-  std::unique_ptr<Destructible> json_tracker;            // JsonTracker
   std::unique_ptr<Destructible> system_info_tracker;     // SystemInfoTracker
 
   // These fields are trace readers which will be called by |forwarding_parser|
@@ -118,6 +116,11 @@ class TraceProcessorContext {
   std::vector<std::vector<ProtoImporterModule*>> modules_by_field;
   std::vector<std::unique_ptr<ProtoImporterModule>> modules;
   FtraceModule* ftrace_module = nullptr;
+
+  // Marks whether the uuid was read from the trace.
+  // If the uuid was NOT read, the uuid will be made from the hash of the first
+  // 4KB of the trace.
+  bool uuid_found_in_trace = false;
 };
 
 }  // namespace trace_processor

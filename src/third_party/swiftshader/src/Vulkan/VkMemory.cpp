@@ -12,9 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef VK_OBJECT_HPP_
-#define VK_OBJECT_HPP_
-
 #include "VkMemory.hpp"
 
 #include "VkConfig.hpp"
@@ -22,16 +19,45 @@
 
 namespace vk {
 
-void *allocate(size_t count, size_t alignment, const VkAllocationCallbacks *pAllocator, VkSystemAllocationScope allocationScope)
+void *allocateDeviceMemory(size_t bytes, size_t alignment)
 {
-	return pAllocator ? pAllocator->pfnAllocation(pAllocator->pUserData, count, alignment, allocationScope) : sw::allocate(count, alignment);
+	// TODO(b/140991626): Use allocateZeroOrPoison() instead of allocateZero() to detect MemorySanitizer errors.
+#if defined(SWIFTSHADER_ZERO_INITIALIZE_DEVICE_MEMORY)
+	return sw::allocateZero(bytes, alignment);
+#else
+	// TODO(b/140991626): Use allocateUninitialized() instead of allocateZeroOrPoison() to improve startup peformance.
+	return sw::allocateZeroOrPoison(bytes, alignment);
+#endif
 }
 
-void deallocate(void *ptr, const VkAllocationCallbacks *pAllocator)
+void freeDeviceMemory(void *ptr)
 {
-	pAllocator ? pAllocator->pfnFree(pAllocator->pUserData, ptr) : sw::deallocate(ptr);
+	sw::freeMemory(ptr);
+}
+
+void *allocateHostMemory(size_t bytes, size_t alignment, const VkAllocationCallbacks *pAllocator, VkSystemAllocationScope allocationScope)
+{
+	if(pAllocator)
+	{
+		return pAllocator->pfnAllocation(pAllocator->pUserData, bytes, alignment, allocationScope);
+	}
+	else
+	{
+		// TODO(b/140991626): Use allocateUninitialized() instead of allocateZeroOrPoison() to improve startup peformance.
+		return sw::allocateZeroOrPoison(bytes, alignment);
+	}
+}
+
+void freeHostMemory(void *ptr, const VkAllocationCallbacks *pAllocator)
+{
+	if(pAllocator)
+	{
+		pAllocator->pfnFree(pAllocator->pUserData, ptr);
+	}
+	else
+	{
+		sw::freeMemory(ptr);
+	}
 }
 
 }  // namespace vk
-
-#endif  // VK_OBJECT_HPP_

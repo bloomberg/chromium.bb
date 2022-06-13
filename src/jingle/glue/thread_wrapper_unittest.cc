@@ -6,8 +6,9 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "jingle/glue/thread_wrapper.h"
@@ -60,7 +61,7 @@ class DeletableObject {
   }
 
  private:
-  bool* deleted_;
+  raw_ptr<bool> deleted_;
 };
 
 }  // namespace
@@ -89,7 +90,7 @@ class ThreadWrapperTest : public testing::Test {
 
   // ThreadWrapper destroyes itself when |message_loop_| is destroyed.
   base::test::SingleThreadTaskEnvironment task_environment_;
-  rtc::Thread* thread_;
+  raw_ptr<rtc::Thread> thread_;
   MockMessageHandler handler1_;
   MockMessageHandler handler2_;
 };
@@ -155,8 +156,7 @@ TEST_F(ThreadWrapperTest, PostDelayed) {
 
   base::RunLoop run_loop;
   task_environment_.GetMainThreadTaskRunner()->PostDelayedTask(
-      FROM_HERE, run_loop.QuitClosure(),
-      base::TimeDelta::FromMilliseconds(kMaxTestDelay));
+      FROM_HERE, run_loop.QuitClosure(), base::Milliseconds(kMaxTestDelay));
   run_loop.Run();
 }
 
@@ -211,8 +211,7 @@ TEST_F(ThreadWrapperTest, ClearDelayed) {
 
   base::RunLoop run_loop;
   task_environment_.GetMainThreadTaskRunner()->PostDelayedTask(
-      FROM_HERE, run_loop.QuitClosure(),
-      base::TimeDelta::FromMilliseconds(kMaxTestDelay));
+      FROM_HERE, run_loop.QuitClosure(), base::Milliseconds(kMaxTestDelay));
   run_loop.Run();
 }
 

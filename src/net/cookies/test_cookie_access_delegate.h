@@ -6,9 +6,13 @@
 #define NET_COOKIES_TEST_COOKIE_ACCESS_DELEGATE_H_
 
 #include <map>
+#include <set>
+#include <string>
 
+#include "base/containers/flat_map.h"
 #include "net/cookies/cookie_access_delegate.h"
 #include "net/cookies/cookie_constants.h"
+#include "net/cookies/same_party_context.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace net {
@@ -21,6 +25,10 @@ class SchemefulSite;
 class TestCookieAccessDelegate : public CookieAccessDelegate {
  public:
   TestCookieAccessDelegate();
+
+  TestCookieAccessDelegate(const TestCookieAccessDelegate&) = delete;
+  TestCookieAccessDelegate& operator=(const TestCookieAccessDelegate&) = delete;
+
   ~TestCookieAccessDelegate() override;
 
   // CookieAccessDelegate implementation:
@@ -29,15 +37,17 @@ class TestCookieAccessDelegate : public CookieAccessDelegate {
   bool ShouldIgnoreSameSiteRestrictions(
       const GURL& url,
       const SiteForCookies& site_for_cookies) const override;
-  bool IsContextSamePartyWithSite(
+  SamePartyContext ComputeSamePartyContext(
       const net::SchemefulSite& site,
-      const absl::optional<net::SchemefulSite>& top_frame_site,
+      const net::SchemefulSite* top_frame_site,
       const std::set<net::SchemefulSite>& party_context) const override;
   FirstPartySetsContextType ComputeFirstPartySetsContextType(
       const net::SchemefulSite& site,
       const absl::optional<net::SchemefulSite>& top_frame_site,
       const std::set<net::SchemefulSite>& party_context) const override;
   bool IsInNontrivialFirstPartySet(
+      const net::SchemefulSite& site) const override;
+  absl::optional<net::SchemefulSite> FindFirstPartySetOwner(
       const net::SchemefulSite& site) const override;
   base::flat_map<net::SchemefulSite, std::set<net::SchemefulSite>>
   RetrieveFirstPartySets() const override;
@@ -55,6 +65,9 @@ class TestCookieAccessDelegate : public CookieAccessDelegate {
       const std::string& site_for_cookies_scheme,
       bool require_secure_origin);
 
+  // Set the test delegate's First-Party Sets. The map is keyed on the set's
+  // owner site. The owner site should still be included in the std::set stored
+  // in the map.
   void SetFirstPartySets(
       const base::flat_map<net::SchemefulSite, std::set<net::SchemefulSite>>&
           sets);
@@ -67,8 +80,6 @@ class TestCookieAccessDelegate : public CookieAccessDelegate {
   std::map<std::string, bool> ignore_samesite_restrictions_schemes_;
   base::flat_map<net::SchemefulSite, std::set<net::SchemefulSite>>
       first_party_sets_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestCookieAccessDelegate);
 };
 
 }  // namespace net

@@ -7,8 +7,8 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "chrome/browser/ash/drive/file_system_util.h"
+#include "chrome/browser/ash/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
-#include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sharesheet/sharesheet_service.h"
@@ -56,7 +56,7 @@ ExtensionFunction::ResponseAction
 FileManagerPrivateInternalSharesheetHasTargetsFunction::Run() {
   using extensions::api::file_manager_private_internal::SharesheetHasTargets::
       Params;
-  const std::unique_ptr<Params> params(Params::Create(*args_));
+  const std::unique_ptr<Params> params(Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   if (params->urls.empty())
@@ -72,7 +72,8 @@ FileManagerPrivateInternalSharesheetHasTargetsFunction::Run() {
   // file paths.
   for (size_t i = 0; i < params->urls.size(); ++i) {
     const GURL url(params->urls[i]);
-    storage::FileSystemURL file_system_url(file_system_context->CrackURL(url));
+    storage::FileSystemURL file_system_url(
+        file_system_context->CrackURLInFirstPartyContext(url));
     if (drive::util::HasHostedDocumentExtension(file_system_url.path())) {
       contains_hosted_document_ = true;
     }
@@ -184,7 +185,7 @@ ExtensionFunction::ResponseAction
 FileManagerPrivateInternalInvokeSharesheetFunction::Run() {
   using extensions::api::file_manager_private_internal::InvokeSharesheet::
       Params;
-  const std::unique_ptr<Params> params(Params::Create(*args_));
+  const std::unique_ptr<Params> params(Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   if (params->urls.empty())
@@ -200,7 +201,8 @@ FileManagerPrivateInternalInvokeSharesheetFunction::Run() {
   // file paths.
   for (size_t i = 0; i < params->urls.size(); ++i) {
     const GURL url(params->urls[i]);
-    storage::FileSystemURL file_system_url(file_system_context->CrackURL(url));
+    storage::FileSystemURL file_system_url(
+        file_system_context->CrackURLInFirstPartyContext(url));
     if (drive::util::HasHostedDocumentExtension(file_system_url.path()))
       contains_hosted_document_ = true;
     if (!chromeos::FileSystemBackend::CanHandleURL(file_system_url))

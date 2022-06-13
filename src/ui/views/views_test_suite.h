@@ -5,6 +5,7 @@
 #ifndef UI_VIEWS_VIEWS_TEST_SUITE_H_
 #define UI_VIEWS_VIEWS_TEST_SUITE_H_
 
+#include "base/memory/raw_ptr.h"
 #include "base/test/test_suite.h"
 
 #include "build/build_config.h"
@@ -22,6 +23,10 @@ namespace views {
 class ViewsTestSuite : public base::TestSuite {
  public:
   ViewsTestSuite(int argc, char** argv);
+
+  ViewsTestSuite(const ViewsTestSuite&) = delete;
+  ViewsTestSuite& operator=(const ViewsTestSuite&) = delete;
+
   ~ViewsTestSuite() override;
 
   int RunTests();
@@ -44,9 +49,7 @@ class ViewsTestSuite : public base::TestSuite {
 #endif
 
   int argc_;
-  char** argv_;
-
-  DISALLOW_COPY_AND_ASSIGN(ViewsTestSuite);
+  raw_ptr<char*> argv_;
 };
 
 }  // namespace views

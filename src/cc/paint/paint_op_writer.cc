@@ -14,18 +14,15 @@
 #include "cc/paint/paint_flags.h"
 #include "cc/paint/paint_op_buffer_serializer.h"
 #include "cc/paint/paint_shader.h"
+#include "cc/paint/skottie_transfer_cache_entry.h"
+#include "cc/paint/skottie_wrapper.h"
 #include "cc/paint/transfer_cache_serialize_helper.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "third_party/skia/include/core/SkSerialProcs.h"
 #include "third_party/skia/include/core/SkTextBlob.h"
 #include "third_party/skia/src/core/SkRemoteGlyphCache.h"
 #include "ui/gfx/geometry/rect_conversions.h"
-#include "ui/gfx/skia_util.h"
-
-#if !defined(OS_ANDROID)
-#include "cc/paint/skottie_transfer_cache_entry.h"
-#include "cc/paint/skottie_wrapper.h"
-#endif
+#include "ui/gfx/geometry/skia_conversions.h"
 
 namespace cc {
 namespace {
@@ -103,12 +100,12 @@ void PaintOpWriter::WriteSimple(const T& val) {
   // to pre-align memory to the correct alignment.
   // TODO(enne): maybe we should do this correctly and DCHECK alignment.
   static constexpr size_t kAlign = 4;
-  size_t size = base::bits::Align(sizeof(T), kAlign);
+  size_t size = base::bits::AlignUp(sizeof(T), kAlign);
   EnsureBytes(size);
   if (!valid_)
     return;
 
-  reinterpret_cast<T*>(memory_)[0] = val;
+  reinterpret_cast<T*>(memory_.get())[0] = val;
 
   memory_ += size;
   remaining_bytes_ -= size;
@@ -136,7 +133,7 @@ void PaintOpWriter::WriteFlattenable(const SkFlattenable* val) {
 
 uint64_t* PaintOpWriter::WriteSize(size_t size) {
   AlignMemory(8);
-  uint64_t* memory = reinterpret_cast<uint64_t*>(memory_);
+  uint64_t* memory = reinterpret_cast<uint64_t*>(memory_.get());
   WriteSimple<uint64_t>(size);
   return memory;
 }
@@ -173,12 +170,15 @@ void PaintOpWriter::Write(const SkRRect& rect) {
   WriteSimple(rect);
 }
 
-void PaintOpWriter::Write(const SkPath& path) {
+void PaintOpWriter::Write(const SkPath& path, UsePaintCache use_paint_cache) {
   auto id = path.getGenerationID();
   if (!options_.for_identifiability_study)
     Write(id);
 
-  if (options_.paint_cache->Get(PaintCacheDataType::kPath, id)) {
+  DCHECK(use_paint_cache == UsePaintCache::kEnabled ||
+         !options_.paint_cache->Get(PaintCacheDataType::kPath, id));
+  if (use_paint_cache == UsePaintCache::kEnabled &&
+      options_.paint_cache->Get(PaintCacheDataType::kPath, id)) {
     Write(static_cast<uint32_t>(PaintCacheEntryState::kCached));
     return;
   }
@@ -190,7 +190,11 @@ void PaintOpWriter::Write(const SkPath& path) {
     return;
   }
 
-  Write(static_cast<uint32_t>(PaintCacheEntryState::kInlined));
+  if (use_paint_cache == UsePaintCache::kEnabled) {
+    Write(static_cast<uint32_t>(PaintCacheEntryState::kInlined));
+  } else {
+    Write(static_cast<uint32_t>(PaintCacheEntryState::kInlinedDoNotCache));
+  }
   uint64_t* bytes_to_skip = WriteSize(0u);
   if (!valid_)
     return;
@@ -201,7 +205,9 @@ void PaintOpWriter::Write(const SkPath& path) {
   }
   size_t bytes_written = path.writeToMemory(memory_);
   DCHECK_EQ(bytes_written, bytes_required);
-  options_.paint_cache->Put(PaintCacheDataType::kPath, id, bytes_written);
+  if (use_paint_cache == UsePaintCache::kEnabled) {
+    options_.paint_cache->Put(PaintCacheDataType::kPath, id, bytes_written);
+  }
   *bytes_to_skip = bytes_written;
   memory_ += bytes_written;
   remaining_bytes_ -= bytes_written;
@@ -273,9 +279,6 @@ void PaintOpWriter::Write(const DrawImage& draw_image,
   WriteImage(decoded_draw_image);
 }
 
-// Android does not use skottie. Remove below section to keep binary size to a
-// minimum.
-#if !defined(OS_ANDROID)
 void PaintOpWriter::Write(scoped_refptr<SkottieWrapper> skottie) {
   uint32_t id = skottie->id();
   Write(id);
@@ -300,7 +303,6 @@ void PaintOpWriter::Write(scoped_refptr<SkottieWrapper> skottie) {
   memory_ += bytes_written;
   remaining_bytes_ -= bytes_written;
 }
-#endif  // !defined(OS_ANDROID)
 
 void PaintOpWriter::WriteImage(const DecodedDrawImage& decoded_draw_image) {
   if (!decoded_draw_image.mailbox().IsZero()) {
@@ -422,7 +424,7 @@ void PaintOpWriter::Write(const sk_sp<SkTextBlob>& blob) {
 
 sk_sp<PaintShader> PaintOpWriter::TransformShaderIfNecessary(
     const PaintShader* original,
-    SkFilterQuality quality,
+    PaintFlags::FilterQuality quality,
     const SkM44& current_ctm,
     uint32_t* paint_image_transfer_cache_entry_id,
     gfx::SizeF* paint_record_post_scale,
@@ -467,7 +469,7 @@ void PaintOpWriter::Write(const SkM44& matrix) {
 }
 
 void PaintOpWriter::Write(const PaintShader* shader,
-                          SkFilterQuality quality,
+                          PaintFlags::FilterQuality quality,
                           const SkM44& current_ctm) {
   sk_sp<PaintShader> transformed_shader;
   uint32_t paint_image_transfer_cache_id = kInvalidImageTransferCacheEntryId;
@@ -534,8 +536,7 @@ void PaintOpWriter::Write(const PaintShader* shader,
     const gfx::Rect playback_rect(
         gfx::ToEnclosingRect(gfx::SkRectToRectF(shader->tile())));
 
-    Write(shader->record_.get(), playback_rect, paint_record_post_scale,
-          SkMatrix::I());
+    Write(shader->record_.get(), playback_rect, paint_record_post_scale);
   } else {
     DCHECK_EQ(shader->id_, PaintShader::kInvalidRecordShaderId);
     Write(false);
@@ -580,12 +581,12 @@ void PaintOpWriter::AlignMemory(size_t alignment) {
   DCHECK_GT(alignment, 0u);
   DCHECK_EQ(alignment & (alignment - 1), 0u);
 
-  uintptr_t memory = reinterpret_cast<uintptr_t>(memory_);
+  uintptr_t memory = reinterpret_cast<uintptr_t>(memory_.get());
   // The following is equivalent to:
   //   padding = (alignment - memory % alignment) % alignment;
   // because alignment is a power of two. This doesn't use modulo operator
   // however, since it can be slow.
-  size_t padding = ((memory + alignment - 1) & ~(alignment - 1)) - memory;
+  size_t padding = base::bits::AlignUp(memory, alignment) - memory;
   EnsureBytes(padding);
   if (!valid_)
     return;
@@ -600,7 +601,7 @@ void PaintOpWriter::Write(const PaintFilter* filter, const SkM44& current_ctm) {
     return;
   }
   WriteEnum(filter->type());
-  auto* crop_rect = filter->crop_rect();
+  auto* crop_rect = filter->GetCropRect();
   WriteSimple(static_cast<uint32_t>(!!crop_rect));
   if (crop_rect) {
     WriteSimple(*crop_rect);
@@ -683,6 +684,9 @@ void PaintOpWriter::Write(const PaintFilter* filter, const SkM44& current_ctm) {
       break;
     case PaintFilter::Type::kLightingSpot:
       Write(static_cast<const LightingSpotPaintFilter&>(*filter), current_ctm);
+      break;
+    case PaintFilter::Type::kStretch:
+      Write(static_cast<const StretchPaintFilter&>(*filter), current_ctm);
       break;
   }
 }
@@ -793,18 +797,24 @@ void PaintOpWriter::Write(const ImagePaintFilter& filter,
 
 void PaintOpWriter::Write(const RecordPaintFilter& filter,
                           const SkM44& current_ctm) {
-  WriteSimple(filter.record_bounds());
+  // Convert to a fixed scale filter so that any content contained within
+  // the filter's PaintRecord is rasterized at the scale we use here for
+  // analysis (e.g. this ensures any contained text blobs will not be missing
+  // from the cache).
+  auto scaled_filter = filter.CreateScaledPaintRecord(
+      current_ctm.asM33(), options_.max_texture_size);
+  if (!scaled_filter) {
+    WriteSimple(false);
+    return;
+  }
 
-  // The logic here to only use the scale component of the matrix during
-  // analysis is for consistency with the rasterization of the filter later in
-  // pipeline in skia. For every draw with a filter, SkCanvas creates a layer
-  // for the draw and modifies the scale for these filters.
-  // See SkCanvas::internalSaveLayer.
-  SkMatrix mat = current_ctm.asM33();
-  SkSize scale;
-  if (!mat.isScaleTranslate() && mat.decomposeScale(&scale))
-    mat = SkMatrix::Scale(scale.width(), scale.height());
-  Write(filter.record().get(), gfx::Rect(), gfx::SizeF(1.f, 1.f), mat);
+  WriteSimple(true);
+  WriteSimple(scaled_filter->record_bounds());
+  WriteSimple(scaled_filter->raster_scale());
+  WriteSimple(scaled_filter->scaling_behavior());
+
+  Write(scaled_filter->record().get(), gfx::Rect(),
+        scaled_filter->raster_scale());
 }
 
 void PaintOpWriter::Write(const MergePaintFilter& filter,
@@ -897,10 +907,18 @@ void PaintOpWriter::Write(const LightingSpotPaintFilter& filter,
   Write(filter.input().get(), current_ctm);
 }
 
+void PaintOpWriter::Write(const StretchPaintFilter& filter,
+                          const SkM44& current_ctm) {
+  WriteSimple(filter.stretch_x());
+  WriteSimple(filter.stretch_y());
+  WriteSimple(filter.width());
+  WriteSimple(filter.height());
+  Write(filter.input().get(), current_ctm);
+}
+
 void PaintOpWriter::Write(const PaintRecord* record,
                           const gfx::Rect& playback_rect,
-                          const gfx::SizeF& post_scale,
-                          const SkMatrix& post_matrix_for_analysis) {
+                          const gfx::SizeF& post_scale) {
   AlignMemory(PaintOpBuffer::PaintOpAlign);
 
   // We need to record how many bytes we will serialize, but we don't know this
@@ -920,18 +938,15 @@ void PaintOpWriter::Write(const PaintRecord* record,
     return;
   }
 
-  // Nested records are used for picture shaders and filters which don't support
-  // using lcd text. Make sure we disable it here to match this in the text
-  // analysis canvas.
-  PaintOp::SerializeOptions lcd_disabled_options(
-      options_.image_provider, options_.transfer_cache, options_.paint_cache,
-      options_.strike_server, options_.color_space,
-      /*can_use_lcd_text=*/false, options_.context_supports_distance_field_text,
-      options_.max_texture_size);
+  // Nested records are used for picture shaders and filters. These are always
+  // converted to a fixed scale mode (hence |post_scale|), which means they are
+  // first rendered offscreen via SkImage::MakeFromPicture. This inherently does
+  // not support lcd text, so reflect that in the serialization options.
+  PaintOp::SerializeOptions lcd_disabled_options = options_;
+  lcd_disabled_options.can_use_lcd_text = false;
   SimpleBufferSerializer serializer(memory_, remaining_bytes_,
                                     lcd_disabled_options);
-  serializer.Serialize(record, playback_rect, post_scale,
-                       post_matrix_for_analysis);
+  serializer.Serialize(record, playback_rect, post_scale);
 
   if (!serializer.valid()) {
     valid_ = false;

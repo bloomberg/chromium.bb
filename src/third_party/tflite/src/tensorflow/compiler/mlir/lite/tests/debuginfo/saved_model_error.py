@@ -16,10 +16,6 @@
 
 # RUN: %p/saved_model_error | FileCheck %s
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import sys
 
 from absl import app
@@ -51,7 +47,6 @@ class TestGraphDebugInfo(object):
 
     # load the model and convert
     converter = tf.lite.TFLiteConverter.from_saved_model(saved_model_path)
-    converter.experimental_new_converter = True
     converter.convert()
 
 # pylint: disable=line-too-long

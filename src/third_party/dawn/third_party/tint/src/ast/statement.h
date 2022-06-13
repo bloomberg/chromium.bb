@@ -32,18 +32,15 @@ class Statement : public Castable<Statement, Node> {
 
  protected:
   /// Constructor
-  /// @param program_id the identifier of the program that owns this node
-  /// @param source the source of the expression
-  Statement(ProgramID program_id, const Source& source);
+  /// @param pid the identifier of the program that owns this node
+  /// @param src the source of the expression
+  Statement(ProgramID pid, const Source& src);
   /// Move constructor
   Statement(Statement&&);
-
- private:
-  Statement(const Statement&) = delete;
 };
 
 /// A list of statements
-using StatementList = std::vector<Statement*>;
+using StatementList = std::vector<const Statement*>;
 
 }  // namespace ast
 }  // namespace tint

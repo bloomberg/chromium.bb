@@ -5,6 +5,7 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_TEST_SHARED_IMAGE_BACKING_H_
 #define GPU_COMMAND_BUFFER_SERVICE_TEST_SHARED_IMAGE_BACKING_H_
 
+#include "base/memory/raw_ptr.h"
 #include "gpu/command_buffer/service/shared_image_backing.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 
@@ -65,14 +66,15 @@ class TestSharedImageBacking : public SharedImageBacking {
   std::unique_ptr<SharedImageRepresentationDawn> ProduceDawn(
       SharedImageManager* manager,
       MemoryTypeTracker* tracker,
-      WGPUDevice device) override;
+      WGPUDevice device,
+      WGPUBackendType backend_type) override;
   std::unique_ptr<SharedImageRepresentationOverlay> ProduceOverlay(
       SharedImageManager* manager,
       MemoryTypeTracker* tracker) override;
 
  private:
   const GLuint service_id_ = 0;
-  gles2::Texture* texture_ = nullptr;
+  raw_ptr<gles2::Texture> texture_ = nullptr;
   scoped_refptr<gles2::TexturePassthrough> texture_passthrough_;
   bool can_access_ = true;
 };

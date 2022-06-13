@@ -39,6 +39,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_ink_overflow.h"
 #include "third_party/blink/renderer/core/paint/box_painter.h"
 #include "third_party/blink/renderer/core/paint/inline_flow_box_painter.h"
+#include "third_party/blink/renderer/core/paint/outline_painter.h"
 #include "third_party/blink/renderer/core/paint/rounded_border_geometry.h"
 #include "third_party/blink/renderer/core/style/shadow_list.h"
 #include "third_party/blink/renderer/platform/fonts/font.h"
@@ -47,17 +48,24 @@
 namespace blink {
 
 struct SameSizeAsInlineFlowBox : public InlineBox {
-  void* pointers[5];
+  void* pointers[1];
+  Member<void*> members[4];
   uint32_t bitfields : 23;
 };
 
 ASSERT_SIZE(InlineFlowBox, SameSizeAsInlineFlowBox);
 
+void InlineFlowBox::Trace(Visitor* visitor) const {
+  visitor->Trace(first_child_);
+  visitor->Trace(last_child_);
+  visitor->Trace(prev_line_box_);
+  visitor->Trace(next_line_box_);
+  InlineBox::Trace(visitor);
+}
+
 #if DCHECK_IS_ON()
-InlineFlowBox::~InlineFlowBox() {
-  if (!has_bad_child_list_)
-    for (InlineBox* child = FirstChild(); child; child = child->NextOnLine())
-      child->SetHasBadParent();
+void InlineFlowBox::Destroy() {
+  InlineBox::Destroy();
 }
 #endif
 
@@ -556,7 +564,7 @@ FontBaseline InlineFlowBox::DominantBaseline() const {
                              .Style(IsFirstLineStyle())
                              ->GetFontDescription()
                              .IsVerticalAnyUpright())
-    return kIdeographicBaseline;
+    return kCentralBaseline;
   return kAlphabeticBaseline;
 }
 
@@ -967,7 +975,7 @@ LayoutUnit InlineFlowBox::FarthestPositionForUnderline(
     // If the text decoration isn't in effect on the child, it must be outside
     // of |decorationObject|.
     if (!EnumHasFlags(curr->LineStyleRef().TextDecorationsInEffect(),
-                      TextDecoration::kUnderline))
+                      TextDecorationLine::kUnderline))
       continue;
 
     if (decorating_box && decorating_box.IsLayoutInline() &&
@@ -1074,7 +1082,7 @@ inline void InlineFlowBox::AddOutlineVisualOverflow(
   if (!style.HasOutline())
     return;
 
-  logical_visual_overflow.Inflate(style.OutlineOutsetExtent());
+  logical_visual_overflow.Inflate(OutlinePainter::OutlineOutsetExtent(style));
 }
 
 inline void InlineFlowBox::AddTextBoxVisualOverflow(
@@ -1129,7 +1137,7 @@ inline void InlineFlowBox::AddTextBoxVisualOverflow(
 
   LayoutRect frame_rect = text_box->LogicalFrameRect();
   frame_rect.Expand(visual_rect_outsets);
-  frame_rect = LayoutRect(EnclosingIntRect(frame_rect));
+  frame_rect = LayoutRect(ToEnclosingRect(frame_rect));
   logical_visual_overflow.Unite(frame_rect);
 
   if (logical_visual_overflow != text_box->LogicalFrameRect())
@@ -1204,7 +1212,7 @@ static void ComputeGlyphOverflow(
     const LineLayoutText& layout_text,
     GlyphOverflowAndFallbackFontsMap& text_box_data_map) {
   HashSet<const SimpleFontData*> fallback_fonts;
-  FloatRect glyph_bounds;
+  gfx::RectF glyph_bounds;
   GlyphOverflow glyph_overflow;
   float measured_width = layout_text.Width(
       text->Start(), text->Len(), LayoutUnit(), text->Direction(), false,
@@ -1452,7 +1460,7 @@ bool InlineFlowBox::NodeAtPoint(HitTestResult& result,
   rect.Move(accumulated_offset);
 
   // Pixel snap hit testing.
-  rect = PhysicalRect(PixelSnappedIntRect(rect));
+  rect = PhysicalRect(ToPixelSnappedRect(rect));
   if (VisibleToHitTestRequest(result.GetHitTestRequest()) &&
       hit_test_location.Intersects(rect)) {
     // Don't add in m_topLeft here, we want coords in the containing block's

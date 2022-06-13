@@ -18,6 +18,8 @@
 #include "common/vulkan_platform.h"
 #include "dawn_native/Error.h"
 #include "dawn_native/vulkan/ExternalHandle.h"
+#include "dawn_native/vulkan/VulkanFunctions.h"
+#include "dawn_native/vulkan/VulkanInfo.h"
 
 namespace dawn_native { namespace vulkan {
     class Device;
@@ -29,6 +31,10 @@ namespace dawn_native { namespace vulkan { namespace external_semaphore {
       public:
         explicit Service(Device* device);
         ~Service();
+
+        static bool CheckSupport(const VulkanDeviceInfo& deviceInfo,
+                                 VkPhysicalDevice physicalDevice,
+                                 const VulkanFunctions& fn);
 
         // True if the device reports it supports this feature
         bool Supported();

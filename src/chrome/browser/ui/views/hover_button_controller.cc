@@ -34,24 +34,26 @@ bool HoverButtonController::OnMousePressed(const ui::MouseEvent& event) {
   if (button()->GetRequestFocusOnPress())
     button()->RequestFocus();
   if (callback_) {
-    button()->ink_drop()->AnimateToState(views::InkDropState::ACTION_TRIGGERED,
-                                         ui::LocatedEvent::FromIfValid(&event));
+    views::InkDrop::Get(button())->AnimateToState(
+        views::InkDropState::ACTION_PENDING,
+        ui::LocatedEvent::FromIfValid(&event));
   } else {
-    button()->ink_drop()->AnimateToState(views::InkDropState::HIDDEN,
-                                         ui::LocatedEvent::FromIfValid(&event));
+    views::InkDrop::Get(button())->AnimateToState(
+        views::InkDropState::HIDDEN, ui::LocatedEvent::FromIfValid(&event));
   }
   return true;
 }
 
 void HoverButtonController::OnMouseReleased(const ui::MouseEvent& event) {
   DCHECK(notify_action() == views::ButtonController::NotifyAction::kOnRelease);
+  views::InkDrop::Get(button())->AnimateToState(views::InkDropState::HIDDEN,
+                                                &event);
   if (button()->GetState() != views::Button::STATE_DISABLED &&
       delegate()->IsTriggerableEvent(event) &&
       button()->HitTestPoint(event.location()) && !delegate()->InDrag()) {
     if (callback_)
       callback_.Run(event);
   } else {
-    button()->ink_drop()->AnimateToState(views::InkDropState::HIDDEN, &event);
     ButtonController::OnMouseReleased(event);
   }
 }

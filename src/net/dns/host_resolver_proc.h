@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "net/base/address_family.h"
@@ -32,6 +31,9 @@ class NET_EXPORT HostResolverProc
  public:
   explicit HostResolverProc(HostResolverProc* previous,
                             bool allow_fallback_to_system_or_default = true);
+
+  HostResolverProc(const HostResolverProc&) = delete;
+  HostResolverProc& operator=(const HostResolverProc&) = delete;
 
   // Resolves |host| to an address list, restricting the results to addresses
   // in |address_family|. If successful returns OK and fills |addrlist| with
@@ -82,8 +84,6 @@ class NET_EXPORT HostResolverProc
   bool allow_fallback_to_system_;
   scoped_refptr<HostResolverProc> previous_proc_;
   static HostResolverProc* default_proc_;
-
-  DISALLOW_COPY_AND_ASSIGN(HostResolverProc);
 };
 
 // Resolves |host| to an address list, using the system's default host resolver.
@@ -102,6 +102,10 @@ NET_EXPORT_PRIVATE int SystemHostResolverCall(
 class NET_EXPORT_PRIVATE SystemHostResolverProc : public HostResolverProc {
  public:
   SystemHostResolverProc();
+
+  SystemHostResolverProc(const SystemHostResolverProc&) = delete;
+  SystemHostResolverProc& operator=(const SystemHostResolverProc&) = delete;
+
   int Resolve(const std::string& hostname,
               AddressFamily address_family,
               HostResolverFlags host_resolver_flags,
@@ -110,8 +114,6 @@ class NET_EXPORT_PRIVATE SystemHostResolverProc : public HostResolverProc {
 
  protected:
   ~SystemHostResolverProc() override;
-
-  DISALLOW_COPY_AND_ASSIGN(SystemHostResolverProc);
 };
 
 // Parameters for customizing HostResolverProc behavior in HostResolvers.

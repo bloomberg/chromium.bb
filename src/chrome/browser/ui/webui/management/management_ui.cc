@@ -10,12 +10,15 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/managed_ui.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/webui/management/management_ui_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
-#include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/grit/management_resources.h"
+#include "chrome/grit/management_resources_map.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/strings/grit/components_strings.h"
 #include "extensions/buildflags/buildflags.h"
@@ -24,9 +27,12 @@
 #include "ui/base/webui/web_ui_util.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_reporting_manager.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_factory.h"
 #include "chrome/grit/chromium_strings.h"
 #include "ui/chromeos/devicetype_utils.h"
 #else  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -57,17 +63,15 @@ content::WebUIDataSource* CreateManagementUIHtmlSource(Profile* profile) {
     {kManagementLogUploadEnabled, IDS_MANAGEMENT_LOG_UPLOAD_ENABLED},
     {kManagementReportActivityTimes,
      IDS_MANAGEMENT_REPORT_DEVICE_ACTIVITY_TIMES},
-    {kManagementReportHardwareStatus,
-     IDS_MANAGEMENT_REPORT_DEVICE_HARDWARE_STATUS},
-    {kManagementReportNetworkInterfaces,
-     IDS_MANAGEMENT_REPORT_DEVICE_NETWORK_INTERFACES},
+    {kManagementReportNetworkData, IDS_MANAGEMENT_REPORT_DEVICE_NETWORK_DATA},
+    {kManagementReportHardwareData, IDS_MANAGEMENT_REPORT_DEVICE_HARDWARE_DATA},
     {kManagementReportUsers, IDS_MANAGEMENT_REPORT_DEVICE_USERS},
     {kManagementReportCrashReports, IDS_MANAGEMENT_REPORT_DEVICE_CRASH_REPORTS},
     {kManagementReportAppInfoAndActivity,
      IDS_MANAGEMENT_REPORT_APP_INFO_AND_ACTIVITY},
     {kManagementPrinting, IDS_MANAGEMENT_REPORT_PRINTING},
     {kManagementReportPrintJobs, IDS_MANAGEMENT_REPORT_PRINT_JOBS},
-    {kManagementReportDlpEvents, IDS_MANAGEMENT_REPORT_DLP_EVENTS},
+    {kManagementReportLoginLogout, IDS_MANAGEMENT_REPORT_LOGIN_LOGOUT},
     {kManagementCrostini, IDS_MANAGEMENT_CROSTINI},
     {kManagementCrostiniContainerConfiguration,
      IDS_MANAGEMENT_CROSTINI_CONTAINER_CONFIGURATION},
@@ -137,16 +141,27 @@ content::WebUIDataSource* CreateManagementUIHtmlSource(Profile* profile) {
                     l10n_util::GetStringFUTF16(
                         IDS_MANAGEMENT_REPORT_PLUGIN_VM,
                         l10n_util::GetStringUTF16(IDS_PLUGIN_VM_APP_NAME)));
+  const size_t dlp_events_count =
+      policy::DlpRulesManagerFactory::GetForPrimaryProfile() &&
+              policy::DlpRulesManagerFactory::GetForPrimaryProfile()
+                  ->GetReportingManager()
+          ? policy::DlpRulesManagerFactory::GetForPrimaryProfile()
+                ->GetReportingManager()
+                ->events_reported()
+          : 0;
+  source->AddString(kManagementReportDlpEvents,
+                    l10n_util::GetPluralStringFUTF16(
+                        IDS_MANAGEMENT_REPORT_DLP_EVENTS, dlp_events_count));
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-  source->UseStringsJs();
-  source->EnableReplaceI18nInJS();
-  // Add required resources.
-  source->AddResourcePath("management_browser_proxy.js",
-                          IDR_MANAGEMENT_BROWSER_PROXY_JS);
-  source->AddResourcePath("management_ui.js", IDR_MANAGEMENT_UI_JS);
-  source->AddResourcePath("icons.js", IDR_MANAGEMENT_ICONS_JS);
-  source->SetDefaultResource(IDR_MANAGEMENT_HTML);
+  source->AddString("enableBrandingUpdateAttribute",
+                    base::FeatureList::IsEnabled(features::kWebUIBrandingUpdate)
+                        ? "enable-branding-update"
+                        : "");
+
+  webui::SetupWebUIDataSource(
+      source, base::make_span(kManagementResources, kManagementResourcesSize),
+      IDR_MANAGEMENT_MANAGEMENT_HTML);
   return source;
 }
 
@@ -154,7 +169,7 @@ content::WebUIDataSource* CreateManagementUIHtmlSource(Profile* profile) {
 
 // static
 base::RefCountedMemory* ManagementUI::GetFaviconResourceBytes(
-    ui::ScaleFactor scale_factor) {
+    ui::ResourceScaleFactor scale_factor) {
   return ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(
       IDR_MANAGEMENT_FAVICON, scale_factor);
 }
@@ -162,10 +177,10 @@ base::RefCountedMemory* ManagementUI::GetFaviconResourceBytes(
 // static
 std::u16string ManagementUI::GetManagementPageSubtitle(Profile* profile) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  policy::BrowserPolicyConnectorAsh* connector =
+      g_browser_process->platform_part()->browser_policy_connector_ash();
   const auto device_type = ui::GetChromeOSDeviceTypeResourceId();
-  if (!connector->IsEnterpriseManaged() &&
+  if (!connector->IsDeviceEnterpriseManaged() &&
       !profile->GetProfilePolicyConnector()->IsManaged()) {
     return l10n_util::GetStringFUTF16(IDS_MANAGEMENT_NOT_MANAGED_SUBTITLE,
                                       l10n_util::GetStringUTF16(device_type));
@@ -176,7 +191,8 @@ std::u16string ManagementUI::GetManagementPageSubtitle(Profile* profile) {
   if (account_manager.empty())
     account_manager = connector->GetRealm();
   if (account_manager.empty())
-    account_manager = ManagementUIHandler::GetAccountManager(profile);
+    account_manager =
+        chrome::GetAccountManagerIdentity(profile).value_or(std::string());
   if (account_manager.empty()) {
     return l10n_util::GetStringFUTF16(IDS_MANAGEMENT_SUBTITLE_MANAGED,
                                       l10n_util::GetStringUTF16(device_type));
@@ -185,7 +201,8 @@ std::u16string ManagementUI::GetManagementPageSubtitle(Profile* profile) {
                                     l10n_util::GetStringUTF16(device_type),
                                     base::UTF8ToUTF16(account_manager));
 #else   // BUILDFLAG(IS_CHROMEOS_ASH)
-  const auto account_manager = ManagementUIHandler::GetAccountManager(profile);
+  const auto account_manager =
+      chrome::GetAccountManagerIdentity(profile).value_or(std::string());
   const auto managed =
       profile->GetProfilePolicyConnector()->IsManaged() ||
       g_browser_process->browser_policy_connector()->HasMachineLevelPolicies();

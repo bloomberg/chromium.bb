@@ -38,7 +38,7 @@
 #include "common/dwarf/types.h"
 #include "common/dwarf/dwarf2enums.h"
 
-namespace dwarf2reader {
+namespace google_breakpad {
 
 // We can't use the obvious name of LITTLE_ENDIAN and BIG_ENDIAN
 // because it conflicts with a macro
@@ -315,6 +315,6 @@ class ByteReader {
   const uint8_t* buffer_base_;
 };
 
-}  // namespace dwarf2reader
+}  // namespace google_breakpad
 
 #endif  // COMMON_DWARF_BYTEREADER_H__

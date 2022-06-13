@@ -19,7 +19,6 @@
 #include "config/aom_dsp_rtcd.h"
 
 #include "test/acm_random.h"
-#include "test/clear_system_state.h"
 #include "test/md5_helper.h"
 #include "aom/aom_integer.h"
 #include "aom_ports/mem.h"
@@ -135,7 +134,6 @@ void TestIntraPred(TX_SIZE tx_size, AvxPredFunc const *pred_funcs,
       pred_funcs[k](intra_pred_test_mem.src, intra_pred_test_mem.stride,
                     intra_pred_test_mem.above, intra_pred_test_mem.left);
     }
-    libaom_test::ClearSystemState();
     aom_usec_timer_mark(&timer);
     const int elapsed_time =
         static_cast<int>(aom_usec_timer_elapsed(&timer) / 1000);
@@ -945,7 +943,6 @@ void TestHighbdIntraPred(TX_SIZE tx_size, AvxHighbdPredFunc const *pred_funcs,
       pred_funcs[k](intra_pred_test_mem.src, intra_pred_test_mem.stride,
                     intra_pred_test_mem.above, intra_pred_test_mem.left, bd);
     }
-    libaom_test::ClearSystemState();
     aom_usec_timer_mark(&timer);
     const int elapsed_time =
         static_cast<int>(aom_usec_timer_elapsed(&timer) / 1000);

@@ -362,6 +362,78 @@ TEST_P(AV1FwdTxfm2dTest, match) {
 TEST_P(AV1FwdTxfm2dTest, DISABLED_Speed) {
   AV1FwdTxfm2dSpeedTest(GET_PARAM(0), GET_PARAM(1));
 }
+TEST(AV1FwdTxfm2dTest, DCTScaleTest) {
+  BitDepthInfo bd_info;
+  bd_info.bit_depth = 8;
+  bd_info.use_highbitdepth_buf = 0;
+  DECLARE_ALIGNED(32, int16_t, src_diff[1024]);
+  DECLARE_ALIGNED(32, tran_low_t, coeff[1024]);
+
+  const TX_SIZE tx_size_list[4] = { TX_4X4, TX_8X8, TX_16X16, TX_32X32 };
+  const int stride_list[4] = { 4, 8, 16, 32 };
+  const int ref_scale_list[4] = { 64, 64, 64, 16 };
+
+  for (int i = 0; i < 4; i++) {
+    TX_SIZE tx_size = tx_size_list[i];
+    int stride = stride_list[i];
+    int array_size = stride * stride;
+
+    for (int i = 0; i < array_size; i++) {
+      src_diff[i] = 8;
+      coeff[i] = 0;
+    }
+
+    av1_quick_txfm(/*use_hadamard=*/0, tx_size, bd_info, src_diff, stride,
+                   coeff);
+
+    double input_sse = 0;
+    double output_sse = 0;
+    for (int i = 0; i < array_size; i++) {
+      input_sse += pow(src_diff[i], 2);
+      output_sse += pow(coeff[i], 2);
+    }
+
+    double scale = output_sse / input_sse;
+
+    EXPECT_NEAR(scale, ref_scale_list[i], 5);
+  }
+}
+TEST(AV1FwdTxfm2dTest, HadamardScaleTest) {
+  BitDepthInfo bd_info;
+  bd_info.bit_depth = 8;
+  bd_info.use_highbitdepth_buf = 0;
+  DECLARE_ALIGNED(32, int16_t, src_diff[1024]);
+  DECLARE_ALIGNED(32, tran_low_t, coeff[1024]);
+
+  const TX_SIZE tx_size_list[4] = { TX_4X4, TX_8X8, TX_16X16, TX_32X32 };
+  const int stride_list[4] = { 4, 8, 16, 32 };
+  const int ref_scale_list[4] = { 1, 64, 64, 16 };
+
+  for (int i = 0; i < 4; i++) {
+    TX_SIZE tx_size = tx_size_list[i];
+    int stride = stride_list[i];
+    int array_size = stride * stride;
+
+    for (int i = 0; i < array_size; i++) {
+      src_diff[i] = 8;
+      coeff[i] = 0;
+    }
+
+    av1_quick_txfm(/*use_hadamard=*/1, tx_size, bd_info, src_diff, stride,
+                   coeff);
+
+    double input_sse = 0;
+    double output_sse = 0;
+    for (int i = 0; i < array_size; i++) {
+      input_sse += pow(src_diff[i], 2);
+      output_sse += pow(coeff[i], 2);
+    }
+
+    double scale = output_sse / input_sse;
+
+    EXPECT_NEAR(scale, ref_scale_list[i], 5);
+  }
+}
 using ::testing::Combine;
 using ::testing::Values;
 using ::testing::ValuesIn;

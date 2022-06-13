@@ -4,11 +4,13 @@
 
 #include <map>
 
+#include "base/memory/raw_ptr.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/android/safe_browsing_api_handler.h"
-#include "components/safe_browsing/content/base_blocking_page.h"
+#include "components/safe_browsing/content/browser/base_blocking_page.h"
+#include "components/safe_browsing/content/browser/safe_browsing_blocking_page.h"
+#include "components/safe_browsing/core/browser/db/v4_protocol_manager_util.h"
 #include "components/safe_browsing/core/browser/safe_browsing_token_fetcher.h"
-#include "components/safe_browsing/core/db/v4_protocol_manager_util.h"
 #include "components/security_interstitials/content/security_interstitial_page.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "components/user_prefs/user_prefs.h"
@@ -18,13 +20,13 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_utils.h"
+#include "google_apis/gaia/gaia_constants.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "weblayer/browser/browser_context_impl.h"
 #include "weblayer/browser/browser_impl.h"
 #include "weblayer/browser/profile_impl.h"
 #include "weblayer/browser/safe_browsing/real_time_url_lookup_service_factory.h"
-#include "weblayer/browser/safe_browsing/safe_browsing_blocking_page.h"
 #include "weblayer/browser/tab_impl.h"
 #include "weblayer/public/google_account_access_token_fetch_delegate.h"
 #include "weblayer/public/navigation.h"
@@ -60,6 +62,11 @@ class TestAccessTokenFetchDelegate
     } else {
       outstanding_request_ = std::move(callback);
     }
+  }
+
+  void OnAccessTokenIdentifiedAsInvalid(const std::set<std::string>& scopes,
+                                        const std::string& token) override {
+    NOTREACHED();
   }
 
   void set_should_respond_to_request(bool should_respond) {
@@ -106,7 +113,7 @@ class SafeBrowsingErrorNavigationObserver : public NavigationObserver {
 
  private:
   const GURL url_;
-  Tab* tab_;
+  raw_ptr<Tab> tab_;
   base::RunLoop run_loop_;
 };
 
@@ -160,6 +167,10 @@ class FakeSafeBrowsingApiHandler
 class SafeBrowsingBrowserTest : public WebLayerBrowserTest {
  public:
   SafeBrowsingBrowserTest() : fake_handler_(new FakeSafeBrowsingApiHandler()) {}
+
+  SafeBrowsingBrowserTest(const SafeBrowsingBrowserTest&) = delete;
+  SafeBrowsingBrowserTest& operator=(const SafeBrowsingBrowserTest&) = delete;
+
   ~SafeBrowsingBrowserTest() override = default;
 
   void SetUpOnMainThread() override {
@@ -220,7 +231,7 @@ class SafeBrowsingBrowserTest : public WebLayerBrowserTest {
     load_observer.Wait();
     EXPECT_EQ(expect_interstitial, HasInterstitial());
     if (expect_interstitial) {
-      ASSERT_EQ(SafeBrowsingBlockingPage::kTypeForTesting,
+      ASSERT_EQ(safe_browsing::SafeBrowsingBlockingPage::kTypeForTesting,
                 GetSecurityInterstitialPage()->GetTypeForTesting());
       EXPECT_TRUE(GetSecurityInterstitialPage()->GetHTMLContents().length() >
                   0);
@@ -284,13 +295,17 @@ class SafeBrowsingBrowserTest : public WebLayerBrowserTest {
 
  private:
   TestAccessTokenFetchDelegate access_token_fetch_delegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(SafeBrowsingBrowserTest);
 };
 
 class SafeBrowsingDisabledBrowserTest : public SafeBrowsingBrowserTest {
  public:
   SafeBrowsingDisabledBrowserTest() {}
+
+  SafeBrowsingDisabledBrowserTest(const SafeBrowsingDisabledBrowserTest&) =
+      delete;
+  SafeBrowsingDisabledBrowserTest& operator=(
+      const SafeBrowsingDisabledBrowserTest&) = delete;
+
   ~SafeBrowsingDisabledBrowserTest() override = default;
 
   void SetUpOnMainThread() override {
@@ -298,9 +313,6 @@ class SafeBrowsingDisabledBrowserTest : public SafeBrowsingBrowserTest {
     SafeBrowsingBrowserTest::InitializeOnMainThread();
     ASSERT_FALSE(GetSafeBrowsingEnabled());
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SafeBrowsingDisabledBrowserTest);
 };
 
 IN_PROC_BROWSER_TEST_F(SafeBrowsingBrowserTest,
@@ -448,7 +460,8 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBrowserTest,
   GURL b_url(embedded_test_server()->GetURL("a.com", "/simple_page.html"));
   NavigateAndWaitForCompletion(a_url, shell()->tab());
 
-  std::set<std::string> safe_browsing_scopes = {safe_browsing::kAPIScope};
+  std::set<std::string> safe_browsing_scopes = {
+      GaiaConstants::kChromeSafeBrowsingOAuth2Scope};
   EXPECT_TRUE(access_token_fetch_delegate()->has_received_request());
   EXPECT_EQ(safe_browsing_scopes,
             access_token_fetch_delegate()->scopes_from_most_recent_request());
@@ -467,7 +480,8 @@ IN_PROC_BROWSER_TEST_F(
   GURL a_url(embedded_test_server()->GetURL("a.com", "/simple_page.html"));
   NavigateAndWaitForCompletion(a_url, shell()->tab());
 
-  std::set<std::string> safe_browsing_scopes = {safe_browsing::kAPIScope};
+  std::set<std::string> safe_browsing_scopes = {
+      GaiaConstants::kChromeSafeBrowsingOAuth2Scope};
   EXPECT_TRUE(access_token_fetch_delegate()->has_received_request());
   EXPECT_EQ(safe_browsing_scopes,
             access_token_fetch_delegate()->scopes_from_most_recent_request());

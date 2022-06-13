@@ -16,13 +16,13 @@ import signal
 import socket
 import sys
 import tempfile
+import six
 
 # The following non-std imports are fetched via vpython. See the list at
 # //.vpython
 import dateutil.parser  # pylint: disable=import-error
 import jsonlines  # pylint: disable=import-error
 import psutil  # pylint: disable=import-error
-import six
 
 CHROMIUM_SRC_PATH = os.path.abspath(
     os.path.join(os.path.dirname(__file__), '..', '..'))
@@ -31,13 +31,14 @@ CHROMIUM_SRC_PATH = os.path.abspath(
 # output json ourselves.
 sys.path.insert(0, os.path.join(CHROMIUM_SRC_PATH, 'build', 'android'))
 from pylib.base import base_test_result  # pylint: disable=import-error
-from pylib.base import result_sink  # pylint: disable=import-error
 from pylib.results import json_results  # pylint: disable=import-error
 
-if six.PY2:
-  import subprocess32 as subprocess  # pylint: disable=import-error
-else:
-  import subprocess  # pylint: disable=import-error,wrong-import-order
+sys.path.insert(0, os.path.join(CHROMIUM_SRC_PATH, 'build', 'util'))
+from lib.results import result_sink  # pylint: disable=import-error
+
+assert not six.PY2, 'Py2 not supported for this file.'
+
+import subprocess  # pylint: disable=import-error,wrong-import-order
 
 DEFAULT_CROS_CACHE = os.path.abspath(
     os.path.join(CHROMIUM_SRC_PATH, 'build', 'cros_cache'))
@@ -68,7 +69,7 @@ class TestFormatError(Exception):
   pass
 
 
-class RemoteTest(object):
+class RemoteTest:
 
   # This is a basic shell script that can be appended to in order to invoke the
   # test on the device.
@@ -164,7 +165,7 @@ class RemoteTest(object):
         os.path.relpath(self._path_to_outdir, CHROMIUM_SRC_PATH),
     ]
     logging.info('Running the following command on the device:')
-    logging.info('\n' + '\n'.join(script_contents))
+    logging.info('\n%s', '\n'.join(script_contents))
     fd, tmp_path = tempfile.mkstemp(suffix='.sh', dir=self._path_to_outdir)
     os.fchmod(fd, 0o755)
     with os.fdopen(fd, 'w') as f:
@@ -217,11 +218,9 @@ class RemoteTest(object):
       if test_proc.returncode == 0:
         break
 
-    ret = self.post_run(test_proc.returncode)
+    self.post_run(test_proc.returncode)
     # Allow post_run to override test proc return code. (Useful when the host
     # side Tast bin returns 0 even for failed tests.)
-    if ret is not None:
-      return ret
     return test_proc.returncode
 
   def post_run(self, return_code):
@@ -239,6 +238,8 @@ class RemoteTest(object):
       run_results.AddResult(suite_result)
       with open(self._test_launcher_summary_output, 'w') as f:
         json.dump(json_results.GenerateResultsDict([run_results]), f)
+      if self._rdb_client:
+        self._rdb_client.Post(self.suite_name, result, None, None, None)
 
   @staticmethod
   def get_artifacts(path):
@@ -262,7 +263,7 @@ class RemoteTest(object):
 class TastTest(RemoteTest):
 
   def __init__(self, args, unknown_args):
-    super(TastTest, self).__init__(args, unknown_args)
+    super().__init__(args, unknown_args)
 
     self._suite_name = args.suite_name
     self._tast_vars = args.tast_vars
@@ -400,14 +401,14 @@ class TastTest(RemoteTest):
     # If we don't need to parse the host-side Tast tool's results, fall back to
     # the parent method's default behavior.
     if self._llvm_profile_var:
-      return super(TastTest, self).post_run(return_code)
+      return super().post_run(return_code)
 
     tast_results_path = os.path.join(self._logs_dir, 'streamed_results.jsonl')
     if not os.path.exists(tast_results_path):
       logging.error(
           'Tast results not found at %s. Falling back to generic result '
           'reporting.', tast_results_path)
-      return super(TastTest, self).post_run(return_code)
+      return super().post_run(return_code)
 
     # See the link below for the format of the results:
     # https://godoc.org/chromium.googlesource.com/chromiumos/platform/tast.git/src/chromiumos/cmd/tast/run#TestResult
@@ -431,15 +432,16 @@ class TastTest(RemoteTest):
         result = base_test_result.ResultType.FAIL
       else:
         result = base_test_result.ResultType.PASS
+      primary_error_message = None
       error_log = ''
       if errors:
         # See the link below for the format of these errors:
-        # https://godoc.org/chromium.googlesource.com/chromiumos/platform/tast.git/src/chromiumos/tast/testing#Error
+        # https://source.chromium.org/chromiumos/chromiumos/codesearch/+/main:src/platform/tast/src/chromiumos/tast/cmd/tast/internal/run/resultsjson/resultsjson.go
+        primary_error_message = errors[0]['reason']
         for err in errors:
           error_log += err['stack'] + '\n'
-      error_log += (
-          "\nIf you're unsure why this test failed, consult the steps "
-          'outlined in\n%s\n' % TAST_DEBUG_DOC)
+      debug_link = ("If you're unsure why this test failed, consult the steps "
+                    'outlined <a href="%s">here</a>.' % TAST_DEBUG_DOC)
       base_result = base_test_result.BaseTestResult(
           test['name'], result, duration=duration_ms, log=error_log)
       suite_results.AddResult(base_result)
@@ -450,8 +452,15 @@ class TastTest(RemoteTest):
         # inside as an RDB 'artifact'. (This could include system logs, screen
         # shots, etc.)
         artifacts = self.get_artifacts(test['outDir'])
-        self._rdb_client.Post(test['name'], result, duration_ms, error_log,
-                              artifacts)
+        self._rdb_client.Post(
+            test['name'],
+            result,
+            duration_ms,
+            error_log,
+            None,
+            artifacts=artifacts,
+            failure_reason=primary_error_message,
+            html_artifact=debug_link)
 
     if self._rdb_client and self._logs_dir:
       # Attach artifacts from the device that don't apply to a single test.
@@ -467,7 +476,7 @@ class TastTest(RemoteTest):
 
     if not suite_results.DidRunPass():
       return 1
-    elif return_code:
+    if return_code:
       logging.warning(
           'No failed tests found, but exit code of %d was returned from '
           'cros_run_test.', return_code)
@@ -523,7 +532,7 @@ class GTestTest(RemoteTest):
   ]
 
   def __init__(self, args, unknown_args):
-    super(GTestTest, self).__init__(args, unknown_args)
+    super().__init__(args, unknown_args)
 
     self._test_exe = args.test_exe
     self._runtime_deps_path = args.runtime_deps_path
@@ -593,21 +602,21 @@ class GTestTest(RemoteTest):
 
     if self._vpython_dir:
       vpython_path = os.path.join(self._path_to_outdir, self._vpython_dir,
-                                  'vpython')
+                                  'vpython3')
       cpython_path = os.path.join(self._path_to_outdir, self._vpython_dir,
-                                  'bin', 'python')
+                                  'bin', 'python3')
       if not os.path.exists(vpython_path) or not os.path.exists(cpython_path):
         raise TestFormatError(
-            '--vpython-dir must point to a dir with both infra/python/cpython '
-            'and infra/tools/luci/vpython installed.')
+            '--vpython-dir must point to a dir with both '
+            'infra/3pp/tools/cpython3 and infra/tools/luci/vpython installed.')
       vpython_spec_path = os.path.relpath(
-          os.path.join(CHROMIUM_SRC_PATH, '.vpython'), self._path_to_outdir)
+          os.path.join(CHROMIUM_SRC_PATH, '.vpython3'), self._path_to_outdir)
       # Initialize the vpython cache. This can take 10-20s, and some tests
       # can't afford to wait that long on the first invocation.
       device_test_script_contents.extend([
           'export PATH=$PWD/%s:$PWD/%s/bin/:$PATH' %
           (self._vpython_dir, self._vpython_dir),
-          'vpython -vpython-spec %s -vpython-tool install' %
+          'vpython3 -vpython-spec %s -vpython-tool install' %
           (vpython_spec_path),
       ])
 
@@ -662,9 +671,6 @@ class GTestTest(RemoteTest):
               os.path.abspath(
                   os.path.join(self._path_to_outdir, self._vpython_dir)),
               CHROMIUM_SRC_PATH))
-      # TODO(bpastene): Add the vpython spec to the test's runtime deps instead
-      # of handling it here.
-      runtime_files.append('.vpython')
 
     for f in runtime_files:
       self._test_cmd.extend(['--files', f])
@@ -694,13 +700,29 @@ class GTestTest(RemoteTest):
     if self._on_device_script:
       os.remove(self._on_device_script)
 
+    if self._test_launcher_summary_output and self._rdb_client:
+      if not os.path.exists(self._test_launcher_summary_output):
+        logging.error('Unable to locate %s in order to upload results to RDB.',
+                      self._test_launcher_summary_output)
+        return
+      with open(self._test_launcher_summary_output) as f:
+        raw_results = json.load(f)
+      parsed_results = json_results.ParseResultsFromJson(raw_results)
+      for r in parsed_results:
+        self._rdb_client.Post(
+            r.GetName(),
+            r.GetType(),
+            r.GetDuration(),
+            r.GetLog(),
+            None,
+            failure_reason=r.GetFailureReason())
+
 
 def device_test(args, unknown_args):
   # cros_run_test has trouble with relative paths that go up directories,
   # so cd to src/, which should be the root of all data deps.
   os.chdir(CHROMIUM_SRC_PATH)
 
-  # pylint: disable=redefined-variable-type
   # TODO: Remove the above when depot_tool's pylint is updated to include the
   # fix to https://github.com/PyCQA/pylint/issues/710.
   if args.test_type == 'tast':
@@ -718,7 +740,7 @@ def device_test(args, unknown_args):
 def host_cmd(args, cmd_args):
   if not cmd_args:
     raise TestFormatError('Must specify command to run on the host.')
-  elif args.deploy_chrome and not args.path_to_outdir:
+  if args.deploy_chrome and not args.path_to_outdir:
     raise TestFormatError(
         '--path-to-outdir must be specified if --deploy-chrome is passed.')
 
@@ -961,7 +983,7 @@ def main():
       '-t',
       action='append',
       dest='tests',
-      help='A Tast test to run in the device (eg: "ui.ChromeLogin").')
+      help='A Tast test to run in the device (eg: "login.Chrome").')
   tast_test_parser.add_argument(
       '--gtest_filter',
       type=str,

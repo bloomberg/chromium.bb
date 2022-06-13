@@ -18,7 +18,7 @@ tf_class {
   }
   member_method {
     name: "__init__"
-    argspec: "args=[\'self\', \'tpu_cluster_resolver\', \'experimental_device_assignment\'], varargs=None, keywords=None, defaults=[\'None\', \'None\'], "
+    argspec: "args=[\'self\', \'tpu_cluster_resolver\', \'experimental_device_assignment\', \'experimental_spmd_xla_partitioning\'], varargs=None, keywords=None, defaults=[\'None\', \'None\', \'False\'], "
   }
   member_method {
     name: "colocate_vars_with"
@@ -27,6 +27,10 @@ tf_class {
   member_method {
     name: "configure"
     argspec: "args=[\'self\', \'session_config\', \'cluster_spec\', \'task_type\', \'task_id\'], varargs=None, keywords=None, defaults=[\'None\', \'None\', \'None\', \'None\'], "
+  }
+  member_method {
+    name: "distribute_datasets_from_function"
+    argspec: "args=[\'self\', \'dataset_fn\', \'options\'], varargs=None, keywords=None, defaults=[\'None\'], "
   }
   member_method {
     name: "experimental_assign_to_logical_device"
@@ -49,10 +53,6 @@ tf_class {
     argspec: "args=[\'self\', \'value\'], varargs=None, keywords=None, defaults=None"
   }
   member_method {
-    name: "experimental_make_numpy_dataset"
-    argspec: "args=[\'self\', \'numpy_input\'], varargs=None, keywords=None, defaults=None"
-  }
-  member_method {
     name: "experimental_replicate_to_logical_devices"
     argspec: "args=[\'self\', \'tensor\'], varargs=None, keywords=None, defaults=None"
   }
@@ -61,12 +61,12 @@ tf_class {
     argspec: "args=[\'self\', \'fn\', \'input_iterator\'], varargs=None, keywords=None, defaults=[\'None\'], "
   }
   member_method {
-    name: "experimental_run_v2"
-    argspec: "args=[\'self\', \'fn\', \'args\', \'kwargs\', \'options\'], varargs=None, keywords=None, defaults=[\'()\', \'None\', \'None\'], "
-  }
-  member_method {
     name: "experimental_split_to_logical_devices"
     argspec: "args=[\'self\', \'tensor\', \'partition_dimensions\'], varargs=None, keywords=None, defaults=None"
+  }
+  member_method {
+    name: "gather"
+    argspec: "args=[\'self\', \'value\', \'axis\'], varargs=None, keywords=None, defaults=None"
   }
   member_method {
     name: "group"

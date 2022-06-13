@@ -11,7 +11,6 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_piece.h"
 #include "net/base/net_export.h"
@@ -147,6 +146,11 @@ class NET_EXPORT_PRIVATE DnsResponse {
 
   // Constructs a response from |data|. Used for testing purposes only!
   DnsResponse(const void* data, size_t length, size_t answer_offset);
+
+  static DnsResponse CreateEmptyNoDataResponse(uint16_t id,
+                                               bool is_authoritative,
+                                               base::StringPiece qname,
+                                               uint16_t qtype);
 
   // Move-only.
   DnsResponse(DnsResponse&& other);

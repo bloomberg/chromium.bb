@@ -9,23 +9,22 @@
 #include "chrome/browser/ash/login/enrollment/enterprise_enrollment_helper.h"
 #include "chrome/browser/ash/login/enrollment/enterprise_enrollment_helper_mock.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
-#include "chrome/browser/chromeos/policy/active_directory_join_delegate.h"
+#include "chrome/browser/ash/policy/active_directory/active_directory_join_delegate.h"
 
-using testing::_;
-using testing::AtLeast;
-using testing::Invoke;
-using testing::InvokeWithoutArgs;
-
+namespace ash {
+namespace test {
 namespace {
+
+using ::testing::_;
+using ::testing::AtLeast;
+using ::testing::Invoke;
+using ::testing::InvokeWithoutArgs;
 
 MATCHER_P(ConfigModeMatches, mode, "") {
   return arg.mode == mode;
 }
 
 }  // namespace
-
-namespace chromeos {
-namespace test {
 
 // static
 const char EnrollmentHelperMixin::kTestAuthCode[] = "test_auth_code";
@@ -107,7 +106,7 @@ void EnrollmentHelperMixin::ExpectOfflineEnrollmentSuccess() {
   ExpectEnrollmentMode(policy::EnrollmentConfig::MODE_OFFLINE_DEMO);
 
   EXPECT_CALL(*mock_, EnrollForOfflineDemo())
-      .WillOnce(testing::InvokeWithoutArgs(
+      .WillOnce(InvokeWithoutArgs(
           [this]() { mock_->status_consumer()->OnDeviceEnrolled(); }));
 }
 
@@ -115,7 +114,7 @@ void EnrollmentHelperMixin::ExpectOfflineEnrollmentError(
     policy::EnrollmentStatus status) {
   ExpectEnrollmentMode(policy::EnrollmentConfig::MODE_OFFLINE_DEMO);
   EXPECT_CALL(*mock_, EnrollForOfflineDemo())
-      .WillOnce(testing::InvokeWithoutArgs([this, status]() {
+      .WillOnce(InvokeWithoutArgs([this, status]() {
         mock_->status_consumer()->OnEnrollmentError(status);
       }));
 }
@@ -154,7 +153,7 @@ void EnrollmentHelperMixin::ExpectAttributePromptUpdate(
 }
 
 void EnrollmentHelperMixin::SetupActiveDirectoryJoin(
-    ActiveDirectoryJoinDelegate* delegate,
+    policy::ActiveDirectoryJoinDelegate* delegate,
     const std::string& expected_domain,
     const std::string& domain_join_config,
     const std::string& dm_token) {
@@ -171,21 +170,5 @@ void EnrollmentHelperMixin::SetupActiveDirectoryJoin(
           }));
 }
 
-void EnrollmentHelperMixin::ExpectTokenEnrollmentSuccess(
-    const std::string& token) {
-  ExpectEnrollmentMode(
-      policy::EnrollmentConfig::MODE_ATTESTATION_ENROLLMENT_TOKEN);
-  EXPECT_CALL(*mock_, EnrollUsingEnrollmentToken(token))
-      .WillOnce(InvokeWithoutArgs(
-          [this]() { mock_->status_consumer()->OnDeviceEnrolled(); }));
-}
-
-void EnrollmentHelperMixin::ExpectRestoreAfterRollback() {
-  EXPECT_CALL(*mock_, RestoreAfterRollback)
-      .WillOnce(InvokeWithoutArgs([this]() {
-        mock_->status_consumer()->OnRestoreAfterRollbackCompleted();
-      }));
-}
-
 }  // namespace test
-}  // namespace chromeos
+}  // namespace ash

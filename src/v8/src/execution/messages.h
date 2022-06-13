@@ -12,6 +12,7 @@
 
 #include <memory>
 
+#include "include/v8-local-handle.h"
 #include "src/base/optional.h"
 #include "src/common/message-template.h"
 #include "src/handles/handles.h"
@@ -84,7 +85,8 @@ class ErrorUtils : public AllStatic {
       Handle<Object> message, Handle<Object> options, FrameSkipMode mode,
       Handle<Object> caller, StackTraceCollection stack_trace_collection);
 
-  static MaybeHandle<String> ToString(Isolate* isolate, Handle<Object> recv);
+  V8_EXPORT_PRIVATE static MaybeHandle<String> ToString(Isolate* isolate,
+                                                        Handle<Object> recv);
 
   static Handle<JSObject> MakeGenericError(
       Isolate* isolate, Handle<JSFunction> constructor, MessageTemplate index,

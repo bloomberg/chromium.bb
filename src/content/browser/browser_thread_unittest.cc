@@ -10,13 +10,14 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
+#include "base/memory/raw_ptr.h"
 #include "base/message_loop/message_pump.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
-#include "base/sequenced_task_runner_helpers.h"
-#include "base/single_thread_task_runner.h"
 #include "base/task/current_thread.h"
 #include "base/task/sequence_manager/sequence_manager_impl.h"
+#include "base/task/sequenced_task_runner_helpers.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -43,9 +44,7 @@ class SequenceManagerThreadDelegate : public base::Thread::Delegate {
         base::sequence_manager::internal::SequenceManagerImpl::CreateUnbound(
             base::sequence_manager::SequenceManager::Settings());
     auto browser_ui_thread_scheduler =
-        BrowserUIThreadScheduler::CreateForTesting(
-            ui_sequence_manager_.get(),
-            ui_sequence_manager_->GetRealTimeDomain());
+        BrowserUIThreadScheduler::CreateForTesting(ui_sequence_manager_.get());
 
     default_task_runner_ =
         browser_ui_thread_scheduler->GetHandle()->GetDefaultTaskRunner();
@@ -57,6 +56,10 @@ class SequenceManagerThreadDelegate : public base::Thread::Delegate {
         std::make_unique<BrowserIOThreadDelegate>());
     BrowserTaskExecutor::EnableAllQueues();
   }
+
+  SequenceManagerThreadDelegate(const SequenceManagerThreadDelegate&) = delete;
+  SequenceManagerThreadDelegate& operator=(
+      const SequenceManagerThreadDelegate&) = delete;
 
   ~SequenceManagerThreadDelegate() override {
     BrowserTaskExecutor::ResetForTesting();
@@ -77,8 +80,6 @@ class SequenceManagerThreadDelegate : public base::Thread::Delegate {
  private:
   std::unique_ptr<base::sequence_manager::SequenceManager> ui_sequence_manager_;
   scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(SequenceManagerThreadDelegate);
 };
 
 }  // namespace
@@ -98,8 +99,8 @@ class BrowserThreadTest : public testing::Test {
     ui_thread_ = std::make_unique<base::Thread>(
         BrowserThreadImpl::GetThreadName(BrowserThread::UI));
     base::Thread::Options ui_options;
-    ui_options.delegate = new SequenceManagerThreadDelegate();
-    ui_thread_->StartWithOptions(ui_options);
+    ui_options.delegate = std::make_unique<SequenceManagerThreadDelegate>();
+    ui_thread_->StartWithOptions(std::move(ui_options));
 
     io_thread_ = BrowserTaskExecutor::CreateIOThread();
     io_thread_->RegisterAsBrowserThread();
@@ -188,7 +189,7 @@ class UIThreadDestructionObserver
   const scoped_refptr<base::SingleThreadTaskRunner> callback_task_runner_;
   const scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
   base::OnceClosure callback_;
-  bool* did_shutdown_;
+  raw_ptr<bool> did_shutdown_;
 };
 
 TEST_F(BrowserThreadTest, PostTask) {
@@ -274,8 +275,7 @@ class BrowserThreadWithCustomSchedulerTest : public testing::Test {
     TaskEnvironmentWithCustomScheduler()
         : base::test::TaskEnvironment(SubclassCreatesDefaultTaskRunner{}) {
       std::unique_ptr<BrowserUIThreadScheduler> browser_ui_thread_scheduler =
-          BrowserUIThreadScheduler::CreateForTesting(sequence_manager(),
-                                                     GetTimeDomain());
+          BrowserUIThreadScheduler::CreateForTesting(sequence_manager());
       DeferredInitFromSubclass(
           browser_ui_thread_scheduler->GetHandle()->GetBrowserTaskRunner(
               QueueType::kDefault));

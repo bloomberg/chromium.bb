@@ -5,6 +5,7 @@
 #include "chrome/browser/file_util_service.h"
 
 #include "chrome/grit/generated_resources.h"
+#include "chrome/services/file_util/public/mojom/file_util_service.mojom.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/service_process_host.h"
 

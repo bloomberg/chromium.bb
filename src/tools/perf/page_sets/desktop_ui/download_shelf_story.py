@@ -39,7 +39,8 @@ class DownloadShelfStory(MultiTabStory):
         tabs.New(url=url)
       except Exception:
         pass
-    self._devtools = action_runner.tab.browser.GetUIDevtools()
+    if not IsMac():
+      self._devtools = action_runner.tab.browser.GetUIDevtools()
 
   def IsWebUI(self):
     return 'webui' in self.NAME
@@ -52,11 +53,11 @@ class DownloadShelfStory(MultiTabStory):
       action_runner = Inspect(action_runner.tab.browser,
                               WEBUI_DOWNLOAD_SHELF_URL)
       action_runner.ExecuteJavaScript(MEASURE_JS_MEMORY %
-                                      'used_js_heap_size_begin')
+                                      'download_shelf:used_js_heap_size_begin')
     self.InteractWithPage(action_runner)
     if self.IsWebUI():
       action_runner.ExecuteJavaScript(MEASURE_JS_MEMORY %
-                                      'used_js_heap_size_end')
+                                      'download_shelf:used_js_heap_size_end')
 
   def InteractWithPage(self, action_runner):
     self.ContextMenu(action_runner)

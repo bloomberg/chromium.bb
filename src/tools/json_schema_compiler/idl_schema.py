@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#!/usr/bin/env python3
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -575,9 +575,8 @@ def Load(filename):
   Python dictionary in a format that the JSON schema compiler expects to see.
   '''
 
-  f = open(filename, 'r')
-  contents = f.read()
-  f.close()
+  with open(filename, 'rb') as handle:
+    contents = handle.read().decode('utf-8')
 
   return Process(contents, filename)
 

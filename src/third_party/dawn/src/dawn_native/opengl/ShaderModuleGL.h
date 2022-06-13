@@ -44,25 +44,30 @@ namespace dawn_native { namespace opengl {
 
     using CombinedSamplerInfo = std::vector<CombinedSampler>;
 
+    using BindingInfoArrayTable =
+        std::unordered_map<std::string, std::unique_ptr<BindingInfoArray>>;
+
     class ShaderModule final : public ShaderModuleBase {
       public:
         static ResultOrError<Ref<ShaderModule>> Create(Device* device,
                                                        const ShaderModuleDescriptor* descriptor,
                                                        ShaderModuleParseResult* parseResult);
 
-        std::string TranslateToGLSL(const char* entryPointName,
-                                    SingleShaderStage stage,
-                                    CombinedSamplerInfo* combinedSamplers,
-                                    const PipelineLayout* layout,
-                                    bool* needsDummySampler) const;
+        ResultOrError<std::string> TranslateToGLSL(const char* entryPointName,
+                                                   SingleShaderStage stage,
+                                                   CombinedSamplerInfo* combinedSamplers,
+                                                   const PipelineLayout* layout,
+                                                   bool* needsDummySampler) const;
 
       private:
         ShaderModule(Device* device, const ShaderModuleDescriptor* descriptor);
         ~ShaderModule() override = default;
         MaybeError Initialize(ShaderModuleParseResult* parseResult);
+        static ResultOrError<BindingInfoArrayTable> ReflectShaderUsingSPIRVCross(
+            DeviceBase* device,
+            const std::vector<uint32_t>& spirv);
 
-        std::vector<uint32_t> mGLSpirv;
-        EntryPointMetadataTable mGLEntryPoints;
+        BindingInfoArrayTable mGLBindings;
     };
 
 }}  // namespace dawn_native::opengl

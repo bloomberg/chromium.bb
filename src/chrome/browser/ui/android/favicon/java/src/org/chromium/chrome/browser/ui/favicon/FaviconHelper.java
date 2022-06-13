@@ -64,14 +64,15 @@ public class FaviconHelper {
                                                       : R.drawable.default_favicon;
         }
 
-        private Bitmap createBitmap(Resources resources, GURL url, boolean useDarkIcon) {
-            Bitmap origBitmap = BitmapFactory.decodeResource(resources, getResourceId(url));
+        private Bitmap createBitmap(Resources resources, int resourceId, boolean useDarkIcon) {
+            Bitmap origBitmap = BitmapFactory.decodeResource(resources, resourceId);
             Bitmap tintedBitmap = Bitmap.createBitmap(
                     origBitmap.getWidth(), origBitmap.getHeight(), Bitmap.Config.ARGB_8888);
             Canvas c = new Canvas(tintedBitmap);
             @ColorInt
             int tintColor = ApiCompatibilityUtils.getColor(resources,
-                    useDarkIcon ? R.color.default_icon_color : R.color.default_icon_color_light);
+                    useDarkIcon ? R.color.default_icon_color_baseline
+                                : R.color.default_icon_color_light);
             Paint p = new Paint();
             p.setColorFilter(new PorterDuffColorFilter(tintColor, PorterDuff.Mode.SRC_IN));
             c.drawBitmap(origBitmap, 0f, 0f, p);
@@ -90,7 +91,7 @@ public class FaviconHelper {
             Bitmap bitmap = isInternal ? (useDarkIcon ? mChromeDarkBitmap : mChromeLightBitmap)
                                        : (useDarkIcon ? mDefaultDarkBitmap : mDefaultLightBitmap);
             if (bitmap != null) return bitmap;
-            bitmap = createBitmap(resources, url, useDarkIcon);
+            bitmap = createBitmap(resources, getResourceId(url), useDarkIcon);
             if (isInternal && useDarkIcon) {
                 mChromeDarkBitmap = bitmap;
             } else if (isInternal) {
@@ -114,6 +115,17 @@ public class FaviconHelper {
                 Resources resources, GURL url, boolean useDarkIcon) {
             return new BitmapDrawable(
                     resources, getDefaultFaviconBitmap(resources, url, useDarkIcon));
+        }
+
+        /**
+         * Gives the favicon for given resource id with current theme.
+         * @param resources The {@link Resources} used to fetch the default icons.
+         * @param resourceId The integer that represents the id of the icon.
+         * @param useDarkIcon Whether a dark icon should be used.
+         * @return The favicon
+         */
+        public Bitmap getThemifiedBitmap(Resources resources, int resourceId, boolean useDarkIcon) {
+            return createBitmap(resources, resourceId, useDarkIcon);
         }
 
         /** Clears any of the cached default drawables. */
@@ -191,7 +203,7 @@ public class FaviconHelper {
      *         that this callback is not called if this method returns false.
      * @return True if GetLocalFaviconImageForURL is successfully called.
      */
-    public boolean getComposedFaviconImage(Profile profile, @NonNull List<String> urls,
+    public boolean getComposedFaviconImage(Profile profile, @NonNull List<GURL> urls,
             int desiredSizeInPixel, FaviconImageCallback faviconImageCallback) {
         assert mNativeFaviconHelper != 0;
 
@@ -201,14 +213,14 @@ public class FaviconHelper {
         }
 
         return FaviconHelperJni.get().getComposedFaviconImage(mNativeFaviconHelper, profile,
-                urls.toArray(new String[0]), desiredSizeInPixel, faviconImageCallback);
+                urls.toArray(new GURL[0]), desiredSizeInPixel, faviconImageCallback);
     }
 
     @NativeMethods
     interface Natives {
         long init();
         void destroy(long nativeFaviconHelper);
-        boolean getComposedFaviconImage(long nativeFaviconHelper, Profile profile, String[] urls,
+        boolean getComposedFaviconImage(long nativeFaviconHelper, Profile profile, GURL[] urls,
                 int desiredSizeInDip, FaviconImageCallback faviconImageCallback);
         boolean getLocalFaviconImageForURL(long nativeFaviconHelper, Profile profile,
                 String pageUrl, int desiredSizeInDip, FaviconImageCallback faviconImageCallback);

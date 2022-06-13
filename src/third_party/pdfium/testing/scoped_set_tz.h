@@ -8,7 +8,7 @@
 #include <string>
 
 #include "core/fxcrt/fx_memory.h"
-#include "third_party/base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class ScopedSetTZ {
  public:
@@ -20,7 +20,7 @@ class ScopedSetTZ {
   ~ScopedSetTZ();
 
  private:
-  Optional<std::string> old_tz_;
+  absl::optional<std::string> old_tz_;
 };
 
 #endif  // TESTING_SCOPED_SET_TZ_H_

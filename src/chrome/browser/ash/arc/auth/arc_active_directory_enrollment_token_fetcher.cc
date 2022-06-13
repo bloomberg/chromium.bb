@@ -10,10 +10,10 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "chrome/browser/ash/arc/arc_optin_uma.h"
+#include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
+#include "chrome/browser/ash/policy/core/dm_token_storage.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/policy/dm_token_storage.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chromeos/tpm/install_attributes.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
@@ -28,9 +28,8 @@ namespace {
 
 constexpr char kSamlAuthErrorMessage[] = "SAML authentication failed. ";
 
-policy::BrowserPolicyConnectorChromeOS* GetConnector() {
-  return g_browser_process->platform_part()
-      ->browser_policy_connector_chromeos();
+policy::BrowserPolicyConnectorAsh* GetConnector() {
+  return g_browser_process->platform_part()->browser_policy_connector_ash();
 }
 
 policy::DeviceManagementService* GetDeviceManagementService() {
@@ -226,7 +225,8 @@ void ArcActiveDirectoryEnrollmentTokenFetcher::OnAuthFailed(
   support_host_->ShowError(
       ArcSupportHost::ErrorInfo(
           ArcSupportHost::Error::SERVER_COMMUNICATION_ERROR),
-      true /* should_show_send_feedback */);
+      true /* should_show_send_feedback */,
+      true /* should_show_run_network_tests */);
   UpdateOptInCancelUMA(OptInCancelReason::NETWORK_ERROR);
 }
 

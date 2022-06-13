@@ -25,6 +25,13 @@
 #include "base/threading/platform_thread.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
+#include "testing/gtest/include/gtest/gtest-death-test.h"
+#include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+
 #if defined(OS_WIN)
 #include "base/win/com_init_util.h"
 #include "base/win/scoped_bstr.h"
@@ -32,12 +39,6 @@
 #include "base/win/scoped_variant.h"
 #include "base/win/wmi.h"
 #endif  // defined(OS_WIN)
-#include "build/build_config.h"
-#include "build/chromeos_buildflags.h"
-#include "testing/gtest/include/gtest/gtest-death-test.h"
-#include "testing/gtest/include/gtest/gtest.h"
-#include "testing/platform_test.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
 
@@ -106,24 +107,14 @@ TEST_F(SysInfoTest, AmountOfFreeDiskSpace) {
   // We aren't actually testing that it's correct, just that it's sane.
   FilePath tmp_path;
   ASSERT_TRUE(GetTempDir(&tmp_path));
-#if defined(OS_FUCHSIA)
-  // Fuchsia currently requires "total disk space" be set explicitly.
-  // See crbug.com/1148334.
-  SysInfo::SetAmountOfTotalDiskSpace(tmp_path, 1024);
-#endif
-  EXPECT_GE(SysInfo::AmountOfFreeDiskSpace(tmp_path), 0) << tmp_path.value();
+  EXPECT_GE(SysInfo::AmountOfFreeDiskSpace(tmp_path), 0) << tmp_path;
 }
 
 TEST_F(SysInfoTest, AmountOfTotalDiskSpace) {
   // We aren't actually testing that it's correct, just that it's sane.
   FilePath tmp_path;
   ASSERT_TRUE(GetTempDir(&tmp_path));
-#if defined(OS_FUCHSIA)
-  // Fuchsia currently requires "total disk space" be set explicitly.
-  // See crbug.com/1148334.
-  SysInfo::SetAmountOfTotalDiskSpace(tmp_path, 1024);
-#endif
-  EXPECT_GT(SysInfo::AmountOfTotalDiskSpace(tmp_path), 0) << tmp_path.value();
+  EXPECT_GT(SysInfo::AmountOfTotalDiskSpace(tmp_path), 0) << tmp_path;
 }
 
 #if defined(OS_FUCHSIA)
@@ -175,7 +166,7 @@ TEST_F(SysInfoTest, Uptime) {
   TimeDelta up_time_1 = SysInfo::Uptime();
   // UpTime() is implemented internally using TimeTicks::Now(), which documents
   // system resolution as being 1-15ms. Sleep a little longer than that.
-  PlatformThread::Sleep(TimeDelta::FromMilliseconds(20));
+  PlatformThread::Sleep(Milliseconds(20));
   TimeDelta up_time_2 = SysInfo::Uptime();
   EXPECT_GT(up_time_1.InMicroseconds(), 0);
   EXPECT_GT(up_time_2.InMicroseconds(), up_time_1.InMicroseconds());
@@ -378,6 +369,19 @@ TEST_F(SysInfoTest, IsRunningOnChromeOS) {
   }
 }
 
+// Regression test for https://crbug.com/1148904.
+TEST_F(SysInfoTest, ScopedChromeOSVersionInfoDoesNotChangeEnvironment) {
+  std::unique_ptr<Environment> environment = Environment::Create();
+  ASSERT_FALSE(environment->HasVar("LSB_RELEASE"));
+  {
+    const char kLsbRelease[] =
+        "CHROMEOS_RELEASE_NAME=Chrome OS\n"
+        "CHROMEOS_RELEASE_VERSION=1.2.3.4\n";
+    test::ScopedChromeOSVersionInfo version(kLsbRelease, Time());
+  }
+  EXPECT_FALSE(environment->HasVar("LSB_RELEASE"));
+}
+
 TEST_F(SysInfoTest, CrashOnBaseImage) {
   const char kLsbRelease[] =
       "CHROMEOS_RELEASE_NAME=Chrome OS\n"
@@ -416,6 +420,54 @@ TEST_F(SysInfoTest, ScopedRunningOnChromeOS) {
   }
   // Previous value restored.
   EXPECT_EQ(was_running, SysInfo::IsRunningOnChromeOS());
+}
+
+SysInfo::GetAppOutputCallback MockGetAppOutputTestCallback(
+    const std::string& mock_output,
+    bool mock_ret) {
+  return BindRepeating(
+      [](const std::string& expected_output, bool return_value,
+         const CommandLine& cl, std::string* out) -> bool {
+        *out = expected_output;
+        return return_value;
+      },
+      mock_output, mock_ret);
+}
+
+TEST_F(SysInfoTest, SpacedValidQuery) {
+  FilePath dummy_path("/a/b/c");
+  auto mock_get_app_output = MockGetAppOutputTestCallback("1234", true);
+  SysInfo::SetChromeOSGetAppOutputForTest(&mock_get_app_output);
+  EXPECT_EQ(SysInfo::GetTotalDiskSpaceFromSpaced(dummy_path), 1234);
+  EXPECT_EQ(SysInfo::GetFreeDiskSpaceFromSpaced(dummy_path), 1234);
+  SysInfo::SetChromeOSGetAppOutputForTest(nullptr);
+}
+
+TEST_F(SysInfoTest, SpacedInternalFailure) {
+  FilePath dummy_path("/a/b/c");
+  auto mock_get_app_output = MockGetAppOutputTestCallback("-1", true);
+  SysInfo::SetChromeOSGetAppOutputForTest(&mock_get_app_output);
+  EXPECT_EQ(SysInfo::GetTotalDiskSpaceFromSpaced(dummy_path), -1);
+  EXPECT_EQ(SysInfo::GetFreeDiskSpaceFromSpaced(dummy_path), -1);
+  SysInfo::SetChromeOSGetAppOutputForTest(nullptr);
+}
+
+TEST_F(SysInfoTest, SpacedFailedInvocation) {
+  FilePath dummy_path("/a/b/c");
+  auto mock_get_app_output = MockGetAppOutputTestCallback("5", false);
+  SysInfo::SetChromeOSGetAppOutputForTest(&mock_get_app_output);
+  EXPECT_EQ(SysInfo::GetTotalDiskSpaceFromSpaced(dummy_path), -1);
+  EXPECT_EQ(SysInfo::GetFreeDiskSpaceFromSpaced(dummy_path), -1);
+  SysInfo::SetChromeOSGetAppOutputForTest(nullptr);
+}
+
+TEST_F(SysInfoTest, SpacedInvalidOutput) {
+  FilePath dummy_path("/a/b/c");
+  auto mock_get_app_output = MockGetAppOutputTestCallback("foo", true);
+  SysInfo::SetChromeOSGetAppOutputForTest(&mock_get_app_output);
+  EXPECT_EQ(SysInfo::GetTotalDiskSpaceFromSpaced(dummy_path), -1);
+  EXPECT_EQ(SysInfo::GetFreeDiskSpaceFromSpaced(dummy_path), -1);
+  SysInfo::SetChromeOSGetAppOutputForTest(nullptr);
 }
 
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)

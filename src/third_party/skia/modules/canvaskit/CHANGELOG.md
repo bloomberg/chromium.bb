@@ -6,6 +6,112 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Breaking
+ - `Canvas.drawVertices` and `Canvas.drawPatch` treat the default blend mode differently.
+   See https://bugs.chromium.org/p/skia/issues/detail?id=12662.
+ - `Canvas.markCTM` and `Canvas.findMarkedCTM` have been removed. They were effectively no-ops.
+
+### Added
+ - Rough implementation of `measureText` to Canvas2D emulation layer. For accurate numbers, clients
+   should use a real shaping library, like SkParagraph.
+ - `AnimatedImage.currentFrameDuration` has been added, as well as some clarifying documentation.
+
+## [0.31.0] - 2021-11-16
+
+### Added
+ - `CanvasKit.MakeLazyImageFromTextureSource`, which is similar to
+   `Surface.makeImageFromTextureSource`, but can be re-used across different WebGL contexts.
+
+### Breaking
+ - `Surface.makeImageFromTextureSource` now takes an optional ImageInfo or PartialImageInfo
+   instead of optional width and height. Sensible defaults will be used if not supplied.
+
+### Fixed
+ - Some `Surface` methods would not properly switch to the right WebGL context.
+ - Warnings about `INVALID_ENUM: enable: invalid capability` should be reduced/eliminated.
+
+### Removed
+ - `FontMgr.MakeTypefaceFromData` and `FontMgr.RefDefault` have been removed in favor of
+   `Typeface.MakeFreeTypeFaceFromData`
+
+### Changed
+ - `make release`, `make debug`, and variants put the output in a different location (./build).
+ - Example .html files load CanvasKit from the new location (./build).
+
+### Type Changes (index.d.ts)
+ - `Surface.requestAnimationFrame` and `Surface.drawOnce` are properly documented.
+ - Fixed typo in TextStyle (decrationStyle => decorationStyle)
+
+## [0.30.0] - 2021-09-15
+
+### Removed
+ - `Surface.grContext` and `Surface.openGLversion` - these had been undocumented and are no longer
+   exposed.
+ - `CanvasKit.setCurrentContext` and `CanvasKit.currentContext`. Existing calls can be deleted.
+
+### Changed
+ - CanvasKit APIs now handle switching between WebGL contexts automatically.
+ - Reduced overhead when switching between WebGL contexts.
+
+### Type Changes (index.d.ts)
+ - `Canvas.drawImage*` calls are correctly documented as accepting an optional `Paint` or null.
+
+## [0.29.0] - 2021-08-06
+
+### Added
+ - `Path.makeAsWinding` has been added to convert paths with an EvenOdd FillType to the
+   equivalent area using the Winding FillType.
+
+### Breaking
+ - `Paint.getBlendMode()` has been removed.
+ - `Canvas.drawImageAtCurrentFrame()` has been removed.
+ - FilterQuality enum removed -- pass `FilterOptions` | `CubicResampler` instead.
+
+### Type Changes (index.d.ts)
+ - Replaced all `object` with actual types, including `AnimationMarker`.
+
+## [0.28.1] - 2021-06-28
+
+### Added
+ - `Typeface.MakeFreeTypeFaceFromData` as a more convenient way to create a Typeface from the bytes
+   of a .ttf, .woff, or .woff2 file.
+ - `Typeface.getGlyphIDs` - provides the same functionality as `Font.getGlyphIDs`.
+
+### Changed
+ - ICU has been updated from v65 to v69.
+ - Freetype has been updated from f9350be to ff40776.
+
+### Fixed
+ - We should no longer have to decode the same font multiple times (skbug.com/12112)
+ - `Font.getGlyphIDs` had the wrong type for the third argument. It is now correctly a Uint16Array.
+
+### Deprecated
+ - `FontMgr.MakeTypefaceFromData` will be removed in favor of `Typeface.MakeFreeTypeFaceFromData`
+ - `FontMgr.RefDefault` will be removed in an upcoming version. It's only real use was
+   for `FontMgr.MakeTypefaceFromData`.
+
+## [0.28.0] - 2021-06-17
+
+### Added
+ - `Surface.makeImageFromTexture` and `Surface.makeImageFromTextureSource` as easy ways to provide
+   CanvasKit with a WebGL texture and interact with WebGL texture sources (e.g. &lt;video&gt;)
+
+### Changed
+ - We now build/ship with emscripten 2.0.20.
+
+### Breaking
+ - `Path.toCmds()` returns a flattened Float32Array instead of a 2D Array.
+ - `Canvaskit.Path.MakeFromCmds` no longer accepts a 2D Array. Inputs must be flattened,
+   but can be an array, a TypedArray, or a MallocObj.
+ - `CanvasKit.*Builder` have all been removed. Clients should use Malloc instead.
+
+### Removed
+ - `CanvasKit.Shader.MakeLerp`, the same effect can be easily generated with `RuntimeEffect`
+
+### Known Bugs
+ - On legacy (non-ANGLE) SwiftShader, certain paths that require tessellation may not be drawn
+   correctly when using a WebGL-backed surface. (skbug.com/11965)
+
 ## [0.27.0] - 2021-05-20
 
 ### Added

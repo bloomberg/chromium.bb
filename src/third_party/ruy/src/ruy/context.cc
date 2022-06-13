@@ -18,6 +18,7 @@ limitations under the License.
 #include "ruy/ctx.h"
 #include "ruy/ctx_impl.h"
 #include "ruy/path.h"
+#include "ruy/performance_advisory.h"
 #include "ruy/prepacked_cache.h"
 #include "ruy/thread_pool.h"
 #include "ruy/tune.h"
@@ -45,5 +46,18 @@ void Context::set_max_num_threads(int value) {
 }
 
 void Context::ClearPrepackedCache() { mutable_ctx()->ClearPrepackedCache(); }
+
+bool Context::performance_advisory(PerformanceAdvisory advisory) const {
+  return ctx().performance_advisory(advisory);
+}
+
+void Context::set_runtime_enabled_paths(Path paths) {
+  mutable_ctx()->SetRuntimeEnabledPaths(paths);
+}
+
+Path Context::get_runtime_enabled_paths() {
+  // The `& kAllPaths` hides internal test-only paths.
+  return mutable_ctx()->GetRuntimeEnabledPaths() & ruy::kAllPaths;
+}
 
 }  // namespace ruy

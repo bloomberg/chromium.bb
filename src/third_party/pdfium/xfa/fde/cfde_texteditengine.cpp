@@ -393,14 +393,6 @@ void CFDE_TextEditEngine::ClearOperationRecords() {
   next_operation_index_to_insert_ = 0;
 }
 
-size_t CFDE_TextEditEngine::GetIndexBefore(size_t pos) {
-  int32_t bidi_level;
-  CFX_RectF rect;
-  // Possible |Layout| triggered by |GetCharacterInfo|.
-  std::tie(bidi_level, rect) = GetCharacterInfo(pos);
-  return FX_IsOdd(bidi_level) ? GetIndexRight(pos) : GetIndexLeft(pos);
-}
-
 size_t CFDE_TextEditEngine::GetIndexLeft(size_t pos) const {
   if (pos == 0)
     return 0;
@@ -674,13 +666,13 @@ void CFDE_TextEditEngine::EnableMultiLine(bool val) {
   if (is_multiline_ == val)
     return;
 
-  is_multiline_ = true;
-
-  uint32_t style = text_break_.GetLayoutStyles();
+  is_multiline_ = val;
+  Mask<CFGAS_Break::LayoutStyle> style = text_break_.GetLayoutStyles();
   if (is_multiline_)
-    style &= ~FX_LAYOUTSTYLE_SingleLine;
+    style.Clear(CFGAS_Break::LayoutStyle::kSingleLine);
   else
-    style |= FX_LAYOUTSTYLE_SingleLine;
+    style |= CFGAS_Break::LayoutStyle::kSingleLine;
+
   text_break_.SetLayoutStyles(style);
   is_dirty_ = true;
 }
@@ -701,12 +693,12 @@ void CFDE_TextEditEngine::SetCombText(bool enable) {
 
   is_comb_text_ = enable;
 
-  uint32_t style = text_break_.GetLayoutStyles();
+  Mask<CFGAS_Break::LayoutStyle> style = text_break_.GetLayoutStyles();
   if (enable) {
-    style |= FX_LAYOUTSTYLE_CombText;
+    style |= CFGAS_Break::LayoutStyle::kCombText;
     SetCombTextWidth();
   } else {
-    style &= ~FX_LAYOUTSTYLE_CombText;
+    style.Clear(CFGAS_Break::LayoutStyle::kCombText);
   }
   text_break_.SetLayoutStyles(style);
   is_dirty_ = true;
@@ -1049,7 +1041,7 @@ void CFDE_TextEditEngine::RebuildPieces() {
   text_piece_info_.clear();
 
   // Must have a font set in order to break the text.
-  if (text_length_ == 0 || !font_)
+  if (!CanGenerateCharacterInfo())
     return;
 
   bool initialized_bounding_box = false;

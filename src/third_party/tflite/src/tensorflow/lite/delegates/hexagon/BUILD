@@ -19,7 +19,7 @@ package(
     default_visibility = [
         "//visibility:public",
     ],
-    licenses = ["notice"],  # Apache 2.0
+    licenses = ["notice"],
 )
 
 cc_library(
@@ -57,13 +57,21 @@ cc_library(
         "//tensorflow/lite:kernel_api",
         "//tensorflow/lite/c:common",
         "//tensorflow/lite/core/api",
-        "//tensorflow/lite/delegates:utils",
         "//tensorflow/lite/delegates/hexagon/builders:op_builder",
         "//tensorflow/lite/delegates/hexagon/hexagon_nn:hexagon_nn_header",
+        "//tensorflow/lite/delegates/utils:simple_delegate",
         "//tensorflow/lite/kernels:kernel_util",
         "//tensorflow/lite/schema:schema_fbs",
         "@hexagon_nn//:hexagon_nn_ops",
     ],
+)
+
+cc_library(
+    name = "enable_hexagon_delegate",
+    defines = select({
+        "//tensorflow:arm_any": ["TFLITE_ENABLE_HEXAGON"],
+        "//conditions:default": [],
+    }),
 )
 
 cc_library(
@@ -81,8 +89,13 @@ cc_library(
         "//tensorflow/lite:kernel_api",
         "//tensorflow/lite:minimal_logging",
         "//tensorflow/lite/c:common",
-        "//tensorflow/lite/delegates:utils",
-    ],
+        "//tensorflow/lite/delegates/utils:simple_delegate",
+    ] + select({
+        "//tensorflow:ios": [],
+        "//tensorflow:ios_x86_64": [],
+        "//tensorflow:macos": [],
+        "//conditions:default": [":enable_hexagon_delegate"],
+    }),
 )
 
 cc_library(

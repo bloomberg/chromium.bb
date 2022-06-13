@@ -38,7 +38,7 @@ protected:
     SkIRect onFilterNodeBounds(const SkIRect&, const SkMatrix& ctm,
                                MapDirection, const SkIRect* inputRect) const override;
 
-    bool onCanHandleComplexCTM() const override { return true; }
+    MatrixCapability onGetCTMCapability() const override { return MatrixCapability::kComplex; }
 
 private:
     friend void ::SkRegisterImageImageFilterFlattenable();
@@ -74,8 +74,7 @@ void SkRegisterImageImageFilterFlattenable() {
 sk_sp<SkFlattenable> SkImageImageFilter::CreateProc(SkReadBuffer& buffer) {
     SkSamplingOptions sampling;
     if (buffer.isVersionLT(SkPicturePriv::kImageFilterImageSampling_Version)) {
-        sampling = SkSamplingOptions(buffer.checkFilterQuality(),
-                                     SkSamplingOptions::kMedium_asMipmapLinear);
+        sampling = SkSamplingPriv::FromFQ(buffer.checkFilterQuality(), kLinear_SkMediumAs);
     } else {
         sampling = buffer.readSampling();
     }

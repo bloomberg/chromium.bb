@@ -9,7 +9,6 @@
 
 #include <vector>
 
-#include "base/macros.h"
 #include "net/tools/huffman_trie/huffman/huffman_builder.h"
 
 namespace net {
@@ -25,6 +24,10 @@ class BitWriter;
 class TrieBitBuffer {
  public:
   TrieBitBuffer();
+
+  TrieBitBuffer(const TrieBitBuffer&) = delete;
+  TrieBitBuffer& operator=(const TrieBitBuffer&) = delete;
+
   ~TrieBitBuffer();
 
   // Writes |bit| to the buffer.
@@ -67,9 +70,6 @@ class TrieBitBuffer {
     uint32_t position;
   };
 
-  // Returns the minimum number of bits needed to represent |input|.
-  uint8_t BitLength(uint32_t input) const;
-
   // Append a new element to |elements_|.
   void AppendBitsElement(uint8_t bits, uint8_t number_of_bits);
   void AppendPositionElement(uint32_t position);
@@ -81,8 +81,6 @@ class TrieBitBuffer {
   uint32_t used_ = 0;
 
   std::vector<BitsOrPosition> elements_;
-
-  DISALLOW_COPY_AND_ASSIGN(TrieBitBuffer);
 };
 
 }  // namespace huffman_trie

@@ -11,54 +11,53 @@
 #include <stack>
 #include <tuple>
 #include <unordered_map>
+#include <unordered_set>
 
-#include "include/private/SkSLModifiers.h"
-#include "include/private/SkSLProgramElement.h"
-#include "include/private/SkSLStatement.h"
 #include "src/core/SkOpts.h"
 #include "src/sksl/SkSLMemoryLayout.h"
 #include "src/sksl/SkSLStringStream.h"
 #include "src/sksl/codegen/SkSLCodeGenerator.h"
-#include "src/sksl/ir/SkSLBinaryExpression.h"
-#include "src/sksl/ir/SkSLBoolLiteral.h"
-#include "src/sksl/ir/SkSLConstructor.h"
-#include "src/sksl/ir/SkSLConstructorArray.h"
-#include "src/sksl/ir/SkSLConstructorCompound.h"
-#include "src/sksl/ir/SkSLConstructorCompoundCast.h"
-#include "src/sksl/ir/SkSLConstructorDiagonalMatrix.h"
-#include "src/sksl/ir/SkSLConstructorMatrixResize.h"
-#include "src/sksl/ir/SkSLConstructorScalarCast.h"
-#include "src/sksl/ir/SkSLConstructorSplat.h"
-#include "src/sksl/ir/SkSLConstructorStruct.h"
-#include "src/sksl/ir/SkSLDoStatement.h"
-#include "src/sksl/ir/SkSLFieldAccess.h"
-#include "src/sksl/ir/SkSLFloatLiteral.h"
-#include "src/sksl/ir/SkSLForStatement.h"
-#include "src/sksl/ir/SkSLFunctionCall.h"
-#include "src/sksl/ir/SkSLFunctionDeclaration.h"
-#include "src/sksl/ir/SkSLFunctionDefinition.h"
-#include "src/sksl/ir/SkSLIfStatement.h"
-#include "src/sksl/ir/SkSLIndexExpression.h"
-#include "src/sksl/ir/SkSLIntLiteral.h"
-#include "src/sksl/ir/SkSLInterfaceBlock.h"
-#include "src/sksl/ir/SkSLPostfixExpression.h"
-#include "src/sksl/ir/SkSLPrefixExpression.h"
-#include "src/sksl/ir/SkSLReturnStatement.h"
-#include "src/sksl/ir/SkSLSwitchStatement.h"
-#include "src/sksl/ir/SkSLSwizzle.h"
-#include "src/sksl/ir/SkSLTernaryExpression.h"
-#include "src/sksl/ir/SkSLVarDeclarations.h"
-#include "src/sksl/ir/SkSLVariableReference.h"
-#include "src/sksl/spirv.h"
 
 namespace SkSL {
+
+class BinaryExpression;
+class Block;
+class ConstructorCompound;
+class ConstructorCompoundCast;
+class ConstructorDiagonalMatrix;
+class ConstructorMatrixResize;
+class ConstructorScalarCast;
+class ConstructorSplat;
+class DoStatement;
+class FieldAccess;
+class ForStatement;
+class FunctionCall;
+class FunctionDeclaration;
+class FunctionDefinition;
+class FunctionPrototype;
+class IfStatement;
+struct IndexExpression;
+class InterfaceBlock;
+enum IntrinsicKind : int8_t;
+class Literal;
+class Operator;
+class PostfixExpression;
+class PrefixExpression;
+class ReturnStatement;
+class Setting;
+class StructDefinition;
+class SwitchStatement;
+struct Swizzle;
+class TernaryExpression;
+class VarDeclaration;
+class VariableReference;
 
 struct SPIRVNumberConstant {
     bool operator==(const SPIRVNumberConstant& that) const {
         return fValueBits == that.fValueBits &&
                fKind      == that.fKind;
     }
-    int64_t fValueBits;  // contains either an SKSL_INT or zero-padded bits from an SKSL_FLOAT
+    int32_t                fValueBits;
     SkSL::Type::NumberKind fKind;
 };
 
@@ -127,18 +126,14 @@ public:
 
     SPIRVCodeGenerator(const Context* context,
                        const Program* program,
-                       ErrorReporter* errors,
                        OutputStream* out)
-            : INHERITED(program, errors, out)
-            , fContext(*context)
+            : INHERITED(context, program, out)
             , fDefaultLayout(MemoryLayout::k140_Standard)
             , fCapabilities(0)
             , fIdCount(1)
-            , fBoolTrue(0)
-            , fBoolFalse(0)
             , fSetupFragPosition(false)
             , fCurrentBlock(0)
-            , fSynthetics(errors, /*builtin=*/true) {
+            , fSynthetics(fContext, /*builtin=*/true) {
         this->setupIntrinsics();
     }
 
@@ -173,6 +168,12 @@ private:
         kRelaxed,
     };
 
+    struct TempVar {
+        SpvId spvId;
+        const Type* type;
+        std::unique_ptr<SPIRVCodeGenerator::LValue> lvalue;
+    };
+
     void setupIntrinsics();
 
     /**
@@ -200,15 +201,15 @@ private:
 
     std::vector<SpvId> getAccessChain(const Expression& expr, OutputStream& out);
 
-    void writeLayout(const Layout& layout, SpvId target);
+    void writeLayout(const Layout& layout, SpvId target, int line);
 
-    void writeLayout(const Layout& layout, SpvId target, int member);
+    void writeFieldLayout(const Layout& layout, SpvId target, int member);
 
     void writeStruct(const Type& type, const MemoryLayout& layout, SpvId resultId);
 
     void writeProgramElement(const ProgramElement& pe, OutputStream& out);
 
-    SpvId writeInterfaceBlock(const InterfaceBlock& intf, bool appendRTHeight = true);
+    SpvId writeInterfaceBlock(const InterfaceBlock& intf, bool appendRTFlip = true);
 
     SpvId writeFunctionStart(const FunctionDeclaration& f, OutputStream& out);
 
@@ -230,12 +231,27 @@ private:
 
     SpvId writeIntrinsicCall(const FunctionCall& c, OutputStream& out);
 
+    SpvId writeFunctionCallArgument(const Expression& arg,
+                                    const Modifiers& paramModifiers,
+                                    std::vector<TempVar>* tempVars,
+                                    OutputStream& out);
+
+    void copyBackTempVars(const std::vector<TempVar>& tempVars, OutputStream& out);
+
     SpvId writeFunctionCall(const FunctionCall& c, OutputStream& out);
 
 
     void writeGLSLExtendedInstruction(const Type& type, SpvId id, SpvId floatInst,
                                       SpvId signedInst, SpvId unsignedInst,
                                       const std::vector<SpvId>& args, OutputStream& out);
+
+    /**
+     * Promotes an expression to a vector. If the expression is already a vector with vectorSize
+     * columns, returns it unmodified. If the expression is a scalar, either promotes it to a
+     * vector (if vectorSize > 1) or returns it unmodified (if vectorSize == 1). Asserts if the
+     * expression is already a vector and it does not have vectorSize columns.
+     */
+    SpvId vectorize(const Expression& expr, int vectorSize, OutputStream& out);
 
     /**
      * Given a list of potentially mixed scalars and vectors, promotes the scalars to match the
@@ -287,9 +303,8 @@ private:
      */
     SpvId writeMatrixCopy(SpvId src, const Type& srcType, const Type& dstType, OutputStream& out);
 
-    void addColumnEntry(SpvId columnType, Precision precision, std::vector<SpvId>* currentColumn,
-                        std::vector<SpvId>* columnIds, int* currentCount, int rows, SpvId entry,
-                        OutputStream& out);
+    void addColumnEntry(const Type& columnType, std::vector<SpvId>* currentColumn,
+                        std::vector<SpvId>* columnIds, int rows, SpvId entry, OutputStream& out);
 
     SpvId writeConstructorCompound(const ConstructorCompound& c, OutputStream& out);
 
@@ -369,11 +384,9 @@ private:
 
     SpvId writePostfixExpression(const PostfixExpression& p, OutputStream& out);
 
-    SpvId writeBoolLiteral(const BoolLiteral& b);
+    SpvId writeLiteral(const Literal& f);
 
-    SpvId writeIntLiteral(const IntLiteral& i);
-
-    SpvId writeFloatLiteral(const FloatLiteral& f);
+    SpvId writeLiteral(double value, const Type& type);
 
     void writeStatement(const Statement& s, OutputStream& out);
 
@@ -397,19 +410,20 @@ private:
 
     void writeWord(int32_t word, OutputStream& out);
 
-    void writeString(const char* string, size_t length, OutputStream& out);
+    void writeString(skstd::string_view s, OutputStream& out);
 
     void writeLabel(SpvId id, OutputStream& out);
 
     void writeInstruction(SpvOp_ opCode, OutputStream& out);
 
-    void writeInstruction(SpvOp_ opCode, StringFragment string, OutputStream& out);
+    void writeInstruction(SpvOp_ opCode, skstd::string_view string, OutputStream& out);
 
     void writeInstruction(SpvOp_ opCode, int32_t word1, OutputStream& out);
 
-    void writeInstruction(SpvOp_ opCode, int32_t word1, StringFragment string, OutputStream& out);
+    void writeInstruction(SpvOp_ opCode, int32_t word1, skstd::string_view string,
+                          OutputStream& out);
 
-    void writeInstruction(SpvOp_ opCode, int32_t word1, int32_t word2, StringFragment string,
+    void writeInstruction(SpvOp_ opCode, int32_t word1, int32_t word2, skstd::string_view string,
                           OutputStream& out);
 
     void writeInstruction(SpvOp_ opCode, int32_t word1, int32_t word2, OutputStream& out);
@@ -433,7 +447,7 @@ private:
                           int32_t word5, int32_t word6, int32_t word7, int32_t word8,
                           OutputStream& out);
 
-    void writeGeometryShaderExecutionMode(SpvId entryPoint, OutputStream& out);
+    bool isDead(const Variable& var) const;
 
     MemoryLayout memoryLayoutForVariable(const Variable&) const;
 
@@ -454,7 +468,8 @@ private:
 
     void writeUniformBuffer(std::shared_ptr<SymbolTable> topLevelSymbolTable);
 
-    const Context& fContext;
+    void addRTFlipUniform(int line);
+
     const MemoryLayout fDefaultLayout;
 
     uint64_t fCapabilities;
@@ -475,8 +490,6 @@ private:
     StringStream fNameBuffer;
     StringStream fDecorationBuffer;
 
-    SpvId fBoolTrue;
-    SpvId fBoolFalse;
     std::unordered_map<SPIRVNumberConstant, SpvId> fNumberConstants;
     std::unordered_map<SPIRVVectorConstant, SpvId> fVectorConstants;
     bool fSetupFragPosition;
@@ -484,9 +497,7 @@ private:
     SpvId fCurrentBlock;
     std::stack<SpvId> fBreakTarget;
     std::stack<SpvId> fContinueTarget;
-    SpvId fRTHeightStructId = (SpvId) -1;
-    SpvId fRTHeightFieldIndex = (SpvId) -1;
-    SpvStorageClass_ fRTHeightStorageClass;
+    bool fWroteRTFlip = false;
     // holds variables synthesized during output, for lifetime purposes
     SymbolTable fSynthetics;
     int fSkInCount = 1;
@@ -495,6 +506,7 @@ private:
     UniformBuffer fUniformBuffer;
     std::vector<const VarDeclaration*> fTopLevelUniforms;
     std::unordered_map<const Variable*, int> fTopLevelUniformMap; //<var, UniformBuffer field index>
+    std::unordered_set<const Variable*> fSPIRVBonusVariables;
     SpvId fUniformBufferId = -1;
 
     friend class PointerLValue;

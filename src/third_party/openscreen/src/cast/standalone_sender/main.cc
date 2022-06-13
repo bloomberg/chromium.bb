@@ -23,6 +23,7 @@
 #include "platform/api/time.h"
 #include "platform/base/error.h"
 #include "platform/base/ip_address.h"
+#include "platform/impl/network_interface.h"
 #include "platform/impl/platform_client_posix.h"
 #include "platform/impl/task_runner.h"
 #include "platform/impl/text_trace_logging_platform.h"
@@ -54,6 +55,10 @@ usage: %s <options> addr[:port] media_file
            Specifies the maximum bits per second for the media streams.
 
            Default if not set: %d
+
+      -n, --no-looping
+           Disable looping the passed in video after it finishes playing.
+
 )"
 #if defined(CAST_ALLOW_DEVELOPER_CERTIFICATE)
                                R"(
@@ -68,13 +73,18 @@ usage: %s <options> addr[:port] media_file
                                R"(
       -a, --android-hack:
            Use the wrong RTP payload types, for compatibility with older Android
-           TV receivers.
+           TV receivers. See https://crbug.com/631828.
+
+      -r, --remoting: Enable remoting content instead of mirroring.
 
       -t, --tracing: Enable performance tracing logging.
 
       -v, --verbose: Enable verbose logging.
 
       -h, --help: Show this help message.
+
+      -c, --codec: Specifies the video codec to be used. Can be one of:
+                   vp8, vp9, av1. Defaults to vp8 if not specified.
 )";
 
   std::cerr << StringPrintf(kTemplate, argv0, argv0, kDefaultCastPort,
@@ -107,23 +117,29 @@ int StandaloneSenderMain(int argc, char* argv[]) {
   // standalone sender, osp demo, and test_main argument options.
   const struct option kArgumentOptions[] = {
     {"max-bitrate", required_argument, nullptr, 'm'},
+    {"no-looping", no_argument, nullptr, 'n'},
 #if defined(CAST_ALLOW_DEVELOPER_CERTIFICATE)
     {"developer-certificate", required_argument, nullptr, 'd'},
 #endif
     {"android-hack", no_argument, nullptr, 'a'},
+    {"remoting", no_argument, nullptr, 'r'},
     {"tracing", no_argument, nullptr, 't'},
     {"verbose", no_argument, nullptr, 'v'},
     {"help", no_argument, nullptr, 'h'},
+    {"codec", required_argument, nullptr, 'c'},
     {nullptr, 0, nullptr, 0}
   };
 
-  bool is_verbose = false;
+  int max_bitrate = kDefaultMaxBitrate;
+  bool should_loop_video = true;
   std::string developer_certificate_path;
   bool use_android_rtp_hack = false;
-  int max_bitrate = kDefaultMaxBitrate;
+  bool use_remoting = false;
+  bool is_verbose = false;
+  VideoCodec codec = VideoCodec::kVp8;
   std::unique_ptr<TextTraceLoggingPlatform> trace_logger;
   int ch = -1;
-  while ((ch = getopt_long(argc, argv, "m:d:atvh", kArgumentOptions,
+  while ((ch = getopt_long(argc, argv, "m:nd:artvhc:", kArgumentOptions,
                            nullptr)) != -1) {
     switch (ch) {
       case 'm':
@@ -135,6 +151,9 @@ int StandaloneSenderMain(int argc, char* argv[]) {
           return 1;
         }
         break;
+      case 'n':
+        should_loop_video = false;
+        break;
 #if defined(CAST_ALLOW_DEVELOPER_CERTIFICATE)
       case 'd':
         developer_certificate_path = optarg;
@@ -142,6 +161,9 @@ int StandaloneSenderMain(int argc, char* argv[]) {
 #endif
       case 'a':
         use_android_rtp_hack = true;
+        break;
+      case 'r':
+        use_remoting = true;
         break;
       case 't':
         trace_logger = std::make_unique<TextTraceLoggingPlatform>();
@@ -152,6 +174,20 @@ int StandaloneSenderMain(int argc, char* argv[]) {
       case 'h':
         LogUsage(argv[0]);
         return 1;
+      case 'c':
+        auto specified_codec = StringToVideoCodec(optarg);
+        if (specified_codec.is_value() &&
+            (specified_codec.value() == VideoCodec::kVp8 ||
+             specified_codec.value() == VideoCodec::kVp9 ||
+             specified_codec.value() == VideoCodec::kAv1)) {
+          codec = specified_codec.value();
+        } else {
+          OSP_LOG_ERROR << "Invalid --codec specified: " << optarg
+                        << " is not one of: vp8, vp9, av1.";
+          LogUsage(argv[0]);
+          return 1;
+        }
+        break;
     }
   }
 
@@ -179,7 +215,7 @@ int StandaloneSenderMain(int argc, char* argv[]) {
 
   IPEndpoint remote_endpoint = ParseAsEndpoint(iface_or_endpoint);
   if (!remote_endpoint.port) {
-    for (const InterfaceInfo& interface : GetNetworkInterfaces()) {
+    for (const InterfaceInfo& interface : GetAllInterfaces()) {
       if (interface.name == iface_or_endpoint) {
         ReceiverChooser chooser(interface, task_runner,
                                 [&](IPEndpoint endpoint) {
@@ -205,9 +241,15 @@ int StandaloneSenderMain(int argc, char* argv[]) {
   task_runner->PostTask([&] {
     cast_agent = new LoopingFileCastAgent(
         task_runner, [&] { task_runner->RequestStopSoon(); });
-    cast_agent->Connect({remote_endpoint, path, max_bitrate,
-                         true /* should_include_video */,
-                         use_android_rtp_hack});
+
+    cast_agent->Connect({.receiver_endpoint = remote_endpoint,
+                         .path_to_file = path,
+                         .max_bitrate = max_bitrate,
+                         .should_include_video = true,
+                         .use_android_rtp_hack = use_android_rtp_hack,
+                         .use_remoting = use_remoting,
+                         .should_loop_video = should_loop_video,
+                         .codec = codec});
   });
 
   // Run the event loop until SIGINT (e.g., CTRL-C at the console) or
@@ -239,7 +281,9 @@ int main(int argc, char* argv[]) {
 #else
   OSP_LOG_ERROR
       << "It compiled! However, you need to configure the build to point to "
-         "external libraries in order to build a useful app.";
+         "external libraries in order to build a useful app. For more "
+         "information, see "
+         "[external_libraries.md](../../build/config/external_libraries.md).";
   return 1;
 #endif
 }

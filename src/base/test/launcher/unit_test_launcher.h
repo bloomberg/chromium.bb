@@ -13,7 +13,7 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/test/launcher/test_launcher.h"
 #include "build/build_config.h"
 
@@ -97,6 +97,11 @@ class DefaultUnitTestPlatformDelegate : public UnitTestPlatformDelegate {
  public:
   DefaultUnitTestPlatformDelegate();
 
+  DefaultUnitTestPlatformDelegate(const DefaultUnitTestPlatformDelegate&) =
+      delete;
+  DefaultUnitTestPlatformDelegate& operator=(
+      const DefaultUnitTestPlatformDelegate&) = delete;
+
  private:
   // UnitTestPlatformDelegate:
 
@@ -116,8 +121,6 @@ class DefaultUnitTestPlatformDelegate : public UnitTestPlatformDelegate {
   std::string GetWrapperForChildGTestProcess() override;
 
   ScopedTempDir temp_dir_;
-
-  DISALLOW_COPY_AND_ASSIGN(DefaultUnitTestPlatformDelegate);
 };
 
 // Test launcher delegate for unit tests (mostly to support batching).
@@ -126,6 +129,10 @@ class UnitTestLauncherDelegate : public TestLauncherDelegate {
   UnitTestLauncherDelegate(UnitTestPlatformDelegate* delegate,
                            size_t batch_limit,
                            bool use_job_objects);
+
+  UnitTestLauncherDelegate(const UnitTestLauncherDelegate&) = delete;
+  UnitTestLauncherDelegate& operator=(const UnitTestLauncherDelegate&) = delete;
+
   ~UnitTestLauncherDelegate() override;
 
  private:
@@ -146,15 +153,30 @@ class UnitTestLauncherDelegate : public TestLauncherDelegate {
 
   ThreadChecker thread_checker_;
 
-  UnitTestPlatformDelegate* platform_delegate_;
+  raw_ptr<UnitTestPlatformDelegate> platform_delegate_;
 
   // Maximum number of tests to run in a single batch.
   size_t batch_limit_;
 
   // Determines whether we use job objects on Windows.
   bool use_job_objects_;
+};
 
-  DISALLOW_COPY_AND_ASSIGN(UnitTestLauncherDelegate);
+// We want to stop throwing away duplicate test filter file flags, but we're
+// afraid of changing too much in fear of breaking other use cases.
+// If you feel like another flag should be merged instead of overridden,
+// feel free to make this into a set of flags in this function,
+// or add its own merging code.
+//
+// out_value contains the existing value and is modified to resolve the
+// duplicate
+class MergeTestFilterSwitchHandler : public DuplicateSwitchHandler {
+ public:
+  ~MergeTestFilterSwitchHandler() override;
+
+  void ResolveDuplicate(base::StringPiece key,
+                        CommandLine::StringPieceType new_value,
+                        CommandLine::StringType& out_value) override;
 };
 
 }   // namespace base

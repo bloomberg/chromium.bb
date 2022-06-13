@@ -27,12 +27,18 @@ namespace dawn_native { namespace opengl {
 
     class ComputePipeline final : public ComputePipelineBase, public PipelineGL {
       public:
-        ComputePipeline(Device* device, const ComputePipelineDescriptor* descriptor);
+        static Ref<ComputePipeline> CreateUninitialized(
+            Device* device,
+            const ComputePipelineDescriptor* descriptor);
 
         void ApplyNow();
 
+        MaybeError Initialize() override;
+
       private:
-        ~ComputePipeline() override = default;
+        using ComputePipelineBase::ComputePipelineBase;
+        ~ComputePipeline() override;
+        void DestroyImpl() override;
     };
 
 }}  // namespace dawn_native::opengl

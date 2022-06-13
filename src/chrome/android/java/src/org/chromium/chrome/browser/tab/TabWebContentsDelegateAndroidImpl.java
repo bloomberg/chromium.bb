@@ -127,14 +127,14 @@ final class TabWebContentsDelegateAndroidImpl extends TabWebContentsDelegateAndr
     }
 
     @Override
-    public void loadingStateChanged(boolean toDifferentDocument) {
+    public void loadingStateChanged(boolean shouldShowLoadingUI) {
         boolean isLoading = mTab.getWebContents() != null && mTab.getWebContents().isLoading();
         if (isLoading) {
-            mTab.onLoadStarted(toDifferentDocument);
+            mTab.onLoadStarted(shouldShowLoadingUI);
         } else {
             mTab.onLoadStopped();
         }
-        mDelegate.loadingStateChanged(toDifferentDocument);
+        mDelegate.loadingStateChanged(shouldShowLoadingUI);
     }
 
     @Override
@@ -283,6 +283,15 @@ final class TabWebContentsDelegateAndroidImpl extends TabWebContentsDelegateAndr
     @Override
     protected boolean isNightModeEnabled() {
         return mDelegate.isNightModeEnabled();
+    }
+
+    /**
+     * @return web preference for force dark mode.
+     */
+    @CalledByNative
+    @Override
+    protected boolean isForceDarkWebContentEnabled() {
+        return mDelegate.isForceDarkWebContentEnabled();
     }
 
     /**

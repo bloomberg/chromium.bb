@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "content/public/browser/global_routing_id.h"
 #include "extensions/browser/extension_api_frame_id_map.h"
 
@@ -29,6 +28,10 @@ class ExtensionNavigationUIData {
                             int tab_id,
                             int window_id);
 
+  ExtensionNavigationUIData(const ExtensionNavigationUIData&) = delete;
+  ExtensionNavigationUIData& operator=(const ExtensionNavigationUIData&) =
+      delete;
+
   static std::unique_ptr<ExtensionNavigationUIData>
   CreateForMainFrameNavigation(content::WebContents* web_contents,
                                int tab_id,
@@ -44,7 +47,7 @@ class ExtensionNavigationUIData {
   int web_view_instance_id() const { return web_view_instance_id_; }
   int web_view_rules_registry_id() const { return web_view_rules_registry_id_; }
 
-  const content::GlobalFrameRoutingId& parent_routing_id() const {
+  const content::GlobalRenderFrameHostId& parent_routing_id() const {
     return parent_routing_id_;
   }
 
@@ -54,7 +57,7 @@ class ExtensionNavigationUIData {
                             int window_id,
                             int frame_id,
                             int parent_frame_id,
-                            content::GlobalFrameRoutingId parent_routing_id);
+                            content::GlobalRenderFrameHostId parent_routing_id);
 
   ExtensionApiFrameIdMap::FrameData frame_data_;
   bool is_web_view_;
@@ -64,9 +67,7 @@ class ExtensionNavigationUIData {
 
   // ID for the parent RenderFrameHost of this navigation. Will only have a
   // valid value for sub-frame navigations.
-  content::GlobalFrameRoutingId parent_routing_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionNavigationUIData);
+  content::GlobalRenderFrameHostId parent_routing_id_;
 };
 
 }  // namespace extensions

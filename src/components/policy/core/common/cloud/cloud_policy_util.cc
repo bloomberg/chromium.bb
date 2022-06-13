@@ -33,8 +33,6 @@
 #import <SystemConfiguration/SCDynamicStoreCopySpecific.h>
 #endif
 
-// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
-// of lacros-chrome is complete.
 #if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 #include <limits.h>  // For HOST_NAME_MAX
 #endif
@@ -42,8 +40,8 @@
 #include <utility>
 
 #include "base/check.h"
+#include "base/cxx17_backports.h"
 #include "base/notreached.h"
-#include "base/stl_util.h"
 #include "base/system/sys_info.h"
 #if defined(OS_WIN)
 #include "base/win/wmi.h"
@@ -69,8 +67,6 @@
 #include "base/system/sys_info.h"
 #endif
 
-// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
-// of lacros-chrome is complete.
 #if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "base/system/sys_info.h"
 #endif
@@ -83,26 +79,7 @@ namespace policy {
 
 namespace em = enterprise_management;
 
-std::string GetDeviceManufacturer() {
-#if defined(OS_IOS)
-  return "Apple Inc.";
-#else
-  return std::string();
-#endif
-}
-
-std::string GetDeviceModel() {
-#if defined(OS_IOS)
-  // Obtains the Apple internal device name (e.g. "iPad6,11").
-  return base::SysInfo::HardwareModelName();
-#else
-  return std::string();
-#endif
-}
-
 std::string GetMachineName() {
-// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
-// of lacros-chrome is complete.
 #if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
   char hostname[HOST_NAME_MAX];
   if (gethostname(hostname, HOST_NAME_MAX) == 0)  // Success.
@@ -149,7 +126,9 @@ std::string GetMachineName() {
     return result;
   }
   return std::string();
-#elif defined(OS_ANDROID)
+#elif defined(OS_ANDROID) || defined(OS_FUCHSIA)
+  // TODO(crbug.com/1257674): This should be fully implemented when there is
+  // support in fuchsia.
   return std::string();
 #else
   NOTREACHED();
@@ -158,16 +137,15 @@ std::string GetMachineName() {
 }
 
 std::string GetOSVersion() {
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_APPLE)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_APPLE) || \
+    defined(OS_ANDROID) || defined(OS_FUCHSIA)
   return base::SysInfo::OperatingSystemVersion();
 #elif defined(OS_WIN)
   base::win::OSInfo::VersionNumber version_number =
       base::win::OSInfo::GetInstance()->version_number();
-  return base::StringPrintf("%d.%d.%d.%d", version_number.major,
+  return base::StringPrintf("%u.%u.%u.%u", version_number.major,
                             version_number.minor, version_number.build,
                             version_number.patch);
-#elif defined(OS_ANDROID)
-  return std::string();
 #else
   NOTREACHED();
   return std::string();
@@ -183,7 +161,7 @@ std::string GetOSArchitecture() {
 }
 
 std::string GetOSUsername() {
-#if (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) || defined(OS_APPLE)
+#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS) || defined(OS_APPLE)
   struct passwd* creds = getpwuid(getuid());
   if (!creds || !creds->pw_name)
     return std::string();
@@ -209,7 +187,9 @@ std::string GetOSUsername() {
   if (!user)
     return std::string();
   return user->GetAccountId().GetUserEmail();
-#elif defined(OS_ANDROID)
+#elif defined(OS_ANDROID) || defined(OS_FUCHSIA)
+  // TODO(crbug.com/1257674): This should be fully implemented when there is
+  // support in fuchsia.
   return std::string();
 #else
   NOTREACHED();
@@ -261,6 +241,8 @@ bool IsMachineLevelUserCloudPolicyType(const std::string& type) {
 std::string GetMachineLevelUserCloudPolicyTypeForCurrentOS() {
 #if defined(OS_IOS)
   return dm_protocol::kChromeMachineLevelUserCloudPolicyIOSType;
+#elif defined(OS_ANDROID)
+  return dm_protocol::kChromeMachineLevelUserCloudPolicyAndroidType;
 #else
   return dm_protocol::kChromeMachineLevelUserCloudPolicyType;
 #endif

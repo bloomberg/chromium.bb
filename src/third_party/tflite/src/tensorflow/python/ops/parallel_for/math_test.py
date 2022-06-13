@@ -14,10 +14,6 @@
 # ==============================================================================
 """Tests for vectorization of math kernels."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 from absl.testing import parameterized
 
 from tensorflow.python.eager import backprop
@@ -33,6 +29,7 @@ from tensorflow.python.ops import nn
 from tensorflow.python.ops import random_ops
 from tensorflow.python.ops import special_math_ops
 from tensorflow.python.ops import tensor_array_grad  # pylint: disable=unused-import
+from tensorflow.python.ops.parallel_for import control_flow_ops as pfor_control_flow_ops
 from tensorflow.python.ops.parallel_for.test_util import PForTestCase
 from tensorflow.python.platform import test
 
@@ -196,12 +193,15 @@ class MathTest(PForTestCase, parameterized.TestCase):
           math_ops.subtract,
           math_ops.truncate_mod,
           safe_polygamma,
-          safe_zeta,
       ]
       # FloorDiv fails on XLA due floor's discontinuities exacerbating small
       # division differences.
       if not test_util.is_xla_enabled():
         float_ops += [math_ops.floor_div]
+        # TODO(b/168912036): Re-enable once GPU + XLA issues for Zeta are
+        # resolved.
+        if not test_util.is_gpu_available():
+          float_ops += [safe_zeta]
       for op in logical_ops + float_ops:
         x = random_ops.random_uniform([7, 3, 5])
         y = random_ops.random_uniform([3, 5])
@@ -238,6 +238,21 @@ class MathTest(PForTestCase, parameterized.TestCase):
 
     self._test_loop_fn(loop_fn, 3)
 
+  def test_abs_complex(self):
+    r = pfor_control_flow_ops.vectorized_map(
+        math_ops.abs, math_ops.cast([0, -1], dtype=dtypes.complex128))
+    self.assertAllEqual(self.evaluate(r), [0, 1])
+
+  def test_colocate_with(self):
+    a = random_ops.random_uniform([3, 5])
+
+    def loop_fn(i):
+      x1 = array_ops.gather(a, i)
+      with framework_ops.colocate_with(x1):
+        return x1 * 2
+
+    self._test_loop_fn(loop_fn, 3)
+
   def test_addn(self):
     x = random_ops.random_uniform([2, 3, 5])
     y = random_ops.random_uniform([3, 5])
@@ -261,6 +276,9 @@ class MathTest(PForTestCase, parameterized.TestCase):
 
     self._test_loop_fn(loop_fn, 4)
 
+  @test_util.run_without_tensor_float_32(
+      "Calls matmul in parallel for-loop and compares result to calling matmul "
+      "in sequential for-loop")
   def test_matmul(self):
     for tr_a in (True, False):
       for tr_b in (True, False):
@@ -341,7 +359,7 @@ class MathTest(PForTestCase, parameterized.TestCase):
         math_ops.reduce_min,
         math_ops.reduce_mean,
     ]:
-      for axis in ([1], None, [0, 2]):
+      for axis in ([1], None, [0, 2], constant_op.constant([1], dtypes.int64)):
         for keepdims in (True, False):
 
           # pylint: disable=cell-var-from-loop
@@ -356,7 +374,7 @@ class MathTest(PForTestCase, parameterized.TestCase):
   def test_boolean_reduction(self):
     x = random_ops.random_uniform([2, 3, 4, 5]) > 0.5
     for op in [math_ops.reduce_any, math_ops.reduce_all]:
-      for axis in ([1], None, [0, 2]):
+      for axis in ([1], None, [0, 2], constant_op.constant([1], dtypes.int64)):
         for keepdims in (True, False):
 
           # pylint: disable=cell-var-from-loop
@@ -402,7 +420,7 @@ class MathTest(PForTestCase, parameterized.TestCase):
 
   def test_cum_sum(self):
     x = random_ops.random_uniform([2, 3, 4, 5])
-    for axis in (1, -2):
+    for axis in (1, -2, constant_op.constant(1, dtypes.int64)):
       for exclusive in (True, False):
         for reverse in (True, False):
 
@@ -418,7 +436,7 @@ class MathTest(PForTestCase, parameterized.TestCase):
 
   def test_cum_prod(self):
     x = random_ops.random_uniform([2, 3, 4, 5])
-    for axis in (1, -2):
+    for axis in (1, -2, constant_op.constant(1, dtypes.int64)):
       for exclusive in (True, False):
         for reverse in (True, False):
 
@@ -539,7 +557,8 @@ class MathTest(PForTestCase, parameterized.TestCase):
 
     self._test_loop_fn(loop_fn, 3)
 
-  @parameterized.parameters(math_ops.sparse_segment_mean_grad,
+  @parameterized.parameters(math_ops.sparse_segment_sum_grad,
+                            math_ops.sparse_segment_mean_grad,
                             math_ops.sparse_segment_sqrt_n_grad)
   def test_sparse_segment_grad(self, op_func):
     grad = random_ops.random_uniform([3, 3, 2])
@@ -678,15 +697,15 @@ class LinalgTest(PForTestCase):
       self._test_loop_fn(loop_fn, 3)
 
   def test_matrix_inverse(self):
-    x = (random_ops.random_uniform([3, 4, 2, 2]) +
-         10 * linalg_ops.eye(2))  # Ensure well-conditioned.
+    x = (random_ops.random_uniform([3, 4, 2, 2]) + 10 * linalg_ops.eye(2)
+        )  # Ensure well-conditioned.
 
     for adjoint in (True, False):
 
       # pylint: disable=cell-var-from-loop
       def loop_fn(i):
-        return linalg_ops.matrix_inverse(array_ops.gather(x, i),
-                                         adjoint=adjoint)
+        return linalg_ops.matrix_inverse(
+            array_ops.gather(x, i), adjoint=adjoint)
 
       # pylint: enable=cell-var-from-loop
       self._test_loop_fn(loop_fn, 2)
@@ -697,8 +716,8 @@ class LinalgTest(PForTestCase):
         for stack_b in (True, False):
           shape_a = (2, 4, 3, 3) if stack_a else (4, 3, 3)
           shape_b = (2, 4, 3, 5) if stack_b else (4, 3, 5)
-          x = (random_ops.random_uniform(shape_a) +
-               10 * linalg_ops.eye(3))  # Ensure well-conditioned.
+          x = (random_ops.random_uniform(shape_a) + 10 * linalg_ops.eye(3)
+              )  # Ensure well-conditioned.
           y = random_ops.random_uniform(shape_b)
 
           # pylint: disable=cell-var-from-loop
@@ -745,6 +764,9 @@ class LinalgTest(PForTestCase):
 
     self._test_loop_fn(loop_fn, 2)
 
+  @test_util.run_without_tensor_float_32(
+      "Calls einsum in parallel for-loop and compares result to calling einsum "
+      "in sequential for-loop")
   def test_einsum(self):
     b = 10
     x_series = random_ops.random_uniform([b, 9, 9])
@@ -755,12 +777,13 @@ class LinalgTest(PForTestCase):
       y = array_ops.gather(y_series, 0)  # invariant.
       x_i = array_ops.gather(x_series, i)
       y_i = array_ops.gather(y_series, i)
+      z0 = special_math_ops.einsum("ab->b", x_i)
       z1 = special_math_ops.einsum("ab,bc->ac", x_i, y)
       z2 = special_math_ops.einsum("ab,bc->ac", x, y_i)
       z3 = special_math_ops.einsum("ab,bc->ac", x, y)
       z4 = special_math_ops.einsum("ab,bc->ac", x_i, y_i)
       z5 = special_math_ops.einsum("cd,ce->de", y_i, x_i)  # Includes transpose.
-      outputs = [z1, z2, z3, z4, z5]
+      outputs = [z0, z1, z2, z3, z4, z5]
       return outputs
 
     self._test_loop_fn(loop_fn, b)

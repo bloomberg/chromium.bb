@@ -16,10 +16,11 @@ limitations under the License.
 
 #include "tensorflow/core/common_runtime/function.h"
 #include "tensorflow/core/common_runtime/input_colocation_exemption_registry.h"
+#include "tensorflow/core/data/captured_function.h"
+#include "tensorflow/core/data/dataset_utils.h"
+#include "tensorflow/core/data/name_utils.h"
 #include "tensorflow/core/framework/partial_tensor_shape.h"
 #include "tensorflow/core/framework/tensor.h"
-#include "tensorflow/core/kernels/data/dataset_utils.h"
-#include "tensorflow/core/kernels/data/name_utils.h"
 #include "tensorflow/core/lib/random/random.h"
 
 namespace tensorflow {
@@ -72,7 +73,7 @@ class MapDatasetOp::Dataset : public DatasetBase {
     return name_utils::DatasetDebugString(kDatasetType);
   }
 
-  int64 Cardinality() const override {
+  int64_t CardinalityInternal() const override {
     if (preserve_cardinality_) {
       return input_->Cardinality();
     } else {
@@ -80,9 +81,35 @@ class MapDatasetOp::Dataset : public DatasetBase {
     }
   }
 
+  int64_t CardinalityInternal(CardinalityOptions options) const override {
+    if (preserve_cardinality_) {
+      return input_->Cardinality(options);
+    } else {
+      return kUnknownCardinality;
+    }
+  }
+
+  Status InputDatasets(std::vector<const DatasetBase*>* inputs) const override {
+    inputs->push_back(input_);
+    return Status::OK();
+  }
+
   Status CheckExternalState() const override {
     TF_RETURN_IF_ERROR(captured_func_->CheckExternalState());
     return input_->CheckExternalState();
+  }
+
+  Status Get(OpKernelContext* ctx, int64 index,
+             std::vector<Tensor>* out_tensors) const override {
+    TF_RETURN_IF_ERROR(CheckRandomAccessCompatible(index));
+    std::vector<Tensor> args;
+    TF_RETURN_IF_ERROR(input_->Get(ctx, index, &args));
+    if (!instantiated_captured_func_) {
+      TF_RETURN_IF_ERROR(
+          captured_func_->Instantiate(InstantiateCapturedFunctionParams(ctx),
+                                      &instantiated_captured_func_));
+    }
+    return instantiated_captured_func_->RunInstantiated(args, out_tensors);
   }
 
  protected:
@@ -153,8 +180,8 @@ class MapDatasetOp::Dataset : public DatasetBase {
         return Status::OK();
       }
 
-      Status s =
-          instantiated_captured_func_->Run(ctx, std::move(args), out_tensors);
+      Status s = instantiated_captured_func_->Run(ctx, std::move(args),
+                                                  out_tensors, model_node());
       if (errors::IsOutOfRange(s)) {
         if (dataset()->preserve_cardinality_) {
           // To guarantee that the transformation preserves the cardinality of
@@ -204,6 +231,9 @@ class MapDatasetOp::Dataset : public DatasetBase {
   const std::unique_ptr<CapturedFunction> captured_func_;
   const DataTypeVector output_types_;
   const std::vector<PartialTensorShape> output_shapes_;
+  // This is used for random access provided by Get().
+  mutable std::unique_ptr<InstantiatedCapturedFunction>
+      instantiated_captured_func_;
 };
 
 MapDatasetOp::MapDatasetOp(OpKernelConstruction* ctx)

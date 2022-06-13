@@ -6,7 +6,6 @@
 
 #include <limits>
 #include <utility>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -19,11 +18,14 @@
 #include "net/base/net_errors.h"
 #include "net/base/proxy_server.h"
 #include "net/base/request_priority.h"
+#include "net/base/upload_data_stream.h"
 #include "net/cert/cert_status_flags.h"
+#include "net/cert/x509_certificate.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
 #include "net/ssl/ssl_info.h"
+#include "net/ssl/ssl_private_key.h"
 #include "net/third_party/quiche/src/quic/core/quic_packets.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/redirect_info.h"

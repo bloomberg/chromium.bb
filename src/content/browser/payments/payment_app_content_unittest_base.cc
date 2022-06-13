@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/browser/payments/payment_app_content_unittest_base.h"
+#include "base/memory/raw_ptr.h"
 
 #include <stdint.h>
 
@@ -13,7 +14,7 @@
 #include "base/containers/contains.h"
 #include "base/files/file_path.h"
 #include "base/run_loop.h"
-#include "components/services/storage/public/cpp/storage_key.h"
+#include "content/browser/payments/payment_app_context_impl.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/fake_embedded_worker_instance_client.h"
 #include "content/browser/service_worker/fake_service_worker.h"
@@ -22,8 +23,10 @@
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_registration_options.mojom.h"
 #include "url/origin.h"
 
 namespace content {
@@ -61,6 +64,11 @@ class PaymentAppContentUnitTestBase::PaymentAppForWorkerTestHelper
       : EmbeddedWorkerTestHelper(base::FilePath()),
         last_sw_registration_id_(
             blink::mojom::kInvalidServiceWorkerRegistrationId) {}
+
+  PaymentAppForWorkerTestHelper(const PaymentAppForWorkerTestHelper&) = delete;
+  PaymentAppForWorkerTestHelper& operator=(
+      const PaymentAppForWorkerTestHelper&) = delete;
+
   ~PaymentAppForWorkerTestHelper() override {}
 
   class EmbeddedWorkerInstanceClient : public FakeEmbeddedWorkerInstanceClient {
@@ -69,6 +77,11 @@ class PaymentAppContentUnitTestBase::PaymentAppForWorkerTestHelper
         PaymentAppForWorkerTestHelper* worker_helper)
         : FakeEmbeddedWorkerInstanceClient(worker_helper),
           worker_helper_(worker_helper) {}
+
+    EmbeddedWorkerInstanceClient(const EmbeddedWorkerInstanceClient&) = delete;
+    EmbeddedWorkerInstanceClient& operator=(
+        const EmbeddedWorkerInstanceClient&) = delete;
+
     ~EmbeddedWorkerInstanceClient() override = default;
 
     void StartWorker(
@@ -82,15 +95,17 @@ class PaymentAppContentUnitTestBase::PaymentAppForWorkerTestHelper
     }
 
    private:
-    PaymentAppForWorkerTestHelper* const worker_helper_;
-
-    DISALLOW_COPY_AND_ASSIGN(EmbeddedWorkerInstanceClient);
+    const raw_ptr<PaymentAppForWorkerTestHelper> worker_helper_;
   };
 
   class ServiceWorker : public FakeServiceWorker {
    public:
     explicit ServiceWorker(PaymentAppForWorkerTestHelper* worker_helper)
         : FakeServiceWorker(worker_helper), worker_helper_(worker_helper) {}
+
+    ServiceWorker(const ServiceWorker&) = delete;
+    ServiceWorker& operator=(const ServiceWorker&) = delete;
+
     ~ServiceWorker() override = default;
 
     void DispatchCanMakePaymentEvent(
@@ -111,8 +126,7 @@ class PaymentAppContentUnitTestBase::PaymentAppForWorkerTestHelper
       response_callback->OnResponseForCanMakePayment(
           payments::mojom::CanMakePaymentResponse::New(
               payments::mojom::CanMakePaymentEventResponseType::SUCCESS,
-              can_make_payment, /*ready_for_minimal_ui=*/false,
-              /*account_balance=*/""));
+              can_make_payment));
       std::move(callback).Run(
           blink::mojom::ServiceWorkerEventStatus::COMPLETED);
     }
@@ -137,9 +151,7 @@ class PaymentAppContentUnitTestBase::PaymentAppForWorkerTestHelper
     }
 
    private:
-    PaymentAppForWorkerTestHelper* const worker_helper_;
-
-    DISALLOW_COPY_AND_ASSIGN(ServiceWorker);
+    const raw_ptr<PaymentAppForWorkerTestHelper> worker_helper_;
   };
 
   std::unique_ptr<FakeEmbeddedWorkerInstanceClient> CreateInstanceClient()
@@ -158,9 +170,6 @@ class PaymentAppContentUnitTestBase::PaymentAppForWorkerTestHelper
   bool respond_payment_request_immediately_ = true;
   mojo::Remote<payments::mojom::PaymentHandlerResponseCallback>
       response_callback_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PaymentAppForWorkerTestHelper);
 };
 
 PaymentAppContentUnitTestBase::PaymentAppContentUnitTestBase()
@@ -192,18 +201,19 @@ PaymentManager* PaymentAppContentUnitTestBase::CreatePaymentManager(
   int64_t registration_id;
   blink::mojom::ServiceWorkerRegistrationOptions registration_opt;
   registration_opt.scope = scope_url;
-  storage::StorageKey key(url::Origin::Create(scope_url));
+  blink::StorageKey key(url::Origin::Create(scope_url));
   worker_helper_->context()->RegisterServiceWorker(
       sw_script_url, key, registration_opt,
       blink::mojom::FetchClientSettingsObject::New(),
-      base::BindOnce(&RegisterServiceWorkerCallback, &called,
-                     &registration_id));
+      base::BindOnce(&RegisterServiceWorkerCallback, &called, &registration_id),
+      /*requesting_frame_id=*/GlobalRenderFrameHostId());
+
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(called);
 
   // Ensure the worker used for installation has stopped.
   called = false;
-  ServiceWorkerRegistration* registration =
+  scoped_refptr<ServiceWorkerRegistration> registration =
       worker_helper_->context()->GetLiveRegistration(registration_id);
   EXPECT_TRUE(registration);
   EXPECT_TRUE(registration->active_version());
@@ -248,7 +258,7 @@ PaymentManager* PaymentAppContentUnitTestBase::CreatePaymentManager(
 
 void PaymentAppContentUnitTestBase::UnregisterServiceWorker(
     const GURL& scope_url,
-    const storage::StorageKey& key) {
+    const blink::StorageKey& key) {
   // Unregister service worker.
   bool called = false;
   worker_helper_->context()->UnregisterServiceWorker(

@@ -92,8 +92,6 @@ const char *GetCommandString(CommandID id)
             return "EndQuery";
         case CommandID::EndTransformFeedback:
             return "EndTransformFeedback";
-        case CommandID::ExecutionBarrier:
-            return "ExecutionBarrier";
         case CommandID::FillBuffer:
             return "FillBuffer";
         case CommandID::ImageBarrier:
@@ -118,6 +116,8 @@ const char *GetCommandString(CommandID id)
             return "SetEvent";
         case CommandID::SetScissor:
             return "SetScissor";
+        case CommandID::SetViewport:
+            return "SetViewport";
         case CommandID::WaitEvents:
             return "WaitEvents";
         case CommandID::WriteTimestamp:
@@ -137,8 +137,10 @@ ANGLE_INLINE const CommandHeader *NextCommand(const CommandHeader *command)
 }
 
 // Parse the cmds in this cmd buffer into given primary cmd buffer
-void SecondaryCommandBuffer::executeCommands(VkCommandBuffer cmdBuffer)
+void SecondaryCommandBuffer::executeCommands(PrimaryCommandBuffer *primary)
 {
+    VkCommandBuffer cmdBuffer = primary->getHandle();
+
     ANGLE_TRACE_EVENT0("gpu.angle", "SecondaryCommandBuffer::executeCommands");
     for (const CommandHeader *command : mCommands)
     {
@@ -355,7 +357,8 @@ void SecondaryCommandBuffer::executeCommands(VkCommandBuffer cmdBuffer)
                 {
                     const DrawIndexedIndirectParams *params =
                         getParamPtr<DrawIndexedIndirectParams>(currentCommand);
-                    vkCmdDrawIndexedIndirect(cmdBuffer, params->buffer, params->offset, 1, 0);
+                    vkCmdDrawIndexedIndirect(cmdBuffer, params->buffer, params->offset,
+                                             params->drawCount, params->stride);
                     break;
                 }
                 case CommandID::DrawIndexedInstanced:
@@ -387,7 +390,8 @@ void SecondaryCommandBuffer::executeCommands(VkCommandBuffer cmdBuffer)
                 {
                     const DrawIndirectParams *params =
                         getParamPtr<DrawIndirectParams>(currentCommand);
-                    vkCmdDrawIndirect(cmdBuffer, params->buffer, params->offset, 1, 0);
+                    vkCmdDrawIndirect(cmdBuffer, params->buffer, params->offset, params->drawCount,
+                                      params->stride);
                     break;
                 }
                 case CommandID::DrawInstanced:
@@ -430,14 +434,6 @@ void SecondaryCommandBuffer::executeCommands(VkCommandBuffer cmdBuffer)
                     offsets.fill(0);
                     vkCmdEndTransformFeedbackEXT(cmdBuffer, 0, params->bufferCount, counterBuffers,
                                                  offsets.data());
-                    break;
-                }
-                case CommandID::ExecutionBarrier:
-                {
-                    const ExecutionBarrierParams *params =
-                        getParamPtr<ExecutionBarrierParams>(currentCommand);
-                    vkCmdPipelineBarrier(cmdBuffer, params->stageMask, params->stageMask, 0, 0,
-                                         nullptr, 0, nullptr, 0, nullptr);
                     break;
                 }
                 case CommandID::FillBuffer:
@@ -545,6 +541,13 @@ void SecondaryCommandBuffer::executeCommands(VkCommandBuffer cmdBuffer)
                 {
                     const SetScissorParams *params = getParamPtr<SetScissorParams>(currentCommand);
                     vkCmdSetScissor(cmdBuffer, 0, 1, &params->scissor);
+                    break;
+                }
+                case CommandID::SetViewport:
+                {
+                    const SetViewportParams *params =
+                        getParamPtr<SetViewportParams>(currentCommand);
+                    vkCmdSetViewport(cmdBuffer, 0, 1, &params->viewport);
                     break;
                 }
                 case CommandID::WaitEvents:

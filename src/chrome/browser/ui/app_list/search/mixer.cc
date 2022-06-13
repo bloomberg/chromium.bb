@@ -12,14 +12,13 @@
 #include <vector>
 
 #include "ash/public/cpp/app_list/app_list_features.h"
-#include "base/macros.h"
+#include "base/cxx17_backports.h"
 #include "base/metrics/field_trial_params.h"
-#include "base/numerics/ranges.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
-#include "chrome/browser/ui/app_list/search/search_controller.h"
+#include "chrome/browser/ui/app_list/search/search_controller_impl.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/chip_ranker.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
@@ -75,6 +74,10 @@ bool Mixer::SortData::operator<(const SortData& other) const {
 class Mixer::Group {
  public:
   explicit Group(size_t max_results) : max_results_(max_results) {}
+
+  Group(const Group&) = delete;
+  Group& operator=(const Group&) = delete;
+
   ~Group() {}
 
   void AddProvider(SearchProvider* provider) {
@@ -90,8 +93,8 @@ class Mixer::Group {
 
         // We cannot rely on providers to give relevance scores in the range
         // [0.0, 1.0]. Clamp to that range.
-        results_.emplace_back(
-            result.get(), base::ClampToRange(result->relevance(), 0.0, 1.0));
+        results_.emplace_back(result.get(),
+                              base::clamp(result->relevance(), 0.0, 1.0));
       }
     }
 
@@ -110,20 +113,19 @@ class Mixer::Group {
 
   Providers providers_;  // Not owned.
   SortedResults results_;
-
-  DISALLOW_COPY_AND_ASSIGN(Group);
 };
 
-Mixer::Mixer(AppListModelUpdater* model_updater)
-    : model_updater_(model_updater) {}
+Mixer::Mixer(AppListModelUpdater* model_updater,
+             SearchControllerImpl* search_controller)
+    : model_updater_(model_updater), search_controller_(search_controller) {}
 Mixer::~Mixer() = default;
 
-void Mixer::InitializeRankers(Profile* profile,
-                              SearchController* search_controller) {
+void Mixer::InitializeRankers(Profile* profile) {
   search_result_ranker_ = std::make_unique<SearchResultRanker>(profile);
-  search_result_ranker_->InitializeRankers(search_controller);
+  search_result_ranker_->InitializeRankers();
 
-  if (app_list_features::IsSuggestedFilesEnabled()) {
+  if (app_list_features::IsSuggestedFilesEnabled() ||
+      app_list_features::IsSuggestedLocalFilesEnabled()) {
     chip_ranker_ = std::make_unique<ChipRanker>(profile);
   }
 }
@@ -187,7 +189,9 @@ void Mixer::MixAndPublish(size_t num_max_results, const std::u16string& query) {
     sort_data.result->SetDisplayScore(sort_data.score);
     new_results.push_back(sort_data.result);
   }
-  model_updater_->PublishSearchResults(new_results);
+  search_controller_->NotifyResultsAdded(new_results);
+  // Categories are unused in old search.
+  model_updater_->PublishSearchResults(new_results, /*categories=*/{});
 }
 
 void Mixer::FetchResults(const std::u16string& query) {

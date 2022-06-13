@@ -11,7 +11,6 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/no_destructor.h"
-#include "base/stl_util.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "content/public/common/isolated_world_ids.h"
 #include "content/public/renderer/chrome_object_extensions_utils.h"
@@ -23,6 +22,11 @@
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "url/origin.h"
+#include "v8/include/v8-array-buffer.h"
+#include "v8/include/v8-context.h"
+#include "v8/include/v8-function.h"
+#include "v8/include/v8-object.h"
+#include "v8/include/v8-primitive.h"
 
 namespace {
 
@@ -113,7 +117,7 @@ void SyncEncryptionKeysExtension::Install() {
       .Check();
 
   if (!base::FeatureList::IsEnabled(
-          switches::kSyncSupportTrustedVaultPassphraseRecovery)) {
+          switches::kSyncTrustedVaultPassphraseRecovery)) {
     return;
   }
 

@@ -8,8 +8,8 @@
 #include <memory>
 #include <string>
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
-#include "base/time/time.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
@@ -46,19 +46,6 @@ class CloudPrintURLFetcher
     CONTINUE_PROCESSING,
     STOP_PROCESSING,
     RETRY_REQUEST,
-  };
-
-  enum RequestType {
-    REQUEST_AUTH_CODE,
-    REQUEST_REGISTER,
-    REQUEST_UNREGISTER,
-    REQUEST_UPDATE_PRINTER,
-    REQUEST_UPDATE_JOB,
-    REQUEST_USER_MESSAGE,
-    REQUEST_TICKET,
-    REQUEST_DATA,
-    REQUEST_JOB_FETCH,
-    REQUEST_MAX,
   };
 
   class Delegate {
@@ -119,17 +106,12 @@ class CloudPrintURLFetcher
 
   bool IsSameRequest(const net::URLFetcher* source);
 
-  void StartGetRequest(RequestType type,
-                       const GURL& url,
-                       Delegate* delegate,
-                       int max_retries);
-  void StartGetRequestWithAcceptHeader(RequestType type,
-                                       const GURL& url,
+  void StartGetRequest(const GURL& url, Delegate* delegate, int max_retries);
+  void StartGetRequestWithAcceptHeader(const GURL& url,
                                        Delegate* delegate,
                                        int max_retries,
                                        const std::string& accept_header);
-  void StartPostRequest(RequestType type,
-                        const GURL& url,
+  void StartPostRequest(const GURL& url,
                         Delegate* delegate,
                         int max_retries,
                         const std::string& post_data_mime_type,
@@ -148,8 +130,7 @@ class CloudPrintURLFetcher
   virtual net::URLRequestContextGetter* GetRequestContextGetter();
 
  private:
-  void StartRequestHelper(RequestType type,
-                          const GURL& url,
+  void StartRequestHelper(const GURL& url,
                           net::URLFetcher::RequestType request_type,
                           Delegate* delegate,
                           int max_retries,
@@ -159,14 +140,12 @@ class CloudPrintURLFetcher
   void SetupRequestHeaders();
 
   std::unique_ptr<net::URLFetcher> request_;
-  Delegate* delegate_;
+  raw_ptr<Delegate> delegate_;
   int num_retries_;
   std::string additional_accept_header_;
   std::string post_data_mime_type_;
   std::string post_data_;
 
-  RequestType type_;
-  base::Time start_time_;
   const net::PartialNetworkTrafficAnnotationTag partial_traffic_annotation_;
 };
 

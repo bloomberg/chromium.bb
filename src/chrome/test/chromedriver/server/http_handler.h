@@ -10,9 +10,7 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
@@ -81,6 +79,10 @@ class HttpHandler {
               const scoped_refptr<base::SingleThreadTaskRunner> cmd_task_runner,
               const std::string& url_base,
               int adb_port);
+
+  HttpHandler(const HttpHandler&) = delete;
+  HttpHandler& operator=(const HttpHandler&) = delete;
+
   ~HttpHandler();
 
   void Handle(const net::HttpServerRequestInfo& request,
@@ -158,8 +160,6 @@ class HttpHandler {
   std::unique_ptr<DeviceManager> device_manager_;
 
   base::WeakPtrFactory<HttpHandler> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(HttpHandler);
 };
 
 namespace internal {

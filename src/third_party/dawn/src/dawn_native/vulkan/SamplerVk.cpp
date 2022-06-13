@@ -31,6 +31,7 @@ namespace dawn_native { namespace vulkan {
                 case wgpu::AddressMode::ClampToEdge:
                     return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
             }
+            UNREACHABLE();
         }
 
         VkFilter VulkanSamplerFilter(wgpu::FilterMode filter) {
@@ -40,6 +41,7 @@ namespace dawn_native { namespace vulkan {
                 case wgpu::FilterMode::Nearest:
                     return VK_FILTER_NEAREST;
             }
+            UNREACHABLE();
         }
 
         VkSamplerMipmapMode VulkanMipMapMode(wgpu::FilterMode filter) {
@@ -49,6 +51,7 @@ namespace dawn_native { namespace vulkan {
                 case wgpu::FilterMode::Nearest:
                     return VK_SAMPLER_MIPMAP_MODE_NEAREST;
             }
+            UNREACHABLE();
         }
     }  // anonymous namespace
 
@@ -97,12 +100,19 @@ namespace dawn_native { namespace vulkan {
             createInfo.maxAnisotropy = 1;
         }
 
-        return CheckVkSuccess(
+        DAWN_TRY(CheckVkSuccess(
             device->fn.CreateSampler(device->GetVkDevice(), &createInfo, nullptr, &*mHandle),
-            "CreateSampler");
+            "CreateSampler"));
+
+        SetLabelImpl();
+
+        return {};
     }
 
-    Sampler::~Sampler() {
+    Sampler::~Sampler() = default;
+
+    void Sampler::DestroyImpl() {
+        SamplerBase::DestroyImpl();
         if (mHandle != VK_NULL_HANDLE) {
             ToBackend(GetDevice())->GetFencedDeleter()->DeleteWhenUnused(mHandle);
             mHandle = VK_NULL_HANDLE;
@@ -111,6 +121,11 @@ namespace dawn_native { namespace vulkan {
 
     VkSampler Sampler::GetHandle() const {
         return mHandle;
+    }
+
+    void Sampler::SetLabelImpl() {
+        SetDebugName(ToBackend(GetDevice()), VK_OBJECT_TYPE_SAMPLER,
+                     reinterpret_cast<uint64_t&>(mHandle), "Dawn_Sampler", GetLabel());
     }
 
 }}  // namespace dawn_native::vulkan

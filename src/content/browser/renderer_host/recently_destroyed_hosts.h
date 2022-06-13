@@ -7,6 +7,7 @@
 
 #include "base/containers/flat_set.h"
 #include "base/supports_user_data.h"
+#include "base/time/time.h"
 #include "content/common/content_export.h"
 
 namespace base {
@@ -36,7 +37,7 @@ class CONTENT_EXPORT RecentlyDestroyedHosts
   // opportunity. This also serves as the maximum reuse interval that can be
   // returned by GetPercentileReuseInterval().
   static constexpr base::TimeDelta kRecentlyDestroyedStorageTimeout =
-      base::TimeDelta::FromSeconds(15);
+      base::Seconds(15);
 
   ~RecentlyDestroyedHosts() override;
   RecentlyDestroyedHosts(const RecentlyDestroyedHosts& other) = delete;

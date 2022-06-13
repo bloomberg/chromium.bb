@@ -4,14 +4,14 @@
 
 (async function() {
   await TestRunner.loadTestModule('extensions_test_runner');
-  await TestRunner.loadModule('timeline'); await TestRunner.loadTestModule('performance_test_runner');
+  await TestRunner.loadLegacyModule('timeline'); await TestRunner.loadTestModule('performance_test_runner');
   await TestRunner.showPanel('timeline');
 
   TestRunner.enableTimelineExtensionAndStart = function(callback) {
     const traceProviders = Extensions.extensionServer.traceProviders();
     const provider = traceProviders[traceProviders.length - 1];
     const timelinePanel = UI.panels.timeline;
-    const setting = Timeline.TimelinePanel._settingForTraceProvider(provider);
+    const setting = Timeline.TimelinePanel.settingForTraceProvider(provider);
     setting.set(true);
     TestRunner.addResult(`Provider short display name: ${provider.shortDisplayName()}`);
     TestRunner.addResult(`Provider long display name: ${provider.longDisplayName()}`);

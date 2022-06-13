@@ -10,7 +10,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
@@ -26,6 +26,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace media {
 
@@ -50,6 +51,9 @@ class MEDIA_MOJO_EXPORT MojoRendererService final : public mojom::Renderer,
   // encrypted media. If null, encrypted media is not supported.
   MojoRendererService(MojoCdmServiceContext* mojo_cdm_service_context,
                       std::unique_ptr<media::Renderer> renderer);
+
+  MojoRendererService(const MojoRendererService&) = delete;
+  MojoRendererService& operator=(const MojoRendererService&) = delete;
 
   ~MojoRendererService() final;
 
@@ -111,7 +115,7 @@ class MEDIA_MOJO_EXPORT MojoRendererService final : public mojom::Renderer,
   // Callback executed once SetCdm() completes.
   void OnCdmAttached(base::OnceCallback<void(bool)> callback, bool success);
 
-  MojoCdmServiceContext* const mojo_cdm_service_context_ = nullptr;
+  const raw_ptr<MojoCdmServiceContext> mojo_cdm_service_context_ = nullptr;
 
   State state_;
   double playback_rate_;
@@ -134,8 +138,6 @@ class MEDIA_MOJO_EXPORT MojoRendererService final : public mojom::Renderer,
 
   base::WeakPtr<MojoRendererService> weak_this_;
   base::WeakPtrFactory<MojoRendererService> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(MojoRendererService);
 };
 
 }  // namespace media

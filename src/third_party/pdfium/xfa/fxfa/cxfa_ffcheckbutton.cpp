@@ -49,7 +49,7 @@ bool CXFA_FFCheckButton::LoadWidget() {
   m_pOldDelegate = pCheckBox->GetDelegate();
   pCheckBox->SetDelegate(this);
   if (m_pNode->IsRadioButton())
-    pCheckBox->ModifyStylesEx(FWL_STYLEEXT_CKB_RadioButton, 0xFFFFFFFF);
+    pCheckBox->ModifyStyleExts(FWL_STYLEEXT_CKB_RadioButton, 0xFFFFFFFF);
 
   {
     CFWL_Widget::ScopedUpdateLock update_lock(pCheckBox);
@@ -93,7 +93,7 @@ void CXFA_FFCheckButton::UpdateWidgetProperty() {
   if (button_->IsAllowNeutral())
     dwStyleEx |= FWL_STYLEEXT_CKB_3State;
 
-  pCheckBox->ModifyStylesEx(
+  pCheckBox->ModifyStyleExts(
       dwStyleEx, FWL_STYLEEXT_CKB_SignShapeMask | FWL_STYLEEXT_CKB_3State);
 }
 
@@ -252,25 +252,26 @@ void CXFA_FFCheckButton::RenderWidget(CFGAS_GEGraphics* pGS,
   GetApp()->GetFWLWidgetMgr()->OnDrawWidget(GetNormalWidget(), pGS, mt);
 }
 
-bool CXFA_FFCheckButton::OnLButtonUp(uint32_t dwFlags,
+bool CXFA_FFCheckButton::OnLButtonUp(Mask<XFA_FWL_KeyFlag> dwFlags,
                                      const CFX_PointF& point) {
   if (!GetNormalWidget() || !IsButtonDown())
     return false;
 
   SetButtonDown(false);
-  CFWL_MessageMouse msg(GetNormalWidget(), FWL_MouseCommand::LeftButtonUp,
-                        dwFlags, FWLToClient(point));
+  CFWL_MessageMouse msg(GetNormalWidget(),
+                        CFWL_MessageMouse::MouseCommand::kLeftButtonUp, dwFlags,
+                        FWLToClient(point));
   SendMessageToFWLWidget(&msg);
   return true;
 }
 
-XFA_CHECKSTATE CXFA_FFCheckButton::FWLState2XFAState() {
+XFA_CheckState CXFA_FFCheckButton::FWLState2XFAState() {
   uint32_t dwState = GetNormalWidget()->GetStates();
   if (dwState & FWL_STATE_CKB_Checked)
-    return XFA_CHECKSTATE_On;
+    return XFA_CheckState::kOn;
   if (dwState & FWL_STATE_CKB_Neutral)
-    return XFA_CHECKSTATE_Neutral;
-  return XFA_CHECKSTATE_Off;
+    return XFA_CheckState::kNeutral;
+  return XFA_CheckState::kOff;
 }
 
 bool CXFA_FFCheckButton::CommitData() {
@@ -279,14 +280,14 @@ bool CXFA_FFCheckButton::CommitData() {
 }
 
 bool CXFA_FFCheckButton::IsDataChanged() {
-  XFA_CHECKSTATE eCheckState = FWLState2XFAState();
+  XFA_CheckState eCheckState = FWLState2XFAState();
   return m_pNode->GetCheckState() != eCheckState;
 }
 
-void CXFA_FFCheckButton::SetFWLCheckState(XFA_CHECKSTATE eCheckState) {
-  if (eCheckState == XFA_CHECKSTATE_Neutral)
+void CXFA_FFCheckButton::SetFWLCheckState(XFA_CheckState eCheckState) {
+  if (eCheckState == XFA_CheckState::kNeutral)
     GetNormalWidget()->SetStates(FWL_STATE_CKB_Neutral);
-  else if (eCheckState == XFA_CHECKSTATE_On)
+  else if (eCheckState == XFA_CheckState::kOn)
     GetNormalWidget()->SetStates(FWL_STATE_CKB_Checked);
   else
     GetNormalWidget()->RemoveStates(FWL_STATE_CKB_Checked);
@@ -311,7 +312,7 @@ void CXFA_FFCheckButton::OnProcessEvent(CFWL_Event* pEvent) {
     case CFWL_Event::Type::CheckStateChanged: {
       CXFA_EventParam eParam;
       eParam.m_eType = XFA_EVENT_Change;
-      eParam.m_wsPrevText = m_pNode->GetValue(XFA_VALUEPICTURE_Raw);
+      eParam.m_wsPrevText = m_pNode->GetValue(XFA_ValuePicture::kRaw);
 
       CXFA_Node* exclNode = m_pNode->GetExclGroupIfExists();
       if (ProcessCommittedData()) {

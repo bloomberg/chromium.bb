@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "remoting/host/input_injector.h"
 
@@ -30,6 +29,10 @@ class SessionInputInjectorWin : public InputInjector {
       scoped_refptr<base::SingleThreadTaskRunner> execute_action_task_runner,
       const base::RepeatingClosure& inject_sas,
       const base::RepeatingClosure& lock_workstation);
+
+  SessionInputInjectorWin(const SessionInputInjectorWin&) = delete;
+  SessionInputInjectorWin& operator=(const SessionInputInjectorWin&) = delete;
+
   ~SessionInputInjectorWin() override;
 
   // InputInjector implementation.
@@ -50,8 +53,6 @@ class SessionInputInjectorWin : public InputInjector {
   // The actual implementation resides in SessionInputInjectorWin::Core class.
   class Core;
   scoped_refptr<Core> core_;
-
-  DISALLOW_COPY_AND_ASSIGN(SessionInputInjectorWin);
 };
 
 }  // namespace remoting

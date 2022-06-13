@@ -12,10 +12,9 @@
 #include <vector>
 
 #include "base/containers/queue.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "components/chromeos_camera/jpeg_encode_accelerator.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
@@ -53,11 +52,17 @@ class MEDIA_GPU_EXPORT V4L2JpegEncodeAccelerator
  public:
   V4L2JpegEncodeAccelerator(
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner);
+
+  V4L2JpegEncodeAccelerator(const V4L2JpegEncodeAccelerator&) = delete;
+  V4L2JpegEncodeAccelerator& operator=(const V4L2JpegEncodeAccelerator&) =
+      delete;
+
   ~V4L2JpegEncodeAccelerator() override;
 
   // JpegEncodeAccelerator implementation.
-  chromeos_camera::JpegEncodeAccelerator::Status Initialize(
-      chromeos_camera::JpegEncodeAccelerator::Client* client) override;
+  void InitializeAsync(
+      chromeos_camera::JpegEncodeAccelerator::Client* client,
+      chromeos_camera::JpegEncodeAccelerator::InitCB init_cb) override;
   size_t GetMaxCodedBufferSize(const gfx::Size& picture_size) override;
   void Encode(scoped_refptr<media::VideoFrame> video_frame,
               int quality,
@@ -71,6 +76,10 @@ class MEDIA_GPU_EXPORT V4L2JpegEncodeAccelerator
                         BitstreamBuffer* exif_buffer) override;
 
  private:
+  void InitializeOnTaskRunner(
+      chromeos_camera::JpegEncodeAccelerator::Client* client,
+      InitCB init_cb);
+
   // Record for input buffers.
   struct I420BufferRecord {
     I420BufferRecord();
@@ -425,8 +434,6 @@ class MEDIA_GPU_EXPORT V4L2JpegEncodeAccelerator
   base::WeakPtr<V4L2JpegEncodeAccelerator> weak_ptr_;
   // Weak factory for producing weak pointers on the child thread.
   base::WeakPtrFactory<V4L2JpegEncodeAccelerator> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(V4L2JpegEncodeAccelerator);
 };
 
 }  // namespace media

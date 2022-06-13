@@ -10,10 +10,12 @@ import android.os.Build;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.PackageUtils;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.blink.mojom.Authenticator;
 import org.chromium.blink.mojom.AuthenticatorStatus;
 import org.chromium.blink.mojom.GetAssertionAuthenticatorResponse;
 import org.chromium.blink.mojom.MakeCredentialAuthenticatorResponse;
+import org.chromium.blink.mojom.PaymentOptions;
 import org.chromium.blink.mojom.PublicKeyCredentialCreationOptions;
 import org.chromium.blink.mojom.PublicKeyCredentialRequestOptions;
 import org.chromium.content_public.browser.ContentFeatureList;
@@ -40,6 +42,9 @@ public class AuthenticatorImpl implements Authenticator {
      * process.
      */
     private Origin mOrigin;
+
+    /** The payment information to be added to the "clientDataJson". */
+    private PaymentOptions mPayment;
 
     private org.chromium.mojo.bindings.Callbacks
             .Callback2<Integer, MakeCredentialAuthenticatorResponse> mMakeCredentialCallback;
@@ -72,15 +77,24 @@ public class AuthenticatorImpl implements Authenticator {
         mOrigin = origin;
     }
 
+    /**
+     * @param payment The payment information to be added to the "clientDataJson". Should be used
+     * only if the user has confirmed the payment information that was displayed to the user.
+     */
+    public void setPaymentOptions(PaymentOptions payment) {
+        mPayment = payment;
+    }
+
     @Override
     public void makeCredential(
-            PublicKeyCredentialCreationOptions options, MakeCredentialResponse callback) {
+            PublicKeyCredentialCreationOptions options, MakeCredential_Response callback) {
         if (mIsOperationPending) {
             callback.call(AuthenticatorStatus.PENDING_REQUEST, null);
             return;
         }
 
         mMakeCredentialCallback = callback;
+        mIsOperationPending = true;
         Context context = ContextUtils.getApplicationContext();
         if (PackageUtils.getPackageVersion(context, GMSCORE_PACKAGE_NAME)
                 < Fido2ApiHandler.GMSCORE_MIN_VERSION) {
@@ -88,7 +102,6 @@ public class AuthenticatorImpl implements Authenticator {
             return;
         }
 
-        mIsOperationPending = true;
         Fido2ApiHandler.getInstance().makeCredential(options, mRenderFrameHost, mOrigin,
                 (status, response)
                         -> onRegisterResponse(status, response),
@@ -97,13 +110,14 @@ public class AuthenticatorImpl implements Authenticator {
 
     @Override
     public void getAssertion(
-            PublicKeyCredentialRequestOptions options, GetAssertionResponse callback) {
+            PublicKeyCredentialRequestOptions options, GetAssertion_Response callback) {
         if (mIsOperationPending) {
             callback.call(AuthenticatorStatus.PENDING_REQUEST, null);
             return;
         }
 
         mGetAssertionCallback = callback;
+        mIsOperationPending = true;
         Context context = ContextUtils.getApplicationContext();
 
         if (PackageUtils.getPackageVersion(context, GMSCORE_PACKAGE_NAME)
@@ -112,34 +126,39 @@ public class AuthenticatorImpl implements Authenticator {
             return;
         }
 
-        mIsOperationPending = true;
-        Fido2ApiHandler.getInstance().getAssertion(options, mRenderFrameHost, mOrigin,
+        Fido2ApiHandler.getInstance().getAssertion(options, mRenderFrameHost, mOrigin, mPayment,
                 (status, response) -> onSignResponse(status, response), status -> onError(status));
     }
 
     @Override
     @TargetApi(Build.VERSION_CODES.N)
     public void isUserVerifyingPlatformAuthenticatorAvailable(
-            IsUserVerifyingPlatformAuthenticatorAvailableResponse callback) {
+            final IsUserVerifyingPlatformAuthenticatorAvailable_Response callback) {
+        IsUserVerifyingPlatformAuthenticatorAvailable_Response decoratedCallback = (isUvpaa) -> {
+            RecordHistogram.recordBooleanHistogram(
+                    "WebAuthentication.IsUVPlatformAuthenticatorAvailable2", isUvpaa);
+            callback.call(isUvpaa);
+        };
+
         Context context = ContextUtils.getApplicationContext();
         // ChromeActivity could be null.
         if (context == null) {
-            callback.call(false);
+            decoratedCallback.call(false);
             return;
         }
 
         if (!ContentFeatureList.isEnabled(ContentFeatureList.WEB_AUTH)) {
-            callback.call(false);
+            decoratedCallback.call(false);
             return;
         }
 
         if (PackageUtils.getPackageVersion(context, GMSCORE_PACKAGE_NAME)
                 < Fido2ApiHandler.GMSCORE_MIN_VERSION) {
-            callback.call(false);
+            decoratedCallback.call(false);
             return;
         }
 
-        mIsUserVerifyingPlatformAuthenticatorAvailableCallbackQueue.add(callback);
+        mIsUserVerifyingPlatformAuthenticatorAvailableCallbackQueue.add(decoratedCallback);
         Fido2ApiHandler.getInstance().isUserVerifyingPlatformAuthenticatorAvailable(
                 mRenderFrameHost,
                 isUvpaa -> onIsUserVerifyingPlatformAuthenticatorAvailableResponse(isUvpaa));
@@ -155,12 +174,18 @@ public class AuthenticatorImpl implements Authenticator {
      * Callbacks for receiving responses from the internal handlers.
      */
     public void onRegisterResponse(Integer status, MakeCredentialAuthenticatorResponse response) {
+        // In case mojo pipe is closed due to the page begin destroyed while waiting for response.
+        if (!mIsOperationPending) return;
+
         assert mMakeCredentialCallback != null;
         mMakeCredentialCallback.call(status, response);
         close();
     }
 
     public void onSignResponse(Integer status, GetAssertionAuthenticatorResponse response) {
+        // In case mojo pipe is closed due to the page begin destroyed while waiting for response.
+        if (!mIsOperationPending) return;
+
         assert mGetAssertionCallback != null;
         mGetAssertionCallback.call(status, response);
         close();
@@ -172,6 +197,9 @@ public class AuthenticatorImpl implements Authenticator {
     }
 
     public void onError(Integer status) {
+        // In case mojo pipe is closed due to the page begin destroyed while waiting for response.
+        if (!mIsOperationPending) return;
+
         assert ((mMakeCredentialCallback != null && mGetAssertionCallback == null)
                 || (mMakeCredentialCallback == null && mGetAssertionCallback != null));
         if (mMakeCredentialCallback != null) {

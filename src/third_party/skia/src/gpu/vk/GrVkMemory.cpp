@@ -57,9 +57,8 @@ void GrVkMemory::FreeBufferMemory(const GrVkGpu* gpu, const GrVkAlloc& alloc) {
 
 bool GrVkMemory::AllocAndBindImageMemory(GrVkGpu* gpu,
                                          VkImage image,
-                                         bool linearTiling,
+                                         GrMemoryless memoryless,
                                          GrVkAlloc* alloc) {
-    SkASSERT(!linearTiling);
     GrVkMemoryAllocator* allocator = gpu->memoryAllocator();
     GrVkBackendMemory memory = 0;
 
@@ -81,6 +80,10 @@ bool GrVkMemory::AllocAndBindImageMemory(GrVkGpu* gpu,
         propFlags |= AllocationPropertyFlags::kProtected;
     }
 
+    if (memoryless == GrMemoryless::kYes) {
+        propFlags |= AllocationPropertyFlags::kLazyAllocation;
+    }
+
     VkResult result = allocator->allocateImageMemory(image, propFlags, &memory);
     if (!gpu->checkVkResult(result)) {
         return false;
@@ -93,15 +96,14 @@ bool GrVkMemory::AllocAndBindImageMemory(GrVkGpu* gpu,
     GR_VK_CALL_RESULT(gpu, err, BindImageMemory(gpu->device(), image, alloc->fMemory,
                                                 alloc->fOffset));
     if (err) {
-        FreeImageMemory(gpu, linearTiling, *alloc);
+        FreeImageMemory(gpu, *alloc);
         return false;
     }
 
     return true;
 }
 
-void GrVkMemory::FreeImageMemory(const GrVkGpu* gpu, bool linearTiling,
-                                 const GrVkAlloc& alloc) {
+void GrVkMemory::FreeImageMemory(const GrVkGpu* gpu, const GrVkAlloc& alloc) {
     SkASSERT(alloc.fBackendMemory);
     GrVkMemoryAllocator* allocator = gpu->memoryAllocator();
     allocator->freeMemory(alloc.fBackendMemory);

@@ -37,10 +37,21 @@ void DebugAnnotatorVk::endEvent(gl::Context *context,
                                 angle::EntryPoint entryPoint)
 {
     angle::LoggingAnnotator::endEvent(context, eventName, entryPoint);
-    if (vkCmdBeginDebugUtilsLabelEXT && context && isDrawOrDispatchEntryPoint(entryPoint))
+    if (vkCmdBeginDebugUtilsLabelEXT && context)
     {
         ContextVk *contextVk = vk::GetImpl(static_cast<gl::Context *>(context));
-        contextVk->endEventLog(entryPoint);
+        if (isDrawEntryPoint(entryPoint))
+        {
+            contextVk->endEventLog(entryPoint, PipelineType::Graphics);
+        }
+        else if (isDispatchEntryPoint(entryPoint))
+        {
+            contextVk->endEventLog(entryPoint, PipelineType::Compute);
+        }
+        else if (isClearOrQueryEntryPoint(entryPoint))
+        {
+            contextVk->endEventLogForClearOrQuery();
+        }
     }
 }
 
@@ -49,12 +60,10 @@ bool DebugAnnotatorVk::getStatus()
     return true;
 }
 
-bool DebugAnnotatorVk::isDrawOrDispatchEntryPoint(angle::EntryPoint entryPoint) const
+bool DebugAnnotatorVk::isDrawEntryPoint(angle::EntryPoint entryPoint) const
 {
     switch (entryPoint)
     {
-        case angle::EntryPoint::GLDispatchCompute:
-        case angle::EntryPoint::GLDispatchComputeIndirect:
         case angle::EntryPoint::GLDrawArrays:
         case angle::EntryPoint::GLDrawArraysIndirect:
         case angle::EntryPoint::GLDrawArraysInstanced:
@@ -62,9 +71,6 @@ bool DebugAnnotatorVk::isDrawOrDispatchEntryPoint(angle::EntryPoint entryPoint) 
         case angle::EntryPoint::GLDrawArraysInstancedBaseInstance:
         case angle::EntryPoint::GLDrawArraysInstancedBaseInstanceANGLE:
         case angle::EntryPoint::GLDrawArraysInstancedEXT:
-        case angle::EntryPoint::GLDrawBuffer:
-        case angle::EntryPoint::GLDrawBuffers:
-        case angle::EntryPoint::GLDrawBuffersEXT:
         case angle::EntryPoint::GLDrawElements:
         case angle::EntryPoint::GLDrawElementsBaseVertex:
         case angle::EntryPoint::GLDrawElementsBaseVertexEXT:
@@ -96,6 +102,39 @@ bool DebugAnnotatorVk::isDrawOrDispatchEntryPoint(angle::EntryPoint entryPoint) 
         case angle::EntryPoint::GLDrawTransformFeedbackInstanced:
         case angle::EntryPoint::GLDrawTransformFeedbackStream:
         case angle::EntryPoint::GLDrawTransformFeedbackStreamInstanced:
+            return true;
+        default:
+            return false;
+    }
+}
+
+bool DebugAnnotatorVk::isDispatchEntryPoint(angle::EntryPoint entryPoint) const
+{
+    switch (entryPoint)
+    {
+        case angle::EntryPoint::GLDispatchCompute:
+        case angle::EntryPoint::GLDispatchComputeIndirect:
+            return true;
+        default:
+            return false;
+    }
+}
+
+bool DebugAnnotatorVk::isClearOrQueryEntryPoint(angle::EntryPoint entryPoint) const
+{
+    switch (entryPoint)
+    {
+        case angle::EntryPoint::GLClear:
+        case angle::EntryPoint::GLClearBufferfi:
+        case angle::EntryPoint::GLClearBufferfv:
+        case angle::EntryPoint::GLClearBufferiv:
+        case angle::EntryPoint::GLClearBufferuiv:
+        case angle::EntryPoint::GLBeginQuery:
+        case angle::EntryPoint::GLBeginQueryEXT:
+        case angle::EntryPoint::GLBeginQueryIndexed:
+        case angle::EntryPoint::GLEndQuery:
+        case angle::EntryPoint::GLEndQueryEXT:
+        case angle::EntryPoint::GLEndQueryIndexed:
             return true;
         default:
             return false;

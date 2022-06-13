@@ -19,14 +19,13 @@
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller_util.h"
 #include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
-#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/context_menu_params.h"
 #include "extensions/browser/extension_prefs.h"
 #include "ui/base/models/image_model.h"
+#include "ui/color/color_id.h"
 #include "ui/display/scoped_display_for_new_windows.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -56,16 +55,9 @@ void ExtensionShelfContextMenu::GetMenuModel(GetMenuModelCallback callback) {
   extension_items_ = std::make_unique<extensions::ContextMenuMatcher>(
       profile, this, menu_model.get(),
       base::BindRepeating(MenuItemHasLauncherContext));
-  // V1 apps can be started from the menu - but V2 apps and system web apps
-  // should not.
-  bool is_system_web_app = web_app::WebAppProvider::Get(profile)
-                               ->system_web_app_manager()
-                               .IsSystemWebApp(app_id);
-  const bool is_platform_app = controller()->IsPlatformApp(item().id);
 
   if (item().type == ash::TYPE_PINNED_APP || item().type == ash::TYPE_APP) {
-    if (!is_platform_app && !is_system_web_app)
-      CreateOpenNewSubmenu(menu_model.get());
+    CreateOpenNewSubmenu(menu_model.get());
     AddPinMenu(menu_model.get());
 
     if (controller()->IsOpen(item().id)) {
@@ -91,8 +83,7 @@ void ExtensionShelfContextMenu::GetMenuModel(GetMenuModelCallback callback) {
   }
   if (app_id != extension_misc::kChromeAppId) {
     AddContextMenuOption(menu_model.get(), ash::UNINSTALL,
-                         is_platform_app ? IDS_APP_LIST_UNINSTALL_ITEM
-                                         : IDS_APP_LIST_EXTENSIONS_UNINSTALL);
+                         IDS_APP_LIST_EXTENSIONS_UNINSTALL);
   }
 
   if (controller()->CanDoShowAppInfoFlow(profile, app_id)) {
@@ -140,12 +131,12 @@ bool ExtensionShelfContextMenu::IsCommandIdEnabled(int command_id) const {
       // "Normal" windows are not allowed when incognito is enforced.
       return IncognitoModePrefs::GetAvailability(
                  controller()->profile()->GetPrefs()) !=
-             IncognitoModePrefs::FORCED;
+             IncognitoModePrefs::Availability::kForced;
     case ash::MENU_NEW_INCOGNITO_WINDOW:
       // Incognito windows are not allowed when incognito is disabled.
       return IncognitoModePrefs::GetAvailability(
                  controller()->profile()->GetPrefs()) !=
-             IncognitoModePrefs::DISABLED;
+             IncognitoModePrefs::Availability::kDisabled;
     default:
       if (command_id < ash::COMMAND_ID_COUNT)
         return ShelfContextMenu::IsCommandIdEnabled(command_id);
@@ -186,10 +177,14 @@ void ExtensionShelfContextMenu::ExecuteCommand(int command_id,
       SetLaunchType(extensions::LAUNCH_TYPE_FULLSCREEN);
       break;
     case ash::MENU_NEW_WINDOW:
-      ash::NewWindowDelegate::GetInstance()->NewWindow(/*incognito=*/false);
+      ash::NewWindowDelegate::GetInstance()->NewWindow(
+          /*incognito=*/false,
+          /*should_trigger_session_restore=*/false);
       break;
     case ash::MENU_NEW_INCOGNITO_WINDOW:
-      ash::NewWindowDelegate::GetInstance()->NewWindow(/*incognito=*/true);
+      ash::NewWindowDelegate::GetInstance()->NewWindow(
+          /*incognito=*/true,
+          /*should_trigger_session_restore=*/false);
       break;
     default:
       if (extension_items_) {
@@ -215,7 +210,7 @@ void ExtensionShelfContextMenu::CreateOpenNewSubmenu(
       open_new_submenu_model_.get(),
       ui::ImageModel::FromVectorIcon(
           GetCommandIdVectorIcon(ash::MENU_OPEN_NEW, GetLaunchTypeStringId()),
-          /*color_id=*/-1, ash::kAppContextMenuIconSize));
+          ui::kColorMenuIcon, ash::kAppContextMenuIconSize));
 }
 
 extensions::LaunchType ExtensionShelfContextMenu::GetLaunchType() const {

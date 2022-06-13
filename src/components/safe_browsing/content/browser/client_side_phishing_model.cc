@@ -17,9 +17,9 @@
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "build/build_config.h"
-#include "components/safe_browsing/core/fbs/client_model_generated.h"
-#include "components/safe_browsing/core/features.h"
-#include "components/safe_browsing/core/proto/client_model.pb.h"
+#include "components/safe_browsing/core/common/fbs/client_model_generated.h"
+#include "components/safe_browsing/core/common/features.h"
+#include "components/safe_browsing/core/common/proto/client_model.pb.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -88,7 +88,7 @@ bool ClientSidePhishingModel::IsEnabled() const {
          visual_tflite_model_.IsValid();
 }
 
-std::string ClientSidePhishingModel::GetModelStr() const {
+const std::string& ClientSidePhishingModel::GetModelStr() const {
   DCHECK(model_type_ != CSDModelType::kFlatbuffer);
   return model_str_;
 }
@@ -113,11 +113,11 @@ void ClientSidePhishingModel::PopulateFromDynamicUpdate(
 
   bool model_valid = false;
   int model_version_field = 0;
-  model_type_ = CSDModelType::kNone;
 
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           kOverrideCsdModelFlag) &&
       !model_str.empty()) {
+    model_type_ = CSDModelType::kNone;
     if (base::FeatureList::IsEnabled(kClientSideDetectionModelIsFlatBuffer)) {
       flatbuffers::Verifier verifier(
           reinterpret_cast<const uint8_t*>(model_str.data()),

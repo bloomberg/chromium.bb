@@ -2,4 +2,6 @@
 
 include_rules = [
   '+discovery/mdns/public',
+  # DNS-SD is layered on top of mDNS.
+  '-discovery/dnssd',
 ]

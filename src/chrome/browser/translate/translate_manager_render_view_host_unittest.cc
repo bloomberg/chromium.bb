@@ -50,6 +50,7 @@
 #include "components/translate/core/browser/translate_script.h"
 #include "components/translate/core/browser/translate_ui_delegate.h"
 #include "components/translate/core/common/language_detection_details.h"
+#include "components/variations/scoped_variations_ids_provider.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
@@ -69,11 +70,16 @@
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
+namespace translate {
 namespace {
 
 class MockTranslateBubbleFactory : public TranslateBubbleFactory {
  public:
   MockTranslateBubbleFactory() {}
+
+  MockTranslateBubbleFactory(const MockTranslateBubbleFactory&) = delete;
+  MockTranslateBubbleFactory& operator=(const MockTranslateBubbleFactory&) =
+      delete;
 
   ShowTranslateBubbleResult ShowImplementation(
       BrowserWindow* window,
@@ -113,11 +119,7 @@ class MockTranslateBubbleFactory : public TranslateBubbleFactory {
 
  private:
   std::unique_ptr<TranslateBubbleModel> model_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockTranslateBubbleFactory);
 };
-
-}  // namespace
 
 class TranslateManagerRenderViewHostTest
     : public ChromeRenderViewHostTestHarness,
@@ -130,6 +132,11 @@ class TranslateManagerRenderViewHostTest
         test_shared_loader_factory_(
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
                 &test_url_loader_factory_)) {}
+
+  TranslateManagerRenderViewHostTest(
+      const TranslateManagerRenderViewHostTest&) = delete;
+  TranslateManagerRenderViewHostTest& operator=(
+      const TranslateManagerRenderViewHostTest&) = delete;
 
 #if !defined(USE_AURA) && !defined(OS_MAC)
   // Ensure that we are testing under the bubble UI.
@@ -351,7 +358,7 @@ class TranslateManagerRenderViewHostTest
     params.writing_direction_right_to_left = 0;
 #endif  // OS_MAC
     params.edit_flags = blink::ContextMenuDataEditFlags::kCanTranslate;
-    return new TestRenderViewContextMenu(web_contents()->GetMainFrame(),
+    return new TestRenderViewContextMenu(*web_contents()->GetMainFrame(),
                                          params);
   }
 
@@ -448,6 +455,9 @@ class TranslateManagerRenderViewHostTest
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
 
+  variations::ScopedVariationsIdsProvider scoped_variations_ids_provider_{
+      variations::VariationsIdsProvider::Mode::kUseSignedInState};
+
   // The infobars that have been removed.
   // WARNING: the pointers point to deleted objects, use only for comparison.
   std::set<infobars::InfoBarDelegate*> removed_infobars_;
@@ -458,8 +468,6 @@ class TranslateManagerRenderViewHostTest
   base::ScopedObservation<infobars::InfoBarManager,
                           infobars::InfoBarManager::Observer>
       infobar_observation_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(TranslateManagerRenderViewHostTest);
 };
 
 // A variant of the above test class that sets the UI language to an invalid
@@ -476,6 +484,11 @@ class TranslateManagerRenderViewHostInvalidLocaleTest
     SetApplicationLocale(kInvalidLocale);
   }
 
+  TranslateManagerRenderViewHostInvalidLocaleTest(
+      const TranslateManagerRenderViewHostInvalidLocaleTest&) = delete;
+  TranslateManagerRenderViewHostInvalidLocaleTest& operator=(
+      const TranslateManagerRenderViewHostInvalidLocaleTest&) = delete;
+
   ~TranslateManagerRenderViewHostInvalidLocaleTest() override {
     SetApplicationLocale(original_locale_);
   }
@@ -488,8 +501,6 @@ class TranslateManagerRenderViewHostInvalidLocaleTest
     translate::TranslateDownloadManager::GetInstance()->set_application_locale(
         g_browser_process->GetApplicationLocale());
   }
-
-  DISALLOW_COPY_AND_ASSIGN(TranslateManagerRenderViewHostInvalidLocaleTest);
 };
 
 // A list of languages to fake being returned by the translate server.
@@ -1135,7 +1146,7 @@ TEST_F(TranslateManagerRenderViewHostTest, TranslateEnabledPref) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   PrefService* prefs = profile->GetPrefs();
-  prefs->SetBoolean(prefs::kOfferTranslateEnabled, true);
+  prefs->SetBoolean(translate::prefs::kOfferTranslateEnabled, true);
 
   SimulateNavigation(GURL("http://www.google.fr"), "fr", true);
 
@@ -1144,7 +1155,7 @@ TEST_F(TranslateManagerRenderViewHostTest, TranslateEnabledPref) {
   EXPECT_TRUE(infobar != NULL);
 
   // Disable translate.
-  prefs->SetBoolean(prefs::kOfferTranslateEnabled, false);
+  prefs->SetBoolean(translate::prefs::kOfferTranslateEnabled, false);
 
   // Navigate to a new page, that should close the previous infobar.
   GURL url("http://www.youtube.fr");
@@ -1282,10 +1293,10 @@ TEST_F(TranslateManagerRenderViewHostTest, AlwaysTranslateLanguagePref) {
   PrefService* prefs = profile->GetPrefs();
   PrefChangeRegistrar registrar;
   registrar.Init(prefs);
-  registrar.Add(prefs::kPrefAlwaysTranslateList, pref_callback_);
+  registrar.Add(translate::prefs::kPrefAlwaysTranslateList, pref_callback_);
   std::unique_ptr<translate::TranslatePrefs> translate_prefs(
       ChromeTranslateClient::CreateTranslatePrefs(prefs));
-  SetPrefObserverExpectation(prefs::kPrefAlwaysTranslateList);
+  SetPrefObserverExpectation(translate::prefs::kPrefAlwaysTranslateList);
   translate_prefs->AddLanguagePairToAlwaysTranslateList("fr", "en");
 
   // Load a page in French.
@@ -1322,7 +1333,7 @@ TEST_F(TranslateManagerRenderViewHostTest, AlwaysTranslateLanguagePref) {
 
   // Now revert the always translate pref and make sure we go back to expected
   // behavior, which is show a "before translate" infobar.
-  SetPrefObserverExpectation(prefs::kPrefAlwaysTranslateList);
+  SetPrefObserverExpectation(translate::prefs::kPrefAlwaysTranslateList);
   translate_prefs->RemoveLanguagePairFromAlwaysTranslateList("fr", "en");
   SimulateNavigation(GURL("http://www.google.fr"), "fr", true);
   EXPECT_FALSE(GetTranslateMessage(&source_lang, &target_lang));
@@ -1675,3 +1686,6 @@ TEST_F(TranslateManagerRenderViewHostTest, BubbleUnknownLanguage) {
             bubble->GetViewState());
 }
 #endif  // defined(USE_AURA) && !defined(OS_MAC)
+
+}  // namespace
+}  // namespace translate

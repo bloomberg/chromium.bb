@@ -6,7 +6,6 @@
 #define NET_REPORTING_REPORTING_BROWSING_DATA_REMOVER_H_
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "net/base/net_export.h"
 #include "url/gurl.h"
 
@@ -21,6 +20,11 @@ class NET_EXPORT ReportingBrowsingDataRemover {
     DATA_TYPE_REPORTS = 0x1,
     DATA_TYPE_CLIENTS = 0x2,
   };
+
+  ReportingBrowsingDataRemover() = delete;
+  ReportingBrowsingDataRemover(const ReportingBrowsingDataRemover&) = delete;
+  ReportingBrowsingDataRemover& operator=(const ReportingBrowsingDataRemover&) =
+      delete;
 
   // Removes browsing data from the Reporting system. |data_type_mask| specifies
   // which types of data to remove: reports queued by browser features and/or
@@ -40,9 +44,6 @@ class NET_EXPORT ReportingBrowsingDataRemover {
   // RemoveBrowsingData.
   static void RemoveAllBrowsingData(ReportingCache* cache,
                                     uint64_t data_type_mask);
-
- private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(ReportingBrowsingDataRemover);
 };
 
 }  // namespace net

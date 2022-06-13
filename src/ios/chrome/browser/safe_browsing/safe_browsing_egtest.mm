@@ -7,8 +7,8 @@
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
+#include "components/safe_browsing/core/common/features.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
-#include "components/safe_browsing/core/features.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_earl_grey.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_earl_grey_ui.h"
@@ -98,8 +98,6 @@ std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
 
 - (AppLaunchConfiguration)appConfigurationForTestCase {
   AppLaunchConfiguration config;
-  config.features_enabled.push_back(safe_browsing::kRealTimeUrlLookupEnabled);
-
   // Use commandline args to insert fake unsafe URLs into the Safe Browsing
   // database.
   config.additional_args.push_back(std::string("--mark_as_phishing=") +
@@ -136,6 +134,20 @@ std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
 
   _safeURL2 = self.testServer->GetURL("/echo_also_safe");
   _safeContent2 = "also_safe";
+
+  if (@available(iOS 15.1, *)) {
+  } else {
+    if (@available(iOS 14.5, *)) {
+      // Workaround https://bugs.webkit.org/show_bug.cgi?id=226323, which breaks
+      // some back/forward navigations between pages that share a renderer
+      // process. Use 'localhost' instead of '127.0.0.1' for safe URLs to
+      // prevent sharing renderer processes with unsafe URLs.
+      GURL::Replacements replacements;
+      replacements.SetHostStr("localhost");
+      _safeURL1 = _safeURL1.ReplaceComponents(replacements);
+      _safeURL2 = _safeURL2.ReplaceComponents(replacements);
+    }
+  }
 
   // |appConfigurationForTestCase| is called during [super setUp], and
   // depends on the URLs initialized above.
@@ -280,14 +292,6 @@ std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
 // Tests expanding the details on a malware warning, proceeding past the
 // warning, and navigating back/forward to the unsafe page.
 - (void)testProceedingPastMalwareWarning {
-  if (@available(iOS 14, *)) {
-  } else {
-    if (@available(iOS 13, *)) {
-      // TODO(crbug.com/1156574): This test is failing on iOS 13, not sure why.
-      EARL_GREY_TEST_DISABLED(@"Disabled on iOS 13 as it is failing.");
-    }
-  }
-
   [ChromeEarlGrey loadURL:_safeURL1];
   [ChromeEarlGrey waitForWebStateContainingText:_safeContent1];
 
@@ -299,6 +303,15 @@ std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
   // Tap on the Details button and verify that warning details are shown.
   [ChromeEarlGrey tapWebStateElementWithID:@"details-button"];
   [ChromeEarlGrey waitForWebStateContainingText:kMalwareWarningDetails];
+
+  if (@available(iOS 15.1, *)) {
+  } else {
+    if (@available(iOS 14.5, *)) {
+      // Workaround https://bugs.webkit.org/show_bug.cgi?id=226323, which can
+      // break loading the unsafe page below.
+      return;
+    }
+  }
 
   // Tap on the link to proceed to the unsafe page, and verify that this page is
   // loaded.
@@ -323,14 +336,6 @@ std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
 // Tests expanding the details on a malware warning, proceeding past the
 // warning, and navigating back/forward to the unsafe page, in incognito mode.
 - (void)testProceedingPastMalwareWarningInIncognito {
-  if (@available(iOS 14, *)) {
-  } else {
-    if (@available(iOS 13, *)) {
-      // TODO(crbug.com/1156574): This test is failing on iOS 13, not sure why.
-      EARL_GREY_TEST_DISABLED(@"Disabled on iOS 13 as it is failing.");
-    }
-  }
-
   [ChromeEarlGrey openNewIncognitoTab];
   [ChromeEarlGrey loadURL:_safeURL1];
   [ChromeEarlGrey waitForWebStateContainingText:_safeContent1];
@@ -343,6 +348,15 @@ std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
   // Tap on the Details button and verify that warning details are shown.
   [ChromeEarlGrey tapWebStateElementWithID:@"details-button"];
   [ChromeEarlGrey waitForWebStateContainingText:kMalwareWarningDetails];
+
+  if (@available(iOS 15.1, *)) {
+  } else {
+    if (@available(iOS 14.5, *)) {
+      // Workaround https://bugs.webkit.org/show_bug.cgi?id=226323, which can
+      // break loading the unsafe page below.
+      return;
+    }
+  }
 
   // Tap on the link to proceed to the unsafe page, and verify that this page is
   // loaded.
@@ -455,14 +469,14 @@ std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
   [ChromeEarlGrey waitForWebStateContainingText:_safeContent2];
   // TODO(crbug.com/1153261): Adding a delay to avoid never-ending load on the
   // last navigation forward. Should be fixed in newer iOS version.
-  base::test::ios::SpinRunLoopWithMinDelay(base::TimeDelta::FromSecondsD(1));
+  base::test::ios::SpinRunLoopWithMinDelay(base::Seconds(1));
 
   [ChromeEarlGrey goBack];
   [ChromeEarlGrey waitForWebStateContainingText:l10n_util::GetStringUTF8(
                                                     IDS_MALWARE_V3_HEADING)];
   // TODO(crbug.com/1153261): Adding a delay to avoid never-ending load on the
   // last navigation forward. Should be fixed in newer iOS version.
-  base::test::ios::SpinRunLoopWithMinDelay(base::TimeDelta::FromSecondsD(1));
+  base::test::ios::SpinRunLoopWithMinDelay(base::Seconds(1));
 
   [ChromeEarlGrey goForward];
   [ChromeEarlGrey waitForWebStateContainingText:_safeContent2];

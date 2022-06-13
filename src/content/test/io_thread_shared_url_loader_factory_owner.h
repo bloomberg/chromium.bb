@@ -7,11 +7,12 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "content/public/browser/browser_thread.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
+
+class GURL;
 
 namespace content {
 
@@ -33,6 +34,11 @@ class IOThreadSharedURLLoaderFactoryOwner {
   static IOThreadSharedURLLoaderFactoryOwnerPtr Create(
       std::unique_ptr<network::PendingSharedURLLoaderFactory> info);
 
+  IOThreadSharedURLLoaderFactoryOwner(
+      const IOThreadSharedURLLoaderFactoryOwner&) = delete;
+  IOThreadSharedURLLoaderFactoryOwner& operator=(
+      const IOThreadSharedURLLoaderFactoryOwner&) = delete;
+
   // Load the given |url| with the internal |shared_url_loader_factory_| on IO
   // thread and return the |net::Error| code.
   int LoadBasicRequestOnIOThread(const GURL& url);
@@ -49,8 +55,6 @@ class IOThreadSharedURLLoaderFactoryOwner {
 
   // Lives on the IO thread.
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(IOThreadSharedURLLoaderFactoryOwner);
 };
 
 }  // namespace content

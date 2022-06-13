@@ -7,9 +7,9 @@
 
 #include "base/callback.h"
 #include "base/cancelable_callback.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/media/webrtc/desktop_media_picker_manager.h"
 #include "chrome/browser/vr/model/capturing_state_model.h"
@@ -35,6 +35,10 @@ class VRUiHostImpl : public content::VrUiHost,
  public:
   VRUiHostImpl(device::mojom::XRDeviceId device_id,
                mojo::PendingRemote<device::mojom::XRCompositorHost> compositor);
+
+  VRUiHostImpl(const VRUiHostImpl&) = delete;
+  VRUiHostImpl& operator=(const VRUiHostImpl&) = delete;
+
   ~VRUiHostImpl() override;
 
  private:
@@ -63,7 +67,7 @@ class VRUiHostImpl : public content::VrUiHost,
     base::Time bluetooth_indicator_start_;
     base::Time usb_indicator_start_;
     base::Time midi_indicator_start_;
-    CapturingStateModel* active_capture_state_model_;  // Not owned.
+    raw_ptr<CapturingStateModel> active_capture_state_model_;  // Not owned.
   };
 
   // content::BrowserXRRuntime::Observer implementation.
@@ -95,8 +99,9 @@ class VRUiHostImpl : public content::VrUiHost,
   mojo::Remote<device::mojom::XRCompositorHost> compositor_;
   std::unique_ptr<VRBrowserRendererThreadWin> ui_rendering_thread_;
   device::mojom::VRDisplayInfoPtr info_;
-  content::WebContents* web_contents_ = nullptr;
-  permissions::PermissionRequestManager* permission_request_manager_ = nullptr;
+  raw_ptr<content::WebContents> web_contents_ = nullptr;
+  raw_ptr<permissions::PermissionRequestManager> permission_request_manager_ =
+      nullptr;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 
   base::CancelableOnceClosure external_prompt_timeout_task_;
@@ -119,8 +124,6 @@ class VRUiHostImpl : public content::VrUiHost,
   THREAD_CHECKER(thread_checker_);
 
   base::WeakPtrFactory<VRUiHostImpl> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(VRUiHostImpl);
 };
 
 }  // namespace vr

@@ -5,10 +5,11 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_INSTRUMENTATION_MEMORY_PRESSURE_LISTENER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_INSTRUMENTATION_MEMORY_PRESSURE_LISTENER_H_
 
-#include "base/macros.h"
 #include "base/memory/memory_pressure_listener.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
 
 namespace blink {
@@ -49,6 +50,10 @@ class PLATFORM_EXPORT MemoryPressureListenerRegistry final
   static void Initialize();
 
   MemoryPressureListenerRegistry();
+  MemoryPressureListenerRegistry(const MemoryPressureListenerRegistry&) =
+      delete;
+  MemoryPressureListenerRegistry& operator=(
+      const MemoryPressureListenerRegistry&) = delete;
 
   void RegisterThread(Thread*) LOCKS_EXCLUDED(threads_mutex_);
   void UnregisterThread(Thread*) LOCKS_EXCLUDED(threads_mutex_);
@@ -74,8 +79,6 @@ class PLATFORM_EXPORT MemoryPressureListenerRegistry final
   HeapHashSet<WeakMember<MemoryPressureListener>> clients_;
   HashSet<Thread*> threads_ GUARDED_BY(threads_mutex_);
   Mutex threads_mutex_;
-
-  DISALLOW_COPY_AND_ASSIGN(MemoryPressureListenerRegistry);
 };
 
 }  // namespace blink

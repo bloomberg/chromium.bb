@@ -10,10 +10,11 @@
 
 #include "base/callback.h"
 #include "base/component_export.h"
-#include "base/macros.h"
 #include "chromeos/dbus/shill/shill_client_helper.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
+class TimeDelta;
 class Value;
 }  // namespace base
 
@@ -60,9 +61,8 @@ class COMPONENT_EXPORT(SHILL_CLIENT) ShillDeviceClient {
         const std::string& device_path,
         const std::string& error_name) = 0;
     // Determines whether or not to simulate the Scanning property changing when
-    // an Inhibit operation is complete.
-    virtual void SetSimulateUninhibitScanning(
-        bool simulate_uninhibit_scanning) = 0;
+    // an Inhibit property is updated.
+    virtual void SetSimulateInhibitScanning(bool simulate_inhibit_scanning) = 0;
     // Adds a delay before a SetProperty call will result in property value
     // change.
     virtual void SetPropertyChangeDelay(
@@ -83,6 +83,9 @@ class COMPONENT_EXPORT(SHILL_CLIENT) ShillDeviceClient {
 
   // Returns the global instance if initialized. May return null.
   static ShillDeviceClient* Get();
+
+  ShillDeviceClient(const ShillDeviceClient&) = delete;
+  ShillDeviceClient& operator=(const ShillDeviceClient&) = delete;
 
   // Adds a property changed |observer| for the device at |device_path|.
   virtual void AddPropertyChangedObserver(
@@ -176,11 +179,14 @@ class COMPONENT_EXPORT(SHILL_CLIENT) ShillDeviceClient {
   // Initialize/Shutdown should be used instead.
   ShillDeviceClient();
   virtual ~ShillDeviceClient();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ShillDeviceClient);
 };
 
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
+// source migration is finished.
+namespace ash {
+using ::chromeos::ShillDeviceClient;
+}
 
 #endif  // CHROMEOS_DBUS_SHILL_SHILL_DEVICE_CLIENT_H_

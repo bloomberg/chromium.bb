@@ -4,7 +4,7 @@
 
 #include <string>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -37,6 +37,7 @@
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
+#include "ui/views/image_model_utils.h"
 #include "ui/views/layout/box_layout.h"
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
@@ -131,7 +132,7 @@ class ExtensionInstalledBubbleView : public BubbleSyncPromoDelegate,
 
   void LinkClicked();
 
-  Browser* const browser_;
+  const raw_ptr<Browser> browser_;
   const std::unique_ptr<ExtensionInstalledBubbleModel> model_;
 };
 
@@ -221,7 +222,7 @@ void ExtensionInstalledBubbleView::Init() {
   // Indent by the size of the icon.
   layout->set_inside_border_insets(gfx::Insets(
       0,
-      GetWindowIcon().width() +
+      views::GetImageSkiaFromImageModel(GetWindowIcon(), nullptr).width() +
           provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_HORIZONTAL),
       0, 0));
   layout->set_cross_axis_alignment(

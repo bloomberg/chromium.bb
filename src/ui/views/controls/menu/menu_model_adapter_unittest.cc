@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/base/models/menu_model_delegate.h"
@@ -28,6 +28,9 @@ class MenuModelBase : public ui::MenuModel {
  public:
   explicit MenuModelBase(int command_id_base)
       : command_id_base_(command_id_base), last_activation_(-1) {}
+
+  MenuModelBase(const MenuModelBase&) = delete;
+  MenuModelBase& operator=(const MenuModelBase&) = delete;
 
   ~MenuModelBase() override = default;
 
@@ -120,7 +123,7 @@ class MenuModelBase : public ui::MenuModel {
 
     ItemType type;
     std::u16string label;
-    ui::MenuModel* submenu;
+    raw_ptr<ui::MenuModel> submenu;
     bool enabled;
     bool visible;
     bool alerted = false;
@@ -141,8 +144,6 @@ class MenuModelBase : public ui::MenuModel {
  private:
   int command_id_base_;
   int last_activation_;
-
-  DISALLOW_COPY_AND_ASSIGN(MenuModelBase);
 };
 
 class SubmenuModel : public MenuModelBase {
@@ -153,10 +154,10 @@ class SubmenuModel : public MenuModelBase {
     items_[1].alerted = true;
   }
 
-  ~SubmenuModel() override = default;
+  SubmenuModel(const SubmenuModel&) = delete;
+  SubmenuModel& operator=(const SubmenuModel&) = delete;
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(SubmenuModel);
+  ~SubmenuModel() override = default;
 };
 
 class ActionableSubmenuModel : public MenuModelBase {
@@ -166,10 +167,11 @@ class ActionableSubmenuModel : public MenuModelBase {
     items_.emplace_back(TYPE_COMMAND, "actionable submenu item 1", nullptr);
     items_[1].new_feature = true;
   }
-  ~ActionableSubmenuModel() override = default;
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(ActionableSubmenuModel);
+  ActionableSubmenuModel(const ActionableSubmenuModel&) = delete;
+  ActionableSubmenuModel& operator=(const ActionableSubmenuModel&) = delete;
+
+  ~ActionableSubmenuModel() override = default;
 };
 
 class RootModel : public MenuModelBase {
@@ -187,13 +189,14 @@ class RootModel : public MenuModelBase {
                         actionable_submenu_model_.get());
   }
 
+  RootModel(const RootModel&) = delete;
+  RootModel& operator=(const RootModel&) = delete;
+
   ~RootModel() override = default;
 
  private:
   std::unique_ptr<MenuModel> submenu_model_;
   std::unique_ptr<MenuModel> actionable_submenu_model_;
-
-  DISALLOW_COPY_AND_ASSIGN(RootModel);
 };
 
 void CheckSubmenu(const RootModel& model,
@@ -219,7 +222,7 @@ void CheckSubmenu(const RootModel& model,
       continue;
     }
     // Check placement.
-    EXPECT_EQ(i, size_t{submenu->GetSubmenu()->GetIndexOf(item)});
+    EXPECT_EQ(i, static_cast<size_t>(submenu->GetSubmenu()->GetIndexOf(item)));
 
     // Check type.
     switch (model_item.type) {
@@ -264,7 +267,7 @@ void CheckSubmenu(const RootModel& model,
 
     // Check activation.
     static_cast<views::MenuDelegate*>(delegate)->ExecuteCommand(id);
-    EXPECT_EQ(i, size_t{submodel->last_activation()});
+    EXPECT_EQ(i, static_cast<size_t>(submodel->last_activation()));
     submodel->set_last_activation(-1);
   }
 }
@@ -303,7 +306,7 @@ TEST_F(MenuModelAdapterTest, BasicTest) {
     }
 
     // Check placement.
-    EXPECT_EQ(i, size_t{menu->GetSubmenu()->GetIndexOf(item)});
+    EXPECT_EQ(i, static_cast<size_t>(menu->GetSubmenu()->GetIndexOf(item)));
 
     // Check type.
     switch (model_item.type) {
@@ -348,7 +351,7 @@ TEST_F(MenuModelAdapterTest, BasicTest) {
 
     // Check activation.
     static_cast<views::MenuDelegate*>(&delegate)->ExecuteCommand(id);
-    EXPECT_EQ(i, size_t{model.last_activation()});
+    EXPECT_EQ(i, static_cast<size_t>(model.last_activation()));
     model.set_last_activation(-1);
   }
 

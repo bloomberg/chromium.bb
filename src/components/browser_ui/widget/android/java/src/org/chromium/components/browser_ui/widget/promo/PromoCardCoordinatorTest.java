@@ -7,6 +7,7 @@ package org.chromium.components.browser_ui.widget.promo;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.support.test.InstrumentationRegistry;
+import android.view.ContextThemeWrapper;
 import android.view.View;
 
 import androidx.appcompat.content.res.AppCompatResources;
@@ -21,6 +22,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.components.browser_ui.widget.promo.PromoCardCoordinator.LayoutStyle;
 import org.chromium.components.browser_ui.widget.test.R;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -40,19 +42,26 @@ public class PromoCardCoordinatorTest {
     @Before
     public void setUp() {
         mContext = InstrumentationRegistry.getInstrumentation().getContext();
-        mModel = new PropertyModel.Builder(PromoCardProperties.ALL_KEYS).build();
+        mModel = TestThreadUtils.runOnUiThreadBlockingNoException(
+                () -> new PropertyModel.Builder(PromoCardProperties.ALL_KEYS).build());
     }
 
     @After
     public void tearDown() {
-        mPromoCardCoordinator.destroy();
+        TestThreadUtils.runOnUiThreadBlocking(mPromoCardCoordinator::destroy);
     }
 
     private void setupCoordinator(@LayoutStyle int layoutStyle) {
-        mPromoCardCoordinator =
-                new PromoCardCoordinator(mContext, mModel, "test-feature", layoutStyle);
-        mView = (PromoCardView) mPromoCardCoordinator.getView();
-
+        // TODO(https://crbug.com/1217140): Remove this theme wrapper after dummy ui activity
+        //  is based on material theme. For now we need the theme wrapper to inflate the layout;
+        //  because we are not setting our theme overlay for the test apk
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            ContextThemeWrapper wrapperTheme = new ContextThemeWrapper(mContext,
+                    org.chromium.components.browser_ui.widget.R.style.Theme_BrowserUI_DayNight);
+            mPromoCardCoordinator =
+                    new PromoCardCoordinator(wrapperTheme, mModel, "test-feature", layoutStyle);
+            mView = (PromoCardView) mPromoCardCoordinator.getView();
+        });
         Assert.assertNotNull("PromoCardView is null", mView);
     }
 
@@ -145,6 +154,7 @@ public class PromoCardCoordinatorTest {
 
     @Test
     @SmallTest
+    @FlakyTest(message = "crbug.com/1232932")
     public void testActionBinding() throws Exception {
         setupCoordinator(LayoutStyle.LARGE);
         final CallbackHelper primaryClickCallback = new CallbackHelper();

@@ -8,7 +8,7 @@
 #include <memory>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_host_view.h"
 
@@ -22,6 +22,10 @@ class InkDropHostTestApi {
   using InkDropMode = views::InkDropHost::InkDropMode;
 
   explicit InkDropHostTestApi(InkDropHost* ink_drop_host);
+
+  InkDropHostTestApi(const InkDropHostTestApi&) = delete;
+  InkDropHostTestApi& operator=(const InkDropHostTestApi&) = delete;
+
   ~InkDropHostTestApi();
 
   void SetInkDropMode(InkDropMode ink_drop_mode);
@@ -49,9 +53,7 @@ class InkDropHostTestApi {
 
  private:
   // The InkDropHost to provide internal access to.
-  InkDropHost* ink_drop_host_;
-
-  DISALLOW_COPY_AND_ASSIGN(InkDropHostTestApi);
+  raw_ptr<InkDropHost> ink_drop_host_;
 };
 
 }  // namespace test

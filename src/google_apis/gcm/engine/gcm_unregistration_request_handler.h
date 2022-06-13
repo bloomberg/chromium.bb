@@ -5,7 +5,6 @@
 #ifndef GOOGLE_APIS_GCM_ENGINE_GCM_UNREGISTRATION_REQUEST_HANDLER_H_
 #define GOOGLE_APIS_GCM_ENGINE_GCM_UNREGISTRATION_REQUEST_HANDLER_H_
 
-#include "base/macros.h"
 #include "google_apis/gcm/engine/unregistration_request.h"
 
 namespace gcm {
@@ -16,6 +15,12 @@ class GCM_EXPORT GCMUnregistrationRequestHandler :
     public UnregistrationRequest::CustomRequestHandler {
  public:
   GCMUnregistrationRequestHandler(const std::string& app_id);
+
+  GCMUnregistrationRequestHandler(const GCMUnregistrationRequestHandler&) =
+      delete;
+  GCMUnregistrationRequestHandler& operator=(
+      const GCMUnregistrationRequestHandler&) = delete;
+
   ~GCMUnregistrationRequestHandler() override;
 
   // UnregistrationRequest::CustomRequestHandler overrides:
@@ -26,8 +31,6 @@ class GCM_EXPORT GCMUnregistrationRequestHandler :
 
  private:
   std::string app_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(GCMUnregistrationRequestHandler);
 };
 
 }  // namespace gcm

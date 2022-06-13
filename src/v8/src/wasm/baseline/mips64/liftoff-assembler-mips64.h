@@ -9,6 +9,7 @@
 #include "src/codegen/machine-type.h"
 #include "src/heap/memory-chunk.h"
 #include "src/wasm/baseline/liftoff-assembler.h"
+#include "src/wasm/wasm-objects.h"
 
 namespace v8 {
 namespace internal {
@@ -57,9 +58,11 @@ inline constexpr Condition ToCondition(LiftoffCondition liftoff_cond) {
 //  -----+--------------------+  <-- frame ptr (fp)
 //  -1   | 0xa: WASM          |
 //  -2   |     instance       |
+//  -3   |     feedback vector|
+//  -4   |     tiering budget |
 //  -----+--------------------+---------------------------
-//  -3   |     slot 0         |   ^
-//  -4   |     slot 1         |   |
+//  -5   |     slot 0         |   ^
+//  -6   |     slot 1         |   |
 //       |                    | Frame slots
 //       |                    |   |
 //       |                    |   v
@@ -67,8 +70,9 @@ inline constexpr Condition ToCondition(LiftoffCondition liftoff_cond) {
 //  -----+--------------------+  <-- stack ptr (sp)
 //
 
-// fp-8 holds the stack marker, fp-16 is the instance parameter.
-constexpr int kInstanceOffset = 16;
+constexpr int kInstanceOffset = 2 * kSystemPointerSize;
+constexpr int kFeedbackVectorOffset = 3 * kSystemPointerSize;
+constexpr int kTierupBudgetOffset = 4 * kSystemPointerSize;
 
 inline MemOperand GetStackSlot(int offset) { return MemOperand(fp, -offset); }
 
@@ -291,10 +295,13 @@ inline void ChangeEndiannessStore(LiftoffAssembler* assm, LiftoffRegister src,
 
 int LiftoffAssembler::PrepareStackFrame() {
   int offset = pc_offset();
-  // When constant that represents size of stack frame can't be represented
-  // as 16bit we need three instructions to add it to sp, so we reserve space
-  // for this case.
+  // When the frame size is bigger than 4KB, we need seven instructions for
+  // stack checking, so we reserve space for this case.
   daddiu(sp, sp, 0);
+  nop();
+  nop();
+  nop();
+  nop();
   nop();
   nop();
   return offset;
@@ -325,11 +332,12 @@ void LiftoffAssembler::PrepareTailCall(int num_callee_stack_params,
 
 void LiftoffAssembler::AlignFrameSize() {}
 
-void LiftoffAssembler::PatchPrepareStackFrame(int offset) {
-  // The frame_size includes the frame marker. The frame marker has already been
-  // pushed on the stack though, so we don't need to allocate memory for it
-  // anymore.
-  int frame_size = GetTotalFrameSize() - kSystemPointerSize;
+void LiftoffAssembler::PatchPrepareStackFrame(
+    int offset, SafepointTableBuilder* safepoint_table_builder) {
+  // The frame_size includes the frame marker and the instance slot. Both are
+  // pushed as part of frame construction, so we don't need to allocate memory
+  // for them anymore.
+  int frame_size = GetTotalFrameSize() - 2 * kSystemPointerSize;
 
   // We can't run out of space, just pass anything big enough to not cause the
   // assembler to try to grow the buffer.
@@ -337,10 +345,64 @@ void LiftoffAssembler::PatchPrepareStackFrame(int offset) {
   TurboAssembler patching_assembler(
       nullptr, AssemblerOptions{}, CodeObjectRequired::kNo,
       ExternalAssemblerBuffer(buffer_start_ + offset, kAvailableSpace));
-  // If bytes can be represented as 16bit, daddiu will be generated and two
-  // nops will stay untouched. Otherwise, lui-ori sequence will load it to
-  // register and, as third instruction, daddu will be generated.
-  patching_assembler.Daddu(sp, sp, Operand(-frame_size));
+
+  if (V8_LIKELY(frame_size < 4 * KB)) {
+    // This is the standard case for small frames: just subtract from SP and be
+    // done with it.
+    patching_assembler.Daddu(sp, sp, Operand(-frame_size));
+    return;
+  }
+
+  // The frame size is bigger than 4KB, so we might overflow the available stack
+  // space if we first allocate the frame and then do the stack check (we will
+  // need some remaining stack space for throwing the exception). That's why we
+  // check the available stack space before we allocate the frame. To do this we
+  // replace the {__ Daddu(sp, sp, -frame_size)} with a jump to OOL code that
+  // does this "extended stack check".
+  //
+  // The OOL code can simply be generated here with the normal assembler,
+  // because all other code generation, including OOL code, has already finished
+  // when {PatchPrepareStackFrame} is called. The function prologue then jumps
+  // to the current {pc_offset()} to execute the OOL code for allocating the
+  // large frame.
+  // Emit the unconditional branch in the function prologue (from {offset} to
+  // {pc_offset()}).
+
+  int imm32 = pc_offset() - offset - 3 * kInstrSize;
+  patching_assembler.BranchLong(imm32);
+
+  // If the frame is bigger than the stack, we throw the stack overflow
+  // exception unconditionally. Thereby we can avoid the integer overflow
+  // check in the condition code.
+  RecordComment("OOL: stack check for large frame");
+  Label continuation;
+  if (frame_size < FLAG_stack_size * 1024) {
+    Register stack_limit = kScratchReg;
+    Ld(stack_limit,
+       FieldMemOperand(kWasmInstanceRegister,
+                       WasmInstanceObject::kRealStackLimitAddressOffset));
+    Ld(stack_limit, MemOperand(stack_limit));
+    Daddu(stack_limit, stack_limit, Operand(frame_size));
+    Branch(&continuation, uge, sp, Operand(stack_limit));
+  }
+
+  Call(wasm::WasmCode::kWasmStackOverflow, RelocInfo::WASM_STUB_CALL);
+  // The call will not return; just define an empty safepoint.
+  safepoint_table_builder->DefineSafepoint(this);
+  if (FLAG_debug_code) stop();
+
+  bind(&continuation);
+
+  // Now allocate the stack space. Note that this might do more than just
+  // decrementing the SP;
+  Daddu(sp, sp, Operand(-frame_size));
+
+  // Jump back to the start of the function, from {pc_offset()} to
+  // right after the reserved space for the {__ Daddu(sp, sp, -framesize)}
+  // (which is a Branch now).
+  int func_start_offset = offset + 7 * kInstrSize;
+  imm32 = func_start_offset - pc_offset() - 3 * kInstrSize;
+  BranchLong(imm32);
 }
 
 void LiftoffAssembler::FinishCode() {}
@@ -349,7 +411,7 @@ void LiftoffAssembler::AbortCompilation() {}
 
 // static
 constexpr int LiftoffAssembler::StaticStackFrameSize() {
-  return liftoff::kInstanceOffset;
+  return liftoff::kTierupBudgetOffset;
 }
 
 int LiftoffAssembler::SlotSizeForType(ValueKind kind) {
@@ -464,15 +526,17 @@ void LiftoffAssembler::StoreTaggedPointer(Register dst_addr,
                 MemoryChunk::kPointersToHereAreInterestingMask, eq,
                 &exit);
   Daddu(scratch, dst_op.rm(), dst_op.offset());
-  CallRecordWriteStub(dst_addr, scratch, RememberedSetAction::kEmit,
-                      SaveFPRegsMode::kSave, wasm::WasmCode::kRecordWrite);
+  CallRecordWriteStubSaveRegisters(
+      dst_addr, scratch, RememberedSetAction::kEmit, SaveFPRegsMode::kSave,
+      StubCallMode::kCallWasmRuntimeStub);
   bind(&exit);
 }
 
 void LiftoffAssembler::Load(LiftoffRegister dst, Register src_addr,
                             Register offset_reg, uintptr_t offset_imm,
                             LoadType type, LiftoffRegList pinned,
-                            uint32_t* protected_load_pc, bool is_load_mem) {
+                            uint32_t* protected_load_pc, bool is_load_mem,
+                            bool i64_offset) {
   MemOperand src_op = liftoff::GetMemOp(this, src_addr, offset_reg, offset_imm);
 
   if (protected_load_pc) *protected_load_pc = pc_offset();
@@ -1393,6 +1457,13 @@ void LiftoffAssembler::emit_i32_cond_jumpi(LiftoffCondition liftoff_cond,
   TurboAssembler::Branch(label, cond, lhs, Operand(imm));
 }
 
+void LiftoffAssembler::emit_i32_subi_jump_negative(Register value,
+                                                   int subtrahend,
+                                                   Label* result_negative) {
+  TurboAssembler::Dsubu(value, value, Operand(subtrahend));
+  TurboAssembler::Branch(result_negative, less, value, Operand(zero_reg));
+}
+
 void LiftoffAssembler::emit_i32_eqz(Register dst, Register src) {
   sltiu(dst, src, 1);
 }
@@ -1934,7 +2005,7 @@ void LiftoffAssembler::emit_s128_const(LiftoffRegister dst,
                                        const uint8_t imms[16]) {
   MSARegister dst_msa = dst.fp().toW();
   uint64_t vals[2];
-  base::Memcpy(vals, imms, sizeof(vals));
+  memcpy(vals, imms, sizeof(vals));
   li(kScratchReg, vals[0]);
   insert_d(dst_msa, 0, kScratchReg);
   li(kScratchReg, vals[1]);
@@ -3169,6 +3240,41 @@ void LiftoffAssembler::DeallocateStackSlot(uint32_t size) {
 }
 
 void LiftoffAssembler::MaybeOSR() {}
+
+void LiftoffAssembler::emit_set_if_nan(Register dst, FPURegister src,
+                                       ValueKind kind) {
+  UseScratchRegisterScope temps(this);
+  Register scratch = temps.Acquire();
+  Label not_nan;
+  if (kind == kF32) {
+    CompareIsNanF32(src, src);
+  } else {
+    DCHECK_EQ(kind, kF64);
+    CompareIsNanF64(src, src);
+  }
+  BranchFalseShortF(&not_nan, USE_DELAY_SLOT);
+  li(scratch, 1);
+  Sw(dst, MemOperand(dst));
+  bind(&not_nan);
+}
+
+void LiftoffAssembler::emit_s128_set_if_nan(Register dst, LiftoffRegister src,
+                                            Register tmp_gp,
+                                            LiftoffRegister tmp_s128,
+                                            ValueKind lane_kind) {
+  Label not_nan;
+  if (lane_kind == kF32) {
+    fcun_w(tmp_s128.fp().toW(), src.fp().toW(), src.fp().toW());
+  } else {
+    DCHECK_EQ(lane_kind, kF64);
+    fcun_d(tmp_s128.fp().toW(), src.fp().toW(), src.fp().toW());
+  }
+  BranchMSA(&not_nan, MSA_BRANCH_V, all_zero, tmp_s128.fp().toW(),
+            USE_DELAY_SLOT);
+  li(tmp_gp, 1);
+  Sw(tmp_gp, MemOperand(dst));
+  bind(&not_nan);
+}
 
 void LiftoffStackSlots::Construct(int param_slots) {
   DCHECK_LT(0, slots_.size());

@@ -8,13 +8,16 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 
 // All data needed by TemplateURLRef::ReplaceSearchTerms which typically may
 // only be accessed on the UI thread.
 class SearchTermsData {
  public:
   SearchTermsData();
+
+  SearchTermsData(const SearchTermsData&) = delete;
+  SearchTermsData& operator=(const SearchTermsData&) = delete;
+
   virtual ~SearchTermsData();
 
   // Returns the value to use for replacements of type GOOGLE_BASE_URL.  This
@@ -44,9 +47,8 @@ class SearchTermsData {
 
   // The suggest client parameter ("client") passed with Google suggest
   // requests.  See GetSuggestRequestIdentifier() for more details.
-  // |from_ntp| is true if the search is made from a non-searchbox NTP surface.
   // This implementation returns the empty string.
-  virtual std::string GetSuggestClient(bool from_ntp) const;
+  virtual std::string GetSuggestClient() const;
 
   // The suggest request identifier parameter ("gs_ri") passed with Google
   // suggest requests.   Along with suggestclient (See GetSuggestClient()),
@@ -69,9 +71,6 @@ class SearchTermsData {
   // Estimates dynamic memory usage.
   // See base/trace_event/memory_usage_estimator.h for more info.
   virtual size_t EstimateMemoryUsage() const;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SearchTermsData);
 };
 
 #endif  // COMPONENTS_SEARCH_ENGINES_SEARCH_TERMS_DATA_H_

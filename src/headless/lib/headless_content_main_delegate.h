@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "build/build_config.h"
 #include "content/public/app/content_main_delegate.h"
 #include "content/public/browser/content_browser_client.h"
@@ -34,14 +33,19 @@ class HEADLESS_EXPORT HeadlessContentMainDelegate
   explicit HeadlessContentMainDelegate(
       std::unique_ptr<HeadlessBrowserImpl> browser);
   explicit HeadlessContentMainDelegate(HeadlessBrowser::Options options);
+
+  HeadlessContentMainDelegate(const HeadlessContentMainDelegate&) = delete;
+  HeadlessContentMainDelegate& operator=(const HeadlessContentMainDelegate&) =
+      delete;
+
   ~HeadlessContentMainDelegate() override;
 
   // content::ContentMainDelegate implementation:
   bool BasicStartupComplete(int* exit_code) override;
   void PreSandboxStartup() override;
-  int RunProcess(
+  absl::variant<int, content::MainFunctionParams> RunProcess(
       const std::string& process_type,
-      const content::MainFunctionParams& main_function_params) override;
+      content::MainFunctionParams main_function_params) override;
 #if defined(OS_MAC)
   void PreBrowserMain() override;
 #endif
@@ -78,8 +82,6 @@ class HEADLESS_EXPORT HeadlessContentMainDelegate
 
   std::unique_ptr<HeadlessBrowserImpl> browser_;
   std::unique_ptr<HeadlessBrowser::Options> options_;
-
-  DISALLOW_COPY_AND_ASSIGN(HeadlessContentMainDelegate);
 };
 
 }  // namespace headless

@@ -9,6 +9,7 @@
 
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
+#include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
 #include "chrome/browser/task_manager/providers/task.h"
 #include "content/public/browser/dedicated_worker_service.h"
@@ -49,10 +50,10 @@ class PerProfileWorkerTaskTracker
   void OnWorkerCreated(
       const blink::DedicatedWorkerToken& worker_token,
       int worker_process_id,
-      content::GlobalFrameRoutingId ancestor_render_frame_host_id) override;
+      content::GlobalRenderFrameHostId ancestor_render_frame_host_id) override;
   void OnBeforeWorkerDestroyed(
       const blink::DedicatedWorkerToken& worker_token,
-      content::GlobalFrameRoutingId ancestor_render_frame_host_id) override;
+      content::GlobalRenderFrameHostId ancestor_render_frame_host_id) override;
   void OnFinalResponseURLDetermined(
       const blink::DedicatedWorkerToken& worker_token,
       const GURL& url) override;
@@ -68,10 +69,10 @@ class PerProfileWorkerTaskTracker
       const GURL& url) override;
   void OnClientAdded(
       const blink::SharedWorkerToken& shared_worker_token,
-      content::GlobalFrameRoutingId render_frame_host_id) override {}
+      content::GlobalRenderFrameHostId render_frame_host_id) override {}
   void OnClientRemoved(
       const blink::SharedWorkerToken& shared_worker_token,
-      content::GlobalFrameRoutingId render_frame_host_id) override {}
+      content::GlobalRenderFrameHostId render_frame_host_id) override {}
 
   // content::ServiceWorkerContextObserver:
   void OnVersionStartedRunning(
@@ -113,7 +114,7 @@ class PerProfileWorkerTaskTracker
       base::flat_map<WorkerId, std::unique_ptr<WorkerTask>>* out_worker_tasks);
 
   // The provider that gets notified when a WorkerTask is created/deleted.
-  WorkerTaskProvider* const worker_task_provider_;  // Owner.
+  const raw_ptr<WorkerTaskProvider> worker_task_provider_;  // Owner.
 
   // For dedicated workers:
   base::ScopedObservation<content::DedicatedWorkerService,

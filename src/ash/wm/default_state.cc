@@ -10,8 +10,10 @@
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
+#include "ash/wm/desks/desks_util.h"
 #include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
+#include "ash/wm/splitview/split_view_metrics_controller.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_delegate.h"
@@ -19,6 +21,7 @@
 #include "ash/wm/wm_event.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/bind.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "chromeos/ui/base/window_state_type.h"
 #include "ui/aura/client/aura_constants.h"
@@ -47,6 +50,8 @@ const int kMaximizedWindowInset = 10;  // DIPs.
 
 constexpr char kSnapWindowSmoothnessHistogramName[] =
     "Ash.Window.AnimationSmoothness.Snap";
+constexpr char kSnapWindowDeviceOrientationHistogramName[] =
+    "Ash.Window.Snap.DeviceOrientation";
 
 gfx::Size GetWindowMaximumSize(aura::Window* window) {
   return window->delegate() ? window->delegate()->GetMaximumSize()
@@ -158,7 +163,7 @@ void DefaultState::HandleWorkspaceEvents(WindowState* window_state,
       // bounds are global across workspaces so don't restore to pre-added
       // bounds.
       if (window_state->pre_added_to_workspace_window_bounds() &&
-          !window->GetProperty(aura::client::kVisibleOnAllWorkspacesKey)) {
+          !desks_util::IsWindowVisibleOnAllWorkspaces(window)) {
         bounds = *window_state->pre_added_to_workspace_window_bounds();
       }
 
@@ -243,6 +248,10 @@ void DefaultState::HandleCompoundEvents(WindowState* window_state,
         window_state->Restore();
       } else if (window_state->CanMaximize()) {
         window_state->Maximize();
+      } else {
+        // If `window` cannot be maximized, then do a window bounce animation.
+        wm::AnimateWindow(window_state->window(),
+                          wm::WINDOW_ANIMATION_TYPE_BOUNCE);
       }
       return;
     case WM_EVENT_TOGGLE_VERTICAL_MAXIMIZE: {
@@ -299,8 +308,8 @@ void DefaultState::HandleCompoundEvents(WindowState* window_state,
     case WM_EVENT_TOGGLE_FULLSCREEN:
       ToggleFullScreen(window_state, window_state->delegate());
       return;
-    case WM_EVENT_CYCLE_SNAP_LEFT:
-    case WM_EVENT_CYCLE_SNAP_RIGHT:
+    case WM_EVENT_CYCLE_SNAP_PRIMARY:
+    case WM_EVENT_CYCLE_SNAP_SECONDARY:
       CycleSnap(window_state, event->type());
       return;
     default:
@@ -343,14 +352,14 @@ void DefaultState::HandleTransitionEvents(WindowState* window_state,
   }
 
   const WMEventType type = event->type();
-  if (type == WM_EVENT_SNAP_LEFT || type == WM_EVENT_SNAP_RIGHT)
+  if (type == WM_EVENT_SNAP_PRIMARY || type == WM_EVENT_SNAP_SECONDARY)
     HandleWindowSnapping(window_state, type);
 
   if (next_state_type == current_state_type && window_state->IsSnapped()) {
     gfx::Rect snapped_bounds = GetSnappedWindowBoundsInParent(
-        window_state->window(), event->type() == WM_EVENT_SNAP_LEFT
-                                    ? WindowStateType::kLeftSnapped
-                                    : WindowStateType::kRightSnapped);
+        window_state->window(), event->type() == WM_EVENT_SNAP_PRIMARY
+                                    ? WindowStateType::kPrimarySnapped
+                                    : WindowStateType::kSecondarySnapped);
     window_state->SetBoundsDirectAnimated(snapped_bounds);
     return;
   }
@@ -453,12 +462,12 @@ void DefaultState::EnterToNextState(WindowState* window_state,
   }
   window_state->NotifyPostStateTypeChange(previous_state_type);
 
-  if (next_state_type == WindowStateType::kPinned ||
-      previous_state_type == WindowStateType::kPinned ||
-      next_state_type == WindowStateType::kTrustedPinned ||
-      previous_state_type == WindowStateType::kTrustedPinned) {
+  if (IsPinnedWindowStateType(next_state_type) ||
+      IsPinnedWindowStateType(previous_state_type)) {
     Shell::Get()->screen_pinning_controller()->SetPinnedWindow(
         window_state->window());
+    if (window_state->delegate())
+      window_state->delegate()->ToggleLockedFullscreen(window_state);
   }
 }
 
@@ -470,13 +479,8 @@ void DefaultState::ReenterToCurrentState(
   // A state change should not move a window into or out of full screen or
   // pinned since these are "special mode" the user wanted to be in and
   // should be respected as such.
-  if (previous_state_type == WindowStateType::kFullscreen ||
-      previous_state_type == WindowStateType::kPinned ||
-      previous_state_type == WindowStateType::kTrustedPinned) {
-    state_type_ = previous_state_type;
-  } else if (state_type_ == WindowStateType::kFullscreen ||
-             state_type_ == WindowStateType::kPinned ||
-             state_type_ == WindowStateType::kTrustedPinned) {
+  if (IsFullscreenOrPinnedWindowStateType(previous_state_type) ||
+      IsFullscreenOrPinnedWindowStateType(state_type_)) {
     state_type_ = previous_state_type;
   }
 
@@ -506,12 +510,17 @@ void DefaultState::UpdateBoundsFromState(WindowState* window_state,
   aura::Window* window = window_state->window();
   gfx::Rect bounds_in_parent;
   switch (state_type_) {
-    case WindowStateType::kLeftSnapped:
-    case WindowStateType::kRightSnapped:
+    case WindowStateType::kPrimarySnapped:
+    case WindowStateType::kSecondarySnapped:
       bounds_in_parent =
           GetSnappedWindowBoundsInParent(window_state->window(), state_type_);
+      base::UmaHistogramEnumeration(
+          kSnapWindowDeviceOrientationHistogramName,
+          chromeos::IsDisplayLayoutHorizontal(
+              display::Screen::GetScreen()->GetDisplayNearestWindow(window))
+              ? SplitViewMetricsController::DeviceOrientation::kLandscape
+              : SplitViewMetricsController::DeviceOrientation::kPortrait);
       break;
-
     case WindowStateType::kDefault:
     case WindowStateType::kNormal: {
       gfx::Rect work_area_in_parent =

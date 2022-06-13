@@ -38,9 +38,31 @@ class PresubmitApi(recipe_api.RecipeApi):
         kwargs['wrapper'] = ('rdb', 'stream', '--')
       step_data = self.m.python(
           name, self.presubmit_support_path, presubmit_args, **kwargs)
-      return step_data.json.output
+      output = step_data.json.output or {}
+      if self.m.step.active_result.retcode != 0:
+        return output
 
-  def prepare(self):
+      # Run with vpython3 directly
+      del (kwargs['venv'])
+      presubmit_args = list(args) + [
+          '--json_output',
+          self.m.json.output(),
+      ]
+      step_data = self.m.step(name + " py3",
+                              ['vpython3', self.presubmit_support_path] +
+                              presubmit_args, **kwargs)
+      output2 = step_data.json.output or {}
+
+      # combine outputs
+      for key in output:
+        if key in output2:
+          output[key] += output2[key]
+          del (output2[key])
+      for key in output2:
+        output[key] = output2[key]
+      return output
+
+  def prepare(self, root_solution_revision=None):
     """Sets up a presubmit run.
 
     This includes:
@@ -50,13 +72,23 @@ class PresubmitApi(recipe_api.RecipeApi):
 
     This expects the gclient configuration to already have been set.
 
+    Args:
+      root_solution_revision: revision of the root solution
+
     Returns:
       the StepResult from the bot_update step.
     """
-    # Expect callers to have already set up their gclient configuration.
+    # Set up the root solution revision by either passing the revision
+    # to this function or adding it to the input properties.
+    root_solution_revision = (
+        root_solution_revision or
+        self.m.properties.get('root_solution_revision'))
 
+    # Expect callers to have already set up their gclient configuration.
     bot_update_step = self.m.bot_update.ensure_checkout(
-        timeout=3600, no_fetch_tags=True)
+        timeout=3600, no_fetch_tags=True,
+        root_solution_revision=root_solution_revision)
+
     relative_root = self.m.gclient.get_gerrit_patch_root().rstrip('/')
 
     abs_root = self.m.context.cwd.join(relative_root)

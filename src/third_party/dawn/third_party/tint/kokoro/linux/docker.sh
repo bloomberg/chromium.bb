@@ -54,7 +54,7 @@ function with_retry {
   done
 }
 
-ORIGINAL_SRC_DIR="$(pwd)"
+CLONE_SRC_DIR="$(pwd)"
 
 . /bin/using.sh # Declare the bash `using` function for configuring toolchains.
 
@@ -62,13 +62,11 @@ using depot_tools
 using go-1.14.4      # Speeds up ./tools/lint
 using doxygen-1.8.18
 
-status "Cloning to clean source directory"
-# We do this so that the docker script can be tested in a local development
-# checkout, without having the build litter the local checkout with artifacts
-SRC_DIR=/tmp/tint-src
+status "Cloning to clean source directory at '${SRC_DIR}'"
+
 mkdir -p ${SRC_DIR}
 cd ${SRC_DIR}
-git clone ${ORIGINAL_SRC_DIR} .
+git clone ${CLONE_SRC_DIR} .
 
 status "Fetching dependencies"
 cp standalone.gclient .gclient
@@ -86,9 +84,14 @@ if [ "$BUILD_SYSTEM" == "cmake" ]; then
 
     COMMON_CMAKE_FLAGS=""
     COMMON_CMAKE_FLAGS+=" -DCMAKE_BUILD_TYPE=${BUILD_TYPE}"
+    COMMON_CMAKE_FLAGS+=" -DTINT_DOCS_WARN_AS_ERROR=ON"
 
     if [ "$BUILD_TOOLCHAIN" == "clang" ]; then
         using clang-10.0.0
+        COMMON_CMAKE_FLAGS+=" -DTINT_BUILD_FUZZERS=1"
+        COMMON_CMAKE_FLAGS+=" -DTINT_BUILD_SPIRV_TOOLS_FUZZER=1"
+        COMMON_CMAKE_FLAGS+=" -DTINT_BUILD_AST_FUZZER=1"
+        COMMON_CMAKE_FLAGS+=" -DTINT_BUILD_REGEX_FUZZER=1"
     elif [ "$BUILD_TOOLCHAIN" == "gcc" ]; then
         using gcc-9
     fi
@@ -102,10 +105,21 @@ if [ "$BUILD_SYSTEM" == "cmake" ]; then
 
     cd ${BUILD_DIR}
 
+    status "Running Doxygen"
+    echo "NOTE: This will fail on first warning. Run with -DTINT_DOCS_WARN_AS_ERROR=OFF to see all warnings".
+    echo ""
+    show_cmds
+        # NOTE: If we upgrade Doxygen to a more recent version, we can set DOXYGEN_WARN_AS_ERROR to
+        # "FAIL_ON_WARNINGS" instead of "YES" in our CMakeLists.txt so see all warnings, and then
+        # fail. See https://www.doxygen.nl/manual/config.html#cfg_warn_as_error
+        cmake ${SRC_DIR} ${CMAKE_FLAGS} ${COMMON_CMAKE_FLAGS}
+        cmake --build . --target tint-docs
+    hide_cmds
+
     status "Building tint"
     show_cmds
         cmake ${SRC_DIR} ${CMAKE_FLAGS} ${COMMON_CMAKE_FLAGS}
-        make --jobs=$(nproc)
+        cmake --build . -- --jobs=$(nproc)
     hide_cmds
 
     status "Running tint_unittests"
@@ -113,15 +127,37 @@ if [ "$BUILD_SYSTEM" == "cmake" ]; then
         ./tint_unittests
     hide_cmds
 
+    if [ -f ./tint_ast_fuzzer_unittests ]; then
+        status "Running tint_ast_fuzzer_unittests"
+        show_cmds
+            ./tint_ast_fuzzer_unittests
+        hide_cmds
+    fi
+
+    if [ -f ./tint_regex_fuzzer_unittests ]; then
+        status "Running tint_regex_fuzzer_unittests"
+        show_cmds
+            ./tint_regex_fuzzer_unittests
+        hide_cmds
+    fi
+
     status "Testing test/test-all.sh"
     show_cmds
-        ${SRC_DIR}/test/test-all.sh "${BUILD_DIR}/tint"
+        ${SRC_DIR}/test/test-all.sh "${BUILD_DIR}/tint" --verbose
     hide_cmds
 
     status "Checking _other.cc files also build"
     show_cmds
-        cmake ${SRC_DIR} ${CMAKE_FLAGS} ${COMMON_CMAKE_FLAGS} -DTINT_BUILD_AS_OTHER_OS=1
-        make --jobs=$(nproc)
+        cmake ${SRC_DIR} ${CMAKE_FLAGS} ${COMMON_CMAKE_FLAGS} -DTINT_BUILD_AS_OTHER_OS=ON
+        cmake --build . -- --jobs=$(nproc)
+        cmake ${SRC_DIR} ${CMAKE_FLAGS} ${COMMON_CMAKE_FLAGS} -DTINT_BUILD_AS_OTHER_OS=OFF
+    hide_cmds
+
+    status "Checking disabling all readers and writers also builds"
+    show_cmds
+        cmake ${SRC_DIR} ${CMAKE_FLAGS} ${COMMON_CMAKE_FLAGS} -DTINT_BUILD_SPV_READER=OFF -DTINT_BUILD_SPV_WRITER=OFF -DTINT_BUILD_WGSL_READER=OFF -DTINT_BUILD_WGSL_WRITER=OFF -DTINT_BUILD_MSL_WRITER=OFF -DTINT_BUILD_HLSL_WRITER=OFF
+        cmake --build . -- --jobs=$(nproc)
+        cmake ${SRC_DIR} ${CMAKE_FLAGS} ${COMMON_CMAKE_FLAGS} -DTINT_BUILD_SPV_READER=ON -DTINT_BUILD_SPV_WRITER=ON -DTINT_BUILD_WGSL_READER=ON -DTINT_BUILD_WGSL_WRITER=ON -DTINT_BUILD_MSL_WRITER=ON -DTINT_BUILD_HLSL_WRITER=ON
     hide_cmds
 else
     status "Unsupported build system: $BUILD_SYSTEM"

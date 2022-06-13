@@ -11,7 +11,7 @@
 #include <unordered_set>
 
 #include "base/callback.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "content/public/browser/notification_database_data.h"
 #include "content/public/browser/platform_notification_service.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -31,6 +31,12 @@ class BrowserContext;
 class MockPlatformNotificationService : public PlatformNotificationService {
  public:
   MockPlatformNotificationService(BrowserContext* context);
+
+  MockPlatformNotificationService(const MockPlatformNotificationService&) =
+      delete;
+  MockPlatformNotificationService& operator=(
+      const MockPlatformNotificationService&) = delete;
+
   ~MockPlatformNotificationService() override;
 
   // Simulates a click on the notification titled |title|. |action_index|
@@ -72,7 +78,7 @@ class MockPlatformNotificationService : public PlatformNotificationService {
   // persistent and non-persistent notifications will be considered for this.
   void ReplaceNotificationIfNeeded(const std::string& notification_id);
 
-  BrowserContext* context_;
+  raw_ptr<BrowserContext> context_;
 
   std::unordered_map<std::string, GURL> persistent_notifications_;
   std::unordered_set<std::string> non_persistent_notifications_;
@@ -81,8 +87,6 @@ class MockPlatformNotificationService : public PlatformNotificationService {
   std::unordered_map<std::string, std::string> notification_id_map_;
 
   int64_t next_persistent_notification_id_ = 1;
-
-  DISALLOW_COPY_AND_ASSIGN(MockPlatformNotificationService);
 };
 
 }  // content

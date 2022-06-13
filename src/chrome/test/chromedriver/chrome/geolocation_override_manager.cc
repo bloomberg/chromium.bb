@@ -34,8 +34,7 @@ Status GeolocationOverrideManager::OnEvent(
     const std::string& method,
     const base::DictionaryValue& params) {
   if (method == "Page.frameNavigated") {
-    const base::Value* unused_value;
-    if (!params.Get("frame.parentId", &unused_value))
+    if (!params.FindPath("frame.parentId"))
       return ApplyOverrideIfNeeded();
   }
   return Status(kOk);
@@ -46,8 +45,8 @@ Status GeolocationOverrideManager::ApplyOverrideIfNeeded() {
     return Status(kOk);
 
   base::DictionaryValue params;
-  params.SetDouble("latitude", overridden_geoposition_->latitude);
-  params.SetDouble("longitude", overridden_geoposition_->longitude);
-  params.SetDouble("accuracy", overridden_geoposition_->accuracy);
+  params.SetDoubleKey("latitude", overridden_geoposition_->latitude);
+  params.SetDoubleKey("longitude", overridden_geoposition_->longitude);
+  params.SetDoubleKey("accuracy", overridden_geoposition_->accuracy);
   return client_->SendCommand("Page.setGeolocationOverride", params);
 }

@@ -200,12 +200,13 @@ void ExtensionOptionsGuest::CloseContents(WebContents* source) {
 }
 
 bool ExtensionOptionsGuest::HandleContextMenu(
-    content::RenderFrameHost* render_frame_host,
+    content::RenderFrameHost& render_frame_host,
     const content::ContextMenuParams& params) {
   if (!extension_options_guest_delegate_)
     return false;
 
-  return extension_options_guest_delegate_->HandleContextMenu(params);
+  return extension_options_guest_delegate_->HandleContextMenu(render_frame_host,
+                                                              params);
 }
 
 bool ExtensionOptionsGuest::IsWebContentsCreationOverridden(
@@ -248,7 +249,10 @@ WebContents* ExtensionOptionsGuest::CreateCustomWebContents(
 
 void ExtensionOptionsGuest::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsInMainFrame() ||
+  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
+  // frames. This caller was converted automatically to the primary main frame
+  // to preserve its semantics. Follow up to confirm correctness.
+  if (!navigation_handle->IsInPrimaryMainFrame() ||
       !navigation_handle->HasCommitted() || !attached()) {
     return;
   }

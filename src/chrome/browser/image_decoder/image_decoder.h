@@ -9,12 +9,13 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
-#include "base/sequenced_task_runner.h"
 #include "base/synchronization/lock.h"
+#include "base/task/sequenced_task_runner.h"
 #include "build/chromeos_buildflags.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace data_decoder {
 class DataDecoder;
@@ -74,7 +75,7 @@ class ImageDecoder {
     const scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
     // If null, will use a new decoder via DecodeImageIsolated() instead.
-    data_decoder::DataDecoder* const data_decoder_ = nullptr;
+    const raw_ptr<data_decoder::DataDecoder> data_decoder_ = nullptr;
 
     SEQUENCE_CHECKER(sequence_checker_);
   };
@@ -88,12 +89,13 @@ class ImageDecoder {
 
   static ImageDecoder* GetInstance();
 
-  // Calls StartWithOptions() with ImageCodec::DEFAULT_CODEC and
-  // shrink_to_fit = false.
-  static void Start(ImageRequest* image_request,
-                    std::vector<uint8_t> image_data);
-  // Deprecated. Use std::vector<uint8_t> version to avoid an extra copy.
-  static void Start(ImageRequest* image_request, const std::string& image_data);
+  ImageDecoder(const ImageDecoder&) = delete;
+  ImageDecoder& operator=(const ImageDecoder&) = delete;
+
+  // Calls StartWithOptions() with default options.
+  // ImageDataType can be std::vector<uint8_t> or std::string.
+  template <typename ImageDataType>
+  static void Start(ImageRequest* image_request, ImageDataType image_data);
 
   // Starts asynchronous image decoding. Once finished, the callback will be
   // posted back to image_request's |task_runner_|.
@@ -102,16 +104,13 @@ class ImageDecoder {
   // one in larger size if there's no precise match). Passing gfx::Size() as
   // |desired_image_frame_size| is also supported and will result in chosing the
   // smallest available size.
-  static void StartWithOptions(ImageRequest* image_request,
-                               std::vector<uint8_t> image_data,
-                               ImageCodec image_codec,
-                               bool shrink_to_fit,
-                               const gfx::Size& desired_image_frame_size);
-  // Deprecated. Use std::vector<uint8_t> version to avoid an extra copy.
-  static void StartWithOptions(ImageRequest* image_request,
-                               const std::string& image_data,
-                               ImageCodec image_codec,
-                               bool shrink_to_fit);
+  template <typename ImageDataType>
+  static void StartWithOptions(
+      ImageRequest* image_request,
+      ImageDataType image_data,
+      ImageCodec image_codec = DEFAULT_CODEC,
+      bool shrink_to_fit = false,
+      const gfx::Size& desired_image_frame_size = gfx::Size());
 
   // Removes all instances of |image_request| from |image_request_id_map_|,
   // ensuring callbacks are not made to the image_request after it is destroyed.
@@ -123,8 +122,9 @@ class ImageDecoder {
   ImageDecoder();
   ~ImageDecoder() = delete;
 
+  template <typename ImageDataType>
   void StartWithOptionsImpl(ImageRequest* image_request,
-                            std::vector<uint8_t> image_data,
+                            ImageDataType image_data,
                             ImageCodec image_codec,
                             bool shrink_to_fit,
                             const gfx::Size& desired_image_frame_size);
@@ -143,8 +143,6 @@ class ImageDecoder {
 
   // Protects |image_request_id_map_| and |image_request_id_counter_|.
   base::Lock map_lock_;
-
-  DISALLOW_COPY_AND_ASSIGN(ImageDecoder);
 };
 
 #endif  // CHROME_BROWSER_IMAGE_DECODER_IMAGE_DECODER_H_

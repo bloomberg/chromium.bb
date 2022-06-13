@@ -91,6 +91,10 @@ interface ServiceWorkerRegistration : EventTarget
     method getNotifications
     method showNotification
 
+# EyeDropper API should not be exposed in WebView because it is not supported
+# on Android, crbug.com/1249967
+interface EyeDropper
+
 # File System API disabled in WebView, crbug.com/589504, crbug.com/589843, b/6930981
 interface HTMLInputElement : HTMLElement
     getter webkitEntries
@@ -116,6 +120,9 @@ interface AuthenticatorAssertionResponse : AuthenticatorResponse
 interface PublicKeyCredential : Credential
 interface AuthenticatorResponse
 interface AuthenticatorAttestationResponse : AuthenticatorResponse
+
+# WebOTP API should not be exposed in WebView, crbug.com/1224417
+interface OTPCredential : Credential
 
 # Picture-in-Picture API is disabled in Android WebView, crbug.com/852449
 interface PictureInPictureEvent : Event

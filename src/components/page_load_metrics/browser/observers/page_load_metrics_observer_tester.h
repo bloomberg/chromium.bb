@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "components/page_load_metrics/browser/page_load_metrics_observer.h"
 #include "components/page_load_metrics/common/page_load_metrics.mojom.h"
@@ -65,6 +65,11 @@ class PageLoadMetricsObserverTester : public test::WeakMockTimerProvider {
       content::WebContents* web_contents,
       content::RenderViewHostTestHarness* rfh_test_harness,
       const RegisterObserversCallback& callback);
+
+  PageLoadMetricsObserverTester(const PageLoadMetricsObserverTester&) = delete;
+  PageLoadMetricsObserverTester& operator=(
+      const PageLoadMetricsObserverTester&) = delete;
+
   ~PageLoadMetricsObserverTester() override;
 
   // Simulates starting a navigation to the given gurl, without committing the
@@ -94,6 +99,9 @@ class PageLoadMetricsObserverTester : public test::WeakMockTimerProvider {
   void SimulateInputTimingUpdate(const mojom::InputTiming& input_timing);
   void SimulateInputTimingUpdate(const mojom::InputTiming& input_timing,
                                  content::RenderFrameHost* rfh);
+  void SimulateMobileFriendlinessUpdate(
+      const blink::MobileFriendliness& mobile_friendliness,
+      content::RenderFrameHost* rfh);
   void SimulateTimingAndMetadataUpdate(const mojom::PageLoadTiming& timing,
                                        const mojom::FrameMetadata& metadata);
   void SimulateMetadataUpdate(const mojom::FrameMetadata& metadata,
@@ -175,13 +183,11 @@ class PageLoadMetricsObserverTester : public test::WeakMockTimerProvider {
   content::WebContents* web_contents() const { return web_contents_; }
 
   RegisterObserversCallback register_callback_;
-  content::WebContents* web_contents_;
-  content::RenderViewHostTestHarness* rfh_test_harness_;
-  MetricsWebContentsObserver* metrics_web_contents_observer_;
+  raw_ptr<content::WebContents> web_contents_;
+  raw_ptr<content::RenderViewHostTestHarness> rfh_test_harness_;
+  raw_ptr<MetricsWebContentsObserver> metrics_web_contents_observer_;
   base::HistogramTester histogram_tester_;
   ukm::TestAutoSetUkmRecorder test_ukm_recorder_;
-
-  DISALLOW_COPY_AND_ASSIGN(PageLoadMetricsObserverTester);
 };
 
 }  // namespace page_load_metrics

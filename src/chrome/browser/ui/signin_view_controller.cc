@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/reauth_result.h"
@@ -13,9 +14,9 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/signin_view_controller_delegate.h"
+#include "components/signin/public/base/consent_level.h"
 #include "components/signin/public/base/signin_buildflags.h"
 #include "components/signin/public/identity_manager/account_info.h"
-#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "google_apis/gaia/core_account_id.h"
@@ -219,7 +220,7 @@ SigninViewController::ShowReauthPrompt(
   // is closed.
   delegate_ = new SigninReauthViewController(
       browser_, account_id, access_point, std::move(wrapped_reauth_callback));
-  delegate_observation_.Observe(delegate_);
+  delegate_observation_.Observe(delegate_.get());
   chrome::RecordDialogCreation(chrome::DialogIdentifier::SIGNIN_REAUTH);
   return abort_handle;
 }
@@ -231,9 +232,33 @@ void SigninViewController::ShowModalSyncConfirmationDialog() {
   // is closed.
   delegate_ =
       SigninViewControllerDelegate::CreateSyncConfirmationDelegate(browser_);
-  delegate_observation_.Observe(delegate_);
+  delegate_observation_.Observe(delegate_.get());
   chrome::RecordDialogCreation(
       chrome::DialogIdentifier::SIGN_IN_SYNC_CONFIRMATION);
+}
+
+void SigninViewController::ShowModalEnterpriseConfirmationDialog(
+    const AccountInfo& account_info,
+    SkColor profile_color,
+    base::OnceCallback<void(bool)> callback) {
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
+    BUILDFLAG(IS_CHROMEOS_LACROS)
+  CloseModalSignin();
+  // The delegate will delete itself on request of the UI code when the widget
+  // is closed.
+  delegate_ =
+      SigninViewControllerDelegate::CreateEnterpriseConfirmationDelegate(
+          browser_, account_info, profile_color,
+          base::BindOnce(
+              [](Browser* browser, base::OnceCallback<void(bool)> callback,
+                 bool result) { std::move(callback).Run(result); },
+              base::Unretained(browser_), std::move(callback)));
+  delegate_observation_.Observe(delegate_.get());
+  chrome::RecordDialogCreation(
+      chrome::DialogIdentifier::SIGNIN_ENTERPRISE_INTERCEPTION);
+#else
+  NOTREACHED() << "Enterprise confirmation dialog modal not supported";
+#endif
 }
 
 void SigninViewController::ShowModalSigninErrorDialog() {
@@ -241,7 +266,7 @@ void SigninViewController::ShowModalSigninErrorDialog() {
   // The delegate will delete itself on request of the UI code when the widget
   // is closed.
   delegate_ = SigninViewControllerDelegate::CreateSigninErrorDelegate(browser_);
-  delegate_observation_.Observe(delegate_);
+  delegate_observation_.Observe(delegate_.get());
   chrome::RecordDialogCreation(chrome::DialogIdentifier::SIGN_IN_ERROR);
 }
 
@@ -262,7 +287,7 @@ void SigninViewController::SetModalSigninHeight(int height) {
 }
 
 void SigninViewController::OnModalSigninClosed() {
-  DCHECK(delegate_observation_.IsObservingSource(delegate_));
+  DCHECK(delegate_observation_.IsObservingSource(delegate_.get()));
   delegate_observation_.Reset();
   delegate_ = nullptr;
 }
@@ -413,7 +438,7 @@ void SigninViewController::ShowModalSigninEmailConfirmationDialog(
   delegate_ = SigninEmailConfirmationDialog::AskForConfirmation(
       active_contents, browser_->profile(), last_email, email,
       std::move(callback));
-  delegate_observation_.Observe(delegate_);
+  delegate_observation_.Observe(delegate_.get());
   chrome::RecordDialogCreation(
       chrome::DialogIdentifier::SIGN_IN_EMAIL_CONFIRMATION);
 }

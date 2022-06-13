@@ -58,7 +58,7 @@ import java.util.concurrent.atomic.AtomicReference;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class PasswordAccessorySheetModernViewTest {
-    private final AccessorySheetTabModel mModel = new AccessorySheetTabModel();
+    private AccessorySheetTabModel mModel;
     private AtomicReference<RecyclerView> mView = new AtomicReference<>();
 
     @Rule
@@ -68,6 +68,8 @@ public class PasswordAccessorySheetModernViewTest {
     public void setUp() throws InterruptedException {
         mActivityTestRule.startMainActivityOnBlankPage();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mModel = new AccessorySheetTabModel();
+
             AccessorySheetCoordinator accessorySheet =
                     new AccessorySheetCoordinator(mActivityTestRule.getActivity().findViewById(
                             R.id.keyboard_accessory_sheet_stub));
@@ -154,13 +156,13 @@ public class PasswordAccessorySheetModernViewTest {
                 new UserInfoField("Unused Name", "Unused Password", "", false, cb -> {});
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            UserInfo sameOriginInfo = new UserInfo("", false);
+            UserInfo sameOriginInfo = new UserInfo("", true);
             sameOriginInfo.addField(kUnusedInfoField);
             sameOriginInfo.addField(kUnusedInfoField);
             mModel.add(new AccessorySheetDataPiece(
                     sameOriginInfo, AccessorySheetDataPiece.Type.PASSWORD_INFO));
 
-            UserInfo pslOriginInfo = new UserInfo("other.origin.eg", true);
+            UserInfo pslOriginInfo = new UserInfo("other.origin.eg", false);
             pslOriginInfo.addField(kUnusedInfoField);
             pslOriginInfo.addField(kUnusedInfoField);
             mModel.add(new AccessorySheetDataPiece(

@@ -58,44 +58,15 @@ bool ContainsAndroidCredentials(const PasswordFormFillData& fill_data) {
   return PreferredRealmIsFromAndroid(fill_data);
 }
 
+#if !defined(OS_IOS) && !defined(ANDROID)
 bool IsFillOnAccountSelectFeatureEnabled() {
   return base::FeatureList::IsEnabled(
       password_manager::features::kFillOnAccountSelect);
 }
+#endif
 
 bool IsPublicSuffixMatchOrAffiliationBasedMatch(const PasswordForm& form) {
   return form.is_public_suffix_match || form.is_affiliation_based_match;
-}
-
-// Finds any suggestion in |login| whose username and password match the |form|.
-PasswordFormFillData::LoginCollection::iterator FindDuplicate(
-    PasswordFormFillData::LoginCollection* logins,
-    const PasswordForm& form) {
-  return std::find_if(logins->begin(), logins->end(),
-                      [&form](const PasswordAndMetadata& login) {
-                        return (form.username_value == login.username &&
-                                form.password_value == login.password);
-                      });
-}
-
-// This function takes a |duplicate_form| and the realm and uses_account_store
-// properties of an existing suggestion. Both suggestions have identical
-// username and password.
-// If the duplicate should replace the existing suggestion, this method
-// overrides the realm and uses_account_store properties to achieve that.
-void MaybeReplaceRealmAndStoreWithDuplicate(const PasswordForm& duplicate_form,
-                                            std::string* existing_realm,
-                                            bool* existing_uses_account_store) {
-  DCHECK(existing_realm);
-  DCHECK(existing_uses_account_store);
-  if (*existing_uses_account_store)
-    return;  // No need to replace existing account-stored suggestion.
-  if (!duplicate_form.IsUsingAccountStore())
-    return;  // No need to replace a local suggestion with identical other one.
-  if (IsPublicSuffixMatchOrAffiliationBasedMatch(duplicate_form))
-    return;  // Never replace a possibly exact match with a PSL match.
-  *existing_uses_account_store = duplicate_form.IsUsingAccountStore();
-  existing_realm->clear();  // Reset realm since form cannot be a psl match.
 }
 
 void Autofill(PasswordManagerClient* client,
@@ -191,6 +162,22 @@ LikelyFormFilling SendFillInformationToRenderer(
   const bool no_sign_in_form =
       !observed_form.HasPasswordElement() && !observed_form.IsSingleUsername();
 
+  using FormType = PasswordFormMetricsRecorder::MatchedFormType;
+  FormType preferred_form_type = FormType::kExactMatch;
+  if (preferred_match->is_affiliation_based_match) {
+    preferred_form_type = IsValidAndroidFacetURI(preferred_match->signon_realm)
+                              ? FormType::kAffiliatedApp
+                              : FormType::kAffiliatedWebsites;
+  } else if (preferred_match->is_public_suffix_match) {
+    preferred_form_type = FormType::kPublicSuffixMatch;
+  }
+
+  if (!no_sign_in_form)
+    metrics_recorder->RecordMatchedFormType(preferred_form_type);
+
+// This metric will always record kReauthRequired on iOS and Android. So we can
+// drop it there.
+#if !defined(OS_IOS) && !defined(ANDROID)
   // Proceed to autofill.
   // Note that we provide the choices but don't actually prefill a value if:
   // (1) we are in Incognito mode, or
@@ -201,9 +188,7 @@ LikelyFormFilling SendFillInformationToRenderer(
       PasswordFormMetricsRecorder::WaitForUsernameReason;
   WaitForUsernameReason wait_for_username_reason =
       WaitForUsernameReason::kDontWait;
-  if (client->RequiresReauthToFill()) {
-    wait_for_username_reason = WaitForUsernameReason::kReauthRequired;
-  } else if (client->IsIncognito()) {
+  if (client->IsIncognito()) {
     wait_for_username_reason = WaitForUsernameReason::kIncognitoMode;
   } else if (preferred_match->is_affiliation_based_match &&
              !IsValidAndroidFacetURI(preferred_match->signon_realm)) {
@@ -222,10 +207,13 @@ LikelyFormFilling SendFillInformationToRenderer(
     wait_for_username_reason = WaitForUsernameReason::kPasswordPrefilled;
   } else if (!client->IsCommittedMainFrameSecure()) {
     wait_for_username_reason = WaitForUsernameReason::kInsecureOrigin;
-  } else if (autofill::IsTouchToFillEnabled()) {
-    wait_for_username_reason = WaitForUsernameReason::kTouchToFill;
   } else if (IsFillOnAccountSelectFeatureEnabled()) {
     wait_for_username_reason = WaitForUsernameReason::kFoasFeature;
+  } else if (observed_form.accepts_webauthn_credentials &&
+             client->GetWebAuthnCredentialsDelegate()
+                 ->IsWebAuthnAutofillEnabled()) {
+    wait_for_username_reason =
+        WaitForUsernameReason::kAcceptsWebAuthnCredentials;
   }
 
   // Record no "FirstWaitForUsernameReason" metrics for a form that is not meant
@@ -237,6 +225,9 @@ LikelyFormFilling SendFillInformationToRenderer(
 
   bool wait_for_username =
       wait_for_username_reason != WaitForUsernameReason::kDontWait;
+#else
+  bool wait_for_username = true;
+#endif  // !defined(OS_IOS) && !defined(ANDROID)
 
   if (wait_for_username) {
     metrics_recorder->SetManagerAction(
@@ -311,18 +302,8 @@ PasswordFormFillData CreatePasswordFormFillData(
 
   // Copy additional username/value pairs.
   for (const PasswordForm* match : matches) {
-    // If any already retained suggestion matches the login, discard the login
-    // or override the existing duplicate with the account-stored match.
     if (match->username_value == preferred_match.username_value &&
         match->password_value == preferred_match.password_value) {
-      MaybeReplaceRealmAndStoreWithDuplicate(*match, &result.preferred_realm,
-                                             &result.uses_account_store);
-      continue;
-    }
-    auto duplicate_iter = FindDuplicate(&result.additional_logins, *match);
-    if (duplicate_iter != result.additional_logins.end()) {
-      MaybeReplaceRealmAndStoreWithDuplicate(
-          *match, &duplicate_iter->realm, &duplicate_iter->uses_account_store);
       continue;
     }
     PasswordAndMetadata value;

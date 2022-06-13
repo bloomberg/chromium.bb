@@ -19,8 +19,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/animation/keyframe/keyframed_animation_curve.h"
 #include "ui/gfx/geometry/size_conversions.h"
+#include "ui/gfx/geometry/test/geometry_util.h"
+#include "ui/gfx/geometry/transform.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
-#include "ui/gfx/transform.h"
 
 namespace cc {
 namespace {
@@ -52,8 +53,8 @@ class PropertyTreeBuilderTest : public LayerTreeImplTestBase,
     // TODO(https://crbug.com/939968) This call should be handled by
     // FakeLayerTreeHost instead of manually pushing the properties from the
     // layer tree host to the pending tree.
-    host()->PushLayerTreePropertiesTo(host_impl()->pending_tree());
-
+    host_impl()->pending_tree()->PullLayerTreePropertiesFrom(
+        *host()->GetPendingCommitState());
     UpdateDrawProperties(host_impl()->pending_tree());
   }
 
@@ -356,8 +357,9 @@ TEST_F(PropertyTreeBuilderTest, VisibleRectWithClippingAndFilters) {
 
   gfx::Transform vertical_flip;
   vertical_flip.Scale(1, -1);
-  sk_sp<PaintFilter> flip_filter = sk_make_sp<MatrixPaintFilter>(
-      SkMatrix(vertical_flip.matrix()), kLow_SkFilterQuality, nullptr);
+  sk_sp<PaintFilter> flip_filter =
+      sk_make_sp<MatrixPaintFilter>(SkMatrix(vertical_flip.matrix()),
+                                    PaintFlags::FilterQuality::kLow, nullptr);
   FilterOperations reflection_filter;
   reflection_filter.Append(
       FilterOperation::CreateReferenceFilter(sk_make_sp<XfermodePaintFilter>(
@@ -416,8 +418,9 @@ TEST_F(PropertyTreeBuilderTest, VisibleRectWithScalingClippingAndFilters) {
 
   gfx::Transform vertical_flip;
   vertical_flip.Scale(1, -1);
-  sk_sp<PaintFilter> flip_filter = sk_make_sp<MatrixPaintFilter>(
-      SkMatrix(vertical_flip.matrix()), kLow_SkFilterQuality, nullptr);
+  sk_sp<PaintFilter> flip_filter =
+      sk_make_sp<MatrixPaintFilter>(SkMatrix(vertical_flip.matrix()),
+                                    PaintFlags::FilterQuality::kLow, nullptr);
   FilterOperations reflection_filter;
   reflection_filter.Append(
       FilterOperation::CreateReferenceFilter(sk_make_sp<XfermodePaintFilter>(
@@ -450,8 +453,7 @@ TEST_F(PropertyTreeBuilderTest, TextureLayerSnapping) {
   auto child_screen_space_transform = ImplOf(child)->ScreenSpaceTransform();
   EXPECT_NE(child_screen_space_transform, fractional_translate);
   fractional_translate.RoundTranslationComponents();
-  EXPECT_TRANSFORMATION_MATRIX_EQ(child_screen_space_transform,
-                                  fractional_translate);
+  EXPECT_TRANSFORM_EQ(child_screen_space_transform, fractional_translate);
   gfx::RectF layer_bounds_in_screen_space = MathUtil::MapClippedRect(
       child_screen_space_transform, gfx::RectF(gfx::SizeF(child->bounds())));
   EXPECT_EQ(layer_bounds_in_screen_space, gfx::RectF(11.f, 20.f, 100.f, 100.f));
@@ -551,13 +553,13 @@ TEST_F(PropertyTreeBuilderTest, DelayedFilterAnimationCreatesRenderSurface) {
   end_filters.Append(FilterOperation::CreateBrightnessFilter(0.3f));
   curve->AddKeyframe(
       FilterKeyframe::Create(base::TimeDelta(), start_filters, nullptr));
-  curve->AddKeyframe(FilterKeyframe::Create(
-      base::TimeDelta::FromMilliseconds(100), end_filters, nullptr));
+  curve->AddKeyframe(
+      FilterKeyframe::Create(base::Milliseconds(100), end_filters, nullptr));
   std::unique_ptr<KeyframeModel> keyframe_model = KeyframeModel::Create(
       std::move(curve), 0, 1,
       KeyframeModel::TargetPropertyId(TargetProperty::FILTER));
   keyframe_model->set_fill_mode(KeyframeModel::FillMode::NONE);
-  keyframe_model->set_time_offset(base::TimeDelta::FromMilliseconds(-1000));
+  keyframe_model->set_time_offset(base::Milliseconds(-1000));
 
   AddKeyframeModelToElementWithAnimation(child->element_id(), timeline(),
                                          std::move(keyframe_model));
@@ -1825,6 +1827,33 @@ TEST_F(PropertyTreeBuilderTest,
   EXPECT_EQ(actual_self_rrect_4.rect(), bounds_in_target_space);
   EXPECT_FLOAT_EQ(actual_self_rrect_4.GetSimpleRadius(),
                   kRoundedCorner4Radius * kDeviceScale);
+}
+
+TEST_F(PropertyTreeBuilderTest, SubtreeSize) {
+  constexpr viz::SubtreeCaptureId kCaptureId{42};
+
+  auto parent = Layer::Create();
+  host()->SetRootLayer(parent);
+  auto child = Layer::Create();
+  parent->AddChild(child);
+  child->SetSubtreeCaptureId(kCaptureId);
+
+  // Layer has empty bounds.
+  Commit(1.1f);
+  EffectNode* node = GetEffectNode(child.get());
+  EXPECT_EQ((gfx::Size{}), node->subtree_size);
+  EXPECT_EQ(kCaptureId, node->subtree_capture_id);
+
+  // Layer has bounds, scaling is 1.
+  child->SetBounds(gfx::Size{1280, 720});
+  Commit(1.0f);
+  node = GetEffectNode(child.get());
+  EXPECT_EQ((gfx::Size{1280, 720}), node->subtree_size);
+
+  // Layer has bounds, scaling is 2.
+  Commit(2.0f);
+  node = GetEffectNode(child.get());
+  EXPECT_EQ((gfx::Size{2560, 1440}), node->subtree_size);
 }
 
 }  // namespace

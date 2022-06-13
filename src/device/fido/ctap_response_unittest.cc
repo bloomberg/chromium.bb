@@ -5,7 +5,7 @@
 #include <algorithm>
 
 #include "base/containers/contains.h"
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "components/cbor/reader.h"
 #include "components/cbor/values.h"
 #include "components/cbor/writer.h"
@@ -648,7 +648,7 @@ TEST(CTAPResponseTest, TestParseSignResponseData) {
       test_data::kApplicationParameter, GetTestSignResponse(),
       GetTestCredentialRawIdBytes());
   ASSERT_TRUE(response);
-  EXPECT_EQ(GetTestCredentialRawIdBytes(), response->credential->id());
+  EXPECT_EQ(GetTestCredentialRawIdBytes(), response->credential->id);
   EXPECT_THAT(
       response->authenticator_data.SerializeToByteArray(),
       ::testing::ElementsAreArray(test_data::kTestSignAuthenticatorData));
@@ -794,7 +794,7 @@ TEST(CTAPResponseTest, TestSerializeGetInfoResponse) {
   response.options = std::move(options);
   response.max_msg_size = 1200;
   response.pin_protocols.emplace({PINUVAuthProtocol::kV1});
-  response.algorithms.clear();
+  response.algorithms.reset();
 
   EXPECT_THAT(AuthenticatorGetInfoResponse::EncodeToCBOR(response),
               ::testing::ElementsAreArray(

@@ -8,7 +8,7 @@
 #include <set>
 #include <string>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_observer.h"
 #include "ui/message_center/message_center_types.h"
@@ -39,6 +39,11 @@ class MessageCenterStatsCollector : public MessageCenterObserver {
   };
 
   explicit MessageCenterStatsCollector(MessageCenter* message_center);
+
+  MessageCenterStatsCollector(const MessageCenterStatsCollector&) = delete;
+  MessageCenterStatsCollector& operator=(const MessageCenterStatsCollector&) =
+      delete;
+
   ~MessageCenterStatsCollector() override;
 
  private:
@@ -81,12 +86,10 @@ class MessageCenterStatsCollector : public MessageCenterObserver {
   void OnQuietModeChanged(bool in_quiet_mode) override;
 
   // Weak, global.
-  MessageCenter* message_center_;
+  raw_ptr<MessageCenter> message_center_;
 
   typedef std::map<std::string, NotificationStats> StatsCollection;
   StatsCollection stats_;
-
-  DISALLOW_COPY_AND_ASSIGN(MessageCenterStatsCollector);
 };
 
 }  // namespace message_center

@@ -5,9 +5,10 @@
 #include "chrome/browser/optimization_guide/android/optimization_guide_bridge.h"
 
 #include "base/android/jni_android.h"
+#include "base/memory/raw_ptr.h"
 #include "base/test/gmock_callback_support.h"
 #include "chrome/browser/optimization_guide/android/native_j_unittests_jni_headers/OptimizationGuideBridgeNativeUnitTest_jni.h"
-#include "chrome/browser/optimization_guide/optimization_guide_hints_manager.h"
+#include "chrome/browser/optimization_guide/chrome_hints_manager.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -18,6 +19,7 @@
 #include "components/optimization_guide/core/optimization_guide_prefs.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/test/browser_task_environment.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -34,19 +36,22 @@ using ::testing::UnorderedElementsAre;
 namespace optimization_guide {
 namespace android {
 
-class MockOptimizationGuideHintsManager : public OptimizationGuideHintsManager {
+class MockOptimizationGuideHintsManager
+    : public optimization_guide::ChromeHintsManager {
  public:
   MockOptimizationGuideHintsManager(Profile* profile, PrefService* pref_service)
-      : OptimizationGuideHintsManager(profile,
-                                      pref_service,
-                                      /*hint_store=*/nullptr,
-                                      /*top_host_provider=*/nullptr,
-                                      /*tab_url_provider=*/nullptr,
-                                      /*url_loader_factory=*/nullptr) {}
+      : optimization_guide::ChromeHintsManager(
+            profile,
+            pref_service,
+            /*hint_store=*/nullptr,
+            /*top_host_provider=*/nullptr,
+            /*tab_url_provider=*/nullptr,
+            /*url_loader_factory=*/nullptr,
+            content::GetNetworkConnectionTracker(),
+            /*push_notification_manager=*/nullptr) {}
   ~MockOptimizationGuideHintsManager() override = default;
-  MOCK_METHOD4(CanApplyOptimizationAsync,
+  MOCK_METHOD3(CanApplyOptimizationAsync,
                void(const GURL&,
-                    const absl::optional<int64_t>&,
                     optimization_guide::proto::OptimizationType,
                     optimization_guide::OptimizationGuideDecisionCallback));
 };
@@ -58,7 +63,7 @@ class MockOptimizationGuideKeyedService : public OptimizationGuideKeyedService {
       : OptimizationGuideKeyedService(browser_context) {}
   ~MockOptimizationGuideKeyedService() override = default;
 
-  MOCK_METHOD0(GetHintsManager, OptimizationGuideHintsManager*());
+  MOCK_METHOD0(GetHintsManager, optimization_guide::ChromeHintsManager*());
   MOCK_METHOD1(
       RegisterOptimizationTypes,
       void(const std::vector<optimization_guide::proto::OptimizationType>&));
@@ -113,8 +118,8 @@ class OptimizationGuideBridgeTest : public testing::Test {
 
  protected:
   base::android::ScopedJavaGlobalRef<jobject> j_test_;
-  JNIEnv* env_;
-  MockOptimizationGuideKeyedService* optimization_guide_keyed_service_;
+  raw_ptr<JNIEnv> env_;
+  raw_ptr<MockOptimizationGuideKeyedService> optimization_guide_keyed_service_;
   std::unique_ptr<MockOptimizationGuideHintsManager>
       optimization_guide_hints_manager_;
 
@@ -122,7 +127,7 @@ class OptimizationGuideBridgeTest : public testing::Test {
   content::BrowserTaskEnvironment task_environment_{
       base::test::TaskEnvironment::MainThreadType::UI};
   TestingProfileManager profile_manager_;
-  TestingProfile* profile_;
+  raw_ptr<TestingProfile> profile_;
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
 };
@@ -149,10 +154,10 @@ TEST_F(OptimizationGuideBridgeTest, CanApplyOptimizationAsyncHasHint) {
   metadata.SetAnyMetadataForTesting(hints_metadata);
   EXPECT_CALL(
       *optimization_guide_hints_manager_,
-      CanApplyOptimizationAsync(GURL("https://example.com/"), Eq(absl::nullopt),
+      CanApplyOptimizationAsync(GURL("https://example.com/"),
                                 optimization_guide::proto::PERFORMANCE_HINTS,
                                 base::test::IsNotNullCallback()))
-      .WillOnce(base::test::RunOnceCallback<3>(
+      .WillOnce(base::test::RunOnceCallback<2>(
           optimization_guide::OptimizationGuideDecision::kTrue,
           ByRef(metadata)));
 

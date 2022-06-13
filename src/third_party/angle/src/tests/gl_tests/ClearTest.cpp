@@ -362,13 +362,55 @@ TEST_P(ClearTestRGB, InvalidateDefaultFramebufferRGB)
     ANGLE_SKIP_TEST_IF(getClientMajorVersion() < 3);
     ANGLE_SKIP_TEST_IF(IsD3D11());
 
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    // Verify that even though Alpha is cleared to 0.0 for this RGB FBO, it should be read back as
+    // 1.0, since the glReadPixels() is issued with GL_RGBA.
+    // OpenGL ES 3.2 spec:
+    // 16.1.3 Obtaining Pixels from the Framebuffer
+    // If G, B, or A values are not present in the internal format, they are taken to be zero,
+    // zero, and one respectively.
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::black);
+
     const GLenum discards[] = {GL_COLOR};
     glInvalidateFramebuffer(GL_FRAMEBUFFER, 1, discards);
-    EXPECT_PIXEL_NEAR(0, 0, 0, 0, 0, 255, 1.0);
 
     // Don't explicitly clear, but draw blue (make sure alpha is not cleared)
     drawQuad(blueProgram, essl1_shaders::PositionAttrib(), 0.5f);
-    EXPECT_PIXEL_NEAR(0, 0, 0, 0, 255, 255, 1.0);
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::blue);
+}
+
+// Draw with a shader that outputs alpha=0.5. Readback and ensure that alpha=1.
+TEST_P(ClearTestRGB, ShaderOutputsAlphaVerifyReadingAlphaIsOne)
+{
+    ANGLE_GL_PROGRAM(blueProgram, essl1_shaders::vs::Simple(), essl1_shaders::fs::UniformColor());
+    glUseProgram(blueProgram);
+
+    // Some GPUs don't support RGB format default framebuffer,
+    // so skip if the back buffer has alpha bits.
+    EGLWindow *window          = getEGLWindow();
+    EGLDisplay display         = window->getDisplay();
+    EGLConfig config           = window->getConfig();
+    EGLint backbufferAlphaBits = 0;
+    eglGetConfigAttrib(display, config, EGL_ALPHA_SIZE, &backbufferAlphaBits);
+    ANGLE_SKIP_TEST_IF(backbufferAlphaBits != 0);
+    // glInvalidateFramebuffer() isn't supported with GLES 2.0
+    ANGLE_SKIP_TEST_IF(getClientMajorVersion() < 3);
+    ANGLE_SKIP_TEST_IF(IsD3D11());
+
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::black);
+
+    GLint colorUniformLocation =
+        glGetUniformLocation(blueProgram, angle::essl1_shaders::ColorUniform());
+    ASSERT_NE(colorUniformLocation, -1);
+    glUniform4f(colorUniformLocation, 0.0f, 0.0f, 1.0f, 0.5f);
+    ASSERT_GL_NO_ERROR();
+
+    // Don't explicitly clear, but draw blue (make sure alpha is not cleared)
+    drawQuad(blueProgram, essl1_shaders::PositionAttrib(), 0.5f);
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::blue);
 }
 
 // Test clearing a RGBA8 Framebuffer
@@ -394,11 +436,10 @@ TEST_P(ClearTest, RGBA8Framebuffer)
 TEST_P(ClearTest, ChangeFramebufferAttachmentFromRGBAtoRGB)
 {
     // http://anglebug.com/2689
-    ANGLE_SKIP_TEST_IF(IsD3D9() || IsD3D11() || (IsOzone() && IsOpenGLES()));
     ANGLE_SKIP_TEST_IF(IsAndroid() && IsAdreno() && IsOpenGLES());
 
     // http://anglebug.com/5165
-    ANGLE_SKIP_TEST_IF(IsOSX() && IsDesktopOpenGL());
+    ANGLE_SKIP_TEST_IF(IsOSX() && IsDesktopOpenGL() && IsIntel());
 
     ANGLE_GL_PROGRAM(program, angle::essl1_shaders::vs::Simple(),
                      angle::essl1_shaders::fs::UniformColor());
@@ -1524,6 +1565,47 @@ TEST_P(ClearTestES3, RepeatedClear)
     ASSERT_GL_NO_ERROR();
 }
 
+// Test that clearing RGB8 attachments work when verified through sampling.
+TEST_P(ClearTestES3, ClearRGB8)
+{
+    GLFramebuffer fb;
+    glBindFramebuffer(GL_FRAMEBUFFER, fb);
+
+    GLTexture tex;
+    glBindTexture(GL_TEXTURE_2D, tex);
+    glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGB8, 1, 1);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex, 0);
+    ASSERT_GL_FRAMEBUFFER_COMPLETE(GL_FRAMEBUFFER);
+
+    // Clear the texture through framebuffer.
+    const GLubyte kClearColor[] = {63, 127, 191, 55};
+    glClearColor(kClearColor[0] / 255.0f, kClearColor[1] / 255.0f, kClearColor[2] / 255.0f,
+                 kClearColor[3] / 255.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    ASSERT_GL_NO_ERROR();
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    // Sample from it and verify clear is done.
+    ANGLE_GL_PROGRAM(program, essl3_shaders::vs::Texture2DLod(), essl3_shaders::fs::Texture2DLod());
+    glUseProgram(program);
+    GLint textureLocation = glGetUniformLocation(program, essl3_shaders::Texture2DUniform());
+    ASSERT_NE(-1, textureLocation);
+    GLint lodLocation = glGetUniformLocation(program, essl3_shaders::LodUniform());
+    ASSERT_NE(-1, lodLocation);
+
+    glUniform1i(textureLocation, 0);
+    glUniform1f(lodLocation, 0);
+
+    drawQuad(program, essl3_shaders::PositionAttrib(), 0.5f);
+
+    EXPECT_PIXEL_NEAR(0, 0, kClearColor[0], kClearColor[1], kClearColor[2], 255, 1);
+    ASSERT_GL_NO_ERROR();
+}
+
 // Test that clearing RGB8 attachments from a 2D texture array does not cause
 // VUID-VkImageMemoryBarrier-oldLayout-01197
 TEST_P(ClearTestES3, TextureArrayRGB8)
@@ -2480,6 +2562,39 @@ TEST_P(ClearTest, DISABLED_ClearReachesWindow)
 
     // Wait for visual verification.
     angle::Sleep(2000);
+}
+
+// Test that clearing slices of a 3D texture and reading them back works.
+TEST_P(ClearTestES3, ClearAndReadPixels3DTexture)
+{
+    constexpr uint32_t kWidth  = 128;
+    constexpr uint32_t kHeight = 128;
+    constexpr uint32_t kDepth  = 7;
+
+    GLTexture texture;
+    glBindTexture(GL_TEXTURE_3D, texture);
+    glTexStorage3D(GL_TEXTURE_3D, 1, GL_RGBA8, kWidth, kHeight, kDepth);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAX_LEVEL, 0);
+
+    std::array<GLColor, kDepth> clearColors = {
+        GLColor::red,  GLColor::green,   GLColor::blue,  GLColor::yellow,
+        GLColor::cyan, GLColor::magenta, GLColor::white,
+    };
+
+    GLFramebuffer framebuffer;
+    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+
+    for (uint32_t z = 0; z < kDepth; ++z)
+    {
+        glFramebufferTextureLayer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texture, 0, z);
+        glClearBufferfv(GL_COLOR, 0, clearColors[z].toNormalizedVector().data());
+    }
+
+    for (uint32_t z = 0; z < kDepth; ++z)
+    {
+        glFramebufferTextureLayer(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texture, 0, z);
+        EXPECT_PIXEL_COLOR_EQ(0, 0, clearColors[z]);
+    }
 }
 
 #ifdef Bool

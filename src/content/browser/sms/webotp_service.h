@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -17,7 +17,7 @@
 #include "content/browser/sms/sms_queue.h"
 #include "content/browser/sms/user_consent_handler.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/frame_service_base.h"
+#include "content/public/browser/document_service.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "third_party/blink/public/mojom/sms/webotp_service.mojom.h"
 #include "url/origin.h"
@@ -26,16 +26,15 @@ namespace content {
 
 class RenderFrameHost;
 class SmsFetcher;
-struct LoadCommittedDetails;
 
 // WebOTPService handles mojo connections from the renderer, observing the
 // incoming SMS messages from an SmsFetcher. In practice, it is owned and
 // managed by a RenderFrameHost. It accomplishes that via subclassing
-// FrameServiceBase, which observes the lifecycle of a RenderFrameHost and
+// DocumentService, which observes the lifecycle of a RenderFrameHost and
 // manages it own memory. Create() creates a self-managed instance of
 // WebOTPService and binds it to the request.
 class CONTENT_EXPORT WebOTPService
-    : public FrameServiceBase<blink::mojom::WebOTPService>,
+    : public DocumentService<blink::mojom::WebOTPService>,
       public SmsFetcher::Subscriber {
  public:
   // Return value indicates success. Creation can fail if origin requirements
@@ -48,6 +47,10 @@ class CONTENT_EXPORT WebOTPService
                 const OriginList&,
                 RenderFrameHost*,
                 mojo::PendingReceiver<blink::mojom::WebOTPService>);
+
+  WebOTPService(const WebOTPService&) = delete;
+  WebOTPService& operator=(const WebOTPService&) = delete;
+
   ~WebOTPService() override;
 
   using FailureType = SmsFetchFailureType;
@@ -75,11 +78,6 @@ class CONTENT_EXPORT WebOTPService
 
   void OnUserConsentComplete(UserConsentResult);
 
- protected:
-  // content::WebContentsObserver:
-  void NavigationEntryCommitted(
-      const content::LoadCommittedDetails& load_details) override;
-
  private:
   void CleanUp();
   UserConsentHandler* CreateConsentHandler(UserConsent);
@@ -89,7 +87,7 @@ class CONTENT_EXPORT WebOTPService
   // |fetcher_| is safe because all instances of SmsFetcher are owned
   // by the browser context, which transitively (through RenderFrameHost) owns
   // and outlives this class.
-  SmsFetcher* fetcher_;
+  raw_ptr<SmsFetcher> fetcher_;
 
   const OriginList origin_list_;
   ReceiveCallback callback_;
@@ -99,19 +97,17 @@ class CONTENT_EXPORT WebOTPService
   // Timer to trigger timeout for any pending request. We (re)arm the timer
   // every time we receive a new request.
   base::DelayTimer timeout_timer_;
-  absl::optional<FailureType> prompt_failure_;
+  absl::optional<FailureType> delayed_rejection_reason_;
 
   // The ptr is valid only when we are handling an incoming otp response.
   std::unique_ptr<UserConsentHandler> consent_handler_;
   // This is used to inject a mock consent handler for testing and it is owned
   // by test code.
-  UserConsentHandler* consent_handler_for_test_{nullptr};
+  raw_ptr<UserConsentHandler> consent_handler_for_test_{nullptr};
 
   SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<WebOTPService> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(WebOTPService);
 };
 
 }  // namespace content

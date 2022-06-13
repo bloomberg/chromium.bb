@@ -12,13 +12,12 @@
 
 #include "base/callback.h"
 #include "base/check.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
 #include "base/json/json_reader.h"
-#include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
-#include "base/numerics/ranges.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -191,7 +190,7 @@ bool IntRangePolicyHandlerBase::EnsureInRange(const base::Value* input,
     if (!clamp_)
       return false;
 
-    value = base::ClampToRange(value, min_, max_);
+    value = base::clamp(value, min_, max_);
   }
 
   if (output)
@@ -252,8 +251,7 @@ bool StringMappingListPolicyHandler::Convert(const base::Value* input,
   int index = -1;
   for (const auto& entry : list_value->GetList()) {
     ++index;
-    std::string entry_value;
-    if (!entry.GetAsString(&entry_value)) {
+    if (!entry.is_string()) {
       if (errors) {
         errors->AddError(policy_name(), index, IDS_POLICY_TYPE_ERROR,
                          base::Value::GetTypeName(base::Value::Type::STRING));
@@ -261,7 +259,7 @@ bool StringMappingListPolicyHandler::Convert(const base::Value* input,
       continue;
     }
 
-    std::unique_ptr<base::Value> mapped_value = Map(entry_value);
+    std::unique_ptr<base::Value> mapped_value = Map(entry.GetString());
     if (mapped_value) {
       if (output)
         output->Append(std::move(mapped_value));
@@ -634,7 +632,7 @@ bool SimpleJsonStringSchemaValidatingPolicyHandler::IsListSchema() const {
 LegacyPoliciesDeprecatingPolicyHandler::LegacyPoliciesDeprecatingPolicyHandler(
     std::vector<std::unique_ptr<ConfigurationPolicyHandler>>
         legacy_policy_handlers,
-    std::unique_ptr<SchemaValidatingPolicyHandler> new_policy_handler)
+    std::unique_ptr<NamedPolicyHandler> new_policy_handler)
     : legacy_policy_handlers_(std::move(legacy_policy_handlers)),
       new_policy_handler_(std::move(new_policy_handler)) {}
 
@@ -693,11 +691,14 @@ SimpleDeprecatingPolicyHandler::~SimpleDeprecatingPolicyHandler() = default;
 bool SimpleDeprecatingPolicyHandler::CheckPolicySettings(
     const PolicyMap& policies,
     PolicyErrorMap* errors) {
-  // TODO(crbug/1102492): When the legacy policy value is ignored, do you think
-  // it's a good idea to add the "Ignore" error to it: IDS_POLICY_LABEL_IGNORED
-  // && IDS_POLICY_OVERRIDDEN.
-  if (policies.Get(new_policy_handler_->policy_name()))
+  if (policies.Get(new_policy_handler_->policy_name())) {
+    if (policies.Get(legacy_policy_handler_->policy_name())) {
+      errors->AddError(legacy_policy_handler_->policy_name(),
+                       IDS_POLICY_OVERRIDDEN,
+                       new_policy_handler_->policy_name());
+    }
     return new_policy_handler_->CheckPolicySettings(policies, errors);
+  }
 
   // The new policy is not set, fall back to legacy ones.
   return legacy_policy_handler_->CheckPolicySettings(policies, errors);

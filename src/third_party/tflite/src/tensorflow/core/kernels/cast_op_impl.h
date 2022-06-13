@@ -27,9 +27,6 @@ namespace functor {
 
 CAST_FUNCTORS(Eigen::ThreadPoolDevice);
 
-#ifdef TENSORFLOW_USE_SYCL
-CAST_FUNCTORS(Eigen::SyclDevice);
-#endif  // TENSORFLOW_USE_SYCL
 
 }  // namespace functor
 
@@ -42,7 +39,7 @@ CAST_FUNCTORS(Eigen::SyclDevice);
   FN(arg0, arg1, int8);                      \
   FN(arg0, arg1, int16);                     \
   FN(arg0, arg1, int32);                     \
-  FN(arg0, arg1, int64);                     \
+  FN(arg0, arg1, int64_t);                   \
   FN(arg0, arg1, float);                     \
   FN(arg0, arg1, double);                    \
   FN(arg0, arg1, std::complex<float>);       \
@@ -65,6 +62,16 @@ CAST_FUNCTORS(Eigen::SyclDevice);
            truncate);                                                     \
     };                                                                    \
   }
+
+#if defined(MLIR_GENERATED_GPU_KERNELS_ENABLED)
+
+// The subset of types which are currently not supported yet with the MLIR
+// generated kernels.
+#define CURRY_SUBSET_TYPES3(FN, arg0, arg1) \
+  FN(arg0, arg1, std::complex<float>);      \
+  FN(arg0, arg1, std::complex<double>)
+
+#endif
 
 // The functions below are implemented in the cast_op_impl_*.cc files.
 CastFunctorType GetCpuCastFromBool(DataType dst_dtype);
@@ -134,27 +141,6 @@ CastFunctorType GetGpuCastFromBfloat(DataType dst_dtype);
 
 #endif  // GOOGLE_CUDA || TENSORFLOW_USE_ROCM
 
-#ifdef TENSORFLOW_USE_SYCL
-CastFunctorType GetSyclCastFromBool(DataType dst_dtype);
-
-CastFunctorType GetSyclCastFromUint8(DataType dst_dtype);
-
-CastFunctorType GetSyclCastFromUint16(DataType dst_dtype);
-
-CastFunctorType GetSyclCastFromUint32(DataType dst_dtype);
-
-CastFunctorType GetSyclCastFromUint64(DataType dst_dtype);
-
-CastFunctorType GetSyclCastFromInt16(DataType dst_dtype);
-
-CastFunctorType GetSyclCastFromInt32(DataType dst_dtype);
-
-CastFunctorType GetSyclCastFromInt64(DataType dst_dtype);
-
-CastFunctorType GetSyclCastFromFloat(DataType dst_dtype);
-
-CastFunctorType GetSyclCastFromDouble(DataType dst_dtype);
-#endif  // TENSORFLOW_USE_SYCL
 
 }  // namespace tensorflow
 

@@ -10,7 +10,6 @@
 
 #include "base/check_op.h"
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "mojo/public/c/system/functions.h"
 #include "mojo/public/c/system/types.h"
 #include "mojo/public/cpp/system/handle_signals_state.h"
@@ -77,6 +76,10 @@ class ScopedHandleBase {
 
   ScopedHandleBase() {}
   explicit ScopedHandleBase(HandleType handle) : handle_(handle) {}
+
+  ScopedHandleBase(const ScopedHandleBase&) = delete;
+  ScopedHandleBase& operator=(const ScopedHandleBase&) = delete;
+
   ~ScopedHandleBase() { CloseIfNecessary(); }
 
   template <class CompatibleHandleType>
@@ -138,8 +141,6 @@ class ScopedHandleBase {
   }
 
   HandleType handle_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedHandleBase);
 };
 
 template <typename HandleType>

@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "ui/web_dialogs/web_dialogs_export.h"
 
@@ -61,6 +61,11 @@ class WEB_DIALOGS_EXPORT WebDialogWebContentsDelegate
   // |context| and |handler| must be non-NULL.
   WebDialogWebContentsDelegate(content::BrowserContext* context,
                                std::unique_ptr<WebContentsHandler> handler);
+
+  WebDialogWebContentsDelegate(const WebDialogWebContentsDelegate&) = delete;
+  WebDialogWebContentsDelegate& operator=(const WebDialogWebContentsDelegate&) =
+      delete;
+
   ~WebDialogWebContentsDelegate() override;
 
   // The returned browser context is guaranteed to be original if non-NULL.
@@ -92,11 +97,9 @@ class WEB_DIALOGS_EXPORT WebDialogWebContentsDelegate
 
  private:
   // Weak pointer.  Always an original profile.
-  content::BrowserContext* browser_context_;
+  raw_ptr<content::BrowserContext> browser_context_;
 
   std::unique_ptr<WebContentsHandler> const handler_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebDialogWebContentsDelegate);
 };
 
 }  // namespace ui

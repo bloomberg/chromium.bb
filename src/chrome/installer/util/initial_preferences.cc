@@ -8,13 +8,13 @@
 
 #include <memory>
 
+#include "base/cxx17_backports.h"
 #include "base/environment.h"
 #include "base/files/file_util.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/notreached.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -24,6 +24,7 @@
 #include "chrome/installer/util/util_constants.h"
 #include "components/variations/pref_names.h"
 #include "rlz/buildflags/buildflags.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace {
 
@@ -46,8 +47,8 @@ std::vector<std::string> GetNamedList(const char* name,
   if (!prefs->GetList(name, &value_list))
     return list;
 
-  list.reserve(value_list->GetSize());
-  for (size_t i = 0; i < value_list->GetSize(); ++i) {
+  list.reserve(value_list->GetList().size());
+  for (size_t i = 0; i < value_list->GetList().size(); ++i) {
     const base::Value* entry;
     std::string url_entry;
     if (!value_list->Get(i, &entry) || !GetURLFromValue(entry, &url_entry)) {
@@ -268,10 +269,13 @@ void InitialPreferences::EnforceLegacyPreferences() {
 }
 
 bool InitialPreferences::GetBool(const std::string& name, bool* value) const {
-  bool ret = false;
-  if (distribution_)
-    ret = distribution_->GetBoolean(name, value);
-  return ret;
+  if (!distribution_)
+    return false;
+  if (absl::optional<bool> v = distribution_->FindBoolPath(name)) {
+    *value = *v;
+    return true;
+  }
+  return false;
 }
 
 bool InitialPreferences::GetInt(const std::string& name, int* value) const {
@@ -319,8 +323,9 @@ std::string InitialPreferences::GetVariationsSeedSignature() const {
 std::string InitialPreferences::ExtractPrefString(
     const std::string& name) const {
   std::string result;
-  std::unique_ptr<base::Value> pref_value;
-  if (initial_dictionary_->Remove(name, &pref_value)) {
+  absl::optional<base::Value> pref_value =
+      initial_dictionary_->ExtractKey(name);
+  if (pref_value.has_value()) {
     if (!pref_value->GetAsString(&result))
       NOTREACHED();
   }

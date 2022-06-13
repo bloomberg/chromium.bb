@@ -10,7 +10,6 @@
 #include "base/android/jni_array.h"
 #include "base/android/scoped_java_ref.h"
 #include "content/browser/contacts/contacts_provider.h"
-#include "content/common/content_export.h"
 #include "third_party/blink/public/mojom/contacts/contacts_manager.mojom.h"
 
 namespace content {
@@ -20,6 +19,10 @@ class RenderFrameHostImpl;
 class ContactsProviderAndroid : public ContactsProvider {
  public:
   explicit ContactsProviderAndroid(RenderFrameHostImpl* render_frame_host);
+
+  ContactsProviderAndroid(const ContactsProviderAndroid&) = delete;
+  ContactsProviderAndroid& operator=(const ContactsProviderAndroid&) = delete;
+
   ~ContactsProviderAndroid() override;
 
   // ContactsProvider:
@@ -62,8 +65,6 @@ class ContactsProviderAndroid : public ContactsProvider {
   // The origin that the contacts data will be shared with. Formatted for
   // display with the scheme omitted.
   std::u16string formatted_origin_;
-
-  DISALLOW_COPY_AND_ASSIGN(ContactsProviderAndroid);
 };
 
 }  // namespace content

@@ -17,10 +17,10 @@
 
 #include "base/atomicops.h"
 #include "base/check.h"
+#include "base/cxx17_backports.h"
 #include "base/file_version_info.h"
 #include "base/lazy_instance.h"
 #include "base/notreached.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/current_module.h"
@@ -59,6 +59,10 @@ using base::subtle::NoBarrier_CompareAndSwap;
 class BreakpadWin {
  public:
   BreakpadWin();
+
+  BreakpadWin(const BreakpadWin&) = delete;
+  BreakpadWin& operator=(const BreakpadWin&) = delete;
+
   ~BreakpadWin();
 
   static BreakpadWin* GetInstance();
@@ -90,8 +94,6 @@ class BreakpadWin {
   static const wchar_t* pipe_name_;
 
   friend void ::remoting::InitializeCrashReportingForTest(const wchar_t*);
-
-  DISALLOW_COPY_AND_ASSIGN(BreakpadWin);
 };
 
 // |LazyInstance| is used to guarantee that the exception handler will be

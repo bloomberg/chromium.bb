@@ -51,7 +51,8 @@ void ClickToCallUiController::ShowDialog(
 
 ClickToCallUiController::ClickToCallUiController(
     content::WebContents* web_contents)
-    : SharingUiController(web_contents) {}
+    : SharingUiController(web_contents),
+      content::WebContentsUserData<ClickToCallUiController>(*web_contents) {}
 
 ClickToCallUiController::~ClickToCallUiController() = default;
 
@@ -59,7 +60,6 @@ void ClickToCallUiController::OnDeviceSelected(
     const std::string& phone_number,
     const syncer::DeviceInfo& device,
     SharingClickToCallEntryPoint entry_point) {
-  // TODO(knollr): figure out how to get a value for |has_apps|.
   LogClickToCallUKM(web_contents(), entry_point,
                     /*has_devices=*/true, /*has_apps=*/false,
                     SharingClickToCallSelection::kDevice);
@@ -192,4 +192,4 @@ SharingDialogData ClickToCallUiController::CreateDialogData(
   return data;
 }
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(ClickToCallUiController)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(ClickToCallUiController);

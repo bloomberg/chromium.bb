@@ -7,13 +7,14 @@
 #include "content/browser/accessibility/accessibility_event_recorder_mac.h"
 #include "content/browser/accessibility/accessibility_tree_formatter_blink.h"
 #include "content/browser/accessibility/accessibility_tree_formatter_mac.h"
+#include "content/browser/accessibility/browser_accessibility_manager.h"
 
 namespace content {
 
 // static
 std::unique_ptr<ui::AXTreeFormatter>
 AXInspectFactory::CreatePlatformFormatter() {
-  return AXInspectFactory::CreateFormatter(kMac);
+  return AXInspectFactory::CreateFormatter(ui::AXApiType::kMac);
 }
 
 // static
@@ -21,16 +22,22 @@ std::unique_ptr<ui::AXEventRecorder> AXInspectFactory::CreatePlatformRecorder(
     BrowserAccessibilityManager* manager,
     base::ProcessId pid,
     const ui::AXTreeSelector& selector) {
-  return AXInspectFactory::CreateRecorder(kMac, manager, pid, selector);
+  return AXInspectFactory::CreateRecorder(ui::AXApiType::kMac, manager, pid,
+                                          selector);
 }
 
 // static
 std::unique_ptr<ui::AXTreeFormatter> AXInspectFactory::CreateFormatter(
-    AXInspectFactory::Type type) {
+    ui::AXApiType::Type type) {
+  // Developer mode: crash immediately on any accessibility fatal error.
+  // This only runs during integration tests, or if a developer is
+  // using an inspection tool, e.g. chrome://accessibility.
+  BrowserAccessibilityManager::AlwaysFailFast();
+
   switch (type) {
-    case kBlink:
+    case ui::AXApiType::kBlink:
       return std::make_unique<AccessibilityTreeFormatterBlink>();
-    case kMac:
+    case ui::AXApiType::kMac:
       return std::make_unique<AccessibilityTreeFormatterMac>();
     default:
       NOTREACHED() << "Unsupported inspect type " << type;
@@ -40,12 +47,17 @@ std::unique_ptr<ui::AXTreeFormatter> AXInspectFactory::CreateFormatter(
 
 // static
 std::unique_ptr<ui::AXEventRecorder> AXInspectFactory::CreateRecorder(
-    AXInspectFactory::Type type,
+    ui::AXApiType::Type type,
     BrowserAccessibilityManager* manager,
     base::ProcessId pid,
     const ui::AXTreeSelector& selector) {
+  // Developer mode: crash immediately on any accessibility fatal error.
+  // This only runs during integration tests, or if a developer is
+  // using an inspection tool, e.g. chrome://accessibility.
+  BrowserAccessibilityManager::AlwaysFailFast();
+
   switch (type) {
-    case kMac:
+    case ui::AXApiType::kMac:
       return std::make_unique<AccessibilityEventRecorderMac>(manager, pid,
                                                              selector);
     default:

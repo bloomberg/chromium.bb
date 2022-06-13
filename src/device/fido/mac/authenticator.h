@@ -10,9 +10,9 @@
 
 #include "base/callback.h"
 #include "base/component_export.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_piece_forward.h"
+#include "device/fido/ctap_make_credential_request.h"
 #include "device/fido/fido_authenticator.h"
 #include "device/fido/fido_transport_protocol.h"
 #include "device/fido/mac/credential_store.h"
@@ -46,6 +46,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) TouchIdAuthenticator
   static std::unique_ptr<TouchIdAuthenticator> Create(
       AuthenticatorConfig config);
 
+  TouchIdAuthenticator(const TouchIdAuthenticator&) = delete;
+  TouchIdAuthenticator& operator=(const TouchIdAuthenticator&) = delete;
+
   ~TouchIdAuthenticator() override;
 
   bool HasCredentialForGetAssertionRequest(
@@ -58,6 +61,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) TouchIdAuthenticator
   // FidoAuthenticator
   void InitializeAuthenticator(base::OnceClosure callback) override;
   void MakeCredential(CtapMakeCredentialRequest request,
+                      MakeCredentialOptions options,
                       MakeCredentialCallback callback) override;
   void GetAssertion(CtapGetAssertionRequest request,
                     CtapGetAssertionOptions options,
@@ -83,9 +87,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) TouchIdAuthenticator
   std::unique_ptr<Operation> operation_;
 
   base::WeakPtrFactory<TouchIdAuthenticator> weak_factory_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TouchIdAuthenticator);
 };
 
 }  // namespace mac

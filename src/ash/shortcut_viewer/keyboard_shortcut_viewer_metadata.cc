@@ -5,13 +5,11 @@
 #include "ash/shortcut_viewer/keyboard_shortcut_viewer_metadata.h"
 
 #include "ash/constants/ash_features.h"
-#include "ash/public/cpp/ash_features.h"
-#include "ash/shortcut_viewer/keyboard_shortcut_item.h"
+#include "ash/public/cpp/keyboard_shortcut_item.h"
 #include "ash/shortcut_viewer/strings/grit/shortcut_viewer_strings.h"
 #include "ash/shortcut_viewer/vector_icons/vector_icons.h"
 #include "base/check.h"
 #include "base/feature_list.h"
-#include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
 #include "base/strings/utf_string_conversions.h"
@@ -26,11 +24,14 @@
 #include "ui/events/keycodes/dom/dom_key.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"
+#include "ui/events/keycodes/keyboard_codes_posix.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
 #include "ui/gfx/vector_icon_types.h"
 
 namespace keyboard_shortcut_viewer {
+
+using ash::ShortcutCategory;
 
 namespace {
 
@@ -283,8 +284,8 @@ const gfx::VectorIcon* GetVectorIconForKeyboardCode(ui::KeyboardCode key_code) {
   }
 }
 
-const std::vector<KeyboardShortcutItem>& GetKeyboardShortcutItemList() {
-  static base::NoDestructor<std::vector<KeyboardShortcutItem>> item_list({
+const std::vector<ash::KeyboardShortcutItem>& GetKeyboardShortcutItemList() {
+  static base::NoDestructor<std::vector<ash::KeyboardShortcutItem>> item_list({
       {// |categories|
        {ShortcutCategory::kAccessibility},
        IDS_KSV_DESCRIPTION_TOGGLE_DOCKED_MAGNIFIER,
@@ -759,6 +760,13 @@ const std::vector<KeyboardShortcutItem>& GetKeyboardShortcutItemList() {
        {},
        // |accelerator_ids|
        {{ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_NONE}}},
+
+      {// |categories|
+       {ShortcutCategory::kTabAndWindow},
+       IDS_KSV_DESCRIPTION_TOGGLE_RESIZE_LOCK_MENU,
+       {},
+       // |accelerator_ids|
+       {{ui::VKEY_C, ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN}}},
 
       {// |categories|
        {ShortcutCategory::kAccessibility},
@@ -1289,6 +1297,13 @@ const std::vector<KeyboardShortcutItem>& GetKeyboardShortcutItemList() {
        {{ui::VKEY_BROWSER_BACK, ui::EF_CONTROL_DOWN}}},
 
       {// |categories|
+       {ShortcutCategory::kPageAndBrowser},
+       IDS_KSV_DESCRIPTION_FOCUS_WEB_CONTENTS_PANE,
+       {},
+       // |accelerator_ids|
+       {{ui::VKEY_F6, ui::EF_CONTROL_DOWN}}},
+
+      {// |categories|
        {ShortcutCategory::kTabAndWindow},
        IDS_KSV_DESCRIPTION_MOVE_ACTIVE_WINDOW_BETWEEN_DISPLAYS,
        {},
@@ -1427,6 +1442,13 @@ const std::vector<KeyboardShortcutItem>& GetKeyboardShortcutItemList() {
        {{ui::VKEY_OEM_6, ui::EF_SHIFT_DOWN | ui::EF_COMMAND_DOWN}}},
 
       {// |categories|
+       {ShortcutCategory::kTabAndWindow},
+       IDS_KSV_DESCRIPTION_FLOAT,
+       {},
+       // |accelerator_ids|
+       {{ui::VKEY_F, ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN}}},
+
+      {// |categories|
        {ShortcutCategory::kPageAndBrowser},
        IDS_KSV_DESCRIPTION_SHOW_IDC_FOCUS_MENU_BAR,
        {},
@@ -1528,7 +1550,7 @@ const std::vector<KeyboardShortcutItem>& GetKeyboardShortcutItemList() {
 
     // Include diagnostics shortcuts only when experiment flag is enabled.
     if (base::FeatureList::IsEnabled(chromeos::features::kDiagnosticsApp)) {
-      const KeyboardShortcutItem diagnostics_shortcut = {
+      const ash::KeyboardShortcutItem diagnostics_shortcut = {
           // |categories|
           {ShortcutCategory::kSystemAndDisplay},
           IDS_KSV_DESCRIPTION_OPEN_DIAGNOSTICS,
@@ -1538,31 +1560,38 @@ const std::vector<KeyboardShortcutItem>& GetKeyboardShortcutItemList() {
       item_list->emplace_back(diagnostics_shortcut);
     }
 
-    for (auto& item : *item_list) {
-      // Capture mode is an improved screenshot and video recording tool, and
-      // the shortuct messages reflect the differences. If capture mode is
-      // disabled, we will swap the strings.
-      // TODO(sammiequon): Remove the strings suffixed with _OLD once capture
-      // mode can no longer be disabled.
-      if (!ash::features::IsCaptureModeEnabled()) {
-        static base::flat_map<int, int> new_to_old_message_id_map = {
-            {IDS_KSV_DESCRIPTION_TAKE_PARTIAL_SCREENSHOT,
-             IDS_KSV_DESCRIPTION_TAKE_PARTIAL_SCREENSHOT_OLD},
-            {IDS_KSV_DESCRIPTION_TAKE_SCREENSHOT,
-             IDS_KSV_DESCRIPTION_TAKE_SCREENSHOT_OLD},
-            {IDS_KSV_DESCRIPTION_TAKE_FULLSCREEN_SCREENSHOT,
-             IDS_KSV_DESCRIPTION_TAKE_SCREENSHOT_OLD},
-            {IDS_KSV_DESCRIPTION_TAKE_WINDOW_SCREENSHOT,
-             IDS_KSV_DESCRIPTION_TAKE_WINDOW_SCREENSHOT_OLD}};
-        const int id = item.description_message_id;
-        if (new_to_old_message_id_map.contains(id))
-          item.description_message_id = new_to_old_message_id_map[id];
-      }
+    // The improved desks keyboard shortcuts should only be enabled if the
+    // improved keyboard shortcuts flag is also enabled.
+    if (::features::IsImprovedKeyboardShortcutsEnabled() &&
+        ash::features::IsImprovedDesksKeyboardShortcutsEnabled()) {
+      const ash::KeyboardShortcutItem indexed_activation_shortcut = {
+          // |categories|
+          {ShortcutCategory::kTabAndWindow},
+          IDS_KSV_DESCRIPTION_DESKS_ACTIVATE_INDEXED_DESK,
+          IDS_KSV_SHORTCUT_DESKS_ACTIVATE_INDEXED_DESK,
+          // |accelerator_ids|
+          {},
+          // |shortcut_key_codes|
+          {{ui::VKEY_SHIFT, ui::VKEY_UNKNOWN, ui::VKEY_COMMAND,
+            ui::VKEY_UNKNOWN}}};
 
+      const ash::KeyboardShortcutItem toggle_all_desks_shortcut = {
+          // |categories|
+          {ShortcutCategory::kTabAndWindow},
+          IDS_KSV_DESCRIPTION_DESKS_TOGGLE_WINDOW_ASSIGNED_TO_ALL_DESKS,
+          {},
+          // |accelerator_ids|
+          {{ui::VKEY_A, ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN}}};
+
+      item_list->emplace_back(indexed_activation_shortcut);
+      item_list->emplace_back(toggle_all_desks_shortcut);
+    }
+
+    for (auto& item : *item_list) {
       if (item.shortcut_key_codes.empty() && !item.accelerator_ids.empty()) {
         // Only use the first |accelerator_id| because the modifiers are the
         // same even if it is a grouped accelerators.
-        const AcceleratorId& accelerator_id = item.accelerator_ids[0];
+        const ash::AcceleratorId& accelerator_id = item.accelerator_ids[0];
         // Insert |shortcut_key_codes| by the order of CTRL, ALT, SHIFT, SEARCH,
         // and then key, to be consistent with how we describe it in the
         // |shortcut_message_id| associated string template.

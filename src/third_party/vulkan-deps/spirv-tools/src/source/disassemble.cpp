@@ -283,13 +283,11 @@ void Disassembler::EmitOperand(const spv_parsed_instruction_t& inst,
     case SPV_OPERAND_TYPE_LITERAL_STRING: {
       stream_ << "\"";
       SetGreen();
-      // Strings are always little-endian, and null-terminated.
-      // Write out the characters, escaping as needed, and without copying
-      // the entire string.
-      auto c_str = reinterpret_cast<const char*>(inst.words + operand.offset);
-      for (auto p = c_str; *p; ++p) {
-        if (*p == '"' || *p == '\\') stream_ << '\\';
-        stream_ << *p;
+
+      std::string str = spvDecodeLiteralStringOperand(inst, operand_index);
+      for (char const& c : str) {
+        if (c == '"' || c == '\\') stream_ << '\\';
+        stream_ << c;
       }
       ResetColor();
       stream_ << '"';
@@ -328,7 +326,9 @@ void Disassembler::EmitOperand(const spv_parsed_instruction_t& inst,
     case SPV_OPERAND_TYPE_CLDEBUG100_DEBUG_OPERATION:
     case SPV_OPERAND_TYPE_CLDEBUG100_DEBUG_IMPORTED_ENTITY:
     case SPV_OPERAND_TYPE_FPDENORM_MODE:
-    case SPV_OPERAND_TYPE_FPOPERATION_MODE: {
+    case SPV_OPERAND_TYPE_FPOPERATION_MODE:
+    case SPV_OPERAND_TYPE_QUANTIZATION_MODES:
+    case SPV_OPERAND_TYPE_OVERFLOW_MODES: {
       spv_operand_desc entry;
       if (grammar_.lookupOperand(operand.type, word, &entry))
         assert(false && "should have caught this earlier");
@@ -345,7 +345,17 @@ void Disassembler::EmitOperand(const spv_parsed_instruction_t& inst,
       EmitMaskOperand(operand.type, word);
       break;
     default:
-      assert(false && "unhandled or invalid case");
+      if (spvOperandIsConcreteMask(operand.type)) {
+        EmitMaskOperand(operand.type, word);
+      } else if (spvOperandIsConcrete(operand.type)) {
+        spv_operand_desc entry;
+        if (grammar_.lookupOperand(operand.type, word, &entry))
+          assert(false && "should have caught this earlier");
+        stream_ << entry->name;
+      } else {
+        assert(false && "unhandled or invalid case");
+      }
+      break;
   }
   ResetColor();
 }

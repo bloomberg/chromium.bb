@@ -22,6 +22,9 @@ struct ThreadData;
 typedef struct EncWorkerData {
   struct AV1_COMP *cpi;
   struct ThreadData *td;
+#if CONFIG_FRAME_PARALLEL_ENCODE
+  struct ThreadData *original_td;
+#endif  // CONFIG_FRAME_PARALLEL_ENCODE
   int start;
   int thread_id;
 } EncWorkerData;
@@ -78,9 +81,24 @@ void av1_compute_num_workers_for_mt(AV1_COMP *cpi);
 
 int av1_get_max_num_workers(AV1_COMP *cpi);
 
-void av1_create_workers(AV1_COMP *cpi, int num_workers);
+void av1_create_workers(AV1_PRIMARY *ppi, int num_workers);
 
-void av1_create_second_pass_workers(AV1_COMP *cpi, int num_workers);
+void av1_init_frame_mt(AV1_PRIMARY *ppi, AV1_COMP *cpi);
+
+void av1_init_cdef_worker(AV1_COMP *cpi);
+
+#if !CONFIG_REALTIME_ONLY
+void av1_init_lr_mt_buffers(AV1_COMP *cpi);
+#endif
+
+#if CONFIG_MULTITHREAD
+void av1_init_mt_sync(AV1_COMP *cpi, int is_first_pass);
+#endif  // CONFIG_MULTITHREAD
+
+int av1_get_num_mod_workers_for_alloc(PrimaryMultiThreadInfo *const p_mt_info,
+                                      MULTI_THREADED_MODULES mod_name);
+
+void av1_init_tile_thread_data(AV1_PRIMARY *ppi, int is_first_pass);
 
 void av1_cdef_mse_calc_frame_mt(AV1_COMMON *cm, MultiThreadInfo *mt_info,
                                 CdefSearchCtx *cdef_search_ctx);
@@ -92,7 +110,18 @@ void av1_write_tile_obu_mt(
     struct aom_write_bit_buffer *saved_wb, uint8_t obu_extn_header,
     const FrameHeaderInfo *fh_info, int *const largest_tile_id,
     unsigned int *max_tile_size, uint32_t *const obu_header_size,
-    uint8_t **tile_data_start);
+    uint8_t **tile_data_start, const int num_workers);
+
+int av1_compute_num_enc_workers(AV1_COMP *cpi, int max_workers);
+
+#if CONFIG_FRAME_PARALLEL_ENCODE
+int av1_compute_num_fp_contexts(AV1_PRIMARY *ppi, AV1EncoderConfig *oxcf);
+
+int av1_check_fpmt_config(AV1_PRIMARY *const ppi, AV1EncoderConfig *const oxcf);
+
+int av1_compress_parallel_frames(AV1_PRIMARY *const ppi,
+                                 AV1_COMP_DATA *const first_cpi_data);
+#endif
 
 #ifdef __cplusplus
 }  // extern "C"

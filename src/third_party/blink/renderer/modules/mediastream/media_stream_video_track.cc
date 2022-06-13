@@ -10,8 +10,7 @@
 #include "base/bind.h"
 #include "base/containers/contains.h"
 #include "base/location.h"
-#include "base/macros.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/limits.h"
@@ -19,7 +18,6 @@
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_sink.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util_video_device.h"
-#include "third_party/blink/renderer/modules/mediastream/media_stream_video_track_signal_observer.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_component.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
@@ -31,7 +29,7 @@ namespace {
 
 // A lower-bound for the refresh interval.
 constexpr base::TimeDelta kLowerBoundRefreshInterval =
-    base::TimeDelta::FromHz(media::limits::kMaxFramesPerSecond);
+    base::Hertz(media::limits::kMaxFramesPerSecond);
 
 // This alias mimics the definition of VideoCaptureDeliverFrameCB.
 using VideoCaptureDeliverFrameInternalCallback = WTF::CrossThreadFunction<void(
@@ -53,11 +51,10 @@ base::TimeDelta ComputeRefreshIntervalFromBounds(
   // the maximum frameRate if it happens to be less than the default.
   base::TimeDelta refresh_interval = required_min_refresh_interval;
   if (min_frame_rate.has_value())
-    refresh_interval = base::TimeDelta::FromHz(*min_frame_rate);
+    refresh_interval = base::Hertz(*min_frame_rate);
 
   if (max_frame_rate.has_value()) {
-    refresh_interval =
-        std::max(refresh_interval, base::TimeDelta::FromHz(*max_frame_rate));
+    refresh_interval = std::max(refresh_interval, base::Hertz(*max_frame_rate));
   }
 
   if (refresh_interval < kLowerBoundRefreshInterval)
@@ -82,6 +79,9 @@ class MediaStreamVideoTrack::FrameDeliverer
   FrameDeliverer(scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
                  base::WeakPtr<MediaStreamVideoTrack> media_stream_video_track,
                  bool enabled);
+
+  FrameDeliverer(const FrameDeliverer&) = delete;
+  FrameDeliverer& operator=(const FrameDeliverer&) = delete;
 
   // Sets whether the track is enabled or not. If getting enabled and encoded
   // output is enabled, the deliverer will wait until the next key frame before
@@ -168,8 +168,6 @@ class MediaStreamVideoTrack::FrameDeliverer
 
   // This should only be accessed on the IO thread.
   bool is_refreshing_for_min_frame_rate_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(FrameDeliverer);
 };
 
 MediaStreamVideoTrack::FrameDeliverer::FrameDeliverer(
@@ -275,9 +273,8 @@ void MediaStreamVideoTrack::FrameDeliverer::RemoveEncodedCallbackOnIO(
 
   // Callback destruction needs to happen on the specified task runner.
   auto it = encoded_callbacks_.find(id);
-  if (it == encoded_callbacks_.end()) {
+  if (it == encoded_callbacks_.end())
     return;
-  }
   PostCrossThreadTask(
       *task_runner, FROM_HERE,
       CrossThreadBindOnce([](EncodedVideoFrameInternalCallback callback) {},
@@ -457,8 +454,6 @@ MediaStreamVideoTrack::MediaStreamVideoTrack(
     MediaStreamVideoSource::ConstraintsOnceCallback callback,
     bool enabled)
     : MediaStreamTrackPlatform(true),
-      adapter_settings_(std::make_unique<VideoTrackAdapterSettings>(
-          VideoTrackAdapterSettings())),
       is_screencast_(false),
       source_(source->GetWeakPtr()) {
   frame_deliverer_ =
@@ -494,8 +489,7 @@ MediaStreamVideoTrack::MediaStreamVideoTrack(
     MediaStreamVideoSource::ConstraintsOnceCallback callback,
     bool enabled)
     : MediaStreamTrackPlatform(true),
-      adapter_settings_(
-          std::make_unique<VideoTrackAdapterSettings>(adapter_settings)),
+      adapter_settings_(adapter_settings),
       noise_reduction_(noise_reduction),
       is_screencast_(is_screen_cast),
       min_frame_rate_(min_frame_rate),
@@ -554,8 +548,16 @@ void MediaStreamVideoTrack::AddSink(
   AddSinkInternal(&sinks_, sink);
   frame_deliverer_->AddCallback(sink, callback);
   secure_tracker_.Add(sink, is_secure == MediaStreamVideoSink::IsSecure::kYes);
-  if (uses_alpha == MediaStreamVideoSink::UsesAlpha::kDefault)
+  if (uses_alpha == MediaStreamVideoSink::UsesAlpha::kDefault) {
     alpha_using_sinks_.insert(sink);
+  } else if (uses_alpha == MediaStreamVideoSink::UsesAlpha::kNo) {
+    alpha_discarding_sinks_.insert(sink);
+  }
+
+  // Ensure sink gets told about any constraints set.
+  sink->OnVideoConstraintsChanged(min_frame_rate_,
+                                  adapter_settings_.max_frame_rate());
+
   // Request source to deliver a frame because a new sink is added.
   if (!source_)
     return;
@@ -563,7 +565,11 @@ void MediaStreamVideoTrack::AddSink(
   RequestRefreshFrame();
   source_->UpdateCapturingLinkSecure(this,
                                      secure_tracker_.is_capturing_secure());
-  source_->SetCanDiscardAlpha(alpha_using_sinks_.IsEmpty());
+  // Alpha can't be discarded if any sink uses alpha, or if the only sinks
+  // connected are kDependsOnOtherSinks.
+  const bool can_discard_alpha =
+      alpha_using_sinks_.IsEmpty() && !alpha_discarding_sinks_.IsEmpty();
+  source_->SetCanDiscardAlpha(can_discard_alpha);
   if (is_screencast_)
     StartTimerForRequestingFrames();
 }
@@ -582,6 +588,7 @@ void MediaStreamVideoTrack::RemoveSink(WebMediaStreamSink* sink) {
   DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
   RemoveSinkInternal(&sinks_, sink);
   alpha_using_sinks_.erase(sink);
+  alpha_discarding_sinks_.erase(sink);
   frame_deliverer_->RemoveCallback(sink);
   secure_tracker_.Remove(sink);
   if (!source_)
@@ -589,7 +596,10 @@ void MediaStreamVideoTrack::RemoveSink(WebMediaStreamSink* sink) {
   UpdateSourceHasConsumers();
   source_->UpdateCapturingLinkSecure(this,
                                      secure_tracker_.is_capturing_secure());
-  source_->SetCanDiscardAlpha(alpha_using_sinks_.IsEmpty());
+  const bool can_discard_alpha =
+      sinks_.IsEmpty() ||
+      (alpha_using_sinks_.IsEmpty() && !alpha_discarding_sinks_.IsEmpty());
+  source_->SetCanDiscardAlpha(can_discard_alpha);
   // Restart the timer with existing sinks.
   if (is_screencast_)
     StartTimerForRequestingFrames();
@@ -701,18 +711,38 @@ void MediaStreamVideoTrack::GetSettings(
     settings.display_surface = info->display_surface;
     settings.logical_surface = info->logical_surface;
     settings.cursor = info->cursor;
-    if (info->capture_handle) {
-      settings.capture_handle.emplace();
-      if (!info->capture_handle->origin.opaque()) {
-        settings.capture_handle->origin =
-            String::FromUTF8(info->capture_handle->origin.Serialize());
-      }
-      settings.capture_handle->handle =
-          WebString::FromUTF16(info->capture_handle->capture_handle);
-    } else {
-      settings.capture_handle = absl::nullopt;
-    }
   }
+}
+
+MediaStreamTrackPlatform::CaptureHandle
+MediaStreamVideoTrack::GetCaptureHandle() {
+  DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
+
+  MediaStreamTrackPlatform::CaptureHandle capture_handle;
+
+  if (!source_) {
+    return capture_handle;
+  }
+
+  const MediaStreamDevice& device = source_->device();
+  if (!device.display_media_info.has_value()) {
+    return capture_handle;
+  }
+  const media::mojom::DisplayMediaInformationPtr& info =
+      device.display_media_info.value();
+
+  if (!info->capture_handle) {
+    return capture_handle;
+  }
+
+  if (!info->capture_handle->origin.opaque()) {
+    capture_handle.origin =
+        String::FromUTF8(info->capture_handle->origin.Serialize());
+  }
+  capture_handle.handle =
+      WebString::FromUTF16(info->capture_handle->capture_handle);
+
+  return capture_handle;
 }
 
 void MediaStreamVideoTrack::OnReadyStateChanged(
@@ -731,9 +761,23 @@ void MediaStreamVideoTrack::OnReadyStateChanged(
     encoded_sink->OnReadyStateChanged(state);
 }
 
+void MediaStreamVideoTrack::SetMinimumFrameRate(double min_frame_rate) {
+  DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
+  min_frame_rate_ = min_frame_rate;
+}
+
 void MediaStreamVideoTrack::SetTrackAdapterSettings(
     const VideoTrackAdapterSettings& settings) {
-  adapter_settings_ = std::make_unique<VideoTrackAdapterSettings>(settings);
+  DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
+  adapter_settings_ = settings;
+}
+
+void MediaStreamVideoTrack::NotifyConstraintsConfigurationComplete() {
+  DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
+  for (auto* sink : sinks_) {
+    sink->OnVideoConstraintsChanged(min_frame_rate_,
+                                    adapter_settings_.max_frame_rate());
+  }
 }
 
 media::VideoCaptureFormat MediaStreamVideoTrack::GetComputedSourceFormat() {
@@ -749,24 +793,6 @@ void MediaStreamVideoTrack::OnFrameDropped(
   source_->OnFrameDropped(reason);
 }
 
-void MediaStreamVideoTrack::SetMinimumFrameRate(double min_frame_rate) {
-  DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
-  min_frame_rate_ = min_frame_rate;
-  if (signal_observer_)
-    signal_observer_->SetMinimumFrameRate(min_frame_rate);
-}
-
-MediaStreamVideoTrackSignalObserver* MediaStreamVideoTrack::SignalObserver() {
-  DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
-  return signal_observer_.Get();
-}
-
-void MediaStreamVideoTrack::SetSignalObserver(
-    MediaStreamVideoTrackSignalObserver* observer) {
-  DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
-  signal_observer_ = observer;
-}
-
 void MediaStreamVideoTrack::StartTimerForRequestingFrames() {
   DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
 
@@ -780,8 +806,7 @@ void MediaStreamVideoTrack::StartTimerForRequestingFrames() {
   }
 
   base::TimeDelta refresh_interval = ComputeRefreshIntervalFromBounds(
-      base::TimeDelta::FromHz(required_min_fps), min_frame_rate_,
-      max_frame_rate_);
+      base::Hertz(required_min_fps), min_frame_rate_, max_frame_rate_);
 
   if (refresh_interval.is_max()) {
     refresh_timer_.Stop();

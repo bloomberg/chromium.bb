@@ -13,6 +13,7 @@
 #include "services/viz/public/cpp/compositing/resource_format_mojom_traits.h"
 #include "services/viz/public/mojom/compositing/resource_format.mojom-shared.h"
 #include "services/viz/public/mojom/compositing/transferable_resource.mojom-shared.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/ipc/color/gfx_param_traits.h"
 
 namespace mojo {
@@ -66,7 +67,7 @@ struct StructTraits<viz::mojom::TransferableResourceDataView,
   }
 
   static bool wants_promotion_hint(const viz::TransferableResource& resource) {
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_WIN)
     // TransferableResource has this in an #ifdef, but mojo doesn't let us.
     // TODO(https://crbug.com/671901)
     return resource.wants_promotion_hint;

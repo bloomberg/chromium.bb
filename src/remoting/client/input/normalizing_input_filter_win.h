@@ -5,7 +5,6 @@
 #ifndef REMOTING_CLIENT_INPUT_NORMALIZING_INPUT_FILTER_WIN_H_
 #define REMOTING_CLIENT_INPUT_NORMALIZING_INPUT_FILTER_WIN_H_
 
-#include "base/macros.h"
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/input_filter.h"
 
@@ -29,6 +28,11 @@ namespace remoting {
 class NormalizingInputFilterWin : public protocol::InputFilter {
  public:
   explicit NormalizingInputFilterWin(protocol::InputStub* input_stub);
+
+  NormalizingInputFilterWin(const NormalizingInputFilterWin&) = delete;
+  NormalizingInputFilterWin& operator=(const NormalizingInputFilterWin&) =
+      delete;
+
   ~NormalizingInputFilterWin() override;
 
   // InputFilter interface.
@@ -51,8 +55,6 @@ class NormalizingInputFilterWin : public protocol::InputFilter {
 
   // True if LeftControl is pressed as part of AltGr.
   bool altgr_is_pressed_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(NormalizingInputFilterWin);
 };
 
 }  // namespace remoting

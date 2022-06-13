@@ -11,9 +11,9 @@
 
 #include <memory>
 
+#include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "ui/accessibility/accessibility_features.h"
@@ -74,18 +74,48 @@ class WindowsAccessibilityEnabler
     BrowserAccessibilityStateImpl::GetInstance()->OnAccessibilityApiUsage();
   }
 
-  void OnUIAutomationUsed() override {
+  void OnBasicUIAutomationUsed() override {
+    AddAXModeForUIA(ui::AXMode::kNativeAPIs);
+  }
+
+  void OnAdvancedUIAutomationUsed() override {
+    AddAXModeForUIA(ui::AXMode::kWebContents);
+  }
+
+  void OnUIAutomationIdRequested() override {
+    // TODO(janewman): Currently, UIA_AutomationIdPropertyId currently uses
+    // GetAuthorUniqueId. This implementation requires html to be enabled, we
+    // should avoid needing all of kHTML by either modifying what we return for
+    // this property or serializing the author supplied ID attribute separately.
+    // Separating out the id is being tracked by crbug 703277
+    AddAXModeForUIA(ui::AXMode::kHTML);
+  }
+
+  void OnProbableUIAutomationScreenReaderDetected() override {
+    // Same as kAXModeComplete but without kHTML as it is not needed for UIA.
+    AddAXModeForUIA(ui::AXMode::kNativeAPIs | ui::AXMode::kWebContents |
+                    ui::AXMode::kScreenReader);
+  }
+
+  void OnTextPatternRequested() override {
+    AddAXModeForUIA(ui::AXMode::kInlineTextBoxes);
+  }
+
+  void AddAXModeForUIA(ui::AXMode mode) {
     DCHECK(::switches::IsExperimentalAccessibilityPlatformUIAEnabled());
 
     // Firing a UIA event can cause UIA to call back into our APIs, don't
     // consider this to be usage.
     if (firing_uia_events_)
       return;
+
     // UI Automation insulates providers from knowing about the client(s) asking
-    // for information. When UI Automation is requested, assume the presence of
-    // a full-fledged accessibility technology and enable full support.
+    // for information. When IsSelectiveUIAEnablement is Enabled, we turn on
+    // various parts of accessibility depending on what APIs have been called.
+    if (!features::IsSelectiveUIAEnablementEnabled())
+      mode = ui::kAXModeComplete;
     BrowserAccessibilityStateImpl::GetInstance()->AddAccessibilityModeFlags(
-        ui::kAXModeComplete);
+        mode);
     BrowserAccessibilityStateImpl::GetInstance()->OnAccessibilityApiUsage();
   }
 
@@ -142,18 +172,6 @@ void BrowserAccessibilityStateImplWin::UpdateHistogramsOnOtherThread() {
   // needs to run in the UI thread can be run in
   // UpdateHistogramsOnUIThread instead.
 
-  AUDIODESCRIPTION audio_description = {0};
-  audio_description.cbSize = sizeof(AUDIODESCRIPTION);
-  SystemParametersInfo(SPI_GETAUDIODESCRIPTION, 0, &audio_description, 0);
-  UMA_HISTOGRAM_BOOLEAN("Accessibility.WinAudioDescription",
-                        !!audio_description.Enabled);
-
-  // This screen reader flag is nearly meaningless, it is set very often
-  // when there is no screen reader, and is not set for Narrator.
-  BOOL win_screen_reader = FALSE;
-  SystemParametersInfo(SPI_GETSCREENREADER, 0, &win_screen_reader, 0);
-  UMA_HISTOGRAM_BOOLEAN("Accessibility.WinScreenReader", !!win_screen_reader);
-
   // Better all-encompassing screen reader metric.
   // See also specific screen reader metrics below, e.g. WinJAWS, WinNVDA.
   ui::AXMode mode =
@@ -166,14 +184,6 @@ void BrowserAccessibilityStateImplWin::UpdateHistogramsOnOtherThread() {
   SystemParametersInfo(SPI_GETSTICKYKEYS, 0, &sticky_keys, 0);
   UMA_HISTOGRAM_BOOLEAN("Accessibility.WinStickyKeys",
                         0 != (sticky_keys.dwFlags & SKF_STICKYKEYSON));
-
-  // We only measure systems where SPI_GETCLIENTAREAANIMATION exists.
-  BOOL win_anim_enabled = TRUE;
-  if (SystemParametersInfo(SPI_GETCLIENTAREAANIMATION, 0, &win_anim_enabled,
-                           0)) {
-    UMA_HISTOGRAM_BOOLEAN("Accessibility.Win.AnimationsEnabled",
-                          win_anim_enabled);
-  }
 
   // Get the file paths of all DLLs loaded.
   HANDLE process = GetCurrentProcess();

@@ -6,7 +6,10 @@ import fnmatch
 import logging
 import posixpath
 import signal
-import thread
+try:
+  import _thread as thread
+except ImportError:
+  import thread
 import threading
 
 from devil import base_error
@@ -30,10 +33,9 @@ _SIGTERM_TEST_LOG = (
 def SubstituteDeviceRoot(device_path, device_root):
   if not device_path:
     return device_root
-  elif isinstance(device_path, list):
+  if isinstance(device_path, list):
     return posixpath.join(*(p if p else device_root for p in device_path))
-  else:
-    return device_path
+  return device_path
 
 
 class TestsTerminated(Exception):
@@ -42,15 +44,15 @@ class TestsTerminated(Exception):
 
 class InvalidShardingSettings(Exception):
   def __init__(self, shard_index, total_shards):
-    super(InvalidShardingSettings, self).__init__(
-        'Invalid sharding settings. shard_index: %d total_shards: %d'
-            % (shard_index, total_shards))
+    super().__init__(
+        'Invalid sharding settings. shard_index: %d total_shards: %d' %
+        (shard_index, total_shards))
 
 
 class LocalDeviceTestRun(test_run.TestRun):
 
   def __init__(self, env, test_instance):
-    super(LocalDeviceTestRun, self).__init__(env, test_instance)
+    super().__init__(env, test_instance)
     self._tools = {}
     # This is intended to be filled by a child class.
     self._installed_packages = []
@@ -96,22 +98,16 @@ class LocalDeviceTestRun(test_run.TestRun):
           # of bad device detection.
           consecutive_device_errors = 0
 
-          # TODO(crbug.com/1181389): Remove this workaround once the deadlocks
-          # in ArCore are resolved
-          def GetResultTypeForTest(t):
-            if 'WebXrAr' in self._GetUniqueTestName(t):
-              return base_test_result.ResultType.PASS
-            return base_test_result.ResultType.TIMEOUT
-
           if isinstance(test, list):
             results.AddResults(
-                base_test_result.BaseTestResult(self._GetUniqueTestName(t),
-                                                GetResultTypeForTest(t))
-                for t in test)
+                base_test_result.BaseTestResult(
+                    self._GetUniqueTestName(t),
+                    base_test_result.ResultType.TIMEOUT) for t in test)
           else:
             results.AddResult(
-                base_test_result.BaseTestResult(self._GetUniqueTestName(test),
-                                                GetResultTypeForTest(test)))
+                base_test_result.BaseTestResult(
+                    self._GetUniqueTestName(test),
+                    base_test_result.ResultType.TIMEOUT))
         except Exception as e:  # pylint: disable=broad-except
           if isinstance(tests, test_collection.TestCollection):
             rerun = test
@@ -234,17 +230,15 @@ class LocalDeviceTestRun(test_run.TestRun):
     tests_and_results = {}
     for test, name in tests_and_names:
       if name.endswith('*'):
-        tests_and_results[name] = (
-            test,
-            [r for n, r in all_test_results.iteritems()
-             if fnmatch.fnmatch(n, name)])
+        tests_and_results[name] = (test, [
+            r for n, r in all_test_results.items() if fnmatch.fnmatch(n, name)
+        ])
       else:
         tests_and_results[name] = (test, all_test_results.get(name))
 
-    failed_tests_and_results = (
-        (test, result) for test, result in tests_and_results.itervalues()
-        if is_failure_result(result)
-    )
+    failed_tests_and_results = ((test, result)
+                                for test, result in tests_and_results.values()
+                                if is_failure_result(result))
 
     return [t for t, r in failed_tests_and_results if self._ShouldRetry(t, r)]
 
@@ -256,6 +250,10 @@ class LocalDeviceTestRun(test_run.TestRun):
       raise InvalidShardingSettings(shard_index, total_shards)
 
     sharded_tests = []
+
+    # Sort tests by hash.
+    # TODO(crbug.com/1257820): Add sorting logic back to _PartitionTests.
+    tests = self._SortTests(tests)
 
     # Group tests by tests that should run in the same test invocation - either
     # unit tests or batched tests.
@@ -273,6 +271,14 @@ class LocalDeviceTestRun(test_run.TestRun):
         sharded_tests.append(t)
     return sharded_tests
 
+  # Sort by hash so we don't put all tests in a slow suite in the same
+  # partition.
+  def _SortTests(self, tests):
+    return sorted(
+        tests,
+        key=lambda t: hash(
+            self._GetUniqueTestName(t[0] if isinstance(t, list) else t)))
+
   # Partition tests evenly into |num_desired_partitions| partitions where
   # possible. However, many constraints make partitioning perfectly impossible.
   # If the max_partition_size isn't large enough, extra partitions may be
@@ -286,12 +292,6 @@ class LocalDeviceTestRun(test_run.TestRun):
     # pylint: disable=no-self-use
     partitions = []
 
-    # Sort by hash so we don't put all tests in a slow suite in the same
-    # partition.
-    tests = sorted(
-        tests,
-        key=lambda t: hash(
-            self._GetUniqueTestName(t[0] if isinstance(t, list) else t)))
 
     def CountTestsIndividually(test):
       if not isinstance(test, list):
@@ -315,7 +315,6 @@ class LocalDeviceTestRun(test_run.TestRun):
     last_partition_size = 0
     for test in tests:
       test_count = len(test) if CountTestsIndividually(test) else 1
-      num_not_yet_allocated -= test_count
       # Make a new shard whenever we would overfill the previous one. However,
       # if the size of the test group is larger than the max partition size on
       # its own, just put the group in its own shard instead of splitting up the
@@ -323,9 +322,6 @@ class LocalDeviceTestRun(test_run.TestRun):
       if (last_partition_size + test_count > partition_size
           and last_partition_size > 0):
         num_desired_partitions -= 1
-        partitions.append([])
-        partitions[-1].append(test)
-        last_partition_size = test_count
         if num_desired_partitions <= 0:
           # Too many tests for number of partitions, just fill all partitions
           # beyond num_desired_partitions.
@@ -334,9 +330,14 @@ class LocalDeviceTestRun(test_run.TestRun):
           # Re-balance remaining partitions.
           partition_size = min(num_not_yet_allocated // num_desired_partitions,
                                max_partition_size)
+        partitions.append([])
+        partitions[-1].append(test)
+        last_partition_size = test_count
       else:
         partitions[-1].append(test)
         last_partition_size += test_count
+
+      num_not_yet_allocated -= test_count
 
     if not partitions[-1]:
       partitions.pop()

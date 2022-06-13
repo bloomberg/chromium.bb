@@ -6,21 +6,24 @@
 
 #include "ash/capture_mode/capture_mode_feature_pod_controller.h"
 #include "ash/constants/ash_features.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/metrics/user_metrics_action.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/projector/projector_controller_impl.h"
 #include "ash/projector/projector_feature_pod_controller.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/metrics_util.h"
 #include "ash/public/cpp/pagination/pagination_controller.h"
 #include "ash/public/cpp/system_tray_client.h"
 #include "ash/session/session_controller_impl.h"
+#include "ash/shelf/shelf_party_feature_pod_controller.h"
 #include "ash/shell.h"
 #include "ash/system/accessibility/accessibility_feature_pod_controller.h"
 #include "ash/system/accessibility/unified_accessibility_detailed_view_controller.h"
 #include "ash/system/audio/unified_audio_detailed_view_controller.h"
 #include "ash/system/audio/unified_volume_slider_controller.h"
+#include "ash/system/bluetooth/bluetooth_detailed_view_controller.h"
 #include "ash/system/bluetooth/bluetooth_feature_pod_controller.h"
+#include "ash/system/bluetooth/bluetooth_feature_pod_controller_legacy.h"
 #include "ash/system/bluetooth/unified_bluetooth_detailed_view_controller.h"
 #include "ash/system/brightness/unified_brightness_slider_controller.h"
 #include "ash/system/cast/cast_feature_pod_controller.h"
@@ -38,12 +41,14 @@
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/nearby_share/nearby_share_feature_pod_controller.h"
 #include "ash/system/network/network_feature_pod_controller.h"
+#include "ash/system/network/network_feature_pod_controller_legacy.h"
 #include "ash/system/network/unified_network_detailed_view_controller.h"
 #include "ash/system/network/unified_vpn_detailed_view_controller.h"
 #include "ash/system/network/vpn_feature_pod_controller.h"
 #include "ash/system/night_light/night_light_feature_pod_controller.h"
 #include "ash/system/privacy_screen/privacy_screen_feature_pod_controller.h"
 #include "ash/system/rotation/rotation_lock_feature_pod_controller.h"
+#include "ash/system/time/unified_calendar_view_controller.h"
 #include "ash/system/tray/system_tray_item_uma_type.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/detailed_view_controller.h"
@@ -59,9 +64,11 @@
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/bind.h"
+#include "base/cxx17_backports.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
-#include "base/numerics/ranges.h"
+#include "components/prefs/pref_service.h"
 #include "media/base/media_switches.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/compositor/compositor.h"
@@ -91,21 +98,24 @@ void ReportCollapseAnimationSmoothness(int smoothness) {
 }
 
 UnifiedSystemTrayController::UnifiedSystemTrayController(
-    UnifiedSystemTrayModel* model,
+    scoped_refptr<UnifiedSystemTrayModel> model,
     UnifiedSystemTrayBubble* bubble,
     views::View* owner_view)
     : views::AnimationDelegateViews(owner_view),
       model_(model),
       bubble_(bubble),
+      active_user_prefs_(
+          Shell::Get()->session_controller()->GetLastActiveUserPrefService()),
       animation_(std::make_unique<gfx::SlideAnimation>(this)) {
+  LoadIsExpandedPref();
+
   animation_->Reset(model_->IsExpandedOnOpen() ? 1.0 : 0.0);
-  animation_->SetSlideDuration(base::TimeDelta::FromMilliseconds(
-      kSystemMenuCollapseExpandAnimationDurationMs));
+  animation_->SetSlideDuration(
+      base::Milliseconds(kSystemMenuCollapseExpandAnimationDurationMs));
   animation_->SetTweenType(gfx::Tween::EASE_IN_OUT);
 
-  model_->pagination_model()->SetTransitionDurations(
-      base::TimeDelta::FromMilliseconds(250),
-      base::TimeDelta::FromMilliseconds(50));
+  model_->pagination_model()->SetTransitionDurations(base::Milliseconds(250),
+                                                     base::Milliseconds(50));
 
   pagination_controller_ = std::make_unique<PaginationController>(
       model_->pagination_model(), PaginationController::SCROLL_AXIS_HORIZONTAL,
@@ -117,7 +127,24 @@ UnifiedSystemTrayController::UnifiedSystemTrayController(
                         model_->IsExpandedOnOpen());
 }
 
-UnifiedSystemTrayController::~UnifiedSystemTrayController() = default;
+UnifiedSystemTrayController::~UnifiedSystemTrayController() {
+  if (active_user_prefs_) {
+    active_user_prefs_->SetBoolean(prefs::kSystemTrayExpanded,
+                                   model_->IsExpandedOnOpen());
+  }
+}
+
+// static
+void UnifiedSystemTrayController::RegisterProfilePrefs(
+    PrefRegistrySimple* registry) {
+  registry->RegisterBooleanPref(prefs::kSystemTrayExpanded,
+                                /*default_value=*/true);
+}
+
+void UnifiedSystemTrayController::OnActiveUserPrefServiceChanged(
+    PrefService* prefs) {
+  active_user_prefs_ = prefs;
+}
 
 UnifiedSystemTrayView* UnifiedSystemTrayController::CreateView() {
   DCHECK(!unified_view_);
@@ -133,8 +160,8 @@ UnifiedSystemTrayView* UnifiedSystemTrayController::CreateView() {
         media_controls_controller_->CreateView());
   }
 
-  volume_slider_controller_ = std::make_unique<UnifiedVolumeSliderController>(
-      this, false /* in_bubble */);
+  volume_slider_controller_ =
+      std::make_unique<UnifiedVolumeSliderController>(this);
   unified_view_->AddSliderView(volume_slider_controller_->CreateView());
 
   brightness_slider_controller_ =
@@ -200,7 +227,7 @@ void UnifiedSystemTrayController::ToggleExpanded() {
                             TOGGLE_EXPANDED_TYPE_BY_BUTTON,
                             TOGGLE_EXPANDED_TYPE_COUNT);
   if (IsExpanded()) {
-    StartAnimation(false /*expand*/);
+    StartAnimation(/*expand=*/false);
     // Expand message center when quick settings is collapsed.
     if (bubble_)
       bubble_->ExpandMessageCenter();
@@ -210,7 +237,7 @@ void UnifiedSystemTrayController::ToggleExpanded() {
     if (IsMessageCenterCollapseRequired()) {
       bubble_->CollapseMessageCenter();
     }
-    StartAnimation(true /*expand*/);
+    StartAnimation(/*expand=*/true);
   }
 }
 
@@ -324,8 +351,12 @@ void UnifiedSystemTrayController::ShowBluetoothDetailedView() {
 
   Shell::Get()->metrics()->RecordUserMetricsAction(
       UMA_STATUS_AREA_DETAILED_BLUETOOTH_VIEW);
-  ShowDetailedView(
-      std::make_unique<UnifiedBluetoothDetailedViewController>(this));
+  if (ash::features::IsBluetoothRevampEnabled()) {
+    ShowDetailedView(std::make_unique<BluetoothDetailedViewController>(this));
+  } else {
+    ShowDetailedView(
+        std::make_unique<UnifiedBluetoothDetailedViewController>(this));
+  }
 }
 
 void UnifiedSystemTrayController::ShowCastDetailedView() {
@@ -368,6 +399,11 @@ void UnifiedSystemTrayController::ShowNotifierSettingsView() {
   DCHECK(Shell::Get()->session_controller()->ShouldShowNotificationTray());
   DCHECK(!Shell::Get()->session_controller()->IsScreenLocked());
   ShowDetailedView(std::make_unique<UnifiedNotifierSettingsController>(this));
+}
+
+void UnifiedSystemTrayController::ShowCalendarView() {
+  if (features::IsCalendarViewEnabled())
+    ShowDetailedView(std::make_unique<UnifiedCalendarViewController>(this));
 }
 
 void UnifiedSystemTrayController::ShowMediaControlsDetailedView() {
@@ -443,15 +479,34 @@ void UnifiedSystemTrayController::OnMediaControlsViewClicked() {
   ShowMediaControlsDetailedView();
 }
 
+void UnifiedSystemTrayController::LoadIsExpandedPref() {
+  if (active_user_prefs_ &&
+      active_user_prefs_->HasPrefPath(prefs::kSystemTrayExpanded)) {
+    model_->set_expanded_on_open(
+        active_user_prefs_->GetBoolean(prefs::kSystemTrayExpanded)
+            ? UnifiedSystemTrayModel::StateOnOpen::EXPANDED
+            : UnifiedSystemTrayModel::StateOnOpen::COLLAPSED);
+  }
+}
+
 void UnifiedSystemTrayController::InitFeaturePods() {
-  AddFeaturePodItem(std::make_unique<NetworkFeaturePodController>(this));
-  AddFeaturePodItem(std::make_unique<BluetoothFeaturePodController>(this));
+  if (ash::features::IsQuickSettingsNetworkRevampEnabled()) {
+    AddFeaturePodItem(std::make_unique<NetworkFeaturePodController>(this));
+  } else {
+    AddFeaturePodItem(
+        std::make_unique<NetworkFeaturePodControllerLegacy>(this));
+  }
+  if (ash::features::IsBluetoothRevampEnabled()) {
+    AddFeaturePodItem(std::make_unique<BluetoothFeaturePodController>(this));
+  } else {
+    AddFeaturePodItem(
+        std::make_unique<BluetoothFeaturePodControllerLegacy>(this));
+  }
   AddFeaturePodItem(std::make_unique<AccessibilityFeaturePodController>(this));
   AddFeaturePodItem(std::make_unique<QuietModeFeaturePodController>(this));
   AddFeaturePodItem(std::make_unique<RotationLockFeaturePodController>());
   AddFeaturePodItem(std::make_unique<PrivacyScreenFeaturePodController>());
-  if (features::IsCaptureModeEnabled())
-    AddFeaturePodItem(std::make_unique<CaptureModeFeaturePodController>(this));
+  AddFeaturePodItem(std::make_unique<CaptureModeFeaturePodController>(this));
   if (chromeos::features::IsProjectorFeaturePodEnabled() &&
       Shell::Get()->projector_controller()->IsEligible()) {
     AddFeaturePodItem(std::make_unique<ProjectorFeaturePodController>(this));
@@ -464,6 +519,8 @@ void UnifiedSystemTrayController::InitFeaturePods() {
   AddFeaturePodItem(std::make_unique<LocaleFeaturePodController>(this));
   if (features::IsDarkLightModeEnabled())
     AddFeaturePodItem(std::make_unique<DarkModeFeaturePodController>(this));
+  if (base::FeatureList::IsEnabled(features::kShelfParty))
+    AddFeaturePodItem(std::make_unique<ShelfPartyFeaturePodController>());
 
   // If you want to add a new feature pod item, add here.
 
@@ -555,11 +612,9 @@ double UnifiedSystemTrayController::GetDragExpandedAmount(
   // If already expanded, only consider swiping down. Otherwise, only consider
   // swiping up.
   if (was_expanded_) {
-    return base::ClampToRange(1.0 - std::max(0.0, y_diff) / drag_threshold_,
-                              0.0, 1.0);
+    return base::clamp(1.0 - std::max(0.0, y_diff) / drag_threshold_, 0.0, 1.0);
   } else {
-    return base::ClampToRange(std::max(0.0, -y_diff) / drag_threshold_, 0.0,
-                              1.0);
+    return base::clamp(std::max(0.0, -y_diff) / drag_threshold_, 0.0, 1.0);
   }
 }
 
@@ -578,8 +633,7 @@ bool UnifiedSystemTrayController::IsMessageCenterCollapseRequired() const {
 
 base::TimeDelta UnifiedSystemTrayController::GetAnimationDurationForReporting()
     const {
-  return base::TimeDelta::FromMilliseconds(
-      kSystemMenuCollapseExpandAnimationDurationMs);
+  return base::Milliseconds(kSystemMenuCollapseExpandAnimationDurationMs);
 }
 
 }  // namespace ash

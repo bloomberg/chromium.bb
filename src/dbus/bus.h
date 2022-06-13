@@ -15,7 +15,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
@@ -185,6 +184,8 @@ class CHROME_DBUS_EXPORT Bus : public base::RefCountedThreadSafe<Bus> {
   struct CHROME_DBUS_EXPORT Options {
     Options();
     ~Options();
+    Options(Options&&);
+    Options& operator=(Options&&);
 
     BusType bus_type;  // SESSION by default.
     ConnectionType connection_type;  // PRIVATE by default.
@@ -219,6 +220,9 @@ class CHROME_DBUS_EXPORT Bus : public base::RefCountedThreadSafe<Bus> {
   // Creates a Bus object. The actual connection will be established when
   // Connect() is called.
   explicit Bus(const Options& options);
+
+  Bus(const Bus&) = delete;
+  Bus& operator=(const Bus&) = delete;
 
   // Called when an ownership request is complete.
   // Parameters:
@@ -781,8 +785,6 @@ class CHROME_DBUS_EXPORT Bus : public base::RefCountedThreadSafe<Bus> {
   int num_pending_timeouts_;
 
   std::string address_;
-
-  DISALLOW_COPY_AND_ASSIGN(Bus);
 };
 
 }  // namespace dbus

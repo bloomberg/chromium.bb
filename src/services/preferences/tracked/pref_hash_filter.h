@@ -15,7 +15,6 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -71,6 +70,9 @@ class PrefHashFilter : public InterceptablePrefFilter {
           mojo::Remote<prefs::mojom::TrackedPreferenceValidationDelegate>>>
           delegate,
       size_t reporting_ids_count);
+
+  PrefHashFilter(const PrefHashFilter&) = delete;
+  PrefHashFilter& operator=(const PrefHashFilter&) = delete;
 
   ~PrefHashFilter() override;
 
@@ -155,8 +157,6 @@ class PrefHashFilter : public InterceptablePrefFilter {
   // The set of all paths whose value has changed since the last call to
   // FilterSerializeData.
   ChangedPathsMap changed_paths_;
-
-  DISALLOW_COPY_AND_ASSIGN(PrefHashFilter);
 };
 
 #endif  // SERVICES_PREFERENCES_TRACKED_PREF_HASH_FILTER_H_

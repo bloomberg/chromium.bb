@@ -14,22 +14,18 @@ namespace android_webview {
 const char kBackgroundTracingFieldTrial[] = "BackgroundWebviewTracing";
 
 void SetupBackgroundTracingFieldTrial() {
+  auto* manager = content::BackgroundTracingManager::GetInstance();
+  DCHECK(manager);
   std::unique_ptr<content::BackgroundTracingConfig> config =
-      content::BackgroundTracingManager::GetInstance()
-          ->GetBackgroundTracingConfig(kBackgroundTracingFieldTrial);
+      manager->GetBackgroundTracingConfig(kBackgroundTracingFieldTrial);
 
   if (config &&
       config->tracing_mode() == content::BackgroundTracingConfig::SYSTEM &&
       tracing::ShouldSetupSystemTracing()) {
     // Only enable background tracing for system tracing if the system producer
     // is enabled.
-    content::BackgroundTracingManager::GetInstance()->SetActiveScenario(
-        std::move(config),
-        base::BindRepeating(
-            base::DoNothing::Repeatedly<std::unique_ptr<std::string>,
-                                        content::BackgroundTracingManager::
-                                            FinishedProcessingCallback>()),
-        content::BackgroundTracingManager::ANONYMIZE_DATA);
+    manager->SetActiveScenario(
+        std::move(config), content::BackgroundTracingManager::ANONYMIZE_DATA);
   }
 }
 

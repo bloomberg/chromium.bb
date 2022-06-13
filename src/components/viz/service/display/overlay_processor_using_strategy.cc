@@ -11,9 +11,9 @@
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
-#include "build/chromeos_buildflags.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/service/debugger/viz_debugger.h"
@@ -22,16 +22,11 @@
 #include "components/viz/service/display/overlay_candidate.h"
 #include "components/viz/service/display/overlay_strategy_single_on_top.h"
 #include "components/viz/service/display/overlay_strategy_underlay.h"
-#include "media/gpu/buildflags.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
-#include "ui/gfx/transform.h"
+#include "ui/gfx/geometry/transform.h"
 
 #include "components/viz/common/quads/texture_draw_quad.h"
-
-#if BUILDFLAG(IS_CHROMEOS_ASH) && BUILDFLAG(USE_VAAPI)
-#include "media/gpu/vaapi/vaapi_wrapper.h"
-#endif
 
 namespace viz {
 namespace {
@@ -88,8 +83,7 @@ OverlayProcessorUsingStrategy::ProposedCandidateKey
 OverlayProcessorUsingStrategy::ToProposeKey(
     const OverlayProcessorUsingStrategy::Strategy::OverlayProposedCandidate&
         proposed) {
-  return {gfx::ToRoundedRect(proposed.candidate.display_rect),
-          proposed.strategy->GetUMAEnum()};
+  return {proposed.candidate.tracking_id, proposed.strategy->GetUMAEnum()};
 }
 
 // Default implementation of whether a strategy would remove the output surface
@@ -138,7 +132,7 @@ void OverlayProcessorUsingStrategy::SetFrameSequenceNumber(
 void OverlayProcessorUsingStrategy::ProcessForOverlays(
     DisplayResourceProvider* resource_provider,
     AggregatedRenderPassList* render_passes,
-    const SkMatrix44& output_color_matrix,
+    const skia::Matrix44& output_color_matrix,
     const OverlayProcessorInterface::FilterOperationsMap& render_pass_filters,
     const OverlayProcessorInterface::FilterOperationsMap&
         render_pass_backdrop_filters,
@@ -185,7 +179,7 @@ void OverlayProcessorUsingStrategy::ProcessForOverlays(
   if (!candidates->empty()) {
     DBG_DRAW_RECT("overlay.selected.rect", (*candidates)[0].display_rect);
   }
-  DBG_DRAW_RECT("overlay.outgoing.dmage", (*damage_rect));
+  DBG_DRAW_RECT("overlay.outgoing.damage", (*damage_rect));
 
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("viz.debug.overlay_planes"),
                  "Scheduled overlay planes", candidates->size());
@@ -283,12 +277,6 @@ void OverlayProcessorUsingStrategy::UpdateDamageRect(
       is_underlay = true;
       exclude_overlay_index = overlay.overlay_damage_index;
     }
-
-    if (overlay.plane_z_order) {
-      RecordOverlayDamageRectHistograms((overlay.plane_z_order > 0),
-                                        overlay.damage_area_estimate != 0,
-                                        damage_rect->IsEmpty());
-    }
   }
 
   // Removes all damage from this overlay and occluded surface damages.
@@ -309,9 +297,19 @@ void OverlayProcessorUsingStrategy::UpdateDamageRect(
     // black transparent hole is made for the underlay to show through
     // but its possible that the damage for this quad is less than the
     // complete size of the underlay.  https://crbug.com/1130733
-    if (is_underlay) {
+    // Also a non-opaque overlay must damage the primary plane as we might be
+    // able see through the overlay to the primary plane.
+    // https://buganizer.corp.google.com/issues/192294199
+    if (is_underlay || !is_opaque_overlay) {
       damage_rect->Union(this_frame_overlay_rect);
     }
+  }
+
+  // Record the first candidate.
+  if (candidates->size() > 0 && (*candidates)[0].plane_z_order != 0) {
+    RecordOverlayDamageRectHistograms(
+        (*candidates)[0].plane_z_order > 0,
+        (*candidates)[0].damage_area_estimate != 0, damage_rect->IsEmpty());
   }
 
   previous_frame_overlay_rect_ = this_frame_overlay_rect;
@@ -332,7 +330,7 @@ void OverlayProcessorUsingStrategy::AdjustOutputSurfaceOverlay(
 }
 
 bool OverlayProcessorUsingStrategy::AttemptWithStrategies(
-    const SkMatrix44& output_color_matrix,
+    const skia::Matrix44& output_color_matrix,
     const OverlayProcessorInterface::FilterOperationsMap&
         render_pass_backdrop_filters,
     DisplayResourceProvider* resource_provider,
@@ -363,9 +361,10 @@ bool OverlayProcessorUsingStrategy::AttemptWithStrategies(
 void OverlayProcessorUsingStrategy::SortProposedOverlayCandidatesPrioritized(
     Strategy::OverlayProposedCandidateList* proposed_candidates) {
   // Removes trackers for candidates that are no longer being rendered.
-  for (auto it = tracked_candidates.begin(); it != tracked_candidates.end();) {
+  for (auto it = tracked_candidates_.begin();
+       it != tracked_candidates_.end();) {
     if (it->second.IsAbsent()) {
-      it = tracked_candidates.erase(it);
+      it = tracked_candidates_.erase(it);
     } else {
       ++it;
     }
@@ -376,16 +375,30 @@ void OverlayProcessorUsingStrategy::SortProposedOverlayCandidatesPrioritized(
        it != proposed_candidates->end();) {
     auto key = ToProposeKey(*it);
     // If no tracking exists we create a new one here.
-    auto& track_data = tracked_candidates[key];
-    auto display_area = it->candidate.display_rect.size().GetArea();
+    auto& track_data = tracked_candidates_[key];
+    DBG_DRAW_TEXT_OPT(
+        "candidate.surface.id", DBG_OPT_GREEN,
+        it->candidate.display_rect.origin(),
+        base::StringPrintf("%X , %d", key.tracking_id, key.strategy_id)
+            .c_str());
+    DBG_DRAW_TEXT_OPT(
+        "candidate.mean.damage", DBG_OPT_GREEN,
+        it->candidate.display_rect.origin(),
+        base::StringPrintf(
+            " %f, %f %d", track_data.MeanFrameRatioRate(tracker_config_),
+            track_data.GetDamageRatioRate(),
+            static_cast<int>(it->candidate.resource_id.value())));
+    const auto display_area = it->candidate.display_rect.size().GetArea();
+    // The |force_update| case is where we have damage and a damage index but
+    // there are no changes in the |resource_id|. This is only known to occur
+    // for low latency surfaces (inking like in the google keeps application).
+    const bool force_update = it->candidate.overlay_damage_index !=
+                                  OverlayCandidate::kInvalidDamageIndex &&
+                              it->candidate.damage_area_estimate != 0;
     track_data.AddRecord(
         frame_sequence_number_,
         static_cast<float>(it->candidate.damage_area_estimate) / display_area,
-        it->candidate.resource_id, tracker_config_,
-        it->candidate.overlay_damage_index !=
-                OverlayCandidate::kInvalidDamageIndex ||
-            it->candidate.assume_damaged);
-
+        it->candidate.resource_id, tracker_config_, force_update);
     // Here a series of criteria are considered for wholesale rejection of a
     // candidate. The rational for rejection is usually power improvements but
     // this can indirectly reallocate limited overlay resources to another
@@ -445,7 +458,7 @@ void OverlayProcessorUsingStrategy::SortProposedOverlayCandidatesPrioritized(
 }
 
 bool OverlayProcessorUsingStrategy::AttemptWithStrategiesPrioritized(
-    const SkMatrix44& output_color_matrix,
+    const skia::Matrix44& output_color_matrix,
     const OverlayProcessorInterface::FilterOperationsMap&
         render_pass_backdrop_filters,
     DisplayResourceProvider* resource_provider,
@@ -478,23 +491,10 @@ bool OverlayProcessorUsingStrategy::AttemptWithStrategiesPrioritized(
             ? candidate.quad_iter->material
             : DrawQuad::Material::kInvalid;
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) && BUILDFLAG(USE_VAAPI)
-    // For protected surfaces, which require overlays, we may need to check if
-    // that surface can still be displayed. There are cases where HW context
-    // loss can occur where it would not be properly displayable.
-    // TODO(jkardatzke): This will not handle the case where those buffers are
-    // already in flight. That will be fixed by a kernel driver update later.
-    if (candidate.candidate.requires_overlay &&
-        candidate.candidate.hw_protected_validation_id &&
-        media::VaapiWrapper::GetProtectedInstanceID() !=
-            candidate.candidate.hw_protected_validation_id) {
-      continue;
-    }
-#endif
     bool used_overlay = candidate.strategy->AttemptPrioritized(
         output_color_matrix, render_pass_backdrop_filters, resource_provider,
         render_pass_list, surface_damage_rect_list, primary_plane, candidates,
-        content_bounds, &candidate);
+        content_bounds, candidate);
     if (!used_overlay && candidate.candidate.requires_overlay) {
       // Check if we likely failed due to scaling capabilities, and if so, try
       // to adjust things to make it work. We do this by tracking what scale
@@ -523,7 +523,7 @@ bool OverlayProcessorUsingStrategy::AttemptWithStrategiesPrioritized(
           if (candidate.strategy->AttemptPrioritized(
                   output_color_matrix, render_pass_backdrop_filters,
                   resource_provider, render_pass_list, surface_damage_rect_list,
-                  primary_plane, candidates, content_bounds, &candidate)) {
+                  primary_plane, candidates, content_bounds, candidate)) {
             used_overlay = true;
             break;
           } else {

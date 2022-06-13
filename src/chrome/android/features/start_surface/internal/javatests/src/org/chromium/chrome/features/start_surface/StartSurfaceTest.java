@@ -27,17 +27,21 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
 import static org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil.TAB_SWITCHER_ON_RETURN_MS;
 import static org.chromium.chrome.features.start_surface.StartSurfaceMediator.FEED_VISIBILITY_CONSISTENCY;
-import static org.chromium.chrome.test.util.ViewUtils.VIEW_GONE;
-import static org.chromium.chrome.test.util.ViewUtils.onViewWaiting;
-import static org.chromium.chrome.test.util.ViewUtils.waitForStableView;
-import static org.chromium.chrome.test.util.ViewUtils.waitForView;
+import static org.chromium.ui.test.util.ViewUtils.VIEW_GONE;
+import static org.chromium.ui.test.util.ViewUtils.onViewWaiting;
+import static org.chromium.ui.test.util.ViewUtils.waitForStableView;
+import static org.chromium.ui.test.util.ViewUtils.waitForView;
 
 import android.os.Build;
+import android.os.Build.VERSION;
+import android.os.Build.VERSION_CODES;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.lifecycle.ActivityLifecycleMonitorRegistry;
 import android.support.test.runner.lifecycle.Stage;
@@ -63,6 +67,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.TimeUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.params.ParameterAnnotations;
 import org.chromium.base.test.params.ParameterAnnotations.UseRunnerDelegate;
@@ -78,15 +83,19 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
-import org.chromium.chrome.browser.feed.FeedSurfaceCoordinator;
-import org.chromium.chrome.browser.feed.FeedSurfaceMediator;
+import org.chromium.chrome.browser.feed.FeedPlaceholderLayout;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.gesturenav.GestureNavigationUtils;
 import org.chromium.chrome.browser.init.AsyncInitializationActivity;
 import org.chromium.chrome.browser.layouts.LayoutStateProvider;
 import org.chromium.chrome.browser.layouts.LayoutType;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
+import org.chromium.chrome.browser.ntp.NewTabPageLaunchOrigin;
+import org.chromium.chrome.browser.ntp.NewTabPageUtils;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.suggestions.SiteSuggestion;
 import org.chromium.chrome.browser.suggestions.tile.SuggestionsTileView;
 import org.chromium.chrome.browser.tab.Tab;
@@ -102,23 +111,27 @@ import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper;
 import org.chromium.chrome.browser.toolbar.HomeButton;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
+import org.chromium.chrome.browser.ui.appmenu.AppMenuTestSupport;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.start_surface.R;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeApplicationTestUtils;
 import org.chromium.chrome.test.util.ChromeTabUtils;
+import org.chromium.chrome.test.util.MenuUtils;
 import org.chromium.chrome.test.util.OverviewModeBehaviorWatcher;
-import org.chromium.chrome.test.util.ViewUtils;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.suggestions.SuggestionsDependenciesRule;
 import org.chromium.chrome.test.util.browser.suggestions.mostvisited.FakeMostVisitedSites;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetTestSupport;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.embedder_support.util.UrlUtilities;
+import org.chromium.content_public.browser.test.util.RenderProcessHostUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TestTouchUtils;
+import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.test.util.UiRestriction;
+import org.chromium.ui.test.util.ViewUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -150,6 +163,7 @@ public class StartSurfaceTest {
             "force-fieldtrial-params=Study.Group:start_surface_variation";
 
     private static final long MAX_TIMEOUT_MS = 40000L;
+    private static final long MILLISECONDS_PER_MINUTE = TimeUtils.SECONDS_PER_MINUTE * 1000;
 
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
@@ -230,12 +244,14 @@ public class StartSurfaceTest {
                 mLayoutChangedCallbackHelper.notifyCalled();
             }
         };
-        mActivityTestRule.getActivity().getLayoutManagerSupplier().addObserver((manager) -> {
-            if (manager.getActiveLayout() != null) {
-                mCurrentlyActiveLayout = manager.getActiveLayout().getLayoutType();
-                mLayoutChangedCallbackHelper.notifyCalled();
-            }
-            manager.addObserver(mLayoutObserver);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mActivityTestRule.getActivity().getLayoutManagerSupplier().addObserver((manager) -> {
+                if (manager.getActiveLayout() != null) {
+                    mCurrentlyActiveLayout = manager.getActiveLayout().getLayoutType();
+                    mLayoutChangedCallbackHelper.notifyCalled();
+                }
+                manager.addObserver(mLayoutObserver);
+            });
         });
     }
 
@@ -331,7 +347,7 @@ public class StartSurfaceTest {
     }
 
     @Test
-    @MediumTest
+    @LargeTest
     @Feature({"StartSurface"})
     // clang-format off
     @CommandLineFlags.Add({BASE_PARAMS + "/single" +
@@ -382,13 +398,15 @@ public class StartSurfaceTest {
     }
 
     @Test
-    @MediumTest
+    @LargeTest
     @Feature({"StartSurface"})
     // clang-format off
     @CommandLineFlags.Add({BASE_PARAMS + "/single/exclude_mv_tiles/true" +
         "/hide_switch_when_no_incognito_tabs/true/show_last_active_tab_only/true"})
     public void testShow_SingleAsHomepage_SingleTabNoMVTiles() {
         // clang-format on
+        Assume.assumeFalse("https://crbug.com/1205642, https://crbug.com/1214303",
+                !mUseInstantStart && mImmediateReturn && VERSION.SDK_INT == VERSION_CODES.M);
         if (!mImmediateReturn) {
             StartSurfaceTestUtils.pressHomePageButton(mActivityTestRule.getActivity());
         }
@@ -469,6 +487,8 @@ public class StartSurfaceTest {
     @Feature({"StartSurface"})
     // clang-format off
     @CommandLineFlags.Add({BASE_PARAMS + "/single"})
+    @DisableIf.
+        Build(sdk_is_less_than = Build.VERSION_CODES.N, message = "Flaky, see crbug.com/1246457")
     public void testShow_SingleAsHomepage_FromResumeShowStart() throws Exception {
         // clang-format on
         if (!mImmediateReturn) {
@@ -597,6 +617,36 @@ public class StartSurfaceTest {
     @Test
     @MediumTest
     @Feature({"StartSurface"})
+    @CommandLineFlags.Add({BASE_PARAMS + "/single/omnibox_focused_on_new_tab/true"})
+    public void testFinale_webFeedLaunchOrigin_notFocusedOnOmnibox() throws ExecutionException {
+        if (!mImmediateReturn) {
+            StartSurfaceTestUtils.pressHomePageButton(mActivityTestRule.getActivity());
+        }
+        StartSurfaceTestUtils.waitForOverviewVisible(
+                mLayoutChangedCallbackHelper, mCurrentlyActiveLayout);
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        StartSurfaceTestUtils.waitForTabModel(cta);
+        TabUiTestHelper.verifyTabModelTabCount(cta, 1, 0);
+        // Launches a new Tab, and verifies the omnibox is not focused.
+        TestThreadUtils.runOnUiThreadBlocking(
+                ()
+                        -> cta.getTabCreator(false).launchUrl(
+                                NewTabPageUtils.encodeNtpUrl(NewTabPageLaunchOrigin.WEB_FEED),
+                                TabLaunchType.FROM_CHROME_UI));
+        TabUiTestHelper.verifyTabModelTabCount(cta, 1, 0);
+        StartSurfaceTestUtils.waitForOverviewVisible(cta);
+        waitForView(withId(R.id.search_box_text));
+        TextView urlBar = cta.findViewById(R.id.url_bar);
+        CriteriaHelper.pollUiThread(
+                ()
+                        -> !StartSurfaceTestUtils.isKeyboardShown(mActivityTestRule)
+                        && !urlBar.isFocused(),
+                MAX_TIMEOUT_MS, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"StartSurface"})
     // clang-format off
     @CommandLineFlags.Add({BASE_PARAMS + "/single/open_ntp_instead_of_start/true"})
     @FlakyTest(message = "https://crbug.com/1201548")
@@ -670,9 +720,33 @@ public class StartSurfaceTest {
     @EnableFeatures({ChromeFeatureList.TAB_SWITCHER_ON_RETURN + "<Study",
             ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
             ChromeFeatureList.START_SURFACE_ANDROID + "<Study"})
-    @CommandLineFlags.Add({BASE_PARAMS + "/single/show_last_active_tab_only/true"})
-    public void startSurfaceRecordHistogramsTest() {
+    @CommandLineFlags.Add({
+            BASE_PARAMS + "/single/show_last_active_tab_only/true",
+            // Disable feed placeholder animation because it causes waitForDeferredStartup() to time
+            // out.
+            FeedPlaceholderLayout.DISABLE_ANIMATION_SWITCH})
+    public void startSurfaceRecordHistogramsTest_SingleTab() {
         // clang-format on
+        startSurfaceRecordHistogramsTest(true);
+    }
+
+    @Test
+    @MediumTest
+    @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
+    // clang-format off
+    @EnableFeatures({ChromeFeatureList.TAB_SWITCHER_ON_RETURN + "<Study",
+        ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
+        ChromeFeatureList.START_SURFACE_ANDROID + "<Study"})
+    @CommandLineFlags.Add({BASE_PARAMS + "/single/show_last_active_tab_only/false",
+        // Disable feed placeholder animation because it causes waitForDeferredStartup() to time
+        // out.
+        FeedPlaceholderLayout.DISABLE_ANIMATION_SWITCH})
+    public void startSurfaceRecordHistogramsTest_CarouselTab() {
+        // clang-format on
+        startSurfaceRecordHistogramsTest(false);
+    }
+
+    private void startSurfaceRecordHistogramsTest(boolean isSingleTabSwitcher) {
         if (!mImmediateReturn) {
             assertNotEquals(0, ReturnToChromeExperimentsUtil.TAB_SWITCHER_ON_RETURN_MS.getValue());
             StartSurfaceTestUtils.pressHomePageButton(mActivityTestRule.getActivity());
@@ -681,22 +755,15 @@ public class StartSurfaceTest {
         }
 
         Assert.assertEquals("single", StartSurfaceConfiguration.START_SURFACE_VARIATION.getValue());
-        Assert.assertTrue(StartSurfaceConfiguration.START_SURFACE_LAST_ACTIVE_TAB_ONLY.getValue());
+        Assert.assertEquals(isSingleTabSwitcher,
+                StartSurfaceConfiguration.START_SURFACE_LAST_ACTIVE_TAB_ONLY.getValue());
         StartSurfaceTestUtils.waitForOverviewVisible(
                 mLayoutChangedCallbackHelper, mCurrentlyActiveLayout);
         mActivityTestRule.waitForActivityNativeInitializationComplete();
+        StartSurfaceTestUtils.waitForDeferredStartup(mActivityTestRule);
 
-        // Waits for the current Tab to complete loading. The deferred startup will be triggered
-        // after the loading.
-        Tab tab = mActivityTestRule.getActivity().getActivityTab();
-        if (tab != null && tab.isLoading()) {
-            CriteriaHelper.pollUiThread(()
-                                                -> !tab.isLoading(),
-                    MAX_TIMEOUT_MS, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
-        }
-        assertTrue("Deferred startup never completed", mActivityTestRule.waitForDeferredStartup());
-
-        boolean isInstantStart = TabUiFeatureUtilities.supportInstantStart(false);
+        boolean isInstantStart =
+                TabUiFeatureUtilities.supportInstantStart(false, mActivityTestRule.getActivity());
         Assert.assertEquals(1,
                 RecordHistogram.getHistogramTotalCountForTesting(
                         StartSurfaceConfiguration.getHistogramName(
@@ -705,22 +772,29 @@ public class StartSurfaceTest {
         int expectedRecordCount = mImmediateReturn ? 1 : 0;
         // Histograms should be only recorded when StartSurface is shown immediately after
         // launch.
+        if (isSingleTabSwitcher) {
+            Assert.assertEquals(expectedRecordCount,
+                    RecordHistogram.getHistogramTotalCountForTesting(
+                            StartSurfaceConfiguration.getHistogramName(
+                                    SingleTabSwitcherMediator.SINGLE_TAB_TITLE_AVAILABLE_TIME_UMA,
+                                    isInstantStart)));
+        }
+
+        Assert.assertEquals(expectedRecordCount,
+                RecordHistogram.getHistogramTotalCountForTesting(
+                        ReturnToChromeExperimentsUtil
+                                .LAST_VISITED_TAB_IS_SRP_WHEN_OVERVIEW_IS_SHOWN_AT_LAUNCH_UMA));
+
         Assert.assertEquals(expectedRecordCount,
                 RecordHistogram.getHistogramTotalCountForTesting(
                         StartSurfaceConfiguration.getHistogramName(
-                                SingleTabSwitcherMediator.SINGLE_TAB_TITLE_AVAILABLE_TIME_UMA,
+                                ExploreSurfaceCoordinator.FEED_CONTENT_FIRST_LOADED_TIME_MS_UMA,
                                 isInstantStart)));
 
         Assert.assertEquals(expectedRecordCount,
                 RecordHistogram.getHistogramTotalCountForTesting(
                         StartSurfaceConfiguration.getHistogramName(
-                                FeedSurfaceMediator.FEED_CONTENT_FIRST_LOADED_TIME_MS_UMA,
-                                isInstantStart)));
-
-        Assert.assertEquals(expectedRecordCount,
-                RecordHistogram.getHistogramTotalCountForTesting(
-                        StartSurfaceConfiguration.getHistogramName(
-                                FeedSurfaceCoordinator.FEED_STREAM_CREATED_TIME_MS_UMA,
+                                ExploreSurfaceCoordinator.FEED_STREAM_CREATED_TIME_MS_UMA,
                                 isInstantStart)));
 
         Assert.assertEquals(isInstantReturn() ? 1 : 0,
@@ -732,6 +806,10 @@ public class StartSurfaceTest {
                 RecordHistogram.getHistogramTotalCountForTesting(FEED_VISIBILITY_CONSISTENCY));
         Assert.assertEquals(expectedRecordCount,
                 RecordHistogram.getHistogramValueCountForTesting(FEED_VISIBILITY_CONSISTENCY, 1));
+        int showAtStartup = mImmediateReturn ? 1 : 0;
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        StartSurfaceCoordinator.START_SHOWN_AT_STARTUP_UMA, showAtStartup));
     }
 
     @Test
@@ -767,7 +845,7 @@ public class StartSurfaceTest {
     @Feature({"StartSurface", "TabGroup"})
     @CommandLineFlags.Add({BASE_PARAMS + "/single"})
     @EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
-    @DisabledTest(message = "crbug.com/1148365")
+    @FlakyTest(message = "https://crbug.com/1232695")
     public void testCreateTabWithinTabGroup() throws Exception {
         // Create tab state files for a group with two tabs.
         TabUiTestHelper.finishActivity(mActivityTestRule.getActivity());
@@ -986,8 +1064,12 @@ public class StartSurfaceTest {
     @Test
     @MediumTest
     @Feature({"StartSurface"})
+    // clang-format off
     @CommandLineFlags.Add({BASE_PARAMS + "/single"})
+    @DisableIf.
+        Build(sdk_is_less_than = Build.VERSION_CODES.N, message = "Flaky, see crbug.com/1246457")
     public void testShow_SingleAsHomepage_BackButtonWithTabSwitcher() {
+        // clang-format on
         singleAsHomepage_BackButtonWithTabSwitcher();
     }
 
@@ -996,6 +1078,8 @@ public class StartSurfaceTest {
     @Feature({"StartSurface"})
     // clang-format off
     @CommandLineFlags.Add({BASE_PARAMS + "/single/show_last_active_tab_only/true"})
+    @DisableIf.
+        Build(sdk_is_less_than = Build.VERSION_CODES.N, message = "Flaky, see crbug.com/1246457")
     public void testShow_SingleAsHomepageV2_BackButtonWithTabSwitcher() {
         // clang-format on
         singleAsHomepage_BackButtonWithTabSwitcher();
@@ -1066,9 +1150,47 @@ public class StartSurfaceTest {
     @Test
     @MediumTest
     @Feature({"StartSurface"})
+    @CommandLineFlags.Add({BASE_PARAMS + "/single"})
+    public void singleAsHomepage_PressHomeButtonWillKeepTab() {
+        if (!mImmediateReturn) {
+            StartSurfaceTestUtils.pressHomePageButton(mActivityTestRule.getActivity());
+        }
+
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        StartSurfaceTestUtils.waitForOverviewVisible(
+                mLayoutChangedCallbackHelper, mCurrentlyActiveLayout);
+        onViewWaiting(
+                allOf(withId(org.chromium.chrome.tab_ui.R.id.mv_tiles_container), isDisplayed()));
+
+        // Launches the first site in mv tiles.
+        StartSurfaceTestUtils.launchFirstMVTile(cta, /* currentTabCount = */ 1);
+
+        if (isInstantReturn()
+                && (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
+                        && Build.VERSION.SDK_INT < Build.VERSION_CODES.O)) {
+            // Fix the issue that failed to perform a single click on the tab switcher button.
+            // See code below.
+            return;
+        }
+
+        Tab tab = cta.getActivityTab();
+        StartSurfaceTestUtils.pressHomePageButton(cta);
+
+        waitForView(withId(R.id.primary_tasks_surface_view));
+        CriteriaHelper.pollUiThread(() -> cta.getLayoutManager().overviewVisible());
+        Assert.assertEquals(TabLaunchType.FROM_START_SURFACE, tab.getLaunchType());
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { Assert.assertTrue(StartSurfaceUserData.getKeepTab(tab)); });
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"StartSurface"})
     @EnableFeatures(ChromeFeatureList.TAB_GROUPS_ANDROID)
     // clang-format off
     @CommandLineFlags.Add({BASE_PARAMS + "/single"})
+    @DisableIf.
+        Build(sdk_is_less_than = Build.VERSION_CODES.N, message = "Flaky, see crbug.com/1246457")
     public void testShow_SingleAsHomepage_BackButtonOnCarouselTabSwitcher() {
         // clang-format on
         if (!mImmediateReturn) {
@@ -1405,37 +1527,17 @@ public class StartSurfaceTest {
     @CommandLineFlags.Add({BASE_PARAMS + "/single/omnibox_focused_on_new_tab/true"})
     public void testOmnibox_FocusedOnNewTabInSingleSurface_BackButtonDeleteBlankTab() {
         // clang-format on
-        if (!mImmediateReturn) {
-            StartSurfaceTestUtils.pressHomePageButton(mActivityTestRule.getActivity());
-        }
-        StartSurfaceTestUtils.waitForOverviewVisible(
-                mLayoutChangedCallbackHelper, mCurrentlyActiveLayout);
-        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
-        StartSurfaceTestUtils.waitForTabModel(cta);
-        assertThat(cta.getTabModelSelector().getCurrentModel().getCount(), equalTo(1));
+        backActionDeleteBlankTabForOmniboxFocusedOnNewTabSingleSurface(this::pressBack);
+    }
 
-        // Launches a new Tab from the Start surface, and verifies the omnibox is focused.
-        TestThreadUtils.runOnUiThreadBlocking(() -> cta.getTabCreator(false).launchNTP());
-        TabUiTestHelper.verifyTabModelTabCount(cta, 2, 0);
-        waitForView(withId(R.id.search_box_text));
-        TextView urlBar = cta.findViewById(R.id.url_bar);
-        CriteriaHelper.pollUiThread(
-                ()
-                        -> StartSurfaceTestUtils.isKeyboardShown(mActivityTestRule)
-                        && urlBar.isFocused(),
-                MAX_TIMEOUT_MS, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
-        waitForView(withId(R.id.voice_search_button));
-        Assert.assertTrue(TextUtils.isEmpty(urlBar.getText()));
-        assertEquals(cta.findViewById(R.id.toolbar_buttons).getVisibility(), View.INVISIBLE);
-        ToolbarDataProvider toolbarDataProvider =
-                cta.getToolbarManager().getLocationBarModelForTesting();
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            assertTrue(TextUtils.equals(toolbarDataProvider.getCurrentUrl(), UrlConstants.NTP_URL));
-        });
-
-        pressBack();
-        waitForView(withId(R.id.primary_tasks_surface_view));
-        TabUiTestHelper.verifyTabModelTabCount(cta, 1, 0);
+    @Test
+    @LargeTest
+    @Feature({"StartSurface"})
+    // clang-format off
+    @CommandLineFlags.Add({BASE_PARAMS + "/single/omnibox_focused_on_new_tab/true"})
+    public void testOmnibox_FocusedOnNewTabInSingleSurface_BackGestureDeleteBlankTab() {
+        // clang-format on
+        backActionDeleteBlankTabForOmniboxFocusedOnNewTabSingleSurface(this::gestureNavigateBack);
     }
 
     @Test
@@ -1469,7 +1571,8 @@ public class StartSurfaceTest {
     @Feature({"StartSurface"})
     // clang-format off
     @CommandLineFlags.Add({BASE_PARAMS + "/single/exclude_mv_tiles/false"
-            + "/new_home_surface_from_home_button/hide_mv_tiles_and_tab_switcher"})
+            + "/new_home_surface_from_home_button/hide_mv_tiles_and_tab_switcher"
+            + "/tab_count_button_on_start_surface/true"})
     public void testNewSurfaceFromHomeButton(){
         // clang-format on
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
@@ -1503,7 +1606,8 @@ public class StartSurfaceTest {
     @Feature({"StartSurface"})
     // clang-format off
     @CommandLineFlags.Add({BASE_PARAMS + "/single/exclude_mv_tiles/false"
-            + "/new_home_surface_from_home_button/hide_tab_switcher_only"})
+            + "/new_home_surface_from_home_button/hide_tab_switcher_only"
+            + "/tab_count_button_on_start_surface/true"})
     public void testNewSurfaceHideTabOnlyFromHomeButton() {
         // clang-format on
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
@@ -1536,7 +1640,7 @@ public class StartSurfaceTest {
     @LargeTest
     @Feature({"StartSurface"})
     @CommandLineFlags.Add({BASE_PARAMS + "/single/show_tabs_in_mru_order/true"})
-    public void testShow_SingleAsHomepage_ShowTabsInMRUOrder() {
+    public void test_CarouselTabSwitcherShowTabsInMRUOrder() {
         if (!mImmediateReturn) {
             StartSurfaceTestUtils.pressHomePageButton(mActivityTestRule.getActivity());
         }
@@ -1586,8 +1690,8 @@ public class StartSurfaceTest {
     @LargeTest
     @Feature({"StartSurface"})
     @CommandLineFlags.Add({BASE_PARAMS + "/single/show_tabs_in_mru_order/true"})
-    public void testShow_TabSwitcher_ShowTabsInMRUOrder() {
-        tabSwitcher_ShowTabsInMRUOrderImpl();
+    public void testShow_GridTabSwitcher_AlwaysShowTabsInCreationOrder() {
+        tabSwitcher_AlwaysShowTabsInGridTabSwitcherInCreationOrderImpl();
     }
 
     @Test
@@ -1597,12 +1701,12 @@ public class StartSurfaceTest {
     // clang-format off
     @CommandLineFlags.Add({BASE_PARAMS +
         "/single/show_tabs_in_mru_order/true/show_last_active_tab_only/true"})
-    public void testShowV2_TabSwitcher_ShowTabsInMRUOrder() {
+    public void testShowV2_GridTabSwitcher_AlwaysShowTabsInCreationOrder() {
         // clang-format on
-        tabSwitcher_ShowTabsInMRUOrderImpl();
+        tabSwitcher_AlwaysShowTabsInGridTabSwitcherInCreationOrderImpl();
     }
 
-    private void tabSwitcher_ShowTabsInMRUOrderImpl() {
+    private void tabSwitcher_AlwaysShowTabsInGridTabSwitcherInCreationOrderImpl() {
         if (!mImmediateReturn) {
             StartSurfaceTestUtils.pressHomePageButton(mActivityTestRule.getActivity());
         }
@@ -1643,26 +1747,28 @@ public class StartSurfaceTest {
         TextView title1 =
                 firstViewHolder.itemView.findViewById(org.chromium.chrome.tab_ui.R.id.tab_title);
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> Assert.assertEquals(tab2.getTitle(), title1.getText()));
+                () -> Assert.assertEquals(tab1.getTitle(), title1.getText()));
 
         RecyclerView.ViewHolder secondViewHolder = recyclerView.findViewHolderForAdapterPosition(1);
         TextView title2 =
                 secondViewHolder.itemView.findViewById(org.chromium.chrome.tab_ui.R.id.tab_title);
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> Assert.assertEquals(tab1.getTitle(), title2.getText()));
+                () -> Assert.assertEquals(tab2.getTitle(), title2.getText()));
     }
 
     /* MV tiles context menu tests starts. */
     @Test
     @MediumTest
     @Feature({"StartSurface"})
-    @CommandLineFlags.Add({BASE_PARAMS + "/single"})
+    // Disable feed placeholder animation because it causes waitForSnackbar() to time out.
+    @CommandLineFlags.Add({BASE_PARAMS + "/single", FeedPlaceholderLayout.DISABLE_ANIMATION_SWITCH})
     public void testDismissTileWithContextMenuAndUndo() throws Exception {
         if (!mImmediateReturn) {
             StartSurfaceTestUtils.pressHomePageButton(mActivityTestRule.getActivity());
         }
         StartSurfaceTestUtils.waitForOverviewVisible(
                 mLayoutChangedCallbackHelper, mCurrentlyActiveLayout);
+        StartSurfaceTestUtils.waitForTabModel(mActivityTestRule.getActivity());
 
         SiteSuggestion siteToDismiss = mMostVisitedSites.getCurrentSites().get(1);
         final View tileView = getTileViewFor(siteToDismiss);
@@ -1695,18 +1801,18 @@ public class StartSurfaceTest {
         }
         StartSurfaceTestUtils.waitForOverviewVisible(
                 mLayoutChangedCallbackHelper, mCurrentlyActiveLayout);
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        StartSurfaceTestUtils.waitForTabModel(cta);
 
         SiteSuggestion siteToOpen = mMostVisitedSites.getCurrentSites().get(1);
         final View tileView = getTileViewFor(siteToOpen);
 
         // Open the tile using the context menu.
-        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         TabUiTestHelper.verifyTabModelTabCount(cta, 1, 0);
-        OverviewModeBehaviorWatcher hideWatcher = TabUiTestHelper.createOverviewHideWatcher(cta);
         invokeContextMenu(tileView, ContextMenuManager.ContextMenuItemId.OPEN_IN_NEW_TAB);
-        hideWatcher.waitForBehavior();
-        CriteriaHelper.pollUiThread(() -> !cta.getLayoutManager().overviewVisible());
-        // Verifies a new Tab is created.
+        // This tab should be opened in the background.
+        Assert.assertTrue(cta.getLayoutManager().overviewVisible());
+        // Verifies a new tab is created.
         TabUiTestHelper.verifyTabModelTabCount(cta, 2, 0);
     }
 
@@ -1721,19 +1827,64 @@ public class StartSurfaceTest {
         }
         StartSurfaceTestUtils.waitForOverviewVisible(
                 mLayoutChangedCallbackHelper, mCurrentlyActiveLayout);
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        StartSurfaceTestUtils.waitForTabModel(cta);
 
         SiteSuggestion siteToOpen = mMostVisitedSites.getCurrentSites().get(1);
         final View tileView = getTileViewFor(siteToOpen);
 
-        // Open the tile using the context menu.
-        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        // Open the incognito tile using the context menu.
         TabUiTestHelper.verifyTabModelTabCount(cta, 1, 0);
         OverviewModeBehaviorWatcher hideWatcher = TabUiTestHelper.createOverviewHideWatcher(cta);
         invokeContextMenu(tileView, ContextMenuManager.ContextMenuItemId.OPEN_IN_INCOGNITO_TAB);
         hideWatcher.waitForBehavior();
         CriteriaHelper.pollUiThread(() -> !cta.getLayoutManager().overviewVisible());
-        // Verifies a new Tab is created.
+        // Verifies a new incognito tab is created.
         TabUiTestHelper.verifyTabModelTabCount(cta, 1, 1);
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"StartSurface"})
+    // clang-format off
+    @CommandLineFlags.Add({BASE_PARAMS + "/single"})
+    @DisableIf.
+        Build(sdk_is_less_than = Build.VERSION_CODES.N, message = "Flaky, see crbug.com/1246457")
+    public void testSwipeBackOnStartSurfaceHomePage() throws ExecutionException {
+        // clang-format on
+        // TODO(https://crbug.com/1093632): Requires 2 back press/gesture events now. Make this
+        // work with a single event.
+        Assume.assumeFalse(mImmediateReturn);
+        StartSurfaceTestUtils.pressHomePageButton(mActivityTestRule.getActivity());
+        StartSurfaceTestUtils.waitForOverviewVisible(
+                mLayoutChangedCallbackHelper, mCurrentlyActiveLayout);
+
+        gestureNavigateBack();
+
+        // Back gesture on the start surface puts Chrome background.
+        ChromeApplicationTestUtils.waitUntilChromeInBackground();
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"StartSurface"})
+    @CommandLineFlags.Add({BASE_PARAMS + "/single"})
+    public void testSwipeBackOnTabOfLaunchTypeStartSurface() throws ExecutionException {
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        if (!mImmediateReturn) StartSurfaceTestUtils.pressHomePageButton(cta);
+        StartSurfaceTestUtils.waitForOverviewVisible(
+                mLayoutChangedCallbackHelper, mCurrentlyActiveLayout);
+        StartSurfaceTestUtils.waitForTabModel(cta);
+        StartSurfaceTestUtils.launchFirstMVTile(cta, /* currentTabCount = */ 1);
+        Assert.assertEquals("The launched tab should have the launch type FROM_START_SURFACE",
+                TabLaunchType.FROM_START_SURFACE,
+                cta.getActivityTabProvider().get().getLaunchType());
+
+        gestureNavigateBack();
+
+        // Back gesture on the tab should take us back to the start surface homepage.
+        StartSurfaceTestUtils.waitForOverviewVisible(
+                mLayoutChangedCallbackHelper, mCurrentlyActiveLayout);
     }
 
     @Test
@@ -1790,6 +1941,486 @@ public class StartSurfaceTest {
         });
     }
 
+    @Test
+    @MediumTest
+    @Feature({"StartSurface"})
+    // clang-format off
+    @CommandLineFlags.Add({BASE_PARAMS + "/single"})
+    public void testDoNotInitializeSecondaryTasksSurfaceWithoutOpenGridTabSwitcher() {
+        // clang-format on
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        if (!mImmediateReturn) StartSurfaceTestUtils.pressHomePageButton(cta);
+        StartSurfaceTestUtils.waitForOverviewVisible(
+                mLayoutChangedCallbackHelper, mCurrentlyActiveLayout);
+        StartSurfaceTestUtils.waitForTabModel(cta);
+        StartSurfaceCoordinator startSurfaceCoordinator =
+                StartSurfaceTestUtils.getStartSurfaceFromUIThread(cta);
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertTrue(startSurfaceCoordinator.isSecondaryTasksSurfaceEmptyForTesting());
+        });
+        StartSurfaceTestUtils.launchFirstMVTile(cta, /* currentTabCount = */ 1);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertTrue(startSurfaceCoordinator.isSecondaryTasksSurfaceEmptyForTesting());
+        });
+
+        TabUiTestHelper.enterTabSwitcher(cta);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertFalse(startSurfaceCoordinator.isSecondaryTasksSurfaceEmptyForTesting());
+        });
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"StartSurface"})
+    // clang-format off
+    @CommandLineFlags.Add({BASE_PARAMS + "/single/check_sync_before_show_start_at_startup/true"})
+    public void testShowStartWithSyncCheck() throws Exception {
+        // clang-format on
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        StartSurfaceTestUtils.waitForTabModel(cta);
+        assertEquals(1, cta.getTabModelSelector().getTotalTabCount());
+        mActivityTestRule.waitForActivityNativeInitializationComplete();
+        Assert.assertFalse(cta.getLayoutManager().overviewVisible());
+
+        Assert.assertFalse(ReturnToChromeExperimentsUtil.isPrimaryAccountSync());
+        Assert.assertFalse(ReturnToChromeExperimentsUtil.shouldShowOverviewPageOnStart(cta,
+                cta.getIntent(), cta.getTabModelSelector(), cta.getInactivityTrackerForTesting()));
+        ReturnToChromeExperimentsUtil.setSyncForTesting(true);
+        Assert.assertTrue(ReturnToChromeExperimentsUtil.isPrimaryAccountSync());
+        Assert.assertEquals(mImmediateReturn,
+                ReturnToChromeExperimentsUtil.shouldShowOverviewPageOnStart(cta, cta.getIntent(),
+                        cta.getTabModelSelector(), cta.getInactivityTrackerForTesting()));
+        ReturnToChromeExperimentsUtil.setSyncForTesting(false);
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"StartSurface"})
+    // clang-format off
+    @CommandLineFlags.Add({BASE_PARAMS + "/single"})
+    @DisableIf.Build(sdk_is_greater_than = VERSION_CODES.O_MR1, supported_abis_includes = "x86",
+            message = "Flaky, see crbug.com/1258154")
+    public void testNotShowIncognitoHomepage() {
+        // clang-format on
+        if (!mImmediateReturn) {
+            StartSurfaceTestUtils.pressHomePageButton(mActivityTestRule.getActivity());
+        }
+
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        CriteriaHelper.pollUiThread(
+                () -> cta.getLayoutManager() != null && cta.getLayoutManager().overviewVisible());
+        StartSurfaceTestUtils.waitForTabModel(cta);
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { cta.getTabModelSelector().getModel(false).closeAllTabs(); });
+        TabUiTestHelper.verifyTabModelTabCount(cta, 0, 0);
+        assertTrue(cta.getLayoutManager().overviewVisible());
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> cta.getTabCreator(true /*incognito*/).launchNTP());
+        TabUiTestHelper.verifyTabModelTabCount(cta, 0, 1);
+
+        // Simulates pressing the home button. Incognito tab should stay and homepage shouldn't
+        // show.
+        onView(withId(R.id.home_button)).perform(click());
+        assertFalse(cta.getLayoutManager().overviewVisible());
+        onViewWaiting(withId(R.id.new_tab_incognito_container)).check(matches(isDisplayed()));
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"StartSurface"})
+    // clang-format off
+    @CommandLineFlags.Add({BASE_PARAMS + "/single"})
+    public void testOpenRecentTabOnStartAndTapBackButtonReturnToStartSurface()
+        throws ExecutionException {
+        // clang-format on
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        if (!mImmediateReturn) StartSurfaceTestUtils.pressHomePageButton(cta);
+        StartSurfaceTestUtils.waitForOverviewVisible(
+                mLayoutChangedCallbackHelper, mCurrentlyActiveLayout);
+        StartSurfaceTestUtils.waitForTabModel(cta);
+        TabUiTestHelper.verifyTabModelTabCount(cta, 1, 0);
+
+        // Taps on the "Recent tabs" menu item.
+        MenuUtils.invokeCustomMenuActionSync(InstrumentationRegistry.getInstrumentation(), cta,
+                org.chromium.chrome.R.id.recent_tabs_menu_id);
+        Assert.assertEquals("The launched tab should have the launch type FROM_START_SURFACE",
+                TabLaunchType.FROM_START_SURFACE,
+                cta.getActivityTabProvider().get().getLaunchType());
+        TabUiTestHelper.verifyTabModelTabCount(cta, 2, 0);
+
+        pressBack();
+
+        // Tap the back on the "Recent tabs" should take us back to the start surface homepage, and
+        // the Tab should be deleted.
+        StartSurfaceTestUtils.waitForOverviewVisible(
+                mLayoutChangedCallbackHelper, mCurrentlyActiveLayout);
+        TabUiTestHelper.verifyTabModelTabCount(cta, 1, 0);
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"StartSurface"})
+    // clang-format off
+    @CommandLineFlags.Add({BASE_PARAMS + "/single/behavioural_targeting/model_mv_tiles"
+        + "/user_clicks_threshold/1/num_days_user_click_below_threshold/2"})
+    public void testStartWithBehaviouralTargeting() throws Exception {
+        // clang-format on
+        Assume.assumeTrue(mImmediateReturn);
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        StartSurfaceTestUtils.waitForTabModel(cta);
+        TabUiTestHelper.verifyTabModelTabCount(cta, 1, 0);
+        Assert.assertFalse(cta.getLayoutManager().overviewVisible());
+
+        SharedPreferencesManager manager = SharedPreferencesManager.getInstance();
+        // Verifies that the START_NEXT_SHOW_ON_STARTUP_DECISION_MS has been set.
+        long nextDecisionTime =
+                manager.readLong(ChromePreferenceKeys.START_NEXT_SHOW_ON_STARTUP_DECISION_MS,
+                        ReturnToChromeExperimentsUtil.INVALID_DECISION_TIMESTAMP);
+        verifyNextDecisionTimeStampInDays(
+                manager, StartSurfaceConfiguration.NUM_DAYS_USER_CLICK_BELOW_THRESHOLD.getValue());
+        Assert.assertFalse(manager.readBoolean(ChromePreferenceKeys.START_SHOW_ON_STARTUP, false));
+        Assert.assertEquals(0, manager.readInt(ChromePreferenceKeys.TAP_MV_TILES_COUNT, 0));
+
+        manager.writeInt(ChromePreferenceKeys.SHOW_START_SEGMENTATION_RESULT,
+                ReturnToChromeExperimentsUtil.ShowChromeStartSegmentationResult.DONT_SHOW);
+
+        StartSurfaceConfiguration.USER_CLICK_THRESHOLD.setForTesting(1);
+        int clicksHigherThreshold = StartSurfaceConfiguration.USER_CLICK_THRESHOLD.getValue();
+        Assert.assertEquals(1, clicksHigherThreshold);
+        ReturnToChromeExperimentsUtil.onMVTileOpened();
+        // Verifies that userBehaviourSupported() returns the same result before the next decision
+        // time arrives.
+        Assert.assertFalse(ReturnToChromeExperimentsUtil.userBehaviourSupported());
+        Assert.assertEquals(nextDecisionTime,
+                manager.readLong(ChromePreferenceKeys.START_NEXT_SHOW_ON_STARTUP_DECISION_MS,
+                        ReturnToChromeExperimentsUtil.INVALID_DECISION_TIMESTAMP));
+        Assert.assertFalse(manager.readBoolean(ChromePreferenceKeys.START_SHOW_ON_STARTUP, false));
+        Assert.assertEquals(1, manager.readInt(ChromePreferenceKeys.TAP_MV_TILES_COUNT, 0));
+
+        Assert.assertEquals(0,
+                RecordHistogram.getHistogramTotalCountForTesting(
+                        "Startup.Android.ShowChromeStartSegmentationResultComparison"));
+
+        // Verifies if the next decision time past and the clicks of MV tiles is higher than the
+        // threshold, userBehaviourSupported() returns true. Besides, the next decision time is set
+        // to NUM_DAYS_KEEP_SHOW_START_AT_STARTUP day's later, and MV tiles count is reset.
+        manager.writeLong(ChromePreferenceKeys.START_NEXT_SHOW_ON_STARTUP_DECISION_MS,
+                System.currentTimeMillis() - 1);
+        Assert.assertTrue(ReturnToChromeExperimentsUtil.userBehaviourSupported());
+        Assert.assertTrue(manager.readBoolean(ChromePreferenceKeys.START_SHOW_ON_STARTUP, false));
+        verifyNextDecisionTimeStampInDays(
+                manager, StartSurfaceConfiguration.NUM_DAYS_KEEP_SHOW_START_AT_STARTUP.getValue());
+        Assert.assertEquals(0, manager.readInt(ChromePreferenceKeys.TAP_MV_TILES_COUNT, 0));
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "Startup.Android.ShowChromeStartSegmentationResultComparison",
+                        ReturnToChromeExperimentsUtil.ShowChromeStartSegmentationResultComparison
+                                .SEGMENTATION_DISABLED_LOGIC_ENABLED));
+
+        // Verifies if the next decision time past and the clicks of MV tiles is lower than the
+        // threshold, userBehaviourSupported() returns false. Besides, the next decision time is
+        // set to NUM_DAYS_USER_CLICK_BELOW_THRESHOLD day's later.
+        manager.writeLong(ChromePreferenceKeys.START_NEXT_SHOW_ON_STARTUP_DECISION_MS,
+                System.currentTimeMillis() - 1);
+        manager.writeInt(ChromePreferenceKeys.SHOW_START_SEGMENTATION_RESULT,
+                ReturnToChromeExperimentsUtil.ShowChromeStartSegmentationResult.SHOW);
+        Assert.assertEquals(0, manager.readInt(ChromePreferenceKeys.TAP_MV_TILES_COUNT, 0));
+        Assert.assertFalse(ReturnToChromeExperimentsUtil.userBehaviourSupported());
+        Assert.assertFalse(manager.readBoolean(ChromePreferenceKeys.START_SHOW_ON_STARTUP, false));
+        verifyNextDecisionTimeStampInDays(
+                manager, StartSurfaceConfiguration.NUM_DAYS_USER_CLICK_BELOW_THRESHOLD.getValue());
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "Startup.Android.ShowChromeStartSegmentationResultComparison",
+                        ReturnToChromeExperimentsUtil.ShowChromeStartSegmentationResultComparison
+                                .SEGMENTATION_ENABLED_LOGIC_DISABLED));
+
+        StartSurfaceConfiguration.BEHAVIOURAL_TARGETING.setForTesting("feeds");
+        verifyBehaviourTypeRecordedAndChecked(manager);
+
+        StartSurfaceConfiguration.BEHAVIOURAL_TARGETING.setForTesting("open_new_tab");
+        verifyBehaviourTypeRecordedAndChecked(manager);
+
+        StartSurfaceConfiguration.BEHAVIOURAL_TARGETING.setForTesting("open_history");
+        verifyBehaviourTypeRecordedAndChecked(manager);
+
+        StartSurfaceConfiguration.BEHAVIOURAL_TARGETING.setForTesting("open_recent_tabs");
+        verifyBehaviourTypeRecordedAndChecked(manager);
+
+        // Verifies if the key doesn't match the value of
+        // StartSurfaceConfiguration.BEHAVIOURAL_TARGETING, e.g., the value isn't set, onUIClicked()
+        // doesn't record or increase the count.
+        StartSurfaceConfiguration.BEHAVIOURAL_TARGETING.setForTesting("");
+        String type = "feeds";
+        String key = ReturnToChromeExperimentsUtil.getBehaviourTypeKeyForTesting(type);
+        ReturnToChromeExperimentsUtil.onUIClicked(key);
+        Assert.assertEquals(0, manager.readInt(key, 0));
+
+        // Verifies the combination case that BEHAVIOURAL_TARGETING is set to "all".
+        StartSurfaceConfiguration.BEHAVIOURAL_TARGETING.setForTesting("all");
+        String type1 = "open_history";
+        String type2 = "open_recent_tabs";
+        String key1 = ReturnToChromeExperimentsUtil.getBehaviourTypeKeyForTesting(type1);
+        String key2 = ReturnToChromeExperimentsUtil.getBehaviourTypeKeyForTesting(type2);
+        Assert.assertEquals(0, manager.readInt(key1, 0));
+        Assert.assertEquals(0, manager.readInt(key2, 0));
+        Assert.assertFalse(manager.readBoolean(ChromePreferenceKeys.START_SHOW_ON_STARTUP, false));
+
+        // Increase the count of one key.
+        ReturnToChromeExperimentsUtil.onHistoryOpened();
+        Assert.assertEquals(1, manager.readInt(key1, 0));
+
+        // Verifies that userBehaviourSupported() return true due to the count of this key is higher
+        // or equal to the threshold.
+        manager.writeLong(ChromePreferenceKeys.START_NEXT_SHOW_ON_STARTUP_DECISION_MS,
+                System.currentTimeMillis() - 1);
+        Assert.assertTrue(ReturnToChromeExperimentsUtil.userBehaviourSupported());
+        Assert.assertEquals(0, manager.readInt(key1, 0));
+        Assert.assertEquals(0, manager.readInt(key2, 0));
+        Assert.assertTrue(manager.readBoolean(ChromePreferenceKeys.START_SHOW_ON_STARTUP, false));
+
+        // Resets the decision.
+        manager.writeBoolean(ChromePreferenceKeys.START_SHOW_ON_STARTUP, false);
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"StartSurface"})
+    // clang-format off
+    @CommandLineFlags.Add({BASE_PARAMS + "/single/behavioural_targeting/model"})
+    public void testStartSegmentationUsage() throws Exception {
+        // clang-format on
+        Assume.assumeTrue(mImmediateReturn);
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        StartSurfaceTestUtils.waitForTabModel(cta);
+        TabUiTestHelper.verifyTabModelTabCount(cta, 1, 0);
+        Assert.assertFalse(cta.getLayoutManager().overviewVisible());
+
+        SharedPreferencesManager manager = SharedPreferencesManager.getInstance();
+        // Verifies that the START_NEXT_SHOW_ON_STARTUP_DECISION_MS has been set.
+        long nextDecisionTime =
+                manager.readLong(ChromePreferenceKeys.START_NEXT_SHOW_ON_STARTUP_DECISION_MS,
+                        ReturnToChromeExperimentsUtil.INVALID_DECISION_TIMESTAMP);
+        verifyNextDecisionTimeStampInDays(
+                manager, StartSurfaceConfiguration.NUM_DAYS_USER_CLICK_BELOW_THRESHOLD.getValue());
+        Assert.assertFalse(manager.readBoolean(ChromePreferenceKeys.START_SHOW_ON_STARTUP, false));
+        Assert.assertEquals(0, manager.readInt(ChromePreferenceKeys.TAP_MV_TILES_COUNT, 0));
+
+        manager.writeInt(ChromePreferenceKeys.SHOW_START_SEGMENTATION_RESULT,
+                ReturnToChromeExperimentsUtil.ShowChromeStartSegmentationResult.SHOW);
+
+        // Verifies that userBehaviourSupported() returns the same result before the next decision
+        // time arrives.
+        Assert.assertFalse(ReturnToChromeExperimentsUtil.userBehaviourSupported());
+        Assert.assertEquals(nextDecisionTime,
+                manager.readLong(ChromePreferenceKeys.START_NEXT_SHOW_ON_STARTUP_DECISION_MS,
+                        ReturnToChromeExperimentsUtil.INVALID_DECISION_TIMESTAMP));
+        Assert.assertFalse(manager.readBoolean(ChromePreferenceKeys.START_SHOW_ON_STARTUP, false));
+
+        // Verifies if the next decision time past, userBehaviourSupported() returns true. Besides,
+        // the next decision time is set to NUM_DAYS_KEEP_SHOW_START_AT_STARTUP day's later.
+        manager.writeLong(ChromePreferenceKeys.START_NEXT_SHOW_ON_STARTUP_DECISION_MS,
+                System.currentTimeMillis() - 1);
+        Assert.assertTrue(ReturnToChromeExperimentsUtil.userBehaviourSupported());
+        Assert.assertTrue(manager.readBoolean(ChromePreferenceKeys.START_SHOW_ON_STARTUP, false));
+        verifyNextDecisionTimeStampInDays(
+                manager, StartSurfaceConfiguration.NUM_DAYS_KEEP_SHOW_START_AT_STARTUP.getValue());
+
+        // Verifies if the next decision time past and segmentation says dont show,
+        // userBehaviourSupported() returns false. Besides, the next decision time is set to
+        // NUM_DAYS_USER_CLICK_BELOW_THRESHOLD day's later.
+        manager.writeInt(ChromePreferenceKeys.SHOW_START_SEGMENTATION_RESULT,
+                ReturnToChromeExperimentsUtil.ShowChromeStartSegmentationResult.DONT_SHOW);
+        manager.writeLong(ChromePreferenceKeys.START_NEXT_SHOW_ON_STARTUP_DECISION_MS,
+                System.currentTimeMillis() - 1);
+        Assert.assertFalse(ReturnToChromeExperimentsUtil.userBehaviourSupported());
+        Assert.assertFalse(manager.readBoolean(ChromePreferenceKeys.START_SHOW_ON_STARTUP, false));
+        verifyNextDecisionTimeStampInDays(
+                manager, StartSurfaceConfiguration.NUM_DAYS_USER_CLICK_BELOW_THRESHOLD.getValue());
+
+        // Verifies that if segmentation stops returning results, then we continue to use the
+        // previous result.
+        manager.writeInt(ChromePreferenceKeys.SHOW_START_SEGMENTATION_RESULT,
+                ReturnToChromeExperimentsUtil.ShowChromeStartSegmentationResult.UNINITIALIZED);
+        manager.writeLong(ChromePreferenceKeys.START_NEXT_SHOW_ON_STARTUP_DECISION_MS,
+                System.currentTimeMillis() - 1);
+        Assert.assertFalse(ReturnToChromeExperimentsUtil.userBehaviourSupported());
+        Assert.assertFalse(manager.readBoolean(ChromePreferenceKeys.START_SHOW_ON_STARTUP, false));
+        verifyNextDecisionTimeStampInDays(
+                manager, StartSurfaceConfiguration.NUM_DAYS_USER_CLICK_BELOW_THRESHOLD.getValue());
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"StartSurface"})
+    // clang-format off
+    @CommandLineFlags.Add({BASE_PARAMS + "/single"})
+    public void testStartSurfaceMenu() throws ExecutionException {
+        // clang-format on
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        if (!mImmediateReturn) StartSurfaceTestUtils.pressHomePageButton(cta);
+        StartSurfaceTestUtils.waitForOverviewVisible(
+                mLayoutChangedCallbackHelper, mCurrentlyActiveLayout);
+        StartSurfaceTestUtils.waitForTabModel(cta);
+        TabUiTestHelper.verifyTabModelTabCount(cta, 1, 0);
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            AppMenuTestSupport.showAppMenu(mActivityTestRule.getAppMenuCoordinator(), null, false);
+        });
+
+        assertNotNull(AppMenuTestSupport.getMenuItemPropertyModel(
+                mActivityTestRule.getAppMenuCoordinator(), R.id.icon_row_menu_id));
+        assertNotNull(AppMenuTestSupport.getMenuItemPropertyModel(
+                mActivityTestRule.getAppMenuCoordinator(), R.id.new_tab_menu_id));
+        assertNotNull(AppMenuTestSupport.getMenuItemPropertyModel(
+                mActivityTestRule.getAppMenuCoordinator(), R.id.new_incognito_tab_menu_id));
+        assertNotNull(AppMenuTestSupport.getMenuItemPropertyModel(
+                mActivityTestRule.getAppMenuCoordinator(), R.id.divider_line_id));
+        assertNotNull(AppMenuTestSupport.getMenuItemPropertyModel(
+                mActivityTestRule.getAppMenuCoordinator(), R.id.open_history_menu_id));
+        assertNotNull(AppMenuTestSupport.getMenuItemPropertyModel(
+                mActivityTestRule.getAppMenuCoordinator(), R.id.downloads_menu_id));
+        assertNotNull(AppMenuTestSupport.getMenuItemPropertyModel(
+                mActivityTestRule.getAppMenuCoordinator(), R.id.all_bookmarks_menu_id));
+        assertNotNull(AppMenuTestSupport.getMenuItemPropertyModel(
+                mActivityTestRule.getAppMenuCoordinator(), R.id.recent_tabs_menu_id));
+        assertNotNull(AppMenuTestSupport.getMenuItemPropertyModel(
+                mActivityTestRule.getAppMenuCoordinator(), R.id.divider_line_id));
+        assertNotNull(AppMenuTestSupport.getMenuItemPropertyModel(
+                mActivityTestRule.getAppMenuCoordinator(), R.id.preferences_id));
+        assertNotNull(AppMenuTestSupport.getMenuItemPropertyModel(
+                mActivityTestRule.getAppMenuCoordinator(), R.id.help_id));
+
+        assertNull(AppMenuTestSupport.getMenuItemPropertyModel(
+                mActivityTestRule.getAppMenuCoordinator(), R.id.menu_group_tabs));
+        assertNull(AppMenuTestSupport.getMenuItemPropertyModel(
+                mActivityTestRule.getAppMenuCoordinator(), R.id.close_all_tabs_menu_id));
+
+        boolean hasUpdateMenuItem =
+                AppMenuTestSupport.getMenuItemPropertyModel(
+                        mActivityTestRule.getAppMenuCoordinator(), R.id.update_menu_id)
+                != null;
+        ModelList menuItemsModelList =
+                AppMenuTestSupport.getMenuModelList(mActivityTestRule.getAppMenuCoordinator());
+        assertEquals(hasUpdateMenuItem ? 12 : 11, menuItemsModelList.size());
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"StartSurface"})
+    // clang-format off
+    @CommandLineFlags.Add({BASE_PARAMS + "/single"})
+    public void test_DoNotLoadLastSelectedTabOnStartup() {
+        // clang-format on
+        doTestNotLoadLastSelectedTabOnStartupImpl();
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"StartSurface"})
+    // clang-format off
+    @CommandLineFlags.Add({BASE_PARAMS + "/single/show_last_active_tab_only/true"})
+    public void test_DoNotLoadLastSelectedTabOnStartupV2() {
+        // clang-format on
+        doTestNotLoadLastSelectedTabOnStartupImpl();
+    }
+
+    private void doTestNotLoadLastSelectedTabOnStartupImpl() {
+        assumeTrue(mImmediateReturn);
+
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        StartSurfaceTestUtils.waitForOverviewVisible(
+                mLayoutChangedCallbackHelper, mCurrentlyActiveLayout);
+        StartSurfaceTestUtils.waitForTabModel(cta);
+        TabUiTestHelper.verifyTabModelTabCount(cta, 1, 0);
+        Assert.assertEquals(0, RenderProcessHostUtils.getCurrentRenderProcessCount());
+
+        StartSurfaceTestUtils.launchFirstMVTile(cta, /* currentTabCount = */ 1);
+        TabUiTestHelper.verifyTabModelTabCount(cta, 2, 0);
+        StartSurfaceTestUtils.waitForCurrentTabLoaded(mActivityTestRule);
+        Assert.assertEquals(1, RenderProcessHostUtils.getCurrentRenderProcessCount());
+    }
+
+    /**
+     * Check that the next decision time is within |numOfDays| from now.
+     * @param numOfDays Number of days to check.
+     */
+    private void verifyNextDecisionTimeStampInDays(
+            SharedPreferencesManager manager, int numOfDays) {
+        long approximateTime = System.currentTimeMillis()
+                + numOfDays * ReturnToChromeExperimentsUtil.MILLISECONDS_PER_DAY;
+        long nextDecisionTime =
+                manager.readLong(ChromePreferenceKeys.START_NEXT_SHOW_ON_STARTUP_DECISION_MS,
+                        ReturnToChromeExperimentsUtil.INVALID_DECISION_TIMESTAMP);
+
+        Assert.assertThat("new decision time lower bound",
+                approximateTime - MILLISECONDS_PER_MINUTE,
+                Matchers.lessThanOrEqualTo(nextDecisionTime));
+
+        Assert.assertThat("new decision time upper bound",
+                approximateTime + MILLISECONDS_PER_MINUTE,
+                Matchers.greaterThanOrEqualTo(nextDecisionTime));
+    }
+
+    private void verifyBehaviourTypeRecordedAndChecked(SharedPreferencesManager manager) {
+        String key = ReturnToChromeExperimentsUtil.getBehaviourTypeKeyForTesting(
+                StartSurfaceConfiguration.BEHAVIOURAL_TARGETING.getValue());
+        Assert.assertEquals(0, manager.readInt(key, 0));
+
+        // Increase the count of the key.
+        ReturnToChromeExperimentsUtil.onUIClicked(key);
+        Assert.assertEquals(1, manager.readInt(key, 0));
+        Assert.assertFalse(manager.readBoolean(ChromePreferenceKeys.START_SHOW_ON_STARTUP, false));
+
+        // Verifies that userBehaviourSupported() return true due to the count of this key is higher
+        // or equal to the threshold.
+        manager.writeLong(ChromePreferenceKeys.START_NEXT_SHOW_ON_STARTUP_DECISION_MS,
+                System.currentTimeMillis() - 1);
+        Assert.assertTrue(ReturnToChromeExperimentsUtil.userBehaviourSupported());
+        Assert.assertEquals(0, manager.readInt(key, 0));
+        Assert.assertTrue(manager.readBoolean(ChromePreferenceKeys.START_SHOW_ON_STARTUP, false));
+
+        // Resets the decision.
+        manager.writeBoolean(ChromePreferenceKeys.START_SHOW_ON_STARTUP, false);
+    }
+
+    private void backActionDeleteBlankTabForOmniboxFocusedOnNewTabSingleSurface(
+            Runnable backAction) {
+        if (!mImmediateReturn) {
+            StartSurfaceTestUtils.pressHomePageButton(mActivityTestRule.getActivity());
+        }
+        StartSurfaceTestUtils.waitForOverviewVisible(
+                mLayoutChangedCallbackHelper, mCurrentlyActiveLayout);
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        StartSurfaceTestUtils.waitForTabModel(cta);
+        assertThat(cta.getTabModelSelector().getCurrentModel().getCount(), equalTo(1));
+
+        // Launches a new Tab from the Start surface, and verifies the omnibox is focused.
+        TestThreadUtils.runOnUiThreadBlocking(() -> cta.getTabCreator(false).launchNTP());
+        TabUiTestHelper.verifyTabModelTabCount(cta, 2, 0);
+        waitForView(withId(R.id.search_box_text));
+        TextView urlBar = cta.findViewById(R.id.url_bar);
+        CriteriaHelper.pollUiThread(
+                ()
+                        -> StartSurfaceTestUtils.isKeyboardShown(mActivityTestRule)
+                        && urlBar.isFocused(),
+                MAX_TIMEOUT_MS, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+        waitForView(withId(R.id.voice_search_button));
+        Assert.assertTrue(TextUtils.isEmpty(urlBar.getText()));
+        assertEquals(cta.findViewById(R.id.toolbar_buttons).getVisibility(), View.INVISIBLE);
+        ToolbarDataProvider toolbarDataProvider =
+                cta.getToolbarManager().getLocationBarModelForTesting();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            assertTrue(TextUtils.equals(toolbarDataProvider.getCurrentUrl(), UrlConstants.NTP_URL));
+        });
+
+        backAction.run();
+
+        waitForView(withId(R.id.primary_tasks_surface_view));
+        TabUiTestHelper.verifyTabModelTabCount(cta, 1, 0);
+    }
+
     private MvTilesLayout getMvTilesLayout() {
         onViewWaiting(withId(org.chromium.chrome.tab_ui.R.id.mv_tiles_layout));
         MvTilesLayout mvTilesLayout = mActivityTestRule.getActivity().findViewById(
@@ -1799,6 +2430,8 @@ public class StartSurfaceTest {
     }
 
     private View getTileViewFor(SiteSuggestion suggestion) {
+        onViewWaiting(
+                allOf(withId(org.chromium.chrome.tab_ui.R.id.mv_tiles_layout), isDisplayed()));
         View tileView = getMvTilesLayout().getTileViewForTesting(suggestion);
         Assert.assertNotNull("Tile not found for suggestion " + suggestion.url, tileView);
 
@@ -1880,6 +2513,11 @@ public class StartSurfaceTest {
                 () -> mActivityTestRule.getActivity().onBackPressed());
     }
 
+    private void gestureNavigateBack() {
+        GestureNavigationUtils navUtils = new GestureNavigationUtils(mActivityTestRule);
+        navUtils.swipeFromLeftEdge();
+    }
+
     private List<Tab> getTabsInCurrentTabModel(TabModel currentTabModel) {
         List<Tab> tabs = new ArrayList<>();
         for (int i = 0; i < currentTabModel.getCount(); i++) {
@@ -1898,5 +2536,3 @@ public class StartSurfaceTest {
         return dialogView.getVisibility() == View.GONE;
     }
 }
-
-// TODO(crbug.com/1033909): Add more integration tests.

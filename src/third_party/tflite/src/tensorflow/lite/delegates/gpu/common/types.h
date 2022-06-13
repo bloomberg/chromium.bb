@@ -19,9 +19,8 @@ limitations under the License.
 #include <array>
 #include <cstddef>
 #include <cstdint>
-#include <string>
 
-#include <fp16.h>
+#include "fp16.h"  // from @FP16
 
 namespace tflite {
 namespace gpu {

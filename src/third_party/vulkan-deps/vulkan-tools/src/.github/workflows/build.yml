@@ -44,7 +44,9 @@ jobs:
             - uses: actions/setup-python@v2
               with:
                 python-version: '3.7'
-            - run: sudo apt install libxkbcommon-dev libwayland-dev libmirclient-dev libxrandr-dev libx11-xcb-dev
+            - run: |
+                sudo apt-get -qq update
+                sudo apt install libxkbcommon-dev libwayland-dev libmirclient-dev libxrandr-dev libx11-xcb-dev
 
             - name: Fetch and install headers
               run: python scripts/update_deps.py --dir external
@@ -58,6 +60,9 @@ jobs:
             - name: Build the tools
               run: make -C build
 
+            - name: Verify generated source files
+              run: python scripts/generate_source.py --verify external/Vulkan-Headers/registry
+
     windows:
         runs-on: ${{matrix.os}}
 
@@ -65,7 +70,7 @@ jobs:
             matrix:
                 arch: [ Win32, x64 ]
                 config: [ Debug, Release ]
-                os: [ windows-2016, windows-2019 ]
+                os: [ windows-latest ]
 
         steps:
             - uses: actions/checkout@v2
@@ -82,6 +87,9 @@ jobs:
 
             - name: Build the tools
               run: cmake --build ./build --config ${{matrix.config}}
+
+            - name: Verify generated source files
+              run: python scripts/generate_source.py --verify external/Vulkan-Headers/registry
 
     mac:
         runs-on: macos-latest
@@ -104,6 +112,9 @@ jobs:
 
             - name: Build the tools
               run: make -C build
+
+            - name: Verify generated source files
+              run: python scripts/generate_source.py --verify external/Vulkan-Headers/registry
 
     gn:
         runs-on: ubuntu-18.04
@@ -132,3 +143,19 @@ jobs:
 
             - name: Build the tools
               run: ninja -C out/${{matrix.config}}
+
+    android:
+        runs-on: ubuntu-20.04
+        steps:
+            - uses: actions/checkout@v2
+            - name: Setup Environment
+              run: |
+                  echo "ANDROID_SDK_HOME=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
+                  echo "$ANDROID_SDK_ROOT/build-tools/31.0.0" >> $GITHUB_PATH
+                  echo "$ANDROID_NDK_ROOT" >> $GITHUB_PATH
+                  $ANDROID_SDK_ROOT/tools/bin/sdkmanager "platforms;android-23"
+                  keytool -genkey -v -keystore $HOME/.android/debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "C=US, O=Android, CN=Android Debug"
+            - name: Build vkcube
+              run: |
+                  cd build-android
+                  ./build_all.sh

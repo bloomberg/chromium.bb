@@ -11,7 +11,6 @@
 
 #include "base/component_export.h"
 #include "base/containers/span.h"
-#include "base/macros.h"
 #include "components/cbor/values.h"
 #include "device/fido/attestation_statement.h"
 #include "device/fido/fido_constants.h"
@@ -27,6 +26,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoAttestationStatement
 
   FidoAttestationStatement(std::vector<uint8_t> signature,
                            std::vector<std::vector<uint8_t>> x509_certificates);
+
+  FidoAttestationStatement(const FidoAttestationStatement&) = delete;
+  FidoAttestationStatement& operator=(const FidoAttestationStatement&) = delete;
+
   ~FidoAttestationStatement() override;
 
   cbor::Value AsCBOR() const override;
@@ -37,8 +40,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoAttestationStatement
  private:
   const std::vector<uint8_t> signature_;
   const std::vector<std::vector<uint8_t>> x509_certificates_;
-
-  DISALLOW_COPY_AND_ASSIGN(FidoAttestationStatement);
 };
 
 // Implements the "packed" attestation statement format from

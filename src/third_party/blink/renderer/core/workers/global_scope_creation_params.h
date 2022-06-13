@@ -6,7 +6,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_GLOBAL_SCOPE_CREATION_PARAMS_H_
 
 #include <memory>
-#include "base/macros.h"
 #include "base/unguessable_token.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
@@ -17,6 +16,7 @@
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/browser_interface_broker.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/loader/code_cache.mojom.h"
 #include "third_party/blink/public/mojom/script/script_type.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/v8_cache_options.mojom-blink.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
@@ -50,6 +50,8 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
       scoped_refptr<WebWorkerFetchContext>,
       Vector<network::mojom::blink::ContentSecurityPolicyPtr>
           outside_content_security_policies,
+      Vector<network::mojom::blink::ContentSecurityPolicyPtr>
+          response_content_security_policies,
       network::mojom::ReferrerPolicy referrer_policy,
       const SecurityOrigin*,
       bool starter_secure_context,
@@ -64,6 +66,8 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
       WorkletModuleResponsesMap*,
       mojo::PendingRemote<mojom::blink::BrowserInterfaceBroker>
           browser_interface_broker = mojo::NullRemote(),
+      mojo::PendingRemote<blink::mojom::CodeCacheHost> code_cahe_host =
+          mojo::NullRemote(),
       BeginFrameProviderParams begin_frame_provider_params = {},
       const PermissionsPolicy* parent_permissions_policy = nullptr,
       base::UnguessableToken agent_cluster_id = {},
@@ -72,6 +76,9 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
           absl::nullopt,
       bool parent_cross_origin_isolated_capability = false,
       bool parent_direct_socket_capability = false);
+  GlobalScopeCreationParams(const GlobalScopeCreationParams&) = delete;
+  GlobalScopeCreationParams& operator=(const GlobalScopeCreationParams&) =
+      delete;
 
   ~GlobalScopeCreationParams() = default;
 
@@ -97,11 +104,16 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
 
   scoped_refptr<WebWorkerFetchContext> web_worker_fetch_context;
 
-  // TODO(bashi): This contains "inside" CSP headers for on-the-main-thread
-  // service/shared worker script fetch. Add a separate parameter for "inside"
-  // CSP headers.
   Vector<network::mojom::blink::ContentSecurityPolicyPtr>
       outside_content_security_policies;
+
+  // This is used only for classic dedicated workers with off-the-main-thread
+  // fetch disabled.
+  //
+  // TODO(https://crbug.com/835717): Remove this after dedicated workers support
+  // off-the-main-thread script fetch by default.
+  Vector<network::mojom::blink::ContentSecurityPolicyPtr>
+      response_content_security_policies;
 
   network::mojom::ReferrerPolicy referrer_policy;
   std::unique_ptr<Vector<String>> origin_trial_tokens;
@@ -160,6 +172,8 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
   mojo::PendingRemote<mojom::blink::BrowserInterfaceBroker>
       browser_interface_broker;
 
+  mojo::PendingRemote<blink::mojom::CodeCacheHost> code_cache_host_interface;
+
   BeginFrameProviderParams begin_frame_provider_params;
 
   std::unique_ptr<PermissionsPolicy> worker_permissions_policy;
@@ -186,8 +200,6 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
   //
   // TODO(mkwst): We need a specification for this capability.
   const bool parent_direct_socket_capability;
-
-  DISALLOW_COPY_AND_ASSIGN(GlobalScopeCreationParams);
 };
 
 }  // namespace blink

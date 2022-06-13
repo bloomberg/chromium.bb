@@ -6,29 +6,34 @@
       "is_debug": true,
       "is_lsan": true,
       "symbol_level": 1,
-      "use_goma": true
+      "use_rbe": true,
+      "use_remoteexec": true
     }
   },
   "ASAN Release": {
     "gn_args": {
+      "dcheck_always_on": false,
       "enable_ipc_fuzzer": true,
       "is_asan": true,
       "is_component_build": false,
       "is_debug": false,
       "is_lsan": true,
-      "use_goma": true,
+      "use_rbe": true,
+      "use_remoteexec": true,
       "v8_enable_verify_heap": true
     }
   },
   "ASAN Release Media": {
     "gn_args": {
+      "dcheck_always_on": false,
       "ffmpeg_branding": "ChromeOS",
       "is_asan": true,
       "is_component_build": false,
       "is_debug": false,
       "is_lsan": true,
       "proprietary_codecs": true,
-      "use_goma": true,
+      "use_rbe": true,
+      "use_remoteexec": true,
       "v8_enable_verify_heap": true
     }
   },
@@ -47,6 +52,7 @@
   },
   "ASan Release (32-bit x86 with V8-ARM)": {
     "gn_args": {
+      "dcheck_always_on": false,
       "enable_ipc_fuzzer": true,
       "enable_nacl": false,
       "is_asan": true,
@@ -60,6 +66,7 @@
   },
   "ASan Release Media (32-bit x86 with V8-ARM)": {
     "gn_args": {
+      "dcheck_always_on": false,
       "enable_ipc_fuzzer": true,
       "enable_nacl": false,
       "ffmpeg_branding": "ChromeOS",
@@ -76,6 +83,7 @@
   "Afl Upload Linux ASan": {
     "gn_args": {
       "archive_seed_corpus": false,
+      "dcheck_always_on": false,
       "enable_nacl": false,
       "ffmpeg_branding": "ChromeOS",
       "is_asan": true,
@@ -90,6 +98,7 @@
   },
   "ChromiumOS ASAN Release": {
     "gn_args": {
+      "dcheck_always_on": false,
       "enable_ipc_fuzzer": true,
       "is_asan": true,
       "is_component_build": false,
@@ -103,6 +112,7 @@
   "Libfuzzer Upload Chrome OS ASan": {
     "gn_args": {
       "archive_seed_corpus": false,
+      "dcheck_always_on": false,
       "enable_nacl": false,
       "ffmpeg_branding": "ChromeOS",
       "is_asan": true,
@@ -118,6 +128,7 @@
   },
   "Libfuzzer Upload Linux ASan": {
     "gn_args": {
+      "dcheck_always_on": false,
       "enable_mojom_fuzzer": true,
       "enable_nacl": false,
       "ffmpeg_branding": "ChromeOS",
@@ -150,6 +161,7 @@
   "Libfuzzer Upload Linux MSan": {
     "gn_args": {
       "archive_seed_corpus": false,
+      "dcheck_always_on": false,
       "enable_nacl": false,
       "ffmpeg_branding": "ChromeOS",
       "is_component_build": true,
@@ -166,6 +178,7 @@
   "Libfuzzer Upload Linux UBSan": {
     "gn_args": {
       "archive_seed_corpus": false,
+      "dcheck_always_on": false,
       "enable_nacl": false,
       "ffmpeg_branding": "ChromeOS",
       "is_component_build": false,
@@ -181,6 +194,7 @@
   "Libfuzzer Upload Linux V8-ARM64 ASan": {
     "gn_args": {
       "archive_seed_corpus": false,
+      "dcheck_always_on": false,
       "enable_nacl": false,
       "ffmpeg_branding": "ChromeOS",
       "is_asan": true,
@@ -216,6 +230,7 @@
   "Libfuzzer Upload Linux32 ASan": {
     "gn_args": {
       "archive_seed_corpus": false,
+      "dcheck_always_on": false,
       "enable_nacl": false,
       "ffmpeg_branding": "ChromeOS",
       "host_cpu": "x86",
@@ -251,6 +266,7 @@
   "Libfuzzer Upload Linux32 V8-ARM ASan": {
     "gn_args": {
       "archive_seed_corpus": false,
+      "dcheck_always_on": false,
       "enable_nacl": false,
       "ffmpeg_branding": "ChromeOS",
       "host_cpu": "x86",
@@ -287,6 +303,7 @@
   },
   "Libfuzzer Upload Mac ASan": {
     "gn_args": {
+      "dcheck_always_on": false,
       "enable_nacl": false,
       "ffmpeg_branding": "Chrome",
       "is_asan": true,
@@ -301,6 +318,7 @@
   },
   "Libfuzzer Upload Windows ASan": {
     "gn_args": {
+      "dcheck_always_on": false,
       "enable_mojom_fuzzer": true,
       "enable_nacl": false,
       "ffmpeg_branding": "Chrome",
@@ -314,26 +332,48 @@
       "use_libfuzzer": true
     }
   },
+  "Libfuzzer Upload iOS Catalyst Debug": {
+    "gn_args": {
+      "enable_dsyms": false,
+      "enable_remoting": false,
+      "ios_set_attributes_for_xcode_project_generation": false,
+      "is_component_build": false,
+      "is_debug": true,
+      "is_p2p_enabled": false,
+      "symbol_level": 1,
+      "target_cpu": "x64",
+      "target_environment": "catalyst",
+      "target_os": "ios",
+      "use_goma": true,
+      "use_libfuzzer": true,
+      "use_lld": false
+    }
+  },
   "MSAN Release (chained origins)": {
     "gn_args": {
+      "dcheck_always_on": false,
       "is_component_build": false,
       "is_debug": false,
       "is_msan": true,
       "msan_track_origins": 2,
-      "use_goma": true
+      "use_rbe": true,
+      "use_remoteexec": true
     }
   },
   "MSAN Release (no origins)": {
     "gn_args": {
+      "dcheck_always_on": false,
       "is_component_build": false,
       "is_debug": false,
       "is_msan": true,
       "msan_track_origins": 0,
-      "use_goma": true
+      "use_rbe": true,
+      "use_remoteexec": true
     }
   },
   "Mac ASAN Release": {
     "gn_args": {
+      "dcheck_always_on": false,
       "enable_ipc_fuzzer": true,
       "enable_nacl": false,
       "is_asan": true,
@@ -345,6 +385,7 @@
   },
   "Mac ASAN Release Media": {
     "gn_args": {
+      "dcheck_always_on": false,
       "enable_ipc_fuzzer": true,
       "enable_nacl": false,
       "ffmpeg_branding": "Chrome",
@@ -363,37 +404,45 @@
       "is_debug": true,
       "is_tsan": true,
       "symbol_level": 1,
-      "use_goma": true
+      "use_rbe": true,
+      "use_remoteexec": true
     }
   },
   "TSAN Release": {
     "gn_args": {
+      "dcheck_always_on": false,
       "enable_nacl": false,
       "is_component_build": false,
       "is_debug": false,
       "is_tsan": true,
-      "use_goma": true
+      "use_rbe": true,
+      "use_remoteexec": true
     }
   },
   "UBSan Release": {
     "gn_args": {
+      "dcheck_always_on": false,
       "is_component_build": false,
       "is_debug": false,
       "is_ubsan": true,
-      "use_goma": true
+      "use_rbe": true,
+      "use_remoteexec": true
     }
   },
   "UBSan vptr Release": {
     "gn_args": {
+      "dcheck_always_on": false,
       "is_component_build": false,
       "is_debug": false,
       "is_ubsan_no_recover": true,
       "is_ubsan_vptr": true,
-      "use_goma": true
+      "use_rbe": true,
+      "use_remoteexec": true
     }
   },
   "Win ASan Release": {
     "gn_args": {
+      "dcheck_always_on": false,
       "enable_ipc_fuzzer": true,
       "is_asan": true,
       "is_clang": true,
@@ -405,6 +454,7 @@
   },
   "Win ASan Release Media": {
     "gn_args": {
+      "dcheck_always_on": false,
       "enable_ipc_fuzzer": true,
       "ffmpeg_branding": "Chrome",
       "is_asan": true,

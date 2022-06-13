@@ -15,6 +15,9 @@
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_registration_options.mojom.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -42,8 +45,9 @@ class ServiceWorkerNewScriptFetcherTest : public testing::Test {
       const GURL& scope) {
     blink::mojom::ServiceWorkerRegistrationOptions options;
     options.scope = scope;
-    auto registration =
-        CreateNewServiceWorkerRegistration(context()->registry(), options);
+    auto registration = CreateNewServiceWorkerRegistration(
+        context()->registry(), options,
+        blink::StorageKey(url::Origin::Create(scope)));
     return registration;
   }
 
@@ -68,7 +72,8 @@ TEST_F(ServiceWorkerNewScriptFetcherTest, Basic) {
       *context(), version,
       base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
           &fake_factory),
-      blink::mojom::FetchClientSettingsObject::New());
+      blink::mojom::FetchClientSettingsObject::New(),
+      /*requesting_frame_id=*/GlobalRenderFrameHostId());
 
   // Start a fetcher and wait to get the result. The script loaded from
   // `loader_factory` is set to the `main_script_load_params` through

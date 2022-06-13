@@ -89,17 +89,14 @@ bool EnableStartupTracingForProcess(
       privacy_filtering_enabled);
 }
 
-void InitTracingPostThreadPoolStartAndFeatureList() {
+void InitTracingPostThreadPoolStartAndFeatureList(bool enable_consumer) {
   if (g_tracing_initialized_after_threadpool_and_featurelist)
     return;
   g_tracing_initialized_after_threadpool_and_featurelist = true;
-  // TODO(nuskos): We should switch these to DCHECK once we're reasonably
-  // confident we've ensured this is called properly in all processes. Probably
-  // after M78 release has been cut (since we'll verify in the rollout of M78).
-  CHECK(base::ThreadPoolInstance::Get());
-  CHECK(base::FeatureList::GetInstance());
+  DCHECK(base::ThreadPoolInstance::Get());
+  DCHECK(base::FeatureList::GetInstance());
 
-  PerfettoTracedProcess::Get()->OnThreadPoolAvailable();
+  PerfettoTracedProcess::Get()->OnThreadPoolAvailable(enable_consumer);
 
   if (ShouldSetupSystemTracing()) {
     // Ensure that data sources are created and registered.
@@ -174,7 +171,7 @@ void PropagateTracingFlagsToChildProcessCmdLine(base::CommandLine* cmd_line) {
 
   // Make sure that the startup session uses privacy filtering mode if it's
   // enabled for the browser's session.
-  if (TraceEventDataSource::GetInstance()->privacy_filtering_enabled())
+  if (TraceEventDataSource::GetInstance()->IsPrivacyFilteringEnabled())
     cmd_line->AppendSwitch(switches::kTraceStartupEnablePrivacyFiltering);
 
   cmd_line->AppendSwitchASCII(switches::kTraceStartup,

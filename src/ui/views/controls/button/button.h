@@ -9,7 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/macros.h"
+#include "base/gtest_prod_util.h"
 #include "build/build_config.h"
 #include "ui/events/event_constants.h"
 #include "ui/gfx/animation/throb_animation.h"
@@ -57,6 +57,12 @@ class VIEWS_EXPORT Button : public View, public AnimationDelegateViews {
       : public ButtonControllerDelegate {
    public:
     explicit DefaultButtonControllerDelegate(Button* button);
+
+    DefaultButtonControllerDelegate(const DefaultButtonControllerDelegate&) =
+        delete;
+    DefaultButtonControllerDelegate& operator=(
+        const DefaultButtonControllerDelegate&) = delete;
+
     ~DefaultButtonControllerDelegate() override;
 
     // views::ButtonControllerDelegate:
@@ -69,9 +75,6 @@ class VIEWS_EXPORT Button : public View, public AnimationDelegateViews {
     InkDrop* GetInkDrop() override;
     int GetDragOperations(const gfx::Point& press_pt) override;
     bool InDrag() override;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(DefaultButtonControllerDelegate);
   };
 
   // PressedCallback wraps a one-arg callback type with multiple constructors to
@@ -109,6 +112,9 @@ class VIEWS_EXPORT Button : public View, public AnimationDelegateViews {
 
   METADATA_HEADER(Button);
 
+  Button(const Button&) = delete;
+  Button& operator=(const Button&) = delete;
+
   ~Button() override;
 
   static const Button* AsButton(const View* view);
@@ -119,12 +125,12 @@ class VIEWS_EXPORT Button : public View, public AnimationDelegateViews {
   void SetTooltipText(const std::u16string& tooltip_text);
   std::u16string GetTooltipText() const;
 
+  // Tag is now a property. These accessors are deprecated. Use GetTag() and
+  // SetTag() below or even better, use SetID()/GetID() from the ancestor.
   int tag() const { return tag_; }
   void set_tag(int tag) { tag_ = tag; }
 
-  void SetCallback(PressedCallback callback) {
-    callback_ = std::move(callback);
-  }
+  virtual void SetCallback(PressedCallback callback);
 
   void SetAccessibleName(const std::u16string& name);
   const std::u16string& GetAccessibleName() const;
@@ -174,16 +180,18 @@ class VIEWS_EXPORT Button : public View, public AnimationDelegateViews {
   void SetHotTracked(bool is_hot_tracked);
   bool IsHotTracked() const;
 
+  // TODO(crbug/1266066): These property accessors and tag_ field should be
+  // removed and use SetID()/GetID from the ancestor View class.
+  void SetTag(int value);
+  int GetTag() const;
+
   void SetFocusPainter(std::unique_ptr<Painter> focus_painter);
 
   // Highlights the ink drop for the button.
-  void SetHighlighted(bool bubble_visible);
+  void SetHighlighted(bool highlighted);
 
   base::CallbackListSubscription AddStateChangedCallback(
       PropertyChangedCallback callback);
-
-  InkDropHost* ink_drop() { return ink_drop_.get(); }
-  const InkDropHost* ink_drop() const { return ink_drop_.get(); }
 
   // Overridden from View:
   bool OnMousePressed(const ui::MouseEvent& event) override;
@@ -285,8 +293,6 @@ class VIEWS_EXPORT Button : public View, public AnimationDelegateViews {
     return hover_animation_;
   }
 
-  FocusRing* focus_ring() { return focus_ring_; }
-
   // Getter used by metadata only.
   const PressedCallback& GetCallback() const { return callback_; }
 
@@ -337,12 +343,6 @@ class VIEWS_EXPORT Button : public View, public AnimationDelegateViews {
   // tracked with SetHotTracked().
   bool show_ink_drop_when_hot_tracked_ = false;
 
-  // The InkDrop for this Button.
-  std::unique_ptr<InkDropHost> ink_drop_{std::make_unique<InkDropHost>(this)};
-
-  // The focus ring for this Button.
-  FocusRing* focus_ring_ = nullptr;
-
   std::unique_ptr<Painter> focus_painter_;
 
   // ButtonController is responsible for handling events sent to the Button and
@@ -354,8 +354,6 @@ class VIEWS_EXPORT Button : public View, public AnimationDelegateViews {
   base::CallbackListSubscription enabled_changed_subscription_{
       AddEnabledChangedCallback(base::BindRepeating(&Button::OnEnabledChanged,
                                                     base::Unretained(this)))};
-
-  DISALLOW_COPY_AND_ASSIGN(Button);
 };
 
 BEGIN_VIEW_BUILDER(VIEWS_EXPORT, Button, View)
@@ -368,6 +366,7 @@ VIEW_BUILDER_PROPERTY(bool, HideInkDropWhenShowingContextMenu)
 VIEW_BUILDER_PROPERTY(bool, InstallFocusRingOnFocus)
 VIEW_BUILDER_PROPERTY(bool, RequestFocusOnPress)
 VIEW_BUILDER_PROPERTY(Button::ButtonState, State)
+VIEW_BUILDER_PROPERTY(int, Tag)
 VIEW_BUILDER_PROPERTY(std::u16string, TooltipText)
 VIEW_BUILDER_PROPERTY(int, TriggerableEventFlags)
 END_VIEW_BUILDER

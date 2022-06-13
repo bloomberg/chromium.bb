@@ -9,7 +9,7 @@
 #include <memory>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "ui/events/gesture_detection/gesture_event_data_packet.h"
 #include "ui/events/gesture_detection/gesture_provider.h"
 #include "ui/events/gesture_detection/touch_disposition_gesture_filter.h"
@@ -26,6 +26,10 @@ class GESTURE_DETECTION_EXPORT FilteredGestureProvider final
   // and allowed by the |gesture_filter_|.
   FilteredGestureProvider(const GestureProvider::Config& config,
                           GestureProviderClient* client);
+
+  FilteredGestureProvider(const FilteredGestureProvider&) = delete;
+  FilteredGestureProvider& operator=(const FilteredGestureProvider&) = delete;
+
   ~FilteredGestureProvider() final;
 
   void UpdateConfig(const GestureProvider::Config& config);
@@ -69,7 +73,7 @@ class GESTURE_DETECTION_EXPORT FilteredGestureProvider final
   // TouchDispositionGestureFilterClient implementation.
   void ForwardGestureEvent(const ui::GestureEventData& event) override;
 
-  GestureProviderClient* const client_;
+  const raw_ptr<GestureProviderClient> client_;
 
   std::unique_ptr<ui::GestureProvider> gesture_provider_;
   ui::TouchDispositionGestureFilter gesture_filter_;
@@ -77,8 +81,6 @@ class GESTURE_DETECTION_EXPORT FilteredGestureProvider final
   bool handling_event_;
   bool any_touch_moved_beyond_slop_region_;
   ui::GestureEventDataPacket pending_gesture_packet_;
-
-  DISALLOW_COPY_AND_ASSIGN(FilteredGestureProvider);
 };
 
 }  // namespace ui

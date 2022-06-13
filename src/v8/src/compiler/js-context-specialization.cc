@@ -103,7 +103,16 @@ base::Optional<ContextRef> GetSpecializationContext(
     Maybe<OuterContext> maybe_outer) {
   switch (node->opcode()) {
     case IrOpcode::kHeapConstant: {
-      HeapObjectRef object = MakeRef(broker, HeapConstantOf(node->op()));
+      // TODO(jgruber,chromium:1209798): Using kAssumeMemoryFence works around
+      // the fact that the graph stores handles (and not refs). The assumption
+      // is that any handle inserted into the graph is safe to read; but we
+      // don't preserve the reason why it is safe to read. Thus we must
+      // over-approximate here and assume the existence of a memory fence. In
+      // the future, we should consider having the graph store ObjectRefs or
+      // ObjectData pointer instead, which would make new ref construction here
+      // unnecessary.
+      HeapObjectRef object =
+          MakeRefAssumeMemoryFence(broker, HeapConstantOf(node->op()));
       if (object.IsContext()) return object.AsContext();
       break;
     }
@@ -231,7 +240,16 @@ base::Optional<ContextRef> GetModuleContext(JSHeapBroker* broker, Node* node,
 
   switch (context->opcode()) {
     case IrOpcode::kHeapConstant: {
-      HeapObjectRef object = MakeRef(broker, HeapConstantOf(context->op()));
+      // TODO(jgruber,chromium:1209798): Using kAssumeMemoryFence works around
+      // the fact that the graph stores handles (and not refs). The assumption
+      // is that any handle inserted into the graph is safe to read; but we
+      // don't preserve the reason why it is safe to read. Thus we must
+      // over-approximate here and assume the existence of a memory fence. In
+      // the future, we should consider having the graph store ObjectRefs or
+      // ObjectData pointer instead, which would make new ref construction here
+      // unnecessary.
+      HeapObjectRef object =
+          MakeRefAssumeMemoryFence(broker, HeapConstantOf(context->op()));
       if (object.IsContext()) {
         return find_context(object.AsContext());
       }
@@ -257,9 +275,10 @@ Reduction JSContextSpecialization::ReduceJSGetImportMeta(Node* node) {
   if (!maybe_context.has_value()) return NoChange();
 
   ContextRef context = maybe_context.value();
-  SourceTextModuleRef module =
-      context.get(Context::EXTENSION_INDEX).value().AsSourceTextModule();
-  base::Optional<ObjectRef> import_meta = module.import_meta();
+  base::Optional<ObjectRef> module = context.get(Context::EXTENSION_INDEX);
+  if (!module.has_value()) return NoChange();
+  base::Optional<ObjectRef> import_meta =
+      module->AsSourceTextModule().import_meta();
   if (!import_meta.has_value()) return NoChange();
   if (!import_meta->IsJSObject()) {
     DCHECK(import_meta->IsTheHole());

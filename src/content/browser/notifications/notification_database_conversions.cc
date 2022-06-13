@@ -63,23 +63,23 @@ bool DeserializeNotificationDatabaseData(const std::string& input,
   output->num_clicks = message.num_clicks();
   output->num_action_button_clicks = message.num_action_button_clicks();
   output->creation_time_millis = base::Time::FromDeltaSinceWindowsEpoch(
-      base::TimeDelta::FromMicroseconds(message.creation_time_millis()));
+      base::Microseconds(message.creation_time_millis()));
 
   if (message.has_time_until_close_millis()) {
     output->time_until_close_millis =
-        base::TimeDelta::FromMilliseconds(message.time_until_close_millis());
+        base::Milliseconds(message.time_until_close_millis());
   } else {
     output->time_until_close_millis = absl::nullopt;
   }
   if (message.has_time_until_first_click_millis()) {
-    output->time_until_first_click_millis = base::TimeDelta::FromMilliseconds(
-        message.time_until_first_click_millis());
+    output->time_until_first_click_millis =
+        base::Milliseconds(message.time_until_first_click_millis());
   } else {
     output->time_until_first_click_millis = absl::nullopt;
   }
   if (message.has_time_until_last_click_millis()) {
-    output->time_until_last_click_millis = base::TimeDelta::FromMilliseconds(
-        message.time_until_last_click_millis());
+    output->time_until_last_click_millis =
+        base::Milliseconds(message.time_until_last_click_millis());
   } else {
     output->time_until_last_click_millis = absl::nullopt;
   }
@@ -132,7 +132,7 @@ bool DeserializeNotificationDatabaseData(const std::string& input,
   }
 
   notification_data->timestamp = base::Time::FromDeltaSinceWindowsEpoch(
-      base::TimeDelta::FromMicroseconds(payload.timestamp()));
+      base::Microseconds(payload.timestamp()));
 
   notification_data->renotify = payload.renotify();
   notification_data->silent = payload.silent();
@@ -173,13 +173,14 @@ bool DeserializeNotificationDatabaseData(const std::string& input,
   if (payload.has_show_trigger_timestamp()) {
     notification_data->show_trigger_timestamp =
         base::Time::FromDeltaSinceWindowsEpoch(
-            base::TimeDelta::FromMicroseconds(
-                payload.show_trigger_timestamp()));
+            base::Microseconds(payload.show_trigger_timestamp()));
   } else {
     notification_data->show_trigger_timestamp = absl::nullopt;
   }
 
   output->has_triggered = message.has_triggered();
+
+  output->is_shown_by_browser = message.is_shown_by_browser();
 
   output->notification_resources = absl::nullopt;
 
@@ -305,6 +306,8 @@ bool SerializeNotificationDatabaseData(const NotificationDatabaseData& input,
   }
 
   message.set_has_triggered(input.has_triggered);
+
+  message.set_is_shown_by_browser(input.is_shown_by_browser);
 
   return message.SerializeToString(output);
 }

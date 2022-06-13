@@ -91,7 +91,7 @@ class LocalFrameTest : public testing::Test {
 TEST_F(LocalFrameTest, IsLazyLoadingImageAllowedWithFeatureDisabled) {
   ScopedLazyImageLoadingForTest scoped_lazy_image_loading_for_test(false);
   auto page_holder = std::make_unique<DummyPageHolder>(
-      IntSize(800, 600), nullptr, nullptr,
+      gfx::Size(800, 600), nullptr, nullptr,
       base::BindOnce(&EnableLazyLoadInSettings));
   EXPECT_EQ(LocalFrame::LazyLoadImageSetting::kDisabled,
             page_holder->GetFrame().GetLazyLoadImageSetting());
@@ -100,7 +100,7 @@ TEST_F(LocalFrameTest, IsLazyLoadingImageAllowedWithFeatureDisabled) {
 TEST_F(LocalFrameTest, IsLazyLoadingImageAllowedWithSettingDisabled) {
   ScopedLazyImageLoadingForTest scoped_lazy_image_loading_for_test(false);
   auto page_holder = std::make_unique<DummyPageHolder>(
-      IntSize(800, 600), nullptr, nullptr,
+      gfx::Size(800, 600), nullptr, nullptr,
       base::BindOnce(&DisableLazyLoadInSettings));
   EXPECT_EQ(LocalFrame::LazyLoadImageSetting::kDisabled,
             page_holder->GetFrame().GetLazyLoadImageSetting());
@@ -111,7 +111,7 @@ TEST_F(LocalFrameTest, IsLazyLoadingImageAllowedWithAutomaticDisabled) {
   ScopedAutomaticLazyImageLoadingForTest
       scoped_automatic_lazy_image_loading_for_test(false);
   auto page_holder = std::make_unique<DummyPageHolder>(
-      IntSize(800, 600), nullptr, nullptr,
+      gfx::Size(800, 600), nullptr, nullptr,
       base::BindOnce(&EnableLazyLoadInSettings));
   EXPECT_EQ(LocalFrame::LazyLoadImageSetting::kEnabledExplicit,
             page_holder->GetFrame().GetLazyLoadImageSetting());
@@ -125,7 +125,7 @@ TEST_F(LocalFrameTest, IsLazyLoadingImageAllowedWhenNotRestricted) {
       scoped_restrict_automatic_lazy_image_loading_to_data_saver_for_test(
           false);
   auto page_holder = std::make_unique<DummyPageHolder>(
-      IntSize(800, 600), nullptr, nullptr,
+      gfx::Size(800, 600), nullptr, nullptr,
       base::BindOnce(&EnableLazyLoadInSettings));
   EXPECT_EQ(LocalFrame::LazyLoadImageSetting::kEnabledAutomatic,
             page_holder->GetFrame().GetLazyLoadImageSetting());
@@ -140,7 +140,7 @@ TEST_F(LocalFrameTest,
       scoped_restrict_automatic_lazy_image_loading_to_data_saver_for_test(true);
   GetNetworkStateNotifier().SetSaveDataEnabled(false);
   auto page_holder = std::make_unique<DummyPageHolder>(
-      IntSize(800, 600), nullptr, nullptr,
+      gfx::Size(800, 600), nullptr, nullptr,
       base::BindOnce(&EnableLazyLoadInSettings));
   EXPECT_EQ(LocalFrame::LazyLoadImageSetting::kEnabledExplicit,
             page_holder->GetFrame().GetLazyLoadImageSetting());
@@ -155,7 +155,7 @@ TEST_F(LocalFrameTest,
       scoped_restrict_automatic_lazy_image_loading_to_data_saver_for_test(true);
   GetNetworkStateNotifier().SetSaveDataEnabled(true);
   auto page_holder = std::make_unique<DummyPageHolder>(
-      IntSize(800, 600), nullptr, nullptr,
+      gfx::Size(800, 600), nullptr, nullptr,
       base::BindOnce(&EnableLazyLoadInSettings));
   EXPECT_EQ(LocalFrame::LazyLoadImageSetting::kEnabledAutomatic,
             page_holder->GetFrame().GetLazyLoadImageSetting());
@@ -175,7 +175,7 @@ void TestGreenDiv(DummyPageHolder& page_holder) {
 }  // namespace
 
 TEST_F(LocalFrameTest, ForceSynchronousDocumentInstall_XHTMLStyleInBody) {
-  auto page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
+  auto page_holder = std::make_unique<DummyPageHolder>(gfx::Size(800, 600));
 
   scoped_refptr<SharedBuffer> data = SharedBuffer::Create();
   data->Append(
@@ -187,7 +187,7 @@ TEST_F(LocalFrameTest, ForceSynchronousDocumentInstall_XHTMLStyleInBody) {
 }
 
 TEST_F(LocalFrameTest, ForceSynchronousDocumentInstall_XHTMLLinkInBody) {
-  auto page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
+  auto page_holder = std::make_unique<DummyPageHolder>(gfx::Size(800, 600));
 
   scoped_refptr<SharedBuffer> data = SharedBuffer::Create();
   data->Append(
@@ -200,7 +200,7 @@ TEST_F(LocalFrameTest, ForceSynchronousDocumentInstall_XHTMLLinkInBody) {
 }
 
 TEST_F(LocalFrameTest, ForceSynchronousDocumentInstall_XHTMLStyleInHead) {
-  auto page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
+  auto page_holder = std::make_unique<DummyPageHolder>(gfx::Size(800, 600));
 
   scoped_refptr<SharedBuffer> data = SharedBuffer::Create();
   data->Append(
@@ -212,7 +212,7 @@ TEST_F(LocalFrameTest, ForceSynchronousDocumentInstall_XHTMLStyleInHead) {
 }
 
 TEST_F(LocalFrameTest, ForceSynchronousDocumentInstall_XHTMLLinkInHead) {
-  auto page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
+  auto page_holder = std::make_unique<DummyPageHolder>(gfx::Size(800, 600));
 
   scoped_refptr<SharedBuffer> data = SharedBuffer::Create();
   data->Append(
@@ -225,7 +225,7 @@ TEST_F(LocalFrameTest, ForceSynchronousDocumentInstall_XHTMLLinkInHead) {
 }
 
 TEST_F(LocalFrameTest, ForceSynchronousDocumentInstall_XMLStyleSheet) {
-  auto page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
+  auto page_holder = std::make_unique<DummyPageHolder>(gfx::Size(800, 600));
 
   scoped_refptr<SharedBuffer> data = SharedBuffer::Create();
   data->Append(
@@ -254,14 +254,12 @@ TEST_F(LocalFrameTest, CharacterIndexAtPointWithPinchZoom) {
 
   Page* page = web_view_helper.GetWebView()->GetPage();
   LocalFrame* main_frame = DynamicTo<LocalFrame>(page->MainFrame());
-  main_frame->text_input_host_.reset();
+  main_frame->ResetTextInputHostForTesting();
 
   base::RunLoop run_loop;
   TestTextInputHostWaiter waiter;
   waiter.Init(run_loop.QuitClosure(), main_frame->GetBrowserInterfaceBroker());
-  main_frame->GetBrowserInterfaceBroker().GetInterface(
-      main_frame->text_input_host_.BindNewPipeAndPassReceiver(
-          main_frame->GetTaskRunner(blink::TaskType::kInternalDefault)));
+  main_frame->RebindTextInputHostForTesting();
   // Since we're zoomed in to 2X, each char of Ahem is 20px wide/tall in
   // viewport space. We expect to hit the fifth char on the first line.
   main_frame->GetCharacterIndexAtPoint(gfx::Point(100, 15));

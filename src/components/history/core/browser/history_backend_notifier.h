@@ -14,8 +14,9 @@ class GURL;
 
 namespace history {
 
-// The HistoryBackendNotifier forwards notifications from the HistoryBackend's
-// client to all the interested observers (in both history and main thread).
+// The HistoryBackendNotifier (mostly) forwards notifications from the
+// HistoryBackend's client to all the interested observers (in both history
+// and main thread).
 class HistoryBackendNotifier {
  public:
   HistoryBackendNotifier() {}
@@ -38,12 +39,15 @@ class HistoryBackendNotifier {
 
   // Sends notification that `changed_urls` have been changed or added.
   virtual void NotifyURLsModified(const URLRows& changed_urls,
-                                  UrlsModifiedReason reason) = 0;
+                                  bool is_from_expiration) = 0;
 
   // Sends notification that some or the totality of the URLs have been
   // deleted.
   // `deletion_info` describes the urls that have been removed from history.
   virtual void NotifyURLsDeleted(DeletionInfo deletion_info) = 0;
+
+  // Called after a visit has been deleted.
+  virtual void NotifyVisitDeleted(const VisitRow& visit) = 0;
 };
 
 }  // namespace history

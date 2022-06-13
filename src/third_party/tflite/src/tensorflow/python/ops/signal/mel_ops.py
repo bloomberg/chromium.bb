@@ -14,10 +14,6 @@
 # ==============================================================================
 """mel conversion ops."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 from tensorflow.python.framework import dtypes
 from tensorflow.python.framework import ops
 from tensorflow.python.framework import tensor_util
@@ -99,7 +95,7 @@ def linear_to_mel_weight_matrix(num_mel_bins=20,
                                 upper_edge_hertz=3800.0,
                                 dtype=dtypes.float32,
                                 name=None):
-  """Returns a matrix to warp linear scale spectrograms to the [mel scale][mel].
+  r"""Returns a matrix to warp linear scale spectrograms to the [mel scale][mel].
 
   Returns a weight matrix that can be used to re-weight a `Tensor` containing
   `num_spectrogram_bins` linearly sampled frequency information from

@@ -15,11 +15,11 @@
 #include <tuple>
 
 #include "config/aom_dsp_rtcd.h"
+#include "config/av1_rtcd.h"
 
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 #include "test/acm_random.h"
 #include "test/util.h"
-#include "test/clear_system_state.h"
 #include "test/register_state_check.h"
 #include "av1/common/common_data.h"
 #include "aom_ports/aom_timer.h"
@@ -92,7 +92,6 @@ class AV1DISTWTDCOMPAVGTest
  public:
   ~AV1DISTWTDCOMPAVGTest() {}
   void SetUp() { rnd_.Reset(ACMRandom::DeterministicSeed()); }
-  void TearDown() { libaom_test::ClearSystemState(); }
 
  protected:
   void RunCheckOutput(distwtdcompavg_func test_impl) {
@@ -117,8 +116,8 @@ class AV1DISTWTDCOMPAVGTest
 
     for (int ii = 0; ii < 2; ii++) {
       for (int jj = 0; jj < 4; jj++) {
-        dist_wtd_comp_params.fwd_offset = quant_dist_lookup_table[ii][jj][0];
-        dist_wtd_comp_params.bck_offset = quant_dist_lookup_table[ii][jj][1];
+        dist_wtd_comp_params.fwd_offset = quant_dist_lookup_table[jj][ii];
+        dist_wtd_comp_params.bck_offset = quant_dist_lookup_table[jj][1 - ii];
 
         const int offset_r = 3 + rnd_.PseudoUniform(h - in_h - 7);
         const int offset_c = 3 + rnd_.PseudoUniform(w - in_w - 7);
@@ -160,8 +159,8 @@ class AV1DISTWTDCOMPAVGTest
     DIST_WTD_COMP_PARAMS dist_wtd_comp_params;
     dist_wtd_comp_params.use_dist_wtd_comp_avg = 1;
 
-    dist_wtd_comp_params.fwd_offset = quant_dist_lookup_table[0][0][0];
-    dist_wtd_comp_params.bck_offset = quant_dist_lookup_table[0][0][1];
+    dist_wtd_comp_params.fwd_offset = quant_dist_lookup_table[0][0];
+    dist_wtd_comp_params.bck_offset = quant_dist_lookup_table[0][1];
 
     const int num_loops = 1000000000 / (in_w + in_h);
     aom_usec_timer timer;
@@ -196,7 +195,6 @@ class AV1DISTWTDCOMPAVGUPSAMPLEDTest
  public:
   ~AV1DISTWTDCOMPAVGUPSAMPLEDTest() {}
   void SetUp() { rnd_.Reset(ACMRandom::DeterministicSeed()); }
-  void TearDown() { libaom_test::ClearSystemState(); }
 
  protected:
   void RunCheckOutput(distwtdcompavgupsampled_func test_impl) {
@@ -226,10 +224,9 @@ class AV1DISTWTDCOMPAVGUPSAMPLEDTest
         for (sub_y_q3 = 0; sub_y_q3 < 8; ++sub_y_q3) {
           for (int ii = 0; ii < 2; ii++) {
             for (int jj = 0; jj < 4; jj++) {
-              dist_wtd_comp_params.fwd_offset =
-                  quant_dist_lookup_table[ii][jj][0];
+              dist_wtd_comp_params.fwd_offset = quant_dist_lookup_table[jj][ii];
               dist_wtd_comp_params.bck_offset =
-                  quant_dist_lookup_table[ii][jj][1];
+                  quant_dist_lookup_table[jj][1 - ii];
 
               const int offset_r = 3 + rnd_.PseudoUniform(h - in_h - 7);
               const int offset_c = 3 + rnd_.PseudoUniform(w - in_w - 7);
@@ -282,8 +279,8 @@ class AV1DISTWTDCOMPAVGUPSAMPLEDTest
     DIST_WTD_COMP_PARAMS dist_wtd_comp_params;
     dist_wtd_comp_params.use_dist_wtd_comp_avg = 1;
 
-    dist_wtd_comp_params.fwd_offset = quant_dist_lookup_table[0][0][0];
-    dist_wtd_comp_params.bck_offset = quant_dist_lookup_table[0][0][1];
+    dist_wtd_comp_params.fwd_offset = quant_dist_lookup_table[0][0];
+    dist_wtd_comp_params.bck_offset = quant_dist_lookup_table[0][1];
 
     int sub_x_q3 = 0;
     int sub_y_q3 = 0;
@@ -326,8 +323,6 @@ class AV1HighBDDISTWTDCOMPAVGTest
   ~AV1HighBDDISTWTDCOMPAVGTest() {}
   void SetUp() { rnd_.Reset(ACMRandom::DeterministicSeed()); }
 
-  void TearDown() { libaom_test::ClearSystemState(); }
-
  protected:
   void RunCheckOutput(distwtdcompavg_func test_impl) {
     const int w = kMaxSize, h = kMaxSize;
@@ -351,8 +346,8 @@ class AV1HighBDDISTWTDCOMPAVGTest
 
     for (int ii = 0; ii < 2; ii++) {
       for (int jj = 0; jj < 4; jj++) {
-        dist_wtd_comp_params.fwd_offset = quant_dist_lookup_table[ii][jj][0];
-        dist_wtd_comp_params.bck_offset = quant_dist_lookup_table[ii][jj][1];
+        dist_wtd_comp_params.fwd_offset = quant_dist_lookup_table[jj][ii];
+        dist_wtd_comp_params.bck_offset = quant_dist_lookup_table[jj][1 - ii];
 
         const int offset_r = 3 + rnd_.PseudoUniform(h - in_h - 7);
         const int offset_c = 3 + rnd_.PseudoUniform(w - in_w - 7);
@@ -398,8 +393,8 @@ class AV1HighBDDISTWTDCOMPAVGTest
     DIST_WTD_COMP_PARAMS dist_wtd_comp_params;
     dist_wtd_comp_params.use_dist_wtd_comp_avg = 1;
 
-    dist_wtd_comp_params.fwd_offset = quant_dist_lookup_table[0][0][0];
-    dist_wtd_comp_params.bck_offset = quant_dist_lookup_table[0][0][1];
+    dist_wtd_comp_params.fwd_offset = quant_dist_lookup_table[0][0];
+    dist_wtd_comp_params.bck_offset = quant_dist_lookup_table[0][1];
 
     const int num_loops = 1000000000 / (in_w + in_h);
     aom_usec_timer timer;
@@ -436,7 +431,6 @@ class AV1HighBDDISTWTDCOMPAVGUPSAMPLEDTest
  public:
   ~AV1HighBDDISTWTDCOMPAVGUPSAMPLEDTest() {}
   void SetUp() { rnd_.Reset(ACMRandom::DeterministicSeed()); }
-  void TearDown() { libaom_test::ClearSystemState(); }
 
  protected:
   void RunCheckOutput(highbddistwtdcompavgupsampled_func test_impl) {
@@ -466,10 +460,9 @@ class AV1HighBDDISTWTDCOMPAVGUPSAMPLEDTest
         for (sub_y_q3 = 0; sub_y_q3 < 8; ++sub_y_q3) {
           for (int ii = 0; ii < 2; ii++) {
             for (int jj = 0; jj < 4; jj++) {
-              dist_wtd_comp_params.fwd_offset =
-                  quant_dist_lookup_table[ii][jj][0];
+              dist_wtd_comp_params.fwd_offset = quant_dist_lookup_table[jj][ii];
               dist_wtd_comp_params.bck_offset =
-                  quant_dist_lookup_table[ii][jj][1];
+                  quant_dist_lookup_table[jj][1 - ii];
 
               const int offset_r = 3 + rnd_.PseudoUniform(h - in_h - 7);
               const int offset_c = 3 + rnd_.PseudoUniform(w - in_w - 7);
@@ -524,8 +517,8 @@ class AV1HighBDDISTWTDCOMPAVGUPSAMPLEDTest
     DIST_WTD_COMP_PARAMS dist_wtd_comp_params;
     dist_wtd_comp_params.use_dist_wtd_comp_avg = 1;
 
-    dist_wtd_comp_params.fwd_offset = quant_dist_lookup_table[0][0][0];
-    dist_wtd_comp_params.bck_offset = quant_dist_lookup_table[0][0][1];
+    dist_wtd_comp_params.fwd_offset = quant_dist_lookup_table[0][0];
+    dist_wtd_comp_params.bck_offset = quant_dist_lookup_table[0][1];
     int sub_x_q3 = 0;
     int sub_y_q3 = 0;
     const int num_loops = 1000000000 / (in_w + in_h);

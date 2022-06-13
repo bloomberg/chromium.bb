@@ -4,17 +4,17 @@
 
 #include "ash/shelf/contextual_tooltip.h"
 
-#include "ash/public/cpp/ash_features.h"
-#include "ash/public/cpp/ash_pref_names.h"
-#include "ash/public/cpp/ash_switches.h"
+#include "ash/constants/ash_features.h"
+#include "ash/constants/ash_pref_names.h"
+#include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/contextual_nudge_status_tracker.h"
 #include "ash/shell.h"
+#include "base/json/values_util.h"
 #include "base/no_destructor.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
-#include "base/util/values/values_util.h"
 #include "components/prefs/scoped_user_pref_update.h"
 
 namespace ash {
@@ -72,7 +72,7 @@ base::Time GetLastShownTime(PrefService* prefs, TooltipType type) {
           ->FindPath(GetPath(type, kLastTimeShown));
   if (!last_shown_time)
     return base::Time();
-  return *util::ValueToTime(last_shown_time);
+  return *base::ValueToTime(last_shown_time);
 }
 
 int GetSuccessCount(PrefService* prefs, TooltipType type) {
@@ -230,7 +230,7 @@ void HandleNudgeShown(PrefService* prefs, TooltipType type) {
   const int shown_count = GetShownCount(prefs, type);
   DictionaryPrefUpdate update(prefs, prefs::kContextualTooltips);
   update->SetIntPath(GetPath(type, kShownCount), shown_count + 1);
-  update->SetPath(GetPath(type, kLastTimeShown), util::TimeToValue(GetTime()));
+  update->SetPath(GetPath(type, kLastTimeShown), base::TimeToValue(GetTime()));
   GetStatusTracker(type)->HandleNudgeShown(base::TimeTicks::Now());
 }
 
@@ -261,7 +261,7 @@ void ClearPrefs() {
       prefs::kContextualTooltips);
   base::DictionaryValue* nudges_dict = update.Get();
   if (nudges_dict && !nudges_dict->DictEmpty())
-    nudges_dict->Clear();
+    nudges_dict->DictClear();
 }
 
 void OverrideClockForTesting(base::Clock* test_clock) {

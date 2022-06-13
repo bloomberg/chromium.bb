@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_CAST_CHANNEL_KEEP_ALIVE_HANDLER_H_
 #define COMPONENTS_CAST_CHANNEL_KEEP_ALIVE_HANDLER_H_
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
@@ -34,6 +34,10 @@ class KeepAliveHandler {
                    base::TimeDelta ping_interval,
                    base::TimeDelta liveness_timeout,
                    OnErrorCallback on_error_cb);
+
+  KeepAliveHandler(const KeepAliveHandler&) = delete;
+  KeepAliveHandler& operator=(const KeepAliveHandler&) = delete;
+
   ~KeepAliveHandler();
 
   // Restarts the ping/liveness timeout timers. Called when a message
@@ -68,7 +72,7 @@ class KeepAliveHandler {
   bool started_;
 
   // Socket that is managed by the keep-alive object.
-  CastSocket* socket_;
+  raw_ptr<CastSocket> socket_;
 
   // Logging object.
   scoped_refptr<Logger> logger_;
@@ -96,8 +100,6 @@ class KeepAliveHandler {
   THREAD_CHECKER(thread_checker_);
 
   base::WeakPtrFactory<KeepAliveHandler> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(KeepAliveHandler);
 };
 
 }  // namespace cast_channel

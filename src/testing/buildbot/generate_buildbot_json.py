@@ -17,14 +17,19 @@ import glob
 import itertools
 import json
 import os
-import re
 import string
 import sys
-import traceback
 
 import buildbot_json_magic_substitutions as magic_substitutions
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
+
+BROWSER_CONFIG_TO_TARGET_SUFFIX_MAP = {
+    'android-chromium': '_android_chrome',
+    'android-chromium-monochrome': '_android_monochrome',
+    'android-weblayer': '_android_weblayer',
+    'android-webview': '_android_webview',
+}
 
 
 class BBGenErr(Exception):
@@ -496,7 +501,7 @@ class BBJSONGenerator(object):
     arr = self.merge_command_line_args(arr, '--test-launcher-filter-file=', ';')
     return arr
 
-  def substitute_magic_args(self, test_config):
+  def substitute_magic_args(self, test_config, tester_name):
     """Substitutes any magic substitution args present in |test_config|.
 
     Substitutions are done in-place.
@@ -507,6 +512,8 @@ class BBJSONGenerator(object):
     Args:
       test_config: A dict containing a configuration for a specific test on
           a specific builder, e.g. the output of update_and_cleanup_test.
+      tester_name: A string containing the name of the tester that |test_config|
+          came from.
     """
     substituted_array = []
     for arg in test_config.get('args', []):
@@ -515,7 +522,7 @@ class BBJSONGenerator(object):
             magic_substitutions.MAGIC_SUBSTITUTION_PREFIX, '')
         if hasattr(magic_substitutions, function):
           substituted_array.extend(
-              getattr(magic_substitutions, function)(test_config))
+              getattr(magic_substitutions, function)(test_config, tester_name))
         else:
           raise BBGenErr(
               'Magic substitution function %s does not exist' % function)
@@ -788,7 +795,7 @@ class BBJSONGenerator(object):
     result = self.update_and_cleanup_test(
         result, test_name, tester_name, tester_config, waterfall)
     self.add_common_test_properties(result, tester_config)
-    self.substitute_magic_args(result)
+    self.substitute_magic_args(result, tester_name)
 
     if not result.get('merge'):
       # TODO(https://crbug.com/958376): Consider adding the ability to not have
@@ -824,7 +831,7 @@ class BBJSONGenerator(object):
     result = self.update_and_cleanup_test(
         result, test_name, tester_name, tester_config, waterfall)
     self.add_common_test_properties(result, tester_config)
-    self.substitute_magic_args(result)
+    self.substitute_magic_args(result, tester_name)
 
     if not result.get('merge'):
       # TODO(https://crbug.com/958376): Consider adding the ability to not have
@@ -852,7 +859,7 @@ class BBJSONGenerator(object):
     }
     result = self.update_and_cleanup_test(
         result, test_name, tester_name, tester_config, waterfall)
-    self.substitute_magic_args(result)
+    self.substitute_magic_args(result, tester_name)
     return result
 
   def generate_junit_test(self, waterfall, tester_name, tester_config,
@@ -868,7 +875,7 @@ class BBJSONGenerator(object):
     self.initialize_args_for_test(result, tester_config)
     result = self.update_and_cleanup_test(
         result, test_name, tester_name, tester_config, waterfall)
-    self.substitute_magic_args(result)
+    self.substitute_magic_args(result, tester_name)
     return result
 
   def generate_skylab_test(self, waterfall, tester_name, tester_config,
@@ -883,7 +890,7 @@ class BBJSONGenerator(object):
     self.initialize_args_for_test(result, tester_config)
     result = self.update_and_cleanup_test(result, test_name, tester_name,
                                           tester_config, waterfall)
-    self.substitute_magic_args(result)
+    self.substitute_magic_args(result, tester_name)
     return result
 
   def substitute_gpu_args(self, tester_config, swarming_config, args):
@@ -921,16 +928,30 @@ class BBJSONGenerator(object):
     if not result:
       return None
     result['isolate_name'] = test_config.get(
-      'isolate_name', 'telemetry_gpu_integration_test')
+        'isolate_name',
+        self.get_default_isolate_name(tester_config, is_android_webview))
 
     # Populate test_id_prefix.
-    gn_entry = (
-        self.gn_isolate_map.get(result['isolate_name']) or
-        self.gn_isolate_map.get('telemetry_gpu_integration_test'))
+    gn_entry = self.gn_isolate_map[result['isolate_name']]
     result['test_id_prefix'] = 'ninja:%s/' % gn_entry['label']
 
     args = result.get('args', [])
     test_to_run = result.pop('telemetry_test_name', test_name)
+
+    # TODO(skbug.com/12149): Remove this once Gold-based tests no longer clobber
+    # earlier results on retry attempts.
+    is_gold_based_test = False
+    for a in args:
+      if '--git-revision' in a:
+        is_gold_based_test = True
+        break
+    if is_gold_based_test:
+      for a in args:
+        if '--test-filter' in a or '--isolated-script-test-filter' in a:
+          raise RuntimeError(
+              '--test-filter/--isolated-script-test-filter are currently not '
+              'supported for Gold-based GPU tests. See skbug.com/12100 and '
+              'skbug.com/12149 for more details.')
 
     # These tests upload and download results from cloud storage and therefore
     # aren't idempotent yet. https://crbug.com/549140.
@@ -968,6 +989,16 @@ class BBJSONGenerator(object):
     result['args'] = self.maybe_fixup_args_array(self.substitute_gpu_args(
       tester_config, result['swarming'], args))
     return result
+
+  def get_default_isolate_name(self, tester_config, is_android_webview):
+    if self.is_android(tester_config):
+      if is_android_webview:
+        return 'telemetry_gpu_integration_test_android_webview'
+      return (
+          'telemetry_gpu_integration_test' +
+          BROWSER_CONFIG_TO_TARGET_SUFFIX_MAP[tester_config['browser_config']])
+    else:
+      return 'telemetry_gpu_integration_test'
 
   def get_test_generator_map(self):
     return {
@@ -1115,6 +1146,11 @@ class BBJSONGenerator(object):
         if isinstance(variant, str):
           variant = self.variants[variant]
 
+        # If 'enabled' is set to False, we will not use this variant;
+        # otherwise if the variant doesn't include 'enabled' variable or
+        # 'enabled' is set to True, we will use this variant
+        if not variant.get('enabled', True):
+          continue
         # Clone a copy of test_config so that we can have a uniquely updated
         # version of it per variant
         cloned_config = copy.deepcopy(test_config)
@@ -1149,6 +1185,11 @@ class BBJSONGenerator(object):
         skylab_config = cloned_variant.get('skylab')
         if skylab_config:
           for k, v in skylab_config.items():
+            # cros_chrome_version is the ash chrome version in the cros img
+            # in the variant of cros_board. We don't want to include it in
+            # the final json files; so remove it.
+            if k == 'cros_chrome_version':
+              continue
             cloned_config[k] = v
 
         # The identifier is used to make the name of the test unique.
@@ -1181,6 +1222,9 @@ class BBJSONGenerator(object):
                                          mtx_test_suite_config['variants'],
                                          mixins)
           full_suite.update(result)
+        else:
+          suite = basic_suites[test_suite]
+          full_suite.update(suite)
       matrix_compound_suites[test_name] = full_suite
 
   def link_waterfalls_to_test_suites(self):
@@ -1448,7 +1492,7 @@ class BBJSONGenerator(object):
       self.write_file(self.pyl_file_path(filename + suffix), jsonstr)
 
   def get_valid_bot_names(self):
-    # Extract bot names from infra/config/generated/luci-milo.cfg.
+    # Extract bot names from infra/config/generated/luci/luci-milo.cfg.
     # NOTE: This reference can cause issues; if a file changes there, the
     # presubmit here won't be run by default. A manually maintained list there
     # tries to run presubmit here when luci-milo.cfg is changed. If any other
@@ -1469,7 +1513,8 @@ class BBJSONGenerator(object):
 
     bot_names = set()
     milo_configs = glob.glob(
-        os.path.join(self.args.infra_config_dir, 'generated', 'luci-milo*.cfg'))
+        os.path.join(self.args.infra_config_dir, 'generated', 'luci',
+                     'luci-milo*.cfg'))
     for c in milo_configs:
       for l in self.read_file(c).splitlines():
         if (not 'name: "buildbucket/luci.chromium.' in l and
@@ -1491,6 +1536,7 @@ class BBJSONGenerator(object):
         'ANGLE GPU Linux Release (Intel HD 630)',
         'ANGLE GPU Linux Release (NVIDIA)',
         'Optional Android Release (Nexus 5X)',
+        'Optional Android Release (Pixel 4)',
         'Optional Linux Release (Intel HD 630)',
         'Optional Linux Release (NVIDIA)',
         'Optional Mac Release (Intel)',
@@ -1498,8 +1544,6 @@ class BBJSONGenerator(object):
         'Optional Mac Retina Release (NVIDIA)',
         'Optional Win10 x64 Release (Intel HD 630)',
         'Optional Win10 x64 Release (NVIDIA)',
-        # chromium.chromiumos
-        'linux-lacros-rel',
         # chromium.fyi
         'linux-blink-rel-dummy',
         'linux-blink-optional-highdpi-rel-dummy',
@@ -1508,30 +1552,15 @@ class BBJSONGenerator(object):
         'mac10.14-blink-rel-dummy',
         'mac10.15-blink-rel-dummy',
         'mac11.0-blink-rel-dummy',
+        'mac11.0.arm64-blink-rel-dummy',
         'win7-blink-rel-dummy',
-        'win10-blink-rel-dummy',
-        'WebKit Linux composite_after_paint Dummy Builder',
+        'win10.20h2-blink-rel-dummy',
         'WebKit Linux layout_ng_disabled Builder',
         # chromium, due to https://crbug.com/878915
         'win-dbg',
         'win32-dbg',
         'win-archive-dbg',
         'win32-archive-dbg',
-        # New LTC isn't created when LTC becomes LTS, so these builders can go
-        # away
-        "chromeos-arm-generic-ltc",
-        "chromeos-betty-pi-arc-chrome-ltc",
-        "chromeos-eve-chrome-ltc",
-        "chromeos-kevin-chrome-ltc",
-        "linux-chromeos-ltc",
-        "linux64-ltc",
-        # TODO(https://crbug.com/1127088): remove once LTS version has been set
-        "chromeos-arm-generic-lts",
-        "chromeos-betty-pi-arc-chrome-lts",
-        "chromeos-eve-chrome-lts",
-        "chromeos-kevin-chrome-lts",
-        "linux-chromeos-lts",
-        "linux64-lts",
         # TODO crbug.com/1143924: Remove once experimentation is complete
         'Linux Builder Robocrop',
         'Linux Tests Robocrop',
@@ -1540,7 +1569,10 @@ class BBJSONGenerator(object):
   def get_internal_waterfalls(self):
     # Similar to get_builders_that_do_not_actually_exist above, but for
     # waterfalls defined in internal configs.
-    return ['chrome', 'chrome.pgo', 'internal.chromeos.fyi', 'internal.soda']
+    return [
+        'chrome', 'chrome.pgo', 'internal.chrome.fyi', 'internal.chromeos.fyi',
+        'internal.soda'
+    ]
 
   def check_input_file_consistency(self, verbose=False):
     self.check_input_files_sorting(verbose)

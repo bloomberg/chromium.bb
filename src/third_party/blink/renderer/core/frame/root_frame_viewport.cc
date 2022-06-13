@@ -26,22 +26,22 @@ namespace {
 // scrollable area.
 FloatRect GetUserScrollableRect(const ScrollableArea& area) {
   FloatRect user_scrollable_rect;
-  FloatSize scrollable_size =
+  ScrollOffset scrollable_size =
       area.MaximumScrollOffset() - area.MinimumScrollOffset();
   if (area.UserInputScrollable(kHorizontalScrollbar)) {
-    user_scrollable_rect.SetX(area.MinimumScrollOffset().Width());
-    user_scrollable_rect.SetWidth(scrollable_size.Width());
+    user_scrollable_rect.set_x(area.MinimumScrollOffset().x());
+    user_scrollable_rect.set_width(scrollable_size.x());
   } else {
-    user_scrollable_rect.SetX(area.GetScrollOffset().Width());
-    user_scrollable_rect.SetWidth(0);
+    user_scrollable_rect.set_x(area.GetScrollOffset().x());
+    user_scrollable_rect.set_width(0);
   }
 
   if (area.UserInputScrollable(kVerticalScrollbar)) {
-    user_scrollable_rect.SetY(area.MinimumScrollOffset().Height());
-    user_scrollable_rect.SetHeight(scrollable_size.Height());
+    user_scrollable_rect.set_y(area.MinimumScrollOffset().y());
+    user_scrollable_rect.set_height(scrollable_size.y());
   } else {
-    user_scrollable_rect.SetY(area.GetScrollOffset().Height());
-    user_scrollable_rect.SetHeight(0);
+    user_scrollable_rect.set_y(area.GetScrollOffset().y());
+    user_scrollable_rect.set_height(0);
   }
   return user_scrollable_rect;
 }
@@ -89,7 +89,7 @@ PhysicalRect RootFrameViewport::RootContentsToLayoutViewportContents(
   // TODO(bokan): This will have to be revisited if we ever remove the
   // restriction that a root scroller must be exactly screen filling.
   ret.Move(
-      PhysicalOffset::FromFloatSizeRound(LayoutViewport().GetScrollOffset()));
+      PhysicalOffset::FromVector2dFRound(LayoutViewport().GetScrollOffset()));
 
   return ret;
 }
@@ -114,9 +114,9 @@ void RootFrameViewport::RestoreToAnchor(const ScrollOffset& target_offset) {
     LayoutViewport().SetScrollOffset(LayoutViewport().GetScrollOffset() + delta,
                                      mojom::blink::ScrollType::kProgrammatic);
   } else {
-    IntSize layout_delta = IntSize(
-        delta.Width() < 0 ? floor(delta.Width()) : ceil(delta.Width()),
-        delta.Height() < 0 ? floor(delta.Height()) : ceil(delta.Height()));
+    gfx::Vector2d layout_delta(
+        delta.x() < 0 ? floor(delta.x()) : ceil(delta.x()),
+        delta.y() < 0 ? floor(delta.y()) : ceil(delta.y()));
 
     LayoutViewport().SetScrollOffset(
         ScrollOffset(LayoutViewport().ScrollOffsetInt() + layout_delta),
@@ -177,11 +177,11 @@ ScrollOffset RootFrameViewport::ScrollOffsetFromScrollAnimators() const {
          LayoutViewport().GetScrollAnimator().CurrentOffset();
 }
 
-IntRect RootFrameViewport::VisibleContentRect(
+gfx::Rect RootFrameViewport::VisibleContentRect(
     IncludeScrollbarsInRect scrollbar_inclusion) const {
-  return IntRect(
-      IntPoint(ScrollOffsetInt()),
-      GetVisualViewport().VisibleContentRect(scrollbar_inclusion).Size());
+  return gfx::Rect(
+      gfx::PointAtOffsetFromOrigin(ScrollOffsetInt()),
+      GetVisualViewport().VisibleContentRect(scrollbar_inclusion).size());
 }
 
 PhysicalRect RootFrameViewport::VisibleScrollSnapportRect(
@@ -189,15 +189,15 @@ PhysicalRect RootFrameViewport::VisibleScrollSnapportRect(
   // The effective viewport is the intersection of the visual viewport with the
   // layout viewport.
   PhysicalRect frame_rect_in_content(
-      PhysicalOffset::FromFloatSizeRound(LayoutViewport().GetScrollOffset()),
+      PhysicalOffset::FromVector2dFRound(LayoutViewport().GetScrollOffset()),
       PhysicalSize(
-          LayoutViewport().VisibleContentRect(scrollbar_inclusion).Size()));
+          LayoutViewport().VisibleContentRect(scrollbar_inclusion).size()));
   PhysicalRect visual_rect_in_content(
-      PhysicalOffset::FromFloatSizeRound(
+      PhysicalOffset::FromVector2dFRound(
           LayoutViewport().GetScrollOffset() +
           GetVisualViewport().GetScrollAnimator().CurrentOffset()),
       PhysicalSize(
-          GetVisualViewport().VisibleContentRect(scrollbar_inclusion).Size()));
+          GetVisualViewport().VisibleContentRect(scrollbar_inclusion).size()));
 
   PhysicalRect visible_scroll_snapport =
       Intersection(visual_rect_in_content, frame_rect_in_content);
@@ -232,17 +232,17 @@ bool RootFrameViewport::IsActive() const {
 }
 
 int RootFrameViewport::ScrollSize(ScrollbarOrientation orientation) const {
-  IntSize scroll_dimensions =
+  gfx::Vector2d scroll_dimensions =
       MaximumScrollOffsetInt() - MinimumScrollOffsetInt();
-  return (orientation == kHorizontalScrollbar) ? scroll_dimensions.Width()
-                                               : scroll_dimensions.Height();
+  return (orientation == kHorizontalScrollbar) ? scroll_dimensions.x()
+                                               : scroll_dimensions.y();
 }
 
 bool RootFrameViewport::IsScrollCornerVisible() const {
   return LayoutViewport().IsScrollCornerVisible();
 }
 
-IntRect RootFrameViewport::ScrollCornerRect() const {
+gfx::Rect RootFrameViewport::ScrollCornerRect() const {
   return LayoutViewport().ScrollCornerRect();
 }
 
@@ -259,8 +259,7 @@ void RootFrameViewport::ApplyPendingHistoryRestoreScrollOffset() {
   // If the visual viewport's offset is (-1, -1) it means the history item
   // is an old version of HistoryItem so distribute the scroll between
   // the main frame and the visual viewport as best as we can.
-  if (visual_viewport_offset.Width() == -1 &&
-      visual_viewport_offset.Height() == -1) {
+  if (visual_viewport_offset.x() == -1 && visual_viewport_offset.y() == -1) {
     visual_viewport_offset = pending_view_state_->scroll_offset_ -
                              LayoutViewport().GetScrollOffset();
   }
@@ -270,11 +269,12 @@ void RootFrameViewport::ApplyPendingHistoryRestoreScrollOffset() {
     visual_viewport->SetScaleAndLocation(
         pending_view_state_->page_scale_factor_,
         visual_viewport->IsPinchGestureActive(),
-        FloatPoint(visual_viewport_offset));
+        gfx::PointAtOffsetFromOrigin(visual_viewport_offset));
   } else if (should_restore_scale) {
     visual_viewport->SetScale(pending_view_state_->page_scale_factor_);
   } else if (should_restore_scroll_) {
-    visual_viewport->SetLocation(FloatPoint(visual_viewport_offset));
+    visual_viewport->SetLocation(
+        gfx::PointAtOffsetFromOrigin(visual_viewport_offset));
   }
 
   should_restore_scroll_ = false;
@@ -322,10 +322,10 @@ ScrollOffset RootFrameViewport::ClampToUserScrollableOffset(
   ScrollOffset scroll_offset = offset;
   FloatRect user_scrollable = GetUserScrollableRect(LayoutViewport()) +
                               GetUserScrollableRect(GetVisualViewport());
-  scroll_offset.SetWidth(clampTo(scroll_offset.Width(), user_scrollable.X(),
-                                 user_scrollable.MaxX()));
-  scroll_offset.SetHeight(clampTo(scroll_offset.Height(), user_scrollable.Y(),
-                                  user_scrollable.MaxY()));
+  scroll_offset.set_x(
+      ClampTo(scroll_offset.x(), user_scrollable.x(), user_scrollable.right()));
+  scroll_offset.set_y(ClampTo(scroll_offset.y(), user_scrollable.y(),
+                              user_scrollable.bottom()));
   return scroll_offset;
 }
 
@@ -336,7 +336,7 @@ PhysicalRect RootFrameViewport::ScrollIntoView(
 
   PhysicalRect rect_in_document = rect_in_absolute;
   rect_in_document.Move(
-      PhysicalOffset::FromFloatSizeFloor(LayoutViewport().GetScrollOffset()));
+      PhysicalOffset::FromVector2dFFloor(LayoutViewport().GetScrollOffset()));
 
   ScrollOffset new_scroll_offset =
       ClampScrollOffset(ScrollAlignment::GetScrollOffsetToExpose(
@@ -345,10 +345,9 @@ PhysicalRect RootFrameViewport::ScrollIntoView(
   if (params->type == mojom::blink::ScrollType::kUser)
     new_scroll_offset = ClampToUserScrollableOffset(new_scroll_offset);
 
-  FloatPoint end_point = ScrollOffsetToPosition(new_scroll_offset);
+  gfx::PointF end_point = ScrollOffsetToPosition(new_scroll_offset);
   std::unique_ptr<cc::SnapSelectionStrategy> strategy =
-      cc::SnapSelectionStrategy::CreateForEndPosition(
-          gfx::ScrollOffset(end_point), true, true);
+      cc::SnapSelectionStrategy::CreateForEndPosition(end_point, true, true);
   if (GetLayoutBox()) {
     end_point = GetSnapPositionAndSetTarget(*strategy).value_or(end_point);
     new_scroll_offset = ScrollPositionToOffset(end_point);
@@ -371,7 +370,7 @@ PhysicalRect RootFrameViewport::ScrollIntoView(
   // TODO(szager): PaintLayerScrollableArea::ScrollIntoView clips the return
   // value to the visible content rect, but this does not.
   rect_in_document.Move(
-      -PhysicalOffset::FromFloatSizeRound(LayoutViewport().GetScrollOffset()));
+      -PhysicalOffset::FromVector2dFRound(LayoutViewport().GetScrollOffset()));
   return rect_in_document;
 }
 
@@ -424,7 +423,7 @@ void RootFrameViewport::DistributeScrollBetweenViewports(
   // Scroll the secondary viewport if all of the scroll was not applied to the
   // primary viewport.
   ScrollOffset updated_offset =
-      secondary.GetScrollAnimator().CurrentOffset() + FloatSize(target_offset);
+      secondary.GetScrollAnimator().CurrentOffset() + target_offset;
   ScrollOffset applied = updated_offset - old_offset;
   delta -= applied;
 
@@ -439,8 +438,8 @@ void RootFrameViewport::DistributeScrollBetweenViewports(
   secondary.SetScrollOffset(target_offset, scroll_type, behavior, all_done);
 }
 
-IntSize RootFrameViewport::ScrollOffsetInt() const {
-  return FlooredIntSize(GetScrollOffset());
+gfx::Vector2d RootFrameViewport::ScrollOffsetInt() const {
+  return gfx::ToFlooredVector2d(GetScrollOffset());
 }
 
 ScrollOffset RootFrameViewport::GetScrollOffset() const {
@@ -448,12 +447,12 @@ ScrollOffset RootFrameViewport::GetScrollOffset() const {
          GetVisualViewport().GetScrollOffset();
 }
 
-IntSize RootFrameViewport::MinimumScrollOffsetInt() const {
-  return IntSize(LayoutViewport().MinimumScrollOffsetInt() +
-                 GetVisualViewport().MinimumScrollOffsetInt());
+gfx::Vector2d RootFrameViewport::MinimumScrollOffsetInt() const {
+  return LayoutViewport().MinimumScrollOffsetInt() +
+         GetVisualViewport().MinimumScrollOffsetInt();
 }
 
-IntSize RootFrameViewport::MaximumScrollOffsetInt() const {
+gfx::Vector2d RootFrameViewport::MaximumScrollOffsetInt() const {
   return LayoutViewport().MaximumScrollOffsetInt() +
          GetVisualViewport().MaximumScrollOffsetInt();
 }
@@ -463,20 +462,12 @@ ScrollOffset RootFrameViewport::MaximumScrollOffset() const {
          GetVisualViewport().MaximumScrollOffset();
 }
 
-IntSize RootFrameViewport::ClampScrollOffset(
-    const IntSize& scroll_offset) const {
-  return scroll_offset.ShrunkTo(MaximumScrollOffsetInt())
-      .ExpandedTo(MinimumScrollOffsetInt());
-}
-
-ScrollOffset RootFrameViewport::ClampScrollOffset(
-    const ScrollOffset& scroll_offset) const {
-  return scroll_offset.ShrunkTo(MaximumScrollOffset())
-      .ExpandedTo(MinimumScrollOffset());
-}
-
-IntSize RootFrameViewport::ContentsSize() const {
+gfx::Size RootFrameViewport::ContentsSize() const {
   return LayoutViewport().ContentsSize();
+}
+
+bool RootFrameViewport::UsesCompositedScrolling() const {
+  return LayoutViewport().UsesCompositedScrolling();
 }
 
 bool RootFrameViewport::ShouldScrollOnMainThread() const {
@@ -520,7 +511,7 @@ cc::Layer* RootFrameViewport::LayerForScrollCorner() const {
 // This method distributes the scroll between the visual and layout viewport.
 ScrollResult RootFrameViewport::UserScroll(
     ScrollGranularity granularity,
-    const FloatSize& delta,
+    const ScrollOffset& delta,
     ScrollableArea::ScrollCallback on_finish) {
   base::ScopedClosureRunner run_on_return(std::move(on_finish));
 
@@ -530,13 +521,13 @@ ScrollResult RootFrameViewport::UserScroll(
 
   UpdateScrollAnimator();
 
-  FloatSize pixel_delta = ResolveScrollDelta(granularity, delta);
+  ScrollOffset pixel_delta = ResolveScrollDelta(granularity, delta);
 
   // Precompute the amount of possible scrolling since, when animated,
   // ScrollAnimator::userScroll will report having consumed the total given
   // scroll delta, regardless of how much will actually scroll, but we need to
   // know how much to leave for the layout viewport.
-  FloatSize visual_consumed_delta =
+  ScrollOffset visual_consumed_delta =
       GetVisualViewport().GetScrollAnimator().ComputeDeltaToConsume(
           pixel_delta);
 
@@ -544,20 +535,19 @@ ScrollResult RootFrameViewport::UserScroll(
   // layout viewport. We only pass a delta to the scrollable axes and remember
   // how much was held back so we can add it to the unused delta in the
   // result.
-  FloatSize layout_delta = pixel_delta - visual_consumed_delta;
-  FloatSize scrollable_axis_delta(
+  ScrollOffset layout_delta = pixel_delta - visual_consumed_delta;
+  ScrollOffset scrollable_axis_delta(
       LayoutViewport().UserInputScrollable(kHorizontalScrollbar)
-          ? layout_delta.Width()
+          ? layout_delta.x()
           : 0,
       LayoutViewport().UserInputScrollable(kVerticalScrollbar)
-          ? layout_delta.Height()
+          ? layout_delta.y()
           : 0);
 
   // If there won't be any scrolling, bail early so we don't produce any side
   // effects like cancelling existing animations.
   if (visual_consumed_delta.IsZero() && scrollable_axis_delta.IsZero()) {
-    return ScrollResult(false, false, pixel_delta.Width(),
-                        pixel_delta.Height());
+    return ScrollResult(false, false, pixel_delta.x(), pixel_delta.y());
   }
 
   CancelProgrammaticScrollAnimation();
@@ -585,13 +575,13 @@ ScrollResult RootFrameViewport::UserScroll(
 
   // Remember to add any delta not used because of !userInputScrollable to the
   // unusedScrollDelta in the result.
-  FloatSize unscrollable_axis_delta = layout_delta - scrollable_axis_delta;
+  ScrollOffset unscrollable_axis_delta = layout_delta - scrollable_axis_delta;
 
   return ScrollResult(
       visual_result.did_scroll_x || layout_result.did_scroll_x,
       visual_result.did_scroll_y || layout_result.did_scroll_y,
-      layout_result.unused_scroll_delta_x + unscrollable_axis_delta.Width(),
-      layout_result.unused_scroll_delta_y + unscrollable_axis_delta.Height());
+      layout_result.unused_scroll_delta_x + unscrollable_axis_delta.x(),
+      layout_result.unused_scroll_delta_y + unscrollable_axis_delta.y());
 }
 
 bool RootFrameViewport::ScrollAnimatorEnabled() const {
@@ -675,7 +665,7 @@ void RootFrameViewport::SetNeedsResnap(bool needs_resnap) {
   LayoutViewport().SetNeedsResnap(needs_resnap);
 }
 
-absl::optional<FloatPoint> RootFrameViewport::GetSnapPositionAndSetTarget(
+absl::optional<gfx::PointF> RootFrameViewport::GetSnapPositionAndSetTarget(
     const cc::SnapSelectionStrategy& strategy) {
   return LayoutViewport().GetSnapPositionAndSetTarget(strategy);
 }

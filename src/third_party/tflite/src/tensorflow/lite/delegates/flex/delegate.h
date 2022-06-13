@@ -77,6 +77,11 @@ class FlexDelegate : public SimpleDelegateInterface {
 
   TfLiteStatus Initialize(TfLiteContext* context) override;
 
+  SimpleDelegateInterface::Options DelegateOptions() const override {
+    // Use default options.
+    return SimpleDelegateInterface::Options();
+  }
+
   std::unique_ptr<SimpleDelegateKernelInterface> CreateDelegateKernelInterface()
       override;
 
@@ -85,6 +90,9 @@ class FlexDelegate : public SimpleDelegateInterface {
                                     TfLiteTensor* output);
 
   flex::DelegateData delegate_data_;
+
+  // Pointer to the base TfLiteDelegate which is created from the Create call.
+  TfLiteDelegate* base_delegate_ = nullptr;
 };
 
 }  // namespace tflite

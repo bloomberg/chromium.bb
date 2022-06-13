@@ -11,7 +11,7 @@ struct Vector3D {
     x = 0;
     y = 0;
     z = 0;
-  };
+  }
   Vector3D(float _x, float _y, float _z) {
     this->x = _x;
     this->y = _y;
@@ -22,11 +22,14 @@ struct Vector3D {
 
 namespace Geometry {
 struct Vector3D;
-}
+struct Vector3DAlt;
+}  // namespace Geometry
 
 namespace flatbuffers {
 Geometry::Vector3D Pack(const Native::Vector3D &obj);
 const Native::Vector3D UnPack(const Geometry::Vector3D &obj);
+Geometry::Vector3DAlt PackVector3DAlt(const Native::Vector3D &obj);
+const Native::Vector3D UnPackVector3DAlt(const Geometry::Vector3DAlt &obj);
 }  // namespace flatbuffers
 
 #endif  // VECTOR3D_PACK_H

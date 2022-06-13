@@ -14,12 +14,12 @@
 #include "ash/ambient/model/ambient_backend_model.h"
 #include "ash/ambient/ui/ambient_view_delegate.h"
 #include "ash/ash_export.h"
+#include "ash/assistant/model/assistant_interaction_model_observer.h"
 #include "ash/public/cpp/ambient/ambient_ui_model.h"
 #include "ash/public/cpp/session/session_observer.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/system/power/power_status.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
 #include "base/time/time.h"
@@ -54,12 +54,17 @@ class ASH_EXPORT AmbientController
       public chromeos::PowerManagerClient::Observer,
       public device::mojom::FingerprintObserver,
       public ui::UserActivityObserver,
-      public ui::EventHandler {
+      public ui::EventHandler,
+      public AssistantInteractionModelObserver {
  public:
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   explicit AmbientController(
       mojo::PendingRemote<device::mojom::Fingerprint> fingerprint);
+
+  AmbientController(const AmbientController&) = delete;
+  AmbientController& operator=(const AmbientController&) = delete;
+
   ~AmbientController() override;
 
   // AmbientUiModelObserver:
@@ -94,6 +99,9 @@ class ASH_EXPORT AmbientController
 
   // ui::EventHandler:
   void OnKeyEvent(ui::KeyEvent* event) override;
+
+  // AssistantInteractionModelObserver:
+  void OnInteractionStateChanged(InteractionState interaction_state) override;
 
   void ShowUi();
   // Ui will be enabled but not shown immediately. If there is no user activity
@@ -224,7 +232,6 @@ class ASH_EXPORT AmbientController
   bool is_screen_off_ = false;
 
   base::WeakPtrFactory<AmbientController> weak_ptr_factory_{this};
-  DISALLOW_COPY_AND_ASSIGN(AmbientController);
 };
 
 }  // namespace ash

@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "services/device/public/cpp/generic_sensor/sensor_reading.h"
 
@@ -18,6 +18,10 @@ class PlatformSensorFusion;
 // Base class for platform sensor fusion algorithm.
 class PlatformSensorFusionAlgorithm {
  public:
+  PlatformSensorFusionAlgorithm(const PlatformSensorFusionAlgorithm&) = delete;
+  PlatformSensorFusionAlgorithm& operator=(
+      const PlatformSensorFusionAlgorithm&) = delete;
+
   virtual ~PlatformSensorFusionAlgorithm();
 
   void set_threshold(double threshold) { threshold_ = threshold; }
@@ -56,7 +60,7 @@ class PlatformSensorFusionAlgorithm {
                                     SensorReading* fused_reading) = 0;
 
   // This raw pointer is safe because |fusion_sensor_| owns this object.
-  PlatformSensorFusion* fusion_sensor_ = nullptr;
+  raw_ptr<PlatformSensorFusion> fusion_sensor_ = nullptr;
 
  private:
   // Default threshold for comparing SensorReading values. If a
@@ -66,8 +70,6 @@ class PlatformSensorFusionAlgorithm {
 
   mojom::SensorType fused_type_;
   std::vector<mojom::SensorType> source_types_;
-
-  DISALLOW_COPY_AND_ASSIGN(PlatformSensorFusionAlgorithm);
 };
 
 }  // namespace device

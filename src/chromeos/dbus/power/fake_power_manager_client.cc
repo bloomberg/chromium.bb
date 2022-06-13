@@ -31,8 +31,7 @@ FakePowerManagerClient* g_instance = nullptr;
 constexpr double kUsbMinAcWatts = 24;
 
 // The time power manager will wait before resuspending from a dark resume.
-constexpr base::TimeDelta kDarkSuspendDelayTimeout =
-    base::TimeDelta::FromSeconds(20);
+constexpr base::TimeDelta kDarkSuspendDelayTimeout = base::Seconds(20);
 
 // Callback fired when timer started through |StartArcTimer| expires. In
 // non-test environments this does a potentially blocking call on the UI
@@ -397,8 +396,20 @@ void FakePowerManagerClient::RefreshBluetoothBattery(
         peripheral_battery_refresh_levels_[address],
         power_manager::
             PeripheralBatteryStatus_ChargeStatus_CHARGE_STATUS_UNKNOWN,
+        /*serial_number=*/"",
         /*active_update=*/true);
   }
+}
+
+void FakePowerManagerClient::SetExternalDisplayALSBrightness(bool enabled) {
+  external_display_als_brightness_enabled_ = enabled;
+}
+
+void FakePowerManagerClient::GetExternalDisplayALSBrightness(
+    DBusMethodCallback<bool> callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback),
+                                external_display_als_brightness_enabled_));
 }
 
 bool FakePowerManagerClient::PopVideoActivityReport() {

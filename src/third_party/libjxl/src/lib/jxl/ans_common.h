@@ -1,16 +1,7 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 #ifndef LIB_JXL_ANS_COMMON_H_
 #define LIB_JXL_ANS_COMMON_H_
@@ -88,12 +79,12 @@ struct AliasTable {
 
   // Dividing `value` by `entry_size` determines `i`, the entry which is
   // responsible for the input. If the remainder is below `cutoff`, then the
-  // mapped symbol is `i`; since `offsets[0]` stores the number of occurences of
-  // `i` "before" the start of this entry, the offset of the input will be
+  // mapped symbol is `i`; since `offsets[0]` stores the number of occurrences
+  // of `i` "before" the start of this entry, the offset of the input will be
   // `offsets[0] + remainder`. If the remainder is above cutoff, the mapped
-  // symbol is `right_value`; since `offsets[1]` stores the number of occurences
-  // of `right_value` "before" this entry, minus the `cutoff` value, the input
-  // offset is then `remainder + offsets[1]`.
+  // symbol is `right_value`; since `offsets[1]` stores the number of
+  // occurrences of `right_value` "before" this entry, minus the `cutoff` value,
+  // the input offset is then `remainder + offsets[1]`.
   static JXL_INLINE Symbol Lookup(const Entry* JXL_RESTRICT table, size_t value,
                                   size_t log_entry_size,
                                   size_t entry_size_minus_1) {

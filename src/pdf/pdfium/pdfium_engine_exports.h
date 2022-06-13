@@ -9,7 +9,6 @@
 #include <stdint.h>
 
 #include "build/build_config.h"
-#include "build/chromeos_buildflags.h"
 #include "pdf/pdf_engine.h"
 
 namespace chrome_pdf {
@@ -22,10 +21,10 @@ class PDFiumEngineExports : public PDFEngineExports {
   ~PDFiumEngineExports() override;
 
 // PDFEngineExports:
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_CHROMEOS)
   std::vector<uint8_t> CreateFlattenedPdf(
       base::span<const uint8_t> input_buffer) override;
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // defined(OS_CHROMEOS)
 #if defined(OS_WIN)
   bool RenderPDFPageToDC(base::span<const uint8_t> pdf_buffer,
                          int page_number,
@@ -34,7 +33,6 @@ class PDFiumEngineExports : public PDFEngineExports {
   void SetPDFEnsureTypefaceCharactersAccessible(
       PDFEnsureTypefaceCharactersAccessible func) override;
 
-  void SetPDFUseGDIPrinting(bool enable) override;
   void SetPDFUsePrintMode(int mode) override;
 #endif  // defined(OS_WIN)
   bool RenderPDFPageToBitmap(base::span<const uint8_t> pdf_buffer,

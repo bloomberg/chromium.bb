@@ -4,7 +4,7 @@
 
 #include "chrome/browser/media/history/media_history_table_base.h"
 
-#include "base/updateable_sequenced_task_runner.h"
+#include "base/task/updateable_sequenced_task_runner.h"
 #include "sql/statement.h"
 #include "third_party/protobuf/src/google/protobuf/message_lite.h"
 
@@ -56,7 +56,7 @@ void MediaHistoryTableBase::BindProto(
     const google::protobuf::MessageLite& protobuf) {
   std::string out;
   CHECK(protobuf.SerializeToString(&out));
-  s.BindBlob(col, out.data(), out.size());
+  s.BindBlob(col, out);
 }
 
 bool MediaHistoryTableBase::GetProto(sql::Statement& s,

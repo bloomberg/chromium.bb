@@ -6,9 +6,10 @@
 #define UI_VIEWS_BUBBLE_BUBBLE_DIALOG_DELEGATE_VIEW_H_
 
 #include <memory>
+#include <utility>
 
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
 #include "ui/accessibility/ax_enums.mojom-forward.h"
 #include "ui/base/class_property.h"
@@ -33,8 +34,7 @@ namespace views {
 
 class Button;
 
-class VIEWS_EXPORT BubbleDialogDelegate : public DialogDelegate,
-                                          public ui::PropertyHandler {
+class VIEWS_EXPORT BubbleDialogDelegate : public DialogDelegate {
  public:
   BubbleDialogDelegate(
       View* anchor_view,
@@ -49,7 +49,7 @@ class VIEWS_EXPORT BubbleDialogDelegate : public DialogDelegate,
   std::unique_ptr<NonClientFrameView> CreateNonClientFrameView(
       Widget* widget) override;
   ClientView* CreateClientView(Widget* widget) override;
-  ax::mojom::Role GetAccessibleWindowRole() override;
+  ax::mojom::Role GetAccessibleWindowRole() final;
 
   // Create and initialize the bubble Widget with proper bounds.
   static Widget* CreateBubble(
@@ -176,6 +176,14 @@ class VIEWS_EXPORT BubbleDialogDelegate : public DialogDelegate,
 
   // Whether focus can traverse from the anchor view into the bubble. Only
   // meaningful if there is an anchor view.
+  // TODO(pbos): See if this can be inferred from if the bubble is activatable
+  // or if there's anything focusable within the dialog. This is currently used
+  // for bubbles that should never receive focus and we should be able have
+  // focus go through a bubble if nothing's focusable within it. Without this
+  // set to `false`, the existence of an InfoBubble in the QR reader bubble will
+  // break focus order in the parent dialog. This is a bug for which
+  // set_focus_traversable_from_anchor_view(false) is used as a workaround. See
+  // if fixing that bug removes the need for this for other dialogs.
   void set_focus_traversable_from_anchor_view(bool focusable) {
     focus_traversable_from_anchor_view_ = focusable;
   }
@@ -207,7 +215,9 @@ class VIEWS_EXPORT BubbleDialogDelegate : public DialogDelegate,
     title_margins_ = title_margins;
   }
 
-  // Sets whether or not CreateClientView() returns a layer backed ClientView.
+  // Sets whether or not CreateClientView() returns a Layer backed ClientView.
+  // TODO(pbos): Remove all calls to this, then remove `paint_client_to_layer_`.
+  // See comment around `paint_client_to_layer_`.
   void SetPaintClientToLayer(bool paint_client_to_layer);
 
   // Sets the content margins to a default picked for smaller bubbles.
@@ -285,15 +295,21 @@ class VIEWS_EXPORT BubbleDialogDelegate : public DialogDelegate,
   class AnchorViewObserver;
   class AnchorWidgetObserver;
   class BubbleWidgetObserver;
+  class ThemeObserver;
 
   FRIEND_TEST_ALL_PREFIXES(BubbleDialogDelegateViewTest,
                            VisibleWidgetShowsInkDropOnAttaching);
   FRIEND_TEST_ALL_PREFIXES(BubbleDialogDelegateViewTest,
                            AttachedWidgetShowsInkDropWhenVisible);
+  FRIEND_TEST_ALL_PREFIXES(BubbleDialogDelegateViewTest,
+                           MultipleBubbleAnchorHighlightTestInOrder);
+  FRIEND_TEST_ALL_PREFIXES(BubbleDialogDelegateViewTest,
+                           MultipleBubbleAnchorHighlightTestOutOfOrder);
 
   friend class AnchorViewObserver;
   friend class AnchorWidgetObserver;
   friend class BubbleWidgetObserver;
+  friend class ThemeObserver;
 
   friend class BubbleBorderDelegate;
   friend class BubbleWindowTargeter;
@@ -312,17 +328,27 @@ class VIEWS_EXPORT BubbleDialogDelegate : public DialogDelegate,
 
   void OnDeactivate();
 
+  // Update the bubble color from the NativeTheme unless it was explicitly set.
+  void UpdateColorsFromTheme();
+
+  // Notify this bubble that it is now the primary anchored bubble. When a new
+  // bubble becomes the primary anchor, the previous primary silently loses its
+  // primary status. This method is only called when this bubble becomes primary
+  // after losing it.
+  void NotifyAnchoredBubbleIsPrimary();
+
+  void SetAnchoredDialogKey();
+
   gfx::Insets title_margins_;
   BubbleBorder::Arrow arrow_ = BubbleBorder::NONE;
   BubbleBorder::Shadow shadow_;
   SkColor color_ = gfx::kPlaceholderColor;
   bool color_explicitly_set_ = false;
-  Widget* anchor_widget_ = nullptr;
+  raw_ptr<Widget> anchor_widget_ = nullptr;
   std::unique_ptr<AnchorViewObserver> anchor_view_observer_;
   std::unique_ptr<AnchorWidgetObserver> anchor_widget_observer_;
   std::unique_ptr<BubbleWidgetObserver> bubble_widget_observer_;
-  base::CallbackListSubscription paint_as_active_subscription_;
-  std::unique_ptr<Widget::PaintAsActiveLock> paint_as_active_lock_;
+  std::unique_ptr<ThemeObserver> theme_observer_;
   bool adjust_if_offscreen_ = true;
   bool focus_traversable_from_anchor_view_ = true;
   ViewTracker highlighted_button_tracker_;
@@ -343,7 +369,18 @@ class VIEWS_EXPORT BubbleDialogDelegate : public DialogDelegate,
   bool has_parent_ = true;
 
   // Pointer to this bubble's ClientView.
-  ClientView* client_view_ = nullptr;
+  raw_ptr<ClientView> client_view_ = nullptr;
+
+  // A BubbleFrameView will apply a masking path to its ClientView to ensure
+  // contents are appropriately clipped to the frame's rounded corners. If the
+  // bubble uses layers in its views hierarchy, these will not be clipped to
+  // the client mask unless the ClientView is backed by a textured ui::Layer.
+  // This flag tracks whether or not to to create a layer backed ClientView.
+  //
+  // TODO(tluk): Fix all cases where bubble transparency is used and have bubble
+  // ClientViews always paint to a layer.
+  // TODO(tluk): Flip this to true for all bubbles.
+  bool paint_client_to_layer_ = false;
 
 #if defined(OS_MAC)
   // Special handler for close_on_deactivate() on Mac. Window (de)activation is
@@ -354,9 +391,10 @@ class VIEWS_EXPORT BubbleDialogDelegate : public DialogDelegate,
 };
 
 // BubbleDialogDelegateView is a BubbleDialogDelegate that is also a View.
-// TODO(pbos): Finish moving functionality from BubbleDialogDelegateView into
-// BubbleDialogDelegate, then document here that it's better to subclass View
-// and construct a BubbleDialogDelegate.
+// Prefer using a BubbleDialogDelegate that sets a separate View as its contents
+// view.
+// TODO(pbos): Migrate existing uses of BubbleDialogDelegateView to directly
+// inherit or use BubbleDialogDelegate.
 class VIEWS_EXPORT BubbleDialogDelegateView : public BubbleDialogDelegate,
                                               public View {
  public:
@@ -385,7 +423,6 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public BubbleDialogDelegate,
   // View:
   Widget* GetWidget() override;
   const Widget* GetWidget() const override;
-  void AddedToWidget() override;
 
  protected:
   // Disallow overrides of GetMinimumSize and GetMaximumSize(). These would only
@@ -396,20 +433,70 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public BubbleDialogDelegate,
   gfx::Size GetMinimumSize() const final;
   gfx::Size GetMaximumSize() const final;
 
-  void OnThemeChanged() override;
-
-  // Perform view initialization on the contents for bubble sizing.
-  void Init() override;
-
  private:
   FRIEND_TEST_ALL_PREFIXES(BubbleDelegateTest, CreateDelegate);
   FRIEND_TEST_ALL_PREFIXES(BubbleDelegateTest, NonClientHitTest);
-
-  // Update the bubble color from the NativeTheme unless it was explicitly set.
-  void UpdateColorsFromTheme();
 };
 
 BEGIN_VIEW_BUILDER(VIEWS_EXPORT, BubbleDialogDelegateView, View)
+VIEW_BUILDER_PROPERTY(ax::mojom::Role, AccessibleRole)
+VIEW_BUILDER_PROPERTY(std::u16string, AccessibleTitle)
+VIEW_BUILDER_PROPERTY(bool, CanMaximize)
+VIEW_BUILDER_PROPERTY(bool, CanMinimize)
+VIEW_BUILDER_PROPERTY(bool, CanResize)
+VIEW_BUILDER_VIEW_TYPE_PROPERTY(views::View, ExtraView)
+VIEW_BUILDER_VIEW_TYPE_PROPERTY(views::View, FootnoteView)
+VIEW_BUILDER_PROPERTY(bool, FocusTraversesOut)
+VIEW_BUILDER_PROPERTY(bool, EnableArrowKeyTraversal)
+VIEW_BUILDER_PROPERTY(gfx::ImageSkia, Icon)
+VIEW_BUILDER_PROPERTY(gfx::ImageSkia, AppIcon)
+VIEW_BUILDER_PROPERTY(ui::ModalType, ModalType)
+VIEW_BUILDER_PROPERTY(bool, OwnedByWidget)
+VIEW_BUILDER_PROPERTY(bool, ShowCloseButton)
+VIEW_BUILDER_PROPERTY(bool, ShowIcon)
+VIEW_BUILDER_PROPERTY(bool, ShowTitle)
+// Manually define the SetTitle methods to resolve the overloads properly.
+BuilderT& SetTitle(const std::u16string& value) & {
+  auto setter = std::make_unique<::views::internal::PropertySetter<
+      ViewClass_, std::u16string,
+      decltype((static_cast<void (WidgetDelegate::*)(const std::u16string&)>(
+          &ViewClass_::SetTitle))),
+      &WidgetDelegate::SetTitle>>(value);
+  ::views::internal::ViewBuilderCore::AddPropertySetter(std::move(setter));
+  return *static_cast<BuilderT*>(this);
+}
+BuilderT&& SetTitle(const std::u16string& value) && {
+  return std::move(this->SetTitle(value));
+}
+BuilderT& SetTitle(int value) & {
+  auto setter = std::make_unique<::views::internal::PropertySetter<
+      ViewClass_, int,
+      decltype(
+          (static_cast<void (WidgetDelegate::*)(int)>(&ViewClass_::SetTitle))),
+      &WidgetDelegate::SetTitle>>(value);
+  ::views::internal::ViewBuilderCore::AddPropertySetter(std::move(setter));
+  return *static_cast<BuilderT*>(this);
+}
+BuilderT&& SetTitle(int value) && {
+  return std::move(this->SetTitle(value));
+}
+#if defined(USE_AURA)
+VIEW_BUILDER_PROPERTY(bool, CenterTitle)
+#endif
+VIEW_BUILDER_PROPERTY(int, Buttons)
+VIEW_BUILDER_PROPERTY(int, DefaultButton)
+VIEW_BUILDER_METHOD(SetButtonLabel, ui::DialogButton, std::u16string)
+VIEW_BUILDER_METHOD(SetButtonEnabled, ui::DialogButton, bool)
+VIEW_BUILDER_METHOD(set_margins, gfx::Insets)
+VIEW_BUILDER_METHOD(set_use_round_corners, bool)
+VIEW_BUILDER_METHOD(set_corner_radius, int)
+VIEW_BUILDER_METHOD(set_draggable, bool)
+VIEW_BUILDER_METHOD(set_use_custom_frame, bool)
+VIEW_BUILDER_METHOD(set_fixed_width, int)
+VIEW_BUILDER_PROPERTY(base::OnceClosure, AcceptCallback)
+VIEW_BUILDER_PROPERTY(base::OnceClosure, CancelCallback)
+VIEW_BUILDER_PROPERTY(base::OnceClosure, CloseCallback)
+VIEW_BUILDER_PROPERTY(const gfx::Insets&, ButtonRowInsets)
 END_VIEW_BUILDER
 
 }  // namespace views

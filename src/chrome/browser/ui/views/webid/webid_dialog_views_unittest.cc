@@ -6,6 +6,7 @@
 #include <memory>
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/memory/raw_ptr.h"
 #include "base/test/bind.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/views/chrome_views_test_base.h"
@@ -17,6 +18,7 @@
 #include "content/public/test/web_contents_tester.h"
 #include "ui/views/test/dialog_test.h"
 #include "ui/views/test/widget_test.h"
+#include "ui/views/widget/widget_observer.h"
 
 namespace {
 
@@ -24,6 +26,21 @@ const std::u16string kRpHostname = u"rp.example";
 const char* kRpUrl = "https://rp.example";
 const std::u16string kIdpHostname = u"idp.example";
 const char* kIdpUrl = "https://idp.example";
+
+class DialogObserver : public views::WidgetObserver {
+ public:
+  DialogObserver() = default;
+  ~DialogObserver() override = default;
+
+  void OnWidgetClosing(views::Widget* widget) override {
+    close_observed_ = true;
+  }
+
+  bool WasWidgetClosed() { return close_observed_; }
+
+ private:
+  bool close_observed_ = false;
+};
 
 }  // namespace
 
@@ -36,11 +53,15 @@ using CloseCallback =
 class WebIdDialogViewsTest : public ChromeViewsTestBase {
  public:
   void SetUp() override {
+    auto on_close = base::BindLambdaForTesting([&]() { did_close_ = true; });
+
     ChromeViewsTestBase::SetUp();
     test_contents_ = CreateTestWebContents(GURL{kRpUrl});
     parent_widget_ = CreateTestWidget();
     dialog_ = new WebIdDialogViews(test_contents_.get(),
-                                   parent_widget_->GetNativeView());
+                                   parent_widget_->GetNativeView(),
+                                   std::move(on_close));
+    dialog_observer_ = std::make_unique<DialogObserver>();
   }
 
   void TearDown() override {
@@ -61,10 +82,15 @@ class WebIdDialogViewsTest : public ChromeViewsTestBase {
 
   WebIdDialogViews* dialog() const { return dialog_; }
   content::WebContents* web_contents() const { return test_contents_.get(); }
+  DialogObserver* observer() const { return dialog_observer_.get(); }
+  bool did_close() const { return did_close_; }
 
  private:
   std::unique_ptr<views::Widget> parent_widget_;
-  WebIdDialogViews* dialog_{nullptr};
+  raw_ptr<WebIdDialogViews> dialog_{nullptr};
+  std::unique_ptr<DialogObserver> dialog_observer_;
+
+  bool did_close_ = false;
 
   // Following are all that we need to create a test web contents.
   content::RenderViewHostTestEnabler test_render_host_enabler_;
@@ -74,7 +100,9 @@ class WebIdDialogViewsTest : public ChromeViewsTestBase {
 
 TEST_F(WebIdDialogViewsTest, DialogButtonsState) {
   // Initial permission should show two dialog buttons for OK and Cancel.
-  dialog()->ShowInitialPermission(kRpHostname, kIdpHostname, base::DoNothing());
+  dialog()->ShowInitialPermission(kRpHostname, kIdpHostname,
+                                  PermissionDialogMode::kStateful,
+                                  base::DoNothing());
   EXPECT_EQ(dialog()->GetDialogButtons(),
             ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL);
   EXPECT_TRUE(dialog()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_CANCEL));
@@ -82,8 +110,7 @@ TEST_F(WebIdDialogViewsTest, DialogButtonsState) {
 
   // SignIn page should not show any buttons for OK and Cancel.
   auto idp_contents = CreateTestWebContents(GURL{kIdpUrl});
-  dialog()->ShowSigninPage(idp_contents.get(), GURL{kIdpUrl},
-                           base::DoNothing());
+  dialog()->ShowSigninPage(idp_contents.get(), GURL{kIdpUrl});
   EXPECT_EQ(dialog()->GetDialogButtons(), ui::DIALOG_BUTTON_NONE);
 
   // Token exchange should show two dialog buttons for OK and Cancel.
@@ -96,25 +123,19 @@ TEST_F(WebIdDialogViewsTest, DialogButtonsState) {
 }
 
 TEST_F(WebIdDialogViewsTest, ExplicitlyClosingSigninInvokesCallback) {
-  bool did_close = false;
-  auto on_close = base::BindLambdaForTesting([&]() { did_close = true; });
   auto idp_contents = CreateTestWebContents(GURL{kIdpUrl});
-  dialog()->ShowSigninPage(idp_contents.get(), GURL{kIdpUrl},
-                           std::move(on_close));
-  EXPECT_FALSE(did_close);
+  dialog()->ShowSigninPage(idp_contents.get(), GURL{kIdpUrl});
+  EXPECT_FALSE(did_close());
   dialog()->CloseSigninPage();
-  EXPECT_TRUE(did_close);
+  EXPECT_TRUE(did_close());
 }
 
 TEST_F(WebIdDialogViewsTest, ClosingDialogOnSigninInvokesCallback) {
-  bool did_close = false;
-  auto on_close = base::BindLambdaForTesting([&]() { did_close = true; });
   auto idp_contents = CreateTestWebContents(GURL{kIdpUrl});
-  dialog()->ShowSigninPage(idp_contents.get(), GURL{kIdpUrl},
-                           std::move(on_close));
-  EXPECT_FALSE(did_close);
+  dialog()->ShowSigninPage(idp_contents.get(), GURL{kIdpUrl});
+  EXPECT_FALSE(did_close());
   dialog()->Close();
-  EXPECT_TRUE(did_close);
+  EXPECT_TRUE(did_close());
 }
 
 TEST_F(WebIdDialogViewsTest, ClosingDialogOnInitialPermissionsRejectsCallback) {
@@ -122,6 +143,7 @@ TEST_F(WebIdDialogViewsTest, ClosingDialogOnInitialPermissionsRejectsCallback) {
   auto on_permission_callback = base::BindLambdaForTesting(
       [&](UserApproval result) { approval = result; });
   dialog()->ShowInitialPermission(kRpHostname, kIdpHostname,
+                                  PermissionDialogMode::kStateful,
                                   on_permission_callback);
   dialog()->Close();
   EXPECT_EQ(UserApproval::kDenied, approval);
@@ -132,9 +154,25 @@ TEST_F(WebIdDialogViewsTest, AcceptingOnInitialPermissionsAcceptsCallback) {
   auto on_permission_callback = base::BindLambdaForTesting(
       [&](UserApproval result) { approval = result; });
   dialog()->ShowInitialPermission(kRpHostname, kIdpHostname,
+                                  PermissionDialogMode::kStateful,
                                   on_permission_callback);
+  dialog()->GetWidget()->AddObserver(observer());
   dialog()->AcceptDialog();
   EXPECT_EQ(UserApproval::kApproved, approval);
+  EXPECT_FALSE(observer()->WasWidgetClosed());
+}
+
+TEST_F(WebIdDialogViewsTest, AcceptingStatelessPermissionModeClosesDialog) {
+  UserApproval approval = UserApproval::kDenied;
+  auto on_permission_callback = base::BindLambdaForTesting(
+      [&](UserApproval result) { approval = result; });
+  dialog()->ShowInitialPermission(kRpHostname, kIdpHostname,
+                                  PermissionDialogMode::kStateless,
+                                  on_permission_callback);
+  dialog()->GetWidget()->AddObserver(observer());
+  dialog()->AcceptDialog();
+  EXPECT_EQ(UserApproval::kApproved, approval);
+  EXPECT_TRUE(observer()->WasWidgetClosed());
 }
 
 TEST_F(WebIdDialogViewsTest, CancellingOnInitialPermissionsRejectsCallback) {
@@ -142,6 +180,18 @@ TEST_F(WebIdDialogViewsTest, CancellingOnInitialPermissionsRejectsCallback) {
   auto on_permission_callback = base::BindLambdaForTesting(
       [&](UserApproval result) { approval = result; });
   dialog()->ShowInitialPermission(kRpHostname, kIdpHostname,
+                                  PermissionDialogMode::kStateful,
+                                  on_permission_callback);
+  dialog()->CancelDialog();
+  EXPECT_EQ(UserApproval::kDenied, approval);
+}
+
+TEST_F(WebIdDialogViewsTest, InitialPermissionClosesInSinglePermissionMode) {
+  UserApproval approval = UserApproval::kApproved;
+  auto on_permission_callback = base::BindLambdaForTesting(
+      [&](UserApproval result) { approval = result; });
+  dialog()->ShowInitialPermission(kRpHostname, kIdpHostname,
+                                  PermissionDialogMode::kStateless,
                                   on_permission_callback);
   dialog()->CancelDialog();
   EXPECT_EQ(UserApproval::kDenied, approval);
@@ -175,6 +225,7 @@ TEST_F(WebIdDialogViewsTest,
   auto on_permission_callback = base::BindLambdaForTesting(
       [&](UserApproval result) { approval = result; });
   dialog()->ShowInitialPermission(kRpHostname, kIdpHostname,
+                                  PermissionDialogMode::kStateful,
                                   on_permission_callback);
   dialog()->CancelDialog();
   EXPECT_EQ(UserApproval::kDenied, approval);

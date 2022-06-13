@@ -10,8 +10,8 @@
 
 #include "base/bind.h"
 #include "base/check.h"
+#include "base/cxx17_backports.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/numerics/ranges.h"
 #include "chromeos/crosapi/mojom/message_center.mojom.h"
 #include "chromeos/crosapi/mojom/notification.mojom.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -52,7 +52,7 @@ mc::FullscreenVisibility FromMojo(mojom::FullscreenVisibility visibility) {
 std::unique_ptr<mc::Notification> FromMojo(
     mojom::NotificationPtr notification) {
   mc::RichNotificationData rich_data;
-  rich_data.priority = base::ClampToRange(notification->priority, -2, 2);
+  rich_data.priority = base::clamp(notification->priority, -2, 2);
   rich_data.never_timeout = notification->require_interaction;
   rich_data.timestamp = notification->timestamp;
   if (!notification->image.isNull())
@@ -70,11 +70,12 @@ std::unique_ptr<mc::Notification> FromMojo(
     item.message = mojo_item->message;
     rich_data.items.push_back(item);
   }
-  rich_data.progress = base::ClampToRange(notification->progress, -1, 100);
+  rich_data.progress = base::clamp(notification->progress, -1, 100);
   rich_data.progress_status = notification->progress_status;
   for (const auto& mojo_button : notification->buttons) {
     mc::ButtonInfo button;
     button.title = mojo_button->title;
+    button.placeholder = mojo_button->placeholder;
     rich_data.buttons.push_back(button);
   }
   rich_data.pinned = notification->pinned;
@@ -122,6 +123,14 @@ class ForwardingDelegate : public message_center::NotificationDelegate {
   ~ForwardingDelegate() override = default;
 
   void OnDisconnect() {
+    mc::Notification* notification =
+        mc::MessageCenter::Get()->FindNotificationById(notification_id_);
+    if (!notification)
+      return;
+    // If the disconnect occurred because an existing notification was updated
+    // with new content, don't close it. https://crbug.com/1270544
+    if (notification->delegate() != this)
+      return;
     // NOTE: Triggers a call to Close() if the notification is still showing.
     mc::MessageCenter::Get()->RemoveNotification(notification_id_,
                                                  /*by_user=*/false);
@@ -136,12 +145,12 @@ class ForwardingDelegate : public message_center::NotificationDelegate {
 
   void Click(const absl::optional<int>& button_index,
              const absl::optional<std::u16string>& reply) override {
+    // The button index comes out of
+    // trusted ash-side message center UI code and is guaranteed not to be
+    // negative.
     if (button_index) {
-      // Chrome OS does not support inline reply. The button index comes out of
-      // trusted ash-side message center UI code and is guaranteed not to be
-      // negative.
       remote_delegate_->OnNotificationButtonClicked(
-          base::checked_cast<uint32_t>(*button_index));
+          base::checked_cast<uint32_t>(*button_index), reply);
     } else {
       remote_delegate_->OnNotificationClicked();
     }

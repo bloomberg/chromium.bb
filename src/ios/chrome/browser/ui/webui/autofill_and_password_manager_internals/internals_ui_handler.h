@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/macros.h"
 #include "components/autofill/core/browser/logging/log_receiver.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/web/public/webui/web_ui_ios_message_handler.h"
@@ -37,6 +36,10 @@ class InternalsUIHandler : public web::WebUIIOSMessageHandler,
 
   explicit InternalsUIHandler(std::string call_on_load,
                               GetLogRouterFunction get_log_router_function);
+
+  InternalsUIHandler(const InternalsUIHandler&) = delete;
+  InternalsUIHandler& operator=(const InternalsUIHandler&) = delete;
+
   ~InternalsUIHandler() override;
 
  private:
@@ -58,8 +61,6 @@ class InternalsUIHandler : public web::WebUIIOSMessageHandler,
 
   // Whether |this| is registered as a log receiver with the LogRouter.
   bool registered_with_log_router_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(InternalsUIHandler);
 };
 
 }  // namespace autofill

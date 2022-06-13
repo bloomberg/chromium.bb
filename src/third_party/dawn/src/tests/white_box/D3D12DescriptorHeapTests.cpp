@@ -36,7 +36,7 @@ class D3D12DescriptorHeapTests : public DawnTest {
   protected:
     void SetUp() override {
         DawnTest::SetUp();
-        DAWN_SKIP_TEST_IF(UsesWire());
+        DAWN_TEST_UNSUPPORTED_IF(UsesWire());
         mD3DDevice = reinterpret_cast<Device*>(device.Get());
 
         mSimpleVSModule = utils::CreateShaderModule(device, R"(
@@ -44,7 +44,7 @@ class D3D12DescriptorHeapTests : public DawnTest {
             [[stage(vertex)]] fn main(
                 [[builtin(vertex_index)]] VertexIndex : u32
             ) -> [[builtin(position)]] vec4<f32> {
-                const pos : array<vec2<f32>, 3> = array<vec2<f32>, 3>(
+                var pos = array<vec2<f32>, 3>(
                     vec2<f32>(-1.0,  1.0),
                     vec2<f32>( 1.0,  1.0),
                     vec2<f32>(-1.0, -1.0)
@@ -123,17 +123,17 @@ class DummyStagingDescriptorAllocator {
 
 // Verify the shader visible view heaps switch over within a single submit.
 TEST_P(D3D12DescriptorHeapTests, SwitchOverViewHeap) {
-    DAWN_SKIP_TEST_IF(!mD3DDevice->IsToggleEnabled(
+    DAWN_TEST_UNSUPPORTED_IF(!mD3DDevice->IsToggleEnabled(
         dawn_native::Toggle::UseD3D12SmallShaderVisibleHeapForTesting));
 
-    utils::ComboRenderPipelineDescriptor2 renderPipelineDescriptor;
+    utils::ComboRenderPipelineDescriptor renderPipelineDescriptor;
 
     // Fill in a view heap with "view only" bindgroups (1x view per group) by creating a
     // view bindgroup each draw. After HEAP_SIZE + 1 draws, the heaps must switch over.
     renderPipelineDescriptor.vertex.module = mSimpleVSModule;
     renderPipelineDescriptor.cFragment.module = mSimpleFSModule;
 
-    wgpu::RenderPipeline renderPipeline = device.CreateRenderPipeline2(&renderPipelineDescriptor);
+    wgpu::RenderPipeline renderPipeline = device.CreateRenderPipeline(&renderPipelineDescriptor);
     utils::BasicRenderPass renderPass = utils::CreateBasicRenderPass(device, kRTSize, kRTSize);
 
     Device* d3dDevice = reinterpret_cast<Device*>(device.Get());
@@ -170,7 +170,7 @@ TEST_P(D3D12DescriptorHeapTests, SwitchOverViewHeap) {
 
 // Verify the shader visible sampler heaps does not switch over within a single submit.
 TEST_P(D3D12DescriptorHeapTests, NoSwitchOverSamplerHeap) {
-    utils::ComboRenderPipelineDescriptor2 renderPipelineDescriptor;
+    utils::ComboRenderPipelineDescriptor renderPipelineDescriptor;
 
     // Fill in a sampler heap with "sampler only" bindgroups (1x sampler per group) by creating a
     // sampler bindgroup each draw. After HEAP_SIZE + 1 draws, the heaps WILL NOT switch over
@@ -183,11 +183,11 @@ TEST_P(D3D12DescriptorHeapTests, NoSwitchOverSamplerHeap) {
     renderPipelineDescriptor.cFragment.module = utils::CreateShaderModule(device, R"(
             [[group(0), binding(0)]] var sampler0 : sampler;
             [[stage(fragment)]] fn main() -> [[location(0)]] vec4<f32> {
-                let referenceSampler : sampler = sampler0;
+                _ = sampler0;
                 return vec4<f32>(0.0, 0.0, 0.0, 0.0);
             })");
 
-    wgpu::RenderPipeline renderPipeline = device.CreateRenderPipeline2(&renderPipelineDescriptor);
+    wgpu::RenderPipeline renderPipeline = device.CreateRenderPipeline(&renderPipelineDescriptor);
     utils::BasicRenderPass renderPass = utils::CreateBasicRenderPass(device, kRTSize, kRTSize);
 
     wgpu::Sampler sampler = device.CreateSampler();
@@ -223,7 +223,7 @@ TEST_P(D3D12DescriptorHeapTests, NoSwitchOverSamplerHeap) {
 // Verify shader-visible heaps can be recycled for multiple submits.
 TEST_P(D3D12DescriptorHeapTests, PoolHeapsInMultipleSubmits) {
     // Use small heaps to count only pool-allocated switches.
-    DAWN_SKIP_TEST_IF(!mD3DDevice->IsToggleEnabled(
+    DAWN_TEST_UNSUPPORTED_IF(!mD3DDevice->IsToggleEnabled(
         dawn_native::Toggle::UseD3D12SmallShaderVisibleHeapForTesting));
 
     ShaderVisibleDescriptorAllocator* allocator =
@@ -264,7 +264,7 @@ TEST_P(D3D12DescriptorHeapTests, PoolHeapsInMultipleSubmits) {
 // Verify shader-visible heaps do not recycle in a pending submit.
 TEST_P(D3D12DescriptorHeapTests, PoolHeapsInPendingSubmit) {
     // Use small heaps to count only pool-allocated switches.
-    DAWN_SKIP_TEST_IF(!mD3DDevice->IsToggleEnabled(
+    DAWN_TEST_UNSUPPORTED_IF(!mD3DDevice->IsToggleEnabled(
         dawn_native::Toggle::UseD3D12SmallShaderVisibleHeapForTesting));
 
     constexpr uint32_t kNumOfSwitches = 5;
@@ -296,7 +296,7 @@ TEST_P(D3D12DescriptorHeapTests, PoolHeapsInPendingSubmit) {
 // once no longer pending.
 TEST_P(D3D12DescriptorHeapTests, PoolHeapsInPendingAndMultipleSubmits) {
     // Use small heaps to count only pool-allocated switches.
-    DAWN_SKIP_TEST_IF(!mD3DDevice->IsToggleEnabled(
+    DAWN_TEST_UNSUPPORTED_IF(!mD3DDevice->IsToggleEnabled(
         dawn_native::Toggle::UseD3D12SmallShaderVisibleHeapForTesting));
 
     constexpr uint32_t kNumOfSwitches = 5;
@@ -434,13 +434,13 @@ TEST_P(D3D12DescriptorHeapTests, EncodeManyUBO) {
     // has its own UBO with a "color value" in the range [1... heapSize]. After |heapSize| draws,
     // the result is the arithmetic sum of the sequence after the framebuffer is blended by
     // accumulation. By checking for this sum, we ensure each bindgroup was encoded correctly.
-    DAWN_SKIP_TEST_IF(!mD3DDevice->IsToggleEnabled(
+    DAWN_TEST_UNSUPPORTED_IF(!mD3DDevice->IsToggleEnabled(
         dawn_native::Toggle::UseD3D12SmallShaderVisibleHeapForTesting));
 
     utils::BasicRenderPass renderPass =
-        MakeRenderPass(kRTSize, kRTSize, wgpu::TextureFormat::R32Float);
+        MakeRenderPass(kRTSize, kRTSize, wgpu::TextureFormat::R16Float);
 
-    utils::ComboRenderPipelineDescriptor2 pipelineDescriptor;
+    utils::ComboRenderPipelineDescriptor pipelineDescriptor;
     pipelineDescriptor.vertex.module = mSimpleVSModule;
 
     pipelineDescriptor.cFragment.module = utils::CreateShaderModule(device, R"(
@@ -449,8 +449,8 @@ TEST_P(D3D12DescriptorHeapTests, EncodeManyUBO) {
         };
         [[group(0), binding(0)]] var<uniform> buffer0 : U;
 
-        [[stage(fragment)]] fn main() -> [[location(0)]] f32 {
-            return buffer0.heapSize;
+        [[stage(fragment)]] fn main() -> [[location(0)]] vec4<f32> {
+            return vec4<f32>(buffer0.heapSize, 0.0, 0.0, 1.0);
         })");
 
     wgpu::BlendState blend;
@@ -461,10 +461,10 @@ TEST_P(D3D12DescriptorHeapTests, EncodeManyUBO) {
     blend.alpha.srcFactor = wgpu::BlendFactor::One;
     blend.alpha.dstFactor = wgpu::BlendFactor::One;
 
-    pipelineDescriptor.cTargets[0].format = wgpu::TextureFormat::R32Float;
+    pipelineDescriptor.cTargets[0].format = wgpu::TextureFormat::R16Float;
     pipelineDescriptor.cTargets[0].blend = &blend;
 
-    wgpu::RenderPipeline renderPipeline = device.CreateRenderPipeline2(&pipelineDescriptor);
+    wgpu::RenderPipeline renderPipeline = device.CreateRenderPipeline(&pipelineDescriptor);
 
     const uint32_t heapSize =
         mD3DDevice->GetViewShaderVisibleDescriptorAllocator()->GetShaderVisibleHeapSizeForTesting();
@@ -500,7 +500,7 @@ TEST_P(D3D12DescriptorHeapTests, EncodeManyUBO) {
     queue.Submit(1, &commands);
 
     float colorSum = numOfEncodedBindGroups * (numOfEncodedBindGroups + 1) / 2;
-    EXPECT_PIXEL_FLOAT_EQ(colorSum, renderPass.color, 0, 0);
+    EXPECT_PIXEL_FLOAT16_EQ(colorSum, renderPass.color, 0, 0);
 }
 
 // Verify encoding one bindgroup then a heaps worth in different submits.
@@ -508,22 +508,20 @@ TEST_P(D3D12DescriptorHeapTests, EncodeManyUBO) {
 // The first descriptor's memory will be reused when the second submit encodes |heapSize|
 // descriptors.
 TEST_P(D3D12DescriptorHeapTests, EncodeUBOOverflowMultipleSubmit) {
-    DAWN_SKIP_TEST_IF(!mD3DDevice->IsToggleEnabled(
+    DAWN_TEST_UNSUPPORTED_IF(!mD3DDevice->IsToggleEnabled(
         dawn_native::Toggle::UseD3D12SmallShaderVisibleHeapForTesting));
 
     // TODO(crbug.com/dawn/742): Test output is wrong with D3D12 + WARP.
-    DAWN_SKIP_TEST_IF(IsD3D12() && IsWARP());
-
-    utils::ComboRenderPipelineDescriptor renderPipelineDescriptor(device);
+    DAWN_SUPPRESS_TEST_IF(IsD3D12() && IsWARP());
 
     utils::BasicRenderPass renderPass = utils::CreateBasicRenderPass(device, kRTSize, kRTSize);
 
-    utils::ComboRenderPipelineDescriptor2 pipelineDescriptor;
+    utils::ComboRenderPipelineDescriptor pipelineDescriptor;
     pipelineDescriptor.vertex.module = mSimpleVSModule;
     pipelineDescriptor.cFragment.module = mSimpleFSModule;
     pipelineDescriptor.cTargets[0].format = renderPass.colorFormat;
 
-    wgpu::RenderPipeline renderPipeline = device.CreateRenderPipeline2(&pipelineDescriptor);
+    wgpu::RenderPipeline renderPipeline = device.CreateRenderPipeline(&pipelineDescriptor);
 
     // Encode the first descriptor and submit.
     {
@@ -598,17 +596,17 @@ TEST_P(D3D12DescriptorHeapTests, EncodeUBOOverflowMultipleSubmit) {
 // Shader-visible heaps should switch out once then re-encode the first descriptor at a new offset
 // in the heap.
 TEST_P(D3D12DescriptorHeapTests, EncodeReuseUBOOverflow) {
-    DAWN_SKIP_TEST_IF(!mD3DDevice->IsToggleEnabled(
+    DAWN_TEST_UNSUPPORTED_IF(!mD3DDevice->IsToggleEnabled(
         dawn_native::Toggle::UseD3D12SmallShaderVisibleHeapForTesting));
 
     utils::BasicRenderPass renderPass = utils::CreateBasicRenderPass(device, kRTSize, kRTSize);
 
-    utils::ComboRenderPipelineDescriptor2 pipelineDescriptor;
+    utils::ComboRenderPipelineDescriptor pipelineDescriptor;
     pipelineDescriptor.vertex.module = mSimpleVSModule;
     pipelineDescriptor.cFragment.module = mSimpleFSModule;
     pipelineDescriptor.cTargets[0].format = renderPass.colorFormat;
 
-    wgpu::RenderPipeline pipeline = device.CreateRenderPipeline2(&pipelineDescriptor);
+    wgpu::RenderPipeline pipeline = device.CreateRenderPipeline(&pipelineDescriptor);
 
     std::array<float, 4> redColor = {1, 0, 0, 1};
     wgpu::Buffer firstUniformBuffer = utils::CreateBufferFromData(
@@ -659,17 +657,17 @@ TEST_P(D3D12DescriptorHeapTests, EncodeReuseUBOOverflow) {
 // Shader-visible heaps should switch out once then re-encode the
 // first descriptor at the same offset in the heap.
 TEST_P(D3D12DescriptorHeapTests, EncodeReuseUBOMultipleSubmits) {
-    DAWN_SKIP_TEST_IF(!mD3DDevice->IsToggleEnabled(
+    DAWN_TEST_UNSUPPORTED_IF(!mD3DDevice->IsToggleEnabled(
         dawn_native::Toggle::UseD3D12SmallShaderVisibleHeapForTesting));
 
     utils::BasicRenderPass renderPass = utils::CreateBasicRenderPass(device, kRTSize, kRTSize);
 
-    utils::ComboRenderPipelineDescriptor2 pipelineDescriptor;
+    utils::ComboRenderPipelineDescriptor pipelineDescriptor;
     pipelineDescriptor.vertex.module = mSimpleVSModule;
     pipelineDescriptor.cFragment.module = mSimpleFSModule;
     pipelineDescriptor.cTargets[0].format = renderPass.colorFormat;
 
-    wgpu::RenderPipeline pipeline = device.CreateRenderPipeline2(&pipelineDescriptor);
+    wgpu::RenderPipeline pipeline = device.CreateRenderPipeline(&pipelineDescriptor);
 
     // Encode heap worth of descriptors plus one more.
     std::array<float, 4> redColor = {1, 0, 0, 1};
@@ -739,7 +737,7 @@ TEST_P(D3D12DescriptorHeapTests, EncodeReuseUBOMultipleSubmits) {
 // Verify encoding many sampler and ubo worth of bindgroups.
 // Shader-visible heaps should switch out |kNumOfViewHeaps| times.
 TEST_P(D3D12DescriptorHeapTests, EncodeManyUBOAndSamplers) {
-    DAWN_SKIP_TEST_IF(!mD3DDevice->IsToggleEnabled(
+    DAWN_TEST_UNSUPPORTED_IF(!mD3DDevice->IsToggleEnabled(
         dawn_native::Toggle::UseD3D12SmallShaderVisibleHeapForTesting));
 
     // Create a solid filled texture.
@@ -751,7 +749,7 @@ TEST_P(D3D12DescriptorHeapTests, EncodeManyUBOAndSamplers) {
     descriptor.sampleCount = 1;
     descriptor.format = wgpu::TextureFormat::RGBA8Unorm;
     descriptor.mipLevelCount = 1;
-    descriptor.usage = wgpu::TextureUsage::Sampled | wgpu::TextureUsage::RenderAttachment |
+    descriptor.usage = wgpu::TextureUsage::TextureBinding | wgpu::TextureUsage::RenderAttachment |
                        wgpu::TextureUsage::CopySrc;
     wgpu::Texture texture = device.CreateTexture(&descriptor);
     wgpu::TextureView textureView = texture.CreateView();
@@ -762,7 +760,7 @@ TEST_P(D3D12DescriptorHeapTests, EncodeManyUBOAndSamplers) {
         utils::ComboRenderPassDescriptor renderPassDesc({textureView});
         renderPassDesc.cColorAttachments[0].loadOp = wgpu::LoadOp::Clear;
         renderPassDesc.cColorAttachments[0].clearColor = {0.0f, 1.0f, 0.0f, 1.0f};
-        renderPass.renderPassInfo.cColorAttachments[0].attachment = textureView;
+        renderPass.renderPassInfo.cColorAttachments[0].view = textureView;
 
         wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
         auto pass = encoder.BeginRenderPass(&renderPassDesc);
@@ -776,7 +774,7 @@ TEST_P(D3D12DescriptorHeapTests, EncodeManyUBOAndSamplers) {
     }
 
     {
-        utils::ComboRenderPipelineDescriptor2 pipelineDescriptor;
+        utils::ComboRenderPipelineDescriptor pipelineDescriptor;
 
         pipelineDescriptor.vertex.module = utils::CreateShaderModule(device, R"(
             [[block]] struct U {
@@ -787,7 +785,7 @@ TEST_P(D3D12DescriptorHeapTests, EncodeManyUBOAndSamplers) {
             [[stage(vertex)]] fn main(
                 [[builtin(vertex_index)]] VertexIndex : u32
             ) -> [[builtin(position)]] vec4<f32> {
-                const pos : array<vec2<f32>, 3> = array<vec2<f32>, 3>(
+                var pos = array<vec2<f32>, 3>(
                     vec2<f32>(-1.0,  1.0),
                     vec2<f32>( 1.0,  1.0),
                     vec2<f32>(-1.0, -1.0)
@@ -811,11 +809,10 @@ TEST_P(D3D12DescriptorHeapTests, EncodeManyUBOAndSamplers) {
         utils::BasicRenderPass renderPass = utils::CreateBasicRenderPass(device, kRTSize, kRTSize);
         pipelineDescriptor.cTargets[0].format = renderPass.colorFormat;
 
-        wgpu::RenderPipeline pipeline = device.CreateRenderPipeline2(&pipelineDescriptor);
+        wgpu::RenderPipeline pipeline = device.CreateRenderPipeline(&pipelineDescriptor);
 
         // Encode a heap worth of descriptors |kNumOfHeaps| times.
-        constexpr float dummy = 0.0f;
-        constexpr float transform[] = {1.f, 0.f, dummy, dummy, 0.f, 1.f, dummy, dummy};
+        constexpr float transform[] = {1.f, 0.f, 0.f, 1.f};
         wgpu::Buffer transformBuffer = utils::CreateBufferFromData(
             device, &transform, sizeof(transform), wgpu::BufferUsage::Uniform);
 

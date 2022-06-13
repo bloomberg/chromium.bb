@@ -15,10 +15,6 @@
 
 """Tests for tpu_function helpers."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 
 from tensorflow.python.framework import tensor_shape
 from tensorflow.python.platform import test
@@ -106,6 +102,17 @@ class ShardingTest(test.TestCase):
       _ = p.get_sharded_shape(tensor_shape.TensorShape(None))
     with self.assertRaises(ValueError):
       _ = p.get_sharded_shape([4, 10], shard_index=-1)
+
+  def testGetUnpartitionedShape(self):
+    """Tests getting a sharded shape."""
+    p = tpu_sharding.ShardingPolicy()
+    p.set_number_of_shards(3)
+    p.set_shard_dimension(1)
+    p.set_number_of_partitions(4)
+    self.assertEqual(p.get_unpartitioned_shape([3, 5]), [3, 20])
+    p.freeze()
+    with self.assertRaises(ValueError):
+      _ = p.get_unpartitioned_shape([3, None])
 
   def testGetUnshardedShape(self):
     """Tests getting an unsharded shape."""

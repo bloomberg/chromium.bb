@@ -1,8 +1,9 @@
 {
-    "project": "chromium-m92",
-    "project_title": "Chromium M92",
-    "is_main": false,
-    "is_lts_branch": false,
-    "ref": "refs/branch-heads/4515",
-    "chrome_project": "chrome-m92"
+    "project": "chromium-m98",
+    "project_title": "Chromium M98",
+    "ref": "refs/branch-heads/4758",
+    "chrome_project": "chrome-m98",
+    "branch_types": [
+        "standard"
+    ]
 }

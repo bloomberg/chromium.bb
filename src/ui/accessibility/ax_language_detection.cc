@@ -264,7 +264,7 @@ void AXLanguageDetectionManager::DetectLanguagesForSubtree(
   //
   // Since kInlineTextBox(es) contain text from their parent, any detection on
   // them is redundant. Instead they can inherit the detected language.
-  if (subtree_root->data().role == ax::mojom::Role::kStaticText) {
+  if (subtree_root->GetRole() == ax::mojom::Role::kStaticText) {
     DetectLanguagesForNode(subtree_root);
   } else {
     // Otherwise, recurse into children for detection.
@@ -423,7 +423,8 @@ AXLanguageDetectionManager::GetLanguageAnnotationForStringAttribute(
   if (node.HasStringAttribute(ax::mojom::StringAttribute::kLanguage)) {
     // Use author-provided language if present.
     language_annotation.push_back(AXLanguageSpan{
-        0 /* start_index */, attr_value.length() /* end_index */,
+        0 /* start_index */,
+        static_cast<int>(attr_value.length()) /* end_index */,
         node.GetStringAttribute(
             ax::mojom::StringAttribute::kLanguage) /* language */,
         1 /* probability */});
@@ -507,13 +508,13 @@ void AXLanguageDetectionObserver::OnAtomicUpdateFinished(
   // are later used by Label in order to make more accurate decisions.
 
   for (auto& change : changes) {
-    if (change.node->data().role == ax::mojom::Role::kStaticText) {
+    if (change.node->GetRole() == ax::mojom::Role::kStaticText) {
       tree->language_detection_manager->DetectLanguagesForNode(change.node);
     }
   }
 
   for (auto& change : changes) {
-    if (change.node->data().role == ax::mojom::Role::kStaticText) {
+    if (change.node->GetRole() == ax::mojom::Role::kStaticText) {
       tree->language_detection_manager->LabelLanguagesForNode(change.node);
     }
   }

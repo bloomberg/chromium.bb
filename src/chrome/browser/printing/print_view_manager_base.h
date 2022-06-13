@@ -9,18 +9,19 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
+#include "base/observer_list_types.h"
 #include "build/build_config.h"
+#include "chrome/browser/printing/print_job.h"
 #include "chrome/browser/ui/webui/print_preview/printer_handler.h"
 #include "components/prefs/pref_member.h"
 #include "components/printing/browser/print_manager.h"
 #include "components/printing/common/print.mojom-forward.h"
 #include "components/services/print_compositor/public/mojom/print_compositor.mojom.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "printing/buildflags/buildflags.h"
 
 #if BUILDFLAG(ENABLE_TAGGED_PDF)
@@ -33,15 +34,25 @@ class RefCountedMemory;
 
 namespace printing {
 
-class JobEventDetails;
-class PrintJob;
 class PrintQueriesQueue;
 class PrinterQuery;
 
 // Base class for managing the print commands for a WebContents.
-class PrintViewManagerBase : public content::NotificationObserver,
-                             public PrintManager {
+class PrintViewManagerBase : public PrintManager, public PrintJob::Observer {
  public:
+  // An observer interface implemented by classes which are interested
+  // in `PrintViewManagerBase` events.
+  class Observer : public base::CheckedObserver {
+   public:
+    virtual void OnPrintNow(const content::RenderFrameHost* rfh) {}
+
+    // This method is never called unless `ENABLE_PRINT_PREVIEW`.
+    virtual void OnPrintPreview(const content::RenderFrameHost* rfh) {}
+  };
+
+  PrintViewManagerBase(const PrintViewManagerBase&) = delete;
+  PrintViewManagerBase& operator=(const PrintViewManagerBase&) = delete;
+
   ~PrintViewManagerBase() override;
 
   // Prints the current document immediately. Since the rendering is
@@ -96,6 +107,12 @@ class PrintViewManagerBase : public content::NotificationObserver,
   void ShowInvalidPrinterSettingsError() override;
   void PrintingFailed(int32_t cookie) override;
 
+  // Adds and removes observers for `PrintViewManagerBase` events. The order in
+  // which notifications are sent to observers is undefined. Observers must be
+  // sure to remove the observer before they go away.
+  void AddObserver(Observer& observer);
+  void RemoveObserver(Observer& observer);
+
  protected:
   explicit PrintViewManagerBase(content::WebContents* web_contents);
 
@@ -123,18 +140,24 @@ class PrintViewManagerBase : public content::NotificationObserver,
   // returns.
   void DisconnectFromCurrentPrintJob();
 
+  // PrintJob::Observer overrides:
+  void OnDocDone(int job_id, PrintedDocument* document) override;
+  void OnJobDone() override;
+  void OnFailed() override;
+
+  base::ObserverList<Observer>& GetObservers() { return observers_; }
+
   // Manages the low-level talk to the printer.
   scoped_refptr<PrintJob> print_job_;
 
  private:
   friend class TestPrintViewManager;
 
-  // content::NotificationObserver implementation.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
-
   // content::WebContentsObserver implementation.
+  void RenderFrameHostStateChanged(
+      content::RenderFrameHost* render_frame_host,
+      content::RenderFrameHost::LifecycleState /*old_state*/,
+      content::RenderFrameHost::LifecycleState new_state) override;
   void DidStartLoading() override;
 
   // Cancels the print job.
@@ -176,9 +199,6 @@ class PrintViewManagerBase : public content::NotificationObserver,
                           int process_id,
                           mojom::PrintPagesParamsPtr params);
 
-  // Processes a NOTIFY_PRINT_JOB_EVENT notification.
-  void OnNotifyPrintJobEvent(const JobEventDetails& event_details);
-
   // Requests the RenderView to render all the missing pages for the print job.
   // No-op if no print job is pending. Returns true if at least one page has
   // been requested to the renderer.
@@ -198,9 +218,8 @@ class PrintViewManagerBase : public content::NotificationObserver,
 
   // Quits the current message loop if these conditions hold true: a document is
   // loaded and is complete and waiting_for_pages_to_be_rendered_ is true. This
-  // function is called in DidPrintDocument() or on ALL_PAGES_REQUESTED
-  // notification. The inner message loop is created was created by
-  // RenderAllMissingPagesNow().
+  // function is called in DidPrintDocument(). The inner message loop was
+  // created by RenderAllMissingPagesNow().
   void ShouldQuitFromInnerMessageLoop();
 
   // Terminates the print job. No-op if no print job has been created. If
@@ -227,13 +246,11 @@ class PrintViewManagerBase : public content::NotificationObserver,
   // Release the PrinterQuery associated with our |cookie_|.
   void ReleasePrinterQuery();
 
-  // Helper method for UpdatePrintingEnabled().
+  // Notifies `rfh` about whether printing is `enabled`.
   void SendPrintingEnabled(bool enabled, content::RenderFrameHost* rfh);
 
-  content::NotificationRegistrar registrar_;
-
   // The current RFH that is printing with a system printing dialog.
-  content::RenderFrameHost* printing_rfh_ = nullptr;
+  raw_ptr<content::RenderFrameHost> printing_rfh_ = nullptr;
 
   // Indication of success of the print job.
   bool printing_succeeded_ = false;
@@ -248,9 +265,9 @@ class PrintViewManagerBase : public content::NotificationObserver,
 
   const scoped_refptr<PrintQueriesQueue> queue_;
 
-  base::WeakPtrFactory<PrintViewManagerBase> weak_ptr_factory_{this};
+  base::ObserverList<Observer> observers_;
 
-  DISALLOW_COPY_AND_ASSIGN(PrintViewManagerBase);
+  base::WeakPtrFactory<PrintViewManagerBase> weak_ptr_factory_{this};
 };
 
 }  // namespace printing

@@ -7,11 +7,13 @@
 #include <set>
 
 #include "ash/public/cpp/holding_space/holding_space_constants.h"
+#include "ash/public/cpp/style/color_provider.h"
 #include "ash/style/ash_color_provider.h"
-#include "ash/system/holding_space/holding_space_item_view_delegate.h"
 #include "ash/system/holding_space/holding_space_item_views_section.h"
 #include "ash/system/holding_space/holding_space_util.h"
+#include "ash/system/holding_space/holding_space_view_delegate.h"
 #include "ash/system/tray/tray_constants.h"
+#include "base/bind.h"
 #include "ui/compositor/callback_layer_animation_observer.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -23,8 +25,7 @@ namespace ash {
 namespace {
 
 // Animation.
-constexpr base::TimeDelta kAnimationDuration =
-    base::TimeDelta::FromMilliseconds(167);
+constexpr base::TimeDelta kAnimationDuration = base::Milliseconds(167);
 
 // Helpers ---------------------------------------------------------------------
 
@@ -112,7 +113,7 @@ class TopAlignedBoxLayout : public views::BoxLayout {
 // HoldingSpaceTrayChildBubble -------------------------------------------------
 
 HoldingSpaceTrayChildBubble::HoldingSpaceTrayChildBubble(
-    HoldingSpaceItemViewDelegate* delegate)
+    HoldingSpaceViewDelegate* delegate)
     : delegate_(delegate) {
   controller_observer_.Observe(HoldingSpaceController::Get());
   if (HoldingSpaceController::Get()->model())
@@ -130,7 +131,7 @@ void HoldingSpaceTrayChildBubble::Init() {
   SetPaintToLayer(ui::LAYER_SOLID_COLOR);
   layer()->GetAnimator()->set_preemption_strategy(
       ui::LayerAnimator::PreemptionStrategy::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-  layer()->SetBackgroundBlur(kUnifiedMenuBackgroundBlur);
+  layer()->SetBackgroundBlur(ColorProvider::kBackgroundBlurSigma);
   layer()->SetFillsBoundsOpaquely(false);
   layer()->SetIsFastRoundedCorner(true);
   layer()->SetOpacity(0.f);

@@ -27,7 +27,7 @@ void EnterpriseEnrollmentHelper::SetEnrollmentHelperMock(
 // static
 std::unique_ptr<EnterpriseEnrollmentHelper> EnterpriseEnrollmentHelper::Create(
     EnrollmentStatusConsumer* status_consumer,
-    ActiveDirectoryJoinDelegate* ad_join_delegate,
+    policy::ActiveDirectoryJoinDelegate* ad_join_delegate,
     const policy::EnrollmentConfig& enrollment_config,
     const std::string& enrolling_user_domain) {
   std::unique_ptr<EnterpriseEnrollmentHelper> result;
@@ -48,7 +48,7 @@ EnterpriseEnrollmentHelper::EnterpriseEnrollmentHelper() {}
 
 void EnterpriseEnrollmentHelper::set_status_consumer(
     EnrollmentStatusConsumer* status_consumer) {
-  DCHECK(status_consumer_);
+  DCHECK(status_consumer);
   status_consumer_ = status_consumer;
 }
 

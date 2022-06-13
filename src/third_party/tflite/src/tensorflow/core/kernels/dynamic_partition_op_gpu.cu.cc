@@ -48,6 +48,14 @@ limitations under the License.
 #include "tensorflow/core/util/gpu_kernel_helper.h"
 #include "tensorflow/core/util/transform_output_iterator.h"
 
+#if GOOGLE_CUDA
+#include "tensorflow/stream_executor/cuda/cuda_activation.h"
+using stream_executor::cuda::ScopedActivateExecutorContext;
+#elif TENSORFLOW_USE_ROCM
+#include "tensorflow/core/platform/rocm.h"
+using stream_executor::rocm::ScopedActivateExecutorContext;
+#endif  // GOOGLE_CUDA
+
 namespace tensorflow {
 
 typedef Eigen::GpuDevice GPUDevice;
@@ -95,17 +103,6 @@ void MoveValues(const GPUDevice& d, int32* keys, int32* values, int32* num_runs,
   TF_CHECK_OK(GpuLaunchKernel(MoveValuesKernel, config.block_count,
                               config.thread_per_block, 0, d.stream(), keys,
                               values, num_runs, out_size, out));
-}
-
-template <typename T>
-void CallGatherKernel(const GPUDevice& d, const T* params, const int32* indices,
-                      T* out, int64 gather_dim_size, int64 indices_size,
-                      int64 slice_size, int64 out_size) {
-  GpuLaunchConfig config = GetGpuLaunchConfig(out_size, d);
-  TF_CHECK_OK(GpuLaunchKernel(GatherOpKernel<T, int32, true>,
-                              config.block_count, config.thread_per_block, 0,
-                              d.stream(), params, indices, out, gather_dim_size,
-                              indices_size, slice_size, out_size));
 }
 
 struct IdentityOp {
@@ -302,6 +299,9 @@ class DynamicPartitionOpGPU : public AsyncOpKernel {
     TensorReference partition_ref(partition_count);
     auto wrapped_callback = [this, c, &data, &partitions, indices_out,
                              partition_ref, cpu_tensor, done]() {
+      auto stream = c->op_device_context()->stream();
+      ScopedActivateExecutorContext scoped_activation{stream->parent()};
+
       OpOutputList outputs;
       this->AllocateOutputs(c, &data, &partitions, &cpu_tensor, &outputs, done);
       if (!c->status().ok()) {
@@ -343,9 +343,9 @@ class DynamicPartitionOpGPU : public AsyncOpKernel {
     // Allocate temporary storage.
     OP_REQUIRES_OK_ASYNC(
         c,
-        c->allocate_temp(DT_INT8,
-                         TensorShape({static_cast<int64>(temp_storage_bytes)}),
-                         &cub_temp_storage),
+        c->allocate_temp(
+            DT_INT8, TensorShape({static_cast<int64_t>(temp_storage_bytes)}),
+            &cub_temp_storage),
         done);
     // Radix-sort the partition information.
     gpuprim::DeviceRadixSort::SortPairs(
@@ -419,9 +419,9 @@ class DynamicPartitionOpGPU : public AsyncOpKernel {
     // Allocate temporary storage.
     OP_REQUIRES_OK_ASYNC(
         c,
-        c->allocate_temp(DT_INT8,
-                         TensorShape({static_cast<int64>(temp_storage_bytes)}),
-                         &cub_temp_storage),
+        c->allocate_temp(
+            DT_INT8, TensorShape({static_cast<int64_t>(temp_storage_bytes)}),
+            &cub_temp_storage),
         done);
     // Run reduce-by-key. The effect is that we count how many times
     // each index appears in partitions. The distinct indices are stored
@@ -452,8 +452,9 @@ class DynamicPartitionOpGPU : public AsyncOpKernel {
       int64 out_size = outs[p]->NumElements();
       T* out_base = outs[p]->flat<T>().data();
       if (out_size > 0)
-        CallGatherKernel<T>(device, data_base, ind_base, out_base, N,
-                            indices_size, slice_size, out_size);
+        TF_CHECK_OK(LaunchGatherKernel</*is_axis_zero = */ true>(
+            device, data_base, ind_base, out_base, N, indices_size, slice_size,
+            out_size));
       ind_base += indices_size;
     }
   }

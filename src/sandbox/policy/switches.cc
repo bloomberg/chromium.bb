@@ -40,10 +40,10 @@ const char kVideoCaptureSandbox[] = "video_capture";
 
 #if defined(OS_WIN)
 const char kPdfConversionSandbox[] = "pdf_conversion";
-const char kProxyResolverSandbox[] = "proxy_resolver";
 const char kXrCompositingSandbox[] = "xr_compositing";
 const char kIconReaderSandbox[] = "icon_reader";
 const char kMediaFoundationCdmSandbox[] = "mf_cdm";
+const char kWindowsSystemProxyResolverSandbox[] = "proxy_resolver_win";
 #endif  // OS_WIN
 
 #if defined(OS_MAC)
@@ -51,11 +51,12 @@ const char kMirroringSandbox[] = "mirroring";
 #endif  // OS_MAC
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+const char kHardwareVideoDecodingSandbox[] = "hardware_video_decoding";
 const char kImeSandbox[] = "ime";
 const char kTtsSandbox[] = "tts";
-#if BUILDFLAG(ENABLE_LIBASSISTANT_SANDBOX)
+#if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
 const char kLibassistantSandbox[] = "libassistant";
-#endif  // BUILDFLAG(ENABLE_LIBASSISTANT_SANDBOX)
+#endif  // BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // Flags owned by the service manager sandbox.
@@ -106,9 +107,6 @@ const char kAllowThirdPartyModules[] = "allow-third-party-modules";
 
 // Add additional capabilities to the AppContainer sandbox on the GPU process.
 const char kAddGpuAppContainerCaps[] = "add-gpu-appcontainer-caps";
-
-// Disables the sandbox and gives the process elevated privileges.
-const char kNoSandboxAndElevatedPrivileges[] = "no-sandbox-and-elevated";
 
 // Add additional capabilities to the AppContainer sandbox used for XR
 // compositing.

@@ -14,6 +14,22 @@
 class SkReadBuffer;
 class SkWriteBuffer;
 
+#if GR_TEST_UTILS
+namespace skgpu {
+    class SurfaceFillContext;
+#if SK_GPU_V1
+    namespace v1 { class SurfaceDrawContext; }
+#endif // SK_GPU_V1
+}
+#endif // GR_TEST_UTILS
+
+// This declaration must match the one in SkDeferredDisplayList.h
+#if SK_SUPPORT_GPU
+class GrRenderTargetProxy;
+#else
+using GrRenderTargetProxy = SkRefCnt;
+#endif // SK_SUPPORT_GPU
+
 class SkAutoCanvasMatrixPaint : SkNoncopyable {
 public:
     SkAutoCanvasMatrixPaint(SkCanvas*, const SkMatrix*, const SkPaint*, const SkRect& bounds);
@@ -43,13 +59,17 @@ public:
     }
 
     // Exposed for testing on non-Android framework builds
-    static void ReplaceClip(SkCanvas* canvas, const SkIRect& rect) {
-        canvas->androidFramework_replaceClip(rect);
+    static void ResetClip(SkCanvas* canvas) {
+        canvas->internal_private_resetClip();
     }
 
-    static GrSurfaceDrawContext* TopDeviceSurfaceDrawContext(SkCanvas* canvas) {
-        return canvas->topDeviceSurfaceDrawContext();
-    }
+#if GR_TEST_UTILS
+#if SK_GPU_V1
+    static skgpu::v1::SurfaceDrawContext* TopDeviceSurfaceDrawContext(SkCanvas*);
+#endif
+    static skgpu::SurfaceFillContext* TopDeviceSurfaceFillContext(SkCanvas*);
+#endif // GR_TEST_UTILS
+    static GrRenderTargetProxy* TopDeviceTargetProxy(SkCanvas*);
 
     // The experimental_DrawEdgeAAImageSet API accepts separate dstClips and preViewMatrices arrays,
     // where entries refer into them, but no explicit size is provided. Given a set of entries,
@@ -57,9 +77,21 @@ public:
     static void GetDstClipAndMatrixCounts(const SkCanvas::ImageSetEntry set[], int count,
                                           int* totalDstClipCount, int* totalMatrixCount);
 
-    // Checks that the marker name is an identifier ([a-zA-Z][a-zA-Z0-9_]*)
-    // Identifiers with leading underscores are reserved (not allowed).
-    static bool ValidateMarker(const char*);
+    static SkCanvas::SaveLayerRec ScaledBackdropLayer(const SkRect* bounds,
+                                                      const SkPaint* paint,
+                                                      const SkImageFilter* backdrop,
+                                                      SkScalar backdropScale,
+                                                      SkCanvas::SaveLayerFlags saveLayerFlags) {
+        return SkCanvas::SaveLayerRec(bounds, paint, backdrop, backdropScale, saveLayerFlags);
+    }
+
+    static SkScalar GetBackdropScaleFactor(const SkCanvas::SaveLayerRec& rec) {
+        return rec.fExperimentalBackdropScale;
+    }
+
+    static void SetBackdropScaleFactor(SkCanvas::SaveLayerRec* rec, SkScalar scale) {
+        rec->fExperimentalBackdropScale = scale;
+    }
 };
 
 /**

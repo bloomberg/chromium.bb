@@ -21,10 +21,9 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/sequence_checker.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -45,6 +44,7 @@
 #include "content/public/common/sandbox_init.h"
 #include "gpu/config/gpu_switches.h"
 #include "net/base/escape.h"
+#include "services/tracing/public/cpp/perfetto/perfetto_traced_process.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/buildflags.h"
 #include "ui/base/ui_base_features.h"
@@ -59,6 +59,9 @@
 #include "sandbox/policy/win/sandbox_win.h"
 #include "sandbox/win/src/sandbox_factory.h"
 #include "sandbox/win/src/sandbox_types.h"
+
+// To avoid conflicts with the macro from the Windows SDK...
+#undef GetCommandLine
 #elif defined(OS_MAC)
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "sandbox/mac/seatbelt_exec.h"
@@ -76,10 +79,12 @@ const char kPreTestPrefix[] = "PRE_";
 const char kManualTestPrefix[] = "MANUAL_";
 
 TestLauncherDelegate* g_launcher_delegate = nullptr;
-#if !defined(OS_ANDROID)
+
 // ContentMain is not run on Android in the test process, and is run via
 // java for child processes. So ContentMainParams does not exist there.
-ContentMainParams* g_params = nullptr;
+#if !defined(OS_ANDROID)
+// The global ContentMainParams config to be copied in each test.
+const ContentMainParams* g_params = nullptr;
 #endif
 
 void PrintUsage() {
@@ -137,6 +142,10 @@ class WrapperTestLauncherDelegate : public base::TestLauncherDelegate {
         switches::kRunManualTestsFlag);
   }
 
+  WrapperTestLauncherDelegate(const WrapperTestLauncherDelegate&) = delete;
+  WrapperTestLauncherDelegate& operator=(const WrapperTestLauncherDelegate&) =
+      delete;
+
   // base::TestLauncherDelegate:
   bool GetTests(std::vector<base::TestIdentifier>* output) override;
 
@@ -163,11 +172,9 @@ class WrapperTestLauncherDelegate : public base::TestLauncherDelegate {
   void ProcessTestResults(std::vector<base::TestResult>& test_results,
                           base::TimeDelta elapsed_time) override;
 
-  content::TestLauncherDelegate* launcher_delegate_;
+  raw_ptr<content::TestLauncherDelegate> launcher_delegate_;
 
   bool run_manual_tests_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(WrapperTestLauncherDelegate);
 };
 
 bool WrapperTestLauncherDelegate::GetTests(
@@ -361,6 +368,12 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
   params.argv = const_cast<const char**>(argv);
 #endif  // defined(OS_WIN)
 
+  // Disable system tracing for browser tests by default. This prevents breakage
+  // of tests that spin the run loop until idle on platforms with system tracing
+  // (e.g. Chrome OS). Browser tests exercising this feature re-enable it with a
+  // custom system tracing service.
+  tracing::PerfettoTracedProcess::SetSystemProducerEnabledForTesting(false);
+
 #if !defined(OS_ANDROID)
   // This needs to be before trying to run tests as otherwise utility processes
   // end up being launched as a test, which leads to rerunning the test.
@@ -370,7 +383,7 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
     // child processes don't have a TestSuite, and must initialize this
     // explicitly before ContentMain.
     TestTimeouts::Initialize();
-    return ContentMain(params);
+    return ContentMain(std::move(params));
   }
 #endif
 
@@ -436,8 +449,8 @@ TestLauncherDelegate* GetCurrentTestLauncherDelegate() {
 }
 
 #if !defined(OS_ANDROID)
-ContentMainParams* GetContentMainParams() {
-  return g_params;
+ContentMainParams CopyContentMainParams() {
+  return g_params->ShallowCopyForTesting();
 }
 #endif
 

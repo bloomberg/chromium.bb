@@ -20,7 +20,9 @@ enum class MenuScenario {
   kContextMenuImageLink = 8,
   kContextMenuLink = 9,
   kTabGridEntry = 10,
-  kMaxValue = kTabGridEntry,
+  kTabGridAddTo = 11,
+  kTabGridEdit = 12,
+  kMaxValue = kTabGridEdit,
 };
 
 // Records a menu shown histogram metric for the |scenario|.

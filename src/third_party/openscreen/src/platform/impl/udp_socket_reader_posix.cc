@@ -10,6 +10,7 @@
 #include "platform/impl/socket_handle_posix.h"
 #include "platform/impl/udp_socket_posix.h"
 #include "util/osp_logging.h"
+#include "util/std_util.h"
 
 namespace openscreen {
 
@@ -65,7 +66,7 @@ void UdpSocketReaderPosix::OnDelete(UdpSocketPosix* socket,
 
 bool UdpSocketReaderPosix::IsMappedReadForTesting(
     UdpSocketPosix* socket) const {
-  return std::find(sockets_.begin(), sockets_.end(), socket) != sockets_.end();
+  return Contains(sockets_, socket);
 }
 
 }  // namespace openscreen

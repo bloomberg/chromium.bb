@@ -37,12 +37,17 @@ public:
         SkFont defaultFont;
         SkStrikeSpec strikeSpec = SkStrikeSpec::MakeWithNoDevice(defaultFont);
         auto strike = strikeSpec.findOrCreateStrike();
+        SkArenaAlloc alloc(1 << 12); // This is a mock SkStrikeCache.
         SkPath glyphPaths[52];
         for (int i = 0; i < 52; ++i) {
             // I and l are rects on OS X ...
             char c = "aQCDEFGH7JKLMNOPBRZTUVWXYSAbcdefghijk1mnopqrstuvwxyz"[i];
             SkPackedGlyphID id(defaultFont.unicharToGlyph(c));
-            sk_ignore_unused_variable(strike->getScalerContext()->getPath(id, &glyphPaths[i]));
+            SkGlyph glyph = strike->getScalerContext()->makeGlyph(id, &alloc);
+            strike->getScalerContext()->getPath(glyph, &alloc);
+            if (glyph.path()) {
+                glyphPaths[i] = *glyph.path();
+            }
         }
 
         for (int i = 0; i < kNumPaths; ++i) {
@@ -271,9 +276,9 @@ public:
     /**
      * Called on a background thread. Here we can only modify fBackPaths.
      */
-    void runAnimationTask(double t, double dt, int w, int h) override {
+    void runAnimationTask(double t, double dt, int width, int height) override {
         const float tsec = static_cast<float>(t);
-        this->MovingGlyphAnimator::runAnimationTask(t, 0.5 * dt, w, h);
+        this->MovingGlyphAnimator::runAnimationTask(t, 0.5 * dt, width, height);
 
         for (int i = 0; i < kNumPaths; ++i) {
             const Glyph& glyph = fGlyphs[i];

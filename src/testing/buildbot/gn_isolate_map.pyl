@@ -74,6 +74,11 @@
 #
 # The optional "skip_usage_check" field indicates that we should skip the check
 # that the target is used in at least one buildbot json file.
+#
+# The optional "python3" field is a boolean that is used by tests to
+# say whether we should run the test under Python2 or Python3. It does
+# not apply to 'generated_script' tests, where the generated wrapper
+# should control this instead.
 
 {
   "All_syzygy": {
@@ -92,10 +97,6 @@
     "label": "//chrome/test:android_browsertests",
     "type": "windowed_test_launcher",
   },
-  "android_lint_test": {
-    "label": "//build/android/test:android_lint_test",
-    "type": "additional_compile_target",
-  },
   "android_sync_integration_tests": {
     "label": "//chrome/test:android_sync_integration_tests",
     "type": "windowed_test_launcher",
@@ -111,10 +112,6 @@
   "android_webview_unittests": {
     "label": "//android_webview/test:android_webview_unittests",
     "type": "console_test_launcher",
-  },
-  "angle_apks": {
-    "label": "//third_party/angle:angle_apks",
-    "type": "additional_compile_target",
   },
   "angle_deqp_egl_tests": {
     "label": "//third_party/angle/src/tests:angle_deqp_egl_tests",
@@ -191,21 +188,6 @@
     "script": "//third_party/angle/scripts/run_gtest_angle_test.py",
     "type": "script",
   },
-  "angle_gles1_conformance_tests": {
-    "label": "//third_party/angle/src/tests:angle_gles1_conformance_tests",
-    "script": "//third_party/angle/scripts/run_gtest_angle_test.py",
-    "type": "script",
-  },
-  "angle_perftests": {
-    "label": "//third_party/angle/src/tests:angle_perftests",
-    "script": "//testing/scripts/run_performance_tests.py",
-    "type": "script",
-  },
-  "angle_restricted_trace_gold_tests": {
-    "type": "script",
-    "label": "//third_party/angle/src/tests/restricted_traces:angle_restricted_trace_gold_tests",
-    "script": "//third_party/angle/src/tests/restricted_traces/restricted_trace_gold_tests.py",
-  },
   "angle_unittests": {
     "label": "//third_party/angle/src/tests:angle_unittests",
     "script": "//third_party/angle/scripts/run_gtest_angle_test.py",
@@ -220,9 +202,9 @@
     "label": "//extensions/shell:app_shell_unittests",
     "type": "windowed_test_launcher",
   },
-  "ash_content_unittests": {
-    "label": "//ash/content:ash_content_unittests",
-    "type": "console_test_launcher",
+  "ash_webui_unittests": {
+    "label": "//ash/webui:ash_webui_unittests",
+    "type": "windowed_test_launcher",
   },
   "ash_unittests": {
     "label": "//ash:ash_unittests",
@@ -251,10 +233,6 @@
   },
   "base_unittests": {
     "label": "//base:base_unittests",
-    "type": "console_test_launcher",
-  },
-  "base_util_unittests": {
-    "label": "//base/util:base_util_unittests",
     "type": "console_test_launcher",
   },
   "blink_common_unittests": {
@@ -322,9 +300,7 @@
     "type": "console_test_launcher",
   },
   "browser_tests": {
-    "args": [
-      "--enable-high-dpi-support-for-testing",
-    ],
+    "python3": False,
     "label": "//chrome/test:browser_tests",
     "type": "windowed_test_launcher",
   },
@@ -378,6 +354,10 @@
   },
   "cast_base_unittests": {
     "label": "//chromecast/base:cast_base_unittests",
+    "type": "console_test_launcher",
+  },
+  "cast_cast_core_unittests": {
+    "label": "//chromecast/cast_core:cast_cast_core_unittests",
     "type": "console_test_launcher",
   },
   "cast_crash_unittests": {
@@ -466,10 +446,6 @@
     "label": "//chrome/test/android:chrome_java_test_pagecontroller_tests",
     "type": "console_test_launcher"
   },
-  "chrome_java_test_webapk_launch_tests": {
-    "label": "//chrome/test/android:chrome_java_test_webapk_launch_tests",
-    "type": "console_test_launcher",
-  },
   "chrome_java_test_wpr_tests": {
     "label": "//chrome/test/android:chrome_java_test_wpr_tests",
     "type": "console_test_launcher",
@@ -486,12 +462,20 @@
     "label": "//chrome/android:chrome_modern_public_bundle_fake_modules_smoke_test",
     "type": "console_test_launcher",
   },
+  "chrome_nocompile_tests": {
+    "label": "//chrome/android:chrome_nocompile_tests",
+    "type": "additional_compile_target",
+  },
   "chrome_official_builder": {
     "label": "//:chrome_official_builder",
     "type": "additional_compile_target",
   },
   "chrome_official_builder_no_unittests": {
     "label": "//:chrome_official_builder_no_unittests",
+    "type": "additional_compile_target",
+  },
+  "chrome_pkg": {
+    "label": "//chrome/app:chrome_pkg",
     "type": "additional_compile_target",
   },
   "chrome_public_apk": {
@@ -502,12 +486,17 @@
     "label": "//chrome/android:chrome_public_smoke_test",
     "type": "console_test_launcher",
   },
+  # TODO(crbug.com/1238057): Rename to chrome_public_integration_test_apk
   "chrome_public_test_apk": {
     "label": "//chrome/android:chrome_public_test_apk",
     "type": "console_test_launcher",
   },
   "chrome_public_test_vr_apk": {
     "label": "//chrome/android:chrome_public_test_vr_apk",
+    "type": "console_test_launcher",
+  },
+  "chrome_public_unit_test_apk": {
+    "label": "//chrome/android:chrome_public_unit_test_apk",
     "type": "console_test_launcher",
   },
   "chrome_public_wpt": {
@@ -522,11 +511,16 @@
     "label": "//chrome/test:chrome_sizes",
     "type": "generated_script",
   },
+  "chrome_webapk_integration_tests": {
+    "label": "//chrome/test/android:chrome_webapk_integration_tests",
+    "type": "console_test_launcher",
+  },
   "chromedriver": {
     "label": "//chrome/test/chromedriver:chromedriver",
     "type": "additional_compile_target",
   },
   "chromedriver_py_tests": {
+    "python3": False,
     "args": [
       "../../testing/scripts/run_chromedriver_tests.py",
       "../../chrome/test/chromedriver/test/run_py_tests.py",
@@ -573,7 +567,12 @@
     "label": "//chrome/installer/linux:linux",
     "type": "additional_compile_target",
   },
+  "variations_smoke_tests": {
+    "label": "//chrome/test:variations_smoke_tests",
+    "type": "generated_script",
+  },
   "chromedriver_replay_unittests": {
+    "python3": False,
     "label": "//chrome/test/chromedriver:chromedriver_replay_unittests",
     "script": "//chrome/test/chromedriver/log_replay/client_replay_unittest.py",
     "type": "script",
@@ -692,6 +691,7 @@
     "type": "console_test_launcher",
   },
   "content_shell_crash_test": {
+    "python3": False,
     "label": "//content/shell:content_shell_crash_test",
     "script": "//testing/scripts/content_shell_crash_test.py",
     "type": "script",
@@ -704,6 +704,10 @@
     "label": "//content/test:content_unittests",
     "type": "windowed_test_launcher",
   },
+  "core_runtime_simple": {
+    "label": "//chromecast/cast_core:core_runtime_simple",
+    "type": "additional_compile_target",
+  },
   "courgette_unittests": {
     "label": "//courgette:courgette_unittests",
     "type": "console_test_launcher",
@@ -713,6 +717,7 @@
     "type": "console_test_launcher",
   },
   "crashpad_tests": {
+    "python3": False,
     "label": "//third_party/crashpad/crashpad:crashpad_tests",
     "type": "console_test_launcher",
   },
@@ -827,10 +832,6 @@
     "label": "//testing:empty_main",
     "type": "additional_compile_target",
   },
-  "errorprone_plugin_tests": {
-    "label": "//tools/android/errorprone_plugin/test:errorprone_plugin_tests",
-    "type": "additional_compile_target",
-  },
   "events_unittests": {
     "label": "//ui/events:events_unittests",
     "type": "windowed_test_launcher",
@@ -856,6 +857,16 @@
     "script": "//testing/scripts/run_flatbuffers_unittests.py",
     "type": "script",
   },
+  # TODO(crbug.com/1256485): The target is not needed after iOS clusterfuzz
+  # upload bot is set up.
+  "form_activity_tab_helper_fuzzer": {
+    "label": "//components/autofill/ios/form_util:form_activity_tab_helper_fuzzer",
+    "type": "additional_compile_target",
+  },
+  "fuchsia_mojo_unittests": {
+    "label": "//fuchsia/mojom:fuchsia_mojo_unittests",
+    "type": "console_test_launcher",
+  },
   "fuchsia_sizes": {
     "label": "//fuchsia/release:fuchsia_sizes",
     "type": "generated_script",
@@ -863,8 +874,8 @@
   "fuchsia_telemetry_gpu_integration_test": {
     "args": [
       "../../content/test/gpu/run_gpu_integration_test_fuchsia.py",
-      "--system-log-file",
-      "${ISOLATED_OUTDIR}/system_log",
+      "--logs-dir",
+      "${ISOLATED_OUTDIR}",
     ],
     "label": "//content/test:fuchsia_telemetry_gpu_integration_test",
     "script": "//testing/scripts/run_gpu_integration_test_as_googletest.py",
@@ -878,8 +889,8 @@
     "label": "//chrome/credential_provider/test:gcp_unittests",
     "type": "console_test_launcher",
   },
-  "gen_linux_ash_chromium_cipd_yaml": {
-    "label": "//chrome:gen_linux_ash_chromium_cipd_yaml",
+  "test_ash_chrome_cipd_yaml": {
+    "label": "//chrome/test:test_ash_chrome_cipd_yaml",
     "type": "additional_compile_target",
   },
   "gfx_unittests": {
@@ -941,15 +952,12 @@
     "script": "//testing/scripts/run_isolated_script_test.py",
     "type": "script",
   },
-  "gtk_unittests": {
-    "label": "//ui/gtk:gtk_unittests",
-    "type": "windowed_test_launcher",
-  },
   "gwp_asan_unittests": {
     "label": "//components/gwp_asan:gwp_asan_unittests",
     "type": "console_test_launcher",
   },
   "headless_browsertests": {
+    "python3": False,
     "label": "//headless:headless_browsertests",
     "type": "console_test_launcher",
   },
@@ -957,13 +965,9 @@
     "label": "//headless:headless_unittests",
     "type": "console_test_launcher",
   },
-  "http_pkg": {
-    "label": "//fuchsia/http:http_pkg",
-    "type": "additonal_compile_target",
-  },
-  "http_service_tests": {
-    "label": "//fuchsia/http:http_service_tests",
-    "type": "console_test_launcher",
+  "incremental_javac_junit_tests": {
+    "label": "//build/android/test:incremental_javac_junit_tests",
+    "type": "junit_test",
   },
   "install_static_unittests": {
     "label": "//chrome/install_static:install_static_unittests",
@@ -975,7 +979,6 @@
   },
   "interactive_ui_tests": {
     "args": [
-      "--enable-high-dpi-support-for-testing",
       "--snapshot-output-dir=${ISOLATED_OUTDIR}",
     ],
     "label": "//chrome/test:interactive_ui_tests",
@@ -1124,9 +1127,23 @@
     "label": "//ash/keyboard/ui:keyboard_unittests",
     "type": "windowed_test_launcher",
   },
+  "lacros_all_tast_tests": {
+    "label": "//chromeos/lacros:lacros_all_tast_tests",
+    "type": "generated_script",
+    "args": [
+      "--logs-dir=${ISOLATED_OUTDIR}",
+    ],
+  },
   "lacros_chrome_browsertests": {
     "label": "//chrome/test:lacros_chrome_browsertests",
     "type": "windowed_test_launcher",
+  },
+  "lacros_chrome_browsertests_run_in_series": {
+    "label": "//chrome/test:lacros_chrome_browsertests_run_in_series",
+    "type": "windowed_test_launcher",
+    "args": [
+      "--test-launcher-jobs=1",
+    ],
   },
   "lacros_chrome_unittests": {
     "label": "//chrome/test:lacros_chrome_unittests",
@@ -1134,13 +1151,6 @@
   },
   "lacros_fyi_tast_tests": {
     "label": "//chromeos/lacros:lacros_fyi_tast_tests",
-    "type": "generated_script",
-    "args": [
-      "--logs-dir=${ISOLATED_OUTDIR}",
-    ],
-  },
-  "lacros_smoke_tast_tests": {
-    "label": "//chromeos/lacros:lacros_smoke_tast_tests",
     "type": "generated_script",
     "args": [
       "--logs-dir=${ISOLATED_OUTDIR}",
@@ -1189,10 +1199,6 @@
     "label": "//media/base/android:media_base_junit_tests",
     "type": "junit_test",
   },
-  "media_blink_unittests": {
-    "label": "//media/blink:media_blink_unittests",
-    "type": "windowed_test_launcher",
-  },
   "media_perftests": {
     "args": [
       "media_perftests",
@@ -1208,26 +1214,11 @@
   },
   "media_router_e2e_tests": {
     "args": [
-      "--extension",
-      "mr_extension/",
       "--test_binary",
       "./browser_tests",
     ],
     "label": "//chrome/test/media_router:media_router_e2e_tests",
     "script": "//chrome/test/media_router/internal/media_router_tests.py",
-    "type": "script",
-  },
-  "media_router_perf_tests": {
-    "args": [
-      "--browser=release",
-      "--also-run-disabled-tests",
-      "-v",
-      "--use-live-sites",
-      "--output-format=histograms",
-      "--output-dir=${ISOLATED_OUTDIR}",
-    ],
-    "label": "//chrome/test/media_router:media_router_perf_tests",
-    "script": "//tools/perf/contrib/media_router_benchmarks/run_benchmark.py",
     "type": "script",
   },
   "media_unittests": {
@@ -1237,14 +1228,6 @@
   "message_center_unittests": {
     "label": "//ui/message_center:message_center_unittests",
     "type": "windowed_test_launcher",
-  },
-  "metrics_python_tests": {
-    "args": [
-      "../../tools/metrics/metrics_python_tests.py",
-    ],
-    "label": "//tools/metrics:metrics_python_tests",
-    "script": "//testing/scripts/run_isolated_script_test.py",
-    "type": "script",
   },
   "microdump_stackwalk": {
     "label": "//third_party/breakpad:microdump_stackwalk",
@@ -1259,8 +1242,8 @@
     "type": "additional_compile_target",
   },
   "mini_installer_tests": {
+    "python3": False,
     "args": [
-      "--isolated-script-test-output=${ISOLATED_OUTDIR}/results.json",
       "../../chrome/test/mini_installer/run_mini_installer_tests.py",
       "--output-dir=${ISOLATED_OUTDIR}",
     ],
@@ -1341,10 +1324,6 @@
     "label": "//native_client/src/trusted/service_runtime/linux:bootstrap",
     "skip_usage_check": True,
     "type": "additional_compile_target",
-  },
-  "nacl_helper_nonsfi_unittests": {
-    "label": "//components/nacl/loader:nacl_helper_nonsfi_unittests",
-    "type": "console_test_launcher",
   },
   "nacl_loader_unittests": {
     "label": "//components/nacl/loader:nacl_loader_unittests",
@@ -1448,6 +1427,26 @@
     "label": "//chrome/test:performance_test_suite",
     "type": "generated_script",
   },
+  "performance_test_suite_android_chrome": {
+    "label": "//chrome/test:performance_test_suite_android_chrome",
+    "type": "generated_script",
+  },
+  "performance_test_suite_android_clank_chrome": {
+    "label": "//chrome/test:performance_test_suite_android_clank_chrome",
+    "type": "generated_script",
+  },
+  "performance_test_suite_android_clank_monochrome_64_32_bundle": {
+    "label": "//chrome/test:performance_test_suite_android_clank_monochrome_64_32_bundle",
+    "type": "generated_script",
+  },
+  "performance_test_suite_android_clank_monochrome_bundle": {
+    "label": "//chrome/test:performance_test_suite_android_clank_monochrome_bundle",
+    "type": "generated_script",
+  },
+  "performance_test_suite_android_clank_trichrome_bundle": {
+    "label": "//chrome/test:performance_test_suite_android_clank_trichrome_bundle",
+    "type": "generated_script",
+  },
   "performance_test_suite_eve": {
     "label": "//chrome/test:performance_test_suite_eve",
     "type": "generated_script",
@@ -1455,6 +1454,7 @@
   "performance_web_engine_test_suite": {
     "args": [
       "../../content/test/gpu/run_telemetry_benchmark_fuchsia.py",
+      "--per-test-logs-dir",
     ],
     "label": "//content/test:performance_web_engine_test_suite",
     "script": "//testing/scripts/run_performance_tests.py",
@@ -1495,6 +1495,10 @@
     "label": "//v8:postmortem-metadata",
     "type": "additional_compile_target",
   },
+  "power_sampler_unittests": {
+    "label": "//tools/mac/power:power_sampler_unittests",
+     "type": "console_test_launcher",
+  },
   "ppapi_unittests": {
     "label": "//ppapi:ppapi_unittests",
     "type": "console_test_launcher",
@@ -1524,6 +1528,7 @@
     "type": "additional_compile_target",
   },
   "remoting_unittests": {
+    "python3": False,
     "label": "//remoting:remoting_unittests",
     "type": "console_test_launcher",
   },
@@ -1534,6 +1539,16 @@
       "--upload-results",
     ],
     "label": "//chrome/test:rendering_representative_perf_tests",
+    "script": "//testing/scripts/run_rendering_benchmark_with_gated_performance.py",
+    "type": "script",
+  },
+  "rendering_representative_perf_tests_android_chrome": {
+    "args": [
+      "--output-format=csv",
+      "--browser=release",
+      "--upload-results",
+    ],
+    "label": "//chrome/test:rendering_representative_perf_tests_android_chrome",
     "script": "//testing/scripts/run_rendering_benchmark_with_gated_performance.py",
     "type": "script",
   },
@@ -1565,6 +1580,10 @@
     "label": "//android_webview:resource_sizes_system_webview_bundle",
     "type": "generated_script",
   },
+  "rust_build_tests": {
+    "label": "//build/rust/tests",
+    "type": "additional_compile_target",
+  },
   "sandbox_linux_unittests": {
     "label": "//sandbox/linux:sandbox_linux_unittests",
     "type": "console_test_launcher",
@@ -1594,6 +1613,7 @@
     "type": "console_test_launcher",
   },
   "services_unittests": {
+    "python3": False,
     "label": "//services:services_unittests",
     "type": "windowed_test_launcher",
   },
@@ -1608,10 +1628,10 @@
   "shell_dialogs_unittests": {
     "label": "//ui/shell_dialogs:shell_dialogs_unittests",
     "type": "console_test_launcher",
-  },
-  "shipped_binaries": {
-    "label": "//:shipped_binaries",
-    "type": "additional_compile_target",
+    # These tests are more like dialog interactive ui tests.
+    "args": [
+      "--test-launcher-jobs=1",
+    ],
   },
   "skia_unittests": {
     "label": "//skia:skia_unittests",
@@ -1674,6 +1694,22 @@
     "script": "//testing/scripts/run_gpu_integration_test_as_googletest.py",
     "type": "script",
   },
+  "telemetry_gpu_integration_test_android_chrome": {
+    "args": [
+      "../../content/test/gpu/run_gpu_integration_test.py",
+    ],
+    "label": "//chrome/test:telemetry_gpu_integration_test_android_chrome",
+    "script": "//testing/scripts/run_gpu_integration_test_as_googletest.py",
+    "type": "script",
+  },
+  "telemetry_gpu_integration_test_android_webview": {
+    "args": [
+      "../../content/test/gpu/run_gpu_integration_test.py",
+    ],
+    "label": "//chrome/test:telemetry_gpu_integration_test_android_webview",
+    "script": "//testing/scripts/run_gpu_integration_test_as_googletest.py",
+    "type": "script",
+  },
   "telemetry_gpu_integration_test_scripts_only": {
     "label": "//chrome/test:telemetry_gpu_integration_test_scripts_only",
     "type": "additional_compile_target",
@@ -1706,6 +1742,15 @@
     "script": "//testing/scripts/run_telemetry_as_googletest.py",
     "type": "script",
   },
+  "telemetry_perf_unittests_android_chrome": {
+    "args": [
+      "../../tools/perf/run_tests",
+      "-v",
+    ],
+    "label": "//chrome/test:telemetry_perf_unittests_android_chrome",
+    "script": "//testing/scripts/run_telemetry_as_googletest.py",
+    "type": "script",
+  },
   "telemetry_unittests": {
     "args": [
       "--xvfb",
@@ -1723,6 +1768,22 @@
   },
   "telemetry_weblayer_apks": {
     "label": "//tools/perf/chrome_telemetry_build:telemetry_weblayer_apks",
+    "type": "additional_compile_target",
+  },
+  "test_ash_chrome": {
+    "label": "//chrome/test:test_ash_chrome",
+    "type": "additional_compile_target",
+  },
+  "test_cpp_including_rust_unittests": {
+    "label": "//build/rust/tests/test_cpp_including_rust:test_cpp_including_rust_unittests",
+    "type": "console_test_launcher",
+  },
+  "test_serde_jsonrc": {
+    "label": "//build/rust/tests/test_serde_jsonrc:test_serde_jsonrc",
+    "type": "console_test_launcher",
+  },
+  "third_party/openscreen/src/cast/cast_core/api": {
+    "label": "//third_party/openscreen/src/cast/cast_core/api:api",
     "type": "additional_compile_target",
   },
   # TODO(crbug.com/1080749): Re-add this once the test is fixed and re-enabled.
@@ -1752,9 +1813,9 @@
     "script": "//testing/scripts/run_performance_tests.py",
     "type": "script",
   },
-  "traffic_annotation_auditor_unittests": {
-    "label": "//tools/traffic_annotation/auditor:traffic_annotation_auditor_unittests",
-    "type": "console_test_launcher",
+  "traffic_annotation_auditor_dependencies": {
+    "label": "//:traffic_annotation_auditor_dependencies",
+    "type": "additional_compile_target",
   },
   "trichrome_chrome_bundle_smoke_test": {
     "label": "//chrome/android:trichrome_chrome_bundle_smoke_test",
@@ -1785,6 +1846,7 @@
     "type": "windowed_test_launcher",
   },
   "unit_tests": {
+    "python3": False,
     "label": "//chrome/test:unit_tests",
     "type": "windowed_test_launcher",
   },
@@ -1795,6 +1857,15 @@
   "updater_tests_system": {
     "label": "//chrome/updater:updater_tests_system",
     "type": "console_test_launcher",
+  },
+  "updater_tests_win_uac": {
+    "label": "//chrome/updater:updater_tests_win_uac",
+    "type": "script",
+    "script": "//testing/scripts/run_telemetry_as_googletest.py",
+    "args": [
+      "test_service/run_command_as_standard_user.py",
+      "--command=updater_tests.exe",
+    ],
   },
   "upload_trace_processor": {
     "label": "//tools/perf/core/perfetto_binary_roller:upload_trace_processor",
@@ -1959,6 +2030,20 @@
     "script": "//android_webview/tools/run_cts.py",
     "type": "script",
   },
+  "webview_64_cts_tests": {
+    "args": [
+      "--skip-expected-failures",
+      "--use-webview-provider",
+      "apks/SystemWebView64.apk",
+      "--apk-under-test",
+      "apks/SystemWebView64.apk",
+      "--use-apk-under-test-flags-file",
+      "-v",
+    ],
+    "label": "//android_webview/test:webview_64_cts_tests",
+    "script": "//android_webview/tools/run_cts.py",
+    "type": "script",
+  },
   "webview_instrumentation_test_apk": {
     "label": "//android_webview/test:webview_instrumentation_test_apk",
     "type": "console_test_launcher",
@@ -1979,10 +2064,6 @@
     "type": "console_test_launcher",
   },
   "weblayer_skew_tests": {
-    "args":  [
-      "--replace-system-package",
-      "org.chromium.weblayer.shell,apks/WebLayerShellSystemWebView.apk"
-    ],
     "label": "//weblayer/browser/android/javatests:weblayer_skew_tests",
     "type": "console_test_launcher",
   },
@@ -2034,6 +2115,7 @@
     "type": "windowed_test_launcher",
   },
   "zlib_unittests": {
+    "python3": False,
     "label": "//third_party/zlib:zlib_unittests",
     "type": "console_test_launcher",
   },

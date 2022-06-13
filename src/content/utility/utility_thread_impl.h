@@ -8,8 +8,6 @@
 #include <memory>
 
 #include "base/callback.h"
-#include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "build/build_config.h"
 #include "content/child/child_thread_impl.h"
 #include "content/public/utility/utility_thread.h"
@@ -30,6 +28,10 @@ class UtilityThreadImpl : public UtilityThread,
   explicit UtilityThreadImpl(base::RepeatingClosure quit_closure);
   // Constructor used when running in single process mode.
   explicit UtilityThreadImpl(const InProcessChildThreadParams& params);
+
+  UtilityThreadImpl(const UtilityThreadImpl&) = delete;
+  UtilityThreadImpl& operator=(const UtilityThreadImpl&) = delete;
+
   ~UtilityThreadImpl() override;
   void Shutdown() override;
 
@@ -56,7 +58,6 @@ class UtilityThreadImpl : public UtilityThread,
   void Init();
 
   // ChildThreadImpl:
-  bool OnControlMessageReceived(const IPC::Message& msg) override;
   void RunServiceDeprecated(
       const std::string& service_name,
       mojo::ScopedMessagePipeHandle service_pipe) override;
@@ -73,8 +74,6 @@ class UtilityThreadImpl : public UtilityThread,
   // browser-side ServiceProcessHost. Any service registered here will run on
   // the main thread of its service process.
   std::unique_ptr<mojo::ServiceFactory> main_thread_services_;
-
-  DISALLOW_COPY_AND_ASSIGN(UtilityThreadImpl);
 };
 
 }  // namespace content

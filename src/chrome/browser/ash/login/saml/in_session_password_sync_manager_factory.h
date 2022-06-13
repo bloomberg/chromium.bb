@@ -5,15 +5,12 @@
 #ifndef CHROME_BROWSER_ASH_LOGIN_SAML_IN_SESSION_PASSWORD_SYNC_MANAGER_FACTORY_H_
 #define CHROME_BROWSER_ASH_LOGIN_SAML_IN_SESSION_PASSWORD_SYNC_MANAGER_FACTORY_H_
 
-#include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
 class Profile;
 
-namespace chromeos {
-
+namespace ash {
 class InSessionPasswordSyncManager;
 
 // Singleton that owns all InSessionPasswordSyncManagers and associates them
@@ -37,6 +34,12 @@ class InSessionPasswordSyncManagerFactory
       content::BrowserContext* context) const override;
 };
 
-}  // namespace chromeos
+}  // namespace ash
+
+// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
+// source migration is finished.
+namespace chromeos {
+using ::ash::InSessionPasswordSyncManagerFactory;
+}
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_SAML_IN_SESSION_PASSWORD_SYNC_MANAGER_FACTORY_H_

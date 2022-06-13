@@ -8,11 +8,13 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/single_thread_task_runner.h"
+#include "base/feature_list.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/trace_event/trace_event.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_frame_metadata.h"
 #include "media/base/video_util.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
@@ -36,15 +38,18 @@ class MediaStreamVideoRendererSink::FrameDeliverer {
       : main_render_task_runner_(std::move(main_render_task_runner)),
         repaint_cb_(repaint_cb),
         media_stream_video_renderer_sink_(media_stream_video_renderer_sink),
-        state_(STOPPED),
+        state_(kStopped),
         frame_size_(kMinFrameSize, kMinFrameSize),
         emit_frame_drop_events_(true) {
     DETACH_FROM_THREAD(io_thread_checker_);
   }
 
+  FrameDeliverer(const FrameDeliverer&) = delete;
+  FrameDeliverer& operator=(const FrameDeliverer&) = delete;
+
   ~FrameDeliverer() {
     DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
-    DCHECK(state_ == STARTED || state_ == PAUSED) << state_;
+    DCHECK(state_ == kStarted || state_ == kPaused) << state_;
   }
 
   void OnVideoFrame(scoped_refptr<media::VideoFrame> frame,
@@ -58,7 +63,7 @@ class MediaStreamVideoRendererSink::FrameDeliverer {
                          TRACE_EVENT_SCOPE_THREAD, "timestamp",
                          frame->timestamp().InMilliseconds());
 
-    if (state_ != STARTED) {
+    if (state_ != kStarted) {
       if (emit_frame_drop_events_) {
         emit_frame_drop_events_ = false;
         PostCrossThreadTask(
@@ -85,8 +90,8 @@ class MediaStreamVideoRendererSink::FrameDeliverer {
     // of available buffers. E.g, video that originates from a video camera.
     scoped_refptr<media::VideoFrame> video_frame =
         media::VideoFrame::CreateBlackFrame(
-            state_ == STOPPED ? gfx::Size(kMinFrameSize, kMinFrameSize)
-                              : frame_size_);
+            state_ == kStopped ? gfx::Size(kMinFrameSize, kMinFrameSize)
+                               : frame_size_);
     if (!video_frame)
       return;
 
@@ -97,20 +102,20 @@ class MediaStreamVideoRendererSink::FrameDeliverer {
 
   void Start() {
     DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
-    DCHECK_EQ(state_, STOPPED);
-    SetState(STARTED);
+    DCHECK_EQ(state_, kStopped);
+    SetState(kStarted);
   }
 
   void Resume() {
     DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
-    if (state_ == PAUSED)
-      SetState(STARTED);
+    if (state_ == kPaused)
+      SetState(kStarted);
   }
 
   void Pause() {
     DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
-    if (state_ == STARTED)
-      SetState(PAUSED);
+    if (state_ == kStarted)
+      SetState(kPaused);
   }
 
  private:
@@ -130,8 +135,6 @@ class MediaStreamVideoRendererSink::FrameDeliverer {
 
   // Used for DCHECKs to ensure method calls are executed on the correct thread.
   THREAD_CHECKER(io_thread_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(FrameDeliverer);
 };
 
 MediaStreamVideoRendererSink::MediaStreamVideoRendererSink(
@@ -159,6 +162,11 @@ void MediaStreamVideoRendererSink::Start() {
       CrossThreadBindOnce(&FrameDeliverer::Start,
                           WTF::CrossThreadUnretained(frame_deliverer_.get())));
 
+  auto uses_alpha =
+      base::FeatureList::IsEnabled(features::kAllowDropAlphaForMediaStream)
+          ? MediaStreamVideoSink::UsesAlpha::kDependsOnOtherSinks
+          : MediaStreamVideoSink::UsesAlpha::kDefault;
+
   MediaStreamVideoSink::ConnectToTrack(
       WebMediaStreamTrack(video_component_.Get()),
       // This callback is run on IO thread. It is safe to use base::Unretained
@@ -168,8 +176,7 @@ void MediaStreamVideoRendererSink::Start() {
           &FrameDeliverer::OnVideoFrame,
           WTF::CrossThreadUnretained(frame_deliverer_.get()))),
       // Local display video rendering is considered a secure link.
-      MediaStreamVideoSink::IsSecure::kYes,
-      MediaStreamVideoSink::UsesAlpha::kDefault);
+      MediaStreamVideoSink::IsSecure::kYes, uses_alpha);
 
   if (video_component_->Source()->GetReadyState() ==
           MediaStreamSource::kReadyStateEnded ||
@@ -227,7 +234,7 @@ MediaStreamVideoRendererSink::State
 MediaStreamVideoRendererSink::GetStateForTesting() {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
   if (!frame_deliverer_)
-    return STOPPED;
+    return kStopped;
   return frame_deliverer_->state_;
 }
 

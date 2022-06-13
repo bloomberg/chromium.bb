@@ -37,7 +37,7 @@ constexpr bool IsPowerOfTwo(T value) {
 }
 
 // Round down |size| to a multiple of alignment, which must be a power of two.
-inline size_t AlignDown(size_t size, size_t alignment) {
+inline constexpr size_t AlignDown(size_t size, size_t alignment) {
   DCHECK(IsPowerOfTwo(alignment));
   return size & ~(alignment - 1);
 }
@@ -51,7 +51,7 @@ inline T* AlignDown(T* ptr, size_t alignment) {
 }
 
 // Round up |size| to a multiple of alignment, which must be a power of two.
-inline size_t AlignUp(size_t size, size_t alignment) {
+inline constexpr size_t AlignUp(size_t size, size_t alignment) {
   DCHECK(IsPowerOfTwo(alignment));
   return (size + alignment - 1) & ~(alignment - 1);
 }
@@ -62,17 +62,6 @@ template <typename T, typename = typename std::enable_if<sizeof(T) == 1>::type>
 inline T* AlignUp(T* ptr, size_t alignment) {
   return reinterpret_cast<T*>(
       AlignUp(reinterpret_cast<size_t>(ptr), alignment));
-}
-
-// Deprecated. Use AlignUp() instead.
-inline size_t Align(size_t size, size_t alignment) {
-  return AlignUp(size, alignment);
-}
-
-// Deprecated. Use AlignUp() instead.
-template <typename T, typename = typename std::enable_if<sizeof(T) == 1>::type>
-inline T* Align(T* ptr, size_t alignment) {
-  return AlignUp(ptr, alignment);
 }
 
 // CountLeadingZeroBits(value) returns the number of zero bits following the
@@ -87,7 +76,10 @@ inline T* Align(T* ptr, size_t alignment) {
 //
 // C does not have an operator to do this, but fortunately the various
 // compilers have built-ins that map to fast underlying processor instructions.
-#if defined(COMPILER_MSVC)
+//
+// Prefer the clang path on Windows, as _BitScanReverse() and friends are not
+// constexpr.
+#if defined(COMPILER_MSVC) && !defined(__clang__)
 
 template <typename T, unsigned bits = sizeof(T) * 8>
 ALWAYS_INLINE
@@ -169,7 +161,7 @@ ALWAYS_INLINE uint64_t CountLeadingZeroBits64(uint64_t x) {
   return CountLeadingZeroBits(x);
 }
 
-#elif defined(COMPILER_GCC)
+#elif defined(COMPILER_GCC) || defined(__clang__)
 
 // __builtin_clz has undefined behaviour for an input of 0, even though there's
 // clearly a return value that makes sense, and even though some processor clz
@@ -217,12 +209,16 @@ ALWAYS_INLINE constexpr size_t CountTrailingZeroBitsSizeT(size_t x) {
   return CountTrailingZeroBits(x);
 }
 
-// Returns the integer i such as 2^i <= n < 2^(i+1)
+// Returns the integer i such as 2^i <= n < 2^(i+1).
+//
+// There is a common `BitLength` function, which returns the number of bits
+// required to represent a value. Rather than implement that function,
+// use `Log2Floor` and add 1 to the result.
 constexpr int Log2Floor(uint32_t n) {
   return 31 - CountLeadingZeroBits(n);
 }
 
-// Returns the integer i such as 2^(i-1) < n <= 2^i
+// Returns the integer i such as 2^(i-1) < n <= 2^i.
 constexpr int Log2Ceiling(uint32_t n) {
   // When n == 0, we want the function to return -1.
   // When n == 0, (n - 1) will underflow to 0xFFFFFFFF, which is

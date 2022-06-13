@@ -11,13 +11,14 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
-#include "components/safe_browsing/core/db/v4_database.h"
-#include "components/safe_browsing/core/db/v4_protocol_manager_util.h"
-#include "components/safe_browsing/core/db/v4_test_util.h"
+#include "components/safe_browsing/core/browser/db/v4_database.h"
+#include "components/safe_browsing/core/browser/db/v4_protocol_manager_util.h"
+#include "components/safe_browsing/core/browser/db/v4_test_util.h"
 #include "components/security_interstitials/core/unsafe_resource.h"
 
 namespace {
@@ -29,6 +30,10 @@ class FakeSafeBrowsingUIManager
  public:
   FakeSafeBrowsingUIManager() {}
 
+  FakeSafeBrowsingUIManager(const FakeSafeBrowsingUIManager&) = delete;
+  FakeSafeBrowsingUIManager& operator=(const FakeSafeBrowsingUIManager&) =
+      delete;
+
  protected:
   ~FakeSafeBrowsingUIManager() override {}
 
@@ -36,9 +41,6 @@ class FakeSafeBrowsingUIManager
     resource.DispatchCallback(FROM_HERE, true /* proceed */,
                               true /* showed_interstitial */);
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FakeSafeBrowsingUIManager);
 };
 
 }  // namespace
@@ -77,7 +79,7 @@ class InsertingDatabaseFactory : public safe_browsing::TestV4DatabaseFactory {
  private:
   std::vector<safe_browsing::ListIdentifier> lists_to_insert_;
   std::vector<safe_browsing::ListIdentifier> lists_;
-  safe_browsing::TestV4StoreFactory* store_factory_;
+  raw_ptr<safe_browsing::TestV4StoreFactory> store_factory_;
 };
 
 TestSafeBrowsingDatabaseHelper::TestSafeBrowsingDatabaseHelper()

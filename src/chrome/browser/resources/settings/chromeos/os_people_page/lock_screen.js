@@ -146,6 +146,18 @@ Polymer({
       readOnly: true,
     },
 
+    /**
+     * Alias for the SmartLockUIRevamp feature flag.
+     * @private
+     */
+    smartLockUIRevampEnabled_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('smartLockUIRevampEnabled');
+      },
+      readOnly: true,
+    },
+
     /** @private */
     showSetupPinDialog_: Boolean,
 
@@ -159,8 +171,6 @@ Polymer({
     supportedSettingIds: {
       type: Object,
       value: () => new Set([
-        chromeos.settings.mojom.Setting.kLockScreen,
-        chromeos.settings.mojom.Setting.kChangeAuthPin,
         chromeos.settings.mojom.Setting.kLockScreenV2,
         chromeos.settings.mojom.Setting.kChangeAuthPinV2,
       ]),

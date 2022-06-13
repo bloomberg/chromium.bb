@@ -13,7 +13,6 @@ import 'chrome://resources/cr_elements/hidden_style_css.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 
 import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
-import {FocusOutlineManager} from 'chrome://resources/js/cr/ui/focus_outline_manager.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {hasKeyModifiers, listenOnce} from 'chrome://resources/js/util.m.js';
 import {html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -177,12 +176,6 @@ export class PDFViewerElement extends PDFViewerBaseElement {
       },
 
       /** @private */
-      documentPropertiesEnabled_: {
-        type: Boolean,
-        value: false,
-      },
-
-      /** @private */
       fileName_: String,
 
       /** @private */
@@ -223,12 +216,6 @@ export class PDFViewerElement extends PDFViewerBaseElement {
 
       /** @private */
       pdfAnnotationsEnabled_: {
-        type: Boolean,
-        value: false,
-      },
-
-      /** @private */
-      presentationModeEnabled_: {
         type: Boolean,
         value: false,
       },
@@ -313,18 +300,6 @@ export class PDFViewerElement extends PDFViewerBaseElement {
     /** @private {?InkController} */
     this.inkController_ = null;
     // </if>
-
-    FocusOutlineManager.forDocument(document);
-  }
-
-  /** @override */
-  getContent() {
-    return /** @type {!HTMLDivElement} */ (this.$$('#content'));
-  }
-
-  /** @override */
-  getSizer() {
-    return /** @type {!HTMLDivElement} */ (this.$$('#sizer'));
   }
 
   /**
@@ -342,14 +317,16 @@ export class PDFViewerElement extends PDFViewerBaseElement {
 
   /** @param {!BrowserApi} browserApi */
   init(browserApi) {
-    super.init(browserApi);
+    super.init(
+        browserApi, /** @type {!HTMLElement} */ (this.$$('#scroller')),
+        /** @type {!HTMLDivElement} */ (this.$$('#sizer')),
+        /** @type {!HTMLDivElement} */ (this.$$('#content')));
 
     this.pluginController_ = PluginController.getInstance();
 
     // <if expr="enable_ink">
     this.inkController_ = InkController.getInstance();
-    this.inkController_.init(
-        this.viewport, /** @type {!HTMLDivElement} */ (this.getContent()));
+    this.inkController_.init(this.viewport);
     this.tracker.add(
         this.inkController_.getEventTarget(),
         InkControllerEventType.HAS_UNSAVED_CHANGES,
@@ -366,11 +343,6 @@ export class PDFViewerElement extends PDFViewerBaseElement {
       this.getToolbar_().hidden = false;
     }
 
-    // Setup the keyboard event listener.
-    document.addEventListener(
-        'keydown',
-        e => this.handleKeyEvent_(/** @type {!KeyboardEvent} */ (e)));
-
     this.navigator_ = new PdfNavigator(
         this.originalUrl, this.viewport,
         /** @type {!OpenPdfParamsParser} */ (this.paramsParser),
@@ -382,27 +354,8 @@ export class PDFViewerElement extends PDFViewerBaseElement {
     }
   }
 
-  /**
-   * Helper for handleKeyEvent_ dealing with events that control toolbars.
-   * @param {!KeyboardEvent} e the event to handle.
-   * @private
-   */
-  handleToolbarKeyEvent_(e) {
-    // TODO(thestig): Should this use hasCtrlModifier() or stay as is?
-    if (e.key === '\\' && e.ctrlKey) {
-      this.getToolbar_().fitToggle();
-    }
-    // TODO: Add handling for additional relevant hotkeys for the new unified
-    // toolbar.
-  }
-
-  /**
-   * Handle key events. These may come from the user directly or via the
-   * scripting API.
-   * @param {!KeyboardEvent} e the event to handle.
-   * @private
-   */
-  handleKeyEvent_(e) {
+  /** @override */
+  handleKeyEvent(e) {
     if (shouldIgnoreKeyEvents() || e.defaultPrevented) {
       return;
     }
@@ -450,6 +403,20 @@ export class PDFViewerElement extends PDFViewerBaseElement {
 
     // Handle toolbar related key events.
     this.handleToolbarKeyEvent_(e);
+  }
+
+  /**
+   * Helper for handleKeyEvent dealing with events that control toolbars.
+   * @param {!KeyboardEvent} e the event to handle.
+   * @private
+   */
+  handleToolbarKeyEvent_(e) {
+    // TODO(thestig): Should this use hasCtrlModifier() or stay as is?
+    if (e.key === '\\' && e.ctrlKey) {
+      this.getToolbar_().fitToggle();
+    }
+    // TODO: Add handling for additional relevant hotkeys for the new unified
+    // toolbar.
   }
 
   // <if expr="enable_ink">
@@ -549,7 +516,6 @@ export class PDFViewerElement extends PDFViewerBaseElement {
       // This runs separately to allow other consumers of `loaded` to queue
       // up after this task.
       this.loaded.then(() => {
-        this.currentController = this.pluginController_;
         this.inkController_.unload();
       });
       // TODO(dstockwell): handle save failure
@@ -558,9 +524,8 @@ export class PDFViewerElement extends PDFViewerBaseElement {
       // Data always exists when save is called with requestType = ANNOTATION.
       const result = /** @type {!RequiredSaveResult} */ (saveResult);
       await this.restoreSidenav_();
+      this.currentController = this.pluginController_;
       await this.pluginController_.load(result.fileName, result.dataToSave);
-      // Ensure the plugin gets the initial viewport.
-      this.pluginController_.afterZoom();
     }
   }
 
@@ -600,8 +565,6 @@ export class PDFViewerElement extends PDFViewerBaseElement {
 
   /** @private */
   onPresentClick_() {
-    assert(this.presentationModeEnabled_);
-
     const onWheel = e => {
       e.deltaY > 0 ? this.viewport.goToNextPage() :
                      this.viewport.goToPreviousPage();
@@ -641,7 +604,6 @@ export class PDFViewerElement extends PDFViewerBaseElement {
 
   /** @private */
   onPropertiesClick_() {
-    assert(this.documentPropertiesEnabled_);
     assert(!this.showPropertiesDialog_);
     this.showPropertiesDialog_ = true;
   }
@@ -682,7 +644,6 @@ export class PDFViewerElement extends PDFViewerBaseElement {
     }
   }
 
-  /** @return {!Viewport} The viewport. Used for testing. */
   /** @return {!Array<!Bookmark>} The bookmarks. Used for testing. */
   get bookmarks() {
     return this.bookmarks_;
@@ -755,12 +716,8 @@ export class PDFViewerElement extends PDFViewerBaseElement {
   handleStrings(strings) {
     super.handleStrings(strings);
 
-    this.documentPropertiesEnabled_ =
-        loadTimeData.getBoolean('documentPropertiesEnabled');
     this.pdfAnnotationsEnabled_ =
         loadTimeData.getBoolean('pdfAnnotationsEnabled');
-    this.presentationModeEnabled_ =
-        loadTimeData.getBoolean('presentationModeEnabled');
     this.printingEnabled_ = loadTimeData.getBoolean('printingEnabled');
     const presetZoomFactors = this.viewport.presetZoomFactors;
     this.zoomBounds_.min = Math.round(presetZoomFactors[0] * 100);
@@ -770,10 +727,12 @@ export class PDFViewerElement extends PDFViewerBaseElement {
 
   /** @override */
   handleScriptingMessage(message) {
-    super.handleScriptingMessage(message);
+    if (super.handleScriptingMessage(message)) {
+      return true;
+    }
 
     if (this.delayScriptingMessage(message)) {
-      return;
+      return true;
     }
 
     switch (message.data.type.toString()) {
@@ -794,7 +753,10 @@ export class PDFViewerElement extends PDFViewerBaseElement {
       case 'selectAll':
         this.pluginController_.selectAll();
         break;
+      default:
+        return false;
     }
+    return true;
   }
 
   /** @override */
@@ -867,6 +829,12 @@ export class PDFViewerElement extends PDFViewerBaseElement {
       case 'documentFocusChanged':
         this.documentHasFocus_ =
             /** @type {{ hasFocus: boolean }} */ (data).hasFocus;
+        return;
+      case 'sendKeyEvent':
+        const keyEvent = DeserializeKeyEvent(
+            /** @type {{ keyEvent: Object }} */ (data).keyEvent);
+        keyEvent.fromPlugin = true;
+        this.handleKeyEvent(keyEvent);
         return;
     }
     assertNotReached('Unknown message type received: ' + data.type);
@@ -1141,7 +1109,8 @@ export class PDFViewerElement extends PDFViewerBaseElement {
     if (!fileName.toLowerCase().endsWith('.pdf')) {
       fileName = fileName + '.pdf';
     }
-
+    // Create blob before callback to avoid race condition.
+    const blob = new Blob([result.dataToSave], {type: 'application/pdf'});
     chrome.fileSystem.chooseEntry(
         {
           type: 'saveFile',
@@ -1158,8 +1127,7 @@ export class PDFViewerElement extends PDFViewerBaseElement {
             return;
           }
           entry.createWriter(writer => {
-            writer.write(
-                new Blob([result.dataToSave], {type: 'application/pdf'}));
+            writer.write(blob);
             // Unblock closing the window now that the user has saved
             // successfully.
             chrome.mimeHandlerPrivate.setShowBeforeUnloadDialog(false);
@@ -1231,7 +1199,9 @@ export class PDFViewerElement extends PDFViewerBaseElement {
 const TOOLBAR_WINDOW_MIN_HEIGHT = 250;
 
 /**
- * The background color used for the regular viewer.
+ * The background color used for the regular viewer. Its decimal value in string
+ * format should match `kPdfViewerBackgroundColor` in
+ * components/pdf/browser/plugin_response_writer.cc.
  * @type {number}
  */
 const BACKGROUND_COLOR = 0xff525659;

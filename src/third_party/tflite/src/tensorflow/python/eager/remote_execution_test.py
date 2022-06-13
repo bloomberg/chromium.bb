@@ -14,10 +14,6 @@
 # ==============================================================================
 """Tests for remote eager execution."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 from absl.testing import parameterized
 import numpy as np
 
@@ -231,21 +227,6 @@ class RemoteExecutionTest(test.TestCase, parameterized.TestCase):
     # `y` is placed on the local CPU as expected.
     self.assertEqual(y.device,
                      "/job:%s/replica:0/task:0/device:CPU:0" % JOB_NAME)
-
-
-class RemoteExecutionWithoutLazyRemoteInputsCopyTest(RemoteExecutionTest):
-
-  @classmethod
-  def setUpClass(cls):
-    super(RemoteExecutionWithoutLazyRemoteInputsCopyTest, cls).setUpClass()
-    context._reset_context()
-    context.context().lazy_remote_inputs_copy = False
-
-  @classmethod
-  def tearDownClass(cls):
-    super(RemoteExecutionWithoutLazyRemoteInputsCopyTest, cls).tearDownClass()
-    context._reset_context()
-    context.context().lazy_remote_inputs_copy = True
 
 
 if __name__ == "__main__":

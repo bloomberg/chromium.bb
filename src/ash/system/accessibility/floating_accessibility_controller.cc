@@ -19,14 +19,14 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/views/border.h"
 
 namespace ash {
 
 namespace {
 
 constexpr int kFloatingMenuHeight = 64;
-constexpr base::TimeDelta kAnimationDuration =
-    base::TimeDelta::FromMilliseconds(150);
+constexpr base::TimeDelta kAnimationDuration = base::Milliseconds(150);
 
 }  // namespace
 

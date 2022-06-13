@@ -5,6 +5,7 @@
 #include "gpu/ipc/shared_image_interface_in_process.h"
 
 #include "base/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
@@ -17,20 +18,87 @@
 
 namespace gpu {
 
+struct SharedImageInterfaceInProcess::SetUpOnGpuParams {
+  const GpuPreferences gpu_preferences;
+  const GpuDriverBugWorkarounds gpu_workarounds;
+  const GpuFeatureInfo gpu_feature_info;
+  const raw_ptr<gpu::SharedContextState> context_state;
+  const raw_ptr<MailboxManager> mailbox_manager;
+  const raw_ptr<SharedImageManager> shared_image_manager;
+  const raw_ptr<ImageFactory> image_factory;
+  const raw_ptr<MemoryTracker> memory_tracker;
+  const bool is_for_display_compositor;
+
+  SetUpOnGpuParams(const GpuPreferences& gpu_preferences,
+                   const GpuDriverBugWorkarounds& gpu_workarounds,
+                   const GpuFeatureInfo& gpu_feature_info,
+                   gpu::SharedContextState* context_state,
+                   MailboxManager* mailbox_manager,
+                   SharedImageManager* shared_image_manager,
+                   ImageFactory* image_factory,
+                   MemoryTracker* memory_tracker,
+                   bool is_for_display_compositor)
+      : gpu_preferences(gpu_preferences),
+        gpu_workarounds(gpu_workarounds),
+        gpu_feature_info(gpu_feature_info),
+        context_state(context_state),
+        mailbox_manager(mailbox_manager),
+        shared_image_manager(shared_image_manager),
+        image_factory(image_factory),
+        memory_tracker(memory_tracker),
+        is_for_display_compositor(is_for_display_compositor) {}
+
+  ~SetUpOnGpuParams() = default;
+
+  SetUpOnGpuParams(const SetUpOnGpuParams& other) = delete;
+  SetUpOnGpuParams& operator=(const SetUpOnGpuParams& other) = delete;
+};
+
 SharedImageInterfaceInProcess::SharedImageInterfaceInProcess(
     SingleTaskSequence* task_sequence,
     DisplayCompositorMemoryAndTaskControllerOnGpu* display_controller,
     std::unique_ptr<CommandBufferHelper> command_buffer_helper)
+    : SharedImageInterfaceInProcess(
+          task_sequence,
+          display_controller->sync_point_manager(),
+          display_controller->gpu_preferences(),
+          display_controller->gpu_driver_bug_workarounds(),
+          display_controller->gpu_feature_info(),
+          display_controller->shared_context_state(),
+          display_controller->mailbox_manager(),
+          display_controller->shared_image_manager(),
+          display_controller->image_factory(),
+          display_controller->memory_tracker(),
+          /*is_for_display_compositor=*/true,
+          std::move(command_buffer_helper)) {}
+
+SharedImageInterfaceInProcess::SharedImageInterfaceInProcess(
+    SingleTaskSequence* task_sequence,
+    SyncPointManager* sync_point_manager,
+    const GpuPreferences& gpu_preferences,
+    const GpuDriverBugWorkarounds& gpu_workarounds,
+    const GpuFeatureInfo& gpu_feature_info,
+    gpu::SharedContextState* context_state,
+    MailboxManager* mailbox_manager,
+    SharedImageManager* shared_image_manager,
+    ImageFactory* image_factory,
+    MemoryTracker* memory_tracker,
+    bool is_for_display_compositor,
+    std::unique_ptr<CommandBufferHelper> command_buffer_helper)
     : task_sequence_(task_sequence),
-      command_buffer_id_(display_controller->NextCommandBufferId()),
+      command_buffer_id_(
+          DisplayCompositorMemoryAndTaskControllerOnGpu::NextCommandBufferId()),
       command_buffer_helper_(std::move(command_buffer_helper)),
-      shared_image_manager_(display_controller->shared_image_manager()),
-      mailbox_manager_(display_controller->mailbox_manager()),
-      sync_point_manager_(display_controller->sync_point_manager()) {
+      shared_image_manager_(shared_image_manager),
+      sync_point_manager_(sync_point_manager) {
   DETACH_FROM_SEQUENCE(gpu_sequence_checker_);
   task_sequence_->ScheduleTask(
-      base::BindOnce(&SharedImageInterfaceInProcess::SetUpOnGpu,
-                     base::Unretained(this), display_controller),
+      base::BindOnce(
+          &SharedImageInterfaceInProcess::SetUpOnGpu, base::Unretained(this),
+          std::make_unique<SetUpOnGpuParams>(
+              gpu_preferences, gpu_workarounds, gpu_feature_info, context_state,
+              mailbox_manager, shared_image_manager, image_factory,
+              memory_tracker, is_for_display_compositor)),
       {});
 }
 
@@ -46,25 +114,22 @@ SharedImageInterfaceInProcess::~SharedImageInterfaceInProcess() {
   completion.Wait();
 }
 void SharedImageInterfaceInProcess::SetUpOnGpu(
-    DisplayCompositorMemoryAndTaskControllerOnGpu* display_controller) {
+    std::unique_ptr<SetUpOnGpuParams> params) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
-  context_state_ = display_controller->shared_context_state();
+  context_state_ = params->context_state.get();
 
   create_factory_ = base::BindOnce(
-      [](DisplayCompositorMemoryAndTaskControllerOnGpu* display_controller,
+      [](std::unique_ptr<SetUpOnGpuParams> params,
          bool enable_wrapped_sk_image) {
         auto shared_image_factory = std::make_unique<SharedImageFactory>(
-            display_controller->gpu_preferences(),
-            display_controller->gpu_driver_bug_workarounds(),
-            display_controller->gpu_feature_info(),
-            display_controller->shared_context_state(),
-            display_controller->mailbox_manager(),
-            display_controller->shared_image_manager(),
-            display_controller->image_factory(),
-            display_controller->memory_tracker(), enable_wrapped_sk_image);
+            params->gpu_preferences, params->gpu_workarounds,
+            params->gpu_feature_info, params->context_state,
+            params->mailbox_manager, params->shared_image_manager,
+            params->image_factory, params->memory_tracker,
+            enable_wrapped_sk_image, params->is_for_display_compositor);
         return shared_image_factory;
       },
-      display_controller);
+      std::move(params));
 
   // Make the SharedImageInterface use the same sequence as the command buffer,
   // it's necessary for WebView because of the blocking behavior.
@@ -106,15 +171,14 @@ bool SharedImageInterfaceInProcess::MakeContextCurrent(bool needs_gl) {
   return context_state_->MakeCurrent(/*surface=*/nullptr, needs_gl);
 }
 
-void SharedImageInterfaceInProcess::LazyCreateSharedImageFactory() {
-  // This function is always called right after we call MakeContextCurrent().
+bool SharedImageInterfaceInProcess::LazyCreateSharedImageFactory() {
   if (shared_image_factory_)
-    return;
+    return true;
 
   // Some shared image backing factories will use GL in ctor, so we need GL even
   // if chrome is using non-GL backing.
   if (!MakeContextCurrent(/*needs_gl=*/true))
-    return;
+    return false;
 
   // We need WrappedSkImage to support creating a SharedImage with pixel data
   // when GL is unavailable. This is used in various unit tests. If we don't
@@ -124,6 +188,7 @@ void SharedImageInterfaceInProcess::LazyCreateSharedImageFactory() {
       !command_buffer_helper_ || command_buffer_helper_->EnableWrappedSkImage();
   shared_image_factory_ =
       std::move(create_factory_).Run(enable_wrapped_sk_image);
+  return true;
 }
 
 Mailbox SharedImageInterfaceInProcess::CreateSharedImage(
@@ -163,11 +228,13 @@ void SharedImageInterfaceInProcess::CreateSharedImageOnGpuThread(
     uint32_t usage,
     const SyncToken& sync_token) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
+  if (!LazyCreateSharedImageFactory())
+    return;
+
   if (!MakeContextCurrent())
     return;
 
-  LazyCreateSharedImageFactory();
-
+  DCHECK(shared_image_factory_);
   if (!shared_image_factory_->CreateSharedImage(
           mailbox, format, size, color_space, surface_origin, alpha_type,
           surface_handle, usage)) {
@@ -217,11 +284,13 @@ void SharedImageInterfaceInProcess::CreateSharedImageWithDataOnGpuThread(
     const SyncToken& sync_token,
     std::vector<uint8_t> pixel_data) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
+  if (!LazyCreateSharedImageFactory())
+    return;
+
   if (!MakeContextCurrent())
     return;
 
-  LazyCreateSharedImageFactory();
-
+  DCHECK(shared_image_factory_);
   if (!shared_image_factory_->CreateSharedImage(
           mailbox, format, size, color_space, surface_origin, alpha_type, usage,
           pixel_data)) {
@@ -289,11 +358,13 @@ void SharedImageInterfaceInProcess::CreateGMBSharedImageOnGpuThread(
     uint32_t usage,
     const SyncToken& sync_token) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
+  if (!LazyCreateSharedImageFactory())
+    return;
+
   if (!MakeContextCurrent())
     return;
 
-  LazyCreateSharedImageFactory();
-
+  DCHECK(shared_image_factory_);
   // TODO(piman): add support for SurfaceHandle (for backbuffers for ozone/drm).
   SurfaceHandle surface_handle = kNullSurfaceHandle;
   if (!shared_image_factory_->CreateSharedImage(

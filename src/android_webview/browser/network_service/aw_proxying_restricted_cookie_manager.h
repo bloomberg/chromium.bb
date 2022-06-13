@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/restricted_cookie_manager.mojom.h"
@@ -34,6 +33,11 @@ class AwProxyingRestrictedCookieManager
       int process_id,
       int frame_id,
       mojo::PendingReceiver<network::mojom::RestrictedCookieManager> receiver);
+
+  AwProxyingRestrictedCookieManager(const AwProxyingRestrictedCookieManager&) =
+      delete;
+  AwProxyingRestrictedCookieManager& operator=(
+      const AwProxyingRestrictedCookieManager&) = delete;
 
   ~AwProxyingRestrictedCookieManager() override;
 
@@ -98,8 +102,6 @@ class AwProxyingRestrictedCookieManager
   int frame_id_;
 
   base::WeakPtrFactory<AwProxyingRestrictedCookieManager> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(AwProxyingRestrictedCookieManager);
 };
 
 }  // namespace android_webview

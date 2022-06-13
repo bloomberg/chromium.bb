@@ -576,3 +576,71 @@ DEF_SIMPLE_GM(longrect_dash, canvas, 250, 250) {
     }
 }
 #endif
+
+DEF_SIMPLE_GM(inner_join_geometry, canvas, 1000, 700) {
+    // These paths trigger cases where we must add inner join geometry.
+    // skbug.com/11964
+    const SkPoint pathPoints[] = {
+        /*moveTo*/  /*lineTo*/  /*lineTo*/
+        {119,  71}, {129, 151}, {230,  24},
+        {200, 144}, {129, 151}, {230,  24},
+        {192, 176}, {224, 175}, {281, 103},
+        {233, 205}, {224, 175}, {281, 103},
+        {121, 216}, {234, 189}, {195, 147},
+        {141, 216}, {254, 189}, {238, 250},
+        {159, 202}, {269, 197}, {289, 165},
+        {159, 202}, {269, 197}, {287, 227},
+    };
+
+    SkPaint pathPaint;
+    pathPaint.setStroke(true);
+    pathPaint.setAntiAlias(true);
+    pathPaint.setStrokeWidth(100);
+
+    SkPaint skeletonPaint;
+    skeletonPaint.setStroke(true);
+    skeletonPaint.setAntiAlias(true);
+    skeletonPaint.setStrokeWidth(0);
+    skeletonPaint.setColor(SK_ColorRED);
+
+    canvas->translate(0, 50);
+    for (size_t i = 0; i < SK_ARRAY_COUNT(pathPoints) / 3; i++) {
+        auto path = SkPath::Polygon(pathPoints + i * 3, 3, false);
+        canvas->drawPath(path, pathPaint);
+
+        SkPath fillPath;
+        pathPaint.getFillPath(path, &fillPath);
+        canvas->drawPath(fillPath, skeletonPaint);
+
+        canvas->translate(200, 0);
+        if ((i + 1) % 4 == 0) {
+            canvas->translate(-800, 200);
+        }
+    }
+}
+
+DEF_SIMPLE_GM(skbug12244, canvas, 150, 150) {
+    // Should look like a stroked triangle; these vertices are the results of the SkStroker
+    // but we draw as a filled path in order to highlight that it's the GPU triangulating path
+    // renderer that's the source of the problem, and not the stroking operation. The original
+    // path was a simple:
+    // m(0,0), l(100, 40), l(0, 80), l(0,0) with a stroke width of 15px
+    SkPath path;
+    path.moveTo(2.7854299545288085938, -6.9635753631591796875);
+    path.lineTo( 120.194366455078125,                   40);
+    path.lineTo(-7.5000004768371582031, 91.07775115966796875);
+    path.lineTo(-7.5000004768371582031, -11.077748298645019531);
+    path.lineTo(2.7854299545288085938, -6.9635753631591796875);
+    path.moveTo(-2.7854299545288085938, 6.9635753631591796875);
+    path.lineTo(                   0,                    0);
+    path.lineTo(                 7.5,                    0);
+    path.lineTo(7.5000004768371582031, 68.92224884033203125);
+    path.lineTo(  79.805633544921875,                   40);
+    path.lineTo(-2.7854299545288085938, 6.9635753631591796875);
+
+    SkPaint p;
+    p.setColor(SK_ColorGREEN);
+
+    canvas->translate(20.f, 20.f);
+    canvas->drawPath(path, p);
+}

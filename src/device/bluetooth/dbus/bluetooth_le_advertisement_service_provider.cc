@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/platform_thread.h"
@@ -80,6 +79,11 @@ class BluetoothAdvertisementServiceProviderImpl
         base::BindOnce(&BluetoothAdvertisementServiceProviderImpl::OnExported,
                        weak_ptr_factory_.GetWeakPtr()));
   }
+
+  BluetoothAdvertisementServiceProviderImpl(
+      const BluetoothAdvertisementServiceProviderImpl&) = delete;
+  BluetoothAdvertisementServiceProviderImpl& operator=(
+      const BluetoothAdvertisementServiceProviderImpl&) = delete;
 
   ~BluetoothAdvertisementServiceProviderImpl() override {
     DVLOG(1) << "Cleaning up Bluetooth Advertisement: " << object_path_.value();
@@ -443,8 +447,6 @@ class BluetoothAdvertisementServiceProviderImpl
   // invalidate its weak pointers before any other members are destroyed.
   base::WeakPtrFactory<BluetoothAdvertisementServiceProviderImpl>
       weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(BluetoothAdvertisementServiceProviderImpl);
 };
 
 BluetoothLEAdvertisementServiceProvider::

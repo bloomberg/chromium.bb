@@ -32,6 +32,9 @@ class TranslateClientImpl
       public content::WebContentsObserver,
       public content::WebContentsUserData<TranslateClientImpl> {
  public:
+  TranslateClientImpl(const TranslateClientImpl&) = delete;
+  TranslateClientImpl& operator=(const TranslateClientImpl&) = delete;
+
   ~TranslateClientImpl() override;
 
   // Gets the LanguageState associated with the page.
@@ -63,16 +66,15 @@ class TranslateClientImpl
                        translate::TranslateErrors::Type error_type,
                        bool triggered_from_menu) override;
   bool IsTranslatableURL(const GURL& url) override;
-  void ShowReportLanguageDetectionErrorUI(const GURL& report_url) override;
   bool IsAutofillAssistantRunning() const override;
 
   // TranslateDriver::LanguageDetectionObserver implementation.
   void OnLanguageDetermined(
       const translate::LanguageDetectionDetails& details) override;
 
-  // Trigger a manual translation when the necessary state (e.g. source
-  // language) is ready.
-  void ManualTranslateWhenReady();
+  // Show the translation UI when the necessary state (e.g. source language) is
+  // ready.
+  void ShowTranslateUiWhenReady();
 
  private:
   explicit TranslateClientImpl(content::WebContents* web_contents);
@@ -84,8 +86,8 @@ class TranslateClientImpl
   translate::ContentTranslateDriver translate_driver_;
   std::unique_ptr<translate::TranslateManager> translate_manager_;
 
-  // Whether to trigger a manual translation when ready.
-  bool manual_translate_on_ready_ = false;
+  // Whether to show translation UI when ready.
+  bool show_translate_ui_on_ready_ = false;
 
   base::ScopedObservation<
       translate::TranslateDriver,
@@ -95,8 +97,6 @@ class TranslateClientImpl
       observation_{this};
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
-
-  DISALLOW_COPY_AND_ASSIGN(TranslateClientImpl);
 };
 
 }  // namespace weblayer

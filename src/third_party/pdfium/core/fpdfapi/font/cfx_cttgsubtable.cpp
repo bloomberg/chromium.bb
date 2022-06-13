@@ -8,8 +8,9 @@
 
 #include <utility>
 
+#include "core/fxcrt/fx_system.h"
+#include "core/fxcrt/stl_util.h"
 #include "core/fxge/cfx_fontmapper.h"
-#include "third_party/base/stl_util.h"
 
 namespace {
 
@@ -49,61 +50,63 @@ CFX_CTTGSUBTable::CFX_CTTGSUBTable(FT_Bytes gsub) {
 CFX_CTTGSUBTable::~CFX_CTTGSUBTable() = default;
 
 bool CFX_CTTGSUBTable::LoadGSUBTable(FT_Bytes gsub) {
-  if ((gsub[0] << 24u | gsub[1] << 16u | gsub[2] << 8u | gsub[3]) != 0x00010000)
+  if (FXSYS_UINT32_GET_MSBFIRST(gsub) != 0x00010000)
     return false;
 
-  return Parse(&gsub[gsub[4] << 8 | gsub[5]], &gsub[gsub[6] << 8 | gsub[7]],
-               &gsub[gsub[8] << 8 | gsub[9]]);
+  return Parse(&gsub[FXSYS_UINT16_GET_MSBFIRST(gsub + 4)],
+               &gsub[FXSYS_UINT16_GET_MSBFIRST(gsub + 6)],
+               &gsub[FXSYS_UINT16_GET_MSBFIRST(gsub + 8)]);
 }
 
 uint32_t CFX_CTTGSUBTable::GetVerticalGlyph(uint32_t glyphnum) const {
-  uint32_t vglyphnum = 0;
   for (uint32_t item : m_featureSet) {
-    if (GetVerticalGlyphSub(FeatureList[item], glyphnum, &vglyphnum))
-      break;
+    absl::optional<uint32_t> result =
+        GetVerticalGlyphSub(FeatureList[item], glyphnum);
+    if (result.has_value())
+      return result.value();
   }
-  return vglyphnum;
+  return 0;
 }
 
-bool CFX_CTTGSUBTable::GetVerticalGlyphSub(const TFeatureRecord& feature,
-                                           uint32_t glyphnum,
-                                           uint32_t* vglyphnum) const {
+absl::optional<uint32_t> CFX_CTTGSUBTable::GetVerticalGlyphSub(
+    const TFeatureRecord& feature,
+    uint32_t glyphnum) const {
   for (int index : feature.LookupListIndices) {
-    if (!pdfium::IndexInBounds(LookupList, index))
+    if (!fxcrt::IndexInBounds(LookupList, index))
       continue;
-    if (LookupList[index].LookupType == 1 &&
-        GetVerticalGlyphSub2(LookupList[index], glyphnum, vglyphnum)) {
-      return true;
-    }
+    if (LookupList[index].LookupType != 1)
+      continue;
+    absl::optional<uint32_t> result =
+        GetVerticalGlyphSub2(LookupList[index], glyphnum);
+    if (result.has_value())
+      return result.value();
   }
-  return false;
+  return absl::nullopt;
 }
 
-bool CFX_CTTGSUBTable::GetVerticalGlyphSub2(const TLookup& lookup,
-                                            uint32_t glyphnum,
-                                            uint32_t* vglyphnum) const {
+absl::optional<uint32_t> CFX_CTTGSUBTable::GetVerticalGlyphSub2(
+    const TLookup& lookup,
+    uint32_t glyphnum) const {
   for (const auto& subTable : lookup.SubTables) {
     switch (subTable->SubstFormat) {
       case 1: {
         auto* tbl1 = static_cast<TSubTable1*>(subTable.get());
         if (GetCoverageIndex(tbl1->Coverage.get(), glyphnum) >= 0) {
-          *vglyphnum = glyphnum + tbl1->DeltaGlyphID;
-          return true;
+          return glyphnum + tbl1->DeltaGlyphID;
         }
         break;
       }
       case 2: {
         auto* tbl2 = static_cast<TSubTable2*>(subTable.get());
         int index = GetCoverageIndex(tbl2->Coverage.get(), glyphnum);
-        if (pdfium::IndexInBounds(tbl2->Substitutes, index)) {
-          *vglyphnum = tbl2->Substitutes[index];
-          return true;
+        if (fxcrt::IndexInBounds(tbl2->Substitutes, index)) {
+          return tbl2->Substitutes[index];
         }
         break;
       }
     }
   }
-  return false;
+  return absl::nullopt;
 }
 
 int CFX_CTTGSUBTable::GetCoverageIndex(TCoverageFormatBase* Coverage,
@@ -144,25 +147,25 @@ uint8_t CFX_CTTGSUBTable::GetUInt8(FT_Bytes& p) const {
 }
 
 int16_t CFX_CTTGSUBTable::GetInt16(FT_Bytes& p) const {
-  uint16_t ret = p[0] << 8 | p[1];
+  uint16_t ret = FXSYS_UINT16_GET_MSBFIRST(p);
   p += 2;
   return *(int16_t*)&ret;
 }
 
 uint16_t CFX_CTTGSUBTable::GetUInt16(FT_Bytes& p) const {
-  uint16_t ret = p[0] << 8 | p[1];
+  uint16_t ret = FXSYS_UINT16_GET_MSBFIRST(p);
   p += 2;
   return ret;
 }
 
 int32_t CFX_CTTGSUBTable::GetInt32(FT_Bytes& p) const {
-  uint32_t ret = p[0] << 24 | p[1] << 16 | p[2] << 8 | p[3];
+  uint32_t ret = FXSYS_UINT32_GET_MSBFIRST(p);
   p += 4;
   return *(int32_t*)&ret;
 }
 
 uint32_t CFX_CTTGSUBTable::GetUInt32(FT_Bytes& p) const {
-  uint32_t ret = p[0] << 24 | p[1] << 16 | p[2] << 8 | p[3];
+  uint32_t ret = FXSYS_UINT32_GET_MSBFIRST(p);
   p += 4;
   return ret;
 }

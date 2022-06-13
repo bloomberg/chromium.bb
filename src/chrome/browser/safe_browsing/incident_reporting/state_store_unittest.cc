@@ -8,7 +8,7 @@
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_file_value_serializer.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_simple_task_runner.h"
@@ -43,6 +43,10 @@ class PlatformStateStoreTestBase : public ::testing::Test {
  protected:
   PlatformStateStoreTestBase() {}
 
+  PlatformStateStoreTestBase(const PlatformStateStoreTestBase&) = delete;
+  PlatformStateStoreTestBase& operator=(const PlatformStateStoreTestBase&) =
+      delete;
+
   void SetUp() override {
     ::testing::Test::SetUp();
     ASSERT_NO_FATAL_FAILURE(
@@ -51,8 +55,6 @@ class PlatformStateStoreTestBase : public ::testing::Test {
 
  private:
   registry_util::RegistryOverrideManager registry_override_manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(PlatformStateStoreTestBase);
 };
 
 #else  // OS_WIN
@@ -75,6 +77,9 @@ class StateStoreTest : public PlatformStateStoreTestBase {
       : profile_(nullptr),
         task_runner_(new base::TestSimpleTaskRunner()),
         profile_manager_(TestingBrowserProcess::GetGlobal()) {}
+
+  StateStoreTest(const StateStoreTest&) = delete;
+  StateStoreTest& operator=(const StateStoreTest&) = delete;
 
   void SetUp() override {
     PlatformStateStoreTestBase::SetUp();
@@ -101,18 +106,18 @@ class StateStoreTest : public PlatformStateStoreTestBase {
   // Removes the safebrowsing.incidents_sent preference from the profile's pref
   // store.
   void TrimPref() {
-    ASSERT_EQ(nullptr, profile_);
+    ASSERT_EQ(nullptr, profile_.get());
     std::unique_ptr<base::Value> prefs(JSONFileValueDeserializer(GetPrefsPath())
                                            .Deserialize(nullptr, nullptr));
     ASSERT_NE(nullptr, prefs.get());
     base::DictionaryValue* dict = nullptr;
     ASSERT_TRUE(prefs->GetAsDictionary(&dict));
-    ASSERT_TRUE(dict->Remove(prefs::kSafeBrowsingIncidentsSent, nullptr));
+    ASSERT_TRUE(dict->RemovePath(prefs::kSafeBrowsingIncidentsSent));
     ASSERT_TRUE(JSONFileValueSerializer(GetPrefsPath()).Serialize(*dict));
   }
 
   void CreateProfile() {
-    ASSERT_EQ(nullptr, profile_);
+    ASSERT_EQ(nullptr, profile_.get());
     // Create the testing profile with a file-backed user pref store.
     sync_preferences::PrefServiceSyncableFactory factory;
     factory.SetUserPrefsFile(GetPrefsPath(), task_runner_.get());
@@ -128,7 +133,7 @@ class StateStoreTest : public PlatformStateStoreTestBase {
   static const char kProfileName_[];
   static const TestData kTestData_[];
   content::BrowserTaskEnvironment task_environment_;
-  TestingProfile* profile_;
+  raw_ptr<TestingProfile> profile_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
 
  private:
@@ -140,8 +145,6 @@ class StateStoreTest : public PlatformStateStoreTestBase {
       disable_purge_for_testing_;
   base::ScopedTempDir temp_dir_;
   TestingProfileManager profile_manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(StateStoreTest);
 };
 
 // static

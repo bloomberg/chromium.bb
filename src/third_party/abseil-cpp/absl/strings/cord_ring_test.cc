@@ -223,7 +223,7 @@ CordRepExternal* MakeFakeExternal(size_t length) {
     std::string s;
     explicit Rep(size_t len) {
       this->tag = EXTERNAL;
-      this->base = this->storage;
+      this->base = reinterpret_cast<const char*>(this->storage);
       this->length = len;
       this->releaser_invoker = [](CordRepExternal* self) {
         delete static_cast<Rep*>(self);
@@ -275,7 +275,7 @@ CordRepConcat* MakeConcat(CordRep* left, CordRep* right, int depth = 0) {
 enum Composition { kMix, kAppend, kPrepend };
 
 Composition RandomComposition() {
-  RandomEngine rng(testing::GTEST_FLAG(random_seed));
+  RandomEngine rng(GTEST_FLAG_GET(random_seed));
   return (rng() & 1) ? kMix : ((rng() & 1) ? kAppend : kPrepend);
 }
 

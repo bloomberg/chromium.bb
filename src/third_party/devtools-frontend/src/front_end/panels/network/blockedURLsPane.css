@@ -10,7 +10,6 @@
 }
 
 .blocking-disabled {
-  pointer-events: none;
   opacity: 80%;
 }
 
@@ -67,7 +66,7 @@
   flex: none;
   display: flex;
   flex-direction: row;
-  margin: 7px 5px 0 5px;
+  margin: 7px 5px 0;
   align-items: center;
 }
 

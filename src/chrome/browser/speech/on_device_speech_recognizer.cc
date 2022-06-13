@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "ash/constants/ash_features.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/speech/cros_speech_recognition_service.h"
@@ -18,7 +19,6 @@
 #include "media/audio/audio_system.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/bind_to_current_loop.h"
-#include "media/base/media_switches.h"
 
 namespace {
 
@@ -59,30 +59,28 @@ media::AudioParameters GetAudioParameters(
 }  // namespace
 
 bool OnDeviceSpeechRecognizer::IsOnDeviceSpeechRecognizerAvailable(
-    std::string language_or_locale) {
-  // IsSodaInstalled will DCHECK if kUseSodaForLiveCaption is disabled.
+    const std::string& language) {
   // kUseSodaForLiveCaption is used to track SODA availability on-device.
-  if (!base::FeatureList::IsEnabled(media::kUseSodaForLiveCaption))
+  if (!base::FeatureList::IsEnabled(ash::features::kOnDeviceSpeechRecognition))
     return false;
   speech::SodaInstaller* soda_installer = speech::SodaInstaller::GetInstance();
-  return soda_installer->IsSodaInstalled() &&
-         soda_installer->IsLanguageInstalled(language_or_locale);
+  return soda_installer->IsSodaInstalled(speech::GetLanguageCode(language));
 }
 
 OnDeviceSpeechRecognizer::OnDeviceSpeechRecognizer(
     const base::WeakPtr<SpeechRecognizerDelegate>& delegate,
     Profile* profile,
-    std::string language_or_locale,
-    bool recognition_mode_ime)
+    const std::string& language,
+    bool recognition_mode_ime,
+    bool enable_formatting)
     : SpeechRecognizer(delegate),
       state_(SpeechRecognizerStatus::SPEECH_RECOGNIZER_OFF),
       is_multichannel_supported_(false),
-      language_or_locale_(language_or_locale),
+      language_(language),
       waiting_for_params_(false) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // Connect the SpeechRecognitionContext.
-  // TODO(crbug.com/1195916): Use language_or_locale_ when starting recognition.
   mojo::PendingReceiver<media::mojom::SpeechRecognitionContext>
       speech_recognition_context_receiver =
           speech_recognition_context_.BindNewPipeAndPassReceiver();
@@ -91,7 +89,8 @@ OnDeviceSpeechRecognizer::OnDeviceSpeechRecognizer(
       speech_recognition_client_receiver_.BindNewPipeAndPassRemote(),
       media::mojom::SpeechRecognitionOptions::New(
           recognition_mode_ime ? media::mojom::SpeechRecognitionMode::kIme
-                               : media::mojom::SpeechRecognitionMode::kCaption),
+                               : media::mojom::SpeechRecognitionMode::kCaption,
+          enable_formatting, language),
       media::BindToCurrentLoop(
           base::BindOnce(&OnDeviceSpeechRecognizer::OnRecognizerBound,
                          weak_factory_.GetWeakPtr())));
@@ -129,16 +128,18 @@ void OnDeviceSpeechRecognizer::Stop() {
 }
 
 void OnDeviceSpeechRecognizer::OnSpeechRecognitionRecognitionEvent(
-    media::mojom::SpeechRecognitionResultPtr result,
+    const media::SpeechRecognitionResult& result,
     OnSpeechRecognitionRecognitionEventCallback reply) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (!result->transcription.size())
-    return;
-  UpdateStatus(SpeechRecognizerStatus::SPEECH_RECOGNIZER_IN_SPEECH);
-  delegate()->OnSpeechResult(base::UTF8ToUTF16(result->transcription),
-                             result->is_final, absl::nullopt);
+
   // Returning true ensures the speech recognition continues.
   std::move(reply).Run(true);
+
+  if (!result.transcription.size())
+    return;
+  UpdateStatus(SpeechRecognizerStatus::SPEECH_RECOGNIZER_IN_SPEECH);
+  delegate()->OnSpeechResult(base::UTF8ToUTF16(result.transcription),
+                             result.is_final, result);
 }
 
 void OnDeviceSpeechRecognizer::OnSpeechRecognitionError() {
@@ -186,6 +187,9 @@ void OnDeviceSpeechRecognizer::UpdateStatus(SpeechRecognizerStatus state) {
   waiting_for_params_ = false;
   if (state_ == state)
     return;
-  delegate()->OnSpeechRecognitionStateChanged(state);
+
   state_ = state;
+  // Since the |OnSpeechRecognitionStateChanged| call below can destroy |this|
+  // it should be the last thing done in here.
+  delegate()->OnSpeechRecognitionStateChanged(state);
 }

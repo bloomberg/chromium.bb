@@ -4,38 +4,46 @@
 
 #include "third_party/blink/renderer/core/css/container_query.h"
 #include "third_party/blink/renderer/core/css/media_query_exp.h"
+#include "third_party/blink/renderer/core/style/computed_style_constants.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 
-namespace {
+String ContainerSelector::ToString() const {
+  StringBuilder builder;
 
-PhysicalAxes ComputeQueriedAxes(const MediaQuerySet& media_queries) {
-  PhysicalAxes axes(kPhysicalAxisNone);
-
-  for (const auto& media_query : media_queries.QueryVector()) {
-    for (const auto& expression : media_query->Expressions()) {
-      if (expression.IsWidthDependent())
-        axes |= PhysicalAxes(kPhysicalAxisHorizontal);
-      if (expression.IsHeightDependent())
-        axes |= PhysicalAxes(kPhysicalAxisVertical);
-    }
+  if (!name_.IsNull()) {
+    if (type_)
+      builder.Append("name(");
+    builder.Append(name_);
+    if (type_)
+      builder.Append(") ");
   }
 
-  return axes;
+  if (type_) {
+    builder.Append("type(");
+    if ((type_ & kContainerTypeSize) == kContainerTypeSize) {
+      builder.Append("size");
+    } else if (type_ & kContainerTypeInlineSize) {
+      builder.Append("inline-size");
+    } else if (type_ & kContainerTypeBlockSize) {
+      builder.Append("block-size");
+    }
+    builder.Append(")");
+  }
+
+  return builder.ReleaseString();
 }
 
-}  // namespace
-
-ContainerQuery::ContainerQuery(scoped_refptr<MediaQuerySet> media_queries)
-    : media_queries_(media_queries),
-      queried_axes_(ComputeQueriedAxes(*media_queries)) {}
+ContainerQuery::ContainerQuery(const ContainerSelector& selector,
+                               std::unique_ptr<MediaQueryExpNode> query)
+    : selector_(selector), query_(std::move(query)) {}
 
 ContainerQuery::ContainerQuery(const ContainerQuery& other)
-    : media_queries_(other.media_queries_->Copy()),
-      queried_axes_(other.queried_axes_) {}
+    : selector_(other.selector_), query_(other.query_->Copy()) {}
 
 String ContainerQuery::ToString() const {
-  return media_queries_->MediaText();
+  return query_->Serialize();
 }
 
 }  // namespace blink

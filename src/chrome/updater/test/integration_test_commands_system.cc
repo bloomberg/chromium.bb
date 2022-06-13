@@ -15,12 +15,15 @@
 #include "base/notreached.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/version.h"
 #include "build/build_config.h"
 #include "chrome/updater/constants.h"
 #include "chrome/updater/persisted_data.h"
 #include "chrome/updater/prefs.h"
 #include "chrome/updater/test/integration_test_commands.h"
 #include "chrome/updater/test/integration_tests_impl.h"
+#include "chrome/updater/test_scope.h"
+#include "chrome/updater/update_service.h"
 #include "chrome/updater/updater_scope.h"
 #include "chrome/updater/util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -41,7 +44,7 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
   void PrintLog() const override { RunCommand("print_log"); }
 
   void CopyLog() const override {
-    const absl::optional<base::FilePath> path = GetDataDirPath(kUpdaterScope);
+    const absl::optional<base::FilePath> path = GetDataDirPath(updater_scope_);
     ASSERT_TRUE(path);
     if (path)
       updater::test::CopyLog(*path);
@@ -65,6 +68,14 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
     RunCommand("enter_test_mode", {Param("url", url.spec())});
   }
 
+  void ExpectUpdateSequence(ScopedServer* test_server,
+                            const std::string& app_id,
+                            const base::Version& from_version,
+                            const base::Version& to_version) const override {
+    updater::test::ExpectUpdateSequence(updater_scope_, test_server, app_id,
+                                        from_version, to_version);
+  }
+
   void ExpectVersionActive(const std::string& version) const override {
     RunCommand("expect_version_active", {Param("version", version)});
   }
@@ -78,11 +89,11 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
   }
 
   void ExpectActive(const std::string& app_id) const override {
-    updater::test::ExpectActive(kUpdaterScope, app_id);
+    updater::test::ExpectActive(updater_scope_, app_id);
   }
 
   void ExpectNotActive(const std::string& app_id) const override {
-    updater::test::ExpectNotActive(kUpdaterScope, app_id);
+    updater::test::ExpectNotActive(updater_scope_, app_id);
   }
 
   void SetupFakeUpdaterHigherVersion() const override {
@@ -99,14 +110,25 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
                {Param("app_id", app_id), Param("path", path.MaybeAsASCII())});
   }
 
+  void SetServerStarts(int value) const override {
+    RunCommand("set_first_registration_counter",
+               {Param("value", base::NumberToString(value))});
+  }
+
   void ExpectAppUnregisteredExistenceCheckerPath(
       const std::string& app_id) const override {
     RunCommand("expect_app_unregistered_existence_checker_path",
                {Param("app_id", app_id)});
   }
 
+  void ExpectAppVersion(const std::string& app_id,
+                        const base::Version& version) const override {
+    RunCommand("expect_app_version", {Param("app_id", app_id),
+                                      Param("version", version.GetString())});
+  }
+
   void SetActive(const std::string& app_id) const override {
-    updater::test::SetActive(kUpdaterScope, app_id);
+    updater::test::SetActive(updater_scope_, app_id);
   }
 
   void RunWake(int expected_exit_code) const override {
@@ -114,15 +136,52 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
                {Param("exit_code", base::NumberToString(expected_exit_code))});
   }
 
+  void Update(const std::string& app_id) const override {
+    RunCommand("update", {Param("app_id", app_id)});
+  }
+
+  void UpdateAll() const override { RunCommand("update_all", {}); }
+
   void RegisterApp(const std::string& app_id) const override {
     RunCommand("register_app", {Param("app_id", app_id)});
   }
 
-  void RegisterTestApp() const override { RunCommand("register_test_app"); }
-
   void WaitForServerExit() const override {
-    updater::test::WaitForServerExit(kUpdaterScope);
+    updater::test::WaitForServerExit(updater_scope_);
   }
+
+#if defined(OS_WIN)
+  void ExpectInterfacesRegistered() const override {
+    RunCommand("expect_interfaces_registered");
+  }
+
+  void ExpectLegacyUpdate3WebSucceeds(const std::string& app_id,
+                                      int expected_final_state,
+                                      int expected_error_code) const override {
+    RunCommand("expect_legacy_update3web_succeeds",
+               {Param("app_id", app_id),
+                Param("expected_final_state",
+                      base::NumberToString(expected_final_state)),
+                Param("expected_error_code",
+                      base::NumberToString(expected_error_code))});
+  }
+
+  void ExpectLegacyProcessLauncherSucceeds() const override {
+    RunCommand("expect_legacy_process_launcher_succeeds");
+  }
+
+  void RunUninstallCmdLine() const override {
+    RunCommand("run_uninstall_cmd_line");
+  }
+
+  void SetUpTestService() const override {
+    updater::test::RunTestServiceCommand("setup");
+  }
+
+  void TearDownTestService() const override {
+    updater::test::RunTestServiceCommand("teardown");
+  }
+#endif  // OS_WIN
 
   base::FilePath GetDifferentUserPath() const override {
 #if defined(OS_MAC)
@@ -132,6 +191,22 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
     NOTREACHED() << __func__ << ": not implemented.";
     return base::FilePath();
 #endif
+  }
+
+  void StressUpdateService() const override {
+    RunCommand("stress_update_service");
+  }
+
+  void CallServiceUpdate(const std::string& app_id,
+                         UpdateService::PolicySameVersionUpdate
+                             policy_same_version_update) const override {
+    RunCommand("call_service_update",
+               {Param("app_id", app_id),
+                Param("same_version_update_allowed",
+                      policy_same_version_update ==
+                              UpdateService::PolicySameVersionUpdate::kAllowed
+                          ? "true"
+                          : "false")});
   }
 
  private:
@@ -144,6 +219,9 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
     std::string value;
   };
 
+  // Invokes the test helper command by running a unit test from the
+  // "updater_integration_tests_helper" program. The program returns 0 if
+  // the unit test passes.
   void RunCommand(const std::string& command_switch,
                   const std::vector<Param>& params) const {
     const base::CommandLine command_line =
@@ -154,17 +232,33 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
     EXPECT_TRUE(base::PathExists(path));
     path = MakeAbsoluteFilePath(path);
     path = path.Append(FILE_PATH_LITERAL("updater_integration_tests_helper"));
+#if defined(OS_WIN)
+    path = path.AddExtension(L"exe");
+#endif
     EXPECT_TRUE(base::PathExists(path));
 
     base::CommandLine helper_command(path);
     helper_command.AppendSwitch(command_switch);
-
     for (const Param& param : params) {
       helper_command.AppendSwitchASCII(param.name, param.value);
     }
 
+    // Avoids the test runner banner about test debugging.
+    helper_command.AppendSwitch("single-process-tests");
+    helper_command.AppendSwitchASCII("gtest_filter",
+                                     "TestHelperCommandRunner.Run");
+    helper_command.AppendSwitchASCII("gtest_brief", "1");
+
     int exit_code = -1;
-    ASSERT_TRUE(Run(kUpdaterScope, helper_command, &exit_code));
+    ASSERT_TRUE(Run(updater_scope_, helper_command, &exit_code));
+
+    // A failure here indicates that the integration test helper
+    // process ran but the invocation of the test helper command was not
+    // successful for a number of reasons.
+    // If the `exit_code` is 1 then there were failed assertions in
+    // the code invoked by the test command. This is the most common case.
+    // Other exit codes mean that the helper command is not defined or the
+    // helper command line syntax is wrong for some reason.
     EXPECT_EQ(exit_code, 0);
   }
 
@@ -172,8 +266,11 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
     RunCommand(command_switch, {});
   }
 
-  static constexpr UpdaterScope kUpdaterScope = UpdaterScope::kSystem;
+  static const UpdaterScope updater_scope_;
 };
+
+const UpdaterScope IntegrationTestCommandsSystem::updater_scope_ =
+    GetTestScope();
 
 scoped_refptr<IntegrationTestCommands> CreateIntegrationTestCommandsSystem() {
   return base::MakeRefCounted<IntegrationTestCommandsSystem>();

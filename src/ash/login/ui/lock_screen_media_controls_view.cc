@@ -35,9 +35,12 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/vector_icons.h"
+#include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/background.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/button/image_button_factory.h"
+#include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -79,12 +82,10 @@ constexpr int kArtworkCornerRadius = 4;
 
 constexpr int kDragVelocityThreshold = 6;
 constexpr int kDistanceDismissalThreshold = 20;
-constexpr base::TimeDelta kAnimationDuration =
-    base::TimeDelta::FromMilliseconds(200);
+constexpr base::TimeDelta kAnimationDuration = base::Milliseconds(200);
 
 // How long to wait (in milliseconds) for a new media session to begin.
-constexpr base::TimeDelta kNextMediaDelay =
-    base::TimeDelta::FromMilliseconds(2500);
+constexpr base::TimeDelta kNextMediaDelay = base::Milliseconds(2500);
 
 // Scales |size| to fit |view_size| while preserving proportions.
 gfx::Size ScaleSizeToFitView(const gfx::Size& size,
@@ -131,6 +132,7 @@ const gfx::VectorIcon& GetVectorIconForMediaAction(MediaSessionAction action) {
     case MediaSessionAction::kToggleCamera:
     case MediaSessionAction::kHangUp:
     case MediaSessionAction::kRaise:
+    case MediaSessionAction::kSetMute:
       NOTREACHED();
       break;
   }
@@ -156,12 +158,13 @@ class MediaActionButton : public views::ImageButton {
             view,
             this)),
         icon_size_(icon_size) {
-    ink_drop()->SetMode(views::InkDropHost::InkDropMode::ON);
+    views::InkDrop::Get(this)->SetMode(views::InkDropHost::InkDropMode::ON);
     SetHasInkDropActionOnClick(true);
-    ink_drop()->SetCreateHighlightCallback(base::BindRepeating(
+    views::InkDrop::Get(this)->SetCreateHighlightCallback(base::BindRepeating(
         [](Button* host) {
           return std::make_unique<views::InkDropHighlight>(
-              gfx::SizeF(host->size()), host->ink_drop()->GetBaseColor());
+              gfx::SizeF(host->size()),
+              views::InkDrop::Get(host)->GetBaseColor());
         },
         this));
 
@@ -179,9 +182,12 @@ class MediaActionButton : public views::ImageButton {
     SetAction(action, accessible_name);
 
     SetInstallFocusRingOnFocus(true);
-    login_views_utils::ConfigureRectFocusRingCircleInkDrop(this, focus_ring(),
-                                                           absl::nullopt);
+    login_views_utils::ConfigureRectFocusRingCircleInkDrop(
+        this, views::FocusRing::Get(this), absl::nullopt);
   }
+
+  MediaActionButton(const MediaActionButton&) = delete;
+  MediaActionButton& operator=(const MediaActionButton&) = delete;
 
   ~MediaActionButton() override = default;
 
@@ -209,8 +215,6 @@ class MediaActionButton : public views::ImageButton {
   }
 
   int const icon_size_;
-
-  DISALLOW_COPY_AND_ASSIGN(MediaActionButton);
 };
 
 }  // namespace

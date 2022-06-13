@@ -11,6 +11,8 @@ source_set("page") {
     "cpdf_allstates.h",
     "cpdf_annotcontext.cpp",
     "cpdf_annotcontext.h",
+    "cpdf_basedcs.cpp",
+    "cpdf_basedcs.h",
     "cpdf_clippath.cpp",
     "cpdf_clippath.h",
     "cpdf_color.cpp",
@@ -117,6 +119,7 @@ source_set("page") {
 
 pdfium_unittest_source_set("unittests") {
   sources = [
+    "cpdf_colorspace_unittest.cpp",
     "cpdf_devicecs_unittest.cpp",
     "cpdf_function_unittest.cpp",
     "cpdf_pageobjectholder_unittest.cpp",

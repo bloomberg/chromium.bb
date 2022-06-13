@@ -10,10 +10,10 @@
 #include <vector>
 
 #include "base/containers/flat_set.h"
-#include "base/macros.h"
 #include "components/url_pattern_index/flat/url_pattern_index_generated.h"
 #include "extensions/common/api/declarative_net_request.h"
 #include "extensions/common/api/declarative_net_request/constants.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class GURL;
 
@@ -27,9 +27,13 @@ enum class ParseResult;
 // UrlRule as specified by the url_pattern_index component.
 struct IndexedRule {
   IndexedRule();
-  ~IndexedRule();
+  IndexedRule(const IndexedRule&) = delete;
   IndexedRule(IndexedRule&& other);
+
+  IndexedRule& operator=(const IndexedRule&) = delete;
   IndexedRule& operator=(IndexedRule&& other);
+
+  ~IndexedRule();
 
   static ParseResult CreateIndexedRule(
       extensions::api::declarative_net_request::Rule parsed_rule,
@@ -81,8 +85,6 @@ struct IndexedRule {
 
   // Set of tab IDs this rule doesn't apply to.
   base::flat_set<int> excluded_tab_ids;
-
-  DISALLOW_COPY_AND_ASSIGN(IndexedRule);
 };
 
 // Compute the rule priority for indexing, by combining the priority from

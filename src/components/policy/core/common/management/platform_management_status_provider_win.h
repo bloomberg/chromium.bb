@@ -5,37 +5,31 @@
 #ifndef COMPONENTS_POLICY_CORE_COMMON_MANAGEMENT_PLATFORM_MANAGEMENT_STATUS_PROVIDER_WIN_H_
 #define COMPONENTS_POLICY_CORE_COMMON_MANAGEMENT_PLATFORM_MANAGEMENT_STATUS_PROVIDER_WIN_H_
 
-#include "base/containers/flat_set.h"
-#include "build/build_config.h"
 #include "components/policy/core/common/management/management_service.h"
 #include "components/policy/policy_export.h"
 
 namespace policy {
 
-#if defined(OS_WIN)
-class POLICY_EXPORT DomainEnrollmentStatusProvider
+class POLICY_EXPORT DomainEnrollmentStatusProvider final
     : public ManagementStatusProvider {
  public:
   DomainEnrollmentStatusProvider();
-  ~DomainEnrollmentStatusProvider() final;
+  ~DomainEnrollmentStatusProvider() override;
 
   // ManagementStatusProvider impl
-  bool IsManaged() final;
-  EnterpriseManagementAuthority GetAuthority() final;
+  EnterpriseManagementAuthority GetAuthority() override;
 
   static bool IsEnrolledToDomain();
 };
-#endif
 
-class POLICY_EXPORT EnterpriseMDMManagementStatusProvider
+class POLICY_EXPORT EnterpriseMDMManagementStatusProvider final
     : public ManagementStatusProvider {
  public:
   EnterpriseMDMManagementStatusProvider();
-  ~EnterpriseMDMManagementStatusProvider() final;
+  ~EnterpriseMDMManagementStatusProvider() override;
 
   // ManagementStatusProvider impl
-  bool IsManaged() final;
-  EnterpriseManagementAuthority GetAuthority() final;
+  EnterpriseManagementAuthority GetAuthority() override;
 
   static bool IsEnrolledToDomain();
 };

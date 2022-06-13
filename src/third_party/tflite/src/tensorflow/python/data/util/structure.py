@@ -13,10 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 """Utilities for describing the structure of a `tf.data` type."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import collections
 import functools
 
@@ -67,7 +63,7 @@ def _RaggedTensorStructure(dtype, shape, ragged_rank):
 
 # TODO(jsimsa): Remove the special-case for `TensorArray` pass-through once
 # it is a subclass of `CompositeTensor`.
-def normalize_element(element):
+def normalize_element(element, element_signature=None):
   """Normalizes a nested structure of element components.
 
   * Components matching `SparseTensorSpec` are converted to `SparseTensor`.
@@ -78,19 +74,32 @@ def normalize_element(element):
 
   Args:
     element: A nested structure of individual components.
+    element_signature: (Optional.) A nested structure of `tf.DType` objects
+      corresponding to each component of `element`. If specified, it will be
+      used to set the exact type of output tensor when converting input
+      components which are not tensors themselves (e.g. numpy arrays, native
+      python types, etc.)
 
   Returns:
     A nested structure of `Tensor`, `Dataset`, `SparseTensor`, `RaggedTensor`,
     or `TensorArray` objects.
   """
-  components = nest.flatten(element)
   normalized_components = []
+  if element_signature is None:
+    components = nest.flatten(element)
+    flattened_signature = [None] * len(components)
+    pack_as = element
+  else:
+    flattened_signature = nest.flatten(element_signature)
+    components = nest.flatten_up_to(element_signature, element)
+    pack_as = element_signature
   with ops.name_scope("normalize_element"):
     # Imported here to avoid circular dependency.
     from tensorflow.python.data.ops import dataset_ops  # pylint: disable=g-import-not-at-top
-    for i, t in enumerate(components):
+    for i, (t, spec) in enumerate(zip(components, flattened_signature)):
       try:
-        spec = type_spec_from_value(t, use_fallback=False)
+        if spec is None:
+          spec = type_spec_from_value(t, use_fallback=False)
       except TypeError:
         # TypeError indicates it was not possible to compute a `TypeSpec` for
         # the value. As a fallback try converting the value to a tensor.
@@ -111,9 +120,10 @@ def normalize_element(element):
         elif isinstance(t, composite_tensor.CompositeTensor):
           normalized_components.append(t)
         else:
+          dtype = getattr(spec, "dtype", None)
           normalized_components.append(
-              ops.convert_to_tensor(t, name="component_%d" % i))
-  return nest.pack_sequence_as(element, normalized_components)
+              ops.convert_to_tensor(t, name="component_%d" % i, dtype=dtype))
+  return nest.pack_sequence_as(pack_as, normalized_components)
 
 
 def convert_legacy_structure(output_types, output_shapes, output_classes):
@@ -167,7 +177,10 @@ def convert_legacy_structure(output_types, output_shapes, output_classes):
       # comprise Tensors, SparseTensors, and nests, we do not need to
       # support all structure types here.
       raise TypeError(
-          "Could not build a structure for output class %r" % (flat_class,))
+          "Could not build a structure for output class {}. Make sure any "
+          "component class in `output_classes` inherits from one of the "
+          "following classes: `tf.TypeSpec`, `tf.sparse.SparseTensor`, "
+          "`tf.Tensor`, `tf.TensorArray`.".format(flat_class.__name__))
 
   return nest.pack_sequence_as(output_classes, flat_ret)
 
@@ -195,8 +208,8 @@ def _from_tensor_list_helper(decode_fn, element_spec, tensor_list):
   flat_specs = nest.flatten(element_spec)
   flat_spec_lengths = [len(spec._flat_tensor_specs) for spec in flat_specs]
   if sum(flat_spec_lengths) != len(tensor_list):
-    raise ValueError("Expected %d tensors but got %d." %
-                     (sum(flat_spec_lengths), len(tensor_list)))
+    raise ValueError("Expected {} tensors but got {}.".format(
+        sum(flat_spec_lengths), len(tensor_list)))
 
   i = 0
   flat_ret = []
@@ -451,6 +464,13 @@ def type_spec_from_value(element, use_fallback=True):
     # `element` is not a namedtuple
     return tuple([type_spec_from_value(v) for v in element])
 
+  if hasattr(element.__class__, "__attrs_attrs__"):
+    # `element` is an `attr.s` decorated class
+    attrs = getattr(element.__class__, "__attrs_attrs__")
+    return type(element)(*[
+        type_spec_from_value(getattr(element, a.name)) for a in attrs
+    ])
+
   if use_fallback:
     # As a fallback try converting the element to a tensor.
     try:
@@ -462,8 +482,9 @@ def type_spec_from_value(element, use_fallback=True):
       logging.vlog(
           3, "Failed to convert %r to tensor: %s" % (type(element).__name__, e))
 
-  raise TypeError("Could not build a TypeSpec for %r with type %s" %
-                  (element, type(element).__name__))
+  raise TypeError("Could not build a `TypeSpec` for {} with type {}".format(
+      element,
+      type(element).__name__))
 
 
 # TODO(b/149584798): Move this to framework and add tests for non-tf.data
@@ -478,6 +499,7 @@ class NoneTensor(composite_tensor.CompositeTensor):
 
 # TODO(b/149584798): Move this to framework and add tests for non-tf.data
 # functionality.
+@type_spec.register("tf.NoneTensorSpec")
 class NoneTensorSpec(type_spec.BatchableTypeSpec):
   """Type specification for `None` value."""
 
@@ -521,6 +543,12 @@ class NoneTensorSpec(type_spec.BatchableTypeSpec):
     return self
 
   def _to_legacy_output_classes(self):
+    return self
+
+  def most_specific_compatible_shape(self, other):
+    if type(self) is not type(other):
+      raise ValueError("No `TypeSpec` is compatible with both {} and {}".format(
+          self, other))
     return self
 
 

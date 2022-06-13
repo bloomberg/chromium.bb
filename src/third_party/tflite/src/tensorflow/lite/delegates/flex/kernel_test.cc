@@ -12,11 +12,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+#include "tensorflow/lite/delegates/flex/kernel.h"
+
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "tensorflow/lite/delegates/flex/delegate.h"
 #include "tensorflow/lite/delegates/flex/delegate_data.h"
 #include "tensorflow/lite/delegates/flex/test_util.h"
+#include "tensorflow/lite/kernels/kernel_util.h"
 
 namespace tflite {
 namespace flex {
@@ -25,6 +28,8 @@ namespace testing {
 using ::testing::ContainsRegex;
 using ::testing::ElementsAre;
 using ::testing::ElementsAreArray;
+using ::testing::Pair;
+using ::testing::UnorderedElementsAre;
 
 // A testing flex delegate that supports every node regardless whether it's
 // actually supported or not. It's only for testing certain scenarios.
@@ -47,12 +52,19 @@ class KernelTest : public testing::FlexModelTest {
 
   void ApplyFlexDelegate(std::unique_ptr<FlexDelegate> delegate = nullptr) {
     auto flex_delegate = FlexDelegate::Create(std::move(delegate));
-    auto* delegate_data =
+    delegate_data_ =
         reinterpret_cast<FlexDelegate*>(flex_delegate->data_)->mutable_data();
-    CHECK(delegate_data->Prepare(tensorflow::SessionOptions{}).ok());
+    CHECK(delegate_data_->Prepare(tensorflow::SessionOptions{}).ok());
     CHECK(interpreter_->ModifyGraphWithDelegate(std::move(flex_delegate)) ==
           kTfLiteOk);
   }
+
+  const std::map<int, int>& GetTensorReleaseMap(DelegateKernel* kernel) {
+    return kernel->GetTensorReleaseMap();
+  }
+
+ protected:
+  tflite::flex::DelegateData* delegate_data_;
 };
 
 TEST_F(KernelTest, FullGraph) {
@@ -88,6 +100,93 @@ TEST_F(KernelTest, FullGraph) {
 
   ASSERT_THAT(GetShape(8), ElementsAre(3, 1));
   ASSERT_THAT(GetValues(8), ElementsAre(24.0f, 32.0f, 48.0f));
+}
+
+TEST_F(KernelTest, ValidateTensorReleaseMap) {
+  // Define the graph.
+  //        0           3
+  //        |           |
+  //      Unpack_0    Unpack_1
+  //       /  \        / \
+  //      1    2      4   5
+  //      |____|_______|__|
+  //         | |__________|
+  //         |      |
+  //        Add_2  Add_3
+  //         |      |
+  //         6      7
+  //         \______/
+  //             |
+  //            Mul_4
+  //             |
+  //             8
+  AddTensors(9, {0, 3}, {8}, kTfLiteFloat32, {3});
+  AddTfOp(testing::kUnpack, {0}, {1, 2});
+  AddTfOp(testing::kUnpack, {3}, {4, 5});
+  AddTfOp(testing::kAdd, {1, 4}, {6});
+  AddTfOp(testing::kAdd, {2, 5}, {7});
+  AddTfOp(testing::kMul, {6, 7}, {8});
+
+  ApplyFlexDelegate();
+
+  const int node_size = interpreter_->primary_subgraph().nodes_size();
+  const std::pair<TfLiteNode, TfLiteRegistration>* node_and_reg =
+      interpreter_->primary_subgraph().node_and_registration(node_size - 1);
+
+  DelegateKernel* delegate_kernel =
+      reinterpret_cast<DelegateKernel*>(node_and_reg->first.user_data);
+  const auto& tensor_release_map = GetTensorReleaseMap(delegate_kernel);
+  // Validate the tensor release mapping.
+  EXPECT_THAT(
+      tensor_release_map,
+      UnorderedElementsAre(Pair(0, 0), Pair(1, 2), Pair(2, 3), Pair(3, 1),
+                           Pair(4, 2), Pair(5, 3), Pair(6, 4), Pair(7, 4)));
+}
+
+TEST_F(KernelTest, PersistEagerTensor) {
+  // Define the graph.
+  //        0           3
+  //        |           |
+  //      Unpack_0    Unpack_1
+  //       /  \        / \
+  //      1    2      4   5
+  //      |____|_______|__|
+  //         | |__________|
+  //         |      |
+  //        Add_2  Add_3
+  //         |      |
+  //         6      7
+  //         | \   /
+  //         | TFL_MUL
+  //         |    |
+  //         |    8
+  //         |____|
+  //             AddN
+  //              |
+  //              9
+  AddTensors(10, {0, 3}, {9}, kTfLiteFloat32, {3});
+
+  AddTfOp(testing::kUnpack, {0}, {1, 2});
+  AddTfOp(testing::kUnpack, {3}, {4, 5});
+  AddTfOp(testing::kAdd, {1, 4}, {6});
+  AddTfOp(testing::kAdd, {2, 5}, {7});
+  AddTfLiteMulOp({6, 7}, {8});
+  AddTfOp(testing::kAdd, {6, 8}, {9});
+
+  ApplyFlexDelegate();
+
+  // Define inputs.
+  SetShape(0, {2, 2, 1});
+  SetValues(0, {1.1f, 2.2f, 3.3f, 4.4f});
+  SetShape(3, {2, 2, 1});
+  SetValues(3, {1.1f, 2.2f, 3.3f, 4.4f});
+
+  ASSERT_TRUE(Invoke());
+  // Validates that tensor 6 should be preserved in the buffer map.
+  auto* buffer_map =
+      delegate_data_->GetBufferMap(interpreter_->primary_subgraph().context());
+  EXPECT_TRUE(buffer_map->HasTensor(6));
+  EXPECT_FALSE(buffer_map->HasTensor(7));
 }
 
 TEST_F(KernelTest, BadTensorFlowOp) {
@@ -351,12 +450,61 @@ TEST_F(MultipleSubgraphsTest, DoNotForwardInputTensors) {
               })));
 }
 
+tensorflow::OpDef MakeOpDef(int num_inputs, int num_outputs) {
+  tensorflow::OpRegistrationData op_reg_data;
+  tensorflow::OpDefBuilder b("dummy");
+  for (int i = 0; i < num_inputs; ++i) {
+    b.Input(tensorflow::strings::StrCat("i", i, ": float"));
+  }
+  for (int i = 0; i < num_outputs; ++i) {
+    b.Output(tensorflow::strings::StrCat("o", i, ": float"));
+  }
+  CHECK(b.Attr("foo:string").Finalize(&op_reg_data).ok());
+  return op_reg_data.op_def;
+}
+
+tensorflow::PartialTensorShape S(std::initializer_list<int64_t> dims) {
+  return tensorflow::PartialTensorShape(dims);
+}
+
+TEST(ValidateOutputTensorShapeConsistencyTest, ShapeHandleDebugString) {
+  // Setup test to contain an input tensor list of size 3.
+  tensorflow::OpDef op_def = MakeOpDef(4, 1);
+  tensorflow::NodeDef def;
+  tensorflow::shape_inference::InferenceContext c(
+      0, def, op_def, {S({1}), S({2, 3}), S({4, 5, 6}), {}}, {}, {}, {});
+  c.SetInput(3, c.UnknownShape());
+
+  std::vector<tensorflow::shape_inference::ShapeHandle> shapes;
+  EXPECT_EQ("[1]", c.DebugString(c.input(0)));
+  EXPECT_EQ("[2,3]", c.DebugString(c.input(1)));
+  EXPECT_EQ("[4,5,6]", c.DebugString(c.input(2)));
+  // c.DebugString() returns "?" for the unknown shape which is different with
+  // "-1" of TFLite. But this is intended behavior since we should use dynamic
+  // tensor for unknown shape so the shape comparison must fail.
+  EXPECT_EQ("?", c.DebugString(c.input(3)));
+}
+
+TEST(ValidateOutputTensorShapeConsistencyTest, GetShapeDebugString) {
+  TfLiteIntArray* dims1 = TfLiteIntArrayCreate(1);
+  dims1->data[0] = 1;
+  EXPECT_EQ("[1]", GetShapeDebugString(dims1));
+  TfLiteIntArrayFree(dims1);
+
+  TfLiteIntArray* dims2 = TfLiteIntArrayCreate(2);
+  dims2->data[0] = 2;
+  dims2->data[1] = 3;
+  EXPECT_EQ("[2,3]", GetShapeDebugString(dims2));
+  TfLiteIntArrayFree(dims2);
+
+  TfLiteIntArray* dims3 = TfLiteIntArrayCreate(3);
+  dims3->data[0] = 4;
+  dims3->data[1] = 5;
+  dims3->data[2] = 6;
+  EXPECT_EQ("[4,5,6]", GetShapeDebugString(dims3));
+  TfLiteIntArrayFree(dims3);
+}
+
 }  // namespace testing
 }  // namespace flex
 }  // namespace tflite
-
-int main(int argc, char** argv) {
-  ::tflite::LogToStderr();
-  ::testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
-}

@@ -47,6 +47,8 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   VideoFrameSubmitter(WebContextProviderCallback,
                       cc::VideoPlaybackRoughnessReporter::ReportingCallback,
                       std::unique_ptr<VideoFrameResourceProvider>);
+  VideoFrameSubmitter(const VideoFrameSubmitter&) = delete;
+  VideoFrameSubmitter& operator=(const VideoFrameSubmitter&) = delete;
   ~VideoFrameSubmitter() override;
 
   // cc::VideoFrameProvider::Client implementation.
@@ -58,7 +60,7 @@ class PLATFORM_EXPORT VideoFrameSubmitter
 
   // WebVideoFrameSubmitter implementation.
   void Initialize(cc::VideoFrameProvider*, bool is_media_stream) override;
-  void SetRotation(media::VideoRotation) override;
+  void SetTransform(media::VideoTransformation) override;
   void EnableSubmission(viz::SurfaceId) override;
   void SetIsSurfaceVisible(bool is_visible) override;
   void SetIsPageVisible(bool is_visible) override;
@@ -86,6 +88,7 @@ class PLATFORM_EXPORT VideoFrameSubmitter
 
  private:
   friend class VideoFrameSubmitterTest;
+  class FrameSinkBundleProxy;
 
   // Called during Initialize() and OnContextLost() after a new ContextGL is
   // requested.
@@ -130,17 +133,28 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   viz::CompositorFrame CreateCompositorFrame(
       uint32_t frame_token,
       const viz::BeginFrameAck& begin_frame_ack,
-      scoped_refptr<media::VideoFrame> video_frame);
+      scoped_refptr<media::VideoFrame> video_frame,
+      media::VideoTransformation transform);
 
   cc::VideoFrameProvider* video_frame_provider_ = nullptr;
   bool is_media_stream_ = false;
   scoped_refptr<viz::RasterContextProvider> context_provider_;
-  mojo::Remote<viz::mojom::blink::CompositorFrameSink> compositor_frame_sink_;
+  mojo::Remote<viz::mojom::blink::CompositorFrameSink> remote_frame_sink_;
   mojo::Remote<mojom::blink::SurfaceEmbedder> surface_embedder_;
   mojo::Receiver<viz::mojom::blink::CompositorFrameSinkClient> receiver_{this};
   WebContextProviderCallback context_provider_callback_;
   std::unique_ptr<VideoFrameResourceProvider> resource_provider_;
   bool waiting_for_compositor_ack_ = false;
+
+  // When UseVideoFrameSinkBundle is enabled, this is initialized to a local
+  // implementation which batches outgoing Viz requests with those from other
+  // related VideoFrameSubmitters, rather than having each VideoFrameSubmitter
+  // submit their ad hoc requests directly to Viz.
+  std::unique_ptr<FrameSinkBundleProxy> bundle_proxy_;
+
+  // Points to either `remote_frame_sink_` or `bundle_proxy_` depending
+  // on whether UseVideoFrameSinkBundle is enabled.
+  viz::mojom::blink::CompositorFrameSink* compositor_frame_sink_ = nullptr;
 
   // Current rendering state. Set by StartRendering() and StopRendering().
   bool is_rendering_ = false;
@@ -164,7 +178,7 @@ class PLATFORM_EXPORT VideoFrameSubmitter
 
   // Needs to be initialized in implementation because media isn't a public_dep
   // of blink/platform.
-  media::VideoRotation rotation_;
+  media::VideoTransformation transform_;
 
   viz::FrameSinkId frame_sink_id_;
 
@@ -201,8 +215,6 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   THREAD_CHECKER(thread_checker_);
 
   base::WeakPtrFactory<VideoFrameSubmitter> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(VideoFrameSubmitter);
 };
 
 }  // namespace blink

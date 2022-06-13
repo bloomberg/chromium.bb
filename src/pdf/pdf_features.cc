@@ -22,11 +22,9 @@ const base::Feature kPdfIncrementalLoading = {
 const base::Feature kPdfPartialLoading = {"PdfPartialLoading",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kPdfViewerDocumentProperties = {
-    "PdfViewerDocumentProperties", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kPdfViewerPresentationMode = {
-    "PdfViewerPresentationMode", base::FEATURE_ENABLED_BY_DEFAULT};
+// TODO(crbug.com/702993): Remove this once the PDF viewer is Pepper-free.
+const base::Feature kPdfUnseasoned = {"PdfUnseasoned",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Feature has no effect if Chrome is built with no XFA support.
 const base::Feature kPdfXfaSupport = {"PdfXfaSupport",

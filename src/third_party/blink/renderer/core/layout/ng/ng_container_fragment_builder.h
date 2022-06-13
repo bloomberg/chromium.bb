@@ -7,6 +7,7 @@
 
 #include "base/dcheck_is_on.h"
 #include "base/memory/scoped_refptr.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/geometry/logical_size.h"
 #include "third_party/blink/renderer/core/layout/ng/exclusions/ng_exclusion_space.h"
@@ -17,6 +18,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_early_break.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_floats_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragment_builder.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_link.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_out_of_flow_positioned_node.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
@@ -40,6 +42,7 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
     oof_positioned_fragmentainer_descendants_.clear();
     oof_positioned_descendants_.clear();
     multicols_with_pending_oofs_.clear();
+    child_break_tokens_.clear();
   }
 
   struct ChildWithOffset {
@@ -55,8 +58,8 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
   };
 
   using ChildrenVector = Vector<ChildWithOffset, 4>;
-  using MulticolCollection =
-      HashMap<LayoutBox*, NGMulticolWithPendingOOFs<LogicalOffset>>;
+  using MulticolCollection = HashMap<UntracedMember<LayoutBox>,
+                                     NGMulticolWithPendingOOFs<LogicalOffset>>;
 
   LayoutUnit BfcLineOffset() const { return bfc_line_offset_; }
   void SetBfcLineOffset(LayoutUnit bfc_line_offset) {
@@ -77,8 +80,19 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
     end_margin_strut_ = end_margin_strut;
   }
 
+  void SetMayHaveDescendantAboveBlockStart(bool b) {
+#if DCHECK_IS_ON()
+    is_may_have_descendant_above_block_start_explicitly_set_ = true;
+#endif
+    may_have_descendant_above_block_start_ = b;
+  }
+
   void SetExclusionSpace(NGExclusionSpace&& exclusion_space) {
     exclusion_space_ = std::move(exclusion_space);
+  }
+
+  void SetLinesUntilClamp(const absl::optional<int>& value) {
+    lines_until_clamp_ = value;
   }
 
   const NGUnpositionedListMarker& UnpositionedListMarker() const {
@@ -126,8 +140,7 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
       NGLogicalStaticPosition::InlineEdge =
           NGLogicalStaticPosition::kInlineStart,
       NGLogicalStaticPosition::BlockEdge = NGLogicalStaticPosition::kBlockStart,
-      bool needs_block_offset_adjustment = true,
-      const absl::optional<LogicalRect> containing_block_rect = absl::nullopt);
+      bool needs_block_offset_adjustment = true);
 
   void AddOutOfFlowChildCandidate(
       const NGLogicalOutOfFlowPositionedNode& candidate);
@@ -155,6 +168,14 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
       const NGBlockNode& multicol,
       NGMulticolWithPendingOOFs<LogicalOffset> multicol_info =
           NGMulticolWithPendingOOFs<LogicalOffset>());
+
+  bool HasOutOfFlowFragmentChild() const {
+    return has_out_of_flow_fragment_child_;
+  }
+
+  void SetHasOutOfFlowFragmentChild(bool has_out_of_flow_fragment_child) {
+    has_out_of_flow_fragment_child_ = has_out_of_flow_fragment_child;
+  }
 
   void SwapOutOfFlowPositionedCandidates(
       Vector<NGLogicalOutOfFlowPositionedNode>* candidates);
@@ -217,7 +238,7 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
       LogicalOffset offset,
       LogicalOffset relative_offset,
       LogicalOffset offset_adjustment = LogicalOffset(),
-      const LayoutInline* inline_container = nullptr,
+      const NGInlineContainer<LogicalOffset>* inline_container = nullptr,
       LayoutUnit containing_block_adjustment = LayoutUnit(),
       const NGContainingBlock<LogicalOffset>* fixedpos_containing_block =
           nullptr,
@@ -227,6 +248,13 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
 
   void SetIsPushedByFloats() { is_pushed_by_floats_ = true; }
   bool IsPushedByFloats() const { return is_pushed_by_floats_; }
+
+  // Set when this subtree has modified the incoming margin-strut, such that it
+  // may change our final position.
+  void SetSubtreeModifiedMarginStrut() {
+    DCHECK(!BfcBlockOffset());
+    subtree_modified_margin_strut_ = true;
+  }
 
   void ResetAdjoiningObjectTypes() {
     adjoining_object_types_ = kAdjoiningNone;
@@ -243,6 +271,8 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
     return adjoining_object_types_;
   }
 
+  void SetIsBlockInInline() { is_block_in_inline_ = true; }
+
   void SetHasBlockFragmentation() { has_block_fragmentation_ = true; }
 
   // Set for any node that establishes a fragmentation context, such as multicol
@@ -255,10 +285,33 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
     return is_fragmentation_context_root_;
   }
 
+  // There may be cases where a column spanner was previously found but is no
+  // longer accessible. For example, in simplified OOF layout, we may want to
+  // recreate a spanner break for an existing fragment being relaid out, but
+  // the spanner node is no longer available. In such cases,
+  // |has_column_spanner_| may be true while |column_spanner_| is not set.
+  void SetHasColumnSpanner(bool has_column_spanner) {
+    has_column_spanner_ = has_column_spanner;
+  }
+  void SetColumnSpanner(NGBlockNode spanner) {
+    column_spanner_ = spanner;
+    SetHasColumnSpanner(!!column_spanner_);
+  }
+  bool FoundColumnSpanner() const {
+    DCHECK(has_column_spanner_ || !column_spanner_);
+    return has_column_spanner_;
+  }
+  void SetIsEmptySpannerParent(bool is_empty_spanner_parent) {
+    DCHECK(FoundColumnSpanner());
+    is_empty_spanner_parent_ = is_empty_spanner_parent;
+  }
+  bool IsEmptySpannerParent() const { return is_empty_spanner_parent_; }
+
   // See NGLayoutResult::AnnotationOverflow().
   void SetAnnotationOverflow(LayoutUnit overflow) {
     annotation_overflow_ = overflow;
   }
+  LayoutUnit AnnotationOverflow() const { return annotation_overflow_; }
 
   // See NGLayoutRsult::BlockEndAnnotatioSpace().
   void SetBlockEndAnnotationSpace(LayoutUnit space) {
@@ -270,6 +323,8 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
   }
 
   const NGConstraintSpace* ConstraintSpace() const { return space_; }
+
+  scoped_refptr<const NGLayoutResult> Abort(NGLayoutResult::EStatus);
 
 #if DCHECK_IS_ON()
   String ToString() const;
@@ -294,7 +349,7 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
       const NGPhysicalFragment& child,
       LogicalOffset child_offset,
       LogicalOffset relative_offset,
-      const LayoutInline* inline_container = nullptr,
+      const NGInlineContainer<LogicalOffset>* inline_container = nullptr,
       absl::optional<LayoutUnit> adjustment_for_oof_propagation = LayoutUnit());
 
   void AddChildInternal(scoped_refptr<const NGPhysicalFragment>,
@@ -307,6 +362,7 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
   absl::optional<LayoutUnit> bfc_block_offset_;
   NGMarginStrut end_margin_strut_;
   NGExclusionSpace exclusion_space_;
+  absl::optional<int> lines_until_clamp_;
 
   Vector<NGLogicalOutOfFlowPositionedNode> oof_positioned_candidates_;
   Vector<NGLogicalOutOfFlowPositionedNode>
@@ -322,10 +378,11 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
   // Only used by the NGBoxFragmentBuilder subclass, but defined here to avoid
   // a virtual function call.
   NGBreakTokenVector child_break_tokens_;
-  scoped_refptr<const NGInlineBreakToken> last_inline_break_token_;
+  const NGInlineBreakToken* last_inline_break_token_ = nullptr;
 
-  scoped_refptr<const NGEarlyBreak> early_break_;
-  NGBreakAppeal break_appeal_ = kBreakAppealLastResort;
+  NGBlockNode column_spanner_ = nullptr;
+
+  const NGEarlyBreak* early_break_ = nullptr;
 
   // See NGLayoutResult::AnnotationOverflow().
   LayoutUnit annotation_overflow_;
@@ -341,14 +398,24 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
 
   bool is_self_collapsing_ = false;
   bool is_pushed_by_floats_ = false;
+  bool subtree_modified_margin_strut_ = false;
   bool is_legacy_layout_root_ = false;
+  bool is_block_in_inline_ = false;
 
   bool has_floating_descendants_for_paint_ = false;
   bool has_descendant_that_depends_on_percentage_block_size_ = false;
+  bool may_have_descendant_above_block_start_ = false;
   bool has_block_fragmentation_ = false;
   bool is_fragmentation_context_root_ = false;
+  bool has_column_spanner_ = false;
+  bool is_empty_spanner_parent_ = false;
 
   bool has_oof_candidate_that_needs_block_offset_adjustment_ = false;
+  bool has_out_of_flow_fragment_child_ = false;
+
+#if DCHECK_IS_ON()
+  bool is_may_have_descendant_above_block_start_explicitly_set_ = false;
+#endif
 };
 
 }  // namespace blink

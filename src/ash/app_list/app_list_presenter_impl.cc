@@ -14,9 +14,11 @@
 #include "ash/app_list/views/apps_container_view.h"
 #include "ash/app_list/views/contents_view.h"
 #include "ash/app_list/views/search_box_view.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
+#include "ash/public/cpp/assistant/controller/assistant_ui_controller.h"
 #include "ash/public/cpp/metrics_util.h"
 #include "ash/public/cpp/pagination/pagination_model.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -27,6 +29,7 @@
 #include "base/containers/contains.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "chromeos/services/assistant/public/cpp/assistant_enums.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/window.h"
@@ -35,15 +38,17 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/screen.h"
 #include "ui/display/types/display_constants.h"
+#include "ui/gfx/geometry/transform.h"
+#include "ui/gfx/geometry/transform_util.h"
 #include "ui/gfx/presentation_feedback.h"
-#include "ui/gfx/transform.h"
-#include "ui/gfx/transform_util.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/transient_window_manager.h"
 #include "ui/wm/public/activation_client.h"
 
 namespace ash {
 namespace {
+
+using chromeos::assistant::AssistantExitPoint;
 
 inline ui::Layer* GetLayer(views::Widget* widget) {
   return widget->GetNativeView()->layer();
@@ -127,11 +132,9 @@ constexpr std::array<int, 7>
 AppListPresenterImpl::AppListPresenterImpl(AppListControllerImpl* controller)
     : controller_(controller) {
   DCHECK(controller_);
-  display_observation_.Observe(display::Screen::GetScreen());
 }
 
 AppListPresenterImpl::~AppListPresenterImpl() {
-  Dismiss(base::TimeTicks());
   // Ensures app list view goes before the controller since pagination model
   // lives in the controller and app list view would access it on destruction.
   if (view_) {
@@ -150,7 +153,8 @@ aura::Window* AppListPresenterImpl::GetWindow() const {
 
 void AppListPresenterImpl::Show(AppListViewState preferred_state,
                                 int64_t display_id,
-                                base::TimeTicks event_time_stamp) {
+                                base::TimeTicks event_time_stamp,
+                                absl::optional<AppListShowSource> show_source) {
   if (is_target_visibility_show_) {
     // Launcher is always visible on the internal display when home launcher is
     // enabled in tablet mode.
@@ -185,8 +189,12 @@ void AppListPresenterImpl::Show(AppListViewState preferred_state,
   shelf->shelf_layout_manager()->UpdateAutoHideState();
 
   // Observe the shelf for changes to rounded corners.
-  if (!shelf_observation_.IsObservingSource(shelf))
-    shelf_observation_.AddObservation(shelf);
+  // If presenter is observing a shelf instance different than `shelf`, it's
+  // because the app list view on the associated display is closing. It's safe
+  // to remove this observation (given that shelf background changes should not
+  // affect appearance of a closing app list view).
+  shelf_observer_.Reset();
+  shelf_observer_.Observe(shelf->shelf_layout_manager());
 
   // By setting us as a drag-and-drop recipient, the app list knows that we can
   // handle items. Do this on every show because |view_| can be reused after a
@@ -196,6 +204,23 @@ void AppListPresenterImpl::Show(AppListViewState preferred_state,
       shelf->shelf_widget()->GetDragAndDropHostForAppList());
   view_->SetShelfHasRoundedCorners(
       IsShelfBackgroundTypeWithRoundedCorners(shelf->GetBackgroundType()));
+  std::unique_ptr<AppListView::ScopedAccessibilityAnnouncementLock>
+      scoped_accessibility_lock;
+
+  // App list view state accessibility alerts should be suppressed when the app
+  // list view is shown by the assistant. The assistant UI should handle its
+  // own accessibility notifications.
+  if (show_source && *show_source == kAssistantEntryPoint) {
+    scoped_accessibility_lock =
+        std::make_unique<AppListView::ScopedAccessibilityAnnouncementLock>(
+            view_);
+  }
+
+  // Save data about how and when we opened the app list for metrics when we
+  // close it.
+  last_open_source_ = show_source;
+  last_open_time_ = base::Time::Now();
+
   view_->Show(preferred_state, IsSideShelf(shelf));
 
   SnapAppListBoundsToDisplayEdge();
@@ -247,10 +272,28 @@ void AppListPresenterImpl::Dismiss(base::TimeTicks event_time_stamp) {
     view_->GetWidget()->Deactivate();
 
   event_filter_.reset();
+
+  if (view_->search_box_view()->is_search_box_active()) {
+    // Close the virtual keyboard before the app list view is dismissed.
+    // Otherwise if the browser is behind the app list view, after the latter is
+    // closed, IME is updated because of the changed focus. Consequently,
+    // the virtual keyboard is hidden for the wrong IME instance, which may
+    // bring troubles when restoring the virtual keyboard (see
+    // https://crbug.com/944233).
+    keyboard::KeyboardUIController::Get()->HideKeyboardExplicitlyBySystem();
+  }
+
   controller_->ViewClosing();
 
   OnVisibilityWillChange(GetTargetVisibility(), GetDisplayId());
-  view_->SetState(AppListViewState::kClosed);
+  if (!Shell::Get()->IsInTabletMode() && last_open_source_.has_value() &&
+      last_open_time_.has_value())
+    RecordAppListUserJourneyTime(last_open_source_.value(),
+                                 base::Time::Now() - last_open_time_.value());
+  last_open_source_.reset();
+  last_open_time_.reset();
+  if (!view_->GetWidget()->GetNativeWindow()->is_destroying())
+    view_->SetState(AppListViewState::kClosed);
   base::RecordAction(base::UserMetricsAction("Launcher_Dismiss"));
 }
 
@@ -288,7 +331,7 @@ ShelfAction AppListPresenterImpl::ToggleAppList(
   }
   Show(request_fullscreen ? AppListViewState::kFullscreenAllApps
                           : AppListViewState::kPeeking,
-       display_id, event_time_stamp);
+       display_id, event_time_stamp, show_source);
   return SHELF_ACTION_APP_LIST_SHOWN;
 }
 
@@ -470,8 +513,7 @@ void AppListPresenterImpl::OnVisibilityWillChange(bool visible,
 
 void AppListPresenterImpl::OnClosed() {
   if (!is_target_visibility_show_)
-    shelf_observation_.RemoveAllObservations();
-  controller_->ViewClosed();
+    shelf_observer_.Reset();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -500,7 +542,8 @@ void AppListPresenterImpl::OnWindowFocused(aura::Window* gained_focus,
       !base::Contains(kIdsOfContainersThatWontHideAppList,
                       gained_focus_container_id);
 
-  const bool app_list_gained_focus = applist_window->Contains(gained_focus);
+  const bool app_list_gained_focus = applist_window->Contains(gained_focus) ||
+                                     applist_container->Contains(gained_focus);
   const bool app_list_lost_focus =
       gained_focus ? gained_focus_hides_app_list
                    : (lost_focus && applist_container->Contains(lost_focus));
@@ -611,7 +654,11 @@ void AppListPresenterImpl::OnDisplayMetricsChanged(
   SnapAppListBoundsToDisplayEdge();
 }
 
-void AppListPresenterImpl::OnBackgroundTypeChanged(
+void AppListPresenterImpl::WillDeleteShelfLayoutManager() {
+  shelf_observer_.Reset();
+}
+
+void AppListPresenterImpl::OnBackgroundUpdated(
     ShelfBackgroundType background_type,
     AnimationChangeType change_type) {
   view_->SetShelfHasRoundedCorners(

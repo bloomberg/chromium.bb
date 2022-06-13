@@ -15,8 +15,10 @@
 #include "media/mojo/services/mojo_video_encode_accelerator_service.h"
 #include "media/video/fake_video_encode_accelerator.h"
 #include "media/video/video_encode_accelerator.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "mojo/public/cpp/bindings/self_owned_receiver.h"
+#include "mojo/public/cpp/bindings/self_owned_associated_receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -52,15 +54,17 @@ class MockMojoVideoEncodeAcceleratorClient
  public:
   MockMojoVideoEncodeAcceleratorClient() = default;
 
+  MockMojoVideoEncodeAcceleratorClient(
+      const MockMojoVideoEncodeAcceleratorClient&) = delete;
+  MockMojoVideoEncodeAcceleratorClient& operator=(
+      const MockMojoVideoEncodeAcceleratorClient&) = delete;
+
   MOCK_METHOD3(RequireBitstreamBuffers,
                void(uint32_t, const gfx::Size&, uint32_t));
   MOCK_METHOD2(BitstreamBufferReady,
                void(int32_t, const media::BitstreamBufferMetadata&));
   MOCK_METHOD1(NotifyError, void(VideoEncodeAccelerator::Error));
   MOCK_METHOD1(NotifyEncoderInfoChange, void(const VideoEncoderInfo& info));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockMojoVideoEncodeAcceleratorClient);
 };
 
 // Test harness for a MojoVideoEncodeAcceleratorService; the tests manipulate it
@@ -71,6 +75,11 @@ class MockMojoVideoEncodeAcceleratorClient
 class MojoVideoEncodeAcceleratorServiceTest : public ::testing::Test {
  public:
   MojoVideoEncodeAcceleratorServiceTest() = default;
+
+  MojoVideoEncodeAcceleratorServiceTest(
+      const MojoVideoEncodeAcceleratorServiceTest&) = delete;
+  MojoVideoEncodeAcceleratorServiceTest& operator=(
+      const MojoVideoEncodeAcceleratorServiceTest&) = delete;
 
   void TearDown() override {
     // The destruction of a mojo::SelfOwnedReceiver closes the bound message
@@ -93,19 +102,25 @@ class MojoVideoEncodeAcceleratorServiceTest : public ::testing::Test {
 
   void BindAndInitialize() {
     // Create an Mojo VEA Client remote and bind it to our Mock.
-    mojo::PendingRemote<mojom::VideoEncodeAcceleratorClient> mojo_vea_client;
-    mojo_vea_receiver_ = mojo::MakeSelfOwnedReceiver(
+    mojo::PendingAssociatedRemote<mojom::VideoEncodeAcceleratorClient>
+        pending_client_remote;
+    auto pending_client_receiver =
+        pending_client_remote.InitWithNewEndpointAndPassReceiver();
+    pending_client_receiver.EnableUnassociatedUsage();
+
+    mojo_vea_receiver_ = mojo::MakeSelfOwnedAssociatedReceiver(
         std::make_unique<MockMojoVideoEncodeAcceleratorClient>(),
-        mojo_vea_client.InitWithNewPipeAndPassReceiver());
+        std::move(pending_client_receiver));
 
     EXPECT_CALL(*mock_mojo_vea_client(),
                 RequireBitstreamBuffers(_, kInputVisibleSize, _));
 
-    const uint32_t kInitialBitrate = 100000u;
+    constexpr media::Bitrate kInitialBitrate =
+        media::Bitrate::ConstantBitrate(100000u);
     const media::VideoEncodeAccelerator::Config config(
         PIXEL_FORMAT_I420, kInputVisibleSize, H264PROFILE_MIN, kInitialBitrate);
     mojo_vea_service()->Initialize(
-        config, std::move(mojo_vea_client),
+        config, std::move(pending_client_remote),
         base::BindOnce([](bool success) { ASSERT_TRUE(success); }));
     base::RunLoop().RunUntilIdle();
   }
@@ -127,13 +142,11 @@ class MojoVideoEncodeAcceleratorServiceTest : public ::testing::Test {
  private:
   base::test::SingleThreadTaskEnvironment task_environment_;
 
-  mojo::SelfOwnedReceiverRef<mojom::VideoEncodeAcceleratorClient>
+  mojo::SelfOwnedAssociatedReceiverRef<mojom::VideoEncodeAcceleratorClient>
       mojo_vea_receiver_;
 
   // The class under test.
   std::unique_ptr<MojoVideoEncodeAcceleratorService> mojo_vea_service_;
-
-  DISALLOW_COPY_AND_ASSIGN(MojoVideoEncodeAcceleratorServiceTest);
 };
 
 // This test verifies the BindAndInitialize() communication prologue in
@@ -180,8 +193,8 @@ TEST_F(MojoVideoEncodeAcceleratorServiceTest, EncodingParametersChange) {
   const uint32_t kNewFramerate = 321321u;
   VideoBitrateAllocation bitrate_allocation;
   bitrate_allocation.SetBitrate(0, 0, kNewBitrate);
-  mojo_vea_service()->RequestEncodingParametersChange(bitrate_allocation,
-                                                      kNewFramerate);
+  mojo_vea_service()->RequestEncodingParametersChangeWithLayers(
+      bitrate_allocation, kNewFramerate);
   base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(fake_vea());
@@ -212,8 +225,8 @@ TEST_F(MojoVideoEncodeAcceleratorServiceTest,
       bitrate_allocation.SetBitrate(si, ti, layer_bitrate);
     }
 
-    mojo_vea_service()->RequestEncodingParametersChange(bitrate_allocation,
-                                                        kNewFramerate);
+    mojo_vea_service()->RequestEncodingParametersChangeWithLayers(
+        bitrate_allocation, kNewFramerate);
     base::RunLoop().RunUntilIdle();
 
     ASSERT_TRUE(fake_vea());
@@ -227,10 +240,11 @@ TEST_F(MojoVideoEncodeAcceleratorServiceTest,
        InitializeWithInvalidClientFails) {
   CreateMojoVideoEncodeAccelerator();
 
-  mojo::PendingRemote<mojom::VideoEncodeAcceleratorClient>
+  mojo::PendingAssociatedRemote<mojom::VideoEncodeAcceleratorClient>
       invalid_mojo_vea_client;
 
-  const uint32_t kInitialBitrate = 100000u;
+  constexpr media::Bitrate kInitialBitrate =
+      media::Bitrate::ConstantBitrate(100000u);
   const media::VideoEncodeAccelerator::Config config(
       PIXEL_FORMAT_I420, kInputVisibleSize, H264PROFILE_MIN, kInitialBitrate);
   mojo_vea_service()->Initialize(
@@ -245,12 +259,14 @@ TEST_F(MojoVideoEncodeAcceleratorServiceTest, InitializeFailure) {
   CreateMojoVideoEncodeAccelerator(
       false /* will_fake_vea_initialization_succeed */);
 
-  mojo::PendingRemote<mojom::VideoEncodeAcceleratorClient> mojo_vea_client;
-  auto mojo_vea_receiver = mojo::MakeSelfOwnedReceiver(
+  mojo::PendingAssociatedRemote<mojom::VideoEncodeAcceleratorClient>
+      mojo_vea_client;
+  auto mojo_vea_receiver = mojo::MakeSelfOwnedAssociatedReceiver(
       std::make_unique<MockMojoVideoEncodeAcceleratorClient>(),
-      mojo_vea_client.InitWithNewPipeAndPassReceiver());
+      mojo_vea_client.InitWithNewEndpointAndPassReceiver());
 
-  const uint32_t kInitialBitrate = 100000u;
+  constexpr media::Bitrate kInitialBitrate =
+      media::Bitrate::ConstantBitrate(100000u);
   const media::VideoEncodeAccelerator::Config config(
       PIXEL_FORMAT_I420, kInputVisibleSize, H264PROFILE_MIN, kInitialBitrate);
   mojo_vea_service()->Initialize(
@@ -324,8 +340,8 @@ TEST_F(MojoVideoEncodeAcceleratorServiceTest, CallsBeforeInitializeAreIgnored) {
     const uint32_t kNewFramerate = 321321u;
     media::VideoBitrateAllocation bitrate_allocation;
     bitrate_allocation.SetBitrate(0, 0, kNewBitrate);
-    mojo_vea_service()->RequestEncodingParametersChange(bitrate_allocation,
-                                                        kNewFramerate);
+    mojo_vea_service()->RequestEncodingParametersChangeWithLayers(
+        bitrate_allocation, kNewFramerate);
     base::RunLoop().RunUntilIdle();
   }
 }

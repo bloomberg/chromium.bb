@@ -13,9 +13,9 @@
 #include <fuchsia/fonts/cpp/fidl.h>
 #include <fuchsia/intl/cpp/fidl.h>
 #include <fuchsia/logger/cpp/fidl.h>
+#include <fuchsia/media/cpp/fidl.h>
 #include <fuchsia/mediacodec/cpp/fidl.h>
 #include <fuchsia/memorypressure/cpp/fidl.h>
-#include <fuchsia/net/cpp/fidl.h>
 #include <fuchsia/net/interfaces/cpp/fidl.h>
 #include <fuchsia/sysmem/cpp/fidl.h>
 #include <fuchsia/ui/scenic/cpp/fidl.h>
@@ -25,12 +25,13 @@
 #include <memory>
 #include <utility>
 
-#include "base/base_paths_fuchsia.h"
+#include "base/base_paths.h"
 #include "base/clang_profiling_buildflags.h"
 #include "base/command_line.h"
 #include "base/containers/span.h"
 #include "base/files/file_util.h"
 #include "base/fuchsia/default_job.h"
+#include "base/fuchsia/file_utils.h"
 #include "base/fuchsia/filtered_service_directory.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/fuchsia/process_context.h"
@@ -38,6 +39,7 @@
 #include "base/process/launch.h"
 #include "base/process/process.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "sandbox/policy/mojom/sandbox.mojom.h"
 #include "sandbox/policy/switches.h"
 
 namespace sandbox {
@@ -66,8 +68,12 @@ struct SandboxConfig {
 
 constexpr SandboxConfig kGpuConfig = {
     base::make_span((const char* const[]){
+        // TODO(crbug.com/1224707): Use the fuchsia.scheduler API instead.
+        fuchsia::media::ProfileProvider::Name_,
         fuchsia::sysmem::Allocator::Name_,
         "fuchsia.vulkan.loader.Loader",
+        fuchsia::ui::composition::Allocator::Name_,
+        fuchsia::ui::composition::Flatland::Name_,
         fuchsia::ui::scenic::Scenic::Name_,
     }),
     kProvideVulkanResources,
@@ -75,7 +81,7 @@ constexpr SandboxConfig kGpuConfig = {
 
 constexpr SandboxConfig kNetworkConfig = {
     base::make_span((const char* const[]){
-        fuchsia::net::NameLookup::Name_,
+        "fuchsia.net.name.Lookup",
         fuchsia::net::interfaces::State::Name_,
         "fuchsia.posix.socket.Provider",
     }),
@@ -85,9 +91,12 @@ constexpr SandboxConfig kNetworkConfig = {
 constexpr SandboxConfig kRendererConfig = {
     base::make_span((const char* const[]){
         fuchsia::fonts::Provider::Name_,
+        // TODO(crbug.com/1224707): Use the fuchsia.scheduler API instead.
+        fuchsia::media::ProfileProvider::Name_,
         fuchsia::mediacodec::CodecFactory::Name_,
         fuchsia::memorypressure::Provider::Name_,
         fuchsia::sysmem::Allocator::Name_,
+        fuchsia::ui::composition::Allocator::Name_,
     }),
     kAmbientMarkVmoAsExecutable,
 };
@@ -106,26 +115,25 @@ constexpr SandboxConfig kEmptySandboxConfig = {
     0,
 };
 
-const SandboxConfig* GetConfigForSandboxType(SandboxType type) {
+const SandboxConfig* GetConfigForSandboxType(sandbox::mojom::Sandbox type) {
   switch (type) {
-    case SandboxType::kNoSandbox:
+    case sandbox::mojom::Sandbox::kNoSandbox:
       return nullptr;
-    case SandboxType::kGpu:
+    case sandbox::mojom::Sandbox::kGpu:
       return &kGpuConfig;
-    case SandboxType::kNetwork:
+    case sandbox::mojom::Sandbox::kNetwork:
       return &kNetworkConfig;
-    case SandboxType::kRenderer:
+    case sandbox::mojom::Sandbox::kRenderer:
       return &kRendererConfig;
-    case SandboxType::kVideoCapture:
+    case sandbox::mojom::Sandbox::kVideoCapture:
       return &kVideoCaptureConfig;
     // Remaining types receive no-access-to-anything.
-    case SandboxType::kAudio:
-    case SandboxType::kCdm:
-    case SandboxType::kPpapi:
-    case SandboxType::kPrintCompositor:
-    case SandboxType::kService:
-    case SandboxType::kSpeechRecognition:
-    case SandboxType::kUtility:
+    case sandbox::mojom::Sandbox::kAudio:
+    case sandbox::mojom::Sandbox::kCdm:
+    case sandbox::mojom::Sandbox::kPrintCompositor:
+    case sandbox::mojom::Sandbox::kService:
+    case sandbox::mojom::Sandbox::kSpeechRecognition:
+    case sandbox::mojom::Sandbox::kUtility:
       return &kEmptySandboxConfig;
   }
 }
@@ -141,9 +149,9 @@ constexpr auto kDefaultServices = base::make_span((const char* const[]) {
 
 }  // namespace
 
-SandboxPolicyFuchsia::SandboxPolicyFuchsia(SandboxType type) {
+SandboxPolicyFuchsia::SandboxPolicyFuchsia(sandbox::mojom::Sandbox type) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoSandbox)) {
-    type_ = SandboxType::kNoSandbox;
+    type_ = sandbox::mojom::Sandbox::kNoSandbox;
   } else {
     type_ = type;
   }
@@ -190,7 +198,7 @@ void SandboxPolicyFuchsia::UpdateLaunchOptionsForSandbox(
   options->fds_to_remap.push_back(std::make_pair(STDERR_FILENO, STDERR_FILENO));
   options->fds_to_remap.push_back(std::make_pair(STDOUT_FILENO, STDOUT_FILENO));
 
-  if (type_ == SandboxType::kNoSandbox) {
+  if (type_ == sandbox::mojom::Sandbox::kNoSandbox) {
     options->spawn_flags = FDIO_SPAWN_CLONE_NAMESPACE | FDIO_SPAWN_CLONE_JOB;
     options->clear_environment = false;
     return;
@@ -198,9 +206,8 @@ void SandboxPolicyFuchsia::UpdateLaunchOptionsForSandbox(
 
   // Map /pkg (read-only files deployed from the package) into the child's
   // namespace.
-  base::FilePath package_root;
-  base::PathService::Get(base::DIR_ASSETS, &package_root);
-  options->paths_to_clone.push_back(package_root);
+  options->paths_to_clone.push_back(
+      base::FilePath(base::kPackageRootDirectoryPath));
 
   // If /config/data/tzdata/icu/ exists then it contains up-to-date timezone
   // data which should be provided to all sub-processes, for consistency.
@@ -227,20 +234,20 @@ void SandboxPolicyFuchsia::UpdateLaunchOptionsForSandbox(
     options->paths_to_clone.push_back(base::FilePath("/config/ssl"));
 
   if (config->features & kProvideVulkanResources) {
-    // /dev/class/gpu and /config/vulkan/icd.d are to used configure and
-    // access the GPU.
-    options->paths_to_clone.push_back(base::FilePath("/dev/class/gpu"));
-    const auto vulkan_icd_path = base::FilePath("/config/vulkan/icd.d");
-    if (base::PathExists(vulkan_icd_path))
-      options->paths_to_clone.push_back(vulkan_icd_path);
-
-    // The following devices are used for Fuchsia Emulator.
-    options->paths_to_clone.insert(
-        options->paths_to_clone.end(),
-        {base::FilePath("/dev/class/goldfish-address-space"),
-         base::FilePath("/dev/class/goldfish-control"),
-         base::FilePath("/dev/class/goldfish-pipe"),
-         base::FilePath("/dev/class/goldfish-sync")});
+    static const char* const kPathsToCloneForVulkan[] = {
+        // Used configure and access the GPU.
+        "/dev/class/gpu", "/config/vulkan/icd.d",
+        // Used for Fuchsia Emulator.
+        "/dev/class/goldfish-address-space", "/dev/class/goldfish-control",
+        "/dev/class/goldfish-pipe", "/dev/class/goldfish-sync"};
+    for (const char* path_str : kPathsToCloneForVulkan) {
+      base::FilePath path(path_str);
+      // Vulkan paths aren't needed with newer Fuchsia versions, so they may not
+      // be available.
+      if (base::PathExists(path)) {
+        options->paths_to_clone.push_back(path);
+      }
+    }
   }
 
   // If the process needs access to any services then transfer the
@@ -256,8 +263,8 @@ void SandboxPolicyFuchsia::UpdateLaunchOptionsForSandbox(
   ZX_CHECK(status == ZX_OK, status) << "zx_job_create";
   options->job_handle = job_.get();
 
-  // Only allow ambient VMO mark-as-executable capability to be granted
-  // to processes that which need to JIT (i.e. do not run V8/WASM).
+  // Only allow the ambient VMO mark-as-executable capability to be granted
+  // to processes that need to JIT (i.e. run V8/WASM).
   zx_policy_basic_v2_t ambient_mark_vmo_exec{
       ZX_POL_AMBIENT_MARK_VMO_EXEC,
 

@@ -29,10 +29,12 @@
 #include <utility>
 
 #include "base/auto_reset.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/stl_util.h"
+#include "base/strings/strcat.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/loader/loading_behavior_flag.h"
-#include "third_party/blink/public/mojom/appcache/appcache.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/css/media_values_cached.h"
@@ -56,11 +58,10 @@
 #include "third_party/blink/renderer/core/loader/preload_helper.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/script/html_parser_script_runner.h"
-#include "third_party/blink/renderer/core/script/script_runner.h"
 #include "third_party/blink/renderer/platform/bindings/runtime_call_stats.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -88,13 +89,6 @@ size_t GetDiscardedTokenCountForTesting() {
 // the final page. This is the default value to use, if no Finch-provided
 // value exists.
 constexpr int kDefaultMaxTokenizationBudget = 250;
-
-// The parser can temporarily defer execution of async scripts for successive
-// <script> tags (this is to reduce site breakage). This constant controls the
-// number of elements that have to be in between two <script> tags for them to
-// be considered "adjacent" for this heuristic. TODO(Richard.Townsend@arm.com,
-// https://crbug.com/1204178): remove this heuristic.
-constexpr int kTokensBetweenAdjacentScripts = 6;
 
 class EndIfDelayedForbiddenScope;
 class ShouldCompleteScope;
@@ -144,6 +138,7 @@ class HTMLDocumentParserState
         end_if_delayed_forbidden_(0),
         should_complete_(0),
         should_attempt_to_end_on_eof_(0),
+        times_yielded_(0),
         needs_link_header_dispatch_(true),
         have_seen_first_byte_(false) {}
 
@@ -197,6 +192,9 @@ class HTMLDocumentParserState
   }
   ParserSynchronizationPolicy GetMode() const { return mode_; }
 
+  void MarkYield() { times_yielded_++; }
+  int TimesYielded() const { return times_yielded_; }
+
   void SetSeenCSPMetaTag(const bool seen) {
     if (meta_csp_state_ == MetaCSPTokenState::kUnenforceable)
       return;
@@ -239,6 +237,7 @@ class HTMLDocumentParserState
   // Set to non-zero if Document::Finish has been called and we're operating
   // asynchronously.
   int should_attempt_to_end_on_eof_;
+  int times_yielded_;
   bool needs_link_header_dispatch_;
   bool have_seen_first_byte_;
 };
@@ -384,22 +383,12 @@ HTMLDocumentParser::HTMLDocumentParser(
       context_element, report_errors, options_));
 }
 
-namespace {
-int GetMaxTokenizationBudget() {
-  static int max = base::GetFieldTrialParamByFeatureAsInt(
-      features::kForceSynchronousHTMLParsing, "MaxTokenizationBudget",
-      kDefaultMaxTokenizationBudget);
-  return max;
-}
-}  // namespace
-
 HTMLDocumentParser::HTMLDocumentParser(Document& document,
                                        ParserContentPolicy content_policy,
                                        ParserSynchronizationPolicy sync_policy,
                                        ParserPrefetchPolicy prefetch_policy)
     : ScriptableDocumentParser(document, content_policy),
       options_(&document),
-      reentry_permit_(HTMLParserReentryPermit::Create()),
       token_(sync_policy != kAllowAsynchronousParsing
                  ? std::make_unique<HTMLToken>()
                  : nullptr),
@@ -451,8 +440,6 @@ HTMLDocumentParser::HTMLDocumentParser(Document& document,
         document.UkmSourceID(), document.UkmRecorder());
   }
 
-  max_tokenization_budget_ = GetMaxTokenizationBudget();
-
   // Don't create preloader for parsing clipboard content.
   if (content_policy == kDisallowScriptingAndPluginContent)
     return;
@@ -478,6 +465,7 @@ void HTMLDocumentParser::Dispose() {
 }
 
 void HTMLDocumentParser::Trace(Visitor* visitor) const {
+  visitor->Trace(reentry_permit_);
   visitor->Trace(tree_builder_);
   visitor->Trace(parser_scheduler_);
   visitor->Trace(script_runner_);
@@ -500,7 +488,8 @@ void HTMLDocumentParser::Detach() {
   DocumentParser::Detach();
   if (script_runner_)
     script_runner_->Detach();
-  tree_builder_->Detach();
+  if (tree_builder_)
+    tree_builder_->Detach();
   // FIXME: It seems wrong that we would have a preload scanner here. Yet during
   // fast/dom/HTMLScriptElement/script-load-events.html we do.
   preload_scanner_.reset();
@@ -559,10 +548,6 @@ void HTMLDocumentParser::PrepareToStopParsing() {
   // underneath. In that case, just bail out.
   if (IsDetached())
     return;
-
-  // If we suspended script async execution for https://crbug.com/1204178,
-  // signal that it's OK to start processing them again.
-  GetDocument()->GetScriptRunner()->ResumeAsyncScriptExecution();
 
   AttemptToRunDeferredScriptsAndEnd();
 }
@@ -681,17 +666,17 @@ void HTMLDocumentParser::RunScriptsForPausedTreeBuilder() {
 
 HTMLDocumentParser::NextTokenStatus HTMLDocumentParser::CanTakeNextToken() {
   if (IsStopped())
-    return NoTokens;
+    return kNoTokens;
 
   // If we're paused waiting for a script, we try to execute scripts before
   // continuing.
-  auto ret = HaveTokens;
+  auto ret = kHaveTokens;
   if (tree_builder_->HasParserBlockingScript()) {
     RunScriptsForPausedTreeBuilder();
-    ret = HaveTokensAfterScript;
+    ret = kHaveTokensAfterScript;
   }
   if (IsStopped() || IsPaused())
-    return NoTokens;
+    return kNoTokens;
   return ret;
 }
 
@@ -735,34 +720,17 @@ void HTMLDocumentParser::EnqueueTokenizedChunk(
   }
 
   if (preloader_) {
-    bool appcache_fetched = false;
-    if (GetDocument()->Loader()) {
-      appcache_fetched = (GetDocument()->Loader()->GetResponse().AppCacheID() !=
-                          mojom::blink::kAppCacheNoCacheId);
-    }
-    bool appcache_initialized = GetDocument()->documentElement();
-    // Delay sending some requests if meta tag based CSP is present or
-    // if AppCache was used to fetch the HTML but was not yet initialized for
-    // this document.
-    if (pending_csp_meta_token_ ||
-        ((!base::FeatureList::IsEnabled(
-              blink::features::kVerifyHTMLFetchedFromAppCacheBeforeDelay) ||
-          appcache_fetched) &&
-         !appcache_initialized)) {
-      PreloadRequestStream link_rel_preloads;
+    // Delay sending some requests if meta tag based CSP is present.
+    if (pending_csp_meta_token_) {
       for (auto& request : chunk->preloads) {
-        // Link rel preloads don't need to wait for AppCache but they
-        // should probably wait for CSP.
-        if (!pending_csp_meta_token_ && request->IsLinkRelPreload())
-          link_rel_preloads.push_back(std::move(request));
-        else
-          queued_preloads_.push_back(std::move(request));
+        queued_preloads_.push_back(std::move(request));
       }
-      preloader_->TakeAndPreload(link_rel_preloads);
     } else {
       // We can safely assume that there are no queued preloads request after
-      // the document element is available, as we empty the queue immediately
-      // after the document element is created in documentElementAvailable().
+      // the document element is available and if there is no pending csp token
+      // in the speculation buffer, as we empty the queue immediately
+      // after the document element is created in DocumentElementAvailable()
+      // or when the csp token has been parsed.
       DCHECK(queued_preloads_.IsEmpty());
       preloader_->TakeAndPreload(chunk->preloads);
     }
@@ -865,7 +833,7 @@ void HTMLDocumentParser::DiscardSpeculationsAndResumeFrom(
                            background_parser_, std::move(checkpoint)));
 }
 
-size_t HTMLDocumentParser::ProcessTokenizedChunkFromBackgroundParser(
+wtf_size_t HTMLDocumentParser::ProcessTokenizedChunkFromBackgroundParser(
     std::unique_ptr<TokenizedChunk> pop_chunk,
     bool* reached_end_of_file) {
   TRACE_EVENT_WITH_FLOW0(
@@ -887,7 +855,7 @@ size_t HTMLDocumentParser::ProcessTokenizedChunkFromBackgroundParser(
 
   std::unique_ptr<TokenizedChunk> chunk(std::move(pop_chunk));
   const CompactHTMLTokenStream& tokens = chunk->tokens;
-  size_t element_token_count = 0;
+  wtf_size_t element_token_count = 0;
 
   loading_task_runner_->PostTask(
       FROM_HERE, WTF::Bind(&BackgroundHTMLParser::StartedChunkWithCheckpoint,
@@ -978,7 +946,7 @@ void HTMLDocumentParser::PumpPendingSpeculations() {
   bool reached_end_of_file = false;
   while (!speculations_.IsEmpty()) {
     DCHECK(!IsScheduledForUnpause());
-    size_t element_token_count = ProcessTokenizedChunkFromBackgroundParser(
+    wtf_size_t element_token_count = ProcessTokenizedChunkFromBackgroundParser(
         speculations_.TakeFirst(), &reached_end_of_file);
     session.AddedElementTokens(element_token_count);
 
@@ -1042,37 +1010,27 @@ bool HTMLDocumentParser::PumpTokenizer() {
   probe::ParseHTML probe(GetDocument(), this);
 
   bool should_yield = false;
-  bool should_pause_async_script_execution = false;
-  int budget = max_tokenization_budget_;
+  // If we've yielded more than 2 times, then set the budget to a very large
+  // number, to attempt to consume all available tokens in one go. This
+  // heuristic is intended to allow a quick first contentful paint, followed by
+  // a larger rendering lifecycle that processes the remainder of the page.
+  int budget = (task_runner_state_->TimesYielded() <= 2)
+                   ? kDefaultMaxTokenizationBudget
+                   : 1e7;
 
   base::ElapsedTimer chunk_parsing_timer_;
   unsigned tokens_parsed = 0;
   while (!should_yield) {
     const auto next_token_status = CanTakeNextToken();
-    if (next_token_status == NoTokens) {
+    if (next_token_status == kNoTokens) {
       // No tokens left to process in this pump, so break
-      if ((tokens_parsed <= kTokensBetweenAdjacentScripts) && !IsDetached() &&
-          GetDocument()->GetScriptRunner()) {
-        should_pause_async_script_execution =
-            GetDocument()->GetScriptRunner()->AsyncScriptExecutionPaused();
-      }
       break;
-    } else if (next_token_status == HaveTokensAfterScript &&
+    } else if (next_token_status == kHaveTokensAfterScript &&
                task_runner_state_->HaveExitedHeader()) {
-      // Just executed a parser-blocking script in the body (which is usually
-      // very expensive), so expire the budget, yield, and permit paint if
-      // needed.
-      budget = 0;
-      if (!should_run_until_completion) {
-        // If we're yielding here, temporarily block async script execution.
-        // There are some sites which assume
-        // <script>...</script><script>...</script> run in a single parser pump
-        // and can't handle an async script running in between. See
-        // crbug.com/1197376 for details.
-        should_yield = true;
-        should_pause_async_script_execution = true;
-        break;
-      }
+      // Just executed a parser-blocking script in the body. We'd probably like
+      // to yield at some point soon, especially if we're in "extended budget"
+      // mode. So reduce the budget back to at most the default.
+      budget = std::min(budget, kDefaultMaxTokenizationBudget);
     }
     {
       RUNTIME_CALL_TIMER_SCOPE(
@@ -1095,17 +1053,8 @@ bool HTMLDocumentParser::PumpTokenizer() {
     DCHECK(IsStopped() || Token().IsUninitialized());
   }
 
-  if (LIKELY(!IsDetached())) {
-    auto* script_runner = GetDocument()->GetScriptRunner();
-    if (LIKELY(script_runner)) {
-      if (should_pause_async_script_execution)
-        script_runner->PauseAsyncScriptExecution();
-      else
-        script_runner->ResumeAsyncScriptExecution();
-    }
-  }
 
-  if (IsStopped()) {
+  if (IsStopped() || IsParsingFragment()) {
     if (metrics_reporter_ && tokens_parsed) {
       metrics_reporter_->AddChunk(chunk_parsing_timer_.Elapsed(),
                                   tokens_parsed);
@@ -1137,6 +1086,8 @@ bool HTMLDocumentParser::PumpTokenizer() {
 
   // should_run_until_completion implies that we should not yield
   CHECK(!should_run_until_completion || !should_yield);
+  if (should_yield)
+    task_runner_state_->MarkYield();
   return should_yield;
 }
 
@@ -1358,10 +1309,6 @@ void HTMLDocumentParser::Append(const String& input_source) {
   }
 
   if (GetDocument()->IsPrefetchOnly()) {
-    // Do not prefetch if there is an appcache.
-    if (GetDocument()->Loader()->GetResponse().AppCacheID() != 0)
-      return;
-
     preload_scanner_->AppendToEnd(source);
     if (preloader_) {
       // TODO(Richard.Townsend@arm.com): add test coverage of this branch.
@@ -1555,6 +1502,14 @@ TextPosition HTMLDocumentParser::GetTextPosition() const {
 }
 
 bool HTMLDocumentParser::IsWaitingForScripts() const {
+  if (IsParsingFragment()) {
+    // HTMLTreeBuilder may have a parser blocking script element, but we
+    // ignore it during fragment parsing.
+    DCHECK(!(tree_builder_->HasParserBlockingScript() || (script_runner_ &&
+    script_runner_->HasParserBlockingScript()) || reentry_permit_->ParserPauseFlag()));
+    return false;
+  }
+
   // When the TreeBuilder encounters a </script> tag, it returns to the
   // HTMLDocumentParser where the script is transfered from the treebuilder to
   // the script runner. The script runner will hold the script until its loaded
@@ -1817,6 +1772,7 @@ std::unique_ptr<HTMLPreloadScanner> HTMLDocumentParser::CreatePreloadScanner(
 void HTMLDocumentParser::ScanAndPreload(HTMLPreloadScanner* scanner) {
   TRACE_EVENT0("blink", "HTMLDocumentParser::ScanAndPreload");
   DCHECK(preloader_);
+  base::ElapsedTimer timer;
   bool seen_csp_meta_tag = false;
   absl::optional<ViewportDescription> viewport_description;
   PreloadRequestStream requests =
@@ -1855,6 +1811,9 @@ void HTMLDocumentParser::ScanAndPreload(HTMLPreloadScanner* scanner) {
     queued_preloads_.push_back(std::move(request));
   }
   FetchQueuedPreloads();
+  base::UmaHistogramTimes(
+      base::StrCat({"Blink.ScanAndPreloadTime", GetPreloadHistogramSuffix()}),
+      timer.Elapsed());
 }
 
 void HTMLDocumentParser::FetchQueuedPreloads() {
@@ -1866,12 +1825,25 @@ void HTMLDocumentParser::FetchQueuedPreloads() {
       return;
   }
 
-  if (!queued_preloads_.IsEmpty())
+  if (!queued_preloads_.IsEmpty()) {
+    base::ElapsedTimer timer;
     preloader_->TakeAndPreload(queued_preloads_);
+    base::UmaHistogramTimes(base::StrCat({"Blink.FetchQueuedPreloadsTime",
+                                          GetPreloadHistogramSuffix()}),
+                            timer.Elapsed());
+  }
   if (auto* subresource_redirect_origins_preloader =
           SubresourceRedirectOriginsPreloader::From(*GetDocument())) {
     subresource_redirect_origins_preloader->PreloadOriginsNow();
   }
+}
+
+std::string HTMLDocumentParser::GetPreloadHistogramSuffix() {
+  bool is_main_frame = GetDocument() && GetDocument()->GetFrame() &&
+                       GetDocument()->GetFrame()->IsMainFrame();
+  bool have_seen_first_byte = task_runner_state_->HaveSeenFirstByte();
+  return base::StrCat({is_main_frame ? ".MainFrame" : ".Subframe",
+                       have_seen_first_byte ? ".NonInitial" : ".Initial"});
 }
 
 }  // namespace blink

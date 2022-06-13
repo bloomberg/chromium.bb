@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "extensions/renderer/bindings/api_binding_hooks_delegate.h"
 #include "v8/include/v8.h"
@@ -20,6 +19,11 @@ namespace extensions {
 class APIBindingHooksTestDelegate : public APIBindingHooksDelegate {
  public:
   APIBindingHooksTestDelegate();
+
+  APIBindingHooksTestDelegate(const APIBindingHooksTestDelegate&) = delete;
+  APIBindingHooksTestDelegate& operator=(const APIBindingHooksTestDelegate&) =
+      delete;
+
   ~APIBindingHooksTestDelegate() override;
 
   using CustomEventFactory = base::RepeatingCallback<v8::Local<v8::Value>(
@@ -72,8 +76,6 @@ class APIBindingHooksTestDelegate : public APIBindingHooksDelegate {
   CustomEventFactory custom_event_;
   TemplateInitializer template_initializer_;
   InstanceInitializer instance_initializer_;
-
-  DISALLOW_COPY_AND_ASSIGN(APIBindingHooksTestDelegate);
 };
 
 }  // namespace extensions

@@ -3,9 +3,14 @@
 # found in the LICENSE file.
 
 """The `windows_sdk` module provides safe functions to access a hermetic
-Microsoft Visual Studio installation.
+Microsoft Visual Studio installation which is derived from Chromium's MSVC
+toolchain.
 
-Available only to Google-run bots.
+See (internal):
+  * go/chromium-msvc-toolchain
+  * go/windows-sdk-cipd-update
+
+Available only on Google-run bots.
 """
 
 import collections
@@ -94,38 +99,44 @@ class WindowsSDKApi(recipe_api.RecipeApi):
     env = {}
     env_prefixes = {}
 
-    # Load .../win_sdk/bin/SetEnv.${arch}.json to extract the required
-    # environment. It contains a dict that looks like this:
-    # {
-    #   "env": {
-    #     "VAR": [["..", "..", "x"], ["..", "..", "y"]],
-    #     ...
-    #   }
-    # }
-    # All these environment variables need to be added to the environment
-    # for the compiler and linker to work.
-    assert target_arch in ('x86', 'x64')
-    filename = 'SetEnv.%s.json' % target_arch
-    step_result = self.m.json.read(
-        'read %s' % filename, sdk_dir.join('win_sdk', 'bin', filename),
-        step_test_data=lambda: self.m.json.test_api.output({
-            'env': {
-                'PATH': [['..', '..', 'win_sdk', 'bin', 'x64']],
-                'VSINSTALLDIR': [['..', '..\\']],
-            },
-        }))
-    data = step_result.json.output.get('env')
+    if target_arch not in ('x86', 'x64', 'arm64'):
+      raise ValueError('unknown architecture {!r}'.format(target_arch))
+
+    data = self.m.step('read SetEnv json', [
+        'python3',
+        self.resource('find_env_json.py'),
+        '--sdk_root',
+        sdk_dir,
+        '--target_arch',
+        target_arch,
+        '--output_json',
+        self.m.json.output(),
+    ],
+                       step_test_data=lambda: self.m.json.test_api.output({
+                           'env': {
+                               'PATH': [['..', '..', 'win_sdk', 'bin', 'x64']],
+                               'VSINSTALLDIR': [['..', '..\\']],
+                           },
+                       })).json.output.get('env')
     for key in data:
+      # SDK cipd packages prior to 10.0.19041.0 contain entries like:
+      #  "INCLUDE": [["..","..","win_sdk","Include","10.0.17134.0","um"], and
       # recipes' Path() does not like .., ., \, or /, so this is cumbersome.
       # What we want to do is:
       #   [sdk_bin_dir.join(*e) for e in env[k]]
       # Instead do that badly, and rely (but verify) on the fact that the paths
       # are all specified relative to the root, but specified relative to
       # win_sdk/bin (i.e. everything starts with "../../".)
+      #
+      # For 10.0.19041.0 and later, the cipd SDK package json is like:
+      #  "INCLUDE": [["Windows Kits","10","Include","10.0.19041.0","um"], so
+      # we simply join paths there.
       results = []
       for value in data[key]:
-        assert value[0] == '..' and (value[1] == '..' or value[1] == '..\\')
-        results.append('%s' % sdk_dir.join(*value[2:]))
+        if value[0] == '..' and (value[1] == '..' or value[1] == '..\\'):
+          results.append('%s' % sdk_dir.join(*value[2:]))
+        else:
+          results.append('%s' % sdk_dir.join(*value))
 
       # PATH is special-cased because we don't want to overwrite other things
       # like C:\Windows\System32. Others are replacements because prepending

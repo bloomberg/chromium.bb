@@ -13,10 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 """Tests for make_template."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import functools
 import traceback
 
@@ -151,6 +147,67 @@ class TemplateTest(test.TestCase):
       # Parameters are tied, so the loss should have gone down after training.
       self.assertLess(final_test_loss.numpy(), initial_test_loss.numpy())
 
+  def test_eager_delayed_store_pickup(self):
+    """This test shows a very simple line model with test_loss in eager mode.
+
+    The template is used to share parameters between a training and test model.
+
+    This test also shows that it can pick up explicitly set variable stores
+    even if they are only set before the first template usage.
+    """
+    with context.eager_mode():
+      training_input, training_output = ([1., 2., 3., 4.], [2.8, 5.1, 7.2, 8.7])
+      test_input, test_output = ([5., 6., 7., 8.], [11, 13, 15, 17])
+
+      random_seed.set_random_seed(1234)
+
+      def test_line(x):
+        m = variable_scope.get_variable(
+            "w", shape=[], initializer=init_ops.truncated_normal_initializer())
+        b = variable_scope.get_variable(
+            "b", shape=[], initializer=init_ops.truncated_normal_initializer())
+        return x * m + b
+
+      line_template = template.make_template("line", test_line)
+
+      def train_loss():
+        train_prediction = line_template(training_input)
+        return math_ops.reduce_mean(
+            math_ops.square(train_prediction - training_output))
+
+      def test_loss():
+        test_prediction = line_template(test_input)
+        return math_ops.reduce_mean(
+            math_ops.square(test_prediction - test_output))
+
+      store = variable_scope._VariableStore()
+      store._store_eager_variables = True
+
+      with variable_scope.with_variable_store(store):
+        optimizer = gradient_descent.GradientDescentOptimizer(0.1)
+        initial_test_loss = test_loss()
+        optimizer.minimize(train_loss)
+        final_test_loss = test_loss()
+
+        # Parameters are tied, so the loss should have gone down after training.
+        self.assertLess(final_test_loss.numpy(), initial_test_loss.numpy())
+
+      # Verify that the explicitly set store is not empty
+      # and the make_template picked it up
+      self.assertEqual(set(store._vars.keys()), {"line/w", "line/b"})
+
+      # But the store should only get picked up once, so a second
+      # store will go unused:
+      second_store = variable_scope._VariableStore()
+      second_store._store_eager_variables = True
+
+      with variable_scope.with_variable_store(second_store):
+        optimizer = gradient_descent.GradientDescentOptimizer(0.1)
+        test_loss()
+        optimizer.minimize(train_loss)
+        test_loss()
+      self.assertEmpty(second_store._vars)
+
   @test_util.run_in_graph_and_eager_modes
   def test_skip_stack_frames(self):
     first = traceback.format_stack()
@@ -195,13 +252,13 @@ class TemplateTest(test.TestCase):
     tmpl1()
     tmpl2 = template.make_template(
         "_", variable_scoped_function, unique_name_="s1")
-    with self.assertRaisesRegexp(
+    with self.assertRaisesRegex(
         ValueError, "Variable s1/dummy already exists, disallowed.*"):
       tmpl2()
 
   def test_unique_name_raise_error_in_eager(self):
     with context.eager_mode():
-      with self.assertRaisesRegexp(
+      with self.assertRaisesRegex(
           ValueError,
           "unique_name_ cannot be used when eager execution is enabled."):
         template.make_template(
@@ -258,8 +315,7 @@ class TemplateTest(test.TestCase):
 
   @test_util.run_in_graph_and_eager_modes
   def test_template_without_name(self):
-    with self.assertRaisesRegexp(
-        ValueError, "name cannot be None."):
+    with self.assertRaisesRegex(ValueError, "name cannot be None."):
       template.make_template(None, variable_scoped_function)
 
   @test_util.run_in_graph_and_eager_modes
@@ -591,31 +647,36 @@ class TemplateTest(test.TestCase):
     linear1 = make_linear_module(output_size=2, name="foo")
     outputs_a, w1 = linear1(inputs)
     outputs_b, _ = linear1(inputs)
-    self.assertEquals("foo", linear1.variable_scope.name)
-    self.assertEquals("foo/w:0", w1.name)
+    self.assertEqual("foo", linear1.variable_scope.name)
+    self.assertEqual("foo/w:0", w1.name)
     if not context.executing_eagerly():
-      self.assertEquals("foo/add:0", outputs_a.name,
-                        "First application of template should get "
-                        "same name scope as variables.")
-      self.assertEquals("foo_1/add:0", outputs_b.name,
-                        "Second application of template should get "
-                        "a freshly uniquified name scope.")
+      self.assertEqual(
+          "foo/add:0", outputs_a.name,
+          "First application of template should get "
+          "same name scope as variables.")
+      self.assertEqual(
+          "foo_1/add:0", outputs_b.name,
+          "Second application of template should get "
+          "a freshly uniquified name scope.")
 
     linear2 = make_linear_module(output_size=2, name="foo")
     outputs_c, w2 = linear2(inputs)
     outputs_d, _ = linear2(inputs)
-    self.assertEquals("foo_1", linear2.variable_scope.name,
-                      "New template gets a freshly uniquified variable scope "
-                      "because 'foo' is already taken.")
-    self.assertEquals("foo_1/w:0", w2.name)
+    self.assertEqual(
+        "foo_1", linear2.variable_scope.name,
+        "New template gets a freshly uniquified variable scope "
+        "because 'foo' is already taken.")
+    self.assertEqual("foo_1/w:0", w2.name)
     if not context.executing_eagerly():
-      self.assertEquals("foo_1_1/add:0", outputs_c.name,
-                        "First application of template would get "
-                        "same name scope as variables, but 'foo_1' is already "
-                        "a name scope.")
-      self.assertEquals("foo_1_2/add:0", outputs_d.name,
-                        "Second application of template should also get "
-                        "a freshly uniquified name scope.")
+      self.assertEqual(
+          "foo_1_1/add:0", outputs_c.name,
+          "First application of template would get "
+          "same name scope as variables, but 'foo_1' is already "
+          "a name scope.")
+      self.assertEqual(
+          "foo_1_2/add:0", outputs_d.name,
+          "Second application of template should also get "
+          "a freshly uniquified name scope.")
 
   @test_util.run_in_graph_and_eager_modes
   def test_global_variables(self):

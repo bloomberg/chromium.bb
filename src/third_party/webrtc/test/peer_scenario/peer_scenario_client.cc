@@ -13,6 +13,7 @@
 #include <memory>
 #include <utility>
 
+#include "absl/memory/memory.h"
 #include "api/audio_codecs/builtin_audio_decoder_factory.h"
 #include "api/audio_codecs/builtin_audio_encoder_factory.h"
 #include "api/rtc_event_log/rtc_event_log_factory.h"
@@ -27,7 +28,6 @@
 #include "test/fake_decoder.h"
 #include "test/fake_vp8_encoder.h"
 #include "test/frame_generator_capturer.h"
-#include "test/peer_scenario/sdp_callbacks.h"
 
 namespace webrtc {
 namespace test {
@@ -117,19 +117,64 @@ class LambdaPeerConnectionObserver final : public PeerConnectionObserver {
   PeerScenarioClient::CallbackHandlers* handlers_;
 };
 
+class LambdaCreateSessionDescriptionObserver
+    : public CreateSessionDescriptionObserver {
+ public:
+  explicit LambdaCreateSessionDescriptionObserver(
+      std::function<void(std::unique_ptr<SessionDescriptionInterface> desc)>
+          on_success)
+      : on_success_(on_success) {}
+  void OnSuccess(SessionDescriptionInterface* desc) override {
+    // Takes ownership of answer, according to CreateSessionDescriptionObserver
+    // convention.
+    on_success_(absl::WrapUnique(desc));
+  }
+  void OnFailure(RTCError error) override {
+    RTC_DCHECK_NOTREACHED() << error.message();
+  }
+
+ private:
+  std::function<void(std::unique_ptr<SessionDescriptionInterface> desc)>
+      on_success_;
+};
+
+class LambdaSetLocalDescriptionObserver
+    : public SetLocalDescriptionObserverInterface {
+ public:
+  explicit LambdaSetLocalDescriptionObserver(
+      std::function<void(RTCError)> on_complete)
+      : on_complete_(on_complete) {}
+  void OnSetLocalDescriptionComplete(RTCError error) override {
+    on_complete_(error);
+  }
+
+ private:
+  std::function<void(RTCError)> on_complete_;
+};
+
+class LambdaSetRemoteDescriptionObserver
+    : public SetRemoteDescriptionObserverInterface {
+ public:
+  explicit LambdaSetRemoteDescriptionObserver(
+      std::function<void(RTCError)> on_complete)
+      : on_complete_(on_complete) {}
+  void OnSetRemoteDescriptionComplete(RTCError error) override {
+    on_complete_(error);
+  }
+
+ private:
+  std::function<void(RTCError)> on_complete_;
+};
+
 class FakeVideoEncoderFactory : public VideoEncoderFactory {
  public:
   FakeVideoEncoderFactory(Clock* clock) : clock_(clock) {}
   std::vector<SdpVideoFormat> GetSupportedFormats() const override {
     return {SdpVideoFormat("VP8")};
   }
-  CodecInfo QueryVideoEncoder(const SdpVideoFormat& format) const override {
-    RTC_CHECK_EQ(format.name, "VP8");
-    CodecInfo info;
-    return info;
-  }
   std::unique_ptr<VideoEncoder> CreateVideoEncoder(
       const SdpVideoFormat& format) override {
+    RTC_CHECK_EQ(format.name, "VP8");
     return std::make_unique<FakeVp8Encoder>(clock_);
   }
 
@@ -297,18 +342,21 @@ void PeerScenarioClient::CreateAndSetSdp(
     std::function<void(std::string)> offer_handler) {
   RTC_DCHECK_RUN_ON(signaling_thread_);
   peer_connection_->CreateOffer(
-      SdpCreateObserver([=](SessionDescriptionInterface* offer) {
-        RTC_DCHECK_RUN_ON(signaling_thread_);
-        if (munge_offer) {
-          munge_offer(offer);
-        }
-        std::string sdp_offer;
-        RTC_CHECK(offer->ToString(&sdp_offer));
-        peer_connection_->SetLocalDescription(
-            SdpSetObserver(
-                [sdp_offer, offer_handler]() { offer_handler(sdp_offer); }),
-            offer);
-      }),
+      rtc::make_ref_counted<LambdaCreateSessionDescriptionObserver>(
+          [=](std::unique_ptr<SessionDescriptionInterface> offer) {
+            RTC_DCHECK_RUN_ON(signaling_thread_);
+            if (munge_offer) {
+              munge_offer(offer.get());
+            }
+            std::string sdp_offer;
+            RTC_CHECK(offer->ToString(&sdp_offer));
+            peer_connection_->SetLocalDescription(
+                std::move(offer),
+                rtc::make_ref_counted<LambdaSetLocalDescriptionObserver>(
+                    [sdp_offer, offer_handler](RTCError) {
+                      offer_handler(sdp_offer);
+                    }));
+          }),
       PeerConnectionInterface::RTCOfferAnswerOptions());
 }
 
@@ -324,20 +372,22 @@ void PeerScenarioClient::SetSdpOfferAndGetAnswer(
   RTC_DCHECK_RUN_ON(signaling_thread_);
   peer_connection_->SetRemoteDescription(
       CreateSessionDescription(SdpType::kOffer, remote_offer),
-      SdpSetObserver([=]() {
+      rtc::make_ref_counted<LambdaSetRemoteDescriptionObserver>([=](RTCError) {
         RTC_DCHECK_RUN_ON(signaling_thread_);
         peer_connection_->CreateAnswer(
-            SdpCreateObserver([=](SessionDescriptionInterface* answer) {
-              RTC_DCHECK_RUN_ON(signaling_thread_);
-              std::string sdp_answer;
-              answer->ToString(&sdp_answer);
-              RTC_LOG(LS_INFO) << sdp_answer;
-              peer_connection_->SetLocalDescription(
-                  SdpSetObserver([answer_handler, sdp_answer]() {
-                    answer_handler(sdp_answer);
-                  }),
-                  answer);
-            }),
+            rtc::make_ref_counted<LambdaCreateSessionDescriptionObserver>(
+                [=](std::unique_ptr<SessionDescriptionInterface> answer) {
+                  RTC_DCHECK_RUN_ON(signaling_thread_);
+                  std::string sdp_answer;
+                  answer->ToString(&sdp_answer);
+                  RTC_LOG(LS_INFO) << sdp_answer;
+                  peer_connection_->SetLocalDescription(
+                      std::move(answer),
+                      rtc::make_ref_counted<LambdaSetLocalDescriptionObserver>(
+                          [answer_handler, sdp_answer](RTCError) {
+                            answer_handler(sdp_answer);
+                          }));
+                }),
             PeerConnectionInterface::RTCOfferAnswerOptions());
       }));
 }
@@ -353,10 +403,12 @@ void PeerScenarioClient::SetSdpAnswer(
   RTC_DCHECK_RUN_ON(signaling_thread_);
   peer_connection_->SetRemoteDescription(
       CreateSessionDescription(SdpType::kAnswer, remote_answer),
-      SdpSetObserver([remote_answer, done_handler] {
-        auto answer = CreateSessionDescription(SdpType::kAnswer, remote_answer);
-        done_handler(*answer);
-      }));
+      rtc::make_ref_counted<LambdaSetRemoteDescriptionObserver>(
+          [remote_answer, done_handler](RTCError) {
+            auto answer =
+                CreateSessionDescription(SdpType::kAnswer, remote_answer);
+            done_handler(*answer);
+          }));
 }
 
 void PeerScenarioClient::AddIceCandidate(

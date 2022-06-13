@@ -65,7 +65,18 @@ WaylandWindow* WaylandWindowManager::GetWindowWithLargestBounds() const {
 }
 
 WaylandWindow* WaylandWindowManager::GetCurrentFocusedWindow() const {
-  for (auto entry : window_map_) {
+  for (const auto& entry : window_map_) {
+    WaylandWindow* window = entry.second;
+    if (window->has_pointer_focus() || window->has_touch_focus() ||
+        window->has_keyboard_focus())
+      return window;
+  }
+  return nullptr;
+}
+
+WaylandWindow* WaylandWindowManager::GetCurrentPointerOrTouchFocusedWindow()
+    const {
+  for (const auto& entry : window_map_) {
     WaylandWindow* window = entry.second;
     if (window->has_pointer_focus() || window->has_touch_focus())
       return window;
@@ -73,8 +84,26 @@ WaylandWindow* WaylandWindowManager::GetCurrentFocusedWindow() const {
   return nullptr;
 }
 
+WaylandWindow* WaylandWindowManager::GetCurrentPointerFocusedWindow() const {
+  for (const auto& entry : window_map_) {
+    WaylandWindow* window = entry.second;
+    if (window->has_pointer_focus())
+      return window;
+  }
+  return nullptr;
+}
+
+WaylandWindow* WaylandWindowManager::GetCurrentTouchFocusedWindow() const {
+  for (const auto& entry : window_map_) {
+    WaylandWindow* window = entry.second;
+    if (window->has_touch_focus())
+      return window;
+  }
+  return nullptr;
+}
+
 WaylandWindow* WaylandWindowManager::GetCurrentKeyboardFocusedWindow() const {
-  for (auto entry : window_map_) {
+  for (const auto& entry : window_map_) {
     WaylandWindow* window = entry.second;
     if (window->has_keyboard_focus())
       return window;
@@ -82,35 +111,36 @@ WaylandWindow* WaylandWindowManager::GetCurrentKeyboardFocusedWindow() const {
   return nullptr;
 }
 
-WaylandWindow* WaylandWindowManager::FindParentForNewWindow(
-    gfx::AcceleratedWidget parent_widget) const {
-  auto* parent_window = GetWindow(parent_widget);
+void WaylandWindowManager::SetPointerFocusedWindow(WaylandWindow* window) {
+  auto* old_focused_window = GetCurrentPointerFocusedWindow();
+  if (window == old_focused_window)
+    return;
+  if (old_focused_window)
+    old_focused_window->SetPointerFocus(false);
+  if (window)
+    window->SetPointerFocus(true);
+}
 
-  // If propagated parent has already had a child, it means that |this| is a
-  // submenu of a 3-dot menu. In aura, the parent of a 3-dot menu and its
-  // submenu is the main native widget, which is the main window. In contrast,
-  // Wayland requires a menu window to be a parent of a submenu window. Thus,
-  // check if the suggested parent has a child. If yes, take its child as a
-  // parent of |this|.
-  // Another case is a notification window or a drop down window, which does not
-  // have a parent in aura. In this case, take the current focused window as a
-  // parent.
-  if (!parent_window)
-    parent_window = GetCurrentFocusedWindow();
+void WaylandWindowManager::SetTouchFocusedWindow(WaylandWindow* window) {
+  auto* old_focused_window = GetCurrentTouchFocusedWindow();
+  if (window == old_focused_window)
+    return;
+  if (old_focused_window)
+    old_focused_window->set_touch_focus(false);
+  if (window)
+    window->set_touch_focus(true);
+}
 
-  // If there is no current focused window, figure out the current active window
-  // set by the Wayland server. Only one window at a time can be set as active.
-  if (!parent_window) {
-    auto windows = GetAllWindows();
-    for (auto* window : windows) {
-      if (window->IsActive()) {
-        parent_window = window;
-        break;
-      }
-    }
-  }
-
-  return parent_window ? parent_window->GetTopMostChildWindow() : nullptr;
+void WaylandWindowManager::SetKeyboardFocusedWindow(WaylandWindow* window) {
+  auto* old_focused_window = GetCurrentKeyboardFocusedWindow();
+  if (window == old_focused_window)
+    return;
+  if (old_focused_window)
+    old_focused_window->set_keyboard_focus(false);
+  if (window)
+    window->set_keyboard_focus(true);
+  for (auto& observer : observers_)
+    observer.OnKeyboardFocusedWindowChanged();
 }
 
 std::vector<WaylandWindow*> WaylandWindowManager::GetWindowsOnOutput(
@@ -139,6 +169,11 @@ void WaylandWindowManager::RemoveWindow(gfx::AcceleratedWidget widget) {
 
   for (WaylandWindowObserver& observer : observers_)
     observer.OnWindowRemoved(window);
+
+  if (window->has_keyboard_focus()) {
+    for (auto& observer : observers_)
+      observer.OnKeyboardFocusedWindowChanged();
+  }
 }
 
 void WaylandWindowManager::AddSubsurface(gfx::AcceleratedWidget widget,

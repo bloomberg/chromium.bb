@@ -10,7 +10,6 @@
 
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
-#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -40,9 +39,9 @@ MessageResponse StructuredMessageHandler::HandleMessage(
     return InternalError("Could parse automation JSON: " + json + " because " +
                          parsed_json.error_message);
 
-  std::string temp;
-  if (!parsed_json.value->GetAsString(&temp))
+  if (!parsed_json.value->is_string())
     return InternalError("Message was not a string: " + json);
+  std::string temp = parsed_json.value->GetString();
 
   parsed_json = base::JSONReader::ReadAndReturnValueWithError(
       temp, base::JSON_ALLOW_TRAILING_COMMAS);
@@ -96,8 +95,11 @@ MessageResponse LoadTestMessageHandler::HandleStructuredMessage(
     std::string message;
     if (!msg->GetString("message", &message))
       return MissingField(type, "message");
-    if (!msg->GetBoolean("passed", &test_passed_))
+    if (absl::optional<bool> passed = msg->FindBoolKey("passed")) {
+      test_passed_ = *passed;
+    } else {
       return MissingField(type, "passed");
+    }
     Log("SHUTDOWN", message);
     return DONE;
   } else {
@@ -114,6 +116,10 @@ class NaClIntegrationMessageHandler : public StructuredMessageHandler {
  public:
   NaClIntegrationMessageHandler();
 
+  NaClIntegrationMessageHandler(const NaClIntegrationMessageHandler&) = delete;
+  NaClIntegrationMessageHandler& operator=(
+      const NaClIntegrationMessageHandler&) = delete;
+
   void Log(const std::string& message);
 
   MessageResponse HandleStructuredMessage(const std::string& type,
@@ -125,8 +131,6 @@ class NaClIntegrationMessageHandler : public StructuredMessageHandler {
 
  private:
   bool test_passed_;
-
-  DISALLOW_COPY_AND_ASSIGN(NaClIntegrationMessageHandler);
 };
 
 NaClIntegrationMessageHandler::NaClIntegrationMessageHandler()
@@ -151,8 +155,11 @@ MessageResponse NaClIntegrationMessageHandler::HandleStructuredMessage(
     std::string message;
     if (!msg->GetString("message", &message))
       return MissingField(type, "message");
-    if (!msg->GetBoolean("passed", &test_passed_))
+    if (absl::optional<bool> passed = msg->FindBoolKey("passed")) {
+      test_passed_ = *passed;
+    } else {
       return MissingField(type, "passed");
+    }
     Log(message);
     return DONE;
   } else if (type == "Ping") {
@@ -229,7 +236,7 @@ bool NaClBrowserTestBase::RunJavascriptTest(
   content::JavascriptTestObserver observer(
       browser()->tab_strip_model()->GetActiveWebContents(),
       handler);
-  ui_test_utils::NavigateToURL(browser(), url);
+  EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
   return observer.Run();
 }
 
@@ -298,16 +305,6 @@ void NaClBrowserTestPnaclSubzero::SetUpCommandLine(
   command_line->AppendSwitch(switches::kForcePNaClSubzero);
 }
 
-base::FilePath::StringType NaClBrowserTestNonSfiMode::Variant() {
-  return FILE_PATH_LITERAL("libc-free");
-}
-
-void NaClBrowserTestNonSfiMode::SetUpCommandLine(
-    base::CommandLine* command_line) {
-  NaClBrowserTestBase::SetUpCommandLine(command_line);
-  command_line->AppendSwitch(switches::kEnableNaClNonSfiMode);
-}
-
 base::FilePath::StringType NaClBrowserTestStatic::Variant() {
   return FILE_PATH_LITERAL("static");
 }
@@ -315,16 +312,6 @@ base::FilePath::StringType NaClBrowserTestStatic::Variant() {
 bool NaClBrowserTestStatic::GetDocumentRoot(base::FilePath* document_root) {
   *document_root = base::FilePath(FILE_PATH_LITERAL("chrome/test/data/nacl"));
   return true;
-}
-
-base::FilePath::StringType NaClBrowserTestPnaclNonSfi::Variant() {
-  return FILE_PATH_LITERAL("nonsfi");
-}
-
-void NaClBrowserTestPnaclNonSfi::SetUpCommandLine(
-    base::CommandLine* command_line) {
-  NaClBrowserTestBase::SetUpCommandLine(command_line);
-  command_line->AppendSwitch(switches::kEnableNaClNonSfiMode);
 }
 
 void NaClBrowserTestNewlibExtension::SetUpCommandLine(

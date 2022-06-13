@@ -17,7 +17,7 @@ namespace printing {
 
 const char kDummyPrinterName[] = "DefaultPrinter";
 
-base::Value GetPrintTicket(PrinterType type) {
+base::Value GetPrintTicket(mojom::PrinterType type) {
   base::Value ticket(base::Value::Type::DICTIONARY);
 
   // Letter
@@ -39,7 +39,6 @@ base::Value GetPrintTicket(PrinterType type) {
   ticket.SetBoolKey(kSettingShouldPrintBackgrounds, false);
   ticket.SetBoolKey(kSettingShouldPrintSelectionOnly, false);
   ticket.SetBoolKey(kSettingPreviewModifiable, true);
-  ticket.SetBoolKey(kSettingPreviewIsPdf, false);
   ticket.SetIntKey(kSettingPrinterType, static_cast<int>(type));
   ticket.SetBoolKey(kSettingRasterizePdf, false);
   ticket.SetIntKey(kSettingScaleFactor, 100);
@@ -52,9 +51,10 @@ base::Value GetPrintTicket(PrinterType type) {
   ticket.SetIntKey(kSettingPageHeight, 279400);
   ticket.SetBoolKey(kSettingShowSystemDialog, false);
 
-  if (type == PrinterType::kCloud) {
+  if (type == mojom::PrinterType::kCloud) {
     ticket.SetStringKey(kSettingCloudPrintId, kDummyPrinterName);
-  } else if (type == PrinterType::kPrivet || type == PrinterType::kExtension) {
+  } else if (type == mojom::PrinterType::kPrivet ||
+             type == mojom::PrinterType::kExtension) {
     base::Value capabilities(base::Value::Type::DICTIONARY);
     capabilities.SetBoolKey("duplex", true);  // non-empty
     std::string caps_string;

@@ -72,38 +72,25 @@ TEST_P(NGBoxFragmentPainterTest, ScrollHitTestOrder) {
 
   EXPECT_THAT(ContentDisplayItems(),
               ElementsAre(VIEW_SCROLLING_BACKGROUND_DISPLAY_ITEM,
-                          IsSameId(&text_fragment, kForegroundType)));
+                          IsSameId(text_fragment.Id(), kForegroundType)));
   HitTestData scroll_hit_test;
   scroll_hit_test.scroll_translation =
       scroller.FirstFragment().PaintProperties()->ScrollTranslation();
-  scroll_hit_test.scroll_hit_test_rect = IntRect(0, 0, 40, 40);
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    EXPECT_THAT(
-        ContentPaintChunks(),
-        ElementsAre(
-            VIEW_SCROLLING_BACKGROUND_CHUNK_COMMON,
-            IsPaintChunk(
-                1, 1,
-                PaintChunk::Id(*scroller.Layer(), DisplayItem::kLayerChunk),
-                scroller.FirstFragment().LocalBorderBoxProperties()),
-            IsPaintChunk(
-                1, 1,
-                PaintChunk::Id(root_fragment, DisplayItem::kScrollHitTest),
-                scroller.FirstFragment().LocalBorderBoxProperties(),
-                &scroll_hit_test, IntRect(0, 0, 40, 40)),
-            IsPaintChunk(1, 2)));
-  } else {
-    EXPECT_THAT(
-        ContentPaintChunks(),
-        ElementsAre(
-            VIEW_SCROLLING_BACKGROUND_CHUNK_COMMON,
-            IsPaintChunk(
-                1, 1,
-                PaintChunk::Id(root_fragment, DisplayItem::kScrollHitTest),
-                scroller.FirstFragment().LocalBorderBoxProperties(),
-                &scroll_hit_test, IntRect(0, 0, 40, 40)),
-            IsPaintChunk(1, 2)));
-  }
+  scroll_hit_test.scroll_hit_test_rect = gfx::Rect(0, 0, 40, 40);
+  EXPECT_THAT(
+      ContentPaintChunks(),
+      ElementsAre(
+          VIEW_SCROLLING_BACKGROUND_CHUNK_COMMON,
+          IsPaintChunk(
+              1, 1,
+              PaintChunk::Id(scroller.Layer()->Id(), DisplayItem::kLayerChunk),
+              scroller.FirstFragment().LocalBorderBoxProperties()),
+          IsPaintChunk(
+              1, 1,
+              PaintChunk::Id(root_fragment.Id(), DisplayItem::kScrollHitTest),
+              scroller.FirstFragment().LocalBorderBoxProperties(),
+              &scroll_hit_test, gfx::Rect(0, 0, 40, 40)),
+          IsPaintChunk(1, 2)));
 }
 
 TEST_P(NGBoxFragmentPainterTest, AddUrlRects) {
@@ -130,16 +117,16 @@ TEST_P(NGBoxFragmentPainterTest, AddUrlRects) {
 
   paint_preview::PaintPreviewTracker tracker(base::UnguessableToken::Create(),
                                              absl::nullopt, true);
-  PaintRecordBuilder builder;
-  builder.Context().SetPaintPreviewTracker(&tracker);
+  auto* builder = MakeGarbageCollected<PaintRecordBuilder>();
+  builder->Context().SetPaintPreviewTracker(&tracker);
 
   GetDocument().View()->PaintContentsOutsideOfLifecycle(
-      builder.Context(),
+      builder->Context(),
       kGlobalPaintNormalPhase | kGlobalPaintAddUrlMetadata |
           kGlobalPaintFlattenCompositingLayers,
       CullRect::Infinite());
 
-  auto record = builder.EndRecording();
+  auto record = builder->EndRecording();
   std::vector<GURL> links;
   ExtractLinks(record.get(), &links);
   ASSERT_EQ(links.size(), 2U);
@@ -191,13 +178,56 @@ TEST_P(NGBoxFragmentPainterTest, SelectionTablePainting) {
   GetDocument().View()->GetFrame().Selection().SelectAll();
   GetDocument().GetLayoutView()->CommitPendingSelection();
   UpdateAllLifecyclePhasesForTest();
-  PaintRecordBuilder builder;
+  auto* builder = MakeGarbageCollected<PaintRecordBuilder>();
   GetDocument().View()->PaintContentsOutsideOfLifecycle(
-      builder.Context(),
+      builder->Context(),
       kGlobalPaintSelectionDragImageOnly | kGlobalPaintFlattenCompositingLayers,
       CullRect::Infinite());
 
-  auto record = builder.EndRecording();
+  auto record = builder->EndRecording();
+}
+
+TEST_P(NGBoxFragmentPainterTest, ClippedText) {
+  SetBodyInnerHTML(R"HTML(
+    <div id="target" style="overflow: hidden; position: relative;
+                            width: 100px; height: 100px">
+      A<br>B<br>C<br>D
+    </div>
+  )HTML");
+  // Initially all the texts are painted.
+  auto num_all_display_items = ContentDisplayItems().size();
+  auto* target = GetDocument().getElementById("target");
+
+  target->SetInlineStyleProperty(CSSPropertyID::kHeight, "0px");
+  UpdateAllLifecyclePhasesForTest();
+  // None of the texts should be painted.
+  EXPECT_EQ(num_all_display_items - 4, ContentDisplayItems().size());
+
+  target->SetInlineStyleProperty(CSSPropertyID::kHeight, "1px");
+  UpdateAllLifecyclePhasesForTest();
+  // Only "A" should be painted.
+  EXPECT_EQ(num_all_display_items - 3, ContentDisplayItems().size());
+}
+
+TEST_P(NGBoxFragmentPainterTest, NodeAtPointWithSvgInline) {
+  ScopedSVGTextNGForTest enable_svg_text_ng(true);
+  SetBodyInnerHTML(R"HTML(
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="900"
+     viewBox="0 0 100 100" id="svg">
+ <g font-size="13">
+  <text x="10%" y="25%" id="pass">Expected paragraph.</text>
+  <text x="10%" y="54%">
+  <tspan id="fail">Should not be selected.</tspan>
+  </text>
+ </g>
+</svg>)HTML");
+  UpdateAllLifecyclePhasesForTest();
+
+  auto* root = GetDocument().getElementById("svg")->GetLayoutBox();
+  HitTestResult result;
+  root->NodeAtPoint(result, HitTestLocation(gfx::PointF(256, 192)),
+                    PhysicalOffset(0, 0), kHitTestForeground);
+  EXPECT_EQ(GetDocument().getElementById("pass"), result.InnerElement());
 }
 
 }  // namespace blink

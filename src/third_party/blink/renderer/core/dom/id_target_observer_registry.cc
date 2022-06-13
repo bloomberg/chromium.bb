@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/core/dom/id_target_observer_registry.h"
 
 #include "third_party/blink/renderer/core/dom/id_target_observer.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
 
 namespace blink {
 
@@ -63,7 +64,9 @@ void IdTargetObserverRegistry::NotifyObserversInternal(const AtomicString& id) {
   DCHECK(!id.IsEmpty());
   DCHECK(!registry_.IsEmpty());
 
-  notifying_observers_in_set_ = registry_.at(id.Impl());
+  auto it_reg = registry_.find(id.Impl());
+  if (it_reg != registry_.end())
+    notifying_observers_in_set_ = it_reg->value;
   if (!notifying_observers_in_set_)
     return;
 
@@ -83,8 +86,8 @@ void IdTargetObserverRegistry::NotifyObserversInternal(const AtomicString& id) {
 bool IdTargetObserverRegistry::HasObservers(const AtomicString& id) const {
   if (id.IsEmpty() || registry_.IsEmpty())
     return false;
-  ObserverSet* set = registry_.at(id.Impl());
-  return set && !set->IsEmpty();
+  auto it = registry_.find(id.Impl());
+  return it != registry_.end() ? !it->value->IsEmpty() : false;
 }
 
 }  // namespace blink

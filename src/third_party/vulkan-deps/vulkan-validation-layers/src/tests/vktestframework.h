@@ -22,7 +22,7 @@
 #ifndef VKTESTFRAMEWORK_H
 #define VKTESTFRAMEWORK_H
 
-#include "SPIRV/GLSL.std.450.h"
+#include "glslang/SPIRV/GLSL.std.450.h"
 #include "spirv-tools/libspirv.h"
 #include "glslang/Public/ShaderLang.h"
 #include "icd-spv.h"
@@ -59,8 +59,8 @@ class VkTestFramework : public ::testing::Test {
     static void Finish();
 
     bool GLSLtoSPV(VkPhysicalDeviceLimits const *const device_limits, const VkShaderStageFlagBits shader_type, const char *pshader,
-                   std::vector<unsigned int> &spv, bool debug = false, uint32_t spirv_minor_version = 0);
-    bool ASMtoSPV(const spv_target_env target_env, const uint32_t options, const char *pasm, std::vector<unsigned int> &spv);
+                   std::vector<uint32_t> &spv, bool debug = false, const spv_target_env spv_env = SPV_ENV_VULKAN_1_0);
+    bool ASMtoSPV(const spv_target_env target_env, const uint32_t options, const char *pasm, std::vector<uint32_t> &spv);
     static bool m_canonicalize_spv;
     static bool m_strip_spv;
     static bool m_do_everything_spv;

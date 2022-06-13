@@ -9,7 +9,6 @@
 
 #include "ash/frame_throttler/frame_throttling_controller.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
@@ -28,9 +27,9 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/bind.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/views/widget/widget.h"
@@ -45,12 +44,12 @@ namespace {
 // triggered animation observer is drawn. Wait 50ms in attempt to let its draw
 // and swap finish.
 constexpr base::TimeDelta kOcclusionPauseDurationForStart =
-    base::TimeDelta::FromMilliseconds(50);
+    base::Milliseconds(50);
 
 // Wait longer when exiting overview mode in case when a user may re-enter
 // overview mode immediately, contents are ready.
 constexpr base::TimeDelta kOcclusionPauseDurationForEnd =
-    base::TimeDelta::FromMilliseconds(500);
+    base::Milliseconds(500);
 
 bool IsSplitViewDividerDraggedOrAnimated() {
   SplitViewController* split_view_controller =
@@ -118,7 +117,8 @@ OverviewController::~OverviewController() {
   }
 }
 
-bool OverviewController::StartOverview(OverviewEnterExitType type) {
+bool OverviewController::StartOverview(OverviewStartAction action,
+                                       OverviewEnterExitType type) {
   // No need to start overview if overview is currently active.
   if (InOverviewSession())
     return true;
@@ -127,10 +127,12 @@ bool OverviewController::StartOverview(OverviewEnterExitType type) {
     return false;
 
   ToggleOverview(type);
+  RecordOverviewStartAction(action);
   return true;
 }
 
-bool OverviewController::EndOverview(OverviewEnterExitType type) {
+bool OverviewController::EndOverview(OverviewEndAction action,
+                                     OverviewEnterExitType type) {
   // No need to end overview if overview is already ended.
   if (!InOverviewSession())
     return true;
@@ -139,6 +141,7 @@ bool OverviewController::EndOverview(OverviewEnterExitType type) {
     return false;
 
   ToggleOverview(type);
+  RecordOverviewEndAction(action);
   return true;
 }
 
@@ -199,8 +202,9 @@ void OverviewController::AddExitAnimationObserver(
     std::unique_ptr<DelayedAnimationObserver> animation_observer) {
   // No delayed animations should be created when overview mode is set to exit
   // immediately.
-  DCHECK_NE(overview_session_->enter_exit_overview_type(),
-            OverviewEnterExitType::kImmediateExit);
+  DCHECK(IsCompletingShutdownAnimations() ||
+         overview_session_->enter_exit_overview_type() !=
+             OverviewEnterExitType::kImmediateExit);
 
   animation_observer->SetOwner(this);
   delayed_animations_.push_back(std::move(animation_observer));

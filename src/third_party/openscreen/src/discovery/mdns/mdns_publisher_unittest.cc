@@ -13,6 +13,7 @@
 #include "discovery/mdns/testing/mdns_test_util.h"
 #include "platform/test/fake_task_runner.h"
 #include "platform/test/fake_udp_socket.h"
+#include "util/std_util.h"
 
 using testing::_;
 using testing::Invoke;
@@ -27,10 +28,8 @@ constexpr Clock::duration kAnnounceGoodbyeDelay = std::chrono::milliseconds(25);
 
 bool ContainsRecord(const std::vector<MdnsRecord::ConstRef>& records,
                     MdnsRecord record) {
-  return std::find_if(records.begin(), records.end(),
-                      [&record](const MdnsRecord& ref) {
-                        return ref == record;
-                      }) != records.end();
+  return ContainsIf(records,
+                    [&record](const MdnsRecord& ref) { return ref == record; });
 }
 
 }  // namespace
@@ -62,12 +61,9 @@ class MdnsPublisherTesting : public MdnsPublisher {
     if (it == records_.end()) {
       return false;
     }
-
-    return std::find_if(it->second.begin(), it->second.end(),
-                        [](const RecordAnnouncerPtr& announcer) {
-                          return announcer->record().dns_type() !=
-                                 DnsType::kPTR;
-                        }) != it->second.end();
+    return ContainsIf(it->second, [](const RecordAnnouncerPtr& announcer) {
+      return announcer->record().dns_type() != DnsType::kPTR;
+    });
   }
 };
 

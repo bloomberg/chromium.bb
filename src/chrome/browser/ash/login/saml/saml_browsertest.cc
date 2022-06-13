@@ -7,16 +7,16 @@
 #include <string>
 #include <utility>
 
+#include "ash/components/attestation/mock_attestation_flow.h"
+#include "ash/components/settings/cros_settings_names.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/login_screen_test_api.h"
-
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
@@ -34,7 +34,6 @@
 #include "chrome/browser/ash/login/test/device_state_mixin.h"
 #include "chrome/browser/ash/login/test/enrollment_ui_mixin.h"
 #include "chrome/browser/ash/login/test/fake_gaia_mixin.h"
-#include "chrome/browser/ash/login/test/https_forwarder.h"
 #include "chrome/browser/ash/login/test/js_checker.h"
 #include "chrome/browser/ash/login/test/local_policy_test_server_mixin.h"
 #include "chrome/browser/ash/login/test/login_manager_mixin.h"
@@ -45,13 +44,13 @@
 #include "chrome/browser/ash/login/users/chrome_user_manager.h"
 #include "chrome/browser/ash/login/users/test_users.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
+#include "chrome/browser/ash/policy/affiliation/affiliation_test_helper.h"
+#include "chrome/browser/ash/policy/core/device_policy_builder.h"
+#include "chrome/browser/ash/policy/core/device_policy_cros_browser_test.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/ash/settings/scoped_testing_cros_settings.h"
 #include "chrome/browser/ash/settings/stub_cros_settings_provider.h"
-#include "chrome/browser/chromeos/policy/affiliation_test_helper.h"
-#include "chrome/browser/chromeos/policy/device_policy_builder.h"
-#include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/profiles/profile.h"
@@ -66,7 +65,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chromeos/attestation/mock_attestation_flow.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/attestation/fake_attestation_client.h"
 #include "chromeos/dbus/attestation/interface.pb.h"
@@ -81,7 +79,6 @@
 #include "chromeos/dbus/userdataauth/fake_userdataauth_client.h"
 #include "chromeos/login/auth/key.h"
 #include "chromeos/login/auth/saml_password_attributes.h"
-#include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/tpm/stub_install_attributes.h"
 #include "components/account_id/account_id.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -118,19 +115,17 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
-namespace em = enterprise_management;
-
-using base::test::RunOnceCallback;
-
-using testing::_;
-using testing::Invoke;
-using testing::NiceMock;
-using testing::Return;
-using testing::WithArgs;
-
-namespace chromeos {
-
+namespace ash {
 namespace {
+
+namespace em = ::enterprise_management;
+
+using ::base::test::RunOnceCallback;
+using ::testing::_;
+using ::testing::Invoke;
+using ::testing::NiceMock;
+using ::testing::Return;
+using ::testing::WithArgs;
 
 const test::UIPath kPasswordInput = {"saml-confirm-password", "passwordInput"};
 const test::UIPath kPasswordConfirmInput = {"saml-confirm-password",
@@ -180,6 +175,11 @@ class SecretInterceptingFakeUserDataAuthClient : public FakeUserDataAuthClient {
  public:
   SecretInterceptingFakeUserDataAuthClient();
 
+  SecretInterceptingFakeUserDataAuthClient(
+      const SecretInterceptingFakeUserDataAuthClient&) = delete;
+  SecretInterceptingFakeUserDataAuthClient& operator=(
+      const SecretInterceptingFakeUserDataAuthClient&) = delete;
+
   void Mount(const ::user_data_auth::MountRequest& request,
              MountCallback callback) override;
 
@@ -187,8 +187,6 @@ class SecretInterceptingFakeUserDataAuthClient : public FakeUserDataAuthClient {
 
  private:
   std::string salted_hashed_secret_;
-
-  DISALLOW_COPY_AND_ASSIGN(SecretInterceptingFakeUserDataAuthClient);
 };
 
 SecretInterceptingFakeUserDataAuthClient::
@@ -208,14 +206,17 @@ class SamlTest : public OobeBaseTest {
   SamlTest() {
     fake_gaia_.set_initialize_fake_merge_session(false);
   }
+
+  SamlTest(const SamlTest&) = delete;
+  SamlTest& operator=(const SamlTest&) = delete;
+
   ~SamlTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     OobeBaseTest::SetUpCommandLine(command_line);
 
     command_line->AppendSwitch(switches::kOobeSkipPostLogin);
-    command_line->AppendSwitch(
-        chromeos::switches::kAllowFailedPolicyFetchForTest);
+    command_line->AppendSwitch(switches::kAllowFailedPolicyFetchForTest);
 
     // TODO(crbug.com/1177416) - Fix this with a proper SSL solution.
     command_line->AppendSwitch(::switches::kIgnoreCertificateErrors);
@@ -312,9 +313,9 @@ class SamlTest : public OobeBaseTest {
   void ExpectFatalErrorMessage(const std::string& error_message) {
     OobeScreenWaiter(SignInFatalErrorView::kScreenId).Wait();
 
-    EXPECT_TRUE(ash::LoginScreenTestApi::IsShutdownButtonShown());
-    EXPECT_FALSE(ash::LoginScreenTestApi::IsGuestButtonShown());
-    EXPECT_FALSE(ash::LoginScreenTestApi::IsAddUserButtonShown());
+    EXPECT_TRUE(LoginScreenTestApi::IsShutdownButtonShown());
+    EXPECT_FALSE(LoginScreenTestApi::IsGuestButtonShown());
+    EXPECT_FALSE(LoginScreenTestApi::IsAddUserButtonShown());
 
     test::OobeJS().ExpectElementText(error_message,
                                      {"signin-fatal-error", "subtitle"});
@@ -325,17 +326,15 @@ class SamlTest : public OobeBaseTest {
  protected:
   SecretInterceptingFakeUserDataAuthClient* cryptohome_client_;
 
-  FakeGaiaMixin fake_gaia_{&mixin_host_, embedded_test_server()};
+  FakeGaiaMixin fake_gaia_{&mixin_host_};
 
-  chromeos::DeviceStateMixin device_state_{
-      &mixin_host_, chromeos::DeviceStateMixin::State::OOBE_COMPLETED_UNOWNED};
+  DeviceStateMixin device_state_{
+      &mixin_host_, DeviceStateMixin::State::OOBE_COMPLETED_UNOWNED};
 
  private:
   FakeSamlIdpMixin fake_saml_idp_mixin_{&mixin_host_, &fake_gaia_};
 
   base::test::ScopedFeatureList feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(SamlTest);
 };
 
 // Tests that signin frame should display the SAML notice and the 'back' button
@@ -459,10 +458,11 @@ IN_PROC_BROWSER_TEST_F(SamlTest, CredentialPassingAPI) {
                     FakeCryptohomeMiscClient::GetStubSystemSalt()));
   EXPECT_EQ(key.GetSecret(), cryptohome_client_->salted_hashed_secret());
 
-  EXPECT_TRUE(user_manager::known_user::GetIsUsingSAMLPrincipalsAPI(
-      AccountId::FromUserEmailGaiaId(
-          saml_test_users::kFirstUserCorpExampleComEmail,
-          kFirstSAMLUserGaiaId)));
+  EXPECT_TRUE(
+      user_manager::KnownUser(user_manager::UserManager::Get()->GetLocalState())
+          .GetIsUsingSAMLPrincipalsAPI(AccountId::FromUserEmailGaiaId(
+              saml_test_users::kFirstUserCorpExampleComEmail,
+              kFirstSAMLUserGaiaId)));
 
   histogram_tester.ExpectUniqueSample("ChromeOS.SAML.APILogin", 1, 1);
   histogram_tester.ExpectUniqueSample("ChromeOS.SAML.Provider", 1, 1);
@@ -496,10 +496,11 @@ IN_PROC_BROWSER_TEST_F(SamlTest, CredentialPassingAPIWithoutConfirm) {
                     FakeCryptohomeMiscClient::GetStubSystemSalt()));
   EXPECT_EQ(key.GetSecret(), cryptohome_client_->salted_hashed_secret());
 
-  EXPECT_TRUE(user_manager::known_user::GetIsUsingSAMLPrincipalsAPI(
-      AccountId::FromUserEmailGaiaId(
-          saml_test_users::kFirstUserCorpExampleComEmail,
-          kFirstSAMLUserGaiaId)));
+  EXPECT_TRUE(
+      user_manager::KnownUser(user_manager::UserManager::Get()->GetLocalState())
+          .GetIsUsingSAMLPrincipalsAPI(AccountId::FromUserEmailGaiaId(
+              saml_test_users::kFirstUserCorpExampleComEmail,
+              kFirstSAMLUserGaiaId)));
 
   histogram_tester.ExpectUniqueSample("ChromeOS.SAML.APILogin", 1, 1);
   histogram_tester.ExpectUniqueSample("ChromeOS.SAML.Provider", 1, 1);
@@ -536,10 +537,11 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedSingle) {
 
   test::WaitForPrimaryUserSessionStart();
 
-  EXPECT_FALSE(user_manager::known_user::GetIsUsingSAMLPrincipalsAPI(
-      AccountId::FromUserEmailGaiaId(
-          saml_test_users::kFirstUserCorpExampleComEmail,
-          kFirstSAMLUserGaiaId)));
+  EXPECT_FALSE(
+      user_manager::KnownUser(user_manager::UserManager::Get()->GetLocalState())
+          .GetIsUsingSAMLPrincipalsAPI(AccountId::FromUserEmailGaiaId(
+              saml_test_users::kFirstUserCorpExampleComEmail,
+              kFirstSAMLUserGaiaId)));
 
   histogram_tester.ExpectUniqueSample("ChromeOS.SAML.APILogin", 2, 1);
   histogram_tester.ExpectUniqueSample("ChromeOS.SAML.Scraping.PasswordCountAll",
@@ -570,10 +572,11 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedDynamic) {
   SigninFrameJS().TapOn("Submit");
   test::WaitForPrimaryUserSessionStart();
 
-  EXPECT_FALSE(user_manager::known_user::GetIsUsingSAMLPrincipalsAPI(
-      AccountId::FromUserEmailGaiaId(
-          saml_test_users::kFirstUserCorpExampleComEmail,
-          kFirstSAMLUserGaiaId)));
+  EXPECT_FALSE(
+      user_manager::KnownUser(user_manager::UserManager::Get()->GetLocalState())
+          .GetIsUsingSAMLPrincipalsAPI(AccountId::FromUserEmailGaiaId(
+              saml_test_users::kFirstUserCorpExampleComEmail,
+              kFirstSAMLUserGaiaId)));
 }
 
 // Tests the multiple password scraped flow.
@@ -599,10 +602,11 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedMultiple) {
   SendConfirmPassword("password1");
   test::WaitForPrimaryUserSessionStart();
 
-  EXPECT_FALSE(user_manager::known_user::GetIsUsingSAMLPrincipalsAPI(
-      AccountId::FromUserEmailGaiaId(
-          saml_test_users::kFirstUserCorpExampleComEmail,
-          kFirstSAMLUserGaiaId)));
+  EXPECT_FALSE(
+      user_manager::KnownUser(user_manager::UserManager::Get()->GetLocalState())
+          .GetIsUsingSAMLPrincipalsAPI(AccountId::FromUserEmailGaiaId(
+              saml_test_users::kFirstUserCorpExampleComEmail,
+              kFirstSAMLUserGaiaId)));
 
   histogram_tester.ExpectUniqueSample("ChromeOS.SAML.APILogin", 2, 1);
   histogram_tester.ExpectUniqueSample("ChromeOS.SAML.Scraping.PasswordCountAll",
@@ -634,10 +638,11 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedNone) {
   SetManualPasswords("Test1", "Test1");
   test::WaitForPrimaryUserSessionStart();
 
-  EXPECT_FALSE(user_manager::known_user::GetIsUsingSAMLPrincipalsAPI(
-      AccountId::FromUserEmailGaiaId(
-          saml_test_users::kFirstUserCorpExampleComEmail,
-          kFirstSAMLUserGaiaId)));
+  EXPECT_FALSE(
+      user_manager::KnownUser(user_manager::UserManager::Get()->GetLocalState())
+          .GetIsUsingSAMLPrincipalsAPI(AccountId::FromUserEmailGaiaId(
+              saml_test_users::kFirstUserCorpExampleComEmail,
+              kFirstSAMLUserGaiaId)));
 
   histogram_tester.ExpectUniqueSample("ChromeOS.SAML.APILogin", 2, 1);
   histogram_tester.ExpectUniqueSample("ChromeOS.SAML.Scraping.PasswordCountAll",
@@ -725,14 +730,18 @@ IN_PROC_BROWSER_TEST_F(SamlTest, PasswordConfirmFlow) {
 // http://crbug.com/447818.
 IN_PROC_BROWSER_TEST_F(SamlTest, NoticeUpdatedOnRedirect) {
   // Start another https server at `kAdditionalIdPHost`.
-  HTTPSForwarder saml_https_forwarder;
-  ASSERT_TRUE(saml_https_forwarder.Initialize(
-      kAdditionalIdPHost, embedded_test_server()->base_url()));
+  net::EmbeddedTestServer saml_https_server(
+      net::EmbeddedTestServer::TYPE_HTTPS);
+  net::EmbeddedTestServer::ServerCertificateConfig saml_cert_config;
+  saml_cert_config.dns_names = {kAdditionalIdPHost};
+  saml_https_server.SetSSLConfig(saml_cert_config);
+  saml_https_server.ServeFilesFromSourceDirectory("chrome/test/data");
+  ASSERT_TRUE(saml_https_server.Start());
 
   // Make the login flow redirect to `kAdditionalIdPHost`.
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login_instant_meta_refresh.html");
   fake_saml_idp()->SetRefreshURL(
-      saml_https_forwarder.GetURLForSSLHost("simple.html"));
+      saml_https_server.GetURL(kAdditionalIdPHost, "/simple.html"));
   StartSamlAndWaitForIdpPageLoad(
       saml_test_users::kFirstUserCorpExampleComEmail);
 
@@ -810,6 +819,10 @@ IN_PROC_BROWSER_TEST_F(SamlTest, MetaRefreshToHTTPDisallowed) {
 class SAMLEnrollmentTest : public SamlTest {
  public:
   SAMLEnrollmentTest();
+
+  SAMLEnrollmentTest(const SAMLEnrollmentTest&) = delete;
+  SAMLEnrollmentTest& operator=(const SAMLEnrollmentTest&) = delete;
+
   ~SAMLEnrollmentTest() override;
 
   // SamlTest:
@@ -819,9 +832,6 @@ class SAMLEnrollmentTest : public SamlTest {
  protected:
   LocalPolicyTestServerMixin local_policy_mixin_{&mixin_host_};
   test::EnrollmentUIMixin enrollment_ui_{&mixin_host_};
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SAMLEnrollmentTest);
 };
 
 SAMLEnrollmentTest::SAMLEnrollmentTest() {
@@ -885,11 +895,16 @@ IN_PROC_BROWSER_TEST_F(SAMLEnrollmentTest, WithCredentialsPassingAPI) {
 class SAMLPolicyTest : public SamlTest {
  public:
   SAMLPolicyTest();
+
+  SAMLPolicyTest(const SAMLPolicyTest&) = delete;
+  SAMLPolicyTest& operator=(const SAMLPolicyTest&) = delete;
+
   ~SAMLPolicyTest() override;
 
   // SamlTest:
   void SetUpInProcessBrowserTestFixture() override;
   void SetUpOnMainThread() override;
+  void SetUpCommandLine(base::CommandLine* command_line) override;
 
   void SetSAMLOfflineSigninTimeLimitPolicy(int limit);
   void EnableTransferSAMLCookiesPolicy();
@@ -911,19 +926,16 @@ class SAMLPolicyTest : public SamlTest {
  protected:
   policy::DevicePolicyCrosTestHelper test_helper_;
   policy::DevicePolicyBuilder* device_policy_;
-  testing::NiceMock<policy::MockConfigurationPolicyProvider> provider_;
+  NiceMock<policy::MockConfigurationPolicyProvider> provider_;
   net::CookieList cookie_list_;
 
   // Add a fake user so the login screen does not show GAIA auth by default.
   // This enables tests to control when the GAIA is shown (and ensure it's
   // loaded after SAML config has been set up).
-  chromeos::LoginManagerMixin login_manager_{
+  LoginManagerMixin login_manager_{
       &mixin_host_,
-      {chromeos::LoginManagerMixin::TestUserInfo(
+      {LoginManagerMixin::TestUserInfo(
           AccountId::FromUserEmailGaiaId("user@gmail.com", "1111"))}};
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SAMLPolicyTest);
 };
 
 SAMLPolicyTest::SAMLPolicyTest()
@@ -949,10 +961,8 @@ void SAMLPolicyTest::SetUpInProcessBrowserTestFixture() {
       &test_helper_, device_affiliation_ids)));
 
   // Initialize user policy.
-  ON_CALL(provider_, IsInitializationComplete(testing::_))
-      .WillByDefault(testing::Return(true));
-  ON_CALL(provider_, IsFirstPolicyLoadComplete(testing::_))
-      .WillByDefault(testing::Return(true));
+  provider_.SetDefaultReturns(/*is_initialization_complete_return=*/true,
+                              /*is_first_policy_load_complete_return=*/true);
   policy::BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
 }
 
@@ -997,6 +1007,12 @@ void SAMLPolicyTest::SetUpOnMainThread() {
       ->GetShillManagerClient()
       ->GetTestInterface()
       ->SetupDefaultEnvironment();
+}
+void SAMLPolicyTest::SetUpCommandLine(base::CommandLine* command_line) {
+  SamlTest::SetUpCommandLine(command_line);
+
+  // Disable token check to allow offline sign-in for the fake gaia users.
+  command_line->AppendSwitch(chromeos::switches::kDisableGaiaServices);
 }
 
 void SAMLPolicyTest::SetSAMLOfflineSigninTimeLimitPolicy(int limit) {
@@ -1058,13 +1074,15 @@ void SAMLPolicyTest::SetLoginVideoCaptureAllowedUrls(
 }
 
 void SAMLPolicyTest::ShowGAIALoginForm() {
+  ash::LoginDisplayHost::default_host()->StartWizard(GaiaView::kScreenId);
+  OobeScreenWaiter(GaiaView::kScreenId).Wait();
   content::DOMMessageQueue message_queue;
   ASSERT_TRUE(content::ExecuteScript(
       GetLoginUI()->GetWebContents(),
       "$('gaia-signin').authenticator_.addEventListener('ready', function() {"
       "  window.domAutomationController.send('ready');"
       "});"));
-  ASSERT_TRUE(ash::LoginScreenTestApi::ClickAddUserButton());
+  ASSERT_TRUE(LoginScreenTestApi::ClickAddUserButton());
   std::string message;
   do {
     ASSERT_TRUE(message_queue.WaitForMessage(&message));
@@ -1072,8 +1090,9 @@ void SAMLPolicyTest::ShowGAIALoginForm() {
 }
 
 void SAMLPolicyTest::ShowSAMLInterstitial() {
-  WaitForOobeUI();
-  ASSERT_TRUE(ash::LoginScreenTestApi::ClickAddUserButton());
+  MaybeWaitForLoginScreenLoad();
+  ASSERT_TRUE(LoginScreenTestApi::ClickAddUserButton());
+  OobeScreenWaiter(GaiaView::kScreenId).Wait();
   test::OobeJS()
       .CreateVisibilityWaiter(true, {"gaia-signin", "saml-interstitial"})
       ->Wait();
@@ -1123,7 +1142,7 @@ std::string SAMLPolicyTest::GetCookieValue(const std::string& name) {
 }
 
 void SAMLPolicyTest::GetCookies() {
-  Profile* profile = chromeos::ProfileHelper::Get()->GetProfileByUserUnsafe(
+  Profile* profile = ProfileHelper::Get()->GetProfileByUserUnsafe(
       user_manager::UserManager::Get()->GetActiveUser());
   ASSERT_TRUE(profile);
   base::RunLoop run_loop;
@@ -1149,19 +1168,24 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, PRE_NoSAML) {
   fake_gaia_.SetupFakeGaiaForLogin(kNonSAMLUserEmail, "", kTestRefreshToken);
 
   // Log in without SAML.
+  LoginDisplayHost::default_host()->StartWizard(GaiaView::kScreenId);
   LoginDisplayHost::default_host()
       ->GetOobeUI()
       ->GetView<GaiaScreenHandler>()
       ->ShowSigninScreenForTest(kNonSAMLUserEmail, "password", "[]");
-
   test::WaitForPrimaryUserSessionStart();
+  // Fake OAUTH token for this user will be invalidated in-session.
+  // Pretend that it's still valid.
+  user_manager::UserManager::Get()->SaveUserOAuthStatus(
+      AccountId::FromUserEmail(kNonSAMLUserEmail),
+      user_manager::User::OAUTH2_TOKEN_STATUS_VALID);
 }
 
 // Verifies that the offline login time limit does not affect a user who
 // authenticated without SAML.
 IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, NoSAML) {
   // Verify that offline login is allowed.
-  ash::LoginScreenTestApi::SubmitPassword(
+  LoginScreenTestApi::SubmitPassword(
       AccountId::FromUserEmail(kNonSAMLUserEmail), "password",
       true /* check_if_submittable */);
   test::WaitForPrimaryUserSessionStart();
@@ -1180,7 +1204,7 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, PRE_SAMLNoLimit) {
 // authenticated with SAML is allowed to log in offline.
 IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, SAMLNoLimit) {
   // Verify that offline login is allowed.
-  ash::LoginScreenTestApi::SubmitPassword(
+  LoginScreenTestApi::SubmitPassword(
       AccountId::FromUserEmail(saml_test_users::kFirstUserCorpExampleComEmail),
       "password", true /* check_if_submittable */);
   test::WaitForPrimaryUserSessionStart();
@@ -1199,9 +1223,8 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, PRE_SAMLZeroLimit) {
 // authenticated via SAML, that user is forced to log in online the next time.
 IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, SAMLZeroLimit) {
   // Verify that offline login is not allowed.
-  ASSERT_TRUE(
-      ash::LoginScreenTestApi::IsForcedOnlineSignin(AccountId::FromUserEmail(
-          saml_test_users::kFirstUserCorpExampleComEmail)));
+  ASSERT_TRUE(LoginScreenTestApi::IsForcedOnlineSignin(AccountId::FromUserEmail(
+      saml_test_users::kFirstUserCorpExampleComEmail)));
 }
 
 IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, PRE_PRE_TransferCookiesAffiliated) {
@@ -1325,8 +1348,8 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, DISABLED_SAMLInterstitialNext) {
   ShowSAMLInterstitial();
   ClickBackOnSAMLInterstitialPage();
   // Back button should hide OOBE dialog.
-  EXPECT_FALSE(ash::LoginScreenTestApi::IsOobeDialogVisible());
-  EXPECT_TRUE(ash::LoginScreenTestApi::IsAddUserButtonShown());
+  EXPECT_FALSE(LoginScreenTestApi::IsOobeDialogVisible());
+  EXPECT_TRUE(LoginScreenTestApi::IsAddUserButtonShown());
 
   ShowSAMLInterstitial();
   ClickNextOnSAMLInterstitialPage();
@@ -1351,6 +1374,8 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, TestLoginMediaPermission) {
   SetLoginVideoCaptureAllowedUrls({url1, url2});
   WaitForSigninScreen();
 
+  // Make sure WebUI is loaded.
+  LoginDisplayHost::default_host()->GetWizardController();
   content::WebContents* web_contents = GetLoginUI()->GetWebContents();
   content::WebContentsDelegate* web_contents_delegate =
       web_contents->GetDelegate();
@@ -1391,13 +1416,15 @@ class SAMLPasswordAttributesTest : public SAMLPolicyTest,
                                    public testing::WithParamInterface<bool> {
  public:
   SAMLPasswordAttributesTest() = default;
+
+  SAMLPasswordAttributesTest(const SAMLPasswordAttributesTest&) = delete;
+  SAMLPasswordAttributesTest& operator=(const SAMLPasswordAttributesTest&) =
+      delete;
+
   void SetUpOnMainThread() override;
 
  protected:
   bool in_session_pw_change_policy_enabled() { return GetParam(); }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SAMLPasswordAttributesTest);
 };
 
 void SAMLPasswordAttributesTest::SetUpOnMainThread() {
@@ -1494,10 +1521,8 @@ void FakeGetCertificateCallbackTrue(
   std::move(callback).Run(attestation::ATTESTATION_SUCCESS, "certificate");
 }
 
-constexpr base::TimeDelta kTimeoutTaskDelay =
-    base::TimeDelta::FromMilliseconds(500);
-constexpr base::TimeDelta kBuildResponseTaskDelay =
-    base::TimeDelta::FromSeconds(3);
+constexpr base::TimeDelta kTimeoutTaskDelay = base::Milliseconds(500);
+constexpr base::TimeDelta kBuildResponseTaskDelay = base::Seconds(3);
 static_assert(
     kTimeoutTaskDelay < kBuildResponseTaskDelay,
     "kTimeoutTaskDelay should be less than kBuildResponseTaskDelay to trigger "
@@ -1516,11 +1541,11 @@ class SAMLDeviceAttestationTest : public SamlTest {
  protected:
   void SetAllowedUrlsPolicy(const std::vector<std::string>& allowed_urls);
 
-  chromeos::ScopedTestingCrosSettings settings_helper_;
+  ScopedTestingCrosSettings settings_helper_;
   StubCrosSettingsProvider* settings_provider_ = nullptr;
 
   attestation::MockMachineCertificateUploader mock_cert_uploader_;
-  NiceMock<chromeos::attestation::MockAttestationFlow> mock_attestation_flow_;
+  NiceMock<attestation::MockAttestationFlow> mock_attestation_flow_;
   chromeos::ScopedStubInstallAttributes stub_install_attributes_;
 };
 
@@ -1549,7 +1574,7 @@ void SAMLDeviceAttestationTest::SetAllowedUrlsPolicy(
   for (const auto& url : allowed_urls) {
     allowed_urls_values.push_back(base::Value(url));
   }
-  settings_provider_->Set(chromeos::kDeviceWebBasedAttestationAllowedUrls,
+  settings_provider_->Set(kDeviceWebBasedAttestationAllowedUrls,
                           base::Value(std::move(allowed_urls_values)));
 }
 
@@ -1643,7 +1668,7 @@ IN_PROC_BROWSER_TEST_F(SAMLDeviceAttestationEnrolledTest,
 IN_PROC_BROWSER_TEST_F(SAMLDeviceAttestationEnrolledTest, Success) {
   base::HistogramTester histogram_tester;
   SetAllowedUrlsPolicy({fake_saml_idp()->GetIdpHost()});
-  settings_provider_->SetBoolean(chromeos::kDeviceAttestationEnabled, true);
+  settings_provider_->SetBoolean(kDeviceAttestationEnabled, true);
 
   StartSamlAndWaitForIdpPageLoad(
       saml_test_users::kFourthUserCorpExampleTestEmail);
@@ -1665,7 +1690,7 @@ IN_PROC_BROWSER_TEST_F(SAMLDeviceAttestationEnrolledTest, Success) {
 IN_PROC_BROWSER_TEST_F(SAMLDeviceAttestationEnrolledTest, PolicyNoMatchError) {
   base::HistogramTester histogram_tester;
   SetAllowedUrlsPolicy({fake_saml_idp()->GetIdpDomain()});
-  settings_provider_->SetBoolean(chromeos::kDeviceAttestationEnabled, true);
+  settings_provider_->SetBoolean(kDeviceAttestationEnabled, true);
 
   StartSamlAndWaitForIdpPageLoad(
       saml_test_users::kFourthUserCorpExampleTestEmail);
@@ -1686,7 +1711,7 @@ IN_PROC_BROWSER_TEST_F(SAMLDeviceAttestationEnrolledTest, PolicyNoMatchError) {
 IN_PROC_BROWSER_TEST_F(SAMLDeviceAttestationEnrolledTest, PolicyRegexSuccess) {
   base::HistogramTester histogram_tester;
   SetAllowedUrlsPolicy({"[*.]" + fake_saml_idp()->GetIdpDomain()});
-  settings_provider_->SetBoolean(chromeos::kDeviceAttestationEnabled, true);
+  settings_provider_->SetBoolean(kDeviceAttestationEnabled, true);
 
   StartSamlAndWaitForIdpPageLoad(
       saml_test_users::kFourthUserCorpExampleTestEmail);
@@ -1709,7 +1734,7 @@ IN_PROC_BROWSER_TEST_F(SAMLDeviceAttestationEnrolledTest,
                        PolicyTwoEntriesSuccess) {
   base::HistogramTester histogram_tester;
   SetAllowedUrlsPolicy({"example2.com", fake_saml_idp()->GetIdpHost()});
-  settings_provider_->SetBoolean(chromeos::kDeviceAttestationEnabled, true);
+  settings_provider_->SetBoolean(kDeviceAttestationEnabled, true);
 
   StartSamlAndWaitForIdpPageLoad(
       saml_test_users::kFourthUserCorpExampleTestEmail);
@@ -1729,7 +1754,7 @@ IN_PROC_BROWSER_TEST_F(SAMLDeviceAttestationEnrolledTest,
 IN_PROC_BROWSER_TEST_F(SAMLDeviceAttestationEnrolledTest, TimeoutError) {
   base::HistogramTester histogram_tester;
   SetAllowedUrlsPolicy({"example2.com", fake_saml_idp()->GetIdpHost()});
-  settings_provider_->SetBoolean(chromeos::kDeviceAttestationEnabled, true);
+  settings_provider_->SetBoolean(kDeviceAttestationEnabled, true);
 
   AttestationClient::Get()
       ->GetTestInterface()
@@ -1756,4 +1781,4 @@ IN_PROC_BROWSER_TEST_F(SAMLDeviceAttestationEnrolledTest, TimeoutError) {
       attestation::TpmChallengeKeyResultCode::kTimeoutError, 1);
 }
 
-}  // namespace chromeos
+}  // namespace ash
