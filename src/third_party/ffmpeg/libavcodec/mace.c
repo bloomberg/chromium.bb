@@ -234,10 +234,9 @@ static av_cold int mace_decode_init(AVCodecContext * avctx)
     return 0;
 }
 
-static int mace_decode_frame(AVCodecContext *avctx, void *data,
+static int mace_decode_frame(AVCodecContext *avctx, AVFrame *frame,
                              int *got_frame_ptr, AVPacket *avpkt)
 {
-    AVFrame *frame     = data;
     const uint8_t *buf = avpkt->data;
     int buf_size = avpkt->size;
     int channels = avctx->ch_layout.nb_channels;
@@ -293,7 +292,7 @@ const FFCodec ff_mace3_decoder = {
     .p.id           = AV_CODEC_ID_MACE3,
     .priv_data_size = sizeof(MACEContext),
     .init           = mace_decode_init,
-    .decode         = mace_decode_frame,
+    FF_CODEC_DECODE_CB(mace_decode_frame),
     .p.capabilities = AV_CODEC_CAP_DR1,
     .p.sample_fmts  = (const enum AVSampleFormat[]) { AV_SAMPLE_FMT_S16P,
                                                       AV_SAMPLE_FMT_NONE },
@@ -307,7 +306,7 @@ const FFCodec ff_mace6_decoder = {
     .p.id           = AV_CODEC_ID_MACE6,
     .priv_data_size = sizeof(MACEContext),
     .init           = mace_decode_init,
-    .decode         = mace_decode_frame,
+    FF_CODEC_DECODE_CB(mace_decode_frame),
     .p.capabilities = AV_CODEC_CAP_DR1,
     .p.sample_fmts  = (const enum AVSampleFormat[]) { AV_SAMPLE_FMT_S16P,
                                                       AV_SAMPLE_FMT_NONE },

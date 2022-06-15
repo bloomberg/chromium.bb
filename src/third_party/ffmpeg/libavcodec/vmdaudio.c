@@ -132,10 +132,9 @@ static void decode_audio_s16(int16_t *out, const uint8_t *buf, int buf_size,
     }
 }
 
-static int vmdaudio_decode_frame(AVCodecContext *avctx, void *data,
+static int vmdaudio_decode_frame(AVCodecContext *avctx, AVFrame *frame,
                                  int *got_frame_ptr, AVPacket *avpkt)
 {
-    AVFrame *frame     = data;
     const uint8_t *buf = avpkt->data;
     const uint8_t *buf_end;
     int buf_size = avpkt->size;
@@ -236,7 +235,7 @@ const FFCodec ff_vmdaudio_decoder = {
     .p.id           = AV_CODEC_ID_VMDAUDIO,
     .priv_data_size = sizeof(VmdAudioContext),
     .init           = vmdaudio_decode_init,
-    .decode         = vmdaudio_decode_frame,
+    FF_CODEC_DECODE_CB(vmdaudio_decode_frame),
     .p.capabilities = AV_CODEC_CAP_DR1,
     .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };

@@ -2409,6 +2409,15 @@ typedef struct AV1_PRIMARY {
    */
   int temp_valid_gm_model_found[FRAME_UPDATE_TYPES];
 #endif
+#if CONFIG_FRAME_PARALLEL_ENCODE_2
+  /*!
+   * Copy of cm->ref_frame_map maintained to facilitate sequential update of
+   * ref_frame_map by lower layer depth frames encoded ahead of time in a
+   * parallel encode set.
+   */
+  RefCntBuffer *ref_frame_map_copy[REF_FRAMES];
+#endif  // CONFIG_FRAME_PARALLEL_ENCODE_2
+#endif  // CONFIG_FRAME_PARALLEL_ENCODE
 
   /*!
    * Start time stamp of the last encoded show frame
@@ -2419,15 +2428,7 @@ typedef struct AV1_PRIMARY {
    * End time stamp of the last encoded show frame
    */
   int64_t ts_end_last_show_frame;
-#if CONFIG_FRAME_PARALLEL_ENCODE_2
-  /*!
-   * Copy of cm->ref_frame_map maintained to facilitate sequential update of
-   * ref_frame_map by lower layer depth frames encoded ahead of time in a
-   * parallel encode set.
-   */
-  RefCntBuffer *ref_frame_map_copy[REF_FRAMES];
-#endif  // CONFIG_FRAME_PARALLEL_ENCODE_2
-#endif  // CONFIG_FRAME_PARALLEL_ENCODE
+
   /*!
    * Number of frame level contexts(cpis)
    */
@@ -3016,8 +3017,7 @@ typedef struct AV1_COMP {
    */
   int do_update_frame_probs_interpfilter[NUM_RECODES_PER_FRAME];
 
-#if CONFIG_FRAME_PARALLEL_ENCODE
-#if CONFIG_FPMT_TEST
+#if CONFIG_FRAME_PARALLEL_ENCODE && CONFIG_FPMT_TEST
   /*!
    * Temporary variable for simulation.
    * Previous frame's framerate.
@@ -3030,7 +3030,6 @@ typedef struct AV1_COMP {
    * post encode updates for parallel frames.
    */
   double new_framerate;
-#endif
 
   /*!
    * Retain condition for fast_extra_bits calculation.
@@ -3413,14 +3412,15 @@ typedef struct {
 
 void av1_initialize_enc(unsigned int usage, enum aom_rc_mode end_usage);
 
-struct AV1_COMP *av1_create_compressor(AV1_PRIMARY *ppi, AV1EncoderConfig *oxcf,
+struct AV1_COMP *av1_create_compressor(AV1_PRIMARY *ppi,
+                                       const AV1EncoderConfig *oxcf,
                                        BufferPool *const pool,
                                        COMPRESSOR_STAGE stage,
                                        int lap_lag_in_frames);
 
 struct AV1_PRIMARY *av1_create_primary_compressor(
     struct aom_codec_pkt_list *pkt_list_head, int num_lap_buffers,
-    AV1EncoderConfig *oxcf);
+    const AV1EncoderConfig *oxcf);
 
 void av1_remove_compressor(AV1_COMP *cpi);
 

@@ -21,7 +21,6 @@
 #include "src/gpu/ganesh/effects/GrTextureEffect.h"
 #include "src/gpu/ganesh/glsl/GrGLSLVarying.h"
 #include "src/sksl/SkSLCompiler.h"
-#include "src/sksl/dsl/priv/DSLFPs.h"
 
 const int GrGLSLProgramBuilder::kVarsPerBlock = 8;
 
@@ -419,7 +418,7 @@ GrGLSLProgramBuilder::SamplerHandle GrGLSLProgramBuilder::emitInputSampler(
 
 bool GrGLSLProgramBuilder::checkSamplerCounts() {
     const GrShaderCaps& shaderCaps = *this->shaderCaps();
-    if (fNumFragmentSamplers > shaderCaps.maxFragmentSamplers()) {
+    if (fNumFragmentSamplers > shaderCaps.fMaxFragmentSamplers) {
         GrCapsDebugf(this->caps(), "Program would use too many fragment samplers\n");
         return false;
     }

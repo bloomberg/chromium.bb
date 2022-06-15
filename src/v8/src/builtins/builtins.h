@@ -90,13 +90,13 @@ class Builtins {
       kFirstWideBytecodeHandler + kNumberOfWideBytecodeHandlers;
   static constexpr int kLastBytecodeHandlerPlusOne =
       kFirstExtraWideBytecodeHandler + kNumberOfWideBytecodeHandlers;
-  STATIC_ASSERT(kLastBytecodeHandlerPlusOne == kBuiltinCount);
+  static_assert(kLastBytecodeHandlerPlusOne == kBuiltinCount);
 
   static constexpr bool IsBuiltinId(Builtin builtin) {
     return builtin != Builtin::kNoBuiltinId;
   }
   static constexpr bool IsBuiltinId(int maybe_id) {
-    STATIC_ASSERT(static_cast<int>(Builtin::kNoBuiltinId) == -1);
+    static_assert(static_cast<int>(Builtin::kNoBuiltinId) == -1);
     return static_cast<uint32_t>(maybe_id) <
            static_cast<uint32_t>(kBuiltinCount);
   }
@@ -119,23 +119,12 @@ class Builtins {
   static BytecodeOffset GetContinuationBytecodeOffset(Builtin builtin);
   static Builtin GetBuiltinFromBytecodeOffset(BytecodeOffset);
 
-  static constexpr Builtin GetRecordWriteStub(
-      RememberedSetAction remembered_set_action, SaveFPRegsMode fp_mode) {
-    switch (remembered_set_action) {
-      case RememberedSetAction::kEmit:
-        switch (fp_mode) {
-          case SaveFPRegsMode::kIgnore:
-            return Builtin::kRecordWriteEmitRememberedSetIgnoreFP;
-          case SaveFPRegsMode::kSave:
-            return Builtin::kRecordWriteEmitRememberedSetSaveFP;
-        }
-      case RememberedSetAction::kOmit:
-        switch (fp_mode) {
-          case SaveFPRegsMode::kIgnore:
-            return Builtin::kRecordWriteOmitRememberedSetIgnoreFP;
-          case SaveFPRegsMode::kSave:
-            return Builtin::kRecordWriteOmitRememberedSetSaveFP;
-        }
+  static constexpr Builtin GetRecordWriteStub(SaveFPRegsMode fp_mode) {
+    switch (fp_mode) {
+      case SaveFPRegsMode::kIgnore:
+        return Builtin::kRecordWriteIgnoreFP;
+      case SaveFPRegsMode::kSave:
+        return Builtin::kRecordWriteSaveFP;
     }
   }
 
@@ -201,7 +190,7 @@ class Builtins {
     return kAllBuiltinsAreIsolateIndependent;
   }
   static constexpr bool IsIsolateIndependent(Builtin builtin) {
-    STATIC_ASSERT(kAllBuiltinsAreIsolateIndependent);
+    static_assert(kAllBuiltinsAreIsolateIndependent);
     return kAllBuiltinsAreIsolateIndependent;
   }
 

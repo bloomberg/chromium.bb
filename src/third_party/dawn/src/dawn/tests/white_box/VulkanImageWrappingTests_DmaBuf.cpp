@@ -51,8 +51,12 @@ class ExternalSemaphoreDmaBuf : public VulkanImageWrappingTestBackend::ExternalS
 
 class ExternalTextureDmaBuf : public VulkanImageWrappingTestBackend::ExternalTexture {
   public:
-    ExternalTextureDmaBuf(gbm_bo* bo, int fd, uint32_t stride, uint64_t drmModifier)
-        : mGbmBo(bo), mFd(fd), stride(stride), drmModifier(drmModifier) {}
+    ExternalTextureDmaBuf(
+        gbm_bo* bo,
+        int fd,
+        std::array<PlaneLayout, ExternalImageDescriptorDmaBuf::kMaxPlanes> planeLayouts,
+        uint64_t drmModifier)
+        : mGbmBo(bo), mFd(fd), planeLayouts(planeLayouts), drmModifier(drmModifier) {}
 
     ~ExternalTextureDmaBuf() override {
         if (mFd != -1) {
@@ -70,7 +74,7 @@ class ExternalTextureDmaBuf : public VulkanImageWrappingTestBackend::ExternalTex
     int mFd = -1;
 
   public:
-    const uint32_t stride;
+    const std::array<PlaneLayout, ExternalImageDescriptorDmaBuf::kMaxPlanes> planeLayouts;
     const uint64_t drmModifier;
 };
 
@@ -93,8 +97,13 @@ class VulkanImageWrappingTestBackendDmaBuf : public VulkanImageWrappingTestBacke
 
         gbm_bo* bo = CreateGbmBo(width, height, true);
 
-        return std::make_unique<ExternalTextureDmaBuf>(
-            bo, gbm_bo_get_fd(bo), gbm_bo_get_stride_for_plane(bo, 0), gbm_bo_get_modifier(bo));
+        std::array<PlaneLayout, ExternalImageDescriptorDmaBuf::kMaxPlanes> planeLayouts;
+        for (int plane = 0; plane < gbm_bo_get_plane_count(bo); ++plane) {
+            planeLayouts[plane].stride = gbm_bo_get_stride_for_plane(bo, plane);
+            planeLayouts[plane].offset = gbm_bo_get_offset(bo, plane);
+        }
+        return std::make_unique<ExternalTextureDmaBuf>(bo, gbm_bo_get_fd(bo), planeLayouts,
+                                                       gbm_bo_get_modifier(bo));
     }
 
     wgpu::Texture WrapImage(const wgpu::Device& device,
@@ -115,10 +124,11 @@ class VulkanImageWrappingTestBackendDmaBuf : public VulkanImageWrappingTestBacke
         descriptorDmaBuf.memoryFD = textureDmaBuf->Dup();
         descriptorDmaBuf.waitFDs = std::move(waitFDs);
 
-        descriptorDmaBuf.stride = textureDmaBuf->stride;
+        descriptorDmaBuf.planeLayouts = textureDmaBuf->planeLayouts;
         descriptorDmaBuf.drmModifier = textureDmaBuf->drmModifier;
 
-        return dawn::native::vulkan::WrapVulkanImage(device.Get(), &descriptorDmaBuf);
+        return wgpu::Texture::Acquire(
+            dawn::native::vulkan::WrapVulkanImage(device.Get(), &descriptorDmaBuf));
     }
 
     bool ExportImage(const wgpu::Texture& texture,
@@ -153,8 +163,9 @@ class VulkanImageWrappingTestBackendDmaBuf : public VulkanImageWrappingTestBacke
         for (uint32_t i = kRenderNodeStart; i < kRenderNodeEnd; i++) {
             std::string renderNode = kRenderNodeTemplate + std::to_string(i);
             renderNodeFd = open(renderNode.c_str(), O_RDWR);
-            if (renderNodeFd >= 0)
+            if (renderNodeFd >= 0) {
                 break;
+            }
         }
         EXPECT_GE(renderNodeFd, 0) << "Failed to get file descriptor for render node";
 
@@ -166,8 +177,9 @@ class VulkanImageWrappingTestBackendDmaBuf : public VulkanImageWrappingTestBacke
   private:
     gbm_bo* CreateGbmBo(uint32_t width, uint32_t height, bool linear) {
         uint32_t flags = GBM_BO_USE_RENDERING;
-        if (linear)
+        if (linear) {
             flags |= GBM_BO_USE_LINEAR;
+        }
         gbm_bo* gbmBo = gbm_bo_create(mGbmDevice, width, height, GBM_FORMAT_XBGR8888, flags);
         EXPECT_NE(gbmBo, nullptr) << "Failed to create GBM buffer object";
         return gbmBo;

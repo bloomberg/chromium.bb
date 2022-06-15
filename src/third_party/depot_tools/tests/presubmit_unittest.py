@@ -540,12 +540,6 @@ class PresubmitUnittest(PresubmitTestsBase):
              '  else:\n'
              '    return ()'), fake_presubmit))
 
-    self.assertRaises(
-        presubmit.PresubmitFailure, executer.ExecPresubmitScript,
-        self.presubmit_text_prefix +
-        'def CheckChangeOnCommit(input_api, output_api):\n'
-        '  return "foo"', fake_presubmit)
-
     self.assertFalse(
         executer.ExecPresubmitScript(
             self.presubmit_text_prefix +
@@ -560,12 +554,6 @@ class PresubmitUnittest(PresubmitTestsBase):
             'CheckChangeHasDescription(\n'
             '    input_api, output_api))\n'
             '  return results\n', fake_presubmit))
-
-    self.assertRaises(
-        presubmit.PresubmitFailure, executer.ExecPresubmitScript,
-        self.presubmit_text_prefix +
-        'def CheckChangeOnCommit(input_api, output_api):\n'
-        '  return ["foo"]', fake_presubmit)
 
   def testExecPresubmitScriptWithResultDB(self):
     description_lines = ('Hello there', 'this is a change', 'BUG=123')
@@ -584,15 +572,6 @@ class PresubmitUnittest(PresubmitTestsBase):
         '  return [output_api.PresubmitResult("test")]\n', fake_presubmit)
     sink.report.assert_called_with('CheckChangeOnCommit',
                                    rdb_wrapper.STATUS_PASS, 0)
-
-    # STATUS_FAIL on exception
-    sink.reset_mock()
-    self.assertRaises(
-        Exception, executer.ExecPresubmitScript, self.presubmit_text_prefix +
-        'def CheckChangeOnCommit(input_api, output_api):\n'
-        '  raise Exception("boom")', fake_presubmit)
-    sink.report.assert_called_with('CheckChangeOnCommit',
-                                   rdb_wrapper.STATUS_FAIL, 0)
 
     # STATUS_FAIL on fatal error
     sink.reset_mock()
@@ -778,6 +757,7 @@ def CheckChangeOnCommit(input_api, output_api):
           }
         ],
         'more_cc': ['me@example.com'],
+        'skipped_presubmits': 0,
     }
 
     fake_result_json = json.dumps(fake_result, sort_keys=True)
@@ -903,9 +883,11 @@ def CheckChangeOnCommit(input_api, output_api):
           RUNNING_PY_CHECKS_TEXT + 'Warning, no PRESUBMIT.py found.\n'
           'Running default presubmit script.\n'
           '** Presubmit ERRORS **\n!!\n\n'
+          'There were Python %d presubmit errors.\n'
           'Was the presubmit check useful? If not, run "git cl presubmit -v"\n'
           'to figure out which PRESUBMIT.py was run, then run git blame\n'
-          'on the file to figure out who to ask for help.\n')
+          'on the file to figure out who to ask for help.\n' %
+          sys.version_info.major)
       self.assertEqual(sys.stdout.getvalue(), text)
 
   def ExampleChange(self, extra_lines=None):
@@ -1788,6 +1770,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
     input_api.subprocess.CalledProcessError = fake_CalledProcessError
     input_api.verbose = False
     input_api.is_windows = False
+    input_api.no_diffs = False
 
     input_api.change = change
     input_api.is_committing = committing

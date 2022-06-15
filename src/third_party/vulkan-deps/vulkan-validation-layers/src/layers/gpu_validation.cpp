@@ -243,17 +243,11 @@ void GpuAssisted::CreateDevice(const VkDeviceCreateInfo *pCreateInfo) {
     if (enabled_features.core.robustBufferAccess || enabled_features.robustness2_features.robustBufferAccess2) {
         buffer_oob_enabled = false;
     } else {
-        std::string bufferoob_string = getLayerOption("khronos_validation.gpuav_buffer_oob");
-        transform(bufferoob_string.begin(), bufferoob_string.end(), bufferoob_string.begin(), ::tolower);
-        buffer_oob_enabled = !bufferoob_string.empty() ? !bufferoob_string.compare("true") : true;
+        buffer_oob_enabled = GpuGetOption("khronos_validation.gpuav_buffer_oob", true);
     }
-    std::string descriptor_indexing_string = getLayerOption("khronos_validation.gpuav_descriptor_indexing");
-    transform(descriptor_indexing_string.begin(), descriptor_indexing_string.end(), descriptor_indexing_string.begin(), ::tolower);
-    bool validate_descriptor_indexing = !descriptor_indexing_string.empty() ? !descriptor_indexing_string.compare("true") : true;
 
-    std::string draw_indirect_string = getLayerOption("khronos_validation.validate_draw_indirect");
-    transform(draw_indirect_string.begin(), draw_indirect_string.end(), draw_indirect_string.begin(), ::tolower);
-    validate_draw_indirect = !draw_indirect_string.empty() ? !draw_indirect_string.compare("true") : true;
+    bool validate_descriptor_indexing = GpuGetOption("khronos_validation.gpuav_descriptor_indexing", true);
+    validate_draw_indirect = GpuGetOption("khronos_validation.validate_draw_indirect", true);
 
     if (phys_dev_props.apiVersion < VK_API_VERSION_1_1) {
         ReportSetupProblem(device, "GPU-Assisted validation requires Vulkan 1.1 or later.  GPU-Assisted Validation disabled.");
@@ -281,6 +275,26 @@ void GpuAssisted::CreateDevice(const VkDeviceCreateInfo *pCreateInfo) {
     if (validate_descriptor_indexing) {
         descriptor_indexing = CheckForDescriptorIndexing(enabled_features);
     }
+    bool use_linear_output_pool = GpuGetOption("khronos_validation.vma_linear_output", true);
+    if (use_linear_output_pool) {
+        auto output_buffer_create_info = LvlInitStruct<VkBufferCreateInfo>();
+        output_buffer_create_info.size = output_buffer_size;
+        output_buffer_create_info.usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
+        VmaAllocationCreateInfo alloc_create_info = {};
+        alloc_create_info.requiredFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+        uint32_t mem_type_index;
+        vmaFindMemoryTypeIndexForBufferInfo(vmaAllocator, &output_buffer_create_info, &alloc_create_info, &mem_type_index);
+        VmaPoolCreateInfo pool_create_info = {};
+        pool_create_info.memoryTypeIndex = mem_type_index;
+        pool_create_info.blockSize = 0;
+        pool_create_info.maxBlockCount = 0;
+        pool_create_info.flags = VMA_POOL_CREATE_LINEAR_ALGORITHM_BIT;
+        VkResult result = vmaCreatePool(vmaAllocator, &pool_create_info, &output_buffer_pool);
+        if (result != VK_SUCCESS) {
+            ReportSetupProblem(device, "Unable to create VMA memory pool");
+        }
+    }
+
     CreateAccelerationStructureBuildValidationState();
 }
 
@@ -297,6 +311,9 @@ void GpuAssisted::PreCallRecordDestroyDevice(VkDevice device, const VkAllocation
             pre_draw_validation_state.renderpass_to_pipeline.erase(entry.first);
         }
         pre_draw_validation_state.globals_created = false;
+    }
+    if (output_buffer_pool) {
+        vmaDestroyPool(vmaAllocator, output_buffer_pool);
     }
     GpuAssistedBase::PreCallRecordDestroyDevice(device, pAllocator);
 }
@@ -1602,6 +1619,11 @@ void GpuAssisted::PreCallRecordCmdTraceRaysIndirectKHR(VkCommandBuffer commandBu
     AllocateValidationResources(commandBuffer, VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, CMD_TRACERAYSINDIRECTKHR);
 }
 
+void GpuAssisted::PreCallRecordCmdTraceRaysIndirect2KHR(VkCommandBuffer commandBuffer, VkDeviceAddress indirectDeviceAddress) {
+    ValidationStateTracker::PreCallRecordCmdTraceRaysIndirect2KHR(commandBuffer, indirectDeviceAddress);
+    AllocateValidationResources(commandBuffer, VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, CMD_TRACERAYSINDIRECT2KHR);
+}
+
 void GpuAssisted::PostCallRecordCmdTraceRaysIndirectKHR(VkCommandBuffer commandBuffer,
                                                         const VkStridedDeviceAddressRegionKHR *pRaygenShaderBindingTable,
                                                         const VkStridedDeviceAddressRegionKHR *pMissShaderBindingTable,
@@ -1685,8 +1707,7 @@ void GpuAssisted::AllocatePreDrawValidationResources(GpuAssistedDeviceMemoryBloc
         binding.binding = 1;
         bindings.push_back(binding);
 
-        VkDescriptorSetLayoutCreateInfo ds_layout_ci = {};
-        ds_layout_ci.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+        VkDescriptorSetLayoutCreateInfo ds_layout_ci = LvlInitStruct<VkDescriptorSetLayoutCreateInfo>();
         ds_layout_ci.bindingCount = static_cast<uint32_t>(bindings.size());
         ds_layout_ci.pBindings = bindings.data();
         result = DispatchCreateDescriptorSetLayout(device, &ds_layout_ci, nullptr, &pre_draw_validation_state.validation_ds_layout);
@@ -1702,8 +1723,7 @@ void GpuAssisted::AllocatePreDrawValidationResources(GpuAssistedDeviceMemoryBloc
         push_constant_ranges[0].offset = 0;
         push_constant_ranges[0].size = 4 * sizeof(uint32_t);
         VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo[1] = {};
-        pipelineLayoutCreateInfo[0].sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-        pipelineLayoutCreateInfo[0].pNext = NULL;
+        pipelineLayoutCreateInfo[0] = LvlInitStruct<VkPipelineLayoutCreateInfo>();
         pipelineLayoutCreateInfo[0].pushConstantRangeCount = push_constant_range_count;
         pipelineLayoutCreateInfo[0].pPushConstantRanges = push_constant_ranges;
         pipelineLayoutCreateInfo[0].setLayoutCount = 1;
@@ -1751,7 +1771,7 @@ void GpuAssisted::AllocatePreDrawValidationResources(GpuAssistedDeviceMemoryBloc
 
     VkWriteDescriptorSet desc_writes[2] = {};
     for (auto i = 0; i < 2; i++) {
-        desc_writes[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        desc_writes[i] = LvlInitStruct<VkWriteDescriptorSet>();
         desc_writes[i].dstBinding = i;
         desc_writes[i].descriptorCount = 1;
         desc_writes[i].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
@@ -1803,14 +1823,15 @@ void GpuAssisted::AllocateValidationResources(const VkCommandBuffer cmd_buffer, 
 
     // Allocate memory for the output block that the gpu will use to return any error information
     GpuAssistedDeviceMemoryBlock output_block = {};
-    VkBufferCreateInfo buffer_info = {VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO};
+    VkBufferCreateInfo buffer_info = LvlInitStruct<VkBufferCreateInfo>();
     buffer_info.size = output_buffer_size;
     buffer_info.usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
     VmaAllocationCreateInfo alloc_info = {};
-    alloc_info.usage = VMA_MEMORY_USAGE_GPU_TO_CPU;
+    alloc_info.requiredFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+    alloc_info.pool = output_buffer_pool;
     result = vmaCreateBuffer(vmaAllocator, &buffer_info, &alloc_info, &output_block.buffer, &output_block.allocation, nullptr);
     if (result != VK_SUCCESS) {
-        ReportSetupProblem(device, "Unable to allocate device memory.  Device could become unstable.");
+        ReportSetupProblem(device, "Unable to allocate device memory.  Device could become unstable.", true);
         aborted = true;
         return;
     }
@@ -1964,12 +1985,12 @@ void GpuAssisted::AllocateValidationResources(const VkCommandBuffer cmd_buffer, 
             } else {
                 words_needed = 1 + number_of_sets + binding_count + descriptor_count;
             }
-            alloc_info.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
             buffer_info.size = words_needed * 4;
+            alloc_info.pool = VK_NULL_HANDLE;
             result = vmaCreateBuffer(vmaAllocator, &buffer_info, &alloc_info, &di_input_block.buffer, &di_input_block.allocation,
                                      nullptr);
             if (result != VK_SUCCESS) {
-                ReportSetupProblem(device, "Unable to allocate device memory.  Device could become unstable.");
+                ReportSetupProblem(device, "Unable to allocate device memory.  Device could become unstable.", true);
                 aborted = true;
                 return;
             }
@@ -2137,12 +2158,12 @@ void GpuAssisted::AllocateValidationResources(const VkCommandBuffer cmd_buffer, 
 
             uint32_t num_buffers = static_cast<uint32_t>(address_ranges.size());
             uint32_t words_needed = (num_buffers + 3) + (num_buffers + 2);
-            alloc_info.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
             buffer_info.size = words_needed * 8;  // 64 bit words
+            alloc_info.pool = VK_NULL_HANDLE;
             result = vmaCreateBuffer(vmaAllocator, &buffer_info, &alloc_info, &bda_input_block.buffer, &bda_input_block.allocation,
                                      nullptr);
             if (result != VK_SUCCESS) {
-                ReportSetupProblem(device, "Unable to allocate device memory.  Device could become unstable.");
+                ReportSetupProblem(device, "Unable to allocate device memory.  Device could become unstable.", true);
                 aborted = true;
                 return;
             }

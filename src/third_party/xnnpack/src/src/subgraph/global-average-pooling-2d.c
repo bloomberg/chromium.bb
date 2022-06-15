@@ -213,25 +213,9 @@ enum xnn_status xnn_define_global_average_pooling_2d(
     return status;
   }
 
-  if (isnan(output_min)) {
-    xnn_log_error(
-      "failed to define %s operator with NaN output lower bound: lower bound must be non-NaN",
-      xnn_node_type_to_string(xnn_node_type_global_average_pooling_2d));
-    return xnn_status_invalid_parameter;
-  }
-
-  if (isnan(output_max)) {
-    xnn_log_error(
-      "failed to define %s operator with NaN output upper bound: upper bound must be non-NaN",
-      xnn_node_type_to_string(xnn_node_type_global_average_pooling_2d));
-    return xnn_status_invalid_parameter;
-  }
-
-  if (output_min >= output_max) {
-    xnn_log_error(
-      "failed to define %s operator with [%.7g, %.7g] output range: lower bound must be below upper bound",
-      xnn_node_type_to_string(xnn_node_type_global_average_pooling_2d), output_min, output_max);
-    return xnn_status_invalid_parameter;
+  status = xnn_subgraph_check_output_min_max(xnn_node_type_global_average_pooling_2d, output_min, output_max);
+  if (status != xnn_status_success) {
+    return status;
   }
 
   if ((status = xnn_subgraph_check_input_node_id(xnn_node_type_global_average_pooling_2d, input_id, subgraph->num_values)) !=
@@ -296,14 +280,10 @@ enum xnn_status xnn_define_global_average_pooling_2d(
       return xnn_status_invalid_parameter;
   }
 
-  if (input_value->datatype != output_value->datatype) {
-    xnn_log_error(
-      "failed to define %s operator with input ID #%" PRIu32 " and output ID #%" PRIu32
-      ": mismatching datatypes across input (%s) and output (%s)",
-      xnn_node_type_to_string(xnn_node_type_global_average_pooling_2d), input_id, output_id,
-      xnn_datatype_to_string(input_value->datatype),
-      xnn_datatype_to_string(output_value->datatype));
-    return xnn_status_invalid_parameter;
+  status = xnn_subgraph_check_datatype_matches(
+    xnn_node_type_global_average_pooling_2d, input_id, input_value, output_id, output_value);
+  if (status != xnn_status_success) {
+    return status;
   }
 
   struct xnn_node* node = xnn_subgraph_new_node(subgraph);

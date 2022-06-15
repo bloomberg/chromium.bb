@@ -66,17 +66,18 @@ MaybeError ValidateSwapChainDescriptor(const DeviceBase* device,
     } else {
         DAWN_INVALID_IF(surface == nullptr,
                         "At least one of surface or implementation must be set");
+        DAWN_INVALID_IF(surface->IsError(), "[Surface] is invalid.");
 
         DAWN_TRY(ValidatePresentMode(descriptor->presentMode));
 
 // TODO(crbug.com/dawn/160): Lift this restriction once wgpu::Instance::GetPreferredSurfaceFormat is
 // implemented.
 // TODO(dawn:286):
-#if defined(DAWN_PLATFORM_ANDROID)
+#if DAWN_PLATFORM_IS(ANDROID)
         constexpr wgpu::TextureFormat kRequireSwapChainFormat = wgpu::TextureFormat::RGBA8Unorm;
 #else
         constexpr wgpu::TextureFormat kRequireSwapChainFormat = wgpu::TextureFormat::BGRA8Unorm;
-#endif  // !defined(DAWN_PLATFORM_ANDROID)
+#endif  // !DAWN_PLATFORM_IS(ANDROID)
         DAWN_INVALID_IF(descriptor->format != kRequireSwapChainFormat,
                         "Format (%s) is not %s, which is (currently) the only accepted format.",
                         descriptor->format, kRequireSwapChainFormat);
@@ -329,10 +330,10 @@ ResultOrError<Ref<TextureViewBase>> NewSwapChainBase::GetCurrentTextureView() {
     ASSERT(mCurrentTextureView->GetLayerCount() == 1);
     ASSERT(mCurrentTextureView->GetDimension() == wgpu::TextureViewDimension::e2D);
     ASSERT(mCurrentTextureView->GetTexture()
-               ->GetMipLevelVirtualSize(mCurrentTextureView->GetBaseMipLevel())
+               ->GetMipLevelSingleSubresourceVirtualSize(mCurrentTextureView->GetBaseMipLevel())
                .width == mWidth);
     ASSERT(mCurrentTextureView->GetTexture()
-               ->GetMipLevelVirtualSize(mCurrentTextureView->GetBaseMipLevel())
+               ->GetMipLevelSingleSubresourceVirtualSize(mCurrentTextureView->GetBaseMipLevel())
                .height == mHeight);
 
     return mCurrentTextureView;

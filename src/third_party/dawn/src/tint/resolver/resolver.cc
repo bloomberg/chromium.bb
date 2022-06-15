@@ -51,6 +51,8 @@
 #include "src/tint/ast/vector.h"
 #include "src/tint/ast/workgroup_attribute.h"
 #include "src/tint/resolver/uniformity.h"
+#include "src/tint/sem/abstract_float.h"
+#include "src/tint/sem/abstract_int.h"
 #include "src/tint/sem/array.h"
 #include "src/tint/sem/atomic.h"
 #include "src/tint/sem/call.h"
@@ -60,6 +62,7 @@
 #include "src/tint/sem/function.h"
 #include "src/tint/sem/if_statement.h"
 #include "src/tint/sem/loop_statement.h"
+#include "src/tint/sem/materialize.h"
 #include "src/tint/sem/member_accessor_expression.h"
 #include "src/tint/sem/module.h"
 #include "src/tint/sem/multisampled_texture.h"
@@ -101,15 +104,16 @@ bool Resolver::Resolve() {
         return false;
     }
 
-    // Create the semantic module
-    builder_->Sem().SetModule(builder_->create<sem::Module>(dependencies_.ordered_globals));
-
     bool result = ResolveInternal();
 
     if (!result && !diagnostics_.contains_errors()) {
         TINT_ICE(Resolver, diagnostics_) << "resolving failed, but no error was raised";
         return false;
     }
+
+    // Create the semantic module
+    builder_->Sem().SetModule(builder_->create<sem::Module>(
+        std::move(dependencies_.ordered_globals), std::move(enabled_extensions_)));
 
     return result;
 }
@@ -120,19 +124,16 @@ bool Resolver::ResolveInternal() {
     // Process all module-scope declarations in dependency order.
     for (auto* decl : dependencies_.ordered_globals) {
         Mark(decl);
-        // Enable directives don't have sem node.
-        if (decl->Is<ast::Enable>()) {
-            continue;
-        }
-        if (!Switch(
+        if (!Switch<bool>(
                 decl,  //
+                [&](const ast::Enable* e) { return Enable(e); },
                 [&](const ast::TypeDecl* td) { return TypeDecl(td); },
                 [&](const ast::Function* func) { return Function(func); },
                 [&](const ast::Variable* var) { return GlobalVariable(var); },
                 [&](Default) {
                     TINT_UNREACHABLE(Resolver, diagnostics_)
                         << "unhandled global declaration: " << decl->TypeInfo().name;
-                    return nullptr;
+                    return false;
                 })) {
             return false;
         }
@@ -146,8 +147,10 @@ bool Resolver::ResolveInternal() {
         return false;
     }
 
-    if (!AnalyzeUniformity(builder_, dependencies_)) {
-        // TODO(jrprice): Reject programs that fail uniformity analysis.
+    if (!enabled_extensions_.contains(ast::Extension::kChromiumDisableUniformityAnalysis)) {
+        if (!AnalyzeUniformity(builder_, dependencies_)) {
+            // TODO(jrprice): Reject programs that fail uniformity analysis.
+        }
     }
 
     bool result = true;
@@ -172,6 +175,14 @@ sem::Type* Resolver::Type(const ast::Type* ty) {
         [&](const ast::Bool*) { return builder_->create<sem::Bool>(); },
         [&](const ast::I32*) { return builder_->create<sem::I32>(); },
         [&](const ast::U32*) { return builder_->create<sem::U32>(); },
+        [&](const ast::F16* t) -> sem::F16* {
+            // Validate if f16 type is allowed.
+            if (!enabled_extensions_.contains(ast::Extension::kF16)) {
+                AddError("f16 used without 'f16' extension enabled", t->source);
+                return nullptr;
+            }
+            return builder_->create<sem::F16>();
+        },
         [&](const ast::F32*) { return builder_->create<sem::F32>(); },
         [&](const ast::Vector* t) -> sem::Vector* {
             if (!t->type) {
@@ -307,7 +318,7 @@ sem::Variable* Resolver::Variable(const ast::Variable* var,
 
     // Does the variable have a constructor?
     if (var->constructor) {
-        rhs = Expression(var->constructor);
+        rhs = Materialize(Expression(var->constructor), storage_ty);
         if (!rhs) {
             return nullptr;
         }
@@ -709,52 +720,61 @@ bool Resolver::WorkgroupSize(const ast::Function* func) {
     }
 
     auto values = attr->Values();
-    auto any_i32 = false;
-    auto any_u32 = false;
+    std::array<const sem::Expression*, 3> args = {};
+    std::array<const sem::Type*, 3> arg_tys = {};
+    size_t arg_count = 0;
+
+    constexpr const char* kErrBadType =
+        "workgroup_size argument must be either literal or module-scope constant of type i32 "
+        "or u32";
+
     for (int i = 0; i < 3; i++) {
-        // Each argument to this attribute can either be a literal, an
-        // identifier for a module-scope constants, or nullptr if not specified.
-
-        auto* expr = values[i];
+        // Each argument to this attribute can either be a literal, an identifier for a module-scope
+        // constants, or nullptr if not specified.
+        auto* value = values[i];
+        if (!value) {
+            break;
+        }
+        const auto* expr = Expression(value);
         if (!expr) {
-            // Not specified, just use the default.
-            continue;
+            return false;
         }
-
-        auto* expr_sem = Expression(expr);
-        if (!expr_sem) {
+        auto* ty = expr->Type();
+        if (!ty->IsAnyOf<sem::I32, sem::U32, sem::AbstractInt>()) {
+            AddError(kErrBadType, value->source);
             return false;
         }
 
-        constexpr const char* kErrBadType =
-            "workgroup_size argument must be either literal or module-scope "
-            "constant of type i32 or u32";
-        constexpr const char* kErrInconsistentType =
-            "workgroup_size arguments must be of the same type, either i32 "
-            "or u32";
+        args[i] = expr;
+        arg_tys[i] = ty;
+        arg_count++;
+    }
 
-        auto* ty = sem_.TypeOf(expr);
-        bool is_i32 = ty->UnwrapRef()->Is<sem::I32>();
-        bool is_u32 = ty->UnwrapRef()->Is<sem::U32>();
-        if (!is_i32 && !is_u32) {
-            AddError(kErrBadType, expr->source);
-            return false;
-        }
+    auto* common_ty = sem::Type::Common(arg_tys.data(), arg_count);
+    if (!common_ty) {
+        AddError("workgroup_size arguments must be of the same type, either i32 or u32",
+                 attr->source);
+        return false;
+    }
 
-        any_i32 = any_i32 || is_i32;
-        any_u32 = any_u32 || is_u32;
-        if (any_i32 && any_u32) {
-            AddError(kErrInconsistentType, expr->source);
+    // If all arguments are abstract-integers, then materialize to i32.
+    if (common_ty->Is<sem::AbstractInt>()) {
+        common_ty = builder_->create<sem::I32>();
+    }
+
+    for (size_t i = 0; i < arg_count; i++) {
+        auto* materialized = Materialize(args[i], common_ty);
+        if (!materialized) {
             return false;
         }
 
         sem::Constant value;
 
-        if (auto* user = sem_.Get(expr)->As<sem::VariableUser>()) {
+        if (auto* user = args[i]->As<sem::VariableUser>()) {
             // We have an variable of a module-scope constant.
             auto* decl = user->Variable()->Declaration();
             if (!decl->is_const) {
-                AddError(kErrBadType, expr->source);
+                AddError(kErrBadType, values[i]->source);
                 return false;
             }
             // Capture the constant if it is pipeline-overridable.
@@ -769,8 +789,8 @@ bool Resolver::WorkgroupSize(const ast::Function* func) {
                 ws[i].value = 0;
                 continue;
             }
-        } else if (expr->Is<ast::LiteralExpression>()) {
-            value = sem_.Get(expr)->ConstantValue();
+        } else if (values[i]->Is<ast::LiteralExpression>()) {
+            value = materialized->ConstantValue();
         } else {
             AddError(
                 "workgroup_size argument must be either a literal or a "
@@ -785,13 +805,12 @@ bool Resolver::WorkgroupSize(const ast::Function* func) {
             continue;
         }
         // validator_.Validate and set the default value for this dimension.
-        if (is_i32 ? value.Elements()[0].i32 < 1 : value.Elements()[0].u32 < 1) {
+        if (value.Element<AInt>(0).value < 1) {
             AddError("workgroup_size argument must be at least 1", values[i]->source);
             return false;
         }
 
-        ws[i].value =
-            is_i32 ? static_cast<uint32_t>(value.Elements()[0].i32) : value.Elements()[0].u32;
+        ws[i].value = value.Element<uint32_t>(0);
     }
 
     current_function_->SetWorkgroupSize(std::move(ws));
@@ -863,10 +882,13 @@ sem::CaseStatement* Resolver::CaseStatement(const ast::CaseStatement* stmt) {
     auto* sem =
         builder_->create<sem::CaseStatement>(stmt, current_compound_statement_, current_function_);
     return StatementScope(stmt, sem, [&] {
+        sem->Selectors().reserve(stmt->selectors.size());
         for (auto* sel : stmt->selectors) {
-            if (!Expression(sel)) {
+            auto* expr = Expression(sel);
+            if (!expr) {
                 return false;
             }
+            sem->Selectors().emplace_back(expr);
         }
         Mark(stmt->body);
         auto* body = BlockStatement(stmt->body);
@@ -1017,11 +1039,19 @@ sem::ForLoopStatement* Resolver::ForLoopStatement(const ast::ForLoopStatement* s
 
 sem::Expression* Resolver::Expression(const ast::Expression* root) {
     std::vector<const ast::Expression*> sorted;
-    bool mark_failed = false;
+    constexpr size_t kMaxExpressionDepth = 512U;
+    bool failed = false;
     if (!ast::TraverseExpressions<ast::TraverseOrder::RightToLeft>(
-            root, diagnostics_, [&](const ast::Expression* expr) {
+            root, diagnostics_, [&](const ast::Expression* expr, size_t depth) {
+                if (depth > kMaxExpressionDepth) {
+                    AddError(
+                        "reached max expression depth of " + std::to_string(kMaxExpressionDepth),
+                        expr->source);
+                    failed = true;
+                    return ast::TraverseAction::Stop;
+                }
                 if (!Mark(expr)) {
-                    mark_failed = true;
+                    failed = true;
                     return ast::TraverseAction::Stop;
                 }
                 sorted.emplace_back(expr);
@@ -1030,7 +1060,7 @@ sem::Expression* Resolver::Expression(const ast::Expression* root) {
         return nullptr;
     }
 
-    if (mark_failed) {
+    if (failed) {
         return nullptr;
     }
 
@@ -1079,8 +1109,105 @@ sem::Expression* Resolver::Expression(const ast::Expression* root) {
     return nullptr;
 }
 
+const sem::Expression* Resolver::Materialize(const sem::Expression* expr,
+                                             const sem::Type* target_type /* = nullptr */) {
+    if (!expr) {
+        return nullptr;  // Allow for Materialize(Expression(blah))
+    }
+
+    // Helper for actually creating the the materialize node, performing the constant cast, updating
+    // the ast -> sem binding, and performing validation.
+    auto materialize = [&](const sem::Type* target_ty) -> sem::Materialize* {
+        auto* decl = expr->Declaration();
+        auto expr_val = EvaluateConstantValue(decl, expr->Type());
+        if (!expr_val) {
+            return nullptr;
+        }
+        if (!expr_val->IsValid()) {
+            TINT_ICE(Resolver, builder_->Diagnostics())
+                << decl->source
+                << "EvaluateConstantValue() returned invalid value for materialized value of type: "
+                << builder_->FriendlyName(expr->Type());
+            return nullptr;
+        }
+        auto materialized_val = ConvertValue(expr_val.Get(), target_ty, decl->source);
+        if (!materialized_val) {
+            return nullptr;
+        }
+        if (!materialized_val->IsValid()) {
+            TINT_ICE(Resolver, builder_->Diagnostics())
+                << decl->source << "ConvertValue(" << builder_->FriendlyName(expr_val->Type())
+                << " -> " << builder_->FriendlyName(target_ty) << ") returned invalid value";
+            return nullptr;
+        }
+        auto* m =
+            builder_->create<sem::Materialize>(expr, current_statement_, materialized_val.Get());
+        m->Behaviors() = expr->Behaviors();
+        builder_->Sem().Replace(decl, m);
+        return validator_.Materialize(m) ? m : nullptr;
+    };
+
+    // Helpers for constructing semantic types
+    auto i32 = [&] { return builder_->create<sem::I32>(); };
+    auto f32 = [&] { return builder_->create<sem::F32>(); };
+    auto i32v = [&](uint32_t width) { return builder_->create<sem::Vector>(i32(), width); };
+    auto f32v = [&](uint32_t width) { return builder_->create<sem::Vector>(f32(), width); };
+    auto f32m = [&](uint32_t columns, uint32_t rows) {
+        return builder_->create<sem::Matrix>(f32v(rows), columns);
+    };
+
+    // Type dispatch based on the expression type
+    return Switch<sem::Expression*>(
+        expr->Type(),  //
+        [&](const sem::AbstractInt*) { return materialize(target_type ? target_type : i32()); },
+        [&](const sem::AbstractFloat*) { return materialize(target_type ? target_type : f32()); },
+        [&](const sem::Vector* v) {
+            return Switch(
+                v->type(),  //
+                [&](const sem::AbstractInt*) {
+                    return materialize(target_type ? target_type : i32v(v->Width()));
+                },
+                [&](const sem::AbstractFloat*) {
+                    return materialize(target_type ? target_type : f32v(v->Width()));
+                },
+                [&](Default) { return expr; });
+        },
+        [&](const sem::Matrix* m) {
+            return Switch(
+                m->type(),  //
+                [&](const sem::AbstractFloat*) {
+                    return materialize(target_type ? target_type : f32m(m->columns(), m->rows()));
+                },
+                [&](Default) { return expr; });
+        },
+        [&](Default) { return expr; });
+}
+
+bool Resolver::MaterializeArguments(std::vector<const sem::Expression*>& args,
+                                    const sem::CallTarget* target) {
+    for (size_t i = 0, n = std::min(args.size(), target->Parameters().size()); i < n; i++) {
+        const auto* param_ty = target->Parameters()[i]->Type();
+        if (ShouldMaterializeArgument(param_ty)) {
+            auto* materialized = Materialize(args[i], param_ty);
+            if (!materialized) {
+                return false;
+            }
+            args[i] = materialized;
+        }
+    }
+    return true;
+}
+
+bool Resolver::ShouldMaterializeArgument(const sem::Type* parameter_ty) const {
+    const auto* param_el_ty = sem::Type::ElementOf(parameter_ty);
+    return param_el_ty && !param_el_ty->Is<sem::AbstractNumeric>();
+}
+
 sem::Expression* Resolver::IndexAccessor(const ast::IndexAccessorExpression* expr) {
-    auto* idx = sem_.Get(expr->index);
+    auto* idx = Materialize(sem_.Get(expr->index));
+    if (!idx) {
+        return nullptr;
+    }
     auto* obj = sem_.Get(expr->object);
     auto* obj_raw_ty = obj->Type();
     auto* obj_ty = obj_raw_ty->UnwrapRef();
@@ -1112,22 +1239,31 @@ sem::Expression* Resolver::IndexAccessor(const ast::IndexAccessorExpression* exp
     }
 
     auto val = EvaluateConstantValue(expr, ty);
+    if (!val) {
+        return nullptr;
+    }
     bool has_side_effects = idx->HasSideEffects() || obj->HasSideEffects();
-    auto* sem = builder_->create<sem::Expression>(expr, ty, current_statement_, val,
+    auto* sem = builder_->create<sem::Expression>(expr, ty, current_statement_, val.Get(),
                                                   has_side_effects, obj->SourceVariable());
     sem->Behaviors() = idx->Behaviors() + obj->Behaviors();
     return sem;
 }
 
 sem::Expression* Resolver::Bitcast(const ast::BitcastExpression* expr) {
-    auto* inner = sem_.Get(expr->expr);
+    auto* inner = Materialize(sem_.Get(expr->expr));
+    if (!inner) {
+        return nullptr;
+    }
     auto* ty = Type(expr->type);
     if (!ty) {
         return nullptr;
     }
 
     auto val = EvaluateConstantValue(expr, ty);
-    auto* sem = builder_->create<sem::Expression>(expr, ty, current_statement_, val,
+    if (!val) {
+        return nullptr;
+    }
+    auto* sem = builder_->create<sem::Expression>(expr, ty, current_statement_, val.Get(),
                                                   inner->HasSideEffects());
 
     sem->Behaviors() = inner->Behaviors();
@@ -1140,179 +1276,266 @@ sem::Expression* Resolver::Bitcast(const ast::BitcastExpression* expr) {
 }
 
 sem::Call* Resolver::Call(const ast::CallExpression* expr) {
+    // A CallExpression can resolve to one of:
+    // * A function call.
+    // * A builtin call.
+    // * A type constructor.
+    // * A type conversion.
+
+    // Resolve all of the arguments, their types and the set of behaviors.
     std::vector<const sem::Expression*> args(expr->args.size());
-    std::vector<const sem::Type*> arg_tys(args.size());
     sem::Behaviors arg_behaviors;
-
-    // The element type of all the arguments. Nullptr if argument types are
-    // different.
-    const sem::Type* arg_el_ty = nullptr;
-
     for (size_t i = 0; i < expr->args.size(); i++) {
         auto* arg = sem_.Get(expr->args[i]);
         if (!arg) {
             return nullptr;
         }
         args[i] = arg;
-        arg_tys[i] = args[i]->Type();
         arg_behaviors.Add(arg->Behaviors());
-
-        // Determine the common argument element type
-        auto* el_ty = arg_tys[i]->UnwrapRef();
-        if (auto* vec = el_ty->As<sem::Vector>()) {
-            el_ty = vec->type();
-        } else if (auto* mat = el_ty->As<sem::Matrix>()) {
-            el_ty = mat->type();
-        }
-        if (i == 0) {
-            arg_el_ty = el_ty;
-        } else if (arg_el_ty != el_ty) {
-            arg_el_ty = nullptr;
-        }
     }
-
     arg_behaviors.Remove(sem::Behavior::kNext);
 
-    auto type_ctor_or_conv = [&](const sem::Type* ty) -> sem::Call* {
-        // The call has resolved to a type constructor or cast.
-        if (args.size() == 1) {
-            auto* target = ty;
-            auto* source = args[0]->Type()->UnwrapRef();
-            if ((source != target) &&  //
-                ((source->is_scalar() && target->is_scalar()) ||
-                 (source->Is<sem::Vector>() && target->Is<sem::Vector>()) ||
-                 (source->Is<sem::Matrix>() && target->Is<sem::Matrix>()))) {
-                // Note: Matrix types currently cannot be converted (the element type
-                // must only be f32). We implement this for the day we support other
-                // matrix element types.
-                return TypeConversion(expr, ty, args[0], arg_tys[0]);
-            }
+    // Did any arguments have side effects?
+    bool has_side_effects =
+        std::any_of(args.begin(), args.end(), [](auto* e) { return e->HasSideEffects(); });
+
+    // ct_ctor_or_conv is a helper for building either a sem::TypeConstructor or sem::TypeConversion
+    // call for a CtorConvIntrinsic with an optional template argument type.
+    auto ct_ctor_or_conv = [&](CtorConvIntrinsic ty, const sem::Type* template_arg) -> sem::Call* {
+        auto arg_tys = utils::Transform(args, [](auto* arg) { return arg->Type(); });
+        auto* call_target = intrinsic_table_->Lookup(ty, template_arg, arg_tys, expr->source);
+        if (!call_target) {
+            return nullptr;
         }
-        return TypeConstructor(expr, ty, std::move(args), std::move(arg_tys));
+        if (!MaterializeArguments(args, call_target)) {
+            return nullptr;
+        }
+        auto val = EvaluateConstantValue(expr, call_target->ReturnType());
+        if (!val) {
+            return nullptr;
+        }
+        return builder_->create<sem::Call>(expr, call_target, std::move(args), current_statement_,
+                                           val.Get(), has_side_effects);
     };
 
-    // Resolve the target of the CallExpression to determine whether this is a
-    // function call, cast or type constructor expression.
-    if (expr->target.type) {
-        const sem::Type* ty = nullptr;
-
-        auto err_cannot_infer_el_ty = [&](std::string name) {
-            AddError("cannot infer " + name +
-                         " element type, as constructor arguments have different types",
-                     expr->source);
-            for (size_t i = 0; i < args.size(); i++) {
-                auto* arg = args[i];
-                AddNote("argument " + std::to_string(i) + " has type " +
-                            arg->Type()->FriendlyName(builder_->Symbols()),
-                        arg->Declaration()->source);
-            }
-        };
-
-        if (!expr->args.empty()) {
-            // vecN() without explicit element type?
-            // Try to infer element type from args
-            if (auto* vec = expr->target.type->As<ast::Vector>()) {
-                if (!vec->type) {
-                    if (!arg_el_ty) {
-                        err_cannot_infer_el_ty("vector");
-                        return nullptr;
-                    }
-
-                    Mark(vec);
-                    auto* v =
-                        builder_->create<sem::Vector>(arg_el_ty, static_cast<uint32_t>(vec->width));
-                    if (!validator_.Vector(v, vec->source)) {
-                        return nullptr;
-                    }
-                    builder_->Sem().Add(vec, v);
-                    ty = v;
+    // ct_ctor_or_conv is a helper for building either a sem::TypeConstructor or sem::TypeConversion
+    // call for the given semantic type.
+    auto ty_ctor_or_conv = [&](const sem::Type* ty) {
+        return Switch(
+            ty,  //
+            [&](const sem::Vector* v) {
+                return ct_ctor_or_conv(VectorCtorConvIntrinsic(v->Width()), v->type());
+            },
+            [&](const sem::Matrix* m) {
+                return ct_ctor_or_conv(MatrixCtorConvIntrinsic(m->columns(), m->rows()), m->type());
+            },
+            [&](const sem::I32*) { return ct_ctor_or_conv(CtorConvIntrinsic::kI32, nullptr); },
+            [&](const sem::U32*) { return ct_ctor_or_conv(CtorConvIntrinsic::kU32, nullptr); },
+            [&](const sem::F32*) { return ct_ctor_or_conv(CtorConvIntrinsic::kF32, nullptr); },
+            [&](const sem::Bool*) { return ct_ctor_or_conv(CtorConvIntrinsic::kBool, nullptr); },
+            [&](const sem::Array* arr) -> sem::Call* {
+                auto* call_target = utils::GetOrCreate(
+                    array_ctors_, ArrayConstructorSig{{arr, args.size()}},
+                    [&]() -> sem::TypeConstructor* {
+                        sem::ParameterList params(args.size());
+                        for (size_t i = 0; i < args.size(); i++) {
+                            params[i] = builder_->create<sem::Parameter>(
+                                nullptr,                   // declaration
+                                static_cast<uint32_t>(i),  // index
+                                arr->ElemType(),           // type
+                                ast::StorageClass::kNone,  // storage_class
+                                ast::Access::kUndefined);  // access
+                        }
+                        return builder_->create<sem::TypeConstructor>(arr, std::move(params));
+                    });
+                if (!MaterializeArguments(args, call_target)) {
+                    return nullptr;
                 }
-            }
-
-            // matNxM() without explicit element type?
-            // Try to infer element type from args
-            if (auto* mat = expr->target.type->As<ast::Matrix>()) {
-                if (!mat->type) {
-                    if (!arg_el_ty) {
-                        err_cannot_infer_el_ty("matrix");
-                        return nullptr;
-                    }
-
-                    Mark(mat);
-                    auto* column_type = builder_->create<sem::Vector>(arg_el_ty, mat->rows);
-                    auto* m = builder_->create<sem::Matrix>(column_type, mat->columns);
-                    if (!validator_.Matrix(m, mat->source)) {
-                        return nullptr;
-                    }
-                    builder_->Sem().Add(mat, m);
-                    ty = m;
+                auto val = EvaluateConstantValue(expr, call_target->ReturnType());
+                if (!val) {
+                    return nullptr;
                 }
-            }
-        }
-
-        if (ty == nullptr) {
-            ty = Type(expr->target.type);
-            if (!ty) {
+                return builder_->create<sem::Call>(expr, call_target, std::move(args),
+                                                   current_statement_, val.Get(), has_side_effects);
+            },
+            [&](const sem::Struct* str) -> sem::Call* {
+                auto* call_target = utils::GetOrCreate(
+                    struct_ctors_, StructConstructorSig{{str, args.size()}},
+                    [&]() -> sem::TypeConstructor* {
+                        sem::ParameterList params(std::min(args.size(), str->Members().size()));
+                        for (size_t i = 0, n = params.size(); i < n; i++) {
+                            params[i] = builder_->create<sem::Parameter>(
+                                nullptr,                    // declaration
+                                static_cast<uint32_t>(i),   // index
+                                str->Members()[i]->Type(),  // type
+                                ast::StorageClass::kNone,   // storage_class
+                                ast::Access::kUndefined);   // access
+                        }
+                        return builder_->create<sem::TypeConstructor>(str, std::move(params));
+                    });
+                if (!MaterializeArguments(args, call_target)) {
+                    return nullptr;
+                }
+                auto val = EvaluateConstantValue(expr, call_target->ReturnType());
+                if (!val) {
+                    return nullptr;
+                }
+                return builder_->create<sem::Call>(expr, call_target, std::move(args),
+                                                   current_statement_, val.Get(), has_side_effects);
+            },
+            [&](Default) {
+                AddError("type is not constructible", expr->source);
                 return nullptr;
-            }
-        }
+            });
+    };
 
-        return type_ctor_or_conv(ty);
+    // ast::CallExpression has a target which is either an ast::Type or an ast::IdentifierExpression
+    sem::Call* call = nullptr;
+    if (expr->target.type) {
+        // ast::CallExpression has an ast::Type as the target.
+        // This call is either a type constructor or type conversion.
+        call = Switch(
+            expr->target.type,
+            [&](const ast::Vector* v) -> sem::Call* {
+                Mark(v);
+                // vector element type must be inferred if it was not specified.
+                sem::Type* template_arg = nullptr;
+                if (v->type) {
+                    template_arg = Type(v->type);
+                    if (!template_arg) {
+                        return nullptr;
+                    }
+                }
+                if (auto* c = ct_ctor_or_conv(VectorCtorConvIntrinsic(v->width), template_arg)) {
+                    builder_->Sem().Add(expr->target.type, c->Target()->ReturnType());
+                    return c;
+                }
+                return nullptr;
+            },
+            [&](const ast::Matrix* m) -> sem::Call* {
+                Mark(m);
+                // matrix element type must be inferred if it was not specified.
+                sem::Type* template_arg = nullptr;
+                if (m->type) {
+                    template_arg = Type(m->type);
+                    if (!template_arg) {
+                        return nullptr;
+                    }
+                }
+                if (auto* c = ct_ctor_or_conv(MatrixCtorConvIntrinsic(m->columns, m->rows),
+                                              template_arg)) {
+                    builder_->Sem().Add(expr->target.type, c->Target()->ReturnType());
+                    return c;
+                }
+                return nullptr;
+            },
+            [&](const ast::Type* ast) -> sem::Call* {
+                // Handler for AST types that do not have an optional element type.
+                if (auto* ty = Type(ast)) {
+                    return ty_ctor_or_conv(ty);
+                }
+                return nullptr;
+            },
+            [&](Default) {
+                TINT_ICE(Resolver, diagnostics_)
+                    << expr->source << " unhandled CallExpression target:\n"
+                    << "type: "
+                    << (expr->target.type ? expr->target.type->TypeInfo().name : "<null>");
+                return nullptr;
+            });
+    } else {
+        // ast::CallExpression has an ast::IdentifierExpression as the target.
+        // This call is either a function call, builtin call, type constructor or type conversion.
+        auto* ident = expr->target.name;
+        Mark(ident);
+        auto* resolved = sem_.ResolvedSymbol(ident);
+        call = Switch<sem::Call*>(
+            resolved,  //
+            [&](sem::Type* ty) {
+                // A type constructor or conversions.
+                // Note: Unlike the code path where we're resolving the call target from an
+                // ast::Type, all types must already have the element type explicitly specified, so
+                // there's no need to infer element types.
+                return ty_ctor_or_conv(ty);
+            },
+            [&](sem::Function* func) {
+                return FunctionCall(expr, func, std::move(args), arg_behaviors);
+            },
+            [&](sem::Variable* var) {
+                auto name = builder_->Symbols().NameFor(var->Declaration()->symbol);
+                AddError("cannot call variable '" + name + "'", ident->source);
+                AddNote("'" + name + "' declared here", var->Declaration()->source);
+                return nullptr;
+            },
+            [&](Default) -> sem::Call* {
+                auto name = builder_->Symbols().NameFor(ident->symbol);
+                auto builtin_type = sem::ParseBuiltinType(name);
+                if (builtin_type != sem::BuiltinType::kNone) {
+                    return BuiltinCall(expr, builtin_type, std::move(args));
+                }
+
+                TINT_ICE(Resolver, diagnostics_)
+                    << expr->source << " unhandled CallExpression target:\n"
+                    << "resolved: " << (resolved ? resolved->TypeInfo().name : "<null>") << "\n"
+                    << "name: " << builder_->Symbols().NameFor(ident->symbol);
+                return nullptr;
+            });
     }
 
-    auto* ident = expr->target.name;
-    Mark(ident);
+    if (!call) {
+        return nullptr;
+    }
 
-    auto* resolved = sem_.ResolvedSymbol(ident);
-    return Switch(
-        resolved,  //
-        [&](sem::Type* type) { return type_ctor_or_conv(type); },
-        [&](sem::Function* func) {
-            return FunctionCall(expr, func, std::move(args), arg_behaviors);
-        },
-        [&](sem::Variable* var) {
-            auto name = builder_->Symbols().NameFor(var->Declaration()->symbol);
-            AddError("cannot call variable '" + name + "'", ident->source);
-            AddNote("'" + name + "' declared here", var->Declaration()->source);
-            return nullptr;
-        },
-        [&](Default) -> sem::Call* {
-            auto name = builder_->Symbols().NameFor(ident->symbol);
-            auto builtin_type = sem::ParseBuiltinType(name);
-            if (builtin_type != sem::BuiltinType::kNone) {
-                return BuiltinCall(expr, builtin_type, std::move(args), std::move(arg_tys));
-            }
-
-            TINT_ICE(Resolver, diagnostics_)
-                << expr->source << " unresolved CallExpression target:\n"
-                << "resolved: " << (resolved ? resolved->TypeInfo().name : "<null>") << "\n"
-                << "name: " << builder_->Symbols().NameFor(ident->symbol);
-            return nullptr;
-        });
+    return validator_.Call(call, current_statement_) ? call : nullptr;
 }
 
 sem::Call* Resolver::BuiltinCall(const ast::CallExpression* expr,
                                  sem::BuiltinType builtin_type,
-                                 const std::vector<const sem::Expression*> args,
-                                 const std::vector<const sem::Type*> arg_tys) {
-    auto* builtin = intrinsic_table_->Lookup(builtin_type, std::move(arg_tys), expr->source);
-    if (!builtin) {
+                                 std::vector<const sem::Expression*> args) {
+    IntrinsicTable::Builtin builtin;
+    {
+        auto arg_tys = utils::Transform(args, [](auto* arg) { return arg->Type(); });
+        builtin = intrinsic_table_->Lookup(builtin_type, arg_tys, expr->source);
+        if (!builtin.sem) {
+            return nullptr;
+        }
+    }
+
+    if (!MaterializeArguments(args, builtin.sem)) {
         return nullptr;
     }
 
-    if (builtin->IsDeprecated()) {
+    if (builtin.sem->IsDeprecated()) {
         AddWarning("use of deprecated builtin", expr->source);
     }
 
+    // If the builtin is @const, and all arguments have constant values, evaluate the builtin now.
+    sem::Constant constant;
+    if (builtin.const_eval_fn) {
+        std::vector<sem::Constant> values(args.size());
+        bool is_const = true;  // all arguments have constant values
+        for (size_t i = 0; i < values.size(); i++) {
+            if (auto v = args[i]->ConstantValue()) {
+                values[i] = std::move(v);
+            } else {
+                is_const = false;
+                break;
+            }
+        }
+        if (is_const) {
+            constant = builtin.const_eval_fn(*builder_, values.data(), args.size());
+        }
+    }
+
     bool has_side_effects =
-        builtin->HasSideEffects() ||
+        builtin.sem->HasSideEffects() ||
         std::any_of(args.begin(), args.end(), [](auto* e) { return e->HasSideEffects(); });
-    auto* call = builder_->create<sem::Call>(expr, builtin, std::move(args), current_statement_,
-                                             sem::Constant{}, has_side_effects);
+    auto* call = builder_->create<sem::Call>(expr, builtin.sem, std::move(args), current_statement_,
+                                             constant, has_side_effects);
 
-    current_function_->AddDirectlyCalledBuiltin(builtin);
+    current_function_->AddDirectlyCalledBuiltin(builtin.sem);
 
-    if (!validator_.RequiredExtensionForBuiltinFunction(call, builder_->AST().Extensions())) {
+    if (!validator_.RequiredExtensionForBuiltinFunction(call, enabled_extensions_)) {
         return nullptr;
     }
 
@@ -1320,21 +1543,7 @@ sem::Call* Resolver::BuiltinCall(const ast::CallExpression* expr,
         if (!validator_.TextureBuiltinFunction(call)) {
             return nullptr;
         }
-        // Collect a texture/sampler pair for this builtin.
-        const auto& signature = builtin->Signature();
-        int texture_index = signature.IndexOf(sem::ParameterUsage::kTexture);
-        if (texture_index == -1) {
-            TINT_ICE(Resolver, diagnostics_) << "texture builtin without texture parameter";
-        }
-
-        auto* texture = args[texture_index]->As<sem::VariableUser>()->Variable();
-        if (!texture->Type()->UnwrapRef()->Is<sem::StorageTexture>()) {
-            int sampler_index = signature.IndexOf(sem::ParameterUsage::kSampler);
-            const sem::Variable* sampler =
-                sampler_index != -1 ? args[sampler_index]->As<sem::VariableUser>()->Variable()
-                                    : nullptr;
-            current_function_->AddTextureSamplerPair(texture, sampler);
-        }
+        CollectTextureSamplerPairs(builtin.sem, call->Arguments());
     }
 
     if (!validator_.BuiltinCall(call)) {
@@ -1346,18 +1555,48 @@ sem::Call* Resolver::BuiltinCall(const ast::CallExpression* expr,
     return call;
 }
 
+void Resolver::CollectTextureSamplerPairs(const sem::Builtin* builtin,
+                                          const std::vector<const sem::Expression*>& args) const {
+    // Collect a texture/sampler pair for this builtin.
+    const auto& signature = builtin->Signature();
+    int texture_index = signature.IndexOf(sem::ParameterUsage::kTexture);
+    if (texture_index == -1) {
+        TINT_ICE(Resolver, diagnostics_) << "texture builtin without texture parameter";
+    }
+    auto* texture = args[texture_index]->As<sem::VariableUser>()->Variable();
+    if (!texture->Type()->UnwrapRef()->Is<sem::StorageTexture>()) {
+        int sampler_index = signature.IndexOf(sem::ParameterUsage::kSampler);
+        const sem::Variable* sampler =
+            sampler_index != -1 ? args[sampler_index]->As<sem::VariableUser>()->Variable()
+                                : nullptr;
+        current_function_->AddTextureSamplerPair(texture, sampler);
+    }
+}
+
 sem::Call* Resolver::FunctionCall(const ast::CallExpression* expr,
                                   sem::Function* target,
-                                  const std::vector<const sem::Expression*> args,
+                                  std::vector<const sem::Expression*> args,
                                   sem::Behaviors arg_behaviors) {
     auto sym = expr->target.name->symbol;
     auto name = builder_->Symbols().NameFor(sym);
+
+    if (!MaterializeArguments(args, target)) {
+        return nullptr;
+    }
 
     // TODO(crbug.com/tint/1420): For now, assume all function calls have side
     // effects.
     bool has_side_effects = true;
     auto* call = builder_->create<sem::Call>(expr, target, std::move(args), current_statement_,
                                              sem::Constant{}, has_side_effects);
+
+    target->AddCallSite(call);
+
+    call->Behaviors() = arg_behaviors + target->Behaviors();
+
+    if (!validator_.FunctionCall(call, current_statement_)) {
+        return nullptr;
+    }
 
     if (current_function_) {
         // Note: Requires called functions to be resolved first.
@@ -1374,163 +1613,34 @@ sem::Call* Resolver::FunctionCall(const ast::CallExpression* expr,
             current_function_->AddTransitivelyReferencedGlobal(var);
         }
 
-        // Map all texture/sampler pairs from the target function to the
-        // current function. These can only be global or parameter
-        // variables. Resolve any parameter variables to the corresponding
-        // argument passed to the current function. Leave global variables
-        // as-is. Then add the mapped pair to the current function's list of
-        // texture/sampler pairs.
-        for (sem::VariablePair pair : target->TextureSamplerPairs()) {
-            const sem::Variable* texture = pair.first;
-            const sem::Variable* sampler = pair.second;
-            if (auto* param = texture->As<sem::Parameter>()) {
-                texture = args[param->Index()]->As<sem::VariableUser>()->Variable();
-            }
-            if (sampler) {
-                if (auto* param = sampler->As<sem::Parameter>()) {
-                    sampler = args[param->Index()]->As<sem::VariableUser>()->Variable();
-                }
-            }
-            current_function_->AddTextureSamplerPair(texture, sampler);
-        }
-    }
-
-    target->AddCallSite(call);
-
-    call->Behaviors() = arg_behaviors + target->Behaviors();
-
-    if (!validator_.FunctionCall(call, current_statement_)) {
-        return nullptr;
+        // Note: Validation *must* be performed before calling this method.
+        CollectTextureSamplerPairs(target, call->Arguments());
     }
 
     return call;
 }
 
-sem::Call* Resolver::TypeConversion(const ast::CallExpression* expr,
-                                    const sem::Type* target,
-                                    const sem::Expression* arg,
-                                    const sem::Type* source) {
-    // It is not valid to have a type-cast call expression inside a call
-    // statement.
-    if (IsCallStatement(expr)) {
-        AddError("type cast evaluated but not used", expr->source);
-        return nullptr;
-    }
-
-    auto* call_target = utils::GetOrCreate(
-        type_conversions_, TypeConversionSig{target, source}, [&]() -> sem::TypeConversion* {
-            // Now that the argument types have been determined, make sure that
-            // they obey the conversion rules laid out in
-            // https://gpuweb.github.io/gpuweb/wgsl/#conversion-expr.
-            bool ok = Switch(
-                target,
-                [&](const sem::Vector* vec_type) {
-                    return validator_.VectorConstructorOrCast(expr, vec_type);
-                },
-                [&](const sem::Matrix* mat_type) {
-                    // Note: Matrix types currently cannot be converted (the element
-                    // type must only be f32). We implement this for the day we
-                    // support other matrix element types.
-                    return validator_.MatrixConstructorOrCast(expr, mat_type);
-                },
-                [&](const sem::Array* arr_type) {
-                    return validator_.ArrayConstructorOrCast(expr, arr_type);
-                },
-                [&](const sem::Struct* struct_type) {
-                    return validator_.StructureConstructorOrCast(expr, struct_type);
-                },
-                [&](Default) {
-                    if (target->is_scalar()) {
-                        return validator_.ScalarConstructorOrCast(expr, target);
-                    }
-                    AddError("type is not constructible", expr->source);
-                    return false;
-                });
-            if (!ok) {
-                return nullptr;
+void Resolver::CollectTextureSamplerPairs(sem::Function* func,
+                                          const std::vector<const sem::Expression*>& args) const {
+    // Map all texture/sampler pairs from the target function to the
+    // current function. These can only be global or parameter
+    // variables. Resolve any parameter variables to the corresponding
+    // argument passed to the current function. Leave global variables
+    // as-is. Then add the mapped pair to the current function's list of
+    // texture/sampler pairs.
+    for (sem::VariablePair pair : func->TextureSamplerPairs()) {
+        const sem::Variable* texture = pair.first;
+        const sem::Variable* sampler = pair.second;
+        if (auto* param = texture->As<sem::Parameter>()) {
+            texture = args[param->Index()]->As<sem::VariableUser>()->Variable();
+        }
+        if (sampler) {
+            if (auto* param = sampler->As<sem::Parameter>()) {
+                sampler = args[param->Index()]->As<sem::VariableUser>()->Variable();
             }
-
-            auto* param =
-                builder_->create<sem::Parameter>(nullptr,                   // declaration
-                                                 0,                         // index
-                                                 source->UnwrapRef(),       // type
-                                                 ast::StorageClass::kNone,  // storage_class
-                                                 ast::Access::kUndefined);  // access
-            return builder_->create<sem::TypeConversion>(target, param);
-        });
-
-    if (!call_target) {
-        return nullptr;
+        }
+        current_function_->AddTextureSamplerPair(texture, sampler);
     }
-
-    auto val = EvaluateConstantValue(expr, target);
-    bool has_side_effects = arg->HasSideEffects();
-    return builder_->create<sem::Call>(expr, call_target, std::vector<const sem::Expression*>{arg},
-                                       current_statement_, val, has_side_effects);
-}
-
-sem::Call* Resolver::TypeConstructor(const ast::CallExpression* expr,
-                                     const sem::Type* ty,
-                                     const std::vector<const sem::Expression*> args,
-                                     const std::vector<const sem::Type*> arg_tys) {
-    // It is not valid to have a type-constructor call expression as a call
-    // statement.
-    if (IsCallStatement(expr)) {
-        AddError("type constructor evaluated but not used", expr->source);
-        return nullptr;
-    }
-
-    auto* call_target = utils::GetOrCreate(
-        type_ctors_, TypeConstructorSig{ty, arg_tys}, [&]() -> sem::TypeConstructor* {
-            // Now that the argument types have been determined, make sure that
-            // they obey the constructor type rules laid out in
-            // https://gpuweb.github.io/gpuweb/wgsl/#type-constructor-expr.
-            bool ok = Switch(
-                ty,
-                [&](const sem::Vector* vec_type) {
-                    return validator_.VectorConstructorOrCast(expr, vec_type);
-                },
-                [&](const sem::Matrix* mat_type) {
-                    return validator_.MatrixConstructorOrCast(expr, mat_type);
-                },
-                [&](const sem::Array* arr_type) {
-                    return validator_.ArrayConstructorOrCast(expr, arr_type);
-                },
-                [&](const sem::Struct* struct_type) {
-                    return validator_.StructureConstructorOrCast(expr, struct_type);
-                },
-                [&](Default) {
-                    if (ty->is_scalar()) {
-                        return validator_.ScalarConstructorOrCast(expr, ty);
-                    }
-                    AddError("type is not constructible", expr->source);
-                    return false;
-                });
-            if (!ok) {
-                return nullptr;
-            }
-
-            return builder_->create<sem::TypeConstructor>(
-                ty, utils::Transform(arg_tys,
-                                     [&](const sem::Type* t, size_t i) -> const sem::Parameter* {
-                                         return builder_->create<sem::Parameter>(
-                                             nullptr,                   // declaration
-                                             static_cast<uint32_t>(i),  // index
-                                             t->UnwrapRef(),            // type
-                                             ast::StorageClass::kNone,  // storage_class
-                                             ast::Access::kUndefined);  // access
-                                     }));
-        });
-
-    if (!call_target) {
-        return nullptr;
-    }
-
-    auto val = EvaluateConstantValue(expr, ty);
-    bool has_side_effects =
-        std::any_of(args.begin(), args.end(), [](auto* e) { return e->HasSideEffects(); });
-    return builder_->create<sem::Call>(expr, call_target, std::move(args), current_statement_, val,
-                                       has_side_effects);
 }
 
 sem::Expression* Resolver::Literal(const ast::LiteralExpression* literal) {
@@ -1539,8 +1649,7 @@ sem::Expression* Resolver::Literal(const ast::LiteralExpression* literal) {
         [&](const ast::IntLiteralExpression* i) -> sem::Type* {
             switch (i->suffix) {
                 case ast::IntLiteralExpression::Suffix::kNone:
-                // TODO(crbug.com/tint/1504): This will need to become abstract-int.
-                // For now, treat as 'i32'.
+                    return builder_->create<sem::AbstractInt>();
                 case ast::IntLiteralExpression::Suffix::kI:
                     return builder_->create<sem::I32>();
                 case ast::IntLiteralExpression::Suffix::kU:
@@ -1548,7 +1657,12 @@ sem::Expression* Resolver::Literal(const ast::LiteralExpression* literal) {
             }
             return nullptr;
         },
-        [&](const ast::FloatLiteralExpression*) { return builder_->create<sem::F32>(); },
+        [&](const ast::FloatLiteralExpression* f) -> sem::Type* {
+            if (f->suffix == ast::FloatLiteralExpression::Suffix::kNone) {
+                return builder_->create<sem::AbstractFloat>();
+            }
+            return builder_->create<sem::F32>();
+        },
         [&](const ast::BoolLiteralExpression*) { return builder_->create<sem::Bool>(); },
         [&](Default) { return nullptr; });
 
@@ -1559,7 +1673,10 @@ sem::Expression* Resolver::Literal(const ast::LiteralExpression* literal) {
     }
 
     auto val = EvaluateConstantValue(literal, ty);
-    return builder_->create<sem::Expression>(literal, ty, current_statement_, val,
+    if (!val) {
+        return nullptr;
+    }
+    return builder_->create<sem::Expression>(literal, ty, current_statement_, val.Get(),
                                              /* has_side_effects */ false);
 }
 
@@ -1748,27 +1865,42 @@ sem::Expression* Resolver::MemberAccessor(const ast::MemberAccessorExpression* e
 }
 
 sem::Expression* Resolver::Binary(const ast::BinaryExpression* expr) {
-    auto* lhs = sem_.Get(expr->lhs);
-    auto* rhs = sem_.Get(expr->rhs);
+    const auto* lhs = sem_.Get(expr->lhs);
+    const auto* rhs = sem_.Get(expr->rhs);
     auto* lhs_ty = lhs->Type()->UnwrapRef();
     auto* rhs_ty = rhs->Type()->UnwrapRef();
 
-    auto* ty = intrinsic_table_->Lookup(expr->op, lhs_ty, rhs_ty, expr->source, false).result;
-    if (!ty) {
+    auto op = intrinsic_table_->Lookup(expr->op, lhs_ty, rhs_ty, expr->source, false);
+    if (!op.result) {
         return nullptr;
     }
+    if (ShouldMaterializeArgument(op.lhs)) {
+        lhs = Materialize(lhs, op.lhs);
+        if (!lhs) {
+            return nullptr;
+        }
+    }
+    if (ShouldMaterializeArgument(op.rhs)) {
+        rhs = Materialize(rhs, op.rhs);
+        if (!rhs) {
+            return nullptr;
+        }
+    }
 
-    auto val = EvaluateConstantValue(expr, ty);
+    auto val = EvaluateConstantValue(expr, op.result);
+    if (!val) {
+        return nullptr;
+    }
     bool has_side_effects = lhs->HasSideEffects() || rhs->HasSideEffects();
-    auto* sem =
-        builder_->create<sem::Expression>(expr, ty, current_statement_, val, has_side_effects);
+    auto* sem = builder_->create<sem::Expression>(expr, op.result, current_statement_, val.Get(),
+                                                  has_side_effects);
     sem->Behaviors() = lhs->Behaviors() + rhs->Behaviors();
 
     return sem;
 }
 
 sem::Expression* Resolver::UnaryOp(const ast::UnaryOpExpression* unary) {
-    auto* expr = sem_.Get(unary->expr);
+    const auto* expr = sem_.Get(unary->expr);
     auto* expr_ty = expr->Type();
     if (!expr_ty) {
         return nullptr;
@@ -1817,18 +1949,34 @@ sem::Expression* Resolver::UnaryOp(const ast::UnaryOpExpression* unary) {
             break;
 
         default: {
-            ty = intrinsic_table_->Lookup(unary->op, expr_ty, unary->source).result;
-            if (!ty) {
+            auto op = intrinsic_table_->Lookup(unary->op, expr_ty, unary->source);
+            if (!op.result) {
                 return nullptr;
             }
+            if (ShouldMaterializeArgument(op.parameter)) {
+                expr = Materialize(expr, op.parameter);
+                if (!expr) {
+                    return nullptr;
+                }
+            }
+            ty = op.result;
+            break;
         }
     }
 
     auto val = EvaluateConstantValue(unary, ty);
-    auto* sem = builder_->create<sem::Expression>(unary, ty, current_statement_, val,
+    if (!val) {
+        return nullptr;
+    }
+    auto* sem = builder_->create<sem::Expression>(unary, ty, current_statement_, val.Get(),
                                                   expr->HasSideEffects(), source_var);
     sem->Behaviors() = expr->Behaviors();
     return sem;
+}
+
+bool Resolver::Enable(const ast::Enable* enable) {
+    enabled_extensions_.add(enable->extension);
+    return true;
 }
 
 sem::Type* Resolver::TypeDecl(const ast::TypeDecl* named_type) {
@@ -1895,7 +2043,7 @@ sem::Array* Resolver::Array(const ast::Array* arr) {
     // sem::Array uses a size of 0 for a runtime-sized array.
     uint32_t count = 0;
     if (auto* count_expr = arr->count) {
-        auto* count_sem = Expression(count_expr);
+        const auto* count_sem = Materialize(Expression(count_expr));
         if (!count_sem) {
             return nullptr;
         }
@@ -1935,13 +2083,12 @@ sem::Array* Resolver::Array(const ast::Array* arr) {
             return nullptr;
         }
 
-        if (ty->is_signed_integer_scalar() ? count_val.Elements()[0].i32 < 1
-                                           : count_val.Elements()[0].u32 < 1u) {
+        if (count_val.Element<AInt>(0).value < 1) {
             AddError("array size must be at least 1", size_source);
             return nullptr;
         }
 
-        count = count_val.Elements()[0].u32;
+        count = count_val.Element<uint32_t>(0);
     }
 
     auto size = std::max<uint64_t>(count, 1) * stride;
@@ -2153,19 +2300,27 @@ sem::Statement* Resolver::ReturnStatement(const ast::ReturnStatement* stmt) {
         auto& behaviors = current_statement_->Behaviors();
         behaviors = sem::Behavior::kReturn;
 
+        const sem::Type* value_ty = nullptr;
         if (auto* value = stmt->value) {
-            auto* expr = Expression(value);
+            const auto* expr = Expression(value);
             if (!expr) {
                 return false;
             }
+            if (auto* ret_ty = current_function_->ReturnType(); !ret_ty->Is<sem::Void>()) {
+                expr = Materialize(expr, ret_ty);
+                if (!expr) {
+                    return false;
+                }
+            }
             behaviors.Add(expr->Behaviors() - sem::Behavior::kNext);
+            value_ty = expr->Type()->UnwrapRef();
+        } else {
+            value_ty = builder_->create<sem::Void>();
         }
 
         // Validate after processing the return value expression so that its type
         // is available for validation.
-        auto* ret_type =
-            stmt->value ? sem_.TypeOf(stmt->value)->UnwrapRef() : builder_->create<sem::Void>();
-        return validator_.Return(stmt, current_function_->ReturnType(), ret_type,
+        return validator_.Return(stmt, current_function_->ReturnType(), value_ty,
                                  current_statement_);
     });
 }
@@ -2176,19 +2331,52 @@ sem::SwitchStatement* Resolver::SwitchStatement(const ast::SwitchStatement* stmt
     return StatementScope(stmt, sem, [&] {
         auto& behaviors = sem->Behaviors();
 
-        auto* cond = Expression(stmt->condition);
+        const auto* cond = Expression(stmt->condition);
         if (!cond) {
             return false;
         }
         behaviors = cond->Behaviors() - sem::Behavior::kNext;
 
+        auto* cond_ty = cond->Type()->UnwrapRef();
+
+        utils::UniqueVector<const sem::Type*> types;
+        types.add(cond_ty);
+
+        std::vector<sem::CaseStatement*> cases;
+        cases.reserve(stmt->body.size());
         for (auto* case_stmt : stmt->body) {
             Mark(case_stmt);
             auto* c = CaseStatement(case_stmt);
             if (!c) {
                 return false;
             }
+            for (auto* expr : c->Selectors()) {
+                types.add(expr->Type()->UnwrapRef());
+            }
+            cases.emplace_back(c);
             behaviors.Add(c->Behaviors());
+            sem->Cases().emplace_back(c);
+        }
+
+        // Determine the common type across all selectors and the switch expression
+        // This must materialize to an integer scalar (non-abstract).
+        auto* common_ty = sem::Type::Common(types.data(), types.size());
+        if (!common_ty || !common_ty->is_integer_scalar()) {
+            // No common type found or the common type was abstract.
+            // Pick i32 and let validation deal with any mismatches.
+            common_ty = builder_->create<sem::I32>();
+        }
+        cond = Materialize(cond, common_ty);
+        if (!cond) {
+            return false;
+        }
+        for (auto* c : cases) {
+            for (auto*& sel : c->Selectors()) {  // Note: pointer reference
+                sel = Materialize(sel, common_ty);
+                if (!sel) {
+                    return false;
+                }
+            }
         }
 
         if (behaviors.Contains(sem::Behavior::kBreak)) {
@@ -2240,14 +2428,23 @@ sem::Statement* Resolver::AssignmentStatement(const ast::AssignmentStatement* st
             return false;
         }
 
-        auto* rhs = Expression(stmt->rhs);
+        const bool is_phony_assignment = stmt->lhs->Is<ast::PhonyExpression>();
+
+        const auto* rhs = Expression(stmt->rhs);
         if (!rhs) {
             return false;
         }
 
+        if (!is_phony_assignment) {
+            rhs = Materialize(rhs, lhs->Type()->UnwrapRef());
+            if (!rhs) {
+                return false;
+            }
+        }
+
         auto& behaviors = sem->Behaviors();
         behaviors = rhs->Behaviors();
-        if (!stmt->lhs->Is<ast::PhonyExpression>()) {
+        if (!is_phony_assignment) {
             behaviors.Add(lhs->Behaviors());
         }
 
@@ -2454,38 +2651,6 @@ void Resolver::AddNote(const std::string& msg, const Source& source) const {
 bool Resolver::IsBuiltin(Symbol symbol) const {
     std::string name = builder_->Symbols().NameFor(symbol);
     return sem::ParseBuiltinType(name) != sem::BuiltinType::kNone;
-}
-
-bool Resolver::IsCallStatement(const ast::Expression* expr) const {
-    return current_statement_ &&
-           Is<ast::CallStatement>(current_statement_->Declaration(),
-                                  [&](auto* stmt) { return stmt->expr == expr; });
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// Resolver::TypeConversionSig
-////////////////////////////////////////////////////////////////////////////////
-bool Resolver::TypeConversionSig::operator==(const TypeConversionSig& rhs) const {
-    return target == rhs.target && source == rhs.source;
-}
-std::size_t Resolver::TypeConversionSig::Hasher::operator()(const TypeConversionSig& sig) const {
-    return utils::Hash(sig.target, sig.source);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// Resolver::TypeConstructorSig
-////////////////////////////////////////////////////////////////////////////////
-Resolver::TypeConstructorSig::TypeConstructorSig(const sem::Type* ty,
-                                                 const std::vector<const sem::Type*> params)
-    : type(ty), parameters(params) {}
-Resolver::TypeConstructorSig::TypeConstructorSig(const TypeConstructorSig&) = default;
-Resolver::TypeConstructorSig::~TypeConstructorSig() = default;
-
-bool Resolver::TypeConstructorSig::operator==(const TypeConstructorSig& rhs) const {
-    return type == rhs.type && parameters == rhs.parameters;
-}
-std::size_t Resolver::TypeConstructorSig::Hasher::operator()(const TypeConstructorSig& sig) const {
-    return utils::Hash(sig.type, sig.parameters);
 }
 
 }  // namespace tint::resolver

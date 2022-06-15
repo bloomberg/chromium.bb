@@ -310,9 +310,10 @@ class Assembler : public AssemblerBase {
   static constexpr int kMovInstructionsNoConstantPool = 2;
   static constexpr int kTaggedLoadInstructions = 1;
 #endif
-  static constexpr int kMovInstructions = FLAG_enable_embedded_constant_pool
-                                              ? kMovInstructionsConstantPool
-                                              : kMovInstructionsNoConstantPool;
+  static constexpr int kMovInstructions =
+      FLAG_enable_embedded_constant_pool.value()
+          ? kMovInstructionsConstantPool
+          : kMovInstructionsNoConstantPool;
 
   static inline int encode_crbit(const CRegister& cr, enum CRBit crbit) {
     return ((cr.code() * CRWIDTH) + crbit);
@@ -821,7 +822,7 @@ class Assembler : public AssemblerBase {
       return;
     }
 
-    if ((L->is_bound() && is_near(L, cond)) || !is_trampoline_emitted()) {
+    if ((L->is_bound() && is_near(L, cond))) {
       bc_short(cond, L, cr, lk);
       return;
     }
@@ -1388,7 +1389,7 @@ class Assembler : public AssemblerBase {
   // not have to check for overflow. The same is true for writes of large
   // relocation info entries.
   static constexpr int kGap = 32;
-  STATIC_ASSERT(AssemblerBase::kMinimalBufferSize >= 2 * kGap);
+  static_assert(AssemblerBase::kMinimalBufferSize >= 2 * kGap);
 
   RelocInfoWriter reloc_info_writer;
 

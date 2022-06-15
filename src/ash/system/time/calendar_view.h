@@ -8,13 +8,20 @@
 #include <string>
 
 #include "ash/ash_export.h"
+#include "ash/shell.h"
+#include "ash/strings/grit/ash_strings.h"
+#include "ash/system/model/system_tray_model.h"
+#include "ash/system/time/calendar_model.h"
 #include "ash/system/time/calendar_view_controller.h"
 #include "ash/system/tray/tray_detailed_view.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
 #include "base/callback_list.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_multi_source_observation.h"
+#include "base/scoped_observation.h"
 #include "base/timer/timer.h"
+#include "calendar_model.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/view.h"
@@ -61,7 +68,8 @@ class CalendarHeaderView : public views::View {
 };
 
 // This view displays a scrollable calendar.
-class ASH_EXPORT CalendarView : public CalendarViewController::Observer,
+class ASH_EXPORT CalendarView : public CalendarModel::Observer,
+                                public CalendarViewController::Observer,
                                 public TrayDetailedView,
                                 public views::ViewObserver {
  public:
@@ -73,8 +81,13 @@ class ASH_EXPORT CalendarView : public CalendarViewController::Observer,
   CalendarView& operator=(const CalendarView& other) = delete;
   ~CalendarView() override;
 
+  // CalendarModel::Observer:
+  void OnEventsFetched(const CalendarModel::FetchingStatus status,
+                       const base::Time start_time,
+                       const google_apis::calendar::EventList* events) override;
+
   // CalendarViewController::Observer:
-  void OnMonthChanged(const base::Time::Exploded current_month) override;
+  void OnMonthChanged() override;
   void OpenEventList() override;
   void CloseEventList() override;
 
@@ -205,6 +218,17 @@ class ASH_EXPORT CalendarView : public CalendarViewController::Observer,
   // animation.
   void ResetToToday();
 
+  // Updates the on-screen month map with the current months on screen.
+  void UpdateOnScreenMonthMap();
+
+  // If the key `start_of_month` is not in the map, insert it with the value as
+  // the fetching status of `start_of_month`.
+  void MaybeAddOnScreenMonth(base::Time start_of_month);
+
+  // Checks if all months in the visible window have finished fetching. If so,
+  // stop showing the loading bar.
+  void MaybeUpdateLoadingBarVisibility();
+
   // Fades in current month.
   void FadeInCurrentMonth();
 
@@ -225,6 +249,10 @@ class ASH_EXPORT CalendarView : public CalendarViewController::Observer,
 
   // If currently focusing on any date cell.
   bool IsDateCellViewFocused();
+
+  // Returns whether `header_`, `current_month_`, `content_view_`, or
+  // `event_list_view_` are animating.
+  bool IsAnimating();
 
   // If focusing on `CalendarDateCellView` is interrupted (by scrolling or by
   // today's button), resets the content view's `FocusBehavior` to `ALWAYS`.
@@ -249,10 +277,26 @@ class ASH_EXPORT CalendarView : public CalendarViewController::Observer,
   void OnOpenEventListAnimationComplete();
   void OnCloseEventListAnimationComplete();
 
-  // Unowned.
-  UnifiedSystemTrayController* controller_;
+  // Animates the month and scrolls back to today and resets the
+  // `scrolling_settled_timer_` to update the `on_screen_month_` map after the
+  // resetting to today animation.
+  void OnResetToTodayAnimationComplete();
 
-  std::unique_ptr<CalendarViewController> calendar_view_controller_;
+  // Tries to focus the preferred CalendarDateCellView. If `prefer_today` is
+  // true, preferred CalendarDateCellView is todays CalendarDateCellView,
+  // otherwise preferred view is the selected CalendarDateCellView. If the
+  // preferred view is not visible, focus the first visible view.
+  void FocusPreferredDateCellViewOrFirstVisible(bool prefer_today);
+
+  // Returns `target_date_cell_view` if it is in the visible window of
+  // `scroll_view_` and in `current_month_`. Otherwise returns the first visible
+  // focusable date cell on the first fully visible row.
+  CalendarDateCellView* GetTargetDateCellViewOrFirstFocusable(
+      CalendarDateCellView* target_date_cell_view);
+
+  // Calculates the first fully visible row (which lives in `content_view_`)
+  // shown in `scroll_view_`'s visible window.
+  int CalculateFirstFullyVisibleRow();
 
   // Setters for animation flags.
   void set_should_header_animate(bool should_animate) {
@@ -261,6 +305,13 @@ class ASH_EXPORT CalendarView : public CalendarViewController::Observer,
   void set_should_months_animate(bool should_animate) {
     should_months_animate_ = should_animate;
   }
+
+  // Unowned.
+  UnifiedSystemTrayController* controller_;
+
+  std::unique_ptr<CalendarViewController> calendar_view_controller_;
+  // Reset `scrolling_settled_timer_`.
+  void reset_scrolling_settled_timer() { scrolling_settled_timer_.Reset(); }
 
   // The content of the `scroll_view_`, which carries months and month labels.
   // Owned by `CalendarView`.
@@ -282,6 +333,9 @@ class ASH_EXPORT CalendarView : public CalendarViewController::Observer,
   IconButton* up_button_ = nullptr;
   IconButton* down_button_ = nullptr;
   CalendarEventListView* event_list_view_ = nullptr;
+  std::map<base::Time, CalendarModel::FetchingStatus> on_screen_month_;
+  CalendarModel* calendar_model_ =
+      Shell::Get()->system_tray_model()->calendar_model();
 
   // If it `is_resetting_scroll_`, we don't calculate the scroll position and we
   // don't need to check if we need to update the month or not.
@@ -303,6 +357,10 @@ class ASH_EXPORT CalendarView : public CalendarViewController::Observer,
   // Whether the Calendar View is scrolling.
   bool is_calendar_view_scrolling_ = false;
 
+  // Timer that fires when the calendar view is settled on, i.e. finished
+  // scrolling to, a currently-visible month
+  base::RetainingOneShotTimer scrolling_settled_timer_;
+
   // Timers that enable the updating month/header animations. When the month
   // keeps getting changed, the animation will be disabled and the cool-down
   // duration is `kAnimationDisablingTimeout` ms to enable the next animation.
@@ -310,6 +368,8 @@ class ASH_EXPORT CalendarView : public CalendarViewController::Observer,
   base::RetainingOneShotTimer months_animation_restart_timer_;
 
   base::CallbackListSubscription on_contents_scrolled_subscription_;
+  base::ScopedObservation<CalendarModel, CalendarModel::Observer>
+      scoped_calendar_model_observer_{this};
   base::ScopedObservation<CalendarViewController,
                           CalendarViewController::Observer>
       scoped_calendar_view_controller_observer_{this};

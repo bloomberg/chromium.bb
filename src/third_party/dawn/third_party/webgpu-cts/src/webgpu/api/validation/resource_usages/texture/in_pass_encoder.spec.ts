@@ -618,6 +618,15 @@ g.test('subresources_and_binding_types_combination_for_aspect')
           // 'render-target'
           p.compute && (p.binding0InBundle || p.binding1InBundle || p.type1 === 'render-target')
       )
+      .unless(
+        p =>
+          // Depth-stencil attachment views must encompass all aspects of the texture. Invalid
+          // cases are for depth-stencil textures when the aspect is not 'all'.
+          p.type1 === 'render-target' &&
+          kTextureFormatInfo[p.format].depth &&
+          kTextureFormatInfo[p.format].stencil &&
+          p.aspect1 !== 'all'
+      )
   )
   .beforeAllSubcases(t => {
     const { format } = t.params;
@@ -947,9 +956,13 @@ g.test('bindings_in_bundle')
     } = t.params;
 
     // Two bindings are attached to the same texture view.
+    const usage =
+      _sampleCount === 4
+        ? GPUTextureUsage[_usage0] | GPUTextureUsage[_usage1] | GPUTextureUsage.RENDER_ATTACHMENT
+        : GPUTextureUsage[_usage0] | GPUTextureUsage[_usage1];
     const view = t
       .createTexture({
-        usage: GPUTextureUsage[_usage0] | GPUTextureUsage[_usage1],
+        usage,
         sampleCount: _sampleCount,
       })
       .createView();
@@ -1070,6 +1083,7 @@ g.test('unused_bindings_in_pipeline')
 
     const pipeline = compute
       ? t.device.createComputePipeline({
+          layout: 'auto',
           compute: {
             module: t.device.createShaderModule({
               code: wgslCompute,
@@ -1078,6 +1092,7 @@ g.test('unused_bindings_in_pipeline')
           },
         })
       : t.device.createRenderPipeline({
+          layout: 'auto',
           vertex: {
             module: t.device.createShaderModule({
               code: wgslVertex,

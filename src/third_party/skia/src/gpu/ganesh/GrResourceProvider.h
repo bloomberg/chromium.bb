@@ -127,7 +127,8 @@ public:
                                               GrRenderable,
                                               int renderTargetSampleCnt,
                                               GrMipmapped,
-                                              GrProtected);
+                                              GrProtected,
+                                              std::string_view label);
 
     /**
      * Creates a compressed texture. The GrGpu must support the SkImageImage::Compression type.
@@ -286,17 +287,22 @@ public:
      * Returns a buffer.
      *
      * @param size            minimum size of buffer to return.
-     * @param intendedType    hint to the graphics subsystem about what the buffer will be used for.
+     * @param GrGpuBufferType hint to the graphics subsystem about what the buffer will be used for.
      * @param GrAccessPattern hint to the graphics subsystem about how the data will be accessed.
-     * @param flags           see Flags enum.
-     * @param data            optional data with which to initialize the buffer.
      *
      * @return the buffer if successful, otherwise nullptr.
      */
-    sk_sp<GrGpuBuffer> createBuffer(size_t size,
-                                    GrGpuBufferType intendedType,
-                                    GrAccessPattern,
-                                    const void* data = nullptr);
+    sk_sp<GrGpuBuffer> createBuffer(size_t size, GrGpuBufferType, GrAccessPattern);
+
+    /** Same as above but also fills the buffer from data. */
+    sk_sp<GrGpuBuffer> createBuffer(const void* data,
+                                    size_t size,
+                                    GrGpuBufferType type,
+                                    GrAccessPattern pattern) {
+        SkASSERT(data);
+        auto buffer = this->createBuffer(size, type, pattern);
+        return buffer && buffer->updateData(data, size) ? buffer : nullptr;
+    }
 
     /**
      * If passed in render target already has a stencil buffer on the specified surface, return
@@ -362,7 +368,8 @@ private:
                                      int renderTargetSampleCnt,
                                      SkBudgeted,
                                      GrMipmapped,
-                                     GrProtected);
+                                     GrProtected,
+                                     std::string_view label);
 
     // Attempts to find a resource in the cache that exactly matches the SkISize. Failing that
     // it returns null. If non-null, the resulting msaa attachment is always budgeted.

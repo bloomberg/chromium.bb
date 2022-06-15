@@ -276,7 +276,8 @@ VkResult DispatchCreateGraphicsPipelines(VkDevice device, VkPipelineCache pipeli
             auto dynamic_rendering = LvlFindInChain<VkPipelineRenderingCreateInfo>(pCreateInfos[idx0].pNext);
             if (dynamic_rendering) {
                 uses_color_attachment        = (dynamic_rendering->colorAttachmentCount > 0);
-                uses_depthstencil_attachment = (dynamic_rendering->depthAttachmentFormat != VK_FORMAT_UNDEFINED);
+                uses_depthstencil_attachment = (dynamic_rendering->depthAttachmentFormat != VK_FORMAT_UNDEFINED ||
+                                                dynamic_rendering->stencilAttachmentFormat != VK_FORMAT_UNDEFINED);
             }
 
             local_pCreateInfos[idx0].initialize(&pCreateInfos[idx0], uses_color_attachment, uses_depthstencil_attachment);
@@ -7156,6 +7157,15 @@ void DispatchCmdResolveImage2KHR(
 
 }
 
+void DispatchCmdTraceRaysIndirect2KHR(
+    VkCommandBuffer                             commandBuffer,
+    VkDeviceAddress                             indirectDeviceAddress)
+{
+    auto layer_data = GetLayerDataPtr(get_dispatch_key(commandBuffer), layer_data_map);
+    layer_data->device_dispatch_table.CmdTraceRaysIndirect2KHR(commandBuffer, indirectDeviceAddress);
+
+}
+
 void DispatchGetDeviceBufferMemoryRequirementsKHR(
     VkDevice                                    device,
     const VkDeviceBufferMemoryRequirements*     pInfo,
@@ -9380,6 +9390,21 @@ void DispatchCmdSetFragmentShadingRateEnumNV(
 
 }
 
+void DispatchGetImageSubresourceLayout2EXT(
+    VkDevice                                    device,
+    VkImage                                     image,
+    const VkImageSubresource2EXT*               pSubresource,
+    VkSubresourceLayout2EXT*                    pLayout)
+{
+    auto layer_data = GetLayerDataPtr(get_dispatch_key(device), layer_data_map);
+    if (!wrap_handles) return layer_data->device_dispatch_table.GetImageSubresourceLayout2EXT(device, image, pSubresource, pLayout);
+    {
+        image = layer_data->Unwrap(image);
+    }
+    layer_data->device_dispatch_table.GetImageSubresourceLayout2EXT(device, image, pSubresource, pLayout);
+
+}
+
 #ifdef VK_USE_PLATFORM_WIN32_KHR
 
 VkResult DispatchAcquireWinrtDisplayNV(
@@ -9700,6 +9725,17 @@ VkResult DispatchGetMemoryRemoteAddressNV(
         }
     }
     VkResult result = layer_data->device_dispatch_table.GetMemoryRemoteAddressNV(device, (const VkMemoryGetRemoteAddressInfoNV*)local_pMemoryGetRemoteAddressInfo, pAddress);
+
+    return result;
+}
+
+VkResult DispatchGetPipelinePropertiesEXT(
+    VkDevice                                    device,
+    const VkPipelineInfoEXT*                    pPipelineInfo,
+    VkBaseOutStructure*                         pPipelineProperties)
+{
+    auto layer_data = GetLayerDataPtr(get_dispatch_key(device), layer_data_map);
+    VkResult result = layer_data->device_dispatch_table.GetPipelinePropertiesEXT(device, pPipelineInfo, pPipelineProperties);
 
     return result;
 }

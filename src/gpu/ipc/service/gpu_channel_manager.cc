@@ -28,7 +28,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/traced_value.h"
 #include "build/build_config.h"
-#include "components/viz/common/features.h"
 #include "gpu/command_buffer/common/context_creation_attribs.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/service/feature_info.h"
@@ -360,18 +359,14 @@ GpuChannelManager::GpuChannelManager(
   DCHECK(io_task_runner);
   DCHECK(scheduler);
 
-  const bool using_skia_renderer = features::IsUsingSkiaRenderer();
   const bool enable_gr_shader_cache =
       (gpu_feature_info_.status_values[GPU_FEATURE_TYPE_GPU_RASTERIZATION] ==
-       gpu::kGpuFeatureStatusEnabled) ||
-      using_skia_renderer;
+       gpu::kGpuFeatureStatusEnabled);
   const bool disable_disk_cache =
       gpu_preferences_.disable_gpu_shader_disk_cache;
   if (enable_gr_shader_cache && !disable_disk_cache) {
     gr_shader_cache_.emplace(gpu_preferences.gpu_program_cache_size, this);
-    if (using_skia_renderer) {
-      gr_shader_cache_->CacheClientIdOnDisk(gpu::kDisplayCompositorClientId);
-    }
+    gr_shader_cache_->CacheClientIdOnDisk(gpu::kDisplayCompositorClientId);
   }
 }
 
@@ -809,15 +804,18 @@ scoped_refptr<SharedContextState> GpuChannelManager::GetSharedContextState(
     context = nullptr;
   }
   if (!context) {
+    ContextCreationAttribs attribs_helper;
+    attribs_helper.context_type = features::UseGles2ForOopR()
+                                      ? gpu::CONTEXT_TYPE_OPENGLES2
+                                      : gpu::CONTEXT_TYPE_OPENGLES3;
     gl::GLContextAttribs attribs = gles2::GenerateGLContextAttribs(
-        ContextCreationAttribs(), use_passthrough_decoder);
+        attribs_helper, use_passthrough_decoder);
 
     // Disable robust resource initialization for raster decoder and compositor.
     // TODO(crbug.com/1192632): disable robust_resource_initialization for
     // SwANGLE.
     if (gl::GLSurfaceEGL::GetGLDisplayEGL()->GetDisplayType() !=
-            gl::ANGLE_SWIFTSHADER &&
-        features::IsUsingSkiaRenderer()) {
+        gl::ANGLE_SWIFTSHADER) {
       attribs.robust_resource_initialization = false;
     }
 

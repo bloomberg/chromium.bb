@@ -203,13 +203,13 @@ def ConvolutionAttributes {
   dag attributes = (ins
     // Default value: one for each of the spatial dimension.
     OptionalAttr<I64ElementsAttr>:$window_strides,
-    // Default value: zero for each of the spatial dimension.
+    // Default value: two zeros for each of the spatial dimension.
     OptionalAttr<I64ElementsAttr>:$padding,
     // Default value: one for each of the spatial dimension.
     OptionalAttr<I64ElementsAttr>:$lhs_dilation,
     // Default value: one for each of the spatial dimension.
     OptionalAttr<I64ElementsAttr>:$rhs_dilation,
-    // Default value: one for each of the spatial dimension.
+    // Default value: false for each of the spatial dimension.
     OptionalAttr<BoolElementsAttr>:$window_reversal,
     ConvDimensionNumbers:$dimension_numbers,
     I64Attr:$feature_group_count,
@@ -243,8 +243,9 @@ def HLO_PairwiseSameOperandAndResultType :
 def HLO_CompatibleOperandsAndResultType : TraitList<
   // TODO(b/231358795): Review the use of InferTypeOpInterface for ops that
   // support quantization or sparsity.
-  InferTensorType.traits #
   [
+    InferTypeOpInterface,
+    DeclareOpInterfaceMethods<InferShapedTypeOpInterface, ["inferReturnTypeComponents"]>,
     HLO_NativeOpTrait<"CompatibleOperandsAndResultType">
   ]>;
 

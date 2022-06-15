@@ -139,7 +139,7 @@ void KHRONOS_APIENTRY DebugMessageCallback(GLenum source,
 void GetPerfCounterValue(const CounterNameToIndexMap &counterIndexMap,
                          std::vector<angle::PerfMonitorTriplet> &triplets,
                          const char *name,
-                         GLuint *counterOut)
+                         GLuint64 *counterOut)
 {
     auto iter = counterIndexMap.find(name);
     ASSERT(iter != counterIndexMap.end());
@@ -468,7 +468,7 @@ angle::VulkanPerfCounters GetPerfCounters(const CounterNameToIndexMap &indexMap)
     return counters;
 }
 
-CounterNameToIndexMap BuildCounterNameToValueMap()
+CounterNameToValueMap BuildCounterNameToValueMap()
 {
     CounterNameToIndexMap indexMap                     = BuildCounterNameToIndexMap();
     std::vector<angle::PerfMonitorTriplet> perfResults = GetPerfMonitorTriplets();
@@ -555,7 +555,7 @@ varying vec2 v_texCoord;
 
 void main()
 {
-    gl_Position = vec4(a_position.xy, 0.0, 1.0);
+    gl_Position = a_position;
     v_texCoord = a_position.xy * 0.5 + vec2(0.5);
 })";
 }

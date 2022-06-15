@@ -165,7 +165,7 @@ struct hb_closure_context_t :
   hb_set_t *glyphs;
   hb_set_t output[1];
   hb_vector_t<hb_set_t> active_glyphs_stack;
-  recurse_func_t recurse_func;
+  recurse_func_t recurse_func = nullptr;
   unsigned int nesting_level_left;
 
   hb_closure_context_t (hb_face_t *face_,
@@ -175,11 +175,9 @@ struct hb_closure_context_t :
 			unsigned int nesting_level_left_ = HB_MAX_NESTING_LEVEL) :
 			  face (face_),
 			  glyphs (glyphs_),
-			  recurse_func (nullptr),
 			  nesting_level_left (nesting_level_left_),
 			  done_lookups_glyph_count (done_lookups_glyph_count_),
-			  done_lookups_glyph_set (done_lookups_glyph_set_),
-			  lookup_count (0)
+			  done_lookups_glyph_set (done_lookups_glyph_set_)
   {}
 
   ~hb_closure_context_t () { flush (); }
@@ -198,7 +196,7 @@ struct hb_closure_context_t :
   private:
   hb_map_t *done_lookups_glyph_count;
   hb_hashmap_t<unsigned, hb_set_t *> *done_lookups_glyph_set;
-  unsigned int lookup_count;
+  unsigned int lookup_count = 0;
 };
 
 
@@ -611,7 +609,10 @@ struct hb_ot_apply_context_t :
   return_t recurse (unsigned int sub_lookup_index)
   {
     if (unlikely (nesting_level_left == 0 || !recurse_func || buffer->max_ops-- <= 0))
+    {
+      buffer->shaping_failed = true;
       return default_return_value ();
+    }
 
     nesting_level_left--;
     bool ret = recurse_func (this, sub_lookup_index);
@@ -621,35 +622,33 @@ struct hb_ot_apply_context_t :
 
   skipping_iterator_t iter_input, iter_context;
 
+  unsigned int table_index; /* GSUB/GPOS */
   hb_font_t *font;
   hb_face_t *face;
   hb_buffer_t *buffer;
-  recurse_func_t recurse_func;
+  recurse_func_t recurse_func = nullptr;
   const GDEF &gdef;
   const VariationStore &var_store;
+  VariationStore::cache_t *var_store_cache;
 
   hb_direction_t direction;
-  hb_mask_t lookup_mask;
-  unsigned int table_index; /* GSUB/GPOS */
-  unsigned int lookup_index;
-  unsigned int lookup_props;
-  unsigned int nesting_level_left;
+  hb_mask_t lookup_mask = 1;
+  unsigned int lookup_index = (unsigned) -1;
+  unsigned int lookup_props = 0;
+  unsigned int nesting_level_left = HB_MAX_NESTING_LEVEL;
 
   bool has_glyph_classes;
-  bool auto_zwnj;
-  bool auto_zwj;
-  bool per_syllable;
-  bool random;
-
-  uint32_t random_state;
-
+  bool auto_zwnj = true;
+  bool auto_zwj = true;
+  bool per_syllable = false;
+  bool random = false;
+  uint32_t random_state = 1;
 
   hb_ot_apply_context_t (unsigned int table_index_,
 			 hb_font_t *font_,
 			 hb_buffer_t *buffer_) :
-			iter_input (), iter_context (),
+			table_index (table_index_),
 			font (font_), face (font->face), buffer (buffer_),
-			recurse_func (nullptr),
 			gdef (
 #ifndef HB_NO_OT_LAYOUT
 			      *face->table.GDEF->table
@@ -658,18 +657,23 @@ struct hb_ot_apply_context_t :
 #endif
 			     ),
 			var_store (gdef.get_var_store ()),
+			var_store_cache (
+#ifndef HB_NO_VAR
+					 table_index == 1 && font->num_coords ? var_store.create_cache () : nullptr
+#else
+					 nullptr
+#endif
+					),
 			direction (buffer_->props.direction),
-			lookup_mask (1),
-			table_index (table_index_),
-			lookup_index ((unsigned int) -1),
-			lookup_props (0),
-			nesting_level_left (HB_MAX_NESTING_LEVEL),
-			has_glyph_classes (gdef.has_glyph_classes ()),
-			auto_zwnj (true),
-			auto_zwj (true),
-			per_syllable (false),
-			random (false),
-			random_state (1) { init_iters (); }
+			has_glyph_classes (gdef.has_glyph_classes ())
+  { init_iters (); }
+
+  ~hb_ot_apply_context_t ()
+  {
+#ifndef HB_NO_VAR
+    VariationStore::destroy_cache (var_store_cache);
+#endif
+  }
 
   void init_iters ()
   {
@@ -1328,7 +1332,7 @@ static void context_closure_recurse_lookups (hb_closure_context_t *c,
     bool has_pos_glyphs = false;
     hb_set_t pos_glyphs;
 
-    if (hb_set_is_empty (covered_seq_indicies) || !hb_set_has (covered_seq_indicies, seqIndex))
+    if (!hb_set_has (covered_seq_indicies, seqIndex))
     {
       has_pos_glyphs = true;
       if (seqIndex == 0)
@@ -1361,7 +1365,7 @@ static void context_closure_recurse_lookups (hb_closure_context_t *c,
 
     covered_seq_indicies->add (seqIndex);
     if (has_pos_glyphs) {
-      c->push_cur_active_glyphs () = pos_glyphs;
+      c->push_cur_active_glyphs () = std::move (pos_glyphs);
     } else {
       c->push_cur_active_glyphs ().set (*c->glyphs);
     }

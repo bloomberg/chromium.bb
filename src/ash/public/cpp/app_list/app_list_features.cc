@@ -48,9 +48,9 @@ const base::Feature kLauncherLacrosIntegration{
 const base::Feature kFeedbackOnContinueSectionRemove{
     "FeedbackOnContinueSectionRemove", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kCompactBubbleLauncher{"CompactBubbleLauncher",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kLauncherPlayStoreSearch{"LauncherPlayStoreSearch",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 bool IsAppRankerEnabled() {
   return base::FeatureList::IsEnabled(kEnableAppRanker);
@@ -155,7 +155,8 @@ bool IsCompactBubbleLauncherEnabled() {
 }
 
 bool IsLauncherPlayStoreSearchEnabled() {
-  return base::FeatureList::IsEnabled(kLauncherPlayStoreSearch);
+  return ash::features::IsProductivityLauncherEnabled() &&
+         base::FeatureList::IsEnabled(kLauncherPlayStoreSearch);
 }
 
 }  // namespace app_list_features

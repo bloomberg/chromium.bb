@@ -199,12 +199,10 @@ static int read_uncompressed_sgi(unsigned char *out_buf, SgiState *s)
     return 0;
 }
 
-static int decode_frame(AVCodecContext *avctx,
-                        void *data, int *got_frame,
-                        AVPacket *avpkt)
+static int decode_frame(AVCodecContext *avctx, AVFrame *p,
+                        int *got_frame, AVPacket *avpkt)
 {
     SgiState *s = avctx->priv_data;
-    AVFrame *p = data;
     unsigned int dimension, rle;
     int ret = 0;
     uint8_t *out_buf, *out_end;
@@ -294,7 +292,7 @@ const FFCodec ff_sgi_decoder = {
     .p.type         = AVMEDIA_TYPE_VIDEO,
     .p.id           = AV_CODEC_ID_SGI,
     .priv_data_size = sizeof(SgiState),
-    .decode         = decode_frame,
+    FF_CODEC_DECODE_CB(decode_frame),
     .init           = sgi_decode_init,
     .p.capabilities = AV_CODEC_CAP_DR1,
     .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,

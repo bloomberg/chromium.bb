@@ -232,7 +232,7 @@ class MockAutofillClient : public autofill::AutofillClient {
   MOCK_METHOD(bool, IsPasswordManagerEnabled, (), (override));
   MOCK_METHOD(void,
               PropagateAutofillPredictions,
-              (content::RenderFrameHost*,
+              (autofill::AutofillDriver*,
                const std::vector<autofill::FormStructure*>&),
               (override));
   MOCK_METHOD(void,
@@ -254,6 +254,10 @@ class MockAutofillClient : public autofill::AutofillClient {
   MOCK_METHOD(void,
               LoadRiskData,
               (base::OnceCallback<void(const std::string&)>),
+              (override));
+  MOCK_METHOD(void,
+              OnPromoCodeSuggestionsFooterSelected,
+              (const GURL& url),
               (override));
 };
 

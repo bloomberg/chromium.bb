@@ -536,7 +536,7 @@ typedef struct OutputStream {
     int inputs_done;
 
     const char *attachment_filename;
-    int seen_kf;
+    int streamcopy_started;
     int copy_initial_nonkeyframes;
     int copy_prior_start;
     char *disposition;
@@ -577,6 +577,10 @@ typedef struct OutputStream {
 } OutputStream;
 
 typedef struct OutputFile {
+    int index;
+
+    const AVOutputFormat *format;
+
     AVFormatContext *ctx;
     AVDictionary *opts;
     int ost_index;       /* index of the first stream in output_streams */
@@ -645,6 +649,10 @@ extern char *qsv_device;
 #endif
 extern HWDevice *filter_hw_device;
 
+extern int want_sdp;
+extern unsigned nb_output_dumped;
+extern int main_return_code;
+
 
 void term_init(void);
 void term_exit(void);
@@ -680,5 +688,13 @@ int hw_device_setup_for_encode(OutputStream *ost);
 int hw_device_setup_for_filter(FilterGraph *fg);
 
 int hwaccel_decode_init(AVCodecContext *avctx);
+
+/* open the muxer when all the streams are initialized */
+int of_check_init(OutputFile *of);
+int of_write_trailer(OutputFile *of);
+void of_close(OutputFile **pof);
+
+void of_write_packet(OutputFile *of, AVPacket *pkt, OutputStream *ost,
+                     int unqueue);
 
 #endif /* FFTOOLS_FFMPEG_H */

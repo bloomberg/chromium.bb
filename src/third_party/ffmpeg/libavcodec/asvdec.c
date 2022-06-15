@@ -213,13 +213,12 @@ static inline void idct_put(ASV1Context *a, AVFrame *frame, int mb_x, int mb_y)
     }
 }
 
-static int decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
-                        AVPacket *avpkt)
+static int decode_frame(AVCodecContext *avctx, AVFrame *p,
+                        int *got_frame, AVPacket *avpkt)
 {
     ASV1Context *const a = avctx->priv_data;
     const uint8_t *buf = avpkt->data;
     int buf_size       = avpkt->size;
-    AVFrame *const p = data;
     int mb_x, mb_y, ret;
 
     if (buf_size * 8LL < a->mb_height * a->mb_width * 13LL)
@@ -337,7 +336,7 @@ const FFCodec ff_asv1_decoder = {
     .priv_data_size = sizeof(ASV1Context),
     .init           = decode_init,
     .close          = decode_end,
-    .decode         = decode_frame,
+    FF_CODEC_DECODE_CB(decode_frame),
     .p.capabilities = AV_CODEC_CAP_DR1,
     .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };
@@ -351,7 +350,7 @@ const FFCodec ff_asv2_decoder = {
     .p.id           = AV_CODEC_ID_ASV2,
     .priv_data_size = sizeof(ASV1Context),
     .init           = decode_init,
-    .decode         = decode_frame,
+    FF_CODEC_DECODE_CB(decode_frame),
     .p.capabilities = AV_CODEC_CAP_DR1,
     .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };

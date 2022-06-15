@@ -88,8 +88,8 @@ class CNNTest : public ::testing::Test {
 
     av1_find_cnn_output_size(image_width, image_height, cnn_config, out_widths,
                              out_heights, not_used);
-    av1_cnn_predict(input, image_width, image_height, in_stride, cnn_config,
-                    thread_data, output);
+    ASSERT_TRUE(av1_cnn_predict(input, image_width, image_height, in_stride,
+                                cnn_config, thread_data, output));
 
     int channel_offset = 0;
     for (int output_idx = 0; output_idx < num_outputs; output_idx++) {

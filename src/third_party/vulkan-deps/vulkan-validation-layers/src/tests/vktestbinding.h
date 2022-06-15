@@ -285,7 +285,7 @@ class Device : public internal::Handle<VkDevice> {
 
 class Queue : public internal::Handle<VkQueue> {
   public:
-    explicit Queue(VkQueue queue, int index) : Handle(queue) { family_index_ = index; }
+    explicit Queue(VkQueue queue, uint32_t index) : Handle(queue) { family_index_ = index; }
 
     // vkQueueSubmit()
     VkResult submit(const std::vector<const CommandBuffer *> &cmds, const Fence &fence, bool expect_success = true);
@@ -295,10 +295,10 @@ class Queue : public internal::Handle<VkQueue> {
     // vkQueueWaitIdle()
     VkResult wait();
 
-    int get_family_index() { return family_index_; }
+    uint32_t get_family_index() const { return family_index_; }
 
   private:
-    int family_index_;
+    uint32_t family_index_;
 };
 
 class DeviceMemory : public internal::NonDispHandle<VkDeviceMemory> {
@@ -929,7 +929,7 @@ inline VkImageCreateInfo Image::create_info() {
 inline VkImageSubresource Image::subresource(VkImageAspectFlags aspect, uint32_t mip_level, uint32_t array_layer) {
     VkImageSubresource subres = {};
     if (aspect == 0) {
-        assert(!"Invalid VkImageAspectFlags");
+        assert(false && "Invalid VkImageAspectFlags");
     }
     subres.aspectMask = aspect;
     subres.mipLevel = mip_level;
@@ -952,7 +952,7 @@ inline VkImageSubresourceLayers Image::subresource(VkImageAspectFlags aspect, ui
             /* valid */
             break;
         default:
-            assert(!"Invalid VkImageAspectFlags");
+            assert(false && "Invalid VkImageAspectFlags");
     }
     subres.aspectMask = aspect;
     subres.mipLevel = mip_level;
@@ -970,7 +970,7 @@ inline VkImageSubresourceRange Image::subresource_range(VkImageAspectFlags aspec
                                                         uint32_t mip_levels, uint32_t base_array_layer, uint32_t num_layers) {
     VkImageSubresourceRange range = {};
     if (aspect_mask == 0) {
-        assert(!"Invalid VkImageAspectFlags");
+        assert(false && "Invalid VkImageAspectFlags");
     }
     range.aspectMask = aspect_mask;
     range.baseMipLevel = base_mip_level;

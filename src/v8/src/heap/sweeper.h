@@ -20,7 +20,7 @@ namespace internal {
 class InvalidatedSlotsCleanup;
 class MajorNonAtomicMarkingState;
 class Page;
-class PagedSpace;
+class PagedSpaceBase;
 class Space;
 
 enum class FreeSpaceTreatmentMode { kIgnoreFreeSpace, kZapFreeSpace };
@@ -106,7 +106,7 @@ class Sweeper {
   // Support concurrent sweepers from main thread
   void SupportConcurrentSweeping();
 
-  Page* GetSweptPageSafe(PagedSpace* space);
+  Page* GetSweptPageSafe(PagedSpaceBase* space);
 
  private:
   class IncrementalSweeperTask;
@@ -141,7 +141,7 @@ class Sweeper {
 
   // Helper function for RawSweep. Clears invalid typed slots in the given free
   // ranges.
-  void CleanupInvalidTypedSlotsOfFreeRanges(
+  void CleanupTypedSlotsInFreeMemory(
       Page* page, const TypedSlotSet::FreeRangesMap& free_ranges_map,
       SweepingMode sweeping_mode);
 

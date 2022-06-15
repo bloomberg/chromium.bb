@@ -47,8 +47,9 @@ TEST(StackContainer, Vector) {
     }
 
     // The array should still be in order.
-    for (int i = 0; i < stack_size * 2; i++)
+    for (int i = 0; i < stack_size * 2; i++) {
         EXPECT_EQ(i, vect.container()[i]);
+    }
 
     // Resize to smaller. Our STL implementation won't reallocate in this case,
     // otherwise it might use our stack buffer. We reserve right after the resize
@@ -64,8 +65,9 @@ TEST(StackContainer, Vector) {
     std::vector<int, StackAllocator<int, stack_size>> other(vect.container());
     EXPECT_EQ(stack_buffer, &other.front());
     EXPECT_TRUE(vect.stack_data().used_stack_buffer_);
-    for (int i = 0; i < stack_size; i++)
+    for (int i = 0; i < stack_size; i++) {
         EXPECT_EQ(i, other[i]);
+    }
 }
 
 TEST(StackContainer, VectorDoubleDelete) {
@@ -121,7 +123,7 @@ TEST(StackContainer, BufferAlignment) {
     aligned16->push_back(AlignedData<16>());
     EXPECT_ALIGNED(&aligned16[0], 16);
 
-#if !defined(DAWN_COMPILER_GCC) || defined(__x86_64__) || defined(__i386__)
+#if !DAWN_COMPILER_IS(GCC) || defined(__x86_64__) || defined(__i386__)
     // It seems that non-X86 gcc doesn't respect greater than 16 byte alignment.
     // See http://gcc.gnu.org/bugzilla/show_bug.cgi?id=33721 for details.
     // TODO(sbc): Re-enable this if GCC starts respecting higher alignments.

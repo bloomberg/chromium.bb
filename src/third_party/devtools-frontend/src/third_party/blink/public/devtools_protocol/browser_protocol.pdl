@@ -702,7 +702,7 @@ experimental domain Audits
       InvalidHeader
 
   # Details for issues around "Attribution Reporting API" usage.
-  # Explainer: https://github.com/WICG/conversion-measurement-api
+  # Explainer: https://github.com/WICG/attribution-reporting-api
   type AttributionReportingIssueDetails extends object
     properties
       AttributionReportingIssueType violationType
@@ -751,7 +751,6 @@ experimental domain Audits
       CrossOriginWindowAlert
       CrossOriginWindowConfirm
       CSSSelectorInternalMediaControlsOverlayCastButton
-      CustomCursorIntersectsViewport
       DeprecationExample
       DocumentDomainSettingWithoutOriginAgentClusterHeader
       EventPath
@@ -762,15 +761,12 @@ experimental domain Audits
       InsecurePrivateNetworkSubresourceRequest
       LegacyConstraintGoogIPv6
       LocalCSSFileExtensionRejected
-      MediaElementAudioSourceNode
       MediaSourceAbortRemove
       MediaSourceDurationTruncatingBuffered
       NoSysexWebMIDIWithoutPermission
       NotificationInsecureOrigin
       NotificationPermissionRequestedIframe
       ObsoleteWebRtcCipherSuite
-      PaymentRequestBasicCard
-      PaymentRequestShowWithoutGesture
       PictureSourceSrc
       PrefixedCancelAnimationFrame
       PrefixedRequestAnimationFrame
@@ -788,7 +784,6 @@ experimental domain Audits
       RTCPeerConnectionComplexPlanBSdpUsingDefaultSdpSemantics
       RTCPeerConnectionSdpSemanticsPlanB
       RtcpMuxPolicyNegotiate
-      RTPDataChannel
       SharedArrayBufferConstructedWithoutIsolation
       TextToSpeech_DisallowedByAutoplay
       V8SharedArrayBufferConstructedInExtensionWithoutIsolation
@@ -1654,6 +1649,8 @@ experimental domain CSS
       string fontWeight
       # The font-stretch.
       string fontStretch
+      # The font-display.
+      string fontDisplay
       # The unicode-range.
       string unicodeRange
       # The src.
@@ -2274,6 +2271,7 @@ domain DOM
       # Whether the node is SVG.
       optional boolean isSVG
       optional CompatibilityMode compatibilityMode
+      optional BackendNode assignedSlot
 
   # A structure holding an RGBA color.
   type RGBA extends object
@@ -3435,12 +3433,6 @@ experimental domain DOMStorage
       string key
       string value
 
-  command getStorageKeyForFrame
-    parameters
-      Page.FrameId frameId
-    returns
-      SerializedStorageKey storageKey
-
   event domStorageItemAdded
     parameters
       StorageId storageId
@@ -3815,6 +3807,11 @@ domain Emulation
     parameters
       # Image types to disable.
       array of DisabledImageType imageTypes
+
+  experimental command setHardwareConcurrencyOverride
+    parameters
+      # Hardware concurrency to report
+      integer hardwareConcurrency
 
   # Allows overriding user agent with the given string.
   command setUserAgentOverride
@@ -6316,9 +6313,10 @@ domain Network
     enum
       SameOrigin
       SameOriginAllowPopups
+      RestrictProperties
       UnsafeNone
       SameOriginPlusCoep
-      SameOriginAllowPopupsPlusCoep
+      RestrictPropertiesPlusCoep
 
   experimental type CrossOriginOpenerPolicyStatus extends object
     properties
@@ -6959,6 +6957,16 @@ domain Page
       AdFrameType adFrameType
       optional array of AdFrameExplanation explanations
 
+  # Identifies the bottom-most script which caused the frame to be labelled
+  # as an ad.
+  experimental type AdScriptId extends object
+    properties
+      # Script Id of the bottom-most script which caused the frame to be labelled
+      # as an ad.
+      Runtime.ScriptId scriptId
+      # Id of adScriptId's debugger.
+      Runtime.UniqueDebuggerId debuggerId
+
   # Indicates whether the frame is a secure context and why it is the case.
   experimental type SecureContextType extends string
     enum
@@ -6996,13 +7004,13 @@ domain Page
       ambient-light-sensor
       attribution-reporting
       autoplay
+      bluetooth
       browsing-topics
       camera
       ch-dpr
       ch-device-memory
       ch-downlink
       ch-ect
-      ch-partitioned-cookies
       ch-prefers-color-scheme
       ch-rtt
       ch-save-data
@@ -7634,7 +7642,8 @@ domain Page
     returns
       # Frame id that has navigated (or failed to navigate)
       FrameId frameId
-      # Loader identifier.
+      # Loader identifier. This is omitted in case of same-document navigation,
+      # as the previously committed loaderId would not change.
       optional Network.LoaderId loaderId
       # User friendly error message, present if and only if navigation has failed.
       optional string errorText
@@ -7991,6 +8000,9 @@ domain Page
       FrameId parentFrameId
       # JavaScript stack trace of when frame was attached, only set if frame initiated from script.
       optional Runtime.StackTrace stack
+      # Identifies the bottom-most script which caused the frame to be labelled
+      # as an ad. Only sent if frame is labelled as an ad and id is available.
+      experimental optional AdScriptId adScriptId
 
   # Fired when frame no longer has a scheduled navigation.
   deprecated event frameClearedScheduledNavigation
@@ -8251,7 +8263,6 @@ domain Page
       ContentMediaDevicesDispatcherHost
       ContentWebBluetooth
       ContentWebUSB
-      ContentMediaSession
       ContentMediaSessionService
       ContentScreenReader
 
@@ -8902,6 +8913,13 @@ experimental domain Storage
       optional string userBiddingSignals
       array of InterestGroupAd ads
       array of InterestGroupAd adComponents
+
+  # Returns a storage key given a frame id.
+  command getStorageKeyForFrame
+    parameters
+      Page.FrameId frameId
+    returns
+      SerializedStorageKey storageKey
 
   # Clears storage for origin.
   command clearDataForOrigin
@@ -10120,6 +10138,13 @@ experimental domain WebAuthn
   # Enable the WebAuthn domain and start intercepting credential storage and
   # retrieval with a virtual authenticator.
   command enable
+    parameters
+      # Whether to enable the WebAuthn user interface. Enabling the UI is
+      # recommended for debugging and demo purposes, as it is closer to the real
+      # experience. Disabling the UI is recommended for automated testing.
+      # Supported at the embedder's discretion if UI is available.
+      # Defaults to false.
+      optional boolean enableUI
 
   # Disable the WebAuthn domain.
   command disable

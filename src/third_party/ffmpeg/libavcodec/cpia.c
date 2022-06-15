@@ -48,8 +48,8 @@ typedef struct {
 } CpiaContext;
 
 
-static int cpia_decode_frame(AVCodecContext *avctx,
-                             void *data, int *got_frame, AVPacket* avpkt)
+static int cpia_decode_frame(AVCodecContext *avctx, AVFrame *rframe,
+                             int *got_frame, AVPacket* avpkt)
 {
     CpiaContext* const cpia = avctx->priv_data;
     int i,j,ret;
@@ -185,7 +185,7 @@ static int cpia_decode_frame(AVCodecContext *avctx,
     }
 
     *got_frame = 1;
-    if ((ret = av_frame_ref(data, cpia->frame)) < 0)
+    if ((ret = av_frame_ref(rframe, cpia->frame)) < 0)
         return ret;
 
     return avpkt->size;
@@ -230,7 +230,7 @@ const FFCodec ff_cpia_decoder = {
     .priv_data_size = sizeof(CpiaContext),
     .init           = cpia_decode_init,
     .close          = cpia_decode_end,
-    .decode         = cpia_decode_frame,
+    FF_CODEC_DECODE_CB(cpia_decode_frame),
     .p.capabilities = AV_CODEC_CAP_DR1,
     .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };

@@ -101,9 +101,9 @@ class MockVisitor : public SpdyFramerVisitorInterface {
               (SpdyStreamId last_accepted_stream_id, SpdyErrorCode error_code),
               (override));
   MOCK_METHOD(void, OnHeaders,
-              (SpdyStreamId stream_id, bool has_priority, int weight,
-               SpdyStreamId parent_stream_id, bool exclusive, bool fin,
-               bool end),
+              (SpdyStreamId stream_id, size_t payload_length, bool has_priority,
+               int weight, SpdyStreamId parent_stream_id, bool exclusive,
+               bool fin, bool end),
               (override));
   MOCK_METHOD(void, OnWindowUpdate,
               (SpdyStreamId stream_id, int delta_window_size), (override));
@@ -111,7 +111,8 @@ class MockVisitor : public SpdyFramerVisitorInterface {
               (SpdyStreamId stream_id, SpdyStreamId promised_stream_id,
                bool end),
               (override));
-  MOCK_METHOD(void, OnContinuation, (SpdyStreamId stream_id, bool end),
+  MOCK_METHOD(void, OnContinuation,
+              (SpdyStreamId stream_id, size_t payload_size, bool end),
               (override));
   MOCK_METHOD(
       void, OnAltSvc,
@@ -281,17 +282,20 @@ class QuicHeadersStreamTest : public QuicTestWithParam<TestParams> {
 
     // Parse the outgoing data and check that it matches was was written.
     if (is_request) {
-      EXPECT_CALL(visitor_,
-                  OnHeaders(stream_id, kHasPriority,
-                            Spdy3PriorityToHttp2Weight(priority),
-                            /*parent_stream_id=*/0,
-                            /*exclusive=*/false, fin, kFrameComplete));
+      EXPECT_CALL(
+          visitor_,
+          OnHeaders(stream_id, saved_data_.length() - spdy::kFrameHeaderSize,
+                    kHasPriority, Spdy3PriorityToHttp2Weight(priority),
+                    /*parent_stream_id=*/0,
+                    /*exclusive=*/false, fin, kFrameComplete));
     } else {
-      EXPECT_CALL(visitor_,
-                  OnHeaders(stream_id, !kHasPriority,
-                            /*weight=*/0,
-                            /*parent_stream_id=*/0,
-                            /*exclusive=*/false, fin, kFrameComplete));
+      EXPECT_CALL(
+          visitor_,
+          OnHeaders(stream_id, saved_data_.length() - spdy::kFrameHeaderSize,
+                    !kHasPriority,
+                    /*weight=*/0,
+                    /*parent_stream_id=*/0,
+                    /*exclusive=*/false, fin, kFrameComplete));
     }
     headers_handler_ = std::make_unique<RecordingHeadersHandler>();
     EXPECT_CALL(visitor_, OnHeaderFrameStart(stream_id))

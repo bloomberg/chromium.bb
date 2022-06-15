@@ -11,6 +11,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <memory.h>
 #include <math.h>
 #include <assert.h>
@@ -374,9 +375,10 @@ unsigned char *av1_downconvert_frame(YV12_BUFFER_CONFIG *frm, int bit_depth) {
   return buf_8bit;
 }
 
-static void get_inliers_from_indices(MotionModel *params,
+static bool get_inliers_from_indices(MotionModel *params,
                                      int *correspondences) {
   int *inliers_tmp = (int *)aom_malloc(2 * MAX_CORNERS * sizeof(*inliers_tmp));
+  if (!inliers_tmp) return false;
   memset(inliers_tmp, 0, 2 * MAX_CORNERS * sizeof(*inliers_tmp));
 
   for (int i = 0; i < params->num_inliers; i++) {
@@ -386,6 +388,7 @@ static void get_inliers_from_indices(MotionModel *params,
   }
   memcpy(params->inliers, inliers_tmp, sizeof(*inliers_tmp) * 2 * MAX_CORNERS);
   aom_free(inliers_tmp);
+  return true;
 }
 
 #define FEAT_COUNT_TR 3
@@ -442,6 +445,7 @@ static int compute_global_motion_feature_based(
   // find correspondences between the two images
   correspondences =
       (int *)malloc(num_src_corners * 4 * sizeof(*correspondences));
+  if (!correspondences) return 0;
   num_correspondences = av1_determine_correspondence(
       src_buffer, (int *)src_corners, num_src_corners, ref_buffer,
       (int *)ref_corners, num_ref_corners, src_width, src_height, src_stride,
@@ -455,8 +459,10 @@ static int compute_global_motion_feature_based(
     if (num_inliers_by_motion[i] < MIN_INLIER_PROB * num_correspondences ||
         num_correspondences == 0) {
       num_inliers_by_motion[i] = 0;
-    } else {
-      get_inliers_from_indices(&params_by_motion[i], correspondences);
+    } else if (!get_inliers_from_indices(&params_by_motion[i],
+                                         correspondences)) {
+      free(correspondences);
+      return 0;
     }
   }
 
@@ -710,12 +716,17 @@ static INLINE void sobel_xy_image_gradient(const uint8_t *src, int src_stride,
 static ImagePyramid *alloc_pyramid(int width, int height, int pad_size,
                                    int compute_gradient) {
   ImagePyramid *pyr = aom_malloc(sizeof(*pyr));
+  if (!pyr) return NULL;
   pyr->has_gradient = compute_gradient;
   // 2 * width * height is the upper bound for a buffer that fits
   // all pyramid levels + padding for each level
   const int buffer_size = sizeof(*pyr->level_buffer) * 2 * width * height +
                           (width + 2 * pad_size) * 2 * pad_size * N_LEVELS;
   pyr->level_buffer = aom_malloc(buffer_size);
+  if (!pyr->level_buffer) {
+    aom_free(pyr);
+    return NULL;
+  }
   memset(pyr->level_buffer, 0, buffer_size);
 
   if (compute_gradient) {
@@ -853,13 +864,18 @@ static INLINE void compute_flow_at_point(unsigned char *frm, unsigned char *ref,
 }
 
 // make sure flow_u and flow_v start at 0
-static void compute_flow_field(ImagePyramid *frm_pyr, ImagePyramid *ref_pyr,
+static bool compute_flow_field(ImagePyramid *frm_pyr, ImagePyramid *ref_pyr,
                                double *flow_u, double *flow_v) {
   int cur_width, cur_height, cur_stride, cur_loc, patch_loc, patch_center;
   double *u_upscale =
       aom_malloc(frm_pyr->strides[0] * frm_pyr->heights[0] * sizeof(*flow_u));
   double *v_upscale =
       aom_malloc(frm_pyr->strides[0] * frm_pyr->heights[0] * sizeof(*flow_v));
+  if (!(u_upscale && v_upscale)) {
+    aom_free(u_upscale);
+    aom_free(v_upscale);
+    return false;
+  }
 
   assert(frm_pyr->n_levels == ref_pyr->n_levels);
 
@@ -903,6 +919,7 @@ static void compute_flow_field(ImagePyramid *frm_pyr, ImagePyramid *ref_pyr,
   }
   aom_free(u_upscale);
   aom_free(v_upscale);
+  return true;
 }
 
 static int compute_global_motion_disflow_based(
@@ -939,40 +956,43 @@ static int compute_global_motion_disflow_based(
   int compute_gradient = 1;
   ImagePyramid *frm_pyr =
       alloc_pyramid(frm_width, frm_height, pad_size, compute_gradient);
+  if (!frm_pyr) return 0;
   compute_flow_pyramids(frm_buffer, frm_width, frm_height, frm_stride, n_levels,
                         pad_size, compute_gradient, frm_pyr);
   // Allocate ref image pyramids
   compute_gradient = 0;
   ImagePyramid *ref_pyr =
       alloc_pyramid(ref_width, ref_height, pad_size, compute_gradient);
+  if (!ref_pyr) {
+    free_pyramid(frm_pyr);
+    return 0;
+  }
   compute_flow_pyramids(ref_buffer, ref_width, ref_height, ref->y_stride,
                         n_levels, pad_size, compute_gradient, ref_pyr);
 
+  int ret = 0;
   double *flow_u =
       aom_malloc(frm_pyr->strides[0] * frm_pyr->heights[0] * sizeof(*flow_u));
   double *flow_v =
       aom_malloc(frm_pyr->strides[0] * frm_pyr->heights[0] * sizeof(*flow_v));
+  if (!(flow_u && flow_v)) goto Error;
 
   memset(flow_u, 0,
          frm_pyr->strides[0] * frm_pyr->heights[0] * sizeof(*flow_u));
   memset(flow_v, 0,
          frm_pyr->strides[0] * frm_pyr->heights[0] * sizeof(*flow_v));
 
-  compute_flow_field(frm_pyr, ref_pyr, flow_u, flow_v);
+  if (!compute_flow_field(frm_pyr, ref_pyr, flow_u, flow_v)) goto Error;
 
   // find correspondences between the two images using the flow field
   correspondences = aom_malloc(num_frm_corners * 4 * sizeof(*correspondences));
+  if (!correspondences) goto Error;
   num_correspondences = determine_disflow_correspondence(
       frm_corners, num_frm_corners, flow_u, flow_v, frm_width, frm_height,
       frm_pyr->strides[0], correspondences);
   ransac(correspondences, num_correspondences, num_inliers_by_motion,
          params_by_motion, num_motions);
 
-  free_pyramid(frm_pyr);
-  free_pyramid(ref_pyr);
-  aom_free(correspondences);
-  aom_free(flow_u);
-  aom_free(flow_v);
   // Set num_inliers = 0 for motions with too few inliers so they are ignored.
   for (int i = 0; i < num_motions; ++i) {
     if (num_inliers_by_motion[i] < MIN_INLIER_PROB * num_correspondences) {
@@ -982,9 +1002,19 @@ static int compute_global_motion_disflow_based(
 
   // Return true if any one of the motions has inliers.
   for (int i = 0; i < num_motions; ++i) {
-    if (num_inliers_by_motion[i] > 0) return 1;
+    if (num_inliers_by_motion[i] > 0) {
+      ret = 1;
+      break;
+    }
   }
-  return 0;
+
+  aom_free(correspondences);
+Error:
+  free_pyramid(frm_pyr);
+  free_pyramid(ref_pyr);
+  aom_free(flow_u);
+  aom_free(flow_v);
+  return ret;
 }
 
 int av1_compute_global_motion(TransformationType type,

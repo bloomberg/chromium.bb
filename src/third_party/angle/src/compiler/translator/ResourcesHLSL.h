@@ -71,6 +71,7 @@ class ResourcesHLSL : angle::NonCopyable
 
     unsigned int getReadonlyImage2DRegisterIndex() const { return mReadonlyImage2DRegisterIndex; }
     unsigned int getImage2DRegisterIndex() const { return mImage2DRegisterIndex; }
+    bool hasImages() const { return mReadonlyImageCount > 0 || mImageCount > 0; }
 
   private:
     TString uniformBlockString(const TInterfaceBlock &interfaceBlock,
@@ -136,8 +137,8 @@ class ResourcesHLSL : angle::NonCopyable
     unsigned int mSRVRegister;
     unsigned int mUAVRegister;
     unsigned int mSamplerCount;
-    unsigned int mReadonlyImageCount;
-    unsigned int mImageCount;
+    unsigned int mReadonlyImageCount = 0;
+    unsigned int mImageCount         = 0;
     StructureHLSL *mStructureHLSL;
     ShShaderOutput mOutputType;
 

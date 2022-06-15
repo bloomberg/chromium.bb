@@ -273,10 +273,9 @@ static void at1_subband_synthesis(AT1Ctx *q, AT1SUCtx* su, float *pOut)
 }
 
 
-static int atrac1_decode_frame(AVCodecContext *avctx, void *data,
+static int atrac1_decode_frame(AVCodecContext *avctx, AVFrame *frame,
                                int *got_frame_ptr, AVPacket *avpkt)
 {
-    AVFrame *frame     = data;
     const uint8_t *buf = avpkt->data;
     int buf_size       = avpkt->size;
     AT1Ctx *q          = avctx->priv_data;
@@ -393,7 +392,7 @@ const FFCodec ff_atrac1_decoder = {
     .priv_data_size = sizeof(AT1Ctx),
     .init           = atrac1_decode_init,
     .close          = atrac1_decode_end,
-    .decode         = atrac1_decode_frame,
+    FF_CODEC_DECODE_CB(atrac1_decode_frame),
     .p.capabilities = AV_CODEC_CAP_DR1,
     .p.sample_fmts  = (const enum AVSampleFormat[]) { AV_SAMPLE_FMT_FLTP,
                                                       AV_SAMPLE_FMT_NONE },

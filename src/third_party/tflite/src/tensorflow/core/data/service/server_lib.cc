@@ -134,8 +134,8 @@ Status DispatchGrpcDataServer::NumWorkers(int* num_workers) {
   return Status::OK();
 }
 
-size_t DispatchGrpcDataServer::NumActiveJobs() {
-  return service_->NumActiveJobs();
+size_t DispatchGrpcDataServer::NumActiveIterations() {
+  return service_->NumActiveIterations();
 }
 
 ServerStateExport DispatchGrpcDataServer::ExportState() const {
@@ -199,7 +199,9 @@ Status WorkerGrpcDataServer::NumTasks(int* num_tasks) {
 }
 
 ServerStateExport WorkerGrpcDataServer::ExportState() const {
-  return ServerStateExport();
+  ServerStateExport server_state_export;
+  *server_state_export.mutable_worker_state_export() = service_->ExportState();
+  return server_state_export;
 }
 
 Status NewDispatchServer(const experimental::DispatcherConfig& config,

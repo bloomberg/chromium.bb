@@ -19,40 +19,15 @@
 namespace tint::ast {
 namespace {
 
-using AstExtensionTest = TestHelper;
+using EnableTest = TestHelper;
 
-TEST_F(AstExtensionTest, Creation) {
-    auto* ext =
-        create<Enable>(Source{Source::Range{Source::Location{20, 2}, Source::Location{20, 5}}},
-                       "InternalExtensionForTesting");
+TEST_F(EnableTest, Creation) {
+    auto* ext = create<ast::Enable>(Source{{{20, 2}, {20, 5}}}, Extension::kF16);
     EXPECT_EQ(ext->source.range.begin.line, 20u);
     EXPECT_EQ(ext->source.range.begin.column, 2u);
     EXPECT_EQ(ext->source.range.end.line, 20u);
     EXPECT_EQ(ext->source.range.end.column, 5u);
-    EXPECT_EQ(ext->kind, ast::Enable::ExtensionKind::kInternalExtensionForTesting);
-}
-
-TEST_F(AstExtensionTest, Creation_InvalidName) {
-    auto* ext = create<Enable>(
-        Source{Source::Range{Source::Location{20, 2}, Source::Location{20, 5}}}, std::string());
-    EXPECT_EQ(ext->source.range.begin.line, 20u);
-    EXPECT_EQ(ext->source.range.begin.column, 2u);
-    EXPECT_EQ(ext->source.range.end.line, 20u);
-    EXPECT_EQ(ext->source.range.end.column, 5u);
-    EXPECT_EQ(ext->kind, ast::Enable::ExtensionKind::kNotAnExtension);
-}
-
-TEST_F(AstExtensionTest, NameToKind_InvalidName) {
-    EXPECT_EQ(ast::Enable::NameToKind(std::string()), ast::Enable::ExtensionKind::kNotAnExtension);
-    EXPECT_EQ(ast::Enable::NameToKind("__ImpossibleExtensionName"),
-              ast::Enable::ExtensionKind::kNotAnExtension);
-    EXPECT_EQ(ast::Enable::NameToKind("123"), ast::Enable::ExtensionKind::kNotAnExtension);
-}
-
-TEST_F(AstExtensionTest, KindToName) {
-    EXPECT_EQ(ast::Enable::KindToName(ast::Enable::ExtensionKind::kInternalExtensionForTesting),
-              "InternalExtensionForTesting");
-    EXPECT_EQ(ast::Enable::KindToName(ast::Enable::ExtensionKind::kNotAnExtension), std::string());
+    EXPECT_EQ(ext->extension, Extension::kF16);
 }
 
 }  // namespace

@@ -21,16 +21,15 @@
 
 #include "avformat.h"
 #include "internal.h"
+#include "mux.h"
 #include "version.h"
 #include "libavcodec/bsf.h"
 #include "libavcodec/internal.h"
 #include "libavcodec/packet_internal.h"
 #include "libavutil/opt.h"
 #include "libavutil/dict.h"
-#include "libavutil/pixdesc.h"
 #include "libavutil/timestamp.h"
 #include "libavutil/avassert.h"
-#include "libavutil/avstring.h"
 #include "libavutil/internal.h"
 #include "libavutil/mathematics.h"
 
@@ -87,51 +86,6 @@ static void frac_add(FFFrac *f, int64_t incr)
         num     = num % den;
     }
     f->num = num;
-}
-
-AVRational ff_choose_timebase(AVFormatContext *s, AVStream *st, int min_precision)
-{
-    AVRational q;
-
-    q = st->time_base;
-
-    for (int j = 2; j < 14; j += 1 + (j > 2))
-        while (q.den / q.num < min_precision && q.num % j == 0)
-            q.num /= j;
-    while (q.den / q.num < min_precision && q.den < (1<<24))
-        q.den <<= 1;
-
-    return q;
-}
-
-enum AVChromaLocation ff_choose_chroma_location(AVFormatContext *s, AVStream *st)
-{
-    AVCodecParameters *par = st->codecpar;
-    const AVPixFmtDescriptor *pix_desc = av_pix_fmt_desc_get(par->format);
-
-    if (par->chroma_location != AVCHROMA_LOC_UNSPECIFIED)
-        return par->chroma_location;
-
-    if (pix_desc) {
-        if (pix_desc->log2_chroma_h == 0) {
-            return AVCHROMA_LOC_TOPLEFT;
-        } else if (pix_desc->log2_chroma_w == 1 && pix_desc->log2_chroma_h == 1) {
-            if (par->field_order == AV_FIELD_UNKNOWN || par->field_order == AV_FIELD_PROGRESSIVE) {
-                switch (par->codec_id) {
-                case AV_CODEC_ID_MJPEG:
-                case AV_CODEC_ID_MPEG1VIDEO: return AVCHROMA_LOC_CENTER;
-                }
-            }
-            if (par->field_order == AV_FIELD_UNKNOWN || par->field_order != AV_FIELD_PROGRESSIVE) {
-                switch (par->codec_id) {
-                case AV_CODEC_ID_MPEG2VIDEO: return AVCHROMA_LOC_LEFT;
-                }
-            }
-        }
-    }
-
-    return AVCHROMA_LOC_UNSPECIFIED;
-
 }
 
 int avformat_alloc_output_context2(AVFormatContext **avctx, const AVOutputFormat *oformat,
@@ -1348,6 +1302,49 @@ int av_get_output_timestamp(struct AVFormatContext *s, int stream,
         return AVERROR(ENOSYS);
     s->oformat->get_output_timestamp(s, stream, dts, wall);
     return 0;
+}
+
+int ff_stream_add_bitstream_filter(AVStream *st, const char *name, const char *args)
+{
+    int ret;
+    const AVBitStreamFilter *bsf;
+    FFStream *const sti = ffstream(st);
+    AVBSFContext *bsfc;
+
+    av_assert0(!sti->bsfc);
+
+    if (!(bsf = av_bsf_get_by_name(name))) {
+        av_log(NULL, AV_LOG_ERROR, "Unknown bitstream filter '%s'\n", name);
+        return AVERROR_BSF_NOT_FOUND;
+    }
+
+    if ((ret = av_bsf_alloc(bsf, &bsfc)) < 0)
+        return ret;
+
+    bsfc->time_base_in = st->time_base;
+    if ((ret = avcodec_parameters_copy(bsfc->par_in, st->codecpar)) < 0) {
+        av_bsf_free(&bsfc);
+        return ret;
+    }
+
+    if (args && bsfc->filter->priv_class) {
+        if ((ret = av_set_options_string(bsfc->priv_data, args, "=", ":")) < 0) {
+            av_bsf_free(&bsfc);
+            return ret;
+        }
+    }
+
+    if ((ret = av_bsf_init(bsfc)) < 0) {
+        av_bsf_free(&bsfc);
+        return ret;
+    }
+
+    sti->bsfc = bsfc;
+
+    av_log(NULL, AV_LOG_VERBOSE,
+           "Automatically inserted bitstream filter '%s'; args='%s'\n",
+           name, args ? args : "");
+    return 1;
 }
 
 int ff_write_chained(AVFormatContext *dst, int dst_stream, AVPacket *pkt,

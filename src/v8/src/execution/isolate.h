@@ -100,7 +100,7 @@ class AstStringConstants;
 class Bootstrapper;
 class BuiltinsConstantsTableBuilder;
 class CancelableTaskManager;
-class LogEventDispatcher;
+class Logger;
 class CodeTracer;
 class CommonFrame;
 class CompilationCache;
@@ -180,6 +180,16 @@ class StackMemory;
     }                                                  \
   } while (false)
 
+#define RETURN_FAILURE_IF_SCHEDULED_EXCEPTION_DETECTOR(isolate, detector) \
+  do {                                                                    \
+    Isolate* __isolate__ = (isolate);                                     \
+    DCHECK(!__isolate__->has_pending_exception());                        \
+    if (__isolate__->has_scheduled_exception()) {                         \
+      detector.AcceptSideEffects();                                       \
+      return __isolate__->PromoteScheduledException();                    \
+    }                                                                     \
+  } while (false)
+
 // Macros for MaybeHandle.
 
 #define RETURN_VALUE_IF_SCHEDULED_EXCEPTION(isolate, value) \
@@ -191,6 +201,10 @@ class StackMemory;
       return value;                                         \
     }                                                       \
   } while (false)
+
+#define RETURN_VALUE_IF_SCHEDULED_EXCEPTION_DETECTOR(isolate, detector, value) \
+  RETURN_VALUE_IF_SCHEDULED_EXCEPTION(isolate,                                 \
+                                      (detector.AcceptSideEffects(), value))
 
 #define RETURN_EXCEPTION_IF_SCHEDULED_EXCEPTION(isolate, T) \
   RETURN_VALUE_IF_SCHEDULED_EXCEPTION(isolate, MaybeHandle<T>())
@@ -462,10 +476,17 @@ V8_EXPORT_PRIVATE void FreeCurrentEmbeddedBlob();
 
 using DebugObjectCache = std::vector<Handle<HeapObject>>;
 
+// Redefine LegacyOOMErrorCallback here for internal usage. We still need to
+// support it but it is deprecated so would trigger warnings.
+// TODO(chromium:1323177): Remove this.
+using DeprecatedLegacyOOMErrorCallback = void (*)(const char* location,
+                                                  bool is_heap_oom);
+
 #define ISOLATE_INIT_LIST(V)                                                  \
   /* Assembler state. */                                                      \
   V(FatalErrorCallback, exception_behavior, nullptr)                          \
-  V(LegacyOOMErrorCallback, oom_behavior, nullptr)                            \
+  V(DeprecatedLegacyOOMErrorCallback, legacy_oom_behavior, nullptr)           \
+  V(OOMErrorCallback, oom_behavior, nullptr)                                  \
   V(LogEventCallback, event_logger, nullptr)                                  \
   V(AllowCodeGenerationFromStringsCallback, allow_code_gen_callback, nullptr) \
   V(ModifyCodeGenerationFromStringsCallback, modify_code_gen_callback,        \
@@ -481,8 +502,6 @@ using DebugObjectCache = std::vector<Handle<HeapObject>>;
   V(WasmLoadSourceMapCallback, wasm_load_source_map_callback, nullptr)        \
   V(WasmSimdEnabledCallback, wasm_simd_enabled_callback, nullptr)             \
   V(WasmExceptionsEnabledCallback, wasm_exceptions_enabled_callback, nullptr) \
-  V(WasmDynamicTieringEnabledCallback, wasm_dynamic_tiering_enabled_callback, \
-    nullptr)                                                                  \
   /* State for Relocatable. */                                                \
   V(Relocatable*, relocatable_top, nullptr)                                   \
   V(DebugObjectCache*, string_stream_debug_object_cache, nullptr)             \
@@ -491,7 +510,6 @@ using DebugObjectCache = std::vector<Handle<HeapObject>>;
   V(AddressToIndexHashMap*, external_reference_map, nullptr)                  \
   V(HeapObjectToIndexHashMap*, root_index_map, nullptr)                       \
   V(MicrotaskQueue*, default_microtask_queue, nullptr)                        \
-  V(CompilationStatistics*, turbo_statistics, nullptr)                        \
   V(CodeTracer*, code_tracer, nullptr)                                        \
   V(PromiseRejectCallback, promise_reject_callback, nullptr)                  \
   V(const v8::StartupData*, snapshot_blob, nullptr)                           \
@@ -518,6 +536,7 @@ using DebugObjectCache = std::vector<Handle<HeapObject>>;
   V(bool, javascript_execution_assert, true)                                  \
   V(bool, javascript_execution_throws, true)                                  \
   V(bool, javascript_execution_dump, true)                                    \
+  V(uint32_t, javascript_execution_counter, 0)                                \
   V(bool, deoptimization_assert, true)                                        \
   V(bool, compilation_assert, true)                                           \
   V(bool, no_exception_assert, true)
@@ -759,7 +778,6 @@ class V8_EXPORT_PRIVATE Isolate final : private HiddenFactory {
 
   bool IsWasmSimdEnabled(Handle<Context> context);
   bool AreWasmExceptionsEnabled(Handle<Context> context);
-  bool IsWasmDynamicTieringEnabled();
 
   THREAD_LOCAL_TOP_ADDRESS(Context, pending_handler_context)
   THREAD_LOCAL_TOP_ADDRESS(Address, pending_handler_entrypoint)
@@ -1136,7 +1154,7 @@ class V8_EXPORT_PRIVATE Isolate final : private HiddenFactory {
   Heap* heap() { return &heap_; }
   const Heap* heap() const { return &heap_; }
   ReadOnlyHeap* read_only_heap() const { return read_only_heap_; }
-  static Isolate* FromHeap(Heap* heap) {
+  static Isolate* FromHeap(const Heap* heap) {
     return reinterpret_cast<Isolate*>(reinterpret_cast<Address>(heap) -
                                       OFFSET_OF(Isolate, heap_));
   }
@@ -1330,9 +1348,7 @@ class V8_EXPORT_PRIVATE Isolate final : private HiddenFactory {
     is_profiling_.store(enabled, std::memory_order_relaxed);
   }
 
-  LogEventDispatcher* log_event_dispatcher() const {
-    return log_event_dispatcher_;
-  }
+  Logger* logger() const { return logger_; }
   HeapProfiler* heap_profiler() const { return heap_profiler_; }
 
 #ifdef DEBUG
@@ -1527,7 +1543,7 @@ class V8_EXPORT_PRIVATE Isolate final : private HiddenFactory {
     was_locker_ever_used_.store(true, std::memory_order_relaxed);
   }
 
-  CompilationStatistics* GetTurboStatistics();
+  std::shared_ptr<CompilationStatistics> GetTurboStatistics();
   CodeTracer* GetCodeTracer();
 
   void DumpAndResetStats();
@@ -1553,7 +1569,7 @@ class V8_EXPORT_PRIVATE Isolate final : private HiddenFactory {
   int GenerateIdentityHash(uint32_t mask);
 
   // Given an address occupied by a live code object, return that object.
-  Code FindCodeObject(Address a);
+  CodeLookupResult FindCodeObject(Address a);
 
   int NextOptimizationId() {
     int id = next_optimization_id_++;
@@ -1653,6 +1669,10 @@ class V8_EXPORT_PRIVATE Isolate final : private HiddenFactory {
 
   Address javascript_execution_assert_address() {
     return reinterpret_cast<Address>(&javascript_execution_assert_);
+  }
+
+  void IncrementJavascriptExecutionCounter() {
+    javascript_execution_counter_++;
   }
 
   Address handle_scope_implementer_address() {
@@ -1928,6 +1948,12 @@ class V8_EXPORT_PRIVATE Isolate final : private HiddenFactory {
   Address external_pointer_table_address() {
     return reinterpret_cast<Address>(&isolate_data_.external_pointer_table_);
   }
+
+  Maybe<ExternalPointer_t> GetWaiterQueueNodeExternalPointer() const {
+    return waiter_queue_node_external_pointer_;
+  }
+
+  ExternalPointer_t EncodeWaiterQueueNodeAsExternalPointer(Address node);
 #endif
 
   struct PromiseHookFields {
@@ -2239,7 +2265,7 @@ class V8_EXPORT_PRIVATE Isolate final : private HiddenFactory {
 
   Debug* debug_ = nullptr;
   HeapProfiler* heap_profiler_ = nullptr;
-  LogEventDispatcher* log_event_dispatcher_ = nullptr;
+  Logger* logger_ = nullptr;
 
   const AstStringConstants* ast_string_constants_ = nullptr;
 
@@ -2308,6 +2334,7 @@ class V8_EXPORT_PRIVATE Isolate final : private HiddenFactory {
 
   v8::Isolate::UseCounterCallback use_counter_callback_ = nullptr;
 
+  std::shared_ptr<CompilationStatistics> turbo_statistics_;
   std::shared_ptr<metrics::Recorder> metrics_recorder_;
   uintptr_t last_recorder_context_id_ = 0;
   std::unordered_map<
@@ -2389,6 +2416,13 @@ class V8_EXPORT_PRIVATE Isolate final : private HiddenFactory {
   // Stores the shared isolate for this client isolate. nullptr for shared
   // isolates or when no shared isolate is used.
   Isolate* shared_isolate_ = nullptr;
+
+#ifdef V8_SANDBOXED_EXTERNAL_POINTERS
+  // A pointer to Isolate's main thread's WaiterQueueNode. It is used to wait
+  // for JS-exposed mutex or condition variable.
+  Maybe<ExternalPointer_t> waiter_queue_node_external_pointer_ =
+      Nothing<ExternalPointer_t>();
+#endif
 
 #if DEBUG
   // Set to true once during isolate initialization right when attaching to the

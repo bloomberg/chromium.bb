@@ -140,6 +140,7 @@ SUBGRAPH_SRCS = [
     "src/subgraph/static-constant-pad.c",
     "src/subgraph/static-reshape.c",
     "src/subgraph/static-resize-bilinear-2d.c",
+    "src/subgraph/static-transpose.c",
     "src/subgraph/subtract.c",
     "src/subgraph/unpooling-2d.c",
     "src/subgraph/validation.c",
@@ -1339,6 +1340,14 @@ ALL_SCALAR_MICROKERNEL_SRCS = [
     "src/x16-transposec/gen/4x1-scalar-int.c",
     "src/x16-transposec/gen/4x2-scalar-int.c",
     "src/x16-transposec/gen/4x4-scalar-int.c",
+    "src/x24-transposec/gen/1x2-scalar.c",
+    "src/x24-transposec/gen/1x4-scalar.c",
+    "src/x24-transposec/gen/2x1-scalar.c",
+    "src/x24-transposec/gen/2x2-scalar.c",
+    "src/x24-transposec/gen/2x4-scalar.c",
+    "src/x24-transposec/gen/4x1-scalar.c",
+    "src/x24-transposec/gen/4x2-scalar.c",
+    "src/x24-transposec/gen/4x4-scalar.c",
     "src/x32-depthtospace2d-chw2hwc/scalar.c",
     "src/x32-packx/x2-scalar.c",
     "src/x32-packx/x3-scalar.c",
@@ -4778,6 +4787,47 @@ ALL_AARCH64_NEONFP16ARITH_MICROKERNEL_SRCS = [
     "src/f16-dwconv/gen/up32x9-minmax-neonfp16arith.c",
     "src/f16-dwconv/gen/up32x25-minmax-neonfp16arith-acc2.c",
     "src/f16-dwconv/gen/up32x25-minmax-neonfp16arith.c",
+    "src/f16-dwconv2d-chw/gen/3x3p1-minmax-neonfp16arith-1x4-acc2.c",
+    "src/f16-dwconv2d-chw/gen/3x3p1-minmax-neonfp16arith-1x4-acc3.c",
+    "src/f16-dwconv2d-chw/gen/3x3p1-minmax-neonfp16arith-1x4-acc4.c",
+    "src/f16-dwconv2d-chw/gen/3x3p1-minmax-neonfp16arith-1x4.c",
+    "src/f16-dwconv2d-chw/gen/3x3p1-minmax-neonfp16arith-2x4-acc2.c",
+    "src/f16-dwconv2d-chw/gen/3x3p1-minmax-neonfp16arith-2x4.c",
+    "src/f16-dwconv2d-chw/gen/3x3p1-minmax-neonfp16arith-3x4.c",
+    "src/f16-dwconv2d-chw/gen/3x3p1-minmax-neonfp16arith-4x4.c",
+    "src/f16-dwconv2d-chw/gen/3x3p1-minmax-neonfp16arith-5x4.c",
+    "src/f16-dwconv2d-chw/gen/3x3p1-minmax-neonfp16arith-6x4.c",
+    "src/f16-dwconv2d-chw/gen/3x3s2p1-minmax-neonfp16arith-1x4-acc2.c",
+    "src/f16-dwconv2d-chw/gen/3x3s2p1-minmax-neonfp16arith-1x4-acc3.c",
+    "src/f16-dwconv2d-chw/gen/3x3s2p1-minmax-neonfp16arith-1x4-acc4.c",
+    "src/f16-dwconv2d-chw/gen/3x3s2p1-minmax-neonfp16arith-1x4.c",
+    "src/f16-dwconv2d-chw/gen/3x3s2p1-minmax-neonfp16arith-2x4-acc2.c",
+    "src/f16-dwconv2d-chw/gen/3x3s2p1-minmax-neonfp16arith-2x4.c",
+    "src/f16-dwconv2d-chw/gen/3x3s2p1-minmax-neonfp16arith-3x4.c",
+    "src/f16-dwconv2d-chw/gen/3x3s2p1-minmax-neonfp16arith-4x4.c",
+    "src/f16-dwconv2d-chw/gen/5x5p2-minmax-neonfp16arith-1x4-acc2.c",
+    "src/f16-dwconv2d-chw/gen/5x5p2-minmax-neonfp16arith-1x4-acc3.c",
+    "src/f16-dwconv2d-chw/gen/5x5p2-minmax-neonfp16arith-1x4-acc4.c",
+    "src/f16-dwconv2d-chw/gen/5x5p2-minmax-neonfp16arith-1x4-acc5.c",
+    "src/f16-dwconv2d-chw/gen/5x5p2-minmax-neonfp16arith-1x4.c",
+    "src/f16-dwconv2d-chw/gen/5x5p2-minmax-neonfp16arith-2x4-acc2.c",
+    "src/f16-dwconv2d-chw/gen/5x5p2-minmax-neonfp16arith-2x4-acc3.c",
+    "src/f16-dwconv2d-chw/gen/5x5p2-minmax-neonfp16arith-2x4.c",
+    "src/f16-dwconv2d-chw/gen/5x5p2-minmax-neonfp16arith-3x4-acc2.c",
+    "src/f16-dwconv2d-chw/gen/5x5p2-minmax-neonfp16arith-3x4.c",
+    "src/f16-dwconv2d-chw/gen/5x5p2-minmax-neonfp16arith-4x4-acc2.c",
+    "src/f16-dwconv2d-chw/gen/5x5p2-minmax-neonfp16arith-4x4.c",
+    "src/f16-dwconv2d-chw/gen/5x5p2-minmax-neonfp16arith-5x4.c",
+    "src/f16-dwconv2d-chw/gen/5x5s2p2-minmax-neonfp16arith-1x4-acc2.c",
+    "src/f16-dwconv2d-chw/gen/5x5s2p2-minmax-neonfp16arith-1x4-acc3.c",
+    "src/f16-dwconv2d-chw/gen/5x5s2p2-minmax-neonfp16arith-1x4-acc4.c",
+    "src/f16-dwconv2d-chw/gen/5x5s2p2-minmax-neonfp16arith-1x4-acc5.c",
+    "src/f16-dwconv2d-chw/gen/5x5s2p2-minmax-neonfp16arith-1x4.c",
+    "src/f16-dwconv2d-chw/gen/5x5s2p2-minmax-neonfp16arith-2x4-acc2.c",
+    "src/f16-dwconv2d-chw/gen/5x5s2p2-minmax-neonfp16arith-2x4-acc3.c",
+    "src/f16-dwconv2d-chw/gen/5x5s2p2-minmax-neonfp16arith-2x4.c",
+    "src/f16-dwconv2d-chw/gen/5x5s2p2-minmax-neonfp16arith-3x4-acc2.c",
+    "src/f16-dwconv2d-chw/gen/5x5s2p2-minmax-neonfp16arith-3x4.c",
     "src/f16-gavgpool-cw/neonfp16arith-x4.c",
     "src/f16-gavgpool-cw/neonfp16arith-x8.c",
     "src/f16-gavgpool/gen/7p7x-minmax-neonfp16arith-c8.c",
@@ -7828,6 +7878,14 @@ AARCH32_ASM_MICROKERNEL_SRCS = [
     "src/f32-gemm/4x4-aarch32-vfp-ld64.S",
     "src/f32-gemm/4x4-minmax-aarch32-vfp-ld64.S",
     "src/f32-gemm/4x8-minmax-aarch32-neon-cortex-a55.S",
+    "src/qc8-igemm/gen/4x8-minmax-fp32-aarch32-neon-mlal-lane-cortex-a7.S",
+    "src/qc8-igemm/gen/4x8-minmax-fp32-aarch32-neon-mlal-lane-prfm-cortex-a7.S",
+    "src/qc8-igemm/gen/4x8-minmax-fp32-aarch32-neonv8-mlal-lane-cortex-a35.S",
+    "src/qc8-igemm/gen/4x8-minmax-fp32-aarch32-neonv8-mlal-lane-prfm-cortex-a35.S",
+    "src/qs8-igemm/gen/4x8-minmax-rndnu-aarch32-neon-mlal-lane-cortex-a7.S",
+    "src/qs8-igemm/gen/4x8-minmax-rndnu-aarch32-neon-mlal-lane-prfm-cortex-a7.S",
+    "src/qu8-igemm/gen/4x8-minmax-rndnu-aarch32-neon-mlal-lane-cortex-a7.S",
+    "src/qu8-igemm/gen/4x8-minmax-rndnu-aarch32-neon-mlal-lane-prfm-cortex-a7.S",
     "src/f32-igemm/gen/4x8-minmax-aarch32-neon-cortex-a7.S",
     "src/f32-igemm/gen/4x8-minmax-aarch32-neon-cortex-a53.S",
     "src/f32-igemm/gen/4x8-minmax-aarch32-neon-cortex-a75.S",
@@ -7835,14 +7893,20 @@ AARCH32_ASM_MICROKERNEL_SRCS = [
     "src/f32-igemm/gen/4x8-minmax-aarch32-neon-prfm-cortex-a53.S",
     "src/f32-igemm/gen/4x8-minmax-aarch32-neon-prfm-cortex-a75.S",
     "src/f32-igemm/4x8-minmax-aarch32-neon-cortex-a55.S",
+    "src/qc8-gemm/gen/1x8-minmax-fp32-aarch32-neon-mlal-lane-cortex-a7.S",
+    "src/qc8-gemm/gen/1x8-minmax-fp32-aarch32-neon-mlal-lane-prfm-cortex-a7.S",
+    "src/qc8-gemm/gen/1x8-minmax-fp32-aarch32-neonv8-mlal-lane-cortex-a35.S",
+    "src/qc8-gemm/gen/1x8-minmax-fp32-aarch32-neonv8-mlal-lane-prfm-cortex-a35.S",
     "src/qc8-gemm/gen/4x8-minmax-fp32-aarch32-neon-mlal-lane-cortex-a7.S",
     "src/qc8-gemm/gen/4x8-minmax-fp32-aarch32-neon-mlal-lane-cortex-a53.S",
     "src/qc8-gemm/gen/4x8-minmax-fp32-aarch32-neon-mlal-lane-ld64.S",
     "src/qc8-gemm/gen/4x8-minmax-fp32-aarch32-neon-mlal-lane-prfm-cortex-a7.S",
     "src/qc8-gemm/gen/4x8-minmax-fp32-aarch32-neon-mlal-lane-prfm-cortex-a53.S",
     "src/qc8-gemm/gen/4x8-minmax-fp32-aarch32-neon-mlal-lane-prfm-ld64.S",
+    "src/qc8-gemm/gen/4x8-minmax-fp32-aarch32-neonv8-mlal-lane-cortex-a35.S",
     "src/qc8-gemm/gen/4x8-minmax-fp32-aarch32-neonv8-mlal-lane-cortex-a53.S",
     "src/qc8-gemm/gen/4x8-minmax-fp32-aarch32-neonv8-mlal-lane-ld64.S",
+    "src/qc8-gemm/gen/4x8-minmax-fp32-aarch32-neonv8-mlal-lane-prfm-cortex-a35.S",
     "src/qc8-gemm/gen/4x8-minmax-fp32-aarch32-neonv8-mlal-lane-prfm-cortex-a53.S",
     "src/qc8-gemm/gen/4x8-minmax-fp32-aarch32-neonv8-mlal-lane-prfm-ld64.S",
     "src/qc8-gemm/gen/4x8c4-minmax-fp32-aarch32-neondot-cortex-a55.S",
@@ -7857,6 +7921,8 @@ AARCH32_ASM_MICROKERNEL_SRCS = [
     "src/qc8-igemm/gen/4x8-minmax-fp32-aarch32-neonv8-mlal-lane-prfm-ld64.S",
     "src/qc8-igemm/gen/4x8c4-minmax-fp32-aarch32-neondot-cortex-a55.S",
     "src/qc8-igemm/gen/4x8c4-minmax-fp32-aarch32-neondot-ld64.S",
+    "src/qs8-gemm/gen/1x8-minmax-rndnu-aarch32-neon-mlal-lane-cortex-a7.S",
+    "src/qs8-gemm/gen/1x8-minmax-rndnu-aarch32-neon-mlal-lane-prfm-cortex-a7.S",
     "src/qs8-gemm/gen/4x8-minmax-rndnu-aarch32-neon-mlal-lane-cortex-a7.S",
     "src/qs8-gemm/gen/4x8-minmax-rndnu-aarch32-neon-mlal-lane-cortex-a53.S",
     "src/qs8-gemm/gen/4x8-minmax-rndnu-aarch32-neon-mlal-lane-ld64.S",
@@ -7871,6 +7937,8 @@ AARCH32_ASM_MICROKERNEL_SRCS = [
     "src/qs8-igemm/gen/4x8-minmax-rndnu-aarch32-neon-mlal-lane-prfm-ld64.S",
     "src/qs8-igemm/gen/4x8c4-minmax-rndnu-aarch32-neondot-cortex-a55.S",
     "src/qs8-igemm/gen/4x8c4-minmax-rndnu-aarch32-neondot-ld64.S",
+    "src/qu8-gemm/gen/1x8-minmax-rndnu-aarch32-neon-mlal-lane-cortex-a7.S",
+    "src/qu8-gemm/gen/1x8-minmax-rndnu-aarch32-neon-mlal-lane-prfm-cortex-a7.S",
     "src/qu8-gemm/gen/4x8-minmax-rndnu-aarch32-neon-mlal-lane-cortex-a7.S",
     "src/qu8-gemm/gen/4x8-minmax-rndnu-aarch32-neon-mlal-lane-cortex-a53.S",
     "src/qu8-gemm/gen/4x8-minmax-rndnu-aarch32-neon-mlal-lane-ld64.S",
@@ -8154,11 +8222,9 @@ JIT_AARCH64_SRCS = [
     "src/f32-gemm/upto6x8-aarch64-neonfma-cortex-a75.cc",
     "src/f32-gemm/1x8-aarch64-neonfma-cortex-a75.cc",
     "src/f32-gemm/4x8-aarch64-neonfma-cortex-a75.cc",
-    "src/f32-gemm/6x8-aarch64-neonfma-cortex-a75.cc",
     "src/f32-igemm/upto6x8-aarch64-neonfma-cortex-a75.cc",
     "src/f32-igemm/1x8-aarch64-neonfma-cortex-a75.cc",
     "src/f32-igemm/4x8-aarch64-neonfma-cortex-a75.cc",
-    "src/f32-igemm/6x8-aarch64-neonfma-cortex-a75.cc",
 ]
 
 INTERNAL_MICROKERNEL_HDRS = [
@@ -10190,6 +10256,15 @@ cc_library(
     }),
 )
 
+cc_library(
+    name = "enable_gemm_m_specialization",
+    defines = select({
+        ":xnn_enable_gemm_m_specialization_explicit_true": ["XNN_ENABLE_GEMM_M_SPECIALIZATION=1"],
+        ":xnn_enable_gemm_m_specialization_explicit_false": ["XNN_ENABLE_GEMM_M_SPECIALIZATION=0"],
+        "//conditions:default": ["XNN_ENABLE_GEMM_M_SPECIALIZATION=1"],
+    }),
+)
+
 xnnpack_cc_library(
     name = "cache",
     srcs = ["src/cache.c"],
@@ -10263,6 +10338,7 @@ xnnpack_cc_library(
         ":allocator",
         ":cache",
         ":common",
+        ":enable_gemm_m_specialization",
         ":indirection",
         ":jit",
         ":logging",
@@ -10300,6 +10376,7 @@ xnnpack_cc_library(
         ":allocator",
         ":cache",
         ":common",
+        ":enable_gemm_m_specialization",
         ":indirection_test_mode",
         ":jit_test_mode",
         ":logging",
@@ -10387,6 +10464,7 @@ xnnpack_cc_library(
         ":allocator",
         ":cache",
         ":common",
+        ":enable_jit",
         ":enable_sparse",
         ":logging",
         ":math",
@@ -10420,6 +10498,7 @@ xnnpack_cc_library(
         ":allocator",
         ":cache",
         ":common",
+        ":enable_jit",
         ":enable_sparse",
         ":logging",
         ":math",
@@ -10510,6 +10589,7 @@ xnnpack_cc_library(
         ":allocator",
         ":common",
         ":enable_assembly",
+        ":enable_gemm_m_specialization",
         ":enable_jit",
         ":logging",
         ":math",
@@ -10549,6 +10629,7 @@ xnnpack_cc_library(
         ":allocator",
         ":common",
         ":enable_assembly",
+        ":enable_gemm_m_specialization",
         ":enable_jit",
         ":logging",
         ":math",
@@ -10601,6 +10682,7 @@ xnnpack_cc_library(
         ":allocator",
         ":common",
         ":enable_assembly",
+        ":enable_gemm_m_specialization",
         ":enable_jit",
         ":logging",
         ":math",
@@ -10646,6 +10728,7 @@ xnnpack_cc_library(
         ":allocator",
         ":common",
         ":enable_assembly",
+        ":enable_gemm_m_specialization",
         ":enable_jit",
         ":logging",
         ":math",
@@ -10956,9 +11039,30 @@ xnnpack_benchmark(
 )
 
 xnnpack_benchmark(
+    name = "f16_dwconv2d_chw_bench",
+    srcs = [
+        "bench/dwconv.h",
+        "bench/f16-dwconv2d-chw.cc",
+    ],
+    deps = MICROKERNEL_BENCHMARK_DEPS + [
+        ":operators",
+        ":indirection",
+        ":packing",
+    ],
+)
+
+xnnpack_benchmark(
     name = "f32_f16_vcvt_bench",
     srcs = [
         "bench/f32-f16-vcvt.cc",
+    ],
+    deps = MICROKERNEL_BENCHMARK_DEPS,
+)
+
+xnnpack_benchmark(
+    name = "xx_transpose_bench",
+    srcs = [
+        "bench/xx-transpose.cc",
     ],
     deps = MICROKERNEL_BENCHMARK_DEPS,
 )
@@ -10975,6 +11079,14 @@ xnnpack_benchmark(
     name = "x16_transpose_bench",
     srcs = [
         "bench/x16-transpose.cc",
+    ],
+    deps = MICROKERNEL_BENCHMARK_DEPS,
+)
+
+xnnpack_benchmark(
+    name = "x24_transpose_bench",
+    srcs = [
+        "bench/x24-transpose.cc",
     ],
     deps = MICROKERNEL_BENCHMARK_DEPS,
 )
@@ -11921,6 +12033,7 @@ xnnpack_unit_test(
     srcs = [
         "test/f16-igemm-minmax.cc",
     ],
+    shard_count = 5,
     deps = MICROKERNEL_TEST_DEPS + [
         ":gemm_microkernel_tester",
     ],
@@ -12338,6 +12451,15 @@ xnnpack_unit_test(
         "test/f32-dwconv-minmax.cc",
     ],
     shard_count = 5,
+    deps = MICROKERNEL_TEST_DEPS + [":packing"],
+)
+
+xnnpack_unit_test(
+    name = "f16_dwconv2d_chw_test",
+    srcs = [
+        "test/dwconv2d-microkernel-tester.h",
+        "test/f16-dwconv2d-chw.cc",
+    ],
     deps = MICROKERNEL_TEST_DEPS + [":packing"],
 )
 
@@ -12882,6 +13004,7 @@ xnnpack_unit_test(
         "test/f32-vsigmoid.cc",
         "test/vunary-microkernel-tester.h",
     ],
+    shard_count = 3,
     deps = MICROKERNEL_TEST_DEPS,
 )
 
@@ -13509,6 +13632,15 @@ xnnpack_unit_test(
 )
 
 xnnpack_unit_test(
+    name = "x24_transpose_test",
+    srcs = [
+        "test/transpose-microkernel-tester.h",
+        "test/x24-transpose.cc",
+    ],
+    deps = MICROKERNEL_TEST_DEPS,
+)
+
+xnnpack_unit_test(
     name = "x32_transpose_test",
     srcs = [
         "test/transpose-microkernel-tester.h",
@@ -13970,6 +14102,7 @@ xnnpack_unit_test(
         "test/transpose-nd.cc",
         "test/transpose-operator-tester.h",
     ],
+    shard_count = 10,
     deps = OPERATOR_TEST_DEPS,
 )
 
@@ -14086,6 +14219,16 @@ xnnpack_unit_test(
     ],
 )
 
+xnnpack_unit_test(
+    name = "operators_util_test",
+    srcs = ["test/operator-utils.cc"],
+    deps = [
+        ":common",
+        ":operators_test_mode",
+        ":params",
+    ],
+)
+
 ############################# Build configurations #############################
 
 # Enables usage of assembly kernels.
@@ -14164,6 +14307,18 @@ config_setting(
 config_setting(
     name = "xnn_enable_jit_explicit_false",
     define_values = {"xnn_enable_jit": "false"},
+)
+
+# Enables usage of mr heuristic to select microkernels.
+config_setting(
+    name = "xnn_enable_gemm_m_specialization_explicit_true",
+    define_values = {"xnn_enable_gemm_m_specialization": "true"},
+)
+
+# Disables usage of mr heuristic to select microkernels.
+config_setting(
+    name = "xnn_enable_gemm_m_specialization_explicit_false",
+    define_values = {"xnn_enable_gemm_m_specialization": "false"},
 )
 
 # Fully disable logging

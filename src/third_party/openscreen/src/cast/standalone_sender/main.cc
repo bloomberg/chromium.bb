@@ -203,11 +203,18 @@ int StandaloneSenderMain(int argc, char* argv[]) {
   const char* const iface_or_endpoint = argv[optind++];
   const char* const path = argv[optind];
 
+  std::unique_ptr<TrustStore> cast_trust_store;
 #if defined(CAST_ALLOW_DEVELOPER_CERTIFICATE)
   if (!developer_certificate_path.empty()) {
-    TrustStore::CreateInstanceFromPemFile(developer_certificate_path);
+    cast_trust_store =
+        TrustStore::CreateInstanceFromPemFile(developer_certificate_path);
+    OSP_LOG_INFO << "using cast trust store generated from: "
+                 << developer_certificate_path;
   }
 #endif
+  if (!cast_trust_store) {
+    cast_trust_store = CastTrustStore::Create();
+  }
 
   auto* const task_runner = new TaskRunnerImpl(&Clock::now);
   PlatformClientPosix::Create(milliseconds(50),
@@ -215,7 +222,7 @@ int StandaloneSenderMain(int argc, char* argv[]) {
 
   IPEndpoint remote_endpoint = ParseAsEndpoint(iface_or_endpoint);
   if (!remote_endpoint.port) {
-    for (const InterfaceInfo& interface : GetAllInterfaces()) {
+    for (const InterfaceInfo& interface : GetNetworkInterfaces()) {
       if (interface.name == iface_or_endpoint) {
         ReceiverChooser chooser(interface, task_runner,
                                 [&](IPEndpoint endpoint) {
@@ -239,8 +246,9 @@ int StandaloneSenderMain(int argc, char* argv[]) {
   // TaskRunner.
   LoopingFileCastAgent* cast_agent = nullptr;
   task_runner->PostTask([&] {
-    cast_agent = new LoopingFileCastAgent(
-        task_runner, [&] { task_runner->RequestStopSoon(); });
+    cast_agent =
+        new LoopingFileCastAgent(task_runner, std::move(cast_trust_store),
+                                 [&] { task_runner->RequestStopSoon(); });
 
     cast_agent->Connect({.receiver_endpoint = remote_endpoint,
                          .path_to_file = path,

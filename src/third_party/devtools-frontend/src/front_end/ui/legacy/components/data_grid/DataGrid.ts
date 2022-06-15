@@ -122,7 +122,7 @@ const elementToIndexMap = new WeakMap<Element, number>();
 
 export class DataGridImpl<T> extends Common.ObjectWrapper.ObjectWrapper<EventTypes<T>> {
   element: HTMLDivElement;
-  private displayName: string;
+  displayName: string;
   private editCallback: ((arg0: any, arg1: string, arg2: any, arg3: any) => void)|undefined;
   private readonly deleteCallback: ((arg0: any) => void)|undefined;
   private readonly refreshCallback: (() => void)|undefined;
@@ -130,6 +130,7 @@ export class DataGridImpl<T> extends Common.ObjectWrapper.ObjectWrapper<EventTyp
     [x: string]: Element,
   };
   scrollContainerInternal: Element;
+  private dataContainerInternal: Element;
   private readonly dataTable: Element;
   protected inline: boolean;
   private columnsArray: ColumnDescriptor[];
@@ -190,8 +191,9 @@ export class DataGridImpl<T> extends Common.ObjectWrapper.ObjectWrapper<EventTyp
 
     this.dataTableHeaders = {};
 
-    this.scrollContainerInternal = this.element.createChild('div', 'data-container');
-    this.dataTable = this.scrollContainerInternal.createChild('table', 'data');
+    this.dataContainerInternal = this.element.createChild('div', 'data-container');
+    this.dataTable = this.dataContainerInternal.createChild('table', 'data');
+    this.scrollContainerInternal = this.dataContainerInternal;
 
     // FIXME: Add a createCallback which is different from editCallback and has different
     // behavior when creating a new node.
@@ -1179,11 +1181,9 @@ export class DataGridImpl<T> extends Common.ObjectWrapper.ObjectWrapper<EventTyp
       nextSelectedNode.select();
     }
 
-    if ((event.key === 'ArrowUp' || event.key === 'ArrowDown' || event.key === 'ArrowLeft' ||
-         event.key === 'ArrowRight') &&
-        document.activeElement !== this.element) {
-      // crbug.com/1005449
-      // navigational keys pressed but current DataGrid panel has lost focus;
+    if (handled && document.activeElement !== this.element) {
+      // crbug.com/1005449, crbug.com/1329956
+      // navigational or delete keys pressed but current DataGrid panel has lost focus;
       // re-focus to ensure subsequent keydowns can be registered within this DataGrid
       this.element.focus();
     }
@@ -1537,6 +1537,18 @@ export class DataGridImpl<T> extends Common.ObjectWrapper.ObjectWrapper<EventTyp
 
   topFillerRowElement(): HTMLElement {
     return this.topFillerRow;
+  }
+
+  // Note on the following methods:
+  // The header row is a child of the scrollable container, and uses position: sticky
+  // so it can visually obscure other elements below it in the grid. We need to manually
+  // subtract the header's height when calculating the actual client area in which
+  // data rows are visible. However, if a caller has set a different scroll container
+  // then we report 0 height and the caller is expected to ensure their chosen scroll
+  // container's height matches the visible scrollable data area as seen by the user.
+
+  protected headerHeightInScroller(): number {
+    return this.scrollContainer === this.dataContainerInternal ? this.headerHeight() : 0;
   }
 
   protected headerHeight(): number {

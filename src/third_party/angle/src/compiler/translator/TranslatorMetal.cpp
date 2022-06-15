@@ -128,10 +128,12 @@ bool TranslatorMetal::translate(TIntermBlock *root,
 
     if (getShaderType() == GL_VERTEX_SHADER)
     {
-        TIntermTyped *negFlipY = driverUniforms.getNegFlipYRef();
+        TIntermTyped *flipNegY =
+            driverUniforms.getFlipXY(&getSymbolTable(), DriverUniformFlip::PreFragment);
+        flipNegY = (new TIntermSwizzle(flipNegY, {1}))->fold(nullptr);
 
         // Append gl_Position.y correction to main
-        if (!AppendVertexShaderPositionYCorrectionToMain(this, root, &getSymbolTable(), negFlipY))
+        if (!AppendVertexShaderPositionYCorrectionToMain(this, root, &getSymbolTable(), flipNegY))
         {
             return false;
         }
@@ -191,13 +193,13 @@ bool TranslatorMetal::transformDepthBeforeCorrection(TIntermBlock *root,
     TVector<int> swizzleOffsetZ = {2};
     TIntermSwizzle *positionZ   = new TIntermSwizzle(positionRef, swizzleOffsetZ);
 
-    // Create a ref to "depthRange.reserved"
-    TIntermTyped *viewportZScale = driverUniforms->getDepthRangeReservedFieldRef();
+    // Create a ref to "zscale"
+    TIntermTyped *viewportZScale = driverUniforms->getViewportZScale();
 
-    // Create the expression "gl_Position.z * depthRange.reserved".
+    // Create the expression "gl_Position.z * zscale".
     TIntermBinary *zScale = new TIntermBinary(EOpMul, positionZ->deepCopy(), viewportZScale);
 
-    // Create the assignment "gl_Position.z = gl_Position.z * depthRange.reserved"
+    // Create the assignment "gl_Position.z = gl_Position.z * zscale"
     TIntermTyped *positionZLHS = positionZ->deepCopy();
     TIntermBinary *assignment  = new TIntermBinary(TOperator::EOpAssign, positionZLHS, zScale);
 
@@ -248,7 +250,7 @@ ANGLE_NO_DISCARD bool TranslatorMetal::insertSampleMaskWritingLogic(
     sampleMaskWriteFunc->addParameter(maskArg);
 
     // coverageMask
-    TIntermTyped *coverageMask = driverUniforms->getCoverageMaskFieldRef();
+    TIntermTyped *coverageMask = driverUniforms->getCoverageMaskField();
 
     // Insert this code to the end of main()
     // if (ANGLECoverageMaskEnabled)

@@ -28,6 +28,7 @@ OPTION(XNNPACK_ENABLE_ASSEMBLY "Build XNNPACK with assembly micro-kernels" ON)
 OPTION(XNNPACK_ENABLE_JIT "Build XNNPACK with JIT micro-kernels" OFF)
 OPTION(XNNPACK_ENABLE_MEMOPT "Build XNNPACK with optimized memory allocation scheme" ON)
 OPTION(XNNPACK_ENABLE_SPARSE "Build XNNPACK with graph rewriting for sparse inference" ON)
+OPTION(XNNPACK_ENABLE_GEMM_M_SPECIALIZATION "Build XNNPACK with support for selecting microkernel with different MR" ON)
 OPTION(XNNPACK_BUILD_TESTS "Build XNNPACK unit tests" ON)
 OPTION(XNNPACK_BUILD_BENCHMARKS "Build XNNPACK benchmarks" ON)
 OPTION(XNNPACK_USE_SYSTEM_LIBS "Use system-provided dependency libraries" OFF)
@@ -67,6 +68,12 @@ IF(XNNPACK_ENABLE_SPARSE)
   ADD_DEFINITIONS(-DXNN_ENABLE_SPARSE=1)
 ELSE()
   ADD_DEFINITIONS(-DXNN_ENABLE_SPARSE=0)
+ENDIF()
+
+IF(XNNPACK_ENABLE_GEMM_M_SPECIALIZATION)
+  ADD_DEFINITIONS(-DXNN_ENABLE_GEMM_M_SPECIALIZATION=1)
+ELSE()
+  ADD_DEFINITIONS(-DXNN_ENABLE_GEMM_M_SPECIALIZATION=0)
 ENDIF()
 
 IF(CMAKE_C_COMPILER_ID STREQUAL "MSVC")
@@ -243,6 +250,7 @@ SET(SUBGRAPH_SRCS
   src/subgraph/static-constant-pad.c
   src/subgraph/static-reshape.c
   src/subgraph/static-resize-bilinear-2d.c
+  src/subgraph/static-transpose.c
   src/subgraph/subtract.c
   src/subgraph/unpooling-2d.c
   src/subgraph/validation.c
@@ -304,11 +312,9 @@ SET(JIT_AARCH64_SRCS
   src/f32-gemm/upto6x8-aarch64-neonfma-cortex-a75.cc
   src/f32-gemm/1x8-aarch64-neonfma-cortex-a75.cc
   src/f32-gemm/4x8-aarch64-neonfma-cortex-a75.cc
-  src/f32-gemm/6x8-aarch64-neonfma-cortex-a75.cc
   src/f32-igemm/upto6x8-aarch64-neonfma-cortex-a75.cc
   src/f32-igemm/1x8-aarch64-neonfma-cortex-a75.cc
-  src/f32-igemm/4x8-aarch64-neonfma-cortex-a75.cc
-  src/f32-igemm/6x8-aarch64-neonfma-cortex-a75.cc)
+  src/f32-igemm/4x8-aarch64-neonfma-cortex-a75.cc)
 
 SET(PROD_SCALAR_PORTABLE_MICROKERNEL_SRCS
   src/u8-lut32norm/scalar.c
@@ -1349,6 +1355,14 @@ SET(ALL_SCALAR_MICROKERNEL_SRCS
   src/x16-transposec/gen/4x1-scalar-int.c
   src/x16-transposec/gen/4x2-scalar-int.c
   src/x16-transposec/gen/4x4-scalar-int.c
+  src/x24-transposec/gen/1x2-scalar.c
+  src/x24-transposec/gen/1x4-scalar.c
+  src/x24-transposec/gen/2x1-scalar.c
+  src/x24-transposec/gen/2x2-scalar.c
+  src/x24-transposec/gen/2x4-scalar.c
+  src/x24-transposec/gen/4x1-scalar.c
+  src/x24-transposec/gen/4x2-scalar.c
+  src/x24-transposec/gen/4x4-scalar.c
   src/x32-depthtospace2d-chw2hwc/scalar.c
   src/x32-packx/x2-scalar.c
   src/x32-packx/x3-scalar.c
@@ -3317,6 +3331,47 @@ SET(ALL_AARCH64_NEONFP16ARITH_MICROKERNEL_SRCS
   src/f16-dwconv/gen/up32x9-minmax-neonfp16arith.c
   src/f16-dwconv/gen/up32x25-minmax-neonfp16arith-acc2.c
   src/f16-dwconv/gen/up32x25-minmax-neonfp16arith.c
+  src/f16-dwconv2d-chw/gen/3x3p1-minmax-neonfp16arith-1x4-acc2.c
+  src/f16-dwconv2d-chw/gen/3x3p1-minmax-neonfp16arith-1x4-acc3.c
+  src/f16-dwconv2d-chw/gen/3x3p1-minmax-neonfp16arith-1x4-acc4.c
+  src/f16-dwconv2d-chw/gen/3x3p1-minmax-neonfp16arith-1x4.c
+  src/f16-dwconv2d-chw/gen/3x3p1-minmax-neonfp16arith-2x4-acc2.c
+  src/f16-dwconv2d-chw/gen/3x3p1-minmax-neonfp16arith-2x4.c
+  src/f16-dwconv2d-chw/gen/3x3p1-minmax-neonfp16arith-3x4.c
+  src/f16-dwconv2d-chw/gen/3x3p1-minmax-neonfp16arith-4x4.c
+  src/f16-dwconv2d-chw/gen/3x3p1-minmax-neonfp16arith-5x4.c
+  src/f16-dwconv2d-chw/gen/3x3p1-minmax-neonfp16arith-6x4.c
+  src/f16-dwconv2d-chw/gen/3x3s2p1-minmax-neonfp16arith-1x4-acc2.c
+  src/f16-dwconv2d-chw/gen/3x3s2p1-minmax-neonfp16arith-1x4-acc3.c
+  src/f16-dwconv2d-chw/gen/3x3s2p1-minmax-neonfp16arith-1x4-acc4.c
+  src/f16-dwconv2d-chw/gen/3x3s2p1-minmax-neonfp16arith-1x4.c
+  src/f16-dwconv2d-chw/gen/3x3s2p1-minmax-neonfp16arith-2x4-acc2.c
+  src/f16-dwconv2d-chw/gen/3x3s2p1-minmax-neonfp16arith-2x4.c
+  src/f16-dwconv2d-chw/gen/3x3s2p1-minmax-neonfp16arith-3x4.c
+  src/f16-dwconv2d-chw/gen/3x3s2p1-minmax-neonfp16arith-4x4.c
+  src/f16-dwconv2d-chw/gen/5x5p2-minmax-neonfp16arith-1x4-acc2.c
+  src/f16-dwconv2d-chw/gen/5x5p2-minmax-neonfp16arith-1x4-acc3.c
+  src/f16-dwconv2d-chw/gen/5x5p2-minmax-neonfp16arith-1x4-acc4.c
+  src/f16-dwconv2d-chw/gen/5x5p2-minmax-neonfp16arith-1x4-acc5.c
+  src/f16-dwconv2d-chw/gen/5x5p2-minmax-neonfp16arith-1x4.c
+  src/f16-dwconv2d-chw/gen/5x5p2-minmax-neonfp16arith-2x4-acc2.c
+  src/f16-dwconv2d-chw/gen/5x5p2-minmax-neonfp16arith-2x4-acc3.c
+  src/f16-dwconv2d-chw/gen/5x5p2-minmax-neonfp16arith-2x4.c
+  src/f16-dwconv2d-chw/gen/5x5p2-minmax-neonfp16arith-3x4-acc2.c
+  src/f16-dwconv2d-chw/gen/5x5p2-minmax-neonfp16arith-3x4.c
+  src/f16-dwconv2d-chw/gen/5x5p2-minmax-neonfp16arith-4x4-acc2.c
+  src/f16-dwconv2d-chw/gen/5x5p2-minmax-neonfp16arith-4x4.c
+  src/f16-dwconv2d-chw/gen/5x5p2-minmax-neonfp16arith-5x4.c
+  src/f16-dwconv2d-chw/gen/5x5s2p2-minmax-neonfp16arith-1x4-acc2.c
+  src/f16-dwconv2d-chw/gen/5x5s2p2-minmax-neonfp16arith-1x4-acc3.c
+  src/f16-dwconv2d-chw/gen/5x5s2p2-minmax-neonfp16arith-1x4-acc4.c
+  src/f16-dwconv2d-chw/gen/5x5s2p2-minmax-neonfp16arith-1x4-acc5.c
+  src/f16-dwconv2d-chw/gen/5x5s2p2-minmax-neonfp16arith-1x4.c
+  src/f16-dwconv2d-chw/gen/5x5s2p2-minmax-neonfp16arith-2x4-acc2.c
+  src/f16-dwconv2d-chw/gen/5x5s2p2-minmax-neonfp16arith-2x4-acc3.c
+  src/f16-dwconv2d-chw/gen/5x5s2p2-minmax-neonfp16arith-2x4.c
+  src/f16-dwconv2d-chw/gen/5x5s2p2-minmax-neonfp16arith-3x4-acc2.c
+  src/f16-dwconv2d-chw/gen/5x5s2p2-minmax-neonfp16arith-3x4.c
   src/f16-gavgpool-cw/neonfp16arith-x4.c
   src/f16-gavgpool-cw/neonfp16arith-x8.c
   src/f16-gavgpool/gen/7p7x-minmax-neonfp16arith-c8.c
@@ -6337,6 +6392,14 @@ SET(AARCH32_ASM_MICROKERNEL_SRCS
   src/f32-gemm/4x4-aarch32-vfp-ld64.S
   src/f32-gemm/4x4-minmax-aarch32-vfp-ld64.S
   src/f32-gemm/4x8-minmax-aarch32-neon-cortex-a55.S
+  src/qc8-igemm/gen/4x8-minmax-fp32-aarch32-neon-mlal-lane-cortex-a7.S
+  src/qc8-igemm/gen/4x8-minmax-fp32-aarch32-neon-mlal-lane-prfm-cortex-a7.S
+  src/qc8-igemm/gen/4x8-minmax-fp32-aarch32-neonv8-mlal-lane-cortex-a35.S
+  src/qc8-igemm/gen/4x8-minmax-fp32-aarch32-neonv8-mlal-lane-prfm-cortex-a35.S
+  src/qs8-igemm/gen/4x8-minmax-rndnu-aarch32-neon-mlal-lane-cortex-a7.S
+  src/qs8-igemm/gen/4x8-minmax-rndnu-aarch32-neon-mlal-lane-prfm-cortex-a7.S
+  src/qu8-igemm/gen/4x8-minmax-rndnu-aarch32-neon-mlal-lane-cortex-a7.S
+  src/qu8-igemm/gen/4x8-minmax-rndnu-aarch32-neon-mlal-lane-prfm-cortex-a7.S
   src/f32-igemm/gen/4x8-minmax-aarch32-neon-cortex-a7.S
   src/f32-igemm/gen/4x8-minmax-aarch32-neon-cortex-a53.S
   src/f32-igemm/gen/4x8-minmax-aarch32-neon-cortex-a75.S
@@ -6344,14 +6407,20 @@ SET(AARCH32_ASM_MICROKERNEL_SRCS
   src/f32-igemm/gen/4x8-minmax-aarch32-neon-prfm-cortex-a53.S
   src/f32-igemm/gen/4x8-minmax-aarch32-neon-prfm-cortex-a75.S
   src/f32-igemm/4x8-minmax-aarch32-neon-cortex-a55.S
+  src/qc8-gemm/gen/1x8-minmax-fp32-aarch32-neon-mlal-lane-cortex-a7.S
+  src/qc8-gemm/gen/1x8-minmax-fp32-aarch32-neon-mlal-lane-prfm-cortex-a7.S
+  src/qc8-gemm/gen/1x8-minmax-fp32-aarch32-neonv8-mlal-lane-cortex-a35.S
+  src/qc8-gemm/gen/1x8-minmax-fp32-aarch32-neonv8-mlal-lane-prfm-cortex-a35.S
   src/qc8-gemm/gen/4x8-minmax-fp32-aarch32-neon-mlal-lane-cortex-a7.S
   src/qc8-gemm/gen/4x8-minmax-fp32-aarch32-neon-mlal-lane-cortex-a53.S
   src/qc8-gemm/gen/4x8-minmax-fp32-aarch32-neon-mlal-lane-ld64.S
   src/qc8-gemm/gen/4x8-minmax-fp32-aarch32-neon-mlal-lane-prfm-cortex-a7.S
   src/qc8-gemm/gen/4x8-minmax-fp32-aarch32-neon-mlal-lane-prfm-cortex-a53.S
   src/qc8-gemm/gen/4x8-minmax-fp32-aarch32-neon-mlal-lane-prfm-ld64.S
+  src/qc8-gemm/gen/4x8-minmax-fp32-aarch32-neonv8-mlal-lane-cortex-a35.S
   src/qc8-gemm/gen/4x8-minmax-fp32-aarch32-neonv8-mlal-lane-cortex-a53.S
   src/qc8-gemm/gen/4x8-minmax-fp32-aarch32-neonv8-mlal-lane-ld64.S
+  src/qc8-gemm/gen/4x8-minmax-fp32-aarch32-neonv8-mlal-lane-prfm-cortex-a35.S
   src/qc8-gemm/gen/4x8-minmax-fp32-aarch32-neonv8-mlal-lane-prfm-cortex-a53.S
   src/qc8-gemm/gen/4x8-minmax-fp32-aarch32-neonv8-mlal-lane-prfm-ld64.S
   src/qc8-gemm/gen/4x8c4-minmax-fp32-aarch32-neondot-cortex-a55.S
@@ -6366,6 +6435,8 @@ SET(AARCH32_ASM_MICROKERNEL_SRCS
   src/qc8-igemm/gen/4x8-minmax-fp32-aarch32-neonv8-mlal-lane-prfm-ld64.S
   src/qc8-igemm/gen/4x8c4-minmax-fp32-aarch32-neondot-cortex-a55.S
   src/qc8-igemm/gen/4x8c4-minmax-fp32-aarch32-neondot-ld64.S
+  src/qs8-gemm/gen/1x8-minmax-rndnu-aarch32-neon-mlal-lane-cortex-a7.S
+  src/qs8-gemm/gen/1x8-minmax-rndnu-aarch32-neon-mlal-lane-prfm-cortex-a7.S
   src/qs8-gemm/gen/4x8-minmax-rndnu-aarch32-neon-mlal-lane-cortex-a7.S
   src/qs8-gemm/gen/4x8-minmax-rndnu-aarch32-neon-mlal-lane-cortex-a53.S
   src/qs8-gemm/gen/4x8-minmax-rndnu-aarch32-neon-mlal-lane-ld64.S
@@ -6380,6 +6451,8 @@ SET(AARCH32_ASM_MICROKERNEL_SRCS
   src/qs8-igemm/gen/4x8-minmax-rndnu-aarch32-neon-mlal-lane-prfm-ld64.S
   src/qs8-igemm/gen/4x8c4-minmax-rndnu-aarch32-neondot-cortex-a55.S
   src/qs8-igemm/gen/4x8c4-minmax-rndnu-aarch32-neondot-ld64.S
+  src/qu8-gemm/gen/1x8-minmax-rndnu-aarch32-neon-mlal-lane-cortex-a7.S
+  src/qu8-gemm/gen/1x8-minmax-rndnu-aarch32-neon-mlal-lane-prfm-cortex-a7.S
   src/qu8-gemm/gen/4x8-minmax-rndnu-aarch32-neon-mlal-lane-cortex-a7.S
   src/qu8-gemm/gen/4x8-minmax-rndnu-aarch32-neon-mlal-lane-cortex-a53.S
   src/qu8-gemm/gen/4x8-minmax-rndnu-aarch32-neon-mlal-lane-ld64.S
@@ -7285,6 +7358,11 @@ IF(XNNPACK_BUILD_TESTS)
   TARGET_LINK_LIBRARIES(f16-dwconv-minmax-test PRIVATE cpuinfo fp16 pthreadpool gtest gtest_main params_init)
   ADD_TEST(f16-dwconv-minmax-test f16-dwconv-minmax-test)
 
+  ADD_EXECUTABLE(f16-dwconv2d-chw-test test/f16-dwconv2d-chw.cc $<TARGET_OBJECTS:all_microkernels> $<TARGET_OBJECTS:packing>)
+  TARGET_INCLUDE_DIRECTORIES(f16-dwconv2d-chw-test PRIVATE include src test)
+  TARGET_LINK_LIBRARIES(f16-dwconv2d-chw-test PRIVATE cpuinfo fp16 pthreadpool gtest gtest_main params_init)
+  ADD_TEST(f16-dwconv2d-chw-test f16-dwconv2d-chw-test)
+
   ADD_EXECUTABLE(f16-gavgpool-minmax-test test/f16-gavgpool-minmax.cc $<TARGET_OBJECTS:all_microkernels>)
   TARGET_INCLUDE_DIRECTORIES(f16-gavgpool-minmax-test PRIVATE include src test)
   TARGET_LINK_LIBRARIES(f16-gavgpool-minmax-test PRIVATE cpuinfo fp16 pthreadpool gtest gtest_main params_init)
@@ -8092,6 +8170,11 @@ IF(XNNPACK_BUILD_TESTS)
   TARGET_LINK_LIBRARIES(x16-transpose-test PRIVATE cpuinfo fp16 pthreadpool gtest gtest_main)
   ADD_TEST(x16-transpose-test x16-transpose-test)
 
+  ADD_EXECUTABLE(x24-transpose-test test/x24-transpose.cc $<TARGET_OBJECTS:all_microkernels>)
+  TARGET_INCLUDE_DIRECTORIES(x24-transpose-test PRIVATE include src test)
+  TARGET_LINK_LIBRARIES(x24-transpose-test PRIVATE cpuinfo fp16 pthreadpool gtest gtest_main)
+  ADD_TEST(x24-transpose-test x24-transpose-test)
+
   ADD_EXECUTABLE(x32-packx-test test/x32-packx.cc $<TARGET_OBJECTS:all_microkernels>)
   TARGET_INCLUDE_DIRECTORIES(x32-packx-test PRIVATE include src test)
   TARGET_LINK_LIBRARIES(x32-packx-test PRIVATE cpuinfo fp16 pthreadpool gtest gtest_main)
@@ -8170,6 +8253,10 @@ IF(XNNPACK_BUILD_TESTS)
   ADD_EXECUTABLE(mutex-test test/mutex.cc)
   TARGET_INCLUDE_DIRECTORIES(mutex-test PRIVATE include src)
   TARGET_LINK_LIBRARIES(mutex-test PRIVATE gtest gtest_main mutex pthreadpool)
+
+  ADD_EXECUTABLE(operator-utils-test test/operator-utils.cc)
+  TARGET_INCLUDE_DIRECTORIES(operator-utils-test PRIVATE include src)
+  TARGET_LINK_LIBRARIES(operator-utils-test PRIVATE XNNPACK gtest gtest_main operators pthreadpool)
 ENDIF()
 
 # ---[ XNNPACK microbenchmarks
@@ -8412,6 +8499,10 @@ IF(XNNPACK_BUILD_BENCHMARKS)
   TARGET_INCLUDE_DIRECTORIES(f16-dwconv-bench PRIVATE . include src)
   TARGET_LINK_LIBRARIES(f16-dwconv-bench PRIVATE benchmark bench-utils cpuinfo fp16 pthreadpool params_init)
 
+  ADD_EXECUTABLE(f16-dwconv2d-chw-bench bench/f16-dwconv2d-chw.cc $<TARGET_OBJECTS:all_microkernels> $<TARGET_OBJECTS:packing>)
+  TARGET_INCLUDE_DIRECTORIES(f16-dwconv2d-chw-bench PRIVATE . include src)
+  TARGET_LINK_LIBRARIES(f16-dwconv2d-chw-bench PRIVATE benchmark bench-utils cpuinfo fp16 pthreadpool params_init)
+
   ADD_EXECUTABLE(f16-gemm-bench bench/f16-gemm.cc $<TARGET_OBJECTS:all_microkernels> $<TARGET_OBJECTS:indirection> $<TARGET_OBJECTS:packing>)
   TARGET_INCLUDE_DIRECTORIES(f16-gemm-bench PRIVATE . include src)
   TARGET_LINK_LIBRARIES(f16-gemm-bench PRIVATE benchmark bench-utils cpuinfo fp16 pthreadpool params_init)
@@ -8594,6 +8685,10 @@ IF(XNNPACK_BUILD_BENCHMARKS)
   TARGET_INCLUDE_DIRECTORIES(rounding-bench PRIVATE . include src)
   TARGET_LINK_LIBRARIES(rounding-bench PRIVATE benchmark bench-utils cpuinfo fp16 pthreadpool params_init)
 
+  ADD_EXECUTABLE(xx-transpose-bench bench/x32-transpose.cc $<TARGET_OBJECTS:all_microkernels>)
+  TARGET_INCLUDE_DIRECTORIES(xx-transpose-bench PRIVATE . include src)
+  TARGET_LINK_LIBRARIES(xx-transpose-bench PRIVATE benchmark bench-utils cpuinfo fp16 pthreadpool)
+
   ADD_EXECUTABLE(x8-lut-bench bench/x8-lut.cc $<TARGET_OBJECTS:all_microkernels>)
   TARGET_INCLUDE_DIRECTORIES(x8-lut-bench PRIVATE . include src)
   TARGET_LINK_LIBRARIES(x8-lut-bench PRIVATE benchmark bench-utils cpuinfo fp16 pthreadpool)
@@ -8605,6 +8700,10 @@ IF(XNNPACK_BUILD_BENCHMARKS)
   ADD_EXECUTABLE(x16-transpose-bench bench/x16-transpose.cc $<TARGET_OBJECTS:all_microkernels>)
   TARGET_INCLUDE_DIRECTORIES(x16-transpose-bench PRIVATE . include src)
   TARGET_LINK_LIBRARIES(x16-transpose-bench PRIVATE benchmark bench-utils cpuinfo fp16 pthreadpool)
+
+  ADD_EXECUTABLE(x24-transpose-bench bench/x16-transpose.cc $<TARGET_OBJECTS:all_microkernels>)
+  TARGET_INCLUDE_DIRECTORIES(x24-transpose-bench PRIVATE . include src)
+  TARGET_LINK_LIBRARIES(x24-transpose-bench PRIVATE benchmark bench-utils cpuinfo fp16 pthreadpool)
 
   ADD_EXECUTABLE(x32-transpose-bench bench/x32-transpose.cc $<TARGET_OBJECTS:all_microkernels>)
   TARGET_INCLUDE_DIRECTORIES(x32-transpose-bench PRIVATE . include src)

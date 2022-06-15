@@ -708,6 +708,8 @@ WEBRTC_RTCSTATS_IMPL(
     &frames_dropped,
     &total_decode_time,
     &total_processing_delay,
+    &total_assembly_time,
+    &frames_assembled_from_multiple_packets,
     &total_inter_frame_delay,
     &total_squared_inter_frame_delay,
     &content_type,
@@ -716,7 +718,8 @@ WEBRTC_RTCSTATS_IMPL(
     &fir_count,
     &pli_count,
     &nack_count,
-    &qp_sum)
+    &qp_sum,
+    &min_playout_delay)
 // clang-format on
 
 RTCInboundRTPStreamStats::RTCInboundRTPStreamStats(const std::string& id,
@@ -764,6 +767,9 @@ RTCInboundRTPStreamStats::RTCInboundRTPStreamStats(std::string&& id,
       frames_dropped("framesDropped"),
       total_decode_time("totalDecodeTime"),
       total_processing_delay("totalProcessingDelay"),
+      total_assembly_time("totalAssemblyTime"),
+      frames_assembled_from_multiple_packets(
+          "framesAssembledFromMultiplePackets"),
       total_inter_frame_delay("totalInterFrameDelay"),
       total_squared_inter_frame_delay("totalSquaredInterFrameDelay"),
       content_type("contentType"),
@@ -772,7 +778,8 @@ RTCInboundRTPStreamStats::RTCInboundRTPStreamStats(std::string&& id,
       fir_count("firCount"),
       pli_count("pliCount"),
       nack_count("nackCount"),
-      qp_sum("qpSum") {}
+      qp_sum("qpSum"),
+      min_playout_delay("minPlayoutDelay") {}
 
 RTCInboundRTPStreamStats::RTCInboundRTPStreamStats(
     const RTCInboundRTPStreamStats& other)
@@ -816,6 +823,9 @@ RTCInboundRTPStreamStats::RTCInboundRTPStreamStats(
       frames_dropped(other.frames_dropped),
       total_decode_time(other.total_decode_time),
       total_processing_delay(other.total_processing_delay),
+      total_assembly_time(other.total_assembly_time),
+      frames_assembled_from_multiple_packets(
+          other.frames_assembled_from_multiple_packets),
       total_inter_frame_delay(other.total_inter_frame_delay),
       total_squared_inter_frame_delay(other.total_squared_inter_frame_delay),
       content_type(other.content_type),
@@ -824,7 +834,8 @@ RTCInboundRTPStreamStats::RTCInboundRTPStreamStats(
       fir_count(other.fir_count),
       pli_count(other.pli_count),
       nack_count(other.nack_count),
-      qp_sum(other.qp_sum) {}
+      qp_sum(other.qp_sum),
+      min_playout_delay(other.min_playout_delay) {}
 
 RTCInboundRTPStreamStats::~RTCInboundRTPStreamStats() {}
 

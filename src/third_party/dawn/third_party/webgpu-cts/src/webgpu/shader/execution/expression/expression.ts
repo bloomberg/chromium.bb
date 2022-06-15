@@ -246,6 +246,7 @@ fn main() {
 
   const module = t.device.createShaderModule({ code: source });
   const pipeline = t.device.createComputePipeline({
+    layout: 'auto',
     compute: { module, entryPoint: 'main' },
   });
 
@@ -327,7 +328,7 @@ function packScalarsToVector(
 
   const packedCases: Array<Case> = [];
   const packedParameterTypes = parameterTypes.map(p => TypeVec(vectorWidth, p as ScalarType));
-  const packedReturnType = new VectorType(vectorWidth, returnType as ScalarType);
+  const packedReturnType = new VectorType(vectorWidth, returnType);
 
   const clampCaseIdx = (idx: number) => Math.min(idx, cases.length - 1);
 
@@ -379,8 +380,8 @@ function packScalarsToVector(
 }
 
 /** @returns a set of flushed and non-flushed floating point results for a given number. */
-function calculateFlushedResults(value: number): Set<Scalar> {
-  return new Set([f64(value), f64(flushSubnormalNumber(value))]);
+function calculateFlushedResults(value: number): Array<Scalar> {
+  return [f64(value), f64(flushSubnormalNumber(value))];
 }
 
 /**
@@ -391,7 +392,13 @@ function calculateFlushedResults(value: number): Set<Scalar> {
  */
 export function makeUnaryF32Case(param: number, op: (p: number) => number): Case {
   const f32_param = quantizeToF32(param);
+  const is_param_subnormal = isSubnormalNumber(f32_param);
   const expected = calculateFlushedResults(op(f32_param));
+  if (is_param_subnormal) {
+    calculateFlushedResults(op(0)).forEach(value => {
+      expected.push(value);
+    });
+  }
   return { input: [f32(param)], expected: anyOf(...expected) };
 }
 
@@ -418,17 +425,17 @@ export function makeBinaryF32Case(
   const expected = calculateFlushedResults(op(f32_param0, f32_param1));
   if (is_param0_subnormal) {
     calculateFlushedResults(op(0, f32_param1)).forEach(value => {
-      expected.add(value);
+      expected.push(value);
     });
   }
   if (!skip_param1_zero_flush && is_param1_subnormal) {
     calculateFlushedResults(op(f32_param0, 0)).forEach(value => {
-      expected.add(value);
+      expected.push(value);
     });
   }
   if (!skip_param1_zero_flush && is_param0_subnormal && is_param1_subnormal) {
     calculateFlushedResults(op(0, 0)).forEach(value => {
-      expected.add(value);
+      expected.push(value);
     });
   }
 

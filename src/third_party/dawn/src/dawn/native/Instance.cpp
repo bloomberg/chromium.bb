@@ -20,6 +20,7 @@
 #include "dawn/common/GPUInfo.h"
 #include "dawn/common/Log.h"
 #include "dawn/common/SystemUtils.h"
+#include "dawn/common/Version_autogen.h"
 #include "dawn/native/ChainUtils_autogen.h"
 #include "dawn/native/ErrorData.h"
 #include "dawn/native/Surface.h"
@@ -94,9 +95,8 @@ BackendsBitset GetEnabledBackends() {
 }
 
 dawn::platform::CachingInterface* GetCachingInterface(dawn::platform::Platform* platform) {
-    if (platform != nullptr) {
-        return platform->GetCachingInterface(/*fingerprint*/ nullptr,
-                                             /*fingerprintSize*/ 0);
+    if (platform != nullptr && dawn::kGitHash.size() > 0) {
+        return platform->GetCachingInterface(dawn::kGitHash.data(), dawn::kGitHash.size());
     }
     return nullptr;
 }
@@ -211,7 +211,7 @@ ResultOrError<Ref<AdapterBase>> InstanceBase::RequestAdapterInternal(
         mAdapters[i]->APIGetProperties(&properties);
 
         if (options->forceFallbackAdapter) {
-            if (!gpu_info::IsSwiftshader(properties.vendorID, properties.deviceID)) {
+            if (!gpu_info::IsGoogleSwiftshader(properties.vendorID, properties.deviceID)) {
                 continue;
             }
             return mAdapters[i];
@@ -437,6 +437,18 @@ BlobCache* InstanceBase::GetBlobCache() {
     return mBlobCache.get();
 }
 
+uint64_t InstanceBase::GetDeviceCountForTesting() const {
+    return mDeviceCountForTesting.load();
+}
+
+void InstanceBase::IncrementDeviceCountForTesting() {
+    mDeviceCountForTesting++;
+}
+
+void InstanceBase::DecrementDeviceCountForTesting() {
+    mDeviceCountForTesting--;
+}
+
 const std::vector<std::string>& InstanceBase::GetRuntimeSearchPaths() const {
     return mRuntimeSearchPaths;
 }
@@ -454,7 +466,7 @@ const XlibXcbFunctions* InstanceBase::GetOrCreateXlibXcbFunctions() {
 
 Surface* InstanceBase::APICreateSurface(const SurfaceDescriptor* descriptor) {
     if (ConsumedError(ValidateSurfaceDescriptor(this, descriptor))) {
-        return nullptr;
+        return Surface::MakeError(this);
     }
 
     return new Surface(this, descriptor);

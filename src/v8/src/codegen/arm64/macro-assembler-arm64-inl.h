@@ -1106,7 +1106,7 @@ void TurboAssembler::SmiToInt32(Register smi) {
 
 void TurboAssembler::JumpIfSmi(Register value, Label* smi_label,
                                Label* not_smi_label) {
-  STATIC_ASSERT((kSmiTagSize == 1) && (kSmiTag == 0));
+  static_assert((kSmiTagSize == 1) && (kSmiTag == 0));
   // Check if the tag bit is set.
   if (smi_label) {
     Tbz(value, 0, smi_label);
@@ -1249,7 +1249,7 @@ void TurboAssembler::Claim(int64_t count, uint64_t unit_size) {
     return;
   }
   DCHECK_EQ(size % 16, 0);
-#if V8_TARGET_OS_WIN
+#ifdef V8_TARGET_OS_WIN
   while (size > kStackPageSize) {
     Sub(sp, sp, kStackPageSize);
     Str(xzr, MemOperand(sp));
@@ -1271,7 +1271,7 @@ void TurboAssembler::Claim(const Register& count, uint64_t unit_size) {
   }
   AssertPositiveOrZero(count);
 
-#if V8_TARGET_OS_WIN
+#ifdef V8_TARGET_OS_WIN
   // "Functions that allocate 4k or more worth of stack must ensure that each
   // page prior to the final page is touched in order." Source:
   // https://docs.microsoft.com/en-us/cpp/build/arm64-windows-abi-conventions?view=vs-2019#stack

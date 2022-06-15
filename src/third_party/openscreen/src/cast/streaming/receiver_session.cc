@@ -271,8 +271,7 @@ void ReceiverSession::OnSocketReady() {
 void ReceiverSession::OnSocketInvalid(Error error) {
   if (pending_offer_) {
     SendErrorAnswerReply(pending_offer_->sender_id,
-                         pending_offer_->sequence_number,
-                         "Failed to bind UDP socket");
+                         pending_offer_->sequence_number, error);
     pending_offer_.reset();
   }
 
@@ -298,10 +297,10 @@ void ReceiverSession::OnOffer(const std::string& sender_id,
   }
 
   if (!message.valid) {
-    SendErrorAnswerReply(sender_id, message.sequence_number,
-                         "Failed to parse malformed OFFER");
-    client_->OnError(this, Error(Error::Code::kParameterInvalid,
-                                 "Received invalid OFFER message"));
+    const Error error(Error::Code::kParameterInvalid,
+                      "Failed to parse malformed OFFER");
+    SendErrorAnswerReply(sender_id, message.sequence_number, error);
+    client_->OnError(this, error);
     return;
   }
 
@@ -313,8 +312,11 @@ void ReceiverSession::OnOffer(const std::string& sender_id,
 
   if (offer.cast_mode == CastMode::kRemoting) {
     if (!preferences_.remoting) {
-      SendErrorAnswerReply(sender_id, message.sequence_number,
-                           "This receiver does not have remoting enabled.");
+      SendErrorAnswerReply(
+          sender_id, message.sequence_number,
+
+          Error(Error::Code::kRemotingNotSupported,
+                "This receiver does not have remoting enabled."));
       return;
     }
   }
@@ -323,7 +325,8 @@ void ReceiverSession::OnOffer(const std::string& sender_id,
   SelectStreams(offer, properties.get());
   if (!properties->IsValid()) {
     SendErrorAnswerReply(sender_id, message.sequence_number,
-                         "Failed to select any streams from OFFER");
+                         Error(Error::Code::kNoStreamSelected,
+                               "Failed to select any streams from OFFER"));
     return;
   }
 
@@ -332,7 +335,8 @@ void ReceiverSession::OnOffer(const std::string& sender_id,
   if (pending_offer_) {
     SendErrorAnswerReply(
         pending_offer_->sender_id, pending_offer_->sequence_number,
-        "Received a new OFFER before negotiation could complete.");
+        Error(Error::Code::kInterrupted,
+              "Received a new OFFER before negotiation could complete."));
     pending_offer_.reset();
   }
 
@@ -340,8 +344,10 @@ void ReceiverSession::OnOffer(const std::string& sender_id,
     // If the environment is ready or in a bad state, we can respond
     // immediately.
     case Environment::SocketState::kInvalid:
-      SendErrorAnswerReply(sender_id, message.sequence_number,
-                           "UDP socket is closed, likely due to a bind error.");
+      SendErrorAnswerReply(
+          sender_id, message.sequence_number,
+          Error(Error::Code::kSocketClosedFailure,
+                "UDP socket is closed, likely due to a bind error."));
       break;
 
     case Environment::SocketState::kReady:
@@ -372,9 +378,8 @@ void ReceiverSession::OnCapabilitiesRequest(const std::string& sender_id,
     response.body = CreateRemotingCapabilityV2();
   } else {
     response.valid = false;
-    response.body =
-        ReceiverError{static_cast<int>(Error::Code::kRemotingNotSupported),
-                      "Remoting is not supported"};
+    response.body = ReceiverError(Error::Code::kRemotingNotSupported,
+                                  "Remoting is not supported");
   }
 
   // NOTE: we respond to any arbitrary sender here, to allow sender to get
@@ -455,7 +460,8 @@ void ReceiverSession::InitializeSession(const PendingOffer& properties) {
     // If the answer message is invalid, there is no point in setting up a
     // negotiation because the sender won't be able to connect to it.
     SendErrorAnswerReply(properties.sender_id, properties.sequence_number,
-                         "Failed to construct an ANSWER message");
+                         Error(Error::Code::kParameterInvalid,
+                               "Failed to construct an ANSWER message"));
     return;
   }
 
@@ -627,14 +633,12 @@ ReceiverCapability ReceiverSession::CreateRemotingCapabilityV2() {
 
 void ReceiverSession::SendErrorAnswerReply(const std::string& sender_id,
                                            int sequence_number,
-                                           const char* message) {
-  const Error error(Error::Code::kParseError, message);
-  OSP_DLOG_WARN << message;
+                                           Error error) {
+  OSP_DLOG_WARN << error;
   const Error result = messenger_.SendMessage(
       sender_id,
-      ReceiverMessage{
-          ReceiverMessage::Type::kAnswer, sequence_number, false /* valid */,
-          ReceiverError{static_cast<int>(Error::Code::kParseError), message}});
+      ReceiverMessage{ReceiverMessage::Type::kAnswer, sequence_number,
+                      false /* valid */, ReceiverError(error)});
   if (!result.ok()) {
     client_->OnError(this, std::move(result));
   }

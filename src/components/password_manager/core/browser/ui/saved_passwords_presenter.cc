@@ -11,18 +11,21 @@
 
 #include "base/check.h"
 #include "base/containers/cxx20_erase.h"
+#include "base/notreached.h"
 #include "base/observer_list.h"
 #include "base/ranges/algorithm.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_list_sorter.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
+#include "components/password_manager/core/browser/ui/credential_ui_entry.h"
 #include "url/gurl.h"
 
 namespace {
 using password_manager::metrics_util::IsPasswordChanged;
 using password_manager::metrics_util::IsPasswordNoteChanged;
 using password_manager::metrics_util::IsUsernameChanged;
+using password_manager::metrics_util::PasswordNoteAction;
 using PasswordNote = password_manager::PasswordNote;
 using Store = password_manager::PasswordForm::Store;
 using SavedPasswordsView =
@@ -45,12 +48,33 @@ bool IsUsernameAlreadyUsed(SavedPasswordsView all_forms,
   return base::ranges::any_of(all_forms, has_conflicting_username);
 }
 
-// Returns trues if there is at least one password store that contains both
-// passwords.
-constexpr bool ShareSameStore(const password_manager::PasswordForm& lhs,
-                              const password_manager::PasswordForm& rhs) {
-  return (lhs.in_store & rhs.in_store) != Store::kNotSet;
+password_manager::PasswordForm GenerateFormFromCredential(
+    password_manager::CredentialUIEntry credential) {
+  password_manager::PasswordForm form;
+  form.url = credential.url;
+  form.signon_realm = credential.signon_realm;
+  form.username_value = credential.username;
+  form.password_value = credential.password;
+  if (!credential.note.value.empty())
+    form.notes = {credential.note};
+
+  DCHECK(!credential.stored_in.empty());
+  form.in_store = *credential.stored_in.begin();
+  return form;
 }
+
+PasswordNoteAction CalculatePasswordNoteAction(bool old_note_empty,
+                                               bool new_note_empty) {
+  if (old_note_empty && !new_note_empty)
+    return PasswordNoteAction::kNoteAddedInEditDialog;
+  if (!old_note_empty && new_note_empty)
+    return PasswordNoteAction::kNoteRemovedInEditDialog;
+  if (!old_note_empty && !new_note_empty)
+    return PasswordNoteAction::kNoteEditedInEditDialog;
+  NOTREACHED();
+  return PasswordNoteAction::kNoteEditedInEditDialog;
+}
+
 }  // namespace
 
 namespace password_manager {
@@ -82,46 +106,69 @@ void SavedPasswordsPresenter::Init() {
 }
 
 void SavedPasswordsPresenter::RemovePassword(const PasswordForm& form) {
-  std::string current_form_key = CreateSortKey(form, IgnoreStore(true));
-  const auto range = sort_key_to_password_forms_.equal_range(current_form_key);
+  RemoveCredential(CredentialUIEntry(form));
+}
 
+bool SavedPasswordsPresenter::RemoveCredential(
+    const CredentialUIEntry& credential) {
+  const auto range =
+      sort_key_to_password_forms_.equal_range(credential.key().value());
+
+  bool removed = false;
   std::for_each(range.first, range.second, [&](const auto& pair) {
     const auto& current_form = pair.second;
     // Make sure |form| and |current_form| share the same store.
-    if (ShareSameStore(form, current_form)) {
+    if (credential.stored_in.contains(current_form.in_store)) {
       // |current_form| is unchanged result obtained from
       // 'OnGetPasswordStoreResultsFrom'. So it can be present only in one store
       // at a time..
       GetStoreFor(current_form).RemoveLogin(current_form);
+      removed = true;
     }
   });
+  return removed;
 }
 
 bool SavedPasswordsPresenter::AddPassword(const PasswordForm& form) {
-  if (!password_manager_util::IsValidPasswordURL(form.url))
+  return AddCredential(CredentialUIEntry(form));
+}
+
+bool SavedPasswordsPresenter::AddCredential(
+    const CredentialUIEntry& credential) {
+  if (!password_manager_util::IsValidPasswordURL(credential.url))
     return false;
-  if (form.password_value.empty())
+  if (credential.password.empty())
     return false;
 
-  auto have_equal_username_and_realm = [&form](const PasswordForm& entry) {
-    return form.signon_realm == entry.signon_realm &&
-           form.username_value == entry.username_value;
-  };
+  auto have_equal_username_and_realm =
+      [&credential](const PasswordForm& entry) {
+        return credential.signon_realm == entry.signon_realm &&
+               credential.username == entry.username_value;
+      };
   if (base::ranges::any_of(passwords_, have_equal_username_and_realm))
     return false;
 
   // Try to unblocklist in both stores anyway because if credentials don't
   // exist, the unblocklist operation is no-op.
-  auto form_digest = PasswordFormDigest(PasswordForm::Scheme::kHtml,
-                                        form.signon_realm, form.url);
+  auto form_digest = PasswordFormDigest(
+      PasswordForm::Scheme::kHtml, credential.signon_realm, credential.url);
   profile_store_->Unblocklist(form_digest);
   if (account_store_)
     account_store_->Unblocklist(form_digest);
+
+  PasswordForm form = GenerateFormFromCredential(credential);
+  form.type = password_manager::PasswordForm::Type::kManuallyAdded;
+  form.date_created = base::Time::Now();
+  form.date_password_modified = base::Time::Now();
 
   GetStoreFor(form).AddLogin(form);
   metrics_util::LogUserInteractionsWhenAddingCredentialFromSettings(
       metrics_util::AddCredentialFromSettingsUserInteractions::
           kCredentialAdded);
+  if (!form.notes.empty() && form.notes[0].value.length() > 0) {
+    metrics_util::LogPasswordNoteActionInSettings(
+        PasswordNoteAction::kNoteAddedInAddDialog);
+  }
   return true;
 }
 
@@ -161,6 +208,39 @@ bool SavedPasswordsPresenter::EditSavedPasswords(
   return EditSavedPasswords(forms_to_change, new_username, new_password);
 }
 
+bool SavedPasswordsPresenter::EditSavedCredentials(
+    const CredentialUIEntry& credential) {
+  const auto range =
+      sort_key_to_password_forms_.equal_range(credential.key().value());
+  std::vector<PasswordForm> forms_to_change;
+  base::ranges::transform(range.first, range.second,
+                          std::back_inserter(forms_to_change),
+                          [](const auto& pair) { return pair.second; });
+
+  if (forms_to_change.empty())
+    return false;
+
+  const auto& old_note_itr =
+      base::ranges::find_if(forms_to_change[0].notes, &std::u16string::empty,
+                            &PasswordNote::unique_display_name);
+
+  // TODO(crbug.com/1184691): Merge into a single method.
+  if (credential.username != forms_to_change[0].username_value ||
+      credential.password != forms_to_change[0].password_value ||
+      (old_note_itr != forms_to_change[0].notes.end() &&
+       credential.note != *old_note_itr)) {
+    return EditSavedPasswords(forms_to_change, credential.username,
+                              credential.password, credential.note.value);
+  } else if (credential.password_issues != forms_to_change[0].password_issues) {
+    for (auto& old_form : forms_to_change) {
+      old_form.password_issues = credential.password_issues;
+      GetStoreFor(old_form).UpdateLogin(old_form);
+    }
+    return true;
+  }
+  return false;
+}
+
 bool SavedPasswordsPresenter::EditSavedPasswords(
     const SavedPasswordsView forms,
     const std::u16string& new_username,
@@ -170,14 +250,21 @@ bool SavedPasswordsPresenter::EditSavedPasswords(
     return false;
   IsUsernameChanged username_changed(new_username != forms[0].username_value);
   IsPasswordChanged password_changed(new_password != forms[0].password_value);
-  IsPasswordNoteChanged note_changed =
-      IsPasswordNoteChanged(forms[0].note.value != new_note);
+
+  const auto& old_note_itr =
+      base::ranges::find_if(forms[0].notes, &std::u16string::empty,
+                            &PasswordNote::unique_display_name);
+  bool old_note_exists = old_note_itr != forms[0].notes.end();
+  IsPasswordNoteChanged note_changed = IsPasswordNoteChanged(
+      (old_note_exists && old_note_itr->value != new_note) ||
+      (!old_note_exists && !new_note.empty()));
 
   if (new_password.empty())
     return false;
   if (username_changed &&
-      IsUsernameAlreadyUsed(passwords_, forms, new_username))
+      IsUsernameAlreadyUsed(passwords_, forms, new_username)) {
     return false;
+  }
 
   // An updated username implies a change in the primary key, thus we need to
   // make sure to call the right API. Update every entry in the equivalence
@@ -194,11 +281,25 @@ bool SavedPasswordsPresenter::EditSavedPasswords(
       }
 
       if (note_changed) {
-        // if the old note is empty, the note is just created.
-        if (old_form.note.value.empty()) {
-          new_form.note.date_created = base::Time::Now();
+        bool old_note_empty = false;
+        // if the old note doesn't exist, the note is just created.
+        const auto& note_itr =
+            base::ranges::find_if(new_form.notes, &std::u16string::empty,
+                                  &PasswordNote::unique_display_name);
+        if (note_itr == new_form.notes.end()) {
+          new_form.notes.emplace_back(new_note,
+                                      /*date_created=*/base::Time::Now());
+          old_note_empty = true;
+        } else {
+          if (note_itr->value.empty()) {
+            note_itr->date_created = base::Time::Now();
+            old_note_empty = true;
+          }
+          note_itr->value = new_note;
         }
-        new_form.note.value = new_note;
+
+        metrics_util::LogPasswordNoteActionInSettings(
+            CalculatePasswordNoteAction(old_note_empty, new_note.empty()));
       }
 
       if (username_changed) {
@@ -245,6 +346,17 @@ std::vector<PasswordForm> SavedPasswordsPresenter::GetUniquePasswordForms()
   }
 
   return forms;
+}
+
+std::vector<CredentialUIEntry> SavedPasswordsPresenter::GetSavedCredentials()
+    const {
+  std::vector<PasswordForm> forms = GetUniquePasswordForms();
+  std::vector<CredentialUIEntry> credentials;
+  credentials.reserve(forms.size());
+  base::ranges::transform(
+      forms, std::back_inserter(credentials),
+      [](const PasswordForm& form) { return CredentialUIEntry(form); });
+  return credentials;
 }
 
 std::vector<std::u16string> SavedPasswordsPresenter::GetUsernamesForRealm(

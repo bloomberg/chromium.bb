@@ -276,16 +276,23 @@ g.test('sampleCount,various_sampleCount_with_all_formats')
     const { dimension, sampleCount, format } = t.params;
     const { blockWidth, blockHeight } = kTextureFormatInfo[format];
 
+    const usage =
+      sampleCount > 1
+        ? GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.RENDER_ATTACHMENT
+        : GPUTextureUsage.TEXTURE_BINDING;
     const descriptor = {
       size: [32 * blockWidth, 32 * blockHeight, 1],
       sampleCount,
       dimension,
       format,
-      usage: GPUTextureUsage.TEXTURE_BINDING,
+      usage,
     };
 
     const success =
-      sampleCount === 1 || (sampleCount === 4 && kTextureFormatInfo[format].multisample);
+      sampleCount === 1 ||
+      (sampleCount === 4 &&
+        kTextureFormatInfo[format].multisample &&
+        kTextureFormatInfo[format].renderable);
 
     t.expectValidationError(() => {
       t.device.createTexture(descriptor);
@@ -320,7 +327,14 @@ g.test('sampleCount,valid_sampleCount_with_other_parameter_varies')
             (!info.renderable || dimension !== '2d')) ||
           ((usage & GPUConst.TextureUsage.STORAGE_BINDING) !== 0 && !info.storage) ||
           (mipLevelCount !== 1 && dimension === '1d') ||
-          (sampleCount > 1 && !info.multisample)
+          // MAINTENANCE_TODO: test that it is not allowed to create a multisampled texture without
+          // RENDER_ATTACHMENT usage.
+          (sampleCount > 1 &&
+            (!info.multisample ||
+              (usage &
+                (GPUConst.TextureUsage.STORAGE_BINDING |
+                  GPUConst.TextureUsage.RENDER_ATTACHMENT)) ===
+                0))
         );
       })
   )

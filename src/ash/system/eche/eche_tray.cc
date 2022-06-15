@@ -9,8 +9,10 @@
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/components/multidevice/logging/logging.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
+#include "ash/public/cpp/accelerators.h"
 #include "ash/public/cpp/ash_web_view.h"
 #include "ash/public/cpp/ash_web_view_factory.h"
+#include "ash/public/cpp/keyboard/keyboard_controller.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
@@ -55,9 +57,15 @@
 #include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/image_view.h"
+#include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/view.h"
+#include "ui/views/views_delegate.h"
 #include "url/gurl.h"
+
+// Uncomment the following line to make a fake
+// bubble for local testing only.
+// #define FAKE_BUBBLE_FOR_DEBUG
 
 namespace ash {
 
@@ -108,10 +116,27 @@ std::unique_ptr<views::Button> CreateButton(
 
 }  // namespace
 
+EcheTray::EventInterceptor::EventInterceptor(EcheTray* eche_tray)
+    : eche_tray_(eche_tray) {}
+EcheTray::EventInterceptor::~EventInterceptor() = default;
+
+void EcheTray::EventInterceptor::OnKeyEvent(ui::KeyEvent* event) {
+  // To provide consistent behavior with a menu, process accelerator as a menu
+  // is open if the event is not handled by the widget.
+  ui::Accelerator accelerator(*event);
+  if (AcceleratorController::Get()->DoesAcceleratorMatchAction(
+          accelerator, AcceleratorAction::WINDOW_MINIMIZE)) {
+    eche_tray_->CloseBubble();
+    event->StopPropagation();
+    return;
+  }
+}
+
 EcheTray::EcheTray(Shelf* shelf)
     : TrayBackgroundView(shelf),
-      icon_(tray_container()->AddChildView(
-          std::make_unique<views::ImageView>())) {
+      icon_(
+          tray_container()->AddChildView(std::make_unique<views::ImageView>())),
+      event_interceptor_(std::make_unique<EventInterceptor>(this)) {
   const int icon_padding = (kTrayItemSize - kIconSize) / 2;
 
   icon_->SetBorder(
@@ -164,7 +189,11 @@ void EcheTray::Initialize() {
   TrayBackgroundView::Initialize();
 
   // By default the icon is not visible until Eche notification is clicked on.
-  SetVisiblePreferred(false);
+  bool visibility = false;
+#ifdef FAKE_BUBBLE_FOR_DEBUG
+  visibility = true;
+#endif
+  SetVisiblePreferred(visibility);
 }
 
 void EcheTray::CloseBubble() {
@@ -192,6 +221,8 @@ void EcheTray::ShowBubble() {
   // We need this as `WorkspaceLayoutManager` conflicts with our resizing.
   // See b/229111865#comment5
   window_state->set_ignore_keyboard_bounds_change(true);
+  bubble_->GetBubbleWidget()->GetNativeWindow()->AddPreTargetHandler(
+      event_interceptor_.get());
 }
 
 bool EcheTray::PerformAction(const ui::Event& event) {
@@ -199,6 +230,10 @@ bool EcheTray::PerformAction(const ui::Event& event) {
   if (bubble_ && bubble_->bubble_view()->GetVisible()) {
     HideBubble();
   } else {
+#ifdef FAKE_BUBBLE_FOR_DEBUG
+    LoadBubble(GURL("http://google.com"), std::move(gfx::Image()),
+               u"visible_name");
+#endif
     ShowBubble();
   }
   return true;
@@ -210,6 +245,11 @@ TrayBubbleView* EcheTray::GetBubbleView() {
 
 views::Widget* EcheTray::GetBubbleWidget() const {
   return bubble_ ? bubble_->GetBubbleWidget() : nullptr;
+}
+
+void EcheTray::OnVirtualKeyboardVisibilityChanged() {
+  OnKeyboardVisibilityChanged(KeyboardController::Get()->IsKeyboardVisible());
+  TrayBackgroundView::OnVirtualKeyboardVisibilityChanged();
 }
 
 std::u16string EcheTray::GetAccessibleNameForBubble() {
@@ -364,6 +404,10 @@ void EcheTray::StartGracefulClose() {
 }
 
 void EcheTray::HideBubble() {
+  if (!bubble_)
+    return;
+  bubble_->GetBubbleWidget()->GetNativeWindow()->RemovePreTargetHandler(
+      event_interceptor_.get());
   SetIsActive(false);
   bubble_->bubble_view()->SetVisible(false);
   bubble_->GetBubbleWidget()->Deactivate();
@@ -389,7 +433,6 @@ void EcheTray::InitBubble() {
   const gfx::Size eche_size = CalculateSizeForEche();
   init_params.preferred_width = eche_size.width();
   init_params.close_on_deactivate = false;
-  init_params.has_shadow = false;
   init_params.translucent = true;
   init_params.reroute_event_handler = false;
   init_params.corner_radius = kTrayItemCornerRadius;
@@ -399,6 +442,11 @@ void EcheTray::InitBubble() {
   bubble_view->SetBorder(views::CreateEmptyBorder(kBubblePadding));
 
   auto* header_view = bubble_view->AddChildView(CreateBubbleHeaderView());
+
+  // We need the header be always visible with the same size.
+  static_cast<views::BoxLayout*>(bubble_view->GetLayoutManager())
+      ->SetFlexForView(header_view, 0, true);
+
   // The layer is needed to draw the header non-opaquely that is needed to
   // match the phone hub behavior.
   header_view->SetPaintToLayer();

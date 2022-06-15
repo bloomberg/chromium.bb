@@ -4,13 +4,19 @@
 
 #include "chrome/browser/ash/note_taking_helper.h"
 
+#include <stddef.h>
+#include <atomic>
+#include <map>
 #include <ostream>
 #include <utility>
 
 #include "apps/launcher.h"
 #include "ash/components/arc/metrics/arc_metrics_constants.h"
 #include "ash/components/arc/metrics/arc_metrics_service.h"
+#include "ash/components/arc/mojom/file_system.mojom-forward.h"
 #include "ash/components/arc/mojom/file_system.mojom.h"
+#include "ash/components/arc/mojom/intent_common.mojom-forward.h"
+#include "ash/components/arc/mojom/intent_common.mojom-shared.h"
 #include "ash/components/arc/mojom/intent_common.mojom.h"
 #include "ash/components/arc/mojom/intent_helper.mojom.h"
 #include "ash/components/arc/session/arc_bridge_service.h"
@@ -24,12 +30,13 @@
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/logging.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_split.h"
-#include "base/values.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_forward.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/arc/session/arc_session_manager.h"
 #include "chrome/browser/ash/note_taking_controller_client.h"
@@ -46,15 +53,13 @@
 #include "components/services/app_service/public/cpp/intent_filter.h"
 #include "components/services/app_service/public/cpp/intent_util.h"
 #include "components/services/app_service/public/cpp/types_util.h"
-#include "components/services/app_service/public/mojom/types.mojom.h"
+#include "components/services/app_service/public/mojom/types.mojom-shared.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/api/app_runtime.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest_handlers/action_handlers_handler.h"
-#include "extensions/common/mojom/api_permission_id.mojom-shared.h"
-#include "extensions/common/permissions/permissions_data.h"
 #include "mojo/public/cpp/bindings/struct_ptr.h"
 #include "ui/events/event_constants.h"
 #include "url/gurl.h"
@@ -86,14 +91,29 @@ bool LooksLikeAndroidPackageName(const std::string& app_id) {
   return base::Contains(app_id, '.');
 }
 
+bool IsInstalledApp(const std::string& app_id, Profile* profile) {
+  if (!apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(profile))
+    return false;
+  auto& cache =
+      apps::AppServiceProxyFactory::GetForProfile(profile)->AppRegistryCache();
+
+  bool result = false;
+  cache.ForOneApp(app_id, [&result](const apps::AppUpdate& update) {
+    if (apps_util::IsInstalled(update.Readiness())) {
+      result = true;
+    }
+  });
+  return result;
+}
+
 bool IsInstalledWebApp(const std::string& app_id, Profile* profile) {
   if (!apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(profile))
     return false;
-  auto* cache =
-      &apps::AppServiceProxyFactory::GetForProfile(profile)->AppRegistryCache();
+  auto& cache =
+      apps::AppServiceProxyFactory::GetForProfile(profile)->AppRegistryCache();
 
   bool result = false;
-  cache->ForOneApp(app_id, [&result](const apps::AppUpdate& update) {
+  cache.ForOneApp(app_id, [&result](const apps::AppUpdate& update) {
     if (apps_util::IsInstalled(update.Readiness()) &&
         update.AppType() == apps::AppType::kWeb) {
       result = true;
@@ -118,10 +138,10 @@ std::string GetAppName(Profile* profile, const std::string& app_id) {
   std::string name;
   if (!apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(profile))
     return name;
-  auto* cache =
-      &apps::AppServiceProxyFactory::GetForProfile(profile)->AppRegistryCache();
+  auto& cache =
+      apps::AppServiceProxyFactory::GetForProfile(profile)->AppRegistryCache();
 
-  cache->ForOneApp(app_id, [&name](const apps::AppUpdate& update) {
+  cache.ForOneApp(app_id, [&name](const apps::AppUpdate& update) {
     if (apps_util::IsInstalled(update.Readiness()))
       name = update.Name();
   });
@@ -129,8 +149,8 @@ std::string GetAppName(Profile* profile, const std::string& app_id) {
   if (!name.empty())
     return name;
 
-  // TODO (crbug.com/1225848): Use the name from App Service (and remove the
-  // code below) once Chrome Apps are published in App Service.
+  // TODO(crbug.com/1194370): Remove once Chrome Apps are gone or Lacros
+  // launches, as note-taking Chrome Apps will not be supported in Lacros.
   const extensions::Extension* chrome_app =
       extensions::ExtensionRegistry::Get(profile)->GetExtensionById(
           app_id, extensions::ExtensionRegistry::ENABLED);
@@ -163,69 +183,6 @@ bool HasNoteTakingIntentFilter(
   return false;
 }
 
-// Whether the app's manifest indicates that the app supports note taking on the
-// lock screen.
-// TODO(crbug.com/1006642): Move this to a lock-screen-specific place.
-bool IsLockScreenEnabled(Profile* profile, const std::string& app_id) {
-  if (IsInstalledWebApp(app_id, profile)) {
-    // TODO(crbug.com/1006642): Add lock screen web app support.
-    return false;
-  }
-
-  // `app_id` may be for a Chrome app.
-  const extensions::Extension* chrome_app =
-      extensions::ExtensionRegistry::Get(profile)->GetExtensionById(
-          app_id, extensions::ExtensionRegistry::ENABLED);
-  if (chrome_app) {
-    if (!chrome_app->permissions_data()->HasAPIPermission(
-            extensions::mojom::APIPermissionID::kLockScreen)) {
-      return false;
-    }
-    return extensions::ActionHandlersInfo::HasLockScreenActionHandler(
-        chrome_app, app_runtime::ACTION_TYPE_NEW_NOTE);
-  }
-
-  // Android apps are not currently supported on the lock screen.
-  return false;
-}
-
-// Gets the set of app IDs that are allowed to be launched on the lock screen,
-// if the feature is restricted using the
-// `prefs::kNoteTakingAppsLockScreenAllowlist` preference. If the pref is not
-// set, this method will return null (in which case the set should not be
-// checked).
-// Note that `prefs::kNoteTakingrAppsAllowedOnLockScreen` is currently only
-// expected to be set by policy (if it's set at all).
-std::unique_ptr<std::set<std::string>> GetAllowedLockScreenApps(
-    PrefService* prefs) {
-  const PrefService::Preference* allowed_lock_screen_apps_pref =
-      prefs->FindPreference(prefs::kNoteTakingAppsLockScreenAllowlist);
-  if (!allowed_lock_screen_apps_pref ||
-      allowed_lock_screen_apps_pref->IsDefaultValue()) {
-    return nullptr;
-  }
-
-  const base::Value* allowed_lock_screen_apps_value =
-      allowed_lock_screen_apps_pref->GetValue();
-
-  if (!allowed_lock_screen_apps_value ||
-      !allowed_lock_screen_apps_value->is_list()) {
-    return nullptr;
-  }
-
-  auto allowed_apps = std::make_unique<std::set<std::string>>();
-  for (const base::Value& app_value :
-       allowed_lock_screen_apps_value->GetListDeprecated()) {
-    if (!app_value.is_string()) {
-      LOG(ERROR) << "Invalid app ID value " << app_value;
-      continue;
-    }
-
-    allowed_apps->insert(app_value.GetString());
-  }
-  return allowed_apps;
-}
-
 NoteTakingHelper::LaunchResult LaunchWebAppInternal(const std::string& app_id,
                                                     Profile* profile) {
   // IsInstalledWebApp must be called before trying to launch. It also ensures
@@ -233,11 +190,11 @@ NoteTakingHelper::LaunchResult LaunchWebAppInternal(const std::string& app_id,
   DCHECK(IsInstalledWebApp(app_id, profile));
   DCHECK(
       apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(profile));
-  auto* cache =
-      &apps::AppServiceProxyFactory::GetForProfile(profile)->AppRegistryCache();
+  auto& cache =
+      apps::AppServiceProxyFactory::GetForProfile(profile)->AppRegistryCache();
 
   bool has_note_taking_intent_filter = false;
-  cache->ForOneApp(
+  cache.ForOneApp(
       app_id, [&has_note_taking_intent_filter](const apps::AppUpdate& update) {
         if (HasNoteTakingIntentFilter(update.IntentFilters()))
           has_note_taking_intent_filter = true;
@@ -305,6 +262,18 @@ void NoteTakingHelper::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
+// TODO(crbug.com/1332379): Remove this method and observe LockScreenHelper for
+// app updates instead.
+void NoteTakingHelper::NotifyAppUpdated(Profile* profile,
+                                        const std::string& app_id) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (app_id == GetPreferredAppId(profile)) {
+    for (Observer& observer : observers_) {
+      observer.OnPreferredNoteTakingAppUpdated(profile);
+    }
+  }
+}
+
 std::vector<NoteTakingAppInfo> NoteTakingHelper::GetAvailableApps(
     Profile* profile) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -313,11 +282,12 @@ std::vector<NoteTakingAppInfo> NoteTakingHelper::GetAvailableApps(
 
   std::vector<std::string> app_ids = GetNoteTakingAppIds(profile);
   for (const auto& app_id : app_ids) {
-    // TODO(crbug.com/1006642): Move this to a lock-screen-specific place.
-    NoteTakingLockScreenSupport lock_screen_support =
-        GetLockScreenSupportForAppId(profile, app_id);
+    LockScreenAppSupport lock_screen_support =
+        LockScreenHelper::GetInstance().GetLockScreenSupportForApp(profile,
+                                                                   app_id);
     infos.push_back(NoteTakingAppInfo{GetAppName(profile, app_id), app_id,
-                                      false, lock_screen_support});
+                                      /*preferred=*/false,
+                                      lock_screen_support});
   }
 
   if (arc::IsArcAllowedForProfile(profile))
@@ -336,42 +306,11 @@ std::vector<NoteTakingAppInfo> NoteTakingHelper::GetAvailableApps(
   return infos;
 }
 
-// TODO(crbug.com/1006642): Move this to a lock-screen-specific place.
-std::unique_ptr<NoteTakingAppInfo>
-NoteTakingHelper::GetPreferredLockScreenAppInfo(Profile* profile) {
-  std::string preferred_app_id =
-      profile->GetPrefs()->GetString(prefs::kNoteTakingAppId);
-  if (LooksLikeAndroidPackageName(preferred_app_id))
-    return nullptr;
-
-  if (preferred_app_id.empty())
-    preferred_app_id = kProdKeepExtensionId;
-
-  if (IsInstalledWebApp(preferred_app_id, profile)) {
-    // TODO(crbug.com/1006642): Add lock screen web app support.
-    return nullptr;
-  }
-
-  const extensions::Extension* chrome_app =
-      extensions::ExtensionRegistry::Get(profile)->GetExtensionById(
-          preferred_app_id, extensions::ExtensionRegistry::ENABLED);
-  if (!chrome_app)
-    return nullptr;
-
-  if (!IsAllowedApp(preferred_app_id) &&
-      !extensions::ActionHandlersInfo::HasActionHandler(
-          chrome_app, app_runtime::ACTION_TYPE_NEW_NOTE)) {
-    return nullptr;
-  }
-
-  std::unique_ptr<NoteTakingAppInfo> info =
-      std::make_unique<NoteTakingAppInfo>();
-  info->name = chrome_app->name();
-  info->app_id = preferred_app_id;
-  info->preferred = true;
-  info->lock_screen_support =
-      GetLockScreenSupportForAppId(profile, preferred_app_id);
-  return info;
+std::string NoteTakingHelper::GetPreferredAppId(Profile* profile) {
+  std::string app_id = profile->GetPrefs()->GetString(prefs::kNoteTakingAppId);
+  if (IsInstalledApp(app_id, profile))
+    return app_id;
+  return std::string();
 }
 
 void NoteTakingHelper::SetPreferredApp(Profile* profile,
@@ -388,31 +327,19 @@ void NoteTakingHelper::SetPreferredApp(Profile* profile,
     observer.OnPreferredNoteTakingAppUpdated(profile);
 }
 
-// TODO(crbug.com/1006642): Move this to a lock-screen-specific place.
 bool NoteTakingHelper::SetPreferredAppEnabledOnLockScreen(Profile* profile,
                                                           bool enabled) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(profile);
-  if (profile != profile_with_enabled_lock_screen_apps_)
-    return false;
 
   std::string app_id = profile->GetPrefs()->GetString(prefs::kNoteTakingAppId);
-  const extensions::Extension* app =
-      extensions::ExtensionRegistry::Get(profile)->GetExtensionById(
-          app_id, extensions::ExtensionRegistry::ENABLED);
-  if (!app)
+  if (app_id.empty())
     return false;
 
-  NoteTakingLockScreenSupport current_state =
-      GetLockScreenSupportForAppId(profile, app_id);
-
-  if ((enabled && current_state != NoteTakingLockScreenSupport::kSupported) ||
-      (!enabled && current_state != NoteTakingLockScreenSupport::kEnabled)) {
+  bool changed = LockScreenHelper::GetInstance().SetAppEnabledOnLockScreen(
+      profile, app_id, enabled);
+  if (!changed)
     return false;
-  }
-
-  profile->GetPrefs()->SetBoolean(prefs::kNoteTakingAppEnabledOnLockScreen,
-                                  enabled);
 
   for (Observer& observer : observers_)
     observer.OnPreferredNoteTakingAppUpdated(profile);
@@ -478,15 +405,12 @@ void NoteTakingHelper::OnProfileAdded(Profile* profile) {
   extension_registry_observations_.AddObservation(registry);
 
   if (apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(profile)) {
-    auto* cache = &apps::AppServiceProxyFactory::GetForProfile(profile)
-                       ->AppRegistryCache();
-    DCHECK(cache);
-    DCHECK(!app_registry_observations_.IsObservingSource(cache));
-    app_registry_observations_.AddObservation(cache);
+    auto& cache = apps::AppServiceProxyFactory::GetForProfile(profile)
+                      ->AppRegistryCache();
+    DCHECK(!app_registry_observations_.IsObservingSource(&cache));
+    app_registry_observations_.AddObservation(&cache);
   }
 
-  // TODO(derat): Remove this once OnArcPlayStoreEnabledChanged() is always
-  // called after an ARC-enabled user logs in: http://b/36655474
   if (!play_store_enabled_ && arc::IsArcPlayStoreEnabledForProfile(profile)) {
     play_store_enabled_ = true;
     for (Observer& observer : observers_)
@@ -496,18 +420,6 @@ void NoteTakingHelper::OnProfileAdded(Profile* profile) {
   auto* bridge = arc::ArcIntentHelperBridge::GetForBrowserContext(profile);
   if (bridge)
     bridge->AddObserver(this);
-}
-
-void NoteTakingHelper::SetProfileWithEnabledLockScreenApps(Profile* profile) {
-  DCHECK(!profile_with_enabled_lock_screen_apps_);
-  profile_with_enabled_lock_screen_apps_ = profile;
-
-  pref_change_registrar_.Init(profile->GetPrefs());
-  pref_change_registrar_.Add(
-      prefs::kNoteTakingAppsLockScreenAllowlist,
-      base::BindRepeating(&NoteTakingHelper::OnAllowedNoteTakingAppsChanged,
-                          base::Unretained(this)));
-  OnAllowedNoteTakingAppsChanged();
 }
 
 NoteTakingHelper::NoteTakingHelper()
@@ -521,11 +433,11 @@ NoteTakingHelper::NoteTakingHelper()
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kNoteTakingAppIds);
   if (!switch_value.empty()) {
-    allowed_app_ids_ = base::SplitString(
+    force_allowed_app_ids_ = base::SplitString(
         switch_value, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   }
-  allowed_app_ids_.insert(
-      allowed_app_ids_.end(), kDefaultAllowedAppIds,
+  force_allowed_app_ids_.insert(
+      force_allowed_app_ids_.end(), kDefaultAllowedAppIds,
       kDefaultAllowedAppIds + std::size(kDefaultAllowedAppIds));
 
   // Track profiles so we can observe their app registries.
@@ -533,16 +445,17 @@ NoteTakingHelper::NoteTakingHelper()
   play_store_enabled_ = false;
   for (Profile* profile :
        g_browser_process->profile_manager()->GetLoadedProfiles()) {
-    // TODO(crbug.com/1225848): Remove extension_registry_observations once
-    // Chrome Apps are published in App Service.
+    // TODO(crbug.com/1194370): Remove extension_registry_observations_ once
+    // Chrome Apps are gone or Lacros launches, as note-taking Chrome Apps will
+    // not be supported in Lacros.
     extension_registry_observations_.AddObservation(
         extensions::ExtensionRegistry::Get(profile));
 
     if (apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(
             profile)) {
-      auto* cache = &apps::AppServiceProxyFactory::GetForProfile(profile)
-                         ->AppRegistryCache();
-      app_registry_observations_.AddObservation(cache);
+      auto& cache = apps::AppServiceProxyFactory::GetForProfile(profile)
+                        ->AppRegistryCache();
+      app_registry_observations_.AddObservation(&cache);
     }
 
     // Check if the profile has already enabled Google Play Store.
@@ -590,10 +503,6 @@ NoteTakingHelper::~NoteTakingHelper() {
   }
 }
 
-bool NoteTakingHelper::IsAllowedApp(const std::string& app_id) const {
-  return base::Contains(allowed_app_ids_, app_id);
-}
-
 std::vector<std::string> NoteTakingHelper::GetNoteTakingAppIds(
     Profile* profile) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -608,9 +517,9 @@ std::vector<std::string> NoteTakingHelper::GetNoteTakingAppIds(
   }
 
   std::vector<std::string> app_ids;
-  for (const auto& id : allowed_app_ids_) {
-    // TODO(crbug.com/1225848): Replace with a check for Chrome Apps in the
-    // block below after Chrome Apps are published to App Service.
+  for (const auto& id : force_allowed_app_ids_) {
+    // TODO(crbug.com/1194370): Remove once Chrome Apps are gone or Lacros
+    // launches, as note-taking Chrome Apps will not be supported in Lacros.
     if (enabled_extensions.Contains(id)) {
       app_ids.push_back(id);
       continue;
@@ -630,8 +539,8 @@ std::vector<std::string> NoteTakingHelper::GetNoteTakingAppIds(
 
   // Add any Chrome Apps that have a "note" action in their manifest
   // "action_handler" entry.
-  // TODO(crbug.com/1225848): Remove when App Service publishes Chrome Apps
-  // including converting action handlers to intents.
+  // TODO(crbug.com/1194370): Remove once Chrome Apps are gone or Lacros
+  // launches, as note-taking Chrome Apps will not be supported in Lacros.
   for (const auto& extension : enabled_extensions) {
     if (base::Contains(app_ids, extension.get()->id()))
       continue;
@@ -697,7 +606,7 @@ void NoteTakingHelper::OnGotAndroidApps(
   for (const auto& it : handlers) {
     android_apps_.emplace_back(
         NoteTakingAppInfo{it->name, it->package_name, false,
-                          NoteTakingLockScreenSupport::kNotSupported});
+                          LockScreenAppSupport::kNotSupported});
   }
   android_apps_received_ = true;
 
@@ -735,8 +644,6 @@ NoteTakingHelper::LaunchResult NoteTakingHelper::LaunchAppInternal(
     arc::mojom::ActivityNamePtr activity = arc::mojom::ActivityName::New();
     activity->package_name = app_id;
 
-    // TODO(derat): Is there some way to detect whether this fails due to the
-    // package no longer being available?
     auto request = CreateArcNoteRequest(app_id);
     arc::mojom::FileSystemInstance* arc_file_system =
         ARC_GET_INSTANCE_FOR_METHOD(
@@ -775,7 +682,7 @@ NoteTakingHelper::LaunchResult NoteTakingHelper::LaunchAppInternal(
 void NoteTakingHelper::OnExtensionLoaded(
     content::BrowserContext* browser_context,
     const extensions::Extension* extension) {
-  if (IsAllowedApp(extension->id()) ||
+  if (base::Contains(force_allowed_app_ids_, extension->id()) ||
       extensions::ActionHandlersInfo::HasActionHandler(
           extension, app_runtime::ACTION_TYPE_NEW_NOTE)) {
     for (Observer& observer : observers_)
@@ -787,7 +694,7 @@ void NoteTakingHelper::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const extensions::Extension* extension,
     extensions::UnloadedExtensionReason reason) {
-  if (IsAllowedApp(extension->id()) ||
+  if (base::Contains(force_allowed_app_ids_, extension->id()) ||
       extensions::ActionHandlersInfo::HasActionHandler(
           extension, app_runtime::ACTION_TYPE_NEW_NOTE)) {
     for (Observer& observer : observers_)
@@ -817,73 +724,6 @@ void NoteTakingHelper::OnAppUpdate(const apps::AppUpdate& update) {
 void NoteTakingHelper::OnAppRegistryCacheWillBeDestroyed(
     apps::AppRegistryCache* cache) {
   app_registry_observations_.RemoveObservation(cache);
-}
-
-// TODO(crbug.com/1006642): Move this to a lock-screen-specific place.
-NoteTakingLockScreenSupport NoteTakingHelper::GetLockScreenSupportForAppId(
-    Profile* profile,
-    const std::string& app_id) {
-  if (profile != profile_with_enabled_lock_screen_apps_)
-    return NoteTakingLockScreenSupport::kNotSupported;
-
-  if (!IsLockScreenEnabled(profile, app_id))
-    return NoteTakingLockScreenSupport::kNotSupported;
-
-  if (allowed_lock_screen_apps_state_ == AllowedAppListState::kUndetermined)
-    UpdateAllowedLockScreenAppsList();
-
-  if (allowed_lock_screen_apps_state_ ==
-          AllowedAppListState::kAllowedAppsListed &&
-      !base::Contains(allowed_lock_screen_apps_by_policy_, app_id)) {
-    return NoteTakingLockScreenSupport::kNotAllowedByPolicy;
-  }
-
-  if (profile->GetPrefs()->GetBoolean(prefs::kNoteTakingAppEnabledOnLockScreen))
-    return NoteTakingLockScreenSupport::kEnabled;
-
-  return NoteTakingLockScreenSupport::kSupported;
-}
-
-void NoteTakingHelper::OnAllowedNoteTakingAppsChanged() {
-  if (allowed_lock_screen_apps_state_ == AllowedAppListState::kUndetermined)
-    return;
-
-  std::unique_ptr<NoteTakingAppInfo> preferred_app =
-      GetPreferredLockScreenAppInfo(profile_with_enabled_lock_screen_apps_);
-  NoteTakingLockScreenSupport lock_screen_value_before_update =
-      preferred_app ? preferred_app->lock_screen_support
-                    : NoteTakingLockScreenSupport::kNotSupported;
-
-  UpdateAllowedLockScreenAppsList();
-
-  preferred_app =
-      GetPreferredLockScreenAppInfo(profile_with_enabled_lock_screen_apps_);
-  NoteTakingLockScreenSupport lock_screen_value_after_update =
-      preferred_app ? preferred_app->lock_screen_support
-                    : NoteTakingLockScreenSupport::kNotSupported;
-
-  // Do not notify observers about preferred app change if its lock screen
-  // support status has not actually changed.
-  if (lock_screen_value_before_update != lock_screen_value_after_update) {
-    for (Observer& observer : observers_) {
-      observer.OnPreferredNoteTakingAppUpdated(
-          profile_with_enabled_lock_screen_apps_);
-    }
-  }
-}
-
-void NoteTakingHelper::UpdateAllowedLockScreenAppsList() {
-  std::unique_ptr<std::set<std::string>> allowed_apps =
-      GetAllowedLockScreenApps(
-          profile_with_enabled_lock_screen_apps_->GetPrefs());
-
-  if (allowed_apps) {
-    allowed_lock_screen_apps_state_ = AllowedAppListState::kAllowedAppsListed;
-    allowed_lock_screen_apps_by_policy_.swap(*allowed_apps);
-  } else {
-    allowed_lock_screen_apps_state_ = AllowedAppListState::kAllAppsAllowed;
-    allowed_lock_screen_apps_by_policy_.clear();
-  }
 }
 
 }  // namespace ash

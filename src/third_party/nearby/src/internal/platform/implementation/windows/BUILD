@@ -48,6 +48,9 @@ cc_library(
     name = "comm",
     hdrs = [
         "ble.h",
+        "ble_medium.h",
+        "ble_peripheral.h",
+        "ble_socket.h",
         "ble_v2.h",
         "bluetooth_adapter.h",
         "bluetooth_classic.h",
@@ -58,7 +61,6 @@ cc_library(
         "condition_variable.h",
         "executor.h",
         "mutex.h",
-        "runner.h",
         "scheduled_executor.h",
         "server_sync.h",
         "submittable_executor.h",
@@ -71,6 +73,7 @@ cc_library(
     visibility = ["//visibility:private"],
     deps = [
         "//internal/platform:base",
+        "//internal/platform:comm",
         "//internal/platform:types",
         "//internal/platform/implementation:comm",
         "//internal/platform/implementation:types",
@@ -101,6 +104,8 @@ cc_library(
 cc_library(
     name = "windows",
     srcs = [
+        "ble_medium.cc",
+        "ble_socket.cc",
         "ble_v2.cc",
         "bluetooth_adapter.cc",
         "bluetooth_classic_device.cc",
@@ -120,6 +125,7 @@ cc_library(
         "wifi_lan_medium.cc",
         "wifi_lan_server_socket.cc",
         "wifi_lan_socket.cc",
+        "wifi_medium.cc",
     ],
     copts = ["-Ithird_party/nearby/internal/platform/implementation/windows/generated"],
     defines = ["_SILENCE_CLANG_COROUTINE_MESSAGE"],
@@ -167,6 +173,7 @@ cc_test(
     srcs = [
         "atomic_boolean_test.cc",
         "atomic_reference_test.cc",
+        "ble_medium_test.cc",
         "ble_v2_test.cc",
         "count_down_latch_test.cc",
         "crypto_test.cc",
@@ -174,6 +181,7 @@ cc_test(
         "platform_test.cc",
         "scheduled_executor_test.cc",
         "submittable_executor_test.cc",
+        "thread_pool_test.cc",
         "utils_test.cc",
     ],
     copts = ["-Ithird_party/nearby/internal/platform/implementation/windows/generated -DCORE_ADAPTER_DLL"],

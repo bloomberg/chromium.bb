@@ -22,7 +22,7 @@ namespace v8::internal::compiler::turboshaft {
 class Assembler;
 class VarAssembler;
 
-// `OperationBuffer` is a growable, Zone-allocated buffer to store TurboShaft
+// `OperationBuffer` is a growable, Zone-allocated buffer to store Turboshaft
 // operations. It is part of a `Graph`.
 // The buffer can be seen as an array of 8-byte `OperationStorageSlot` values.
 // The structure is append-only, that is, we only add operations at the end.
@@ -220,7 +220,18 @@ class Block {
     return result;
   }
 
+  Block* LastPredecessor() const { return last_predecessor_; }
+  Block* NeighboringPredecessor() const { return neighboring_predecessor_; }
   bool HasPredecessors() const { return last_predecessor_ != nullptr; }
+
+  // The block from the previous graph which produced the current block. This is
+  // used for translating phi nodes from the previous graph.
+  void SetOrigin(const Block* origin) {
+    DCHECK_NULL(origin_);
+    DCHECK_EQ(origin->graph_generation_ + 1, graph_generation_);
+    origin_ = origin;
+  }
+  const Block* Origin() const { return origin_; }
 
   OpIndex begin() const {
     DCHECK(begin_.valid());
@@ -243,8 +254,9 @@ class Block {
   BlockIndex index_ = BlockIndex::Invalid();
   Block* last_predecessor_ = nullptr;
   Block* neighboring_predecessor_ = nullptr;
+  const Block* origin_ = nullptr;
 #ifdef DEBUG
-  Graph* graph_ = nullptr;
+  size_t graph_generation_ = 0;
 #endif
 };
 
@@ -319,8 +331,8 @@ class Graph {
 
   template <class Op, class... Args>
   void Replace(OpIndex replaced, Args... args) {
-    STATIC_ASSERT((std::is_base_of<Operation, Op>::value));
-    STATIC_ASSERT(std::is_trivially_destructible<Op>::value);
+    static_assert((std::is_base_of<Operation, Op>::value));
+    static_assert(std::is_trivially_destructible<Op>::value);
 
     OperationBuffer::ReplaceScope replace_scope(&operations_, replaced);
     Op::New(this, args...);
@@ -337,13 +349,13 @@ class Graph {
     Block* result = all_blocks_[next_block_++];
     *result = Block(kind);
 #ifdef DEBUG
-    result->graph_ = this;
+    result->graph_generation_ = generation_;
 #endif
     return result;
   }
 
-  bool Add(Block* block) {
-    DCHECK_EQ(block->graph_, this);
+  V8_INLINE bool Add(Block* block) {
+    DCHECK_EQ(block->graph_generation_, generation_);
     if (!bound_blocks_.empty() && !block->HasPredecessors()) return false;
     bool deferred = true;
     for (Block* pred = block->last_predecessor_; pred != nullptr;
@@ -435,12 +447,16 @@ class Graph {
 
   base::iterator_range<ConstOperationIterator> operations(OpIndex begin,
                                                           OpIndex end) const {
+    DCHECK(begin.valid());
+    DCHECK(end.valid());
     return {ConstOperationIterator(begin, this),
             ConstOperationIterator(end, this)};
   }
 
   base::iterator_range<MutableOperationIterator> operations(OpIndex begin,
                                                             OpIndex end) {
+    DCHECK(begin.valid());
+    DCHECK(end.valid());
     return {MutableOperationIterator(begin, this),
             MutableOperationIterator(end, this)};
   }
@@ -461,6 +477,9 @@ class Graph {
   Graph& GetOrCreateCompanion() {
     if (!companion_) {
       companion_ = std::make_unique<Graph>(graph_zone_, operations_.size());
+#ifdef DEBUG
+      companion_->generation_ = generation_ + 1;
+#endif  // DEBUG
     }
     return *companion_;
   }
@@ -474,6 +493,11 @@ class Graph {
     std::swap(all_blocks_, companion.all_blocks_);
     std::swap(next_block_, companion.next_block_);
     std::swap(graph_zone_, companion.graph_zone_);
+#ifdef DEBUG
+    // Update generation index.
+    DCHECK_EQ(generation_ + 1, companion.generation_);
+    generation_ = companion.generation_++;
+#endif  // DEBUG
   }
 
  private:
@@ -490,6 +514,9 @@ class Graph {
   size_t next_block_ = 0;
   Zone* graph_zone_;
   std::unique_ptr<Graph> companion_ = {};
+#ifdef DEBUG
+  size_t generation_ = 1;
+#endif  // DEBUG
 };
 
 V8_INLINE OperationStorageSlot* AllocateOpStorage(Graph* graph,
@@ -502,6 +529,7 @@ struct PrintAsBlockHeader {
 };
 std::ostream& operator<<(std::ostream& os, PrintAsBlockHeader block);
 std::ostream& operator<<(std::ostream& os, const Graph& graph);
+std::ostream& operator<<(std::ostream& os, const Block::Kind& kind);
 
 }  // namespace v8::internal::compiler::turboshaft
 

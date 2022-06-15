@@ -147,9 +147,8 @@ declare_args() {
   # For now the IPC layer is conservatively not enabled on Chromium+Windows
   # builds.
   enable_perfetto_ipc =
-      !is_fuchsia && !is_nacl &&
-      (perfetto_build_standalone || perfetto_build_with_android ||
-       (build_with_chromium && !is_win))
+      !is_nacl && (perfetto_build_standalone || perfetto_build_with_android ||
+                   (build_with_chromium && !is_win) || is_fuchsia)
 
   # Makes the heap profiling daemon target reachable. It works only on Android,
   # but is built on Linux as well for test/compiler coverage.
@@ -299,8 +298,8 @@ declare_args() {
 }
 
 declare_args() {
-  # Enables the trace_to_text tool.
-  enable_perfetto_tools_trace_to_text =
+  # Enables the traceconv tool.
+  enable_perfetto_traceconv =
       enable_perfetto_tools && enable_perfetto_trace_processor_sqlite
 
   # Allows to build the UI (TypeScript/ HTML / WASM)

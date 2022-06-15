@@ -9,6 +9,7 @@
 
 #include "testing/fxgc_unittest.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/v8_test_environment.h"
 #include "third_party/base/containers/contains.h"
 #include "v8/include/cppgc/allocation.h"
 #include "v8/include/cppgc/persistent.h"
@@ -51,6 +52,12 @@ class CollectibleHolder {
 
  private:
   cppgc::Persistent<PseudoCollectible> holdee_;
+};
+
+class Bloater : public cppgc::GarbageCollected<Bloater> {
+ public:
+  void Trace(cppgc::Visitor* visitor) const {}
+  uint8_t bloat_[65536];
 };
 
 }  // namespace
@@ -157,4 +164,12 @@ TEST_F(HeapUnitTest, DeleteHeapNoReferences) {
   heap1.reset();
   EXPECT_EQ(0u, PseudoCollectible::LiveCount());
   EXPECT_EQ(1u, PseudoCollectible::DeadCount());
+}
+
+TEST_F(HeapUnitTest, Bloat) {
+  ASSERT_TRUE(heap());
+  for (int i = 0; i < 100000; ++i) {
+    cppgc::MakeGarbageCollected<Bloater>(heap()->GetAllocationHandle());
+    Pump();  // Do not force GC, must happen implicitly when space required.
+  }
 }

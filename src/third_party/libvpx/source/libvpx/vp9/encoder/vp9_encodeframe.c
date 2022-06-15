@@ -217,8 +217,8 @@ static void set_segment_index(VP9_COMP *cpi, MACROBLOCK *const x, int mi_row,
       break;
   }
 
-  // Set segment index from ROI map if it's enabled.
-  if (cpi->roi.enabled)
+  // Set segment index if ROI map or active_map is enabled.
+  if (cpi->roi.enabled || cpi->active_map.enabled)
     mi->segment_id = get_segment_id(cm, map, bsize, mi_row, mi_col);
 
   vp9_init_plane_quantizers(cpi, x);
@@ -1905,13 +1905,17 @@ void vp9_setup_src_planes(MACROBLOCK *x, const YV12_BUFFER_CONFIG *src,
 }
 
 static void set_mode_info_seg_skip(MACROBLOCK *x, TX_MODE tx_mode,
+                                   INTERP_FILTER interp_filter,
                                    RD_COST *rd_cost, BLOCK_SIZE bsize) {
   MACROBLOCKD *const xd = &x->e_mbd;
   MODE_INFO *const mi = xd->mi[0];
   INTERP_FILTER filter_ref;
 
   filter_ref = get_pred_context_switchable_interp(xd);
-  if (filter_ref == SWITCHABLE_FILTERS) filter_ref = EIGHTTAP;
+  if (interp_filter == BILINEAR)
+    filter_ref = BILINEAR;
+  else if (filter_ref == SWITCHABLE_FILTERS)
+    filter_ref = EIGHTTAP;
 
   mi->sb_type = bsize;
   mi->mode = ZEROMV;
@@ -2495,7 +2499,8 @@ static void update_state_rt(VP9_COMP *cpi, ThreadData *td,
   *(xd->mi[0]) = ctx->mic;
   *(x->mbmi_ext) = ctx->mbmi_ext;
 
-  if (seg->enabled && (cpi->oxcf.aq_mode != NO_AQ || cpi->roi.enabled)) {
+  if (seg->enabled && (cpi->oxcf.aq_mode != NO_AQ || cpi->roi.enabled ||
+                       cpi->active_map.enabled)) {
     // Setting segmentation map for cyclic_refresh.
     if (cpi->oxcf.aq_mode == CYCLIC_REFRESH_AQ &&
         cpi->cyclic_refresh->content_mode) {
@@ -4682,7 +4687,7 @@ static void nonrd_pick_sb_modes(VP9_COMP *cpi, TileDataEnc *tile_data,
     hybrid_search_svc_baseiskey(cpi, x, rd_cost, bsize, ctx, tile_data, mi_row,
                                 mi_col);
   else if (segfeature_active(&cm->seg, mi->segment_id, SEG_LVL_SKIP))
-    set_mode_info_seg_skip(x, cm->tx_mode, rd_cost, bsize);
+    set_mode_info_seg_skip(x, cm->tx_mode, cm->interp_filter, rd_cost, bsize);
   else if (bsize >= BLOCK_8X8) {
     if (cpi->rc.hybrid_intra_scene_change)
       hybrid_search_scene_change(cpi, x, rd_cost, bsize, ctx, tile_data, mi_row,

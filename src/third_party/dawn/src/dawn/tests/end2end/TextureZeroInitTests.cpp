@@ -72,7 +72,7 @@ class TextureZeroInitTest : public DawnTest {
         pipelineDescriptor.vertex.module = CreateBasicVertexShaderForTest(depth);
         const char* fs = R"(
             ;
-            @stage(fragment) fn main() -> @location(0) vec4<f32> {
+            @fragment fn main() -> @location(0) vec4<f32> {
                return vec4<f32>(1.0, 0.0, 0.0, 1.0);
             }
         )";
@@ -85,7 +85,7 @@ class TextureZeroInitTest : public DawnTest {
     }
     wgpu::ShaderModule CreateBasicVertexShaderForTest(float depth = 0.f) {
         std::string source = R"(
-            @stage(vertex)
+            @vertex
             fn main(@builtin(vertex_index) VertexIndex : u32) -> @builtin(position) vec4<f32> {
                 var pos = array<vec2<f32>, 6>(
                     vec2<f32>(-1.0, -1.0),
@@ -106,7 +106,7 @@ class TextureZeroInitTest : public DawnTest {
             struct FragmentOut {
                 @location(0) color : vec4<f32>
             }
-            @stage(fragment)
+            @fragment
             fn main(@builtin(position) FragCoord : vec4<f32>) -> FragmentOut {
                 var output : FragmentOut;
                 output.color = textureLoad(texture0, vec2<i32>(FragCoord.xy), 0);
@@ -469,6 +469,9 @@ TEST_P(TextureZeroInitTest, CopyTextureToTextureHalf) {
 // This tests the texture with depth attachment and load op load will init depth stencil texture to
 // 0s.
 TEST_P(TextureZeroInitTest, RenderingLoadingDepth) {
+    // TODO(crbug.com/dawn/1423): Investigate why this test fails on Windows Vulkan drivers
+    DAWN_SUPPRESS_TEST_IF(IsWindows() && IsVulkan());
+
     wgpu::TextureDescriptor srcDescriptor =
         CreateTextureDescriptor(1, 1,
                                 wgpu::TextureUsage::CopySrc | wgpu::TextureUsage::CopyDst |
@@ -511,6 +514,9 @@ TEST_P(TextureZeroInitTest, RenderingLoadingDepth) {
 // This tests the texture with stencil attachment and load op load will init depth stencil texture
 // to 0s.
 TEST_P(TextureZeroInitTest, RenderingLoadingStencil) {
+    // TODO(crbug.com/dawn/1423): Investigate why this test fails on Windows Vulkan drivers
+    DAWN_SUPPRESS_TEST_IF(IsWindows() && IsVulkan());
+
     wgpu::TextureDescriptor srcDescriptor =
         CreateTextureDescriptor(1, 1,
                                 wgpu::TextureUsage::CopySrc | wgpu::TextureUsage::CopyDst |
@@ -553,6 +559,9 @@ TEST_P(TextureZeroInitTest, RenderingLoadingStencil) {
 // This tests the texture with depth stencil attachment and load op load will init depth stencil
 // texture to 0s.
 TEST_P(TextureZeroInitTest, RenderingLoadingDepthStencil) {
+    // TODO(crbug.com/dawn/1423): Investigate why this test fails on Windows Vulkan drivers
+    DAWN_SUPPRESS_TEST_IF(IsWindows() && IsVulkan());
+
     wgpu::TextureDescriptor srcDescriptor =
         CreateTextureDescriptor(1, 1,
                                 wgpu::TextureUsage::CopySrc | wgpu::TextureUsage::CopyDst |
@@ -983,7 +992,7 @@ TEST_P(TextureZeroInitTest, ComputePassSampledTextureClear) {
             value : vec4<f32>
         }
         @group(0) @binding(1) var<storage, read_write> result : Result;
-        @stage(compute) @workgroup_size(1) fn main() {
+        @compute @workgroup_size(1) fn main() {
            result.value = textureLoad(tex, vec2<i32>(0,0), 0);
         }
     )";

@@ -465,6 +465,7 @@ export class GPUTest extends Fixture<GPUTestSubcaseBatchState> {
     `;
 
     const pipeline = this.device.createComputePipeline({
+      layout: 'auto',
       compute: {
         module: this.device.createShaderModule({ code: reducer }),
         entryPoint: 'reduce',

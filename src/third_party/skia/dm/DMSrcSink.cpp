@@ -10,6 +10,7 @@
 #include "include/codec/SkAndroidCodec.h"
 #include "include/codec/SkCodec.h"
 #include "include/core/SkColorSpace.h"
+#include "include/core/SkCombinationBuilder.h"
 #include "include/core/SkData.h"
 #include "include/core/SkDeferredDisplayListRecorder.h"
 #include "include/core/SkDocument.h"
@@ -2131,32 +2132,10 @@ Result RasterSink::draw(const Src& src, SkBitmap* dst, SkWStream*, SkString*) co
 
 #ifdef SK_GRAPHITE_ENABLED
 
-namespace {
-
-// For the sprint Graphite only handles:
-//    solid colors with src or srcOver
-//    repeated or clamped linear gradients with src or srcOver
-void precompile(skgpu::graphite::Context* context) {
-    using ShaderType = skgpu::graphite::ShaderCombo::ShaderType;
-
-    skgpu::graphite::PaintCombo c1 { { skgpu::graphite::ShaderCombo({ ShaderType::kSolidColor },
-                                                                    { SkTileMode::kRepeat }) },
-                                     { SkBlendMode::kSrcOver, SkBlendMode::kSrc } };
-    context->preCompile(c1);
-
-    skgpu::graphite::PaintCombo c2 { { skgpu::graphite::ShaderCombo({ ShaderType::kLinearGradient },
-                                                     { SkTileMode::kRepeat, SkTileMode::kClamp }) },
-                                     { SkBlendMode::kSrcOver, SkBlendMode::kSrc } };
-    context->preCompile(c2);
-}
-
-} // anonymous namespace
-
 GraphiteSink::GraphiteSink(const SkCommandLineConfigGraphite* config)
         : fContextType(config->getContextType())
         , fColorType(config->getColorType())
-        , fAlphaType(config->getAlphaType())
-        , fTestPrecompile(config->getTestPrecompile()) {
+        , fAlphaType(config->getAlphaType()) {
 }
 
 Result GraphiteSink::draw(const Src& src,
@@ -2169,10 +2148,6 @@ Result GraphiteSink::draw(const Src& src,
     auto [_, context] = factory.getContextInfo(fContextType);
     if (!context) {
         return Result::Fatal("Could not create a context.");
-    }
-
-    if (fTestPrecompile) {
-        precompile(context);
     }
 
     std::unique_ptr<skgpu::graphite::Recorder> recorder = context->makeRecorder();

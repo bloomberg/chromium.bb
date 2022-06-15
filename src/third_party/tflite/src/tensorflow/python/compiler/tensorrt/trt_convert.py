@@ -106,10 +106,7 @@ class TrtPrecisionMode(object):
 
 # Use a large enough number as the default max_workspace_size for TRT engines,
 # so it can produce reasonable performance results with the default.
-if trt_utils.is_loaded_tensorrt_version_greater_equal(8, 4, 0):
-  DEFAULT_TRT_MAX_WORKSPACE_SIZE_BYTES = np.iinfo(np.int32).max
-else:
-  DEFAULT_TRT_MAX_WORKSPACE_SIZE_BYTES = 1 << 30
+DEFAULT_TRT_MAX_WORKSPACE_SIZE_BYTES = 1 << 30
 
 PROFILE_STRATEGY_RANGE = "Range"
 PROFILE_STRATEGY_OPTIMAL = "Optimal"
@@ -888,32 +885,6 @@ def _print_row(fields, positions, print_fn):
   print_fn(line)
 
 
-def _get_nodes_in_engine(graphdef, node_name):
-  ops_in_engine = collections.defaultdict(int)
-  for func in graphdef.library.function:
-    if f"{node_name}_native_segment" == func.signature.name:
-      node_count = len(func.node_def)
-      for node in func.node_def:
-        ops_in_engine[node.op] += 1
-      break
-  return node_count, ops_in_engine
-
-
-def _extract_shapes_from_node(node, key):
-  out_shape = []
-  for shape in node.attr[key].list.shape:
-    out_shape.append([dim.size for dim in shape.dim])
-  return out_shape
-
-
-def _get_engine_dtypes_from_node(node, key):
-  return [dtypes._TYPE_TO_STRING[dtype] for dtype in node.attr[key].list.type]
-
-
-def _get_engines_io_nodes_count(node, key):
-  return len(node.attr[key].list.type)
-
-
 def _save_calibration_table(node):
   calibration_table = gen_trt_ops.get_calibration_data_op(
       _get_canonical_engine_name(node.name))
@@ -1131,6 +1102,7 @@ class TrtGraphConverterV2(object):
     self._calibration_input_fn = None
 
     self._converted = False
+    self._device = None
     self._build_called_once = False
     self._calibrated = False
 
@@ -1240,6 +1212,17 @@ class TrtGraphConverterV2(object):
     """
     assert not self._converted
 
+    # Creating an empty tensor to fetch queried device
+    device_requested = array_ops.zeros([]).device
+
+    if "gpu" not in device_requested.lower():
+      raise ValueError(f"Specified device is not a GPU: {device_requested}")
+
+    if "gpu:0" not in device_requested.lower():
+      self._device = device_requested
+      logging.info(f"Placing imported graph from "
+                   f"`{self._input_saved_model_dir}` on device: {self._device}")
+
     if (self._need_calibration and not calibration_input_fn):
       raise ValueError("Should specify calibration_input_fn because INT8 "
                        "calibration is needed")
@@ -1251,8 +1234,21 @@ class TrtGraphConverterV2(object):
                                   self._input_saved_model_tags)
     func = self._saved_model.signatures[self._input_saved_model_signature_key]
     frozen_func = convert_to_constants.convert_variables_to_constants_v2(func)
-    grappler_meta_graph_def = saver.export_meta_graph(
-        graph_def=frozen_func.graph.as_graph_def(), graph=frozen_func.graph)
+    frozen_graph_def = frozen_func.graph.as_graph_def()
+
+    # Clear any prior device assignments
+    logging.info("Clearing prior device assignments in loaded saved model")
+    for node in frozen_graph_def.node:
+      node.device = ""
+
+    if self._device is None:
+      grappler_meta_graph_def = saver.export_meta_graph(
+          graph_def=frozen_graph_def, graph=frozen_func.graph)
+    else:
+      with ops.Graph().as_default() as graph, ops.device(self._device):
+        importer.import_graph_def(frozen_graph_def, name="")
+        grappler_meta_graph_def = saver.export_meta_graph(
+            graph_def=graph.as_graph_def(), graph=graph)
 
     # Add a collection 'train_op' so that Grappler knows the outputs.
     fetch_collection = meta_graph_pb2.CollectionDef()
@@ -1293,6 +1289,17 @@ class TrtGraphConverterV2(object):
         self._calibration_input_fn = calibration_input_fn
 
     self._converted = True
+
+    graphviz_path = os.environ.get("TF_TRT_EXPORT_GRAPH_VIZ_PATH", default=None)
+    if graphviz_path is not None:
+      try:
+        trt_utils.draw_graphdef_as_graphviz(
+            graphdef=self._converted_func.graph.as_graph_def(add_shapes=True),
+            dot_output_filename=graphviz_path)
+      except Exception as e:
+        logging.error("An Exception occured during the export of the graph "
+                      f"visualization: {e}")
+
     return self._converted_func
 
   def build(self, input_fn):
@@ -1542,13 +1549,14 @@ class TrtGraphConverterV2(object):
 
     for name, node in sorted(trtengineops_dict.items()):
       node_device = node.device.split("/")[-1]
-      in_shapes = _extract_shapes_from_node(node, "input_shapes")
-      out_shapes = _extract_shapes_from_node(node, "_output_shapes")
-      in_dtypes = _get_engine_dtypes_from_node(node, "InT")
-      out_dtypes = _get_engine_dtypes_from_node(node, "OutT")
-      in_nodes_count = _get_engines_io_nodes_count(node, "InT")
-      out_nodes_count = _get_engines_io_nodes_count(node, "OutT")
-      node_count, converted_ops_dict = _get_nodes_in_engine(graphdef, name)
+      in_shapes = trt_utils.get_node_io_shapes(node, "input_shapes")
+      out_shapes = trt_utils.get_node_io_shapes(node, "_output_shapes")
+      in_dtypes = trt_utils.get_trtengineop_io_dtypes(node, "InT")
+      out_dtypes = trt_utils.get_trtengineop_io_dtypes(node, "OutT")
+      in_nodes_count = trt_utils.get_trtengineop_io_nodes_count(node, "InT")
+      out_nodes_count = trt_utils.get_trtengineop_io_nodes_count(node, "OutT")
+      node_count, converted_ops_dict = trt_utils.get_trtengineop_node_op_count(
+          graphdef, name)
 
       n_ops_converted += node_count
 

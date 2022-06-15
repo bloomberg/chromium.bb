@@ -104,6 +104,8 @@ class MemoryAllocator::Unmapper::UnmapFreeMemoryJob : public JobTask {
 };
 
 void MemoryAllocator::Unmapper::FreeQueuedChunks() {
+  if (NumberOfChunks() == 0) return;
+
   if (!heap_->IsTearingDown() && FLAG_concurrent_sweeping) {
     if (job_handle_ && job_handle_->IsValid()) {
       job_handle_->NotifyConcurrencyIncrease();
@@ -213,6 +215,10 @@ size_t MemoryAllocator::Unmapper::CommittedBufferedMemory() {
     sum += chunk->size();
   }
   return sum;
+}
+
+bool MemoryAllocator::Unmapper::IsRunning() const {
+  return job_handle_ && job_handle_->IsValid();
 }
 
 bool MemoryAllocator::CommitMemory(VirtualMemory* reservation) {

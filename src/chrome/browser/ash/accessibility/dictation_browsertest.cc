@@ -44,9 +44,11 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/fake_speech_recognition_manager.h"
+#include "extensions/browser/browsertest_util.h"
 #include "extensions/browser/extension_host_test_helper.h"
 #include "media/mojo/mojom/speech_recognition_service.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/accessibility/accessibility_features.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/clipboard_buffer.h"
@@ -317,7 +319,13 @@ class DictationTest
   }
 
   // Routers to SpeechRecognitionTestHelper methods.
-  void WaitForRecognitionStarted() { test_helper_.WaitForRecognitionStarted(); }
+  void WaitForRecognitionStarted() {
+    test_helper_.WaitForRecognitionStarted();
+    // Dictation initializes FocusHandler when speech recognition starts.
+    // Several tests require FocusHandler logic, so wait for it to initialize
+    // before proceeding.
+    WaitForFocusHandler();
+  }
 
   void WaitForRecognitionStopped() { test_helper_.WaitForRecognitionStopped(); }
 
@@ -338,7 +346,9 @@ class DictationTest
         browser()->tab_strip_model()->GetActiveWebContents(),
         ui::kAXModeComplete, ax::mojom::Event::kValueChanged);
     SendFinalResultAndWait(result);
-    waiter.WaitForNotification();
+    // TODO(https://crbug.com/1333354): Investigate why this does not always
+    // return true.
+    std::ignore = waiter.WaitForNotification();
     WaitForTextAreaValue(value);
   }
 
@@ -351,7 +361,9 @@ class DictationTest
     content::BoundingBoxUpdateWaiter bounding_box_waiter(web_contents);
     SendFinalResultAndWait(result);
     bounding_box_waiter.Wait();
-    selection_waiter.WaitForNotification();
+    // TODO(https://crbug.com/1333354): Investigate why this does not always
+    // return true.
+    std::ignore = selection_waiter.WaitForNotification();
   }
 
   void SendFinalResultAndWaitForCaretBoundsChanged(const std::string& result) {
@@ -362,7 +374,9 @@ class DictationTest
         browser()->window()->GetNativeWindow()->GetHost()->GetInputMethod());
     SendFinalResultAndWait(result);
     caret_waiter.Wait();
-    selection_waiter.WaitForNotification();
+    // TODO(https://crbug.com/1333354): Investigate why this does not always
+    // return true.
+    std::ignore = selection_waiter.WaitForNotification();
   }
 
   void SendFinalResultAndWaitForClipboardChanged(const std::string& result) {
@@ -386,6 +400,29 @@ class DictationTest
     SuccessWaiter(base::BindLambdaForTesting(
                       [&]() { return value == GetTextAreaValue(); }),
                   error_message)
+        .Wait();
+  }
+
+  void WaitForFocusHandler() {
+    std::string error_message = "Still waiting for FocusHandler";
+    std::string script = R"(
+      if (accessibilityCommon.dictation_.focusHandler_.isReadyForTesting()) {
+        window.domAutomationController.send("ready");
+      } else {
+        window.domAutomationController.send("not ready");
+      }
+    )";
+    SuccessWaiter(
+        base::BindLambdaForTesting([&]() {
+          std::string result =
+              extensions::browsertest_util::ExecuteScriptInBackgroundPage(
+                  /*context=*/browser()->profile(),
+                  /*extension_id=*/
+                  extension_misc::kAccessibilityCommonExtensionId,
+                  /*script=*/script);
+          return result == "ready";
+        }),
+        error_message)
         .Wait();
   }
 
@@ -1107,6 +1144,305 @@ IN_PROC_BROWSER_TEST_P(DictationUITest, MAYBE_HintsShownAfterCommandExecuted) {
       /*icon=*/DictationBubbleIconType::kStandby,
       /*text=*/absl::optional<std::u16string>(),
       /*hints=*/std::vector<std::u16string>{kTrySaying, kUndo, kHelp});
+}
+
+// Tests behavior of Dictation macros that haven't been hooked up to the
+// speech parser.
+class DictationHiddenMacrosTest : public DictationTest {
+ protected:
+  DictationHiddenMacrosTest() = default;
+  ~DictationHiddenMacrosTest() = default;
+  DictationHiddenMacrosTest(const DictationHiddenMacrosTest&) = delete;
+  DictationHiddenMacrosTest& operator=(const DictationHiddenMacrosTest&) =
+      delete;
+
+  void RunHiddenMacro(int macro) {
+    std::string script = base::StringPrintf(R"(
+      accessibilityCommon.dictation_.runHiddenMacroForTesting(%d);
+      window.domAutomationController.send("done");
+    )",
+                                            macro);
+    ExecuteAccessibilityCommonScript(script);
+  }
+
+  void RunHiddenMacroWithStringArg(int macro, const std::string& arg) {
+    std::string script = base::StringPrintf(R"(
+      accessibilityCommon.dictation_.
+          runHiddenMacroWithStringArgForTesting(%d, "%s");
+      window.domAutomationController.send("done");
+    )",
+                                            macro, arg.c_str());
+
+    ExecuteAccessibilityCommonScript(script);
+  }
+
+  void RunHiddenMacroWithTwoStringArgs(int macro,
+                                       const std::string& arg1,
+                                       const std::string& arg2) {
+    std::string script = base::StringPrintf(R"(
+      accessibilityCommon.dictation_.
+          runHiddenMacroWithTwoStringArgsForTesting(%d, "%s", "%s");
+      window.domAutomationController.send("done");
+    )",
+                                            macro, arg1.c_str(), arg2.c_str());
+
+    ExecuteAccessibilityCommonScript(script);
+  }
+
+  void RunMacroAndWaitForCaretBoundsChanged(int macro) {
+    content::AccessibilityNotificationWaiter selection_waiter(
+        browser()->tab_strip_model()->GetActiveWebContents(),
+        ui::kAXModeComplete, ax::mojom::Event::kTextSelectionChanged);
+    CaretBoundsChangedWaiter caret_waiter(
+        browser()->window()->GetNativeWindow()->GetHost()->GetInputMethod());
+    RunHiddenMacro(macro);
+    caret_waiter.Wait();
+    std::ignore = selection_waiter.WaitForNotification();
+  }
+
+ private:
+  void ExecuteAccessibilityCommonScript(const std::string& script) {
+    extensions::browsertest_util::ExecuteScriptInBackgroundPage(
+        /*context=*/browser()->profile(),
+        /*extension_id=*/extension_misc::kAccessibilityCommonExtensionId,
+        /*script=*/script);
+  }
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    Network,
+    DictationHiddenMacrosTest,
+    ::testing::Values(speech::SpeechRecognitionType::kNetwork));
+
+INSTANTIATE_TEST_SUITE_P(
+    OnDevice,
+    DictationHiddenMacrosTest,
+    ::testing::Values(speech::SpeechRecognitionType::kOnDevice));
+
+IN_PROC_BROWSER_TEST_P(DictationHiddenMacrosTest, StopListening) {
+  ToggleDictationWithKeystroke();
+  WaitForRecognitionStarted();
+  RunHiddenMacro(/*STOP_LISTENING*/ 16);
+  WaitForRecognitionStopped();
+}
+
+IN_PROC_BROWSER_TEST_P(DictationHiddenMacrosTest, DeletePrevWordSimple) {
+  ToggleDictationWithKeystroke();
+  WaitForRecognitionStarted();
+  SendFinalResultAndWaitForTextAreaValue("This is a test", "This is a test");
+  RunHiddenMacro(/*DELETE_PREV_WORD*/ 17);
+  WaitForTextAreaValue("This is a ");
+}
+
+IN_PROC_BROWSER_TEST_P(DictationHiddenMacrosTest, DeletePrevWordExtraSpace) {
+  ToggleDictationWithKeystroke();
+  WaitForRecognitionStarted();
+  SendFinalResultAndWaitForTextAreaValue("This is a test ", "This is a test ");
+  RunHiddenMacro(/*DELETE_PREV_WORD*/ 17);
+  WaitForTextAreaValue("This is a ");
+}
+
+IN_PROC_BROWSER_TEST_P(DictationHiddenMacrosTest, DeletePrevWordNewLine) {
+  ToggleDictationWithKeystroke();
+  WaitForRecognitionStarted();
+  SendFinalResultAndWaitForTextAreaValue("This is a test\n\n",
+                                         "This is a test\n\n");
+  RunHiddenMacro(/*DELETE_PREV_WORD*/ 17);
+  WaitForTextAreaValue("This is a test\n");
+}
+
+IN_PROC_BROWSER_TEST_P(DictationHiddenMacrosTest, DeletePrevWordPunctuation) {
+  ToggleDictationWithKeystroke();
+  WaitForRecognitionStarted();
+  SendFinalResultAndWaitForTextAreaValue("This.is.a.test. ",
+                                         "This.is.a.test. ");
+  RunHiddenMacro(/*DELETE_PREV_WORD*/ 17);
+  WaitForTextAreaValue("This.is.a.test");
+}
+
+IN_PROC_BROWSER_TEST_P(DictationHiddenMacrosTest, DeletePrevWordMiddleOfWord) {
+  ToggleDictationWithKeystroke();
+  WaitForRecognitionStarted();
+  SendFinalResultAndWaitForTextAreaValue("This is a test.", "This is a test.");
+  // Move the text caret into the middle of the word "test".
+  SendFinalResultAndWaitForCaretBoundsChanged("Move to the Previous character");
+  SendFinalResultAndWaitForCaretBoundsChanged("Move to the Previous character");
+  RunHiddenMacro(/*DELETE_PREV_WORD*/ 17);
+  WaitForTextAreaValue("This is a t.");
+}
+
+IN_PROC_BROWSER_TEST_P(DictationHiddenMacrosTest, DeletePrevSentSimple) {
+  ToggleDictationWithKeystroke();
+  WaitForRecognitionStarted();
+  SendFinalResultAndWaitForTextAreaValue("Hello, world.", "Hello, world.");
+  RunHiddenMacro(/*DELETE_PREV_SENT*/ 18);
+  WaitForTextAreaValue("");
+}
+
+IN_PROC_BROWSER_TEST_P(DictationHiddenMacrosTest, DeletePrevSentWhiteSpace) {
+  ToggleDictationWithKeystroke();
+  WaitForRecognitionStarted();
+  SendFinalResultAndWaitForTextAreaValue("  \nHello, world.\n  ",
+                                         "  \nHello, world.\n  ");
+  RunHiddenMacro(/*DELETE_PREV_SENT*/ 18);
+  WaitForTextAreaValue("");
+}
+
+IN_PROC_BROWSER_TEST_P(DictationHiddenMacrosTest, DeletePrevSentPunctuation) {
+  ToggleDictationWithKeystroke();
+  WaitForRecognitionStarted();
+  SendFinalResultAndWaitForTextAreaValue(
+      "Hello, world! Good afternoon; good evening? Goodnight, world.",
+      "Hello, world! Good afternoon; good evening? Goodnight, world.");
+  RunHiddenMacro(/*DELETE_PREV_SENT*/ 18);
+  WaitForTextAreaValue("Hello, world! Good afternoon; good evening? ");
+  RunHiddenMacro(/*DELETE_PREV_SENT*/ 18);
+  WaitForTextAreaValue("Hello, world! Good afternoon; ");
+  RunHiddenMacro(/*DELETE_PREV_SENT*/ 18);
+  WaitForTextAreaValue("Hello, world! ");
+}
+
+IN_PROC_BROWSER_TEST_P(DictationHiddenMacrosTest, DeletePrevSentTwoSentences) {
+  ToggleDictationWithKeystroke();
+  WaitForRecognitionStarted();
+  SendFinalResultAndWaitForTextAreaValue("Hello, world. Goodnight, world.",
+                                         "Hello, world. Goodnight, world.");
+  RunHiddenMacro(/*DELETE_PREV_SENT*/ 18);
+  WaitForTextAreaValue("Hello, world. ");
+}
+
+IN_PROC_BROWSER_TEST_P(DictationHiddenMacrosTest,
+                       DeletePrevSentMiddleOfSentence) {
+  ToggleDictationWithKeystroke();
+  WaitForRecognitionStarted();
+  SendFinalResultAndWaitForTextAreaValue("Hello, world. Goodnight, world.",
+                                         "Hello, world. Goodnight, world.");
+  // Move the text caret into the middle of the second sentence.
+  SendFinalResultAndWaitForCaretBoundsChanged("Move to the Previous character");
+  SendFinalResultAndWaitForCaretBoundsChanged("Move to the Previous character");
+  RunHiddenMacro(/*DELETE_PREV_SENT*/ 18);
+  WaitForTextAreaValue("Hello, world. d.");
+}
+
+IN_PROC_BROWSER_TEST_P(DictationHiddenMacrosTest, MoveByWord) {
+  ToggleDictationWithKeystroke();
+  WaitForRecognitionStarted();
+  SendFinalResultAndWaitForTextAreaValue("This is a quiz", "This is a quiz");
+  RunMacroAndWaitForCaretBoundsChanged(/*NAV_PREV_WORD*/ 20);
+  SendFinalResultAndWaitForTextAreaValue("pop ", "This is a pop quiz");
+  RunMacroAndWaitForCaretBoundsChanged(/*NAV_NEXT_WORD*/ 19);
+  SendFinalResultAndWaitForTextAreaValue("folks!", "This is a pop quiz folks!");
+}
+
+IN_PROC_BROWSER_TEST_P(DictationHiddenMacrosTest, SmartDeletePhraseSimple) {
+  ToggleDictationWithKeystroke();
+  WaitForRecognitionStarted();
+  SendFinalResultAndWaitForTextAreaValue("This is a difficult test",
+                                         "This is a difficult test");
+  RunHiddenMacroWithStringArg(/* SMART_DELETE_PHRASE */ 21, "difficult");
+  WaitForTextAreaValue("This is a test");
+}
+
+IN_PROC_BROWSER_TEST_P(DictationHiddenMacrosTest,
+                       SmartDeletePhraseCaseInsensitive) {
+  ToggleDictationWithKeystroke();
+  WaitForRecognitionStarted();
+  SendFinalResultAndWaitForTextAreaValue("This is a DIFFICULT test",
+                                         "This is a DIFFICULT test");
+  RunHiddenMacroWithStringArg(/* SMART_DELETE_PHRASE */ 21, "difficult");
+  WaitForTextAreaValue("This is a test");
+}
+
+IN_PROC_BROWSER_TEST_P(DictationHiddenMacrosTest,
+                       SmartDeletePhraseDuplicateMatches) {
+  ToggleDictationWithKeystroke();
+  WaitForRecognitionStarted();
+  SendFinalResultAndWaitForTextAreaValue("The cow jumped over the moon.",
+                                         "The cow jumped over the moon.");
+  // Deletes the right-most occurrence of "the".
+  RunHiddenMacroWithStringArg(/* SMART_DELETE_PHRASE */ 21, "the");
+  WaitForTextAreaValue("The cow jumped over moon.");
+}
+
+IN_PROC_BROWSER_TEST_P(DictationHiddenMacrosTest,
+                       SmartDeletePhraseDeletesLeftOfCaret) {
+  ToggleDictationWithKeystroke();
+  WaitForRecognitionStarted();
+  SendFinalResultAndWaitForTextAreaValue("The cow jumped over the moon.",
+                                         "The cow jumped over the moon.");
+  RunMacroAndWaitForCaretBoundsChanged(/*NAV_PREV_WORD*/ 20);
+  RunMacroAndWaitForCaretBoundsChanged(/*NAV_PREV_WORD*/ 20);
+  RunMacroAndWaitForCaretBoundsChanged(/*NAV_PREV_WORD*/ 20);
+  RunHiddenMacroWithStringArg(/* SMART_DELETE_PHRASE */ 21, "the");
+  WaitForTextAreaValue("cow jumped over the moon.");
+}
+
+IN_PROC_BROWSER_TEST_P(DictationHiddenMacrosTest,
+                       SmartDeletePhraseDeletesAtWordBoundaries) {
+  ToggleDictationWithKeystroke();
+  WaitForRecognitionStarted();
+  SendFinalResultAndWaitForTextAreaValue("A square is also a rectangle.",
+                                         "A square is also a rectangle.");
+  // Deletes the first word "a", not the first character "a".
+  RunHiddenMacroWithStringArg(/* SMART_DELETE_PHRASE */ 21, "a");
+  WaitForTextAreaValue("A square is also rectangle.");
+}
+
+IN_PROC_BROWSER_TEST_P(DictationHiddenMacrosTest, SmartReplacePhrase) {
+  ToggleDictationWithKeystroke();
+  WaitForRecognitionStarted();
+  SendFinalResultAndWaitForTextAreaValue("This is a difficult test.",
+                                         "This is a difficult test.");
+  RunHiddenMacroWithTwoStringArgs(/* SMART_REPLACE_PHRASE */ 22, "difficult",
+                                  "simple");
+  WaitForTextAreaValue("This is a simple test.");
+  RunHiddenMacroWithTwoStringArgs(/*SMART_REPLACE_PHRASE*/ 22, "is", "isn't");
+  WaitForTextAreaValue("This isn't a simple test.");
+}
+
+// Tests behavior of Dictation and installation of Pumpkin.
+class DictationPumpkinInstallTest : public DictationTest {
+ protected:
+  DictationPumpkinInstallTest() = default;
+  ~DictationPumpkinInstallTest() = default;
+  DictationPumpkinInstallTest(const DictationPumpkinInstallTest&) = delete;
+  DictationPumpkinInstallTest& operator=(const DictationPumpkinInstallTest&) =
+      delete;
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    DictationTest::SetUpCommandLine(command_line);
+    scoped_feature_list_.InitAndEnableFeature(
+        ::features::kExperimentalAccessibilityDictationWithPumpkin);
+  }
+
+  void WaitForInstallToSucceed() {
+    std::string error_message = "Waiting for Pumpkin installation to succeed";
+    SuccessWaiter(base::BindLambdaForTesting([&]() {
+                    return AccessibilityManager::Get()
+                        ->is_pumpkin_installed_for_testing();
+                  }),
+                  error_message)
+        .Wait();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    Network,
+    DictationPumpkinInstallTest,
+    ::testing::Values(speech::SpeechRecognitionType::kNetwork));
+
+INSTANTIATE_TEST_SUITE_P(
+    OnDevice,
+    DictationPumpkinInstallTest,
+    ::testing::Values(speech::SpeechRecognitionType::kOnDevice));
+
+IN_PROC_BROWSER_TEST_P(DictationPumpkinInstallTest, WaitForInstall) {
+  // Dictation will request a Pumpkin install when it starts up. Wait for
+  // the install to succeed.
+  WaitForInstallToSucceed();
 }
 
 // TODO(crbug.com/1264544): Test looking at gn args has pumpkin and does

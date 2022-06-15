@@ -116,6 +116,16 @@ std::ostream& operator<<(std::ostream& out, FeedUserActionType value) {
       return out << "kShowUnfollowFailedSnackbar";
     case FeedUserActionType::kTappedGoToFeedOnSnackbar:
       return out << "kTappedGoToFeedOnSnackbar";
+    case FeedUserActionType::kTappedCrowButton:
+      return out << "kTappedCrow";
+    case FeedUserActionType::kFirstFollowSheetShown:
+      return out << "kFirstFollowSheetShown";
+    case FeedUserActionType::kFirstFollowSheetTappedGoToFeed:
+      return out << "kFirstFollowSheetTappedGoToFeed";
+    case FeedUserActionType::kFirstFollowSheetTappedGotIt:
+      return out << "kFirstFollowSheetTappedGotIt";
+    case FeedUserActionType::kFollowRecommendationIPHShown:
+      return out << "kFollowRecommendationIPHShown";
   }
 }
 

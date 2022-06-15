@@ -95,7 +95,18 @@ base::EnumSet<CodeFlushMode> Heap::GetCodeFlushMode(Isolate* isolate) {
   return code_flush_mode;
 }
 
-Isolate* Heap::isolate() { return Isolate::FromHeap(this); }
+Isolate* Heap::isolate() const { return Isolate::FromHeap(this); }
+
+#ifdef DEBUG
+bool Heap::IsMainThread() const {
+  return isolate()->thread_id() == ThreadId::Current();
+}
+
+bool Heap::IsSharedMainThread() const {
+  Isolate* shared_isolate = isolate()->shared_isolate();
+  return shared_isolate && shared_isolate->thread_id() == ThreadId::Current();
+}
+#endif
 
 int64_t Heap::external_memory() { return external_memory_.total(); }
 
@@ -323,13 +334,6 @@ Heap* Heap::FromWritableHeapObject(HeapObject obj) {
   return heap;
 }
 
-bool Heap::ShouldBePromoted(Address old_address) {
-  Page* page = Page::FromAddress(old_address);
-  Address age_mark = new_space_->age_mark();
-  return page->IsFlagSet(MemoryChunk::NEW_SPACE_BELOW_AGE_MARK) &&
-         (!page->ContainsLimit(age_mark) || old_address < age_mark);
-}
-
 void Heap::CopyBlock(Address dst, Address src, int byte_size) {
   DCHECK(IsAligned(byte_size, kTaggedSize));
   CopyTagged(dst, src, static_cast<size_t>(byte_size / kTaggedSize));
@@ -438,7 +442,7 @@ bool Heap::IsPendingAllocationInternal(HeapObject object) {
   switch (base_space->identity()) {
     case NEW_SPACE: {
       base::SharedMutexGuard<base::kShared> guard(
-          new_space_->pending_allocation_mutex());
+          new_space_->linear_area_lock());
       Address top = new_space_->original_top_acquire();
       Address limit = new_space_->original_limit_relaxed();
       DCHECK_LE(top, limit);
@@ -450,9 +454,9 @@ bool Heap::IsPendingAllocationInternal(HeapObject object) {
     case MAP_SPACE: {
       PagedSpace* paged_space = static_cast<PagedSpace*>(base_space);
       base::SharedMutexGuard<base::kShared> guard(
-          paged_space->pending_allocation_mutex());
-      Address top = paged_space->original_top();
-      Address limit = paged_space->original_limit();
+          paged_space->linear_area_lock());
+      Address top = paged_space->original_top_acquire();
+      Address limit = paged_space->original_limit_relaxed();
       DCHECK_LE(top, limit);
       return top && top <= addr && addr < limit;
     }
@@ -509,7 +513,7 @@ int Heap::NextScriptId() {
   Smi new_id, last_id_before_cas;
   do {
     if (last_id.value() == Smi::kMaxValue) {
-      STATIC_ASSERT(v8::UnboundScript::kNoScriptId == 0);
+      static_assert(v8::UnboundScript::kNoScriptId == 0);
       new_id = Smi::FromInt(1);
     } else {
       new_id = Smi::FromInt(last_id.value() + 1);
@@ -598,12 +602,13 @@ AlwaysAllocateScopeForTesting::AlwaysAllocateScopeForTesting(Heap* heap)
     : scope_(heap) {}
 
 CodeSpaceMemoryModificationScope::CodeSpaceMemoryModificationScope(Heap* heap)
-    : heap_(heap) {
+    :
+#if V8_HEAP_USE_PTHREAD_JIT_WRITE_PROTECT
+      rwx_write_scope_("A part of CodeSpaceMemoryModificationScope"),
+#endif
+      heap_(heap) {
   DCHECK_EQ(ThreadId::Current(), heap_->isolate()->thread_id());
   heap_->safepoint()->AssertActive();
-  if (V8_HEAP_USE_PTHREAD_JIT_WRITE_PROTECT) {
-    RwxMemoryWriteScope::SetWritable();
-  }
   if (heap_->write_protect_code_memory()) {
     heap_->increment_code_space_memory_modification_scope_depth();
     heap_->code_space()->SetCodeModificationPermissions();
@@ -629,17 +634,15 @@ CodeSpaceMemoryModificationScope::~CodeSpaceMemoryModificationScope() {
       page = page->next_page();
     }
   }
-  if (V8_HEAP_USE_PTHREAD_JIT_WRITE_PROTECT) {
-    RwxMemoryWriteScope::SetExecutable();
-  }
 }
 
 CodePageCollectionMemoryModificationScope::
     CodePageCollectionMemoryModificationScope(Heap* heap)
-    : heap_(heap) {
-  if (V8_HEAP_USE_PTHREAD_JIT_WRITE_PROTECT) {
-    RwxMemoryWriteScope::SetWritable();
-  }
+    :
+#if V8_HEAP_USE_PTHREAD_JIT_WRITE_PROTECT
+      rwx_write_scope_("A part of CodePageCollectionMemoryModificationScope"),
+#endif
+      heap_(heap) {
   if (heap_->write_protect_code_memory()) {
     heap_->IncrementCodePageCollectionMemoryModificationScopeDepth();
   }
@@ -648,19 +651,19 @@ CodePageCollectionMemoryModificationScope::
 CodePageCollectionMemoryModificationScope::
     ~CodePageCollectionMemoryModificationScope() {
   if (heap_->write_protect_code_memory()) {
-    heap_->DecrementCodePageCollectionMemoryModificationScopeDepth();
-    if (heap_->code_page_collection_memory_modification_scope_depth() == 0) {
-      heap_->ProtectUnprotectedMemoryChunks();
-    }
-  }
-  if (V8_HEAP_USE_PTHREAD_JIT_WRITE_PROTECT) {
-    RwxMemoryWriteScope::SetExecutable();
+    heap_->ProtectUnprotectedMemoryChunks();
   }
 }
 
 #ifdef V8_ENABLE_THIRD_PARTY_HEAP
 CodePageMemoryModificationScope::CodePageMemoryModificationScope(Code code)
-    : chunk_(nullptr), scope_active_(false) {}
+    :
+#if V8_HEAP_USE_PTHREAD_JIT_WRITE_PROTECT
+      rwx_write_scope_("A part of CodePageMemoryModificationScope"),
+#endif
+      chunk_(nullptr),
+      scope_active_(false) {
+}
 #else
 CodePageMemoryModificationScope::CodePageMemoryModificationScope(Code code)
     : CodePageMemoryModificationScope(BasicMemoryChunk::FromHeapObject(code)) {}
@@ -668,12 +671,13 @@ CodePageMemoryModificationScope::CodePageMemoryModificationScope(Code code)
 
 CodePageMemoryModificationScope::CodePageMemoryModificationScope(
     BasicMemoryChunk* chunk)
-    : chunk_(chunk),
+    :
+#if V8_HEAP_USE_PTHREAD_JIT_WRITE_PROTECT
+      rwx_write_scope_("A part of CodePageMemoryModificationScope"),
+#endif
+      chunk_(chunk),
       scope_active_(chunk_->heap()->write_protect_code_memory() &&
                     chunk_->IsFlagSet(MemoryChunk::IS_EXECUTABLE)) {
-  if (V8_HEAP_USE_PTHREAD_JIT_WRITE_PROTECT) {
-    RwxMemoryWriteScope::SetWritable();
-  }
   if (scope_active_) {
     DCHECK(chunk_->owner()->identity() == CODE_SPACE ||
            (chunk_->owner()->identity() == CODE_LO_SPACE));
@@ -684,9 +688,6 @@ CodePageMemoryModificationScope::CodePageMemoryModificationScope(
 CodePageMemoryModificationScope::~CodePageMemoryModificationScope() {
   if (scope_active_) {
     MemoryChunk::cast(chunk_)->SetDefaultCodePermissions();
-  }
-  if (V8_HEAP_USE_PTHREAD_JIT_WRITE_PROTECT) {
-    RwxMemoryWriteScope::SetExecutable();
   }
 }
 

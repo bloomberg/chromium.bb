@@ -193,25 +193,90 @@ local_repository(
     path = "third_party/externals/spirv-headers",
 )
 
-###################################################
-# External C++ deps with NO Bazel support         #
-# In this case, we need to supply a BUILD file    #
-# and a WORKSPACE file.                           #
-###################################################
+###############################################################################
+# External C++ deps with NO Bazel support                                     #
+# In this case, we need to supply a BUILD file which exposes targets/files    #
+# we need. If these deps depend on other deps (e.g. @dawn -> @spirv_tools),   #
+# then we need to specify those here as well. The workspace_file_content is   #
+# generally ignored; external repos (i.e. the ones starting with @) will be   #
+# resolved with Skia's version of those repos, which is how Bazel avoids      #
+# multiple versions of the same project being compiled together.              #
+###############################################################################
 # https://bazel.build/reference/be/workspace#new_local_repository
 new_local_repository(
-    name = "vulkanmemoryallocator",
-    build_file_content = """
-cc_library(
-    name = "hdrs",
-    hdrs = [
-        "include/vk_mem_alloc.h",
-    ],
-    includes = ["include"],
-    visibility = ["//visibility:public"],
-    # TODO(kjlubick) set copts to avoid noisy warnings/errors
+    name = "dawn",
+    build_file = "bazel/external/dawn/BUILD.bazel",
+    path = "third_party/externals/dawn",
+    workspace_file_content = "",
 )
-""",
+
+new_local_repository(
+    name = "dng_sdk",
+    build_file = "bazel/external/dng_sdk/BUILD.bazel",
+    path = "third_party/externals/dng_sdk",
+    workspace_file_content = "",
+)
+
+new_local_repository(
+    name = "libjpeg_turbo",
+    build_file = "bazel/external/libjpeg_turbo/BUILD.bazel",
+    path = "third_party/externals/libjpeg-turbo",
+    workspace_file_content = "",
+)
+
+new_local_repository(
+    name = "libpng",
+    build_file = "bazel/external/libpng/BUILD.bazel",
+    path = "third_party/externals/libpng",
+    workspace_file_content = "",
+)
+
+new_local_repository(
+    name = "libwebp",
+    build_file = "bazel/external/libwebp/BUILD.bazel",
+    path = "third_party/externals/libwebp",
+    workspace_file_content = "",
+)
+
+new_local_repository(
+    name = "piex",
+    build_file = "bazel/external/piex/BUILD.bazel",
+    path = "third_party/externals/piex",
+    workspace_file_content = "",
+)
+
+new_local_repository(
+    name = "vulkan_headers",
+    build_file = "bazel/external/vulkan_headers/BUILD.bazel",
+    path = "third_party/externals/vulkan-headers",
+    workspace_file_content = "",
+)
+
+new_local_repository(
+    name = "vulkan_tools",
+    build_file = "bazel/external/vulkan_tools/BUILD.bazel",
+    path = "third_party/externals/vulkan-tools",
+    workspace_file_content = "",
+)
+
+new_local_repository(
+    name = "vulkanmemoryallocator",
+    build_file = "bazel/external/vulkanmemoryallocator/BUILD.bazel",
     path = "third_party/externals/vulkanmemoryallocator",
-    workspace_file_content = "",  # this DEP has no other deps
+    workspace_file_content = "",
+)
+
+new_local_repository(
+    name = "wuffs",
+    build_file = "bazel/external/wuffs/BUILD.bazel",
+    path = "third_party/externals/wuffs",
+    workspace_file_content = "",
+)
+
+new_local_repository(
+    # Some other dependency downloads zlib but with their own rules
+    name = "zlib_skia",
+    build_file = "bazel/external/zlib/BUILD.bazel",
+    path = "third_party/externals/zlib",
+    workspace_file_content = "",
 )

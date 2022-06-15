@@ -70,9 +70,16 @@ const UIStrings = {
   script: 'Script',
   /**
   *@description Title of a section in the debugger showing JavaScript variables from the a 'with'
-  *block. Block here means section of code, 'with' refers to a JavaScript programming concept.
+  *block. Block here means section of code, 'with' refers to a JavaScript programming concept and
+  *is a fixed term.
   */
-  withBlock: '`With` Block',
+  withBlock: '`With` block',
+  /**
+  *@description Title of a section in the debugger showing JavaScript variables from the a 'catch'
+  *block. Block here means section of code, 'catch' refers to a JavaScript programming concept and
+  *is a fixed term.
+  */
+  catchBlock: '`Catch` block',
   /**
   *@description Title of a section in the debugger showing JavaScript variables from the global scope.
   */
@@ -1235,6 +1242,11 @@ export class BreakLocation extends Location {
   }
 }
 
+export interface MissingDebugInfoDetails {
+  details: string;
+  resources: string[];
+}
+
 export class CallFrame {
   debuggerModel: DebuggerModel;
   readonly #scriptInternal: Script;
@@ -1246,7 +1258,9 @@ export class CallFrame {
   readonly #functionNameInternal: string;
   readonly #functionLocationInternal: Location|undefined;
   #returnValueInternal: RemoteObject|null;
-  readonly warnings: string[] = [];
+  #missingDebugInfoDetails: MissingDebugInfoDetails|null = null;
+
+  readonly canBeRestarted: boolean;
 
   constructor(
       debuggerModel: DebuggerModel, script: Script, payload: Protocol.Debugger.CallFrame, inlineFrameIndex?: number,
@@ -1259,6 +1273,7 @@ export class CallFrame {
     this.#localScopeInternal = null;
     this.#inlineFrameIndexInternal = inlineFrameIndex || 0;
     this.#functionNameInternal = functionName || payload.functionName;
+    this.canBeRestarted = Boolean(payload.canBeRestarted);
     for (let i = 0; i < payload.scopeChain.length; ++i) {
       const scope = new Scope(this, i);
       this.#scopeChainInternal.push(scope);
@@ -1289,8 +1304,12 @@ export class CallFrame {
     return new CallFrame(this.debuggerModel, this.#scriptInternal, this.payload, inlineFrameIndex, name);
   }
 
-  addWarning(warning: string): void {
-    this.warnings.push(warning);
+  setMissingDebugInfoDetails(details: MissingDebugInfoDetails): void {
+    this.#missingDebugInfoDetails = details;
+  }
+
+  get missingDebugInfoDetails(): MissingDebugInfoDetails|null {
+    return this.#missingDebugInfoDetails;
   }
 
   get script(): Script {
@@ -1390,6 +1409,15 @@ export class CallFrame {
     return {object: runtimeModel.createRemoteObject(response.result), exceptionDetails: response.exceptionDetails};
   }
 
+  async restart(): Promise<void> {
+    console.assert(this.canBeRestarted, 'This frame can not be restarted.');
+    // Note that even if `canBeRestarted` is true, the restart frame call can still fail.
+    // The user can evaluate arbitrary code between pausing and restarting the frame that
+    // could mess with the call stack.
+    await this.debuggerModel.agent.invoke_restartFrame(
+        {callFrameId: this.id, mode: Protocol.Debugger.RestartFrameRequestMode.StepInto});
+  }
+
   getPayload(): Protocol.Debugger.CallFrame {
     return this.payload;
   }
@@ -1452,7 +1480,9 @@ export class Scope implements ScopeChainEntry {
       case Protocol.Debugger.ScopeType.Closure:
         return i18nString(UIStrings.closure);
       case Protocol.Debugger.ScopeType.Catch:
-        return i18n.i18n.lockedString('Catch');
+        return i18nString(UIStrings.catchBlock);
+      case Protocol.Debugger.ScopeType.Eval:
+        return i18n.i18n.lockedString('Eval');
       case Protocol.Debugger.ScopeType.Block:
         return i18nString(UIStrings.block);
       case Protocol.Debugger.ScopeType.Script:

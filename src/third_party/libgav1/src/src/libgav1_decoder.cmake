@@ -107,7 +107,7 @@ macro(libgav1_add_decoder_targets)
     list(APPEND libgav1_static_lib_sources ${libgav1_api_sources})
   endif()
 
-  if(NOT ANDROID)
+  if(use_absl_threading)
     list(APPEND libgav1_absl_deps absl::base absl::synchronization)
   endif()
 

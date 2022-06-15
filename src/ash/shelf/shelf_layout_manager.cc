@@ -15,6 +15,7 @@
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
+#include "ash/controls/contextual_tooltip.h"
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/drag_drop/scoped_drag_drop_observer.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
@@ -24,7 +25,6 @@
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/session/session_controller_impl.h"
-#include "ash/shelf/contextual_tooltip.h"
 #include "ash/shelf/drag_handle.h"
 #include "ash/shelf/home_to_overview_nudge_controller.h"
 #include "ash/shelf/hotseat_widget.h"
@@ -270,6 +270,14 @@ absl::optional<InAppShelfGestures> CalculateHotseatGestureToRecord(
 bool IsInImmersiveFullscreen() {
   WindowState* active_window = WindowState::ForActiveWindow();
   return active_window && active_window->IsInImmersiveFullscreen();
+}
+
+int GetShelfSwipeOffset() {
+  if (!features::IsShelfPalmRejectionSwipeOffsetEnabled())
+    return 0;
+
+  return base::GetFieldTrialParamByFeatureAsInt(
+      ash::features::kShelfPalmRejectionSwipeOffset, "shelf_swipe_offset", 0);
 }
 
 // Forwards gesture events to ShelfLayoutManager to hide the hotseat
@@ -829,6 +837,8 @@ void ShelfLayoutManager::ProcessGestureEventFromShelfWidget(
 
 void ShelfLayoutManager::ProcessScrollOffset(int offset,
                                              base::TimeTicks time_stamp) {
+  DCHECK(!features::IsProductivityLauncherEnabled());
+
   if (offset <= ShelfConfig::Get()->mousewheel_scroll_offset_threshold())
     return;
 
@@ -840,6 +850,7 @@ void ShelfLayoutManager::ProcessScrollOffset(int offset,
 }
 
 void ShelfLayoutManager::ProcessScrollEventFromShelf(ui::ScrollEvent* event) {
+  DCHECK(!features::IsProductivityLauncherEnabled());
   if (shelf_->IsHorizontalAlignment()) {
     ProcessScrollOffset(GetOffset(event->y_offset(), prefs::kNaturalScroll),
                         event->time_stamp());
@@ -854,6 +865,7 @@ void ShelfLayoutManager::ProcessScrollEventFromShelf(ui::ScrollEvent* event) {
 
 void ShelfLayoutManager::ProcessMouseWheelEventFromShelf(
     ui::MouseWheelEvent* event) {
+  DCHECK(!features::IsProductivityLauncherEnabled());
   const int y_offset =
       GetOffset(event->offset().y(), prefs::kMouseReverseScroll);
   ProcessScrollOffset(y_offset, event->time_stamp());
@@ -1413,7 +1425,9 @@ HotseatState ShelfLayoutManager::CalculateHotseatState(
       if (shelf_->hotseat_widget()->IsShowingShelfMenu())
         return HotseatState::kExtended;
 
-      if (in_overview && !in_split_view) {
+      if (in_overview) {
+        if (in_split_view)
+          return HotseatState::kExtended;
         // Maintain the ShownHomeLauncher state if we enter overview mode
         // from it.
         if (hotseat_state() == HotseatState::kShownHomeLauncher)
@@ -1955,8 +1969,11 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
     return SHELF_AUTO_HIDE_SHOWN;
   }
 
-  if (!in_tablet_mode && shelf_widget_->IsShowingAppList())
+  if (auto* app_list_controller = Shell::Get()->app_list_controller();
+      !in_tablet_mode &&
+      app_list_controller->GetTargetVisibility(display_.id())) {
     return SHELF_AUTO_HIDE_SHOWN;
+  }
 
   if (shelf_widget_->status_area_widget() &&
       shelf_widget_->status_area_widget()->ShouldShowShelf()) {
@@ -2144,11 +2161,11 @@ void ShelfLayoutManager::UpdateShelfVisibilityAfterLoginUIChange() {
 
 float ShelfLayoutManager::ComputeTargetOpacity(const State& state) const {
   if (Shell::Get()->IsInTabletMode()) {
-    // The shelf should not become transparent during the animation to or from
+    // The shelf should not become transparent during the animation to
     // HomeLauncher.
     auto* app_list_controller = Shell::Get()->app_list_controller();
-    if (app_list_controller->GetTargetVisibility(display_.id()) !=
-        app_list_controller->IsVisible(display_.id())) {
+    if (app_list_controller->GetTargetVisibility(display_.id()) &&
+        !app_list_controller->IsVisible(display_.id())) {
       return 1.0f;
     }
   }
@@ -2409,6 +2426,12 @@ bool ShelfLayoutManager::StartShelfDrag(const ui::LocatedEvent& event_in_screen,
     return false;
   }
 
+  if (is_tablet_mode &&
+      !shelf_->hotseat_widget()->IsPointWithinGestureTouchArea(
+          event_in_screen.location())) {
+    return false;
+  }
+
   drag_status_ = kDragInProgress;
   drag_auto_hide_state_ =
       (!Shell::Get()->overview_controller()->InOverviewSession() &&
@@ -2434,7 +2457,10 @@ bool ShelfLayoutManager::StartShelfDrag(const ui::LocatedEvent& event_in_screen,
     drag_amount_ = -(shelf_->hotseat_widget()->GetHotseatSize() +
                      ShelfConfig::Get()->hotseat_bottom_padding());
   } else {
-    drag_amount_ = 0.f;
+    // For tablet mode, we allow a certain offset between the drag event offset
+    // and the hotseat location to avoid accidentally extendeing the hotseat in
+    // certain conditions.
+    drag_amount_ = is_tablet_mode ? GetShelfSwipeOffset() : 0;
   }
 
   // If the start location is above the shelf (e.g., on the extended hotseat),

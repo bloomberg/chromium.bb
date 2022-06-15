@@ -815,6 +815,8 @@ TEST_P(HotseatWidgetTest, SwipeUpOnShelfShowsHotseatInSplitView) {
   std::unique_ptr<aura::Window> window =
       AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
   wm::ActivateWindow(window.get());
+  std::unique_ptr<aura::Window> window2 =
+      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
 
   base::HistogramTester histogram_tester;
   histogram_tester.ExpectBucketCount(kHotseatGestureHistogramName,
@@ -828,7 +830,8 @@ TEST_P(HotseatWidgetTest, SwipeUpOnShelfShowsHotseatInSplitView) {
   SplitViewController* split_view_controller =
       SplitViewController::Get(Shell::GetPrimaryRootWindow());
   split_view_controller->SnapWindow(window.get(), SplitViewController::LEFT);
-  EXPECT_TRUE(split_view_controller->InSplitViewMode());
+  split_view_controller->SnapWindow(window2.get(), SplitViewController::RIGHT);
+  EXPECT_TRUE(split_view_controller->BothSnapped());
 
   // We should still be able to drag up the hotseat.
   SwipeUpOnShelf();
@@ -2303,9 +2306,7 @@ TEST_P(HotseatWidgetTest, AnimationAfterDrag) {
 
 // Tests that hotseat bounds don't jump when the hotseat widget is translated
 // when a transitionj animation starts.
-// Flaky https://crbug.com/1292675
-TEST_P(HotseatWidgetTest,
-       DISABLED_InitialAnimationPositionWithNonIdentityTransform) {
+TEST_P(HotseatWidgetTest, InitialAnimationPositionWithNonIdentityTransform) {
   TabletModeControllerTestApi().EnterTabletMode();
   // Add an app to shelf - the app will be used to track the shelf view position
   // throughout the test.
@@ -2315,6 +2316,12 @@ TEST_P(HotseatWidgetTest,
   std::unique_ptr<aura::Window> window =
       AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
   wm::ActivateWindow(window.get());
+
+  // Make sure that all shelf item views complete their bounds animations
+  // before starting the test (tests depend on the first item bounds within the
+  // shelf view).
+  auto* shelf_view = GetPrimaryShelf()->GetShelfViewForTesting();
+  ShelfViewTestAPI(shelf_view).RunMessageLoopUntilAnimationsDone();
 
   HotseatWidget* const hotseat_widget = GetPrimaryShelf()->hotseat_widget();
   gfx::Point last_app_views_position =

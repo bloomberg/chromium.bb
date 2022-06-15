@@ -461,10 +461,12 @@ Condition FlagsConditionToCondition(FlagsCondition condition, ArchOpcode op) {
     MemOperand operand = i.MemoryOperand(&mode);               \
     bool is_atomic = i.InputInt32(2);                          \
     if (mode == kMode_MRI) {                                   \
-      if (CpuFeatures::IsSupported(PPC_10_PLUS)) {             \
-        __ asm_instrp(result, operand);                        \
-      } else {                                                 \
+      intptr_t offset = operand.offset();                      \
+      if (is_int16(offset)) {                                  \
         __ asm_instr(result, operand);                         \
+      } else {                                                 \
+        CHECK(CpuFeatures::IsSupported(PPC_10_PLUS));          \
+        __ asm_instrp(result, operand);                        \
       }                                                        \
     } else {                                                   \
       __ asm_instrx(result, operand);                          \
@@ -473,23 +475,27 @@ Condition FlagsConditionToCondition(FlagsCondition condition, ArchOpcode op) {
     DCHECK_EQ(LeaveRC, i.OutputRCBit());                       \
   } while (0)
 
-#define ASSEMBLE_LOAD_INTEGER(asm_instr, asm_instrp, asm_instrx) \
-  do {                                                           \
-    Register result = i.OutputRegister();                        \
-    AddressingMode mode = kMode_None;                            \
-    MemOperand operand = i.MemoryOperand(&mode);                 \
-    bool is_atomic = i.InputInt32(2);                            \
-    if (mode == kMode_MRI) {                                     \
-      if (CpuFeatures::IsSupported(PPC_10_PLUS)) {               \
-        __ asm_instrp(result, operand);                          \
-      } else {                                                   \
-        __ asm_instr(result, operand);                           \
-      }                                                          \
-    } else {                                                     \
-      __ asm_instrx(result, operand);                            \
-    }                                                            \
-    if (is_atomic) __ lwsync();                                  \
-    DCHECK_EQ(LeaveRC, i.OutputRCBit());                         \
+#define ASSEMBLE_LOAD_INTEGER(asm_instr, asm_instrp, asm_instrx,   \
+                              must_be_aligned)                     \
+  do {                                                             \
+    Register result = i.OutputRegister();                          \
+    AddressingMode mode = kMode_None;                              \
+    MemOperand operand = i.MemoryOperand(&mode);                   \
+    bool is_atomic = i.InputInt32(2);                              \
+    if (mode == kMode_MRI) {                                       \
+      intptr_t offset = operand.offset();                          \
+      bool misaligned = offset & 3;                                \
+      if (is_int16(offset) && (!must_be_aligned || !misaligned)) { \
+        __ asm_instr(result, operand);                             \
+      } else {                                                     \
+        CHECK(CpuFeatures::IsSupported(PPC_10_PLUS));              \
+        __ asm_instrp(result, operand);                            \
+      }                                                            \
+    } else {                                                       \
+      __ asm_instrx(result, operand);                              \
+    }                                                              \
+    if (is_atomic) __ lwsync();                                    \
+    DCHECK_EQ(LeaveRC, i.OutputRCBit());                           \
   } while (0)
 
 #define ASSEMBLE_LOAD_INTEGER_RR(asm_instr)      \
@@ -515,10 +521,12 @@ Condition FlagsConditionToCondition(FlagsCondition condition, ArchOpcode op) {
     /* removed frsp as instruction-selector checked */          \
     /* value to be kFloat32 */                                  \
     if (mode == kMode_MRI) {                                    \
-      if (CpuFeatures::IsSupported(PPC_10_PLUS)) {              \
-        __ asm_instrp(value, operand);                          \
-      } else {                                                  \
+      intptr_t offset = operand.offset();                       \
+      if (is_int16(offset)) {                                   \
         __ asm_instr(value, operand);                           \
+      } else {                                                  \
+        CHECK(CpuFeatures::IsSupported(PPC_10_PLUS));           \
+        __ asm_instrp(value, operand);                          \
       }                                                         \
     } else {                                                    \
       __ asm_instrx(value, operand);                            \
@@ -527,25 +535,29 @@ Condition FlagsConditionToCondition(FlagsCondition condition, ArchOpcode op) {
     DCHECK_EQ(LeaveRC, i.OutputRCBit());                        \
   } while (0)
 
-#define ASSEMBLE_STORE_INTEGER(asm_instr, asm_instrp, asm_instrx) \
-  do {                                                            \
-    size_t index = 0;                                             \
-    AddressingMode mode = kMode_None;                             \
-    MemOperand operand = i.MemoryOperand(&mode, &index);          \
-    Register value = i.InputRegister(index);                      \
-    bool is_atomic = i.InputInt32(3);                             \
-    if (is_atomic) __ lwsync();                                   \
-    if (mode == kMode_MRI) {                                      \
-      if (CpuFeatures::IsSupported(PPC_10_PLUS)) {                \
-        __ asm_instrp(value, operand);                            \
-      } else {                                                    \
-        __ asm_instr(value, operand);                             \
-      }                                                           \
-    } else {                                                      \
-      __ asm_instrx(value, operand);                              \
-    }                                                             \
-    if (is_atomic) __ sync();                                     \
-    DCHECK_EQ(LeaveRC, i.OutputRCBit());                          \
+#define ASSEMBLE_STORE_INTEGER(asm_instr, asm_instrp, asm_instrx,  \
+                               must_be_aligned)                    \
+  do {                                                             \
+    size_t index = 0;                                              \
+    AddressingMode mode = kMode_None;                              \
+    MemOperand operand = i.MemoryOperand(&mode, &index);           \
+    Register value = i.InputRegister(index);                       \
+    bool is_atomic = i.InputInt32(3);                              \
+    if (is_atomic) __ lwsync();                                    \
+    if (mode == kMode_MRI) {                                       \
+      intptr_t offset = operand.offset();                          \
+      bool misaligned = offset & 3;                                \
+      if (is_int16(offset) && (!must_be_aligned || !misaligned)) { \
+        __ asm_instr(value, operand);                              \
+      } else {                                                     \
+        CHECK(CpuFeatures::IsSupported(PPC_10_PLUS));              \
+        __ asm_instrp(value, operand);                             \
+      }                                                            \
+    } else {                                                       \
+      __ asm_instrx(value, operand);                               \
+    }                                                              \
+    if (is_atomic) __ sync();                                      \
+    DCHECK_EQ(LeaveRC, i.OutputRCBit());                           \
   } while (0)
 
 #define ASSEMBLE_STORE_INTEGER_RR(asm_instr)             \
@@ -1967,27 +1979,27 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
       break;
 #endif
     case kPPC_LoadWordU8:
-      ASSEMBLE_LOAD_INTEGER(lbz, plbz, lbzx);
+      ASSEMBLE_LOAD_INTEGER(lbz, plbz, lbzx, false);
       break;
     case kPPC_LoadWordS8:
-      ASSEMBLE_LOAD_INTEGER(lbz, plbz, lbzx);
+      ASSEMBLE_LOAD_INTEGER(lbz, plbz, lbzx, false);
       __ extsb(i.OutputRegister(), i.OutputRegister());
       break;
     case kPPC_LoadWordU16:
-      ASSEMBLE_LOAD_INTEGER(lhz, plhz, lhzx);
+      ASSEMBLE_LOAD_INTEGER(lhz, plhz, lhzx, false);
       break;
     case kPPC_LoadWordS16:
-      ASSEMBLE_LOAD_INTEGER(lha, plha, lhax);
+      ASSEMBLE_LOAD_INTEGER(lha, plha, lhax, false);
       break;
     case kPPC_LoadWordU32:
-      ASSEMBLE_LOAD_INTEGER(lwz, plwz, lwzx);
+      ASSEMBLE_LOAD_INTEGER(lwz, plwz, lwzx, false);
       break;
     case kPPC_LoadWordS32:
-      ASSEMBLE_LOAD_INTEGER(lwa, plwa, lwax);
+      ASSEMBLE_LOAD_INTEGER(lwa, plwa, lwax, true);
       break;
 #if V8_TARGET_ARCH_PPC64
     case kPPC_LoadWord64:
-      ASSEMBLE_LOAD_INTEGER(ld, pld, ldx);
+      ASSEMBLE_LOAD_INTEGER(ld, pld, ldx, true);
       break;
 #endif
     case kPPC_LoadFloat32:
@@ -2012,17 +2024,17 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
       break;
     }
     case kPPC_StoreWord8:
-      ASSEMBLE_STORE_INTEGER(stb, pstb, stbx);
+      ASSEMBLE_STORE_INTEGER(stb, pstb, stbx, false);
       break;
     case kPPC_StoreWord16:
-      ASSEMBLE_STORE_INTEGER(sth, psth, sthx);
+      ASSEMBLE_STORE_INTEGER(sth, psth, sthx, false);
       break;
     case kPPC_StoreWord32:
-      ASSEMBLE_STORE_INTEGER(stw, pstw, stwx);
+      ASSEMBLE_STORE_INTEGER(stw, pstw, stwx, false);
       break;
 #if V8_TARGET_ARCH_PPC64
     case kPPC_StoreWord64:
-      ASSEMBLE_STORE_INTEGER(std, pstd, stdx);
+      ASSEMBLE_STORE_INTEGER(std, pstd, stdx, true);
       break;
 #endif
     case kPPC_StoreFloat32:
@@ -3778,23 +3790,23 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
     }
     case kPPC_StoreCompressTagged: {
       ASSEMBLE_STORE_INTEGER(StoreTaggedField, StoreTaggedField,
-                             StoreTaggedField);
+                             StoreTaggedField, true);
       break;
     }
     case kPPC_LoadDecompressTaggedSigned: {
       CHECK(instr->HasOutput());
-      ASSEMBLE_LOAD_INTEGER(lwz, plwz, lwzx);
+      ASSEMBLE_LOAD_INTEGER(lwz, plwz, lwzx, false);
       break;
     }
     case kPPC_LoadDecompressTaggedPointer: {
       CHECK(instr->HasOutput());
-      ASSEMBLE_LOAD_INTEGER(lwz, plwz, lwzx);
+      ASSEMBLE_LOAD_INTEGER(lwz, plwz, lwzx, false);
       __ add(i.OutputRegister(), i.OutputRegister(), kRootRegister);
       break;
     }
     case kPPC_LoadDecompressAnyTagged: {
       CHECK(instr->HasOutput());
-      ASSEMBLE_LOAD_INTEGER(lwz, plwz, lwzx);
+      ASSEMBLE_LOAD_INTEGER(lwz, plwz, lwzx, false);
       __ add(i.OutputRegister(), i.OutputRegister(), kRootRegister);
       break;
     }
@@ -4265,11 +4277,90 @@ void CodeGenerator::PrepareForDeoptimizationExits(
   __ CheckTrampolinePoolQuick(total_size);
 }
 
+void CodeGenerator::MoveToTempLocation(InstructionOperand* source) {
+  // Must be kept in sync with {MoveTempLocationTo}.
+  auto rep = LocationOperand::cast(source)->representation();
+  if (!IsFloatingPoint(rep) ||
+      ((IsFloatingPoint(rep) &&
+        !move_cycle_.pending_double_scratch_register_use))) {
+    // The scratch register for this rep is available.
+    int scratch_reg_code =
+        !IsFloatingPoint(rep) ? kScratchReg.code() : kScratchDoubleReg.code();
+    AllocatedOperand scratch(LocationOperand::REGISTER, rep, scratch_reg_code);
+    DCHECK(!AreAliased(kScratchReg, r0, ip));
+    AssembleMove(source, &scratch);
+  } else {
+    DCHECK(!source->IsRegister() && !source->IsStackSlot());
+    // The scratch register is blocked by pending moves. Use the stack instead.
+    int new_slots = ElementSizeInPointers(rep);
+    PPCOperandConverter g(this, nullptr);
+    if (source->IsFloatStackSlot() || source->IsDoubleStackSlot()) {
+      __ LoadU64(r0, g.ToMemOperand(source), r0);
+      __ Push(r0);
+    } else {
+      // Bump the stack pointer and assemble the move.
+      int last_frame_slot_id =
+          frame_access_state_->frame()->GetTotalFrameSlotCount() - 1;
+      int sp_delta = frame_access_state_->sp_delta();
+      int temp_slot = last_frame_slot_id + sp_delta + new_slots;
+      __ addi(sp, sp, Operand(-(new_slots * kSystemPointerSize)));
+      AllocatedOperand temp(LocationOperand::STACK_SLOT, rep, temp_slot);
+      AssembleMove(source, &temp);
+    }
+    frame_access_state()->IncreaseSPDelta(new_slots);
+  }
+}
+
+void CodeGenerator::MoveTempLocationTo(InstructionOperand* dest,
+                                       MachineRepresentation rep) {
+  if (!IsFloatingPoint(rep) ||
+      ((IsFloatingPoint(rep) &&
+        !move_cycle_.pending_double_scratch_register_use))) {
+    int scratch_reg_code =
+        !IsFloatingPoint(rep) ? kScratchReg.code() : kScratchDoubleReg.code();
+    AllocatedOperand scratch(LocationOperand::REGISTER, rep, scratch_reg_code);
+    DCHECK(!AreAliased(kScratchReg, r0, ip));
+    AssembleMove(&scratch, dest);
+  } else {
+    DCHECK(!dest->IsRegister() && !dest->IsStackSlot());
+    PPCOperandConverter g(this, nullptr);
+    int new_slots = ElementSizeInPointers(rep);
+    frame_access_state()->IncreaseSPDelta(-new_slots);
+    if (dest->IsFloatStackSlot() || dest->IsDoubleStackSlot()) {
+      UseScratchRegisterScope temps(tasm());
+      Register scratch = temps.Acquire();
+      __ Pop(scratch);
+      __ StoreU64(scratch, g.ToMemOperand(dest), r0);
+    } else {
+      int last_frame_slot_id =
+          frame_access_state_->frame()->GetTotalFrameSlotCount() - 1;
+      int sp_delta = frame_access_state_->sp_delta();
+      int temp_slot = last_frame_slot_id + sp_delta + new_slots;
+      AllocatedOperand temp(LocationOperand::STACK_SLOT, rep, temp_slot);
+      AssembleMove(&temp, dest);
+      __ addi(sp, sp, Operand(new_slots * kSystemPointerSize));
+    }
+  }
+  move_cycle_ = MoveCycleState();
+}
+
+void CodeGenerator::SetPendingMove(MoveOperands* move) {
+  if (move->source().IsFPStackSlot() && !move->destination().IsFPRegister()) {
+    move_cycle_.pending_double_scratch_register_use = true;
+  } else if (move->source().IsConstant() &&
+             (move->destination().IsDoubleStackSlot() ||
+              move->destination().IsFloatStackSlot())) {
+    move_cycle_.pending_double_scratch_register_use = true;
+  }
+}
+
 void CodeGenerator::AssembleMove(InstructionOperand* source,
                                  InstructionOperand* destination) {
   PPCOperandConverter g(this, nullptr);
   // Dispatch on the source and destination operand kinds.  Not all
   // combinations are possible.
+  // If a move type needs the scratch register, this also needs to be recorded
+  // in {SetPendingMove} to avoid conflicts with the gap resolver.
   if (source->IsRegister()) {
     DCHECK(destination->IsRegister() || destination->IsStackSlot());
     Register src = g.ToRegister(source);
@@ -4284,15 +4375,14 @@ void CodeGenerator::AssembleMove(InstructionOperand* source,
     if (destination->IsRegister()) {
       __ LoadU64(g.ToRegister(destination), src, r0);
     } else {
-      Register temp = kScratchReg;
+      Register temp = ip;
       __ LoadU64(temp, src, r0);
       __ StoreU64(temp, g.ToMemOperand(destination), r0);
     }
   } else if (source->IsConstant()) {
     Constant src = g.ToConstant(source);
     if (destination->IsRegister() || destination->IsStackSlot()) {
-      Register dst =
-          destination->IsRegister() ? g.ToRegister(destination) : kScratchReg;
+      Register dst = destination->IsRegister() ? g.ToRegister(destination) : ip;
       switch (src.type()) {
         case Constant::kInt32:
 #if V8_ENABLE_WEBASSEMBLY && !V8_TARGET_ARCH_PPC64
@@ -4380,7 +4470,7 @@ void CodeGenerator::AssembleMove(InstructionOperand* source,
                   ? base::Double(static_cast<double>(src.ToFloat32()))
                   : base::Double(src.ToFloat64());
 #endif
-      __ LoadDoubleLiteral(dst, value, kScratchReg);
+      __ LoadDoubleLiteral(dst, value, r0);
       if (destination->IsDoubleStackSlot()) {
         __ StoreF64(dst, g.ToMemOperand(destination), r0);
       } else if (destination->IsFloatStackSlot()) {

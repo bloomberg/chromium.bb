@@ -30,6 +30,7 @@
 #include "src/objects/heap-object.h"
 #include "src/objects/js-array-buffer-inl.h"
 #include "src/objects/js-array-inl.h"
+#include "src/objects/js-atomics-synchronization.h"
 #include "src/objects/lookup.h"
 #include "src/objects/map-updater.h"
 #include "src/objects/objects-inl.h"
@@ -1216,9 +1217,11 @@ MaybeHandle<Object> GetPropertyWithInterceptorInternal(
     result = args.CallNamedGetter(interceptor, it->name());
   }
 
-  RETURN_EXCEPTION_IF_SCHEDULED_EXCEPTION(isolate, Object);
+  RETURN_VALUE_IF_SCHEDULED_EXCEPTION_DETECTOR(isolate, args,
+                                               MaybeHandle<Object>());
   if (result.is_null()) return isolate->factory()->undefined_value();
   *done = true;
+  args.AcceptSideEffects();
   // Rebox handle before return
   return handle(*result, isolate);
 }
@@ -1254,6 +1257,10 @@ Maybe<PropertyAttributes> GetPropertyAttributesWithInterceptorInternal(
       CHECK(result->ToInt32(&value));
       DCHECK_IMPLIES((value & ~PropertyAttributes::ALL_ATTRIBUTES_MASK) != 0,
                      value == PropertyAttributes::ABSENT);
+      // In case of absent property side effects are not allowed.
+      if (value != PropertyAttributes::ABSENT) {
+        args.AcceptSideEffects();
+      }
       return Just(static_cast<PropertyAttributes>(value));
     }
   } else if (!interceptor->getter().IsUndefined(isolate)) {
@@ -1264,10 +1271,14 @@ Maybe<PropertyAttributes> GetPropertyAttributesWithInterceptorInternal(
     } else {
       result = args.CallNamedGetter(interceptor, it->name());
     }
-    if (!result.is_null()) return Just(DONT_ENUM);
+    if (!result.is_null()) {
+      args.AcceptSideEffects();
+      return Just(DONT_ENUM);
+    }
   }
 
-  RETURN_VALUE_IF_SCHEDULED_EXCEPTION(isolate, Nothing<PropertyAttributes>());
+  RETURN_VALUE_IF_SCHEDULED_EXCEPTION_DETECTOR(isolate, args,
+                                               Nothing<PropertyAttributes>());
   return Just(ABSENT);
 }
 
@@ -1301,7 +1312,9 @@ Maybe<bool> SetPropertyWithInterceptorInternal(
     result = !args.CallNamedSetter(interceptor, it->name(), value).is_null();
   }
 
-  RETURN_VALUE_IF_SCHEDULED_EXCEPTION(it->isolate(), Nothing<bool>());
+  RETURN_VALUE_IF_SCHEDULED_EXCEPTION_DETECTOR(it->isolate(), args,
+                                               Nothing<bool>());
+  if (result) args.AcceptSideEffects();
   return Just(result);
 }
 
@@ -1323,8 +1336,6 @@ Maybe<bool> DefinePropertyWithInterceptorInternal(
                                      Object::ConvertReceiver(isolate, receiver),
                                      Nothing<bool>());
   }
-  PropertyCallbackArguments args(isolate, interceptor->data(), *receiver,
-                                 *holder, should_throw);
 
   std::unique_ptr<v8::PropertyDescriptor> descriptor(
       new v8::PropertyDescriptor());
@@ -1347,6 +1358,8 @@ Maybe<bool> DefinePropertyWithInterceptorInternal(
     descriptor->set_configurable(desc->configurable());
   }
 
+  PropertyCallbackArguments args(isolate, interceptor->data(), *receiver,
+                                 *holder, should_throw);
   if (it->IsElement(*holder)) {
     result =
         !args.CallIndexedDefiner(interceptor, it->array_index(), *descriptor)
@@ -1356,7 +1369,9 @@ Maybe<bool> DefinePropertyWithInterceptorInternal(
         !args.CallNamedDefiner(interceptor, it->name(), *descriptor).is_null();
   }
 
-  RETURN_VALUE_IF_SCHEDULED_EXCEPTION(it->isolate(), Nothing<bool>());
+  RETURN_VALUE_IF_SCHEDULED_EXCEPTION_DETECTOR(it->isolate(), args,
+                                               Nothing<bool>());
+  if (result) args.AcceptSideEffects();
   return Just(result);
 }
 
@@ -1803,10 +1818,11 @@ Maybe<bool> GetPropertyDescriptorWithInterceptor(LookupIterator* it,
     result = args.CallNamedDescriptor(interceptor, it->name());
   }
   // An exception was thrown in the interceptor. Propagate.
-  RETURN_VALUE_IF_SCHEDULED_EXCEPTION(isolate, Nothing<bool>());
+  RETURN_VALUE_IF_SCHEDULED_EXCEPTION_DETECTOR(isolate, args, Nothing<bool>());
   if (!result.is_null()) {
-    // Request successfully intercepted, try to set the property
+    // Request was successfully intercepted, try to set the property
     // descriptor.
+    args.AcceptSideEffects();
     Utils::ApiCheck(
         PropertyDescriptor::ToPropertyDescriptor(isolate, result, desc),
         it->IsElement(*holder) ? "v8::IndexedPropertyDescriptorCallback"
@@ -2445,6 +2461,8 @@ int JSObject::GetHeaderSize(InstanceType type,
       return JSModuleNamespace::kHeaderSize;
     case JS_SHARED_STRUCT_TYPE:
       return JSSharedStruct::kHeaderSize;
+    case JS_ATOMICS_MUTEX_TYPE:
+      return JSAtomicsMutex::kHeaderSize;
     case JS_TEMPORAL_CALENDAR_TYPE:
       return JSTemporalCalendar::kHeaderSize;
     case JS_TEMPORAL_DURATION_TYPE:
@@ -3967,10 +3985,11 @@ Maybe<bool> JSObject::DeletePropertyWithInterceptor(LookupIterator* it,
     result = args.CallNamedDeleter(interceptor, it->name());
   }
 
-  RETURN_VALUE_IF_SCHEDULED_EXCEPTION(isolate, Nothing<bool>());
+  RETURN_VALUE_IF_SCHEDULED_EXCEPTION_DETECTOR(isolate, args, Nothing<bool>());
   if (result.is_null()) return Nothing<bool>();
 
   DCHECK(result->IsBoolean());
+  args.AcceptSideEffects();
   // Rebox CustomArguments::kReturnValueOffset before returning.
   return Just(result->IsTrue(isolate));
 }
@@ -4222,7 +4241,7 @@ Handle<NumberDictionary> CreateElementDictionary(Isolate* isolate,
 template <PropertyAttributes attrs>
 Maybe<bool> JSObject::PreventExtensionsWithTransition(
     Handle<JSObject> object, ShouldThrow should_throw) {
-  STATIC_ASSERT(attrs == NONE || attrs == SEALED || attrs == FROZEN);
+  static_assert(attrs == NONE || attrs == SEALED || attrs == FROZEN);
 
   // Sealing/freezing sloppy arguments or namespace objects should be handled
   // elsewhere.

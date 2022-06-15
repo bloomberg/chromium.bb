@@ -63,6 +63,13 @@ class FirstIndexOffsetTests : public DawnTest {
         DAWN_SUPPRESS_TEST_IF(IsOpenGL() || IsOpenGLES());
     }
 
+    std::vector<wgpu::FeatureName> GetRequiredFeatures() override {
+        if (!SupportsFeatures({wgpu::FeatureName::IndirectFirstInstance})) {
+            return {};
+        }
+        return {wgpu::FeatureName::IndirectFirstInstance};
+    }
+
   private:
     void TestImpl(DrawMode mode,
                   CheckIndex checkIndex,
@@ -128,7 +135,7 @@ struct VertexInputs {
 struct VertexOutputs {
 )" + vertexOutputs.str() + R"(
 }
-@stage(vertex) fn main(input : VertexInputs) -> VertexOutputs {
+@vertex fn main(input : VertexInputs) -> VertexOutputs {
   var output : VertexOutputs;
 )" + vertexBody.str() + R"(
   output.position = input.position;
@@ -145,7 +152,7 @@ struct IndexVals {
 struct FragInputs {
 )" + fragmentInputs.str() + R"(
 }
-@stage(fragment) fn main(input : FragInputs) {
+@fragment fn main(input : FragInputs) {
 )" + fragmentBody.str() + R"(
 })";
 
@@ -280,6 +287,8 @@ TEST_P(FirstIndexOffsetTests, IndexedBothOffset) {
 
 // Test that vertex_index starts at 7 when drawn using DrawIndirect()
 TEST_P(FirstIndexOffsetTests, NonIndexedIndirectVertexOffset) {
+    // TODO(crbug.com/dawn/1429): Fails with the full validation turned on.
+    DAWN_SUPPRESS_TEST_IF(IsD3D12() && IsFullBackendValidationEnabled());
     TestVertexIndex(DrawMode::NonIndexedIndirect, 7);
 }
 
@@ -296,6 +305,8 @@ TEST_P(FirstIndexOffsetTests, NonIndexedIndirectBothOffset) {
 
 // Test that vertex_index starts at 7 when drawn using DrawIndexedIndirect()
 TEST_P(FirstIndexOffsetTests, IndexedIndirectVertex) {
+    // TODO(crbug.com/dawn/1429): Fails with the full validation turned on.
+    DAWN_SUPPRESS_TEST_IF(IsD3D12() && IsFullBackendValidationEnabled());
     TestVertexIndex(DrawMode::IndexedIndirect, 7);
 }
 

@@ -4,7 +4,7 @@
 
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
-import type * as Platform from '../../core/platform/platform.js';
+import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Protocol from '../../generated/protocol.js';
 
@@ -146,14 +146,22 @@ const UIStrings = {
   */
   desktop: 'Desktop',
   /**
-  *@description Text for option to enable simulated throttling in Lighthouse Panel
-  */
-  simulatedThrottling: 'Simulated throttling',
+   * @description Text for an option to select a throttling method.
+   */
+  throttlingMethod: 'Throttling method',
   /**
-  *@description Tooltip text that appears when hovering over the 'Simulated Throttling' checkbox in the settings pane opened by clicking the setting cog in the start view of the audits panel
-  */
+   * @description Text for an option in a dropdown to use simulated throttling. This is the default setting.
+   */
+  simulatedThrottling: 'Simulated throttling (default)',
+  /**
+   * @description Text for an option in a dropdown to use DevTools throttling. This option should only be used by advanced users.
+   */
+  devtoolsThrottling: 'DevTools throttling (advanced)',
+  /**
+   * @description Tooltip text that appears when hovering over the 'Simulated Throttling' checkbox in the settings pane opened by clicking the setting cog in the start view of the audits panel
+   */
   simulateASlowerPageLoadBasedOn:
-      'Simulate a slower page load, based on data from an initial unthrottled load. If disabled, the page is actually slowed with applied throttling.',
+      'Simulated throttling simulates a slower page load based on data from an initial unthrottled load. DevTools throttling actually slows down the page.',
   /**
   *@description Text of checkbox to reset storage features prior to running audits in Lighthouse
   */
@@ -186,7 +194,7 @@ export class LighthouseController extends Common.ObjectWrapper.ObjectWrapper<Eve
     SDK.TargetManager.SDKModelObserver<SDK.ServiceWorkerManager.ServiceWorkerManager> {
   private manager?: SDK.ServiceWorkerManager.ServiceWorkerManager|null;
   private serviceWorkerListeners?: Common.EventTarget.EventDescriptor[];
-  private inspectedURL?: string;
+  private inspectedURL?: Platform.DevToolsPath.UrlString;
 
   constructor(protocolService: ProtocolService) {
     super();
@@ -314,9 +322,9 @@ export class LighthouseController extends Common.ObjectWrapper.ObjectWrapper<Eve
     return '';
   }
 
-  private async evaluateInspectedURL(): Promise<string> {
+  private async evaluateInspectedURL(): Promise<Platform.DevToolsPath.UrlString> {
     if (!this.manager) {
-      return '';
+      return Platform.DevToolsPath.EmptyUrlString;
     }
     const mainTarget = this.manager.target();
     // target.inspectedURL is reliably populated, however it lacks any url #hash
@@ -331,7 +339,7 @@ export class LighthouseController extends Common.ObjectWrapper.ObjectWrapper<Eve
 
     const {currentIndex, entries} = navHistory;
     const navigationEntry = entries[currentIndex];
-    return navigationEntry.url;
+    return navigationEntry.url as Platform.DevToolsPath.UrlString;
   }
 
   getFlags(): {
@@ -365,7 +373,7 @@ export class LighthouseController extends Common.ObjectWrapper.ObjectWrapper<Eve
     return categoryIDs;
   }
 
-  async getInspectedURL(options?: {force: boolean}): Promise<string> {
+  async getInspectedURL(options?: {force: boolean}): Promise<Platform.DevToolsPath.UrlString> {
     if (options && options.force || !this.inspectedURL) {
       this.inspectedURL = await this.evaluateInspectedURL();
     }
@@ -515,17 +523,24 @@ export const RuntimeSettings: RuntimeSetting[] = [
   {
     // This setting is disabled, but we keep it around to show in the UI.
     setting: Common.Settings.Settings.instance().createSetting(
-        'lighthouse.throttling', true, Common.Settings.SettingStorageType.Synced),
-    title: i18nLazyString(UIStrings.simulatedThrottling),
+        'lighthouse.throttling', 'simulate', Common.Settings.SettingStorageType.Synced),
+    title: i18nLazyString(UIStrings.throttlingMethod),
     // We will disable this when we have a Lantern trace viewer within DevTools.
     learnMore:
         'https://github.com/GoogleChrome/lighthouse/blob/master/docs/throttling.md#devtools-lighthouse-panel-throttling' as
         Platform.DevToolsPath.UrlString,
     description: i18nLazyString(UIStrings.simulateASlowerPageLoadBasedOn),
     setFlags: (flags: Flags, value: string|boolean): void => {
-      flags.throttlingMethod = value ? 'simulate' : 'devtools';
+      if (typeof value === 'string') {
+        flags.throttlingMethod = value;
+      } else {
+        flags.throttlingMethod = value ? 'simulate' : 'devtools';
+      }
     },
-    options: undefined,
+    options: [
+      {label: i18nLazyString(UIStrings.simulatedThrottling), value: 'simulate'},
+      {label: i18nLazyString(UIStrings.devtoolsThrottling), value: 'devtools'},
+    ],
   },
   {
     setting: Common.Settings.Settings.instance().createSetting(

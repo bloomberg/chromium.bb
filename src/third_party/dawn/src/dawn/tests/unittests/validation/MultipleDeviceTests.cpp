@@ -27,7 +27,7 @@ class MultipleDeviceTest : public ValidationTest {};
 
 // Test that it is invalid to submit a command buffer created on a different device.
 TEST_F(MultipleDeviceTest, ValidatesSameDevice) {
-    wgpu::Device device2 = RegisterDevice(CreateTestDevice());
+    wgpu::Device device2 = RequestDeviceSync(wgpu::DeviceDescriptor{});
     wgpu::CommandBuffer commandBuffer = device2.CreateCommandEncoder().Finish();
 
     ASSERT_DEVICE_ERROR(device.GetQueue().Submit(1, &commandBuffer));
@@ -38,7 +38,7 @@ TEST_F(MultipleDeviceTest, ValidatesSameDevice) {
 TEST_F(MultipleDeviceTest, ValidatesSameDeviceCreatePipelineAsync) {
     wgpu::ShaderModuleWGSLDescriptor wgslDesc = {};
     wgslDesc.source = R"(
-         @stage(compute) @workgroup_size(1, 1, 1) fn main() {
+         @compute @workgroup_size(1, 1, 1) fn main() {
         }
     )";
 
@@ -66,7 +66,7 @@ TEST_F(MultipleDeviceTest, ValidatesSameDeviceCreatePipelineAsync) {
 
     // CreateComputePipelineAsync errors if the shader module is created on a different device.
     {
-        wgpu::Device device2 = RegisterDevice(CreateTestDevice());
+        wgpu::Device device2 = RequestDeviceSync(wgpu::DeviceDescriptor{});
         wgpu::ShaderModule shaderModule = device2.CreateShaderModule(&shaderModuleDesc);
 
         wgpu::ComputePipelineDescriptor pipelineDesc = {};

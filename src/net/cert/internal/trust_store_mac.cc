@@ -25,8 +25,7 @@
 #include "net/cert/known_roots_mac.h"
 #include "net/cert/test_keychain_search_list_mac.h"
 #include "net/cert/x509_util.h"
-#include "net/cert/x509_util_ios_and_mac.h"
-#include "net/cert/x509_util_mac.h"
+#include "net/cert/x509_util_apple.h"
 #include "third_party/boringssl/src/include/openssl/sha.h"
 
 namespace net {
@@ -1044,12 +1043,7 @@ base::ScopedCFTypeRef<CFDataRef> TrustStoreMac::GetMacNormalizedIssuer(
     LOG(ERROR) << "CreateCertBufferFromBytes";
     return name_data;
   }
-  if (__builtin_available(macOS 10.12.4, *)) {
-    name_data.reset(SecCertificateCopyNormalizedIssuerSequence(cert_handle));
-  } else {
-    name_data.reset(
-        SecCertificateCopyNormalizedIssuerContent(cert_handle, nullptr));
-  }
+  name_data.reset(SecCertificateCopyNormalizedIssuerSequence(cert_handle));
   if (!name_data)
     LOG(ERROR) << "SecCertificateCopyNormalizedIssuerContent";
   return name_data;

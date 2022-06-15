@@ -120,7 +120,7 @@
         "name": "rendering.mobile/baidu_mobile_2018"
     },
     {
-        "duration": "39.0",
+        "duration": "38.0",
         "name": "rendering.mobile/balls_css_key_frame_animations"
     },
     {
@@ -132,7 +132,7 @@
         "name": "rendering.mobile/balls_css_transition_2_properties"
     },
     {
-        "duration": "33.0",
+        "duration": "32.0",
         "name": "rendering.mobile/balls_css_transition_40_properties"
     },
     {
@@ -172,7 +172,7 @@
         "name": "rendering.mobile/blogspot_mobile_2018"
     },
     {
-        "duration": "28.0",
+        "duration": "27.0",
         "name": "rendering.mobile/blur_rotating_background"
     },
     {
@@ -256,7 +256,7 @@
         "name": "rendering.mobile/canvas_arcs"
     },
     {
-        "duration": "35.0",
+        "duration": "34.0",
         "name": "rendering.mobile/canvas_font_cycler"
     },
     {
@@ -272,7 +272,7 @@
         "name": "rendering.mobile/canvas_to_canvas_draw"
     },
     {
-        "duration": "45.0",
+        "duration": "44.0",
         "name": "rendering.mobile/capitolvolkswagen_mobile_2018"
     },
     {
@@ -312,7 +312,7 @@
         "name": "rendering.mobile/cnn_article_mobile_2018"
     },
     {
-        "duration": "61.0",
+        "duration": "60.0",
         "name": "rendering.mobile/cnn_mobile_2018"
     },
     {
@@ -320,7 +320,7 @@
         "name": "rendering.mobile/cnn_mobile_pinch_2018"
     },
     {
-        "duration": "56.0",
+        "duration": "55.0",
         "name": "rendering.mobile/cnn_pathological_2018"
     },
     {
@@ -336,7 +336,7 @@
         "name": "rendering.mobile/crafty_mind"
     },
     {
-        "duration": "40.0",
+        "duration": "39.0",
         "name": "rendering.mobile/css_animations_many_keyframes"
     },
     {
@@ -440,7 +440,7 @@
         "name": "rendering.mobile/css_transitions_triggered_new_element"
     },
     {
-        "duration": "38.0",
+        "duration": "37.0",
         "name": "rendering.mobile/css_transitions_triggered_style_element"
     },
     {
@@ -460,7 +460,7 @@
         "name": "rendering.mobile/css_value_type_filter"
     },
     {
-        "duration": "38.0",
+        "duration": "37.0",
         "name": "rendering.mobile/css_value_type_length"
     },
     {
@@ -556,7 +556,7 @@
         "name": "rendering.mobile/espn_2018"
     },
     {
-        "duration": "66.0",
+        "duration": "65.0",
         "name": "rendering.mobile/espn_mobile_2018"
     },
     {
@@ -1180,11 +1180,11 @@
         "name": "rendering.mobile/no_update_compositor_animation_with_janky_main_animation"
     },
     {
-        "duration": "36.0",
+        "duration": "35.0",
         "name": "rendering.mobile/non_opaque_background_compositor_thread_scrolling_00050_pixels_per_second"
     },
     {
-        "duration": "36.0",
+        "duration": "35.0",
         "name": "rendering.mobile/non_opaque_background_main_thread_scrolling_00050_pixels_per_second"
     },
     {
@@ -1532,7 +1532,7 @@
         "name": "rendering.mobile/toBlob_duration_jpeg.html"
     },
     {
-        "duration": "37.0",
+        "duration": "36.0",
         "name": "rendering.mobile/toBlob_small_canvas_in_worker.html"
     },
     {
@@ -1620,7 +1620,7 @@
         "name": "rendering.mobile/web_animation_value_type_length_simple"
     },
     {
-        "duration": "34.0",
+        "duration": "33.0",
         "name": "rendering.mobile/web_animation_value_type_path"
     },
     {
@@ -1948,15 +1948,15 @@
         "name": "system_health.memory_desktop/load:news:cnn:2020"
     },
     {
-        "duration": "26.0",
+        "duration": "25.0",
         "name": "system_health.memory_desktop/load:news:flipboard"
     },
     {
-        "duration": "19.0",
+        "duration": "18.0",
         "name": "system_health.memory_desktop/load:news:hackernews:2018"
     },
     {
-        "duration": "44.0",
+        "duration": "45.0",
         "name": "system_health.memory_desktop/load:news:nytimes:2018"
     },
     {
@@ -1984,7 +1984,7 @@
         "name": "system_health.memory_desktop/load:search:ebay:2018"
     },
     {
-        "duration": "40.0",
+        "duration": "39.0",
         "name": "system_health.memory_desktop/load:search:flipkart:2018"
     },
     {

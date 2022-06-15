@@ -322,8 +322,9 @@ TEST_F(QueueWriteTextureValidationTest, DataOffset) {
 TEST_F(QueueWriteTextureValidationTest, WriteToMultisampledTexture) {
     uint64_t dataSize =
         utils::RequiredBytesInCopy(256, 0, {2, 2, 1}, wgpu::TextureFormat::RGBA8Unorm);
-    wgpu::Texture destination = Create2DTexture({2, 2, 1}, 1, wgpu::TextureFormat::RGBA8Unorm,
-                                                wgpu::TextureUsage::CopyDst, 4);
+    wgpu::Texture destination =
+        Create2DTexture({2, 2, 1}, 1, wgpu::TextureFormat::RGBA8Unorm,
+                        wgpu::TextureUsage::CopyDst | wgpu::TextureUsage::RenderAttachment, 4);
 
     ASSERT_DEVICE_ERROR(
         TestWriteTexture(dataSize, 0, 256, 2, destination, 0, {0, 0, 0}, {2, 2, 1}));
@@ -535,14 +536,14 @@ TEST_F(QueueWriteTextureValidationTest, WriteToStencilAspect) {
 
 class WriteTextureTest_CompressedTextureFormats : public QueueWriteTextureValidationTest {
   protected:
-    WGPUDevice CreateTestDevice() override {
+    WGPUDevice CreateTestDevice(dawn::native::Adapter dawnAdapter) override {
         wgpu::DeviceDescriptor descriptor;
         wgpu::FeatureName requiredFeatures[3] = {wgpu::FeatureName::TextureCompressionBC,
                                                  wgpu::FeatureName::TextureCompressionETC2,
                                                  wgpu::FeatureName::TextureCompressionASTC};
         descriptor.requiredFeatures = requiredFeatures;
         descriptor.requiredFeaturesCount = 3;
-        return adapter.CreateDevice(&descriptor);
+        return dawnAdapter.CreateDevice(&descriptor);
     }
 
     wgpu::Texture Create2DTexture(wgpu::TextureFormat format,

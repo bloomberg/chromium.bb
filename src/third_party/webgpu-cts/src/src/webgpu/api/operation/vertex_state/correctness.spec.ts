@@ -186,7 +186,7 @@ struct VSOutputs {
   @builtin(position) position : vec4<f32>,
 };
 
-@stage(vertex) fn vsMain(input : Inputs) -> VSOutputs {
+@vertex fn vsMain(input : Inputs) -> VSOutputs {
   doTest(input);
 
   // Place that point at pixel (vertexIndex, instanceIndex) in a framebuffer of size
@@ -201,7 +201,7 @@ struct VSOutputs {
   return output;
 }
 
-@stage(fragment) fn fsMain(@location(0) @interpolate(flat) result : i32)
+@fragment fn fsMain(@location(0) @interpolate(flat) result : i32)
   -> @location(0) i32 {
   return result;
 }
@@ -232,6 +232,7 @@ struct VSOutputs {
     }
 
     return this.device.createRenderPipeline({
+      layout: 'auto',
       vertex: {
         module,
         entryPoint: 'vsMain',
@@ -422,7 +423,7 @@ struct VSOutputs {
           testComponentCount: data.length,
           expectedData: new Float32Array(data.map(v => normalizedIntegerAsFloat(v, bitSize, false)))
             .buffer,
-          vertexData: vertexData!,
+          vertexData,
           floatTolerance: 0.1 * normalizedIntegerAsFloat(1, bitSize, false),
         };
       }

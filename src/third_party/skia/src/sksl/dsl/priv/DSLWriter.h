@@ -10,12 +10,7 @@
 
 #include "include/core/SkTypes.h"
 
-#if !defined(SKSL_STANDALONE) && SK_SUPPORT_GPU
-#include "src/gpu/ganesh/glsl/GrGLSLUniformHandler.h"
-#endif // !defined(SKSL_STANDALONE) && SK_SUPPORT_GPU
-
 #include <memory>
-#include <string_view>
 
 namespace SkSL {
 
@@ -24,7 +19,6 @@ class Statement;
 
 namespace dsl {
 
-class DSLGlobalVar;
 class DSLParameter;
 class DSLStatement;
 class DSLVarBase;
@@ -35,28 +29,6 @@ class DSLVar;
  */
 class DSLWriter {
 public:
-    /**
-     * Returns whether name mangling is enabled. Mangling is important for the DSL because its
-     * variables normally all go into the same symbol table; for instance if you were to translate
-     * this legal (albeit silly) GLSL code:
-     *     int x;
-     *     {
-     *         int x;
-     *     }
-     *
-     * into DSL, you'd end up with:
-     *     DSLVar x1(kInt_Type, "x");
-     *     DSLVar x2(kInt_Type, "x");
-     *     Declare(x1);
-     *     Block(Declare(x2));
-     *
-     * with x1 and x2 ending up in the same symbol table. This is fine as long as their effective
-     * names are different, so mangling prevents this situation from causing problems.
-     */
-    static bool ManglingEnabled();
-
-    static std::string_view Name(std::string_view name);
-
     /**
      * Returns the SkSL variable corresponding to a DSL var.
      */
@@ -73,18 +45,6 @@ public:
     static std::unique_ptr<SkSL::Statement> Declaration(DSLVarBase& var);
 
     /**
-     * For use in testing only: marks the variable as having been declared, so that it can be
-     * destroyed without generating errors.
-     */
-    static void MarkDeclared(DSLVarBase& var);
-
-    /**
-     * Returns whether DSLVars should automatically be marked declared upon creation. This is used
-     * to simplify testing.
-     */
-    static bool MarkVarsDeclared();
-
-    /**
      * Adds a new declaration into an existing declaration statement. This either turns the original
      * declaration into an unscoped block or, if it already was, appends a new statement to the end
      * of it.
@@ -95,10 +55,6 @@ public:
      * Clears any elements or symbols which have been output.
      */
     static void Reset();
-
-#if !defined(SKSL_STANDALONE) && SK_SUPPORT_GPU
-    static GrGLSLUniformHandler::UniformHandle VarUniformHandle(const DSLGlobalVar& var);
-#endif
 
     friend class DSLCore;
     friend class DSLVar;

@@ -246,6 +246,11 @@ export class UserMetrics {
         EnumeratedHistogram.RecordingReplayFinished, value, RecordingReplayFinished.MaxValue);
   }
 
+  recordingReplaySpeed(value: RecordingReplaySpeed): void {
+    InspectorFrontendHostInstance.recordEnumeratedHistogram(
+        EnumeratedHistogram.RecordingReplaySpeed, value, RecordingReplaySpeed.MaxValue);
+  }
+
   recordingReplayStarted(value: RecordingReplayStarted): void {
     InspectorFrontendHostInstance.recordEnumeratedHistogram(
         EnumeratedHistogram.RecordingReplayStarted, value, RecordingReplayStarted.MaxValue);
@@ -588,7 +593,7 @@ export enum DevtoolsExperiments {
   'developerResourcesView' = 15,
   'recordCoverageWithPerformanceTracing' = 16,
   'samplingHeapProfilerTimeline' = 17,
-  'showOptionToNotTreatGlobalObjectsAsRoots' = 18,
+  'showOptionToExposeInternalsInHeapSnapshot' = 18,
   'sourceOrderViewer' = 20,
   'webauthnPane' = 22,
   'timelineEventInitiators' = 24,
@@ -621,8 +626,10 @@ export enum DevtoolsExperiments {
   'cssLayers' = 59,
   'eyedropperColorPicker' = 60,
   'instrumentationBreakpoints' = 61,
+  'cssAuthoringHints' = 62,
+  'authoredDeployedGrouping' = 63,
   // Increment this when new experiments are added.
-  'MaxValue' = 62,
+  'MaxValue' = 64,
 }
 /* eslint-enable @typescript-eslint/naming-convention */
 
@@ -897,6 +904,16 @@ export enum RecordingReplayFinished {
 
 // TODO(crbug.com/1167717): Make this a const enum again
 // eslint-disable-next-line rulesdir/const_enum
+export enum RecordingReplaySpeed {
+  Normal = 1,
+  Slow = 2,
+  VerySlow = 3,
+  ExtremelySlow = 4,
+  MaxValue = 5,
+}
+
+// TODO(crbug.com/1167717): Make this a const enum again
+// eslint-disable-next-line rulesdir/const_enum
 export enum RecordingReplayStarted {
   ReplayOnly = 1,
   ReplayWithPerformanceTracing = 2,
@@ -924,7 +941,9 @@ export enum RecordingEdited {
 export enum RecordingExported {
   ToPuppeteer = 1,
   ToJSON = 2,
-  MaxValue = 3,
+  ToPuppeteerReplay = 3,
+  ToExtension = 4,
+  MaxValue = 5,
 }
 
 /* eslint-disable @typescript-eslint/naming-convention */

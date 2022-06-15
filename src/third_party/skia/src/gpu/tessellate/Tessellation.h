@@ -18,53 +18,6 @@ class SkMatrix;
 class SkPath;
 struct SkRect;
 
-namespace skgpu {
-
-// Use familiar type names from SkSL.
-template<int N> using vec = skvx::Vec<N, float>;
-using float2 = vec<2>;
-using float4 = vec<4>;
-
-template<int N> using ivec = skvx::Vec<N, int32_t>;
-using int2 = ivec<2>;
-using int4 = ivec<4>;
-
-template<int N> using uvec = skvx::Vec<N, uint32_t>;
-using uint2 = uvec<2>;
-using uint4 = uvec<4>;
-
-#define AI SK_MAYBE_UNUSED SK_ALWAYS_INLINE
-
-AI float dot(float2 a, float2 b) {
-    float2 ab = a*b;
-    return ab.x() + ab.y();
-}
-
-AI float cross(float2 a, float2 b) {
-    float2 x = a * b.yx();
-    return x[0] - x[1];
-}
-
-// This does not return b when t==1, but it otherwise seems to get better precision than
-// "a*(1 - t) + b*t" for things like chopping cubics on exact cusp points.
-// The responsibility falls on the caller to check that t != 1 before calling.
-template<int N>
-AI vec<N> mix(vec<N> a, vec<N> b, vec<N> T) {
-    SkASSERT(all((0 <= T) & (T < 1)));
-    return (b - a)*T + a;
-}
-
-template<int N>
-AI vec<N> mix(vec<N> a, vec<N> b, float T) {
-    return mix(a, b, vec<N>(T));
-}
-
-AI constexpr float pow2(float x) { return x*x; }
-AI constexpr float pow4(float x) { return pow2(x*x); }
-
-#undef AI
-}  // namespace skgpu
-
 namespace skgpu::tess {
 
 // Don't allow linearized segments to be off by more than 1/4th of a pixel from the true curve.
@@ -81,6 +34,9 @@ constexpr static int kMaxResolveLevel = 5;
 // path filling algorithms snap their dynamic vertex counts to powers-of-two, whereas the stroking
 // algorithm does not.
 constexpr static int kMaxParametricSegments = 1 << kMaxResolveLevel;
+constexpr static int kMaxParametricSegments_p2 = kMaxParametricSegments * kMaxParametricSegments;
+constexpr static int kMaxParametricSegments_p4 = kMaxParametricSegments_p2 *
+                                                 kMaxParametricSegments_p2;
 
 // Don't tessellate paths that might have an individual curve that requires more than 1024 segments.
 // (See wangs_formula::worst_case_cubic). If this is the case, call "PreChopPathCurves" first.
@@ -88,6 +44,8 @@ constexpr static int kMaxParametricSegments = 1 << kMaxResolveLevel;
 // kMaxTessellationSegmentsPerCurve is handled automatically by PatchWriter. It differs from
 // PreChopPathCurves in that it does no culling of offscreen chopped paths.
 constexpr static float kMaxSegmentsPerCurve = 1024;
+constexpr static float kMaxSegmentsPerCurve_p2 = kMaxSegmentsPerCurve * kMaxSegmentsPerCurve;
+constexpr static float kMaxSegmentsPerCurve_p4 = kMaxSegmentsPerCurve_p2 * kMaxSegmentsPerCurve_p2;
 
 // Returns a new path, equivalent to 'path' within the given viewport, whose verbs can all be drawn
 // with 'maxSegments' tessellation segments or fewer, while staying within '1/tessellationPrecision'
@@ -189,6 +147,7 @@ inline float GetJoinType(const SkStrokeRec& stroke) {
 // This float2 gets written out with each patch/instance if PatchAttribs::kStrokeParams is enabled.
 struct StrokeParams {
     StrokeParams() = default;
+    StrokeParams(float radius, float joinType) : fRadius(radius), fJoinType(joinType) {}
     StrokeParams(const SkStrokeRec& stroke) {
         this->set(stroke);
     }
@@ -232,17 +191,9 @@ constexpr int NumFixedEdgesInJoin(SkPaint::Join joinType) {
     }
     SkUNREACHABLE;
 }
-
-// Returns the worst-case number of edges we will need in order to draw a join of the given type.
-constexpr int WorstCaseEdgesInJoin(SkPaint::Join joinType,
-                                   float numRadialSegmentsPerRadian) {
-    int numEdges = NumFixedEdgesInJoin(joinType);
-    if (joinType == SkPaint::kRound_Join) {
-        // For round joins we need to count the radial edges on our own. Account for a worst-case
-        // join of 180 degrees (SK_ScalarPI radians).
-        numEdges += std::max(SkScalarCeilToInt(numRadialSegmentsPerRadian * SK_ScalarPI) - 1, 0);
-    }
-    return numEdges;
+constexpr int NumFixedEdgesInJoin(const StrokeParams& strokeParams) {
+    // The caller is responsible for counting the variable number of segments for round joins.
+    return strokeParams.fJoinType > 0.f ? /* miter */ 4 : /* round or bevel */ 3;
 }
 
 // Decides the number of radial segments the tessellator adds for each curve. (Uniform steps

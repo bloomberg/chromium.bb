@@ -449,10 +449,10 @@ struct FeaturesVk : FeatureSetBase
         "generateSPIRVThroughGlslang", FeatureCategory::VulkanFeatures,
         "Translate SPIR-V through glslang.", &members, "http://anglebug.com/4889"};
 
-    FeatureInfo forceDriverUniformOverSpecConst = {
-        "forceDriverUniformOverSpecConst", FeatureCategory::VulkanWorkarounds,
-        "Forces using driver uniforms instead of specialization constants.", &members,
-        "http://issuetracker.google.com/173636783"};
+    FeatureInfo preferDriverUniformOverSpecConst = {
+        "preferDriverUniformOverSpecConst", FeatureCategory::VulkanFeatures,
+        "Prefer using driver uniforms instead of specialization constants.", &members,
+        "http://anglebug.com/7406"};
 
     FeatureInfo exposeNonConformantExtensionsAndVersions = {
         "exposeNonConformantExtensionsAndVersions", FeatureCategory::VulkanWorkarounds,
@@ -493,6 +493,16 @@ struct FeaturesVk : FeatureSetBase
     FeatureInfo supportsHostQueryReset = {"supportsHostQueryReset", FeatureCategory::VulkanFeatures,
                                           "VkDevice supports VK_EXT_host_query_reset extension",
                                           &members, "http://anglebug.com/6692"};
+
+    FeatureInfo supportsPipelineCreationCacheControl = {
+        "supportsPipelineCreationCacheControl", FeatureCategory::VulkanFeatures,
+        "VkDevice supports VK_EXT_pipeline_creation_cache_control extension", &members,
+        "http://anglebug.com/5881"};
+
+    FeatureInfo supportsPipelineCreationFeedback = {
+        "supportsPipelineCreationFeedback", FeatureCategory::VulkanFeatures,
+        "VkDevice supports VK_EXT_pipeline_creation_feedback extension", &members,
+        "http://anglebug.com/5881"};
 
     FeatureInfo supportsSurfaceCapabilities2Extension = {
         "supportsSurfaceCapabilities2Extension",
@@ -599,6 +609,16 @@ struct FeaturesVk : FeatureSetBase
         "Prefer adding HOST_VISIBLE flag for DEVICE_LOCAL memory when picking memory types",
         &members, "http://anglebug.com/7047"};
 
+    FeatureInfo supportsExtendedDynamicState = {
+        "supportsExtendedDynamicState", FeatureCategory::VulkanFeatures,
+        "VkDevice supports VK_EXT_extended_dynamic_state extension", &members,
+        "http://anglebug.com/5906"};
+
+    FeatureInfo supportsExtendedDynamicState2 = {
+        "supportsExtendedDynamicState2", FeatureCategory::VulkanFeatures,
+        "VkDevice supports VK_EXT_extended_dynamic_state2 extension", &members,
+        "http://anglebug.com/5906"};
+
     FeatureInfo supportsFragmentShadingRate = {
         "supportsFragmentShadingRate", FeatureCategory::VulkanFeatures,
         "VkDevice supports VK_KHR_fragment_shading_rate extension", &members,
@@ -614,6 +634,17 @@ struct FeaturesVk : FeatureSetBase
         "forceContinuousRefreshOnSharedPresent", FeatureCategory::VulkanFeatures,
         "Force to create vulkan swapchain with continuous refresh on shared present", &members,
         "https://issuetracker.google.com/229267970"};
+
+    FeatureInfo supportsImage2dViewOf3d = {
+        "supportsImage2dViewOf3d", FeatureCategory::VulkanFeatures,
+        "VkDevice supports VK_EXT_image_2d_view_of_3d", &members, "https://anglebug.com/7320"};
+
+    FeatureInfo preferLinearFilterForYUV = {
+        "preferLinearFilterForYUV",
+        FeatureCategory::VulkanFeatures,
+        "Prefer to use VK_FILTER_LINEAR for VkSamplerYcbcrConversion",
+        &members,
+    };
 };
 
 inline FeaturesVk::FeaturesVk()  = default;

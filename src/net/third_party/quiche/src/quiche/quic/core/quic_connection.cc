@@ -313,8 +313,6 @@ QuicConnection::QuicConnection(
       max_consecutive_num_packets_with_no_retransmittable_frames_(
           kMaxConsecutiveNonRetransmittablePackets),
       bundle_retransmittable_with_pto_ack_(false),
-      fill_up_link_during_probing_(false),
-      probing_retransmission_pending_(false),
       last_control_frame_id_(kInvalidControlFrameId),
       is_path_degrading_(false),
       processing_ack_frame_(false),
@@ -1969,29 +1967,6 @@ void QuicConnection::OnClientConnectionIdAvailable() {
   }
 }
 
-bool QuicConnection::ShouldSetRetransmissionAlarmOnPacketSent(
-    bool in_flight, EncryptionLevel level) const {
-  QUICHE_DCHECK(!sent_packet_manager_.simplify_set_retransmission_alarm());
-  if (!retransmission_alarm_->IsSet()) {
-    return true;
-  }
-  if (!in_flight) {
-    return false;
-  }
-
-  if (!SupportsMultiplePacketNumberSpaces()) {
-    return true;
-  }
-  // Before handshake gets confirmed, do not re-arm PTO timer on application
-  // data. Think about this scenario: on the client side, the CHLO gets
-  // acknowledged and the SHLO is not received yet. The PTO alarm is set when
-  // the CHLO acknowledge is received (and there is no in flight INITIAL
-  // packet). Re-arming PTO alarm on 0-RTT packet would keep postponing the PTO
-  // alarm.
-  return IsHandshakeConfirmed() || level == ENCRYPTION_INITIAL ||
-         level == ENCRYPTION_HANDSHAKE;
-}
-
 bool QuicConnection::OnNewConnectionIdFrameInner(
     const QuicNewConnectionIdFrame& frame) {
   if (peer_issued_cid_manager_ == nullptr) {
@@ -3014,15 +2989,8 @@ bool QuicConnection::ProcessValidatedPacket(const QuicPacketHeader& header) {
             ", encryption level: ",
             EncryptionLevelToString(
                 last_received_packet_info_.decrypted_level));
-        if (GetQuicReloadableFlag(
-                quic_drop_packets_with_changed_server_address)) {
-          QUIC_LOG_EVERY_N_SEC(INFO, 100) << error_details;
-          QUIC_CODE_COUNT(quic_dropped_packets_with_changed_server_address);
-          return false;
-        }
-        QUIC_PEER_BUG(Server self address change) << error_details;
-        CloseConnection(QUIC_ERROR_MIGRATING_ADDRESS, error_details,
-                        ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
+        QUIC_LOG_EVERY_N_SEC(INFO, 100) << error_details;
+        QUIC_CODE_COUNT(quic_dropped_packets_with_changed_server_address);
         return false;
       }
     }
@@ -3138,17 +3106,6 @@ void QuicConnection::WriteQueuedPackets() {
     }
     if (IsWriteBlockedStatus(result.status)) {
       visitor_->OnWriteBlocked();
-      break;
-    }
-  }
-}
-
-void QuicConnection::SendProbingRetransmissions() {
-  while (sent_packet_manager_.GetSendAlgorithm()->ShouldSendProbingPacket() &&
-         CanWrite(HAS_RETRANSMITTABLE_DATA)) {
-    if (!visitor_->SendProbingData()) {
-      QUIC_DVLOG(1)
-          << "Cannot send probing retransmissions: nothing to retransmit.";
       break;
     }
   }
@@ -3686,13 +3643,7 @@ bool QuicConnection::WritePacket(SerializedPacket* packet) {
       return true;
     }
   }
-  if (sent_packet_manager_.simplify_set_retransmission_alarm()) {
-    QUIC_RELOADABLE_FLAG_COUNT_N(quic_simplify_set_retransmission_alarm, 1, 2);
-    if (in_flight || !retransmission_alarm_->IsSet()) {
-      SetRetransmissionAlarm();
-    }
-  } else if (ShouldSetRetransmissionAlarmOnPacketSent(
-                 in_flight, packet->encryption_level)) {
+  if (in_flight || !retransmission_alarm_->IsSet()) {
     SetRetransmissionAlarm();
   }
   SetPingAlarm();
@@ -4369,14 +4320,7 @@ void QuicConnection::QueueUndecryptablePacket(
   undecryptable_packets_.emplace_back(packet, decryption_level,
                                       last_received_packet_info_);
   if (perspective_ == Perspective::IS_CLIENT) {
-    if (sent_packet_manager_.simplify_set_retransmission_alarm()) {
-      SetRetransmissionAlarm();
-    } else if (!retransmission_alarm_->IsSet() ||
-               GetRetransmissionDeadline() <
-                   retransmission_alarm_->deadline()) {
-      // Re-arm PTO only if we can make it sooner to speed up recovery.
-      SetRetransmissionAlarm();
-    }
+    SetRetransmissionAlarm();
   }
 }
 
@@ -4440,18 +4384,7 @@ void QuicConnection::MaybeProcessUndecryptablePackets() {
     undecryptable_packets_.clear();
   }
   if (perspective_ == Perspective::IS_CLIENT) {
-    if (sent_packet_manager_.simplify_set_retransmission_alarm()) {
-      SetRetransmissionAlarm();
-    } else if (!retransmission_alarm_->IsSet() ||
-               undecryptable_packets_.empty() ||
-               GetRetransmissionDeadline() <
-                   retransmission_alarm_->deadline()) {
-      // 1) If there is still undecryptable packet, only re-arm PTO to make it
-      // sooner to speed up recovery.
-      // 2) If all undecryptable packets get processed, re-arm (which may
-      // postpone) PTO since no immediate recovery is needed.
-      SetRetransmissionAlarm();
-    }
+    SetRetransmissionAlarm();
   }
 }
 
@@ -4796,15 +4729,13 @@ void QuicConnection::SetRetransmissionAlarm() {
     return;
   }
   PacketNumberSpace packet_number_space;
-  if (sent_packet_manager_.simplify_set_retransmission_alarm() &&
-      SupportsMultiplePacketNumberSpaces() && !IsHandshakeConfirmed() &&
+  if (SupportsMultiplePacketNumberSpaces() && !IsHandshakeConfirmed() &&
       !sent_packet_manager_
            .GetEarliestPacketSentTimeForPto(&packet_number_space)
            .IsInitialized()) {
     // Before handshake gets confirmed, GetEarliestPacketSentTimeForPto
     // returning 0 indicates no packets are in flight or only application data
     // is in flight.
-    QUIC_RELOADABLE_FLAG_COUNT_N(quic_simplify_set_retransmission_alarm, 2, 2);
     if (perspective_ == Perspective::IS_SERVER) {
       // No need to arm PTO on server side.
       retransmission_alarm_->Cancel();
@@ -4881,29 +4812,19 @@ QuicConnection::ScopedPacketFlusher::~ScopedPacketFlusher() {
       }
     }
 
-    if (connection_->flush_after_coalesce_higher_space_packets_) {
-      // INITIAL or HANDSHAKE retransmission could cause peer to derive new
-      // keys, such that the buffered undecryptable packets may be processed.
-      // This endpoint would derive an inflated RTT sample when receiving ACKs
-      // of those undecryptable packets. To mitigate this, tries to coalesce as
-      // many higher space packets as possible (via for loop inside
-      // MaybeCoalescePacketOfHigherSpace) to fill the remaining space in the
-      // coalescer.
-      QUIC_RELOADABLE_FLAG_COUNT(
-          quic_flush_after_coalesce_higher_space_packets);
-      if (connection_->version().CanSendCoalescedPackets()) {
-        connection_->MaybeCoalescePacketOfHigherSpace();
-      }
-      connection_->packet_creator_.Flush();
-      if (connection_->version().CanSendCoalescedPackets()) {
-        connection_->FlushCoalescedPacket();
-      }
-    } else {
-      connection_->packet_creator_.Flush();
-      if (connection_->version().CanSendCoalescedPackets()) {
-        connection_->MaybeCoalescePacketOfHigherSpace();
-        connection_->FlushCoalescedPacket();
-      }
+    // INITIAL or HANDSHAKE retransmission could cause peer to derive new
+    // keys, such that the buffered undecryptable packets may be processed.
+    // This endpoint would derive an inflated RTT sample when receiving ACKs
+    // of those undecryptable packets. To mitigate this, tries to coalesce as
+    // many higher space packets as possible (via for loop inside
+    // MaybeCoalescePacketOfHigherSpace) to fill the remaining space in the
+    // coalescer.
+    if (connection_->version().CanSendCoalescedPackets()) {
+      connection_->MaybeCoalescePacketOfHigherSpace();
+    }
+    connection_->packet_creator_.Flush();
+    if (connection_->version().CanSendCoalescedPackets()) {
+      connection_->FlushCoalescedPacket();
     }
     connection_->FlushPackets();
     if (!handshake_packet_sent_ && connection_->handshake_packet_sent_) {
@@ -5517,29 +5438,8 @@ bool QuicConnection::MaybeConsiderAsMemoryCorruption(
   return false;
 }
 
-void QuicConnection::MaybeSendProbingRetransmissions() {
-  QUICHE_DCHECK(fill_up_link_during_probing_);
-
-  // Don't send probing retransmissions until the handshake has completed.
-  if (!IsHandshakeComplete() ||
-      sent_packet_manager().HasUnackedCryptoPackets()) {
-    return;
-  }
-
-  if (probing_retransmission_pending_) {
-    QUIC_BUG(quic_bug_10511_37)
-        << "MaybeSendProbingRetransmissions is called while another call "
-           "to it is already in progress";
-    return;
-  }
-
-  probing_retransmission_pending_ = true;
-  SendProbingRetransmissions();
-  probing_retransmission_pending_ = false;
-}
-
 void QuicConnection::CheckIfApplicationLimited() {
-  if (!connected_ || probing_retransmission_pending_) {
+  if (!connected_) {
     return;
   }
 
@@ -5548,13 +5448,6 @@ void QuicConnection::CheckIfApplicationLimited() {
 
   if (!application_limited) {
     return;
-  }
-
-  if (fill_up_link_during_probing_) {
-    MaybeSendProbingRetransmissions();
-    if (!CanWrite(HAS_RETRANSMITTABLE_DATA)) {
-      return;
-    }
   }
 
   sent_packet_manager_.OnApplicationLimited();
@@ -5987,8 +5880,7 @@ void QuicConnection::MaybeCoalescePacketOfHigherSpace() {
   }
   if (fill_coalesced_packet_) {
     // Make sure MaybeCoalescePacketOfHigherSpace is not re-entrant.
-    QUIC_BUG_IF(quic_coalesce_packet_reentrant,
-                flush_after_coalesce_higher_space_packets_);
+    QUIC_BUG(quic_coalesce_packet_reentrant);
     return;
   }
   for (EncryptionLevel retransmission_level :
@@ -6940,11 +6832,38 @@ QuicConnectionId QuicConnection::GetOneActiveServerConnectionId() const {
 
 std::vector<QuicConnectionId> QuicConnection::GetActiveServerConnectionIds()
     const {
+  QUICHE_DCHECK_EQ(Perspective::IS_SERVER, perspective_);
+  std::vector<QuicConnectionId> result;
   if (self_issued_cid_manager_ == nullptr) {
-    return {default_path_.server_connection_id};
+    result.push_back(default_path_.server_connection_id);
+  } else {
+    QUICHE_DCHECK(version().HasIetfQuicFrames());
+    result = self_issued_cid_manager_->GetUnretiredConnectionIds();
   }
-  QUICHE_DCHECK(version().HasIetfQuicFrames());
-  return self_issued_cid_manager_->GetUnretiredConnectionIds();
+  if (GetQuicReloadableFlag(
+          quic_consider_original_connection_id_as_active_pre_handshake)) {
+    QUIC_RELOADABLE_FLAG_COUNT(
+        quic_consider_original_connection_id_as_active_pre_handshake);
+    if (!IsHandshakeComplete() &&
+        original_destination_connection_id_.has_value()) {
+      // Consider original_destination_connection_id_ as active before handshake
+      // completes.
+      if (std::find(result.begin(), result.end(),
+                    original_destination_connection_id_.value()) !=
+          result.end()) {
+        QUIC_BUG(quic_unexpected_original_destination_connection_id)
+            << "original_destination_connection_id: "
+            << original_destination_connection_id_.value()
+            << " is unexpectedly in active "
+               "list";
+      } else {
+        result.insert(result.end(),
+                      original_destination_connection_id_.value());
+      }
+      QUIC_CODE_COUNT(quic_active_original_connection_id_pre_handshake);
+    }
+  }
+  return result;
 }
 
 void QuicConnection::CreateConnectionIdManager() {

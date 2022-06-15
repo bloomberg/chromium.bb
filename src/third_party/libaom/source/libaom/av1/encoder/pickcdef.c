@@ -10,6 +10,7 @@
  */
 
 #include <math.h>
+#include <stdbool.h>
 #include <string.h>
 
 #include "config/aom_dsp_rtcd.h"
@@ -413,7 +414,7 @@ static void cdef_mse_calc_frame(CdefSearchCtx *cdef_search_ctx) {
 //   related to CDEF search context.
 // Returns:
 //   Nothing will be returned. Contents of cdef_search_ctx will be modified.
-static AOM_INLINE void cdef_alloc_data(CdefSearchCtx *cdef_search_ctx) {
+static AOM_INLINE bool cdef_alloc_data(CdefSearchCtx *cdef_search_ctx) {
   const int nvfb = cdef_search_ctx->nvfb;
   const int nhfb = cdef_search_ctx->nhfb;
   cdef_search_ctx->sb_index =
@@ -423,6 +424,14 @@ static AOM_INLINE void cdef_alloc_data(CdefSearchCtx *cdef_search_ctx) {
       aom_malloc(sizeof(**cdef_search_ctx->mse) * nvfb * nhfb);
   cdef_search_ctx->mse[1] =
       aom_malloc(sizeof(**cdef_search_ctx->mse) * nvfb * nhfb);
+  if (!(cdef_search_ctx->sb_index && cdef_search_ctx->mse[0] &&
+        cdef_search_ctx->mse[1])) {
+    aom_free(cdef_search_ctx->sb_index);
+    aom_free(cdef_search_ctx->mse[0]);
+    aom_free(cdef_search_ctx->mse[1]);
+    return false;
+  }
+  return true;
 }
 
 // Deallocates the memory allocated for members of CdefSearchCtx.
@@ -599,7 +608,14 @@ void av1_cdef_search(MultiThreadInfo *mt_info, const YV12_BUFFER_CONFIG *frame,
   // Initialize parameters related to CDEF search context.
   cdef_params_init(frame, ref, cm, xd, &cdef_search_ctx, pick_method);
   // Allocate CDEF search context buffers.
-  cdef_alloc_data(&cdef_search_ctx);
+  if (!cdef_alloc_data(&cdef_search_ctx)) {
+    CdefInfo *const cdef_info = &cm->cdef_info;
+    cdef_info->nb_cdef_strengths = 0;
+    cdef_info->cdef_bits = 0;
+    cdef_info->cdef_strengths[0] = 0;
+    cdef_info->cdef_uv_strengths[0] = 0;
+    return;
+  }
   // Frame level mse calculation.
   if (mt_info->num_workers > 1) {
     av1_cdef_mse_calc_frame_mt(cm, mt_info, &cdef_search_ctx);

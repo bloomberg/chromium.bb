@@ -49,10 +49,11 @@ g.test('render_pass_resolve')
     // well as a line between the portions that contain the midpoint color due to the multisample
     // resolve.
     const pipeline = t.device.createRenderPipeline({
+      layout: 'auto',
       vertex: {
         module: t.device.createShaderModule({
           code: `
-            @stage(vertex) fn main(
+            @vertex fn main(
               @builtin(vertex_index) VertexIndex : u32
               ) -> @builtin(position) vec4<f32> {
               var pos : array<vec2<f32>, 3> = array<vec2<f32>, 3>(
@@ -74,7 +75,7 @@ g.test('render_pass_resolve')
               @location(3) fragColor3 : vec4<f32>,
             };
 
-            @stage(fragment) fn main() -> Output {
+            @fragment fn main() -> Output {
               return Output(
                 vec4<f32>(1.0, 1.0, 1.0, 1.0),
                 vec4<f32>(1.0, 1.0, 1.0, 1.0),

@@ -225,6 +225,7 @@ static int find_translation(int np, double *pts1, double *pts2, double *mat) {
 static int find_rotzoom(int np, double *pts1, double *pts2, double *mat) {
   const int np2 = np * 2;
   double *a = (double *)aom_malloc(sizeof(*a) * (np2 * 5 + 20));
+  if (a == NULL) return 1;
   double *b = a + np2 * 4;
   double *temp = b + np2;
   int i;

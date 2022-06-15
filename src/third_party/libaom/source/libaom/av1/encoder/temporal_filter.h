@@ -12,6 +12,8 @@
 #ifndef AOM_AV1_ENCODER_TEMPORAL_FILTER_H_
 #define AOM_AV1_ENCODER_TEMPORAL_FILTER_H_
 
+#include <stdbool.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -348,7 +350,7 @@ int av1_get_q(const struct AV1_COMP *cpi);
 //   is_high_bitdepth: Whether the frame is high-bitdepth or not.
 // Returns:
 //   Nothing will be returned. But the contents of tf_data will be modified.
-static AOM_INLINE void tf_alloc_and_reset_data(TemporalFilterData *tf_data,
+static AOM_INLINE bool tf_alloc_and_reset_data(TemporalFilterData *tf_data,
                                                int num_pels,
                                                int is_high_bitdepth) {
   tf_data->tmp_mbmi = (MB_MODE_INFO *)malloc(sizeof(*tf_data->tmp_mbmi));
@@ -364,6 +366,13 @@ static AOM_INLINE void tf_alloc_and_reset_data(TemporalFilterData *tf_data,
   else
     tf_data->pred =
         (uint8_t *)aom_memalign(32, num_pels * sizeof(*tf_data->pred));
+  if (!(tf_data->accum && tf_data->count && tf_data->pred)) {
+    aom_free(tf_data->accum);
+    aom_free(tf_data->count);
+    aom_free(tf_data->pred);
+    return false;
+  }
+  return true;
 }
 
 // Setup macroblockd params for temporal filtering process.

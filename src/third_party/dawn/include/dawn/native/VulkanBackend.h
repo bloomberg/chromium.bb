@@ -17,6 +17,7 @@
 
 #include <vulkan/vulkan.h>
 
+#include <array>
 #include <vector>
 
 #include "dawn/dawn_wsi.h"
@@ -68,7 +69,7 @@ struct ExternalImageExportInfoVk : ExternalImageExportInfo {
     using ExternalImageExportInfo::ExternalImageExportInfo;
 };
 
-// Can't use DAWN_PLATFORM_LINUX since header included in both Dawn and Chrome
+// Can't use DAWN_PLATFORM_IS(LINUX) since header included in both Dawn and Chrome
 #ifdef __linux__
 
 // Common properties of external images represented by FDs. On successful import the file
@@ -92,11 +93,18 @@ struct DAWN_NATIVE_EXPORT ExternalImageDescriptorOpaqueFD : ExternalImageDescrip
     uint32_t memoryTypeIndex;     // Must match VkMemoryAllocateInfo from image creation
 };
 
+// The plane-wise offset and stride.
+struct DAWN_NATIVE_EXPORT PlaneLayout {
+    uint64_t offset;
+    uint32_t stride;
+};
+
 // Descriptor for dma-buf file descriptor image import
 struct DAWN_NATIVE_EXPORT ExternalImageDescriptorDmaBuf : ExternalImageDescriptorFD {
     ExternalImageDescriptorDmaBuf();
 
-    uint32_t stride;       // Stride of the buffer in bytes
+    static constexpr uint32_t kMaxPlanes = 3;
+    std::array<PlaneLayout, kMaxPlanes> planeLayouts;
     uint64_t drmModifier;  // DRM modifier of the buffer
 };
 

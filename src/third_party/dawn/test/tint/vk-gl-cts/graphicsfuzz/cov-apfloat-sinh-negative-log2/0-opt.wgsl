@@ -30,7 +30,7 @@ fn main_1() {
   var undefined : f32;
   var x_45 : bool;
   var x_46_phi : bool;
-  undefined = sinh(0x1.8p+128);
+  undefined = sinh(1.0);
   let x_10 : i32 = x_6.x_GLF_uniform_int_values[0].el;
   let x_38 : bool = (1 == x_10);
   x_46_phi = x_38;
@@ -60,7 +60,7 @@ struct main_out {
   x_GLF_color_1 : vec4<f32>,
 }
 
-@stage(fragment)
+@fragment
 fn main() -> main_out {
   main_1();
   return main_out(x_GLF_color);

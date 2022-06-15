@@ -27,6 +27,7 @@ import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.content_public.browser.SelectionClient;
@@ -111,7 +112,7 @@ public class ContextualSearchTriggerTest extends ContextualSearchInstrumentation
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    @ParameterAnnotations.UseMethodParameter(ContextualSearchManagerTest.FeatureParamProvider.class)
+    @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
     public void testNonResolveTrigger(@EnabledFeature int enabledFeature) throws Exception {
         if (isConfigurationForResolvingGesturesOnly()) return;
         triggerNonResolve("states");
@@ -206,6 +207,12 @@ public class ContextualSearchTriggerTest extends ContextualSearchInstrumentation
     public void testTapGestureFarAwayTogglesSelecting() throws Exception {
         FeatureList.setTestFeatures(ENABLE_NONE);
 
+        // Showing the handles on a Tap gesture can interfere with the next tap gesture because
+        // the handles make the CS System think it's a long-press, which behaves differently.
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXTUAL_TRIGGERS_SELECTION_HANDLES)) {
+            return;
+        }
+
         clickWordNode("states");
         Assert.assertEquals("States", getSelectedText());
         waitForPanelToPeek();
@@ -230,7 +237,6 @@ public class ContextualSearchTriggerTest extends ContextualSearchInstrumentation
         clickWordNode("states");
         Assert.assertEquals("States", getSelectedText());
         waitForPanelToPeek();
-        assertLoggedAllExpectedFeaturesToRanker();
         // Avoid issues with double-tap detection by ensuring sequential taps
         // aren't treated as such. Double-tapping can also select words much as
         // longpress, in turn showing the pins and preventing contextual tap
@@ -242,12 +248,9 @@ public class ContextualSearchTriggerTest extends ContextualSearchInstrumentation
         // for the selection to change.
         clickNode("states-near");
         waitForSelectionToBe("StatesNear");
-        assertLoggedAllExpectedOutcomesToRanker();
-        assertLoggedAllExpectedFeaturesToRanker();
         Thread.sleep(ViewConfiguration.getDoubleTapTimeout());
         clickNode("states");
         waitForSelectionToBe("States");
-        assertLoggedAllExpectedOutcomesToRanker();
     }
 
     //============================================================================================
@@ -260,7 +263,7 @@ public class ContextualSearchTriggerTest extends ContextualSearchInstrumentation
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    @ParameterAnnotations.UseMethodParameter(ContextualSearchManagerTest.FeatureParamProvider.class)
+    @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
     @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.O, message = "crbug.com/1071080")
     public void testLongPressGestureFollowedByScrollMaintainsSelection(
             @EnabledFeature int enabledFeature) throws Exception {
@@ -279,7 +282,7 @@ public class ContextualSearchTriggerTest extends ContextualSearchInstrumentation
     @SmallTest
     @Feature({"ContextualSearch"})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    @DisabledTest(message = "See https://crbug.com/837998")
+    // Previously disabled: https://crbug.com/837998
     public void testLongPressGestureFollowedByTapDoesntSelect() throws Exception {
         FeatureList.setTestFeatures(ENABLE_NONE);
 
@@ -354,7 +357,7 @@ public class ContextualSearchTriggerTest extends ContextualSearchInstrumentation
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    @ParameterAnnotations.UseMethodParameter(ContextualSearchManagerTest.FeatureParamProvider.class)
+    @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
     public void testExpandBeforeSearchTermResolution(@EnabledFeature int enabledFeature)
             throws Exception {
         simulateSlowResolveSearch("states");
@@ -411,7 +414,7 @@ public class ContextualSearchTriggerTest extends ContextualSearchInstrumentation
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    @ParameterAnnotations.UseMethodParameter(ContextualSearchManagerTest.FeatureParamProvider.class)
+    @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
     // Previously flaky and disabled 4/2021.  https://crbug.com/1180304
     public void testSelectionExpansionOnSearchTermResolution(@EnabledFeature int enabledFeature)
             throws Exception {

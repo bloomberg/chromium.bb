@@ -212,6 +212,7 @@ TEST_F(ParserImplTest, Attribute_Workgroup_Missing_Z_Value) {
     EXPECT_EQ(p->error(), "1:22: expected workgroup_size z parameter");
 }
 
+// TODO(crbug.com/tint/1503): Remove when @stage is removed
 TEST_F(ParserImplTest, Attribute_Stage) {
     auto p = parser("stage(compute)");
     auto attr = p->attribute();
@@ -263,6 +264,45 @@ TEST_F(ParserImplTest, Attribute_Stage_MissingRightParen) {
     EXPECT_EQ(attr.value, nullptr);
     EXPECT_TRUE(p->has_error());
     EXPECT_EQ(p->error(), "1:14: expected ')' for stage attribute");
+}
+
+TEST_F(ParserImplTest, Attribute_Compute) {
+    auto p = parser("compute");
+    auto attr = p->attribute();
+    EXPECT_TRUE(attr.matched);
+    EXPECT_FALSE(attr.errored);
+    ASSERT_NE(attr.value, nullptr) << p->error();
+    ASSERT_FALSE(p->has_error());
+    auto* func_attr = attr.value->As<ast::Attribute>();
+    ASSERT_NE(func_attr, nullptr);
+    ASSERT_TRUE(func_attr->Is<ast::StageAttribute>());
+    EXPECT_EQ(func_attr->As<ast::StageAttribute>()->stage, ast::PipelineStage::kCompute);
+}
+
+TEST_F(ParserImplTest, Attribute_Vertex) {
+    auto p = parser("vertex");
+    auto attr = p->attribute();
+    EXPECT_TRUE(attr.matched);
+    EXPECT_FALSE(attr.errored);
+    ASSERT_NE(attr.value, nullptr) << p->error();
+    ASSERT_FALSE(p->has_error());
+    auto* func_attr = attr.value->As<ast::Attribute>();
+    ASSERT_NE(func_attr, nullptr);
+    ASSERT_TRUE(func_attr->Is<ast::StageAttribute>());
+    EXPECT_EQ(func_attr->As<ast::StageAttribute>()->stage, ast::PipelineStage::kVertex);
+}
+
+TEST_F(ParserImplTest, Attribute_Fragment) {
+    auto p = parser("fragment");
+    auto attr = p->attribute();
+    EXPECT_TRUE(attr.matched);
+    EXPECT_FALSE(attr.errored);
+    ASSERT_NE(attr.value, nullptr) << p->error();
+    ASSERT_FALSE(p->has_error());
+    auto* func_attr = attr.value->As<ast::Attribute>();
+    ASSERT_NE(func_attr, nullptr);
+    ASSERT_TRUE(func_attr->Is<ast::StageAttribute>());
+    EXPECT_EQ(func_attr->As<ast::StageAttribute>()->stage, ast::PipelineStage::kFragment);
 }
 
 }  // namespace

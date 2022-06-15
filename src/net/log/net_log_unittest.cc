@@ -32,9 +32,9 @@ base::Value CaptureModeToValue(NetLogCaptureMode capture_mode) {
 }
 
 base::Value NetCaptureModeParams(NetLogCaptureMode capture_mode) {
-  base::Value dict(base::Value::Type::DICTIONARY);
-  dict.SetKey("capture_mode", CaptureModeToValue(capture_mode));
-  return dict;
+  base::Value::Dict dict;
+  dict.Set("capture_mode", CaptureModeToValue(capture_mode));
+  return base::Value(std::move(dict));
 }
 
 TEST(NetLogTest, BasicGlobalEvents) {
@@ -186,7 +186,7 @@ TEST(NetLogTest, CaptureModes) {
 
 class CountingObserver : public NetLog::ThreadSafeObserver {
  public:
-  CountingObserver() : count_(0) {}
+  CountingObserver() = default;
 
   ~CountingObserver() override {
     if (net_log())
@@ -198,7 +198,7 @@ class CountingObserver : public NetLog::ThreadSafeObserver {
   int count() const { return count_; }
 
  private:
-  int count_;
+  int count_ = 0;
 };
 
 class LoggingObserver : public NetLog::ThreadSafeObserver {
@@ -235,10 +235,7 @@ void AddEvent(NetLog* net_log) {
 // RunTestThread.
 class NetLogTestThread : public base::SimpleThread {
  public:
-  NetLogTestThread()
-      : base::SimpleThread("NetLogTest"),
-        net_log_(nullptr),
-        start_event_(nullptr) {}
+  NetLogTestThread() : base::SimpleThread("NetLogTest") {}
 
   NetLogTestThread(const NetLogTestThread&) = delete;
   NetLogTestThread& operator=(const NetLogTestThread&) = delete;
@@ -260,12 +257,12 @@ class NetLogTestThread : public base::SimpleThread {
   virtual void RunTestThread() = 0;
 
  protected:
-  raw_ptr<NetLog> net_log_;
+  raw_ptr<NetLog> net_log_ = nullptr;
 
  private:
   // Only triggered once all threads have been created, to make it less likely
   // each thread completes before the next one starts.
-  raw_ptr<base::WaitableEvent> start_event_;
+  raw_ptr<base::WaitableEvent> start_event_ = nullptr;
 };
 
 // A thread that adds a bunch of events to the NetLog.
@@ -417,11 +414,11 @@ TEST(NetLogTest, NetLogTwoObservers) {
   absl::optional<int> param;
   AddEvent(NetLog::Get());
   ASSERT_EQ(1U, observer[0].GetNumValues());
-  param = observer[0].GetValue(0)->FindIntKey("params");
+  param = observer[0].GetValue(0)->GetDict().FindInt("params");
   ASSERT_TRUE(param);
   EXPECT_EQ(CaptureModeToInt(observer[0].capture_mode()), param.value());
   ASSERT_EQ(1U, observer[1].GetNumValues());
-  param = observer[1].GetValue(0)->FindIntKey("params");
+  param = observer[1].GetValue(0)->GetDict().FindInt("params");
   ASSERT_TRUE(param);
   EXPECT_EQ(CaptureModeToInt(observer[1].capture_mode()), param.value());
 
@@ -465,7 +462,7 @@ TEST(NetLogTest, NetLogEntryToValueEmptyParams) {
                      NetLogEventPhase::BEGIN, base::TimeTicks(), base::Value());
 
   ASSERT_TRUE(entry1.params.is_none());
-  ASSERT_FALSE(entry1.ToValue().FindKey("params"));
+  ASSERT_FALSE(entry1.ToValue().GetDict().Find("params"));
 }
 
 }  // namespace

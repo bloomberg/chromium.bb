@@ -590,12 +590,12 @@
             "issue": "http://anglebug.com/4889"
         },
         {
-            "name": "force_driver_uniform_over_spec_const",
-            "category": "Workarounds",
+            "name": "prefer_driver_uniform_over_spec_const",
+            "category": "Features",
             "description": [
-                "Forces using driver uniforms instead of specialization constants."
+                "Prefer using driver uniforms instead of specialization constants."
             ],
-            "issue": "http://issuetracker.google.com/173636783"
+            "issue": "http://anglebug.com/7406"
         },
         {
             "name": "expose_non_conformant_extensions_and_versions",
@@ -659,6 +659,22 @@
                 "VkDevice supports VK_EXT_host_query_reset extension"
             ],
             "issue": "http://anglebug.com/6692"
+        },
+        {
+            "name": "supports_pipeline_creation_cache_control",
+            "category": "Features",
+            "description": [
+                "VkDevice supports VK_EXT_pipeline_creation_cache_control extension"
+            ],
+            "issue": "http://anglebug.com/5881"
+        },
+        {
+            "name": "supports_pipeline_creation_feedback",
+            "category": "Features",
+            "description": [
+                "VkDevice supports VK_EXT_pipeline_creation_feedback extension"
+            ],
+            "issue": "http://anglebug.com/5881"
         },
         {
             "name": "supports_surface_capabilities2_extension",
@@ -798,6 +814,22 @@
             "issue": "http://anglebug.com/7047"
         },
         {
+            "name": "supports_extended_dynamic_state",
+            "category": "Features",
+            "description": [
+                "VkDevice supports VK_EXT_extended_dynamic_state extension"
+            ],
+            "issue": "http://anglebug.com/5906"
+        },
+        {
+            "name": "supports_extended_dynamic_state2",
+            "category": "Features",
+            "description": [
+                "VkDevice supports VK_EXT_extended_dynamic_state2 extension"
+            ],
+            "issue": "http://anglebug.com/5906"
+        },
+        {
             "name": "supports_fragment_shading_rate",
             "category": "Features",
             "description": [
@@ -821,6 +853,21 @@
                 "Force to create vulkan swapchain with continuous refresh on shared present"
             ],
             "issue": "https://issuetracker.google.com/229267970"
+        },
+        {
+            "name": "supports_image_2d_view_of_3d",
+            "category": "Features",
+            "description": [
+                "VkDevice supports VK_EXT_image_2d_view_of_3d"
+            ],
+            "issue": "https://anglebug.com/7320"
+        },
+        {
+            "name": "prefer_linear_filter_for_YUV",
+            "category": "Features",
+            "description": [
+                "Prefer to use VK_FILTER_LINEAR for VkSamplerYcbcrConversion"
+            ]
         }
     ]
 }

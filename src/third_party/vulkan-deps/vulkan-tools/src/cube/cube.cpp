@@ -495,7 +495,7 @@ static void seat_handle_capabilities(void *data, wl_seat *seat, uint32_t caps) {
     if (caps & WL_SEAT_CAPABILITY_KEYBOARD) {
         demo.keyboard = wl_seat_get_keyboard(seat);
         wl_keyboard_add_listener(demo.keyboard, &keyboard_listener, &demo);
-    } else if (!(caps & WL_SEAT_CAPABILITY_KEYBOARD)) {
+    } else if (!(caps & WL_SEAT_CAPABILITY_KEYBOARD) && demo.keyboard) {
         wl_keyboard_destroy(demo.keyboard);
         demo.keyboard = nullptr;
     }
@@ -601,9 +601,9 @@ void Demo::cleanup() {
     xcb_disconnect(connection);
     free(atom_wm_delete_window);
 #elif defined(VK_USE_PLATFORM_WAYLAND_KHR)
-    wl_keyboard_destroy(keyboard);
-    wl_pointer_destroy(pointer);
-    wl_seat_destroy(seat);
+    if (keyboard) wl_keyboard_destroy(keyboard);
+    if (pointer) wl_pointer_destroy(pointer);
+    if (seat) wl_seat_destroy(seat);
     xdg_toplevel_destroy(window_toplevel);
     xdg_surface_destroy(window_surface);
     wl_surface_destroy(window);
@@ -1131,7 +1131,7 @@ void Demo::init_vk() {
             // We want cube to be able to enumerate drivers that support the portability_subset extension, so we have to enable the
             // portability enumeration extension.
             portabilityEnumerationActive = true;
-            enabled_instance_extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+            enabled_instance_extensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
         } else if (!strcmp(VK_KHR_SURFACE_EXTENSION_NAME, extension.extensionName)) {
             surfaceExtFound = 1;
             enabled_instance_extensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
@@ -2962,7 +2962,8 @@ vk::Result Demo::create_display_surface() {
         exit(1);
     }
 
-    vk::DisplayPlaneCapabilitiesKHR planeCaps = gpu.getDisplayPlaneCapabilitiesKHR(display_mode_prop.displayMode, plane_found);
+    vk::DisplayPlaneCapabilitiesKHR planeCaps =
+        gpu.getDisplayPlaneCapabilitiesKHR(display_mode_prop.displayMode, plane_found).value;
     // Find a supported alpha mode
     vk::DisplayPlaneAlphaFlagBitsKHR alphaMode = vk::DisplayPlaneAlphaFlagBitsKHR::eOpaque;
     std::array<vk::DisplayPlaneAlphaFlagBitsKHR, 4> alphaModes = {

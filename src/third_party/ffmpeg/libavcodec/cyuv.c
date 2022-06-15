@@ -59,14 +59,12 @@ static av_cold int cyuv_decode_init(AVCodecContext *avctx)
     return 0;
 }
 
-static int cyuv_decode_frame(AVCodecContext *avctx,
-                             void *data, int *got_frame,
-                             AVPacket *avpkt)
+static int cyuv_decode_frame(AVCodecContext *avctx, AVFrame *frame,
+                             int *got_frame, AVPacket *avpkt)
 {
     const uint8_t *buf = avpkt->data;
     int buf_size = avpkt->size;
     CyuvDecodeContext *s=avctx->priv_data;
-    AVFrame *frame = data;
 
     unsigned char *y_plane;
     unsigned char *u_plane;
@@ -186,7 +184,7 @@ const FFCodec ff_aura_decoder = {
     .p.id           = AV_CODEC_ID_AURA,
     .priv_data_size = sizeof(CyuvDecodeContext),
     .init           = cyuv_decode_init,
-    .decode         = cyuv_decode_frame,
+    FF_CODEC_DECODE_CB(cyuv_decode_frame),
     .p.capabilities = AV_CODEC_CAP_DR1,
     .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };
@@ -200,7 +198,7 @@ const FFCodec ff_cyuv_decoder = {
     .p.id           = AV_CODEC_ID_CYUV,
     .priv_data_size = sizeof(CyuvDecodeContext),
     .init           = cyuv_decode_init,
-    .decode         = cyuv_decode_frame,
+    FF_CODEC_DECODE_CB(cyuv_decode_frame),
     .p.capabilities = AV_CODEC_CAP_DR1,
     .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };

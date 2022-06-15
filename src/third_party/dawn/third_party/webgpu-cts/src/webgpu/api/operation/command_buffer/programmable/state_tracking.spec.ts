@@ -104,8 +104,8 @@ g.test('bind_group_order')
     const { encoder, validateFinishAndSubmit } = t.createEncoder(encoderType);
     t.setPipeline(encoder, pipeline);
 
-    for (let i = 0; i < setOrder.length; ++i) {
-      encoder.setBindGroup(groupIndices[setOrder[i]], bindGroups[setOrder[i]]);
+    for (const bindingName of setOrder) {
+      encoder.setBindGroup(groupIndices[bindingName], bindGroups[bindingName]);
     }
 
     t.dispatchOrDraw(encoder);
@@ -151,14 +151,14 @@ g.test('bind_group_before_pipeline')
 
     const { encoder, validateFinishAndSubmit } = t.createEncoder(encoderType);
 
-    for (let i = 0; i < setBefore.length; ++i) {
-      encoder.setBindGroup(groupIndices[setBefore[i]], bindGroups[setBefore[i]]);
+    for (const bindingName of setBefore) {
+      encoder.setBindGroup(groupIndices[bindingName], bindGroups[bindingName]);
     }
 
     t.setPipeline(encoder, pipeline);
 
-    for (let i = 0; i < setAfter.length; ++i) {
-      encoder.setBindGroup(groupIndices[setAfter[i]], bindGroups[setAfter[i]]);
+    for (const bindingName of setAfter) {
+      encoder.setBindGroup(groupIndices[bindingName], bindGroups[bindingName]);
     }
 
     t.dispatchOrDraw(encoder);

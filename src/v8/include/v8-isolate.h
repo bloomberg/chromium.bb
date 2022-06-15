@@ -286,11 +286,10 @@ class V8_EXPORT Isolate {
      * Callbacks to invoke in case of fatal or OOM errors.
      */
     FatalErrorCallback fatal_error_callback = nullptr;
-    LegacyOOMErrorCallback legacy_oom_error_callback = nullptr;
-    V8_DEPRECATED(
-        "Use legacy_oom_error_callback; OOMErrorCallback will be changed soon "
-        "(https://crbug.com/1323177)")
     OOMErrorCallback oom_error_callback = nullptr;
+
+    V8_DEPRECATE_SOON("Use oom_error_callback (https://crbug.com/1323177)")
+    LegacyOOMErrorCallback legacy_oom_error_callback = nullptr;
 
     /**
      * The following parameter is experimental and may change significantly.
@@ -846,7 +845,7 @@ class V8_EXPORT Isolate {
    * Returns the number of phantom handles without callbacks that were reset
    * by the garbage collector since the last call to this function.
    */
-  V8_DEPRECATE_SOON(
+  V8_DEPRECATED(
       "Information cannot be relied on anymore as internal representation may "
       "change.")
   size_t NumberOfPhantomHandleResetsSinceLastCall();
@@ -1478,8 +1477,12 @@ class V8_EXPORT Isolate {
   /** Set the callback to invoke in case of fatal errors. */
   void SetFatalErrorHandler(FatalErrorCallback that);
 
-  /** Set the callback to invoke in case of OOM errors. */
+  /** Set the callback to invoke in case of OOM errors (deprecated). */
+  V8_DEPRECATE_SOON("Use OOMErrorCallback (https://crbug.com/1323177)")
   void SetOOMErrorHandler(LegacyOOMErrorCallback that);
+
+  /** Set the callback to invoke in case of OOM errors. */
+  void SetOOMErrorHandler(OOMErrorCallback that);
 
   /**
    * Add a callback to invoke in case the heap size is close to the heap limit.
@@ -1535,8 +1538,9 @@ class V8_EXPORT Isolate {
 
   void SetWasmExceptionsEnabledCallback(WasmExceptionsEnabledCallback callback);
 
-  void SetWasmDynamicTieringEnabledCallback(
-      WasmDynamicTieringEnabledCallback callback);
+  V8_DEPRECATE_SOON("Dynamic tiering is now enabled by default")
+  void SetWasmDynamicTieringEnabledCallback(WasmDynamicTieringEnabledCallback) {
+  }
 
   void SetSharedArrayBufferConstructorEnabledCallback(
       SharedArrayBufferConstructorEnabledCallback callback);
@@ -1608,7 +1612,7 @@ class V8_EXPORT Isolate {
    * Iterates through all the persistent handles in the current isolate's heap
    * that have class_ids.
    */
-  V8_DEPRECATE_SOON(
+  V8_DEPRECATED(
       "Information cannot be relied on anymore as internal representation may "
       "change.")
   void VisitHandlesWithClassIds(PersistentHandleVisitor* visitor);
@@ -1618,7 +1622,7 @@ class V8_EXPORT Isolate {
    * that have class_ids and are weak to be marked as inactive if there is no
    * pending activity for the handle.
    */
-  V8_DEPRECATE_SOON(
+  V8_DEPRECATED(
       "Information cannot be relied on anymore as internal representation may "
       "change.")
   void VisitWeakHandles(PersistentHandleVisitor* visitor);

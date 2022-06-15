@@ -54,7 +54,7 @@ using InstanceExtSet = ityp::bitset<InstanceExt, static_cast<uint32_t>(InstanceE
 struct InstanceExtInfo {
     InstanceExt index;
     const char* name;
-    // The version in which this extension was promoted as built with VK_MAKE_VERSION,
+    // The version in which this extension was promoted as built with VK_API_VERSION_1_x,
     // or NeverPromoted if it was never promoted.
     uint32_t versionPromoted;
 };
@@ -92,6 +92,7 @@ enum class DeviceExt {
     ShaderFloat16Int8,
 
     // Promoted to 1.3
+    ShaderIntegerDotProduct,
     ZeroInitializeWorkgroupMemory,
 
     // External* extensions
@@ -116,7 +117,7 @@ using DeviceExtSet = ityp::bitset<DeviceExt, static_cast<uint32_t>(DeviceExt::En
 struct DeviceExtInfo {
     DeviceExt index;
     const char* name;
-    // The version in which this extension was promoted as built with VK_MAKE_VERSION,
+    // The version in which this extension was promoted as built with VK_API_VERSION_1_x,
     // or NeverPromoted if it was never promoted.
     uint32_t versionPromoted;
 };

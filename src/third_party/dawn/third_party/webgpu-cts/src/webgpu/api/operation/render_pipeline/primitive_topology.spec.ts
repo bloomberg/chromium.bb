@@ -330,6 +330,7 @@ class PrimitiveTopologyTest extends GPUTest {
     // Output color is solid green.
     renderPass.setPipeline(
       this.device.createRenderPipeline({
+        layout: 'auto',
         vertex: {
           module: this.device.createShaderModule({
             code: `

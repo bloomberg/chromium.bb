@@ -15,8 +15,8 @@
 
 #include <tuple>
 
-#if SK_SUPPORT_GPU
-#include "src/gpu/ganesh/text/GrSDFTControl.h"
+#if SK_SUPPORT_GPU || defined(SK_GRAPHITE_ENABLED)
+#include "src/text/gpu/SDFTControl.h"
 namespace sktext::gpu {
 class StrikeCache;
 class TextStrike;
@@ -71,14 +71,14 @@ public:
     // Make a strike spec for PDF Vector strikes
     static SkStrikeSpec MakePDFVector(const SkTypeface& typeface, int* size);
 
-#if SK_SUPPORT_GPU
+#if SK_SUPPORT_GPU || defined(SK_GRAPHITE_ENABLED)
     // Create a strike spec for scaled distance field text.
-    static std::tuple<SkStrikeSpec, SkScalar, GrSDFTMatrixRange> MakeSDFT(
+    static std::tuple<SkStrikeSpec, SkScalar, sktext::gpu::SDFTMatrixRange> MakeSDFT(
             const SkFont& font,
             const SkPaint& paint,
             const SkSurfaceProps& surfaceProps,
             const SkMatrix& deviceMatrix,
-            const GrSDFTControl& control);
+            const sktext::gpu::SDFTControl& control);
 
     sk_sp<sktext::gpu::TextStrike> findOrCreateTextStrike(sktext::gpu::StrikeCache* cache) const;
 #endif

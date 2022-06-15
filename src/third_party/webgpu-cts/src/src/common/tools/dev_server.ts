@@ -95,9 +95,7 @@ const app = express();
 app.use((req, res, next) => {
   res.header('Origin-Trial', [
     // Token for http://localhost:8080
-    'Ak2PbRK+Dtqxmf674mzpBNMFBexvOQC4PJUEL4oOIn4Yzsd2cr9p7IPmOwctzEnW44LbNg1fFt2F4mXOd4oxgA4AAABJeyJvcmlnaW4iOiJodHRwOi8vbG9jYWxob3N0OjgwODAiLCJmZWF0dXJlIjoiV2ViR1BVIiwiZXhwaXJ5IjoxNjUyODMxOTk5fQ==',
-    // Token for http://localhost:8081
-    'At4vqQ4HYWorpfwbvDdiIIENLLbftULveMfTVwtz/DOHmQ91n5pBYVxIrSglnGGc048cB0gZnTQHSRnupwJt1AAAAABJeyJvcmlnaW4iOiJodHRwOi8vbG9jYWxob3N0OjgwODEiLCJmZWF0dXJlIjoiV2ViR1BVIiwiZXhwaXJ5IjoxNjUyODMxOTk5fQ==',
+    'AvyDIV+RJoYs8fn3W6kIrBhWw0te0klraoz04mw/nPb8VTus3w5HCdy+vXqsSzomIH745CT6B5j1naHgWqt/tw8AAABJeyJvcmlnaW4iOiJodHRwOi8vbG9jYWxob3N0OjgwODAiLCJmZWF0dXJlIjoiV2ViR1BVIiwiZXhwaXJ5IjoxNjYzNzE4Mzk5fQ==',
   ]);
   next();
 });

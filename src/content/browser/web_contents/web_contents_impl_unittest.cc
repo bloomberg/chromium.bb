@@ -787,6 +787,9 @@ TEST_F(WebContentsImplTest, NavigateFromSitelessUrl) {
   SiteInstanceImpl* orig_instance = contents()->GetSiteInstance();
 
   // Navigate to an URL that will not assign a new SiteInstance.
+  // The url also needs to be defined with an empty scheme.
+  url::ScopedSchemeRegistryForTests scheme_registry;
+  url::AddEmptyDocumentScheme("non-site-url");
   const GURL native_url("non-site-url://stuffandthings");
   browser_client.set_assign_site_for_url(false, native_url);
   NavigationSimulator::NavigateAndCommitFromBrowser(contents(), native_url);
@@ -3211,11 +3214,11 @@ TEST_F(WebContentsImplTest, RequestMediaAccessPermissionNoDelegate) {
   contents()->RequestMediaAccessPermission(
       dummy_request,
       base::BindLambdaForTesting(
-          [&callback_run](const blink::mojom::StreamDevices& stream_devices,
-                          blink::mojom::MediaStreamRequestResult result,
-                          std::unique_ptr<MediaStreamUI> ui) {
-            EXPECT_FALSE(stream_devices.audio_device.has_value());
-            EXPECT_FALSE(stream_devices.video_device.has_value());
+          [&callback_run](
+              const blink::mojom::StreamDevicesSet& stream_devices_set,
+              blink::mojom::MediaStreamRequestResult result,
+              std::unique_ptr<MediaStreamUI> ui) {
+            EXPECT_TRUE(stream_devices_set.stream_devices.empty());
             EXPECT_EQ(
                 result,
                 blink::mojom::MediaStreamRequestResult::FAILED_DUE_TO_SHUTDOWN);

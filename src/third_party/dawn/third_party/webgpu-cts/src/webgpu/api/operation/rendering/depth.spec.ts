@@ -98,6 +98,7 @@ g.test('depth_compare_func')
     const depthTextureView = depthTexture.createView();
 
     const pipelineDescriptor: GPURenderPipelineDescriptor = {
+      layout: 'auto',
       vertex: {
         module: t.device.createShaderModule({
           code: `
@@ -190,6 +191,7 @@ g.test('reverse_depth')
     const depthTextureView = depthTexture.createView();
 
     const pipelineDescriptor: GPURenderPipelineDescriptor = {
+      layout: 'auto',
       vertex: {
         module: t.device.createShaderModule({
           code: `

@@ -326,7 +326,7 @@ void Builtins::Generate_JSConstructStubGeneric(MacroAssembler* masm) {
 
   // If the type of the result (stored in its map) is less than
   // FIRST_JS_RECEIVER_TYPE, it is not an object in the ECMA sense.
-  STATIC_ASSERT(LAST_JS_RECEIVER_TYPE == LAST_TYPE);
+  static_assert(LAST_JS_RECEIVER_TYPE == LAST_TYPE);
   __ CmpObjectType(eax, FIRST_JS_RECEIVER_TYPE, ecx);
   __ j(above_equal, &leave_and_return, Label::kNear);
   __ jmp(&use_receiver, Label::kNear);
@@ -783,8 +783,7 @@ static void ReplaceClosureCodeWithOptimizedCode(MacroAssembler* masm,
   __ mov(FieldOperand(closure, JSFunction::kCodeOffset), optimized_code);
   __ mov(value, optimized_code);  // Write barrier clobbers slot_address below.
   __ RecordWriteField(closure, JSFunction::kCodeOffset, value, slot_address,
-                      SaveFPRegsMode::kIgnore, RememberedSetAction::kOmit,
-                      SmiCheck::kOmit);
+                      SaveFPRegsMode::kIgnore, SmiCheck::kOmit);
 }
 
 static void LeaveInterpreterFrame(MacroAssembler* masm, Register scratch1,
@@ -928,10 +927,10 @@ static void AdvanceBytecodeOffsetOrReturn(MacroAssembler* masm,
 
   // Check if the bytecode is a Wide or ExtraWide prefix bytecode.
   Label process_bytecode, extra_wide;
-  STATIC_ASSERT(0 == static_cast<int>(interpreter::Bytecode::kWide));
-  STATIC_ASSERT(1 == static_cast<int>(interpreter::Bytecode::kExtraWide));
-  STATIC_ASSERT(2 == static_cast<int>(interpreter::Bytecode::kDebugBreakWide));
-  STATIC_ASSERT(3 ==
+  static_assert(0 == static_cast<int>(interpreter::Bytecode::kWide));
+  static_assert(1 == static_cast<int>(interpreter::Bytecode::kExtraWide));
+  static_assert(2 == static_cast<int>(interpreter::Bytecode::kDebugBreakWide));
+  static_assert(3 ==
                 static_cast<int>(interpreter::Bytecode::kDebugBreakExtraWide));
   __ cmp(bytecode, Immediate(0x3));
   __ j(above, &process_bytecode, Label::kNear);
@@ -1035,7 +1034,7 @@ static void MaybeOptimizeCodeOrTailCallOptimizedCodeSlot(
 namespace {
 
 void ResetBytecodeAge(MacroAssembler* masm, Register bytecode_array) {
-  STATIC_ASSERT(BytecodeArray::kNoAgeBytecodeAge == 0);
+  static_assert(BytecodeArray::kNoAgeBytecodeAge == 0);
   __ mov_w(FieldOperand(bytecode_array, BytecodeArray::kBytecodeAgeOffset),
            Immediate(0));
 }
@@ -2430,7 +2429,7 @@ void Builtins::Generate_CallFunction(MacroAssembler* masm,
       Label convert_to_object, convert_receiver;
       __ mov(ecx, args.GetReceiverOperand());
       __ JumpIfSmi(ecx, &convert_to_object, Label::kNear);
-      STATIC_ASSERT(LAST_JS_RECEIVER_TYPE == LAST_TYPE);
+      static_assert(LAST_JS_RECEIVER_TYPE == LAST_TYPE);
       __ CmpObjectType(ecx, FIRST_JS_RECEIVER_TYPE, ecx);  // Clobbers ecx.
       __ j(above_equal, &done_convert);
       // Reload the receiver (it was clobbered by CmpObjectType).
@@ -2890,14 +2889,14 @@ void OnStackReplacement(MacroAssembler* masm, OsrSourceTier source,
 
 void Builtins::Generate_InterpreterOnStackReplacement(MacroAssembler* masm) {
   using D = InterpreterOnStackReplacementDescriptor;
-  STATIC_ASSERT(D::kParameterCount == 1);
+  static_assert(D::kParameterCount == 1);
   OnStackReplacement(masm, OsrSourceTier::kInterpreter,
                      D::MaybeTargetCodeRegister());
 }
 
 void Builtins::Generate_BaselineOnStackReplacement(MacroAssembler* masm) {
   using D = BaselineOnStackReplacementDescriptor;
-  STATIC_ASSERT(D::kParameterCount == 1);
+  static_assert(D::kParameterCount == 1);
 
   __ mov(kContextRegister,
          MemOperand(ebp, BaselineFrameConstants::kContextOffset));
@@ -3052,11 +3051,11 @@ void Builtins::Generate_CEntry(MacroAssembler* masm, int result_size,
   // If argv_mode == ArgvMode::kRegister:
   // ecx: pointer to the first argument
 
-  STATIC_ASSERT(eax == kRuntimeCallArgCountRegister);
-  STATIC_ASSERT(ecx == kRuntimeCallArgvRegister);
-  STATIC_ASSERT(edx == kRuntimeCallFunctionRegister);
-  STATIC_ASSERT(esi == kContextRegister);
-  STATIC_ASSERT(edi == kJSFunctionRegister);
+  static_assert(eax == kRuntimeCallArgCountRegister);
+  static_assert(ecx == kRuntimeCallArgvRegister);
+  static_assert(edx == kRuntimeCallFunctionRegister);
+  static_assert(esi == kContextRegister);
+  static_assert(edi == kJSFunctionRegister);
 
   DCHECK(!AreAliased(kRuntimeCallArgCountRegister, kRuntimeCallArgvRegister,
                      kRuntimeCallFunctionRegister, kContextRegister,
@@ -3472,13 +3471,13 @@ void Builtins::Generate_CallApiCallback(MacroAssembler* masm) {
 
   using FCA = FunctionCallbackArguments;
 
-  STATIC_ASSERT(FCA::kArgsLength == 6);
-  STATIC_ASSERT(FCA::kNewTargetIndex == 5);
-  STATIC_ASSERT(FCA::kDataIndex == 4);
-  STATIC_ASSERT(FCA::kReturnValueOffset == 3);
-  STATIC_ASSERT(FCA::kReturnValueDefaultValueIndex == 2);
-  STATIC_ASSERT(FCA::kIsolateIndex == 1);
-  STATIC_ASSERT(FCA::kHolderIndex == 0);
+  static_assert(FCA::kArgsLength == 6);
+  static_assert(FCA::kNewTargetIndex == 5);
+  static_assert(FCA::kDataIndex == 4);
+  static_assert(FCA::kReturnValueOffset == 3);
+  static_assert(FCA::kReturnValueDefaultValueIndex == 2);
+  static_assert(FCA::kIsolateIndex == 1);
+  static_assert(FCA::kHolderIndex == 0);
 
   // Set up FunctionCallbackInfo's implicit_args on the stack as follows:
   //
@@ -3565,14 +3564,14 @@ void Builtins::Generate_CallApiCallback(MacroAssembler* masm) {
 void Builtins::Generate_CallApiGetter(MacroAssembler* masm) {
   // Build v8::PropertyCallbackInfo::args_ array on the stack and push property
   // name below the exit frame to make GC aware of them.
-  STATIC_ASSERT(PropertyCallbackArguments::kShouldThrowOnErrorIndex == 0);
-  STATIC_ASSERT(PropertyCallbackArguments::kHolderIndex == 1);
-  STATIC_ASSERT(PropertyCallbackArguments::kIsolateIndex == 2);
-  STATIC_ASSERT(PropertyCallbackArguments::kReturnValueDefaultValueIndex == 3);
-  STATIC_ASSERT(PropertyCallbackArguments::kReturnValueOffset == 4);
-  STATIC_ASSERT(PropertyCallbackArguments::kDataIndex == 5);
-  STATIC_ASSERT(PropertyCallbackArguments::kThisIndex == 6);
-  STATIC_ASSERT(PropertyCallbackArguments::kArgsLength == 7);
+  static_assert(PropertyCallbackArguments::kShouldThrowOnErrorIndex == 0);
+  static_assert(PropertyCallbackArguments::kHolderIndex == 1);
+  static_assert(PropertyCallbackArguments::kIsolateIndex == 2);
+  static_assert(PropertyCallbackArguments::kReturnValueDefaultValueIndex == 3);
+  static_assert(PropertyCallbackArguments::kReturnValueOffset == 4);
+  static_assert(PropertyCallbackArguments::kDataIndex == 5);
+  static_assert(PropertyCallbackArguments::kThisIndex == 6);
+  static_assert(PropertyCallbackArguments::kArgsLength == 7);
 
   Register receiver = ApiGetterDescriptor::ReceiverRegister();
   Register holder = ApiGetterDescriptor::HolderRegister();

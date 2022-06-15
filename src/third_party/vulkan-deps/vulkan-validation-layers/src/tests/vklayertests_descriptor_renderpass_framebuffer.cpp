@@ -1539,7 +1539,7 @@ TEST_F(VkLayerTest, RenderPassCreateInvalidFragmentDensityMapReferences) {
                                       VK_ATTACHMENT_STORE_OP_DONT_CARE,
                                       VK_ATTACHMENT_LOAD_OP_DONT_CARE,
                                       VK_ATTACHMENT_STORE_OP_DONT_CARE,
-                                      VK_IMAGE_LAYOUT_UNDEFINED,
+                                      VK_IMAGE_LAYOUT_PREINITIALIZED,
                                       VK_IMAGE_LAYOUT_FRAGMENT_DENSITY_MAP_OPTIMAL_EXT};
     // Set 1 instead of 0
     VkAttachmentReference ref = {1, VK_IMAGE_LAYOUT_FRAGMENT_DENSITY_MAP_OPTIMAL_EXT};
@@ -1569,7 +1569,7 @@ TEST_F(VkLayerTest, RenderPassCreateInvalidFragmentDensityMapReferences) {
               VK_ATTACHMENT_STORE_OP_DONT_CARE,
               VK_ATTACHMENT_LOAD_OP_DONT_CARE,
               VK_ATTACHMENT_STORE_OP_DONT_CARE,
-              VK_IMAGE_LAYOUT_UNDEFINED,
+              VK_IMAGE_LAYOUT_PREINITIALIZED,
               VK_IMAGE_LAYOUT_FRAGMENT_DENSITY_MAP_OPTIMAL_EXT};
 
     ref = {0, VK_IMAGE_LAYOUT_FRAGMENT_DENSITY_MAP_OPTIMAL_EXT};
@@ -1588,7 +1588,7 @@ TEST_F(VkLayerTest, RenderPassCreateInvalidFragmentDensityMapReferences) {
               VK_ATTACHMENT_STORE_OP_STORE,
               VK_ATTACHMENT_LOAD_OP_DONT_CARE,
               VK_ATTACHMENT_STORE_OP_DONT_CARE,
-              VK_IMAGE_LAYOUT_UNDEFINED,
+              VK_IMAGE_LAYOUT_PREINITIALIZED,
               VK_IMAGE_LAYOUT_FRAGMENT_DENSITY_MAP_OPTIMAL_EXT};
 
     ref = {0, VK_IMAGE_LAYOUT_FRAGMENT_DENSITY_MAP_OPTIMAL_EXT};
@@ -1610,13 +1610,11 @@ TEST_F(VkLayerTest, InvalidFragmentDensityMapLayerCount) {
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
 
     if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
-        printf("%s Tests requires Vulkan 1.1+, skipping test\n", kSkipPrefix);
-        return;
+        GTEST_SKIP() << "At least Vulkan version 1.1 is required";
     }
 
-    if (!AreRequestedExtensionsEnabled()) {
-        printf("%s %s is not supported; skipping\n", kSkipPrefix, VK_EXT_FRAGMENT_DENSITY_MAP_EXTENSION_NAME);
-        return;
+    if (!AreRequiredExtensionsEnabled()) {
+        GTEST_SKIP() << RequiredExtensionsNotSupported() << " not supported";
     }
 
     auto vkGetPhysicalDeviceFeatures2KHR = reinterpret_cast<PFN_vkGetPhysicalDeviceFeatures2KHR>(
@@ -2931,19 +2929,13 @@ TEST_F(VkLayerTest, RenderPassEndBeforeFinalSubpass) {
 TEST_F(VkLayerTest, InvalidRenderPassEndFragmentDensityMapOffsetQCOM) {
     TEST_DESCRIPTION("Ensure RenderPass end meets the requirements for VK_QCOM_fragment_density_map_offset");
 
-    if (!AddRequiredInstanceExtensions(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME)) {
-        printf("%s Extension %s is not supported.\n", kSkipPrefix, VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
-        return;
-    }
-    // enable extension
+    AddRequiredExtensions(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
     AddRequiredExtensions(VK_QCOM_FRAGMENT_DENSITY_MAP_OFFSET_EXTENSION_NAME);
     AddRequiredExtensions(VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME);
 
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
-    if (!AreRequestedExtensionsEnabled()) {
-        printf("%s Extension %s is not supported, skipping test.\n", kSkipPrefix,
-               VK_QCOM_FRAGMENT_DENSITY_MAP_OFFSET_EXTENSION_NAME);
-        return;
+    if (!AreRequiredExtensionsEnabled()) {
+        GTEST_SKIP() << RequiredExtensionsNotSupported() << " not supported";
     }
 
     auto multiview_features = LvlInitStruct<VkPhysicalDeviceMultiviewFeatures>();
@@ -3429,6 +3421,7 @@ TEST_F(VkLayerTest, FramebufferCreateErrors) {
     VkAttachmentDescription attach_desc = {};
     attach_desc.format = VK_FORMAT_B8G8R8A8_UNORM;
     attach_desc.samples = VK_SAMPLE_COUNT_1_BIT;
+    attach_desc.initialLayout = VK_IMAGE_LAYOUT_PREINITIALIZED;
     attach_desc.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
     rpci.pAttachments = &attach_desc;
     VkRenderPass rp;
@@ -3918,8 +3911,7 @@ TEST_F(VkLayerTest, AllocDescriptorFromEmptyPool) {
 
     // This test is valid for Vulkan 1.0 only -- skip if device has an API version greater than 1.0.
     if (DeviceValidationVersion() >= VK_API_VERSION_1_1) {
-        printf("%s Device has apiVersion greater than 1.0 -- skipping Descriptor Set checks.\n", kSkipPrefix);
-        return;
+        GTEST_SKIP() << "Tests for 1.0 only";
     }
 
     // Create Pool w/ 1 Sampler descriptor, but try to alloc Uniform Buffer
@@ -6824,13 +6816,12 @@ TEST_F(VkLayerTest, DrawWithPipelineIncompatibleWithRenderPassFragmentDensityMap
         "Hit RenderPass incompatible case: drawing with an active renderpass that's not compatible with the bound pipeline state "
         "object's creation renderpass since only the former uses a Fragment Density Map.");
 
-    // Check for VK_KHR_get_physical_device_properties2
-    if (!AddRequiredInstanceExtensions(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME)) {
-        printf("%s Extension %s is not supported.\n", kSkipPrefix, VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
-        return;
-    }
+    AddRequiredExtensions(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
 
-    ASSERT_NO_FATAL_FAILURE(InitFramework());
+    if (!AreRequiredExtensionsEnabled()) {
+        GTEST_SKIP() << RequiredExtensionsNotSupported() << " not supported";
+    }
 
     bool rp2Supported = CheckCreateRenderPass2Support(this, m_device_extension_names);
     if (!rp2Supported) {
@@ -6996,6 +6987,7 @@ TEST_F(VkLayerTest, DrawWithPipelineIncompatibleWithRenderPassMultiview) {
     VkAttachmentDescription attach = {};
     attach.samples = VK_SAMPLE_COUNT_1_BIT;
     attach.format = VK_FORMAT_B8G8R8A8_UNORM;
+    attach.initialLayout = VK_IMAGE_LAYOUT_PREINITIALIZED;
     attach.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
 
     VkSubpassDescription subpass = {};
@@ -7021,6 +7013,7 @@ TEST_F(VkLayerTest, DrawWithPipelineIncompatibleWithRenderPassMultiview) {
     VkAttachmentDescription2 attach2 = LvlInitStruct<VkAttachmentDescription2>();
     attach2.samples = VK_SAMPLE_COUNT_1_BIT;
     attach2.format = VK_FORMAT_B8G8R8A8_UNORM;
+    attach2.initialLayout = VK_IMAGE_LAYOUT_PREINITIALIZED;
     attach2.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
 
     VkSubpassDescription2 subpass2 = LvlInitStruct<VkSubpassDescription2>();
@@ -10021,11 +10014,13 @@ TEST_F(VkLayerTest, DepthStencilResolveMode) {
     // Depth/stencil attachment
     attachmentDescriptions[0] = LvlInitStruct<VkAttachmentDescription2KHR>();
     attachmentDescriptions[0].samples = VK_SAMPLE_COUNT_4_BIT;
+    attachmentDescriptions[0].initialLayout = VK_IMAGE_LAYOUT_PREINITIALIZED;
     attachmentDescriptions[0].finalLayout = VK_IMAGE_LAYOUT_GENERAL;
     attachmentDescriptions[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
     // Depth/stencil resolve attachment
     attachmentDescriptions[1] = LvlInitStruct<VkAttachmentDescription2KHR>();
     attachmentDescriptions[1].samples = VK_SAMPLE_COUNT_1_BIT;
+    attachmentDescriptions[1].initialLayout = VK_IMAGE_LAYOUT_PREINITIALIZED;
     attachmentDescriptions[1].finalLayout = VK_IMAGE_LAYOUT_GENERAL;
     attachmentDescriptions[1].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 
@@ -10304,9 +10299,8 @@ TEST_F(VkLayerTest, InvalidCreateDescriptorPoolFlags) {
 
     AddRequiredExtensions(VK_VALVE_MUTABLE_DESCRIPTOR_TYPE_EXTENSION_NAME);
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
-    if (!AreRequestedExtensionsEnabled()) {
-        printf("%s Extension %s is not supported, skipping test.\n", kSkipPrefix, VK_VALVE_MUTABLE_DESCRIPTOR_TYPE_EXTENSION_NAME);
-        return;
+    if (!AreRequiredExtensionsEnabled()) {
+        GTEST_SKIP() << RequiredExtensionsNotSupported() << " not supported";
     }
     auto mutable_descriptor_type_features = LvlInitStruct<VkPhysicalDeviceMutableDescriptorTypeFeaturesVALVE>();
     auto features2 = LvlInitStruct<VkPhysicalDeviceFeatures2KHR>(&mutable_descriptor_type_features);
@@ -10341,9 +10335,8 @@ TEST_F(VkLayerTest, MissingMutableDescriptorTypeFeature) {
 
     AddRequiredExtensions(VK_VALVE_MUTABLE_DESCRIPTOR_TYPE_EXTENSION_NAME);
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
-    if (!AreRequestedExtensionsEnabled()) {
-        printf("%s Extension %s is not supported, skipping test.\n", kSkipPrefix, VK_VALVE_MUTABLE_DESCRIPTOR_TYPE_EXTENSION_NAME);
-        return;
+    if (!AreRequiredExtensionsEnabled()) {
+        GTEST_SKIP() << RequiredExtensionsNotSupported() << " not supported";
     }
     ASSERT_NO_FATAL_FAILURE(InitState());
 
@@ -10374,9 +10367,8 @@ TEST_F(VkLayerTest, MutableDescriptorPoolsWithPartialOverlap) {
 
     AddRequiredExtensions(VK_VALVE_MUTABLE_DESCRIPTOR_TYPE_EXTENSION_NAME);
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
-    if (!AreRequestedExtensionsEnabled()) {
-        printf("%s Extension %s is not supported, skipping test.\n", kSkipPrefix, VK_VALVE_MUTABLE_DESCRIPTOR_TYPE_EXTENSION_NAME);
-        return;
+    if (!AreRequiredExtensionsEnabled()) {
+        GTEST_SKIP() << RequiredExtensionsNotSupported() << " not supported";
     }
     auto mutable_descriptor_type_features = LvlInitStruct<VkPhysicalDeviceMutableDescriptorTypeFeaturesVALVE>();
     auto features2 = LvlInitStruct<VkPhysicalDeviceFeatures2KHR>(&mutable_descriptor_type_features);
@@ -10452,9 +10444,8 @@ TEST_F(VkLayerTest, InvalidCreateDescriptorPoolAllocateFlags) {
 
     AddRequiredExtensions(VK_VALVE_MUTABLE_DESCRIPTOR_TYPE_EXTENSION_NAME);
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
-    if (!AreRequestedExtensionsEnabled()) {
-        printf("%s Extension %s is not supported, skipping test.\n", kSkipPrefix, VK_VALVE_MUTABLE_DESCRIPTOR_TYPE_EXTENSION_NAME);
-        return;
+    if (!AreRequiredExtensionsEnabled()) {
+        GTEST_SKIP() << RequiredExtensionsNotSupported() << " not supported";
     }
     auto mutable_descriptor_type_features = LvlInitStruct<VkPhysicalDeviceMutableDescriptorTypeFeaturesVALVE>();
     auto features2 = LvlInitStruct<VkPhysicalDeviceFeatures2KHR>(&mutable_descriptor_type_features);
@@ -10507,20 +10498,10 @@ TEST_F(VkLayerTest, InvalidCreateDescriptorPoolAllocateFlags) {
 TEST_F(VkLayerTest, InvalidRenderArea) {
     TEST_DESCRIPTION("Begin render pass with render area that is not within the framebuffer.");
 
-    // Enable api version 1.1 since the extensions were promoted there. Otherwise, try to enable extensions
-    bool is_required_api = SetTargetApiVersion(VK_API_VERSION_1_1) >= VK_API_VERSION_1_1;
-    bool device_group_supported = true;
-    if (!is_required_api && !AddRequiredInstanceExtensions(VK_KHR_DEVICE_GROUP_CREATION_EXTENSION_NAME)) {
-        device_group_supported = false;
-    }
-
-    ASSERT_NO_FATAL_FAILURE(InitFramework());
-    is_required_api = (DeviceValidationVersion() >= VK_API_VERSION_1_1);
-    if (!is_required_api && !AddRequiredDeviceExtensions(VK_KHR_DEVICE_GROUP_EXTENSION_NAME)) {
-        device_group_supported = false;
-    }
-    ASSERT_NO_FATAL_FAILURE(InitState());
+    AddOptionalExtensions(VK_KHR_DEVICE_GROUP_EXTENSION_NAME);
+    ASSERT_NO_FATAL_FAILURE(Init());
     ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
+    const bool device_group_supported = IsExtensionsEnabled(VK_KHR_DEVICE_GROUP_EXTENSION_NAME);
 
     VkRenderPassBeginInfo rpbinfo = LvlInitStruct<VkRenderPassBeginInfo>();
     rpbinfo.renderPass = m_renderPass;
@@ -10590,15 +10571,11 @@ TEST_F(VkLayerTest, SwapchainAcquireImageRetired) {
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
 
     if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
-        printf("%s vkAcquireNextImage2KHR not supported, skipping test\n", kSkipPrefix);
-        return;
+        GTEST_SKIP() << "At least Vulkan version 1.1 is required";
     }
 
     if (DeviceExtensionSupported(gpu(), nullptr, VK_KHR_DEVICE_GROUP_EXTENSION_NAME)) {
         m_device_extension_names.push_back(VK_KHR_DEVICE_GROUP_EXTENSION_NAME);
-    } else if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
-        printf("%s vkAcquireNextImage2KHR not supported, skipping test\n", kSkipPrefix);
-        return;
     }
 
     if (!AddSwapchainDeviceExtension()) {
@@ -10652,18 +10629,11 @@ TEST_F(VkLayerTest, SwapchainAcquireImageRetired) {
 TEST_F(VkLayerTest, InvalidDeviceGroupRenderArea) {
     TEST_DESCRIPTION("Begin render pass with device group render area that is not within the framebuffer.");
 
-    // Enable api version 1.1 since the extensions were promoted there. Otherwise, try to enable extensions
-    bool is_required_api = SetTargetApiVersion(VK_API_VERSION_1_1) >= VK_API_VERSION_1_1;
-    if (!is_required_api && !AddRequiredInstanceExtensions(VK_KHR_DEVICE_GROUP_CREATION_EXTENSION_NAME)) {
-        printf("%s %s extension not supported skipped.\n", kSkipPrefix, VK_KHR_DEVICE_GROUP_CREATION_EXTENSION_NAME);
-        return;
-    }
-
+    AddRequiredExtensions(VK_KHR_DEVICE_GROUP_CREATION_EXTENSION_NAME);
+    AddRequiredExtensions(VK_KHR_DEVICE_GROUP_EXTENSION_NAME);
     ASSERT_NO_FATAL_FAILURE(InitFramework());
-    is_required_api = (DeviceValidationVersion() >= VK_API_VERSION_1_1);
-    if (!is_required_api && !AddRequiredDeviceExtensions(VK_KHR_DEVICE_GROUP_EXTENSION_NAME)) {
-        printf("%s %s extension not supported skipped.\n", kSkipPrefix, VK_KHR_DEVICE_GROUP_EXTENSION_NAME);
-        return;
+    if (!AreRequiredExtensionsEnabled()) {
+        GTEST_SKIP() << RequiredExtensionsNotSupported() << " not supported";
     }
 
     ASSERT_NO_FATAL_FAILURE(InitState());
@@ -10756,12 +10726,14 @@ TEST_F(VkLayerTest, DepthStencilResolveAttachmentInvalidFormat) {
     attachmentDescriptions[0] = LvlInitStruct<VkAttachmentDescription2>();
     attachmentDescriptions[0].format = VK_FORMAT_R8_UNORM;
     attachmentDescriptions[0].samples = VK_SAMPLE_COUNT_1_BIT;
+    attachmentDescriptions[0].initialLayout = VK_IMAGE_LAYOUT_PREINITIALIZED;
     attachmentDescriptions[0].finalLayout = VK_IMAGE_LAYOUT_GENERAL;
     attachmentDescriptions[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
     // Depth/stencil resolve attachment
     attachmentDescriptions[1] = LvlInitStruct<VkAttachmentDescription2>();
     attachmentDescriptions[1].format = ds_format;
     attachmentDescriptions[1].samples = VK_SAMPLE_COUNT_4_BIT;
+    attachmentDescriptions[1].initialLayout = VK_IMAGE_LAYOUT_PREINITIALIZED;
     attachmentDescriptions[1].finalLayout = VK_IMAGE_LAYOUT_GENERAL;
     attachmentDescriptions[1].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 
@@ -10979,10 +10951,8 @@ TEST_F(VkLayerTest, AccelerationStructureBindings) {
     SetTargetApiVersion(VK_API_VERSION_1_1);
     AddRequiredExtensions(VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME);
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
-
-    if (!CanEnableDeviceExtension(VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME)) {
-        printf("%s Extension %s not supported, skipping test.\n", kSkipPrefix, VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME);
-        return;
+    if (!AreRequiredExtensionsEnabled()) {
+        GTEST_SKIP() << RequiredExtensionsNotSupported() << " not supported";
     }
 
     PFN_vkGetPhysicalDeviceProperties2KHR vkGetPhysicalDeviceProperties2KHR =
@@ -11038,9 +11008,8 @@ TEST_F(VkLayerTest, AccelerationStructureBindingsNV) {
     AddRequiredExtensions(VK_NV_RAY_TRACING_EXTENSION_NAME);
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
 
-    if (!AreRequestedExtensionsEnabled()) {
-        printf("%s Extension %s not supported, skipping test.\n", kSkipPrefix, VK_NV_RAY_TRACING_EXTENSION_NAME);
-        return;
+    if (!AreRequiredExtensionsEnabled()) {
+        GTEST_SKIP() << RequiredExtensionsNotSupported() << " not supported";
     }
 
     PFN_vkGetPhysicalDeviceProperties2KHR vkGetPhysicalDeviceProperties2KHR =
@@ -11093,9 +11062,8 @@ TEST_F(VkLayerTest, InvalidWriteMutableDescriptorSet) {
 
     AddRequiredExtensions(VK_VALVE_MUTABLE_DESCRIPTOR_TYPE_EXTENSION_NAME);
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
-    if (!AreRequestedExtensionsEnabled()) {
-        printf("%s Extension %s is not supported, skipping test.\n", kSkipPrefix, VK_VALVE_MUTABLE_DESCRIPTOR_TYPE_EXTENSION_NAME);
-        return;
+    if (!AreRequiredExtensionsEnabled()) {
+        GTEST_SKIP() << RequiredExtensionsNotSupported() << " not supported";
     }
     ASSERT_NO_FATAL_FAILURE(InitState());
     ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
@@ -11183,9 +11151,8 @@ TEST_F(VkLayerTest, MutableDescriptors) {
     AddRequiredExtensions(VK_VALVE_MUTABLE_DESCRIPTOR_TYPE_EXTENSION_NAME);
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
 
-    if (!AreRequestedExtensionsEnabled()) {
-        printf("%s Extension %s is not supported, skipping test.\n", kSkipPrefix, VK_VALVE_MUTABLE_DESCRIPTOR_TYPE_EXTENSION_NAME);
-        return;
+    if (!AreRequiredExtensionsEnabled()) {
+        GTEST_SKIP() << RequiredExtensionsNotSupported() << " not supported";
     }
 
     PFN_vkGetPhysicalDeviceFeatures2KHR vkGetPhysicalDeviceFeatures2KHR =
@@ -11264,13 +11231,11 @@ TEST_F(VkLayerTest, DescriptorUpdateTemplate) {
     SetTargetApiVersion(VK_API_VERSION_1_1);
     AddRequiredExtensions(VK_VALVE_MUTABLE_DESCRIPTOR_TYPE_EXTENSION_NAME);
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
-    if (!AreRequestedExtensionsEnabled()) {
-        printf("%s Extension %s not supported, skipping tests\n", kSkipPrefix, VK_VALVE_MUTABLE_DESCRIPTOR_TYPE_EXTENSION_NAME);
-        return;
+    if (!AreRequiredExtensionsEnabled()) {
+        GTEST_SKIP() << RequiredExtensionsNotSupported() << " not supported";
     }
     if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
-        printf("%s Tests requires Vulkan 1.1+, skipping test\n", kSkipPrefix);
-        return;
+        GTEST_SKIP() << "At least Vulkan version 1.1 is required";
     }
     ASSERT_NO_FATAL_FAILURE(InitState());
 
@@ -11338,13 +11303,13 @@ TEST_F(VkLayerTest, MutableDescriptorSetLayout) {
     TEST_DESCRIPTION("Create mutable descriptor set layout.");
 
     AddRequiredExtensions(VK_VALVE_MUTABLE_DESCRIPTOR_TYPE_EXTENSION_NAME);
-    AddRequiredExtensions(VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME);
+    AddOptionalExtensions(VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME);
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
-    if (!CanEnableDeviceExtension(VK_VALVE_MUTABLE_DESCRIPTOR_TYPE_EXTENSION_NAME)) {
-        printf("%s Extension %s is not supported, skipping test.\n", kSkipPrefix, VK_VALVE_MUTABLE_DESCRIPTOR_TYPE_EXTENSION_NAME);
-        return;
+    const bool push_descriptors = IsExtensionsEnabled(VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME);
+    if (!AreRequiredExtensionsEnabled()) {
+        GTEST_SKIP() << RequiredExtensionsNotSupported() << " not supported";
     }
-    bool push_descriptors = CanEnableDeviceExtension(VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME);
+
     auto mutable_descriptor_type_features = LvlInitStruct<VkPhysicalDeviceMutableDescriptorTypeFeaturesVALVE>();
     auto features2 = LvlInitStruct<VkPhysicalDeviceFeatures2KHR>(&mutable_descriptor_type_features);
     PFN_vkGetPhysicalDeviceFeatures2KHR vkGetPhysicalDeviceFeatures2KHR =
@@ -11424,9 +11389,8 @@ TEST_F(VkLayerTest, MutableDescriptorSetLayoutMissingFeature) {
 
     AddRequiredExtensions(VK_VALVE_MUTABLE_DESCRIPTOR_TYPE_EXTENSION_NAME);
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
-    if (!AreRequestedExtensionsEnabled()) {
-        printf("%s Extension %s is not supported, skipping test.\n", kSkipPrefix, VK_VALVE_MUTABLE_DESCRIPTOR_TYPE_EXTENSION_NAME);
-        return;
+    if (!AreRequiredExtensionsEnabled()) {
+        GTEST_SKIP() << RequiredExtensionsNotSupported() << " not supported";
     }
     auto mutable_descriptor_type_features = LvlInitStruct<VkPhysicalDeviceMutableDescriptorTypeFeaturesVALVE>();
     mutable_descriptor_type_features.mutableDescriptorType = VK_FALSE;
@@ -11475,14 +11439,12 @@ TEST_F(VkLayerTest, InvalidDeviceGroupRenderAreaDynamicRendering) {
 
     ASSERT_NO_FATAL_FAILURE(InitFramework());
 
-    if (!AreRequestedExtensionsEnabled()) {
-        printf("%s %s Extension not supported, skipping tests\n", kSkipPrefix, VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME);
-        return;
+    if (!AreRequiredExtensionsEnabled()) {
+        GTEST_SKIP() << RequiredExtensionsNotSupported() << " not supported";
     }
 
     if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
-        printf("%s Tests requires Vulkan 1.1+, skipping test\n", kSkipPrefix);
-        return;
+        GTEST_SKIP() << "At least Vulkan version 1.1 is required";
     }
 
     auto dynamic_rendering_features = LvlInitStruct<VkPhysicalDeviceDynamicRenderingFeaturesKHR>();
@@ -11545,16 +11507,13 @@ TEST_F(VkLayerTest, EndRenderingWithIncorrectlyStartedRenderpassInstance) {
 
     ASSERT_NO_FATAL_FAILURE(InitFramework());
 
-    if (!AreRequestedExtensionsEnabled()) {
-        printf("%s %s Extension not supported, skipping tests\n", kSkipPrefix, VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME);
-        return;
+    if (!AreRequiredExtensionsEnabled()) {
+        GTEST_SKIP() << RequiredExtensionsNotSupported() << " not supported";
     }
 
     if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
-        printf("%s Tests requires Vulkan 1.1+, skipping test\n", kSkipPrefix);
-        return;
+        GTEST_SKIP() << "At least Vulkan version 1.1 is required";
     }
-
     auto dynamic_rendering_features = LvlInitStruct<VkPhysicalDeviceDynamicRenderingFeaturesKHR>();
     auto features2 = LvlInitStruct<VkPhysicalDeviceFeatures2>(&dynamic_rendering_features);
     vk::GetPhysicalDeviceFeatures2(gpu(), &features2);
@@ -11648,15 +11607,12 @@ TEST_F(VkLayerTest, EndRenderpassWithBeginRenderingRenderpassInstance) {
 
     ASSERT_NO_FATAL_FAILURE(InitFramework());
 
-    if (!AreRequestedExtensionsEnabled()) {
-        printf("%s %s or %s Extension not supported, skipping tests\n", kSkipPrefix, VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME,
-               VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME);
-        return;
+    if (!AreRequiredExtensionsEnabled()) {
+        GTEST_SKIP() << RequiredExtensionsNotSupported() << " not supported";
     }
 
     if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
-        printf("%s Tests requires Vulkan 1.1+, skipping test\n", kSkipPrefix);
-        return;
+        GTEST_SKIP() << "At least Vulkan version 1.1 is required";
     }
 
     auto dynamic_rendering_features = LvlInitStruct<VkPhysicalDeviceDynamicRenderingFeaturesKHR>();
@@ -12174,13 +12130,13 @@ TEST_F(VkLayerTest, TestDescriptorWriteFromReadAttachment) {
 TEST_F(VkLayerTest, RenderPassMultiViewCreateInvalidViewOffsets) {
     TEST_DESCRIPTION("Create a render pass with invalid multiview pViewOffsets");
 
-    if (!AddRequiredInstanceExtensions(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME)) {
-        printf("%s %s extension not supported, skipping tests\n", kSkipPrefix,
-               VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
-        return;
+    AddRequiredExtensions(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+
+    if (!AreRequiredExtensionsEnabled()) {
+        GTEST_SKIP() << RequiredExtensionsNotSupported() << " not supported";
     }
 
-    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
     bool rp2Supported = CheckCreateRenderPass2Support(this, m_device_extension_names);
 
     if (!rp2Supported) {
@@ -12225,13 +12181,11 @@ TEST_F(VkLayerTest, RenderPassMultiViewCreateInvalidViewMask) {
     AddRequiredExtensions(VK_KHR_MULTIVIEW_EXTENSION_NAME);
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
     if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
-        printf("%s Tests requires Vulkan 1.1+, skipping test\n", kSkipPrefix);
-        return;
+        GTEST_SKIP() << "At least Vulkan version 1.1 is required";
     }
 
-    if (!AreRequestedExtensionsEnabled()) {
-        printf("%s Extension %s is not supported.\n", kSkipPrefix, VK_KHR_MULTIVIEW_EXTENSION_NAME);
-        return;
+    if (!AreRequiredExtensionsEnabled()) {
+        GTEST_SKIP() << RequiredExtensionsNotSupported() << " not supported";
     }
 
     ASSERT_NO_FATAL_FAILURE(InitState());
@@ -12263,8 +12217,7 @@ TEST_F(VkLayerTest, InvalidRenderPassAttachmentFormat) {
     SetTargetApiVersion(VK_API_VERSION_1_2);
     ASSERT_NO_FATAL_FAILURE(Init());
     if (DeviceValidationVersion() < VK_API_VERSION_1_2) {
-        printf("%s Tests requires Vulkan 1.2+, skipping test\n", kSkipPrefix);
-        return;
+        GTEST_SKIP() << "At least Vulkan version 1.2 is required";
     }
 
     VkAttachmentDescription attach_desc = {};
@@ -12522,18 +12475,16 @@ TEST_F(VkLayerTest, CreateRenderPassWithInvalidStencilLoadOp) {
     ASSERT_NO_FATAL_FAILURE(Init());
 
     if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
-        printf("%s Tests requires Vulkan 1.1+, skipping test\n", kSkipPrefix);
-        return;
+        GTEST_SKIP() << "At least Vulkan version 1.1 is required";
     }
 
-    if (!AreRequestedExtensionsEnabled()) {
-        printf("%s required extensions are not supported, skipping tests.\n", kSkipPrefix);
-        return;
+    if (!AreRequiredExtensionsEnabled()) {
+        GTEST_SKIP() << RequiredExtensionsNotSupported() << " not supported";
     }
 
-    const VkFormat ds_format = FindSupportedDepthStencilFormat(gpu());
-    if (ds_format == VK_FORMAT_UNDEFINED) {
-        printf("%s No Depth + Stencil format found rest of tests skipped.\n", kSkipPrefix);
+    const VkFormat stencil_format = FindSupportedStencilOnlyFormat(gpu());
+    if (stencil_format == VK_FORMAT_UNDEFINED) {
+        printf("%s No stencil format found rest of tests skipped.\n", kSkipPrefix);
         return;
     }
 
@@ -12541,7 +12492,7 @@ TEST_F(VkLayerTest, CreateRenderPassWithInvalidStencilLoadOp) {
         reinterpret_cast<PFN_vkCreateRenderPass2KHR>(vk::GetDeviceProcAddr(m_device->device(), "vkCreateRenderPass2KHR"));
 
     auto attach_desc = LvlInitStruct<VkAttachmentDescription2>();
-    attach_desc.format = ds_format;
+    attach_desc.format = stencil_format;
     attach_desc.samples = VK_SAMPLE_COUNT_1_BIT;
     attach_desc.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     attach_desc.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
@@ -12580,13 +12531,11 @@ TEST_F(VkLayerTest, CreateRenderPassWithViewMask) {
     ASSERT_NO_FATAL_FAILURE(Init());
 
     if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
-        printf("%s Tests requires Vulkan 1.1+, skipping test\n", kSkipPrefix);
-        return;
+        GTEST_SKIP() << "At least Vulkan version 1.1 is required";
     }
 
-    if (!AreRequestedExtensionsEnabled()) {
-        printf("%s required extensions are not supported, skipping tests.\n", kSkipPrefix);
-        return;
+    if (!AreRequiredExtensionsEnabled()) {
+        GTEST_SKIP() << RequiredExtensionsNotSupported() << " not supported";
     }
 
     auto vkCreateRenderPass2KHR =
@@ -12595,7 +12544,7 @@ TEST_F(VkLayerTest, CreateRenderPassWithViewMask) {
     auto attach_desc = LvlInitStruct<VkAttachmentDescription2>();
     attach_desc.format = VK_FORMAT_R8G8B8A8_UNORM;
     attach_desc.samples = VK_SAMPLE_COUNT_1_BIT;
-    attach_desc.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    attach_desc.initialLayout = VK_IMAGE_LAYOUT_PREINITIALIZED;
     attach_desc.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
 
     VkSubpassDescription2 subpass = LvlInitStruct<VkSubpassDescription2>();
@@ -12619,8 +12568,7 @@ TEST_F(VkLayerTest, InvalidSubpassDescriptionViewMask) {
     SetTargetApiVersion(VK_API_VERSION_1_2);
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
     if (DeviceValidationVersion() < VK_API_VERSION_1_2) {
-        printf("%s Tests requires Vulkan 1.2+, skipping test\n", kSkipPrefix);
-        return;
+        GTEST_SKIP() << "At least Vulkan version 1.2 is required";
     }
     auto multiview_features = LvlInitStruct<VkPhysicalDeviceMultiviewFeatures>();
     auto features2 = LvlInitStruct<VkPhysicalDeviceFeatures2>(&multiview_features);
@@ -12673,9 +12621,8 @@ TEST_F(VkLayerTest, TestAllocatingVariableDescriptorSets) {
 
     AddRequiredExtensions(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME);
     ASSERT_NO_FATAL_FAILURE(InitFramework());
-    if (!AreRequestedExtensionsEnabled()) {
-        printf("%s Extension %s is not supported, skipping test.\n", kSkipPrefix, VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME);
-        return;
+    if (!AreRequiredExtensionsEnabled()) {
+        GTEST_SKIP() << RequiredExtensionsNotSupported() << " not supported";
     }
     auto indexing_features = LvlInitStruct<VkPhysicalDeviceDescriptorIndexingFeaturesEXT>();
     auto features2 = LvlInitStruct<VkPhysicalDeviceFeatures2>(&indexing_features);
@@ -12842,8 +12789,7 @@ TEST_F(VkLayerTest, TestAllViewMasksZero) {
     SetTargetApiVersion(VK_API_VERSION_1_1);
     ASSERT_NO_FATAL_FAILURE(Init());
     if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
-        printf("%s Tests requires Vulkan 1.1+, skipping test\n", kSkipPrefix);
-        return;
+        GTEST_SKIP() << "At least Vulkan version 1.1 is required";
     }
     VkSubpassDescription subpass_description = {};
     subpass_description.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
@@ -12886,14 +12832,11 @@ TEST_F(VkLayerTest, FragmentDensityMappAttachmentCount) {
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
 
     if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
-        printf("%s Tests requires Vulkan 1.1+, skipping test\n", kSkipPrefix);
-        return;
+        GTEST_SKIP() << "At least Vulkan version 1.1 is required";
     }
 
-    if (!AreRequestedExtensionsEnabled()) {
-        printf("%s %s or %s is not supported; skipping\n", kSkipPrefix, VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME,
-               VK_EXT_FRAGMENT_DENSITY_MAP_EXTENSION_NAME);
-        return;
+    if (!AreRequiredExtensionsEnabled()) {
+        GTEST_SKIP() << RequiredExtensionsNotSupported() << " not supported";
     }
 
     auto fdm_features = LvlInitStruct<VkPhysicalDeviceFragmentDensityMapFeaturesEXT>();
@@ -12936,4 +12879,153 @@ TEST_F(VkLayerTest, FragmentDensityMappAttachmentCount) {
     m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkRenderPassCreateInfo2-fragmentDensityMapAttachment-06472");
     vkCreateRenderPass2KHR(device(), &render_pass_ci, nullptr, &render_pass);
     m_errorMonitor->VerifyFound();
+}
+
+TEST_F(VkLayerTest, InvalidRenderPassAttachmentUndefinedLayout) {
+    TEST_DESCRIPTION("Create render pass with invalid attachment undefined layout.");
+
+    AddRequiredExtensions(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+    bool rp2Supported = CheckCreateRenderPass2Support(this, m_device_extension_names);
+    ASSERT_NO_FATAL_FAILURE(InitState());
+
+    const VkFormat ds_format = FindSupportedDepthStencilFormat(gpu());
+    if (ds_format == VK_FORMAT_UNDEFINED) {
+        printf("%s No Depth + Stencil format found rest of tests skipped.\n", kSkipPrefix);
+        return;
+    }
+
+    VkSubpassDescription subpass = {};
+    subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+
+    VkAttachmentDescription attach_desc = {};
+    attach_desc.format = ds_format;
+    attach_desc.samples = VK_SAMPLE_COUNT_1_BIT;
+    attach_desc.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+    attach_desc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    attach_desc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    attach_desc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    attach_desc.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    attach_desc.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
+
+    VkRenderPassCreateInfo rpci = LvlInitStruct<VkRenderPassCreateInfo>();
+    rpci.subpassCount = 1;
+    rpci.pSubpasses = &subpass;
+    rpci.attachmentCount = 1;
+    rpci.pAttachments = &attach_desc;
+
+    TestRenderPassCreate(m_errorMonitor, device(), &rpci, rp2Supported, "VUID-VkAttachmentDescription-format-06699",
+                         "VUID-VkAttachmentDescription2-format-06702");
+
+    attach_desc.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    attach_desc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkAttachmentDescription-format-06700");
+    VkRenderPass render_pass;
+    vk::CreateRenderPass(device(), &rpci, nullptr, &render_pass);
+    m_errorMonitor->VerifyFound();
+}
+
+TEST_F(VkLayerTest, ImagelessFramebufferWith3DImage) {
+    TEST_DESCRIPTION("Create imageless framebuffer with image view from 3D image.");
+
+    m_errorMonitor->ExpectSuccess();
+
+    SetTargetApiVersion(VK_API_VERSION_1_2);
+    ASSERT_NO_FATAL_FAILURE(InitFramework());
+    if (DeviceValidationVersion() < VK_API_VERSION_1_2) {
+        GTEST_SKIP() << "At least Vulkan version 1.2 is required";
+    }
+    auto imageless_framebuffer = LvlInitStruct<VkPhysicalDeviceImagelessFramebufferFeatures>();
+    auto features2 = LvlInitStruct<VkPhysicalDeviceFeatures2KHR>(&imageless_framebuffer);
+    vk::GetPhysicalDeviceFeatures2(gpu(), &features2);
+    if (imageless_framebuffer.imagelessFramebuffer == VK_FALSE) {
+        printf("%s multiview feature not supported, skipping test.\n", kSkipPrefix);
+        return;
+    }
+    ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &features2));
+
+    VkSubpassDescription subpass = {};
+
+    VkFormat format = VK_FORMAT_R8G8B8A8_UNORM;
+
+    VkAttachmentDescription attachment = {};
+    attachment.format = format;
+    attachment.samples = VK_SAMPLE_COUNT_1_BIT;
+    attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    attachment.initialLayout = VK_IMAGE_LAYOUT_GENERAL;
+    attachment.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
+
+    VkRenderPassCreateInfo rp_ci = LvlInitStruct<VkRenderPassCreateInfo>();
+    rp_ci.subpassCount = 1;
+    rp_ci.pSubpasses = &subpass;
+    rp_ci.attachmentCount = 1;
+    rp_ci.pAttachments = &attachment;
+
+    vk_testing::RenderPass render_pass;
+    render_pass.init(*m_device, rp_ci);
+
+    auto image_ci = LvlInitStruct<VkImageCreateInfo>();
+    image_ci.flags = VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT;
+    image_ci.imageType = VK_IMAGE_TYPE_3D;
+    image_ci.format = format;
+    image_ci.extent.width = 32;
+    image_ci.extent.height = 32;
+    image_ci.extent.depth = 4;
+    image_ci.mipLevels = 1;
+    image_ci.arrayLayers = 1;
+    image_ci.samples = VK_SAMPLE_COUNT_1_BIT;
+    image_ci.tiling = VK_IMAGE_TILING_OPTIMAL;
+    image_ci.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+
+    VkImageObj image(m_device);
+    image.Init(image_ci);
+    VkImageView imageView = image.targetView(format, VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 4, VK_IMAGE_VIEW_TYPE_2D_ARRAY);
+
+    VkFramebufferAttachmentImageInfo framebuffer_attachment_image_info = LvlInitStruct<VkFramebufferAttachmentImageInfo>();
+    framebuffer_attachment_image_info.flags = VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT;
+    framebuffer_attachment_image_info.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+    framebuffer_attachment_image_info.width = 32;
+    framebuffer_attachment_image_info.height = 32;
+    framebuffer_attachment_image_info.layerCount = 4;
+    framebuffer_attachment_image_info.viewFormatCount = 1;
+    framebuffer_attachment_image_info.pViewFormats = &format;
+
+    VkFramebufferAttachmentsCreateInfo framebuffer_attachments = LvlInitStruct<VkFramebufferAttachmentsCreateInfo>();
+    framebuffer_attachments.attachmentImageInfoCount = 1;
+    framebuffer_attachments.pAttachmentImageInfos = &framebuffer_attachment_image_info;
+
+    VkFramebufferCreateInfo framebuffer_ci = LvlInitStruct<VkFramebufferCreateInfo>(&framebuffer_attachments);
+    framebuffer_ci.flags = VK_FRAMEBUFFER_CREATE_IMAGELESS_BIT;
+    framebuffer_ci.renderPass = render_pass.handle();
+    framebuffer_ci.attachmentCount = 1;
+    framebuffer_ci.pAttachments = &imageView;
+    framebuffer_ci.width = 32;
+    framebuffer_ci.height = 32;
+    framebuffer_ci.layers = 1;
+
+    vk_testing::Framebuffer framebuffer;
+    framebuffer.init(*m_device, framebuffer_ci);
+
+    VkClearValue clear_value = {};
+    clear_value.color = {{0u, 0u, 0u, 0u}};
+
+    VkRenderPassAttachmentBeginInfo render_pass_attachment_bi = LvlInitStruct<VkRenderPassAttachmentBeginInfo>();
+    render_pass_attachment_bi.attachmentCount = 1;
+    render_pass_attachment_bi.pAttachments = &imageView;
+
+    VkRenderPassBeginInfo render_pass_bi = LvlInitStruct<VkRenderPassBeginInfo>(&render_pass_attachment_bi);
+    render_pass_bi.renderPass = render_pass.handle();
+    render_pass_bi.framebuffer = framebuffer.handle();
+    render_pass_bi.clearValueCount = 1;
+    render_pass_bi.pClearValues = &clear_value;
+
+    m_commandBuffer->begin();
+    m_commandBuffer->BeginRenderPass(render_pass_bi);
+    m_commandBuffer->EndRenderPass();
+    m_commandBuffer->end();
+    m_errorMonitor->VerifyNotFound();
 }

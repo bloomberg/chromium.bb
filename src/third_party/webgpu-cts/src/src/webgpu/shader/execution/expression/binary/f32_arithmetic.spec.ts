@@ -7,7 +7,7 @@ import { GPUTest } from '../../../../gpu_test.js';
 import { correctlyRoundedMatch, ulpMatch } from '../../../../util/compare.js';
 import { TypeF32 } from '../../../../util/conversion.js';
 import { biasedRange, fullF32Range } from '../../../../util/math.js';
-import { Case, Config, makeBinaryF32Case, run } from '../expression.js';
+import { allInputSources, Case, Config, makeBinaryF32Case, run } from '../expression.js';
 
 import { binary } from './binary.js';
 
@@ -22,9 +22,7 @@ Accuracy: Correctly rounded
 `
   )
   .params(u =>
-    u
-      .combine('storageClass', ['uniform', 'storage_r', 'storage_rw'] as const)
-      .combine('vectorize', [undefined, 2, 3, 4] as const)
+    u.combine('inputSource', allInputSources).combine('vectorize', [undefined, 2, 3, 4] as const)
   )
   .fn(async t => {
     const cfg: Config = t.params;
@@ -56,9 +54,7 @@ Accuracy: Correctly rounded
 `
   )
   .params(u =>
-    u
-      .combine('storageClass', ['uniform', 'storage_r', 'storage_rw'] as const)
-      .combine('vectorize', [undefined, 2, 3, 4] as const)
+    u.combine('inputSource', allInputSources).combine('vectorize', [undefined, 2, 3, 4] as const)
   )
   .fn(async t => {
     const cfg: Config = t.params;
@@ -90,9 +86,7 @@ Accuracy: Correctly rounded
 `
   )
   .params(u =>
-    u
-      .combine('storageClass', ['uniform', 'storage_r', 'storage_rw'] as const)
-      .combine('vectorize', [undefined, 2, 3, 4] as const)
+    u.combine('inputSource', allInputSources).combine('vectorize', [undefined, 2, 3, 4] as const)
   )
   .fn(async t => {
     const cfg: Config = t.params;
@@ -124,9 +118,7 @@ Accuracy: 2.5 ULP for |y| in the range [2^-126, 2^126]
 `
   )
   .params(u =>
-    u
-      .combine('storageClass', ['uniform', 'storage_r', 'storage_rw'] as const)
-      .combine('vectorize', [undefined, 2, 3, 4] as const)
+    u.combine('inputSource', allInputSources).combine('vectorize', [undefined, 2, 3, 4] as const)
   )
   .fn(async t => {
     const cfg: Config = t.params;

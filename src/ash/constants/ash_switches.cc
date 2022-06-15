@@ -101,19 +101,9 @@ const char kArcDisableMediaStoreMaintenance[] =
 // apps silently. Used in autotests to resolve racy conditions.
 const char kArcDisablePlayAutoInstall[] = "arc-disable-play-auto-install";
 
-// Used for development of Android app that are included into ARC as system
-// default apps in order to be able to install them via adb.
-const char kArcDisableSystemDefaultApps[] = "arc-disable-system-default-apps";
-
 // Flag that disables ureadahead completely, including host and guest parts.
 // See also |kArcVmUreadaheadMode|.
 const char kArcDisableUreadahead[] = "arc-disable-ureadahead";
-
-// Flag to enables an experiment to allow users to turn on 64-bit support in
-// native bridge on systems that have such support available but not yet enabled
-// by default.
-const char kArcEnableNativeBridge64BitSupportExperiment[] =
-    "arc-enable-native-bridge-64bit-support-experiment";
 
 // Flag that forces the OptIn ui to be shown. Used in tests.
 const char kArcForceShowOptInUi[] = "arc-force-show-optin-ui";
@@ -259,6 +249,10 @@ const char kAshUiMode[] = "force-tablet-mode";
 // Values for the kAshUiMode flag.
 const char kAshUiModeClamshell[] = "clamshell";
 const char kAshUiModeTablet[] = "touch_view";
+
+// Makes ash use ChromeOS mojo service manager as the mojo broker.
+const char kAshUseCrOSMojoServiceManager[] =
+    "ash-use-cros-mojo-service-manager";
 
 // (Most) Chrome OS hardware reports ACPI power button releases correctly.
 // Standard hardware reports releases immediately after presses.  If set, we
@@ -679,6 +673,10 @@ const char kLoginUser[] = "login-user";
 // Specifies the user that the browser data migration should happen for.
 const char kBrowserDataMigrationForUser[] = "browser-data-migration-for-user";
 
+// Run move migration instead of copy. Passed with
+// `kBrowserDataMigrationForUser`.
+const char kBrowserDataMigrationMoveMode[] = "browser-data-migration-move-mode";
+
 // Force skip or force migration. Should only be used for testing.
 const char kForceBrowserDataMigrationForTesting[] =
     "force-browser-data-migration-for-testing";
@@ -715,6 +713,9 @@ const char kOobeLargeScreenSpecialScaling[] =
 
 // Specifies directory for screenshots taken with OOBE UI Debugger.
 const char kOobeScreenshotDirectory[] = "oobe-screenshot-dir";
+
+// Shows Blazey screens.
+const char kOobeShowBlazeyScreen[] = "oobe-show-blazey";
 
 // Skips all other OOBE pages after user login.
 const char kOobeSkipPostLogin[] = "oobe-skip-postlogin";

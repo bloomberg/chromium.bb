@@ -505,6 +505,8 @@ SPIRVBuilder::SPIRVBuilder(TCompiler *compiler,
     {
         addCapability(spv::CapabilityTessellation);
     }
+
+    mExtInstImportIdStd = getNewId({});
 }
 
 spirv::IdRef SPIRVBuilder::getNewId(const SpirvDecorations &decorations)
@@ -537,6 +539,10 @@ SpirvType SPIRVBuilder::getSpirvType(const TType &type, const SpirvTypeSpec &typ
         // WEBGL video textures too.
         case EbtSamplerVideoWEBGL:
             spirvType.type = EbtSampler2D;
+            break;
+        // yuvCscStandardEXT is just a uint under the hood.
+        case EbtYuvCscStandardEXT:
+            spirvType.type = EbtUInt;
             break;
         default:
             break;
@@ -692,10 +698,13 @@ SpirvDecorations SPIRVBuilder::getArithmeticDecorations(const TType &type,
     // > relaxed precision.
     // > ...
     //
-    // Here, we remove RelaxedPrecision from such problematic instructions.
+    // findLSB() and bitCount() are in a similar situation.  Here, we remove RelaxedPrecision from
+    // such problematic instructions.
     switch (op)
     {
         case EOpFindMSB:
+        case EOpFindLSB:
+        case EOpBitCount:
             // Currently getDecorations() only adds RelaxedPrecision, so removing the
             // RelaxedPrecision decoration is simply done by clearing the vector.
             ASSERT(decorations.empty() ||
@@ -717,10 +726,7 @@ SpirvDecorations SPIRVBuilder::getArithmeticDecorations(const TType &type,
 
 spirv::IdRef SPIRVBuilder::getExtInstImportIdStd()
 {
-    if (!mExtInstImportIdStd.valid())
-    {
-        mExtInstImportIdStd = getNewId({});
-    }
+    ASSERT(mExtInstImportIdStd.valid());
     return mExtInstImportIdStd;
 }
 
@@ -2106,10 +2112,7 @@ spirv::Blob SPIRVBuilder::getSpirv()
     writeExtensions(&result);
 
     // - OpExtInstImport
-    if (mExtInstImportIdStd.valid())
-    {
-        spirv::WriteExtInstImport(&result, mExtInstImportIdStd, "GLSL.std.450");
-    }
+    spirv::WriteExtInstImport(&result, getExtInstImportIdStd(), "GLSL.std.450");
 
     // - OpMemoryModel
     spirv::WriteMemoryModel(&result, spv::AddressingModelLogical, spv::MemoryModelGLSL450);
@@ -2157,8 +2160,7 @@ void SPIRVBuilder::writeExecutionModes(spirv::Blob *blob)
         case gl::ShaderType::Fragment:
             spirv::WriteExecutionMode(blob, mEntryPointId, spv::ExecutionModeOriginUpperLeft, {});
 
-            if (mCompiler->isEarlyFragmentTestsSpecified() ||
-                mCompiler->isEarlyFragmentTestsOptimized())
+            if (mCompiler->isEarlyFragmentTestsSpecified())
             {
                 spirv::WriteExecutionMode(blob, mEntryPointId, spv::ExecutionModeEarlyFragmentTests,
                                           {});

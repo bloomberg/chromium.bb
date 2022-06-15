@@ -38,8 +38,38 @@
 namespace libgav1 {
 namespace dsp {
 
+// Section 7.11.3.5.
+struct WarpFilterParams {
+  int64_t x4;
+  int64_t y4;
+  int ix4;
+  int iy4;
+};
+
 // Initializes Dsp::warp. This function is not thread-safe.
 void WarpInit_C();
+
+// Section 7.11.3.5.
+inline WarpFilterParams GetWarpFilterParams(int src_x, int src_y,
+                                            int subsampling_x,
+                                            int subsampling_y,
+                                            const int* warp_params) {
+  WarpFilterParams filter_params;
+  // warp_params[2]/[5] require 17 bits (the others 14). With large resolutions
+  // the result of the multiplication will require 33.
+  const int64_t dst_x = static_cast<int64_t>(src_x) * warp_params[2] +
+                        src_y * warp_params[3] + warp_params[0];
+  const int64_t dst_y = src_x * warp_params[4] +
+                        static_cast<int64_t>(src_y) * warp_params[5] +
+                        warp_params[1];
+  filter_params.x4 = dst_x >> subsampling_x;
+  filter_params.y4 = dst_y >> subsampling_y;
+  filter_params.ix4 =
+      static_cast<int>(filter_params.x4 >> kWarpedModelPrecisionBits);
+  filter_params.iy4 =
+      static_cast<int>(filter_params.y4 >> kWarpedModelPrecisionBits);
+  return filter_params;
+}
 
 }  // namespace dsp
 }  // namespace libgav1

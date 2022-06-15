@@ -57,6 +57,7 @@
 static_assert ((sizeof (hb_glyph_info_t) == 20), "");
 static_assert ((sizeof (hb_glyph_info_t) == sizeof (hb_glyph_position_t)), "");
 
+HB_MARK_AS_FLAG_T (hb_glyph_flags_t);
 HB_MARK_AS_FLAG_T (hb_buffer_flags_t);
 HB_MARK_AS_FLAG_T (hb_buffer_serialize_flags_t);
 HB_MARK_AS_FLAG_T (hb_buffer_diff_flags_t);
@@ -106,6 +107,7 @@ struct hb_buffer_t
   hb_segment_properties_t props; /* Script, language, direction */
 
   bool successful; /* Allocations successful */
+  bool shaping_failed; /* Shaping failure */
   bool have_output; /* Whether we have an output buffer going on */
   bool have_positions; /* Whether we have positions */
 

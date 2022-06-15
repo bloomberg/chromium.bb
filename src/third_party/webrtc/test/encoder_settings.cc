@@ -88,6 +88,7 @@ std::vector<VideoStream> CreateVideoStreams(
       stream_settings[i].width = width / stream.scale_resolution_down_by;
       stream_settings[i].height = height / stream.scale_resolution_down_by;
     }
+    stream_settings[i].scalability_mode = stream.scalability_mode;
     stream_settings[i].target_bitrate_bps = target_bitrate_bps;
     stream_settings[i].max_bitrate_bps = max_bitrate_bps;
     stream_settings[i].active =
@@ -122,6 +123,7 @@ void FillEncoderConfiguration(VideoCodecType codec_type,
   configuration->video_stream_factory =
       rtc::make_ref_counted<DefaultVideoStreamFactory>();
   configuration->max_bitrate_bps = 0;
+  configuration->frame_drop_enabled = true;
   configuration->simulcast_layers = std::vector<VideoStream>(num_streams);
   for (size_t i = 0; i < num_streams; ++i) {
     configuration->max_bitrate_bps +=
@@ -129,16 +131,16 @@ void FillEncoderConfiguration(VideoCodecType codec_type,
   }
 }
 
-VideoReceiveStream::Decoder CreateMatchingDecoder(
+VideoReceiveStreamInterface::Decoder CreateMatchingDecoder(
     int payload_type,
     const std::string& payload_name) {
-  VideoReceiveStream::Decoder decoder;
+  VideoReceiveStreamInterface::Decoder decoder;
   decoder.payload_type = payload_type;
   decoder.video_format = SdpVideoFormat(payload_name);
   return decoder;
 }
 
-VideoReceiveStream::Decoder CreateMatchingDecoder(
+VideoReceiveStreamInterface::Decoder CreateMatchingDecoder(
     const VideoSendStream::Config& config) {
   return CreateMatchingDecoder(config.rtp.payload_type,
                                config.rtp.payload_name);

@@ -1256,9 +1256,9 @@ struct Task {
                     bool unclamped = false;
                     for (int y = 0; y < pm.height() && !unclamped; ++y)
                     for (int x = 0; x < pm.width() && !unclamped; ++x) {
-                        Sk4f rgba = SkHalfToFloat_finite_ftz(*pm.addr64(x, y));
+                        skvx::float4 rgba = SkHalfToFloat_finite_ftz(*pm.addr64(x, y));
                         float a = rgba[3];
-                        if (a > 1.0f || (rgba < 0.0f).anyTrue() || (rgba > a).anyTrue()) {
+                        if (a > 1.0f || any(rgba < 0.0f) || any(rgba > a)) {
                             SkDebugf("[%s] F16Norm pixel [%d, %d] unclamped: (%g, %g, %g, %g)\n",
                                      name.c_str(), x, y, rgba[0], rgba[1], rgba[2], rgba[3]);
                             unclamped = true;
@@ -1346,10 +1346,26 @@ struct Task {
                             const SkBitmap* bitmap,
                             const HashAndEncode* hashAndEncode) {
 
+        // Determine whether or not the OldestSupportedSkpVersion extra_config is provided.
+        bool isOldestSupportedSkp = false;
+        for (int i = 1; i < FLAGS_key.count(); i += 2) {
+            if (0 == strcmp(FLAGS_key[i-1], "extra_config") &&
+                0 == strcmp(FLAGS_key[i], "OldestSupportedSkpVersion")) {
+                isOldestSupportedSkp = true;
+                break;
+            }
+        }
+
         JsonWriter::BitmapResult result;
         result.name          = task.src->name();
         result.config        = task.sink.tag;
         result.sourceType    = task.src.tag;
+        // If the OldestSupportedSkpVersion extra_config is provided, override the "skp"
+        // source_type with "old-skp". This has the effect of grouping the oldest supported SKPs in
+        // a separate Gold corpus for easier triaging.
+        if (isOldestSupportedSkp && 0 == strcmp(result.sourceType.c_str(), "skp")) {
+            result.sourceType = "old-skp";
+        }
         result.sourceOptions = task.src.options;
         result.ext           = ext;
         result.md5           = md5;

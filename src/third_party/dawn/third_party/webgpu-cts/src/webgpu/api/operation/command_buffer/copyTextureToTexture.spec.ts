@@ -1237,12 +1237,16 @@ g.test('copy_multisampled_color')
     const destinationTexture = t.device.createTexture({
       format: kColorFormat,
       size: textureSize,
-      usage: GPUTextureUsage.COPY_DST | GPUTextureUsage.TEXTURE_BINDING,
+      usage:
+        GPUTextureUsage.COPY_DST |
+        GPUTextureUsage.TEXTURE_BINDING |
+        GPUTextureUsage.RENDER_ATTACHMENT,
       sampleCount: kSampleCount,
     });
 
     // Initialize sourceTexture with a draw call.
     const renderPipelineForInit = t.device.createRenderPipeline({
+      layout: 'auto',
       vertex: {
         module: t.device.createShaderModule({
           code: `
@@ -1305,6 +1309,7 @@ g.test('copy_multisampled_color')
     // Verify if all the sub-pixel values at the same location of sourceTexture and
     // destinationTexture are equal.
     const renderPipelineForValidation = t.device.createRenderPipeline({
+      layout: 'auto',
       vertex: {
         module: t.device.createShaderModule({
           code: `
@@ -1438,6 +1443,7 @@ g.test('copy_multisampled_depth')
 
     // Initialize the depth aspect of source texture with a draw call
     const renderPipelineForInit = t.device.createRenderPipeline({
+      layout: 'auto',
       vertex: vertexState,
       depthStencil: {
         format: kDepthFormat,
@@ -1481,6 +1487,7 @@ g.test('copy_multisampled_depth')
     // depthCompareFunction == 'equal' and depthWriteEnabled == false in the render pipeline
     const kColorFormat = 'rgba8unorm';
     const renderPipelineForVerify = t.device.createRenderPipeline({
+      layout: 'auto',
       vertex: vertexState,
       fragment: {
         module: t.device.createShaderModule({

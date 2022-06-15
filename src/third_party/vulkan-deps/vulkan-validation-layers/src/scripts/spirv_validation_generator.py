@@ -97,6 +97,14 @@ class SpirvValidationHelperOutputGenerator(OutputGenerator):
         self.extensionExcludeList = []
         self.capabilityExcludeList = []
 
+        # There are some enums that share the same value in the SPIR-V header.
+        # This array remove the duplicate to not print out, usually due to being the older value given
+        self.capabilityAliasList = [
+          'ShaderViewportIndexLayerNV',
+          'ShadingRateNV',
+          'FragmentBarycentricNV',
+        ]
+
         # This is a list that maps the Vulkan struct a feature field is with the internal
         # state tracker's enabled features value
         #
@@ -131,6 +139,7 @@ class SpirvValidationHelperOutputGenerator(OutputGenerator):
             {'vulkan' : 'VkPhysicalDeviceRayTracingMotionBlurFeaturesNV', 'layer' : 'ray_tracing_motion_blur_features'},
             {'vulkan' : 'VkPhysicalDeviceShaderIntegerDotProductFeaturesKHR', 'layer' : 'shader_integer_dot_product_features'},
             {'vulkan' : 'VkPhysicalDeviceShaderSubgroupUniformControlFlowFeaturesKHR', 'layer' : 'shader_subgroup_uniform_control_flow_features'},
+            {'vulkan' : 'VkPhysicalDeviceRayTracingMaintenance1FeaturesKHR', 'layer' : 'ray_tracing_maintenance1_features'},
         ]
 
         # Promoted features structure in state_tracker.cpp are put in the VkPhysicalDeviceVulkan*Features structs
@@ -273,13 +282,10 @@ class SpirvValidationHelperOutputGenerator(OutputGenerator):
     #
     # Creates the Enum string helpers for better error messages. Same idea of vk_enum_string_helper.h but for SPIR-V
     def enumHelper(self):
-        # There are some enums that share the same value in the SPIR-V header.
-        # This array remove the duplicate to not print out, usually due to being the older value given
-        excludeList = ['ShaderViewportIndexLayerNV', 'ShadingRateNV']
         output =  'static inline const char* string_SpvCapability(uint32_t input_value) {\n'
         output += '    switch ((spv::Capability)input_value) {\n'
         for name, enables in sorted(self.capabilities.items()):
-            if (name not in excludeList) and (name not in self.capabilityExcludeList):
+            if (name not in self.capabilityAliasList) and (name not in self.capabilityExcludeList):
                 output += '         case spv::Capability' + name + ':\n'
                 output += '            return \"' + name + '\";\n'
         output += '        default:\n'

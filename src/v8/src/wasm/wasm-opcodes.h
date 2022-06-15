@@ -540,7 +540,10 @@ bool V8_EXPORT_PRIVATE IsJSCompatibleSignature(const FunctionSig* sig,
   V(F32x4RelaxedMin, 0xfd10d, s_ss)            \
   V(F32x4RelaxedMax, 0xfd10e, s_ss)            \
   V(F64x2RelaxedMin, 0xfd10f, s_ss)            \
-  V(F64x2RelaxedMax, 0xfd110, s_ss)
+  V(F64x2RelaxedMax, 0xfd110, s_ss)            \
+  V(I16x8RelaxedQ15MulRS, 0xfd111, s_ss)       \
+  V(I16x8DotI8x16I7x16S, 0xfd112, s_ss)        \
+  V(I32x4DotI8x16I7x16AddS, 0xfd113, s_sss)
 
 #define FOREACH_SIMD_1_OPERAND_1_PARAM_OPCODE(V) \
   V(I8x16ExtractLaneS, 0xfd15, _)                \
@@ -723,7 +726,32 @@ bool V8_EXPORT_PRIVATE IsJSCompatibleSignature(const FunctionSig* sig,
   V(BrOnNonFunc, 0xfb63, _)                                                    \
   V(BrOnNonData, 0xfb64, _)                                                    \
   V(BrOnNonI31, 0xfb65, _)                                                     \
-  V(BrOnNonArray, 0xfb67, _)
+  V(BrOnNonArray, 0xfb67, _)                                                   \
+  V(StringNewWtf8, 0xfb80, _)                                                  \
+  V(StringNewWtf16, 0xfb81, _)                                                 \
+  V(StringConst, 0xfb82, _)                                                    \
+  V(StringMeasureUtf8, 0xfb83, _)                                              \
+  V(StringMeasureWtf8, 0xfb84, _)                                              \
+  V(StringMeasureWtf16, 0xfb85, _)                                             \
+  V(StringEncodeWtf8, 0xfb86, _)                                               \
+  V(StringEncodeWtf16, 0xfb87, _)                                              \
+  V(StringConcat, 0xfb88, _)                                                   \
+  V(StringEq, 0xfb89, _)                                                       \
+  V(StringIsUSVSequence, 0xfb8a, _)                                            \
+  V(StringAsWtf8, 0xfb90, _)                                                   \
+  V(StringViewWtf8Advance, 0xfb91, _)                                          \
+  V(StringViewWtf8Encode, 0xfb92, _)                                           \
+  V(StringViewWtf8Slice, 0xfb93, _)                                            \
+  V(StringAsWtf16, 0xfb98, _)                                                  \
+  V(StringViewWtf16Length, 0xfb99, _)                                          \
+  V(StringViewWtf16GetCodeUnit, 0xfb9a, _)                                     \
+  V(StringViewWtf16Encode, 0xfb9b, _)                                          \
+  V(StringViewWtf16Slice, 0xfb9c, _)                                           \
+  V(StringAsIter, 0xfba0, _)                                                   \
+  V(StringViewIterCur, 0xfba1, _)                                              \
+  V(StringViewIterAdvance, 0xfba2, _)                                          \
+  V(StringViewIterRewind, 0xfba3, _)                                           \
+  V(StringViewIterSlice, 0xfba4, _)
 
 // All opcodes.
 #define FOREACH_OPCODE(V)            \
@@ -805,6 +833,23 @@ bool V8_EXPORT_PRIVATE IsJSCompatibleSignature(const FunctionSig* sig,
   V(Simd, 0xfd)           \
   V(Atomic, 0xfe)
 
+// Prefixed opcodes are encoded as 1 prefix byte, followed by LEB encoded
+// opcode bytes. We internally encode them as {WasmOpcode} as follows:
+// 1) non-prefixed opcodes use the opcode itself as {WasmOpcode} enum value;
+// 2) prefixed opcodes in [0, 0xff] use {(prefix << 8) | opcode};
+// 3) prefixed opcodes in [0x100, 0xfff] use {(prefix << 12) | opcode} (this is
+//    only used for relaxed simd so far).
+//
+// This encoding is bijective (i.e. a one-to-one mapping in both directions).
+// The used opcode ranges are:
+// 1) [0, 0xff]  ->  no prefix, 8 bits opcode
+// 2) [0xfb00, 0xfe00]  ->  prefix shifted by 8 bits, and 8 bits opcode
+// 3) [0xfd100, 0xfdfff]  ->  prefix shifted by 12 bits, and 12 bits opcode
+//                            (only [0xfd100, 0xfd1ff] used so far)
+//
+// This allows to compute back the prefix and the non-prefixed opcode from each
+// WasmOpcode, see {WasmOpcodes::ExtractPrefix} and
+// {ExtractPrefixedOpcodeBytes} (for testing).
 enum WasmOpcode {
 // Declare expression opcodes.
 #define DECLARE_NAMED_ENUM(name, opcode, ...) kExpr##name = opcode,
@@ -839,12 +884,8 @@ class V8_EXPORT_PRIVATE WasmOpcodes {
   static constexpr bool IsBreakable(WasmOpcode);
 
   static constexpr MessageTemplate TrapReasonToMessageId(TrapReason);
-  // Prefixed opcodes are encoded as 1 prefix byte, followed by LEB encoded
-  // opcode bytes. With the addition of relaxed SIMD opcodes, the decoded
-  // length of opcode bytes exceeds two bytes. This method, and other mehtods
-  // that operate on prefixed opcodes, handle upto 3 byte opcodes, when
-  // opcodes exceed a decoded length of 3 bytes, this code, and elsewhere
-  // that assumes 3-bytes to be the maximum opcode length should be updated.
+
+  // Extract the prefix byte (or 0x00) from a {WasmOpcode}.
   static constexpr byte ExtractPrefix(WasmOpcode);
   static inline const char* TrapReasonMessage(TrapReason);
 };

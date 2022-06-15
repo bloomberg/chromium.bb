@@ -157,6 +157,12 @@ source_set("sources") {
 
   configs += [ ":internal" ]
 
+  # Enable -Wglobal-constructors here only, instead of in internal_config,
+  # because gtest and some other targets don't build with it.
+  if (is_clang) {
+    cflags = [ "-Wglobal-constructors" ]
+  }
+
   # Dependencies that are needed to compile dawn native entry points in
   # FooBackend.cpp need to be public deps so they are propagated to the
   # dawn native target
@@ -182,6 +188,8 @@ source_set("sources") {
     "BindGroupTracker.h",
     "BindingInfo.cpp",
     "BindingInfo.h",
+    "Blob.cpp",
+    "Blob.h",
     "BlobCache.cpp",
     "BlobCache.h",
     "BuddyAllocator.cpp",
@@ -278,6 +286,8 @@ source_set("sources") {
     "QuerySet.h",
     "Queue.cpp",
     "Queue.h",
+    "RefCountedWithExternalCount.cpp",
+    "RefCountedWithExternalCount.h",
     "RenderBundle.cpp",
     "RenderBundle.h",
     "RenderBundleEncoder.cpp",
@@ -366,10 +376,13 @@ source_set("sources") {
       "d3d12/BindGroupD3D12.h",
       "d3d12/BindGroupLayoutD3D12.cpp",
       "d3d12/BindGroupLayoutD3D12.h",
+      "d3d12/BlobD3D12.cpp",
+      "d3d12/BlobD3D12.h",
       "d3d12/BufferD3D12.cpp",
       "d3d12/BufferD3D12.h",
       "d3d12/CPUDescriptorHeapAllocationD3D12.cpp",
       "d3d12/CPUDescriptorHeapAllocationD3D12.h",
+      "d3d12/CacheKeyD3D12.cpp",
       "d3d12/CommandAllocatorManager.cpp",
       "d3d12/CommandAllocatorManager.h",
       "d3d12/CommandBufferD3D12.cpp",
@@ -510,6 +523,8 @@ source_set("sources") {
     ]
     sources += get_target_outputs(":opengl_loader_gen")
     sources += [
+      "opengl/AdapterGL.cpp",
+      "opengl/AdapterGL.h",
       "opengl/BackendGL.cpp",
       "opengl/BackendGL.h",
       "opengl/BindGroupGL.cpp",

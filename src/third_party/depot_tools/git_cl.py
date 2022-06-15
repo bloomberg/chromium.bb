@@ -805,6 +805,12 @@ class Settings(object):
       return False
     return None
 
+  def GetIsGerrit(self):
+    """Return True if gerrit.host is set."""
+    if self.is_gerrit is None:
+      self.is_gerrit = bool(self._GetConfig('gerrit.host', False))
+    return self.is_gerrit
+
   def GetGerritSkipEnsureAuthenticated(self):
     """Return True if EnsureAuthenticated should not be done for Gerrit
     uploads."""
@@ -1323,9 +1329,10 @@ class Changelist(object):
 
     remote, remote_branch = self.GetRemoteBranch()
     target_ref = GetTargetRef(remote, remote_branch, None)
-    args.extend(['--gerrit_url', self.GetCodereviewServer()])
-    args.extend(['--gerrit_project', self.GetGerritProject()])
-    args.extend(['--gerrit_branch', target_ref])
+    if settings.GetIsGerrit():
+      args.extend(['--gerrit_url', self.GetCodereviewServer()])
+      args.extend(['--gerrit_project', self.GetGerritProject()])
+      args.extend(['--gerrit_branch', target_ref])
 
     author = self.GetAuthor()
     issue = self.GetIssue()
@@ -1362,6 +1369,8 @@ class Changelist(object):
     if files:
       args.extend(files.split(';'))
       args.append('--source_controlled_only')
+    if files or all_files:
+      args.append('--no_diffs')
 
     if resultdb and not realm:
       # TODO (crbug.com/1113463): store realm somewhere and look it up so
@@ -1370,10 +1379,14 @@ class Changelist(object):
             ' was not specified. To enable ResultDB, please run the command'
             ' again with the --realm argument to specify the LUCI realm.')
 
-    py2_results = self._RunPresubmit(args, resultdb, realm, description,
-                                     use_python3=False)
     py3_results = self._RunPresubmit(args, resultdb, realm, description,
                                      use_python3=True)
+    if py3_results.get('skipped_presubmits', 1) == 0:
+      print('No more presubmits to run - skipping Python 2 presubmits.')
+      return py3_results
+
+    py2_results = self._RunPresubmit(args, resultdb, realm, description,
+                                      use_python3=False)
     return self._MergePresubmitResults(py2_results, py3_results)
 
   def _RunPresubmit(self, args, resultdb, realm, description, use_python3):
@@ -2997,14 +3010,18 @@ def FindCodereviewSettingsFile(filename='codereview.settings'):
   cwd = os.getcwd()
   root = settings.GetRoot()
   if os.path.isfile(os.path.join(root, inherit_ok_file)):
-    root = '/'
+    root = None
   while True:
-    if filename in os.listdir(cwd):
-      if os.path.isfile(os.path.join(cwd, filename)):
-        return open(os.path.join(cwd, filename))
+    if os.path.isfile(os.path.join(cwd, filename)):
+      return open(os.path.join(cwd, filename))
     if cwd == root:
       break
-    cwd = os.path.dirname(cwd)
+    parent_dir = os.path.dirname(cwd)
+    if parent_dir == cwd:
+      # We hit the system root directory.
+      break
+    cwd = parent_dir
+  return None
 
 
 def LoadCodereviewSettingsFromFile(fileobj):

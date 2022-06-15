@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-const AutomationNode = chrome.automation.AutomationNode;
-const AutomationEvent = chrome.automation.AutomationEvent;
-const EventType = chrome.automation.EventType;
 const IconType = chrome.accessibilityPrivate.DictationBubbleIconType;
 
 /**
  * InputController handles interaction with input fields for Dictation.
  */
 export class InputController {
-  constructor(stopDictationCallback) {
+  constructor(stopDictationCallback, focusHandler) {
     /** @private {number} */
     this.activeImeContextId_ = InputController.NO_ACTIVE_IME_CONTEXT_ID_;
+
+    /** @private {!FocusHandler} */
+    this.focusHandler_ = focusHandler;
 
     /**
      * The engine ID of the previously active IME input method. Used to
@@ -28,15 +28,6 @@ export class InputController {
     /** @private {?function():void} */
     this.onConnectCallback_ = null;
 
-    /**
-     * The currently focused editable node.
-     * @private {?AutomationNode}
-     */
-    this.editableNode_ = null;
-
-    /** @private {?EventHandler} */
-    this.focusHandler_ = null;
-
     this.initialize_();
   }
 
@@ -46,20 +37,9 @@ export class InputController {
    */
   initialize_() {
     // Listen for IME focus changes.
-    chrome.input.ime.onFocus.addListener(
-        (context) => this.onImeFocus_(context));
+    chrome.input.ime.onFocus.addListener(context => this.onImeFocus_(context));
     chrome.input.ime.onBlur.addListener(
-        (contextId) => this.onImeBlur_(contextId));
-
-    // IME focus and blur listeners do not tell us which AutomationNode is
-    // currently focused. Register a focus event handler that will give us this
-    // information.
-    this.focusHandler_ = new EventHandler(
-        [], EventType.FOCUS, event => this.onFocusChanged_(event));
-    chrome.automation.getDesktop((desktop) => {
-      this.focusHandler_.setNodes(desktop);
-      this.focusHandler_.start();
-    });
+        contextId => this.onImeBlur_(contextId));
   }
 
   /**
@@ -79,7 +59,7 @@ export class InputController {
   connect(callback) {
     this.onConnectCallback_ = callback;
     chrome.inputMethodPrivate.getCurrentInputMethod(
-        (method) => this.saveCurrentInputMethodAndStart_(method));
+        method => this.saveCurrentInputMethodAndStart_(method));
   }
 
   /**
@@ -153,20 +133,6 @@ export class InputController {
   }
 
   /**
-   * @param {!AutomationEvent} event
-   * @private
-   */
-  onFocusChanged_(event) {
-    const node = event.target;
-    if (!node || !AutomationPredicate.editText(node)) {
-      this.editableNode_ = null;
-      return;
-    }
-
-    this.editableNode_ = node;
-  }
-
-  /**
    * @param {string} text
    * @return {string}
    */
@@ -177,14 +143,15 @@ export class InputController {
     // space when committed to a text field. This is a temporary workaround
     // until the blocking SODA bug can be fixed. Note, a similar strategy
     // already exists in Dictation::OnSpeechResult().
-    if (!this.editableNode_ ||
+    const editableNode = this.focusHandler_.getEditableNode();
+    if (!editableNode ||
         InputController.BEGINS_WITH_WHITESPACE_REGEX_.test(text)) {
       return text;
     }
 
-    const value = this.editableNode_.value;
-    const selStart = this.editableNode_.textSelStart;
-    const selEnd = this.editableNode_.textSelEnd;
+    const value = editableNode.value;
+    const selStart = editableNode.textSelStart;
+    const selEnd = editableNode.textSelEnd;
     // Prepend a space to `text` if there is text directly left of the cursor.
     if (!selStart || selStart !== selEnd || !value ||
         InputController.BEGINS_WITH_WHITESPACE_REGEX_.test(
@@ -193,6 +160,125 @@ export class InputController {
     }
 
     return ' ' + text;
+  }
+
+  /**
+   * Deletes the sentence to the left of the text caret. If the caret is in the
+   * middle of a sentence, it will delete a portion of the sentence it
+   * intersects.
+   */
+  deletePrevSentence() {
+    const editableNode = this.focusHandler_.getEditableNode();
+    if (!editableNode || !editableNode.value ||
+        editableNode.textSelStart !== editableNode.textSelEnd) {
+      return;
+    }
+
+    const value = editableNode.value;
+    const caretIndex = editableNode.textSelStart;
+    const prevSentenceStart =
+        this.findPrevSentenceStartIndex_(value, caretIndex);
+    const length = caretIndex - prevSentenceStart;
+    this.deleteSurroundingText_(length, -length);
+  }
+
+  /**
+   * Returns the start index of the sentence to the left of the caret. Indices
+   * are relative to `text`. Assumes that sentences are separated by punctuation
+   * specified in `InputController.END_OF_SENTENCE_REGEX_`.
+   * @param {string} text
+   * @param {number} caretIndex The index of the text caret.
+   */
+  findPrevSentenceStartIndex_(text, caretIndex) {
+    let encounteredText = false;
+    if (caretIndex === text.length) {
+      --caretIndex;
+    }
+
+    while (caretIndex >= 0) {
+      const valueAtCaret = text[caretIndex];
+      if (encounteredText &&
+          InputController.END_OF_SENTENCE_REGEX_.test(valueAtCaret)) {
+        // Adjust if there is another sentence after this one.
+        return text[caretIndex + 1] === ' ' ? caretIndex + 2 : caretIndex;
+      }
+
+      if (!InputController.BEGINS_WITH_WHITESPACE_REGEX_.test(valueAtCaret) &&
+          !InputController.PUNCTUATION_REGEX_.test(valueAtCaret)) {
+        encounteredText = true;
+      }
+      --caretIndex;
+    }
+
+    return 0;
+  }
+
+  /**
+   * @param {number} length The number of characters to be deleted.
+   * @param {number} offset The offset from the caret position where deletion
+   * will start. This value can be negative.
+   * @private
+   */
+  deleteSurroundingText_(length, offset) {
+    chrome.input.ime.deleteSurroundingText({
+      contextID: this.activeImeContextId_,
+      engineID: InputController.IME_ENGINE_ID,
+      length,
+      offset
+    });
+  }
+
+  /**
+   * Deletes a phrase to the left of the text caret. If multiple instances of
+   * `phrase` are present, it deletes the one closest to the text caret.
+   * @param {string} phrase The phrase to be deleted.
+   */
+  smartDeletePhrase(phrase) {
+    this.smartReplacePhrase(phrase, '');
+  }
+
+  /**
+   * Replaces a phrase to the left of the text caret with another phrase. If
+   * multiple instances of `deletePhrase` are present, this function will
+   * replace the one closest to the text caret.
+   * @param {string} deletePhrase The phrase to be deleted.
+   * @param {string} insertPhrase The phrase to be inserted.
+   */
+  smartReplacePhrase(deletePhrase, insertPhrase) {
+    const editableNode = this.focusHandler_.getEditableNode();
+    if (!editableNode || !editableNode.value ||
+        editableNode.textSelStart !== editableNode.textSelEnd) {
+      return;
+    }
+
+    const value = editableNode.value;
+    const caretIndex = editableNode.textSelStart;
+    const leftOfCaret = value.substring(0, caretIndex);
+    const rightOfCaret = value.substring(caretIndex);
+    const performingDelete = insertPhrase === '';
+    deletePhrase = deletePhrase.trim();
+    insertPhrase = insertPhrase.trim();
+
+    // Find the right-most occurrence of `deletePhrase`. Require `deletePhrase`
+    // to be separated by word boundaries. If we're deleting text, prefer
+    // the RegExps that include a leading/trailing space to preserve spacing.
+    const re = new RegExp(`(\\b${deletePhrase}\\b)(?!.*\\b\\1\\b)`, 'i');
+    const reWithLeadingSpace =
+        new RegExp(`(\\b ${deletePhrase}\\b)(?!.*\\b\\1\\b)`, 'i');
+    const reWithTrailingSpace =
+        new RegExp(`(\\b${deletePhrase} \\b)(?!.*\\b\\1\\b)`, 'i');
+
+    let newLeft;
+    if (performingDelete && reWithLeadingSpace.test(leftOfCaret)) {
+      newLeft = leftOfCaret.replace(reWithLeadingSpace, insertPhrase);
+    } else if (performingDelete && reWithTrailingSpace.test(leftOfCaret)) {
+      newLeft = leftOfCaret.replace(reWithTrailingSpace, insertPhrase);
+    } else {
+      newLeft = leftOfCaret.replace(re, insertPhrase);
+    }
+
+    const newValue = newLeft + rightOfCaret;
+    editableNode.setValue(newValue);
   }
 }
 
@@ -214,3 +300,16 @@ InputController.NO_ACTIVE_IME_CONTEXT_ID_ = -1;
  * @const
  */
 InputController.BEGINS_WITH_WHITESPACE_REGEX_ = /^\s/;
+
+/**
+ * @private {!RegExp}
+ * @const
+ */
+InputController.PUNCTUATION_REGEX_ =
+    /[-$#"()*;:<>\n\\\/\{\}\[\]+='~`!@_.,?%\u2022\u25e6\u25a0]/g;
+
+/**
+ * @private {!RegExp}
+ * @const
+ */
+InputController.END_OF_SENTENCE_REGEX_ = /[;!.?]/g;

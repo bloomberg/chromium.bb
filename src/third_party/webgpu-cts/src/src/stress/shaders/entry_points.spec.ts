@@ -15,7 +15,7 @@ const makeCode = (numEntryPoints: number) => {
       fn main() { buffer.data = buffer.data + 1u;  }
       `;
   const makeEntryPoint = (i: number) => `
-      @stage(compute) @workgroup_size(1) fn computeMain${i}() { main(); }
+      @compute @workgroup_size(1) fn computeMain${i}() { main(); }
       `;
   return kBaseCode + range(numEntryPoints, makeEntryPoint).join('');
 };

@@ -11,7 +11,7 @@ import { makeTestGroup } from '../../../../../../common/framework/test_group.js'
 import { GPUTest } from '../../../../../gpu_test.js';
 import { anyOf, ulpMatch } from '../../../../../util/compare.js';
 import { f64, TypeF32 } from '../../../../../util/conversion.js';
-import { flushSubnormalNumber, fullF32Range } from '../../../../../util/math.js';
+import { fullF32Range, isSubnormalNumber } from '../../../../../util/math.js';
 import { Case, Config, makeBinaryF32Case, run } from '../../expression.js';
 
 import { builtin } from './builtin.js';
@@ -49,7 +49,7 @@ TODO(#792): Decide what the ground-truth is for these tests. [1]
     // [1]: Need to decide what the ground-truth is.
     const makeCase = (y: number, x: number): Case => {
       const c = makeBinaryF32Case(y, x, Math.atan2, true);
-      if (flushSubnormalNumber(y) === 0.0) {
+      if (isSubnormalNumber(y)) {
         // If y is subnormal, also expect possible results of atan2(0, x)
         c.expected = anyOf(c.expected, f64(0), f64(Math.PI), f64(-Math.PI));
       }
@@ -67,7 +67,7 @@ TODO(#792): Decide what the ground-truth is for these tests. [1]
     numeric_range.forEach((y, y_idx) => {
       numeric_range.forEach((x, x_idx) => {
         // atan2(y, 0) is not well defined, so skipping those cases
-        if (flushSubnormalNumber(x) !== 0) {
+        if (!isSubnormalNumber(x)) {
           if (x_idx >= y_idx) {
             cases.push(makeCase(y, x));
           }

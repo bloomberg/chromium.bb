@@ -249,11 +249,6 @@ bool String::MakeExternal(v8::String::ExternalStringResource* resource) {
   bool is_internalized = this->IsInternalizedString();
   bool has_pointers = StringShape(*this).IsIndirect();
 
-  if (has_pointers) {
-    isolate->heap()->NotifyObjectLayoutChange(*this, no_gc,
-                                              InvalidateRecordedSlots::kYes);
-  }
-
   base::SharedMutexGuard<base::kExclusive> shared_mutex_guard(
       isolate->internalized_string_access());
   // Morph the string to an external string by replacing the map and
@@ -277,6 +272,12 @@ bool String::MakeExternal(v8::String::ExternalStringResource* resource) {
 
   // Byte size of the external String object.
   int new_size = this->SizeFromMap(new_map);
+
+  if (has_pointers) {
+    isolate->heap()->NotifyObjectLayoutChange(
+        *this, no_gc, InvalidateRecordedSlots::kYes, new_size);
+  }
+
   if (!isolate->heap()->IsLargeObject(*this)) {
     isolate->heap()->NotifyObjectSizeChange(
         *this, size, new_size,
@@ -333,11 +334,6 @@ bool String::MakeExternal(v8::String::ExternalOneByteStringResource* resource) {
   bool is_internalized = this->IsInternalizedString();
   bool has_pointers = StringShape(*this).IsIndirect();
 
-  if (has_pointers) {
-    isolate->heap()->NotifyObjectLayoutChange(*this, no_gc,
-                                              InvalidateRecordedSlots::kYes);
-  }
-
   base::SharedMutexGuard<base::kExclusive> shared_mutex_guard(
       isolate->internalized_string_access());
   // Morph the string to an external string by replacing the map and
@@ -361,6 +357,11 @@ bool String::MakeExternal(v8::String::ExternalOneByteStringResource* resource) {
   if (!isolate->heap()->IsLargeObject(*this)) {
     // Byte size of the external String object.
     int new_size = this->SizeFromMap(new_map);
+
+    if (has_pointers) {
+      isolate->heap()->NotifyObjectLayoutChange(
+          *this, no_gc, InvalidateRecordedSlots::kYes, new_size);
+    }
 
     isolate->heap()->NotifyObjectSizeChange(
         *this, size, new_size,
@@ -1898,18 +1899,18 @@ namespace {
 
 DEFINE_TORQUE_GENERATED_STRING_INSTANCE_TYPE()
 
-STATIC_ASSERT(kStringRepresentationMask == RepresentationBits::kMask);
+static_assert(kStringRepresentationMask == RepresentationBits::kMask);
 
-STATIC_ASSERT(kStringEncodingMask == IsOneByteBit::kMask);
-STATIC_ASSERT(kTwoByteStringTag == IsOneByteBit::encode(false));
-STATIC_ASSERT(kOneByteStringTag == IsOneByteBit::encode(true));
+static_assert(kStringEncodingMask == IsOneByteBit::kMask);
+static_assert(kTwoByteStringTag == IsOneByteBit::encode(false));
+static_assert(kOneByteStringTag == IsOneByteBit::encode(true));
 
-STATIC_ASSERT(kUncachedExternalStringMask == IsUncachedBit::kMask);
-STATIC_ASSERT(kUncachedExternalStringTag == IsUncachedBit::encode(true));
+static_assert(kUncachedExternalStringMask == IsUncachedBit::kMask);
+static_assert(kUncachedExternalStringTag == IsUncachedBit::encode(true));
 
-STATIC_ASSERT(kIsNotInternalizedMask == IsNotInternalizedBit::kMask);
-STATIC_ASSERT(kNotInternalizedTag == IsNotInternalizedBit::encode(true));
-STATIC_ASSERT(kInternalizedTag == IsNotInternalizedBit::encode(false));
+static_assert(kIsNotInternalizedMask == IsNotInternalizedBit::kMask);
+static_assert(kNotInternalizedTag == IsNotInternalizedBit::encode(true));
+static_assert(kInternalizedTag == IsNotInternalizedBit::encode(false));
 }  // namespace
 
 }  // namespace internal

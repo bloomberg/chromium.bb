@@ -33,7 +33,6 @@
 #include "p2p/base/port_allocator.h"
 #include "p2p/client/basic_port_allocator.h"
 #include "pc/audio_track.h"
-#include "pc/channel_manager.h"
 #include "pc/local_audio_source.h"
 #include "pc/media_stream.h"
 #include "pc/media_stream_proxy.h"
@@ -129,17 +128,17 @@ RtpCapabilities PeerConnectionFactory::GetRtpSenderCapabilities(
   switch (kind) {
     case cricket::MEDIA_TYPE_AUDIO: {
       cricket::AudioCodecs cricket_codecs;
-      channel_manager()->GetSupportedAudioSendCodecs(&cricket_codecs);
-      return ToRtpCapabilities(
-          cricket_codecs,
-          channel_manager()->GetDefaultEnabledAudioRtpHeaderExtensions());
+      cricket_codecs = media_engine()->voice().send_codecs();
+      auto extensions =
+          GetDefaultEnabledRtpHeaderExtensions(media_engine()->voice());
+      return ToRtpCapabilities(cricket_codecs, extensions);
     }
     case cricket::MEDIA_TYPE_VIDEO: {
       cricket::VideoCodecs cricket_codecs;
-      channel_manager()->GetSupportedVideoSendCodecs(&cricket_codecs);
-      return ToRtpCapabilities(
-          cricket_codecs,
-          channel_manager()->GetDefaultEnabledVideoRtpHeaderExtensions());
+      cricket_codecs = media_engine()->video().send_codecs();
+      auto extensions =
+          GetDefaultEnabledRtpHeaderExtensions(media_engine()->video());
+      return ToRtpCapabilities(cricket_codecs, extensions);
     }
     case cricket::MEDIA_TYPE_DATA:
       return RtpCapabilities();
@@ -156,17 +155,17 @@ RtpCapabilities PeerConnectionFactory::GetRtpReceiverCapabilities(
   switch (kind) {
     case cricket::MEDIA_TYPE_AUDIO: {
       cricket::AudioCodecs cricket_codecs;
-      channel_manager()->GetSupportedAudioReceiveCodecs(&cricket_codecs);
-      return ToRtpCapabilities(
-          cricket_codecs,
-          channel_manager()->GetDefaultEnabledAudioRtpHeaderExtensions());
+      cricket_codecs = media_engine()->voice().recv_codecs();
+      auto extensions =
+          GetDefaultEnabledRtpHeaderExtensions(media_engine()->voice());
+      return ToRtpCapabilities(cricket_codecs, extensions);
     }
     case cricket::MEDIA_TYPE_VIDEO: {
-      cricket::VideoCodecs cricket_codecs;
-      channel_manager()->GetSupportedVideoReceiveCodecs(&cricket_codecs);
-      return ToRtpCapabilities(
-          cricket_codecs,
-          channel_manager()->GetDefaultEnabledVideoRtpHeaderExtensions());
+      cricket::VideoCodecs cricket_codecs =
+          media_engine()->video().recv_codecs(context_->use_rtx());
+      auto extensions =
+          GetDefaultEnabledRtpHeaderExtensions(media_engine()->video());
+      return ToRtpCapabilities(cricket_codecs, extensions);
     }
     case cricket::MEDIA_TYPE_DATA:
       return RtpCapabilities();
@@ -187,12 +186,18 @@ PeerConnectionFactory::CreateAudioSource(const cricket::AudioOptions& options) {
 
 bool PeerConnectionFactory::StartAecDump(FILE* file, int64_t max_size_bytes) {
   RTC_DCHECK_RUN_ON(worker_thread());
-  return channel_manager()->StartAecDump(FileWrapper(file), max_size_bytes);
+  return media_engine()->voice().StartAecDump(FileWrapper(file),
+                                              max_size_bytes);
 }
 
 void PeerConnectionFactory::StopAecDump() {
   RTC_DCHECK_RUN_ON(worker_thread());
-  channel_manager()->StopAecDump();
+  media_engine()->voice().StopAecDump();
+}
+
+cricket::MediaEngineInterface* PeerConnectionFactory::media_engine() const {
+  RTC_DCHECK(context_);
+  return context_->media_engine();
 }
 
 RTCErrorOr<rtc::scoped_refptr<PeerConnectionInterface>>
@@ -312,11 +317,10 @@ std::unique_ptr<Call> PeerConnectionFactory::CreateCall_w(
   RTC_DCHECK_RUN_ON(worker_thread());
 
   webrtc::Call::Config call_config(event_log, network_thread());
-  if (!channel_manager()->media_engine() || !context_->call_factory()) {
+  if (!media_engine() || !context_->call_factory()) {
     return nullptr;
   }
-  call_config.audio_state =
-      channel_manager()->media_engine()->voice().GetAudioState();
+  call_config.audio_state = media_engine()->voice().GetAudioState();
 
   FieldTrialParameter<DataRate> min_bandwidth("min",
                                               DataRate::KilobitsPerSec(30));

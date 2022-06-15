@@ -556,7 +556,7 @@ static double get_rate_correction_factor(const AV1_COMP *cpi, int width,
   double rate_correction_factors_kfstd;
   double rate_correction_factors_gfarfstd;
   double rate_correction_factors_internormal;
-#if CONFIG_FRAME_PARALLEL_ENCODE
+
   rate_correction_factors_kfstd =
       (cpi->ppi->gf_group.frame_parallel_level[cpi->gf_frame_index] > 0)
           ? rc->frame_level_rate_correction_factors[KF_STD]
@@ -569,27 +569,16 @@ static double get_rate_correction_factor(const AV1_COMP *cpi, int width,
       (cpi->ppi->gf_group.frame_parallel_level[cpi->gf_frame_index] > 0)
           ? rc->frame_level_rate_correction_factors[INTER_NORMAL]
           : p_rc->rate_correction_factors[INTER_NORMAL];
-#else
-  rate_correction_factors_kfstd = p_rc->rate_correction_factors[KF_STD];
-  rate_correction_factors_gfarfstd = p_rc->rate_correction_factors[GF_ARF_STD];
-  rate_correction_factors_internormal =
-      p_rc->rate_correction_factors[INTER_NORMAL];
-#endif
 
   if (cpi->common.current_frame.frame_type == KEY_FRAME) {
     rcf = rate_correction_factors_kfstd;
   } else if (is_stat_consumption_stage(cpi)) {
     const RATE_FACTOR_LEVEL rf_lvl =
         get_rate_factor_level(&cpi->ppi->gf_group, cpi->gf_frame_index);
-    double rate_correction_factors_rflvl;
-#if CONFIG_FRAME_PARALLEL_ENCODE
-    rate_correction_factors_rflvl =
+    double rate_correction_factors_rflvl =
         (cpi->ppi->gf_group.frame_parallel_level[cpi->gf_frame_index] > 0)
             ? rc->frame_level_rate_correction_factors[rf_lvl]
             : p_rc->rate_correction_factors[rf_lvl];
-#else
-    rate_correction_factors_rflvl = p_rc->rate_correction_factors[rf_lvl];
-#endif
     rcf = rate_correction_factors_rflvl;
   } else {
     if ((refresh_frame->alt_ref_frame || refresh_frame->golden_frame) &&
@@ -625,9 +614,6 @@ static void set_rate_correction_factor(AV1_COMP *cpi, int is_encode_stage,
   RATE_CONTROL *const rc = &cpi->rc;
   PRIMARY_RATE_CONTROL *const p_rc = &cpi->ppi->p_rc;
   const RefreshFrameInfo *const refresh_frame = &cpi->refresh_frame;
-#if !CONFIG_FRAME_PARALLEL_ENCODE
-  (void)is_encode_stage;
-#endif
   int update_default_rcf = 1;
   // Normalize RCF to account for the size-dependent scaling factor.
   factor /= resize_rate_factor(&cpi->oxcf.frm_dim_cfg, width, height);
@@ -639,13 +625,11 @@ static void set_rate_correction_factor(AV1_COMP *cpi, int is_encode_stage,
   } else if (is_stat_consumption_stage(cpi)) {
     const RATE_FACTOR_LEVEL rf_lvl =
         get_rate_factor_level(&cpi->ppi->gf_group, cpi->gf_frame_index);
-#if CONFIG_FRAME_PARALLEL_ENCODE
     if (is_encode_stage &&
         cpi->ppi->gf_group.frame_parallel_level[cpi->gf_frame_index] > 0) {
       rc->frame_level_rate_correction_factors[rf_lvl] = factor;
       update_default_rcf = 0;
     }
-#endif
     if (update_default_rcf) p_rc->rate_correction_factors[rf_lvl] = factor;
   } else {
     if ((refresh_frame->alt_ref_frame || refresh_frame->golden_frame) &&
@@ -654,13 +638,11 @@ static void set_rate_correction_factor(AV1_COMP *cpi, int is_encode_stage,
          cpi->oxcf.rc_cfg.gf_cbr_boost_pct > 20)) {
       p_rc->rate_correction_factors[GF_ARF_STD] = factor;
     } else {
-#if CONFIG_FRAME_PARALLEL_ENCODE
       if (is_encode_stage &&
           cpi->ppi->gf_group.frame_parallel_level[cpi->gf_frame_index] > 0) {
         rc->frame_level_rate_correction_factors[INTER_NORMAL] = factor;
         update_default_rcf = 0;
       }
-#endif
       if (update_default_rcf)
         p_rc->rate_correction_factors[INTER_NORMAL] = factor;
     }
@@ -675,11 +657,6 @@ void av1_rc_update_rate_correction_factors(AV1_COMP *cpi, int is_encode_stage,
       get_rate_correction_factor(cpi, width, height);
   double adjustment_limit;
   const int MBs = av1_get_MBs(width, height);
-
-#if !CONFIG_FRAME_PARALLEL_ENCODE
-  (void)is_encode_stage;
-#endif
-
   int projected_size_based_on_q = 0;
 
   // Do not update the rate factors for arf overlay frames.
@@ -2775,10 +2752,10 @@ static void rc_scene_detection_onepass_rt(AV1_COMP *cpi) {
         (cm->width == cm->render_width) && (cm->height == cm->render_height)) {
       full_sampling = 1;
       if (cpi->src_sad_blk_64x64 == NULL) {
-        cpi->src_sad_blk_64x64 = (uint64_t *)aom_malloc(
-            (sb_cols * sb_rows) * sizeof(*cpi->src_sad_blk_64x64));
-        memset(cpi->src_sad_blk_64x64, 0,
-               (sb_cols * sb_rows) * sizeof(*cpi->src_sad_blk_64x64));
+        CHECK_MEM_ERROR(
+            cm, cpi->src_sad_blk_64x64,
+            (uint64_t *)aom_calloc(sb_cols * sb_rows,
+                                   sizeof(*cpi->src_sad_blk_64x64)));
       }
     }
     for (int sbi_row = 0; sbi_row < sb_rows; ++sbi_row) {

@@ -46,7 +46,8 @@ class ConcurrentMarkingState final
                          MemoryChunkDataMap* memory_chunk_data)
       : MarkingStateBase(cage_base), memory_chunk_data_(memory_chunk_data) {}
 
-  ConcurrentBitmap<AccessMode::ATOMIC>* bitmap(const BasicMemoryChunk* chunk) {
+  ConcurrentBitmap<AccessMode::ATOMIC>* bitmap(
+      const BasicMemoryChunk* chunk) const {
     return chunk->marking_bitmap<AccessMode::ATOMIC>();
   }
 
@@ -455,7 +456,7 @@ void ConcurrentMarking::Run(JobDelegate* delegate,
                             unsigned mark_compact_epoch,
                             bool should_keep_ages_unchanged) {
   size_t kBytesUntilInterruptCheck = 64 * KB;
-  int kObjectsUntilInterrupCheck = 1000;
+  int kObjectsUntilInterruptCheck = 1000;
   uint8_t task_id = delegate->GetTaskId() + 1;
   TaskState* task_state = &task_state_[task_id];
   auto* cpp_heap = CppHeap::From(heap_->cpp_heap());
@@ -500,7 +501,7 @@ void ConcurrentMarking::Run(JobDelegate* delegate,
       size_t current_marked_bytes = 0;
       int objects_processed = 0;
       while (current_marked_bytes < kBytesUntilInterruptCheck &&
-             objects_processed < kObjectsUntilInterrupCheck) {
+             objects_processed < kObjectsUntilInterruptCheck) {
         HeapObject object;
         if (!local_marking_worklists.Pop(&object)) {
           done = true;

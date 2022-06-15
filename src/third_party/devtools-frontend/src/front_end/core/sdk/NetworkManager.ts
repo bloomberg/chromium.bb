@@ -255,6 +255,10 @@ export class NetworkManager extends SDKModel<EventTypes> {
     return this.dispatcher.requestForURL(url);
   }
 
+  requestforId(id: string): NetworkRequest|null {
+    return this.dispatcher.requestForId(id);
+  }
+
   private cacheDisabledSettingChanged({data: enabled}: Common.EventTarget.EventTargetEvent<boolean>): void {
     void this.#networkAgent.invoke_setCacheDisabled({cacheDisabled: enabled});
   }
@@ -520,8 +524,8 @@ export class NetworkDispatcher implements ProtocolProxyApi.NetworkDispatcher {
     }
   }
 
-  requestForId(url: string): NetworkRequest|null {
-    return this.#requestsById.get(url) || null;
+  requestForId(id: string): NetworkRequest|null {
+    return this.#requestsById.get(id) || null;
   }
 
   requestForURL(url: Platform.DevToolsPath.UrlString): NetworkRequest|null {
@@ -1101,7 +1105,7 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
   #updatingInterceptionPatternsPromise: Promise<void>|null;
   readonly #blockingEnabledSetting: Common.Settings.Setting<boolean>;
   readonly #blockedPatternsSetting: Common.Settings.Setting<BlockedPattern[]>;
-  #effectiveBlockedURLs: Platform.DevToolsPath.UrlString[];
+  #effectiveBlockedURLs: string[];
   readonly #urlsForRequestInterceptor:
       Platform.MapUtilities.Multimap<(arg0: InterceptedRequest) => Promise<void>, InterceptionPattern>;
   #extraHeaders?: Protocol.Network.Headers;
@@ -1715,7 +1719,7 @@ export interface Conditions {
 }
 
 export interface BlockedPattern {
-  url: Platform.DevToolsPath.UrlString;
+  url: string;
   enabled: boolean;
 }
 

@@ -45,7 +45,8 @@ class TestFontSelector : public FontSelector {
         font_description.IsSyntheticItalic() &&
             font_description.SyntheticItalicAllowed(),
         font_description.GetFontSelectionRequest(), normal_capabilities,
-        font_description.FontOpticalSizing(), font_description.Orientation());
+        font_description.FontOpticalSizing(), font_description.TextRendering(),
+        font_description.Orientation());
     return SimpleFontData::Create(platform_data, CustomFontData::Create());
   }
 
@@ -67,24 +68,25 @@ class TestFontSelector : public FontSelector {
   void ReportFontLookupByUniqueOrFamilyName(
       const AtomicString& name,
       const FontDescription& font_description,
-      SimpleFontData* resulting_font_data) override {}
+      scoped_refptr<SimpleFontData> resulting_font_data) override {}
   void ReportFontLookupByUniqueNameOnly(
       const AtomicString& name,
       const FontDescription& font_description,
-      SimpleFontData* resulting_font_data,
+      scoped_refptr<SimpleFontData> resulting_font_data,
       bool is_loading_fallback = false) override {}
   void ReportFontLookupByFallbackCharacter(
       UChar32 hint,
       FontFallbackPriority fallback_priority,
       const FontDescription& font_description,
-      SimpleFontData* resulting_font_data) override {}
+      scoped_refptr<SimpleFontData> resulting_font_data) override {}
   void ReportLastResortFallbackFontLookup(
       const FontDescription& font_description,
-      SimpleFontData* resulting_font_data) override {}
+      scoped_refptr<SimpleFontData> resulting_font_data) override {}
   void ReportNotDefGlyph() const override {}
   void ReportEmojiSegmentGlyphCoverage(unsigned, unsigned) override {}
   ExecutionContext* GetExecutionContext() const override { return nullptr; }
   FontFaceCache* GetFontFaceCache() override { return nullptr; }
+  bool IsContextThread() const override { return true; }
 
   void RegisterForInvalidationCallbacks(FontSelectorClient*) override {}
   void UnregisterForInvalidationCallbacks(FontSelectorClient*) override {}

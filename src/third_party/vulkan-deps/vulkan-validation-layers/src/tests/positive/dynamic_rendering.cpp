@@ -47,14 +47,12 @@ TEST_F(VkPositiveLayerTest, DynamicRenderingDraw) {
 
     ASSERT_NO_FATAL_FAILURE(InitFramework());
 
-    if (!AreRequestedExtensionsEnabled()) {
-        printf("%s %s Extension not supported, skipping tests\n", kSkipPrefix, VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME);
-        return;
+    if (!AreRequiredExtensionsEnabled()) {
+        GTEST_SKIP() << RequiredExtensionsNotSupported() << " not supported";
     }
 
     if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
-        printf("%s Tests requires Vulkan 1.1+, skipping test\n", kSkipPrefix);
-        return;
+        GTEST_SKIP() << "At least Vulkan version 1.1 is required";
     }
 
     auto dynamic_rendering_features = LvlInitStruct<VkPhysicalDeviceDynamicRenderingFeaturesKHR>();
@@ -132,14 +130,12 @@ TEST_F(VkPositiveLayerTest, CmdClearAttachmentTestsDynamicRendering) {
 
     ASSERT_NO_FATAL_FAILURE(InitFramework());
 
-    if (!AreRequestedExtensionsEnabled()) {
-        printf("%s %s Extension not supported, skipping tests\n", kSkipPrefix, VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME);
-        return;
+    if (!AreRequiredExtensionsEnabled()) {
+        GTEST_SKIP() << RequiredExtensionsNotSupported() << " not supported";
     }
 
     if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
-        printf("%s Tests requires Vulkan 1.1+, skipping test\n", kSkipPrefix);
-        return;
+        GTEST_SKIP() << "At least Vulkan version 1.1 is required";
     }
 
     m_errorMonitor->ExpectSuccess();
@@ -204,8 +200,7 @@ TEST_F(VkPositiveLayerTest, TestBeginQueryInDynamicRendering) {
     ASSERT_NO_FATAL_FAILURE(InitFramework());
 
     if (DeviceValidationVersion() < VK_API_VERSION_1_3) {
-        printf("%s Tests requires Vulkan 1.3+, skipping test\n", kSkipPrefix);
-        return;
+        GTEST_SKIP() << "At least Vulkan version 1.3 is required";
     }
 
     auto vk13features = LvlInitStruct<VkPhysicalDeviceVulkan13Features>();
@@ -263,14 +258,12 @@ TEST_F(VkPositiveLayerTest, DynamicRenderingPipeWithDiscard) {
 
     ASSERT_NO_FATAL_FAILURE(InitFramework());
 
-    if (!AreRequestedExtensionsEnabled()) {
-        printf("%s %s Extension not supported, skipping tests\n", kSkipPrefix, VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME);
-        return;
+    if (!AreRequiredExtensionsEnabled()) {
+        GTEST_SKIP() << RequiredExtensionsNotSupported() << " not supported";
     }
 
     if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
-        printf("%s Tests requires Vulkan 1.1+, skipping test\n", kSkipPrefix);
-        return;
+        GTEST_SKIP() << "At least Vulkan version 1.1 is required";
     }
 
     m_errorMonitor->ExpectSuccess();
@@ -338,13 +331,10 @@ TEST_F(VkPositiveLayerTest, UseStencilAttachmentWithIntegerFormatAndDepthStencil
     ASSERT_NO_FATAL_FAILURE(InitFramework());
 
     if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
-        printf("%s Tests requires Vulkan 1.1+, skipping test\n", kSkipPrefix);
-        return;
+        GTEST_SKIP() << "At least Vulkan version 1.1 is required";
     }
-    if (!AreRequestedExtensionsEnabled()) {
-        printf("%s %s or %s is not supported; skipping\n", kSkipPrefix, VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME,
-               VK_KHR_DEPTH_STENCIL_RESOLVE_EXTENSION_NAME);
-        return;
+    if (!AreRequiredExtensionsEnabled()) {
+        GTEST_SKIP() << RequiredExtensionsNotSupported() << " not supported";
     }
 
     auto dynamic_rendering_features = LvlInitStruct<VkPhysicalDeviceDynamicRenderingFeaturesKHR>();
@@ -398,6 +388,189 @@ TEST_F(VkPositiveLayerTest, UseStencilAttachmentWithIntegerFormatAndDepthStencil
     m_commandBuffer->BeginRendering(begin_rendering_info);
     m_commandBuffer->EndRendering();
     m_commandBuffer->end();
+
+    m_errorMonitor->VerifyNotFound();
+}
+
+TEST_F(VkPositiveLayerTest, DynamicRenderingFragmentDensityMapSubsampledBit) {
+    TEST_DESCRIPTION("Test creating an image with subsampled bit.");
+
+    m_errorMonitor->ExpectSuccess();
+
+    SetTargetApiVersion(VK_API_VERSION_1_1);
+
+    AddRequiredExtensions(VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME);
+    AddRequiredExtensions(VK_EXT_FRAGMENT_DENSITY_MAP_EXTENSION_NAME);
+
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+
+    if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
+        GTEST_SKIP() << "At least Vulkan version 1.1 is required";
+    }
+
+    if (!AreRequiredExtensionsEnabled()) {
+        GTEST_SKIP() << RequiredExtensionsNotSupported() << " not supported";
+    }
+
+    auto dynamic_rendering_features = LvlInitStruct<VkPhysicalDeviceDynamicRenderingFeaturesKHR>();
+    auto features2 = LvlInitStruct<VkPhysicalDeviceFeatures2>(&dynamic_rendering_features);
+    vk::GetPhysicalDeviceFeatures2(gpu(), &features2);
+    if (!dynamic_rendering_features.dynamicRendering) {
+        printf("%s Test requires (unsupported) dynamicRendering , skipping\n", kSkipPrefix);
+        return;
+    }
+
+    ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &features2));
+
+    VkImageCreateInfo image_ci = LvlInitStruct<VkImageCreateInfo>();
+    image_ci.flags = VK_IMAGE_CREATE_SUBSAMPLED_BIT_EXT;
+    image_ci.imageType = VK_IMAGE_TYPE_2D;
+    image_ci.format = VK_FORMAT_R8G8B8A8_UINT;
+    image_ci.extent = {32, 32, 1};
+    image_ci.mipLevels = 1;
+    image_ci.arrayLayers = 1;
+    image_ci.samples = VK_SAMPLE_COUNT_1_BIT;
+    image_ci.tiling = VK_IMAGE_TILING_OPTIMAL;
+    image_ci.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+
+    VkImageObj image(m_device);
+    image.Init(image_ci);
+    VkImageView image_view = image.targetView(VK_FORMAT_R8G8B8A8_UINT, VK_IMAGE_ASPECT_COLOR_BIT);
+
+    image_ci.flags = 0;
+    image_ci.usage = VK_IMAGE_USAGE_FRAGMENT_DENSITY_MAP_BIT_EXT;
+
+    VkImageObj fdm_image(m_device);
+    fdm_image.Init(image_ci);
+    VkImageView fdm_image_view = fdm_image.targetView(VK_FORMAT_R8G8B8A8_UINT);
+
+    VkRenderingAttachmentInfoKHR color_attachment = LvlInitStruct<VkRenderingAttachmentInfoKHR>();
+    color_attachment.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+    color_attachment.imageView = image_view;
+
+    VkRenderingInfoKHR begin_rendering_info = LvlInitStruct<VkRenderingInfoKHR>();
+    begin_rendering_info.colorAttachmentCount = 1;
+    begin_rendering_info.pColorAttachments = &color_attachment;
+
+    auto fragment_density_map = LvlInitStruct<VkRenderingFragmentDensityMapAttachmentInfoEXT>();
+    fragment_density_map.imageView = fdm_image_view;
+    fragment_density_map.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+    begin_rendering_info.pNext = &fragment_density_map;
+    begin_rendering_info.layerCount = 1;
+
+    m_commandBuffer->begin();
+    m_commandBuffer->BeginRendering(begin_rendering_info);
+    m_errorMonitor->VerifyNotFound();
+}
+
+TEST_F(VkPositiveLayerTest, DynamicRenderingSuspendResumeDraw) {
+    TEST_DESCRIPTION("Resume and suspend at vkCmdBeginRendering time");
+
+    m_errorMonitor->ExpectSuccess();
+
+    SetTargetApiVersion(VK_API_VERSION_1_1);
+
+    AddRequiredExtensions(VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME);
+
+    ASSERT_NO_FATAL_FAILURE(InitFramework());
+
+    if (!AreRequiredExtensionsEnabled()) {
+        GTEST_SKIP() << RequiredExtensionsNotSupported() << " not supported";
+    }
+
+    if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
+        GTEST_SKIP() << "At least Vulkan version 1.1 is required";
+    }
+
+    auto dynamic_rendering_features = LvlInitStruct<VkPhysicalDeviceDynamicRenderingFeaturesKHR>();
+    auto features2 = LvlInitStruct<VkPhysicalDeviceFeatures2>(&dynamic_rendering_features);
+    vk::GetPhysicalDeviceFeatures2(gpu(), &features2);
+    if (!dynamic_rendering_features.dynamicRendering) {
+        GTEST_SKIP() << "Test requires (unsupported) dynamicRendering , skipping";
+    }
+
+    ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &features2));
+
+    char const* fsSource = R"glsl(
+        #version 450
+        layout(location=0) out vec4 color;
+        void main() {
+           color = vec4(1.0f);
+        }
+    )glsl";
+
+    VkShaderObj vs(this, bindStateVertShaderText, VK_SHADER_STAGE_VERTEX_BIT);
+    VkShaderObj fs(this, fsSource, VK_SHADER_STAGE_FRAGMENT_BIT);
+
+    VkPipelineObj pipe(m_device);
+    pipe.AddShader(&vs);
+    pipe.AddShader(&fs);
+    pipe.AddDefaultColorAttachment();
+
+    VkDescriptorSetLayoutBinding dslb = {0, VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr};
+    const VkDescriptorSetLayoutObj dsl(m_device, {dslb});
+    const VkPipelineLayoutObj pl(m_device, {&dsl});
+
+    VkFormat color_formats = {VK_FORMAT_R8G8B8A8_UNORM};
+    auto pipeline_rendering_info = LvlInitStruct<VkPipelineRenderingCreateInfoKHR>();
+    pipeline_rendering_info.colorAttachmentCount = 1;
+    pipeline_rendering_info.pColorAttachmentFormats = &color_formats;
+
+    auto create_info = LvlInitStruct<VkGraphicsPipelineCreateInfo>();
+    pipe.InitGraphicsPipelineCreateInfo(&create_info);
+    create_info.pNext = &pipeline_rendering_info;
+
+    pipe.CreateVKPipeline(pl.handle(), VK_NULL_HANDLE, &create_info);
+
+    VkViewport viewport = {0, 0, 16, 16, 0, 1};
+    VkRect2D scissor = {{0, 0}, {16, 16}};
+
+    VkRenderingAttachmentInfoKHR color_attachment = LvlInitStruct<VkRenderingAttachmentInfoKHR>();
+    color_attachment.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+    VkRenderingInfoKHR begin_rendering_info = LvlInitStruct<VkRenderingInfoKHR>();
+    begin_rendering_info.flags = VK_RENDERING_SUSPENDING_BIT_KHR;
+    begin_rendering_info.colorAttachmentCount = 1;
+    begin_rendering_info.pColorAttachments = &color_attachment;
+    begin_rendering_info.layerCount = 1;
+
+    VkCommandBufferObj cb1(m_device, m_commandPool);
+    VkCommandBufferObj cb2(m_device, m_commandPool);
+
+    m_commandBuffer->begin();
+    m_commandBuffer->BeginRendering(begin_rendering_info);
+    vk::CmdBindPipeline(m_commandBuffer->handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipe.handle());
+    vk::CmdSetViewport(m_commandBuffer->handle(), 0, 1, &viewport);
+    vk::CmdSetScissor(m_commandBuffer->handle(), 0, 1, &scissor);
+    vk::CmdDraw(m_commandBuffer->handle(), 3, 1, 0, 0);
+    m_commandBuffer->EndRendering();
+    m_commandBuffer->end();
+
+    begin_rendering_info.flags = VK_RENDERING_RESUMING_BIT_KHR | VK_RENDERING_SUSPENDING_BIT_KHR;
+    cb1.begin();
+    cb1.BeginRendering(begin_rendering_info);
+    vk::CmdBindPipeline(cb1.handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipe.handle());
+    vk::CmdSetViewport(cb1.handle(), 0, 1, &viewport);
+    vk::CmdSetScissor(cb1.handle(), 0, 1, &scissor);
+    vk::CmdDraw(cb1.handle(), 3, 1, 0, 0);
+    cb1.EndRendering();
+    cb1.end();
+
+    begin_rendering_info.flags = VK_RENDERING_RESUMING_BIT_KHR;
+    cb2.begin();
+    cb2.BeginRendering(begin_rendering_info);
+    vk::CmdBindPipeline(cb2.handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipe.handle());
+    vk::CmdSetViewport(cb2.handle(), 0, 1, &viewport);
+    vk::CmdSetScissor(cb2.handle(), 0, 1, &scissor);
+    vk::CmdDraw(cb2.handle(), 3, 1, 0, 0);
+    cb2.EndRendering();
+    cb2.end();
+
+    std::array<VkCommandBuffer, 3> cbs = {m_commandBuffer->handle(), cb1.handle(), cb2.handle()};
+    auto submit = LvlInitStruct<VkSubmitInfo>();
+    submit.commandBufferCount = static_cast<uint32_t>(cbs.size());
+    submit.pCommandBuffers = cbs.data();
+    vk::QueueSubmit(m_device->m_queue, 1, &submit, VK_NULL_HANDLE);
 
     m_errorMonitor->VerifyNotFound();
 }

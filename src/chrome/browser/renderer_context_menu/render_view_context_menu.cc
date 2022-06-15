@@ -38,7 +38,10 @@
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/browser_app_launcher.h"
 #include "chrome/browser/apps/platform_apps/app_load_service.h"
+#include "chrome/browser/ash/system_web_apps/types/system_web_app_delegate.h"
+#include "chrome/browser/ash/system_web_apps/types/system_web_app_type.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
+#include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/browser_features.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
@@ -94,8 +97,6 @@
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/webui/history/foreign_session_handler.h"
-#include "chrome/browser/web_applications/system_web_apps/system_web_app_delegate.h"
-#include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
@@ -252,7 +253,6 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/clipboard_history_controller.h"
-#include "ash/public/cpp/new_window_delegate.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/arc/intent_helper/arc_intent_helper_mojo_ash.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
@@ -289,6 +289,7 @@ using extensions::MenuManager;
 
 namespace {
 
+constexpr char16_t kGoogle[] = u"Google";
 constexpr char16_t kGoogleLens[] = u"Google Lens";
 
 constexpr char kOpenLinkAsProfileHistogram[] =
@@ -528,6 +529,12 @@ int FindUMAEnumValueForCommand(int id, UmaEnumIdLookupType type) {
   if (ContextMenuMatcher::IsExtensionsCustomCommandId(id))
     return 1;
 
+  if (autofill::AutofillContextMenuManager::IsAutofillCustomCommandId(
+          autofill::AutofillContextMenuManager::CommandId(id))) {
+    // TODO(crbug.com/1325811): Track the autofill items.
+    return -1;
+  }
+
   id = CollapseCommandsForUMA(id);
   const auto& map = GetIdcToUmaMap(type);
   auto it = map.find(id);
@@ -594,8 +601,7 @@ void AddAvatarToLastMenuItem(const gfx::Image& icon,
   int target_dip_height = icon.Height();
   gfx::CalculateFaviconTargetSize(&target_dip_width, &target_dip_height);
   gfx::Image sized_icon = profiles::GetSizedAvatarIcon(
-      icon, true /* is_rectangle */, target_dip_width, target_dip_height,
-      profiles::SHAPE_CIRCLE);
+      icon, target_dip_width, target_dip_height, profiles::SHAPE_CIRCLE);
   menu->SetIcon(menu->GetItemCount() - 1,
                 ui::ImageModel::FromImage(sized_icon));
 }
@@ -634,8 +640,8 @@ bool DoesInputFieldTypeSupportEmoji(
 
 // If the link points to a system web app (in |profile|), return its type.
 // Otherwise nullopt.
-absl::optional<web_app::SystemAppType> GetLinkSystemAppType(Profile* profile,
-                                                            const GURL& url) {
+absl::optional<ash::SystemWebAppType> GetLinkSystemAppType(Profile* profile,
+                                                           const GURL& url) {
   absl::optional<web_app::AppId> link_app_id =
       web_app::FindInstalledAppWithUrlInScope(profile, url);
 
@@ -701,7 +707,12 @@ RenderViewContextMenu::RenderViewContextMenu(
       protocol_handler_registry_(
           ProtocolHandlerRegistryFactory::GetForBrowserContext(GetProfile())),
       accessibility_labels_submenu_model_(this),
-      embedder_web_contents_(GetWebContentsToUse(source_web_contents_)) {
+      embedder_web_contents_(GetWebContentsToUse(source_web_contents_)),
+      autofill_context_menu_manager_(
+          autofill::PersonalDataManagerFactory::GetForProfile(
+              GetProfile()->GetOriginalProfile()),
+          this,
+          &menu_model_) {
   if (!g_custom_id_ranges_initialized) {
     g_custom_id_ranges_initialized = true;
     SetContentCustomCommandIdRange(IDC_CONTENT_CONTEXT_CUSTOM_FIRST,
@@ -851,7 +862,7 @@ void RenderViewContextMenu::AppendCurrentExtensionItems() {
   if (web_view_guest) {
     key = MenuItem::ExtensionKey(extension->id(),
                                  web_view_guest->owner_web_contents()
-                                     ->GetMainFrame()
+                                     ->GetPrimaryMainFrame()
                                      ->GetProcess()
                                      ->GetID(),
                                  web_view_guest->view_instance_id());
@@ -915,6 +926,12 @@ void RenderViewContextMenu::InitMenu() {
     AppendLinkItems();
     if (params_.media_type != ContextMenuDataMediaType::kNone)
       menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
+  }
+
+  if (content_type_->SupportsGroup(
+          ContextMenuContentType::ITEM_GROUP_AUTOFILL)) {
+    autofill_context_menu_manager_.AppendItems();
+    menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
   }
 
   bool media_image = content_type_->SupportsGroup(
@@ -1158,7 +1175,7 @@ void RenderViewContextMenu::RecordUsedItem(int id) {
        lens::features::GetEnableUKMLoggingForImageSearch())) {
     // Enum id should correspond to the RenderViewContextMenuItem enum.
     ukm::SourceId source_id =
-        source_web_contents_->GetMainFrame()->GetPageUkmSourceId();
+        source_web_contents_->GetPrimaryMainFrame()->GetPageUkmSourceId();
     ukm::builders::RenderViewContextMenu_Used(source_id)
         .SetSelectedMenuItem(enum_id)
         .Record(ukm::UkmRecorder::Get());
@@ -1342,7 +1359,7 @@ void RenderViewContextMenu::AppendLinkItems() {
         browser && (browser->is_type_app() || browser->is_type_app_popup());
 
     Profile* profile = GetProfile();
-    absl::optional<web_app::SystemAppType> link_system_app_type =
+    absl::optional<ash::SystemWebAppType> link_system_app_type =
         GetLinkSystemAppType(profile, params_.link_url);
     if (system_app_ && link_system_app_type) {
       // Show "Open in new tab" if this link points to the current app, and the
@@ -1932,19 +1949,16 @@ void RenderViewContextMenu::AppendEditableItems() {
   }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (chromeos::features::IsClipboardHistoryEnabled()) {
-    menu_model_.AddItemWithStringId(
-        IDC_CONTENT_CLIPBOARD_HISTORY_MENU,
-        IDS_CONTEXT_MENU_SHOW_CLIPBOARD_HISTORY_MENU);
-    ash::ClipboardHistoryController* clipboard_history_controller =
-        ash::ClipboardHistoryController::Get();
-    if (clipboard_history_controller &&
-        clipboard_history_controller->ShouldShowNewFeatureBadge()) {
-      menu_model_.SetIsNewFeatureAt(
-          menu_model_.GetIndexOfCommandId(IDC_CONTENT_CLIPBOARD_HISTORY_MENU),
-          true);
-      clipboard_history_controller->MarkNewFeatureBadgeShown();
-    }
+  menu_model_.AddItemWithStringId(IDC_CONTENT_CLIPBOARD_HISTORY_MENU,
+                                  IDS_CONTEXT_MENU_SHOW_CLIPBOARD_HISTORY_MENU);
+  ash::ClipboardHistoryController* clipboard_history_controller =
+      ash::ClipboardHistoryController::Get();
+  if (clipboard_history_controller &&
+      clipboard_history_controller->ShouldShowNewFeatureBadge()) {
+    menu_model_.SetIsNewFeatureAt(
+        menu_model_.GetIndexOfCommandId(IDC_CONTENT_CLIPBOARD_HISTORY_MENU),
+        true);
+    clipboard_history_controller->MarkNewFeatureBadgeShown();
   }
 #endif
 
@@ -2126,21 +2140,25 @@ void RenderViewContextMenu::AppendSharedClipboardItem() {
 }
 
 void RenderViewContextMenu::AppendRegionSearchItem() {
-  int resource_id = IDS_CONTENT_CONTEXT_LENS_REGION_SEARCH;
-  if (lens::features::kRegionSearchUseMenuItemAltText1.Get()) {
+  // IDS_CONTENT_CONTEXT_LENS_REGION_SEARCH_ALT4 is the currently launched
+  // string for the regions search menu item.
+  int resource_id = IDS_CONTENT_CONTEXT_LENS_REGION_SEARCH_ALT4;
+  std::u16string provider_name = std::u16string(kGoogleLens);
+  if (lens::features::UseRegionSearchMenuItemAltText1()) {
     resource_id = IDS_CONTENT_CONTEXT_LENS_REGION_SEARCH_ALT1;
-  } else if (lens::features::kRegionSearchUseMenuItemAltText2.Get()) {
+  } else if (lens::features::UseRegionSearchMenuItemAltText2()) {
     resource_id = IDS_CONTENT_CONTEXT_LENS_REGION_SEARCH_ALT2;
-  } else if (lens::features::kRegionSearchUseMenuItemAltText3.Get()) {
-    resource_id = IDS_CONTENT_CONTEXT_LENS_REGION_SEARCH_ALT3;
-  } else if (lens::features::kRegionSearchUseMenuItemAltText4.Get()) {
-    resource_id = IDS_CONTENT_CONTEXT_LENS_REGION_SEARCH_ALT4;
+  } else if (lens::features::UseRegionSearchMenuItemAltText3() ||
+             lens::features::IsLensFullscreenSearchEnabled()) {
+    // Default text for fullscreen search when enabled. Uses `Google` instead of
+    // `Google Lens` like the first alternative string.
+    resource_id = IDS_CONTENT_CONTEXT_LENS_REGION_SEARCH_ALT1;
+    provider_name = std::u16string(kGoogle);
   }
 
   if (search::DefaultSearchProviderIsGoogle(GetProfile())) {
-    menu_model_.AddItem(
-        IDC_CONTENT_CONTEXT_LENS_REGION_SEARCH,
-        l10n_util::GetStringFUTF16(resource_id, std::u16string(kGoogleLens)));
+    menu_model_.AddItem(IDC_CONTENT_CONTEXT_LENS_REGION_SEARCH,
+                        l10n_util::GetStringFUTF16(resource_id, provider_name));
   } else {
     TemplateURLService* service =
         TemplateURLServiceFactory::GetForProfile(GetProfile());
@@ -2196,6 +2214,13 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
   // Extension items.
   if (ContextMenuMatcher::IsExtensionsCustomCommandId(id))
     return extension_items_.IsCommandIdEnabled(id);
+
+  // Autofill items.
+  if (autofill::AutofillContextMenuManager::IsAutofillCustomCommandId(
+          autofill::AutofillContextMenuManager::CommandId(id))) {
+    return autofill_context_menu_manager_.IsCommandIdEnabled(
+        autofill::AutofillContextMenuManager::CommandId(id));
+  }
 
   if (id >= IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_FIRST &&
       id <= IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_LAST) {
@@ -2405,8 +2430,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
 
     case IDC_CONTENT_CLIPBOARD_HISTORY_MENU:
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-      return chromeos::features::IsClipboardHistoryEnabled() &&
-             ash::ClipboardHistoryController::Get()->CanShowMenu();
+      return ash::ClipboardHistoryController::Get()->CanShowMenu();
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
     {
       auto* service = chromeos::LacrosService::Get();
@@ -2455,6 +2479,11 @@ bool RenderViewContextMenu::IsCommandIdChecked(int id) const {
 bool RenderViewContextMenu::IsCommandIdVisible(int id) const {
   if (ContextMenuMatcher::IsExtensionsCustomCommandId(id))
     return extension_items_.IsCommandIdVisible(id);
+  if (autofill::AutofillContextMenuManager::IsAutofillCustomCommandId(
+          autofill::AutofillContextMenuManager::CommandId(id))) {
+    return autofill_context_menu_manager_.IsCommandIdVisible(
+        autofill::AutofillContextMenuManager::CommandId(id));
+  }
   return RenderViewContextMenuBase::IsCommandIdVisible(id);
 }
 
@@ -2470,6 +2499,17 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
     if (render_frame_host) {
       extension_items_.ExecuteCommand(id, source_web_contents_,
                                       render_frame_host, params_);
+    }
+    return;
+  }
+
+  if (autofill::AutofillContextMenuManager::IsAutofillCustomCommandId(
+          autofill::AutofillContextMenuManager::CommandId(id))) {
+    RenderFrameHost* render_frame_host = GetRenderFrameHost();
+    if (render_frame_host) {
+      autofill_context_menu_manager_.ExecuteCommand(
+          autofill::AutofillContextMenuManager::CommandId(id),
+          source_web_contents_, render_frame_host);
     }
     return;
   }
@@ -2666,7 +2706,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       break;
 
     case IDC_VIEW_SOURCE:
-      embedder_web_contents_->GetMainFrame()->ViewSource();
+      embedder_web_contents_->GetPrimaryMainFrame()->ViewSource();
       break;
 
     case IDC_CONTENT_CONTEXT_INSPECTELEMENT:
@@ -2724,16 +2764,10 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
 
     case IDC_CONTENT_CONTEXT_SEARCHWEBFOR:
     case IDC_CONTENT_CONTEXT_GOTOURL:
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-      ash::NewWindowDelegate::GetPrimary()->OpenUrl(
-          selection_navigation_url_,
-          ash::NewWindowDelegate::OpenUrlFrom::kUserInteraction);
-#else
       OpenURL(selection_navigation_url_, GURL(),
               ui::DispositionFromEventFlags(
                   event_flags, WindowOpenDisposition::NEW_FOREGROUND_TAB),
               ui::PAGE_TRANSITION_LINK);
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
       break;
 
     case IDC_CONTENT_CONTEXT_LANGUAGE_SETTINGS:
@@ -3433,8 +3467,11 @@ void RenderViewContextMenu::ExecRegionSearch(
     lens_region_search_controller_ =
         std::make_unique<lens::LensRegionSearchController>(source_web_contents_,
                                                            GetBrowser());
+  // If Lens fullscreen search is enabled, we want to send every region search
+  // as a fullscreen capture.
   bool use_fullscreen_capture =
-      GetMenuSourceType(event_flags) == ui::MENU_SOURCE_KEYBOARD;
+      GetMenuSourceType(event_flags) == ui::MENU_SOURCE_KEYBOARD ||
+      lens::features::IsLensFullscreenSearchEnabled();
   lens_region_search_controller_->Start(use_fullscreen_capture,
                                         is_google_default_search_provider);
 #endif
@@ -3561,8 +3598,6 @@ void RenderViewContextMenu::ExecRouteMedia() {
 
   dialog_controller->ShowMediaRouterDialog(
       media_router::MediaRouterDialogOpenOrigin::CONTEXTUAL_MENU);
-  media_router::MediaRouterMetrics::RecordMediaRouterDialogOrigin(
-      media_router::MediaRouterDialogOpenOrigin::CONTEXTUAL_MENU);
 }
 
 void RenderViewContextMenu::ExecTranslate() {
@@ -3633,11 +3668,11 @@ void RenderViewContextMenu::PluginActionAt(
   // main frame when Pepper-free PDF viewer is enabled. To trigger any plugin
   // action, we need to detect this child frame and trigger the actions from
   // there.
-  plugin_rfh =
-      pdf_frame_util::FindPdfChildFrame(source_web_contents_->GetMainFrame());
+  plugin_rfh = pdf_frame_util::FindPdfChildFrame(
+      source_web_contents_->GetPrimaryMainFrame());
 #endif
   if (!plugin_rfh)
-    plugin_rfh = source_web_contents_->GetMainFrame();
+    plugin_rfh = source_web_contents_->GetPrimaryMainFrame();
 
   // TODO(crbug.com/776807): See if this needs to be done for OOPIFs as well.
   // Calculate the local location in view coordinates inside the plugin before

@@ -27,7 +27,6 @@ class FunctionDeclaration;
 namespace dsl {
 
 class DSLType;
-template <typename T> class DSLWrapper;
 
 class DSLFunction {
 public:
@@ -40,11 +39,8 @@ public:
                 Parameters&... parameters) {
         SkTArray<DSLParameter*> parameterArray;
         parameterArray.reserve_back(sizeof...(parameters));
+        (parameterArray.push_back(&parameters), ...);
 
-        // in C++17, we could just do:
-        // (parameterArray.push_back(&parameters), ...);
-        int unused[] = {0, (static_cast<void>(parameterArray.push_back(&parameters)), 0)...};
-        static_cast<void>(unused);
         // We can't have a default parameter and a template parameter pack at the same time, so
         // unfortunately we can't capture position from this overload.
         this->init(modifiers, returnType, name, std::move(parameterArray), Position());
@@ -87,8 +83,7 @@ public:
     /**
      * Invokes the function with the given arguments.
      */
-    DSLExpression call(SkTArray<DSLWrapper<DSLExpression>> args,
-            Position pos = {});
+    DSLExpression call(SkTArray<DSLExpression> args, Position pos = {});
 
     DSLExpression call(ExpressionArray args, Position pos = {});
 

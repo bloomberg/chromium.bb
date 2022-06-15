@@ -401,7 +401,7 @@ static int decode_dvd_subtitles(DVDSubContext *ctx, AVSubtitle *sub_header,
                 } else {
                     sub_header->rects[0]->nb_colors = 4;
                     guess_palette(ctx, (uint32_t*)sub_header->rects[0]->data[1],
-                                  0xffff00);
+                                  0xffffff);
                 }
                 sub_header->rects[0]->x = x1;
                 sub_header->rects[0]->y = y1;
@@ -548,14 +548,12 @@ static int append_to_cached_buf(AVCodecContext *avctx,
     return 0;
 }
 
-static int dvdsub_decode(AVCodecContext *avctx,
-                         void *data, int *data_size,
-                         AVPacket *avpkt)
+static int dvdsub_decode(AVCodecContext *avctx, AVSubtitle *sub,
+                         int *data_size, const AVPacket *avpkt)
 {
     DVDSubContext *ctx = avctx->priv_data;
     const uint8_t *buf = avpkt->data;
     int buf_size = avpkt->size;
-    AVSubtitle *sub = data;
     int appended = 0;
     int is_menu;
 
@@ -762,7 +760,7 @@ const FFCodec ff_dvdsub_decoder = {
     .p.id           = AV_CODEC_ID_DVD_SUBTITLE,
     .priv_data_size = sizeof(DVDSubContext),
     .init           = dvdsub_init,
-    .decode         = dvdsub_decode,
+    FF_CODEC_DECODE_SUB_CB(dvdsub_decode),
     .flush          = dvdsub_flush,
     .p.priv_class   = &dvdsub_class,
     .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,

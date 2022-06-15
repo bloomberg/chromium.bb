@@ -55,6 +55,7 @@
 #include "src/compiler/js-intrinsic-lowering.h"
 #include "src/compiler/js-native-context-specialization.h"
 #include "src/compiler/js-typed-lowering.h"
+#include "src/compiler/late-escape-analysis.h"
 #include "src/compiler/load-elimination.h"
 #include "src/compiler/loop-analysis.h"
 #include "src/compiler/loop-peeling.h"
@@ -77,7 +78,9 @@
 #include "src/compiler/store-store-elimination.h"
 #include "src/compiler/turboshaft/assembler.h"
 #include "src/compiler/turboshaft/graph-builder.h"
+#include "src/compiler/turboshaft/graph-visualizer.h"
 #include "src/compiler/turboshaft/graph.h"
+#include "src/compiler/turboshaft/optimization-phase.h"
 #include "src/compiler/turboshaft/recreate-schedule.h"
 #include "src/compiler/type-narrowing-reducer.h"
 #include "src/compiler/typed-optimization.h"
@@ -103,8 +106,11 @@
 #if V8_ENABLE_WEBASSEMBLY
 #include "src/compiler/wasm-compiler.h"
 #include "src/compiler/wasm-escape-analysis.h"
+#include "src/compiler/wasm-gc-lowering.h"
+#include "src/compiler/wasm-gc-operator-reducer.h"
 #include "src/compiler/wasm-inlining.h"
 #include "src/compiler/wasm-loop-peeling.h"
+#include "src/compiler/wasm-typer.h"
 #include "src/wasm/function-body-decoder.h"
 #include "src/wasm/function-compiler.h"
 #include "src/wasm/wasm-engine.h"
@@ -963,15 +969,12 @@ void PrintCode(Isolate* isolate, Handle<Code> code,
 #endif  // ENABLE_DISASSEMBLER
 }
 
-void TraceScheduleAndVerify(OptimizedCompilationInfo* info, PipelineData* data,
-                            Schedule* schedule, const char* phase_name) {
-  RCS_SCOPE(data->runtime_call_stats(),
-            RuntimeCallCounterId::kOptimizeTraceScheduleAndVerify,
-            RuntimeCallStats::kThreadSpecific);
-  TRACE_EVENT0(PipelineStatistics::kTraceCategory, "V8.TraceScheduleAndVerify");
+void TraceSchedule(OptimizedCompilationInfo* info, PipelineData* data,
+                   Schedule* schedule, const char* phase_name) {
   if (info->trace_turbo_json()) {
     UnparkedScopeIfNeeded scope(data->broker());
     AllowHandleDereference allow_deref;
+
     TurboJsonFile json_of(info, std::ios_base::app);
     json_of << "{\"name\":\"" << phase_name << "\",\"type\":\"schedule\""
             << ",\"data\":\"";
@@ -983,14 +986,26 @@ void TraceScheduleAndVerify(OptimizedCompilationInfo* info, PipelineData* data,
     }
     json_of << "\"},\n";
   }
+
   if (info->trace_turbo_graph() || FLAG_trace_turbo_scheduler) {
     UnparkedScopeIfNeeded scope(data->broker());
     AllowHandleDereference allow_deref;
+
     CodeTracer::StreamScope tracing_scope(data->GetCodeTracer());
     tracing_scope.stream()
-        << "-- Schedule --------------------------------------\n"
+        << "----- " << phase_name << " -----\n"
         << *schedule;
   }
+}
+
+void TraceScheduleAndVerify(OptimizedCompilationInfo* info, PipelineData* data,
+                            Schedule* schedule, const char* phase_name) {
+  RCS_SCOPE(data->runtime_call_stats(),
+            RuntimeCallCounterId::kOptimizeTraceScheduleAndVerify,
+            RuntimeCallStats::kThreadSpecific);
+  TRACE_EVENT0(PipelineStatistics::kTraceCategory, "V8.TraceScheduleAndVerify");
+
+  TraceSchedule(info, data, schedule, phase_name);
 
   if (FLAG_turbo_verify) ScheduleVerifier::Run(schedule);
 }
@@ -1711,7 +1726,7 @@ struct WasmLoopPeelingPhase {
       if (loop_info.can_be_innermost) {
         ZoneUnorderedSet<Node*>* loop =
             LoopFinder::FindSmallInnermostLoopFromHeader(
-                loop_info.header, temp_zone, std::numeric_limits<size_t>::max(),
+                loop_info.header, temp_zone, FLAG_wasm_loop_peeling_max_size,
                 false);
         if (loop == nullptr) continue;
         PeelWasmLoop(loop_info.header, loop, data->graph(), data->common(),
@@ -1938,6 +1953,8 @@ struct LateOptimizationPhase {
     GraphReducer graph_reducer(
         temp_zone, data->graph(), &data->info()->tick_counter(), data->broker(),
         data->jsgraph()->Dead(), data->observe_node_manager());
+    LateEscapeAnalysis escape_analysis(&graph_reducer, data->graph(),
+                                       data->common(), temp_zone);
     BranchElimination branch_condition_elimination(
         &graph_reducer, data->jsgraph(), temp_zone, data->source_positions());
     DeadCodeElimination dead_code_elimination(&graph_reducer, data->graph(),
@@ -1949,6 +1966,7 @@ struct LateOptimizationPhase {
         data->machine(), temp_zone, BranchSemantics::kMachine);
     JSGraphAssembler graph_assembler(data->jsgraph(), temp_zone);
     SelectLowering select_lowering(&graph_assembler, data->graph());
+    AddReducer(data, &graph_reducer, &escape_analysis);
     AddReducer(data, &graph_reducer, &branch_condition_elimination);
     AddReducer(data, &graph_reducer, &dead_code_elimination);
     AddReducer(data, &graph_reducer, &machine_reducer);
@@ -2011,12 +2029,22 @@ struct BranchConditionDuplicationPhase {
 };
 
 struct BuildTurboshaftPhase {
-  DECL_PIPELINE_PHASE_CONSTANTS(BuildTurboShaft)
+  DECL_PIPELINE_PHASE_CONSTANTS(BuildTurboshaft)
 
   void Run(PipelineData* data, Zone* temp_zone) {
     turboshaft::BuildGraph(data->schedule(), data->graph_zone(), temp_zone,
                            &data->turboshaft_graph());
     data->reset_schedule();
+  }
+};
+
+struct OptimizeTurboshaftPhase {
+  DECL_PIPELINE_PHASE_CONSTANTS(OptimizeTurboshaft)
+
+  void Run(PipelineData* data, Zone* temp_zone) {
+    turboshaft::OptimizationPhase<
+        turboshaft::LivenessAnalyzer,
+        turboshaft::Assembler>::Run(&data->turboshaft_graph(), temp_zone);
   }
 };
 
@@ -2033,6 +2061,49 @@ struct TurboshaftRecreateSchedulePhase {
 };
 
 #if V8_ENABLE_WEBASSEMBLY
+struct WasmTypingPhase {
+  DECL_PIPELINE_PHASE_CONSTANTS(WasmTyping)
+
+  void Run(PipelineData* data, Zone* temp_zone, uint32_t function_index) {
+    GraphReducer graph_reducer(
+        temp_zone, data->graph(), &data->info()->tick_counter(), data->broker(),
+        data->jsgraph()->Dead(), data->observe_node_manager());
+    WasmTyper typer(&graph_reducer, data->mcgraph(), function_index);
+    AddReducer(data, &graph_reducer, &typer);
+    graph_reducer.ReduceGraph();
+  }
+};
+
+struct WasmGCOptimizationPhase {
+  DECL_PIPELINE_PHASE_CONSTANTS(WasmGCOptimization)
+
+  void Run(PipelineData* data, Zone* temp_zone,
+           const wasm::WasmModule* module) {
+    GraphReducer graph_reducer(
+        temp_zone, data->graph(), &data->info()->tick_counter(), data->broker(),
+        data->jsgraph()->Dead(), data->observe_node_manager());
+    WasmGCOperatorReducer wasm_gc(&graph_reducer, data->mcgraph(), module);
+    AddReducer(data, &graph_reducer, &wasm_gc);
+    graph_reducer.ReduceGraph();
+  }
+};
+
+struct WasmGCLoweringPhase {
+  DECL_PIPELINE_PHASE_CONSTANTS(WasmGCLowering)
+
+  void Run(PipelineData* data, Zone* temp_zone) {
+    GraphReducer graph_reducer(
+        temp_zone, data->graph(), &data->info()->tick_counter(), data->broker(),
+        data->jsgraph()->Dead(), data->observe_node_manager());
+    WasmGCLowering lowering(&graph_reducer, data->mcgraph());
+    DeadCodeElimination dead_code_elimination(&graph_reducer, data->graph(),
+                                              data->common(), temp_zone);
+    AddReducer(data, &graph_reducer, &lowering);
+    AddReducer(data, &graph_reducer, &dead_code_elimination);
+    graph_reducer.ReduceGraph();
+  }
+};
+
 struct WasmOptimizationPhase {
   DECL_PIPELINE_PHASE_CONSTANTS(WasmOptimization)
 
@@ -2465,7 +2536,6 @@ struct FinalizeCodePhase {
   }
 };
 
-
 struct PrintGraphPhase {
   DECL_PIPELINE_PHASE_CONSTANTS(PrintGraph)
 
@@ -2496,19 +2566,44 @@ struct PrintGraphPhase {
       AllowHandleDereference allow_deref;
       CodeTracer::StreamScope tracing_scope(data->GetCodeTracer());
       tracing_scope.stream()
-          << "-- Graph after " << phase << " -- " << std::endl
+          << "----- Graph after " << phase << " ----- " << std::endl
           << AsScheduledGraph(schedule);
     } else if (info->trace_turbo_graph()) {  // Simple textual RPO.
       UnparkedScopeIfNeeded scope(data->broker());
       AllowHandleDereference allow_deref;
       CodeTracer::StreamScope tracing_scope(data->GetCodeTracer());
       tracing_scope.stream()
-          << "-- Graph after " << phase << " -- " << std::endl
+          << "----- Graph after " << phase << " ----- " << std::endl
           << AsRPO(*graph);
     }
   }
 };
 
+struct PrintTurboshaftGraphPhase {
+  DECL_PIPELINE_PHASE_CONSTANTS(PrintTurboshaftGraph)
+
+  void Run(PipelineData* data, Zone* temp_zone, const char* phase) {
+    if (data->info()->trace_turbo_json()) {
+      UnparkedScopeIfNeeded scope(data->broker());
+      AllowHandleDereference allow_deref;
+
+      TurboJsonFile json_of(data->info(), std::ios_base::app);
+      json_of << "{\"name\":\"" << phase << "\",\"type\":\"turboshaft_graph\",\"data\":"
+              << AsJSON(data->turboshaft_graph(), temp_zone)
+              << "},\n";
+    }
+
+    if (data->info()->trace_turbo_graph()) {
+      UnparkedScopeIfNeeded scope(data->broker());
+      AllowHandleDereference allow_deref;
+
+      CodeTracer::StreamScope tracing_scope(data->GetCodeTracer());
+      tracing_scope.stream()
+          << "\n----- " << phase << " -----\n"
+          << data->turboshaft_graph();
+    }
+  }
+};
 
 struct VerifyGraphPhase {
   DECL_PIPELINE_PHASE_CONSTANTS(VerifyGraph)
@@ -2855,24 +2950,14 @@ bool PipelineImpl::OptimizeGraph(Linkage* linkage) {
 
   if (FLAG_turboshaft) {
     Run<BuildTurboshaftPhase>();
-    if (data->info()->trace_turbo_graph()) {
-      UnparkedScopeIfNeeded scope(data->broker());
-      AllowHandleDereference allow_deref;
-      CodeTracer::StreamScope tracing_scope(data->GetCodeTracer());
-      tracing_scope.stream()
-          << "\n-- TurboShaft Graph ----------------------------\n"
-          << data->turboshaft_graph();
-    }
+    Run<PrintTurboshaftGraphPhase>(BuildTurboshaftPhase::phase_name());
+
+    Run<OptimizeTurboshaftPhase>();
+    Run<PrintTurboshaftGraphPhase>(OptimizeTurboshaftPhase::phase_name());
 
     Run<TurboshaftRecreateSchedulePhase>(linkage);
-    if (data->info()->trace_turbo_graph() || FLAG_trace_turbo_scheduler) {
-      UnparkedScopeIfNeeded scope(data->broker());
-      AllowHandleDereference allow_deref;
-      CodeTracer::StreamScope tracing_scope(data->GetCodeTracer());
-      tracing_scope.stream()
-          << "\n-- Recreated Schedule ----------------------------\n"
-          << *data->schedule();
-    }
+    TraceSchedule(data->info(), data, data->schedule(),
+                  TurboshaftRecreateSchedulePhase::phase_name());
   }
 
   return SelectInstructions(linkage);
@@ -3226,6 +3311,15 @@ void Pipeline::GenerateCodeForWasmFunction(
   }
   const bool is_asm_js = is_asmjs_module(module);
 
+  if (FLAG_experimental_wasm_gc) {
+    pipeline.Run<WasmTypingPhase>(function_index);
+    pipeline.RunPrintAndVerify(WasmTypingPhase::phase_name(), true);
+    pipeline.Run<WasmGCOptimizationPhase>(module);
+    pipeline.RunPrintAndVerify(WasmGCOptimizationPhase::phase_name(), true);
+    pipeline.Run<WasmGCLoweringPhase>();
+    pipeline.RunPrintAndVerify(WasmGCLoweringPhase::phase_name(), true);
+  }
+
   if (FLAG_wasm_opt || is_asm_js) {
     pipeline.Run<WasmOptimizationPhase>(is_asm_js);
     pipeline.RunPrintAndVerify(WasmOptimizationPhase::phase_name(), true);
@@ -3236,6 +3330,16 @@ void Pipeline::GenerateCodeForWasmFunction(
 
   pipeline.Run<MemoryOptimizationPhase>();
   pipeline.RunPrintAndVerify(MemoryOptimizationPhase::phase_name(), true);
+
+  if (FLAG_experimental_wasm_gc) {
+    pipeline.Run<DecompressionOptimizationPhase>();
+    pipeline.RunPrintAndVerify(DecompressionOptimizationPhase::phase_name(),
+                               true);
+  }
+
+  pipeline.Run<BranchConditionDuplicationPhase>();
+  pipeline.RunPrintAndVerify(BranchConditionDuplicationPhase::phase_name(),
+                             true);
 
   if (FLAG_turbo_splitting && !is_asm_js) {
     data.info()->set_splitting();

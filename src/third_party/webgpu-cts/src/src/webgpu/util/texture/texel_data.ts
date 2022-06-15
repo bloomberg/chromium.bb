@@ -759,41 +759,6 @@ export const kTexelRepresentationInfo: {
       numericRange: { min: 0, max: 1 },
     },
     stencil8: makeIntegerInfo([TexelComponent.Stencil], 8, { signed: false }),
-    'depth24unorm-stencil8': {
-      componentOrder: [TexelComponent.Depth, TexelComponent.Stencil],
-      componentInfo: {
-        Depth: {
-          dataType: 'unorm',
-          bitLength: 24,
-        },
-        Stencil: {
-          dataType: 'uint',
-          bitLength: 8,
-        },
-      },
-      encode: components => {
-        assert(components.Stencil !== undefined);
-        assertInIntegerRange(components.Stencil, 8, false);
-        return {
-          Depth: floatAsNormalizedInteger(components.Depth ?? unreachable(), 24, false),
-          Stencil: components.Stencil,
-        };
-      },
-      decode: components => {
-        assert(components.Stencil !== undefined);
-        assertInIntegerRange(components.Stencil, 8, false);
-        return {
-          Depth: normalizedIntegerAsFloat(components.Depth ?? unreachable(), 24, false),
-          Stencil: components.Stencil,
-        };
-      },
-      pack: () => unreachable('depth24unorm-stencil8 data cannot be packed'),
-      unpackBits: () => unreachable('depth24unorm-stencil8 data cannot be unpacked'),
-      numberToBits: () => unreachable('not implemented'),
-      bitsToNumber: () => unreachable('not implemented'),
-      bitsToULPFromZero: () => unreachable('not implemented'),
-      numericRange: null,
-    },
     'depth32float-stencil8': {
       componentOrder: [TexelComponent.Depth, TexelComponent.Stencil],
       componentInfo: {

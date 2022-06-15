@@ -26,6 +26,9 @@ vars = {
 
   # GN variable required by //testing that will be output in the gclient_args.gni
   'generate_location_tags': False,
+
+  # Fetch clang-tidy into the same bin/ directory as our clang binary.
+  'checkout_clang_tidy': False,
 }
 
 deps = {
@@ -117,8 +120,7 @@ deps = {
 
   # GLFW for tests and samples
   'third_party/glfw': {
-    'url': '{chromium_git}/external/github.com/glfw/glfw@94773111300fee0453844a4c9407af7e880b4df8',
-    'condition': 'dawn_standalone',
+    'url': '{chromium_git}/external/github.com/glfw/glfw@62e175ef9fae75335575964c845a302447c012c7',
   },
 
   'third_party/vulkan_memory_allocator': {
@@ -127,17 +129,17 @@ deps = {
   },
 
   'third_party/angle': {
-    'url': '{chromium_git}/angle/angle@1d8227dab6f14dc344fffc3a6b18eae24336faf2',
+    'url': '{chromium_git}/angle/angle@c11af00ae1d10d43a71a28c07f99969665c4ea2a',
     'condition': 'dawn_standalone',
   },
 
   'third_party/swiftshader': {
-    'url': '{swiftshader_git}/SwiftShader@f1c2c0b0728152d7ca24472e696e07e957e6d09a',
+    'url': '{swiftshader_git}/SwiftShader@26243894edb812abe0f120ac36c400439848dacb',
     'condition': 'dawn_standalone',
   },
 
   'third_party/vulkan-deps': {
-    'url': '{chromium_git}/vulkan-deps@b768d03422eaba0e33c6ed6aaf12f04e5ec0ea2b',
+    'url': '{chromium_git}/vulkan-deps@23b710f1a0b3c44d51035c6400a554415f95d9c6',
     'condition': 'dawn_standalone',
   },
 
@@ -153,7 +155,7 @@ deps = {
 
   # WebGPU CTS - not used directly by Dawn, only transitively by Chromium.
   'third_party/webgpu-cts': {
-    'url': '{chromium_git}/external/github.com/gpuweb/cts@11f61c5f919cf69aefddfb71f1612f502dbf5f45',
+    'url': '{chromium_git}/external/github.com/gpuweb/cts@f19f0c38c943499913a9ab59b0fe0c26168a2368',
     'condition': 'build_with_chromium',
   },
 
@@ -167,12 +169,8 @@ deps = {
     'condition': 'dawn_node',
   },
   'third_party/gpuweb': {
-    'url': '{github_git}/gpuweb/gpuweb.git@16df823c91c9045b7cdf9bd0f2c0ef6d43ac95e7',
+    'url': '{github_git}/gpuweb/gpuweb.git@3c4734b09c68eb800b15da5e9ecefeca735fa7df',
     'condition': 'dawn_node',
-  },
-  'third_party/gpuweb-cts': {
-    'url': '{chromium_git}/external/github.com/gpuweb/cts@11f61c5f919cf69aefddfb71f1612f502dbf5f45',
-    'condition': 'dawn_standalone',
   },
 
   'tools/golang': {
@@ -241,6 +239,15 @@ hooks = [
     'pattern': '.',
     'action': ['python3', 'tools/clang/scripts/update.py'],
     'condition': 'dawn_standalone',
+  },
+  {
+    # This is also supposed to support the same set of platforms as 'clang'
+    # above. LLVM ToT support isn't provided at the moment.
+    'name': 'clang_tidy',
+    'pattern': '.',
+    'condition': 'dawn_standalone and checkout_clang_tidy',
+    'action': ['python3', 'tools/clang/scripts/update.py',
+               '--package=clang-tidy'],
   },
   {
     # Pull rc binaries using checked-in hashes.

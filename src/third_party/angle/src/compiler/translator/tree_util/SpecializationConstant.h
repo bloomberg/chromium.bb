@@ -27,23 +27,9 @@ class SpecConst
     SpecConst(TSymbolTable *symbolTable, ShCompileOptions compileOptions, GLenum shaderType);
     virtual ~SpecConst();
 
-    // Line rasterizaton emulation
-    TIntermSymbol *getLineRasterEmulation();
-
     // Flip/rotation
-    TIntermTyped *getMultiplierXForDFdx();
-    TIntermTyped *getMultiplierYForDFdx();
-    TIntermTyped *getMultiplierXForDFdy();
-    TIntermTyped *getMultiplierYForDFdy();
-    TIntermTyped *getPreRotationMatrix();
-    TIntermTyped *getFragRotationMatrix();
-    TIntermTyped *getFlipXY();
-    TIntermTyped *getNegFlipXY();
-    TIntermTyped *getFlipY();
-    TIntermTyped *getFragRotationMultiplyFlipXY();
-
-    // Half render area
-    TIntermTyped *getHalfRenderArea();
+    // Returns a boolean: should X and Y be swapped?
+    TIntermTyped *getSwapXY();
 
     // Dither emulation
     TIntermTyped *getDither();
@@ -52,20 +38,13 @@ class SpecConst
     SpecConstUsageBits getSpecConstUsageBits() const { return mUsageBits; }
 
   private:
-    TIntermSymbol *getFlipRotation();
-    TIntermTyped *getNegFlipY();
-    TIntermSymbol *getDrawableWidth();
-    TIntermSymbol *getDrawableHeight();
-    TIntermTyped *getHalfRenderAreaRotationMatrix();
+    TIntermSymbol *getRotation();
 
     // If unsupported, this should be set to null.
     TSymbolTable *mSymbolTable;
     ShCompileOptions mCompileOptions;
 
-    TVariable *mLineRasterEmulationVar;
     TVariable *mSurfaceRotationVar;
-    TVariable *mDrawableWidthVar;
-    TVariable *mDrawableHeightVar;
     TVariable *mDitherVar;
 
     // Bit is set if YFlip or Rotation has been used

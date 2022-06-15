@@ -301,7 +301,7 @@ export class TextureZeroInitTest extends GPUTest {
     commandEncoder.pushDebugGroup('initializeWithStoreOp');
 
     for (const viewDescriptor of this.generateTextureViewDescriptorsForRendering(
-      this.p.aspect,
+      'all',
       subresourceRange
     )) {
       if (kTextureFormatInfo[this.p.format].color) {
@@ -321,12 +321,12 @@ export class TextureZeroInitTest extends GPUTest {
         const depthStencilAttachment: GPURenderPassDepthStencilAttachment = {
           view: texture.createView(viewDescriptor),
         };
-        if (kTextureFormatInfo[this.p.format].depth && this.p.aspect !== 'stencil-only') {
+        if (kTextureFormatInfo[this.p.format].depth) {
           depthStencilAttachment.depthClearValue = initializedStateAsDepth[state];
           depthStencilAttachment.depthLoadOp = 'clear';
           depthStencilAttachment.depthStoreOp = 'store';
         }
-        if (kTextureFormatInfo[this.p.format].stencil && this.p.aspect !== 'depth-only') {
+        if (kTextureFormatInfo[this.p.format].stencil) {
           depthStencilAttachment.stencilClearValue = initializedStateAsStencil[state];
           depthStencilAttachment.stencilLoadOp = 'clear';
           depthStencilAttachment.stencilStoreOp = 'store';
@@ -413,10 +413,7 @@ export class TextureZeroInitTest extends GPUTest {
     const commandEncoder = this.device.createCommandEncoder();
     commandEncoder.pushDebugGroup('discardTexture');
 
-    for (const desc of this.generateTextureViewDescriptorsForRendering(
-      this.p.aspect,
-      subresourceRange
-    )) {
+    for (const desc of this.generateTextureViewDescriptorsForRendering('all', subresourceRange)) {
       if (kTextureFormatInfo[this.p.format].color) {
         commandEncoder
           .beginRenderPass({
@@ -433,11 +430,11 @@ export class TextureZeroInitTest extends GPUTest {
         const depthStencilAttachment: GPURenderPassDepthStencilAttachment = {
           view: texture.createView(desc),
         };
-        if (kTextureFormatInfo[this.p.format].depth && this.p.aspect !== 'stencil-only') {
+        if (kTextureFormatInfo[this.p.format].depth) {
           depthStencilAttachment.depthLoadOp = 'load';
           depthStencilAttachment.depthStoreOp = 'discard';
         }
-        if (kTextureFormatInfo[this.p.format].stencil && this.p.aspect !== 'depth-only') {
+        if (kTextureFormatInfo[this.p.format].stencil) {
           depthStencilAttachment.stencilLoadOp = 'load';
           depthStencilAttachment.stencilStoreOp = 'discard';
         }

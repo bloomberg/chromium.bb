@@ -168,32 +168,6 @@ std::ostream& operator<<(std::ostream& os, const Error::Code& code) {
       return os << "ErrCertsPathlen";
     case Error::Code::kErrCertSerialize:
       return os << "ErrCertSerialize";
-    case Error::Code::kUnknownError:
-      return os << "UnknownError";
-    case Error::Code::kNotImplemented:
-      return os << "NotImplemented";
-    case Error::Code::kInsufficientBuffer:
-      return os << "InsufficientBuffer";
-    case Error::Code::kParameterInvalid:
-      return os << "ParameterInvalid";
-    case Error::Code::kParameterOutOfRange:
-      return os << "ParameterOutOfRange";
-    case Error::Code::kParameterNullPointer:
-      return os << "ParameterNullPointer";
-    case Error::Code::kIndexOutOfBounds:
-      return os << "IndexOutOfBounds";
-    case Error::Code::kItemAlreadyExists:
-      return os << "ItemAlreadyExists";
-    case Error::Code::kItemNotFound:
-      return os << "ItemNotFound";
-    case Error::Code::kOperationInvalid:
-      return os << "OperationInvalid";
-    case Error::Code::kOperationInProgress:
-      return os << "OperationInProgress";
-    case Error::Code::kOperationCancelled:
-      return os << "OperationCancelled";
-    case Error::Code::kTypeError:
-      return os << "TypeError";
     case Error::Code::kCastV2PeerCertEmpty:
       return os << "kCastV2PeerCertEmpty";
     case Error::Code::kCastV2WrongPayloadType:
@@ -254,6 +228,32 @@ std::ostream& operator<<(std::ostream& os, const Error::Code& code) {
       return os << "kRecordPublicationError";
     case Error::Code::kProcessReceivedRecordFailure:
       return os << "ProcessReceivedRecordFailure";
+    case Error::Code::kUnknownError:
+      return os << "UnknownError";
+    case Error::Code::kNotImplemented:
+      return os << "NotImplemented";
+    case Error::Code::kInsufficientBuffer:
+      return os << "InsufficientBuffer";
+    case Error::Code::kParameterInvalid:
+      return os << "ParameterInvalid";
+    case Error::Code::kParameterOutOfRange:
+      return os << "ParameterOutOfRange";
+    case Error::Code::kParameterNullPointer:
+      return os << "ParameterNullPointer";
+    case Error::Code::kIndexOutOfBounds:
+      return os << "IndexOutOfBounds";
+    case Error::Code::kItemAlreadyExists:
+      return os << "ItemAlreadyExists";
+    case Error::Code::kItemNotFound:
+      return os << "ItemNotFound";
+    case Error::Code::kOperationInvalid:
+      return os << "OperationInvalid";
+    case Error::Code::kOperationInProgress:
+      return os << "OperationInProgress";
+    case Error::Code::kOperationCancelled:
+      return os << "OperationCancelled";
+    case Error::Code::kInterrupted:
+      return os << "Interrupted";
     case Error::Code::kUnknownCodec:
       return os << "UnknownCodec";
     case Error::Code::kInvalidCodecParameter:
@@ -266,6 +266,8 @@ std::ostream& operator<<(std::ostream& os, const Error::Code& code) {
       return os << "RemotingNotSupported";
     case Error::Code::kNegotiationFailure:
       return os << "NegotiationFailure";
+    case Error::Code::kNoStreamSelected:
+      return os << "NoStreamSelected";
     case Error::Code::kNone:
       break;
   }

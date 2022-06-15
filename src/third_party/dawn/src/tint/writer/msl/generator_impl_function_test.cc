@@ -207,7 +207,7 @@ struct tint_symbol {
 };
 
 Interface vert_main_inner() {
-  Interface const tint_symbol_3 = {.col1=0.5f, .col2=0.25f, .pos=float4()};
+  Interface const tint_symbol_3 = {.col1=0.5f, .col2=0.25f, .pos=float4(0.0f)};
   return tint_symbol_3;
 }
 
@@ -615,12 +615,12 @@ TEST_F(MslGeneratorImplTest, Emit_Function_Multiple_EntryPoint_With_Same_ModuleV
     // };
     // @binding(0) @group(0) var<storage> data : Data;
     //
-    // @stage(compute) @workgroup_size(1)
+    // @compute @workgroup_size(1)
     // fn a() {
     //   return;
     // }
     //
-    // @stage(compute) @workgroup_size(1)
+    // @compute @workgroup_size(1)
     // fn b() {
     //   return;
     // }

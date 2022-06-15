@@ -261,10 +261,8 @@ static AOM_INLINE void dealloc_compressor_data(AV1_COMP *cpi) {
 #endif
 
   if (!is_stat_generation_stage(cpi)) {
-    int num_cdef_workers =
-        av1_get_num_mod_workers_for_alloc(&cpi->ppi->p_mt_info, MOD_CDEF);
     av1_free_cdef_buffers(cm, &cpi->ppi->p_mt_info.cdef_worker,
-                          &cpi->mt_info.cdef_sync, num_cdef_workers);
+                          &cpi->mt_info.cdef_sync);
   }
 
   aom_free_frame_buffer(&cpi->trial_frame_rst);

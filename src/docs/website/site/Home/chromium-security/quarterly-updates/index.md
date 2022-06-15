@@ -15,13 +15,55 @@ It's an open list, so
 if you're interested in updates, discussion, or feisty rants related to Chromium
 security.
 
+## Q1 2022
+
+Greetings,
+
+The first quarter of 2022 was a busy one for Chrome Security, as you can read below. This was all in addition to our evergreen role providing security review, consulting, and support to teams across Chrome. If you'd like to be part of this fantastic team **Chrome is hiring for security positions! See [goo.gl/chrome/hiring](https://goo.gl/chrome/hiring)** **for more details.**
+
+We collaborated with the Google Accounts team to launch an integration that will help users opt-in to Chrome’s [Enhanced Safe Browsing](https://security.googleblog.com/2021/06/new-protections-for-enhanced-safe.html) protection via a similar [setting for their Google account](https://myaccount.google.com/account-enhanced-safe-browsing).
+
+We’ve almost completed the implementation for the initial version of a ​​redesigned downloads experience, and will soon run an experiment with it on Chrome 102. To stop the spread of malware through macros embedded in Microsoft Office documents, we fully launched the parsing of downloaded Office documents in Chrome 97 to identify whether they contain macros and include this information when contacting Safe Browsing to determine if they’re unsafe.
+
+Two extension-telemetry signals are active on Chrome early channels, feeding client-side data to Safe Browsing to suss out suspicious extensions.
+
+We also completed the launch of a new TfLite-based client-side phishing detection model on desktop platforms in Chrome 97, which showed 2.5x as many warnings as the previous model.
+
+This quarter we launched a major [new Certificate Transparency policy](https://groups.google.com/a/chromium.org/g/ct-policy/c/507lPdbbwSk/m/JpxJEtrQAwAJ) that removes Google from the critical path of global HTTPS certificate issuance, made possible in part by expanding our [SCT Auditing](https://docs.google.com/document/d/16G-Q7iN3kB46GSW5b-sfH5MO3nKSYyEb77YsM7TMZGE/preview) efforts. This quarter also saw CT enforcement and protections coming to Android, vastly expanding the number of users protected by CT.
+
+In preparation for the upcoming rollout of our own [Chrome Root Store](https://www.chromium.org/Home/chromium-security/root-ca-policy/), we've also been developing several major policies and processes for interacting with certificate authorities, and the engineering to deliver root certificates to Chrome out-of-band. This enables Chrome to directly validate site certificates, rather than relying on each operating system’s verification.
+
+Following last quarter's investments in better infrastructure for handling [lookalike warnings](https://g.co/chrome/lookalike-warnings) appeals, and this quarter's work on safer rollout mechanisms, we are rolling out a new heuristic to detect additional lookalike domains and prepping for an intern on the project starting in Q2. Our initial implementation of [TLS ECH](https://chromestatus.com/feature/6196703843581952) is also now nearly code complete, with only polish work remaining.
+
+We made great progress on our Rust-in-Chromium experiments. Rust would have security, productivity and performance benefits over C++, but [we don’t yet know](https://security.googleblog.com/2021/09/an-update-on-memory-safety-in-chrome.html) if we can ergonomically mix it with C++ in Chromium. This quarter, we landed a [Rust JSON parser](https://source.chromium.org/chromium/chromium/src/+/main:base/json/json_parser.rs), achieving some compile-time safety while wrapping existing C++ APIs. We also landed support for a C++ -> Rust bindings generator called [autocxx](https://google.github.io/autocxx/). In the next quarter we’ll be using that, plus another tool called [crubit](https://github.com/google/crubit), to build [some ambitious demos](https://crbug.com/1296314).
+
+Work continues on sandboxing the network service across [Windows](https://bugs.chromium.org/p/chromium/issues/detail?id=841001), [Android](https://bugs.chromium.org/p/chromium/issues/detail?id=1262395), and [Linux/CrOS](https://bugs.chromium.org/p/chromium/issues/detail?id=1079808). We are making good progress on brokering or servicifying the numerous network stack subsystems that do not work within the confines of a sandbox. On Windows, we also successfully landed [CFG](https://bugs.chromium.org/p/chromium/issues/detail?id=584575) and [investigated sandbox improvements](https://docs.google.com/document/d/1bsC5Llw_GLuYhxYhRxqhcwIXDFEuYwzswbTAZ0qj0vM/edit#heading=h.g9aa775zjc37). On Mac, we experimented with [Apéritif](https://bugs.chromium.org/p/chromium/issues/detail?id=1255223), but hit roll-out issues on older macOS versions
+
+We’re on track for a new attempt at preflight warnings for Private Network Access requests in Chrome 102. IoT developers reported that Web Transport was insufficient as the only workaround to the PNA secure context restriction, so we’re looking at a [permission-based alternative](https://github.com/WICG/private-network-access/issues/23#issuecomment-1126195439) and are seeking feedback on it. The initial attempt was [rolled back](https://docs.google.com/document/d/1fdwetZXUz_Q03ZpGwXizq5AE1yn_lMhamUJMwvsHvTU/edit?pli=1#heading=h.3gout81lc93a) due to various bugs, in particular one affecting partially-cached range requests.
+
+We created [a specification](https://wicg.github.io/anonymous-iframe/#specification) for anonymous iframe and are nearing code completion. Origin Trial is expected for Chrome 106. This resolves a common difficulty: embedding arbitrary 3rd party iframes inside a crossOriginIsolated page.
+
+We have made progress towards a decision on a new [COOP policy](https://github.com/hemeryar/explainers/blob/main/coop_restrict_properties.md) (restrict-properties), to solve the crossOriginIsolation + popups integration.
+
+On continued progress towards safer defaults, we shipped warnings for document.domain usage without opt-in, to prepare for eventual deprecation. And Chrome 103 saw us [block sandboxed iframe from opening external applications](https://chromestatus.com/feature/5680742077038592).
+
+In Web Platform memory safety news, we implemented a C++ dangling pointer detector. We are now working on fixing all the occurrences, and refactoring Chrome for using safer memory ownership patterns.
+
+In Q1, the Security Architecture team continued several projects to improve Site Isolation and related defenses, including implementation work for [<webview> tag Site Isolation](https://crbug.com/1267977), [Site Isolation for sandboxed iframes](https://crbug.com/510122), and the first steps towards [ORB](https://github.com/annevk/orb) as a replacement for [CORB](https://www.chromium.org/Home/chromium-security/corb-for-developers/). We worked on other security fixes for a series of use-after-free bugs involving RenderFrameHost, as well as safer ways to handle renderer process termination. We also made progress on [SiteInstanceGroups](https://crbug.com/1195535), stricter enforcements for extensions and [citadel](https://crbug.com/1286501) checks, and [Origin-Agent-Cluster by default](https://groups.google.com/a/chromium.org/g/blink-dev/c/_oRc19PjpFo/m/10vHgsmwAQAJ).
+
+Until next time,
+
+Andrew
+
+On behalf of Chrome Security
+
 ## Q4 2021
 
 Greetings,
 
 As we enter the last month of the first quarter of 2022, here's a look back to what Chrome Security was doing in the last quarter of 2021.
 
-**Chrome is hiring for security positions! See [g.co/chrome/hiring](https://g.co/chrome/hiring)** **for more details.**
+**Chrome is hiring for security positions! See [goo.gl/chrome/hiring](https://goo.gl/chrome/hiring)** **for more details.**
 
 For extension security, we are working on a telemetry framework that monitors suspicious extension activity and transmits associated signals to Safe Browsing, for users opt-ed into sharing these data. The signals are analyzed server-side (both manual and automated analysis) to detect and mitigate extension abuse patterns.
 
@@ -51,7 +93,7 @@ Greetings,
 
 Here's what the Chrome Security team has been up to in Q3 of this year,
 
-**Chrome is hiring, including for security positions! See [g.co/chrome/hiring](https://g.co/chrome/hiring)**. In particular we're looking for a **[lead security product manager](https://careers.google.com/jobs/results/118648881425588934-lead-product-manager-chrome-security/)** to work with the teams doing all the great things in this update, and more across the Chrome Trust and Safety organisation.
+**Chrome is hiring, including for security positions! See [goo.gl/chrome/hiring](https://goo.gl/chrome/hiring)**. In particular we're looking for a **[lead security product manager](https://careers.google.com/jobs/results/118648881425588934-lead-product-manager-chrome-security/)** to work with the teams doing all the great things in this update, and more across the Chrome Trust and Safety organisation.
 
 Through a series of in-product integrations and promotions on the new tab page on Desktop and Android, we saw a growth of almost 70% in the number of users who chose to opt-in to [Enhanced Safe Browsing](https://security.googleblog.com/2021/06/new-protections-for-enhanced-safe.html) in Chrome.
 
@@ -95,7 +137,7 @@ is a look back at what the Chrome Security teams have been up to in the first
 half of 2021.
 
 Chrome is hiring, including for security positions! See
-[g.co/chrome/hiring](https://g.co/chrome/hiring). In particular we're looking
+[goo.gl/chrome/hiring](https://goo.gl/chrome/hiring). In particular we're looking
 for a [lead security product
 manager](https://careers.google.com/jobs/results/118648881425588934-lead-product-manager-chrome-security/)
 to work with the teams doing all the great things in this update, and more
@@ -371,7 +413,7 @@ Greetings,
 
 Even as 2021 is well underway, here's a look back at what Chrome Security was up to in the last quarter of 2020.
 
-Interested in helping to protect users of Chrome, Chromium, and the entire web? We're hiring! Take a look at [g.co/chrome/hiring](https://g.co/chrome/hiring), with several of the roles in Washington, DC: [g.co/chrome/securityprivacydc](https://g.co/chrome/securityprivacydc).
+Interested in helping to protect users of Chrome, Chromium, and the entire web? We're hiring! Take a look at [goo.gl/chrome/hiring](https://goo.gl/chrome/hiring), with several of the roles in Washington, DC: [g.co/chrome/securityprivacydc](https://g.co/chrome/securityprivacydc).
 
 The Usable Security team fully launched a new warning for [lookalike domain names](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/security/lookalikes/lookalike-domains.md): low-quality or suspicious domains that make it hard for people to understand which website they’re actually visiting. We continued to place some final nails in the coffin of [mixed content](https://blog.chromium.org/2019/10/no-more-mixed-messages-about-https.html) (insecure subresources on secure pages). Secure pages are no longer allowed to initiate any [insecure downloads](https://blog.chromium.org/2020/02/protecting-users-from-insecure.html) as of Chrome 88. We uncovered some issues with our new [warning on mixed form submissions](https://blog.chromium.org/2020/08/protecting-google-chrome-users-from.html) due to redirects, and this warning will be re-launching in Chrome 88 as well.
 

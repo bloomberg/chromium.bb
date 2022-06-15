@@ -26,7 +26,7 @@
 
 // Version number for shader translation API.
 // It is incremented every time the API changes.
-#define ANGLE_SH_VERSION 273
+#define ANGLE_SH_VERSION 280
 
 enum ShShaderSpec
 {
@@ -304,10 +304,7 @@ const ShCompileOptions SH_REMOVE_DYNAMIC_INDEXING_OF_SWIZZLED_VECTOR = UINT64_C(
 // This flag works around a slow fxc compile performance issue with dynamic uniform indexing.
 const ShCompileOptions SH_ALLOW_TRANSLATE_UNIFORM_BLOCK_TO_STRUCTUREDBUFFER = UINT64_C(1) << 46;
 
-// This flag indicates whether Bresenham line raster emulation code should be generated.  This
-// emulation is necessary if the backend uses a differnet algorithm to draw lines.  Currently only
-// implemented for the Vulkan backend.
-const ShCompileOptions SH_ADD_BRESENHAM_LINE_RASTER_EMULATION = UINT64_C(1) << 47;
+// Note: bit 47 is unused
 
 // This flag allows disabling ARB_texture_rectangle on a per-compile basis. This is necessary
 // for WebGL contexts becuase ARB_texture_rectangle may be necessary for the WebGL implementation
@@ -321,11 +318,11 @@ const ShCompileOptions SH_REWRITE_ROW_MAJOR_MATRICES = UINT64_C(1) << 49;
 // Drop any explicit precision qualifiers from shader.
 const ShCompileOptions SH_IGNORE_PRECISION_QUALIFIERS = UINT64_C(1) << 50;
 
-// Allow compiler to do early fragment tests as an optimization.
-const ShCompileOptions SH_EARLY_FRAGMENT_TESTS_OPTIMIZATION = UINT64_C(1) << 51;
+// Ask compiler to generate code for depth correction to conform to the Vulkan clip space.  If
+// VK_EXT_depth_clip_control is supported, this code is not generated, saving a uniform look up.
+const ShCompileOptions SH_ADD_VULKAN_DEPTH_CORRECTION = UINT64_C(1) << 51;
 
-// Allow compiler to insert Android pre-rotation code.
-const ShCompileOptions SH_ADD_PRE_ROTATION = UINT64_C(1) << 52;
+// Note: bit 52 is unused
 
 const ShCompileOptions SH_FORCE_SHADER_PRECISION_HIGHP_TO_MEDIUMP = UINT64_C(1) << 53;
 
@@ -724,8 +721,6 @@ sh::WorkGroupSize GetComputeShaderLocalGroupSize(const ShHandle handle);
 // Returns the number of views specified through the num_views layout qualifier. If num_views is
 // not set, the function returns -1.
 int GetVertexShaderNumViews(const ShHandle handle);
-// Returns true if compiler has injected instructions for early fragment tests as an optimization
-bool HasEarlyFragmentTestsOptimization(const ShHandle handle);
 // Returns true if the shader has specified the |sample| qualifier, implying that per-sample shading
 // should be enabled
 bool EnablesPerSampleShading(const ShHandle handle);
@@ -835,40 +830,19 @@ namespace vk
 // Specialization constant ids
 enum class SpecializationConstantId : uint32_t
 {
-    LineRasterEmulation = 0,
-    SurfaceRotation     = 1,
-    DrawableWidth       = 2,
-    DrawableHeight      = 3,
-    Dither              = 4,
+    SurfaceRotation = 0,
+    Dither          = 1,
 
-    InvalidEnum = 5,
+    InvalidEnum = 2,
     EnumCount   = InvalidEnum,
-};
-
-enum class SurfaceRotation : uint32_t
-{
-    Identity,
-    Rotated90Degrees,
-    Rotated180Degrees,
-    Rotated270Degrees,
-    FlippedIdentity,
-    FlippedRotated90Degrees,
-    FlippedRotated180Degrees,
-    FlippedRotated270Degrees,
-
-    InvalidEnum,
-    EnumCount = InvalidEnum,
 };
 
 enum class SpecConstUsage : uint32_t
 {
-    LineRasterEmulation = 0,
-    YFlip               = 1,
-    Rotation            = 2,
-    DrawableSize        = 3,
-    Dither              = 4,
+    Rotation = 0,
+    Dither   = 1,
 
-    InvalidEnum = 5,
+    InvalidEnum = 2,
     EnumCount   = InvalidEnum,
 };
 
@@ -893,11 +867,25 @@ extern const char kDefaultUniformsNameCS[];
 extern const char kDriverUniformsBlockName[];
 extern const char kDriverUniformsVarName[];
 
+// Packing information for driver uniform's misc field:
+// - 1 bit for whether surface rotation results in swapped axes
+// - 5 bits for advanced blend equation
+// - 6 bits for sample count
+// - 8 bits for enabled clip planes
+// - 1 bit for whether depth should be transformed to Vulkan clip space
+// - 11 bits unused
+constexpr uint32_t kDriverUniformsMiscSwapXYMask                  = 0x1;
+constexpr uint32_t kDriverUniformsMiscAdvancedBlendEquationOffset = 1;
+constexpr uint32_t kDriverUniformsMiscAdvancedBlendEquationMask   = 0x1F;
+constexpr uint32_t kDriverUniformsMiscSampleCountOffset           = 6;
+constexpr uint32_t kDriverUniformsMiscSampleCountMask             = 0x3F;
+constexpr uint32_t kDriverUniformsMiscEnabledClipPlanesOffset     = 12;
+constexpr uint32_t kDriverUniformsMiscEnabledClipPlanesMask       = 0xFF;
+constexpr uint32_t kDriverUniformsMiscTransformDepthOffset        = 20;
+constexpr uint32_t kDriverUniformsMiscTransformDepthMask          = 0x1;
+
 // Interface block array name used for atomic counter emulation
 extern const char kAtomicCountersBlockName[];
-
-// Line raster emulation varying
-extern const char kLineRasterEmulationPosition[];
 
 // Transform feedback emulation support
 extern const char kXfbEmulationGetOffsetsFunctionName[];
@@ -908,6 +896,9 @@ extern const char kXfbEmulationBufferFieldName[];
 
 // Transform feedback extension support
 extern const char kXfbExtensionPositionOutName[];
+
+// Pre-rotation support
+extern const char kTransformPositionFunctionName[];
 
 // EXT_shader_framebuffer_fetch and EXT_shader_framebuffer_fetch_non_coherent
 extern const char kInputAttachmentName[];

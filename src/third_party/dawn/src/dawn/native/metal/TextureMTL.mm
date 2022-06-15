@@ -29,9 +29,7 @@ namespace dawn::native::metal {
 
 namespace {
 
-MTLTextureUsage MetalTextureUsage(const Format& format,
-                                  wgpu::TextureUsage usage,
-                                  uint32_t sampleCount) {
+MTLTextureUsage MetalTextureUsage(const Format& format, wgpu::TextureUsage usage) {
     MTLTextureUsage result = MTLTextureUsageUnknown;  // This is 0
 
     if (usage & (wgpu::TextureUsage::StorageBinding)) {
@@ -52,8 +50,7 @@ MTLTextureUsage MetalTextureUsage(const Format& format,
         }
     }
 
-    // MTLTextureUsageRenderTarget is needed to clear multisample textures.
-    if (usage & (wgpu::TextureUsage::RenderAttachment) || sampleCount > 1) {
+    if (usage & wgpu::TextureUsage::RenderAttachment) {
         result |= MTLTextureUsageRenderTarget;
     }
 
@@ -120,8 +117,7 @@ bool RequiresCreatingNewTextureView(const TextureBase* texture,
 
     // If the texture is created with MTLTextureUsagePixelFormatView, we need
     // a new view to perform format reinterpretation.
-    if ((MetalTextureUsage(texture->GetFormat(), texture->GetInternalUsage(),
-                           texture->GetSampleCount()) &
+    if ((MetalTextureUsage(texture->GetFormat(), texture->GetInternalUsage()) &
          MTLTextureUsagePixelFormatView) != 0) {
         return true;
     }
@@ -156,7 +152,7 @@ bool AllowFormatReinterpretationWithoutFlag(MTLPixelFormat origin,
         case MTLPixelFormatBGRA8Unorm_sRGB:
             return reinterpretation == MTLPixelFormatRGBA8Unorm_sRGB ||
                    reinterpretation == MTLPixelFormatBGRA8Unorm;
-#if defined(DAWN_PLATFORM_MACOS)
+#if DAWN_PLATFORM_IS(MACOS)
         case MTLPixelFormatBC1_RGBA:
             return reinterpretation == MTLPixelFormatBC1_RGBA_sRGB;
         case MTLPixelFormatBC1_RGBA_sRGB:
@@ -216,9 +212,9 @@ uint32_t GetIOSurfacePlane(wgpu::TextureAspect aspect) {
     }
 }
 
-#if defined(DAWN_PLATFORM_MACOS)
+#if DAWN_PLATFORM_IS(MACOS)
 MTLStorageMode kIOSurfaceStorageMode = MTLStorageModeManaged;
-#elif defined(DAWN_PLATFORM_IOS)
+#elif DAWN_PLATFORM_IS(IOS)
 MTLStorageMode kIOSurfaceStorageMode = MTLStorageModePrivate;
 #else
 #error "Unsupported Apple platform."
@@ -321,7 +317,7 @@ MTLPixelFormat MetalPixelFormat(wgpu::TextureFormat format) {
         case wgpu::TextureFormat::Stencil8:
             return MTLPixelFormatStencil8;
 
-#if defined(DAWN_PLATFORM_MACOS)
+#if DAWN_PLATFORM_IS(MACOS)
         case wgpu::TextureFormat::Depth24UnormStencil8:
             return MTLPixelFormatDepth24Unorm_Stencil8;
 
@@ -652,7 +648,7 @@ NSRef<MTLTextureDescriptor> Texture::CreateMetalTextureDescriptor() const {
     // Metal only allows format reinterpretation to happen on swizzle pattern or conversion
     // between linear space and sRGB. For example, creating bgra8Unorm texture view on
     // rgba8Unorm texture or creating rgba8Unorm_srgb texture view on rgab8Unorm texture.
-    mtlDesc.usage = MetalTextureUsage(GetFormat(), GetInternalUsage(), GetSampleCount());
+    mtlDesc.usage = MetalTextureUsage(GetFormat(), GetInternalUsage());
     mtlDesc.pixelFormat = MetalPixelFormat(GetFormat().format);
     mtlDesc.mipmapLevelCount = GetNumMipLevels();
     mtlDesc.storageMode = MTLStorageModePrivate;
@@ -869,8 +865,9 @@ MaybeError Texture::ClearTexture(CommandRecordingContext* commandContext,
                         }
                     }
 
-                    DAWN_TRY(EncodeEmptyMetalRenderPass(device, commandContext, descriptor,
-                                                        GetMipLevelVirtualSize(level)));
+                    DAWN_TRY(
+                        EncodeEmptyMetalRenderPass(device, commandContext, descriptor,
+                                                   GetMipLevelSingleSubresourceVirtualSize(level)));
                 }
             }
         } else {
@@ -883,7 +880,7 @@ MaybeError Texture::ClearTexture(CommandRecordingContext* commandContext,
                 NSRef<MTLRenderPassDescriptor> descriptor;
                 uint32_t attachment = 0;
 
-                uint32_t numZSlices = GetMipLevelVirtualSize(level).depthOrArrayLayers;
+                uint32_t depth = GetMipLevelSingleSubresourceVirtualSize(level).depthOrArrayLayers;
 
                 for (uint32_t arrayLayer = range.baseArrayLayer;
                      arrayLayer < range.baseArrayLayer + range.layerCount; arrayLayer++) {
@@ -894,7 +891,7 @@ MaybeError Texture::ClearTexture(CommandRecordingContext* commandContext,
                         continue;
                     }
 
-                    for (uint32_t z = 0; z < numZSlices; ++z) {
+                    for (uint32_t z = 0; z < depth; ++z) {
                         if (descriptor == nullptr) {
                             // Note that this creates a descriptor that's autoreleased so we
                             // don't use AcquireNSRef
@@ -915,38 +912,36 @@ MaybeError Texture::ClearTexture(CommandRecordingContext* commandContext,
 
                         if (attachment == kMaxColorAttachments) {
                             attachment = 0;
-                            DAWN_TRY(EncodeEmptyMetalRenderPass(device, commandContext,
-                                                                descriptor.Get(),
-                                                                GetMipLevelVirtualSize(level)));
+                            DAWN_TRY(EncodeEmptyMetalRenderPass(
+                                device, commandContext, descriptor.Get(),
+                                GetMipLevelSingleSubresourceVirtualSize(level)));
                             descriptor = nullptr;
                         }
                     }
                 }
 
                 if (descriptor != nullptr) {
-                    DAWN_TRY(EncodeEmptyMetalRenderPass(device, commandContext, descriptor.Get(),
-                                                        GetMipLevelVirtualSize(level)));
+                    DAWN_TRY(
+                        EncodeEmptyMetalRenderPass(device, commandContext, descriptor.Get(),
+                                                   GetMipLevelSingleSubresourceVirtualSize(level)));
                 }
             }
         }
     } else {
-        Extent3D largestMipSize = GetMipLevelVirtualSize(range.baseMipLevel);
+        ASSERT(!IsMultisampledTexture());
 
         // Encode a buffer to texture copy to clear each subresource.
         for (Aspect aspect : IterateEnumMask(range.aspects)) {
             // Compute the buffer size big enough to fill the largest mip.
             const TexelBlockInfo& blockInfo = GetFormat().GetAspectInfo(aspect).block;
 
-            // Metal validation layers: sourceBytesPerRow must be at least 64.
+            // Computations for the bytes per row / image height are done using the physical size
+            // so that enough data is reserved for compressed textures.
+            Extent3D largestMipSize = GetMipLevelSingleSubresourcePhysicalSize(range.baseMipLevel);
             uint32_t largestMipBytesPerRow =
-                std::max((largestMipSize.width / blockInfo.width) * blockInfo.byteSize, 64u);
-
-            // Metal validation layers: sourceBytesPerImage must be at least 512.
-            uint64_t largestMipBytesPerImage =
-                std::max(static_cast<uint64_t>(largestMipBytesPerRow) *
-                             (largestMipSize.height / blockInfo.height),
-                         512llu);
-
+                (largestMipSize.width / blockInfo.width) * blockInfo.byteSize;
+            uint64_t largestMipBytesPerImage = static_cast<uint64_t>(largestMipBytesPerRow) *
+                                               (largestMipSize.height / blockInfo.height);
             uint64_t bufferSize = largestMipBytesPerImage * largestMipSize.depthOrArrayLayers;
 
             if (bufferSize > std::numeric_limits<NSUInteger>::max()) {
@@ -964,7 +959,7 @@ MaybeError Texture::ClearTexture(CommandRecordingContext* commandContext,
 
             for (uint32_t level = range.baseMipLevel; level < range.baseMipLevel + range.levelCount;
                  ++level) {
-                Extent3D virtualSize = GetMipLevelVirtualSize(level);
+                Extent3D virtualSize = GetMipLevelSingleSubresourceVirtualSize(level);
 
                 for (uint32_t arrayLayer = range.baseArrayLayer;
                      arrayLayer < range.baseArrayLayer + range.layerCount; ++arrayLayer) {
@@ -1038,8 +1033,7 @@ MaybeError TextureView::Initialize(const TextureViewDescriptor* descriptor) {
         MTLTextureDescriptor* mtlDesc = mtlDescRef.Get();
 
         mtlDesc.sampleCount = texture->GetSampleCount();
-        mtlDesc.usage = MetalTextureUsage(texture->GetFormat(), texture->GetInternalUsage(),
-                                          texture->GetSampleCount());
+        mtlDesc.usage = MetalTextureUsage(texture->GetFormat(), texture->GetInternalUsage());
         mtlDesc.pixelFormat = MetalPixelFormat(descriptor->format);
         mtlDesc.mipmapLevelCount = texture->GetNumMipLevels();
         mtlDesc.storageMode = kIOSurfaceStorageMode;
@@ -1072,7 +1066,7 @@ MaybeError TextureView::Initialize(const TextureViewDescriptor* descriptor) {
                 if (textureFormat == MTLPixelFormatDepth32Float_Stencil8) {
                     viewFormat = MTLPixelFormatX32_Stencil8;
                 }
-#if defined(DAWN_PLATFORM_MACOS)
+#if DAWN_PLATFORM_IS(MACOS)
                 else if (textureFormat == MTLPixelFormatDepth24Unorm_Stencil8) {
                     viewFormat = MTLPixelFormatX24_Stencil8;
                 }

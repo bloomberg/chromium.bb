@@ -248,7 +248,6 @@ class DownloadTests(unittest.TestCase):
     sha1_hash = self.lorem_ipsum_sha1
     input_filename = '%s/%s' % (self.base_url, sha1_hash)
     output_filename = os.path.join(self.base_path, 'uploaded_lorem_ipsum.txt')
-    self.gsutil.add_expected(0, '', '')  # ls
     self.gsutil.add_expected(0, '', '', lambda: shutil.copyfile(
         self.lorem_ipsum, output_filename))  # cp
     self.queue.put((sha1_hash, output_filename))
@@ -258,8 +257,6 @@ class DownloadTests(unittest.TestCase):
         0, self.queue, False, self.base_url, self.gsutil,
         stdout_queue, self.ret_codes, True, False)
     expected_calls = [
-        ('check_call',
-            ('ls', input_filename)),
         ('check_call',
             ('cp', input_filename, output_filename))]
     sha1_hash = '7871c8e24da15bad8b0be2c36edc9dc77e37727f'
@@ -304,8 +301,6 @@ class DownloadTests(unittest.TestCase):
         0, self.queue, True, self.base_url, self.gsutil,
         stdout_queue, self.ret_codes, True, True, delete=False)
     expected_calls = [
-        ('check_call',
-            ('ls', input_filename)),
         ('check_call',
             ('cp', input_filename, output_filename))]
     if sys.platform != 'win32':
@@ -362,8 +357,7 @@ class DownloadTests(unittest.TestCase):
                                                            True,
                                                            True,
                                                            delete=False)
-    expected_calls += [('check_call', ('ls', input_filename)),
-                       ('check_call', ('cp', input_filename, output_filename))]
+    expected_calls += [('check_call', ('cp', input_filename, output_filename))]
     if sys.platform != 'win32':
       expected_calls.append(
           ('check_call', ('stat', 'gs://sometesturl/%s' % sha1_hash)))
@@ -389,17 +383,18 @@ class DownloadTests(unittest.TestCase):
     self.queue.put((sha1_hash, output_filename))
     self.queue.put((None, None))
     stdout_queue = queue.Queue()
-    self.gsutil.add_expected(1, '', '')  # Return error when 'ls' is called.
+    self.gsutil.add_expected(1, '', '')  # Return error when 'cp' is called.
     download_from_google_storage._downloader_worker_thread(
         0, self.queue, False, self.base_url, self.gsutil,
         stdout_queue, self.ret_codes, True, False)
     expected_output = [
+        '0> Downloading %s@%s...' % (output_filename, sha1_hash),
         '0> Failed to fetch file %s for %s, skipping. [Err: ]' % (
             input_filename, output_filename),
     ]
     expected_calls = [
         ('check_call',
-            ('ls', input_filename))
+            ('cp', input_filename, output_filename))
     ]
     expected_ret_codes = [
         (1, 'Failed to fetch file %s for %s. [Err: ]' % (
@@ -413,8 +408,7 @@ class DownloadTests(unittest.TestCase):
     sha1_hash = '7871c8e24da15bad8b0be2c36edc9dc77e37727f'
     input_filename = '%s/%s' % (self.base_url, sha1_hash)
     output_filename = os.path.join(self.base_path, 'uploaded_lorem_ipsum.txt')
-    self.gsutil.add_expected(0, '', '')  # ls
-    self.gsutil.add_expected(101, '', 'Test error message.')
+    self.gsutil.add_expected(101, '', 'Test error message.') # cp
     code = download_from_google_storage.download_from_google_storage(
         input_filename=sha1_hash,
         base_url=self.base_url,
@@ -430,8 +424,6 @@ class DownloadTests(unittest.TestCase):
         auto_platform=False,
         extract=False)
     expected_calls = [
-        ('check_call',
-            ('ls', input_filename)),
         ('check_call',
             ('cp', input_filename, output_filename))
     ]
@@ -450,8 +442,7 @@ class DownloadTests(unittest.TestCase):
     def _write_bad_file():
       with open(output_filename, 'w') as f:
         f.write('foobar')
-    self.gsutil.add_expected(0, '', '')
-    self.gsutil.add_expected(0, '', '', _write_bad_file)
+    self.gsutil.add_expected(0, '', '', _write_bad_file) # cp
     download_from_google_storage._downloader_worker_thread(
         1, q, True, self.base_url, self.gsutil, out_q, ret_codes, True, False)
     self.assertTrue(q.empty())
@@ -470,7 +461,6 @@ class DownloadTests(unittest.TestCase):
     input_filename = '%s/%s' % (self.base_url, sha1_hash)
     output_filename = os.path.join(self.base_path, 'uploaded_lorem_ipsum.txt')
     self.gsutil.add_expected(0, '', '')  # version
-    self.gsutil.add_expected(0, '', '')  # ls
     self.gsutil.add_expected(0, '', '', lambda: shutil.copyfile(
         self.lorem_ipsum, output_filename))  # cp
     code = download_from_google_storage.download_from_google_storage(
@@ -489,8 +479,6 @@ class DownloadTests(unittest.TestCase):
         extract=False)
     expected_calls = [
         ('check_call', ('version',)),
-        ('check_call',
-            ('ls', input_filename)),
         ('check_call',
             ('cp', input_filename, output_filename))]
     if sys.platform != 'win32':

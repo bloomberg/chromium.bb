@@ -217,18 +217,6 @@ macro(libgav1_add_tests_targets)
                       ${libgav1_gtest_include_paths}
                       ${libgav1_include_paths})
 
-  if(ANDROID OR IOS)
-    if(DEFINED LIBGAV1_THREADPOOL_USE_STD_MUTEX
-       AND NOT LIBGAV1_THREADPOOL_USE_STD_MUTEX)
-      set(use_absl_threading TRUE)
-    endif()
-  elseif(NOT
-         (DEFINED
-          LIBGAV1_THREADPOOL_USE_STD_MUTEX
-          AND LIBGAV1_THREADPOOL_USE_STD_MUTEX))
-    set(use_absl_threading TRUE)
-  endif()
-
   if(use_absl_threading)
     list(APPEND libgav1_common_test_absl_deps absl::synchronization)
   endif()

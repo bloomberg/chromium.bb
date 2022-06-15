@@ -536,6 +536,9 @@ class RTC_EXPORT RTCInboundRTPStreamStats final
   RTCStatsMember<uint32_t> frames_dropped;
   RTCStatsMember<double> total_decode_time;
   RTCStatsMember<double> total_processing_delay;
+  // TODO(bugs.webrtc.org/13986): standardize
+  RTCNonStandardStatsMember<double> total_assembly_time;
+  RTCNonStandardStatsMember<uint32_t> frames_assembled_from_multiple_packets;
   RTCStatsMember<double> total_inter_frame_delay;
   RTCStatsMember<double> total_squared_inter_frame_delay;
   // https://henbos.github.io/webrtc-provisional-stats/#dom-rtcinboundrtpstreamstats-contenttype
@@ -550,6 +553,9 @@ class RTC_EXPORT RTCInboundRTPStreamStats final
   RTCStatsMember<uint32_t> pli_count;
   RTCStatsMember<uint32_t> nack_count;
   RTCStatsMember<uint64_t> qp_sum;
+
+  // The former googMinPlayoutDelayMs (in seconds).
+  RTCNonStandardStatsMember<double> min_playout_delay;
 };
 
 // https://w3c.github.io/webrtc-stats/#outboundrtpstats-dict*

@@ -329,7 +329,6 @@ void PostFilter::HorizontalDeblockFilter(int row4x4_start, int row4x4_end,
             src_row, src_stride, outer_thresh_[level], inner_thresh_[level],
             HevThresh(level));
       }
-      // TODO(chengchen): use shifts instead of multiplication.
       src_row += row_step * src_stride;
       row_step = DivideBy4(row_step);
     }

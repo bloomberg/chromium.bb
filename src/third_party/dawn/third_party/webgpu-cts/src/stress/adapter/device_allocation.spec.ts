@@ -10,6 +10,8 @@ import { getGPU } from '../../common/util/navigator_gpu.js';
 import { assert, iterRange } from '../../common/util/util.js';
 import { kLimitInfo } from '../../webgpu/capability_info.js';
 
+export const g = makeTestGroup(Fixture);
+
 /** Adapter preference identifier to option. */
 const kAdapterTypeOptions: {
   readonly [k in GPUPowerPreference | 'fallback']: GPURequestAdapterOptions;
@@ -21,32 +23,32 @@ const kAdapterTypeOptions: {
 /** List of all adapter hint types. */
 const kAdapterTypes = keysOf(kAdapterTypeOptions);
 
-class DeviceAllocationTests extends Fixture {
-  /**
-   * Creates a device, a valid compute pipeline, valid resources for the pipeline, and
-   * ties them together into a set of compute commands ready to be submitted to the GPU
-   * queue. Does not submit the commands in order to make sure that all resources are
-   * kept alive until the device is destroyed.
-   */
-  async createDeviceAndComputeCommands(adapter: GPUAdapter) {
-    // Constants are computed such that per run, this function should allocate roughly 2G
-    // worth of data. This should be sufficient as we run these creation functions many
-    // times. If the data backing the created objects is not recycled we should OOM.
-    const kNumPipelines = 64;
-    const kNumBindgroups = 128;
-    const kNumBufferElements =
-      kLimitInfo.maxComputeWorkgroupSizeX.default * kLimitInfo.maxComputeWorkgroupSizeY.default;
-    const kBufferSize = kNumBufferElements * 4;
-    const kBufferData = new Uint32Array([...iterRange(kNumBufferElements, x => x)]);
+/**
+ * Creates a device, a valid compute pipeline, valid resources for the pipeline, and
+ * ties them together into a set of compute commands ready to be submitted to the GPU
+ * queue. Does not submit the commands in order to make sure that all resources are
+ * kept alive until the device is destroyed.
+ */
+async function createDeviceAndComputeCommands(adapter: GPUAdapter) {
+  // Constants are computed such that per run, this function should allocate roughly 2G
+  // worth of data. This should be sufficient as we run these creation functions many
+  // times. If the data backing the created objects is not recycled we should OOM.
+  const kNumPipelines = 64;
+  const kNumBindgroups = 128;
+  const kNumBufferElements =
+    kLimitInfo.maxComputeWorkgroupSizeX.default * kLimitInfo.maxComputeWorkgroupSizeY.default;
+  const kBufferSize = kNumBufferElements * 4;
+  const kBufferData = new Uint32Array([...iterRange(kNumBufferElements, x => x)]);
 
-    const device: GPUDevice = await adapter.requestDevice();
-    const commands = [];
+  const device: GPUDevice = await adapter.requestDevice();
+  const commands = [];
 
-    for (let pipelineIndex = 0; pipelineIndex < kNumPipelines; ++pipelineIndex) {
-      const pipeline = device.createComputePipeline({
-        compute: {
-          module: device.createShaderModule({
-            code: `
+  for (let pipelineIndex = 0; pipelineIndex < kNumPipelines; ++pipelineIndex) {
+    const pipeline = device.createComputePipeline({
+      layout: 'auto',
+      compute: {
+        module: device.createShaderModule({
+          code: `
               struct Buffer { data: array<u32>; };
 
               @group(0) @binding(0) var<storage, read_write> buffer: Buffer;
@@ -57,57 +59,57 @@ class DeviceAllocationTests extends Fixture {
                     ${pipelineIndex}u;
               }
             `,
-          }),
-          entryPoint: 'main',
-        },
+        }),
+        entryPoint: 'main',
+      },
+    });
+    for (let bindgroupIndex = 0; bindgroupIndex < kNumBindgroups; ++bindgroupIndex) {
+      const buffer = device.createBuffer({
+        size: kBufferSize,
+        usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC,
       });
-      for (let bindgroupIndex = 0; bindgroupIndex < kNumBindgroups; ++bindgroupIndex) {
-        const buffer = device.createBuffer({
-          size: kBufferSize,
-          usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC,
-        });
-        device.queue.writeBuffer(buffer, 0, kBufferData, 0, kBufferData.length);
-        const bindgroup = device.createBindGroup({
-          layout: pipeline.getBindGroupLayout(0),
-          entries: [{ binding: 0, resource: { buffer } }],
-        });
+      device.queue.writeBuffer(buffer, 0, kBufferData, 0, kBufferData.length);
+      const bindgroup = device.createBindGroup({
+        layout: pipeline.getBindGroupLayout(0),
+        entries: [{ binding: 0, resource: { buffer } }],
+      });
 
-        const encoder = device.createCommandEncoder();
-        const pass = encoder.beginComputePass();
-        pass.setPipeline(pipeline);
-        pass.setBindGroup(0, bindgroup);
-        pass.dispatch(
-          kLimitInfo.maxComputeWorkgroupSizeX.default,
-          kLimitInfo.maxComputeWorkgroupSizeY.default
-        );
-        pass.end();
-        commands.push(encoder.finish());
-      }
+      const encoder = device.createCommandEncoder();
+      const pass = encoder.beginComputePass();
+      pass.setPipeline(pipeline);
+      pass.setBindGroup(0, bindgroup);
+      pass.dispatch(
+        kLimitInfo.maxComputeWorkgroupSizeX.default,
+        kLimitInfo.maxComputeWorkgroupSizeY.default
+      );
+      pass.end();
+      commands.push(encoder.finish());
     }
-    return { device, objects: commands };
   }
+  return { device, objects: commands };
+}
 
-  /**
-   * Creates a device, a valid render pipeline, valid resources for the pipeline, and
-   * ties them together into a set of render commands ready to be submitted to the GPU
-   * queue. Does not submit the commands in order to make sure that all resources are
-   * kept alive until the device is destroyed.
-   */
-  async createDeviceAndRenderCommands(adapter: GPUAdapter) {
-    // Constants are computed such that per run, this function should allocate roughly 2G
-    // worth of data. This should be sufficient as we run these creation functions many
-    // times. If the data backing the created objects is not recycled we should OOM.
-    const kNumPipelines = 128;
-    const kNumBindgroups = 128;
-    const kSize = 128;
-    const kBufferData = new Uint32Array([...iterRange(kSize * kSize, x => x)]);
+/**
+ * Creates a device, a valid render pipeline, valid resources for the pipeline, and
+ * ties them together into a set of render commands ready to be submitted to the GPU
+ * queue. Does not submit the commands in order to make sure that all resources are
+ * kept alive until the device is destroyed.
+ */
+async function createDeviceAndRenderCommands(adapter: GPUAdapter) {
+  // Constants are computed such that per run, this function should allocate roughly 2G
+  // worth of data. This should be sufficient as we run these creation functions many
+  // times. If the data backing the created objects is not recycled we should OOM.
+  const kNumPipelines = 128;
+  const kNumBindgroups = 128;
+  const kSize = 128;
+  const kBufferData = new Uint32Array([...iterRange(kSize * kSize, x => x)]);
 
-    const device: GPUDevice = await adapter.requestDevice();
-    const commands = [];
+  const device: GPUDevice = await adapter.requestDevice();
+  const commands = [];
 
-    for (let pipelineIndex = 0; pipelineIndex < kNumPipelines; ++pipelineIndex) {
-      const module = device.createShaderModule({
-        code: `
+  for (let pipelineIndex = 0; pipelineIndex < kNumPipelines; ++pipelineIndex) {
+    const module = device.createShaderModule({
+      code: `
           struct Buffer { data: array<vec4<u32>, ${(kSize * kSize) / 4}>; };
 
           @group(0) @binding(0) var<uniform> buffer: Buffer;
@@ -126,94 +128,91 @@ class DeviceAllocationTests extends Fixture {
             return vec4<f32>(${pipelineIndex}.0 / ${kNumPipelines}.0, 0.0, 0.0, 1.0);
           }
         `,
-      });
-      const pipeline = device.createRenderPipeline({
-        layout: device.createPipelineLayout({
-          bindGroupLayouts: [
-            device.createBindGroupLayout({
-              entries: [
-                {
-                  binding: 0,
-                  visibility: GPUShaderStage.VERTEX,
-                  buffer: { type: 'uniform' },
-                },
-              ],
-            }),
-          ],
-        }),
-        vertex: { module, entryPoint: 'vmain', buffers: [] },
-        primitive: { topology: 'point-list' },
-        fragment: {
-          targets: [{ format: 'rgba8unorm' }],
-          module,
-          entryPoint: 'fmain',
-        },
-      });
-      for (let bindgroupIndex = 0; bindgroupIndex < kNumBindgroups; ++bindgroupIndex) {
-        const buffer = device.createBuffer({
-          size: kSize * kSize * 4,
-          usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-        });
-        device.queue.writeBuffer(buffer, 0, kBufferData, 0, kBufferData.length);
-        const bindgroup = device.createBindGroup({
-          layout: pipeline.getBindGroupLayout(0),
-          entries: [{ binding: 0, resource: { buffer } }],
-        });
-        const texture = device.createTexture({
-          size: [kSize, kSize],
-          usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC,
-          format: 'rgba8unorm',
-        });
-
-        const encoder = device.createCommandEncoder();
-        const pass = encoder.beginRenderPass({
-          colorAttachments: [
-            {
-              view: texture.createView(),
-              loadOp: 'load',
-              storeOp: 'store',
-            },
-          ],
-        });
-        pass.setPipeline(pipeline);
-        pass.setBindGroup(0, bindgroup);
-        pass.draw(kSize * kSize);
-        pass.end();
-        commands.push(encoder.finish());
-      }
-    }
-    return { device, objects: commands };
-  }
-
-  /**
-   * Creates a device and a large number of buffers which are immediately written to. The
-   * buffers are expected to be kept alive until they or the device are destroyed.
-   */
-  async createDeviceAndBuffers(adapter: GPUAdapter) {
-    // Currently we just allocate 2G of memory using 512MB blocks. We may be able to
-    // increase this to hit OOM instead, but on integrated GPUs on Metal, this can cause
-    // kernel panics at the moment, and it can greatly increase the time needed.
-    const kTotalMemorySize = 2 * 1024 * 1024 * 1024;
-    const kMemoryBlockSize = 512 * 1024 * 1024;
-    const kMemoryBlockData = new Uint8Array(kMemoryBlockSize);
-
-    const device: GPUDevice = await adapter.requestDevice();
-    const buffers = [];
-    for (let memory = 0; memory < kTotalMemorySize; memory += kMemoryBlockSize) {
+    });
+    const pipeline = device.createRenderPipeline({
+      layout: device.createPipelineLayout({
+        bindGroupLayouts: [
+          device.createBindGroupLayout({
+            entries: [
+              {
+                binding: 0,
+                visibility: GPUShaderStage.VERTEX,
+                buffer: { type: 'uniform' },
+              },
+            ],
+          }),
+        ],
+      }),
+      vertex: { module, entryPoint: 'vmain', buffers: [] },
+      primitive: { topology: 'point-list' },
+      fragment: {
+        targets: [{ format: 'rgba8unorm' }],
+        module,
+        entryPoint: 'fmain',
+      },
+    });
+    for (let bindgroupIndex = 0; bindgroupIndex < kNumBindgroups; ++bindgroupIndex) {
       const buffer = device.createBuffer({
-        size: kMemoryBlockSize,
-        usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+        size: kSize * kSize * 4,
+        usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+      });
+      device.queue.writeBuffer(buffer, 0, kBufferData, 0, kBufferData.length);
+      const bindgroup = device.createBindGroup({
+        layout: pipeline.getBindGroupLayout(0),
+        entries: [{ binding: 0, resource: { buffer } }],
+      });
+      const texture = device.createTexture({
+        size: [kSize, kSize],
+        usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC,
+        format: 'rgba8unorm',
       });
 
-      // Write out to the buffer to make sure that it has backing memory.
-      device.queue.writeBuffer(buffer, 0, kMemoryBlockData, 0, kMemoryBlockData.length);
-      buffers.push(buffer);
+      const encoder = device.createCommandEncoder();
+      const pass = encoder.beginRenderPass({
+        colorAttachments: [
+          {
+            view: texture.createView(),
+            loadOp: 'load',
+            storeOp: 'store',
+          },
+        ],
+      });
+      pass.setPipeline(pipeline);
+      pass.setBindGroup(0, bindgroup);
+      pass.draw(kSize * kSize);
+      pass.end();
+      commands.push(encoder.finish());
     }
-    return { device, objects: buffers };
   }
+  return { device, objects: commands };
 }
 
-export const g = makeTestGroup(DeviceAllocationTests);
+/**
+ * Creates a device and a large number of buffers which are immediately written to. The
+ * buffers are expected to be kept alive until they or the device are destroyed.
+ */
+async function createDeviceAndBuffers(adapter: GPUAdapter) {
+  // Currently we just allocate 2G of memory using 512MB blocks. We may be able to
+  // increase this to hit OOM instead, but on integrated GPUs on Metal, this can cause
+  // kernel panics at the moment, and it can greatly increase the time needed.
+  const kTotalMemorySize = 2 * 1024 * 1024 * 1024;
+  const kMemoryBlockSize = 512 * 1024 * 1024;
+  const kMemoryBlockData = new Uint8Array(kMemoryBlockSize);
+
+  const device: GPUDevice = await adapter.requestDevice();
+  const buffers = [];
+  for (let memory = 0; memory < kTotalMemorySize; memory += kMemoryBlockSize) {
+    const buffer = device.createBuffer({
+      size: kMemoryBlockSize,
+      usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+    });
+
+    // Write out to the buffer to make sure that it has backing memory.
+    device.queue.writeBuffer(buffer, 0, kMemoryBlockData, 0, kMemoryBlockData.length);
+    buffers.push(buffer);
+  }
+  return { device, objects: buffers };
+}
 
 g.test('coexisting')
   .desc(`Tests allocation of many coexisting GPUDevice objects.`)
@@ -249,9 +248,9 @@ objects are recycled over a very large number of iterations.`
     // Since devices are being destroyed, we should be able to create many devices.
     const kNumDevices = 100;
     const kFunctions = [
-      t.createDeviceAndBuffers,
-      t.createDeviceAndComputeCommands,
-      t.createDeviceAndRenderCommands,
+      createDeviceAndBuffers,
+      createDeviceAndComputeCommands,
+      createDeviceAndRenderCommands,
     ];
 
     const deviceList = [];

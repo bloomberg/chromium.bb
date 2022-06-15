@@ -1064,8 +1064,8 @@ void GrGLCaps::initBlendEqationSupport(const GrGLContextInfo& ctxInfo) {
     GrShaderCaps* shaderCaps = static_cast<GrShaderCaps*>(fShaderCaps.get());
 
     bool layoutQualifierSupport = false;
-    if ((GR_IS_GR_GL(fStandard) && shaderCaps->generation() >= SkSL::GLSLGeneration::k140)  ||
-        (GR_IS_GR_GL_ES(fStandard) && shaderCaps->generation() >= SkSL::GLSLGeneration::k300es)) {
+    if ((GR_IS_GR_GL(fStandard) && shaderCaps->fGLSLGeneration >= SkSL::GLSLGeneration::k140) ||
+        (GR_IS_GR_GL_ES(fStandard) && shaderCaps->fGLSLGeneration >= SkSL::GLSLGeneration::k300es)){
         layoutQualifierSupport = true;
     } else if (GR_IS_GR_WEBGL(fStandard)) {
         return;
@@ -3926,12 +3926,6 @@ void GrGLCaps::applyDriverCorrectnessWorkarounds(const GrGLContextInfo& ctxInfo,
         ctxInfo.renderer() == GrGLRenderer::kAdreno5xx_other) {
         shaderCaps->fFBFetchSupport = false;
     }
-
-    // On the NexusS and GalaxyNexus, the use of 'any' causes the compilation error "Calls to any
-    // function that may require a gradient calculation inside a conditional block may return
-    // undefined results". This appears to be an issue with the 'any' call since even the simple
-    // "result=black; if (any()) result=white;" code fails to compile.
-    shaderCaps->fCanUseAnyFunctionInShader = (ctxInfo.vendor() != GrGLVendor::kImagination);
 
     if (ctxInfo.renderer() == GrGLRenderer::kTegra_PreK1) {
         // The Tegra3 compiler will sometimes never return if we have min(abs(x), 1.0),

@@ -224,25 +224,9 @@ enum xnn_status xnn_define_multiply2(
     return status;
   }
 
-  if (isnan(output_min)) {
-    xnn_log_error(
-      "failed to define %s operator with NaN output lower bound: lower bound must be non-NaN",
-      xnn_node_type_to_string(xnn_node_type_multiply2));
-    return xnn_status_invalid_parameter;
-  }
-
-  if (isnan(output_max)) {
-    xnn_log_error(
-      "failed to define %s operator with NaN output upper bound: upper bound must be non-NaN",
-      xnn_node_type_to_string(xnn_node_type_multiply2));
-    return xnn_status_invalid_parameter;
-  }
-
-  if (output_min >= output_max) {
-    xnn_log_error(
-      "failed to define %s operator with [%.7g, %.7g] output range: lower bound must be below upper bound",
-      xnn_node_type_to_string(xnn_node_type_multiply2), output_min, output_max);
-    return xnn_status_invalid_parameter;
+  status = xnn_subgraph_check_output_min_max(xnn_node_type_multiply2, output_min, output_max);
+  if (status != xnn_status_success) {
+    return status;
   }
 
   if ((status = xnn_subgraph_check_nth_input_node_id(
@@ -335,17 +319,10 @@ enum xnn_status xnn_define_multiply2(
       return xnn_status_invalid_parameter;
   }
 
-  if (input1_value->datatype != input2_value->datatype ||
-      input1_value->datatype != output_value->datatype)
-  {
-    xnn_log_error(
-      "failed to define %s operator with input IDs #%" PRIu32 " and #%" PRIu32 " and output ID #%" PRIu32
-      ": mismatching datatypes across the first input (%s), the second input (%s), and output (%s)",
-      xnn_node_type_to_string(xnn_node_type_multiply2), input1_id, input2_id, output_id,
-      xnn_datatype_to_string(input1_value->datatype),
-      xnn_datatype_to_string(input2_value->datatype),
-      xnn_datatype_to_string(output_value->datatype));
-    return xnn_status_invalid_parameter;
+  status = xnn_subgraph_check_datatype_matches_two_inputs(
+      xnn_node_type_multiply2, input1_id, input1_value, input2_id, input2_value, output_id, output_value);
+  if (status != xnn_status_success) {
+    return status;
   }
 
   struct xnn_node* node = xnn_subgraph_new_node(subgraph);

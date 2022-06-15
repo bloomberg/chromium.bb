@@ -259,7 +259,7 @@ class ActivationsFinder : public ThreadVisitor {
   // it to replace the current pc on the stack.
   void VisitThread(Isolate* isolate, ThreadLocalTop* top) override {
     for (StackFrameIterator it(isolate, top); !it.done(); it.Advance()) {
-      if (it.frame()->type() == StackFrame::OPTIMIZED) {
+      if (it.frame()->is_optimized()) {
         Code code = it.frame()->LookupCode();
         if (CodeKindCanDeoptimize(code.kind()) &&
             code.marked_for_deoptimization()) {
@@ -269,7 +269,7 @@ class ActivationsFinder : public ThreadVisitor {
               code.GetSafepointEntry(isolate, it.frame()->pc());
           int trampoline_pc = safepoint.trampoline_pc();
           DCHECK_IMPLIES(code == topmost_, safe_to_deopt_);
-          STATIC_ASSERT(SafepointEntry::kNoTrampolinePC == -1);
+          static_assert(SafepointEntry::kNoTrampolinePC == -1);
           CHECK_GE(trampoline_pc, 0);
           // Replace the current pc on the stack with the trampoline.
           // TODO(v8:10026): avoid replacing a signed pointer.
@@ -306,8 +306,7 @@ void Deoptimizer::DeoptimizeMarkedCodeForContext(NativeContext native_context) {
   // deoptimized due to weak object dependency.
   for (StackFrameIterator it(isolate, isolate->thread_local_top()); !it.done();
        it.Advance()) {
-    StackFrame::Type type = it.frame()->type();
-    if (type == StackFrame::OPTIMIZED) {
+    if (it.frame()->is_optimized()) {
       Code code = it.frame()->LookupCode();
       JSFunction function =
           static_cast<OptimizedFrame*>(it.frame())->function();
@@ -315,7 +314,7 @@ void Deoptimizer::DeoptimizeMarkedCodeForContext(NativeContext native_context) {
       SafepointEntry safepoint =
           code.GetSafepointEntry(isolate, it.frame()->pc());
 
-      // Turbofan deopt is checked when we are patching addresses on stack.
+      // Deopt is checked when we are patching addresses on stack.
       bool safe_if_deopt_triggered = safepoint.has_deoptimization_index();
       bool is_builtin_code = code.kind() == CodeKind::BUILTIN;
       DCHECK(topmost_optimized_code.is_null() || safe_if_deopt_triggered ||
@@ -550,8 +549,9 @@ Deoptimizer::Deoptimizer(Isolate* isolate, JSFunction function,
 
 Code Deoptimizer::FindOptimizedCode() {
   Code compiled_code = FindDeoptimizingCode(from_);
-  return !compiled_code.is_null() ? compiled_code
-                                  : isolate_->FindCodeObject(from_);
+  if (!compiled_code.is_null()) return compiled_code;
+  CodeLookupResult lookup_result = isolate_->FindCodeObject(from_);
+  return lookup_result.code();
 }
 
 Handle<JSFunction> Deoptimizer::function() const {

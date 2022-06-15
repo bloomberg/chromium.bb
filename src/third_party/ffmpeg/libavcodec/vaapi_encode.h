@@ -331,6 +331,7 @@ typedef struct VAAPIEncodeContext {
     int idr_counter;
     int gop_counter;
     int end_of_stream;
+    int p_to_gpb;
 
     // Whether the driver supports ROI at all.
     int             roi_allowed;
@@ -384,6 +385,13 @@ typedef struct VAAPIEncodeType {
     // Default quality for this codec - used as quantiser or RC quality
     // factor depending on RC mode.
     int default_quality;
+
+    // Determine encode parameters like block sizes for surface alignment
+    // and slices. This may need to query the profile and entrypoint,
+    // which will be available when this function is called. If not set,
+    // assume that all blocks are 16x16 and that surfaces should be
+    // aligned to match this.
+    int (*get_encoder_caps)(AVCodecContext *avctx);
 
     // Perform any extra codec-specific configuration after the
     // codec context is initialised (set up the private data and

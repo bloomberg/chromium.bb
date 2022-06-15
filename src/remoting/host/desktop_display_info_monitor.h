@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
@@ -20,8 +21,6 @@ class SequencedTaskRunner;
 
 namespace remoting {
 
-class ClientSessionControl;
-
 // This class regularly queries the OS for any changes to the multi-monitor
 // display configuration, and reports any changes to the ClientSession.
 // This class ensures that the DisplayInfo is fetched on the UI thread, which
@@ -31,9 +30,11 @@ class ClientSessionControl;
 // the Desktop process.
 class DesktopDisplayInfoMonitor {
  public:
+  using Callback = base::RepeatingCallback<void(const DesktopDisplayInfo&)>;
+
   DesktopDisplayInfoMonitor(
       scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
-      base::WeakPtr<ClientSessionControl> client_session_control);
+      Callback callback);
 
   DesktopDisplayInfoMonitor(const DesktopDisplayInfoMonitor&) = delete;
   DesktopDisplayInfoMonitor& operator=(const DesktopDisplayInfoMonitor&) =
@@ -47,20 +48,23 @@ class DesktopDisplayInfoMonitor {
 
   // Queries the OS immediately for the current monitor layout and reports any
   // changed display info to the ClientSessionControl. If this instance is
-  // associated with a DesktopCapturerProxy, this method could be used to
-  // query the display info on each captured frame.
+  // associated with only one DesktopCapturerProxy, this method could be used to
+  // query the display info after each captured frame. If there are multiple
+  // capturers all linked to this instance, it doesn't make sense to query after
+  // every captured frame. So Start() should be called instead, and subsequent
+  // calls to QueryDisplayInfo() will have no effect.
   void QueryDisplayInfo();
 
  private:
+  void QueryDisplayInfoImpl();
   void OnDisplayInfoLoaded(DesktopDisplayInfo info);
 
   SEQUENCE_CHECKER(sequence_checker_);
 
   scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
 
-  // Object which receives DesktopDisplayInfo updates.
-  base::WeakPtr<ClientSessionControl> client_session_control_
-      GUARDED_BY_CONTEXT(sequence_checker_);
+  // Callback which receives DesktopDisplayInfo updates.
+  Callback callback_ GUARDED_BY_CONTEXT(sequence_checker_);
 
   // Contains the most recently gathered info about the desktop displays.
   DesktopDisplayInfo desktop_display_info_
@@ -71,6 +75,7 @@ class DesktopDisplayInfoMonitor {
 
   // Timer to regularly poll |desktop_display_info_loader_| for updates.
   base::RepeatingTimer timer_ GUARDED_BY_CONTEXT(sequence_checker_);
+  bool timer_running_ GUARDED_BY_CONTEXT(sequence_checker_) = false;
 
   base::WeakPtrFactory<DesktopDisplayInfoMonitor> weak_factory_{this};
 };

@@ -1,5 +1,5 @@
 import { assert } from '../../../../../common/util/util.js';
-import { resolvePerAspectFormat } from '../../../../capability_info.js';
+import { kTextureFormatInfo } from '../../../../capability_info.js';
 import { GPUTest } from '../../../../gpu_test.js';
 import { virtualMipSize } from '../../../../util/texture/base.js';
 import { CheckContents } from '../texture_zero.spec.js';
@@ -27,6 +27,7 @@ function getDepthTestEqualPipeline(
   expected: number
 ): GPURenderPipeline {
   return t.device.createRenderPipeline({
+    layout: 'auto',
     vertex: {
       entryPoint: 'main',
       module: makeFullscreenVertexModule(t.device),
@@ -66,6 +67,7 @@ function getStencilTestEqualPipeline(
   sampleCount: number
 ): GPURenderPipeline {
   return t.device.createRenderPipeline({
+    layout: 'auto',
     vertex: {
       entryPoint: 'main',
       module: makeFullscreenVertexModule(t.device),
@@ -100,9 +102,11 @@ const checkContents: (type: 'depth' | 'stencil', ...args: Parameters<CheckConten
   state,
   subresourceRange
 ) => {
+  const formatInfo = kTextureFormatInfo[params.format];
+
   assert(params.dimension === '2d');
   for (const viewDescriptor of t.generateTextureViewDescriptorsForRendering(
-    params.aspect,
+    'all',
     subresourceRange
   )) {
     assert(viewDescriptor.baseMipLevel !== undefined);
@@ -145,21 +149,20 @@ const checkContents: (type: 'depth' | 'stencil', ...args: Parameters<CheckConten
       ],
       depthStencilAttachment: {
         view: texture.createView(viewDescriptor),
-        depthStoreOp: type === 'depth' ? 'store' : undefined,
-        depthLoadOp: type === 'depth' ? 'load' : undefined,
-        stencilStoreOp: type === 'stencil' ? 'store' : undefined,
-        stencilLoadOp: type === 'stencil' ? 'load' : undefined,
+        depthStoreOp: formatInfo.depth ? 'store' : undefined,
+        depthLoadOp: formatInfo.depth ? 'load' : undefined,
+        stencilStoreOp: formatInfo.stencil ? 'store' : undefined,
+        stencilLoadOp: formatInfo.stencil ? 'load' : undefined,
       },
     });
 
-    const pipelineDSFormat = resolvePerAspectFormat(params.format, params.aspect);
     switch (type) {
       case 'depth': {
         const expectedDepth = t.stateToTexelComponents[state].Depth;
         assert(expectedDepth !== undefined);
 
         pass.setPipeline(
-          getDepthTestEqualPipeline(t, pipelineDSFormat, params.sampleCount, expectedDepth)
+          getDepthTestEqualPipeline(t, params.format, params.sampleCount, expectedDepth)
         );
         break;
       }
@@ -168,7 +171,7 @@ const checkContents: (type: 'depth' | 'stencil', ...args: Parameters<CheckConten
         const expectedStencil = t.stateToTexelComponents[state].Stencil;
         assert(expectedStencil !== undefined);
 
-        pass.setPipeline(getStencilTestEqualPipeline(t, pipelineDSFormat, params.sampleCount));
+        pass.setPipeline(getStencilTestEqualPipeline(t, params.format, params.sampleCount));
         pass.setStencilReference(expectedStencil);
         break;
       }

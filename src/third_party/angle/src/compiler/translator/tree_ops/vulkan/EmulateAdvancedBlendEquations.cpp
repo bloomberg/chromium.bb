@@ -21,27 +21,12 @@
 #include "compiler/translator/tree_util/FindMain.h"
 #include "compiler/translator/tree_util/IntermNode_util.h"
 #include "compiler/translator/tree_util/IntermTraverse.h"
-#include "compiler/translator/tree_util/RunAtTheBeginningOfShader.h"
 #include "compiler/translator/tree_util/RunAtTheEndOfShader.h"
 
 namespace sh
 {
 namespace
 {
-
-#if 0
-static constexpr const int kNormalBlendFuncChannel = 1;
-static constexpr const int kHslBlendFuncChannel    = 3;
-
-static const char *kColorCoeffVarName       = "coeff_color";
-static const char *kAlphaCoeffVarName       = "coeff_alpha";
-static const char *kSourceVarName           = "src";
-static const char *kDestinationVarName      = "dst";
-static const char *kOutputVarName           = "blend_result";
-static const char *kPremultipliedSrcVarName = "premul_src";
-static const char *kPremultipliedDstVarName = "premul_dst";
-static const char *kBlendMainFuncName       = "main";
-#endif
 
 // All helper functions that may be generated.
 class Builder
@@ -141,7 +126,7 @@ bool Builder::build(TIntermBlock *root)
     generateEquationSwitch(blendBlock);
 
     // Place the entire blend block under an if (equation != 0)
-    TIntermTyped *equationUniform = mDriverUniforms->getAdvancedBlendEquationRef();
+    TIntermTyped *equationUniform = mDriverUniforms->getAdvancedBlendEquation();
     TIntermTyped *notZero = new TIntermBinary(EOpNotEqual, equationUniform, CreateUIntNode(0));
 
     TIntermIfElse *blend = new TIntermIfElse(notZero, blendBlock, nullptr);
@@ -1196,7 +1181,7 @@ void Builder::generateEquationSwitch(TIntermBlock *blendBlock)
     }
 
     // A driver uniform is used to communicate the blend equation to use.
-    TIntermTyped *equationUniform = mDriverUniforms->getAdvancedBlendEquationRef();
+    TIntermTyped *equationUniform = mDriverUniforms->getAdvancedBlendEquation();
 
     blendBlock->appendStatement(new TIntermSwitch(equationUniform, switchBody));
 

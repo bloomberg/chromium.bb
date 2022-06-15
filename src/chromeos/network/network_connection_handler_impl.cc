@@ -226,8 +226,6 @@ NetworkConnectionHandlerImpl::NetworkConnectionHandlerImpl()
       certificates_loaded_(false) {}
 
 NetworkConnectionHandlerImpl::~NetworkConnectionHandlerImpl() {
-  if (network_state_handler_)
-    network_state_handler_->RemoveObserver(this, FROM_HERE);
   if (network_cert_loader_)
     network_cert_loader_->RemoveObserver(this);
 }
@@ -252,7 +250,7 @@ void NetworkConnectionHandlerImpl::Init(
 
   if (network_state_handler) {
     network_state_handler_ = network_state_handler;
-    network_state_handler_->AddObserver(this, FROM_HERE);
+    network_state_handler_observer_.Observe(network_state_handler_);
   }
   configuration_handler_ = network_configuration_handler;
   managed_configuration_handler_ = managed_network_configuration_handler;
@@ -675,7 +673,9 @@ void NetworkConnectionHandlerImpl::VerifyConfiguredAndConnect(
   const base::Value* policy = nullptr;
   if (guid && profile) {
     policy = managed_configuration_handler_->FindPolicyByGuidAndProfile(
-        *guid, *profile, &onc_source);
+        *guid, *profile,
+        ManagedNetworkConfigurationHandler::PolicyType::kWithRuntimeValues,
+        &onc_source, /*out_userhash=*/nullptr);
   }
   // Check if network is blocked by policy.
   if (*type == shill::kTypeWifi &&
@@ -697,7 +697,7 @@ void NetworkConnectionHandlerImpl::VerifyConfiguredAndConnect(
 
   client_cert::ClientCertConfig cert_config_from_policy;
   if (policy) {
-    client_cert::OncToClientCertConfig(onc_source, *policy,
+    client_cert::OncToClientCertConfig(onc_source, policy->GetDict(),
                                        &cert_config_from_policy);
   }
 

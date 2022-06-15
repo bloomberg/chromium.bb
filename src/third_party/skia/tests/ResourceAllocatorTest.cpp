@@ -63,7 +63,8 @@ static sk_sp<GrSurfaceProxy> make_deferred(GrProxyProvider* proxyProvider, const
                                            const ProxyParams& p) {
     const GrBackendFormat format = caps->getDefaultBackendFormat(p.fColorType, p.fRenderable);
     return proxyProvider->createProxy(format, {p.fSize, p.fSize}, p.fRenderable, p.fSampleCnt,
-                                      GrMipmapped::kNo, p.fFit, p.fBudgeted, GrProtected::kNo);
+                                      GrMipmapped::kNo, p.fFit, p.fBudgeted, GrProtected::kNo,
+                                      /*label=*/"ResourceAllocatorTest_Deffered");
 }
 
 static sk_sp<GrSurfaceProxy> make_backend(GrDirectContext* dContext, const ProxyParams& p) {
@@ -98,7 +99,7 @@ static sk_sp<GrSurfaceProxy> make_fully_lazy(GrProxyProvider* proxyProvider, con
                                            desc.fMipmapped,
                                            desc.fBudgeted,
                                            desc.fProtected,
-                                           /*label=*/{});
+                                           /*label=*/"ResourceAllocatorTest_FullLazy");
         return GrSurfaceProxy::LazyCallbackResult(std::move(tex));
     };
     return GrProxyProvider::MakeFullyLazyProxy(std::move(cb), format, p.fRenderable, p.fSampleCnt,
@@ -118,7 +119,7 @@ static sk_sp<GrSurfaceProxy> make_lazy(GrProxyProvider* proxyProvider, const GrC
                                            desc.fMipmapped,
                                            desc.fBudgeted,
                                            desc.fProtected,
-                                           /*label=*/{});
+                                           /*label=*/"ResourceAllocatorTest_Lazy");
         return GrSurfaceProxy::LazyCallbackResult(std::move(tex));
     };
     return proxyProvider->createLazyProxy(std::move(cb), format, {p.fSize, p.fSize},

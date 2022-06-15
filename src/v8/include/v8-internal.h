@@ -157,7 +157,7 @@ V8_INLINE static constexpr internal::Address IntToSmi(int value) {
  * Sandbox related types, constants, and functions.
  */
 constexpr bool SandboxIsEnabled() {
-#ifdef V8_SANDBOX
+#ifdef V8_ENABLE_SANDBOX
   return true;
 #else
   return false;
@@ -185,8 +185,9 @@ using ExternalPointer_t = uint32_t;
 using ExternalPointer_t = Address;
 #endif
 
-#ifdef V8_SANDBOX_IS_AVAILABLE
+#ifdef V8_ENABLE_SANDBOX
 
+// Size of the sandbox, excluding the guard regions surrounding it.
 #ifdef V8_OS_ANDROID
 // On Android, most 64-bit devices seem to be configured with only 39 bits of
 // virtual address space for userspace. As such, limit the sandbox to 128GB (a
@@ -283,7 +284,7 @@ static_assert((1 << (32 - kExternalPointerIndexShift)) ==
               "kExternalPointerTableReservationSize and "
               "kExternalPointerIndexShift don't match");
 
-#endif  // V8_SANDBOX_IS_AVAILABLE
+#endif  // V8_ENABLE_SANDBOX
 
 // If sandboxed external pointers are enabled, these tag values will be ORed
 // with the external pointers in the external pointer table to prevent use of
@@ -306,14 +307,15 @@ constexpr uint64_t kExternalPointerTagShift = 48;
 // clang-format off
 enum ExternalPointerTag : uint64_t {
   kExternalPointerNullTag =         MAKE_TAG(0b0000000000000000),
-  kExternalPointerFreeEntryTag =    MAKE_TAG(0b0111111110000000),
-  kExternalStringResourceTag =      MAKE_TAG(0b1000000011111111),
-  kExternalStringResourceDataTag =  MAKE_TAG(0b1000000101111111),
-  kForeignForeignAddressTag =       MAKE_TAG(0b1000000110111111),
-  kNativeContextMicrotaskQueueTag = MAKE_TAG(0b1000000111011111),
-  kEmbedderDataSlotPayloadTag =     MAKE_TAG(0b1000000111101111),
-  kCodeEntryPointTag =              MAKE_TAG(0b1000000111110111),
-  kExternalObjectValueTag =         MAKE_TAG(0b1000000111111011),
+  kExternalPointerFreeEntryTag =    MAKE_TAG(0b0111111100000000),
+  kWaiterQueueNodeTag =             MAKE_TAG(0b1000000111111111),
+  kExternalStringResourceTag =      MAKE_TAG(0b1000001011111111),
+  kExternalStringResourceDataTag =  MAKE_TAG(0b1000001101111111),
+  kForeignForeignAddressTag =       MAKE_TAG(0b1000001110111111),
+  kNativeContextMicrotaskQueueTag = MAKE_TAG(0b1000001111011111),
+  kEmbedderDataSlotPayloadTag =     MAKE_TAG(0b1000001111101111),
+  kCodeEntryPointTag =              MAKE_TAG(0b1000001111110111),
+  kExternalObjectValueTag =         MAKE_TAG(0b1000001111111011),
 };
 // clang-format on
 #undef MAKE_TAG
@@ -372,8 +374,8 @@ class Internals {
 
   static const uint32_t kNumIsolateDataSlots = 4;
   static const int kStackGuardSize = 7 * kApiSystemPointerSize;
-  static const int kBuiltinTier0EntryTableSize = 9 * kApiSystemPointerSize;
-  static const int kBuiltinTier0TableSize = 9 * kApiSystemPointerSize;
+  static const int kBuiltinTier0EntryTableSize = 7 * kApiSystemPointerSize;
+  static const int kBuiltinTier0TableSize = 7 * kApiSystemPointerSize;
 
   // IsolateData layout guarantees.
   static const int kIsolateCageBaseOffset = 0;

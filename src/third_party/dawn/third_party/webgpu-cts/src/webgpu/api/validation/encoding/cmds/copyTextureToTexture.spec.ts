@@ -262,13 +262,13 @@ Test that textures in copyTextureToTexture must have the same sample count.
     const srcTexture = t.device.createTexture({
       size: { width: 4, height: 4, depthOrArrayLayers: 1 },
       format: 'rgba8unorm',
-      usage: GPUTextureUsage.COPY_SRC,
+      usage: GPUTextureUsage.COPY_SRC | GPUTextureUsage.RENDER_ATTACHMENT,
       sampleCount: srcSampleCount,
     });
     const dstTexture = t.device.createTexture({
       size: { width: 4, height: 4, depthOrArrayLayers: 1 },
       format: 'rgba8unorm',
-      usage: GPUTextureUsage.COPY_DST,
+      usage: GPUTextureUsage.COPY_DST | GPUTextureUsage.RENDER_ATTACHMENT,
       sampleCount: dstSampleCount,
     });
 
@@ -319,13 +319,13 @@ TODO: Check the source and destination constraints separately.
     const srcTexture = t.device.createTexture({
       size: { width: kWidth, height: kHeight, depthOrArrayLayers: 1 },
       format: 'rgba8unorm',
-      usage: GPUTextureUsage.COPY_SRC,
+      usage: GPUTextureUsage.COPY_SRC | GPUTextureUsage.RENDER_ATTACHMENT,
       sampleCount: 4,
     });
     const dstTexture = t.device.createTexture({
       size: { width: kWidth, height: kHeight, depthOrArrayLayers: 1 },
       format: 'rgba8unorm',
-      usage: GPUTextureUsage.COPY_DST,
+      usage: GPUTextureUsage.COPY_DST | GPUTextureUsage.RENDER_ATTACHMENT,
       sampleCount: 4,
     });
 

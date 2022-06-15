@@ -48,7 +48,7 @@ class Counter {
   void Bind(const char* name, bool histogram);
   // TODO(12482): Return pointer to an atomic.
   int* ptr() {
-    STATIC_ASSERT(sizeof(int) == sizeof(count_));
+    static_assert(sizeof(int) == sizeof(count_));
     return reinterpret_cast<int*>(&count_);
   }
   int count() const { return count_.load(std::memory_order_relaxed); }
@@ -324,6 +324,9 @@ class PerIsolateData {
   Local<FunctionTemplate> GetSnapshotObjectCtor() const;
   void SetSnapshotObjectCtor(Local<FunctionTemplate> ctor);
 
+  Local<FunctionTemplate> GetDomNodeCtor() const;
+  void SetDomNodeCtor(Local<FunctionTemplate> ctor);
+
  private:
   friend class Shell;
   friend class RealmScope;
@@ -344,6 +347,7 @@ class PerIsolateData {
 #endif
   Global<FunctionTemplate> test_api_object_ctor_;
   Global<FunctionTemplate> snapshot_object_ctor_;
+  Global<FunctionTemplate> dom_node_ctor_;
 
   int RealmIndexOrThrow(const v8::FunctionCallbackInfo<v8::Value>& args,
                         int arg_offset);
@@ -741,7 +745,9 @@ class Shell : public i::AllStatic {
 
   static void NodeTypeCallback(const v8::FunctionCallbackInfo<v8::Value>& args);
 
-  static Local<FunctionTemplate> CreateNodeTemplates(Isolate* isolate);
+  static Local<FunctionTemplate> CreateEventTargetTemplate(Isolate* isolate);
+  static Local<FunctionTemplate> CreateNodeTemplates(
+      Isolate* isolate, Local<FunctionTemplate> event_target);
   static Local<ObjectTemplate> CreateGlobalTemplate(Isolate* isolate);
   static Local<ObjectTemplate> CreateOSTemplate(Isolate* isolate);
   static Local<FunctionTemplate> CreateWorkerTemplate(Isolate* isolate);

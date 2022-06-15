@@ -418,7 +418,7 @@ class V8_EXPORT_PRIVATE TurboAssembler : public TurboAssemblerBase {
 #undef DEFINE_INSTRUCTION3
 
   void SmiTag(Register dst, Register src) {
-    STATIC_ASSERT(kSmiTag == 0);
+    static_assert(kSmiTag == 0);
     if (SmiValuesAre32Bits()) {
       slli_d(dst, src, 32);
     } else {
@@ -1082,6 +1082,19 @@ void TurboAssembler::GenerateSwitchTable(Register index, size_t case_count,
     b(GetLabelFunction(index));
   }
 }
+
+struct MoveCycleState {
+  // List of scratch registers reserved for pending moves in a move cycle, and
+  // which should therefore not be used as a temporary location by
+  // {MoveToTempLocation}.
+  RegList scratch_regs;
+  DoubleRegList scratch_fpregs;
+  // Available scratch registers during the move cycle resolution scope.
+  base::Optional<UseScratchRegisterScope> temps;
+  // Scratch register picked by {MoveToTempLocation}.
+  base::Optional<Register> scratch_reg;
+  base::Optional<DoubleRegister> scratch_fpreg;
+};
 
 #define ACCESS_MASM(masm) masm->
 

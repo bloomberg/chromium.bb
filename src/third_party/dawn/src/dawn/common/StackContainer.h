@@ -51,7 +51,7 @@ class StackAllocator : public std::allocator<T> {
         // constructors and destructors to be automatically called. Define a POD
         // buffer of the right size instead.
         alignas(T) char stack_buffer_[sizeof(T[stack_capacity])];
-#if defined(DAWN_COMPILER_GCC) && !defined(__x86_64__) && !defined(__i386__)
+#if DAWN_COMPILER_IS(GCC) && !defined(__x86_64__) && !defined(__i386__)
         static_assert(alignof(T) <= 16, "http://crbug.com/115612");
 #endif
 
@@ -103,10 +103,11 @@ class StackAllocator : public std::allocator<T> {
     // Free: when trying to free the stack buffer, just mark it as free. For
     // non-stack-buffer pointers, just fall though to the standard allocator.
     void deallocate(pointer p, size_type n) {
-        if (source_ && p == source_->stack_buffer())
+        if (source_ && p == source_->stack_buffer()) {
             source_->used_stack_buffer_ = false;
-        else
+        } else {
             std::allocator<T>::deallocate(p, n);
+        }
     }
 
   private:

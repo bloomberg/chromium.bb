@@ -167,6 +167,7 @@ static int config_output(AVFilterLink *outlink)
     outlink->h = s->h;
     outlink->sample_aspect_ratio = (AVRational){1,1};
     outlink->frame_rate = s->frame_rate;
+    outlink->time_base = av_inv_q(outlink->frame_rate);
 
     s->histogram_h = s->h * s->phisto;
     s->ypos = s->h * s->phisto;
@@ -243,7 +244,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
         memset(s->out->data[2] + n * s->out->linesize[0], 127, w);
         memset(s->out->data[3] + n * s->out->linesize[0], 0, w);
     }
-    s->out->pts = in->pts;
+    s->out->pts = av_rescale_q(in->pts, inlink->time_base, outlink->time_base);
 
     s->first = s->frame_count;
 
@@ -434,6 +435,11 @@ static int activate(AVFilterContext *ctx)
         return ret;
     if (ret > 0)
         return filter_frame(inlink, in);
+
+    if (ff_inlink_queued_samples(inlink) >= s->nb_samples) {
+        ff_filter_set_ready(ctx, 10);
+        return 0;
+    }
 
     FF_FILTER_FORWARD_STATUS(inlink, outlink);
     FF_FILTER_FORWARD_WANTED(outlink, inlink);

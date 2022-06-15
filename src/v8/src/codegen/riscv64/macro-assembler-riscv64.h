@@ -867,7 +867,7 @@ class V8_EXPORT_PRIVATE TurboAssembler : public TurboAssemblerBase {
   // Smi utilities.
 
   void SmiTag(Register dst, Register src) {
-    STATIC_ASSERT(kSmiTag == 0);
+    static_assert(kSmiTag == 0);
     if (SmiValuesAre32Bits()) {
       // Smi goes to upper 32
       slli(dst, src, 32);
@@ -1022,11 +1022,11 @@ class V8_EXPORT_PRIVATE TurboAssembler : public TurboAssemblerBase {
 
   template <typename F_TYPE>
   void RoundHelper(FPURegister dst, FPURegister src, FPURegister fpu_scratch,
-                   RoundingMode mode);
+                   FPURoundingMode mode);
 
   template <typename F>
   void RoundHelper(VRegister dst, VRegister src, Register scratch,
-                   VRegister v_scratch, RoundingMode frm);
+                   VRegister v_scratch, FPURoundingMode frm);
 
   template <typename TruncFunc>
   void RoundFloatingPointToInteger(Register rd, FPURegister fs, Register result,
@@ -1357,6 +1357,12 @@ void TurboAssembler::GenerateSwitchTable(Register index, size_t case_count,
     dd(GetLabelFunction(index));
   }
 }
+
+struct MoveCycleState {
+  // Whether a move in the cycle needs the scratch or double scratch register.
+  bool pending_scratch_register_use = false;
+  bool pending_double_scratch_register_use = false;
+};
 
 #define ACCESS_MASM(masm) masm->
 

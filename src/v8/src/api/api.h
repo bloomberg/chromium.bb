@@ -28,7 +28,6 @@
 
 namespace v8 {
 
-class AccessorSignature;
 class Extension;
 class Signature;
 class Template;
@@ -99,7 +98,6 @@ class RegisteredExtension {
   V(FunctionTemplate, FunctionTemplateInfo)    \
   V(ObjectTemplate, ObjectTemplateInfo)        \
   V(Signature, FunctionTemplateInfo)           \
-  V(AccessorSignature, FunctionTemplateInfo)   \
   V(Data, Object)                              \
   V(RegExp, JSRegExp)                          \
   V(Object, JSReceiver)                        \
@@ -156,7 +154,7 @@ class Utils {
     return condition;
   }
   static void ReportOOMFailure(v8::internal::Isolate* isolate,
-                               const char* location, bool is_heap_oom);
+                               const char* location, const OOMDetails& details);
 
   static inline Local<debug::AccessorPair> ToLocal(
       v8::internal::Handle<v8::internal::AccessorPair> obj);
@@ -243,8 +241,6 @@ class Utils {
   static inline Local<ObjectTemplate> ToLocal(
       v8::internal::Handle<v8::internal::ObjectTemplateInfo> obj);
   static inline Local<Signature> SignatureToLocal(
-      v8::internal::Handle<v8::internal::FunctionTemplateInfo> obj);
-  static inline Local<AccessorSignature> AccessorSignatureToLocal(
       v8::internal::Handle<v8::internal::FunctionTemplateInfo> obj);
   static inline Local<External> ExternalToLocal(
       v8::internal::Handle<v8::internal::JSObject> obj);
@@ -425,7 +421,7 @@ class HandleScopeImplementer {
   }
 
   void BeginDeferredScope();
-  std::unique_ptr<PersistentHandles> DetachPersistent(Address* prev_limit);
+  std::unique_ptr<PersistentHandles> DetachPersistent(Address* first_block);
 
   Isolate* isolate_;
   DetachableVector<Address*> blocks_;

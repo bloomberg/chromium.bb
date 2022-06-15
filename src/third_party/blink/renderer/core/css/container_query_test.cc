@@ -205,7 +205,7 @@ TEST_F(ContainerQueryTest, FeatureFlags) {
   EXPECT_EQ(MediaQueryExpNode::kFeatureWidth,
             FeatureFlagsFrom("((width: 100px))"));
   EXPECT_EQ(MediaQueryExpNode::kFeatureWidth,
-            FeatureFlagsFrom("not (width: 100px)"));
+            FeatureFlagsFrom("(not (width: 100px))"));
 }
 
 TEST_F(ContainerQueryTest, ImplicitContainerSelector) {
@@ -306,8 +306,8 @@ TEST_F(ContainerQueryTest, RuleCopy) {
   // The ContainerQuery should be copied.
   EXPECT_NE(&container->GetContainerQuery(), &copy->GetContainerQuery());
 
-  // The inner MediaQueryExpNode should be copied.
-  EXPECT_NE(&GetInnerQuery(container->GetContainerQuery()),
+  // The inner MediaQueryExpNode is immutable, and does not need to be copied.
+  EXPECT_EQ(&GetInnerQuery(container->GetContainerQuery()),
             &GetInnerQuery(copy->GetContainerQuery()));
 }
 

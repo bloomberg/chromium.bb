@@ -16,7 +16,6 @@
 #include "content/browser/renderer_host/navigation_request.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
-#include "content/browser/shared_storage/shared_storage_originated_document_data.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
@@ -1152,20 +1151,10 @@ IN_PROC_BROWSER_TEST_P(
     observer.Wait();
   }
 
-  SharedStorageOriginatedDocumentData*
-      shared_storage_originated_document_data1 =
-          SharedStorageOriginatedDocumentData::GetForCurrentDocument(
-              fenced_frame_root_node1->current_frame_host());
-  SharedStorageOriginatedDocumentData*
-      shared_storage_originated_document_data2 =
-          SharedStorageOriginatedDocumentData::GetForCurrentDocument(
-              fenced_frame_root_node2->current_frame_host());
+  EXPECT_TRUE(fenced_frame_root_node1->FindSharedStorageBudgetMetadata());
 
-  DCHECK_NE(shared_storage_originated_document_data1,
-            shared_storage_originated_document_data2);
-
-  DCHECK_EQ(&shared_storage_originated_document_data1->budget_metadata(),
-            &shared_storage_originated_document_data2->budget_metadata());
+  EXPECT_EQ(fenced_frame_root_node1->FindSharedStorageBudgetMetadata(),
+            fenced_frame_root_node2->FindSharedStorageBudgetMetadata());
 }
 
 // Test the scenario where the FF navigation is deferred and then resumed, and
@@ -1221,10 +1210,9 @@ IN_PROC_BROWSER_TEST_P(
 
   EXPECT_TRUE(url_mapping.HasObserverForTesting(urn_uuid, request));
 
-  SharedStorageOriginatedDocumentData* shared_storage_originated_document_data =
-      SharedStorageOriginatedDocumentData::GetForCurrentDocument(
-          fenced_frame_root_node->current_frame_host());
-  EXPECT_FALSE(shared_storage_originated_document_data);
+  auto* budget_metadata =
+      fenced_frame_root_node->FindSharedStorageBudgetMetadata();
+  EXPECT_FALSE(budget_metadata);
 
   // Trigger the mapping to resume the deferred navigation.
   SimulateSharedStorageURNMappingComplete(
@@ -1240,15 +1228,11 @@ IN_PROC_BROWSER_TEST_P(
       mapped_url,
       fenced_frame_root_node->current_frame_host()->GetLastCommittedURL());
 
-  shared_storage_originated_document_data =
-      SharedStorageOriginatedDocumentData::GetForCurrentDocument(
-          fenced_frame_root_node->current_frame_host());
-  EXPECT_TRUE(shared_storage_originated_document_data);
-  EXPECT_EQ(shared_storage_originated_document_data->budget_metadata().origin,
+  budget_metadata = fenced_frame_root_node->FindSharedStorageBudgetMetadata();
+  EXPECT_TRUE(budget_metadata);
+  EXPECT_EQ(budget_metadata->origin,
             url::Origin::Create(GURL("https://bar.com")));
-  EXPECT_DOUBLE_EQ(shared_storage_originated_document_data->budget_metadata()
-                       .budget_to_charge,
-                   2.0);
+  EXPECT_DOUBLE_EQ(budget_metadata->budget_to_charge, 2.0);
 }
 
 // Test the scenario where the FF navigation is deferred and then resumed, and
@@ -1317,10 +1301,8 @@ IN_PROC_BROWSER_TEST_P(
   observer.Wait();
   EXPECT_EQ(observer.last_net_error_code(), net::ERR_BLOCKED_BY_RESPONSE);
 
-  SharedStorageOriginatedDocumentData* shared_storage_originated_document_data =
-      SharedStorageOriginatedDocumentData::GetForCurrentDocument(
-          fenced_frame_root_node->current_frame_host());
-  EXPECT_FALSE(shared_storage_originated_document_data);
+  auto* metadata = fenced_frame_root_node->FindSharedStorageBudgetMetadata();
+  EXPECT_FALSE(metadata);
 }
 
 IN_PROC_BROWSER_TEST_P(
@@ -4228,10 +4210,8 @@ IN_PROC_BROWSER_TEST_F(FrameTreeAnonymousIframeBrowserTest,
                      "document.body.appendChild(d);"));
   EXPECT_EQ(2U, root->child_count());
   EXPECT_TRUE(root->child_at(1)->anonymous());
-  // TODO(https://crbug.com/1251084): Fill navigation_params->anonymous for the
-  // initial empty document.
-  EXPECT_EQ(false, EvalJs(root->child_at(1)->current_frame_host(),
-                          "window.isAnonymouslyFramed"));
+  EXPECT_EQ(true, EvalJs(root->child_at(1)->current_frame_host(),
+                         "window.isAnonymouslyFramed"));
 
   // Setting the attribute via javascript works.
   EXPECT_TRUE(ExecJs(root,
@@ -4240,20 +4220,18 @@ IN_PROC_BROWSER_TEST_F(FrameTreeAnonymousIframeBrowserTest,
                      "document.body.appendChild(g);"));
   EXPECT_EQ(3U, root->child_count());
   EXPECT_TRUE(root->child_at(2)->anonymous());
-  // TODO(https://crbug.com/1251084): Fill navigation_params->anonymous for the
-  // initial empty document.
-  EXPECT_EQ(false, EvalJs(root->child_at(2)->current_frame_host(),
-                          "window.isAnonymouslyFramed"));
+  EXPECT_EQ(true, EvalJs(root->child_at(2)->current_frame_host(),
+                         "window.isAnonymouslyFramed"));
 
   EXPECT_TRUE(ExecJs(root, "g.anonymous = false;"));
   EXPECT_FALSE(root->child_at(2)->anonymous());
-  EXPECT_EQ(false, EvalJs(root->child_at(2)->current_frame_host(),
-                          "window.isAnonymouslyFramed"));
+  EXPECT_EQ(true, EvalJs(root->child_at(2)->current_frame_host(),
+                         "window.isAnonymouslyFramed"));
 
   EXPECT_TRUE(ExecJs(root, "g.anonymous = true;"));
   EXPECT_TRUE(root->child_at(2)->anonymous());
-  EXPECT_EQ(false, EvalJs(root->child_at(2)->current_frame_host(),
-                          "window.isAnonymouslyFramed"));
+  EXPECT_EQ(true, EvalJs(root->child_at(2)->current_frame_host(),
+                         "window.isAnonymouslyFramed"));
 }
 
 // This is fenced frames test class differs on from FencedFrameTreeBrowserTest,

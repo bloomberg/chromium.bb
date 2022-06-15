@@ -17,12 +17,12 @@
 
 #include <vector>
 
+#include "src/tint/ast/extension.h"
 #include "src/tint/sem/node.h"
 
 // Forward declarations
 namespace tint::ast {
 class Node;
-class Module;
 }  // namespace tint::ast
 
 namespace tint::sem {
@@ -33,7 +33,8 @@ class Module final : public Castable<Module, Node> {
   public:
     /// Constructor
     /// @param dep_ordered_decls the dependency-ordered module-scope declarations
-    explicit Module(std::vector<const ast::Node*> dep_ordered_decls);
+    /// @param extensions the list of enabled extensions in the module
+    Module(std::vector<const ast::Node*> dep_ordered_decls, ast::Extensions extensions);
 
     /// Destructor
     ~Module() override;
@@ -43,8 +44,12 @@ class Module final : public Castable<Module, Node> {
         return dep_ordered_decls_;
     }
 
+    /// @returns the list of enabled extensions in the module
+    const ast::Extensions& Extensions() const { return extensions_; }
+
   private:
     const std::vector<const ast::Node*> dep_ordered_decls_;
+    ast::Extensions extensions_;
 };
 
 }  // namespace tint::sem

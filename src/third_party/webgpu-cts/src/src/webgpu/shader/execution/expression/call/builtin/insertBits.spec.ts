@@ -29,7 +29,7 @@ import {
   vec4,
   TypeVec,
 } from '../../../../../util/conversion.js';
-import { Config, run } from '../../expression.js';
+import { allInputSources, Config, run } from '../../expression.js';
 
 import { builtin } from './builtin.js';
 
@@ -40,7 +40,7 @@ g.test('integer')
   .desc(`integer tests`)
   .params(u =>
     u
-      .combine('storageClass', ['uniform', 'storage_r', 'storage_rw'] as const)
+      .combine('inputSource', allInputSources)
       .combine('signed', [false, true])
       .combine('width', [1, 2, 3, 4])
   )

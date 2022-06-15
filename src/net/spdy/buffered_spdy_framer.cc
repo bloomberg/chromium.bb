@@ -25,8 +25,6 @@ BufferedSpdyFramer::BufferedSpdyFramer(uint32_t max_header_list_size,
                                        const NetLogWithSource& net_log,
                                        TimeFunc time_func)
     : spdy_framer_(spdy::SpdyFramer::ENABLE_COMPRESSION),
-      visitor_(nullptr),
-      frames_received_(0),
       max_header_list_size_(max_header_list_size),
       net_log_(net_log),
       time_func_(time_func) {
@@ -56,6 +54,7 @@ void BufferedSpdyFramer::OnError(
 }
 
 void BufferedSpdyFramer::OnHeaders(spdy::SpdyStreamId stream_id,
+                                   size_t payload_length,
                                    bool has_priority,
                                    int weight,
                                    spdy::SpdyStreamId parent_stream_id,
@@ -217,6 +216,7 @@ void BufferedSpdyFramer::OnAltSvc(
 }
 
 void BufferedSpdyFramer::OnContinuation(spdy::SpdyStreamId stream_id,
+                                        size_t payload_length,
                                         bool end) {}
 
 bool BufferedSpdyFramer::OnUnknownFrame(spdy::SpdyStreamId stream_id,

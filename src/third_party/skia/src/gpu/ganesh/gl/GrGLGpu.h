@@ -259,8 +259,7 @@ private:
                                                GrProtected,
                                                const void* data, size_t dataSize) override;
 
-    sk_sp<GrGpuBuffer> onCreateBuffer(size_t size, GrGpuBufferType intendedType, GrAccessPattern,
-                                      const void* data) override;
+    sk_sp<GrGpuBuffer> onCreateBuffer(size_t size, GrGpuBufferType, GrAccessPattern) override;
 
     sk_sp<GrTexture> onWrapBackendTexture(const GrBackendTexture&,
                                           GrWrapOwnership,
@@ -362,8 +361,7 @@ private:
     // binds texture unit in GL
     void setTextureUnit(int unitIdx);
 
-    void flushBlendAndColorWrite(const GrXferProcessor::BlendInfo& blendInfo,
-                                 const skgpu::Swizzle&);
+    void flushBlendAndColorWrite(const skgpu::BlendInfo&, const skgpu::Swizzle&);
 
     void addFinishedProc(GrGpuFinishedProc finishedProc,
                          GrGpuFinishedContext finishedContext) override;
@@ -437,7 +435,7 @@ private:
     void flushWindowRectangles(const GrWindowRectsState&, const GrGLRenderTarget*, GrSurfaceOrigin);
     void disableWindowRectangles();
 
-    int numTextureUnits() const { return this->caps()->shaderCaps()->maxFragmentSamplers(); }
+    int numTextureUnits() const { return this->caps()->shaderCaps()->fMaxFragmentSamplers; }
 
     // Binds a texture to a target on the "scratch" texture unit to use for texture operations
     // other than usual draw flow (i.e. a GrGLProgram derived from a GrPipeline used to draw). It

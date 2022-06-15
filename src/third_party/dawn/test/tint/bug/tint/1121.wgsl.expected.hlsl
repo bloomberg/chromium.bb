@@ -1,9 +1,3 @@
-uint atomicAdd_1(RWByteAddressBuffer buffer, uint offset, uint value) {
-  uint original_value = 0;
-  buffer.InterlockedAdd(offset, value, original_value);
-  return original_value;
-}
-
 RWByteAddressBuffer lightsBuffer : register(u0, space0);
 
 RWByteAddressBuffer tileLightId : register(u0, space1);
@@ -27,6 +21,13 @@ float4x4 tint_symbol_6(uint4 buffer[11], uint offset) {
   const uint scalar_offset_3 = ((offset + 48u)) / 4;
   return float4x4(asfloat(buffer[scalar_offset / 4]), asfloat(buffer[scalar_offset_1 / 4]), asfloat(buffer[scalar_offset_2 / 4]), asfloat(buffer[scalar_offset_3 / 4]));
 }
+
+uint tint_atomicAdd(RWByteAddressBuffer buffer, uint offset, uint value) {
+  uint original_value = 0;
+  buffer.InterlockedAdd(offset, value, original_value);
+  return original_value;
+}
+
 
 void main_inner(uint3 GlobalInvocationID) {
   uint index = GlobalInvocationID.x;
@@ -54,10 +55,10 @@ void main_inner(uint3 GlobalInvocationID) {
   {
     [loop] for(int y_1 = 0; (y_1 < 2); y_1 = (y_1 + 1)) {
       {
-        [loop] for(int x_1 = 0; (x_1 < TILE_COUNT_X); x_1 = (x_1 + 1)) {
-          int2 tilePixel0Idx = int2((x_1 * TILE_SIZE), (y_1 * TILE_SIZE));
-          float2 floorCoord = (((2.0f * float2(tilePixel0Idx)) / asfloat(uniforms[10]).xy) - float2((1.0f).xx));
-          float2 ceilCoord = (((2.0f * float2((tilePixel0Idx + int2((TILE_SIZE).xx)))) / asfloat(uniforms[10]).xy) - float2((1.0f).xx));
+        [loop] for(int x_1 = 0; (x_1 < 2); x_1 = (x_1 + 1)) {
+          int2 tilePixel0Idx = int2((x_1 * 16), (y_1 * 16));
+          float2 floorCoord = (((2.0f * float2(tilePixel0Idx)) / asfloat(uniforms[10]).xy) - (1.0f).xx);
+          float2 ceilCoord = (((2.0f * float2((tilePixel0Idx + (16).xx))) / asfloat(uniforms[10]).xy) - (1.0f).xx);
           float2 viewFloorCoord = float2((((-(viewNear) * floorCoord.x) - (M[2][0] * viewNear)) / M[0][0]), (((-(viewNear) * floorCoord.y) - (M[2][1] * viewNear)) / M[1][1]));
           float2 viewCeilCoord = float2((((-(viewNear) * ceilCoord.x) - (M[2][0] * viewNear)) / M[0][0]), (((-(viewNear) * ceilCoord.y) - (M[2][1] * viewNear)) / M[1][1]));
           frustumPlanes[0] = float4(1.0f, 0.0f, (-(viewFloorCoord.x) / viewNear), 0.0f);
@@ -88,7 +89,7 @@ void main_inner(uint3 GlobalInvocationID) {
             }
           }
           if ((dp >= 0.0f)) {
-            uint tileId = uint((x_1 + (y_1 * TILE_COUNT_X)));
+            uint tileId = uint((x_1 + (y_1 * 2)));
             bool tint_tmp = (tileId < 0u);
             if (!tint_tmp) {
               tint_tmp = (tileId >= config[0].y);
@@ -96,7 +97,7 @@ void main_inner(uint3 GlobalInvocationID) {
             if ((tint_tmp)) {
               continue;
             }
-            uint offset = atomicAdd_1(tileLightId, (260u * tileId), 1u);
+            uint offset = tint_atomicAdd(tileLightId, (260u * tileId), 1u);
             if ((offset >= config[1].x)) {
               continue;
             }

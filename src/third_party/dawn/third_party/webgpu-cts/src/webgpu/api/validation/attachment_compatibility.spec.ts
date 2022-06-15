@@ -139,6 +139,7 @@ class F extends ValidationTest {
     cullMode?: GPUCullMode
   ) {
     return this.device.createRenderPipeline({
+      layout: 'auto',
       vertex: {
         module: this.device.createShaderModule({
           code: `
@@ -535,7 +536,12 @@ Test that the depth stencil read only state in render passes or bundles is compa
     );
 
     const { encoder, validateFinishAndSubmit } = t.createEncoder(encoderType, {
-      attachmentInfo: { colorFormats: ['rgba8unorm'], depthStencilFormat: format },
+      attachmentInfo: {
+        colorFormats: ['rgba8unorm'],
+        depthStencilFormat: format,
+        depthReadOnly,
+        stencilReadOnly,
+      },
     });
     encoder.setPipeline(pipeline);
 

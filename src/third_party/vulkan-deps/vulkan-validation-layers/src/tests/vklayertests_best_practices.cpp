@@ -149,11 +149,7 @@ TEST_F(VkBestPracticesLayerTest, UseDeprecatedInstanceExtensions) {
 TEST_F(VkBestPracticesLayerTest, UseDeprecatedDeviceExtensions) {
     TEST_DESCRIPTION("Create a device with a deprecated extension.");
 
-    uint32_t version = SetTargetApiVersion(VK_API_VERSION_1_2);
-    if (version < VK_API_VERSION_1_2) {
-        printf("%s At least Vulkan version 1.2 is required, skipping test.\n", kSkipPrefix);
-        return;
-    }
+    SetTargetApiVersion(VK_API_VERSION_1_2);
 
     if (InstanceExtensionSupported(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME)) {
         m_instance_extension_names.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
@@ -165,8 +161,7 @@ TEST_F(VkBestPracticesLayerTest, UseDeprecatedDeviceExtensions) {
     ASSERT_NO_FATAL_FAILURE(InitBestPracticesFramework());
 
     if (DeviceValidationVersion() < VK_API_VERSION_1_2) {
-        printf("%s At least Vulkan version 1.2 is required for device, skipping test\n", kSkipPrefix);
-        return;
+        GTEST_SKIP() << "At least Vulkan version 1.2 is required";
     }
 
     if (DeviceExtensionSupported(gpu(), nullptr, VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME)) {
@@ -1236,11 +1231,10 @@ TEST_F(VkBestPracticesLayerTest, WorkgroupSizeDeprecated) {
     SetTargetApiVersion(VK_API_VERSION_1_3);
     AddRequiredExtensions(VK_KHR_MAINTENANCE_4_EXTENSION_NAME);
     ASSERT_NO_FATAL_FAILURE(InitBestPracticesFramework());
-    ASSERT_NO_FATAL_FAILURE(InitState());
-    if (!AreRequestedExtensionsEnabled()) {
-        printf("%s Extension %s is not supported, skipping test.\n", kSkipPrefix, VK_KHR_MAINTENANCE_4_EXTENSION_NAME);
-        return;
+    if (!AreRequiredExtensionsEnabled()) {
+        GTEST_SKIP() << RequiredExtensionsNotSupported() << " not supported";
     }
+    ASSERT_NO_FATAL_FAILURE(InitState());
 
     const std::string spv_source = R"(
                OpCapability Shader
@@ -1322,18 +1316,13 @@ TEST_F(VkBestPracticesLayerTest, ThreadUpdateDescriptorUpdateAfterBindNoCollisio
     test_platform_thread thread;
     m_errorMonitor->ExpectSuccess();
 
-    if (!AddRequiredInstanceExtensions(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME)) {
-        printf("%s %s Extension not supported, skipping tests\n", kSkipPrefix,
-               VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
-        return;
-    }
+    AddRequiredExtensions(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
     AddRequiredExtensions(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME);
     AddRequiredExtensions(VK_KHR_MAINTENANCE_3_EXTENSION_NAME);
 
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
-    if (!AreRequestedExtensionsEnabled()) {
-        printf("%s Descriptor Indexing or Maintenance3 Extension not supported, skipping tests\n", kSkipPrefix);
-        return;
+    if (!AreRequiredExtensionsEnabled()) {
+        GTEST_SKIP() << RequiredExtensionsNotSupported() << " not supported";
     }
 
     PFN_vkGetPhysicalDeviceFeatures2KHR vkGetPhysicalDeviceFeatures2KHR =
@@ -1544,8 +1533,7 @@ TEST_F(VkBestPracticesLayerTest, OverAllocateFromDescriptorPool) {
     ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
 
     if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
-        printf("%s At least Vulkan version 1.1 is required, skipping test.\n", kSkipPrefix);
-        return;
+        GTEST_SKIP() << "At least Vulkan version 1.1 is required";
     }
 
     // Create Pool w/ 1 Sampler descriptor, but try to alloc Uniform Buffer

@@ -47,7 +47,7 @@ void av1_alloc_cdef_buffers(struct AV1Common *const cm,
                             int init_worker);
 void av1_free_cdef_buffers(struct AV1Common *const cm,
                            struct AV1CdefWorker **cdef_worker,
-                           struct AV1CdefSyncData *cdef_sync, int num_workers);
+                           struct AV1CdefSyncData *cdef_sync);
 void av1_alloc_restoration_buffers(struct AV1Common *cm);
 void av1_free_restoration_buffers(struct AV1Common *cm);
 

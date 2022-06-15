@@ -245,7 +245,7 @@ struct AdaptivePtimeConfig {
 
 // TODO(tommi): Constructing a receive stream could be made simpler.
 // Move some of this boiler plate code into the config structs themselves.
-webrtc::AudioReceiveStream::Config BuildReceiveStreamConfig(
+webrtc::AudioReceiveStreamInterface::Config BuildReceiveStreamConfig(
     uint32_t remote_ssrc,
     uint32_t local_ssrc,
     bool use_transport_cc,
@@ -260,11 +260,10 @@ webrtc::AudioReceiveStream::Config BuildReceiveStreamConfig(
     size_t jitter_buffer_max_packets,
     bool jitter_buffer_fast_accelerate,
     int jitter_buffer_min_delay_ms,
-    bool jitter_buffer_enable_rtx_handling,
     rtc::scoped_refptr<webrtc::FrameDecryptorInterface> frame_decryptor,
     const webrtc::CryptoOptions& crypto_options,
     rtc::scoped_refptr<webrtc::FrameTransformerInterface> frame_transformer) {
-  webrtc::AudioReceiveStream::Config config;
+  webrtc::AudioReceiveStreamInterface::Config config;
   config.rtp.remote_ssrc = remote_ssrc;
   config.rtp.local_ssrc = local_ssrc;
   config.rtp.transport_cc = use_transport_cc;
@@ -281,7 +280,6 @@ webrtc::AudioReceiveStream::Config BuildReceiveStreamConfig(
   config.jitter_buffer_max_packets = jitter_buffer_max_packets;
   config.jitter_buffer_fast_accelerate = jitter_buffer_fast_accelerate;
   config.jitter_buffer_min_delay_ms = jitter_buffer_min_delay_ms;
-  config.jitter_buffer_enable_rtx_handling = jitter_buffer_enable_rtx_handling;
   config.frame_decryptor = std::move(frame_decryptor);
   config.crypto_options = crypto_options;
   config.frame_transformer = std::move(frame_transformer);
@@ -400,7 +398,6 @@ void WebRtcVoiceEngine::Init() {
     options.audio_jitter_buffer_max_packets = 200;
     options.audio_jitter_buffer_fast_accelerate = false;
     options.audio_jitter_buffer_min_delay_ms = 0;
-    options.audio_jitter_buffer_enable_rtx_handling = false;
     bool error = ApplyOptions(options);
     RTC_DCHECK(error);
   }
@@ -547,12 +544,6 @@ bool WebRtcVoiceEngine::ApplyOptions(const AudioOptions& options_in) {
                      << *options.audio_jitter_buffer_min_delay_ms;
     audio_jitter_buffer_min_delay_ms_ =
         *options.audio_jitter_buffer_min_delay_ms;
-  }
-  if (options.audio_jitter_buffer_enable_rtx_handling) {
-    RTC_LOG(LS_INFO) << "NetEq handle reordered packets? "
-                     << *options.audio_jitter_buffer_enable_rtx_handling;
-    audio_jitter_buffer_enable_rtx_handling_ =
-        *options.audio_jitter_buffer_enable_rtx_handling;
   }
 
   webrtc::AudioProcessing* ap = apm();
@@ -1160,7 +1151,7 @@ class WebRtcVoiceMediaChannel::WebRtcAudioSendStream
 
 class WebRtcVoiceMediaChannel::WebRtcAudioReceiveStream {
  public:
-  WebRtcAudioReceiveStream(webrtc::AudioReceiveStream::Config config,
+  WebRtcAudioReceiveStream(webrtc::AudioReceiveStreamInterface::Config config,
                            webrtc::Call* call)
       : call_(call), stream_(call_->CreateAudioReceiveStream(config)) {
     RTC_DCHECK(call);
@@ -1176,7 +1167,7 @@ class WebRtcVoiceMediaChannel::WebRtcAudioReceiveStream {
     call_->DestroyAudioReceiveStream(stream_);
   }
 
-  webrtc::AudioReceiveStream& stream() {
+  webrtc::AudioReceiveStreamInterface& stream() {
     RTC_DCHECK(stream_);
     return *stream_;
   }
@@ -1189,8 +1180,8 @@ class WebRtcVoiceMediaChannel::WebRtcAudioReceiveStream {
 
   void SetUseTransportCc(bool use_transport_cc, bool use_nack) {
     RTC_DCHECK_RUN_ON(&worker_thread_checker_);
-    stream_->SetUseTransportCcAndNackHistory(use_transport_cc,
-                                             use_nack ? kNackRtpHistoryMs : 0);
+    stream_->SetTransportCc(use_transport_cc);
+    stream_->SetNackHistory(use_nack ? kNackRtpHistoryMs : 0);
   }
 
   void SetNonSenderRttMeasurement(bool enabled) {
@@ -1209,7 +1200,7 @@ class WebRtcVoiceMediaChannel::WebRtcAudioReceiveStream {
     stream_->SetDecoderMap(decoder_map);
   }
 
-  webrtc::AudioReceiveStream::Stats GetStats(
+  webrtc::AudioReceiveStreamInterface::Stats GetStats(
       bool get_and_clear_legacy_stats) const {
     RTC_DCHECK_RUN_ON(&worker_thread_checker_);
     return stream_->GetStats(get_and_clear_legacy_stats);
@@ -1243,7 +1234,7 @@ class WebRtcVoiceMediaChannel::WebRtcAudioReceiveStream {
       return true;
 
     RTC_LOG(LS_ERROR) << "Failed to SetBaseMinimumPlayoutDelayMs"
-                         " on AudioReceiveStream on SSRC="
+                         " on AudioReceiveStreamInterface on SSRC="
                       << stream_->remote_ssrc()
                       << " with delay_ms=" << delay_ms;
     return false;
@@ -1276,7 +1267,7 @@ class WebRtcVoiceMediaChannel::WebRtcAudioReceiveStream {
  private:
   webrtc::SequenceChecker worker_thread_checker_;
   webrtc::Call* call_ = nullptr;
-  webrtc::AudioReceiveStream* const stream_ = nullptr;
+  webrtc::AudioReceiveStreamInterface* const stream_ = nullptr;
   std::unique_ptr<webrtc::AudioSinkInterface> raw_audio_sink_
       RTC_GUARDED_BY(worker_thread_checker_);
 };
@@ -1958,9 +1949,8 @@ bool WebRtcVoiceMediaChannel::AddRecvStream(const StreamParams& sp) {
       recv_rtp_extensions_, this, engine()->decoder_factory_, decoder_map_,
       codec_pair_id_, engine()->audio_jitter_buffer_max_packets_,
       engine()->audio_jitter_buffer_fast_accelerate_,
-      engine()->audio_jitter_buffer_min_delay_ms_,
-      engine()->audio_jitter_buffer_enable_rtx_handling_,
-      unsignaled_frame_decryptor_, crypto_options_, nullptr);
+      engine()->audio_jitter_buffer_min_delay_ms_, unsignaled_frame_decryptor_,
+      crypto_options_, nullptr);
 
   recv_streams_.insert(std::make_pair(
       ssrc, new WebRtcAudioReceiveStream(std::move(config), call_)));
@@ -2351,7 +2341,7 @@ bool WebRtcVoiceMediaChannel::GetStats(VoiceMediaInfo* info,
         continue;
       }
     }
-    webrtc::AudioReceiveStream::Stats stats =
+    webrtc::AudioReceiveStreamInterface::Stats stats =
         stream.second->GetStats(get_and_clear_legacy_stats);
     VoiceReceiverInfo rinfo;
     rinfo.add_ssrc(stats.remote_ssrc);

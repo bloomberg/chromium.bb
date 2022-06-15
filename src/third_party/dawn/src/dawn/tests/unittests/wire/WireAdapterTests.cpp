@@ -62,6 +62,8 @@ class WireAdapterTests : public WireTest {
                 EXPECT_CALL(api, AdapterGetProperties(apiAdapter, NotNull()))
                     .WillOnce(WithArg<1>(Invoke([&](WGPUAdapterProperties* properties) {
                         *properties = {};
+                        properties->vendorName = "";
+                        properties->architecture = "";
                         properties->name = "";
                         properties->driverDescription = "";
                     })));
@@ -360,7 +362,5 @@ TEST_F(WireAdapterTests, RequestDeviceWireDisconnectedBeforeCallback) {
     GetWireClient()->Disconnect();
 }
 
-// TODO(https://crbug.com/dawn/1381) Remove when namespaces are not indented.
-// NOLINTNEXTLINE(readability/namespace)
 }  // namespace
 }  // namespace dawn::wire

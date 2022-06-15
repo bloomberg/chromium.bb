@@ -228,6 +228,16 @@ def FlattenTuplePass : Pass<"mhlo-flatten-tuple", "func::FuncOp"> {
   let constructor = "createFlattenTuplePass()";
 }
 
+def ConvertToSignlessPass : Pass<"convert-to-signless", "ModuleOp"> {
+  let summary = "Pass to transform the IR to be on signless integers.";
+  let constructor = "createConvertToSignlessPass()";
+}
+
+def SparseRewritingPass : Pass<"mhlo-sparse-rewriting", "func::FuncOp"> {
+  let summary = "Pass to rewrite mhlo sparse tensor types.";
+  let constructor = "createSparseRewritingPass()";
+}
+
 /// Rank specialization passes.
 
 def RankSpecializationClusterPass

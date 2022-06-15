@@ -301,11 +301,11 @@ declare_args() {
   v8_enable_zone_compression = ""
 
   # Enable the experimental V8 sandbox.
-  # Sets -DV8_SANDBOX.
+  # Sets -DV8_ENABLE_SANDBOX.
   v8_enable_sandbox = ""
 
   # Enable external pointer sandboxing. Requires v8_enable_sandbox.
-  # Sets -DV8_SANDBOXED_EXTERNAL_POINRTERS.
+  # Sets -DV8_SANDBOXED_EXTERNAL_POINTERS.
   v8_enable_sandboxed_external_pointers = false
 
   # Enable sandboxed pointers. Requires v8_enable_sandbox.
@@ -314,6 +314,11 @@ declare_args() {
 
   # Enable all available sandbox features. Implies v8_enable_sandbox.
   v8_enable_sandbox_future = false
+
+  # Expose the memory corruption API to JavaScript. Useful for testing the sandbox.
+  # WARNING This will expose builtins that (by design) cause memory corruption.
+  # Sets -DV8_EXPOSE_MEMORY_CORRUPTION_API
+  v8_expose_memory_corruption_api = false
 
   # Experimental feature for collecting per-class zone memory stats.
   # Requires use_rtti = true
@@ -496,21 +501,16 @@ if (v8_enable_shared_ro_heap == "") {
 if (v8_enable_sandbox == "") {
   # TODO(saelo, v8:11880) remove dependency on v8_enable_external_code_space
   # once that is enabled everywhere by default.
+  # TODO(chromium:1325784) the sandbox is not currently supported in Chromium
+  # on Fuchsia.
   v8_enable_sandbox =
       build_with_chromium && v8_enable_pointer_compression_shared_cage &&
-      v8_enable_external_code_space
+      v8_enable_external_code_space && target_os != "fuchsia"
 }
 
 # Enable sandboxed pointers on desktop when the sandbox is enabled.
 if (v8_enable_sandbox) {
-  # When sanitizers are enabled, PartitionAlloc forwards allocations to malloc
-  # instead of allocating from its Pools and so isn't compatible with the
-  # sandbox. As such, disable the sandbox there. See https://crbug.com/1323174
-  if (!is_asan && !is_hwasan && !is_lsan && !is_tsan && !is_msan) {
-    v8_enable_sandboxed_pointers =
-        target_os != "fuchsia" && target_os != "android" &&
-        target_os != "chromeos"
-  }
+  v8_enable_sandboxed_pointers = target_os != "android"
 }
 
 # Enable all available sandbox features if sandbox future is enabled.
@@ -554,6 +554,9 @@ assert(!v8_enable_sandboxed_pointers || v8_enable_sandbox,
 assert(!v8_enable_sandboxed_external_pointers || v8_enable_sandbox,
        "Sandboxed external pointers require the sandbox")
 
+assert(!v8_expose_memory_corruption_api || v8_enable_sandbox,
+       "The Memory Corruption API requires the sandbox")
+
 assert(
     !v8_enable_pointer_compression_shared_cage || v8_enable_pointer_compression,
     "Can't share a pointer compression cage if pointers aren't compressed")
@@ -572,6 +575,9 @@ assert(!cppgc_enable_caged_heap || v8_current_cpu == "x64" ||
 
 assert(!cppgc_enable_young_generation || cppgc_enable_caged_heap,
        "Young generation in CppGC requires caged heap")
+
+assert(!cppgc_enable_pointer_compression || cppgc_enable_caged_heap,
+       "Pointer compression in CppGC requires caged heap")
 
 if (v8_enable_single_generation == true) {
   assert(
@@ -715,7 +721,7 @@ external_v8_defines = [
   "V8_COMPRESS_POINTERS_IN_ISOLATE_CAGE",
   "V8_31BIT_SMIS_ON_64BIT_ARCH",
   "V8_COMPRESS_ZONES",
-  "V8_SANDBOX",
+  "V8_ENABLE_SANDBOX",
   "V8_SANDBOXED_POINTERS",
   "V8_SANDBOXED_EXTERNAL_POINTERS",
   "V8_DEPRECATION_WARNINGS",
@@ -746,7 +752,7 @@ if (v8_enable_zone_compression) {
   enabled_external_v8_defines += [ "V8_COMPRESS_ZONES" ]
 }
 if (v8_enable_sandbox) {
-  enabled_external_v8_defines += [ "V8_SANDBOX" ]
+  enabled_external_v8_defines += [ "V8_ENABLE_SANDBOX" ]
 }
 if (v8_enable_sandboxed_pointers) {
   enabled_external_v8_defines += [ "V8_SANDBOXED_POINTERS" ]
@@ -790,6 +796,7 @@ external_cppgc_defines = [
   "CPPGC_SUPPORTS_OBJECT_NAMES",
   "CPPGC_CAGED_HEAP",
   "CPPGC_YOUNG_GENERATION",
+  "CPPGC_POINTER_COMPRESSION",
 ]
 
 enabled_external_cppgc_defines = []
@@ -805,6 +812,9 @@ if (cppgc_enable_caged_heap) {
 }
 if (cppgc_enable_young_generation) {
   enabled_external_cppgc_defines += [ "CPPGC_YOUNG_GENERATION" ]
+}
+if (cppgc_enable_pointer_compression) {
+  enabled_external_cppgc_defines += [ "CPPGC_POINTER_COMPRESSION" ]
 }
 
 disabled_external_cppgc_defines =
@@ -1013,6 +1023,9 @@ config("features") {
   }
   if (v8_fuchsia_use_vmex_resource) {
     defines += [ "V8_USE_VMEX_RESOURCE" ]
+  }
+  if (v8_expose_memory_corruption_api) {
+    defines += [ "V8_EXPOSE_MEMORY_CORRUPTION_API" ]
   }
 }
 
@@ -1668,7 +1681,9 @@ torque_files = [
   "src/builtins/array-slice.tq",
   "src/builtins/array-some.tq",
   "src/builtins/array-splice.tq",
+  "src/builtins/array-to-reversed.tq",
   "src/builtins/array-unshift.tq",
+  "src/builtins/array-with.tq",
   "src/builtins/array.tq",
   "src/builtins/arraybuffer.tq",
   "src/builtins/base.tq",
@@ -1767,7 +1782,9 @@ torque_files = [
   "src/builtins/typed-array-some.tq",
   "src/builtins/typed-array-sort.tq",
   "src/builtins/typed-array-subarray.tq",
+  "src/builtins/typed-array-to-reversed.tq",
   "src/builtins/typed-array-values.tq",
+  "src/builtins/typed-array-with.tq",
   "src/builtins/typed-array.tq",
   "src/builtins/weak-ref.tq",
   "src/ic/handler-configuration.tq",
@@ -1792,6 +1809,7 @@ torque_files = [
   "src/objects/heap-object.tq",
   "src/objects/js-array-buffer.tq",
   "src/objects/js-array.tq",
+  "src/objects/js-atomics-synchronization.tq",
   "src/objects/js-collection-iterator.tq",
   "src/objects/js-collection.tq",
   "src/objects/js-function.tq",
@@ -2667,7 +2685,10 @@ v8_header_set("v8_flags") {
     "src/flags/flags.h",
   ]
 
-  deps = [ ":v8_shared_internal_headers" ]
+  deps = [
+    ":v8_libbase",
+    ":v8_shared_internal_headers",
+  ]
 }
 
 v8_header_set("v8_internal_headers") {
@@ -2846,6 +2867,7 @@ v8_header_set("v8_internal_headers") {
     "src/compiler/js-operator.h",
     "src/compiler/js-type-hint-lowering.h",
     "src/compiler/js-typed-lowering.h",
+    "src/compiler/late-escape-analysis.h",
     "src/compiler/linkage.h",
     "src/compiler/load-elimination.h",
     "src/compiler/loop-analysis.h",
@@ -2894,8 +2916,10 @@ v8_header_set("v8_internal_headers") {
     "src/compiler/turboshaft/assembler.h",
     "src/compiler/turboshaft/deopt-data.h",
     "src/compiler/turboshaft/graph-builder.h",
+    "src/compiler/turboshaft/graph-visualizer.h",
     "src/compiler/turboshaft/graph.h",
     "src/compiler/turboshaft/operations.h",
+    "src/compiler/turboshaft/optimization-phase.h",
     "src/compiler/turboshaft/recreate-schedule.h",
     "src/compiler/type-cache.h",
     "src/compiler/type-narrowing-reducer.h",
@@ -3069,6 +3093,7 @@ v8_header_set("v8_internal_headers") {
     "src/heap/parallel-work-item.h",
     "src/heap/parked-scope.h",
     "src/heap/progress-bar.h",
+    "src/heap/promote-young-generation.h",
     "src/heap/read-only-heap-inl.h",
     "src/heap/read-only-heap.h",
     "src/heap/read-only-spaces.h",
@@ -3210,6 +3235,8 @@ v8_header_set("v8_internal_headers") {
     "src/objects/js-array-buffer.h",
     "src/objects/js-array-inl.h",
     "src/objects/js-array.h",
+    "src/objects/js-atomics-synchronization-inl.h",
+    "src/objects/js-atomics-synchronization.h",
     "src/objects/js-collection-inl.h",
     "src/objects/js-collection-iterator-inl.h",
     "src/objects/js-collection-iterator.h",
@@ -3298,6 +3325,7 @@ v8_header_set("v8_internal_headers") {
     "src/objects/script.h",
     "src/objects/shared-function-info-inl.h",
     "src/objects/shared-function-info.h",
+    "src/objects/simd.h",
     "src/objects/slots-atomic-inl.h",
     "src/objects/slots-inl.h",
     "src/objects/slots.h",
@@ -3412,6 +3440,7 @@ v8_header_set("v8_internal_headers") {
     "src/sandbox/sandbox.h",
     "src/sandbox/sandboxed-pointer-inl.h",
     "src/sandbox/sandboxed-pointer.h",
+    "src/sandbox/testing.h",
     "src/snapshot/code-serializer.h",
     "src/snapshot/context-deserializer.h",
     "src/snapshot/context-serializer.h",
@@ -3471,6 +3500,7 @@ v8_header_set("v8_internal_headers") {
     "src/utils/ostreams.h",
     "src/utils/scoped-list.h",
     "src/utils/sha-256.h",
+    "src/utils/sparse-bit-vector.h",
     "src/utils/utils-inl.h",
     "src/utils/utils.h",
     "src/utils/version.h",
@@ -3528,13 +3558,18 @@ v8_header_set("v8_internal_headers") {
       "src/asmjs/asm-scanner.h",
       "src/asmjs/asm-types.h",
       "src/compiler/int64-lowering.h",
+      "src/compiler/wasm-compiler-definitions.h",
       "src/compiler/wasm-compiler.h",
       "src/compiler/wasm-escape-analysis.h",
+      "src/compiler/wasm-gc-lowering.h",
+      "src/compiler/wasm-gc-operator-reducer.h",
       "src/compiler/wasm-graph-assembler.h",
       "src/compiler/wasm-inlining.h",
       "src/compiler/wasm-loop-peeling.h",
+      "src/compiler/wasm-typer.h",
       "src/debug/debug-wasm-objects-inl.h",
       "src/debug/debug-wasm-objects.h",
+      "src/third_party/utf8-decoder/generalized-utf8-decoder.h",
       "src/trap-handler/trap-handler-internal.h",
       "src/trap-handler/trap-handler.h",
       "src/wasm/assembler-buffer-cache.h",
@@ -3588,6 +3623,7 @@ v8_header_set("v8_internal_headers") {
       "src/wasm/wasm-subtyping.h",
       "src/wasm/wasm-tier.h",
       "src/wasm/wasm-value.h",
+      "src/wasm/wtf8.h",
     ]
   }
 
@@ -3634,6 +3670,7 @@ v8_header_set("v8_internal_headers") {
   if (v8_enable_conservative_stack_scanning) {
     sources += [
       "src/heap/conservative-stack-visitor.h",
+      "src/heap/object-start-bitmap-inl.h",
       "src/heap/object-start-bitmap.h",
     ]
   }
@@ -3968,6 +4005,7 @@ v8_compiler_sources = [
   "src/compiler/js-operator.cc",
   "src/compiler/js-type-hint-lowering.cc",
   "src/compiler/js-typed-lowering.cc",
+  "src/compiler/late-escape-analysis.cc",
   "src/compiler/linkage.cc",
   "src/compiler/load-elimination.cc",
   "src/compiler/loop-analysis.cc",
@@ -4025,9 +4063,12 @@ if (v8_enable_webassembly) {
     "src/compiler/int64-lowering.cc",
     "src/compiler/wasm-compiler.cc",
     "src/compiler/wasm-escape-analysis.cc",
+    "src/compiler/wasm-gc-lowering.cc",
+    "src/compiler/wasm-gc-operator-reducer.cc",
     "src/compiler/wasm-graph-assembler.cc",
     "src/compiler/wasm-inlining.cc",
     "src/compiler/wasm-loop-peeling.cc",
+    "src/compiler/wasm-typer.cc",
   ]
 }
 
@@ -4092,8 +4133,10 @@ v8_source_set("v8_turboshaft") {
 
   sources = [
     "src/compiler/turboshaft/graph-builder.cc",
+    "src/compiler/turboshaft/graph-visualizer.cc",
     "src/compiler/turboshaft/graph.cc",
     "src/compiler/turboshaft/operations.cc",
+    "src/compiler/turboshaft/optimization-phase.cc",
     "src/compiler/turboshaft/recreate-schedule.cc",
   ]
 
@@ -4162,6 +4205,7 @@ v8_source_set("v8_base_without_compiler") {
     "src/builtins/builtins-array.cc",
     "src/builtins/builtins-arraybuffer.cc",
     "src/builtins/builtins-async-module.cc",
+    "src/builtins/builtins-atomics-synchronization.cc",
     "src/builtins/builtins-bigint.cc",
     "src/builtins/builtins-callsite.cc",
     "src/builtins/builtins-collections.cc",
@@ -4329,6 +4373,7 @@ v8_source_set("v8_base_without_compiler") {
     "src/heap/object-stats.cc",
     "src/heap/objects-visiting.cc",
     "src/heap/paged-spaces.cc",
+    "src/heap/promote-young-generation.cc",
     "src/heap/read-only-heap.cc",
     "src/heap/read-only-spaces.cc",
     "src/heap/safepoint.cc",
@@ -4396,6 +4441,7 @@ v8_source_set("v8_base_without_compiler") {
     "src/objects/field-type.cc",
     "src/objects/intl-objects.cc",
     "src/objects/js-array-buffer.cc",
+    "src/objects/js-atomics-synchronization.cc",
     "src/objects/js-break-iterator.cc",
     "src/objects/js-collator.cc",
     "src/objects/js-date-time-format.cc",
@@ -4428,6 +4474,7 @@ v8_source_set("v8_base_without_compiler") {
     "src/objects/property.cc",
     "src/objects/scope-info.cc",
     "src/objects/shared-function-info.cc",
+    "src/objects/simd.cc",
     "src/objects/source-text-module.cc",
     "src/objects/string-comparator.cc",
     "src/objects/string-table.cc",
@@ -4523,6 +4570,7 @@ v8_source_set("v8_base_without_compiler") {
     "src/runtime/runtime.cc",
     "src/sandbox/external-pointer-table.cc",
     "src/sandbox/sandbox.cc",
+    "src/sandbox/testing.cc",
     "src/snapshot/code-serializer.cc",
     "src/snapshot/context-deserializer.cc",
     "src/snapshot/context-serializer.cc",
@@ -4640,6 +4688,7 @@ v8_source_set("v8_base_without_compiler") {
       "src/wasm/wasm-result.cc",
       "src/wasm/wasm-serialization.cc",
       "src/wasm/wasm-subtyping.cc",
+      "src/wasm/wtf8.cc",
     ]
   }
 
@@ -5249,6 +5298,7 @@ v8_component("v8_libbase") {
     "src/base/sanitizer/msan.h",
     "src/base/sanitizer/tsan.h",
     "src/base/small-vector.h",
+    "src/base/string-format.h",
     "src/base/strings.cc",
     "src/base/strings.h",
     "src/base/sys-info.cc",
@@ -5584,9 +5634,9 @@ v8_source_set("v8_heap_base") {
     }
   } else if (is_win) {
     if (current_cpu == "x64") {
-      sources += [ "src/heap/base/asm/x64/push_registers_masm.S" ]
+      sources += [ "src/heap/base/asm/x64/push_registers_masm.asm" ]
     } else if (current_cpu == "x86") {
-      sources += [ "src/heap/base/asm/ia32/push_registers_masm.S" ]
+      sources += [ "src/heap/base/asm/ia32/push_registers_masm.asm" ]
     } else if (current_cpu == "arm64") {
       sources += [ "src/heap/base/asm/arm64/push_registers_masm.S" ]
     }
@@ -5716,6 +5766,8 @@ v8_source_set("cppgc_base") {
     "src/heap/cppgc/marking-visitor.h",
     "src/heap/cppgc/marking-worklists.cc",
     "src/heap/cppgc/marking-worklists.h",
+    "src/heap/cppgc/member.cc",
+    "src/heap/cppgc/member.h",
     "src/heap/cppgc/memory.cc",
     "src/heap/cppgc/memory.h",
     "src/heap/cppgc/metric-recorder.h",
@@ -6127,10 +6179,10 @@ if (is_fuchsia && !build_with_chromium) {
     package_name_override = "d8"
   }
 
-  fuchsia_package_runner("d8_fuchsia") {
+  fuchsia_package_installer("d8_fuchsia") {
     testonly = true
     package = ":d8_fuchsia_pkg"
-    package_name_override = "d8"
+    package_name = "d8"
   }
 }
 
@@ -6371,6 +6423,10 @@ if (want_v8_shell) {
       # you can't have both applied to the same target.
       ":internal_config_base",
     ]
+
+    if (is_win && !v8_enable_cet_shadow_stack) {
+      v8_remove_configs += [ "//build/config/compiler:cet_shadow_stack" ]
+    }
 
     deps = [
       ":v8",
@@ -6620,6 +6676,24 @@ if (v8_enable_webassembly) {
   }
 
   v8_fuzzer("wasm_compile_fuzzer") {
+  }
+
+  v8_source_set("wasm_streaming_fuzzer") {
+    sources = [ "test/fuzzer/wasm-streaming.cc" ]
+
+    deps = [
+      ":fuzzer_support",
+      ":lib_wasm_fuzzer_common",
+      ":wasm_test_common",
+    ]
+
+    configs = [
+      ":external_config",
+      ":internal_config_base",
+    ]
+  }
+
+  v8_fuzzer("wasm_streaming_fuzzer") {
   }
 }
 

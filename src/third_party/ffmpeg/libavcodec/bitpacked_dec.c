@@ -122,12 +122,11 @@ static av_cold int bitpacked_init_decoder(AVCodecContext *avctx)
     return 0;
 }
 
-static int bitpacked_decode(AVCodecContext *avctx, void *data, int *got_frame,
-                            AVPacket *avpkt)
+static int bitpacked_decode(AVCodecContext *avctx, AVFrame *frame,
+                            int *got_frame, AVPacket *avpkt)
 {
     struct BitpackedContext *bc = avctx->priv_data;
     int buf_size = avpkt->size;
-    AVFrame *frame = data;
     int res;
 
     res = bc->decode(avctx, frame, avpkt);
@@ -150,7 +149,7 @@ const FFCodec ff_bitpacked_decoder = {
     .p.capabilities  = AV_CODEC_CAP_FRAME_THREADS,
     .priv_data_size        = sizeof(struct BitpackedContext),
     .init = bitpacked_init_decoder,
-    .decode = bitpacked_decode,
+    FF_CODEC_DECODE_CB(bitpacked_decode),
     .codec_tags     = (const uint32_t []){
         MKTAG('U', 'Y', 'V', 'Y'),
         FF_CODEC_TAGS_END,

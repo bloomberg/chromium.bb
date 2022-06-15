@@ -53,9 +53,14 @@ const UIStrings = {
   */
   value: 'Value',
   /**
-  *@description Data grid name for DOM Storage Items data grids
+  *@description Name for the "DOM Storage Items" table that shows the content of the DOM Storage.
   */
   domStorageItems: 'DOM Storage Items',
+  /**
+   *@description Text for announcing that the "DOM Storage Items" table was cleared, that is, all
+   * entries were deleted.
+   */
+  domStorageItemsCleared: 'DOM Storage Items cleared',
   /**
   *@description Text in DOMStorage Items View of the Application panel
   */
@@ -149,6 +154,7 @@ export class DOMStorageItemsView extends StorageItemsView {
 
     this.dataGrid.rootNode().removeChildren();
     this.dataGrid.addCreationNode(false);
+    UI.ARIAUtils.alert(i18nString(UIStrings.domStorageItemsCleared));
     this.setCanDeleteSelected(false);
   }
 

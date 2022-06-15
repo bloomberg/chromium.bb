@@ -290,6 +290,20 @@ class SplitUrlRevisionTestCase(unittest.TestCase):
     self.assertEqual(out_url, url)
 
 
+class ExtracRefNameTest(unittest.TestCase):
+  def testMatchFound(self):
+    self.assertEqual(
+        'main', gclient_utils.ExtractRefName('origin',
+                                             'refs/remote/origin/main'))
+    self.assertEqual('1234',
+                     gclient_utils.ExtractRefName('origin', 'refs/tags/1234'))
+    self.assertEqual(
+        'chicken', gclient_utils.ExtractRefName('origin', 'refs/heads/chicken'))
+
+  def testNoMatch(self):
+    self.assertIsNone(gclient_utils.ExtractRefName('origin', 'abcbbb1234'))
+
+
 class GClientUtilsTest(trial_dir.TestCase):
   def testHardToDelete(self):
     # Use the fact that tearDown will delete the directory to make it hard to do

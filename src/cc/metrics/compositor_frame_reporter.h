@@ -162,7 +162,7 @@ class CC_EXPORT CompositorFrameReporter {
       base::TimeDelta GetLatency() const;
 
      private:
-      const ProcessedBlinkBreakdown* owner_;
+      raw_ptr<const ProcessedBlinkBreakdown> owner_;
 
       size_t index_ = 0;
     };
@@ -200,7 +200,7 @@ class CC_EXPORT CompositorFrameReporter {
       base::TimeDelta GetDuration() const;
 
      private:
-      const ProcessedVizBreakdown* owner_;
+      raw_ptr<const ProcessedVizBreakdown> owner_;
       const bool skip_swap_start_to_swap_end_;
 
       size_t index_ = 0;
@@ -272,6 +272,8 @@ class CC_EXPORT CompositorFrameReporter {
   void SetVizBreakdown(const viz::FrameTimingDetails& viz_breakdown);
 
   void AddEventsMetrics(EventMetrics::List events_metrics);
+
+  // Erase and return all EventMetrics objects from our list.
   EventMetrics::List TakeEventsMetrics();
 
   size_t stage_history_size_for_testing() const {
@@ -391,6 +393,10 @@ class CC_EXPORT CompositorFrameReporter {
   FrameInfo GenerateFrameInfo() const;
 
   base::WeakPtr<CompositorFrameReporter> GetWeakPtr();
+
+  // Erase and return only the EventMetrics objects which depend on main thread
+  // updates (see comments on EventMetrics::requires_main_thread_update_).
+  EventMetrics::List TakeMainBlockedEventsMetrics();
 
   // Whether UMA histograms should be reported or not.
   const bool should_report_histograms_;

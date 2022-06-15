@@ -38,7 +38,7 @@ including options for hardware acceleration.
     <div class="devsite-landing-row-item-description">
     <div class="devsite-landing-row-item-body">
     <div class="devsite-landing-row-item-description-content">
-      <a href="../convert">
+      <a href="../models">
       <h3 class="no-link hide-from-toc" id="ml-models" data-text="ML models">ML models</h3></a>
       Learn about choosing and using ML models with TensorFlow Lite, see the
       <a href="../models">Models</a> docs.
@@ -64,7 +64,7 @@ TensorFlow Lite models, but that process is not reversible.
 This page discusses using already-built machine learning models and does not
 cover building, training, testing, or converting models. Learn more about
 picking, modifying, building, and converting machine learning models for
-TensorFlow Lite in the [Models](../guide/hosted_models) section.
+TensorFlow Lite in the [Models](../models) section.
 
 ## Run models on Android
 
@@ -78,7 +78,7 @@ to the Android app so it can take action, such as showing the result to a user
 or executing additional business logic.
 
 ![Functional execution flow for TensorFlow Lite models in Android
-apps](../images/android/tf_execution_flow_android.png)
+apps](../../images/lite/android/tf_execution_flow_android.png)
 
 **Figure 1.** Functional execution flow for TensorFlow Lite models in Android
 apps.
@@ -120,7 +120,7 @@ Play resources and not bundled into your app. Some advanced use cases require
 customization of model runtime environment, which are described in the
 [Advanced runtime environments](#adv_runtime) section.
 
-You access these runtime enviroments in your Android app by adding TensorFlow
+You access these runtime environments in your Android app by adding TensorFlow
 Lite development libraries to your app development environment. For information
 about how to use the standard runtime environment in your app, see the next
 section. For information about other runtime environments, see
@@ -154,7 +154,7 @@ If just want to use the Interpreter API, you can include the [TensorFlow Lite
 library](./development#lite_lib). Alternatively, you can include [Google Play
 services library](./play_services#1_add_project_dependencies)
 for TensorFlow Lite, and access the Interpreter API through Play services,
-without bundling a separate libary into your app.
+without bundling a separate library into your app.
 
 The [TensorFlow Lite Support library](./development#support_lib) is also
 available to provide additional functionality for managing data for models,

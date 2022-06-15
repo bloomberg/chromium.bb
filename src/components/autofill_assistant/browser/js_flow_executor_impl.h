@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 #include "base/callback_forward.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "components/autofill_assistant/browser/client_status.h"
@@ -20,9 +21,10 @@ namespace autofill_assistant {
 // native actions to be performed by its delegate.
 class JsFlowExecutorImpl : public JsFlowExecutor {
  public:
-  // |delegate| must outlive the JsFlowExecutorImpl.
-  JsFlowExecutorImpl(content::BrowserContext* browser_context,
-                     Delegate* delegate);
+  // |delegate| and |js_flow_library| must outlive the JsFlowExecutorImpl.
+  JsFlowExecutorImpl(Delegate* delegate,
+                     content::WebContents* web_contents_for_js_execution,
+                     const std::string* js_flow_library);
   ~JsFlowExecutorImpl() override;
   JsFlowExecutorImpl(const JsFlowExecutorImpl&) = delete;
   JsFlowExecutorImpl& operator=(const JsFlowExecutorImpl&) = delete;
@@ -76,11 +78,13 @@ class JsFlowExecutorImpl : public JsFlowExecutor {
 
  private:
   void InternalStart();
+
   void OnGetFrameTree(const DevtoolsClient::ReplyStatus& reply_status,
                       std::unique_ptr<page::GetFrameTreeResult> result);
-  void IsolatedWorldCreated(
+  void OnIsolatedWorldCreated(
       const DevtoolsClient::ReplyStatus& reply_status,
       std::unique_ptr<page::CreateIsolatedWorldResult> result);
+
   void RefreshNativeActionPromise();
   void OnNativeActionRequested(const DevtoolsClient::ReplyStatus& reply_status,
                                std::unique_ptr<runtime::EvaluateResult> result);
@@ -119,9 +123,10 @@ class JsFlowExecutorImpl : public JsFlowExecutor {
     return true;
   }
 
-  Delegate* const delegate_;
-  std::unique_ptr<content::WebContents> dummy_web_contents_;
+  const raw_ptr<Delegate> delegate_;
   std::unique_ptr<DevtoolsClient> devtools_client_;
+  const std::string* js_flow_library_;
+
   int isolated_world_context_id_ = -1;
 
   // Only set during a flow.

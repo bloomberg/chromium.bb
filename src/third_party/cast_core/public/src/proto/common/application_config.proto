@@ -16,6 +16,8 @@ syntax = "proto3";
 
 package cast.common;
 
+import "proto/common/value.proto";
+
 option optimize_for = LITE_RUNTIME;
 
 // Generic Cast application config.
@@ -34,7 +36,12 @@ message ApplicationConfig {
   }
 
   // Cast features requested by the application.
+  // TODO(b/232254267): Remove this field as all data moves to extra_features.
   repeated CastFeature cast_features = 6;
+
+  // Cast features. The keys in the dictionary must be well defined to allow
+  // easy data expantion.
+  cast.common.Dictionary extra_features = 7;
 }
 
 // Config for applications running in CastLite runtime.
@@ -81,7 +88,7 @@ message NativeApplicationConfig {
   string url = 1;
 }
 
-  // A Cast feature definition.
+// A Cast feature definition.
 message CastFeature {
   message Value {
     // Value key.

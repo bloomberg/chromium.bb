@@ -274,10 +274,9 @@ static void microdvd_close_no_persistent_tags(AVBPrint *new_line,
     }
 }
 
-static int microdvd_decode_frame(AVCodecContext *avctx,
-                                 void *data, int *got_sub_ptr, AVPacket *avpkt)
+static int microdvd_decode_frame(AVCodecContext *avctx, AVSubtitle *sub,
+                                 int *got_sub_ptr, const AVPacket *avpkt)
 {
-    AVSubtitle *sub = data;
     AVBPrint new_line;
     char *line = avpkt->data;
     char *end = avpkt->data + avpkt->size;
@@ -375,7 +374,7 @@ const FFCodec ff_microdvd_decoder = {
     .p.type       = AVMEDIA_TYPE_SUBTITLE,
     .p.id         = AV_CODEC_ID_MICRODVD,
     .init         = microdvd_init,
-    .decode       = microdvd_decode_frame,
+    FF_CODEC_DECODE_SUB_CB(microdvd_decode_frame),
     .flush        = ff_ass_decoder_flush,
     .priv_data_size = sizeof(FFASSDecoderContext),
     .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,

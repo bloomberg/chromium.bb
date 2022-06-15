@@ -62,6 +62,11 @@ const base::Feature kExcludeLowEntropyImagesFromLCP{
 const base::FeatureParam<double> kMinimumEntropyForLCP{
     &kExcludeLowEntropyImagesFromLCP, "min_bpp", 2};
 
+// Used as a binding for controlling the runtime enabled blink feature
+// "FixedElementsDontOverscroll". This is needed for experimentation.
+const base::Feature kFixedElementsDontOverscroll{
+    "FixedElementsDontOverscroll", base::FEATURE_ENABLED_BY_DEFAULT};
+
 const base::Feature kGMSCoreEmoji{"GMSCoreEmoji",
                                   base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -153,14 +158,9 @@ const base::Feature kPrivacySandboxAdsAPIs{"PrivacySandboxAdsAPIs",
 const base::Feature kMixedContentAutoupgrade{"AutoupgradeMixedContent",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
-// An experimental replacement for the `User-Agent` header, defined in
-// https://tools.ietf.org/html/draft-west-ua-client-hints.
+// Enables User-Agent Client Hints
 const base::Feature kUserAgentClientHint{"UserAgentClientHint",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enable `sec-ch-ua-full-version-list` client hint.
-const base::Feature kUserAgentClientHintFullVersionList{
-    "UserAgentClientHintFullVersionList", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Handle prefers-color-scheme user preference media feature via client hints.
 const base::Feature kPrefersColorSchemeClientHintHeader{
@@ -224,8 +224,9 @@ const base::FeatureParam<FencedFramesImplementationType>
         FencedFramesImplementationType::kShadowDOM,
         &fenced_frame_implementation_types};
 
-// Enable the shared storage API. This base::Feature directly controls the
-// corresponding runtime enabled feature.
+// Enable the shared storage API. Note that enabling this feature does not
+// automatically expose this API to the web, it only allows the element to be
+// enabled by the runtime enabled feature, for origin trials.
 // https://github.com/pythagoraskitty/shared-storage/blob/main/README.md
 const base::Feature kSharedStorageAPI{"SharedStorageAPI",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
@@ -713,7 +714,7 @@ const base::FeatureParam<int> kCacheCodeOnIdleDelayParam{&kCacheCodeOnIdle,
 // TODO(crbug.com/920069): Remove this once the feature has
 // landed and no compat issues are reported.
 const base::Feature kOffsetParentNewSpecBehavior{
-    "OffsetParentNewSpecBehavior", base::FEATURE_ENABLED_BY_DEFAULT};
+    "OffsetParentNewSpecBehavior", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Makes form elements cancel previous form submissions made by the same form
 // when the default event handler schedules a form submission.
@@ -773,14 +774,8 @@ const base::Feature kResamplingScrollEvents{"ResamplingScrollEvents",
 // Enables the device-memory, resource-width, viewport-width and DPR client
 // hints to be sent to third-party origins if the first-party has opted in to
 // receiving client hints, regardless of Permissions Policy.
-const base::Feature kAllowClientHintsToThirdParty {
-  "AllowClientHintsToThirdParty",
-#if BUILDFLAG(IS_ANDROID)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-};
+const base::Feature kAllowClientHintsToThirdParty{
+    "AllowClientHintsToThirdParty", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kFilteringScrollPrediction{
     "FilteringScrollPrediction", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -920,6 +915,10 @@ const base::Feature kWebAppEnableUrlHandlers{"WebAppEnableUrlHandlers",
 const base::Feature kWebAppManifestLockScreen{
     "WebAppManifestLockScreen", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable borderless mode for desktop PWAs. go/borderless-mode
+const base::Feature kWebAppBorderless{"WebAppBorderless",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Makes network loading tasks unfreezable so that they can be processed while
 // the page is frozen.
 const base::Feature kLoadingTasksUnfreezable{"LoadingTasksUnfreezable",
@@ -964,9 +963,11 @@ const base::FeatureParam<std::string>
     kBackgroundTracingPerformanceMark_AllowList{
         &kBackgroundTracingPerformanceMark, "allow_list", ""};
 
-// Controls whether the Sanitizer API is available.
+// Controls whether (and how much of) the Sanitizer API is available.
 const base::Feature kSanitizerAPI{"SanitizerAPI",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kSanitizerAPIv0{"SanitizerAPIv0",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether the Sanitizer API allows namespaced content (SVG + MathML).
 //
@@ -1118,17 +1119,12 @@ const base::Feature kAutofillShadowDOM{"AutofillShadowDOM",
 // Allows read/write of custom formats with unsanitized clipboard content. See
 // crbug.com/106449.
 const base::Feature kClipboardCustomFormats{"ClipboardCustomFormats",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Uses page viewport instead of frame viewport in the Largest Contentful Paint
 // heuristic where images occupying the full viewport are ignored.
 const base::Feature kUsePageViewportInLCP{"UsePageViewportInLCP",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enable `Sec-CH-UA-Platform` client hint and request header to be sent by
-// default
-const base::Feature kUACHPlatformEnabledByDefault{
-    "UACHPlatformEnabledByDefault", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // When enabled, allow dropping alpha on media streams for rendering sinks if
 // other sinks connected do not use alpha.
@@ -1256,6 +1252,41 @@ GetSetTimeoutWithout1MsClampPolicyOverride() {
   return policy;
 }
 
+enum class UnthrottledNestedTimeoutPolicyOverride {
+  kNoOverride,
+  kForceDisable,
+  kForceEnable
+};
+
+bool g_unthrottled_nested_timeout_policy_override_cached = false;
+
+// Returns the UnthrottledNestedTimeout policy settings. This is calculated
+// once on first access and cached.
+UnthrottledNestedTimeoutPolicyOverride
+GetUnthrottledNestedTimeoutPolicyOverride() {
+  static UnthrottledNestedTimeoutPolicyOverride policy =
+      UnthrottledNestedTimeoutPolicyOverride::kNoOverride;
+  if (g_unthrottled_nested_timeout_policy_override_cached)
+    return policy;
+
+  // Otherwise, check the command-line for the renderer. Only values of "0"
+  // and "1" are valid, anything else is ignored (and allows the base::Feature
+  // to control the feature). This slow path will only be hit once per renderer
+  // process.
+  std::string value =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kUnthrottledNestedTimeoutPolicy);
+  if (value == switches::kUnthrottledNestedTimeoutPolicy_ForceEnable) {
+    policy = UnthrottledNestedTimeoutPolicyOverride::kForceEnable;
+  } else if (value == switches::kUnthrottledNestedTimeoutPolicy_ForceDisable) {
+    policy = UnthrottledNestedTimeoutPolicyOverride::kForceDisable;
+  } else {
+    policy = UnthrottledNestedTimeoutPolicyOverride::kNoOverride;
+  }
+  g_unthrottled_nested_timeout_policy_override_cached = true;
+  return policy;
+}
+
 }  // namespace
 
 void ClearSetTimeoutWithout1MsClampPolicyOverrideCacheForTesting() {
@@ -1273,18 +1304,32 @@ bool IsSetTimeoutWithoutClampEnabled() {
   return base::FeatureList::IsEnabled(features::kSetTimeoutWithoutClamp);
 }
 
+void ClearUnthrottledNestedTimeoutOverrideCacheForTesting() {
+  // Tests may want to force recalculation of the cached policy value when
+  // exercising different configs.
+  g_unthrottled_nested_timeout_policy_override_cached = false;
+}
+
 // If enabled, the setTimeout(..., 0) will clamp to 4ms after a custom `nesting`
 // level.
 // Tracking bug: https://crbug.com/1108877.
 const base::Feature kMaxUnthrottledTimeoutNestingLevel{
     "MaxUnthrottledTimeoutNestingLevel", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::FeatureParam<int> kMaxUnthrottledTimeoutNestingLevelParam{
-    &kMaxUnthrottledTimeoutNestingLevel, "nesting", 10};
+    &kMaxUnthrottledTimeoutNestingLevel, "nesting", 100};
 bool IsMaxUnthrottledTimeoutNestingLevelEnabled() {
+  auto policy = GetUnthrottledNestedTimeoutPolicyOverride();
+  if (policy != UnthrottledNestedTimeoutPolicyOverride::kNoOverride)
+    return policy == UnthrottledNestedTimeoutPolicyOverride::kForceEnable;
+  // Otherwise respect the base::Feature.
   return base::FeatureList::IsEnabled(
       blink::features::kMaxUnthrottledTimeoutNestingLevel);
 }
+
 int GetMaxUnthrottledTimeoutNestingLevel() {
+  auto policy = GetUnthrottledNestedTimeoutPolicyOverride();
+  if (policy != UnthrottledNestedTimeoutPolicyOverride::kNoOverride)
+    return kMaxUnthrottledTimeoutNestingLevelParam.default_value;
   return kMaxUnthrottledTimeoutNestingLevelParam.Get();
 }
 
@@ -1354,14 +1399,6 @@ const base::Feature kNoForcedFrameUpdatesForWebTests{
 const base::Feature kElementSuperRareData{"ElementSuperRareData",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
-// If enabled, the memory limit used for tiles is scaled by
-// `kScaleTileMemoryLimitFactor`.
-const base::Feature kScaleTileMemoryLimit{"ScaleTileMemoryLimit",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::FeatureParam<double> kScaleTileMemoryLimitFactor{
-    &kScaleTileMemoryLimit, "Factor", 1.0};
-
 const base::Feature kDurableClientHintsCache{"DurableClientHintsCache",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -1377,7 +1414,7 @@ const base::Feature kWindowPlacement{"WindowPlacement",
 // Allows sites to request fullscreen and open a popup from a single gesture.
 const base::Feature kWindowPlacementFullscreenCompanionWindow{
     "WindowPlacementFullscreenCompanionWindow",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Allows sites to request fullscreen when the set of screens change.
 const base::Feature kWindowPlacementFullscreenOnScreensChange{
@@ -1467,6 +1504,36 @@ const base::Feature kWebRtcExposeNonStandardStats{
 
 const base::Feature kSubstringSetTreeForAttributeBuckets{
     "SubstringSetTreeForAttributeBuckets", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kPendingBeaconAPI{"PendingBeaconAPI",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID)
+const base::Feature kPrefetchFontLookupTables{
+    "PrefetchFontLookupTables", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
+const base::Feature kPrecompileInlineScripts{"PrecompileInlineScripts",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kSimulateClickOnAXFocus {
+  "SimulateClickOnAXFocus",
+#if BUILDFLAG(IS_WIN)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
+
+// Allow access to WebSQL in non-secure contexts.
+const base::Feature kWebSQLNonSecureContextAccess{
+    "WebSQLNonSecureContextAccess", base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kFileSystemUrlNavigation{"FileSystemUrlNavigation",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kEarlyExitOnNoopClassOrStyleChange{
+    "EarlyExitOnNoopClassOrStyleChange", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace blink

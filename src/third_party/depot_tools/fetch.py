@@ -24,6 +24,7 @@ import json
 import argparse
 import os
 import pipes
+import re
 import subprocess
 import sys
 import textwrap
@@ -34,7 +35,6 @@ from distutils import spawn
 
 
 SCRIPT_PATH = os.path.dirname(os.path.abspath(__file__))
-DEFAULT_PROTOCOL = 'https'
 
 #################################################
 # Checkout class definitions.
@@ -204,7 +204,7 @@ def handle_args(argv):
     '-p',
     '--protocol-override',
     type=str,
-    default=DEFAULT_PROTOCOL,
+    default=None,
     help='Protocol to use to fetch dependencies, defaults to https.')
 
   parser.add_argument('config', type=str,
@@ -259,6 +259,18 @@ def run(options, spec, root):
   assert 'type' in spec
   checkout_type = spec['type']
   checkout_spec = spec['%s_spec' % checkout_type]
+
+  # Use sso:// by default if the env is cog
+  if not options.protocol_override and \
+    os.getcwd().startswith('/google/src/cloud'):
+    options.protocol_override = 'sso'
+
+  # Replace https using the protocol specified in --protocol-override
+  if options.protocol_override is not None:
+    for solution in checkout_spec['solutions']:
+      solution['url'] = re.sub(
+        '^([a-z]+):', options.protocol_override + ':', solution['url'])
+
   try:
     checkout = CheckoutFactory(checkout_type, options, checkout_spec, root)
   except KeyError:

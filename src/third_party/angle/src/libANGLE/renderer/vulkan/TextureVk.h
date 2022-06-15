@@ -190,6 +190,10 @@ class TextureVk : public TextureImpl, public angle::ObserverInterface
                                      GLenum binding,
                                      const gl::ImageIndex &imageIndex) override;
 
+    angle::Result initializeContentsWithBlack(const gl::Context *context,
+                                              GLenum binding,
+                                              const gl::ImageIndex &imageIndex);
+
     const vk::ImageHelper &getImage() const
     {
         ASSERT(mImage && mImage->valid());
@@ -202,10 +206,12 @@ class TextureVk : public TextureImpl, public angle::ObserverInterface
         return *mImage;
     }
 
-    void retainBufferViews(vk::ResourceUseList *resourceUseList)
+    void retainBufferViews(vk::CommandBufferHelperCommon *commandBufferHelper)
     {
-        mBufferViews.retain(resourceUseList);
+        commandBufferHelper->retainResource(&mBufferViews);
     }
+
+    bool imageValid() const { return (mImage && mImage->valid()); }
 
     void releaseOwnershipOfImage(const gl::Context *context);
 
@@ -257,6 +263,8 @@ class TextureVk : public TextureImpl, public angle::ObserverInterface
     }
 
     vk::ImageOrBufferViewSubresourceSerial getBufferViewSerial() const;
+    vk::ImageOrBufferViewSubresourceSerial getStorageImageViewSerial(
+        const gl::ImageUnit &binding) const;
 
     GLenum getColorReadFormat(const gl::Context *context) override;
     GLenum getColorReadType(const gl::Context *context) override;
@@ -297,6 +305,8 @@ class TextureVk : public TextureImpl, public angle::ObserverInterface
         mImmutableSamplerDirty = false;
         return isDirty;
     }
+
+    angle::Result onLabelUpdate(const gl::Context *context) override;
 
   private:
     // Transform an image index from the frontend into one that can be used on the backing
@@ -504,7 +514,9 @@ class TextureVk : public TextureImpl, public angle::ObserverInterface
     }
 
     angle::Result refreshImageViews(ContextVk *contextVk);
-    bool shouldDecodeSRGB(vk::Context *context, GLenum srgbDecode, bool texelFetchStaticUse) const;
+    bool shouldDecodeSRGB(vk::Context *contextVk,
+                          GLenum srgbDecode,
+                          bool texelFetchStaticUse) const;
     void initImageUsageFlags(ContextVk *contextVk, angle::FormatID actualFormatID);
     void handleImmutableSamplerTransition(const vk::ImageHelper *previousImage,
                                           const vk::ImageHelper *nextImage);

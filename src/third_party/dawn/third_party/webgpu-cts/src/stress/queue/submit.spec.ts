@@ -19,6 +19,7 @@ results verified at the end of the test.`
     const data = new Uint32Array([...iterRange(kNumElements, x => x)]);
     const buffer = t.makeBufferWithContents(data, GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC);
     const pipeline = t.device.createComputePipeline({
+      layout: 'auto',
       compute: {
         module: t.device.createShaderModule({
           code: `
@@ -63,6 +64,7 @@ submit() call.`
     const data = new Uint32Array([...iterRange(kNumElements, x => x)]);
     const buffer = t.makeBufferWithContents(data, GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC);
     const pipeline = t.device.createComputePipeline({
+      layout: 'auto',
       compute: {
         module: t.device.createShaderModule({
           code: `

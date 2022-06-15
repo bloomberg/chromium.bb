@@ -373,9 +373,17 @@ class PeerConnectionIntegrationWrapper : public webrtc::PeerConnectionObserver,
   rtc::scoped_refptr<RtpSenderInterface> AddTrack(
       rtc::scoped_refptr<MediaStreamTrackInterface> track,
       const std::vector<std::string>& stream_ids = {}) {
+    EXPECT_TRUE(track);
+    if (!track) {
+      return nullptr;
+    }
     auto result = pc()->AddTrack(track, stream_ids);
     EXPECT_EQ(RTCErrorType::NONE, result.error().type());
-    return result.MoveValue();
+    if (result.ok()) {
+      return result.MoveValue();
+    } else {
+      return nullptr;
+    }
   }
 
   std::vector<rtc::scoped_refptr<RtpReceiverInterface>> GetReceiversOfType(
@@ -736,6 +744,7 @@ class PeerConnectionIntegrationWrapper : public webrtc::PeerConnectionObserver,
   bool Init(const PeerConnectionFactory::Options* options,
             const PeerConnectionInterface::RTCConfiguration* config,
             webrtc::PeerConnectionDependencies dependencies,
+            rtc::SocketServer* socket_server,
             rtc::Thread* network_thread,
             rtc::Thread* worker_thread,
             std::unique_ptr<webrtc::FakeRtcEventLogFactory> event_log_factory,
@@ -750,7 +759,9 @@ class PeerConnectionIntegrationWrapper : public webrtc::PeerConnectionObserver,
     fake_network_manager_->AddInterface(kDefaultLocalAddress);
 
     std::unique_ptr<cricket::PortAllocator> port_allocator(
-        new cricket::BasicPortAllocator(fake_network_manager_.get()));
+        new cricket::BasicPortAllocator(
+            fake_network_manager_.get(),
+            std::make_unique<rtc::BasicPacketSocketFactory>(socket_server)));
     port_allocator_ = port_allocator.get();
     fake_audio_capture_module_ = FakeAudioCaptureModule::Create();
     if (!fake_audio_capture_module_) {
@@ -1461,7 +1472,7 @@ class PeerConnectionIntegrationBaseTest : public ::testing::Test {
         new PeerConnectionIntegrationWrapper(debug_name));
 
     if (!client->Init(options, &modified_config, std::move(dependencies),
-                      network_thread_.get(), worker_thread_.get(),
+                      fss_.get(), network_thread_.get(), worker_thread_.get(),
                       std::move(event_log_factory), reset_encoder_factory,
                       reset_decoder_factory, create_media_engine)) {
       return nullptr;
@@ -1707,6 +1718,20 @@ class PeerConnectionIntegrationBaseTest : public ::testing::Test {
 
   PeerConnectionIntegrationWrapper* caller() { return caller_.get(); }
 
+  // Destroy peerconnections.
+  // This can be used to ensure that all pointers to on-stack mocks
+  // get dropped before exit.
+  void DestroyPeerConnections() {
+    if (caller_) {
+      caller_->pc()->Close();
+    }
+    if (callee_) {
+      callee_->pc()->Close();
+    }
+    caller_.reset();
+    callee_.reset();
+  }
+
   // Set the `caller_` to the `wrapper` passed in and return the
   // original `caller_`.
   PeerConnectionIntegrationWrapper* SetCallerPcWrapperAndReturnCurrent(
@@ -1896,6 +1921,7 @@ class PeerConnectionIntegrationBaseTest : public ::testing::Test {
   SdpSemantics sdp_semantics_;
 
  private:
+  rtc::AutoThread main_thread_;  // Used as the signal thread by most tests.
   // `ss_` is used by `network_thread_` so it must be destroyed later.
   std::unique_ptr<rtc::VirtualSocketServer> ss_;
   std::unique_ptr<rtc::FirewallSocketServer> fss_;

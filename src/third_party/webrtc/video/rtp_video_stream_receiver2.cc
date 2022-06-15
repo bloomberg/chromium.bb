@@ -105,7 +105,7 @@ std::unique_ptr<ModuleRtpRtcpImpl2> CreateRtpRtcpModule(
 std::unique_ptr<NackRequester> MaybeConstructNackModule(
     TaskQueueBase* current_queue,
     NackPeriodicProcessor* nack_periodic_processor,
-    const VideoReceiveStream::Config& config,
+    const VideoReceiveStreamInterface::Config& config,
     Clock* clock,
     NackSender* nack_sender,
     KeyFrameRequestSender* keyframe_request_sender,
@@ -208,7 +208,7 @@ RtpVideoStreamReceiver2::RtpVideoStreamReceiver2(
     Transport* transport,
     RtcpRttStats* rtt_stats,
     PacketRouter* packet_router,
-    const VideoReceiveStream::Config* config,
+    const VideoReceiveStreamInterface::Config* config,
     ReceiveStatistics* rtp_receive_statistics,
     RtcpPacketTypeCounterObserver* rtcp_packet_type_counter_observer,
     RtcpCnameCallback* rtcp_cname_callback,
@@ -921,6 +921,11 @@ void RtpVideoStreamReceiver2::UpdateRtt(int64_t max_rtt_ms) {
   RTC_DCHECK_RUN_ON(&worker_task_checker_);
   if (nack_module_)
     nack_module_->UpdateRtt(max_rtt_ms);
+}
+
+void RtpVideoStreamReceiver2::OnLocalSsrcChange(uint32_t local_ssrc) {
+  RTC_DCHECK_RUN_ON(&packet_sequence_checker_);
+  rtp_rtcp_->SetLocalSsrc(local_ssrc);
 }
 
 absl::optional<int64_t> RtpVideoStreamReceiver2::LastReceivedPacketMs() const {

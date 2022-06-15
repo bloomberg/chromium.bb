@@ -48,6 +48,7 @@
 #include "src/tint/ast/variable_decl_statement.h"
 #include "src/tint/ast/vector.h"
 #include "src/tint/ast/workgroup_attribute.h"
+#include "src/tint/sem/abstract_numeric.h"
 #include "src/tint/sem/array.h"
 #include "src/tint/sem/atomic.h"
 #include "src/tint/sem/call.h"
@@ -57,6 +58,7 @@
 #include "src/tint/sem/function.h"
 #include "src/tint/sem/if_statement.h"
 #include "src/tint/sem/loop_statement.h"
+#include "src/tint/sem/materialize.h"
 #include "src/tint/sem/member_accessor_expression.h"
 #include "src/tint/sem/multisampled_texture.h"
 #include "src/tint/sem/pointer.h"
@@ -194,7 +196,7 @@ bool Validator::IsFixedFootprint(const sem::Type* type) const {
 
 // https://gpuweb.github.io/gpuweb/wgsl.html#host-shareable-types
 bool Validator::IsHostShareable(const sem::Type* type) const {
-    if (type->IsAnyOf<sem::I32, sem::U32, sem::F32>()) {
+    if (type->IsAnyOf<sem::I32, sem::U32, sem::F32, sem::F16>()) {
         return true;
     }
     return Switch(
@@ -271,6 +273,19 @@ bool Validator::StorageTexture(const ast::StorageTexture* t) const {
             "image format must be one of the texel formats specified for storage "
             "textues in https://gpuweb.github.io/gpuweb/wgsl/#texel-formats",
             t->source);
+        return false;
+    }
+    return true;
+}
+
+bool Validator::Materialize(const sem::Materialize* m) const {
+    auto* from = m->Expr()->Type();
+    auto* to = m->Type();
+
+    if (sem::Type::ConversionRank(from, to) == sem::Type::kNoConversion) {
+        AddError("cannot convert value of type '" + sem_.TypeNameOf(from) + "' to type '" +
+                     sem_.TypeNameOf(to) + "'",
+                 m->Expr()->Declaration()->source);
         return false;
     }
     return true;
@@ -650,6 +665,13 @@ bool Validator::Variable(const sem::Variable* var) const {
         AddError(sem_.TypeNameOf(storage_ty) + " cannot be used as the type of a let",
                  decl->source);
         return false;
+    }
+
+    if (auto* r = storage_ty->As<sem::SampledTexture>()) {
+        if (!r->type()->UnwrapRef()->is_numeric_scalar()) {
+            AddError("texture_2d<type>: type must be f32, i32 or u32", decl->source);
+            return false;
+        }
     }
 
     if (auto* r = storage_ty->As<sem::MultisampledTexture>()) {
@@ -1356,6 +1378,35 @@ bool Validator::ContinueStatement(const sem::Statement* stmt,
     return true;
 }
 
+bool Validator::Call(const sem::Call* call, sem::Statement* current_statement) const {
+    auto* expr = call->Declaration();
+    bool is_call_stmt =
+        current_statement && Is<ast::CallStatement>(current_statement->Declaration(),
+                                                    [&](auto* stmt) { return stmt->expr == expr; });
+
+    return Switch(
+        call->Target(),  //
+        [&](const sem::TypeConversion*) {
+            if (is_call_stmt) {
+                AddError("type conversion evaluated but not used", call->Declaration()->source);
+                return false;
+            }
+            return true;
+        },
+        [&](const sem::TypeConstructor* ctor) {
+            if (is_call_stmt) {
+                AddError("type constructor evaluated but not used", call->Declaration()->source);
+                return false;
+            }
+            return Switch(
+                ctor->ReturnType(),  //
+                [&](const sem::Array* arr) { return ArrayConstructor(expr, arr); },
+                [&](const sem::Struct* str) { return StructureConstructor(expr, str); },
+                [&](Default) { return true; });
+        },
+        [&](Default) { return true; });
+}
+
 bool Validator::DiscardStatement(const sem::Statement* stmt,
                                  sem::Statement* current_statement) const {
     if (auto* continuing = ClosestContinuing(/*stop_at_loop*/ false, current_statement)) {
@@ -1485,8 +1536,8 @@ bool Validator::TextureBuiltinFunction(const sem::Call* call) const {
                 });
             if (is_const_expr) {
                 auto vector = builtin->Parameters()[index]->Type()->Is<sem::Vector>();
-                for (size_t i = 0; i < values.Elements().size(); i++) {
-                    auto value = values.Elements()[i].i32;
+                for (size_t i = 0, n = values.ElementCount(); i < n; i++) {
+                    auto value = values.Element<AInt>(i).value;
                     if (value < min || value > max) {
                         if (vector) {
                             AddError("each component of the " + name +
@@ -1517,21 +1568,22 @@ bool Validator::TextureBuiltinFunction(const sem::Call* call) const {
            check_arg_is_constexpr(sem::ParameterUsage::kComponent, 0, 3);
 }
 
-bool Validator::RequiredExtensionForBuiltinFunction(const sem::Call* call,
-                                                    const ast::ExtensionSet& extensionSet) const {
+bool Validator::RequiredExtensionForBuiltinFunction(
+    const sem::Call* call,
+    const ast::Extensions& enabled_extensions) const {
     const auto* builtin = call->Target()->As<sem::Builtin>();
     if (!builtin) {
         return true;
     }
 
     const auto extension = builtin->RequiredExtension();
-    if (extension == ast::Enable::ExtensionKind::kNotAnExtension) {
+    if (extension == ast::Extension::kNone) {
         return true;
     }
 
-    if (extensionSet.find(extension) == extensionSet.cend()) {
+    if (!enabled_extensions.contains(extension)) {
         AddError("cannot call built-in function '" + std::string(builtin->str()) +
-                     "' without extension " + ast::Enable::KindToName(extension),
+                     "' without extension " + ast::str(extension),
                  call->Declaration()->source);
         return false;
     }
@@ -1649,8 +1701,8 @@ bool Validator::FunctionCall(const sem::Call* call, sem::Statement* current_stat
     return true;
 }
 
-bool Validator::StructureConstructorOrCast(const ast::CallExpression* ctor,
-                                           const sem::Struct* struct_type) const {
+bool Validator::StructureConstructor(const ast::CallExpression* ctor,
+                                     const sem::Struct* struct_type) const {
     if (!struct_type->IsConstructible()) {
         AddError("struct constructor has non-constructible type", ctor->source);
         return false;
@@ -1682,8 +1734,8 @@ bool Validator::StructureConstructorOrCast(const ast::CallExpression* ctor,
     return true;
 }
 
-bool Validator::ArrayConstructorOrCast(const ast::CallExpression* ctor,
-                                       const sem::Array* array_type) const {
+bool Validator::ArrayConstructor(const ast::CallExpression* ctor,
+                                 const sem::Array* array_type) const {
     auto& values = ctor->args;
     auto* elem_ty = array_type->ElemType();
     for (auto* value : values) {
@@ -1721,66 +1773,6 @@ bool Validator::ArrayConstructorOrCast(const ast::CallExpression* ctor,
     return true;
 }
 
-bool Validator::VectorConstructorOrCast(const ast::CallExpression* ctor,
-                                        const sem::Vector* vec_type) const {
-    auto& values = ctor->args;
-    auto* elem_ty = vec_type->type();
-    size_t value_cardinality_sum = 0;
-    for (auto* value : values) {
-        auto* value_ty = sem_.TypeOf(value)->UnwrapRef();
-        if (value_ty->is_scalar()) {
-            if (elem_ty != value_ty) {
-                AddError(
-                    "type in vector constructor does not match vector type: "
-                    "expected '" +
-                        sem_.TypeNameOf(elem_ty) + "', found '" + sem_.TypeNameOf(value_ty) + "'",
-                    value->source);
-                return false;
-            }
-
-            value_cardinality_sum++;
-        } else if (auto* value_vec = value_ty->As<sem::Vector>()) {
-            auto* value_elem_ty = value_vec->type();
-            // A mismatch of vector type parameter T is only an error if multiple
-            // arguments are present. A single argument constructor constitutes a
-            // type conversion expression.
-            if (elem_ty != value_elem_ty && values.size() > 1u) {
-                AddError(
-                    "type in vector constructor does not match vector type: "
-                    "expected '" +
-                        sem_.TypeNameOf(elem_ty) + "', found '" + sem_.TypeNameOf(value_elem_ty) +
-                        "'",
-                    value->source);
-                return false;
-            }
-
-            value_cardinality_sum += value_vec->Width();
-        } else {
-            // A vector constructor can only accept vectors and scalars.
-            AddError("expected vector or scalar type in vector constructor; found: " +
-                         sem_.TypeNameOf(value_ty),
-                     value->source);
-            return false;
-        }
-    }
-
-    // A correct vector constructor must either be a zero-value expression,
-    // a single-value initializer (splat) expression, or the number of components
-    // of all constructor arguments must add up to the vector cardinality.
-    if (value_cardinality_sum > 1 && value_cardinality_sum != vec_type->Width()) {
-        if (values.empty()) {
-            TINT_ICE(Resolver, diagnostics_) << "constructor arguments expected to be non-empty!";
-        }
-        const Source& values_start = values[0]->source;
-        const Source& values_end = values[values.size() - 1]->source;
-        AddError("attempted to construct '" + sem_.TypeNameOf(vec_type) + "' with " +
-                     std::to_string(value_cardinality_sum) + " component(s)",
-                 Source::Combine(values_start, values_end));
-        return false;
-    }
-    return true;
-}
-
 bool Validator::Vector(const sem::Vector* ty, const Source& source) const {
     if (!ty->type()->is_scalar()) {
         AddError("vector element type must be 'bool', 'f32', 'i32' or 'u32'", source);
@@ -1794,115 +1786,6 @@ bool Validator::Matrix(const sem::Matrix* ty, const Source& source) const {
         AddError("matrix element type must be 'f32'", source);
         return false;
     }
-    return true;
-}
-
-bool Validator::MatrixConstructorOrCast(const ast::CallExpression* ctor,
-                                        const sem::Matrix* matrix_ty) const {
-    auto& values = ctor->args;
-    // Zero Value expression
-    if (values.empty()) {
-        return true;
-    }
-
-    if (!Matrix(matrix_ty, ctor->source)) {
-        return false;
-    }
-
-    std::vector<const sem::Type*> arg_tys;
-    arg_tys.reserve(values.size());
-    for (auto* value : values) {
-        arg_tys.emplace_back(sem_.TypeOf(value)->UnwrapRef());
-    }
-
-    auto* elem_type = matrix_ty->type();
-    auto num_elements = matrix_ty->columns() * matrix_ty->rows();
-
-    // Print a generic error for an invalid matrix constructor, showing the
-    // available overloads.
-    auto print_error = [&]() {
-        const Source& values_start = values[0]->source;
-        const Source& values_end = values[values.size() - 1]->source;
-        auto type_name = sem_.TypeNameOf(matrix_ty);
-        auto elem_type_name = sem_.TypeNameOf(elem_type);
-        std::stringstream ss;
-        ss << "no matching constructor " + type_name << "(";
-        for (size_t i = 0; i < values.size(); i++) {
-            if (i > 0) {
-                ss << ", ";
-            }
-            ss << arg_tys[i]->FriendlyName(symbols_);
-        }
-        ss << ")" << std::endl << std::endl;
-        ss << "3 candidates available:" << std::endl;
-        ss << "  " << type_name << "()" << std::endl;
-        ss << "  " << type_name << "(" << elem_type_name << ",...," << elem_type_name << ")"
-           << " // " << std::to_string(num_elements) << " arguments" << std::endl;
-        ss << "  " << type_name << "(";
-        for (uint32_t c = 0; c < matrix_ty->columns(); c++) {
-            if (c > 0) {
-                ss << ", ";
-            }
-            ss << VectorPretty(matrix_ty->rows(), elem_type);
-        }
-        ss << ")" << std::endl;
-        AddError(ss.str(), Source::Combine(values_start, values_end));
-    };
-
-    const sem::Type* expected_arg_type = nullptr;
-    if (num_elements == values.size()) {
-        // Column-major construction from scalar elements.
-        expected_arg_type = matrix_ty->type();
-    } else if (matrix_ty->columns() == values.size()) {
-        // Column-by-column construction from vectors.
-        expected_arg_type = matrix_ty->ColumnType();
-    } else {
-        print_error();
-        return false;
-    }
-
-    for (auto* arg_ty : arg_tys) {
-        if (arg_ty != expected_arg_type) {
-            print_error();
-            return false;
-        }
-    }
-
-    return true;
-}
-
-bool Validator::ScalarConstructorOrCast(const ast::CallExpression* ctor,
-                                        const sem::Type* ty) const {
-    if (ctor->args.size() == 0) {
-        return true;
-    }
-    if (ctor->args.size() > 1) {
-        AddError(
-            "expected zero or one value in constructor, got " + std::to_string(ctor->args.size()),
-            ctor->source);
-        return false;
-    }
-
-    // Validate constructor
-    auto* value = ctor->args[0];
-    auto* value_ty = sem_.TypeOf(value)->UnwrapRef();
-
-    using Bool = sem::Bool;
-    using I32 = sem::I32;
-    using U32 = sem::U32;
-    using F32 = sem::F32;
-
-    const bool is_valid =
-        (ty->Is<Bool>() && value_ty->is_scalar()) || (ty->Is<I32>() && value_ty->is_scalar()) ||
-        (ty->Is<U32>() && value_ty->is_scalar()) || (ty->Is<F32>() && value_ty->is_scalar());
-    if (!is_valid) {
-        AddError("cannot construct '" + sem_.TypeNameOf(ty) + "' with a value of type '" +
-                     sem_.TypeNameOf(value_ty) + "'",
-                 ctor->source);
-
-        return false;
-    }
-
     return true;
 }
 
@@ -2259,7 +2142,8 @@ bool Validator::Assignment(const ast::Statement* a, const sem::Type* rhs_ty) con
     if (lhs->Is<ast::PhonyExpression>()) {
         // https://www.w3.org/TR/WGSL/#phony-assignment-section
         auto* ty = rhs_ty->UnwrapRef();
-        if (!ty->IsConstructible() && !ty->IsAnyOf<sem::Pointer, sem::Texture, sem::Sampler>()) {
+        if (!ty->IsConstructible() &&
+            !ty->IsAnyOf<sem::Pointer, sem::Texture, sem::Sampler, sem::AbstractNumeric>()) {
             AddError("cannot assign '" + sem_.TypeNameOf(rhs_ty) +
                          "' to '_'. '_' can only be assigned a constructible, pointer, "
                          "texture or sampler type",

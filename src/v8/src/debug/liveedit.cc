@@ -210,7 +210,7 @@ class Differencer {
   // This method only holds static assert statement (unfortunately you cannot
   // place one in class scope).
   void StaticAssertHolder() {
-    STATIC_ASSERT(MAX_DIRECTION_FLAG_VALUE < (1 << kDirectionSizeBits));
+    static_assert(MAX_DIRECTION_FLAG_VALUE < (1 << kDirectionSizeBits));
   }
 
   class ResultWriter {
@@ -990,6 +990,7 @@ void LiveEdit::PatchScript(Isolate* isolate, Handle<Script> script,
   UnoptimizedCompileFlags flags =
       UnoptimizedCompileFlags::ForScriptCompile(isolate, *script);
   flags.set_is_eager(true);
+  flags.set_is_reparse(true);
   ParseInfo parse_info(isolate, flags, &compile_state, &reusable_state);
   std::vector<FunctionLiteral*> literals;
   if (!ParseScript(isolate, script, &parse_info, false, &literals, result))
@@ -1107,7 +1108,11 @@ void LiveEdit::PatchScript(Isolate* isolate, Handle<Script> script,
   for (const auto& mapping : changed) {
     FunctionData* data = nullptr;
     if (!function_data_map.Lookup(new_script, mapping.second, &data)) continue;
-    Handle<SharedFunctionInfo> new_sfi = data->shared.ToHandleChecked();
+    Handle<SharedFunctionInfo> new_sfi;
+    // In most cases the new FunctionLiteral should also have an SFI, but there
+    // are some exceptions. E.g the compiler doesn't create SFIs for
+    // inner functions that are never referenced.
+    if (!data->shared.ToHandle(&new_sfi)) continue;
     DCHECK_EQ(new_sfi->script(), *new_script);
 
     if (!function_data_map.Lookup(script, mapping.first, &data)) continue;

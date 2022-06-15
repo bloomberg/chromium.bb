@@ -23,8 +23,6 @@ g.test('texture_descriptor')
     `
   Test creating a texture with an optional texture format will fail if the required optional feature
   is not enabled.
-
-  TODO(#919): Actually it should throw an exception, not fail with a validation error.
   `
   )
   .params(u =>
@@ -42,13 +40,13 @@ g.test('texture_descriptor')
     const { format, enable_required_feature } = t.params;
 
     const formatInfo = kTextureFormatInfo[format];
-    t.expectValidationError(() => {
+    t.shouldThrow(enable_required_feature ? false : 'TypeError', () => {
       t.device.createTexture({
         format,
         size: [formatInfo.blockWidth, formatInfo.blockHeight, 1] as const,
         usage: GPUTextureUsage.TEXTURE_BINDING,
       });
-    }, !enable_required_feature);
+    });
   });
 
 g.test('storage_texture_binding_layout')
@@ -120,6 +118,7 @@ g.test('color_target_state')
 
     t.expectValidationError(() => {
       t.device.createRenderPipeline({
+        layout: 'auto',
         vertex: {
           module: t.device.createShaderModule({
             code: `
@@ -175,6 +174,7 @@ g.test('depth_stencil_state')
 
     t.expectValidationError(() => {
       t.device.createRenderPipeline({
+        layout: 'auto',
         vertex: {
           module: t.device.createShaderModule({
             code: `

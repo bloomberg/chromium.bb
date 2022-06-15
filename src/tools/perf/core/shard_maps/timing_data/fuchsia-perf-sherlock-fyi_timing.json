@@ -300,7 +300,7 @@
         "name": "rendering.mobile/cc_scroll_text_only"
     },
     {
-        "duration": "26.0",
+        "duration": "27.0",
         "name": "rendering.mobile/chip_tune"
     },
     {
@@ -532,7 +532,7 @@
         "name": "rendering.mobile/earth"
     },
     {
-        "duration": "28.0",
+        "duration": "27.0",
         "name": "rendering.mobile/ebay_2018"
     },
     {
@@ -676,7 +676,7 @@
         "name": "rendering.mobile/gsp.ro_mobile_2018"
     },
     {
-        "duration": "18.0",
+        "duration": "19.0",
         "name": "rendering.mobile/guardian_pathological_2018"
     },
     {
@@ -1188,7 +1188,7 @@
         "name": "rendering.mobile/non_opaque_background_main_thread_scrolling_00050_pixels_per_second"
     },
     {
-        "duration": "21.0",
+        "duration": "20.0",
         "name": "rendering.mobile/nvidia_vertex_buffer_object"
     },
     {
@@ -1244,7 +1244,7 @@
         "name": "rendering.mobile/pinterest_2018"
     },
     {
-        "duration": "13.0",
+        "duration": "14.0",
         "name": "rendering.mobile/pinterest_mobile_2018"
     },
     {
@@ -1376,7 +1376,7 @@
         "name": "rendering.mobile/techcrunch_2018"
     },
     {
-        "duration": "40.0",
+        "duration": "41.0",
         "name": "rendering.mobile/techcrunch_mobile_2018"
     },
     {
@@ -1536,7 +1536,7 @@
         "name": "rendering.mobile/toBlob_small_canvas_in_worker.html"
     },
     {
-        "duration": "21.0",
+        "duration": "22.0",
         "name": "rendering.mobile/touch_handler_scrolling"
     },
     {
@@ -1708,7 +1708,7 @@
         "name": "rendering.mobile/wsj_mobile_2018"
     },
     {
-        "duration": "31.0",
+        "duration": "32.0",
         "name": "rendering.mobile/yahoo_answers_2018"
     },
     {

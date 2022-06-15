@@ -128,7 +128,7 @@ both web developers and users. Your feature must satisfy the following:
                 as that can be automatically monitored by the origin trials
                 infrastructure.
     *   The feature must have a corresponding entry in the enum
-                [WebFeature](https://cs.chromium.org/chromium/src/third_party/blink/public/mojom/web_feature/web_feature.mojom).
+                [WebFeature](https://cs.chromium.org/chromium/src/third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom).
     *   For any JavaScript-exposed API, usage can be recorded easily via
                 one of the
                 [\[Measure\]](https://chromium.googlesource.com/chromium/src/+/HEAD/third_party/blink/renderer/bindings/IDLExtendedAttributes.md#Measure_i_m_a_c)

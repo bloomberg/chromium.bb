@@ -28,6 +28,7 @@
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/projector/projector_controller_impl.h"
+#include "ash/public/cpp/resources/grit/ash_public_unscaled_resources.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
@@ -60,7 +61,6 @@
 #include "ui/display/types/display_constants.h"
 #include "ui/events/types/event_type.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
@@ -107,12 +107,6 @@ constexpr MagnifierGlass::Params kMagnifierParams{
 constexpr int kSizeLabelBorderRadius = 4;
 
 constexpr int kSizeLabelHorizontalPadding = 8;
-
-// Dimming shield color in the capture session. It is set to be the same color
-// in both dark and light mode. We will investigate whether to do this kind of
-// change to ShieldLayer globally.
-// Grey900 at 40%.
-constexpr SkColor kDimmingShieldColor = SkColorSetA(gfx::kGoogleGrey900, 102);
 
 // Values for the shadows of the capture region components.
 constexpr int kRegionAffordanceCircleShadow2Blur = 6;
@@ -177,12 +171,6 @@ constexpr float kLabelScaleDownOnPhaseChange = 0.8;
 // opacity changes to the capture UI.
 constexpr base::TimeDelta kCaptureUIOpacityChangeDuration =
     base::Milliseconds(100);
-
-// When capture UI (capture bar, capture label) is overlapped with user
-// capture region or camera preview, and the mouse is not hovering over the
-// capture UI, drop the opacity to this value to make the region or camera
-// preview easier to see.
-constexpr float kCaptureUiOverlapOpacity = 0.1;
 
 // If the user is using keyboard only and they are on the selecting region
 // phase, they can create default region which is centered and sized to this
@@ -263,11 +251,10 @@ ui::Cursor GetCursorForFullscreenOrWindowCapture(bool capture_image) {
       display::Screen::GetScreen()->GetDisplayNearestWindow(
           GetPreferredRootWindow());
   const float device_scale_factor = display.device_scale_factor();
-  // TODO: Adjust the icon color after spec is updated.
-  const gfx::ImageSkia icon = gfx::CreateVectorIcon(
-      capture_image ? kCaptureModeImageIcon : kCaptureModeVideoIcon,
-      SK_ColorBLACK);
-  SkBitmap bitmap = *icon.bitmap();
+  const gfx::ImageSkia* icon =
+      ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+          capture_image ? IDR_CAPTURE_IMAGE_CURSOR : IDR_CAPTURE_VIDEO_CURSOR);
+  SkBitmap bitmap = *icon->bitmap();
   gfx::Point hotspot(bitmap.width() / 2, bitmap.height() / 2);
   aura::ScaleAndRotateCursorBitmapAndHotpoint(
       device_scale_factor, display.panel_rotation(), &bitmap, &hotspot);
@@ -1077,7 +1064,7 @@ void CaptureModeSession::OnPaintLayer(const ui::PaintContext& context) {
   }
 
   ui::PaintRecorder recorder(context, layer()->size());
-  recorder.canvas()->DrawColor(kDimmingShieldColor);
+  recorder.canvas()->DrawColor(capture_mode::kDimmingShieldColor);
 
   PaintCaptureRegion(recorder.canvas());
 }
@@ -1365,8 +1352,9 @@ void CaptureModeSession::UpdateCursor(const gfx::Point& location_in_screen,
   // long as the cursor is not on top of the capture button, since clicking
   // anywhere outside the bounds of either of them (the menu or the clickable
   // capture button) will dismiss the menu. Also if the event is on the bar, a
-  // pointer will also be used.
+  // pointer will also be used, as long as the bar is visible.
   const bool is_event_on_capture_bar =
+      capture_mode_bar_widget_->GetLayer()->GetTargetOpacity() &&
       capture_mode_bar_widget_->GetWindowBoundsInScreen().Contains(
           location_in_screen);
   if (capture_mode_settings_widget_ || is_event_on_capture_bar) {
@@ -1377,8 +1365,8 @@ void CaptureModeSession::UpdateCursor(const gfx::Point& location_in_screen,
   const CaptureModeSource source = controller_->source();
   if (source == CaptureModeSource::kWindow && !GetSelectedWindow()) {
     // If we're in window capture mode and there is no select window at the
-    // moment, we should use the original mouse.
-    cursor_setter_->ResetCursor();
+    // moment, we should use a pointer cursor.
+    cursor_setter_->UpdateCursor(ui::mojom::CursorType::kPointer);
     return;
   }
 
@@ -1470,12 +1458,20 @@ void CaptureModeSession::MaybeUpdateCaptureUisOpacity(
       if (is_cursor_on_top_of_widget)
         continue;
 
+      // If the cursor is hovering on top of the capture label, capture bar
+      // should be fully opaque.
+      if (capture_label_widget_ &&
+          capture_label_widget_->GetWindowBoundsInScreen().Contains(
+              *cursor_screen_location)) {
+        continue;
+      }
+
       const bool capture_bar_intersects_region =
           controller_->source() == CaptureModeSource::kRegion &&
           window_bounds_in_screen.Intersects(capture_region);
 
       if (capture_bar_intersects_region) {
-        opacity = kCaptureUiOverlapOpacity;
+        opacity = capture_mode::kCaptureUiOverlapOpacity;
         continue;
       }
 
@@ -1489,7 +1485,7 @@ void CaptureModeSession::MaybeUpdateCaptureUisOpacity(
     }
 
     if (IsWidgetOverlappedWithCameraPreview(widget))
-      opacity = kCaptureUiOverlapOpacity;
+      opacity = capture_mode::kCaptureUiOverlapOpacity;
   }
 
   for (const auto& pair : widget_opacity_map) {
@@ -2037,13 +2033,15 @@ void CaptureModeSession::OnLocatedEvent(ui::LocatedEvent* event,
 }
 
 FineTunePosition CaptureModeSession::GetFineTunePosition(
-    const gfx::Point& location_in_root,
+    const gfx::Point& location_in_screen,
     bool is_touch) const {
   // When the region is empty, this is a brand new selection rather than a fine
   // tune.
   if (controller_->user_capture_region().IsEmpty())
     return FineTunePosition::kNone;
 
+  gfx::Rect capture_region_in_screen = controller_->user_capture_region();
+  wm::ConvertRectToScreen(current_root_, &capture_region_in_screen);
   // In the case of overlapping affordances, prioritize the bottomm right
   // corner, then the rest of the corners, then the edges.
   static const std::vector<FineTunePosition> drag_positions = {
@@ -2058,16 +2056,15 @@ FineTunePosition CaptureModeSession::GetFineTunePosition(
   for (FineTunePosition position : drag_positions) {
     const gfx::Point position_location =
         capture_mode_util::GetLocationForFineTunePosition(
-            controller_->user_capture_region(), position);
-    // If |location_in_root| is within |hit_radius| of |position_location| for
-    // both x and y, then |position| is the current pressed down affordance.
-    if ((position_location - location_in_root).LengthSquared() <=
+            capture_region_in_screen, position);
+    // If `location_in_screen` is within `hit_radius` of `position_location` for
+    // both x and y, then `position` is the current pressed down affordance.
+    if ((position_location - location_in_screen).LengthSquared() <=
         hit_radius_squared) {
       return position;
     }
   }
-
-  if (controller_->user_capture_region().Contains(location_in_root))
+  if (capture_region_in_screen.Contains(location_in_screen))
     return FineTunePosition::kCenter;
 
   return FineTunePosition::kNone;
@@ -2104,7 +2101,7 @@ void CaptureModeSession::OnLocatedEventPressed(
   if (is_selecting_region_)
     return;
 
-  fine_tune_position_ = GetFineTunePosition(location_in_root, is_touch);
+  fine_tune_position_ = GetFineTunePosition(screen_location, is_touch);
 
   if (fine_tune_position_ == FineTunePosition::kNone) {
     // If the point is outside the capture region and not on the capture bar or

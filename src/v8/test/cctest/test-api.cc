@@ -7998,7 +7998,8 @@ static void PGetter2(Local<Name> name,
                      const v8::PropertyCallbackInfo<v8::Value>& info) {
   ApiTestFuzzer::Fuzz();
   p_getter_count2++;
-  v8::Local<v8::Context> context = info.GetIsolate()->GetCurrentContext();
+  v8::Isolate* isolate = info.GetIsolate();
+  v8::Local<v8::Context> context = isolate->GetCurrentContext();
   v8::Local<v8::Object> global = context->Global();
   CHECK(
       info.Holder()
@@ -8025,6 +8026,8 @@ static void PGetter2(Local<Name> name,
                        global->Get(context, v8_str("o4")).ToLocalChecked())
               .FromJust());
   }
+  // Return something to indicate that the operation was intercepted.
+  info.GetReturnValue().Set(True(isolate));
 }
 
 
@@ -10226,7 +10229,7 @@ THREADED_TEST(InstanceProperties) {
 
 static void GlobalObjectInstancePropertiesGet(
     Local<Name> key, const v8::PropertyCallbackInfo<v8::Value>&) {
-  ApiTestFuzzer::Fuzz();
+  // The request is not intercepted so don't call ApiTestFuzzer::Fuzz() here.
 }
 
 static int script_execution_count = 0;
@@ -11584,7 +11587,7 @@ THREADED_TEST(HandleIteration) {
 
 static void InterceptorCallICFastApi(
     Local<Name> name, const v8::PropertyCallbackInfo<v8::Value>& info) {
-  ApiTestFuzzer::Fuzz();
+  // The request is not intercepted so don't call ApiTestFuzzer::Fuzz() here.
   CheckReturnValue(info, FUNCTION_ADDR(InterceptorCallICFastApi));
   int* call_count =
       reinterpret_cast<int*>(v8::External::Cast(*info.Data())->Value());
@@ -12156,6 +12159,8 @@ static void ShouldThrowOnErrorSetter(Local<Name> name, Local<v8::Value> value,
             ->Set(isolate->GetCurrentContext(), v8_str("should_throw_setter"),
                   should_throw_on_error_value)
             .FromJust());
+  // Return a boolean to indicate that the operation was intercepted.
+  info.GetReturnValue().Set(True(isolate));
 }
 
 
@@ -12224,6 +12229,8 @@ static void ShouldThrowOnErrorDeleter(
             ->Set(isolate->GetCurrentContext(), v8_str("should_throw_deleter"),
                   should_throw_on_error_value)
             .FromJust());
+  // Return a boolean to indicate that the operation was intercepted.
+  info.GetReturnValue().Set(True(isolate));
 }
 
 
@@ -12986,6 +12993,11 @@ int ApiTestFuzzer::current_;
 // We are in a callback and want to switch to another thread (if we
 // are currently running the thread fuzzing test).
 void ApiTestFuzzer::Fuzz() {
+  // Emulate context switch which might cause side effects as well.
+  // This is mostly to ensure that the callbacks in the tests do not cause
+  // side effects when they don't intercept the operation.
+  CcTest::i_isolate()->IncrementJavascriptExecutionCounter();
+
   if (!fuzzing_) return;
   ApiTestFuzzer* test = RegisterThreadedTest::nth(current_)->fuzzer_;
   test->ContextSwitch();
@@ -21134,8 +21146,8 @@ TEST(AccessCheckThrows) {
   CheckCorrectThrow("%GetProperty(other, 'x')");
   CheckCorrectThrow("%SetKeyedProperty(other, 'x', 'foo')");
   CheckCorrectThrow("%SetNamedProperty(other, 'y', 'foo')");
-  STATIC_ASSERT(static_cast<int>(i::LanguageMode::kSloppy) == 0);
-  STATIC_ASSERT(static_cast<int>(i::LanguageMode::kStrict) == 1);
+  static_assert(static_cast<int>(i::LanguageMode::kSloppy) == 0);
+  static_assert(static_cast<int>(i::LanguageMode::kStrict) == 1);
   CheckCorrectThrow("%DeleteProperty(other, 'x', 0)");  // 0 == SLOPPY
   CheckCorrectThrow("%DeleteProperty(other, 'x', 1)");  // 1 == STRICT
   CheckCorrectThrow("%DeleteProperty(other, '1', 0)");
@@ -21164,7 +21176,7 @@ const uint16_t kTwoByteSubjectString[] = {
     'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', '\0'};
 
 const int kSubjectStringLength = arraysize(kOneByteSubjectString) - 1;
-STATIC_ASSERT(arraysize(kOneByteSubjectString) ==
+static_assert(arraysize(kOneByteSubjectString) ==
               arraysize(kTwoByteSubjectString));
 
 OneByteVectorResource one_byte_string_resource(v8::base::Vector<const char>(
@@ -29354,26 +29366,29 @@ TEST(EmbedderInstanceTypes) {
   Local<FunctionTemplate> nodeType = v8::FunctionTemplate::New(
       isolate, NodeTypeCallback, Local<Value>(),
       v8::Signature::New(isolate, node), 0, v8::ConstructorBehavior::kThrow,
-      v8::SideEffectType::kHasSideEffect, nullptr, 0, 1, 3);
+      v8::SideEffectType::kHasSideEffect, nullptr,
+      i::Internals::kFirstJSApiObjectType,
+      i::Internals::kFirstJSApiObjectType + 1,
+      i::Internals::kFirstJSApiObjectType + 3);
   proto_template->SetAccessorProperty(
       String::NewFromUtf8Literal(isolate, "nodeType"), nodeType);
 
   Local<FunctionTemplate> element = FunctionTemplate::New(
       isolate, nullptr, Local<Value>(), Local<v8::Signature>(), 0,
       v8::ConstructorBehavior::kAllow, v8::SideEffectType::kHasSideEffect,
-      nullptr, 1);
+      nullptr, i::Internals::kFirstJSApiObjectType + 1);
   element->Inherit(node);
 
   Local<FunctionTemplate> html_element = FunctionTemplate::New(
       isolate, nullptr, Local<Value>(), Local<v8::Signature>(), 0,
       v8::ConstructorBehavior::kAllow, v8::SideEffectType::kHasSideEffect,
-      nullptr, 2);
+      nullptr, i::Internals::kFirstJSApiObjectType + 2);
   html_element->Inherit(element);
 
   Local<FunctionTemplate> div_element = FunctionTemplate::New(
       isolate, nullptr, Local<Value>(), Local<v8::Signature>(), 0,
       v8::ConstructorBehavior::kAllow, v8::SideEffectType::kHasSideEffect,
-      nullptr, 3);
+      nullptr, i::Internals::kFirstJSApiObjectType + 3);
   div_element->Inherit(html_element);
 
   CHECK(env->Global()

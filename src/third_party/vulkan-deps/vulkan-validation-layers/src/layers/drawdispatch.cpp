@@ -529,7 +529,10 @@ struct DispatchVuidsCmdDrawIndirectCount : DrawDispatchVuid {
         cubic_sampler                      = "VUID-vkCmdDrawIndirectCount-None-02692";
         indirect_protected_cb              = "VUID-vkCmdDrawIndirectCount-commandBuffer-02711";
         indirect_contiguous_memory         = "VUID-vkCmdDrawIndirectCount-buffer-02708";
+        indirect_count_contiguous_memory   = "VUID-vkCmdDrawIndirectCount-countBuffer-02714";
         indirect_buffer_bit                = "VUID-vkCmdDrawIndirectCount-buffer-02709";
+        indirect_count_buffer_bit          = "VUID-vkCmdDrawIndirectCount-countBuffer-02715";
+        indirect_count_offset              = "VUID-vkCmdDrawIndirectCount-countBufferOffset-04129";
         viewport_count                     = "VUID-vkCmdDrawIndirectCount-viewportCount-03417";
         scissor_count                      = "VUID-vkCmdDrawIndirectCount-scissorCount-03418";
         viewport_scissor_count             = "VUID-vkCmdDrawIndirectCount-viewportCount-03419";
@@ -600,7 +603,10 @@ struct DispatchVuidsCmdDrawIndexedIndirectCount : DrawDispatchVuid {
         cubic_sampler                      = "VUID-vkCmdDrawIndexedIndirectCount-None-02692";
         indirect_protected_cb              = "VUID-vkCmdDrawIndexedIndirectCount-commandBuffer-02711";
         indirect_contiguous_memory         = "VUID-vkCmdDrawIndexedIndirectCount-buffer-02708";
+        indirect_count_contiguous_memory   = "VUID-vkCmdDrawIndexedIndirectCount-countBuffer-02714";
         indirect_buffer_bit                = "VUID-vkCmdDrawIndexedIndirectCount-buffer-02709";
+        indirect_count_buffer_bit          = "VUID-vkCmdDrawIndexedIndirectCount-countBuffer-02715";
+        indirect_count_offset              = "VUID-vkCmdDrawIndexedIndirectCount-countBufferOffset-04129";
         viewport_count                     = "VUID-vkCmdDrawIndexedIndirectCount-viewportCount-03417";
         scissor_count                      = "VUID-vkCmdDrawIndexedIndirectCount-scissorCount-03418";
         viewport_scissor_count             = "VUID-vkCmdDrawIndexedIndirectCount-viewportCount-03419";
@@ -699,7 +705,7 @@ struct DispatchVuidsCmdTraceRaysKHR: DrawDispatchVuid {
         sampler_bias_offset                = "VUID-vkCmdTraceRaysKHR-None-02704";
         dynamic_state_setting_commands     = "VUID-vkCmdTraceRaysKHR-None-02859";
         unprotected_command_buffer         = "VUID-vkCmdTraceRaysKHR-commandBuffer-02707";
-        ray_query_protected_cb              = "VUID-vkCmdTraceRaysKHR-commandBuffer-04625";
+        ray_query_protected_cb             = "VUID-vkCmdTraceRaysKHR-commandBuffer-03635";
         img_filter_cubic                   = "VUID-vkCmdTraceRaysKHR-None-02693";
         filter_cubic                       = "VUID-vkCmdTraceRaysKHR-filterCubic-02694";
         filter_cubic_min_max               = "VUID-vkCmdTraceRaysKHR-filterCubicMinmax-02695";
@@ -734,6 +740,34 @@ struct DispatchVuidsCmdTraceRaysIndirectKHR: DrawDispatchVuid {
         storage_image_read_without_format  = "VUID-vkCmdTraceRaysIndirectKHR-OpTypeImage-06424";
         storage_image_write_without_format = "VUID-vkCmdTraceRaysIndirectKHR-OpTypeImage-06423";
         depth_compare_sample               = "VUID-vkCmdTraceRaysIndirectKHR-None-06479";
+    }
+};
+
+struct DispatchVuidsCmdTraceRaysIndirect2KHR: DrawDispatchVuid {
+    DispatchVuidsCmdTraceRaysIndirect2KHR() : DrawDispatchVuid() {
+        pipeline_bound                     = "VUID-vkCmdTraceRaysIndirect2KHR-None-02700";
+        dynamic_state                      = "VUID-vkCmdTraceRaysIndirect2KHR-commandBuffer-02701";
+        compatible_pipeline                = "VUID-vkCmdTraceRaysIndirect2KHR-None-02697";
+        linear_sampler                     = "VUID-vkCmdTraceRaysIndirect2KHR-magFilter-04553";
+        cubic_sampler                      = "VUID-vkCmdTraceRaysIndirect2KHR-None-02692";
+        indirect_contiguous_memory         = "VUID-vkCmdTraceRaysIndirect2KHR-indirectDeviceAddress-03632";
+        indirect_buffer_bit                = "VUID-vkCmdTraceRaysIndirect2KHR-indirectDeviceAddress-03633";
+        corner_sampled_address_mode        = "VUID-vkCmdTraceRaysIndirect2KHR-flags-02696";
+        imageview_atomic                   = "VUID-vkCmdTraceRaysIndirect2KHR-None-02691";
+        push_constants_set                 = "VUID-vkCmdTraceRaysIndirect2KHR-maintenance4-06425";
+        descriptor_valid                   = "VUID-vkCmdTraceRaysIndirect2KHR-None-02699";
+        sampler_imageview_type             = "VUID-vkCmdTraceRaysIndirect2KHR-None-02702";
+        sampler_implicitLod_dref_proj      = "VUID-vkCmdTraceRaysIndirect2KHR-None-02703";
+        sampler_bias_offset                = "VUID-vkCmdTraceRaysIndirect2KHR-None-02704";
+        dynamic_state_setting_commands     = "VUID-vkCmdTraceRaysIndirect2KHR-None-02859";
+        unprotected_command_buffer         = "VUID-vkCmdTraceRaysIndirect2KHR-commandBuffer-02707";
+        ray_query_protected_cb             = "VUID-vkCmdTraceRaysIndirect2KHR-commandBuffer-03635";
+        img_filter_cubic                   = "VUID-vkCmdTraceRaysIndirect2KHR-None-02693";
+        filter_cubic                       = "VUID-vkCmdTraceRaysIndirect2KHR-filterCubic-02694";
+        filter_cubic_min_max               = "VUID-vkCmdTraceRaysIndirect2KHR-filterCubicMinmax-02695";
+        storage_image_read_without_format  = "VUID-vkCmdTraceRaysIndirect2KHR-OpTypeImage-06424";
+        storage_image_write_without_format = "VUID-vkCmdTraceRaysIndirect2KHR-OpTypeImage-06423";
+        depth_compare_sample               = "VUID-vkCmdTraceRaysIndirect2KHR-None-06479";
     }
 };
 
@@ -810,7 +844,10 @@ struct DispatchVuidsCmdDrawMeshTasksIndirectNV: DrawDispatchVuid {
         cubic_sampler                      = "VUID-vkCmdDrawMeshTasksIndirectNV-None-02692";
         indirect_protected_cb              = "VUID-vkCmdDrawMeshTasksIndirectNV-commandBuffer-02711";
         indirect_contiguous_memory         = "VUID-vkCmdDrawMeshTasksIndirectNV-buffer-02708";
+        indirect_count_contiguous_memory   = "VUID-vkCmdDrawMeshTasksIndirectNV-countBuffer-02714";
         indirect_buffer_bit                = "VUID-vkCmdDrawMeshTasksIndirectNV-buffer-02709";
+        indirect_count_buffer_bit          = "VUID-vkCmdDrawMeshTasksIndirectNV-countBuffer-02715";
+        indirect_count_offset              = "VUID-vkCmdDrawMeshTasksIndirectNV-countBufferOffset-04129";
         viewport_count                     = "VUID-vkCmdDrawMeshTasksIndirectNV-viewportCount-03417";
         scissor_count                      = "VUID-vkCmdDrawMeshTasksIndirectNV-scissorCount-03418";
         viewport_scissor_count             = "VUID-vkCmdDrawMeshTasksIndirectNV-viewportCount-03419";
@@ -1082,6 +1119,7 @@ static const std::map<CMD_TYPE, DrawDispatchVuid> kDrawdispatchVuid = {
     {CMD_TRACERAYSNV, DispatchVuidsCmdTraceRaysNV()},
     {CMD_TRACERAYSKHR, DispatchVuidsCmdTraceRaysKHR()},
     {CMD_TRACERAYSINDIRECTKHR, DispatchVuidsCmdTraceRaysIndirectKHR()},
+    {CMD_TRACERAYSINDIRECT2KHR, DispatchVuidsCmdTraceRaysIndirect2KHR()},
     {CMD_DRAWMESHTASKSNV, DispatchVuidsCmdDrawMeshTasksNV()},
     {CMD_DRAWMESHTASKSINDIRECTNV, DispatchVuidsCmdDrawMeshTasksIndirectNV()},
     {CMD_DRAWMESHTASKSINDIRECTCOUNTNV, DispatchVuidsCmdDrawMeshTasksIndirectCountNV()},
@@ -1358,10 +1396,7 @@ bool CoreChecks::ValidateCmdDrawIndirectCount(VkCommandBuffer commandBuffer, VkB
     auto buffer_state = Get<BUFFER_STATE>(buffer);
     skip |= ValidateIndirectCmd(*cb_state, *buffer_state, cmd_type);
     auto count_buffer_state = Get<BUFFER_STATE>(countBuffer);
-    skip |= ValidateMemoryIsBoundToBuffer(count_buffer_state.get(), apiName, "VUID-vkCmdDrawIndirectCount-countBuffer-02714");
-    skip |=
-        ValidateBufferUsageFlags(count_buffer_state.get(), VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT, true,
-                                 "VUID-vkCmdDrawIndirectCount-countBuffer-02715", apiName, "VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT");
+    skip |= ValidateIndirectCountCmd(*count_buffer_state, countBufferOffset, cmd_type);
     return skip;
 }
 
@@ -1403,11 +1438,7 @@ bool CoreChecks::ValidateCmdDrawIndexedIndirectCount(VkCommandBuffer commandBuff
     skip |= ValidateCmdDrawType(*cb_state, true, VK_PIPELINE_BIND_POINT_GRAPHICS, cmd_type);
     skip |= ValidateIndirectCmd(*cb_state, *buffer_state, cmd_type);
     auto count_buffer_state = Get<BUFFER_STATE>(countBuffer);
-    skip |=
-        ValidateMemoryIsBoundToBuffer(count_buffer_state.get(), apiName, "VUID-vkCmdDrawIndexedIndirectCount-countBuffer-02714");
-    skip |= ValidateBufferUsageFlags(count_buffer_state.get(), VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT, true,
-                                     "VUID-vkCmdDrawIndexedIndirectCount-countBuffer-02715", apiName,
-                                     "VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT");
+    skip |= ValidateIndirectCountCmd(*count_buffer_state, countBufferOffset, cmd_type);
     return skip;
 }
 
@@ -1610,6 +1641,13 @@ bool CoreChecks::PreCallValidateCmdTraceRaysIndirectKHR(VkCommandBuffer commandB
     return skip;
 }
 
+bool CoreChecks::PreCallValidateCmdTraceRaysIndirect2KHR(VkCommandBuffer commandBuffer,
+                                                         VkDeviceAddress indirectDeviceAddress) const {
+    auto cb_state = GetRead<CMD_BUFFER_STATE>(commandBuffer);
+    bool skip = ValidateCmdDrawType(*cb_state, true, VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, CMD_TRACERAYSINDIRECTKHR);
+    return skip;
+}
+
 bool CoreChecks::PreCallValidateCmdDrawMeshTasksNV(VkCommandBuffer commandBuffer, uint32_t taskCount, uint32_t firstTask) const {
     auto cb_state = GetRead<CMD_BUFFER_STATE>(commandBuffer);
     bool skip = ValidateCmdDrawType(*cb_state, false, VK_PIPELINE_BIND_POINT_GRAPHICS, CMD_DRAWMESHTASKSNV);
@@ -1638,11 +1676,7 @@ bool CoreChecks::PreCallValidateCmdDrawMeshTasksIndirectCountNV(VkCommandBuffer 
     auto buffer_state = Get<BUFFER_STATE>(buffer);
     auto count_buffer_state = Get<BUFFER_STATE>(countBuffer);
     skip |= ValidateIndirectCmd(*cb_state, *buffer_state, CMD_DRAWMESHTASKSINDIRECTCOUNTNV);
-    skip |= ValidateMemoryIsBoundToBuffer(count_buffer_state.get(), "vkCmdDrawMeshTasksIndirectCountNV()",
-                                          "VUID-vkCmdDrawMeshTasksIndirectCountNV-countBuffer-02714");
-    skip |= ValidateBufferUsageFlags(count_buffer_state.get(), VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT, true,
-                                     "VUID-vkCmdDrawMeshTasksIndirectCountNV-countBuffer-02715",
-                                     "vkCmdDrawMeshTasksIndirectCountNV()", "VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT");
+    skip |= ValidateIndirectCountCmd(*count_buffer_state, countBufferOffset, CMD_DRAWMESHTASKSINDIRECTCOUNTNV);
     skip |= ValidateCmdDrawStrideWithStruct(commandBuffer, "VUID-vkCmdDrawMeshTasksIndirectCountNV-stride-02182", stride,
                                             "VkDrawMeshTasksIndirectCommandNV", sizeof(VkDrawMeshTasksIndirectCommandNV));
     if (maxDrawCount > 1) {

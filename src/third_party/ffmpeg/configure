@@ -215,6 +215,7 @@ External library support:
   --disable-iconv          disable iconv [autodetect]
   --enable-jni             enable JNI support [no]
   --enable-ladspa          enable LADSPA audio filtering [no]
+  --enable-lcms2           enable ICC profile support via LittleCMS 2 [no]
   --enable-libaom          enable AV1 video encoding/decoding via libaom [no]
   --enable-libaribb24      enable ARIB text and caption decoding via libaribb24 [no]
   --enable-libass          enable libass subtitles rendering,
@@ -240,6 +241,7 @@ External library support:
   --enable-libiec61883     enable iec61883 via libiec61883 [no]
   --enable-libilbc         enable iLBC de/encoding via libilbc [no]
   --enable-libjack         enable JACK audio sound server [no]
+  --enable-libjxl          enable JPEG XL de/encoding via libjxl [no]
   --enable-libklvanc       enable Kernel Labs VANC processing [no]
   --enable-libkvazaar      enable HEVC encoding via libkvazaar [no]
   --enable-liblensfun      enable lensfun lens correction [no]
@@ -1813,6 +1815,7 @@ EXTERNAL_LIBRARY_LIST="
     gnutls
     jni
     ladspa
+    lcms2
     libaom
     libass
     libbluray
@@ -1833,6 +1836,7 @@ EXTERNAL_LIBRARY_LIST="
     libiec61883
     libilbc
     libjack
+    libjxl
     libklvanc
     libkvazaar
     libmodplug
@@ -2959,6 +2963,8 @@ txd_decoder_select="texturedsp"
 utvideo_decoder_select="bswapdsp llviddsp"
 utvideo_encoder_select="bswapdsp huffman llvidencdsp"
 vble_decoder_select="llviddsp"
+vbn_decoder_select="texturedsp"
+vbn_encoder_select="texturedspenc"
 vc1_decoder_select="blockdsp h263_decoder h264qpel intrax8 mpegvideodec vc1dsp"
 vc1image_decoder_select="vc1_decoder"
 vorbis_decoder_select="mdct"
@@ -3329,6 +3335,8 @@ libgsm_ms_decoder_deps="libgsm"
 libgsm_ms_encoder_deps="libgsm"
 libilbc_decoder_deps="libilbc"
 libilbc_encoder_deps="libilbc"
+libjxl_decoder_deps="libjxl libjxl_threads"
+libjxl_encoder_deps="libjxl libjxl_threads"
 libkvazaar_encoder_deps="libkvazaar"
 libmodplug_demuxer_deps="libmodplug"
 libmp3lame_encoder_deps="libmp3lame"
@@ -3396,6 +3404,7 @@ asf_stream_muxer_select="asf_muxer"
 av1_demuxer_select="av1_frame_merge_bsf av1_parser"
 avi_demuxer_select="riffdec exif"
 avi_muxer_select="riffenc"
+avif_muxer_select="mov_muxer"
 caf_demuxer_select="iso_media"
 caf_muxer_select="iso_media"
 dash_muxer_select="mp4_muxer"
@@ -3427,7 +3436,7 @@ latm_muxer_select="aac_adtstoasc_bsf mpeg4audio"
 matroska_audio_muxer_select="matroska_muxer"
 matroska_demuxer_select="riffdec"
 matroska_demuxer_suggest="bzlib zlib"
-matroska_muxer_select="mpeg4audio riffenc vp9_superframe_bsf aac_adtstoasc_bsf"
+matroska_muxer_select="mpeg4audio riffenc aac_adtstoasc_bsf pgs_frame_merge_bsf vp9_superframe_bsf"
 mlp_demuxer_select="mlp_parser"
 mmf_muxer_select="riffenc"
 mov_demuxer_select="iso_media riffdec"
@@ -3579,6 +3588,8 @@ udp_protocol_select="network"
 udplite_protocol_select="network"
 unix_protocol_deps="sys_un_h"
 unix_protocol_select="network"
+ipfs_protocol_select="https_protocol"
+ipns_protocol_select="https_protocol"
 
 # external library protocols
 libamqp_protocol_deps="librabbitmq"
@@ -3655,6 +3666,8 @@ gblur_vulkan_filter_deps="vulkan spirv_compiler"
 hflip_vulkan_filter_deps="vulkan spirv_compiler"
 histeq_filter_deps="gpl"
 hqdn3d_filter_deps="gpl"
+iccdetect_filter_deps="lcms2"
+iccgen_filter_deps="lcms2"
 interlace_filter_deps="gpl"
 kerndeint_filter_deps="gpl"
 ladspa_filter_deps="ladspa libdl"
@@ -6512,6 +6525,7 @@ enabled gmp               && require gmp gmp.h mpz_export -lgmp
 enabled gnutls            && require_pkg_config gnutls gnutls gnutls/gnutls.h gnutls_global_init
 enabled jni               && { [ $target_os = "android" ] && check_headers jni.h && enabled pthreads || die "ERROR: jni not found"; }
 enabled ladspa            && require_headers "ladspa.h dlfcn.h"
+enabled lcms2             && require_pkg_config lcms2 "lcms2 >= 2.13" lcms2.h cmsCreateContext
 enabled libaom            && require_pkg_config libaom "aom >= 1.0.0" aom/aom_codec.h aom_codec_version
 enabled libaribb24        && { check_pkg_config libaribb24 "aribb24 > 1.0.3" "aribb24/aribb24.h" arib_instance_new ||
                                { enabled gpl && require_pkg_config libaribb24 aribb24 "aribb24/aribb24.h" arib_instance_new; } ||
@@ -6551,6 +6565,8 @@ enabled libgsm            && { for gsm_hdr in "gsm.h" "gsm/gsm.h"; do
                                    check_lib libgsm "${gsm_hdr}" gsm_create -lgsm && break;
                                done || die "ERROR: libgsm not found"; }
 enabled libilbc           && require libilbc ilbc.h WebRtcIlbcfix_InitDecode -lilbc $pthreads_extralibs
+enabled libjxl            && require_pkg_config libjxl "libjxl >= 0.7.0" jxl/decode.h JxlDecoderVersion &&
+                             require_pkg_config libjxl_threads "libjxl_threads >= 0.7.0" jxl/thread_parallel_runner.h JxlThreadParallelRunner
 enabled libklvanc         && require libklvanc libklvanc/vanc.h klvanc_context_create -lklvanc
 enabled libkvazaar        && require_pkg_config libkvazaar "kvazaar >= 0.8.1" kvazaar.h kvz_api_get
 enabled liblensfun        && require_pkg_config liblensfun lensfun lensfun.h lf_db_new
@@ -6738,7 +6754,7 @@ fi
 
 if enabled sdl2; then
     SDL2_CONFIG="${cross_prefix}sdl2-config"
-    test_pkg_config sdl2 "sdl2 >= 2.0.1 sdl2 < 2.1.0" SDL_events.h SDL_PollEvent
+    test_pkg_config sdl2 "sdl2 >= 2.0.1 sdl2 < 3.0.0" SDL_events.h SDL_PollEvent
     if disabled sdl2 && "${SDL2_CONFIG}" --version > /dev/null 2>&1; then
         sdl2_cflags=$("${SDL2_CONFIG}" --cflags)
         sdl2_extralibs=$("${SDL2_CONFIG}" --libs)

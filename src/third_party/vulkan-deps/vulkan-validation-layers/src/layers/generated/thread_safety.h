@@ -292,19 +292,21 @@ public:
     layer_data::unordered_map<VkCommandPool, layer_data::unordered_set<VkCommandBuffer>> pool_command_buffers_map;
     layer_data::unordered_map<VkDevice, layer_data::unordered_set<VkQueue>> device_queues_map;
 
-    // Track per-descriptorsetlayout and per-descriptorset whether UPDATE_AFTER_BIND is used.
-    // This is used to (sloppily) implement the relaxed externsync rules for UPDATE_AFTER_BIND
-    // descriptors. We model updates of UPDATE_AFTER_BIND descriptors as if they were reads
+    // Track per-descriptorsetlayout and per-descriptorset whether read_only is used.
+    // This is used to (sloppily) implement the relaxed externsync rules for read_only
+    // descriptors. We model updates of read_only descriptors as if they were reads
     // rather than writes, because they only conflict with the set being freed or reset.
     //
-    // We don't track the UPDATE_AFTER_BIND state per-binding for a couple reasons:
+    // We don't track the read_only state per-binding for a couple reasons:
     // (1) We only have one counter per object, and if we treated non-UAB as writes
     //     and UAB as reads then they'd appear to conflict with each other.
     // (2) Avoid additional tracking of descriptor binding state in the descriptor set
     //     layout, and tracking of which bindings are accessed by a VkDescriptorUpdateTemplate.
-    vl_concurrent_unordered_map<VkDescriptorSetLayout, bool, 4> dsl_update_after_bind_map;
-    vl_concurrent_unordered_map<VkDescriptorSet, bool, 6> ds_update_after_bind_map;
-    bool DsUpdateAfterBind(VkDescriptorSet) const;
+    // Descriptor sets using VK_DESCRIPTOR_SET_LAYOUT_CREATE_HOST_ONLY_POOL_BIT_VALVE can also
+    // be used simultaneously in multiple threads
+    vl_concurrent_unordered_map<VkDescriptorSetLayout, bool, 4> dsl_read_only_map;
+    vl_concurrent_unordered_map<VkDescriptorSet, bool, 6> ds_read_only_map;
+    bool DsReadOnly(VkDescriptorSet) const;
 
     counter<VkCommandBuffer> c_VkCommandBuffer;
     counter<VkDevice> c_VkDevice;
@@ -4080,6 +4082,14 @@ void PostCallRecordCmdResolveImage2KHR(
     VkCommandBuffer                             commandBuffer,
     const VkResolveImageInfo2*                  pResolveImageInfo) override;
 
+void PreCallRecordCmdTraceRaysIndirect2KHR(
+    VkCommandBuffer                             commandBuffer,
+    VkDeviceAddress                             indirectDeviceAddress) override;
+
+void PostCallRecordCmdTraceRaysIndirect2KHR(
+    VkCommandBuffer                             commandBuffer,
+    VkDeviceAddress                             indirectDeviceAddress) override;
+
 void PreCallRecordGetDeviceBufferMemoryRequirementsKHR(
     VkDevice                                    device,
     const VkDeviceBufferMemoryRequirements*     pInfo,
@@ -5611,6 +5621,18 @@ void PostCallRecordCmdSetFragmentShadingRateEnumNV(
     VkFragmentShadingRateNV                     shadingRate,
     const VkFragmentShadingRateCombinerOpKHR    combinerOps[2]) override;
 
+void PreCallRecordGetImageSubresourceLayout2EXT(
+    VkDevice                                    device,
+    VkImage                                     image,
+    const VkImageSubresource2EXT*               pSubresource,
+    VkSubresourceLayout2EXT*                    pLayout) override;
+
+void PostCallRecordGetImageSubresourceLayout2EXT(
+    VkDevice                                    device,
+    VkImage                                     image,
+    const VkImageSubresource2EXT*               pSubresource,
+    VkSubresourceLayout2EXT*                    pLayout) override;
+
 #ifdef VK_USE_PLATFORM_WIN32_KHR
 
 void PreCallRecordAcquireWinrtDisplayNV(
@@ -5798,6 +5820,17 @@ void PostCallRecordGetMemoryRemoteAddressNV(
     VkDevice                                    device,
     const VkMemoryGetRemoteAddressInfoNV*       pMemoryGetRemoteAddressInfo,
     VkRemoteAddressNV*                          pAddress,
+    VkResult                                    result) override;
+
+void PreCallRecordGetPipelinePropertiesEXT(
+    VkDevice                                    device,
+    const VkPipelineInfoEXT*                    pPipelineInfo,
+    VkBaseOutStructure*                         pPipelineProperties) override;
+
+void PostCallRecordGetPipelinePropertiesEXT(
+    VkDevice                                    device,
+    const VkPipelineInfoEXT*                    pPipelineInfo,
+    VkBaseOutStructure*                         pPipelineProperties,
     VkResult                                    result) override;
 
 void PreCallRecordCmdSetPatchControlPointsEXT(

@@ -86,8 +86,7 @@ class CORE_EXPORT NGPhysicalFragment
                      NGFragmentType type,
                      unsigned sub_type);
 
-  NGPhysicalFragment(const NGPhysicalFragment& other,
-                     bool recalculate_layout_overflow);
+  NGPhysicalFragment(const NGPhysicalFragment& other);
 
   ~NGPhysicalFragment();
 
@@ -623,12 +622,7 @@ class CORE_EXPORT NGPhysicalFragment
   }
 
   base::span<NGPhysicalOutOfFlowPositionedNode> OutOfFlowPositionedDescendants()
-      const {
-    if (!HasOutOfFlowPositionedDescendants())
-      return base::span<NGPhysicalOutOfFlowPositionedNode>();
-    return {oof_data_->oof_positioned_descendants.data(),
-            oof_data_->oof_positioned_descendants.size()};
-  }
+      const;
 
   NGFragmentedOutOfFlowData* FragmentedOutOfFlowData() const;
 

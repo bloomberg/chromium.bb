@@ -14,7 +14,7 @@
  * @enum {number}
  */
 export const MacroName = {
-  UNSPECIFID: 0,
+  UNSPECIFIED: 0,
 
   // Simply input text into a text field.
   INPUT_TEXT_VIEW: 1,
@@ -66,6 +66,27 @@ export const MacroName = {
   // Insert a new line character.
   // Note: This doesn't correspond to a Voice Access action.
   NEW_LINE: 15,
+
+  // Stops dictation.
+  STOP_LISTENING: 16,
+
+  // Delete one word.
+  DELETE_PREV_WORD: 17,
+
+  // Delete one sentence.
+  DELETE_PREV_SENT: 18,
+
+  // Move the cursor to the next word.
+  NAV_NEXT_WORD: 19,
+
+  // Move the cursor to the previous word.
+  NAV_PREV_WORD: 20,
+
+  // Deletes a provided word or phrase.
+  SMART_DELETE_PHRASE: 21,
+
+  // Replaces a provided word or phrase.
+  SMART_REPLACE_PHRASE: 22,
 
   // Any new actions should match with Voice Access's semantic tags.
 };

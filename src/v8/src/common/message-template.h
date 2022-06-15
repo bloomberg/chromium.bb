@@ -41,6 +41,8 @@ namespace internal {
   T(AwaitNotInDebugEvaluate,                                                   \
     "await can not be used when evaluating code "                              \
     "while paused in the debugger")                                            \
+  T(AtomicsMutexLockNotAllowed,                                                \
+    "Atomics.Mutex.lock cannot be called in this context")                     \
   T(AtomicsWaitNotAllowed, "Atomics.wait cannot be called in this context")    \
   T(BadRoundingType, "RoundingType is not fractionDigits")                     \
   T(BadSortComparisonFunction,                                                 \
@@ -126,8 +128,6 @@ namespace internal {
   T(LocaleBadParameters, "Incorrect locale information provided")              \
   T(ListFormatBadParameters, "Incorrect ListFormat information provided")      \
   T(MapperFunctionNonCallable, "flatMap mapper function is not callable")      \
-  T(MethodCalledOnWrongObject,                                                 \
-    "Method % called on a non-object or on a wrong type of object.")           \
   T(MethodInvokedOnWrongType, "Method invoked on an object that is not %.")    \
   T(NoAccess, "no access")                                                     \
   T(NonCallableInInstanceOfCheck,                                              \
@@ -481,9 +481,43 @@ namespace internal {
   T(InvalidUnusedPrivateStaticMethodAccessedByDebugger,                        \
     "Unused static private method '%' cannot be accessed at debug time")       \
   T(JsonParseUnexpectedEOS, "Unexpected end of JSON input")                    \
-  T(JsonParseUnexpectedToken, "Unexpected token % in JSON at position %")      \
   T(JsonParseUnexpectedTokenNumber, "Unexpected number in JSON at position %") \
   T(JsonParseUnexpectedTokenString, "Unexpected string in JSON at position %") \
+  T(JsonParseUnterminatedString, "Unterminated string in JSON at position %")  \
+  T(JsonParseExpectedPropNameOrRBrace,                                         \
+    "Expected property name or '}' in JSON at position %")                     \
+  T(JsonParseExpectedCommaOrRBrack,                                            \
+    "Expected ',' or ']' after array element in JSON at position %")           \
+  T(JsonParseExpectedCommaOrRBrace,                                            \
+    "Expected ',' or '}' after property value in JSON at position "            \
+    "%")                                                                       \
+  T(JsonParseExpectedDoubleQuotedPropertyName,                                 \
+    "Expected double-quoted property name in JSON at position %")              \
+  T(JsonParseExponentPartMissingNumber,                                        \
+    "Exponent part is missing a number in JSON at position %")                 \
+  T(JsonParseExpectedColonAfterPropertyName,                                   \
+    "Expected ':' after property name in JSON at position %")                  \
+  T(JsonParseUnterminatedFractionalNumber,                                     \
+    "Unterminated fractional number in JSON at position %")                    \
+  T(JsonParseUnexpectedNonWhiteSpaceCharacter,                                 \
+    "Unexpected non-whitespace character after JSON at position "              \
+    "%")                                                                       \
+  T(JsonParseBadEscapedCharacter,                                              \
+    "Bad escaped character in JSON at position %")                             \
+  T(JsonParseBadControlCharacter,                                              \
+    "Bad control character in string literal in JSON at position %")           \
+  T(JsonParseBadUnicodeEscape, "Bad Unicode escape in JSON at position %")     \
+  T(JsonParseNoNumberAfterMinusSign,                                           \
+    "No number after minus sign in JSON at position %")                        \
+  T(JsonParseShortString, "\"%\" is not valid JSON")                           \
+  T(JsonParseUnexpectedTokenShortString,                                       \
+    "Unexpected token '%', \"%\" is not valid JSON")                           \
+  T(JsonParseUnexpectedTokenSurroundStringWithContext,                         \
+    "Unexpected token '%', ...\"%\"... is not valid JSON")                     \
+  T(JsonParseUnexpectedTokenEndStringWithContext,                              \
+    "Unexpected token '%', ...\"%\" is not valid JSON")                        \
+  T(JsonParseUnexpectedTokenStartStringWithContext,                            \
+    "Unexpected token '%', \"%\"... is not valid JSON")                        \
   T(LabelRedeclaration, "Label '%' has already been declared")                 \
   T(LabelledFunctionDeclaration,                                               \
     "Labelled function declaration not allowed as the body of a control flow " \
@@ -609,6 +643,7 @@ namespace internal {
   T(WasmTrapIllegalCast, "illegal cast")                                       \
   T(WasmTrapArrayOutOfBounds, "array element access out of bounds")            \
   T(WasmTrapArrayTooLarge, "requested new array is too large")                 \
+  T(WasmTrapStringInvalidWtf8, "invalid WTF-8 string")                         \
   T(WasmExceptionError, "wasm exception")                                      \
   /* Asm.js validation related */                                              \
   T(AsmJsInvalid, "Invalid asm.js: %")                                         \

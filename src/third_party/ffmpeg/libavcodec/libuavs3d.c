@@ -1,5 +1,5 @@
 /*
- * RAW AVS3-P2/IEEE1857.10 video demuxer
+ * AVS3-P2/IEEE1857.10 video decoder (using the uavs3d library)
  * Copyright (c) 2020 Zhenyu Wang <wangzhenyu@pkusz.edu.cn>
  *                    Bingjie Han <hanbj@pkusz.edu.cn>
  *                    Huiwen Ren  <hwrenx@gmail.com>
@@ -142,14 +142,14 @@ static void libuavs3d_flush(AVCodecContext * avctx)
 }
 
 #define UAVS3D_CHECK_INVALID_RANGE(v, l, r) ((v)<(l)||(v)>(r))
-static int libuavs3d_decode_frame(AVCodecContext *avctx, void *data, int *got_frame, AVPacket *avpkt)
+static int libuavs3d_decode_frame(AVCodecContext *avctx, AVFrame *frm,
+                                  int *got_frame, AVPacket *avpkt)
 {
     uavs3d_context *h = avctx->priv_data;
     const uint8_t *buf = avpkt->data;
     int buf_size = avpkt->size;
     const uint8_t *buf_end;
     const uint8_t *buf_ptr;
-    AVFrame *frm = data;
     int left_bytes;
     int ret, finish = 0;
 
@@ -162,7 +162,7 @@ static int libuavs3d_decode_frame(AVCodecContext *avctx, void *data, int *got_fr
             if (!frm->data[0] && (ret = ff_get_buffer(avctx, frm, 0)) < 0) {
                 return ret;
             }
-            h->dec_frame.priv = data;   // AVFrame
+            h->dec_frame.priv = frm;   // AVFrame
         }
         do {
             ret = uavs3d_flush(h->dec_handle, &h->dec_frame);
@@ -182,7 +182,7 @@ static int libuavs3d_decode_frame(AVCodecContext *avctx, void *data, int *got_fr
                 if (!frm->data[0] && (ret = ff_get_buffer(avctx, frm, 0)) < 0) {
                     return ret;
                 }
-                h->dec_frame.priv = data;   // AVFrame
+                h->dec_frame.priv = frm;   // AVFrame
             }
 
             if (uavs3d_find_next_start_code(buf_ptr, buf_end - buf_ptr, &left_bytes)) {
@@ -255,7 +255,7 @@ const FFCodec ff_libuavs3d_decoder = {
     .priv_data_size = sizeof(uavs3d_context),
     .init           = libuavs3d_init,
     .close          = libuavs3d_end,
-    .decode         = libuavs3d_decode_frame,
+    FF_CODEC_DECODE_CB(libuavs3d_decode_frame),
     .p.capabilities = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_DELAY | AV_CODEC_CAP_OTHER_THREADS,
     .caps_internal  = FF_CODEC_CAP_AUTO_THREADS,
     .flush          = libuavs3d_flush,

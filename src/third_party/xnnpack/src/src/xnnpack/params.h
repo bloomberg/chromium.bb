@@ -905,6 +905,19 @@ union xnn_f32_chw_params {
 #endif  // XNN_ARCH_X86 || XNN_ARCH_X86_64
 };
 
+union xnn_f16_chw_params {
+  char _; // Dummy member variable to comply with the C standard
+#if XNN_ARCH_ARM || XNN_ARCH_ARM64
+  struct {
+    uint16_t min;
+    uint16_t max;
+    XNN_ALIGN(8) uint16_t mask_even[4]; // used by stride 2 kernels
+    XNN_ALIGN(8) uint16_t mask_odd[4];  // used by stride 2 kernels
+    XNN_ALIGN(8) uint16_t mask[4]; // used by stride 1 kernels
+  } neonfp16arith;
+#endif  // XNN_ARCH_ARM || XNN_ARCH_ARM64
+};
+
 union xnn_s8_minmax_params {
   struct {
     int32_t min;
@@ -2212,6 +2225,14 @@ typedef void (*xnn_x16_transposec_ukernel_function)(
     size_t block_width,
     size_t block_height);
 
+typedef void (*xnn_x24_transposec_ukernel_function)(
+    const void* a,
+    void* b,
+    size_t input_stride,
+    size_t output_stride,
+    size_t block_width,
+    size_t block_height);
+
 typedef void (*xnn_x32_transposec_ukernel_function)(
     const uint32_t* a,
     uint32_t* b,
@@ -2674,6 +2695,16 @@ typedef void (*xnn_f32_dwconv2d_chw_ukernel_function)(
     float* output,
     uint32_t padding_top,
     const union xnn_f32_chw_params* params);
+
+typedef void (*xnn_f16_dwconv2d_chw_ukernel_function)(
+    size_t input_height,
+    size_t input_width,
+    const void* input,
+    const void* weights,
+    const void* zero,
+    void* output,
+    uint32_t padding_top,
+    const union xnn_f16_chw_params* params);
 
 typedef void (*xnn_dwconv_unipass_ukernel_function)(
     size_t channels,
@@ -3779,6 +3810,12 @@ typedef void (*xnn_init_qu8_mul_minmax_params_fn)(
   uint8_t output_min,
   uint8_t output_max);
 
+typedef void (*xnn_init_f16_chw_params_fn)(
+  union xnn_f16_chw_params params[XNN_MIN_ELEMENTS(1)],
+  uint32_t width,
+  uint16_t output_min,
+  uint16_t output_max);
+
 typedef void (*xnn_init_f16_hswish_params_fn)(
   union xnn_f16_hswish_params params[XNN_MIN_ELEMENTS(1)]);
 
@@ -3965,12 +4002,13 @@ static inline bool xnn_is_hmp_igemm_ukernel(struct xnn_hmp_igemm_ukernel ukernel
 #endif
 }
 
+// Largest GEMM/IGEMM MR used in init.c is 7 (x86 AVX512).
+// Largest GEMM/IGEMM MR is 8 in e2e benchmarks.
+#define XNN_MAX_MR 8
+
 struct gemm_fused_ukernels {
-  struct xnn_hmp_gemm_ukernel gemm;
-  struct xnn_hmp_igemm_ukernel igemm;
-  // Optional GEMM and IGEMM micro-kernels with MR=1 and the same NR and KR parameters.
-  struct xnn_hmp_gemm_ukernel gemm1;
-  struct xnn_hmp_igemm_ukernel igemm1;
+  struct xnn_hmp_gemm_ukernel gemm[XNN_MAX_MR];
+  struct xnn_hmp_igemm_ukernel igemm[XNN_MAX_MR];
 };
 
 struct transpose_parameters {

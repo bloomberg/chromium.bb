@@ -32,11 +32,12 @@ the attention of other relevant leads).
 re-architecting the code? Do the [API owners](/blink/guidelines/api-owners) need
 to be involved?*
 
-**A**: No. The API owners oversee the **process** of shipping [web-exposed](/blink/guidelines/web-exposed) API changes. They are not necessarily leads or
-overseers of any of the code. Instead, you should get the buy-in of the leads of
-the code areas touched by your project. If there may be side effects of your
-change, you should follow the "Architectural change" process below. In addition,
-such large projects should have public design docs that are also shared on
+**A**: No. The API owners oversee the **process** of shipping [web-exposed](/blink/guidelines/web-exposed)
+API changes. They are not necessarily leads or overseers of any of the code.
+Instead, you should get the buy-in of the leads of the code areas touched by
+your project. If there may be side effects of your change, you should follow the
+"Architectural change" process below. In addition, such large projects should
+have public design docs that are also shared on
 [blink-dev@chromium.org](mailto:blink-dev@chromium.org) (or
 [chromium-dev@chromium.org](mailto:chromium-dev@chromium.org), for projects that
 have significant parts outside of third_party/blink) for feedback (this is also
@@ -275,6 +276,38 @@ via Finch on a percentage of the stable or beta populations may be useful
 In these cases, an Intent to Experiment explaining why this non-typical path is
 requested and the corresponding LGTM(s) are still required before proceeding.
 
+An initial origin trial for a feature may only run for *6 milestones of Chromium*.
+Each request to extend beyond that limit may only be for *3 milestones* at a time,
+and will not be approved unless substantial progress is demonstrated in all of
+these areas:
+* Draft spec (early draft is ok, but must be spec-like and associated with the
+  appropriate standardization venue, or WICG)
+* TAG review
+* bit.ly/blink-signals requests
+* Outreach for feedback from the spec community
+* WPT tests
+
+Each subsequent request to extend an origin trial must provide substantial
+*additional*  progress on top of the previous extension request.
+
+[Note: the required breaking period was removed in April 2022. This removal will run
+for 12 months, after which the API owners will consider making the change permanent.]
+~~If an Origin Trial happens, then there is a [required breaking
+period](https://docs.google.com/document/d/1oSlxRwsc8vTUGDGAPU6CaJ8dXRdvCdxvZJGxDp9IC3M/edit#heading=h.r5cdr0aazfpm)
+before shipping in step 4. If you wish to skip the breaking period, meaning that
+sites participating in the Origin Trial will not see an interruption in support
+for the feature between Origin Trial and launch (\*), you may request an
+exception. The process to do so is to include this request in your Intent to
+Ship email. In the request, you must show clear evidence that developers engaged
+with the Origin Trial and that their concerns were taken into account in the
+final API design and implementation. LGTMs for the Intent to Ship imply approval
+of the request.~~
+
+(\*) "Not see an interruption" means that if the origin trial ends at milestone
+N, and the feature is shipped in milestone N+1, sites opting into the origin
+trial will continue to be able to use the feature on Chromium milestone N up to
+(and even after, for those users who have not upgraded) N+1 ships.
+
 #### Step 6: Prepare to Ship
 
 At this point, if you are a Googler you should get a final spec review from your
@@ -344,53 +377,8 @@ significant data for your feature.
 
 #### Step 3 (Optional): Origin Trial
 
-If you want to gather data on the usability of your feature that an [Origin
-Trial](/blink/origin-trials/running-an-origin-trial) can help collect, proceed
-to the “Origin Trial” stage in ChromeStatus and fill out the required fields
-detailing what you hope to learn from the origin trial. This will generate an
-[Intent to
-Experiment](https://docs.google.com/document/d/1vlTlsQKThwaX0-lj_iZbVTzyqY7LioqERU8DK3u3XjI/edit)
-mail that you should send to [blink-dev](mailto:blink-dev@chromium.org). After
-receiving at least [one LGTM](/blink/guidelines/api-owners/procedures) from the
-API owners, you can proceed with your origin trial release. Collect data and
-respond to any issues. From here, you may wish to return to Dev Trials, proceed
-to Prepare to Ship, or park the feature.
-
-Please note that origin trials are not exempt from requiring cross-functional
-approvals from the Chrome launch review process. Details[
-here](/blink/origin-trials/running-an-origin-trial).
-
-An initial origin trial for a feature may only run for *6 milestones of Chromium*.
-Each request to extend beyond that limit may only be for *3 milestones* at a time,
-and will not be approved unless substantial progress is demonstrated in all of
-these areas:
-* Draft spec (early draft is ok, but must be spec-like and associated with the
-  appropriate standardization venue, or WICG)
-* TAG review
-* bit.ly/blink-signals requests
-* Outreach for feedback from the spec community
-* WPT tests
-
-Each subsequent request to extend an origin trial must provide substantial
-*additional*  progress on top of the previous extension request.
-
-[Note: the required breaking period was removed in April 2022. This removal will run
-for 12 months, after which the API owners will consider making the change permanent.]
-~~If an Origin Trial happens, then there is a [required breaking
-period](https://docs.google.com/document/d/1oSlxRwsc8vTUGDGAPU6CaJ8dXRdvCdxvZJGxDp9IC3M/edit#heading=h.r5cdr0aazfpm)
-before shipping in step 4. If you wish to skip the breaking period, meaning that
-sites participating in the Origin Trial will not see an interruption in support
-for the feature between Origin Trial and launch (\*), you may request an
-exception. The process to do so is to include this request in your Intent to
-Ship email. In the request, you must show clear evidence that developers engaged
-with the Origin Trial and that their concerns were taken into account in the
-final API design and implementation. LGTMs for the Intent to Ship imply approval
-of the request.~~
-
-(\*) "Not see an interruption" means that if the origin trial ends at milestone
-N, and the feature is shipped in milestone N+1, sites opting into the origin
-trial will continue to be able to use the feature on Chromium milestone N up to
-(and even after, for those users who have not upgraded) N+1 ships.
+The [Origin Trial guidelines](#step-5-optional-origin-trial) for new feature
+incubations applies here as well.
 
 #### Step 4: Prepare to Ship
 

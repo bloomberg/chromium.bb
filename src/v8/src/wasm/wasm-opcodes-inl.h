@@ -376,6 +376,9 @@ constexpr const char* WasmOpcodes::OpcodeName(WasmOpcode opcode) {
     CASE_I32x4_OP(RelaxedTruncF32x4U, "relaxed_trunc_f32x4_u");
     CASE_I32x4_OP(RelaxedTruncF64x2SZero, "relaxed_trunc_f64x2_s_zero");
     CASE_I32x4_OP(RelaxedTruncF64x2UZero, "relaxed_trunc_f64x2_u_zero");
+    CASE_I16x8_OP(RelaxedQ15MulRS, "relaxed_q15mulr_s")
+    CASE_I16x8_OP(DotI8x16I7x16S, "dot_i8x16_i7x16_s")
+    CASE_I32x4_OP(DotI8x16I7x16AddS, "dot_i8x16_i7x16_add_s")
 
     // Atomic operations.
     CASE_OP(AtomicNotify, "atomic.notify")
@@ -443,6 +446,31 @@ constexpr const char* WasmOpcodes::OpcodeName(WasmOpcode opcode) {
     CASE_OP(BrOnNonData, "br_on_non_data")
     CASE_OP(BrOnNonI31, "br_on_non_i31")
     CASE_OP(BrOnNonArray, "br_on_non_array")
+    CASE_OP(StringNewWtf8, "string.new_wtf8")
+    CASE_OP(StringNewWtf16, "string.new_wtf16")
+    CASE_OP(StringConst, "string.const")
+    CASE_OP(StringMeasureUtf8, "string.measure_utf8")
+    CASE_OP(StringMeasureWtf8, "string.measure_wtf8")
+    CASE_OP(StringMeasureWtf16, "string.measure_wtf16")
+    CASE_OP(StringEncodeWtf8, "string.encode_wtf8")
+    CASE_OP(StringEncodeWtf16, "string.encode_wtf16")
+    CASE_OP(StringConcat, "string.concat")
+    CASE_OP(StringEq, "string.eq")
+    CASE_OP(StringIsUSVSequence, "string.is_usv_sequence")
+    CASE_OP(StringAsWtf8, "string.as_wtf8")
+    CASE_OP(StringViewWtf8Advance, "stringview_wtf8.advance")
+    CASE_OP(StringViewWtf8Encode, "stringview_wtf8.encode")
+    CASE_OP(StringViewWtf8Slice, "stringview_wtf8.slice")
+    CASE_OP(StringAsWtf16, "string.as_wtf16")
+    CASE_OP(StringViewWtf16Length, "stringview_wtf16.length")
+    CASE_OP(StringViewWtf16GetCodeUnit, "stringview_wtf16.get_codeunit")
+    CASE_OP(StringViewWtf16Encode, "stringview_wtf16.encode")
+    CASE_OP(StringViewWtf16Slice, "stringview_wtf16.slice")
+    CASE_OP(StringAsIter, "string.as_iter")
+    CASE_OP(StringViewIterCur, "stringview_iter.cur")
+    CASE_OP(StringViewIterAdvance, "stringview_iter.advance")
+    CASE_OP(StringViewIterRewind, "stringview_iter.rewind")
+    CASE_OP(StringViewIterSlice, "stringview_iter.slice")
 
     case kNumericPrefix:
     case kSimdPrefix:
@@ -572,20 +600,19 @@ constexpr bool WasmOpcodes::IsThrowingOpcode(WasmOpcode opcode) {
 
 // static
 constexpr bool WasmOpcodes::IsRelaxedSimdOpcode(WasmOpcode opcode) {
-  switch (opcode) {
-#define CHECK_OPCODE(name, opcode, _) case kExpr##name:
-    FOREACH_RELAXED_SIMD_OPCODE(CHECK_OPCODE)
+  // Relaxed SIMD opcodes have the SIMD prefix (0xfd) shifted by 12 bits, and
+  // nibble 3 must be 0x1. I.e. their encoded opcode is in [0xfd100, 0xfd1ff].
+  static_assert(kSimdPrefix == 0xfd);
+#define CHECK_OPCODE(name, opcode, _) \
+  static_assert((opcode & 0xfff00) == 0xfd100);
+  FOREACH_RELAXED_SIMD_OPCODE(CHECK_OPCODE)
 #undef CHECK_OPCODE
-    return true;
-    default:
-      return false;
-  }
+
+  return (opcode & 0xfff00) == 0xfd100;
 }
 
 constexpr byte WasmOpcodes::ExtractPrefix(WasmOpcode opcode) {
-  // If the decoded opcode exceeds two bytes, shift an additional
-  // byte. For decoded opcodes that exceed 3 bytes, this would
-  // need to be fixed.
+  // See comment on {WasmOpcode} for the encoding.
   return (opcode > 0xffff) ? opcode >> 12 : opcode >> 8;
 }
 
@@ -670,16 +697,24 @@ constexpr std::array<WasmOpcodeSig, 256> kNumericExprSigTable =
 constexpr const FunctionSig* WasmOpcodes::Signature(WasmOpcode opcode) {
   switch (ExtractPrefix(opcode)) {
     case 0:
+      DCHECK_GT(impl::kShortSigTable.size(), opcode);
       return impl::kCachedSigs[impl::kShortSigTable[opcode]];
     case kSimdPrefix: {
-      if (IsRelaxedSimdOpcode(opcode))
-        return impl::kCachedSigs[impl::kRelaxedSimdExprSigTable[opcode & 0xFF]];
-      return impl::kCachedSigs[impl::kSimdExprSigTable[opcode & 0xFF]];
+      // Handle SIMD MVP opcodes (in [0xfd00, 0xfdff]).
+      if (opcode <= 0xfdff) {
+        DCHECK_LE(0xfd00, opcode);
+        return impl::kCachedSigs[impl::kSimdExprSigTable[opcode & 0xff]];
+      }
+      // Handle relaxed SIMD opcodes (in [0xfd100, 0xfd1ff]).
+      if (IsRelaxedSimdOpcode(opcode)) {
+        return impl::kCachedSigs[impl::kRelaxedSimdExprSigTable[opcode & 0xff]];
+      }
+      return nullptr;
     }
     case kAtomicPrefix:
-      return impl::kCachedSigs[impl::kAtomicExprSigTable[opcode & 0xFF]];
+      return impl::kCachedSigs[impl::kAtomicExprSigTable[opcode & 0xff]];
     case kNumericPrefix:
-      return impl::kCachedSigs[impl::kNumericExprSigTable[opcode & 0xFF]];
+      return impl::kCachedSigs[impl::kNumericExprSigTable[opcode & 0xff]];
     default:
       UNREACHABLE();  // invalid prefix.
   }

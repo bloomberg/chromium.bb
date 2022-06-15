@@ -143,9 +143,8 @@ ShouldThrow GetShouldThrow(Isolate* isolate, Maybe<ShouldThrow> should_throw) {
   if (mode == LanguageMode::kStrict) return kThrowOnError;
 
   for (StackFrameIterator it(isolate); !it.done(); it.Advance()) {
-    if (!(it.frame()->is_optimized() || it.frame()->is_unoptimized())) {
-      continue;
-    }
+    if (!it.frame()->is_java_script()) continue;
+
     // Get the language mode from closure.
     JavaScriptFrame* js_frame = static_cast<JavaScriptFrame*>(it.frame());
     std::vector<SharedFunctionInfo> functions;
@@ -179,6 +178,11 @@ bool ComparisonResultToBool(Operation op, ComparisonResult result) {
 }
 
 std::ostream& operator<<(std::ostream& os, InstanceType instance_type) {
+  if (InstanceTypeChecker::IsJSApiObject(instance_type)) {
+    return os << "[api object] "
+              << static_cast<int16_t>(instance_type) -
+                     i::Internals::kFirstJSApiObjectType;
+  }
   switch (instance_type) {
 #define WRITE_TYPE(TYPE) \
   case TYPE:             \
@@ -1035,12 +1039,12 @@ MaybeHandle<FixedArray> CreateListFromArrayLikeFastPath(
           isolate, array, length);
     } else if (object->IsJSTypedArray()) {
       Handle<JSTypedArray> array = Handle<JSTypedArray>::cast(object);
-      size_t length = array->length();
-      if (array->WasDetached() ||
+      size_t length = array->GetLength();
+      if (array->IsDetachedOrOutOfBounds() ||
           length > static_cast<size_t>(FixedArray::kMaxLength)) {
         return MaybeHandle<FixedArray>();
       }
-      STATIC_ASSERT(FixedArray::kMaxLength <=
+      static_assert(FixedArray::kMaxLength <=
                     std::numeric_limits<uint32_t>::max());
       return array->GetElementsAccessor()->CreateListFromArrayLike(
           isolate, array, static_cast<uint32_t>(length));
@@ -1330,7 +1334,7 @@ Handle<TemplateList> TemplateList::New(Isolate* isolate, int size) {
 Handle<TemplateList> TemplateList::Add(Isolate* isolate,
                                        Handle<TemplateList> list,
                                        Handle<i::Object> value) {
-  STATIC_ASSERT(kFirstElementIndex == 1);
+  static_assert(kFirstElementIndex == 1);
   int index = list->length() + 1;
   Handle<i::FixedArray> fixed_array = Handle<FixedArray>::cast(list);
   fixed_array = FixedArray::SetAndGrow(isolate, fixed_array, index, value);
@@ -1419,12 +1423,6 @@ MaybeHandle<Object> Object::GetPropertyWithAccessor(LookupIterator* it) {
   if (structure->IsAccessorInfo()) {
     Handle<Name> name = it->GetName();
     Handle<AccessorInfo> info = Handle<AccessorInfo>::cast(structure);
-    if (!info->IsCompatibleReceiver(*receiver)) {
-      THROW_NEW_ERROR(isolate,
-                      NewTypeError(MessageTemplate::kIncompatibleMethodReceiver,
-                                   name, receiver),
-                      Object);
-    }
 
     if (!info->has_getter()) return isolate->factory()->undefined_value();
 
@@ -1493,14 +1491,6 @@ Address CallHandlerInfo::redirected_callback() const {
   return ExternalReference::Create(&fun, type).address();
 }
 
-bool AccessorInfo::IsCompatibleReceiverMap(Handle<AccessorInfo> info,
-                                           Handle<Map> map) {
-  if (!info->HasExpectedReceiverType()) return true;
-  if (!map->IsJSObjectMap()) return false;
-  return FunctionTemplateInfo::cast(info->expected_receiver_type())
-      .IsTemplateFor(*map);
-}
-
 Maybe<bool> Object::SetPropertyWithAccessor(
     LookupIterator* it, Handle<Object> value,
     Maybe<ShouldThrow> maybe_should_throw) {
@@ -1522,11 +1512,6 @@ Maybe<bool> Object::SetPropertyWithAccessor(
   if (structure->IsAccessorInfo()) {
     Handle<Name> name = it->GetName();
     Handle<AccessorInfo> info = Handle<AccessorInfo>::cast(structure);
-    if (!info->IsCompatibleReceiver(*receiver)) {
-      isolate->Throw(*isolate->factory()->NewTypeError(
-          MessageTemplate::kIncompatibleMethodReceiver, name, receiver));
-      return Nothing<bool>();
-    }
 
     if (!info->has_setter()) {
       // TODO(verwaest): We should not get here anymore once all AccessorInfos
@@ -1866,12 +1851,16 @@ void HeapObject::HeapObjectShortPrint(std::ostream& os) {
     case MAP_TYPE: {
       os << "<Map";
       Map mapInstance = Map::cast(*this);
-      if (mapInstance.IsJSObjectMap()) {
-        os << "(" << ElementsKindToString(mapInstance.elements_kind()) << ")";
-      } else if (mapInstance.instance_size() != kVariableSizeSentinel) {
+      if (mapInstance.instance_size() != kVariableSizeSentinel) {
         os << "[" << mapInstance.instance_size() << "]";
       }
-      os << ">";
+      os << "(";
+      if (mapInstance.IsJSObjectMap()) {
+        os << ElementsKindToString(mapInstance.elements_kind());
+      } else {
+        os << mapInstance.instance_type();
+      }
+      os << ")>";
     } break;
     case AWAIT_CONTEXT_TYPE: {
       os << "<AwaitContext generator= ";
@@ -2153,7 +2142,7 @@ void Tuple2::BriefPrintDetails(std::ostream& os) {
 }
 
 void MegaDomHandler::BriefPrintDetails(std::ostream& os) {
-  os << " " << Brief(accessor()) << ", " << Brief(context());
+  os << " " << Brief(accessor(kAcquireLoad)) << ", " << Brief(context());
 }
 
 void ClassPositions::BriefPrintDetails(std::ostream& os) {
@@ -4518,7 +4507,7 @@ void DescriptorArray::Sort() {
 
 int16_t DescriptorArray::UpdateNumberOfMarkedDescriptors(
     unsigned mark_compact_epoch, int16_t new_marked) {
-  STATIC_ASSERT(kMaxNumberOfDescriptors <=
+  static_assert(kMaxNumberOfDescriptors <=
                 NumberOfMarkedDescriptors::kMaxNumberOfMarkedDescriptors);
   int16_t old_raw_marked = raw_number_of_marked_descriptors();
   int16_t old_marked =
@@ -5665,7 +5654,7 @@ Handle<Object> JSPromise::TriggerPromiseReactions(Isolate* isolate,
     }
     if (!has_handler_context) handler_context = isolate->native_context();
 
-    STATIC_ASSERT(
+    static_assert(
         static_cast<int>(PromiseReaction::kSize) ==
         static_cast<int>(
             PromiseReactionJobTask::kSizeOfAllPromiseReactionJobTasks));
@@ -5677,14 +5666,14 @@ Handle<Object> JSPromise::TriggerPromiseReactions(Isolate* isolate,
           *argument);
       Handle<PromiseFulfillReactionJobTask>::cast(task)->set_context(
           *handler_context);
-      STATIC_ASSERT(
+      static_assert(
           static_cast<int>(PromiseReaction::kFulfillHandlerOffset) ==
           static_cast<int>(PromiseFulfillReactionJobTask::kHandlerOffset));
-      STATIC_ASSERT(
+      static_assert(
           static_cast<int>(PromiseReaction::kPromiseOrCapabilityOffset) ==
           static_cast<int>(
               PromiseFulfillReactionJobTask::kPromiseOrCapabilityOffset));
-      STATIC_ASSERT(
+      static_assert(
           static_cast<int>(
               PromiseReaction::kContinuationPreservedEmbedderDataOffset) ==
           static_cast<int>(PromiseFulfillReactionJobTask::
@@ -5699,11 +5688,11 @@ Handle<Object> JSPromise::TriggerPromiseReactions(Isolate* isolate,
           *handler_context);
       Handle<PromiseRejectReactionJobTask>::cast(task)->set_handler(
           *primary_handler);
-      STATIC_ASSERT(
+      static_assert(
           static_cast<int>(PromiseReaction::kPromiseOrCapabilityOffset) ==
           static_cast<int>(
               PromiseRejectReactionJobTask::kPromiseOrCapabilityOffset));
-      STATIC_ASSERT(
+      static_assert(
           static_cast<int>(
               PromiseReaction::kContinuationPreservedEmbedderDataOffset) ==
           static_cast<int>(PromiseRejectReactionJobTask::

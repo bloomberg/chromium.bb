@@ -1964,6 +1964,7 @@ mojom::IPAddressSpace ResponseAddressSpace(
     case net::TransportType::kCached:
       return params.endpoint_address_space;
     case net::TransportType::kProxied:
+    case net::TransportType::kCachedFromProxy:
       return mojom::IPAddressSpace::kUnknown;
   }
 }
@@ -2159,6 +2160,31 @@ constexpr URLLoaderFakeTransportInfoTestParams
             mojom::IPAddressSpace::kPrivate,
             mojom::IPAddressSpace::kLocal,
             net::TransportType::kProxied,
+            net::OK,
+        },
+        // TransportType: kCachedFromProxy
+        {
+            mojom::IPAddressSpace::kUnknown,
+            mojom::IPAddressSpace::kLocal,
+            net::TransportType::kCachedFromProxy,
+            net::OK,
+        },
+        {
+            mojom::IPAddressSpace::kPublic,
+            mojom::IPAddressSpace::kLocal,
+            net::TransportType::kCachedFromProxy,
+            net::OK,
+        },
+        {
+            mojom::IPAddressSpace::kPublic,
+            mojom::IPAddressSpace::kPrivate,
+            net::TransportType::kCachedFromProxy,
+            net::OK,
+        },
+        {
+            mojom::IPAddressSpace::kPrivate,
+            mojom::IPAddressSpace::kLocal,
+            net::TransportType::kCachedFromProxy,
             net::OK,
         },
         // TransportType: kCached. We only test a local target for brevity.
@@ -7392,6 +7418,17 @@ class URLLoaderCacheTransparencyTest : public URLLoaderTest {
     SendRequest(path);
   }
 
+  // Causes an expectation failure if the specified reason was not logged.
+  void ExpectNotUsedReason(CacheTransparencyCacheNotUsedReason reason) const {
+    // The count is 2 because each test sends two requests.
+    histogram_tester_.ExpectUniqueSample(kNotUsedHistogram, reason, 2);
+  }
+
+  // Causes an expectation failure if any reason was logged.
+  void ExpectNoSamples() const {
+    histogram_tester_.ExpectTotalCount(kNotUsedHistogram, 0);
+  }
+
   int network_request_count() { return network_request_count_; }
 
   void set_third_party_cookies_enabled(bool value) {
@@ -7408,6 +7445,8 @@ class URLLoaderCacheTransparencyTest : public URLLoaderTest {
 
  private:
   static constexpr char kPervasivePayload[] = "/pervasive.js";
+  static constexpr char kNotUsedHistogram[] =
+      "Network.CacheTransparency.CacheNotUsed";
 
   base::test::ScopedFeatureList pervasive_payloads_feature_;
   base::test::ScopedFeatureList cache_transparency_feature_;
@@ -7418,42 +7457,51 @@ class URLLoaderCacheTransparencyTest : public URLLoaderTest {
   std::string method_ = "GET";
   int load_flags_ = net::LOAD_NORMAL;
   std::string headers_;
+  base::HistogramTester histogram_tester_;
 };
 
-// This test is critical. If it doesn't pass, then the results of the other
-// URLLoaderCacheTransparencyTests are meaningless.
 TEST_F(URLLoaderCacheTransparencyTest, SuccessfulPervasivePayload) {
   SendTwoRequestsWithDifferentOrigins();
   EXPECT_EQ(1, network_request_count());
+  ExpectNotUsedReason(
+      CacheTransparencyCacheNotUsedReason::kTryingSingleKeyedCache);
 }
 
 TEST_F(URLLoaderCacheTransparencyTest, ThirdPartyCookiesDisabled) {
   set_third_party_cookies_enabled(false);
   SendTwoRequestsWithDifferentOrigins();
   EXPECT_EQ(2, network_request_count());
+  ExpectNoSamples();
 }
 
 TEST_F(URLLoaderCacheTransparencyTest, NotAPervasivePayload) {
   SendTwoRequestsWithDifferentOrigins("/cacheable.js");
   EXPECT_EQ(2, network_request_count());
+  ExpectNoSamples();
 }
 
 TEST_F(URLLoaderCacheTransparencyTest, NotAGETRequest) {
   set_method("POST");
   SendTwoRequestsWithDifferentOrigins();
   EXPECT_EQ(2, network_request_count());
+  ExpectNotUsedReason(
+      CacheTransparencyCacheNotUsedReason::kIncompatibleRequestType);
 }
 
 TEST_F(URLLoaderCacheTransparencyTest, IncompatibleLoadFlags) {
   set_load_flags(net::LOAD_SKIP_VARY_CHECK);
   SendTwoRequestsWithDifferentOrigins();
   EXPECT_EQ(2, network_request_count());
+  ExpectNotUsedReason(
+      CacheTransparencyCacheNotUsedReason::kIncompatibleRequestLoadFlags);
 }
 
 TEST_F(URLLoaderCacheTransparencyTest, IncompatibleHeaders) {
   set_headers("Range: bytes=0-5\r\n");
   SendTwoRequestsWithDifferentOrigins();
   EXPECT_EQ(2, network_request_count());
+  ExpectNotUsedReason(
+      CacheTransparencyCacheNotUsedReason::kIncompatibleRequestHeaders);
 }
 
 }  // namespace network

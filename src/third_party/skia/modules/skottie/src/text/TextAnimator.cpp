@@ -9,7 +9,8 @@
 
 #include "include/core/SkColor.h"
 #include "include/core/SkPoint.h"
-#include "include/private/SkNx.h"
+#include "include/private/SkColorData.h"
+#include "include/private/SkVx.h"
 #include "modules/skottie/src/SkottieValue.h"
 #include "modules/skottie/src/animator/Animator.h"
 #include "modules/skottie/src/text/RangeSelector.h"
@@ -125,21 +126,20 @@ TextAnimator::ResolvedProps TextAnimator::modulateProps(const ResolvedProps& pro
     modulated_props.scale    *= SkV3{1,1,1} +
             (static_cast<SkV3>(fTextProps.scale) * 0.01f - SkV3{1,1,1}) * amount;
 
-    // ... as does blur and line spacing
+    // ... as do blur, line spacing, and stroke width.
     modulated_props.blur         += fTextProps.blur         * amount;
     modulated_props.line_spacing += fTextProps.line_spacing * amount;
+    modulated_props.stroke_width += fTextProps.stroke_width * amount;
 
     const auto lerp = [](float v0, float v1, float t) {
         return v0 + (v1 - v0)*t;
     };
     const auto lerp_color = [](SkColor c0, SkColor c1, float t) {
-        const auto c0_4f = SkNx_cast<float>(Sk4b::Load(&c0)),
-                   c1_4f = SkNx_cast<float>(Sk4b::Load(&c1)),
+        const auto c0_4f = Sk4f_fromL32(c0),
+                   c1_4f = Sk4f_fromL32(c1),
                     c_4f = c0_4f + (c1_4f - c0_4f) * t;
 
-        SkColor c;
-        SkNx_cast<uint8_t>(Sk4f_round(c_4f)).store(&c);
-        return c;
+        return Sk4f_toL32(c_4f);
     };
 
     // Colors and opacity are interpolated, and use a clamped amount value.
@@ -206,6 +206,8 @@ TextAnimator::TextAnimator(std::vector<sk_sp<RangeSelector>>&& selectors,
     fHasStrokeOpacity = acontainer->bind(*abuilder, jprops["so"], fTextProps.stroke_opacity);
     fHasOpacity       = acontainer->bind(*abuilder, jprops["o" ], fTextProps.opacity       );
     fHasBlur          = acontainer->bind(*abuilder, jprops["bl"], fTextProps.blur          );
+
+    acontainer->bind(*abuilder, jprops["sw"], fTextProps.stroke_width);
 }
 
 } // namespace internal

@@ -544,7 +544,6 @@ class Job(ndb.Model):
     except taskqueue.Error as e:
       logging.debug('Failed ScheduleResults2Generation: %s', str(e))
 
-    logging.debug('crbug/1215127 - format and post bug comment')
     self._FormatAndPostBugCommentOnComplete()
     self._UpdateGerritIfNeeded()
     scheduler.Complete(self)
@@ -553,15 +552,9 @@ class Job(ndb.Model):
     # returns the improvement direction
     if self.tags is not None and "test_path" in self.tags:
       datastore_hooks.SetSinglePrivilegedRequest()
-      logging.debug('crbug/1215127 - self.tags test_path = %s',
-                    self.tags["test_path"])
       t = graph_data.TestMetadata.get_by_id(self.tags["test_path"])
       if t is not None:
-        logging.debug('crbug/1215127 - improvement direction = %s',
-                      t.improvement_direction)
         return t.improvement_direction
-      else:
-        logging.debug('crbug/1215127 - t is None')
     return anomaly.UNKNOWN
 
   def _FormatAndPostBugCommentOnComplete(self):
@@ -639,21 +632,16 @@ class Job(ndb.Model):
           _retry_options=RETRY_OPTIONS)
       return
 
-    # Determine direction of improvement
-    logging.debug('crbug/1215127 - get improvement direction')
-    improvement_dir = self._GetImprovementDirection()
-
     # Collect the result values for each of the differences
     bug_update_builder = job_bug_update.DifferencesFoundBugUpdateBuilder(
-        self.state.metric, improvement_dir)
+        self.state.metric)
     bug_update_builder.SetExaminedCount(changes_examined)
     for change_a, change_b in differences:
       values_a = result_values[change_a]
       values_b = result_values[change_b]
       bug_update_builder.AddDifference(change_b, values_a, values_b)
 
-    logging.debug('crbug/1215127 - defer block called, improve_dir %s',
-                  improvement_dir)
+    improvement_dir = self._GetImprovementDirection()
     deferred.defer(
         job_bug_update.UpdatePostAndMergeDeferred,
         bug_update_builder,
@@ -661,6 +649,7 @@ class Job(ndb.Model):
         self.tags,
         self.url,
         self.project,
+        improvement_dir,
         _retry_options=RETRY_OPTIONS)
 
   def _UpdateGerritIfNeeded(self, success=True):

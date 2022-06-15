@@ -1647,7 +1647,7 @@ static int encode_frame(AVCodecContext *avctx, AVPacket *pkt,
 
         s->m.avctx= s->avctx;
         s->m.   last_picture.f = s->last_picture[0];
-        s->m.    new_picture.f = s->input_picture;
+        s->m.    new_picture   = s->input_picture;
         s->m.   last_picture_ptr= &s->m.   last_picture;
         s->m.linesize = stride;
         s->m.uvlinesize= s->current_picture->linesize[1];
@@ -1919,7 +1919,7 @@ const FFCodec ff_snow_encoder = {
     .p.id           = AV_CODEC_ID_SNOW,
     .priv_data_size = sizeof(SnowContext),
     .init           = encode_init,
-    .encode2        = encode_frame,
+    FF_CODEC_ENCODE_CB(encode_frame),
     .close          = encode_end,
     .p.pix_fmts     = (const enum AVPixelFormat[]){
         AV_PIX_FMT_YUV420P, AV_PIX_FMT_YUV410P, AV_PIX_FMT_YUV444P,

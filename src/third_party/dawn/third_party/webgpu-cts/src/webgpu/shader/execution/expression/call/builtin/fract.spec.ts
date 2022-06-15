@@ -13,6 +13,7 @@ import { GPUTest } from '../../../../../gpu_test.js';
 import { correctlyRoundedMatch, anyOf } from '../../../../../util/compare.js';
 import { kBit, kValue } from '../../../../../util/constants.js';
 import { f32, f32Bits, TypeF32 } from '../../../../../util/conversion.js';
+import { isSubnormalNumber } from '../../../../../util/math.js';
 import { Case, Config, makeUnaryF32Case, run } from '../../expression.js';
 
 import { builtin } from './builtin.js';
@@ -43,7 +44,7 @@ g.test('f32')
 
     const makeCase = (x: number): Case => {
       const result = x - Math.floor(x);
-      if (result < 1.0) {
+      if (result < 1.0 || isSubnormalNumber(x)) {
         return makeUnaryF32Case(x, x => x - Math.floor(x));
       }
       // Very small negative numbers can lead to catastrophic cancellation, thus calculating a fract of 1.0, which is

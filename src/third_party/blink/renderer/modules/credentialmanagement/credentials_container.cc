@@ -320,7 +320,7 @@ bool IsIconURLNullOrSecure(const KURL& url) {
   if (!url.IsValid())
     return false;
 
-  return network::IsUrlPotentiallyTrustworthy(url);
+  return network::IsUrlPotentiallyTrustworthy(GURL(url));
 }
 
 // Checks if the size of the supplied ArrayBuffer or ArrayBufferView is at most
@@ -1016,6 +1016,19 @@ ScriptPromise CredentialsContainer::get(
               "browser/webauth/uv_preferred.md for details."));
     }
 
+    if (options->publicKey()->hasUserVerification() &&
+        !mojo::ConvertTo<
+            absl::optional<mojom::blink::UserVerificationRequirement>>(
+            options->publicKey()->userVerification())) {
+      // The specification prescribes ignoring unknown values, but other
+      // browsers throw a TypeError. Reconsider removing this code after
+      // https://github.com/w3c/webauthn/issues/1738 is addressed.
+      v8::Isolate* isolate = resolver->GetScriptState()->GetIsolate();
+      resolver->Reject(V8ThrowException::CreateTypeError(
+          isolate, "Unknown publicKey.userVerification value."));
+      return promise;
+    }
+
     if (options->hasSignal()) {
       if (options->signal()->aborted()) {
         resolver->Reject(MakeGarbageCollected<DOMException>(
@@ -1080,7 +1093,8 @@ ScriptPromise CredentialsContainer::get(
         CredentialManagerProxy::From(script_state)->WebOTPService();
     webotp_service->Receive(WTF::Bind(&OnSmsReceive, WrapPersistent(resolver),
                                       base::TimeTicks::Now()));
-    UMA_HISTOGRAM_ENUMERATION("Blink.UseCounter.Features", WebFeature::kWebOTP);
+
+    UseCounter::Count(context, WebFeature::kWebOTP);
     return promise;
   }
 
@@ -1404,6 +1418,22 @@ ScriptPromise CredentialsContainer::create(
             "https://chromium.googlesource.com/chromium/src/+/master/content/"
             "browser/webauth/uv_preferred.md for details"));
   }
+
+  if (options->publicKey()->hasAuthenticatorSelection() &&
+      options->publicKey()->authenticatorSelection()->hasUserVerification() &&
+      !mojo::ConvertTo<
+          absl::optional<mojom::blink::UserVerificationRequirement>>(
+          options->publicKey()->authenticatorSelection()->userVerification())) {
+    // The specification prescribes ignoring unknown values, but other
+    // browsers throw a TypeError. Reconsider removing this code after
+    // https://github.com/w3c/webauthn/issues/1738 is addressed.
+    v8::Isolate* isolate = resolver->GetScriptState()->GetIsolate();
+    resolver->Reject(V8ThrowException::CreateTypeError(
+        isolate,
+        "Unknown publicKey.authenticatorSelection.userVerification value."));
+    return promise;
+  }
+
   if (options->publicKey()->hasAuthenticatorSelection() &&
       options->publicKey()->authenticatorSelection()->hasResidentKey() &&
       !mojo::ConvertTo<absl::optional<mojom::blink::ResidentKeyRequirement>>(

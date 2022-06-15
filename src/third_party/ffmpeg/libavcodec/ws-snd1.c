@@ -51,10 +51,9 @@ static av_cold int ws_snd_decode_init(AVCodecContext *avctx)
     return 0;
 }
 
-static int ws_snd_decode_frame(AVCodecContext *avctx, void *data,
+static int ws_snd_decode_frame(AVCodecContext *avctx, AVFrame *frame,
                                int *got_frame_ptr, AVPacket *avpkt)
 {
-    AVFrame *frame     = data;
     const uint8_t *buf = avpkt->data;
     int buf_size       = avpkt->size;
 
@@ -177,7 +176,7 @@ const FFCodec ff_ws_snd1_decoder = {
     .p.type         = AVMEDIA_TYPE_AUDIO,
     .p.id           = AV_CODEC_ID_WESTWOOD_SND1,
     .init           = ws_snd_decode_init,
-    .decode         = ws_snd_decode_frame,
+    FF_CODEC_DECODE_CB(ws_snd_decode_frame),
     .p.capabilities = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_CHANNEL_CONF,
     .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };

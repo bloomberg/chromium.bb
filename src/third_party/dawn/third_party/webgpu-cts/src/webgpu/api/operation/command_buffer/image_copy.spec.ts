@@ -1011,6 +1011,7 @@ class ImageCopyTest extends GPUTest {
     );
 
     const renderPipeline = this.device.createRenderPipeline({
+      layout: 'auto',
       vertex: {
         module: this.device.createShaderModule({
           code: `

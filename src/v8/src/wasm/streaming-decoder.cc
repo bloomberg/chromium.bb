@@ -332,10 +332,7 @@ class CompilationChunkFinishedCallback : public CompilationEventCallback {
   }
 
   void call(CompilationEvent event) override {
-    if (event != CompilationEvent::kFinishedCompilationChunk &&
-        event != CompilationEvent::kFinishedTopTierCompilation) {
-      return;
-    }
+    if (event != CompilationEvent::kFinishedCompilationChunk) return;
     // If the native module is still alive, get back a shared ptr and call the
     // callback.
     if (std::shared_ptr<NativeModule> native_module = native_module_.lock()) {
@@ -345,7 +342,7 @@ class CompilationChunkFinishedCallback : public CompilationEventCallback {
   }
 
   ReleaseAfterFinalEvent release_after_final_event() override {
-    return CompilationEventCallback::ReleaseAfterFinalEvent::kKeep;
+    return kKeepAfterFinalEvent;
   }
 
  private:

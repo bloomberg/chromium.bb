@@ -129,6 +129,8 @@ void PixelRoutine::quad(Pointer<Byte> cBuffer[MAX_COLOR_BUFFERS], Pointer<Byte> 
 				depthPass = depthPass || depthTest(zBuffer, q, x, z[q], sMask[q], zMask[q], cMask[q]);
 				depthBoundsTest(zBuffer, q, x, zMask[q], cMask[q]);
 			}
+
+			writeStencil(sBuffer, x, sMask, zMask, cMask, samples);
 		}
 
 		If(depthPass || !earlyFragmentTests)
@@ -136,6 +138,7 @@ void PixelRoutine::quad(Pointer<Byte> cBuffer[MAX_COLOR_BUFFERS], Pointer<Byte> 
 			if(earlyFragmentTests)
 			{
 				writeDepth(zBuffer, x, zMask, samples);
+				occlusionSampleCount(zMask, sMask, samples);
 			}
 
 			Float4 yyyy = Float4(Float(y)) + *Pointer<Float4>(primitive + OFFSET(Primitive, yQuad), 16);
@@ -170,7 +173,7 @@ void PixelRoutine::quad(Pointer<Byte> cBuffer[MAX_COLOR_BUFFERS], Pointer<Byte> 
 
 				if(state.centroid || shaderContainsInterpolation)  // TODO(b/194714095)
 				{
-					rhwCentroid = reciprocal(SpirvRoutine::interpolateAtXY(XXXX, YYYY, rhwCentroid, primitive + OFFSET(Primitive, w), false, false));
+					rhwCentroid = reciprocal(SpirvRoutine::interpolateAtXY(XXXX, YYYY, rhwCentroid, primitive + OFFSET(Primitive, w), SpirvRoutine::Linear));
 				}
 			}
 
@@ -201,19 +204,20 @@ void PixelRoutine::quad(Pointer<Byte> cBuffer[MAX_COLOR_BUFFERS], Pointer<Byte> 
 					auto const &input = spirvShader->inputs[interfaceInterpolant];
 					if(input.Type != SpirvShader::ATTRIBTYPE_UNUSED)
 					{
+						routine.inputsInterpolation[packedInterpolant] = input.Flat ? SpirvRoutine::Flat : (input.NoPerspective ? SpirvRoutine::Linear : SpirvRoutine::Perspective);
 						if(input.Centroid && state.enableMultiSampling)
 						{
 							routine.inputs[interfaceInterpolant] =
 							    SpirvRoutine::interpolateAtXY(XXXX, YYYY, rhwCentroid,
 							                                  primitive + OFFSET(Primitive, V[packedInterpolant]),
-							                                  input.Flat, !input.NoPerspective);
+							                                  routine.inputsInterpolation[packedInterpolant]);
 						}
 						else if(perSampleShading)
 						{
 							routine.inputs[interfaceInterpolant] =
 							    SpirvRoutine::interpolateAtXY(xxxx, yyyy, rhw,
 							                                  primitive + OFFSET(Primitive, V[packedInterpolant]),
-							                                  input.Flat, !input.NoPerspective);
+							                                  routine.inputsInterpolation[packedInterpolant]);
 						}
 						else
 						{
@@ -282,7 +286,7 @@ void PixelRoutine::quad(Pointer<Byte> cBuffer[MAX_COLOR_BUFFERS], Pointer<Byte> 
 
 			Bool alphaPass = alphaTest(cMask, samples);
 
-			if((spirvShader && spirvShader->getAnalysis().ContainsDiscard) || state.alphaToCoverage)
+			if((spirvShader && spirvShader->coverageModified()) || state.alphaToCoverage)
 			{
 				for(unsigned int q : samples)
 				{
@@ -308,16 +312,18 @@ void PixelRoutine::quad(Pointer<Byte> cBuffer[MAX_COLOR_BUFFERS], Pointer<Byte> 
 					if(!earlyFragmentTests)
 					{
 						writeDepth(zBuffer, x, zMask, samples);
+						occlusionSampleCount(zMask, sMask, samples);
 					}
 
 					blendColor(cBuffer, x, sMask, zMask, cMask, samples);
-
-					occlusionSampleCount(zMask, sMask, samples);
 				}
 			}
 		}
 
-		writeStencil(sBuffer, x, sMask, zMask, cMask, samples);
+		if(!earlyFragmentTests)
+		{
+			writeStencil(sBuffer, x, sMask, zMask, cMask, samples);
+		}
 	}
 }
 
@@ -800,8 +806,7 @@ void PixelRoutine::writeStencil(Pointer<Byte> &sBuffer, const Int &x, const Int 
 		Int pitch = *Pointer<Int>(data + OFFSET(DrawData, stencilPitchB));
 		Byte8 bufferValue = *Pointer<Byte8>(buffer) & Byte8(-1, -1, 0, 0, 0, 0, 0, 0);
 		bufferValue = bufferValue | (*Pointer<Byte8>(buffer + pitch - 2) & Byte8(0, 0, -1, -1, 0, 0, 0, 0));
-		Byte8 newValue;
-		stencilOperation(newValue, bufferValue, state.frontStencil, false, zMask[q], sMask[q]);
+		Byte8 newValue = stencilOperation(bufferValue, state.frontStencil, false, zMask[q], sMask[q]);
 
 		if((state.frontStencil.writeMask & 0xFF) != 0xFF)  // Assume 8-bit stencil buffer
 		{
@@ -811,9 +816,7 @@ void PixelRoutine::writeStencil(Pointer<Byte> &sBuffer, const Int &x, const Int 
 			newValue |= maskedValue;
 		}
 
-		Byte8 newValueBack;
-
-		stencilOperation(newValueBack, bufferValue, state.backStencil, true, zMask[q], sMask[q]);
+		Byte8 newValueBack = stencilOperation(bufferValue, state.backStencil, true, zMask[q], sMask[q]);
 
 		if((state.backStencil.writeMask & 0xFF) != 0xFF)  // Assume 8-bit stencil buffer
 		{
@@ -836,37 +839,29 @@ void PixelRoutine::writeStencil(Pointer<Byte> &sBuffer, const Int &x, const Int 
 	}
 }
 
-void PixelRoutine::stencilOperation(Byte8 &newValue, const Byte8 &bufferValue, const PixelProcessor::States::StencilOpState &ops, bool isBack, const Int &zMask, const Int &sMask)
+Byte8 PixelRoutine::stencilOperation(const Byte8 &bufferValue, const PixelProcessor::States::StencilOpState &ops, bool isBack, const Int &zMask, const Int &sMask)
 {
-	Byte8 &pass = newValue;
-	Byte8 fail;
-	Byte8 zFail;
+	Byte8 pass = stencilOperation(bufferValue, ops.passOp, isBack);
 
-	stencilOperation(pass, bufferValue, ops.passOp, isBack);
-
-	if(ops.depthFailOp != ops.passOp)
+	if(state.depthTestActive && ops.depthFailOp != ops.passOp)  // zMask valid and values not the same
 	{
-		stencilOperation(zFail, bufferValue, ops.depthFailOp, isBack);
+		Byte8 zFail = stencilOperation(bufferValue, ops.depthFailOp, isBack);
+
+		pass &= *Pointer<Byte8>(constants + OFFSET(Constants, maskB4Q) + 8 * zMask);
+		zFail &= *Pointer<Byte8>(constants + OFFSET(Constants, invMaskB4Q) + 8 * zMask);
+		pass |= zFail;
 	}
 
-	if(ops.failOp != ops.passOp || ops.failOp != ops.depthFailOp)
+	if(ops.failOp != ops.passOp || (state.depthTestActive && ops.failOp != ops.depthFailOp))
 	{
-		stencilOperation(fail, bufferValue, ops.failOp, isBack);
-	}
-
-	if(ops.failOp != ops.passOp || ops.failOp != ops.depthFailOp)
-	{
-		if(state.depthTestActive && ops.depthFailOp != ops.passOp)  // zMask valid and values not the same
-		{
-			pass &= *Pointer<Byte8>(constants + OFFSET(Constants, maskB4Q) + 8 * zMask);
-			zFail &= *Pointer<Byte8>(constants + OFFSET(Constants, invMaskB4Q) + 8 * zMask);
-			pass |= zFail;
-		}
+		Byte8 fail = stencilOperation(bufferValue, ops.failOp, isBack);
 
 		pass &= *Pointer<Byte8>(constants + OFFSET(Constants, maskB4Q) + 8 * sMask);
 		fail &= *Pointer<Byte8>(constants + OFFSET(Constants, invMaskB4Q) + 8 * sMask);
 		pass |= fail;
 	}
+
+	return pass;
 }
 
 bool PixelRoutine::hasStencilReplaceRef() const
@@ -895,44 +890,38 @@ Byte8 PixelRoutine::stencilReplaceRef()
 	return As<Byte8>(sRefDuplicated);
 }
 
-void PixelRoutine::stencilOperation(Byte8 &output, const Byte8 &bufferValue, VkStencilOp operation, bool isBack)
+Byte8 PixelRoutine::stencilOperation(const Byte8 &bufferValue, VkStencilOp operation, bool isBack)
 {
 	if(hasStencilReplaceRef())
 	{
-		output = stencilReplaceRef();
+		return stencilReplaceRef();
 	}
 	else
 	{
 		switch(operation)
 		{
 		case VK_STENCIL_OP_KEEP:
-			output = bufferValue;
-			break;
+			return bufferValue;
 		case VK_STENCIL_OP_ZERO:
-			output = Byte8(0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00);
-			break;
+			return Byte8(0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00);
 		case VK_STENCIL_OP_REPLACE:
-			output = *Pointer<Byte8>(data + OFFSET(DrawData, stencil[isBack].referenceQ));
-			break;
+			return *Pointer<Byte8>(data + OFFSET(DrawData, stencil[isBack].referenceQ));
 		case VK_STENCIL_OP_INCREMENT_AND_CLAMP:
-			output = AddSat(bufferValue, Byte8(1, 1, 1, 1, 1, 1, 1, 1));
-			break;
+			return AddSat(bufferValue, Byte8(1, 1, 1, 1, 1, 1, 1, 1));
 		case VK_STENCIL_OP_DECREMENT_AND_CLAMP:
-			output = SubSat(bufferValue, Byte8(1, 1, 1, 1, 1, 1, 1, 1));
-			break;
+			return SubSat(bufferValue, Byte8(1, 1, 1, 1, 1, 1, 1, 1));
 		case VK_STENCIL_OP_INVERT:
-			output = bufferValue ^ Byte8(0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF);
-			break;
+			return bufferValue ^ Byte8(0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF);
 		case VK_STENCIL_OP_INCREMENT_AND_WRAP:
-			output = bufferValue + Byte8(1, 1, 1, 1, 1, 1, 1, 1);
-			break;
+			return bufferValue + Byte8(1, 1, 1, 1, 1, 1, 1, 1);
 		case VK_STENCIL_OP_DECREMENT_AND_WRAP:
-			output = bufferValue - Byte8(1, 1, 1, 1, 1, 1, 1, 1);
-			break;
+			return bufferValue - Byte8(1, 1, 1, 1, 1, 1, 1, 1);
 		default:
 			UNSUPPORTED("VkStencilOp: %d", int(operation));
 		}
 	}
+
+	return Byte8(0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00);
 }
 
 bool PixelRoutine::isSRGB(int index) const

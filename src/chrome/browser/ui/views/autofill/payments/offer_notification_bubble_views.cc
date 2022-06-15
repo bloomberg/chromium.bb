@@ -46,8 +46,10 @@ OfferNotificationBubbleViews::~OfferNotificationBubbleViews() {
 
 void OfferNotificationBubbleViews::Hide() {
   CloseBubble();
-  if (controller_)
-    controller_->OnBubbleClosed(closed_reason_);
+  if (controller_) {
+    controller_->OnBubbleClosed(
+        GetPaymentsBubbleClosedReasonFromWidget(GetWidget()));
+  }
   controller_ = nullptr;
 }
 
@@ -56,6 +58,7 @@ void OfferNotificationBubbleViews::Init() {
     case AutofillOfferData::OfferType::GPAY_CARD_LINKED_OFFER:
       InitWithCardLinkedOfferContent();
       break;
+    case AutofillOfferData::OfferType::GPAY_PROMO_CODE_OFFER:
     case AutofillOfferData::OfferType::FREE_LISTING_COUPON_OFFER:
       InitWithPromoCodeOfferContent();
       break;
@@ -70,8 +73,8 @@ void OfferNotificationBubbleViews::AddedToWidget() {
       std::make_unique<TitleWithIconAndSeparatorView>(
           GetWindowTitle(), TitleWithIconAndSeparatorView::Icon::GOOGLE_G));
 
-  // Set the header image for promo code offers.
-  if (controller_->GetOffer()->IsPromoCodeOffer()) {
+  // Set the header image for free listing coupon offers.
+  if (controller_->GetOffer()->IsFreeListingCouponOffer()) {
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
     auto* autofill_offers_banner =
         bundle.GetImageSkiaNamed(IDR_AUTOFILL_OFFERS);
@@ -89,17 +92,18 @@ std::u16string OfferNotificationBubbleViews::GetWindowTitle() const {
 
 void OfferNotificationBubbleViews::WindowClosing() {
   if (controller_) {
-    controller_->OnBubbleClosed(closed_reason_);
+    controller_->OnBubbleClosed(
+        GetPaymentsBubbleClosedReasonFromWidget(GetWidget()));
     controller_ = nullptr;
   }
 }
 
-void OfferNotificationBubbleViews::OnWidgetClosing(views::Widget* widget) {
-  LocationBarBubbleDelegateView::OnWidgetClosing(widget);
+void OfferNotificationBubbleViews::OnWidgetDestroying(views::Widget* widget) {
+  LocationBarBubbleDelegateView::OnWidgetDestroying(widget);
+  if (!widget->IsClosed())
+    return;
   DCHECK_NE(widget->closed_reason(),
             views::Widget::ClosedReason::kCancelButtonClicked);
-  closed_reason_ = GetPaymentsBubbleClosedReasonFromWidgetClosedReason(
-      widget->closed_reason());
 }
 
 void OfferNotificationBubbleViews::InitWithCardLinkedOfferContent() {
@@ -135,18 +139,18 @@ void OfferNotificationBubbleViews::InitWithPromoCodeOfferContent() {
 
   const AutofillOfferData* offer = controller_->GetOffer();
   DCHECK(offer);
-  DCHECK(!offer->promo_code.empty());
+  DCHECK(!offer->GetPromoCode().empty());
 
   promo_code_label_button_ =
       AddChildView(std::make_unique<PromoCodeLabelButton>(
           base::BindRepeating(
               &OfferNotificationBubbleViews::OnPromoCodeButtonClicked,
               base::Unretained(this)),
-          base::ASCIIToUTF16(offer->promo_code)));
+          base::ASCIIToUTF16(offer->GetPromoCode())));
 
-  if (!offer->display_strings.value_prop_text.empty()) {
+  if (!offer->GetDisplayStrings().value_prop_text.empty()) {
     auto* promo_code_value_prop = AddChildView(std::make_unique<views::Label>(
-        base::ASCIIToUTF16(offer->display_strings.value_prop_text),
+        base::ASCIIToUTF16(offer->GetDisplayStrings().value_prop_text),
         views::style::CONTEXT_DIALOG_BODY_TEXT, views::style::STYLE_SECONDARY));
     promo_code_value_prop->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     promo_code_value_prop->SetMultiLine(true);
@@ -157,7 +161,7 @@ void OfferNotificationBubbleViews::InitWithPromoCodeOfferContent() {
 void OfferNotificationBubbleViews::OnPromoCodeButtonClicked() {
   // Copy clicked promo code to clipboard.
   ui::ScopedClipboardWriter(ui::ClipboardBuffer::kCopyPaste)
-      .WriteText(base::ASCIIToUTF16(controller_->GetOffer()->promo_code));
+      .WriteText(base::ASCIIToUTF16(controller_->GetOffer()->GetPromoCode()));
 
   // Update controller and tooltip.
   controller_->OnPromoCodeButtonClicked();

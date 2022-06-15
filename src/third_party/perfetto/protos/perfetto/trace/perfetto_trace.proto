@@ -329,6 +329,18 @@ enum BuiltinClock {
 
 // End of protos/perfetto/common/builtin_clock.proto
 
+// Begin of protos/perfetto/config/android/android_game_intervention_list_config.proto
+
+// Data source that lists game modes and game interventions of games
+// on an Android device.
+message AndroidGameInterventionListConfig {
+  // If not empty, emit info about only the following list of package names
+  // (exact match, no regex). Otherwise, emit info about all packages.
+  repeated string package_name_filter = 1;
+}
+
+// End of protos/perfetto/config/android/android_game_intervention_list_config.proto
+
 // Begin of protos/perfetto/common/android_log_constants.proto
 
 // Values from NDK's android/log.h.
@@ -1605,6 +1617,11 @@ message TrackEventConfig {
   // Learn more : "CLOCK_THREAD_CPUTIME_ID" flag at
   // https://linux.die.net/man/3/clock_gettime
   optional bool enable_thread_time_sampling = 8;
+
+  // Default: false (i.e. dynamic event names are NOT filtered out by default)
+  // When true, event_names wrapped in perfetto::DynamicString will be filtered
+  // out.
+  optional bool filter_dynamic_event_names = 9;
 }
 
 // End of protos/perfetto/config/track_event/track_event_config.proto
@@ -1688,6 +1705,9 @@ message DataSourceConfig {
   optional AndroidLogConfig android_log_config = 107 [lazy = true];
   // TODO(fmayer): Add data source name for this.
   optional GpuCounterConfig gpu_counter_config = 108 [lazy = true];
+  // Data source name: android.game_intervention_list
+  optional AndroidGameInterventionListConfig
+      android_game_intervention_list_config = 116 [lazy = true];
   // Data source name: android.packages_list
   optional PackagesListConfig packages_list_config = 109 [lazy = true];
   // Data source name: linux.perf
@@ -2389,6 +2409,34 @@ message TraceStats {
 }
 
 // End of protos/perfetto/common/trace_stats.proto
+
+// Begin of protos/perfetto/trace/android/android_game_intervention_list.proto
+
+message AndroidGameInterventionList {
+  message GameModeInfo {
+    optional uint32 mode = 1;
+    optional bool use_angle = 2;
+    optional float resolution_downscale = 3;
+    optional float fps = 4;
+  }
+  message GamePackageInfo {
+    optional string name = 1;
+    optional uint64 uid = 2;
+    optional uint32 current_mode = 3;
+    repeated GameModeInfo game_mode_info = 4;
+  }
+
+  repeated GamePackageInfo game_packages = 1;
+
+  // True when at least one error occured when parsing
+  // game_mode_intervention.list
+  optional bool parse_error = 2;
+
+  // Failed to open / read game_mode_intervention.list
+  optional bool read_error = 3;
+}
+
+// End of protos/perfetto/trace/android/android_game_intervention_list.proto
 
 // Begin of protos/perfetto/trace/android/android_log.proto
 
@@ -4751,6 +4799,61 @@ message F2fsWriteEndFtraceEvent {
   optional uint32 len = 4;
   optional uint32 copied = 5;
 }
+message F2fsIostatFtraceEvent {
+  optional uint64 app_bio = 1;
+  optional uint64 app_brio = 2;
+  optional uint64 app_dio = 3;
+  optional uint64 app_drio = 4;
+  optional uint64 app_mio = 5;
+  optional uint64 app_mrio = 6;
+  optional uint64 app_rio = 7;
+  optional uint64 app_wio = 8;
+  optional uint64 dev = 9;
+  optional uint64 fs_cdrio = 10;
+  optional uint64 fs_cp_dio = 11;
+  optional uint64 fs_cp_mio = 12;
+  optional uint64 fs_cp_nio = 13;
+  optional uint64 fs_dio = 14;
+  optional uint64 fs_discard = 15;
+  optional uint64 fs_drio = 16;
+  optional uint64 fs_gc_dio = 17;
+  optional uint64 fs_gc_nio = 18;
+  optional uint64 fs_gdrio = 19;
+  optional uint64 fs_mio = 20;
+  optional uint64 fs_mrio = 21;
+  optional uint64 fs_nio = 22;
+  optional uint64 fs_nrio = 23;
+}
+message F2fsIostatLatencyFtraceEvent {
+  optional uint32 d_rd_avg = 1;
+  optional uint32 d_rd_cnt = 2;
+  optional uint32 d_rd_peak = 3;
+  optional uint32 d_wr_as_avg = 4;
+  optional uint32 d_wr_as_cnt = 5;
+  optional uint32 d_wr_as_peak = 6;
+  optional uint32 d_wr_s_avg = 7;
+  optional uint32 d_wr_s_cnt = 8;
+  optional uint32 d_wr_s_peak = 9;
+  optional uint64 dev = 10;
+  optional uint32 m_rd_avg = 11;
+  optional uint32 m_rd_cnt = 12;
+  optional uint32 m_rd_peak = 13;
+  optional uint32 m_wr_as_avg = 14;
+  optional uint32 m_wr_as_cnt = 15;
+  optional uint32 m_wr_as_peak = 16;
+  optional uint32 m_wr_s_avg = 17;
+  optional uint32 m_wr_s_cnt = 18;
+  optional uint32 m_wr_s_peak = 19;
+  optional uint32 n_rd_avg = 20;
+  optional uint32 n_rd_cnt = 21;
+  optional uint32 n_rd_peak = 22;
+  optional uint32 n_wr_as_avg = 23;
+  optional uint32 n_wr_as_cnt = 24;
+  optional uint32 n_wr_as_peak = 25;
+  optional uint32 n_wr_s_avg = 26;
+  optional uint32 n_wr_s_cnt = 27;
+  optional uint32 n_wr_s_peak = 28;
+}
 
 // End of protos/perfetto/trace/ftrace/f2fs.proto
 
@@ -6534,6 +6637,8 @@ message FtraceEvent {
     DmaFenceSignaledFtraceEvent dma_fence_signaled = 416;
     DmaFenceWaitStartFtraceEvent dma_fence_wait_start = 417;
     DmaFenceWaitEndFtraceEvent dma_fence_wait_end = 418;
+    F2fsIostatFtraceEvent f2fs_iostat = 419;
+    F2fsIostatLatencyFtraceEvent f2fs_iostat_latency = 420;
   }
 }
 
@@ -7315,10 +7420,18 @@ message LogMessageBody {
 // Interned data types:
 // --------------------
 
+// A source location, represented as a native symbol.
+// This is similar to `message Frame` from
+// protos/perfetto/trace/profiling/profile_common.proto, but for abitrary
+// source code locations (for example in track event args), not stack frames.
+message UnsymbolizedSourceLocation {
+  optional uint64 iid = 1;
+  optional uint64 mapping_id = 2;
+  optional uint64 rel_pc = 3;
+}
+
 message SourceLocation {
   optional uint64 iid = 1;
-
-  // We intend to add a binary symbol version of this in the future.
   optional string file_name = 2;
   optional string function_name = 3;
   optional uint32 line_number = 4;
@@ -7687,6 +7800,9 @@ message ChromeFrameReporter {
 
   // The id of layer_tree_host that the frame has been produced for.
   optional uint64 layer_tree_host_id = 11;
+
+  // If total latency of PipelineReporter exceeds a certain limit.
+  optional bool has_high_latency = 12;
 }
 
 // End of protos/perfetto/trace/track_event/chrome_frame_reporter.proto
@@ -7862,6 +7978,16 @@ message ChromeMojoEventInfo {
   // A static string representing the mojo interface name of the message that is
   // being handled.
   optional string mojo_interface_tag = 3;
+
+  // Refers to an interned UnsymbolizedSourceLocation.
+  // The UnsymbolizedSourceLocation contains the interface method that's being
+  // handled, represented as a native symbol.
+  // The native symbol can be symbolized after the trace is recorded.
+  // Not using a symbolized source location for official Chromium builds to
+  // reduce binary size - emitting file/function names as strings into the
+  // trace requires storing them in the binary, which causes a significant
+  // binary size bloat for Chromium.
+  optional uint64 mojo_interface_method_iid = 4;
 }
 
 // End of protos/perfetto/trace/track_event/chrome_mojo_event_info.proto
@@ -8339,7 +8465,7 @@ message EventName {
 // emitted proactively in advance of referring to them in later packets.
 //
 // Next reserved id: 8 (up to 15).
-// Next id: 28.
+// Next id: 29.
 message InternedData {
   // TODO(eseckler): Replace iid fields inside interned messages with
   // map<iid, message> type fields in InternedData.
@@ -8356,6 +8482,7 @@ message InternedData {
   repeated DebugAnnotationName debug_annotation_names = 3;
   repeated DebugAnnotationValueTypeName debug_annotation_value_type_names = 27;
   repeated SourceLocation source_locations = 4;
+  repeated UnsymbolizedSourceLocation unsymbolized_source_locations = 28;
   repeated LogMessageBody log_message_body = 20;
   repeated HistogramName histogram_names = 25;
 
@@ -10159,6 +10286,7 @@ message TracePacket {
     AndroidCameraFrameEvent android_camera_frame_event = 80;
     AndroidCameraSessionStats android_camera_session_stats = 81;
     TranslationTable translation_table = 82;
+    AndroidGameInterventionList android_game_intervention_list = 83;
 
     // Only used in profile packets.
     ProfiledFrameSymbols profiled_frame_symbols = 55;

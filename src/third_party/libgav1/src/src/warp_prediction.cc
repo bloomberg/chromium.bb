@@ -231,9 +231,6 @@ bool WarpEstimation(const int num_samples, const int block_width4x4,
       Clip3(vx, -kWarpModelTranslationClamp, kWarpModelTranslationClamp - 1);
   params[1] =
       Clip3(vy, -kWarpModelTranslationClamp, kWarpModelTranslationClamp - 1);
-
-  params[6] = 0;
-  params[7] = 0;
   return true;
 }
 

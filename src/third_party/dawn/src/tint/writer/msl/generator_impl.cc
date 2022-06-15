@@ -36,6 +36,7 @@
 #include "src/tint/sem/atomic.h"
 #include "src/tint/sem/bool.h"
 #include "src/tint/sem/call.h"
+#include "src/tint/sem/constant.h"
 #include "src/tint/sem/depth_multisampled_texture.h"
 #include "src/tint/sem/depth_texture.h"
 #include "src/tint/sem/f32.h"
@@ -83,6 +84,31 @@ namespace {
 
 bool last_is_break_or_fallthrough(const ast::BlockStatement* stmts) {
     return IsAnyOf<ast::BreakStatement, ast::FallthroughStatement>(stmts->Last());
+}
+
+void PrintF32(std::ostream& out, float value) {
+    // Note: Currently inf and nan should not be constructable, but this is implemented for the day
+    // we support them.
+    if (std::isinf(value)) {
+        out << (value >= 0 ? "INFINITY" : "-INFINITY");
+    } else if (std::isnan(value)) {
+        out << "NAN";
+    } else {
+        out << FloatToString(value) << "f";
+    }
+}
+
+void PrintI32(std::ostream& out, int32_t value) {
+    // MSL (and C++) parse `-2147483648` as a `long` because it parses unary minus and `2147483648`
+    // as separate tokens, and the latter doesn't fit into an (32-bit) `int`.
+    // WGSL, on the other hand, parses this as an `i32`.
+    // To avoid issues with `long` to `int` casts, emit `(-2147483647 - 1)` instead, which ensures
+    // the expression type is `int`.
+    if (auto int_min = std::numeric_limits<int32_t>::min(); value == int_min) {
+        out << "(" << int_min + 1 << " - 1)";
+    } else {
+        out << value;
+    }
 }
 
 class ScopedBitCast {
@@ -513,6 +539,22 @@ bool GeneratorImpl::EmitBinary(std::ostream& out, const ast::BinaryExpression* e
         return true;
     }
 
+    // Handle '&' and '|' of booleans.
+    if ((expr->IsAnd() || expr->IsOr()) && lhs_type->Is<sem::Bool>()) {
+        out << "bool";
+        ScopedParen sp(out);
+        if (!EmitExpression(out, expr->lhs)) {
+            return false;
+        }
+        if (!emit_op()) {
+            return false;
+        }
+        if (!EmitExpression(out, expr->rhs)) {
+            return false;
+        }
+        return true;
+    }
+
     // Emit as usual
     ScopedParen sp(out);
     if (!EmitExpression(out, expr->lhs)) {
@@ -534,7 +576,7 @@ bool GeneratorImpl::EmitBreak(const ast::BreakStatement*) {
 }
 
 bool GeneratorImpl::EmitCall(std::ostream& out, const ast::CallExpression* expr) {
-    auto* call = program_->Sem().Get(expr);
+    auto* call = program_->Sem().Get<sem::Call>(expr);
     auto* target = call->Target();
     return Switch(
         target, [&](const sem::Function* func) { return EmitFunctionCall(out, call, func); },
@@ -786,37 +828,64 @@ bool GeneratorImpl::EmitAtomicCall(std::ostream& out,
         case sem::BuiltinType::kAtomicCompareExchangeWeak: {
             auto* ptr_ty = TypeOf(expr->args[0])->UnwrapRef()->As<sem::Pointer>();
             auto sc = ptr_ty->StorageClass();
+            auto* str = builtin->ReturnType()->As<sem::Struct>();
 
-            auto func = utils::GetOrCreate(atomicCompareExchangeWeak_, sc, [&]() -> std::string {
-                auto name = UniqueIdentifier("atomicCompareExchangeWeak");
-                auto& buf = helpers_;
-
-                line(&buf) << "template <typename A, typename T>";
-                {
-                    auto f = line(&buf);
-                    f << "vec<T, 2> " << name << "(";
-                    if (!EmitStorageClass(f, sc)) {
+            auto func = utils::GetOrCreate(
+                atomicCompareExchangeWeak_, ACEWKeyType{{sc, str}}, [&]() -> std::string {
+                    // Emit the builtin return type unique to this overload. This does not
+                    // exist in the AST, so it will not be generated in Generate().
+                    if (!EmitStructTypeOnce(&helpers_, builtin->ReturnType()->As<sem::Struct>())) {
                         return "";
                     }
-                    f << " A* atomic, T compare, T value) {";
-                }
 
-                buf.IncrementIndent();
-                TINT_DEFER({
-                    buf.DecrementIndent();
-                    line(&buf) << "}";
-                    line(&buf);
+                    auto name = UniqueIdentifier("atomicCompareExchangeWeak");
+                    auto& buf = helpers_;
+                    auto* atomic_ty = builtin->Parameters()[0]->Type();
+                    auto* arg_ty = builtin->Parameters()[1]->Type();
+
+                    {
+                        auto f = line(&buf);
+                        auto str_name = StructName(builtin->ReturnType()->As<sem::Struct>());
+                        f << str_name << " " << name << "(";
+                        if (!EmitTypeAndName(f, atomic_ty, "atomic")) {
+                            return "";
+                        }
+                        f << ", ";
+                        if (!EmitTypeAndName(f, arg_ty, "compare")) {
+                            return "";
+                        }
+                        f << ", ";
+                        if (!EmitTypeAndName(f, arg_ty, "value")) {
+                            return "";
+                        }
+                        f << ") {";
+                    }
+
+                    buf.IncrementIndent();
+                    TINT_DEFER({
+                        buf.DecrementIndent();
+                        line(&buf) << "}";
+                        line(&buf);
+                    });
+
+                    {
+                        auto f = line(&buf);
+                        if (!EmitTypeAndName(f, arg_ty, "old_value")) {
+                            return "";
+                        }
+                        f << " = compare;";
+                    }
+                    line(&buf) << "bool exchanged = "
+                                  "atomic_compare_exchange_weak_explicit(atomic, "
+                                  "&old_value, value, memory_order_relaxed, "
+                                  "memory_order_relaxed);";
+                    line(&buf) << "return {old_value, exchanged};";
+                    return name;
                 });
 
-                line(&buf) << "T prev_value = compare;";
-                line(&buf) << "bool matched = "
-                              "atomic_compare_exchange_weak_explicit(atomic, "
-                              "&prev_value, value, memory_order_relaxed, "
-                              "memory_order_relaxed);";
-                line(&buf) << "return {prev_value, matched};";
-                return name;
-            });
-
+            if (func.empty()) {
+                return false;
+            }
             return call(func, false);
         }
 
@@ -1027,8 +1096,9 @@ bool GeneratorImpl::EmitTextureCall(std::ostream& out,
                 }
             }
 
-            if (!EmitExpression(out, e->Declaration()))
+            if (!EmitExpression(out, e->Declaration())) {
                 return false;
+            }
 
             if (casted) {
                 out << ")";
@@ -1120,8 +1190,8 @@ bool GeneratorImpl::EmitTextureCall(std::ostream& out,
                     break;  // Other texture dimensions don't have an offset
             }
         }
-        auto c = component->ConstantValue().Elements()[0].i32;
-        switch (c) {
+        auto c = component->ConstantValue().Element<AInt>(0);
+        switch (c.value) {
             case 0:
                 out << "component::x";
                 break;
@@ -1467,6 +1537,12 @@ bool GeneratorImpl::EmitZeroValue(std::ostream& out, const sem::Type* type) {
             out << "false";
             return true;
         },
+        [&](const sem::F16*) {
+            // Placeholder for emitting f16 zero value
+            diagnostics_.add_error(diag::System::Writer,
+                                   "Type f16 is not completely implemented yet");
+            return false;
+        },
         [&](const sem::F32*) {
             out << "0.0f";
             return true;
@@ -1486,8 +1562,7 @@ bool GeneratorImpl::EmitZeroValue(std::ostream& out, const sem::Type* type) {
             if (!EmitType(out, mat, "")) {
                 return false;
             }
-            out << "(";
-            TINT_DEFER(out << ")");
+            ScopedParen sp(out);
             return EmitZeroValue(out, mat->type());
         },
         [&](const sem::Array* arr) {
@@ -1507,6 +1582,92 @@ bool GeneratorImpl::EmitZeroValue(std::ostream& out, const sem::Type* type) {
         });
 }
 
+bool GeneratorImpl::EmitConstant(std::ostream& out, const sem::Constant& constant) {
+    auto emit_bool = [&](size_t element_idx) {
+        out << (constant.Element<AInt>(element_idx) ? "true" : "false");
+        return true;
+    };
+    auto emit_f32 = [&](size_t element_idx) {
+        PrintF32(out, static_cast<float>(constant.Element<AFloat>(element_idx)));
+        return true;
+    };
+    auto emit_i32 = [&](size_t element_idx) {
+        PrintI32(out, static_cast<int32_t>(constant.Element<AInt>(element_idx).value));
+        return true;
+    };
+    auto emit_u32 = [&](size_t element_idx) {
+        out << constant.Element<AInt>(element_idx).value << "u";
+        return true;
+    };
+    auto emit_vector = [&](const sem::Vector* vec_ty, size_t start, size_t end) {
+        if (!EmitType(out, vec_ty, "")) {
+            return false;
+        }
+
+        ScopedParen sp(out);
+
+        auto emit_els = [&](auto emit_el) {
+            if (constant.AllEqual(start, end)) {
+                return emit_el(start);
+            }
+            for (size_t i = start; i < end; i++) {
+                if (i > start) {
+                    out << ", ";
+                }
+                if (!emit_el(i)) {
+                    return false;
+                }
+            }
+            return true;
+        };
+        return Switch(
+            vec_ty->type(),                                         //
+            [&](const sem::Bool*) { return emit_els(emit_bool); },  //
+            [&](const sem::F32*) { return emit_els(emit_f32); },    //
+            [&](const sem::I32*) { return emit_els(emit_i32); },    //
+            [&](const sem::U32*) { return emit_els(emit_u32); },    //
+            [&](Default) {
+                diagnostics_.add_error(diag::System::Writer,
+                                       "unhandled constant vector element type: " +
+                                           builder_.FriendlyName(vec_ty->type()));
+                return false;
+            });
+    };
+    auto emit_matrix = [&](const sem::Matrix* m) {
+        if (!EmitType(out, constant.Type(), "")) {
+            return false;
+        }
+
+        ScopedParen sp(out);
+
+        for (size_t column_idx = 0; column_idx < m->columns(); column_idx++) {
+            if (column_idx > 0) {
+                out << ", ";
+            }
+            size_t start = m->rows() * column_idx;
+            size_t end = m->rows() * (column_idx + 1);
+            if (!emit_vector(m->ColumnType(), start, end)) {
+                return false;
+            }
+        }
+        return true;
+    };
+    return Switch(
+        constant.Type(),                                                                   //
+        [&](const sem::Bool*) { return emit_bool(0); },                                    //
+        [&](const sem::F32*) { return emit_f32(0); },                                      //
+        [&](const sem::I32*) { return emit_i32(0); },                                      //
+        [&](const sem::U32*) { return emit_u32(0); },                                      //
+        [&](const sem::Vector* v) { return emit_vector(v, 0, constant.ElementCount()); },  //
+        [&](const sem::Matrix* m) { return emit_matrix(m); },                              //
+        [&](Default) {
+            diagnostics_.add_error(
+                diag::System::Writer,
+                "unhandled constant type: " + builder_.FriendlyName(constant.Type()));
+            return false;
+        });
+}
+
 bool GeneratorImpl::EmitLiteral(std::ostream& out, const ast::LiteralExpression* lit) {
     return Switch(
         lit,
@@ -1515,31 +1676,14 @@ bool GeneratorImpl::EmitLiteral(std::ostream& out, const ast::LiteralExpression*
             return true;
         },
         [&](const ast::FloatLiteralExpression* l) {
-            if (std::isinf(l->value)) {
-                out << (l->value >= 0 ? "INFINITY" : "-INFINITY");
-            } else if (std::isnan(l->value)) {
-                out << "NAN";
-            } else {
-                out << FloatToString(static_cast<float>(l->value)) << "f";
-            }
+            PrintF32(out, static_cast<float>(l->value));
             return true;
         },
         [&](const ast::IntLiteralExpression* i) {
             switch (i->suffix) {
                 case ast::IntLiteralExpression::Suffix::kNone:
                 case ast::IntLiteralExpression::Suffix::kI: {
-                    // MSL (and C++) parse `-2147483648` as a `long` because it parses
-                    // unary minus and `2147483648` as separate tokens, and the latter
-                    // doesn't fit into an (32-bit) `int`. WGSL, OTOH, parses this as an
-                    // `i32`. To avoid issues with `long` to `int` casts, emit
-                    // `(2147483647 - 1)` instead, which ensures the expression type is
-                    // `int`.
-                    const auto int_min = std::numeric_limits<int32_t>::min();
-                    if (i->value == int_min) {
-                        out << "(" << int_min + 1 << " - 1)";
-                    } else {
-                        out << i->value;
-                    }
+                    PrintI32(out, static_cast<int32_t>(i->value));
                     return true;
                 }
                 case ast::IntLiteralExpression::Suffix::kU: {
@@ -1557,6 +1701,11 @@ bool GeneratorImpl::EmitLiteral(std::ostream& out, const ast::LiteralExpression*
 }
 
 bool GeneratorImpl::EmitExpression(std::ostream& out, const ast::Expression* expr) {
+    if (auto* sem = builder_.Sem().Get(expr)) {
+        if (auto constant = sem->ConstantValue()) {
+            return EmitConstant(out, constant);
+        }
+    }
     return Switch(
         expr,
         [&](const ast::IndexAccessorExpression* a) {  //
@@ -2239,6 +2388,11 @@ bool GeneratorImpl::EmitType(std::ostream& out,
             out << "bool";
             return true;
         },
+        [&](const sem::F16*) {
+            diagnostics_.add_error(diag::System::Writer,
+                                   "Type f16 is not completely implemented yet");
+            return false;
+        },
         [&](const sem::F32*) {
             out << "float";
             return true;
@@ -2629,6 +2783,14 @@ bool GeneratorImpl::EmitStructType(TextBuffer* b, const sem::Struct* str) {
 
     line(b) << "};";
     return true;
+}
+
+bool GeneratorImpl::EmitStructTypeOnce(TextBuffer* buffer, const sem::Struct* str) {
+    auto it = emitted_structs_.emplace(str);
+    if (!it.second) {
+        return true;
+    }
+    return EmitStructType(buffer, str);
 }
 
 bool GeneratorImpl::EmitUnaryOp(std::ostream& out, const ast::UnaryOpExpression* expr) {

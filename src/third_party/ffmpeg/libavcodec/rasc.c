@@ -671,14 +671,12 @@ static void draw_cursor(AVCodecContext *avctx)
     }
 }
 
-static int decode_frame(AVCodecContext *avctx,
-                        void *data, int *got_frame,
-                        AVPacket *avpkt)
+static int decode_frame(AVCodecContext *avctx, AVFrame *frame,
+                        int *got_frame, AVPacket *avpkt)
 {
     RASCContext *s = avctx->priv_data;
     GetByteContext *gb = &s->gb;
     int ret, intra = 0;
-    AVFrame *frame = data;
 
     bytestream2_init(gb, avpkt->data, avpkt->size);
 
@@ -807,7 +805,7 @@ const FFCodec ff_rasc_decoder = {
     .priv_data_size   = sizeof(RASCContext),
     .init             = decode_init,
     .close            = decode_close,
-    .decode           = decode_frame,
+    FF_CODEC_DECODE_CB(decode_frame),
     .flush            = decode_flush,
     .p.capabilities   = AV_CODEC_CAP_DR1,
     .caps_internal    = FF_CODEC_CAP_INIT_THREADSAFE |

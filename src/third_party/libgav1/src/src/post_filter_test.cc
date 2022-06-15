@@ -141,6 +141,45 @@ const char* GetSuperResDigest10bpp(int id, int plane) {
 }
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
 
+#if LIBGAV1_MAX_BITDEPTH == 12
+const char* GetSuperResDigest12bpp(int id, int plane) {
+  // Digests are in Y/U/V order.
+  static const char* const kDigestSuperRes[][kMaxPlanes] = {
+      {
+          // all input is 0.
+          "fccb1f57b252b1a86d335aea929d1d58",
+          "2f244a56091c9705794e92e6bcc38058",
+          "2f244a56091c9705794e92e6bcc38058",
+      },
+      {
+          // all input is 1.
+          "de8556204999d6e4bf74cfdde61a095b",
+          "e7d0f4ce6df81c46de95da7790a67384",
+          "e7d0f4ce6df81c46de95da7790a67384",
+      },
+      {
+          // all input is 2048.
+          "83d600a7b3dc9bc3f710668ee2244e6b",
+          "468eec1453edc1befeb8a346f61950a7",
+          "468eec1453edc1befeb8a346f61950a7",
+      },
+      {
+          // all input is 4095.
+          "30bdb1dfee2b02b12b38e6b9f6287e27",
+          "34d673f075d2caa93a2f648ee3569e20",
+          "34d673f075d2caa93a2f648ee3569e20",
+      },
+      {
+          // random input.
+          "f10f21f5322231d991550fce7ef9787d",
+          "a2d8b6140bd5002e86644ef433b8eb42",
+          "a2d8b6140bd5002e86644ef433b8eb42",
+      },
+  };
+  return kDigestSuperRes[id][plane];
+}
+#endif  // LIBGAV1_MAX_BITDEPTH == 12
+
 }  // namespace
 
 // This type is used to parameterize the tests so is defined outside the
@@ -175,6 +214,7 @@ static std::ostream& operator<<(std::ostream& os, const FrameSizeParam& param) {
 template <int bitdepth, typename Pixel>
 class PostFilterTestBase : public testing::TestWithParam<FrameSizeParam> {
  public:
+  static_assert(bitdepth >= kBitdepth8 && bitdepth <= LIBGAV1_MAX_BITDEPTH, "");
   PostFilterTestBase() = default;
   PostFilterTestBase(const PostFilterTestBase&) = delete;
   PostFilterTestBase& operator=(const PostFilterTestBase&) = delete;
@@ -231,6 +271,7 @@ class PostFilterTestBase : public testing::TestWithParam<FrameSizeParam> {
 template <int bitdepth, typename Pixel>
 class PostFilterHelperFuncTest : public PostFilterTestBase<bitdepth, Pixel> {
  public:
+  static_assert(bitdepth >= kBitdepth8 && bitdepth <= LIBGAV1_MAX_BITDEPTH, "");
   PostFilterHelperFuncTest() = default;
   PostFilterHelperFuncTest(const PostFilterHelperFuncTest&) = delete;
   PostFilterHelperFuncTest& operator=(const PostFilterHelperFuncTest&) = delete;
@@ -425,6 +466,7 @@ void PostFilterHelperFuncTest<bitdepth, Pixel>::TestExtendFrame(
 template <int bitdepth, typename Pixel>
 class PostFilterSuperResTest : public PostFilterTestBase<bitdepth, Pixel> {
  public:
+  static_assert(bitdepth >= kBitdepth8 && bitdepth <= LIBGAV1_MAX_BITDEPTH, "");
   PostFilterSuperResTest() {
     test_utils::ResetDspTable(bitdepth);
     dsp::SuperResInit_C();
@@ -581,6 +623,11 @@ void PostFilterSuperResTest<bitdepth, Pixel>::TestApplySuperRes(
         expected_digest = GetSuperResDigest10bpp(id, plane);
         break;
 #endif
+#if LIBGAV1_MAX_BITDEPTH == 12
+      case 12:
+        expected_digest = GetSuperResDigest12bpp(id, plane);
+        break;
+#endif
     }
     ASSERT_NE(expected_digest, nullptr);
     EXPECT_STREQ(digest.c_str(), expected_digest);
@@ -680,6 +727,44 @@ INSTANTIATE_TEST_SUITE_P(PostFilterHelperFuncTestInstance,
                          testing::ValuesIn(kTestParamExtendFrame));
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
 
+#if LIBGAV1_MAX_BITDEPTH == 12
+using PostFilterSuperResTest12bpp = PostFilterSuperResTest<12, uint16_t>;
+
+TEST_P(PostFilterSuperResTest12bpp, ApplySuperRes) {
+  TestApplySuperRes(true, 0, 0, false);
+  TestApplySuperRes(true, 1, 1, false);
+  TestApplySuperRes(true, 1 << 11, 2, false);
+  TestApplySuperRes(true, (1 << 12) - 1, 3, false);
+  TestApplySuperRes(false, 0, 4, false);
+}
+
+TEST_P(PostFilterSuperResTest12bpp, ApplySuperResThreaded) {
+  TestApplySuperRes(true, 0, 0, true);
+  TestApplySuperRes(true, 1, 1, true);
+  TestApplySuperRes(true, 1 << 11, 2, true);
+  TestApplySuperRes(true, (1 << 12) - 1, 3, true);
+  TestApplySuperRes(false, 0, 4, true);
+}
+
+INSTANTIATE_TEST_SUITE_P(PostFilterSuperResTestInstance,
+                         PostFilterSuperResTest12bpp,
+                         testing::ValuesIn(kTestParamSuperRes));
+
+using PostFilterHelperFuncTest12bpp = PostFilterHelperFuncTest<12, uint16_t>;
+
+TEST_P(PostFilterHelperFuncTest12bpp, ExtendFrame) {
+  TestExtendFrame(true, 0);
+  TestExtendFrame(true, 1);
+  TestExtendFrame(true, 255);
+  TestExtendFrame(true, (1 << 12) - 1);
+  TestExtendFrame(false, 0);
+}
+
+INSTANTIATE_TEST_SUITE_P(PostFilterHelperFuncTestInstance,
+                         PostFilterHelperFuncTest12bpp,
+                         testing::ValuesIn(kTestParamExtendFrame));
+#endif  // LIBGAV1_MAX_BITDEPTH == 12
+
 namespace {
 
 const char* GetDigestApplyCdef8bpp(int id) {
@@ -712,12 +797,29 @@ const char* GetDigestApplyCdef10bpp(int id) {
 }
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
 
+#if LIBGAV1_MAX_BITDEPTH == 12
+const char* GetDigestApplyCdef12bpp(int id) {
+  static const char* const kDigest[] = {
+      "06e2d09b6ce3924f3b5d4c00ab76eea5", "287240e4b13cb75e17932a3dd7ba3b3c",
+      "265da123e3347c4fb3e434f26a3949e7", "e032ce6eb76242df6894482ac6688406",
+      "f648328221f0f02a5b7fc3d55a66271a", "8f759aa84a110902025dacf8062d2f6a",
+      "592b49e4b993d6b4634d8eb1ee3bba54", "29a3e8e329ec70d06910e982ea763e6b",
+      "f648328221f0f02a5b7fc3d55a66271a", "8f759aa84a110902025dacf8062d2f6a",
+      "592b49e4b993d6b4634d8eb1ee3bba54", "29a3e8e329ec70d06910e982ea763e6b",
+      "155dd4283f8037f86cce34b6cfe67a7e", "0a022c70ead199517af9bad2002d70cd",
+      "a966dfea52a7a2084545f68b2c9e1735", "e098438a23a7c9f276e594b98b2db922",
+  };
+  return kDigest[id];
+}
+#endif  // LIBGAV1_MAX_BITDEPTH == 12
+
 }  // namespace
 
 template <int bitdepth, typename Pixel>
 class PostFilterApplyCdefTest : public testing::TestWithParam<FrameSizeParam>,
                                 public test_utils::MaxAlignedAllocable {
  public:
+  static_assert(bitdepth >= kBitdepth8 && bitdepth <= LIBGAV1_MAX_BITDEPTH, "");
   PostFilterApplyCdefTest() = default;
   PostFilterApplyCdefTest(const PostFilterApplyCdefTest&) = delete;
   PostFilterApplyCdefTest& operator=(const PostFilterApplyCdefTest&) = delete;
@@ -903,17 +1005,25 @@ void PostFilterApplyCdefTest<bitdepth, Pixel>::TestMultiThread(
   elapsed_time += absl::Now() - start;
 
   CopyFilterOutputToDestBuffer();
-  if (bitdepth == 8) {
-    test_utils::CheckMd5Digest(kCdef, kApplyCdefName,
-                               GetDigestApplyCdef8bpp(id), dest_, size_,
-                               elapsed_time);
+  const char* expected_digest = nullptr;
+  switch (bitdepth) {
+    case 8:
+      expected_digest = GetDigestApplyCdef8bpp(id);
+      break;
 #if LIBGAV1_MAX_BITDEPTH >= 10
-  } else {
-    test_utils::CheckMd5Digest(kCdef, kApplyCdefName,
-                               GetDigestApplyCdef10bpp(id), dest_, size_,
-                               elapsed_time);
-#endif  // LIBGAV1_MAX_BITDEPTH >= 10
+    case 10:
+      expected_digest = GetDigestApplyCdef10bpp(id);
+      break;
+#endif
+#if LIBGAV1_MAX_BITDEPTH == 12
+    case 12:
+      expected_digest = GetDigestApplyCdef12bpp(id);
+      break;
+#endif
   }
+  ASSERT_NE(expected_digest, nullptr);
+  test_utils::CheckMd5Digest(kCdef, kApplyCdefName, expected_digest, dest_,
+                             size_, elapsed_time);
 }
 
 const FrameSizeParam kTestParamApplyCdef[] = {
@@ -952,5 +1062,19 @@ INSTANTIATE_TEST_SUITE_P(PostFilterApplyCdefTestInstance,
                          PostFilterApplyCdefTest10bpp,
                          testing::ValuesIn(kTestParamApplyCdef));
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
+
+#if LIBGAV1_MAX_BITDEPTH == 12
+using PostFilterApplyCdefTest12bpp = PostFilterApplyCdefTest<12, uint16_t>;
+
+TEST_P(PostFilterApplyCdefTest12bpp, ApplyCdef) {
+  TestMultiThread(2);
+  TestMultiThread(4);
+  TestMultiThread(8);
+}
+
+INSTANTIATE_TEST_SUITE_P(PostFilterApplyCdefTestInstance,
+                         PostFilterApplyCdefTest12bpp,
+                         testing::ValuesIn(kTestParamApplyCdef));
+#endif  // LIBGAV1_MAX_BITDEPTH == 12
 
 }  // namespace libgav1

@@ -644,7 +644,6 @@ namespace VULKAN_HPP_NAMESPACE
     ePhysicalDeviceComputeShaderDerivativesFeaturesNV   = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COMPUTE_SHADER_DERIVATIVES_FEATURES_NV,
     ePhysicalDeviceMeshShaderFeaturesNV                 = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_NV,
     ePhysicalDeviceMeshShaderPropertiesNV               = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_PROPERTIES_NV,
-    ePhysicalDeviceFragmentShaderBarycentricFeaturesNV  = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_BARYCENTRIC_FEATURES_NV,
     ePhysicalDeviceShaderImageFootprintFeaturesNV       = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_IMAGE_FOOTPRINT_FEATURES_NV,
     ePipelineViewportExclusiveScissorStateCreateInfoNV  = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_EXCLUSIVE_SCISSOR_STATE_CREATE_INFO_NV,
     ePhysicalDeviceExclusiveScissorFeaturesNV           = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXCLUSIVE_SCISSOR_FEATURES_NV,
@@ -746,13 +745,30 @@ namespace VULKAN_HPP_NAMESPACE
     eVideoEncodeRateControlLayerInfoKHR = VK_STRUCTURE_TYPE_VIDEO_ENCODE_RATE_CONTROL_LAYER_INFO_KHR,
     eVideoEncodeCapabilitiesKHR         = VK_STRUCTURE_TYPE_VIDEO_ENCODE_CAPABILITIES_KHR,
 #endif /*VK_ENABLE_BETA_EXTENSIONS*/
-    ePhysicalDeviceDiagnosticsConfigFeaturesNV                   = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DIAGNOSTICS_CONFIG_FEATURES_NV,
-    eDeviceDiagnosticsConfigCreateInfoNV                         = VK_STRUCTURE_TYPE_DEVICE_DIAGNOSTICS_CONFIG_CREATE_INFO_NV,
+    ePhysicalDeviceDiagnosticsConfigFeaturesNV = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DIAGNOSTICS_CONFIG_FEATURES_NV,
+    eDeviceDiagnosticsConfigCreateInfoNV       = VK_STRUCTURE_TYPE_DEVICE_DIAGNOSTICS_CONFIG_CREATE_INFO_NV,
+#if defined( VK_USE_PLATFORM_METAL_EXT )
+    eExportMetalObjectCreateInfoEXT = VK_STRUCTURE_TYPE_EXPORT_METAL_OBJECT_CREATE_INFO_EXT,
+    eExportMetalObjectsInfoEXT      = VK_STRUCTURE_TYPE_EXPORT_METAL_OBJECTS_INFO_EXT,
+    eExportMetalDeviceInfoEXT       = VK_STRUCTURE_TYPE_EXPORT_METAL_DEVICE_INFO_EXT,
+    eExportMetalCommandQueueInfoEXT = VK_STRUCTURE_TYPE_EXPORT_METAL_COMMAND_QUEUE_INFO_EXT,
+    eExportMetalBufferInfoEXT       = VK_STRUCTURE_TYPE_EXPORT_METAL_BUFFER_INFO_EXT,
+    eImportMetalBufferInfoEXT       = VK_STRUCTURE_TYPE_IMPORT_METAL_BUFFER_INFO_EXT,
+    eExportMetalTextureInfoEXT      = VK_STRUCTURE_TYPE_EXPORT_METAL_TEXTURE_INFO_EXT,
+    eImportMetalTextureInfoEXT      = VK_STRUCTURE_TYPE_IMPORT_METAL_TEXTURE_INFO_EXT,
+    eExportMetalIoSurfaceInfoEXT    = VK_STRUCTURE_TYPE_EXPORT_METAL_IO_SURFACE_INFO_EXT,
+    eImportMetalIoSurfaceInfoEXT    = VK_STRUCTURE_TYPE_IMPORT_METAL_IO_SURFACE_INFO_EXT,
+    eExportMetalSharedEventInfoEXT  = VK_STRUCTURE_TYPE_EXPORT_METAL_SHARED_EVENT_INFO_EXT,
+    eImportMetalSharedEventInfoEXT  = VK_STRUCTURE_TYPE_IMPORT_METAL_SHARED_EVENT_INFO_EXT,
+#endif /*VK_USE_PLATFORM_METAL_EXT*/
     eQueueFamilyCheckpointProperties2NV                          = VK_STRUCTURE_TYPE_QUEUE_FAMILY_CHECKPOINT_PROPERTIES_2_NV,
     eCheckpointData2NV                                           = VK_STRUCTURE_TYPE_CHECKPOINT_DATA_2_NV,
     ePhysicalDeviceGraphicsPipelineLibraryFeaturesEXT            = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GRAPHICS_PIPELINE_LIBRARY_FEATURES_EXT,
     ePhysicalDeviceGraphicsPipelineLibraryPropertiesEXT          = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GRAPHICS_PIPELINE_LIBRARY_PROPERTIES_EXT,
     eGraphicsPipelineLibraryCreateInfoEXT                        = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_LIBRARY_CREATE_INFO_EXT,
+    ePhysicalDeviceShaderEarlyAndLateFragmentTestsFeaturesAMD    = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_EARLY_AND_LATE_FRAGMENT_TESTS_FEATURES_AMD,
+    ePhysicalDeviceFragmentShaderBarycentricFeaturesKHR          = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_BARYCENTRIC_FEATURES_KHR,
+    ePhysicalDeviceFragmentShaderBarycentricPropertiesKHR        = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_BARYCENTRIC_PROPERTIES_KHR,
     ePhysicalDeviceShaderSubgroupUniformControlFlowFeaturesKHR   = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_SUBGROUP_UNIFORM_CONTROL_FLOW_FEATURES_KHR,
     ePhysicalDeviceFragmentShadingRateEnumsPropertiesNV          = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_ENUMS_PROPERTIES_NV,
     ePhysicalDeviceFragmentShadingRateEnumsFeaturesNV            = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_ENUMS_FEATURES_NV,
@@ -829,6 +845,7 @@ namespace VULKAN_HPP_NAMESPACE
     ePhysicalDeviceDescriptorSetHostMappingFeaturesVALVE       = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_SET_HOST_MAPPING_FEATURES_VALVE,
     eDescriptorSetBindingReferenceVALVE                        = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_BINDING_REFERENCE_VALVE,
     eDescriptorSetLayoutHostMappingInfoVALVE                   = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_HOST_MAPPING_INFO_VALVE,
+    ePhysicalDeviceNonSeamlessCubeMapFeaturesEXT               = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_NON_SEAMLESS_CUBE_MAP_FEATURES_EXT,
     ePhysicalDeviceFragmentDensityMapOffsetFeaturesQCOM        = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_OFFSET_FEATURES_QCOM,
     ePhysicalDeviceFragmentDensityMapOffsetPropertiesQCOM      = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_OFFSET_PROPERTIES_QCOM,
     eSubpassFragmentDensityMapOffsetEndInfoQCOM                = VK_STRUCTURE_TYPE_SUBPASS_FRAGMENT_DENSITY_MAP_OFFSET_END_INFO_QCOM,
@@ -836,8 +853,8 @@ namespace VULKAN_HPP_NAMESPACE
     ePhysicalDeviceImageCompressionControlSwapchainFeaturesEXT = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_COMPRESSION_CONTROL_SWAPCHAIN_FEATURES_EXT,
     ePhysicalDeviceSubpassMergeFeedbackFeaturesEXT             = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBPASS_MERGE_FEEDBACK_FEATURES_EXT,
     eRenderPassCreationControlEXT                              = VK_STRUCTURE_TYPE_RENDER_PASS_CREATION_CONTROL_EXT,
-    eRenderPassCreationFeedbackInfoEXT                         = VK_STRUCTURE_TYPE_RENDER_PASS_CREATION_FEEDBACK_INFO_EXT,
-    eRenderPassSubpassFeedbackInfoEXT                          = VK_STRUCTURE_TYPE_RENDER_PASS_SUBPASS_FEEDBACK_INFO_EXT,
+    eRenderPassCreationFeedbackCreateInfoEXT                   = VK_STRUCTURE_TYPE_RENDER_PASS_CREATION_FEEDBACK_CREATE_INFO_EXT,
+    eRenderPassSubpassFeedbackCreateInfoEXT                    = VK_STRUCTURE_TYPE_RENDER_PASS_SUBPASS_FEEDBACK_CREATE_INFO_EXT,
     eAttachmentDescription2KHR                                 = VK_STRUCTURE_TYPE_ATTACHMENT_DESCRIPTION_2_KHR,
     eAttachmentDescriptionStencilLayoutKHR                     = VK_STRUCTURE_TYPE_ATTACHMENT_DESCRIPTION_STENCIL_LAYOUT_KHR,
     eAttachmentReference2KHR                                   = VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2_KHR,
@@ -926,6 +943,7 @@ namespace VULKAN_HPP_NAMESPACE
     ePhysicalDeviceFeatures2KHR                                = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2_KHR,
     ePhysicalDeviceFloat16Int8FeaturesKHR                      = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FLOAT16_INT8_FEATURES_KHR,
     ePhysicalDeviceFloatControlsPropertiesKHR                  = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FLOAT_CONTROLS_PROPERTIES_KHR,
+    ePhysicalDeviceFragmentShaderBarycentricFeaturesNV         = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_BARYCENTRIC_FEATURES_NV,
     ePhysicalDeviceGlobalPriorityQueryFeaturesEXT              = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GLOBAL_PRIORITY_QUERY_FEATURES_EXT,
     ePhysicalDeviceGroupPropertiesKHR                          = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GROUP_PROPERTIES_KHR,
     ePhysicalDeviceHostQueryResetFeaturesEXT                   = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_HOST_QUERY_RESET_FEATURES_EXT,
@@ -1518,7 +1536,6 @@ namespace VULKAN_HPP_NAMESPACE
       case StructureType::ePhysicalDeviceComputeShaderDerivativesFeaturesNV: return "PhysicalDeviceComputeShaderDerivativesFeaturesNV";
       case StructureType::ePhysicalDeviceMeshShaderFeaturesNV: return "PhysicalDeviceMeshShaderFeaturesNV";
       case StructureType::ePhysicalDeviceMeshShaderPropertiesNV: return "PhysicalDeviceMeshShaderPropertiesNV";
-      case StructureType::ePhysicalDeviceFragmentShaderBarycentricFeaturesNV: return "PhysicalDeviceFragmentShaderBarycentricFeaturesNV";
       case StructureType::ePhysicalDeviceShaderImageFootprintFeaturesNV: return "PhysicalDeviceShaderImageFootprintFeaturesNV";
       case StructureType::ePipelineViewportExclusiveScissorStateCreateInfoNV: return "PipelineViewportExclusiveScissorStateCreateInfoNV";
       case StructureType::ePhysicalDeviceExclusiveScissorFeaturesNV: return "PhysicalDeviceExclusiveScissorFeaturesNV";
@@ -1622,11 +1639,28 @@ namespace VULKAN_HPP_NAMESPACE
 #endif /*VK_ENABLE_BETA_EXTENSIONS*/
       case StructureType::ePhysicalDeviceDiagnosticsConfigFeaturesNV: return "PhysicalDeviceDiagnosticsConfigFeaturesNV";
       case StructureType::eDeviceDiagnosticsConfigCreateInfoNV: return "DeviceDiagnosticsConfigCreateInfoNV";
+#if defined( VK_USE_PLATFORM_METAL_EXT )
+      case StructureType::eExportMetalObjectCreateInfoEXT: return "ExportMetalObjectCreateInfoEXT";
+      case StructureType::eExportMetalObjectsInfoEXT: return "ExportMetalObjectsInfoEXT";
+      case StructureType::eExportMetalDeviceInfoEXT: return "ExportMetalDeviceInfoEXT";
+      case StructureType::eExportMetalCommandQueueInfoEXT: return "ExportMetalCommandQueueInfoEXT";
+      case StructureType::eExportMetalBufferInfoEXT: return "ExportMetalBufferInfoEXT";
+      case StructureType::eImportMetalBufferInfoEXT: return "ImportMetalBufferInfoEXT";
+      case StructureType::eExportMetalTextureInfoEXT: return "ExportMetalTextureInfoEXT";
+      case StructureType::eImportMetalTextureInfoEXT: return "ImportMetalTextureInfoEXT";
+      case StructureType::eExportMetalIoSurfaceInfoEXT: return "ExportMetalIoSurfaceInfoEXT";
+      case StructureType::eImportMetalIoSurfaceInfoEXT: return "ImportMetalIoSurfaceInfoEXT";
+      case StructureType::eExportMetalSharedEventInfoEXT: return "ExportMetalSharedEventInfoEXT";
+      case StructureType::eImportMetalSharedEventInfoEXT: return "ImportMetalSharedEventInfoEXT";
+#endif /*VK_USE_PLATFORM_METAL_EXT*/
       case StructureType::eQueueFamilyCheckpointProperties2NV: return "QueueFamilyCheckpointProperties2NV";
       case StructureType::eCheckpointData2NV: return "CheckpointData2NV";
       case StructureType::ePhysicalDeviceGraphicsPipelineLibraryFeaturesEXT: return "PhysicalDeviceGraphicsPipelineLibraryFeaturesEXT";
       case StructureType::ePhysicalDeviceGraphicsPipelineLibraryPropertiesEXT: return "PhysicalDeviceGraphicsPipelineLibraryPropertiesEXT";
       case StructureType::eGraphicsPipelineLibraryCreateInfoEXT: return "GraphicsPipelineLibraryCreateInfoEXT";
+      case StructureType::ePhysicalDeviceShaderEarlyAndLateFragmentTestsFeaturesAMD: return "PhysicalDeviceShaderEarlyAndLateFragmentTestsFeaturesAMD";
+      case StructureType::ePhysicalDeviceFragmentShaderBarycentricFeaturesKHR: return "PhysicalDeviceFragmentShaderBarycentricFeaturesKHR";
+      case StructureType::ePhysicalDeviceFragmentShaderBarycentricPropertiesKHR: return "PhysicalDeviceFragmentShaderBarycentricPropertiesKHR";
       case StructureType::ePhysicalDeviceShaderSubgroupUniformControlFlowFeaturesKHR: return "PhysicalDeviceShaderSubgroupUniformControlFlowFeaturesKHR";
       case StructureType::ePhysicalDeviceFragmentShadingRateEnumsPropertiesNV: return "PhysicalDeviceFragmentShadingRateEnumsPropertiesNV";
       case StructureType::ePhysicalDeviceFragmentShadingRateEnumsFeaturesNV: return "PhysicalDeviceFragmentShadingRateEnumsFeaturesNV";
@@ -1703,6 +1737,7 @@ namespace VULKAN_HPP_NAMESPACE
       case StructureType::ePhysicalDeviceDescriptorSetHostMappingFeaturesVALVE: return "PhysicalDeviceDescriptorSetHostMappingFeaturesVALVE";
       case StructureType::eDescriptorSetBindingReferenceVALVE: return "DescriptorSetBindingReferenceVALVE";
       case StructureType::eDescriptorSetLayoutHostMappingInfoVALVE: return "DescriptorSetLayoutHostMappingInfoVALVE";
+      case StructureType::ePhysicalDeviceNonSeamlessCubeMapFeaturesEXT: return "PhysicalDeviceNonSeamlessCubeMapFeaturesEXT";
       case StructureType::ePhysicalDeviceFragmentDensityMapOffsetFeaturesQCOM: return "PhysicalDeviceFragmentDensityMapOffsetFeaturesQCOM";
       case StructureType::ePhysicalDeviceFragmentDensityMapOffsetPropertiesQCOM: return "PhysicalDeviceFragmentDensityMapOffsetPropertiesQCOM";
       case StructureType::eSubpassFragmentDensityMapOffsetEndInfoQCOM: return "SubpassFragmentDensityMapOffsetEndInfoQCOM";
@@ -1710,8 +1745,22 @@ namespace VULKAN_HPP_NAMESPACE
       case StructureType::ePhysicalDeviceImageCompressionControlSwapchainFeaturesEXT: return "PhysicalDeviceImageCompressionControlSwapchainFeaturesEXT";
       case StructureType::ePhysicalDeviceSubpassMergeFeedbackFeaturesEXT: return "PhysicalDeviceSubpassMergeFeedbackFeaturesEXT";
       case StructureType::eRenderPassCreationControlEXT: return "RenderPassCreationControlEXT";
-      case StructureType::eRenderPassCreationFeedbackInfoEXT: return "RenderPassCreationFeedbackInfoEXT";
-      case StructureType::eRenderPassSubpassFeedbackInfoEXT: return "RenderPassSubpassFeedbackInfoEXT";
+      case StructureType::eRenderPassCreationFeedbackCreateInfoEXT: return "RenderPassCreationFeedbackCreateInfoEXT";
+      case StructureType::eRenderPassSubpassFeedbackCreateInfoEXT: return "RenderPassSubpassFeedbackCreateInfoEXT";
+      default: return "invalid ( " + VULKAN_HPP_NAMESPACE::toHexString( static_cast<uint32_t>( value ) ) + " )";
+    }
+  }
+
+  enum class PipelineCacheHeaderVersion
+  {
+    eOne = VK_PIPELINE_CACHE_HEADER_VERSION_ONE
+  };
+
+  VULKAN_HPP_INLINE std::string to_string( PipelineCacheHeaderVersion value )
+  {
+    switch ( value )
+    {
+      case PipelineCacheHeaderVersion::eOne: return "One";
       default: return "invalid ( " + VULKAN_HPP_NAMESPACE::toHexString( static_cast<uint32_t>( value ) ) + " )";
     }
   }
@@ -1851,20 +1900,6 @@ namespace VULKAN_HPP_NAMESPACE
       case VendorId::eCodeplay: return "Codeplay";
       case VendorId::eMESA: return "MESA";
       case VendorId::ePocl: return "Pocl";
-      default: return "invalid ( " + VULKAN_HPP_NAMESPACE::toHexString( static_cast<uint32_t>( value ) ) + " )";
-    }
-  }
-
-  enum class PipelineCacheHeaderVersion
-  {
-    eOne = VK_PIPELINE_CACHE_HEADER_VERSION_ONE
-  };
-
-  VULKAN_HPP_INLINE std::string to_string( PipelineCacheHeaderVersion value )
-  {
-    switch ( value )
-    {
-      case PipelineCacheHeaderVersion::eOne: return "One";
       default: return "invalid ( " + VULKAN_HPP_NAMESPACE::toHexString( static_cast<uint32_t>( value ) ) + " )";
     }
   }
@@ -4193,7 +4228,8 @@ namespace VULKAN_HPP_NAMESPACE
   enum class SamplerCreateFlagBits : VkSamplerCreateFlags
   {
     eSubsampledEXT                     = VK_SAMPLER_CREATE_SUBSAMPLED_BIT_EXT,
-    eSubsampledCoarseReconstructionEXT = VK_SAMPLER_CREATE_SUBSAMPLED_COARSE_RECONSTRUCTION_BIT_EXT
+    eSubsampledCoarseReconstructionEXT = VK_SAMPLER_CREATE_SUBSAMPLED_COARSE_RECONSTRUCTION_BIT_EXT,
+    eNonSeamlessCubeMapEXT             = VK_SAMPLER_CREATE_NON_SEAMLESS_CUBE_MAP_BIT_EXT
   };
 
   VULKAN_HPP_INLINE std::string to_string( SamplerCreateFlagBits value )
@@ -4202,6 +4238,7 @@ namespace VULKAN_HPP_NAMESPACE
     {
       case SamplerCreateFlagBits::eSubsampledEXT: return "SubsampledEXT";
       case SamplerCreateFlagBits::eSubsampledCoarseReconstructionEXT: return "SubsampledCoarseReconstructionEXT";
+      case SamplerCreateFlagBits::eNonSeamlessCubeMapEXT: return "NonSeamlessCubeMapEXT";
       default: return "invalid ( " + VULKAN_HPP_NAMESPACE::toHexString( static_cast<uint32_t>( value ) ) + " )";
     }
   }
@@ -8045,7 +8082,8 @@ namespace VULKAN_HPP_NAMESPACE
   {
     eEnableShaderDebugInfo      = VK_DEVICE_DIAGNOSTICS_CONFIG_ENABLE_SHADER_DEBUG_INFO_BIT_NV,
     eEnableResourceTracking     = VK_DEVICE_DIAGNOSTICS_CONFIG_ENABLE_RESOURCE_TRACKING_BIT_NV,
-    eEnableAutomaticCheckpoints = VK_DEVICE_DIAGNOSTICS_CONFIG_ENABLE_AUTOMATIC_CHECKPOINTS_BIT_NV
+    eEnableAutomaticCheckpoints = VK_DEVICE_DIAGNOSTICS_CONFIG_ENABLE_AUTOMATIC_CHECKPOINTS_BIT_NV,
+    eEnableShaderErrorReporting = VK_DEVICE_DIAGNOSTICS_CONFIG_ENABLE_SHADER_ERROR_REPORTING_BIT_NV
   };
 
   VULKAN_HPP_INLINE std::string to_string( DeviceDiagnosticsConfigFlagBitsNV value )
@@ -8055,9 +8093,38 @@ namespace VULKAN_HPP_NAMESPACE
       case DeviceDiagnosticsConfigFlagBitsNV::eEnableShaderDebugInfo: return "EnableShaderDebugInfo";
       case DeviceDiagnosticsConfigFlagBitsNV::eEnableResourceTracking: return "EnableResourceTracking";
       case DeviceDiagnosticsConfigFlagBitsNV::eEnableAutomaticCheckpoints: return "EnableAutomaticCheckpoints";
+      case DeviceDiagnosticsConfigFlagBitsNV::eEnableShaderErrorReporting: return "EnableShaderErrorReporting";
       default: return "invalid ( " + VULKAN_HPP_NAMESPACE::toHexString( static_cast<uint32_t>( value ) ) + " )";
     }
   }
+
+#if defined( VK_USE_PLATFORM_METAL_EXT )
+  //=== VK_EXT_metal_objects ===
+
+  enum class ExportMetalObjectTypeFlagBitsEXT : VkExportMetalObjectTypeFlagsEXT
+  {
+    eMetalDevice       = VK_EXPORT_METAL_OBJECT_TYPE_METAL_DEVICE_BIT_EXT,
+    eMetalCommandQueue = VK_EXPORT_METAL_OBJECT_TYPE_METAL_COMMAND_QUEUE_BIT_EXT,
+    eMetalBuffer       = VK_EXPORT_METAL_OBJECT_TYPE_METAL_BUFFER_BIT_EXT,
+    eMetalTexture      = VK_EXPORT_METAL_OBJECT_TYPE_METAL_TEXTURE_BIT_EXT,
+    eMetalIosurface    = VK_EXPORT_METAL_OBJECT_TYPE_METAL_IOSURFACE_BIT_EXT,
+    eMetalSharedEvent  = VK_EXPORT_METAL_OBJECT_TYPE_METAL_SHARED_EVENT_BIT_EXT
+  };
+
+  VULKAN_HPP_INLINE std::string to_string( ExportMetalObjectTypeFlagBitsEXT value )
+  {
+    switch ( value )
+    {
+      case ExportMetalObjectTypeFlagBitsEXT::eMetalDevice: return "MetalDevice";
+      case ExportMetalObjectTypeFlagBitsEXT::eMetalCommandQueue: return "MetalCommandQueue";
+      case ExportMetalObjectTypeFlagBitsEXT::eMetalBuffer: return "MetalBuffer";
+      case ExportMetalObjectTypeFlagBitsEXT::eMetalTexture: return "MetalTexture";
+      case ExportMetalObjectTypeFlagBitsEXT::eMetalIosurface: return "MetalIosurface";
+      case ExportMetalObjectTypeFlagBitsEXT::eMetalSharedEvent: return "MetalSharedEvent";
+      default: return "invalid ( " + VULKAN_HPP_NAMESPACE::toHexString( static_cast<uint32_t>( value ) ) + " )";
+    }
+  }
+#endif /*VK_USE_PLATFORM_METAL_EXT*/
 
   //=== VK_EXT_graphics_pipeline_library ===
 
@@ -10389,7 +10456,8 @@ namespace VULKAN_HPP_NAMESPACE
   {
     enum : VkFlags
     {
-      allFlags = VkFlags( SamplerCreateFlagBits::eSubsampledEXT ) | VkFlags( SamplerCreateFlagBits::eSubsampledCoarseReconstructionEXT )
+      allFlags = VkFlags( SamplerCreateFlagBits::eSubsampledEXT ) | VkFlags( SamplerCreateFlagBits::eSubsampledCoarseReconstructionEXT ) |
+                 VkFlags( SamplerCreateFlagBits::eNonSeamlessCubeMapEXT )
     };
   };
 
@@ -10423,6 +10491,8 @@ namespace VULKAN_HPP_NAMESPACE
       result += "SubsampledEXT | ";
     if ( value & SamplerCreateFlagBits::eSubsampledCoarseReconstructionEXT )
       result += "SubsampledCoarseReconstructionEXT | ";
+    if ( value & SamplerCreateFlagBits::eNonSeamlessCubeMapEXT )
+      result += "NonSeamlessCubeMapEXT | ";
 
     return "{ " + result.substr( 0, result.size() - 3 ) + " }";
   }
@@ -15204,7 +15274,8 @@ namespace VULKAN_HPP_NAMESPACE
     enum : VkFlags
     {
       allFlags = VkFlags( DeviceDiagnosticsConfigFlagBitsNV::eEnableShaderDebugInfo ) | VkFlags( DeviceDiagnosticsConfigFlagBitsNV::eEnableResourceTracking ) |
-                 VkFlags( DeviceDiagnosticsConfigFlagBitsNV::eEnableAutomaticCheckpoints )
+                 VkFlags( DeviceDiagnosticsConfigFlagBitsNV::eEnableAutomaticCheckpoints ) |
+                 VkFlags( DeviceDiagnosticsConfigFlagBitsNV::eEnableShaderErrorReporting )
     };
   };
 
@@ -15243,9 +15314,73 @@ namespace VULKAN_HPP_NAMESPACE
       result += "EnableResourceTracking | ";
     if ( value & DeviceDiagnosticsConfigFlagBitsNV::eEnableAutomaticCheckpoints )
       result += "EnableAutomaticCheckpoints | ";
+    if ( value & DeviceDiagnosticsConfigFlagBitsNV::eEnableShaderErrorReporting )
+      result += "EnableShaderErrorReporting | ";
 
     return "{ " + result.substr( 0, result.size() - 3 ) + " }";
   }
+
+#if defined( VK_USE_PLATFORM_METAL_EXT )
+  //=== VK_EXT_metal_objects ===
+
+  using ExportMetalObjectTypeFlagsEXT = Flags<ExportMetalObjectTypeFlagBitsEXT>;
+
+  template <>
+  struct FlagTraits<ExportMetalObjectTypeFlagBitsEXT>
+  {
+    enum : VkFlags
+    {
+      allFlags = VkFlags( ExportMetalObjectTypeFlagBitsEXT::eMetalDevice ) | VkFlags( ExportMetalObjectTypeFlagBitsEXT::eMetalCommandQueue ) |
+                 VkFlags( ExportMetalObjectTypeFlagBitsEXT::eMetalBuffer ) | VkFlags( ExportMetalObjectTypeFlagBitsEXT::eMetalTexture ) |
+                 VkFlags( ExportMetalObjectTypeFlagBitsEXT::eMetalIosurface ) | VkFlags( ExportMetalObjectTypeFlagBitsEXT::eMetalSharedEvent )
+    };
+  };
+
+  VULKAN_HPP_INLINE VULKAN_HPP_CONSTEXPR ExportMetalObjectTypeFlagsEXT operator|( ExportMetalObjectTypeFlagBitsEXT bit0,
+                                                                                  ExportMetalObjectTypeFlagBitsEXT bit1 ) VULKAN_HPP_NOEXCEPT
+  {
+    return ExportMetalObjectTypeFlagsEXT( bit0 ) | bit1;
+  }
+
+  VULKAN_HPP_INLINE VULKAN_HPP_CONSTEXPR ExportMetalObjectTypeFlagsEXT operator&( ExportMetalObjectTypeFlagBitsEXT bit0,
+                                                                                  ExportMetalObjectTypeFlagBitsEXT bit1 ) VULKAN_HPP_NOEXCEPT
+  {
+    return ExportMetalObjectTypeFlagsEXT( bit0 ) & bit1;
+  }
+
+  VULKAN_HPP_INLINE VULKAN_HPP_CONSTEXPR ExportMetalObjectTypeFlagsEXT operator^( ExportMetalObjectTypeFlagBitsEXT bit0,
+                                                                                  ExportMetalObjectTypeFlagBitsEXT bit1 ) VULKAN_HPP_NOEXCEPT
+  {
+    return ExportMetalObjectTypeFlagsEXT( bit0 ) ^ bit1;
+  }
+
+  VULKAN_HPP_INLINE VULKAN_HPP_CONSTEXPR ExportMetalObjectTypeFlagsEXT operator~( ExportMetalObjectTypeFlagBitsEXT bits ) VULKAN_HPP_NOEXCEPT
+  {
+    return ~( ExportMetalObjectTypeFlagsEXT( bits ) );
+  }
+
+  VULKAN_HPP_INLINE std::string to_string( ExportMetalObjectTypeFlagsEXT value )
+  {
+    if ( !value )
+      return "{}";
+
+    std::string result;
+    if ( value & ExportMetalObjectTypeFlagBitsEXT::eMetalDevice )
+      result += "MetalDevice | ";
+    if ( value & ExportMetalObjectTypeFlagBitsEXT::eMetalCommandQueue )
+      result += "MetalCommandQueue | ";
+    if ( value & ExportMetalObjectTypeFlagBitsEXT::eMetalBuffer )
+      result += "MetalBuffer | ";
+    if ( value & ExportMetalObjectTypeFlagBitsEXT::eMetalTexture )
+      result += "MetalTexture | ";
+    if ( value & ExportMetalObjectTypeFlagBitsEXT::eMetalIosurface )
+      result += "MetalIosurface | ";
+    if ( value & ExportMetalObjectTypeFlagBitsEXT::eMetalSharedEvent )
+      result += "MetalSharedEvent | ";
+
+    return "{ " + result.substr( 0, result.size() - 3 ) + " }";
+  }
+#endif /*VK_USE_PLATFORM_METAL_EXT*/
 
   //=== VK_EXT_graphics_pipeline_library ===
 

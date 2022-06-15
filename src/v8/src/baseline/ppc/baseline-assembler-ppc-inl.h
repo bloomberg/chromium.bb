@@ -70,7 +70,7 @@ enum class Condition : uint32_t {
 };
 
 inline internal::Condition AsMasmCondition(Condition cond) {
-  STATIC_ASSERT(sizeof(internal::Condition) == sizeof(Condition));
+  static_assert(sizeof(internal::Condition) == sizeof(Condition));
   switch (cond) {
     case Condition::kEqual:
       return eq;
@@ -237,7 +237,7 @@ void BaselineAssembler::TestAndBranch(Register value, int mask, Condition cc,
                                       Label* target, Label::Distance) {
   ASM_CODE_COMMENT(masm_);
   __ AndU64(r0, value, Operand(mask), ip, SetRC);
-  __ b(AsMasmCondition(cc), target);
+  __ b(AsMasmCondition(cc), target, cr0);
 }
 
 void BaselineAssembler::JumpIf(Condition cc, Register lhs, const Operand& rhs,
@@ -572,14 +572,14 @@ void BaselineAssembler::AddToInterruptBudgetAndJumpIfNotExceeded(
       interrupt_budget,
       FieldMemOperand(feedback_cell, FeedbackCell::kInterruptBudgetOffset), r0);
   // Remember to set flags as part of the add!
-  __ AddS32(interrupt_budget, interrupt_budget, Operand(weight), r0);
+  __ AddS32(interrupt_budget, interrupt_budget, Operand(weight), r0, SetRC);
   __ StoreU32(
       interrupt_budget,
       FieldMemOperand(feedback_cell, FeedbackCell::kInterruptBudgetOffset), r0);
   if (skip_interrupt_label) {
     // Use compare flags set by add
     DCHECK_LT(weight, 0);
-    __ b(ge, skip_interrupt_label);
+    __ bge(skip_interrupt_label, cr0);
   }
 }
 
@@ -597,11 +597,11 @@ void BaselineAssembler::AddToInterruptBudgetAndJumpIfNotExceeded(
       interrupt_budget,
       FieldMemOperand(feedback_cell, FeedbackCell::kInterruptBudgetOffset), r0);
   // Remember to set flags as part of the add!
-  __ AddS32(interrupt_budget, interrupt_budget, weight);
+  __ AddS32(interrupt_budget, interrupt_budget, weight, SetRC);
   __ StoreU32(
       interrupt_budget,
       FieldMemOperand(feedback_cell, FeedbackCell::kInterruptBudgetOffset), r0);
-  if (skip_interrupt_label) __ b(ge, skip_interrupt_label);
+  if (skip_interrupt_label) __ bge(skip_interrupt_label, cr0);
 }
 
 void BaselineAssembler::AddSmi(Register lhs, Smi rhs) {

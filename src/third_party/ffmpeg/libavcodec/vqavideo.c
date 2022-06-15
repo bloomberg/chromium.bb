@@ -794,9 +794,8 @@ static int vqa_decode_frame_hicolor(VqaContext *s, AVFrame *frame)
     return 0;
 }
 
-static int vqa_decode_frame(AVCodecContext *avctx,
-                            void *data, int *got_frame,
-                            AVPacket *avpkt)
+static int vqa_decode_frame(AVCodecContext *avctx, AVFrame *rframe,
+                            int *got_frame, AVPacket *avpkt)
 {
     VqaContext *s = avctx->priv_data;
     int res;
@@ -821,7 +820,7 @@ static int vqa_decode_frame(AVCodecContext *avctx,
         return AVERROR_BUG;
     }
 
-    if ((res = av_frame_ref(data, s->frame)) < 0)
+    if ((res = av_frame_ref(rframe, s->frame)) < 0)
         return res;
 
     *got_frame      = 1;
@@ -855,7 +854,7 @@ const FFCodec ff_vqa_decoder = {
     .priv_data_size = sizeof(VqaContext),
     .init           = vqa_decode_init,
     .close          = vqa_decode_end,
-    .decode         = vqa_decode_frame,
+    FF_CODEC_DECODE_CB(vqa_decode_frame),
     .p.capabilities = AV_CODEC_CAP_DR1,
     .defaults       = vqa_defaults,
     .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP,

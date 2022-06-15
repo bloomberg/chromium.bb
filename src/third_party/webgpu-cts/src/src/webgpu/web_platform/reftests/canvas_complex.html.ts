@@ -212,6 +212,7 @@ export function run(
       const srcTexture = setupSrcTexture(imageBitmap);
 
       const pipeline = t.device.createRenderPipeline({
+        layout: 'auto',
         vertex: {
           module: t.device.createShaderModule({
             code: `
@@ -220,7 +221,7 @@ struct VertexOutput {
   @location(0) fragUV : vec2<f32>;
 };
 
-@stage(vertex)
+@vertex
 fn main(@builtin(vertex_index) VertexIndex : u32) -> VertexOutput {
   var pos = array<vec2<f32>, 6>(
       vec2<f32>( 1.0,  1.0),
@@ -265,7 +266,7 @@ fn gammaDecompress(n: f32) -> f32 {
   return r;
 }
 
-@stage(fragment)
+@fragment
 fn srgbMain(@location(0) fragUV: vec2<f32>) -> @location(0) vec4<f32> {
   var result = textureSample(myTexture, mySampler, fragUV);
   result.r = gammaDecompress(result.r);
@@ -274,7 +275,7 @@ fn srgbMain(@location(0) fragUV: vec2<f32>) -> @location(0) vec4<f32> {
   return result;
 }
 
-@stage(fragment)
+@fragment
 fn linearMain(@location(0) fragUV: vec2<f32>) -> @location(0) vec4<f32> {
   return textureSample(myTexture, mySampler, fragUV);
 }
@@ -330,6 +331,7 @@ fn linearMain(@location(0) fragUV: vec2<f32>) -> @location(0) vec4<f32> {
 
     function DrawVertexColor(ctx: GPUCanvasContext) {
       const pipeline = t.device.createRenderPipeline({
+        layout: 'auto',
         vertex: {
           module: t.device.createShaderModule({
             code: `
@@ -338,7 +340,7 @@ struct VertexOutput {
   @location(0) fragColor : vec4<f32>;
 };
 
-@stage(vertex)
+@vertex
 fn main(@builtin(vertex_index) VertexIndex : u32) -> VertexOutput {
   var pos = array<vec2<f32>, 6>(
       vec2<f32>( 0.5,  0.5),
@@ -372,7 +374,7 @@ fn main(@builtin(vertex_index) VertexIndex : u32) -> VertexOutput {
         fragment: {
           module: t.device.createShaderModule({
             code: `
-@stage(fragment)
+@fragment
 fn main(@location(0) fragColor: vec4<f32>) -> @location(0) vec4<f32> {
   return fragColor;
 }
@@ -410,6 +412,7 @@ fn main(@location(0) fragColor: vec4<f32>) -> @location(0) vec4<f32> {
       const halfCanvasWidthStr = (ctx.canvas.width / 2).toFixed();
       const halfCanvasHeightStr = (ctx.canvas.height / 2).toFixed();
       const pipeline = t.device.createRenderPipeline({
+        layout: 'auto',
         vertex: {
           module: t.device.createShaderModule({
             code: `
@@ -417,7 +420,7 @@ struct VertexOutput {
   @builtin(position) Position : vec4<f32>;
 };
 
-@stage(vertex)
+@vertex
 fn main(@builtin(vertex_index) VertexIndex : u32) -> VertexOutput {
   var pos = array<vec2<f32>, 6>(
       vec2<f32>( 1.0,  1.0),
@@ -441,7 +444,7 @@ fn main(@builtin(vertex_index) VertexIndex : u32) -> VertexOutput {
 @group(0) @binding(0) var mySampler: sampler;
 @group(0) @binding(1) var myTexture: texture_2d<f32>;
 
-@stage(fragment)
+@fragment
 fn main(@builtin(position) fragcoord: vec4<f32>) -> @location(0) vec4<f32> {
   var coord = vec2<u32>(floor(fragcoord.xy));
   var color = vec4<f32>(0.0, 0.0, 0.0, 1.0);
@@ -495,6 +498,7 @@ fn main(@builtin(position) fragcoord: vec4<f32>) -> @location(0) vec4<f32> {
       const halfCanvasWidthStr = (ctx.canvas.width / 2).toFixed();
       const halfCanvasHeightStr = (ctx.canvas.height / 2).toFixed();
       const pipeline = t.device.createRenderPipeline({
+        layout: 'auto',
         vertex: {
           module: t.device.createShaderModule({
             code: `
@@ -502,7 +506,7 @@ struct VertexOutput {
   @builtin(position) Position : vec4<f32>;
 };
 
-@stage(vertex)
+@vertex
 fn main(@builtin(vertex_index) VertexIndex : u32) -> VertexOutput {
   var pos = array<vec2<f32>, 6>(
       vec2<f32>( 1.0,  1.0),
@@ -525,7 +529,7 @@ fn main(@builtin(vertex_index) VertexIndex : u32) -> VertexOutput {
             code: `
 @group(0) @binding(0) var outImage : texture_storage_2d<${format}, write>;
 
-@stage(fragment)
+@fragment
 fn main(@builtin(position) fragcoord: vec4<f32>) -> @location(0) vec4<f32> {
   var coord = vec2<u32>(floor(fragcoord.xy));
   var color = vec4<f32>(0.0, 0.0, 0.0, 1.0);
@@ -592,12 +596,13 @@ fn main(@builtin(position) fragcoord: vec4<f32>) -> @location(0) vec4<f32> {
       const halfCanvasWidthStr = (ctx.canvas.width / 2).toFixed();
       const halfCanvasHeightStr = (ctx.canvas.height / 2).toFixed();
       const pipeline = t.device.createComputePipeline({
+        layout: 'auto',
         compute: {
           module: t.device.createShaderModule({
             code: `
 @group(0) @binding(0) var outImage : texture_storage_2d<${format}, write>;
 
-@stage(compute) @workgroup_size(1, 1, 1)
+@compute @workgroup_size(1, 1, 1)
 fn main(@builtin(global_invocation_id) GlobalInvocationID : vec3<u32>) {
   var color = vec4<f32>(0.0, 0.0, 0.0, 1.0);
   if (GlobalInvocationID.x < ${halfCanvasWidthStr}u) {
@@ -643,12 +648,13 @@ fn main(@builtin(global_invocation_id) GlobalInvocationID : vec3<u32>) {
       const halfCanvasWidthStr = (ctx.canvas.width / 2).toFixed();
       const halfCanvasHeightStr = (ctx.canvas.height / 2).toFixed();
       const pipeline = t.device.createComputePipeline({
+        layout: 'auto',
         compute: {
           module: t.device.createShaderModule({
             code: `
 @group(0) @binding(0) var outImage : texture_storage_2d<${format}, write>;
 
-@stage(compute) @workgroup_size(16, 16, 1)
+@compute @workgroup_size(16, 16, 1)
 fn main(@builtin(global_invocation_id) GlobalInvocationID : vec3<u32>) {
   if (GlobalInvocationID.x >= ${canvasWidthStr}u ||
       GlobalInvocationID.y >= ${canvasHeightStr}u) {

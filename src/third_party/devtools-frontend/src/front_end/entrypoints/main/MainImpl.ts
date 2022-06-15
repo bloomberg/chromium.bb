@@ -292,8 +292,7 @@ export class MainImpl {
         'recordCoverageWithPerformanceTracing', 'Record coverage while performance tracing');
     Root.Runtime.experiments.register('samplingHeapProfilerTimeline', 'Sampling heap profiler timeline', true);
     Root.Runtime.experiments.register(
-        'showOptionToNotTreatGlobalObjectsAsRoots',
-        'Show option to take heap snapshot where globals are not treated as root');
+        'showOptionToExposeInternalsInHeapSnapshot', 'Show option to expose internals in heap snapshots');
     Root.Runtime.experiments.register(
         'sourceOrderViewer', 'Source order viewer', undefined,
         'https://developer.chrome.com/blog/new-in-devtools-92/#source-order');
@@ -387,6 +386,11 @@ export class MainImpl {
     Root.Runtime.experiments.register(
         Root.Runtime.ExperimentName.HEADER_OVERRIDES, 'Local overrides for response headers');
 
+    // Enable CSS Authoring hints for inactive rules, deprecated properties, etc.
+    Root.Runtime.experiments.register(
+        Root.Runtime.ExperimentName.CSS_AUTHORING_HINTS,
+        'Enable CSS Authoring hints for inactive rules, deprecated properties, etc.');
+
     // New Lighthouse panel with timespan and snapshot mode
     Root.Runtime.experiments.register('lighthousePanelFR', 'Use Lighthouse panel with timespan and snapshot modes');
 
@@ -397,6 +401,10 @@ export class MainImpl {
     // Enable color picking outside the browser window (using Eyedropper API)
     Root.Runtime.experiments.register(
         Root.Runtime.ExperimentName.EYEDROPPER_COLOR_PICKER, 'Enable color picking outside the browser window');
+
+    // Change grouping of sources panel to use Authored/Deployed trees
+    Root.Runtime.experiments.register(
+        Root.Runtime.ExperimentName.AUTHORED_DEPLOYED_GROUPING, 'Group sources into Authored and Deployed trees');
 
     Root.Runtime.experiments.enableExperimentsByDefault([
       'sourceOrderViewer',
@@ -420,6 +428,7 @@ export class MainImpl {
       'backgroundServicesNotifications',
       'backgroundServicesPushMessaging',
       'backgroundServicesPaymentHandler',
+      'bfcacheDisplayTree',
       'webauthnPane',
       'developerResourcesView',
     ]);

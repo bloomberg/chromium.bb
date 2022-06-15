@@ -972,8 +972,8 @@ void CollectElementIndices(Isolate* isolate, Handle<JSObject> object,
     }
 #define TYPED_ARRAY_CASE(Type, type, TYPE, ctype) case TYPE##_ELEMENTS:
 
-      TYPED_ARRAYS(TYPED_ARRAY_CASE) {
-        size_t length = Handle<JSTypedArray>::cast(object)->length();
+      TYPED_ARRAYS(TYPED_ARRAY_CASE) RAB_GSAB_TYPED_ARRAYS(TYPED_ARRAY_CASE) {
+        size_t length = Handle<JSTypedArray>::cast(object)->GetLength();
         if (range <= length) {
           length = range;
           // We will add all indices, so we might as well clear it first
@@ -988,9 +988,6 @@ void CollectElementIndices(Isolate* isolate, Handle<JSObject> object,
         if (length == range) return;  // All indices accounted for already.
         break;
       }
-      RAB_GSAB_TYPED_ARRAYS(TYPED_ARRAY_CASE)
-      // TODO(v8:11111): Support RAB / GSAB.
-      UNREACHABLE();
 
 #undef TYPED_ARRAY_CASE
     case FAST_SLOPPY_ARGUMENTS_ELEMENTS:
@@ -1464,8 +1461,8 @@ MaybeHandle<JSArray> Fast_ArrayConcat(Isolate* isolate,
   }
   // We shouldn't overflow when adding another len.
   const int kHalfOfMaxInt = 1 << (kBitsPerInt - 2);
-  STATIC_ASSERT(FixedArray::kMaxLength < kHalfOfMaxInt);
-  STATIC_ASSERT(FixedDoubleArray::kMaxLength < kHalfOfMaxInt);
+  static_assert(FixedArray::kMaxLength < kHalfOfMaxInt);
+  static_assert(FixedDoubleArray::kMaxLength < kHalfOfMaxInt);
   USE(kHalfOfMaxInt);
 
   int n_arguments = args->length();
@@ -1515,7 +1512,8 @@ BUILTIN(ArrayConcat) {
   ASSIGN_RETURN_FAILURE_ON_EXCEPTION(
       isolate, receiver,
       Object::ToObject(isolate, args.receiver(), "Array.prototype.concat"));
-  args.set_at(0, *receiver);
+  BuiltinArguments::ChangeValueScope set_receiver_value_scope(
+      isolate, &args, BuiltinArguments::kReceiverOffset, *receiver);
 
   Handle<JSArray> result_array;
 
@@ -1661,7 +1659,7 @@ inline MaybeHandle<OrderedHashMap> FastArrayGroupBy(
     }
     // 6a. Let Pk be ! ToString(𝔽(k)).
     // 6b. Let kValue be ? Get(O, Pk).
-    Handle<Object> kValue = accessor->Get(array, k);
+    Handle<Object> kValue = accessor->Get(isolate, array, k);
     if (kValue->IsTheHole()) {
       kValue = isolate->factory()->undefined_value();
     }

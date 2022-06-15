@@ -26,6 +26,7 @@ g.test('memcpy').fn(async t => {
   });
 
   const pipeline = t.device.createComputePipeline({
+    layout: 'auto',
     compute: {
       module: t.device.createShaderModule({
         code: `
@@ -104,6 +105,7 @@ g.test('large_dispatch')
     const wgSizes = [1, 1, 1];
     wgSizes[t.params.largeDimension] = t.params.workgroupSize;
     const pipeline = t.device.createComputePipeline({
+      layout: 'auto',
       compute: {
         module: t.device.createShaderModule({
           code: `

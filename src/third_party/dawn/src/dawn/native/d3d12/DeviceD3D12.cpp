@@ -217,9 +217,6 @@ ComPtr<IDXGIFactory4> Device::GetFactory() const {
 MaybeError Device::ApplyUseDxcToggle() {
     if (!ToBackend(GetAdapter())->GetBackend()->GetFunctions()->IsDXCAvailable()) {
         ForceSetToggle(Toggle::UseDXC, false);
-    } else if (IsFeatureEnabled(Feature::ShaderFloat16)) {
-        // Currently we can only use DXC to compile HLSL shaders using float16.
-        ForceSetToggle(Toggle::UseDXC, true);
     }
 
     if (IsToggleEnabled(Toggle::UseDXC)) {
@@ -594,9 +591,7 @@ void Device::InitTogglesFromDriver() {
 
     // Currently this workaround is only needed on Intel Gen9 and Gen9.5 GPUs.
     // See http://crbug.com/1161355 for more information.
-    if (gpu_info::IsIntel(vendorId) &&
-        (gpu_info::IsSkylake(deviceId) || gpu_info::IsKabylake(deviceId) ||
-         gpu_info::IsCoffeelake(deviceId))) {
+    if (gpu_info::IsIntelGen9(vendorId, deviceId)) {
         constexpr gpu_info::D3DDriverVersion kFirstDriverVersionWithFix = {30, 0, 100, 9864};
         if (gpu_info::CompareD3DDriverVersion(vendorId, ToBackend(GetAdapter())->GetDriverVersion(),
                                               kFirstDriverVersionWithFix) < 0) {
@@ -707,6 +702,8 @@ void Device::AppendDebugLayerMessages(ErrorData* error) {
 void Device::DestroyImpl() {
     ASSERT(GetState() == State::Disconnected);
 
+    mZeroBuffer = nullptr;
+
     // Immediately forget about all pending commands for the case where device is lost on its
     // own and WaitForIdleForDestruction isn't called.
     mPendingCommands.Release();
@@ -782,6 +779,17 @@ float Device::GetTimestampPeriodInNS() const {
 bool Device::ShouldDuplicateNumWorkgroupsForDispatchIndirect(
     ComputePipelineBase* computePipeline) const {
     return ToBackend(computePipeline)->UsesNumWorkgroups();
+}
+
+bool Device::IsFeatureEnabled(Feature feature) const {
+    // Currently we can only use DXC to compile HLSL shaders using float16, and
+    // ChromiumExperimentalDp4a is an experimental feature which can only be enabled with toggle
+    // "use_dxc".
+    if ((feature == Feature::ChromiumExperimentalDp4a || feature == Feature::ShaderFloat16) &&
+        !IsToggleEnabled(Toggle::UseDXC)) {
+        return false;
+    }
+    return DeviceBase::IsFeatureEnabled(feature);
 }
 
 void Device::SetLabelImpl() {

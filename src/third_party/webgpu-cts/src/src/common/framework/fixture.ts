@@ -199,10 +199,9 @@ export class Fixture<S extends SubcaseBatchState = SubcaseBatchState> {
    * Wraps an async function, passing it an `Error` object recording the original stack trace.
    * The async work will be implicitly waited upon before reporting a test status.
    */
-  protected eventualAsyncExpectation<T>(fn: (niceStack: Error) => Promise<T>): Promise<T> {
+  protected eventualAsyncExpectation<T>(fn: (niceStack: Error) => Promise<T>): void {
     const promise = fn(new Error());
     this.eventualExpectations.push(promise);
-    return promise;
   }
 
   private expectErrorValue(expectedError: string | true, ex: unknown, niceStack: Error): void {

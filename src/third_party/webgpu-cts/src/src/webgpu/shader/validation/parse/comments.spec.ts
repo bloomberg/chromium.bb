@@ -15,7 +15,7 @@ g.test('comments')
  * /* I can nest /**/ comments. */
  * // I can nest line comments too.
  **/
-@stage(fragment) // This is the stage
+@fragment // This is the stage
 fn main(/*
 no
 parameters

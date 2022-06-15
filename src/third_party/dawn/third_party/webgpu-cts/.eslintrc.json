@@ -28,8 +28,41 @@
 
     // Plugin: @typescript-eslint
     "@typescript-eslint/no-inferrable-types": "off",
-    "@typescript-eslint/no-unused-vars": ["warn", { "vars": "all", "args": "none" }],
     "@typescript-eslint/consistent-type-assertions": "warn",
+    // Recommended lints
+    // https://github.com/typescript-eslint/typescript-eslint/blob/main/packages/eslint-plugin/docs/rules/README.md
+    "@typescript-eslint/adjacent-overload-signatures": "warn",
+    "@typescript-eslint/await-thenable": "warn",
+    "@typescript-eslint/ban-ts-comment": "warn",
+    "@typescript-eslint/no-empty-interface": "warn",
+    "@typescript-eslint/no-explicit-any": "warn",
+    "@typescript-eslint/no-extra-non-null-assertion": "warn",
+    "@typescript-eslint/no-floating-promises": "warn",
+    "@typescript-eslint/no-for-in-array": "warn",
+    "@typescript-eslint/no-misused-new": "warn",
+    "@typescript-eslint/no-namespace": "warn",
+    "@typescript-eslint/no-non-null-asserted-optional-chain": "warn",
+    "@typescript-eslint/no-this-alias": "warn",
+    "@typescript-eslint/no-unnecessary-type-assertion": "warn",
+    "@typescript-eslint/no-unnecessary-type-constraint": "warn",
+    "@typescript-eslint/no-unused-vars": ["warn", { "vars": "all", "args": "none" }],
+    "@typescript-eslint/prefer-as-const": "warn",
+    "@typescript-eslint/prefer-for-of": "warn",
+    "@typescript-eslint/prefer-namespace-keyword": "warn",
+    "@typescript-eslint/restrict-plus-operands": "warn",
+    "@typescript-eslint/triple-slash-reference": "warn",
+    "@typescript-eslint/unbound-method": "warn",
+    // MAINTENANCE_TODO: Try to clean up and enable these recommended lints?
+    //"@typescript-eslint/no-unsafe-argument": "warn",
+    //"@typescript-eslint/no-unsafe-assignment": "warn",
+    //"@typescript-eslint/no-unsafe-call": "warn",
+    //"@typescript-eslint/no-unsafe-member-access": "warn",
+    //"@typescript-eslint/no-unsafe-return": "warn",
+    // Note: These recommended lints are probably not practical to enable.
+    //"@typescript-eslint/no-misused-promises": "warn",
+    //"@typescript-eslint/no-non-null-assertion": "warn",
+    //"@typescript-eslint/no-var-requires": "warn",
+    //"@typescript-eslint/restrict-template-expressions": "warn",
 
     // Plugin: ban
     "ban/ban": [

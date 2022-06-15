@@ -130,11 +130,24 @@ g.test('duplicate_test_params,none').fn(() => {
 g.test('duplicate_test_params,basic').fn(t => {
   {
     const g = makeTestGroupForUnitTesting(UnitTest);
-    g.test('abc')
-      .paramsSimple([
+    const builder = g.test('abc');
+    t.shouldThrow('Error', () => {
+      builder.paramsSimple([
         { a: 1 }, //
         { a: 1 },
-      ])
+      ]);
+      g.validate();
+    });
+  }
+  {
+    const g = makeTestGroupForUnitTesting(UnitTest);
+    g.test('abc')
+      .params(u =>
+        u.expandWithParams(() => [
+          { a: 1 }, //
+          { a: 1 },
+        ])
+      )
       .fn(() => {});
     t.shouldThrow('Error', () => {
       g.validate();
@@ -155,16 +168,30 @@ g.test('duplicate_test_params,basic').fn(t => {
 });
 
 g.test('duplicate_test_params,with_different_private_params').fn(t => {
-  const g = makeTestGroupForUnitTesting(UnitTest);
-  g.test('abc')
-    .paramsSimple([
-      { a: 1, _b: 1 }, //
-      { a: 1, _b: 2 },
-    ])
-    .fn(() => {});
-  t.shouldThrow('Error', () => {
-    g.validate();
-  });
+  {
+    const g = makeTestGroupForUnitTesting(UnitTest);
+    const builder = g.test('abc');
+    t.shouldThrow('Error', () => {
+      builder.paramsSimple([
+        { a: 1, _b: 1 }, //
+        { a: 1, _b: 2 },
+      ]);
+    });
+  }
+  {
+    const g = makeTestGroupForUnitTesting(UnitTest);
+    g.test('abc')
+      .params(u =>
+        u.expandWithParams(() => [
+          { a: 1, _b: 1 }, //
+          { a: 1, _b: 2 },
+        ])
+      )
+      .fn(() => {});
+    t.shouldThrow('Error', () => {
+      g.validate();
+    });
+  }
 });
 
 g.test('invalid_test_name').fn(t => {
@@ -191,9 +218,9 @@ g.test('param_value,valid').fn(() => {
 g.test('param_value,invalid').fn(t => {
   for (const badChar of ';=*') {
     const g = makeTestGroupForUnitTesting(UnitTest);
-    g.test('a').paramsSimple([{ badChar }]);
+    const builder = g.test('a');
     t.shouldThrow('Error', () => {
-      g.validate();
+      builder.paramsSimple([{ badChar }]);
     });
   }
 });

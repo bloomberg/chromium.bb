@@ -68,23 +68,22 @@ void SharedArrayBufferBuiltinsAssembler::ValidateIntegerTypedArray(
   GotoIfNot(IsJSTypedArrayMap(map), &invalid);
   TNode<JSTypedArray> array = CAST(maybe_array);
 
-  // Fail if the array's JSArrayBuffer is detached.
-  TNode<JSArrayBuffer> array_buffer = GetTypedArrayBuffer(context, array);
-  GotoIf(IsDetachedBuffer(array_buffer), detached);
+  // Fail if the array's JSArrayBuffer is detached / out of bounds.
+  GotoIf(IsJSArrayBufferViewDetachedOrOutOfBoundsBoolean(array), detached);
 
   // Fail if the array's element type is float32, float64 or clamped.
-  STATIC_ASSERT(INT8_ELEMENTS < FLOAT32_ELEMENTS);
-  STATIC_ASSERT(INT16_ELEMENTS < FLOAT32_ELEMENTS);
-  STATIC_ASSERT(INT32_ELEMENTS < FLOAT32_ELEMENTS);
-  STATIC_ASSERT(UINT8_ELEMENTS < FLOAT32_ELEMENTS);
-  STATIC_ASSERT(UINT16_ELEMENTS < FLOAT32_ELEMENTS);
-  STATIC_ASSERT(UINT32_ELEMENTS < FLOAT32_ELEMENTS);
+  static_assert(INT8_ELEMENTS < FLOAT32_ELEMENTS);
+  static_assert(INT16_ELEMENTS < FLOAT32_ELEMENTS);
+  static_assert(INT32_ELEMENTS < FLOAT32_ELEMENTS);
+  static_assert(UINT8_ELEMENTS < FLOAT32_ELEMENTS);
+  static_assert(UINT16_ELEMENTS < FLOAT32_ELEMENTS);
+  static_assert(UINT32_ELEMENTS < FLOAT32_ELEMENTS);
   TNode<Int32T> elements_kind =
       GetNonRabGsabElementsKind(LoadMapElementsKind(map));
   GotoIf(Int32LessThan(elements_kind, Int32Constant(FLOAT32_ELEMENTS)),
          &not_float_or_clamped);
-  STATIC_ASSERT(BIGINT64_ELEMENTS > UINT8_CLAMPED_ELEMENTS);
-  STATIC_ASSERT(BIGUINT64_ELEMENTS > UINT8_CLAMPED_ELEMENTS);
+  static_assert(BIGINT64_ELEMENTS > UINT8_CLAMPED_ELEMENTS);
+  static_assert(BIGUINT64_ELEMENTS > UINT8_CLAMPED_ELEMENTS);
   Branch(Int32GreaterThan(elements_kind, Int32Constant(UINT8_CLAMPED_ELEMENTS)),
          &not_float_or_clamped, &invalid);
 
@@ -97,6 +96,7 @@ void SharedArrayBufferBuiltinsAssembler::ValidateIntegerTypedArray(
   BIND(&not_float_or_clamped);
   *out_elements_kind = elements_kind;
 
+  TNode<JSArrayBuffer> array_buffer = GetTypedArrayBuffer(context, array);
   TNode<RawPtrT> backing_store = LoadJSArrayBufferBackingStorePtr(array_buffer);
   TNode<UintPtrT> byte_offset = LoadJSArrayBufferViewByteOffset(array);
   *out_backing_store = RawPtrAdd(backing_store, Signed(byte_offset));
@@ -106,13 +106,13 @@ void SharedArrayBufferBuiltinsAssembler::ValidateIntegerTypedArray(
 // ValidateAtomicAccess( typedArray, requestIndex )
 TNode<UintPtrT> SharedArrayBufferBuiltinsAssembler::ValidateAtomicAccess(
     TNode<JSTypedArray> array, TNode<Object> index, TNode<Context> context) {
-  Label done(this), range_error(this);
+  Label done(this), range_error(this), unreachable(this);
 
   // 1. Assert: typedArray is an Object that has a [[ViewedArrayBuffer]]
   // internal slot.
   // 2. Let length be IntegerIndexedObjectLength(typedArray);
   TNode<UintPtrT> array_length =
-      LoadJSTypedArrayLengthAndCheckDetached(array, &range_error);
+      LoadJSTypedArrayLengthAndCheckDetached(array, &unreachable);
 
   // 3. Let accessIndex be ? ToIndex(requestIndex).
   TNode<UintPtrT> index_uintptr = ToIndex(context, index, &range_error);
@@ -120,6 +120,10 @@ TNode<UintPtrT> SharedArrayBufferBuiltinsAssembler::ValidateAtomicAccess(
   // 4. Assert: accessIndex ≥ 0.
   // 5. If accessIndex ≥ length, throw a RangeError exception.
   Branch(UintPtrLessThan(index_uintptr, array_length), &done, &range_error);
+
+  BIND(&unreachable);
+  // This should not happen, since we've just called ValidateIntegerTypedArray.
+  Unreachable();
 
   BIND(&range_error);
   ThrowRangeError(context, MessageTemplate::kInvalidAtomicAccessIndex);
@@ -308,8 +312,8 @@ TF_BUILTIN(AtomicsStore, SharedArrayBufferBuiltinsAssembler) {
   // 3. Let arrayTypeName be typedArray.[[TypedArrayName]].
   // 4. If arrayTypeName is "BigUint64Array" or "BigInt64Array",
   //    let v be ? ToBigInt(value).
-  STATIC_ASSERT(BIGINT64_ELEMENTS > INT32_ELEMENTS);
-  STATIC_ASSERT(BIGUINT64_ELEMENTS > INT32_ELEMENTS);
+  static_assert(BIGINT64_ELEMENTS > INT32_ELEMENTS);
+  static_assert(BIGUINT64_ELEMENTS > INT32_ELEMENTS);
   GotoIf(Int32GreaterThan(elements_kind, Int32Constant(INT32_ELEMENTS)), &u64);
 
   // 5. Otherwise, let v be ? ToInteger(value).
@@ -432,8 +436,8 @@ TF_BUILTIN(AtomicsExchange, SharedArrayBufferBuiltinsAssembler) {
 
   // 3. Let arrayTypeName be typedArray.[[TypedArrayName]].
   // 4. If typedArray.[[ContentType]] is BigInt, let v be ? ToBigInt(value).
-  STATIC_ASSERT(BIGINT64_ELEMENTS > INT32_ELEMENTS);
-  STATIC_ASSERT(BIGUINT64_ELEMENTS > INT32_ELEMENTS);
+  static_assert(BIGINT64_ELEMENTS > INT32_ELEMENTS);
+  static_assert(BIGUINT64_ELEMENTS > INT32_ELEMENTS);
   GotoIf(Int32GreaterThan(elements_kind, Int32Constant(INT32_ELEMENTS)), &big);
 
   // 5. Otherwise, let v be ? ToInteger(value).
@@ -569,8 +573,8 @@ TF_BUILTIN(AtomicsCompareExchange, SharedArrayBufferBuiltinsAssembler) {
   // 4. If typedArray.[[ContentType]] is BigInt, then
   //   a. Let expected be ? ToBigInt(expectedValue).
   //   b. Let replacement be ? ToBigInt(replacementValue).
-  STATIC_ASSERT(BIGINT64_ELEMENTS > INT32_ELEMENTS);
-  STATIC_ASSERT(BIGUINT64_ELEMENTS > INT32_ELEMENTS);
+  static_assert(BIGINT64_ELEMENTS > INT32_ELEMENTS);
+  static_assert(BIGUINT64_ELEMENTS > INT32_ELEMENTS);
   GotoIf(Int32GreaterThan(elements_kind, Int32Constant(INT32_ELEMENTS)), &big);
 
   // 5. Else,
@@ -736,8 +740,8 @@ void SharedArrayBufferBuiltinsAssembler::AtomicBinopBuiltinCommon(
 
   // 3. Let arrayTypeName be typedArray.[[TypedArrayName]].
   // 4. If typedArray.[[ContentType]] is BigInt, let v be ? ToBigInt(value).
-  STATIC_ASSERT(BIGINT64_ELEMENTS > INT32_ELEMENTS);
-  STATIC_ASSERT(BIGUINT64_ELEMENTS > INT32_ELEMENTS);
+  static_assert(BIGINT64_ELEMENTS > INT32_ELEMENTS);
+  static_assert(BIGUINT64_ELEMENTS > INT32_ELEMENTS);
   GotoIf(Int32GreaterThan(elements_kind, Int32Constant(INT32_ELEMENTS)), &big);
 
   // 5. Otherwise, let v be ? ToInteger(value).

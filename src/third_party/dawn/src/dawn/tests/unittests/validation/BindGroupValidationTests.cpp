@@ -60,7 +60,8 @@ class BindGroupValidationTest : public ValidationTest {
                 CreateTexture(wgpu::TextureUsage::TextureBinding, kDefaultTextureFormat, 1);
             mSampledTextureView = mSampledTexture.CreateView();
 
-            wgpu::ExternalTextureDescriptor externalTextureDesc;
+            wgpu::ExternalTextureDescriptor externalTextureDesc =
+                CreateDefaultExternalTextureDescriptor();
             externalTextureDesc.plane0 = mSampledTextureView;
             mExternalTexture = device.CreateExternalTexture(&externalTextureDesc);
             mExternalTextureBindingEntry.externalTexture = mExternalTexture;
@@ -68,6 +69,15 @@ class BindGroupValidationTest : public ValidationTest {
     }
 
   protected:
+    wgpu::ExternalTextureDescriptor CreateDefaultExternalTextureDescriptor() {
+        wgpu::ExternalTextureDescriptor desc;
+        desc.yuvToRgbConversionMatrix = mPlaceholderConstantArray.data();
+        desc.gamutConversionMatrix = mPlaceholderConstantArray.data();
+        desc.srcTransferFunctionParameters = mPlaceholderConstantArray.data();
+        desc.dstTransferFunctionParameters = mPlaceholderConstantArray.data();
+        return desc;
+    }
+
     wgpu::Buffer mUBO;
     wgpu::Buffer mSSBO;
     wgpu::Sampler mSampler;
@@ -79,6 +89,7 @@ class BindGroupValidationTest : public ValidationTest {
 
   private:
     wgpu::ExternalTexture mExternalTexture;
+    std::array<float, 12> mPlaceholderConstantArray;
 };
 
 // Test the validation of BindGroupDescriptor::nextInChain
@@ -311,7 +322,7 @@ TEST_F(BindGroupValidationTest, ExternalTextureBindingType) {
     // Create an external texture
     wgpu::Texture texture =
         CreateTexture(wgpu::TextureUsage::TextureBinding, kDefaultTextureFormat, 1);
-    wgpu::ExternalTextureDescriptor externalDesc;
+    wgpu::ExternalTextureDescriptor externalDesc = CreateDefaultExternalTextureDescriptor();
     externalDesc.plane0 = texture.CreateView();
     wgpu::ExternalTexture externalTexture = device.CreateExternalTexture(&externalDesc);
 
@@ -360,7 +371,8 @@ TEST_F(BindGroupValidationTest, ExternalTextureBindingType) {
     {
         wgpu::Texture errorTexture = CreateTexture(wgpu::TextureUsage::TextureBinding,
                                                    wgpu::TextureFormat::RGBA8UnormSrgb, 1);
-        wgpu::ExternalTextureDescriptor errorExternalDesciptor;
+        wgpu::ExternalTextureDescriptor errorExternalDesciptor =
+            CreateDefaultExternalTextureDescriptor();
         errorExternalDesciptor.plane0 = errorTexture.CreateView();
 
         wgpu::ExternalTexture errorExternalTexture;
@@ -435,6 +447,7 @@ TEST_F(BindGroupValidationTest, StorageTextureUsage) {
     // Multisampled texture is invalid with storage buffer binding
     // Regression case for crbug.com/dawn/614 where this hit an ASSERT.
     descriptor.sampleCount = 4;
+    descriptor.usage |= wgpu::TextureUsage::RenderAttachment;
     view = device.CreateTexture(&descriptor).CreateView();
     ASSERT_DEVICE_ERROR(utils::MakeBindGroup(device, layout, {{0, view}}));
 }
@@ -715,7 +728,7 @@ TEST_F(BindGroupValidationTest, MultisampledTexture) {
     // Control case: setting a multisampled 2D texture works
     wgpu::TextureDescriptor textureDesc;
     textureDesc.sampleCount = 4;
-    textureDesc.usage = wgpu::TextureUsage::TextureBinding;
+    textureDesc.usage = wgpu::TextureUsage::TextureBinding | wgpu::TextureUsage::RenderAttachment;
     textureDesc.dimension = wgpu::TextureDimension::e2D;
     textureDesc.format = wgpu::TextureFormat::RGBA8Unorm;
     textureDesc.size = {1, 1, 1};
@@ -1445,7 +1458,7 @@ class SetBindGroupValidationTest : public ValidationTest {
 
     wgpu::RenderPipeline CreateRenderPipeline() {
         wgpu::ShaderModule vsModule = utils::CreateShaderModule(device, R"(
-                @stage(vertex) fn main() -> @builtin(position) vec4<f32> {
+                @vertex fn main() -> @builtin(position) vec4<f32> {
                     return vec4<f32>();
                 })");
 
@@ -1459,7 +1472,7 @@ class SetBindGroupValidationTest : public ValidationTest {
                 @group(0) @binding(2) var<storage, read_write> sBufferDynamic : S;
                 @group(0) @binding(3) var<storage, read> sReadonlyBufferDynamic : S;
 
-                @stage(fragment) fn main() {
+                @fragment fn main() {
                 })");
 
         utils::ComboRenderPipelineDescriptor pipelineDescriptor;
@@ -1483,7 +1496,7 @@ class SetBindGroupValidationTest : public ValidationTest {
                 @group(0) @binding(2) var<storage, read_write> sBufferDynamic : S;
                 @group(0) @binding(3) var<storage, read> sReadonlyBufferDynamic : S;
 
-                @stage(compute) @workgroup_size(4, 4, 1) fn main() {
+                @compute @workgroup_size(4, 4, 1) fn main() {
                 })");
 
         wgpu::PipelineLayout pipelineLayout =
@@ -1854,7 +1867,7 @@ class SetBindGroupPersistenceValidationTest : public ValidationTest {
         ValidationTest::SetUp();
 
         mVsModule = utils::CreateShaderModule(device, R"(
-                @stage(vertex) fn main() -> @builtin(position) vec4<f32> {
+                @vertex fn main() -> @builtin(position) vec4<f32> {
                     return vec4<f32>();
                 })");
 
@@ -1924,7 +1937,7 @@ class SetBindGroupPersistenceValidationTest : public ValidationTest {
             }
         }
 
-        ss << "@stage(fragment) fn main() {}";
+        ss << "@fragment fn main() {}";
 
         wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, ss.str().c_str());
 
@@ -2056,7 +2069,7 @@ class BindGroupLayoutCompatibilityTest : public ValidationTest {
         const char* fsShader,
         std::vector<wgpu::BindGroupLayout> bindGroupLayout) {
         wgpu::ShaderModule vsModule = utils::CreateShaderModule(device, R"(
-                @stage(vertex) fn main() -> @builtin(position) vec4<f32> {
+                @vertex fn main() -> @builtin(position) vec4<f32> {
                     return vec4<f32>();
                 })");
 
@@ -2083,7 +2096,7 @@ class BindGroupLayoutCompatibilityTest : public ValidationTest {
             @group(0) @binding(0) var<storage, read_write> sBufferDynamic : S;
             @group(1) @binding(0) var<storage, read> sReadonlyBufferDynamic : S;
 
-            @stage(fragment) fn main() {
+            @fragment fn main() {
                 var val : vec2<f32> = sBufferDynamic.value;
                 val = sReadonlyBufferDynamic.value;
             })",
@@ -2118,7 +2131,7 @@ class BindGroupLayoutCompatibilityTest : public ValidationTest {
             @group(0) @binding(0) var<storage, read_write> sBufferDynamic : S;
             @group(1) @binding(0) var<storage, read> sReadonlyBufferDynamic : S;
 
-            @stage(compute) @workgroup_size(4, 4, 1) fn main() {
+            @compute @workgroup_size(4, 4, 1) fn main() {
                 var val : vec2<f32> = sBufferDynamic.value;
                 val = sReadonlyBufferDynamic.value;
             })",
@@ -2161,12 +2174,12 @@ TEST_F(BindGroupLayoutCompatibilityTest, ROStorageInBGLWithRWStorageInShader) {
 TEST_F(BindGroupLayoutCompatibilityTest, TextureViewDimension) {
     constexpr char kTexture2DShaderFS[] = R"(
         @group(0) @binding(0) var myTexture : texture_2d<f32>;
-        @stage(fragment) fn main() {
+        @fragment fn main() {
             textureDimensions(myTexture);
         })";
     constexpr char kTexture2DShaderCS[] = R"(
         @group(0) @binding(0) var myTexture : texture_2d<f32>;
-        @stage(compute) @workgroup_size(1) fn main() {
+        @compute @workgroup_size(1) fn main() {
             textureDimensions(myTexture);
         })";
 
@@ -2200,12 +2213,12 @@ TEST_F(BindGroupLayoutCompatibilityTest, TextureViewDimension) {
 
     constexpr char kTexture2DArrayShaderFS[] = R"(
         @group(0) @binding(0) var myTexture : texture_2d_array<f32>;
-        @stage(fragment) fn main() {
+        @fragment fn main() {
             textureDimensions(myTexture);
         })";
     constexpr char kTexture2DArrayShaderCS[] = R"(
         @group(0) @binding(0) var myTexture : texture_2d_array<f32>;
-        @stage(compute) @workgroup_size(1) fn main() {
+        @compute @workgroup_size(1) fn main() {
             textureDimensions(myTexture);
         })";
 
@@ -2247,7 +2260,7 @@ TEST_F(BindGroupLayoutCompatibilityTest, ExternalTextureBindGroupLayoutCompatibi
     // Test that an external texture binding works with a texture_external in the shader.
     CreateFSRenderPipeline(R"(
             @group(0) @binding(0) var myExternalTexture: texture_external;
-            @stage(fragment) fn main() {
+            @fragment fn main() {
                 _ = myExternalTexture;
             })",
                            {bgl});
@@ -2255,7 +2268,7 @@ TEST_F(BindGroupLayoutCompatibilityTest, ExternalTextureBindGroupLayoutCompatibi
     // Test that an external texture binding doesn't work with a texture_2d<f32> in the shader.
     ASSERT_DEVICE_ERROR(CreateFSRenderPipeline(R"(
             @group(0) @binding(0) var myTexture: texture_2d<f32>;
-            @stage(fragment) fn main() {
+            @fragment fn main() {
                 _ = myTexture;
             })",
                                                {bgl}));
@@ -2461,7 +2474,7 @@ class SamplerTypeBindingTest : public ValidationTest {
     wgpu::RenderPipeline CreateFragmentPipeline(wgpu::BindGroupLayout* bindGroupLayout,
                                                 const char* fragmentSource) {
         wgpu::ShaderModule vsModule = utils::CreateShaderModule(device, R"(
-            @stage(vertex) fn main() -> @builtin(position) vec4<f32> {
+            @vertex fn main() -> @builtin(position) vec4<f32> {
                 return vec4<f32>();
             })");
 
@@ -2488,7 +2501,7 @@ TEST_F(SamplerTypeBindingTest, ShaderAndBGLMatches) {
 
         CreateFragmentPipeline(&bindGroupLayout, R"(
             @group(0) @binding(0) var mySampler: sampler;
-            @stage(fragment) fn main() {
+            @fragment fn main() {
                 _ = mySampler;
             })");
     }
@@ -2500,7 +2513,7 @@ TEST_F(SamplerTypeBindingTest, ShaderAndBGLMatches) {
 
         CreateFragmentPipeline(&bindGroupLayout, R"(
             @group(0) @binding(0) var mySampler: sampler;
-            @stage(fragment) fn main() {
+            @fragment fn main() {
                 _ = mySampler;
             })");
     }
@@ -2512,7 +2525,7 @@ TEST_F(SamplerTypeBindingTest, ShaderAndBGLMatches) {
 
         CreateFragmentPipeline(&bindGroupLayout, R"(
             @group(0) @binding(0) var mySampler: sampler_comparison;
-            @stage(fragment) fn main() {
+            @fragment fn main() {
                 _ = mySampler;
             })");
     }
@@ -2524,7 +2537,7 @@ TEST_F(SamplerTypeBindingTest, ShaderAndBGLMatches) {
 
         ASSERT_DEVICE_ERROR(CreateFragmentPipeline(&bindGroupLayout, R"(
             @group(0) @binding(0) var mySampler: sampler_comparison;
-            @stage(fragment) fn main() {
+            @fragment fn main() {
                 _ = mySampler;
             })"));
     }
@@ -2536,7 +2549,7 @@ TEST_F(SamplerTypeBindingTest, ShaderAndBGLMatches) {
 
         ASSERT_DEVICE_ERROR(CreateFragmentPipeline(&bindGroupLayout, R"(
             @group(0) @binding(0) var mySampler: sampler_comparison;
-            @stage(fragment) fn main() {
+            @fragment fn main() {
                 _ = mySampler;
             })"));
     }
@@ -2548,7 +2561,7 @@ TEST_F(SamplerTypeBindingTest, ShaderAndBGLMatches) {
 
         ASSERT_DEVICE_ERROR(CreateFragmentPipeline(&bindGroupLayout, R"(
             @group(0) @binding(0) var mySampler: sampler;
-            @stage(fragment) fn main() {
+            @fragment fn main() {
                 _ = mySampler;
             })"));
     }
@@ -2562,7 +2575,7 @@ TEST_F(SamplerTypeBindingTest, ShaderAndBGLMatches) {
         CreateFragmentPipeline(&bindGroupLayout, R"(
             @group(0) @binding(0) var mySampler: sampler;
             @group(0) @binding(1) var myTexture: texture_2d<f32>;
-            @stage(fragment) fn main() {
+            @fragment fn main() {
                 textureSample(myTexture, mySampler, vec2<f32>(0.0, 0.0));
             })");
     }
@@ -2576,7 +2589,7 @@ TEST_F(SamplerTypeBindingTest, ShaderAndBGLMatches) {
         CreateFragmentPipeline(&bindGroupLayout, R"(
             @group(0) @binding(0) var mySampler: sampler;
             @group(0) @binding(1) var myTexture: texture_2d<f32>;
-            @stage(fragment) fn main() {
+            @fragment fn main() {
                 textureSample(myTexture, mySampler, vec2<f32>(0.0, 0.0));
             })");
     }
@@ -2590,7 +2603,7 @@ TEST_F(SamplerTypeBindingTest, ShaderAndBGLMatches) {
         CreateFragmentPipeline(&bindGroupLayout, R"(
             @group(0) @binding(0) var mySampler: sampler;
             @group(0) @binding(1) var myTexture: texture_depth_2d;
-            @stage(fragment) fn main() {
+            @fragment fn main() {
                 textureSample(myTexture, mySampler, vec2<f32>(0.0, 0.0));
             })");
     }
@@ -2604,7 +2617,7 @@ TEST_F(SamplerTypeBindingTest, ShaderAndBGLMatches) {
         CreateFragmentPipeline(&bindGroupLayout, R"(
             @group(0) @binding(0) var mySampler: sampler;
             @group(0) @binding(1) var myTexture: texture_depth_2d;
-            @stage(fragment) fn main() {
+            @fragment fn main() {
                 textureSample(myTexture, mySampler, vec2<f32>(0.0, 0.0));
             })");
     }
@@ -2618,7 +2631,7 @@ TEST_F(SamplerTypeBindingTest, ShaderAndBGLMatches) {
         CreateFragmentPipeline(&bindGroupLayout, R"(
             @group(0) @binding(0) var mySampler: sampler_comparison;
             @group(0) @binding(1) var myTexture: texture_depth_2d;
-            @stage(fragment) fn main() {
+            @fragment fn main() {
                 textureSampleCompare(myTexture, mySampler, vec2<f32>(0.0, 0.0), 0.0);
             })");
     }
@@ -2632,7 +2645,7 @@ TEST_F(SamplerTypeBindingTest, ShaderAndBGLMatches) {
         ASSERT_DEVICE_ERROR(CreateFragmentPipeline(&bindGroupLayout, R"(
             @group(0) @binding(0) var mySampler: sampler;
             @group(0) @binding(1) var myTexture: texture_2d<f32>;
-            @stage(fragment) fn main() {
+            @fragment fn main() {
                 textureSample(myTexture, mySampler, vec2<f32>(0.0, 0.0));
             })"));
     }
@@ -2646,7 +2659,7 @@ TEST_F(SamplerTypeBindingTest, ShaderAndBGLMatches) {
         CreateFragmentPipeline(&bindGroupLayout, R"(
             @group(0) @binding(0) var mySampler: sampler;
             @group(0) @binding(1) var myTexture: texture_2d<f32>;
-            @stage(fragment) fn main() {
+            @fragment fn main() {
                 textureSample(myTexture, mySampler, vec2<f32>(0.0, 0.0));
             })");
     }

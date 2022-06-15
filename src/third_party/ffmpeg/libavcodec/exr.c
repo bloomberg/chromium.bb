@@ -1833,8 +1833,8 @@ static int decode_header(EXRContext *s, AVFrame *frame)
             dx = bytestream2_get_le32(gb);
             dy = bytestream2_get_le32(gb);
 
-            s->w = dx - sx + 1;
-            s->h = dy - sy + 1;
+            s->w = (unsigned)dx - sx + 1;
+            s->h = (unsigned)dy - sy + 1;
 
             continue;
         } else if ((var_size = check_header_variable(s, "lineOrder",
@@ -2023,12 +2023,11 @@ fail:
     return ret;
 }
 
-static int decode_frame(AVCodecContext *avctx, void *data,
+static int decode_frame(AVCodecContext *avctx, AVFrame *picture,
                         int *got_frame, AVPacket *avpkt)
 {
     EXRContext *s = avctx->priv_data;
     GetByteContext *gb = &s->gb;
-    AVFrame *picture = data;
     uint8_t *ptr;
 
     int i, y, ret, ymax;
@@ -2349,7 +2348,7 @@ const FFCodec ff_exr_decoder = {
     .priv_data_size   = sizeof(EXRContext),
     .init             = decode_init,
     .close            = decode_end,
-    .decode           = decode_frame,
+    FF_CODEC_DECODE_CB(decode_frame),
     .p.capabilities   = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_FRAME_THREADS |
                         AV_CODEC_CAP_SLICE_THREADS,
     .caps_internal    = FF_CODEC_CAP_INIT_THREADSAFE,

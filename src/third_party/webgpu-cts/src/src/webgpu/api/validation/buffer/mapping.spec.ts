@@ -144,7 +144,7 @@ g.test('mapAsync,state,mappedAtCreation')
     await t.testMapAsyncCall(false, 'OperationError', buffer, mapMode);
 
     buffer.unmap();
-    t.testMapAsyncCall(true, null, buffer, mapMode);
+    await t.testMapAsyncCall(true, null, buffer, mapMode);
   });
 
 g.test('mapAsync,state,mapped')

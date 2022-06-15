@@ -33,7 +33,22 @@ static av_cold int pcm_bluray_encode_init(AVCodecContext *avctx)
 {
     BlurayPCMEncContext *s = avctx->priv_data;
     uint8_t ch_layout;
-    int quant, freq;
+    int quant, freq, frame_size;
+
+    switch (avctx->sample_fmt) {
+    case AV_SAMPLE_FMT_S16:
+        avctx->bits_per_coded_sample = 16;
+        frame_size = 240;
+        quant = 1;
+        break;
+    case AV_SAMPLE_FMT_S32:
+        frame_size = 360;
+        avctx->bits_per_coded_sample = 24;
+        quant = 3;
+        break;
+    default:
+        return AVERROR_BUG;
+    }
 
     switch (avctx->sample_rate) {
     case 48000:
@@ -44,19 +59,6 @@ static av_cold int pcm_bluray_encode_init(AVCodecContext *avctx)
         break;
     case 192000:
         freq = 5;
-        break;
-    default:
-        return AVERROR_BUG;
-    }
-
-    switch (avctx->sample_fmt) {
-    case AV_SAMPLE_FMT_S16:
-        avctx->bits_per_coded_sample = 16;
-        quant = 1;
-        break;
-    case AV_SAMPLE_FMT_S32:
-        avctx->bits_per_coded_sample = 24;
-        quant = 3;
         break;
     default:
         return AVERROR_BUG;
@@ -98,6 +100,7 @@ static av_cold int pcm_bluray_encode_init(AVCodecContext *avctx)
     }
 
     s->header = (((ch_layout << 4) | freq) << 8) | (quant << 6);
+    avctx->frame_size = frame_size;
 
     return 0;
 }
@@ -277,7 +280,7 @@ const FFCodec ff_pcm_bluray_encoder = {
     .p.id                  = AV_CODEC_ID_PCM_BLURAY,
     .priv_data_size        = sizeof(BlurayPCMEncContext),
     .init                  = pcm_bluray_encode_init,
-    .encode2               = pcm_bluray_encode_frame,
+    FF_CODEC_ENCODE_CB(pcm_bluray_encode_frame),
     .p.supported_samplerates = (const int[]) { 48000, 96000, 192000, 0 },
 #if FF_API_OLD_CHANNEL_LAYOUT
     .p.channel_layouts = (const uint64_t[]) {
@@ -308,5 +311,5 @@ const FFCodec ff_pcm_bluray_encoder = {
     .p.sample_fmts         = (const enum AVSampleFormat[]) {
         AV_SAMPLE_FMT_S16, AV_SAMPLE_FMT_S32, AV_SAMPLE_FMT_NONE },
     .caps_internal         = FF_CODEC_CAP_INIT_THREADSAFE,
-    .p.capabilities        = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_VARIABLE_FRAME_SIZE,
+    .p.capabilities        = AV_CODEC_CAP_DR1,
 };

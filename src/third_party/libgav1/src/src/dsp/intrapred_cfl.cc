@@ -639,6 +639,263 @@ void Init10bpp() {
 }  // NOLINT(readability/fn_size)
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
 
+#if LIBGAV1_MAX_BITDEPTH == 12
+void Init12bpp() {
+  Dsp* const dsp = dsp_internal::GetWritableDspTable(12);
+  assert(dsp != nullptr);
+#if LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
+  INIT_CFL_INTRAPREDICTORS(12, uint16_t);
+#else  // !LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
+#ifndef LIBGAV1_Dsp12bpp_TransformSize4x4_CflIntraPredictor
+  dsp->cfl_intra_predictors[kTransformSize4x4] =
+      CflIntraPredictor_C<4, 4, 12, uint16_t>;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize4x4_CflSubsampler444
+  dsp->cfl_subsamplers[kTransformSize4x4][kSubsamplingType444] =
+      CflSubsampler_C<4, 4, 12, uint16_t, 0, 0>;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize4x4_CflSubsampler422
+  dsp->cfl_subsamplers[kTransformSize4x4][kSubsamplingType422] =
+      CflSubsampler_C<4, 4, 12, uint16_t, 1, 0>;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize4x4_CflSubsampler420
+  dsp->cfl_subsamplers[kTransformSize4x4][kSubsamplingType420] =
+      CflSubsampler_C<4, 4, 12, uint16_t, 1, 1>;
+#endif
+
+#ifndef LIBGAV1_Dsp12bpp_TransformSize4x8_CflIntraPredictor
+  dsp->cfl_intra_predictors[kTransformSize4x8] =
+      CflIntraPredictor_C<4, 8, 12, uint16_t>;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize4x8_CflSubsampler444
+  dsp->cfl_subsamplers[kTransformSize4x8][kSubsamplingType444] =
+      CflSubsampler_C<4, 8, 12, uint16_t, 0, 0>;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize4x8_CflSubsampler422
+  dsp->cfl_subsamplers[kTransformSize4x8][kSubsamplingType422] =
+      CflSubsampler_C<4, 8, 12, uint16_t, 1, 0>;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize4x8_CflSubsampler420
+  dsp->cfl_subsamplers[kTransformSize4x8][kSubsamplingType420] =
+      CflSubsampler_C<4, 8, 12, uint16_t, 1, 1>;
+#endif
+
+#ifndef LIBGAV1_Dsp12bpp_TransformSize4x16_CflIntraPredictor
+  dsp->cfl_intra_predictors[kTransformSize4x16] =
+      CflIntraPredictor_C<4, 16, 12, uint16_t>;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize4x16_CflSubsampler444
+  dsp->cfl_subsamplers[kTransformSize4x16][kSubsamplingType444] =
+      CflSubsampler_C<4, 16, 12, uint16_t, 0, 0>;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize4x16_CflSubsampler422
+  dsp->cfl_subsamplers[kTransformSize4x16][kSubsamplingType422] =
+      CflSubsampler_C<4, 16, 12, uint16_t, 1, 0>;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize4x16_CflSubsampler420
+  dsp->cfl_subsamplers[kTransformSize4x16][kSubsamplingType420] =
+      CflSubsampler_C<4, 16, 12, uint16_t, 1, 1>;
+#endif
+
+#ifndef LIBGAV1_Dsp12bpp_TransformSize8x4_CflIntraPredictor
+  dsp->cfl_intra_predictors[kTransformSize8x4] =
+      CflIntraPredictor_C<8, 4, 12, uint16_t>;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize8x4_CflSubsampler444
+  dsp->cfl_subsamplers[kTransformSize8x4][kSubsamplingType444] =
+      CflSubsampler_C<8, 4, 12, uint16_t, 0, 0>;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize8x4_CflSubsampler422
+  dsp->cfl_subsamplers[kTransformSize8x4][kSubsamplingType422] =
+      CflSubsampler_C<8, 4, 12, uint16_t, 1, 0>;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize8x4_CflSubsampler420
+  dsp->cfl_subsamplers[kTransformSize8x4][kSubsamplingType420] =
+      CflSubsampler_C<8, 4, 12, uint16_t, 1, 1>;
+#endif
+
+#ifndef LIBGAV1_Dsp12bpp_TransformSize8x8_CflIntraPredictor
+  dsp->cfl_intra_predictors[kTransformSize8x8] =
+      CflIntraPredictor_C<8, 8, 12, uint16_t>;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize8x8_CflSubsampler444
+  dsp->cfl_subsamplers[kTransformSize8x8][kSubsamplingType444] =
+      CflSubsampler_C<8, 8, 12, uint16_t, 0, 0>;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize8x8_CflSubsampler422
+  dsp->cfl_subsamplers[kTransformSize8x8][kSubsamplingType422] =
+      CflSubsampler_C<8, 8, 12, uint16_t, 1, 0>;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize8x8_CflSubsampler420
+  dsp->cfl_subsamplers[kTransformSize8x8][kSubsamplingType420] =
+      CflSubsampler_C<8, 8, 12, uint16_t, 1, 1>;
+#endif
+
+#ifndef LIBGAV1_Dsp12bpp_TransformSize8x16_CflIntraPredictor
+  dsp->cfl_intra_predictors[kTransformSize8x16] =
+      CflIntraPredictor_C<8, 16, 12, uint16_t>;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize8x16_CflSubsampler444
+  dsp->cfl_subsamplers[kTransformSize8x16][kSubsamplingType444] =
+      CflSubsampler_C<8, 16, 12, uint16_t, 0, 0>;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize8x16_CflSubsampler422
+  dsp->cfl_subsamplers[kTransformSize8x16][kSubsamplingType422] =
+      CflSubsampler_C<8, 16, 12, uint16_t, 1, 0>;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize8x16_CflSubsampler420
+  dsp->cfl_subsamplers[kTransformSize8x16][kSubsamplingType420] =
+      CflSubsampler_C<8, 16, 12, uint16_t, 1, 1>;
+#endif
+
+#ifndef LIBGAV1_Dsp12bpp_TransformSize8x32_CflIntraPredictor
+  dsp->cfl_intra_predictors[kTransformSize8x32] =
+      CflIntraPredictor_C<8, 32, 12, uint16_t>;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize8x32_CflSubsampler444
+  dsp->cfl_subsamplers[kTransformSize8x32][kSubsamplingType444] =
+      CflSubsampler_C<8, 32, 12, uint16_t, 0, 0>;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize8x32_CflSubsampler422
+  dsp->cfl_subsamplers[kTransformSize8x32][kSubsamplingType422] =
+      CflSubsampler_C<8, 32, 12, uint16_t, 1, 0>;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize8x32_CflSubsampler420
+  dsp->cfl_subsamplers[kTransformSize8x32][kSubsamplingType420] =
+      CflSubsampler_C<8, 32, 12, uint16_t, 1, 1>;
+#endif
+
+#ifndef LIBGAV1_Dsp12bpp_TransformSize16x4_CflIntraPredictor
+  dsp->cfl_intra_predictors[kTransformSize16x4] =
+      CflIntraPredictor_C<16, 4, 12, uint16_t>;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize16x4_CflSubsampler444
+  dsp->cfl_subsamplers[kTransformSize16x4][kSubsamplingType444] =
+      CflSubsampler_C<16, 4, 12, uint16_t, 0, 0>;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize16x4_CflSubsampler422
+  dsp->cfl_subsamplers[kTransformSize16x4][kSubsamplingType422] =
+      CflSubsampler_C<16, 4, 12, uint16_t, 1, 0>;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize16x4_CflSubsampler420
+  dsp->cfl_subsamplers[kTransformSize16x4][kSubsamplingType420] =
+      CflSubsampler_C<16, 4, 12, uint16_t, 1, 1>;
+#endif
+
+#ifndef LIBGAV1_Dsp12bpp_TransformSize16x8_CflIntraPredictor
+  dsp->cfl_intra_predictors[kTransformSize16x8] =
+      CflIntraPredictor_C<16, 8, 12, uint16_t>;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize16x8_CflSubsampler444
+  dsp->cfl_subsamplers[kTransformSize16x8][kSubsamplingType444] =
+      CflSubsampler_C<16, 8, 12, uint16_t, 0, 0>;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize16x8_CflSubsampler422
+  dsp->cfl_subsamplers[kTransformSize16x8][kSubsamplingType422] =
+      CflSubsampler_C<16, 8, 12, uint16_t, 1, 0>;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize16x8_CflSubsampler420
+  dsp->cfl_subsamplers[kTransformSize16x8][kSubsamplingType420] =
+      CflSubsampler_C<16, 8, 12, uint16_t, 1, 1>;
+#endif
+
+#ifndef LIBGAV1_Dsp12bpp_TransformSize16x16_CflIntraPredictor
+  dsp->cfl_intra_predictors[kTransformSize16x16] =
+      CflIntraPredictor_C<16, 16, 12, uint16_t>;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize16x16_CflSubsampler444
+  dsp->cfl_subsamplers[kTransformSize16x16][kSubsamplingType444] =
+      CflSubsampler_C<16, 16, 12, uint16_t, 0, 0>;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize16x16_CflSubsampler422
+  dsp->cfl_subsamplers[kTransformSize16x16][kSubsamplingType422] =
+      CflSubsampler_C<16, 16, 12, uint16_t, 1, 0>;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize16x16_CflSubsampler420
+  dsp->cfl_subsamplers[kTransformSize16x16][kSubsamplingType420] =
+      CflSubsampler_C<16, 16, 12, uint16_t, 1, 1>;
+#endif
+
+#ifndef LIBGAV1_Dsp12bpp_TransformSize16x32_CflIntraPredictor
+  dsp->cfl_intra_predictors[kTransformSize16x32] =
+      CflIntraPredictor_C<16, 32, 12, uint16_t>;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize16x32_CflSubsampler444
+  dsp->cfl_subsamplers[kTransformSize16x32][kSubsamplingType444] =
+      CflSubsampler_C<16, 32, 12, uint16_t, 0, 0>;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize16x32_CflSubsampler422
+  dsp->cfl_subsamplers[kTransformSize16x32][kSubsamplingType422] =
+      CflSubsampler_C<16, 32, 12, uint16_t, 1, 0>;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize16x32_CflSubsampler420
+  dsp->cfl_subsamplers[kTransformSize16x32][kSubsamplingType420] =
+      CflSubsampler_C<16, 32, 12, uint16_t, 1, 1>;
+#endif
+
+#ifndef LIBGAV1_Dsp12bpp_TransformSize32x8_CflIntraPredictor
+  dsp->cfl_intra_predictors[kTransformSize32x8] =
+      CflIntraPredictor_C<32, 8, 12, uint16_t>;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize32x8_CflSubsampler444
+  dsp->cfl_subsamplers[kTransformSize32x8][kSubsamplingType444] =
+      CflSubsampler_C<32, 8, 12, uint16_t, 0, 0>;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize32x8_CflSubsampler422
+  dsp->cfl_subsamplers[kTransformSize32x8][kSubsamplingType422] =
+      CflSubsampler_C<32, 8, 12, uint16_t, 1, 0>;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize32x8_CflSubsampler420
+  dsp->cfl_subsamplers[kTransformSize32x8][kSubsamplingType420] =
+      CflSubsampler_C<32, 8, 12, uint16_t, 1, 1>;
+#endif
+
+#ifndef LIBGAV1_Dsp12bpp_TransformSize32x16_CflIntraPredictor
+  dsp->cfl_intra_predictors[kTransformSize32x16] =
+      CflIntraPredictor_C<32, 16, 12, uint16_t>;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize32x16_CflSubsampler444
+  dsp->cfl_subsamplers[kTransformSize32x16][kSubsamplingType444] =
+      CflSubsampler_C<32, 16, 12, uint16_t, 0, 0>;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize32x16_CflSubsampler422
+  dsp->cfl_subsamplers[kTransformSize32x16][kSubsamplingType422] =
+      CflSubsampler_C<32, 16, 12, uint16_t, 1, 0>;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize32x16_CflSubsampler420
+  dsp->cfl_subsamplers[kTransformSize32x16][kSubsamplingType420] =
+      CflSubsampler_C<32, 16, 12, uint16_t, 1, 1>;
+#endif
+
+#ifndef LIBGAV1_Dsp12bpp_TransformSize32x32_CflIntraPredictor
+  dsp->cfl_intra_predictors[kTransformSize32x32] =
+      CflIntraPredictor_C<32, 32, 12, uint16_t>;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize32x32_CflSubsampler444
+  dsp->cfl_subsamplers[kTransformSize32x32][kSubsamplingType444] =
+      CflSubsampler_C<32, 32, 12, uint16_t, 0, 0>;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize32x32_CflSubsampler422
+  dsp->cfl_subsamplers[kTransformSize32x32][kSubsamplingType422] =
+      CflSubsampler_C<32, 32, 12, uint16_t, 1, 0>;
+#endif
+#ifndef LIBGAV1_Dsp12bpp_TransformSize32x32_CflSubsampler420
+  dsp->cfl_subsamplers[kTransformSize32x32][kSubsamplingType420] =
+      CflSubsampler_C<32, 32, 12, uint16_t, 1, 1>;
+#endif
+
+#endif  // LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
+  // Cfl predictors are available only for transform sizes with max(width,
+  // height) <= 32. Set all others to nullptr.
+  for (const auto i : kTransformSizesLargerThan32x32) {
+    dsp->cfl_intra_predictors[i] = nullptr;
+    for (int j = 0; j < kNumSubsamplingTypes; ++j) {
+      dsp->cfl_subsamplers[i][j] = nullptr;
+    }
+  }
+}  // NOLINT(readability/fn_size)
+#endif  // LIBGAV1_MAX_BITDEPTH == 12
+
 #undef INIT_CFL_INTRAPREDICTOR_WxH
 #undef INIT_CFL_INTRAPREDICTORS
 
@@ -648,6 +905,9 @@ void IntraPredCflInit_C() {
   Init8bpp();
 #if LIBGAV1_MAX_BITDEPTH >= 10
   Init10bpp();
+#endif
+#if LIBGAV1_MAX_BITDEPTH == 12
+  Init12bpp();
 #endif
 }
 

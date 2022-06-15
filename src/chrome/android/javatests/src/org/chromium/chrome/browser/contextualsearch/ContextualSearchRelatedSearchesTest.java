@@ -84,6 +84,10 @@ public class ContextualSearchRelatedSearchesTest extends ContextualSearchInstrum
     @SmallTest
     @Feature({"ContextualSearch"})
     public void testRelatedSearchesInBarSerpOffset() throws Exception {
+        // If this experiment under development is active, skip this test for now.
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXTUAL_TRIGGERS_SELECTION_HANDLES)) {
+            return;
+        }
         FeatureList.setTestFeatures(ENABLE_RELATED_SEARCHES_IN_BAR);
         mFakeServer.reset();
         simulateResolveSearch(SEARCH_NODE);
@@ -158,7 +162,7 @@ public class ContextualSearchRelatedSearchesTest extends ContextualSearchInstrum
         Assert.assertTrue("Related Searches results should have been returned but were not!",
                 !resolvedSearchTerm.relatedSearchesJson().isEmpty());
         // Select a chip in the Bar, which should expand the panel.
-        tapPeekingBarToExpandAndAssert();
+        expandPanelAndAssert();
 
         CriteriaHelper.pollUiThread(() -> {
             Criteria.checkThat(
@@ -194,7 +198,7 @@ public class ContextualSearchRelatedSearchesTest extends ContextualSearchInstrum
         Assert.assertTrue("Related Searches results should have been returned but were not!",
                 !resolvedSearchTerm.relatedSearchesJson().isEmpty());
         // Select a chip in the Bar, which should expand the panel.
-        tapPeekingBarToExpandAndAssert();
+        expandPanelAndAssert();
 
         CriteriaHelper.pollUiThread(() -> {
             Criteria.checkThat(

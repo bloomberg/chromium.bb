@@ -254,6 +254,9 @@
   "core/sdk/DebuggerModel.ts | block": {
     "message": "B̂ĺôćk̂"
   },
+  "core/sdk/DebuggerModel.ts | catchBlock": {
+    "message": "Catch b̂ĺôćk̂"
+  },
   "core/sdk/DebuggerModel.ts | closure": {
     "message": "Ĉĺôśûŕê"
   },
@@ -273,7 +276,7 @@
     "message": "Ŝćr̂íp̂t́"
   },
   "core/sdk/DebuggerModel.ts | withBlock": {
-    "message": "With B̂ĺôćk̂"
+    "message": "With b̂ĺôćk̂"
   },
   "core/sdk/DOMDebuggerModel.ts | animation": {
     "message": "Âńîḿât́îón̂"
@@ -1238,6 +1241,9 @@
   "models/bindings/ContentProviderBasedProject.ts | unknownErrorLoadingFile": {
     "message": "Ûńk̂ńôẃn̂ ér̂ŕôŕ l̂óâd́îńĝ f́îĺê"
   },
+  "models/bindings/DebuggerLanguagePlugins.ts | debugSymbolsIncomplete": {
+    "message": "T̂h́ê d́êb́ûǵ îńf̂ór̂ḿât́îón̂ f́ôŕ f̂ún̂ćt̂íôń {PH1} îś îńĉóm̂ṕl̂ét̂é"
+  },
   "models/bindings/DebuggerLanguagePlugins.ts | errorInDebuggerLanguagePlugin": {
     "message": "Êŕr̂ór̂ ín̂ d́êb́ûǵĝér̂ ĺâńĝúâǵê ṕl̂úĝín̂: {PH1}"
   },
@@ -1245,7 +1251,7 @@
     "message": "[{PH1}] F̂áîĺêd́ t̂ó l̂óâd́ d̂éb̂úĝ śŷḿb̂ól̂ś f̂ór̂ {PH2} ({PH3})"
   },
   "models/bindings/DebuggerLanguagePlugins.ts | failedToLoadDebugSymbolsForFunction": {
-    "message": "M̂íŝśîńĝ d́êb́ûǵ ŝým̂b́ôĺŝ f́ôŕ f̂ún̂ćt̂íôń \"{PH1}\""
+    "message": "N̂ó d̂éb̂úĝ ín̂f́ôŕm̂át̂íôń f̂ór̂ f́ûńĉt́îón̂ \"{PH1}\""
   },
   "models/bindings/DebuggerLanguagePlugins.ts | loadedDebugSymbolsForButDidnt": {
     "message": "[{PH1}] L̂óâd́êd́ d̂éb̂úĝ śŷḿb̂ól̂ś f̂ór̂ {PH2}, b́ût́ d̂íd̂ń't̂ f́îńd̂ án̂ý ŝóûŕĉé f̂íl̂éŝ"
@@ -1258,9 +1264,6 @@
   },
   "models/bindings/DebuggerLanguagePlugins.ts | loadingDebugSymbolsForVia": {
     "message": "[{PH1}] L̂óâd́îńĝ d́êb́ûǵ ŝým̂b́ôĺŝ f́ôŕ {PH2} (v̂íâ {PH3})..."
-  },
-  "models/bindings/DebuggerLanguagePlugins.ts | symbolFileNotFound": {
-    "message": "Ŝým̂b́ôĺ f̂íl̂é \"{PH1}\" n̂ót̂ f́ôún̂d́"
   },
   "models/bindings/ResourceScriptMapping.ts | liveEditCompileFailed": {
     "message": "LiveEdit ĉóm̂ṕîĺê f́âíl̂éd̂: {PH1}"
@@ -1382,9 +1385,6 @@
   "models/issues_manager/DeprecationIssue.ts | cssSelectorInternalMediaControlsOverlayCastButton": {
     "message": "T̂h́ê disableRemotePlayback át̂t́r̂íb̂út̂é ŝh́ôúl̂d́ b̂é ûśêd́ îń ôŕd̂ér̂ t́ô d́îśâb́l̂é t̂h́ê d́êf́âúl̂t́ Ĉáŝt́ îńt̂éĝŕât́îón̂ ín̂śt̂éâd́ ôf́ ûśîńĝ -internal-media-controls-overlay-cast-button śêĺêćt̂ór̂."
   },
-  "models/issues_manager/DeprecationIssue.ts | customCursorIntersectsViewport": {
-    "message": "Ĉúŝt́ôḿ ĉúr̂śôŕŝ ẃît́ĥ śîźê ǵr̂éât́êŕ t̂h́âń 32x̂32 D́ÎṔ îńt̂ér̂śêćt̂ín̂ǵ n̂át̂ív̂é ÛÍ îś d̂ép̂ŕêćât́êd́ âńd̂ ẃîĺl̂ b́ê ŕêḿôv́êd́."
-  },
   "models/issues_manager/DeprecationIssue.ts | deprecatedWithReplacement": {
     "message": "{PH1} îś d̂ép̂ŕêćât́êd́. P̂ĺêáŝé ûśê {PH2} ín̂śt̂éâd́."
   },
@@ -1416,16 +1416,13 @@
     "message": "T̂h́ê ẃêb́ŝít̂é r̂éq̂úêśt̂éd̂ á ŝúb̂ŕêśôúr̂ćê f́r̂óm̂ á n̂ét̂ẃôŕk̂ t́ĥát̂ ít̂ ćôúl̂d́ ôńl̂ý âćĉéŝś b̂éĉáûśê óf̂ ít̂ś ûśêŕŝ' ṕr̂ív̂íl̂éĝéd̂ ńêt́ŵór̂ḱ p̂óŝít̂íôń. T̂h́êśê ŕêq́ûéŝt́ŝ éx̂ṕôśê ńôń-p̂úb̂ĺîć d̂év̂íĉéŝ án̂d́ ŝér̂v́êŕŝ t́ô t́ĥé îńt̂ér̂ńêt́, îńĉŕêáŝín̂ǵ t̂h́ê ŕîśk̂ óf̂ á ĉŕôśŝ-śît́ê ŕêq́ûéŝt́ f̂ór̂ǵêŕŷ (ĆŜŔF̂) át̂t́âćk̂, án̂d́/ôŕ îńf̂ór̂ḿât́îón̂ ĺêák̂áĝé. T̂ó m̂ít̂íĝát̂é t̂h́êśê ŕîśk̂ś, Ĉh́r̂óm̂é d̂ép̂ŕêćât́êś r̂éq̂úêśt̂ś t̂ó n̂ón̂-ṕûb́l̂íĉ śûb́r̂éŝóûŕĉéŝ ẃĥén̂ ín̂ít̂íât́êd́ f̂ŕôḿ n̂ón̂-śêćûŕê ćôńt̂éx̂t́ŝ, án̂d́ ŵíl̂ĺ ŝt́âŕt̂ b́l̂óĉḱîńĝ t́ĥém̂."
   },
   "models/issues_manager/DeprecationIssue.ts | legacyConstraintGoogIPv6": {
-    "message": "ÎṔv̂6 íŝ én̂áb̂ĺêd́-b̂ý-d̂éf̂áûĺt̂ án̂d́ t̂h́ê áb̂íl̂ít̂ý t̂ó d̂íŝáb̂ĺê ít̂ úŝín̂ǵ googIPv6 ŵíl̂ĺ ŝóôń b̂é r̂ém̂óv̂éd̂. Ṕl̂éâśê śt̂óp̂ úŝín̂ǵ t̂h́îś l̂éĝáĉý ĉón̂śt̂ŕâín̂t́."
+    "message": "ÎṔv̂6 íŝ én̂áb̂ĺêd́-b̂ý-d̂éf̂áûĺt̂ án̂d́ t̂h́ê áb̂íl̂ít̂ý t̂ó d̂íŝáb̂ĺê ít̂ úŝín̂ǵ googIPv6 îś t̂ár̂ǵêt́êd́ t̂ó b̂é r̂ém̂óv̂éd̂ ín̂ Ḿ108, âf́t̂ér̂ ẃĥíĉh́ ît́ ŵíl̂ĺ b̂é îǵn̂ór̂éd̂. Ṕl̂éâśê śt̂óp̂ úŝín̂ǵ t̂h́îś l̂éĝáĉý ĉón̂śt̂ŕâín̂t́."
   },
   "models/issues_manager/DeprecationIssue.ts | localCSSFileExtensionRejected": {
     "message": "ĈŚŜ ćâńn̂ót̂ b́ê ĺôád̂éd̂ f́r̂óm̂ file: ÚR̂Ĺŝ ún̂ĺêśŝ t́ĥéŷ én̂d́ îń â .css f́îĺê éx̂t́êńŝíôń."
   },
-  "models/issues_manager/DeprecationIssue.ts | mediaElementAudioSourceNode": {
-    "message": "Ĉŕêát̂ín̂ǵ â MediaElementAudioSourceNode ón̂ án̂ OfflineAudioContext íŝ d́êṕr̂éĉát̂éd̂ án̂d́ ŵíl̂ĺ b̂é r̂ém̂óv̂éd̂."
-  },
   "models/issues_manager/DeprecationIssue.ts | mediaSourceAbortRemove": {
-    "message": "Ûśîńĝ SourceBuffer.abort() t́ô áb̂ór̂t́ remove()'ŝ áŝýn̂ćĥŕôńôúŝ ŕâńĝé r̂ém̂óv̂ál̂ íŝ d́êṕr̂éĉát̂éd̂ d́ûé t̂ó ŝṕêćîf́îćât́îón̂ ćĥán̂ǵê. Śûṕp̂ór̂t́ ŵíl̂ĺ b̂é r̂ém̂óv̂éd̂ ín̂ t́ĥé f̂út̂úr̂é. Ŷóû śĥóûĺd̂ ín̂śt̂éâd́ âẃâít̂ updateend. abort() íŝ ín̂t́êńd̂éd̂ t́ô ón̂ĺŷ áb̂ór̂t́ âń âśŷńĉh́r̂ón̂óûś m̂éd̂íâ áp̂ṕêńd̂ ór̂ ŕêśêt́ p̂ár̂śêŕ ŝt́ât́ê."
+    "message": "Ûśîńĝ SourceBuffer.abort() t́ô áb̂ór̂t́ remove()'ŝ áŝýn̂ćĥŕôńôúŝ ŕâńĝé r̂ém̂óv̂ál̂ íŝ d́êṕr̂éĉát̂éd̂ d́ûé t̂ó ŝṕêćîf́îćât́îón̂ ćĥán̂ǵê. Śûṕp̂ór̂t́ ŵíl̂ĺ b̂é r̂ém̂óv̂éd̂ ín̂ t́ĥé f̂út̂úr̂é. Ŷóû śĥóûĺd̂ ĺîśt̂én̂ t́ô t́ĥé updateend êv́êńt̂ ín̂śt̂éâd́. abort() îś îńt̂én̂d́êd́ t̂ó ôńl̂ý âb́ôŕt̂ án̂ áŝýn̂ćĥŕôńôúŝ ḿêd́îá âṕp̂én̂d́ ôŕ r̂éŝét̂ ṕâŕŝér̂ śt̂át̂é."
   },
   "models/issues_manager/DeprecationIssue.ts | mediaSourceDurationTruncatingBuffered": {
     "message": "Ŝét̂t́îńĝ MediaSource.duration b́êĺôẃ t̂h́ê h́îǵĥéŝt́ p̂ŕêśêńt̂át̂íôń t̂ím̂éŝt́âḿp̂ óf̂ án̂ý b̂úf̂f́êŕêd́ ĉód̂éd̂ f́r̂ám̂éŝ íŝ d́êṕr̂éĉát̂éd̂ d́ûé t̂ó ŝṕêćîf́îćât́îón̂ ćĥán̂ǵê. Śûṕp̂ór̂t́ f̂ór̂ ím̂ṕl̂íĉít̂ ŕêḿôv́âĺ ôf́ t̂ŕûńĉát̂éd̂ b́ûf́f̂ér̂éd̂ ḿêd́îá ŵíl̂ĺ b̂é r̂ém̂óv̂éd̂ ín̂ t́ĥé f̂út̂úr̂é. Ŷóû śĥóûĺd̂ ín̂śt̂éâd́ p̂ér̂f́ôŕm̂ éx̂ṕl̂íĉít̂ remove(newDuration, oldDuration) ón̂ ál̂ĺ sourceBuffers, ŵh́êŕê newDuration < oldDuration."
@@ -1444,12 +1441,6 @@
   },
   "models/issues_manager/DeprecationIssue.ts | obsoleteWebRtcCipherSuite": {
     "message": "Ŷóûŕ p̂ár̂t́n̂ér̂ íŝ ńêǵôt́îát̂ín̂ǵ âń ôb́ŝól̂ét̂é (D̂)T́L̂Ś v̂ér̂śîón̂. Ṕl̂éâśê ćĥéĉḱ ŵít̂h́ ŷóûŕ p̂ár̂t́n̂ér̂ t́ô h́âv́ê t́ĥíŝ f́îx́êd́."
-  },
-  "models/issues_manager/DeprecationIssue.ts | paymentRequestBasicCard": {
-    "message": "T̂h́ê basic-card ṕâým̂én̂t́ m̂ét̂h́ôd́ îś d̂ép̂ŕêćât́êd́ âńd̂ ẃîĺl̂ b́ê ŕêḿôv́êd́."
-  },
-  "models/issues_manager/DeprecationIssue.ts | paymentRequestShowWithoutGesture": {
-    "message": "Ĉál̂ĺîńĝ PaymentRequest.show() ẃît́ĥóût́ ûśêŕ âćt̂ív̂át̂íôń îś d̂ép̂ŕêćât́êd́ âńd̂ ẃîĺl̂ b́ê ŕêḿôv́êd́."
   },
   "models/issues_manager/DeprecationIssue.ts | pictureSourceSrc": {
     "message": "<source src> ŵít̂h́ â <picture> ṕâŕêńt̂ íŝ ín̂v́âĺîd́ âńd̂ t́ĥér̂éf̂ór̂é îǵn̂ór̂éd̂. Ṕl̂éâśê úŝé <source srcset> îńŝt́êád̂."
@@ -1474,9 +1465,6 @@
   },
   "models/issues_manager/DeprecationIssue.ts | rtcpMuxPolicyNegotiate": {
     "message": "T̂h́ê rtcpMuxPolicy óp̂t́îón̂ íŝ d́êṕr̂éĉát̂éd̂ án̂d́ ŵíl̂ĺ b̂é r̂ém̂óv̂éd̂."
-  },
-  "models/issues_manager/DeprecationIssue.ts | rtpDataChannel": {
-    "message": "RTP data channels âŕê ńô ĺôńĝér̂ śûṕp̂ór̂t́êd́. T̂h́ê RtpDataChannels ćôńŝt́r̂áîńt̂ íŝ ćûŕr̂én̂t́l̂ý îǵn̂ór̂éd̂, án̂d́ m̂áŷ ćâúŝé âń êŕr̂ór̂ át̂ á l̂át̂ér̂ d́ât́ê."
   },
   "models/issues_manager/DeprecationIssue.ts | sharedArrayBufferConstructedWithoutIsolation": {
     "message": "SharedArrayBuffer ŵíl̂ĺ r̂éq̂úîŕê ćr̂óŝś-ôŕîǵîń îśôĺât́îón̂. Śêé ĥt́t̂ṕŝ://d́êv́êĺôṕêŕ.ĉh́r̂óm̂é.ĉóm̂/b́l̂óĝ/én̂áb̂ĺîńĝ-śĥár̂éd̂-ár̂ŕâý-b̂úf̂f́êŕ/ f̂ór̂ ḿôŕê d́êt́âíl̂ś."
@@ -2948,6 +2936,9 @@
   "panels/application/components/BackForwardCacheView.ts | mainFrame": {
     "message": "M̂áîń F̂ŕâḿê"
   },
+  "panels/application/components/BackForwardCacheView.ts | neverUseUnload": {
+    "message": "L̂éâŕn̂ ḿôŕê: Ńêv́êŕ ûśê ún̂ĺôád̂ h́âńd̂ĺêŕ"
+  },
   "panels/application/components/BackForwardCacheView.ts | normalNavigation": {
     "message": "N̂ót̂ śêŕv̂éd̂ f́r̂óm̂ b́âćk̂/f́ôŕŵár̂d́ ĉáĉh́ê: t́ô t́r̂íĝǵêŕ b̂áĉḱ/f̂ór̂ẃâŕd̂ ćâćĥé, ûśê Ćĥŕôḿê'ś b̂áĉḱ/f̂ór̂ẃâŕd̂ b́ût́t̂ón̂ś, ôŕ ûśê t́ĥé t̂éŝt́ b̂út̂t́ôń b̂él̂óŵ t́ô áût́ôḿât́îćâĺl̂ý n̂áv̂íĝát̂é âẃâý âńd̂ b́âćk̂."
   },
@@ -3067,6 +3058,12 @@
   },
   "panels/application/components/FrameDetailsView.ts | parentIsAdExplanation": {
     "message": "T̂h́îś f̂ŕâḿê íŝ ćôńŝíd̂ér̂éd̂ án̂ ád̂ f́r̂ám̂é b̂éĉáûśê ít̂ś p̂ár̂én̂t́ f̂ŕâḿê íŝ án̂ ád̂ f́r̂ám̂é."
+  },
+  "panels/application/components/FrameDetailsView.ts | prerendering": {
+    "message": "P̂ŕêŕêńd̂ér̂ín̂ǵ"
+  },
+  "panels/application/components/FrameDetailsView.ts | prerenderingStatus": {
+    "message": "P̂ŕêŕêńd̂ér̂ín̂ǵ Ŝt́ât́ûś"
   },
   "panels/application/components/FrameDetailsView.ts | refresh": {
     "message": "R̂éf̂ŕêśĥ"
@@ -3292,6 +3289,9 @@
   },
   "panels/application/DOMStorageItemsView.ts | domStorageItems": {
     "message": "D̂ÓM̂ Śt̂ór̂áĝé Ît́êḿŝ"
+  },
+  "panels/application/DOMStorageItemsView.ts | domStorageItemsCleared": {
+    "message": "D̂ÓM̂ Śt̂ór̂áĝé Ît́êḿŝ ćl̂éâŕêd́"
   },
   "panels/application/DOMStorageItemsView.ts | domStorageNumberEntries": {
     "message": "N̂úm̂b́êŕ ôf́ êńt̂ŕîéŝ śĥóŵń îń t̂áb̂ĺê: {PH1}"
@@ -3799,6 +3799,9 @@
   },
   "panels/browser_debugger/DOMBreakpointsSidebarPane.ts | sS": {
     "message": "{PH1}: {PH2}"
+  },
+  "panels/browser_debugger/DOMBreakpointsSidebarPane.ts | sSS": {
+    "message": "{PH1}: {PH2}, {PH3}"
   },
   "panels/browser_debugger/DOMBreakpointsSidebarPane.ts | subtreeModified": {
     "message": "Ŝúb̂t́r̂éê ḿôd́îf́îéd̂"
@@ -5948,6 +5951,9 @@
   "panels/lighthouse/LighthouseController.ts | desktop": {
     "message": "D̂éŝḱt̂óp̂"
   },
+  "panels/lighthouse/LighthouseController.ts | devtoolsThrottling": {
+    "message": "D̂év̂T́ôól̂ś t̂h́r̂ót̂t́l̂ín̂ǵ (âd́v̂án̂ćêd́)"
+  },
   "panels/lighthouse/LighthouseController.ts | doesThisPageFollowBestPractices": {
     "message": "D̂óêś t̂h́îś p̂áĝé f̂ól̂ĺôẃ b̂éŝt́ p̂ŕâćt̂íĉéŝ f́ôŕ m̂ód̂ér̂ń ŵéb̂ d́êv́êĺôṕm̂én̂t́"
   },
@@ -6012,10 +6018,10 @@
     "message": "ŜÉÔ"
   },
   "panels/lighthouse/LighthouseController.ts | simulateASlowerPageLoadBasedOn": {
-    "message": "Ŝím̂úl̂át̂é â śl̂óŵér̂ ṕâǵê ĺôád̂, b́âśêd́ ôń d̂át̂á f̂ŕôḿ âń îńît́îál̂ ún̂t́ĥŕôt́t̂ĺêd́ l̂óâd́. Îf́ d̂íŝáb̂ĺêd́, t̂h́ê ṕâǵê íŝ áĉt́ûál̂ĺŷ śl̂óŵéd̂ ẃît́ĥ áp̂ṕl̂íêd́ t̂h́r̂ót̂t́l̂ín̂ǵ."
+    "message": "Ŝím̂úl̂át̂éd̂ t́ĥŕôt́t̂ĺîńĝ śîḿûĺât́êś â śl̂óŵér̂ ṕâǵê ĺôád̂ b́âśêd́ ôń d̂át̂á f̂ŕôḿ âń îńît́îál̂ ún̂t́ĥŕôt́t̂ĺêd́ l̂óâd́. D̂év̂T́ôól̂ś t̂h́r̂ót̂t́l̂ín̂ǵ âćt̂úâĺl̂ý ŝĺôẃŝ d́ôẃn̂ t́ĥé p̂áĝé."
   },
   "panels/lighthouse/LighthouseController.ts | simulatedThrottling": {
-    "message": "Ŝím̂úl̂át̂éd̂ t́ĥŕôt́t̂ĺîńĝ"
+    "message": "Ŝím̂úl̂át̂éd̂ t́ĥŕôt́t̂ĺîńĝ (d́êf́âúl̂t́)"
   },
   "panels/lighthouse/LighthouseController.ts | snapshot": {
     "message": "Ŝńâṕŝh́ôt́"
@@ -6028,6 +6034,9 @@
   },
   "panels/lighthouse/LighthouseController.ts | thereMayBeStoredDataAffectingSingular": {
     "message": "T̂h́êŕê ḿâý b̂é ŝt́ôŕêd́ d̂át̂á âf́f̂éĉt́îńĝ ĺôád̂ín̂ǵ p̂ér̂f́ôŕm̂án̂ćê ín̂ t́ĥíŝ ĺôćât́îón̂: {PH1}. Áûd́ît́ t̂h́îś p̂áĝé îń âń îńĉóĝńît́ô ẃîńd̂óŵ t́ô ṕr̂év̂én̂t́ t̂h́ôśê ŕêśôúr̂ćêś f̂ŕôḿ âf́f̂éĉt́îńĝ ýôúr̂ śĉór̂éŝ."
+  },
+  "panels/lighthouse/LighthouseController.ts | throttlingMethod": {
+    "message": "T̂h́r̂ót̂t́l̂ín̂ǵ m̂ét̂h́ôd́"
   },
   "panels/lighthouse/LighthouseController.ts | timespan": {
     "message": "T̂ím̂éŝṕâń"
@@ -6458,14 +6467,29 @@
   "panels/mobile_throttling/ThrottlingManager.ts | dSlowdown": {
     "message": "{PH1}× ŝĺôẃd̂óŵń"
   },
+  "panels/mobile_throttling/ThrottlingManager.ts | excessConcurrency": {
+    "message": "Êx́ĉéêd́îńĝ t́ĥé d̂éf̂áûĺt̂ v́âĺûé m̂áŷ d́êǵr̂ád̂é ŝýŝt́êḿ p̂ér̂f́ôŕm̂án̂ćê."
+  },
   "panels/mobile_throttling/ThrottlingManager.ts | forceDisconnectedFromNetwork": {
     "message": "F̂ór̂ćê d́îśĉón̂ńêćt̂éd̂ f́r̂óm̂ ńêt́ŵór̂ḱ"
+  },
+  "panels/mobile_throttling/ThrottlingManager.ts | hardwareConcurrency": {
+    "message": "Ĥár̂d́ŵár̂é ĉón̂ćûŕr̂én̂ćŷ"
+  },
+  "panels/mobile_throttling/ThrottlingManager.ts | hardwareConcurrencyIsEnabled": {
+    "message": "Ĥár̂d́ŵár̂é ĉón̂ćûŕr̂én̂ćŷ óv̂ér̂ŕîd́ê íŝ én̂áb̂ĺêd́"
+  },
+  "panels/mobile_throttling/ThrottlingManager.ts | hardwareConcurrencyValue": {
+    "message": "V̂ál̂úê óf̂ ńâv́îǵât́ôŕ.ĥár̂d́ŵár̂éĈón̂ćûŕr̂én̂ćŷ"
   },
   "panels/mobile_throttling/ThrottlingManager.ts | noThrottling": {
     "message": "N̂ó t̂h́r̂ót̂t́l̂ín̂ǵ"
   },
   "panels/mobile_throttling/ThrottlingManager.ts | offline": {
     "message": "Ôf́f̂ĺîńê"
+  },
+  "panels/mobile_throttling/ThrottlingManager.ts | resetConcurrency": {
+    "message": "R̂éŝét̂ t́ô t́ĥé d̂éf̂áûĺt̂ v́âĺûé"
   },
   "panels/mobile_throttling/ThrottlingManager.ts | sS": {
     "message": "{PH1}: {PH2}"
@@ -6592,6 +6616,54 @@
   },
   "panels/network/BlockedURLsPane.ts | textPatternToBlockMatching": {
     "message": "T̂éx̂t́ p̂át̂t́êŕn̂ t́ô b́l̂óĉḱ m̂át̂ćĥín̂ǵ r̂éq̂úêśt̂ś; ûśê * f́ôŕ ŵíl̂d́ĉár̂d́"
+  },
+  "panels/network/components/RequestHeadersView.ts | fromDiskCache": {
+    "message": "(f̂ŕôḿ d̂íŝḱ ĉáĉh́ê)"
+  },
+  "panels/network/components/RequestHeadersView.ts | fromMemoryCache": {
+    "message": "(f̂ŕôḿ m̂ém̂ór̂ý ĉáĉh́ê)"
+  },
+  "panels/network/components/RequestHeadersView.ts | fromPrefetchCache": {
+    "message": "(f̂ŕôḿ p̂ŕêf́êt́ĉh́ ĉáĉh́ê)"
+  },
+  "panels/network/components/RequestHeadersView.ts | fromServiceWorker": {
+    "message": "(f̂ŕôḿ service worker)"
+  },
+  "panels/network/components/RequestHeadersView.ts | fromSignedexchange": {
+    "message": "(f̂ŕôḿ ŝíĝńêd́-êx́ĉh́âńĝé)"
+  },
+  "panels/network/components/RequestHeadersView.ts | fromWebBundle": {
+    "message": "(f̂ŕôḿ Ŵéb̂ B́ûńd̂ĺê)"
+  },
+  "panels/network/components/RequestHeadersView.ts | general": {
+    "message": "Ĝén̂ér̂ál̂"
+  },
+  "panels/network/components/RequestHeadersView.ts | raw": {
+    "message": "R̂áŵ"
+  },
+  "panels/network/components/RequestHeadersView.ts | referrerPolicy": {
+    "message": "R̂éf̂ér̂ŕêŕ P̂ól̂íĉý"
+  },
+  "panels/network/components/RequestHeadersView.ts | remoteAddress": {
+    "message": "R̂ém̂ót̂é Âd́d̂ŕêśŝ"
+  },
+  "panels/network/components/RequestHeadersView.ts | requestHeaders": {
+    "message": "R̂éq̂úêśt̂ H́êád̂ér̂ś"
+  },
+  "panels/network/components/RequestHeadersView.ts | requestMethod": {
+    "message": "R̂éq̂úêśt̂ Ḿêt́ĥód̂"
+  },
+  "panels/network/components/RequestHeadersView.ts | requestUrl": {
+    "message": "R̂éq̂úêśt̂ ÚR̂Ĺ"
+  },
+  "panels/network/components/RequestHeadersView.ts | responseHeaders": {
+    "message": "R̂éŝṕôńŝé Ĥéâd́êŕŝ"
+  },
+  "panels/network/components/RequestHeadersView.ts | showMore": {
+    "message": "Ŝh́ôẃ m̂ór̂é"
+  },
+  "panels/network/components/RequestHeadersView.ts | statusCode": {
+    "message": "Ŝt́ât́ûś Ĉód̂é"
   },
   "panels/network/components/RequestTrustTokensView.ts | aClientprovidedArgumentWas": {
     "message": "Â ćl̂íêńt̂-ṕr̂óv̂íd̂éd̂ ár̂ǵûḿêńt̂ ẃâś m̂ál̂f́ôŕm̂éd̂ ór̂ ót̂h́êŕŵíŝé îńv̂ál̂íd̂."
@@ -7024,6 +7096,9 @@
   },
   "panels/network/NetworkLogView.ts | copyStacktrace": {
     "message": "Ĉóp̂ý ŝt́âćk̂ t́r̂áĉé"
+  },
+  "panels/network/NetworkLogView.ts | createResponseHeaderOverride": {
+    "message": "Ĉŕêát̂é r̂éŝṕôńŝé ĥéâd́êŕ ôv́êŕr̂íd̂é"
   },
   "panels/network/NetworkLogView.ts | domcontentloadedS": {
     "message": "D̂ÓM̂Ćôńt̂én̂t́L̂óâd́êd́: {PH1}"
@@ -8069,6 +8144,9 @@
   "panels/profiler/HeapSnapshotView.ts | containment": {
     "message": "Ĉón̂t́âín̂ḿêńt̂"
   },
+  "panels/profiler/HeapSnapshotView.ts | exposeInternals": {
+    "message": "Êx́p̂óŝé îńt̂ér̂ńâĺŝ (ín̂ćl̂úd̂éŝ ád̂d́ît́îón̂ál̂ ím̂ṕl̂ém̂én̂t́ât́îón̂-śp̂éĉíf̂íĉ d́êt́âíl̂ś)"
+  },
   "panels/profiler/HeapSnapshotView.ts | filter": {
     "message": "F̂íl̂t́êŕ"
   },
@@ -8155,9 +8233,6 @@
   },
   "panels/profiler/HeapSnapshotView.ts | takeHeapSnapshot": {
     "message": "T̂ák̂é ĥéâṕ ŝńâṕŝh́ôt́"
-  },
-  "panels/profiler/HeapSnapshotView.ts | treatGlobalObjectsAsRoots": {
-    "message": "T̂ŕêát̂ ǵl̂ób̂ál̂ ób̂j́êćt̂ś âś r̂óôt́ŝ (ŕêćôḿm̂én̂d́êd́, ûńĉh́êćk̂ín̂ǵ t̂h́îś êx́p̂óŝéŝ ín̂t́êŕn̂ál̂ ńôd́êś âńd̂ ín̂t́r̂ód̂úĉéŝ éx̂ćêśŝív̂é d̂ét̂áîĺ, b̂út̂ ḿîǵĥt́ ĥél̂ṕ d̂éb̂úĝǵîńĝ ćŷćl̂éŝ ín̂ ŕêt́âín̂ín̂ǵ p̂át̂h́ŝ)"
   },
   "panels/profiler/HeapSnapshotView.ts | typedArrays": {
     "message": "T̂ýp̂éd̂ ár̂ŕâýŝ"
@@ -9440,6 +9515,9 @@
   "panels/sources/CallStackSidebarPane.ts | copyStackTrace": {
     "message": "Ĉóp̂ý ŝt́âćk̂ t́r̂áĉé"
   },
+  "panels/sources/CallStackSidebarPane.ts | debugFileNotFound": {
+    "message": "F̂áîĺêd́ t̂ó l̂óâd́ d̂éb̂úĝ f́îĺê \"{PH1}\"."
+  },
   "panels/sources/CallStackSidebarPane.ts | notPaused": {
     "message": "N̂ót̂ ṕâúŝéd̂"
   },
@@ -9451,6 +9529,9 @@
   },
   "panels/sources/CallStackSidebarPane.ts | removeFromIgnoreList": {
     "message": "R̂ém̂óv̂é f̂ŕôḿ îǵn̂ór̂é l̂íŝt́"
+  },
+  "panels/sources/CallStackSidebarPane.ts | restartFrame": {
+    "message": "R̂éŝt́âŕt̂ f́r̂ám̂é"
   },
   "panels/sources/CallStackSidebarPane.ts | showIgnorelistedFrames": {
     "message": "Ŝh́ôẃ îǵn̂ór̂é-l̂íŝt́êd́ f̂ŕâḿêś"
@@ -9571,6 +9652,12 @@
   },
   "panels/sources/DebuggerPlugin.ts | configure": {
     "message": "Ĉón̂f́îǵûŕê"
+  },
+  "panels/sources/DebuggerPlugin.ts | debugFileNotFound": {
+    "message": "F̂áîĺêd́ t̂ó l̂óâd́ d̂éb̂úĝ f́îĺê \"{PH1}\"."
+  },
+  "panels/sources/DebuggerPlugin.ts | debugInfoNotFound": {
+    "message": "F̂áîĺêd́ t̂ó l̂óâd́ âńŷ d́êb́ûǵ îńf̂ó f̂ór̂ {PH1}."
   },
   "panels/sources/DebuggerPlugin.ts | disableBreakpoint": {
     "message": "{n, plural, =1 {D̂íŝáb̂ĺê b́r̂éâḱp̂óîńt̂} other {D́îśâb́l̂é âĺl̂ b́r̂éâḱp̂óîńt̂ś îń l̂ín̂é}}"
@@ -9704,11 +9791,23 @@
   "panels/sources/NavigatorView.ts | areYouSureYouWantToRemoveThis": {
     "message": "Âŕê ýôú ŝúr̂é ŷóû ẃâńt̂ t́ô ŕêḿôv́ê t́ĥíŝ f́ôĺd̂ér̂?"
   },
+  "panels/sources/NavigatorView.ts | authored": {
+    "message": "Âút̂h́ôŕêd́"
+  },
+  "panels/sources/NavigatorView.ts | authoredTooltip": {
+    "message": "Ĉón̂t́âín̂ś ôŕîǵîńâĺ ŝóûŕĉéŝ"
+  },
   "panels/sources/NavigatorView.ts | delete": {
     "message": "D̂él̂ét̂é"
   },
   "panels/sources/NavigatorView.ts | deleteAllOverrides": {
     "message": "D̂él̂ét̂é âĺl̂ óv̂ér̂ŕîd́êś"
+  },
+  "panels/sources/NavigatorView.ts | deployed": {
+    "message": "D̂ép̂ĺôýêd́"
+  },
+  "panels/sources/NavigatorView.ts | deployedTooltip": {
+    "message": "Ĉón̂t́âín̂ś f̂ín̂ál̂ śôúr̂ćêś t̂h́ê b́r̂óŵśêŕ ŝéêś"
   },
   "panels/sources/NavigatorView.ts | excludeFolder": {
     "message": "Êx́ĉĺûd́ê f́ôĺd̂ér̂"
@@ -10070,6 +10169,9 @@
   "panels/sources/sources-meta.ts | watch": {
     "message": "Ŵát̂ćĥ"
   },
+  "panels/sources/SourcesNavigator.ts | authoredDescription": {
+    "message": "Ĝŕôúp̂ f́îĺêś b̂ý Âút̂h́ôŕêd́/D̂ép̂ĺôýêd́"
+  },
   "panels/sources/SourcesNavigator.ts | clearConfiguration": {
     "message": "Ĉĺêár̂ ćôńf̂íĝúr̂át̂íôń"
   },
@@ -10138,6 +10240,9 @@
   },
   "panels/sources/SourcesPanel.ts | dropWorkspaceFolderHere": {
     "message": "D̂ŕôṕ ŵór̂ḱŝṕâćê f́ôĺd̂ér̂ h́êŕê"
+  },
+  "panels/sources/SourcesPanel.ts | groupByAuthored": {
+    "message": "Ĝŕôúp̂ b́ŷ Áût́ĥór̂éd̂/D́êṕl̂óŷéd̂"
   },
   "panels/sources/SourcesPanel.ts | groupByFolder": {
     "message": "Ĝŕôúp̂ b́ŷ f́ôĺd̂ér̂"
@@ -10424,9 +10529,6 @@
   "panels/timeline/TimelineFlameChartDataProvider.ts | idleFrame": {
     "message": "Îd́l̂é F̂ŕâḿê"
   },
-  "panels/timeline/TimelineFlameChartDataProvider.ts | interactions": {
-    "message": "Îńt̂ér̂áĉt́îón̂ś"
-  },
   "panels/timeline/TimelineFlameChartDataProvider.ts | longFrame": {
     "message": "L̂ón̂ǵ f̂ŕâḿê"
   },
@@ -10564,6 +10666,9 @@
   },
   "panels/timeline/TimelinePanel.ts | failedToSaveTimelineSSS": {
     "message": "F̂áîĺêd́ t̂ó ŝáv̂é t̂ím̂él̂ín̂é: {PH1} ({PH2}, {PH3})"
+  },
+  "panels/timeline/TimelinePanel.ts | HardwareConcurrencyIsEnabled": {
+    "message": "- Ĥár̂d́ŵár̂é ĉón̂ćûŕr̂én̂ćŷ óv̂ér̂ŕîd́ê íŝ én̂áb̂ĺêd́"
   },
   "panels/timeline/TimelinePanel.ts | initializingProfiler": {
     "message": "Îńît́îál̂íẑín̂ǵ p̂ŕôf́îĺêŕ…"
@@ -11810,8 +11915,14 @@
   "ui/components/panel_feedback/PanelFeedback.ts | videoAndDocumentation": {
     "message": "V̂íd̂éô án̂d́ d̂óĉúm̂én̂t́ât́îón̂"
   },
+  "ui/components/panel_feedback/PreviewToggle.ts | learnMoreLink": {
+    "message": "L̂éâŕn̂ Ḿôŕê"
+  },
   "ui/components/panel_feedback/PreviewToggle.ts | previewTextFeedbackLink": {
     "message": "Ŝén̂d́ ûś ŷóûŕ f̂éêd́b̂áĉḱ."
+  },
+  "ui/components/panel_feedback/PreviewToggle.ts | shortFeedbackLink": {
+    "message": "Ŝén̂d́ f̂éêd́b̂áĉḱ"
   },
   "ui/components/request_link_icon/RequestLinkIcon.ts | clickToShowRequestInTheNetwork": {
     "message": "Ĉĺîćk̂ t́ô óp̂én̂ t́ĥé n̂ét̂ẃôŕk̂ ṕâńêĺ âńd̂ śĥóŵ ŕêq́ûéŝt́ f̂ór̂ ÚR̂Ĺ: {url}"
@@ -12496,6 +12607,12 @@
   },
   "ui/legacy/InspectorView.ts | reloadDevtools": {
     "message": "R̂él̂óâd́ D̂év̂T́ôól̂ś"
+  },
+  "ui/legacy/InspectorView.ts | selectFolder": {
+    "message": "Ŝél̂éĉt́ f̂ól̂d́êŕ"
+  },
+  "ui/legacy/InspectorView.ts | selectOverrideFolder": {
+    "message": "Ŝél̂éĉt́ â f́ôĺd̂ér̂ t́ô śt̂ór̂é ôv́êŕr̂íd̂é f̂íl̂éŝ ín̂."
   },
   "ui/legacy/InspectorView.ts | setToBrowserLanguage": {
     "message": "Âĺŵáŷś m̂át̂ćĥ Ćĥŕôḿê'ś l̂án̂ǵûáĝé"

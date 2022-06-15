@@ -226,6 +226,36 @@ from :3
 
 class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
 
+  @mock.patch('gclient_scm.GitWrapper._IsCog')
+  @mock.patch('gclient_scm.GitWrapper._Run', return_value=True)
+  @mock.patch('gclient_scm.GitWrapper._SetFetchConfig')
+  @mock.patch('gclient_scm.GitWrapper._GetCurrentBranch')
+  def testCloneInCog(self, mockGetCurrentBranch, mockSetFetchConfig, mockRun,
+                     _mockIsCog):
+    """Test that we call the correct commands when in a cog workspace."""
+    if not self.enabled:
+      return
+    options = self.Options()
+    scm = gclient_scm.GitWrapper(self.url, self.root_dir, self.relpath)
+    scm._Clone('123123ab', self.url, options)
+    self.assertEquals(mockRun.mock_calls, [
+        mock.call(
+            ['citc', 'clone-repo', self.url, scm.checkout_path, '123123ab'],
+            options,
+            cwd=scm._root_dir,
+            retry=True,
+            print_stdout=False,
+            filter_fn=scm.filter),
+        mock.call(['-C', scm.checkout_path, 'sparse-checkout', 'reapply'],
+                  options,
+                  cwd=scm._root_dir,
+                  retry=True,
+                  print_stdout=False,
+                  filter_fn=scm.filter),
+    ])
+    mockSetFetchConfig.assert_called_once()
+    mockGetCurrentBranch.assert_called_once()
+
   def testRevertMissing(self):
     if not self.enabled:
       return
@@ -1459,6 +1489,10 @@ class GerritChangesTest(fake_repos.FakeReposTestBase):
     self.assertCommits([1, 2, 3, 5, 6])
     self.assertEqual(self.githash('repo_1', 5), self.gitrevparse(self.root_dir))
 
+
+if 'unittest.util' in __import__('sys').modules:
+  # Show full diff in self.assertEqual.
+  __import__('sys').modules['unittest.util']._MAX_LENGTH = 999999999
 
 if __name__ == '__main__':
   level = logging.DEBUG if '-v' in sys.argv else logging.FATAL

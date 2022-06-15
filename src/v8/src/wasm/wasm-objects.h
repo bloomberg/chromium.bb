@@ -303,6 +303,7 @@ class WasmGlobalObject
   inline void SetF64(double value);
   inline void SetExternRef(Handle<Object> value);
   inline bool SetFuncRef(Isolate* isolate, Handle<Object> value);
+  inline void SetStringRef(Handle<Object> value);
 
  private:
   // This function returns the address of the global's data in the
@@ -418,13 +419,13 @@ class V8_EXPORT_PRIVATE WasmInstanceObject : public JSObject {
 
   DEFINE_FIELD_OFFSET_CONSTANTS(JSObject::kHeaderSize,
                                 WASM_INSTANCE_OBJECT_FIELDS)
-  STATIC_ASSERT(IsAligned(kHeaderSize, kTaggedSize));
+  static_assert(IsAligned(kHeaderSize, kTaggedSize));
   // TODO(ishell, v8:8875): When pointer compression is enabled 8-byte size
   // fields (external pointers, doubles and BigInt data) are only kTaggedSize
   // aligned so checking for alignments of fields bigger than kTaggedSize
   // doesn't make sense until v8:8875 is fixed.
 #define ASSERT_FIELD_ALIGNED(offset, size)                                 \
-  STATIC_ASSERT(size == 0 || IsAligned(offset, size) ||                    \
+  static_assert(size == 0 || IsAligned(offset, size) ||                    \
                 (COMPRESS_POINTERS_BOOL && (size == kSystemPointerSize) && \
                  IsAligned(offset, kTaggedSize)));
   WASM_INSTANCE_OBJECT_FIELDS(ASSERT_FIELD_ALIGNED)
@@ -687,7 +688,7 @@ class WasmIndirectFunctionTable
 
   DECL_PRINTER(WasmIndirectFunctionTable)
 
-  STATIC_ASSERT(kStartOfStrongFieldsOffset == kManagedNativeAllocationsOffset);
+  static_assert(kStartOfStrongFieldsOffset == kManagedNativeAllocationsOffset);
   using BodyDescriptor = FlexibleBodyDescriptor<kStartOfStrongFieldsOffset>;
 
   TQ_OBJECT_CONSTRUCTORS(WasmIndirectFunctionTable)

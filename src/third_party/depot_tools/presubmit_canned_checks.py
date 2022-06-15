@@ -41,11 +41,13 @@ OFF_BY_DEFAULT_LINT_FILTERS = [
 # - build/c++11         : Include file and feature blocklists are
 #                         google3-specific
 # - build/header_guard  : Checked by CheckForIncludeGuards
+# - readability/todo    : Chromium puts bug links, not usernames, in TODOs
 # - runtime/references  : No longer banned by Google style guide
 # - whitespace/...      : Most whitespace issues handled by clang-format
 OFF_UNLESS_MANUALLY_ENABLED_LINT_FILTERS = [
     '-build/c++11',
     '-build/header_guard',
+    '-readability/todo',
     '-runtime/references',
     '-whitespace/braces',
     '-whitespace/comma',
@@ -109,7 +111,7 @@ def CheckChangeHasDescription(input_api, output_api):
   """Checks the CL description is not empty."""
   text = input_api.change.DescriptionText()
   if text.strip() == '':
-    if input_api.is_committing:
+    if input_api.is_committing and not input_api.no_diffs:
       return [output_api.PresubmitError('Add a description to the CL.')]
 
     return [output_api.PresubmitNotifyResult('Add a description to the CL.')]
@@ -119,8 +121,11 @@ def CheckChangeHasDescription(input_api, output_api):
 def CheckChangeWasUploaded(input_api, output_api):
   """Checks that the issue was uploaded before committing."""
   if input_api.is_committing and not input_api.change.issue:
-    return [output_api.PresubmitError(
-      'Issue wasn\'t uploaded. Please upload first.')]
+    message = 'Issue wasn\'t uploaded. Please upload first.'
+    if input_api.no_diffs:
+      # Make this just a message with presubmit --all and --files
+      return [output_api.PresubmitNotifyResult(message)]
+    return [output_api.PresubmitError(message)]
   return []
 
 
@@ -229,6 +234,20 @@ def CheckChangeLintsClean(input_api, output_api, source_file_filter=None,
 
   cpplint._SetFilters(','.join(GetCppLintFilters(lint_filters)))
 
+  # Use VS error format on Windows to make it easier to step through the
+  # results.
+  if input_api.platform == 'win32':
+    cpplint._SetOutputFormat('vs7')
+
+  if source_file_filter == None:
+    # The only valid extensions for cpplint are .cc, .h, .cpp, .cu, and .ch.
+    # Only process those extensions which are used in Chromium.
+    INCLUDE_CPP_FILES_ONLY = (r'.*\.(cc|h|cpp)$', )
+    source_file_filter = lambda x: input_api.FilterSourceFile(
+        x,
+        files_to_check=INCLUDE_CPP_FILES_ONLY,
+        files_to_skip=input_api.DEFAULT_FILES_TO_SKIP)
+
   # We currently are more strict with normal code than unit tests; 4 and 5 are
   # the verbosity level that would normally be passed to cpplint.py through
   # --verbose=#. Hopefully, in the future, we can be more verbose.
@@ -248,7 +267,10 @@ def CheckChangeLintsClean(input_api, output_api, source_file_filter=None,
       res_type = output_api.PresubmitError
     else:
       res_type = output_api.PresubmitPromptWarning
-    result = [res_type('Changelist failed cpplint.py check.')]
+    result = [
+        res_type('Changelist failed cpplint.py check. '
+                 'Search the output for "(cpplint)"')
+    ]
 
   return result
 
@@ -310,6 +332,9 @@ def CheckGenderNeutral(input_api, output_api, source_file_filter=None):
   """Checks that there are no gendered pronouns in any of the text files to be
   submitted.
   """
+  if input_api.no_diffs:
+    return []
+
   gendered_re = input_api.re.compile(
       r'(^|\s|\(|\[)([Hh]e|[Hh]is|[Hh]ers?|[Hh]im|[Ss]he|[Gg]uys?)\\b')
 
@@ -403,6 +428,8 @@ def _FindNewViolationsOfRule(callable_rule,
   Returns:
     A list of the newly-introduced violations reported by the rule.
   """
+  if input_api.no_diffs:
+    return []
   return _FindNewViolationsOfRuleForList(
       callable_rule, _GenerateAffectedFileExtList(
           input_api, source_file_filter), error_formatter)
@@ -459,6 +486,8 @@ def CheckLongLines(input_api, output_api, maxlen, source_file_filter=None):
   """Checks that there aren't any lines longer than maxlen characters in any of
   the text files to be submitted.
   """
+  if input_api.no_diffs:
+    return []
   maxlens = {
       'java': 100,
       # This is specifically for Android's handwritten makefiles (Android.mk).
@@ -683,6 +712,10 @@ def CheckTreeIsOpen(input_api, output_api,
       if not status['can_commit_freely']:
         short_text = 'Tree state is: ' + status['general_state']
         long_text = status['message'] + '\n' + json_url
+        if input_api.no_diffs:
+          return [
+              output_api.PresubmitPromptWarning(short_text, long_text=long_text)
+          ]
         return [output_api.PresubmitError(short_text, long_text=long_text)]
     else:
       # TODO(bradnelson): drop this once all users are gone.
@@ -806,10 +839,9 @@ def GetUnitTests(input_api,
             message=message_type))
         test_run = True
       if not test_run:
-        output_api.PresubmitPromptWarning(
-            "Some python tests were not run. You may need to add\n"
-            "skip_shebang_check=True for python3 tests.",
-            items=unit_test)
+        results.append(output_api.PresubmitPromptWarning(
+            "The %s test was not run. You may need to add\n"
+            "skip_shebang_check=True for python3 tests." % unit_test))
   return results
 
 
@@ -854,7 +886,7 @@ def GetUnitTestsRecursively(input_api,
                       skip_shebang_check=skip_shebang_check)
 
 
-def GetPythonUnitTests(input_api, output_api, unit_tests):
+def GetPythonUnitTests(input_api, output_api, unit_tests, python3=False):
   """Run the unit tests out of process, capture the output and use the result
   code to determine success.
 
@@ -893,7 +925,10 @@ def GetPythonUnitTests(input_api, output_api, unit_tests):
         backpath.append(env.get('PYTHONPATH'))
       env['PYTHONPATH'] = input_api.os_path.pathsep.join((backpath))
       env.pop('VPYTHON_CLEAR_PYTHONPATH', None)
-    cmd = [input_api.python_executable, '-m', '%s' % unit_test]
+    if python3:
+      cmd = [input_api.python3_executable, '-m', '%s' % unit_test]
+    else:
+      cmd = [input_api.python_executable, '-m', '%s' % unit_test]
     results.append(input_api.Command(
         name=unit_test_name,
         cmd=cmd,
@@ -1072,28 +1107,27 @@ def GetPylint(input_api,
         message=error_type,
         python3=not python2)
 
-  # Always run pylint and pass it all the py files at once.
-  # Passing py files one at time is slower and can produce
-  # different results.  input_api.verbose used to be used
-  # to enable this behaviour but differing behaviour in
-  # verbose mode is not desirable.
-  # Leave this unreachable code in here so users can make
-  # a quick local edit to diagnose pylint issues more
-  # easily.
-  if True:
-    # pylint's cycle detection doesn't work in parallel, so spawn a second,
-    # single-threaded job for just that check.
+  # pylint's cycle detection doesn't work in parallel, so spawn a second,
+  # single-threaded job for just that check.
+  # Some PRESUBMITs explicitly mention cycle detection.
+  if not any('R0401' in a or 'cyclic-import' in a for a in extra_args):
+    tests = [
+      GetPylintCmd(files, ["--disable=cyclic-import"], True),
+      GetPylintCmd(files, ["--disable=all", "--enable=cyclic-import"], False),
+    ]
+  else:
+    tests = [
+        GetPylintCmd(files, [], True),
+    ]
+  if version == '1.5':
+    # Warn users about pylint-1.5 deprecation
+    tests.append(
+        output_api.PresubmitPromptWarning(
+            'pylint-1.5 is being run on %s and is deprecated, please switch '
+            'to 2.7 before 2022-07-11 (add version=\'2.7\' to RunPylint call)'
+            % input_api.PresubmitLocalPath()))
 
-    # Some PRESUBMITs explicitly mention cycle detection.
-    if not any('R0401' in a or 'cyclic-import' in a for a in extra_args):
-      return [
-        GetPylintCmd(files, ["--disable=cyclic-import"], True),
-        GetPylintCmd(files, ["--disable=all", "--enable=cyclic-import"], False)
-      ]
-
-    return [ GetPylintCmd(files, [], True) ]
-
-  return map(lambda x: GetPylintCmd([x], [], 1), files)
+  return tests
 
 
 def RunPylint(input_api, *args, **kwargs):
@@ -1149,6 +1183,9 @@ def CheckDirMetadataFormat(input_api, output_api, dirmd_bin=None):
 
 def CheckNoNewMetadataInOwners(input_api, output_api):
   """Check that no metadata is added to OWNERS files."""
+  if input_api.no_diffs:
+    return []
+
   _METADATA_LINE_RE = input_api.re.compile(
       r'^#\s*(TEAM|COMPONENT|OS|WPT-NOTIFY)+\s*:\s*\S+$',
       input_api.re.MULTILINE | input_api.re.IGNORECASE)
@@ -1240,7 +1277,7 @@ def CheckOwners(
   if input_api.gerrit and input_api.gerrit.IsCodeOwnersEnabledOnRepo():
     return []
 
-  affected_files = {f.LocalPath() for f in 
+  affected_files = {f.LocalPath() for f in
                     input_api.change.AffectedFiles(
                         file_filter=source_file_filter)}
   owner_email, reviewers = GetCodereviewOwnerAndReviewers(
@@ -1471,6 +1508,11 @@ def CheckPatchFormatted(input_api,
 
   cmd = ['-C', input_api.change.RepositoryRoot(),
          'cl', 'format', '--dry-run', '--presubmit'] + display_args
+
+  # Make sure the passed --upstream branch is applied to a dry run.
+  if input_api.change.UpstreamBranch():
+    cmd.extend(['--upstream', input_api.change.UpstreamBranch()])
+
   presubmit_subdir = input_api.os_path.relpath(
       input_api.PresubmitLocalPath(), input_api.change.RepositoryRoot())
   if presubmit_subdir.startswith('..') or presubmit_subdir == '.':
@@ -1480,6 +1522,7 @@ def CheckPatchFormatted(input_api,
   # contains the PRESUBMIT.py.
   if presubmit_subdir:
     cmd.append(input_api.PresubmitLocalPath())
+
   code, _ = git_cl.RunGitWithCode(cmd, suppress_stderr=bypass_warnings)
   # bypass_warnings? Only fail with code 2.
   # As this is just a warning, ignore all other errors if the user
@@ -1921,6 +1964,8 @@ def CheckInclusiveLanguage(input_api, output_api,
   # ANGLE), but this particular check only makes sense for changes to
   # chromium/src.
   if input_api.change.RepositoryRoot() != input_api.PresubmitLocalPath():
+    return []
+  if input_api.no_diffs:
     return []
 
   warnings = []

@@ -262,15 +262,14 @@ static void cdg_scroll(CDGraphicsContext *cc, uint8_t *data,
 
 }
 
-static int cdg_decode_frame(AVCodecContext *avctx,
-                            void *data, int *got_frame, AVPacket *avpkt)
+static int cdg_decode_frame(AVCodecContext *avctx, AVFrame *frame,
+                            int *got_frame, AVPacket *avpkt)
 {
     GetByteContext gb;
     int buf_size       = avpkt->size;
     int ret;
     uint8_t command, inst;
     uint8_t cdg_data[CDG_DATA_SIZE] = {0};
-    AVFrame *frame = data;
     CDGraphicsContext *cc = avctx->priv_data;
 
     if (buf_size < CDG_MINIMUM_PKT_SIZE) {
@@ -396,7 +395,7 @@ const FFCodec ff_cdgraphics_decoder = {
     .priv_data_size = sizeof(CDGraphicsContext),
     .init           = cdg_decode_init,
     .close          = cdg_decode_end,
-    .decode         = cdg_decode_frame,
+    FF_CODEC_DECODE_CB(cdg_decode_frame),
     .flush          = cdg_decode_flush,
     .p.capabilities = AV_CODEC_CAP_DR1,
     .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,

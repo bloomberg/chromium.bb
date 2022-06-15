@@ -221,10 +221,10 @@ OgHttp2Session::PassthroughHeadersHandler::PassthroughHeadersHandler(
     OgHttp2Session& session, Http2VisitorInterface& visitor)
     : session_(session), visitor_(visitor) {
   if (session_.options_.validate_http_headers) {
-    QUICHE_LOG(INFO) << "birenroy | instantiating regular header validator";
+    QUICHE_VLOG(2) << "instantiating regular header validator";
     validator_ = absl::make_unique<HeaderValidator>();
   } else {
-    QUICHE_LOG(INFO) << "birenroy | instantiating noop header validator";
+    QUICHE_VLOG(2) << "instantiating noop header validator";
     validator_ = absl::make_unique<NoopHeaderValidator>();
   }
 }
@@ -1218,16 +1218,6 @@ void OgHttp2Session::OnSettings() {
 
 void OgHttp2Session::OnSetting(spdy::SpdySettingsId id, uint32_t value) {
   switch (id) {
-    case MAX_FRAME_SIZE:
-      max_frame_payload_ = value;
-      break;
-    case MAX_CONCURRENT_STREAMS:
-      max_outbound_concurrent_streams_ = value;
-      if (!IsServerSession()) {
-        // We may now be able to start pending streams.
-        StartPendingStreams();
-      }
-      break;
     case HEADER_TABLE_SIZE:
       value = std::min(value, HpackCapacityBound(options_));
       if (value < framer_.GetHpackEncoder()->CurrentHeaderTableSizeSetting()) {
@@ -1243,6 +1233,13 @@ void OgHttp2Session::OnSetting(spdy::SpdySettingsId id, uint32_t value) {
         encoder_header_table_capacity_when_acking_ = value;
       }
       break;
+    case MAX_CONCURRENT_STREAMS:
+      max_outbound_concurrent_streams_ = value;
+      if (!IsServerSession()) {
+        // We may now be able to start pending streams.
+        StartPendingStreams();
+      }
+      break;
     case INITIAL_WINDOW_SIZE:
       if (value > spdy::kSpdyMaximumWindowSize) {
         visitor_.OnInvalidFrame(
@@ -1255,6 +1252,19 @@ void OgHttp2Session::OnSetting(spdy::SpdySettingsId id, uint32_t value) {
       } else {
         UpdateStreamSendWindowSizes(value);
       }
+      break;
+    case MAX_FRAME_SIZE:
+      if (value < kDefaultFramePayloadSizeLimit ||
+          value > kMaximumFramePayloadSizeLimit) {
+        visitor_.OnInvalidFrame(
+            0, Http2VisitorInterface::InvalidFrameError::kProtocol);
+        // The specification says this is a connection-level protocol error.
+        LatchErrorAndNotify(
+            Http2ErrorCode::PROTOCOL_ERROR,
+            Http2VisitorInterface::ConnectionError::kInvalidSetting);
+        return;
+      }
+      max_frame_payload_ = value;
       break;
     default:
       // TODO(bnc): See if C++17 inline constants are allowed in QUICHE.
@@ -1338,7 +1348,8 @@ bool OgHttp2Session::OnGoAwayFrameData(const char* /*goaway_data*/, size_t
 }
 
 void OgHttp2Session::OnHeaders(spdy::SpdyStreamId stream_id,
-                               bool /*has_priority*/, int /*weight*/,
+                               size_t /*payload_length*/, bool /*has_priority*/,
+                               int /*weight*/,
                                spdy::SpdyStreamId /*parent_stream_id*/,
                                bool /*exclusive*/, bool fin, bool /*end*/) {
   if (stream_id % 2 == 0) {
@@ -1415,12 +1426,13 @@ void OgHttp2Session::OnWindowUpdate(spdy::SpdyStreamId stream_id,
       if (streams_reset_.contains(stream_id)) {
         return;
       }
-      if (it->second.send_window == 0) {
+      const bool was_blocked = (it->second.send_window <= 0);
+      it->second.send_window += delta_window_size;
+      if (was_blocked && it->second.send_window > 0) {
         // The stream was blocked on flow control.
         QUICHE_VLOG(1) << "Marking stream " << stream_id << " ready to write.";
         write_scheduler_.MarkStreamReady(stream_id, false);
       }
-      it->second.send_window += delta_window_size;
     }
   }
   visitor_.OnWindowUpdate(stream_id, delta_window_size);
@@ -1434,8 +1446,8 @@ void OgHttp2Session::OnPushPromise(spdy::SpdyStreamId /*stream_id*/,
                       ConnectionError::kInvalidPushPromise);
 }
 
-void OgHttp2Session::OnContinuation(spdy::SpdyStreamId /*stream_id*/, bool
-                                    /*end*/) {}
+void OgHttp2Session::OnContinuation(spdy::SpdyStreamId /*stream_id*/,
+                                    size_t /*payload_length*/, bool /*end*/) {}
 
 void OgHttp2Session::OnAltSvc(spdy::SpdyStreamId /*stream_id*/,
                               absl::string_view /*origin*/,
@@ -1598,7 +1610,7 @@ void OgHttp2Session::HandleOutboundSettings(
         if (value == 1u && IsServerSession()) {
           // Allow extended CONNECT semantics even before SETTINGS are acked, to
           // make things easier for clients.
-          headers_handler_.AllowConnect();
+          headers_handler_.SetAllowExtendedConnect();
         }
         break;
       case HEADER_TABLE_SIZE:

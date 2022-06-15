@@ -387,10 +387,9 @@ static void unpack(HCAContext *c, ChannelContext *ch,
         ch->base[i] = dequantizer_scaling_table[ch->scale_factors[i]] * quant_step_size[ch->scale[i]];
 }
 
-static int decode_frame(AVCodecContext *avctx, void *data,
+static int decode_frame(AVCodecContext *avctx, AVFrame *frame,
                         int *got_frame_ptr, AVPacket *avpkt)
 {
-    AVFrame *frame = data;
     HCAContext *c = avctx->priv_data;
     int ch, ret, packed_noise_level;
     GetBitContext *gb = &c->gb;
@@ -453,7 +452,7 @@ const FFCodec ff_hca_decoder = {
     .p.id           = AV_CODEC_ID_HCA,
     .priv_data_size = sizeof(HCAContext),
     .init           = decode_init,
-    .decode         = decode_frame,
+    FF_CODEC_DECODE_CB(decode_frame),
     .close          = decode_close,
     .p.capabilities = AV_CODEC_CAP_DR1,
     .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP,

@@ -37,7 +37,7 @@ g.test('shared_with_buffer')
       @group(0) @binding(0)
       var<storage, read_write> outputs : S;
 
-      @stage(compute) @workgroup_size(${wgsize[0]}, ${wgsize[1]}, ${wgsize[2]})
+      @compute @workgroup_size(${wgsize[0]}, ${wgsize[1]}, ${wgsize[2]})
       fn main(inputs : S) {
         if (inputs.group_id.x == ${targetGroup[0]}u &&
             inputs.group_id.y == ${targetGroup[1]}u &&
@@ -49,6 +49,7 @@ g.test('shared_with_buffer')
     `;
 
     const pipeline = t.device.createComputePipeline({
+      layout: 'auto',
       compute: {
         module: t.device.createShaderModule({ code: wgsl }),
         entryPoint: 'main',
@@ -128,12 +129,12 @@ g.test('shared_between_stages')
         vec2<f32>( 0.7, -0.7),
       );
 
-      @stage(vertex)
+      @vertex
       fn vert_main(@builtin(vertex_index) index : u32) -> Interface {
         return Interface(vec4<f32>(vertices[index], 0.0, 1.0), 1.0);
       }
 
-      @stage(fragment)
+      @fragment
       fn frag_main(inputs : Interface) -> @location(0) vec4<f32> {
         // Toggle red vs green based on the x position.
         var color = vec4<f32>(0.0, 0.0, 0.0, 1.0);
@@ -149,6 +150,7 @@ g.test('shared_between_stages')
     // Set up the render pipeline.
     const module = t.device.createShaderModule({ code: wgsl });
     const pipeline = t.device.createRenderPipeline({
+      layout: 'auto',
       vertex: {
         module,
         entryPoint: 'vert_main',
@@ -255,12 +257,12 @@ g.test('shared_with_non_entry_point_function')
         return out;
       }
 
-      @stage(vertex)
+      @vertex
       fn vert_main(inputs : Inputs) -> Outputs {
         return process(inputs);
       }
 
-      @stage(fragment)
+      @fragment
       fn frag_main(@location(0) color : vec4<f32>) -> @location(0) vec4<f32> {
         return color;
       }
@@ -269,6 +271,7 @@ g.test('shared_with_non_entry_point_function')
     // Set up the render pipeline.
     const module = t.device.createShaderModule({ code: wgsl });
     const pipeline = t.device.createRenderPipeline({
+      layout: 'auto',
       vertex: {
         module,
         entryPoint: 'vert_main',

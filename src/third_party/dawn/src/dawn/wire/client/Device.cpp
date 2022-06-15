@@ -67,6 +67,10 @@ Device::~Device() {
                 "Device destroyed before callback", request->userdata);
         }
     });
+
+    if (mQueue != nullptr) {
+        GetProcs().queueRelease(ToAPI(mQueue));
+    }
 }
 
 bool Device::GetLimits(WGPUSupportedLimits* limits) const {
@@ -196,7 +200,16 @@ WGPUBuffer Device::CreateBuffer(const WGPUBufferDescriptor* descriptor) {
 }
 
 WGPUBuffer Device::CreateErrorBuffer() {
-    return Buffer::CreateError(this);
+    WGPUBufferDescriptor fakeDescriptor = {};
+    return Buffer::CreateError(this, &fakeDescriptor);
+}
+
+WGPUQuerySet Device::CreateQuerySet(const WGPUQuerySetDescriptor* descriptor) {
+    return QuerySet::Create(this, descriptor);
+}
+
+WGPUTexture Device::CreateTexture(const WGPUTextureDescriptor* descriptor) {
+    return Texture::Create(this, descriptor);
 }
 
 WGPUQueue Device::GetQueue() {

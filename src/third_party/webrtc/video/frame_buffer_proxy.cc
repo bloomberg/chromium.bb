@@ -23,6 +23,8 @@
 #include "api/video/video_content_type.h"
 #include "modules/video_coding/frame_buffer2.h"
 #include "modules/video_coding/frame_helpers.h"
+#include "modules/video_coding/timing/inter_frame_delay.h"
+#include "modules/video_coding/timing/jitter_estimator.h"
 #include "rtc_base/checks.h"
 #include "rtc_base/logging.h"
 #include "rtc_base/thread_annotations.h"
@@ -166,10 +168,10 @@ Timestamp ReceiveTime(const EncodedFrame& frame) {
   return *ts;
 }
 
-// Encapsulates use of the new frame buffer for use in VideoReceiveStream. This
-// behaves the same as the FrameBuffer2Proxy but uses frame_buffer instead.
-// Responsibilities from frame_buffer2, like stats, jitter and frame timing
-// accounting are moved into this pro
+// Encapsulates use of the new frame buffer for use in
+// VideoReceiveStreamInterface. This behaves the same as the FrameBuffer2Proxy
+// but uses frame_buffer instead. Responsibilities from frame_buffer2, like
+// stats, jitter and frame timing accounting are moved into this pro
 class FrameBuffer3Proxy : public FrameBufferProxy {
  public:
   FrameBuffer3Proxy(
@@ -499,10 +501,8 @@ class FrameBuffer3Proxy : public FrameBufferProxy {
   const std::unique_ptr<FrameDecodeScheduler> frame_decode_scheduler_
       RTC_GUARDED_BY(&worker_sequence_checker_);
 
-  VCMJitterEstimator jitter_estimator_
-      RTC_GUARDED_BY(&worker_sequence_checker_);
-  VCMInterFrameDelay inter_frame_delay_
-      RTC_GUARDED_BY(&worker_sequence_checker_);
+  JitterEstimator jitter_estimator_ RTC_GUARDED_BY(&worker_sequence_checker_);
+  InterFrameDelay inter_frame_delay_ RTC_GUARDED_BY(&worker_sequence_checker_);
   bool keyframe_required_ RTC_GUARDED_BY(&worker_sequence_checker_) = false;
   std::unique_ptr<FrameBuffer> buffer_
       RTC_GUARDED_BY(&worker_sequence_checker_);

@@ -113,7 +113,7 @@ class TableBuilder {
         indentLevel: row[0],
         extraCell: row[1],
         contents: {kind: 'TableHeader', header: prefix},
-        tooltip: completePrefix
+        tooltip: completePrefix,
       });
 
       for (let i = 0; i < record.length; i++) {
@@ -145,7 +145,7 @@ class TableBuilder {
             indentLevel: row[0],
             extraCell: row[1],
             contents: {kind: 'TableHeader', header: prefix},
-            tooltip: completePrefix
+            tooltip: completePrefix,
           });
           this.stack.push('whitespace');
         }
@@ -163,7 +163,7 @@ class TableBuilder {
         indentLevel: row[0],
         extraCell: row[1],
         contents: {kind: 'KVPair', key: prefix, value: record},
-        tooltip: completePrefix
+        tooltip: completePrefix,
       });
     }
   }
@@ -174,18 +174,18 @@ export class ChromeSliceDetailsPanel extends SlicePanel {
     const sliceInfo = globals.sliceDetails;
     if (sliceInfo.ts !== undefined && sliceInfo.dur !== undefined &&
         sliceInfo.name !== undefined) {
-      const builder = new TableBuilder();
-      builder.add('Name', sliceInfo.name);
-      builder.add(
+      const defaultBuilder = new TableBuilder();
+      defaultBuilder.add('Name', sliceInfo.name);
+      defaultBuilder.add(
           'Category',
           !sliceInfo.category || sliceInfo.category === '[NULL]' ?
               'N/A' :
               sliceInfo.category);
-      builder.add('Start time', timeToCode(sliceInfo.ts));
+      defaultBuilder.add('Start time', timeToCode(sliceInfo.ts));
       if (sliceInfo.absTime !== undefined) {
-        builder.add('Absolute Time', sliceInfo.absTime);
+        defaultBuilder.add('Absolute Time', sliceInfo.absTime);
       }
-      builder.add(
+      defaultBuilder.add(
           'Duration', this.computeDuration(sliceInfo.ts, sliceInfo.dur));
       if (sliceInfo.threadTs !== undefined &&
           sliceInfo.threadDur !== undefined) {
@@ -194,7 +194,7 @@ export class ChromeSliceDetailsPanel extends SlicePanel {
         const threadDurFractionSuffix = sliceInfo.threadDur === -1 ?
             '' :
             ` (${(sliceInfo.threadDur / sliceInfo.dur * 100).toFixed(2)}%)`;
-        builder.add(
+        defaultBuilder.add(
             'Thread duration',
             this.computeDuration(sliceInfo.threadTs, sliceInfo.threadDur) +
                 threadDurFractionSuffix);
@@ -202,22 +202,26 @@ export class ChromeSliceDetailsPanel extends SlicePanel {
 
       for (const [key, value] of this.getProcessThreadDetails(sliceInfo)) {
         if (value !== undefined) {
-          builder.add(key, value);
+          defaultBuilder.add(key, value);
         }
       }
 
-      builder.add(
+      defaultBuilder.add(
           'Slice ID', sliceInfo.id ? sliceInfo.id.toString() : 'Unknown');
       if (sliceInfo.description) {
         for (const [key, value] of sliceInfo.description) {
-          builder.add(key, value);
+          defaultBuilder.add(key, value);
         }
       }
-      this.fillArgs(sliceInfo, builder);
+      const argsBuilder = new TableBuilder();
+      this.fillArgs(sliceInfo, argsBuilder);
       return m(
           '.details-panel',
           m('.details-panel-heading', m('h2', `Slice Details`)),
-          m('.details-table', this.renderTable(builder)));
+          m('.details-table-multicolumn', [
+            m('table', this.renderTable(defaultBuilder)),
+            m('table', [m('h3', 'Arguments'), this.renderTable(argsBuilder)]),
+          ]));
     } else {
       return m(
           '.details-panel',
@@ -301,7 +305,7 @@ export class ChromeSliceDetailsPanel extends SlicePanel {
                       // scrolling to ts.
                       verticalScrollToTrack(trackId, true);
                     },
-                    title: 'Go to destination slice'
+                    title: 'Go to destination slice',
                   },
                   'call_made')));
         }

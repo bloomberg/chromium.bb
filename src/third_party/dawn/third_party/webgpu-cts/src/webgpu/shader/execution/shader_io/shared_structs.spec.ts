@@ -49,6 +49,7 @@ g.test('shared_with_buffer')
     `;
 
     const pipeline = t.device.createComputePipeline({
+      layout: 'auto',
       compute: {
         module: t.device.createShaderModule({ code: wgsl }),
         entryPoint: 'main',
@@ -149,6 +150,7 @@ g.test('shared_between_stages')
     // Set up the render pipeline.
     const module = t.device.createShaderModule({ code: wgsl });
     const pipeline = t.device.createRenderPipeline({
+      layout: 'auto',
       vertex: {
         module,
         entryPoint: 'vert_main',
@@ -269,6 +271,7 @@ g.test('shared_with_non_entry_point_function')
     // Set up the render pipeline.
     const module = t.device.createShaderModule({ code: wgsl });
     const pipeline = t.device.createRenderPipeline({
+      layout: 'auto',
       vertex: {
         module,
         entryPoint: 'vert_main',

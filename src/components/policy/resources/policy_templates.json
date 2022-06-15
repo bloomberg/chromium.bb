@@ -144,6 +144,9 @@
 #   'default_for_managed_devices_doc_only', which documents an explicitly
 #   implemented default policy value for managed devices.
 #
+#   'default_policy_level' is used to override mandatory policy level for the
+#   'default_for_enterprise_users' with the recommended level.
+#
 #   'items' is used to outline the behavior of each state the policy can take.
 #   This field is only used for policies of type 'main', 'int-enum', or
 #   'string-enum'. For 'main' policies, it describes how the policy behaves when
@@ -287,9 +290,9 @@
 #   For managed users on ChromeOS (i.e. users receiving user policy from the
 #   cloud), if the optional key 'default_for_enterprise_users' is set, its value
 #   is applied as mandatory policy unless a different setting is received from
-#   the cloud. This default value handling is automatically enforced by the
-#   policy stack when filling the PolicyMap (specifically, by the generated
-#   function SetEnterpriseUsersDefaults).
+#   the cloud or `default_policy_level` is set. This default value handling is
+#   automatically enforced by the policy stack when filling the PolicyMap
+#   (specifically, by the generated function SetEnterpriseUsersDefaults).
 #
 # Enterprise defaults for device policy:
 #   The optional key 'default_for_managed_devices_doc_only' can be used to
@@ -9285,7 +9288,7 @@
           'primary_account_signin',
         ]
       },
-      'future_on': ['chrome_os'],
+      'supported_on': ['chrome_os:103-'],
       'features': {
         # The case where a user is already signed in as a secondary account and the policy is dynamically refreshed to not allow secondary sign-ins cannot be handled right now. Hence this is not dynamic.
         'dynamic_refresh': False,
@@ -19326,7 +19329,7 @@
     },
     {
       'name': 'WifiSyncAndroidAllowed',
-      'owners': ['jonmann@chromium.org', 'cvandermerwe@google.com'],
+      'owners': ['jonmann@chromium.org', 'chromeos-cross-device-eng@google.com'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome_os:89-'],
@@ -20010,7 +20013,9 @@
 
       Setting the policy to Disabled or leaving it unset means platform policy takes precedence if it conflicts with cloud policy.
 
-      This mandatory policy affects machine scope cloud policies.''',
+      This mandatory policy affects machine scope cloud policies.
+
+      This policy is only available on <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>; it has no effect on <ph name="GOOGLE_UPDATE_NAME">Google Update</ph>.''',
     },
     {
       'name': 'CloudUserPolicyOverridesCloudMachinePolicy',
@@ -24547,8 +24552,17 @@
       'example_value': {'reboot_time' : {'hour': 22, 'minute': 30}, 'frequency': 'WEEKLY', 'day_of_week': 'TUESDAY', 'day_of_month': 11},
       'tags': [],
       'id': 862,
-      'caption': '''Set custom schedule to reboot kiosk devices''',
-      'desc': '''Allows setting a custom schedule to reboot devices. The policy currently applies only to devices which have enabled auto-launch app in the Kiosk session. Once set to True, the device will reboot to the schedule. The policy must be removed to cancel any more scheduled reboots.'''
+      'caption': '''Set custom schedule to reboot devices''',
+      'desc': '''Allows setting a custom schedule to reboot devices. Once set to True, the device will reboot to the schedule. The policy must be removed to cancel any more scheduled reboots.
+
+      In user sessions and guest sessions, the following applies:
+
+        * The users are notified that the restart will occur 1 hour before the scheduled time. They have an option to restart then or wait for the scheduled reboot. The scheduled reboot cannot be deferred.
+
+        * There is a 1 hour grace period after the device is booted. Scheduled reboots are skipped during this period and rescheduled for the next day, week, or month, depending on the setting.
+
+      In kiosk sessions, there is no grace period and no notifications about the reboot.
+'''
     },
     {
       'name': 'KerberosEnabled',
@@ -25564,6 +25578,37 @@
       'desc': '''Setting the policy to Enabled or leaving it unset turns Renderer Code Integrity on.
 
       Setting the policy to Disabled has a detrimental effect on <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s security and stability as unknown and potentially hostile code can load inside <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s renderer processes. Only turn off the policy if there are compatibility issues with third-party software that must run inside <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s renderer processes.
+
+      Note: Read more about Process mitigation policies ( https://chromium.googlesource.com/chromium/src/+/HEAD/docs/design/sandbox.md#Process-mitigation-policies ).''',
+    },
+    {
+      'name': 'RendererAppContainerEnabled',
+      'owners': ['wfh@chromium.org', 'adetaylor@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.win:104-'],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': False,
+      },
+      'default': True,
+      'example_value': False,
+      'id': 987,
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable the Renderer App Container sandbox',
+        },
+        {
+          'value': False,
+          'caption': 'Disable the Renderer App Container sandbox',
+        },
+      ],
+      'caption': '''Enable Renderer App Container''',
+      'tags': ['system-security'],
+      'desc': '''Setting the policy to Enabled or leaving it unset means Renderer App Container configuration will be enabled on supported platforms.
+
+      Setting the policy to Disabled has a detrimental effect on the security and stability of <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> as it will weaken the sandbox that renderer processes use. Only turn off the policy if there are compatibility issues with third-party software that must run inside renderer processes.
 
       Note: Read more about Process mitigation policies ( https://chromium.googlesource.com/chromium/src/+/HEAD/docs/design/sandbox.md#Process-mitigation-policies ).''',
     },
@@ -29551,7 +29596,7 @@ When this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google ChromeOS</ex></
       'owners': ['mattm@chromium.org'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'future_on': ['chrome.win', 'chrome.mac', 'chrome.linux'],
+      'supported_on': ['chrome.win:104-', 'chrome.mac:104-', 'chrome.linux:104-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -29904,7 +29949,7 @@ When this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google ChromeOS</ex></
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'default': True,
-      'supported_on': ['chrome.*:97-103', 'chrome_os:97-103', 'android:97-103'],
+      'supported_on': ['chrome.*:97-', 'chrome_os:97-', 'android:97-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -29925,13 +29970,13 @@ When this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google ChromeOS</ex></
       'tags': [],
       'desc': '''Configures support of CORS non-wildcard request headers.
 
-      <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 97 introduces support for CORS non-wildcard request headers. When scripts make a cross-origin network request via fetch() and XMLHttpRequest with a script-added Authorization header, the header must be explicitly allowed by the Access-Control-Allow-Headers header in the CORS preflight response. "Explicitly" here means that the wild card symbol "*" doesn't cover the Authorization header. See <ph name="CORS_NON_WILDCARD_REQUEST_HEADERS_FEATURE_URL">https://www.chromest atus.com/feature/5768642492891136</ph> for more detail.
+      <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 97 introduces support for CORS non-wildcard request headers. When scripts make a cross-origin network request via fetch() and XMLHttpRequest with a script-added Authorization header, the header must be explicitly allowed by the Access-Control-Allow-Headers header in the CORS preflight response. "Explicitly" here means that the wild card symbol "*" doesn't cover the Authorization header. See <ph name="CORS_NON_WILDCARD_REQUEST_HEADERS_FEATURE_URL">https://www.chromestatus.com/feature/5768642492891136</ph> for more detail.
 
       If this policy is not set, or set to True, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will support the CORS non-wildcard request headers and behave as described above.
 
       When this policy is set to False, chrome will allow the wildcard symbol ("*") in the Access-Control-Allow-Headers header in the CORS preflight response to cover the Authorization header.
 
-      This Enterprise policy is temporary; it's intended to be removed after <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 103.''',
+      This Enterprise policy is temporary; it's intended to be removed in the future.''',
     },
     {
       'name': 'DeviceI18nShortcutsEnabled',
@@ -30515,7 +30560,7 @@ When this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google ChromeOS</ex></
       'schema': { 'type': 'boolean' },
       'features' : {
         'dynamic_refresh': False,
-        'per_profile': False,
+        'per_profile': True,
       },
       'items': [
         {
@@ -30539,8 +30584,7 @@ When this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google ChromeOS</ex></
 
                   When this policy is set to Disabled, the First-Party Sets feature is disabled.
 
-                  The state of the First-Party Sets feature determines whether Chrome retrieves the list of First-Party Sets.
-                  It also controls whether Chrome supports First-Party Sets related features (e.g. the SameParty cookie attribute).''',
+                  It controls whether Chrome supports First-Party Sets related features (e.g. the SameParty cookie attribute).''',
     },
     {
       'name': 'FirstPartySetsOverrides',
@@ -30914,6 +30958,52 @@ When this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google ChromeOS</ex></
       If this policy is set to Disabled, a warning dialog is not shown when the user is attempting to quit.'''
     },
     {
+      'name': 'OsColorMode',
+      'owners': ['jaflis@google.com', 'cros-oobe@google.com', 'chromeos-wmp@google.com'],
+      'type': 'string-enum',
+      'schema': {
+        'type': 'string',
+        'enum': [
+          'light',
+          'dark',
+          'auto',
+        ],
+      },
+      'items': [
+        {
+          'name': 'light',
+          'value': 'light',
+          'caption': '''Use the Light theme''',
+        },
+        {
+          'name': 'dark',
+          'value': 'dark',
+          'caption': '''Use the Dark theme''',
+        },
+        {
+          'name': 'auto',
+          'value': 'auto',
+          'caption': '''Use the Auto mode''',
+        },
+      ],
+      'supported_on': ['chrome_os:104-'],
+      'features': {
+        'can_be_recommended': True,
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'default': 'light',
+      'default_for_enterprise_users': 'light',
+      'default_policy_level': 'recommended',
+      'example_value': 'light',
+      'id': 986,
+      'caption': '''ChromeOS color mode''',
+      'tags': [],
+      'desc': '''Controls the theme used to render UI during OOBE and in session (dark/light/auto).
+      The auto mode automatically switches between dark and light themes on sunrise and sunset.
+      This policy should be recommended, giving users the possibility to change the theme in system settings.''',
+    },
+    {
       'name': 'InsightsExtensionEnabled',
       'owners': ['cros-reporting-team@google.com', 'vshenvi@google.com'],
       'type': 'main',
@@ -31046,7 +31136,47 @@ When this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google ChromeOS</ex></
       If the policy is Enabled or not set, visited origins will be reported to the OS, and origins that have been blocked in Screen Time settings will display a blocking screen.
       If the policy is Disabled, visited origins will not be reported to the OS, and origins that have been blocked in Screen Time settings will be accessible.''',
     },
+    {
+      'name': 'UnthrottledNestedTimeoutEnabled',
+      'owners': ['file://third_party/blink/renderer/core/frame/OWNERS', 'etiennep@chromium.org', 'shaseley@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:104-106', 'chrome.*:104-106', 'android:104-106'],
+      'features': {
+        'per_profile': True,
+        'dynamic_refresh': False,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': '''Javascript setTimeout() will not be clamped until a higher nesting threshold.''',
+        },
+        {
+          'value': False,
+          'caption': '''Javascript setTimeout() will be clamped after a normal nesting threshold.''',
+        },
+        {
+          'value': None,
+          'caption': '''Default behavior for setTimeout() function nested clamp.''',
+        },
+      ],
+      'default': None,
+      'example_value': True,
+      'id': 988,
+      'caption': '''Control the nesting threshold before which Javascript setTimeout() function start being clamped.''',
+      'tags': [],
+      'desc': '''setTimeout(…, 0) is commonly used to break down long Javascript tasks.
+          When the policy is set to Enabled, setTimeouts and setIntervals with an interval smaller than 4ms are not clamped as aggressively.
+          This improves short horizon performance, but websites abusing the API will still eventually have their setTimeouts clamped.
 
+          This may change task ordering on a web page, leading to unexpected behavior on sites that are dependent on a certain ordering in some way.
+          It also may affect sites with a lot of setTimeout() with a timeout of 0ms usage, e.g. increasing CPU load.
+
+          For users where this policy is unset, Chrome will roll out the change gradually on the stable channel.
+
+          This is a temporary policy that is planned be removed in Chrome 105. This deadline may be extended if there is a need for it among enterprises.
+          ''',
+    },
   ],
   'messages': {
     # Messages that are not associated to any policies.
@@ -32053,6 +32183,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   'placeholders': [],
   'deleted_policy_ids': [114, 115, 204, 205, 206, 341, 412, 476, 544, 546, 562, 569, 578, 583, 585, 586, 587, 588, 589, 590, 591, 600, 668, 669, 872],
   'deleted_atomic_policy_group_ids': [19],
-  'highest_id_currently_used': 985,
+  'highest_id_currently_used': 988,
   'highest_atomic_group_id_currently_used': 43
 }

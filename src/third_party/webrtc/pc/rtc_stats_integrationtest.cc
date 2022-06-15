@@ -917,22 +917,32 @@ class RTCStatsReportVerifier {
       verifier.TestMemberIsNonNegative<double>(
           inbound_stream.total_processing_delay);
       verifier.TestMemberIsNonNegative<double>(
+          inbound_stream.total_assembly_time);
+      verifier.TestMemberIsDefined(
+          inbound_stream.frames_assembled_from_multiple_packets);
+      verifier.TestMemberIsNonNegative<double>(
           inbound_stream.total_inter_frame_delay);
       verifier.TestMemberIsNonNegative<double>(
           inbound_stream.total_squared_inter_frame_delay);
       // The integration test is not set up to test screen share; don't require
       // this to be present.
       verifier.MarkMemberTested(inbound_stream.content_type, true);
+      verifier.TestMemberIsNonNegative<double>(
+          inbound_stream.min_playout_delay);
     } else {
       verifier.TestMemberIsUndefined(inbound_stream.frames_decoded);
       verifier.TestMemberIsUndefined(inbound_stream.key_frames_decoded);
       verifier.TestMemberIsUndefined(inbound_stream.frames_dropped);
       verifier.TestMemberIsUndefined(inbound_stream.total_decode_time);
       verifier.TestMemberIsUndefined(inbound_stream.total_processing_delay);
+      verifier.TestMemberIsUndefined(inbound_stream.total_assembly_time);
+      verifier.TestMemberIsUndefined(
+          inbound_stream.frames_assembled_from_multiple_packets);
       verifier.TestMemberIsUndefined(inbound_stream.total_inter_frame_delay);
       verifier.TestMemberIsUndefined(
           inbound_stream.total_squared_inter_frame_delay);
       verifier.TestMemberIsUndefined(inbound_stream.content_type);
+      verifier.TestMemberIsUndefined(inbound_stream.min_playout_delay);
     }
     return verifier.ExpectAllMembersSuccessfullyTested();
   }
@@ -1162,7 +1172,7 @@ TEST_F(RTCStatsIntegrationTest, GetStatsFromCaller) {
 
 #if RTC_TRACE_EVENTS_ENABLED
   EXPECT_EQ(report->ToJson(), RTCStatsReportTraceListener::last_trace());
-  #endif
+#endif
 }
 
 TEST_F(RTCStatsIntegrationTest, GetStatsFromCallee) {
@@ -1173,7 +1183,7 @@ TEST_F(RTCStatsIntegrationTest, GetStatsFromCallee) {
 
 #if RTC_TRACE_EVENTS_ENABLED
   EXPECT_EQ(report->ToJson(), RTCStatsReportTraceListener::last_trace());
-  #endif
+#endif
 }
 
 // These tests exercise the integration of the stats selection algorithm inside
@@ -1253,10 +1263,10 @@ TEST_F(RTCStatsIntegrationTest,
   // Any pending stats requests should have completed in the act of destroying
   // the peer connection.
   ASSERT_TRUE(stats_obtainer->report());
-  #if RTC_TRACE_EVENTS_ENABLED
+#if RTC_TRACE_EVENTS_ENABLED
   EXPECT_EQ(stats_obtainer->report()->ToJson(),
             RTCStatsReportTraceListener::last_trace());
-  #endif
+#endif
 }
 
 TEST_F(RTCStatsIntegrationTest, GetsStatsWhileClosingPeerConnection) {
@@ -1268,10 +1278,10 @@ TEST_F(RTCStatsIntegrationTest, GetsStatsWhileClosingPeerConnection) {
   caller_->pc()->Close();
 
   ASSERT_TRUE(stats_obtainer->report());
-  #if RTC_TRACE_EVENTS_ENABLED
+#if RTC_TRACE_EVENTS_ENABLED
   EXPECT_EQ(stats_obtainer->report()->ToJson(),
             RTCStatsReportTraceListener::last_trace());
-  #endif
+#endif
 }
 
 // GetStatsReferencedIds() is optimized to recognize what is or isn't a

@@ -39,6 +39,7 @@ const ExtensionInfoMap &GetExtensionInfoMap()
 
         // GLES 2.0 extension strings
         // --------------------------
+        map["GL_EXT_base_instance"] = enableableExtension(&Extensions::baseInstanceEXT);
         map["GL_KHR_blend_equation_advanced"] = esOnlyExtension(&Extensions::blendEquationAdvancedKHR);
         map["GL_EXT_blend_func_extended"] = enableableExtension(&Extensions::blendFuncExtendedEXT);
         map["GL_EXT_blend_minmax"] = enableableExtension(&Extensions::blendMinmaxEXT);
@@ -225,6 +226,7 @@ const ExtensionInfoMap &GetExtensionInfoMap()
         map["GL_ANGLE_program_binary"] = esOnlyExtension(&Extensions::programBinaryANGLE);
         map["GL_ANGLE_program_cache_control"] = esOnlyExtension(&Extensions::programCacheControlANGLE);
         map["GL_ANGLE_provoking_vertex"] = enableableExtension(&Extensions::provokingVertexANGLE);
+        map["GL_ANGLE_read_only_depth_stencil_feedback_loops"] = enableableExtension(&Extensions::readOnlyDepthStencilFeedbackLoopsANGLE);
         map["GL_ANGLE_relaxed_vertex_attribute_type"] = esOnlyExtension(&Extensions::relaxedVertexAttributeTypeANGLE);
         map["GL_ANGLE_request_extension"] = esOnlyExtension(&Extensions::requestExtensionANGLE);
         map["GL_ANGLE_rgbx_internal_format"] = esOnlyExtension(&Extensions::rgbxInternalFormatANGLE);

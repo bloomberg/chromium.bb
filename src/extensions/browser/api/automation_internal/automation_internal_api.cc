@@ -77,7 +77,7 @@ class QuerySelectorHandler : public content::WebContentsObserver {
       : content::WebContentsObserver(web_contents),
         request_id_(request_id),
         callback_(std::move(callback)) {
-    content::RenderFrameHost* rfh = web_contents->GetMainFrame();
+    content::RenderFrameHost* rfh = web_contents->GetPrimaryMainFrame();
 
     rfh->Send(new ExtensionMsg_AutomationQuerySelector(
         rfh->GetRoutingID(), request_id, acc_obj_id, query));
@@ -300,7 +300,7 @@ class AutomationWebContentsObserver
             *web_contents),
         browser_context_(web_contents->GetBrowserContext()) {
     if (web_contents->IsCurrentlyAudible()) {
-      content::RenderFrameHost* rfh = web_contents->GetMainFrame();
+      content::RenderFrameHost* rfh = web_contents->GetPrimaryMainFrame();
       if (!rfh)
         return;
 
@@ -354,7 +354,7 @@ ExtensionFunction::ResponseAction AutomationInternalEnableTabFunction::Run() {
     tab_id = automation_api_delegate->GetTabId(contents);
   }
 
-  content::RenderFrameHost* rfh = contents->GetMainFrame();
+  content::RenderFrameHost* rfh = contents->GetPrimaryMainFrame();
   if (!rfh)
     return RespondNow(Error("Could not enable accessibility for active tab"));
 
@@ -781,6 +781,21 @@ AutomationInternalEnableDesktopFunction::Run() {
   return RespondNow(
       ArgumentList(api::automation_internal::EnableDesktop::Results::Create(
           ax_tree_id.ToString())));
+#else
+  return RespondNow(Error("getDesktop is unsupported by this platform"));
+#endif  // defined(USE_AURA)
+}
+
+ExtensionFunction::ResponseAction
+AutomationInternalDisableDesktopFunction::Run() {
+#if defined(USE_AURA)
+  const AutomationInfo* automation_info = AutomationInfo::Get(extension());
+  if (!automation_info || !automation_info->desktop)
+    return RespondNow(Error("desktop permission must be requested"));
+
+  AutomationEventRouter::GetInstance()->UnregisterListenerWithDesktopPermission(
+      source_process_id());
+  return RespondNow(NoArguments());
 #else
   return RespondNow(Error("getDesktop is unsupported by this platform"));
 #endif  // defined(USE_AURA)

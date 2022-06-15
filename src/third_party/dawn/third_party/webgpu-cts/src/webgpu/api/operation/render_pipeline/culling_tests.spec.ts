@@ -112,6 +112,7 @@ TODO: check the contents of the depth and stencil outputs [2]
     // 2. The bottom-right one is clockwise (CW)
     pass.setPipeline(
       t.device.createRenderPipeline({
+        layout: 'auto',
         vertex: {
           module: t.device.createShaderModule({
             code: `

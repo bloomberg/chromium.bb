@@ -527,6 +527,7 @@ _error_suppressions = {}
 # The root directory used for deriving header guard CPP variable.
 # This is set by --root flag.
 _root = None
+_root_debug = False
 
 # The project root directory. Used for deriving header guard CPP variable.
 # This is set by --project_root flag. Must be an absolute path.
@@ -1191,14 +1192,14 @@ def Error(filename, linenum, category, confidence, message):
   if _ShouldPrintError(category, confidence, linenum):
     _cpplint_state.IncrementErrorCount(category)
     if _cpplint_state.output_format == 'vs7':
-      sys.stderr.write('%s(%s):  %s  [%s] [%d]\n' % (
-          filename, linenum, message, category, confidence))
+      sys.stderr.write('%s(%s): (cpplint)  %s  [%s] [%d]\n' %
+                       (filename, linenum, message, category, confidence))
     elif _cpplint_state.output_format == 'eclipse':
-      sys.stderr.write('%s:%s: warning: %s  [%s] [%d]\n' % (
-          filename, linenum, message, category, confidence))
+      sys.stderr.write('%s:%s: (cpplint) warning: %s  [%s] [%d]\n' %
+                       (filename, linenum, message, category, confidence))
     else:
-      sys.stderr.write('%s:%s:  %s  [%s] [%d]\n' % (
-          filename, linenum, message, category, confidence))
+      sys.stderr.write('%s:%s:  (cpplint) %s  [%s] [%d]\n' %
+                       (filename, linenum, message, category, confidence))
 
 
 # Matches standard C++ escape sequences per 2.13.2.3 of the C++ standard.
@@ -1735,6 +1736,32 @@ def GetIndentLevel(line):
     return 0
 
 
+def PathSplitToList(path):
+  """Returns the path split into a list by the separator.
+
+  Args:
+    path: An absolute or relative path (e.g. '/a/b/c/' or '../a')
+
+  Returns:
+    A list of path components (e.g. ['a', 'b', 'c]).
+  """
+  lst = []
+  while True:
+    (head, tail) = os.path.split(path)
+    if head == path:  # absolute paths end
+      lst.append(head)
+      break
+    if tail == path:  # relative paths end
+      lst.append(tail)
+      break
+
+    path = head
+    lst.append(tail)
+
+  lst.reverse()
+  return lst
+
+
 def GetHeaderGuardCPPVariable(filename):
   """Returns the CPP variable that should be used as a header guard.
 
@@ -1756,8 +1783,59 @@ def GetHeaderGuardCPPVariable(filename):
 
   fileinfo = FileInfo(filename)
   file_path_from_root = fileinfo.RepositoryName()
-  if _root:
-    file_path_from_root = re.sub('^' + _root + os.sep, '', file_path_from_root)
+
+  def FixupPathFromRoot():
+    if _root_debug:
+      sys.stderr.write("\n_root fixup, _root = '%s', repository name = '%s'\n"
+          % (_root, fileinfo.RepositoryName()))
+
+    # Process the file path with the --root flag if it was set.
+    if not _root:
+      if _root_debug:
+        sys.stderr.write("_root unspecified\n")
+      return file_path_from_root
+
+    def StripListPrefix(lst, prefix):
+      # f(['x', 'y'], ['w, z']) -> None  (not a valid prefix)
+      if lst[:len(prefix)] != prefix:
+        return None
+      # f(['a, 'b', 'c', 'd'], ['a', 'b']) -> ['c', 'd']
+      return lst[(len(prefix)):]
+
+    # root behavior:
+    #   --root=subdir , lstrips subdir from the header guard
+    maybe_path = StripListPrefix(PathSplitToList(file_path_from_root),
+                                 PathSplitToList(_root))
+
+    if _root_debug:
+      sys.stderr.write(("_root lstrip (maybe_path=%s, file_path_from_root=%s," +
+          " _root=%s)\n") % (maybe_path, file_path_from_root, _root))
+
+    if maybe_path:
+      return os.path.join(*maybe_path)
+
+    #   --root=.. , will prepend the outer directory to the header guard
+    full_path = fileinfo.FullName()
+    # adapt slashes for windows
+    root_abspath = os.path.abspath(_root).replace('\\', '/')
+
+    maybe_path = StripListPrefix(PathSplitToList(full_path),
+                                 PathSplitToList(root_abspath))
+
+    if _root_debug:
+      sys.stderr.write(("_root prepend (maybe_path=%s, full_path=%s, " +
+          "root_abspath=%s)\n") % (maybe_path, full_path, root_abspath))
+
+    if maybe_path:
+      return os.path.join(*maybe_path)
+
+    if _root_debug:
+      sys.stderr.write("_root ignore, returning %s\n" % (file_path_from_root))
+
+    #   --root=FAKE_DIR is ignored
+    return file_path_from_root
+
+  file_path_from_root = FixupPathFromRoot()
   return re.sub(r'[^a-zA-Z0-9]', '_', file_path_from_root).upper() + '_'
 
 
@@ -2832,7 +2910,7 @@ def CheckSpacingForFunctionCall(filename, clean_lines, linenum, error):
   # first see if we should be looking inside such an expression for a
   # function call, to which we can apply more strict standards.
   fncall = line    # if there's no control flow construct, look at whole line
-  for pattern in (r'\bif\s*\((.*)\)\s*{',
+  for pattern in (r'\bif\s*(?:constexpr\s*)?\((.*)\)\s*{',
                   r'\bfor\s*\((.*)\)\s*{',
                   r'\bwhile\s*\((.*)\)\s*[{;]',
                   r'\bswitch\s*\((.*)\)\s*{'):
@@ -3653,8 +3731,8 @@ def CheckBraces(filename, clean_lines, linenum, error):
 
   # If braces come on one side of an else, they should be on both.
   # However, we have to worry about "else if" that spans multiple lines!
-  if Search(r'else if\s*\(', line):       # could be multi-line if
-    brace_on_left = bool(Search(r'}\s*else if\s*\(', line))
+  if Search(r'else if\s*(?:constexpr\s*)?\(', line):  # could be multi-line if
+    brace_on_left = bool(Search(r'}\s*else if\s*(?:constexpr\s*)?\(', line))
     # find the ( after the if
     pos = line.find('else if')
     pos = line.find('(', pos)
@@ -3685,11 +3763,11 @@ def CheckBraces(filename, clean_lines, linenum, error):
   # its line, and the line after that should have an indent level equal to or
   # lower than the if. We also check for ambiguous if/else nesting without
   # braces.
-  if_else_match = Search(r'\b(if\s*\(|else\b)', line)
+  if_else_match = Search(r'\b(if\s*(?:constexpr\s*)?\(|else\b)', line)
   if if_else_match and not Match(r'\s*#', line):
     if_indent = GetIndentLevel(line)
     endline, endlinenum, endpos = line, linenum, if_else_match.end()
-    if_match = Search(r'\bif\s*\(', line)
+    if_match = Search(r'\bif\s*(?:constexpr\s*)?\(', line)
     if if_match:
       # This could be a multiline if condition, so find the end first.
       pos = if_match.end() - 1
@@ -4620,7 +4698,7 @@ def CheckLanguage(filename, clean_lines, linenum, file_extension,
 
   # Check for suspicious usage of "if" like
   # } if (a == b) {
-  if Search(r'\}\s*if\s*\(', line):
+  if Search(r'\}\s*if\s*(?:constexpr\s*)?\(', line):
     error(filename, linenum, 'readability/braces', 4,
           'Did you mean "else if"? If not, start a new line for "if".')
 

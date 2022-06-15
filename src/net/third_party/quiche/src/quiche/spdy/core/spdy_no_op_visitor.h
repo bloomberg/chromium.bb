@@ -46,15 +46,17 @@ class QUICHE_EXPORT_PRIVATE SpdyNoOpVisitor
   void OnSettingsAck() override {}
   void OnGoAway(SpdyStreamId /*last_accepted_stream_id*/,
                 SpdyErrorCode /*error_code*/) override {}
-  void OnHeaders(SpdyStreamId /*stream_id*/, bool /*has_priority*/,
-                 int /*weight*/, SpdyStreamId /*parent_stream_id*/,
-                 bool /*exclusive*/, bool /*fin*/, bool /*end*/) override {}
+  void OnHeaders(SpdyStreamId /*stream_id*/, size_t /*payload_length*/,
+                 bool /*has_priority*/, int /*weight*/,
+                 SpdyStreamId /*parent_stream_id*/, bool /*exclusive*/,
+                 bool /*fin*/, bool /*end*/) override {}
   void OnWindowUpdate(SpdyStreamId /*stream_id*/,
                       int /*delta_window_size*/) override {}
   void OnPushPromise(SpdyStreamId /*stream_id*/,
                      SpdyStreamId /*promised_stream_id*/,
                      bool /*end*/) override {}
-  void OnContinuation(SpdyStreamId /*stream_id*/, bool /*end*/) override {}
+  void OnContinuation(SpdyStreamId /*stream_id*/, size_t /*payload_size*/,
+                      bool /*end*/) override {}
   void OnAltSvc(SpdyStreamId /*stream_id*/, absl::string_view /*origin*/,
                 const SpdyAltSvcWireFormat::AlternativeServiceVector&
                 /*altsvc_vector*/) override {}

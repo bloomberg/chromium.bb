@@ -741,11 +741,10 @@ static void frame_erasure(EVRCContext *e, float *samples)
     }
 }
 
-static int evrc_decode_frame(AVCodecContext *avctx, void *data,
+static int evrc_decode_frame(AVCodecContext *avctx, AVFrame *frame,
                              int *got_frame_ptr, AVPacket *avpkt)
 {
     const uint8_t *buf = avpkt->data;
-    AVFrame *frame     = data;
     EVRCContext *e     = avctx->priv_data;
     int buf_size       = avpkt->size;
     float ilspf[FILTER_ORDER], ilpc[FILTER_ORDER], idelay[NB_SUBFRAMES];
@@ -936,7 +935,7 @@ const FFCodec ff_evrc_decoder = {
     .p.type         = AVMEDIA_TYPE_AUDIO,
     .p.id           = AV_CODEC_ID_EVRC,
     .init           = evrc_decode_init,
-    .decode         = evrc_decode_frame,
+    FF_CODEC_DECODE_CB(evrc_decode_frame),
     .p.capabilities = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_CHANNEL_CONF,
     .priv_data_size = sizeof(EVRCContext),
     .p.priv_class   = &evrcdec_class,

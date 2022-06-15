@@ -1856,6 +1856,7 @@ False로 설정하면 개인정보 보호 화면은 항상 사용 중지됩니�
 
       정책을 설정하지 않으면 <ph name="ASK_GEOLOCATION_POLICY_NAME" /> 정책이 적용되지만 사용자가 이 설정을 변경할 수 있습니다.</translation>
 <translation id="2922511125678964398">종속 포털 인증에서 프록시 설정을 무시하도록 허용</translation>
+<translation id="2926813071464307947">렌더러 앱 컨테이너 샌드박스 사용 안함</translation>
 <translation id="2931888116345994552">설정하지 않거나 사용 설정하면 <ph name="PRODUCT_NAME" />의 모든 구성요소에 구성요소 업데이트를 사용합니다.
 
       사용 안함으로 설정하면 구성요소 업데이트가 사용 중지됩니다. 하지만 일부 구성요소는 이 정책에서 제외됩니다. 예를 들어 실행 코드가 포함되지 않은 구성요소와 브라우저 보안에 중요한 구성요소 업데이트는 사용 중지되지 않습니다.
@@ -2297,6 +2298,11 @@ False로 설정하면 개인정보 보호 화면은 항상 사용 중지됩니�
           이 정책을 비어 있지 않은 문자열로 설정하면 해당 문자열이 <ph name="PRODUCT_NAME" /> 전송 대상의 이름으로 사용됩니다. 반면에 비어 있는 문자열로 설정하면 기기 이름이 전송 대상의 이름으로 사용됩니다. 이 정책을 설정하지 않으면 기기 이름이 전송 대상의 이름으로 사용되며, 기기 소유자(또는 기기를 관리하는 도메인의 사용자)가 이 이름을 변경할 수 있습니다. 이름의 길이는 영문 24자로 제한됩니다.</translation>
 <translation id="3329063005964041553">웹 앱에서 File Handling API 차단</translation>
 <translation id="3329401415394648069">U2F Security Key API 사용 허용</translation>
+<translation id="3329976499753286262">정책을 사용으로 설정하거나 설정하지 않으면 지원되는 플랫폼에서 렌더러 앱 컨테이너 구성이 사용 설정됩니다.
+
+      정책을 사용 안함으로 설정하면 <ph name="PRODUCT_NAME" />의 보안 및 안정성에 부정적인 영향을 미치게 됩니다. 렌더러 프로세스에서 사용하는 샌드박스가 취약해지기 때문입니다. 렌더러 프로세스 내에서 실행되어야 하는 서드 파티 소프트웨어에 호환성 문제가 발생하는 경우에만 정책을 사용 중지하세요.
+
+      참고: 프로세스 완화 정책(https://chromium.googlesource.com/chromium/src/+/HEAD/docs/design/sandbox.md#Process-mitigation-policies)에 관해 자세히 알아보세요.</translation>
 <translation id="3339271789059866414">시스템 프록시 서비스 이용 가능 여부 및 시스템 서비스에 대한 프록시 사용자 인증 정보를 구성합니다.
       정책이 설정되지 않은 경우 시스템 프록시 서비스를 사용할 수 없습니다.</translation>
 <translation id="3348799281602260763">사용 설정하면 WebRTC 동종 연결이 지원 중단된 버전의
@@ -3106,14 +3112,6 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
       기기가 관리되지 않거나 사용자가 1명인 경우 이 정책은 무시되고 항상 알림이 표시됩니다.
 
       관리 기기에 여러 개의 사용자 계정이 있으면 이 정책이 사용 설정되어 있는 경우에만 알림이 표시됩니다.</translation>
-<translation id="4293593564662654474">이 정책은 First-Party Sets 기능을 거부하기 위한 수단으로 제공됩니다.
-
-                  정책이 설정되지 않거나 사용으로 설정되면 First-Party Sets 기능이 사용 설정됩니다.
-
-                  정책이 사용 중지로 설정되면 First-Party Sets 기능이 사용 중지됩니다.
-
-                  First-Party Sets 기능의 상태가 Chrome에서 First-Party Sets 목록을 검색할지 결정하며
-                  Chrome에서 SamePart 쿠키 속성 등 First-Party Sets 관련 기능을 지원할지 여부도 제어합니다.</translation>
 <translation id="4311195029067684288">Full</translation>
 <translation id="4313767483634435271">기기에서 지정된 도크 MAC 주소</translation>
 <translation id="4314538398999793073">Kerberos 인증 시 CNAME 검색 사용 안함</translation>
@@ -3637,6 +3635,7 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 <translation id="4960597185231686653">터치 키보드에서 음성 입력을 지원할 수 있는지 나타내는 부울 플래그입니다.</translation>
 <translation id="4970046075219007744">웹 앱에서 사용자에게 File Handling API를 통해 파일 형식 액세스 권한을 요청하도록 허용</translation>
 <translation id="4970855112942626932">브라우저 로그인 사용 중지</translation>
+<translation id="4974091268178043378">ChromeOS 색상 모드</translation>
 <translation id="4976928720873547342">정책이 설정되면 지정된 모든 데이터 유형이 <ph name="CHROME_SYNC_NAME" />와 로밍 프로필 동기화 모두에서 제외됩니다. 이렇게 하면 로밍 프로필의 크기를 줄이거나 <ph name="CHROME_SYNC_NAME" /> 서버에 업로드되는 데이터의 유형을 제한하는 데 도움이 될 수 있습니다.
 
       정책의 현재 데이터 유형은 'bookmarks', ‘readingList’, 'preferences', 'passwords', 'autofill', 'themes', 'typedUrls', 'extensions', 'apps', 'tabs', 'wifiConfigurations'입니다. 이름은 대소문자를 구분합니다.</translation>
@@ -4217,6 +4216,7 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 시스템 알림을 사�
 <translation id="5625771176514429288">Chrome 앱이 이러한 플랫폼에서 실행됩니다.</translation>
 <translation id="5630352020869108293">마지막 세션 복원</translation>
 <translation id="5633871703004128675">캐럿 강조표시 접근성 기능 사용</translation>
+<translation id="5634032995857968056">렌더러 앱 컨테이너 샌드박스 사용</translation>
 <translation id="5639454129004500060">설정된 경우 정책에 데스크 템플릿 파일을 다운로드하기 위한 정보가 포함됩니다.  파일에 현재 사용자에게 프로비저닝할 데스크 템플릿이 포함됩니다.
       설정되지 않은 경우 사전 구성된 데스크 템플릿이 데스크 템플릿 목록에 포함되지 않습니다.  <ph name="DESK_TEMPLATES_ENABLED_POLICY_NAME" />
       정책이 참으로 설정되지 않은 경우 정책은 적용되지 않습니다.</translation>
@@ -4279,6 +4279,13 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 시스템 알림을 사�
 
           이 정책 값은 <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> 정책이 사용 설정된 경우에만 적용되며 다른 경우에는 적용되지 않습니다.</translation>
 <translation id="5697306356229823047">기기 사용자 보고</translation>
+<translation id="5698923148503075597">정책을 사용으로 설정하면 클라우드 정책과 플랫폼 정책이 충돌할 경우 클라우드 정책이 우선 적용됩니다.
+
+      정책을 사용 안함으로 설정하거나 설정하지 않으면 플랫폼 정책과 클라우드 정책이 충돌할 경우 플랫폼 정책이 우선 적용됩니다.
+
+      이 필수 정책은 머신 범위 클라우드 정책에 영향을 줍니다.
+
+      이 정책은 <ph name="PRODUCT_NAME" />에만 사용할 수 있으며 <ph name="GOOGLE_UPDATE_NAME" />에는 영향이 없습니다.</translation>
 <translation id="5699770471852263667">정책을 Enabled로 설정하면 <ph name="PRODUCT_NAME" />의 내부 PDF 뷰어를 사용 중지하고, PDF 파일을 다운로드 파일로 처리하며, 사용자가 기본 애플리케이션으로 PDF를 열 수 있습니다.
 
       정책을 Disabled로 설정하면 사용자가 PDF 플러그인을 사용 중지하지 않는 한 PDF 플러그인에서 PDF 파일을 엽니다.
@@ -4398,6 +4405,7 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 시스템 알림을 사�
 
       사용자가 이 설정을 변경할 수 없습니다.</translation>
 <translation id="5848438019586925019">키 쌍 생성을 위한 알고리즘입니다.</translation>
+<translation id="5851248808417680865">어두운 테마 사용</translation>
 <translation id="585270638818921943">사용자가 신뢰할 수 없는 출처의 Android 앱을 사용하는 것을 방지</translation>
 <translation id="5853547031212075792">사용자가 HTTPS 전용 모드를 사용 설정하도록 허용</translation>
 <translation id="5859344336338527083">정책을 설정하여 확장 프로그램, 앱, 테마를 설치할 수 있는 URL을 지정합니다. <ph name="PRODUCT_NAME" /> 21 이전에는 사용자가 *.crx 파일 링크를 클릭하면 <ph name="PRODUCT_NAME" />에서 몇 가지 경고 후 파일을 설치하도록 허용했습니다. 이후에는 파일을 다운로드하여 <ph name="PRODUCT_NAME" /> 설정 페이지로 드래그해야 합니다. 이 설정을 사용하면 특정 URL에서 더 간편한 기존의 설치 과정을 따를 수 있습니다.
@@ -4529,11 +4537,6 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 시스템 알림을 사�
       정책을 설정하면 사용자가 변경할 수 없습니다. 설정하지 않으면 머리글과 바닥글의 표시 여부를 사용자가 결정합니다.</translation>
 <translation id="5951418260805607969">디스크 공간이 부족할 때 알림 표시</translation>
 <translation id="5958746038080720143">WPAD(웹 프록시 자동 검색) 최적화 사용 설정</translation>
-<translation id="5959428851851090097">정책을 사용으로 설정하면 클라우드 정책과 플랫폼 정책이 충돌할 경우 클라우드 정책이 우선 적용됩니다.
-
-      정책을 사용 안함으로 설정하거나 설정하지 않으면 플랫폼 정책과 클라우드 정책이 충돌할 경우 플랫폼 정책이 우선 적용됩니다.
-
-      이 필수 정책은 머신 범위 클라우드 정책에 영향을 줍니다.</translation>
 <translation id="5961137303188584693">기기의 내장 NIC MAC 주소</translation>
 <translation id="5963752574792883406">포트 990(2022년 2월 1일까지 차단 해제될 수 있음)</translation>
 <translation id="5966615072639944554">원격 인증 API를 사용하도록 허용된 확장 프로그램입니다.</translation>
@@ -4574,6 +4577,7 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 시스템 알림을 사�
 
       <ph name="PRODUCT_NAME" />의 경우 이 정책은 기기가 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" />에 등록되어 있을 때만 적용됩니다.
       <ph name="PRODUCT_OS_NAME" />의 경우 이 정책이 항상 적용됩니다.</translation>
+<translation id="6019162469732742754">자동 모드 사용</translation>
 <translation id="6019606564278029236">원격 지원 세션에서 원격 사용자가 관리자 창과 상호작용할 수 있도록 허용</translation>
 <translation id="6022948604095165524">시작 시 동작</translation>
 <translation id="602318745029752898">텍스트 읽어주기의 향상된 네트워크 텍스트 음성 변환 음성 허용</translation>
@@ -5304,6 +5308,15 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 시스템 알림을 사�
 <translation id="6786666051053129545">Google 어시스턴트 Voice Match 흐름 사용 설정</translation>
 <translation id="6786747875388722282">확장 프로그램</translation>
 <translation id="6786967369487349613">로밍 프로필 디렉터리를 설정합니다.</translation>
+<translation id="6789319144568227749">와일드 카드가 아닌 CORS 요청 헤더 지원을 구성합니다.
+
+      <ph name="PRODUCT_NAME" /> 버전 97에서는 와일드 카드가 아닌 CORS 요청 헤더를 지원합니다. 스크립트에서 스크립트가 추가된 Authorization 헤더와 함께 fetch() 및 XMLHttpRequest를 사용하여 교차 출처 네트워크 요청을 하는 경우 CORS 프리플라이트 응답에서 Access-Control-Allow-Headers 헤더가 이 헤더를 명시적으로 허용해야 합니다. 여기서 "명시적으로"는 Authorization 헤더에 와일드 카드 기호 "*"를 사용할 수 없음을 의미합니다. <ph name="CORS_NON_WILDCARD_REQUEST_HEADERS_FEATURE_URL" />에서 자세한 내용을 참고하세요.
+
+      정책이 설정되지 않거나 True로 설정되면 <ph name="PRODUCT_NAME" />에서 와일드 카드가 아닌 CORS 요청 헤더를 지원하고 위 설명과 같이 동작합니다.
+
+      정책이 False로 설정되면 Chrome은 CORS 프리플라이트 응답의 Access-Control-Allow-Headers 헤더에서 와일드 카드 기호("*")를 Authorization 헤더에 사용할 수 있도록 허용합니다.
+
+      이 기업 정책은 일시적이며 향후 삭제됩니다.</translation>
 <translation id="6789422336869764846">정책을 사용 설정하거나 설정하지 않으면 컴퓨터가 부팅될 때 등록된 기기에서 기기의 개발자 스위치 상태를 보고합니다.
 
       정책을 사용 중지하면 등록된 기기에서 개발자 스위치 상태를 보고하지 않습니다.</translation>
@@ -5554,6 +5567,7 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 시스템 알림을 사�
 <translation id="7019805045859631636">Fast</translation>
 <translation id="7025332601572838001">CCT 첫 실행 시 서비스 약관 동작 구성</translation>
 <translation id="7026351325994257733"><ph name="PRODUCT_OS_NAME" /> 기기 및 연결된 Android 휴대전화 전체에서 Wi-Fi 네트워크 구성을 동기화하도록 허용합니다.</translation>
+<translation id="7027057540229843762">밝은 테마 사용</translation>
 <translation id="7027785306666625591"><ph name="PRODUCT_OS_NAME" />에서 전원 관리를 설정합니다.
 
       이 정책으로 사용자가 일정 시간 동안 유휴 상태일 때 <ph name="PRODUCT_OS_NAME" />에서 수행할 동작을 설정할 수 있습니다.</translation>
@@ -6552,15 +6566,6 @@ False로 설정하면 로그인 화면이 표시될 때 개인정보 보호 화�
       이 정책이 사용 중지로 설정되었거나 아예 설정되지 않은 경우 로그인하면 일반 프로필로 연결됩니다.</translation>
 <translation id="8151299379693359769">원격 증명을 토대로 추가 보안 확인을 사용 설정합니다(선택사항, 기본값: True).</translation>
 <translation id="8151490482515839285">데이터 유출 방지 보고 사용</translation>
-<translation id="8151949408479239790">와일드카드가 아닌 CORS 요청 헤더 지원을 구성합니다.
-
-      <ph name="PRODUCT_NAME" /> 버전 97에서는 와일드카드가 아닌 CORS 요청 헤더를 지원합니다. 스크립트에서 스크립트가 추가된 승인 헤더와 함께 fetch() 및 XMLHttpRequest를 사용하여 교차 출처 네트워크 요청을 하는 경우 CORS 프리플라이트 응답에서 Access-Control-Allow-Headers 헤더가 이 헤더를 명시적으로 허용해야 합니다. 여기서 "명시적으로"는 와일드카드 기호 "*"를 승인 헤더에 사용할 수 없음을 의미합니다. <ph name="CORS_NON_WILDCARD_REQUEST_HEADERS_FEATURE_URL" />에서 자세한 내용을 참고하세요.
-
-      정책이 설정되지 않거나 True로 설정되면 <ph name="PRODUCT_NAME" />에서 와일드카드가 아닌 CORS 요청 헤더를 지원하고 위 설명과 같이 동작합니다.
-
-      정책이 False로 설정되면 Chrome은 CORS 프리플라이트 응답의 Access-Control-Allow-Headers 헤더에서 와일드카드 기호("*")를 승인 헤더에 사용할 수 있도록 허용합니다.
-
-      이 기업 정책은 일시적이며 <ph name="PRODUCT_NAME" /> 버전 103 이후 삭제됩니다.</translation>
 <translation id="8158758865057576716"><ph name="PRODUCT_NAME" /> 프로필 데이터 로밍 사본 생성을 사용합니다.</translation>
 <translation id="8158897487095710470">정책을 True로 설정하면 <ph name="PRODUCT_NAME" />에 북마크바가 표시됩니다. 정책을 False로 설정하면 사용자에게 북마크바가 표시되지 않습니다.
 
@@ -7122,6 +7127,9 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
 
       'http://acme.com/ABC'는 'IESiteListMode'에서만 매칭됩니다.</translation>
 <translation id="8736538322216687231">최소 YouTube 제한 모드 강제 사용</translation>
+<translation id="8744844164152340112">OOBE에서, 세션 중에 UI 렌더링에 사용할 테마를 관리합니다(어두운 테마/밝은 테마/자동).
+      자동 모드는 일출 및 일몰 시 어두운 테마와 밝은 테마를 자동으로 전환합니다.
+      사용자가 시스템 설정에서 테마를 변경할 수 있도록 이 정책을 사용하는 것이 좋습니다.</translation>
 <translation id="8745669971728319820">이 정책은 확장 프로그램 및 플러그인 데이터의 보고 여부를 제어합니다.
 
       <ph name="CLOUD_REPORTING_ENABLED_POLICY_NAME" /> 정책이 설정되지 않거나 사용 중지되면 정책이 무시됩니다.
@@ -7141,6 +7149,7 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
 <translation id="8763716376920670835">M101에서 WebSQL이 기본으로 사용 설정되어 있으나 Chrome 플래그에 의해 사용 중지될 수 있습니다.
           이 정책을 False로 설정하거나 설정하지 않으면 WebSQL이 사용 중지될 수 있습니다.
           정책을 True로 설정하면 WebSQL이 사용 중지되지 않습니다.</translation>
+<translation id="8766910236040529804">렌더러 앱 컨테이너 사용</translation>
 <translation id="8767743923206070405">정책을 사용으로 설정하면 <ph name="PRODUCT_NAME" /> 툴바에 홈 버튼이 표시됩니다. 사용 안함으로 설정하면 홈 버튼이 표시되지 않습니다.
 
       정책을 설정하면 <ph name="PRODUCT_NAME" />에서 사용자가 변경할 수 없습니다. 설정하지 않으면 사용자가 홈 버튼 표시 여부를 선택할 수 있습니다.</translation>

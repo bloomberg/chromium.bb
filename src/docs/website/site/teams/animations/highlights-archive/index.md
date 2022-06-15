@@ -10,6 +10,9 @@ title: Highlights Archive
 
 This page contains an archive of previous Chromium Animations team highlights.
 
+[April 2022
+highlights!](https://docs.google.com/document/d/1mp55CCVPkI-1MVIY3k8amtSk4XNRuO8XwIAYGRnojzs/edit?usp=sharing)
+
 [March 2022
 highlights!](https://docs.google.com/document/d/1lmSPF8aFxZW5pKwHHuFCjy7WtTMSVIteWsKrjnBOrrs/edit?usp=sharing&resourcekey=0-kKKocd0VfRjjeUvWgXts6w)
 

@@ -232,6 +232,7 @@ struct VSOutputs {
     }
 
     return this.device.createRenderPipeline({
+      layout: 'auto',
       vertex: {
         module,
         entryPoint: 'vsMain',
@@ -422,7 +423,7 @@ struct VSOutputs {
           testComponentCount: data.length,
           expectedData: new Float32Array(data.map(v => normalizedIntegerAsFloat(v, bitSize, false)))
             .buffer,
-          vertexData: vertexData!,
+          vertexData,
           floatTolerance: 0.1 * normalizedIntegerAsFloat(1, bitSize, false),
         };
       }
