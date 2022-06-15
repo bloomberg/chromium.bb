@@ -31,7 +31,10 @@ device loss.`
         }
       `,
     });
-    const pipeline = t.device.createComputePipeline({ compute: { module, entryPoint: 'main' } });
+    const pipeline = t.device.createComputePipeline({
+      layout: 'auto',
+      compute: { module, entryPoint: 'main' },
+    });
     const encoder = t.device.createCommandEncoder();
     const pass = encoder.beginComputePass();
     pass.setPipeline(pipeline);
@@ -75,6 +78,7 @@ device loss.`
     });
 
     const pipeline = t.device.createRenderPipeline({
+      layout: 'auto',
       vertex: { module, entryPoint: 'vmain', buffers: [] },
       primitive: { topology: 'point-list' },
       fragment: {
@@ -146,6 +150,7 @@ device loss.`
     });
 
     const pipeline = t.device.createRenderPipeline({
+      layout: 'auto',
       vertex: { module, entryPoint: 'vmain', buffers: [] },
       primitive: { topology: 'point-list' },
       fragment: {

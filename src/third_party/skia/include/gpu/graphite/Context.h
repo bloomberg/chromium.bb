@@ -8,19 +8,19 @@
 #ifndef skgpu_graphite_Context_DEFINED
 #define skgpu_graphite_Context_DEFINED
 
-#include <vector>
-#include "include/core/SkBlendMode.h"
 #include "include/core/SkRefCnt.h"
 #include "include/core/SkShader.h"
-#include "include/core/SkTileMode.h"
-#include "include/private/SkNoncopyable.h"
-
 #include "include/gpu/graphite/GraphiteTypes.h"
+
+class SkBlenderID;
+class SkCombinationBuilder;
+class SkRuntimeEffect;
 
 namespace skgpu::graphite {
 
 class BackendTexture;
 class CommandBuffer;
+class Context;
 class ContextPriv;
 class GlobalCache;
 class Gpu;
@@ -28,31 +28,6 @@ struct MtlBackendContext;
 class Recorder;
 class Recording;
 class TextureInfo;
-
-struct ShaderCombo {
-    enum class ShaderType {
-        kNone, // does not modify color buffer, e.g. depth and/or stencil only
-        kSolidColor,
-        kLinearGradient,
-        kRadialGradient,
-        kSweepGradient,
-        kConicalGradient
-    };
-
-    ShaderCombo() {}
-    ShaderCombo(std::vector<ShaderType> types,
-                std::vector<SkTileMode> tileModes)
-            : fTypes(std::move(types))
-            , fTileModes(std::move(tileModes)) {
-    }
-    std::vector<ShaderType> fTypes;
-    std::vector<SkTileMode> fTileModes;
-};
-
-struct PaintCombo {
-    std::vector<ShaderCombo> fShaders;
-    std::vector<SkBlendMode> fBlendModes;
-};
 
 class Context final {
 public:
@@ -79,7 +54,11 @@ public:
      */
     void checkAsyncWorkCompletion();
 
-    void preCompile(const PaintCombo&);
+    // TODO: add "SkShaderID addUserDefinedShader(sk_sp<SkRuntimeEffect>)" here
+    // TODO: add "SkColorFilterID addUserDefinedColorFilter(sk_sp<SkRuntimeEffect>)" here
+    SkBlenderID addUserDefinedBlender(sk_sp<SkRuntimeEffect>);
+
+    void precompile(SkCombinationBuilder*);
 
     /**
      * Creates a new backend gpu texture matching the dimensinos and TextureInfo. If an invalid

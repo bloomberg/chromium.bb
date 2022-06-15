@@ -1280,9 +1280,6 @@ declare namespace ProtocolProxyApi {
 
     invoke_setDOMStorageItem(params: Protocol.DOMStorage.SetDOMStorageItemRequest):
         Promise<Protocol.ProtocolResponseWithError>;
-
-    invoke_getStorageKeyForFrame(params: Protocol.DOMStorage.GetStorageKeyForFrameRequest):
-        Promise<Protocol.DOMStorage.GetStorageKeyForFrameResponse>;
   }
   export interface DOMStorageDispatcher {
     domStorageItemAdded(params: Protocol.DOMStorage.DomStorageItemAddedEvent): void;
@@ -1473,6 +1470,9 @@ declare namespace ProtocolProxyApi {
         Promise<Protocol.ProtocolResponseWithError>;
 
     invoke_setDisabledImageTypes(params: Protocol.Emulation.SetDisabledImageTypesRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
+
+    invoke_setHardwareConcurrencyOverride(params: Protocol.Emulation.SetHardwareConcurrencyOverrideRequest):
         Promise<Protocol.ProtocolResponseWithError>;
 
     /**
@@ -2995,6 +2995,12 @@ declare namespace ProtocolProxyApi {
 
   export interface StorageApi {
     /**
+     * Returns a storage key given a frame id.
+     */
+    invoke_getStorageKeyForFrame(params: Protocol.Storage.GetStorageKeyForFrameRequest):
+        Promise<Protocol.Storage.GetStorageKeyForFrameResponse>;
+
+    /**
      * Clears storage for origin.
      */
     invoke_clearDataForOrigin(params: Protocol.Storage.ClearDataForOriginRequest):
@@ -3508,7 +3514,7 @@ declare namespace ProtocolProxyApi {
      * Enable the WebAuthn domain and start intercepting credential storage and
      * retrieval with a virtual authenticator.
      */
-    invoke_enable(): Promise<Protocol.ProtocolResponseWithError>;
+    invoke_enable(params: Protocol.WebAuthn.EnableRequest): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Disable the WebAuthn domain.
@@ -3680,7 +3686,19 @@ declare namespace ProtocolProxyApi {
         Promise<Protocol.ProtocolResponseWithError>;
 
     /**
-     * Restarts particular call frame from the beginning.
+     * Restarts particular call frame from the beginning. The old, deprecated
+     * behavior of `restartFrame` is to stay paused and allow further CDP commands
+     * after a restart was scheduled. This can cause problems with restarting, so
+     * we now continue execution immediatly after it has been scheduled until we
+     * reach the beginning of the restarted frame.
+     *
+     * To stay back-wards compatible, `restartFrame` now expects a `mode`
+     * parameter to be present. If the `mode` parameter is missing, `restartFrame`
+     * errors out.
+     *
+     * The various return values are deprecated and `callFrames` is always empty.
+     * Use the call frames from the `Debugger#paused` events instead, that fires
+     * once V8 pauses at the beginning of the restarted function.
      */
     invoke_restartFrame(params: Protocol.Debugger.RestartFrameRequest): Promise<Protocol.Debugger.RestartFrameResponse>;
 

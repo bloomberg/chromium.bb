@@ -970,7 +970,7 @@ export namespace Audits {
 
   /**
    * Details for issues around "Attribution Reporting API" usage.
-   * Explainer: https://github.com/WICG/conversion-measurement-api
+   * Explainer: https://github.com/WICG/attribution-reporting-api
    */
   export interface AttributionReportingIssueDetails {
     violationType: AttributionReportingIssueType;
@@ -1027,7 +1027,6 @@ export namespace Audits {
     CrossOriginWindowAlert = 'CrossOriginWindowAlert',
     CrossOriginWindowConfirm = 'CrossOriginWindowConfirm',
     CSSSelectorInternalMediaControlsOverlayCastButton = 'CSSSelectorInternalMediaControlsOverlayCastButton',
-    CustomCursorIntersectsViewport = 'CustomCursorIntersectsViewport',
     DeprecationExample = 'DeprecationExample',
     DocumentDomainSettingWithoutOriginAgentClusterHeader = 'DocumentDomainSettingWithoutOriginAgentClusterHeader',
     EventPath = 'EventPath',
@@ -1038,15 +1037,12 @@ export namespace Audits {
     InsecurePrivateNetworkSubresourceRequest = 'InsecurePrivateNetworkSubresourceRequest',
     LegacyConstraintGoogIPv6 = 'LegacyConstraintGoogIPv6',
     LocalCSSFileExtensionRejected = 'LocalCSSFileExtensionRejected',
-    MediaElementAudioSourceNode = 'MediaElementAudioSourceNode',
     MediaSourceAbortRemove = 'MediaSourceAbortRemove',
     MediaSourceDurationTruncatingBuffered = 'MediaSourceDurationTruncatingBuffered',
     NoSysexWebMIDIWithoutPermission = 'NoSysexWebMIDIWithoutPermission',
     NotificationInsecureOrigin = 'NotificationInsecureOrigin',
     NotificationPermissionRequestedIframe = 'NotificationPermissionRequestedIframe',
     ObsoleteWebRtcCipherSuite = 'ObsoleteWebRtcCipherSuite',
-    PaymentRequestBasicCard = 'PaymentRequestBasicCard',
-    PaymentRequestShowWithoutGesture = 'PaymentRequestShowWithoutGesture',
     PictureSourceSrc = 'PictureSourceSrc',
     PrefixedCancelAnimationFrame = 'PrefixedCancelAnimationFrame',
     PrefixedRequestAnimationFrame = 'PrefixedRequestAnimationFrame',
@@ -1065,7 +1061,6 @@ export namespace Audits {
         'RTCPeerConnectionComplexPlanBSdpUsingDefaultSdpSemantics',
     RTCPeerConnectionSdpSemanticsPlanB = 'RTCPeerConnectionSdpSemanticsPlanB',
     RtcpMuxPolicyNegotiate = 'RtcpMuxPolicyNegotiate',
-    RTPDataChannel = 'RTPDataChannel',
     SharedArrayBufferConstructedWithoutIsolation = 'SharedArrayBufferConstructedWithoutIsolation',
     TextToSpeech_DisallowedByAutoplay = 'TextToSpeech_DisallowedByAutoplay',
     V8SharedArrayBufferConstructedInExtensionWithoutIsolation =
@@ -2357,6 +2352,10 @@ export namespace CSS {
      */
     fontStretch: string;
     /**
+     * The font-display.
+     */
+    fontDisplay: string;
+    /**
      * The unicode-range.
      */
     unicodeRange: string;
@@ -3212,6 +3211,7 @@ export namespace DOM {
      */
     isSVG?: boolean;
     compatibilityMode?: CompatibilityMode;
+    assignedSlot?: BackendNode;
   }
 
   /**
@@ -4979,14 +4979,6 @@ export namespace DOMStorage {
     value: string;
   }
 
-  export interface GetStorageKeyForFrameRequest {
-    frameId: Page.FrameId;
-  }
-
-  export interface GetStorageKeyForFrameResponse extends ProtocolResponseWithError {
-    storageKey: SerializedStorageKey;
-  }
-
   export interface DomStorageItemAddedEvent {
     storageId: StorageId;
     key: string;
@@ -5462,6 +5454,13 @@ export namespace Emulation {
      * Image types to disable.
      */
     imageTypes: DisabledImageType[];
+  }
+
+  export interface SetHardwareConcurrencyOverrideRequest {
+    /**
+     * Hardware concurrency to report
+     */
+    hardwareConcurrency: integer;
   }
 
   export interface SetUserAgentOverrideRequest {
@@ -8160,9 +8159,10 @@ export namespace Network {
   export const enum CrossOriginOpenerPolicyValue {
     SameOrigin = 'SameOrigin',
     SameOriginAllowPopups = 'SameOriginAllowPopups',
+    RestrictProperties = 'RestrictProperties',
     UnsafeNone = 'UnsafeNone',
     SameOriginPlusCoep = 'SameOriginPlusCoep',
-    SameOriginAllowPopupsPlusCoep = 'SameOriginAllowPopupsPlusCoep',
+    RestrictPropertiesPlusCoep = 'RestrictPropertiesPlusCoep',
   }
 
   export interface CrossOriginOpenerPolicyStatus {
@@ -10143,6 +10143,22 @@ export namespace Page {
   }
 
   /**
+   * Identifies the bottom-most script which caused the frame to be labelled
+   * as an ad.
+   */
+  export interface AdScriptId {
+    /**
+     * Script Id of the bottom-most script which caused the frame to be labelled
+     * as an ad.
+     */
+    scriptId: Runtime.ScriptId;
+    /**
+     * Id of adScriptId's debugger.
+     */
+    debuggerId: Runtime.UniqueDebuggerId;
+  }
+
+  /**
    * Indicates whether the frame is a secure context and why it is the case.
    */
   export const enum SecureContextType {
@@ -10177,13 +10193,13 @@ export namespace Page {
     AmbientLightSensor = 'ambient-light-sensor',
     AttributionReporting = 'attribution-reporting',
     Autoplay = 'autoplay',
+    Bluetooth = 'bluetooth',
     BrowsingTopics = 'browsing-topics',
     Camera = 'camera',
     ChDpr = 'ch-dpr',
     ChDeviceMemory = 'ch-device-memory',
     ChDownlink = 'ch-downlink',
     ChEct = 'ch-ect',
-    ChPartitionedCookies = 'ch-partitioned-cookies',
     ChPrefersColorScheme = 'ch-prefers-color-scheme',
     ChRtt = 'ch-rtt',
     ChSaveData = 'ch-save-data',
@@ -10917,7 +10933,6 @@ export namespace Page {
     ContentMediaDevicesDispatcherHost = 'ContentMediaDevicesDispatcherHost',
     ContentWebBluetooth = 'ContentWebBluetooth',
     ContentWebUSB = 'ContentWebUSB',
-    ContentMediaSession = 'ContentMediaSession',
     ContentMediaSessionService = 'ContentMediaSessionService',
     ContentScreenReader = 'ContentScreenReader',
     EmbedderPopupBlockerTabHelper = 'EmbedderPopupBlockerTabHelper',
@@ -11296,7 +11311,8 @@ export namespace Page {
      */
     frameId: FrameId;
     /**
-     * Loader identifier.
+     * Loader identifier. This is omitted in case of same-document navigation,
+     * as the previously committed loaderId would not change.
      */
     loaderId?: Network.LoaderId;
     /**
@@ -11766,6 +11782,11 @@ export namespace Page {
      * JavaScript stack trace of when frame was attached, only set if frame initiated from script.
      */
     stack?: Runtime.StackTrace;
+    /**
+     * Identifies the bottom-most script which caused the frame to be labelled
+     * as an ad. Only sent if frame is labelled as an ad and id is available.
+     */
+    adScriptId?: AdScriptId;
   }
 
   /**
@@ -12777,6 +12798,14 @@ export namespace Storage {
     userBiddingSignals?: string;
     ads: InterestGroupAd[];
     adComponents: InterestGroupAd[];
+  }
+
+  export interface GetStorageKeyForFrameRequest {
+    frameId: Page.FrameId;
+  }
+
+  export interface GetStorageKeyForFrameResponse extends ProtocolResponseWithError {
+    storageKey: SerializedStorageKey;
   }
 
   export interface ClearDataForOriginRequest {
@@ -14480,6 +14509,17 @@ export namespace WebAuthn {
     largeBlob?: binary;
   }
 
+  export interface EnableRequest {
+    /**
+     * Whether to enable the WebAuthn user interface. Enabling the UI is
+     * recommended for debugging and demo purposes, as it is closer to the real
+     * experience. Disabling the UI is recommended for automated testing.
+     * Supported at the embedder's discretion if UI is available.
+     * Defaults to false.
+     */
+    enableUI?: boolean;
+  }
+
   export interface AddVirtualAuthenticatorRequest {
     options: VirtualAuthenticatorOptions;
   }
@@ -15023,11 +15063,20 @@ export namespace Debugger {
     breakpointId: BreakpointId;
   }
 
+  export const enum RestartFrameRequestMode {
+    StepInto = 'StepInto',
+  }
+
   export interface RestartFrameRequest {
     /**
      * Call frame identifier to evaluate on.
      */
     callFrameId: CallFrameId;
+    /**
+     * The `mode` parameter must be present and set to 'StepInto', otherwise
+     * `restartFrame` will error out.
+     */
+    mode?: RestartFrameRequestMode;
   }
 
   export interface RestartFrameResponse extends ProtocolResponseWithError {

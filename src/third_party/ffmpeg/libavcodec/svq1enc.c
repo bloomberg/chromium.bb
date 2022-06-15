@@ -277,7 +277,7 @@ static int svq1_encode_plane(SVQ1EncContext *s, int plane,
         s->m.last_picture.f->data[0]        = ref_plane;
         s->m.linesize                      =
         s->m.last_picture.f->linesize[0]    =
-        s->m.new_picture.f->linesize[0]     =
+        s->m.new_picture->linesize[0]      =
         s->m.current_picture.f->linesize[0] = stride;
         s->m.width                         = width;
         s->m.height                        = height;
@@ -327,7 +327,7 @@ static int svq1_encode_plane(SVQ1EncContext *s, int plane,
         s->m.me.dia_size      = s->avctx->dia_size;
         s->m.first_slice_line = 1;
         for (y = 0; y < block_height; y++) {
-            s->m.new_picture.f->data[0] = src - y * 16 * stride; // ugly
+            s->m.new_picture->data[0]  = src - y * 16 * stride; // ugly
             s->m.mb_y                  = y;
 
             for (i = 0; i < 16 && i + 16 * y < height; i++) {
@@ -595,12 +595,12 @@ static int svq1_encode_frame(AVCodecContext *avctx, AVPacket *pkt,
     }
 
     if (!s->current_picture->data[0]) {
-        if ((ret = ff_get_buffer(avctx, s->current_picture, 0)) < 0) {
+        if ((ret = ff_encode_alloc_frame(avctx, s->current_picture)) < 0) {
             return ret;
         }
     }
     if (!s->last_picture->data[0]) {
-        ret = ff_get_buffer(avctx, s->last_picture, 0);
+        ret = ff_encode_alloc_frame(avctx, s->last_picture);
         if (ret < 0)
             return ret;
     }
@@ -684,7 +684,7 @@ const FFCodec ff_svq1_encoder = {
     .priv_data_size = sizeof(SVQ1EncContext),
     .p.priv_class   = &svq1enc_class,
     .init           = svq1_encode_init,
-    .encode2        = svq1_encode_frame,
+    FF_CODEC_ENCODE_CB(svq1_encode_frame),
     .close          = svq1_encode_end,
     .p.pix_fmts     = (const enum AVPixelFormat[]) { AV_PIX_FMT_YUV410P,
                                                      AV_PIX_FMT_NONE },

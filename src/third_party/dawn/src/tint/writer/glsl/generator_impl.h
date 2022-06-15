@@ -42,6 +42,7 @@
 // Forward declarations
 namespace tint::sem {
 class Call;
+class Constant;
 class Builtin;
 class TypeConstructor;
 class TypeConversion;
@@ -174,14 +175,6 @@ class GeneratorImpl : public TextGenerator {
     /// @param builtin the semantic information for the barrier builtin
     /// @returns true if the call expression is emitted
     bool EmitBarrierCall(std::ostream& out, const sem::Builtin* builtin);
-    /// Handles generating an atomic intrinsic call for a storage buffer variable
-    /// @param out the output of the expression stream
-    /// @param expr the call expression
-    /// @param intrinsic the atomic intrinsic
-    /// @returns true if the call expression is emitted
-    bool EmitStorageAtomicCall(std::ostream& out,
-                               const ast::CallExpression* expr,
-                               const transform::DecomposeMemoryAccess::Intrinsic* intrinsic);
     /// Handles generating an atomic builtin call for a workgroup variable
     /// @param out the output of the expression stream
     /// @param expr the call expression
@@ -346,6 +339,11 @@ class GeneratorImpl : public TextGenerator {
     /// @param stmt the statement to emit
     /// @returns true if the statement was successfully emitted
     bool EmitIf(const ast::IfStatement* stmt);
+    /// Handles a constant value
+    /// @param out the output stream
+    /// @param constant the constant value to emit
+    /// @returns true if the constant value was successfully emitted
+    bool EmitConstant(std::ostream& out, const sem::Constant& constant);
     /// Handles a literal
     /// @param out the output stream
     /// @param lit the literal to emit
@@ -413,6 +411,12 @@ class GeneratorImpl : public TextGenerator {
     /// @param ty the struct to generate
     /// @returns true if the struct is emitted
     bool EmitStructType(TextBuffer* buffer, const sem::Struct* ty);
+    /// Handles generating a structure declaration only the first time called. Subsequent calls are
+    /// a no-op and return true.
+    /// @param buffer the text buffer that the type declaration will be written to
+    /// @param ty the struct to generate
+    /// @returns true if the struct is emitted
+    bool EmitStructTypeOnce(TextBuffer* buffer, const sem::Struct* ty);
     /// Handles generating the members of a structure
     /// @param buffer the text buffer that the struct members will be written to
     /// @param ty the struct to generate
@@ -505,6 +509,7 @@ class GeneratorImpl : public TextGenerator {
     std::unordered_map<const sem::Vector*, std::string> dynamic_vector_write_;
     std::unordered_map<const sem::Vector*, std::string> int_dot_funcs_;
     std::unordered_map<const sem::Type*, std::string> float_modulo_funcs_;
+    std::unordered_set<const sem::Struct*> emitted_structs_;
     bool requires_oes_sample_variables_ = false;
     bool requires_default_precision_qualifier_ = false;
     Version version_;

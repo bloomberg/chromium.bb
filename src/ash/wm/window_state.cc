@@ -100,6 +100,10 @@ constexpr auto kWindowStateRestoreHistoryLayerMap =
         {WindowStateType::kSecondarySnapped, 1},
         {WindowStateType::kMaximized, 2},
         {WindowStateType::kFullscreen, 3},
+        // TODO(crbug.com/1330999): Special handling is needed for
+        // Fullscreen/Float restore behavior in
+        // WindowState::UpdateWindowStateRestoreHistoryStack.
+        {WindowStateType::kFloated, 3},
         {WindowStateType::kPip, 4},
         {WindowStateType::kMinimized, 4},
     });
@@ -277,10 +281,12 @@ WindowState::~WindowState() {
   // properties. As a result, window_->RemoveObserver() doesn't need to (and
   // shouldn't) be called here.
 
-  // Records the number of mis-triggers of drag to maximize behavior for
-  // `window_` during its lifetime.
-  base::UmaHistogramCounts100(kDragToMaximizeMisTriggersHistogramName,
-                              num_of_drag_to_maximize_mis_triggers_);
+  // Records the number of mis-triggers of drag to maximize behavior if
+  // `window_` has been dragged to maximized during its lifetime.
+  if (has_ever_been_dragged_to_maximized_) {
+    base::UmaHistogramCounts100(kDragToMaximizeMisTriggersHistogramName,
+                                num_of_drag_to_maximize_mis_triggers_);
+  }
 }
 
 bool WindowState::HasDelegate() const {
@@ -329,6 +335,10 @@ bool WindowState::IsTrustedPinned() const {
 
 bool WindowState::IsPip() const {
   return GetStateType() == WindowStateType::kPip;
+}
+
+bool WindowState::IsFloated() const {
+  return GetStateType() == WindowStateType::kFloated;
 }
 
 bool WindowState::IsNormalStateType() const {
@@ -452,7 +462,7 @@ void WindowState::RestoreZOrdering() {
 void WindowState::OnWMEvent(const WMEvent* event) {
   current_state_->OnWMEvent(this, event);
 
-  UpdateSnapRatio(event);
+  MaybeUpdateSnapRatio(event);
 
   PersistentDesksBarController* bar_controller =
       Shell::Get()->persistent_desks_bar_controller();
@@ -558,7 +568,7 @@ std::unique_ptr<WindowState::State> WindowState::SetStateObject(
   return old_object;
 }
 
-void WindowState::UpdateSnapRatio(const WMEvent* event) {
+void WindowState::MaybeUpdateSnapRatio(const WMEvent* event) {
   if (!IsSnapped()) {
     snap_ratio_.reset();
     return;
@@ -569,7 +579,7 @@ void WindowState::UpdateSnapRatio(const WMEvent* event) {
   if (type == WM_EVENT_SNAP_PRIMARY || type == WM_EVENT_SNAP_SECONDARY ||
       type == WM_EVENT_CYCLE_SNAP_PRIMARY ||
       type == WM_EVENT_CYCLE_SNAP_SECONDARY) {
-    // Since |UpdateSnapRatio()| is called post WMEvent taking effect,
+    // Since |MaybeUpdateSnapRatio()| is called post WMEvent taking effect,
     // |window_|'s bounds is in a correct state for ratio update.
     snap_ratio_ = absl::make_optional(GetCurrentSnapRatio(window_));
     return;
@@ -704,6 +714,9 @@ WindowStateType WindowState::GetRestoreWindowState() const {
 }
 
 void WindowState::TrackDragToMaximizeBehavior() {
+  if (!has_ever_been_dragged_to_maximized_)
+    has_ever_been_dragged_to_maximized_ = true;
+
   // If drag to maximize is triggered again before we check for the previous
   // one, then the previous one must be a mis-trigger. Record the mis-trigger
   // and reset `drag_to_maximize_mis_trigger_timer_`.
@@ -765,7 +778,8 @@ void WindowState::SetBoundsInScreen(const gfx::Rect& bounds_in_screen) {
   window_->SetBounds(bounds_in_parent);
 }
 
-void WindowState::AdjustSnappedBounds(gfx::Rect* bounds) {
+void WindowState::AdjustSnappedBoundsForDisplayWorkspaceChange(
+    gfx::Rect* bounds) {
   auto* tablet_mode_controller = Shell::Get()->tablet_mode_controller();
   const bool in_tablet =
       tablet_mode_controller && tablet_mode_controller->InTabletMode();
@@ -809,12 +823,6 @@ void WindowState::AdjustSnappedBounds(gfx::Rect* bounds) {
 void WindowState::UpdateWindowPropertiesFromStateType() {
   ui::WindowShowState new_window_state =
       ToWindowShowState(current_state_->GetType());
-  // Clear |kPreMinimizedShowStateKey| property only when the window is actually
-  // Unminimized and not in tablet mode.
-  if (new_window_state != ui::SHOW_STATE_MINIMIZED && IsMinimized() &&
-      !IsTabletModeEnabled()) {
-    window()->ClearProperty(aura::client::kPreMinimizedShowStateKey);
-  }
   if (new_window_state != GetShowState()) {
     base::AutoReset<bool> resetter(&ignore_property_change_, true);
     window_->SetProperty(aura::client::kShowStateKey, new_window_state);
@@ -1040,6 +1048,7 @@ void WindowState::UpdateWindowStateRestoreHistoryStack(
       kWindowStateRestoreHistoryLayerMap.end();
   if (!is_state_type_supported) {
     window_state_restore_history_.clear();
+    window_->ClearProperty(aura::client::kRestoreShowStateKey);
     return;
   }
 
@@ -1063,6 +1072,16 @@ void WindowState::UpdateWindowStateRestoreHistoryStack(
       (kWindowStateRestoreHistoryLayerMap.at(current_state_type) >
        kWindowStateRestoreHistoryLayerMap.at(previous_state_type))) {
     window_state_restore_history_.push_back(previous_state_type);
+  }
+
+  // TODO(xdai): For now we don't save the restore history in tablet mode in the
+  // window property, so that when exiting tablet mode, the window can still
+  // restore back to its old window state (see the test case
+  // TabletModeWindowManagerTest.UnminimizeInTabletMode). We should revisit this
+  // logic.
+  if (!IsTabletModeEnabled()) {
+    window_->SetProperty(aura::client::kRestoreShowStateKey,
+                         chromeos::ToWindowShowState(GetRestoreWindowState()));
   }
 }
 
@@ -1132,15 +1151,20 @@ void WindowState::OnWindowPropertyChanged(aura::Window* window,
     }
     return;
   }
-  if (key == chromeos::kWindowFloatTypeKey) {
+  // `kWindowToggleFloatKey` is only used to toggle float event, not an
+  // indicator of window's float state. this is created to allow access from
+  // both chromeos/ash and avoid recursive call to `kWindowStateTypeKey`.
+  // TODO(shidi): Create API to allow outside access and remove this property.
+  if (key == chromeos::kWindowToggleFloatKey) {
     DCHECK(chromeos::wm::features::IsFloatWindowEnabled());
-    auto* const float_controller = Shell::Get()->float_controller();
-    if (window->GetProperty(chromeos::kWindowFloatTypeKey)) {
-      float_controller->Float(window);
+    if (IsFloated()) {
+      // If window is already floated, unfloat and restore.
+      Restore();
     } else {
-      float_controller->Unfloat(window);
+      WMEvent event(WM_EVENT_FLOAT);
+      OnWMEvent(&event);
+      return;
     }
-    return;
   }
   if (key == chromeos::kWindowStateTypeKey) {
     if (!ignore_property_change_) {

@@ -877,6 +877,7 @@ protected:
 	bool requires_transpose_3x3 = false;
 	bool requires_transpose_4x4 = false;
 	bool ray_tracing_is_khr = false;
+	bool barycentric_is_nv = false;
 	void ray_tracing_khr_fixup_locations();
 
 	bool args_will_forward(uint32_t id, const uint32_t *args, uint32_t num_args, bool pure);
@@ -915,6 +916,8 @@ protected:
 
 	uint32_t consume_temporary_in_precision_context(uint32_t type_id, uint32_t id, Options::Precision precision);
 	std::unordered_map<uint32_t, uint32_t> temporary_to_mirror_precision_alias;
+	std::unordered_set<uint32_t> composite_insert_overwritten;
+	std::unordered_set<uint32_t> block_composite_insert_overwrite;
 
 	std::string emit_for_loop_initializers(const SPIRBlock &block);
 	void emit_while_loop_initializers(const SPIRBlock &block);

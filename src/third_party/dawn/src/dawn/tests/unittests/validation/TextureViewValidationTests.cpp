@@ -41,7 +41,7 @@ wgpu::Texture Create2DArrayTexture(wgpu::Device& device,
     descriptor.sampleCount = sampleCount;
     descriptor.format = kDefaultTextureFormat;
     descriptor.mipLevelCount = mipLevelCount;
-    descriptor.usage = wgpu::TextureUsage::TextureBinding;
+    descriptor.usage = wgpu::TextureUsage::TextureBinding | wgpu::TextureUsage::RenderAttachment;
     return device.CreateTexture(&descriptor);
 }
 
@@ -487,10 +487,15 @@ TEST_F(TextureViewValidationTest, TextureViewDescriptorDefaults2DArray) {
     {
         wgpu::TextureViewDescriptor descriptor;
 
-        // Setting array layers to non-0 means the dimensionality will
-        // default to 2D so by itself it causes an error.
+        // Setting array layers to > 1 with an explicit dimensionality of 2D will
+        // causes an error.
         descriptor.arrayLayerCount = kDefaultArrayLayers;
+        descriptor.dimension = wgpu::TextureViewDimension::e2D;
         ASSERT_DEVICE_ERROR(texture.CreateView(&descriptor));
+        // Setting view dimension to Undefined will result in a dimension of 2DArray because the
+        // underlying texture has > 1 array layers.
+        descriptor.dimension = wgpu::TextureViewDimension::Undefined;
+        texture.CreateView(&descriptor);
         descriptor.dimension = wgpu::TextureViewDimension::e2DArray;
         texture.CreateView(&descriptor);
 
@@ -920,12 +925,12 @@ TEST_F(TextureViewValidationTest, AspectMustExist) {
 
 class D24S8TextureViewValidationTests : public ValidationTest {
   protected:
-    WGPUDevice CreateTestDevice() override {
+    WGPUDevice CreateTestDevice(dawn::native::Adapter dawnAdapter) override {
         wgpu::DeviceDescriptor descriptor;
         wgpu::FeatureName requiredFeatures[1] = {wgpu::FeatureName::Depth24UnormStencil8};
         descriptor.requiredFeatures = requiredFeatures;
         descriptor.requiredFeaturesCount = 1;
-        return adapter.CreateDevice(&descriptor);
+        return dawnAdapter.CreateDevice(&descriptor);
     }
 };
 
@@ -966,12 +971,12 @@ TEST_F(D24S8TextureViewValidationTests, TextureViewFormatCompatibility) {
 
 class D32S8TextureViewValidationTests : public ValidationTest {
   protected:
-    WGPUDevice CreateTestDevice() override {
+    WGPUDevice CreateTestDevice(dawn::native::Adapter dawnAdapter) override {
         wgpu::DeviceDescriptor descriptor;
         wgpu::FeatureName requiredFeatures[1] = {wgpu::FeatureName::Depth32FloatStencil8};
         descriptor.requiredFeatures = requiredFeatures;
         descriptor.requiredFeaturesCount = 1;
-        return adapter.CreateDevice(&descriptor);
+        return dawnAdapter.CreateDevice(&descriptor);
     }
 };
 

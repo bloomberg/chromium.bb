@@ -42,7 +42,6 @@
 #include "p2p/base/p2p_constants.h"
 #include "p2p/base/p2p_transport_channel.h"
 #include "p2p/base/transport_info.h"
-#include "pc/channel_manager.h"
 #include "pc/ice_server_parsing.h"
 #include "pc/rtp_receiver.h"
 #include "pc/rtp_receiver_proxy.h"
@@ -315,7 +314,6 @@ bool PeerConnectionInterface::RTCConfiguration::operator==(
     int audio_jitter_buffer_max_packets;
     bool audio_jitter_buffer_fast_accelerate;
     int audio_jitter_buffer_min_delay_ms;
-    bool audio_jitter_buffer_enable_rtx_handling;
     int ice_connection_receiving_timeout;
     int ice_backup_candidate_pair_ping_interval;
     ContinualGatheringPolicy continual_gathering_policy;
@@ -362,8 +360,6 @@ bool PeerConnectionInterface::RTCConfiguration::operator==(
              o.audio_jitter_buffer_fast_accelerate &&
          audio_jitter_buffer_min_delay_ms ==
              o.audio_jitter_buffer_min_delay_ms &&
-         audio_jitter_buffer_enable_rtx_handling ==
-             o.audio_jitter_buffer_enable_rtx_handling &&
          ice_connection_receiving_timeout ==
              o.ice_connection_receiving_timeout &&
          ice_backup_candidate_pair_ping_interval ==
@@ -647,8 +643,8 @@ RTCError PeerConnection::Initialize(
                                                dependencies, context_.get());
 
   rtp_manager_ = std::make_unique<RtpTransmissionManager>(
-      IsUnifiedPlan(), signaling_thread(), worker_thread(), channel_manager(),
-      &usage_pattern_, observer_, stats_.get(), [this]() {
+      IsUnifiedPlan(), context_.get(), &usage_pattern_, observer_, stats_.get(),
+      [this]() {
         RTC_DCHECK_RUN_ON(signaling_thread());
         sdp_handler_->UpdateNegotiationNeeded();
       });
@@ -657,14 +653,12 @@ RTCError PeerConnection::Initialize(
   if (!IsUnifiedPlan()) {
     rtp_manager()->transceivers()->Add(
         RtpTransceiverProxyWithInternal<RtpTransceiver>::Create(
-            signaling_thread(),
-            rtc::make_ref_counted<RtpTransceiver>(cricket::MEDIA_TYPE_AUDIO,
-                                                  channel_manager())));
+            signaling_thread(), rtc::make_ref_counted<RtpTransceiver>(
+                                    cricket::MEDIA_TYPE_AUDIO, context())));
     rtp_manager()->transceivers()->Add(
         RtpTransceiverProxyWithInternal<RtpTransceiver>::Create(
-            signaling_thread(),
-            rtc::make_ref_counted<RtpTransceiver>(cricket::MEDIA_TYPE_VIDEO,
-                                                  channel_manager())));
+            signaling_thread(), rtc::make_ref_counted<RtpTransceiver>(
+                                    cricket::MEDIA_TYPE_VIDEO, context())));
   }
 
   int delay_ms = configuration.report_usage_pattern_delay_ms
@@ -1178,8 +1172,10 @@ std::vector<rtc::scoped_refptr<RtpSenderInterface>> PeerConnection::GetSenders()
     const {
   RTC_DCHECK_RUN_ON(signaling_thread());
   std::vector<rtc::scoped_refptr<RtpSenderInterface>> ret;
-  for (const auto& sender : rtp_manager()->GetSendersInternal()) {
-    ret.push_back(sender);
+  if (ConfiguredForMedia()) {
+    for (const auto& sender : rtp_manager()->GetSendersInternal()) {
+      ret.push_back(sender);
+    }
   }
   return ret;
 }
@@ -1188,8 +1184,10 @@ std::vector<rtc::scoped_refptr<RtpReceiverInterface>>
 PeerConnection::GetReceivers() const {
   RTC_DCHECK_RUN_ON(signaling_thread());
   std::vector<rtc::scoped_refptr<RtpReceiverInterface>> ret;
-  for (const auto& receiver : rtp_manager()->GetReceiversInternal()) {
-    ret.push_back(receiver);
+  if (ConfiguredForMedia()) {
+    for (const auto& receiver : rtp_manager()->GetReceiversInternal()) {
+      ret.push_back(receiver);
+    }
   }
   return ret;
 }
@@ -1200,8 +1198,10 @@ PeerConnection::GetTransceivers() const {
   RTC_CHECK(IsUnifiedPlan())
       << "GetTransceivers is only supported with Unified Plan SdpSemantics.";
   std::vector<rtc::scoped_refptr<RtpTransceiverInterface>> all_transceivers;
-  for (const auto& transceiver : rtp_manager()->transceivers()->List()) {
-    all_transceivers.push_back(transceiver);
+  if (ConfiguredForMedia()) {
+    for (const auto& transceiver : rtp_manager()->transceivers()->List()) {
+      all_transceivers.push_back(transceiver);
+    }
   }
   return all_transceivers;
 }
@@ -1680,8 +1680,7 @@ void PeerConnection::SetAudioPlayout(bool playout) {
         RTC_FROM_HERE, [this, playout] { SetAudioPlayout(playout); });
     return;
   }
-  auto audio_state =
-      context_->channel_manager()->media_engine()->voice().GetAudioState();
+  auto audio_state = context_->media_engine()->voice().GetAudioState();
   audio_state->SetPlayout(playout);
 }
 
@@ -1691,8 +1690,7 @@ void PeerConnection::SetAudioRecording(bool recording) {
         RTC_FROM_HERE, [this, recording] { SetAudioRecording(recording); });
     return;
   }
-  auto audio_state =
-      context_->channel_manager()->media_engine()->voice().GetAudioState();
+  auto audio_state = context_->media_engine()->voice().GetAudioState();
   audio_state->SetRecording(recording);
 }
 
@@ -1712,7 +1710,7 @@ void PeerConnection::AddAdaptationResource(
 }
 
 bool PeerConnection::ConfiguredForMedia() const {
-  return context_->channel_manager()->media_engine();
+  return context_->media_engine();
 }
 
 bool PeerConnection::StartRtcEventLog(std::unique_ptr<RtcEventLogOutput> output,
@@ -1822,12 +1820,13 @@ void PeerConnection::Close() {
 
   NoteUsageEvent(UsageEvent::CLOSE_CALLED);
 
-  for (const auto& transceiver : rtp_manager()->transceivers()->List()) {
-    transceiver->internal()->SetPeerConnectionClosed();
-    if (!transceiver->stopped())
-      transceiver->StopInternal();
+  if (ConfiguredForMedia()) {
+    for (const auto& transceiver : rtp_manager()->transceivers()->List()) {
+      transceiver->internal()->SetPeerConnectionClosed();
+      if (!transceiver->stopped())
+        transceiver->StopInternal();
+    }
   }
-
   // Ensure that all asynchronous stats requests are completed before destroying
   // the transport controller below.
   if (stats_collector_) {
@@ -1844,7 +1843,9 @@ void PeerConnection::Close() {
   // WebRTC session description factory, the session description factory would
   // call the transport controller.
   sdp_handler_->ResetSessionDescFactory();
-  rtp_manager_->Close();
+  if (ConfiguredForMedia()) {
+    rtp_manager_->Close();
+  }
 
   network_thread()->Invoke<void>(RTC_FROM_HERE, [this] {
     // Data channels will already have been unset via the DestroyAllChannels()
@@ -2735,12 +2736,15 @@ void PeerConnection::ReportTransportStats() {
   rtc::Thread::ScopedDisallowBlockingCalls no_blocking_calls;
   std::map<std::string, std::set<cricket::MediaType>>
       media_types_by_transport_name;
-  for (const auto& transceiver : rtp_manager()->transceivers()->UnsafeList()) {
-    if (transceiver->internal()->channel()) {
-      std::string transport_name(
-          transceiver->internal()->channel()->transport_name());
-      media_types_by_transport_name[transport_name].insert(
-          transceiver->media_type());
+  if (ConfiguredForMedia()) {
+    for (const auto& transceiver :
+         rtp_manager()->transceivers()->UnsafeList()) {
+      if (transceiver->internal()->channel()) {
+        std::string transport_name(
+            transceiver->internal()->channel()->transport_name());
+        media_types_by_transport_name[transport_name].insert(
+            transceiver->media_type());
+      }
     }
   }
 
@@ -2888,10 +2892,13 @@ bool PeerConnection::OnTransportChanged(
     DataChannelTransportInterface* data_channel_transport) {
   RTC_DCHECK_RUN_ON(network_thread());
   bool ret = true;
-  for (const auto& transceiver : rtp_manager()->transceivers()->UnsafeList()) {
-    cricket::ChannelInterface* channel = transceiver->internal()->channel();
-    if (channel && channel->mid() == mid) {
-      ret = channel->SetRtpTransport(rtp_transport);
+  if (ConfiguredForMedia()) {
+    for (const auto& transceiver :
+         rtp_manager()->transceivers()->UnsafeList()) {
+      cricket::ChannelInterface* channel = transceiver->internal()->channel();
+      if (channel && channel->mid() == mid) {
+        ret = channel->SetRtpTransport(rtp_transport);
+      }
     }
   }
 

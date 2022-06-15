@@ -226,6 +226,7 @@ static aom_codec_err_t parse_layer_options_from_string(
     return AOM_CODEC_INVALID_PARAM;
 
   input_string = malloc(strlen(input));
+  if (!input_string) die("Failed to allocate input string.");
   memcpy(input_string, input, strlen(input));
   if (input_string == NULL) return AOM_CODEC_MEM_ERROR;
   token = strtok(input_string, delim);  // NOLINT

@@ -23,8 +23,6 @@ namespace {
 
 VaapiVideoEncoderDelegate::Config kDefaultVEADelegateConfig{
     .max_num_ref_frames = 4,
-    .bitrate_control =
-        VaapiVideoEncoderDelegate::BitrateControl::kConstantBitrate,
 };
 
 VideoEncodeAccelerator::Config kDefaultVEAConfig(
@@ -190,8 +188,6 @@ void H264VaapiVideoEncoderDelegateTest::SetUp() {
       base::BindRepeating(&H264VaapiVideoEncoderDelegateTest::OnError,
                           base::Unretained(this)));
   EXPECT_CALL(*this, OnError()).Times(0);
-
-  encoder_->supports_temporal_layer_for_testing_ = true;
 }
 
 bool H264VaapiVideoEncoderDelegateTest::InitializeEncoder(

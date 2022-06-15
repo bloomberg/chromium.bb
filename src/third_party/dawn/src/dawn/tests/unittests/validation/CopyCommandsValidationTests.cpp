@@ -420,13 +420,13 @@ TEST_F(CopyCommandTest_B2B, CopyWithinSameBuffer) {
 
 class CopyCommandTest_B2T : public CopyCommandTest {
   protected:
-    WGPUDevice CreateTestDevice() override {
+    WGPUDevice CreateTestDevice(dawn::native::Adapter dawnAdapter) override {
         wgpu::DeviceDescriptor descriptor;
         wgpu::FeatureName requiredFeatures[2] = {wgpu::FeatureName::Depth24UnormStencil8,
                                                  wgpu::FeatureName::Depth32FloatStencil8};
         descriptor.requiredFeatures = requiredFeatures;
         descriptor.requiredFeaturesCount = 2;
-        return adapter.CreateDevice(&descriptor);
+        return dawnAdapter.CreateDevice(&descriptor);
     }
 };
 
@@ -751,8 +751,9 @@ TEST_F(CopyCommandTest_B2T, IncorrectBufferOffsetForDepthStencilTexture) {
 TEST_F(CopyCommandTest_B2T, CopyToMultisampledTexture) {
     uint64_t bufferSize = BufferSizeForTextureCopy(16, 16, 1);
     wgpu::Buffer source = CreateBuffer(bufferSize, wgpu::BufferUsage::CopySrc);
-    wgpu::Texture destination = Create2DTexture(2, 2, 1, 1, wgpu::TextureFormat::RGBA8Unorm,
-                                                wgpu::TextureUsage::CopyDst, 4);
+    wgpu::Texture destination =
+        Create2DTexture(2, 2, 1, 1, wgpu::TextureFormat::RGBA8Unorm,
+                        wgpu::TextureUsage::CopyDst | wgpu::TextureUsage::RenderAttachment, 4);
 
     TestB2TCopy(utils::Expectation::Failure, source, 0, 256, 2, destination, 0, {0, 0, 0},
                 {2, 2, 1});
@@ -1029,13 +1030,13 @@ TEST_F(CopyCommandTest_B2T, RequiredBytesInCopyOverflow) {
 
 class CopyCommandTest_T2B : public CopyCommandTest {
   protected:
-    WGPUDevice CreateTestDevice() override {
+    WGPUDevice CreateTestDevice(dawn::native::Adapter dawnAdapter) override {
         wgpu::DeviceDescriptor descriptor;
         wgpu::FeatureName requiredFeatures[2] = {wgpu::FeatureName::Depth24UnormStencil8,
                                                  wgpu::FeatureName::Depth32FloatStencil8};
         descriptor.requiredFeatures = requiredFeatures;
         descriptor.requiredFeaturesCount = 2;
-        return adapter.CreateDevice(&descriptor);
+        return dawnAdapter.CreateDevice(&descriptor);
     }
 };
 
@@ -1387,8 +1388,9 @@ TEST_F(CopyCommandTest_T2B, IncorrectBufferOffsetForDepthStencilTexture) {
 
 // Test multisampled textures cannot be used in T2B copies.
 TEST_F(CopyCommandTest_T2B, CopyFromMultisampledTexture) {
-    wgpu::Texture source = Create2DTexture(2, 2, 1, 1, wgpu::TextureFormat::RGBA8Unorm,
-                                           wgpu::TextureUsage::CopySrc, 4);
+    wgpu::Texture source =
+        Create2DTexture(2, 2, 1, 1, wgpu::TextureFormat::RGBA8Unorm,
+                        wgpu::TextureUsage::CopySrc | wgpu::TextureUsage::RenderAttachment, 4);
     uint64_t bufferSize = BufferSizeForTextureCopy(16, 16, 1);
     wgpu::Buffer destination = CreateBuffer(bufferSize, wgpu::BufferUsage::CopyDst);
 
@@ -1667,13 +1669,13 @@ TEST_F(CopyCommandTest_T2B, RequiredBytesInCopyOverflow) {
 
 class CopyCommandTest_T2T : public CopyCommandTest {
   protected:
-    WGPUDevice CreateTestDevice() override {
+    WGPUDevice CreateTestDevice(dawn::native::Adapter dawnAdapter) override {
         wgpu::DeviceDescriptor descriptor;
         wgpu::FeatureName requiredFeatures[2] = {wgpu::FeatureName::Depth24UnormStencil8,
                                                  wgpu::FeatureName::Depth32FloatStencil8};
         descriptor.requiredFeatures = requiredFeatures;
         descriptor.requiredFeaturesCount = 2;
-        return adapter.CreateDevice(&descriptor);
+        return dawnAdapter.CreateDevice(&descriptor);
     }
 
     wgpu::TextureFormat GetCopyCompatibleFormat(wgpu::TextureFormat format) {
@@ -1956,10 +1958,12 @@ TEST_F(CopyCommandTest_T2T, SrgbFormatsCompatibility) {
 TEST_F(CopyCommandTest_T2T, MultisampledCopies) {
     wgpu::Texture sourceMultiSampled1x = Create2DTexture(
         16, 16, 1, 1, wgpu::TextureFormat::RGBA8Unorm, wgpu::TextureUsage::CopySrc, 1);
-    wgpu::Texture sourceMultiSampled4x = Create2DTexture(
-        16, 16, 1, 1, wgpu::TextureFormat::RGBA8Unorm, wgpu::TextureUsage::CopySrc, 4);
-    wgpu::Texture destinationMultiSampled4x = Create2DTexture(
-        16, 16, 1, 1, wgpu::TextureFormat::RGBA8Unorm, wgpu::TextureUsage::CopyDst, 4);
+    wgpu::Texture sourceMultiSampled4x =
+        Create2DTexture(16, 16, 1, 1, wgpu::TextureFormat::RGBA8Unorm,
+                        wgpu::TextureUsage::CopySrc | wgpu::TextureUsage::RenderAttachment, 4);
+    wgpu::Texture destinationMultiSampled4x =
+        Create2DTexture(16, 16, 1, 1, wgpu::TextureFormat::RGBA8Unorm,
+                        wgpu::TextureUsage::CopyDst | wgpu::TextureUsage::RenderAttachment, 4);
 
     // Success when entire multisampled subresource is copied
     {
@@ -2145,14 +2149,14 @@ TEST_F(CopyCommandTest_T2T, CopyWithinSameTexture) {
 
 class CopyCommandTest_CompressedTextureFormats : public CopyCommandTest {
   protected:
-    WGPUDevice CreateTestDevice() override {
+    WGPUDevice CreateTestDevice(dawn::native::Adapter dawnAdapter) override {
         wgpu::DeviceDescriptor descriptor;
         wgpu::FeatureName requiredFeatures[3] = {wgpu::FeatureName::TextureCompressionBC,
                                                  wgpu::FeatureName::TextureCompressionETC2,
                                                  wgpu::FeatureName::TextureCompressionASTC};
         descriptor.requiredFeatures = requiredFeatures;
         descriptor.requiredFeaturesCount = 3;
-        return adapter.CreateDevice(&descriptor);
+        return dawnAdapter.CreateDevice(&descriptor);
     }
 
     wgpu::Texture Create2DTexture(wgpu::TextureFormat format,

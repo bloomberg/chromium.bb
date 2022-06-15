@@ -648,6 +648,7 @@ typedef enum {
   OPENSSL_THREAD_LOCAL_ERR = 0,
   OPENSSL_THREAD_LOCAL_RAND,
   OPENSSL_THREAD_LOCAL_FIPS_COUNTERS,
+  OPENSSL_THREAD_LOCAL_FIPS_SERVICE_INDICATOR_STATE,
   OPENSSL_THREAD_LOCAL_TEST,
   NUM_OPENSSL_THREAD_LOCALS,
 } thread_local_data_t;
@@ -877,6 +878,16 @@ static inline uint32_t CRYPTO_load_u32_be(const void *in) {
 
 static inline void CRYPTO_store_u32_be(void *out, uint32_t v) {
   v = CRYPTO_bswap4(v);
+  OPENSSL_memcpy(out, &v, sizeof(v));
+}
+
+static inline uint64_t CRYPTO_load_u64_le(const void *in) {
+  uint64_t v;
+  OPENSSL_memcpy(&v, in, sizeof(v));
+  return v;
+}
+
+static inline void CRYPTO_store_u64_le(void *out, uint64_t v) {
   OPENSSL_memcpy(out, &v, sizeof(v));
 }
 

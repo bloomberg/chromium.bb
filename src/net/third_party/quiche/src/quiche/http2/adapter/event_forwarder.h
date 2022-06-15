@@ -46,14 +46,16 @@ class QUICHE_EXPORT_PRIVATE EventForwarder
   void OnGoAway(spdy::SpdyStreamId last_accepted_stream_id,
                 spdy::SpdyErrorCode error_code) override;
   bool OnGoAwayFrameData(const char* goaway_data, size_t len) override;
-  void OnHeaders(spdy::SpdyStreamId stream_id, bool has_priority, int weight,
+  void OnHeaders(spdy::SpdyStreamId stream_id, size_t payload_length,
+                 bool has_priority, int weight,
                  spdy::SpdyStreamId parent_stream_id, bool exclusive, bool fin,
                  bool end) override;
   void OnWindowUpdate(spdy::SpdyStreamId stream_id,
                       int delta_window_size) override;
   void OnPushPromise(spdy::SpdyStreamId stream_id,
                      spdy::SpdyStreamId promised_stream_id, bool end) override;
-  void OnContinuation(spdy::SpdyStreamId stream_id, bool end) override;
+  void OnContinuation(spdy::SpdyStreamId stream_id, size_t payload_length,
+                      bool end) override;
   void OnAltSvc(spdy::SpdyStreamId stream_id, absl::string_view origin,
                 const spdy::SpdyAltSvcWireFormat::AlternativeServiceVector&
                     altsvc_vector) override;

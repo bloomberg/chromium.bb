@@ -65,7 +65,7 @@ DEF_TEST(SkRuntimeEffectInvalid_SkCapsDisallowed, r) {
     // sk_Caps is an internal system. It should not be visible to runtime effects
     test_invalid_effect(
             r,
-            "half4 main(float2 p) { return sk_Caps.integerSupport ? half4(1) : half4(0); }",
+            "half4 main(float2 p) { return sk_Caps.floatIs32Bits ? half4(1) : half4(0); }",
             "unknown identifier 'sk_Caps'");
 }
 
@@ -98,6 +98,17 @@ DEF_TEST(SkRuntimeEffectCanDisableES2Restrictions, r) {
 
     test_invalid_effect(r, "float f[2] = float[2](0, 1);" EMPTY_MAIN, "construction of array type");
     test_valid_es3     (r, "float f[2] = float[2](0, 1);" EMPTY_MAIN);
+}
+
+DEF_TEST(SkRuntimeEffectCanEnableVersion300, r) {
+    auto test_valid = [](skiatest::Reporter* r, const char* sksl) {
+        auto [effect, errorText] = SkRuntimeEffect::MakeForShader(SkString(sksl));
+        REPORTER_ASSERT(r, effect, "%s", errorText.c_str());
+    };
+
+    test_invalid_effect(r, "#version 100\nfloat f[2] = float[2](0, 1);" EMPTY_MAIN,
+                           "construction of array type");
+    test_valid         (r, "#version 300\nfloat f[2] = float[2](0, 1);" EMPTY_MAIN);
 }
 
 DEF_TEST(SkRuntimeEffectForColorFilter, r) {

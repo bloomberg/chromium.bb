@@ -19,10 +19,10 @@
 #include "dawn/native/Instance.h"
 #include "dawn/native/SwapChain.h"
 
-#if defined(DAWN_PLATFORM_WINDOWS)
+#if DAWN_PLATFORM_IS(WINDOWS)
 #include <windows.ui.core.h>
 #include <windows.ui.xaml.controls.h>
-#endif  // defined(DAWN_PLATFORM_WINDOWS)
+#endif  // DAWN_PLATFORM_IS(WINDOWS)
 
 #if defined(DAWN_USE_X11)
 #include "dawn/common/xlib_with_undefs.h"
@@ -40,6 +40,9 @@ absl::FormatConvertResult<absl::FormatConversionCharSet::kString> AbslFormatConv
             break;
         case Surface::Type::MetalLayer:
             s->Append("MetalLayer");
+            break;
+        case Surface::Type::WaylandSurface:
+            s->Append("WaylandSurface");
             break;
         case Surface::Type::WindowsHWND:
             s->Append("WindowsHWND");
@@ -84,7 +87,7 @@ MaybeError ValidateSurfaceDescriptor(const InstanceBase* instance,
     }
 #endif  // defined(DAWN_ENABLE_BACKEND_METAL)
 
-#if defined(DAWN_PLATFORM_ANDROID)
+#if DAWN_PLATFORM_IS(ANDROID)
     const SurfaceDescriptorFromAndroidNativeWindow* androidDesc = nullptr;
     FindInChain(descriptor->nextInChain, &androidDesc);
     // Currently the best validation we can do since it's not possible to check if the pointer
@@ -93,17 +96,17 @@ MaybeError ValidateSurfaceDescriptor(const InstanceBase* instance,
         DAWN_INVALID_IF(androidDesc->window == nullptr, "Android window is not set.");
         return {};
     }
-#endif  // defined(DAWN_PLATFORM_ANDROID)
+#endif  // DAWN_PLATFORM_IS(ANDROID)
 
-#if defined(DAWN_PLATFORM_WINDOWS)
-#if defined(DAWN_PLATFORM_WIN32)
+#if DAWN_PLATFORM_IS(WINDOWS)
+#if DAWN_PLATFORM_IS(WIN32)
     const SurfaceDescriptorFromWindowsHWND* hwndDesc = nullptr;
     FindInChain(descriptor->nextInChain, &hwndDesc);
     if (hwndDesc) {
         DAWN_INVALID_IF(IsWindow(static_cast<HWND>(hwndDesc->hwnd)) == 0, "Invalid HWND");
         return {};
     }
-#endif  // defined(DAWN_PLATFORM_WIN32)
+#endif  // DAWN_PLATFORM_IS(WIN32)
     const SurfaceDescriptorFromWindowsCoreWindow* coreWindowDesc = nullptr;
     FindInChain(descriptor->nextInChain, &coreWindowDesc);
     if (coreWindowDesc) {
@@ -126,7 +129,19 @@ MaybeError ValidateSurfaceDescriptor(const InstanceBase* instance,
                         "Invalid SwapChainPanel");
         return {};
     }
-#endif  // defined(DAWN_PLATFORM_WINDOWS)
+#endif  // DAWN_PLATFORM_IS(WINDOWS)
+
+#if defined(DAWN_USE_WAYLAND)
+    const SurfaceDescriptorFromWaylandSurface* waylandDesc = nullptr;
+    FindInChain(descriptor->nextInChain, &waylandDesc);
+    if (waylandDesc) {
+        // Unfortunately we can't check the validity of wayland objects. Only that they
+        // aren't nullptr.
+        DAWN_INVALID_IF(waylandDesc->display == nullptr, "Wayland display is nullptr.");
+        DAWN_INVALID_IF(waylandDesc->surface == nullptr, "Wayland surface is nullptr.");
+        return {};
+    }
+#endif  // defined(DAWN_USE_X11)
 
 #if defined(DAWN_USE_X11)
     const SurfaceDescriptorFromXlibWindow* xDesc = nullptr;
@@ -150,14 +165,22 @@ MaybeError ValidateSurfaceDescriptor(const InstanceBase* instance,
     return DAWN_FORMAT_VALIDATION_ERROR("Unsupported sType (%s)", descriptor->nextInChain->sType);
 }
 
+// static
+Surface* Surface::MakeError(InstanceBase* instance) {
+    return new Surface(instance, ErrorMonad::kError);
+}
+
+Surface::Surface(InstanceBase* instance, ErrorTag tag) : ErrorMonad(tag), mInstance(instance) {}
+
 Surface::Surface(InstanceBase* instance, const SurfaceDescriptor* descriptor)
-    : mInstance(instance) {
+    : ErrorMonad(), mInstance(instance) {
     ASSERT(descriptor->nextInChain != nullptr);
     const SurfaceDescriptorFromAndroidNativeWindow* androidDesc = nullptr;
     const SurfaceDescriptorFromMetalLayer* metalDesc = nullptr;
     const SurfaceDescriptorFromWindowsHWND* hwndDesc = nullptr;
     const SurfaceDescriptorFromWindowsCoreWindow* coreWindowDesc = nullptr;
     const SurfaceDescriptorFromWindowsSwapChainPanel* swapChainPanelDesc = nullptr;
+    const SurfaceDescriptorFromWaylandSurface* waylandDesc = nullptr;
     const SurfaceDescriptorFromXlibWindow* xDesc = nullptr;
     FindInChain(descriptor->nextInChain, &androidDesc);
     FindInChain(descriptor->nextInChain, &metalDesc);
@@ -171,20 +194,24 @@ Surface::Surface(InstanceBase* instance, const SurfaceDescriptor* descriptor)
     } else if (androidDesc) {
         mType = Type::AndroidWindow;
         mAndroidNativeWindow = androidDesc->window;
+    } else if (waylandDesc) {
+        mType = Type::WaylandSurface;
+        mWaylandDisplay = waylandDesc->display;
+        mWaylandSurface = waylandDesc->surface;
     } else if (hwndDesc) {
         mType = Type::WindowsHWND;
         mHInstance = hwndDesc->hinstance;
         mHWND = hwndDesc->hwnd;
     } else if (coreWindowDesc) {
-#if defined(DAWN_PLATFORM_WINDOWS)
+#if DAWN_PLATFORM_IS(WINDOWS)
         mType = Type::WindowsCoreWindow;
         mCoreWindow = static_cast<IUnknown*>(coreWindowDesc->coreWindow);
-#endif  // defined(DAWN_PLATFORM_WINDOWS)
+#endif  // DAWN_PLATFORM_IS(WINDOWS)
     } else if (swapChainPanelDesc) {
-#if defined(DAWN_PLATFORM_WINDOWS)
+#if DAWN_PLATFORM_IS(WINDOWS)
         mType = Type::WindowsSwapChainPanel;
         mSwapChainPanel = static_cast<IUnknown*>(swapChainPanelDesc->swapChainPanel);
-#endif  // defined(DAWN_PLATFORM_WINDOWS)
+#endif  // DAWN_PLATFORM_IS(WINDOWS)
     } else if (xDesc) {
         mType = Type::XlibWindow;
         mXDisplay = xDesc->display;
@@ -202,43 +229,61 @@ Surface::~Surface() {
 }
 
 NewSwapChainBase* Surface::GetAttachedSwapChain() {
+    ASSERT(!IsError());
     return mSwapChain.Get();
 }
 
 void Surface::SetAttachedSwapChain(NewSwapChainBase* swapChain) {
+    ASSERT(!IsError());
     mSwapChain = swapChain;
 }
 
-InstanceBase* Surface::GetInstance() {
+InstanceBase* Surface::GetInstance() const {
     return mInstance.Get();
 }
 
 Surface::Type Surface::GetType() const {
+    ASSERT(!IsError());
     return mType;
 }
 
 void* Surface::GetAndroidNativeWindow() const {
+    ASSERT(!IsError());
     ASSERT(mType == Type::AndroidWindow);
     return mAndroidNativeWindow;
 }
 
 void* Surface::GetMetalLayer() const {
+    ASSERT(!IsError());
     ASSERT(mType == Type::MetalLayer);
     return mMetalLayer;
 }
 
+void* Surface::GetWaylandDisplay() const {
+    ASSERT(mType == Type::WaylandSurface);
+    return mWaylandDisplay;
+}
+
+void* Surface::GetWaylandSurface() const {
+    ASSERT(mType == Type::WaylandSurface);
+    return mWaylandSurface;
+}
+
 void* Surface::GetHInstance() const {
+    ASSERT(!IsError());
     ASSERT(mType == Type::WindowsHWND);
     return mHInstance;
 }
 void* Surface::GetHWND() const {
+    ASSERT(!IsError());
     ASSERT(mType == Type::WindowsHWND);
     return mHWND;
 }
 
 IUnknown* Surface::GetCoreWindow() const {
+    ASSERT(!IsError());
     ASSERT(mType == Type::WindowsCoreWindow);
-#if defined(DAWN_PLATFORM_WINDOWS)
+#if DAWN_PLATFORM_IS(WINDOWS)
     return mCoreWindow.Get();
 #else
     return nullptr;
@@ -246,8 +291,9 @@ IUnknown* Surface::GetCoreWindow() const {
 }
 
 IUnknown* Surface::GetSwapChainPanel() const {
+    ASSERT(!IsError());
     ASSERT(mType == Type::WindowsSwapChainPanel);
-#if defined(DAWN_PLATFORM_WINDOWS)
+#if DAWN_PLATFORM_IS(WINDOWS)
     return mSwapChainPanel.Get();
 #else
     return nullptr;
@@ -255,10 +301,12 @@ IUnknown* Surface::GetSwapChainPanel() const {
 }
 
 void* Surface::GetXDisplay() const {
+    ASSERT(!IsError());
     ASSERT(mType == Type::XlibWindow);
     return mXDisplay;
 }
 uint32_t Surface::GetXWindow() const {
+    ASSERT(!IsError());
     ASSERT(mType == Type::XlibWindow);
     return mXWindow;
 }

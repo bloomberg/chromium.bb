@@ -31,9 +31,11 @@
     __cpp_lib_is_scoped_enum                       202011L [C++2b]
     __cpp_lib_is_swappable                         201603L [C++17]
     __cpp_lib_logical_traits                       201510L [C++17]
+    __cpp_lib_reference_from_temporary             202202L [C++2b]
     __cpp_lib_remove_cvref                         201711L [C++20]
     __cpp_lib_result_of_sfinae                     201210L [C++14]
     __cpp_lib_transformation_trait_aliases         201304L [C++14]
+    __cpp_lib_type_identity                        201806L [C++20]
     __cpp_lib_type_trait_variable_templates        201510L [C++17]
     __cpp_lib_void_t                               201411L [C++17]
 */
@@ -103,6 +105,10 @@
 #   error "__cpp_lib_logical_traits should not be defined before c++17"
 # endif
 
+# ifdef __cpp_lib_reference_from_temporary
+#   error "__cpp_lib_reference_from_temporary should not be defined before c++2b"
+# endif
+
 # ifdef __cpp_lib_remove_cvref
 #   error "__cpp_lib_remove_cvref should not be defined before c++20"
 # endif
@@ -113,6 +119,10 @@
 
 # ifdef __cpp_lib_transformation_trait_aliases
 #   error "__cpp_lib_transformation_trait_aliases should not be defined before c++14"
+# endif
+
+# ifdef __cpp_lib_type_identity
+#   error "__cpp_lib_type_identity should not be defined before c++20"
 # endif
 
 # ifdef __cpp_lib_type_trait_variable_templates
@@ -194,6 +204,10 @@
 #   error "__cpp_lib_logical_traits should not be defined before c++17"
 # endif
 
+# ifdef __cpp_lib_reference_from_temporary
+#   error "__cpp_lib_reference_from_temporary should not be defined before c++2b"
+# endif
+
 # ifdef __cpp_lib_remove_cvref
 #   error "__cpp_lib_remove_cvref should not be defined before c++20"
 # endif
@@ -210,6 +224,10 @@
 # endif
 # if __cpp_lib_transformation_trait_aliases != 201304L
 #   error "__cpp_lib_transformation_trait_aliases should have the value 201304L in c++14"
+# endif
+
+# ifdef __cpp_lib_type_identity
+#   error "__cpp_lib_type_identity should not be defined before c++20"
 # endif
 
 # ifdef __cpp_lib_type_trait_variable_templates
@@ -233,17 +251,11 @@
 #   error "__cpp_lib_bounded_array_traits should not be defined before c++20"
 # endif
 
-# if TEST_HAS_BUILTIN_IDENTIFIER(__has_unique_object_representations) || TEST_GCC_VER >= 700
-#   ifndef __cpp_lib_has_unique_object_representations
-#     error "__cpp_lib_has_unique_object_representations should be defined in c++17"
-#   endif
-#   if __cpp_lib_has_unique_object_representations != 201606L
-#     error "__cpp_lib_has_unique_object_representations should have the value 201606L in c++17"
-#   endif
-# else
-#   ifdef __cpp_lib_has_unique_object_representations
-#     error "__cpp_lib_has_unique_object_representations should not be defined when TEST_HAS_BUILTIN_IDENTIFIER(__has_unique_object_representations) || TEST_GCC_VER >= 700 is not defined!"
-#   endif
+# ifndef __cpp_lib_has_unique_object_representations
+#   error "__cpp_lib_has_unique_object_representations should be defined in c++17"
+# endif
+# if __cpp_lib_has_unique_object_representations != 201606L
+#   error "__cpp_lib_has_unique_object_representations should have the value 201606L in c++17"
 # endif
 
 # ifndef __cpp_lib_integral_constant_callable
@@ -253,17 +265,11 @@
 #   error "__cpp_lib_integral_constant_callable should have the value 201304L in c++17"
 # endif
 
-# if TEST_HAS_BUILTIN_IDENTIFIER(__is_aggregate) || TEST_GCC_VER_NEW >= 7001
-#   ifndef __cpp_lib_is_aggregate
-#     error "__cpp_lib_is_aggregate should be defined in c++17"
-#   endif
-#   if __cpp_lib_is_aggregate != 201703L
-#     error "__cpp_lib_is_aggregate should have the value 201703L in c++17"
-#   endif
-# else
-#   ifdef __cpp_lib_is_aggregate
-#     error "__cpp_lib_is_aggregate should not be defined when TEST_HAS_BUILTIN_IDENTIFIER(__is_aggregate) || TEST_GCC_VER_NEW >= 7001 is not defined!"
-#   endif
+# ifndef __cpp_lib_is_aggregate
+#   error "__cpp_lib_is_aggregate should be defined in c++17"
+# endif
+# if __cpp_lib_is_aggregate != 201703L
+#   error "__cpp_lib_is_aggregate should have the value 201703L in c++17"
 # endif
 
 # ifdef __cpp_lib_is_constant_evaluated
@@ -321,6 +327,10 @@
 #   error "__cpp_lib_logical_traits should have the value 201510L in c++17"
 # endif
 
+# ifdef __cpp_lib_reference_from_temporary
+#   error "__cpp_lib_reference_from_temporary should not be defined before c++2b"
+# endif
+
 # ifdef __cpp_lib_remove_cvref
 #   error "__cpp_lib_remove_cvref should not be defined before c++20"
 # endif
@@ -337,6 +347,10 @@
 # endif
 # if __cpp_lib_transformation_trait_aliases != 201304L
 #   error "__cpp_lib_transformation_trait_aliases should have the value 201304L in c++17"
+# endif
+
+# ifdef __cpp_lib_type_identity
+#   error "__cpp_lib_type_identity should not be defined before c++20"
 # endif
 
 # ifndef __cpp_lib_type_trait_variable_templates
@@ -369,17 +383,11 @@
 #   error "__cpp_lib_bounded_array_traits should have the value 201902L in c++20"
 # endif
 
-# if TEST_HAS_BUILTIN_IDENTIFIER(__has_unique_object_representations) || TEST_GCC_VER >= 700
-#   ifndef __cpp_lib_has_unique_object_representations
-#     error "__cpp_lib_has_unique_object_representations should be defined in c++20"
-#   endif
-#   if __cpp_lib_has_unique_object_representations != 201606L
-#     error "__cpp_lib_has_unique_object_representations should have the value 201606L in c++20"
-#   endif
-# else
-#   ifdef __cpp_lib_has_unique_object_representations
-#     error "__cpp_lib_has_unique_object_representations should not be defined when TEST_HAS_BUILTIN_IDENTIFIER(__has_unique_object_representations) || TEST_GCC_VER >= 700 is not defined!"
-#   endif
+# ifndef __cpp_lib_has_unique_object_representations
+#   error "__cpp_lib_has_unique_object_representations should be defined in c++20"
+# endif
+# if __cpp_lib_has_unique_object_representations != 201606L
+#   error "__cpp_lib_has_unique_object_representations should have the value 201606L in c++20"
 # endif
 
 # ifndef __cpp_lib_integral_constant_callable
@@ -389,30 +397,18 @@
 #   error "__cpp_lib_integral_constant_callable should have the value 201304L in c++20"
 # endif
 
-# if TEST_HAS_BUILTIN_IDENTIFIER(__is_aggregate) || TEST_GCC_VER_NEW >= 7001
-#   ifndef __cpp_lib_is_aggregate
-#     error "__cpp_lib_is_aggregate should be defined in c++20"
-#   endif
-#   if __cpp_lib_is_aggregate != 201703L
-#     error "__cpp_lib_is_aggregate should have the value 201703L in c++20"
-#   endif
-# else
-#   ifdef __cpp_lib_is_aggregate
-#     error "__cpp_lib_is_aggregate should not be defined when TEST_HAS_BUILTIN_IDENTIFIER(__is_aggregate) || TEST_GCC_VER_NEW >= 7001 is not defined!"
-#   endif
+# ifndef __cpp_lib_is_aggregate
+#   error "__cpp_lib_is_aggregate should be defined in c++20"
+# endif
+# if __cpp_lib_is_aggregate != 201703L
+#   error "__cpp_lib_is_aggregate should have the value 201703L in c++20"
 # endif
 
-# if TEST_HAS_BUILTIN(__builtin_is_constant_evaluated) || TEST_GCC_VER >= 900
-#   ifndef __cpp_lib_is_constant_evaluated
-#     error "__cpp_lib_is_constant_evaluated should be defined in c++20"
-#   endif
-#   if __cpp_lib_is_constant_evaluated != 201811L
-#     error "__cpp_lib_is_constant_evaluated should have the value 201811L in c++20"
-#   endif
-# else
-#   ifdef __cpp_lib_is_constant_evaluated
-#     error "__cpp_lib_is_constant_evaluated should not be defined when TEST_HAS_BUILTIN(__builtin_is_constant_evaluated) || TEST_GCC_VER >= 900 is not defined!"
-#   endif
+# ifndef __cpp_lib_is_constant_evaluated
+#   error "__cpp_lib_is_constant_evaluated should be defined in c++20"
+# endif
+# if __cpp_lib_is_constant_evaluated != 201811L
+#   error "__cpp_lib_is_constant_evaluated should have the value 201811L in c++20"
 # endif
 
 # ifndef __cpp_lib_is_final
@@ -487,6 +483,10 @@
 #   error "__cpp_lib_logical_traits should have the value 201510L in c++20"
 # endif
 
+# ifdef __cpp_lib_reference_from_temporary
+#   error "__cpp_lib_reference_from_temporary should not be defined before c++2b"
+# endif
+
 # ifndef __cpp_lib_remove_cvref
 #   error "__cpp_lib_remove_cvref should be defined in c++20"
 # endif
@@ -506,6 +506,13 @@
 # endif
 # if __cpp_lib_transformation_trait_aliases != 201304L
 #   error "__cpp_lib_transformation_trait_aliases should have the value 201304L in c++20"
+# endif
+
+# ifndef __cpp_lib_type_identity
+#   error "__cpp_lib_type_identity should be defined in c++20"
+# endif
+# if __cpp_lib_type_identity != 201806L
+#   error "__cpp_lib_type_identity should have the value 201806L in c++20"
 # endif
 
 # ifndef __cpp_lib_type_trait_variable_templates
@@ -538,17 +545,11 @@
 #   error "__cpp_lib_bounded_array_traits should have the value 201902L in c++2b"
 # endif
 
-# if TEST_HAS_BUILTIN_IDENTIFIER(__has_unique_object_representations) || TEST_GCC_VER >= 700
-#   ifndef __cpp_lib_has_unique_object_representations
-#     error "__cpp_lib_has_unique_object_representations should be defined in c++2b"
-#   endif
-#   if __cpp_lib_has_unique_object_representations != 201606L
-#     error "__cpp_lib_has_unique_object_representations should have the value 201606L in c++2b"
-#   endif
-# else
-#   ifdef __cpp_lib_has_unique_object_representations
-#     error "__cpp_lib_has_unique_object_representations should not be defined when TEST_HAS_BUILTIN_IDENTIFIER(__has_unique_object_representations) || TEST_GCC_VER >= 700 is not defined!"
-#   endif
+# ifndef __cpp_lib_has_unique_object_representations
+#   error "__cpp_lib_has_unique_object_representations should be defined in c++2b"
+# endif
+# if __cpp_lib_has_unique_object_representations != 201606L
+#   error "__cpp_lib_has_unique_object_representations should have the value 201606L in c++2b"
 # endif
 
 # ifndef __cpp_lib_integral_constant_callable
@@ -558,30 +559,18 @@
 #   error "__cpp_lib_integral_constant_callable should have the value 201304L in c++2b"
 # endif
 
-# if TEST_HAS_BUILTIN_IDENTIFIER(__is_aggregate) || TEST_GCC_VER_NEW >= 7001
-#   ifndef __cpp_lib_is_aggregate
-#     error "__cpp_lib_is_aggregate should be defined in c++2b"
-#   endif
-#   if __cpp_lib_is_aggregate != 201703L
-#     error "__cpp_lib_is_aggregate should have the value 201703L in c++2b"
-#   endif
-# else
-#   ifdef __cpp_lib_is_aggregate
-#     error "__cpp_lib_is_aggregate should not be defined when TEST_HAS_BUILTIN_IDENTIFIER(__is_aggregate) || TEST_GCC_VER_NEW >= 7001 is not defined!"
-#   endif
+# ifndef __cpp_lib_is_aggregate
+#   error "__cpp_lib_is_aggregate should be defined in c++2b"
+# endif
+# if __cpp_lib_is_aggregate != 201703L
+#   error "__cpp_lib_is_aggregate should have the value 201703L in c++2b"
 # endif
 
-# if TEST_HAS_BUILTIN(__builtin_is_constant_evaluated) || TEST_GCC_VER >= 900
-#   ifndef __cpp_lib_is_constant_evaluated
-#     error "__cpp_lib_is_constant_evaluated should be defined in c++2b"
-#   endif
-#   if __cpp_lib_is_constant_evaluated != 201811L
-#     error "__cpp_lib_is_constant_evaluated should have the value 201811L in c++2b"
-#   endif
-# else
-#   ifdef __cpp_lib_is_constant_evaluated
-#     error "__cpp_lib_is_constant_evaluated should not be defined when TEST_HAS_BUILTIN(__builtin_is_constant_evaluated) || TEST_GCC_VER >= 900 is not defined!"
-#   endif
+# ifndef __cpp_lib_is_constant_evaluated
+#   error "__cpp_lib_is_constant_evaluated should be defined in c++2b"
+# endif
+# if __cpp_lib_is_constant_evaluated != 201811L
+#   error "__cpp_lib_is_constant_evaluated should have the value 201811L in c++2b"
 # endif
 
 # ifndef __cpp_lib_is_final
@@ -659,6 +648,19 @@
 #   error "__cpp_lib_logical_traits should have the value 201510L in c++2b"
 # endif
 
+# if !defined(_LIBCPP_VERSION)
+#   ifndef __cpp_lib_reference_from_temporary
+#     error "__cpp_lib_reference_from_temporary should be defined in c++2b"
+#   endif
+#   if __cpp_lib_reference_from_temporary != 202202L
+#     error "__cpp_lib_reference_from_temporary should have the value 202202L in c++2b"
+#   endif
+# else // _LIBCPP_VERSION
+#   ifdef __cpp_lib_reference_from_temporary
+#     error "__cpp_lib_reference_from_temporary should not be defined because it is unimplemented in libc++!"
+#   endif
+# endif
+
 # ifndef __cpp_lib_remove_cvref
 #   error "__cpp_lib_remove_cvref should be defined in c++2b"
 # endif
@@ -678,6 +680,13 @@
 # endif
 # if __cpp_lib_transformation_trait_aliases != 201304L
 #   error "__cpp_lib_transformation_trait_aliases should have the value 201304L in c++2b"
+# endif
+
+# ifndef __cpp_lib_type_identity
+#   error "__cpp_lib_type_identity should be defined in c++2b"
+# endif
+# if __cpp_lib_type_identity != 201806L
+#   error "__cpp_lib_type_identity should have the value 201806L in c++2b"
 # endif
 
 # ifndef __cpp_lib_type_trait_variable_templates

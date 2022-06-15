@@ -14,22 +14,23 @@ $assert DATATYPE != "QC8" or REQUANTIZATION == "FP32"
 
 $PARAMS_UNION = "xnn_qs8_minmax_params" if CHANNELWISE else "xnn_qs8_conv_minmax_params"
 $ISA = "neonv8" if ARMV8 else "neon"
+$CPU = "a35" if ARMV8 else "a7"
 $XMIN = "VMIN.U8" if DATATYPE == "QU8" else "VMIN.S8"
 $XMAX = "VMAX.U8" if DATATYPE == "QU8" else "VMAX.S8"
 $XXTL = "VMOVL.U8" if DATATYPE == "QU8" else "VMOVL.S8"
 $SQXTXN = "VQMOVUN.S16" if DATATYPE == "QU8" else "VQMOVN.S16"
 $XINT8_T = "uint8_t" if DATATYPE == "QU8" else "int8_t"
-// void xnn_${DATATYPE.lower()}_gemm_minmax_${REQUANTIZATION.lower()}_ukernel_4x8__aarch32_${ISA}_mlal_lane${"_prfm" if PREFETCH else ""}_cortex_a7(
+// void xnn_${DATATYPE.lower()}_gemm_minmax_${REQUANTIZATION.lower()}_ukernel_4x8__aarch32_${ISA}_mlal_lane${"_prfm" if PREFETCH else ""}_cortex_${CPU}(
 //     size_t mr,                            r0
 //     size_t nc,                            r1
-//     size_t kc,                            (r2) -> sp + 56 -> r5
+//     size_t kc,                            (r2) -> r5
 //     const ${XINT8_T}*restrict a,              r3
-//     size_t a_stride,           sp + 96 -> (r7)
-//     const void*restrict w,     sp + 100 -> r9
-//     ${XINT8_T}*restrict c,         sp + 104 -> r11
-//     size_t cm_stride,          sp + 108 -> (r6)
-//     size_t cn_stride,          sp + 112 -> r7
-//     ${PARAMS_UNION} params)  sp + 116 -> (r5)
+//     size_t a_stride,           sp + 88 -> (r7)
+//     const void*restrict w,     sp + 92 -> r9
+//     ${XINT8_T}*restrict c,         sp + 96 -> r11
+//     size_t cm_stride,          sp + 100 -> (r6)
+//     size_t cn_stride,          sp + 104 -> r7
+//     ${PARAMS_UNION} params)  sp + 108 -> (r5)
 
 // d8-d15, r4-r11,r14(lr) need to be preserved if used. r13(sp),r15(pc) are reserved.
 
@@ -87,21 +88,20 @@ $else:
   //    int8_t output_max;          d13[7]
   //  } xnn_qs8_minmax_params.neonv8;
 
-BEGIN_FUNCTION xnn_${DATATYPE.lower()}_gemm_minmax_${REQUANTIZATION.lower()}_ukernel_4x8__aarch32_${ISA}_mlal_lane${"_prfm" if PREFETCH else ""}_cortex_a7
-        # Push 96 bytes
+BEGIN_FUNCTION xnn_${DATATYPE.lower()}_gemm_minmax_${REQUANTIZATION.lower()}_ukernel_4x8__aarch32_${ISA}_mlal_lane${"_prfm" if PREFETCH else ""}_cortex_${CPU}
+        # Push 88 bytes
         PUSH    {r4, r5, r6, r7, r8, r9, r10, r11}  // 32
         $if DATATYPE == "QU8":
-          SUB     sp, sp, 8                           // +8
-          VPUSH   {d8-d14}                            // +56 = 96
+          VPUSH   {d8-d14}                            // +56 = 88
         $else:
-          SUB     sp, sp, 16                          // +16
-          VPUSH   {d8-d13}                            // +48 = 96
+          SUB     sp, sp, 8                           // +8
+          VPUSH   {d8-d13}                            // +48 = 88
 
-        LDR     r7, [sp, 96]            // a_stride
-        LDR     r11, [sp, 104]          // c
-        LDR     r6, [sp, 108]           // cm_stride
-        LDR     r9, [sp, 100]           // w
-        LDR     r5, [sp, 116]           // params
+        LDR     r7, [sp, 88]            // a_stride
+        LDR     r11, [sp, 96]           // c
+        LDR     r6, [sp, 100]           // cm_stride
+        LDR     r9, [sp, 92]            // w
+        LDR     r5, [sp, 108]           // params
 
         # Clamp A and C pointers
         CMP     r0, 2                   // if mr >= 2
@@ -131,7 +131,7 @@ BEGIN_FUNCTION xnn_${DATATYPE.lower()}_gemm_minmax_${REQUANTIZATION.lower()}_uke
         $elif DATATYPE == "QC8" and not ARMV8:
           VLDM    r5!, {d12}              // QC8 neon params
           VLD1.16 {d13[]}, [r5]           // output_min/max
-        LDR     r7, [sp, 112]            // cn_stride
+        LDR     r7, [sp, 104]            // cn_stride
 
         $if PREFETCH:
           PLD     [r9,  64]               // Prefetch B
@@ -574,7 +574,7 @@ BEGIN_FUNCTION xnn_${DATATYPE.lower()}_gemm_minmax_${REQUANTIZATION.lower()}_uke
         ${SQXTXN} d2, q10
         ${SQXTXN} d3, q11
 
-        VDUP.8  q13, d13[7]             // output_min
+        VDUP.8  q13, d13[7]             // output_max
 
         ${XMAX} q0, q0, q12
         ${XMAX} q1, q1, q12
@@ -598,10 +598,9 @@ BEGIN_FUNCTION xnn_${DATATYPE.lower()}_gemm_minmax_${REQUANTIZATION.lower()}_uke
 
         $if DATATYPE == "QU8":
           VPOP    {d8-d14}
-          ADD     sp, sp, 8               // skip pad of 8
         $else:
           VPOP    {d8-d13}
-          ADD     sp, sp, 16              // skip pad of 8 + d14
+          ADD     sp, sp, 8               // skip d14
         POP     {r4, r5, r6, r7, r8, r9, r10, r11}
         BX      lr
 
@@ -759,14 +758,13 @@ BEGIN_FUNCTION xnn_${DATATYPE.lower()}_gemm_minmax_${REQUANTIZATION.lower()}_uke
 8:
         $if DATATYPE == "QU8":
           VPOP    {d8-d14}
-          ADD     sp, sp, 8               // skip pad of 8
         $else:
           VPOP    {d8-d13}
-          ADD     sp, sp, 16              // skip pad of 8 + d14
+          ADD     sp, sp, 8               // skip d14
         POP     {r4, r5, r6, r7, r8, r9, r10, r11}
         BX      lr
 
-END_FUNCTION xnn_${DATATYPE.lower()}_gemm_minmax_${REQUANTIZATION.lower()}_ukernel_4x8__aarch32_${ISA}_mlal_lane${"_prfm" if PREFETCH else ""}_cortex_a7
+END_FUNCTION xnn_${DATATYPE.lower()}_gemm_minmax_${REQUANTIZATION.lower()}_ukernel_4x8__aarch32_${ISA}_mlal_lane${"_prfm" if PREFETCH else ""}_cortex_${CPU}
 
 #ifdef __ELF__
 .section ".note.GNU-stack","",%progbits

@@ -21,43 +21,10 @@
 
 namespace dawn::native {
 
-CachedBlob::CachedBlob(size_t size) {
-    if (size != 0) {
-        Reset(size);
-    }
-}
-
-CachedBlob::CachedBlob(CachedBlob&&) = default;
-
-CachedBlob::~CachedBlob() = default;
-
-CachedBlob& CachedBlob::operator=(CachedBlob&&) = default;
-
-bool CachedBlob::Empty() const {
-    return mSize == 0;
-}
-
-const uint8_t* CachedBlob::Data() const {
-    return mData.get();
-}
-
-uint8_t* CachedBlob::Data() {
-    return mData.get();
-}
-
-size_t CachedBlob::Size() const {
-    return mSize;
-}
-
-void CachedBlob::Reset(size_t size) {
-    mSize = size;
-    mData = std::make_unique<uint8_t[]>(size);
-}
-
 BlobCache::BlobCache(dawn::platform::CachingInterface* cachingInterface)
     : mCache(cachingInterface) {}
 
-CachedBlob BlobCache::Load(const CacheKey& key) {
+Blob BlobCache::Load(const CacheKey& key) {
     std::lock_guard<std::mutex> lock(mMutex);
     return LoadInternal(key);
 }
@@ -67,23 +34,24 @@ void BlobCache::Store(const CacheKey& key, size_t valueSize, const void* value) 
     StoreInternal(key, valueSize, value);
 }
 
-void BlobCache::Store(const CacheKey& key, const CachedBlob& value) {
+void BlobCache::Store(const CacheKey& key, const Blob& value) {
     Store(key, value.Size(), value.Data());
 }
 
-CachedBlob BlobCache::LoadInternal(const CacheKey& key) {
-    CachedBlob result;
+Blob BlobCache::LoadInternal(const CacheKey& key) {
     if (mCache == nullptr) {
-        return result;
+        return Blob();
     }
     const size_t expectedSize = mCache->LoadData(key.data(), key.size(), nullptr, 0);
     if (expectedSize > 0) {
-        result.Reset(expectedSize);
+        // Need to put this inside to trigger copy elision.
+        Blob result = CreateBlob(expectedSize);
         const size_t actualSize =
             mCache->LoadData(key.data(), key.size(), result.Data(), expectedSize);
         ASSERT(expectedSize == actualSize);
+        return result;
     }
-    return result;
+    return Blob();
 }
 
 void BlobCache::StoreInternal(const CacheKey& key, size_t valueSize, const void* value) {

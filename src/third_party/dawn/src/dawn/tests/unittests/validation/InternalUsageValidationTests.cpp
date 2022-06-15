@@ -64,12 +64,12 @@ TEST_F(InternalUsageValidationDisabledTest, CommandEncoderDescriptorRequiresFeat
 }
 
 class TextureInternalUsageValidationTest : public ValidationTest {
-    WGPUDevice CreateTestDevice() override {
+    WGPUDevice CreateTestDevice(dawn::native::Adapter dawnAdapter) override {
         wgpu::DeviceDescriptor descriptor;
         wgpu::FeatureName requiredFeatures[1] = {wgpu::FeatureName::DawnInternalUsages};
         descriptor.requiredFeatures = requiredFeatures;
         descriptor.requiredFeaturesCount = 1;
-        return adapter.CreateDevice(&descriptor);
+        return dawnAdapter.CreateDevice(&descriptor);
     }
 };
 
@@ -115,7 +115,7 @@ TEST_F(TextureInternalUsageValidationTest, UsageValidation) {
     {
         wgpu::TextureDescriptor textureDesc = {};
         textureDesc.size = {1, 1};
-        textureDesc.usage = wgpu::TextureUsage::CopySrc;
+        textureDesc.usage = wgpu::TextureUsage::CopySrc | wgpu::TextureUsage::RenderAttachment;
         textureDesc.format = wgpu::TextureFormat::RGBA8Unorm;
         textureDesc.sampleCount = 4;
 
@@ -204,6 +204,24 @@ TEST_F(TextureInternalUsageValidationTest, DeprecatedCommandValidation) {
     }
 }
 
+// Test that the internal usages aren't reflected with wgpu::Texture::GetUsage.
+TEST_F(TextureInternalUsageValidationTest, InternalUsagesAreNotReflected) {
+    wgpu::DawnTextureInternalUsageDescriptor internalDesc = {};
+    internalDesc.internalUsage = wgpu::TextureUsage::StorageBinding;
+
+    wgpu::TextureDescriptor textureDesc = {};
+    textureDesc.size = {1, 1};
+    textureDesc.usage = wgpu::TextureUsage::CopySrc;
+    textureDesc.format = wgpu::TextureFormat::RGBA8Unorm;
+    textureDesc.nextInChain = &internalDesc;
+
+    wgpu::Texture texture = device.CreateTexture(&textureDesc);
+    ASSERT_EQ(texture.GetUsage(), wgpu::TextureUsage::CopySrc);
+}
+
+
+// Test the validation of internal usages against command encoders with and without
+// useInternalUsages.
 TEST_F(TextureInternalUsageValidationTest, CommandValidation) {
     wgpu::TextureDescriptor textureDesc = {};
     textureDesc.size = {1, 1};

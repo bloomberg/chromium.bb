@@ -1846,7 +1846,7 @@ IFACEMETHODIMP AXPlatformNodeWin::get_accSelection(VARIANT* selected) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ACC_SELECTION);
   COM_OBJECT_VALIDATE_1_ARG(selected);
   std::vector<Microsoft::WRL::ComPtr<IDispatch>> selected_nodes;
-  for (int i = 0; i < GetDelegate()->GetChildCount(); ++i) {
+  for (size_t i = 0; i < GetDelegate()->GetChildCount(); ++i) {
     auto* node = static_cast<AXPlatformNodeWin*>(
         FromNativeViewAccessible(GetDelegate()->ChildAtIndex(i)));
     if (node && node->GetBoolAttribute(ax::mojom::BoolAttribute::kSelected)) {
@@ -2298,19 +2298,18 @@ IFACEMETHODIMP AXPlatformNodeWin::get_selectionRanges(IA2Range** ranges,
   AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
   AXTree::Selection unignored_selection =
       GetDelegate()->GetUnignoredSelection();
-  int32_t anchor_id = unignored_selection.anchor_object_id;
+
+  AXNodeID anchor_id = unignored_selection.anchor_object_id;
   auto* anchor_node =
       static_cast<AXPlatformNodeWin*>(GetDelegate()->GetFromNodeID(anchor_id));
   if (!anchor_node)
     return E_FAIL;
-  int anchor_offset = int{unignored_selection.anchor_offset};
 
-  int32_t focus_id = unignored_selection.focus_object_id;
+  AXNodeID focus_id = unignored_selection.focus_object_id;
   auto* focus_node =
       static_cast<AXPlatformNodeWin*>(GetDelegate()->GetFromNodeID(focus_id));
   if (!focus_node)
     return E_FAIL;
-  int focus_offset = int{unignored_selection.focus_offset};
 
   if (!IsDescendant(anchor_node) || !IsDescendant(focus_node))
     return S_FALSE;  // No selection within this subtree.
@@ -2318,10 +2317,10 @@ IFACEMETHODIMP AXPlatformNodeWin::get_selectionRanges(IA2Range** ranges,
   *ranges = reinterpret_cast<IA2Range*>(CoTaskMemAlloc(sizeof(IA2Range)));
   anchor_node->AddRef();
   ranges[0]->anchor = static_cast<IAccessible*>(anchor_node);
-  ranges[0]->anchorOffset = anchor_offset;
+  ranges[0]->anchorOffset = unignored_selection.anchor_offset;
   focus_node->AddRef();
   ranges[0]->active = static_cast<IAccessible*>(focus_node);
-  ranges[0]->activeOffset = focus_offset;
+  ranges[0]->activeOffset = unignored_selection.focus_offset;
   *nRanges = 1;
   return S_OK;
 }
@@ -2376,7 +2375,8 @@ IFACEMETHODIMP AXPlatformNodeWin::setSelectionRanges(LONG nRanges,
       return E_INVALIDARG;
     }
   } else {
-    if (ranges->anchorOffset > anchor_node->GetChildCount())
+    if (static_cast<size_t>(ranges->anchorOffset) >
+        anchor_node->GetChildCount())
       return E_INVALIDARG;
   }
 
@@ -2385,7 +2385,7 @@ IFACEMETHODIMP AXPlatformNodeWin::setSelectionRanges(LONG nRanges,
         focus_node->GetHypertext().length())
       return E_INVALIDARG;
   } else {
-    if (ranges->activeOffset > focus_node->GetChildCount())
+    if (static_cast<size_t>(ranges->activeOffset) > focus_node->GetChildCount())
       return E_INVALIDARG;
   }
 
@@ -3139,7 +3139,7 @@ IFACEMETHODIMP AXPlatformNodeWin::SetValue(LPCWSTR value) {
   if (!value)
     return E_INVALIDARG;
 
-  if (GetData().IsReadOnlyOrDisabled())
+  if (GetDelegate()->IsReadOnlyOrDisabled())
     return UIA_E_ELEMENTNOTENABLED;
 
   AXActionData data;
@@ -3153,7 +3153,7 @@ IFACEMETHODIMP AXPlatformNodeWin::SetValue(LPCWSTR value) {
 IFACEMETHODIMP AXPlatformNodeWin::get_IsReadOnly(BOOL* result) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_VALUE_GET_ISREADONLY);
   UIA_VALIDATE_CALL_1_ARG(result);
-  *result = GetData().IsReadOnlyOrDisabled();
+  *result = GetDelegate()->IsReadOnlyOrDisabled();
   return S_OK;
 }
 
@@ -4450,12 +4450,147 @@ IFACEMETHODIMP AXPlatformNodeWin::setSelection(LONG selection_index,
 IFACEMETHODIMP
 AXPlatformNodeWin::get_selections(IA2TextSelection** selections,
                                   LONG* nSelections) {
-  return E_NOTIMPL;
+  AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
+
+  COM_OBJECT_VALIDATE_2_ARGS(selections, nSelections);
+
+  AXTree::Selection unignored_selection =
+      GetDelegate()->GetUnignoredSelection();
+
+  AXNodeID anchor_id = unignored_selection.anchor_object_id;
+  AXPlatformNodeWin* anchor_node =
+      static_cast<AXPlatformNodeWin*>(GetDelegate()->GetFromNodeID(anchor_id));
+  if (!anchor_node)
+    return E_FAIL;
+
+  // If the selection endpoint is inside this object and therefore, at least
+  // from this side, we do not need to crop the selection. Simply convert
+  // selection anchor/focus offset to a hypertext offset within anchor/focus
+  // object. Otherwise per the IA2 Spec, we need to crop the selection to be
+  // within this object. `AXPlatformNodeBase::GetHypertextOffsetFromEndpoint`
+  // can correctly handle endpoint offsets that are outside this object by
+  // returning either 0 or hypertext length; see the related comment in
+  // the method's declaration.
+
+  int anchor_offset = unignored_selection.anchor_offset;
+  if (anchor_node->IsDescendant(this)) {
+    anchor_offset =
+        anchor_node->GetHypertextOffsetFromEndpoint(anchor_node, anchor_offset);
+  } else {
+    anchor_offset = GetHypertextOffsetFromEndpoint(anchor_node, anchor_offset);
+    anchor_node = this;
+  }
+  DCHECK_GE(anchor_offset, 0)
+      << "This value is unexpected here, since we have already determined in "
+         "this method that anchor_object is in the accessibility tree.";
+
+  AXNodeID focus_id = unignored_selection.focus_object_id;
+  AXPlatformNodeWin* focus_node =
+      static_cast<AXPlatformNodeWin*>(GetDelegate()->GetFromNodeID(focus_id));
+  if (!focus_node)
+    return E_FAIL;
+
+  int focus_offset = unignored_selection.focus_offset;
+  if (focus_node->IsDescendant(this)) {
+    focus_offset =
+        focus_node->GetHypertextOffsetFromEndpoint(focus_node, focus_offset);
+  } else {
+    focus_offset = GetHypertextOffsetFromEndpoint(focus_node, focus_offset);
+    focus_node = this;
+  }
+  DCHECK_GE(focus_offset, 0)
+      << "This value is unexpected here, since we have already determined in "
+         "this method that focus_object is in the accessibility tree.";
+
+  if (anchor_node == focus_node && anchor_offset == focus_offset)
+    return S_FALSE;  // No selection within this subtree.
+
+  Microsoft::WRL::ComPtr<IAccessibleText> anchor_text_node;
+  if (FAILED(anchor_node->QueryInterface(IID_PPV_ARGS(&anchor_text_node))))
+    return E_FAIL;
+
+  Microsoft::WRL::ComPtr<IAccessibleText> focus_text_node;
+  if (FAILED(focus_node->QueryInterface(IID_PPV_ARGS(&focus_text_node))))
+    return E_FAIL;
+
+  *selections = reinterpret_cast<IA2TextSelection*>(
+      CoTaskMemAlloc(sizeof(IA2TextSelection)));
+
+  if (unignored_selection.is_backward) {
+    selections[0]->startObj = focus_text_node.Detach();
+    selections[0]->startOffset = focus_offset;
+    selections[0]->endObj = anchor_text_node.Detach();
+    selections[0]->endOffset = anchor_offset;
+    selections[0]->startIsActive = true;
+  } else {
+    selections[0]->startObj = anchor_text_node.Detach();
+    selections[0]->startOffset = anchor_offset;
+    selections[0]->endObj = focus_text_node.Detach();
+    selections[0]->endOffset = focus_offset;
+    selections[0]->startIsActive = false;
+  }
+
+  *nSelections = 1;
+  return S_OK;
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::setSelections(LONG nSelections,
                                                 IA2TextSelection* selections) {
-  return E_NOTIMPL;
+  AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
+
+  COM_OBJECT_VALIDATE_1_ARG(selections);
+  if (nSelections != 1)
+    return E_INVALIDARG;
+
+  if (!selections->startObj || !selections->endObj)
+    return E_INVALIDARG;
+
+  Microsoft::WRL::ComPtr<IAccessible> start_obj;
+  if (FAILED(selections->startObj->QueryInterface(IID_PPV_ARGS(&start_obj))))
+    return E_INVALIDARG;
+
+  Microsoft::WRL::ComPtr<IAccessible> end_obj;
+  if (FAILED(selections->endObj->QueryInterface(IID_PPV_ARGS(&end_obj))))
+    return E_INVALIDARG;
+
+  const auto* start_node = static_cast<AXPlatformNodeWin*>(
+      FromNativeViewAccessible(start_obj.Get()));
+  const auto* end_node =
+      static_cast<AXPlatformNodeWin*>(FromNativeViewAccessible(end_obj.Get()));
+  if (!start_node || !end_node)
+    return E_INVALIDARG;
+
+  AXPosition start_position =
+      start_node->HypertextOffsetToEndpoint(selections->startOffset);
+  AXPosition end_position =
+      end_node->HypertextOffsetToEndpoint(selections->endOffset);
+  if (!start_position->IsNullPosition() || end_position->IsNullPosition())
+    return E_INVALIDARG;
+
+  AXActionData action_data;
+  action_data.action = ax::mojom::Action::kSetSelection;
+  action_data.target_tree_id = start_position->tree_id();
+  int start_offset = start_position->IsTextPosition()
+                         ? start_position->text_offset()
+                         : start_position->child_index();
+  int end_offset = end_position->IsTextPosition() ? end_position->text_offset()
+                                                  : end_position->child_index();
+  if (selections->startIsActive) {
+    action_data.focus_node_id = start_position->anchor_id();
+    action_data.focus_offset = start_offset;
+    action_data.anchor_node_id = end_position->anchor_id();
+    action_data.anchor_offset = end_offset;
+  } else {
+    action_data.anchor_node_id = start_position->anchor_id();
+    action_data.anchor_offset = start_offset;
+    action_data.focus_node_id = end_position->anchor_id();
+    action_data.focus_offset = end_offset;
+  }
+
+  if (GetDelegate()->AccessibilityPerformAction(action_data))
+    return S_OK;
+
+  return S_FALSE;
 }
 
 //
@@ -5551,9 +5686,10 @@ HRESULT AXPlatformNodeWin::GetTextAttributeValue(
       const AXPlatformNodeWin* text_field = static_cast<AXPlatformNodeWin*>(
           FromNativeViewAccessible(GetDelegate()->GetTextFieldAncestor()));
       if (text_field) {
-        result->Insert<VT_BOOL>(text_field->GetData().IsReadOnlyOrDisabled());
+        result->Insert<VT_BOOL>(
+            text_field->GetDelegate()->IsReadOnlyOrDisabled());
       } else {
-        result->Insert<VT_BOOL>(GetData().IsReadOnlyOrDisabled());
+        result->Insert<VT_BOOL>(GetDelegate()->IsReadOnlyOrDisabled());
       }
       break;
     }
@@ -6860,7 +6996,7 @@ std::wstring AXPlatformNodeWin::ComputeUIAProperties() {
     // on *some* document structure roles such as paragraph, heading or list
     // even if the node data isn't marked as read only, as long as the
     // node is not editable.
-    if (GetData().IsReadOnlyOrDisabled())
+    if (GetDelegate()->IsReadOnlyOrDisabled())
       properties.push_back(L"readonly=true");
   }
 
@@ -7603,7 +7739,7 @@ HRESULT AXPlatformNodeWin::ComputeListItemNameAsBstr(BSTR* value_bstr) const {
   std::wstring str;
   // The list item name will result in the concatenation of its children's
   // accessible names, excluding the list item marker.
-  for (int i = 0; i < GetChildCount(); ++i) {
+  for (size_t i = 0; i < GetChildCount(); ++i) {
     auto* child = static_cast<AXPlatformNodeWin*>(
         FromNativeViewAccessible(ChildAtIndex(i)));
     if (child->GetDelegate()->IsText() &&
@@ -7666,11 +7802,12 @@ AXPlatformNodeWin* AXPlatformNodeWin::GetTargetFromChildID(
   if (child_id == CHILDID_SELF)
     return this;
 
-  if (child_id >= 1 && child_id <= GetDelegate()->GetChildCount()) {
+  if (child_id >= 1 &&
+      static_cast<size_t>(child_id) <= GetDelegate()->GetChildCount()) {
     // Positive child ids are a 1-based child index, used by clients
     // that want to enumerate all immediate children.
-    AXPlatformNodeBase* base =
-        FromNativeViewAccessible(GetDelegate()->ChildAtIndex(child_id - 1));
+    AXPlatformNodeBase* base = FromNativeViewAccessible(
+        GetDelegate()->ChildAtIndex(static_cast<size_t>(child_id - 1)));
     return static_cast<AXPlatformNodeWin*>(base);
   }
 

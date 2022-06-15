@@ -152,8 +152,8 @@ See also: All [How-tos](/developers/how-tos).
 *   [Adding Performance
             Tests](/developers/testing/adding-performance-tests)
 *   [Telemetry: Performance testing framework](/developers/telemetry)
-    *   [Cluster Telemetry](/developers/cluster-telemetry): Run
-                benchmarks against the top 10k web pages
+    *   [Cluster Telemetry](https://sites.google.com/corp/google.com/cluster-telemetry/home): Run
+                benchmarks against the top 10k web pages (Googlers-only)
 *   [Memory](/Home/memory)
 *   [Profiling Tools](/developers/profiling-chromium-and-webkit):
     *   [Thread and Task Profiling and

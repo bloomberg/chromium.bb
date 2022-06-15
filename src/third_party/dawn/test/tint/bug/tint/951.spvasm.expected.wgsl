@@ -34,8 +34,8 @@ fn getAAtOutCoords_() -> f32 {
 
 fn unaryOperation_f1_(a : ptr<function, f32>) -> f32 {
   let x_47 : f32 = *(a);
-  if ((x_47 < 0.0)) {
-    return 0x1p+128;
+  if ((x_47 < 0.0f)) {
+    return 0x1p+128f;
   }
   let x_55 : f32 = *(a);
   return log(x_55);
@@ -72,7 +72,7 @@ fn main_1() {
   return;
 }
 
-@stage(compute) @workgroup_size(128i, 1i, 1i)
+@compute @workgroup_size(128i, 1i, 1i)
 fn main(@builtin(global_invocation_id) gl_GlobalInvocationID_param : vec3<u32>) {
   gl_GlobalInvocationID = gl_GlobalInvocationID_param;
   main_1();

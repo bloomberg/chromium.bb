@@ -24,13 +24,14 @@ cc_library(
     copts = ["-DCORE_ADAPTER_DLL"],
     visibility = [
         "//location/nearby/cpp/sharing:__subpackages__",
+        "//location/nearby/testing:__subpackages__",
         "//connections/clients:__subpackages__",
         "//internal/platform/implementation:__subpackages__",
     ],
     deps = [
         ":core_types",
-        ":event_logger",
         "//connections/implementation:internal",
+        "//internal/analytics:event_logger",
         "//internal/platform:base",
         "//internal/platform:logging",
         "//internal/platform:types",
@@ -47,6 +48,7 @@ cc_library(
         "connection_options.cc",
         "discovery_options.cc",
         "payload.cc",
+        "status.cc",
         "strategy.cc",
     ],
     hdrs = [
@@ -80,19 +82,6 @@ cc_library(
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/types:variant",
         "@com_google_glog//:glog",
-    ],
-)
-
-cc_library(
-    name = "event_logger",
-    hdrs = [
-        "event_logger.h",
-    ],
-    visibility = [
-        "//internal/analytics:__subpackages__",
-    ],
-    deps = [
-        "//internal/proto/analytics:connections_log_cc_proto",
     ],
 )
 

@@ -784,10 +784,9 @@ static int dxtory_decode_v2_444(AVCodecContext *avctx, AVFrame *pic,
                             AV_PIX_FMT_YUV444P, vflipped);
 }
 
-static int decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
-                        AVPacket *avpkt)
+static int decode_frame(AVCodecContext *avctx, AVFrame *pic,
+                        int *got_frame, AVPacket *avpkt)
 {
-    AVFrame *pic = data;
     const uint8_t *src = avpkt->data;
     uint32_t type;
     int vflipped, ret;
@@ -876,6 +875,6 @@ const FFCodec ff_dxtory_decoder = {
     .p.long_name    = NULL_IF_CONFIG_SMALL("Dxtory"),
     .p.type         = AVMEDIA_TYPE_VIDEO,
     .p.id           = AV_CODEC_ID_DXTORY,
-    .decode         = decode_frame,
+    FF_CODEC_DECODE_CB(decode_frame),
     .p.capabilities = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_FRAME_THREADS,
 };

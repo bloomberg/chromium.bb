@@ -24,7 +24,7 @@ TEST_F(ParserImplTest, Empty) {
 
 TEST_F(ParserImplTest, Parses) {
     auto p = parser(R"(
-@stage(fragment)
+@fragment
 fn main() -> @location(0) vec4<f32> {
   return vec4<f32>(.4, .2, .3, 1);
 }
@@ -82,7 +82,7 @@ foobar
 TEST_F(ParserImplTest, HandlesBadToken_InMiddle) {
     auto p = parser(R"(
 fn main() {
-  let f = 0x1p500000000000; // Exponent too big for hex float
+  let f = 0x1p10000000000000000000; // Exponent too big for hex float
   return;
 })");
 
@@ -96,7 +96,7 @@ TEST_F(ParserImplTest, HandlesBadToken_AtModuleScope) {
 fn main() {
   return;
 }
-0x1p5000000000000
+0x1p10000000000000000000
 )");
 
     ASSERT_FALSE(p->Parse());
@@ -112,7 +112,7 @@ TEST_F(ParserImplTest, Comments_TerminatedBlockComment) {
  * /* I can nest /**/ comments. */
  * // I can nest line comments too.
  **/
-@stage(fragment) // This is the stage
+@fragment // This is the stage
 fn main(/*
 no
 parameters
@@ -126,7 +126,7 @@ parameters
 
 TEST_F(ParserImplTest, Comments_UnterminatedBlockComment) {
     auto p = parser(R"(
-@stage(fragment)
+@fragment
 fn main() -> @location(0) vec4<f32> {
   return vec4<f32>(.4, .2, .3, 1);
 } /* unterminated block comments are invalid ...)");

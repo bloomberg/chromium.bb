@@ -64,7 +64,7 @@ The following information will be uploaded with ninjalog.
 * following build configs
 %s
 
-Uploading ninjalog will be started after you run autoninja another %d time.
+Uploading ninjalog will be started after you run autoninja another %d time(s).
 
 If you don't want to upload ninjalog, please run following command.
 $ python3 %s opt-out

@@ -5,6 +5,19 @@
 
 #include "transpose-normalization-tester.h"
 
+TEST(TRANSPOSE_NORMALIZATION_TEST, normalize_adjacent_1_dims) {
+    TransposeNormalizationTester()
+      .num_dims(4)
+      .element_size(4)
+      .perm({0,1,3,2})
+      .shape({1,1,60,2400})
+      .expected_normalized_shape({60,2400})
+      .expected_normalized_perm({1,0})
+      .expected_normalized_dims(2)
+      .expected_element_size(4)
+      .Test();
+}
+
 TEST(TRANSPOSE_NORMALIZATION_TEST, normalize_1D) {
     TransposeNormalizationTester()
       .num_dims(1)
@@ -40,6 +53,32 @@ TEST(TRANSPOSE_NORMALIZATION_TEST, normalize_2D_flatten_2D) {
       .expected_normalized_shape({23,17})
       .expected_normalized_perm({1,0})
       .expected_normalized_dims(2)
+      .expected_element_size(4)
+      .Test();
+}
+
+TEST(TRANSPOSE_NORMALIZATION_TEST, normalize_3D_redundant_dim) {
+    TransposeNormalizationTester()
+      .num_dims(3)
+      .element_size(4)
+      .perm({0,2,1})
+      .shape({2,1,3})
+      .expected_normalized_shape({1})
+      .expected_normalized_perm({0})
+      .expected_normalized_dims(1)
+      .expected_element_size(24)
+      .Test();
+}
+
+TEST(TRANSPOSE_NORMALIZATION_TEST, normalize_3D_all_ones) {
+    TransposeNormalizationTester()
+      .num_dims(3)
+      .element_size(4)
+      .perm({2,1,0})
+      .shape({1,1,1})
+      .expected_normalized_shape({1})
+      .expected_normalized_perm({0})
+      .expected_normalized_dims(1)
       .expected_element_size(4)
       .Test();
 }
@@ -106,6 +145,19 @@ TEST(TRANSPOSE_NORMALIZATION_TEST, normalize_3D_redundant_dim_first) {
       .expected_normalized_perm({1,0})
       .expected_normalized_dims(2)
       .expected_element_size(4)
+      .Test();
+}
+
+TEST(TRANSPOSE_NORMALIZATION_TEST, normalize_4D_to_1D) {
+    TransposeNormalizationTester()
+      .num_dims(4)
+      .element_size(4)
+      .perm({0, 2, 3, 1})
+      .shape({2, 2, 1, 1})
+      .expected_normalized_shape({1})
+      .expected_normalized_perm({0})
+      .expected_normalized_dims(1)
+      .expected_element_size(16)
       .Test();
 }
 

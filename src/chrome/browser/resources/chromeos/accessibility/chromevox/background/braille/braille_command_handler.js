@@ -5,8 +5,12 @@
 /**
  * @fileoverview ChromeVox braille commands.
  */
+import {ChromeVoxState} from '/chromevox/background/chromevox_state.js';
 import {DesktopAutomationInterface} from '/chromevox/background/desktop_automation_interface.js';
+import {EventSourceState} from '/chromevox/background/event_source.js';
+import {Output} from '/chromevox/background/output/output.js';
 import {BrailleCommandData} from '/chromevox/common/braille/braille_command_data.js';
+import {EventSourceType} from '/chromevox/common/event_source_type.js';
 import {EventGenerator} from '/common/event_generator.js';
 
 const RoleType = chrome.automation.RoleType;
@@ -235,5 +239,6 @@ export class BrailleCommandHandler {
 BrailleCommandHandler.instance_;
 
 BridgeHelper.registerHandler(
-    BridgeTarget.BRAILLE_COMMAND_HANDLER, BridgeAction.SET_ENABLED,
+    BridgeConstants.BrailleCommandHandler.TARGET,
+    BridgeConstants.BrailleCommandHandler.Action.SET_ENABLED,
     enabled => BrailleCommandHandler.setEnabled(enabled));

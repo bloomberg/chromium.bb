@@ -1387,13 +1387,13 @@ static int copy_output(SANMVideoContext *ctx, SANMFrameHeader *hdr)
     return 0;
 }
 
-static int decode_frame(AVCodecContext *avctx, void *data,
+static int decode_frame(AVCodecContext *avctx, AVFrame *frame,
                         int *got_frame_ptr, AVPacket *pkt)
 {
     SANMVideoContext *ctx = avctx->priv_data;
     int i, ret;
 
-    ctx->frame = data;
+    ctx->frame = frame;
     bytestream2_init(&ctx->gb, pkt->data, pkt->size);
 
     if (!ctx->version) {
@@ -1524,7 +1524,7 @@ const FFCodec ff_sanm_decoder = {
     .priv_data_size = sizeof(SANMVideoContext),
     .init           = decode_init,
     .close          = decode_end,
-    .decode         = decode_frame,
+    FF_CODEC_DECODE_CB(decode_frame),
     .p.capabilities = AV_CODEC_CAP_DR1,
     .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };

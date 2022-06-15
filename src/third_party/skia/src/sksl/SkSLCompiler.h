@@ -40,6 +40,7 @@
 #define SK_VERTEXID_BUILTIN               42
 #define SK_INSTANCEID_BUILTIN             43
 #define SK_POSITION_BUILTIN                0
+#define SK_POINTSIZE_BUILTIN               1
 
 class SkSLCompileBench;
 
@@ -250,8 +251,11 @@ private:
     /** Performs final checks to confirm that a fully-assembled/optimized is valid. */
     bool finalize(Program& program);
 
-    /** Optimize the module. */
-    bool optimize(LoadedModule& module, const ParsedModule& base);
+    /** Optimize a module in preparation for dehydration. */
+    bool optimizeModuleForDehydration(LoadedModule& module, const ParsedModule& base);
+
+    /** Optimize a module after rehydrating it. */
+    bool optimizeRehydratedModule(LoadedModule& module, const ParsedModule& base);
 
     /** Flattens out function calls when it is safe to do so. */
     bool runInliner(const std::vector<std::unique_ptr<ProgramElement>>& elements,

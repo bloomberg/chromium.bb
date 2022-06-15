@@ -959,6 +959,9 @@ static int ff_vsscanf(const char *s, const char *fmt, va_list ap)
     return ff_vfscanf(&f, fmt, ap);
 }
 
+// Chromium: av_sscanf() is ~8kb in implementation and isn't used by any
+// methods needed for Chromium; drop to save binary size.
+#if 0
 int av_sscanf(const char *string, const char *format, ...)
 {
     int ret;
@@ -968,3 +971,4 @@ int av_sscanf(const char *string, const char *format, ...)
     va_end(ap);
     return ret;
 }
+#endif

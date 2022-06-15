@@ -38,15 +38,16 @@ class PasswordStoreAndroidBackend
     : public PasswordStoreBackend,
       public PasswordStoreAndroidBackendBridge::Consumer {
  public:
-  explicit PasswordStoreAndroidBackend(
-      std::unique_ptr<SyncDelegate> sync_delegate);
+  PasswordStoreAndroidBackend(std::unique_ptr<SyncDelegate> sync_delegate,
+                              PrefService* prefs);
   PasswordStoreAndroidBackend(
       base::PassKey<class PasswordStoreAndroidBackendTest>,
       std::unique_ptr<PasswordStoreAndroidBackendBridge> bridge,
       std::unique_ptr<PasswordManagerLifecycleHelper> lifecycle_helper,
       std::unique_ptr<SyncDelegate> sync_delegate,
       std::unique_ptr<PasswordSyncControllerDelegateAndroid>
-          sync_controller_delegate);
+          sync_controller_delegate,
+      PrefService* prefs);
   ~PasswordStoreAndroidBackend() override;
 
  private:
@@ -95,10 +96,6 @@ class PasswordStoreAndroidBackend
   // like a bulk deletion just as well as the normal, rather small job load.
   using JobMap = base::small_map<
       std::unordered_map<JobId, JobReturnHandler, JobId::Hasher>>;
-  using AccumulatedLoginsReply =
-      base::OnceCallback<void(std::unique_ptr<LoginsResult>)>;
-  using AccumulatedPasswordStoreChangeListReply =
-      base::OnceCallback<void(std::unique_ptr<PasswordStoreChangeList>)>;
 
   // Implements PasswordStoreBackend interface.
   void InitBackend(RemoteChangesReceived stored_passwords_changed,
@@ -110,7 +107,7 @@ class PasswordStoreAndroidBackend
   void GetAllLoginsForAccountAsync(absl::optional<std::string> account,
                                    LoginsOrErrorReply callback) override;
   void FillMatchingLoginsAsync(
-      LoginsReply callback,
+      LoginsOrErrorReply callback,
       bool include_psl,
       const std::vector<PasswordFormDigest>& forms) override;
   void AddLoginAsync(const PasswordForm& form,
@@ -178,7 +175,7 @@ class PasswordStoreAndroidBackend
   // |callback|.
   static LoginsOrErrorReply ReportMetricsAndInvokeCallbackForLoginsRetrieval(
       const MetricInfix& metric_infix,
-      LoginsReply callback);
+      LoginsOrErrorReply callback);
 
   // Creates a metrics recorder that records latency and success metrics for
   // store modification operation with |metric_infix| name prior to
@@ -235,6 +232,8 @@ class PasswordStoreAndroidBackend
   // Delegate to handle sync events.
   std::unique_ptr<PasswordSyncControllerDelegateAndroid>
       sync_controller_delegate_;
+
+  raw_ptr<PrefService> prefs_ = nullptr;
 
   base::WeakPtrFactory<PasswordStoreAndroidBackend> weak_ptr_factory_{this};
 };

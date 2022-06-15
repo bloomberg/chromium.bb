@@ -27,15 +27,15 @@ class HistoryClustersItemView extends SelectableItemView<ClusterVisit> {
     @Override
     protected void onClick() {}
 
-    void setTitleText(String text) {
+    void setTitleText(CharSequence text) {
         mTitleView.setText(text);
     }
 
-    void setHostText(String text) {
+    void setHostText(CharSequence text) {
         mDescriptionView.setText(text);
     }
 
     void setIconDrawable(Drawable drawable) {
-        mStartIconView.setImageDrawable(drawable);
+        super.setStartIconDrawable(drawable);
     }
 }

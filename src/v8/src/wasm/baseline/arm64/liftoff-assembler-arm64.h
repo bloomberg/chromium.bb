@@ -520,9 +520,8 @@ void LiftoffAssembler::StoreTaggedPointer(Register dst_addr,
   }
   CheckPageFlag(src.gp(), MemoryChunk::kPointersToHereAreInterestingMask, ne,
                 &exit);
-  CallRecordWriteStubSaveRegisters(
-      dst_addr, offset_op, RememberedSetAction::kEmit, SaveFPRegsMode::kSave,
-      StubCallMode::kCallWasmRuntimeStub);
+  CallRecordWriteStubSaveRegisters(dst_addr, offset_op, SaveFPRegsMode::kSave,
+                                   StubCallMode::kCallWasmRuntimeStub);
   bind(&exit);
 }
 
@@ -991,7 +990,7 @@ void LiftoffAssembler::FillStackSlotsWithZero(int start, int size) {
       IsImmLSUnscaled(-start - 12)) {
     // Special straight-line code for up to 12 slots. Generates one
     // instruction per two slots (<= 7 instructions total).
-    STATIC_ASSERT(kStackSlotSize == kSystemPointerSize);
+    static_assert(kStackSlotSize == kSystemPointerSize);
     uint32_t remainder = size;
     for (; remainder >= 2 * kStackSlotSize; remainder -= 2 * kStackSlotSize) {
       stp(xzr, xzr, liftoff::GetStackSlot(start + remainder));
@@ -1778,14 +1777,34 @@ void LiftoffAssembler::emit_i8x16_swizzle(LiftoffRegister dst,
 void LiftoffAssembler::emit_i8x16_relaxed_swizzle(LiftoffRegister dst,
                                                   LiftoffRegister lhs,
                                                   LiftoffRegister rhs) {
-  bailout(kSimd, "emit_i8x16_relaxed_swizzle");
+  Tbl(dst.fp().V16B(), lhs.fp().V16B(), rhs.fp().V16B());
+}
+
+void LiftoffAssembler::emit_i32x4_relaxed_trunc_f32x4_s(LiftoffRegister dst,
+                                                        LiftoffRegister src) {
+  bailout(kRelaxedSimd, "emit_i32x4_relaxed_trunc_f32x4_s");
+}
+
+void LiftoffAssembler::emit_i32x4_relaxed_trunc_f32x4_u(LiftoffRegister dst,
+                                                        LiftoffRegister src) {
+  bailout(kRelaxedSimd, "emit_i32x4_relaxed_trunc_f32x4_u");
+}
+
+void LiftoffAssembler::emit_i32x4_relaxed_trunc_f64x2_s_zero(
+    LiftoffRegister dst, LiftoffRegister src) {
+  bailout(kRelaxedSimd, "emit_i32x4_relaxed_trunc_f64x2_s_zero");
+}
+
+void LiftoffAssembler::emit_i32x4_relaxed_trunc_f64x2_u_zero(
+    LiftoffRegister dst, LiftoffRegister src) {
+  bailout(kRelaxedSimd, "emit_i32x4_relaxed_trunc_f64x2_u_zero");
 }
 
 void LiftoffAssembler::emit_s128_relaxed_laneselect(LiftoffRegister dst,
                                                     LiftoffRegister src1,
                                                     LiftoffRegister src2,
                                                     LiftoffRegister mask) {
-  bailout(kSimd, "emit_s128_relaxed_laneselect");
+  emit_s128_select(dst, src1, src2, mask);
 }
 
 void LiftoffAssembler::emit_f64x2_splat(LiftoffRegister dst,
@@ -1912,6 +1931,18 @@ void LiftoffAssembler::emit_f64x2_pmax(LiftoffRegister dst, LiftoffRegister lhs,
   }
 }
 
+void LiftoffAssembler::emit_f64x2_relaxed_min(LiftoffRegister dst,
+                                              LiftoffRegister lhs,
+                                              LiftoffRegister rhs) {
+  Fmin(dst.fp().V2D(), lhs.fp().V2D(), rhs.fp().V2D());
+}
+
+void LiftoffAssembler::emit_f64x2_relaxed_max(LiftoffRegister dst,
+                                              LiftoffRegister lhs,
+                                              LiftoffRegister rhs) {
+  Fmax(dst.fp().V2D(), lhs.fp().V2D(), rhs.fp().V2D());
+}
+
 void LiftoffAssembler::emit_f64x2_convert_low_i32x4_s(LiftoffRegister dst,
                                                       LiftoffRegister src) {
   Sxtl(dst.fp().V2D(), src.fp().V2S());
@@ -2016,6 +2047,18 @@ void LiftoffAssembler::emit_f32x4_min(LiftoffRegister dst, LiftoffRegister lhs,
 
 void LiftoffAssembler::emit_f32x4_max(LiftoffRegister dst, LiftoffRegister lhs,
                                       LiftoffRegister rhs) {
+  Fmax(dst.fp().V4S(), lhs.fp().V4S(), rhs.fp().V4S());
+}
+
+void LiftoffAssembler::emit_f32x4_relaxed_min(LiftoffRegister dst,
+                                              LiftoffRegister lhs,
+                                              LiftoffRegister rhs) {
+  Fmin(dst.fp().V4S(), lhs.fp().V4S(), rhs.fp().V4S());
+}
+
+void LiftoffAssembler::emit_f32x4_relaxed_max(LiftoffRegister dst,
+                                              LiftoffRegister lhs,
+                                              LiftoffRegister rhs) {
   Fmax(dst.fp().V4S(), lhs.fp().V4S(), rhs.fp().V4S());
 }
 
@@ -3125,6 +3168,37 @@ void LiftoffAssembler::emit_i16x8_q15mulr_sat_s(LiftoffRegister dst,
   Sqrdmulh(dst.fp().V8H(), src1.fp().V8H(), src2.fp().V8H());
 }
 
+void LiftoffAssembler::emit_i16x8_relaxed_q15mulr_s(LiftoffRegister dst,
+                                                    LiftoffRegister src1,
+                                                    LiftoffRegister src2) {
+  Sqrdmulh(dst.fp().V8H(), src1.fp().V8H(), src2.fp().V8H());
+}
+
+void LiftoffAssembler::emit_i16x8_dot_i8x16_i7x16_s(LiftoffRegister dst,
+                                                    LiftoffRegister lhs,
+                                                    LiftoffRegister rhs) {
+  UseScratchRegisterScope scope(this);
+  VRegister tmp1 = scope.AcquireV(kFormat8H);
+  VRegister tmp2 = scope.AcquireV(kFormat8H);
+  Smull(tmp1, lhs.fp().V8B(), rhs.fp().V8B());
+  Smull2(tmp2, lhs.fp().V16B(), rhs.fp().V16B());
+  Addp(dst.fp().V8H(), tmp1, tmp2);
+}
+
+void LiftoffAssembler::emit_i32x4_dot_i8x16_i7x16_add_s(LiftoffRegister dst,
+                                                        LiftoffRegister lhs,
+                                                        LiftoffRegister rhs,
+                                                        LiftoffRegister acc) {
+  UseScratchRegisterScope scope(this);
+  VRegister tmp1 = scope.AcquireV(kFormat8H);
+  VRegister tmp2 = scope.AcquireV(kFormat8H);
+  Smull(tmp1, lhs.fp().V8B(), rhs.fp().V8B());
+  Smull2(tmp2, lhs.fp().V16B(), rhs.fp().V16B());
+  Addp(tmp1, tmp1, tmp2);
+  Saddlp(tmp1.V4S(), tmp1);
+  Add(dst.fp().V4S(), tmp1.V4S(), acc.fp().V4S());
+}
+
 void LiftoffAssembler::emit_i32x4_abs(LiftoffRegister dst,
                                       LiftoffRegister src) {
   Abs(dst.fp().V4S(), src.fp().V4S());
@@ -3139,28 +3213,28 @@ void LiftoffAssembler::emit_f32x4_qfma(LiftoffRegister dst,
                                        LiftoffRegister src1,
                                        LiftoffRegister src2,
                                        LiftoffRegister src3) {
-  bailout(kSimd, "emit_f32x4_qfma");
+  bailout(kRelaxedSimd, "emit_f32x4_qfma");
 }
 
 void LiftoffAssembler::emit_f32x4_qfms(LiftoffRegister dst,
                                        LiftoffRegister src1,
                                        LiftoffRegister src2,
                                        LiftoffRegister src3) {
-  bailout(kSimd, "emit_f32x4_qfms");
+  bailout(kRelaxedSimd, "emit_f32x4_qfms");
 }
 
 void LiftoffAssembler::emit_f64x2_qfma(LiftoffRegister dst,
                                        LiftoffRegister src1,
                                        LiftoffRegister src2,
                                        LiftoffRegister src3) {
-  bailout(kSimd, "emit_f64x2_qfma");
+  bailout(kRelaxedSimd, "emit_f64x2_qfma");
 }
 
 void LiftoffAssembler::emit_f64x2_qfms(LiftoffRegister dst,
                                        LiftoffRegister src1,
                                        LiftoffRegister src2,
                                        LiftoffRegister src3) {
-  bailout(kSimd, "emit_f64x2_qfms");
+  bailout(kRelaxedSimd, "emit_f64x2_qfms");
 }
 
 void LiftoffAssembler::StackCheck(Label* ool_code, Register limit_address) {

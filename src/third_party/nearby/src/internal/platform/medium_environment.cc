@@ -539,6 +539,9 @@ void MediumEnvironment::UpdateBleV2MediumForAdvertising(
           BleV2MediumContext& remote_context = medium_info.second;
           // Do not send notification to the same medium.
           if (remote_medium == &medium) continue;
+          auto const it = context.advertisement_data.service_data.find(
+              remote_context.scanning_service_uuid);
+          if (it == context.advertisement_data.service_data.end()) continue;
           NEARBY_LOGS(INFO)
               << "G3 UpdateBleV2MediumForAdvertising, found other medium="
               << remote_medium << ", remote_medium_context=" << &remote_context
@@ -552,10 +555,12 @@ void MediumEnvironment::UpdateBleV2MediumForAdvertising(
 }
 
 void MediumEnvironment::UpdateBleV2MediumForScanning(
-    bool enabled, BleScanCallback callback, api::ble_v2::BleMedium& medium) {
+    bool enabled, const Uuid& scanning_service_uuid, BleScanCallback callback,
+    api::ble_v2::BleMedium& medium) {
   if (!enabled_) return;
   RunOnMediumEnvironmentThread(
-      [this, &medium, callback = std::move(callback), enabled]() {
+      [this, &medium, scanning_service_uuid = scanning_service_uuid,
+       callback = std::move(callback), enabled]() {
         auto it = ble_v2_mediums_.find(&medium);
         if (it == ble_v2_mediums_.end()) {
           NEARBY_LOGS(INFO)
@@ -565,6 +570,7 @@ void MediumEnvironment::UpdateBleV2MediumForScanning(
         }
         BleV2MediumContext& context = it->second;
         context.scan_callback = std::move(callback);
+        context.scanning_service_uuid = scanning_service_uuid;
         NEARBY_LOGS(INFO) << "G3 UpdateBleV2MediumForScanning: this=" << this
                           << ", medium=" << &medium
                           << ", medium_context=" << &context
@@ -577,10 +583,16 @@ void MediumEnvironment::UpdateBleV2MediumForScanning(
             // medium.
             if (remote_medium == &medium || !remote_context.advertising)
               continue;
+            auto const it = remote_context.advertisement_data.service_data.find(
+                context.scanning_service_uuid);
+            if (it == remote_context.advertisement_data.service_data.end())
+              continue;
             NEARBY_LOGS(INFO)
                 << "G3 UpdateBleV2MediumForScanning, found other medium="
                 << remote_medium
                 << ", remote_medium_context=" << &remote_context
+                << ", scanning_service_uuid="
+                << scanning_service_uuid.Get16BitAsString()
                 << ". Ready to call OnBleV2PeripheralStateChanged.";
             OnBleV2PeripheralStateChanged(enabled, context,
                                           remote_context.advertisement_data,
@@ -588,6 +600,68 @@ void MediumEnvironment::UpdateBleV2MediumForScanning(
           }
         }
       });
+}
+
+void MediumEnvironment::InsertBleV2MediumGattCharacteristics(
+    const api::ble_v2::GattCharacteristic& characteristic,
+    const ByteArray& gatt_advertisement_byte) {
+  if (!enabled_) return;
+  CountDownLatch latch(1);
+  RunOnMediumEnvironmentThread(
+      [this, &latch, &characteristic, &gatt_advertisement_byte]() {
+        gatt_advertisement_bytes_[characteristic] = gatt_advertisement_byte;
+        latch.CountDown();
+      });
+  latch.Await();
+}
+
+bool MediumEnvironment::ContainsBleV2MediumGattCharacteristics(
+    const Uuid& service_uuid, const Uuid& characteristic_uuid) {
+  if (!enabled_) return false;
+  bool found_characteristic = false;
+  CountDownLatch latch(1);
+  RunOnMediumEnvironmentThread([this, &latch, &service_uuid,
+                                &characteristic_uuid, &found_characteristic]() {
+    for (const auto& item : gatt_advertisement_bytes_) {
+      if (item.first.service_uuid == service_uuid) {
+        if (characteristic_uuid.IsEmpty()) {
+          // Found the service uuid and no need to search characteristic
+          // uuid.
+          found_characteristic = true;
+          break;
+        }
+        if (item.first.uuid == characteristic_uuid) {
+          found_characteristic = true;
+          break;
+        }
+      }
+    }
+    latch.CountDown();
+  });
+  latch.Await();
+  return found_characteristic;
+}
+
+ByteArray MediumEnvironment::ReadBleV2MediumGattCharacteristics(
+    const api::ble_v2::GattCharacteristic& characteristic) {
+  if (!enabled_) return {};
+  ByteArray gatt_advertisement_byte = {};
+  CountDownLatch latch(1);
+  RunOnMediumEnvironmentThread(
+      [this, &latch, &characteristic, &gatt_advertisement_byte]() {
+        auto it = gatt_advertisement_bytes_.find(characteristic);
+        if (it != gatt_advertisement_bytes_.end()) {
+          gatt_advertisement_byte = it->second;
+        }
+        latch.CountDown();
+      });
+  latch.Await();
+  return gatt_advertisement_byte;
+}
+
+void MediumEnvironment::ClearBleV2MediumGattCharacteristics() {
+  if (!enabled_) return;
+  RunOnMediumEnvironmentThread([this]() { gatt_advertisement_bytes_.clear(); });
 }
 
 void MediumEnvironment::UnregisterBleV2Medium(api::ble_v2::BleMedium& medium) {
@@ -822,8 +896,8 @@ api::WifiHotspotMedium* MediumEnvironment::GetWifiHotspotMedium(
 }
 
 void MediumEnvironment::UpdateWifiHotspotMediumForStartOrConnect(
-      api::WifiHotspotMedium& medium, HotspotCredentials* hotspot_credentials,
-      bool is_ap, bool enabled) {
+    api::WifiHotspotMedium& medium, HotspotCredentials* hotspot_credentials,
+    bool is_ap, bool enabled) {
   if (!enabled_) return;
 
   CountDownLatch latch(1);
@@ -841,8 +915,8 @@ void MediumEnvironment::UpdateWifiHotspotMediumForStartOrConnect(
                         << "; ssid=" << hotspot_credentials->GetSSID()
                         << "; password=" << hotspot_credentials->GetPassword();
     } else {
-      NEARBY_LOGS(INFO) << "Reset WifiHotspot medium for Hotspot: this="
-                        << this << "; medium=" << &medium << role_status;
+      NEARBY_LOGS(INFO) << "Reset WifiHotspot medium for Hotspot: this=" << this
+                        << "; medium=" << &medium << role_status;
     }
 
     MutexLock lock(&mutex_);

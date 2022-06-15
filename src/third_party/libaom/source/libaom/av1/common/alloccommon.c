@@ -110,7 +110,7 @@ static INLINE void free_cdef_row_sync(AV1CdefRowSync **cdef_row_mt,
 
 void av1_free_cdef_buffers(AV1_COMMON *const cm,
                            AV1CdefWorkerData **cdef_worker,
-                           AV1CdefSync *cdef_sync, int num_workers) {
+                           AV1CdefSync *cdef_sync) {
   CdefInfo *cdef_info = &cm->cdef_info;
   const int num_mi_rows = cdef_info->allocated_mi_rows;
 
@@ -121,16 +121,17 @@ void av1_free_cdef_buffers(AV1_COMMON *const cm,
   // De-allocation of column buffer & source buffer (worker_0).
   free_cdef_bufs(cdef_info->colbuf, &cdef_info->srcbuf);
 
-  if (num_workers < 2) return;
+  free_cdef_row_sync(&cdef_sync->cdef_row_mt, num_mi_rows);
+
+  if (cdef_info->allocated_num_workers < 2) return;
   if (*cdef_worker != NULL) {
-    for (int idx = num_workers - 1; idx >= 1; idx--) {
+    for (int idx = cdef_info->allocated_num_workers - 1; idx >= 1; idx--) {
       // De-allocation of column buffer & source buffer for remaining workers.
       free_cdef_bufs((*cdef_worker)[idx].colbuf, &(*cdef_worker)[idx].srcbuf);
     }
     aom_free(*cdef_worker);
     *cdef_worker = NULL;
   }
-  free_cdef_row_sync(&cdef_sync->cdef_row_mt, num_mi_rows);
 }
 
 static INLINE void alloc_cdef_linebuf(AV1_COMMON *const cm, uint16_t **linebuf,
@@ -237,6 +238,9 @@ void av1_alloc_cdef_buffers(AV1_COMMON *const cm,
       // num_workers
       for (int idx = cdef_info->allocated_num_workers - 1; idx >= 1; idx--)
         free_cdef_bufs((*cdef_worker)[idx].colbuf, &(*cdef_worker)[idx].srcbuf);
+
+      aom_free(*cdef_worker);
+      *cdef_worker = NULL;
     } else if (num_workers > 1) {
       // Free src and column buffers for remaining workers in case of
       // reallocation

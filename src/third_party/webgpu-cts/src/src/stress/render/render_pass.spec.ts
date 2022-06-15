@@ -17,7 +17,7 @@ a single render pass for every output fragment, with each pass executing a one-v
     const kSize = 1024;
     const module = t.device.createShaderModule({
       code: `
-    @stage(vertex) fn vmain(@builtin(vertex_index) index: u32)
+    @vertex fn vmain(@builtin(vertex_index) index: u32)
         -> @builtin(position) vec4<f32> {
       let position = vec2<f32>(f32(index % ${kSize}u), f32(index / ${kSize}u));
       let r = vec2<f32>(1.0 / f32(${kSize}));
@@ -25,12 +25,13 @@ a single render pass for every output fragment, with each pass executing a one-v
       let b = r - vec2<f32>(1.0);
       return vec4<f32>(fma(position, a, b), 0.0, 1.0);
     }
-    @stage(fragment) fn fmain() -> @location(0) vec4<f32> {
+    @fragment fn fmain() -> @location(0) vec4<f32> {
       return vec4<f32>(1.0, 0.0, 1.0, 1.0);
     }
     `,
     });
     const pipeline = t.device.createRenderPipeline({
+      layout: 'auto',
       vertex: { module, entryPoint: 'vmain', buffers: [] },
       primitive: { topology: 'point-list' },
       fragment: {
@@ -77,7 +78,7 @@ pass does a single draw call, with one pass per output fragment.`
     const kHeight = 8;
     const module = t.device.createShaderModule({
       code: `
-    @stage(vertex) fn vmain(@builtin(vertex_index) index: u32)
+    @vertex fn vmain(@builtin(vertex_index) index: u32)
         -> @builtin(position) vec4<f32> {
       let position = vec2<f32>(f32(index % ${kWidth}u), f32(index / ${kWidth}u));
       let size = vec2<f32>(f32(${kWidth}), f32(${kHeight}));
@@ -86,7 +87,7 @@ pass does a single draw call, with one pass per output fragment.`
       let b = r - vec2<f32>(1.0);
       return vec4<f32>(fma(position, a, b), 0.0, 1.0);
     }
-    @stage(fragment) fn fmain() -> @location(0) vec4<f32> {
+    @fragment fn fmain() -> @location(0) vec4<f32> {
       return vec4<f32>(1.0, 0.0, 1.0, 1.0);
     }
     `,
@@ -120,6 +121,7 @@ pass does a single draw call, with one pass per output fragment.`
     const encoder = t.device.createCommandEncoder();
     range(kWidth * kHeight, i => {
       const pipeline = t.device.createRenderPipeline({
+        layout: 'auto',
         vertex: { module, entryPoint: 'vmain', buffers: [] },
         primitive: { topology: 'point-list' },
         depthStencil: {
@@ -159,7 +161,7 @@ buffer.`
       code: `
     struct Uniforms { index: u32; };
     @group(0) @binding(0) var<uniform> uniforms: Uniforms;
-    @stage(vertex) fn vmain() -> @builtin(position) vec4<f32> {
+    @vertex fn vmain() -> @builtin(position) vec4<f32> {
       let index = uniforms.index;
       let position = vec2<f32>(f32(index % ${kSize}u), f32(index / ${kSize}u));
       let r = vec2<f32>(1.0 / f32(${kSize}));
@@ -167,7 +169,7 @@ buffer.`
       let b = r - vec2<f32>(1.0);
       return vec4<f32>(fma(position, a, b), 0.0, 1.0);
     }
-    @stage(fragment) fn fmain() -> @location(0) vec4<f32> {
+    @fragment fn fmain() -> @location(0) vec4<f32> {
       return vec4<f32>(1.0, 0.0, 1.0, 1.0);
     }
     `,
@@ -239,7 +241,7 @@ render pass with a single pipeline, and one draw call per fragment of the output
     const kSize = 4096;
     const module = t.device.createShaderModule({
       code: `
-    @stage(vertex) fn vmain(@builtin(vertex_index) index: u32)
+    @vertex fn vmain(@builtin(vertex_index) index: u32)
         -> @builtin(position) vec4<f32> {
       let position = vec2<f32>(f32(index % ${kSize}u), f32(index / ${kSize}u));
       let r = vec2<f32>(1.0 / f32(${kSize}));
@@ -247,12 +249,13 @@ render pass with a single pipeline, and one draw call per fragment of the output
       let b = r - vec2<f32>(1.0);
       return vec4<f32>(fma(position, a, b), 0.0, 1.0);
     }
-    @stage(fragment) fn fmain() -> @location(0) vec4<f32> {
+    @fragment fn fmain() -> @location(0) vec4<f32> {
       return vec4<f32>(1.0, 0.0, 1.0, 1.0);
     }
     `,
     });
     const pipeline = t.device.createRenderPipeline({
+      layout: 'auto',
       vertex: { module, entryPoint: 'vmain', buffers: [] },
       primitive: { topology: 'point-list' },
       fragment: {
@@ -298,7 +301,7 @@ call which draws multiple vertices for each fragment of a large output texture.`
     const kVertsPerFragment = (kSize * kSize) / (kTextureSize * kTextureSize);
     const module = t.device.createShaderModule({
       code: `
-    @stage(vertex) fn vmain(@builtin(vertex_index) vert_index: u32)
+    @vertex fn vmain(@builtin(vertex_index) vert_index: u32)
         -> @builtin(position) vec4<f32> {
       let index = vert_index / ${kVertsPerFragment}u;
       let position = vec2<f32>(f32(index % ${kTextureSize}u), f32(index / ${kTextureSize}u));
@@ -307,12 +310,13 @@ call which draws multiple vertices for each fragment of a large output texture.`
       let b = r - vec2<f32>(1.0);
       return vec4<f32>(fma(position, a, b), 0.0, 1.0);
     }
-    @stage(fragment) fn fmain() -> @location(0) vec4<f32> {
+    @fragment fn fmain() -> @location(0) vec4<f32> {
       return vec4<f32>(1.0, 0.0, 1.0, 1.0);
     }
     `,
     });
     const pipeline = t.device.createRenderPipeline({
+      layout: 'auto',
       vertex: { module, entryPoint: 'vmain', buffers: [] },
       primitive: { topology: 'point-list' },
       fragment: {

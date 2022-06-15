@@ -16,6 +16,7 @@
 #include "src/execution/isolate-inl.h"
 #include "src/interpreter/bytecode-array-iterator.h"
 #include "src/interpreter/bytecodes.h"
+#include "src/objects/code-inl.h"
 #include "src/objects/contexts.h"
 #include "src/snapshot/snapshot.h"
 
@@ -1072,9 +1073,11 @@ static bool TransitivelyCalledBuiltinHasNoSideEffect(Builtin caller,
     case Builtin::kArrayForEachLoopContinuation:
     case Builtin::kArrayIncludesHoleyDoubles:
     case Builtin::kArrayIncludesPackedDoubles:
+    case Builtin::kArrayIncludesSmi:
     case Builtin::kArrayIncludesSmiOrObject:
     case Builtin::kArrayIndexOfHoleyDoubles:
     case Builtin::kArrayIndexOfPackedDoubles:
+    case Builtin::kArrayIndexOfSmi:
     case Builtin::kArrayIndexOfSmiOrObject:
     case Builtin::kArrayMapLoopContinuation:
     case Builtin::kArrayReduceLoopContinuation:
@@ -1120,10 +1123,8 @@ static bool TransitivelyCalledBuiltinHasNoSideEffect(Builtin caller,
     case Builtin::kProxyHasProperty:
     case Builtin::kProxyIsExtensible:
     case Builtin::kProxyGetPrototypeOf:
-    case Builtin::kRecordWriteEmitRememberedSetSaveFP:
-    case Builtin::kRecordWriteOmitRememberedSetSaveFP:
-    case Builtin::kRecordWriteEmitRememberedSetIgnoreFP:
-    case Builtin::kRecordWriteOmitRememberedSetIgnoreFP:
+    case Builtin::kRecordWriteSaveFP:
+    case Builtin::kRecordWriteIgnoreFP:
     case Builtin::kStringAdd_CheckNone:
     case Builtin::kStringEqual:
     case Builtin::kStringIndexOf:
@@ -1205,10 +1206,11 @@ void DebugEvaluate::VerifyTransitiveBuiltins(Isolate* isolate) {
     for (RelocIterator it(code, mode); !it.done(); it.next()) {
       RelocInfo* rinfo = it.rinfo();
       DCHECK(RelocInfo::IsCodeTargetMode(rinfo->rmode()));
-      Code callee_code = isolate->heap()->GcSafeFindCodeForInnerPointer(
-          rinfo->target_address());
-      if (!callee_code.is_builtin()) continue;
-      Builtin callee = static_cast<Builtin>(callee_code.builtin_id());
+      CodeLookupResult lookup_result =
+          isolate->heap()->GcSafeFindCodeForInnerPointer(
+              rinfo->target_address());
+      CHECK(lookup_result.IsFound());
+      Builtin callee = lookup_result.builtin_id();
       if (BuiltinGetSideEffectState(callee) == DebugInfo::kHasNoSideEffect) {
         continue;
       }

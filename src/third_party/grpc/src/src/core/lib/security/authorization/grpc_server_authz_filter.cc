@@ -16,7 +16,10 @@
 
 #include "src/core/lib/security/authorization/grpc_server_authz_filter.h"
 
+#include "absl/strings/str_join.h"
+
 #include "src/core/lib/channel/promise_based_filter.h"
+#include "src/core/lib/promise/promise.h"
 #include "src/core/lib/security/authorization/evaluate_args.h"
 #include "src/core/lib/transport/transport.h"
 
@@ -32,11 +35,9 @@ GrpcServerAuthzFilter::GrpcServerAuthzFilter(
       provider_(std::move(provider)) {}
 
 absl::StatusOr<GrpcServerAuthzFilter> GrpcServerAuthzFilter::Create(
-    const grpc_channel_args* args, ChannelFilter::Args) {
-  grpc_auth_context* auth_context = grpc_find_auth_context_in_args(args);
-  grpc_authorization_policy_provider* provider =
-      grpc_channel_args_find_pointer<grpc_authorization_policy_provider>(
-          args, GRPC_ARG_AUTHORIZATION_POLICY_PROVIDER);
+    ChannelArgs args, ChannelFilter::Args) {
+  auto* auth_context = args.GetObject<grpc_auth_context>();
+  auto* provider = args.GetObject<grpc_authorization_policy_provider>();
   if (provider == nullptr) {
     return absl::InvalidArgumentError("Failed to get authorization provider.");
   }

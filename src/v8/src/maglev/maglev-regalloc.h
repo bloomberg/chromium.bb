@@ -129,11 +129,17 @@ class StraightForwardRegisterAllocator {
   void AllocateControlNode(ControlNode* node, BasicBlock* block);
   void AllocateNode(Node* node);
   void AllocateNodeResult(ValueNode* node);
-  void AssignInput(Input& input);
+  void AssignFixedInput(Input& input);
+  void AssignArbitraryRegisterInput(Input& input);
+  void AssignInputs(NodeBase* node);
   void AssignTemporaries(NodeBase* node);
   void TryAllocateToInput(Phi* phi);
 
-  void AddMoveBeforeCurrentNode(compiler::AllocatedOperand source,
+  void VerifyInputs(NodeBase* node);
+  void VerifyRegisterState();
+
+  void AddMoveBeforeCurrentNode(ValueNode* node,
+                                compiler::InstructionOperand source,
                                 compiler::AllocatedOperand target);
 
   void AllocateSpillSlot(ValueNode* node);
@@ -194,6 +200,8 @@ class StraightForwardRegisterAllocator {
   std::unique_ptr<MaglevPrintingVisitor> printing_visitor_;
   BlockConstIterator block_it_;
   NodeIterator node_it_;
+  // The current node, whether a Node in the body or the ControlNode.
+  NodeBase* current_node_;
 };
 
 }  // namespace maglev

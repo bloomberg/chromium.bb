@@ -23,50 +23,33 @@ namespace {
 
 using namespace skgpu::tess;
 
-using FixedCountStrokeWriter = PatchWriter<VertexChunkPatchAllocator,
-                                           Required<PatchAttribs::kJoinControlPoint>,
-                                           Optional<PatchAttribs::kStrokeParams>,
-                                           Optional<PatchAttribs::kColor>,
-                                           Optional<PatchAttribs::kWideColorIfEnabled>,
-                                           Optional<PatchAttribs::kExplicitCurveType>,
-                                           ReplicateLineEndPoints,
-                                           TrackJoinControlPoints>;
+using StrokeWriter = PatchWriter<VertexChunkPatchAllocator,
+                                 Required<PatchAttribs::kJoinControlPoint>,
+                                 Optional<PatchAttribs::kStrokeParams>,
+                                 Optional<PatchAttribs::kColor>,
+                                 Optional<PatchAttribs::kWideColorIfEnabled>,
+                                 Optional<PatchAttribs::kExplicitCurveType>,
+                                 ReplicateLineEndPoints,
+                                 TrackJoinControlPoints>;
 
-int write_fixed_count_patches(FixedCountStrokeWriter&& patchWriter,
-                              const SkMatrix& shaderMatrix,
-                              StrokeTessellator::PathStrokeList* pathStrokeList) {
-    int maxEdgesInJoin = 0;
-    float maxRadialSegmentsPerRadian = 0;
-    // getMaxScale() returns -1 if it can't compute a scale factor (e.g. perspective), taking the
-    // absolute value automatically converts that to an identity scale factor for our purposes.
-    float maxScale = std::abs(shaderMatrix.getMaxScale());
-
-    if (!(patchWriter.attribs() & PatchAttribs::kStrokeParams)) {
-        // Strokes are static. Calculate tolerances once.
-        const SkStrokeRec& stroke = pathStrokeList->fStroke;
-        float approxDevStrokeWidth = stroke.isHairlineStyle() ? 1.f : maxScale * stroke.getWidth();
-        float numRadialSegmentsPerRadian =
-                CalcNumRadialSegmentsPerRadian(0.5f * approxDevStrokeWidth);
-        maxEdgesInJoin = WorstCaseEdgesInJoin(stroke.getJoin(), numRadialSegmentsPerRadian);
-        maxRadialSegmentsPerRadian = numRadialSegmentsPerRadian;
-    }
-
+void write_fixed_count_patches(StrokeWriter&& patchWriter,
+                               const SkMatrix& shaderMatrix,
+                               StrokeTessellator::PathStrokeList* pathStrokeList) {
     // The vector xform approximates how the control points are transformed by the shader to
     // more accurately compute how many *parametric* segments are needed.
-    wangs_formula::VectorXform shaderXform{shaderMatrix};
+    // getMaxScale() returns -1 if it can't compute a scale factor (e.g. perspective), taking the
+    // absolute value automatically converts that to an identity scale factor for our purposes.
+    patchWriter.setShaderTransform(wangs_formula::VectorXform{shaderMatrix},
+                                   std::abs(shaderMatrix.getMaxScale()));
+    if (!(patchWriter.attribs() & PatchAttribs::kStrokeParams)) {
+        // Strokes are static. Calculate tolerances once.
+        patchWriter.updateUniformStrokeParams(pathStrokeList->fStroke);
+    }
+
     for (auto* pathStroke = pathStrokeList; pathStroke; pathStroke = pathStroke->fNext) {
         const SkStrokeRec& stroke = pathStroke->fStroke;
         if (patchWriter.attribs() & PatchAttribs::kStrokeParams) {
             // Strokes are dynamic. Calculate tolerances every time.
-            float approxDevStrokeWidth =
-                    stroke.isHairlineStyle() ? 1.f : maxScale * stroke.getWidth();
-            float numRadialSegmentsPerRadian =
-                    CalcNumRadialSegmentsPerRadian(0.5f * approxDevStrokeWidth);
-            maxEdgesInJoin = std::max(
-                    WorstCaseEdgesInJoin(stroke.getJoin(), numRadialSegmentsPerRadian),
-                    maxEdgesInJoin);
-            maxRadialSegmentsPerRadian = std::max(numRadialSegmentsPerRadian,
-                                                  maxRadialSegmentsPerRadian);
             patchWriter.updateStrokeParamsAttrib(stroke);
         }
         if (patchWriter.attribs() & PatchAttribs::kColor) {
@@ -103,7 +86,7 @@ int write_fixed_count_patches(FixedCountStrokeWriter&& patchWriter,
                         patchWriter.writeLine(p[0], cusp);
                         patchWriter.writeLine(cusp, p[2]);
                     } else {
-                        patchWriter.writeQuadratic(p, shaderXform);
+                        patchWriter.writeQuadratic(p);
                     }
                     break;
                 case Verb::kConic:
@@ -116,7 +99,7 @@ int write_fixed_count_patches(FixedCountStrokeWriter&& patchWriter,
                         patchWriter.writeLine(p[0], cusp);
                         patchWriter.writeLine(cusp, p[2]);
                     } else {
-                        patchWriter.writeConic(p, strokeIter.w(), shaderXform);
+                        patchWriter.writeConic(p, strokeIter.w());
                     }
                     break;
                 case Verb::kCubic:
@@ -125,7 +108,7 @@ int write_fixed_count_patches(FixedCountStrokeWriter&& patchWriter,
                     bool areCusps;
                     numChops = FindCubicConvex180Chops(p, T, &areCusps);
                     if (numChops == 0) {
-                        patchWriter.writeCubic(p, shaderXform);
+                        patchWriter.writeCubic(p);
                     } else if (numChops == 1) {
                         SkChopCubicAt(p, chops, T[0]);
                         if (areCusps) {
@@ -134,8 +117,8 @@ int write_fixed_count_patches(FixedCountStrokeWriter&& patchWriter,
                             // on a cusp.
                             chops[2] = chops[4] = chops[3];
                         }
-                        patchWriter.writeCubic(chops, shaderXform);
-                        patchWriter.writeCubic(chops + 3, shaderXform);
+                        patchWriter.writeCubic(chops);
+                        patchWriter.writeCubic(chops + 3);
                     } else {
                         SkASSERT(numChops == 2);
                         SkChopCubicAt(p, chops, T[0], T[1]);
@@ -148,45 +131,15 @@ int write_fixed_count_patches(FixedCountStrokeWriter&& patchWriter,
                             patchWriter.writeLine(chops[3], chops[6]);
                             patchWriter.writeLine(chops[6], chops[9]);
                         } else {
-                            patchWriter.writeCubic(chops, shaderXform);
-                            patchWriter.writeCubic(chops + 3, shaderXform);
-                            patchWriter.writeCubic(chops + 6, shaderXform);
+                            patchWriter.writeCubic(chops);
+                            patchWriter.writeCubic(chops + 3);
+                            patchWriter.writeCubic(chops + 6);
                         }
                     }
                     break;
             }
         }
     }
-
-    // The maximum rotation we can have in a stroke is 180 degrees (SK_ScalarPI radians).
-    int maxRadialSegmentsInStroke =
-            std::max(SkScalarCeilToInt(maxRadialSegmentsPerRadian * SK_ScalarPI), 1);
-
-    int maxParametricSegmentsInStroke = patchWriter.requiredFixedSegments();
-    SkASSERT(maxParametricSegmentsInStroke >= 1);
-
-    // Now calculate the maximum number of edges we will need in the stroke portion of the instance.
-    // The first and last edges in a stroke are shared by both the parametric and radial sets of
-    // edges, so the total number of edges is:
-    //
-    //   numCombinedEdges = numParametricEdges + numRadialEdges - 2
-    //
-    // It's also important to differentiate between the number of edges and segments in a strip:
-    //
-    //   numSegments = numEdges - 1
-    //
-    // So the total number of combined edges in the stroke is:
-    //
-    //   numEdgesInStroke = numParametricSegments + 1 + numRadialSegments + 1 - 2
-    //                    = numParametricSegments + numRadialSegments
-    //
-    int maxEdgesInStroke = maxRadialSegmentsInStroke + maxParametricSegmentsInStroke;
-
-    // Each triangle strip has two sections: It starts with a join then transitions to a stroke. The
-    // number of edges in an instance is the sum of edges from the join and stroke sections both.
-    // NOTE: The final join edge and the first stroke edge are co-located, however we still need to
-    // emit both because the join's edge is half-width and the stroke's is full-width.
-    return maxEdgesInJoin + maxEdgesInStroke;
 }
 
 }  // namespace
@@ -198,19 +151,17 @@ void StrokeTessellator::prepare(GrMeshDrawTarget* target,
                                 const SkMatrix& shaderMatrix,
                                 PathStrokeList* pathStrokeList,
                                 int totalCombinedStrokeVerbCnt) {
-    int preallocCount = FixedCountStrokes::PreallocCount(totalCombinedStrokeVerbCnt);
-    FixedCountStrokeWriter patchWriter{fAttribs, target, &fVertexChunkArray, preallocCount};
+    LinearTolerances worstCase;
+    const int preallocCount = FixedCountStrokes::PreallocCount(totalCombinedStrokeVerbCnt);
+    StrokeWriter patchWriter{fAttribs, &worstCase,  target, &fVertexChunkArray, preallocCount};
 
-    fFixedEdgeCount = write_fixed_count_patches(std::move(patchWriter),
-                                                shaderMatrix,
-                                                pathStrokeList);
+    write_fixed_count_patches(std::move(patchWriter), shaderMatrix, pathStrokeList);
+    fVertexCount = FixedCountStrokes::VertexCount(worstCase);
 
-    fFixedEdgeCount = std::min(fFixedEdgeCount, FixedCountStrokes::kMaxEdges);
-
-    if (!target->caps().shaderCaps()->vertexIDSupport()) {
+    if (!target->caps().shaderCaps()->fVertexIDSupport) {
         // Our shader won't be able to use sk_VertexID. Bind a fallback vertex buffer with the IDs
         // in it instead.
-        fFixedEdgeCount = std::min(fFixedEdgeCount, FixedCountStrokes::kMaxEdgesNoVertexIDs);
+        fVertexCount = std::min(fVertexCount, 2 * FixedCountStrokes::kMaxEdgesNoVertexIDs);
 
         SKGPU_DEFINE_STATIC_UNIQUE_KEY(gVertexIDFallbackBufferKey);
 
@@ -223,10 +174,10 @@ void StrokeTessellator::prepare(GrMeshDrawTarget* target,
 }
 
 void StrokeTessellator::draw(GrOpFlushState* flushState) const {
-    if (fVertexChunkArray.empty() || fFixedEdgeCount <= 0) {
+    if (fVertexChunkArray.empty() || fVertexCount <= 0) {
         return;
     }
-    if (!flushState->caps().shaderCaps()->vertexIDSupport() &&
+    if (!flushState->caps().shaderCaps()->fVertexIDSupport &&
         !fVertexBufferIfNoIDSupport) {
         return;
     }
@@ -234,7 +185,7 @@ void StrokeTessellator::draw(GrOpFlushState* flushState) const {
         flushState->bindBuffers(nullptr, instanceChunk.fBuffer, fVertexBufferIfNoIDSupport);
         flushState->drawInstanced(instanceChunk.fCount,
                                   instanceChunk.fBase,
-                                  fFixedEdgeCount * 2,
+                                  fVertexCount,
                                   0);
     }
 }

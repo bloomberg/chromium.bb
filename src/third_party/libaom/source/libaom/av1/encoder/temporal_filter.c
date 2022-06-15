@@ -608,11 +608,20 @@ void av1_apply_temporal_filter_c(
   // Allocate memory for pixel-wise squared differences. They,
   // regardless of the subsampling, are assigned with memory of size `mb_pels`.
   uint32_t *square_diff = aom_memalign(16, mb_pels * sizeof(uint32_t));
+  if (!square_diff) {
+    aom_internal_error(mbd->error_info, AOM_CODEC_MEM_ERROR,
+                       "Error allocating temporal filter data");
+  }
   memset(square_diff, 0, mb_pels * sizeof(square_diff[0]));
 
   // Allocate memory for accumulated luma squared error. This value will be
   // consumed while filtering the chroma planes.
   uint32_t *luma_sse_sum = aom_memalign(32, mb_pels * sizeof(uint32_t));
+  if (!luma_sse_sum) {
+    aom_free(square_diff);
+    aom_internal_error(mbd->error_info, AOM_CODEC_MEM_ERROR,
+                       "Error allocating temporal filter data");
+  }
   memset(luma_sse_sum, 0, mb_pels * sizeof(luma_sse_sum[0]));
 
   // Get window size for pixel-wise filtering.
@@ -1245,7 +1254,10 @@ void av1_temporal_filter(AV1_COMP *cpi, const int filter_frame_lookahead_idx,
 
   // Allocate and reset temporal filter buffers.
   const int is_highbitdepth = tf_ctx->is_highbitdepth;
-  tf_alloc_and_reset_data(tf_data, tf_ctx->num_pels, is_highbitdepth);
+  if (!tf_alloc_and_reset_data(tf_data, tf_ctx->num_pels, is_highbitdepth)) {
+    aom_internal_error(cpi->common.error, AOM_CODEC_MEM_ERROR,
+                       "Error allocating temporal filter data");
+  }
 
   // Perform temporal filtering process.
   if (mt_info->num_workers > 1)

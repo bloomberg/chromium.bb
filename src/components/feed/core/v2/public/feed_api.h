@@ -149,6 +149,11 @@ class FeedApi {
   // navigated to by the user.
   virtual bool WasUrlRecentlyNavigatedFromFeed(const GURL& url) = 0;
 
+  // Requests that the cache of the feed identified by |stream_kind| be
+  // invalidated so that its contents are re-fetched the next time that feed is
+  // shown/loaded.
+  virtual void InvalidateContentCacheFor(StreamKind stream_kind) = 0;
+
   // User interaction reporting. Unless otherwise documented, these have no
   // side-effects other than reporting metrics.
 
@@ -187,19 +192,6 @@ class FeedApi {
   // reporting function above..
   virtual void ReportOtherUserAction(const StreamType& stream_type,
                                      FeedUserActionType action_type) = 0;
-  // The notice identified by |key| is created.
-  virtual void ReportNoticeCreated(const StreamType& stream_type,
-                                   const std::string& key) = 0;
-  // The notice identified by |key| is viewed (fully visible in the viewport).
-  virtual void ReportNoticeViewed(const StreamType& stream_type,
-                                  const std::string& key) = 0;
-  // The notice identified by |key| has been clicked/tapped to perform an open
-  // action.
-  virtual void ReportNoticeOpenAction(const StreamType& stream_type,
-                                      const std::string& key) = 0;
-  // The notice identified by |key| is dismissed.
-  virtual void ReportNoticeDismissed(const StreamType& stream_type,
-                                     const std::string& key) = 0;
   // Reports that the info card is being tracked for its full visibility.
   virtual void ReportInfoCardTrackViewStarted(const StreamType& stream_type,
                                               int info_card_type) = 0;

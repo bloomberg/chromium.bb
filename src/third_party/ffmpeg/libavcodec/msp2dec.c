@@ -29,13 +29,11 @@
 #include "codec_internal.h"
 #include "internal.h"
 
-static int msp2_decode_frame(AVCodecContext *avctx,
-                            void *data, int *got_frame,
-                            AVPacket *avpkt)
+static int msp2_decode_frame(AVCodecContext *avctx, AVFrame *p,
+                             int *got_frame, AVPacket *avpkt)
 {
     const uint8_t *buf = avpkt->data;
     int buf_size       = avpkt->size;
-    AVFrame *p         = data;
     int ret;
     unsigned int x, y, width = (avctx->width + 7) / 8;
     GetByteContext idx, gb;
@@ -100,5 +98,5 @@ const FFCodec ff_msp2_decoder = {
     .p.type         = AVMEDIA_TYPE_VIDEO,
     .p.id           = AV_CODEC_ID_MSP2,
     .p.capabilities = AV_CODEC_CAP_DR1,
-    .decode         = msp2_decode_frame,
+    FF_CODEC_DECODE_CB(msp2_decode_frame),
 };

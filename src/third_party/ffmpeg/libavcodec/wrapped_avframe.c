@@ -76,10 +76,10 @@ static int wrapped_avframe_encode(AVCodecContext *avctx, AVPacket *pkt,
     return 0;
 }
 
-static int wrapped_avframe_decode(AVCodecContext *avctx, void *data,
+static int wrapped_avframe_decode(AVCodecContext *avctx, AVFrame *out,
                                   int *got_frame, AVPacket *pkt)
 {
-    AVFrame *in, *out;
+    AVFrame *in;
     int err;
 
     if (!(pkt->flags & AV_PKT_FLAG_TRUSTED)) {
@@ -91,19 +91,12 @@ static int wrapped_avframe_decode(AVCodecContext *avctx, void *data,
         return AVERROR(EINVAL);
 
     in  = (AVFrame*)pkt->data;
-    out = data;
 
     err = ff_decode_frame_props(avctx, out);
     if (err < 0)
         return err;
 
     av_frame_move_ref(out, in);
-
-    err = ff_attach_decode_data(out);
-    if (err < 0) {
-        av_frame_unref(out);
-        return err;
-    }
 
     *got_frame = 1;
     return 0;
@@ -114,7 +107,7 @@ const FFCodec ff_wrapped_avframe_encoder = {
     .p.long_name    = NULL_IF_CONFIG_SMALL("AVFrame to AVPacket passthrough"),
     .p.type         = AVMEDIA_TYPE_VIDEO,
     .p.id           = AV_CODEC_ID_WRAPPED_AVFRAME,
-    .encode2        = wrapped_avframe_encode,
+    FF_CODEC_ENCODE_CB(wrapped_avframe_encode),
     .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };
 
@@ -123,6 +116,6 @@ const FFCodec ff_wrapped_avframe_decoder = {
     .p.long_name    = NULL_IF_CONFIG_SMALL("AVPacket to AVFrame passthrough"),
     .p.type         = AVMEDIA_TYPE_VIDEO,
     .p.id           = AV_CODEC_ID_WRAPPED_AVFRAME,
-    .decode         = wrapped_avframe_decode,
+    FF_CODEC_DECODE_CB(wrapped_avframe_decode),
     .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };

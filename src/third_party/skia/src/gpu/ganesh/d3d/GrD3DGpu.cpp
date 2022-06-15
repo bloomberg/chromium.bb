@@ -365,15 +365,16 @@ sk_sp<GrTexture> GrD3DGpu::onCreateCompressedTexture(SkISize dimensions,
     GrMipmapStatus mipmapStatus = mipLevelCount > 1 ? GrMipmapStatus::kValid
                                                     : GrMipmapStatus::kNotAllocated;
 
-    sk_sp<GrD3DTexture> d3dTex = this->createD3DTexture(dimensions,
-                                                        dxgiFormat,
-                                                        GrRenderable::kNo,
-                                                        1,
-                                                        budgeted,
-                                                        isProtected,
-                                                        mipLevelCount,
-                                                        mipmapStatus,
-                                                        /*label=*/{});
+    sk_sp<GrD3DTexture> d3dTex = this->createD3DTexture(
+        dimensions,
+        dxgiFormat,
+        GrRenderable::kNo,
+        1,
+        budgeted,
+        isProtected,
+        mipLevelCount,
+        mipmapStatus,
+        /*label=*/"D3DGpu_CreateCompressedTexture");
     if (!d3dTex) {
         return nullptr;
     }
@@ -1103,7 +1104,7 @@ bool GrD3DGpu::onRegenerateMipMapLevels(GrTexture * tex) {
                                                   uavDesc,
                                                   grProtected,
                                                   GrMipmapStatus::kDirty,
-                                                  /*label=*/{});
+                                                  /*label=*/"RegenerateMipMapLevels");
         if (!uavTexture) {
             return false;
         }
@@ -1263,14 +1264,10 @@ bool GrD3DGpu::onRegenerateMipMapLevels(GrTexture * tex) {
     return true;
 }
 
-sk_sp<GrGpuBuffer> GrD3DGpu::onCreateBuffer(size_t sizeInBytes, GrGpuBufferType type,
-                                             GrAccessPattern accessPattern, const void* data) {
-    sk_sp<GrD3DBuffer> buffer = GrD3DBuffer::Make(this, sizeInBytes, type, accessPattern);
-    if (data && buffer) {
-        buffer->updateData(data, sizeInBytes);
-    }
-
-    return std::move(buffer);
+sk_sp<GrGpuBuffer> GrD3DGpu::onCreateBuffer(size_t sizeInBytes,
+                                            GrGpuBufferType type,
+                                            GrAccessPattern accessPattern) {
+    return GrD3DBuffer::Make(this, sizeInBytes, type, accessPattern);
 }
 
 sk_sp<GrAttachment> GrD3DGpu::makeStencilAttachment(const GrBackendFormat& /*colorFormat*/,

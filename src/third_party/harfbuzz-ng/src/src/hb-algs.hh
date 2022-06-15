@@ -59,7 +59,7 @@
 	  static inline constexpr T operator | (T l, T r) { return T ((unsigned) l | (unsigned) r); } \
 	  static inline constexpr T operator & (T l, T r) { return T ((unsigned) l & (unsigned) r); } \
 	  static inline constexpr T operator ^ (T l, T r) { return T ((unsigned) l ^ (unsigned) r); } \
-	  static inline constexpr T operator ~ (T r) { return T (~(unsigned int) r); } \
+	  static inline constexpr unsigned operator ~ (T r) { return (~(unsigned) r); } \
 	  static inline T& operator |= (T &l, T r) { l = l | r; return l; } \
 	  static inline T& operator &= (T& l, T r) { l = l & r; return l; } \
 	  static inline T& operator ^= (T& l, T r) { l = l ^ r; return l; } \
@@ -229,11 +229,11 @@ HB_FUNCOBJ (hb_bool);
 
 template <typename T>
 static inline
-T hb_coerce (const T v) { return v; }
+constexpr T hb_coerce (const T v) { return v; }
 template <typename T, typename V,
 	  hb_enable_if (!hb_is_same (hb_decay<T>, hb_decay<V>) && std::is_pointer<V>::value)>
 static inline
-T hb_coerce (const V v) { return *v; }
+constexpr T hb_coerce (const V v) { return *v; }
 
 struct
 {

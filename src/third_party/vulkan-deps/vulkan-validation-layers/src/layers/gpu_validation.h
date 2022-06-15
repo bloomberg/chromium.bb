@@ -257,6 +257,7 @@ class GpuAssisted : public GpuAssistedBase {
                                               const VkStridedDeviceAddressRegionKHR* pHitShaderBindingTable,
                                               const VkStridedDeviceAddressRegionKHR* pCallableShaderBindingTable,
                                               VkDeviceAddress indirectDeviceAddress) override;
+    void PreCallRecordCmdTraceRaysIndirect2KHR(VkCommandBuffer commandBuffer, VkDeviceAddress indirectDeviceAddress) override;
     void PostCallRecordCmdTraceRaysIndirectKHR(VkCommandBuffer commandBuffer,
                                                const VkStridedDeviceAddressRegionKHR* pRaygenShaderBindingTable,
                                                const VkStridedDeviceAddressRegionKHR* pMissShaderBindingTable,
@@ -284,6 +285,7 @@ class GpuAssisted : public GpuAssistedBase {
     VkBool32 shaderInt64;
     bool buffer_oob_enabled;
     bool validate_draw_indirect;
+    VmaPool output_buffer_pool = VK_NULL_HANDLE;
     GpuAssistedAccelerationStructureBuildValidationState acceleration_structure_validation_state;
     GpuAssistedPreDrawValidationState pre_draw_validation_state;
 

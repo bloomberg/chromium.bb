@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/media_query_exp.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/vector_traits.h"
 
 namespace blink {
 
@@ -34,22 +35,23 @@ class CORE_EXPORT MediaQueryResult {
   DISALLOW_NEW();
 
  public:
-  MediaQueryResult(const MediaQueryExp& expr, bool result)
-      : expression_(expr), result_(result) {}
+  MediaQueryResult(const MediaQueryFeatureExpNode& feature, bool result)
+      : feature_(&feature), result_(result) {}
+  void Trace(Visitor* visitor) const { visitor->Trace(feature_); }
 
   bool operator==(const MediaQueryResult& other) const {
-    return expression_ == other.expression_ && result_ == other.result_;
+    return feature_ == other.feature_ && result_ == other.result_;
   }
   bool operator!=(const MediaQueryResult& other) const {
     return !(*this == other);
   }
 
-  const MediaQueryExp& Expression() const { return expression_; }
+  const MediaQueryFeatureExpNode& Feature() const { return *feature_; }
 
   bool Result() const { return result_; }
 
  private:
-  const MediaQueryExp expression_;
+  Member<const MediaQueryFeatureExpNode> feature_;
   bool result_;
 };
 
@@ -59,16 +61,20 @@ class MediaQuerySetResult {
  public:
   MediaQuerySetResult(const MediaQuerySet& media_queries, bool result)
       : media_queries_(&media_queries), result_(result) {}
+  void Trace(Visitor* visitor) const { visitor->Trace(media_queries_); }
 
   const MediaQuerySet& MediaQueries() const { return *media_queries_; }
 
   bool Result() const { return result_; }
 
  private:
-  scoped_refptr<const MediaQuerySet> media_queries_;
+  Member<const MediaQuerySet> media_queries_;
   bool result_;
 };
 
 }  // namespace blink
+
+WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::MediaQueryResult)
+WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::MediaQuerySetResult)
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_MEDIA_QUERY_RESULT_H_

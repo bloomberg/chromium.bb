@@ -43,7 +43,9 @@ export async function attemptGarbageCollection(): Promise<void> {
   let i: number;
   function gcRec(n: number): void {
     if (n < 1) return;
+    /* eslint-disable @typescript-eslint/restrict-plus-operands */
     let temp: object | string = { i: 'ab' + i + i / 100000 };
+    /* eslint-disable @typescript-eslint/restrict-plus-operands */
     temp = temp + 'foo';
     temp; // dummy use of unused variable
     gcRec(n - 1);

@@ -12,8 +12,12 @@
 
 namespace skgpu::graphite {
 
-Caps::Caps() {}
+Caps::Caps() : fShaderCaps(std::make_unique<SkSL::ShaderCaps>()) {}
 Caps::~Caps() {}
+
+void Caps::finishInitialization() {
+    this->initSkCaps(fShaderCaps.get());
+}
 
 bool Caps::isTexturable(const TextureInfo& info) const {
     if (info.numSamples() > 1) {

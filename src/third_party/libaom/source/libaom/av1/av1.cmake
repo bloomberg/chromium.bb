@@ -354,7 +354,7 @@ list(APPEND AOM_AV1_ENCODER_INTRIN_AVX2
 
 list(APPEND AOM_AV1_ENCODER_INTRIN_NEON
             "${AOM_ROOT}/av1/encoder/arm/neon/quantize_neon.c"
-            "${AOM_ROOT}/av1/encoder/arm/neon/highbd_quantize_neon.c"
+            "${AOM_ROOT}/av1/encoder/arm/neon/av1_highbd_quantize_neon.c"
             "${AOM_ROOT}/av1/encoder/arm/neon/ml_neon.c"
             "${AOM_ROOT}/av1/encoder/arm/neon/picksrt_neon.c"
             "${AOM_ROOT}/av1/encoder/arm/neon/rdopt_neon.c"

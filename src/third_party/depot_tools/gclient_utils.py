@@ -111,6 +111,15 @@ def SplitUrlRevision(url):
   return tuple(components)
 
 
+def ExtractRefName(remote, full_refs_str):
+  """Returns the ref name if full_refs_str is a valid ref."""
+  result = re.compile(r'^refs(\/.+)?\/((%s)|(heads)|(tags))\/(?P<ref_name>.+)' %
+                      remote).match(full_refs_str)
+  if result:
+    return result.group('ref_name')
+  return None
+
+
 def IsGitSha(revision):
   """Returns true if the given string is a valid hex-encoded sha"""
   return re.match('^[a-fA-F0-9]{6,40}$', revision) is not None

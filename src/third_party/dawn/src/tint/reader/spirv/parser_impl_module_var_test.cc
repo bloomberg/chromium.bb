@@ -408,7 +408,7 @@ TEST_F(SpvModuleScopeVarParserTest, BuiltinPosition_StorePositionMember_OneAcces
     EXPECT_TRUE(p->BuildAndParseInternalModule());
     EXPECT_TRUE(p->error().empty());
     const auto module_str = test::ToString(p->program());
-    EXPECT_THAT(module_str, HasSubstr("gl_Position.y = 0.0;")) << module_str;
+    EXPECT_THAT(module_str, HasSubstr("gl_Position.y = 0.0f;")) << module_str;
 }
 
 TEST_F(SpvModuleScopeVarParserTest, BuiltinPosition_StorePositionMember_TwoAccessChain) {
@@ -430,7 +430,7 @@ TEST_F(SpvModuleScopeVarParserTest, BuiltinPosition_StorePositionMember_TwoAcces
     EXPECT_TRUE(p->BuildAndParseInternalModule());
     EXPECT_TRUE(p->error().empty());
     const auto module_str = test::ToString(p->program());
-    EXPECT_THAT(module_str, HasSubstr("gl_Position.y = 0.0;")) << module_str;
+    EXPECT_THAT(module_str, HasSubstr("gl_Position.y = 0.0f;")) << module_str;
 }
 
 TEST_F(SpvModuleScopeVarParserTest, BuiltinPointSize_Write1_IsErased) {
@@ -460,7 +460,7 @@ struct main_out {
   gl_Position : vec4<f32>,
 }
 
-@stage(vertex)
+@vertex
 fn main() -> main_out {
   main_1();
   return main_out(gl_Position);
@@ -510,7 +510,7 @@ TEST_F(SpvModuleScopeVarParserTest, BuiltinPointSize_ReadReplaced) {
 var<private> gl_Position : vec4<f32>;
 
 fn main_1() {
-  x_900 = 1.0;
+  x_900 = 1.0f;
   return;
 }
 
@@ -519,7 +519,7 @@ struct main_out {
   gl_Position : vec4<f32>,
 }
 
-@stage(vertex)
+@vertex
 fn main() -> main_out {
   main_1();
   return main_out(gl_Position);
@@ -575,7 +575,7 @@ struct main_out {
   gl_Position : vec4<f32>,
 }
 
-@stage(vertex)
+@vertex
 fn main() -> main_out {
   main_1();
   return main_out(gl_Position);
@@ -634,7 +634,7 @@ struct main_out {
   x_2_1 : vec4<f32>,
 }
 
-@stage(vertex)
+@vertex
 fn main() -> main_out {
   main_1();
   return main_out(x_2);
@@ -681,7 +681,7 @@ TEST_F(SpvModuleScopeVarParserTest, BuiltinPointSize_Loose_ReadReplaced_Vertex) 
 var<private> x_900 : f32;
 
 fn main_1() {
-  x_900 = 1.0;
+  x_900 = 1.0f;
   return;
 }
 
@@ -690,7 +690,7 @@ struct main_out {
   x_2_1 : vec4<f32>,
 }
 
-@stage(vertex)
+@vertex
 fn main() -> main_out {
   main_1();
   return main_out(x_2);
@@ -746,7 +746,7 @@ struct main_out {
   x_2_1 : vec4<f32>,
 }
 
-@stage(vertex)
+@vertex
 fn main() -> main_out {
   main_1();
   return main_out(x_2);
@@ -782,7 +782,7 @@ struct main_out {
   x_2_1 : vec4<f32>,
 }
 
-@stage(vertex)
+@vertex
 fn main() -> main_out {
   main_1();
   return main_out(x_2);
@@ -889,7 +889,7 @@ var<private> x_3 : i32 = -1i;
 
 var<private> x_4 : u32 = 1u;
 
-var<private> x_5 : f32 = 1.5;
+var<private> x_5 : f32 = 1.5f;
 )"));
 }
 
@@ -914,7 +914,7 @@ var<private> x_2 : i32 = 0i;
 
 var<private> x_3 : u32 = 0u;
 
-var<private> x_4 : f32 = 0.0;
+var<private> x_4 : f32 = 0.0f;
 )"));
 }
 
@@ -939,7 +939,7 @@ var<private> x_2 : i32 = 0i;
 
 var<private> x_3 : u32 = 0u;
 
-var<private> x_4 : f32 = 0.0;
+var<private> x_4 : f32 = 0.0f;
 )"));
 
     // This example module emits ok, but is not valid SPIR-V in the first place.
@@ -956,7 +956,7 @@ TEST_F(SpvModuleScopeVarParserTest, VectorInitializer) {
     ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
     EXPECT_TRUE(p->error().empty());
     const auto module_str = test::ToString(p->program());
-    EXPECT_THAT(module_str, HasSubstr("var<private> x_200 : vec2<f32> = vec2<f32>(1.5, 2.0);"));
+    EXPECT_THAT(module_str, HasSubstr("var<private> x_200 : vec2<f32> = vec2<f32>(1.5f, 2.0f);"));
 }
 
 TEST_F(SpvModuleScopeVarParserTest, VectorBoolNullInitializer) {
@@ -1083,9 +1083,9 @@ TEST_F(SpvModuleScopeVarParserTest, MatrixInitializer) {
     EXPECT_TRUE(p->error().empty());
     const auto module_str = test::ToString(p->program());
     EXPECT_THAT(module_str, HasSubstr("var<private> x_200 : mat3x2<f32> = mat3x2<f32>("
-                                      "vec2<f32>(1.5, 2.0), "
-                                      "vec2<f32>(2.0, 3.0), "
-                                      "vec2<f32>(3.0, 4.0));"));
+                                      "vec2<f32>(1.5f, 2.0f), "
+                                      "vec2<f32>(2.0f, 3.0f), "
+                                      "vec2<f32>(3.0f, 4.0f));"));
 }
 
 TEST_F(SpvModuleScopeVarParserTest, MatrixNullInitializer) {
@@ -1168,7 +1168,7 @@ TEST_F(SpvModuleScopeVarParserTest, StructInitializer) {
     EXPECT_TRUE(p->error().empty());
     const auto module_str = test::ToString(p->program());
     EXPECT_THAT(module_str,
-                HasSubstr("var<private> x_200 : S = S(1u, 1.5, array<u32, 2u>(1u, 2u));"))
+                HasSubstr("var<private> x_200 : S = S(1u, 1.5f, array<u32, 2u>(1u, 2u));"))
         << module_str;
 }
 
@@ -1181,7 +1181,7 @@ TEST_F(SpvModuleScopeVarParserTest, StructNullInitializer) {
     ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions()) << p->error();
     EXPECT_TRUE(p->error().empty());
     const auto module_str = test::ToString(p->program());
-    EXPECT_THAT(module_str, HasSubstr("var<private> x_200 : S = S(0u, 0.0, array<u32, 2u>());"))
+    EXPECT_THAT(module_str, HasSubstr("var<private> x_200 : S = S(0u, 0.0f, array<u32, 2u>());"))
         << module_str;
 }
 
@@ -1195,7 +1195,7 @@ TEST_F(SpvModuleScopeVarParserTest, StructUndefInitializer) {
     EXPECT_TRUE(p->error().empty());
 
     const auto module_str = test::ToString(p->program());
-    EXPECT_THAT(module_str, HasSubstr("var<private> x_200 : S = S(0u, 0.0, array<u32, 2u>());"))
+    EXPECT_THAT(module_str, HasSubstr("var<private> x_200 : S = S(0u, 0.0f, array<u32, 2u>());"))
         << module_str;
 
     // This example module emits ok, but is not valid SPIR-V in the first place.
@@ -1565,7 +1565,7 @@ TEST_F(SpvModuleScopeVarParserTest, ScalarSpecConstant_DeclareConst_F32) {
     ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions()) << p->error();
     EXPECT_TRUE(p->error().empty());
     const auto module_str = test::ToString(p->program());
-    EXPECT_THAT(module_str, HasSubstr("@id(12) override myconst : f32 = 2.5;")) << module_str;
+    EXPECT_THAT(module_str, HasSubstr("@id(12) override myconst : f32 = 2.5f;")) << module_str;
 }
 
 TEST_F(SpvModuleScopeVarParserTest, ScalarSpecConstant_DeclareConst_F32_WithoutSpecId) {
@@ -1580,7 +1580,7 @@ TEST_F(SpvModuleScopeVarParserTest, ScalarSpecConstant_DeclareConst_F32_WithoutS
     ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions()) << p->error();
     EXPECT_TRUE(p->error().empty());
     const auto module_str = test::ToString(p->program());
-    EXPECT_THAT(module_str, HasSubstr("override myconst : f32 = 2.5;")) << module_str;
+    EXPECT_THAT(module_str, HasSubstr("override myconst : f32 = 2.5f;")) << module_str;
 }
 
 TEST_F(SpvModuleScopeVarParserTest, ScalarSpecConstant_UsedInFunction) {
@@ -1650,7 +1650,7 @@ fn main_1() {
   return;
 }
 
-@stage(fragment)
+@fragment
 fn main(@builtin(sample_index) x_1_param : u32) {
   x_1 = bitcast<i32>(x_1_param);
   main_1();
@@ -1763,7 +1763,7 @@ fn main_1() {
   return;
 }
 
-@stage(fragment)
+@fragment
 fn main(@builtin(sample_index) x_1_param : u32) {
   x_1 = bitcast<i32>(x_1_param);
   main_1();
@@ -1816,7 +1816,7 @@ fn main_1() {
   return;
 }
 
-@stage(fragment)
+@fragment
 fn main(@builtin(sample_index) x_1_param : u32) {
   x_1 = x_1_param;
   main_1();
@@ -1846,7 +1846,7 @@ fn main_1() {
   return;
 }
 
-@stage(fragment)
+@fragment
 fn main(@builtin(sample_index) x_1_param : u32) {
   x_1 = x_1_param;
   main_1();
@@ -1875,7 +1875,7 @@ fn main_1() {
   return;
 }
 
-@stage(fragment)
+@fragment
 fn main(@builtin(sample_index) x_1_param : u32) {
   x_1 = x_1_param;
   main_1();
@@ -1989,7 +1989,7 @@ fn main_1() {
   return;
 }
 
-@stage(fragment)
+@fragment
 fn main(@builtin(sample_mask) x_1_param : u32) {
   x_1[0i] = x_1_param;
   main_1();
@@ -2021,7 +2021,7 @@ fn main_1() {
   return;
 }
 
-@stage(fragment)
+@fragment
 fn main(@builtin(sample_mask) x_1_param : u32) {
   x_1[0i] = x_1_param;
   main_1();
@@ -2053,7 +2053,7 @@ fn main_1() {
   return;
 }
 
-@stage(fragment)
+@fragment
 fn main(@builtin(sample_mask) x_1_param : u32) {
   x_1[0i] = x_1_param;
   main_1();
@@ -2084,7 +2084,7 @@ fn main_1() {
   return;
 }
 
-@stage(fragment)
+@fragment
 fn main(@builtin(sample_mask) x_1_param : u32) {
   x_1[0i] = bitcast<i32>(x_1_param);
   main_1();
@@ -2116,7 +2116,7 @@ fn main_1() {
   return;
 }
 
-@stage(fragment)
+@fragment
 fn main(@builtin(sample_mask) x_1_param : u32) {
   x_1[0i] = bitcast<i32>(x_1_param);
   main_1();
@@ -2148,7 +2148,7 @@ fn main_1() {
   return;
 }
 
-@stage(fragment)
+@fragment
 fn main(@builtin(sample_mask) x_1_param : u32) {
   x_1[0i] = bitcast<i32>(x_1_param);
   main_1();
@@ -2202,7 +2202,7 @@ struct main_out {
   x_1_1 : u32,
 }
 
-@stage(fragment)
+@fragment
 fn main() -> main_out {
   main_1();
   return main_out(x_1[0i]);
@@ -2239,7 +2239,7 @@ struct main_out {
   x_1_1 : u32,
 }
 
-@stage(fragment)
+@fragment
 fn main() -> main_out {
   main_1();
   return main_out(x_1[0i]);
@@ -2276,7 +2276,7 @@ struct main_out {
   x_1_1 : u32,
 }
 
-@stage(fragment)
+@fragment
 fn main() -> main_out {
   main_1();
   return main_out(x_1[0i]);
@@ -2312,7 +2312,7 @@ struct main_out {
   x_1_1 : u32,
 }
 
-@stage(fragment)
+@fragment
 fn main() -> main_out {
   main_1();
   return main_out(bitcast<u32>(x_1[0i]));
@@ -2349,7 +2349,7 @@ struct main_out {
   x_1_1 : u32,
 }
 
-@stage(fragment)
+@fragment
 fn main() -> main_out {
   main_1();
   return main_out(bitcast<u32>(x_1[0i]));
@@ -2386,7 +2386,7 @@ struct main_out {
   x_1_1 : u32,
 }
 
-@stage(fragment)
+@fragment
 fn main() -> main_out {
   main_1();
   return main_out(bitcast<u32>(x_1[0i]));
@@ -2425,7 +2425,7 @@ fn main_1() {
   return;
 }
 
-@stage(fragment)
+@fragment
 fn main(@builtin(sample_mask) x_1_param : u32) {
   x_1[0i] = x_1_param;
   main_1();
@@ -2469,7 +2469,7 @@ struct main_out {
   x_1_1 : u32,
 }
 
-@stage(fragment)
+@fragment
 fn main() -> main_out {
   main_1();
   return main_out(x_1[0i]);
@@ -2527,7 +2527,7 @@ struct main_out {
   x_4_1 : vec4<f32>,
 }
 
-@stage(vertex)
+@vertex
 fn main(@builtin(vertex_index) x_1_param : u32) -> main_out {
   x_1 = bitcast<i32>(x_1_param);
   main_1();
@@ -2565,7 +2565,7 @@ struct main_out {
   x_4_1 : vec4<f32>,
 }
 
-@stage(vertex)
+@vertex
 fn main(@builtin(vertex_index) x_1_param : u32) -> main_out {
   x_1 = bitcast<i32>(x_1_param);
   main_1();
@@ -2602,7 +2602,7 @@ struct main_out {
   x_4_1 : vec4<f32>,
 }
 
-@stage(vertex)
+@vertex
 fn main(@builtin(vertex_index) x_1_param : u32) -> main_out {
   x_1 = bitcast<i32>(x_1_param);
   main_1();
@@ -2638,7 +2638,7 @@ struct main_out {
   x_4_1 : vec4<f32>,
 }
 
-@stage(vertex)
+@vertex
 fn main(@builtin(vertex_index) x_1_param : u32) -> main_out {
   x_1 = x_1_param;
   main_1();
@@ -2676,7 +2676,7 @@ struct main_out {
   x_4_1 : vec4<f32>,
 }
 
-@stage(vertex)
+@vertex
 fn main(@builtin(vertex_index) x_1_param : u32) -> main_out {
   x_1 = x_1_param;
   main_1();
@@ -2713,7 +2713,7 @@ struct main_out {
   x_4_1 : vec4<f32>,
 }
 
-@stage(vertex)
+@vertex
 fn main(@builtin(vertex_index) x_1_param : u32) -> main_out {
   x_1 = x_1_param;
   main_1();
@@ -2797,7 +2797,7 @@ struct main_out {
   position_1 : vec4<f32>,
 }
 
-@stage(vertex)
+@vertex
 fn main(@builtin(instance_index) x_1_param : u32) -> main_out {
   x_1 = bitcast<i32>(x_1_param);
   main_1();
@@ -2835,7 +2835,7 @@ struct main_out {
   position_1 : vec4<f32>,
 }
 
-@stage(vertex)
+@vertex
 fn main(@builtin(instance_index) x_1_param : u32) -> main_out {
   x_1 = bitcast<i32>(x_1_param);
   main_1();
@@ -2872,7 +2872,7 @@ struct main_out {
   position_1 : vec4<f32>,
 }
 
-@stage(vertex)
+@vertex
 fn main(@builtin(instance_index) x_1_param : u32) -> main_out {
   x_1 = bitcast<i32>(x_1_param);
   main_1();
@@ -2931,7 +2931,7 @@ struct main_out {
   position_1 : vec4<f32>,
 }
 
-@stage(vertex)
+@vertex
 fn main(@builtin(instance_index) x_1_param : u32) -> main_out {
   x_1 = x_1_param;
   main_1();
@@ -2969,7 +2969,7 @@ struct main_out {
   position_1 : vec4<f32>,
 }
 
-@stage(vertex)
+@vertex
 fn main(@builtin(instance_index) x_1_param : u32) -> main_out {
   x_1 = x_1_param;
   main_1();
@@ -3006,7 +3006,7 @@ struct main_out {
   position_1 : vec4<f32>,
 }
 
-@stage(vertex)
+@vertex
 fn main(@builtin(instance_index) x_1_param : u32) -> main_out {
   x_1 = x_1_param;
   main_1();
@@ -3149,7 +3149,7 @@ fn main_1() {
   return;
 }
 
-@stage(compute) @workgroup_size(1i, 1i, 1i)
+@compute @workgroup_size(1i, 1i, 1i)
 fn main(@builtin(${wgsl_builtin}) x_1_param : ${unsigned_wgsl_type}) {
   x_1 = ${assignment_value};
   main_1();
@@ -3195,7 +3195,7 @@ fn main_1() {
   return;
 }
 
-@stage(compute) @workgroup_size(1i, 1i, 1i)
+@compute @workgroup_size(1i, 1i, 1i)
 fn main(@builtin(${wgsl_builtin}) x_1_param : ${unsigned_wgsl_type}) {
   x_1 = ${assignment_value};
   main_1();
@@ -3240,7 +3240,7 @@ fn main_1() {
   return;
 }
 
-@stage(compute) @workgroup_size(1i, 1i, 1i)
+@compute @workgroup_size(1i, 1i, 1i)
 fn main(@builtin(${wgsl_builtin}) x_1_param : ${unsigned_wgsl_type}) {
   x_1 = ${assignment_value};
   main_1();
@@ -3552,7 +3552,7 @@ struct main_out {
   x_4_1 : u32,
 }
 
-@stage(fragment)
+@fragment
 fn main(@location(0) @interpolate(flat) x_1_param : u32, @location(30) @interpolate(flat) x_3_param : u32) -> main_out {
   x_1 = x_1_param;
   x_3 = x_3_param;
@@ -3603,7 +3603,7 @@ struct main_out {
   x_4_1 : vec4<f32>,
 }
 
-@stage(vertex)
+@vertex
 fn main(@builtin(instance_index) x_1_param : u32) -> main_out {
   x_1 = x_1_param;
   main_1();
@@ -3652,7 +3652,7 @@ struct main_out {
   x_4_1 : vec4<f32>,
 }
 
-@stage(vertex)
+@vertex
 fn main(@builtin(instance_index) x_1_param : u32) -> main_out {
   x_1 = bitcast<i32>(x_1_param);
   main_1();
@@ -3692,7 +3692,7 @@ fn main_1() {
   return;
 }
 
-@stage(fragment)
+@fragment
 fn main(@builtin(sample_mask) x_1_param : u32) {
   x_1[0i] = x_1_param;
   main_1();
@@ -3730,7 +3730,7 @@ fn main_1() {
   return;
 }
 
-@stage(fragment)
+@fragment
 fn main(@builtin(sample_mask) x_1_param : u32) {
   x_1[0i] = bitcast<i32>(x_1_param);
   main_1();
@@ -3776,7 +3776,7 @@ struct main_out {
   x_1_1 : u32,
 }
 
-@stage(fragment)
+@fragment
 fn main() -> main_out {
   main_1();
   return main_out(x_1[0i]);
@@ -3822,7 +3822,7 @@ struct main_out {
   x_1_1 : u32,
 }
 
-@stage(fragment)
+@fragment
 fn main() -> main_out {
   main_1();
   return main_out(bitcast<u32>(x_1[0i]));
@@ -3854,7 +3854,7 @@ TEST_F(SpvModuleScopeVarParserTest, EntryPointWrapping_BuiltinVar_FragDepth_Out_
     ASSERT_TRUE(p->Parse()) << p->error() << assembly;
     EXPECT_TRUE(p->error().empty());
     const auto got = test::ToString(p->program());
-    const std::string expected = R"(var<private> x_1 : f32 = 0.0;
+    const std::string expected = R"(var<private> x_1 : f32 = 0.0f;
 
 fn main_1() {
   return;
@@ -3865,7 +3865,7 @@ struct main_out {
   x_1_1 : f32,
 }
 
-@stage(fragment)
+@fragment
 fn main() -> main_out {
   main_1();
   return main_out(x_1);
@@ -3899,7 +3899,7 @@ struct main_out {
   gl_Position : vec4<f32>,
 }
 
-@stage(vertex)
+@vertex
 fn main() -> main_out {
   main_1();
   return main_out(gl_Position);
@@ -3957,7 +3957,7 @@ TEST_F(SpvModuleScopeVarParserTest, BuiltinPosition_BuiltIn_Position_Initializer
 
     const auto got = test::ToString(p->program());
     const std::string expected =
-        R"(var<private> gl_Position : vec4<f32> = vec4<f32>(1.0, 2.0, 3.0, 4.0);
+        R"(var<private> gl_Position : vec4<f32> = vec4<f32>(1.0f, 2.0f, 3.0f, 4.0f);
 
 fn main_1() {
   return;
@@ -3968,7 +3968,7 @@ struct main_out {
   gl_Position : vec4<f32>,
 }
 
-@stage(vertex)
+@vertex
 fn main() -> main_out {
   main_1();
   return main_out(gl_Position);
@@ -4025,7 +4025,7 @@ struct main_out {
   x_2_1 : vec4<f32>,
 }
 
-@stage(vertex)
+@vertex
 fn main(@location(4) x_1_param : f32, @location(5) x_1_param_1 : f32, @location(6) x_1_param_2 : f32) -> main_out {
   x_1[0i] = x_1_param;
   x_1[1i] = x_1_param_1;
@@ -4083,7 +4083,7 @@ struct main_out {
   x_2_1 : vec4<f32>,
 }
 
-@stage(vertex)
+@vertex
 fn main(@location(9) x_1_param : vec4<f32>, @location(10) x_1_param_1 : vec4<f32>) -> main_out {
   x_1[0i] = x_1_param;
   x_1[1i] = x_1_param_1;
@@ -4150,7 +4150,7 @@ struct main_out {
   x_2_1 : vec4<f32>,
 }
 
-@stage(vertex)
+@vertex
 fn main(@location(9) x_1_param : f32, @location(10) x_1_param_1 : vec4<f32>) -> main_out {
   x_1.alice = x_1_param;
   x_1.bob = x_1_param_1;
@@ -4209,7 +4209,7 @@ struct main_out {
   x_2_1 : vec4<f32>,
 }
 
-@stage(vertex)
+@vertex
 fn main(@location(7) x_1_param : vec4<f32>, @location(8) x_1_param_1 : vec4<f32>, @location(9) x_1_param_2 : vec4<f32>, @location(10) x_1_param_3 : vec4<f32>) -> main_out {
   x_1[0i][0i] = x_1_param;
   x_1[0i][1i] = x_1_param_1;
@@ -4276,7 +4276,7 @@ struct main_out {
   x_2_1 : vec4<f32>,
 }
 
-@stage(vertex)
+@vertex
 fn main() -> main_out {
   main_1();
   return main_out(x_1[0i], x_1[1i], x_1[2i], x_2);
@@ -4335,7 +4335,7 @@ struct main_out {
   x_2_1 : vec4<f32>,
 }
 
-@stage(vertex)
+@vertex
 fn main() -> main_out {
   main_1();
   return main_out(x_1[0i], x_1[1i], x_2);
@@ -4404,7 +4404,7 @@ struct main_out {
   x_2_1 : vec4<f32>,
 }
 
-@stage(vertex)
+@vertex
 fn main() -> main_out {
   main_1();
   return main_out(x_1.alice, x_1.bob, x_2);
@@ -4479,7 +4479,7 @@ struct main_out {
   x_3_2 : vec4<f32>,
 }
 
-@stage(vertex)
+@vertex
 fn main(@location(9) x_1_param : f32, @location(11) x_1_param_1 : vec4<f32>) -> main_out {
   x_1.alice = x_1_param;
   x_1.bob = x_1_param_1;
@@ -4558,7 +4558,7 @@ struct main_out {
   x_10_1 : vec4<f32>,
 }
 
-@stage(vertex)
+@vertex
 fn main(@location(1) @interpolate(flat) x_1_param : u32, @location(2) @interpolate(flat) x_2_param : vec2<u32>, @location(3) @interpolate(flat) x_3_param : i32, @location(4) @interpolate(flat) x_4_param : vec2<i32>, @location(5) @interpolate(flat) x_5_param : f32, @location(6) @interpolate(flat) x_6_param : vec2<f32>) -> main_out {
   x_1 = x_1_param;
   x_2 = x_2_param;
@@ -4653,7 +4653,7 @@ struct main_out {
   x_10_1 : vec4<f32>,
 }
 
-@stage(vertex)
+@vertex
 fn main() -> main_out {
   main_1();
   return main_out(x_1, x_2, x_3, x_4, x_5, x_6, x_10);
@@ -4703,7 +4703,7 @@ fn main_1() {
   return;
 }
 
-@stage(fragment)
+@fragment
 fn main(@location(1) @interpolate(flat) x_1_param : f32, @location(2) @interpolate(flat) x_1_param_1 : f32, @location(5) @interpolate(flat) x_2_param : f32, @location(6) @interpolate(flat) x_2_param_1 : f32) {
   x_1[0i] = x_1_param;
   x_1[1i] = x_1_param_1;
@@ -4777,7 +4777,7 @@ fn main_1() {
   return;
 }
 
-@stage(fragment)
+@fragment
 fn main(@location(1) x_1_param : f32, @location(2) @interpolate(perspective, centroid) x_2_param : f32, @location(3) @interpolate(perspective, sample) x_3_param : f32, @location(4) @interpolate(linear) x_4_param : f32, @location(5) @interpolate(linear, centroid) x_5_param : f32, @location(6) @interpolate(linear, sample) x_6_param : f32) {
   x_1 = x_1_param;
   x_2 = x_2_param;
@@ -4844,7 +4844,7 @@ fn main_1() {
   return;
 }
 
-@stage(fragment)
+@fragment
 fn main(@location(1) x_1_param : f32, @location(2) @interpolate(perspective, centroid) x_1_param_1 : f32, @location(3) @interpolate(perspective, sample) x_1_param_2 : f32, @location(4) @interpolate(linear) x_1_param_3 : f32, @location(5) @interpolate(linear, centroid) x_1_param_4 : f32, @location(6) @interpolate(linear, sample) x_1_param_5 : f32) {
   x_1.field0 = x_1_param;
   x_1.field1 = x_1_param_1;
@@ -4935,7 +4935,7 @@ struct main_out {
   x_6_1 : f32,
 }
 
-@stage(fragment)
+@fragment
 fn main() -> main_out {
   main_1();
   return main_out(x_1, x_2, x_3, x_4, x_5, x_6);
@@ -5014,7 +5014,7 @@ struct main_out {
   x_1_6 : f32,
 }
 
-@stage(fragment)
+@fragment
 fn main() -> main_out {
   main_1();
   return main_out(x_1.field0, x_1.field1, x_1.field2, x_1.field3, x_1.field4, x_1.field5);
@@ -5100,7 +5100,7 @@ struct main_out {
   x_10_1 : vec4<f32>,
 }
 
-@stage(vertex)
+@vertex
 fn main() -> main_out {
   main_1();
   return main_out(x_1, x_2, x_3, x_4, x_5, x_6, x_10);
@@ -5163,7 +5163,7 @@ fn main_1() {
   return;
 }
 
-@stage(fragment)
+@fragment
 fn main(@location(1) @interpolate(flat) x_1_param : u32, @location(2) @interpolate(flat) x_2_param : vec2<u32>, @location(3) @interpolate(flat) x_3_param : i32, @location(4) @interpolate(flat) x_4_param : vec2<i32>, @location(5) x_5_param : f32, @location(6) x_6_param : vec2<f32>) {
   x_1 = x_1_param;
   x_2 = x_2_param;

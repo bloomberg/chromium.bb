@@ -29,6 +29,7 @@
 #include "src/objects/object-type.h"
 #include "src/objects/objects-inl.h"
 #include "src/objects/ordered-hash-table.h"
+#include "src/objects/simd.h"
 #include "src/regexp/experimental/experimental.h"
 #include "src/regexp/regexp-interpreter.h"
 #include "src/regexp/regexp-macro-assembler-arch.h"
@@ -319,13 +320,13 @@ struct IsValidExternalReferenceType<Result (Class::*)(Args...)> {
 
 #define FUNCTION_REFERENCE(Name, Target)                                   \
   ExternalReference ExternalReference::Name() {                            \
-    STATIC_ASSERT(IsValidExternalReferenceType<decltype(&Target)>::value); \
+    static_assert(IsValidExternalReferenceType<decltype(&Target)>::value); \
     return ExternalReference(Redirect(FUNCTION_ADDR(Target)));             \
   }
 
 #define FUNCTION_REFERENCE_WITH_TYPE(Name, Target, Type)                   \
   ExternalReference ExternalReference::Name() {                            \
-    STATIC_ASSERT(IsValidExternalReferenceType<decltype(&Target)>::value); \
+    static_assert(IsValidExternalReferenceType<decltype(&Target)>::value); \
     return ExternalReference(Redirect(FUNCTION_ADDR(Target), Type));       \
   }
 
@@ -437,6 +438,8 @@ IF_WASM(FUNCTION_REFERENCE, wasm_float64_pow, wasm::float64_pow_wrapper)
 IF_WASM(FUNCTION_REFERENCE, wasm_call_trap_callback_for_testing,
         wasm::call_trap_callback_for_testing)
 IF_WASM(FUNCTION_REFERENCE, wasm_array_copy, wasm::array_copy_wrapper)
+IF_WASM(FUNCTION_REFERENCE, wasm_array_fill_with_zeroes,
+        wasm::array_fill_with_zeroes_wrapper)
 
 static void f64_acos_wrapper(Address data) {
   double input = ReadUnalignedValue<double>(data);
@@ -1000,6 +1003,9 @@ FUNCTION_REFERENCE(try_string_to_index_or_lookup_existing,
 FUNCTION_REFERENCE(string_from_forward_table,
                    StringForwardingTable::GetForwardStringAddress)
 FUNCTION_REFERENCE(string_to_array_index_function, String::ToArrayIndex)
+FUNCTION_REFERENCE(array_indexof_includes_smi_or_object,
+                   ArrayIndexOfIncludesSmiOrObject)
+FUNCTION_REFERENCE(array_indexof_includes_double, ArrayIndexOfIncludesDouble)
 
 static Address LexicographicCompareWrapper(Isolate* isolate, Address smi_x,
                                            Address smi_y) {

@@ -252,16 +252,17 @@ static void CheckFindCodeObject(Isolate* isolate) {
   Address obj_addr = obj.address();
 
   for (int i = 0; i < obj.Size(cage_base); i += kTaggedSize) {
-    Object found = isolate->FindCodeObject(obj_addr + i);
-    CHECK_EQ(*code, found);
+    CodeLookupResult lookup_result = isolate->FindCodeObject(obj_addr + i);
+    CHECK_EQ(*code, lookup_result.code());
   }
 
   Handle<Code> copy =
       Factory::CodeBuilder(isolate, desc, CodeKind::FOR_TESTING).Build();
   HeapObject obj_copy = HeapObject::cast(*copy);
-  Object not_right = isolate->FindCodeObject(obj_copy.address() +
-                                             obj_copy.Size(cage_base) / 2);
-  CHECK(not_right != *code);
+  CodeLookupResult not_right = isolate->FindCodeObject(
+      obj_copy.address() + obj_copy.Size(cage_base) / 2);
+  CHECK_NE(not_right.code(), *code);
+  CHECK_EQ(not_right.code(), *copy);
 }
 
 
@@ -1536,7 +1537,6 @@ TEST(CompilationCacheCachingBehavior) {
     CHECK(cached_script.is_null());
   }
 }
-
 
 static void OptimizeEmptyFunction(const char* name) {
   HandleScope scope(CcTest::i_isolate());
@@ -6577,7 +6577,7 @@ UNINITIALIZED_TEST(ReinitializeStringHashSeed) {
 const int kHeapLimit = 100 * MB;
 Isolate* oom_isolate = nullptr;
 
-void OOMCallback(const char* location, bool is_heap_oom) {
+void OOMCallback(const char* location, const OOMDetails&) {
   Heap* heap = oom_isolate->heap();
   size_t kSlack = heap->new_space() ? heap->MaxSemiSpaceSize() : 0;
   CHECK_LE(heap->OldGenerationCapacity(), kHeapLimit + kSlack);
@@ -6872,8 +6872,8 @@ UNINITIALIZED_TEST(RestoreHeapLimit) {
   reinterpret_cast<v8::Isolate*>(isolate)->Dispose();
 }
 
-void HeapTester::UncommitFromSpace(Heap* heap) {
-  heap->UncommitFromSpace();
+void HeapTester::UncommitUnusedMemory(Heap* heap) {
+  heap->new_space()->Shrink();
   heap->memory_allocator()->unmapper()->EnsureUnmappingCompleted();
 }
 

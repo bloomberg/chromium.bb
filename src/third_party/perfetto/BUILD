@@ -240,11 +240,9 @@ perfetto_cc_library(
         ":src_traced_probes_system_info_system_info",
         ":src_traced_service_service",
         ":src_tracing_common",
-        ":src_tracing_consumer_api_deprecated_consumer_api_deprecated",
         ":src_tracing_core_core",
         ":src_tracing_core_service",
         ":src_tracing_ipc_common",
-        ":src_tracing_ipc_consumer_consumer",
         ":src_tracing_ipc_default_socket",
         ":src_tracing_ipc_producer_producer",
         ":src_tracing_ipc_service_service",
@@ -258,7 +256,6 @@ perfetto_cc_library(
         ":include_perfetto_ext_tracing_core_core",
         ":include_perfetto_ext_tracing_ipc_ipc",
         ":include_perfetto_protozero_protozero",
-        ":include_perfetto_public_public",
         ":include_perfetto_tracing_core_core",
         ":include_perfetto_tracing_core_forward_decls",
         ":include_perfetto_tracing_tracing",
@@ -515,14 +512,6 @@ perfetto_filegroup(
         "include/perfetto/protozero/scattered_stream_null_delegate.h",
         "include/perfetto/protozero/scattered_stream_writer.h",
         "include/perfetto/protozero/static_buffer.h",
-    ],
-)
-
-# GN target: //include/perfetto/public:public
-perfetto_filegroup(
-    name = "include_perfetto_public_public",
-    srcs = [
-        "include/perfetto/public/consumer_api.h",
     ],
 )
 
@@ -964,6 +953,7 @@ perfetto_cc_library(
 perfetto_filegroup(
     name = "src_trace_processor_db_db",
     srcs = [
+        "src/trace_processor/db/base_id.h",
         "src/trace_processor/db/column.cc",
         "src/trace_processor/db/column.h",
         "src/trace_processor/db/compare.h",
@@ -971,6 +961,8 @@ perfetto_filegroup(
         "src/trace_processor/db/table.h",
         "src/trace_processor/db/typed_column.h",
         "src/trace_processor/db/typed_column_internal.h",
+        "src/trace_processor/db/view.cc",
+        "src/trace_processor/db/view.h",
     ],
 )
 
@@ -1002,8 +994,8 @@ perfetto_filegroup(
         "src/trace_processor/dynamic/experimental_slice_layout_generator.h",
         "src/trace_processor/dynamic/flamegraph_construction_algorithms.cc",
         "src/trace_processor/dynamic/flamegraph_construction_algorithms.h",
-        "src/trace_processor/dynamic/thread_state_generator.cc",
-        "src/trace_processor/dynamic/thread_state_generator.h",
+        "src/trace_processor/dynamic/view_generator.cc",
+        "src/trace_processor/dynamic/view_generator.h",
     ],
 )
 
@@ -1115,6 +1107,7 @@ perfetto_genrule(
         "src/trace_processor/metrics/sql/android/android_dma_heap.sql",
         "src/trace_processor/metrics/sql/android/android_dvfs.sql",
         "src/trace_processor/metrics/sql/android/android_fastrpc.sql",
+        "src/trace_processor/metrics/sql/android/android_frame_timeline_metric.sql",
         "src/trace_processor/metrics/sql/android/android_gpu.sql",
         "src/trace_processor/metrics/sql/android/android_hwcomposer.sql",
         "src/trace_processor/metrics/sql/android/android_hwui_metric.sql",
@@ -1177,6 +1170,7 @@ perfetto_genrule(
         "src/trace_processor/metrics/sql/chrome/chrome_performance_mark_hashes.sql",
         "src/trace_processor/metrics/sql/chrome/chrome_processes.sql",
         "src/trace_processor/metrics/sql/chrome/chrome_slice_names.sql",
+        "src/trace_processor/metrics/sql/chrome/chrome_tasks.sql",
         "src/trace_processor/metrics/sql/chrome/chrome_thread_slice.sql",
         "src/trace_processor/metrics/sql/chrome/chrome_user_event_hashes.sql",
         "src/trace_processor/metrics/sql/chrome/cpu_time_by_category.sql",
@@ -1415,6 +1409,17 @@ perfetto_filegroup(
     ],
 )
 
+# GN target: //src/trace_processor/views:views
+perfetto_filegroup(
+    name = "src_trace_processor_views_views",
+    srcs = [
+        "src/trace_processor/views/macros.h",
+        "src/trace_processor/views/macros_internal.h",
+        "src/trace_processor/views/slice_views.h",
+        "src/trace_processor/views/view_destructors.cc",
+    ],
+)
+
 # GN target: //src/trace_processor:demangle
 perfetto_cc_library(
     name = "src_trace_processor_demangle",
@@ -1487,10 +1492,14 @@ perfetto_filegroup(
         "src/trace_processor/importers/ftrace/ftrace_parser.h",
         "src/trace_processor/importers/ftrace/ftrace_tokenizer.cc",
         "src/trace_processor/importers/ftrace/ftrace_tokenizer.h",
+        "src/trace_processor/importers/ftrace/iostat_tracker.cc",
+        "src/trace_processor/importers/ftrace/iostat_tracker.h",
         "src/trace_processor/importers/ftrace/rss_stat_tracker.cc",
         "src/trace_processor/importers/ftrace/rss_stat_tracker.h",
         "src/trace_processor/importers/ftrace/sched_event_tracker.cc",
         "src/trace_processor/importers/ftrace/sched_event_tracker.h",
+        "src/trace_processor/importers/ftrace/thread_state_tracker.cc",
+        "src/trace_processor/importers/ftrace/thread_state_tracker.h",
         "src/trace_processor/importers/fuchsia/fuchsia_record.cc",
         "src/trace_processor/importers/fuchsia/fuchsia_trace_parser.cc",
         "src/trace_processor/importers/fuchsia/fuchsia_trace_parser.h",
@@ -1613,7 +1622,64 @@ perfetto_filegroup(
         "src/trace_processor/trace_processor_storage_impl.h",
         "src/trace_processor/trace_sorter.cc",
         "src/trace_processor/trace_sorter.h",
+        "src/trace_processor/trace_sorter_queue.h",
         "src/trace_processor/virtual_destructors.cc",
+    ],
+)
+
+perfetto_cc_proto_descriptor(
+    name = "src_traceconv_gen_cc_trace_descriptor",
+    deps = [
+        ":protos_perfetto_trace_descriptor",
+    ],
+    outs = [
+        "src/traceconv/trace.descriptor.h",
+    ],
+)
+
+# GN target: //src/traceconv:lib
+perfetto_filegroup(
+    name = "src_traceconv_lib",
+    srcs = [
+        "src/traceconv/deobfuscate_profile.cc",
+        "src/traceconv/deobfuscate_profile.h",
+        "src/traceconv/symbolize_profile.cc",
+        "src/traceconv/symbolize_profile.h",
+        "src/traceconv/trace_to_hprof.cc",
+        "src/traceconv/trace_to_hprof.h",
+        "src/traceconv/trace_to_json.cc",
+        "src/traceconv/trace_to_json.h",
+        "src/traceconv/trace_to_profile.cc",
+        "src/traceconv/trace_to_profile.h",
+        "src/traceconv/trace_to_systrace.cc",
+        "src/traceconv/trace_to_systrace.h",
+        "src/traceconv/trace_to_text.cc",
+        "src/traceconv/trace_to_text.h",
+    ],
+)
+
+# GN target: //src/traceconv:main
+perfetto_filegroup(
+    name = "src_traceconv_main",
+    srcs = [
+        "src/traceconv/main.cc",
+    ],
+)
+
+# GN target: //src/traceconv:pprofbuilder
+perfetto_filegroup(
+    name = "src_traceconv_pprofbuilder",
+    srcs = [
+        "src/traceconv/pprof_builder.cc",
+    ],
+)
+
+# GN target: //src/traceconv:utils
+perfetto_filegroup(
+    name = "src_traceconv_utils",
+    srcs = [
+        "src/traceconv/utils.cc",
+        "src/traceconv/utils.h",
     ],
 )
 
@@ -1822,14 +1888,6 @@ perfetto_filegroup(
     ],
 )
 
-# GN target: //src/tracing/consumer_api_deprecated:consumer_api_deprecated
-perfetto_filegroup(
-    name = "src_tracing_consumer_api_deprecated_consumer_api_deprecated",
-    srcs = [
-        "src/tracing/consumer_api_deprecated/consumer_api_deprecated.cc",
-    ],
-)
-
 # GN target: //src/tracing/core:core
 perfetto_filegroup(
     name = "src_tracing_core_core",
@@ -1976,62 +2034,6 @@ perfetto_filegroup(
     name = "src_tracing_system_backend",
     srcs = [
         "src/tracing/internal/system_tracing_backend.cc",
-    ],
-)
-
-perfetto_cc_proto_descriptor(
-    name = "tools_trace_to_text_gen_cc_trace_descriptor",
-    deps = [
-        ":protos_perfetto_trace_descriptor",
-    ],
-    outs = [
-        "tools/trace_to_text/trace.descriptor.h",
-    ],
-)
-
-# GN target: //tools/trace_to_text:lib
-perfetto_filegroup(
-    name = "tools_trace_to_text_lib",
-    srcs = [
-        "tools/trace_to_text/deobfuscate_profile.cc",
-        "tools/trace_to_text/deobfuscate_profile.h",
-        "tools/trace_to_text/symbolize_profile.cc",
-        "tools/trace_to_text/symbolize_profile.h",
-        "tools/trace_to_text/trace_to_hprof.cc",
-        "tools/trace_to_text/trace_to_hprof.h",
-        "tools/trace_to_text/trace_to_json.cc",
-        "tools/trace_to_text/trace_to_json.h",
-        "tools/trace_to_text/trace_to_profile.cc",
-        "tools/trace_to_text/trace_to_profile.h",
-        "tools/trace_to_text/trace_to_systrace.cc",
-        "tools/trace_to_text/trace_to_systrace.h",
-        "tools/trace_to_text/trace_to_text.cc",
-        "tools/trace_to_text/trace_to_text.h",
-    ],
-)
-
-# GN target: //tools/trace_to_text:main
-perfetto_filegroup(
-    name = "tools_trace_to_text_main",
-    srcs = [
-        "tools/trace_to_text/main.cc",
-    ],
-)
-
-# GN target: //tools/trace_to_text:pprofbuilder
-perfetto_filegroup(
-    name = "tools_trace_to_text_pprofbuilder",
-    srcs = [
-        "tools/trace_to_text/pprof_builder.cc",
-    ],
-)
-
-# GN target: //tools/trace_to_text:utils
-perfetto_filegroup(
-    name = "tools_trace_to_text_utils",
-    srcs = [
-        "tools/trace_to_text/utils.cc",
-        "tools/trace_to_text/utils.h",
     ],
 )
 
@@ -2362,6 +2364,7 @@ perfetto_cc_protocpp_library(
 perfetto_proto_library(
     name = "protos_perfetto_config_android_protos",
     srcs = [
+        "protos/perfetto/config/android/android_game_intervention_list_config.proto",
         "protos/perfetto/config/android/android_log_config.proto",
         "protos/perfetto/config/android/android_polled_state_config.proto",
         "protos/perfetto/config/android/packages_list_config.proto",
@@ -2812,6 +2815,7 @@ perfetto_proto_library(
 perfetto_proto_library(
     name = "protos_perfetto_metrics_android_protos",
     srcs = [
+        "protos/perfetto/metrics/android/android_frame_timeline_metric.proto",
         "protos/perfetto/metrics/android/android_trusty_workqueues.proto",
         "protos/perfetto/metrics/android/batt_metric.proto",
         "protos/perfetto/metrics/android/binder_metric.proto",
@@ -2939,6 +2943,7 @@ perfetto_proto_library(
 perfetto_proto_library(
     name = "protos_perfetto_trace_android_protos",
     srcs = [
+        "protos/perfetto/trace/android/android_game_intervention_list.proto",
         "protos/perfetto/trace/android/android_log.proto",
         "protos/perfetto/trace/android/camera_event.proto",
         "protos/perfetto/trace/android/frame_timeline_event.proto",
@@ -3801,6 +3806,7 @@ perfetto_cc_library(
         ":src_trace_processor_util_proto_to_args_parser",
         ":src_trace_processor_util_protozero_to_text",
         ":src_trace_processor_util_util",
+        ":src_trace_processor_views_views",
     ],
     hdrs = [
         ":include_perfetto_base_base",
@@ -3908,6 +3914,7 @@ perfetto_cc_binary(
         ":src_trace_processor_util_proto_to_args_parser",
         ":src_trace_processor_util_protozero_to_text",
         ":src_trace_processor_util_util",
+        ":src_trace_processor_views_views",
         "src/trace_processor/trace_processor_shell.cc",
         "src/trace_processor/util/proto_to_json.cc",
         "src/trace_processor/util/proto_to_json.h",
@@ -3966,45 +3973,15 @@ perfetto_cc_binary(
            PERFETTO_CONFIG.deps.demangle_wrapper,
 )
 
-# GN target: //src/traced/probes:traced_probes
-perfetto_cc_binary(
-    name = "traced_probes",
-    srcs = [
-        ":include_perfetto_ext_traced_traced",
-        "src/traced/probes/main.cc",
-    ],
-    visibility = [
-        "//visibility:public",
-    ],
-    deps = [
-        ":libperfetto",
-    ],
-)
-
-# GN target: //src/traced/service:traced
-perfetto_cc_binary(
-    name = "traced",
-    srcs = [
-        ":include_perfetto_ext_traced_traced",
-        "src/traced/service/main.cc",
-    ],
-    visibility = [
-        "//visibility:public",
-    ],
-    deps = [
-        ":libperfetto",
-    ],
-)
-
-# GN target: //tools/trace_to_text:libpprofbuilder
+# GN target: //src/traceconv:libpprofbuilder
 perfetto_cc_library(
     name = "libpprofbuilder",
     srcs = [
         ":src_profiling_deobfuscator",
         ":src_profiling_symbolizer_symbolize_database",
         ":src_profiling_symbolizer_symbolizer",
-        ":tools_trace_to_text_pprofbuilder",
-        ":tools_trace_to_text_utils",
+        ":src_traceconv_pprofbuilder",
+        ":src_traceconv_utils",
     ],
     hdrs = [
         ":include_perfetto_base_base",
@@ -4054,9 +4031,9 @@ perfetto_cc_library(
     linkstatic = True,
 )
 
-# GN target: //tools/trace_to_text:trace_to_text
+# GN target: //src/traceconv:traceconv
 perfetto_cc_binary(
-    name = "trace_to_text",
+    name = "traceconv",
     srcs = [
         ":include_perfetto_base_base",
         ":include_perfetto_ext_base_base",
@@ -4097,10 +4074,11 @@ perfetto_cc_binary(
         ":src_trace_processor_util_proto_to_args_parser",
         ":src_trace_processor_util_protozero_to_text",
         ":src_trace_processor_util_util",
-        ":tools_trace_to_text_lib",
-        ":tools_trace_to_text_main",
-        ":tools_trace_to_text_pprofbuilder",
-        ":tools_trace_to_text_utils",
+        ":src_trace_processor_views_views",
+        ":src_traceconv_lib",
+        ":src_traceconv_main",
+        ":src_traceconv_pprofbuilder",
+        ":src_traceconv_utils",
     ],
     visibility = [
         "//visibility:public",
@@ -4145,7 +4123,7 @@ perfetto_cc_binary(
                ":src_trace_processor_importers_gen_cc_track_event_descriptor",
                ":src_trace_processor_metrics_gen_cc_all_chrome_metrics_descriptor",
                ":src_trace_processor_metrics_gen_cc_metrics_descriptor",
-               ":tools_trace_to_text_gen_cc_trace_descriptor",
+               ":src_traceconv_gen_cc_trace_descriptor",
            ] + PERFETTO_CONFIG.deps.jsoncpp +
            PERFETTO_CONFIG.deps.sqlite +
            PERFETTO_CONFIG.deps.sqlite_ext_percentile +
@@ -4153,6 +4131,36 @@ perfetto_cc_binary(
         ":cc_amalgamated_sql_metrics",
     ] +
            PERFETTO_CONFIG.deps.demangle_wrapper,
+)
+
+# GN target: //src/traced/probes:traced_probes
+perfetto_cc_binary(
+    name = "traced_probes",
+    srcs = [
+        ":include_perfetto_ext_traced_traced",
+        "src/traced/probes/main.cc",
+    ],
+    visibility = [
+        "//visibility:public",
+    ],
+    deps = [
+        ":libperfetto",
+    ],
+)
+
+# GN target: //src/traced/service:traced
+perfetto_cc_binary(
+    name = "traced",
+    srcs = [
+        ":include_perfetto_ext_traced_traced",
+        "src/traced/service/main.cc",
+    ],
+    visibility = [
+        "//visibility:public",
+    ],
+    deps = [
+        ":libperfetto",
+    ],
 )
 
 # Content from BUILD.extras

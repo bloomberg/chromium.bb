@@ -163,6 +163,18 @@ MaybeError Adapter::InitializeSupportedFeaturesImpl() {
         mSupportedFeatures.EnableFeature(Feature::Depth32FloatStencil8);
     }
 
+    if (mDeviceInfo.features.drawIndirectFirstInstance == VK_TRUE) {
+        mSupportedFeatures.EnableFeature(Feature::IndirectFirstInstance);
+    }
+
+    if (mDeviceInfo.HasExt(DeviceExt::ShaderIntegerDotProduct) &&
+        mDeviceInfo.shaderIntegerDotProductProperties
+                .integerDotProduct4x8BitPackedSignedAccelerated == VK_TRUE &&
+        mDeviceInfo.shaderIntegerDotProductProperties
+                .integerDotProduct4x8BitPackedUnsignedAccelerated == VK_TRUE) {
+        mSupportedFeatures.EnableFeature(Feature::ChromiumExperimentalDp4a);
+    }
+
 #if defined(DAWN_USE_SYNC_FDS)
     // TODO(chromium:1258986): Precisely enable the feature by querying the device's format
     // features.

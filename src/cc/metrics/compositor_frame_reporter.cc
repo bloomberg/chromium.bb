@@ -347,6 +347,16 @@ CompositorFrameReporter::CompositorFrameReporter(
     DCHECK(smooth_thread_ == SmoothThread::kSmoothMain ||
            smooth_thread_ == SmoothThread::kSmoothBoth);
   }
+  // If we have a SET version of the animation, then we should also have a
+  // non-SET version of the same animation.
+  DCHECK(!active_trackers_.test(static_cast<size_t>(
+             FrameSequenceTrackerType::kSETCompositorAnimation)) ||
+         active_trackers_.test(static_cast<size_t>(
+             FrameSequenceTrackerType::kCompositorAnimation)));
+  DCHECK(!active_trackers_.test(static_cast<size_t>(
+             FrameSequenceTrackerType::kSETMainThreadAnimation)) ||
+         active_trackers_.test(static_cast<size_t>(
+             FrameSequenceTrackerType::kMainThreadAnimation)));
 }
 
 // static
@@ -610,6 +620,21 @@ EventMetrics::List CompositorFrameReporter::TakeEventsMetrics() {
   return result;
 }
 
+EventMetrics::List CompositorFrameReporter::TakeMainBlockedEventsMetrics() {
+  auto mid = std::partition(events_metrics_.begin(), events_metrics_.end(),
+                            [](std::unique_ptr<EventMetrics>& metrics) {
+                              DCHECK(metrics);
+                              bool is_blocked_on_main =
+                                  metrics->requires_main_thread_update();
+                              // Invert so we can take from the end.
+                              return !is_blocked_on_main;
+                            });
+  EventMetrics::List result(std::make_move_iterator(mid),
+                            std::make_move_iterator(events_metrics_.end()));
+  events_metrics_.erase(mid, events_metrics_.end());
+  return result;
+}
+
 void CompositorFrameReporter::TerminateReporter() {
   if (frame_termination_status_ == FrameTerminationStatus::kUnknown)
     TerminateFrame(FrameTerminationStatus::kUnknown, Now());
@@ -777,6 +802,14 @@ void CompositorFrameReporter::ReportCompositorLatencyMetrics() const {
           UMA_HISTOGRAM_ENUMERATION("CompositorLatency.Type.JSAnimation",
                                     report_type);
           break;
+        case FrameSequenceTrackerType::kSETCompositorAnimation:
+          UMA_HISTOGRAM_ENUMERATION(
+              "CompositorLatency.Type.SETCompositorAnimation", report_type);
+          break;
+        case FrameSequenceTrackerType::kSETMainThreadAnimation:
+          UMA_HISTOGRAM_ENUMERATION(
+              "CompositorLatency.Type.SETMainThreadAnimation", report_type);
+          break;
         case FrameSequenceTrackerType::kCustom:
         case FrameSequenceTrackerType::kMaxType:
           NOTREACHED();
@@ -913,7 +946,11 @@ void CompositorFrameReporter::ReportEventLatencyMetrics() const {
     const base::TimeTicks generated_timestamp =
         event_metrics->GetDispatchStageTimestamp(
             EventMetrics::DispatchStage::kGenerated);
-    DCHECK_LT(generated_timestamp, total_latency_stage.end_time);
+    // Generally, we expect that the event timestamp is strictly smaller than
+    // the end timestamp of the last stage (i.e. total latency is positive);
+    // however, at least in tests, it is possible that the timestamps are the
+    // same and total latency is zero.
+    DCHECK_LE(generated_timestamp, total_latency_stage.end_time);
     const base::TimeDelta total_latency =
         total_latency_stage.end_time - generated_timestamp;
 
@@ -1159,6 +1196,11 @@ void CompositorFrameReporter::AdoptReporter(
   // update, then |this| should not have any such dependents.
   DCHECK(!partial_update_decider_);
   DCHECK(!partial_update_dependents_.empty());
+
+  // The adoptee tracks a partial update. If it has metrics that depend on the
+  // main thread update, move them into |this| reporter.
+  AddEventsMetrics(reporter->TakeMainBlockedEventsMetrics());
+
   owned_partial_update_dependents_.push(std::move(reporter));
   DiscardOldPartialUpdateReporters();
 }

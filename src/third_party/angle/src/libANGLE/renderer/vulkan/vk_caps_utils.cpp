@@ -173,92 +173,73 @@ bool GetTextureSRGBOverrideSupport(const RendererVk *rendererVk,
     return true;
 }
 
-bool HasTexelBufferSupport(const RendererVk *rendererVk, GLenum formatGL)
-{
-    const Format &formatVk = rendererVk->getFormat(formatGL);
-
-    return rendererVk->hasBufferFormatFeatureBits(
-        formatVk.getActualBufferFormat(false).id,
-        VK_FORMAT_FEATURE_UNIFORM_TEXEL_BUFFER_BIT | VK_FORMAT_FEATURE_STORAGE_TEXEL_BUFFER_BIT);
-}
-
 bool HasTextureBufferSupport(const RendererVk *rendererVk)
 {
-    // The following formats don't have mandatory UNIFORM_TEXEL_BUFFER support in Vulkan.
+    //  glTexBuffer page 187 table 8.18.
+    //  glBindImageTexture page 216 table 8.24.
+    //  https://www.khronos.org/registry/OpenGL/specs/es/3.2/es_spec_3.2.pdf.
+    //  https://www.khronos.org/registry/vulkan/specs/1.0-extensions/html/chap43.html#features-required-format-support
+    //  required image and texture access for texture buffer formats are
+    //                         texture access                image access
+    //    8-bit components, all required by vulkan.
     //
-    //     VK_FORMAT_R32G32B32_UINT
-    //     VK_FORMAT_R32G32B32_SINT
-    //     VK_FORMAT_R32G32B32_SFLOAT
+    //    GL_R8                        Y                           N
+    //    GL_R8I                       Y                           N
+    //    GL_R8UI                      Y                           N
+    //    GL_RG8                       Y                           N
+    //    GL_RG8I                      Y                           N
+    //    GL_RG8UI                     Y                           N
+    //    GL_RGBA8                     Y                           Y
+    //    GL_RGBA8I                    Y                           Y
+    //    GL_RGBA8UI                   Y                           Y
+    //    GL_RGBA8_SNORM               N                           Y
     //
-    // Additionally, the following formats don't have mandatory STORAGE_TEXEL_BUFFER support:
+    //    16-bit components,  all required by vulkan.
     //
-    //     VK_FORMAT_R8_UINT
-    //     VK_FORMAT_R8_SINT
-    //     VK_FORMAT_R8_UNORM
-    //     VK_FORMAT_R8G8_UINT
-    //     VK_FORMAT_R8G8_SINT
-    //     VK_FORMAT_R8G8_UNORM
-    //     VK_FORMAT_R16_UINT
-    //     VK_FORMAT_R16_SINT
-    //     VK_FORMAT_R16_SFLOAT
-    //     VK_FORMAT_R16G16_UINT
-    //     VK_FORMAT_R16G16_SINT
-    //     VK_FORMAT_R16G16_SFLOAT
-    //     VK_FORMAT_R32G32B32_UINT
-    //     VK_FORMAT_R32G32B32_SINT
-    //     VK_FORMAT_R32G32B32_SFLOAT
+    //    GL_R16F                      Y                           N
+    //    GL_R16I                      Y                           N
+    //    GL_R16UI                     Y                           N
+    //    GL_RG16F                     Y                           N
+    //    GL_RG16I                     Y                           N
+    //    GL_RG16UI                    Y                           N
+    //    GL_RGBA16F                   Y                           Y
+    //    GL_RGBA16I                   Y                           Y
+    //    GL_RGBA16UI                  Y                           Y
     //
-    // The formats that have mandatory support for both features (and don't need to be checked) are:
+    //    32-bit components, except RGB32 all others required by vulkan.
     //
-    //     VK_FORMAT_R8G8B8A8_UINT
-    //     VK_FORMAT_R8G8B8A8_SINT
-    //     VK_FORMAT_R8G8B8A8_UNORM
-    //     VK_FORMAT_R16G16B16A16_UINT
-    //     VK_FORMAT_R16G16B16A16_SINT
-    //     VK_FORMAT_R16G16B16A16_SFLOAT
-    //     VK_FORMAT_R32_UINT
-    //     VK_FORMAT_R32_SINT
-    //     VK_FORMAT_R32_SFLOAT
-    //     VK_FORMAT_R32G32_UINT
-    //     VK_FORMAT_R32G32_SINT
-    //     VK_FORMAT_R32G32_SFLOAT
-    //     VK_FORMAT_R32G32B32A32_UINT
-    //     VK_FORMAT_R32G32B32A32_SINT
-    //     VK_FORMAT_R32G32B32A32_SFLOAT
-    //
+    //    GL_R32F                      Y                           Y
+    //    GL_R32I                      Y                           Y
+    //    GL_R32UI                     Y                           Y
+    //    GL_RG32F                     Y                           N
+    //    GL_RG32I                     Y                           N
+    //    GL_RG32UI                    Y                           N
+    //    GL_RGB32F                    Y                           N
+    //    GL_RGB32I                    Y                           N
+    //    GL_RGB32UI                   Y                           N
+    //    GL_RGBA32F                   Y                           Y
+    //    GL_RGBA32I                   Y                           Y
+    //    GL_RGBA32UI                  Y                           Y
 
-    const std::array<GLenum, 12> &optionalFormats = {
-        GL_R8,   GL_R8I,  GL_R8UI,  GL_RG8,   GL_RG8I,  GL_RG8UI,
-        GL_R16F, GL_R16I, GL_R16UI, GL_RG16F, GL_RG16I, GL_RG16UI,
-    };
-
-    for (GLenum formatGL : optionalFormats)
-    {
-        if (!HasTexelBufferSupport(rendererVk, formatGL))
-        {
-            return false;
-        }
-    }
-
-    // TODO: RGB32 formats currently don't have STORAGE_TEXEL_BUFFER support on any known platform.
-    // Despite this limitation, we expose EXT_texture_buffer.  http://anglebug.com/3573
+    // TODO: some platform may not support RGB32 formats as UNIFORM_TEXEL_BUFFER
+    // Despite this limitation, we expose EXT_texture_buffer. http://anglebug.com/3573
     if (rendererVk->getFeatures().exposeNonConformantExtensionsAndVersions.enabled)
     {
         return true;
     }
 
-    const std::array<GLenum, 3> &optionalFormats2 = {
+    const std::array<GLenum, 3> &optionalFormats = {
         GL_RGB32F,
         GL_RGB32I,
         GL_RGB32UI,
     };
 
-    for (GLenum formatGL : optionalFormats2)
+    for (GLenum formatGL : optionalFormats)
     {
-        if (!HasTexelBufferSupport(rendererVk, formatGL))
-        {
+        const Format &formatVk = rendererVk->getFormat(formatGL);
+        if (!rendererVk->hasBufferFormatFeatureBits(formatVk.getActualBufferFormat(false).id,
+                                                    VK_FORMAT_FEATURE_UNIFORM_TEXEL_BUFFER_BIT))
             return false;
-        }
     }
 
     return true;
@@ -607,11 +588,11 @@ void RendererVk::ensureCapsInitialized() const
     mNativeCaps.maxViewportHeight    = LimitToInt(limitsVk.maxViewportDimensions[1]);
     mNativeCaps.maxSampleMaskWords   = LimitToInt(limitsVk.maxSampleMaskWords);
     mNativeCaps.maxColorTextureSamples =
-        limitsVk.sampledImageColorSampleCounts & vk_gl::kSupportedSampleCounts;
+        vk_gl::GetMaxSampleCount(limitsVk.sampledImageColorSampleCounts);
     mNativeCaps.maxDepthTextureSamples =
-        limitsVk.sampledImageDepthSampleCounts & vk_gl::kSupportedSampleCounts;
+        vk_gl::GetMaxSampleCount(limitsVk.sampledImageDepthSampleCounts);
     mNativeCaps.maxIntegerSamples =
-        limitsVk.sampledImageIntegerSampleCounts & vk_gl::kSupportedSampleCounts;
+        vk_gl::GetMaxSampleCount(limitsVk.sampledImageIntegerSampleCounts);
 
     mNativeCaps.maxVertexAttributes     = LimitToInt(limitsVk.maxVertexInputAttributes);
     mNativeCaps.maxVertexAttribBindings = LimitToInt(limitsVk.maxVertexInputBindings);
@@ -890,7 +871,12 @@ void RendererVk::ensureCapsInitialized() const
         reservedVaryingComponentCount += kReservedVaryingComponentsForGLLineRasterization;
     }
     if (getFeatures().supportsTransformFeedbackExtension.enabled &&
-        !getFeatures().supportsDepthClipControl.enabled)
+        (!getFeatures().supportsDepthClipControl.enabled ||
+         getFeatures().enablePreRotateSurfaces.enabled ||
+         getFeatures().emulatedPrerotation90.enabled ||
+         getFeatures().emulatedPrerotation180.enabled ||
+         getFeatures().emulatedPrerotation270.enabled ||
+         !getFeatures().supportsNegativeViewport.enabled))
     {
         reservedVaryingComponentCount += kReservedVaryingComponentsForTransformFeedbackExtension;
     }
@@ -963,6 +949,9 @@ void RendererVk::ensureCapsInitialized() const
 
     // GL_EXT_clip_control
     mNativeExtensions.clipControlEXT = true;
+
+    // GL_ANGLE_read_only_depth_stencil_feedback_loops
+    mNativeExtensions.readOnlyDepthStencilFeedbackLoopsANGLE = true;
 
     // Enable GL_EXT_texture_buffer and OES variant.  Nearly all formats required for this extension
     // are also required to have the UNIFORM_TEXEL_BUFFER feature bit in Vulkan, except for
@@ -1087,8 +1076,7 @@ void RendererVk::ensureCapsInitialized() const
         limitsVk.maxClipDistances >= kMaxClipDistancePerSpec)
     {
         mNativeExtensions.clipDistanceAPPLE = true;
-        mNativeCaps.maxClipDistances =
-            std::min<GLuint>(limitsVk.maxClipDistances, gl::IMPLEMENTATION_MAX_CLIP_DISTANCES);
+        mNativeCaps.maxClipDistances        = limitsVk.maxClipDistances;
 
         if (mPhysicalDeviceFeatures.shaderCullDistance &&
             limitsVk.maxCullDistances >= kMaxCullDistancePerSpec &&

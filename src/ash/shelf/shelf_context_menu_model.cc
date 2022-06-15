@@ -14,6 +14,7 @@
 #include "ash/app_list/model/app_list_model.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
+#include "ash/constants/personalization_entry_point.h"
 #include "ash/public/cpp/app_menu_constants.h"
 #include "ash/public/cpp/new_window_delegate.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
@@ -27,6 +28,7 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/user_metrics.h"
 #include "base/numerics/safe_conversions.h"
 #include "components/prefs/pref_service.h"
@@ -121,6 +123,9 @@ void ShelfContextMenuModel::ExecuteCommand(int command_id, int event_flags) {
       break;
     case MENU_PERSONALIZATION_HUB:
       DCHECK(ash::features::IsPersonalizationHubEnabled());
+      // Record entry point metric to Personalization Hub through Home Screen.
+      base::UmaHistogramEnumeration(kPersonalizationEntryPointHistogramName,
+                                    PersonalizationEntryPoint::kHomeScreen);
       NewWindowDelegate::GetPrimary()->OpenPersonalizationHub();
       break;
     // Using reorder CommandId in ash/public/cpp/app_menu_constants.h
@@ -191,16 +196,18 @@ void ShelfContextMenuModel::AddShelfAndWallpaperItems() {
                                        ui::kColorAshSystemUIMenuIcon));
   }
 
-  if (ash::features::IsPersonalizationHubEnabled()) {
-    AddItemWithStringIdAndIcon(
-        MENU_PERSONALIZATION_HUB, IDS_AURA_OPEN_PERSONALIZATION_HUB,
-        ui::ImageModel::FromVectorIcon(kPaintBrushIcon,
-                                       ui::kColorAshSystemUIMenuIcon));
-  } else if (Shell::Get()->wallpaper_controller()->CanOpenWallpaperPicker()) {
-    AddItemWithStringIdAndIcon(
-        MENU_CHANGE_WALLPAPER, IDS_AURA_SET_DESKTOP_WALLPAPER,
-        ui::ImageModel::FromVectorIcon(kWallpaperIcon,
-                                       ui::kColorAshSystemUIMenuIcon));
+  if (Shell::Get()->wallpaper_controller()->CanOpenWallpaperPicker()) {
+    if (ash::features::IsPersonalizationHubEnabled()) {
+      AddItemWithStringIdAndIcon(
+          MENU_PERSONALIZATION_HUB, IDS_AURA_OPEN_PERSONALIZATION_HUB,
+          ui::ImageModel::FromVectorIcon(kPaintBrushIcon,
+                                         ui::kColorAshSystemUIMenuIcon));
+    } else {
+      AddItemWithStringIdAndIcon(
+          MENU_CHANGE_WALLPAPER, IDS_AURA_SET_DESKTOP_WALLPAPER,
+          ui::ImageModel::FromVectorIcon(kWallpaperIcon,
+                                         ui::kColorAshSystemUIMenuIcon));
+    }
   }
 }
 

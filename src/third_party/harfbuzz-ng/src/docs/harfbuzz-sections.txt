@@ -373,6 +373,8 @@ hb_font_glyph_from_string
 hb_font_glyph_to_string
 hb_font_is_immutable
 hb_font_make_immutable
+hb_font_get_serial
+hb_font_changed
 hb_font_reference
 hb_font_set_face
 hb_font_set_funcs
@@ -453,14 +455,17 @@ hb_icu_script_to_script
 HB_MAP_VALUE_INVALID
 hb_map_allocation_successful
 hb_map_clear
+hb_map_copy
 hb_map_create
 hb_map_del
 hb_map_destroy
 hb_map_get
 hb_map_get_empty
 hb_map_get_population
+hb_map_is_equal
 hb_map_get_user_data
 hb_map_has
+hb_map_hash
 hb_map_is_empty
 hb_map_reference
 hb_map_set
@@ -651,6 +656,7 @@ hb_set_get_min
 hb_set_get_population
 hb_set_get_user_data
 hb_set_has
+hb_set_hash
 hb_set_intersect
 hb_set_invert
 hb_set_is_empty

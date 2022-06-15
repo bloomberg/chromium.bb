@@ -62,6 +62,7 @@ luci.gitiles_poller(
         "chromium.linux",
         "chromium.chromiumos",
         "chromium.android",
+        "chromium.fuchsia",
         "chromium.angle",
         "chrome",
         "chromium.memory",
@@ -126,12 +127,14 @@ consoles.console_view(
 )]
 
 exec("./ci/chromium.star")
+exec("./ci/chromium.accessibility.star")
 exec("./ci/chromium.android.star")
 exec("./ci/chromium.android.fyi.star")
 exec("./ci/chromium.angle.star")
 exec("./ci/chromium.chromiumos.star")
 exec("./ci/chromium.clang.star")
 exec("./ci/chromium.dawn.star")
+exec("./ci/chromium.fuchsia.star")
 exec("./ci/chromium.fuchsia.fyi.star")
 exec("./ci/chromium.fuzz.star")
 exec("./ci/chromium.fyi.star")

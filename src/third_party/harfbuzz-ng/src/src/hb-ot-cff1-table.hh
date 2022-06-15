@@ -318,12 +318,19 @@ struct Charset0 {
     return_trace (c->check_struct (this) && sids[num_glyphs - 1].sanitize (c));
   }
 
-  hb_codepoint_t get_sid (hb_codepoint_t glyph) const
+  hb_codepoint_t get_sid (hb_codepoint_t glyph, unsigned num_glyphs) const
   {
+    if (unlikely (glyph >= num_glyphs)) return 0;
     if (glyph == 0)
       return 0;
     else
       return sids[glyph - 1];
+  }
+
+  void collect_glyph_to_sid_map (hb_map_t *mapping, unsigned int num_glyphs) const
+  {
+    for (hb_codepoint_t gid = 1; gid < num_glyphs; gid++)
+      mapping->set (gid, sids[gid - 1]);
   }
 
   hb_codepoint_t get_glyph (hb_codepoint_t sid, unsigned int num_glyphs) const
@@ -381,18 +388,34 @@ struct Charset1_2 {
     return_trace (true);
   }
 
-  hb_codepoint_t get_sid (hb_codepoint_t glyph) const
+  hb_codepoint_t get_sid (hb_codepoint_t glyph, unsigned num_glyphs) const
   {
+    if (unlikely (glyph >= num_glyphs)) return 0;
     if (glyph == 0) return 0;
     glyph--;
     for (unsigned int i = 0;; i++)
     {
       if (glyph <= ranges[i].nLeft)
-	return (hb_codepoint_t)ranges[i].first + glyph;
+	return (hb_codepoint_t) ranges[i].first + glyph;
       glyph -= (ranges[i].nLeft + 1);
     }
 
     return 0;
+  }
+
+  void collect_glyph_to_sid_map (hb_map_t *mapping, unsigned int num_glyphs) const
+  {
+    hb_codepoint_t gid = 1;
+    for (unsigned i = 0;; i++)
+    {
+      hb_codepoint_t sid = ranges[i].first;
+      unsigned count = ranges[i].nLeft + 1;
+      for (unsigned j = 0; j < count; j++)
+	mapping->set (gid++, sid++);
+
+      if (gid >= num_glyphs)
+        break;
+    }
   }
 
   hb_codepoint_t get_glyph (hb_codepoint_t sid, unsigned int num_glyphs) const
@@ -521,13 +544,23 @@ struct Charset
 
   hb_codepoint_t get_sid (hb_codepoint_t glyph, unsigned int num_glyphs) const
   {
-    if (unlikely (glyph >= num_glyphs)) return 0;
     switch (format)
     {
-    case 0: return u.format0.get_sid (glyph);
-    case 1: return u.format1.get_sid (glyph);
-    case 2: return u.format2.get_sid (glyph);
+    case 0: return u.format0.get_sid (glyph, num_glyphs);
+    case 1: return u.format1.get_sid (glyph, num_glyphs);
+    case 2: return u.format2.get_sid (glyph, num_glyphs);
     default:return 0;
+    }
+  }
+
+  void collect_glyph_to_sid_map (hb_map_t *mapping, unsigned int num_glyphs) const
+  {
+    switch (format)
+    {
+    case 0: u.format0.collect_glyph_to_sid_map (mapping, num_glyphs); return;
+    case 1: u.format1.collect_glyph_to_sid_map (mapping, num_glyphs); return;
+    case 2: u.format2.collect_glyph_to_sid_map (mapping, num_glyphs); return;
+    default:return;
     }
   }
 
@@ -1195,6 +1228,19 @@ struct cff1
       }
     }
 
+    hb_map_t *create_glyph_to_sid_map () const
+    {
+      if (charset != &Null (Charset))
+      {
+	hb_map_t *mapping = hb_map_create ();
+	mapping->set (0, 0);
+	charset->collect_glyph_to_sid_map (mapping, num_glyphs);
+	return mapping;
+      }
+      else
+	return nullptr;
+    }
+
     hb_codepoint_t glyph_to_sid (hb_codepoint_t glyph) const
     {
       if (charset != &Null (Charset))
@@ -1275,30 +1321,20 @@ struct cff1
     {
       SUPER::init (face);
 
+      glyph_names.set_relaxed (nullptr);
+
       if (!is_valid ()) return;
       if (is_CID ()) return;
 
-      /* fill glyph_names */
-      for (hb_codepoint_t gid = 0; gid < num_glyphs; gid++)
-      {
-	hb_codepoint_t	sid = glyph_to_sid (gid);
-	gname_t	gname;
-	gname.sid = sid;
-	if (sid < cff1_std_strings_length)
-	  gname.name = cff1_std_strings (sid);
-	else
-	{
-	  hb_ubytes_t	ustr = (*stringIndex)[sid - cff1_std_strings_length];
-	  gname.name = hb_bytes_t ((const char*)ustr.arrayZ, ustr.length);
-	}
-	if (unlikely (!gname.name.length)) { fini (); return; }
-	glyph_names.push (gname);
-      }
-      glyph_names.qsort ();
     }
     ~accelerator_t ()
     {
-      glyph_names.fini ();
+      hb_sorted_vector_t<gname_t> *names = glyph_names.get_relaxed ();
+      if (names)
+      {
+	names->fini ();
+	hb_free (names);
+      }
 
       SUPER::fini ();
     }
@@ -1306,9 +1342,9 @@ struct cff1
     bool get_glyph_name (hb_codepoint_t glyph,
 			 char *buf, unsigned int buf_len) const
     {
-      if (!buf_len) return true;
       if (unlikely (!is_valid ())) return false;
       if (is_CID()) return false;
+      if (unlikely (!buf_len)) return true;
       hb_codepoint_t sid = glyph_to_sid (glyph);
       const char *str;
       size_t str_len;
@@ -1334,11 +1370,53 @@ struct cff1
     bool get_glyph_from_name (const char *name, int len,
 			      hb_codepoint_t *glyph) const
     {
+      if (unlikely (!is_valid ())) return false;
+      if (is_CID()) return false;
       if (len < 0) len = strlen (name);
       if (unlikely (!len)) return false;
 
+    retry:
+      hb_sorted_vector_t<gname_t> *names = glyph_names.get ();
+      if (unlikely (!names))
+      {
+	names = (hb_sorted_vector_t<gname_t> *) hb_calloc (sizeof (hb_sorted_vector_t<gname_t>), 1);
+	if (likely (names))
+	{
+	  names->init ();
+	  /* TODO */
+
+	  /* fill glyph names */
+	  for (hb_codepoint_t gid = 0; gid < num_glyphs; gid++)
+	  {
+	    hb_codepoint_t	sid = glyph_to_sid (gid);
+	    gname_t	gname;
+	    gname.sid = sid;
+	    if (sid < cff1_std_strings_length)
+	      gname.name = cff1_std_strings (sid);
+	    else
+	    {
+	      hb_ubytes_t	ustr = (*stringIndex)[sid - cff1_std_strings_length];
+	      gname.name = hb_bytes_t ((const char*) ustr.arrayZ, ustr.length);
+	    }
+	    if (unlikely (!gname.name.arrayZ))
+	      gname.name = hb_bytes_t ("", 0); /* To avoid nullptr. */
+	    names->push (gname);
+	  }
+	  names->qsort ();
+	}
+	if (unlikely (!glyph_names.cmpexch (nullptr, names)))
+	{
+	  if (names)
+	  {
+	    names->fini ();
+	    hb_free (names);
+	  }
+	  goto retry;
+	}
+      }
+
       gname_t key = { hb_bytes_t (name, len), 0 };
-      const gname_t *gname = glyph_names.bsearch (key);
+      const gname_t *gname = names ? names->bsearch (key) : nullptr;
       if (!gname) return false;
       hb_codepoint_t gid = sid_to_glyph (gname->sid);
       if (!gid && gname->sid) return false;
@@ -1369,7 +1447,7 @@ struct cff1
       int cmp (const gname_t &a) const { return cmp (&a, this); }
     };
 
-    hb_sorted_vector_t<gname_t>	glyph_names;
+    mutable hb_atomic_ptr_t<hb_sorted_vector_t<gname_t>> glyph_names;
 
     typedef accelerator_templ_t<cff1_private_dict_opset_t, cff1_private_dict_values_t> SUPER;
   };

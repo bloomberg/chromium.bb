@@ -400,14 +400,33 @@ static TX_MODE select_tx_mode(
 static INLINE int bypass_winner_mode_processing(const MACROBLOCK *const x,
                                                 const SPEED_FEATURES *sf,
                                                 int use_txfm_skip,
-                                                int actual_txfm_skip) {
+                                                int actual_txfm_skip,
+                                                PREDICTION_MODE best_mode) {
+  const int prune_winner_mode_eval_level =
+      sf->winner_mode_sf.prune_winner_mode_eval_level;
+
   // Disable winner mode processing for blocks with low source variance.
   // The aggressiveness of this pruning logic reduces as qindex increases.
   // The threshold decreases linearly from 64 as qindex varies from 0 to 255.
-  if (sf->winner_mode_sf.prune_winner_mode_eval_level == 1) {
+  if (prune_winner_mode_eval_level == 1) {
     const unsigned int src_var_thresh = 64 - 48 * x->qindex / (MAXQ + 1);
     if (x->source_variance < src_var_thresh) return 1;
-  } else if (sf->winner_mode_sf.prune_winner_mode_eval_level >= 2) {
+  } else if (prune_winner_mode_eval_level == 2) {
+    // Skip winner mode processing of blocks for which transform turns out to be
+    // skip due to nature of eob alone except NEWMV mode.
+    if (!have_newmv_in_inter_mode(best_mode) && actual_txfm_skip) return 1;
+  } else if (prune_winner_mode_eval_level == 3) {
+    // Skip winner mode processing of blocks for which transform turns out to be
+    // skip except NEWMV mode and considered based on the quantizer.
+    // At high quantizers: Take conservative approach by considering transform
+    // skip based on eob alone.
+    // At low quantizers: Consider transform skip based on eob nature or RD cost
+    // evaluation.
+    const int is_txfm_skip =
+        x->qindex > 127 ? actual_txfm_skip : actual_txfm_skip || use_txfm_skip;
+
+    if (!have_newmv_in_inter_mode(best_mode) && is_txfm_skip) return 1;
+  } else if (prune_winner_mode_eval_level >= 4) {
     // Do not skip winner mode evaluation at low quantizers if normal mode's
     // transform search was too aggressive.
     if (sf->rd_sf.perform_coeff_opt >= 5 && x->qindex <= 70) return 0;
@@ -426,7 +445,8 @@ static INLINE int is_winner_mode_processing_enabled(const struct AV1_COMP *cpi,
   const SPEED_FEATURES *sf = &cpi->sf;
   const PREDICTION_MODE best_mode = mbmi->mode;
 
-  if (bypass_winner_mode_processing(x, sf, mbmi->skip_txfm, actual_txfm_skip))
+  if (bypass_winner_mode_processing(x, sf, mbmi->skip_txfm, actual_txfm_skip,
+                                    best_mode))
     return 0;
 
   // TODO(any): Move block independent condition checks to frame level

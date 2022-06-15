@@ -1731,6 +1731,7 @@
 
       このポリシーを未設定のままにした場合、<ph name="ASK_GEOLOCATION_POLICY_NAME" /> ポリシーは適用されますが、ユーザーはこの設定を変更できます。</translation>
 <translation id="2922511125678964398">キャプティブ ポータル認証でプロキシ設定を無視できるようにする</translation>
+<translation id="2926813071464307947">レンダラアプリ コンテナのサンドボックスを無効にする</translation>
 <translation id="2931888116345994552">このポリシーを未設定のままか有効に設定した場合、<ph name="PRODUCT_NAME" /> のすべてのコンポーネントでコンポーネントの更新が有効になります。
 
       このポリシーを無効に設定した場合、コンポーネントの更新は無効になります。ただし、一部のコンポーネント（実行可能コードを含まず、ブラウザのセキュリティ上重要なコンポーネント）はこのポリシーの適用外で、これらのコンポーネントの更新は無効にはなりません。
@@ -2160,6 +2161,11 @@
           このポリシーが空でない文字列に設定されている場合は、その文字列が <ph name="PRODUCT_NAME" /> のレシーバー名として使用されます。それ以外の場合、レシーバー名にはデバイス名が設定されます。このポリシーが未設定の場合、レシーバー名にはデバイス名が設定され、デバイスの所有者（またはデバイスを管理するドメインのユーザー）はその名前を変更できます。なお、名前は 24 文字以内で指定する必要があります。</translation>
 <translation id="3329063005964041553">File Handling API の使用をブロックするウェブアプリを指定する</translation>
 <translation id="3329401415394648069">U2F Security Key API の使用を許可</translation>
+<translation id="3329976499753286262">このポリシーを有効に設定するか未設定のままにすると、対応プラットフォームでレンダラアプリ コンテナの設定が有効になります。
+
+      このポリシーを無効に設定した場合は、レンダラ プロセスで使用されるサンドボックスの保護が弱まるため、<ph name="PRODUCT_NAME" /> のセキュリティと安定性が低下します。このポリシーは、レンダラ プロセス内で実行する必要のあるサードパーティ ソフトウェアとの間で互換性の問題が発生する場合にのみ無効にしてください。
+
+      注: 詳しくはプロセス対応ポリシー（https://chromium.googlesource.com/chromium/src/+/HEAD/docs/design/sandbox.md#Process-mitigation-policies）をご覧ください。</translation>
 <translation id="3339271789059866414">システム プロキシ サービスを利用できるようにするかどうかとシステム サービスのプロキシ認証情報を設定します。
       このポリシーが設定されていない場合、システム プロキシ サービスは利用できません。</translation>
 <translation id="3348799281602260763">有効にすると、WebRTC ピア接続が TLS/DTLS プロトコルのサポートが終了したバージョン（DTLS 1.0、TLS 1.0、TLS 1.1）にダウングレードされる可能性があります。
@@ -2930,14 +2936,6 @@
       デバイスが管理対象外またはユーザーが 1 人のみの場合、このポリシーは無視され、通知が常に表示されます。
 
       管理対象デバイスに複数のユーザー アカウントがある場合は、このポリシーを有効に設定しているときのみ通知が表示されます。</translation>
-<translation id="4293593564662654474">このポリシーでは、First-Party Sets 機能からオプトアウトするよう指定できます。
-
-                  このポリシーを未設定のままにした場合や有効に設定した場合、First-Party Sets 機能が有効になります。
-
-                  このポリシーを無効に設定した場合、First-Party Sets 機能は無効になります。
-
-                  この First-Party Sets 機能のステータスに基づいて、Chrome で First-Party Sets のリストを取得するかどうかが決まります。
-                  また、Chrome で First-Party Sets 関連の機能（「SameParty」の Cookie 属性など）をサポートするかどうかも決まります。</translation>
 <translation id="4311195029067684288">フル</translation>
 <translation id="4313767483634435271">デバイスで指定されたホルダーの MAC アドレス</translation>
 <translation id="4314538398999793073">Kerberos 認証時に CNAME 検索を無効にする</translation>
@@ -3438,6 +3436,7 @@
 <translation id="4960597185231686653">画面キーボードで音声入力を有効にするかどうかを示すブール値のフラグです。</translation>
 <translation id="4970046075219007744">File Handling API を通じたファイル形式へのアクセスをユーザーに求めることをウェブアプリに許可する</translation>
 <translation id="4970855112942626932">ブラウザのログインを無効にする</translation>
+<translation id="4974091268178043378">ChromeOS のカラーモード</translation>
 <translation id="4976928720873547342">このポリシーを設定した場合、指定したすべてのデータタイプが <ph name="CHROME_SYNC_NAME" /> とローミング プロファイルの同期から除外されます。これにより、ローミング プロファイルのサイズを抑えたり、<ph name="CHROME_SYNC_NAME" /> サーバーにアップロードされるデータのタイプを制限したりできます。
 
       現在、このポリシーで指定できるデータタイプは次のとおりです: "bookmarks"、"readingList"、"preferences"、"passwords"、"autofill"、"themes"、"typedUrls"、"extensions"、"apps"、"tabs"、"wifiConfigurations"。データタイプの名前では大文字と小文字が区別されます。</translation>
@@ -3963,6 +3962,7 @@
 <translation id="5625771176514429288">指定プラットフォームで Chrome アプリを実行できる。</translation>
 <translation id="5630352020869108293">最後のセッションを復元する</translation>
 <translation id="5633871703004128675">「テキストカーソルによるハイライト表示」のユーザー補助機能を有効にする</translation>
+<translation id="5634032995857968056">レンダラアプリ コンテナのサンドボックスを有効にする</translation>
 <translation id="5639454129004500060">設定した場合、このポリシーによって、デスク テンプレート ファイルをダウンロードするための情報が含められます。このファイルには、現在のユーザーにプロビジョニングするデスク テンプレートが含まれます。
       未設定の場合、デスク テンプレートのリストに事前設定のデスク テンプレートは含められません。<ph name="DESK_TEMPLATES_ENABLED_POLICY_NAME" /> ポリシーが true に設定されていない場合、このポリシーは無視されます。</translation>
 <translation id="5641279111657132737">このポリシーはサポートが終了しています。代わりに <ph name="AUTH_SERVER_ALLOWLIST_POLICY_NAME" /> ポリシーを使用してください。
@@ -4024,6 +4024,13 @@
 
           このポリシーの値は <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> ポリシーが有効になっている場合のみ適用されます。それ以外の場合は適用されません。</translation>
 <translation id="5697306356229823047">デバイス ユーザーを報告する</translation>
+<translation id="5698923148503075597">このポリシーを有効に設定すると、クラウド ポリシーとプラットフォーム ポリシーが競合する場合にクラウド ポリシーが優先されます。
+
+      このポリシーを無効に設定するか未設定のままにすると、クラウド ポリシーとプラットフォーム ポリシーが競合する場合にプラットフォーム ポリシーが優先されます。
+
+      この必須のポリシーは、マシンスコープのクラウド ポリシーに適用されます。
+
+      このポリシーは、<ph name="PRODUCT_NAME" /> にのみ適用されます。<ph name="GOOGLE_UPDATE_NAME" /> では無視されます。</translation>
 <translation id="5699770471852263667">このポリシーを有効に設定した場合、<ph name="PRODUCT_NAME" /> で内部 PDF ビューアがオフになります。この場合、PDF ファイルはダウンロードしたファイルと同じように扱われ、ユーザーはデフォルトのアプリで開くことができます。
 
       このポリシーを無効に設定した場合、ユーザーが PDF プラグインをオフにしない限り、PDF ファイルは PDF プラグインで開かれます。
@@ -4142,6 +4149,7 @@
 
       ユーザーはこの設定を変更できません。</translation>
 <translation id="5848438019586925019">鍵ペアの生成に使用するアルゴリズムです。</translation>
+<translation id="5851248808417680865">ダークモードを使用する</translation>
 <translation id="585270638818921943">信頼できない提供元の Android アプリの使用をユーザーに許可しない</translation>
 <translation id="5853547031212075792">ユーザーに HTTPS 専用モードの有効化を許可する</translation>
 <translation id="5859344336338527083">このポリシーを設定することで、どの URL から拡張機能、アプリ、テーマのインストールを許可するかを指定できます。<ph name="PRODUCT_NAME" /> 21 より前では、*.crx ファイルのリンクをクリックすると、いくつかの警告が表示された後、<ph name="PRODUCT_NAME" /> によりファイルのインストールを申し出るメッセージが表示されました。それ以降のバージョンでは、このようなファイルは、ダウンロードしてから <ph name="PRODUCT_NAME" /> の設定ページにドラッグする必要があります。この設定を利用することで、特定の URL に以前の簡単なインストール フローを適用できます。
@@ -4261,11 +4269,6 @@
       このポリシーを設定した場合、ユーザーはこの設定を変更できません。未設定の場合、ヘッダーとフッターを表示するかどうかをユーザーが指定します。</translation>
 <translation id="5951418260805607969">ディスク容量が少ない場合に通知を表示する</translation>
 <translation id="5958746038080720143">ウェブプロキシ自動検出（WAPD）の最適化を有効にする</translation>
-<translation id="5959428851851090097">このポリシーを有効に設定すると、クラウド ポリシーとプラットフォーム ポリシーが競合する場合にクラウド ポリシーが優先されます。
-
-      このポリシーを無効に設定するか未設定のままにすると、クラウド ポリシーとプラットフォーム ポリシーが競合する場合にプラットフォーム ポリシーが優先されます。
-
-      この必須のポリシーは、マシンスコープのクラウド ポリシーに適用されます。</translation>
 <translation id="5961137303188584693">デバイスの組み込みの NIC MAC アドレス</translation>
 <translation id="5963752574792883406">ポート 990（ブロックの解除は 2022 年 2 年 1 日まで可能）</translation>
 <translation id="5966615072639944554">Remote Attestation API の使用が許可されている拡張機能</translation>
@@ -4306,6 +4309,7 @@
 
       <ph name="PRODUCT_NAME" /> の場合、このポリシーは <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> で登録されたマシンでのみ有効です。
       <ph name="PRODUCT_OS_NAME" /> の場合、このポリシーは常に有効です。</translation>
+<translation id="6019162469732742754">自動モードを使用する</translation>
 <translation id="6019606564278029236">リモート ユーザーがリモート アシスタンス セッションで権限昇格ウィンドウとやり取りできるようにする</translation>
 <translation id="6022948604095165524">起動時の操作</translation>
 <translation id="602318745029752898">「選択して読み上げ」で Enhanced Network のテキスト読み上げ音声を許可する</translation>
@@ -4989,6 +4993,15 @@
 <translation id="6786666051053129545">Google アシスタントの Voice Match 設定フローを有効にする</translation>
 <translation id="6786747875388722282">拡張機能</translation>
 <translation id="6786967369487349613">ローミング プロフィール ディレクトリの設定</translation>
+<translation id="6789319144568227749">CORS 非ワイルドカード リクエスト ヘッダーをサポートするかどうかを設定します。
+
+      <ph name="PRODUCT_NAME" /> バージョン 97 より、CORS 非ワイルドカード リクエスト ヘッダーがサポートされるようになりました。スクリプトによって追加された Authorization ヘッダーを使用して fetch() や XMLHttpRequest でクロスオリジン ネットワーク リクエストを行う場合、CORS プリフライト レスポンスの Access-Control-Allow-Headers ヘッダーで Authorization ヘッダーが明示的に許可されている必要があります。この場合の「明示的に」は、Authorization ヘッダーがワイルドカード記号「*」で表されていないことを意味します。詳しくは、<ph name="CORS_NON_WILDCARD_REQUEST_HEADERS_FEATURE_URL" /> をご覧ください。
+
+      このポリシーを未設定のままにするか true に設定した場合、<ph name="PRODUCT_NAME" /> は CORS 非ワイルドカード リクエスト ヘッダーをサポートし、前述のとおり動作します。
+
+      このポリシーを false に設定した場合、Chrome では CORS プリフライト レスポンスの Access-Control-Allow-Headers ヘッダーで、ワイルドカード記号「*」で表された Authorization ヘッダーが許可されます。
+
+      このエンタープライズ ポリシーは一時的なものであり、今後削除される予定です。</translation>
 <translation id="6789422336869764846">このポリシーを有効にするか、未設定のままにすると、登録済みのデバイスはデバイス起動時の Dev スイッチの状態を報告します。
 
       このポリシーを無効に設定すると、登録済みのデバイスは Dev スイッチの状態を報告しません。</translation>
@@ -5221,6 +5234,7 @@
 <translation id="7019805045859631636">速い</translation>
 <translation id="7025332601572838001">CCT の初回実行時の利用規約処理を設定します</translation>
 <translation id="7026351325994257733">Wi-Fi ネットワーク設定を <ph name="PRODUCT_OS_NAME" /> デバイスと接続された Android スマートフォンとの間で同期できるようにします。</translation>
+<translation id="7027057540229843762">ライトモードを使用する</translation>
 <translation id="7027785306666625591"><ph name="PRODUCT_OS_NAME" /> の電源管理を設定します。
 
       これらのポリシーでは、アイドル状態が一定時間続いたときの <ph name="PRODUCT_OS_NAME" /> の動作を設定できます。</translation>
@@ -6168,15 +6182,6 @@
       このポリシーが無効に設定されているか未設定の場合は、ログイン時に通常のプロフィールが適用されます。</translation>
 <translation id="8151299379693359769">リモート認証に基づく追加のセキュリティ チェックを有効にします（省略可、デフォルト値は True）。</translation>
 <translation id="8151490482515839285">データ漏洩防止レポートを有効にする</translation>
-<translation id="8151949408479239790">CORS 非ワイルドカード リクエスト ヘッダーをサポートするかどうかを設定します。
-
-      <ph name="PRODUCT_NAME" /> バージョン 97 より、CORS 非ワイルドカード リクエスト ヘッダーがサポートされるようになりました。スクリプトによって追加された Authorization ヘッダーを使用して fetch() や XMLHttpRequest でクロスオリジン ネットワーク リクエストを行う場合、CORS プリフライト レスポンスの Access-Control-Allow-Headers ヘッダーで Authorization ヘッダーが明示的に許可されている必要があります。この場合の「明示的に」は、Authorization ヘッダーがワイルドカード記号「*」で表されていないことを意味します。詳しくは、<ph name="CORS_NON_WILDCARD_REQUEST_HEADERS_FEATURE_URL" /> をご覧ください。
-
-      このポリシーを未設定のままにするか true に設定した場合、<ph name="PRODUCT_NAME" /> は CORS 非ワイルドカード リクエスト ヘッダーをサポートし、前述のとおり動作します。
-
-      このポリシーを false に設定した場合、Chrome では CORS プリフライト レスポンスの Access-Control-Allow-Headers ヘッダーで、ワイルドカード記号「*」で表された Authorization ヘッダーが許可されます。
-
-      このエンタープライズ ポリシーは一時的なものであり、<ph name="PRODUCT_NAME" /> バージョン 103 以降で削除される予定です。</translation>
 <translation id="8158758865057576716"><ph name="PRODUCT_NAME" /> プロフィール データのローミング コピーの作成を有効にする。</translation>
 <translation id="8158897487095710470">このポリシーを True に設定した場合、<ph name="PRODUCT_NAME" /> にブックマーク バーが表示されます。このポリシーを False に設定した場合、ブックマーク バーは表示されません。このポリシーを設定した場合、ユーザーは設定を変更できません。ポリシーが設定されていない場合は、この機能を使用するかどうかをユーザーが指定します。</translation>
 <translation id="8159760979508295709">「カーソルによるハイライト表示」のユーザー補助機能を有効にします。
@@ -6711,6 +6716,9 @@
 
       「http://acme.com/ABC」は [IESiteListMode] モードの場合のみ一致します。</translation>
 <translation id="8736538322216687231">YouTube で一定レベル以上の制限付きモードを強制する</translation>
+<translation id="8744844164152340112">OOBE 中とセッション中に UI のレンダリングに使用するモード（ダーク、ライト、自動）を管理します。
+      自動モードでは、日の出と日の入りに合わせてダークモードとライトモードを自動的に切り替えます。
+      このポリシーは、ユーザーがシステム設定でモードを変更する可能性を考慮して設定することをおすすめします。</translation>
 <translation id="8745669971728319820">このポリシーでは、拡張機能とプラグインの情報について、レポートを作成するかどうかを管理します。
 
       ポリシー <ph name="CLOUD_REPORTING_ENABLED_POLICY_NAME" /> を未設定のままにするか無効にすると、このポリシーは無視されます。
@@ -6730,6 +6738,7 @@
 <translation id="8763716376920670835">WebSQL は、M101 ではデフォルトで有効になっていますが、Chrome フラグで無効にできます。
           このポリシーを False に設定するか未設定のままにした場合、WebSQL を無効にできます。
           このポリシーを True に設定した場合、WebSQL を無効にすることはできません。</translation>
+<translation id="8766910236040529804">レンダラアプリ コンテナを有効にする</translation>
 <translation id="8767743923206070405">このポリシーを有効にすると、<ph name="PRODUCT_NAME" /> のツールバーにホームボタンが表示されます。無効にすると、ホームボタンは表示されません。
 
       このポリシーが設定されている場合、ユーザーは <ph name="PRODUCT_NAME" /> でこの設定を変更できません。未設定の場合、ホームボタンを表示するかどうかはユーザーが選択します。</translation>

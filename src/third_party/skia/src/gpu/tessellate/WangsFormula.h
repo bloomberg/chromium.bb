@@ -12,6 +12,7 @@
 #include "include/core/SkPoint.h"
 #include "include/core/SkString.h"
 #include "include/private/SkFloatingPoint.h"
+#include "include/private/SkVx.h"
 #include "src/gpu/tessellate/Tessellation.h"
 
 #define AI SK_MAYBE_UNUSED SK_ALWAYS_INLINE
@@ -32,7 +33,7 @@ namespace skgpu::wangs_formula {
 template<int Degree> constexpr float length_term(float precision) {
     return (Degree * (Degree - 1) / 8.f) * precision;
 }
-template<int Degree> constexpr float length_term_pow2(float precision) {
+template<int Degree> constexpr float length_term_p2(float precision) {
     return ((Degree * Degree) * ((Degree - 1) * (Degree - 1)) / 64.f) * (precision * precision);
 }
 
@@ -62,7 +63,7 @@ AI int nextlog16(float x) {
 //
 class VectorXform {
 public:
-    AI explicit VectorXform() : fType(Type::kIdentity) {}
+    AI VectorXform() : fType(Type::kIdentity) {}
     AI explicit VectorXform(const SkMatrix& m) { *this = m; }
     AI VectorXform& operator=(const SkMatrix& m) {
         SkASSERT(!m.hasPerspective());
@@ -82,18 +83,18 @@ public:
         }
         return *this;
     }
-    AI float2 operator()(float2 vector) const {
+    AI skvx::float2 operator()(skvx::float2 vector) const {
         switch (fType) {
             case Type::kIdentity:
                 return vector;
             case Type::kScale:
                 return fScaleXY * vector;
             case Type::kAffine:
-                return fScaleXSkewY * float2(vector[0]) + fSkewXScaleY * vector[1];
+                return fScaleXSkewY * skvx::float2(vector[0]) + fSkewXScaleY * vector[1];
         }
         SkUNREACHABLE;
     }
-    AI float4 operator()(float4 vectors) const {
+    AI skvx::float4 operator()(skvx::float4 vectors) const {
         switch (fType) {
             case Type::kIdentity:
                 return vectors;
@@ -106,36 +107,36 @@ public:
     }
 private:
     enum class Type { kIdentity, kScale, kAffine } fType;
-    union { float2 fScaleXY, fScaleXSkewY; };
-    float2 fSkewXScaleY;
-    float4 fScaleXYXY;
-    float4 fSkewXYXY;
+    union { skvx::float2 fScaleXY, fScaleXSkewY; };
+    skvx::float2 fSkewXScaleY;
+    skvx::float4 fScaleXYXY;
+    skvx::float4 fSkewXYXY;
 };
 
 // Returns Wang's formula, raised to the 4th power, specialized for a quadratic curve.
-AI float quadratic_pow4(float precision,
-                        float2 p0, float2 p1, float2 p2,
-                        const VectorXform& vectorXform = VectorXform()) {
-    float2 v = -2*p1 + p0 + p2;
+AI float quadratic_p4(float precision,
+                      skvx::float2 p0, skvx::float2 p1, skvx::float2 p2,
+                      const VectorXform& vectorXform = VectorXform()) {
+    skvx::float2 v = -2*p1 + p0 + p2;
     v = vectorXform(v);
-    float2 vv = v*v;
-    return (vv[0] + vv[1]) * length_term_pow2<2>(precision);
+    skvx::float2 vv = v*v;
+    return (vv[0] + vv[1]) * length_term_p2<2>(precision);
 }
-AI float quadratic_pow4(float precision,
-                        const SkPoint pts[],
-                        const VectorXform& vectorXform = VectorXform()) {
-    return quadratic_pow4(precision,
-                          skvx::bit_pun<float2>(pts[0]),
-                          skvx::bit_pun<float2>(pts[1]),
-                          skvx::bit_pun<float2>(pts[2]),
-                          vectorXform);
+AI float quadratic_p4(float precision,
+                      const SkPoint pts[],
+                      const VectorXform& vectorXform = VectorXform()) {
+    return quadratic_p4(precision,
+                        skvx::bit_pun<skvx::float2>(pts[0]),
+                        skvx::bit_pun<skvx::float2>(pts[1]),
+                        skvx::bit_pun<skvx::float2>(pts[2]),
+                        vectorXform);
 }
 
 // Returns Wang's formula specialized for a quadratic curve.
 AI float quadratic(float precision,
                    const SkPoint pts[],
                    const VectorXform& vectorXform = VectorXform()) {
-    return root4(quadratic_pow4(precision, pts, vectorXform));
+    return root4(quadratic_p4(precision, pts, vectorXform));
 }
 
 // Returns the log2 value of Wang's formula specialized for a quadratic curve, rounded up to the
@@ -144,37 +145,37 @@ AI int quadratic_log2(float precision,
                       const SkPoint pts[],
                       const VectorXform& vectorXform = VectorXform()) {
     // nextlog16(x) == ceil(log2(sqrt(sqrt(x))))
-    return nextlog16(quadratic_pow4(precision, pts, vectorXform));
+    return nextlog16(quadratic_p4(precision, pts, vectorXform));
 }
 
 // Returns Wang's formula, raised to the 4th power, specialized for a cubic curve.
-AI float cubic_pow4(float precision,
-                    float2 p0, float2 p1, float2 p2, float2 p3,
-                    const VectorXform& vectorXform = VectorXform()) {
-    float4 p01{p0, p1};
-    float4 p12{p1, p2};
-    float4 p23{p2, p3};
-    float4 v = -2*p12 + p01 + p23;
+AI float cubic_p4(float precision,
+                  skvx::float2 p0, skvx::float2 p1, skvx::float2 p2, skvx::float2 p3,
+                  const VectorXform& vectorXform = VectorXform()) {
+    skvx::float4 p01{p0, p1};
+    skvx::float4 p12{p1, p2};
+    skvx::float4 p23{p2, p3};
+    skvx::float4 v = -2*p12 + p01 + p23;
     v = vectorXform(v);
-    float4 vv = v*v;
-    return std::max(vv[0] + vv[1], vv[2] + vv[3]) * length_term_pow2<3>(precision);
+    skvx::float4 vv = v*v;
+    return std::max(vv[0] + vv[1], vv[2] + vv[3]) * length_term_p2<3>(precision);
 }
-AI float cubic_pow4(float precision,
-                    const SkPoint pts[],
-                    const VectorXform& vectorXform = VectorXform()) {
-    return cubic_pow4(precision,
-                      skvx::bit_pun<float2>(pts[0]),
-                      skvx::bit_pun<float2>(pts[1]),
-                      skvx::bit_pun<float2>(pts[2]),
-                      skvx::bit_pun<float2>(pts[3]),
-                      vectorXform);
+AI float cubic_p4(float precision,
+                  const SkPoint pts[],
+                  const VectorXform& vectorXform = VectorXform()) {
+    return cubic_p4(precision,
+                    skvx::bit_pun<skvx::float2>(pts[0]),
+                    skvx::bit_pun<skvx::float2>(pts[1]),
+                    skvx::bit_pun<skvx::float2>(pts[2]),
+                    skvx::bit_pun<skvx::float2>(pts[3]),
+                    vectorXform);
 }
 
 // Returns Wang's formula specialized for a cubic curve.
 AI float cubic(float precision,
                const SkPoint pts[],
                const VectorXform& vectorXform = VectorXform()) {
-    return root4(cubic_pow4(precision, pts, vectorXform));
+    return root4(cubic_p4(precision, pts, vectorXform));
 }
 
 // Returns the log2 value of Wang's formula specialized for a cubic curve, rounded up to the next
@@ -183,29 +184,29 @@ AI int cubic_log2(float precision,
                   const SkPoint pts[],
                   const VectorXform& vectorXform = VectorXform()) {
     // nextlog16(x) == ceil(log2(sqrt(sqrt(x))))
-    return nextlog16(cubic_pow4(precision, pts, vectorXform));
+    return nextlog16(cubic_p4(precision, pts, vectorXform));
 }
 
 // Returns the maximum number of line segments a cubic with the given device-space bounding box size
 // would ever need to be divided into, raised to the 4th power. This is simply a special case of the
 // cubic formula where we maximize its value by placing control points on specific corners of the
 // bounding box.
-AI float worst_case_cubic_pow4(float precision, float devWidth, float devHeight) {
-    float kk = length_term_pow2<3>(precision);
+AI float worst_case_cubic_p4(float precision, float devWidth, float devHeight) {
+    float kk = length_term_p2<3>(precision);
     return 4*kk * (devWidth * devWidth + devHeight * devHeight);
 }
 
 // Returns the maximum number of line segments a cubic with the given device-space bounding box size
 // would ever need to be divided into.
 AI float worst_case_cubic(float precision, float devWidth, float devHeight) {
-    return root4(worst_case_cubic_pow4(precision, devWidth, devHeight));
+    return root4(worst_case_cubic_p4(precision, devWidth, devHeight));
 }
 
 // Returns the maximum log2 number of line segments a cubic with the given device-space bounding box
 // size would ever need to be divided into.
 AI int worst_case_cubic_log2(float precision, float devWidth, float devHeight) {
     // nextlog16(x) == ceil(log2(sqrt(sqrt(x))))
-    return nextlog16(worst_case_cubic_pow4(precision, devWidth, devHeight));
+    return nextlog16(worst_case_cubic_p4(precision, devWidth, devHeight));
 }
 
 // Returns Wang's formula specialized for a conic curve, raised to the second power.
@@ -214,16 +215,16 @@ AI int worst_case_cubic_log2(float precision, float devWidth, float devHeight) {
 // This is not actually due to Wang, but is an analogue from (Theorem 3, corollary 1):
 //   J. Zheng, T. Sederberg. "Estimating Tessellation Parameter Intervals for
 //   Rational Curves and Surfaces." ACM Transactions on Graphics 19(1). 2000.
-AI float conic_pow2(float precision,
-                    float2 p0, float2 p1, float2 p2,
-                    float w,
-                    const VectorXform& vectorXform = VectorXform()) {
+AI float conic_p2(float precision,
+                  skvx::float2 p0, skvx::float2 p1, skvx::float2 p2,
+                  float w,
+                  const VectorXform& vectorXform = VectorXform()) {
     p0 = vectorXform(p0);
     p1 = vectorXform(p1);
     p2 = vectorXform(p2);
 
     // Compute center of bounding box in projected space
-    const float2 C = 0.5f * (skvx::min(skvx::min(p0, p1), p2) + skvx::max(skvx::max(p0, p1), p2));
+    const skvx::float2 C = 0.5f * (min(min(p0, p1), p2) + max(max(p0, p1), p2));
 
     // Translate by -C. This improves translation-invariance of the formula,
     // see Sec. 3.3 of cited paper
@@ -234,8 +235,9 @@ AI float conic_pow2(float precision,
     // Compute max length
     const float max_len = sqrtf(std::max(dot(p0, p0), std::max(dot(p1, p1), dot(p2, p2))));
 
+
     // Compute forward differences
-    const float2 dp = -2*w*p1 + p0 + p2;
+    const skvx::float2 dp = -2*w*p1 + p0 + p2;
     const float dw = fabsf(-2 * w + 2);
 
     // Compute numerator and denominator for parametric step size of linearization. Here, the
@@ -249,16 +251,16 @@ AI float conic_pow2(float precision,
     // If not, the number of segments is (tmax - tmin) / sqrt(denom / numer).
     return numer / denom;
 }
-AI float conic_pow2(float precision,
-                    const SkPoint pts[],
-                    float w,
-                    const VectorXform& vectorXform = VectorXform()) {
-    return conic_pow2(precision,
-                      skvx::bit_pun<float2>(pts[0]),
-                      skvx::bit_pun<float2>(pts[1]),
-                      skvx::bit_pun<float2>(pts[2]),
-                      w,
-                      vectorXform);
+AI float conic_p2(float precision,
+                  const SkPoint pts[],
+                  float w,
+                  const VectorXform& vectorXform = VectorXform()) {
+    return conic_p2(precision,
+                    skvx::bit_pun<skvx::float2>(pts[0]),
+                    skvx::bit_pun<skvx::float2>(pts[1]),
+                    skvx::bit_pun<skvx::float2>(pts[2]),
+                    w,
+                    vectorXform);
 }
 
 // Returns the value of Wang's formula specialized for a conic curve.
@@ -266,7 +268,7 @@ AI float conic(float tolerance,
                const SkPoint pts[],
                float w,
                const VectorXform& vectorXform = VectorXform()) {
-    return sqrtf(conic_pow2(tolerance, pts, w, vectorXform));
+    return sqrtf(conic_p2(tolerance, pts, w, vectorXform));
 }
 
 // Returns the log2 value of Wang's formula specialized for a conic curve, rounded up to the next
@@ -276,7 +278,7 @@ AI int conic_log2(float tolerance,
                   float w,
                   const VectorXform& vectorXform = VectorXform()) {
     // nextlog4(x) == ceil(log2(sqrt(x)))
-    return nextlog4(conic_pow2(tolerance, pts, w, vectorXform));
+    return nextlog4(conic_p2(tolerance, pts, w, vectorXform));
 }
 
 }  // namespace skgpu::wangs_formula

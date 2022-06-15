@@ -635,11 +635,7 @@ TEST_F(VkPositiveLayerTest, ImagelessFramebufferNonZeroBaseMip) {
     TEST_DESCRIPTION("Use a 1D image view for an imageless framebuffer with base mip level > 0.");
     m_errorMonitor->ExpectSuccess();
 
-    if (!AddRequiredExtensions(VK_KHR_IMAGELESS_FRAMEBUFFER_EXTENSION_NAME)) {
-        printf("%s Instance extensions for %s not supported\n", kSkipPrefix, VK_KHR_IMAGELESS_FRAMEBUFFER_EXTENSION_NAME);
-        return;
-    }
-
+    AddRequiredExtensions(VK_KHR_IMAGELESS_FRAMEBUFFER_EXTENSION_NAME);
     auto pd_imageless_fb_features = LvlInitStruct<VkPhysicalDeviceImagelessFramebufferFeaturesKHR>();
     pd_imageless_fb_features.imagelessFramebuffer = VK_TRUE;
     auto pd_features2 = LvlInitStruct<VkPhysicalDeviceFeatures2>(&pd_imageless_fb_features);
@@ -648,9 +644,8 @@ TEST_F(VkPositiveLayerTest, ImagelessFramebufferNonZeroBaseMip) {
         return;
     }
 
-    if (!AreRequestedExtensionsEnabled()) {
-        printf("%s Device extensions for %s not supported\n", kSkipPrefix, VK_KHR_IMAGELESS_FRAMEBUFFER_EXTENSION_NAME);
-        return;
+    if (!AreRequiredExtensionsEnabled()) {
+        GTEST_SKIP() << RequiredExtensionsNotSupported() << " not supported";
     }
 
     if (pd_imageless_fb_features.imagelessFramebuffer != VK_TRUE) {
@@ -1007,13 +1002,11 @@ TEST_F(VkPositiveLayerTest, CreateRenderPassWithViewMask) {
     ASSERT_NO_FATAL_FAILURE(InitFramework());
 
     if (DeviceValidationVersion() < VK_API_VERSION_1_2) {
-        printf("%s Tests requires Vulkan 1.2+, skipping test\n", kSkipPrefix);
-        return;
+        GTEST_SKIP() << "At least Vulkan version 1.2 is required";
     }
 
-    if (!AreRequestedExtensionsEnabled()) {
-        printf("%s required extensions are not supported, skipping tests.\n", kSkipPrefix);
-        return;
+    if (!AreRequiredExtensionsEnabled()) {
+        GTEST_SKIP() << RequiredExtensionsNotSupported() << " not supported";
     }
 
     auto vulkan_11_features = LvlInitStruct<VkPhysicalDeviceVulkan11Features>();
@@ -1033,7 +1026,7 @@ TEST_F(VkPositiveLayerTest, CreateRenderPassWithViewMask) {
     auto attach_desc = LvlInitStruct<VkAttachmentDescription2>();
     attach_desc.format = VK_FORMAT_R8G8B8A8_UNORM;
     attach_desc.samples = VK_SAMPLE_COUNT_1_BIT;
-    attach_desc.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    attach_desc.initialLayout = VK_IMAGE_LAYOUT_PREINITIALIZED;
     attach_desc.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
 
     VkSubpassDescription2 subpass = LvlInitStruct<VkSubpassDescription2>();

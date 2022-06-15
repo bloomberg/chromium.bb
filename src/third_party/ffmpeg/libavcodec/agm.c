@@ -1094,13 +1094,12 @@ static int decode_huffman2(AVCodecContext *avctx, int header, int size)
     return 0;
 }
 
-static int decode_frame(AVCodecContext *avctx, void *data,
+static int decode_frame(AVCodecContext *avctx, AVFrame *frame,
                         int *got_frame, AVPacket *avpkt)
 {
     AGMContext *s = avctx->priv_data;
     GetBitContext *gb = &s->gb;
     GetByteContext *gbyte = &s->gbyte;
-    AVFrame *frame = data;
     int w, h, width, height, header;
     unsigned compressed_size;
     long skip;
@@ -1295,7 +1294,7 @@ const FFCodec ff_agm_decoder = {
     .priv_data_size   = sizeof(AGMContext),
     .init             = decode_init,
     .close            = decode_close,
-    .decode           = decode_frame,
+    FF_CODEC_DECODE_CB(decode_frame),
     .flush            = decode_flush,
     .caps_internal    = FF_CODEC_CAP_INIT_THREADSAFE |
                         FF_CODEC_CAP_INIT_CLEANUP |

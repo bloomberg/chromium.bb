@@ -115,7 +115,7 @@ export function getTextureSubCopyLayout(
     depthOrArrayLayers: copySize_.depthOrArrayLayers,
   };
 
-  const minBytesPerRow = copySizeBlocks.width * bytesPerBlock!;
+  const minBytesPerRow = copySizeBlocks.width * bytesPerBlock;
   const alignedMinBytesPerRow = align(minBytesPerRow, kBytesPerRowAlignment);
   if (bytesPerRow !== undefined) {
     assert(bytesPerRow >= alignedMinBytesPerRow);
@@ -132,11 +132,11 @@ export function getTextureSubCopyLayout(
 
   const bytesPerSlice = bytesPerRow * rowsPerImage;
   const sliceSize =
-    bytesPerRow * (copySizeBlocks.height - 1) + bytesPerBlock! * copySizeBlocks.width;
+    bytesPerRow * (copySizeBlocks.height - 1) + bytesPerBlock * copySizeBlocks.width;
   const byteLength = bytesPerSlice * (copySizeBlocks.depthOrArrayLayers - 1) + sliceSize;
 
   return {
-    bytesPerBlock: bytesPerBlock!,
+    bytesPerBlock,
     byteLength: align(byteLength, kBufferCopyAlignment),
     minBytesPerRow,
     bytesPerRow,

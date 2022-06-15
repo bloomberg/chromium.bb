@@ -59,7 +59,7 @@ static icu::CalendarCache *gChineseCalendarWinterSolsticeCache = NULL;
 static icu::CalendarCache *gChineseCalendarNewYearCache = NULL;
 
 static icu::TimeZone *gChineseCalendarZoneAstroCalc = NULL;
-static icu::UInitOnce gChineseCalendarZoneAstroCalcInitOnce = U_INITONCE_INITIALIZER;
+static icu::UInitOnce gChineseCalendarZoneAstroCalcInitOnce {};
 
 /**
  * The start year of the Chinese calendar, the 61st year of the reign
@@ -328,7 +328,7 @@ int32_t ChineseCalendar::handleComputeMonthStart(int32_t eyear, int32_t month, U
     // modify the extended year value accordingly.
     if (month < 0 || month > 11) {
         double m = month;
-        eyear += (int32_t)ClockMath::floorDivide(m, 12.0, m);
+        eyear += (int32_t)ClockMath::floorDivide(m, 12.0, &m);
         month = (int32_t)m;
     }
 
@@ -727,7 +727,7 @@ void ChineseCalendar::computeChineseFields(int32_t days, int32_t gyear, int32_t 
 
         // 0->0,60  1->1,1  60->1,60  61->2,1  etc.
         int32_t yearOfCycle;
-        int32_t cycle = ClockMath::floorDivide(cycle_year - 1, 60, yearOfCycle);
+        int32_t cycle = ClockMath::floorDivide(cycle_year - 1, 60, &yearOfCycle);
         internalSet(UCAL_ERA, cycle + 1);
         internalSet(UCAL_YEAR, yearOfCycle + 1);
 
@@ -843,7 +843,7 @@ ChineseCalendar::inDaylightTime(UErrorCode& status) const
 
 static UDate     gSystemDefaultCenturyStart       = DBL_MIN;
 static int32_t   gSystemDefaultCenturyStartYear   = -1;
-static icu::UInitOnce gSystemDefaultCenturyInitOnce = U_INITONCE_INITIALIZER;
+static icu::UInitOnce gSystemDefaultCenturyInitOnce {};
 
 
 UBool ChineseCalendar::haveDefaultCentury() const

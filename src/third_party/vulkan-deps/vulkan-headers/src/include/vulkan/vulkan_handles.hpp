@@ -983,9 +983,6 @@ namespace VULKAN_HPP_NAMESPACE
   struct PhysicalDeviceMeshShaderPropertiesNV;
   struct DrawMeshTasksIndirectCommandNV;
 
-  //=== VK_NV_fragment_shader_barycentric ===
-  struct PhysicalDeviceFragmentShaderBarycentricFeaturesNV;
-
   //=== VK_NV_shader_image_footprint ===
   struct PhysicalDeviceShaderImageFootprintFeaturesNV;
 
@@ -1190,6 +1187,22 @@ namespace VULKAN_HPP_NAMESPACE
   struct PhysicalDeviceDiagnosticsConfigFeaturesNV;
   struct DeviceDiagnosticsConfigCreateInfoNV;
 
+#if defined( VK_USE_PLATFORM_METAL_EXT )
+  //=== VK_EXT_metal_objects ===
+  struct ExportMetalObjectCreateInfoEXT;
+  struct ExportMetalObjectsInfoEXT;
+  struct ExportMetalDeviceInfoEXT;
+  struct ExportMetalCommandQueueInfoEXT;
+  struct ExportMetalBufferInfoEXT;
+  struct ImportMetalBufferInfoEXT;
+  struct ExportMetalTextureInfoEXT;
+  struct ImportMetalTextureInfoEXT;
+  struct ExportMetalIOSurfaceInfoEXT;
+  struct ImportMetalIOSurfaceInfoEXT;
+  struct ExportMetalSharedEventInfoEXT;
+  struct ImportMetalSharedEventInfoEXT;
+#endif /*VK_USE_PLATFORM_METAL_EXT*/
+
   //=== VK_KHR_synchronization2 ===
   struct QueueFamilyCheckpointProperties2NV;
   struct CheckpointData2NV;
@@ -1198,6 +1211,14 @@ namespace VULKAN_HPP_NAMESPACE
   struct PhysicalDeviceGraphicsPipelineLibraryFeaturesEXT;
   struct PhysicalDeviceGraphicsPipelineLibraryPropertiesEXT;
   struct GraphicsPipelineLibraryCreateInfoEXT;
+
+  //=== VK_AMD_shader_early_and_late_fragment_tests ===
+  struct PhysicalDeviceShaderEarlyAndLateFragmentTestsFeaturesAMD;
+
+  //=== VK_KHR_fragment_shader_barycentric ===
+  struct PhysicalDeviceFragmentShaderBarycentricFeaturesKHR;
+  using PhysicalDeviceFragmentShaderBarycentricFeaturesNV = PhysicalDeviceFragmentShaderBarycentricFeaturesKHR;
+  struct PhysicalDeviceFragmentShaderBarycentricPropertiesKHR;
 
   //=== VK_KHR_shader_subgroup_uniform_control_flow ===
   struct PhysicalDeviceShaderSubgroupUniformControlFlowFeaturesKHR;
@@ -1370,6 +1391,9 @@ namespace VULKAN_HPP_NAMESPACE
   struct DescriptorSetBindingReferenceVALVE;
   struct DescriptorSetLayoutHostMappingInfoVALVE;
 
+  //=== VK_EXT_non_seamless_cube_map ===
+  struct PhysicalDeviceNonSeamlessCubeMapFeaturesEXT;
+
   //=== VK_QCOM_fragment_density_map_offset ===
   struct PhysicalDeviceFragmentDensityMapOffsetFeaturesQCOM;
   struct PhysicalDeviceFragmentDensityMapOffsetPropertiesQCOM;
@@ -1385,7 +1409,9 @@ namespace VULKAN_HPP_NAMESPACE
   struct PhysicalDeviceSubpassMergeFeedbackFeaturesEXT;
   struct RenderPassCreationControlEXT;
   struct RenderPassCreationFeedbackInfoEXT;
+  struct RenderPassCreationFeedbackCreateInfoEXT;
   struct RenderPassSubpassFeedbackInfoEXT;
+  struct RenderPassSubpassFeedbackCreateInfoEXT;
 
   //===============
   //=== HANDLEs ===
@@ -10901,6 +10927,22 @@ namespace VULKAN_HPP_NAMESPACE
                                                      VULKAN_HPP_NAMESPACE::PrivateDataSlot privateDataSlot,
                                                      Dispatch const & d                    VULKAN_HPP_DEFAULT_DISPATCHER_ASSIGNMENT ) const VULKAN_HPP_NOEXCEPT;
 #endif /*VULKAN_HPP_DISABLE_ENHANCED_MODE*/
+
+#if defined( VK_USE_PLATFORM_METAL_EXT )
+    //=== VK_EXT_metal_objects ===
+
+    template <typename Dispatch = VULKAN_HPP_DEFAULT_DISPATCHER_TYPE>
+    void exportMetalObjectsEXT( VULKAN_HPP_NAMESPACE::ExportMetalObjectsInfoEXT * pMetalObjectsInfo,
+                                Dispatch const & d                                VULKAN_HPP_DEFAULT_DISPATCHER_ASSIGNMENT ) const VULKAN_HPP_NOEXCEPT;
+#  ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
+    template <typename Dispatch = VULKAN_HPP_DEFAULT_DISPATCHER_TYPE>
+    VULKAN_HPP_NODISCARD VULKAN_HPP_NAMESPACE::ExportMetalObjectsInfoEXT
+                         exportMetalObjectsEXT( Dispatch const & d VULKAN_HPP_DEFAULT_DISPATCHER_ASSIGNMENT ) const VULKAN_HPP_NOEXCEPT;
+    template <typename X, typename Y, typename... Z, typename Dispatch = VULKAN_HPP_DEFAULT_DISPATCHER_TYPE>
+    VULKAN_HPP_NODISCARD StructureChain<X, Y, Z...>
+                         exportMetalObjectsEXT( Dispatch const & d VULKAN_HPP_DEFAULT_DISPATCHER_ASSIGNMENT ) const VULKAN_HPP_NOEXCEPT;
+#  endif /*VULKAN_HPP_DISABLE_ENHANCED_MODE*/
+#endif   /*VK_USE_PLATFORM_METAL_EXT*/
 
     //=== VK_EXT_image_compression_control ===
 

@@ -316,6 +316,7 @@ void CompilerGLSL::reset(uint32_t iteration_count)
 
 	// Clear invalid expression tracking.
 	invalid_expressions.clear();
+	composite_insert_overwritten.clear();
 	current_function = nullptr;
 
 	// Clear temporary usage tracking.
@@ -618,6 +619,11 @@ void CompilerGLSL::find_static_extensions()
 			SPIRV_CROSS_THROW("OVR_multiview2 can only be used with Vertex shaders.");
 		require_extension_internal("GL_OVR_multiview2");
 	}
+
+	// KHR one is likely to get promoted at some point, so if we don't see an explicit SPIR-V extension, assume KHR.
+	for (auto &ext : ir.declared_extensions)
+		if (ext == "SPV_NV_fragment_shader_barycentric")
+			barycentric_is_nv = true;
 }
 
 void CompilerGLSL::ray_tracing_khr_fixup_locations()
@@ -1205,14 +1211,23 @@ string CompilerGLSL::to_interpolation_qualifiers(const Bitset &flags)
 		res += "__explicitInterpAMD ";
 	}
 
-	if (flags.get(DecorationPerVertexNV))
+	if (flags.get(DecorationPerVertexKHR))
 	{
 		if (options.es && options.version < 320)
-			SPIRV_CROSS_THROW("pervertexNV requires ESSL 320.");
+			SPIRV_CROSS_THROW("pervertexEXT requires ESSL 320.");
 		else if (!options.es && options.version < 450)
-			SPIRV_CROSS_THROW("pervertexNV requires GLSL 450.");
-		require_extension_internal("GL_NV_fragment_shader_barycentric");
-		res += "pervertexNV ";
+			SPIRV_CROSS_THROW("pervertexEXT requires GLSL 450.");
+
+		if (barycentric_is_nv)
+		{
+			require_extension_internal("GL_NV_fragment_shader_barycentric");
+			res += "pervertexNV ";
+		}
+		else
+		{
+			require_extension_internal("GL_EXT_fragment_shader_barycentric");
+			res += "pervertexEXT ";
+		}
 	}
 
 	return res;
@@ -4311,7 +4326,8 @@ void CompilerGLSL::force_temporary_and_recompile(uint32_t id)
 uint32_t CompilerGLSL::consume_temporary_in_precision_context(uint32_t type_id, uint32_t id, Options::Precision precision)
 {
 	// Constants do not have innate precision.
-	if (ir.ids[id].get_type() == TypeConstant || ir.ids[id].get_type() == TypeConstantOp)
+	auto handle_type = ir.ids[id].get_type();
+	if (handle_type == TypeConstant || handle_type == TypeConstantOp || handle_type == TypeUndef)
 		return id;
 
 	// Ignore anything that isn't 32-bit values.
@@ -4381,6 +4397,11 @@ void CompilerGLSL::handle_invalid_expression(uint32_t id)
 	// This means we need another pass at compilation, but next time,
 	// force temporary variables so that they cannot be invalidated.
 	force_temporary_and_recompile(id);
+
+	// If the invalid expression happened as a result of a CompositeInsert
+	// overwrite, we must block this from happening next iteration.
+	if (composite_insert_overwritten.count(id))
+		block_composite_insert_overwrite.insert(id);
 }
 
 // Converts the format of the current expression from packed to unpacked,
@@ -6059,6 +6080,16 @@ void CompilerGLSL::emit_binary_func_op(uint32_t result_type, uint32_t result_id,
 void CompilerGLSL::emit_atomic_func_op(uint32_t result_type, uint32_t result_id, uint32_t op0, uint32_t op1,
                                        const char *op)
 {
+	auto &type = get<SPIRType>(result_type);
+	if (type_is_floating_point(type))
+	{
+		if (!options.vulkan_semantics)
+			SPIRV_CROSS_THROW("Floating point atomics requires Vulkan semantics.");
+		if (options.es)
+			SPIRV_CROSS_THROW("Floating point atomics requires desktop GLSL.");
+		require_extension_internal("GL_EXT_shader_atomic_float");
+	}
+
 	forced_temporaries.insert(result_id);
 	emit_op(result_type, result_id,
 	        join(op, "(", to_non_uniform_aware_expression(op0), ", ",
@@ -6333,7 +6364,11 @@ string CompilerGLSL::legacy_tex_op(const std::string &op, const SPIRType &imgtyp
 	switch (imgtype.image.dim)
 	{
 	case spv::Dim1D:
-		type = (imgtype.image.arrayed && !options.es) ? "1DArray" : "1D";
+		// Force 2D path for ES.
+		if (options.es)
+			type = (imgtype.image.arrayed && !options.es) ? "2DArray" : "2D";
+		else
+			type = (imgtype.image.arrayed && !options.es) ? "1DArray" : "1D";
 		break;
 	case spv::Dim2D:
 		type = (imgtype.image.arrayed && !options.es) ? "2DArray" : "2D";
@@ -7011,8 +7046,8 @@ std::string CompilerGLSL::to_texture_op(const Instruction &i, bool sparse, bool 
 	expr += to_function_args(args, forward);
 	expr += ")";
 
-	// texture(samplerXShadow) returns float. shadowX() returns vec4. Swizzle here.
-	if (is_legacy() && is_depth_image(imgtype, img))
+	// texture(samplerXShadow) returns float. shadowX() returns vec4, but only in desktop GLSL. Swizzle here.
+	if (is_legacy() && !options.es && is_depth_image(imgtype, img))
 		expr += ".r";
 
 	// Sampling from a texture which was deduced to be a depth image, might actually return 1 component here.
@@ -7100,7 +7135,7 @@ string CompilerGLSL::to_function_name(const TextureFunctionNameArguments &args)
 	// This happens for HLSL SampleCmpLevelZero on Texture2DArray and TextureCube.
 	bool workaround_lod_array_shadow_as_grad = false;
 	if (((imgtype.image.arrayed && imgtype.image.dim == Dim2D) || imgtype.image.dim == DimCube) &&
-	    is_depth_image(imgtype, tex) && args.lod)
+	    is_depth_image(imgtype, tex) && args.lod && !args.base.is_fetch)
 	{
 		if (!expression_is_constant_null(args.lod))
 		{
@@ -7244,7 +7279,7 @@ string CompilerGLSL::to_function_args(const TextureFunctionArguments &args, bool
 	// This happens for HLSL SampleCmpLevelZero on Texture2DArray and TextureCube.
 	bool workaround_lod_array_shadow_as_grad =
 	    ((imgtype.image.arrayed && imgtype.image.dim == Dim2D) || imgtype.image.dim == DimCube) &&
-	    is_depth_image(imgtype, img) && args.lod != 0;
+	    is_depth_image(imgtype, img) && args.lod != 0 && !args.base.is_fetch;
 
 	if (args.dref)
 	{
@@ -7293,10 +7328,29 @@ string CompilerGLSL::to_function_args(const TextureFunctionArguments &args, bool
 			// Create a composite which merges coord/dref into a single vector.
 			auto type = expression_type(args.coord);
 			type.vecsize = args.coord_components + 1;
+			if (imgtype.image.dim == Dim1D && options.es)
+				type.vecsize++;
 			farg_str += ", ";
 			farg_str += type_to_glsl_constructor(type);
 			farg_str += "(";
-			farg_str += coord_expr;
+
+			if (imgtype.image.dim == Dim1D && options.es)
+			{
+				if (imgtype.image.arrayed)
+				{
+					farg_str += enclose_expression(coord_expr) + ".x";
+					farg_str += ", 0.0, ";
+					farg_str += enclose_expression(coord_expr) + ".y";
+				}
+				else
+				{
+					farg_str += coord_expr;
+					farg_str += ", 0.0";
+				}
+			}
+			else
+				farg_str += coord_expr;
+
 			farg_str += ", ";
 			farg_str += to_expression(args.dref);
 			farg_str += ")";
@@ -7304,6 +7358,33 @@ string CompilerGLSL::to_function_args(const TextureFunctionArguments &args, bool
 	}
 	else
 	{
+		if (imgtype.image.dim == Dim1D && options.es)
+		{
+			// Have to fake a second coordinate.
+			if (type_is_floating_point(coord_type))
+			{
+				// Cannot mix proj and array.
+				if (imgtype.image.arrayed || args.base.is_proj)
+				{
+					coord_expr = join("vec3(", enclose_expression(coord_expr), ".x, 0.0, ",
+					                  enclose_expression(coord_expr), ".y)");
+				}
+				else
+					coord_expr = join("vec2(", coord_expr, ", 0.0)");
+			}
+			else
+			{
+				if (imgtype.image.arrayed)
+				{
+					coord_expr = join("ivec3(", enclose_expression(coord_expr),
+									  ".x, 0, ",
+									  enclose_expression(coord_expr), ".y)");
+				}
+				else
+					coord_expr = join("ivec2(", coord_expr, ", 0)");
+			}
+		}
+
 		farg_str += ", ";
 		farg_str += coord_expr;
 	}
@@ -8691,24 +8772,42 @@ string CompilerGLSL::builtin_to_glsl(BuiltIn builtin, StorageClass storage)
 	case BuiltInIncomingRayFlagsKHR:
 		return ray_tracing_is_khr ? "gl_IncomingRayFlagsEXT" : "gl_IncomingRayFlagsNV";
 
-	case BuiltInBaryCoordNV:
+	case BuiltInBaryCoordKHR:
 	{
 		if (options.es && options.version < 320)
-			SPIRV_CROSS_THROW("gl_BaryCoordNV requires ESSL 320.");
+			SPIRV_CROSS_THROW("gl_BaryCoordEXT requires ESSL 320.");
 		else if (!options.es && options.version < 450)
-			SPIRV_CROSS_THROW("gl_BaryCoordNV requires GLSL 450.");
-		require_extension_internal("GL_NV_fragment_shader_barycentric");
-		return "gl_BaryCoordNV";
+			SPIRV_CROSS_THROW("gl_BaryCoordEXT requires GLSL 450.");
+
+		if (barycentric_is_nv)
+		{
+			require_extension_internal("GL_NV_fragment_shader_barycentric");
+			return "gl_BaryCoordNV";
+		}
+		else
+		{
+			require_extension_internal("GL_EXT_fragment_shader_barycentric");
+			return "gl_BaryCoordEXT";
+		}
 	}
 
 	case BuiltInBaryCoordNoPerspNV:
 	{
 		if (options.es && options.version < 320)
-			SPIRV_CROSS_THROW("gl_BaryCoordNoPerspNV requires ESSL 320.");
+			SPIRV_CROSS_THROW("gl_BaryCoordNoPerspEXT requires ESSL 320.");
 		else if (!options.es && options.version < 450)
-			SPIRV_CROSS_THROW("gl_BaryCoordNoPerspNV requires GLSL 450.");
-		require_extension_internal("GL_NV_fragment_shader_barycentric");
-		return "gl_BaryCoordNoPerspNV";
+			SPIRV_CROSS_THROW("gl_BaryCoordNoPerspEXT requires GLSL 450.");
+
+		if (barycentric_is_nv)
+		{
+			require_extension_internal("GL_NV_fragment_shader_barycentric");
+			return "gl_BaryCoordNoPerspNV";
+		}
+		else
+		{
+			require_extension_internal("GL_EXT_fragment_shader_barycentric");
+			return "gl_BaryCoordNoPerspEXT";
+		}
 	}
 
 	case BuiltInFragStencilRefEXT:
@@ -10309,7 +10408,9 @@ CompilerGLSL::Options::Precision CompilerGLSL::analyze_expression_precision(cons
 	for (uint32_t i = 0; i < length; i++)
 	{
 		uint32_t arg = args[i];
-		if (ir.ids[arg].get_type() == TypeConstant)
+
+		auto handle_type = ir.ids[arg].get_type();
+		if (handle_type == TypeConstant || handle_type == TypeConstantOp || handle_type == TypeUndef)
 			continue;
 
 		if (has_decoration(arg, DecorationRelaxedPrecision))
@@ -11105,11 +11206,61 @@ void CompilerGLSL::emit_instruction(const Instruction &instruction)
 
 		flush_variable_declaration(composite);
 
-		// Make a copy, then use access chain to store the variable.
-		statement(declare_temporary(result_type, id), to_expression(composite), ";");
-		set<SPIRExpression>(id, to_name(id), result_type, true);
-		auto chain = access_chain_internal(id, elems, length, ACCESS_CHAIN_INDEX_IS_LITERAL_BIT, nullptr);
-		statement(chain, " = ", to_unpacked_expression(obj), ";");
+		// CompositeInsert requires a copy + modification, but this is very awkward code in HLL.
+		// Speculate that the input composite is no longer used, and we can modify it in-place.
+		// There are various scenarios where this is not possible to satisfy.
+		bool can_modify_in_place = true;
+		forced_temporaries.insert(id);
+
+		// Cannot safely RMW PHI variables since they have no way to be invalidated,
+		// forcing temporaries is not going to help.
+		// This is similar for Constant and Undef inputs.
+		// The only safe thing to RMW is SPIRExpression.
+		if (invalid_expressions.count(composite) ||
+		    block_composite_insert_overwrite.count(composite) ||
+		    maybe_get<SPIRExpression>(composite) == nullptr)
+		{
+			can_modify_in_place = false;
+		}
+		else if (backend.requires_relaxed_precision_analysis &&
+		         has_decoration(composite, DecorationRelaxedPrecision) !=
+		         has_decoration(id, DecorationRelaxedPrecision) &&
+		         get<SPIRType>(result_type).basetype != SPIRType::Struct)
+		{
+			// Similarly, if precision does not match for input and output,
+			// we cannot alias them. If we write a composite into a relaxed precision
+			// ID, we might get a false truncation.
+			can_modify_in_place = false;
+		}
+
+		if (can_modify_in_place)
+		{
+			// Have to make sure the modified SSA value is bound to a temporary so we can modify it in-place.
+			if (!forced_temporaries.count(composite))
+				force_temporary_and_recompile(composite);
+
+			auto chain = access_chain_internal(composite, elems, length, ACCESS_CHAIN_INDEX_IS_LITERAL_BIT, nullptr);
+			statement(chain, " = ", to_unpacked_expression(obj), ";");
+			set<SPIRExpression>(id, to_expression(composite), result_type, true);
+			invalid_expressions.insert(composite);
+			composite_insert_overwritten.insert(composite);
+		}
+		else
+		{
+			if (maybe_get<SPIRUndef>(composite) != nullptr)
+			{
+				emit_uninitialized_temporary_expression(result_type, id);
+			}
+			else
+			{
+				// Make a copy, then use access chain to store the variable.
+				statement(declare_temporary(result_type, id), to_expression(composite), ";");
+				set<SPIRExpression>(id, to_name(id), result_type, true);
+			}
+
+			auto chain = access_chain_internal(id, elems, length, ACCESS_CHAIN_INDEX_IS_LITERAL_BIT, nullptr);
+			statement(chain, " = ", to_unpacked_expression(obj), ";");
+		}
 
 		break;
 	}
@@ -12073,6 +12224,7 @@ void CompilerGLSL::emit_instruction(const Instruction &instruction)
 	}
 
 	case OpAtomicIAdd:
+	case OpAtomicFAddEXT:
 	{
 		const char *op = check_atomic_image(ops[2]) ? "imageAtomicAdd" : "atomicAdd";
 		emit_atomic_func_op(ops[0], ops[1], ops[2], ops[5], op);
@@ -12425,6 +12577,10 @@ void CompilerGLSL::emit_instruction(const Instruction &instruction)
 			target_coord_type.basetype = SPIRType::Int;
 			coord_expr = bitcast_expression(target_coord_type, expression_type(ops[3]).basetype, coord_expr);
 
+			// ES needs to emulate 1D images as 2D.
+			if (type.image.dim == Dim1D && options.es)
+				coord_expr = join("ivec2(", coord_expr, ", 0)");
+
 			// Plain image load/store.
 			if (sparse)
 			{
@@ -12536,6 +12692,10 @@ void CompilerGLSL::emit_instruction(const Instruction &instruction)
 		auto target_coord_type = expression_type(ops[1]);
 		target_coord_type.basetype = SPIRType::Int;
 		coord_expr = bitcast_expression(target_coord_type, expression_type(ops[1]).basetype, coord_expr);
+
+		// ES needs to emulate 1D images as 2D.
+		if (type.image.dim == Dim1D && options.es)
+			coord_expr = join("ivec2(", coord_expr, ", 0)");
 
 		if (type.image.ms)
 		{
@@ -13897,7 +14057,8 @@ string CompilerGLSL::image_type_glsl(const SPIRType &type, uint32_t id)
 	switch (type.image.dim)
 	{
 	case Dim1D:
-		res += "1D";
+		// ES doesn't support 1D. Fake it with 2D.
+		res += options.es ? "2D" : "1D";
 		break;
 	case Dim2D:
 		res += "2D";
@@ -15704,8 +15865,43 @@ void CompilerGLSL::emit_block_chain(SPIRBlock &block)
 		break;
 
 	case SPIRBlock::Unreachable:
+	{
+		// Avoid emitting false fallthrough, which can happen for
+		// if (cond) break; else discard; inside a case label.
+		// Discard is not always implementable as a terminator.
+
+		auto &cfg = get_cfg_for_current_function();
+		bool inner_dominator_is_switch = false;
+		ID id = block.self;
+
+		while (id)
+		{
+			auto &iter_block = get<SPIRBlock>(id);
+			if (iter_block.terminator == SPIRBlock::MultiSelect ||
+			    iter_block.merge == SPIRBlock::MergeLoop)
+			{
+				ID next_block = iter_block.merge == SPIRBlock::MergeLoop ?
+				                iter_block.merge_block : iter_block.next_block;
+				bool outside_construct = next_block && cfg.find_common_dominator(next_block, block.self) == next_block;
+				if (!outside_construct)
+				{
+					inner_dominator_is_switch = iter_block.terminator == SPIRBlock::MultiSelect;
+					break;
+				}
+			}
+
+			if (cfg.get_preceding_edges(id).empty())
+				break;
+
+			id = cfg.get_immediate_dominator(id);
+		}
+
+		if (inner_dominator_is_switch)
+			statement("break; // unreachable workaround");
+
 		emit_next_block = false;
 		break;
+	}
 
 	case SPIRBlock::IgnoreIntersection:
 		statement("ignoreIntersectionEXT;");

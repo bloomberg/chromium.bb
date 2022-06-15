@@ -31,6 +31,7 @@ class Context;
 class ConstructorCompound;
 class Expression;
 class ExpressionStatement;
+class FieldAccess;
 class FunctionDeclaration;
 class FunctionDefinition;
 class Literal;
@@ -40,8 +41,10 @@ class ReturnStatement;
 class Statement;
 class Type;
 class VarDeclaration;
+class VariableReference;
 struct Modifiers;
 struct Program;
+struct Swizzle;
 
 /**
  * Convert a Program into WGSL code.
@@ -77,6 +80,17 @@ public:
         kNone = 0,
         kPipelineInputs = 1,
         kPipelineOutputs = 2,
+    };
+
+    // Variable declarations can be terminated by:
+    //   - comma (","), e.g. in struct member declarations or function parameters
+    //   - semicolon (";"), e.g. in function scope variables
+    // A "none" option is provided to skip the delimiter when not needed, e.g. at the end of a list
+    // of declarations.
+    enum class Delimiter {
+        kComma,
+        kSemicolon,
+        kNone,
     };
 
     struct ProgramRequirements {
@@ -115,9 +129,18 @@ private:
     void writeName(std::string_view name);
 
     // Helpers to declare a pipeline stage IO parameter declaration.
-    void writePipelineIODeclaration(Modifiers modifiers, const Type& type, std::string_view name);
-    void writeUserDefinedVariableDecl(const Type& type, std::string_view name, int location);
-    void writeBuiltinVariableDecl(const Type& type, std::string_view name, Builtin kind);
+    void writePipelineIODeclaration(Modifiers modifiers,
+                                    const Type& type,
+                                    std::string_view name,
+                                    Delimiter delimiter);
+    void writeUserDefinedIODecl(const Type& type,
+                                std::string_view name,
+                                int location,
+                                Delimiter delimiter);
+    void writeBuiltinIODecl(const Type& type,
+                            std::string_view name,
+                            Builtin builtin,
+                            Delimiter delimiter);
 
     // Write a function definition.
     void writeFunction(const FunctionDefinition& f);
@@ -137,7 +160,10 @@ private:
     // Writers for expressions.
     void writeExpression(const Expression& e, Precedence parentPrecedence);
     void writeBinaryExpression(const BinaryExpression& b, Precedence parentPrecedence);
+    void writeFieldAccess(const FieldAccess& f);
     void writeLiteral(const Literal& l);
+    void writeSwizzle(const Swizzle& swizzle);
+    void writeVariableReference(const VariableReference& r);
 
     // Constructor expressions
     void writeAnyConstructor(const AnyConstructor& c, Precedence parentPrecedence);
@@ -155,6 +181,7 @@ private:
     // TODO(skia:13092): populate this
     SkTHashSet<std::string_view> fReservedWords;
     ProgramRequirements fRequirements;
+    int fPipelineInputCount = 0;
 
     // Output processing state.
     int fIndentation = 0;

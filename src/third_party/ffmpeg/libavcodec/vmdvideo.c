@@ -430,14 +430,12 @@ static av_cold int vmdvideo_decode_init(AVCodecContext *avctx)
     return 0;
 }
 
-static int vmdvideo_decode_frame(AVCodecContext *avctx,
-                                 void *data, int *got_frame,
-                                 AVPacket *avpkt)
+static int vmdvideo_decode_frame(AVCodecContext *avctx, AVFrame *frame,
+                                 int *got_frame, AVPacket *avpkt)
 {
     const uint8_t *buf = avpkt->data;
     int buf_size = avpkt->size;
     VmdVideoContext *s = avctx->priv_data;
-    AVFrame *frame = data;
     int ret;
 
     s->buf = buf;
@@ -474,7 +472,7 @@ const FFCodec ff_vmdvideo_decoder = {
     .priv_data_size = sizeof(VmdVideoContext),
     .init           = vmdvideo_decode_init,
     .close          = vmdvideo_decode_end,
-    .decode         = vmdvideo_decode_frame,
+    FF_CODEC_DECODE_CB(vmdvideo_decode_frame),
     .p.capabilities = AV_CODEC_CAP_DR1,
     .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP,
 };

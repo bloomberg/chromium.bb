@@ -189,6 +189,8 @@
             "BufferMapAsync",
             "BufferGetConstMappedRange",
             "BufferGetMappedRange",
+            "BufferGetSize",
+            "BufferGetUsage",
             "DeviceCreateBuffer",
             "DeviceCreateComputePipelineAsync",
             "DeviceCreateRenderPipelineAsync",
@@ -201,14 +203,26 @@
             "DeviceSetLoggingCallback",
             "InstanceRequestAdapter",
             "ShaderModuleGetCompilationInfo",
+            "QuerySetGetType",
+            "QuerySetGetCount",
             "QueueOnSubmittedWorkDone",
             "QueueWriteBuffer",
-            "QueueWriteTexture"
+            "QueueWriteTexture",
+            "TextureGetWidth",
+            "TextureGetHeight",
+            "TextureGetDepthOrArrayLayers",
+            "TextureGetMipLevelCount",
+            "TextureGetSampleCount",
+            "TextureGetDimension",
+            "TextureGetFormat",
+            "TextureGetUsage"
         ],
         "client_handwritten_commands": [
             "BufferDestroy",
             "BufferUnmap",
             "DeviceCreateErrorBuffer",
+            "DeviceCreateQuerySet",
+            "DeviceCreateTexture",
             "DeviceGetQueue",
             "DeviceInjectError"
         ],
@@ -217,8 +231,10 @@
             "Buffer",
             "Device",
             "Instance",
+            "QuerySet",
             "Queue",
-            "ShaderModule"
+            "ShaderModule",
+            "Texture"
         ],
         "server_custom_pre_handler_commands": [
             "BufferDestroy",

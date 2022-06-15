@@ -468,15 +468,14 @@ GrBackendTexture SkImage_Base::onGetBackendTexture(bool flushPendingGrContextIO,
 
 #ifdef SK_GRAPHITE_ENABLED
 std::tuple<skgpu::graphite::TextureProxyView, SkColorType> SkImage_Base::asView(
-        skgpu::graphite::Recorder* recorder, skgpu::graphite::Mipmapped mipmapped,
-        SkBudgeted budgeted) const {
+        skgpu::graphite::Recorder* recorder, skgpu::graphite::Mipmapped mipmapped) const {
     if (!recorder) {
         return {};
     }
     if (this->dimensions().area() <= 1) {
         mipmapped = skgpu::graphite::Mipmapped::kNo;
     }
-    return this->onAsView(recorder, mipmapped, budgeted);
+    return this->onAsView(recorder, mipmapped);
 }
 #endif // SK_GRAPHITE_ENABLED
 
@@ -537,10 +536,11 @@ bool SkImage_Base::onAsLegacyBitmap(GrDirectContext* dContext, SkBitmap* bitmap)
 
 sk_sp<SkImage> SkImage::MakeFromPicture(sk_sp<SkPicture> picture, const SkISize& dimensions,
                                         const SkMatrix* matrix, const SkPaint* paint,
-                                        BitDepth bitDepth, sk_sp<SkColorSpace> colorSpace) {
+                                        BitDepth bitDepth, sk_sp<SkColorSpace> colorSpace,
+                                        SkSurfaceProps props) {
     return MakeFromGenerator(SkImageGenerator::MakeFromPicture(dimensions, std::move(picture),
                                                                matrix, paint, bitDepth,
-                                                               std::move(colorSpace)));
+                                                               std::move(colorSpace), props));
 }
 
 sk_sp<SkImage> SkImage::makeWithFilter(GrRecordingContext* rContext, const SkImageFilter* filter,

@@ -8,6 +8,7 @@
 #include "src/gpu/ganesh/ops/FillRRectOp.h"
 
 #include "include/gpu/GrRecordingContext.h"
+#include "include/private/SkVx.h"
 #include "src/core/SkRRectPriv.h"
 #include "src/gpu/BufferWriter.h"
 #include "src/gpu/KeyBuilder.h"
@@ -19,7 +20,6 @@
 #include "src/gpu/ganesh/GrProgramInfo.h"
 #include "src/gpu/ganesh/GrRecordingContextPriv.h"
 #include "src/gpu/ganesh/GrResourceProvider.h"
-#include "src/gpu/ganesh/GrVx.h"
 #include "src/gpu/ganesh/geometry/GrShape.h"
 #include "src/gpu/ganesh/glsl/GrGLSLFragmentShaderBuilder.h"
 #include "src/gpu/ganesh/glsl/GrGLSLVarying.h"
@@ -303,9 +303,9 @@ GrDrawOp::ClipResult FillRRectOpImpl::clipToShape(skgpu::v1::SurfaceDrawContext*
 
         if (fHeadInstance->fLocalCoords.fType == LocalCoords::Type::kRect) {
             // Update the local rect.
-            auto rect = skvx::bit_pun<grvx::float4>(fHeadInstance->fRRect.rect());
-            auto local = skvx::bit_pun<grvx::float4>(fHeadInstance->fLocalCoords.fRect);
-            auto isect = skvx::bit_pun<grvx::float4>(isectRRect.rect());
+            auto rect = skvx::bit_pun<skvx::float4>(fHeadInstance->fRRect.rect());
+            auto local = skvx::bit_pun<skvx::float4>(fHeadInstance->fLocalCoords.fRect);
+            auto isect = skvx::bit_pun<skvx::float4>(isectRRect.rect());
             auto rectToLocalSize = (local - skvx::shuffle<2,3,0,1>(local)) /
                                    (rect - skvx::shuffle<2,3,0,1>(rect));
             fHeadInstance->fLocalCoords.fRect =
@@ -561,7 +561,7 @@ void FillRRectOpImpl::onPrepareDraws(GrMeshDrawTarget* target) {
             m.postConcat(i->fViewMatrix);
 
             // Convert the radii to [-1, -1, +1, +1] space and write their attribs.
-            grvx::float4 radiiX, radiiY;
+            skvx::float4 radiiX, radiiY;
             skvx::strided_load2(&SkRRectPriv::GetRadiiArray(i->fRRect)->fX, radiiX, radiiY);
             radiiX *= 2 / (r - l);
             radiiY *= 2 / (b - t);
@@ -839,10 +839,11 @@ void FillRRectOpImpl::onExecute(GrOpFlushState* flushState, const SkRect& chainB
 }
 
 // Will the given corner look good if we use HW derivatives?
-bool can_use_hw_derivatives_with_coverage(const Sk2f& devScale, const Sk2f& cornerRadii) {
-    Sk2f devRadii = devScale * cornerRadii;
+bool can_use_hw_derivatives_with_coverage(const skvx::float2& devScale,
+                                          const skvx::float2& cornerRadii) {
+    skvx::float2 devRadii = devScale * cornerRadii;
     if (devRadii[1] < devRadii[0]) {
-        devRadii = SkNx_shuffle<1,0>(devRadii);
+        devRadii = skvx::shuffle<1,0>(devRadii);
     }
     float minDevRadius = std::max(devRadii[0], 1.f);  // Shader clamps radius at a minimum of 1.
     // Is the gradient smooth enough for this corner look ok if we use hardware derivatives?
@@ -850,21 +851,22 @@ bool can_use_hw_derivatives_with_coverage(const Sk2f& devScale, const Sk2f& corn
     return minDevRadius * minDevRadius * 5 > devRadii[1];
 }
 
-bool can_use_hw_derivatives_with_coverage(const Sk2f& devScale, const SkVector& cornerRadii) {
-    return can_use_hw_derivatives_with_coverage(devScale, Sk2f::Load(&cornerRadii));
+bool can_use_hw_derivatives_with_coverage(const skvx::float2& devScale,
+                                          const SkVector& cornerRadii) {
+    return can_use_hw_derivatives_with_coverage(devScale, skvx::float2::Load(&cornerRadii));
 }
 
 // Will the given round rect look good if we use HW derivatives?
 bool can_use_hw_derivatives_with_coverage(const GrShaderCaps& shaderCaps,
                                           const SkMatrix& viewMatrix,
                                           const SkRRect& rrect) {
-    if (!shaderCaps.shaderDerivativeSupport()) {
+    if (!shaderCaps.fShaderDerivativeSupport) {
         return false;
     }
 
-    Sk2f x = Sk2f(viewMatrix.getScaleX(), viewMatrix.getSkewX());
-    Sk2f y = Sk2f(viewMatrix.getSkewY(), viewMatrix.getScaleY());
-    Sk2f devScale = (x*x + y*y).sqrt();
+    auto x = skvx::float2(viewMatrix.getScaleX(), viewMatrix.getSkewX());
+    auto y = skvx::float2(viewMatrix.getSkewY(), viewMatrix.getScaleY());
+    skvx::float2 devScale = sqrt(x*x + y*y);
     switch (rrect.getType()) {
         case SkRRect::kEmpty_Type:
         case SkRRect::kRect_Type:
@@ -875,12 +877,14 @@ bool can_use_hw_derivatives_with_coverage(const GrShaderCaps& shaderCaps,
             return can_use_hw_derivatives_with_coverage(devScale, rrect.getSimpleRadii());
 
         case SkRRect::kNinePatch_Type: {
-            Sk2f r0 = Sk2f::Load(SkRRectPriv::GetRadiiArray(rrect));
-            Sk2f r1 = Sk2f::Load(SkRRectPriv::GetRadiiArray(rrect) + 2);
-            Sk2f minRadii = Sk2f::Min(r0, r1);
-            Sk2f maxRadii = Sk2f::Max(r0, r1);
-            return can_use_hw_derivatives_with_coverage(devScale, Sk2f(minRadii[0], maxRadii[1])) &&
-                   can_use_hw_derivatives_with_coverage(devScale, Sk2f(maxRadii[0], minRadii[1]));
+            skvx::float2 r0 = skvx::float2::Load(SkRRectPriv::GetRadiiArray(rrect));
+            skvx::float2 r1 = skvx::float2::Load(SkRRectPriv::GetRadiiArray(rrect) + 2);
+            skvx::float2 minRadii = min(r0, r1);
+            skvx::float2 maxRadii = max(r0, r1);
+            return can_use_hw_derivatives_with_coverage(devScale,
+                                                        skvx::float2(minRadii[0], maxRadii[1])) &&
+                   can_use_hw_derivatives_with_coverage(devScale,
+                                                        skvx::float2(maxRadii[0], minRadii[1]));
         }
 
         case SkRRect::kComplex_Type: {

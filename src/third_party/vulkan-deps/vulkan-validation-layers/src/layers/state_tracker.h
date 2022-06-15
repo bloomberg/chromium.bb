@@ -88,8 +88,7 @@ struct create_shader_module_api_state {
 
 // This structure is used to save data across the CreateGraphicsPipelines down-chain API call
 struct create_graphics_pipeline_api_state {
-    std::vector<safe_VkGraphicsPipelineCreateInfo> gpu_create_infos;
-    std::vector<safe_VkGraphicsPipelineCreateInfo> printf_create_infos;
+    std::vector<safe_VkGraphicsPipelineCreateInfo> modified_create_infos;
     std::vector<std::shared_ptr<PIPELINE_STATE>> pipe_state;
     std::vector<std::vector<create_shader_module_api_state>> shader_states;
     const VkGraphicsPipelineCreateInfo* pCreateInfos;
@@ -97,24 +96,21 @@ struct create_graphics_pipeline_api_state {
 
 // This structure is used to save data across the CreateComputePipelines down-chain API call
 struct create_compute_pipeline_api_state {
-    std::vector<safe_VkComputePipelineCreateInfo> gpu_create_infos;
-    std::vector<safe_VkComputePipelineCreateInfo> printf_create_infos;
+    std::vector<safe_VkComputePipelineCreateInfo> modified_create_infos;
     std::vector<std::shared_ptr<PIPELINE_STATE>> pipe_state;
     const VkComputePipelineCreateInfo* pCreateInfos;
 };
 
 // This structure is used to save data across the CreateRayTracingPipelinesNV down-chain API call.
 struct create_ray_tracing_pipeline_api_state {
-    std::vector<safe_VkRayTracingPipelineCreateInfoCommon> gpu_create_infos;
-    std::vector<safe_VkRayTracingPipelineCreateInfoCommon> printf_create_infos;
+    std::vector<safe_VkRayTracingPipelineCreateInfoCommon> modified_create_infos;
     std::vector<std::shared_ptr<PIPELINE_STATE>> pipe_state;
     const VkRayTracingPipelineCreateInfoNV* pCreateInfos;
 };
 
 // This structure is used to save data across the CreateRayTracingPipelinesKHR down-chain API call.
 struct create_ray_tracing_pipeline_khr_api_state {
-    std::vector<safe_VkRayTracingPipelineCreateInfoCommon> gpu_create_infos;
-    std::vector<safe_VkRayTracingPipelineCreateInfoCommon> printf_create_infos;
+    std::vector<safe_VkRayTracingPipelineCreateInfoCommon> modified_create_infos;
     std::vector<std::shared_ptr<PIPELINE_STATE>> pipe_state;
     const VkRayTracingPipelineCreateInfoKHR* pCreateInfos;
 };
@@ -346,6 +342,22 @@ class ValidationStateTracker : public ValidationObject {
         return GetStateMap<State>().size();
     }
 
+    template <typename State, typename Fn>
+    void ForEachShared(Fn&& fn) const {
+        const auto& map = GetStateMap<State>();
+        for (const auto& entry : map.snapshot()) {
+            fn(entry.second);
+        }
+    }
+
+    template <typename State, typename Fn>
+    void ForEachShared(Fn&& fn) {
+        auto& map = GetStateMap<State>();
+        for (const auto& entry : map.snapshot()) {
+            fn(entry.second);
+        }
+    }
+
     template <typename State>
     void ForEach(std::function<void(const State& s)> fn) const {
         const auto& map = GetStateMap<State>();
@@ -469,6 +481,11 @@ class ValidationStateTracker : public ValidationObject {
     template <typename Fn>
     void SetCommandBufferFreeCallback(Fn&& fn) {
         command_buffer_free_callback.reset(new CommandBufferFreeCallback(std::forward<Fn>(fn)));
+    }
+
+    void ResetCommandBufferCallbacks() {
+        command_buffer_reset_callback.reset();
+        command_buffer_free_callback.reset();
     }
 
     using SetImageViewInitialLayoutCallback = std::function<void(CMD_BUFFER_STATE*, const IMAGE_VIEW_STATE&, VkImageLayout)>;
@@ -1007,6 +1024,7 @@ class ValidationStateTracker : public ValidationObject {
                                                const VkStridedDeviceAddressRegionKHR *pHitShaderBindingTable,
                                                const VkStridedDeviceAddressRegionKHR *pCallableShaderBindingTable,
                                                VkDeviceAddress indirectDeviceAddress) override;
+    void PostCallRecordCmdTraceRaysIndirect2KHR(VkCommandBuffer commandBuffer, VkDeviceAddress indirectDeviceAddress) override;
     void PostCallRecordCmdEndDebugUtilsLabelEXT(VkCommandBuffer commandBuffer) override;
     void PostCallRecordCmdEndQuery(VkCommandBuffer commandBuffer, VkQueryPool queryPool, uint32_t slot) override;
     void PostCallRecordCmdEndQueryIndexedEXT(VkCommandBuffer commandBuffer, VkQueryPool queryPool, uint32_t query,

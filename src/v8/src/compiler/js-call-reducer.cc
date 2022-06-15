@@ -7,6 +7,7 @@
 #include <functional>
 
 #include "src/api/api-inl.h"
+#include "src/base/cpu.h"
 #include "src/base/small-vector.h"
 #include "src/builtins/builtins-promise.h"
 #include "src/builtins/builtins-utils.h"
@@ -718,6 +719,9 @@ class IteratingArrayBuiltinReducerAssembler : public JSCallReducerAssembler {
       MapInference* inference, const bool has_stability_dependency,
       ElementsKind kind, const SharedFunctionInfoRef& shared,
       const NativeContextRef& native_context, ArrayEverySomeVariant variant);
+  TNode<Object> ReduceArrayPrototypeAt(ZoneVector<ElementsKind> kinds,
+                                       bool needs_fallback_builtin_call,
+                                       Node* receiver_kind);
   TNode<Object> ReduceArrayPrototypeIndexOfIncludes(
       ElementsKind kind, ArrayIndexOfIncludesVariant variant);
 
@@ -1220,7 +1224,7 @@ TNode<Boolean> JSCallReducerAssembler::ReduceStringPrototypeStartsWith(
 
   GotoIf(search_string_too_long, &out, BranchHint::kFalse, FalseConstant());
 
-  STATIC_ASSERT(String::kMaxLength <= kSmiMaxValue);
+  static_assert(String::kMaxLength <= kSmiMaxValue);
 
   for (int i = 0; i < search_string_length; i++) {
     TNode<Number> k = NumberConstant(i);
@@ -1263,7 +1267,7 @@ TNode<Boolean> JSCallReducerAssembler::ReduceStringPrototypeStartsWith() {
 
   GotoIf(search_string_too_long, &out, BranchHint::kFalse, FalseConstant());
 
-  STATIC_ASSERT(String::kMaxLength <= kSmiMaxValue);
+  static_assert(String::kMaxLength <= kSmiMaxValue);
 
   ForZeroUntil(search_string_length).Do([&](TNode<Number> k) {
     TNode<Number> receiver_string_position = TNode<Number>::UncheckedCast(
@@ -1324,6 +1328,83 @@ TNode<String> JSCallReducerAssembler::ReduceStringPrototypeSlice() {
       .Else(_ { return EmptyStringConstant(); })
       .ExpectTrue()
       .Value();
+}
+
+TNode<Object> IteratingArrayBuiltinReducerAssembler::ReduceArrayPrototypeAt(
+    ZoneVector<ElementsKind> kinds, bool needs_fallback_builtin_call,
+    Node* receiver_kind) {
+  TNode<JSArray> receiver = ReceiverInputAs<JSArray>();
+  TNode<Object> index = ArgumentOrZero(0);
+
+  TNode<Number> index_num = CheckSmi(index);
+  TNode<FixedArrayBase> elements = LoadElements(receiver);
+
+  auto out = MakeLabel(MachineRepresentation::kTagged);
+
+  for (ElementsKind kind : kinds) {
+    auto correct_map_label = MakeLabel(), wrong_map_label = MakeLabel();
+    Branch(NumberEqual(TNode<Number>::UncheckedCast(receiver_kind),
+                       NumberConstant(kind)),
+           &correct_map_label, &wrong_map_label);
+    Bind(&correct_map_label);
+
+    TNode<Number> length = LoadJSArrayLength(receiver, kind);
+
+    // If index is less than 0, then subtract from length.
+    TNode<Boolean> cond = NumberLessThan(index_num, ZeroConstant());
+    TNode<Number> real_index_num =
+        SelectIf<Number>(cond)
+            .Then(_ { return NumberAdd(length, index_num); })
+            .Else(_ { return index_num; })
+            .ExpectTrue()  // Most common usage should be .at(-1)
+            .Value();
+
+    // Bound checking.
+    GotoIf(NumberLessThan(real_index_num, ZeroConstant()), &out,
+           UndefinedConstant());
+    GotoIfNot(NumberLessThan(real_index_num, length), &out,
+              UndefinedConstant());
+
+    // Retrieving element at index.
+    TNode<Object> element = LoadElement<Object>(
+        AccessBuilder::ForFixedArrayElement(kind), elements, real_index_num);
+    if (IsHoleyElementsKind(kind)) {
+      // This case is needed in particular for HOLEY_DOUBLE_ELEMENTS: raw
+      // doubles are stored in the FixedDoubleArray, and need to be converted to
+      // HeapNumber or to Smi so that this function can return an Object. The
+      // automatic converstion performed by
+      // RepresentationChanger::GetTaggedRepresentationFor does not handle
+      // holes, so we convert manually a potential hole here.
+      element = TryConvertHoleToUndefined(element, kind);
+    }
+    Goto(&out, element);
+
+    Bind(&wrong_map_label);
+  }
+
+  if (needs_fallback_builtin_call) {
+    JSCallNode n(node_ptr());
+    CallParameters const& p = n.Parameters();
+
+    // We set SpeculationMode to kDisallowSpeculation to avoid infinite
+    // recursion on the node we're creating (since, after all, it's calling
+    // Array.Prototype.at).
+    const Operator* op = javascript()->Call(
+        JSCallNode::ArityForArgc(1), p.frequency(), p.feedback(),
+        ConvertReceiverMode::kNotNullOrUndefined,
+        SpeculationMode::kDisallowSpeculation, CallFeedbackRelation::kTarget);
+    Node* fallback_builtin = node_ptr()->InputAt(0);
+
+    TNode<Object> res = AddNode<Object>(graph()->NewNode(
+        op, fallback_builtin, receiver, index, n.feedback_vector(),
+        ContextInput(), n.frame_state(), effect(), control()));
+    Goto(&out, res);
+  } else {
+    Goto(&out, UndefinedConstant());
+  }
+
+  Bind(&out);
+  return out.PhiAt<Object>(0);
 }
 
 namespace {
@@ -2075,6 +2156,7 @@ Callable GetCallableForArrayIndexOfIncludes(ArrayIndexOfIncludesVariant variant,
     switch (elements_kind) {
       case PACKED_SMI_ELEMENTS:
       case HOLEY_SMI_ELEMENTS:
+        return Builtins::CallableFor(isolate, Builtin::kArrayIndexOfSmi);
       case PACKED_ELEMENTS:
       case HOLEY_ELEMENTS:
         return Builtins::CallableFor(isolate,
@@ -2092,6 +2174,7 @@ Callable GetCallableForArrayIndexOfIncludes(ArrayIndexOfIncludesVariant variant,
     switch (elements_kind) {
       case PACKED_SMI_ELEMENTS:
       case HOLEY_SMI_ELEMENTS:
+        return Builtins::CallableFor(isolate, Builtin::kArrayIncludesSmi);
       case PACKED_ELEMENTS:
       case HOLEY_ELEMENTS:
         return Builtins::CallableFor(isolate,
@@ -2109,7 +2192,6 @@ Callable GetCallableForArrayIndexOfIncludes(ArrayIndexOfIncludesVariant variant,
 }
 
 }  // namespace
-
 TNode<Object>
 IteratingArrayBuiltinReducerAssembler::ReduceArrayPrototypeIndexOfIncludes(
     ElementsKind kind, ArrayIndexOfIncludesVariant variant) {
@@ -2147,7 +2229,6 @@ IteratingArrayBuiltinReducerAssembler::ReduceArrayPrototypeIndexOfIncludes(
   return Call4(GetCallableForArrayIndexOfIncludes(variant, kind, isolate()),
                context, elements, search_element, length, from_index);
 }
-
 namespace {
 
 struct PromiseCtorFrameStateParams {
@@ -3056,7 +3137,7 @@ Reduction JSCallReducer::ReduceReflectApply(Node* node) {
   CallParameters const& p = n.Parameters();
   int arity = p.arity_without_implicit_args();
   // Massage value inputs appropriately.
-  STATIC_ASSERT(n.ReceiverIndex() > n.TargetIndex());
+  static_assert(n.ReceiverIndex() > n.TargetIndex());
   node->RemoveInput(n.ReceiverIndex());
   node->RemoveInput(n.TargetIndex());
   while (arity < 3) {
@@ -3082,13 +3163,13 @@ Reduction JSCallReducer::ReduceReflectConstruct(Node* node) {
   Node* arg_argument_list = n.ArgumentOrUndefined(1, jsgraph());
   Node* arg_new_target = n.ArgumentOr(2, arg_target);
 
-  STATIC_ASSERT(n.ReceiverIndex() > n.TargetIndex());
+  static_assert(n.ReceiverIndex() > n.TargetIndex());
   node->RemoveInput(n.ReceiverIndex());
   node->RemoveInput(n.TargetIndex());
 
   // TODO(jgruber): This pattern essentially ensures that we have the correct
   // number of inputs for a given argument count. Wrap it in a helper function.
-  STATIC_ASSERT(JSConstructNode::FirstArgumentIndex() == 2);
+  static_assert(JSConstructNode::FirstArgumentIndex() == 2);
   while (arity < 3) {
     node->InsertInput(graph()->zone(), arity++, jsgraph()->UndefinedConstant());
   }
@@ -3096,9 +3177,9 @@ Reduction JSCallReducer::ReduceReflectConstruct(Node* node) {
     node->RemoveInput(arity);
   }
 
-  STATIC_ASSERT(JSConstructNode::TargetIndex() == 0);
-  STATIC_ASSERT(JSConstructNode::NewTargetIndex() == 1);
-  STATIC_ASSERT(JSConstructNode::kFeedbackVectorIsLastInput);
+  static_assert(JSConstructNode::TargetIndex() == 0);
+  static_assert(JSConstructNode::NewTargetIndex() == 1);
+  static_assert(JSConstructNode::kFeedbackVectorIsLastInput);
   node->ReplaceInput(JSConstructNode::TargetIndex(), arg_target);
   node->ReplaceInput(JSConstructNode::NewTargetIndex(), arg_new_target);
   node->ReplaceInput(JSConstructNode::ArgumentIndex(0), arg_argument_list);
@@ -4029,10 +4110,10 @@ JSCallReducer::ReduceCallOrConstructWithArrayLikeOrSpreadOfCreateArguments(
         FieldAccess const& access = FieldAccessOf(user->op());
         if (access.offset == JSArray::kLengthOffset) {
           // Ignore uses for arguments#length.
-          STATIC_ASSERT(
+          static_assert(
               static_cast<int>(JSArray::kLengthOffset) ==
               static_cast<int>(JSStrictArgumentsObject::kLengthOffset));
-          STATIC_ASSERT(
+          static_assert(
               static_cast<int>(JSArray::kLengthOffset) ==
               static_cast<int>(JSSloppyArgumentsObject::kLengthOffset));
           continue;
@@ -4608,6 +4689,8 @@ Reduction JSCallReducer::ReduceJSCall(Node* node,
       return ReduceArrayIncludes(node);
     case Builtin::kArraySome:
       return ReduceArraySome(node, shared);
+    case Builtin::kArrayPrototypeAt:
+      return ReduceArrayPrototypeAt(node);
     case Builtin::kArrayPrototypePush:
       return ReduceArrayPrototypePush(node);
     case Builtin::kArrayPrototypePop:
@@ -5046,7 +5129,7 @@ Reduction JSCallReducer::ReduceJSConstruct(Node* node) {
 
       // Turn the {node} into a {JSCreateArray} call.
       NodeProperties::ReplaceEffectInput(node, effect);
-      STATIC_ASSERT(JSConstructNode::NewTargetIndex() == 1);
+      static_assert(JSConstructNode::NewTargetIndex() == 1);
       node->ReplaceInput(n.NewTargetIndex(), array_function);
       node->RemoveInput(n.FeedbackVectorIndex());
       NodeProperties::ChangeOp(
@@ -5113,7 +5196,7 @@ Reduction JSCallReducer::ReduceJSConstruct(Node* node) {
         case Builtin::kArrayConstructor: {
           // TODO(bmeurer): Deal with Array subclasses here.
           // Turn the {node} into a {JSCreateArray} call.
-          STATIC_ASSERT(JSConstructNode::NewTargetIndex() == 1);
+          static_assert(JSConstructNode::NewTargetIndex() == 1);
           node->ReplaceInput(n.NewTargetIndex(), new_target);
           node->RemoveInput(n.FeedbackVectorIndex());
           NodeProperties::ChangeOp(
@@ -5539,6 +5622,60 @@ void JSCallReducer::CheckIfElementsKind(Node* receiver_elements_kind,
   }
 }
 
+// ES6 section 23.1.3.1 Array.prototype.at ( )
+Reduction JSCallReducer::ReduceArrayPrototypeAt(Node* node) {
+  if (!FLAG_turbo_inline_array_builtins) return NoChange();
+
+  JSCallNode n(node);
+  CallParameters const& p = n.Parameters();
+  if (p.speculation_mode() == SpeculationMode::kDisallowSpeculation) {
+    return NoChange();
+  }
+
+  Node* receiver = n.receiver();
+  Effect effect = n.effect();
+  Control control = n.control();
+
+  MapInference inference(broker(), receiver, effect);
+  if (!inference.HaveMaps()) return NoChange();
+
+  // Collecting kinds
+  ZoneVector<ElementsKind> kinds(broker()->zone());
+  bool needs_fallback_builtin_call = false;
+  for (const MapRef& map : inference.GetMaps()) {
+    if (map.supports_fast_array_iteration()) {
+      ElementsKind kind = map.elements_kind();
+      // Checking that |kind| isn't already in |kinds|. Using std::find should
+      // be fast enough since |kinds| can contain at most 4 items.
+      if (std::find(kinds.begin(), kinds.end(), kind) == kinds.end()) {
+        kinds.push_back(kind);
+      }
+    } else {
+      needs_fallback_builtin_call = true;
+    }
+  }
+  inference.RelyOnMapsPreferStability(dependencies(), jsgraph(), &effect,
+                                      control, p.feedback());
+
+  if (kinds.empty()) {
+    // No map in the feedback supports fast iteration. Keeping the builtin call.
+    return NoChange();
+  }
+
+  if (!dependencies()->DependOnNoElementsProtector()) {
+    return NoChange();
+  }
+
+  Node* receiver_kind = LoadReceiverElementsKind(receiver, &effect, control);
+
+  IteratingArrayBuiltinReducerAssembler a(this, node);
+  a.InitializeEffectControl(effect, control);
+
+  TNode<Object> subgraph = a.ReduceArrayPrototypeAt(
+      kinds, needs_fallback_builtin_call, receiver_kind);
+  return ReplaceWithSubgraph(&a, subgraph);
+}
+
 // ES6 section 22.1.3.18 Array.prototype.push ( )
 Reduction JSCallReducer::ReduceArrayPrototypePush(Node* node) {
   JSCallNode n(node);
@@ -5951,7 +6088,7 @@ Reduction JSCallReducer::ReduceArrayPrototypeShift(Node* node) {
           // And we need to use index when using NumberLessThan to check
           // terminate and updating index, otherwise which will break inducing
           // variables in LoopVariableOptimizer.
-          STATIC_ASSERT(JSArray::kMaxCopyElements < kSmiMaxValue);
+          static_assert(JSArray::kMaxCopyElements < kSmiMaxValue);
           Node* index_retyped = effect2 =
               graph()->NewNode(common()->TypeGuard(Type::UnsignedSmall()),
                                index, effect2, control2);
@@ -7648,7 +7785,7 @@ Reduction JSCallReducer::ReduceCollectionIteratorPrototypeNext(
       Node* etrue0 = effect;
       {
         // Load the key of the entry.
-        STATIC_ASSERT(OrderedHashMap::HashTableStartIndex() ==
+        static_assert(OrderedHashMap::HashTableStartIndex() ==
                       OrderedHashSet::HashTableStartIndex());
         Node* entry_start_position = graph()->NewNode(
             simplified()->NumberAdd(),

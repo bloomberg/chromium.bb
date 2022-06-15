@@ -85,7 +85,7 @@ static const char sCopyTextureForBrowserShader[] = R"(
                 return sign(v) * (pow(params.A * abs(v) + params.B, params.G) + params.E);
             }
 
-            @stage(vertex)
+            @vertex
             fn vs_main(
                 @builtin(vertex_index) VertexIndex : u32
             ) -> VertexOutputs {
@@ -123,7 +123,7 @@ static const char sCopyTextureForBrowserShader[] = R"(
             @binding(1) @group(0) var mySampler: sampler;
             @binding(2) @group(0) var myTexture: texture_2d<f32>;
 
-            @stage(fragment)
+            @fragment
             fn fs_main(
                 @location(0) texcoord : vec2<f32>
             ) -> @location(0) vec4<f32> {
@@ -537,6 +537,7 @@ MaybeError DoCopyTextureForBrowser(DeviceBase* device,
 
     // Prepare binding 2 resource: sampled texture
     TextureViewDescriptor srcTextureViewDesc = {};
+    srcTextureViewDesc.dimension = wgpu::TextureViewDimension::e2D;
     srcTextureViewDesc.baseMipLevel = source->mipLevel;
     srcTextureViewDesc.mipLevelCount = 1;
     srcTextureViewDesc.arrayLayerCount = 1;
@@ -556,6 +557,7 @@ MaybeError DoCopyTextureForBrowser(DeviceBase* device,
 
     // Prepare dst texture view as color Attachment.
     TextureViewDescriptor dstTextureViewDesc;
+    dstTextureViewDesc.dimension = wgpu::TextureViewDimension::e2D;
     dstTextureViewDesc.baseMipLevel = destination->mipLevel;
     dstTextureViewDesc.mipLevelCount = 1;
     dstTextureViewDesc.baseArrayLayer = destination->origin.z;

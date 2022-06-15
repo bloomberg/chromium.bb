@@ -15,6 +15,7 @@ limitations under the License.
 
 #include "tensorflow/compiler/tf2xla/kernels/gpu_tf_kernel_custom_call.h"
 
+#include <algorithm>
 #include <memory>
 #include <numeric>
 #include <string>
@@ -48,14 +49,6 @@ limitations under the License.
 #include "tensorflow/core/framework/tensor_shape.h"
 #include "tensorflow/core/framework/types.pb.h"
 
-#if !GOOGLE_CUDA && !TENSORFLOW_USE_ROCM
-namespace stream_executor {
-namespace gpu {
-using GpuStreamHandle = void*;
-}  // namespace gpu
-}  // namespace stream_executor
-#endif
-
 namespace tensorflow {
 
 namespace {
@@ -76,27 +69,17 @@ static StatusOr<TfCallbackData> CallbackDataFromProto(const char* opaque,
                                                       size_t opaque_len) {
   TfCallbackData callback_data;
   absl::string_view data{opaque, opaque_len};
-  auto s = HumanReadableJsonToProto(std::string(data), &callback_data);
-  if (!s.ok()) {
-    return se::port::InternalError(
-        absl::StrCat("Failed parsing callback proto: ", s.ToString()));
-  }
+  callback_data.ParseFromString(std::string{data});  // NOLINT: OSS req
   return callback_data;
 }
 
 static StatusOr<std::string> SerializeCallbackData(const TfCallbackData& data) {
-  std::string out;
-  auto status = ProtoToHumanReadableJson(data, &out,
-                                         /*ignore_accuracy_loss=*/true);
-  if (!status.ok()) {
-    return se::port::InternalError("Failed converting proto to JSON");
-  }
-  return out;
+  return data.SerializeAsString();
 }
 
-Status CompileToCustomCallCallingTfKernel(int graph_def_version,
-                                          const NodeDef& node_def,
-                                          XlaOpKernelContext* ctx) {
+Status CallTfKernelOp::CompileToCustomCallCallingTfKernel(
+    int graph_def_version, const NodeDef& node_def,
+    XlaOpKernelContext* ctx) const {
   const OpRegistrationData* data = OpRegistry::Global()->LookUp(node_def.op());
   int num_inputs = ctx->num_inputs();
   int num_outputs = ctx->num_outputs();
@@ -128,6 +111,7 @@ Status CompileToCustomCallCallingTfKernel(int graph_def_version,
           "Input dynamic dimensions are not supported for light outside "
           "compilation");
     }
+    // TODO(cheshire): Use InputXlaShape.
     TensorShape shape = ctx->InputShape(i);
     TfCallbackData::InputBufferDescription input_description;
 
@@ -157,23 +141,40 @@ Status CompileToCustomCallCallingTfKernel(int graph_def_version,
   ic.set_input_tensors(input_tensors);
 
   TF_RETURN_IF_ERROR(data->shape_inference_fn(&ic));
+  TF_ASSIGN_OR_RETURN(OutputDimensionBoundsMap output_dimension_bounds,
+                      DynamicOutputDimensions(node_def, ctx));
 
   std::vector<xla::Shape> output_xla_shapes;
   for (int i = 0; i < num_outputs; ++i) {
+    const DimensionBoundsMap& dimension_bounds = output_dimension_bounds[i];
     TfCallbackData::OutputBufferDescription output_description;
     output_description.mutable_buffer_description()->set_type(
         ctx->expected_output_dtype(i));
 
     TensorShapeProto output_tensor_shape_proto =
         ic.ShapeHandleToProto(ic.output(i));
+    if (output_tensor_shape_proto.unknown_rank()) {
+      return se::port::InternalError(
+          absl::StrCat("Output ", i, " has unknown rank"));
+    }
+
+    int rank = output_tensor_shape_proto.dim_size();
+    std::vector<bool> dynamic_dimensions(rank, false);
 
     // Modify output tensor shape proto to replace dynamic dimensions with upper
     // bounds: that is the information we will be storing in the callback.
     for (int d = 0; d < output_tensor_shape_proto.dim_size(); ++d) {
       auto* dim = output_tensor_shape_proto.mutable_dim(d);
+
       if (dim->size() < 0) {
-        return se::port::InternalError(
-            absl::StrCat("Found unknown dimension ", d, " for output ", i));
+        auto it = dimension_bounds.find(d);
+        if (it == dimension_bounds.end()) {
+          return se::port::InternalError(absl::StrCat(
+              "Bound for unknown dimension not found for dimension ", d));
+        }
+        dim->set_size(it->second);
+        dynamic_dimensions[d] = true;
+        output_description.set_is_dynamically_padded(true);
       }
     }
 
@@ -188,15 +189,16 @@ Status CompileToCustomCallCallingTfKernel(int graph_def_version,
     TF_ASSIGN_OR_RETURN(xla::Shape output_shape,
                         TensorShapeToXLAShape(ctx->expected_output_dtype(i),
                                               output_tensor_shape));
+
+    // Set corresponding dynamic bounds on the output xla::Shape.
+    for (int64_t d = 0; d < dynamic_dimensions.size(); ++d) {
+      output_shape.set_dynamic_dimension(d, dynamic_dimensions[d]);
+    }
     output_xla_shapes.push_back(output_shape);
   }
 
-  xla::Shape output_shape;
-  if (output_xla_shapes.size() == 1) {
-    output_shape = output_xla_shapes.back();
-  } else {
-    output_shape = xla::ShapeUtil::MakeTupleShape(output_xla_shapes);
-  }
+  xla::Shape output_shape =
+      xla::ShapeUtil::MakeMaybeTupleShape(output_xla_shapes);
 
   VLOG(1) << "Created output shape: " << output_shape.ToString();
 
@@ -211,13 +213,11 @@ Status CompileToCustomCallCallingTfKernel(int graph_def_version,
       /*literal=*/nullptr, xla::CustomCallSchedule::SCHEDULE_NONE,
       xla::CustomCallApiVersion::API_VERSION_STATUS_RETURNING);
 
-  if (num_outputs == 1) {
-    ctx->SetOutput(0, out);
-  } else {
-    for (int i = 0; i < num_outputs; ++i) {
-      ctx->SetOutput(i, xla::GetTupleElement(out, i));
-    }
+  for (int i = 0; i < num_outputs; ++i) {
+    ctx->SetOutput(i,
+                   output_shape.IsTuple() ? xla::GetTupleElement(out, i) : out);
   }
+
   return Status::OK();
 }
 
@@ -258,15 +258,17 @@ class WriteIntoXlaBufferAllocator : public Allocator {
   std::string description_;
 };
 
-static int GetOutputBufferId(int output_num,
-                             const TfCallbackData& callback_data) {
-  int num_constants =
-      absl::c_count_if(callback_data.inputs(),
-                       [&](const auto& input) { return input.has_value(); });
-  return (callback_data.inputs_size() - num_constants) + output_num;
+int GetNumConstants(const TfCallbackData& callback_data) {
+  return absl::c_count_if(callback_data.inputs(),
+                          [&](const auto& input) { return input.has_value(); });
 }
 
-static int64_t BufferSize(const TfCallbackData::BufferDescription& descr) {
+int GetOutputBufferId(int output_num, const TfCallbackData& callback_data) {
+  return (callback_data.inputs_size() - GetNumConstants(callback_data)) +
+         output_num;
+}
+
+int64_t BufferSize(const TfCallbackData::BufferDescription& descr) {
   TensorShape shape;
   CHECK(TensorShape::BuildTensorShape(descr.shape(), &shape).ok());  // Crash OK
   return shape.num_elements() * DataTypeSize(descr.type());
@@ -341,34 +343,53 @@ class TfCallbackDevice : public DeviceBase {
   std::string name_ = "tf_callback_device";
 };
 
-static StatusOr<std::unique_ptr<se::Stream>> StreamForRawHandle(
-    se::StreamExecutor* executor, se::gpu::GpuStreamHandle handle) {
-#if GOOGLE_CUDA || TENSORFLOW_USE_ROCM
-  auto gpu_stream =
-      std::make_unique<se::gpu::GpuStream>(static_cast<se::gpu::GpuExecutor*>(
-          executor->GetInternalExecutor()->GetUnderlyingExecutor()));
-  *gpu_stream->GpuStreamMemberHack() = handle;
-  return std::make_unique<se::Stream>(executor, std::move(gpu_stream));
-#else
-  return se::port::InternalError("GPUs not configured");
-#endif
+// Populate the output with actual dimensions of the allocated shapes.
+//
+// Populates the vector on the host and then copies it over to the GPU.
+Status PopulateMetadataBufferIfNeeded(OpKernelContext& ctx,
+                                      const TfCallbackData& callback_data,
+                                      void** buffers, se::Stream* stream) {
+  for (int i = 0; i < ctx.num_outputs(); i++) {
+    if (callback_data.outputs(i).is_dynamically_padded()) {
+      Tensor* allocated = ctx.mutable_output(i);
+      TensorShape allocated_shape = allocated->shape();
+      int num_dimensions = allocated_shape.dims();
+      std::vector<int32_t> shape_info(num_dimensions);
+      for (int d = 0; d < allocated_shape.dims(); d++) {
+        int dim_size = allocated_shape.dim_size(d);
+        shape_info[d] = dim_size;
+      }
+
+      TF_ASSIGN_OR_RETURN(
+          xla::Shape xla_shape,
+          tensorflow::TensorShapeToXLAShape(
+              callback_data.outputs(i).buffer_description().type(),
+              callback_data.outputs(i).buffer_description().shape()));
+      void* location = static_cast<char*>(allocated->data()) +
+                       xla::ShapeUtil::ByteSizeOf(xla_shape);
+      se::DeviceMemoryBase m{location, num_dimensions * sizeof(int32_t)};
+      stream->ThenMemcpy(&m, shape_info.data(),
+                         num_dimensions * sizeof(int32_t));
+    }
+  }
+  return Status::OK();
 }
 
-static Status CallTfKernel(se::gpu::GpuStreamHandle stream_handle,
-                           void** buffers, const char* opaque, int opaque_len) {
-  // TODO(cheshire): Pass device ordinal explicitly, but it seems it's not doing
-  // anything when the stream is passed explicitly.
-  const int device_ordinal = 0;
+Status CallTfKernel(void* stream_handle, void** buffers, const char* opaque,
+                    int opaque_len) {
   TF_ASSIGN_OR_RETURN(se::Platform * platform,
                       se::MultiPlatformManager::PlatformWithName("CUDA"));
+  se::StreamExecutorConfig config;
+  config.gpu_stream = stream_handle;
   TF_ASSIGN_OR_RETURN(se::StreamExecutor * executor,
-                      platform->ExecutorForDevice(device_ordinal));
-  TF_ASSIGN_OR_RETURN(std::unique_ptr<se::Stream> stream,
-                      StreamForRawHandle(executor, stream_handle));
+                      platform->GetExecutor(config));
+  se::Stream* stream = executor->FindAllocatedStream(stream_handle);
+  if (!stream) {
+    return xla::InternalError("Stream not found for %p", stream_handle);
+  }
   TF_ASSIGN_OR_RETURN(TfCallbackData callback_data,
                       CallbackDataFromProto(opaque, opaque_len));
-
-  TfCallbackDevice device(stream.get(), buffers, callback_data);
+  TfCallbackDevice device(stream, buffers, callback_data);
 
   std::vector<AllocatorAttributes> allocator_attributes;
   for (int output_idx = 0; output_idx < callback_data.outputs_size();
@@ -439,13 +460,22 @@ static Status CallTfKernel(se::gpu::GpuStreamHandle stream_handle,
   params.inputs = &inputs;
   OpKernelContext ctx(&params, callback_data.outputs_size());
   kernel->Compute(&ctx);
+
+  bool has_dynamic_outputs = absl::c_any_of(
+      callback_data.outputs(),
+      [](const auto& out) { return out.is_dynamically_padded(); });
+
+  if (has_dynamic_outputs) {
+    TF_RETURN_IF_ERROR(
+        PopulateMetadataBufferIfNeeded(ctx, callback_data, buffers, stream));
+  }
+
   TF_RETURN_IF_ERROR(ctx.status());
   return Status::OK();
 }
 
-static void GenericTfCallback(se::gpu::GpuStreamHandle stream_handle,
-                              void** buffers, const char* opaque,
-                              int opaque_len, XlaCustomCallStatus* status) {
+void GenericTfCallback(void* stream_handle, void** buffers, const char* opaque,
+                       int opaque_len, XlaCustomCallStatus* status) {
   Status s = CallTfKernel(stream_handle, buffers, opaque, opaque_len);
   if (!s.ok()) {
     XlaCustomCallStatusSetFailure(status, s.error_message().c_str(),

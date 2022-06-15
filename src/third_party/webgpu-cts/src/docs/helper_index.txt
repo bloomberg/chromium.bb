@@ -59,6 +59,7 @@ Whenever a new generally-useful helper is added, it should be indexed here.
     CSS Color Module Level 4.
 - {@link webgpu/util/create_elements}:
     Helpers for creating web elements like HTMLCanvasElement, OffscrrenCanvas, etc.
+- {@link webgpu/util/shader}: Helpers for creating fragment shader based on intended output values, plainType, and componentCount.
 - {@link webgpu/util/texture/base}: General texture-related helpers.
 - {@link webgpu/util/texture/layout}: Helpers for working with linear image data
     (like in copyBufferToTexture, copyTextureToBuffer, writeTexture).

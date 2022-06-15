@@ -107,8 +107,12 @@ HLSLTextureGroup TextureGroup(const TBasicType type, TLayoutImageInternalFormat 
             return HLSL_TEXTURE_2D_MS;
         case EbtSampler2DMSArray:
             return HLSL_TEXTURE_2D_MS_ARRAY;
+        case EbtSamplerBuffer:
+            return HLSL_TEXTURE_BUFFER;
         case EbtISampler2D:
             return HLSL_TEXTURE_2D_INT4;
+        case EbtISamplerBuffer:
+            return HLSL_TEXTURE_BUFFER_INT4;
         case EbtISampler3D:
             return HLSL_TEXTURE_3D_INT4;
         case EbtISamplerCube:
@@ -125,6 +129,8 @@ HLSLTextureGroup TextureGroup(const TBasicType type, TLayoutImageInternalFormat 
             return HLSL_TEXTURE_3D_UINT4;
         case EbtUSamplerCube:
             return HLSL_TEXTURE_2D_ARRAY_UINT4;
+        case EbtUSamplerBuffer:
+            return HLSL_TEXTURE_BUFFER_UINT4;
         case EbtUSampler2DArray:
             return HLSL_TEXTURE_2D_ARRAY_UINT4;
         case EbtUSampler2DMS:
@@ -151,9 +157,7 @@ HLSLTextureGroup TextureGroup(const TBasicType type, TLayoutImageInternalFormat 
                     return HLSL_TEXTURE_2D_SNORM;
                 default:
                     UNREACHABLE();
-#if !UNREACHABLE_IS_NORETURN
                     return HLSL_TEXTURE_UNKNOWN;
-#endif
             }
         }
         case EbtIImage2D:
@@ -167,9 +171,7 @@ HLSLTextureGroup TextureGroup(const TBasicType type, TLayoutImageInternalFormat 
                     return HLSL_TEXTURE_2D_INT4;
                 default:
                     UNREACHABLE();
-#if !UNREACHABLE_IS_NORETURN
                     return HLSL_TEXTURE_UNKNOWN;
-#endif
             }
         }
         case EbtUImage2D:
@@ -184,9 +186,7 @@ HLSLTextureGroup TextureGroup(const TBasicType type, TLayoutImageInternalFormat 
                     return HLSL_TEXTURE_2D_UINT4;
                 default:
                     UNREACHABLE();
-#if !UNREACHABLE_IS_NORETURN
                     return HLSL_TEXTURE_UNKNOWN;
-#endif
             }
         }
         case EbtImage3D:
@@ -203,9 +203,7 @@ HLSLTextureGroup TextureGroup(const TBasicType type, TLayoutImageInternalFormat 
                     return HLSL_TEXTURE_3D_SNORM;
                 default:
                     UNREACHABLE();
-#if !UNREACHABLE_IS_NORETURN
                     return HLSL_TEXTURE_UNKNOWN;
-#endif
             }
         }
         case EbtIImage3D:
@@ -219,9 +217,7 @@ HLSLTextureGroup TextureGroup(const TBasicType type, TLayoutImageInternalFormat 
                     return HLSL_TEXTURE_3D_INT4;
                 default:
                     UNREACHABLE();
-#if !UNREACHABLE_IS_NORETURN
                     return HLSL_TEXTURE_UNKNOWN;
-#endif
             }
         }
         case EbtUImage3D:
@@ -235,9 +231,7 @@ HLSLTextureGroup TextureGroup(const TBasicType type, TLayoutImageInternalFormat 
                     return HLSL_TEXTURE_3D_UINT4;
                 default:
                     UNREACHABLE();
-#if !UNREACHABLE_IS_NORETURN
                     return HLSL_TEXTURE_UNKNOWN;
-#endif
             }
         }
         case EbtImage2DArray:
@@ -255,9 +249,7 @@ HLSLTextureGroup TextureGroup(const TBasicType type, TLayoutImageInternalFormat 
                     return HLSL_TEXTURE_2D_ARRAY_SNORM;
                 default:
                     UNREACHABLE();
-#if !UNREACHABLE_IS_NORETURN
                     return HLSL_TEXTURE_UNKNOWN;
-#endif
             }
         }
         case EbtIImage2DArray:
@@ -272,9 +264,7 @@ HLSLTextureGroup TextureGroup(const TBasicType type, TLayoutImageInternalFormat 
                     return HLSL_TEXTURE_2D_ARRAY_INT4;
                 default:
                     UNREACHABLE();
-#if !UNREACHABLE_IS_NORETURN
                     return HLSL_TEXTURE_UNKNOWN;
-#endif
             }
         }
         case EbtUImage2DArray:
@@ -289,16 +279,57 @@ HLSLTextureGroup TextureGroup(const TBasicType type, TLayoutImageInternalFormat 
                     return HLSL_TEXTURE_2D_ARRAY_UINT4;
                 default:
                     UNREACHABLE();
-#if !UNREACHABLE_IS_NORETURN
                     return HLSL_TEXTURE_UNKNOWN;
-#endif
+            }
+        }
+        case EbtImageBuffer:
+        {
+            switch (imageInternalFormat)
+            {
+                case EiifRGBA32F:
+                case EiifRGBA16F:
+                case EiifR32F:
+                    return HLSL_TEXTURE_BUFFER;
+                case EiifRGBA8:
+                    return HLSL_TEXTURE_BUFFER_UNORM;
+                case EiifRGBA8_SNORM:
+                    return HLSL_TEXTURE_BUFFER_SNORM;
+                default:
+                    UNREACHABLE();
+                    return HLSL_TEXTURE_UNKNOWN;
+            }
+        }
+        case EbtUImageBuffer:
+        {
+            switch (imageInternalFormat)
+            {
+                case EiifRGBA32UI:
+                case EiifRGBA16UI:
+                case EiifRGBA8UI:
+                case EiifR32UI:
+                    return HLSL_TEXTURE_BUFFER_UINT4;
+                default:
+                    UNREACHABLE();
+                    return HLSL_TEXTURE_UNKNOWN;
+            }
+        }
+        case EbtIImageBuffer:
+        {
+            switch (imageInternalFormat)
+            {
+                case EiifRGBA32I:
+                case EiifRGBA16I:
+                case EiifRGBA8I:
+                case EiifR32I:
+                    return HLSL_TEXTURE_BUFFER_INT4;
+                default:
+                    UNREACHABLE();
+                    return HLSL_TEXTURE_UNKNOWN;
             }
         }
         default:
             UNREACHABLE();
-#if !UNREACHABLE_IS_NORETURN
             return HLSL_TEXTURE_UNKNOWN;
-#endif
     }
 }
 
@@ -360,6 +391,16 @@ const char *TextureString(const HLSLTextureGroup textureGroup)
             return "TextureCube";
         case HLSL_TEXTURE_2D_ARRAY_COMPARISON:
             return "Texture2DArray";
+        case HLSL_TEXTURE_BUFFER:
+            return "Buffer<float4>";
+        case HLSL_TEXTURE_BUFFER_INT4:
+            return "Buffer<int4>";
+        case HLSL_TEXTURE_BUFFER_UINT4:
+            return "Buffer<uint4>";
+        case HLSL_TEXTURE_BUFFER_UNORM:
+            return "Buffer<unorm float4>";
+        case HLSL_TEXTURE_BUFFER_SNORM:
+            return "Buffer<snorm float4>";
         default:
             UNREACHABLE();
     }
@@ -430,6 +471,16 @@ const char *TextureGroupSuffix(const HLSLTextureGroup type)
             return "Cube_comparison";
         case HLSL_TEXTURE_2D_ARRAY_COMPARISON:
             return "2DArray_comparison";
+        case HLSL_TEXTURE_BUFFER:
+            return "Buffer";
+        case HLSL_TEXTURE_BUFFER_INT4:
+            return "Buffer_int4_";
+        case HLSL_TEXTURE_BUFFER_UINT4:
+            return "Buffer_uint4_";
+        case HLSL_TEXTURE_BUFFER_UNORM:
+            return "Buffer_unorm_float4_";
+        case HLSL_TEXTURE_BUFFER_SNORM:
+            return "Buffer_snorm_float4_";
         default:
             UNREACHABLE();
     }
@@ -468,9 +519,7 @@ const char *TextureTypeSuffix(const TBasicType type, TLayoutImageInternalFormat 
                 default:
                     UNREACHABLE();
             }
-#if !UNREACHABLE_IS_NORETURN
             break;
-#endif
         }
         case EbtIImageCube:
         {
@@ -484,9 +533,7 @@ const char *TextureTypeSuffix(const TBasicType type, TLayoutImageInternalFormat 
                 default:
                     UNREACHABLE();
             }
-#if !UNREACHABLE_IS_NORETURN
             break;
-#endif
         }
         case EbtUImageCube:
         {
@@ -500,18 +547,14 @@ const char *TextureTypeSuffix(const TBasicType type, TLayoutImageInternalFormat 
                 default:
                     UNREACHABLE();
             }
-#if !UNREACHABLE_IS_NORETURN
             break;
-#endif
         }
         default:
             // All other types are identified by their group suffix
             return TextureGroupSuffix(type, imageInternalFormat);
     }
-#if !UNREACHABLE_IS_NORETURN
     UNREACHABLE();
     return "_TTS_invalid_";
-#endif
 }
 
 HLSLRWTextureGroup RWTextureGroup(const TBasicType type,
@@ -535,9 +578,7 @@ HLSLRWTextureGroup RWTextureGroup(const TBasicType type,
                 default:
                     UNREACHABLE();
             }
-#if !UNREACHABLE_IS_NORETURN
             break;
-#endif
         }
         case EbtIImage2D:
         {
@@ -551,9 +592,7 @@ HLSLRWTextureGroup RWTextureGroup(const TBasicType type,
                 default:
                     UNREACHABLE();
             }
-#if !UNREACHABLE_IS_NORETURN
             break;
-#endif
         }
         case EbtUImage2D:
         {
@@ -568,9 +607,7 @@ HLSLRWTextureGroup RWTextureGroup(const TBasicType type,
                 default:
                     UNREACHABLE();
             }
-#if !UNREACHABLE_IS_NORETURN
             break;
-#endif
         }
         case EbtImage3D:
         {
@@ -587,9 +624,7 @@ HLSLRWTextureGroup RWTextureGroup(const TBasicType type,
                 default:
                     UNREACHABLE();
             }
-#if !UNREACHABLE_IS_NORETURN
             break;
-#endif
         }
         case EbtIImage3D:
         {
@@ -603,9 +638,7 @@ HLSLRWTextureGroup RWTextureGroup(const TBasicType type,
                 default:
                     UNREACHABLE();
             }
-#if !UNREACHABLE_IS_NORETURN
             break;
-#endif
         }
         case EbtUImage3D:
         {
@@ -619,9 +652,7 @@ HLSLRWTextureGroup RWTextureGroup(const TBasicType type,
                 default:
                     UNREACHABLE();
             }
-#if !UNREACHABLE_IS_NORETURN
             break;
-#endif
         }
         case EbtImage2DArray:
         case EbtImageCube:
@@ -639,9 +670,7 @@ HLSLRWTextureGroup RWTextureGroup(const TBasicType type,
                 default:
                     UNREACHABLE();
             }
-#if !UNREACHABLE_IS_NORETURN
             break;
-#endif
         }
         case EbtIImage2DArray:
         case EbtIImageCube:
@@ -656,9 +685,7 @@ HLSLRWTextureGroup RWTextureGroup(const TBasicType type,
                 default:
                     UNREACHABLE();
             }
-#if !UNREACHABLE_IS_NORETURN
             break;
-#endif
         }
         case EbtUImage2DArray:
         case EbtUImageCube:
@@ -673,9 +700,52 @@ HLSLRWTextureGroup RWTextureGroup(const TBasicType type,
                 default:
                     UNREACHABLE();
             }
-#if !UNREACHABLE_IS_NORETURN
             break;
-#endif
+        }
+        case EbtImageBuffer:
+        {
+            switch (imageInternalFormat)
+            {
+                case EiifRGBA32F:
+                case EiifRGBA16F:
+                case EiifR32F:
+                    return HLSL_RWTEXTURE_BUFFER_FLOAT4;
+                case EiifRGBA8:
+                    return HLSL_RWTEXTURE_BUFFER_UNORM;
+                case EiifRGBA8_SNORM:
+                    return HLSL_RWTEXTURE_BUFFER_SNORM;
+                default:
+                    UNREACHABLE();
+            }
+            break;
+        }
+        case EbtIImageBuffer:
+        {
+            switch (imageInternalFormat)
+            {
+                case EiifRGBA32I:
+                case EiifRGBA16I:
+                case EiifRGBA8I:
+                case EiifR32I:
+                    return HLSL_RWTEXTURE_BUFFER_INT4;
+                default:
+                    UNREACHABLE();
+            }
+            break;
+        }
+        case EbtUImageBuffer:
+        {
+            switch (imageInternalFormat)
+            {
+                case EiifRGBA32UI:
+                case EiifRGBA16UI:
+                case EiifRGBA8UI:
+                case EiifR32UI:
+                    return HLSL_RWTEXTURE_BUFFER_UINT4;
+                default:
+                    UNREACHABLE();
+            }
+            break;
         }
         default:
             UNREACHABLE();
@@ -717,6 +787,16 @@ const char *RWTextureString(const HLSLRWTextureGroup RWTextureGroup)
             return "RWTexture2DArray<int4>";
         case HLSL_RWTEXTURE_3D_INT4:
             return "RWTexture3D<int4>";
+        case HLSL_RWTEXTURE_BUFFER_FLOAT4:
+            return "RWBuffer<float4>";
+        case HLSL_RWTEXTURE_BUFFER_UNORM:
+            return "RWBuffer<unorm float4>";
+        case HLSL_RWTEXTURE_BUFFER_SNORM:
+            return "RWBuffer<snorm float4>";
+        case HLSL_RWTEXTURE_BUFFER_UINT4:
+            return "RWBuffer<uint4>";
+        case HLSL_RWTEXTURE_BUFFER_INT4:
+            return "RWBuffer<int4>";
         default:
             UNREACHABLE();
     }
@@ -763,6 +843,16 @@ const char *RWTextureGroupSuffix(const HLSLRWTextureGroup type)
             return "RW2DArray_int4_";
         case HLSL_RWTEXTURE_3D_INT4:
             return "RW3D_int4_";
+        case HLSL_RWTEXTURE_BUFFER_FLOAT4:
+            return "RWBuffer_float4_";
+        case HLSL_RWTEXTURE_BUFFER_UNORM:
+            return "RWBuffer_unorm_float4_";
+        case HLSL_RWTEXTURE_BUFFER_SNORM:
+            return "RWBuffer_snorm_float4_";
+        case HLSL_RWTEXTURE_BUFFER_UINT4:
+            return "RWBuffer_uint4_";
+        case HLSL_RWTEXTURE_BUFFER_INT4:
+            return "RWBuffer_int4_";
         default:
             UNREACHABLE();
     }
@@ -796,9 +886,7 @@ const char *RWTextureTypeSuffix(const TBasicType type,
                 default:
                     UNREACHABLE();
             }
-#if !UNREACHABLE_IS_NORETURN
             break;
-#endif
         }
         case EbtIImageCube:
         {
@@ -812,9 +900,7 @@ const char *RWTextureTypeSuffix(const TBasicType type,
                 default:
                     UNREACHABLE();
             }
-#if !UNREACHABLE_IS_NORETURN
             break;
-#endif
         }
         case EbtUImageCube:
         {
@@ -828,18 +914,14 @@ const char *RWTextureTypeSuffix(const TBasicType type,
                 default:
                     UNREACHABLE();
             }
-#if !UNREACHABLE_IS_NORETURN
             break;
-#endif
         }
         default:
             // All other types are identified by their group suffix
             return RWTextureGroupSuffix(type, imageInternalFormat);
     }
-#if !UNREACHABLE_IS_NORETURN
     UNREACHABLE();
     return "_RWTS_invalid_";
-#endif
 }
 
 TString DecorateField(const ImmutableString &string, const TStructure &structure)

@@ -21,6 +21,7 @@ export class EmulationModel extends SDKModel<void> {
   readonly #mediaConfiguration: Map<string, string>;
   #touchEnabled: boolean;
   #touchMobile: boolean;
+  #touchEmulationAllowed: boolean;
   #customTouchEnabled: boolean;
   #touchConfiguration: {
     enabled: boolean,
@@ -176,6 +177,7 @@ export class EmulationModel extends SDKModel<void> {
       updateDisabledImageFormats();
     }
 
+    this.#touchEmulationAllowed = true;
     this.#touchEnabled = false;
     this.#touchMobile = false;
     this.#customTouchEnabled = false;
@@ -183,6 +185,10 @@ export class EmulationModel extends SDKModel<void> {
       enabled: false,
       configuration: Protocol.Emulation.SetEmitTouchEventsForMouseRequestConfiguration.Mobile,
     };
+  }
+
+  setTouchEmulationAllowed(touchEmulationAllowed: boolean): void {
+    this.#touchEmulationAllowed = touchEmulationAllowed;
   }
 
   supportsDeviceEmulation(): boolean {
@@ -314,14 +320,21 @@ export class EmulationModel extends SDKModel<void> {
     await this.#emulationAgent.invoke_setCPUThrottlingRate({rate});
   }
 
+  async setHardwareConcurrency(hardwareConcurrency: number): Promise<void> {
+    if (hardwareConcurrency < 1) {
+      throw new Error('hardwareConcurrency must be a positive value');
+    }
+    await this.#emulationAgent.invoke_setHardwareConcurrencyOverride({hardwareConcurrency});
+  }
+
   async emulateTouch(enabled: boolean, mobile: boolean): Promise<void> {
-    this.#touchEnabled = enabled;
-    this.#touchMobile = mobile;
+    this.#touchEnabled = enabled && this.#touchEmulationAllowed;
+    this.#touchMobile = mobile && this.#touchEmulationAllowed;
     await this.updateTouch();
   }
 
   async overrideEmulateTouch(enabled: boolean): Promise<void> {
-    this.#customTouchEnabled = enabled;
+    this.#customTouchEnabled = enabled && this.#touchEmulationAllowed;
     await this.updateTouch();
   }
 

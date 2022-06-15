@@ -383,6 +383,7 @@ struct DeviceExtensions : public InstanceExtensions {
     ExtEnabled vk_amd_shader_ballot{kNotEnabled};
     ExtEnabled vk_amd_shader_core_properties{kNotEnabled};
     ExtEnabled vk_amd_shader_core_properties2{kNotEnabled};
+    ExtEnabled vk_amd_shader_early_and_late_fragment_tests{kNotEnabled};
     ExtEnabled vk_amd_shader_explicit_vertex_parameter{kNotEnabled};
     ExtEnabled vk_amd_shader_fragment_mask{kNotEnabled};
     ExtEnabled vk_amd_shader_image_load_store_lod{kNotEnabled};
@@ -424,6 +425,8 @@ struct DeviceExtensions : public InstanceExtensions {
     ExtEnabled vk_ext_hdr_metadata{kNotEnabled};
     ExtEnabled vk_ext_host_query_reset{kNotEnabled};
     ExtEnabled vk_ext_image_2d_view_of_3d{kNotEnabled};
+    ExtEnabled vk_ext_image_compression_control{kNotEnabled};
+    ExtEnabled vk_ext_image_compression_control_swapchain{kNotEnabled};
     ExtEnabled vk_ext_image_drm_format_modifier{kNotEnabled};
     ExtEnabled vk_ext_image_robustness{kNotEnabled};
     ExtEnabled vk_ext_image_view_min_lod{kNotEnabled};
@@ -439,6 +442,7 @@ struct DeviceExtensions : public InstanceExtensions {
     ExtEnabled vk_ext_physical_device_drm{kNotEnabled};
     ExtEnabled vk_ext_pipeline_creation_cache_control{kNotEnabled};
     ExtEnabled vk_ext_pipeline_creation_feedback{kNotEnabled};
+    ExtEnabled vk_ext_pipeline_properties{kNotEnabled};
     ExtEnabled vk_ext_post_depth_coverage{kNotEnabled};
     ExtEnabled vk_ext_primitive_topology_list_restart{kNotEnabled};
     ExtEnabled vk_ext_primitives_generated_query{kNotEnabled};
@@ -460,6 +464,7 @@ struct DeviceExtensions : public InstanceExtensions {
     ExtEnabled vk_ext_shader_subgroup_vote{kNotEnabled};
     ExtEnabled vk_ext_shader_viewport_index_layer{kNotEnabled};
     ExtEnabled vk_ext_subgroup_size_control{kNotEnabled};
+    ExtEnabled vk_ext_subpass_merge_feedback{kNotEnabled};
     ExtEnabled vk_ext_texel_buffer_alignment{kNotEnabled};
     ExtEnabled vk_ext_texture_compression_astc_hdr{kNotEnabled};
     ExtEnabled vk_ext_tooling_info{kNotEnabled};
@@ -513,6 +518,7 @@ struct DeviceExtensions : public InstanceExtensions {
     ExtEnabled vk_khr_external_semaphore_fd{kNotEnabled};
     ExtEnabled vk_khr_external_semaphore_win32{kNotEnabled};
     ExtEnabled vk_khr_format_feature_flags2{kNotEnabled};
+    ExtEnabled vk_khr_fragment_shader_barycentric{kNotEnabled};
     ExtEnabled vk_khr_fragment_shading_rate{kNotEnabled};
     ExtEnabled vk_khr_get_memory_requirements2{kNotEnabled};
     ExtEnabled vk_khr_global_priority{kNotEnabled};
@@ -532,6 +538,7 @@ struct DeviceExtensions : public InstanceExtensions {
     ExtEnabled vk_khr_present_wait{kNotEnabled};
     ExtEnabled vk_khr_push_descriptor{kNotEnabled};
     ExtEnabled vk_khr_ray_query{kNotEnabled};
+    ExtEnabled vk_khr_ray_tracing_maintenance1{kNotEnabled};
     ExtEnabled vk_khr_ray_tracing_pipeline{kNotEnabled};
     ExtEnabled vk_khr_relaxed_block_layout{kNotEnabled};
     ExtEnabled vk_khr_sampler_mirror_clamp_to_edge{kNotEnabled};
@@ -647,6 +654,7 @@ struct DeviceExtensions : public InstanceExtensions {
                            {&DeviceExtensions::vk_khr_get_physical_device_properties2, VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME}}})},
             {VK_AMD_SHADER_CORE_PROPERTIES_2_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_amd_shader_core_properties2, {{
                            {&DeviceExtensions::vk_amd_shader_core_properties, VK_AMD_SHADER_CORE_PROPERTIES_EXTENSION_NAME}}})},
+            {VK_AMD_SHADER_EARLY_AND_LATE_FRAGMENT_TESTS_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_amd_shader_early_and_late_fragment_tests, {})},
             {VK_AMD_SHADER_EXPLICIT_VERTEX_PARAMETER_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_amd_shader_explicit_vertex_parameter, {})},
             {VK_AMD_SHADER_FRAGMENT_MASK_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_amd_shader_fragment_mask, {})},
             {VK_AMD_SHADER_IMAGE_LOAD_STORE_LOD_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_amd_shader_image_load_store_lod, {})},
@@ -732,6 +740,9 @@ struct DeviceExtensions : public InstanceExtensions {
             {VK_EXT_IMAGE_2D_VIEW_OF_3D_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_ext_image_2d_view_of_3d, {{
                            {&DeviceExtensions::vk_khr_maintenance1, VK_KHR_MAINTENANCE_1_EXTENSION_NAME},
                            {&DeviceExtensions::vk_khr_get_physical_device_properties2, VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME}}})},
+            {VK_EXT_IMAGE_COMPRESSION_CONTROL_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_ext_image_compression_control, {})},
+            {VK_EXT_IMAGE_COMPRESSION_CONTROL_SWAPCHAIN_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_ext_image_compression_control_swapchain, {{
+                           {&DeviceExtensions::vk_ext_image_compression_control, VK_EXT_IMAGE_COMPRESSION_CONTROL_EXTENSION_NAME}}})},
             {VK_EXT_IMAGE_DRM_FORMAT_MODIFIER_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_ext_image_drm_format_modifier, {{
                            {&DeviceExtensions::vk_khr_bind_memory2, VK_KHR_BIND_MEMORY_2_EXTENSION_NAME},
                            {&DeviceExtensions::vk_khr_get_physical_device_properties2, VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME},
@@ -761,6 +772,8 @@ struct DeviceExtensions : public InstanceExtensions {
                            {&DeviceExtensions::vk_khr_get_physical_device_properties2, VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME}}})},
             {VK_EXT_PIPELINE_CREATION_CACHE_CONTROL_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_ext_pipeline_creation_cache_control, {})},
             {VK_EXT_PIPELINE_CREATION_FEEDBACK_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_ext_pipeline_creation_feedback, {})},
+            {VK_EXT_PIPELINE_PROPERTIES_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_ext_pipeline_properties, {{
+                           {&DeviceExtensions::vk_khr_get_physical_device_properties2, VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME}}})},
             {VK_EXT_POST_DEPTH_COVERAGE_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_ext_post_depth_coverage, {})},
             {VK_EXT_PRIMITIVE_TOPOLOGY_LIST_RESTART_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_ext_primitive_topology_list_restart, {})},
             {VK_EXT_PRIMITIVES_GENERATED_QUERY_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_ext_primitives_generated_query, {{
@@ -794,6 +807,7 @@ struct DeviceExtensions : public InstanceExtensions {
             {VK_EXT_SHADER_VIEWPORT_INDEX_LAYER_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_ext_shader_viewport_index_layer, {})},
             {VK_EXT_SUBGROUP_SIZE_CONTROL_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_ext_subgroup_size_control, {{
                            {&DeviceExtensions::vk_feature_version_1_1, VK_VERSION_1_1_NAME}}})},
+            {VK_EXT_SUBPASS_MERGE_FEEDBACK_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_ext_subpass_merge_feedback, {})},
             {VK_EXT_TEXEL_BUFFER_ALIGNMENT_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_ext_texel_buffer_alignment, {{
                            {&DeviceExtensions::vk_khr_get_physical_device_properties2, VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME}}})},
             {VK_EXT_TEXTURE_COMPRESSION_ASTC_HDR_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_ext_texture_compression_astc_hdr, {{
@@ -895,6 +909,7 @@ struct DeviceExtensions : public InstanceExtensions {
             {VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_khr_driver_properties, {{
                            {&DeviceExtensions::vk_khr_get_physical_device_properties2, VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME}}})},
             {VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_khr_dynamic_rendering, {{
+                           {&DeviceExtensions::vk_khr_depth_stencil_resolve, VK_KHR_DEPTH_STENCIL_RESOLVE_EXTENSION_NAME},
                            {&DeviceExtensions::vk_khr_get_physical_device_properties2, VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME}}})},
             {VK_KHR_EXTERNAL_FENCE_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_khr_external_fence, {{
                            {&DeviceExtensions::vk_khr_external_fence_capabilities, VK_KHR_EXTERNAL_FENCE_CAPABILITIES_EXTENSION_NAME}}})},
@@ -921,6 +936,8 @@ struct DeviceExtensions : public InstanceExtensions {
                            {&DeviceExtensions::vk_khr_external_semaphore, VK_KHR_EXTERNAL_SEMAPHORE_EXTENSION_NAME}}})},
 #endif
             {VK_KHR_FORMAT_FEATURE_FLAGS_2_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_khr_format_feature_flags2, {{
+                           {&DeviceExtensions::vk_khr_get_physical_device_properties2, VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME}}})},
+            {VK_KHR_FRAGMENT_SHADER_BARYCENTRIC_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_khr_fragment_shader_barycentric, {{
                            {&DeviceExtensions::vk_khr_get_physical_device_properties2, VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME}}})},
             {VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_khr_fragment_shading_rate, {{
                            {&DeviceExtensions::vk_khr_create_renderpass2, VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME},
@@ -959,6 +976,9 @@ struct DeviceExtensions : public InstanceExtensions {
                            {&DeviceExtensions::vk_khr_get_physical_device_properties2, VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME}}})},
             {VK_KHR_RAY_QUERY_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_khr_ray_query, {{
                            {&DeviceExtensions::vk_khr_spirv_1_4, VK_KHR_SPIRV_1_4_EXTENSION_NAME},
+                           {&DeviceExtensions::vk_khr_acceleration_structure, VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME},
+                           {&DeviceExtensions::vk_feature_version_1_1, VK_VERSION_1_1_NAME}}})},
+            {VK_KHR_RAY_TRACING_MAINTENANCE_1_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_khr_ray_tracing_maintenance1, {{
                            {&DeviceExtensions::vk_khr_acceleration_structure, VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME},
                            {&DeviceExtensions::vk_feature_version_1_1, VK_VERSION_1_1_NAME}}})},
             {VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME, DeviceInfo(&DeviceExtensions::vk_khr_ray_tracing_pipeline, {{
@@ -1277,6 +1297,7 @@ static const std::set<std::string> kDeviceExtensionNames = {
     VK_AMD_SHADER_BALLOT_EXTENSION_NAME,
     VK_AMD_SHADER_CORE_PROPERTIES_EXTENSION_NAME,
     VK_AMD_SHADER_CORE_PROPERTIES_2_EXTENSION_NAME,
+    VK_AMD_SHADER_EARLY_AND_LATE_FRAGMENT_TESTS_EXTENSION_NAME,
     VK_AMD_SHADER_EXPLICIT_VERTEX_PARAMETER_EXTENSION_NAME,
     VK_AMD_SHADER_FRAGMENT_MASK_EXTENSION_NAME,
     VK_AMD_SHADER_IMAGE_LOAD_STORE_LOD_EXTENSION_NAME,
@@ -1322,6 +1343,8 @@ static const std::set<std::string> kDeviceExtensionNames = {
     VK_EXT_HDR_METADATA_EXTENSION_NAME,
     VK_EXT_HOST_QUERY_RESET_EXTENSION_NAME,
     VK_EXT_IMAGE_2D_VIEW_OF_3D_EXTENSION_NAME,
+    VK_EXT_IMAGE_COMPRESSION_CONTROL_EXTENSION_NAME,
+    VK_EXT_IMAGE_COMPRESSION_CONTROL_SWAPCHAIN_EXTENSION_NAME,
     VK_EXT_IMAGE_DRM_FORMAT_MODIFIER_EXTENSION_NAME,
     VK_EXT_IMAGE_ROBUSTNESS_EXTENSION_NAME,
     VK_EXT_IMAGE_VIEW_MIN_LOD_EXTENSION_NAME,
@@ -1337,6 +1360,7 @@ static const std::set<std::string> kDeviceExtensionNames = {
     VK_EXT_PHYSICAL_DEVICE_DRM_EXTENSION_NAME,
     VK_EXT_PIPELINE_CREATION_CACHE_CONTROL_EXTENSION_NAME,
     VK_EXT_PIPELINE_CREATION_FEEDBACK_EXTENSION_NAME,
+    VK_EXT_PIPELINE_PROPERTIES_EXTENSION_NAME,
     VK_EXT_POST_DEPTH_COVERAGE_EXTENSION_NAME,
     VK_EXT_PRIMITIVE_TOPOLOGY_LIST_RESTART_EXTENSION_NAME,
     VK_EXT_PRIMITIVES_GENERATED_QUERY_EXTENSION_NAME,
@@ -1358,6 +1382,7 @@ static const std::set<std::string> kDeviceExtensionNames = {
     VK_EXT_SHADER_SUBGROUP_VOTE_EXTENSION_NAME,
     VK_EXT_SHADER_VIEWPORT_INDEX_LAYER_EXTENSION_NAME,
     VK_EXT_SUBGROUP_SIZE_CONTROL_EXTENSION_NAME,
+    VK_EXT_SUBPASS_MERGE_FEEDBACK_EXTENSION_NAME,
     VK_EXT_TEXEL_BUFFER_ALIGNMENT_EXTENSION_NAME,
     VK_EXT_TEXTURE_COMPRESSION_ASTC_HDR_EXTENSION_NAME,
     VK_EXT_TOOLING_INFO_EXTENSION_NAME,
@@ -1433,6 +1458,7 @@ static const std::set<std::string> kDeviceExtensionNames = {
     VK_KHR_EXTERNAL_SEMAPHORE_WIN32_EXTENSION_NAME,
 #endif
     VK_KHR_FORMAT_FEATURE_FLAGS_2_EXTENSION_NAME,
+    VK_KHR_FRAGMENT_SHADER_BARYCENTRIC_EXTENSION_NAME,
     VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME,
     VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME,
     VK_KHR_GLOBAL_PRIORITY_EXTENSION_NAME,
@@ -1454,6 +1480,7 @@ static const std::set<std::string> kDeviceExtensionNames = {
     VK_KHR_PRESENT_WAIT_EXTENSION_NAME,
     VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME,
     VK_KHR_RAY_QUERY_EXTENSION_NAME,
+    VK_KHR_RAY_TRACING_MAINTENANCE_1_EXTENSION_NAME,
     VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME,
     VK_KHR_RELAXED_BLOCK_LAYOUT_EXTENSION_NAME,
     VK_KHR_SAMPLER_MIRROR_CLAMP_TO_EDGE_EXTENSION_NAME,

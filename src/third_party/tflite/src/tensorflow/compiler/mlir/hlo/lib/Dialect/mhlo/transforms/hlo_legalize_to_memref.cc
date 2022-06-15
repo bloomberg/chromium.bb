@@ -71,7 +71,7 @@ struct ReshapeOpInterface
     auto reshape_op = cast<mhlo::ReshapeOp>(op);
     auto unranked_operand_type =
         reshape_op.operand().getType().dyn_cast<UnrankedTensorType>();
-    if (unranked_operand_type == nullptr) return failure();
+    if (unranked_operand_type == nullptr) return success();
 
     // The buffer still has the old (pre-reshape) type.
     FailureOr<Value> operand_buffer =
@@ -151,8 +151,8 @@ struct DynamicReshapeOpInterface
       if (failed(alloc)) return failure();
 
       operand = *alloc;
-      auto copy_status = bufferization::createMemCpy(
-          rewriter, op->getLoc(), *operand_buffer, operand, state.getOptions());
+      auto copy_status = state.getOptions().createMemCpy(
+          rewriter, op->getLoc(), *operand_buffer, operand);
       if (failed(copy_status)) return failure();
     }
     bufferization::replaceOpWithNewBufferizedOp<memref::ReshapeOp>(
@@ -209,10 +209,10 @@ memref::ReinterpretCastOp InsertDynamicMemrefCastOp(
   }
   for (int i = 0; i < result_rank; ++i) {
     Value i_val = rewriter.create<arith::ConstantIndexOp>(loc, i);
-    Value result_dim_size = rewriter.createOrFold<memref::LoadOp>(
-        loc,
-        bufferization::lookupBuffer(rewriter, op.output_dimensions(), options),
-        i_val);
+    Value output_dims_buffer =
+        bufferization::lookupBuffer(rewriter, op.output_dimensions(), options);
+    Value result_dim_size =
+        rewriter.create<memref::LoadOp>(loc, output_dims_buffer, i_val);
     if (!result_dim_size.getType().isIndex()) {
       result_dim_size = rewriter.create<arith::IndexCastOp>(
           loc, rewriter.getIndexType(), result_dim_size);
@@ -289,7 +289,7 @@ struct DynamicBroadcastInDimOpInterface
     auto broadcast_in_dim_op = cast<mhlo::DynamicBroadcastInDimOp>(op);
     auto result_type =
         broadcast_in_dim_op.getType().dyn_cast<RankedTensorType>();
-    if (!result_type) return failure();
+    if (!result_type) return success();
 
     // The buffer still has the old (pre-reshape) type.
     FailureOr<Value> operand_buffer = state.getBuffer(
@@ -316,7 +316,7 @@ struct HloLegalizeToMemrefPass
   void runOnOperation() override {
     bufferization::BufferizationOptions options =
         bufferization::getPartialBufferizationOptions();
-    options.allowDialectInFilter<mhlo::MhloDialect>();
+    options.opFilter.allowDialect<mhlo::MhloDialect>();
     if (failed(bufferizeOp(getOperation(), options))) signalPassFailure();
   }
 };

@@ -1,4 +1,6 @@
 import { Merged, mergeParams } from '../internal/params_utils.js';
+import { stringifyPublicParams } from '../internal/query/stringify_params.js';
+import { assert, mapLazy } from '../util/util.js';
 
 // ================================================================
 // "Public" ParamsBuilder API / Documentation
@@ -159,8 +161,7 @@ export class CaseParamsBuilder<CaseP extends {}>
   ): CaseParamsBuilder<Merged<CaseP, { [name in NewPKey]: NewPValue }>> {
     return this.expandWithParams(function* (p) {
       for (const value of expander(p)) {
-        // TypeScript doesn't know here that NewPKey is always a single literal string type.
-        yield { [key]: value } as { [name in NewPKey]: NewPValue };
+        yield { [key]: value } as { readonly [name in NewPKey]: NewPValue };
       }
     });
   }
@@ -169,6 +170,14 @@ export class CaseParamsBuilder<CaseP extends {}>
   combineWithParams<NewP extends {}>(
     newParams: Iterable<NewP>
   ): CaseParamsBuilder<Merged<CaseP, NewP>> {
+    assertNotGenerator(newParams);
+    const seenValues = new Set<string>();
+    for (const params of newParams) {
+      const paramsStr = stringifyPublicParams(params);
+      assert(!seenValues.has(paramsStr), `Duplicate entry in combine[WithParams]: ${paramsStr}`);
+      seenValues.add(paramsStr);
+    }
+
     return this.expandWithParams(() => newParams);
   }
 
@@ -177,7 +186,9 @@ export class CaseParamsBuilder<CaseP extends {}>
     key: NewPKey,
     values: Iterable<NewPValue>
   ): CaseParamsBuilder<Merged<CaseP, { [name in NewPKey]: NewPValue }>> {
-    return this.expand(key, () => values);
+    assertNotGenerator(values);
+    const mapped = mapLazy(values, v => ({ [key]: v } as { [name in NewPKey]: NewPValue }));
+    return this.combineWithParams(mapped);
   }
 
   /** @inheritdoc */
@@ -265,6 +276,7 @@ export class SubcaseParamsBuilder<CaseP extends {}, SubcaseP extends {}>
   combineWithParams<NewP extends {}>(
     newParams: Iterable<NewP>
   ): SubcaseParamsBuilder<CaseP, Merged<SubcaseP, NewP>> {
+    assertNotGenerator(newParams);
     return this.expandWithParams(() => newParams);
   }
 
@@ -273,6 +285,7 @@ export class SubcaseParamsBuilder<CaseP extends {}, SubcaseP extends {}>
     key: NewPKey,
     values: Iterable<NewPValue>
   ): SubcaseParamsBuilder<CaseP, Merged<SubcaseP, { [name in NewPKey]: NewPValue }>> {
+    assertNotGenerator(values);
     return this.expand(key, () => values);
   }
 
@@ -311,4 +324,14 @@ function filterGenerator<Base, A>(
       }
     }
   };
+}
+
+/** Assert an object is not a Generator (a thing returned from a generator function). */
+function assertNotGenerator(x: object) {
+  if ('constructor' in x) {
+    assert(
+      x.constructor !== (function* () {})().constructor,
+      'Argument must not be a generator, as generators are not reusable'
+    );
+  }
 }

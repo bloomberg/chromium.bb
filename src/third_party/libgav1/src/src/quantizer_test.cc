@@ -106,6 +106,32 @@ TEST(QuantizerTest, GetDcValue) {
     EXPECT_EQ(quantizer.GetDcValue(kPlaneV, 253), 5347);
   }
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
+
+#if LIBGAV1_MAX_BITDEPTH == 12
+  // Test lookups of Dc_Qlookup[2][0], Dc_Qlookup[2][11], Dc_Qlookup[2][12],
+  // and Dc_Qlookup[2][255] in the spec, including the clipping of qindex.
+  {
+    Quantizer quantizer(12, &params);
+    EXPECT_EQ(quantizer.GetDcValue(kPlaneY, -2), 4);
+    EXPECT_EQ(quantizer.GetDcValue(kPlaneY, -1), 4);
+    EXPECT_EQ(quantizer.GetDcValue(kPlaneY, 10), 103);
+    EXPECT_EQ(quantizer.GetDcValue(kPlaneY, 11), 115);
+    EXPECT_EQ(quantizer.GetDcValue(kPlaneY, 254), 21387);
+    EXPECT_EQ(quantizer.GetDcValue(kPlaneY, 255), 21387);
+    EXPECT_EQ(quantizer.GetDcValue(kPlaneU, -3), 4);
+    EXPECT_EQ(quantizer.GetDcValue(kPlaneU, -2), 4);
+    EXPECT_EQ(quantizer.GetDcValue(kPlaneU, 9), 103);
+    EXPECT_EQ(quantizer.GetDcValue(kPlaneU, 10), 115);
+    EXPECT_EQ(quantizer.GetDcValue(kPlaneU, 253), 21387);
+    EXPECT_EQ(quantizer.GetDcValue(kPlaneU, 254), 21387);
+    EXPECT_EQ(quantizer.GetDcValue(kPlaneV, -4), 4);
+    EXPECT_EQ(quantizer.GetDcValue(kPlaneV, -3), 4);
+    EXPECT_EQ(quantizer.GetDcValue(kPlaneV, 8), 103);
+    EXPECT_EQ(quantizer.GetDcValue(kPlaneV, 9), 115);
+    EXPECT_EQ(quantizer.GetDcValue(kPlaneV, 254), 21387);
+    EXPECT_EQ(quantizer.GetDcValue(kPlaneV, 253), 21387);
+  }
+#endif  // LIBGAV1_MAX_BITDEPTH == 12
 }
 
 TEST(QuantizerTest, GetAcValue) {
@@ -162,6 +188,32 @@ TEST(QuantizerTest, GetAcValue) {
     EXPECT_EQ(quantizer.GetAcValue(kPlaneV, 254), 7312);
   }
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
+
+#if LIBGAV1_MAX_BITDEPTH == 12
+  // Test lookups of Ac_Qlookup[1][0], Ac_Qlookup[1][11], Ac_Qlookup[1][12],
+  // and Ac_Qlookup[1][255] in the spec, including the clipping of qindex.
+  {
+    Quantizer quantizer(12, &params);
+    EXPECT_EQ(quantizer.GetAcValue(kPlaneY, -1), 4);
+    EXPECT_EQ(quantizer.GetAcValue(kPlaneY, 0), 4);
+    EXPECT_EQ(quantizer.GetAcValue(kPlaneY, 11), 112);
+    EXPECT_EQ(quantizer.GetAcValue(kPlaneY, 12), 126);
+    EXPECT_EQ(quantizer.GetAcValue(kPlaneY, 255), 29247);
+    EXPECT_EQ(quantizer.GetAcValue(kPlaneY, 256), 29247);
+    EXPECT_EQ(quantizer.GetAcValue(kPlaneU, -2), 4);
+    EXPECT_EQ(quantizer.GetAcValue(kPlaneU, -1), 4);
+    EXPECT_EQ(quantizer.GetAcValue(kPlaneU, 10), 112);
+    EXPECT_EQ(quantizer.GetAcValue(kPlaneU, 11), 126);
+    EXPECT_EQ(quantizer.GetAcValue(kPlaneU, 254), 29247);
+    EXPECT_EQ(quantizer.GetAcValue(kPlaneU, 255), 29247);
+    EXPECT_EQ(quantizer.GetAcValue(kPlaneV, -3), 4);
+    EXPECT_EQ(quantizer.GetAcValue(kPlaneV, -2), 4);
+    EXPECT_EQ(quantizer.GetAcValue(kPlaneV, 9), 112);
+    EXPECT_EQ(quantizer.GetAcValue(kPlaneV, 10), 126);
+    EXPECT_EQ(quantizer.GetAcValue(kPlaneV, 253), 29247);
+    EXPECT_EQ(quantizer.GetAcValue(kPlaneV, 254), 29247);
+  }
+#endif  // LIBGAV1_MAX_BITDEPTH == 12
 }
 
 }  // namespace

@@ -70,9 +70,7 @@ class SlotAccessorForHeapObject {
   int Write(MaybeObject value, int slot_offset = 0) {
     MaybeObjectSlot current_slot = slot() + slot_offset;
     current_slot.Relaxed_Store(value);
-    WriteBarrier::Marking(*object_, current_slot, value);
-    // No need for a generational write barrier.
-    DCHECK(!Heap::InYoungGeneration(value));
+    CombinedWriteBarrier(*object_, current_slot, value, UPDATE_WRITE_BARRIER);
     return 1;
   }
   int Write(HeapObject value, HeapObjectReferenceType ref_type,
@@ -82,26 +80,6 @@ class SlotAccessorForHeapObject {
   int Write(Handle<HeapObject> value, HeapObjectReferenceType ref_type,
             int slot_offset = 0) {
     return Write(*value, ref_type, slot_offset);
-  }
-
-  // Same as Write, but additionally with a generational barrier.
-  int WriteWithGenerationalBarrier(MaybeObject value) {
-    MaybeObjectSlot current_slot = slot();
-    current_slot.Relaxed_Store(value);
-    WriteBarrier::Marking(*object_, current_slot, value);
-    if (Heap::InYoungGeneration(value)) {
-      GenerationalBarrier(*object_, current_slot, value);
-    }
-    return 1;
-  }
-  int WriteWithGenerationalBarrier(HeapObject value,
-                                   HeapObjectReferenceType ref_type) {
-    return WriteWithGenerationalBarrier(
-        HeapObjectReference::From(value, ref_type));
-  }
-  int WriteWithGenerationalBarrier(Handle<HeapObject> value,
-                                   HeapObjectReferenceType ref_type) {
-    return WriteWithGenerationalBarrier(*value, ref_type);
   }
 
  private:
@@ -137,17 +115,6 @@ class SlotAccessorForRootSlots {
     return Write(*value, ref_type, slot_offset);
   }
 
-  int WriteWithGenerationalBarrier(MaybeObject value) { return Write(value); }
-  int WriteWithGenerationalBarrier(HeapObject value,
-                                   HeapObjectReferenceType ref_type) {
-    return WriteWithGenerationalBarrier(
-        HeapObjectReference::From(value, ref_type));
-  }
-  int WriteWithGenerationalBarrier(Handle<HeapObject> value,
-                                   HeapObjectReferenceType ref_type) {
-    return WriteWithGenerationalBarrier(*value, ref_type);
-  }
-
  private:
   const FullMaybeObjectSlot slot_;
 };
@@ -180,15 +147,6 @@ class SlotAccessorForHandle {
     return 1;
   }
 
-  int WriteWithGenerationalBarrier(HeapObject value,
-                                   HeapObjectReferenceType ref_type) {
-    return Write(value, ref_type);
-  }
-  int WriteWithGenerationalBarrier(Handle<HeapObject> value,
-                                   HeapObjectReferenceType ref_type) {
-    return Write(value, ref_type);
-  }
-
  private:
   Handle<HeapObject>* handle_;
   IsolateT* isolate_;
@@ -199,7 +157,7 @@ template <typename TSlot>
 int Deserializer<IsolateT>::WriteAddress(TSlot dest, Address value) {
   DCHECK(!next_reference_is_weak_);
   memcpy(dest.ToVoidPtr(), &value, kSystemPointerSize);
-  STATIC_ASSERT(IsAligned(kSystemPointerSize, TSlot::kSlotDataSize));
+  static_assert(IsAligned(kSystemPointerSize, TSlot::kSlotDataSize));
   return (kSystemPointerSize / TSlot::kSlotDataSize);
 }
 
@@ -252,7 +210,7 @@ Deserializer<IsolateT>::Deserializer(IsolateT* isolate,
   // We start the indices here at 1, so that we can distinguish between an
   // actual index and an empty backing store (serialized as
   // kEmptyBackingStoreRefSentinel) in a deserialized object requiring fix-up.
-  STATIC_ASSERT(kEmptyBackingStoreRefSentinel == 0);
+  static_assert(kEmptyBackingStoreRefSentinel == 0);
   backing_stores_.push_back({});
 
 #ifdef DEBUG
@@ -817,7 +775,7 @@ void DeserializerRelocInfoVisitor::VisitInternalReference(Code host,
   // TODO(jgruber,v8:11036): We are being permissive for this DCHECK, but
   // consider using raw_instruction_size() instead of raw_body_size() in the
   // future.
-  STATIC_ASSERT(Code::kOnHeapBodyIsContiguous);
+  static_assert(Code::kOnHeapBodyIsContiguous);
   DCHECK_LT(static_cast<unsigned>(target_offset),
             static_cast<unsigned>(host.raw_body_size()));
   Address target = host.entry() + target_offset;
@@ -868,7 +826,7 @@ namespace {
 // given number of cases matches the number of expected cases for that bytecode.
 template <int byte_code_count, int expected>
 constexpr byte VerifyBytecodeCount(byte bytecode) {
-  STATIC_ASSERT(byte_code_count == expected);
+  static_assert(byte_code_count == expected);
   return bytecode;
 }
 
@@ -1035,11 +993,7 @@ int Deserializer<IsolateT>::ReadSingleBytecodeData(byte data,
     case kAttachedReference: {
       int index = source_.GetInt();
       Handle<HeapObject> heap_object = attached_objects_[index];
-
-      // This is the only case where we might encounter new space objects, so
-      // maybe emit a generational write barrier.
-      return slot_accessor.WriteWithGenerationalBarrier(
-          heap_object, GetAndResetNextReferenceType());
+      return slot_accessor.Write(heap_object, GetAndResetNextReferenceType());
     }
 
     case kNop:
@@ -1221,9 +1175,9 @@ int Deserializer<IsolateT>::ReadSingleBytecodeData(byte data,
     case CASE_RANGE(kRootArrayConstants, 32): {
       // First kRootArrayConstantsCount roots are guaranteed to be in
       // the old space.
-      STATIC_ASSERT(static_cast<int>(RootIndex::kFirstImmortalImmovableRoot) ==
+      static_assert(static_cast<int>(RootIndex::kFirstImmortalImmovableRoot) ==
                     0);
-      STATIC_ASSERT(kRootArrayConstantsCount <=
+      static_assert(kRootArrayConstantsCount <=
                     static_cast<int>(RootIndex::kLastImmortalImmovableRoot));
 
       RootIndex root_index = RootArrayConstant::Decode(data);
@@ -1241,7 +1195,7 @@ int Deserializer<IsolateT>::ReadSingleBytecodeData(byte data,
     case CASE_RANGE(kFixedRawData, 32): {
       // Deserialize raw data of fixed length from 1 to 32 times kTaggedSize.
       int size_in_tagged = FixedRawDataWithSize::Decode(data);
-      STATIC_ASSERT(TSlot::kSlotDataSize == kTaggedSize ||
+      static_assert(TSlot::kSlotDataSize == kTaggedSize ||
                     TSlot::kSlotDataSize == 2 * kTaggedSize);
       int size_in_slots = size_in_tagged / (TSlot::kSlotDataSize / kTaggedSize);
       // kFixedRawData can have kTaggedSize != TSlot::kSlotDataSize when

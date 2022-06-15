@@ -756,14 +756,12 @@ class PortTest : public ::testing::Test, public sigslot::has_slots<> {
     EXPECT_TRUE_WAIT(ch2.conn() == NULL, kDefaultTimeout);
   }
 
-  std::unique_ptr<IceMessage> CreateStunMessage(int type) {
-    auto msg = std::make_unique<IceMessage>();
-    msg->SetType(type);
-    msg->SetTransactionID("TESTTESTTEST");
+  std::unique_ptr<IceMessage> CreateStunMessage(StunMessageType type) {
+    auto msg = std::make_unique<IceMessage>(type, "TESTTESTTEST");
     return msg;
   }
   std::unique_ptr<IceMessage> CreateStunMessageWithUsername(
-      int type,
+      StunMessageType type,
       const std::string& username) {
     std::unique_ptr<IceMessage> msg = CreateStunMessage(type);
     msg->AddAttribute(std::make_unique<StunByteStringAttribute>(
@@ -1474,7 +1472,7 @@ TEST_F(PortTest, TestLoopbackCall) {
   const StunByteStringAttribute* username_attr =
       msg->GetByteString(STUN_ATTR_USERNAME);
   modified_req->AddAttribute(std::make_unique<StunByteStringAttribute>(
-      STUN_ATTR_USERNAME, username_attr->GetString()));
+      STUN_ATTR_USERNAME, username_attr->string_view()));
   // To make sure we receive error response, adding tiebreaker less than
   // what's present in request.
   modified_req->AddAttribute(std::make_unique<StunUInt64Attribute>(
@@ -1794,7 +1792,7 @@ TEST_F(PortTest, TestSendStunMessage) {
   const StunUInt32Attribute* priority_attr = msg->GetUInt32(STUN_ATTR_PRIORITY);
   ASSERT_TRUE(priority_attr != NULL);
   EXPECT_EQ(kDefaultPrflxPriority, priority_attr->value());
-  EXPECT_EQ("rfrag:lfrag", username_attr->GetString());
+  EXPECT_EQ("rfrag:lfrag", username_attr->string_view());
   EXPECT_TRUE(msg->GetByteString(STUN_ATTR_MESSAGE_INTEGRITY) != NULL);
   EXPECT_EQ(StunMessage::IntegrityStatus::kIntegrityOk,
             msg->ValidateMessageIntegrity("rpass"));
@@ -2319,7 +2317,7 @@ TEST_F(PortTest, TestHandleStunMessageBadFingerprint) {
 
   // Now, add a fingerprint, but munge the message so it's not valid.
   in_msg->AddFingerprint();
-  in_msg->SetTransactionID("TESTTESTBADD");
+  in_msg->SetTransactionIdForTesting("TESTTESTBADD");
   WriteStunMessage(*in_msg, buf.get());
   EXPECT_FALSE(port->GetStunMessage(buf->Data(), buf->Length(), addr, &out_msg,
                                     &username));
@@ -2337,7 +2335,7 @@ TEST_F(PortTest, TestHandleStunMessageBadFingerprint) {
 
   // Now, add a fingerprint, but munge the message so it's not valid.
   in_msg->AddFingerprint();
-  in_msg->SetTransactionID("TESTTESTBADD");
+  in_msg->SetTransactionIdForTesting("TESTTESTBADD");
   WriteStunMessage(*in_msg, buf.get());
   EXPECT_FALSE(port->GetStunMessage(buf->Data(), buf->Length(), addr, &out_msg,
                                     &username));
@@ -2356,7 +2354,7 @@ TEST_F(PortTest, TestHandleStunMessageBadFingerprint) {
 
   // Now, add a fingerprint, but munge the message so it's not valid.
   in_msg->AddFingerprint();
-  in_msg->SetTransactionID("TESTTESTBADD");
+  in_msg->SetTransactionIdForTesting("TESTTESTBADD");
   WriteStunMessage(*in_msg, buf.get());
   EXPECT_FALSE(port->GetStunMessage(buf->Data(), buf->Length(), addr, &out_msg,
                                     &username));
@@ -3411,9 +3409,8 @@ TEST_F(PortTest, TestErrorResponseMakesGoogPingFallBackToStunBinding) {
   ASSERT_EQ(response2->type(), GOOG_PING_RESPONSE);
 
   // But rather than the RESPONSE...feedback an error.
-  StunMessage error_response;
-  error_response.SetType(GOOG_PING_ERROR_RESPONSE);
-  error_response.SetTransactionID(response2->transaction_id());
+  StunMessage error_response(GOOG_PING_ERROR_RESPONSE);
+  error_response.SetTransactionIdForTesting(response2->transaction_id());
   error_response.AddMessageIntegrity32("rpass");
   rtc::ByteBufferWriter buf;
   error_response.Write(&buf);

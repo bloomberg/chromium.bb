@@ -14,6 +14,7 @@ function createHugeVertexBuffer(t: GPUTest, size: number) {
     usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC,
   });
   const pipeline = t.device.createComputePipeline({
+    layout: 'auto',
     compute: {
       module: t.device.createShaderModule({
         code: `
@@ -76,6 +77,7 @@ g.test('many')
     `,
     });
     const pipeline = t.device.createRenderPipeline({
+      layout: 'auto',
       vertex: {
         module,
         entryPoint: 'vmain',

@@ -624,6 +624,19 @@ void WriteCppReplayForCall(const CallCapture &call,
         callOut << "gSyncMap[" << SyncIndexValue(sync) << "] = ";
     }
 
+    if (call.entryPoint == EntryPoint::EGLCreateImage ||
+        call.entryPoint == EntryPoint::EGLCreateImageKHR)
+    {
+        GLeglImageOES image = call.params.getReturnValue().value.voidPointerVal;
+        callOut << "gEGLImageMap[" << reinterpret_cast<uintptr_t>(image) << "ul] = ";
+    }
+
+    if (call.entryPoint == EntryPoint::EGLCreateNativeClientBufferANDROID)
+    {
+        EGLClientBuffer buffer = call.params.getReturnValue().value.EGLClientBufferVal;
+        callOut << "gClientBufferMap[" << reinterpret_cast<EGLClientBuffer>(buffer) << "] = ";
+    }
+
     // Depending on how a buffer is mapped, we may need to track its location for readback
     bool trackBufferPointer = false;
 
@@ -1262,6 +1275,31 @@ void MaybeResetOpaqueTypeObjects(ReplayWriter &replayWriter,
                                  std::vector<uint8_t> *binaryData)
 {
     MaybeResetFenceSyncObjects(out, replayWriter, header, resourceTracker, binaryData);
+}
+
+void MaybeResetContextState(ReplayWriter &replayWriter,
+                            std::stringstream &out,
+                            std::stringstream &header,
+                            ResourceTracker *resourceTracker,
+                            const gl::State &replayState,
+                            std::vector<uint8_t> *binaryData,
+                            const StateResetHelper &stateResetHelper)
+{
+    // Check dirty states per entrypoint
+    for (const EntryPoint &entryPoint : stateResetHelper.getDirtyEntryPoints())
+    {
+        // Ensure we have calls to reset this entrypoint
+        ASSERT(stateResetHelper.getResetCalls().find(entryPoint) !=
+               stateResetHelper.getResetCalls().end());
+
+        // Emit the calls
+        for (const auto &call : stateResetHelper.getResetCalls().at(entryPoint))
+        {
+            out << "    ";
+            WriteCppReplayForCall(call, replayWriter, out, header, binaryData);
+            out << ";\n";
+        }
+    }
 }
 
 bool FindShaderProgramIDsInCall(const CallCapture &call, std::vector<gl::ShaderProgramID> &idsOut)
@@ -3380,6 +3418,7 @@ void CaptureShareGroupMidExecutionSetup(const gl::Context *context,
 
 void CaptureMidExecutionSetup(const gl::Context *context,
                               std::vector<CallCapture> *setupCalls,
+                              CallResetMap &resetCalls,
                               std::vector<CallCapture> *shareGroupSetupCalls,
                               ResourceIDToSetupCallsMap *resourceIDToSetupCalls,
                               ResourceTracker *resourceTracker,
@@ -3727,6 +3766,7 @@ void CaptureMidExecutionSetup(const gl::Context *context,
         // If we have a program bound in the API, or if there is no program bound to the API at
         // time of capture and we bound a program for uniform updates during MEC, we must add
         // a set program call to replay the correct states.
+        GLuint currentProgram = 0;
         if (apiState.getProgram())
         {
             cap(CaptureUseProgram(replayState, true, apiState.getProgram()->id()));
@@ -3736,6 +3776,8 @@ void CaptureMidExecutionSetup(const gl::Context *context,
             // Set this program as active so it will be generated in Setup
             MarkResourceIDActive(ResourceIDType::ShaderProgram, apiState.getProgram()->id().value,
                                  shareGroupSetupCalls, resourceIDToSetupCalls);
+
+            currentProgram = apiState.getProgram()->id().value;
         }
         else if (replayState.getProgram())
         {
@@ -3743,6 +3785,12 @@ void CaptureMidExecutionSetup(const gl::Context *context,
             CaptureUpdateCurrentProgram(setupCalls->back(), 0, setupCalls);
             (void)replayState.setProgram(context, nullptr);
         }
+
+        // Track the calls necessary to reset active program back to initial state
+        Capture(&resetCalls[angle::EntryPoint::GLUseProgram],
+                CaptureUseProgram(replayState, true, {currentProgram}));
+        CaptureUpdateCurrentProgram((&resetCalls[angle::EntryPoint::GLUseProgram])->back(), 0,
+                                    &resetCalls[angle::EntryPoint::GLUseProgram]);
 
         // Same for program pipelines as for programs, see comment above.
         if (apiState.getProgramPipeline())
@@ -5273,21 +5321,6 @@ void FrameCaptureShared::maybeOverrideEntryPoint(const gl::Context *context,
 {
     switch (inCall.entryPoint)
     {
-        case EntryPoint::GLEGLImageTargetTexture2DOES:
-        {
-            // We don't support reading EGLImages. Instead, just pull from a tiny null texture.
-            // TODO (anglebug.com/4964): Read back the image data and populate the texture.
-            std::vector<uint8_t> pixelData = {0, 0, 0, 0};
-            outCalls.emplace_back(
-                CaptureTexSubImage2D(context->getState(), true, gl::TextureTarget::_2D, 0, 0, 0, 1,
-                                     1, GL_RGBA, GL_UNSIGNED_BYTE, pixelData.data()));
-            break;
-        }
-        case EntryPoint::GLEGLImageTargetRenderbufferStorageOES:
-        {
-            UNIMPLEMENTED();
-            break;
-        }
         case EntryPoint::GLCopyImageSubData:
         case EntryPoint::GLCopyImageSubDataEXT:
         case EntryPoint::GLCopyImageSubDataOES:
@@ -5851,6 +5884,15 @@ void FrameCaptureShared::maybeCapturePreCallUpdates(
             }
             break;
         }
+        case EntryPoint::GLUseProgram:
+        {
+            if (isCaptureActive())
+            {
+                context->getFrameCapture()->getStateResetHelper().setEntryPointDirty(
+                    EntryPoint::GLUseProgram);
+            }
+            break;
+        }
         default:
             break;
     }
@@ -6360,6 +6402,7 @@ void FrameCaptureShared::runMidExecutionCapture(const gl::Context *mainContext)
         if (shareContext->id() == mainContext->id())
         {
             CaptureMidExecutionSetup(shareContext, &frameCapture->getSetupCalls(),
+                                     frameCapture->getStateResetHelper().getResetCalls(),
                                      &mShareGroupSetupCalls, &mResourceIDToSetupCalls,
                                      &mResourceTracker, mainContextReplayState,
                                      mValidateSerializedState);
@@ -6374,6 +6417,7 @@ void FrameCaptureShared::runMidExecutionCapture(const gl::Context *mainContext)
             auxContextReplayState.initializeForCapture(shareContext);
 
             CaptureMidExecutionSetup(shareContext, &frameCapture->getSetupCalls(),
+                                     frameCapture->getStateResetHelper().getResetCalls(),
                                      &mShareGroupSetupCalls, &mResourceIDToSetupCalls,
                                      &mResourceTracker, auxContextReplayState,
                                      mValidateSerializedState);
@@ -6455,7 +6499,8 @@ void FrameCaptureShared::onEndFrame(const gl::Context *context)
         CaptureValidateSerializedState(context, &mFrameCalls);
     }
 
-    writeMainContextCppReplay(context, frameCapture->getSetupCalls());
+    writeMainContextCppReplay(context, frameCapture->getSetupCalls(),
+                              frameCapture->getStateResetHelper());
 
     if (mFrameIndex == mCaptureEndFrame)
     {
@@ -6552,6 +6597,9 @@ TrackedResource::~TrackedResource() = default;
 ResourceTracker::ResourceTracker() = default;
 
 ResourceTracker::~ResourceTracker() = default;
+
+StateResetHelper::StateResetHelper()  = default;
+StateResetHelper::~StateResetHelper() = default;
 
 void ResourceTracker::setDeletedFenceSync(GLsync sync)
 {
@@ -6918,7 +6966,8 @@ void FrameCaptureShared::writeCppReplayIndexFiles(const gl::Context *context,
 }
 
 void FrameCaptureShared::writeMainContextCppReplay(const gl::Context *context,
-                                                   const std::vector<CallCapture> &setupCalls)
+                                                   const std::vector<CallCapture> &setupCalls,
+                                                   const StateResetHelper &stateResetHelper)
 {
     ASSERT(mWindowSurfaceContextID == context->id());
 
@@ -7050,6 +7099,10 @@ void FrameCaptureShared::writeMainContextCppReplay(const gl::Context *context,
         // Reset opaque type objects that don't have IDs, so are not ResourceIDTypes.
         MaybeResetOpaqueTypeObjects(mReplayWriter, bodyStream, headerStream, &mResourceTracker,
                                     &mBinaryData);
+
+        // Reset any context state
+        MaybeResetContextState(mReplayWriter, bodyStream, headerStream, &mResourceTracker,
+                               context->getState(), &mBinaryData, stateResetHelper);
 
         bodyStream << "}\n";
 
@@ -7586,7 +7639,7 @@ void WriteParamValueReplay<ParamType::TGLeglImageOES>(std::ostream &os,
                                                       GLeglImageOES value)
 {
     uint64_t pointerValue = reinterpret_cast<uint64_t>(value);
-    os << "reinterpret_cast<EGLImageKHR>(" << pointerValue << "ul)";
+    os << "gEGLImageMap[reinterpret_cast<uintptr_t>(" << pointerValue << "ul)]";
 }
 
 template <>
@@ -7596,44 +7649,6 @@ void WriteParamValueReplay<ParamType::TGLubyte>(std::ostream &os,
 {
     const int v = value;
     os << v;
-}
-
-template <>
-void WriteParamValueReplay<ParamType::TEGLContext>(std::ostream &os,
-                                                   const CallCapture &call,
-                                                   EGLContext value)
-{
-    os << "gContextMap[" << reinterpret_cast<size_t>(value) << "]";
-}
-
-template <>
-void WriteParamValueReplay<ParamType::TEGLDisplay>(std::ostream &os,
-                                                   const CallCapture &call,
-                                                   EGLDisplay value)
-{
-    if (value == EGL_NO_DISPLAY)
-    {
-        os << "EGL_NO_DISPLAY";
-        return;
-    }
-
-    // We don't support capturing real EGL calls.
-    UNREACHABLE();
-}
-
-template <>
-void WriteParamValueReplay<ParamType::TEGLSurface>(std::ostream &os,
-                                                   const CallCapture &call,
-                                                   EGLSurface value)
-{
-    if (value == EGL_NO_SURFACE)
-    {
-        os << "EGL_NO_SURFACE";
-        return;
-    }
-
-    // We don't support capturing real EGL calls.
-    UNREACHABLE();
 }
 
 template <>

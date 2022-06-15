@@ -42,10 +42,9 @@ static av_cold int paf_audio_init(AVCodecContext *avctx)
     return 0;
 }
 
-static int paf_audio_decode(AVCodecContext *avctx, void *data,
+static int paf_audio_decode(AVCodecContext *avctx, AVFrame *frame,
                             int *got_frame, AVPacket *pkt)
 {
-    AVFrame *frame = data;
     int16_t *output_samples;
     const uint8_t *src = pkt->data;
     int frames, ret, i, j;
@@ -80,7 +79,7 @@ const FFCodec ff_paf_audio_decoder = {
     .p.type       = AVMEDIA_TYPE_AUDIO,
     .p.id         = AV_CODEC_ID_PAF_AUDIO,
     .init         = paf_audio_init,
-    .decode       = paf_audio_decode,
+    FF_CODEC_DECODE_CB(paf_audio_decode),
     .p.capabilities = AV_CODEC_CAP_DR1,
     .caps_internal = FF_CODEC_CAP_INIT_THREADSAFE,
 };

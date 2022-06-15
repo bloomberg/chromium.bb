@@ -31,13 +31,13 @@ class DestroyTest : public DawnTest {
         renderPass = utils::CreateBasicRenderPass(device, kRTSize, kRTSize);
 
         wgpu::ShaderModule vsModule = utils::CreateShaderModule(device, R"(
-              @stage(vertex)
+              @vertex
               fn main(@location(0) pos : vec4<f32>) -> @builtin(position) vec4<f32> {
                   return pos;
               })");
 
         wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, R"(
-              @stage(fragment) fn main() -> @location(0) vec4<f32> {
+              @fragment fn main() -> @location(0) vec4<f32> {
                   return vec4<f32>(0.0, 1.0, 0.0, 1.0);
               })");
 
@@ -188,6 +188,20 @@ TEST_P(DestroyTest, DestroyDeviceLingeringBGL) {
     utils::MakeBindGroup(device, layout, {{0, device.CreateSampler()}});
 
     DestroyDevice();
+}
+
+// Regression test for crbug.com/1327865 where the device set the queue to null
+// inside Destroy() such that it could no longer return it to a call to GetQueue().
+TEST_P(DestroyTest, GetQueueAfterDeviceDestroy) {
+    DestroyDevice();
+
+    wgpu::Queue queue = device.GetQueue();
+    ASSERT_DEVICE_ERROR(queue.OnSubmittedWorkDone(
+        0u,
+        [](WGPUQueueWorkDoneStatus status, void* userdata) {
+            EXPECT_EQ(status, WGPUQueueWorkDoneStatus_DeviceLost);
+        },
+        nullptr));
 }
 
 DAWN_INSTANTIATE_TEST(DestroyTest,

@@ -29,13 +29,8 @@ class X11Extension;
 
 namespace views {
 
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-class WindowEventFilterLacros;
-using WindowEventFilterClass = WindowEventFilterLacros;
-#else
 class WindowEventFilterLinux;
 using WindowEventFilterClass = WindowEventFilterLinux;
-#endif
 
 // Contains Linux specific implementation, which supports both X11 and Wayland
 // backend.
@@ -77,9 +72,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostLinux
   gfx::Point GetLocationOnScreenInPixels() const override;
 
   // PlatformWindowDelegate:
-#if !BUILDFLAG(IS_CHROMEOS_LACROS)
   void DispatchEvent(ui::Event* event) override;
-#endif
   void OnClosed() override;
 
   ui::X11Extension* GetX11Extension();

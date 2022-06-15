@@ -78,6 +78,46 @@ TEST_F(QuerySetValidationTest, DestroyDestroyedQuerySet) {
     querySet.Destroy();
 }
 
+// Test that the query set creation parameters are correctly reflected for successfully created
+// query sets.
+TEST_F(QuerySetValidationTest, CreationParameterReflectionForValidQuerySet) {
+    // Test reflection on two succesfully created but different query sets
+    {
+        wgpu::QuerySetDescriptor desc;
+        desc.type = wgpu::QueryType::Occlusion;
+        desc.count = 18;
+        wgpu::QuerySet set = device.CreateQuerySet(&desc);
+
+        EXPECT_EQ(wgpu::QueryType::Occlusion, set.GetType());
+        EXPECT_EQ(18u, set.GetCount());
+    }
+    {
+        wgpu::QuerySetDescriptor desc;
+        // Unfortunately without extensions we can't check a different type.
+        desc.type = wgpu::QueryType::Occlusion;
+        desc.count = 1;
+        wgpu::QuerySet set = device.CreateQuerySet(&desc);
+
+        EXPECT_EQ(wgpu::QueryType::Occlusion, set.GetType());
+        EXPECT_EQ(1u, set.GetCount());
+    }
+}
+
+// Test that the query set creation parameters are correctly reflected for error query sets.
+TEST_F(QuerySetValidationTest, CreationParameterReflectionForErrorQuerySet) {
+    wgpu::QuerySetDescriptor desc;
+    desc.type = static_cast<wgpu::QueryType>(0xFFFF);
+    desc.count = 76;
+
+    // Error! We have a garbage type.
+    wgpu::QuerySet set;
+    ASSERT_DEVICE_ERROR(set = device.CreateQuerySet(&desc));
+
+    // Reflection data is still exactly what was in the descriptor.
+    EXPECT_EQ(desc.type, set.GetType());
+    EXPECT_EQ(76u, set.GetCount());
+}
+
 class OcclusionQueryValidationTest : public QuerySetValidationTest {};
 
 // Test the occlusionQuerySet in RenderPassDescriptor
@@ -111,7 +151,7 @@ TEST_F(OcclusionQueryValidationTest, InvalidOcclusionQuerySet) {
 
     // Fail to begin render pass if the occlusionQuerySet is created from other device
     {
-        wgpu::Device otherDevice = RegisterDevice(adapter.CreateDevice());
+        wgpu::Device otherDevice = RequestDeviceSync(wgpu::DeviceDescriptor{});
         wgpu::QuerySet occlusionQuerySetOnOther =
             CreateQuerySet(otherDevice, wgpu::QueryType::Occlusion, 2);
         renderPass.occlusionQuerySet = occlusionQuerySetOnOther;
@@ -225,7 +265,7 @@ TEST_F(OcclusionQueryValidationTest, InvalidBeginAndEnd) {
 
 class TimestampQueryValidationTest : public QuerySetValidationTest {
   protected:
-    WGPUDevice CreateTestDevice() override {
+    WGPUDevice CreateTestDevice(dawn::native::Adapter dawnAdapter) override {
         wgpu::DeviceDescriptor descriptor;
         wgpu::FeatureName requiredFeatures[1] = {wgpu::FeatureName::TimestampQuery};
         descriptor.requiredFeatures = requiredFeatures;
@@ -237,7 +277,7 @@ class TimestampQueryValidationTest : public QuerySetValidationTest {
         togglesDesc.forceDisabledToggles = forceDisabledToggles;
         togglesDesc.forceDisabledTogglesCount = 1;
 
-        return adapter.CreateDevice(&descriptor);
+        return dawnAdapter.CreateDevice(&descriptor);
     }
 
     void EncodeRenderPassWithTimestampWrites(
@@ -324,7 +364,7 @@ TEST_F(TimestampQueryValidationTest, TimestampWritesOnComputePass) {
 
     // Fail to write timestamps to a query set created from another device
     {
-        wgpu::Device otherDevice = RegisterDevice(adapter.CreateDevice());
+        wgpu::Device otherDevice = RequestDeviceSync(wgpu::DeviceDescriptor{});
         wgpu::QuerySet querySetFromOtherDevice =
             CreateQuerySet(otherDevice, wgpu::QueryType::Timestamp, 2);
 
@@ -352,13 +392,23 @@ TEST_F(TimestampQueryValidationTest, TimestampWritesOnComputePass) {
         encoder.Finish();
     }
 
-    // Success to write timestamps at same location of compute pass
+    // Success to write timestamps at same location of different compute pass
+    {
+        wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+        EncodeComputePassWithTimestampWrites(
+            encoder, {{querySet, 0, wgpu::ComputePassTimestampLocation::Beginning}});
+        EncodeComputePassWithTimestampWrites(
+            encoder, {{querySet, 0, wgpu::ComputePassTimestampLocation::Beginning}});
+        encoder.Finish();
+    }
+
+    // Fail to write timestamps at same location of a compute pass
     {
         wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
         EncodeComputePassWithTimestampWrites(
             encoder, {{querySet, 0, wgpu::ComputePassTimestampLocation::Beginning},
                       {querySet, 1, wgpu::ComputePassTimestampLocation::Beginning}});
-        encoder.Finish();
+        ASSERT_DEVICE_ERROR(encoder.Finish());
     }
 
     // Fail to write timestamps at invalid location of compute pass
@@ -408,7 +458,7 @@ TEST_F(TimestampQueryValidationTest, TimestampWritesOnRenderPass) {
 
     // Fail to write timestamps to a query set created from another device
     {
-        wgpu::Device otherDevice = RegisterDevice(adapter.CreateDevice());
+        wgpu::Device otherDevice = RequestDeviceSync(wgpu::DeviceDescriptor{});
         wgpu::QuerySet querySetFromOtherDevice =
             CreateQuerySet(otherDevice, wgpu::QueryType::Timestamp, 2);
 
@@ -427,7 +477,8 @@ TEST_F(TimestampQueryValidationTest, TimestampWritesOnRenderPass) {
         ASSERT_DEVICE_ERROR(encoder.Finish());
     }
 
-    // Success to write timestamps to the same query index twice on different render pass
+    // Success to write timestamps to the same query index and location twice on different render
+    // pass
     {
         wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
         EncodeRenderPassWithTimestampWrites(
@@ -449,13 +500,13 @@ TEST_F(TimestampQueryValidationTest, TimestampWritesOnRenderPass) {
         ASSERT_DEVICE_ERROR(encoder.Finish());
     }
 
-    // Success to write timestamps at same location of render pass
+    // Fail to write timestamps at same location of a render pass
     {
         wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
         EncodeRenderPassWithTimestampWrites(
             encoder, {{querySet, 0, wgpu::RenderPassTimestampLocation::Beginning},
                       {querySet, 1, wgpu::RenderPassTimestampLocation::Beginning}});
-        encoder.Finish();
+        ASSERT_DEVICE_ERROR(encoder.Finish());
     }
 
     // Fail to write timestamps at invalid location of render pass
@@ -640,7 +691,7 @@ TEST_F(TimestampQueryValidationTest, WriteTimestampOnRenderPassEncoder) {
 
 class PipelineStatisticsQueryValidationTest : public QuerySetValidationTest {
   protected:
-    WGPUDevice CreateTestDevice() override {
+    WGPUDevice CreateTestDevice(dawn::native::Adapter dawnAdapter) override {
         wgpu::DeviceDescriptor descriptor;
         wgpu::FeatureName requiredFeatures[1] = {wgpu::FeatureName::PipelineStatisticsQuery};
         descriptor.requiredFeatures = requiredFeatures;
@@ -654,7 +705,7 @@ class PipelineStatisticsQueryValidationTest : public QuerySetValidationTest {
         togglesDesc.forceDisabledToggles = forceDisabledToggles;
         togglesDesc.forceDisabledTogglesCount = 1;
 
-        return adapter.CreateDevice(&descriptor);
+        return dawnAdapter.CreateDevice(&descriptor);
     }
 };
 
@@ -793,7 +844,7 @@ TEST_F(ResolveQuerySetValidationTest, ResolveToInvalidBufferAndOffset) {
 
     // Fail to resolve query set to a buffer created from another device
     {
-        wgpu::Device otherDevice = RegisterDevice(adapter.CreateDevice());
+        wgpu::Device otherDevice = RequestDeviceSync(wgpu::DeviceDescriptor{});
         wgpu::Buffer bufferOnOther =
             CreateBuffer(otherDevice, kBufferSize, wgpu::BufferUsage::QueryResolve);
         wgpu::CommandEncoder encoder = device.CreateCommandEncoder();

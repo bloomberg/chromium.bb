@@ -118,7 +118,6 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
                                       public FontSelectorClient,
                                       public NameClient {
  public:
-
   class DOMRemovalScope {
     STACK_ALLOCATED();
 
@@ -576,6 +575,10 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   RuleSet* DefaultDocumentTransitionStyle() const;
   void InvalidateUADocumentTransitionStyle();
 
+  const ActiveStyleSheetVector& ActiveUserStyleSheetsForDebug() const {
+    return active_user_style_sheets_;
+  }
+
  private:
   // FontSelectorClient implementation.
   void FontsNeedUpdate(FontSelector*, FontInvalidationReason) override;
@@ -722,10 +725,10 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   void RebuildFieldSetContainer(HTMLFieldSetElement& fieldset);
 
   // Invalidate ancestors or siblings affected by :has() state change
-  void InvalidateAncestorsOrSiblingsAffectedByHasInternal(
-      Element* parent,
-      Element* previous_sibling,
-      bool for_pseudo_change);
+  inline void InvalidateElementAffectedByHas(Element&, bool for_pseudo_change);
+  void InvalidateAncestorsOrSiblingsAffectedByHas(Element* parent,
+                                                  Element* previous_sibling,
+                                                  bool for_pseudo_change);
   inline void InvalidateAncestorsOrSiblingsAffectedByHas(
       Element& changed_element);
   void InvalidateAncestorsOrSiblingsAffectedByHas(Element* parent,
@@ -735,6 +738,10 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   void InvalidateAncestorsOrSiblingsAffectedByHasForPseudoChange(
       Element* parent,
       Element* previous_sibling);
+  // Invalidate changed element affected by logical combinations in :has()
+  inline void InvalidateChangedElementAffectedByLogicalCombinationsInHas(
+      Element& changed_element,
+      bool for_pseudo_change);
 
   Member<Document> document_;
 

@@ -38,7 +38,7 @@ const fullscreenQuadWGSL = `
     @builtin(position) Position : vec4<f32>
   };
 
-  @stage(vertex) fn vert_main(@builtin(vertex_index) VertexIndex : u32) -> VertexOutput {
+  @vertex fn vert_main(@builtin(vertex_index) VertexIndex : u32) -> VertexOutput {
     var pos = array<vec2<f32>, 6>(
         vec2<f32>( 1.0,  1.0),
         vec2<f32>( 1.0, -1.0),
@@ -188,7 +188,7 @@ class TextureSyncTestHelper extends OperationContextHelper {
                 @group(0) @binding(0) var inputTex: texture_2d<f32>;
                 @group(0) @binding(1) var outputTex: texture_storage_2d<rgba8unorm, write>;
 
-                @stage(fragment) fn frag_main(@builtin(position) fragCoord: vec4<f32>) -> @location(0) vec4<f32> {
+                @fragment fn frag_main(@builtin(position) fragCoord: vec4<f32>) -> @location(0) vec4<f32> {
                   let coord = vec2<i32>(fragCoord.xy);
                   textureStore(outputTex, coord, textureLoad(inputTex, coord, 0));
                   return vec4<f32>();
@@ -240,7 +240,7 @@ class TextureSyncTestHelper extends OperationContextHelper {
                 @group(0) @binding(0) var inputTex: texture_2d<f32>;
                 @group(0) @binding(1) var outputTex: texture_storage_2d<rgba8unorm, write>;
 
-                @stage(compute) @workgroup_size(8, 8)
+                @compute @workgroup_size(8, 8)
                 fn main(@builtin(global_invocation_id) gid : vec3<u32>) {
                   if (any(gid.xy >= vec2<u32>(textureDimensions(inputTex)))) {
                     return;
@@ -455,7 +455,7 @@ class TextureSyncTestHelper extends OperationContextHelper {
 
                 @group(0) @binding(0) var outputTex: texture_storage_2d<rgba8unorm, write>;
 
-                @stage(fragment) fn frag_main(@builtin(position) fragCoord: vec4<f32>) -> @location(0) vec4<f32> {
+                @fragment fn frag_main(@builtin(position) fragCoord: vec4<f32>) -> @location(0) vec4<f32> {
                   textureStore(outputTex, vec2<i32>(fragCoord.xy), ${storedValue});
                   return vec4<f32>();
                 }
@@ -505,7 +505,7 @@ class TextureSyncTestHelper extends OperationContextHelper {
               code: `
                 @group(0) @binding(0) var outputTex: texture_storage_2d<rgba8unorm, write>;
 
-                @stage(compute) @workgroup_size(8, 8)
+                @compute @workgroup_size(8, 8)
                 fn main(@builtin(global_invocation_id) gid : vec3<u32>) {
                   if (any(gid.xy >= vec2<u32>(textureDimensions(outputTex)))) {
                     return;

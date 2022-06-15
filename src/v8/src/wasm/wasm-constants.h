@@ -49,7 +49,11 @@ enum ValueTypeCode : uint8_t {
   kRttWithDepthCode = 0x69,
   kRttCode = 0x68,
   kDataRefCode = 0x67,
-  kArrayRefCode = 0x66
+  kArrayRefCode = 0x66,
+  kStringRefCode = 0x65,
+  kStringViewWtf8Code = 0x64,
+  kStringViewWtf16Code = 0x63,
+  kStringViewIterCode = 0x62,
 };
 
 // Binary encoding of type definitions.
@@ -103,6 +107,7 @@ enum SectionCode : int8_t {
   kDataSectionCode = 11,       // Data segments
   kDataCountSectionCode = 12,  // Number of data segments
   kTagSectionCode = 13,        // Tag section
+  kStringRefSectionCode = 14,  // Stringref literal section
 
   // The following sections are custom sections, and are identified using a
   // string rather than an integer. Their enumeration values are not guaranteed
@@ -116,7 +121,7 @@ enum SectionCode : int8_t {
 
   // Helper values
   kFirstSectionInModule = kTypeSectionCode,
-  kLastKnownModuleSection = kBranchHintsSectionCode,
+  kLastKnownModuleSection = kStringRefSectionCode,
   kFirstUnorderedSection = kDataCountSectionCode,
 };
 
@@ -139,6 +144,15 @@ enum NameSectionKindCode : uint8_t {
   kDataSegmentCode = 9,
   // https://github.com/WebAssembly/gc/issues/193
   kFieldCode = 10
+};
+
+// What to do when treating a stringref as WTF-8 and we see an isolated
+// surrogate.
+enum StringRefWtf8Policy : uint8_t {
+  kWtf8PolicyReject = 0,   // Strict UTF-8; no isolated surrogates allowed.
+  kWtf8PolicyAccept = 1,   // Follow WTF-8 encoding of isolates surrogates.
+  kWtf8PolicyReplace = 2,  // Replace isolated surrogates with U+FFFD.
+  kLastWtf8Policy = kWtf8PolicyReplace
 };
 
 constexpr size_t kWasmPageSize = 0x10000;
@@ -172,12 +186,12 @@ constexpr uint32_t kGenericWrapperBudget = 1000;
 // gives up some module size for faster access to the supertypes.
 constexpr uint32_t kMinimumSupertypeArraySize = 3;
 
+// Maximum number of call targets tracked per call.
+constexpr int kMaxPolymorphism = 4;
+
 #if V8_TARGET_ARCH_X64
 constexpr int32_t kOSRTargetOffset = 5 * kSystemPointerSize;
 #endif
-
-constexpr Tagged_t kArrayInitFromDataArrayTooLargeErrorCode = 0;
-constexpr Tagged_t kArrayInitFromDataSegmentOutOfBoundsErrorCode = 1;
 
 }  // namespace wasm
 }  // namespace internal

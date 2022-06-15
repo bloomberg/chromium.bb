@@ -18,6 +18,7 @@ GPUComputePipeline.`
     const data = new Uint32Array([...iterRange(kNumElements, x => x)]);
     const buffer = t.makeBufferWithContents(data, GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC);
     const pipeline = t.device.createComputePipeline({
+      layout: 'auto',
       compute: {
         module: t.device.createShaderModule({
           code: `
@@ -77,7 +78,7 @@ GPUComputePipeline.`
     }));
     for (const compute of stages) {
       const encoder = t.device.createCommandEncoder();
-      const pipeline = t.device.createComputePipeline({ compute });
+      const pipeline = t.device.createComputePipeline({ layout: 'auto', compute });
       const bindGroup = t.device.createBindGroup({
         layout: pipeline.getBindGroupLayout(0),
         entries: [{ binding: 0, resource: { buffer } }],
@@ -121,7 +122,10 @@ groups.`
       `,
     });
     const kNumIterations = 250_000;
-    const pipeline = t.device.createComputePipeline({ compute: { module, entryPoint: 'main' } });
+    const pipeline = t.device.createComputePipeline({
+      layout: 'auto',
+      compute: { module, entryPoint: 'main' },
+    });
     const encoder = t.device.createCommandEncoder();
     const pass = encoder.beginComputePass();
     pass.setPipeline(pipeline);
@@ -168,7 +172,10 @@ g.test('many_dispatches')
       `,
     });
     const kNumIterations = 1_000_000;
-    const pipeline = t.device.createComputePipeline({ compute: { module, entryPoint: 'main' } });
+    const pipeline = t.device.createComputePipeline({
+      layout: 'auto',
+      compute: { module, entryPoint: 'main' },
+    });
     const encoder = t.device.createCommandEncoder();
     const pass = encoder.beginComputePass();
     pass.setPipeline(pipeline);
@@ -211,7 +218,10 @@ g.test('huge_dispatches')
       `,
     });
     const kNumIterations = 16;
-    const pipeline = t.device.createComputePipeline({ compute: { module, entryPoint: 'main' } });
+    const pipeline = t.device.createComputePipeline({
+      layout: 'auto',
+      compute: { module, entryPoint: 'main' },
+    });
     const bindGroup = t.device.createBindGroup({
       layout: pipeline.getBindGroupLayout(0),
       entries: [{ binding: 0, resource: { buffer } }],

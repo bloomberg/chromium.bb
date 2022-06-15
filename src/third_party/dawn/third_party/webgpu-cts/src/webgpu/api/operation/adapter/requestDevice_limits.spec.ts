@@ -50,7 +50,7 @@ g.test('supported_limits')
         value = kLimitInfo[limit].default;
         break;
       case 'adapter':
-        value = adapter.limits[limit] as number;
+        value = adapter.limits[limit];
         break;
     }
 

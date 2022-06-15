@@ -176,13 +176,6 @@ class LiveObjectVisitor : AllStatic {
                                       Visitor* visitor,
                                       IterationMode iteration_mode);
 
-  // Visits black objects on a MemoryChunk. The visitor is not allowed to fail
-  // visitation for an object.
-  template <class Visitor, typename MarkingState>
-  static void VisitGreyObjectsNoFail(MemoryChunk* chunk, MarkingState* state,
-                                     Visitor* visitor,
-                                     IterationMode iteration_mode);
-
   template <typename MarkingState>
   static void RecomputeLiveBytes(MemoryChunk* chunk, MarkingState* state);
 };
@@ -207,7 +200,7 @@ class MinorMarkingState final
     chunk->young_generation_live_byte_count_ += by;
   }
 
-  intptr_t live_bytes(MemoryChunk* chunk) const {
+  intptr_t live_bytes(const MemoryChunk* chunk) const {
     return chunk->young_generation_live_byte_count_;
   }
 
@@ -234,7 +227,7 @@ class MinorNonAtomicMarkingState final
         by, std::memory_order_relaxed);
   }
 
-  intptr_t live_bytes(MemoryChunk* chunk) const {
+  intptr_t live_bytes(const MemoryChunk* chunk) const {
     return chunk->young_generation_live_byte_count_.load(
         std::memory_order_relaxed);
   }
@@ -263,7 +256,7 @@ class MajorMarkingState final
     chunk->live_byte_count_.fetch_add(by, std::memory_order_relaxed);
   }
 
-  intptr_t live_bytes(MemoryChunk* chunk) const {
+  intptr_t live_bytes(const MemoryChunk* chunk) const {
     return chunk->live_byte_count_.load(std::memory_order_relaxed);
   }
 
@@ -306,7 +299,7 @@ class MajorNonAtomicMarkingState final
     chunk->live_byte_count_.fetch_add(by, std::memory_order_relaxed);
   }
 
-  intptr_t live_bytes(MemoryChunk* chunk) const {
+  intptr_t live_bytes(const MemoryChunk* chunk) const {
     return chunk->live_byte_count_.load(std::memory_order_relaxed);
   }
 
@@ -614,7 +607,8 @@ class MarkCompactCollector final {
   void UpdatePointersInClientHeap(Isolate* client);
 
   // Marks object reachable from harmony weak maps and wrapper tracing.
-  void ProcessEphemeronMarking();
+  void MarkTransitiveClosure();
+  void VerifyEphemeronMarking();
 
   // If the call-site of the top optimized code was not prepared for
   // deoptimization, then treat embedded pointers in the code as strong as
@@ -629,18 +623,20 @@ class MarkCompactCollector final {
   // Returns true if value was actually marked.
   bool ProcessEphemeron(HeapObject key, HeapObject value);
 
-  // Marks ephemerons and drains marking worklist iteratively
-  // until a fixpoint is reached. Returns false if too many iterations have been
-  // tried and the linear approach should be used.
-  bool ProcessEphemeronsUntilFixpoint();
+  // Marks the transitive closure by draining the marking worklist iteratively,
+  // applying ephemerons semantics and invoking embedder tracing until a
+  // fixpoint is reached. Returns false if too many iterations have been tried
+  // and the linear approach should be used.
+  bool MarkTransitiveClosureUntilFixpoint();
+
+  // Marks the transitive closure applying ephemeron semantics and invoking
+  // embedder tracing with a linear algorithm for ephemerons. Only used if
+  // fixpoint iteration doesn't finish within a few iterations.
+  void MarkTransitiveClosureLinear();
 
   // Drains ephemeron and marking worklists. Single iteration of the
   // fixpoint iteration.
   bool ProcessEphemerons();
-
-  // Mark ephemerons and drain marking worklist with a linear algorithm.
-  // Only used if fixpoint iteration doesn't finish within a few iterations.
-  void ProcessEphemeronsLinear();
 
   // Perform Wrapper Tracing if in use.
   void PerformWrapperTracing();
@@ -648,6 +644,10 @@ class MarkCompactCollector final {
   // Callback function for telling whether the object *p is an unmarked
   // heap object.
   static bool IsUnmarkedHeapObject(Heap* heap, FullObjectSlot p);
+
+  // Retain dying maps for `FLAG_retain_maps_for_n_gc` garbage collections to
+  // increase chances of reusing of map transition tree in future.
+  void RetainMaps();
 
   // Clear non-live references in weak cells, transition and descriptor arrays,
   // and deoptimize dependent code of non-live maps.
@@ -747,6 +747,7 @@ class MarkCompactCollector final {
   bool compacting_ = false;
   bool black_allocation_ = false;
   bool have_code_to_deoptimize_ = false;
+  bool parallel_marking_ = false;
 
   MarkingWorklists marking_worklists_;
 

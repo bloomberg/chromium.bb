@@ -543,7 +543,7 @@ void QuicSession::OnBlockedFrame(const QuicBlockedFrame& frame) {
   //                streams: if we have a large window then maybe something
   //                had gone wrong with the flow control accounting.
   QUIC_DLOG(INFO) << ENDPOINT << "Received BLOCKED frame with stream id: "
-                  << frame.stream_id;
+                  << frame.stream_id << ", offset: " << frame.offset;
 }
 
 bool QuicSession::CheckStreamNotBusyLooping(QuicStream* stream,
@@ -690,14 +690,6 @@ void QuicSession::OnCanWrite() {
     }
     currently_writing_stream_id_ = 0;
   }
-}
-
-bool QuicSession::SendProbingData() {
-  if (connection()->sent_packet_manager().MaybeRetransmitOldestPacket(
-          PROBING_RETRANSMISSION)) {
-    return true;
-  }
-  return false;
 }
 
 bool QuicSession::WillingAndAbleToWrite() const {
@@ -939,8 +931,8 @@ void QuicSession::SendGoAway(QuicErrorCode error_code,
       reason);
 }
 
-void QuicSession::SendBlocked(QuicStreamId id) {
-  control_frame_manager_.WriteOrBufferBlocked(id);
+void QuicSession::SendBlocked(QuicStreamId id, QuicStreamOffset byte_offset) {
+  control_frame_manager_.WriteOrBufferBlocked(id, byte_offset);
 }
 
 void QuicSession::SendWindowUpdate(QuicStreamId id,

@@ -76,6 +76,7 @@ constexpr EdgeFilterParams kIntraEdgeFilterParamList[] = {
 template <int bitdepth, typename Pixel>
 class IntraEdgeFilterTest : public testing::TestWithParam<EdgeFilterParams> {
  public:
+  static_assert(bitdepth >= kBitdepth8 && bitdepth <= LIBGAV1_MAX_BITDEPTH, "");
   IntraEdgeFilterTest() = default;
   IntraEdgeFilterTest(const IntraEdgeFilterTest&) = delete;
   IntraEdgeFilterTest& operator=(const IntraEdgeFilterTest&) = delete;
@@ -315,11 +316,27 @@ TEST_P(IntraEdgeFilterTest10bpp, FixedInput) {
 }
 
 TEST_P(IntraEdgeFilterTest10bpp, DISABLED_Speed) { TestRandomValues(1e7); }
-#endif
+#endif  // LIBGAV1_MAX_BITDEPTH >= 10
+
+#if LIBGAV1_MAX_BITDEPTH == 12
+using IntraEdgeFilterTest12bpp = IntraEdgeFilterTest<12, uint16_t>;
+
+const char* GetIntraEdgeFilterDigest12bpp(int strength, int size) {
+  return GetIntraEdgeFilterDigest10bpp(strength, size);
+}
+
+TEST_P(IntraEdgeFilterTest12bpp, FixedInput) {
+  TestFixedValues(GetIntraEdgeFilterDigest12bpp(strength_, size_));
+  TestRandomValues(1);
+}
+
+TEST_P(IntraEdgeFilterTest12bpp, DISABLED_Speed) { TestRandomValues(1e7); }
+#endif  // LIBGAV1_MAX_BITDEPTH == 12
 
 template <int bitdepth, typename Pixel>
 class IntraEdgeUpsamplerTest : public testing::TestWithParam<int> {
  public:
+  static_assert(bitdepth >= kBitdepth8 && bitdepth <= LIBGAV1_MAX_BITDEPTH, "");
   IntraEdgeUpsamplerTest() = default;
   IntraEdgeUpsamplerTest(const IntraEdgeUpsamplerTest&) = delete;
   IntraEdgeUpsamplerTest& operator=(const IntraEdgeUpsamplerTest&) = delete;
@@ -476,7 +493,22 @@ TEST_P(IntraEdgeUpsamplerTest10bpp, FixedInput) {
 }
 
 TEST_P(IntraEdgeUpsamplerTest10bpp, DISABLED_Speed) { TestRandomValues(5e7); }
-#endif
+#endif  // LIBGAV1_MAX_BITDEPTH >= 10
+
+#if LIBGAV1_MAX_BITDEPTH == 12
+using IntraEdgeUpsamplerTest12bpp = IntraEdgeUpsamplerTest<12, uint16_t>;
+
+const char* GetIntraEdgeUpsampleDigest12bpp(int size) {
+  return GetIntraEdgeUpsampleDigest10bpp(size);
+}
+
+TEST_P(IntraEdgeUpsamplerTest12bpp, FixedInput) {
+  TestFixedValues(GetIntraEdgeUpsampleDigest12bpp(size_));
+  TestRandomValues(1);
+}
+
+TEST_P(IntraEdgeUpsamplerTest12bpp, DISABLED_Speed) { TestRandomValues(5e7); }
+#endif  // LIBGAV1_MAX_BITDEPTH == 12
 
 INSTANTIATE_TEST_SUITE_P(C, IntraEdgeFilterTest8bpp,
                          testing::ValuesIn(kIntraEdgeFilterParamList));
@@ -512,7 +544,15 @@ INSTANTIATE_TEST_SUITE_P(NEON, IntraEdgeUpsamplerTest10bpp,
                          testing::ValuesIn(kIntraEdgeUpsampleSizes));
 #endif
 
-#endif
+#endif  // LIBGAV1_MAX_BITDEPTH >= 10
+
+#if LIBGAV1_MAX_BITDEPTH == 12
+INSTANTIATE_TEST_SUITE_P(C, IntraEdgeFilterTest12bpp,
+                         testing::ValuesIn(kIntraEdgeFilterParamList));
+INSTANTIATE_TEST_SUITE_P(C, IntraEdgeUpsamplerTest12bpp,
+                         testing::ValuesIn(kIntraEdgeUpsampleSizes));
+#endif  // LIBGAV1_MAX_BITDEPTH == 12
+
 }  // namespace
 }  // namespace dsp
 }  // namespace libgav1

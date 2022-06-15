@@ -90,6 +90,7 @@ struct MapReadUserdata {
 };
 
 DawnTestEnvironment* gTestEnv = nullptr;
+DawnTestBase* gCurrentTest = nullptr;
 
 template <typename T>
 void printBuffer(testing::AssertionResult& result, const T* buffer, const size_t count) {
@@ -313,6 +314,13 @@ void DawnTestEnvironment::ParseArgs(int argc, char** argv) {
             continue;
         }
 
+        constexpr const char kUseAngleArg[] = "--use-angle=";
+        argLen = sizeof(kUseAngleArg) - 1;
+        if (strncmp(argv[i], kUseAngleArg, argLen) == 0) {
+            mANGLEBackend = argv[i] + argLen;
+            continue;
+        }
+
         constexpr const char kExclusiveDeviceTypePreferenceArg[] =
             "--exclusive-device-type-preference=";
         argLen = sizeof(kExclusiveDeviceTypePreferenceArg) - 1;
@@ -440,7 +448,17 @@ std::unique_ptr<dawn::native::Instance> DawnTestEnvironment::CreateInstanceAndDi
 
     ScopedEnvironmentVar angleDefaultPlatform;
     if (GetEnvironmentVar("ANGLE_DEFAULT_PLATFORM").first.empty()) {
-        angleDefaultPlatform.Set("ANGLE_DEFAULT_PLATFORM", "swiftshader");
+        const char* platform;
+        if (!mANGLEBackend.empty()) {
+            platform = mANGLEBackend.c_str();
+        } else {
+#if DAWN_PLATFORM_IS(WINDOWS)
+            platform = "d3d11";
+#else
+            platform = "swiftshader";
+#endif
+        }
+        angleDefaultPlatform.Set("ANGLE_DEFAULT_PLATFORM", platform);
     }
 
     if (!glfwInit()) {
@@ -694,15 +712,68 @@ const std::vector<std::string>& DawnTestEnvironment::GetDisabledToggles() const 
 
 // Implementation of DawnTest
 
-DawnTestBase::DawnTestBase(const AdapterTestParam& param)
-    : mParam(param),
-      mWireHelper(utils::CreateWireHelper(gTestEnv->UsesWire(), gTestEnv->GetWireTraceDir())) {}
+DawnTestBase::DawnTestBase(const AdapterTestParam& param) : mParam(param) {
+    gCurrentTest = this;
+
+    DawnProcTable procs = dawn::native::GetProcs();
+    // Override procs to provide harness-specific behavior to always select the null adapter,
+    // and to allow fixture-specific overriding of the test device with CreateDeviceImpl.
+    procs.instanceRequestAdapter = [](WGPUInstance instance, const WGPURequestAdapterOptions*,
+                                      WGPURequestAdapterCallback callback, void* userdata) {
+        ASSERT(gCurrentTest);
+
+        // Find the adapter that exactly matches our adapter properties.
+        const auto& adapters = gTestEnv->GetInstance()->GetAdapters();
+        const auto& it = std::find_if(
+            adapters.begin(), adapters.end(), [&](const dawn::native::Adapter& adapter) {
+                wgpu::AdapterProperties properties;
+                adapter.GetProperties(&properties);
+
+                const auto& param = gCurrentTest->mParam;
+                return (param.adapterProperties.selected &&
+                        properties.deviceID == param.adapterProperties.deviceID &&
+                        properties.vendorID == param.adapterProperties.vendorID &&
+                        properties.adapterType == param.adapterProperties.adapterType &&
+                        properties.backendType == param.adapterProperties.backendType &&
+                        strcmp(properties.name, param.adapterProperties.adapterName.c_str()) == 0);
+            });
+        ASSERT(it != adapters.end());
+        gCurrentTest->mBackendAdapter = *it;
+
+        WGPUAdapter cAdapter = it->Get();
+        ASSERT(cAdapter);
+        dawn::native::GetProcs().adapterReference(cAdapter);
+        callback(WGPURequestAdapterStatus_Success, cAdapter, nullptr, userdata);
+    };
+
+    procs.adapterRequestDevice = [](WGPUAdapter adapter, const WGPUDeviceDescriptor*,
+                                    WGPURequestDeviceCallback callback, void* userdata) {
+        ASSERT(gCurrentTest);
+
+        // Isolation keys may be enqueued by CreateDevice(std::string isolationKey).
+        // CreateDevice calls requestAdapter, so consume them there and forward them
+        // to CreateDeviceImpl.
+        std::string isolationKey;
+        if (!gCurrentTest->mNextIsolationKeyQueue.empty()) {
+            isolationKey = std::move(gCurrentTest->mNextIsolationKeyQueue.front());
+            gCurrentTest->mNextIsolationKeyQueue.pop();
+        }
+        WGPUDevice cDevice = gCurrentTest->CreateDeviceImpl(std::move(isolationKey));
+        ASSERT(cDevice != nullptr);
+
+        gCurrentTest->mLastCreatedBackendDevice = cDevice;
+        callback(WGPURequestDeviceStatus_Success, cDevice, nullptr, userdata);
+    };
+
+    mWireHelper = utils::CreateWireHelper(procs, gTestEnv->UsesWire(), gTestEnv->GetWireTraceDir());
+}
 
 DawnTestBase::~DawnTestBase() {
-    // We need to destroy child objects before the Device
     mReadbackSlots.clear();
-    queue = wgpu::Queue();
-    device = wgpu::Device();
+    queue = nullptr;
+    device = nullptr;
+    mAdapter = nullptr;
+    mInstance = nullptr;
 
     // D3D12's GPU-based validation will accumulate objects over time if the backend device is not
     // destroyed and recreated, so we reset it here.
@@ -710,6 +781,11 @@ DawnTestBase::~DawnTestBase() {
         mBackendAdapter.ResetInternalDeviceForTesting();
     }
     mWireHelper.reset();
+
+    // Check that all devices were destructed.
+    EXPECT_EQ(gTestEnv->GetInstance()->GetDeviceCountForTesting(), 0u);
+
+    gCurrentTest = nullptr;
 }
 
 bool DawnTestBase::IsD3D12() const {
@@ -761,8 +837,8 @@ bool DawnTestBase::IsQualcomm() const {
 }
 
 bool DawnTestBase::IsSwiftshader() const {
-    return gpu_info::IsSwiftshader(mParam.adapterProperties.vendorID,
-                                   mParam.adapterProperties.deviceID);
+    return gpu_info::IsGoogleSwiftshader(mParam.adapterProperties.vendorID,
+                                         mParam.adapterProperties.deviceID);
 }
 
 bool DawnTestBase::IsANGLE() const {
@@ -770,11 +846,12 @@ bool DawnTestBase::IsANGLE() const {
 }
 
 bool DawnTestBase::IsWARP() const {
-    return gpu_info::IsWARP(mParam.adapterProperties.vendorID, mParam.adapterProperties.deviceID);
+    return gpu_info::IsMicrosoftWARP(mParam.adapterProperties.vendorID,
+                                     mParam.adapterProperties.deviceID);
 }
 
 bool DawnTestBase::IsWindows() const {
-#ifdef DAWN_PLATFORM_WINDOWS
+#if DAWN_PLATFORM_IS(WINDOWS)
     return true;
 #else
     return false;
@@ -782,7 +859,7 @@ bool DawnTestBase::IsWindows() const {
 }
 
 bool DawnTestBase::IsLinux() const {
-#ifdef DAWN_PLATFORM_LINUX
+#if DAWN_PLATFORM_IS(LINUX)
     return true;
 #else
     return false;
@@ -790,7 +867,7 @@ bool DawnTestBase::IsLinux() const {
 }
 
 bool DawnTestBase::IsMacOS(int32_t majorVersion, int32_t minorVersion) const {
-#ifdef DAWN_PLATFORM_MACOS
+#if DAWN_PLATFORM_IS(MACOS)
     if (majorVersion == -1 && minorVersion == -1) {
         return true;
     }
@@ -809,6 +886,10 @@ bool DawnTestBase::UsesWire() const {
 
 bool DawnTestBase::IsBackendValidationEnabled() const {
     return gTestEnv->GetBackendValidationLevel() != dawn::native::BackendValidationLevel::Disabled;
+}
+
+bool DawnTestBase::IsFullBackendValidationEnabled() const {
+    return gTestEnv->GetBackendValidationLevel() == dawn::native::BackendValidationLevel::Full;
 }
 
 bool DawnTestBase::RunSuppressedTests() const {
@@ -871,10 +952,9 @@ const wgpu::AdapterProperties& DawnTestBase::GetAdapterProperties() const {
 }
 
 wgpu::SupportedLimits DawnTestBase::GetSupportedLimits() {
-    WGPUSupportedLimits supportedLimits;
-    supportedLimits.nextInChain = nullptr;
-    dawn::native::GetProcs().deviceGetLimits(backendDevice, &supportedLimits);
-    return *reinterpret_cast<wgpu::SupportedLimits*>(&supportedLimits);
+    wgpu::SupportedLimits supportedLimits = {};
+    device.GetLimits(&supportedLimits);
+    return supportedLimits;
 }
 
 bool DawnTestBase::SupportsFeatures(const std::vector<wgpu::FeatureName>& features) {
@@ -899,10 +979,7 @@ bool DawnTestBase::SupportsFeatures(const std::vector<wgpu::FeatureName>& featur
     return true;
 }
 
-std::pair<wgpu::Device, WGPUDevice> DawnTestBase::CreateDeviceImpl(std::string isolationKey) {
-    // TODO(dawn:1399) Always flush wire before creating to avoid reuse of the same handle.
-    FlushWire();
-
+WGPUDevice DawnTestBase::CreateDeviceImpl(std::string isolationKey) {
     // Create the device from the adapter
     for (const char* forceEnabledWorkaround : mParam.forceEnabledWorkarounds) {
         ASSERT(gTestEnv->GetInstance()->GetToggleInfo(forceEnabledWorkaround) != nullptr);
@@ -953,20 +1030,38 @@ std::pair<wgpu::Device, WGPUDevice> DawnTestBase::CreateDeviceImpl(std::string i
     togglesDesc.nextInChain = &cacheDesc;
     cacheDesc.isolationKey = isolationKey.c_str();
 
-    auto devices = mWireHelper->RegisterDevice(mBackendAdapter.CreateDevice(&deviceDescriptor));
-    wgpu::Device device = devices.first;
+    return mBackendAdapter.CreateDevice(&deviceDescriptor);
+}
+
+wgpu::Device DawnTestBase::CreateDevice(std::string isolationKey) {
+    wgpu::Device apiDevice;
+
+    // The isolation key will be consumed inside adapterRequestDevice and passed
+    // to CreateDeviceImpl.
+    mNextIsolationKeyQueue.push(std::move(isolationKey));
+
+    // This descriptor doesn't matter since device selection is overriden by CreateDeviceImpl.
+    wgpu::DeviceDescriptor deviceDesc = {};
+    mAdapter.RequestDevice(
+        &deviceDesc,
+        [](WGPURequestDeviceStatus, WGPUDevice cDevice, const char*, void* userdata) {
+            *static_cast<wgpu::Device*>(userdata) = wgpu::Device::Acquire(cDevice);
+        },
+        &apiDevice);
+    FlushWire();
+    ASSERT(apiDevice);
 
     // Set up the mocks for uncaptured errors and device loss. The loss of the device is expected
     // to happen at the end of the test so at it directly.
-    device.SetUncapturedErrorCallback(mDeviceErrorCallback.Callback(),
-                                      mDeviceErrorCallback.MakeUserdata(device.Get()));
-    device.SetDeviceLostCallback(mDeviceLostCallback.Callback(),
-                                 mDeviceLostCallback.MakeUserdata(device.Get()));
+    apiDevice.SetUncapturedErrorCallback(mDeviceErrorCallback.Callback(),
+                                         mDeviceErrorCallback.MakeUserdata(apiDevice.Get()));
+    apiDevice.SetDeviceLostCallback(mDeviceLostCallback.Callback(),
+                                    mDeviceLostCallback.MakeUserdata(apiDevice.Get()));
     EXPECT_CALL(mDeviceLostCallback,
-                Call(WGPUDeviceLostReason_Destroyed, testing::_, device.Get()))
+                Call(WGPUDeviceLostReason_Destroyed, testing::_, apiDevice.Get()))
         .Times(testing::AtMost(1));
 
-    device.SetLoggingCallback(
+    apiDevice.SetLoggingCallback(
         [](WGPULoggingType type, char const* message, void*) {
             switch (type) {
                 case WGPULoggingType_Verbose:
@@ -985,47 +1080,38 @@ std::pair<wgpu::Device, WGPUDevice> DawnTestBase::CreateDeviceImpl(std::string i
         },
         nullptr);
 
-    return devices;
-}
-
-wgpu::Device DawnTestBase::CreateDevice(std::string isolationKey) {
-    return CreateDeviceImpl(isolationKey).first;
+    return apiDevice;
 }
 
 void DawnTestBase::SetUp() {
-    {
-        // Find the adapter that exactly matches our adapter properties.
-        const auto& adapters = gTestEnv->GetInstance()->GetAdapters();
-        const auto& it = std::find_if(
-            adapters.begin(), adapters.end(), [&](const dawn::native::Adapter& adapter) {
-                wgpu::AdapterProperties properties;
-                adapter.GetProperties(&properties);
-
-                return (mParam.adapterProperties.selected &&
-                        properties.deviceID == mParam.adapterProperties.deviceID &&
-                        properties.vendorID == mParam.adapterProperties.vendorID &&
-                        properties.adapterType == mParam.adapterProperties.adapterType &&
-                        properties.backendType == mParam.adapterProperties.backendType &&
-                        strcmp(properties.name, mParam.adapterProperties.adapterName.c_str()) == 0);
-            });
-        ASSERT(it != adapters.end());
-        mBackendAdapter = *it;
-    }
-
     // Setup the per-test platform. Tests can provide one by overloading CreateTestPlatform. This is
     // NOT a thread-safe operation and is allowed here for testing only.
     mTestPlatform = CreateTestPlatform();
     dawn::native::FromAPI(gTestEnv->GetInstance()->Get())
         ->SetPlatformForTesting(mTestPlatform.get());
 
+    mInstance = mWireHelper->RegisterInstance(gTestEnv->GetInstance()->Get());
+
     std::string traceName =
         std::string(::testing::UnitTest::GetInstance()->current_test_info()->test_suite_name()) +
         "_" + ::testing::UnitTest::GetInstance()->current_test_info()->name();
     mWireHelper->BeginWireTrace(traceName.c_str());
 
-    // Create the device from the adapter
-    std::tie(device, backendDevice) = CreateDeviceImpl();
-    ASSERT_NE(nullptr, backendDevice);
+    // These options are unused since adapter selection is overriden to use the test params
+    wgpu::RequestAdapterOptions options = {};
+    mInstance.RequestAdapter(
+        &options,
+        [](WGPURequestAdapterStatus, WGPUAdapter cAdapter, const char*, void* userdata) {
+            *static_cast<wgpu::Adapter*>(userdata) = wgpu::Adapter::Acquire(cAdapter);
+        },
+        &mAdapter);
+    FlushWire();
+    ASSERT(mAdapter);
+
+    device = CreateDevice();
+    backendDevice = mLastCreatedBackendDevice;
+    ASSERT(backendDevice);
+    ASSERT(device);
 
     queue = device.GetQueue();
 
@@ -1051,7 +1137,7 @@ void DawnTestBase::TearDown() {
         mReadbackSlots[i].buffer.Unmap();
     }
 
-    if (!UsesWire()) {
+    if (!UsesWire() && device) {
         EXPECT_EQ(mLastWarningCount,
                   dawn::native::GetDeprecationWarningCountForTesting(device.Get()));
     }
@@ -1199,7 +1285,7 @@ std::ostringstream& DawnTestBase::ExpectSampledFloatDataImpl(wgpu::TextureView t
         }
     }
     shaderSource << R"(
-        @stage(compute) @workgroup_size(1) fn main(
+        @compute @workgroup_size(1) fn main(
             @builtin(global_invocation_id) GlobalInvocationId : vec3<u32>
         ) {
             let baseOutIndex = GlobalInvocationId.y * width + GlobalInvocationId.x;
@@ -1343,7 +1429,7 @@ std::ostringstream& DawnTestBase::ExpectAttachmentDepthStencilTestData(
     utils::ComboRenderPipelineDescriptor pipelineDescriptor;
 
     pipelineDescriptor.vertex.module = utils::CreateShaderModule(device, R"(
-        @stage(vertex)
+        @vertex
         fn main(@builtin(vertex_index) VertexIndex : u32) -> @builtin(position) vec4<f32> {
             var pos = array<vec2<f32>, 3>(
                 vec2<f32>(-1.0, -1.0),
@@ -1363,7 +1449,7 @@ std::ostringstream& DawnTestBase::ExpectAttachmentDepthStencilTestData(
                 @builtin(frag_depth) fragDepth : f32,
             }
 
-            @stage(fragment)
+            @fragment
             fn main(@builtin(position) FragCoord : vec4<f32>) -> FragmentOut {
                 var output : FragmentOut;
                 output.result = 1u;
@@ -1372,7 +1458,7 @@ std::ostringstream& DawnTestBase::ExpectAttachmentDepthStencilTestData(
             })");
     } else {
         pipelineDescriptor.cFragment.module = utils::CreateShaderModule(device, R"(
-            @stage(fragment)
+            @fragment
             fn main() -> @location(0) u32 {
                 return 1u;
             })");
@@ -1439,7 +1525,9 @@ std::ostringstream& DawnTestBase::ExpectAttachmentDepthStencilTestData(
 }
 
 void DawnTestBase::WaitABit() {
-    device.Tick();
+    if (device) {
+        device.Tick();
+    }
     FlushWire();
 
     utils::USleep(100);

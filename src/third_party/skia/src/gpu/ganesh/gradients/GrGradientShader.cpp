@@ -277,6 +277,7 @@ static std::unique_ptr<GrFragmentProcessor> make_looping_colorizer(int intervalC
         // chunk` near the end via an @if statement, as the result will always be in chunk 0.
         int loopCount = SkNextLog2(intervalChunks);
         sksl.appendf(R"(
+        #version 300
         uniform half4 thresholds[%d];
         uniform float4 scale[%d];
         uniform float4 bias[%d];
@@ -317,8 +318,7 @@ static std::unique_ptr<GrFragmentProcessor> make_looping_colorizer(int intervalC
             /* loopCount: */ loopCount,
             /* @if (loopCount > 0): */ loopCount);
 
-        auto result = SkRuntimeEffect::MakeForShader(std::move(sksl),
-                                                     SkRuntimeEffectPriv::ES3Options());
+        auto result = SkRuntimeEffect::MakeForShader(std::move(sksl));
         SkASSERTF(result.effect, "%s", result.errorText.c_str());
         cacheEntry->effect = std::move(result.effect);
     });
@@ -467,7 +467,7 @@ static std::unique_ptr<GrFragmentProcessor> make_colorizer(const SkPMColor4f* co
         // isn't 32-bit, output can be incorrect if the thresholds are too close together. However,
         // the analytic shaders are higher quality, so they can be used with lower precision
         // hardware when the thresholds are not ill-conditioned.
-        if (!caps->floatIs32Bits()) {
+        if (!caps->fFloatIs32Bits) {
             // Could run into problems. Check if thresholds are close together (with a limit of .01,
             // so that scales will be less than 100, which leaves 4 decimals of precision on
             // 16-bit).
@@ -501,8 +501,8 @@ static std::unique_ptr<GrFragmentProcessor> make_colorizer(const SkPMColor4f* co
         return nullptr;
     };
 
-    int binaryColorizerLimit = caps->nonconstantArrayIndexSupport() ? kMaxLoopingColorCount
-                                                                    : kMaxUnrolledColorCount;
+    int binaryColorizerLimit = caps->fNonconstantArrayIndexSupport ? kMaxLoopingColorCount
+                                                                   : kMaxUnrolledColorCount;
     if ((count <= binaryColorizerLimit) && !intervalsExceedPrecisionLimit()) {
         // The dual-interval colorizer uses the same principles as the binary-search colorizer, but
         // is limited to exactly 2 intervals.
@@ -511,7 +511,7 @@ static std::unique_ptr<GrFragmentProcessor> make_colorizer(const SkPMColor4f* co
             return colorizer;
         }
         // Attempt to create an analytic colorizer that uses a binary-search loop.
-        colorizer = caps->nonconstantArrayIndexSupport()
+        colorizer = caps->fNonconstantArrayIndexSupport
                             ? make_looping_binary_colorizer(colors, positions, count)
                             : make_unrolled_binary_colorizer(colors, positions, count);
         if (colorizer) {
@@ -654,7 +654,7 @@ static std::unique_ptr<GrFragmentProcessor> make_tiled_gradient(
         optFlags |= GrSkSLFP::OptFlags::kPreservesOpaqueInput;
     }
     const bool useFloorAbsWorkaround =
-            args.fContext->priv().caps()->shaderCaps()->mustDoOpBetweenFloorAndAbs();
+            args.fContext->priv().caps()->shaderCaps()->fMustDoOpBetweenFloorAndAbs;
 
     return GrSkSLFP::Make(effect, "TiledGradient", /*inputFP=*/nullptr, optFlags,
                           "colorizer", GrSkSLFP::IgnoreOptFlags(std::move(colorizer)),
@@ -811,7 +811,7 @@ std::unique_ptr<GrFragmentProcessor> MakeSweep(const SkSweepGradient& shader,
     // undefined behavior of the second paramenter being 0 instead of doing the divide ourselves and
     // using atan instead.
     int useAtanWorkaround =
-            args.fContext->priv().caps()->shaderCaps()->atan2ImplementedAsAtanYOverX();
+            args.fContext->priv().caps()->shaderCaps()->fAtan2ImplementedAsAtanYOverX;
     static auto effect = SkMakeRuntimeEffect(SkRuntimeEffect::MakeForShader, R"(
         uniform half bias;
         uniform half scale;

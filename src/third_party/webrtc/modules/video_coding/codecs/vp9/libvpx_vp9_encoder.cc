@@ -499,7 +499,7 @@ void LibvpxVp9Encoder::SetActiveSpatialLayers() {
 
 void LibvpxVp9Encoder::SetRates(const RateControlParameters& parameters) {
   if (!inited_) {
-    RTC_LOG(LS_WARNING) << "SetRates() calll while uninitialzied.";
+    RTC_LOG(LS_WARNING) << "SetRates() called while uninitialized.";
     return;
   }
   if (encoder_->err) {
@@ -570,14 +570,32 @@ int LibvpxVp9Encoder::InitEncode(const VideoCodec* inst,
   force_key_frame_ = true;
   pics_since_key_ = 0;
 
-  num_spatial_layers_ = inst->VP9().numberOfSpatialLayers;
-  RTC_DCHECK_GT(num_spatial_layers_, 0);
-  num_temporal_layers_ = inst->VP9().numberOfTemporalLayers;
-  if (num_temporal_layers_ == 0) {
-    num_temporal_layers_ = 1;
+  absl::optional<ScalabilityMode> scalability_mode = inst->GetScalabilityMode();
+  if (scalability_mode.has_value()) {
+    // Use settings from `ScalabilityMode` identifier.
+    RTC_LOG(LS_INFO) << "Create scalability structure "
+                     << ScalabilityModeToString(*scalability_mode);
+    svc_controller_ = CreateScalabilityStructure(*scalability_mode);
+    if (!svc_controller_) {
+      RTC_LOG(LS_WARNING) << "Failed to create scalability structure.";
+      return WEBRTC_VIDEO_CODEC_ERR_PARAMETER;
+    }
+    ScalableVideoController::StreamLayersConfig info =
+        svc_controller_->StreamConfig();
+    num_spatial_layers_ = info.num_spatial_layers;
+    num_temporal_layers_ = info.num_temporal_layers;
+    inter_layer_pred_ = ScalabilityModeToInterLayerPredMode(*scalability_mode);
+  } else {
+    num_spatial_layers_ = inst->VP9().numberOfSpatialLayers;
+    RTC_DCHECK_GT(num_spatial_layers_, 0);
+    num_temporal_layers_ = inst->VP9().numberOfTemporalLayers;
+    if (num_temporal_layers_ == 0) {
+      num_temporal_layers_ = 1;
+    }
+    inter_layer_pred_ = inst->VP9().interLayerPred;
+    svc_controller_ = CreateVp9ScalabilityStructure(*inst);
   }
 
-  svc_controller_ = CreateVp9ScalabilityStructure(*inst);
   framerate_controller_ = std::vector<FramerateControllerDeprecated>(
       num_spatial_layers_, FramerateControllerDeprecated(codec_.maxFramerate));
 
@@ -629,7 +647,7 @@ int LibvpxVp9Encoder::InitEncode(const VideoCodec* inst,
   config_->g_lag_in_frames = 0;  // 0- no frame lagging
   config_->g_threads = 1;
   // Rate control settings.
-  config_->rc_dropframe_thresh = inst->VP9().frameDroppingOn ? 30 : 0;
+  config_->rc_dropframe_thresh = inst->GetFrameDropEnabled() ? 30 : 0;
   config_->rc_end_usage = VPX_CBR;
   config_->g_pass = VPX_RC_ONE_PASS;
   config_->rc_min_quantizer =
@@ -660,8 +678,6 @@ int LibvpxVp9Encoder::InitEncode(const VideoCodec* inst,
       NumberOfThreads(config_->g_w, config_->g_h, settings.number_of_cores);
 
   is_flexible_mode_ = inst->VP9().flexibleMode;
-
-  inter_layer_pred_ = inst->VP9().interLayerPred;
 
   if (num_spatial_layers_ > 1 &&
       codec_.mode == VideoCodecMode::kScreensharing && !is_flexible_mode_) {

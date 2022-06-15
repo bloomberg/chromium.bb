@@ -980,9 +980,8 @@ static av_cold int sonic_decode_close(AVCodecContext *avctx)
     return 0;
 }
 
-static int sonic_decode_frame(AVCodecContext *avctx,
-                            void *data, int *got_frame_ptr,
-                            AVPacket *avpkt)
+static int sonic_decode_frame(AVCodecContext *avctx, AVFrame *frame,
+                              int *got_frame_ptr, AVPacket *avpkt)
 {
     const uint8_t *buf = avpkt->data;
     int buf_size = avpkt->size;
@@ -991,7 +990,6 @@ static int sonic_decode_frame(AVCodecContext *avctx,
     uint8_t state[32];
     int i, quant, ch, j, ret;
     int16_t *samples;
-    AVFrame *frame = data;
 
     if (buf_size == 0) return 0;
 
@@ -1086,7 +1084,7 @@ const FFCodec ff_sonic_decoder = {
     .priv_data_size = sizeof(SonicContext),
     .init           = sonic_decode_init,
     .close          = sonic_decode_close,
-    .decode         = sonic_decode_frame,
+    FF_CODEC_DECODE_CB(sonic_decode_frame),
     .p.capabilities = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_EXPERIMENTAL | AV_CODEC_CAP_CHANNEL_CONF,
     .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP,
 };
@@ -1100,7 +1098,7 @@ const FFCodec ff_sonic_encoder = {
     .p.id           = AV_CODEC_ID_SONIC,
     .priv_data_size = sizeof(SonicContext),
     .init           = sonic_encode_init,
-    .encode2        = sonic_encode_frame,
+    FF_CODEC_ENCODE_CB(sonic_encode_frame),
     .p.sample_fmts  = (const enum AVSampleFormat[]){ AV_SAMPLE_FMT_S16, AV_SAMPLE_FMT_NONE },
     .p.capabilities = AV_CODEC_CAP_EXPERIMENTAL,
     .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP,
@@ -1116,7 +1114,7 @@ const FFCodec ff_sonic_ls_encoder = {
     .p.id           = AV_CODEC_ID_SONIC_LS,
     .priv_data_size = sizeof(SonicContext),
     .init           = sonic_encode_init,
-    .encode2        = sonic_encode_frame,
+    FF_CODEC_ENCODE_CB(sonic_encode_frame),
     .p.sample_fmts  = (const enum AVSampleFormat[]){ AV_SAMPLE_FMT_S16, AV_SAMPLE_FMT_NONE },
     .p.capabilities = AV_CODEC_CAP_EXPERIMENTAL,
     .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP,

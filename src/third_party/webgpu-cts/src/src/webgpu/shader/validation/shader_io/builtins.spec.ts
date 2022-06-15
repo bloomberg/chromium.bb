@@ -209,7 +209,7 @@ g.test('duplicates')
       ${ra} a : u32,
       ${rb} b : u32,
     };
-    @stage(fragment)
+    @fragment
     fn main(${p1} p1 : u32,
             ${p2} p2 : u32,
             s1 : S1,
@@ -241,7 +241,7 @@ g.test('missing_vertex_position')
       ${t.params.attribute} value : vec4<f32>
     };
 
-    @stage(vertex)
+    @vertex
     fn main() -> ${t.params.use_struct ? 'S' : `${t.params.attribute} vec4<f32>`} {
       return ${t.params.use_struct ? 'S' : 'vec4<f32>'}();
     }

@@ -13,7 +13,14 @@ import { absMatch, FloatMatch, ulpMatch } from '../../../../../util/compare.js';
 import { kValue } from '../../../../../util/constants.js';
 import { TypeF32 } from '../../../../../util/conversion.js';
 import { biasedRange, linearRange } from '../../../../../util/math.js';
-import { Case, CaseList, Config, makeUnaryF32Case, run } from '../../expression.js';
+import {
+  allInputSources,
+  Case,
+  CaseList,
+  Config,
+  makeUnaryF32Case,
+  run,
+} from '../../expression.js';
 
 import { builtin } from './builtin.js';
 
@@ -24,7 +31,7 @@ g.test('abstract_float')
   .desc(`abstract float tests`)
   .params(u =>
     u
-      .combine('storageClass', ['uniform', 'storage_r', 'storage_rw'] as const)
+      .combine('inputSource', allInputSources)
       .combine('vectorize', [undefined, 2, 3, 4] as const)
       .combine('range', ['low', 'mid', 'high'] as const)
   )
@@ -41,7 +48,7 @@ TODO(#792): Decide what the ground-truth is for these tests. [1]
   )
   .params(u =>
     u
-      .combine('storageClass', ['uniform', 'storage_r', 'storage_rw'] as const)
+      .combine('inputSource', allInputSources)
       .combine('vectorize', [undefined, 2, 3, 4] as const)
       .combine('range', ['low', 'mid', 'high'] as const)
   )
@@ -85,7 +92,7 @@ g.test('f16')
   .desc(`f16 tests`)
   .params(u =>
     u
-      .combine('storageClass', ['uniform', 'storage_r', 'storage_rw'] as const)
+      .combine('inputSource', allInputSources)
       .combine('vectorize', [undefined, 2, 3, 4] as const)
       .combine('range', ['low', 'mid', 'high'] as const)
   )

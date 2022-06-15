@@ -208,6 +208,7 @@ std::string ProtocolUtils::CreateNextScriptActionsRequest(
   ScriptActionRequestProto request_proto;
   request_proto.set_global_payload(global_payload);
   request_proto.set_script_payload(script_payload);
+
   NextScriptActionsRequestProto* next_request =
       request_proto.mutable_next_request();
   for (const auto& processed_action : processed_actions) {
@@ -460,6 +461,14 @@ std::unique_ptr<Action> ProtocolUtils::CreateAction(ActionDelegate* delegate,
     case ActionProto::ActionInfoCase::kRegisterPasswordResetRequest:
       return std::make_unique<RegisterPasswordResetRequestAction>(delegate,
                                                                   action);
+    case ActionProto::ActionInfoCase::kSetNativeValue:
+      return PerformOnSingleElementAction::WithClientId(
+          delegate, action, action.set_native_value().client_id(),
+          base::BindOnce(
+              &action_delegate_util::PerformWithTextValue, delegate,
+              action.set_native_value().value(),
+              base::BindOnce(&WebController::SetNativeValue,
+                             delegate->GetWebController()->GetWeakPtr())));
     case ActionProto::ActionInfoCase::ACTION_INFO_NOT_SET: {
       VLOG(1) << "Encountered action with ACTION_INFO_NOT_SET";
       return std::make_unique<UnsupportedAction>(delegate, action);
@@ -728,6 +737,10 @@ absl::optional<ActionProto> ProtocolUtils::ParseFromString(
       success = ParseActionFromString(action_id, bytes, error_message,
                                       proto.mutable_external_action());
       break;
+    case ActionProto::ActionInfoCase::kSetNativeValue:
+      success = ParseActionFromString(action_id, bytes, error_message,
+                                      proto.mutable_set_native_value());
+      break;
     case ActionProto::ActionInfoCase::kRegisterPasswordResetRequest:
       success = ParseActionFromString(
           action_id, bytes, error_message,
@@ -756,7 +769,8 @@ bool ProtocolUtils::ParseActions(ActionDelegate* delegate,
                                  std::string* return_script_payload,
                                  std::vector<std::unique_ptr<Action>>* actions,
                                  std::vector<std::unique_ptr<Script>>* scripts,
-                                 bool* should_update_scripts) {
+                                 bool* should_update_scripts,
+                                 std::string* js_flow_library) {
   DCHECK(actions);
   DCHECK(scripts);
 
@@ -774,6 +788,9 @@ bool ProtocolUtils::ParseActions(ActionDelegate* delegate,
   }
   if (return_script_payload) {
     *return_script_payload = response_proto.script_payload();
+  }
+  if (js_flow_library) {
+    *js_flow_library = std::move(*response_proto.mutable_js_flow_library());
   }
 
   for (const auto& action : response_proto.actions()) {

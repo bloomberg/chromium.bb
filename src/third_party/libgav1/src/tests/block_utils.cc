@@ -55,7 +55,6 @@ void PrintBlockDiff(const Pixel* block1, const Pixel* block2, int width,
     block2 += stride2;
   }
 }
-#undef LIBGAV1_DEBUG_FORMAT_CODE
 
 }  // namespace
 
@@ -68,15 +67,16 @@ void PrintBlock(const Pixel* block, int width, int height, int stride,
     printf("[%2d] ", y);
     for (int x = 0; x < print_width; ++x) {
       if (x >= width) {
-        printf("[%*d] ", field_width, block[x]);
+        printf("[%*" LIBGAV1_DEBUG_FORMAT_CODE "] ", field_width, block[x]);
       } else {
-        printf("%*d ", field_width, block[x]);
+        printf("%*" LIBGAV1_DEBUG_FORMAT_CODE " ", field_width, block[x]);
       }
     }
     printf("\n");
     block += stride;
   }
 }
+#undef LIBGAV1_DEBUG_FORMAT_CODE
 
 template void PrintBlock(const uint8_t* block, int width, int height,
                          int stride, bool print_padding /*= false*/);

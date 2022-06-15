@@ -161,6 +161,26 @@ cc_library(
 )
 
 cc_library(
+    name = "uuid",
+    srcs = [
+        "uuid.cc",
+    ],
+    hdrs = [
+        "uuid.h",
+    ],
+    defines = ["NO_WEBRTC"],
+    visibility = [
+        "//connections/implementation:__subpackages__",
+        "//internal/platform:__pkg__",
+        "//internal/platform/implementation:__subpackages__",
+    ],
+    deps = [
+        "//internal/platform/implementation:types",
+        "@com_google_absl//absl/strings",
+    ],
+)
+
+cc_library(
     name = "test_util",
     testonly = True,
     srcs = [
@@ -314,14 +334,17 @@ cc_library(
         "file.cc",
         "wifi_hotspot.cc",
         "wifi_lan.cc",
+        "wifi_utils.cc",
     ],
     hdrs = [
         "ble.h",
         "ble_v2.h",
         "bluetooth_adapter.h",
         "bluetooth_classic.h",
+        "wifi.h",
         "wifi_hotspot.h",
         "wifi_lan.h",
+        "wifi_utils.h",
     ],
     copts = ["-DCORE_ADAPTER_DLL"],
     defines = ["NO_WEBRTC"],
@@ -330,16 +353,19 @@ cc_library(
         "//googlemac/iPhone/Shared/Nearby/Connections:__subpackages__",
         "//internal/analytics:__subpackages__",
         "//internal/platform:__pkg__",
+        "//internal/platform/implementation:__subpackages__",
     ],
     deps = [
         ":logging",
         ":types",
+        ":uuid",
         "//internal/platform:base",
         "//internal/platform:cancellation_flag",
         "//internal/platform/implementation:comm",
         "//internal/platform/implementation:platform",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/types:optional",
     ],
 )
 
@@ -365,8 +391,11 @@ cc_test(
         "pipe_test.cc",
         "scheduled_executor_test.cc",
         "single_thread_executor_test.cc",
+        "uuid_test.cc",
         "wifi_hotspot_test.cc",
         "wifi_lan_test.cc",
+        "wifi_test.cc",
+        "wifi_utils_test.cc",
     ],
     copts = ["-DCORE_ADAPTER_DLL"],
     defines = ["NO_WEBRTC"],
@@ -375,6 +404,7 @@ cc_test(
         ":comm",
         ":logging",
         ":types",
+        ":uuid",
         "//internal/platform:base",
         "//internal/platform:test_util",
         "//internal/platform/implementation/g3",  # build_cleaner: keep

@@ -31,10 +31,9 @@ static av_cold int yuv4_decode_init(AVCodecContext *avctx)
     return 0;
 }
 
-static int yuv4_decode_frame(AVCodecContext *avctx, void *data,
+static int yuv4_decode_frame(AVCodecContext *avctx, AVFrame *pic,
                              int *got_frame, AVPacket *avpkt)
 {
-    AVFrame *pic = data;
     const uint8_t *src = avpkt->data;
     uint8_t *y, *u, *v;
     int i, j, ret;
@@ -80,7 +79,7 @@ const FFCodec ff_yuv4_decoder = {
     .p.type       = AVMEDIA_TYPE_VIDEO,
     .p.id         = AV_CODEC_ID_YUV4,
     .init         = yuv4_decode_init,
-    .decode       = yuv4_decode_frame,
+    FF_CODEC_DECODE_CB(yuv4_decode_frame),
     .p.capabilities = AV_CODEC_CAP_DR1,
     .caps_internal = FF_CODEC_CAP_INIT_THREADSAFE,
 };

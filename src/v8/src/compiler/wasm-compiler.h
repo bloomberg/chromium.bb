@@ -45,14 +45,12 @@ enum class TrapId : uint32_t;
 struct Int64LoweringSpecialCase;
 template <size_t VarCount>
 class GraphAssemblerLabel;
+struct WasmTypeCheckConfig;
 }  // namespace compiler
 
 namespace wasm {
 class AssemblerBufferCache;
 struct DecodeStruct;
-// Expose {Node} and {Graph} opaquely as {wasm::TFNode} and {wasm::TFGraph}.
-using TFNode = compiler::Node;
-using TFGraph = compiler::MachineGraph;
 class WasmCode;
 class WasmFeatures;
 class WireBytesStorage;
@@ -224,10 +222,6 @@ class WasmGraphBuilder {
     kWasmApiFunctionRefMode,
     kNoSpecialParameterMode
   };
-  struct ObjectReferenceKnowledge {
-    bool object_can_be_null;
-    uint8_t rtt_depth;
-  };
   enum EnforceBoundsCheck : bool {  // --
     kNeedsBoundsCheck = true,
     kCanOmitBoundsCheck = false
@@ -371,7 +365,8 @@ class WasmGraphBuilder {
 
   void CompareToInternalFunctionAtIndex(Node* func_ref, uint32_t function_index,
                                         Node** success_control,
-                                        Node** failure_control);
+                                        Node** failure_control,
+                                        bool is_last_case);
 
   void BrOnNull(Node* ref_object, Node** non_null_node, Node** null_node);
 
@@ -422,6 +417,8 @@ class WasmGraphBuilder {
     SetEffectControl(effect_and_control, effect_and_control);
     return effect_and_control;
   }
+
+  Node* SetType(Node* node, wasm::ValueType type);
 
   // Utilities to manipulate sets of instance cache nodes.
   void InitInstanceCache(WasmInstanceCacheNodes* instance_cache);
@@ -512,41 +509,47 @@ class WasmGraphBuilder {
   Node* I31GetU(Node* input);
   Node* RttCanon(uint32_t type_index);
 
-  Node* RefTest(Node* object, Node* rtt, ObjectReferenceKnowledge config);
-  Node* RefCast(Node* object, Node* rtt, ObjectReferenceKnowledge config,
+  Node* RefTest(Node* object, Node* rtt, WasmTypeCheckConfig config);
+  Node* RefCast(Node* object, Node* rtt, WasmTypeCheckConfig config,
                 wasm::WasmCodePosition position);
-  void BrOnCast(Node* object, Node* rtt, ObjectReferenceKnowledge config,
+  void BrOnCast(Node* object, Node* rtt, WasmTypeCheckConfig config,
                 Node** match_control, Node** match_effect,
                 Node** no_match_control, Node** no_match_effect);
   Node* RefIsData(Node* object, bool object_can_be_null);
   Node* RefAsData(Node* object, bool object_can_be_null,
                   wasm::WasmCodePosition position);
-  void BrOnData(Node* object, Node* rtt, ObjectReferenceKnowledge config,
+  void BrOnData(Node* object, Node* rtt, WasmTypeCheckConfig config,
                 Node** match_control, Node** match_effect,
                 Node** no_match_control, Node** no_match_effect);
   Node* RefIsFunc(Node* object, bool object_can_be_null);
   Node* RefAsFunc(Node* object, bool object_can_be_null,
                   wasm::WasmCodePosition position);
-  void BrOnFunc(Node* object, Node* rtt, ObjectReferenceKnowledge config,
+  void BrOnFunc(Node* object, Node* rtt, WasmTypeCheckConfig config,
                 Node** match_control, Node** match_effect,
                 Node** no_match_control, Node** no_match_effect);
   Node* RefIsArray(Node* object, bool object_can_be_null);
   Node* RefAsArray(Node* object, bool object_can_be_null,
                    wasm::WasmCodePosition position);
-  void BrOnArray(Node* object, Node* rtt, ObjectReferenceKnowledge config,
+  void BrOnArray(Node* object, Node* rtt, WasmTypeCheckConfig config,
                  Node** match_control, Node** match_effect,
                  Node** no_match_control, Node** no_match_effect);
   Node* RefIsI31(Node* object);
   Node* RefAsI31(Node* object, wasm::WasmCodePosition position);
-  void BrOnI31(Node* object, Node* rtt, ObjectReferenceKnowledge config,
+  void BrOnI31(Node* object, Node* rtt, WasmTypeCheckConfig config,
                Node** match_control, Node** match_effect,
                Node** no_match_control, Node** no_match_effect);
+  Node* StringNewWtf8(uint32_t memory, Node* offset, Node* size);
+  Node* StringNewWtf16(uint32_t memory, Node* offset, Node* size);
+  Node* IsNull(Node* object);
+  Node* TypeGuard(Node* value, wasm::ValueType type);
 
   bool has_simd() const { return has_simd_; }
 
   wasm::BoundsCheckStrategy bounds_checks() const {
     return env_->bounds_checks;
   }
+
+  Node* DefaultValue(wasm::ValueType type);
 
   MachineGraph* mcgraph() { return mcgraph_; }
   Graph* graph();
@@ -559,6 +562,9 @@ class WasmGraphBuilder {
 
   static const wasm::FunctionSig* Int64LoweredSig(Zone* zone,
                                                   const wasm::FunctionSig* sig);
+
+  void StoreCallCount(Node* call, int count);
+  void ReserveCallCounts(size_t num_call_instructions);
 
  protected:
   V8_EXPORT_PRIVATE WasmGraphBuilder(wasm::CompilationEnv* env, Zone* zone,
@@ -691,23 +697,10 @@ class WasmGraphBuilder {
                        MachineType result_type, wasm::TrapReason trap_zero,
                        wasm::WasmCodePosition position);
 
-  Node* BuildTruncateIntPtrToInt32(Node* value);
-  Node* BuildChangeInt32ToIntPtr(Node* value);
-  Node* BuildChangeIntPtrToInt64(Node* value);
-  Node* BuildChangeUint32ToUintPtr(Node*);
-  Node* BuildChangeInt32ToSmi(Node* value);
-  Node* BuildChangeUint31ToSmi(Node* value);
-  Node* BuildSmiShiftBitsConstant();
-  Node* BuildSmiShiftBitsConstant32();
-  Node* BuildChangeSmiToInt32(Node* value);
-  Node* BuildChangeSmiToIntPtr(Node* value);
-  // generates {index > max ? Smi(max) : Smi(index)}
-  Node* BuildConvertUint32ToSmiWithSaturation(Node* index, uint32_t maxval);
-
   void MemTypeToUintPtrOrOOBTrap(std::initializer_list<Node**> nodes,
                                  wasm::WasmCodePosition position);
 
-  Node* IsNull(Node* object);
+  Node* AssertNotNull(Node* object, wasm::WasmCodePosition position);
 
   void GetGlobalBaseAndOffset(const wasm::WasmGlobal&, Node** base_node,
                               Node** offset_node);
@@ -720,9 +713,9 @@ class WasmGraphBuilder {
   };
 
   // This type is used to collect control/effect nodes we need to merge at the
-  // end of BrOn* functions. Nodes are collected in {TypeCheck} etc. by calling
-  // the passed callbacks succeed_if, fail_if and fail_if_not. We have up to 5
-  // control nodes to merge; the EffectPhi needs an additional input.
+  // end of BrOn* functions. Nodes are collected by calling the passed callbacks
+  // succeed_if, fail_if and fail_if_not. We have up to 5 control nodes to
+  // merge; the EffectPhi needs an additional input.
   using SmallNodeVector = base::SmallVector<Node*, 6>;
 
   Callbacks TestCallbacks(GraphAssemblerLabel<1>* label);
@@ -733,8 +726,6 @@ class WasmGraphBuilder {
                             SmallNodeVector& match_controls,
                             SmallNodeVector& match_effects);
 
-  void TypeCheck(Node* object, Node* rtt, ObjectReferenceKnowledge config,
-                 bool null_succeeds, Callbacks callbacks);
   void DataCheck(Node* object, bool object_can_be_null, Callbacks callbacks);
   void ManagedObjectInstanceCheck(Node* object, bool object_can_be_null,
                                   InstanceType instance_type,

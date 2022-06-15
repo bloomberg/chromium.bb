@@ -169,6 +169,10 @@ MaybeError ValidateSampleCount(const TextureDescriptor* descriptor,
         DAWN_INVALID_IF(usage & wgpu::TextureUsage::StorageBinding,
                         "The sample count (%u) of a storage textures is not 1.",
                         descriptor->sampleCount);
+
+        DAWN_INVALID_IF((usage & wgpu::TextureUsage::RenderAttachment) == 0,
+                        "The usage (%s) of a multisampled texture doesn't include (%s).",
+                        descriptor->usage, wgpu::TextureUsage::RenderAttachment);
     }
 
     return {};
@@ -441,7 +445,7 @@ ResultOrError<TextureViewDescriptor> GetTextureViewDescriptorWithDefaults(
     }
 
     // The default value for the view dimension depends on the texture's dimension with a
-    // special case for 2DArray being chosen automatically if arrayLayerCount is unspecified.
+    // special case for 2DArray being chosen if texture is 2D but has more than one array layer.
     if (desc.dimension == wgpu::TextureViewDimension::Undefined) {
         switch (texture->GetDimension()) {
             case wgpu::TextureDimension::e1D:
@@ -449,7 +453,11 @@ ResultOrError<TextureViewDescriptor> GetTextureViewDescriptorWithDefaults(
                 break;
 
             case wgpu::TextureDimension::e2D:
-                desc.dimension = wgpu::TextureViewDimension::e2D;
+                if (texture->GetArrayLayers() == 1) {
+                    desc.dimension = wgpu::TextureViewDimension::e2D;
+                } else {
+                    desc.dimension = wgpu::TextureViewDimension::e2DArray;
+                }
                 break;
 
             case wgpu::TextureDimension::e3D:
@@ -525,7 +533,8 @@ TextureBase::TextureBase(DeviceBase* device,
       mSampleCount(descriptor->sampleCount),
       mUsage(descriptor->usage),
       mInternalUsage(mUsage),
-      mState(state) {
+      mState(state),
+      mFormatEnumForReflection(descriptor->format) {
     uint32_t subresourceCount = mMipLevelCount * GetArrayLayers() * GetAspectCount(mFormat.aspects);
     mIsSubresourceContentInitializedAtIndex = std::vector<bool>(subresourceCount, false);
 
@@ -548,23 +557,32 @@ TextureBase::TextureBase(DeviceBase* device,
 
 TextureBase::~TextureBase() = default;
 
-static Format kUnusedFormat;
+static constexpr Format kUnusedFormat;
 
 TextureBase::TextureBase(DeviceBase* device, TextureState state)
     : ApiObjectBase(device, kLabelNotImplemented), mFormat(kUnusedFormat), mState(state) {
     TrackInDevice();
 }
 
-TextureBase::TextureBase(DeviceBase* device, ObjectBase::ErrorTag tag)
-    : ApiObjectBase(device, tag), mFormat(kUnusedFormat) {}
+TextureBase::TextureBase(DeviceBase* device,
+                         const TextureDescriptor* descriptor,
+                         ObjectBase::ErrorTag tag)
+    : ApiObjectBase(device, tag),
+      mDimension(descriptor->dimension),
+      mFormat(kUnusedFormat),
+      mSize(descriptor->size),
+      mMipLevelCount(descriptor->mipLevelCount),
+      mSampleCount(descriptor->sampleCount),
+      mUsage(descriptor->usage),
+      mFormatEnumForReflection(descriptor->format) {}
 
 void TextureBase::DestroyImpl() {
     mState = TextureState::Destroyed;
 }
 
 // static
-TextureBase* TextureBase::MakeError(DeviceBase* device) {
-    return new TextureBase(device, ObjectBase::kError);
+TextureBase* TextureBase::MakeError(DeviceBase* device, const TextureDescriptor* descriptor) {
+    return new TextureBase(device, descriptor, ObjectBase::kError);
 }
 
 ObjectType TextureBase::GetType() const {
@@ -691,7 +709,7 @@ bool TextureBase::IsMultisampledTexture() const {
     return mSampleCount > 1;
 }
 
-Extent3D TextureBase::GetMipLevelVirtualSize(uint32_t level) const {
+Extent3D TextureBase::GetMipLevelSingleSubresourceVirtualSize(uint32_t level) const {
     Extent3D extent = {std::max(mSize.width >> level, 1u), 1u, 1u};
     if (mDimension == wgpu::TextureDimension::e1D) {
         return extent;
@@ -706,8 +724,8 @@ Extent3D TextureBase::GetMipLevelVirtualSize(uint32_t level) const {
     return extent;
 }
 
-Extent3D TextureBase::GetMipLevelPhysicalSize(uint32_t level) const {
-    Extent3D extent = GetMipLevelVirtualSize(level);
+Extent3D TextureBase::GetMipLevelSingleSubresourcePhysicalSize(uint32_t level) const {
+    Extent3D extent = GetMipLevelSingleSubresourceVirtualSize(level);
 
     // Compressed Textures will have paddings if their width or height is not a multiple of
     // 4 at non-zero mipmap levels.
@@ -727,7 +745,7 @@ Extent3D TextureBase::GetMipLevelPhysicalSize(uint32_t level) const {
 Extent3D TextureBase::ClampToMipLevelVirtualSize(uint32_t level,
                                                  const Origin3D& origin,
                                                  const Extent3D& extent) const {
-    const Extent3D virtualSizeAtLevel = GetMipLevelVirtualSize(level);
+    const Extent3D virtualSizeAtLevel = GetMipLevelSingleSubresourceVirtualSize(level);
     ASSERT(origin.x <= virtualSizeAtLevel.width);
     ASSERT(origin.y <= virtualSizeAtLevel.height);
     uint32_t clampedCopyExtentWidth = (extent.width > virtualSizeAtLevel.width - origin.x)
@@ -761,6 +779,37 @@ void TextureBase::APIDestroy() {
     }
     ASSERT(!IsError());
     Destroy();
+}
+
+uint32_t TextureBase::APIGetWidth() const {
+    return mSize.width;
+}
+
+uint32_t TextureBase::APIGetHeight() const {
+    return mSize.height;
+}
+uint32_t TextureBase::APIGetDepthOrArrayLayers() const {
+    return mSize.depthOrArrayLayers;
+}
+
+uint32_t TextureBase::APIGetMipLevelCount() const {
+    return mMipLevelCount;
+}
+
+uint32_t TextureBase::APIGetSampleCount() const {
+    return mSampleCount;
+}
+
+wgpu::TextureDimension TextureBase::APIGetDimension() const {
+    return mDimension;
+}
+
+wgpu::TextureFormat TextureBase::APIGetFormat() const {
+    return mFormatEnumForReflection;
+}
+
+wgpu::TextureUsage TextureBase::APIGetUsage() const {
+    return mUsage;
 }
 
 MaybeError TextureBase::ValidateDestroy() const {

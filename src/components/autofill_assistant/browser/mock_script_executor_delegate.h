@@ -49,6 +49,16 @@ class MockScriptExecutorDelegate : public ScriptExecutorDelegate {
               (),
               (override));
   MOCK_METHOD(content::WebContents*, GetWebContents, (), (override));
+  MOCK_METHOD(content::WebContents*,
+              GetWebContentsForJsExecution,
+              (),
+              (override));
+  MOCK_METHOD(void,
+              SetJsFlowLibrary,
+              (const std::string& js_flow_library),
+              (override));
+  MOCK_METHOD(const std::string*, GetJsFlowLibrary, (), (const override));
+
   MOCK_METHOD(std::string,
               GetEmailAddressForAccessTokenAccount,
               (),

@@ -273,9 +273,20 @@ def _downloader_worker_thread(thread_num, q, force, base_url,
           skip = False
       if skip:
         continue
-    # Check if file exists.
+
     file_url = '%s/%s' % (base_url, input_sha1_sum)
-    (code, _, err) = gsutil.check_call('ls', file_url)
+
+    try:
+      if delete:
+        os.remove(output_filename)  # Delete the file if it exists already.
+    except OSError:
+      if os.path.exists(output_filename):
+        out_q.put('%d> Warning: deleting %s failed.' % (
+            thread_num, output_filename))
+    if verbose:
+      out_q.put('%d> Downloading %s@%s...' % (
+          thread_num, output_filename, input_sha1_sum))
+    code, _, err = gsutil.check_call('cp', file_url, output_filename)
     if code != 0:
       if code == 404:
         out_q.put('%d> File %s for %s does not exist, skipping.' % (
@@ -294,24 +305,8 @@ def _downloader_worker_thread(thread_num, q, force, base_url,
         # Other error, probably auth related (bad ~/.boto, etc).
         out_q.put('%d> Failed to fetch file %s for %s, skipping. [Err: %s]' %
                   (thread_num, file_url, output_filename, err))
-        ret_codes.put((1, 'Failed to fetch file %s for %s. [Err: %s]' %
+        ret_codes.put((code, 'Failed to fetch file %s for %s. [Err: %s]' %
                        (file_url, output_filename, err)))
-      continue
-    # Fetch the file.
-    if verbose:
-      out_q.put('%d> Downloading %s@%s...' %
-                (thread_num, output_filename, input_sha1_sum))
-    try:
-      if delete:
-        os.remove(output_filename)  # Delete the file if it exists already.
-    except OSError:
-      if os.path.exists(output_filename):
-        out_q.put('%d> Warning: deleting %s failed.' % (
-            thread_num, output_filename))
-    code, _, err = gsutil.check_call('cp', file_url, output_filename)
-    if code != 0:
-      out_q.put('%d> %s' % (thread_num, err))
-      ret_codes.put((code, err))
       continue
 
     remote_sha1 = get_sha1(output_filename)

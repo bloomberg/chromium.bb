@@ -7,14 +7,21 @@
 
 #include "src/sksl/ir/SkSLVariable.h"
 
+#include "include/private/SkSLLayout.h"
 #include "include/private/SkStringView.h"
+#include "include/sksl/SkSLErrorReporter.h"
 #include "src/sksl/SkSLCompiler.h"
 #include "src/sksl/SkSLContext.h"
 #include "src/sksl/SkSLMangler.h"
+#include "src/sksl/SkSLModifiersPool.h"
 #include "src/sksl/SkSLProgramSettings.h"
 #include "src/sksl/SkSLThreadContext.h"
+#include "src/sksl/ir/SkSLExpression.h"
 #include "src/sksl/ir/SkSLSymbolTable.h"
 #include "src/sksl/ir/SkSLVarDeclarations.h"
+
+#include <type_traits>
+#include <utility>
 
 namespace SkSL {
 
@@ -41,6 +48,9 @@ std::unique_ptr<Variable> Variable::Convert(const Context& context, Position pos
     }
     if (!context.fConfig->fIsBuiltinCode && skstd::starts_with(name, '$')) {
         context.fErrors->error(namePos, "name '" + std::string(name) + "' is reserved");
+    }
+    if (baseType->isArray() && baseType->columns() == Type::kUnsizedArray) {
+        context.fErrors->error(pos, "unsized arrays are not permitted here");
     }
 
     return Make(context, pos, modifiersPos, modifiers, baseType, name, isArray,

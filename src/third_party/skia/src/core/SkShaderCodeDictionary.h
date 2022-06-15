@@ -24,6 +24,9 @@ namespace SkSL {
 struct ShaderCaps;
 }
 
+class SkBlenderID;
+class SkRuntimeEffect;
+
 // TODO: How to represent the type (e.g., 2D) of texture being sampled?
 class SkTextureAndSampler {
 public:
@@ -102,10 +105,10 @@ public:
     }
 
 #ifdef SK_GRAPHITE_ENABLED
-    void setBlendInfo(const SkPipelineDataGatherer::BlendInfo& blendInfo) {
+    void setBlendInfo(const skgpu::BlendInfo& blendInfo) {
         fBlendInfo = blendInfo;
     }
-    const SkPipelineDataGatherer::BlendInfo& blendInfo() const { return fBlendInfo; }
+    const skgpu::BlendInfo& blendInfo() const { return fBlendInfo; }
 #endif
 
 #if SK_SUPPORT_GPU && defined(SK_GRAPHITE_ENABLED) && defined(SK_METAL)
@@ -126,7 +129,7 @@ private:
 
     // The blendInfo doesn't actually contribute to the program's creation but, it contains the
     // matching fixed-function settings that the program's caller needs to set up.
-    SkPipelineDataGatherer::BlendInfo fBlendInfo;
+    skgpu::BlendInfo fBlendInfo;
 #endif
 };
 
@@ -142,14 +145,14 @@ public:
         }
         const SkPaintParamsKey& paintParamsKey() const { return fKey; }
 #ifdef SK_GRAPHITE_ENABLED
-        const SkPipelineDataGatherer::BlendInfo& blendInfo() const { return fBlendInfo; }
+        const skgpu::BlendInfo& blendInfo() const { return fBlendInfo; }
 #endif
 
     private:
         friend class SkShaderCodeDictionary;
 
 #ifdef SK_GRAPHITE_ENABLED
-        Entry(const SkPaintParamsKey& key, const SkPipelineDataGatherer::BlendInfo& blendInfo)
+        Entry(const SkPaintParamsKey& key, const skgpu::BlendInfo& blendInfo)
                 : fKey(key.asSpan())
                 , fBlendInfo(blendInfo) {
         }
@@ -169,13 +172,13 @@ public:
         // The BlendInfo isn't used in the hash (that is the key's job) but it does directly vary
         // with the key. It could, theoretically, be recreated from the key but that would add
         // extra complexity.
-        SkPipelineDataGatherer::BlendInfo fBlendInfo;
+        skgpu::BlendInfo fBlendInfo;
 #endif
     };
 
 #ifdef SK_GRAPHITE_ENABLED
     const Entry* findOrCreate(const SkPaintParamsKey&,
-                              const SkPipelineDataGatherer::BlendInfo&) SK_EXCLUDES(fSpinLock);
+                              const skgpu::BlendInfo&) SK_EXCLUDES(fSpinLock);
 #else
     const Entry* findOrCreate(const SkPaintParamsKey&) SK_EXCLUDES(fSpinLock);
 #endif
@@ -189,17 +192,16 @@ public:
 
     SkSpan<const SkPaintParamsKey::DataPayloadField> dataPayloadExpectations(int snippetID) const;
 
+    bool isValidID(int snippetID) const;
+
     // This method can return nullptr
     const SkShaderSnippet* getEntry(int codeSnippetID) const;
     const SkShaderSnippet* getEntry(SkBuiltInCodeSnippetID codeSnippetID) const {
         return this->getEntry(SkTo<int>(codeSnippetID));
     }
+    const SkShaderSnippet* getEntry(SkBlenderID) const;
 
     void getShaderInfo(SkUniquePaintParamsID, SkShaderInfo*);
-
-    int maxCodeSnippetID() const {
-        return static_cast<int>(SkBuiltInCodeSnippetID::kLast) + fUserDefinedCodeSnippets.size();
-    }
 
     // TODO: this is still experimental but, most likely, it will need to be made thread-safe
     // It returns the code snippet ID to use to identify the supplied user-defined code
@@ -207,9 +209,11 @@ public:
     int addUserDefinedSnippet(const char* name,
                               SkSpan<const SkPaintParamsKey::DataPayloadField> expectations);
 
+    SkBlenderID addUserDefinedBlender(sk_sp<SkRuntimeEffect>);
+
 private:
 #ifdef SK_GRAPHITE_ENABLED
-    Entry* makeEntry(const SkPaintParamsKey&, const SkPipelineDataGatherer::BlendInfo&);
+    Entry* makeEntry(const SkPaintParamsKey&, const skgpu::BlendInfo&);
 #else
     Entry* makeEntry(const SkPaintParamsKey&);
 #endif

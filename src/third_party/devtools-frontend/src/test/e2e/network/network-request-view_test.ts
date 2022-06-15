@@ -7,11 +7,15 @@ import {assert} from 'chai';
 import type {ElementHandle} from 'puppeteer';
 import {expectError} from '../../conductor/events.js';
 import {
+  $,
   $$,
   click,
+  enableExperiment,
+  getTestServerPort,
   step,
   typeText,
   waitFor,
+  waitForAria,
   waitForElementWithTextContent,
   waitForFunction,
   getBrowserAndPages,
@@ -19,6 +23,7 @@ import {
 } from '../../shared/helper.js';
 import {describe, it} from '../../shared/mocha-extensions.js';
 import {CONSOLE_TAB_SELECTOR, focusConsolePrompt} from '../helpers/console-helpers.js';
+import {triggerLocalFindDialog} from '../helpers/memory-helpers.js';
 import {
   getAllRequestNames,
   navigateToNetworkTab,
@@ -342,5 +347,48 @@ describe('The Network Request view', async () => {
 
     await selectRequestByName('image.svg?delay');
     await target.evaluate(async () => await fetch('/?send_delayed'));
+  });
+
+  it('can create header overrides via context menu', async () => {
+    await enableExperiment('headerOverrides');
+    await navigateToNetworkTab('hello.html');
+    await selectRequestByName('hello.html', {button: 'right'});
+
+    const createHeaderOverrideMenuEntry = await waitForAria('Create response header override');
+    await click(createHeaderOverrideMenuEntry);
+    const infoBar = await waitForAria('Select a folder to store override files in.');
+    const button = await waitFor('.infobar-main-row .infobar-button', infoBar);
+    await click(button);
+
+    await waitFor('devtools-button.add-block');
+    const folderElement = await waitFor('.tree-outline-disclosure ol.tree-outline .navigator-fs-folder-tree-item');
+    const textContent = await folderElement.evaluate(el => el.textContent || '');
+    assert.match(textContent, new RegExp(`localhost(:|%3A)${getTestServerPort()}/test/e2e/resources/network`));
+
+    await waitFor('.tabbed-pane-header-tab[aria-label=".headers"]');
+  });
+
+  it('can search by headers name', async () => {
+    await navigateToNetworkTab('headers-and-payload.html');
+
+    await waitForSomeRequestsToAppear(2);
+
+    await selectRequestByName('image.svg?id=42&param=a%20b');
+    const SEARCH_QUERY = '[aria-label="Search Query"]';
+    const SEARCH_RESULT = '.search-result';
+    const {frontend} = getBrowserAndPages();
+
+    await triggerLocalFindDialog(frontend);
+    await waitFor(SEARCH_QUERY);
+    const inputElement = await $(SEARCH_QUERY);
+    if (!inputElement) {
+      assert.fail('Unable to find search input field');
+    }
+
+    await inputElement.focus();
+    await inputElement.type('Cache-Control');
+    await frontend.keyboard.press('Enter');
+
+    await waitFor(SEARCH_RESULT);
   });
 });

@@ -44,7 +44,6 @@
 #include "components/feed/core/v2/public/types.h"
 #include "components/feed/core/v2/public/unread_content_observer.h"
 #include "components/feed/core/v2/scheduling.h"
-#include "components/feed/core/v2/stream/notice_card_tracker.h"
 #include "components/feed/core/v2/stream/unread_content_notifier.h"
 #include "components/feed/core/v2/stream_model.h"
 #include "components/feed/core/v2/surface_updater.h"
@@ -670,6 +669,15 @@ bool FeedStream::WasUrlRecentlyNavigatedFromFeed(const GURL& url) {
                    url) != recent_feed_navigations_.end();
 }
 
+void FeedStream::InvalidateContentCacheFor(StreamKind stream_kind) {
+  if (StreamKind::kForYou == stream_kind) {
+    SetStreamStale(kForYouStream, true);
+  }
+  if (StreamKind::kFollowing == stream_kind) {
+    SetStreamStale(kWebFeedStream, true);
+  }
+}
+
 DebugStreamData FeedStream::GetDebugStreamData() {
   return ::feed::prefs::GetDebugStreamData(*profile_prefs_);
 }
@@ -913,8 +921,6 @@ RequestMetadata FeedStream::GetCommonRequestMetadata(
   result.notice_card_acknowledged =
       privacy_notice_card_tracker_.HasAcknowledgedNoticeCard();
   result.autoplay_enabled = delegate_->IsAutoplayEnabled();
-  result.acknowledged_notice_keys =
-      NoticeCardTracker::GetAllAckowledgedKeys(profile_prefs_);
 
   if (signed_in_request) {
     result.client_instance_id = prefs::GetClientInstanceId(*profile_prefs_);
@@ -1333,45 +1339,6 @@ void FeedStream::ReportOtherUserAction(const StreamType& stream_type,
   metrics_reporter_->OtherUserAction(stream_type, action_type);
 }
 
-void FeedStream::ReportNoticeCreated(const StreamType& stream_type,
-                                     const std::string& key) {
-  metrics_reporter_->OnNoticeCreated(stream_type, key);
-}
-
-void FeedStream::ReportNoticeViewed(const StreamType& stream_type,
-                                    const std::string& key) {
-  metrics_reporter_->OnNoticeViewed(stream_type, key);
-  NoticeCardTracker& tracker = GetNoticeCardTracker(key);
-  bool was_acknowledged = tracker.HasAcknowledged();
-  tracker.OnViewed();
-  if (!was_acknowledged && tracker.HasAcknowledged()) {
-    metrics_reporter_->OnNoticeAcknowledged(
-        stream_type, key, NoticeAcknowledgementPath::kViaViewing);
-  }
-}
-
-void FeedStream::ReportNoticeOpenAction(const StreamType& stream_type,
-                                        const std::string& key) {
-  metrics_reporter_->OnNoticeOpenAction(stream_type, key);
-  NoticeCardTracker& tracker = GetNoticeCardTracker(key);
-  bool was_acknowledged = tracker.HasAcknowledged();
-  tracker.OnOpenAction();
-  if (!was_acknowledged && tracker.HasAcknowledged())
-    metrics_reporter_->OnNoticeAcknowledged(
-        stream_type, key, NoticeAcknowledgementPath::kViaOpenAction);
-}
-
-void FeedStream::ReportNoticeDismissed(const StreamType& stream_type,
-                                       const std::string& key) {
-  metrics_reporter_->OnNoticeDismissed(stream_type, key);
-  NoticeCardTracker& tracker = GetNoticeCardTracker(key);
-  bool was_acknowledged = tracker.HasAcknowledged();
-  tracker.OnDismissed();
-  if (!was_acknowledged && tracker.HasAcknowledged())
-    metrics_reporter_->OnNoticeAcknowledged(
-        stream_type, key, NoticeAcknowledgementPath::kViaDismissal);
-}
-
 void FeedStream::ReportInfoCardTrackViewStarted(const StreamType& stream_type,
                                                 int info_card_type) {
   metrics_reporter_->OnInfoCardTrackViewStarted(stream_type, info_card_type);
@@ -1401,17 +1368,6 @@ void FeedStream::ResetInfoCardStates(const StreamType& stream_type,
                                      int info_card_type) {
   metrics_reporter_->OnInfoCardStateReset(stream_type, info_card_type);
   info_card_tracker_.ResetState(info_card_type);
-}
-
-NoticeCardTracker& FeedStream::GetNoticeCardTracker(const std::string& key) {
-  const auto iter = notice_card_trackers_.find(key);
-  if (iter != notice_card_trackers_.end())
-    return iter->second;
-
-  return notice_card_trackers_
-      .emplace(std::piecewise_construct, std::forward_as_tuple(key),
-               std::forward_as_tuple(profile_prefs_, key))
-      .first->second;
 }
 
 void FeedStream::SetContentOrder(const StreamType& stream_type,

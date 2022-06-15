@@ -76,7 +76,7 @@ class F extends ValidationTest {
     };
   }
 
-  async tryRenderPass(success: boolean, descriptor: GPURenderPassDescriptor): Promise<void> {
+  tryRenderPass(success: boolean, descriptor: GPURenderPassDescriptor): void {
     const commandEncoder = this.device.createCommandEncoder();
     const renderPass = commandEncoder.beginRenderPass(descriptor);
     renderPass.end();
@@ -122,7 +122,7 @@ g.test('OOB_color_attachment_indices_are_handled')
       colorAttachments.push(t.getColorAttachment(colorTexture));
     }
 
-    await t.tryRenderPass(_success, { colorAttachments });
+    t.tryRenderPass(_success, { colorAttachments });
   });
 
 g.test('attachments_must_have_the_same_size').fn(async t => {
@@ -161,7 +161,7 @@ g.test('attachments_must_have_the_same_size').fn(async t => {
       ],
     };
 
-    await t.tryRenderPass(false, descriptor);
+    t.tryRenderPass(false, descriptor);
   }
   {
     // The depth stencil attachment has a different size
@@ -173,7 +173,7 @@ g.test('attachments_must_have_the_same_size').fn(async t => {
       depthStencilAttachment: t.getDepthStencilAttachment(depthStencilTexture2x2),
     };
 
-    await t.tryRenderPass(false, descriptor);
+    t.tryRenderPass(false, descriptor);
   }
 });
 
@@ -187,7 +187,7 @@ g.test('attachments_must_match_whether_they_are_used_for_color_or_depth_stencil'
       colorAttachments: [t.getColorAttachment(depthStencilTexture)],
     };
 
-    await t.tryRenderPass(false, descriptor);
+    t.tryRenderPass(false, descriptor);
   }
   {
     // Using color for depth-stencil
@@ -196,7 +196,7 @@ g.test('attachments_must_match_whether_they_are_used_for_color_or_depth_stencil'
       depthStencilAttachment: t.getDepthStencilAttachment(colorTexture),
     };
 
-    await t.tryRenderPass(false, descriptor);
+    t.tryRenderPass(false, descriptor);
   }
 });
 
@@ -248,7 +248,7 @@ g.test('check_layer_count_for_color_or_depth_stencil')
         colorAttachments: [t.getColorAttachment(colorTexture, textureViewDescriptor)],
       };
 
-      await t.tryRenderPass(_success, descriptor);
+      t.tryRenderPass(_success, descriptor);
     }
     {
       // Check 2D array texture view for depth stencil
@@ -265,7 +265,7 @@ g.test('check_layer_count_for_color_or_depth_stencil')
         ),
       };
 
-      await t.tryRenderPass(_success, descriptor);
+      t.tryRenderPass(_success, descriptor);
     }
   });
 
@@ -317,7 +317,7 @@ g.test('check_mip_level_count_for_color_or_depth_stencil')
         colorAttachments: [t.getColorAttachment(colorTexture, textureViewDescriptor)],
       };
 
-      await t.tryRenderPass(_success, descriptor);
+      t.tryRenderPass(_success, descriptor);
     }
     {
       // Check 2D texture view for depth stencil
@@ -334,7 +334,7 @@ g.test('check_mip_level_count_for_color_or_depth_stencil')
         ),
       };
 
-      await t.tryRenderPass(_success, descriptor);
+      t.tryRenderPass(_success, descriptor);
     }
   });
 
@@ -355,7 +355,7 @@ g.test('it_is_invalid_to_set_resolve_target_if_color_attachment_is_non_multisamp
       ],
     };
 
-    await t.tryRenderPass(false, descriptor);
+    t.tryRenderPass(false, descriptor);
   }
 );
 
@@ -379,7 +379,7 @@ g.test('check_the_use_of_multisampled_textures_as_color_attachments').fn(async t
       ],
     };
 
-    await t.tryRenderPass(false, descriptor);
+    t.tryRenderPass(false, descriptor);
   }
 });
 
@@ -394,7 +394,7 @@ g.test('it_is_invalid_to_use_a_multisampled_resolve_target').fn(async t => {
     colorAttachments: [colorAttachment],
   };
 
-  await t.tryRenderPass(false, descriptor);
+  t.tryRenderPass(false, descriptor);
 });
 
 g.test('it_is_invalid_to_use_a_resolve_target_with_array_layer_count_greater_than_1').fn(
@@ -409,7 +409,7 @@ g.test('it_is_invalid_to_use_a_resolve_target_with_array_layer_count_greater_tha
       colorAttachments: [colorAttachment],
     };
 
-    await t.tryRenderPass(false, descriptor);
+    t.tryRenderPass(false, descriptor);
   }
 );
 
@@ -425,7 +425,7 @@ g.test('it_is_invalid_to_use_a_resolve_target_with_mipmap_level_count_greater_th
       colorAttachments: [colorAttachment],
     };
 
-    await t.tryRenderPass(false, descriptor);
+    t.tryRenderPass(false, descriptor);
   }
 );
 
@@ -442,7 +442,7 @@ g.test('it_is_invalid_to_use_a_resolve_target_whose_usage_is_not_RENDER_ATTACHME
     colorAttachments: [colorAttachment],
   };
 
-  await t.tryRenderPass(false, descriptor);
+  t.tryRenderPass(false, descriptor);
 });
 
 g.test('it_is_invalid_to_use_a_resolve_target_in_error_state').fn(async t => {
@@ -464,7 +464,7 @@ g.test('it_is_invalid_to_use_a_resolve_target_in_error_state').fn(async t => {
     colorAttachments: [colorAttachment],
   };
 
-  await t.tryRenderPass(false, descriptor);
+  t.tryRenderPass(false, descriptor);
 });
 
 g.test('use_of_multisampled_attachment_and_non_multisampled_resolve_target_is_allowed').fn(
@@ -495,7 +495,7 @@ g.test('use_a_resolve_target_in_a_format_different_than_the_attachment_is_not_al
       colorAttachments: [colorAttachment],
     };
 
-    await t.tryRenderPass(false, descriptor);
+    t.tryRenderPass(false, descriptor);
   }
 );
 
@@ -521,7 +521,7 @@ g.test('size_of_the_resolve_target_must_be_the_same_as_the_color_attachment').fn
       colorAttachments: [colorAttachment],
     };
 
-    await t.tryRenderPass(false, descriptor);
+    t.tryRenderPass(false, descriptor);
   }
   {
     const resolveTargetTextureView = resolveTargetTexture.createView({ baseMipLevel: 1 });
@@ -556,7 +556,7 @@ g.test('check_depth_stencil_attachment_sample_counts_mismatch').fn(async t => {
       depthStencilAttachment: t.getDepthStencilAttachment(depthStencilTexture),
     };
 
-    await t.tryRenderPass(false, descriptor);
+    t.tryRenderPass(false, descriptor);
   }
   {
     const colorTexture = t.createTexture({ sampleCount: 1 });
@@ -565,7 +565,7 @@ g.test('check_depth_stencil_attachment_sample_counts_mismatch').fn(async t => {
       depthStencilAttachment: t.getDepthStencilAttachment(multisampledDepthStencilTexture),
     };
 
-    await t.tryRenderPass(false, descriptor);
+    t.tryRenderPass(false, descriptor);
   }
   {
     // It is allowed to use a multisampled depth stencil attachment whose sample count is equal to

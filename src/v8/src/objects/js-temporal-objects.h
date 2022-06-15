@@ -138,9 +138,19 @@ class JSTemporalCalendar
       Handle<Object> temporal_date_like);
 
   // #sec-temporal.calendar.prototype.tostring
-  static MaybeHandle<String> ToString(Isolate* isolate,
-                                      Handle<JSTemporalCalendar> calendar,
-                                      const char* method_name);
+  V8_WARN_UNUSED_RESULT static MaybeHandle<String> ToString(
+      Isolate* isolate, Handle<JSTemporalCalendar> calendar,
+      const char* method_name);
+
+#ifdef V8_INTL_SUPPORT
+  V8_WARN_UNUSED_RESULT static MaybeHandle<Object> Era(
+      Isolate* isolate, Handle<JSTemporalCalendar> calendar,
+      Handle<Object> temporal_date_like);
+
+  V8_WARN_UNUSED_RESULT static MaybeHandle<Object> EraYear(
+      Isolate* isolate, Handle<JSTemporalCalendar> calendar,
+      Handle<Object> temporal_date_like);
+#endif  // V8_INTL_SUPPORT
 
   DECL_PRINTER(JSTemporalCalendar)
 
@@ -183,6 +193,15 @@ class JSTemporalDuration
   V8_WARN_UNUSED_RESULT static MaybeHandle<JSTemporalDuration> Abs(
       Isolate* isolate, Handle<JSTemporalDuration> duration);
 
+  // #sec-temporal.duration.prototype.tojson
+  V8_WARN_UNUSED_RESULT static MaybeHandle<String> ToJSON(
+      Isolate* isolate, Handle<JSTemporalDuration> duration);
+
+  // #sec-temporal.duration.prototype.with
+  V8_WARN_UNUSED_RESULT static MaybeHandle<JSTemporalDuration> With(
+      Isolate* isolate, Handle<JSTemporalDuration> duration,
+      Handle<Object> temporal_duration_like);
+
   DECL_PRINTER(JSTemporalDuration)
 
   TQ_OBJECT_CONSTRUCTORS(JSTemporalDuration)
@@ -217,6 +236,26 @@ class JSTemporalInstant
   V8_WARN_UNUSED_RESULT static MaybeHandle<JSTemporalInstant> From(
       Isolate* isolate, Handle<Object> item);
 
+  // #sec-temporal.instant.prototype.tozoneddatetime
+  V8_WARN_UNUSED_RESULT static MaybeHandle<JSTemporalZonedDateTime>
+  ToZonedDateTime(Isolate* isolate, Handle<JSTemporalInstant> instant,
+                  Handle<Object> item);
+
+  // #sec-temporal.instant.prototype.tozoneddatetimeiso
+  V8_WARN_UNUSED_RESULT static MaybeHandle<JSTemporalZonedDateTime>
+  ToZonedDateTimeISO(Isolate* isolate, Handle<JSTemporalInstant> instant,
+                     Handle<Object> item);
+
+  // #sec-temporal.instant.compare
+  V8_WARN_UNUSED_RESULT static MaybeHandle<Smi> Compare(Isolate* isolate,
+                                                        Handle<Object> one,
+                                                        Handle<Object> two);
+
+  // #sec-temporal.instant.prototype.equals
+  V8_WARN_UNUSED_RESULT static MaybeHandle<Oddball> Equals(
+      Isolate* isolate, Handle<JSTemporalInstant> instant,
+      Handle<Object> other);
+
   DECL_PRINTER(JSTemporalInstant)
 
   TQ_OBJECT_CONSTRUCTORS(JSTemporalInstant)
@@ -232,18 +271,61 @@ class JSTemporalPlainDate
       Handle<Object> iso_month, Handle<Object> iso_day,
       Handle<Object> calendar_like);
 
+  // #sec-temporal.plaindate.compare
+  V8_WARN_UNUSED_RESULT static MaybeHandle<Smi> Compare(Isolate* isolate,
+                                                        Handle<Object> one,
+                                                        Handle<Object> two);
+
+  // #sec-temporal.plaindate.prototype.equals
+  V8_WARN_UNUSED_RESULT static MaybeHandle<Oddball> Equals(
+      Isolate* isolate, Handle<JSTemporalPlainDate> plain_date,
+      Handle<Object> other);
+
   // #sec-temporal.plaindate.prototype.withcalendar
   V8_WARN_UNUSED_RESULT static MaybeHandle<JSTemporalPlainDate> WithCalendar(
       Isolate* isolate, Handle<JSTemporalPlainDate> plain_date,
       Handle<Object> calendar_like);
 
+  // #sec-temporal.plaindate.prototype.toplaindatetime
+  V8_WARN_UNUSED_RESULT static MaybeHandle<JSTemporalPlainDateTime>
+  ToPlainDateTime(Isolate* isolate, Handle<JSTemporalPlainDate> plain_date,
+                  Handle<Object> temporal_time);
+
+  // #sec-temporal.plaindate.prototype.with
+  V8_WARN_UNUSED_RESULT static MaybeHandle<JSTemporalPlainDate> With(
+      Isolate* isolate, Handle<JSTemporalPlainDate> plain_date,
+      Handle<Object> temporal_duration_like, Handle<Object> options);
+
   // #sec-temporal.plaindate.from
   V8_WARN_UNUSED_RESULT static MaybeHandle<JSTemporalPlainDate> From(
       Isolate* isolate, Handle<Object> item, Handle<Object> options);
 
+  // #sec-temporal.plaindate.prototype.add
+  V8_WARN_UNUSED_RESULT static MaybeHandle<JSTemporalPlainDate> Add(
+      Isolate* isolate, Handle<JSTemporalPlainDate> plain_date,
+      Handle<Object> temporal_duration_like, Handle<Object> options);
+
+  // #sec-temporal.plaindate.prototype.subtract
+  V8_WARN_UNUSED_RESULT static MaybeHandle<JSTemporalPlainDate> Subtract(
+      Isolate* isolate, Handle<JSTemporalPlainDate> plain_date,
+      Handle<Object> temporal_duration_like, Handle<Object> options);
+
   // #sec-temporal.plaindate.prototype.getisofields
   V8_WARN_UNUSED_RESULT static MaybeHandle<JSReceiver> GetISOFields(
       Isolate* isolate, Handle<JSTemporalPlainDate> plain_date);
+
+  // #sec-temporal.plaindate.prototype.toplainyearmonth
+  V8_WARN_UNUSED_RESULT static MaybeHandle<JSTemporalPlainYearMonth>
+  ToPlainYearMonth(Isolate* isolate, Handle<JSTemporalPlainDate> plain_date);
+
+  // #sec-temporal.plaindate.prototype.toplainmonthday
+  V8_WARN_UNUSED_RESULT static MaybeHandle<JSTemporalPlainMonthDay>
+  ToPlainMonthDay(Isolate* isolate, Handle<JSTemporalPlainDate> plain_date);
+
+  // #sec-temporal.plaindate.prototype.tozoneddatetime
+  V8_WARN_UNUSED_RESULT static MaybeHandle<JSTemporalZonedDateTime>
+  ToZonedDateTime(Isolate* isolate, Handle<JSTemporalPlainDate> plain_date,
+                  Handle<Object> item);
 
   // #sec-temporal.now.plaindate
   V8_WARN_UNUSED_RESULT static MaybeHandle<JSTemporalPlainDate> Now(
@@ -253,6 +335,21 @@ class JSTemporalPlainDate
   // #sec-temporal.now.plaindateiso
   V8_WARN_UNUSED_RESULT static MaybeHandle<JSTemporalPlainDate> NowISO(
       Isolate* isolate, Handle<Object> temporal_time_zone_like);
+
+  // #sec-temporal.plaindate.prototype.tostring
+  V8_WARN_UNUSED_RESULT static MaybeHandle<String> ToString(
+      Isolate* isolate, Handle<JSTemporalPlainDate> plain_date,
+      Handle<Object> options);
+
+  // #sec-temporal.plaindate.prototype.tojson
+  V8_WARN_UNUSED_RESULT static MaybeHandle<String> ToJSON(
+      Isolate* isolate, Handle<JSTemporalPlainDate> plain_date);
+
+  // #sec-temporal.plaindate.prototype.tolocalestring
+  V8_WARN_UNUSED_RESULT static MaybeHandle<String> ToLocaleString(
+      Isolate* isolate, Handle<JSTemporalPlainDate> plain_date,
+      Handle<Object> locales, Handle<Object> options);
+
   DECL_PRINTER(JSTemporalPlainDate)
 
   DEFINE_TORQUE_GENERATED_JS_TEMPORAL_YEAR_MONTH_DAY()
@@ -275,6 +372,11 @@ class JSTemporalPlainDateTime
       Handle<Object> microsecond, Handle<Object> nanosecond,
       Handle<Object> calendar_like);
 
+  // #sec-temporal.plaindatetime.prototype.withplaintime
+  V8_WARN_UNUSED_RESULT static MaybeHandle<JSTemporalPlainDateTime>
+  WithPlainTime(Isolate* isolate, Handle<JSTemporalPlainDateTime> date_time,
+                Handle<Object> temporal_time_like);
+
   // #sec-temporal.plaindatetime.prototype.withcalendar
   V8_WARN_UNUSED_RESULT static MaybeHandle<JSTemporalPlainDateTime>
   WithCalendar(Isolate* isolate, Handle<JSTemporalPlainDateTime> date_time,
@@ -284,9 +386,62 @@ class JSTemporalPlainDateTime
   V8_WARN_UNUSED_RESULT static MaybeHandle<JSTemporalPlainDateTime> From(
       Isolate* isolate, Handle<Object> item, Handle<Object> options);
 
+  // #sec-temporal.plaindatetime.compare
+  V8_WARN_UNUSED_RESULT static MaybeHandle<Smi> Compare(Isolate* isolate,
+                                                        Handle<Object> one,
+                                                        Handle<Object> two);
+
+  // #sec-temporal.plaindatetime.prototype.equals
+  V8_WARN_UNUSED_RESULT static MaybeHandle<Oddball> Equals(
+      Isolate* isolate, Handle<JSTemporalPlainDateTime> plain_date,
+      Handle<Object> other);
+
+  // #sec-temporal.plaindatetime.prototype.toplainyearmonth
+  V8_WARN_UNUSED_RESULT static MaybeHandle<JSTemporalPlainYearMonth>
+  ToPlainYearMonth(Isolate* isolate, Handle<JSTemporalPlainDateTime> date_time);
+
+  // #sec-temporal.plaindatetime.prototype.toplainmonthday
+  V8_WARN_UNUSED_RESULT static MaybeHandle<JSTemporalPlainMonthDay>
+  ToPlainMonthDay(Isolate* isolate, Handle<JSTemporalPlainDateTime> date_time);
+
+  // #sec-temporal.plaintime.prototype.tozoneddatetime
+  V8_WARN_UNUSED_RESULT static MaybeHandle<JSTemporalZonedDateTime>
+  ToZonedDateTime(Isolate* isolate, Handle<JSTemporalPlainDateTime> date_time,
+                  Handle<Object> temporal_time_zone_like,
+                  Handle<Object> options_obj);
+
+  // #sec-temporal.plaindatetime.prototype.withplaindate
+  V8_WARN_UNUSED_RESULT static MaybeHandle<JSTemporalPlainDateTime>
+  WithPlainDate(Isolate* isolate, Handle<JSTemporalPlainDateTime> date_time,
+                Handle<Object> temporal_date_date_like);
+
   // #sec-temporal.plaindatetime.prototype.getisofields
   V8_WARN_UNUSED_RESULT static MaybeHandle<JSReceiver> GetISOFields(
       Isolate* isolate, Handle<JSTemporalPlainDateTime> date_time);
+
+  // #sec-temporal.plaindatetime.prototype.with
+  V8_WARN_UNUSED_RESULT static MaybeHandle<JSTemporalPlainDateTime> With(
+      Isolate* isolate, Handle<JSTemporalPlainDateTime> date_time,
+      Handle<Object> temporal_date_time_like, Handle<Object> options);
+
+  // #sec-temporal.plaindatetime.prototype.tojson
+  V8_WARN_UNUSED_RESULT static MaybeHandle<String> ToJSON(
+      Isolate* isolate, Handle<JSTemporalPlainDateTime> date_time);
+
+  // #sec-temporal.plaindatetime.prototype.tolocalestring
+  V8_WARN_UNUSED_RESULT static MaybeHandle<String> ToLocaleString(
+      Isolate* isolate, Handle<JSTemporalPlainDateTime> date_time,
+      Handle<Object> locales, Handle<Object> options);
+
+  // #sec-temporal.plaindatetime.prototype.add
+  V8_WARN_UNUSED_RESULT static MaybeHandle<JSTemporalPlainDateTime> Add(
+      Isolate* isolate, Handle<JSTemporalPlainDateTime> date_time,
+      Handle<Object> temporal_duration_like, Handle<Object> options);
+
+  // #sec-temporal.plaindatetime.prototype.subtract
+  V8_WARN_UNUSED_RESULT static MaybeHandle<JSTemporalPlainDateTime> Subtract(
+      Isolate* isolate, Handle<JSTemporalPlainDateTime> date_time,
+      Handle<Object> temporal_duration_like, Handle<Object> options);
 
   // #sec-temporal.now.plaindatetime
   V8_WARN_UNUSED_RESULT static MaybeHandle<JSTemporalPlainDateTime> Now(
@@ -296,6 +451,14 @@ class JSTemporalPlainDateTime
   // #sec-temporal.now.plaindatetimeiso
   V8_WARN_UNUSED_RESULT static MaybeHandle<JSTemporalPlainDateTime> NowISO(
       Isolate* isolate, Handle<Object> temporal_time_zone_like);
+
+  // #sec-temporal.plaindatetime.prototype.toplaindate
+  V8_WARN_UNUSED_RESULT static MaybeHandle<JSTemporalPlainDate> ToPlainDate(
+      Isolate* isolate, Handle<JSTemporalPlainDateTime> date_time);
+
+  // #sec-temporal.plaindatetime.prototype.toplaintime
+  V8_WARN_UNUSED_RESULT static MaybeHandle<JSTemporalPlainTime> ToPlainTime(
+      Isolate* isolate, Handle<JSTemporalPlainDateTime> date_time);
 
   DECL_PRINTER(JSTemporalPlainDateTime)
 
@@ -320,9 +483,37 @@ class JSTemporalPlainMonthDay
       Handle<Object> iso_day, Handle<Object> calendar_like,
       Handle<Object> reference_iso_year);
 
+  // #sec-temporal.plainmonthday.from
+  V8_WARN_UNUSED_RESULT static MaybeHandle<JSTemporalPlainMonthDay> From(
+      Isolate* isolate, Handle<Object> item, Handle<Object> options);
+
+  // #sec-temporal.plainmonthday.prototype.with
+  V8_WARN_UNUSED_RESULT static MaybeHandle<JSTemporalPlainMonthDay> With(
+      Isolate* isolate, Handle<JSTemporalPlainMonthDay> month_day,
+      Handle<Object> temporal_month_day_like, Handle<Object> options);
+
+  // #sec-temporal.plainmonthday.prototype.toplaindate
+  V8_WARN_UNUSED_RESULT static MaybeHandle<JSTemporalPlainDate> ToPlainDate(
+      Isolate* isolate, Handle<JSTemporalPlainMonthDay> month_day,
+      Handle<Object> item);
+
   // #sec-temporal.plainmonthday.prototype.getisofields
   V8_WARN_UNUSED_RESULT static MaybeHandle<JSReceiver> GetISOFields(
       Isolate* isolate, Handle<JSTemporalPlainMonthDay> month_day);
+
+  // #sec-temporal.plainmonthday.prototype.tostring
+  V8_WARN_UNUSED_RESULT static MaybeHandle<String> ToString(
+      Isolate* isolate, Handle<JSTemporalPlainMonthDay> month_day,
+      Handle<Object> options);
+
+  // #sec-temporal.plainmonthday.prototype.tojson
+  V8_WARN_UNUSED_RESULT static MaybeHandle<String> ToJSON(
+      Isolate* isolate, Handle<JSTemporalPlainMonthDay> month_day);
+
+  // #sec-temporal.plainmonthday.prototype.tolocalestring
+  V8_WARN_UNUSED_RESULT static MaybeHandle<String> ToLocaleString(
+      Isolate* isolate, Handle<JSTemporalPlainMonthDay> plain_date,
+      Handle<Object> locales, Handle<Object> options);
 
   DECL_PRINTER(JSTemporalPlainMonthDay)
 
@@ -343,17 +534,66 @@ class JSTemporalPlainTime
       Handle<Object> second, Handle<Object> millisecond,
       Handle<Object> microsecond, Handle<Object> nanosecond);
 
+  // #sec-temporal.plaintime.compare
+  V8_WARN_UNUSED_RESULT static MaybeHandle<Smi> Compare(Isolate* isolate,
+                                                        Handle<Object> one,
+                                                        Handle<Object> two);
+
+  // #sec-temporal.plaintime.prototype.equals
+  V8_WARN_UNUSED_RESULT static MaybeHandle<Oddball> Equals(
+      Isolate* isolate, Handle<JSTemporalPlainTime> plain_date,
+      Handle<Object> other);
+
   // #sec-temporal.plaintime.from
   V8_WARN_UNUSED_RESULT static MaybeHandle<JSTemporalPlainTime> From(
       Isolate* isolate, Handle<Object> item, Handle<Object> options);
+
+  // #sec-temporal.plaintime.prototype.tozoneddatetime
+  V8_WARN_UNUSED_RESULT static MaybeHandle<JSTemporalZonedDateTime>
+  ToZonedDateTime(Isolate* isolate, Handle<JSTemporalPlainTime> plain_time,
+                  Handle<Object> item);
+
+  // #sec-temporal.plaintime.prototype.add
+  V8_WARN_UNUSED_RESULT static MaybeHandle<JSTemporalPlainTime> Add(
+      Isolate* isolate, Handle<JSTemporalPlainTime> plain_time,
+      Handle<Object> temporal_duration_like);
+
+  // #sec-temporal.plaintime.prototype.subtract
+  V8_WARN_UNUSED_RESULT static MaybeHandle<JSTemporalPlainTime> Subtract(
+      Isolate* isolate, Handle<JSTemporalPlainTime> plain_time,
+      Handle<Object> temporal_duration_like);
 
   // #sec-temporal.plaintime.prototype.getisofields
   V8_WARN_UNUSED_RESULT static MaybeHandle<JSReceiver> GetISOFields(
       Isolate* isolate, Handle<JSTemporalPlainTime> plain_time);
 
+  // #sec-temporal.plaintime.prototype.toplaindatetime
+  V8_WARN_UNUSED_RESULT static MaybeHandle<JSTemporalPlainDateTime>
+  ToPlainDateTime(Isolate* isolate, Handle<JSTemporalPlainTime> plain_time,
+                  Handle<Object> temporal_date);
+
+  // #sec-temporal.plaintime.prototype.with
+  V8_WARN_UNUSED_RESULT static MaybeHandle<JSTemporalPlainTime> With(
+      Isolate* isolate, Handle<JSTemporalPlainTime> plain_time,
+      Handle<Object> temporal_time_like, Handle<Object> options);
+
   // #sec-temporal.now.plaintimeiso
   V8_WARN_UNUSED_RESULT static MaybeHandle<JSTemporalPlainTime> NowISO(
       Isolate* isolate, Handle<Object> temporal_time_zone_like);
+
+  // #sec-temporal.plaintime.prototype.tojson
+  V8_WARN_UNUSED_RESULT static MaybeHandle<String> ToJSON(
+      Isolate* isolate, Handle<JSTemporalPlainTime> plain_time);
+
+  // #sec-temporal.plaintime.prototype.tostring
+  V8_WARN_UNUSED_RESULT static MaybeHandle<String> ToString(
+      Isolate* isolate, Handle<JSTemporalPlainTime> plain_time,
+      Handle<Object> options);
+
+  // #sec-temporal.plaintime.prototype.tolocalestring
+  V8_WARN_UNUSED_RESULT static MaybeHandle<String> ToLocaleString(
+      Isolate* isolate, Handle<JSTemporalPlainTime> plain_time,
+      Handle<Object> locales, Handle<Object> options);
 
   DECL_PRINTER(JSTemporalPlainTime)
 
@@ -376,9 +616,37 @@ class JSTemporalPlainYearMonth
               Handle<Object> iso_month, Handle<Object> calendar_like,
               Handle<Object> reference_iso_day);
 
+  // #sec-temporal.plainyearmonth.from
+  V8_WARN_UNUSED_RESULT static MaybeHandle<JSTemporalPlainYearMonth> From(
+      Isolate* isolate, Handle<Object> item, Handle<Object> options);
+
+  // #sec-temporal.plainyearmonth.prototype.with
+  V8_WARN_UNUSED_RESULT static MaybeHandle<JSTemporalPlainYearMonth> With(
+      Isolate* isolate, Handle<JSTemporalPlainYearMonth> year_month,
+      Handle<Object> temporal_year_month_like, Handle<Object> options);
+
+  // #sec-temporal.plainyearmonth.prototype.toplaindate
+  V8_WARN_UNUSED_RESULT static MaybeHandle<JSTemporalPlainDate> ToPlainDate(
+      Isolate* isolate, Handle<JSTemporalPlainYearMonth> year_month,
+      Handle<Object> item);
+
   // #sec-temporal.plainyearmonth.prototype.getisofields
   V8_WARN_UNUSED_RESULT static MaybeHandle<JSReceiver> GetISOFields(
       Isolate* isolate, Handle<JSTemporalPlainYearMonth> year_month);
+
+  // #sec-temporal.plainyearmonth.prototype.tostring
+  V8_WARN_UNUSED_RESULT static MaybeHandle<String> ToString(
+      Isolate* isolate, Handle<JSTemporalPlainYearMonth> year_month,
+      Handle<Object> options);
+
+  // #sec-temporal.plainyearmonth.prototype.tojson
+  V8_WARN_UNUSED_RESULT static MaybeHandle<String> ToJSON(
+      Isolate* isolate, Handle<JSTemporalPlainYearMonth> year_month);
+
+  // #sec-temporal.plainyearmonth.prototype.tolocalestring
+  V8_WARN_UNUSED_RESULT static MaybeHandle<String> ToLocaleString(
+      Isolate* isolate, Handle<JSTemporalPlainYearMonth> plain_date,
+      Handle<Object> locales, Handle<Object> options);
 
   // Abstract Operations
 
@@ -428,6 +696,16 @@ class JSTemporalTimeZone
       Isolate* isolate, Handle<JSTemporalTimeZone> time_zone,
       Handle<Object> date_time);
 
+  // #sec-temporal.timezone.prototype.getoffsetnanosecondsfor
+  V8_WARN_UNUSED_RESULT static MaybeHandle<Object> GetOffsetNanosecondsFor(
+      Isolate* isolate, Handle<JSTemporalTimeZone> time_zone,
+      Handle<Object> instance);
+
+  // #sec-temporal.timezone.prototype.getoffsetstringfor
+  V8_WARN_UNUSED_RESULT static MaybeHandle<String> GetOffsetStringFor(
+      Isolate* isolate, Handle<JSTemporalTimeZone> time_zone,
+      Handle<Object> instance);
+
   // #sec-temporal.timezone.prototype.tostring
   static MaybeHandle<Object> ToString(Isolate* isolate,
                                       Handle<JSTemporalTimeZone> time_zone,
@@ -471,11 +749,30 @@ class JSTemporalZonedDateTime
                Handle<JSTemporalZonedDateTime> zoned_date_time,
                Handle<Object> calendar_like);
 
+  // #sec-temporal.zoneddatetime.prototype.withplaintime
+  V8_WARN_UNUSED_RESULT static MaybeHandle<JSTemporalZonedDateTime>
+  WithPlainTime(Isolate* isolate,
+                Handle<JSTemporalZonedDateTime> zoned_date_time,
+                Handle<Object> plain_time_like);
+
   // #sec-temporal.zoneddatetime.prototype.withtimezone
   V8_WARN_UNUSED_RESULT static MaybeHandle<JSTemporalZonedDateTime>
   WithTimeZone(Isolate* isolate,
                Handle<JSTemporalZonedDateTime> zoned_date_time,
                Handle<Object> time_zone_like);
+
+  // #sec-get-temporal.zoneddatetime.prototype.hoursinday
+  V8_WARN_UNUSED_RESULT static MaybeHandle<Smi> HoursInDay(
+      Isolate* isolate, Handle<JSTemporalZonedDateTime> zoned_date_time);
+
+  // #sec-temporal.zoneddatetime.prototype.add
+  V8_WARN_UNUSED_RESULT static MaybeHandle<JSTemporalZonedDateTime> Add(
+      Isolate* isolate, Handle<JSTemporalZonedDateTime> zoned_date_time,
+      Handle<Object> temporal_duration_like, Handle<Object> options);
+  // #sec-temporal.zoneddatetime.prototype.subtract
+  V8_WARN_UNUSED_RESULT static MaybeHandle<JSTemporalZonedDateTime> Subtract(
+      Isolate* isolate, Handle<JSTemporalZonedDateTime> zoned_date_time,
+      Handle<Object> temporal_duration_like, Handle<Object> options);
 
   // #sec-temporal.zoneddatetime.prototype.getisofields
   V8_WARN_UNUSED_RESULT static MaybeHandle<JSReceiver> GetISOFields(
@@ -508,6 +805,27 @@ class JSTemporalZonedDateTime
   V8_WARN_UNUSED_RESULT static MaybeHandle<String> Offset(
       Isolate* isolate, Handle<JSTemporalZonedDateTime> zoned_date_time);
 
+  // #sec-temporal.zoneddatetime.prototype.startofday
+  V8_WARN_UNUSED_RESULT static MaybeHandle<JSTemporalZonedDateTime> StartOfDay(
+      Isolate* isolate, Handle<JSTemporalZonedDateTime> zoned_date_time);
+
+  // #sec-temporal.zoneddatetime.prototype.toinstant
+  V8_WARN_UNUSED_RESULT static MaybeHandle<JSTemporalInstant> ToInstant(
+      Isolate* isolate, Handle<JSTemporalZonedDateTime> zoned_date_time);
+
+  // #sec-temporal.zoneddatetime.prototype.toplaindate
+  V8_WARN_UNUSED_RESULT static MaybeHandle<JSTemporalPlainDate> ToPlainDate(
+      Isolate* isolate, Handle<JSTemporalZonedDateTime> zoned_date_time);
+
+  // #sec-temporal.zoneddatetime.prototype.toplaintime
+  V8_WARN_UNUSED_RESULT static MaybeHandle<JSTemporalPlainTime> ToPlainTime(
+      Isolate* isolate, Handle<JSTemporalZonedDateTime> zoned_date_time);
+
+  // #sec-temporal.zoneddatetime.prototype.toplaindatetime
+  V8_WARN_UNUSED_RESULT static MaybeHandle<JSTemporalPlainDateTime>
+  ToPlainDateTime(Isolate* isolate,
+                  Handle<JSTemporalZonedDateTime> zoned_date_time);
+
   DECL_PRINTER(JSTemporalZonedDateTime)
 
   TQ_OBJECT_CONSTRUCTORS(JSTemporalZonedDateTime)
@@ -531,6 +849,14 @@ DECLARE_CALENDAR_ABSTRACT_OPERATION(Year)
 DECLARE_CALENDAR_ABSTRACT_OPERATION(Month)
 DECLARE_CALENDAR_ABSTRACT_OPERATION(MonthCode)
 DECLARE_CALENDAR_ABSTRACT_OPERATION(Day)
+DECLARE_CALENDAR_ABSTRACT_OPERATION(DayOfWeek)
+DECLARE_CALENDAR_ABSTRACT_OPERATION(DayOfYear)
+DECLARE_CALENDAR_ABSTRACT_OPERATION(WeekOfYear)
+DECLARE_CALENDAR_ABSTRACT_OPERATION(DaysInWeek)
+DECLARE_CALENDAR_ABSTRACT_OPERATION(DaysInMonth)
+DECLARE_CALENDAR_ABSTRACT_OPERATION(DaysInYear)
+DECLARE_CALENDAR_ABSTRACT_OPERATION(MonthsInYear)
+DECLARE_CALENDAR_ABSTRACT_OPERATION(InLeapYear)
 
 #ifdef V8_INTL_SUPPORT
 DECLARE_CALENDAR_ABSTRACT_OPERATION(Era)
@@ -540,8 +866,7 @@ DECLARE_CALENDAR_ABSTRACT_OPERATION(EraYear)
 #undef DECLARE_CALENDAR_ABSTRACT_OPERATION
 
 // #sec-temporal-getiso8601calendar
-V8_WARN_UNUSED_RESULT MaybeHandle<JSTemporalCalendar> GetISO8601Calendar(
-    Isolate* isolate);
+Handle<JSTemporalCalendar> GetISO8601Calendar(Isolate* isolate);
 
 // #sec-temporal-builtintimezonegetplaindatetimefor
 V8_WARN_UNUSED_RESULT MaybeHandle<JSTemporalPlainDateTime>

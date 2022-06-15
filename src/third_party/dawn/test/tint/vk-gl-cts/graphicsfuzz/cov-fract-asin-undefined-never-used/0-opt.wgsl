@@ -31,7 +31,7 @@ var<private> x_GLF_color : vec4<f32>;
 fn main_1() {
   var f0 : f32;
   var f1 : f32;
-  f0 = 0x1.8p+128;
+  f0 = 1.0;
   let x_35 : f32 = f0;
   f1 = fract(x_35);
   let x_38 : f32 = gl_FragCoord.x;
@@ -54,7 +54,7 @@ struct main_out {
   x_GLF_color_1 : vec4<f32>,
 }
 
-@stage(fragment)
+@fragment
 fn main(@builtin(position) gl_FragCoord_param : vec4<f32>) -> main_out {
   gl_FragCoord = gl_FragCoord_param;
   main_1();

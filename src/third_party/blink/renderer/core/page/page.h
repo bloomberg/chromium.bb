@@ -25,6 +25,7 @@
 
 #include <memory>
 
+#include "base/check_op.h"
 #include "base/dcheck_is_on.h"
 #include "base/types/pass_key.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -222,7 +223,7 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
     return window_features_;
   }
 
-  absl::optional<features::FencedFramesImplementationType>
+  const absl::optional<features::FencedFramesImplementationType>&
   FencedFramesImplementationType() const {
     return fenced_frames_impl_;
   }

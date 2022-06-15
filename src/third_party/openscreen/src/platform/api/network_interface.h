@@ -15,10 +15,8 @@ namespace openscreen {
 // system. No two entries in this vector can have the same NetworkInterfaceIndex
 // value.
 //
-// This can return an empty vector if: 1) there are no active network
-// interfaces, 2) an error occurred querying the system for them, or 3) Open
-// Screen features that involve broadcast listening/publishing (e.g., mDNS
-// discovery) are not being used.
+// This can return an empty vector if there are no active network interfaces or
+// an error occurred querying the system for them.
 std::vector<InterfaceInfo> GetNetworkInterfaces();
 
 }  // namespace openscreen

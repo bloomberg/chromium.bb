@@ -107,7 +107,7 @@ constexpr int kStackSpaceRequiredForCompilation = 40;
 constexpr int kStackLimitSlackForDeoptimizationInBytes = 256;
 
 // Sanity-check, assuming that we aim for a real OS stack size of at least 1MB.
-STATIC_ASSERT(V8_DEFAULT_STACK_SIZE_KB* KB +
+static_assert(V8_DEFAULT_STACK_SIZE_KB * KB +
                   kStackLimitSlackForDeoptimizationInBytes <=
               MB);
 
@@ -188,8 +188,7 @@ using CodeT = Code;
 //
 #if V8_HAS_PTHREAD_JIT_WRITE_PROTECT && \
     !(defined(V8_COMPRESS_POINTERS) && !defined(V8_EXTERNAL_CODE_SPACE))
-// TODO(v8:12797): enable fast W^X permissions switching on Apple Silicon.
-#define V8_HEAP_USE_PTHREAD_JIT_WRITE_PROTECT false
+#define V8_HEAP_USE_PTHREAD_JIT_WRITE_PROTECT true
 #else
 #define V8_HEAP_USE_PTHREAD_JIT_WRITE_PROTECT false
 #endif
@@ -305,10 +304,12 @@ constexpr bool kPlatformRequiresCodeRange = true;
 constexpr size_t kMaximalCodeRangeSize = 512 * MB;
 constexpr size_t kMinExpectedOSPageSize = 64 * KB;  // OS page on PPC Linux
 #elif V8_TARGET_ARCH_ARM64
-constexpr size_t kMaximalCodeRangeSize = 128 * MB;
+constexpr size_t kMaximalCodeRangeSize =
+    V8_EXTERNAL_CODE_SPACE_BOOL ? 256 * MB : 128 * MB;
 constexpr size_t kMinExpectedOSPageSize = 4 * KB;  // OS page.
 #else
-constexpr size_t kMaximalCodeRangeSize = 128 * MB;
+constexpr size_t kMaximalCodeRangeSize =
+    V8_EXTERNAL_CODE_SPACE_BOOL ? 512 * MB : 128 * MB;
 constexpr size_t kMinExpectedOSPageSize = 4 * KB;  // OS page.
 #endif
 #if V8_OS_WIN
@@ -318,7 +319,9 @@ constexpr size_t kReservedCodeRangePages = 1;
 constexpr size_t kMinimumCodeRangeSize = 3 * MB;
 constexpr size_t kReservedCodeRangePages = 0;
 #endif
-#else
+
+#else  // V8_HOST_ARCH_64_BIT
+
 constexpr int kSystemPointerSizeLog2 = 2;
 constexpr intptr_t kIntptrSignBit = 0x80000000;
 #if (V8_HOST_ARCH_PPC || V8_HOST_ARCH_PPC64) && \
@@ -339,9 +342,9 @@ constexpr size_t kMinimumCodeRangeSize = 0 * MB;
 constexpr size_t kMinExpectedOSPageSize = 4 * KB;  // OS page.
 #endif
 constexpr size_t kReservedCodeRangePages = 0;
-#endif
+#endif  // V8_HOST_ARCH_64_BIT
 
-STATIC_ASSERT(kSystemPointerSize == (1 << kSystemPointerSizeLog2));
+static_assert(kSystemPointerSize == (1 << kSystemPointerSizeLog2));
 
 #ifdef V8_COMPRESS_ZONES
 #define COMPRESS_ZONES_BOOL true
@@ -378,36 +381,36 @@ using AtomicTagged_t = base::AtomicWord;
 
 #endif  // V8_COMPRESS_POINTERS
 
-STATIC_ASSERT(kTaggedSize == (1 << kTaggedSizeLog2));
-STATIC_ASSERT((kTaggedSize == 8) == TAGGED_SIZE_8_BYTES);
+static_assert(kTaggedSize == (1 << kTaggedSizeLog2));
+static_assert((kTaggedSize == 8) == TAGGED_SIZE_8_BYTES);
 
 using AsAtomicTagged = base::AsAtomicPointerImpl<AtomicTagged_t>;
-STATIC_ASSERT(sizeof(Tagged_t) == kTaggedSize);
-STATIC_ASSERT(sizeof(AtomicTagged_t) == kTaggedSize);
+static_assert(sizeof(Tagged_t) == kTaggedSize);
+static_assert(sizeof(AtomicTagged_t) == kTaggedSize);
 
-STATIC_ASSERT(kTaggedSize == kApiTaggedSize);
+static_assert(kTaggedSize == kApiTaggedSize);
 
 // TODO(ishell): use kTaggedSize or kSystemPointerSize instead.
 #ifndef V8_COMPRESS_POINTERS
 constexpr int kPointerSize = kSystemPointerSize;
 constexpr int kPointerSizeLog2 = kSystemPointerSizeLog2;
-STATIC_ASSERT(kPointerSize == (1 << kPointerSizeLog2));
+static_assert(kPointerSize == (1 << kPointerSizeLog2));
 #endif
 
 // This type defines raw storage type for external (or off-V8 heap) pointers
 // stored on V8 heap.
 constexpr int kExternalPointerSize = sizeof(ExternalPointer_t);
 #ifdef V8_SANDBOXED_EXTERNAL_POINTERS
-STATIC_ASSERT(kExternalPointerSize == kTaggedSize);
+static_assert(kExternalPointerSize == kTaggedSize);
 #else
-STATIC_ASSERT(kExternalPointerSize == kSystemPointerSize);
+static_assert(kExternalPointerSize == kSystemPointerSize);
 #endif
 
 constexpr int kEmbedderDataSlotSize = kSystemPointerSize;
 
 constexpr int kEmbedderDataSlotSizeInTaggedSlots =
     kEmbedderDataSlotSize / kTaggedSize;
-STATIC_ASSERT(kEmbedderDataSlotSize >= kSystemPointerSize);
+static_assert(kEmbedderDataSlotSize >= kSystemPointerSize);
 
 constexpr int kExternalAllocationSoftLimit =
     internal::Internals::kExternalAllocationSoftLimit;
@@ -536,7 +539,7 @@ inline LanguageMode construct_language_mode(bool strict_bit) {
 // otherwise.
 inline LanguageMode stricter_language_mode(LanguageMode mode1,
                                            LanguageMode mode2) {
-  STATIC_ASSERT(LanguageModeSize == 2);
+  static_assert(LanguageModeSize == 2);
   return static_cast<LanguageMode>(static_cast<int>(mode1) |
                                    static_cast<int>(mode2));
 }
@@ -547,8 +550,6 @@ enum class StoreOrigin { kMaybeKeyed, kNamed };
 
 enum class TypeofMode { kInside, kNotInside };
 
-// Use by RecordWrite stubs.
-enum class RememberedSetAction { kOmit, kEmit };
 // Enums used by CEntry.
 enum class SaveFPRegsMode { kIgnore, kSave };
 enum class ArgvMode { kStack, kRegister };
@@ -579,7 +580,7 @@ enum class DeoptimizeKind : uint8_t {
 };
 constexpr DeoptimizeKind kFirstDeoptimizeKind = DeoptimizeKind::kEager;
 constexpr DeoptimizeKind kLastDeoptimizeKind = DeoptimizeKind::kLazy;
-STATIC_ASSERT(static_cast<int>(kFirstDeoptimizeKind) == 0);
+static_assert(static_cast<int>(kFirstDeoptimizeKind) == 0);
 constexpr int kDeoptimizeKindCount = static_cast<int>(kLastDeoptimizeKind) + 1;
 inline size_t hash_value(DeoptimizeKind kind) {
   return static_cast<size_t>(kind);
@@ -880,7 +881,7 @@ enum AllocationSpace {
   LAST_GROWABLE_PAGED_SPACE = MAP_SPACE
 };
 constexpr int kSpaceTagSize = 4;
-STATIC_ASSERT(FIRST_SPACE == 0);
+static_assert(FIRST_SPACE == 0);
 
 enum class AllocationType : uint8_t {
   kYoung,      // Regular object allocated in NEW_SPACE or NEW_LO_SPACE
@@ -1366,7 +1367,7 @@ inline bool IsDynamicVariableMode(VariableMode mode) {
 }
 
 inline bool IsDeclaredVariableMode(VariableMode mode) {
-  STATIC_ASSERT(static_cast<uint8_t>(VariableMode::kLet) ==
+  static_assert(static_cast<uint8_t>(VariableMode::kLet) ==
                 0);  // Implies that mode >= VariableMode::kLet.
   return mode <= VariableMode::kVar;
 }
@@ -1387,7 +1388,7 @@ inline bool IsConstVariableMode(VariableMode mode) {
 }
 
 inline bool IsLexicalVariableMode(VariableMode mode) {
-  STATIC_ASSERT(static_cast<uint8_t>(VariableMode::kLet) ==
+  static_assert(static_cast<uint8_t>(VariableMode::kLet) ==
                 0);  // Implies that mode >= VariableMode::kLet.
   return mode <= VariableMode::kLastLexicalVariableMode;
 }
@@ -1575,13 +1576,13 @@ enum class ForInFeedback : uint8_t {
   kEnumCacheKeys = 0x3,
   kAny = 0x7
 };
-STATIC_ASSERT((static_cast<int>(ForInFeedback::kNone) |
+static_assert((static_cast<int>(ForInFeedback::kNone) |
                static_cast<int>(ForInFeedback::kEnumCacheKeysAndIndices)) ==
               static_cast<int>(ForInFeedback::kEnumCacheKeysAndIndices));
-STATIC_ASSERT((static_cast<int>(ForInFeedback::kEnumCacheKeysAndIndices) |
+static_assert((static_cast<int>(ForInFeedback::kEnumCacheKeysAndIndices) |
                static_cast<int>(ForInFeedback::kEnumCacheKeys)) ==
               static_cast<int>(ForInFeedback::kEnumCacheKeys));
-STATIC_ASSERT((static_cast<int>(ForInFeedback::kEnumCacheKeys) |
+static_assert((static_cast<int>(ForInFeedback::kEnumCacheKeys) |
                static_cast<int>(ForInFeedback::kAny)) ==
               static_cast<int>(ForInFeedback::kAny));
 
@@ -1691,9 +1692,9 @@ enum class TieringState : int32_t {
 // To efficiently check whether a marker is kNone or kInProgress using a single
 // mask, we expect the kNone to be 0 and kInProgress to be 1 so that we can
 // mask off the lsb for checking.
-STATIC_ASSERT(static_cast<int>(TieringState::kNone) == 0b00 &&
+static_assert(static_cast<int>(TieringState::kNone) == 0b00 &&
               static_cast<int>(TieringState::kInProgress) == 0b01);
-STATIC_ASSERT(static_cast<int>(TieringState::kLastTieringState) <= 0b111);
+static_assert(static_cast<int>(TieringState::kLastTieringState) <= 0b111);
 static constexpr uint32_t kNoneOrInProgressMask = 0b110;
 
 #define V(Name, Value)                          \

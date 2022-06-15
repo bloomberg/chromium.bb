@@ -18,7 +18,6 @@ Tu motor de búsqueda es <ph name="DSE_NAME" />. Consulta las instrucciones para
 <translation id="1066060668811609597">Administrar la sincronización</translation>
 <translation id="1076421457278169141">Código escaneado</translation>
 <translation id="1084365883616172403">Entrada de Facebook publicada</translation>
-<translation id="1086486568852410168">Buscar con Google Lens</translation>
 <translation id="1103523840287552314">Siempre traducir <ph name="LANGUAGE" /></translation>
 <translation id="1104948393051856124">Aceptar y continuar</translation>
 <translation id="110724200315609752">Cambiar a otra ventana abierta</translation>
@@ -66,6 +65,7 @@ Tu motor de búsqueda es <ph name="DSE_NAME" />. Consulta las instrucciones para
 <translation id="1434356225517321998">Tu navegador está administrado. <ph name="BEGIN_LINK" />Detalles<ph name="END_LINK" /></translation>
 <translation id="1449835205994625556">Ocultar contraseña</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> elementos</translation>
+<translation id="1450170672351507823">Se activó la protección estándar. Para obtener más seguridad, usa la Protección mejorada.</translation>
 <translation id="149095475893949513">Este sitio web intenta descargar un perfil de configuración.</translation>
 <translation id="1491277525950327607">Presiona dos veces para activar o desactivar la configuración</translation>
 <translation id="1492417797159476138">Ya guardaste este nombre de usuario en este sitio</translation>
@@ -241,6 +241,7 @@ Tampoco pueden usar cookies para ver la actividad de navegación en diferentes s
 <translation id="2982481275546140226">Borrar datos</translation>
 <translation id="298306318844797842">Agregar forma de pago…</translation>
 <translation id="2989805286512600854">Abrir en una nueva pestaña</translation>
+<translation id="3020183492814296499">Accesos directos</translation>
 <translation id="3037605927509011580">¡Oh, no!</translation>
 <translation id="3039722182465315531">No acceder</translation>
 <translation id="3076846064362030967">No saldrás de tu Cuenta de Google. Es posible que se guarden <ph name="BEGIN_LINK" />otras formas de actividad<ph name="END_LINK" /> en tu Cuenta de Google cuando accedes. Podrás borrarlas en cualquier momento.
@@ -249,6 +250,7 @@ Tampoco pueden usar cookies para ver la actividad de navegación en diferentes s
 Consulta las instrucciones de tu motor de búsqueda para borrar el historial de búsqueda (si corresponde).</translation>
 <translation id="3080525922482950719">Puedes guardar páginas para leerlas más tarde o sin conexión.</translation>
 <translation id="3081338492074632642">Asegúrate de que la contraseña que guardes coincida con la de <ph name="WEBSITE" /></translation>
+<translation id="3103603146121354983">Autocompletar contraseñas</translation>
 <translation id="3112556859945124369">Marcar…</translation>
 <translation id="3122484138405575719"><ph name="BEGIN_LINK" />Consulta lo que puedes sincronizar<ph name="END_LINK" /></translation>
 <translation id="3131206671572504478">Bloquear todas</translation>
@@ -512,6 +514,7 @@ Para cambiar esta configuración, <ph name="BEGIN_LINK" />restablece la sincroni
 <translation id="5416022985862681400">Últimos 7 días</translation>
 <translation id="543338862236136125">Editar la contraseña</translation>
 <translation id="5433691172869980887">Se copió el nombre de usuario</translation>
+<translation id="5439599923922718668">Visitados con frecuencia</translation>
 <translation id="54401264925851789">Información de seguridad de la página</translation>
 <translation id="5443952882982198570">Tarjetas de crédito</translation>
 <translation id="5457226814769348910">Versión sin conexión</translation>
@@ -526,7 +529,6 @@ Handoff también debe estar habilitado en la sección General de la configuraci�
 <translation id="5551897871312988470">Ofrecer la traducción</translation>
 <translation id="5556459405103347317">Cargar de nuevo</translation>
 <translation id="5580834567471114021">¿Deseas agregar la página a la Lista de lectura para retomarla más tarde?</translation>
-<translation id="5592679540098330836">Activa la sincronización para <ph name="NAME" /></translation>
 <translation id="560322036295180549">Tu organización desactivó la opción.</translation>
 <translation id="5614553682702429503">¿Quieres guardar la contraseña?</translation>
 <translation id="5626245204502895507">No se pudo descargar el archivo esta vez.</translation>
@@ -660,6 +662,7 @@ Sin embargo, no pueden usar cookies para ver la actividad de navegación en dife
 
 Intenta usar una contraseña única para cada sitio.</translation>
 <translation id="650279896687777322">Más información…</translation>
+<translation id="6510072653668207258">Recordarme más tarde</translation>
 <translation id="651505212789431520">¿Quieres cancelar la sincronización? Puedes activarla en la Configuración en cualquier momento.</translation>
 <translation id="6524918542306337007">El modo Incógnito no está disponible</translation>
 <translation id="6530992499366869131">Advertirme si quedan expuestas las contraseñas ante una violación de la seguridad de los datos</translation>
@@ -736,6 +739,7 @@ Cuando está activado el modo Incógnito, los sitios no pueden usar cookies para
 <translation id="7099761977003084116">Pestañas recientes</translation>
 <translation id="7102005569666697658">Descargando… <ph name="FILE_SIZE" /></translation>
 <translation id="7108338896283013870">Ocultar</translation>
+<translation id="7108762695052995889">Visitar sitio</translation>
 <translation id="7133798577887235672">Nombre completo</translation>
 <translation id="7136892417564438900">La cámara no está disponible</translation>
 <translation id="7153999225810839758">Tiempo de lectura: <ph name="TIME" /> minuto(s)</translation>
@@ -900,7 +904,6 @@ También pueden usar cookies para ver la actividad de navegación en diferentes 
 <translation id="8588404856427128947">Apagada</translation>
 <translation id="8590913940444621808">Nunca preguntar</translation>
 <translation id="8591976964826315682">Bloquear cookies de terceros en modo Incógnito</translation>
-<translation id="8592752150819985187">Autocompletar contraseñas</translation>
 <translation id="8605219856220328675">Cierra la pestaña.</translation>
 <translation id="8620640915598389714">Editar</translation>
 <translation id="8620785403235741379">Seleccionar una opción</translation>

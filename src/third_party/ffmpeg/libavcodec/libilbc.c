@@ -87,13 +87,12 @@ static av_cold int ilbc_decode_init(AVCodecContext *avctx)
     return 0;
 }
 
-static int ilbc_decode_frame(AVCodecContext *avctx, void *data,
+static int ilbc_decode_frame(AVCodecContext *avctx, AVFrame *frame,
                              int *got_frame_ptr, AVPacket *avpkt)
 {
     const uint8_t *buf = avpkt->data;
     int buf_size       = avpkt->size;
     ILBCDecContext *s  = avctx->priv_data;
-    AVFrame *frame     = data;
     int ret;
 
     if (s->decoder.no_of_bytes > buf_size) {
@@ -125,7 +124,7 @@ const FFCodec ff_libilbc_decoder = {
     .p.id           = AV_CODEC_ID_ILBC,
     .priv_data_size = sizeof(ILBCDecContext),
     .init           = ilbc_decode_init,
-    .decode         = ilbc_decode_frame,
+    FF_CODEC_DECODE_CB(ilbc_decode_frame),
     .p.capabilities = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_CHANNEL_CONF,
     .p.priv_class   = &ilbc_dec_class,
 };
@@ -207,7 +206,7 @@ const FFCodec ff_libilbc_encoder = {
     .p.id           = AV_CODEC_ID_ILBC,
     .priv_data_size = sizeof(ILBCEncContext),
     .init           = ilbc_encode_init,
-    .encode2        = ilbc_encode_frame,
+    FF_CODEC_ENCODE_CB(ilbc_encode_frame),
     .p.sample_fmts  = (const enum AVSampleFormat[]){ AV_SAMPLE_FMT_S16,
                                                      AV_SAMPLE_FMT_NONE },
     .defaults       = ilbc_encode_defaults,

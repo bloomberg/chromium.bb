@@ -90,7 +90,9 @@ bool RequiresEncoderReset(const VideoCodec& prev_send_codec,
       new_send_codec.qpMax != prev_send_codec.qpMax ||
       new_send_codec.numberOfSimulcastStreams !=
           prev_send_codec.numberOfSimulcastStreams ||
-      new_send_codec.mode != prev_send_codec.mode) {
+      new_send_codec.mode != prev_send_codec.mode ||
+      new_send_codec.GetFrameDropEnabled() !=
+          prev_send_codec.GetFrameDropEnabled()) {
     return true;
   }
 
@@ -379,7 +381,8 @@ void ApplyVp9BitrateLimits(const VideoEncoder::EncoderInfo& encoder_info,
                            VideoCodec* codec) {
   if (codec->codecType != VideoCodecType::kVideoCodecVP9 ||
       encoder_config.simulcast_layers.size() <= 1 ||
-      VideoStreamEncoderResourceManager::IsSimulcast(encoder_config)) {
+      VideoStreamEncoderResourceManager::IsSimulcastOrMultipleSpatialLayers(
+          encoder_config)) {
     // Resolution bitrate limits usage is restricted to singlecast.
     return;
   }
@@ -612,7 +615,8 @@ VideoStreamEncoder::VideoStreamEncoder(
     std::unique_ptr<webrtc::TaskQueueBase, webrtc::TaskQueueDeleter>
         encoder_queue,
     BitrateAllocationCallbackType allocation_cb_type,
-    const FieldTrialsView& field_trials)
+    const FieldTrialsView& field_trials,
+    webrtc::VideoEncoderFactory::EncoderSelectorInterface* encoder_selector)
     : field_trials_(field_trials),
       worker_queue_(TaskQueueBase::Current()),
       number_of_cores_(number_of_cores),
@@ -620,7 +624,14 @@ VideoStreamEncoder::VideoStreamEncoder(
       settings_(settings),
       allocation_cb_type_(allocation_cb_type),
       rate_control_settings_(RateControlSettings::ParseFromFieldTrials()),
-      encoder_selector_(settings.encoder_factory->GetEncoderSelector()),
+      encoder_selector_from_constructor_(encoder_selector),
+      encoder_selector_from_factory_(
+          encoder_selector_from_constructor_
+              ? nullptr
+              : settings.encoder_factory->GetEncoderSelector()),
+      encoder_selector_(encoder_selector_from_constructor_
+                            ? encoder_selector_from_constructor_
+                            : encoder_selector_from_factory_.get()),
       encoder_stats_observer_(encoder_stats_observer),
       cadence_callback_(*this),
       frame_cadence_adapter_(std::move(frame_cadence_adapter)),
@@ -728,31 +739,32 @@ void VideoStreamEncoder::Stop() {
 
   rtc::Event shutdown_event;
 
-  encoder_queue_.PostTask([this, &shutdown_event] {
-    RTC_DCHECK_RUN_ON(&encoder_queue_);
-    if (resource_adaptation_processor_) {
-      stream_resource_manager_.StopManagedResources();
-      for (auto* constraint : adaptation_constraints_) {
-        video_stream_adapter_->RemoveAdaptationConstraint(constraint);
-      }
-      for (auto& resource : additional_resources_) {
-        stream_resource_manager_.RemoveResource(resource);
-      }
-      additional_resources_.clear();
-      video_stream_adapter_->RemoveRestrictionsListener(this);
-      video_stream_adapter_->RemoveRestrictionsListener(
-          &stream_resource_manager_);
-      resource_adaptation_processor_->RemoveResourceLimitationsListener(
-          &stream_resource_manager_);
-      stream_resource_manager_.SetAdaptationProcessor(nullptr, nullptr);
-      resource_adaptation_processor_.reset();
-    }
-    rate_allocator_ = nullptr;
-    ReleaseEncoder();
-    encoder_ = nullptr;
-    frame_cadence_adapter_ = nullptr;
-    shutdown_event.Set();
-  });
+  encoder_queue_.PostTask(webrtc::ToQueuedTask(
+      [this] {
+        RTC_DCHECK_RUN_ON(&encoder_queue_);
+        if (resource_adaptation_processor_) {
+          stream_resource_manager_.StopManagedResources();
+          for (auto* constraint : adaptation_constraints_) {
+            video_stream_adapter_->RemoveAdaptationConstraint(constraint);
+          }
+          for (auto& resource : additional_resources_) {
+            stream_resource_manager_.RemoveResource(resource);
+          }
+          additional_resources_.clear();
+          video_stream_adapter_->RemoveRestrictionsListener(this);
+          video_stream_adapter_->RemoveRestrictionsListener(
+              &stream_resource_manager_);
+          resource_adaptation_processor_->RemoveResourceLimitationsListener(
+              &stream_resource_manager_);
+          stream_resource_manager_.SetAdaptationProcessor(nullptr, nullptr);
+          resource_adaptation_processor_.reset();
+        }
+        rate_allocator_ = nullptr;
+        ReleaseEncoder();
+        encoder_ = nullptr;
+        frame_cadence_adapter_ = nullptr;
+      },
+      [&shutdown_event]() { shutdown_event.Set(); }));
   shutdown_event.Wait(rtc::Event::kForever);
 }
 

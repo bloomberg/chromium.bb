@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/base64.h"
+#include "base/check.h"
 #include "base/containers/contains.h"
 #include "base/containers/span.h"
 #include "base/files/file_path.h"
@@ -168,20 +169,35 @@ testing::AssertionResult SharedInfoEqual(
            << expected.scheduled_report_time
            << ", actual: " << actual.scheduled_report_time;
   }
-  if (expected.privacy_budget_key != actual.privacy_budget_key) {
-    return testing::AssertionFailure()
-           << "Expected privacy_budget_key " << expected.privacy_budget_key
-           << ", actual: " << actual.privacy_budget_key;
-  }
   if (expected.report_id != actual.report_id) {
     return testing::AssertionFailure()
            << "Expected report_id " << expected.report_id
            << ", actual: " << actual.report_id;
   }
+  if (expected.reporting_origin != actual.reporting_origin) {
+    return testing::AssertionFailure()
+           << "Expected reporting_origin " << expected.reporting_origin
+           << ", actual: " << actual.reporting_origin;
+  }
   if (expected.debug_mode != actual.debug_mode) {
     return testing::AssertionFailure()
            << "Expected debug_mode " << expected.debug_mode
            << ", actual: " << actual.debug_mode;
+  }
+  if (expected.additional_fields != actual.additional_fields) {
+    return testing::AssertionFailure()
+           << "Expected additional_fields " << expected.additional_fields
+           << ", actual: " << actual.additional_fields;
+  }
+  if (expected.api_version != actual.api_version) {
+    return testing::AssertionFailure()
+           << "Expected api_version " << expected.api_version
+           << ", actual: " << actual.api_version;
+  }
+  if (expected.api_identifier != actual.api_identifier) {
+    return testing::AssertionFailure()
+           << "Expected api_identifier " << expected.api_identifier
+           << ", actual: " << actual.api_identifier;
   }
 
   return testing::AssertionSuccess();
@@ -197,19 +213,21 @@ AggregatableReportRequest CreateExampleRequest(
                  aggregation_mode),
              AggregatableReportSharedInfo(
                  /*scheduled_report_time=*/base::Time::Now(),
-                 /*privacy_budget_key=*/"example_budget_key",
                  /*report_id=*/
                  base::GUID::GenerateRandomV4(),
                  url::Origin::Create(GURL("https://reporting.example")),
-                 AggregatableReportSharedInfo::DebugMode::kDisabled))
+                 AggregatableReportSharedInfo::DebugMode::kDisabled,
+                 /*additional_fields=*/base::Value::Dict(),
+                 /*api_version=*/"",
+                 /*api_identifier=*/"example-api"))
       .value();
 }
 
 AggregatableReportRequest CloneReportRequest(
     const AggregatableReportRequest& request) {
-  return AggregatableReportRequest::CreateForTesting(request.processing_urls(),
-                                                     request.payload_contents(),
-                                                     request.shared_info())
+  return AggregatableReportRequest::CreateForTesting(
+             request.processing_urls(), request.payload_contents(),
+             request.shared_info().Clone())
       .value();
 }
 
@@ -285,19 +303,19 @@ absl::optional<PublicKeyset> ReadAndParsePublicKeys(const base::FilePath& file,
 }
 
 std::vector<uint8_t> DecryptPayloadWithHpke(
-    const std::vector<uint8_t>& payload,
+    base::span<const uint8_t> payload,
     const EVP_HPKE_KEY& key,
     const std::string& expected_serialized_shared_info) {
-  base::span<const uint8_t> enc =
-      base::make_span(payload).subspan(0, X25519_PUBLIC_VALUE_LEN);
+  base::span<const uint8_t> enc = payload.subspan(0, X25519_PUBLIC_VALUE_LEN);
 
-  std::vector<uint8_t> authenticated_info(
-      AggregatableReport::kDomainSeparationPrefix,
-      AggregatableReport::kDomainSeparationPrefix +
-          sizeof(AggregatableReport::kDomainSeparationPrefix));
-  authenticated_info.insert(authenticated_info.end(),
-                            expected_serialized_shared_info.begin(),
-                            expected_serialized_shared_info.end());
+  std::string authenticated_info_str =
+      base::StrCat({AggregatableReport::kDomainSeparationPrefix,
+                    expected_serialized_shared_info});
+  base::span<const uint8_t> authenticated_info =
+      base::as_bytes(base::make_span(authenticated_info_str));
+
+  // No null terminators should have been copied when concatenating the strings.
+  DCHECK(!base::Contains(authenticated_info_str, '\0'));
 
   bssl::ScopedEVP_HPKE_CTX recipient_context;
   if (!EVP_HPKE_CTX_setup_recipient(
@@ -311,7 +329,7 @@ std::vector<uint8_t> DecryptPayloadWithHpke(
   }
 
   base::span<const uint8_t> ciphertext =
-      base::make_span(payload).subspan(X25519_PUBLIC_VALUE_LEN);
+      payload.subspan(X25519_PUBLIC_VALUE_LEN);
   std::vector<uint8_t> plaintext(ciphertext.size());
   size_t plaintext_len;
 

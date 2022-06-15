@@ -14,7 +14,7 @@ import { ulpMatch } from '../../../../../util/compare.js';
 import { kBit } from '../../../../../util/constants.js';
 import { f32, f32Bits, TypeF32 } from '../../../../../util/conversion.js';
 import { fullF32Range } from '../../../../../util/math.js';
-import { Case, Config, makeUnaryF32Case, run } from '../../expression.js';
+import { allInputSources, Case, Config, makeUnaryF32Case, run } from '../../expression.js';
 
 import { builtin } from './builtin.js';
 
@@ -24,9 +24,7 @@ g.test('abstract_float')
   .specURL('https://www.w3.org/TR/WGSL/#float-builtin-functions')
   .desc(`abstract float tests`)
   .params(u =>
-    u
-      .combine('storageClass', ['uniform', 'storage_r', 'storage_rw'] as const)
-      .combine('vectorize', [undefined, 2, 3, 4] as const)
+    u.combine('inputSource', allInputSources).combine('vectorize', [undefined, 2, 3, 4] as const)
   )
   .unimplemented();
 
@@ -40,9 +38,7 @@ TODO(#792): Decide what the ground-truth is for these tests. [1]
 `
   )
   .params(u =>
-    u
-      .combine('storageClass', ['uniform', 'storage_r', 'storage_rw'] as const)
-      .combine('vectorize', [undefined, 2, 3, 4] as const)
+    u.combine('inputSource', allInputSources).combine('vectorize', [undefined, 2, 3, 4] as const)
   )
   .fn(async t => {
     // [1]: Need to decide what the ground-truth is.
@@ -67,8 +63,6 @@ TODO(#792): Decide what the ground-truth is for these tests. [1]
       { input: f32Bits(kBit.f32.negative.zero), expected: f32(0) },
       { input: f32Bits(kBit.f32.positive.min), expected: f32Bits(kBit.f32.positive.min) },
       { input: f32Bits(kBit.f32.negative.max), expected: f32Bits(kBit.f32.negative.max) },
-      { input: f32Bits(kBit.f32.positive.min), expected: f32Bits(kBit.f32.negative.max) },
-      { input: f32Bits(kBit.f32.negative.max), expected: f32Bits(kBit.f32.positive.min) },
       { input: f32Bits(kBit.f32.positive.zero), expected: f32Bits(kBit.f32.positive.zero) },
       { input: f32Bits(kBit.f32.negative.zero), expected: f32Bits(kBit.f32.negative.zero) },
       { input: f32Bits(kBit.f32.positive.zero), expected: f32Bits(kBit.f32.negative.zero) },
@@ -87,8 +81,6 @@ g.test('f16')
   .specURL('https://www.w3.org/TR/WGSL/#float-builtin-functions')
   .desc(`f16 tests`)
   .params(u =>
-    u
-      .combine('storageClass', ['uniform', 'storage_r', 'storage_rw'] as const)
-      .combine('vectorize', [undefined, 2, 3, 4] as const)
+    u.combine('inputSource', allInputSources).combine('vectorize', [undefined, 2, 3, 4] as const)
   )
   .unimplemented();

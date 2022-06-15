@@ -34,6 +34,7 @@
 #include "api/video/video_source_interface.h"
 #include "api/video/video_timing.h"
 #include "api/video_codecs/video_encoder_config.h"
+#include "api/video_codecs/video_encoder_factory.h"
 #include "call/video_receive_stream.h"
 #include "common_video/include/quality_limitation_reason.h"
 #include "media/base/codec.h"
@@ -243,6 +244,13 @@ class MediaChannel {
 
   // Enable network condition based codec switching.
   virtual void SetVideoCodecSwitchingEnabled(bool enabled);
+
+  // note: The encoder_selector object must remain valid for the lifetime of the
+  // MediaChannel, unless replaced.
+  virtual void SetEncoderSelector(
+      uint32_t ssrc,
+      webrtc::VideoEncoderFactory::EncoderSelectorInterface* encoder_selector) {
+  }
 
   // Base method to send packet using NetworkInterface.
   bool SendPacket(rtc::CopyOnWriteBuffer* packet,
@@ -615,6 +623,8 @@ struct VideoReceiverInfo : public MediaReceiverInfo {
   uint64_t total_decode_time_ms = 0;
   // https://w3c.github.io/webrtc-stats/#dom-rtcinboundrtpstreamstats-totalprocessingdelay
   webrtc::TimeDelta total_processing_delay = webrtc::TimeDelta::Millis(0);
+  webrtc::TimeDelta total_assembly_time = webrtc::TimeDelta::Millis(0);
+  uint32_t frames_assembled_from_multiple_packets = 0;
   double total_inter_frame_delay = 0;
   double total_squared_inter_frame_delay = 0;
   int64_t interframe_delay_max_ms = -1;

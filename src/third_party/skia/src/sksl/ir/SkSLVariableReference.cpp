@@ -7,10 +7,8 @@
 
 #include "src/sksl/ir/SkSLVariableReference.h"
 
-#include "src/sksl/ir/SkSLConstructor.h"
-#include "src/sksl/ir/SkSLLiteral.h"
-#include "src/sksl/ir/SkSLSetting.h"
 #include "src/sksl/ir/SkSLVariable.h"
+#include <string_view>
 
 namespace SkSL {
 
@@ -29,10 +27,6 @@ bool VariableReference::hasProperty(Property property) const {
             SkASSERT(false);
             return false;
     }
-}
-
-bool VariableReference::isConstantOrUniform() const {
-    return (this->variable()->modifiers().fFlags & Modifiers::kUniform_Flag) != 0;
 }
 
 std::string VariableReference::description() const {

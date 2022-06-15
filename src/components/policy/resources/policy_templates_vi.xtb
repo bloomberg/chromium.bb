@@ -1858,6 +1858,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
       Nếu bạn không đặt chính sách này, thì chính sách <ph name="ASK_GEOLOCATION_POLICY_NAME" /> sẽ áp dụng, tuy nhiên, người dùng có thể thay đổi tùy chọn cài đặt này.</translation>
 <translation id="2922511125678964398">Cho phép quá trình xác thực qua trang xác thực bỏ qua cài đặt proxy</translation>
+<translation id="2926813071464307947">Tắt hộp cát Vùng chứa ứng dụng kết xuất</translation>
 <translation id="2931888116345994552">Nếu bạn bật hoặc không đặt chính sách này, thì các bản cập nhật cho mọi thành phần trong <ph name="PRODUCT_NAME" /> sẽ được bật.
 
       Nếu bạn tắt chính sách này thì các bản cập nhật cho những thành phần đó sẽ bị vô hiệu hoá. Tuy nhiên, chính sách này không áp dụng cho một số thành phần: các bản cập nhật cho thành phần bất kỳ không chứa mã thực thi và quan trọng đối với tính bảo mật của trình duyệt sẽ không bị vô hiệu hoá.
@@ -2302,6 +2303,11 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Nếu bạn đặt chính sách này thành một chuỗi không phải là chuỗi trống, thì chuỗi đó sẽ được sử dụng làm tên của đích <ph name="PRODUCT_NAME" />. Nếu không, tên đích sẽ là tên thiết bị. Nếu bạn không đặt chính sách này, thì tên đích sẽ là tên thiết bị và chủ sở hữu thiết bị (hoặc người dùng từ miền quản lý thiết bị) sẽ được phép thay đổi tên đó. Tên có độ dài tối đa là 24 ký tự.</translation>
 <translation id="3329063005964041553">Chặn API Xử lý tệp trên các ứng dụng web này</translation>
 <translation id="3329401415394648069">Cho phép dùng API Khóa bảo mật U2F.</translation>
+<translation id="3329976499753286262">Nếu bạn không đặt hoặc đặt chính sách này thành Bật, thì cấu hình Vùng chứa ứng dụng kết xuất sẽ được bật trên các nền tảng được hỗ trợ.
+
+      Khi bạn tắt chính sách này, thì tính bảo mật và độ ổn định của <ph name="PRODUCT_NAME" /> sẽ bị ảnh hưởng vì hộp cát sẽ làm yếu hộp cát mà trình kết xuất sử dụng. Bạn chỉ nên tắt chính sách này nếu gặp vấn đề về khả năng tương thích với phần mềm bên thứ ba. Phần mềm này phải chạy trong các quá trình xử lý kết xuất.
+
+      Lưu ý: Hãy đọc thêm về Chính sách giảm thiểu quy trình (https://chromium.googlesource.com/chromium/src/+/HEAD/docs/design/sandbox.md#Process-mitigation-policies).</translation>
 <translation id="3339271789059866414">Định cấu hình tình trạng có sẵn của dịch vụ Proxy hệ thống và thông tin xác thực proxy đối với các dịch vụ hệ thống.
       Nếu bạn không đặt chính sách này, thì dịch vụ Proxy hệ thống sẽ không dùng được.</translation>
 <translation id="3348799281602260763">Nếu bạn bật chính sách này, các kết nối ngang hàng WebRTC có thể hạ cấp xuống phiên bản 
@@ -3099,14 +3105,6 @@ Nếu bạn đặt chính sách này thành Tắt, thì <ph name="PRODUCT_NAME" 
       Chính sách này sẽ bị bỏ qua và thông báo sẽ luôn hiển thị nếu thiết bị không được quản lý hoặc chỉ có một người dùng.
 
       Nếu có nhiều tài khoản người dùng trên một thiết bị được quản lý, thì thông báo sẽ chỉ hiển thị khi bạn đặt chính sách này thành bật.</translation>
-<translation id="4293593564662654474">Chính sách này được coi là một cách để chọn không áp dụng tính năng First-Party Sets.
-
-                  Khi chính sách này không được đặt hoặc được đặt thành Bật (Enabled), tính năng First-Party Sets sẽ được bật.
-
-                  Khi chính sách này được đặt thành Tắt (Disabled), tính năng First-Party Sets sẽ bị tắt.
-
-                  Trạng thái của tính năng First-Party Sets xác định liệu Chrome có truy xuất danh sách First-Party Sets hay không.
-                  Trạng thái này cũng kiểm soát việc liệu Chrome có hỗ trợ các tính năng liên quan tới First-Party Sets hay không (chẳng hạn như thuộc tính cookie SameParty).</translation>
 <translation id="4311195029067684288">Đầy</translation>
 <translation id="4313767483634435271">Địa chỉ MAC chỉ định cho đế sạc của thiết bị</translation>
 <translation id="4314538398999793073">Tắt tính năng tra cứu CNAME trong quá trình xác thực Kerberos</translation>
@@ -3632,6 +3630,7 @@ Khi bạn đặt chính sách này, <ph name="PRODUCT_OS_NAME" /> chỉ cho phé
 <translation id="4960597185231686653">Một cờ boolean cho biết liệu bàn phím ảo có thể cung cấp tính năng nhập bằng giọng nói hay không.</translation>
 <translation id="4970046075219007744">Cho phép các ứng dụng web yêu cầu người dùng cấp quyền truy cập vào các loại tệp thông qua API Xử lý tệp</translation>
 <translation id="4970855112942626932">Vô hiệu hóa đăng nhập vào trình duyệt</translation>
+<translation id="4974091268178043378">Chế độ màu trên ChromeOS</translation>
 <translation id="4976928720873547342">Nếu bạn đặt chính sách này, thì hệ thống sẽ loại trừ tất cả loại dữ liệu đã chỉ định khỏi quá trình đồng bộ hóa của <ph name="CHROME_SYNC_NAME" /> cũng như quá trình đồng bộ hóa cấu hình chuyển vùng. Điều này có thể giúp giảm kích thước của cấu hình chuyển vùng hoặc giới hạn loại dữ liệu đã tải lên các máy chủ <ph name="CHROME_SYNC_NAME" />.
 
       Chính sách này hiện áp dụng cho các loại dữ liệu sau: "bookmarks", "readingList", "preferences", "passwords", "autofill", "themes", "typedUrls", "extensions", "apps", "tabs", "wifiConfigurations". Tên của các loại dữ liệu đó phân biệt chữ hoa chữ thường!</translation>
@@ -4213,6 +4212,7 @@ Nếu bạn đặt chính sách thành Tắt, thì <ph name="PRODUCT_NAME" /> s�
 <translation id="5625771176514429288">Ứng dụng Chrome sẽ được phép chạy trên các nền tảng này.</translation>
 <translation id="5630352020869108293">Khôi phục phiên trước đó</translation>
 <translation id="5633871703004128675">Bật tính năng hỗ trợ tiếp cận về làm nổi bật dấu chèn</translation>
+<translation id="5634032995857968056">Bật hộp cát Hộp chứa ứng dụng kết xuất</translation>
 <translation id="5639454129004500060">Nếu được đặt, chính sách này sẽ chứa thông tin để tải một tệp mẫu không gian làm việc xuống.  Tệp chứa một mẫu không gian làm việc sẽ được cung cấp cho người dùng hiện tại.
       Nếu bạn không đặt chính sách này, thì sẽ không có mẫu không gian làm việc được thiết lập sẵn nào được đưa vào danh sách các mẫu không gian làm việc.  Nếu bạn không bật chính sách <ph name="DESK_TEMPLATES_ENABLED_POLICY_NAME" />,
      thì chính sách này không có hiệu lực.</translation>
@@ -4275,6 +4275,13 @@ Nếu bạn đặt chính sách thành Tắt, thì <ph name="PRODUCT_NAME" /> s�
 
           Chính sách này chỉ được áp dụng khi chính sách <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> bật và không được áp dụng trong những trường hợp khác.</translation>
 <translation id="5697306356229823047">Báo cáo người dùng thiết bị</translation>
+<translation id="5698923148503075597">Nếu đặt chính sách này thành Bật, thì chính sách đám mây sẽ được ưu tiên nếu chính sách này xung đột với chính sách nền tảng.
+
+      Nếu bạn đặt chính sách này thành Tắt hoặc không định cấu hình chính sách này, thì chính sách nền tảng sẽ được ưu tiên trong trường hợp xung đột với chính sách đám mây.
+
+      Chính sách bắt buộc này ảnh hưởng đến chính sách đám mây trong phạm vi máy.
+
+      Chính sách này chỉ có sẵn trên <ph name="PRODUCT_NAME" />; nó không ảnh hưởng đến <ph name="GOOGLE_UPDATE_NAME" />.</translation>
 <translation id="5699770471852263667">Nếu bạn bật chính sách này thì trình xem PDF nội bộ trong <ph name="PRODUCT_NAME" /> sẽ tắt, tệp PDF sẽ được xem là nội dung tải xuống và người dùng có thể mở tệp PDF bằng ứng dụng mặc định.
 
       Nếu bạn tắt chính sách này, các tệp PDF sẽ được mở trừ phi người dùng tắt trình bổ trợ PDF.
@@ -4394,6 +4401,7 @@ Nếu bạn đặt chính sách thành Tắt, thì <ph name="PRODUCT_NAME" /> s�
 
       Người dùng không thể quản lý tùy chọn cài đặt này.</translation>
 <translation id="5848438019586925019">Thuật toán để tạo cặp khóa.</translation>
+<translation id="5851248808417680865">Sử dụng Giao diện tối</translation>
 <translation id="585270638818921943">Ngăn người dùng sử dụng các ứng dụng Android từ những nguồn không tin cậy</translation>
 <translation id="5853547031212075792">Cho phép người dùng bật chế độ Chỉ giao thức HTTPS</translation>
 <translation id="5859344336338527083">Nếu bạn đặt chính sách này, thì hệ thống sẽ chỉ định những URL nào có thể cài đặt tiện ích, ứng dụng và giao diện. Trước <ph name="PRODUCT_NAME" /> 21, người dùng có thể nhấp vào một đường liên kết tới tệp *.crx và <ph name="PRODUCT_NAME" /> sẽ đề xuất cài đặt tệp này sau một vài cảnh báo. Về sau, người dùng phải tải các tệp này xuống và kéo vào trang cài đặt <ph name="PRODUCT_NAME" />. Tùy chọn cài đặt này cho phép các URL cụ thể thực hiện theo quy trình cài đặt cũ, dễ dàng hơn.
@@ -4515,11 +4523,6 @@ Nếu bạn đặt chính sách thành Tắt, thì <ph name="PRODUCT_NAME" /> s�
       Nếu bạn đặt chính sách này, người dùng sẽ không thể thay đổi được. Nếu bạn không đặt chính sách này, người dùng sẽ quyết định có để đầu trang và chân trang xuất hiện hay không.</translation>
 <translation id="5951418260805607969">Hiện thông báo khi dung lượng ổ đĩa sắp hết</translation>
 <translation id="5958746038080720143">Bật tính năng tối ưu hóa Web Proxy Auto-Discovery (WPAD) (Tự động phát hiện proxy web)</translation>
-<translation id="5959428851851090097">Nếu đặt chính sách này thành Bật, thì chính sách đám mây sẽ được ưu tiên nếu chính sách này xung đột với chính sách nền tảng.
-
-      Nếu bạn đặt chính sách này thành Tắt hoặc không định cấu hình chính sách này, thì chính sách nền tảng sẽ được ưu tiên trong trường hợp xung đột với chính sách đám mây.
-
-      Chính sách bắt buộc này ảnh hưởng đến chính sách đám mây trong phạm vi máy.</translation>
 <translation id="5961137303188584693">Địa chỉ MAC trên NIC tích hợp của thiết bị</translation>
 <translation id="5963752574792883406">cổng 990 (có thể được bỏ chặn cho đến ngày 1/2/2022)</translation>
 <translation id="5966615072639944554">Tiện ích được phép sử dụng API chứng thực từ xa</translation>
@@ -4559,6 +4562,7 @@ Nếu bạn đặt chính sách thành Tắt, thì <ph name="PRODUCT_NAME" /> s�
 
       Chính sách này chỉ có hiệu lực khi máy đã đăng ký chính sách <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> đối với <ph name="PRODUCT_NAME" />.
       Chính sách này luôn có hiệu lực đối với <ph name="PRODUCT_OS_NAME" />.</translation>
+<translation id="6019162469732742754">Sử dụng chế độ Tự động</translation>
 <translation id="6019606564278029236">Cho phép người dùng từ xa tương tác với cửa sổ bật lên trong phiên hỗ trợ từ xa</translation>
 <translation id="6022948604095165524">Tác vụ khi khởi động</translation>
 <translation id="602318745029752898">Cho phép dùng các giọng nói của tính năng chuyển văn bản sang lời nói trên mạng nâng cao trong tính năng Chọn để nói</translation>
@@ -5288,6 +5292,15 @@ Nếu bạn đặt chính sách thành Tắt, thì <ph name="PRODUCT_NAME" /> s�
 <translation id="6786666051053129545">Bật quy trình so khớp giọng nói của Trợ lý Google</translation>
 <translation id="6786747875388722282">Tiện ích</translation>
 <translation id="6786967369487349613">Đặt thư mục hồ sơ chuyển vùng</translation>
+<translation id="6789319144568227749">Những thiết lập hỗ trợ các tiêu đề của yêu cầu không phải ký tự đại diện CORS.
+
+      <ph name="PRODUCT_NAME" /> phiên bản 97 hỗ trợ các tiêu đề của yêu cầu không phải ký tự đại diện CORS. Khi các tập lệnh thực hiện một yêu cầu mạng nhiều nguồn gốc thông qua lệnh fetch() và XMLHttpRequest có tiêu đề Uỷ quyền đã thêm vào tập lệnh, tiêu đề này phải được tiêu đề Access-Control-Allow-Headers cho phép rõ ràng trong phản hồi về yêu cầu kiểm tra CORS. "Rõ ràng" ở đây có nghĩa là biểu tượng ký tự đại diện "*" không bao gồm tiêu đề Uỷ quyền. Hãy xem <ph name="CORS_NON_WILDCARD_REQUEST_HEADERS_FEATURE_URL" /> để biết thêm thông tin.
+
+      Nếu bạn không đặt hoặc đặt chính sách này thành True (Bật) thì <ph name="PRODUCT_NAME" /> sẽ hỗ trợ các tiêu đề của yêu cầu không phải ký tự đại diện CORS và hoạt động như nêu trên.
+
+      Khi bạn đặt chính sách này thành False (Tắt), Chrome sẽ cho phép biểu tượng ký tự đại diện ("*") trong tiêu đề Access-Control-Allow-Headers trong phản hồi về yêu cầu kiểm tra CORS để bao gồm cả tiêu đề Uỷ quyền.
+
+      Chính sách Doanh nghiệp này là tạm thời và dự kiến sẽ bị xoá sau này.</translation>
 <translation id="6789422336869764846">Nếu bạn không đặt hoặc đặt chính sách này thành Bật, thì thiết bị đã đăng ký sẽ báo cáo trạng thái của chế độ chuyển đổi dành cho nhà phát triển của thiết bị lúc máy khởi động.
 
       Nếu bạn đặt chính sách này thành Tắt, thiết bị đã đăng ký sẽ không báo cáo trạng thái của chế độ chuyển đổi dành cho nhà phát triển.</translation>
@@ -5538,6 +5551,7 @@ Nếu bạn đặt chính sách thành Tắt, thì <ph name="PRODUCT_NAME" /> s�
 <translation id="7019805045859631636">Nhanh</translation>
 <translation id="7025332601572838001">Định cấu hình hoạt động của Điều khoản dịch vụ (ToS) trong lần chạy đầu tiên của CCT</translation>
 <translation id="7026351325994257733">Cho phép đồng bộ hóa các cấu hình mạng Wi-Fi trên nhiều thiết bị <ph name="PRODUCT_OS_NAME" /> với một điện thoại Android đã kết nối.</translation>
+<translation id="7027057540229843762">Sử dụng Giao diện sáng</translation>
 <translation id="7027785306666625591">Định cấu hình việc quản lý nguồn trong <ph name="PRODUCT_OS_NAME" />.
 
       Những chính sách này cho phép bạn định cấu hình cách <ph name="PRODUCT_OS_NAME" /> hoạt động khi người dùng duy trì chế độ rảnh trong một khoảng thời gian.</translation>
@@ -6534,15 +6548,6 @@ Nếu bạn không đặt chính sách này, thì màn hình bảo vệ quyền 
       Nếu chính sách được đặt ở trạng thái tắt hoặc không được đặt, việc đăng nhập sẽ dẫn tới cấu hình thông thường.</translation>
 <translation id="8151299379693359769">Bật tính năng kiểm tra bảo mật bổ sung dựa trên quy trình chứng thực từ xa (không bắt buộc, mặc định: Bật).</translation>
 <translation id="8151490482515839285">Bật tùy chọn báo cáo ngăn rò rỉ dữ liệu</translation>
-<translation id="8151949408479239790">Những thiết lập hỗ trợ các tiêu đề của yêu cầu không phải ký tự đại diện CORS.
-
-      <ph name="PRODUCT_NAME" /> phiên bản 97 hỗ trợ cho các tiêu đề của yêu cầu không phải ký tự đại diện CORS. Khi các tập lệnh thực hiện một yêu cầu mạng nhiều nguồn gốc thông qua tính năng tìm nạp() và XMLHttpRequest với tiêu đề Uỷ quyền đã thêm vào tập lệnh, tiêu đề này phải được tiêu đề Access-Control-Allow-Headers cho phép rõ ràng trong phản hồi về yêu cầu kiểm tra CORS. "Rõ ràng" ở đây có nghĩa là biểu tượng ký tự đại diện "*" không che tiêu đề Uỷ quyền. Hãy xem <ph name="CORS_NON_WILDCARD_REQUEST_HEADERS_FEATURE_URL" /> để biết thêm thông tin chi tiết.
-
-      Nếu bạn không đặt hoặc bật chính sách này, thì <ph name="PRODUCT_NAME" /> sẽ hỗ trợ các tiêu đề của yêu cầu không phải ký tự đại diện CORS và hoạt động theo mô tả ở trên.
-
-      Khi bạn tắt chính sách này, Chrome sẽ cho phép biểu tượng ký tự đại diện ("*") trong tiêu đề Access-Control-Allow-Headers trong phản hồi về yêu cầu kiểm tra CORS che tiêu đề Uỷ quyền.
-
-      Chính sách Doanh nghiệp này là tạm thời và dự kiến sẽ bị xoá sau phiên bản 103 của <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8158758865057576716">Bật tạo bản sao chuyển vùng cho dữ liệu hồ sơ của <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8158897487095710470">Nếu bạn đặt chính sách này thành True, thì thanh dấu trang sẽ hiển trị trong <ph name="PRODUCT_NAME" />. Nếu bạn đặt chính sách này thành False, thì người dùng sẽ không thấy thanh dấu trang.
 
@@ -7111,6 +7116,9 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 
       "http://acme.com/ABC" sẽ chỉ khớp ở chế độ "IESiteListMode".</translation>
 <translation id="8736538322216687231">Buộc sử dụng Chế độ hạn chế tối thiểu trên YouTube</translation>
+<translation id="8744844164152340112">Cài đặt giao diện dùng để kết xuất giao diện người dùng khi OOBE và trong phiên sử dụng (tối/sáng/tự động).
+      Chế độ tự động sẽ tự động chuyển đổi giữa giao diện tối và giao diện sáng tại thời điểm bình minh và hoàng hôn.
+      Nên đề xuất chính sách này, cho phép người dùng thay đổi giao diện trong phần cài đặt hệ thống.</translation>
 <translation id="8745669971728319820">Chính sách này kiểm soát việc có báo cáo thông tin về trình bổ trợ và tiện ích hay không.
 
       Khi bạn không đặt chính sách <ph name="CLOUD_REPORTING_ENABLED_POLICY_NAME" /> hoặc đặt thành tắt, thì chính sách này sẽ bị bỏ qua.
@@ -7130,6 +7138,7 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 <translation id="8763716376920670835">WebSQL được bật theo mặc định từ M101, nhưng cũng có thể bị cờ Chrome tắt.
           Nếu chính sách này được đặt thành sai hoặc không được đặt, thì WebSQL có thể tắt được.
           Nếu chính sách này được đặt thành đúng, thì WebSQL không tắt được.</translation>
+<translation id="8766910236040529804">Bật vùng chứa ứng dụng kết xuất</translation>
 <translation id="8767743923206070405">Việc đặt chính sách này thành Bật sẽ hiển thị nút Trang chủ trên thanh công cụ của <ph name="PRODUCT_NAME" />. Nếu bạn đặt chính sách này thành Tắt, nút Trang chủ sẽ không xuất hiện.
 
       Nếu bạn đặt chính sách này, người dùng sẽ không thay đổi được trong <ph name="PRODUCT_NAME" />. Nếu bạn không đặt chính sách này, người dùng sẽ chọn liệu có hiển thị nút Trang chủ hay không.</translation>

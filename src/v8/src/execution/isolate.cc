@@ -377,7 +377,7 @@ uint32_t Isolate::CurrentEmbeddedBlobDataSize() {
 // static
 base::AddressRegion Isolate::GetShortBuiltinsCallRegion() {
   // Update calculations below if the assert fails.
-  STATIC_ASSERT(kMaxPCRelativeCodeRangeInMB <= 4096);
+  static_assert(kMaxPCRelativeCodeRangeInMB <= 4096);
   if (kMaxPCRelativeCodeRangeInMB == 0) {
     // Return empty region if pc-relative calls/jumps are not supported.
     return base::AddressRegion(kNullAddress, 0);
@@ -430,16 +430,16 @@ size_t Isolate::HashIsolateForEmbeddedBlob() {
     // they change when creating the off-heap trampolines. Other data fields
     // must remain the same.
 #ifdef V8_EXTERNAL_CODE_SPACE
-    STATIC_ASSERT(Code::kMainCageBaseUpper32BitsOffset == Code::kDataStart);
-    STATIC_ASSERT(Code::kInstructionSizeOffset ==
+    static_assert(Code::kMainCageBaseUpper32BitsOffset == Code::kDataStart);
+    static_assert(Code::kInstructionSizeOffset ==
                   Code::kMainCageBaseUpper32BitsOffsetEnd + 1);
 #else
-    STATIC_ASSERT(Code::kInstructionSizeOffset == Code::kDataStart);
+    static_assert(Code::kInstructionSizeOffset == Code::kDataStart);
 #endif  // V8_EXTERNAL_CODE_SPACE
-    STATIC_ASSERT(Code::kMetadataSizeOffset ==
+    static_assert(Code::kMetadataSizeOffset ==
                   Code::kInstructionSizeOffsetEnd + 1);
-    STATIC_ASSERT(Code::kFlagsOffset == Code::kMetadataSizeOffsetEnd + 1);
-    STATIC_ASSERT(Code::kBuiltinIndexOffset == Code::kFlagsOffsetEnd + 1);
+    static_assert(Code::kFlagsOffset == Code::kMetadataSizeOffsetEnd + 1);
+    static_assert(Code::kBuiltinIndexOffset == Code::kFlagsOffsetEnd + 1);
     static constexpr int kStartOffset = Code::kBuiltinIndexOffset;
 
     for (int j = kStartOffset; j < Code::kUnalignedHeaderSize; j++) {
@@ -1115,7 +1115,7 @@ void VisitStack(Isolate* isolate, Visitor* visitor,
       case StackFrame::BUILTIN_EXIT:
       case StackFrame::JAVA_SCRIPT_BUILTIN_CONTINUATION:
       case StackFrame::JAVA_SCRIPT_BUILTIN_CONTINUATION_WITH_CATCH:
-      case StackFrame::OPTIMIZED:
+      case StackFrame::TURBOFAN:
       case StackFrame::INTERPRETED:
       case StackFrame::BASELINE:
       case StackFrame::BUILTIN:
@@ -1918,7 +1918,7 @@ Object Isolate::UnwindAndFindHandler() {
       CHECK(!catchable_by_js);
       CHECK(frame->is_java_script());
 
-      if (frame->is_optimized()) {
+      if (frame->is_turbofan()) {
         Code code = frame->LookupCode();
         // The debugger triggers lazy deopt for the "to-be-restarted" frame
         // immediately when the CDP event arrives while paused.
@@ -1939,6 +1939,7 @@ Object Isolate::UnwindAndFindHandler() {
                             offset, code.constant_pool(), return_sp,
                             frame->fp(), visited_frames);
       }
+      DCHECK(!frame->is_maglev());
 
       debug()->clear_restart_frame();
       Code code = FromCodeT(builtins()->code(Builtin::kRestartFrameTrampoline));
@@ -2022,10 +2023,10 @@ Object Isolate::UnwindAndFindHandler() {
       }
 #endif  // V8_ENABLE_WEBASSEMBLY
 
-      case StackFrame::OPTIMIZED: {
+      case StackFrame::TURBOFAN: {
         // For optimized frames we perform a lookup in the handler table.
         if (!catchable_by_js) break;
-        OptimizedFrame* js_frame = static_cast<OptimizedFrame*>(frame);
+        TurbofanFrame* js_frame = static_cast<TurbofanFrame*>(frame);
         Code code = frame->LookupCode();
         int offset = js_frame->LookupExceptionHandlerInTable(nullptr, nullptr);
         if (offset < 0) break;
@@ -2035,7 +2036,7 @@ Object Isolate::UnwindAndFindHandler() {
                             StandardFrameConstants::kFixedFrameSizeAboveFp -
                             code.stack_slots() * kSystemPointerSize;
 
-        // TODO(bmeurer): Turbofanned BUILTIN frames appear as OPTIMIZED,
+        // TODO(bmeurer): Turbofanned BUILTIN frames appear as TURBOFAN,
         // but do not have a code kind of TURBOFAN.
         if (CodeKindCanDeoptimize(code.kind()) &&
             code.marked_for_deoptimization()) {
@@ -2165,7 +2166,7 @@ Object Isolate::UnwindAndFindHandler() {
         break;
     }
 
-    if (frame->is_optimized()) {
+    if (frame->is_turbofan()) {
       // Remove per-frame stored materialized objects.
       bool removed = materialized_object_store_->Remove(frame->fp());
       USE(removed);
@@ -2181,7 +2182,7 @@ Object Isolate::UnwindAndFindHandler() {
 namespace {
 HandlerTable::CatchPrediction PredictException(JavaScriptFrame* frame) {
   HandlerTable::CatchPrediction prediction;
-  if (frame->is_optimized()) {
+  if (frame->is_turbofan()) {
     if (frame->LookupExceptionHandlerInTable(nullptr, nullptr) > 0) {
       // This optimized frame will catch. It's handler table does not include
       // exception prediction, and we need to use the corresponding handler
@@ -2257,9 +2258,9 @@ Isolate::CatchType Isolate::PredictExceptionCatcher() {
       } break;
 
       // For JavaScript frames we perform a lookup in the handler table.
-      case StackFrame::OPTIMIZED:
       case StackFrame::INTERPRETED:
       case StackFrame::BASELINE:
+      case StackFrame::TURBOFAN:
       case StackFrame::BUILTIN: {
         JavaScriptFrame* js_frame = JavaScriptFrame::cast(frame);
         Isolate::CatchType prediction = ToCatchType(PredictException(js_frame));
@@ -2268,21 +2269,23 @@ Isolate::CatchType Isolate::PredictExceptionCatcher() {
       }
 
       case StackFrame::STUB: {
-        Handle<Code> code(frame->LookupCode(), this);
-        if (!code->IsCode() || code->kind() != CodeKind::BUILTIN ||
-            !code->has_handler_table() || !code->is_turbofanned()) {
+        Code code = frame->LookupCode();
+        if (code.kind() != CodeKind::BUILTIN || !code.has_handler_table() ||
+            !code.is_turbofanned()) {
           break;
         }
 
-        CatchType prediction = ToCatchType(code->GetBuiltinCatchPrediction());
+        CatchType prediction = ToCatchType(code.GetBuiltinCatchPrediction());
         if (prediction != NOT_CAUGHT) return prediction;
-      } break;
+        break;
+      }
 
       case StackFrame::JAVA_SCRIPT_BUILTIN_CONTINUATION_WITH_CATCH: {
-        Handle<Code> code(frame->LookupCode(), this);
-        CatchType prediction = ToCatchType(code->GetBuiltinCatchPrediction());
+        Code code = frame->LookupCode();
+        CatchType prediction = ToCatchType(code.GetBuiltinCatchPrediction());
         if (prediction != NOT_CAUGHT) return prediction;
-      } break;
+        break;
+      }
 
       default:
         // All other types can not handle exception.
@@ -2871,19 +2874,6 @@ bool Isolate::AreWasmExceptionsEnabled(Handle<Context> context) {
 #endif  // V8_ENABLE_WEBASSEMBLY
 }
 
-bool Isolate::IsWasmDynamicTieringEnabled() {
-#if V8_ENABLE_WEBASSEMBLY
-  if (FLAG_wasm_dynamic_tiering) return true;
-  if (wasm_dynamic_tiering_enabled_callback()) {
-    HandleScope handle_scope(this);
-    v8::Local<v8::Context> api_context =
-        v8::Utils::ToLocal(handle(context(), this));
-    return wasm_dynamic_tiering_enabled_callback()(api_context);
-  }
-#endif  // V8_ENABLE_WEBASSEMBLY
-  return false;
-}
-
 Handle<Context> Isolate::GetIncumbentContext() {
   JavaScriptFrameIterator it(this);
 
@@ -3255,7 +3245,7 @@ Isolate::Isolate(std::unique_ptr<i::IsolateAllocator> isolate_allocator,
       num_active_deserializers_(0),
 #endif
       rail_mode_(PERFORMANCE_ANIMATION),
-      log_event_dispatcher_(new LogEventDispatcher()),
+      logger_(new Logger()),
       detailed_source_positions_for_profiling_(FLAG_detailed_line_info),
       persistent_handles_list_(new PersistentHandlesList()),
       jitless_(FLAG_jitless),
@@ -3330,10 +3320,10 @@ void Isolate::CheckIsolateLayout() {
   CHECK_EQ(static_cast<int>(OFFSET_OF(Isolate, isolate_data_.roots_table_)),
            Internals::kIsolateRootsOffset);
 
-  STATIC_ASSERT(Internals::kStackGuardSize == sizeof(StackGuard));
-  STATIC_ASSERT(Internals::kBuiltinTier0TableSize ==
+  static_assert(Internals::kStackGuardSize == sizeof(StackGuard));
+  static_assert(Internals::kBuiltinTier0TableSize ==
                 Builtins::kBuiltinTier0Count * kSystemPointerSize);
-  STATIC_ASSERT(Internals::kBuiltinTier0EntryTableSize ==
+  static_assert(Internals::kBuiltinTier0EntryTableSize ==
                 Builtins::kBuiltinTier0Count * kSystemPointerSize);
 
 #ifdef V8_SANDBOXED_EXTERNAL_POINTERS
@@ -3491,8 +3481,8 @@ void Isolate::Deinit() {
   delete ast_string_constants_;
   ast_string_constants_ = nullptr;
 
-  delete log_event_dispatcher_;
-  log_event_dispatcher_ = nullptr;
+  delete logger_;
+  logger_ = nullptr;
 
   delete root_index_map_;
   root_index_map_ = nullptr;
@@ -3679,7 +3669,7 @@ void CreateOffHeapTrampolines(Isolate* isolate) {
 
   EmbeddedData d = EmbeddedData::FromBlob(isolate);
 
-  STATIC_ASSERT(Builtins::kAllBuiltinsAreIsolateIndependent);
+  static_assert(Builtins::kAllBuiltinsAreIsolateIndependent);
   for (Builtin builtin = Builtins::kFirst; builtin <= Builtins::kLast;
        ++builtin) {
     Address instruction_start = d.InstructionStartOfBuiltin(builtin);
@@ -4347,19 +4337,18 @@ void Isolate::DumpAndResetStats() {
       stack_access_count_map = nullptr;
     }
   }
-  if (turbo_statistics() != nullptr) {
+  if (turbo_statistics_ != nullptr) {
     DCHECK(FLAG_turbo_stats || FLAG_turbo_stats_nvp);
     StdoutStream os;
     if (FLAG_turbo_stats) {
-      AsPrintableStatistics ps = {*turbo_statistics(), false};
+      AsPrintableStatistics ps = {*turbo_statistics_, false};
       os << ps << std::endl;
     }
     if (FLAG_turbo_stats_nvp) {
-      AsPrintableStatistics ps = {*turbo_statistics(), true};
+      AsPrintableStatistics ps = {*turbo_statistics_, true};
       os << ps << std::endl;
     }
-    delete turbo_statistics_;
-    turbo_statistics_ = nullptr;
+    turbo_statistics_.reset();
   }
 #if V8_ENABLE_WEBASSEMBLY
   // TODO(7424): There is no public API for the {WasmEngine} yet. So for now we
@@ -4391,10 +4380,11 @@ void Isolate::AbortConcurrentOptimization(BlockingBehavior behavior) {
   }
 }
 
-CompilationStatistics* Isolate::GetTurboStatistics() {
-  if (turbo_statistics() == nullptr)
-    set_turbo_statistics(new CompilationStatistics());
-  return turbo_statistics();
+std::shared_ptr<CompilationStatistics> Isolate::GetTurboStatistics() {
+  if (turbo_statistics_ == nullptr) {
+    turbo_statistics_.reset(new CompilationStatistics());
+  }
+  return turbo_statistics_;
 }
 
 CodeTracer* Isolate::GetCodeTracer() {
@@ -4559,7 +4549,7 @@ int Isolate::GenerateIdentityHash(uint32_t mask) {
   return hash != 0 ? hash : 1;
 }
 
-Code Isolate::FindCodeObject(Address a) {
+CodeLookupResult Isolate::FindCodeObject(Address a) {
   return heap()->GcSafeFindCodeForInnerPointer(a);
 }
 
@@ -5200,19 +5190,16 @@ int Isolate::GetNextScriptId() { return heap()->NextScriptId(); }
 
 // static
 std::string Isolate::GetTurboCfgFileName(Isolate* isolate) {
-  if (FLAG_trace_turbo_cfg_file == nullptr) {
-    std::ostringstream os;
-    os << "turbo-" << base::OS::GetCurrentProcessId() << "-";
-    if (isolate != nullptr) {
-      os << isolate->id();
-    } else {
-      os << "any";
-    }
-    os << ".cfg";
-    return os.str();
+  if (const char* filename = FLAG_trace_turbo_cfg_file) return filename;
+  std::ostringstream os;
+  os << "turbo-" << base::OS::GetCurrentProcessId() << "-";
+  if (isolate != nullptr) {
+    os << isolate->id();
   } else {
-    return FLAG_trace_turbo_cfg_file;
+    os << "any";
   }
+  os << ".cfg";
+  return os.str();
 }
 
 // Heap::detached_contexts tracks detached contexts as pairs
@@ -5685,6 +5672,27 @@ void Isolate::DetachFromSharedIsolate() {
   attached_to_shared_isolate_ = false;
 #endif  // DEBUG
 }
+
+#ifdef V8_SANDBOXED_EXTERNAL_POINTERS
+ExternalPointer_t Isolate::EncodeWaiterQueueNodeAsExternalPointer(
+    Address node) {
+  DCHECK_NE(kNullAddress, node);
+  Isolate* shared = shared_isolate();
+  uint32_t index;
+  ExternalPointer_t ext;
+  if (waiter_queue_node_external_pointer_.IsJust()) {
+    ext = waiter_queue_node_external_pointer_.FromJust();
+    index = ext >> kExternalPointerIndexShift;
+  } else {
+    index = shared->external_pointer_table().Allocate();
+    ext = index << kExternalPointerIndexShift;
+    waiter_queue_node_external_pointer_ = Just(ext);
+  }
+  DCHECK_NE(0, index);
+  shared->external_pointer_table().Set(index, node, kWaiterQueueNodeTag);
+  return ext;
+}
+#endif  // V8_SANDBOXED_EXTERNAL_POINTERS
 
 }  // namespace internal
 }  // namespace v8

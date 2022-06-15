@@ -211,6 +211,7 @@ ContextMtl::ContextMtl(const gl::State &state,
       mRenderEncoder(&mCmdBuffer, mOcclusionQueryPool),
       mBlitEncoder(&mCmdBuffer),
       mComputeEncoder(&mCmdBuffer),
+      mDriverUniforms{},
       mProvokingVertexHelper(this, &display->cmdQueue(), display),
       mContextDevice(GetOwnershipIdentity(attribs))
 {}
@@ -1135,9 +1136,15 @@ angle::Result ContextMtl::syncState(const gl::Context *context,
             case gl::State::DIRTY_BIT_COLOR_MASK:
             {
                 const gl::BlendStateExt &blendStateExt = glState.getBlendStateExt();
-                for (size_t i = 0; i < mBlendDescArray.size(); i++)
+                size_t i                               = 0;
+                for (; i < blendStateExt.getDrawBufferCount(); i++)
                 {
                     mBlendDescArray[i].updateWriteMask(blendStateExt.getColorMaskIndexed(i));
+                    mWriteMaskArray[i] = mBlendDescArray[i].writeMask;
+                }
+                for (; i < mBlendDescArray.size(); i++)
+                {
+                    mBlendDescArray[i].updateWriteMask(0);
                     mWriteMaskArray[i] = mBlendDescArray[i].writeMask;
                 }
                 invalidateRenderPipeline();
@@ -1397,7 +1404,7 @@ ProgramImpl *ContextMtl::createProgram(const gl::ProgramState &state)
 // Framebuffer creation
 FramebufferImpl *ContextMtl::createFramebuffer(const gl::FramebufferState &state)
 {
-    return new FramebufferMtl(state, false, nullptr);
+    return new FramebufferMtl(state, this, false, nullptr);
 }
 
 // Texture creation
@@ -1692,10 +1699,19 @@ void ContextMtl::flushCommandBuffer(mtl::CommandBufferFinishOperation operation)
 
     endEncoding(true);
     mCmdBuffer.commit(operation);
+    mRenderPassesSinceFlush = 0;
 }
 
 void ContextMtl::flushCommandBufferIfNeeded()
 {
+    if (mRenderPassesSinceFlush >= mtl::kMaxRenderPassesPerCommandBuffer)
+    {
+        // WaitUntilScheduled here is intended to help the CPU-GPU pipeline and
+        // helps to keep the number of inflight render passes in the system to a
+        // minimum.
+        flushCommandBuffer(mtl::WaitUntilScheduled);
+    }
+
     if (mCmdBuffer.needsFlushForDrawCallLimits())
     {
         flushCommandBuffer(mtl::NoWait);
@@ -1716,6 +1732,7 @@ void ContextMtl::present(const gl::Context *context, id<CAMetalDrawable> present
     endEncoding(false);
     mCmdBuffer.present(presentationDrawable);
     mCmdBuffer.commit(mtl::NoWait);
+    mRenderPassesSinceFlush = 0;
 }
 
 angle::Result ContextMtl::finishCommandBuffer()
@@ -1751,6 +1768,7 @@ mtl::RenderCommandEncoder *ContextMtl::getRenderPassCommandEncoder(const mtl::Re
     endEncoding(false);
 
     ensureCommandBufferReady();
+    ++mRenderPassesSinceFlush;
 
     // Need to re-apply everything on next draw call.
     mDirtyBits.set();
@@ -1761,7 +1779,7 @@ mtl::RenderCommandEncoder *ContextMtl::getRenderPassCommandEncoder(const mtl::Re
         ANGLE_MTL_OBJC_SCOPE
         {
             MTLRenderPassDescriptor *objCDesc = [MTLRenderPassDescriptor renderPassDescriptor];
-            desc.convertToMetalDesc(objCDesc);
+            desc.convertToMetalDesc(objCDesc, getNativeCaps().maxColorAttachments);
             NSUInteger maxSize = mtl::GetMaxRenderTargetSizeForDeviceInBytes(metalDevice);
             NSUInteger renderTargetSize =
                 ComputeTotalSizeUsedForMTLRenderPassDescriptor(objCDesc, this, metalDevice);
@@ -1776,7 +1794,7 @@ mtl::RenderCommandEncoder *ContextMtl::getRenderPassCommandEncoder(const mtl::Re
             }
         }
     }
-    return &mRenderEncoder.restart(desc);
+    return &mRenderEncoder.restart(desc, getNativeCaps().maxColorAttachments);
 }
 
 // Utilities to quickly create render command encoder to a specific texture:
@@ -2216,6 +2234,32 @@ angle::Result ContextMtl::setupDraw(const gl::Context *context,
                                     const void *indices,
                                     bool xfbPass)
 {
+    ANGLE_TRY(setupDrawImpl(context, mode, firstVertex, vertexOrIndexCount, instances,
+                            indexTypeOrNone, indices, xfbPass));
+    if (!mRenderEncoder.valid())
+    {
+        // Flush occurred during setup, due to running out of memory while setting up the render
+        // pass state. This would happen for example when there is no more space in the uniform
+        // buffers in the uniform buffer pool. The rendering would be flushed to free the uniform
+        // buffer memory for new usage. In this case, re-run the setup.
+        ANGLE_TRY(setupDrawImpl(context, mode, firstVertex, vertexOrIndexCount, instances,
+                                indexTypeOrNone, indices, xfbPass));
+        // Setup with flushed state should either produce a working encoder or fail with an error
+        // result.
+        ASSERT(mRenderEncoder.valid());
+    }
+    return angle::Result::Continue;
+}
+
+angle::Result ContextMtl::setupDrawImpl(const gl::Context *context,
+                                        gl::PrimitiveMode mode,
+                                        GLint firstVertex,
+                                        GLsizei vertexOrIndexCount,
+                                        GLsizei instances,
+                                        gl::DrawElementsType indexTypeOrNone,
+                                        const void *indices,
+                                        bool xfbPass)
+{
     ASSERT(mProgram);
 
     // instances=0 means no instanced draw.
@@ -2450,41 +2494,30 @@ angle::Result ContextMtl::handleDirtyDriverUniforms(const gl::Context *context,
                                                     GLint drawCallFirstVertex,
                                                     uint32_t verticesPerInstance)
 {
-    const gl::Rectangle &glViewport = mState.getViewport();
+    mDriverUniforms.depthRange[0] = mState.getNearPlane();
+    mDriverUniforms.depthRange[1] = mState.getFarPlane();
 
-    float depthRangeNear = mState.getNearPlane();
-    float depthRangeFar  = mState.getFarPlane();
-    float depthRangeDiff = depthRangeFar - depthRangeNear;
+    mDriverUniforms.renderArea = mDrawFramebuffer->getState().getDimensions().height << 16 |
+                                 mDrawFramebuffer->getState().getDimensions().width;
 
-    mDriverUniforms.viewport[0] = glViewport.x;
-    mDriverUniforms.viewport[1] = glViewport.y;
-    mDriverUniforms.viewport[2] = glViewport.width;
-    mDriverUniforms.viewport[3] = glViewport.height;
-
-    mDriverUniforms.halfRenderArea[0] =
-        static_cast<float>(mDrawFramebuffer->getState().getDimensions().width) * 0.5f;
-    mDriverUniforms.halfRenderArea[1] =
-        static_cast<float>(mDrawFramebuffer->getState().getDimensions().height) * 0.5f;
-    mDriverUniforms.flipXY[0]    = 1.0f;
-    mDriverUniforms.flipXY[1]    = mDrawFramebuffer->flipY() ? -1.0f : 1.0f;
-    mDriverUniforms.negFlipXY[0] = mDriverUniforms.flipXY[0];
-    mDriverUniforms.negFlipXY[1] = -mDriverUniforms.flipXY[1];
+    const float flipX      = 1.0;
+    const float flipY      = mDrawFramebuffer->flipY() ? -1.0f : 1.0f;
+    mDriverUniforms.flipXY = gl::PackSnorm4x8(flipX, flipY, flipX, -flipY);
 
     // gl_ClipDistance
-    mDriverUniforms.enabledClipDistances = mState.getEnabledClipDistances().bits();
+    const uint32_t enabledClipDistances = mState.getEnabledClipDistances().bits();
+    ASSERT((enabledClipDistances & ~sh::vk::kDriverUniformsMiscEnabledClipPlanesMask) == 0);
 
-    mDriverUniforms.depthRange[0] = depthRangeNear;
-    mDriverUniforms.depthRange[1] = depthRangeFar;
-    mDriverUniforms.depthRange[2] = depthRangeDiff;
-    mDriverUniforms.depthRange[3] = NeedToInvertDepthRange(depthRangeNear, depthRangeFar) ? -1 : 1;
+    mDriverUniforms.misc = enabledClipDistances
+                           << sh::vk::kDriverUniformsMiscEnabledClipPlanesOffset;
 
     // Sample coverage mask
-    uint32_t sampleBitCount = mDrawFramebuffer->getSamples();
-    uint32_t coverageSampleBitCount =
+    const uint32_t sampleBitCount = mDrawFramebuffer->getSamples();
+    const uint32_t coverageSampleBitCount =
         static_cast<uint32_t>(std::round(mState.getSampleCoverageValue() * sampleBitCount));
     ASSERT(sampleBitCount < 32);
-    uint32_t coverageMask = (1u << coverageSampleBitCount) - 1;
-    uint32_t sampleMask   = (1u << sampleBitCount) - 1;
+    const uint32_t sampleMask = (1u << sampleBitCount) - 1;
+    uint32_t coverageMask     = (1u << coverageSampleBitCount) - 1;
     if (mState.getSampleCoverageInvert())
     {
         coverageMask = sampleMask & (~coverageMask);

@@ -2,11 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'chrome://resources/mojo/mojo/public/mojom/base/big_buffer.mojom-lite.js';
+import 'chrome://resources/mojo/mojo/public/mojom/base/string16.mojom-lite.js';
+
 import {fakeEmptyFeedbackContext, fakeFeedbackContext} from 'chrome://os-feedback/fake_data.js';
 import {FeedbackFlowState} from 'chrome://os-feedback/feedback_flow.js';
 import {ShareDataPageElement} from 'chrome://os-feedback/share_data_page.js';
+import {mojoString16ToString, stringToMojoString16} from 'chrome://resources/ash/common/mojo_utils.js';
 
-import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
+import {assertArrayEquals, assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
 import {eventToPromise, flushTasks, isVisible} from '../../test_util.js';
 
 /** @type {string} */
@@ -94,8 +98,8 @@ export function shareDataPageTestSuite() {
     assertEquals('Screenshot', getElementContent('#screenshotCheckLabel'));
     assertTrue(!!getElement('#screenshotImage'));
 
-    // Add file element.
-    assertEquals('Add file', getElementContent('#addFile'));
+    // Add file attachment element.
+    assertTrue(!!getElement('file-attachment'));
 
     // Email elements.
     assertEquals('Email', getElementContent('#userEmailLabel'));
@@ -213,8 +217,9 @@ export function shareDataPageTestSuite() {
   /**
    * Test that when when the send button is clicked, an on-continue is fired.
    * Case 4: Do not share email or screenshot.
+   * 4.1) No screenshot and screenshot checkbox is unchecked.
    */
-  test('SendReportDoNotShareEmail', async () => {
+  test('SendReportDoNotShareEmailNoScreenshotUnchecked', async () => {
     await initializePage();
     page.feedbackContext = fakeFeedbackContext;
     // When there is not a screenshot.
@@ -224,28 +229,72 @@ export function shareDataPageTestSuite() {
     // Select the "Don't include email address" option.
     getElement('#userEmailDropDown').value = '';
 
-    let request = (await clickSendAndWait(page)).report;
+    const request = (await clickSendAndWait(page)).report;
 
     assertFalse(!!request.feedbackContext.email);
     assertFalse(request.includeScreenshot);
+  });
+
+  /**
+   * Test that when when the send button is clicked, an on-continue is fired.
+   * Case 4: Do not share email or screenshot.
+   * 4.2) No screenshot and screenshot checkbox is checked.
+   */
+  test('SendReportDoNotShareEmailNoScreenshotChecked', async () => {
+    await initializePage();
+    page.feedbackContext = fakeFeedbackContext;
+    // When there is not a screenshot.
+    page.screenshotUrl = '';
+    assertFalse(!!getElement('#screenshotImage').src);
+
+    // Select the "Don't include email address" option.
+    getElement('#userEmailDropDown').value = '';
 
     // When the checkbox is selected but there is not a screenshot.
     getElement('#screenshotCheckbox').checked = true;
     assertFalse(!!getElement('#screenshotImage').src);
 
-    request = (await clickSendAndWait(page)).report;
+    const request = (await clickSendAndWait(page)).report;
 
     assertFalse(!!request.feedbackContext.email);
     assertFalse(request.includeScreenshot);
+  });
+
+  /**
+   * Test that when when the send button is clicked, an on-continue is fired.
+   * Case 4: Do not share email or screenshot.
+   * 4.3) Has screenshot but screenshot checkbox is unchecked.
+   */
+  test('SendReportDoNotShareEmailHasScreenshotUnchecked', async () => {
+    await initializePage();
+    page.feedbackContext = fakeFeedbackContext;
+
+    // Select the "Don't include email address" option.
+    getElement('#userEmailDropDown').value = '';
 
     // When there is a screenshot but it is not selected.
     page.screenshotUrl = fakeImageUrl;
     assertEquals(fakeImageUrl, getElement('#screenshotImage').src);
     getElement('#screenshotCheckbox').checked = false;
-    request = (await clickSendAndWait(page)).report;
+
+    const request = (await clickSendAndWait(page)).report;
 
     assertFalse(!!request.feedbackContext.email);
     assertFalse(request.includeScreenshot);
+  });
+
+  // Test that the send button will be disabled once clicked.
+  test('DisableSendButtonAfterClick', async () => {
+    await initializePage();
+    page.feedbackContext = fakeFeedbackContext;
+
+    const sendButton = getElement('#buttonSend');
+
+    assertFalse(sendButton.disabled);
+
+    await clickSendAndWait(page);
+
+    assertTrue(sendButton.disabled);
   });
 
   // Test that the screenshot checkbox is disabled when no screenshot.
@@ -273,5 +322,34 @@ export function shareDataPageTestSuite() {
     const screenshotImage = getElement('#screenshotImage');
     assertTrue(!!screenshotImage.src);
     assertEquals(imgUrl, screenshotImage.src);
+  });
+
+  /**
+   * Test that when when the send button is clicked, the getAttachedFile has
+   * been called.
+   */
+  test('getAttachedFileCalled', async () => {
+    await initializePage();
+    page.feedbackContext = fakeFeedbackContext;
+
+    const fileAttachment = getElement('file-attachment');
+    const fakeFileData = [11, 22, 99];
+    fileAttachment.getAttachedFile = async () => {
+      return {
+        fileName: stringToMojoString16('fake.zip'),
+        fileData: {
+          bytes: fakeFileData,
+        }
+      };
+    };
+
+    const request = (await clickSendAndWait(page)).report;
+
+    const attachedFile = request.attachedFile;
+    assertTrue(!!attachedFile);
+    assertEquals('fake.zip', mojoString16ToString(attachedFile.fileName));
+    assertArrayEquals(
+        fakeFileData,
+        /** @type {!Array<Number>} */ (attachedFile.fileData.bytes));
   });
 }

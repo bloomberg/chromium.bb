@@ -62,6 +62,7 @@ class F extends ValidationTest {
     vertexShaderCode: string
   ): GPURenderPipelineDescriptor {
     const descriptor: GPURenderPipelineDescriptor = {
+      layout: 'auto',
       vertex: {
         module: this.device.createShaderModule({ code: vertexShaderCode }),
         entryPoint: 'main',
@@ -97,6 +98,7 @@ class F extends ValidationTest {
 
     this.expectValidationError(() => {
       this.device.createRenderPipeline({
+        layout: 'auto',
         vertex: {
           module: vsModule,
           entryPoint: 'main',

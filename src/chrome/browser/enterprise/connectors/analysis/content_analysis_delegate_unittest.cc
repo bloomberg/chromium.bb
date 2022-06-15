@@ -598,10 +598,6 @@ class ContentAnalysisDelegateAuditOnlyTest : public BaseTest {
     failures_.insert({std::move(path), std::move(response)});
   }
 
-  void SetPathIsEncrypted(base::FilePath path) {
-    encrypted_.insert(std::move(path));
-  }
-
   void SetScanPolicies(bool dlp, bool malware) {
     include_dlp_ = dlp;
     include_malware_ = malware;
@@ -639,9 +635,6 @@ class ContentAnalysisDelegateAuditOnlyTest : public BaseTest {
         base::BindRepeating(
             &ContentAnalysisDelegateAuditOnlyTest::ConnectorStatusCallback,
             base::Unretained(this)),
-        base::BindRepeating(
-            &ContentAnalysisDelegateAuditOnlyTest::EncryptionStatusCallback,
-            base::Unretained(this)),
         kDmToken));
   }
 
@@ -667,10 +660,6 @@ class ContentAnalysisDelegateAuditOnlyTest : public BaseTest {
     return response;
   }
 
-  bool EncryptionStatusCallback(const base::FilePath& path) {
-    return encrypted_.count(path) > 0;
-  }
-
  private:
   ScopedSetDMToken scoped_dm_token_{
       policy::DMToken::CreateValidTokenForTesting(kDmToken)};
@@ -680,10 +669,6 @@ class ContentAnalysisDelegateAuditOnlyTest : public BaseTest {
   // Paths in this map will be consider to have failed deep scan checks.
   // The actual failure response is given for each path.
   std::map<base::FilePath, ContentAnalysisResponse> failures_;
-
-  // Paths in this set will be considered to contain encryption and will
-  // not be uploaded.
-  std::set<base::FilePath> encrypted_;
 
   // DLP response to ovewrite in the callback if present.
   absl::optional<ContentAnalysisResponse> dlp_response_ = absl::nullopt;
@@ -1393,7 +1378,19 @@ TEST_F(ContentAnalysisDelegateAuditOnlyTest, SupportedTypes) {
 
   std::vector<base::FilePath::StringType> file_names;
   for (const base::FilePath::StringType& supported_type :
-       safe_browsing::SupportedDlpFileTypes()) {
+       {FILE_PATH_LITERAL(".7z"),   FILE_PATH_LITERAL(".bz2"),
+        FILE_PATH_LITERAL(".bzip"), FILE_PATH_LITERAL(".cab"),
+        FILE_PATH_LITERAL(".csv"),  FILE_PATH_LITERAL(".doc"),
+        FILE_PATH_LITERAL(".docx"), FILE_PATH_LITERAL(".eps"),
+        FILE_PATH_LITERAL(".gz"),   FILE_PATH_LITERAL(".gzip"),
+        FILE_PATH_LITERAL(".htm"),  FILE_PATH_LITERAL(".html"),
+        FILE_PATH_LITERAL(".odt"),  FILE_PATH_LITERAL(".pdf"),
+        FILE_PATH_LITERAL(".ppt"),  FILE_PATH_LITERAL(".pptx"),
+        FILE_PATH_LITERAL(".ps"),   FILE_PATH_LITERAL(".rar"),
+        FILE_PATH_LITERAL(".rtf"),  FILE_PATH_LITERAL(".tar"),
+        FILE_PATH_LITERAL(".txt"),  FILE_PATH_LITERAL(".wpd"),
+        FILE_PATH_LITERAL(".xls"),  FILE_PATH_LITERAL(".xlsx"),
+        FILE_PATH_LITERAL(".xps"),  FILE_PATH_LITERAL(".zip")}) {
     file_names.push_back(base::FilePath::StringType(FILE_PATH_LITERAL("foo")) +
                          supported_type);
   }
@@ -1622,8 +1619,6 @@ class ContentAnalysisDelegateResultHandlingTest
         base::BindRepeating(
             &ContentAnalysisDelegateResultHandlingTest::ConnectorStatusCallback,
             base::Unretained(this)),
-        /*encryption_callback=*/
-        base::BindRepeating([](const base::FilePath& path) { return false; }),
         kDmToken));
   }
 

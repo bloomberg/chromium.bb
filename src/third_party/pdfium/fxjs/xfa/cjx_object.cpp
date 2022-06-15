@@ -1031,7 +1031,7 @@ void CJX_Object::ScriptAttributeString(v8::Isolate* pIsolate,
   } else if (!wsID.IsEmpty()) {
     pProtoNode = GetDocument()->GetNodeByID(pProtoRoot, wsID.AsStringView());
   }
-  if (!pProtoNode)
+  if (!pProtoNode || pProtoNode->GetPacketType() != XFA_PacketType::Template)
     return;
 
   CXFA_Node* pHeadChild = GetXFANode()->GetFirstChild();
@@ -1425,16 +1425,15 @@ void CJX_Object::ScriptSomInstanceIndex(v8::Isolate* pIsolate,
   if (!pNotify)
     return;
 
-  CXFA_Node* pToInstance = pManagerNode->GetItemIfExists(iTo);
-  if (pToInstance && pToInstance->GetElementType() == XFA_Element::Subform) {
+  auto* pToInstance =
+      CXFA_Subform::FromNode(pManagerNode->GetItemIfExists(iTo));
+  if (pToInstance)
     pNotify->RunSubformIndexChange(pToInstance);
-  }
 
-  CXFA_Node* pFromInstance = pManagerNode->GetItemIfExists(iFrom);
-  if (pFromInstance &&
-      pFromInstance->GetElementType() == XFA_Element::Subform) {
+  auto* pFromInstance =
+      CXFA_Subform::FromNode(pManagerNode->GetItemIfExists(iFrom));
+  if (pFromInstance)
     pNotify->RunSubformIndexChange(pFromInstance);
-  }
 }
 
 void CJX_Object::ScriptSubmitFormatMode(v8::Isolate* pIsolate,

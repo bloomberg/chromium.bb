@@ -107,6 +107,43 @@ describe('The Network Tab', async function() {
     });
   });
 
+  it('shows size of chunked responses', async () => {
+    const {target, frontend} = getBrowserAndPages();
+    await navigateToNetworkTab('chunked.txt?numChunks=5');
+
+    // Reload to populate network request table
+    await target.reload({waitUntil: 'networkidle0'});
+    await waitForSomeRequestsToAppear(1);
+
+    // Get the size of the first two network request responses (excluding header and favicon.ico).
+    const getNetworkRequestSize = () => frontend.evaluate(() => {
+      return Array.from(document.querySelectorAll('.size-column')).slice(1, 3).map(node => node.textContent);
+    });
+
+    assert.deepEqual(await getNetworkRequestSize(), [
+      `${formatByteSize(210)}${formatByteSize(25)}`,
+    ]);
+  });
+
+  it('shows size of chunked responses for sync XHR', async () => {
+    const {target, frontend} = getBrowserAndPages();
+    await navigateToNetworkTab('chunked_sync.html');
+
+    // Reload to populate network request table
+    await target.reload({waitUntil: 'networkidle0'});
+    await waitForSomeRequestsToAppear(2);
+
+    // Get the size of the first two network request responses (excluding header and favicon.ico).
+    const getNetworkRequestSize = () => frontend.evaluate(() => {
+      return Array.from(document.querySelectorAll('.size-column')).slice(1, 3).map(node => node.textContent);
+    });
+
+    assert.deepEqual(await getNetworkRequestSize(), [
+      `${formatByteSize(313)}${formatByteSize(128)}`,
+      `${formatByteSize(210)}${formatByteSize(25)}`,
+    ]);
+  });
+
   it('the HTML response including cyrillic characters with utf-8 encoding', async () => {
     const {target} = getBrowserAndPages();
     await navigateToNetworkTab('utf-8.rawresponse');
@@ -375,9 +412,7 @@ describe('The Network Tab', async function() {
     await waitFor('.network-item-view');
   });
 
-  // This is currently skipped while we fix the alignment of requestId+networkId in the CDP
-  // events that apply to the main service worker request
-  it.skip('[crbug.com/1304795] shows the main service worker request as complete', async () => {
+  it('shows the main service worker request as complete', async () => {
     await navigateToNetworkTab('service-worker.html');
     const {target, frontend} = getBrowserAndPages();
     await target.waitForXPath('//div[@id="content" and text()="pong"]');
@@ -386,7 +421,7 @@ describe('The Network Tab', async function() {
       status: '200OK',
       type: 'document',
     });
-    const sw = await getRequestRowInfo(frontend, '⚙ service-worker.js/test/e2e/resources/network');
+    const sw = await getRequestRowInfo(frontend, '⚙ service-worker.jslocalhost/test/e2e/resources/network');
     expect(sw).to.contain({
       status: '200OK',
       type: 'script',

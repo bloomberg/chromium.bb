@@ -248,12 +248,9 @@ static void adjust_frame_rate(AV1_COMP *cpi, int64_t ts_start, int64_t ts_end) {
 
   if (this_duration) {
     if (step) {
-#if CONFIG_FRAME_PARALLEL_ENCODE
       cpi->new_framerate = 10000000.0 / this_duration;
-#endif
-      av1_new_framerate(cpi, 10000000.0 / this_duration);
+      av1_new_framerate(cpi, cpi->new_framerate);
     } else {
-      double framerate;
       // Average this frame's rate into the last second's average
       // frame rate. If we haven't seen 1 second yet, then average
       // over the whole interval seen.
@@ -262,17 +259,13 @@ static void adjust_frame_rate(AV1_COMP *cpi, int64_t ts_start, int64_t ts_end) {
       double avg_duration = 10000000.0 / cpi->framerate;
       avg_duration *= (interval - avg_duration + this_duration);
       avg_duration /= interval;
-#if CONFIG_FRAME_PARALLEL_ENCODE
       cpi->new_framerate = (10000000.0 / avg_duration);
       // For parallel frames update cpi->framerate with new_framerate
       // during av1_post_encode_updates()
-      framerate =
+      double framerate =
           (cpi->ppi->gf_group.frame_parallel_level[cpi->gf_frame_index] > 0)
               ? cpi->framerate
               : cpi->new_framerate;
-#else
-      framerate = (10000000.0 / avg_duration);
-#endif
       av1_new_framerate(cpi, framerate);
     }
   }
@@ -1285,21 +1278,20 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
     start_timing(cpi, av1_get_second_pass_params_time);
 #endif
 
-#if CONFIG_FRAME_PARALLEL_ENCODE
     // Initialise frame_level_rate_correction_factors with value previous
     // to the parallel frames.
     if (cpi->ppi->gf_group.frame_parallel_level[cpi->gf_frame_index] > 0) {
       for (int i = 0; i < RATE_FACTOR_LEVELS; i++) {
         cpi->rc.frame_level_rate_correction_factors[i] =
-#if CONFIG_FPMT_TEST
+#if CONFIG_FRAME_PARALLEL_ENCODE && CONFIG_FPMT_TEST
             (cpi->ppi->fpmt_unit_test_cfg == PARALLEL_SIMULATION_ENCODE)
                 ? cpi->ppi->p_rc.temp_rate_correction_factors[i]
                 :
-#endif  // CONFIG_FPMT_TEST
+#endif  // CONFIG_FRAME_PARALLEL_ENCODE && CONFIG_FPMT_TEST
                 cpi->ppi->p_rc.rate_correction_factors[i];
       }
     }
-#endif
+
     // copy mv_stats from ppi to frame_level cpi.
     cpi->mv_stats = cpi->ppi->mv_stats;
     av1_get_second_pass_params(cpi, &frame_params, *frame_flags);

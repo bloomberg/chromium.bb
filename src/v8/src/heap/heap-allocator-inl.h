@@ -15,6 +15,10 @@
 #include "src/heap/read-only-spaces.h"
 #include "src/heap/third-party/heap-api.h"
 
+#ifdef V8_ENABLE_CONSERVATIVE_STACK_SCANNING
+#include "src/heap/object-start-bitmap-inl.h"
+#endif
+
 namespace v8 {
 namespace internal {
 
@@ -59,7 +63,7 @@ V8_WARN_UNUSED_RESULT V8_INLINE AllocationResult HeapAllocator::AllocateRaw(
   DCHECK(AllowHandleAllocation::IsAllowed());
   DCHECK(AllowHeapAllocation::IsAllowed());
 
-  if (FLAG_single_generation && type == AllocationType::kYoung) {
+  if (FLAG_single_generation.value() && type == AllocationType::kYoung) {
     return AllocateRaw(size_in_bytes, AllocationType::kOld, origin, alignment);
   }
 

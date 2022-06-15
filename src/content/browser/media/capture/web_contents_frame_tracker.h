@@ -55,6 +55,10 @@ class CONTENT_EXPORT WebContentsFrameTracker final
     // initialized in the test harness.
     virtual void IncrementCapturerCount(const gfx::Size& capture_size) = 0;
     virtual void DecrementCapturerCount() = 0;
+
+    // Adjust the associated RenderWidgetHostView's rendering scale for capture.
+    virtual void SetScaleOverrideForCapture(float scale) = 0;
+    virtual float GetScaleOverrideForCapture() const = 0;
   };
 
   // NOTE on lifetime: |device| should outlive the WebContentsFrameTracker. The
@@ -73,12 +77,25 @@ class CONTENT_EXPORT WebContentsFrameTracker final
   void WillStartCapturingWebContents(const gfx::Size& capture_size);
   void DidStopCapturingWebContents();
 
+  void SetCapturedContentSize(const gfx::Size& content_size);
+
   // The preferred size calculated here is a strong suggestion to UI
   // layout code to size the viewport such that physical rendering matches the
   // exact capture size. This helps to eliminate redundant scaling operations
   // during capture. Note that if there are multiple capturers, a "first past
   // the post" system is used and the first capturer's preferred size is set.
   gfx::Size CalculatePreferredSize(const gfx::Size& capture_size);
+
+  // Determines the preferred capture scale factor based on the content size and
+  // current conditions. This method requires the |content_size|, which is the
+  // resulting frame size from the first captured frame, and thus has an
+  // implicit relationship with |CalculatePreferredSize|, which is used to help
+  // size the backing WebContents before any frames are captured. Ideally, the
+  // result of calculating the preferred size results in a content size that
+  // does not need any scaling, however in practice this is not always true and
+  // we need to adjust the DPI of the WebContents to get an appropriately sized
+  // VideoFrame.
+  float CalculatePreferredScaleFactor(const gfx::Size& content_size);
 
   // WebContentsObserver overrides.
   void RenderFrameCreated(RenderFrameHost* render_frame_host) override;
@@ -122,6 +139,10 @@ class CONTENT_EXPORT WebContentsFrameTracker final
   // Noop on Android.
   void SetTargetView(gfx::NativeView view);
 
+  // Helper for setting the capture scale override, should always update the
+  // context at the same time.
+  void SetCaptureScaleOverride(float new_value);
+
   // |device_| may be dereferenced only by tasks run by |device_task_runner_|.
   const base::WeakPtr<WebContentsVideoCaptureDevice> device_;
 
@@ -154,6 +175,20 @@ class CONTENT_EXPORT WebContentsFrameTracker final
   // cropping and then uncropping, values other than 0 can also be associated
   // with an uncropped track.)
   uint32_t crop_version_ = 0;
+
+  // Scale multiplier used for the captured content when HiDPI capture mode is
+  // active. A value of 1.0 means no override, using the original unmodified
+  // resolution. The scale override is a multiplier applied to both the X and Y
+  // dimensions, so a value of 2.0 means four times the pixel count. This value
+  // tracks the intended scale according to the heuristic. Whenever the value
+  // changes, the new scale is immediately applied to the RenderWidgetHostView
+  // via SetScaleOverrideForCapture. The value is also saved in this attribute
+  // so that it can be undone and/or re-applied when the RenderFrameHost
+  // changes.
+  float capture_scale_override_ = 1.0f;
+
+  // The last set capture size.
+  gfx::Size capture_size_;
 };
 
 }  // namespace content

@@ -799,6 +799,26 @@ void MakeDebugUtilsLabel(GLenum source, const char *marker, VkDebugUtilsLabelEXT
     kLabelColors[colorIndex].writeData(label->color);
 }
 
+angle::Result SetDebugUtilsObjectName(ContextVk *contextVk,
+                                      uint64_t handle,
+                                      const std::string &label)
+{
+    RendererVk *renderer = contextVk->getRenderer();
+
+    VkDebugUtilsObjectNameInfoEXT objectNameInfo = {};
+    objectNameInfo.sType        = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+    objectNameInfo.objectType   = VK_OBJECT_TYPE_IMAGE;
+    objectNameInfo.objectHandle = handle;
+    objectNameInfo.pObjectName  = label.c_str();
+
+    if (vkSetDebugUtilsObjectNameEXT)
+    {
+        ANGLE_VK_TRY(contextVk,
+                     vkSetDebugUtilsObjectNameEXT(renderer->getDevice(), &objectNameInfo));
+    }
+    return angle::Result::Continue;
+}
+
 // ClearValuesArray implementation.
 ClearValuesArray::ClearValuesArray() : mValues{}, mEnabled{} {}
 
@@ -878,6 +898,24 @@ void ClampViewport(VkViewport *viewport)
     }
 }
 
+void ApplyPipelineCreationFeedback(Context *context, const VkPipelineCreationFeedback &feedback)
+{
+    const bool cacheHit =
+        (feedback.flags & VK_PIPELINE_CREATION_FEEDBACK_APPLICATION_PIPELINE_CACHE_HIT_BIT) != 0;
+
+    angle::VulkanPerfCounters &perfCounters = context->getPerfCounters();
+
+    if (cacheHit)
+    {
+        ++perfCounters.pipelineCreationCacheHits;
+        perfCounters.pipelineCreationTotalCacheHitsDurationNs += feedback.duration;
+    }
+    else
+    {
+        ++perfCounters.pipelineCreationCacheMisses;
+        perfCounters.pipelineCreationTotalCacheMissesDurationNs += feedback.duration;
+    }
+}
 }  // namespace vk
 
 #if !defined(ANGLE_SHARED_LIBVULKAN)
@@ -887,6 +925,7 @@ PFN_vkDestroyDebugUtilsMessengerEXT vkDestroyDebugUtilsMessengerEXT = nullptr;
 PFN_vkCmdBeginDebugUtilsLabelEXT vkCmdBeginDebugUtilsLabelEXT       = nullptr;
 PFN_vkCmdEndDebugUtilsLabelEXT vkCmdEndDebugUtilsLabelEXT           = nullptr;
 PFN_vkCmdInsertDebugUtilsLabelEXT vkCmdInsertDebugUtilsLabelEXT     = nullptr;
+PFN_vkSetDebugUtilsObjectNameEXT vkSetDebugUtilsObjectNameEXT       = nullptr;
 
 // VK_EXT_debug_report
 PFN_vkCreateDebugReportCallbackEXT vkCreateDebugReportCallbackEXT   = nullptr;
@@ -973,6 +1012,27 @@ PFN_vkCreateStreamDescriptorSurfaceGGP vkCreateStreamDescriptorSurfaceGGP = null
 // VK_KHR_shared_presentable_image
 PFN_vkGetSwapchainStatusKHR vkGetSwapchainStatusKHR = nullptr;
 
+// VK_EXT_extended_dynamic_state
+PFN_vkCmdBindVertexBuffers2EXT vkCmdBindVertexBuffers2EXT             = nullptr;
+PFN_vkCmdSetCullModeEXT vkCmdSetCullModeEXT                           = nullptr;
+PFN_vkCmdSetDepthBoundsTestEnableEXT vkCmdSetDepthBoundsTestEnableEXT = nullptr;
+PFN_vkCmdSetDepthCompareOpEXT vkCmdSetDepthCompareOpEXT               = nullptr;
+PFN_vkCmdSetDepthTestEnableEXT vkCmdSetDepthTestEnableEXT             = nullptr;
+PFN_vkCmdSetDepthWriteEnableEXT vkCmdSetDepthWriteEnableEXT           = nullptr;
+PFN_vkCmdSetFrontFaceEXT vkCmdSetFrontFaceEXT                         = nullptr;
+PFN_vkCmdSetPrimitiveTopologyEXT vkCmdSetPrimitiveTopologyEXT         = nullptr;
+PFN_vkCmdSetScissorWithCountEXT vkCmdSetScissorWithCountEXT           = nullptr;
+PFN_vkCmdSetStencilOpEXT vkCmdSetStencilOpEXT                         = nullptr;
+PFN_vkCmdSetStencilTestEnableEXT vkCmdSetStencilTestEnableEXT         = nullptr;
+PFN_vkCmdSetViewportWithCountEXT vkCmdSetViewportWithCountEXT         = nullptr;
+
+// VK_EXT_extended_dynamic_state2
+PFN_vkCmdSetDepthBiasEnableEXT vkCmdSetDepthBiasEnableEXT                 = nullptr;
+PFN_vkCmdSetLogicOpEXT vkCmdSetLogicOpEXT                                 = nullptr;
+PFN_vkCmdSetPatchControlPointsEXT vkCmdSetPatchControlPointsEXT           = nullptr;
+PFN_vkCmdSetPrimitiveRestartEnableEXT vkCmdSetPrimitiveRestartEnableEXT   = nullptr;
+PFN_vkCmdSetRasterizerDiscardEnableEXT vkCmdSetRasterizerDiscardEnableEXT = nullptr;
+
 // VK_KHR_fragment_shading_rate
 PFN_vkGetPhysicalDeviceFragmentShadingRatesKHR vkGetPhysicalDeviceFragmentShadingRatesKHR = nullptr;
 PFN_vkCmdSetFragmentShadingRateKHR vkCmdSetFragmentShadingRateKHR                         = nullptr;
@@ -984,6 +1044,7 @@ void InitDebugUtilsEXTFunctions(VkInstance instance)
     GET_INSTANCE_FUNC(vkCmdBeginDebugUtilsLabelEXT);
     GET_INSTANCE_FUNC(vkCmdEndDebugUtilsLabelEXT);
     GET_INSTANCE_FUNC(vkCmdInsertDebugUtilsLabelEXT);
+    GET_INSTANCE_FUNC(vkSetDebugUtilsObjectNameEXT);
 }
 
 void InitDebugReportEXTFunctions(VkInstance instance)
@@ -1096,6 +1157,33 @@ void InitExternalSemaphoreCapabilitiesFunctions(VkInstance instance)
 void InitGetSwapchainStatusKHRFunctions(VkDevice device)
 {
     GET_DEVICE_FUNC(vkGetSwapchainStatusKHR);
+}
+
+// VK_EXT_extended_dynamic_state
+void InitExtendedDynamicStateEXTFunctions(VkDevice device)
+{
+    GET_DEVICE_FUNC(vkCmdBindVertexBuffers2EXT);
+    GET_DEVICE_FUNC(vkCmdSetCullModeEXT);
+    GET_DEVICE_FUNC(vkCmdSetDepthBoundsTestEnableEXT);
+    GET_DEVICE_FUNC(vkCmdSetDepthCompareOpEXT);
+    GET_DEVICE_FUNC(vkCmdSetDepthTestEnableEXT);
+    GET_DEVICE_FUNC(vkCmdSetDepthWriteEnableEXT);
+    GET_DEVICE_FUNC(vkCmdSetFrontFaceEXT);
+    GET_DEVICE_FUNC(vkCmdSetPrimitiveTopologyEXT);
+    GET_DEVICE_FUNC(vkCmdSetScissorWithCountEXT);
+    GET_DEVICE_FUNC(vkCmdSetStencilOpEXT);
+    GET_DEVICE_FUNC(vkCmdSetStencilTestEnableEXT);
+    GET_DEVICE_FUNC(vkCmdSetViewportWithCountEXT);
+}
+
+// VK_EXT_extended_dynamic_state2
+void InitExtendedDynamicState2EXTFunctions(VkDevice device)
+{
+    GET_DEVICE_FUNC(vkCmdSetDepthBiasEnableEXT);
+    GET_DEVICE_FUNC(vkCmdSetLogicOpEXT);
+    GET_DEVICE_FUNC(vkCmdSetPatchControlPointsEXT);
+    GET_DEVICE_FUNC(vkCmdSetPrimitiveRestartEnableEXT);
+    GET_DEVICE_FUNC(vkCmdSetRasterizerDiscardEnableEXT);
 }
 
 // VK_KHR_fragment_shading_rate
@@ -1337,6 +1425,32 @@ VkCompareOp GetCompareOp(const GLenum compareFunc)
         default:
             UNREACHABLE();
             return VK_COMPARE_OP_ALWAYS;
+    }
+}
+
+VkStencilOp GetStencilOp(GLenum compareOp)
+{
+    switch (compareOp)
+    {
+        case GL_KEEP:
+            return VK_STENCIL_OP_KEEP;
+        case GL_ZERO:
+            return VK_STENCIL_OP_ZERO;
+        case GL_REPLACE:
+            return VK_STENCIL_OP_REPLACE;
+        case GL_INCR:
+            return VK_STENCIL_OP_INCREMENT_AND_CLAMP;
+        case GL_DECR:
+            return VK_STENCIL_OP_DECREMENT_AND_CLAMP;
+        case GL_INCR_WRAP:
+            return VK_STENCIL_OP_INCREMENT_AND_WRAP;
+        case GL_DECR_WRAP:
+            return VK_STENCIL_OP_DECREMENT_AND_WRAP;
+        case GL_INVERT:
+            return VK_STENCIL_OP_INVERT;
+        default:
+            UNREACHABLE();
+            return VK_STENCIL_OP_KEEP;
     }
 }
 

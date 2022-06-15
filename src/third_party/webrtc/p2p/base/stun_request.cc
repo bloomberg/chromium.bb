@@ -57,7 +57,6 @@ void StunRequestManager::Send(StunRequest* request) {
 void StunRequestManager::SendDelayed(StunRequest* request, int delay) {
   RTC_DCHECK_RUN_ON(thread_);
   RTC_DCHECK_EQ(this, request->manager());
-  request->Construct();
   auto [iter, was_inserted] =
       requests_.emplace(request->id(), absl::WrapUnique(request));
   RTC_DCHECK(was_inserted);
@@ -193,12 +192,10 @@ void StunRequestManager::SendPacket(const void* data,
 
 StunRequest::StunRequest(StunRequestManager& manager)
     : manager_(manager),
-      msg_(new StunMessage()),
+      msg_(new StunMessage(STUN_INVALID_MESSAGE_TYPE)),
       tstamp_(0),
       count_(0),
-      timeout_(false) {
-  msg_->SetTransactionID(rtc::CreateRandomString(kStunTransactionIdLength));
-}
+      timeout_(false) {}
 
 StunRequest::StunRequest(StunRequestManager& manager,
                          std::unique_ptr<StunMessage> message)
@@ -207,18 +204,11 @@ StunRequest::StunRequest(StunRequestManager& manager,
       tstamp_(0),
       count_(0),
       timeout_(false) {
-  msg_->SetTransactionID(rtc::CreateRandomString(kStunTransactionIdLength));
+  RTC_DCHECK(!msg_->transaction_id().empty());
 }
 
 StunRequest::~StunRequest() {
   manager_.network_thread()->Clear(this);
-}
-
-void StunRequest::Construct() {
-  if (msg_->type() == 0) {
-    Prepare(msg_.get());
-    RTC_DCHECK(msg_->type() != 0);
-  }
 }
 
 int StunRequest::type() {

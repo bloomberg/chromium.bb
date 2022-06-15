@@ -1771,24 +1771,25 @@ bool WebGLRenderingContextBase::CopyRenderingResultsFromDrawingBuffer(
   return true;
 }
 
-void WebGLRenderingContextBase::CopyRenderingResultsToVideoFrame(
+bool WebGLRenderingContextBase::CopyRenderingResultsToVideoFrame(
     WebGraphicsContext3DVideoFramePool* frame_pool,
     SourceDrawingBuffer src_buffer,
     const gfx::ColorSpace& dst_color_space,
-    VideoFrameCopyCompletedCallback& callback) {
+    VideoFrameCopyCompletedCallback callback) {
   if (!frame_pool)
-    return;
+    return false;
 
   auto* drawing_buffer = GetDrawingBuffer();
   if (!drawing_buffer)
-    return;
+    return false;
 
   ScopedFramebufferRestorer fbo_restorer(this);
   if (!drawing_buffer->ResolveAndBindForReadAndDraw())
-    return;
+    return false;
 
-  drawing_buffer->CopyToVideoFrame(frame_pool, src_buffer, is_origin_top_left_,
-                                   dst_color_space, callback);
+  return drawing_buffer->CopyToVideoFrame(frame_pool, src_buffer,
+                                          is_origin_top_left_, dst_color_space,
+                                          std::move(callback));
 }
 
 gfx::Size WebGLRenderingContextBase::DrawingBufferSize() const {
@@ -3201,23 +3202,10 @@ GLenum WebGLRenderingContextBase::getError() {
   return ContextGL()->GetError();
 }
 
-const char* const* WebGLRenderingContextBase::ExtensionTracker::Prefixes()
-    const {
-  static const char* const kUnprefixed[] = {
-      "",
-      nullptr,
-  };
-  return prefixes_ ? prefixes_ : kUnprefixed;
-}
-
-bool WebGLRenderingContextBase::ExtensionTracker::MatchesNameWithPrefixes(
+bool WebGLRenderingContextBase::ExtensionTracker::MatchesName(
     const String& name) const {
-  const char* const* prefix_set = Prefixes();
-  for (; *prefix_set; ++prefix_set) {
-    String prefixed_name = String(*prefix_set) + ExtensionName();
-    if (DeprecatedEqualIgnoringCase(prefixed_name, name)) {
-      return true;
-    }
+  if (DeprecatedEqualIgnoringCase(ExtensionName(), name)) {
+    return true;
   }
   return false;
 }
@@ -3256,7 +3244,7 @@ ScriptValue WebGLRenderingContextBase::getExtension(ScriptState* script_state,
 
   if (!isContextLost()) {
     for (ExtensionTracker* tracker : extensions_) {
-      if (tracker->MatchesNameWithPrefixes(name)) {
+      if (tracker->MatchesName(name)) {
         if (ExtensionSupportedAndAllowed(tracker)) {
           extension = tracker->GetExtension(this);
           if (extension) {
@@ -3995,11 +3983,7 @@ WebGLRenderingContextBase::getSupportedExtensions() {
 
   for (ExtensionTracker* tracker : extensions_) {
     if (ExtensionSupportedAndAllowed(tracker)) {
-      const char* const* prefixes = tracker->Prefixes();
-      for (; *prefixes; ++prefixes) {
-        String prefixed_name = String(*prefixes) + tracker->ExtensionName();
-        result.push_back(prefixed_name);
-      }
+      result.push_back(tracker->ExtensionName());
     }
   }
 
@@ -5897,7 +5881,7 @@ void WebGLRenderingContextBase::TexImageHelperHTMLVideoElement(
   media::PaintCanvasVideoRenderer* video_renderer = nullptr;
   scoped_refptr<media::VideoFrame> media_video_frame;
   if (auto* wmp = video->GetWebMediaPlayer()) {
-    media_video_frame = wmp->GetCurrentFrame();
+    media_video_frame = wmp->GetCurrentFrameThenUpdate();
     video_renderer = wmp->GetPaintCanvasVideoRenderer();
   }
 
@@ -7066,6 +7050,13 @@ void WebGLRenderingContextBase::LoseContextImpl(
 
   for (wtf_size_t i = 0; i < kWebGLExtensionNameCount; ++i)
     extension_enabled_[i] = false;
+
+  // This resolver is non-null during a makeXRCompatible call, while waiting
+  // for a response from the browser and XR process. If the WebGL context is
+  // lost before we get a response, the resolver has to be rejected to be
+  // be properly disposed of.
+  xr_compatible_ = false;
+  CompleteXrCompatiblePromiseIfPending(DOMExceptionCode::kInvalidStateError);
 
   RemoveAllCompressedTextureFormats();
 

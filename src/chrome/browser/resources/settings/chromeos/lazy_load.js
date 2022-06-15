@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 // Uncomment as these modules are migrated to Polymer 3.
+import './crostini_page/bruschetta_subpage.js';
 import './crostini_page/crostini_arc_adb.js';
 import './crostini_page/crostini_arc_adb_confirmation_dialog.js';
 import './crostini_page/crostini_confirmation_dialog.js';
@@ -51,6 +52,7 @@ import './os_printing_page/cups_settings_add_printer_dialog.js';
 import './os_printing_page/os_printing_page.js';
 import './os_privacy_page/os_privacy_page.js';
 import './os_privacy_page/peripheral_data_access_protection_dialog.js';
+import './os_privacy_page/privacy_hub_page.js';
 import './os_privacy_page/smart_privacy_page.js';
 import './os_reset_page/os_powerwash_dialog.js';
 import './os_reset_page/os_powerwash_dialog_esim_item.js';

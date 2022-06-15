@@ -28,6 +28,7 @@
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/domain_reliability/service_factory.h"
+#include "chrome/browser/first_party_sets/first_party_sets_pref_names.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_settings_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -64,11 +65,15 @@
 #include "services/cert_verifier/public/mojom/cert_verifier_service_factory.mojom.h"
 #include "services/network/public/cpp/cors/origin_access_list.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/mojom/first_party_sets_access_delegate.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "third_party/blink/public/common/features.h"
 
 #if BUILDFLAG(IS_CHROMEOS)
+#include "chrome/browser/certificate_provider/certificate_provider.h"
+#include "chrome/browser/certificate_provider/certificate_provider_service.h"
+#include "chrome/browser/certificate_provider/certificate_provider_service_factory.h"
 #include "chrome/browser/policy/networking/policy_cert_service.h"
 #include "chrome/browser/policy/networking/policy_cert_service_factory.h"
 #endif
@@ -76,9 +81,6 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
-#include "chrome/browser/ash/certificate_provider/certificate_provider.h"
-#include "chrome/browser/ash/certificate_provider/certificate_provider_service.h"
-#include "chrome/browser/ash/certificate_provider/certificate_provider_service_factory.h"
 #include "chrome/browser/ash/net/client_cert_store_ash.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
@@ -111,7 +113,7 @@
 #include "chrome/browser/lacros/cert/cert_db_initializer_factory.h"
 #include "chrome/browser/lacros/cert/client_cert_store_lacros.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
-#include "chromeos/lacros/lacros_service.h"
+#include "chromeos/startup/browser_init_params.h"
 #endif
 
 namespace {
@@ -568,6 +570,16 @@ ProfileNetworkContextService::CreateClientCertStore() {
   if (!client_cert_store_factory_.is_null())
     return client_cert_store_factory_.Run();
 
+#if BUILDFLAG(IS_CHROMEOS)
+  chromeos::CertificateProviderService* cert_provider_service =
+      chromeos::CertificateProviderServiceFactory::GetForBrowserContext(
+          profile_);
+  std::unique_ptr<chromeos::CertificateProvider> certificate_provider;
+  if (cert_provider_service) {
+    certificate_provider = cert_provider_service->CreateCertificateProvider();
+  }
+#endif
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   bool use_system_key_slot = false;
   // Enable client certificates for the Chrome OS sign-in frame, if this feature
@@ -592,14 +604,6 @@ ProfileNetworkContextService::CreateClientCertStore() {
     if (user->IsAffiliated()) {
       use_system_key_slot = true;
     }
-  }
-
-  chromeos::CertificateProviderService* cert_provider_service =
-      chromeos::CertificateProviderServiceFactory::GetForBrowserContext(
-          profile_);
-  std::unique_ptr<chromeos::CertificateProvider> certificate_provider;
-  if (cert_provider_service) {
-    certificate_provider = cert_provider_service->CreateCertificateProvider();
   }
 
   // `ClientCertStoreAsh` internally depends on NSS initialization that happens
@@ -630,8 +634,8 @@ ProfileNetworkContextService::CreateClientCertStore() {
 
   CertDbInitializer* cert_db_initializer =
       CertDbInitializerFactory::GetForBrowserContext(profile_);
-  store = std::make_unique<ClientCertStoreLacros>(cert_db_initializer,
-                                                  std::move(store));
+  store = std::make_unique<ClientCertStoreLacros>(
+      std::move(certificate_provider), cert_db_initializer, std::move(store));
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
   return store;
@@ -917,10 +921,8 @@ void ProfileNetworkContextService::ConfigureNetworkContextParamsInternal(
   // moment).
   cert_verifier_creation_params->nss_full_path.reset();
   if (profile_->IsMainProfile()) {
-    DCHECK(chromeos::LacrosService::Get());
-    DCHECK(chromeos::LacrosService::Get()->init_params());
     const crosapi::mojom::DefaultPathsPtr& default_paths =
-        chromeos::LacrosService::Get()->init_params()->default_paths;
+        chromeos::BrowserInitParams::Get()->default_paths;
     // `default_paths` can be nullptr in tests.
     if (default_paths && default_paths->user_nss_database.has_value()) {
       cert_verifier_creation_params->nss_full_path =
@@ -976,6 +978,22 @@ void ProfileNetworkContextService::ConfigureNetworkContextParamsInternal(
   network_context_params->block_trust_tokens =
       !PrivacySandboxSettingsFactory::GetForProfile(profile_)
            ->IsTrustTokensAllowed();
+
+  network_context_params->first_party_sets_access_delegate_params =
+      network::mojom::FirstPartySetsAccessDelegateParams::New();
+  network_context_params->first_party_sets_access_delegate_params->enabled =
+      profile_->GetPrefs()->GetBoolean(
+          first_party_sets::kFirstPartySetsEnabled);
+
+  mojo::Remote<network::mojom::FirstPartySetsAccessDelegate>
+      fps_access_delegate_remote;
+  network_context_params->first_party_sets_access_delegate_receiver =
+      fps_access_delegate_remote.BindNewPipeAndPassReceiver();
+  // TODO(crbug.com/1325050): Call NotifyReady() here for now to match the
+  // existing behavior. NotifyReady() will be called by the remote handle owner
+  // in the follow up change.
+  fps_access_delegate_remote->NotifyReady();
+  fps_access_delegate_remote_set_.Add(std::move(fps_access_delegate_remote));
 }
 
 base::FilePath ProfileNetworkContextService::GetPartitionPath(

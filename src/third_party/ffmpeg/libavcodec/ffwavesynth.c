@@ -413,11 +413,10 @@ static void wavesynth_enter_intervals(struct wavesynth_context *ws, int64_t ts)
     *last = -1;
 }
 
-static int wavesynth_decode(AVCodecContext *avc, void *rframe, int *rgot_frame,
-                            AVPacket *packet)
+static int wavesynth_decode(AVCodecContext *avc, AVFrame *frame,
+                            int *rgot_frame, AVPacket *packet)
 {
     struct wavesynth_context *ws = avc->priv_data;
-    AVFrame *frame = rframe;
     int64_t ts;
     int duration;
     int s, c, r;
@@ -468,7 +467,7 @@ const FFCodec ff_ffwavesynth_decoder = {
     .priv_data_size = sizeof(struct wavesynth_context),
     .init           = wavesynth_init,
     .close          = wavesynth_close,
-    .decode         = wavesynth_decode,
+    FF_CODEC_DECODE_CB(wavesynth_decode),
     .p.capabilities = AV_CODEC_CAP_DR1,
     .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP,
 };

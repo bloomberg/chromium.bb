@@ -195,7 +195,7 @@ class MediaFoundationRendererErrorMessageView : public views::StyledLabel {
   }
 
  private:
-  CaptionBubble* const caption_bubble_;  // Not owned.
+  const raw_ptr<CaptionBubble> caption_bubble_;  // Not owned.
 };
 #endif
 
@@ -993,9 +993,7 @@ void CaptionBubble::UpdateContentSize() {
 #if BUILDFLAG(IS_WIN)
   // The Media Foundation renderer error message should not scale with the
   // user's caption style preference.
-  if (model_ && model_->HasError() &&
-      model_->ErrorType() ==
-          CaptionBubbleErrorType::MEDIA_FOUNDATION_RENDERER_UNSUPPORTED) {
+  if (HasMediaFoundationError()) {
     width = kMaxWidthDip;
     content_height =
         media_foundation_renderer_error_message_->GetPreferredSize().height();
@@ -1070,7 +1068,8 @@ void CaptionBubble::Hide() {
 }
 
 void CaptionBubble::OnInactivityTimeout() {
-  Hide();
+  if (HasMediaFoundationError())
+    return;
 
   // Clear the partial and final text in the caption bubble model and the label.
   // Does not affect the speech service. The speech service will emit a final
@@ -1081,6 +1080,8 @@ void CaptionBubble::OnInactivityTimeout() {
   // contain text cleared by the UI.
   if (model_)
     model_->ClearText();
+
+  Hide();
 }
 
 void CaptionBubble::MediaFoundationErrorCheckboxPressed() {
@@ -1089,6 +1090,12 @@ void CaptionBubble::MediaFoundationErrorCheckboxPressed() {
       CaptionBubbleErrorType::MEDIA_FOUNDATION_RENDERER_UNSUPPORTED,
       media_foundation_renderer_error_checkbox_->GetChecked());
 #endif
+}
+
+bool CaptionBubble::HasMediaFoundationError() {
+  return (model_ && model_->HasError() &&
+          model_->ErrorType() ==
+              CaptionBubbleErrorType::MEDIA_FOUNDATION_RENDERER_UNSUPPORTED);
 }
 
 bool CaptionBubble::HasActivity() {

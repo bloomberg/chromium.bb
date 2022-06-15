@@ -22,6 +22,7 @@ limitations under the License.
 #include <iterator>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "absl/memory/memory.h"
 #include "absl/strings/numbers.h"
@@ -96,6 +97,7 @@ limitations under the License.
 #include "tensorflow/compiler/xla/service/gpu/gpu_reduce_scatter_creator.h"
 #include "tensorflow/compiler/xla/service/gpu/gpu_sanitize_constant_names.h"
 #include "tensorflow/compiler/xla/service/gpu/gpu_scatter_expander.h"
+#include "tensorflow/compiler/xla/service/gpu/hlo_fusion_stats.h"
 #include "tensorflow/compiler/xla/service/gpu/horizontal_input_fusion.h"
 #include "tensorflow/compiler/xla/service/gpu/horizontal_loop_fusion.h"
 #include "tensorflow/compiler/xla/service/gpu/instruction_fusion.h"
@@ -104,6 +106,7 @@ limitations under the License.
 #include "tensorflow/compiler/xla/service/gpu/ir_emitter_unnested.h"
 #include "tensorflow/compiler/xla/service/gpu/launch_dimensions.h"
 #include "tensorflow/compiler/xla/service/gpu/llvm_gpu_backend/gpu_backend_lib.h"
+#include "tensorflow/compiler/xla/service/gpu/matmul_utils.h"
 #include "tensorflow/compiler/xla/service/gpu/metrics.h"
 #include "tensorflow/compiler/xla/service/gpu/multi_output_fusion.h"
 #include "tensorflow/compiler/xla/service/gpu/nccl_all_gather_thunk.h"
@@ -111,6 +114,7 @@ limitations under the License.
 #include "tensorflow/compiler/xla/service/gpu/reduction_dimension_grouper.h"
 #include "tensorflow/compiler/xla/service/gpu/reduction_layout_normalizer.h"
 #include "tensorflow/compiler/xla/service/gpu/reduction_splitter.h"
+#include "tensorflow/compiler/xla/service/gpu/runtime_intrinsics.h"
 #include "tensorflow/compiler/xla/service/gpu/stream_assignment.h"
 #include "tensorflow/compiler/xla/service/gpu/stream_executor_util.h"
 #include "tensorflow/compiler/xla/service/gpu/target_constants.h"
@@ -162,7 +166,6 @@ limitations under the License.
 #include "tensorflow/compiler/xla/util.h"
 #include "tensorflow/core/lib/core/status.h"
 #include "tensorflow/core/lib/gtl/cleanup.h"
-#include "tensorflow/core/lib/io/path.h"
 #include "tensorflow/core/platform/blocking_counter.h"
 #include "tensorflow/core/platform/casts.h"
 #include "tensorflow/core/platform/env.h"
@@ -170,9 +173,7 @@ limitations under the License.
 #include "tensorflow/core/platform/regexp.h"
 #include "tensorflow/core/platform/statusor.h"
 #include "tensorflow/core/platform/stream_executor_no_cuda.h"
-#include "tensorflow/core/platform/subprocess.h"
 #include "tensorflow/core/platform/threadpool.h"
-#include "tensorflow/core/platform/tracing.h"
 #include "tensorflow/core/profiler/lib/traceme.h"
 #include "tensorflow/core/util/env_var.h"
 
@@ -280,6 +281,7 @@ bool ConvIsLowerable(HloInstruction* conv) {
 
 using OwnedThunkSchedule = GpuExecutable::OwnedThunkSchedule;
 using OwnedBefBuffer = GpuExecutable::OwnedBefBuffer;
+using OwnedJitRtProgram = GpuExecutable::OwnedJitRtProgram;
 
 StatusOr<std::unique_ptr<Executable>> GpuAotCompilationResult::LoadExecutable(
     Compiler* compiler, se::StreamExecutor* executor) const {
@@ -436,9 +438,36 @@ Status GpuCompiler::OptimizeHloModule(
         /*expansion_type=*/LogisticExpansionType::kExp);
     pipeline.AddPass<ConditionalCanonicalizer>();
     pipeline.AddPass<DynamicDimensionSimplifier>();
-    auto dynamic_padder_options = DynamicPadderOptions();
-    dynamic_padder_options.shape_check_mode =
-        DynamicDimensionInference::ShapeCheckMode::kCompileTime;
+
+    DynamicPadderOptions dynamic_padder_options;
+
+    switch (hlo_module->config().debug_options().xla_gpu_shape_checks()) {
+      case DebugOptions::IGNORE:
+        dynamic_padder_options.shape_check_mode =
+            DynamicDimensionInference::ShapeCheckMode::kIgnore;
+        break;
+      case DebugOptions::RUNTIME: {
+        dynamic_padder_options.shape_check_mode =
+            DynamicDimensionInference::ShapeCheckMode::kRuntime;
+        dynamic_padder_options.assertion_generator = [&](HloInstruction* inst) {
+          auto created = Cast<HloCustomCallInstruction>(
+              inst->parent()->AddInstruction(HloInstruction::CreateCustomCall(
+                  ShapeUtil::MakeTokenShape(), {inst},
+                  kXlaGpuAssertCustomCallTag,
+                  "Buffers have different size at runtime",
+                  API_VERSION_STATUS_RETURNING)));
+          created->set_custom_call_has_side_effect(true);
+        };
+        break;
+      }
+      case DebugOptions::COMPILE_TIME:
+        dynamic_padder_options.shape_check_mode =
+            DynamicDimensionInference::ShapeCheckMode::kCompileTime;
+        break;
+      default:
+        LOG(FATAL) << "Unreachable";
+    }
+
     pipeline.AddPass<DynamicPadder>(dynamic_padder_options);
 
     // Build simplification pipeline.  The passes in here are run to a fixed
@@ -495,7 +524,7 @@ Status GpuCompiler::OptimizeHloModule(
       pipeline.AddPass<HloConstantFolding>();
       pipeline.AddPass<ConditionalSimplifier>();
       pipeline.AddPass<RealImagExpander>();
-      pipeline.AddPass<TransposeFolding>();
+      pipeline.AddPass<TransposeFolding>(CanFoldTransposeOperandIntoDot);
       pipeline.AddPass<HloCSE>(/*is_layout_sensitive=*/false);
       pipeline.AddPass<HloDCE>();
     }();
@@ -595,6 +624,12 @@ Status GpuCompiler::OptimizeHloModule(
                                       /*only_fusion_computations=*/true);
     horizontal_fusion.AddPass<HloDCE>();
     TF_RETURN_IF_ERROR(horizontal_fusion.Run(hlo_module).status());
+  }
+
+  if (VLOG_IS_ON(2)) {
+    HloFusionStatsVisitor stats;
+    TF_RETURN_IF_ERROR(hlo_module->entry_computation()->Accept(&stats));
+    VLOG(2) << stats.ToString();
   }
 
   {
@@ -714,13 +749,8 @@ Status GpuCompiler::OptimizeHloPostLayoutAssignment(
   // GemmRewriter assumes that all transposes are folded into gemms, but,
   // since commit 7d529df, this is not always true at this point.
   // Therefore, rerun transpose folding.
-  pipeline.AddPass<TransposeFolding>(
-      [](const HloInstruction& dot,
-         const TransposeFolding::OperandIndices& candidate_operands) {
-        return IsMatrixMultiplication(dot) ? candidate_operands
-                                           : TransposeFolding::OperandIndices{};
-      },
-      TransposeFolding::NeverFoldTranspose);
+  pipeline.AddPass<TransposeFolding>(CanFoldTransposeOperandIntoDot,
+                                     TransposeFolding::NeverFoldTranspose);
   // Rewrite GEMMs into custom calls.
   pipeline.AddPass<GemmRewriter>();
 
@@ -870,6 +900,36 @@ static StatusOr<OwnedBefBuffer> LowerToBef(mlir::ModuleOp mlir_module,
   std::copy(bef.begin(), bef.end(), ptr);
   return OwnedBefBuffer(ptr, {bef.size()});
 }
+
+static StatusOr<OwnedJitRtProgram> LowerToJitRt(
+    mlir::ModuleOp mlir_module, llvm::StringRef entry_function_name,
+    llvm::ArrayRef<int64_t> buffer_sizes, HloModule* hlo_module) {
+  // Forward collective (NCCL) attributes for use by the lowering pipeline.
+  mlir::OpBuilder builder(mlir_module.getContext());
+  mlir::IntegerAttr replica_count_attr =
+      builder.getI64IntegerAttr(hlo_module->config().replica_count());
+  mlir::IntegerAttr num_partitions_attr =
+      builder.getI64IntegerAttr(hlo_module->config().num_partitions());
+  mlir::func::FuncOp func =
+      mlir_module.lookupSymbol<mlir::func::FuncOp>(entry_function_name);
+  func->setAttr("replica_count", replica_count_attr);
+  func->setAttr("num_partitions", num_partitions_attr);
+
+  // Lower LMHLO operations to the JitRt compatible custom calls.
+  TF_RETURN_IF_ERROR(tensorflow::ConvertLmhloToJitRt(
+      mlir_module, {entry_function_name.data(), entry_function_name.size()},
+      buffer_sizes));
+  // Serialize module to pass it to GpuExecutable for compilation.
+  std::string serialized_module;
+  llvm::raw_string_ostream os(serialized_module);
+  mlir_module.print(os);
+
+  // TODO(b/232033540): Pass MLIR module directly to JitRt to instantiate an
+  // executable, without forcing serialization.
+  return std::make_unique<GpuExecutable::JitRtProgram>(
+      entry_function_name.str(), os.str(), buffer_sizes.vec(),
+      hlo_module->config().debug_options());
+}
 #endif  // XLA_ENABLE_XLIR
 
 using OutputInfoMap =
@@ -905,7 +965,8 @@ struct CompileModuleResults {
   std::unique_ptr<llvm::Module> llvm_module;
   std::unique_ptr<BufferAssignment> buffer_assignment;
   std::vector<BufferAllocation> allocations;
-  absl::variant<OwnedThunkSchedule, OwnedBefBuffer> thunks_or_bef;
+  absl::variant<OwnedThunkSchedule, OwnedBefBuffer, OwnedJitRtProgram>
+      executable;
   GpuExecutable::OwnedGpuContextCache gpu_ctx_cache;
   EntryFunctionAttributes entry_func_attrs;
   std::vector<GpuExecutable::ConstantInfo> constants;
@@ -1025,11 +1086,11 @@ static Status CompileModuleToLlvmIrImpl(
     llvm::transform(
         results->allocations, std::back_inserter(buffer_sizes),
         [](const BufferAllocation& allocation) { return allocation.size(); });
-    TF_ASSIGN_OR_RETURN(results->thunks_or_bef,
+    TF_ASSIGN_OR_RETURN(results->executable,
                         LowerToBef(*mlir_module, entry_function.getName(),
                                    buffer_sizes, hlo_module));
     if (stream_exec) {
-      auto& bef_buffer = absl::get<OwnedBefBuffer>(results->thunks_or_bef);
+      auto& bef_buffer = absl::get<OwnedBefBuffer>(results->executable);
       llvm::ArrayRef<uint8_t> bef_array(bef_buffer.get(),
                                         bef_buffer.get_deleter().size);
       TF_ASSIGN_OR_RETURN(results->gpu_ctx_cache,
@@ -1038,9 +1099,20 @@ static Status CompileModuleToLlvmIrImpl(
     }
     return Status::OK();
   }
+
+  if (IsJitRtExecutableEnabled(hlo_module->config())) {
+    std::vector<int64_t> buffer_sizes;
+    llvm::transform(
+        results->allocations, std::back_inserter(buffer_sizes),
+        [](const BufferAllocation& allocation) { return allocation.size(); });
+    TF_ASSIGN_OR_RETURN(results->executable,
+                        LowerToJitRt(*mlir_module, entry_function.getName(),
+                                     buffer_sizes, hlo_module));
+    return Status::OK();
+  }
 #endif  // XLA_ENABLE_XLIR
 
-  results->thunks_or_bef =
+  results->executable =
       absl::make_unique<ThunkSchedule>(ir_emitter->ConsumeThunkSequence());
   return Status::OK();
 }
@@ -1316,9 +1388,9 @@ StatusOr<std::unique_ptr<Executable>> GpuCompiler::RunBackend(
                             stream_exec, options, module.get()));
   if (DumpingEnabledForHloModule(*module) &&
       absl::holds_alternative<OwnedThunkSchedule>(
-          compile_module_results.thunks_or_bef)) {
+          compile_module_results.executable)) {
     const ThunkSchedule& thunk_schedule =
-        *absl::get<OwnedThunkSchedule>(compile_module_results.thunks_or_bef);
+        *absl::get<OwnedThunkSchedule>(compile_module_results.executable);
     DumpToFileInDirOrStdout(*module, "", "thunk_schedule",
                             thunk_schedule.ToString());
   }
@@ -1335,7 +1407,7 @@ StatusOr<std::unique_ptr<Executable>> GpuCompiler::RunBackend(
       auto gpu_executable,
       GpuExecutable::Create(
           {std::move(backend_result.first), std::move(backend_result.second),
-           gpu_version, std::move(compile_module_results.thunks_or_bef),
+           gpu_version, std::move(compile_module_results.executable),
            compile_module_results.entry_func_attrs,
            std::move(compile_module_results.constants),
            std::move(compile_module_results.output_info),
@@ -1463,11 +1535,11 @@ GpuCompiler::CompileAheadOfTime(std::unique_ptr<HloModuleGroup> module_group,
         GetCanShareBuffer(), pointer_size_, &compile_module_results));
 
     if (!absl::holds_alternative<OwnedBefBuffer>(
-            compile_module_results.thunks_or_bef)) {
+            compile_module_results.executable)) {
       return FailedPrecondition("Expected BefBuffer is not supplied.");
     }
     const auto& bef_buffer =
-        absl::get<OwnedBefBuffer>(compile_module_results.thunks_or_bef);
+        absl::get<OwnedBefBuffer>(compile_module_results.executable);
     const std::string bef(reinterpret_cast<char*>(bef_buffer.get()),
                           bef_buffer.get_deleter().size);
 

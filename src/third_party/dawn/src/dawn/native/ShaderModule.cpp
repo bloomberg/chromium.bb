@@ -112,8 +112,9 @@ tint::transform::VertexStepMode ToTintVertexStepMode(wgpu::VertexStepMode mode) 
             return tint::transform::VertexStepMode::kVertex;
         case wgpu::VertexStepMode::Instance:
             return tint::transform::VertexStepMode::kInstance;
+        case wgpu::VertexStepMode::VertexBufferNotUsed:
+            UNREACHABLE();
     }
-    UNREACHABLE();
 }
 
 ResultOrError<SingleShaderStage> TintPipelineStageToShaderStage(tint::ast::PipelineStage stage) {
@@ -380,8 +381,8 @@ ResultOrError<tint::Program> ParseWGSL(const tint::Source::File* file,
         outMessages->AddMessages(program.Diagnostics());
     }
     if (!program.IsValid()) {
-        return DAWN_FORMAT_VALIDATION_ERROR("Tint WGSL reader failure:\nParser: %s\nShader:\n%s\n",
-                                            program.Diagnostics().str(), file->content.data);
+        return DAWN_FORMAT_VALIDATION_ERROR("Tint WGSL reader failure: %s\n",
+                                            program.Diagnostics().str());
     }
 
     return std::move(program);

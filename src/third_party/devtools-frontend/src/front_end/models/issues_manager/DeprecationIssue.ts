@@ -34,7 +34,9 @@ const UIStrings = {
   authorizationCoveredByWildcard:
       'Authorization will not be covered by the wildcard symbol (*) in CORS `Access-Control-Allow-Headers` handling.',
   /**
-   * @description TODO(crbug.com/1320334): Description needed for translation
+   * @description This warning occurs when a page attempts to request a resource
+   *    whose URL contained both a newline character (`\n` or `\r`), and a
+   *    less-than character (`<`). These resources are blocked.
    */
   canRequestURLHTTPContainingNewline:
       'Resource requests whose URLs contained both removed whitespace `\\(n|r|t)` characters and less-than characters (`<`) are blocked. Please remove newlines and encode less-than characters from places like element attribute values in order to load these resources.',
@@ -80,11 +82,6 @@ const UIStrings = {
   cssSelectorInternalMediaControlsOverlayCastButton:
       'The `disableRemotePlayback` attribute should be used in order to disable the default Cast integration instead of using `-internal-media-controls-overlay-cast-button` selector.',
   /**
-   * @description TODO(crbug.com/1320340): Description needed for translation
-   */
-  customCursorIntersectsViewport:
-      'Custom cursors with size greater than 32x32 DIP intersecting native UI is deprecated and will be removed.',
-  /**
    * @description This message is shown when the example deprecated feature is used
    */
   deprecationExample: 'This is an example of a translated deprecation issue message.',
@@ -116,7 +113,7 @@ const UIStrings = {
   getUserMediaInsecureOrigin:
       '`getUserMedia()` no longer works on insecure origins. To use this feature, you should consider switching your application to a secure origin, such as HTTPS. See https://goo.gle/chrome-insecure-origins for more details.',
   /**
-   * @description TODO(crbug.com/1320342): Description needed for translation
+   * @description A deprecation warning shown to developers in the DevTools Issues tab when code tries to use the deprecated hostCandidate field, guiding developers to use the the equivalent information in the .address and .port fields instead.
    */
   hostCandidateAttributeGetter:
       '`RTCPeerConnectionIceErrorEvent.hostCandidate` is deprecated. Please use `RTCPeerConnectionIceErrorEvent.address` or `RTCPeerConnectionIceErrorEvent.port` instead.',
@@ -131,22 +128,17 @@ const UIStrings = {
    * use of IPv6 addresses with a non-standard API.
    */
   legacyConstraintGoogIPv6:
-      'IPv6 is enabled-by-default and the ability to disable it using `googIPv6` will soon be removed. Please stop using this legacy constraint.',
+      'IPv6 is enabled-by-default and the ability to disable it using `googIPv6` is targeted to be removed in M108, after which it will be ignored. Please stop using this legacy constraint.',
   /**
    * @description TODO(crbug.com/1318865): Description needed for translation
    */
   localCSSFileExtensionRejected:
       'CSS cannot be loaded from `file:` URLs unless they end in a `.css` file extension.',
   /**
-   * @description TODO(crbug.com/1320344): Description needed for translation
-   */
-  mediaElementAudioSourceNode:
-      'Creating a `MediaElementAudioSourceNode` on an `OfflineAudioContext` is deprecated and will be removed.',
-  /**
    * @description TODO(crbug.com/1320345): Description needed for translation
    */
   mediaSourceAbortRemove:
-      'Using `SourceBuffer.abort()` to abort `remove()`\'s asynchronous range removal is deprecated due to specification change. Support will be removed in the future. You should instead await `updateend`. `abort()` is intended to only abort an asynchronous media append or reset parser state.',
+      'Using `SourceBuffer.abort()` to abort `remove()`\'s asynchronous range removal is deprecated due to specification change. Support will be removed in the future. You should listen to the `updateend` event instead. `abort()` is intended to only abort an asynchronous media append or reset parser state.',
   /**
    * @description TODO(crbug.com/1320346): Description needed for translation
    */
@@ -173,15 +165,6 @@ const UIStrings = {
   obsoleteWebRtcCipherSuite:
       'Your partner is negotiating an obsolete (D)TLS version. Please check with your partner to have this fixed.',
   /**
-   * @description TODO(crbug.com/1320349): Description needed for translation
-   */
-  paymentRequestBasicCard: 'The `basic-card` payment method is deprecated and will be removed.',
-  /**
-   * @description TODO(crbug.com/1320350): Description needed for translation
-   */
-  paymentRequestShowWithoutGesture:
-      'Calling `PaymentRequest.show()` without user activation is deprecated and will be removed.',
-  /**
    * @description This issue indicates that a `<source>` element with a `<picture>` parent was using an `src` attribute, which is not valid and is ignored by the browser. The `srcset` attribute should be used instead.
    */
   pictureSourceSrc:
@@ -194,7 +177,7 @@ const UIStrings = {
    */
   vendorSpecificApi: '{PH1} is vendor-specific. Please use the standard {PH2} instead.',
   /**
-   * @description TODO(crbug.com/1320351): Description needed for translation
+   * @description Warning displayed to developers when `window.webkitStorageInfo` is used to notify that the API is deprecated.
    */
   prefixedStorageInfo:
       '`window.webkitStorageInfo` is deprecated. Please use `navigator.webkitTemporaryStorage` or `navigator.webkitPersistentStorage` instead.',
@@ -256,16 +239,6 @@ const UIStrings = {
    * `RTCP MUX` policy.
    */
   rtcpMuxPolicyNegotiate: 'The `rtcpMuxPolicy` option is deprecated and will be removed.',
-  /**
-   * @description A deprecation warning shown in the DevTools Issues tab.
-   * It's shown when a video conferencing website attempts to turn on or
-   * off a feature that has been removed, `RTP data channels`.
-   * `RTP data channels` are used to send and receive arbitrary data,
-   * but have been removed in favor of standardized versions of
-   * `data channels`: `SCTP data channels`.
-   */
-  rtpDataChannel:
-      '`RTP data channels` are no longer supported. The `RtpDataChannels` constraint is currently ignored, and may cause an error at a later date.',
   /**
    * @description TODO(crbug.com/1318878): Description needed for translation
    */
@@ -371,11 +344,6 @@ export class DeprecationIssue extends Issue {
         messageFunction = i18nLazyString(UIStrings.cssSelectorInternalMediaControlsOverlayCastButton);
         feature = 5714245488476160;
         break;
-      case Protocol.Audits.DeprecationIssueType.CustomCursorIntersectsViewport:
-        messageFunction = i18nLazyString(UIStrings.customCursorIntersectsViewport);
-        feature = 5825971391299584;
-        milestone = 75;
-        break;
       case Protocol.Audits.DeprecationIssueType.DeprecationExample:
         messageFunction = i18nLazyString(UIStrings.deprecationExample);
         feature = 5684289032159232;
@@ -415,11 +383,6 @@ export class DeprecationIssue extends Issue {
         messageFunction = i18nLazyString(UIStrings.localCSSFileExtensionRejected);
         milestone = 64;
         break;
-      case Protocol.Audits.DeprecationIssueType.MediaElementAudioSourceNode:
-        messageFunction = i18nLazyString(UIStrings.mediaElementAudioSourceNode);
-        feature = 5258622686724096;
-        milestone = 71;
-        break;
       case Protocol.Audits.DeprecationIssueType.MediaSourceAbortRemove:
         messageFunction = i18nLazyString(UIStrings.mediaSourceAbortRemove);
         feature = 6107495151960064;
@@ -443,16 +406,6 @@ export class DeprecationIssue extends Issue {
       case Protocol.Audits.DeprecationIssueType.ObsoleteWebRtcCipherSuite:
         messageFunction = i18nLazyString(UIStrings.obsoleteWebRtcCipherSuite);
         milestone = 81;
-        break;
-      case Protocol.Audits.DeprecationIssueType.PaymentRequestBasicCard:
-        messageFunction = i18nLazyString(UIStrings.paymentRequestBasicCard);
-        feature = 5730051011117056;
-        milestone = 100;
-        break;
-      case Protocol.Audits.DeprecationIssueType.PaymentRequestShowWithoutGesture:
-        messageFunction = i18nLazyString(UIStrings.paymentRequestShowWithoutGesture);
-        feature = 5948593429020672;
-        milestone = 102;
         break;
       case Protocol.Audits.DeprecationIssueType.PictureSourceSrc:
         messageFunction = i18nLazyString(UIStrings.pictureSourceSrc);
@@ -527,10 +480,6 @@ export class DeprecationIssue extends Issue {
         messageFunction = i18nLazyString(UIStrings.rtcpMuxPolicyNegotiate);
         feature = 5654810086866944;
         milestone = 62;
-        break;
-      case Protocol.Audits.DeprecationIssueType.RTPDataChannel:
-        messageFunction = i18nLazyString(UIStrings.rtpDataChannel);
-        milestone = 88;
         break;
       case Protocol.Audits.DeprecationIssueType.SharedArrayBufferConstructedWithoutIsolation:
         messageFunction = i18nLazyString(UIStrings.sharedArrayBufferConstructedWithoutIsolation);

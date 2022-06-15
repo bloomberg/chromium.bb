@@ -208,6 +208,8 @@ class PeerConnectionE2EQualityTestFixture {
     // if it's spec is `Spec::kNone`.
     bool IsRegular() const { return spec_ == Spec::kNone; }
 
+    std::string ToString() const;
+
    private:
     size_t width_ = 0;
     size_t height_ = 0;
@@ -377,6 +379,11 @@ class PeerConnectionE2EQualityTestFixture {
     static absl::optional<VideoResolution> GetMaxResolution(
         rtc::ArrayView<const VideoResolution> resolutions);
 
+    bool operator==(const VideoSubscription& other) const;
+    bool operator!=(const VideoSubscription& other) const {
+      return !(*this == other);
+    }
+
     // Subscribes receiver to all streams sent by the specified peer with
     // specified resolution. It will override any resolution that was used in
     // `SubscribeToAll` independently from methods call order.
@@ -422,6 +429,8 @@ class PeerConnectionE2EQualityTestFixture {
       }
       return subscribed_streams;
     }
+
+    std::string ToString() const;
 
    private:
     absl::optional<VideoResolution> default_resolution_ = absl::nullopt;

@@ -45,19 +45,6 @@ CollectionEpoch next_epoch() {
 }
 }  // namespace
 
-#if DEBUG
-void GCTracer::Scope::AssertMainThread() {
-  Isolate* isolate = tracer_->heap_->isolate();
-  Isolate* shared_isolate = isolate->shared_isolate();
-  ThreadId thread_id = ThreadId::Current();
-
-  // Either run on isolate's main thread or on the current main thread of the
-  // shared isolate during shared GCs.
-  DCHECK(isolate->thread_id() == thread_id ||
-         (shared_isolate && shared_isolate->thread_id() == thread_id));
-}
-#endif  // DEBUG
-
 GCTracer::Event::Event(Type type, State state,
                        GarbageCollectionReason gc_reason,
                        const char* collector_reason)
@@ -167,10 +154,10 @@ GCTracer::GCTracer(Heap* heap)
       previous_mark_compact_end_time_(0) {
   // All accesses to incremental_marking_scope assume that incremental marking
   // scopes come first.
-  STATIC_ASSERT(0 == Scope::FIRST_INCREMENTAL_SCOPE);
+  static_assert(0 == Scope::FIRST_INCREMENTAL_SCOPE);
   // We assume that MC_INCREMENTAL is the first scope so that we can properly
   // map it to RuntimeCallStats.
-  STATIC_ASSERT(0 == Scope::MC_INCREMENTAL);
+  static_assert(0 == Scope::MC_INCREMENTAL);
   current_.end_time = MonotonicallyIncreasingTimeInMs();
   for (int i = 0; i < Scope::NUMBER_OF_SCOPES; i++) {
     background_counter_[i].total_duration_ms = 0;
@@ -907,11 +894,10 @@ void GCTracer::PrintNVP() const {
           "mark=%.1f "
           "mark.finish_incremental=%.1f "
           "mark.roots=%.1f "
-          "mark.main=%.1f "
-          "mark.weak_closure=%.1f "
-          "mark.weak_closure.ephemeron=%.1f "
-          "mark.weak_closure.ephemeron.marking=%.1f "
-          "mark.weak_closure.ephemeron.linear=%.1f "
+          "mark.full_closure_parallel=%.1f "
+          "mark.full_closure=%.1f "
+          "mark.ephemeron.marking=%.1f "
+          "mark.ephemeron.linear=%.1f "
           "mark.embedder_prologue=%.1f "
           "mark.embedder_tracing=%.1f "
           "prologue=%.1f "
@@ -996,9 +982,8 @@ void GCTracer::PrintNVP() const {
           current_scope(Scope::MC_MARK),
           current_scope(Scope::MC_MARK_FINISH_INCREMENTAL),
           current_scope(Scope::MC_MARK_ROOTS),
-          current_scope(Scope::MC_MARK_MAIN),
-          current_scope(Scope::MC_MARK_WEAK_CLOSURE),
-          current_scope(Scope::MC_MARK_WEAK_CLOSURE_EPHEMERON),
+          current_scope(Scope::MC_MARK_FULL_CLOSURE_PARALLEL),
+          current_scope(Scope::MC_MARK_FULL_CLOSURE),
           current_scope(Scope::MC_MARK_WEAK_CLOSURE_EPHEMERON_MARKING),
           current_scope(Scope::MC_MARK_WEAK_CLOSURE_EPHEMERON_LINEAR),
           current_scope(Scope::MC_MARK_EMBEDDER_PROLOGUE),

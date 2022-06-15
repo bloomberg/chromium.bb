@@ -1522,11 +1522,11 @@ TEST_F(VkLayerTest, ImagelessFramebufferRenderPassBeginImageView3D) {
 
 TEST_F(VkLayerTest, FramebufferAttachmentImageInfoPNext) {
     TEST_DESCRIPTION("Begin render pass with missing framebuffer attachment");
+    AddRequiredExtensions(VK_KHR_IMAGELESS_FRAMEBUFFER_EXTENSION_NAME);
 
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
-    if (!AddRequiredDeviceExtensions(VK_KHR_IMAGELESS_FRAMEBUFFER_EXTENSION_NAME)) {
-        printf("%s test requires VK_KHR_imageless_framebuffer, not available.  Skipping.\n", kSkipPrefix);
-        return;
+    if (!AreRequiredExtensionsEnabled()) {
+        GTEST_SKIP() << RequiredExtensionsNotSupported() << " not supported";
     }
     ASSERT_NO_FATAL_FAILURE(InitState());
     ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
@@ -1666,9 +1666,8 @@ TEST_F(VkLayerTest, RenderPassCreateFragmentDensityMapReferenceToInvalidAttachme
         return;
     }
 
-    if (DeviceValidationVersion() >= VK_API_VERSION_1_1) {
-        printf("%s Tests requires a Vulkan version prior to 1.1, skipping test\n", kSkipPrefix);
-        return;
+    if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
+        GTEST_SKIP() << "At least Vulkan version 1.1 is required";
     }
 
     m_device_extension_names.push_back(VK_EXT_FRAGMENT_DENSITY_MAP_EXTENSION_NAME);

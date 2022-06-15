@@ -38,7 +38,7 @@ void SideSearchTabContentsHelper::NavigateInTabContents(
       params.url, ui::PageTransitionCoreTypeIs(ui::PAGE_TRANSITION_LINK,
                                                params.transition)};
 
-  web_contents()->GetMainFrame()->NotifyUserActivation(
+  web_contents()->GetPrimaryMainFrame()->NotifyUserActivation(
       blink::mojom::UserActivationNotificationType::kInteraction);
   web_contents()->GetController().LoadURLWithParams(
       content::NavigationController::LoadURLParams(params));
@@ -96,6 +96,10 @@ void SideSearchTabContentsHelper::DidFinishNavigation(
     // Capture the URL here in case the side contents is closed before the
     // navigation completes.
     last_search_url_ = url;
+
+    // Allow the page action label to be shown next time the entrypoint is
+    // revealed.
+    can_show_page_action_label_ = true;
 
     // If the navigation to a search results page succeeds we should update the
     // side panel availability bit accordingly.
@@ -169,6 +173,16 @@ void SideSearchTabContentsHelper::
 void SideSearchTabContentsHelper::SetDelegate(
     base::WeakPtr<Delegate> delegate) {
   delegate_ = std::move(delegate);
+}
+
+void SideSearchTabContentsHelper::DidShowPageActionLabel() {
+  ++page_action_label_shown_count_;
+}
+
+bool SideSearchTabContentsHelper::GetAndResetCanShowPageActionLabel() {
+  const bool initial_can_show_page_action_label = can_show_page_action_label_;
+  can_show_page_action_label_ = false;
+  return initial_can_show_page_action_label;
 }
 
 void SideSearchTabContentsHelper::SetSidePanelContentsForTesting(

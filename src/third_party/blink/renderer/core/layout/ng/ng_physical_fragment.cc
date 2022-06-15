@@ -403,8 +403,7 @@ NGPhysicalFragment::OutOfFlowData* NGPhysicalFragment::OutOfFlowDataFromBuilder(
 
 // Even though the other constructors don't initialize many of these fields
 // (instead set by their super-classes), the copy constructor does.
-NGPhysicalFragment::NGPhysicalFragment(const NGPhysicalFragment& other,
-                                       bool recalculate_layout_overflow)
+NGPhysicalFragment::NGPhysicalFragment(const NGPhysicalFragment& other)
     : layout_object_(other.layout_object_),
       size_(other.size_),
       has_floating_descendants_for_paint_(
@@ -471,6 +470,14 @@ bool NGPhysicalFragment::IsTextControlContainer() const {
 bool NGPhysicalFragment::IsTextControlPlaceholder() const {
   return IsCSSBox() &&
          blink::IsTextControlPlaceholder(layout_object_->GetNode());
+}
+
+base::span<NGPhysicalOutOfFlowPositionedNode>
+NGPhysicalFragment::OutOfFlowPositionedDescendants() const {
+  if (!HasOutOfFlowPositionedDescendants())
+    return base::span<NGPhysicalOutOfFlowPositionedNode>();
+  return {oof_data_->oof_positioned_descendants.data(),
+          oof_data_->oof_positioned_descendants.size()};
 }
 
 NGFragmentedOutOfFlowData* NGPhysicalFragment::FragmentedOutOfFlowData() const {
@@ -787,11 +794,13 @@ void NGPhysicalFragment::AddOutlineRectsForCursor(
     NGInlineCursor* cursor) const {
   const auto* const text_combine =
       DynamicTo<LayoutNGTextCombine>(containing_block);
-  for (; *cursor; cursor->MoveToNext()) {
+  while (*cursor) {
     DCHECK(cursor->Current().Item());
     const NGFragmentItem& item = *cursor->Current().Item();
-    if (UNLIKELY(item.IsLayoutObjectDestroyedOrMoved()))
+    if (UNLIKELY(item.IsLayoutObjectDestroyedOrMoved())) {
+      cursor->MoveToNext();
       continue;
+    }
     switch (item.Type()) {
       case NGFragmentItem::kLine: {
         AddOutlineRectsForDescendant(
@@ -825,10 +834,16 @@ void NGPhysicalFragment::AddOutlineRectsForCursor(
           AddOutlineRectsForDescendant(
               {child_box, item.OffsetInContainerFragment()}, outline_rects,
               additional_offset, outline_type, containing_block);
+          if (child_box->IsInlineBox()) {
+            // Inline boxes have their children in the flat list. Skip them.
+            cursor->MoveToNextSkippingChildren();
+            continue;
+          }
         }
         break;
       }
     }
+    cursor->MoveToNext();
   }
 }
 

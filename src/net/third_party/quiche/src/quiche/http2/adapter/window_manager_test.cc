@@ -24,7 +24,7 @@ class WindowManagerPeer {
 
 namespace {
 
-class WindowManagerTest : public ::testing::Test {
+class WindowManagerTest : public quiche::test::QuicheTest {
  protected:
   WindowManagerTest()
       : wm_(kDefaultLimit, absl::bind_front(&WindowManagerTest::OnCall, this)),
@@ -72,7 +72,9 @@ TEST_F(WindowManagerTest, DataBufferedAndFlushed) {
     wm_.MarkDataBuffered(buffered);
     total_buffered += buffered;
     EXPECT_TRUE(call_sequence_.empty());
-    int64_t flushed = random_.Uniform(total_buffered - total_flushed);
+    int64_t flushed = (total_buffered - total_flushed) > 0
+                          ? random_.Uniform(total_buffered - total_flushed)
+                          : 0;
     wm_.MarkDataFlushed(flushed);
     total_flushed += flushed;
   }

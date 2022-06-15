@@ -30,7 +30,7 @@ class Isolate;
 class ObjectVisitor;
 
 // -----------------------------------------------------------------------------
-// Heap object iterator in old/map spaces.
+// Heap object iterator in paged spaces.
 //
 // A PagedSpaceObjectIterator iterates objects from the bottom of the given
 // space to its top or from the bottom of the given page to its top.
@@ -41,8 +41,11 @@ class ObjectVisitor;
 class V8_EXPORT_PRIVATE PagedSpaceObjectIterator : public ObjectIterator {
  public:
   // Creates a new object iterator in a given space.
-  PagedSpaceObjectIterator(Heap* heap, PagedSpace* space);
-  PagedSpaceObjectIterator(Heap* heap, PagedSpace* space, Page* page);
+  PagedSpaceObjectIterator(Heap* heap, const PagedSpaceBase* space);
+  PagedSpaceObjectIterator(Heap* heap, const PagedSpaceBase* space,
+                           const Page* page);
+  PagedSpaceObjectIterator(Heap* heap, const PagedSpace* space,
+                           const Page* page, Address start_address);
 
   // Advance to the next object, skipping free spaces and other fillers and
   // skipping the special garbage section of which there is one per space.
@@ -69,15 +72,15 @@ class V8_EXPORT_PRIVATE PagedSpaceObjectIterator : public ObjectIterator {
 
   Address cur_addr_;  // Current iteration point.
   Address cur_end_;   // End iteration point.
-  const PagedSpace* const space_;
-  PageRange page_range_;
-  PageRange::iterator current_page_;
+  const PagedSpaceBase* const space_;
+  ConstPageRange page_range_;
+  ConstPageRange::iterator current_page_;
 #if V8_COMPRESS_POINTERS
   const PtrComprCageBase cage_base_;
 #endif  // V8_COMPRESS_POINTERS
 };
 
-class V8_EXPORT_PRIVATE PagedSpace
+class V8_EXPORT_PRIVATE PagedSpaceBase
     : NON_EXPORTED_BASE(public SpaceWithLinearArea) {
  public:
   using iterator = PageIterator;
@@ -86,12 +89,13 @@ class V8_EXPORT_PRIVATE PagedSpace
   static const size_t kCompactionMemoryWanted = 500 * KB;
 
   // Creates a space with an id.
-  PagedSpace(
+  PagedSpaceBase(
       Heap* heap, AllocationSpace id, Executability executable,
-      FreeList* free_list, LinearAllocationArea* allocation_info_,
+      FreeList* free_list, LinearAllocationArea* allocation_info,
+      LinearAreaOriginalData& linear_area_original_data,
       CompactionSpaceKind compaction_space_kind = CompactionSpaceKind::kNone);
 
-  ~PagedSpace() override { TearDown(); }
+  ~PagedSpaceBase() override { TearDown(); }
 
   // Checks whether an object/address is in this space.
   inline bool Contains(Address a) const;
@@ -233,9 +237,9 @@ class V8_EXPORT_PRIVATE PagedSpace
 
 #ifdef VERIFY_HEAP
   // Verify integrity of this space.
-  virtual void Verify(Isolate* isolate, ObjectVisitor* visitor);
+  virtual void Verify(Isolate* isolate, ObjectVisitor* visitor) const;
 
-  void VerifyLiveBytes();
+  void VerifyLiveBytes() const;
 
   // Overridden by subclasses to verify space-specific object
   // properties (e.g., only maps or free-list nodes are in map space).
@@ -243,8 +247,8 @@ class V8_EXPORT_PRIVATE PagedSpace
 #endif
 
 #ifdef DEBUG
-  void VerifyCountersAfterSweeping(Heap* heap);
-  void VerifyCountersBeforeConcurrentSweeping();
+  void VerifyCountersAfterSweeping(Heap* heap) const;
+  void VerifyCountersBeforeConcurrentSweeping() const;
   // Print meta info and objects in this space.
   void Print() override;
 
@@ -305,21 +309,6 @@ class V8_EXPORT_PRIVATE PagedSpace
 
   void SetLinearAllocationArea(Address top, Address limit);
 
-  Address original_top() const { return original_top_; }
-
-  Address original_limit() const { return original_limit_; }
-
-  void MoveOriginalTopForward() {
-    base::SharedMutexGuard<base::kExclusive> guard(&pending_allocation_mutex_);
-    DCHECK_GE(top(), original_top_);
-    DCHECK_LE(top(), original_limit_);
-    original_top_ = top();
-  }
-
-  base::SharedMutex* pending_allocation_mutex() {
-    return &pending_allocation_mutex_;
-  }
-
   void AddRangeToActiveSystemPages(Page* page, Address start, Address end);
   void ReduceActiveSystemPages(Page* page,
                                ActiveSystemPages active_system_pages);
@@ -327,7 +316,7 @@ class V8_EXPORT_PRIVATE PagedSpace
  private:
   class ConcurrentAllocationMutex {
    public:
-    explicit ConcurrentAllocationMutex(const PagedSpace* space) {
+    explicit ConcurrentAllocationMutex(const PagedSpaceBase* space) {
       if (space->SupportsConcurrentAllocation()) {
         guard_.emplace(&space->space_mutex_);
       }
@@ -420,14 +409,6 @@ class V8_EXPORT_PRIVATE PagedSpace
   // Mutex guarding any concurrent access to the space.
   mutable base::Mutex space_mutex_;
 
-  // The top and the limit at the time of setting the linear allocation area.
-  // These values are protected by pending_allocation_mutex_.
-  Address original_top_;
-  Address original_limit_;
-
-  // Protects original_top_ and original_limit_.
-  base::SharedMutex pending_allocation_mutex_;
-
   std::atomic<size_t> committed_physical_memory_{0};
 
   friend class IncrementalMarking;
@@ -435,6 +416,20 @@ class V8_EXPORT_PRIVATE PagedSpace
 
   // Used in cctest.
   friend class heap::HeapTester;
+};
+
+class V8_EXPORT_PRIVATE PagedSpace : public PagedSpaceBase {
+ public:
+  // Creates a space with an id.
+  PagedSpace(
+      Heap* heap, AllocationSpace id, Executability executable,
+      FreeList* free_list, LinearAllocationArea* allocation_info,
+      CompactionSpaceKind compaction_space_kind = CompactionSpaceKind::kNone)
+      : PagedSpaceBase(heap, id, executable, free_list, allocation_info,
+                       linear_area_original_data_, compaction_space_kind) {}
+
+ private:
+  LinearAreaOriginalData linear_area_original_data_;
 };
 
 // -----------------------------------------------------------------------------
@@ -587,6 +582,7 @@ class OldGenerationMemoryChunkIterator {
   PageIterator old_iterator_;
   PageIterator code_iterator_;
   PageIterator map_iterator_;
+  const PageIterator map_iterator_end_;
   LargePageIterator lo_iterator_;
   LargePageIterator code_lo_iterator_;
 };

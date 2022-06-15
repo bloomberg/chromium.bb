@@ -29,20 +29,22 @@ Chrome will enforce these rules for cookies set with the `Partitioned` attribute
 
 ## Origin Trial
 
-If you are interested in participating in the CHIPS origin trial, then you need to include the `Origin-Trial` header in each HTTP response with a valid token.
-You must also send the `Accept-CH: Sec-CH-Partitioned-Cookies` header in each HTTP response as well.
+**The following only applies to Chrome version 103 or later.**
 
-If you have successfully opted into the origin trial, subsequent requests from the Chrome client will include the `Sec-CH-Partitioned-Cookies: ?1` request header until the current session is ended.
-If you store persistent partitioned cookies then you will receive the `Sec-CH-Partitioned-Cookies: ?0` request header for the first request to the cookies' origin.
+If you are interested in participating in the CHIPS origin trial, then you need to include the `Origin-Trial` header with a valid token in any HTTP response that also includes a `Set-Cookie` header with the `Partitioned` attribute.
 
-**Not all Chrome clients using versions 100-102 will be in the trial.**
+The `Set-Cookie` header does NOT have to result in a valid cookie.
+
+If you have successfully opted into the origin trial AND have set a partitioned cookie, then subsequent requests from the Chrome client will include the `Sec-CH-Partitioned-Cookies: ?0` whenever the partitioned cookie is included in the `Cookie` header.
+
+Responses which do not include a `Set-Cookie` header with `Partitioned` will not impact a site's origin trial participation status.
+
+**Not all Chrome clients will be in the trial.**
 **If the client does not send the Sec-CH-Partitioned-Cookies header, then partitioned cookies are not enabled.**
-
-If you do not respond with a valid token in the `Origin-Trial` header and `Accept-CH: Partitioned-Cookies`, then the partitioned cookies on the machine will be converted to unpartitioned cookies.
 
 You can register your site for the origin trial [here](https://developer.chrome.com/origintrials/#/view_trial/1239615797433729025).
 
-**The origin trial is only available in Chrome versions 100-102.**
+**The origin trial is only available in Chrome versions 103-105.**
 
 ### Example usage
 
@@ -50,7 +52,6 @@ When a site wishes to participate in the origin trial, they should include the f
 
 ```text
 Origin-Trial: *valid Origin Trial token*
-Accept-CH: Sec-CH-Partitioned-Cookies
 Set-Cookie: __Host-name=value; Secure; Path=/; SameSite=None; Partitioned;
 ```
 
@@ -59,41 +60,9 @@ Remember, in order to keep participating in the trial, you must include these he
 If the opt in is successful, Chrome will include the following headers in future requests:
 
 ```text
-Sec-CH-Partitioned-Cookies: ?1
-Cookie: __Host-name=value
-```
-
-If your site receives the cookie without this client hint, then this means your site did not opt into the origin trial correctly and the cookie you are receiving is not partitioned.
-
-If the site sets persistent partitioned cookies (e.g. a max age of 1 day):
-
-```text
-Origin-Trial: *valid Origin Trial token*
-Accept-CH: Sec-CH-Partitioned-Cookies
-Set-Cookie: __Host-name=value; Secure; Path=/; SameSite=None; Partitioned; Max-Age=86400;
-```
-
-if the user visits the site after the current session has ended, the first request to the site will include the following request headers:
-
-```text
 Sec-CH-Partitioned-Cookies: ?0
 Cookie: __Host-name=value
 ```
-
-If the site responds with the `Accept-CH` and `Origin-Trial` headers, Chrome will continue to send partitioned cookies and the `Sec-CH-Partitioned-Cookies: ?1` request header.
-
-If the site does not opt back into the trial, the `__Host-name` cookie will be converted into an unpartitioned cookie.
-This will allow the site to roll back its usage of partitioned cookies in case it causes server breakage.
-
-You can also persist your participation in the origin trial between sessions using the `Critical-CH: Sec-CH-Partitioned-Cookies` response header:
-
-```text
-Origin-Trial: *valid Origin Trial token*
-Accept-CH: Sec-CH-Partitioned-Cookies
-Critical-CH: Sec-CH-Partitioned-Cookies
-```
-
-This will cause Chrome to restart the request and send the `Sec-CH-Partitioned-Cookies: ?1` request header.
 
 ### JavaScript
 
@@ -147,13 +116,13 @@ cookieStore.set({
 });
 ```
 
-## Demo
+## Demo (Chrome 103 or later)
 
 One you have followed the instructions in the [End-to-End Testing](#end-to-end-testing) section, you can use the following instructions to see a demonstration of the Partitioned attribute.
 
 1. Go to chrome://settings/cookies and make sure that the radio button is set to "Allow all cookies" or "Block third-party cookies in Incognito".
 
-1. Open a new tab and navigate to https://cr2.kungfoo.net/cookies/index.php.
+1. Open a new tab and navigate to https://cr2.kungfoo.net/cookies/v2.
 
 1. Click "Set cookie (SameSite=None)" to set an **unpartitioned** SameSite=None cookie named "unpartitioned".
 
@@ -162,28 +131,33 @@ One you have followed the instructions in the [End-to-End Testing](#end-to-end-t
 1. Open DevTools to Application > Cookies > https://cr2.kungfoo.net and you should see both the UI display both cookies.
   Note that the partitioned cookie has a "Partition Key", https://kungfoo.net, whereas the unpartitioned cookie does not.
 
-1. Navigate to https://lying-river-tablecloth.glitch.me to see a site which embeds a cross-site iframe whose origin is https://cr2.kungfoo.net.
+1. Navigate to https://wobbly-violet-heaven.glitch.me to see a site which embeds a cross-site iframe whose origin is https://cr2.kungfoo.net.
   As you can see, the unpartitioned SameSite=None cookie is available, but the partitioned cookie is not since we are now on a different top-level site.
 
 1. Click "Set partitioned cookie (SameSite=None; Partitioned)" to set a partitioned cookie, "__Host-3P_partitioned", in a third-party context.
 
-1. Open Application > Cookies > https://cr2.kungfoo.net and you should see both cookies. Note that the new partitioned cookie's "Partition Key" is https://lying-river-tablecloth.glitch.me, the top level site (glitch.me is on the [Public Suffix List](https://publicsuffix.org/)).
+1. Open Application > Cookies > https://cr2.kungfoo.net and you should see both cookies. Note that the new partitioned cookie's "Partition Key" is https://wobbly-violet-heaven.glitch.me, the top level site (glitch.me is on the [Public Suffix List](https://publicsuffix.org/)).
 
 1. Go back to the first tab which has the chrome://settings/cookies page open. Change the setting to "Block Third-Party Cookies".
 
-1. Navigate back to the tab navigated to https://lying-river-tablecloth.glitch.me and refresh the page.
+1. Navigate back to the tab navigated to https://wobbly-violet-heaven.glitch.me and refresh the page.
   You should see that only the partitioned cookie, "__Host-3P_partitioned", is available.
 
-1. Open DevTools to the "Network" tab and refresh the page. Click on the request to "thirdparty.html" and click on the "Cookies" tab.
+1. Open DevTools to the Network > Cookies tab and refresh the page. Click on the request to "thirdparty.html".
   You should see that the unpartitioned cookie was blocked in a third-party context, but the partitioned cookie was allowed.
 
 1. Go back to the tab which has chrome://settings/cookies open. Change the setting back to "Allow all cookies" or "Block third-party cookies in Incognito".
 
-1. Open the tab which has https://lying-river-tablecloth.glitch.me open. You should see that both the "unpartitioned" and "__Host-3P_partitioned" cookies are available again.
+1. Open the tab which has https://wobbly-violet-heaven.glitch.me open. You should see that both the "unpartitioned" and "__Host-3P_partitioned" cookies are available again.
 
 1. Click the "Clear cookies" button. This will cause cr2.kungfoo.net to send the `Clear-Site-Data: "cookies"` header. You should see that both the "unpartitioned" and "__Host-3P_partitioned" cookies were removed.
 
-1. Navigate the tab back to https://cr2.kungfoo.net/cookies/index.php. You should see that the "__Host-1P_partitioned" cookie was not removed after cr2.kungfoo.net sent the `Clear-Site-Data` header on a different top-level site.
+1. Navigate the tab back to https://cr2.kungfoo.net/cookies/v2. You should see that the "__Host-1P_partitioned" cookie was not removed after cr2.kungfoo.net sent the `Clear-Site-Data` header on a different top-level site.
+
+1. For Chrome versions 103 and 104, you can also click the "Opt-out of partitioned cookies" button to revert the partitioned cookie back to unpartitoned behavior.
+  This option is only available to HTTP cookies during the CHIPS origin trial, which ends in 105, and is meant to demonstrate Chrome's behavior when a site opts out of the OT.
+  If you navigate back to https://wobbly-violet-heaven.glitch.me after clicking this button, the "__Host-1P_partitioned" cookie should still be available.
+  Note that if you change the setting on chrome://settings/cookies to "Block Third-Party Cookies" then the "__Host-1P_partitioned" cookie is not available in a cross-site context.
 
 ## Resources
 - [CHIPS explainer](https://github.com/WICG/CHIPS)

@@ -19,9 +19,6 @@
 #include <memory>
 #include <string>
 
-#include "absl/container/flat_hash_map.h"
-#include "absl/container/flat_hash_set.h"
-#include "absl/strings/escaping.h"
 #include "absl/synchronization/mutex.h"
 #include "internal/platform/byte_array.h"
 #include "internal/platform/implementation/ble_v2.h"
@@ -37,7 +34,7 @@ namespace windows {
 
 class BleV2Peripheral : public api::ble_v2::BlePeripheral {
  public:
-  std::string GetId() const override;
+  std::string GetAddress() const override;
 };
 
 // Container of operations that can be performed over the BLE medium.
@@ -49,32 +46,30 @@ class BleV2Medium : public api::ble_v2::BleMedium {
   // Returns true once the Ble advertising has been initiated.
   bool StartAdvertising(
       const api::ble_v2::BleAdvertisementData& advertising_data,
-      const api::ble_v2::BleAdvertisementData& scan_response_data,
-      api::ble_v2::PowerMode power_mode) override ABSL_LOCKS_EXCLUDED(mutex_);
+      api::ble_v2::AdvertiseParameters advertising_parameters) override
+      ABSL_LOCKS_EXCLUDED(mutex_);
   bool StopAdvertising() override ABSL_LOCKS_EXCLUDED(mutex_);
 
-  bool StartScanning(const std::vector<std::string>& service_uuids,
-                     api::ble_v2::PowerMode power_mode,
+  bool StartScanning(const Uuid& service_uuid,
+                     api::ble_v2::TxPowerLevel tx_power_level,
                      ScanCallback callback) override
       ABSL_LOCKS_EXCLUDED(mutex_);
   bool StopScanning() override ABSL_LOCKS_EXCLUDED(mutex_);
   std::unique_ptr<api::ble_v2::GattServer> StartGattServer(
       api::ble_v2::ServerGattConnectionCallback callback) override
       ABSL_LOCKS_EXCLUDED(mutex_);
-  bool StartListeningForIncomingBleSockets(
-      const api::ble_v2::ServerBleSocketLifeCycleCallback& callback) override
-      ABSL_LOCKS_EXCLUDED(mutex_);
-  void StopListeningForIncomingBleSockets() override
-      ABSL_LOCKS_EXCLUDED(mutex_);
-  std::unique_ptr<api::ble_v2::ClientGattConnection> ConnectToGattServer(
-      api::ble_v2::BlePeripheral& peripheral, Mtu mtu,
-      api::ble_v2::PowerMode power_mode,
+  std::unique_ptr<api::ble_v2::GattClient> ConnectToGattServer(
+      api::ble_v2::BlePeripheral& peripheral,
+      api::ble_v2::TxPowerLevel tx_power_level,
       api::ble_v2::ClientGattConnectionCallback callback) override
       ABSL_LOCKS_EXCLUDED(mutex_);
-  std::unique_ptr<api::ble_v2::BleSocket> EstablishBleSocket(
-      api::ble_v2::BlePeripheral* peripheral,
-      const api::ble_v2::BleSocketLifeCycleCallback& callback) override
-      ABSL_LOCKS_EXCLUDED(mutex_);
+  std::unique_ptr<api::ble_v2::BleServerSocket> OpenServerSocket(
+      const std::string& service_id) override ABSL_LOCKS_EXCLUDED(mutex_);
+  std::unique_ptr<api::ble_v2::BleSocket> Connect(
+      const std::string& service_id, api::ble_v2::TxPowerLevel tx_power_level,
+      api::ble_v2::BlePeripheral& remote_peripheral,
+      CancellationFlag* cancellation_flag) override ABSL_LOCKS_EXCLUDED(mutex_);
+  bool IsExtendedAdvertisementsAvailable() override { return false; }
 
   BluetoothAdapter& GetAdapter() { return *adapter_; }
 

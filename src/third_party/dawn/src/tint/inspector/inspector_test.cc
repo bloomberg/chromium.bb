@@ -2485,7 +2485,7 @@ TEST_F(InspectorGetExternalTextureResourceBindingsTest, Simple) {
 
 TEST_F(InspectorGetSamplerTextureUsesTest, None) {
     std::string shader = R"(
-@stage(fragment)
+@fragment
 fn main() {
 })";
 
@@ -2501,7 +2501,7 @@ TEST_F(InspectorGetSamplerTextureUsesTest, Simple) {
 @group(0) @binding(1) var mySampler: sampler;
 @group(0) @binding(2) var myTexture: texture_2d<f32>;
 
-@stage(fragment)
+@fragment
 fn main(@location(0) fragUV: vec2<f32>,
         @location(1) fragPosition: vec4<f32>) -> @location(0) vec4<f32> {
   return textureSample(myTexture, mySampler, fragUV) * fragPosition;
@@ -2524,7 +2524,7 @@ TEST_F(InspectorGetSamplerTextureUsesTest, UnknownEntryPoint) {
 @group(0) @binding(1) var mySampler: sampler;
 @group(0) @binding(2) var myTexture: texture_2d<f32>;
 
-@stage(fragment)
+@fragment
 fn main(@location(0) fragUV: vec2<f32>,
         @location(1) fragPosition: vec4<f32>) -> @location(0) vec4<f32> {
   return textureSample(myTexture, mySampler, fragUV) * fragPosition;
@@ -2540,7 +2540,7 @@ TEST_F(InspectorGetSamplerTextureUsesTest, MultipleCalls) {
 @group(0) @binding(1) var mySampler: sampler;
 @group(0) @binding(2) var myTexture: texture_2d<f32>;
 
-@stage(fragment)
+@fragment
 fn main(@location(0) fragUV: vec2<f32>,
         @location(1) fragPosition: vec4<f32>) -> @location(0) vec4<f32> {
   return textureSample(myTexture, mySampler, fragUV) * fragPosition;
@@ -2565,7 +2565,7 @@ fn doSample(t: texture_2d<f32>, s: sampler, uv: vec2<f32>) -> vec4<f32> {
   return textureSample(t, s, uv);
 }
 
-@stage(fragment)
+@fragment
 fn main(@location(0) fragUV: vec2<f32>,
         @location(1) fragPosition: vec4<f32>) -> @location(0) vec4<f32> {
   return doSample(myTexture, mySampler, fragUV) * fragPosition;
@@ -2592,7 +2592,7 @@ fn doSample(s: sampler, uv: vec2<f32>) -> vec4<f32> {
   return textureSample(myTexture, s, uv);
 }
 
-@stage(fragment)
+@fragment
 fn main(@location(0) fragUV: vec2<f32>,
         @location(1) fragPosition: vec4<f32>) -> @location(0) vec4<f32> {
   return doSample(mySampler, fragUV) * fragPosition;
@@ -2619,7 +2619,7 @@ fn doSample(t: texture_2d<f32>, uv: vec2<f32>) -> vec4<f32> {
   return textureSample(t, mySampler, uv);
 }
 
-@stage(fragment)
+@fragment
 fn main(@location(0) fragUV: vec2<f32>,
         @location(1) fragPosition: vec4<f32>) -> @location(0) vec4<f32> {
   return doSample(myTexture, fragUV) * fragPosition;
@@ -2646,7 +2646,7 @@ fn doSample(uv: vec2<f32>) -> vec4<f32> {
   return textureSample(myTexture, mySampler, uv);
 }
 
-@stage(fragment)
+@fragment
 fn main(@location(0) fragUV: vec2<f32>,
         @location(1) fragPosition: vec4<f32>) -> @location(0) vec4<f32> {
   return doSample(fragUV) * fragPosition;
@@ -2686,19 +2686,19 @@ fn Z(t: texture_2d<f32>, s: sampler, uv: vec2<f32>) -> vec4<f32> {
   return X(t, s, uv) + Y(t, s, uv);
 }
 
-@stage(fragment)
+@fragment
 fn via_call(@location(0) fragUV: vec2<f32>,
         @location(1) fragPosition: vec4<f32>) -> @location(0) vec4<f32> {
   return Z(myTexture, mySampler, fragUV) * fragPosition;
 }
 
-@stage(fragment)
+@fragment
 fn via_ptr(@location(0) fragUV: vec2<f32>,
         @location(1) fragPosition: vec4<f32>) -> @location(0) vec4<f32> {
   return textureSample(myTexture, mySampler, fragUV) + fragPosition;
 }
 
-@stage(fragment)
+@fragment
 fn direct(@location(0) fragUV: vec2<f32>,
         @location(1) fragPosition: vec4<f32>) -> @location(0) vec4<f32> {
   return textureSample(myTexture, mySampler, fragUV) + fragPosition;
@@ -2836,7 +2836,7 @@ TEST_F(InspectorGetUsedExtensionNamesTest, Empty) {
 // Test calling GetUsedExtensionNames on a shader with no extension.
 TEST_F(InspectorGetUsedExtensionNamesTest, None) {
     std::string shader = R"(
-@stage(fragment)
+@fragment
 fn main() {
 })";
 
@@ -2849,9 +2849,9 @@ fn main() {
 // Test calling GetUsedExtensionNames on a shader with valid extension.
 TEST_F(InspectorGetUsedExtensionNamesTest, Simple) {
     std::string shader = R"(
-enable InternalExtensionForTesting;
+enable f16;
 
-@stage(fragment)
+@fragment
 fn main() {
 })";
 
@@ -2859,17 +2859,17 @@ fn main() {
 
     auto result = inspector.GetUsedExtensionNames();
     EXPECT_EQ(result.size(), 1u);
-    EXPECT_EQ(result[0], "InternalExtensionForTesting");
+    EXPECT_EQ(result[0], "f16");
 }
 
 // Test calling GetUsedExtensionNames on a shader with a extension enabled for
 // multiple times.
 TEST_F(InspectorGetUsedExtensionNamesTest, Duplicated) {
     std::string shader = R"(
-enable InternalExtensionForTesting;
-enable InternalExtensionForTesting;
+enable f16;
+enable f16;
 
-@stage(fragment)
+@fragment
 fn main() {
 })";
 
@@ -2877,7 +2877,7 @@ fn main() {
 
     auto result = inspector.GetUsedExtensionNames();
     EXPECT_EQ(result.size(), 1u);
-    EXPECT_EQ(result[0], "InternalExtensionForTesting");
+    EXPECT_EQ(result[0], "f16");
 }
 
 // Test calling GetEnableDirectives on a empty shader.
@@ -2893,7 +2893,7 @@ TEST_F(InspectorGetEnableDirectivesTest, Empty) {
 // Test calling GetEnableDirectives on a shader with no extension.
 TEST_F(InspectorGetEnableDirectivesTest, None) {
     std::string shader = R"(
-@stage(fragment)
+@fragment
 fn main() {
 })";
 
@@ -2906,9 +2906,9 @@ fn main() {
 // Test calling GetEnableDirectives on a shader with valid extension.
 TEST_F(InspectorGetEnableDirectivesTest, Simple) {
     std::string shader = R"(
-enable InternalExtensionForTesting;
+enable f16;
 
-@stage(fragment)
+@fragment
 fn main() {
 })";
 
@@ -2916,18 +2916,18 @@ fn main() {
 
     auto result = inspector.GetEnableDirectives();
     EXPECT_EQ(result.size(), 1u);
-    EXPECT_EQ(result[0].first, "InternalExtensionForTesting");
-    EXPECT_EQ(result[0].second.range, (Source::Range{{2, 8}, {2, 35}}));
+    EXPECT_EQ(result[0].first, "f16");
+    EXPECT_EQ(result[0].second.range, (Source::Range{{2, 8}, {2, 11}}));
 }
 
 // Test calling GetEnableDirectives on a shader with a extension enabled for
 // multiple times.
 TEST_F(InspectorGetEnableDirectivesTest, Duplicated) {
     std::string shader = R"(
-enable InternalExtensionForTesting;
+enable f16;
 
-enable InternalExtensionForTesting;
-@stage(fragment)
+enable f16;
+@fragment
 fn main() {
 })";
 
@@ -2935,10 +2935,10 @@ fn main() {
 
     auto result = inspector.GetEnableDirectives();
     EXPECT_EQ(result.size(), 2u);
-    EXPECT_EQ(result[0].first, "InternalExtensionForTesting");
-    EXPECT_EQ(result[0].second.range, (Source::Range{{2, 8}, {2, 35}}));
-    EXPECT_EQ(result[1].first, "InternalExtensionForTesting");
-    EXPECT_EQ(result[1].second.range, (Source::Range{{4, 8}, {4, 35}}));
+    EXPECT_EQ(result[0].first, "f16");
+    EXPECT_EQ(result[0].second.range, (Source::Range{{2, 8}, {2, 11}}));
+    EXPECT_EQ(result[1].first, "f16");
+    EXPECT_EQ(result[1].second.range, (Source::Range{{4, 8}, {4, 11}}));
 }
 
 // Crash was occuring in ::GenerateSamplerTargets, when
@@ -2952,7 +2952,7 @@ fn doSample(t: texture_2d<f32>, s: sampler, uv: vec2<f32>) -> vec4<f32> {
   return textureSample(t, s, uv);
 }
 
-@stage(fragment)
+@fragment
 fn main(@location(0) fragUV: vec2<f32>,
         @location(1) fragPosition: vec4<f32>) -> @location(0) vec4<f32> {
   return doSample(myTexture, mySampler, fragUV) * fragPosition;

@@ -395,7 +395,7 @@ int Map::UsedInstanceSize() const {
 }
 
 void Map::SetInObjectUnusedPropertyFields(int value) {
-  STATIC_ASSERT(JSObject::kFieldsAdded == JSObject::kHeaderSize / kTaggedSize);
+  static_assert(JSObject::kFieldsAdded == JSObject::kHeaderSize / kTaggedSize);
   if (!IsJSObjectMap()) {
     CHECK_EQ(0, value);
     set_used_or_unused_instance_size_in_words(0);
@@ -411,7 +411,7 @@ void Map::SetInObjectUnusedPropertyFields(int value) {
 }
 
 void Map::SetOutOfObjectUnusedPropertyFields(int value) {
-  STATIC_ASSERT(JSObject::kFieldsAdded == JSObject::kHeaderSize / kTaggedSize);
+  static_assert(JSObject::kFieldsAdded == JSObject::kHeaderSize / kTaggedSize);
   CHECK_LT(static_cast<unsigned>(value), JSObject::kFieldsAdded);
   // For out of object properties "used_instance_size_in_words" byte encodes
   // the slack in the property array.
@@ -438,7 +438,7 @@ void Map::CopyUnusedPropertyFieldsAdjustedForInstanceSize(Map map) {
 
 void Map::AccountAddedPropertyField() {
   // Update used instance size and unused property fields number.
-  STATIC_ASSERT(JSObject::kFieldsAdded == JSObject::kHeaderSize / kTaggedSize);
+  static_assert(JSObject::kFieldsAdded == JSObject::kHeaderSize / kTaggedSize);
 #ifdef DEBUG
   int new_unused = UnusedPropertyFields() - 1;
   if (new_unused < 0) new_unused += JSObject::kFieldsAdded;
@@ -788,9 +788,13 @@ ACCESSORS_CHECKED(Map, wasm_type_info, WasmTypeInfo,
 
 bool Map::IsPrototypeValidityCellValid() const {
   Object validity_cell = prototype_validity_cell();
-  Object value = validity_cell.IsSmi() ? Smi::cast(validity_cell)
-                                       : Cell::cast(validity_cell).value();
-  return value == Smi::FromInt(Map::kPrototypeChainValid);
+  if (validity_cell.IsSmi()) {
+    // Smi validity cells should always be considered valid.
+    DCHECK_EQ(Smi::cast(validity_cell).value(), Map::kPrototypeChainValid);
+    return true;
+  }
+  Smi cell_value = Smi::cast(Cell::cast(validity_cell).value());
+  return cell_value == Smi::FromInt(Map::kPrototypeChainValid);
 }
 
 DEF_GETTER(Map, GetConstructor, Object) {

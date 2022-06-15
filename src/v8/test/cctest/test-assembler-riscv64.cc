@@ -1962,7 +1962,6 @@ TEST(li_estimate) {
       -256,      -255,          0,         255,        8192,      0x7FFFFFFF,
       INT32_MIN, INT32_MAX / 2, INT32_MAX, UINT32_MAX, INT64_MAX, INT64_MAX / 2,
       INT64_MIN};
-  // Test jump tables with backward jumps and embedded heap objects.
   CcTest::InitializeVM();
   Isolate* isolate = CcTest::i_isolate();
   HandleScope scope(isolate);
@@ -2622,7 +2621,7 @@ static inline uint8_t get_round(int vxrm, uint64_t v, uint8_t shift) {
 #define UTEST_RVV_VNCLIP_E32M2_E16M1(instr_name, sign)                       \
   TEST(RISCV_UTEST_##instr_name##_E32M2_E16M1) {                             \
     if (!CpuFeatures::IsSupported(RISCV_SIMD)) return;                       \
-    constexpr RoundingMode vxrm = RNE;                                       \
+    constexpr FPURoundingMode vxrm = RNE;                                    \
     CcTest::InitializeVM();                                                  \
     Isolate* isolate = CcTest::i_isolate();                                  \
     HandleScope scope(isolate);                                              \

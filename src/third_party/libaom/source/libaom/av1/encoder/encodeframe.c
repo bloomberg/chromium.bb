@@ -1444,7 +1444,10 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
     }
 
     av1_hash_table_init(intrabc_hash_info);
-    av1_hash_table_create(&intrabc_hash_info->intrabc_hash_table);
+    if (!av1_hash_table_create(&intrabc_hash_info->intrabc_hash_table)) {
+      aom_internal_error(cm->error, AOM_CODEC_MEM_ERROR,
+                         "Error allocating intrabc_hash_table");
+    }
     hash_table_created = 1;
     av1_generate_block_2x2_hash_value(intrabc_hash_info, cpi->source,
                                       block_hash_values[0], is_block_same[0]);
@@ -1453,6 +1456,7 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
     const int max_sb_size =
         (1 << (cm->seq_params->mib_size_log2 + MI_SIZE_LOG2));
     int src_idx = 0;
+    bool error = false;
     for (int size = 4; size <= max_sb_size; size *= 2, src_idx = !src_idx) {
       const int dst_idx = !src_idx;
       av1_generate_block_hash_value(
@@ -1460,9 +1464,13 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
           block_hash_values[dst_idx], is_block_same[src_idx],
           is_block_same[dst_idx]);
       if (size >= min_alloc_size) {
-        av1_add_to_hash_map_by_row_with_precal_data(
-            &intrabc_hash_info->intrabc_hash_table, block_hash_values[dst_idx],
-            is_block_same[dst_idx][2], pic_width, pic_height, size);
+        if (!av1_add_to_hash_map_by_row_with_precal_data(
+                &intrabc_hash_info->intrabc_hash_table,
+                block_hash_values[dst_idx], is_block_same[dst_idx][2],
+                pic_width, pic_height, size)) {
+          error = true;
+          break;
+        }
       }
     }
 
@@ -1474,6 +1482,11 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
       for (j = 0; j < 3; j++) {
         aom_free(is_block_same[k][j]);
       }
+    }
+
+    if (error) {
+      aom_internal_error(cm->error, AOM_CODEC_MEM_ERROR,
+                         "Error adding data to intrabc_hash_table");
     }
   }
 

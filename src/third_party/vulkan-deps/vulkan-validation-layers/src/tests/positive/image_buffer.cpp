@@ -330,8 +330,7 @@ TEST_F(VkPositiveLayerTest, SamplerMirrorClampToEdgeWithoutFeature) {
     ASSERT_NO_FATAL_FAILURE(InitState());
     ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
     if (DeviceValidationVersion() != VK_API_VERSION_1_1) {
-        printf("%s Tests requires Vulkan 1.1 exactly, skipping test\n", kSkipPrefix);
-        return;
+        GTEST_SKIP() << "Test requires Vulkan 1.1 exactly";
     }
 
     VkSampler sampler = VK_NULL_HANDLE;
@@ -350,8 +349,7 @@ TEST_F(VkPositiveLayerTest, SamplerMirrorClampToEdgeWithoutFeature12) {
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
 
     if (DeviceValidationVersion() < VK_API_VERSION_1_2) {
-        printf("%s Tests requires Vulkan 1.2+, skipping test\n", kSkipPrefix);
-        return;
+        GTEST_SKIP() << "At least Vulkan version 1.2 is required";
     }
 
     if (DeviceExtensionSupported(gpu(), nullptr, VK_KHR_SAMPLER_MIRROR_CLAMP_TO_EDGE_EXTENSION_NAME)) {
@@ -380,8 +378,7 @@ TEST_F(VkPositiveLayerTest, SamplerMirrorClampToEdgeWithFeature) {
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
 
     if (DeviceValidationVersion() < VK_API_VERSION_1_2) {
-        printf("%s Tests requires Vulkan 1.2+, skipping test\n", kSkipPrefix);
-        return;
+        GTEST_SKIP() << "At least Vulkan version 1.2 is required";
     }
 
     auto features12 = LvlInitStruct<VkPhysicalDeviceVulkan12Features>();
@@ -1604,14 +1601,19 @@ TEST_F(VkPositiveLayerTest, MultiplaneImageTests) {
 
         // Set up 3-plane binding
         VkBindImageMemoryInfo bind_info[3];
+        VkBindImagePlaneMemoryInfo plane_info[3];
         for (int plane = 0; plane < 3; plane++) {
-            bind_info[plane] = LvlInitStruct<VkBindImageMemoryInfo>();
+            plane_info[plane] = LvlInitStruct<VkBindImagePlaneMemoryInfo>();
+            bind_info[plane] = LvlInitStruct<VkBindImageMemoryInfo>(&plane_info[plane]);
             bind_info[plane].image = image;
             bind_info[plane].memoryOffset = 0;
         }
         bind_info[0].memory = p0_mem;
         bind_info[1].memory = p1_mem;
         bind_info[2].memory = p2_mem;
+        plane_info[0].planeAspect = VK_IMAGE_ASPECT_PLANE_0_BIT;
+        plane_info[1].planeAspect = VK_IMAGE_ASPECT_PLANE_1_BIT;
+        plane_info[2].planeAspect = VK_IMAGE_ASPECT_PLANE_2_BIT;
 
         m_errorMonitor->ExpectSuccess();
         vkBindImageMemory2Function(device(), 3, bind_info);
@@ -1823,9 +1825,8 @@ TEST_F(VkPositiveLayerTest, TestMappingMemoryWithMultiInstanceHeapFlag) {
 
     AddRequiredExtensions(VK_KHR_DEVICE_GROUP_EXTENSION_NAME);
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
-    if (!AreRequestedExtensionsEnabled()) {
-        printf("%s Extension %s is not supported, skipping test.\n", kSkipPrefix, VK_KHR_DEVICE_GROUP_EXTENSION_NAME);
-        return;
+    if (!AreRequiredExtensionsEnabled()) {
+        GTEST_SKIP() << RequiredExtensionsNotSupported() << " not supported";
     }
     ASSERT_NO_FATAL_FAILURE(InitState());
 
@@ -1887,8 +1888,7 @@ TEST_F(VkPositiveLayerTest, CmdCopySwapchainImage) {
     }
 
     if (DeviceValidationVersion() < VK_API_VERSION_1_2) {
-        printf("%s This test requires Vulkan 1.2+, skipping test\n", kSkipPrefix);
-        return;
+        GTEST_SKIP() << "At least Vulkan version 1.2 is required";
     }
 
     if (IsDriver(VK_DRIVER_ID_MESA_RADV)) {
@@ -1992,8 +1992,7 @@ TEST_F(VkPositiveLayerTest, TransferImageToSwapchainDeviceGroup) {
     }
 
     if (DeviceValidationVersion() < VK_API_VERSION_1_2) {
-        printf("%s This test requires Vulkan 1.2+, skipping test\n", kSkipPrefix);
-        return;
+        GTEST_SKIP() << "At least Vulkan version 1.2 is required";
     }
 
     if (IsDriver(VK_DRIVER_ID_MESA_RADV)) {
@@ -2293,8 +2292,7 @@ TEST_F(VkPositiveLayerTest, ImagelessLayoutTracking) {
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
 
     if (DeviceValidationVersion() < VK_API_VERSION_1_2) {
-        printf("%s This test requires Vulkan 1.2+, skipping test\n", kSkipPrefix);
-        return;
+        GTEST_SKIP() << "At least Vulkan version 1.2 is required";
     }
 
     if (IsDriver(VK_DRIVER_ID_MESA_RADV)) {
@@ -2478,9 +2476,8 @@ TEST_F(VkPositiveLayerTest, ValidExtendedUsageWithDifferentFormatViews) {
 
     AddRequiredExtensions(VK_KHR_MAINTENANCE_2_EXTENSION_NAME);
     ASSERT_NO_FATAL_FAILURE(Init());
-    if (!AreRequestedExtensionsEnabled()) {
-        printf("%s %s extension not available\n", kSkipPrefix, VK_KHR_MAINTENANCE_2_EXTENSION_NAME);
-        return;
+    if (!AreRequiredExtensionsEnabled()) {
+        GTEST_SKIP() << RequiredExtensionsNotSupported() << " not supported";
     }
 
     auto image_ci = LvlInitStruct<VkImageCreateInfo>();
@@ -2544,8 +2541,7 @@ TEST_F(VkPositiveLayerTest, PlaneAspectNone) {
     ASSERT_NO_FATAL_FAILURE(Init());
 
     if (DeviceValidationVersion() < VK_API_VERSION_1_3) {
-        printf("%s This test requires Vulkan 1.3+, skipping test\n", kSkipPrefix);
-        return;
+        GTEST_SKIP() << "At least Vulkan version 1.3 is required";
     }
     m_errorMonitor->ExpectSuccess();
     auto image_createinfo = LvlInitStruct<VkImageCreateInfo>();
@@ -2564,5 +2560,87 @@ TEST_F(VkPositiveLayerTest, PlaneAspectNone) {
     image_mem_reqs.planeAspect = VK_IMAGE_ASPECT_NONE;
     auto  mem_reqs_2 = LvlInitStruct<VkMemoryRequirements2>();
     vk::GetDeviceImageMemoryRequirements(device(), &image_mem_reqs, &mem_reqs_2);
+    m_errorMonitor->VerifyNotFound();
+}
+
+TEST_F(VkPositiveLayerTest, ImageCompressionControl) {
+    TEST_DESCRIPTION("Checks for creating fixed rate compression image.");
+
+    uint32_t version = SetTargetApiVersion(VK_API_VERSION_1_2);
+    if (version < VK_API_VERSION_1_2) {
+        printf("%s At least Vulkan version 1.2 is required, skipping test.\n", kSkipPrefix);
+        return;
+    }
+
+    AddRequiredExtensions(VK_EXT_IMAGE_COMPRESSION_CONTROL_EXTENSION_NAME);
+    AddRequiredExtensions(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+
+    auto image_compression_control = LvlInitStruct<VkPhysicalDeviceImageCompressionControlFeaturesEXT>();
+    auto features2 = LvlInitStruct<VkPhysicalDeviceFeatures2>(&image_compression_control);
+
+    ASSERT_NO_FATAL_FAILURE(InitFrameworkAndRetrieveFeatures(features2));
+
+    if (!AreRequiredExtensionsEnabled()) {
+        GTEST_SKIP() << RequiredExtensionsNotSupported() << " not supported";
+    }
+
+    if (!image_compression_control.imageCompressionControl) {
+        printf("%s Test requires (unsupported) imageCompressionControl , skipping\n", kSkipPrefix);
+        return;
+    }
+
+    ASSERT_NO_FATAL_FAILURE(InitState());
+    m_errorMonitor->ExpectSuccess();
+
+    // Query possible image format with vkGetPhysicalDeviceImageFormatProperties2KHR
+    auto image_format_info = LvlInitStruct<VkPhysicalDeviceImageFormatInfo2>();
+    image_format_info.format = VK_FORMAT_R8G8B8A8_UNORM;
+    image_format_info.tiling = VK_IMAGE_TILING_LINEAR;
+    image_format_info.type = VK_IMAGE_TYPE_2D;
+    image_format_info.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+
+    auto compression_properties = LvlInitStruct<VkImageCompressionPropertiesEXT>();
+    auto image_format_properties = LvlInitStruct<VkImageFormatProperties2>(&compression_properties);
+
+    vk::GetPhysicalDeviceImageFormatProperties2(gpu(), &image_format_info, &image_format_properties);
+
+    auto image_ci = vk_testing::Image::create_info();
+    image_ci.imageType = VK_IMAGE_TYPE_2D;
+    image_ci.format = VK_FORMAT_R8G8B8A8_UNORM;
+    image_ci.tiling = VK_IMAGE_TILING_LINEAR;
+    image_ci.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+
+    // Create with fixed rate compression image
+    {
+        auto compressionControl = LvlInitStruct<VkImageCompressionControlEXT>();
+        compressionControl.flags = VK_IMAGE_COMPRESSION_FIXED_RATE_DEFAULT_EXT;
+        image_ci.pNext = &compressionControl;
+
+        vk_testing::Image image(*m_device, image_ci);
+    }
+
+    // Create with fixed rate compression image
+    if (compression_properties.imageCompressionFixedRateFlags != VK_IMAGE_COMPRESSION_FIXED_RATE_NONE_EXT) {
+        VkImageCompressionFixedRateFlagsEXT supported_compression_fixed_rate = VK_IMAGE_COMPRESSION_FIXED_RATE_NONE_EXT;
+
+        for (uint32_t index = 0; index < 32; index++) {
+            if ((compression_properties.imageCompressionFixedRateFlags & (1 << index)) != 0) {
+                supported_compression_fixed_rate = (1 << index);
+                break;
+            }
+        }
+
+        ASSERT_TRUE(supported_compression_fixed_rate != VK_IMAGE_COMPRESSION_FIXED_RATE_NONE_EXT);
+
+        VkImageCompressionFixedRateFlagsEXT fixedRageFlags = supported_compression_fixed_rate;
+        auto compressionControl = LvlInitStruct<VkImageCompressionControlEXT>();
+        compressionControl.flags = VK_IMAGE_COMPRESSION_FIXED_RATE_EXPLICIT_EXT;
+        compressionControl.pFixedRateFlags = &fixedRageFlags;
+        compressionControl.compressionControlPlaneCount = 1;
+        image_ci.pNext = &compressionControl;
+
+        vk_testing::Image image(*m_device, image_ci);
+    }
+
     m_errorMonitor->VerifyNotFound();
 }

@@ -493,6 +493,7 @@
   V(TransitionAndStoreNumberElement)    \
   V(TransitionElementsKind)             \
   V(TypeOf)                             \
+  V(Unsigned32Divide)                   \
   V(VerifyType)
 
 #define SIMPLIFIED_SPECULATIVE_BIGINT_BINOP_LIST(V) \
@@ -503,6 +504,15 @@
   V(SpeculativeBigIntAsIntN)                       \
   V(SpeculativeBigIntAsUintN)                      \
   V(SpeculativeBigIntNegate)
+
+#define SIMPLIFIED_WASM_OP_LIST(V) \
+  V(AssertNotNull)                 \
+  V(IsNull)                        \
+  V(IsNotNull)                     \
+  V(Null)                          \
+  V(RttCanon)                      \
+  V(WasmTypeCast)                  \
+  V(WasmTypeCheck)
 
 #define SIMPLIFIED_OP_LIST(V)                 \
   SIMPLIFIED_CHANGE_OP_LIST(V)                \
@@ -516,6 +526,7 @@
   SIMPLIFIED_SPECULATIVE_NUMBER_UNOP_LIST(V)  \
   SIMPLIFIED_SPECULATIVE_BIGINT_UNOP_LIST(V)  \
   SIMPLIFIED_SPECULATIVE_BIGINT_BINOP_LIST(V) \
+  IF_WASM(SIMPLIFIED_WASM_OP_LIST, V)         \
   SIMPLIFIED_OTHER_OP_LIST(V)
 
 // Opcodes for Machine-level operators.
@@ -991,6 +1002,9 @@
   V(I32x4RelaxedTruncF32x4U)     \
   V(I32x4RelaxedTruncF64x2SZero) \
   V(I32x4RelaxedTruncF64x2UZero) \
+  V(I16x8RelaxedQ15MulRS)        \
+  V(I16x8DotI8x16I7x16S)         \
+  V(I32x4DotI8x16I7x16AddS)      \
   V(I8x16Shuffle)                \
   V(V128AnyTrue)                 \
   V(I64x2AllTrue)                \

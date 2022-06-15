@@ -31,6 +31,7 @@ a single render pass for every output fragment, with each pass executing a one-v
     `,
     });
     const pipeline = t.device.createRenderPipeline({
+      layout: 'auto',
       vertex: { module, entryPoint: 'vmain', buffers: [] },
       primitive: { topology: 'point-list' },
       fragment: {
@@ -120,6 +121,7 @@ pass does a single draw call, with one pass per output fragment.`
     const encoder = t.device.createCommandEncoder();
     range(kWidth * kHeight, i => {
       const pipeline = t.device.createRenderPipeline({
+        layout: 'auto',
         vertex: { module, entryPoint: 'vmain', buffers: [] },
         primitive: { topology: 'point-list' },
         depthStencil: {
@@ -253,6 +255,7 @@ render pass with a single pipeline, and one draw call per fragment of the output
     `,
     });
     const pipeline = t.device.createRenderPipeline({
+      layout: 'auto',
       vertex: { module, entryPoint: 'vmain', buffers: [] },
       primitive: { topology: 'point-list' },
       fragment: {
@@ -313,6 +316,7 @@ call which draws multiple vertices for each fragment of a large output texture.`
     `,
     });
     const pipeline = t.device.createRenderPipeline({
+      layout: 'auto',
       vertex: { module, entryPoint: 'vmain', buffers: [] },
       primitive: { topology: 'point-list' },
       fragment: {

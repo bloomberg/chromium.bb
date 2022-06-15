@@ -348,10 +348,6 @@ MaybeError ValidateFragmentState(DeviceBase* device,
             DAWN_INVALID_IF(target->blend,
                             "Color target[%u] blend state is set when the format is undefined.",
                             static_cast<uint8_t>(i));
-            DAWN_INVALID_IF(
-                target->writeMask != wgpu::ColorWriteMask::None,
-                "Color target[%u] write mask is set to (%s) when the format is undefined.",
-                static_cast<uint8_t>(i), target->writeMask);
         }
     }
 
@@ -502,7 +498,8 @@ RenderPipelineBase::RenderPipelineBase(DeviceBase* device,
     mVertexBufferCount = descriptor->vertex.bufferCount;
     const VertexBufferLayout* buffers = descriptor->vertex.buffers;
     for (uint8_t slot = 0; slot < mVertexBufferCount; ++slot) {
-        if (buffers[slot].attributeCount == 0) {
+        // Skip unused slots
+        if (buffers[slot].stepMode == wgpu::VertexStepMode::VertexBufferNotUsed) {
             continue;
         }
 

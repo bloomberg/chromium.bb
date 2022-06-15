@@ -166,7 +166,7 @@ g.test('duplicates')
       @location(${ra}) a : f32,
       @location(${rb}) b : f32,
     };
-    @stage(fragment)
+    @fragment
     fn main(@location(${p1}) p1 : f32,
             @location(${p2}) p2 : f32,
             s1 : S1,

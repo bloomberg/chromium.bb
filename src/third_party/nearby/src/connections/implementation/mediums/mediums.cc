@@ -24,6 +24,10 @@ BluetoothClassic& Mediums::GetBluetoothClassic() { return bluetooth_classic_; }
 
 Ble& Mediums::GetBle() { return ble_; }
 
+BleV2& Mediums::GetBleV2() { return ble_v2_; }
+
+Wifi& Mediums::GetWifi() { return wifi_; }
+
 WifiLan& Mediums::GetWifiLan() { return wifi_lan_; }
 
 WifiHotspot& Mediums::GetWifiHotspot() { return wifi_hotspot_; }

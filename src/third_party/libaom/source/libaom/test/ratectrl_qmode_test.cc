@@ -753,6 +753,26 @@ TEST(RateControlQModeTest, TestKeyframeDetection) {
               ElementsAre(0, 30, 60, 90, 120, 150, 180, 210, 240));
 }
 
+TEST(RateControlQModeTest, DISABLED_TestGopIntervals) {
+  FirstpassInfo firstpass_info;
+  ASSERT_NO_FATAL_FAILURE(
+      ReadFirstpassInfo("firstpass_stats", &firstpass_info));
+  AV1RateControlQMode rc;
+  RateControlParam rc_param;
+  rc_param.frame_height = 288;
+  rc_param.frame_width = 352;
+  rc_param.max_gop_show_frame_count = 32;
+  rc_param.min_gop_show_frame_count = 4;
+  rc.SetRcParam(rc_param);
+  GopStructList gop_list = rc.DetermineGopInfo(firstpass_info);
+  std::vector<int> gop_interval_list;
+  std::transform(gop_list.begin(), gop_list.end(),
+                 std::back_inserter(gop_interval_list),
+                 [](GopStruct const &x) { return x.show_frame_count; });
+  EXPECT_THAT(gop_interval_list,
+              ElementsAre(21, 9, 30, 30, 30, 21, 9, 30, 12, 16, 2, 30, 10));
+}
+
 // MockRateControlQMode is provided for the use of clients of libaom, but it's
 // not expected that it will be used in any real libaom tests.
 // This simple "toy" test exists solely to verify the integration of gmock into

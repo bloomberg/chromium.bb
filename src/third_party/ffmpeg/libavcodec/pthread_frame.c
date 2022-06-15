@@ -218,7 +218,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
 
         av_frame_unref(p->frame);
         p->got_frame = 0;
-        p->result = codec->decode(avctx, p->frame, &p->got_frame, p->avpkt);
+        p->result = codec->cb.decode(avctx, p->frame, &p->got_frame, p->avpkt);
 
         if ((p->result < 0 || !p->got_frame) && p->frame->buf[0])
             ff_thread_release_buffer(avctx, p->frame);
@@ -791,7 +791,7 @@ static av_cold int init_thread(PerThreadContext *p, int *threads_to_free,
     p->parent = fctx;
     p->avctx  = copy;
 
-    copy->internal = av_memdup(avctx->internal, sizeof(*avctx->internal));
+    copy->internal = av_mallocz(sizeof(*copy->internal));
     if (!copy->internal)
         return AVERROR(ENOMEM);
     copy->internal->thread_ctx = p;

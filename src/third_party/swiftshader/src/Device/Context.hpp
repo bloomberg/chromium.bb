@@ -74,10 +74,11 @@ struct Inputs
 	inline const DescriptorSet::DynamicOffsets &getDescriptorDynamicOffsets() const { return descriptorDynamicOffsets; }
 	inline const sw::Stream &getStream(uint32_t i) const { return stream[i]; }
 
-	void bindVertexInputs(int firstInstance);
+	void bindVertexInputs(int firstInstance, bool dynamicInstanceStride);
 	void setVertexInputBinding(const VertexInputBinding vertexInputBindings[]);
-	void advanceInstanceAttributes();
+	void advanceInstanceAttributes(bool dynamicInstanceStride);
 	VkDeviceSize getVertexStride(uint32_t i, bool dynamicVertexStride) const;
+	VkDeviceSize getInstanceStride(uint32_t i, bool dynamicVertexStride) const;
 
 private:
 	VertexInputBinding vertexInputBindings[MAX_VERTEX_INPUT_BINDINGS] = {};
@@ -121,9 +122,9 @@ struct BlendState : sw::Memset<BlendState>
 
 struct DynamicState
 {
-	VkViewport viewport;
-	VkRect2D scissor;
-	sw::float4 blendConstants;
+	VkViewport viewport = {};
+	VkRect2D scissor = {};
+	sw::float4 blendConstants = {};
 	float depthBiasConstantFactor = 0.0f;
 	float depthBiasClamp = 0.0f;
 	float depthBiasSlopeFactor = 0.0f;

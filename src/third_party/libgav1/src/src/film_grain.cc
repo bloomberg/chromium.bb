@@ -824,5 +824,8 @@ template class FilmGrain<kBitdepth8>;
 #if LIBGAV1_MAX_BITDEPTH >= 10
 template class FilmGrain<kBitdepth10>;
 #endif
+#if LIBGAV1_MAX_BITDEPTH == 12
+template class FilmGrain<kBitdepth12>;
+#endif
 
 }  // namespace libgav1

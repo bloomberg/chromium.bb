@@ -30,6 +30,8 @@ class FloatLiteralExpression final : public Castable<FloatLiteralExpression, Lit
         kNone,
         /// 'f' suffix (f32)
         kF,
+        /// 'h' suffix (f16)
+        kH,
     };
 
     /// Constructor
@@ -52,6 +54,12 @@ class FloatLiteralExpression final : public Castable<FloatLiteralExpression, Lit
     /// The literal suffix
     const Suffix suffix;
 };
+
+/// Writes the float literal suffix to the std::ostream.
+/// @param out the std::ostream to write to
+/// @param suffix the suffix to write
+/// @returns out so calls can be chained
+std::ostream& operator<<(std::ostream& out, FloatLiteralExpression::Suffix suffix);
 
 }  // namespace tint::ast
 

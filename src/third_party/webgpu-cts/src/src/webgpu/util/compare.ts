@@ -1,6 +1,7 @@
 import { Colors } from '../../common/util/colors.js';
 
 import { f32, isFloatValue, Scalar, Value, Vector } from './conversion.js';
+import { F32Interval } from './f32_interval.js';
 import { correctlyRounded, oneULP, withinULP } from './math.js';
 
 /** Comparison describes the result of a Comparator function. */
@@ -57,6 +58,21 @@ export function ulpMatch(ulp: number): FloatMatch {
 export function correctlyRoundedMatch(): FloatMatch {
   return (got, expected) => {
     return correctlyRounded(f32(got), expected);
+  };
+}
+
+/**
+ * @returns a FloatMatch that return true iff |got| is contained in the interval |i|.
+ *
+ * The standard |expected| parameter is ignored.
+ *
+ * NB: This will be removed at the end of transition to the new FP testing framework.
+ *
+ * @param i interval to test the |got| value against.
+ */
+export function intervalMatch(i: F32Interval): FloatMatch {
+  return (got, _) => {
+    return i.contains(got);
   };
 }
 
@@ -131,7 +147,7 @@ export function compare(got: Value, expected: Value, cmpFloats: FloatMatch): Com
 /** @returns a Comparator that checks whether a test value matches any of the provided options */
 export function anyOf(...expectations: (Value | Comparator)[]): Comparator {
   return (got, cmpFloats) => {
-    const failed: Array<string> = [];
+    const failed = new Set<string>();
     for (const e of expectations) {
       let cmp: Comparison;
       if ((e as Value).type !== undefined) {
@@ -144,9 +160,9 @@ export function anyOf(...expectations: (Value | Comparator)[]): Comparator {
       if (cmp.matched) {
         return cmp;
       }
-      failed.push(cmp.expected);
+      failed.add(cmp.expected);
     }
-    return { matched: false, got: got.toString(), expected: failed.join(' or ') };
+    return { matched: false, got: got.toString(), expected: [...failed].join(' or ') };
   };
 }
 
@@ -171,6 +187,26 @@ export function ulpComparator(x: number, target: Scalar, n: (x: number) => numbe
       matched: false,
       got: got.toString(),
       expected: `within ${c} * ULP (${ulp}) of ${target}`,
+    };
+  };
+}
+
+/** @returns a Comparator that checks whether a result is contained within a target interval
+ *
+ * NB: This will be removed at the end of transition to the new FP testing framework.
+ */
+export function intervalComparator(i: F32Interval): Comparator {
+  const match = intervalMatch(i);
+  return (got, _) => {
+    // The second param is ignored by match
+    const cmp = compare(got, f32(0.0), match);
+    if (cmp.matched) {
+      return cmp;
+    }
+    return {
+      matched: false,
+      got: got.toString(),
+      expected: `within ${i}`,
     };
   };
 }

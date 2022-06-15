@@ -18,6 +18,7 @@
 #include "src/objects/bigint.h"
 #include "src/objects/call-site-info-inl.h"
 #include "src/objects/cell-inl.h"
+#include "src/objects/code-inl.h"
 #include "src/objects/data-handler-inl.h"
 #include "src/objects/debug-objects-inl.h"
 #include "src/objects/elements.h"
@@ -32,6 +33,7 @@
 #include "src/objects/instance-type.h"
 #include "src/objects/js-array-buffer-inl.h"
 #include "src/objects/js-array-inl.h"
+#include "src/objects/js-atomics-synchronization-inl.h"
 #include "src/objects/objects-inl.h"
 #include "src/objects/objects.h"
 #include "src/objects/turbofan-types-inl.h"
@@ -878,7 +880,7 @@ void JSFunction::JSFunctionVerify(Isolate* isolate) {
 
   // This assertion exists to encourage updating this verification function if
   // new fields are added in the Torque class layout definition.
-  STATIC_ASSERT(JSFunction::TorqueGeneratedClass::kHeaderSize ==
+  static_assert(JSFunction::TorqueGeneratedClass::kHeaderSize ==
                 8 * kTaggedSize);
 
   JSFunctionOrBoundFunctionOrWrappedFunctionVerify(isolate);
@@ -1087,9 +1089,11 @@ void CodeDataContainer::CodeDataContainerVerify(Isolate* isolate) {
           // So, do a reverse Code object lookup via code_entry_point value to
           // ensure it corresponds to the same Code object associated with this
           // CodeDataContainer.
-          Code the_code = isolate->heap()->GcSafeFindCodeForInnerPointer(
-              code_entry_point());
-          CHECK_EQ(the_code, code());
+          CodeLookupResult lookup_result =
+              isolate->heap()->GcSafeFindCodeForInnerPointer(
+                  code_entry_point());
+          CHECK(lookup_result.IsFound());
+          CHECK_EQ(lookup_result.ToCode(), code());
         }
       } else {
         CHECK_EQ(code().InstructionStart(), code_entry_point());
@@ -1237,6 +1241,17 @@ void JSSharedStruct::JSSharedStructVerify(Isolate* isolate) {
     CHECK(
         RawFastPropertyAt(FieldIndex::ForDescriptor(struct_map, i)).IsShared());
   }
+}
+
+void JSAtomicsMutex::JSAtomicsMutexVerify(Isolate* isolate) {
+  CHECK(IsJSAtomicsMutex());
+  CHECK(InSharedHeap());
+  JSObjectVerify(isolate);
+  Map mutex_map = map();
+  CHECK(mutex_map.InSharedHeap());
+  CHECK(mutex_map.GetBackPointer().IsUndefined(isolate));
+  CHECK(!mutex_map.is_extensible());
+  CHECK(!mutex_map.is_prototype_map());
 }
 
 void WeakCell::WeakCellVerify(Isolate* isolate) {
@@ -1797,7 +1812,7 @@ void DataHandler::DataHandlerVerify(Isolate* isolate) {
 
   // This assertion exists to encourage updating this verification function if
   // new fields are added in the Torque class layout definition.
-  STATIC_ASSERT(DataHandler::kHeaderSize == 6 * kTaggedSize);
+  static_assert(DataHandler::kHeaderSize == 6 * kTaggedSize);
 
   StructVerify(isolate);
   CHECK(IsDataHandler());

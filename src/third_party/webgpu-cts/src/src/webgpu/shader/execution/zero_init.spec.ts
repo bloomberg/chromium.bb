@@ -389,7 +389,7 @@ g.test('compute,zero_init')
 
     const wgsl = `
       ${moduleScope}
-      @stage(compute) @workgroup_size(${t.params.workgroupSize})
+      @compute @workgroup_size(${t.params.workgroupSize})
       fn main() {
         ${functionScope}
         ${checkZeroCode}
@@ -398,6 +398,7 @@ g.test('compute,zero_init')
     `;
 
     const pipeline = t.device.createComputePipeline({
+      layout: 'auto',
       compute: {
         module: t.device.createShaderModule({
           code: wgsl,

@@ -40,7 +40,7 @@ const myself = 'src/common/tools/gen_listings.ts';
 
 const outDir = argv[2];
 
-(async () => {
+void (async () => {
   for (const suiteDir of argv.slice(3)) {
     const listing = await crawl(suiteDir, validate);
 

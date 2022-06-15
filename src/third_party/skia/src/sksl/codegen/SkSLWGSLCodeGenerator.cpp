@@ -39,6 +39,7 @@
 #include "src/sksl/ir/SkSLConstructorCompound.h"
 #include "src/sksl/ir/SkSLExpression.h"
 #include "src/sksl/ir/SkSLExpressionStatement.h"
+#include "src/sksl/ir/SkSLFieldAccess.h"
 #include "src/sksl/ir/SkSLFunctionCall.h"
 #include "src/sksl/ir/SkSLFunctionDeclaration.h"
 #include "src/sksl/ir/SkSLFunctionDefinition.h"
@@ -46,6 +47,7 @@
 #include "src/sksl/ir/SkSLLiteral.h"
 #include "src/sksl/ir/SkSLProgram.h"
 #include "src/sksl/ir/SkSLReturnStatement.h"
+#include "src/sksl/ir/SkSLSwizzle.h"
 #include "src/sksl/ir/SkSLSymbolTable.h"
 #include "src/sksl/ir/SkSLType.h"
 #include "src/sksl/ir/SkSLVarDeclarations.h"
@@ -133,9 +135,9 @@ std::string to_ptr_type(const Type& type,
            ">";
 }
 
-std::string_view to_wgsl_builtin_name(WGSLCodeGenerator::Builtin kind) {
+std::string_view wgsl_builtin_name(WGSLCodeGenerator::Builtin builtin) {
     using Builtin = WGSLCodeGenerator::Builtin;
-    switch (kind) {
+    switch (builtin) {
         case Builtin::kVertexIndex:
             return "vertex_index";
         case Builtin::kInstanceIndex:
@@ -168,6 +170,56 @@ std::string_view to_wgsl_builtin_name(WGSLCodeGenerator::Builtin kind) {
     return "unsupported";
 }
 
+std::string_view wgsl_builtin_type(WGSLCodeGenerator::Builtin builtin) {
+    using Builtin = WGSLCodeGenerator::Builtin;
+    switch (builtin) {
+        case Builtin::kVertexIndex:
+            return "u32";
+        case Builtin::kInstanceIndex:
+            return "u32";
+        case Builtin::kPosition:
+            return "vec4<f32>";
+        case Builtin::kFrontFacing:
+            return "bool";
+        case Builtin::kSampleIndex:
+            return "u32";
+        case Builtin::kFragDepth:
+            return "f32";
+        case Builtin::kSampleMask:
+            return "u32";
+        case Builtin::kLocalInvocationId:
+            return "vec3<u32>";
+        case Builtin::kLocalInvocationIndex:
+            return "u32";
+        case Builtin::kGlobalInvocationId:
+            return "vec3<u32>";
+        case Builtin::kWorkgroupId:
+            return "vec3<u32>";
+        case Builtin::kNumWorkgroups:
+            return "vec3<u32>";
+        default:
+            break;
+    }
+
+    SkDEBUGFAIL("unsupported builtin");
+    return "unsupported";
+}
+
+// Some built-in variables have a type that differs from their SkSL counterpart (e.g. signed vs
+// unsigned integer). We handle these cases with an explicit type conversion during a variable
+// reference. Returns the WGSL type of the conversion target if conversion is needed, otherwise
+// returns std::nullopt.
+std::optional<std::string_view> needs_builtin_type_conversion(const Variable& v) {
+    switch (v.modifiers().fLayout.fBuiltin) {
+        case SK_VERTEXID_BUILTIN:
+        case SK_INSTANCEID_BUILTIN:
+            return {"i32"};
+        default:
+            break;
+    }
+    return std::nullopt;
+}
+
 // Map a SkSL builtin flag to a WGSL builtin kind. Returns std::nullopt if `builtin` is not
 // not supported for WGSL.
 //
@@ -197,6 +249,20 @@ std::optional<WGSLCodeGenerator::Builtin> builtin_from_sksl_name(int builtin) {
 
 std::shared_ptr<SymbolTable> top_level_symbol_table(const FunctionDefinition& f) {
     return f.body()->as<Block>().symbolTable()->fParent;
+}
+
+const char* delimiter_to_str(WGSLCodeGenerator::Delimiter delimiter) {
+    using Delim = WGSLCodeGenerator::Delimiter;
+    switch (delimiter) {
+        case Delim::kComma:
+            return ",";
+        case Delim::kSemicolon:
+            return ";";
+        case Delim::kNone:
+        default:
+            break;
+    }
+    return "";
 }
 
 // FunctionDependencyResolver visits the IR tree rooted at a particular function definition and
@@ -306,6 +372,25 @@ WGSLCodeGenerator::ProgramRequirements resolve_program_requirements(const Progra
     return WGSLCodeGenerator::ProgramRequirements(std::move(dependencies), mainNeedsCoordsArgument);
 }
 
+int count_pipeline_inputs(const Program* program) {
+    int inputCount = 0;
+    for (const ProgramElement* e : program->elements()) {
+        if (e->is<GlobalVarDeclaration>()) {
+            const Variable& v =
+                    e->as<GlobalVarDeclaration>().declaration()->as<VarDeclaration>().var();
+            if (v.modifiers().fFlags & Modifiers::kIn_Flag) {
+                inputCount++;
+            }
+        } else if (e->is<InterfaceBlock>()) {
+            const Variable& v = e->as<InterfaceBlock>().variable();
+            if (v.modifiers().fFlags & Modifiers::kIn_Flag) {
+                inputCount++;
+            }
+        }
+    }
+    return inputCount;
+}
+
 }  // namespace
 
 bool WGSLCodeGenerator::generateCode() {
@@ -344,12 +429,12 @@ bool WGSLCodeGenerator::generateCode() {
 
     write_stringstream(header, *fOut);
     write_stringstream(body, *fOut);
-    fContext.fErrors->reportPendingErrors(Position());
     return fContext.fErrors->errorCount() == 0;
 }
 
 void WGSLCodeGenerator::preprocessProgram() {
     fRequirements = resolve_program_requirements(&fProgram);
+    fPipelineInputCount = count_pipeline_inputs(&fProgram);
 }
 
 void WGSLCodeGenerator::write(std::string_view s) {
@@ -387,7 +472,8 @@ void WGSLCodeGenerator::writeName(std::string_view name) {
 
 void WGSLCodeGenerator::writePipelineIODeclaration(Modifiers modifiers,
                                                    const Type& type,
-                                                   std::string_view name) {
+                                                   std::string_view name,
+                                                   Delimiter delimiter) {
     // In WGSL, an entry-point IO parameter is "one of either a built-in value or
     // assigned a location". However, some SkSL declarations, specifically sk_FragColor, can
     // contain both a location and a builtin modifier. In addition, WGSL doesn't have a built-in
@@ -403,34 +489,44 @@ void WGSLCodeGenerator::writePipelineIODeclaration(Modifiers modifiers,
     // https://www.w3.org/TR/WGSL/#builtin-inputs-outputs
     int location = modifiers.fLayout.fLocation;
     if (location >= 0) {
-        this->writeUserDefinedVariableDecl(type, name, location);
+        this->writeUserDefinedIODecl(type, name, location, delimiter);
     } else if (modifiers.fLayout.fBuiltin >= 0) {
         auto builtin = builtin_from_sksl_name(modifiers.fLayout.fBuiltin);
         if (builtin.has_value()) {
-            this->writeBuiltinVariableDecl(type, name, *builtin);
+            this->writeBuiltinIODecl(type, name, *builtin, delimiter);
         }
     }
 }
 
-void WGSLCodeGenerator::writeUserDefinedVariableDecl(const Type& type,
-                                                     std::string_view name,
-                                                     int location) {
+void WGSLCodeGenerator::writeUserDefinedIODecl(const Type& type,
+                                               std::string_view name,
+                                               int location,
+                                               Delimiter delimiter) {
     this->write("@location(" + std::to_string(location) + ") ");
+
+    // "User-defined IO of scalar or vector integer type must always be specified as
+    // @interpolate(flat)" (see https://www.w3.org/TR/WGSL/#interpolation)
+    if (type.isInteger() || (type.isVector() && type.componentType().isInteger())) {
+        this->write("@interpolate(flat) ");
+    }
+
     this->writeName(name);
     this->write(": " + to_wgsl_type(type));
-    this->writeLine(";");
+    this->writeLine(delimiter_to_str(delimiter));
 }
 
-void WGSLCodeGenerator::writeBuiltinVariableDecl(const Type& type,
-                                                 std::string_view name,
-                                                 Builtin kind) {
+void WGSLCodeGenerator::writeBuiltinIODecl(const Type& type,
+                                           std::string_view name,
+                                           Builtin builtin,
+                                           Delimiter delimiter) {
     this->write("@builtin(");
-    this->write(to_wgsl_builtin_name(kind));
+    this->write(wgsl_builtin_name(builtin));
     this->write(") ");
 
     this->writeName(name);
-    this->write(": " + to_wgsl_type(type));
-    this->writeLine(";");
+    this->write(": ");
+    this->write(wgsl_builtin_type(builtin));
+    this->writeLine(delimiter_to_str(delimiter));
 }
 
 void WGSLCodeGenerator::writeFunction(const FunctionDefinition& f) {
@@ -498,10 +594,18 @@ void WGSLCodeGenerator::writeEntryPoint(const FunctionDefinition& main) {
     // function.
     std::string outputType;
     if (ProgramConfig::IsVertex(fProgram.fConfig->fKind)) {
-        this->writeLine("@stage(vertex) fn vertexMain(_stageIn: VSIn) -> VSOut {");
+        this->write("@stage(vertex) fn vertexMain(");
+        if (fPipelineInputCount > 0) {
+            this->write("_stageIn: VSIn");
+        }
+        this->writeLine(") -> VSOut {");
         outputType = "VSOut";
     } else if (ProgramConfig::IsFragment(fProgram.fConfig->fKind)) {
-        this->writeLine("@stage(fragment) fn fragmentMain(_stageIn: FSIn) -> FSOut {");
+        this->write("@stage(fragment) fn fragmentMain(");
+        if (fPipelineInputCount > 0) {
+            this->write("_stageIn: FSIn");
+        }
+        this->writeLine(") -> FSOut {");
         outputType = "FSOut";
     } else {
         fContext.fErrors->error(Position(), "program kind not supported");
@@ -653,8 +757,21 @@ void WGSLCodeGenerator::writeExpression(const Expression& e, Precedence parentPr
         case Expression::Kind::kConstructorCompound:
             this->writeConstructorCompound(e.as<ConstructorCompound>(), parentPrecedence);
             break;
+        case Expression::Kind::kConstructorCompoundCast:
+        case Expression::Kind::kConstructorScalarCast:
+            this->writeAnyConstructor(e.asAnyConstructor(), parentPrecedence);
+            break;
+        case Expression::Kind::kFieldAccess:
+            this->writeFieldAccess(e.as<FieldAccess>());
+            break;
         case Expression::Kind::kLiteral:
             this->writeLiteral(e.as<Literal>());
+            break;
+        case Expression::Kind::kSwizzle:
+            this->writeSwizzle(e.as<Swizzle>());
+            break;
+        case Expression::Kind::kVariableReference:
+            this->writeVariableReference(e.as<VariableReference>());
             break;
         default:
             SkDEBUGFAILF("unsupported expression (kind: %d) %s",
@@ -666,7 +783,50 @@ void WGSLCodeGenerator::writeExpression(const Expression& e, Precedence parentPr
 
 void WGSLCodeGenerator::writeBinaryExpression(const BinaryExpression& b,
                                               Precedence parentPrecedence) {
-    // TODO(skia:13092): implement
+    const Expression& left = *b.left();
+    const Expression& right = *b.right();
+    Operator op = b.getOperator();
+    Precedence precedence = op.getBinaryPrecedence();
+    bool needParens = precedence >= parentPrecedence;
+
+    if (needParens) {
+        this->write("(");
+    }
+
+    // TODO(skia:13092): Correctly handle the case when lhs is a pointer.
+
+    this->writeExpression(left, precedence);
+    this->write(op.operatorName());
+    this->writeExpression(right, precedence);
+
+    if (needParens) {
+        this->write(")");
+    }
+}
+
+void WGSLCodeGenerator::writeFieldAccess(const FieldAccess& f) {
+    const Type::Field* field = &f.base()->type().fields()[f.fieldIndex()];
+    if (FieldAccess::OwnerKind::kDefault == f.ownerKind()) {
+        this->writeExpression(*f.base(), Precedence::kPostfix);
+        this->write(".");
+    } else {
+        // We are accessing a field in an anonymous interface block. If the field refers to a
+        // pipeline IO parameter, then we access it via the synthesized IO structs. We make an
+        // explicit exception for `sk_PointSize` which we declare as a placeholder variable in
+        // global scope as it is not supported by WebGPU as a pipeline IO parameter (see comments
+        // in `writeStageOutputStruct`).
+        const Variable& v = *f.base()->as<VariableReference>().variable();
+        if (v.modifiers().fFlags & Modifiers::kIn_Flag) {
+            this->write("_stageIn.");
+        } else if (v.modifiers().fFlags & Modifiers::kOut_Flag &&
+                   field->fModifiers.fLayout.fBuiltin != SK_POINTSIZE_BUILTIN) {
+            this->write("(*_stageOut).");
+        } else {
+            // TODO(skia:13902): Reference the variable using the base name used for its
+            // uniform/storage block global declaration.
+        }
+    }
+    this->writeName(field->fName);
 }
 
 void WGSLCodeGenerator::writeLiteral(const Literal& l) {
@@ -688,6 +848,42 @@ void WGSLCodeGenerator::writeLiteral(const Literal& l) {
         this->write("u");
     } else {
         this->write(std::to_string(l.intValue()));
+    }
+}
+
+void WGSLCodeGenerator::writeSwizzle(const Swizzle& swizzle) {
+    this->writeExpression(*swizzle.base(), Precedence::kPostfix);
+    this->write(".");
+    for (int c : swizzle.components()) {
+        SkASSERT(c >= 0 && c <= 3);
+        this->write(&("x\0y\0z\0w\0"[c * 2]));
+    }
+}
+
+void WGSLCodeGenerator::writeVariableReference(const VariableReference& r) {
+    // TODO(skia:13902): Correctly handle function parameters.
+    // TODO(skia:13902): Correctly handle RTflip for built-ins.
+    const Variable& v = *r.variable();
+
+    // Insert a conversion expression if this is a built-in variable whose type differs from the
+    // SkSL.
+    std::optional<std::string_view> conversion = needs_builtin_type_conversion(v);
+    if (conversion.has_value()) {
+        this->write(*conversion);
+        this->write("(");
+    }
+    if (v.storage() == Variable::Storage::kGlobal) {
+        if (v.modifiers().fFlags & Modifiers::kIn_Flag) {
+            this->write("_stageIn.");
+        } else if (v.modifiers().fFlags & Modifiers::kOut_Flag) {
+            this->write("(*_stageOut).");
+        }
+    }
+
+    this->writeName(v.name());
+
+    if (conversion.has_value()) {
+        this->write(")");
     }
 }
 
@@ -765,6 +961,11 @@ void WGSLCodeGenerator::writeStageInputStruct() {
         return;
     }
 
+    // It is illegal to declare a struct with no members.
+    if (fPipelineInputCount < 1) {
+        return;
+    }
+
     this->write("struct ");
     this->write(structNamePrefix);
     this->writeLine("In {");
@@ -776,7 +977,8 @@ void WGSLCodeGenerator::writeStageInputStruct() {
             const Variable& v =
                     e->as<GlobalVarDeclaration>().declaration()->as<VarDeclaration>().var();
             if (v.modifiers().fFlags & Modifiers::kIn_Flag) {
-                this->writePipelineIODeclaration(v.modifiers(), v.type(), v.name());
+                this->writePipelineIODeclaration(
+                        v.modifiers(), v.type(), v.name(), Delimiter::kComma);
                 if (v.modifiers().fLayout.fBuiltin == SK_FRAGCOORD_BUILTIN) {
                     declaredFragCoordsBuiltin = true;
                 }
@@ -790,7 +992,8 @@ void WGSLCodeGenerator::writeStageInputStruct() {
             // but with members that have individual storage qualifiers?
             if (v.modifiers().fFlags & Modifiers::kIn_Flag) {
                 for (const auto& f : v.type().fields()) {
-                    this->writePipelineIODeclaration(f.fModifiers, *f.fType, f.fName);
+                    this->writePipelineIODeclaration(
+                            f.fModifiers, *f.fType, f.fName, Delimiter::kComma);
                     if (f.fModifiers.fLayout.fBuiltin == SK_FRAGCOORD_BUILTIN) {
                         declaredFragCoordsBuiltin = true;
                     }
@@ -801,7 +1004,7 @@ void WGSLCodeGenerator::writeStageInputStruct() {
 
     if (ProgramConfig::IsFragment(fProgram.fConfig->fKind) &&
         fRequirements.mainNeedsCoordsArgument && !declaredFragCoordsBuiltin) {
-        this->writeLine("@builtin(position) sk_FragCoord: vec4<f32>;");
+        this->writeLine("@builtin(position) sk_FragCoord: vec4<f32>,");
     }
 
     fIndentation--;
@@ -822,12 +1025,15 @@ void WGSLCodeGenerator::writeStageOutputStruct() {
 
     // TODO(skia:13092): Remember all variables that are added to the output struct here so they
     // can be referenced correctly when handling variable references.
+    bool declaredPositionBuiltin = false;
+    bool requiresPointSizeBuiltin = false;
     for (const ProgramElement* e : fProgram.elements()) {
         if (e->is<GlobalVarDeclaration>()) {
             const Variable& v =
                     e->as<GlobalVarDeclaration>().declaration()->as<VarDeclaration>().var();
             if (v.modifiers().fFlags & Modifiers::kOut_Flag) {
-                this->writePipelineIODeclaration(v.modifiers(), v.type(), v.name());
+                this->writePipelineIODeclaration(
+                        v.modifiers(), v.type(), v.name(), Delimiter::kComma);
             }
         } else if (e->is<InterfaceBlock>()) {
             const Variable& v = e->as<InterfaceBlock>().variable();
@@ -838,14 +1044,38 @@ void WGSLCodeGenerator::writeStageOutputStruct() {
             // but with members that have individual storage qualifiers?
             if (v.modifiers().fFlags & Modifiers::kOut_Flag) {
                 for (const auto& f : v.type().fields()) {
-                    this->writePipelineIODeclaration(f.fModifiers, *f.fType, f.fName);
+                    this->writePipelineIODeclaration(
+                            f.fModifiers, *f.fType, f.fName, Delimiter::kComma);
+                    if (f.fModifiers.fLayout.fBuiltin == SK_POSITION_BUILTIN) {
+                        declaredPositionBuiltin = true;
+                    } else if (f.fModifiers.fLayout.fBuiltin == SK_POINTSIZE_BUILTIN) {
+                        // sk_PointSize is explicitly not supported by `builtin_from_sksl_name` so
+                        // writePipelineIODeclaration will never write it. We mark it here if the
+                        // declaration is needed so we can synthesize it below.
+                        requiresPointSizeBuiltin = true;
+                    }
                 }
             }
         }
     }
 
+    // A vertex program must include the `position` builtin in its entry point return type.
+    if (ProgramConfig::IsVertex(fProgram.fConfig->fKind) && !declaredPositionBuiltin) {
+        this->writeLine("@builtin(position) sk_Position: vec4<f32>,");
+    }
+
     fIndentation--;
     this->writeLine("};");
+
+    // In WebGPU/WGSL, the vertex stage does not support a point-size output and the size
+    // of a point primitive is always 1 pixel (see https://github.com/gpuweb/gpuweb/issues/332).
+    //
+    // There isn't anything we can do to emulate this correctly at this stage so we
+    // synthesize a placeholder variable that has no effect. Programs should not rely on
+    // sk_PointSize when using the Dawn backend.
+    if (ProgramConfig::IsVertex(fProgram.fConfig->fKind) && requiresPointSizeBuiltin) {
+        this->writeLine("/* unsupported */ var<private> sk_PointSize: f32;");
+    }
 }
 
 }  // namespace SkSL

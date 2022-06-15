@@ -1281,7 +1281,7 @@ void MacroAssembler::PushCalleeSavedRegisters() {
   stp(x21, x22, tos);
   stp(x19, x20, tos);
 
-  STATIC_ASSERT(
+  static_assert(
       EntryFrameConstants::kCalleeSavedRegisterBytesPushedBeforeFpLrPair ==
       18 * kSystemPointerSize);
 
@@ -1293,7 +1293,7 @@ void MacroAssembler::PushCalleeSavedRegisters() {
 
     stp(x29, x30, tos);  // fp, lr
 
-    STATIC_ASSERT(
+    static_assert(
         EntryFrameConstants::kCalleeSavedRegisterBytesPushedAfterFpLrPair == 0);
 }
 
@@ -1448,7 +1448,7 @@ void TurboAssembler::AssertFPCRState(Register fpcr) {
     //   - Assert that flush-to-zero is not set.
     Tbnz(fpcr, FZ_offset, &unexpected_mode);
     //   - Assert that the rounding mode is nearest-with-ties-to-even.
-    STATIC_ASSERT(FPTieEven == 0);
+    static_assert(FPTieEven == 0);
     Tst(fpcr, RMode_mask);
     B(eq, &done);
 
@@ -1538,7 +1538,7 @@ void TurboAssembler::Swap(VRegister lhs, VRegister rhs) {
 void TurboAssembler::AssertSmi(Register object, AbortReason reason) {
   if (!FLAG_debug_code) return;
   ASM_CODE_COMMENT(this);
-  STATIC_ASSERT(kSmiTag == 0);
+  static_assert(kSmiTag == 0);
   Tst(object, kSmiTagMask);
   Check(eq, reason);
 }
@@ -1546,7 +1546,7 @@ void TurboAssembler::AssertSmi(Register object, AbortReason reason) {
 void MacroAssembler::AssertNotSmi(Register object, AbortReason reason) {
   if (!FLAG_debug_code) return;
   ASM_CODE_COMMENT(this);
-  STATIC_ASSERT(kSmiTag == 0);
+  static_assert(kSmiTag == 0);
   Tst(object, kSmiTagMask);
   Check(ne, reason);
 }
@@ -2152,7 +2152,7 @@ void TurboAssembler::LoadCodeDataContainerCodeNonBuiltin(
   ASM_CODE_COMMENT(this);
   CHECK(V8_EXTERNAL_CODE_SPACE_BOOL);
   // Given the fields layout we can read the Code reference as a full word.
-  STATIC_ASSERT(!V8_EXTERNAL_CODE_SPACE_BOOL ||
+  static_assert(!V8_EXTERNAL_CODE_SPACE_BOOL ||
                 (CodeDataContainer::kCodeCageBaseUpper32BitsOffset ==
                  CodeDataContainer::kCodeOffset + kTaggedSize));
   Ldr(destination, FieldMemOperand(code_data_container_object,
@@ -2643,7 +2643,7 @@ void TurboAssembler::Prologue() {
   ASM_CODE_COMMENT(this);
   Push<TurboAssembler::kSignLR>(lr, fp);
   mov(fp, sp);
-  STATIC_ASSERT(kExtraSlotClaimedByPrologue == 1);
+  static_assert(kExtraSlotClaimedByPrologue == 1);
   Push(cp, kJSFunctionRegister, kJavaScriptCallArgCountRegister, padreg);
 }
 
@@ -2752,13 +2752,13 @@ void MacroAssembler::EnterExitFrame(bool save_doubles, const Register& scratch,
   //    fp -> fp[0]: CallerFP (old fp)
   //          fp[-8]: STUB marker
   //    sp -> fp[-16]: Space reserved for SPOffset.
-  STATIC_ASSERT((2 * kSystemPointerSize) ==
+  static_assert((2 * kSystemPointerSize) ==
                 ExitFrameConstants::kCallerSPOffset);
-  STATIC_ASSERT((1 * kSystemPointerSize) ==
+  static_assert((1 * kSystemPointerSize) ==
                 ExitFrameConstants::kCallerPCOffset);
-  STATIC_ASSERT((0 * kSystemPointerSize) ==
+  static_assert((0 * kSystemPointerSize) ==
                 ExitFrameConstants::kCallerFPOffset);
-  STATIC_ASSERT((-2 * kSystemPointerSize) == ExitFrameConstants::kSPOffset);
+  static_assert((-2 * kSystemPointerSize) == ExitFrameConstants::kSPOffset);
 
   // Save the frame pointer and context pointer in the top frame.
   Mov(scratch,
@@ -2768,7 +2768,7 @@ void MacroAssembler::EnterExitFrame(bool save_doubles, const Register& scratch,
       ExternalReference::Create(IsolateAddressId::kContextAddress, isolate()));
   Str(cp, MemOperand(scratch));
 
-  STATIC_ASSERT((-2 * kSystemPointerSize) ==
+  static_assert((-2 * kSystemPointerSize) ==
                 ExitFrameConstants::kLastExitFrameField);
   if (save_doubles) {
     ExitFramePreserveFPRegs();
@@ -3085,7 +3085,6 @@ void MacroAssembler::RecordWriteField(Register object, int offset,
                                       Register value,
                                       LinkRegisterStatus lr_status,
                                       SaveFPRegsMode save_fp,
-                                      RememberedSetAction remembered_set_action,
                                       SmiCheck smi_check) {
   ASM_CODE_COMMENT(this);
   DCHECK(!AreAliased(object, value));
@@ -3116,7 +3115,7 @@ void MacroAssembler::RecordWriteField(Register object, int offset,
   }
 
   RecordWrite(object, Operand(offset - kHeapObjectTag), value, lr_status,
-              save_fp, remembered_set_action, SmiCheck::kOmit);
+              save_fp, SmiCheck::kOmit);
 
   Bind(&done);
 }
@@ -3179,7 +3178,7 @@ void TurboAssembler::LoadExternalPointerField(Register destination,
   Ldr(destination.W(), field_operand);
   // MemOperand doesn't support LSR currently (only LSL), so here we do the
   // offset computation separately first.
-  STATIC_ASSERT(kExternalPointerIndexShift > kSystemPointerSizeLog2);
+  static_assert(kExternalPointerIndexShift > kSystemPointerSizeLog2);
   int shift_amount = kExternalPointerIndexShift - kSystemPointerSizeLog2;
   Mov(destination, Operand(destination, LSR, shift_amount));
   Ldr(destination, MemOperand(external_table, destination));
@@ -3225,9 +3224,10 @@ void TurboAssembler::CallEphemeronKeyBarrier(Register object, Operand offset,
   MaybeRestoreRegisters(registers);
 }
 
-void TurboAssembler::CallRecordWriteStubSaveRegisters(
-    Register object, Operand offset, RememberedSetAction remembered_set_action,
-    SaveFPRegsMode fp_mode, StubCallMode mode) {
+void TurboAssembler::CallRecordWriteStubSaveRegisters(Register object,
+                                                      Operand offset,
+                                                      SaveFPRegsMode fp_mode,
+                                                      StubCallMode mode) {
   ASM_CODE_COMMENT(this);
   RegList registers = WriteBarrierDescriptor::ComputeSavedRegisters(object);
   MaybeSaveRegisters(registers);
@@ -3237,30 +3237,26 @@ void TurboAssembler::CallRecordWriteStubSaveRegisters(
       WriteBarrierDescriptor::SlotAddressRegister();
   MoveObjectAndSlot(object_parameter, slot_address_parameter, object, offset);
 
-  CallRecordWriteStub(object_parameter, slot_address_parameter,
-                      remembered_set_action, fp_mode, mode);
+  CallRecordWriteStub(object_parameter, slot_address_parameter, fp_mode, mode);
 
   MaybeRestoreRegisters(registers);
 }
 
-void TurboAssembler::CallRecordWriteStub(
-    Register object, Register slot_address,
-    RememberedSetAction remembered_set_action, SaveFPRegsMode fp_mode,
-    StubCallMode mode) {
+void TurboAssembler::CallRecordWriteStub(Register object, Register slot_address,
+                                         SaveFPRegsMode fp_mode,
+                                         StubCallMode mode) {
   ASM_CODE_COMMENT(this);
   DCHECK_EQ(WriteBarrierDescriptor::ObjectRegister(), object);
   DCHECK_EQ(WriteBarrierDescriptor::SlotAddressRegister(), slot_address);
 #if V8_ENABLE_WEBASSEMBLY
   if (mode == StubCallMode::kCallWasmRuntimeStub) {
-    auto wasm_target =
-        wasm::WasmCode::GetRecordWriteStub(remembered_set_action, fp_mode);
+    auto wasm_target = wasm::WasmCode::GetRecordWriteStub(fp_mode);
     Call(wasm_target, RelocInfo::WASM_STUB_CALL);
 #else
   if (false) {
 #endif
   } else {
-    Builtin builtin =
-        Builtins::GetRecordWriteStub(remembered_set_action, fp_mode);
+    Builtin builtin = Builtins::GetRecordWriteStub(fp_mode);
     if (options().inline_offheap_trampolines) {
       CallBuiltin(builtin);
     } else {
@@ -3310,9 +3306,7 @@ void TurboAssembler::MoveObjectAndSlot(Register dst_object, Register dst_slot,
 // shifted away.
 void MacroAssembler::RecordWrite(Register object, Operand offset,
                                  Register value, LinkRegisterStatus lr_status,
-                                 SaveFPRegsMode fp_mode,
-                                 RememberedSetAction remembered_set_action,
-                                 SmiCheck smi_check) {
+                                 SaveFPRegsMode fp_mode, SmiCheck smi_check) {
   ASM_CODE_COMMENT(this);
   ASM_LOCATION_IN_ASSEMBLER("MacroAssembler::RecordWrite");
   DCHECK(!AreAliased(object, value));
@@ -3328,9 +3322,7 @@ void MacroAssembler::RecordWrite(Register object, Operand offset,
     Check(eq, AbortReason::kWrongAddressOrValuePassedToRecordWrite);
   }
 
-  if ((remembered_set_action == RememberedSetAction::kOmit &&
-       !FLAG_incremental_marking) ||
-      FLAG_disable_write_barriers) {
+  if (FLAG_disable_write_barriers) {
     return;
   }
 
@@ -3357,7 +3349,7 @@ void MacroAssembler::RecordWrite(Register object, Operand offset,
   // TODO(cbruni): Turn offset into int.
   DCHECK(offset.IsImmediate());
   Add(slot_address, object, offset);
-  CallRecordWriteStub(object, slot_address, remembered_set_action, fp_mode);
+  CallRecordWriteStub(object, slot_address, fp_mode);
   if (lr_status == kLRHasNotBeenSaved) {
     Pop<TurboAssembler::kAuthLR>(lr, padreg);
   }

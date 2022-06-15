@@ -59,6 +59,10 @@
 #include "spirv-tools/libspirv.hpp"
 #endif
 
+#ifdef SK_ENABLE_WGSL_VALIDATION
+#include "tint/tint.h"
+#endif
+
 #ifdef SKSL_STANDALONE
 #define REHYDRATE 0
 #include <fstream>
@@ -383,7 +387,7 @@ LoadedModule Compiler::loadModule(ProgramKind kind,
     AutoProgramConfig autoConfig(fContext, &config);
     SkASSERT(data.fData && (data.fSize != 0));
     Rehydrator rehydrator(*this, data.fData, data.fSize, std::move(base));
-    LoadedModule result = { kind, rehydrator.symbolTable(), rehydrator.elements() };
+    LoadedModule module = {kind, rehydrator.symbolTable(), rehydrator.elements()};
 #else
     SkASSERT(this->errorCount() == 0);
     SkASSERT(data.fPath);
@@ -394,20 +398,21 @@ LoadedModule Compiler::loadModule(ProgramKind kind,
         abort();
     }
     ParsedModule baseModule = {std::move(base), /*fElements=*/nullptr};
-    LoadedModule result = DSLParser(this, settings, kind,
-            std::move(text)).moduleInheritingFrom(std::move(baseModule));
+    LoadedModule module = DSLParser(this, settings, kind, std::move(text))
+                                  .moduleInheritingFrom(baseModule);
     if (this->errorCount()) {
         printf("Unexpected errors: %s\n", this->fErrorText.c_str());
         SkDEBUGFAILF("%s %s\n", data.fPath, this->fErrorText.c_str());
     }
+    this->optimizeModuleForDehydration(module, baseModule);
 #endif
 
-    return result;
+    return module;
 }
 
 ParsedModule Compiler::parseModule(ProgramKind kind, ModuleData data, const ParsedModule& base) {
     LoadedModule module = this->loadModule(kind, data, base.fSymbols, /*dehydrate=*/false);
-    this->optimize(module, base);
+    this->optimizeRehydratedModule(module, base);
 
     // For modules that just declare (but don't define) intrinsic functions, there will be no new
     // program elements. In that case, we can share our parent's element map:
@@ -505,14 +510,13 @@ std::unique_ptr<Program> Compiler::convertProgram(ProgramKind kind,
     this->resetErrors();
     fInliner.reset();
 
-    settings.fDSLMangling = false;
     return DSLParser(this, settings, kind, std::move(text)).program();
 }
 
 void Compiler::updateInputsForBuiltinVariable(const Variable& var) {
     switch (var.modifiers().fLayout.fBuiltin) {
         case SK_FRAGCOORD_BUILTIN:
-            if (fContext->fCaps.canUseFragCoord()) {
+            if (fContext->fCaps.fCanUseFragCoord) {
                 ThreadContext::Inputs().fUseFlipRTUniform =
                         !fContext->fConfig->fSettings.fForceNoRTFlip;
             }
@@ -568,7 +572,7 @@ std::unique_ptr<Expression> Compiler::convertIdentifier(Position pos, std::strin
     }
 }
 
-bool Compiler::optimize(LoadedModule& module, const ParsedModule& base) {
+bool Compiler::optimizeRehydratedModule(LoadedModule& module, const ParsedModule& base) {
     SkASSERT(!this->errorCount());
 
     // Create a temporary program configuration with default settings.
@@ -587,6 +591,35 @@ bool Compiler::optimize(LoadedModule& module, const ParsedModule& base) {
             break;
         }
     }
+    return this->errorCount() == 0;
+}
+
+bool Compiler::optimizeModuleForDehydration(LoadedModule& module, const ParsedModule& base) {
+    SkASSERT(!this->errorCount());
+
+    // Create a temporary program configuration with default settings.
+    ProgramConfig config;
+    config.fIsBuiltinCode = true;
+    config.fKind = module.fKind;
+    AutoProgramConfig autoConfig(fContext, &config);
+
+    std::unique_ptr<ProgramUsage> usage = Analysis::GetUsage(module, base);
+
+    // Remove any unreachable code.
+    Transform::EliminateUnreachableCode(module, usage.get());
+
+    while (Transform::EliminateDeadLocalVariables(*fContext, module, usage.get())) {
+        // Removing dead variables may cause more variables to become unreferenced. Try again.
+    }
+
+    // Save space by eliminating empty statements from the code.
+    Transform::EliminateEmptyStatements(module);
+
+    // Note that we intentionally don't attempt to eliminate unreferenced global variables or
+    // functions here, since those can be referenced by the finished program even if they're
+    // unreferenced now. We also don't run the inliner to avoid growing the program; that is done in
+    // `optimizeRehydratedModule` above.
+
     return this->errorCount() == 0;
 }
 
@@ -662,7 +695,7 @@ bool Compiler::finalize(Program& program) {
     return this->errorCount() == 0;
 }
 
-#if defined(SKSL_STANDALONE) || SK_SUPPORT_GPU || SK_GRAPHITE_ENABLED
+#if defined(SKSL_STANDALONE) || SK_SUPPORT_GPU || defined(SK_GRAPHITE_ENABLED)
 
 #if defined(SK_ENABLE_SPIRV_VALIDATION)
 static bool validate_spirv(ErrorReporter& reporter, std::string_view program) {
@@ -689,7 +722,6 @@ static bool validate_spirv(ErrorReporter& reporter, std::string_view program) {
             errors.append(disassembly);
         }
         reporter.error(Position(), errors);
-        reporter.reportPendingErrors(Position());
 #else
         SkDEBUGFAILF("%s", errors.c_str());
 #endif
@@ -791,14 +823,44 @@ bool Compiler::toMetal(Program& program, std::string* out) {
     return result;
 }
 
+#if defined(SK_ENABLE_WGSL_VALIDATION)
+static bool validate_wgsl(ErrorReporter& reporter, const std::string& wgsl) {
+    tint::Source::File srcFile("", wgsl);
+    tint::Program program(tint::reader::wgsl::Parse(&srcFile));
+    if (program.Diagnostics().count() > 0) {
+        tint::diag::Formatter diagFormatter;
+        std::string diagOutput = diagFormatter.format(program.Diagnostics());
+#if defined(SKSL_STANDALONE)
+        reporter.error(Position(), diagOutput);
+#else
+        SkDEBUGFAILF("%s", diagOutput.c_str());
+#endif
+        return false;
+    }
+    return true;
+}
+#endif  // defined(SK_ENABLE_WGSL_VALIDATION)
+
 bool Compiler::toWGSL(Program& program, OutputStream& out) {
     TRACE_EVENT0("skia.shaders", "SkSL::Compiler::toWGSL");
     AutoSource as(this, *program.fSource);
+#ifdef SK_ENABLE_WGSL_VALIDATION
+    StringStream wgsl;
+    WGSLCodeGenerator cg(fContext.get(), &program, &wgsl);
+    bool result = cg.generateCode();
+    if (result) {
+        std::string wgslString = wgsl.str();
+        result = validate_wgsl(this->errorReporter(), wgslString);
+        out.writeString(wgslString);
+    }
+#else
     WGSLCodeGenerator cg(fContext.get(), &program, &out);
-    return cg.generateCode();
+    bool result = cg.generateCode();
+#endif
+    return result;
 }
 
-#endif // defined(SKSL_STANDALONE) || SK_SUPPORT_GPU || SK_GRAPHITE_ENABLED
+#endif // defined(SKSL_STANDALONE) || SK_SUPPORT_GPU || defined(SK_GRAPHITE_ENABLED)
 
 void Compiler::handleError(std::string_view msg, Position pos) {
     fErrorText += "error: ";

@@ -157,8 +157,8 @@ static double residual_frame_average_variance(AV1_COMP *cpi,
   bool do_motion_search = false;
   if (mvs == NULL) {
     do_motion_search = true;
-    mvs = (FULLPEL_MV *)aom_malloc(sizeof(*mvs) * mb_rows * mb_cols);
-    memset(mvs, 0, sizeof(*mvs) * mb_rows * mb_cols);
+    CHECK_MEM_ERROR(&cpi->common, mvs,
+                    (FULLPEL_MV *)aom_calloc(mb_rows * mb_cols, sizeof(*mvs)));
   }
 
   unsigned int variance = 0;
@@ -485,9 +485,11 @@ void av1_vmaf_blk_preprocessing(AV1_COMP *const cpi,
   const int num_cols = (source->y_width + block_w - 1) / block_w;
   const int num_rows = (source->y_height + block_h - 1) / block_h;
   double *best_unsharp_amounts =
-      aom_malloc(sizeof(*best_unsharp_amounts) * num_cols * num_rows);
-  memset(best_unsharp_amounts, 0,
-         sizeof(*best_unsharp_amounts) * num_cols * num_rows);
+      aom_calloc(num_cols * num_rows, sizeof(*best_unsharp_amounts));
+  if (!best_unsharp_amounts) {
+    aom_internal_error(cm->error, AOM_CODEC_MEM_ERROR,
+                       "Error allocating vmaf data");
+  }
 
   YV12_BUFFER_CONFIG source_block, blurred_block;
   memset(&source_block, 0, sizeof(source_block));
@@ -655,8 +657,11 @@ void av1_set_mb_vmaf_rdmult_scaling(AV1_COMP *cpi) {
   const bool cal_vmaf_neg =
       cpi->oxcf.tune_cfg.tuning == AOM_TUNE_VMAF_NEG_MAX_GAIN;
   aom_init_vmaf_context(&vmaf_context, cpi->vmaf_info.vmaf_model, cal_vmaf_neg);
-  unsigned int *sses = aom_malloc(sizeof(*sses) * (num_rows * num_cols));
-  memset(sses, 0, sizeof(*sses) * (num_rows * num_cols));
+  unsigned int *sses = aom_calloc(num_rows * num_cols, sizeof(*sses));
+  if (!sses) {
+    aom_internal_error(cm->error, AOM_CODEC_MEM_ERROR,
+                       "Error allocating vmaf data");
+  }
 
   // Loop through each 'block_size' block.
   for (int row = 0; row < num_rows; ++row) {

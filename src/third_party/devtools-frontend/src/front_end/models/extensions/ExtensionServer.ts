@@ -31,8 +31,6 @@
 // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
 /* eslint-disable @typescript-eslint/naming-convention */
 
-// TODO(crbug.com/1253323): Casts to UrlString will be removed from this file when migration to branded types is complete.
-
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
@@ -54,9 +52,11 @@ import {ExtensionButton, ExtensionPanel, ExtensionSidebarPane} from './Extension
 import type {TracingSession} from './ExtensionTraceProvider.js';
 import {ExtensionTraceProvider} from './ExtensionTraceProvider.js';
 import {LanguageExtensionEndpoint} from './LanguageExtensionEndpoint.js';
+import {RecorderExtensionEndpoint} from './RecorderExtensionEndpoint.js';
 import {PrivateAPI} from './ExtensionAPI.js';
+import {RecorderPluginManager} from './RecorderPluginManager.js';
 
-const extensionOrigins: WeakMap<MessagePort, string> = new WeakMap();
+const extensionOrigins: WeakMap<MessagePort, Platform.DevToolsPath.UrlString> = new WeakMap();
 
 declare global {
   interface Window {
@@ -140,6 +140,8 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper<EventTyp
     this.registerHandler(PrivateAPI.Commands.UpdateButton, this.onUpdateButton.bind(this));
     this.registerHandler(
         PrivateAPI.Commands.RegisterLanguageExtensionPlugin, this.registerLanguageExtensionEndpoint.bind(this));
+    this.registerHandler(
+        PrivateAPI.Commands.RegisterRecorderExtensionPlugin, this.registerRecorderExtensionEndpoint.bind(this));
     window.addEventListener('message', this.onWindowMessage.bind(this), false);  // Only for main window.
 
     const existingTabId =
@@ -214,6 +216,16 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper<EventTyp
         (Array.isArray(symbol_types) && symbol_types.every(e => typeof e === 'string') ? symbol_types : []);
     const endpoint = new LanguageExtensionEndpoint(pluginName, {language, symbol_types: symbol_types_array}, port);
     pluginManager.addPlugin(endpoint);
+    return this.status.OK();
+  }
+
+  private registerRecorderExtensionEndpoint(
+      message: PrivateAPI.ExtensionServerRequestMessage, _shared_port: MessagePort): Record {
+    if (message.command !== PrivateAPI.Commands.RegisterRecorderExtensionPlugin) {
+      return this.status.E_BADARG('command', `expected ${PrivateAPI.Commands.RegisterRecorderExtensionPlugin}`);
+    }
+    const {pluginName, mediaType, port} = message;
+    RecorderPluginManager.instance().addPlugin(new RecorderExtensionEndpoint(pluginName, mediaType, port));
     return this.status.OK();
   }
 
@@ -344,7 +356,7 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper<EventTyp
     return undefined;
   }
 
-  private getExtensionOrigin(port: MessagePort): string {
+  private getExtensionOrigin(port: MessagePort): Platform.DevToolsPath.UrlString {
     const origin = extensionOrigins.get(port);
     if (!origin) {
       throw new Error('Received a message from an unregistered extension');
@@ -503,8 +515,7 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper<EventTyp
     if (message.command !== PrivateAPI.Commands.OpenResource) {
       return this.status.E_BADARG('command', `expected ${PrivateAPI.Commands.OpenResource}`);
     }
-    const uiSourceCode =
-        Workspace.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(message.url as Platform.DevToolsPath.UrlString);
+    const uiSourceCode = Workspace.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(message.url);
     if (uiSourceCode) {
       void Common.Revealer.reveal(uiSourceCode.uiLocation(message.lineNumber, message.columnNumber));
       return this.status.OK();
@@ -840,7 +851,7 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper<EventTyp
     this.postNotification(PrivateAPI.Events.PanelObjectSelected + 'elements');
   }
 
-  sourceSelectionChanged(url: string, range: TextUtils.TextRange.TextRange): void {
+  sourceSelectionChanged(url: Platform.DevToolsPath.UrlString, range: TextUtils.TextRange.TextRange): void {
     this.postNotification(PrivateAPI.Events.PanelObjectSelected + 'sources', {
       startLine: range.startLine,
       startColumn: range.startColumn,
@@ -857,6 +868,13 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper<EventTyp
       // Run deferred init
       this.initializeExtensions();
     }
+  }
+
+  addExtensionForTest(extensionInfo: Host.InspectorFrontendHostAPI.ExtensionDescriptor, origin: string): boolean
+      |undefined {
+    const name = extensionInfo.name || `Extension ${origin}`;
+    this.registeredExtensions.set(origin, {name});
+    return true;
   }
 
   private addExtension(extensionInfo: Host.InspectorFrontendHostAPI.ExtensionDescriptor): boolean|undefined {
@@ -896,7 +914,7 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper<EventTyp
     return true;
   }
 
-  private registerExtension(origin: string, port: MessagePort): void {
+  private registerExtension(origin: Platform.DevToolsPath.UrlString, port: MessagePort): void {
     if (!this.registeredExtensions.has(origin)) {
       if (origin !== window.location.origin) {  // Just ignore inspector frames.
         console.error('Ignoring unauthorized client request from ' + origin);
@@ -910,7 +928,7 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper<EventTyp
 
   private onWindowMessage(event: MessageEvent): void {
     if (event.data === 'registerExtension') {
-      this.registerExtension(event.origin, event.ports[0]);
+      this.registerExtension(event.origin as Platform.DevToolsPath.UrlString, event.ports[0]);
     }
   }
 
@@ -984,8 +1002,9 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper<EventTyp
         removeLastEventListener.bind(this));
   }
 
-  private expandResourcePath(extensionPath: string, resourcePath: string): string {
-    return extensionPath + '/' + Common.ParsedURL.normalizePath(resourcePath);
+  private expandResourcePath(extensionPath: Platform.DevToolsPath.UrlString, resourcePath: string):
+      Platform.DevToolsPath.UrlString {
+    return extensionPath + '/' + Common.ParsedURL.normalizePath(resourcePath) as Platform.DevToolsPath.UrlString;
   }
 
   evaluate(
@@ -995,7 +1014,7 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper<EventTyp
       |undefined {
     let context;
 
-    function resolveURLToFrame(url: string): SDK.ResourceTreeModel.ResourceTreeFrame|null {
+    function resolveURLToFrame(url: Platform.DevToolsPath.UrlString): SDK.ResourceTreeModel.ResourceTreeFrame|null {
       let found = null;
       function hasMatchingURL(frame: SDK.ResourceTreeModel.ResourceTreeFrame): SDK.ResourceTreeModel.ResourceTreeFrame|
           null {
@@ -1009,7 +1028,7 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper<EventTyp
     options = options || {};
     let frame;
     if (options.frameURL) {
-      frame = resolveURLToFrame(options.frameURL);
+      frame = resolveURLToFrame(options.frameURL as Platform.DevToolsPath.UrlString);
     } else {
       const target = SDK.TargetManager.TargetManager.instance().mainTarget();
       const resourceTreeModel = target && target.model(SDK.ResourceTreeModel.ResourceTreeModel);
@@ -1088,7 +1107,7 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper<EventTyp
     return undefined;
   }
 
-  private canInspectURL(url: string): boolean {
+  private canInspectURL(url: Platform.DevToolsPath.UrlString): boolean {
     let parsedURL;
     // This is only to work around invalid URLs we're occasionally getting from some tests.
     // TODO(caseq): make sure tests supply valid URLs or we specifically handle invalid ones.

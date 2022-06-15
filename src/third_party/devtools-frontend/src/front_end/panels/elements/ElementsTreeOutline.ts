@@ -1180,6 +1180,11 @@ export class ElementsTreeOutline extends
         !node.parentNode.parentNode) {
       treeElement.setCollapsible(false);
     }
+
+    if (node.hasAssignedSlot()) {
+      treeElement.createSlotLink(node.assignedSlot);
+    }
+
     treeElement.selectable = Boolean(this.selectEnabled);
     return treeElement;
   }
@@ -1212,6 +1217,8 @@ export class ElementsTreeOutline extends
     if (templateContent) {
       visibleChildren.push(templateContent);
     }
+
+    visibleChildren.push(...node.pageTransitionPseudoElements());
 
     const markerPseudoElement = node.markerPseudoElement();
     if (markerPseudoElement) {

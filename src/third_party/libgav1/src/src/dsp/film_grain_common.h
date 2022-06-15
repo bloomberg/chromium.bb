@@ -17,15 +17,7 @@
 #ifndef LIBGAV1_SRC_DSP_FILM_GRAIN_COMMON_H_
 #define LIBGAV1_SRC_DSP_FILM_GRAIN_COMMON_H_
 
-#include <cstddef>
 #include <cstdint>
-#include <memory>
-#include <type_traits>
-
-#include "src/dsp/common.h"
-#include "src/utils/array_2d.h"
-#include "src/utils/constants.h"
-#include "src/utils/cpu.h"
 
 namespace libgav1 {
 

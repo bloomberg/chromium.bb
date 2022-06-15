@@ -183,7 +183,8 @@ DEF_GPUTEST(OpChainTest, reporter, /*ctxInfo*/) {
     static const GrSurfaceOrigin kOrigin = kTopLeft_GrSurfaceOrigin;
     auto proxy = dContext->priv().proxyProvider()->createProxy(
             format, kDims, GrRenderable::kYes, 1, GrMipmapped::kNo, SkBackingFit::kExact,
-            SkBudgeted::kNo, GrProtected::kNo, GrInternalSurfaceFlags::kNone);
+            SkBudgeted::kNo, GrProtected::kNo, /*label=*/"OpChainTest",
+            GrInternalSurfaceFlags::kNone);
     SkASSERT(proxy);
     proxy->instantiate(dContext->priv().resourceProvider());
 
@@ -216,7 +217,7 @@ DEF_GPUTEST(OpChainTest, reporter, /*ctxInfo*/) {
         for (int g = 1; g < kNumOps; ++g) {
             for (int c = 0; c < kNumCombinabilitiesPerGrouping; ++c) {
                 init_combinable(g, &combinable, &random);
-                GrTokenTracker tracker;
+                skgpu::TokenTracker tracker;
                 GrOpFlushState flushState(dContext->priv().getGpu(),
                                           dContext->priv().resourceProvider(),
                                           &tracker);

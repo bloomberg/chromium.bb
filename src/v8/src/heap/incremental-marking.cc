@@ -363,87 +363,17 @@ void IncrementalMarking::EnsureBlackAllocated(Address allocated, size_t size) {
   }
 }
 
-bool IncrementalMarking::ShouldRetainMap(Map map, int age) {
-  if (age == 0) {
-    // The map has aged. Do not retain this map.
-    return false;
-  }
-  Object constructor = map.GetConstructor();
-  if (!constructor.IsHeapObject() ||
-      marking_state()->IsWhite(HeapObject::cast(constructor))) {
-    // The constructor is dead, no new objects with this map can
-    // be created. Do not retain this map.
-    return false;
-  }
-  return true;
-}
-
-void IncrementalMarking::RetainMaps() {
-  // Do not retain dead maps if flag disables it or there is
-  // - memory pressure (reduce_memory_footprint_),
-  // - GC is requested by tests or dev-tools (abort_incremental_marking_).
-  bool map_retaining_is_disabled = heap()->ShouldReduceMemory() ||
-                                   FLAG_retain_maps_for_n_gc == 0;
-  std::vector<WeakArrayList> retained_maps_list = heap()->FindAllRetainedMaps();
-
-  for (WeakArrayList retained_maps : retained_maps_list) {
-    int length = retained_maps.length();
-
-    for (int i = 0; i < length; i += 2) {
-      MaybeObject value = retained_maps.Get(i);
-      HeapObject map_heap_object;
-      if (!value->GetHeapObjectIfWeak(&map_heap_object)) {
-        continue;
-      }
-      int age = retained_maps.Get(i + 1).ToSmi().value();
-      int new_age;
-      Map map = Map::cast(map_heap_object);
-      if (!map_retaining_is_disabled && marking_state()->IsWhite(map)) {
-        if (ShouldRetainMap(map, age)) {
-          WhiteToGreyAndPush(map);
-          if (V8_UNLIKELY(FLAG_track_retaining_path)) {
-            heap_->AddRetainingRoot(Root::kRetainMaps, map);
-          }
-        }
-        Object prototype = map.prototype();
-        if (age > 0 && prototype.IsHeapObject() &&
-            marking_state()->IsWhite(HeapObject::cast(prototype))) {
-          // The prototype is not marked, age the map.
-          new_age = age - 1;
-        } else {
-          // The prototype and the constructor are marked, this map keeps only
-          // transition tree alive, not JSObjects. Do not age the map.
-          new_age = age;
-        }
-      } else {
-        new_age = FLAG_retain_maps_for_n_gc;
-      }
-      // Compact the array and update the age.
-      if (new_age != age) {
-        retained_maps.Set(i + 1, MaybeObject::FromSmi(Smi::FromInt(new_age)));
-      }
-    }
-  }
-}
-
 void IncrementalMarking::FinalizeIncrementally() {
   TRACE_GC(heap()->tracer(), GCTracer::Scope::MC_INCREMENTAL_FINALIZE_BODY);
   DCHECK(!finalize_marking_completed_);
   DCHECK(IsMarking());
 
-  double start = heap_->MonotonicallyIncreasingTimeInMs();
-
-  // Map retaining is needed for performance, not correctness,
-  // so we can do it only once at the beginning of the finalization.
-  RetainMaps();
-
+  // TODO(v8:12775): Remove the finalization step.
   finalize_marking_completed_ = true;
 
   if (FLAG_trace_incremental_marking) {
-    double end = heap_->MonotonicallyIncreasingTimeInMs();
-    double delta = end - start;
     heap()->isolate()->PrintWithTimestamp(
-        "[IncrementalMarking] Finalize incrementally spent %.1f ms.\n", delta);
+        "[IncrementalMarking] Finalize incrementally.\n");
   }
 }
 
@@ -470,9 +400,7 @@ void IncrementalMarking::UpdateMarkingWorklistAfterYoungGenGC() {
     DCHECK(obj.IsHeapObject());
     // Only pointers to from space have to be updated.
     if (Heap::InFromPage(obj)) {
-      DCHECK_IMPLIES(FLAG_minor_mc_sweeping, minor_marking_state->IsWhite(obj));
       MapWord map_word = obj.map_word(cage_base, kRelaxedLoad);
-      DCHECK_IMPLIES(FLAG_minor_mc_sweeping, !map_word.IsForwardingAddress());
       if (!map_word.IsForwardingAddress()) {
         // There may be objects on the marking deque that do not exist
         // anymore, e.g. left trimmed objects or objects from the root set
@@ -837,7 +765,7 @@ void IncrementalMarking::FetchBytesMarkedConcurrently() {
   if (FLAG_concurrent_marking) {
     size_t current_bytes_marked_concurrently =
         heap()->concurrent_marking()->TotalMarkedBytes();
-    // The concurrent_marking()->TotalMarkedBytes() is not monothonic for a
+    // The concurrent_marking()->TotalMarkedBytes() is not monotonic for a
     // short period of time when a concurrent marking task is finishing.
     if (current_bytes_marked_concurrently > bytes_marked_concurrently_) {
       bytes_marked_ +=
@@ -865,7 +793,7 @@ size_t IncrementalMarking::ComputeStepSizeInBytes(StepOrigin step_origin) {
           (bytes_marked_ - scheduled_bytes_to_mark_) / KB);
     }
   }
-  // Allow steps on allocation to get behind the schedule by small ammount.
+  // Allow steps on allocation to get behind the schedule by small amount.
   // This gives higher priority to steps in tasks.
   size_t kScheduleMarginInBytes = step_origin == StepOrigin::kV8 ? 1 * MB : 0;
   if (bytes_marked_ + kScheduleMarginInBytes > scheduled_bytes_to_mark_)

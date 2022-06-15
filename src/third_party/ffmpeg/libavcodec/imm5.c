@@ -83,11 +83,10 @@ static av_cold int imm5_init(AVCodecContext *avctx)
     return 0;
 }
 
-static int imm5_decode_frame(AVCodecContext *avctx, void *data,
+static int imm5_decode_frame(AVCodecContext *avctx, AVFrame *frame,
                              int *got_frame, AVPacket *avpkt)
 {
     IMM5Context *ctx = avctx->priv_data;
-    AVFrame *frame = data;
     AVCodecContext *codec_avctx = ctx->h264_avctx;
     int ret;
 
@@ -184,7 +183,7 @@ const FFCodec ff_imm5_decoder = {
     .p.type         = AVMEDIA_TYPE_VIDEO,
     .p.id           = AV_CODEC_ID_IMM5,
     .init           = imm5_init,
-    .decode         = imm5_decode_frame,
+    FF_CODEC_DECODE_CB(imm5_decode_frame),
     .close          = imm5_close,
     .flush          = imm5_flush,
     .priv_data_size = sizeof(IMM5Context),

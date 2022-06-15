@@ -223,7 +223,7 @@ static av_cold int encode_init(AVCodecContext *avctx)
         return ret;
 
     if (find_frame_rate_index(mpeg12) < 0) {
-        if (s->strict_std_compliance > FF_COMPLIANCE_EXPERIMENTAL) {
+        if (avctx->strict_std_compliance > FF_COMPLIANCE_EXPERIMENTAL) {
             av_log(avctx, AV_LOG_ERROR, "MPEG-1/2 does not support %d/%d fps\n",
                    avctx->time_base.den, avctx->time_base.num);
             return AVERROR(EINVAL);
@@ -1232,7 +1232,7 @@ const FFCodec ff_mpeg1video_encoder = {
     .p.id                 = AV_CODEC_ID_MPEG1VIDEO,
     .priv_data_size       = sizeof(MPEG12EncContext),
     .init                 = encode_init,
-    .encode2              = ff_mpv_encode_picture,
+    FF_CODEC_ENCODE_CB(ff_mpv_encode_picture),
     .close                = ff_mpv_encode_end,
     .p.supported_framerates = ff_mpeg12_frame_rate_tab + 1,
     .p.pix_fmts           = (const enum AVPixelFormat[]) { AV_PIX_FMT_YUV420P,
@@ -1249,7 +1249,7 @@ const FFCodec ff_mpeg2video_encoder = {
     .p.id                 = AV_CODEC_ID_MPEG2VIDEO,
     .priv_data_size       = sizeof(MPEG12EncContext),
     .init                 = encode_init,
-    .encode2              = ff_mpv_encode_picture,
+    FF_CODEC_ENCODE_CB(ff_mpv_encode_picture),
     .close                = ff_mpv_encode_end,
     .p.supported_framerates = ff_mpeg2_frame_rate_tab,
     .p.pix_fmts           = (const enum AVPixelFormat[]) { AV_PIX_FMT_YUV420P,

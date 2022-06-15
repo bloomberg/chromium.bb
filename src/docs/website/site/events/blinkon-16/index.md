@@ -32,24 +32,20 @@ all the latest information.
 
 ### Lightning Talks
 
-The lightning talk sign up has now closed. If you've signed up to host a lightning talk, please follow the steps below:
-
-
-
-1. Limit your talk to 3 minutes
-2. Record and submit your talk by completing Columns E to H in [this sheet](https://docs.google.com/spreadsheets/d/1krAIrq6crZ7M07Uy4FLY-MAiontOecPMjeWrvCWr2m0/edit#gid=0) by **Wednesday, May 4th (hard deadline)**
+The lightning talk sign up has now closed - thank you to everyone who
+signed up to host a talk!
 
 
 ### Breakout Talks
 
-If you'd like to host a 25-minute breakout talk (presentation, discussion, etc.), **[sign up here](https://docs.google.com/forms/d/e/1FAIpQLSdkWcf95qOqIBtw97BCyYi3_515ZGb-fPeTCiP72GnnNkCrEw/viewform?resourcekey=0-PT5CAkaLNOmeD8Iz4y5paw) by Wednesday, May 4th**.
+If you'd like to host a 25-minute breakout talk (presentation, discussion, etc.), **[sign up here](https://docs.google.com/forms/d/e/1FAIpQLSdkWcf95qOqIBtw97BCyYi3_515ZGb-fPeTCiP72GnnNkCrEw/viewform?resourcekey=0-PT5CAkaLNOmeD8Iz4y5paw)**.
 
 _Before the event_
 
 
 
 1. If you're creating slides, consider using [this template](https://docs.google.com/presentation/d/1VvlBAn67d9UDMsvUlnxTqWdlh4KcbEoV36840HR88jU/edit?usp=sharing&resourcekey=0-bCFXV_O7VAaKbBfhe3aQXg)
-2. Add your sides or pre-recorded talk to Column F in [this sheet](https://docs.google.com/spreadsheets/d/1dGfYKL5AQTvkGdpWtHJT9R8FFfLlndumSTaV7EF_xuQ/edit#gid=1964232842) by **Monday May 16th**
+2. Add your sides or pre-recorded talk to Column F in [this sheet](https://docs.google.com/spreadsheets/d/1dGfYKL5AQTvkGdpWtHJT9R8FFfLlndumSTaV7EF_xuQ/edit#gid=1964232842)
 3. [Update your profile details in Hopin](https://support.hopin.com/hc/en-us/articles/4407672721684-How-to-update-your-profile-details)
 4. Check your [network connectivity](https://support.hopin.com/hc/en-us/articles/360056528911-Network-Connectivity-Settings) and [browser compatibility](https://support.hopin.com/hc/en-us/articles/360056078872-Browser-Compatibility-for-online-events-on-Hopin)
 
@@ -86,9 +82,14 @@ Watching is simple, just join any Session and watch the Speakers talk or engage 
 
 ### Participating
 
-Clicking Share audio and Video or Ask to Share Audio and Video means you want to participate on live video -- people will be able to see and hear you in the session.
+Clicking Share audio and Video or Ask to Share Audio and Video means you want to participate on live video - people will be able to see and hear you in the session.
 
 At the top of a session, you'll notice the number of people speaking/max number allowed and the number of people watching the Session.
+
+
+## **Networking**
+
+You asked for it... and we're excited to tell you that we're leveraging Kumospace - a virtual chat space - for this event. There are scheduled networking sessions at the beginning and end of each day, but you can collaborate with your fellow attendees by heading to the Networking tab in Hopin at any time!
 
 
 ## **Hopin Resources**
@@ -99,6 +100,7 @@ At the top of a session, you'll notice the number of people speaking/max number 
 * [Network Connectivity](https://support.hopin.com/hc/en-us/articles/360056528911-Network-Connectivity-Settings)
 * [Browser Compatibility](https://support.hopin.com/hc/en-us/articles/360056078872-Browser-Compatibility-for-online-events-on-Hopin)
 * [Quick Troubleshooting Reference Guide](https://support.hopin.com/hc/en-us/articles/4404012531732-Quick-Troubleshooting-Reference-Guide)
+* [Using Closed Captions](https://support.hopin.com/hc/en-us/articles/4413173640724) - as an attendee, you can enable closed captions by clicking on the CC button at the bottom of the screen you are viewing.
 
 
 ## **Code of Conduct**

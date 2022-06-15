@@ -188,13 +188,14 @@ void VideoAnalyzer::SetSendStream(VideoSendStream* stream) {
   send_stream_ = stream;
 }
 
-void VideoAnalyzer::SetReceiveStream(VideoReceiveStream* stream) {
+void VideoAnalyzer::SetReceiveStream(VideoReceiveStreamInterface* stream) {
   MutexLock lock(&lock_);
   RTC_DCHECK(!receive_stream_);
   receive_stream_ = stream;
 }
 
-void VideoAnalyzer::SetAudioReceiveStream(AudioReceiveStream* recv_stream) {
+void VideoAnalyzer::SetAudioReceiveStream(
+    AudioReceiveStreamInterface* recv_stream) {
   MutexLock lock(&lock_);
   RTC_CHECK(!audio_receive_stream_);
   audio_receive_stream_ = recv_stream;
@@ -490,7 +491,8 @@ void VideoAnalyzer::PollStats() {
   last_fec_bytes_ = fec_bytes;
 
   if (receive_stream_ != nullptr) {
-    VideoReceiveStream::Stats receive_stats = receive_stream_->GetStats();
+    VideoReceiveStreamInterface::Stats receive_stats =
+        receive_stream_->GetStats();
     // `total_decode_time_ms` gives a good estimate of the mean decode time,
     // `decode_ms` is used to keep track of the standard deviation.
     if (receive_stats.frames_decoded > 0)
@@ -525,7 +527,7 @@ void VideoAnalyzer::PollStats() {
   }
 
   if (audio_receive_stream_ != nullptr) {
-    AudioReceiveStream::Stats receive_stats =
+    AudioReceiveStreamInterface::Stats receive_stats =
         audio_receive_stream_->GetStats(/*get_and_clear_legacy_stats=*/true);
     audio_expand_rate_.AddSample(receive_stats.expand_rate);
     audio_accelerate_rate_.AddSample(receive_stats.accelerate_rate);

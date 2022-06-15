@@ -30,7 +30,7 @@ class F extends ValidationTest {
 
     this.device.pushErrorScope('validation');
     const buffer = this.device.createBuffer(descriptor);
-    this.device.popErrorScope();
+    void this.device.popErrorScope();
 
     if (state === 'valid') {
       this.queue.writeBuffer(buffer, 0, data);
@@ -73,6 +73,7 @@ g.test('pipeline,device_mismatch')
     const device = mismatched ? t.mismatchedDevice : t.device;
 
     const pipeline = device.createComputePipeline({
+      layout: 'auto',
       compute: {
         module: device.createShaderModule({
           code: '@stage(compute) @workgroup_size(1) fn main() {}',

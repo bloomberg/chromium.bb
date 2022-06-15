@@ -100,11 +100,10 @@ static av_cold int dfpwm_dec_init(struct AVCodecContext *ctx)
     return 0;
 }
 
-static int dfpwm_dec_frame(struct AVCodecContext *ctx, void *data,
-    int *got_frame, struct AVPacket *packet)
+static int dfpwm_dec_frame(struct AVCodecContext *ctx, AVFrame *frame,
+                           int *got_frame, struct AVPacket *packet)
 {
     DFPWMState *state = ctx->priv_data;
-    AVFrame *frame = data;
     int ret;
 
     if (packet->size * 8LL % ctx->ch_layout.nb_channels)
@@ -132,7 +131,7 @@ const FFCodec ff_dfpwm_decoder = {
     .p.id           = AV_CODEC_ID_DFPWM,
     .priv_data_size = sizeof(DFPWMState),
     .init           = dfpwm_dec_init,
-    .decode         = dfpwm_dec_frame,
+    FF_CODEC_DECODE_CB(dfpwm_dec_frame),
     .p.capabilities = AV_CODEC_CAP_DR1,
     .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };

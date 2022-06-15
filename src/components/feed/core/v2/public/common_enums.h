@@ -146,8 +146,20 @@ enum class FeedUserActionType {
   kShowUnfollowFailedSnackbar = 51,
   // User tapped to go to feed using the snackbar 'go to feed' option.
   kTappedGoToFeedOnSnackbar = 52,
+  // User tapped the Crow button in the context menu.
+  kTappedCrowButton = 53,
+  // User action caused a first follow sheet to be shown. User action not
+  // reported here. iOS only.
+  kFirstFollowSheetShown = 54,
+  // User tapped the "Go To Feed" button on the first follow sheet. (IOS)
+  kFirstFollowSheetTappedGoToFeed = 55,
+  // User tapped the "Got It" button on the first follow sheet. (IOS)
+  kFirstFollowSheetTappedGotIt = 56,
+  // Page load caused a Follow Recommendation IPH to be shown. User action not
+  // reported here. iOS only.
+  kFollowRecommendationIPHShown = 57,
 
-  kMaxValue = kTappedGoToFeedOnSnackbar,
+  kMaxValue = kFollowRecommendationIPHShown,
 };
 
 // For testing and debugging only.

@@ -21,7 +21,6 @@
 
 #include <stdint.h>
 
-#include "config.h"
 #include "config_components.h"
 
 #include "av1.h"
@@ -35,6 +34,7 @@
 #include "internal.h"
 #include "isom.h"
 #include "matroska.h"
+#include "mux.h"
 #include "riff.h"
 #include "version.h"
 #include "vorbiscomment.h"
@@ -1089,7 +1089,7 @@ static int mkv_write_native_codecprivate(AVFormatContext *s, AVIOContext *pb,
     case AV_CODEC_ID_AV1:
         if (par->extradata_size)
             return ff_isom_write_av1c(dyn_cp, par->extradata,
-                                      par->extradata_size);
+                                      par->extradata_size, 1);
         else
             put_ebml_void(pb, 4 + 3);
         break;
@@ -2665,7 +2665,7 @@ static int mkv_check_new_extra_data(AVFormatContext *s, const AVPacket *pkt)
             ret = avio_open_dyn_buf(&dyn_cp);
             if (ret < 0)
                 return ret;
-            ff_isom_write_av1c(dyn_cp, side_data, side_data_size);
+            ff_isom_write_av1c(dyn_cp, side_data, side_data_size, 1);
             codecpriv_size = avio_get_dyn_buf(dyn_cp, &codecpriv);
             if ((ret = dyn_cp->error) < 0 ||
                 !codecpriv_size && (ret = AVERROR_INVALIDDATA)) {
@@ -3172,6 +3172,9 @@ static int mkv_check_bitstream(AVFormatContext *s, AVStream *st,
             ret = ff_stream_add_bitstream_filter(st, "aac_adtstoasc", NULL);
     } else if (st->codecpar->codec_id == AV_CODEC_ID_VP9) {
         ret = ff_stream_add_bitstream_filter(st, "vp9_superframe", NULL);
+    } else if (CONFIG_MATROSKA_MUXER &&
+               st->codecpar->codec_id == AV_CODEC_ID_HDMV_PGS_SUBTITLE) {
+        ret = ff_stream_add_bitstream_filter(st, "pgs_frame_merge", NULL);
     }
 
     return ret;

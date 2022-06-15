@@ -216,7 +216,7 @@ export function makeInPlaceColorConversion({
   srcPremultiplied: boolean;
   dstPremultiplied: boolean;
   srcColorSpace?: PredefinedColorSpace;
-  dstColorSpace?: GPUPredefinedColorSpace;
+  dstColorSpace?: PredefinedColorSpace;
 }): InPlaceColorConversion {
   const requireColorSpaceConversion = srcColorSpace !== dstColorSpace;
   const requireUnpremultiplyAlpha =

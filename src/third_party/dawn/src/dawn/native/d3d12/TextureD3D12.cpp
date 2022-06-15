@@ -77,19 +77,14 @@ D3D12_RESOURCE_STATES D3D12TextureUsage(wgpu::TextureUsage usage, const Format& 
     return resourceState;
 }
 
-D3D12_RESOURCE_FLAGS D3D12ResourceFlags(wgpu::TextureUsage usage,
-                                        const Format& format,
-                                        bool isMultisampledTexture) {
+D3D12_RESOURCE_FLAGS D3D12ResourceFlags(wgpu::TextureUsage usage, const Format& format) {
     D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_NONE;
 
     if (usage & wgpu::TextureUsage::StorageBinding) {
         flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
     }
 
-    // A multisampled resource must have either D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET or
-    // D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL set in D3D12_RESOURCE_DESC::Flags.
-    // https://docs.microsoft.com/en-us/windows/desktop/api/d3d12/ns-d3d12-d3d12_resource_desc
-    if ((usage & wgpu::TextureUsage::RenderAttachment) != 0 || isMultisampledTexture) {
+    if (usage & wgpu::TextureUsage::RenderAttachment) {
         if (format.HasDepthOrStencil()) {
             flags |= D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
         } else {
@@ -591,8 +586,7 @@ MaybeError Texture::InitializeAsInternalTexture() {
     resourceDescriptor.SampleDesc.Count = GetSampleCount();
     resourceDescriptor.SampleDesc.Quality = 0;
     resourceDescriptor.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
-    resourceDescriptor.Flags =
-        D3D12ResourceFlags(GetInternalUsage(), GetFormat(), IsMultisampledTexture());
+    resourceDescriptor.Flags = D3D12ResourceFlags(GetInternalUsage(), GetFormat());
     mD3D12ResourceFlags = resourceDescriptor.Flags;
 
     DAWN_TRY_ASSIGN(mResourceAllocation,
@@ -1080,13 +1074,15 @@ MaybeError Texture::ClearTexture(CommandRecordingContext* commandContext,
             }
         }
     } else {
+        ASSERT(!IsMultisampledTexture());
+
         // create temp buffer with clear color to copy to the texture image
         TrackUsageAndTransitionNow(commandContext, D3D12_RESOURCE_STATE_COPY_DEST, range);
 
         for (Aspect aspect : IterateEnumMask(range.aspects)) {
             const TexelBlockInfo& blockInfo = GetFormat().GetAspectInfo(aspect).block;
 
-            Extent3D largestMipSize = GetMipLevelPhysicalSize(range.baseMipLevel);
+            Extent3D largestMipSize = GetMipLevelSingleSubresourcePhysicalSize(range.baseMipLevel);
 
             uint32_t bytesPerRow =
                 Align((largestMipSize.width / blockInfo.width) * blockInfo.byteSize,
@@ -1103,7 +1099,7 @@ MaybeError Texture::ClearTexture(CommandRecordingContext* commandContext,
             for (uint32_t level = range.baseMipLevel; level < range.baseMipLevel + range.levelCount;
                  ++level) {
                 // compute d3d12 texture copy locations for texture and buffer
-                Extent3D copySize = GetMipLevelPhysicalSize(level);
+                Extent3D copySize = GetMipLevelSingleSubresourcePhysicalSize(level);
 
                 for (uint32_t layer = range.baseArrayLayer;
                      layer < range.baseArrayLayer + range.layerCount; ++layer) {
@@ -1122,7 +1118,8 @@ MaybeError Texture::ClearTexture(CommandRecordingContext* commandContext,
                     RecordBufferTextureCopyWithBufferHandle(
                         BufferTextureCopyDirection::B2T, commandList,
                         ToBackend(uploadHandle.stagingBuffer)->GetResource(),
-                        uploadHandle.startOffset, bytesPerRow, GetHeight(), textureCopy, copySize);
+                        uploadHandle.startOffset, bytesPerRow, largestMipSize.height, textureCopy,
+                        copySize);
                 }
             }
         }

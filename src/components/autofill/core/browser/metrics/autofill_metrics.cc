@@ -327,6 +327,8 @@ int GetFieldTypeGroupPredictionQualityMetric(
         case NAME_SUFFIX:
         case EMAIL_ADDRESS:
         case PHONE_HOME_NUMBER:
+        case PHONE_HOME_NUMBER_PREFIX:
+        case PHONE_HOME_NUMBER_SUFFIX:
         case PHONE_HOME_CITY_CODE:
         case PHONE_HOME_CITY_CODE_WITH_TRUNK_PREFIX:
         case PHONE_HOME_COUNTRY_CODE:
@@ -1230,6 +1232,9 @@ void AutofillMetrics::LogOfferNotificationBubbleOfferMetric(
     case AutofillOfferData::OfferType::GPAY_CARD_LINKED_OFFER:
       histogram_name += "CardLinkedOffer";
       break;
+    case AutofillOfferData::OfferType::GPAY_PROMO_CODE_OFFER:
+      histogram_name += "GPayPromoCodeOffer";
+      break;
     case AutofillOfferData::OfferType::FREE_LISTING_COUPON_OFFER:
       histogram_name += "FreeListingCouponOffer";
       break;
@@ -1252,6 +1257,9 @@ void AutofillMetrics::LogOfferNotificationBubbleResultMetric(
     case AutofillOfferData::OfferType::GPAY_CARD_LINKED_OFFER:
       histogram_name += "CardLinkedOffer.";
       break;
+    case AutofillOfferData::OfferType::GPAY_PROMO_CODE_OFFER:
+      histogram_name += "GPayPromoCodeOffer.";
+      break;
     case AutofillOfferData::OfferType::FREE_LISTING_COUPON_OFFER:
       histogram_name += "FreeListingCouponOffer.";
       break;
@@ -1272,6 +1280,9 @@ void AutofillMetrics::LogOfferNotificationBubblePromoCodeButtonClicked(
   // Switch to different sub-histogram depending on offer type being displayed.
   // Card-linked offers do not have a promo code button.
   switch (offer_type) {
+    case AutofillOfferData::OfferType::GPAY_PROMO_CODE_OFFER:
+      histogram_name += "GPayPromoCodeOffer";
+      break;
     case AutofillOfferData::OfferType::FREE_LISTING_COUPON_OFFER:
       histogram_name += "FreeListingCouponOffer";
       break;
@@ -1290,6 +1301,9 @@ void AutofillMetrics::LogOfferNotificationBubbleSuppressed(
   // Switch to different sub-histogram depending on offer type being suppressed.
   // Card-linked offers will not be suppressed.
   switch (offer_type) {
+    case AutofillOfferData::OfferType::GPAY_PROMO_CODE_OFFER:
+      histogram_name += "GPayPromoCodeOffer";
+      break;
     case AutofillOfferData::OfferType::FREE_LISTING_COUPON_OFFER:
       histogram_name += "FreeListingCouponOffer";
       break;
@@ -2230,9 +2244,9 @@ void AutofillMetrics::LogStoredOfferMetrics(
   for (const std::unique_ptr<AutofillOfferData>& offer : offers) {
     base::UmaHistogramCounts1000(
         "Autofill.Offer.StoredOfferRelatedMerchantCount",
-        offer->merchant_origins.size());
+        offer->GetMerchantOrigins().size());
     base::UmaHistogramCounts1000("Autofill.Offer.StoredOfferRelatedCardCount",
-                                 offer->eligible_instrument_id.size());
+                                 offer->GetEligibleInstrumentIds().size());
   }
 }
 
@@ -3151,7 +3165,7 @@ void AutofillMetrics::
 }
 
 // static
-void AutofillMetrics::LogAddressFormImportStatustMetric(
+void AutofillMetrics::LogAddressFormImportStatusMetric(
     AutofillMetrics::AddressProfileImportStatusMetric metric) {
   base::UmaHistogramEnumeration("Autofill.AddressProfileImportStatus", metric);
 }
@@ -3380,6 +3394,16 @@ void AutofillMetrics::LogRemovedSettingInaccessibleField(
   base::UmaHistogramEnumeration(
       "Autofill.ProfileImport.InaccessibleFieldsRemoved.ByFieldType",
       ConvertSettingsVisibleFieldTypeForMetrics(field));
+}
+
+// static
+void AutofillMetrics::LogPhoneNumberImportParsingResult(
+    bool with_variation_country_code,
+    bool with_app_locale) {
+  base::UmaHistogramEnumeration(
+      "Autofill.ProfileImport.PhoneNumberParsingResult",
+      static_cast<AutofillMetrics::PhoneNumberImportParsingResult>(
+          (with_variation_country_code << 1) | with_app_locale));
 }
 
 void AutofillMetrics::LogVerificationStatusOfNameTokensOnProfileUsage(

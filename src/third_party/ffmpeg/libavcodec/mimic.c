@@ -339,7 +339,7 @@ static void flip_swap_frame(AVFrame *f)
         f->linesize[i] *= -1;
 }
 
-static int mimic_decode_frame(AVCodecContext *avctx, void *data,
+static int mimic_decode_frame(AVCodecContext *avctx, AVFrame *rframe,
                               int *got_frame, AVPacket *avpkt)
 {
     const uint8_t *buf = avpkt->data;
@@ -425,11 +425,11 @@ static int mimic_decode_frame(AVCodecContext *avctx, void *data,
         return res;
     }
 
-    if ((res = av_frame_ref(data, ctx->frames[ctx->cur_index].f)) < 0)
+    if ((res = av_frame_ref(rframe, ctx->frames[ctx->cur_index].f)) < 0)
         return res;
     *got_frame      = 1;
 
-    flip_swap_frame(data);
+    flip_swap_frame(rframe);
 
     ctx->prev_index = ctx->next_prev_index;
     ctx->cur_index  = ctx->next_cur_index;
@@ -445,7 +445,7 @@ const FFCodec ff_mimic_decoder = {
     .priv_data_size        = sizeof(MimicContext),
     .init                  = mimic_decode_init,
     .close                 = mimic_decode_end,
-    .decode                = mimic_decode_frame,
+    FF_CODEC_DECODE_CB(mimic_decode_frame),
     .p.capabilities        = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_FRAME_THREADS,
     .update_thread_context = ONLY_IF_THREADS_ENABLED(mimic_decode_update_thread_context),
     .caps_internal         = FF_CODEC_CAP_ALLOCATE_PROGRESS |

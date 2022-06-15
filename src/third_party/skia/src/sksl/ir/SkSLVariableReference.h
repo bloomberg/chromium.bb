@@ -8,11 +8,15 @@
 #ifndef SKSL_VARIABLEREFERENCE
 #define SKSL_VARIABLEREFERENCE
 
+#include "include/core/SkTypes.h"
+#include "include/sksl/SkSLPosition.h"
 #include "src/sksl/ir/SkSLExpression.h"
+
+#include <memory>
+#include <string>
 
 namespace SkSL {
 
-class IRGenerator;
 class Variable;
 
 enum class VariableRefKind : int8_t {
@@ -63,8 +67,6 @@ public:
     void setVariable(const Variable* variable);
 
     bool hasProperty(Property property) const override;
-
-    bool isConstantOrUniform() const override;
 
     std::unique_ptr<Expression> clone(Position pos) const override {
         return std::make_unique<VariableReference>(pos, this->variable(), this->refKind());

@@ -56,7 +56,16 @@ const char* GetDigest10bpp(int id) {
       "126cd7727e787e0625ec3f5ce97f8fa0", "85c806c41d40b841764bcb54f6d3a712"};
   return kDigestSuperRes[id];
 }
-#endif
+#endif  // LIBGAV1_MAX_BITDEPTH >= 10
+
+#if LIBGAV1_MAX_BITDEPTH == 12
+const char* GetDigest12bpp(int id) {
+  static const char* const kDigestSuperRes[] = {
+      "9a08983d82df4983700976f18919201b", "6e5edbafcb6c38db37258bf79c00ea32",
+      "f5c57e6d3b518f9585f768ed19b91568", "b5de9b93c8a1a50580e7c7c9456fb615"};
+  return kDigestSuperRes[id];
+}
+#endif  // LIBGAV1_MAX_BITDEPTH == 12
 
 struct SuperResTestParam {
   SuperResTestParam(int downscaled_width, int upscaled_width)
@@ -69,6 +78,7 @@ template <int bitdepth, typename Pixel, typename Coefficient>
 class SuperResTest : public testing::TestWithParam<SuperResTestParam>,
                      public test_utils::MaxAlignedAllocable {
  public:
+  static_assert(bitdepth >= kBitdepth8 && bitdepth <= LIBGAV1_MAX_BITDEPTH, "");
   SuperResTest() = default;
   void SetUp() override {
     test_utils::ResetDspTable(bitdepth);
@@ -174,14 +184,23 @@ void SuperResTest<bitdepth, Pixel, Coefficient>::TestComputeSuperRes(
         }
       }
     }
-    const char* expected_digest;
-    if (bitdepth == 8) {
-      expected_digest = GetDigest8bpp(test_id_);
-    } else {
+    const char* expected_digest = nullptr;
+    switch (bitdepth) {
+      case 8:
+        expected_digest = GetDigest8bpp(test_id_);
+        break;
 #if LIBGAV1_MAX_BITDEPTH >= 10
-      expected_digest = GetDigest10bpp(test_id_);
+      case 10:
+        expected_digest = GetDigest10bpp(test_id_);
+        break;
+#endif
+#if LIBGAV1_MAX_BITDEPTH == 12
+      case 12:
+        expected_digest = GetDigest12bpp(test_id_);
+        break;
 #endif
     }
+    ASSERT_NE(expected_digest, nullptr);
     test_utils::CheckMd5Digest(
         "SuperRes",
         absl::StrFormat("width %d, step %d, start %d", kUpscaledWidth, step,
@@ -258,6 +277,25 @@ INSTANTIATE_TEST_SUITE_P(NEON, SuperResTest10bpp,
                          testing::ValuesIn(kSuperResTestParams));
 #endif
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
+
+#if LIBGAV1_MAX_BITDEPTH == 12
+using SuperResTest12bpp = SuperResTest<12, uint16_t, int16_t>;
+
+TEST_P(SuperResTest12bpp, FixedValues) {
+  TestComputeSuperRes(100, 1);
+  TestComputeSuperRes(2047, 1);
+  TestComputeSuperRes(1, 1);
+}
+
+TEST_P(SuperResTest12bpp, RandomValues) { TestComputeSuperRes(0, 1); }
+
+TEST_P(SuperResTest12bpp, DISABLED_Speed) {
+  TestComputeSuperRes(0, kNumSpeedTests);
+}
+
+INSTANTIATE_TEST_SUITE_P(C, SuperResTest12bpp,
+                         testing::ValuesIn(kSuperResTestParams));
+#endif  // LIBGAV1_MAX_BITDEPTH == 12
 
 }  // namespace
 }  // namespace dsp

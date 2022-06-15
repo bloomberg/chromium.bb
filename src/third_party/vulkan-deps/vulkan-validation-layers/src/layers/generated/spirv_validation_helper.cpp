@@ -99,6 +99,8 @@ struct FeaturePointer {
         : IsEnabled([=](const DeviceFeatures &features) { return features.shader_integer_dot_product_features.*ptr; }) {}
     FeaturePointer(VkBool32 VkPhysicalDeviceShaderSubgroupUniformControlFlowFeaturesKHR::*ptr)
         : IsEnabled([=](const DeviceFeatures &features) { return features.shader_subgroup_uniform_control_flow_features.*ptr; }) {}
+    FeaturePointer(VkBool32 VkPhysicalDeviceRayTracingMaintenance1FeaturesKHR::*ptr)
+        : IsEnabled([=](const DeviceFeatures &features) { return features.ray_tracing_maintenance1_features.*ptr; }) {}
 };
 
 // Each instance of the struct will only have a singel field non-null
@@ -154,6 +156,7 @@ static const std::unordered_multimap<uint32_t, RequiredSpirvInfo> spirvCapabilit
     {spv::CapabilityFloat16, {0, &VkPhysicalDeviceVulkan12Features::shaderFloat16, nullptr, ""}},
     {spv::CapabilityFloat16, {0, nullptr, &DeviceExtensions::vk_amd_gpu_shader_half_float, ""}},
     {spv::CapabilityFloat64, {0, &VkPhysicalDeviceFeatures::shaderFloat64, nullptr, ""}},
+    {spv::CapabilityFragmentBarycentricKHR, {0, &VkPhysicalDeviceFragmentShaderBarycentricFeaturesKHR::fragmentShaderBarycentric, nullptr, ""}},
     {spv::CapabilityFragmentBarycentricNV, {0, &VkPhysicalDeviceFragmentShaderBarycentricFeaturesNV::fragmentShaderBarycentric, nullptr, ""}},
     {spv::CapabilityFragmentDensityEXT, {0, &VkPhysicalDeviceFragmentDensityMapFeaturesEXT::fragmentDensityMap, nullptr, ""}},
     {spv::CapabilityFragmentMaskAMD, {0, nullptr, &DeviceExtensions::vk_amd_shader_fragment_mask, ""}},
@@ -206,6 +209,7 @@ static const std::unordered_multimap<uint32_t, RequiredSpirvInfo> spirvCapabilit
     {spv::CapabilityPerViewAttributesNV, {0, nullptr, &DeviceExtensions::vk_nvx_multiview_per_view_attributes, ""}},
     {spv::CapabilityPhysicalStorageBufferAddresses, {0, &VkPhysicalDeviceVulkan12Features::bufferDeviceAddress, nullptr, ""}},
     {spv::CapabilityPhysicalStorageBufferAddresses, {0, &VkPhysicalDeviceBufferDeviceAddressFeaturesEXT::bufferDeviceAddress, nullptr, ""}},
+    {spv::CapabilityRayCullMaskKHR, {0, &VkPhysicalDeviceRayTracingMaintenance1FeaturesKHR::rayTracingMaintenance1, nullptr, ""}},
     {spv::CapabilityRayQueryKHR, {0, &VkPhysicalDeviceRayQueryFeaturesKHR::rayQuery, nullptr, ""}},
     {spv::CapabilityRayTracingKHR, {0, &VkPhysicalDeviceRayTracingPipelineFeaturesKHR::rayTracingPipeline, nullptr, ""}},
     {spv::CapabilityRayTracingMotionBlurNV, {0, &VkPhysicalDeviceRayTracingMotionBlurFeaturesNV::rayTracingMotionBlur, nullptr, ""}},
@@ -319,6 +323,7 @@ static const std::unordered_multimap<std::string, RequiredSpirvInfo> spirvExtens
     {"SPV_KHR_device_group", {0, nullptr, &DeviceExtensions::vk_khr_device_group, ""}},
     {"SPV_KHR_float_controls", {VK_API_VERSION_1_2, nullptr, nullptr, ""}},
     {"SPV_KHR_float_controls", {0, nullptr, &DeviceExtensions::vk_khr_shader_float_controls, ""}},
+    {"SPV_KHR_fragment_shader_barycentric", {0, nullptr, &DeviceExtensions::vk_khr_fragment_shader_barycentric, ""}},
     {"SPV_KHR_fragment_shading_rate", {0, nullptr, &DeviceExtensions::vk_khr_fragment_shading_rate, ""}},
     {"SPV_KHR_integer_dot_product", {VK_API_VERSION_1_3, nullptr, nullptr, ""}},
     {"SPV_KHR_integer_dot_product", {0, nullptr, &DeviceExtensions::vk_khr_shader_integer_dot_product, ""}},
@@ -329,6 +334,7 @@ static const std::unordered_multimap<std::string, RequiredSpirvInfo> spirvExtens
     {"SPV_KHR_physical_storage_buffer", {VK_API_VERSION_1_2, nullptr, nullptr, ""}},
     {"SPV_KHR_physical_storage_buffer", {0, nullptr, &DeviceExtensions::vk_khr_buffer_device_address, ""}},
     {"SPV_KHR_post_depth_coverage", {0, nullptr, &DeviceExtensions::vk_ext_post_depth_coverage, ""}},
+    {"SPV_KHR_ray_cull_mask", {0, nullptr, &DeviceExtensions::vk_khr_ray_tracing_maintenance1, ""}},
     {"SPV_KHR_ray_query", {0, nullptr, &DeviceExtensions::vk_khr_ray_query, ""}},
     {"SPV_KHR_ray_tracing", {0, nullptr, &DeviceExtensions::vk_khr_ray_tracing_pipeline, ""}},
     {"SPV_KHR_shader_ballot", {0, nullptr, &DeviceExtensions::vk_ext_shader_subgroup_ballot, ""}},
@@ -411,8 +417,8 @@ static inline const char* string_SpvCapability(uint32_t input_value) {
             return "Float16";
          case spv::CapabilityFloat64:
             return "Float64";
-         case spv::CapabilityFragmentBarycentricNV:
-            return "FragmentBarycentricNV";
+         case spv::CapabilityFragmentBarycentricKHR:
+            return "FragmentBarycentricKHR";
          case spv::CapabilityFragmentDensityEXT:
             return "FragmentDensityEXT";
          case spv::CapabilityFragmentMaskAMD:
@@ -503,6 +509,8 @@ static inline const char* string_SpvCapability(uint32_t input_value) {
             return "PerViewAttributesNV";
          case spv::CapabilityPhysicalStorageBufferAddresses:
             return "PhysicalStorageBufferAddresses";
+         case spv::CapabilityRayCullMaskKHR:
+            return "RayCullMaskKHR";
          case spv::CapabilityRayQueryKHR:
             return "RayQueryKHR";
          case spv::CapabilityRayTracingKHR:

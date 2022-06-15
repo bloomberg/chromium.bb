@@ -99,13 +99,15 @@ class CodeDataContainer : public HeapObject {
   // Initializes internal flags field which stores cached values of some
   // properties of the respective Code object.
   // Available only when V8_EXTERNAL_CODE_SPACE is enabled.
-  inline void initialize_flags(CodeKind kind, Builtin builtin_id);
+  inline void initialize_flags(CodeKind kind, Builtin builtin_id,
+                               bool is_turbofanned,
+                               bool is_off_heap_trampoline);
 
   // Alias for code_entry_point to make it API compatible with Code.
   inline Address InstructionStart() const;
 
   // Alias for code_entry_point to make it API compatible with Code.
-  inline Address raw_instruction_start();
+  inline Address raw_instruction_start() const;
 
   // Alias for code_entry_point to make it API compatible with Code.
   inline Address entry() const;
@@ -154,6 +156,23 @@ class CodeDataContainer : public HeapObject {
   DECL_GETTER(source_position_table, ByteArray)
   DECL_GETTER(bytecode_offset_table, ByteArray)
 
+  // When builtins un-embedding is enabled for the Isolate
+  // (see Isolate::is_short_builtin_calls_enabled()) then both embedded and
+  // un-embedded builtins might be exeuted and thus two kinds of |pc|s might
+  // appear on the stack.
+  // Unlike the paremeterless versions of the functions above the below variants
+  // ensure that the instruction start correspond to the given |pc| value.
+  // Thus for off-heap trampoline Code objects the result might be the
+  // instruction start/end of the embedded code stream or of un-embedded one.
+  // For normal Code objects these functions just return the
+  // raw_instruction_start/end() values.
+  // TODO(11527): remove these versions once the full solution is ready.
+  Address OffHeapInstructionStart(Isolate* isolate, Address pc) const;
+  Address OffHeapInstructionEnd(Isolate* isolate, Address pc) const;
+
+  inline Address InstructionStart(Isolate* isolate, Address pc) const;
+  inline Address InstructionEnd(Isolate* isolate, Address pc) const;
+
 #endif  // V8_EXTERNAL_CODE_SPACE
 
   DECL_CAST(CodeDataContainer)
@@ -190,14 +209,16 @@ class CodeDataContainer : public HeapObject {
   class BodyDescriptor;
 
   // Flags layout.
-#define FLAGS_BIT_FIELDS(V, _) \
-  V(KindField, CodeKind, 4, _) \
-  /* The other 12 bits are still free. */
+#define FLAGS_BIT_FIELDS(V, _)      \
+  V(KindField, CodeKind, 4, _)      \
+  V(IsTurbofannedField, bool, 1, _) \
+  V(IsOffHeapTrampoline, bool, 1, _)
+  /* The other 10 bits are still free. */
 
   DEFINE_BIT_FIELDS(FLAGS_BIT_FIELDS)
 #undef FLAGS_BIT_FIELDS
-  STATIC_ASSERT(FLAGS_BIT_FIELDS_Ranges::kBitsCount == 4);
-  STATIC_ASSERT(!V8_EXTERNAL_CODE_SPACE_BOOL ||
+  static_assert(FLAGS_BIT_FIELDS_Ranges::kBitsCount == 6);
+  static_assert(!V8_EXTERNAL_CODE_SPACE_BOOL ||
                 (FLAGS_BIT_FIELDS_Ranges::kBitsCount <=
                  FIELD_SIZE(CodeDataContainer::kFlagsOffset) * kBitsPerByte));
 
@@ -631,7 +652,7 @@ class Code : public HeapObject {
   /* Offsets describing inline metadata tables, relative to MetadataStart. */ \
   V(kHandlerTableOffsetOffset, kIntSize)                                      \
   V(kConstantPoolOffsetOffset,                                                \
-    FLAG_enable_embedded_constant_pool ? kIntSize : 0)                        \
+    FLAG_enable_embedded_constant_pool.value() ? kIntSize : 0)                \
   V(kCodeCommentsOffsetOffset, kIntSize)                                      \
   V(kUnwindingInfoOffsetOffset, kInt32Size)                                   \
   V(kUnalignedHeaderSize, 0)                                                  \
@@ -663,8 +684,9 @@ class Code : public HeapObject {
   static constexpr int kHeaderPaddingSize = 8;
 #elif V8_TARGET_ARCH_PPC64
   static constexpr int kHeaderPaddingSize =
-      FLAG_enable_embedded_constant_pool ? (COMPRESS_POINTERS_BOOL ? 4 : 48)
-                                         : (COMPRESS_POINTERS_BOOL ? 8 : 52);
+      FLAG_enable_embedded_constant_pool.value()
+          ? (COMPRESS_POINTERS_BOOL ? 4 : 48)
+          : (COMPRESS_POINTERS_BOOL ? 8 : 52);
 #elif V8_TARGET_ARCH_S390X
   static constexpr int kHeaderPaddingSize = COMPRESS_POINTERS_BOOL ? 8 : 20;
 #elif V8_TARGET_ARCH_RISCV64
@@ -672,7 +694,7 @@ class Code : public HeapObject {
 #else
 #error Unknown architecture.
 #endif
-  STATIC_ASSERT(FIELD_SIZE(kOptionalPaddingOffset) == kHeaderPaddingSize);
+  static_assert(FIELD_SIZE(kOptionalPaddingOffset) == kHeaderPaddingSize);
 
   class BodyDescriptor;
 
@@ -684,9 +706,9 @@ class Code : public HeapObject {
   V(IsOffHeapTrampoline, bool, 1, _)
   DEFINE_BIT_FIELDS(CODE_FLAGS_BIT_FIELDS)
 #undef CODE_FLAGS_BIT_FIELDS
-  STATIC_ASSERT(kCodeKindCount <= KindField::kNumValues);
-  STATIC_ASSERT(CODE_FLAGS_BIT_FIELDS_Ranges::kBitsCount == 30);
-  STATIC_ASSERT(CODE_FLAGS_BIT_FIELDS_Ranges::kBitsCount <=
+  static_assert(kCodeKindCount <= KindField::kNumValues);
+  static_assert(CODE_FLAGS_BIT_FIELDS_Ranges::kBitsCount == 30);
+  static_assert(CODE_FLAGS_BIT_FIELDS_Ranges::kBitsCount <=
                 FIELD_SIZE(kFlagsOffset) * kBitsPerByte);
 
   // KindSpecificFlags layout.
@@ -697,8 +719,8 @@ class Code : public HeapObject {
   V(IsPromiseRejectionField, bool, 1, _)
   DEFINE_BIT_FIELDS(CODE_KIND_SPECIFIC_FLAGS_BIT_FIELDS)
 #undef CODE_KIND_SPECIFIC_FLAGS_BIT_FIELDS
-  STATIC_ASSERT(CODE_KIND_SPECIFIC_FLAGS_BIT_FIELDS_Ranges::kBitsCount == 4);
-  STATIC_ASSERT(CODE_KIND_SPECIFIC_FLAGS_BIT_FIELDS_Ranges::kBitsCount <=
+  static_assert(CODE_KIND_SPECIFIC_FLAGS_BIT_FIELDS_Ranges::kBitsCount == 4);
+  static_assert(CODE_KIND_SPECIFIC_FLAGS_BIT_FIELDS_Ranges::kBitsCount <=
                 FIELD_SIZE(CodeDataContainer::kKindSpecificFlagsOffset) *
                     kBitsPerByte);
 
@@ -762,6 +784,108 @@ V8_EXPORT_PRIVATE Address OffHeapUnwindingInfoAddress(HeapObject code,
                                                       Builtin builtin);
 V8_EXPORT_PRIVATE int OffHeapUnwindingInfoSize(HeapObject code,
                                                Builtin builtin);
+
+// Represents result of the code by inner address (or pc) lookup.
+// When V8_EXTERNAL_CODE_SPACE is disabled there might be two variants:
+//  - the pc does not correspond to any known code and IsFound() will return
+//    false,
+//  - the pc corresponds to existing Code object or embedded builtin (in which
+//    case the code() will return the respective Code object or the trampoline
+//    Code object that corresponds to the builtin).
+//
+// When V8_EXTERNAL_CODE_SPACE is enabled there might be three variants:
+//  - the pc does not correspond to any known code (in which case IsFound()
+//    will return false),
+//  - the pc corresponds to existing Code object (in which case the code() will
+//    return the respective Code object),
+//  - the pc corresponds to an embedded builtin (in which case the
+//    code_data_container() will return CodeDataContainer object corresponding
+//    to the builtin).
+class CodeLookupResult {
+ public:
+  // Not found.
+  CodeLookupResult() = default;
+
+  // Code object was found.
+  explicit CodeLookupResult(Code code) : code_(code) {}
+
+#ifdef V8_EXTERNAL_CODE_SPACE
+  // Embedded builtin was found.
+  explicit CodeLookupResult(CodeDataContainer code_data_container)
+      : code_data_container_(code_data_container) {}
+#endif
+
+  // Returns true if the lookup was successful.
+  bool IsFound() const { return IsCode() || IsCodeDataContainer(); }
+
+  // Returns true if the lookup found a Code object.
+  bool IsCode() const { return !code_.is_null(); }
+
+  // Returns true if V8_EXTERNAL_CODE_SPACE is enabled and the lookup found
+  // an embedded builtin.
+  bool IsCodeDataContainer() const {
+#ifdef V8_EXTERNAL_CODE_SPACE
+    return !code_data_container_.is_null();
+#else
+    return false;
+#endif
+  }
+
+  // Returns the Code object containing the address in question.
+  Code code() const {
+    DCHECK(IsCode());
+    return code_;
+  }
+
+  // Returns the CodeDataContainer object corresponding to an embedded builtin
+  // containing the address in question.
+  // Can be used only when V8_EXTERNAL_CODE_SPACE is enabled.
+  CodeDataContainer code_data_container() const {
+#ifdef V8_EXTERNAL_CODE_SPACE
+    DCHECK(IsCodeDataContainer());
+    return code_data_container_;
+#else
+    UNREACHABLE();
+#endif
+  }
+
+  // Helper method, in case of successful lookup returns the kind() of
+  // the Code/CodeDataContainer object found.
+  // It's safe use from GC.
+  inline CodeKind kind() const;
+
+  // Helper method, in case of successful lookup returns the builtin_id() of
+  // the Code/CodeDataContainer object found.
+  // It's safe use from GC.
+  inline Builtin builtin_id() const;
+
+  // Helper method, coverts the successful lookup result to Code object.
+  // It's not safe to be used from GC because conversion to Code might perform
+  // a map check.
+  inline Code ToCode() const;
+
+  // Helper method, coverts the successful lookup result to CodeT object.
+  // It's not safe to be used from GC because conversion to CodeT might perform
+  // a map check.
+  inline CodeT ToCodeT() const;
+
+  bool operator==(const CodeLookupResult& other) const {
+    return code_ == other.code_
+#ifdef V8_EXTERNAL_CODE_SPACE
+           && code_data_container_ == other.code_data_container_
+#endif
+        ;
+  }
+  bool operator!=(const CodeLookupResult& other) const {
+    return !operator==(other);
+  }
+
+ private:
+  Code code_;
+#ifdef V8_EXTERNAL_CODE_SPACE
+  CodeDataContainer code_data_container_;
+#endif
+};
 
 class Code::OptimizedCodeIterator {
  public:
@@ -967,7 +1091,7 @@ class BytecodeArray
     kFirstBytecodeAge = kNoAgeBytecodeAge,
     kLastBytecodeAge = kAfterLastBytecodeAge - 1,
     kBytecodeAgeCount = kAfterLastBytecodeAge - kFirstBytecodeAge - 1,
-    kIsOldBytecodeAge = kSexagenarianBytecodeAge
+    kIsOldBytecodeAge = kOctogenarianBytecodeAge
   };
 
   static constexpr int SizeFor(int length) {

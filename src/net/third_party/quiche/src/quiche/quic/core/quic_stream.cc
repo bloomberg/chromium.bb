@@ -150,7 +150,7 @@ void PendingStream::AddBytesConsumed(QuicByteCount bytes) {
 void PendingStream::ResetWithError(QuicResetStreamError /*error*/) {
   // Currently PendingStream is only read-unidirectional. It shouldn't send
   // Reset.
-  QUIC_NOTREACHED();
+  QUICHE_NOTREACHED();
 }
 
 void PendingStream::OnUnrecoverableError(QuicErrorCode error,
@@ -741,15 +741,12 @@ void QuicStream::MaybeSendBlocked() {
         << ENDPOINT << "MaybeSendBlocked called on stream without flow control";
     return;
   }
-  if (flow_controller_->ShouldSendBlocked()) {
-    session_->SendBlocked(id_);
-  }
+  flow_controller_->MaybeSendBlocked();
   if (!stream_contributes_to_connection_flow_control_) {
     return;
   }
-  if (connection_flow_controller_->ShouldSendBlocked()) {
-    session_->SendBlocked(QuicUtils::GetInvalidStreamId(transport_version()));
-  }
+  connection_flow_controller_->MaybeSendBlocked();
+
   // If the stream is blocked by connection-level flow control but not by
   // stream-level flow control, add the stream to the write blocked list so that
   // the stream will be given a chance to write when a connection-level
@@ -1139,7 +1136,7 @@ void QuicStream::OnStreamFrameLost(QuicStreamOffset offset,
 bool QuicStream::RetransmitStreamData(QuicStreamOffset offset,
                                       QuicByteCount data_length, bool fin,
                                       TransmissionType type) {
-  QUICHE_DCHECK(type == PTO_RETRANSMISSION || type == PROBING_RETRANSMISSION);
+  QUICHE_DCHECK(type == PTO_RETRANSMISSION);
   if (HasDeadlinePassed()) {
     OnDeadlinePassed();
     return true;

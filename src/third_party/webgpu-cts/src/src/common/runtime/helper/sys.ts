@@ -8,8 +8,8 @@ function node() {
     type: 'node',
     existsSync,
     args: process.argv.slice(2),
-    cwd: process.cwd,
-    exit: process.exit,
+    cwd: () => process.cwd(),
+    exit: (code?: number | undefined) => process.exit(code),
   };
 }
 

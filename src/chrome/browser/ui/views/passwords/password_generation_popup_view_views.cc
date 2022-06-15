@@ -33,7 +33,6 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/layout/grid_layout.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
@@ -315,6 +314,9 @@ void PasswordGenerationPopupViewViews::OnPaint(gfx::Canvas* canvas) {
 
 void PasswordGenerationPopupViewViews::GetAccessibleNodeData(
     ui::AXNodeData* node_data) {
+  if (!controller_) {
+    return;
+  }
   node_data->SetName(base::JoinString(
       {controller_->SuggestedText(), controller_->password()}, u" "));
   node_data->SetDescription(controller_->HelpText());

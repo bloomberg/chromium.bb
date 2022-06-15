@@ -1997,6 +1997,7 @@ class TestAuthenticatorRequestDelegate
   void RegisterActionCallbacks(
       base::OnceClosure cancel_callback,
       base::RepeatingClosure start_over_callback,
+      AccountPreselectedCallback account_preselected_callback,
       device::FidoRequestHandlerBase::RequestCallback request_callback,
       base::RepeatingClosure bluetooth_adapter_power_on_callback) override {
     ASSERT_TRUE(action_callbacks_registered_callback_)
@@ -6655,6 +6656,7 @@ class BlockingAuthenticatorRequestDelegate
   void RegisterActionCallbacks(
       base::OnceClosure cancel_callback,
       base::RepeatingClosure start_over_callback,
+      AccountPreselectedCallback account_preselected_callback,
       device::FidoRequestHandlerBase::RequestCallback request_callback,
       base::RepeatingClosure bluetooth_adapter_power_on_callback) override {
     cancel_callback_ = std::move(cancel_callback);
@@ -8169,19 +8171,15 @@ TEST_F(TouchIdAuthenticatorImplTest, IsUVPAA) {
   NavigateAndCommit(GURL(kTestOrigin1));
   mojo::Remote<blink::mojom::Authenticator> authenticator =
       ConnectToAuthenticator();
-
-  if (__builtin_available(macOS 10.12.2, *)) {
-    for (const bool touch_id_available : {false, true}) {
-      SCOPED_TRACE(::testing::Message()
-                   << "touch_id_available=" << touch_id_available);
-      device::fido::mac::ScopedTouchIdTestEnvironment touch_id_test_environment;
-      touch_id_test_environment.SetTouchIdAvailable(touch_id_available);
-      TestIsUvpaaCallback cb;
-      authenticator->IsUserVerifyingPlatformAuthenticatorAvailable(
-          cb.callback());
-      cb.WaitForCallback();
-      EXPECT_EQ(touch_id_available, cb.value());
-    }
+  for (const bool touch_id_available : {false, true}) {
+    SCOPED_TRACE(::testing::Message()
+                 << "touch_id_available=" << touch_id_available);
+    device::fido::mac::ScopedTouchIdTestEnvironment touch_id_test_environment;
+    touch_id_test_environment.SetTouchIdAvailable(touch_id_available);
+    TestIsUvpaaCallback cb;
+    authenticator->IsUserVerifyingPlatformAuthenticatorAvailable(cb.callback());
+    cb.WaitForCallback();
+    EXPECT_EQ(touch_id_available, cb.value());
   }
 }
 #endif  // BUILDFLAG(IS_MAC)

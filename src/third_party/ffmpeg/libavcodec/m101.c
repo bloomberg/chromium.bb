@@ -44,15 +44,14 @@ static av_cold int m101_decode_init(AVCodecContext *avctx)
     return 0;
 }
 
-static int m101_decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
-                      AVPacket *avpkt)
+static int m101_decode_frame(AVCodecContext *avctx, AVFrame *frame,
+                             int *got_frame, AVPacket *avpkt)
 {
     const uint8_t *buf = avpkt->data;
     int stride, ret;
     int x, y;
     int min_stride = 2 * avctx->width;
     int bits = avctx->extradata[2*4];
-    AVFrame *frame = data;
 
     if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
         return ret;
@@ -112,7 +111,7 @@ const FFCodec ff_m101_decoder = {
     .p.type         = AVMEDIA_TYPE_VIDEO,
     .p.id           = AV_CODEC_ID_M101,
     .init           = m101_decode_init,
-    .decode         = m101_decode_frame,
+    FF_CODEC_DECODE_CB(m101_decode_frame),
     .p.capabilities = AV_CODEC_CAP_DR1,
     .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };

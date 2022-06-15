@@ -83,6 +83,10 @@ bool IsAtomicBuiltin(BuiltinType i) {
            i == sem::BuiltinType::kAtomicCompareExchangeWeak;
 }
 
+bool IsDP4aBuiltin(BuiltinType i) {
+    return i == sem::BuiltinType::kDot4I8Packed || i == sem::BuiltinType::kDot4U8Packed;
+}
+
 Builtin::Builtin(BuiltinType type,
                  const sem::Type* return_type,
                  std::vector<Parameter*> parameters,
@@ -135,6 +139,10 @@ bool Builtin::IsAtomic() const {
     return IsAtomicBuiltin(type_);
 }
 
+bool Builtin::IsDP4a() const {
+    return IsDP4aBuiltin(type_);
+}
+
 bool Builtin::HasSideEffects() const {
     if (IsAtomic() && type_ != sem::BuiltinType::kAtomicLoad) {
         return true;
@@ -145,14 +153,11 @@ bool Builtin::HasSideEffects() const {
     return false;
 }
 
-ast::Enable::ExtensionKind Builtin::RequiredExtension() const {
-    switch (type_) {
-        case sem::BuiltinType::kDot4I8Packed:
-        case sem::BuiltinType::kDot4U8Packed:
-            return ast::Enable::ExtensionKind::kChromiumExperimentalDP4a;
-        default:
-            return ast::Enable::ExtensionKind::kNotAnExtension;
+ast::Extension Builtin::RequiredExtension() const {
+    if (IsDP4a()) {
+        return ast::Extension::kChromiumExperimentalDP4a;
     }
+    return ast::Extension::kNone;
 }
 
 }  // namespace tint::sem

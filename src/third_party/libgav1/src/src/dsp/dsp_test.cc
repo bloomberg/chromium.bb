@@ -41,7 +41,9 @@ constexpr int kMaxTransform1dSize[kNumTransform1ds] = {
 };
 
 void CheckTables(bool c_only) {
-#if LIBGAV1_MAX_BITDEPTH >= 10
+#if LIBGAV1_MAX_BITDEPTH == 12
+  static constexpr int kBitdepths[] = {kBitdepth8, kBitdepth10, kBitdepth12};
+#elif LIBGAV1_MAX_BITDEPTH >= 10
   static constexpr int kBitdepths[] = {kBitdepth8, kBitdepth10};
 #else
   static constexpr int kBitdepths[] = {kBitdepth8};
@@ -108,7 +110,9 @@ void CheckTables(bool c_only) {
     const uint32_t cpu_features = GetCpuInfo();
     super_res_coefficients_is_nonnull = (cpu_features & kSSE4_1) != 0;
 #endif
-    if (c_only) super_res_coefficients_is_nonnull = false;
+    if (c_only || bitdepth == kBitdepth12) {
+      super_res_coefficients_is_nonnull = false;
+    }
     if (super_res_coefficients_is_nonnull) {
       EXPECT_NE(dsp->super_res_coefficients, nullptr);
     } else {
@@ -234,6 +238,9 @@ TEST(Dsp, TablesArePopulatedCOnly) {
 #if LIBGAV1_MAX_BITDEPTH >= 10
   test_utils::ResetDspTable(kBitdepth10);
 #endif
+#if LIBGAV1_MAX_BITDEPTH == 12
+  test_utils::ResetDspTable(kBitdepth12);
+#endif
   dsp_internal::DspInit_C();
   CheckTables(/*c_only=*/true);
 }
@@ -241,15 +248,22 @@ TEST(Dsp, TablesArePopulatedCOnly) {
 
 TEST(Dsp, GetDspTable) {
   EXPECT_EQ(GetDspTable(1), nullptr);
-  EXPECT_NE(GetDspTable(8), nullptr);
+  EXPECT_NE(GetDspTable(kBitdepth8), nullptr);
   EXPECT_EQ(dsp_internal::GetWritableDspTable(1), nullptr);
-  EXPECT_NE(dsp_internal::GetWritableDspTable(8), nullptr);
+  EXPECT_NE(dsp_internal::GetWritableDspTable(kBitdepth8), nullptr);
 #if LIBGAV1_MAX_BITDEPTH >= 10
-  EXPECT_NE(GetDspTable(10), nullptr);
-  EXPECT_NE(dsp_internal::GetWritableDspTable(10), nullptr);
+  EXPECT_NE(GetDspTable(kBitdepth10), nullptr);
+  EXPECT_NE(dsp_internal::GetWritableDspTable(kBitdepth10), nullptr);
 #else
-  EXPECT_EQ(GetDspTable(10), nullptr);
-  EXPECT_EQ(dsp_internal::GetWritableDspTable(10), nullptr);
+  EXPECT_EQ(GetDspTable(kBitdepth10), nullptr);
+  EXPECT_EQ(dsp_internal::GetWritableDspTable(kBitdepth10), nullptr);
+#endif
+#if LIBGAV1_MAX_BITDEPTH == 12
+  EXPECT_NE(GetDspTable(kBitdepth12), nullptr);
+  EXPECT_NE(dsp_internal::GetWritableDspTable(kBitdepth12), nullptr);
+#else
+  EXPECT_EQ(GetDspTable(kBitdepth12), nullptr);
+  EXPECT_EQ(dsp_internal::GetWritableDspTable(kBitdepth12), nullptr);
 #endif
 }
 

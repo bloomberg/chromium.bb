@@ -14,7 +14,11 @@
 
 #include "src/tint/sem/type.h"
 
+#include "src/tint/sem/abstract_float.h"
+#include "src/tint/sem/abstract_int.h"
+#include "src/tint/sem/array.h"
 #include "src/tint/sem/bool.h"
+#include "src/tint/sem/f16.h"
 #include "src/tint/sem/f32.h"
 #include "src/tint/sem/i32.h"
 #include "src/tint/sem/matrix.h"
@@ -64,15 +68,19 @@ bool Type::IsConstructible() const {
 }
 
 bool Type::is_scalar() const {
-    return IsAnyOf<F32, U32, I32, Bool>();
+    return IsAnyOf<F16, F32, U32, I32, Bool>();
+}
+
+bool Type::is_abstract_or_scalar() const {
+    return IsAnyOf<F16, F32, U32, I32, Bool, AbstractNumeric>();
 }
 
 bool Type::is_numeric_scalar() const {
-    return IsAnyOf<F32, U32, I32>();
+    return IsAnyOf<F16, F32, U32, I32>();
 }
 
 bool Type::is_float_scalar() const {
-    return Is<F32>();
+    return IsAnyOf<F16, F32>();
 }
 
 bool Type::is_float_matrix() const {
@@ -150,6 +158,100 @@ bool Type::is_numeric_scalar_or_vector() const {
 
 bool Type::is_handle() const {
     return IsAnyOf<Sampler, Texture>();
+}
+
+uint32_t Type::ConversionRank(const Type* from, const Type* to) {
+    if (from->UnwrapRef() == to) {
+        return 0;
+    }
+    return Switch(
+        from,
+        [&](const AbstractFloat*) {
+            return Switch(
+                to,                             //
+                [&](const F32*) { return 1; },  //
+                [&](const F16*) { return 2; },  //
+                [&](Default) { return kNoConversion; });
+        },
+        [&](const AbstractInt*) {
+            return Switch(
+                to,                                       //
+                [&](const I32*) { return 3; },            //
+                [&](const U32*) { return 4; },            //
+                [&](const AbstractFloat*) { return 5; },  //
+                [&](const F32*) { return 6; },            //
+                [&](const F16*) { return 7; },            //
+                [&](Default) { return kNoConversion; });
+        },
+        [&](const Vector* from_vec) {
+            if (auto* to_vec = to->As<Vector>()) {
+                if (from_vec->Width() == to_vec->Width()) {
+                    return ConversionRank(from_vec->type(), to_vec->type());
+                }
+            }
+            return kNoConversion;
+        },
+        [&](const Matrix* from_mat) {
+            if (auto* to_mat = to->As<Matrix>()) {
+                if (from_mat->columns() == to_mat->columns() &&
+                    from_mat->rows() == to_mat->rows()) {
+                    return ConversionRank(from_mat->type(), to_mat->type());
+                }
+            }
+            return kNoConversion;
+        },
+        [&](Default) { return kNoConversion; });
+}
+
+const Type* Type::ElementOf(const Type* ty, uint32_t* count /* = nullptr */) {
+    if (ty->is_abstract_or_scalar()) {
+        if (count) {
+            *count = 1;
+        }
+        return ty;
+    }
+    return Switch(
+        ty,  //
+        [&](const Vector* v) {
+            if (count) {
+                *count = v->Width();
+            }
+            return v->type();
+        },
+        [&](const Matrix* m) {
+            if (count) {
+                *count = m->columns() * m->rows();
+            }
+            return m->type();
+        },
+        [&](const Array* a) {
+            if (count) {
+                *count = a->Count();
+            }
+            return a->ElemType();
+        });
+}
+
+const sem::Type* Type::Common(Type const* const* types, size_t count) {
+    if (count == 0) {
+        return nullptr;
+    }
+    const auto* common = types[0];
+    for (size_t i = 1; i < count; i++) {
+        auto* ty = types[i];
+        if (ty == common) {
+            continue;  // ty == common
+        }
+        if (sem::Type::ConversionRank(ty, common) != sem::Type::kNoConversion) {
+            continue;  // ty can be converted to common.
+        }
+        if (sem::Type::ConversionRank(common, ty) != sem::Type::kNoConversion) {
+            common = ty;  // common can be converted to ty.
+            continue;
+        }
+        return nullptr;  // Conversion is not valid.
+    }
+    return common;
 }
 
 }  // namespace tint::sem

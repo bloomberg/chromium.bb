@@ -247,6 +247,16 @@ bool Parser::CollapseNaryExpression(Expression** x, Expression* y,
   return true;
 }
 
+const AstRawString* Parser::GetBigIntAsSymbol() {
+  base::Vector<const uint8_t> literal = scanner()->BigIntLiteral();
+  if (literal[0] != '0' || literal.length() == 1) {
+    return ast_value_factory()->GetOneByteString(literal);
+  }
+  std::unique_ptr<char[]> decimal =
+      BigIntLiteralToDecimal(local_isolate_, literal);
+  return ast_value_factory()->GetOneByteString(decimal.get());
+}
+
 Expression* Parser::BuildUnaryExpression(Expression* expression,
                                          Token::Value op, int pos) {
   DCHECK_NOT_NULL(expression);
@@ -2695,10 +2705,10 @@ FunctionLiteral* Parser::ParseFunctionLiteral(
       can_preparse && info()->dispatcher() &&
       scanner()->stream()->can_be_cloned_for_parallel_access();
 
-  // If parallel compile tasks are enabled, enable parallel compile for the
-  // subset of functions as defined by flags.
+  // If parallel compile tasks are enabled, and this isn't a re-parse, enable
+  // parallel compile for the subset of functions as defined by flags.
   bool should_post_parallel_task =
-      can_post_parallel_task &&
+      can_post_parallel_task && !flags().is_reparse() &&
       ((is_eager_top_level_function &&
         flags().post_parallel_compile_tasks_for_eager_toplevel()) ||
        (is_lazy && flags().post_parallel_compile_tasks_for_lazy()));

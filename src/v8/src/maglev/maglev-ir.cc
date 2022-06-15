@@ -10,6 +10,9 @@
 #include "src/codegen/interface-descriptors.h"
 #include "src/codegen/macro-assembler-inl.h"
 #include "src/codegen/register.h"
+#include "src/codegen/reglist.h"
+#include "src/codegen/x64/assembler-x64.h"
+#include "src/common/globals.h"
 #include "src/compiler/backend/instruction.h"
 #include "src/ic/handler-configuration.h"
 #include "src/maglev/maglev-code-gen-state.h"
@@ -59,6 +62,10 @@ void DefineAsRegister(MaglevVregAllocationState* vreg_state, Node* node) {
       compiler::UnallocatedOperand::MUST_HAVE_REGISTER,
       vreg_state->AllocateVirtualRegister());
 }
+void DefineAsConstant(MaglevVregAllocationState* vreg_state, Node* node) {
+  node->result().SetUnallocated(compiler::UnallocatedOperand::NONE,
+                                vreg_state->AllocateVirtualRegister());
+}
 
 void DefineAsFixed(MaglevVregAllocationState* vreg_state, Node* node,
                    Register reg) {
@@ -96,16 +103,21 @@ void UseFixed(Input& input, DoubleRegister reg) {
 // ---
 
 void PushInput(MaglevCodeGenState* code_gen_state, const Input& input) {
-  // TODO(leszeks): Consider special casing the value. (Toon: could possibly
-  // be done through Input directly?)
-  const compiler::AllocatedOperand& operand =
-      compiler::AllocatedOperand::cast(input.operand());
-
-  if (operand.IsRegister()) {
-    __ Push(operand.GetRegister());
+  if (input.operand().IsConstant()) {
+    input.node()->LoadToRegister(code_gen_state, kScratchRegister);
+    __ Push(kScratchRegister);
   } else {
-    DCHECK(operand.IsStackSlot());
-    __ Push(code_gen_state->GetStackSlot(operand));
+    // TODO(leszeks): Consider special casing the value. (Toon: could possibly
+    // be done through Input directly?)
+    const compiler::AllocatedOperand& operand =
+        compiler::AllocatedOperand::cast(input.operand());
+
+    if (operand.IsRegister()) {
+      __ Push(operand.GetRegister());
+    } else {
+      DCHECK(operand.IsStackSlot());
+      __ Push(code_gen_state->GetStackSlot(operand));
+    }
   }
 }
 
@@ -270,7 +282,7 @@ void EmitEagerDeopt(MaglevCodeGenState* code_gen_state,
 
 template <typename NodeT>
 void EmitEagerDeopt(MaglevCodeGenState* code_gen_state, NodeT* node) {
-  STATIC_ASSERT(NodeT::kProperties.can_eager_deopt());
+  static_assert(NodeT::kProperties.can_eager_deopt());
   EmitEagerDeopt(code_gen_state, node->eager_deopt_info());
 }
 
@@ -284,7 +296,7 @@ void EmitEagerDeoptIf(Condition cond, MaglevCodeGenState* code_gen_state,
 template <typename NodeT>
 void EmitEagerDeoptIf(Condition cond, MaglevCodeGenState* code_gen_state,
                       NodeT* node) {
-  STATIC_ASSERT(NodeT::kProperties.can_eager_deopt());
+  static_assert(NodeT::kProperties.can_eager_deopt());
   EmitEagerDeoptIf(cond, code_gen_state, node->eager_deopt_info());
 }
 
@@ -375,26 +387,72 @@ DeoptInfo::DeoptInfo(Zone* zone, const MaglevCompilationUnit& compilation_unit,
       state(state),
       input_locations(zone->NewArray<InputLocation>(
           GetInputLocationsArraySize(compilation_unit, state))) {
-  // Default initialise if we're printing the graph, to avoid printing junk
-  // values.
-  if (FLAG_print_maglev_graph) {
-    for (size_t i = 0; i < GetInputLocationsArraySize(compilation_unit, state);
-         ++i) {
-      new (&input_locations[i]) InputLocation();
-    }
+  // Initialise InputLocations so that they correctly don't have a next use id.
+  for (size_t i = 0; i < GetInputLocationsArraySize(compilation_unit, state);
+       ++i) {
+    new (&input_locations[i]) InputLocation();
   }
 }
 
 // ---
 // Nodes
 // ---
+void ValueNode::LoadToRegister(MaglevCodeGenState* code_gen_state,
+                               Register reg) {
+  switch (opcode()) {
+#define V(Name)         \
+  case Opcode::k##Name: \
+    return this->Cast<Name>()->DoLoadToRegister(code_gen_state, reg);
+    VALUE_NODE_LIST(V)
+#undef V
+    default:
+      UNREACHABLE();
+  }
+}
+void ValueNode::DoLoadToRegister(MaglevCodeGenState* code_gen_state,
+                                 Register reg) {
+  DCHECK(is_spilled());
+  __ movq(reg, code_gen_state->GetStackSlot(
+                   compiler::AllocatedOperand::cast(spill_slot())));
+}
+Handle<Object> ValueNode::Reify(Isolate* isolate) {
+  switch (opcode()) {
+#define V(Name)         \
+  case Opcode::k##Name: \
+    return this->Cast<Name>()->DoReify(isolate);
+    CONSTANT_VALUE_NODE_LIST(V)
+#undef V
+    default:
+      UNREACHABLE();
+  }
+}
+
+void ValueNode::SetNoSpillOrHint() {
+  DCHECK_EQ(state_, kLastUse);
+#ifdef DEBUG
+  state_ = kSpillOrHint;
+#endif  // DEBUG
+  if (IsConstantNode(opcode())) {
+    spill_or_hint_ = compiler::ConstantOperand(
+        compiler::UnallocatedOperand::cast(result().operand())
+            .virtual_register());
+  } else {
+    spill_or_hint_ = compiler::InstructionOperand();
+  }
+}
+
 void SmiConstant::AllocateVreg(MaglevVregAllocationState* vreg_state,
                                const ProcessingState& state) {
-  DefineAsRegister(vreg_state, this);
+  DefineAsConstant(vreg_state, this);
 }
 void SmiConstant::GenerateCode(MaglevCodeGenState* code_gen_state,
-                               const ProcessingState& state) {
-  __ Move(ToRegister(result()), Immediate(value()));
+                               const ProcessingState& state) {}
+Handle<Object> SmiConstant::DoReify(Isolate* isolate) {
+  return handle(value_, isolate);
+}
+void SmiConstant::DoLoadToRegister(MaglevCodeGenState* code_gen_state,
+                                   Register reg) {
+  __ Move(reg, Immediate(value()));
 }
 void SmiConstant::PrintParams(std::ostream& os,
                               MaglevGraphLabeller* graph_labeller) const {
@@ -403,11 +461,16 @@ void SmiConstant::PrintParams(std::ostream& os,
 
 void Float64Constant::AllocateVreg(MaglevVregAllocationState* vreg_state,
                                    const ProcessingState& state) {
-  DefineAsRegister(vreg_state, this);
+  DefineAsConstant(vreg_state, this);
 }
 void Float64Constant::GenerateCode(MaglevCodeGenState* code_gen_state,
-                                   const ProcessingState& state) {
-  __ Move(ToDoubleRegister(result()), value());
+                                   const ProcessingState& state) {}
+Handle<Object> Float64Constant::DoReify(Isolate* isolate) {
+  return isolate->factory()->NewNumber(value_);
+}
+void Float64Constant::DoLoadToRegister(MaglevCodeGenState* code_gen_state,
+                                       DoubleRegister reg) {
+  __ Move(reg, value());
 }
 void Float64Constant::PrintParams(std::ostream& os,
                                   MaglevGraphLabeller* graph_labeller) const {
@@ -416,12 +479,15 @@ void Float64Constant::PrintParams(std::ostream& os,
 
 void Constant::AllocateVreg(MaglevVregAllocationState* vreg_state,
                             const ProcessingState& state) {
-  DefineAsRegister(vreg_state, this);
+  DefineAsConstant(vreg_state, this);
 }
 void Constant::GenerateCode(MaglevCodeGenState* code_gen_state,
-                            const ProcessingState& state) {
-  __ Move(ToRegister(result()), object_.object());
+                            const ProcessingState& state) {}
+void Constant::DoLoadToRegister(MaglevCodeGenState* code_gen_state,
+                                Register reg) {
+  __ Move(reg, object_.object());
 }
+Handle<Object> Constant::DoReify(Isolate* isolate) { return object_.object(); }
 void Constant::PrintParams(std::ostream& os,
                            MaglevGraphLabeller* graph_labeller) const {
   os << "(" << object_ << ")";
@@ -470,6 +536,7 @@ void LoadGlobal::GenerateCode(MaglevCodeGenState* code_gen_state,
 
   // TODO(jgruber): Implement full LoadGlobal handling.
   __ CallBuiltin(Builtin::kLoadGlobalIC_NoFeedback);
+  code_gen_state->DefineLazyDeoptPoint(lazy_deopt_info());
 }
 void LoadGlobal::PrintParams(std::ostream& os,
                              MaglevGraphLabeller* graph_labeller) const {
@@ -491,14 +558,16 @@ void RegisterInput::PrintParams(std::ostream& os,
 
 void RootConstant::AllocateVreg(MaglevVregAllocationState* vreg_state,
                                 const ProcessingState& state) {
-  DefineAsRegister(vreg_state, this);
+  DefineAsConstant(vreg_state, this);
 }
 void RootConstant::GenerateCode(MaglevCodeGenState* code_gen_state,
-                                const ProcessingState& state) {
-  if (!has_valid_live_range()) return;
-
-  Register reg = ToRegister(result());
+                                const ProcessingState& state) {}
+void RootConstant::DoLoadToRegister(MaglevCodeGenState* code_gen_state,
+                                    Register reg) {
   __ LoadRoot(reg, index());
+}
+Handle<Object> RootConstant::DoReify(Isolate* isolate) {
+  return isolate->root_handle(index());
 }
 void RootConstant::PrintParams(std::ostream& os,
                                MaglevGraphLabeller* graph_labeller) const {
@@ -703,6 +772,7 @@ void LoadNamedGeneric::GenerateCode(MaglevCodeGenState* code_gen_state,
           Smi::FromInt(feedback().slot.ToInt()));
   __ Move(D::GetRegisterParameter(D::kVector), feedback().vector);
   __ CallBuiltin(Builtin::kLoadIC);
+  code_gen_state->DefineLazyDeoptPoint(lazy_deopt_info());
 }
 void LoadNamedGeneric::PrintParams(std::ostream& os,
                                    MaglevGraphLabeller* graph_labeller) const {
@@ -711,7 +781,7 @@ void LoadNamedGeneric::PrintParams(std::ostream& os,
 
 void SetNamedGeneric::AllocateVreg(MaglevVregAllocationState* vreg_state,
                                    const ProcessingState& state) {
-  using D = StoreWithVectorDescriptor;
+  using D = CallInterfaceDescriptorFor<Builtin::kStoreIC>::type;
   UseFixed(context(), kContextRegister);
   UseFixed(object_input(), D::GetRegisterParameter(D::kReceiver));
   UseFixed(value_input(), D::GetRegisterParameter(D::kValue));
@@ -719,7 +789,7 @@ void SetNamedGeneric::AllocateVreg(MaglevVregAllocationState* vreg_state,
 }
 void SetNamedGeneric::GenerateCode(MaglevCodeGenState* code_gen_state,
                                    const ProcessingState& state) {
-  using D = StoreWithVectorDescriptor;
+  using D = CallInterfaceDescriptorFor<Builtin::kStoreIC>::type;
   DCHECK_EQ(ToRegister(context()), kContextRegister);
   DCHECK_EQ(ToRegister(object_input()), D::GetRegisterParameter(D::kReceiver));
   DCHECK_EQ(ToRegister(value_input()), D::GetRegisterParameter(D::kValue));
@@ -728,9 +798,36 @@ void SetNamedGeneric::GenerateCode(MaglevCodeGenState* code_gen_state,
           Smi::FromInt(feedback().slot.ToInt()));
   __ Move(D::GetRegisterParameter(D::kVector), feedback().vector);
   __ CallBuiltin(Builtin::kStoreIC);
+  code_gen_state->DefineLazyDeoptPoint(lazy_deopt_info());
 }
 void SetNamedGeneric::PrintParams(std::ostream& os,
                                   MaglevGraphLabeller* graph_labeller) const {
+  os << "(" << name_ << ")";
+}
+
+void DefineNamedOwnGeneric::AllocateVreg(MaglevVregAllocationState* vreg_state,
+                                         const ProcessingState& state) {
+  using D = CallInterfaceDescriptorFor<Builtin::kDefineNamedOwnIC>::type;
+  UseFixed(context(), kContextRegister);
+  UseFixed(object_input(), D::GetRegisterParameter(D::kReceiver));
+  UseFixed(value_input(), D::GetRegisterParameter(D::kValue));
+  DefineAsFixed(vreg_state, this, kReturnRegister0);
+}
+void DefineNamedOwnGeneric::GenerateCode(MaglevCodeGenState* code_gen_state,
+                                         const ProcessingState& state) {
+  using D = CallInterfaceDescriptorFor<Builtin::kDefineNamedOwnIC>::type;
+  DCHECK_EQ(ToRegister(context()), kContextRegister);
+  DCHECK_EQ(ToRegister(object_input()), D::GetRegisterParameter(D::kReceiver));
+  DCHECK_EQ(ToRegister(value_input()), D::GetRegisterParameter(D::kValue));
+  __ Move(D::GetRegisterParameter(D::kName), name().object());
+  __ Move(D::GetRegisterParameter(D::kSlot),
+          Smi::FromInt(feedback().slot.ToInt()));
+  __ Move(D::GetRegisterParameter(D::kVector), feedback().vector);
+  __ CallBuiltin(Builtin::kDefineNamedOwnIC);
+  code_gen_state->DefineLazyDeoptPoint(lazy_deopt_info());
+}
+void DefineNamedOwnGeneric::PrintParams(
+    std::ostream& os, MaglevGraphLabeller* graph_labeller) const {
   os << "(" << name_ << ")";
 }
 
@@ -774,6 +871,46 @@ void GapMove::PrintParams(std::ostream& os,
                           MaglevGraphLabeller* graph_labeller) const {
   os << "(" << source() << " → " << target() << ")";
 }
+void ConstantGapMove::AllocateVreg(MaglevVregAllocationState* vreg_state,
+                                   const ProcessingState& state) {
+  UNREACHABLE();
+}
+
+namespace {
+template <typename T>
+struct GetRegister;
+template <>
+struct GetRegister<Register> {
+  static Register Get(compiler::AllocatedOperand target) {
+    return target.GetRegister();
+  }
+};
+template <>
+struct GetRegister<DoubleRegister> {
+  static DoubleRegister Get(compiler::AllocatedOperand target) {
+    return target.GetDoubleRegister();
+  }
+};
+};  // namespace
+void ConstantGapMove::GenerateCode(MaglevCodeGenState* code_gen_state,
+                                   const ProcessingState& state) {
+  switch (node_->opcode()) {
+#define CASE(Name)                                \
+  case Opcode::k##Name:                           \
+    return node_->Cast<Name>()->DoLoadToRegister( \
+        code_gen_state, GetRegister<Name::OutputRegister>::Get(target()));
+    CONSTANT_VALUE_NODE_LIST(CASE)
+#undef CASE
+    default:
+      UNREACHABLE();
+  }
+}
+void ConstantGapMove::PrintParams(std::ostream& os,
+                                  MaglevGraphLabeller* graph_labeller) const {
+  os << "(";
+  graph_labeller->PrintNodeLabel(os, node_);
+  os << " → " << target() << ")";
+}
 
 namespace {
 
@@ -806,6 +943,7 @@ void UnaryWithFeedbackNode<Derived, kOperation>::GenerateCode(
   __ Move(D::GetRegisterParameter(D::kSlot), Immediate(feedback().index()));
   __ Move(D::GetRegisterParameter(D::kFeedbackVector), feedback().vector);
   __ CallBuiltin(BuiltinFor(kOperation));
+  code_gen_state->DefineLazyDeoptPoint(this->lazy_deopt_info());
 }
 
 template <class Derived, Operation kOperation>
@@ -827,6 +965,7 @@ void BinaryWithFeedbackNode<Derived, kOperation>::GenerateCode(
   __ Move(D::GetRegisterParameter(D::kSlot), Immediate(feedback().index()));
   __ Move(D::GetRegisterParameter(D::kFeedbackVector), feedback().vector);
   __ CallBuiltin(BuiltinFor(kOperation));
+  code_gen_state->DefineLazyDeoptPoint(this->lazy_deopt_info());
 }
 
 #define DEF_OPERATION(Name)                                      \
@@ -839,6 +978,353 @@ void BinaryWithFeedbackNode<Derived, kOperation>::GenerateCode(
     Base::GenerateCode(code_gen_state, state);                   \
   }
 GENERIC_OPERATIONS_NODE_LIST(DEF_OPERATION)
+#undef DEF_OPERATION
+
+void Int32AddWithOverflow::AllocateVreg(MaglevVregAllocationState* vreg_state,
+                                        const ProcessingState& state) {
+  UseRegister(left_input());
+  UseRegister(right_input());
+  DefineSameAsFirst(vreg_state, this);
+}
+
+void Int32AddWithOverflow::GenerateCode(MaglevCodeGenState* code_gen_state,
+                                        const ProcessingState& state) {
+  Register left = ToRegister(left_input());
+  Register right = ToRegister(right_input());
+  __ addl(left, right);
+  EmitEagerDeoptIf(overflow, code_gen_state, this);
+}
+
+void Int32SubtractWithOverflow::AllocateVreg(
+    MaglevVregAllocationState* vreg_state, const ProcessingState& state) {
+  UseRegister(left_input());
+  UseRegister(right_input());
+  DefineSameAsFirst(vreg_state, this);
+}
+
+void Int32SubtractWithOverflow::GenerateCode(MaglevCodeGenState* code_gen_state,
+                                             const ProcessingState& state) {
+  Register left = ToRegister(left_input());
+  Register right = ToRegister(right_input());
+  __ subl(left, right);
+  EmitEagerDeoptIf(overflow, code_gen_state, this);
+}
+
+void Int32MultiplyWithOverflow::AllocateVreg(
+    MaglevVregAllocationState* vreg_state, const ProcessingState& state) {
+  UseRegister(left_input());
+  UseRegister(right_input());
+  DefineSameAsFirst(vreg_state, this);
+  set_temporaries_needed(1);
+}
+
+void Int32MultiplyWithOverflow::GenerateCode(MaglevCodeGenState* code_gen_state,
+                                             const ProcessingState& state) {
+  Register result = ToRegister(this->result());
+  Register right = ToRegister(right_input());
+  DCHECK_EQ(result, ToRegister(left_input()));
+
+  Register saved_left = temporaries().first();
+  __ movl(saved_left, result);
+  // TODO(leszeks): peephole optimise multiplication by a constant.
+  __ imull(result, right);
+  EmitEagerDeoptIf(overflow, code_gen_state, this);
+
+  // If the result is zero, check if either lhs or rhs is negative.
+  Label end;
+  __ cmpl(result, Immediate(0));
+  __ j(not_zero, &end);
+  {
+    __ orl(saved_left, right);
+    __ cmpl(saved_left, Immediate(0));
+    // If one of them is negative, we must have a -0 result, which is non-int32,
+    // so deopt.
+    // TODO(leszeks): Consider merging these deopts.
+    EmitEagerDeoptIf(less, code_gen_state, this);
+  }
+  __ bind(&end);
+}
+
+void Int32DivideWithOverflow::AllocateVreg(
+    MaglevVregAllocationState* vreg_state, const ProcessingState& state) {
+  UseFixed(left_input(), rax);
+  UseRegister(right_input());
+  DefineAsFixed(vreg_state, this, rax);
+  // rdx is clobbered by idiv.
+  RequireSpecificTemporary(rdx);
+}
+
+void Int32DivideWithOverflow::GenerateCode(MaglevCodeGenState* code_gen_state,
+                                           const ProcessingState& state) {
+  DCHECK_EQ(rax, ToRegister(left_input()));
+  DCHECK(temporaries().has(rdx));
+  Register right = ToRegister(right_input());
+  // Clear rdx so that it doesn't participate in the division.
+  __ xorl(rdx, rdx);
+  // TODO(leszeks): peephole optimise division by a constant.
+  __ idivl(right);
+  __ cmpl(rdx, Immediate(0));
+  EmitEagerDeoptIf(equal, code_gen_state, this);
+}
+
+void Int32BitwiseAnd::AllocateVreg(MaglevVregAllocationState* vreg_state,
+                                   const ProcessingState& state) {
+  UseRegister(left_input());
+  UseRegister(right_input());
+  DefineSameAsFirst(vreg_state, this);
+}
+
+void Int32BitwiseAnd::GenerateCode(MaglevCodeGenState* code_gen_state,
+                                   const ProcessingState& state) {
+  Register left = ToRegister(left_input());
+  Register right = ToRegister(right_input());
+  __ andl(left, right);
+}
+
+void Int32BitwiseOr::AllocateVreg(MaglevVregAllocationState* vreg_state,
+                                  const ProcessingState& state) {
+  UseRegister(left_input());
+  UseRegister(right_input());
+  DefineSameAsFirst(vreg_state, this);
+}
+
+void Int32BitwiseOr::GenerateCode(MaglevCodeGenState* code_gen_state,
+                                  const ProcessingState& state) {
+  Register left = ToRegister(left_input());
+  Register right = ToRegister(right_input());
+  __ orl(left, right);
+}
+
+void Int32BitwiseXor::AllocateVreg(MaglevVregAllocationState* vreg_state,
+                                   const ProcessingState& state) {
+  UseRegister(left_input());
+  UseRegister(right_input());
+  DefineSameAsFirst(vreg_state, this);
+}
+
+void Int32BitwiseXor::GenerateCode(MaglevCodeGenState* code_gen_state,
+                                   const ProcessingState& state) {
+  Register left = ToRegister(left_input());
+  Register right = ToRegister(right_input());
+  __ xorl(left, right);
+}
+
+void Int32ShiftLeft::AllocateVreg(MaglevVregAllocationState* vreg_state,
+                                  const ProcessingState& state) {
+  UseRegister(left_input());
+  // Use the "shift by cl" variant of shl.
+  // TODO(leszeks): peephole optimise shifts by a constant.
+  UseFixed(right_input(), rcx);
+  DefineSameAsFirst(vreg_state, this);
+}
+
+void Int32ShiftLeft::GenerateCode(MaglevCodeGenState* code_gen_state,
+                                  const ProcessingState& state) {
+  Register left = ToRegister(left_input());
+  DCHECK_EQ(rcx, ToRegister(right_input()));
+  __ shll_cl(left);
+}
+
+void Int32ShiftRight::AllocateVreg(MaglevVregAllocationState* vreg_state,
+                                   const ProcessingState& state) {
+  UseRegister(left_input());
+  // Use the "shift by cl" variant of sar.
+  // TODO(leszeks): peephole optimise shifts by a constant.
+  UseFixed(right_input(), rcx);
+  DefineSameAsFirst(vreg_state, this);
+}
+
+void Int32ShiftRight::GenerateCode(MaglevCodeGenState* code_gen_state,
+                                   const ProcessingState& state) {
+  Register left = ToRegister(left_input());
+  DCHECK_EQ(rcx, ToRegister(right_input()));
+  __ sarl_cl(left);
+}
+
+void Int32ShiftRightLogical::AllocateVreg(MaglevVregAllocationState* vreg_state,
+                                          const ProcessingState& state) {
+  UseRegister(left_input());
+  // Use the "shift by cl" variant of shr.
+  // TODO(leszeks): peephole optimise shifts by a constant.
+  UseFixed(right_input(), rcx);
+  DefineSameAsFirst(vreg_state, this);
+}
+
+void Int32ShiftRightLogical::GenerateCode(MaglevCodeGenState* code_gen_state,
+                                          const ProcessingState& state) {
+  Register left = ToRegister(left_input());
+  DCHECK_EQ(rcx, ToRegister(right_input()));
+  __ shrl_cl(left);
+}
+
+namespace {
+
+constexpr Condition ConditionFor(Operation operation) {
+  switch (operation) {
+    case Operation::kEqual:
+    case Operation::kStrictEqual:
+      return equal;
+    case Operation::kLessThan:
+      return less;
+    case Operation::kLessThanOrEqual:
+      return less_equal;
+    case Operation::kGreaterThan:
+      return greater;
+    case Operation::kGreaterThanOrEqual:
+      return greater_equal;
+    default:
+      UNREACHABLE();
+  }
+}
+
+}  // namespace
+
+template <class Derived, Operation kOperation>
+void Int32CompareNode<Derived, kOperation>::AllocateVreg(
+    MaglevVregAllocationState* vreg_state, const ProcessingState& state) {
+  UseRegister(left_input());
+  UseRegister(right_input());
+  DefineAsRegister(vreg_state, this);
+}
+
+template <class Derived, Operation kOperation>
+void Int32CompareNode<Derived, kOperation>::GenerateCode(
+    MaglevCodeGenState* code_gen_state, const ProcessingState& state) {
+  Register left = ToRegister(left_input());
+  Register right = ToRegister(right_input());
+  Register result = ToRegister(this->result());
+  Label is_true, end;
+  __ cmpl(left, right);
+  // TODO(leszeks): Investigate using cmov here.
+  __ j(ConditionFor(kOperation), &is_true);
+  // TODO(leszeks): Investigate loading existing materialisations of roots here,
+  // if available.
+  __ LoadRoot(result, RootIndex::kFalseValue);
+  __ jmp(&end);
+  {
+    __ bind(&is_true);
+    __ LoadRoot(result, RootIndex::kTrueValue);
+  }
+  __ bind(&end);
+}
+
+#define DEF_OPERATION(Name)                                      \
+  void Name::AllocateVreg(MaglevVregAllocationState* vreg_state, \
+                          const ProcessingState& state) {        \
+    Base::AllocateVreg(vreg_state, state);                       \
+  }                                                              \
+  void Name::GenerateCode(MaglevCodeGenState* code_gen_state,    \
+                          const ProcessingState& state) {        \
+    Base::GenerateCode(code_gen_state, state);                   \
+  }
+DEF_OPERATION(Int32Equal)
+DEF_OPERATION(Int32StrictEqual)
+DEF_OPERATION(Int32LessThan)
+DEF_OPERATION(Int32LessThanOrEqual)
+DEF_OPERATION(Int32GreaterThan)
+DEF_OPERATION(Int32GreaterThanOrEqual)
+#undef DEF_OPERATION
+
+void Float64Add::AllocateVreg(MaglevVregAllocationState* vreg_state,
+                              const ProcessingState& state) {
+  UseRegister(left_input());
+  UseRegister(right_input());
+  DefineSameAsFirst(vreg_state, this);
+}
+
+void Float64Add::GenerateCode(MaglevCodeGenState* code_gen_state,
+                              const ProcessingState& state) {
+  DoubleRegister left = ToDoubleRegister(left_input());
+  DoubleRegister right = ToDoubleRegister(right_input());
+  __ Addsd(left, right);
+}
+
+void Float64Subtract::AllocateVreg(MaglevVregAllocationState* vreg_state,
+                                   const ProcessingState& state) {
+  UseRegister(left_input());
+  UseRegister(right_input());
+  DefineSameAsFirst(vreg_state, this);
+}
+
+void Float64Subtract::GenerateCode(MaglevCodeGenState* code_gen_state,
+                                   const ProcessingState& state) {
+  DoubleRegister left = ToDoubleRegister(left_input());
+  DoubleRegister right = ToDoubleRegister(right_input());
+  __ Subsd(left, right);
+}
+
+void Float64Multiply::AllocateVreg(MaglevVregAllocationState* vreg_state,
+                                   const ProcessingState& state) {
+  UseRegister(left_input());
+  UseRegister(right_input());
+  DefineSameAsFirst(vreg_state, this);
+}
+
+void Float64Multiply::GenerateCode(MaglevCodeGenState* code_gen_state,
+                                   const ProcessingState& state) {
+  DoubleRegister left = ToDoubleRegister(left_input());
+  DoubleRegister right = ToDoubleRegister(right_input());
+  __ Mulsd(left, right);
+}
+
+void Float64Divide::AllocateVreg(MaglevVregAllocationState* vreg_state,
+                                 const ProcessingState& state) {
+  UseRegister(left_input());
+  UseRegister(right_input());
+  DefineSameAsFirst(vreg_state, this);
+}
+
+void Float64Divide::GenerateCode(MaglevCodeGenState* code_gen_state,
+                                 const ProcessingState& state) {
+  DoubleRegister left = ToDoubleRegister(left_input());
+  DoubleRegister right = ToDoubleRegister(right_input());
+  __ Divsd(left, right);
+}
+
+template <class Derived, Operation kOperation>
+void Float64CompareNode<Derived, kOperation>::AllocateVreg(
+    MaglevVregAllocationState* vreg_state, const ProcessingState& state) {
+  UseRegister(left_input());
+  UseRegister(right_input());
+  DefineAsRegister(vreg_state, this);
+}
+
+template <class Derived, Operation kOperation>
+void Float64CompareNode<Derived, kOperation>::GenerateCode(
+    MaglevCodeGenState* code_gen_state, const ProcessingState& state) {
+  DoubleRegister left = ToDoubleRegister(left_input());
+  DoubleRegister right = ToDoubleRegister(right_input());
+  Register result = ToRegister(this->result());
+  Label is_true, end;
+  __ Ucomisd(left, right);
+  // TODO(leszeks): Investigate using cmov here.
+  __ j(ConditionFor(kOperation), &is_true);
+  // TODO(leszeks): Investigate loading existing materialisations of roots here,
+  // if available.
+  __ LoadRoot(result, RootIndex::kFalseValue);
+  __ jmp(&end);
+  {
+    __ bind(&is_true);
+    __ LoadRoot(result, RootIndex::kTrueValue);
+  }
+  __ bind(&end);
+}
+
+#define DEF_OPERATION(Name)                                      \
+  void Name::AllocateVreg(MaglevVregAllocationState* vreg_state, \
+                          const ProcessingState& state) {        \
+    Base::AllocateVreg(vreg_state, state);                       \
+  }                                                              \
+  void Name::GenerateCode(MaglevCodeGenState* code_gen_state,    \
+                          const ProcessingState& state) {        \
+    Base::GenerateCode(code_gen_state, state);                   \
+  }
+DEF_OPERATION(Float64Equal)
+DEF_OPERATION(Float64StrictEqual)
+DEF_OPERATION(Float64LessThan)
+DEF_OPERATION(Float64LessThanOrEqual)
+DEF_OPERATION(Float64GreaterThan)
+DEF_OPERATION(Float64GreaterThanOrEqual)
 #undef DEF_OPERATION
 
 void CheckedSmiUntag::AllocateVreg(MaglevVregAllocationState* vreg_state,
@@ -873,30 +1359,20 @@ void CheckedSmiTag::GenerateCode(MaglevCodeGenState* code_gen_state,
 
 void Int32Constant::AllocateVreg(MaglevVregAllocationState* vreg_state,
                                  const ProcessingState& state) {
-  DefineAsRegister(vreg_state, this);
+  DefineAsConstant(vreg_state, this);
 }
 void Int32Constant::GenerateCode(MaglevCodeGenState* code_gen_state,
-                                 const ProcessingState& state) {
-  __ Move(ToRegister(result()), Immediate(value()));
+                                 const ProcessingState& state) {}
+void Int32Constant::DoLoadToRegister(MaglevCodeGenState* code_gen_state,
+                                     Register reg) {
+  __ Move(reg, Immediate(value()));
+}
+Handle<Object> Int32Constant::DoReify(Isolate* isolate) {
+  return isolate->factory()->NewNumber(value());
 }
 void Int32Constant::PrintParams(std::ostream& os,
                                 MaglevGraphLabeller* graph_labeller) const {
   os << "(" << value() << ")";
-}
-
-void Int32AddWithOverflow::AllocateVreg(MaglevVregAllocationState* vreg_state,
-                                        const ProcessingState& state) {
-  UseRegister(left_input());
-  UseRegister(right_input());
-  DefineSameAsFirst(vreg_state, this);
-}
-
-void Int32AddWithOverflow::GenerateCode(MaglevCodeGenState* code_gen_state,
-                                        const ProcessingState& state) {
-  Register left = ToRegister(left_input());
-  Register right = ToRegister(right_input());
-  __ addl(left, right);
-  EmitEagerDeoptIf(overflow, code_gen_state, this);
 }
 
 void Float64Box::AllocateVreg(MaglevVregAllocationState* vreg_state,
@@ -950,20 +1426,6 @@ void ChangeInt32ToFloat64::AllocateVreg(MaglevVregAllocationState* vreg_state,
 void ChangeInt32ToFloat64::GenerateCode(MaglevCodeGenState* code_gen_state,
                                         const ProcessingState& state) {
   __ Cvtlsi2sd(ToDoubleRegister(result()), ToRegister(input()));
-}
-
-void Float64Add::AllocateVreg(MaglevVregAllocationState* vreg_state,
-                              const ProcessingState& state) {
-  UseRegister(left_input());
-  UseRegister(right_input());
-  DefineSameAsFirst(vreg_state, this);
-}
-
-void Float64Add::GenerateCode(MaglevCodeGenState* code_gen_state,
-                              const ProcessingState& state) {
-  DoubleRegister left = ToDoubleRegister(left_input());
-  DoubleRegister right = ToDoubleRegister(right_input());
-  __ Addsd(left, right);
 }
 
 void Phi::AllocateVreg(MaglevVregAllocationState* vreg_state,
@@ -1074,7 +1536,6 @@ void AttemptOnStackReplacement(MaglevCodeGenState* code_gen_state,
 void UpdateInterruptBudgetAndMaybeCallRuntime(
     MaglevCodeGenState* code_gen_state, Register scratch,
     int32_t relative_jump_bytecode_offset) {
-  Label out;
   // TODO(v8:7700): Remove once regalloc is fixed. See crrev.com/c/3625978.
   __ Push(scratch);
   __ movq(scratch, MemOperand(rbp, StandardFrameConstants::kFunctionOffset));
@@ -1082,13 +1543,24 @@ void UpdateInterruptBudgetAndMaybeCallRuntime(
       scratch, FieldOperand(scratch, JSFunction::kFeedbackCellOffset));
   __ addl(FieldOperand(scratch, FeedbackCell::kInterruptBudgetOffset),
           Immediate(relative_jump_bytecode_offset));
-  __ j(greater_equal, &out);
 
-  __ Move(kContextRegister, code_gen_state->native_context().object());
-  __ Push(MemOperand(rbp, StandardFrameConstants::kFunctionOffset));
-  __ CallRuntime(Runtime::kBytecodeBudgetInterruptWithStackCheck, 1);
+  // Only check the interrupt if the above add can drop the interrupt budget
+  // below zero.
+  if (relative_jump_bytecode_offset < 0) {
+    JumpToDeferredIf(
+        less, code_gen_state,
+        [](MaglevCodeGenState* code_gen_state, Label* return_label) {
+          // TODO(leszeks): Only save registers if they're not free (requires
+          // fixing the regalloc, same as for scratch).
+          __ PushCallerSaved(SaveFPRegsMode::kSave);
+          __ Move(kContextRegister, code_gen_state->native_context().object());
+          __ Push(MemOperand(rbp, StandardFrameConstants::kFunctionOffset));
+          __ CallRuntime(Runtime::kBytecodeBudgetInterruptWithStackCheck, 1);
+          __ PopCallerSaved(SaveFPRegsMode::kSave);
+          __ jmp(return_label);
+        });
+  }
 
-  __ bind(&out);
   // TODO(v8:7700): Remove once regalloc is fixed. See crrev.com/c/3625978.
   __ Pop(scratch);
 }
@@ -1247,12 +1719,70 @@ void BranchIfTrue::GenerateCode(MaglevCodeGenState* code_gen_state,
   }
 }
 
-void BranchIfCompare::AllocateVreg(MaglevVregAllocationState* vreg_state,
-                                   const ProcessingState& state) {}
-void BranchIfCompare::GenerateCode(MaglevCodeGenState* code_gen_state,
-                                   const ProcessingState& state) {
-  USE(operation_);
-  UNREACHABLE();
+void BranchIfInt32Compare::AllocateVreg(MaglevVregAllocationState* vreg_state,
+                                        const ProcessingState& state) {
+  UseRegister(left_input());
+  UseRegister(right_input());
+}
+void BranchIfInt32Compare::GenerateCode(MaglevCodeGenState* code_gen_state,
+                                        const ProcessingState& state) {
+  Register left = ToRegister(left_input());
+  Register right = ToRegister(right_input());
+
+  auto* next_block = state.next_block();
+
+  __ cmpl(left, right);
+
+  // We don't have any branch probability information, so try to jump
+  // over whatever the next block emitted is.
+  if (if_false() == next_block) {
+    // Jump over the false block if true, otherwise fall through into it.
+    __ j(ConditionFor(operation_), if_true()->label());
+  } else {
+    // Jump to the false block if true.
+    __ j(NegateCondition(ConditionFor(operation_)), if_false()->label());
+    // Jump to the true block if it's not the next block.
+    if (if_true() != next_block) {
+      __ jmp(if_true()->label());
+    }
+  }
+}
+void BranchIfFloat64Compare::PrintParams(
+    std::ostream& os, MaglevGraphLabeller* graph_labeller) const {
+  os << "(" << operation_ << ")";
+}
+
+void BranchIfFloat64Compare::AllocateVreg(MaglevVregAllocationState* vreg_state,
+                                          const ProcessingState& state) {
+  UseRegister(left_input());
+  UseRegister(right_input());
+}
+void BranchIfFloat64Compare::GenerateCode(MaglevCodeGenState* code_gen_state,
+                                          const ProcessingState& state) {
+  DoubleRegister left = ToDoubleRegister(left_input());
+  DoubleRegister right = ToDoubleRegister(right_input());
+
+  auto* next_block = state.next_block();
+
+  __ Ucomisd(left, right);
+
+  // We don't have any branch probability information, so try to jump
+  // over whatever the next block emitted is.
+  if (if_false() == next_block) {
+    // Jump over the false block if true, otherwise fall through into it.
+    __ j(ConditionFor(operation_), if_true()->label());
+  } else {
+    // Jump to the false block if true.
+    __ j(NegateCondition(ConditionFor(operation_)), if_false()->label());
+    // Jump to the true block if it's not the next block.
+    if (if_true() != next_block) {
+      __ jmp(if_true()->label());
+    }
+  }
+}
+void BranchIfInt32Compare::PrintParams(
+    std::ostream& os, MaglevGraphLabeller* graph_labeller) const {
+  os << "(" << operation_ << ")";
 }
 
 void BranchIfToBooleanTrue::AllocateVreg(MaglevVregAllocationState* vreg_state,

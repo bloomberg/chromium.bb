@@ -15,17 +15,17 @@
 #ifndef SRC_DAWN_NATIVE_SURFACE_H_
 #define SRC_DAWN_NATIVE_SURFACE_H_
 
-#include "dawn/common/RefCounted.h"
 #include "dawn/native/Error.h"
 #include "dawn/native/Forward.h"
+#include "dawn/native/ObjectBase.h"
 
 #include "dawn/native/dawn_platform.h"
 
 #include "dawn/common/Platform.h"
 
-#if defined(DAWN_PLATFORM_WINDOWS)
+#if DAWN_PLATFORM_IS(WINDOWS)
 #include "dawn/native/d3d12/d3d12_platform.h"
-#endif  // defined(DAWN_PLATFORM_WINDOWS)
+#endif  // DAWN_PLATFORM_IS(WINDOWS)
 
 // Forward declare IUnknown
 // GetCoreWindow needs to return an IUnknown pointer
@@ -42,8 +42,10 @@ MaybeError ValidateSurfaceDescriptor(const InstanceBase* instance,
 // ObjectiveC).
 // The surface is also used to store the current swapchain so that we can detach it when it is
 // replaced.
-class Surface final : public RefCounted {
+class Surface final : public ErrorMonad {
   public:
+    static Surface* MakeError(InstanceBase* instance);
+
     Surface(InstanceBase* instance, const SurfaceDescriptor* descriptor);
 
     void SetAttachedSwapChain(NewSwapChainBase* swapChain);
@@ -53,19 +55,24 @@ class Surface final : public RefCounted {
     enum class Type {
         AndroidWindow,
         MetalLayer,
+        WaylandSurface,
         WindowsHWND,
         WindowsCoreWindow,
         WindowsSwapChainPanel,
         XlibWindow,
     };
     Type GetType() const;
-    InstanceBase* GetInstance();
+    InstanceBase* GetInstance() const;
 
     // Valid to call if the type is MetalLayer
     void* GetMetalLayer() const;
 
     // Valid to call if the type is Android
     void* GetAndroidNativeWindow() const;
+
+    // Valid to call if the type is WaylandSurface
+    void* GetWaylandDisplay() const;
+    void* GetWaylandSurface() const;
 
     // Valid to call if the type is WindowsHWND
     void* GetHInstance() const;
@@ -82,6 +89,7 @@ class Surface final : public RefCounted {
     uint32_t GetXWindow() const;
 
   private:
+    Surface(InstanceBase* instance, ErrorMonad::ErrorTag tag);
     ~Surface() override;
 
     Ref<InstanceBase> mInstance;
@@ -96,17 +104,21 @@ class Surface final : public RefCounted {
     // ANativeWindow
     void* mAndroidNativeWindow = nullptr;
 
+    // Wayland
+    void* mWaylandDisplay = nullptr;
+    void* mWaylandSurface = nullptr;
+
     // WindowsHwnd
     void* mHInstance = nullptr;
     void* mHWND = nullptr;
 
-#if defined(DAWN_PLATFORM_WINDOWS)
+#if DAWN_PLATFORM_IS(WINDOWS)
     // WindowsCoreWindow
     ComPtr<IUnknown> mCoreWindow;
 
     // WindowsSwapChainPanel
     ComPtr<IUnknown> mSwapChainPanel;
-#endif  // defined(DAWN_PLATFORM_WINDOWS)
+#endif  // DAWN_PLATFORM_IS(WINDOWS)
 
     // Xlib
     void* mXDisplay = nullptr;

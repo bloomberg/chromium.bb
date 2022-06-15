@@ -8,6 +8,7 @@
 #ifndef GrCaps_DEFINED
 #define GrCaps_DEFINED
 
+#include "include/core/SkCapabilities.h"
 #include "include/core/SkImageInfo.h"
 #include "include/core/SkRefCnt.h"
 #include "include/core/SkString.h"
@@ -37,7 +38,7 @@ class KeyBuilder;
 /**
  * Represents the capabilities of a GrContext.
  */
-class GrCaps : public SkRefCnt {
+class GrCaps : public SkCapabilities {
 public:
     GrCaps(const GrContextOptions&);
 
@@ -165,8 +166,8 @@ public:
         return fMustSyncGpuDuringAbandon;
     }
 
-    // Shortcut for shaderCaps()->reducedShaderMode().
-    bool reducedShaderMode() const { return this->shaderCaps()->reducedShaderMode(); }
+    // Shortcut for shaderCaps()->fReducedShaderMode.
+    bool reducedShaderMode() const { return this->shaderCaps()->fReducedShaderMode; }
 
     /**
      * Indicates whether GPU->CPU memory mapping for GPU resources such as vertex buffers and

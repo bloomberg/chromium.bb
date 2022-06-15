@@ -54,7 +54,7 @@ class TestUtilityFunctions(unittest.TestCase):
       no_history=False,
       force=False,
       config='foo',
-      protocol_override='https',
+      protocol_override=None,
       props=[]), response)
 
     response = fetch.handle_args([

@@ -56,6 +56,7 @@ class ShareGroup;
 namespace gl
 {
 class MockOverlay;
+class ProgramExecutable;
 struct RasterizerState;
 struct SwizzleState;
 struct VertexAttribute;
@@ -789,8 +790,7 @@ class Recycler final : angle::NonCopyable
 ANGLE_ENABLE_STRUCT_PADDING_WARNINGS
 struct SpecializationConstants final
 {
-    VkBool32 lineRasterEmulation;
-    uint32_t surfaceRotation;
+    VkBool32 surfaceRotation;
     float drawableWidth;
     float drawableHeight;
     uint32_t dither;
@@ -1275,6 +1275,24 @@ using LevelIndex = gl::LevelIndexWrapper<uint32_t>;
 // Ensure viewport is within Vulkan requirements
 void ClampViewport(VkViewport *viewport);
 
+constexpr bool IsDynamicDescriptor(VkDescriptorType descriptorType)
+{
+    switch (descriptorType)
+    {
+        case VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC:
+        case VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC:
+            return true;
+        default:
+            return false;
+    }
+}
+
+void ApplyPipelineCreationFeedback(Context *context, const VkPipelineCreationFeedback &feedback);
+
+angle::Result SetDebugUtilsObjectName(ContextVk *contextVk,
+                                      uint64_t handle,
+                                      const std::string &label);
+
 }  // namespace vk
 
 #if !defined(ANGLE_SHARED_LIBVULKAN)
@@ -1328,6 +1346,12 @@ void InitExternalSemaphoreCapabilitiesFunctions(VkInstance instance);
 // VK_KHR_shared_presentable_image
 void InitGetSwapchainStatusKHRFunctions(VkDevice device);
 
+// VK_EXT_extended_dynamic_state
+void InitExtendedDynamicStateEXTFunctions(VkDevice device);
+
+// VK_EXT_extended_dynamic_state2
+void InitExtendedDynamicState2EXTFunctions(VkDevice device);
+
 // VK_KHR_fragment_shading_rate
 void InitFragmentShadingRateKHRFunctions(VkDevice device);
 
@@ -1348,6 +1372,7 @@ VkFrontFace GetFrontFace(GLenum frontFace, bool invertCullFace);
 VkSampleCountFlagBits GetSamples(GLint sampleCount);
 VkComponentSwizzle GetSwizzle(const GLenum swizzle);
 VkCompareOp GetCompareOp(const GLenum compareFunc);
+VkStencilOp GetStencilOp(const GLenum compareOp);
 
 constexpr gl::ShaderMap<VkShaderStageFlagBits> kShaderStageMap = {
     {gl::ShaderType::Vertex, VK_SHADER_STAGE_VERTEX_BIT},

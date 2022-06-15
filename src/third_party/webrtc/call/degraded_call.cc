@@ -13,6 +13,7 @@
 #include <memory>
 #include <utility>
 
+#include "absl/strings/string_view.h"
 #include "rtc_base/location.h"
 
 namespace webrtc {
@@ -186,13 +187,13 @@ void DegradedCall::DestroyAudioSendStream(AudioSendStream* send_stream) {
   audio_send_transport_adapters_.erase(send_stream);
 }
 
-AudioReceiveStream* DegradedCall::CreateAudioReceiveStream(
-    const AudioReceiveStream::Config& config) {
+AudioReceiveStreamInterface* DegradedCall::CreateAudioReceiveStream(
+    const AudioReceiveStreamInterface::Config& config) {
   return call_->CreateAudioReceiveStream(config);
 }
 
 void DegradedCall::DestroyAudioReceiveStream(
-    AudioReceiveStream* receive_stream) {
+    AudioReceiveStreamInterface* receive_stream) {
   call_->DestroyAudioReceiveStream(receive_stream);
 }
 
@@ -236,13 +237,13 @@ void DegradedCall::DestroyVideoSendStream(VideoSendStream* send_stream) {
   video_send_transport_adapters_.erase(send_stream);
 }
 
-VideoReceiveStream* DegradedCall::CreateVideoReceiveStream(
-    VideoReceiveStream::Config configuration) {
+VideoReceiveStreamInterface* DegradedCall::CreateVideoReceiveStream(
+    VideoReceiveStreamInterface::Config configuration) {
   return call_->CreateVideoReceiveStream(std::move(configuration));
 }
 
 void DegradedCall::DestroyVideoReceiveStream(
-    VideoReceiveStream* receive_stream) {
+    VideoReceiveStreamInterface* receive_stream) {
   call_->DestroyVideoReceiveStream(receive_stream);
 }
 
@@ -299,13 +300,23 @@ void DegradedCall::OnAudioTransportOverheadChanged(
   call_->OnAudioTransportOverheadChanged(transport_overhead_per_packet);
 }
 
-void DegradedCall::OnLocalSsrcUpdated(AudioReceiveStream& stream,
+void DegradedCall::OnLocalSsrcUpdated(AudioReceiveStreamInterface& stream,
                                       uint32_t local_ssrc) {
   call_->OnLocalSsrcUpdated(stream, local_ssrc);
 }
 
-void DegradedCall::OnUpdateSyncGroup(AudioReceiveStream& stream,
-                                     const std::string& sync_group) {
+void DegradedCall::OnLocalSsrcUpdated(VideoReceiveStreamInterface& stream,
+                                      uint32_t local_ssrc) {
+  call_->OnLocalSsrcUpdated(stream, local_ssrc);
+}
+
+void DegradedCall::OnLocalSsrcUpdated(FlexfecReceiveStream& stream,
+                                      uint32_t local_ssrc) {
+  call_->OnLocalSsrcUpdated(stream, local_ssrc);
+}
+
+void DegradedCall::OnUpdateSyncGroup(AudioReceiveStreamInterface& stream,
+                                     absl::string_view sync_group) {
   call_->OnUpdateSyncGroup(stream, sync_group);
 }
 

@@ -378,6 +378,8 @@ class AutotestPrivateGetRegisteredSystemWebAppsFunction
  private:
   ~AutotestPrivateGetRegisteredSystemWebAppsFunction() override;
   ResponseAction Run() override;
+
+  void OnSystemWebAppsInstalled();
 };
 
 class AutotestPrivateIsSystemWebAppOpenFunction : public ExtensionFunction {
@@ -1555,6 +1557,17 @@ class AutotestPrivateAddLoginEventForTestingFunction
 
  private:
   ~AutotestPrivateAddLoginEventForTestingFunction() override;
+  ResponseAction Run() override;
+};
+
+class AutotestPrivateForceAutoThemeModeFunction : public ExtensionFunction {
+ public:
+  AutotestPrivateForceAutoThemeModeFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.forceAutoThemeMode",
+                             AUTOTESTPRIVATE_FORCEAUTOTHEMEMODE)
+
+ private:
+  ~AutotestPrivateForceAutoThemeModeFunction() override;
   ResponseAction Run() override;
 };
 

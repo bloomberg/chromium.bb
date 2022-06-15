@@ -43,6 +43,7 @@ OBJS = ac3_parser.o                                                     \
        dirac.o                                                          \
        dv_profile.o                                                     \
        encode.o                                                         \
+       get_buffer.o                                                     \
        imgconvert.o                                                     \
        jni.o                                                            \
        mathtables.o                                                     \
@@ -55,6 +56,7 @@ OBJS = ac3_parser.o                                                     \
        qsv_api.o                                                        \
        raw.o                                                            \
        utils.o                                                          \
+       version.o                                                        \
        vlc.o                                                            \
        vorbis_parser.o                                                  \
        xiph.o                                                           \
@@ -708,6 +710,8 @@ OBJS-$(CONFIG_V408_ENCODER)            += v408enc.o
 OBJS-$(CONFIG_V410_DECODER)            += v410dec.o
 OBJS-$(CONFIG_V410_ENCODER)            += v410enc.o
 OBJS-$(CONFIG_VB_DECODER)              += vb.o
+OBJS-$(CONFIG_VBN_DECODER)             += vbndec.o
+OBJS-$(CONFIG_VBN_ENCODER)             += vbnenc.o
 OBJS-$(CONFIG_VBLE_DECODER)            += vble.o
 OBJS-$(CONFIG_VC1_DECODER)             += vc1dec.o vc1_block.o vc1_loopfilter.o \
                                           vc1_mc.o vc1_pred.o vc1.o vc1data.o \
@@ -1059,6 +1063,8 @@ OBJS-$(CONFIG_LIBGSM_MS_DECODER)          += libgsmdec.o
 OBJS-$(CONFIG_LIBGSM_MS_ENCODER)          += libgsmenc.o
 OBJS-$(CONFIG_LIBILBC_DECODER)            += libilbc.o
 OBJS-$(CONFIG_LIBILBC_ENCODER)            += libilbc.o
+OBJS-$(CONFIG_LIBJXL_DECODER)             += libjxldec.o libjxl.o
+OBJS-$(CONFIG_LIBJXL_ENCODER)             += libjxlenc.o libjxl.o
 OBJS-$(CONFIG_LIBKVAZAAR_ENCODER)         += libkvazaar.o
 OBJS-$(CONFIG_LIBMP3LAME_ENCODER)         += libmp3lame.o
 OBJS-$(CONFIG_LIBOPENCORE_AMRNB_DECODER)  += libopencore-amr.o
@@ -1190,6 +1196,7 @@ OBJS-$(CONFIG_NOISE_BSF)                  += noise_bsf.o
 OBJS-$(CONFIG_NULL_BSF)                   += null_bsf.o
 OBJS-$(CONFIG_OPUS_METADATA_BSF)          += opus_metadata_bsf.o
 OBJS-$(CONFIG_PCM_RECHUNK_BSF)            += pcm_rechunk_bsf.o
+OBJS-$(CONFIG_PGS_FRAME_MERGE_BSF)        += pgs_frame_merge_bsf.o
 OBJS-$(CONFIG_PRORES_METADATA_BSF)        += prores_metadata_bsf.o
 OBJS-$(CONFIG_REMOVE_EXTRADATA_BSF)       += remove_extradata_bsf.o av1_parse.o
 OBJS-$(CONFIG_SETTS_BSF)                  += setts_bsf.o
@@ -1224,6 +1231,7 @@ SKIPHEADERS-$(CONFIG_AMF)              += amfenc.h
 SKIPHEADERS-$(CONFIG_D3D11VA)          += d3d11va.h dxva2_internal.h
 SKIPHEADERS-$(CONFIG_DXVA2)            += dxva2.h dxva2_internal.h
 SKIPHEADERS-$(CONFIG_JNI)              += ffjni.h
+SKIPHEADERS-$(CONFIG_LIBJXL)           += libjxl.h
 SKIPHEADERS-$(CONFIG_LIBVPX)           += libvpx.h
 SKIPHEADERS-$(CONFIG_LIBWEBP_ENCODER)  += libwebpenc_common.h
 SKIPHEADERS-$(CONFIG_MEDIACODEC)       += mediacodecdec_common.h mediacodec_surface.h mediacodec_wrapper.h mediacodec_sw_buffer.h

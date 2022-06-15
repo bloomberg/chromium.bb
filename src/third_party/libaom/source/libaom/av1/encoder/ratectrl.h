@@ -250,9 +250,8 @@ typedef struct {
 
   // Stores fast_extra_bits of the current frame.
   int frame_level_fast_extra_bits;
-#if CONFIG_FRAME_PARALLEL_ENCODE
+
   double frame_level_rate_correction_factors[RATE_FACTOR_LEVELS];
-#endif
   /*!\endcond */
 } RATE_CONTROL;
 

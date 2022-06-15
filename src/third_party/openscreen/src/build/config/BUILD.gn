@@ -181,6 +181,9 @@ config("openscreen_code") {
 
         # Warn on enumeration type mismatches.
         "-Wenum-compare-conditional",
+
+        # Warn on non-virtual destructors in virtual classes.
+        "-Wnon-virtual-dtor",
       ]
     }
 

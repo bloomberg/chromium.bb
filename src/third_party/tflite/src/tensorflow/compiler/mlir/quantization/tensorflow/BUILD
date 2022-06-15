@@ -27,11 +27,14 @@ py_binary(
 
 genrule(
     name = "quantized_function_library",
-    srcs = ["passes/quantized_function_library.mlir"],
+    srcs = [
+        "passes/quantized_function_library.mlir",
+        "passes/quantized_function_library_drq.mlir",
+    ],
     outs = [
         "passes/quantized_function_library.h",
     ],
-    cmd = "$(location gen_quantized_function_library) --output_file $(RULEDIR)/passes/quantized_function_library.h --src $(SRCS)",
+    cmd = "$(location gen_quantized_function_library) --output_file $(RULEDIR)/passes/quantized_function_library.h --src '$(SRCS)'",
     exec_tools = ["gen_quantized_function_library"],
 )
 
@@ -50,12 +53,14 @@ cc_library(
 )
 
 td_library(
-    name = "ptq_td_files",
+    name = "quant_td_files",
     srcs = [
         "passes/lift_quantizable_spots_as_functions.td",
+        "passes/lift_quantizable_spots_as_functions_drq.td",
         "passes/prepare_lifting.td",
         "passes/prepare_quantize.td",
         "passes/quantize_composite_functions.td",
+        "passes/tf_quant_ops.td",
         "passes/utils.td",
     ],
     deps = [
@@ -77,7 +82,7 @@ gentbl_cc_library(
     ],
     tblgen = "@llvm-project//mlir:mlir-tblgen",
     td_file = "passes/prepare_lifting.td",
-    deps = [":ptq_td_files"],
+    deps = [":quant_td_files"],
 )
 
 gentbl_cc_library(
@@ -90,7 +95,20 @@ gentbl_cc_library(
     ],
     tblgen = "@llvm-project//mlir:mlir-tblgen",
     td_file = "passes/lift_quantizable_spots_as_functions.td",
-    deps = [":ptq_td_files"],
+    deps = [":quant_td_files"],
+)
+
+gentbl_cc_library(
+    name = "lift_quantizable_spots_as_functions_drq_inc_gen",
+    tbl_outs = [
+        (
+            ["-gen-rewriters"],
+            "passes/lift_quantizable_spots_as_functions_drq.inc",
+        ),
+    ],
+    tblgen = "@llvm-project//mlir:mlir-tblgen",
+    td_file = "passes/lift_quantizable_spots_as_functions_drq.td",
+    deps = [":quant_td_files"],
 )
 
 gentbl_cc_library(
@@ -103,7 +121,7 @@ gentbl_cc_library(
     ],
     tblgen = "@llvm-project//mlir:mlir-tblgen",
     td_file = "passes/prepare_quantize.td",
-    deps = [":ptq_td_files"],
+    deps = [":quant_td_files"],
 )
 
 gentbl_cc_library(
@@ -116,7 +134,55 @@ gentbl_cc_library(
     ],
     tblgen = "@llvm-project//mlir:mlir-tblgen",
     td_file = "passes/quantize_composite_functions.td",
-    deps = [":ptq_td_files"],
+    deps = [":quant_td_files"],
+)
+
+gentbl_cc_library(
+    name = "tf_quant_ops_inc_gen",
+    tbl_outs = [
+        (
+            ["-gen-op-decls"],
+            "passes/tf_quant_ops.h.inc",
+        ),
+        (
+            ["-gen-op-defs"],
+            "passes/tf_quant_ops.cc.inc",
+        ),
+    ],
+    tblgen = "@llvm-project//mlir:mlir-tblgen",
+    td_file = "passes/tf_quant_ops.td",
+    deps = [
+        ":quant_td_files",
+    ],
+)
+
+cc_library(
+    name = "tf_quant_ops",
+    srcs = [
+        "passes/tf_quant_ops.cc",
+        "passes/tf_quant_ops.cc.inc",
+        "passes/tf_quant_ops.h.inc",
+    ],
+    hdrs = ["passes/tf_quant_ops.h"],
+    deps = [
+        "//tensorflow/compiler/mlir/tensorflow:tensorflow_attributes",
+        "//tensorflow/compiler/mlir/tensorflow:tensorflow_op_interfaces",
+        "//tensorflow/compiler/mlir/tensorflow:tensorflow_side_effects",
+        "//tensorflow/compiler/mlir/tensorflow:tensorflow_structs",
+        "//tensorflow/compiler/mlir/tensorflow:tensorflow_traits",
+        "//tensorflow/compiler/mlir/tensorflow:tensorflow_types",
+        "@llvm-project//llvm:Support",
+        "@llvm-project//mlir:ControlFlowInterfaces",
+        "@llvm-project//mlir:DerivedAttributeOpInterface",
+        "@llvm-project//mlir:Dialect",
+        "@llvm-project//mlir:IR",
+        "@llvm-project//mlir:InferTypeOpInterface",
+        "@llvm-project//mlir:LoopLikeInterface",
+        "@llvm-project//mlir:Parser",
+        "@llvm-project//mlir:SideEffects",
+        "@llvm-project//mlir:StandardOps",
+        "@llvm-project//mlir:Support",
+    ],
 )
 
 cc_library(
@@ -130,11 +196,14 @@ cc_library(
         "passes/issue_ids_of_custom_aggregation_ops.cc",
         "passes/lift_quantizable_spots_as_functions.cc",
         "passes/lift_quantizable_spots_as_functions.inc",
+        "passes/lift_quantizable_spots_as_functions_drq.cc",
+        "passes/lift_quantizable_spots_as_functions_drq.inc",
         "passes/post_quantize.cc",
         "passes/prepare_lifting.cc",
         "passes/prepare_lifting.inc",
         "passes/prepare_quantize.cc",
         "passes/prepare_quantize.inc",
+        "passes/prepare_quantize_drq.cc",
         "passes/quantize.cc",
         "passes/quantize_composite_functions.cc",
         "passes/quantize_composite_functions.inc",
@@ -163,6 +232,7 @@ cc_library(
         "@com_google_absl//absl/random",
         "@com_google_absl//absl/strings",
         "@llvm-project//llvm:Support",
+        "@llvm-project//mlir:ArithmeticDialect",
         "@llvm-project//mlir:FuncDialect",
         "@llvm-project//mlir:IR",
         "@llvm-project//mlir:Parser",

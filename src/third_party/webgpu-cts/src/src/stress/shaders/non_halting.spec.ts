@@ -21,7 +21,7 @@ device loss.`
       code: `
         struct Buffer { data: u32; };
         @group(0) @binding(0) var<storage, read_write> buffer: Buffer;
-        @stage(compute) @workgroup_size(1) fn main() {
+        @compute @workgroup_size(1) fn main() {
           loop {
             if (buffer.data == 1u) {
               break;
@@ -31,7 +31,10 @@ device loss.`
         }
       `,
     });
-    const pipeline = t.device.createComputePipeline({ compute: { module, entryPoint: 'main' } });
+    const pipeline = t.device.createComputePipeline({
+      layout: 'auto',
+      compute: { module, entryPoint: 'main' },
+    });
     const encoder = t.device.createCommandEncoder();
     const pass = encoder.beginComputePass();
     pass.setPipeline(pipeline);
@@ -58,7 +61,7 @@ device loss.`
       code: `
         struct Data { counter: u32; increment: u32; };
         @group(0) @binding(0) var<uniform> data: Data;
-        @stage(vertex) fn vmain() -> @builtin(position) vec4<f32> {
+        @vertex fn vmain() -> @builtin(position) vec4<f32> {
           var counter: u32 = data.counter;
           loop {
             if (counter % 2u == 1u) {
@@ -68,13 +71,14 @@ device loss.`
           }
           return vec4<f32>(1.0, 1.0, 0.0, f32(counter));
         }
-        @stage(fragment) fn fmain() -> @location(0) vec4<f32> {
+        @fragment fn fmain() -> @location(0) vec4<f32> {
           return vec4<f32>(1.0);
         }
       `,
     });
 
     const pipeline = t.device.createRenderPipeline({
+      layout: 'auto',
       vertex: { module, entryPoint: 'vmain', buffers: [] },
       primitive: { topology: 'point-list' },
       fragment: {
@@ -129,10 +133,10 @@ device loss.`
       code: `
         struct Data { counter: u32; increment: u32; };
         @group(0) @binding(0) var<uniform> data: Data;
-        @stage(vertex) fn vmain() -> @builtin(position) vec4<f32> {
+        @vertex fn vmain() -> @builtin(position) vec4<f32> {
           return vec4<f32>(0.0, 0.0, 0.0, 1.0);
         }
-        @stage(fragment) fn fmain() -> @location(0) vec4<f32> {
+        @fragment fn fmain() -> @location(0) vec4<f32> {
           var counter: u32 = data.counter;
           loop {
             if (counter % 2u == 1u) {
@@ -146,6 +150,7 @@ device loss.`
     });
 
     const pipeline = t.device.createRenderPipeline({
+      layout: 'auto',
       vertex: { module, entryPoint: 'vmain', buffers: [] },
       primitive: { topology: 'point-list' },
       fragment: {

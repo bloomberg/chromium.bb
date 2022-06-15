@@ -782,7 +782,7 @@ RUNTIME_FUNCTION(Runtime_GetOptimizationStatus) {
   }
   if (frame != nullptr) {
     status |= static_cast<int>(OptimizationStatus::kIsExecuting);
-    if (frame->is_optimized()) {
+    if (frame->is_turbofan()) {
       status |=
           static_cast<int>(OptimizationStatus::kTopmostFrameIsTurboFanned);
     } else if (frame->is_interpreted()) {
@@ -910,6 +910,16 @@ int FixedArrayLenFromSize(int size) {
                    FixedArray::kMaxRegularLength});
 }
 
+int GetSpaceRemainingOnCurrentPage(v8::internal::NewSpace* space) {
+  Address top = space->top();
+  if ((top & kPageAlignmentMask) == 0) {
+    // `top` points to the start of a page signifies that there is not room in
+    // the current page.
+    return 0;
+  }
+  return static_cast<int>(Page::FromAddress(space->top())->area_end() - top);
+}
+
 void FillUpOneNewSpacePage(Isolate* isolate, Heap* heap) {
   DCHECK(!FLAG_single_generation);
   PauseAllocationObserversScope pause_observers(heap);
@@ -919,8 +929,7 @@ void FillUpOneNewSpacePage(Isolate* isolate, Heap* heap) {
   // the current allocation pointer.
   DCHECK_IMPLIES(!space->IsInlineAllocationEnabled(),
                  space->limit() == space->top());
-  int space_remaining =
-      static_cast<int>(space->to_space().page_high() - space->top());
+  int space_remaining = GetSpaceRemainingOnCurrentPage(space);
   while (space_remaining > 0) {
     int length = FixedArrayLenFromSize(space_remaining);
     if (length > 0) {
@@ -1579,7 +1588,7 @@ RUNTIME_FUNCTION(Runtime_EnableCodeLoggingForTesting) {
 #if V8_ENABLE_WEBASSEMBLY
   wasm::GetWasmEngine()->EnableCodeLogging(isolate);
 #endif  // V8_ENABLE_WEBASSEMBLY
-  isolate->log_event_dispatcher()->AddListener(noop_listener.get());
+  isolate->logger()->AddListener(noop_listener.get());
   return ReadOnlyRoots(isolate).undefined_value();
 }
 

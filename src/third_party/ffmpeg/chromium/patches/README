@@ -893,3 +893,28 @@ Date:   Fri Apr 1 16:01:02 2022 -0700
 Affects:
     libavutil/avstring.h
 
+------------------------------------------------------------------
+commit e481fc655a6287e657a88e8c2bcd6f411d254d70
+Author: Dan Sanders <sandersd@chromium.org>
+Date:   Tue May 3 14:39:37 2022 -0700
+
+    Do not parse late SEI messages during decoding.
+
+    Bug: 1306751
+    Change-Id: I2088b9ff89bd8eee8ab82675258af302d9bfccf9
+    Reviewed-on: https://chromium-review.googlesource.com/c/chromium/third_party/ffmpeg/+/3625832
+    Reviewed-by: Dale Curtis <dalecurtis@chromium.org>
+
+Affects:
+    libavcodec/h264dec.c
+
+------------------------------------------------------------------
+commit 71c81ea6d295b2940df5a265c9298229a4bced03
+Author: Dan Sanders <sandersd@chromium.org>
+Date:   Thu May 19 14:16:20 2022 -0700
+
+    GN Configuration
+
+Affects:
+    libavutil/avsscanf.c
+

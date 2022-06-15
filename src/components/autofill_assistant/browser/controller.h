@@ -124,6 +124,9 @@ class Controller : public ScriptExecutorDelegate,
   password_manager::PasswordChangeSuccessTracker*
   GetPasswordChangeSuccessTracker() override;
   content::WebContents* GetWebContents() override;
+  content::WebContents* GetWebContentsForJsExecution() override;
+  void SetJsFlowLibrary(const std::string& js_flow_library) override;
+  const std::string* GetJsFlowLibrary() const override;
   std::string GetEmailAddressForAccessTokenAccount() override;
   ukm::UkmRecorder* GetUkmRecorder() override;
   void SetTouchableElementArea(const ElementAreaProto& area) override;
@@ -299,6 +302,12 @@ class Controller : public ScriptExecutorDelegate,
   // Sets the semantic selector in the DOM annotation service.
   void SetSemanticSelectorPolicy(SemanticSelectorPolicy policy);
 
+  void MaybeUpdateClientContextAndGetScriptsForUrl(const GURL& url);
+  void OnGetAnnotateDomModelVersionForGetScripts(
+      const GURL& url,
+      absl::optional<int64_t> model_version);
+  void GetScriptsForUrl(const GURL& url);
+
   ClientSettings settings_;
   const raw_ptr<Client> client_;
   const raw_ptr<const base::TickClock> tick_clock_;
@@ -433,6 +442,10 @@ class Controller : public ScriptExecutorDelegate,
   // If instantiated, will start delivering the required model for annotating
   // DOM nodes. May be nullptr.
   const raw_ptr<AnnotateDomModelService> annotate_dom_model_service_;
+
+  // Lazily instantiated in GetWebContentsForJsExecution()
+  std::unique_ptr<content::WebContents> web_contents_for_js_execution_;
+  std::string js_flow_library_;
 
   base::WeakPtrFactory<Controller> weak_ptr_factory_{this};
 };

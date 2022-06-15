@@ -24,6 +24,9 @@
 #include <xnnpack/pack.h>
 #include <xnnpack/params.h>
 
+#ifndef XNN_ENABLE_GEMM_M_SPECIALIZATION
+#error "XNN_ENABLE_GEMM_M_SPECIALIZATION is not defined"
+#endif
 
 static inline size_t compute_output_dimension(
     size_t input_dimension,
@@ -270,13 +273,21 @@ static enum xnn_status create_deconvolution2d_nhwc(
   deconvolution_op->type = operator_type;
   deconvolution_op->ukernel.type = ukernel_type;
   deconvolution_op->ukernel.igemm = (struct xnn_ukernel_igemm) {
-    .general_case = gemm_ukernels->igemm,
-    .gemm_case = gemm_ukernels->gemm,
     .mr = mr,
     .nr = nr,
     .kr = kr,
     .sr = sr,
   };
+
+  assert(XNN_MAX_MR >= mr);
+  for (size_t i = 0; i < mr; i++) {
+    if (gemm_ukernels->gemm[i].function[XNN_UARCH_DEFAULT] != NULL) {
+      deconvolution_op->ukernel.igemm.gemm_cases[i] = gemm_ukernels->gemm[i];
+    }
+    if (gemm_ukernels->igemm[i].function[XNN_UARCH_DEFAULT] != NULL) {
+      deconvolution_op->ukernel.igemm.igemm_cases[i] = gemm_ukernels->igemm[i];
+    }
+  }
 
   deconvolution_op->state = xnn_run_state_invalid;
 
@@ -540,7 +551,7 @@ enum xnn_status xnn_create_deconvolution2d_nhwc_f16(
   const struct gemm_parameters* gemm_parameters = &xnn_params.f16.gemm;
   const struct gemm_fused_ukernels* gemm_ukernels = &gemm_parameters->minmax;
   const bool linear_activation = (output_max == INFINITY) && (output_min == -output_max);
-  if (linear_activation && gemm_parameters->linear.gemm.function[XNN_UARCH_DEFAULT] != NULL) {
+  if (linear_activation && gemm_parameters->linear.gemm[gemm_parameters->mr - 1].function[XNN_UARCH_DEFAULT] != NULL) {
     gemm_ukernels = &gemm_parameters->linear;
   }
 
@@ -625,13 +636,15 @@ enum xnn_status xnn_create_deconvolution2d_nhwc_f32(
   const struct gemm_parameters* gemm_parameters = &xnn_params.f32.gemm;
   if (gemm_parameters->nr > group_output_channels) {
     // Default micro-kernel is suboptimal. Try to find a better micro-kernel.
-    if (xnn_params.f32.gemm2.minmax.igemm.function[XNN_UARCH_DEFAULT] != NULL) {
-      gemm_parameters = &xnn_params.f32.gemm2;
+    const struct gemm_parameters* gemm2_parameters = &xnn_params.f32.gemm2;
+    if (gemm2_parameters->minmax.igemm[gemm2_parameters->mr - 1].function[XNN_UARCH_DEFAULT] != NULL) {
+      gemm_parameters = gemm2_parameters;
     }
   }
+
   const struct gemm_fused_ukernels* gemm_ukernels = &gemm_parameters->minmax;
   const bool linear_activation = (output_max == INFINITY) && (output_min == -output_max);
-  if (linear_activation && gemm_parameters->linear.gemm.function[XNN_UARCH_DEFAULT] != NULL) {
+  if (linear_activation && gemm_parameters->linear.gemm[gemm_parameters->mr - 1].function[XNN_UARCH_DEFAULT] != NULL) {
     gemm_ukernels = &gemm_parameters->linear;
   }
 
@@ -685,7 +698,14 @@ static enum xnn_status setup_conv_path(
 
   const size_t groups = deconvolution_op->groups;
   const size_t output_size = output_height * output_width;
-  const size_t mr = deconvolution_op->ukernel.igemm.mr;
+  size_t mr = deconvolution_op->ukernel.igemm.mr;
+
+  struct xnn_hmp_igemm_ukernel igemm_ukernel = deconvolution_op->ukernel.igemm.igemm_cases[mr - 1];
+  if (output_size == 1 && deconvolution_op->ukernel.igemm.igemm_cases[0].function[XNN_UARCH_DEFAULT] != NULL) {
+    mr = 1;
+    igemm_ukernel = deconvolution_op->ukernel.igemm.igemm_cases[0];
+  }
+
   const size_t tiled_output_size = round_up(output_size, mr);
   const size_t indirection_buffer_size = sizeof(void*) * kernel_size * tiled_output_size;
 
@@ -710,6 +730,7 @@ static enum xnn_status setup_conv_path(
   const size_t group_input_channels = deconvolution_op->group_input_channels;
   const size_t group_output_channels = deconvolution_op->group_output_channels;
   const uint32_t nr = deconvolution_op->ukernel.igemm.nr;
+
   const size_t w_stride = bias_element_size +
     (round_up_po2(group_input_channels, deconvolution_op->ukernel.igemm.kr * deconvolution_op->ukernel.igemm.sr) * kernel_size << log2_filter_element_size);
   deconvolution_op->context.igemm = (struct igemm_context) {
@@ -730,48 +751,95 @@ static enum xnn_status setup_conv_path(
       .ba_stride = input_height * input_width * deconvolution_op->input_pixel_stride << log2_input_element_size,
       .bc_stride = output_size * deconvolution_op->output_pixel_stride << log2_output_element_size,
       .log2_csize = log2_output_element_size,
-      .ukernel = deconvolution_op->ukernel.igemm.general_case,
+      .ukernel = igemm_ukernel,
   };
-  if (output_size == 1 && deconvolution_op->ukernel.igemm.mr1_case.function[XNN_UARCH_DEFAULT] != NULL) {
-    deconvolution_op->context.igemm.ukernel = deconvolution_op->ukernel.igemm.mr1_case;
-  }
   memcpy(&deconvolution_op->context.igemm.params, params, params_size);
 
-  size_t nc = group_output_channels;
-  if (num_threads > 1) {
-    const size_t num_other_tiles = groups * batch_size * divide_round_up(output_size, mr);
-    const size_t target_tiles_per_thread = 5;
-    const size_t max_nc = divide_round_up(group_output_channels * num_other_tiles, num_threads * target_tiles_per_thread);
-    if (max_nc < nc) {
-      nc = min(nc, divide_round_up(nc, max_nc * nr) * nr);
+  #if XNN_TEST_MODE
+    const size_t nc = nr;
+  #else
+    size_t nc = group_output_channels;
+    if (num_threads > 1) {
+      const size_t num_other_tiles = groups * batch_size * divide_round_up(output_size, mr);
+      const size_t target_tiles_per_thread = 5;
+      const size_t max_nc = divide_round_up(group_output_channels * num_other_tiles, num_threads * target_tiles_per_thread);
+      if (max_nc < nc) {
+        nc = min(nc, divide_round_up(nc, max_nc * nr) * nr);
+      }
     }
-  }
+  #endif
   if (groups == 1) {
+    #if XNN_MAX_UARCH_TYPES > 1
+      if (xnn_is_hmp_igemm_ukernel(igemm_ukernel)) {
+        if (batch_size > 1) {
+          deconvolution_op->compute.type = xnn_parallelization_type_3d_tile_2d_with_uarch;
+          deconvolution_op->compute.task_3d_tile_2d_with_id = (pthreadpool_task_3d_tile_2d_with_id_t) xnn_compute_batch_hmp_igemm;
+        } else {
+          deconvolution_op->compute.type = xnn_parallelization_type_2d_tile_2d_with_uarch;
+          deconvolution_op->compute.task_2d_tile_2d_with_id = (pthreadpool_task_2d_tile_2d_with_id_t) xnn_compute_hmp_igemm;
+        }
+      } else {
+        if (batch_size > 1) {
+          deconvolution_op->compute.type = xnn_parallelization_type_3d_tile_2d;
+          deconvolution_op->compute.task_3d_tile_2d = (pthreadpool_task_3d_tile_2d_t) xnn_compute_batch_igemm;
+        } else {
+          deconvolution_op->compute.type = xnn_parallelization_type_2d_tile_2d;
+          deconvolution_op->compute.task_2d_tile_2d = (pthreadpool_task_2d_tile_2d_t) xnn_compute_igemm;
+        }
+      }
+    #else
+      if (batch_size > 1) {
+        deconvolution_op->compute.type = xnn_parallelization_type_3d_tile_2d;
+        deconvolution_op->compute.task_3d_tile_2d = (pthreadpool_task_3d_tile_2d_t) xnn_compute_batch_igemm;
+      } else {
+        deconvolution_op->compute.type = xnn_parallelization_type_2d_tile_2d;
+        deconvolution_op->compute.task_2d_tile_2d = (pthreadpool_task_2d_tile_2d_t) xnn_compute_igemm;
+      }
+    #endif
     if (batch_size > 1) {
-      deconvolution_op->compute.type = xnn_parallelization_type_3d_tile_2d;
-      deconvolution_op->compute.task_3d_tile_2d = (pthreadpool_task_3d_tile_2d_t) xnn_compute_batch_igemm;
       deconvolution_op->compute.range[0] = batch_size;
       deconvolution_op->compute.range[1] = output_size;
       deconvolution_op->compute.range[2] = group_output_channels;
     } else {
-      deconvolution_op->compute.type = xnn_parallelization_type_2d_tile_2d;
-      deconvolution_op->compute.task_2d_tile_2d = (pthreadpool_task_2d_tile_2d_t) xnn_compute_igemm;
       deconvolution_op->compute.range[0] = output_size;
       deconvolution_op->compute.range[1] = group_output_channels;
     }
     deconvolution_op->compute.tile[0] = mr;
     deconvolution_op->compute.tile[1] = nc;
   } else {
+    #if XNN_MAX_UARCH_TYPES > 1
+      if (xnn_is_hmp_igemm_ukernel(igemm_ukernel)) {
+        if (batch_size > 1) {
+          deconvolution_op->compute.type = xnn_parallelization_type_4d_tile_2d_with_uarch;
+          deconvolution_op->compute.task_4d_tile_2d_with_id = (pthreadpool_task_4d_tile_2d_with_id_t) xnn_compute_hmp_grouped_batch_igemm;
+        } else {
+          deconvolution_op->compute.type = xnn_parallelization_type_3d_tile_2d_with_uarch;
+          deconvolution_op->compute.task_3d_tile_2d_with_id = (pthreadpool_task_3d_tile_2d_with_id_t) xnn_compute_hmp_grouped_igemm;
+        }
+      } else {
+        if (batch_size > 1) {
+          deconvolution_op->compute.type = xnn_parallelization_type_4d_tile_2d;
+          deconvolution_op->compute.task_4d_tile_2d = (pthreadpool_task_4d_tile_2d_t) xnn_compute_grouped_batch_igemm;
+        } else {
+          deconvolution_op->compute.type = xnn_parallelization_type_3d_tile_2d;
+          deconvolution_op->compute.task_3d_tile_2d = (pthreadpool_task_3d_tile_2d_t) xnn_compute_grouped_igemm;
+        }
+      }
+    #else
+      if (batch_size > 1) {
+        deconvolution_op->compute.type = xnn_parallelization_type_4d_tile_2d;
+        deconvolution_op->compute.task_4d_tile_2d = (pthreadpool_task_4d_tile_2d_t) xnn_compute_grouped_batch_igemm;
+      } else {
+        deconvolution_op->compute.type = xnn_parallelization_type_3d_tile_2d;
+        deconvolution_op->compute.task_3d_tile_2d = (pthreadpool_task_3d_tile_2d_t) xnn_compute_grouped_igemm;
+      }
+    #endif
     if (batch_size > 1) {
-      deconvolution_op->compute.type = xnn_parallelization_type_4d_tile_2d;
-      deconvolution_op->compute.task_4d_tile_2d = (pthreadpool_task_4d_tile_2d_t) xnn_compute_grouped_batch_igemm;
       deconvolution_op->compute.range[0] = batch_size;
       deconvolution_op->compute.range[1] = groups;
       deconvolution_op->compute.range[2] = output_size;
       deconvolution_op->compute.range[3] = group_output_channels;
     } else {
-      deconvolution_op->compute.type = xnn_parallelization_type_3d_tile_2d;
-      deconvolution_op->compute.task_3d_tile_2d = (pthreadpool_task_3d_tile_2d_t) xnn_compute_grouped_igemm;
       deconvolution_op->compute.range[0] = groups;
       deconvolution_op->compute.range[1] = output_size;
       deconvolution_op->compute.range[2] = group_output_channels;
@@ -808,10 +876,17 @@ static enum xnn_status setup_subconv2d_path(
   const size_t kernel_size = kernel_height * kernel_width;
   const size_t stride_height = deconvolution_op->stride_height;
   const size_t stride_width = deconvolution_op->stride_width;
+  const size_t output_height_positions = divide_round_up(output_height, stride_height);
+  const size_t output_width_positions = divide_round_up(output_width, stride_width);
 
   const size_t groups = deconvolution_op->groups;
   const size_t output_size = output_height * output_width;
-  const size_t mr = deconvolution_op->ukernel.igemm.mr;
+  uint32_t mr = deconvolution_op->ukernel.igemm.mr;
+  const uint32_t nr = deconvolution_op->ukernel.igemm.nr;
+  #if XNN_ENABLE_GEMM_M_SPECIALIZATION
+    mr = xnn_get_heuristic_mr_igemm(
+      output_width_positions, mr, nr, deconvolution_op->ukernel.igemm.igemm_cases);
+  #endif
 
   const size_t input_pixel_stride = deconvolution_op->input_pixel_stride << log2_input_element_size;
   const size_t output_pixel_stride = deconvolution_op->output_pixel_stride << log2_output_element_size;
@@ -883,7 +958,6 @@ static enum xnn_status setup_subconv2d_path(
 
   const size_t group_input_channels = deconvolution_op->group_input_channels;
   const size_t group_output_channels = deconvolution_op->group_output_channels;
-  const uint32_t nr = deconvolution_op->ukernel.igemm.nr;
   const uint32_t kr = deconvolution_op->ukernel.igemm.kr;
   const uint32_t sr = deconvolution_op->ukernel.igemm.sr;
   const size_t w_stride = stride_height * stride_width * bias_element_size +
@@ -904,7 +978,7 @@ static enum xnn_status setup_subconv2d_path(
         .ba_stride = input_height * input_width * input_pixel_stride,
         .bc_stride = output_size * output_pixel_stride,
         .log2_csize = log2_output_element_size,
-        .ukernel = deconvolution_op->ukernel.igemm.gemm_case,
+        .ukernel = deconvolution_op->ukernel.igemm.gemm_cases[mr - 1],
     };
     memcpy(&deconvolution_op->context.subgemm.params, params, params_size);
   } else {
@@ -922,24 +996,25 @@ static enum xnn_status setup_subconv2d_path(
         .ba_stride = input_height * input_width * input_pixel_stride,
         .bc_stride = output_size * output_pixel_stride,
         .log2_csize = log2_output_element_size,
-        .ukernel = deconvolution_op->ukernel.igemm.general_case,
+        .ukernel = deconvolution_op->ukernel.igemm.igemm_cases[mr - 1],
     };
     memcpy(&deconvolution_op->context.subconv.params, params, params_size);
   }
 
-  const size_t output_height_positions = divide_round_up(output_height, stride_height);
-  const size_t output_width_positions = divide_round_up(output_width, stride_width);
-
-  size_t nc = group_output_channels;
-  if (num_threads > 1) {
-    const size_t num_other_tiles = groups * stride_height * stride_width *
-      output_height_positions * divide_round_up(output_width_positions, mr);
-    const size_t target_tiles_per_thread = 5;
-    const size_t max_nc = divide_round_up(group_output_channels * num_other_tiles, num_threads * target_tiles_per_thread);
-    if (max_nc < nc) {
-      nc = min(nc, divide_round_up(nc, max_nc * nr) * nr);
+  #if XNN_TEST_MODE
+    const size_t nc = nr;
+  #else
+    size_t nc = group_output_channels;
+    if (num_threads > 1) {
+      const size_t num_other_tiles = groups * stride_height * stride_width *
+        output_height_positions * divide_round_up(output_width_positions, mr);
+      const size_t target_tiles_per_thread = 5;
+      const size_t max_nc = divide_round_up(group_output_channels * num_other_tiles, num_threads * target_tiles_per_thread);
+      if (max_nc < nc) {
+        nc = min(nc, divide_round_up(nc, max_nc * nr) * nr);
+      }
     }
-  }
+  #endif
 
   if (groups == 1) {
     deconvolution_op->compute.type = xnn_parallelization_type_5d_tile_2d;
@@ -947,8 +1022,8 @@ static enum xnn_status setup_subconv2d_path(
       (pthreadpool_task_5d_tile_2d_t) xnn_compute_subgemm2d : (pthreadpool_task_5d_tile_2d_t) xnn_compute_subconv2d;
     deconvolution_op->compute.range[0] = batch_size;
     deconvolution_op->compute.range[1] = stride_height * stride_width;
-    deconvolution_op->compute.range[2] = divide_round_up(output_height, stride_height);
-    deconvolution_op->compute.range[3] = divide_round_up(output_width, stride_width);
+    deconvolution_op->compute.range[2] = output_height_positions;
+    deconvolution_op->compute.range[3] = output_width_positions;
     deconvolution_op->compute.range[4] = group_output_channels;
     deconvolution_op->compute.tile[0] = mr;
     deconvolution_op->compute.tile[1] = nc;
@@ -959,8 +1034,8 @@ static enum xnn_status setup_subconv2d_path(
     deconvolution_op->compute.range[0] = batch_size;
     deconvolution_op->compute.range[1] = groups;
     deconvolution_op->compute.range[2] = stride_height * stride_width;
-    deconvolution_op->compute.range[3] = divide_round_up(output_height, stride_height);
-    deconvolution_op->compute.range[4] = divide_round_up(output_width, stride_width);
+    deconvolution_op->compute.range[3] = output_height_positions;
+    deconvolution_op->compute.range[4] = output_width_positions;
     deconvolution_op->compute.range[5] = group_output_channels;
     deconvolution_op->compute.tile[0] = mr;
     deconvolution_op->compute.tile[1] = nc;
@@ -1053,12 +1128,13 @@ static enum xnn_status setup_deconvolution2d_nhwc(
         params, params_size, num_threads);
     case xnn_ukernel_type_subconv2d:
     {
+      const size_t mr = deconvolution_op->ukernel.igemm.mr;
       const bool no_padding = (deconvolution_op->padding_top | deconvolution_op->padding_right | deconvolution_op->padding_bottom | deconvolution_op->padding_left) == 0;
       const bool no_adjustment = (adjustment_height | adjustment_width) == 0;
       const bool use_gemm = no_padding && no_adjustment &&
         deconvolution_op->kernel_height == deconvolution_op->stride_height &&
         deconvolution_op->kernel_width == deconvolution_op->stride_width &&
-        deconvolution_op->ukernel.igemm.gemm_case.function[XNN_UARCH_DEFAULT] != NULL;
+        deconvolution_op->ukernel.igemm.gemm_cases[mr - 1].function[XNN_UARCH_DEFAULT] != NULL;
       return setup_subconv2d_path(
         deconvolution_op,
         batch_size,

@@ -68,7 +68,7 @@ wgpu::ShaderModule CreateDefaultVertexShaderModule(wgpu::Device device) {
                 @builtin(position) position : vec4<f32>,
             }
 
-            @stage(vertex)
+            @vertex
             fn main(@builtin(vertex_index) VertexIndex : u32) -> VertexOut {
                 var output : VertexOut;
                 var pos = array<vec2<f32>, 6>(
@@ -222,7 +222,7 @@ class TextureViewSamplingTest : public DawnTest {
             @group(0) @binding(0) var sampler0 : sampler;
             @group(0) @binding(1) var texture0 : texture_2d<f32>;
 
-            @stage(fragment)
+            @fragment
             fn main(@location(0) texCoord : vec2<f32>) -> @location(0) vec4<f32> {
                 return textureSample(texture0, sampler0, texCoord);
             }
@@ -258,7 +258,7 @@ class TextureViewSamplingTest : public DawnTest {
             @group(0) @binding(0) var sampler0 : sampler;
             @group(0) @binding(1) var texture0 : texture_2d_array<f32>;
 
-            @stage(fragment)
+            @fragment
             fn main(@location(0) texCoord : vec2<f32>) -> @location(0) vec4<f32> {
                 return textureSample(texture0, sampler0, texCoord, 0) +
                        textureSample(texture0, sampler0, texCoord, 1) +
@@ -293,7 +293,7 @@ class TextureViewSamplingTest : public DawnTest {
             @group(0) @binding(0) var sampler0 : sampler;
             @group(0) @binding(1) var texture0 : )"
                << textureType << R"(<f32>;
-            @stage(fragment)
+            @fragment
             fn main(@location(0) texCoord : vec2<f32>) -> @location(0) vec4<f32> {
                 var sc : f32 = 2.0 * texCoord.x - 1.0;
                 var tc : f32 = 2.0 * texCoord.y - 1.0;
@@ -367,7 +367,7 @@ TEST_P(TextureViewSamplingTest, Default2DArrayTexture) {
             @group(0) @binding(0) var sampler0 : sampler;
             @group(0) @binding(1) var texture0 : texture_2d_array<f32>;
 
-            @stage(fragment)
+            @fragment
             fn main(@location(0) texCoord : vec2<f32>) -> @location(0) vec4<f32> {
                 return textureSample(texture0, sampler0, texCoord, 0) +
                        textureSample(texture0, sampler0, texCoord, 1) +
@@ -408,7 +408,7 @@ TEST_P(TextureViewSamplingTest, Texture2DArrayViewOnSingleLayer2DTexture) {
         @group(0) @binding(0) var sampler0 : sampler;
         @group(0) @binding(1) var texture0 : texture_2d_array<f32>;
 
-        @stage(fragment)
+        @fragment
         fn main(@location(0) texCoord : vec2<f32>) -> @location(0) vec4<f32> {
             return textureSample(texture0, sampler0, texCoord, 0);
         }
@@ -470,7 +470,7 @@ TEST_P(TextureViewSamplingTest, SRGBReinterpretation) {
 
     utils::ComboRenderPipelineDescriptor pipelineDesc;
     pipelineDesc.vertex.module = utils::CreateShaderModule(device, R"(
-        @stage(vertex)
+        @vertex
         fn main(@builtin(vertex_index) VertexIndex : u32) -> @builtin(position) vec4<f32> {
             var pos = array<vec2<f32>, 6>(
                                         vec2<f32>(-1.0, -1.0),
@@ -485,7 +485,7 @@ TEST_P(TextureViewSamplingTest, SRGBReinterpretation) {
     pipelineDesc.cFragment.module = utils::CreateShaderModule(device, R"(
         @group(0) @binding(0) var texture : texture_2d<f32>;
 
-        @stage(fragment)
+        @fragment
         fn main(@builtin(position) coord: vec4<f32>) -> @location(0) vec4<f32> {
             return textureLoad(texture, vec2<i32>(coord.xy), 0);
         }
@@ -552,20 +552,12 @@ TEST_P(TextureViewSamplingTest, TextureCubeMapArrayOnWholeTexture) {
 
 // Test sampling from a cube map texture array view that covers a sub part of a 2D array texture.
 TEST_P(TextureViewSamplingTest, TextureCubeMapArrayViewOnPartOfTexture) {
-    // Test failing on the GPU FYI Mac Pro (AMD), see
-    // https://bugs.chromium.org/p/dawn/issues/detail?id=58
-    DAWN_SUPPRESS_TEST_IF(IsMacOS() && IsMetal() && IsAMD());
-
     TextureCubeMapTest(20, 3, 12, true);
 }
 
 // Test sampling from a cube map texture array view that covers the last layer of a 2D array
 // texture.
 TEST_P(TextureViewSamplingTest, TextureCubeMapArrayViewCoveringLastLayer) {
-    // Test failing on the GPU FYI Mac Pro (AMD), see
-    // https://bugs.chromium.org/p/dawn/issues/detail?id=58
-    DAWN_SUPPRESS_TEST_IF(IsMacOS() && IsMetal() && IsAMD());
-
     constexpr uint32_t kTotalLayers = 20;
     constexpr uint32_t kBaseLayer = 8;
     TextureCubeMapTest(kTotalLayers, kBaseLayer, kTotalLayers - kBaseLayer, true);
@@ -573,10 +565,6 @@ TEST_P(TextureViewSamplingTest, TextureCubeMapArrayViewCoveringLastLayer) {
 
 // Test sampling from a cube map array texture view that only has a single cube map.
 TEST_P(TextureViewSamplingTest, TextureCubeMapArrayViewSingleCubeMap) {
-    // Test failing on the GPU FYI Mac Pro (AMD), see
-    // https://bugs.chromium.org/p/dawn/issues/detail?id=58
-    DAWN_SUPPRESS_TEST_IF(IsMacOS() && IsMetal() && IsAMD());
-
     TextureCubeMapTest(20, 7, 6, true);
 }
 
@@ -615,7 +603,7 @@ class TextureViewRenderingTest : public DawnTest {
         renderPassInfo.cColorAttachments[0].clearValue = {1.0f, 0.0f, 0.0f, 1.0f};
 
         const char* oneColorFragmentShader = R"(
-            @stage(fragment) fn main(@location(0) texCoord : vec2<f32>) ->
+            @fragment fn main(@location(0) texCoord : vec2<f32>) ->
                 @location(0) vec4<f32> {
                 return vec4<f32>(0.0, 1.0, 0.0, 1.0);
             }
@@ -814,7 +802,7 @@ TEST_P(TextureViewRenderingTest, SRGBReinterpretationRenderAttachment) {
     // Create a render pipeline to blit |sampledTexture| into |textureView|.
     utils::ComboRenderPipelineDescriptor pipelineDesc;
     pipelineDesc.vertex.module = utils::CreateShaderModule(device, R"(
-        @stage(vertex)
+        @vertex
         fn main(@builtin(vertex_index) VertexIndex : u32) -> @builtin(position) vec4<f32> {
             var pos = array<vec2<f32>, 6>(
                                         vec2<f32>(-1.0, -1.0),
@@ -829,7 +817,7 @@ TEST_P(TextureViewRenderingTest, SRGBReinterpretationRenderAttachment) {
     pipelineDesc.cFragment.module = utils::CreateShaderModule(device, R"(
         @group(0) @binding(0) var texture : texture_2d<f32>;
 
-        @stage(fragment)
+        @fragment
         fn main(@builtin(position) coord: vec4<f32>) -> @location(0) vec4<f32> {
             return textureLoad(texture, vec2<i32>(coord.xy), 0);
         }
@@ -928,7 +916,7 @@ TEST_P(TextureViewRenderingTest, SRGBReinterpretionResolveAttachment) {
     // Create a render pipeline to blit |sampledTexture| into |multisampledTextureView|.
     utils::ComboRenderPipelineDescriptor pipelineDesc;
     pipelineDesc.vertex.module = utils::CreateShaderModule(device, R"(
-        @stage(vertex)
+        @vertex
         fn main(@builtin(vertex_index) VertexIndex : u32) -> @builtin(position) vec4<f32> {
             var pos = array<vec2<f32>, 6>(
                                         vec2<f32>(-1.0, -1.0),
@@ -943,7 +931,7 @@ TEST_P(TextureViewRenderingTest, SRGBReinterpretionResolveAttachment) {
     pipelineDesc.cFragment.module = utils::CreateShaderModule(device, R"(
         @group(0) @binding(0) var texture : texture_2d<f32>;
 
-        @stage(fragment)
+        @fragment
         fn main(@builtin(position) coord: vec4<f32>) -> @location(0) vec4<f32> {
             return textureLoad(texture, vec2<i32>(coord.xy), 0);
         }
@@ -1077,7 +1065,7 @@ TEST_P(TextureView1DTest, Sampling) {
 
     // Create a pipeline that will sample from the 1D texture and output to an attachment.
     wgpu::ShaderModule module = utils::CreateShaderModule(device, R"(
-        @stage(vertex)
+        @vertex
         fn vs(@builtin(vertex_index) VertexIndex : u32) -> @builtin(position) vec4<f32> {
             var pos = array<vec4<f32>, 3>(
                 vec4<f32>( 0.,  2., 0., 1.),
@@ -1088,7 +1076,7 @@ TEST_P(TextureView1DTest, Sampling) {
 
         @group(0) @binding(0) var tex : texture_1d<f32>;
         @group(0) @binding(1) var samp : sampler;
-        @stage(fragment)
+        @fragment
         fn fs(@builtin(position) pos: vec4<f32>) -> @location(0) vec4<f32> {
             return textureSample(tex, samp, pos.x / 4.0);
         }

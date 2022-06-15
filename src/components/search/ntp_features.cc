@@ -34,11 +34,6 @@ const base::Feature kCwsScrimRemoval{"CwsScrimRemoval",
 const base::Feature kDismissPromos{"DismissNtpPromos",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
-// If enabled, queries that are frequently repeated by the user (and are
-// expected to be issued again) are shown as most visited tiles.
-const base::Feature kNtpRepeatableQueries{"NtpRepeatableQueries",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
-
 // If enabled, the NTP "realbox" will be themed like the omnibox
 // (same background/text/selected/hover colors).
 const base::Feature kRealboxMatchOmniboxTheme{
@@ -127,6 +122,12 @@ const base::Feature kNtpPhotosModuleCustomizedOptInArtWork{
 // If enabled, Google Photos opt-in card will show a button to soft opt-out.
 const base::Feature kNtpPhotosModuleSoftOptOut(
     "NtpPhotosModuleSoftOptOut",
+    base::FEATURE_DISABLED_BY_DEFAULT);
+
+// If enabled, the single svg image show in Photos opt-in screen will be
+// replaced by constituent images to support i18n.
+const base::Feature kNtpPhotosModuleSplitSvgOptInArtWork(
+    "NtpPhotosModuleSplitSvgOptInArtWork",
     base::FEATURE_DISABLED_BY_DEFAULT);
 
 // If enabled, SafeBrowsing module will be shown to a target user.

@@ -22,7 +22,7 @@
 Pod::Spec.new do |s|
   s.name     = 'gRPC-C++'
   # TODO (mxyan): use version that match gRPC version when pod is stabilized
-  version = '1.46.0-dev'
+  version = '1.47.0-dev'
   s.version  = version
   s.summary  = 'gRPC C++ library'
   s.homepage = 'https://grpc.io'
@@ -202,6 +202,7 @@ Pod::Spec.new do |s|
     ss.dependency 'abseil/functional/bind_front', abseil_version
     ss.dependency 'abseil/hash/hash', abseil_version
     ss.dependency 'abseil/memory/memory', abseil_version
+    ss.dependency 'abseil/meta/type_traits', abseil_version
     ss.dependency 'abseil/random/random', abseil_version
     ss.dependency 'abseil/status/status', abseil_version
     ss.dependency 'abseil/status/statusor', abseil_version
@@ -211,10 +212,12 @@ Pod::Spec.new do |s|
     ss.dependency 'abseil/synchronization/synchronization', abseil_version
     ss.dependency 'abseil/time/time', abseil_version
     ss.dependency 'abseil/types/optional', abseil_version
+    ss.dependency 'abseil/types/span', abseil_version
     ss.dependency 'abseil/types/variant', abseil_version
     ss.dependency 'abseil/utility/utility', abseil_version
 
-    ss.source_files = 'src/core/ext/filters/channel_idle/idle_filter_state.h',
+    ss.source_files = 'src/core/ext/filters/channel_idle/channel_idle_filter.h',
+                      'src/core/ext/filters/channel_idle/idle_filter_state.h',
                       'src/core/ext/filters/client_channel/backend_metric.h',
                       'src/core/ext/filters/client_channel/backup_poller.h',
                       'src/core/ext/filters/client_channel/client_channel.h',
@@ -225,7 +228,6 @@ Pod::Spec.new do |s|
                       'src/core/ext/filters/client_channel/dynamic_filters.h',
                       'src/core/ext/filters/client_channel/global_subchannel_pool.h',
                       'src/core/ext/filters/client_channel/health/health_check_client.h',
-                      'src/core/ext/filters/client_channel/http_connect_handshaker.h',
                       'src/core/ext/filters/client_channel/http_proxy.h',
                       'src/core/ext/filters/client_channel/lb_policy.h',
                       'src/core/ext/filters/client_channel/lb_policy/address_filtering.h',
@@ -235,6 +237,7 @@ Pod::Spec.new do |s|
                       'src/core/ext/filters/client_channel/lb_policy/grpclb/grpclb_balancer_addresses.h',
                       'src/core/ext/filters/client_channel/lb_policy/grpclb/grpclb_client_stats.h',
                       'src/core/ext/filters/client_channel/lb_policy/grpclb/load_balancer_api.h',
+                      'src/core/ext/filters/client_channel/lb_policy/oob_backend_metric.h',
                       'src/core/ext/filters/client_channel/lb_policy/ring_hash/ring_hash.h',
                       'src/core/ext/filters/client_channel/lb_policy/subchannel_list.h',
                       'src/core/ext/filters/client_channel/lb_policy/xds/xds.h',
@@ -256,6 +259,7 @@ Pod::Spec.new do |s|
                       'src/core/ext/filters/client_channel/retry_throttle.h',
                       'src/core/ext/filters/client_channel/subchannel.h',
                       'src/core/ext/filters/client_channel/subchannel_interface.h',
+                      'src/core/ext/filters/client_channel/subchannel_interface_internal.h',
                       'src/core/ext/filters/client_channel/subchannel_pool_interface.h',
                       'src/core/ext/filters/client_channel/subchannel_stream_client.h',
                       'src/core/ext/filters/deadline/deadline_filter.h',
@@ -472,6 +476,7 @@ Pod::Spec.new do |s|
                       'src/core/ext/upb-generated/xds/core/v3/resource_locator.upb.h',
                       'src/core/ext/upb-generated/xds/core/v3/resource_name.upb.h',
                       'src/core/ext/upb-generated/xds/data/orca/v3/orca_load_report.upb.h',
+                      'src/core/ext/upb-generated/xds/service/orca/v3/orca.upb.h',
                       'src/core/ext/upb-generated/xds/type/matcher/v3/matcher.upb.h',
                       'src/core/ext/upb-generated/xds/type/matcher/v3/regex.upb.h',
                       'src/core/ext/upb-generated/xds/type/matcher/v3/string.upb.h',
@@ -650,9 +655,6 @@ Pod::Spec.new do |s|
                       'src/core/lib/channel/channelz_registry.h',
                       'src/core/lib/channel/connected_channel.h',
                       'src/core/lib/channel/context.h',
-                      'src/core/lib/channel/handshaker.h',
-                      'src/core/lib/channel/handshaker_factory.h',
-                      'src/core/lib/channel/handshaker_registry.h',
                       'src/core/lib/channel/promise_based_filter.h',
                       'src/core/lib/channel/status_util.h',
                       'src/core/lib/compression/compression_internal.h',
@@ -741,6 +743,7 @@ Pod::Spec.new do |s|
                       'src/core/lib/iomgr/internal_errqueue.h',
                       'src/core/lib/iomgr/iocp_windows.h',
                       'src/core/lib/iomgr/iomgr.h',
+                      'src/core/lib/iomgr/iomgr_fwd.h',
                       'src/core/lib/iomgr/iomgr_internal.h',
                       'src/core/lib/iomgr/load_file.h',
                       'src/core/lib/iomgr/lockfree_event.h',
@@ -875,6 +878,7 @@ Pod::Spec.new do |s|
                       'src/core/lib/slice/b64.h',
                       'src/core/lib/slice/percent_encoding.h',
                       'src/core/lib/slice/slice.h',
+                      'src/core/lib/slice/slice_buffer.h',
                       'src/core/lib/slice/slice_internal.h',
                       'src/core/lib/slice/slice_refcount.h',
                       'src/core/lib/slice/slice_refcount_base.h',
@@ -898,11 +902,16 @@ Pod::Spec.new do |s|
                       'src/core/lib/transport/byte_stream.h',
                       'src/core/lib/transport/connectivity_state.h',
                       'src/core/lib/transport/error_utils.h',
+                      'src/core/lib/transport/handshaker.h',
+                      'src/core/lib/transport/handshaker_factory.h',
+                      'src/core/lib/transport/handshaker_registry.h',
                       'src/core/lib/transport/http2_errors.h',
+                      'src/core/lib/transport/http_connect_handshaker.h',
                       'src/core/lib/transport/metadata_batch.h',
                       'src/core/lib/transport/parsed_metadata.h',
                       'src/core/lib/transport/pid_controller.h',
                       'src/core/lib/transport/status_conversion.h',
+                      'src/core/lib/transport/tcp_connect_handshaker.h',
                       'src/core/lib/transport/timeout_encoding.h',
                       'src/core/lib/transport/transport.h',
                       'src/core/lib/transport/transport_impl.h',
@@ -1042,7 +1051,8 @@ Pod::Spec.new do |s|
                       'third_party/upb/upb/upb_internal.h',
                       'third_party/xxhash/xxhash.h'
 
-    ss.private_header_files = 'src/core/ext/filters/channel_idle/idle_filter_state.h',
+    ss.private_header_files = 'src/core/ext/filters/channel_idle/channel_idle_filter.h',
+                              'src/core/ext/filters/channel_idle/idle_filter_state.h',
                               'src/core/ext/filters/client_channel/backend_metric.h',
                               'src/core/ext/filters/client_channel/backup_poller.h',
                               'src/core/ext/filters/client_channel/client_channel.h',
@@ -1053,7 +1063,6 @@ Pod::Spec.new do |s|
                               'src/core/ext/filters/client_channel/dynamic_filters.h',
                               'src/core/ext/filters/client_channel/global_subchannel_pool.h',
                               'src/core/ext/filters/client_channel/health/health_check_client.h',
-                              'src/core/ext/filters/client_channel/http_connect_handshaker.h',
                               'src/core/ext/filters/client_channel/http_proxy.h',
                               'src/core/ext/filters/client_channel/lb_policy.h',
                               'src/core/ext/filters/client_channel/lb_policy/address_filtering.h',
@@ -1063,6 +1072,7 @@ Pod::Spec.new do |s|
                               'src/core/ext/filters/client_channel/lb_policy/grpclb/grpclb_balancer_addresses.h',
                               'src/core/ext/filters/client_channel/lb_policy/grpclb/grpclb_client_stats.h',
                               'src/core/ext/filters/client_channel/lb_policy/grpclb/load_balancer_api.h',
+                              'src/core/ext/filters/client_channel/lb_policy/oob_backend_metric.h',
                               'src/core/ext/filters/client_channel/lb_policy/ring_hash/ring_hash.h',
                               'src/core/ext/filters/client_channel/lb_policy/subchannel_list.h',
                               'src/core/ext/filters/client_channel/lb_policy/xds/xds.h',
@@ -1084,6 +1094,7 @@ Pod::Spec.new do |s|
                               'src/core/ext/filters/client_channel/retry_throttle.h',
                               'src/core/ext/filters/client_channel/subchannel.h',
                               'src/core/ext/filters/client_channel/subchannel_interface.h',
+                              'src/core/ext/filters/client_channel/subchannel_interface_internal.h',
                               'src/core/ext/filters/client_channel/subchannel_pool_interface.h',
                               'src/core/ext/filters/client_channel/subchannel_stream_client.h',
                               'src/core/ext/filters/deadline/deadline_filter.h',
@@ -1282,6 +1293,7 @@ Pod::Spec.new do |s|
                               'src/core/ext/upb-generated/xds/core/v3/resource_locator.upb.h',
                               'src/core/ext/upb-generated/xds/core/v3/resource_name.upb.h',
                               'src/core/ext/upb-generated/xds/data/orca/v3/orca_load_report.upb.h',
+                              'src/core/ext/upb-generated/xds/service/orca/v3/orca.upb.h',
                               'src/core/ext/upb-generated/xds/type/matcher/v3/matcher.upb.h',
                               'src/core/ext/upb-generated/xds/type/matcher/v3/regex.upb.h',
                               'src/core/ext/upb-generated/xds/type/matcher/v3/string.upb.h',
@@ -1460,9 +1472,6 @@ Pod::Spec.new do |s|
                               'src/core/lib/channel/channelz_registry.h',
                               'src/core/lib/channel/connected_channel.h',
                               'src/core/lib/channel/context.h',
-                              'src/core/lib/channel/handshaker.h',
-                              'src/core/lib/channel/handshaker_factory.h',
-                              'src/core/lib/channel/handshaker_registry.h',
                               'src/core/lib/channel/promise_based_filter.h',
                               'src/core/lib/channel/status_util.h',
                               'src/core/lib/compression/compression_internal.h',
@@ -1551,6 +1560,7 @@ Pod::Spec.new do |s|
                               'src/core/lib/iomgr/internal_errqueue.h',
                               'src/core/lib/iomgr/iocp_windows.h',
                               'src/core/lib/iomgr/iomgr.h',
+                              'src/core/lib/iomgr/iomgr_fwd.h',
                               'src/core/lib/iomgr/iomgr_internal.h',
                               'src/core/lib/iomgr/load_file.h',
                               'src/core/lib/iomgr/lockfree_event.h',
@@ -1685,6 +1695,7 @@ Pod::Spec.new do |s|
                               'src/core/lib/slice/b64.h',
                               'src/core/lib/slice/percent_encoding.h',
                               'src/core/lib/slice/slice.h',
+                              'src/core/lib/slice/slice_buffer.h',
                               'src/core/lib/slice/slice_internal.h',
                               'src/core/lib/slice/slice_refcount.h',
                               'src/core/lib/slice/slice_refcount_base.h',
@@ -1708,11 +1719,16 @@ Pod::Spec.new do |s|
                               'src/core/lib/transport/byte_stream.h',
                               'src/core/lib/transport/connectivity_state.h',
                               'src/core/lib/transport/error_utils.h',
+                              'src/core/lib/transport/handshaker.h',
+                              'src/core/lib/transport/handshaker_factory.h',
+                              'src/core/lib/transport/handshaker_registry.h',
                               'src/core/lib/transport/http2_errors.h',
+                              'src/core/lib/transport/http_connect_handshaker.h',
                               'src/core/lib/transport/metadata_batch.h',
                               'src/core/lib/transport/parsed_metadata.h',
                               'src/core/lib/transport/pid_controller.h',
                               'src/core/lib/transport/status_conversion.h',
+                              'src/core/lib/transport/tcp_connect_handshaker.h',
                               'src/core/lib/transport/timeout_encoding.h',
                               'src/core/lib/transport/transport.h',
                               'src/core/lib/transport/transport_impl.h',
@@ -1832,11 +1848,9 @@ Pod::Spec.new do |s|
   end
 
   # patch include of openssl to openssl_grpc
-  # patch xxhash.h to silent the -Wdocumentation error
   s.prepare_command = <<-END_OF_COMMAND
     set -e
     find src/core -type f \\( -path '*.h' -or -path '*.cc' \\) -print0 | xargs -0 -L1 sed -E -i'.grpc_back' 's;#include <openssl/(.*)>;#if COCOAPODS==1\\\n  #include <openssl_grpc/\\1>\\\n#else\\\n  #include <openssl/\\1>\\\n#endif;g'
-    find third_party/xxhash  -type f -name xxhash.h -print0 | xargs -0 -L1 sed -E -i'.grpc_back' 's;@param([^,]*),;@param\\1 ,;g'
-    find src/core/ third_party/xxhash/ -type f -name '*.grpc_back' -print0 | xargs -0 rm
+    find src/core/ -type f -name '*.grpc_back' -print0 | xargs -0 rm
   END_OF_COMMAND
 end

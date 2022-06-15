@@ -40,7 +40,7 @@ struct str_encoder_t
   str_encoder_t (str_buff_t &buff_)
     : buff (buff_), error (false) {}
 
-  void reset () { buff.resize (0); }
+  void reset () { buff.reset (); }
 
   void encode_byte (unsigned char b)
   {
@@ -110,17 +110,15 @@ struct str_encoder_t
   void copy_str (const hb_ubytes_t &str)
   {
     unsigned int  offset = buff.length;
-    if (unlikely (!buff.resize (offset + str.length)))
+    /* Manually resize buffer since faster. */
+    if ((signed) (buff.length + str.length) <= buff.allocated)
+      buff.length += str.length;
+    else if (unlikely (!buff.resize (offset + str.length)))
     {
       set_error ();
       return;
     }
-    if (unlikely (buff.length < offset + str.length))
-    {
-      set_error ();
-      return;
-    }
-    memcpy (&buff[offset], &str[0], str.length);
+    memcpy (buff.arrayZ + offset, &str[0], str.length);
   }
 
   bool is_error () const { return error; }
@@ -317,9 +315,9 @@ struct parsed_cs_op_t : op_str_t
   unsigned int  subr_num;
 
   protected:
-  bool	  drop_flag : 1;
-  bool	  keep_flag : 1;
-  bool	  skip_flag : 1;
+  bool	  drop_flag;
+  bool	  keep_flag;
+  bool	  skip_flag;
 };
 
 struct parsed_cs_str_t : parsed_values_t<parsed_cs_op_t>
@@ -468,6 +466,7 @@ struct subr_remap_t : hb_inc_bimap_t
      * no optimization based on usage counts. fonttools doesn't appear doing that either.
      */
 
+    resize (closure->get_population ());
     hb_codepoint_t old_num = HB_SET_VALUE_INVALID;
     while (hb_set_next (closure, &old_num))
       add (old_num);
@@ -853,9 +852,10 @@ struct subr_subsetter_t
 
   bool encode_str (const parsed_cs_str_t &str, const unsigned int fd, str_buff_t &buff) const
   {
-    buff.init ();
+    unsigned count = str.get_count ();
     str_encoder_t  encoder (buff);
     encoder.reset ();
+    buff.alloc (count * 3);
     /* if a prefix (CFF1 width or CFF2 vsindex) has been removed along with hints,
      * re-insert it at the beginning of charstreing */
     if (str.has_prefix () && str.is_hint_dropped ())
@@ -864,7 +864,7 @@ struct subr_subsetter_t
       if (str.prefix_op () != OpCode_Invalid)
 	encoder.encode_op (str.prefix_op ());
     }
-    for (unsigned int i = 0; i < str.get_count(); i++)
+    for (unsigned int i = 0; i < count; i++)
     {
       const parsed_cs_op_t  &opstr = str.values[i];
       if (!opstr.for_drop () && !opstr.for_skip ())

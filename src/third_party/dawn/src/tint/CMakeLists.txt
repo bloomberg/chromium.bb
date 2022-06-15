@@ -62,18 +62,17 @@ set(TINT_LIB_SRCS
   ../../include/tint/tint.h
   ast/access.cc
   ast/access.h
-  ast/attribute.cc
-  ast/attribute.h
   ast/alias.cc
   ast/alias.h
-  ast/index_accessor_expression.cc
-  ast/index_accessor_expression.h
   ast/array.cc
   ast/array.h
   ast/assignment_statement.cc
   ast/assignment_statement.h
+  ast/ast_type.cc  # TODO(bclayton) - rename to type.cc
   ast/atomic.cc
   ast/atomic.h
+  ast/attribute.cc
+  ast/attribute.h
   ast/binary_expression.cc
   ast/binary_expression.h
   ast/binding_attribute.cc
@@ -104,18 +103,22 @@ set(TINT_LIB_SRCS
   ast/continue_statement.h
   ast/depth_multisampled_texture.cc
   ast/depth_multisampled_texture.h
-  ast/disable_validation_attribute.cc
-  ast/disable_validation_attribute.h
   ast/depth_texture.cc
   ast/depth_texture.h
+  ast/disable_validation_attribute.cc
+  ast/disable_validation_attribute.h
   ast/discard_statement.cc
   ast/discard_statement.h
   ast/enable.cc
   ast/enable.h
   ast/expression.cc
   ast/expression.h
+  ast/extension.cc
+  ast/extension.h
   ast/external_texture.cc
   ast/external_texture.h
+  ast/f16.cc
+  ast/f16.h
   ast/f32.cc
   ast/f32.h
   ast/fallthrough_statement.cc
@@ -138,6 +141,8 @@ set(TINT_LIB_SRCS
   ast/if_statement.h
   ast/increment_decrement_statement.cc
   ast/increment_decrement_statement.h
+  ast/index_accessor_expression.cc
+  ast/index_accessor_expression.h
   ast/int_literal_expression.cc
   ast/int_literal_expression.h
   ast/internal_attribute.cc
@@ -199,14 +204,11 @@ set(TINT_LIB_SRCS
   ast/texture.cc
   ast/texture.h
   ast/traverse_expressions.h
-  ast/type_name.cc
-  ast/type_name.h
-  ast/ast_type.cc  # TODO(bclayton) - rename to type.cc
-  ast/type.h
   ast/type_decl.cc
   ast/type_decl.h
   ast/type_name.cc
   ast/type_name.h
+  ast/type.h
   ast/u32.cc
   ast/u32.h
   ast/unary_op_expression.cc
@@ -229,7 +231,6 @@ set(TINT_LIB_SRCS
   clone_context.h
   demangler.cc
   demangler.h
-  number.h
   inspector/entry_point.cc
   inspector/entry_point.h
   inspector/inspector.cc
@@ -238,6 +239,8 @@ set(TINT_LIB_SRCS
   inspector/resource_binding.h
   inspector/scalar.cc
   inspector/scalar.h
+  number.cc
+  number.h
   program_builder.cc
   program_builder.h
   program_id.cc
@@ -246,13 +249,17 @@ set(TINT_LIB_SRCS
   program.h
   reader/reader.cc
   reader/reader.h
+  resolver/const_eval.cc
+  resolver/const_eval.h
+  resolver/ctor_conv_intrinsic.cc
+  resolver/ctor_conv_intrinsic.h
   resolver/dependency_graph.cc
   resolver/dependency_graph.h
   resolver/intrinsic_table.cc
   resolver/intrinsic_table.h
   resolver/intrinsic_table.inl
-  resolver/resolver.cc
   resolver/resolver_constants.cc
+  resolver/resolver.cc
   resolver/resolver.h
   resolver/sem_helper.cc
   resolver/sem_helper.h
@@ -276,6 +283,8 @@ set(TINT_LIB_SRCS
   sem/binding_point.h
   sem/block_statement.cc
   sem/block_statement.h
+  sem/bool.cc
+  sem/bool.h
   sem/builtin_type.cc
   sem/builtin_type.h
   sem/builtin.cc
@@ -288,24 +297,74 @@ set(TINT_LIB_SRCS
   sem/constant.h
   sem/depth_multisampled_texture.cc
   sem/depth_multisampled_texture.h
+  sem/depth_texture.cc
+  sem/depth_texture.h
   sem/expression.cc
   sem/expression.h
+  sem/external_texture.cc
+  sem/external_texture.h
+  sem/f16.cc
+  sem/f16.h
+  sem/f32.cc
+  sem/f32.h
+  sem/for_loop_statement.cc
+  sem/for_loop_statement.h
   sem/function.cc
+  sem/i32.cc
+  sem/i32.h
+  sem/if_statement.cc
+  sem/if_statement.h
   sem/info.cc
   sem/info.h
+  sem/loop_statement.cc
+  sem/loop_statement.h
+  sem/materialize.cc
+  sem/materialize.h
+  sem/matrix.cc
+  sem/matrix.h
   sem/member_accessor_expression.cc
+  sem/module.cc
+  sem/module.h
+  sem/multisampled_texture.cc
+  sem/multisampled_texture.h
+  sem/node.cc
+  sem/node.h
   sem/parameter_usage.cc
   sem/parameter_usage.h
   sem/pipeline_stage_set.h
-  sem/node.cc
-  sem/node.h
-  sem/module.cc
-  sem/module.h
+  sem/pointer.cc
+  sem/pointer.h
+  sem/reference.cc
+  sem/reference.h
+  sem/sampled_texture.cc
+  sem/sampled_texture.h
   sem/sampler_texture_pair.h
+  sem/sampler.cc
+  sem/sampler.h
   sem/statement.cc
+  sem/storage_texture.cc
+  sem/storage_texture.h
   sem/struct.cc
+  sem/switch_statement.cc
+  sem/switch_statement.h
+  sem/texture.cc
+  sem/texture.h
+  sem/type_constructor.cc
+  sem/type_constructor.h
+  sem/type_conversion.cc
+  sem/type_conversion.h
+  sem/type_manager.cc
+  sem/type_manager.h
   sem/type_mappings.h
+  sem/type.cc
+  sem/type.h
+  sem/u32.cc
+  sem/u32.h
   sem/variable.cc
+  sem/vector.cc
+  sem/vector.h
+  sem/void.cc
+  sem/void.h
   symbol_table.cc
   symbol_table.h
   symbol.cc
@@ -325,10 +384,10 @@ set(TINT_LIB_SRCS
   transform/builtin_polyfill.h
   transform/calculate_array_length.cc
   transform/calculate_array_length.h
-  transform/combine_samplers.cc
-  transform/combine_samplers.h
   transform/canonicalize_entry_point_io.cc
   transform/canonicalize_entry_point_io.h
+  transform/combine_samplers.cc
+  transform/combine_samplers.h
   transform/decompose_memory_access.cc
   transform/decompose_memory_access.h
   transform/decompose_strided_array.cc
@@ -337,18 +396,16 @@ set(TINT_LIB_SRCS
   transform/decompose_strided_matrix.h
   transform/disable_uniformity_analysis.cc
   transform/disable_uniformity_analysis.h
-  transform/first_index_offset.cc
-  transform/first_index_offset.h
-  transform/fold_constants.cc
-  transform/fold_constants.h
-  transform/fold_trivial_single_use_lets.cc
-  transform/fold_trivial_single_use_lets.h
-  transform/localize_struct_array_assignment.cc
-  transform/localize_struct_array_assignment.h
-  transform/for_loop_to_loop.cc
-  transform/for_loop_to_loop.h
   transform/expand_compound_assignment.cc
   transform/expand_compound_assignment.h
+  transform/first_index_offset.cc
+  transform/first_index_offset.h
+  transform/fold_trivial_single_use_lets.cc
+  transform/fold_trivial_single_use_lets.h
+  transform/for_loop_to_loop.cc
+  transform/for_loop_to_loop.h
+  transform/localize_struct_array_assignment.cc
+  transform/localize_struct_array_assignment.h
   transform/loop_to_for_loop.cc
   transform/loop_to_for_loop.h
   transform/manager.cc
@@ -363,10 +420,10 @@ set(TINT_LIB_SRCS
   transform/promote_initializers_to_const_var.h
   transform/promote_side_effects_to_decl.cc
   transform/promote_side_effects_to_decl.h
-  transform/remove_phonies.cc
-  transform/remove_phonies.h
   transform/remove_continue_in_switch.cc
   transform/remove_continue_in_switch.h
+  transform/remove_phonies.cc
+  transform/remove_phonies.h
   transform/remove_unreachable_statements.cc
   transform/remove_unreachable_statements.h
   transform/renamer.cc
@@ -383,70 +440,24 @@ set(TINT_LIB_SRCS
   transform/unshadow.h
   transform/unwind_discard_functions.cc
   transform/unwind_discard_functions.h
-  transform/vectorize_scalar_matrix_constructors.cc
-  transform/vectorize_scalar_matrix_constructors.h
+  transform/utils/get_insertion_point.cc
+  transform/utils/get_insertion_point.h
+  transform/utils/hoist_to_decl_before.cc
+  transform/utils/hoist_to_decl_before.h
   transform/var_for_dynamic_index.cc
   transform/var_for_dynamic_index.h
+  transform/vectorize_scalar_matrix_constructors.cc
+  transform/vectorize_scalar_matrix_constructors.h
   transform/vertex_pulling.cc
   transform/vertex_pulling.h
   transform/wrap_arrays_in_structs.cc
   transform/wrap_arrays_in_structs.h
   transform/zero_init_workgroup_memory.cc
   transform/zero_init_workgroup_memory.h
-  transform/utils/get_insertion_point.cc
-  transform/utils/get_insertion_point.h
-  transform/utils/hoist_to_decl_before.cc
-  transform/utils/hoist_to_decl_before.h
-  sem/bool.cc
-  sem/bool.h
-  sem/depth_texture.cc
-  sem/depth_texture.h
-  sem/external_texture.cc
-  sem/external_texture.h
-  sem/f32.cc
-  sem/f32.h
-  sem/for_loop_statement.cc
-  sem/for_loop_statement.h
-  sem/i32.cc
-  sem/i32.h
-  sem/if_statement.cc
-  sem/if_statement.h
-  sem/loop_statement.cc
-  sem/loop_statement.h
-  sem/matrix.cc
-  sem/matrix.h
-  sem/multisampled_texture.cc
-  sem/multisampled_texture.h
-  sem/pointer.cc
-  sem/pointer.h
-  sem/reference.cc
-  sem/reference.h
-  sem/sampled_texture.cc
-  sem/sampled_texture.h
-  sem/sampler.cc
-  sem/sampler.h
-  sem/storage_texture.cc
-  sem/storage_texture.h
-  sem/switch_statement.cc
-  sem/switch_statement.h
-  sem/texture.cc
-  sem/texture.h
-  sem/type_constructor.cc
-  sem/type_constructor.h
-  sem/type_conversion.cc
-  sem/type_conversion.h
-  sem/type.cc
-  sem/type.h
-  sem/type_manager.cc
-  sem/type_manager.h
-  sem/u32.cc
-  sem/u32.h
-  sem/vector.cc
-  sem/vector.h
-  sem/void.cc
-  sem/void.h
   utils/bitcast.h
   utils/block_allocator.h
+  utils/compiler_macros.h
+  utils/concat.h
   utils/crc32.h
   utils/enum_set.h
   utils/hash.h
@@ -685,7 +696,9 @@ if(TINT_BUILD_TESTS)
     ast/depth_texture_test.cc
     ast/discard_statement_test.cc
     ast/enable_test.cc
+    ast/extension_test.cc
     ast/external_texture_test.cc
+    ast/f16_test.cc
     ast/f32_test.cc
     ast/fallthrough_statement_test.cc
     ast/float_literal_expression_test.cc
@@ -738,21 +751,23 @@ if(TINT_BUILD_TESTS)
     diagnostic/diagnostic_test.cc
     diagnostic/formatter_test.cc
     diagnostic/printer_test.cc
+    number_test.cc
+    program_builder_test.cc
     program_test.cc
     resolver/array_accessor_test.cc
     resolver/assignment_validation_test.cc
     resolver/atomics_test.cc
     resolver/atomics_validation_test.cc
+    resolver/attribute_validation_test.cc
     resolver/bitcast_validation_test.cc
-    resolver/builtins_validation_test.cc
     resolver/builtin_test.cc
     resolver/builtin_validation_test.cc
+    resolver/builtins_validation_test.cc
     resolver/call_test.cc
     resolver/call_validation_test.cc
     resolver/compound_assignment_validation_test.cc
     resolver/compound_statement_test.cc
     resolver/control_block_validation_test.cc
-    resolver/attribute_validation_test.cc
     resolver/dependency_graph_test.cc
     resolver/entry_point_validation_test.cc
     resolver/function_validation_test.cc
@@ -762,6 +777,7 @@ if(TINT_BUILD_TESTS)
     resolver/intrinsic_table_test.cc
     resolver/is_host_shareable_test.cc
     resolver/is_storeable_test.cc
+    resolver/materialize_test.cc
     resolver/pipeline_overridable_constant_test.cc
     resolver/ptr_ref_test.cc
     resolver/ptr_ref_validation_test.cc
@@ -787,9 +803,12 @@ if(TINT_BUILD_TESTS)
     sem/atomic.cc
     sem/bool_test.cc
     sem/builtin_test.cc
+    sem/constant_test.cc
     sem/depth_multisampled_texture_test.cc
     sem/depth_texture_test.cc
+    sem/expression_test.cc
     sem/external_texture_test.cc
+    sem/f16_test.cc
     sem/f32_test.cc
     sem/i32_test.cc
     sem/matrix_test.cc
@@ -803,6 +822,7 @@ if(TINT_BUILD_TESTS)
     sem/storage_texture_test.cc
     sem/texture_test.cc
     sem/type_manager_test.cc
+    sem/type_test.cc
     sem/u32_test.cc
     sem/vector_test.cc
     source_test.cc
@@ -822,6 +842,7 @@ if(TINT_BUILD_TESTS)
     utils/io/tmpfile_test.cc
     utils/map_test.cc
     utils/math_test.cc
+    utils/result_test.cc
     utils/reverse_test.cc
     utils/scoped_assignment_test.cc
     utils/string_test.cc
@@ -1058,7 +1079,6 @@ if(TINT_BUILD_TESTS)
       transform/disable_uniformity_analysis_test.cc
       transform/expand_compound_assignment_test.cc
       transform/first_index_offset_test.cc
-      transform/fold_constants_test.cc
       transform/fold_trivial_single_use_lets_test.cc
       transform/for_loop_to_loop_test.cc
       transform/expand_compound_assignment.cc

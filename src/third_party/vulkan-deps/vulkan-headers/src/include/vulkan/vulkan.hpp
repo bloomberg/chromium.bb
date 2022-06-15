@@ -38,6 +38,7 @@
 #include <system_error>
 #include <tuple>
 #include <type_traits>
+#include <utility>
 #include <vulkan/vulkan.h>
 #if 17 <= VULKAN_HPP_CPP_VERSION
 #  include <string_view>
@@ -119,7 +120,7 @@ extern "C" __declspec( dllimport ) FARPROC __stdcall GetProcAddress( HINSTANCE h
 #  include <span>
 #endif
 
-static_assert( VK_HEADER_VERSION == 213, "Wrong VK_HEADER_VERSION!" );
+static_assert( VK_HEADER_VERSION == 217, "Wrong VK_HEADER_VERSION!" );
 
 // 32-bit vulkan is not typesafe for non-dispatchable handles, so don't allow copy constructors on this platform by default.
 // To enable this feature on 32-bit platforms please define VULKAN_HPP_TYPESAFE_CONVERSION
@@ -4853,6 +4854,15 @@ namespace VULKAN_HPP_NAMESPACE
     }
 #  endif /*VK_ENABLE_BETA_EXTENSIONS*/
 
+#  if defined( VK_USE_PLATFORM_METAL_EXT )
+    //=== VK_EXT_metal_objects ===
+
+    void vkExportMetalObjectsEXT( VkDevice device, VkExportMetalObjectsInfoEXT * pMetalObjectsInfo ) const VULKAN_HPP_NOEXCEPT
+    {
+      return ::vkExportMetalObjectsEXT( device, pMetalObjectsInfo );
+    }
+#  endif /*VK_USE_PLATFORM_METAL_EXT*/
+
     //=== VK_KHR_synchronization2 ===
 
     void vkCmdSetEvent2KHR( VkCommandBuffer commandBuffer, VkEvent event, const VkDependencyInfo * pDependencyInfo ) const VULKAN_HPP_NOEXCEPT
@@ -9007,24 +9017,6 @@ namespace VULKAN_HPP_NAMESPACE
     };
   };
 
-  //=== VK_NV_fragment_shader_barycentric ===
-  template <>
-  struct StructExtends<PhysicalDeviceFragmentShaderBarycentricFeaturesNV, PhysicalDeviceFeatures2>
-  {
-    enum
-    {
-      value = true
-    };
-  };
-  template <>
-  struct StructExtends<PhysicalDeviceFragmentShaderBarycentricFeaturesNV, DeviceCreateInfo>
-  {
-    enum
-    {
-      value = true
-    };
-  };
-
   //=== VK_NV_shader_image_footprint ===
   template <>
   struct StructExtends<PhysicalDeviceShaderImageFootprintFeaturesNV, PhysicalDeviceFeatures2>
@@ -9945,6 +9937,154 @@ namespace VULKAN_HPP_NAMESPACE
     };
   };
 
+#if defined( VK_USE_PLATFORM_METAL_EXT )
+  //=== VK_EXT_metal_objects ===
+  template <>
+  struct StructExtends<ExportMetalObjectCreateInfoEXT, InstanceCreateInfo>
+  {
+    enum
+    {
+      value = true
+    };
+  };
+  template <>
+  struct StructExtends<ExportMetalObjectCreateInfoEXT, MemoryAllocateInfo>
+  {
+    enum
+    {
+      value = true
+    };
+  };
+  template <>
+  struct StructExtends<ExportMetalObjectCreateInfoEXT, ImageCreateInfo>
+  {
+    enum
+    {
+      value = true
+    };
+  };
+  template <>
+  struct StructExtends<ExportMetalObjectCreateInfoEXT, ImageViewCreateInfo>
+  {
+    enum
+    {
+      value = true
+    };
+  };
+  template <>
+  struct StructExtends<ExportMetalObjectCreateInfoEXT, BufferViewCreateInfo>
+  {
+    enum
+    {
+      value = true
+    };
+  };
+  template <>
+  struct StructExtends<ExportMetalObjectCreateInfoEXT, SemaphoreCreateInfo>
+  {
+    enum
+    {
+      value = true
+    };
+  };
+  template <>
+  struct StructExtends<ExportMetalObjectCreateInfoEXT, EventCreateInfo>
+  {
+    enum
+    {
+      value = true
+    };
+  };
+  template <>
+  struct StructExtends<ExportMetalDeviceInfoEXT, ExportMetalObjectsInfoEXT>
+  {
+    enum
+    {
+      value = true
+    };
+  };
+  template <>
+  struct StructExtends<ExportMetalCommandQueueInfoEXT, ExportMetalObjectsInfoEXT>
+  {
+    enum
+    {
+      value = true
+    };
+  };
+  template <>
+  struct StructExtends<ExportMetalBufferInfoEXT, ExportMetalObjectsInfoEXT>
+  {
+    enum
+    {
+      value = true
+    };
+  };
+  template <>
+  struct StructExtends<ImportMetalBufferInfoEXT, MemoryAllocateInfo>
+  {
+    enum
+    {
+      value = true
+    };
+  };
+  template <>
+  struct StructExtends<ExportMetalTextureInfoEXT, ExportMetalObjectsInfoEXT>
+  {
+    enum
+    {
+      value = true
+    };
+  };
+  template <>
+  struct StructExtends<ImportMetalTextureInfoEXT, ImageCreateInfo>
+  {
+    enum
+    {
+      value = true
+    };
+  };
+  template <>
+  struct StructExtends<ExportMetalIOSurfaceInfoEXT, ExportMetalObjectsInfoEXT>
+  {
+    enum
+    {
+      value = true
+    };
+  };
+  template <>
+  struct StructExtends<ImportMetalIOSurfaceInfoEXT, ImageCreateInfo>
+  {
+    enum
+    {
+      value = true
+    };
+  };
+  template <>
+  struct StructExtends<ExportMetalSharedEventInfoEXT, ExportMetalObjectsInfoEXT>
+  {
+    enum
+    {
+      value = true
+    };
+  };
+  template <>
+  struct StructExtends<ImportMetalSharedEventInfoEXT, SemaphoreCreateInfo>
+  {
+    enum
+    {
+      value = true
+    };
+  };
+  template <>
+  struct StructExtends<ImportMetalSharedEventInfoEXT, EventCreateInfo>
+  {
+    enum
+    {
+      value = true
+    };
+  };
+#endif /*VK_USE_PLATFORM_METAL_EXT*/
+
   //=== VK_KHR_synchronization2 ===
   template <>
   struct StructExtends<QueueFamilyCheckpointProperties2NV, QueueFamilyProperties2>
@@ -9982,6 +10122,50 @@ namespace VULKAN_HPP_NAMESPACE
   };
   template <>
   struct StructExtends<GraphicsPipelineLibraryCreateInfoEXT, GraphicsPipelineCreateInfo>
+  {
+    enum
+    {
+      value = true
+    };
+  };
+
+  //=== VK_AMD_shader_early_and_late_fragment_tests ===
+  template <>
+  struct StructExtends<PhysicalDeviceShaderEarlyAndLateFragmentTestsFeaturesAMD, PhysicalDeviceFeatures2>
+  {
+    enum
+    {
+      value = true
+    };
+  };
+  template <>
+  struct StructExtends<PhysicalDeviceShaderEarlyAndLateFragmentTestsFeaturesAMD, DeviceCreateInfo>
+  {
+    enum
+    {
+      value = true
+    };
+  };
+
+  //=== VK_KHR_fragment_shader_barycentric ===
+  template <>
+  struct StructExtends<PhysicalDeviceFragmentShaderBarycentricFeaturesKHR, PhysicalDeviceFeatures2>
+  {
+    enum
+    {
+      value = true
+    };
+  };
+  template <>
+  struct StructExtends<PhysicalDeviceFragmentShaderBarycentricFeaturesKHR, DeviceCreateInfo>
+  {
+    enum
+    {
+      value = true
+    };
+  };
+  template <>
+  struct StructExtends<PhysicalDeviceFragmentShaderBarycentricPropertiesKHR, PhysicalDeviceProperties2>
   {
     enum
     {
@@ -10773,6 +10957,24 @@ namespace VULKAN_HPP_NAMESPACE
     };
   };
 
+  //=== VK_EXT_non_seamless_cube_map ===
+  template <>
+  struct StructExtends<PhysicalDeviceNonSeamlessCubeMapFeaturesEXT, PhysicalDeviceFeatures2>
+  {
+    enum
+    {
+      value = true
+    };
+  };
+  template <>
+  struct StructExtends<PhysicalDeviceNonSeamlessCubeMapFeaturesEXT, DeviceCreateInfo>
+  {
+    enum
+    {
+      value = true
+    };
+  };
+
   //=== VK_QCOM_fragment_density_map_offset ===
   template <>
   struct StructExtends<PhysicalDeviceFragmentDensityMapOffsetFeaturesQCOM, PhysicalDeviceFeatures2>
@@ -10877,7 +11079,7 @@ namespace VULKAN_HPP_NAMESPACE
     };
   };
   template <>
-  struct StructExtends<RenderPassCreationFeedbackInfoEXT, RenderPassCreateInfo2>
+  struct StructExtends<RenderPassCreationFeedbackCreateInfoEXT, RenderPassCreateInfo2>
   {
     enum
     {
@@ -10885,23 +11087,7 @@ namespace VULKAN_HPP_NAMESPACE
     };
   };
   template <>
-  struct StructExtends<RenderPassCreationFeedbackInfoEXT, RenderPassCreationControlEXT>
-  {
-    enum
-    {
-      value = true
-    };
-  };
-  template <>
-  struct StructExtends<RenderPassSubpassFeedbackInfoEXT, SubpassDescription2>
-  {
-    enum
-    {
-      value = true
-    };
-  };
-  template <>
-  struct StructExtends<RenderPassSubpassFeedbackInfoEXT, RenderPassCreationControlEXT>
+  struct StructExtends<RenderPassSubpassFeedbackCreateInfoEXT, SubpassDescription2>
   {
     enum
     {
@@ -11812,6 +11998,13 @@ namespace VULKAN_HPP_NAMESPACE
 #else
     PFN_dummy vkCmdEncodeVideoKHR_placeholder                               = 0;
 #endif /*VK_ENABLE_BETA_EXTENSIONS*/
+
+#if defined( VK_USE_PLATFORM_METAL_EXT )
+    //=== VK_EXT_metal_objects ===
+    PFN_vkExportMetalObjectsEXT vkExportMetalObjectsEXT = 0;
+#else
+    PFN_dummy vkExportMetalObjectsEXT_placeholder                           = 0;
+#endif /*VK_USE_PLATFORM_METAL_EXT*/
 
     //=== VK_KHR_synchronization2 ===
     PFN_vkCmdSetEvent2KHR           vkCmdSetEvent2KHR           = 0;
@@ -12964,6 +13157,11 @@ namespace VULKAN_HPP_NAMESPACE
       vkCmdEncodeVideoKHR = PFN_vkCmdEncodeVideoKHR( vkGetInstanceProcAddr( instance, "vkCmdEncodeVideoKHR" ) );
 #endif /*VK_ENABLE_BETA_EXTENSIONS*/
 
+#if defined( VK_USE_PLATFORM_METAL_EXT )
+      //=== VK_EXT_metal_objects ===
+      vkExportMetalObjectsEXT = PFN_vkExportMetalObjectsEXT( vkGetInstanceProcAddr( instance, "vkExportMetalObjectsEXT" ) );
+#endif /*VK_USE_PLATFORM_METAL_EXT*/
+
       //=== VK_KHR_synchronization2 ===
       vkCmdSetEvent2KHR = PFN_vkCmdSetEvent2KHR( vkGetInstanceProcAddr( instance, "vkCmdSetEvent2KHR" ) );
       if ( !vkCmdSetEvent2 )
@@ -13816,6 +14014,11 @@ namespace VULKAN_HPP_NAMESPACE
       //=== VK_KHR_video_encode_queue ===
       vkCmdEncodeVideoKHR = PFN_vkCmdEncodeVideoKHR( vkGetDeviceProcAddr( device, "vkCmdEncodeVideoKHR" ) );
 #endif /*VK_ENABLE_BETA_EXTENSIONS*/
+
+#if defined( VK_USE_PLATFORM_METAL_EXT )
+      //=== VK_EXT_metal_objects ===
+      vkExportMetalObjectsEXT = PFN_vkExportMetalObjectsEXT( vkGetDeviceProcAddr( device, "vkExportMetalObjectsEXT" ) );
+#endif /*VK_USE_PLATFORM_METAL_EXT*/
 
       //=== VK_KHR_synchronization2 ===
       vkCmdSetEvent2KHR = PFN_vkCmdSetEvent2KHR( vkGetDeviceProcAddr( device, "vkCmdSetEvent2KHR" ) );

@@ -280,7 +280,6 @@ export function registerCommands(inspectorBackend) {
     CrossOriginWindowAlert: 'CrossOriginWindowAlert',
     CrossOriginWindowConfirm: 'CrossOriginWindowConfirm',
     CSSSelectorInternalMediaControlsOverlayCastButton: 'CSSSelectorInternalMediaControlsOverlayCastButton',
-    CustomCursorIntersectsViewport: 'CustomCursorIntersectsViewport',
     DeprecationExample: 'DeprecationExample',
     DocumentDomainSettingWithoutOriginAgentClusterHeader: 'DocumentDomainSettingWithoutOriginAgentClusterHeader',
     EventPath: 'EventPath',
@@ -291,15 +290,12 @@ export function registerCommands(inspectorBackend) {
     InsecurePrivateNetworkSubresourceRequest: 'InsecurePrivateNetworkSubresourceRequest',
     LegacyConstraintGoogIPv6: 'LegacyConstraintGoogIPv6',
     LocalCSSFileExtensionRejected: 'LocalCSSFileExtensionRejected',
-    MediaElementAudioSourceNode: 'MediaElementAudioSourceNode',
     MediaSourceAbortRemove: 'MediaSourceAbortRemove',
     MediaSourceDurationTruncatingBuffered: 'MediaSourceDurationTruncatingBuffered',
     NoSysexWebMIDIWithoutPermission: 'NoSysexWebMIDIWithoutPermission',
     NotificationInsecureOrigin: 'NotificationInsecureOrigin',
     NotificationPermissionRequestedIframe: 'NotificationPermissionRequestedIframe',
     ObsoleteWebRtcCipherSuite: 'ObsoleteWebRtcCipherSuite',
-    PaymentRequestBasicCard: 'PaymentRequestBasicCard',
-    PaymentRequestShowWithoutGesture: 'PaymentRequestShowWithoutGesture',
     PictureSourceSrc: 'PictureSourceSrc',
     PrefixedCancelAnimationFrame: 'PrefixedCancelAnimationFrame',
     PrefixedRequestAnimationFrame: 'PrefixedRequestAnimationFrame',
@@ -318,7 +314,6 @@ export function registerCommands(inspectorBackend) {
         'RTCPeerConnectionComplexPlanBSdpUsingDefaultSdpSemantics',
     RTCPeerConnectionSdpSemanticsPlanB: 'RTCPeerConnectionSdpSemanticsPlanB',
     RtcpMuxPolicyNegotiate: 'RtcpMuxPolicyNegotiate',
-    RTPDataChannel: 'RTPDataChannel',
     SharedArrayBufferConstructedWithoutIsolation: 'SharedArrayBufferConstructedWithoutIsolation',
     TextToSpeech_DisallowedByAutoplay: 'TextToSpeech_DisallowedByAutoplay',
     V8SharedArrayBufferConstructedInExtensionWithoutIsolation:
@@ -1063,8 +1058,6 @@ export function registerCommands(inspectorBackend) {
         {'name': 'key', 'type': 'string', 'optional': false}, {'name': 'value', 'type': 'string', 'optional': false}
       ],
       []);
-  inspectorBackend.registerCommand(
-      'DOMStorage.getStorageKeyForFrame', [{'name': 'frameId', 'type': 'string', 'optional': false}], ['storageKey']);
 
   // Database.
   inspectorBackend.registerEvent('Database.addDatabase', ['database']);
@@ -1206,6 +1199,9 @@ export function registerCommands(inspectorBackend) {
       []);
   inspectorBackend.registerCommand(
       'Emulation.setDisabledImageTypes', [{'name': 'imageTypes', 'type': 'object', 'optional': false}], []);
+  inspectorBackend.registerCommand(
+      'Emulation.setHardwareConcurrencyOverride',
+      [{'name': 'hardwareConcurrency', 'type': 'number', 'optional': false}], []);
   inspectorBackend.registerCommand(
       'Emulation.setUserAgentOverride',
       [
@@ -1738,9 +1734,10 @@ export function registerCommands(inspectorBackend) {
   inspectorBackend.registerEnum('Network.CrossOriginOpenerPolicyValue', {
     SameOrigin: 'SameOrigin',
     SameOriginAllowPopups: 'SameOriginAllowPopups',
+    RestrictProperties: 'RestrictProperties',
     UnsafeNone: 'UnsafeNone',
     SameOriginPlusCoep: 'SameOriginPlusCoep',
-    SameOriginAllowPopupsPlusCoep: 'SameOriginAllowPopupsPlusCoep'
+    RestrictPropertiesPlusCoep: 'RestrictPropertiesPlusCoep'
   });
   inspectorBackend.registerEnum(
       'Network.CrossOriginEmbedderPolicyValue',
@@ -2081,13 +2078,13 @@ export function registerCommands(inspectorBackend) {
     AmbientLightSensor: 'ambient-light-sensor',
     AttributionReporting: 'attribution-reporting',
     Autoplay: 'autoplay',
+    Bluetooth: 'bluetooth',
     BrowsingTopics: 'browsing-topics',
     Camera: 'camera',
     ChDpr: 'ch-dpr',
     ChDeviceMemory: 'ch-device-memory',
     ChDownlink: 'ch-downlink',
     ChEct: 'ch-ect',
-    ChPartitionedCookies: 'ch-partitioned-cookies',
     ChPrefersColorScheme: 'ch-prefers-color-scheme',
     ChRtt: 'ch-rtt',
     ChSaveData: 'ch-save-data',
@@ -2319,7 +2316,6 @@ export function registerCommands(inspectorBackend) {
     ContentMediaDevicesDispatcherHost: 'ContentMediaDevicesDispatcherHost',
     ContentWebBluetooth: 'ContentWebBluetooth',
     ContentWebUSB: 'ContentWebUSB',
-    ContentMediaSession: 'ContentMediaSession',
     ContentMediaSessionService: 'ContentMediaSessionService',
     ContentScreenReader: 'ContentScreenReader',
     EmbedderPopupBlockerTabHelper: 'EmbedderPopupBlockerTabHelper',
@@ -2381,7 +2377,7 @@ export function registerCommands(inspectorBackend) {
   inspectorBackend.registerEnum(
       'Page.FileChooserOpenedEventMode', {SelectSingle: 'selectSingle', SelectMultiple: 'selectMultiple'});
   inspectorBackend.registerEvent('Page.fileChooserOpened', ['frameId', 'backendNodeId', 'mode']);
-  inspectorBackend.registerEvent('Page.frameAttached', ['frameId', 'parentFrameId', 'stack']);
+  inspectorBackend.registerEvent('Page.frameAttached', ['frameId', 'parentFrameId', 'stack', 'adScriptId']);
   inspectorBackend.registerEvent('Page.frameClearedScheduledNavigation', ['frameId']);
   inspectorBackend.registerEnum('Page.FrameDetachedEventReason', {Remove: 'remove', Swap: 'swap'});
   inspectorBackend.registerEvent('Page.frameDetached', ['frameId', 'reason']);
@@ -2775,6 +2771,8 @@ export function registerCommands(inspectorBackend) {
   inspectorBackend.registerEvent('Storage.indexedDBListUpdated', ['origin']);
   inspectorBackend.registerEvent('Storage.interestGroupAccessed', ['accessTime', 'type', 'ownerOrigin', 'name']);
   inspectorBackend.registerCommand(
+      'Storage.getStorageKeyForFrame', [{'name': 'frameId', 'type': 'string', 'optional': false}], ['storageKey']);
+  inspectorBackend.registerCommand(
       'Storage.clearDataForOrigin',
       [
         {'name': 'origin', 'type': 'string', 'optional': false},
@@ -3073,7 +3071,7 @@ export function registerCommands(inspectorBackend) {
   inspectorBackend.registerEnum('WebAuthn.Ctap2Version', {Ctap2_0: 'ctap2_0', Ctap2_1: 'ctap2_1'});
   inspectorBackend.registerEnum(
       'WebAuthn.AuthenticatorTransport', {Usb: 'usb', Nfc: 'nfc', Ble: 'ble', Cable: 'cable', Internal: 'internal'});
-  inspectorBackend.registerCommand('WebAuthn.enable', [], []);
+  inspectorBackend.registerCommand('WebAuthn.enable', [{'name': 'enableUI', 'type': 'boolean', 'optional': true}], []);
   inspectorBackend.registerCommand('WebAuthn.disable', [], []);
   inspectorBackend.registerCommand(
       'WebAuthn.addVirtualAuthenticator', [{'name': 'options', 'type': 'object', 'optional': false}],
@@ -3223,8 +3221,13 @@ export function registerCommands(inspectorBackend) {
       'Debugger.pauseOnAsyncCall', [{'name': 'parentStackTraceId', 'type': 'object', 'optional': false}], []);
   inspectorBackend.registerCommand(
       'Debugger.removeBreakpoint', [{'name': 'breakpointId', 'type': 'string', 'optional': false}], []);
+  inspectorBackend.registerEnum('Debugger.RestartFrameRequestMode', {StepInto: 'StepInto'});
   inspectorBackend.registerCommand(
-      'Debugger.restartFrame', [{'name': 'callFrameId', 'type': 'string', 'optional': false}],
+      'Debugger.restartFrame',
+      [
+        {'name': 'callFrameId', 'type': 'string', 'optional': false},
+        {'name': 'mode', 'type': 'string', 'optional': true}
+      ],
       ['callFrames', 'asyncStackTrace', 'asyncStackTraceId']);
   inspectorBackend.registerCommand(
       'Debugger.resume', [{'name': 'terminateOnResume', 'type': 'boolean', 'optional': true}], []);

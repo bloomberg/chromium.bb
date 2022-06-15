@@ -15,6 +15,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/numerics/safe_math.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/raster_interface.h"
 #include "media/base/limits.h"
@@ -713,6 +714,8 @@ scoped_refptr<VideoFrame> ReadbackTextureBackedFrameToMemorySync(
     VideoFramePool* pool) {
   DCHECK(ri);
 
+  TRACE_EVENT2("media", "ReadbackTextureBackedFrameToMemorySync", "timestamp",
+               txt_frame.timestamp(), "gr_ctx", !!gr_context);
   VideoPixelFormat format = ReadbackFormat(txt_frame);
   if (format == PIXEL_FORMAT_UNKNOWN) {
     DLOG(ERROR) << "Readback is not possible for this frame: "
@@ -765,22 +768,26 @@ bool ReadbackTexturePlaneToMemorySync(const VideoFrame& src_frame,
 EncoderStatus ConvertAndScaleFrame(const VideoFrame& src_frame,
                                    VideoFrame& dst_frame,
                                    std::vector<uint8_t>& tmp_buf) {
+  TRACE_EVENT2("media", "ConvertAndScaleFrame", "src_format",
+               VideoPixelFormatToString(src_frame.format()), "dst_format",
+               VideoPixelFormatToString(dst_frame.format()));
   constexpr auto kDefaultFiltering = libyuv::kFilterBox;
   if (!src_frame.IsMappable() || !dst_frame.IsMappable())
     return EncoderStatus::Codes::kUnsupportedFrameFormat;
 
-  // I420A can only be produced from I420A.
-  if (dst_frame.format() == PIXEL_FORMAT_I420A &&
-      src_frame.format() != PIXEL_FORMAT_I420A) {
-    return EncoderStatus::Codes::kUnsupportedFrameFormat;
-  }
-
-  if ((dst_frame.format() == PIXEL_FORMAT_I420 ||
+  if ((dst_frame.format() == PIXEL_FORMAT_I420A ||
+       dst_frame.format() == PIXEL_FORMAT_I420 ||
        dst_frame.format() == PIXEL_FORMAT_NV12) &&
       (src_frame.format() == PIXEL_FORMAT_XBGR ||
        src_frame.format() == PIXEL_FORMAT_XRGB ||
        src_frame.format() == PIXEL_FORMAT_ABGR ||
        src_frame.format() == PIXEL_FORMAT_ARGB)) {
+    if (!media::IsOpaque(dst_frame.format()) &&
+        media::IsOpaque(src_frame.format())) {
+      // We can drop an alpha channel, but we don't add it out of nothing.
+      return EncoderStatus::Codes::kUnsupportedFrameFormat;
+    }
+
     // libyuv's RGB to YUV methods always output BT.601.
     dst_frame.set_color_space(gfx::ColorSpace::CreateREC601());
 
@@ -806,7 +813,8 @@ EncoderStatus ConvertAndScaleFrame(const VideoFrame& src_frame,
       src_stride = stride;
     }
 
-    if (dst_frame.format() == PIXEL_FORMAT_I420) {
+    if (dst_frame.format() == PIXEL_FORMAT_I420 ||
+        dst_frame.format() == PIXEL_FORMAT_I420A) {
       auto convert_fn = (src_frame.format() == PIXEL_FORMAT_XBGR ||
                          src_frame.format() == PIXEL_FORMAT_ABGR)
                             ? libyuv::ABGRToI420
@@ -821,6 +829,17 @@ EncoderStatus ConvertAndScaleFrame(const VideoFrame& src_frame,
           dst_frame.visible_rect().width(), dst_frame.visible_rect().height());
       if (error)
         return EncoderStatus::Codes::kFormatConversionError;
+
+      if (dst_frame.format() == PIXEL_FORMAT_I420A) {
+        // Convert alpha channel separately
+        libyuv::ARGBExtractAlpha(
+            src_data, src_stride,
+            dst_frame.visible_data(media::VideoFrame::kAPlane),
+            dst_frame.stride(media::VideoFrame::kAPlane),
+            dst_frame.visible_rect().width(),
+            dst_frame.visible_rect().height());
+      }
+
       return OkStatus();
     }
 

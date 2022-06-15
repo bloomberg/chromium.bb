@@ -68,13 +68,21 @@ public:
         };
 
         enum Flags {
-            // Uniform is an declared as an array. 'count' contains array length.
+            // Uniform is declared as an array. 'count' contains array length.
             kArray_Flag = 0x1,
 
             // Uniform is declared with layout(color). Colors should be supplied as unpremultiplied,
             // extended-range (unclamped) sRGB (ie SkColor4f). The uniform will be automatically
             // transformed to unpremultiplied extended-range working-space colors.
             kColor_Flag = 0x2,
+
+            // When used with SkMeshSpecification, indicates that the uniform is present in the
+            // vertex shader. Not used with SkRuntimeEffect.
+            kVertex_Flag = 0x4,
+
+            // When used with SkMeshSpecification, indicates that the uniform is present in the
+            // fragment shader. Not used with SkRuntimeEffect.
+            kFragment_Flag = 0x8,
         };
 
         SkString  name;
@@ -112,6 +120,7 @@ public:
         friend class SkRuntimeEffect;
         friend class SkRuntimeEffectPriv;
 
+        // TODO(skia:11209) - Replace this with a promised SkCapabilities?
         // This flag lifts the ES2 restrictions on Runtime Effects that are gated by the
         // `strictES2Mode` check. Be aware that the software renderer and pipeline-stage effect are
         // still largely ES3-unaware and can still fail or crash if post-ES2 features are used.
@@ -164,19 +173,6 @@ public:
         return MakeForBlender(std::move(sksl), Options{});
     }
 
-    // DSL entry points
-    static Result MakeForColorFilter(std::unique_ptr<SkSL::Program> program, const Options&);
-    static Result MakeForColorFilter(std::unique_ptr<SkSL::Program> program);
-
-    static Result MakeForShader(std::unique_ptr<SkSL::Program> program, const Options&);
-    static Result MakeForShader(std::unique_ptr<SkSL::Program> program);
-    static sk_sp<SkRuntimeEffect> MakeForShader(std::unique_ptr<SkSL::Program> program,
-                                                const Options&, SkSL::ErrorReporter* errors);
-
-
-    static Result MakeForBlender(std::unique_ptr<SkSL::Program> program, const Options&);
-    static Result MakeForBlender(std::unique_ptr<SkSL::Program> program);
-
     // Object that allows passing a SkShader, SkColorFilter or SkBlender as a child
     class ChildPtr {
     public:
@@ -199,29 +195,30 @@ public:
         sk_sp<SkFlattenable> fChild;
     };
 
-    sk_sp<SkShader> makeShader(sk_sp<SkData> uniforms,
+    sk_sp<SkShader> makeShader(sk_sp<const SkData> uniforms,
                                sk_sp<SkShader> children[],
                                size_t childCount,
                                const SkMatrix* localMatrix = nullptr) const;
-    sk_sp<SkShader> makeShader(sk_sp<SkData> uniforms,
+    sk_sp<SkShader> makeShader(sk_sp<const SkData> uniforms,
                                SkSpan<ChildPtr> children,
                                const SkMatrix* localMatrix = nullptr) const;
 
     sk_sp<SkImage> makeImage(GrRecordingContext*,
-                             sk_sp<SkData> uniforms,
+                             sk_sp<const SkData> uniforms,
                              SkSpan<ChildPtr> children,
                              const SkMatrix* localMatrix,
                              SkImageInfo resultInfo,
                              bool mipmapped) const;
 
-    sk_sp<SkColorFilter> makeColorFilter(sk_sp<SkData> uniforms) const;
-    sk_sp<SkColorFilter> makeColorFilter(sk_sp<SkData> uniforms,
+    sk_sp<SkColorFilter> makeColorFilter(sk_sp<const SkData> uniforms) const;
+    sk_sp<SkColorFilter> makeColorFilter(sk_sp<const SkData> uniforms,
                                          sk_sp<SkColorFilter> children[],
                                          size_t childCount) const;
-    sk_sp<SkColorFilter> makeColorFilter(sk_sp<SkData> uniforms,
+    sk_sp<SkColorFilter> makeColorFilter(sk_sp<const SkData> uniforms,
                                          SkSpan<ChildPtr> children) const;
 
-    sk_sp<SkBlender> makeBlender(sk_sp<SkData> uniforms, SkSpan<ChildPtr> children = {}) const;
+    sk_sp<SkBlender> makeBlender(sk_sp<const SkData> uniforms,
+                                 SkSpan<ChildPtr> children = {}) const;
 
     /**
      * Creates a new Runtime Effect patterned after an already-existing one. The new shader behaves
@@ -282,15 +279,6 @@ private:
     sk_sp<SkRuntimeEffect> makeUnoptimizedClone();
 
     static Result MakeFromSource(SkString sksl, const Options& options, SkSL::ProgramKind kind);
-
-    static Result MakeFromDSL(std::unique_ptr<SkSL::Program> program,
-                              const Options& options,
-                              SkSL::ProgramKind kind);
-
-    static sk_sp<SkRuntimeEffect> MakeFromDSL(std::unique_ptr<SkSL::Program> program,
-                                              const Options& options,
-                                              SkSL::ProgramKind kind,
-                                              SkSL::ErrorReporter* errors);
 
     static Result MakeInternal(std::unique_ptr<SkSL::Program> program,
                                const Options& options,
@@ -440,7 +428,7 @@ protected:
     SkRuntimeEffectBuilder& operator=(SkRuntimeEffectBuilder&&) = delete;
     SkRuntimeEffectBuilder& operator=(const SkRuntimeEffectBuilder&) = delete;
 
-    sk_sp<SkData> uniforms() { return fUniforms; }
+    sk_sp<const SkData> uniforms() { return fUniforms; }
     SkRuntimeEffect::ChildPtr* children() { return fChildren.data(); }
     size_t numChildren() { return fChildren.size(); }
 

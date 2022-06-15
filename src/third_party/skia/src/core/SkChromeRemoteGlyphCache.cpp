@@ -34,9 +34,11 @@
 #if SK_SUPPORT_GPU
 #include "include/gpu/GrContextOptions.h"
 #include "src/gpu/ganesh/GrDrawOpAtlas.h"
-#include "src/gpu/ganesh/text/GrSDFTControl.h"
-#include "src/gpu/ganesh/text/GrTextBlob.h"
+#include "src/text/gpu/SDFTControl.h"
+#include "src/text/gpu/TextBlob.h"
 #endif
+
+using namespace sktext::gpu;
 
 namespace {
 // -- Serializer -----------------------------------------------------------------------------------
@@ -100,7 +102,7 @@ public:
 
     bool readDescriptor(SkAutoDescriptor* ad) {
         uint32_t descLength = 0u;
-        if (!read<uint32_t>(&descLength)) return false;
+        if (!this->read<uint32_t>(&descLength)) return false;
 
         auto* underlyingBuffer = this->ensureAtLeast(descLength, alignof(SkDescriptor));
         if (!underlyingBuffer) return false;
@@ -148,12 +150,10 @@ struct StrikeSpec {
             : fTypefaceID{typefaceID}, fDiscardableHandleId(discardableHandleId) {}
     SkTypefaceID fTypefaceID = 0u;
     SkDiscardableHandleId fDiscardableHandleId = 0u;
-    /* desc */
-    /* n X (glyphs ids) */
 };
 
 // Represent a set of x sub-pixel-position glyphs with a glyph id < kMaxGlyphID and
-// y sub-pxiel-position must be 0. Most sub-pixel-positioned glyphs have been x-axis aligned
+// y sub-pixel-position must be 0. Most sub-pixel-positioned glyphs have been x-axis aligned
 // forcing the y sub-pixel position to be zero. We can organize the SkPackedGlyphID to check that
 // the glyph id and the y position == 0 with a single compare in the following way:
 //    <y-sub-pixel-position>:2 | <glyphid:16> | <x-sub-pixel-position>:2
@@ -461,9 +461,9 @@ void RemoteStrike::prepareForMaskDrawing(
         SkPackedGlyphID packedID = variant.packedID();
         if (fSentLowGlyphIDs.test(packedID)) {
             #ifdef SK_DEBUG
-            SkGlyphDigest* digest = fSentGlyphs.find(packedID);
-            SkASSERT(digest != nullptr);
-            SkASSERT(digest->canDrawAsMask() && digest->canDrawAsSDFT());
+                SkGlyphDigest* digest = fSentGlyphs.find(packedID);
+                SkASSERT(digest != nullptr);
+                SkASSERT(digest->canDrawAsMask() && digest->canDrawAsSDFT());
             #endif
             continue;
         }
@@ -676,31 +676,20 @@ void SkStrikeServerImpl::writeStrikeData(std::vector<uint8_t>* memory) {
 
     serializer.emplace<uint64_t>(SkTo<uint64_t>(strikesToSend));
     fRemoteStrikesToSend.foreach (
-#ifdef SK_DEBUG
-            [&](RemoteStrike* strike) {
-                if (strike->hasPendingGlyphs()) {
-                    strike->writePendingGlyphs(&serializer);
-                    strike->resetScalerContext();
-                }
+        [&](RemoteStrike* strike) {
+            if (strike->hasPendingGlyphs()) {
+                strike->writePendingGlyphs(&serializer);
+                strike->resetScalerContext();
+            }
+            #ifdef SK_DEBUG
                 auto it = fDescToRemoteStrike.find(&strike->getDescriptor());
                 SkASSERT(it != fDescToRemoteStrike.end());
                 SkASSERT(it->second.get() == strike);
-                #if defined(SK_TRACE_GLYPH_RUN_PROCESS)
-                    msg.append(strike->getDescriptor().dumpRec());
-                #endif
-            }
-
-#else
-            [&serializer](RemoteStrike* strike) {
-                if (strike->hasPendingGlyphs()) {
-                    strike->writePendingGlyphs(&serializer);
-                    strike->resetScalerContext();
-                }
-                #if defined(SK_TRACE_GLYPH_RUN_PROCESS)
-                    msg.append(strike->getDescriptor().dumpRec());
-                #endif
-            }
-#endif
+            #endif
+            #if defined(SK_TRACE_GLYPH_RUN_PROCESS)
+                msg.append(strike->getDescriptor().dumpRec());
+            #endif
+        }
     );
     fRemoteStrikesToSend.reset();
     #if defined(SK_TRACE_GLYPH_RUN_PROCESS)
@@ -719,17 +708,18 @@ void SkStrikeServerImpl::checkForDeletedEntries() {
            it != fDescToRemoteStrike.end()) {
         RemoteStrike* strike = it->second.get();
         if (fDiscardableHandleManager->isHandleDeleted(strike->discardableHandleId())) {
-            // If we are removing the strike, we better not be trying to send it at the same time.
-            SkASSERT(!fRemoteStrikesToSend.contains(strike));
-            it = fDescToRemoteStrike.erase(it);
-        } else {
-            ++it;
+            // If we are trying to send the strike, then do not erase it.
+            if (!fRemoteStrikesToSend.contains(strike)) {
+                // Erase returns the iterator following the removed element.
+                it = fDescToRemoteStrike.erase(it);
+                continue;
+            }
         }
+        ++it;
     }
 }
 
 RemoteStrike* SkStrikeServerImpl::getOrCreateCache(const SkStrikeSpec& strikeSpec) {
-
     // In cases where tracing is turned off, make sure not to get an unused function warning.
     // Lambdaize the function.
     TRACE_EVENT1("skia", "RecForDesc", "rec",
@@ -744,8 +734,9 @@ RemoteStrike* SkStrikeServerImpl::getOrCreateCache(const SkStrikeSpec& strikeSpe
                  )
     );
 
-    auto it = fDescToRemoteStrike.find(&strikeSpec.descriptor());
-    if (it != fDescToRemoteStrike.end()) {
+    if (auto it = fDescToRemoteStrike.find(&strikeSpec.descriptor());
+        it != fDescToRemoteStrike.end())
+    {
         // We have processed the RemoteStrike before. Reuse it.
         RemoteStrike* strike = it->second.get();
         strike->setStrikeSpec(strikeSpec);
@@ -761,6 +752,7 @@ RemoteStrike* SkStrikeServerImpl::getOrCreateCache(const SkStrikeSpec& strikeSpe
             return strike;
         }
 
+        // If it wasn't locked, then forget this strike, and build it anew below.
         fDescToRemoteStrike.erase(it);
     }
 
@@ -795,19 +787,21 @@ class GlyphTrackingDevice final : public SkNoPixelsDevice {
 public:
     GlyphTrackingDevice(
             const SkISize& dimensions, const SkSurfaceProps& props, SkStrikeServerImpl* server,
-            sk_sp<SkColorSpace> colorSpace, bool DFTSupport)
+            sk_sp<SkColorSpace> colorSpace, sktext::gpu::SDFTControl SDFTControl)
             : SkNoPixelsDevice(SkIRect::MakeSize(dimensions), props, std::move(colorSpace))
             , fStrikeServerImpl(server)
-            , fDFTSupport(DFTSupport)
-            , fPainter{props, imageInfo().colorSpace(), fStrikeServerImpl}
-            , fConvertPainter{props, imageInfo().colorSpace(), SkStrikeCache::GlobalStrikeCache()} {
+            , fSDFTControl(SDFTControl) {
         SkASSERT(fStrikeServerImpl != nullptr);
     }
 
     SkBaseDevice* onCreateDevice(const CreateInfo& cinfo, const SkPaint*) override {
         const SkSurfaceProps surfaceProps(this->surfaceProps().flags(), cinfo.fPixelGeometry);
         return new GlyphTrackingDevice(cinfo.fInfo.dimensions(), surfaceProps, fStrikeServerImpl,
-                                       cinfo.fInfo.refColorSpace(), fDFTSupport);
+                                       cinfo.fInfo.refColorSpace(), fSDFTControl);
+    }
+
+    SkStrikeDeviceInfo strikeDeviceInfo() const override {
+        return {this->surfaceProps(), this->scalerContextFlags(), &fSDFTControl};
     }
 
 protected:
@@ -815,29 +809,23 @@ protected:
                             const SkGlyphRunList& glyphRunList,
                             const SkPaint& initialPaint,
                             const SkPaint& drawingPaint) override {
-        GrContextOptions ctxOptions;
-        GrSDFTControl control =
-                GrSDFTControl{fDFTSupport,
-                              this->surfaceProps().isUseDeviceIndependentFonts(),
-                              ctxOptions.fMinDistanceFieldFontSize,
-                              ctxOptions.fGlyphsAsPathsFontSize};
-
         SkMatrix drawMatrix = this->localToDevice();
         drawMatrix.preTranslate(glyphRunList.origin().x(), glyphRunList.origin().y());
-        fPainter.categorizeGlyphRunList(
-                nullptr, glyphRunList, drawMatrix, drawingPaint, control, "Cache Diff");
+
+        // Just ignore the resulting SubRunContainer. Since we're passing in a null SubRunAllocator
+        // no SubRuns will be produced.
+        SubRunContainer::MakeInAlloc(glyphRunList,
+                                     drawMatrix,
+                                     drawingPaint,
+                                     this->strikeDeviceInfo(),
+                                     fStrikeServerImpl,
+                                     nullptr,
+                                     "Cache Diff");
     }
 
-    sk_sp<GrSlug> convertGlyphRunListToSlug(const SkGlyphRunList& glyphRunList,
-                                            const SkPaint& initialPaint,
-                                            const SkPaint& drawingPaint) override {
-        GrContextOptions ctxOptions;
-        GrSDFTControl control =
-                GrSDFTControl{fDFTSupport,
-                              this->surfaceProps().isUseDeviceIndependentFonts(),
-                              ctxOptions.fMinDistanceFieldFontSize,
-                              ctxOptions.fGlyphsAsPathsFontSize};
-
+    sk_sp<sktext::gpu::Slug> convertGlyphRunListToSlug(const SkGlyphRunList& glyphRunList,
+                                                       const SkPaint& initialPaint,
+                                                       const SkPaint& drawingPaint) override {
         // Full matrix for placing glyphs.
         SkMatrix positionMatrix = this->localToDevice();
         positionMatrix.preTranslate(glyphRunList.origin().x(), glyphRunList.origin().y());
@@ -846,24 +834,28 @@ protected:
         //  cache is fortified with enough information for supporting slug creation.
 
         // Use the lightweight strike cache provided by SkRemoteGlyphCache through fPainter to do
-        // the analysis.
-        fPainter.categorizeGlyphRunList(
-            nullptr, glyphRunList, positionMatrix, drawingPaint, control, "Convert Slug Analysis");
+        // the analysis. Just ignore the resulting SubRunContainer. Since we're passing in a null
+        // SubRunAllocator no SubRuns will be produced.
+        SubRunContainer::MakeInAlloc(glyphRunList,
+                                     positionMatrix,
+                                     drawingPaint,
+                                     this->strikeDeviceInfo(),
+                                     fStrikeServerImpl,
+                                     nullptr,
+                                     "Convert Slug Analysis");
 
         // Use the glyph strike cache to get actual glyph information.
         return skgpu::v1::MakeSlug(this->localToDevice(),
                                    glyphRunList,
                                    initialPaint,
                                    drawingPaint,
-                                   control,
-                                   &fConvertPainter);
+                                   this->strikeDeviceInfo(),
+                                   SkStrikeCache::GlobalStrikeCache());
     }
 
 private:
     SkStrikeServerImpl* const fStrikeServerImpl;
-    const bool fDFTSupport{false};
-    SkGlyphRunListPainter fPainter;
-    SkGlyphRunListPainter fConvertPainter;
+    const sktext::gpu::SDFTControl fSDFTControl;
 };
 #endif  // SK_SUPPORT_GPU
 
@@ -878,10 +870,17 @@ std::unique_ptr<SkCanvas> SkStrikeServer::makeAnalysisCanvas(int width, int heig
                                                              sk_sp<SkColorSpace> colorSpace,
                                                              bool DFTSupport) {
 #if SK_SUPPORT_GPU
-    sk_sp<SkBaseDevice> trackingDevice(new GlyphTrackingDevice(SkISize::Make(width, height),
-                                                               props, this->impl(),
-                                                               std::move(colorSpace),
-                                                               DFTSupport));
+    GrContextOptions ctxOptions;
+    auto control = sktext::gpu::SDFTControl{DFTSupport,
+                                            props.isUseDeviceIndependentFonts(),
+                                            ctxOptions.fMinDistanceFieldFontSize,
+                                            ctxOptions.fGlyphsAsPathsFontSize};
+
+    sk_sp<SkBaseDevice> trackingDevice(new GlyphTrackingDevice(
+            SkISize::Make(width, height),
+            props, this->impl(),
+            std::move(colorSpace),
+            control));
 #else
     sk_sp<SkBaseDevice> trackingDevice(new SkNoPixelsDevice(
             SkIRect::MakeWH(width, height), props, std::move(colorSpace)));
@@ -949,7 +948,7 @@ private:
     static bool ReadGlyph(SkTLazy<SkGlyph>& glyph, Deserializer* deserializer);
     sk_sp<SkTypeface> addTypeface(const WireTypeface& wire);
 
-    SkTHashMap<SkTypefaceID, sk_sp<SkTypeface>> fRemoteFontIdToTypeface;
+    SkTHashMap<SkTypefaceID, sk_sp<SkTypeface>> fRemoteTypefaceIdToTypeface;
     sk_sp<SkStrikeClient::DiscardableHandleManager> fDiscardableHandleManager;
     SkStrikeCache* const fStrikeCache;
     const bool fIsLogging;
@@ -1010,10 +1009,7 @@ bool SkStrikeClientImpl::readStrikeData(const volatile void* memory, size_t memo
         WireTypeface wire;
         if (!deserializer.read<WireTypeface>(&wire)) READ_FAILURE
 
-        // TODO(khushalsagar): The typeface no longer needs a reference to the
-        // SkStrikeClient, since all needed glyphs must have been pushed before
-        // raster.
-        addTypeface(wire);
+        this->addTypeface(wire);
     }
 
     #if defined(SK_TRACE_GLYPH_RUN_PROCESS)
@@ -1041,6 +1037,11 @@ bool SkStrikeClientImpl::readStrikeData(const volatile void* memory, size_t memo
             if (!deserializer.read<SkFontMetrics>(&fontMetrics)) READ_FAILURE
         }
 
+        // Preflight the TypefaceID before doing the Descriptor translation.
+        auto* tfPtr = fRemoteTypefaceIdToTypeface.find(spec.fTypefaceID);
+        // Received a TypefaceID for a typeface we don't know about.
+        if (!tfPtr) READ_FAILURE
+
         // Replace the ContextRec in the desc from the server to create the client
         // side descriptor.
         if (!this->translateTypefaceID(&ad)) READ_FAILURE
@@ -1050,14 +1051,16 @@ bool SkStrikeClientImpl::readStrikeData(const volatile void* memory, size_t memo
             msg.appendf("  Mapped descriptor:\n%s", clientDesc->dumpRec().c_str());
         #endif
         auto strike = fStrikeCache->findStrike(*clientDesc);
+
+        // Make sure strike is pinned
+        if (strike) {
+            strike->verifyPinnedStrike();
+        }
+
         // Metrics are only sent the first time. If the metrics are not initialized, there must
         // be an existing strike.
         if (fontMetricsInitialized && strike == nullptr) READ_FAILURE
         if (strike == nullptr) {
-            // Get the local typeface from remote fontID.
-            auto* tfPtr = fRemoteFontIdToTypeface.find(spec.fTypefaceID);
-            // Received strikes for a typeface which doesn't exist.
-            if (!tfPtr) READ_FAILURE
             // Note that we don't need to deserialize the effects since we won't be generating any
             // glyphs here anyway, and the desc is still correct since it includes the serialized
             // effects.
@@ -1151,7 +1154,7 @@ bool SkStrikeClientImpl::translateTypefaceID(SkAutoDescriptor* toChange) const {
         SkScalerContextRec rec;
         std::memcpy((void*)&rec, ptr, size);
         // Get the local typeface from remote typefaceID.
-        auto* tfPtr = fRemoteFontIdToTypeface.find(rec.fTypefaceID);
+        auto* tfPtr = fRemoteTypefaceIdToTypeface.find(rec.fTypefaceID);
         // Received a strike for a typeface which doesn't exist.
         if (!tfPtr) { return false; }
         // Update the typeface id to work with the client side.
@@ -1172,13 +1175,13 @@ sk_sp<SkTypeface> SkStrikeClientImpl::deserializeTypeface(const void* buf, size_
 }
 
 sk_sp<SkTypeface> SkStrikeClientImpl::addTypeface(const WireTypeface& wire) {
-    auto* typeface = fRemoteFontIdToTypeface.find(wire.fTypefaceID);
+    auto* typeface = fRemoteTypefaceIdToTypeface.find(wire.fTypefaceID);
     if (typeface) return *typeface;
 
     auto newTypeface = sk_make_sp<SkTypefaceProxy>(
             wire.fTypefaceID, wire.fGlyphCount, wire.fStyle, wire.fIsFixed,
             wire.fGlyphMaskNeedsCurrentColor, fDiscardableHandleManager, fIsLogging);
-    fRemoteFontIdToTypeface.set(wire.fTypefaceID, newTypeface);
+    fRemoteTypefaceIdToTypeface.set(wire.fTypefaceID, newTypeface);
     return std::move(newTypeface);
 }
 
@@ -1203,7 +1206,7 @@ bool SkStrikeClient::translateTypefaceID(SkAutoDescriptor* descriptor) const {
 }
 
 #if SK_SUPPORT_GPU
-sk_sp<GrSlug> SkStrikeClient::deserializeSlug(const void* data, size_t size) const {
-    return GrSlug::Deserialize(data, size, this);
+sk_sp<sktext::gpu::Slug> SkStrikeClient::deserializeSlug(const void* data, size_t size) const {
+    return sktext::gpu::Slug::Deserialize(data, size, this);
 }
 #endif  // SK_SUPPORT_GPU

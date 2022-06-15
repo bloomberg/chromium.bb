@@ -29,14 +29,6 @@ tast_disabled_tests_from_chrome_all = [
   "apps.SystemWebAppsReinstall.default_enabled_apps_stable",
   "camera.EncodeAccelJPEG",
 
-  # crbug.com/1247485
-  "inputs.PhysicalKeyboardInputFields.us_en",
-  "inputs.VirtualKeyboardAccent",
-
-  # crbug.com/1247177
-  "inputs.PhysicalKeyboardEnglishTyping",
-  "inputs.PhysicalKeyboardEmoji",
-
   # https://crbug.com/1252352
   "quicksettings.SignInScreen.battery",
   "quicksettings.SignInScreen.noaudio_nobattery",
@@ -47,9 +39,6 @@ tast_disabled_tests_from_chrome_all = [
 
   # crbug.com/1259127
   "ui.TabletOperations",
-
-  # crbug.com/1257474
-  "shelf.OpenCloseSwitchApps",
 
   # crbug.com/1239838
   "graphics.FPS",
@@ -93,17 +82,6 @@ tast_disabled_tests_from_chrome_all = [
   # https://crbug.com/1282369
   "apps.LaunchHelpAppOffline",
 
-  # https://crbug.com/1282366 and https://crbug.com/1311184
-  "inputs.VirtualKeyboardChangeInput.a11y",
-  "inputs.VirtualKeyboardDeadKeys.french",
-  "inputs.VirtualKeyboardFloat.clamshell",
-  "inputs.VirtualKeyboardGlideTyping.clamshell_a11y_floating",
-  "inputs.VirtualKeyboardHandwriting.docked",
-  "inputs.VirtualKeyboardHandwriting.floating",
-  "inputs.VirtualKeyboardMultipaste",
-  "inputs.VirtualKeyboardOOBE",
-  "inputs.VirtualKeyboardSystemLanguages.es",
-
   # https://crbug.com/1282370
   "arc.Boot.vm_with_per_vcpu_core_scheduling",
 
@@ -112,12 +90,6 @@ tast_disabled_tests_from_chrome_all = [
 
   # http://b/212644512
   "security.SELinuxFilesDataDir",
-
-  # https://crbug.com/1283300 (http://b/212637568)
-  "inputs.PhysicalKeyboardCapsLock",
-  "inputs.PhysicalKeyboardChangeInput",
-  "inputs.PhysicalKeyboardAutocorrect.en_us_1",
-  "inputs.PhysicalKeyboardDeadKeys.us_intl_acute",
 
   # https://crbug.com/1260046
   "wmp.WindowCycle",
@@ -219,9 +191,6 @@ tast_disabled_tests_from_chrome_all = [
   # https://crbug.com/1315123
   "dlp.DataLeakPreventionRulesListScreenshot.ash_blocked",
 
-  # https://crbug.com/1315880
-  "u2fd.WebauthnUsingPassword.tpm1",
-
   # https://crbug.com/1318989
   "assistant.StartupInSignedOutMode",
   "login.ChangePassword",
@@ -233,11 +202,110 @@ tast_disabled_tests_from_chrome_all = [
   "policy.PopupsForURLCheck.allowlist",
 
   # https://crbug.com/1323628
-  "crostini.AppEclipse",
-  "crostini.AppAndroidStudio",
-  "crostini.AppEmacs",
   "crostini.AppVscode",
   "crostini.AppGeditFilesharing",
+
+  # https://crbug.com/1326279
+  "policy.AccessibilityPolicies.focus_highlight",
+
+  # https://crbug.com/1326331
+  "policy.AccessibilityPolicies.high_contrast",
+
+  # https://crbug.com/1326403
+  "policy.AccessibilityPolicies.large_cursor",
+
+  # https://crbug.com/1327171
+  "policy.PopupsForURLCheck.default",
+
+  # https://crbug.com/1327345
+  "policy.ChromePolicyPageStatusTimestamps.ash",
+
+  # https://crbug.com/1327361
+  "policy.FullscreenAllowed",
+
+  # https://crbug.com/1328128
+  "policy.PopupsForURLCheck.blocklist",
+
+  # https://crbug.com/1329734
+  "health.DiagnosticsList",
+  "health.DiagnosticsCancel.urandom",
+
+  # https://crbug.com/1329761
+  "policy.DefaultSerialGuardSetting",
+
+  # https://crbug.com/1335176
+  "policy.ScreenBrightnessPercent",
+
+  # https://crbug.com/1334354
+  "arc.Boot.vm",
+  "arc.ChromeCrash.vm_logged_in",
+  "arc.Drivefs.vm",
+  "arc.OptinManaged.vm",
+  "arc.OptinNetworkError.vm",
+  "arc.RemovableMedia.vm",
+  "security.NetworkListenersARC.vm",
+  "security.SELinuxFilesDataDir.vm",
+
+  # b/233264555
+  "inputs.PhysicalKeyboardEmojiSuggestion",
+  "inputs.PhysicalKeyboardEmojiSuggestion.guest",
+  "inputs.PhysicalKeyboardEmojiSuggestion.incognito",
+
+  # http://b/229032436
+  "health.DiagnosticsRun.captive_portal",
+  "health.DiagnosticsRun.cpu_cache",
+  "health.DiagnosticsRun.cpu_stress",
+  "health.DiagnosticsRun.dns_latency",
+  "health.DiagnosticsRun.dns_resolution",
+  "health.DiagnosticsRun.dns_resolver_present",
+
+  # This is effectively the mirror of the crrev.com/c/3691078 in CrOS.
+  # Although the change is made, because CrOS SDK is not yet ready
+  # we're still blocked by the test failures. This is the short term
+  # mitigation. We can remove this when CrOS SDK 14903 gets ready
+  # and started to be used.
+  "crostini.LaunchTerminal.buster_stable",
+  "crostini.Notify.buster_stable",
+  "crostini.PackageInfo.buster_stable",
+  "crostini.NoSharedFolder.buster_stable",
+  "crostini.LaunchBrowser.buster_stable",
+  "crostini.SecureCopyPaste.copy_wayland_buster_stable",
+  "crostini.SecureCopyPaste.copy_x11_buster_stable",
+  "crostini.PackageInstallUninstall.buster_stable",
+  "crostini.Xattrs.buster_stable",
+  "crostini.SSHFSMount.buster_stable",
+  "crostini.SecureCopyPaste.paste_wayland_buster_stable",
+  "crostini.UninstallInvalidApp.buster_stable",
+  "crostini.SecureCopyPaste.paste_x11_buster_stable",
+  "crostini.SharedFontFiles.buster_stable",
+  "crostini.CrashReporter.buster_stable",
+  "crostini.HomeDirectoryCreateFile.buster_stable",
+  "crostini.Basic.buster_stable",
+  "crostini.GPUEnabled.gpu_buster_stable",
+  "crostini.GPUEnabled.gpu_bullseye_stable",
+  "crostini.CrashReporter.bullseye_stable",
+  "crostini.Basic.bullseye_stable",
+  "crostini.HomeDirectoryCreateFile.bullseye_stable",
+  "crostini.LaunchBrowser.bullseye_stable",
+  "crostini.SecureCopyPaste.copy_wayland_bullseye_stable",
+  "crostini.SharedFontFiles.bullseye_stable",
+  "crostini.SecureCopyPaste.paste_x11_bullseye_stable",
+  "crostini.PackageInfo.bullseye_stable",
+  "crostini.Notify.bullseye_stable",
+  "crostini.UninstallInvalidApp.bullseye_stable",
+  "crostini.LaunchTerminal.bullseye_stable",
+  "crostini.NoSharedFolder.bullseye_stable",
+  "crostini.Xattrs.bullseye_stable",
+  "crostini.PackageInstallUninstall.bullseye_stable",
+  "crostini.SecureCopyPaste.paste_wayland_bullseye_stable",
+  "crostini.SSHFSMount.bullseye_stable",
+  "crostini.SecureCopyPaste.copy_x11_bullseye_stable",
+
+  # http://b234699971
+  "crostini.AppGeditUnshareFolder",
+
+  # b/235279574
+  "wmp.DragAndDropWindow",
 ]
 
 # To create filters to be used on specific builders add them like this:
@@ -246,4 +314,7 @@ tast_disabled_tests_from_chrome_all = [
 # test config as 'tast_expr_key'
 # To disable a specific test in lacros_all_tast_tests, add it the following
 # list and cite a bug.
-tast_disabled_tests_from_lacros_all = []
+tast_disabled_tests_from_lacros_all = [
+  # https://crbug.com/1329764
+  "policy.HistoryClustersVisible",
+]

@@ -14,12 +14,13 @@ function createHugeVertexBuffer(t: GPUTest, size: number) {
     usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC,
   });
   const pipeline = t.device.createComputePipeline({
+    layout: 'auto',
     compute: {
       module: t.device.createShaderModule({
         code: `
         struct Buffer { data: array<vec2<u32>>; };
         @group(0) @binding(0) var<storage, read_write> buffer: Buffer;
-        @stage(compute) @workgroup_size(1) fn main(
+        @compute @workgroup_size(1) fn main(
             @builtin(global_invocation_id) id: vec3<u32>) {
           let base = id.x * ${size}u;
           for (var x: u32 = 0u; x < ${size}u; x = x + 1u) {
@@ -63,19 +64,20 @@ g.test('many')
     const buffer = createHugeVertexBuffer(t, kSize);
     const module = t.device.createShaderModule({
       code: `
-    @stage(vertex) fn vmain(@location(0) position: vec2<u32>)
+    @vertex fn vmain(@location(0) position: vec2<u32>)
         -> @builtin(position) vec4<f32> {
       let r = vec2<f32>(1.0 / f32(${kSize}));
       let a = 2.0 * r;
       let b = r - vec2<f32>(1.0);
       return vec4<f32>(fma(vec2<f32>(position), a, b), 0.0, 1.0);
     }
-    @stage(fragment) fn fmain() -> @location(0) vec4<f32> {
+    @fragment fn fmain() -> @location(0) vec4<f32> {
       return vec4<f32>(1.0, 0.0, 1.0, 1.0);
     }
     `,
     });
     const pipeline = t.device.createRenderPipeline({
+      layout: 'auto',
       vertex: {
         module,
         entryPoint: 'vmain',

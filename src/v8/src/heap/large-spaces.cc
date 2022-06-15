@@ -28,14 +28,14 @@ namespace internal {
 // can't overlap with the lower 32 bits of cleared weak reference value and
 // therefore it's enough to compare only the lower 32 bits of a MaybeObject in
 // order to figure out if it's a cleared weak reference or not.
-STATIC_ASSERT(kClearedWeakHeapObjectLower32 < LargePage::kHeaderSize);
+static_assert(kClearedWeakHeapObjectLower32 < LargePage::kHeaderSize);
 
 LargePage::LargePage(Heap* heap, BaseSpace* space, size_t chunk_size,
                      Address area_start, Address area_end,
                      VirtualMemory reservation, Executability executable)
     : MemoryChunk(heap, space, chunk_size, area_start, area_end,
                   std::move(reservation), executable, PageSize::kLarge) {
-  STATIC_ASSERT(LargePage::kMaxCodePageSize <= TypedSlotSet::kMaxOffset);
+  static_assert(LargePage::kMaxCodePageSize <= TypedSlotSet::kMaxOffset);
 
   if (executable && chunk_size > LargePage::kMaxCodePageSize) {
     FATAL("Code page is too large.");
@@ -48,7 +48,7 @@ LargePage::LargePage(Heap* heap, BaseSpace* space, size_t chunk_size,
 LargePage* LargePage::Initialize(Heap* heap, MemoryChunk* chunk,
                                  Executability executable) {
   if (executable && chunk->size() > LargePage::kMaxCodePageSize) {
-    STATIC_ASSERT(LargePage::kMaxCodePageSize <= TypedSlotSet::kMaxOffset);
+    static_assert(LargePage::kMaxCodePageSize <= TypedSlotSet::kMaxOffset);
     FATAL("Code page is too large.");
   }
 
@@ -267,6 +267,10 @@ void LargeObjectSpace::AddPage(LargePage* page, size_t object_size) {
   page->set_owner(this);
   page->SetOldGenerationPageFlags(!is_off_thread() &&
                                   heap()->incremental_marking()->IsMarking());
+  for (size_t i = 0; i < ExternalBackingStoreType::kNumTypes; i++) {
+    ExternalBackingStoreType t = static_cast<ExternalBackingStoreType>(i);
+    IncrementExternalBackingStoreBytes(t, page->ExternalBackingStoreBytes(t));
+  }
 }
 void LargeObjectSpace::RemovePage(LargePage* page) {
   size_ -= static_cast<int>(page->size());
@@ -274,6 +278,10 @@ void LargeObjectSpace::RemovePage(LargePage* page) {
   page_count_--;
   memory_chunk_list_.Remove(page);
   page->set_owner(nullptr);
+  for (size_t i = 0; i < ExternalBackingStoreType::kNumTypes; i++) {
+    ExternalBackingStoreType t = static_cast<ExternalBackingStoreType>(i);
+    DecrementExternalBackingStoreBytes(t, page->ExternalBackingStoreBytes(t));
+  }
 }
 
 namespace {
@@ -522,14 +530,12 @@ void NewLargeObjectSpace::FreeDeadObjects(
     const std::function<bool(HeapObject)>& is_dead) {
   bool is_marking = heap()->incremental_marking()->IsMarking();
   size_t surviving_object_size = 0;
-  bool freed_pages = false;
   PtrComprCageBase cage_base(heap()->isolate());
   for (auto it = begin(); it != end();) {
     LargePage* page = *it;
     it++;
     HeapObject object = page->GetObject();
     if (is_dead(object)) {
-      freed_pages = true;
       RemovePage(page);
       heap()->memory_allocator()->Free(MemoryAllocator::FreeMode::kConcurrently,
                                        page);
@@ -543,9 +549,6 @@ void NewLargeObjectSpace::FreeDeadObjects(
   // Right-trimming does not update the objects_size_ counter. We are lazily
   // updating it after every GC.
   objects_size_ = surviving_object_size;
-  if (freed_pages) {
-    heap()->memory_allocator()->unmapper()->FreeQueuedChunks();
-  }
 }
 
 void NewLargeObjectSpace::SetCapacity(size_t capacity) {

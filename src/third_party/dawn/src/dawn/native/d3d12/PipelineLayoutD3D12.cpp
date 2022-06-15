@@ -252,10 +252,9 @@ MaybeError PipelineLayout::Initialize() {
     rootSignatureDescriptor.pStaticSamplers = nullptr;
     rootSignatureDescriptor.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
-    ComPtr<ID3DBlob> signature;
     ComPtr<ID3DBlob> error;
     HRESULT hr = device->GetFunctions()->d3d12SerializeRootSignature(
-        &rootSignatureDescriptor, D3D_ROOT_SIGNATURE_VERSION_1, &signature, &error);
+        &rootSignatureDescriptor, D3D_ROOT_SIGNATURE_VERSION_1, &mRootSignatureBlob, &error);
     if (DAWN_UNLIKELY(FAILED(hr))) {
         std::ostringstream messageStream;
         if (error) {
@@ -269,10 +268,32 @@ MaybeError PipelineLayout::Initialize() {
         DAWN_TRY(CheckHRESULT(hr, messageStream.str().c_str()));
     }
     DAWN_TRY(CheckHRESULT(device->GetD3D12Device()->CreateRootSignature(
-                              0, signature->GetBufferPointer(), signature->GetBufferSize(),
-                              IID_PPV_ARGS(&mRootSignature)),
+                              0, mRootSignatureBlob->GetBufferPointer(),
+                              mRootSignatureBlob->GetBufferSize(), IID_PPV_ARGS(&mRootSignature)),
                           "D3D12 create root signature"));
+    mCacheKey.Record(mRootSignatureBlob.Get());
     return {};
+}
+
+void PipelineLayout::DestroyImpl() {
+    PipelineLayoutBase::DestroyImpl();
+
+    Device* device = ToBackend(GetDevice());
+    device->ReferenceUntilUnused(mRootSignature);
+
+    // The ID3D12CommandSignature object should not be referenced by GPU operations in-flight on
+    // Command Queue when it is being deleted. According to D3D12 debug layer, "it is not safe to
+    // final-release objects that may have GPU operations pending. This can result in application
+    // instability (921)".
+    if (mDispatchIndirectCommandSignatureWithNumWorkgroups.Get()) {
+        device->ReferenceUntilUnused(mDispatchIndirectCommandSignatureWithNumWorkgroups);
+    }
+    if (mDrawIndirectCommandSignatureWithInstanceVertexOffsets.Get()) {
+        device->ReferenceUntilUnused(mDrawIndirectCommandSignatureWithInstanceVertexOffsets);
+    }
+    if (mDrawIndexedIndirectCommandSignatureWithInstanceVertexOffsets.Get()) {
+        device->ReferenceUntilUnused(mDrawIndexedIndirectCommandSignatureWithInstanceVertexOffsets);
+    }
 }
 
 uint32_t PipelineLayout::GetCbvUavSrvRootParameterIndex(BindGroupIndex group) const {
@@ -287,6 +308,10 @@ uint32_t PipelineLayout::GetSamplerRootParameterIndex(BindGroupIndex group) cons
 
 ID3D12RootSignature* PipelineLayout::GetRootSignature() const {
     return mRootSignature.Get();
+}
+
+ID3DBlob* PipelineLayout::GetRootSignatureBlob() const {
+    return mRootSignatureBlob.Get();
 }
 
 const PipelineLayout::DynamicStorageBufferLengthInfo&
