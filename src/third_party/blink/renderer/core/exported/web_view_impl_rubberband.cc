@@ -323,26 +323,26 @@ void WebViewImpl::RubberbandWalkFrame(const RubberbandContext& context, const Lo
     localContext.m_parent = nullptr;
     localContext.m_layoutTopLeft = LayoutPoint::Zero();
 
-    RubberbandLayerContext layerContext;
-    localContext.m_layerContext = &layerContext;
+    RubberbandLayerContext *layerContext = MakeGarbageCollected<RubberbandLayerContext>();
+    localContext.m_layerContext = layerContext;
 
     if (context.m_layerContext) {
-        layerContext.m_layerScrollOffset = context.m_layerContext->m_layerScrollOffset;
-        layerContext.m_translateX = context.m_layerContext->m_translateX + clientTopLeft.X();
-        layerContext.m_translateY = context.m_layerContext->m_translateY + clientTopLeft.Y();
-        layerContext.m_scaleX = context.m_layerContext->m_scaleX;
-        layerContext.m_scaleY = context.m_layerContext->m_scaleY;
+        layerContext->m_layerScrollOffset = context.m_layerContext->m_layerScrollOffset;
+        layerContext->m_translateX = context.m_layerContext->m_translateX + clientTopLeft.X();
+        layerContext->m_translateY = context.m_layerContext->m_translateY + clientTopLeft.Y();
+        layerContext->m_scaleX = context.m_layerContext->m_scaleX;
+        layerContext->m_scaleY = context.m_layerContext->m_scaleY;
 
-        layerContext.m_clipRect = localContext.calcAbsRect(LayoutRect(LayoutPoint(), LayoutSize(view->Size())));
-        layerContext.m_clipRect.Intersect(context.m_layerContext->m_clipRect);
+        layerContext->m_clipRect = localContext.calcAbsRect(LayoutRect(LayoutPoint(), LayoutSize(view->Size())));
+        layerContext->m_clipRect.Intersect(context.m_layerContext->m_clipRect);
     }
     else {
-        layerContext.m_translateX = clientTopLeft.X();
-        layerContext.m_translateY = clientTopLeft.Y();
-        layerContext.m_clipRect = localContext.calcAbsRect(LayoutRect(LayoutPoint(), LayoutSize(view->Size())));
+        layerContext->m_translateX = clientTopLeft.X();
+        layerContext->m_translateY = clientTopLeft.Y();
+        layerContext->m_clipRect = localContext.calcAbsRect(LayoutRect(LayoutPoint(), LayoutSize(view->Size())));
     }
 
-    if (layerContext.m_clipRect.IsEmpty()) {
+    if (layerContext->m_clipRect.IsEmpty()) {
         return;
     }
 
@@ -1061,9 +1061,8 @@ WebString WebViewImpl::GetTextInRubberband(const gfx::Rect& rc)
     rubberbandState_ = std::unique_ptr<RubberbandState>(new RubberbandState());
 
     RubberbandContext context;
-    RubberbandLayerContext layerContext;
-    context.m_layerContext = &layerContext;
-    layerContext.m_clipRect = LayoutRect(rc.x(), rc.y(), rc.width(), rc.height());
+    context.m_layerContext = MakeGarbageCollected<RubberbandLayerContext>();
+    context.m_layerContext->m_clipRect = LayoutRect(rc.x(), rc.y(), rc.width(), rc.height());
     RubberbandWalkFrame(context, page_->DeprecatedLocalMainFrame(), LayoutPoint());
     LayoutRect layoutRc(rc.x(), rc.y(), rc.width(), rc.height());
     WTF::String result = GetTextInRubberbandImpl(layoutRc);
