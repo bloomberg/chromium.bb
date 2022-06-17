@@ -399,7 +399,7 @@ def DownloadPinnedClang():
 
   with open(script_path, 'w') as f:
     subprocess.check_call(
-        ['git', 'show', 'HEAD~:tools/clang/scripts/update.py'],
+        ['git', 'show', 'HEAD~:src/tools/clang/scripts/update.py'],
         stdout=f,
         cwd=CHROMIUM_DIR)
   print("Running pinned update.py")
