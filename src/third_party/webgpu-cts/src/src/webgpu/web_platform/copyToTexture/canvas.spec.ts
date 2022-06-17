@@ -3,7 +3,11 @@ copyToTexture with HTMLCanvasElement and OffscreenCanvas sources.
 `;
 
 import { makeTestGroup } from '../../../common/framework/test_group.js';
-import { kTextureFormatInfo, kValidTextureFormatsForCopyE2T } from '../../capability_info.js';
+import {
+  kTextureFormatInfo,
+  kValidTextureFormatsForCopyE2T,
+  RegularTextureFormat,
+} from '../../capability_info.js';
 import { CopyToTextureUtils } from '../../util/copy_to_texture.js';
 import { CanvasType, kAllCanvasTypes, createCanvas } from '../../util/create_elements.js';
 import { TexelCompareOptions } from '../../util/texture/texture_ok.js';
@@ -119,16 +123,13 @@ class F extends CopyToTextureUtils {
     const canvas = createCanvas(this, canvasType, width, height);
 
     let canvasContext = null;
-    canvasContext = canvas.getContext('2d') as
-      | CanvasRenderingContext2D
-      | OffscreenCanvasRenderingContext2D
-      | null;
+    canvasContext = canvas.getContext('2d');
 
     if (canvasContext === null) {
       this.skip(canvasType + ' canvas 2d context not available');
     }
 
-    const ctx = canvasContext as CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
+    const ctx = canvasContext;
     this.paint2DCanvas(ctx, width, height, 0.6);
 
     return { canvas, canvasContext };
@@ -283,7 +284,7 @@ class F extends CopyToTextureUtils {
   } {
     const canvas = createCanvas(this, canvasType, width, height);
 
-    const gpuContext = canvas.getContext('webgpu') as GPUCanvasContext | null;
+    const gpuContext = canvas.getContext('webgpu');
 
     if (gpuContext === null) {
       this.skip(canvasType + ' canvas webgpu context not available');
@@ -368,6 +369,63 @@ class F extends CopyToTextureUtils {
 
     return rgbaPixels;
   }
+
+  doCopyContentsTest(
+    canvas: HTMLCanvasElement | OffscreenCanvas,
+    sourcePixels: Uint8ClampedArray,
+    p: {
+      width: number;
+      height: number;
+      dstColorFormat: RegularTextureFormat;
+      srcDoFlipYDuringCopy: boolean;
+      srcPremultiplied: boolean;
+      dstPremultiplied: boolean;
+    }
+  ) {
+    const dst = this.device.createTexture({
+      size: {
+        width: p.width,
+        height: p.height,
+        depthOrArrayLayers: 1,
+      },
+      format: p.dstColorFormat,
+      usage:
+        GPUTextureUsage.COPY_DST | GPUTextureUsage.COPY_SRC | GPUTextureUsage.RENDER_ATTACHMENT,
+    });
+
+    // Construct expected value for different dst color format
+    const info = kTextureFormatInfo[p.dstColorFormat];
+    const expFormat = info.baseFormat ?? p.dstColorFormat;
+
+    // For 2d canvas, get expected pixels with getImageData(), which returns unpremultiplied
+    // values.
+    const expTexelView = this.getExpectedPixels(
+      sourcePixels,
+      p.width,
+      p.height,
+      expFormat,
+      p.srcDoFlipYDuringCopy,
+      {
+        srcPremultiplied: p.srcPremultiplied,
+        dstPremultiplied: p.dstPremultiplied,
+      }
+    );
+
+    this.doTestAndCheckResult(
+      { source: canvas, origin: { x: 0, y: 0 }, flipY: p.srcDoFlipYDuringCopy },
+      {
+        texture: dst,
+        origin: { x: 0, y: 0 },
+        colorSpace: 'srgb',
+        premultipliedAlpha: p.dstPremultiplied,
+      },
+      expTexelView,
+      { width: p.width, height: p.height, depthOrArrayLayers: 1 },
+      // 1.0 and 0.6 are representable precisely by all formats except rgb10a2unorm, but
+      // allow diffs of 1ULP since that's the generally-appropriate threshold.
+      { maxDiffULPsForNormFormat: 1, maxDiffULPsForFloatFormat: 1 }
+    );
+  }
 }
 
 export const g = makeTestGroup(F);
@@ -409,69 +467,20 @@ g.test('copy_contents_from_2d_context_canvas')
       .combine('dstPremultiplied', [true, false])
       .combine('srcDoFlipYDuringCopy', [true, false])
       .beginSubcases()
-      .combine('width', [1, 2, 4, 15, 255, 256])
-      .combine('height', [1, 2, 4, 15, 255, 256])
+      .combine('width', [1, 2, 4, 15])
+      .combine('height', [1, 2, 4, 15])
   )
   .fn(async t => {
-    const {
-      width,
-      height,
-      canvasType,
-      dstColorFormat,
-      dstPremultiplied,
-      srcDoFlipYDuringCopy,
-    } = t.params;
+    const { width, height, canvasType } = t.params;
 
     const { canvas, canvasContext } = t.init2DCanvasContent({
       canvasType,
       width,
       height,
     });
-
-    const dst = t.device.createTexture({
-      size: {
-        width,
-        height,
-        depthOrArrayLayers: 1,
-      },
-      format: dstColorFormat,
-      usage:
-        GPUTextureUsage.COPY_DST | GPUTextureUsage.COPY_SRC | GPUTextureUsage.RENDER_ATTACHMENT,
-    });
-
-    // Construct expected value for different dst color format
-    const info = kTextureFormatInfo[dstColorFormat];
-    const expFormat = info.baseFormat ?? dstColorFormat;
-
-    // For 2d canvas, get expected pixels with getImageData(), which returns unpremultiplied
-    // values.
     const sourcePixels = t.getSourceCanvas2DContent(canvasContext, width, height);
-    const expTexelView = t.getExpectedPixels(
-      sourcePixels,
-      width,
-      height,
-      expFormat,
-      srcDoFlipYDuringCopy,
-      {
-        srcPremultiplied: false,
-        dstPremultiplied,
-      }
-    );
 
-    t.doTestAndCheckResult(
-      { source: canvas, origin: { x: 0, y: 0 }, flipY: srcDoFlipYDuringCopy },
-      {
-        texture: dst,
-        origin: { x: 0, y: 0 },
-        colorSpace: 'srgb',
-        premultipliedAlpha: dstPremultiplied,
-      },
-      expTexelView,
-      { width, height, depthOrArrayLayers: 1 },
-      // 1.0 and 0.6 are representable precisely by all formats except rgb10a2unorm, but
-      // allow diffs of 1ULP since that's the generally-appropriate threshold.
-      { maxDiffULPsForNormFormat: 1, maxDiffULPsForFloatFormat: 1 }
-    );
+    t.doCopyContentsTest(canvas, sourcePixels, { srcPremultiplied: false, ...t.params });
   });
 
 g.test('copy_contents_from_gl_context_canvas')
@@ -516,20 +525,11 @@ g.test('copy_contents_from_gl_context_canvas')
       .combine('dstPremultiplied', [true, false])
       .combine('srcDoFlipYDuringCopy', [true, false])
       .beginSubcases()
-      .combine('width', [1, 2, 4, 15, 255, 256])
-      .combine('height', [1, 2, 4, 15, 255, 256])
+      .combine('width', [1, 2, 4, 15])
+      .combine('height', [1, 2, 4, 15])
   )
   .fn(async t => {
-    const {
-      width,
-      height,
-      canvasType,
-      contextName,
-      dstColorFormat,
-      srcPremultiplied,
-      dstPremultiplied,
-      srcDoFlipYDuringCopy,
-    } = t.params;
+    const { width, height, canvasType, contextName, srcPremultiplied } = t.params;
 
     const { canvas, canvasContext } = t.initGLCanvasContent({
       canvasType,
@@ -538,44 +538,9 @@ g.test('copy_contents_from_gl_context_canvas')
       height,
       premultiplied: srcPremultiplied,
     });
-
-    const dst = t.device.createTexture({
-      size: { width, height },
-      format: dstColorFormat,
-      usage:
-        GPUTextureUsage.COPY_DST | GPUTextureUsage.COPY_SRC | GPUTextureUsage.RENDER_ATTACHMENT,
-    });
-
-    // Construct expected value for different dst color format
-    const info = kTextureFormatInfo[dstColorFormat];
-    const expFormat = info.baseFormat ?? dstColorFormat;
     const sourcePixels = t.getSourceCanvasGLContent(canvasContext, width, height);
-    const expTexelView = t.getExpectedPixels(
-      sourcePixels,
-      width,
-      height,
-      expFormat,
-      srcDoFlipYDuringCopy,
-      {
-        srcPremultiplied,
-        dstPremultiplied,
-      }
-    );
 
-    t.doTestAndCheckResult(
-      { source: canvas, origin: { x: 0, y: 0 }, flipY: srcDoFlipYDuringCopy },
-      {
-        texture: dst,
-        origin: { x: 0, y: 0 },
-        colorSpace: 'srgb',
-        premultipliedAlpha: dstPremultiplied,
-      },
-      expTexelView,
-      { width, height, depthOrArrayLayers: 1 },
-      // 1.0 and 0.6 are representable precisely by all formats except rgb10a2unorm, but
-      // allow diffs of 1ULP since that's the generally-appropriate threshold.
-      { maxDiffULPsForNormFormat: 1, maxDiffULPsForFloatFormat: 1 }
-    );
+    t.doCopyContentsTest(canvas, sourcePixels, t.params);
   });
 
 g.test('copy_contents_from_gpu_context_canvas')
@@ -589,6 +554,7 @@ g.test('copy_contents_from_gpu_context_canvas')
   red rect for top-left, green rect for top-right, blue rect for bottom-left
   and white for bottom-right.
 
+  TODO: Actually test alphaMode = opaque.
   And do premultiply alpha in advance if the webgpu context is created
   with compositingAlphaMode="premultiplied".
 
@@ -622,26 +588,16 @@ g.test('copy_contents_from_gpu_context_canvas')
       .combine('dstPremultiplied', [true, false])
       .combine('srcDoFlipYDuringCopy', [true, false])
       .beginSubcases()
-      .combine('width', [1, 2, 4, 15, 255, 256])
-      .combine('height', [1, 2, 4, 15, 255, 256])
+      .combine('width', [1, 2, 4, 15])
+      .combine('height', [1, 2, 4, 15])
   )
   .beforeAllSubcases(t => {
     t.selectMismatchedDeviceOrSkipTestCase(undefined);
   })
   .fn(async t => {
-    const {
-      width,
-      height,
-      canvasType,
-      srcAndDstInSameGPUDevice,
-      dstColorFormat,
-      srcPremultiplied,
-      dstPremultiplied,
-      srcDoFlipYDuringCopy,
-    } = t.params;
+    const { width, height, canvasType, srcAndDstInSameGPUDevice, srcPremultiplied } = t.params;
 
     const device = srcAndDstInSameGPUDevice ? t.device : t.mismatchedDevice;
-
     const { canvas } = t.initGPUCanvasContent({
       device,
       canvasType,
@@ -649,48 +605,9 @@ g.test('copy_contents_from_gpu_context_canvas')
       height,
       premultiplied: srcPremultiplied,
     });
-
-    const dst = t.device.createTexture({
-      size: {
-        width,
-        height,
-        depthOrArrayLayers: 1,
-      },
-      format: dstColorFormat,
-      usage:
-        GPUTextureUsage.COPY_DST | GPUTextureUsage.COPY_SRC | GPUTextureUsage.RENDER_ATTACHMENT,
-    });
-
-    // Construct expected value for different dst color format
-    const info = kTextureFormatInfo[dstColorFormat];
-    const expFormat = info.baseFormat ?? dstColorFormat;
     const sourcePixels = t.calculateSourceContentOnCPU(width, height, srcPremultiplied);
-    const expTexelView = t.getExpectedPixels(
-      sourcePixels,
-      width,
-      height,
-      expFormat,
-      srcDoFlipYDuringCopy,
-      {
-        srcPremultiplied,
-        dstPremultiplied,
-      }
-    );
 
-    t.doTestAndCheckResult(
-      { source: canvas, origin: { x: 0, y: 0 }, flipY: srcDoFlipYDuringCopy },
-      {
-        texture: dst,
-        origin: { x: 0, y: 0 },
-        colorSpace: 'srgb',
-        premultipliedAlpha: dstPremultiplied,
-      },
-      expTexelView,
-      { width: canvas.width, height: canvas.height, depthOrArrayLayers: 1 },
-      // 1.0 and 0.6 are representable precisely by all formats except rgb10a2unorm, but
-      // allow diffs of 1ULP since that's the generally-appropriate threshold.
-      { maxDiffULPsForNormFormat: 1, maxDiffULPsForFloatFormat: 1 }
-    );
+    t.doCopyContentsTest(canvas, sourcePixels, t.params);
   });
 
 g.test('color_space_conversion')

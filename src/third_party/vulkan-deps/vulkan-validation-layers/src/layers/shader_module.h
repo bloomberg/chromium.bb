@@ -243,12 +243,15 @@ struct SHADER_MODULE_STATE : public BASE_NODE {
         // Find all decoration instructions to prevent relooping module later - many checks need this info
         std::vector<spirv_inst_iter> decoration_inst;
         std::vector<spirv_inst_iter> member_decoration_inst;
+        // Find all variable instructions to prevent relookping module later
+        std::vector<spirv_inst_iter> variable_inst;
         // Execution are not tied to an entry point and are their own mapping tied to entry point function
         // [OpEntryPoint function <id> operand] : [Execution Mode Instruction list]
         layer_data::unordered_map<uint32_t, std::vector<spirv_inst_iter>> execution_mode_inst;
         // both OpDecorate and OpMemberDecorate builtin instructions
         std::vector<builtin_set> builtin_decoration_list;
         std::unordered_map<uint32_t, atomic_instruction> atomic_inst;
+        std::vector<spv::Capability> capability_list;
 
         bool has_group_decoration = false;
         bool has_specialization_constants{false};
@@ -403,8 +406,16 @@ struct SHADER_MODULE_STATE : public BASE_NODE {
     uint32_t GetTypeBytesSize(const spirv_inst_iter &iter) const;
     uint32_t GetBaseType(const spirv_inst_iter &iter) const;
     uint32_t GetTypeId(uint32_t id) const;
-    uint32_t CalcComputeSharedMemory(VkShaderStageFlagBits stage,
-                                     const spirv_inst_iter &insn) const;
+
+    bool WritesToGlLayer() const {
+        return std::any_of(static_data_.builtin_decoration_list.begin(), static_data_.builtin_decoration_list.end(),
+                           [](const builtin_set &built_in) { return built_in.builtin == spv::BuiltInLayer; });
+    }
+
+    bool HasInputAttachmentCapability() const {
+        return std::any_of(static_data_.capability_list.begin(), static_data_.capability_list.end(),
+                           [](const spv::Capability &capability) { return capability == spv::CapabilityInputAttachment; });
+    }
 
   private:
     // Functions used for initialization only

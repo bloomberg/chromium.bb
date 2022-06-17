@@ -3538,10 +3538,12 @@ void InstructionSelector::VisitInt64AbsWithOverflow(Node* node) {
 #define SIMD_BINOP_LIST(V)                        \
   V(I32x4Mul, kArm64I32x4Mul)                     \
   V(I32x4DotI16x8S, kArm64I32x4DotI16x8S)         \
+  V(I16x8DotI8x16I7x16S, kArm64I16x8DotI8x16S)    \
   V(I16x8SConvertI32x4, kArm64I16x8SConvertI32x4) \
   V(I16x8Mul, kArm64I16x8Mul)                     \
   V(I16x8UConvertI32x4, kArm64I16x8UConvertI32x4) \
   V(I16x8Q15MulRSatS, kArm64I16x8Q15MulRSatS)     \
+  V(I16x8RelaxedQ15MulRS, kArm64I16x8Q15MulRSatS) \
   V(I8x16SConvertI16x8, kArm64I8x16SConvertI16x8) \
   V(I8x16UConvertI16x8, kArm64I8x16UConvertI16x8) \
   V(S128Or, kArm64S128Or)                         \
@@ -3597,7 +3599,7 @@ void InstructionSelector::VisitS128Const(Node* node) {
   Arm64OperandGenerator g(this);
   static const int kUint32Immediates = 4;
   uint32_t val[kUint32Immediates];
-  STATIC_ASSERT(sizeof(val) == kSimd128Size);
+  static_assert(sizeof(val) == kSimd128Size);
   memcpy(val, S128ImmediateParameterOf(node->op()).data(), kSimd128Size);
   // If all bytes are zeros, avoid emitting code for generic constants
   bool all_zeros = !(val[0] || val[1] || val[2] || val[3]);
@@ -3660,7 +3662,7 @@ base::Optional<BicImmParam> BicImm32bitHelper(uint32_t val) {
 base::Optional<BicImmParam> BicImmConstHelper(Node* const_node, bool not_imm) {
   const int kUint32Immediates = 4;
   uint32_t val[kUint32Immediates];
-  STATIC_ASSERT(sizeof(val) == kSimd128Size);
+  static_assert(sizeof(val) == kSimd128Size);
   memcpy(val, S128ImmediateParameterOf(const_node->op()).data(), kSimd128Size);
   // If 4 uint32s are not the same, cannot emit Bic
   if (!(val[0] == val[1] && val[1] == val[2] && val[2] == val[3])) {
@@ -3669,10 +3671,14 @@ base::Optional<BicImmParam> BicImmConstHelper(Node* const_node, bool not_imm) {
   return BicImm32bitHelper(not_imm ? ~val[0] : val[0]);
 }
 
-base::Optional<BicImmResult> BicImmHelper(Node* or_node, bool not_imm) {
-  Node* left = or_node->InputAt(0);
-  Node* right = or_node->InputAt(1);
-  if (left->opcode() == IrOpcode::kS128Const) {
+base::Optional<BicImmResult> BicImmHelper(Node* and_node, bool not_imm) {
+  Node* left = and_node->InputAt(0);
+  Node* right = and_node->InputAt(1);
+  // If we are negating the immediate then we are producing And(x, imm), and so
+  // can take the immediate from the left or right input. Otherwise we are
+  // producing And(x, Not(imm)), which can only be used when the immediate is
+  // the right (negated) input.
+  if (not_imm && left->opcode() == IrOpcode::kS128Const) {
     return BicImmResult(BicImmConstHelper(left, not_imm), left, right);
   }
   if (right->opcode() == IrOpcode::kS128Const) {
@@ -3708,6 +3714,7 @@ void InstructionSelector::VisitS128AndNot(Node* node) {
 }
 
 void InstructionSelector::VisitS128And(Node* node) {
+  // AndNot can be used if we negate the immediate input of And.
   if (!TryEmitS128AndNotImm(this, node, true)) {
     VisitRRR(this, kArm64S128And, node);
   }
@@ -3716,6 +3723,13 @@ void InstructionSelector::VisitS128And(Node* node) {
 void InstructionSelector::VisitS128Zero(Node* node) {
   Arm64OperandGenerator g(this);
   Emit(kArm64S128Zero, g.DefineAsRegister(node));
+}
+
+void InstructionSelector::VisitI32x4DotI8x16I7x16AddS(Node* node) {
+  Arm64OperandGenerator g(this);
+  Emit(
+    kArm64I32x4DotI8x16AddS, g.DefineAsRegister(node), g.UseRegister(node->InputAt(0)),
+    g.UseRegister(node->InputAt(1)), g.UseRegister(node->InputAt(2)));
 }
 
 #define SIMD_VISIT_EXTRACT_LANE(Type, T, Sign, LaneSize)                     \

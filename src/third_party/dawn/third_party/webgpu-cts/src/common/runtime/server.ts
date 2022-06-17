@@ -130,7 +130,7 @@ if (gpuProviderModule) {
           }
         } catch (err) {
           response.statusCode = 500;
-          response.end('run failed with error: ' + err);
+          response.end(`run failed with error: ${err}`);
         }
       } else if (request.url.startsWith(terminatePrefix)) {
         server.close();

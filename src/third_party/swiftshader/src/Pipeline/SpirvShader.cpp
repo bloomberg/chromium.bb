@@ -447,6 +447,9 @@ SpirvShader::SpirvShader(
 				case spv::CapabilityStencilExportEXT: capabilities.StencilExportEXT = true; break;
 				case spv::CapabilityVulkanMemoryModel: capabilities.VulkanMemoryModel = true; break;
 				case spv::CapabilityVulkanMemoryModelDeviceScope: capabilities.VulkanMemoryModelDeviceScope = true; break;
+				case spv::CapabilityShaderNonUniform: capabilities.ShaderNonUniform = true; break;
+				case spv::CapabilityRuntimeDescriptorArray: capabilities.RuntimeDescriptorArray = true; break;
+				case spv::CapabilityStorageBufferArrayNonUniformIndexing: capabilities.StorageBufferArrayNonUniformIndexing = true; break;
 				default:
 					UNSUPPORTED("Unsupported capability %u", insn.word(1));
 				}
@@ -556,6 +559,7 @@ SpirvShader::SpirvShader(
 		case spv::OpLoad:
 		case spv::OpAccessChain:
 		case spv::OpInBoundsAccessChain:
+		case spv::OpPtrAccessChain:
 		case spv::OpSampledImage:
 		case spv::OpImage:
 			{
@@ -571,7 +575,7 @@ SpirvShader::SpirvShader(
 
 				DefineResult(insn);
 
-				if(opcode == spv::OpAccessChain || opcode == spv::OpInBoundsAccessChain)
+				if(opcode == spv::OpAccessChain || opcode == spv::OpInBoundsAccessChain || opcode == spv::OpPtrAccessChain)
 				{
 					Decorations dd{};
 					ApplyDecorationsForAccessChain(&dd, &descriptorDecorations[resultId], pointerId, Span(insn, 4, insn.wordCount() - 4));
@@ -809,6 +813,7 @@ SpirvShader::SpirvShader(
 				if(!strcmp(ext, "SPV_GOOGLE_decorate_string")) break;
 				if(!strcmp(ext, "SPV_GOOGLE_hlsl_functionality1")) break;
 				if(!strcmp(ext, "SPV_GOOGLE_user_type")) break;
+				if(!strcmp(ext, "SPV_EXT_descriptor_indexing")) break;
 				UNSUPPORTED("SPIR-V Extension: %s", ext);
 			}
 			break;
@@ -1242,15 +1247,15 @@ void SpirvShader::ApplyDecorationsForAccessChain(Decorations *d, DescriptorDecor
 	}
 }
 
-SIMD::Pointer SpirvShader::WalkExplicitLayoutAccessChain(Object::ID baseId, const Span &indexIds, const EmitState *state) const
+SIMD::Pointer SpirvShader::WalkExplicitLayoutAccessChain(Object::ID baseId, Object::ID elementId, const Span &indexIds, bool nonUniform, const EmitState *state) const
 {
 	// Produce a offset into external memory in sizeof(float) units
 
 	auto &baseObject = getObject(baseId);
 	Type::ID typeId = getType(baseObject).element;
 	Decorations d = GetDecorationsForId(baseObject.typeId());
+	SIMD::Int arrayIndex = 0;
 
-	Int arrayIndex = 0;
 	uint32_t start = 0;
 	if(baseObject.kind == Object::Kind::DescriptorSet)
 	{
@@ -1265,8 +1270,8 @@ SIMD::Pointer SpirvShader::WalkExplicitLayoutAccessChain(Object::ID baseId, cons
 			}
 			else
 			{
-				// Note: the value of indexIds[0] must be dynamically uniform.
-				arrayIndex = Extract(state->getIntermediate(indexIds[0]).Int(0), 0);
+				nonUniform |= GetDecorationsForId(indexIds[0]).NonUniform;
+				arrayIndex = state->getIntermediate(indexIds[0]).Int(0);
 			}
 
 			start = 1;
@@ -1274,7 +1279,8 @@ SIMD::Pointer SpirvShader::WalkExplicitLayoutAccessChain(Object::ID baseId, cons
 		}
 	}
 
-	auto ptr = GetPointerToData(baseId, arrayIndex, state);
+	auto ptr = GetPointerToData(baseId, arrayIndex, nonUniform, state);
+	OffsetToElement(ptr, elementId, d.ArrayStride, state);
 
 	int constantOffset = 0;
 
@@ -1353,14 +1359,16 @@ SIMD::Pointer SpirvShader::WalkExplicitLayoutAccessChain(Object::ID baseId, cons
 	return ptr;
 }
 
-SIMD::Pointer SpirvShader::WalkAccessChain(Object::ID baseId, const Span &indexIds, EmitState const *state) const
+SIMD::Pointer SpirvShader::WalkAccessChain(Object::ID baseId, Object::ID elementId, const Span &indexIds, EmitState const *state) const
 {
 	// TODO: avoid doing per-lane work in some cases if we can?
 	auto routine = state->routine;
 	auto &baseObject = getObject(baseId);
 	Type::ID typeId = getType(baseObject).element;
+	Decorations d = GetDecorationsForId(baseObject.typeId());
 
 	auto ptr = state->getPointer(baseId);
+	OffsetToElement(ptr, elementId, d.ArrayStride, state);
 
 	int constantOffset = 0;
 
@@ -1400,12 +1408,12 @@ SIMD::Pointer SpirvShader::WalkAccessChain(Object::ID baseId, const Span &indexI
 					auto &obj = getObject(indexIds[i]);
 					if(obj.kind == Object::Kind::Constant)
 					{
-						ptr.base += descriptorSize * GetConstScalarInt(indexIds[i]);
+						ptr += descriptorSize * GetConstScalarInt(indexIds[i]);
 					}
 					else
 					{
 						// Note: the value of indexIds[i] must be dynamically uniform.
-						ptr.base += descriptorSize * Extract(state->getIntermediate(indexIds[i]).Int(0), 0);
+						ptr += Int(descriptorSize * Extract(state->getIntermediate(indexIds[i]).Int(0), 0));
 					}
 				}
 				else
@@ -1532,6 +1540,10 @@ void SpirvShader::Decorations::Apply(spv::Decoration decoration, uint32_t arg)
 	case spv::DecorationColMajor:
 		HasRowMajor = true;
 		RowMajor = false;
+		break;
+	case spv::DecorationNonUniform:
+		NonUniform = true;
+		break;
 	default:
 		// Intentionally partial, there are many decorations we just don't care about.
 		break;
@@ -1590,6 +1602,7 @@ void SpirvShader::Decorations::Apply(const sw::SpirvShader::Decorations &src)
 	BufferBlock |= src.BufferBlock;
 	RelaxedPrecision |= src.RelaxedPrecision;
 	InsideMatrix |= src.InsideMatrix;
+	NonUniform |= src.NonUniform;
 }
 
 void SpirvShader::DescriptorDecorations::Apply(const sw::SpirvShader::DescriptorDecorations &src)
@@ -1925,6 +1938,7 @@ SpirvShader::EmitResult SpirvShader::EmitInstruction(InsnIterator insn, EmitStat
 
 	case spv::OpAccessChain:
 	case spv::OpInBoundsAccessChain:
+	case spv::OpPtrAccessChain:
 		return EmitAccessChain(insn, state);
 
 	case spv::OpCompositeConstruct:
@@ -2201,21 +2215,25 @@ SpirvShader::EmitResult SpirvShader::EmitAccessChain(InsnIterator insn, EmitStat
 {
 	Type::ID typeId = insn.word(1);
 	Object::ID resultId = insn.word(2);
+	bool nonUniform = GetDecorationsForId(resultId).NonUniform;
 	Object::ID baseId = insn.word(3);
 	auto &type = getType(typeId);
 	ASSERT(type.componentCount == 1);
 	ASSERT(getObject(resultId).kind == Object::Kind::Pointer);
 
+	Object::ID elementId = (insn.opcode() == spv::OpPtrAccessChain) ? insn.word(4) : 0;
+	int indexId = (insn.opcode() == spv::OpPtrAccessChain) ? 5 : 4;
+
 	if(type.storageClass == spv::StorageClassPushConstant ||
 	   type.storageClass == spv::StorageClassUniform ||
 	   type.storageClass == spv::StorageClassStorageBuffer)
 	{
-		auto ptr = WalkExplicitLayoutAccessChain(baseId, Span(insn, 4, insn.wordCount() - 4), state);
+		auto ptr = WalkExplicitLayoutAccessChain(baseId, elementId, Span(insn, indexId, insn.wordCount() - indexId), nonUniform, state);
 		state->createPointer(resultId, ptr);
 	}
 	else
 	{
-		auto ptr = WalkAccessChain(baseId, Span(insn, 4, insn.wordCount() - 4), state);
+		auto ptr = WalkAccessChain(baseId, elementId, Span(insn, indexId, insn.wordCount() - indexId), state);
 		state->createPointer(resultId, ptr);
 	}
 
@@ -2366,19 +2384,37 @@ SpirvShader::EmitResult SpirvShader::EmitVectorInsertDynamic(InsnIterator insn, 
 SpirvShader::EmitResult SpirvShader::EmitSelect(InsnIterator insn, EmitState *state) const
 {
 	auto &type = getType(insn.resultTypeId());
-	auto &dst = state->createIntermediate(insn.resultId(), type.componentCount);
+	auto result = getObject(insn.resultId());
 	auto cond = Operand(this, state, insn.word(3));
 	auto condIsScalar = (cond.componentCount == 1);
-	auto lhs = Operand(this, state, insn.word(4));
-	auto rhs = Operand(this, state, insn.word(5));
 
-	for(auto i = 0u; i < type.componentCount; i++)
+	switch(result.kind)
 	{
-		auto sel = cond.Int(condIsScalar ? 0 : i);
-		dst.move(i, (sel & lhs.Int(i)) | (~sel & rhs.Int(i)));  // TODO: IfThenElse()
+	case Object::Kind::Pointer:
+		{
+			ASSERT(condIsScalar);
+			ASSERT(type.storageClass == spv::StorageClassPhysicalStorageBuffer);
+
+			auto &lhs = state->getPointer(insn.word(4));
+			auto &rhs = state->getPointer(insn.word(5));
+			state->createPointer(insn.resultId(), SIMD::Pointer::IfThenElse(cond.Int(0), lhs, rhs));
+		}
+		break;
+	default:
+		{
+			auto lhs = Operand(this, state, insn.word(4));
+			auto rhs = Operand(this, state, insn.word(5));
+			auto &dst = state->createIntermediate(insn.resultId(), type.componentCount);
+			for(auto i = 0u; i < type.componentCount; i++)
+			{
+				auto sel = cond.Int(condIsScalar ? 0 : i);
+				dst.move(i, (sel & lhs.Int(i)) | (~sel & rhs.Int(i)));  // TODO: IfThenElse()
+			}
+		}
+		break;
 	}
 
-	SPIRV_SHADER_DBG("{0}: {1}", insn.word(2), dst);
+	SPIRV_SHADER_DBG("{0}: {1}", insn.word(2), result);
 	SPIRV_SHADER_DBG("{0}: {1}", insn.word(3), cond);
 	SPIRV_SHADER_DBG("{0}: {1}", insn.word(4), lhs);
 	SPIRV_SHADER_DBG("{0}: {1}", insn.word(5), rhs);
@@ -2436,7 +2472,6 @@ SpirvShader::EmitResult SpirvShader::EmitAtomicOp(InsnIterator insn, EmitState *
 	auto value = (insn.wordCount() == 7) ? Operand(this, state, insn.word(6)).UInt(0) : RValue<SIMD::UInt>(1);
 	auto &dst = state->createIntermediate(resultId, resultType.componentCount);
 	auto ptr = state->getPointer(pointerId);
-	auto ptrOffsets = ptr.offsets();
 
 	SIMD::Int mask = state->activeLaneMask() & state->storesAndAtomicsMask();
 
@@ -2450,42 +2485,41 @@ SpirvShader::EmitResult SpirvShader::EmitAtomicOp(InsnIterator insn, EmitState *
 	{
 		If(Extract(mask, j) != 0)
 		{
-			auto offset = Extract(ptrOffsets, j);
 			auto laneValue = Extract(value, j);
 			UInt v;
 			switch(insn.opcode())
 			{
 			case spv::OpAtomicIAdd:
 			case spv::OpAtomicIIncrement:
-				v = AddAtomic(Pointer<UInt>(&ptr.base[offset]), laneValue, memoryOrder);
+				v = AddAtomic(Pointer<UInt>(ptr.getPointerForLane(j)), laneValue, memoryOrder);
 				break;
 			case spv::OpAtomicISub:
 			case spv::OpAtomicIDecrement:
-				v = SubAtomic(Pointer<UInt>(&ptr.base[offset]), laneValue, memoryOrder);
+				v = SubAtomic(Pointer<UInt>(ptr.getPointerForLane(j)), laneValue, memoryOrder);
 				break;
 			case spv::OpAtomicAnd:
-				v = AndAtomic(Pointer<UInt>(&ptr.base[offset]), laneValue, memoryOrder);
+				v = AndAtomic(Pointer<UInt>(ptr.getPointerForLane(j)), laneValue, memoryOrder);
 				break;
 			case spv::OpAtomicOr:
-				v = OrAtomic(Pointer<UInt>(&ptr.base[offset]), laneValue, memoryOrder);
+				v = OrAtomic(Pointer<UInt>(ptr.getPointerForLane(j)), laneValue, memoryOrder);
 				break;
 			case spv::OpAtomicXor:
-				v = XorAtomic(Pointer<UInt>(&ptr.base[offset]), laneValue, memoryOrder);
+				v = XorAtomic(Pointer<UInt>(ptr.getPointerForLane(j)), laneValue, memoryOrder);
 				break;
 			case spv::OpAtomicSMin:
-				v = As<UInt>(MinAtomic(Pointer<Int>(&ptr.base[offset]), As<Int>(laneValue), memoryOrder));
+				v = As<UInt>(MinAtomic(Pointer<Int>(ptr.getPointerForLane(j)), As<Int>(laneValue), memoryOrder));
 				break;
 			case spv::OpAtomicSMax:
-				v = As<UInt>(MaxAtomic(Pointer<Int>(&ptr.base[offset]), As<Int>(laneValue), memoryOrder));
+				v = As<UInt>(MaxAtomic(Pointer<Int>(ptr.getPointerForLane(j)), As<Int>(laneValue), memoryOrder));
 				break;
 			case spv::OpAtomicUMin:
-				v = MinAtomic(Pointer<UInt>(&ptr.base[offset]), laneValue, memoryOrder);
+				v = MinAtomic(Pointer<UInt>(ptr.getPointerForLane(j)), laneValue, memoryOrder);
 				break;
 			case spv::OpAtomicUMax:
-				v = MaxAtomic(Pointer<UInt>(&ptr.base[offset]), laneValue, memoryOrder);
+				v = MaxAtomic(Pointer<UInt>(ptr.getPointerForLane(j)), laneValue, memoryOrder);
 				break;
 			case spv::OpAtomicExchange:
-				v = ExchangeAtomic(Pointer<UInt>(&ptr.base[offset]), laneValue, memoryOrder);
+				v = ExchangeAtomic(Pointer<UInt>(ptr.getPointerForLane(j)), laneValue, memoryOrder);
 				break;
 			default:
 				UNREACHABLE("%s", OpcodeName(insn.opcode()));
@@ -2514,7 +2548,6 @@ SpirvShader::EmitResult SpirvShader::EmitAtomicCompareExchange(InsnIterator insn
 	auto comparator = Operand(this, state, insn.word(8));
 	auto &dst = state->createIntermediate(resultId, resultType.componentCount);
 	auto ptr = state->getPointer(insn.word(3));
-	auto ptrOffsets = ptr.offsets();
 
 	SIMD::UInt x(0);
 	auto mask = state->activeLaneMask() & state->storesAndAtomicsMask();
@@ -2522,10 +2555,9 @@ SpirvShader::EmitResult SpirvShader::EmitAtomicCompareExchange(InsnIterator insn
 	{
 		If(Extract(mask, j) != 0)
 		{
-			auto offset = Extract(ptrOffsets, j);
 			auto laneValue = Extract(value.UInt(0), j);
 			auto laneComparator = Extract(comparator.UInt(0), j);
-			UInt v = CompareExchangeAtomic(Pointer<UInt>(&ptr.base[offset]), laneValue, laneComparator, memoryOrderEqual, memoryOrderUnequal);
+			UInt v = CompareExchangeAtomic(Pointer<UInt>(ptr.getPointerForLane(j)), laneValue, laneComparator, memoryOrderEqual, memoryOrderUnequal);
 			x = Insert(x, v, j);
 		}
 	}
@@ -2560,7 +2592,7 @@ SpirvShader::EmitResult SpirvShader::EmitArrayLength(InsnIterator insn, EmitStat
 	auto arrayId = Type::ID(structTy.definition.word(2 + arrayFieldIdx));
 
 	auto &result = state->createIntermediate(insn.resultId(), 1);
-	auto structBase = GetPointerToData(structPtrId, 0, state);
+	auto structBase = GetPointerToData(structPtrId, 0, false, state);
 
 	Decorations structDecorations = {};
 	ApplyDecorationsForIdMember(&structDecorations, structPtrTy.element, arrayFieldIdx);

@@ -157,7 +157,7 @@
     // See crbug.com/1312449.
     // TODO(crbug.com/1314012): Need test for this case.
     self.authenticationService->SignOut(signin_metrics::ABORT_SIGNIN,
-                                        /*force_clear_browsing_data=*/true,
+                                        /*force_clear_browsing_data=*/false,
                                         startSignInCompletion);
     return;
   }
@@ -185,7 +185,7 @@
     }
   };
   self.authenticationService->SignOut(signin_metrics::ABORT_SIGNIN,
-                                      /*force_clear_browsing_data=*/true,
+                                      /*force_clear_browsing_data=*/false,
                                       signOutCompletion);
 }
 
@@ -248,10 +248,7 @@
       _consumer.signinStatus = SigninScreenConsumerSigninStatusDisabled;
       break;
   }
-  self.consumer.managedEnabled =
-      GetEnterpriseSignInRestrictions(self.authenticationService,
-                                      self.prefService, self.syncService) !=
-      kNoEnterpriseRestriction;
+  self.consumer.isManaged = IsApplicationManaged();
   if (!self.showFREConsent) {
     self.consumer.screenIntent = SigninScreenConsumerScreenIntentSigninOnly;
   } else {
@@ -264,8 +261,6 @@
         metricReportingDisabled
             ? SigninScreenConsumerScreenIntentWelcomeWithoutUMAAndSignin
             : SigninScreenConsumerScreenIntentWelcomeAndSignin;
-    self.consumer.managedEnabled |= self.localPrefService->IsManagedPreference(
-        metrics::prefs::kMetricsReportingEnabled);
   }
   if (signinForcedOrAvailable) {
     self.selectedIdentity = self.accountManagerService->GetDefaultIdentity();

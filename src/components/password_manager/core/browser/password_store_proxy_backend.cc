@@ -17,10 +17,13 @@
 #include "base/ranges/algorithm.h"
 #include "base/strings/strcat.h"
 #include "components/password_manager/core/browser/field_info_table.h"
+#include "components/password_manager/core/browser/password_sync_util.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/sync/driver/sync_service.h"
 #include "components/sync/model/proxy_model_type_controller_delegate.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 
 namespace password_manager {
 
@@ -86,30 +89,6 @@ bool ShouldExecuteDeletionsOnShadowBackend(PrefService* prefs,
   }
   NOTREACHED()
       << "Define explicitly whether deletions on both backends are required!";
-  return false;
-}
-
-// This helper is used to determine main *and* shadow backends. Technically,
-// some "Enable" groups don't require shadow traffic but they use it for safe
-// deletions.
-bool UsesAndroidBackendAsMainBackend(bool is_syncing) {
-  if (!is_syncing)
-    return false;
-
-  if (!base::FeatureList::IsEnabled(features::kUnifiedPasswordManagerAndroid))
-    return false;
-
-  features::UpmExperimentVariation variation =
-      features::kUpmExperimentVariationParam.Get();
-  switch (variation) {
-    case features::UpmExperimentVariation::kEnableForSyncingUsers:
-    case features::UpmExperimentVariation::kEnableOnlyBackendForSyncingUsers:
-    case features::UpmExperimentVariation::kEnableForAllUsers:
-      return true;
-    case features::UpmExperimentVariation::kShadowSyncingUsers:
-      return false;
-  }
-  NOTREACHED() << "Define explicitly whether Android is the main backend!";
   return false;
 }
 
@@ -457,25 +436,25 @@ void PasswordStoreProxyBackend::GetAllLoginsForAccountAsync(
 }
 
 void PasswordStoreProxyBackend::FillMatchingLoginsAsync(
-    LoginsReply callback,
+    LoginsOrErrorReply callback,
     bool include_psl,
     const std::vector<PasswordFormDigest>& forms) {
-  auto handler =
-      base::MakeRefCounted<ShadowTrafficMetricsRecorder<LoginsResultImpl>>(
-          MethodName("FillMatchingLoginsAsync"));
+  auto handler = base::MakeRefCounted<
+      ShadowTrafficMetricsRecorder<LoginsResultOrErrorImpl>>(
+      MethodName("FillMatchingLoginsAsync"));
   main_backend()->FillMatchingLoginsAsync(
-      base::BindOnce(
-          &ShadowTrafficMetricsRecorder<LoginsResultImpl>::RecordMainResult,
-          handler)
+      base::BindOnce(&ShadowTrafficMetricsRecorder<
+                         LoginsResultOrErrorImpl>::RecordMainResult,
+                     handler)
           .Then(std::move(callback)),
       include_psl, forms);
 
   if (ShouldExecuteReadOperationsOnShadowBackend(
           prefs_, sync_delegate_->IsSyncingPasswordsEnabled())) {
     shadow_backend()->FillMatchingLoginsAsync(
-        base::BindOnce(
-            &ShadowTrafficMetricsRecorder<LoginsResultImpl>::RecordShadowResult,
-            handler),
+        base::BindOnce(&ShadowTrafficMetricsRecorder<
+                           LoginsResultOrErrorImpl>::RecordShadowResult,
+                       handler),
         include_psl, forms);
   }
 }
@@ -644,21 +623,18 @@ void PasswordStoreProxyBackend::ClearAllLocalPasswords() {
 
 void PasswordStoreProxyBackend::OnSyncServiceInitialized(
     syncer::SyncService* sync_service) {
+  sync_service_ = sync_service;
   android_backend_->OnSyncServiceInitialized(sync_service);
 }
 
 PasswordStoreBackend* PasswordStoreProxyBackend::main_backend() {
-  return UsesAndroidBackendAsMainBackend(
-             sync_delegate_->IsSyncingPasswordsEnabled())
-             ? android_backend_
-             : built_in_backend_;
+  return UsesAndroidBackendAsMainBackend() ? android_backend_
+                                           : built_in_backend_;
 }
 
 PasswordStoreBackend* PasswordStoreProxyBackend::shadow_backend() {
-  return UsesAndroidBackendAsMainBackend(
-             sync_delegate_->IsSyncingPasswordsEnabled())
-             ? built_in_backend_
-             : android_backend_;
+  return UsesAndroidBackendAsMainBackend() ? built_in_backend_
+                                           : android_backend_;
 }
 
 void PasswordStoreProxyBackend::OnRemoteFormChangesReceived(
@@ -668,11 +644,33 @@ void PasswordStoreProxyBackend::OnRemoteFormChangesReceived(
   // `remote_form_changes_received` is used to inform observers about changes in
   // the backend. This check guarantees observers are informed only about
   // changes in the main backend.
-  if (originates_from_android.value() ==
-      UsesAndroidBackendAsMainBackend(
-          sync_delegate_->IsSyncingPasswordsEnabled())) {
+  if (originates_from_android.value() == UsesAndroidBackendAsMainBackend()) {
     remote_form_changes_received.Run(std::move(changes));
   }
+}
+
+bool PasswordStoreProxyBackend::UsesAndroidBackendAsMainBackend() {
+  if (prefs_->GetBoolean(prefs::kUnenrolledFromGoogleMobileServicesDueToErrors))
+    return false;
+
+  if (!sync_delegate_->IsSyncingPasswordsEnabled())
+    return false;
+
+  if (!base::FeatureList::IsEnabled(features::kUnifiedPasswordManagerAndroid))
+    return false;
+
+  features::UpmExperimentVariation variation =
+      features::kUpmExperimentVariationParam.Get();
+  switch (variation) {
+    case features::UpmExperimentVariation::kEnableForSyncingUsers:
+    case features::UpmExperimentVariation::kEnableOnlyBackendForSyncingUsers:
+    case features::UpmExperimentVariation::kEnableForAllUsers:
+      return true;
+    case features::UpmExperimentVariation::kShadowSyncingUsers:
+      return false;
+  }
+  NOTREACHED() << "Define explicitly whether Android is the main backend!";
+  return false;
 }
 
 }  // namespace password_manager

@@ -14,7 +14,7 @@
 
 #include "src/tint/sem/constant.h"
 
-#include <functional>
+#include <cmath>
 #include <utility>
 
 #include "src/tint/debug.h"
@@ -24,34 +24,30 @@
 namespace tint::sem {
 
 namespace {
+size_t CountElements(const Constant::Elements& elements) {
+    return std::visit([](auto&& vec) { return vec.size(); }, elements);
+}
 
-const Type* ElemType(const Type* ty, size_t num_elements) {
-    diag::List diag;
-    if (ty->is_scalar()) {
-        if (num_elements != 1) {
-            TINT_ICE(Semantic, diag) << "sem::Constant() type <-> num_element mismatch. type: '"
-                                     << ty->TypeInfo().name << "' num_elements: " << num_elements;
-        }
-        return ty;
+template <typename T>
+bool IsNegativeFloat(T value) {
+    (void)value;
+    if constexpr (IsFloatingPoint<T>) {
+        return std::signbit(value);
+    } else {
+        return false;
     }
-    if (auto* vec = ty->As<Vector>()) {
-        if (num_elements != vec->Width()) {
-            TINT_ICE(Semantic, diag) << "sem::Constant() type <-> num_element mismatch. type: '"
-                                     << ty->TypeInfo().name << "' num_elements: " << num_elements;
-        }
-        TINT_ASSERT(Semantic, vec->type()->is_scalar());
-        return vec->type();
-    }
-    TINT_UNREACHABLE(Semantic, diag) << "Unsupported sem::Constant type";
-    return nullptr;
 }
 
 }  // namespace
 
 Constant::Constant() {}
 
-Constant::Constant(const sem::Type* ty, Scalars els)
-    : type_(ty), elem_type_(ElemType(ty, els.size())), elems_(std::move(els)) {}
+Constant::Constant(const sem::Type* ty, Elements els)
+    : type_(ty), elem_type_(CheckElemType(ty, CountElements(els))), elems_(std::move(els)) {}
+
+Constant::Constant(const sem::Type* ty, AInts vec) : Constant(ty, Elements{std::move(vec)}) {}
+
+Constant::Constant(const sem::Type* ty, AFloats vec) : Constant(ty, Elements{std::move(vec)}) {}
 
 Constant::Constant(const Constant&) = default;
 
@@ -60,20 +56,58 @@ Constant::~Constant() = default;
 Constant& Constant::operator=(const Constant& rhs) = default;
 
 bool Constant::AnyZero() const {
-    for (size_t i = 0; i < Elements().size(); ++i) {
-        if (WithScalarAt(i, [&](auto&& s) {
-                // Use std::equal_to to work around -Wfloat-equal warnings
-                using T = std::remove_reference_t<decltype(s)>;
-                auto equal_to = std::equal_to<T>{};
-                if (equal_to(s, T(0))) {
-                    return true;
-                }
-                return false;
-            })) {
-            return true;
+    return WithElements([&](auto&& vec) {
+        using T = typename std::decay_t<decltype(vec)>::value_type;
+        for (auto el : vec) {
+            if (el == T(0) && !IsNegativeFloat(el.value)) {
+                return true;
+            }
         }
+        return false;
+    });
+}
+
+bool Constant::AllZero() const {
+    return WithElements([&](auto&& vec) {
+        using T = typename std::decay_t<decltype(vec)>::value_type;
+        for (auto el : vec) {
+            if (el != T(0) || IsNegativeFloat(el.value)) {
+                return false;
+            }
+        }
+        return true;
+    });
+}
+
+bool Constant::AllEqual(size_t start, size_t end) const {
+    return WithElements([&](auto&& vec) {
+        if (!vec.empty()) {
+            auto value = vec[start];
+            bool float_sign = IsNegativeFloat(vec[start].value);
+            for (size_t i = start + 1; i < end; i++) {
+                if (vec[i] != value || float_sign != IsNegativeFloat(vec[i].value)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    });
+}
+
+const Type* Constant::CheckElemType(const sem::Type* ty, size_t num_elements) {
+    diag::List diag;
+    if (ty->is_abstract_or_scalar() || ty->IsAnyOf<Vector, Matrix>()) {
+        uint32_t count = 0;
+        auto* el_ty = Type::ElementOf(ty, &count);
+        if (num_elements != count) {
+            TINT_ICE(Semantic, diag) << "sem::Constant() type <-> element mismatch. type: '"
+                                     << ty->TypeInfo().name << "' element: " << num_elements;
+        }
+        TINT_ASSERT(Semantic, el_ty->is_abstract_or_scalar());
+        return el_ty;
     }
-    return false;
+    TINT_UNREACHABLE(Semantic, diag) << "Unsupported sem::Constant type: " << ty->TypeInfo().name;
+    return nullptr;
 }
 
 }  // namespace tint::sem

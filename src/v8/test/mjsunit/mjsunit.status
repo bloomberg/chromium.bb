@@ -45,19 +45,11 @@
   ##############################################################################
   # Temporal tests to be implemented
   # https://crbug.com/v8/11544
-  'temporal/calendar-date-add': [FAIL],
-  'temporal/calendar-date-from-fields': [FAIL],
-  'temporal/calendar-date-until': [FAIL],
-  'temporal/calendar-month-day-from-fields': [FAIL],
   'temporal/calendar-week-of-year': [FAIL],
-  'temporal/calendar-year-month-from-fields': [FAIL],
   'temporal/duration-add': [FAIL],
   'temporal/duration-to-json': [FAIL],
-  'temporal/duration-with': [FAIL],
   'temporal/instant-add': [FAIL],
-  'temporal/instant-compare': [FAIL],
   'temporal/instant-constructor': [FAIL],
-  'temporal/instant-equals': [FAIL],
   'temporal/instant-from-epoch-microseconds': [FAIL],
   'temporal/instant-from-epoch-milliseconds': [FAIL],
   'temporal/instant-from-epoch-nanoseconds': [FAIL],
@@ -65,29 +57,10 @@
   'temporal/instant-subtract': [FAIL],
   'temporal/instant-to-json': [FAIL],
   'temporal/instant-toJSON': [FAIL],
-  'temporal/plain-date-add': [FAIL],
-  'temporal/plain-date-compare': [FAIL],
-  'temporal/plain-date-equals': [FAIL],
-  'temporal/plain-date-from': [FAIL],
   'temporal/plain-date-time-add': [FAIL],
-  'temporal/plain-date-time-compare': [FAIL],
-  'temporal/plain-date-time-equals': [FAIL],
-  'temporal/plain-date-time-from': [FAIL],
   'temporal/plain-date-time-subtract': [FAIL],
   'temporal/plain-date-time-to-json': [FAIL],
-  'temporal/plain-date-time-to-plain-date': [FAIL],
-  'temporal/plain-date-time-to-plain-month-day': [FAIL],
-  'temporal/plain-date-time-to-plain-time': [FAIL],
-  'temporal/plain-date-time-to-plain-year-month': [FAIL],
-  'temporal/plain-date-time-valueOf': [FAIL],
-  'temporal/plain-date-time-with': [FAIL],
-  'temporal/plain-date-time-with-plain-date': [FAIL],
-  'temporal/plain-date-time-with-plain-time': [FAIL],
-  'temporal/plain-date-to-json': [FAIL],
   'temporal/plain-date-to-plain-date-time': [FAIL],
-  'temporal/plain-date-to-plain-month-day': [FAIL],
-  'temporal/plain-date-to-plain-year-month': [FAIL],
-  'temporal/plain-date-valueOf': [FAIL],
   'temporal/plain-date-with': [FAIL],
 
   ##############################################################################
@@ -107,9 +80,6 @@
 
   # BUG(v8:8169)
   'external-backing-store-gc': [SKIP],
-
-  # Issue 9380: Memory leaks of shared WebAssembly.Memory objects
-  'wasm/shared-memory-worker-gc': [SKIP],
 
   # BUG(v8:10197)
   'regress/regress-748069': [SKIP],
@@ -327,6 +297,10 @@
   'regress/wasm/regress-1010272': [SKIP],
   'wasm/atomics-stress': [SKIP],
   'wasm/atomics64-stress': [SKIP],
+
+  # Slow tests which times out in debug mode.
+  'typedarray-growablesharedarraybuffer-array-methods': [PASS, ['mode == debug', SKIP]],
+  'typedarray-resizablearraybuffer-array-methods': [PASS, ['mode == debug', SKIP]],
 }],  # simulator_run
 
 ##############################################################################
@@ -416,6 +390,9 @@
 
   # BUG(v8:12561)
   'spread-large-map': [SKIP],
+
+  # Flaky tests due to GC interferring with optimization.
+  'compiler/regress-crbug-1323114': [SKIP],
 }],  # 'gc_stress'
 
 ##############################################################################
@@ -729,6 +706,9 @@
 
   # BUG(v8:12822): Flakes on TSAN.
   'regress/regress-crbug-1239907': [SKIP],
+
+  # BUG(v8:12920): Breaks on TSAN.
+  'regress/regress-crbug-620253': [SKIP],
 }],  # 'tsan == True'
 
 ##############################################################################

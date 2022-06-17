@@ -87,7 +87,7 @@ sk_sp<GrGLAttachment> GrGLAttachment::MakeStencil(GrGLGpu* gpu,
                                                     GrAttachment::UsageFlags::kStencilAttachment,
                                                     sampleCnt,
                                                     format,
-                                                    /*label=*/{}));
+                                                    /*label=*/"GLAttachmentMakeStencil"));
 }
 
 sk_sp<GrGLAttachment> GrGLAttachment::MakeMSAA(GrGLGpu* gpu,
@@ -114,7 +114,7 @@ sk_sp<GrGLAttachment> GrGLAttachment::MakeMSAA(GrGLGpu* gpu,
                                                     GrAttachment::UsageFlags::kColorAttachment,
                                                     sampleCnt,
                                                     format,
-                                                    /*label=*/{}));
+                                                    /*label=*/"GLAttachmentMakeMSAA"));
 }
 
 
@@ -144,4 +144,16 @@ void GrGLAttachment::setMemoryBacking(SkTraceMemoryDump* traceMemoryDump,
     SkString renderbuffer_id;
     renderbuffer_id.appendU32(this->renderbufferID());
     traceMemoryDump->setMemoryBacking(dumpName.c_str(), "gl_renderbuffer", renderbuffer_id.c_str());
+}
+
+void GrGLAttachment::onSetLabel() {
+    SkASSERT(fRenderbufferID);
+    if (!this->getLabel().empty()) {
+        const std::string label = "_Skia_" + this->getLabel();
+        GrGLGpu* glGpu = static_cast<GrGLGpu*>(this->getGpu());
+        if (glGpu->glCaps().debugSupport()) {
+            GR_GL_CALL(glGpu->glInterface(),
+                       ObjectLabel(GR_GL_TEXTURE, fRenderbufferID, -1, label.c_str()));
+        }
+    }
 }

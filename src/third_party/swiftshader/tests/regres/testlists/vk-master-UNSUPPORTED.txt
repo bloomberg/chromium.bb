@@ -1,2 +1,1 @@
-dEQP-VK.api.info.get_physical_device_properties2.properties
-dEQP-VK.draw.renderpass.shader_invocation.helper_invocation
+dEQP-VK.pipeline.pipeline_library.graphics_library.fast.4

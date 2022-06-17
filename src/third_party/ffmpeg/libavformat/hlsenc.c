@@ -22,7 +22,6 @@
 
 #include "config.h"
 #include "config_components.h"
-#include <float.h>
 #include <stdint.h>
 #if HAVE_UNISTD_H
 #include <unistd.h>
@@ -36,11 +35,9 @@
 
 #include "libavutil/avassert.h"
 #include "libavutil/mathematics.h"
-#include "libavutil/parseutils.h"
 #include "libavutil/avstring.h"
 #include "libavutil/bprint.h"
 #include "libavutil/intreadwrite.h"
-#include "libavutil/random_seed.h"
 #include "libavutil/opt.h"
 #include "libavutil/log.h"
 #include "libavutil/time.h"
@@ -54,6 +51,7 @@
 #endif
 #include "hlsplaylist.h"
 #include "internal.h"
+#include "mux.h"
 #include "os_support.h"
 
 typedef enum {
@@ -317,8 +315,7 @@ static int hlsenc_io_close(AVFormatContext *s, AVIOContext **pb, char *filename)
         URLContext *http_url_context = ffio_geturlcontext(*pb);
         av_assert0(http_url_context);
         avio_flush(*pb);
-        ffurl_shutdown(http_url_context, AVIO_FLAG_WRITE);
-        ret = ff_http_get_shutdown_status(http_url_context);
+        ret = ffurl_shutdown(http_url_context, AVIO_FLAG_WRITE);
 #endif
     }
     return ret;
@@ -1289,8 +1286,10 @@ static int parse_playlist(AVFormatContext *s, const char *url, VariantStream *vs
                 new_start_pos = avio_tell(vs->avf->pb);
                 vs->size = new_start_pos - vs->start_pos;
                 ret = hls_append_segment(s, hls, vs, vs->duration, vs->start_pos, vs->size);
-                vs->last_segment->discont_program_date_time = discont_program_date_time;
-                discont_program_date_time += vs->duration;
+                if (discont_program_date_time) {
+                    vs->last_segment->discont_program_date_time = discont_program_date_time;
+                    discont_program_date_time += vs->duration;
+                }
                 if (ret < 0)
                     goto fail;
                 vs->start_pos = new_start_pos;

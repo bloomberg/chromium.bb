@@ -113,4 +113,17 @@ const base::Feature kPersonalizeFeedUnsignedUsers{
 const base::Feature kInfoCardAcknowledgementTracking{
     "InfoCardAcknowledgementTracking", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kShareCrowButton{"ShareCrowButton",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kIsAblated{"FeedAblation",
+                               base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kFeedCloseRefresh{"FeedCloseRefresh",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+const base::FeatureParam<int> kFeedCloseRefreshDelayMinutes{
+    &kFeedCloseRefresh, "delay_minutes", 30};
+const base::FeatureParam<bool> kFeedCloseRefreshRequireInteraction{
+    &kFeedCloseRefresh, "require_interaction", false};
+
 }  // namespace feed

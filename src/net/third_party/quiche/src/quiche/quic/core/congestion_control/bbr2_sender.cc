@@ -16,6 +16,7 @@
 #include "quiche/quic/platform/api/quic_flag_utils.h"
 #include "quiche/quic/platform/api/quic_flags.h"
 #include "quiche/quic/platform/api/quic_logging.h"
+#include "quiche/common/platform/api/quiche_logging.h"
 #include "quiche/common/print_elements.h"
 
 namespace quic {
@@ -221,7 +222,7 @@ Limits<QuicByteCount> Bbr2Sender::GetCwndLimitsByMode() const {
     case Bbr2Mode::PROBE_RTT:
       return probe_rtt_.GetCwndLimits();
     default:
-      QUIC_NOTREACHED();
+      QUICHE_NOTREACHED();
       return Unlimited<QuicByteCount>();
   }
 }
@@ -502,11 +503,6 @@ void Bbr2Sender::OnExitQuiescence(QuicTime now) {
     }
     last_quiescence_start_ = QuicTime::Zero();
   }
-}
-
-bool Bbr2Sender::ShouldSendProbingPacket() const {
-  // TODO(wub): Implement ShouldSendProbingPacket properly.
-  return BBR2_MODE_DISPATCH(IsProbingForBandwidth());
 }
 
 std::string Bbr2Sender::GetDebugState() const {

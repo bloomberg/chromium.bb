@@ -11,7 +11,7 @@
 #include "src/gpu/AtlasTypes.h"
 #include "src/gpu/ganesh/effects/GrDistanceFieldGeoProc.h"
 #include "src/gpu/ganesh/ops/GrMeshDrawOp.h"
-#include "src/gpu/ganesh/text/GrTextBlob.h"
+#include "src/text/gpu/TextBlob.h"
 
 class GrRecordingContext;
 
@@ -34,11 +34,11 @@ public:
     static void ClearCache();
 
     struct Geometry {
-        Geometry(const GrAtlasSubRun& subRun,
+        Geometry(const sktext::gpu::AtlasSubRun& subRun,
                  const SkMatrix& drawMatrix,
                  SkPoint drawOrigin,
                  SkIRect clipRect,
-                 sk_sp<SkRefCnt> supportData,
+                 sk_sp<SkRefCnt>&& supportData,
                  const SkPMColor4f& color)
             : fSubRun{subRun}
             , fSupportDataKeepAlive{std::move(supportData)}
@@ -49,19 +49,19 @@ public:
                 SkASSERT(fSupportDataKeepAlive != nullptr);
         }
 
-        static Geometry* MakeForBlob(const GrAtlasSubRun& subRun,
-                                     const SkMatrix& drawMatrix,
-                                     SkPoint drawOrigin,
-                                     SkIRect clipRect,
-                                     sk_sp<SkRefCnt> supportData,
-                                     const SkPMColor4f& color,
-                                     SkArenaAlloc* alloc);
+        static Geometry* Make(const sktext::gpu::AtlasSubRun& subRun,
+                              const SkMatrix& drawMatrix,
+                              SkPoint drawOrigin,
+                              SkIRect clipRect,
+                              sk_sp<SkRefCnt>&& supportData,
+                              const SkPMColor4f& color,
+                              SkArenaAlloc* alloc);
 
         void fillVertexData(void* dst, int offset, int count) const;
 
-        const GrAtlasSubRun& fSubRun;
+        const sktext::gpu::AtlasSubRun& fSubRun;
 
-        // Keep the GrTextBlob or Slug alive until the op is deleted.
+        // Keep the TextBlob or Slug alive until the op is deleted.
         sk_sp<SkRefCnt> fSupportDataKeepAlive;
 
         const SkMatrix fDrawMatrix;

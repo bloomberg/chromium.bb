@@ -80,7 +80,7 @@ const [
   const lines: Array<string | undefined> = [];
   for (const prefix of argsPrefixes) {
     const rootQuery = new TestQueryMultiFile(suite, []);
-    const tree = await loader.loadTree(rootQuery, expectations.get(prefix)!);
+    const tree = await loader.loadTree(rootQuery, expectations.get(prefix));
 
     lines.push(undefined); // output blank line between prefixes
     const alwaysExpandThroughLevel = 2; // expand to, at minimum, every test.

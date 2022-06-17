@@ -10,7 +10,6 @@
 
 #include "pc/rtc_stats_collector.h"
 
-#include <ctype.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -917,6 +916,7 @@ class RTCStatsCollectorTest : public ::testing::Test {
 
  protected:
   rtc::ScopedFakeClock fake_clock_;
+  rtc::AutoThread main_thread_;
   rtc::scoped_refptr<FakePeerConnectionForStats> pc_;
   std::unique_ptr<RTCStatsCollectorWrapper> stats_;
 };
@@ -2141,6 +2141,9 @@ TEST_F(RTCStatsCollectorTest, CollectRTCInboundRTPStreamStats_Video) {
   video_media_info.receivers[0].total_decode_time_ms = 9000;
   video_media_info.receivers[0].total_processing_delay =
       webrtc::TimeDelta::Millis(600);
+  video_media_info.receivers[0].total_assembly_time =
+      webrtc::TimeDelta::Millis(500);
+  video_media_info.receivers[0].frames_assembled_from_multiple_packets = 23;
   video_media_info.receivers[0].total_inter_frame_delay = 0.123;
   video_media_info.receivers[0].total_squared_inter_frame_delay = 0.00456;
   video_media_info.receivers[0].jitter_ms = 1199;
@@ -2153,6 +2156,7 @@ TEST_F(RTCStatsCollectorTest, CollectRTCInboundRTPStreamStats_Video) {
   video_media_info.receivers[0].estimated_playout_ntp_timestamp_ms =
       absl::nullopt;
   video_media_info.receivers[0].decoder_implementation_name = "";
+  video_media_info.receivers[0].min_playout_delay_ms = 50;
 
   RtpCodecParameters codec_parameters;
   codec_parameters.payload_type = 42;
@@ -2191,6 +2195,8 @@ TEST_F(RTCStatsCollectorTest, CollectRTCInboundRTPStreamStats_Video) {
   // `expected_video.qp_sum` should be undefined.
   expected_video.total_decode_time = 9.0;
   expected_video.total_processing_delay = 0.6;
+  expected_video.total_assembly_time = 0.5;
+  expected_video.frames_assembled_from_multiple_packets = 23;
   expected_video.total_inter_frame_delay = 0.123;
   expected_video.total_squared_inter_frame_delay = 0.00456;
   expected_video.jitter = 1.199;
@@ -2199,6 +2205,7 @@ TEST_F(RTCStatsCollectorTest, CollectRTCInboundRTPStreamStats_Video) {
   // `expected_video.last_packet_received_timestamp` should be undefined.
   // `expected_video.content_type` should be undefined.
   // `expected_video.decoder_implementation` should be undefined.
+  expected_video.min_playout_delay = 0.05;
 
   ASSERT_TRUE(report->Get(expected_video.id()));
   EXPECT_EQ(
@@ -3524,6 +3531,7 @@ class FakeRTCStatsCollector : public RTCStatsCollector,
 };
 
 TEST(RTCStatsCollectorTestWithFakeCollector, ThreadUsageAndResultsMerging) {
+  rtc::AutoThread main_thread_;
   auto pc = rtc::make_ref_counted<FakePeerConnectionForStats>();
   rtc::scoped_refptr<FakeRTCStatsCollector> stats_collector(
       FakeRTCStatsCollector::Create(pc.get(),

@@ -52,6 +52,8 @@ func (l *lexer) lex() error {
 			l.next()
 		case '\n':
 			l.next()
+		case '@':
+			l.tok(1, tok.Attr)
 		case '(':
 			l.tok(1, tok.Lparen)
 		case ')':
@@ -89,14 +91,14 @@ func (l *lexer) lex() error {
 				l.skip(l.count(toFirst('\n')))
 				l.next() // Consume newline
 			case l.match("/", tok.Divide):
-			case l.match("[[", tok.Ldeco):
-			case l.match("]]", tok.Rdeco):
 			case l.match("->", tok.Arrow):
 			case l.match("-", tok.Minus):
 			case l.match("fn", tok.Function):
 			case l.match("op", tok.Operator):
 			case l.match("enum", tok.Enum):
 			case l.match("type", tok.Type):
+			case l.match("ctor", tok.Constructor):
+			case l.match("conv", tok.Converter):
 			case l.match("match", tok.Match):
 			case unicode.IsLetter(l.peek(0)) || l.peek(0) == '_':
 				l.tok(l.count(alphaNumericOrUnderscore), tok.Identifier)

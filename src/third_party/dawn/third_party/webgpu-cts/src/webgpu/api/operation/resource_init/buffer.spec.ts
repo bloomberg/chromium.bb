@@ -50,6 +50,7 @@ class F extends GPUTest {
     boundBufferSize: number
   ): void {
     const computePipeline = this.device.createComputePipeline({
+      layout: 'auto',
       compute: {
         module: computeShaderModule,
         entryPoint: 'main',
@@ -94,6 +95,7 @@ class F extends GPUTest {
     testVertexBuffer: boolean
   ): GPURenderPipeline {
     const renderPipelineDescriptor: GPURenderPipelineDescriptor = {
+      layout: 'auto',
       vertex: {
         module: vertexShaderModule,
         entryPoint: 'main',
@@ -814,6 +816,7 @@ g.test('indirect_buffer_for_dispatch_indirect')
     const { bufferOffset } = t.params;
 
     const computePipeline = t.device.createComputePipeline({
+      layout: 'auto',
       compute: {
         module: t.device.createShaderModule({
           code: `

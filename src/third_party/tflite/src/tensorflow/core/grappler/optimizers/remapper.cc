@@ -3203,7 +3203,8 @@ bool RequiresInferredShapes(const RemapperContext& ctx, int node_index) {
 
   if (IsMKLEnabled())
     return is_batch_norm_candidate() || is_batch_norm_fusion_candidate() ||
-           IsContractionWithAdd(ctx, node_index);
+           IsContractionWithAdd(ctx, node_index) ||
+           is_relu_biasadd_conv_candidate();
 
   return is_relu_biasadd_conv_candidate() || is_batch_norm_candidate() ||
          is_batch_norm_fusion_candidate() ||
@@ -3337,17 +3338,6 @@ Status Remapper::Optimize(Cluster* cluster, const GrapplerItem& item,
                             &invalidated_nodes, &nodes_to_delete));
         continue;
       }
-    }
-
-    // Infer properties lazily in case they are not needed.
-    if (!ctx.inferred_graph_properties && RequiresInferredShapes(ctx, i)) {
-      const bool assume_valid_feeds = opt_level_ == RewriterConfig::AGGRESSIVE;
-      TF_RETURN_IF_ERROR(ctx.graph_properties.InferStatically(
-          assume_valid_feeds,
-          /*aggressive_shape_inference=*/false,
-          /*include_input_tensor_values=*/true,
-          /*include_output_tensor_values=*/false));
-      ctx.inferred_graph_properties = true;
     }
 
     // Remap {Conv2D,DepthwiseConv2D,MatMul}+BiasAdd into the

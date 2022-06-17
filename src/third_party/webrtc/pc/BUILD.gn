@@ -118,53 +118,6 @@ rtc_source_set("channel_interface") {
   absl_deps = [ "//third_party/abseil-cpp/absl/strings" ]
 }
 
-rtc_source_set("channel_factory_interface") {
-  visibility = [ ":*" ]
-  sources = [ "channel_factory_interface.h" ]
-  deps = [
-    "../api:audio_options_api",
-    "../api/crypto:options",
-    "../api/video:video_bitrate_allocator_factory",
-    "../call:call_interfaces",
-    "../media:rtc_media_base",
-    "../media:rtc_media_config",
-  ]
-}
-
-rtc_source_set("channel_manager") {
-  visibility = [ ":*" ]
-  sources = [
-    "channel_manager.cc",
-    "channel_manager.h",
-  ]
-  deps = [
-    ":channel",
-    ":channel_factory_interface",
-    ":channel_interface",
-    ":session_description",
-    "../api:audio_options_api",
-    "../api:rtp_parameters",
-    "../api:sequence_checker",
-    "../api/crypto:options",
-    "../api/video:video_bitrate_allocator_factory",
-    "../call:call_interfaces",
-    "../media:rtc_media_base",
-    "../media:rtc_media_config",
-    "../rtc_base",
-    "../rtc_base:checks",
-    "../rtc_base:event_tracer",
-    "../rtc_base:location",
-    "../rtc_base:macromagic",
-    "../rtc_base:threading",
-    "../rtc_base/system:file_wrapper",
-  ]
-  absl_deps = [
-    "//third_party/abseil-cpp/absl/algorithm:container",
-    "//third_party/abseil-cpp/absl/memory",
-    "//third_party/abseil-cpp/absl/strings",
-  ]
-}
-
 rtc_source_set("dtls_srtp_transport") {
   visibility = [ ":*" ]
   sources = [
@@ -357,7 +310,6 @@ rtc_source_set("media_session") {
     "media_session.h",
   ]
   deps = [
-    ":channel_manager",
     ":jsep_transport",
     ":media_protocol_names",
     ":rtp_media_utils",
@@ -377,6 +329,7 @@ rtc_source_set("media_session") {
     "../rtc_base:checks",
     "../rtc_base:logging",
     "../rtc_base:stringutils",
+    "../rtc_base/memory:always_valid_pointer",
     "../rtc_base/third_party/base64",
   ]
   absl_deps = [
@@ -723,6 +676,7 @@ rtc_source_set("session_description") {
   absl_deps = [
     "//third_party/abseil-cpp/absl/algorithm:container",
     "//third_party/abseil-cpp/absl/memory:memory",
+    "//third_party/abseil-cpp/absl/strings",
   ]
 }
 
@@ -949,7 +903,6 @@ rtc_library("connection_context") {
     "connection_context.h",
   ]
   deps = [
-    ":channel_manager",
     "../api:callfactory_api",
     "../api:field_trials_view",
     "../api:libjingle_peerconnection_api",
@@ -1120,7 +1073,6 @@ rtc_source_set("sdp_offer_answer") {
   deps = [
     ":channel",
     ":channel_interface",
-    ":channel_manager",
     ":connection_context",
     ":data_channel_controller",
     ":dtls_transport",
@@ -1210,7 +1162,6 @@ rtc_source_set("peer_connection") {
   deps = [
     ":channel",
     ":channel_interface",
-    ":channel_manager",
     ":connection_context",
     ":data_channel_controller",
     ":data_channel_utils",
@@ -1437,7 +1388,6 @@ rtc_source_set("webrtc_session_description_factory") {
     "webrtc_session_description_factory.h",
   ]
   deps = [
-    ":channel_manager",
     ":connection_context",
     ":media_session",
     ":sdp_state_provider",
@@ -1503,7 +1453,6 @@ rtc_source_set("peer_connection_factory") {
     "peer_connection_factory.h",
   ]
   deps = [
-    ":channel_manager",
     ":local_audio_source",
     ":media_stream_proxy",
     ":media_stream_track_proxy",
@@ -1597,7 +1546,7 @@ rtc_library("rtp_transceiver") {
   deps = [
     ":channel",
     ":channel_interface",
-    ":channel_manager",
+    ":connection_context",
     ":peer_connection_sdp_methods",
     ":proxy",
     ":rtp_media_utils",
@@ -1646,7 +1595,6 @@ rtc_library("rtp_transmission_manager") {
     ":audio_rtp_receiver",
     ":channel",
     ":channel_interface",
-    ":channel_manager",
     ":rtp_receiver",
     ":rtp_receiver_proxy",
     ":rtp_sender",
@@ -2078,7 +2026,6 @@ if (rtc_include_tests && !build_with_chromium) {
 
     sources = [
       "audio_rtp_receiver_unittest.cc",
-      "channel_manager_unittest.cc",
       "channel_unittest.cc",
       "dtls_srtp_transport_unittest.cc",
       "dtls_transport_unittest.cc",
@@ -2108,7 +2055,6 @@ if (rtc_include_tests && !build_with_chromium) {
     deps = [
       ":audio_rtp_receiver",
       ":channel",
-      ":channel_manager",
       ":dtls_srtp_transport",
       ":dtls_transport",
       ":ice_transport",
@@ -2176,8 +2122,8 @@ if (rtc_include_tests && !build_with_chromium) {
       "../rtc_base/third_party/sigslot",
       "../system_wrappers:metrics",
       "../test:explicit_key_value_config",
+      "../test:run_loop",
       "../test:scoped_key_value_config",
-      "../test:test_common",
       "../test:test_main",
       "../test:test_support",
       "//third_party/abseil-cpp/absl/algorithm:container",
@@ -2347,7 +2293,6 @@ if (rtc_include_tests && !build_with_chromium) {
       ":audio_track",
       ":channel",
       ":channel_interface",
-      ":channel_manager",
       ":data_channel_controller_unittest",
       ":dtls_srtp_transport",
       ":dtls_transport",
@@ -2399,6 +2344,7 @@ if (rtc_include_tests && !build_with_chromium) {
       "../api:libjingle_logging_api",
       "../api:libjingle_peerconnection_api",
       "../api:media_stream_interface",
+      "../api:mock_encoder_selector",
       "../api:mock_video_track",
       "../api:packet_socket_factory",
       "../api:priority",
@@ -2459,8 +2405,8 @@ if (rtc_include_tests && !build_with_chromium) {
       "../rtc_base/third_party/base64",
       "../rtc_base/third_party/sigslot",
       "../system_wrappers:metrics",
+      "../test:run_loop",
       "../test:scoped_key_value_config",
-      "../test:test_common",
       "../test/pc/sctp:fake_sctp_transport",
       "//third_party/abseil-cpp/absl/algorithm:container",
       "//third_party/abseil-cpp/absl/memory",
@@ -2697,7 +2643,6 @@ if (rtc_include_tests && !build_with_chromium) {
     deps = [
       ":channel",
       ":channel_interface",
-      ":channel_manager",
       ":jitter_buffer_delay",
       ":libjingle_peerconnection",
       ":peer_connection_internal",

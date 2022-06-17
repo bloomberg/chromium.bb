@@ -30,7 +30,8 @@ ReceiverChooser::ReceiverChooser(const InterfaceInfo& interface,
   discovery::Config config{.network_info = {interface},
                            .enable_publication = false,
                            .enable_querying = true};
-  discovery::CreateDnsSdService(task_runner, this, std::move(config));
+  service_ =
+      discovery::CreateDnsSdService(task_runner, this, std::move(config));
 
   watcher_ = std::make_unique<discovery::DnsSdServiceWatcher<ReceiverInfo>>(
       service_.get(), kCastV2ServiceId, DnsSdInstanceEndpointToReceiverInfo,
@@ -89,11 +90,11 @@ void ReceiverChooser::PrintMenuAndHandleChoice() {
   for (size_t i = 0; i < discovered_receivers_.size(); ++i) {
     const ReceiverInfo& info = discovered_receivers_[i];
     std::cout << '[' << i << "]: " << info.friendly_name << " @ ";
-    if (info.v6_address) {
-      std::cout << info.v6_address;
-    } else {
-      OSP_DCHECK(info.v4_address);
+    if (info.v4_address) {
       std::cout << info.v4_address;
+    } else {
+      OSP_DCHECK(info.v6_address);
+      std::cout << info.v6_address;
     }
     std::cout << ':' << info.port << '\n';
   }
@@ -105,10 +106,10 @@ void ReceiverChooser::PrintMenuAndHandleChoice() {
     if (menu_choice >= 0 &&
         menu_choice < static_cast<int>(discovered_receivers_.size())) {
       const ReceiverInfo& choice = discovered_receivers_[menu_choice];
-      if (choice.v6_address) {
-        callback_on_stack(IPEndpoint{choice.v6_address, choice.port});
-      } else {
+      if (choice.v4_address) {
         callback_on_stack(IPEndpoint{choice.v4_address, choice.port});
+      } else {
+        callback_on_stack(IPEndpoint{choice.v6_address, choice.port});
       }
     } else {
       callback_on_stack(IPEndpoint{});  // Signal "bad choice" or EOF.

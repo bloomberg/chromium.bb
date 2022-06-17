@@ -36,6 +36,9 @@ class DeviceAuthNamespaceHandler final : public CastMessageHandler {
    public:
     virtual absl::Span<const uint8_t> GetCurrentTlsCertAsDer() = 0;
     virtual const DeviceCredentials& GetCurrentDeviceCredentials() = 0;
+
+   protected:
+    virtual ~CredentialsProvider();
   };
 
   // |creds_provider| must outlive |this|.

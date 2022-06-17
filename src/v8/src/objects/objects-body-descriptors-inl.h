@@ -20,6 +20,7 @@
 #include "src/objects/free-space-inl.h"
 #include "src/objects/hash-table.h"
 #include "src/objects/heap-number.h"
+#include "src/objects/js-atomics-synchronization.h"
 #include "src/objects/js-collection.h"
 #include "src/objects/js-weak-refs.h"
 #include "src/objects/literal-objects.h"
@@ -56,7 +57,7 @@ int FlexibleWeakBodyDescriptor<start_offset>::SizeOf(Map map,
 bool BodyDescriptorBase::IsValidJSObjectSlotImpl(Map map, HeapObject obj,
                                                  int offset) {
 #ifdef V8_COMPRESS_POINTERS
-  STATIC_ASSERT(kEmbedderDataSlotSize == 2 * kTaggedSize);
+  static_assert(kEmbedderDataSlotSize == 2 * kTaggedSize);
   int embedder_fields_offset = JSObject::GetEmbedderFieldsStartOffset(map);
   int inobject_fields_offset = map.GetInObjectPropertyOffset(0);
   // |embedder_fields_offset| may be greater than |inobject_fields_offset| if
@@ -65,14 +66,14 @@ bool BodyDescriptorBase::IsValidJSObjectSlotImpl(Map map, HeapObject obj,
   if (embedder_fields_offset <= offset && offset < inobject_fields_offset) {
     // offset points to embedder fields area:
     // [embedder_fields_offset, inobject_fields_offset).
-    STATIC_ASSERT(base::bits::IsPowerOfTwo(kEmbedderDataSlotSize));
+    static_assert(base::bits::IsPowerOfTwo(kEmbedderDataSlotSize));
     return ((offset - embedder_fields_offset) & (kEmbedderDataSlotSize - 1)) ==
            EmbedderDataSlot::kTaggedPayloadOffset;
   }
 #else
   // We store raw aligned pointers as Smis, so it's safe to treat the whole
   // embedder field area as tagged slots.
-  STATIC_ASSERT(kEmbedderDataSlotSize == kTaggedSize);
+  static_assert(kEmbedderDataSlotSize == kTaggedSize);
 #endif
   return true;
 }
@@ -83,7 +84,7 @@ void BodyDescriptorBase::IterateJSObjectBodyImpl(Map map, HeapObject obj,
                                                  int end_offset,
                                                  ObjectVisitor* v) {
 #ifdef V8_COMPRESS_POINTERS
-  STATIC_ASSERT(kEmbedderDataSlotSize == 2 * kTaggedSize);
+  static_assert(kEmbedderDataSlotSize == 2 * kTaggedSize);
   int header_end_offset = JSObject::GetHeaderSize(map);
   int inobject_fields_start_offset = map.GetInObjectPropertyOffset(0);
   // We are always requested to process header and embedder fields.
@@ -106,7 +107,7 @@ void BodyDescriptorBase::IterateJSObjectBodyImpl(Map map, HeapObject obj,
 #else
   // We store raw aligned pointers as Smis, so it's safe to iterate the whole
   // embedder field area as tagged slots.
-  STATIC_ASSERT(kEmbedderDataSlotSize == kTaggedSize);
+  static_assert(kEmbedderDataSlotSize == kTaggedSize);
 #endif
   IteratePointers(obj, start_offset, end_offset, v);
 }
@@ -297,11 +298,11 @@ class JSFinalizationRegistry::BodyDescriptor final : public BodyDescriptorBase {
 
 class AllocationSite::BodyDescriptor final : public BodyDescriptorBase {
  public:
-  STATIC_ASSERT(AllocationSite::kCommonPointerFieldEndOffset ==
+  static_assert(AllocationSite::kCommonPointerFieldEndOffset ==
                 AllocationSite::kPretenureDataOffset);
-  STATIC_ASSERT(AllocationSite::kPretenureDataOffset + kInt32Size ==
+  static_assert(AllocationSite::kPretenureDataOffset + kInt32Size ==
                 AllocationSite::kPretenureCreateCountOffset);
-  STATIC_ASSERT(AllocationSite::kPretenureCreateCountOffset + kInt32Size ==
+  static_assert(AllocationSite::kPretenureCreateCountOffset + kInt32Size ==
                 AllocationSite::kWeakNextOffset);
 
   static bool IsValidSlot(Map map, HeapObject obj, int offset) {
@@ -487,7 +488,7 @@ class V8_EXPORT_PRIVATE SwissNameDictionary::BodyDescriptor final
     // address (a Smi) rather than a map.
 
     SwissNameDictionary table = SwissNameDictionary::unchecked_cast(obj);
-    STATIC_ASSERT(MetaTablePointerOffset() + kTaggedSize ==
+    static_assert(MetaTablePointerOffset() + kTaggedSize ==
                   DataTableStartOffset());
     return offset >= MetaTablePointerOffset() &&
            (offset < table.DataTableEndOffset(table.Capacity()));
@@ -497,7 +498,7 @@ class V8_EXPORT_PRIVATE SwissNameDictionary::BodyDescriptor final
   static inline void IterateBody(Map map, HeapObject obj, int object_size,
                                  ObjectVisitor* v) {
     SwissNameDictionary table = SwissNameDictionary::unchecked_cast(obj);
-    STATIC_ASSERT(MetaTablePointerOffset() + kTaggedSize ==
+    static_assert(MetaTablePointerOffset() + kTaggedSize ==
                   DataTableStartOffset());
     int start_offset = MetaTablePointerOffset();
     int end_offset = table.DataTableEndOffset(table.Capacity());
@@ -617,7 +618,7 @@ class PromiseOnStack::BodyDescriptor final : public BodyDescriptorBase {
                                  ObjectVisitor* v) {
     IteratePointers(obj, Struct::kHeaderSize, kPromiseOffset, v);
     IterateMaybeWeakPointer(obj, kPromiseOffset, v);
-    STATIC_ASSERT(kPromiseOffset + kTaggedSize == kHeaderSize);
+    static_assert(kPromiseOffset + kTaggedSize == kHeaderSize);
   }
 
   static inline int SizeOf(Map map, HeapObject obj) {
@@ -636,7 +637,7 @@ class PrototypeInfo::BodyDescriptor final : public BodyDescriptorBase {
                                  ObjectVisitor* v) {
     IteratePointers(obj, HeapObject::kHeaderSize, kObjectCreateMapOffset, v);
     IterateMaybeWeakPointer(obj, kObjectCreateMapOffset, v);
-    STATIC_ASSERT(kObjectCreateMapOffset + kTaggedSize == kHeaderSize);
+    static_assert(kObjectCreateMapOffset + kTaggedSize == kHeaderSize);
   }
 
   static inline int SizeOf(Map map, HeapObject obj) {
@@ -646,7 +647,7 @@ class PrototypeInfo::BodyDescriptor final : public BodyDescriptorBase {
 
 class JSWeakCollection::BodyDescriptorImpl final : public BodyDescriptorBase {
  public:
-  STATIC_ASSERT(kTableOffset + kTaggedSize == kHeaderSizeOfAllWeakCollections);
+  static_assert(kTableOffset + kTaggedSize == kHeaderSizeOfAllWeakCollections);
 
   static bool IsValidSlot(Map map, HeapObject obj, int offset) {
     return IsValidJSObjectSlotImpl(map, obj, offset);
@@ -656,6 +657,26 @@ class JSWeakCollection::BodyDescriptorImpl final : public BodyDescriptorBase {
   static inline void IterateBody(Map map, HeapObject obj, int object_size,
                                  ObjectVisitor* v) {
     IterateJSObjectBodyImpl(map, obj, kPropertiesOrHashOffset, object_size, v);
+  }
+
+  static inline int SizeOf(Map map, HeapObject object) {
+    return map.instance_size();
+  }
+};
+
+class JSAtomicsMutex::BodyDescriptor final : public BodyDescriptorBase {
+ public:
+  static bool IsValidSlot(Map map, HeapObject obj, int offset) {
+    if (offset < kEndOfTaggedFieldsOffset) return true;
+    if (offset < kHeaderSize) return false;
+    return IsValidJSObjectSlotImpl(map, obj, offset);
+  }
+
+  template <typename ObjectVisitor>
+  static inline void IterateBody(Map map, HeapObject obj, int object_size,
+                                 ObjectVisitor* v) {
+    IteratePointers(obj, kPropertiesOrHashOffset, kEndOfTaggedFieldsOffset, v);
+    IterateJSObjectBodyImpl(map, obj, kHeaderSize, object_size, v);
   }
 
   static inline int SizeOf(Map map, HeapObject object) {
@@ -739,7 +760,7 @@ class WasmInstanceObject::BodyDescriptor final : public BodyDescriptorBase {
   static bool IsValidSlot(Map map, HeapObject obj, int offset) {
     SLOW_DCHECK(std::is_sorted(std::begin(kTaggedFieldOffsets),
                                std::end(kTaggedFieldOffsets)));
-    STATIC_ASSERT(sizeof(*kTaggedFieldOffsets) == sizeof(uint16_t));
+    static_assert(sizeof(*kTaggedFieldOffsets) == sizeof(uint16_t));
     if (offset < int{8 * sizeof(*kTaggedFieldOffsets)} &&
         std::binary_search(std::begin(kTaggedFieldOffsets),
                            std::end(kTaggedFieldOffsets),
@@ -869,12 +890,12 @@ class CoverageInfo::BodyDescriptor final : public BodyDescriptorBase {
 
 class Code::BodyDescriptor final : public BodyDescriptorBase {
  public:
-  STATIC_ASSERT(kRelocationInfoOffset + kTaggedSize ==
+  static_assert(kRelocationInfoOffset + kTaggedSize ==
                 kDeoptimizationDataOrInterpreterDataOffset);
-  STATIC_ASSERT(kDeoptimizationDataOrInterpreterDataOffset + kTaggedSize ==
+  static_assert(kDeoptimizationDataOrInterpreterDataOffset + kTaggedSize ==
                 kPositionTableOffset);
-  STATIC_ASSERT(kPositionTableOffset + kTaggedSize == kCodeDataContainerOffset);
-  STATIC_ASSERT(kCodeDataContainerOffset + kTaggedSize == kDataStart);
+  static_assert(kPositionTableOffset + kTaggedSize == kCodeDataContainerOffset);
+  static_assert(kCodeDataContainerOffset + kTaggedSize == kDataStart);
 
   static bool IsValidSlot(Map map, HeapObject obj, int offset) {
     // Slots in code can't be invalid because we never trim code objects.
@@ -1011,14 +1032,14 @@ class EmbedderDataArray::BodyDescriptor final : public BodyDescriptorBase {
  public:
   static bool IsValidSlot(Map map, HeapObject obj, int offset) {
 #ifdef V8_COMPRESS_POINTERS
-    STATIC_ASSERT(kEmbedderDataSlotSize == 2 * kTaggedSize);
-    STATIC_ASSERT(base::bits::IsPowerOfTwo(kEmbedderDataSlotSize));
+    static_assert(kEmbedderDataSlotSize == 2 * kTaggedSize);
+    static_assert(base::bits::IsPowerOfTwo(kEmbedderDataSlotSize));
     return (offset < EmbedderDataArray::kHeaderSize) ||
            (((offset - EmbedderDataArray::kHeaderSize) &
              (kEmbedderDataSlotSize - 1)) ==
             EmbedderDataSlot::kTaggedPayloadOffset);
 #else
-    STATIC_ASSERT(kEmbedderDataSlotSize == kTaggedSize);
+    static_assert(kEmbedderDataSlotSize == kTaggedSize);
     // We store raw aligned pointers as Smis, so it's safe to iterate the whole
     // array.
     return true;
@@ -1029,7 +1050,7 @@ class EmbedderDataArray::BodyDescriptor final : public BodyDescriptorBase {
   static inline void IterateBody(Map map, HeapObject obj, int object_size,
                                  ObjectVisitor* v) {
 #ifdef V8_COMPRESS_POINTERS
-    STATIC_ASSERT(kEmbedderDataSlotSize == 2 * kTaggedSize);
+    static_assert(kEmbedderDataSlotSize == 2 * kTaggedSize);
     for (int offset = EmbedderDataArray::OffsetOfElementAt(0);
          offset < object_size; offset += kEmbedderDataSlotSize) {
       IteratePointer(obj, offset + EmbedderDataSlot::kTaggedPayloadOffset, v);
@@ -1041,7 +1062,7 @@ class EmbedderDataArray::BodyDescriptor final : public BodyDescriptorBase {
 #else
     // We store raw aligned pointers as Smis, so it's safe to iterate the whole
     // array.
-    STATIC_ASSERT(kEmbedderDataSlotSize == kTaggedSize);
+    static_assert(kEmbedderDataSlotSize == kTaggedSize);
     IteratePointers(obj, EmbedderDataArray::kHeaderSize, object_size, v);
 #endif
   }
@@ -1254,6 +1275,8 @@ auto BodyDescriptorApply(InstanceType type, Args&&... args) {
       return CALL_APPLY(JSWeakRef);
     case JS_PROXY_TYPE:
       return CALL_APPLY(JSProxy);
+    case JS_ATOMICS_MUTEX_TYPE:
+      return CALL_APPLY(JSAtomicsMutex);
     case FOREIGN_TYPE:
       return CALL_APPLY(Foreign);
     case MAP_TYPE:

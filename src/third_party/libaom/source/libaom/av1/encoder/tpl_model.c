@@ -503,6 +503,16 @@ static AOM_INLINE void mode_estimation(AV1_COMP *cpi,
   int64_t recon_error = 1;
   int64_t pred_error = 1;
 
+  if (!(predictor8 && src_diff && coeff && qcoeff && dqcoeff)) {
+    aom_free(predictor8);
+    aom_free(src_diff);
+    aom_free(coeff);
+    aom_free(qcoeff);
+    aom_free(dqcoeff);
+    aom_internal_error(cm->error, AOM_CODEC_MEM_ERROR,
+                       "Error allocating tpl data");
+  }
+
   memset(tpl_stats, 0, sizeof(*tpl_stats));
   tpl_stats->ref_frame_index[0] = -1;
   tpl_stats->ref_frame_index[1] = -1;

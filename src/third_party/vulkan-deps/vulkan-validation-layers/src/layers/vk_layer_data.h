@@ -56,12 +56,17 @@ template <typename Key, typename T>
 using map_entry = robin_hood::pair<Key, T>;
 
 // robin_hood-compatible insert_iterator (std:: uses the wrong insert method)
+// NOTE: std::iterator was deprecated in C++17, and newer versions of libstdc++ appear to mark this as such.
 template <typename T>
-class insert_iterator : public std::iterator<std::output_iterator_tag, void, void, void, void> {
-  public:
-    typedef typename T::value_type value_type;
-    typedef typename T::iterator iterator;
-    insert_iterator(T &t, iterator i) : container(&t), iter(i) {}
+struct insert_iterator {
+    using iterator_category = std::output_iterator_tag;
+    using value_type = typename T::value_type;
+    using iterator = typename T::iterator;
+    using difference_type = void;
+    using pointer = void;
+    using reference = T &;
+
+    insert_iterator(reference t, iterator i) : container(&t), iter(i) {}
 
     insert_iterator &operator=(const value_type &value) {
         auto result = container->insert(value);
@@ -85,7 +90,7 @@ class insert_iterator : public std::iterator<std::output_iterator_tag, void, voi
 
   private:
     T *container;
-    typename T::iterator iter;
+    iterator iter;
 };
 #else
 template <typename T>
@@ -136,7 +141,7 @@ class small_vector {
     static const size_type kMaxCapacity = std::numeric_limits<size_type>::max();
     static_assert(N <= kMaxCapacity, "size must be less than size_type::max");
 
-    small_vector() : size_(0), capacity_(N) {}
+    small_vector() : size_(0), capacity_(N) { DebugUpdateWorkingStore(); }
 
     small_vector(const small_vector &other) : size_(0), capacity_(N) {
         reserve(other.size_);
@@ -154,6 +159,7 @@ class small_vector {
             large_store_ = std::move(other.large_store_);
             capacity_ = other.capacity_;
             other.capacity_ = kSmallCapacity;
+            other.DebugUpdateWorkingStore();
         } else {
             auto dest = GetWorkingStore();
             for (auto &value : other) {
@@ -164,6 +170,7 @@ class small_vector {
         }
         size_ = other.size_;
         other.size_ = 0;
+        DebugUpdateWorkingStore();
     }
 
     ~small_vector() { clear(); }
@@ -214,8 +221,10 @@ class small_vector {
                 large_store_ = std::move(other.large_store_);
                 capacity_ = other.capacity_;
                 size_ = other.size_;
+                DebugUpdateWorkingStore();
 
                 other.capacity_ = kSmallCapacity;
+                other.DebugUpdateWorkingStore();
             } else {
                 // Other is using the small_store
                 auto source = other.begin();
@@ -309,6 +318,8 @@ class small_vector {
                 working_store[i].~value_type();
             }
             large_store_ = std::move(new_store);
+            capacity_ = new_cap;
+            DebugUpdateWorkingStore();
         }
         // No shrink here.
     }
@@ -344,6 +355,7 @@ class small_vector {
         clear();
         large_store_.reset();
         capacity_ = kSmallCapacity;
+        DebugUpdateWorkingStore();
     }
 
     struct alignas(alignof(value_type)) BackingStore {
@@ -353,6 +365,13 @@ class small_vector {
     size_type capacity_;
     BackingStore small_store_[N];
     std::unique_ptr<BackingStore[]> large_store_;
+
+#ifdef NDEBUG
+    void DebugUpdateWorkingStore() {}
+#else
+    void DebugUpdateWorkingStore() { _dbg_working_store = GetWorkingStore(); }
+    value_type *_dbg_working_store;
+#endif
 };
 
 // This is a wrapper around unordered_map that optimizes for the common case
@@ -875,6 +894,77 @@ template <typename T>
 span<T> make_span(T *begin, T *end) {
     return make_span<T>(begin, end);
 }
+
+template <typename BaseType>
+using base_type =
+    typename std::remove_reference<typename std::remove_const<typename std::remove_pointer<BaseType>::type>::type>::type;
+
+// Helper for thread local Validate -> Record phase data
+// Define T unique to each entrypoint which will persist data
+// Use only in with singleton (leaf) validation objects
+// State machine transition state changes of payload relative to TlsGuard object lifecycle:
+//  State INIT: bool(payload_) 
+//  State RESET: NOT bool(payload_) 
+//    * PreCallValidate* phase
+//        * Initialized with skip (in PreCallValidate*)
+//            * RESET -> INIT
+//        * Destruct with skip == true
+//           * INIT -> RESET
+//    * PreCallRecord* phase (optional IF PostCallRecord present)
+//        * Initialized w/o skip (set "persist_" IFF PostCallRecord present)
+//           * Must be in state INIT
+//        * Destruct with NOT persist_
+//           * INIT -> RESET
+//    * PreCallRecord* phase (optional IF PreCallRecord present)
+//        * Initialized w/o skip ("persist_" *must be false)
+//           * Must be in state INIT
+//        * Destruct
+//           * INIT -> RESET
+
+struct TlsGuardPersist {};
+template <typename T>
+class TlsGuard {
+  public:
+    // For use on inital references -- Validate phase
+    template <typename... Args>
+    TlsGuard(bool *skip, Args &&...args) : skip_(skip), persist_(false) {
+        // Record phase calls are required to clean up payload
+        assert(!payload_);
+        payload_.emplace(std::forward<Args>(args)...);
+    }
+    // For use on non-terminal persistent references (PreRecord phase IFF PostRecord is also present.
+    TlsGuard(const TlsGuardPersist &) : skip_(nullptr), persist_(true) { assert(payload_); }
+    // For use on terminal persistent references
+    // Validate phase calls are required to setup payload
+    // PreCallRecord calls are required to preserve (persist_) payload, if PostCallRecord calls will use
+    TlsGuard() : skip_(nullptr), persist_(false) { assert(payload_); }
+    ~TlsGuard() {
+        assert(payload_);
+        if (!persist_ && (!skip_ || *skip_)) payload_.reset();
+    }
+
+    T &operator*() & {
+        assert(payload_);
+        return *payload_;
+    }
+    const T &operator*() const & {
+        assert(payload_);
+        return *payload_;
+    }
+    T &&operator*() && {
+        assert(payload_);
+        return std::move(*payload_);
+    }
+    T *operator->() { return &(*payload_); }
+
+  private:
+    thread_local static optional<T> payload_;
+    bool *skip_;
+    bool persist_;
+};
+
+template <typename T>
+thread_local optional<T> TlsGuard<T>::payload_;
 
 }  // namespace layer_data
 #endif  // LAYER_DATA_H

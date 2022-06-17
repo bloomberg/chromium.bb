@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/side_search/side_search_config.h"
 #include "chrome/browser/ui/side_search/side_search_metrics.h"
 #include "chrome/browser/ui/side_search/side_search_tab_contents_helper.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/side_search/side_search_browser_controller.h"
 #include "chrome/grit/generated_resources.h"
@@ -35,8 +36,7 @@ SideSearchIconView::SideSearchIconView(
   image()->SetFlipCanvasOnPaintForRTLUI(false);
   SetProperty(views::kElementIdentifierKey, kSideSearchButtonElementId);
   SetVisible(false);
-  SetLabel(l10n_util::GetStringUTF16(
-      IDS_TOOLTIP_SIDE_SEARCH_TOOLBAR_BUTTON_NOT_ACTIVATED));
+  SetLabel(l10n_util::GetStringUTF16(IDS_SIDE_SEARCH_ENTRYPOINT_LABEL));
   SetUpForInOutAnimation();
   SetPaintLabelOverSolidBackground(true);
 }
@@ -70,11 +70,8 @@ void SideSearchIconView::UpdateImpl() {
       !tab_contents_helper->toggled_open();
   SetVisible(should_show);
 
-  auto* side_search_config =
-      SideSearchConfig::Get(active_contents->GetBrowserContext());
-  if (should_show && !was_visible &&
-      side_search_config->should_show_page_action_label()) {
-    side_search_config->set_should_show_page_action_label(false);
+  if (should_show && !was_visible && ShouldShowPageActionLabel()) {
+    SetPageActionLabelShown();
     should_extend_label_shown_duration_ = true;
     AnimateIn(absl::nullopt);
   }
@@ -86,6 +83,11 @@ void SideSearchIconView::OnExecuting(PageActionIconView::ExecuteSource source) {
   RecordSideSearchPageActionLabelVisibilityOnToggle(
       label()->GetVisible() ? SideSearchPageActionLabelVisibility::kVisible
                             : SideSearchPageActionLabelVisibility::kNotVisible);
+
+  // Reset the slide animation if in progress.
+  UnpauseAnimation();
+  ResetSlideAnimation(false);
+
   side_search_browser_controller->ToggleSidePanel();
 }
 
@@ -127,6 +129,53 @@ void SideSearchIconView::AnimationProgressed(const gfx::Animation* animation) {
         base::BindOnce(&SideSearchIconView::UnpauseAnimation,
                        base::Unretained(this)));
   }
+}
+
+bool SideSearchIconView::ShouldShowPageActionLabel() const {
+  content::WebContents* active_contents = GetWebContents();
+  DCHECK(active_contents);
+
+  auto* tab_contents_helper =
+      SideSearchTabContentsHelper::FromWebContents(active_contents);
+  DCHECK(tab_contents_helper);
+
+  if (!tab_contents_helper->GetAndResetCanShowPageActionLabel())
+    return false;
+
+  const int max_label_show_count =
+      features::kSideSearchPageActionLabelAnimationMaxCount.Get();
+
+  switch (features::kSideSearchPageActionLabelAnimationType.Get()) {
+    case features::kSideSearchLabelAnimationTypeOption::kProfile: {
+      auto* side_search_config =
+          SideSearchConfig::Get(active_contents->GetBrowserContext());
+      return side_search_config->page_action_label_shown_count() <
+             max_label_show_count;
+    }
+    case features::kSideSearchLabelAnimationTypeOption::kWindow: {
+      return page_action_label_shown_count_ < max_label_show_count;
+    }
+    case features::kSideSearchLabelAnimationTypeOption::kTab: {
+      return tab_contents_helper->page_action_label_shown_count() <
+             max_label_show_count;
+    }
+  }
+}
+
+void SideSearchIconView::SetPageActionLabelShown() {
+  content::WebContents* active_contents = GetWebContents();
+  DCHECK(active_contents);
+
+  auto* side_search_config =
+      SideSearchConfig::Get(active_contents->GetBrowserContext());
+  side_search_config->DidShowPageActionLabel();
+
+  ++page_action_label_shown_count_;
+
+  auto* tab_contents_helper =
+      SideSearchTabContentsHelper::FromWebContents(active_contents);
+  DCHECK(tab_contents_helper);
+  tab_contents_helper->DidShowPageActionLabel();
 }
 
 BEGIN_METADATA(SideSearchIconView, PageActionIconView)

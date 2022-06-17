@@ -39,6 +39,9 @@ class AdapterBase;
 // An optional parameter of Adapter::CreateDevice() to send additional information when creating
 // a Device. For example, we can use it to enable a workaround, optimization or feature.
 struct DAWN_NATIVE_EXPORT DawnDeviceDescriptor {
+    DawnDeviceDescriptor();
+    ~DawnDeviceDescriptor();
+
     std::vector<const char*> requiredFeatures;
     std::vector<const char*> forceEnabledToggles;
     std::vector<const char*> forceDisabledToggles;
@@ -167,6 +170,8 @@ class DAWN_NATIVE_EXPORT Instance {
     // TODO(dawn:1374) Deprecate this once it is passed via the descriptor.
     void SetPlatform(dawn::platform::Platform* platform);
 
+    uint64_t GetDeviceCountForTesting() const;
+
     // Returns the underlying WGPUInstance object.
     WGPUInstance Get() const;
 
@@ -247,6 +252,8 @@ struct DAWN_NATIVE_EXPORT ExternalImageExportInfo {
   private:
     ExternalImageType mType;
 };
+
+DAWN_NATIVE_EXPORT bool CheckIsErrorForTesting(void* objectHandle);
 
 DAWN_NATIVE_EXPORT const char* GetObjectLabelForTesting(void* objectHandle);
 

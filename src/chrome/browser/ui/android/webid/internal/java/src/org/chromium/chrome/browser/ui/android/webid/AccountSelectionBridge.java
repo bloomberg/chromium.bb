@@ -38,7 +38,7 @@ class AccountSelectionBridge implements AccountSelectionComponent.Delegate {
     }
 
     @CalledByNative
-    private static int getBrandIconMinimumSize() {
+    static int getBrandIconMinimumSize() {
         // Icon needs to be big enough for the smallest screen density (1x).
         Resources resources = ContextUtils.getApplicationContext().getResources();
         // Density < 1.0f on ldpi devices. Adjust density to ensure that
@@ -48,7 +48,7 @@ class AccountSelectionBridge implements AccountSelectionComponent.Delegate {
     }
 
     @CalledByNative
-    private static int getBrandIconIdealSize() {
+    static int getBrandIconIdealSize() {
         Resources resources = ContextUtils.getApplicationContext().getResources();
         return Math.round(resources.getDimension(R.dimen.account_selection_sheet_icon_size));
     }
@@ -70,17 +70,17 @@ class AccountSelectionBridge implements AccountSelectionComponent.Delegate {
 
     /* Shows the accounts in a bottom sheet UI allowing user to select one.
      *
-     * @param rpEtldPlusOne is the ETLD+1 for RP that has initiated the WebID flow.
-     * @param idpEtldPlusOne is the ETLD+1 for the IDP that is providing the accounts.
+     * @param rpForDisplay is the formatted RP URL to display in the FedCM prompt.
+     * @param idpForDisplay is the formatted IDP URL to display in the FedCM prompt.
      * @param accounts is the list of accounts to be shown.
      * @param isAutoSignIn represents whether this is an auto sign in flow.
      */
     @CalledByNative
-    private void showAccounts(String rpEtldPlusOne, String idpEtldPlusOne, Account[] accounts,
+    private void showAccounts(String rpForDisplay, String idpForDisplay, Account[] accounts,
             IdentityProviderMetadata idpMetadata, ClientIdMetadata clientIdMetadata,
             boolean isAutoSignIn) {
         assert accounts != null && accounts.length > 0;
-        mAccountSelectionComponent.showAccounts(rpEtldPlusOne, idpEtldPlusOne,
+        mAccountSelectionComponent.showAccounts(rpForDisplay, idpForDisplay,
                 Arrays.asList(accounts), idpMetadata, clientIdMetadata, isAutoSignIn);
     }
 

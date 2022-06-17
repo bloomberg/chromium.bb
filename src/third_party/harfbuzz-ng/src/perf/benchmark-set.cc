@@ -3,6 +3,7 @@
  */
 #include "benchmark/benchmark.h"
 
+#include <cassert>
 #include <cstdlib>
 #include "hb.h"
 
@@ -33,9 +34,11 @@ static void BM_SetInsert_1000(benchmark::State& state) {
   assert(hb_set_get_population(original) == set_size);
 
   for (auto _ : state) {
+    state.PauseTiming ();
     hb_set_t* data = hb_set_copy(original);
+    state.ResumeTiming ();
     for (int i = 0; i < 1000; i++) {
-      hb_set_add(data, rand() % max_value);
+      hb_set_add(data, i * 2654435761u % max_value);
     }
     hb_set_destroy(data);
   }
@@ -58,7 +61,9 @@ static void BM_SetOrderedInsert_1000(benchmark::State& state) {
   assert(hb_set_get_population(original) == set_size);
 
   for (auto _ : state) {
+    state.PauseTiming ();
     hb_set_t* data = hb_set_copy(original);
+    state.ResumeTiming ();
     for (int i = 0; i < 1000; i++) {
       hb_set_add(data, i);
     }
@@ -74,7 +79,7 @@ BENCHMARK(BM_SetOrderedInsert_1000)
          {2, 512}});          // Density
 
 /* Single value lookup on sets of various sizes. */
-static void BM_SetLookup(benchmark::State& state) {
+static void BM_SetLookup(benchmark::State& state, unsigned interval) {
   unsigned set_size = state.range(0);
   unsigned max_value = state.range(0) * state.range(1);
 
@@ -82,14 +87,19 @@ static void BM_SetLookup(benchmark::State& state) {
   RandomSet(set_size, max_value, original);
   assert(hb_set_get_population(original) == set_size);
 
+  auto needle = max_value / 2;
   for (auto _ : state) {
     benchmark::DoNotOptimize(
-        hb_set_has (original, rand() % max_value));
+        hb_set_has (original, (needle += interval) % max_value));
   }
 
   hb_set_destroy(original);
 }
-BENCHMARK(BM_SetLookup)
+BENCHMARK_CAPTURE(BM_SetLookup, ordered, 3)
+    ->Ranges(
+        {{1 << 10, 1 << 16}, // Set Size
+         {2, 512}});          // Density
+BENCHMARK_CAPTURE(BM_SetLookup, random, 12345)
     ->Ranges(
         {{1 << 10, 1 << 16}, // Set Size
          {2, 512}});          // Density
@@ -111,6 +121,29 @@ static void BM_SetIteration(benchmark::State& state) {
   hb_set_destroy(original);
 }
 BENCHMARK(BM_SetIteration)
+    ->Ranges(
+        {{1 << 10, 1 << 16}, // Set Size
+         {2, 512}});          // Density
+
+/* Set copy. */
+static void BM_SetCopy(benchmark::State& state) {
+  unsigned set_size = state.range(0);
+  unsigned max_value = state.range(0) * state.range(1);
+
+  hb_set_t* original = hb_set_create ();
+  RandomSet(set_size, max_value, original);
+  assert(hb_set_get_population(original) == set_size);
+
+  for (auto _ : state) {
+    hb_set_t *s = hb_set_create ();
+    hb_set_set (s, original);
+    hb_set_destroy (s);
+  }
+
+  hb_set_destroy(original);
+}
+BENCHMARK(BM_SetCopy)
+    ->Unit(benchmark::kMicrosecond)
     ->Ranges(
         {{1 << 10, 1 << 16}, // Set Size
          {2, 512}});          // Density

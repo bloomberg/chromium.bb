@@ -685,7 +685,7 @@ func (b *jobBuilder) deriveCompileTaskName() string {
 			}
 			ec = keep
 		}
-		if b.os("Android") {
+		if b.matchOs("Android") {
 			if !In("Android", ec) {
 				ec = append([]string{"Android"}, ec...)
 			}
@@ -765,6 +765,7 @@ func (b *taskBuilder) defaultSwarmDimensions() {
 	if os, ok := b.parts["os"]; ok {
 		d["os"], ok = map[string]string{
 			"Android":    "Android",
+			"Android12":  "Android",
 			"ChromeOS":   "ChromeOS",
 			"Debian9":    DEFAULT_OS_LINUX_GCE, // Runs in Deb9 Docker.
 			"Debian10":   DEFAULT_OS_LINUX_GCE,
@@ -823,6 +824,23 @@ func (b *taskBuilder) defaultSwarmDimensions() {
 				"Pixel6":          {"oriole", "SD1A.210817.037"},
 				"TecnoSpark3Pro":  {"TECNO-KB8", "PPR1.180610.011"},
 				"Wembley":         {"wembley", "SP2A.211004.001"},
+			}[b.parts["model"]]
+			if !ok {
+				log.Fatalf("Entry %q not found in Android mapping.", b.parts["model"])
+			}
+			d["device_type"] = deviceInfo[0]
+			d["device_os"] = deviceInfo[1]
+
+			// Tests using Android's HWAddress Sanitizer require an HWASan build of Android.
+			// See https://developer.android.com/ndk/guides/hwasan.
+			if b.extraConfig("HWASAN") {
+				d["android_hwasan_build"] = "1"
+			}
+		} else if b.os("Android12") {
+			// For Android, the device type is a better dimension
+			// than CPU or GPU.
+			deviceInfo, ok := map[string][]string{
+				"Pixel5": {"redfin", "SP2A.220305.012"},
 			}[b.parts["model"]]
 			if !ok {
 				log.Fatalf("Entry %q not found in Android mapping.", b.parts["model"])
@@ -1183,8 +1201,6 @@ func (b *jobBuilder) compile() string {
 	name := b.deriveCompileTaskName()
 	if b.extraConfig("WasmGMTests") {
 		b.compileWasmGMTests(name)
-	} else if b.compiler("BazelClang") {
-		b.compileWithBazel(name)
 	} else {
 		b.addTask(name, func(b *taskBuilder) {
 			recipe := "compile"
@@ -1270,47 +1286,6 @@ func (b *jobBuilder) compile() string {
 	return name
 }
 
-// compileWithBazel uses RBE to compile Skia.
-func (b *jobBuilder) compileWithBazel(name string) {
-	if b.extraConfig("IWYU") {
-		b.addTask(name, func(b *taskBuilder) {
-			b.cmd("./bazel_check_includes",
-				"--project_id", "skia-swarming-bots",
-				"--task_id", specs.PLACEHOLDER_TASK_ID,
-				"--task_name", b.Name,
-			)
-			b.linuxGceDimensions(MACHINE_TYPE_MEDIUM)
-			b.cipd(b.MustGetCipdPackageFromAsset("bazelisk"))
-			b.addToPATH("bazelisk")
-			b.idempotent()
-			b.cas(CAS_COMPILE)
-			b.dep(b.buildTaskDrivers("linux", "amd64"))
-			b.attempts(1)
-			b.serviceAccount(b.cfg.ServiceAccountCompile)
-		})
-	} else {
-		log.Fatalf("Unsupported Bazel task " + name)
-	}
-}
-
-// compileWithBazel uses RBE to compile Skia.
-func (b *jobBuilder) checkGeneratedBazelFiles() {
-	b.addTask("Housekeeper-PerCommit-CheckGeneratedBazelFiles", func(b *taskBuilder) {
-		b.cmd("./check_generated_bazel_files",
-			"--project_id", "skia-swarming-bots",
-			"--task_id", specs.PLACEHOLDER_TASK_ID,
-			"--task_name", b.Name,
-		)
-		b.linuxGceDimensions(MACHINE_TYPE_MEDIUM)
-		b.cipd(b.MustGetCipdPackageFromAsset("bazelisk"))
-		b.addToPATH("bazelisk")
-		b.idempotent()
-		b.cas(CAS_COMPILE)
-		b.dep(b.buildTaskDrivers("linux", "amd64"))
-		b.attempts(1)
-		b.serviceAccount(b.cfg.ServiceAccountCompile) // needed for logging
-	})
-}
 
 // recreateSKPs generates a RecreateSKPs task.
 func (b *jobBuilder) recreateSKPs() {
@@ -1439,7 +1414,7 @@ func (b *jobBuilder) infra() {
 		b.kitchenTask("infra", OUTPUT_NONE)
 		b.cas(CAS_WHOLE_REPO)
 		b.serviceAccount(b.cfg.ServiceAccountCompile)
-		b.cipd(specs.CIPD_PKGS_GSUTIL...)
+		b.usesGSUtil()
 		b.idempotent()
 		b.usesGo()
 	})
@@ -1475,7 +1450,7 @@ func (b *jobBuilder) buildstats() {
 			b.Name = uploadName
 			b.serviceAccount(b.cfg.ServiceAccountUploadNano)
 			b.linuxGceDimensions(MACHINE_TYPE_SMALL)
-			b.cipd(specs.CIPD_PKGS_GSUTIL...)
+			b.usesGSUtil()
 			b.dep(depName)
 		})
 	}
@@ -1573,7 +1548,7 @@ func (b *taskBuilder) commonTestPerfAssets() {
 func (b *taskBuilder) directUpload(gsBucket, serviceAccount string) {
 	b.recipeProp("gs_bucket", gsBucket)
 	b.serviceAccount(serviceAccount)
-	b.cipd(specs.CIPD_PKGS_GSUTIL...)
+	b.usesGSUtil()
 }
 
 // dm generates a Test task using dm.
@@ -1642,7 +1617,7 @@ func (b *jobBuilder) dm() {
 		if compileTaskName != "" {
 			b.dep(compileTaskName)
 		}
-		if b.os("Android") && b.extraConfig("ASAN") {
+		if b.matchOs("Android") && b.extraConfig("ASAN") {
 			b.asset("android_ndk_linux")
 		}
 		b.commonTestPerfAssets()
@@ -1679,7 +1654,7 @@ func (b *jobBuilder) dm() {
 			b.kitchenTask("upload_dm_results", OUTPUT_NONE)
 			b.serviceAccount(b.cfg.ServiceAccountUploadGM)
 			b.linuxGceDimensions(MACHINE_TYPE_SMALL)
-			b.cipd(specs.CIPD_PKGS_GSUTIL...)
+			b.usesGSUtil()
 			b.dep(depName)
 		})
 	}
@@ -1867,7 +1842,7 @@ func (b *jobBuilder) puppeteer() {
 		b.Name = uploadName
 		b.serviceAccount(b.cfg.ServiceAccountUploadNano)
 		b.linuxGceDimensions(MACHINE_TYPE_SMALL)
-		b.cipd(specs.CIPD_PKGS_GSUTIL...)
+		b.usesGSUtil()
 		b.dep(depName)
 	})
 }
@@ -1938,7 +1913,7 @@ func (b *jobBuilder) perf() {
 			b.asset("lottie-samples")
 		}
 
-		if b.os("Android") && b.cpu() {
+		if b.matchOs("Android") && b.cpu() {
 			b.asset("text_blob_traces")
 		}
 		b.maybeAddIosDevImage()
@@ -1964,7 +1939,7 @@ func (b *jobBuilder) perf() {
 			b.Name = uploadName
 			b.serviceAccount(b.cfg.ServiceAccountUploadNano)
 			b.linuxGceDimensions(MACHINE_TYPE_SMALL)
-			b.cipd(specs.CIPD_PKGS_GSUTIL...)
+			b.usesGSUtil()
 			b.dep(depName)
 		})
 	}
@@ -2080,7 +2055,11 @@ func (b *jobBuilder) runWasmGMTests() {
 // label or "target pattern" https://bazel.build/docs/build#specifying-build-targets
 // The reason we need this mapping is because Buildbucket build names cannot have / or : in them.
 var shorthandToLabel = map[string]string{
+	"example_hello_world_dawn":         "//example:hello_world_dawn",
+	"example_hello_world_gl":           "//example:hello_world_gl",
+	"example_hello_world_vulkan":       "//example:hello_world_vulkan",
 	"modules_canvaskit_canvaskit_wasm": "//modules/canvaskit:canvaskit_wasm",
+	"skia_public":                      "//:skia_public",
 }
 
 // bazelBuild adds a task which builds the specified single-target label (//foo:bar) or
@@ -2093,12 +2072,13 @@ func (b *jobBuilder) bazelBuild() {
 		panic("unsupported Bazel label shorthand " + shorthand)
 	}
 	b.addTask(b.Name, func(b *taskBuilder) {
-		cmd := []string{"./bazel_build",
+		cmd := []string{"bazel_build_task_driver/bazel_build",
 			"--project_id=skia-swarming-bots",
 			"--task_id=" + specs.PLACEHOLDER_TASK_ID,
 			"--task_name=" + b.Name,
 			"--label=" + label,
 			"--config=" + config,
+			"--workdir=.",
 		}
 		if cross != "" {
 			// The cross (and host) platform is expected to be defined in
@@ -2108,7 +2088,13 @@ func (b *jobBuilder) bazelBuild() {
 		}
 		if host == "linux_x64" {
 			b.linuxGceDimensions(MACHINE_TYPE_MEDIUM)
-			b.dep(b.buildTaskDrivers("linux", "amd64"))
+			// Use a built task_driver from CIPD instead of building it from scratch. The
+			// task_driver should not need to change often, so using a CIPD version should reduce
+			// build latency.
+			// TODO(kjlubick) For now, this only has the linux version. We could build the task
+			//   driver for all hosts that we support running Bazel from in this CIPD package
+			//   if/when needed.
+			b.cipd(b.MustGetCipdPackageFromAsset("bazel_build_task_driver"))
 
 			// We want all Linux Bazel Builds to use RBE
 			cmd = append(cmd, "--bazel_arg=--config=linux_rbe")

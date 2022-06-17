@@ -178,3 +178,11 @@ TEST_F(FPDFSaveEmbedderTest, BUG_905142) {
   EXPECT_TRUE(FPDF_SaveAsCopy(document(), this, 0));
   EXPECT_THAT(GetString(), testing::HasSubstr("/Length 0"));
 }
+
+// Should not trigger a DCHECK() failure in CFX_FileBufferArchive.
+// Fails because the PDF is malformed.
+TEST_F(FPDFSaveEmbedderTest, Bug1328389) {
+  ASSERT_TRUE(OpenDocument("bug_1328389.pdf"));
+  EXPECT_TRUE(FPDF_SaveAsCopy(document(), this, 0));
+  EXPECT_THAT(GetString(), testing::HasSubstr("/Foo/"));
+}

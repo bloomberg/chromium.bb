@@ -248,7 +248,7 @@ static void getPhysicalDeviceDescriptorIndexingFeatures(T *features)
 	features->shaderStorageTexelBufferArrayDynamicIndexing = VK_FALSE;
 	features->shaderUniformBufferArrayNonUniformIndexing = VK_FALSE;
 	features->shaderSampledImageArrayNonUniformIndexing = VK_FALSE;
-	features->shaderStorageBufferArrayNonUniformIndexing = VK_FALSE;
+	features->shaderStorageBufferArrayNonUniformIndexing = VK_TRUE;
 	features->shaderStorageImageArrayNonUniformIndexing = VK_FALSE;
 	features->shaderInputAttachmentArrayNonUniformIndexing = VK_FALSE;
 	features->shaderUniformTexelBufferArrayNonUniformIndexing = VK_FALSE;
@@ -256,13 +256,13 @@ static void getPhysicalDeviceDescriptorIndexingFeatures(T *features)
 	features->descriptorBindingUniformBufferUpdateAfterBind = VK_FALSE;
 	features->descriptorBindingSampledImageUpdateAfterBind = VK_FALSE;
 	features->descriptorBindingStorageImageUpdateAfterBind = VK_FALSE;
-	features->descriptorBindingStorageBufferUpdateAfterBind = VK_FALSE;
+	features->descriptorBindingStorageBufferUpdateAfterBind = VK_TRUE;
 	features->descriptorBindingUniformTexelBufferUpdateAfterBind = VK_FALSE;
 	features->descriptorBindingStorageTexelBufferUpdateAfterBind = VK_FALSE;
-	features->descriptorBindingUpdateUnusedWhilePending = VK_FALSE;
-	features->descriptorBindingPartiallyBound = VK_FALSE;
+	features->descriptorBindingUpdateUnusedWhilePending = VK_TRUE;
+	features->descriptorBindingPartiallyBound = VK_TRUE;
 	features->descriptorBindingVariableDescriptorCount = VK_FALSE;
-	features->runtimeDescriptorArray = VK_FALSE;
+	features->runtimeDescriptorArray = VK_TRUE;
 }
 
 template<typename T>
@@ -580,10 +580,6 @@ void PhysicalDevice::getFeatures2(VkPhysicalDeviceFeatures2 *features) const
 			getPhysicalDeviceMaintenance4Features(reinterpret_cast<struct VkPhysicalDeviceMaintenance4Features *>(curExtension));
 			break;
 		case VK_STRUCTURE_TYPE_MAX_ENUM:  // TODO(b/176893525): This may not be legal. dEQP tests that this value is ignored.
-			break;
-		// FIXME(b/228307968): VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_FEATURES_ARM
-		//                     is used by dEQP without checking if VK_ARM_rasterization_order_attachment_access is present
-		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_FEATURES_ARM:
 			break;
 		default:
 			UNSUPPORTED("curExtension->sType: %s", vk::Stringify(curExtension->sType).c_str());
@@ -1860,8 +1856,6 @@ void PhysicalDevice::GetFormatProperties(Format format, VkFormatProperties3 *pFo
 	case VK_FORMAT_D16_UNORM:
 	case VK_FORMAT_D32_SFLOAT:          // Note: either VK_FORMAT_D32_SFLOAT or VK_FORMAT_X8_D24_UNORM_PACK32 must be supported
 	case VK_FORMAT_D32_SFLOAT_S8_UINT:  // Note: either VK_FORMAT_D24_UNORM_S8_UINT or VK_FORMAT_D32_SFLOAT_S8_UINT must be supported
-		pFormatProperties->linearTilingFeatures |=
-		    VK_FORMAT_FEATURE_2_SAMPLED_IMAGE_DEPTH_COMPARISON_BIT_KHR;
 		pFormatProperties->optimalTilingFeatures |=
 		    VK_FORMAT_FEATURE_2_SAMPLED_IMAGE_DEPTH_COMPARISON_BIT_KHR;
 		break;
@@ -2003,19 +1997,19 @@ void PhysicalDevice::GetFormatProperties(Format format, VkFormatProperties3 *pFo
 
 	if(pFormatProperties->optimalTilingFeatures)
 	{
+		// "Formats that are required to support VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT must also support
+		//  VK_FORMAT_FEATURE_TRANSFER_SRC_BIT and VK_FORMAT_FEATURE_TRANSFER_DST_BIT."
+
 		pFormatProperties->linearTilingFeatures |= VK_FORMAT_FEATURE_TRANSFER_SRC_BIT |
 		                                           VK_FORMAT_FEATURE_TRANSFER_DST_BIT;
 
 		if(!format.isCompressed())
 		{
-			if(pFormatProperties->optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT)
-			{
-				pFormatProperties->linearTilingFeatures |= VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT;
-			}
-			if(pFormatProperties->optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT)
-			{
-				pFormatProperties->linearTilingFeatures |= VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT;
-			}
+			VkFormatFeatureFlagBits2KHR transferableFeatureBits = VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT |
+			                                                      VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT |
+			                                                      VK_FORMAT_FEATURE_2_SAMPLED_IMAGE_DEPTH_COMPARISON_BIT_KHR;
+
+			pFormatProperties->linearTilingFeatures |= (pFormatProperties->optimalTilingFeatures & transferableFeatureBits);
 		}
 	}
 }

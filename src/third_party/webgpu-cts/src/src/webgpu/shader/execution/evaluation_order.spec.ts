@@ -418,7 +418,7 @@ fn test_body() -> i32 {
 
 @group(0) @binding(0) var<storage, write> output : i32;
 
-@stage(compute) @workgroup_size(1)
+@compute @workgroup_size(1)
 fn main() {
   output = test_body();
 }
@@ -433,6 +433,7 @@ fn main() {
 
   const module = t.device.createShaderModule({ code: source });
   const pipeline = t.device.createComputePipeline({
+    layout: 'auto',
     compute: { module, entryPoint: 'main' },
   });
 

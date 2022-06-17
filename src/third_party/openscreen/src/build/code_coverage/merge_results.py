@@ -18,35 +18,26 @@ import os
 import subprocess
 import sys
 
-import merge_lib as coverage_merger
-
+import merge_lib as profile_merger
 
 def _MergeAPIArgumentParser(*args, **kwargs):
+  """Parameters passed to this merge script, as per:
+  https://chromium.googlesource.com/chromium/tools/build/+/main/scripts/slave/recipe_modules/swarming/resources/merge_api.py
+  """
   parser = argparse.ArgumentParser(*args, **kwargs)
-  parser.add_argument(
-      '--task-output-dir', required=True, help=argparse.SUPPRESS)
+  parser.add_argument('--build-properties', help=argparse.SUPPRESS)
+  parser.add_argument('--task-output-dir', help=argparse.SUPPRESS)
+
+  # Custom arguments for this merge script.
   parser.add_argument(
       '--profdata-dir', required=True, help='where to store the merged data')
   parser.add_argument(
-      '--llvm-profdata',
-      required=True,
-      help='path to llvm-profdata executable')
+      '--llvm-profdata', required=True, help='path to llvm-profdata executable')
+  parser.add_argument('--test-target-name', help='test target name')
   parser.add_argument(
       '--per-cl-coverage',
       action='store_true',
       help='set to indicate that this is a per-CL coverage build')
-  # TODO(crbug.com/1077304) - migrate this to sparse=False as default, and have
-  # --sparse to set sparse
-  parser.add_argument(
-      '--no-sparse',
-      action='store_false',
-      dest='sparse',
-      help='run llvm-profdata without the sparse flag.')
-  # TODO(crbug.com/1077304) - The intended behaviour is to default sparse to
-  # false. --no-sparse above was added as a workaround, and will be removed.
-  # This is being introduced now in support of the migration to intended
-  # behavior. Ordering of args matters here, as the default is set by the former
-  # (sparse defaults to False because of ordering. See unit tests for details)
   parser.add_argument(
       '--sparse',
       action='store_true',
@@ -69,8 +60,16 @@ def main():
   parser = _MergeAPIArgumentParser(description=desc)
   params = parser.parse_args()
 
-  output_prodata_filename = 'default.profdata'
-  invalid_profiles, counter_overflows = coverage_merger.merge_profiles(
+  # Name the output profdata file name as {test_target}.profdata or
+  # default.profdata.
+  output_profdata_filename = (params.test_target_name or 'default') +
+      '.profdata'
+
+  # NOTE: The profile data merge script must make sure that the profraw files
+  # are deleted from the task output directory after merging, otherwise, other
+  # test results merge script such as layout tests will treat them as json test
+  # results files and result in errors.
+  invalid_profiles, counter_overflows = profile_merger.merge_profiles(
       params.task_output_dir,
       os.path.join(params.profdata_dir, output_prodata_filename), '.profraw',
       params.llvm_profdata,
@@ -96,5 +95,6 @@ def main():
 
 if __name__ == '__main__':
   logging.basicConfig(
-      format='[%(asctime)s %(levelname)s] %(message)s', level=logging.INFO)
+      format='[%(asctime)s %(levelname)s] %(message)s',
+      level=logging.INFO)
   sys.exit(main())

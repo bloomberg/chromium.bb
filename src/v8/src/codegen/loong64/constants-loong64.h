@@ -137,7 +137,7 @@ enum SoftwareInterruptCodes {
 //   debugger.
 const uint32_t kMaxWatchpointCode = 31;
 const uint32_t kMaxStopCode = 127;
-STATIC_ASSERT(kMaxWatchpointCode < kMaxStopCode);
+static_assert(kMaxWatchpointCode < kMaxStopCode);
 
 // ----- Fields offset and length.
 const int kRjShift = 5;
@@ -1276,7 +1276,8 @@ InstructionBase::Type InstructionBase::InstructionType() const {
 
 template <class P>
 bool InstructionGetters<P>::IsTrap() const {
-  return true;
+  if ((this->Bits(31, 15) << 15) == BREAK) return true;
+  return false;
 }
 
 }  // namespace internal

@@ -4,8 +4,8 @@
 
 #include "device/bluetooth/chromeos/bluetooth_utils.h"
 
-#include "ash/constants/ash_features.h"
 #include "base/containers/contains.h"
+#include "base/containers/fixed_flat_set.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
@@ -17,15 +17,15 @@
 #include "build/chromeos_buildflags.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "device/base/features.h"
-#include "device/bluetooth/floss/floss_features.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-#include "chromeos/lacros/lacros_service.h"
+#include "chromeos/startup/browser_init_params.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 namespace device {
@@ -78,8 +78,7 @@ BluetoothAdapter::DeviceList FilterUnknownDevices(
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-  if (chromeos::LacrosService::Get()
-          ->init_params()
+  if (chromeos::BrowserInitParams::Get()
           ->is_unfiltered_bluetooth_device_enabled) {
     return devices;
   }
@@ -150,6 +149,23 @@ std::string GetTransportName(BluetoothTransport transport) {
   }
 }
 
+bool IsPolyDevicePairingAllowed() {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  return ash::features::IsPolyDevicePairingAllowed();
+#else
+  return false;
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+}
+
+bool IsPolyDevice(const device::BluetoothDevice* device) {
+  // OUI portions of Bluetooth addresses for devices manufactured by Poly. See
+  // https://standards-oui.ieee.org/.
+  constexpr auto kPolyOuis = base::MakeFixedFlatSet<base::StringPiece>(
+      {"64:16:7F", "48:25:67", "00:04:F2"});
+
+  return base::Contains(kPolyOuis, device->GetOuiPortionOfBluetoothAddress());
+}
+
 }  // namespace
 
 device::BluetoothAdapter::DeviceList FilterBluetoothDeviceList(
@@ -163,24 +179,23 @@ device::BluetoothAdapter::DeviceList FilterBluetoothDeviceList(
 }
 
 bool IsUnsupportedDevice(const device::BluetoothDevice* device) {
-  // With Floss, device list filtering is still unstable. We disable filtering
-  // first so that Floss testing of other features can be unblocked.
-  // TODO(b/202335393): Enable device filtering once it's stable with Floss.
-  if (base::FeatureList::IsEnabled(floss::features::kFlossEnabled))
-    return false;
-
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   if (ash::switches::IsUnfilteredBluetoothDevicesEnabled())
     return false;
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-  if (chromeos::LacrosService::Get()
-          ->init_params()
+  if (chromeos::BrowserInitParams::Get()
           ->is_unfiltered_bluetooth_device_enabled) {
     return false;
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
+  // Never filter out Poly devices; this requires a special case since these
+  // devices often identify themselves as phones, which are disallowed below.
+  // See b/228118615.
+  if (IsPolyDevicePairingAllowed() && IsPolyDevice(device))
+    return false;
 
   // Always filter out laptops, etc. There is no intended use case or
   // Bluetooth profile in this context.

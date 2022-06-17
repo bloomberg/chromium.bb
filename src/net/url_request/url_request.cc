@@ -577,35 +577,13 @@ URLRequest::URLRequest(const GURL& url,
     : context_(context),
       net_log_(CreateNetLogWithSource(context->net_log(), net_log_source)),
       url_chain_(1, url),
-      force_ignore_site_for_cookies_(false),
-      force_ignore_top_frame_party_for_cookies_(false),
-      force_main_frame_for_same_site_cookies_(false),
       method_("GET"),
-      referrer_policy_(
-          ReferrerPolicy::CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE),
-      first_party_url_policy_(
-          RedirectInfo::FirstPartyURLPolicy::NEVER_CHANGE_URL),
-      load_flags_(LOAD_NORMAL),
-      allow_credentials_(true),
-      secure_dns_policy_(SecureDnsPolicy::kAllow),
-#if BUILDFLAG(ENABLE_REPORTING)
-      reporting_upload_depth_(0),
-#endif
       delegate_(delegate),
       is_for_websockets_(is_for_websockets),
-      status_(OK),
-      is_pending_(false),
-      is_redirecting_(false),
       redirect_limit_(kMaxRedirects),
       priority_(priority),
-      delegate_event_type_(NetLogEventType::FAILED),
-      calling_delegate_(false),
-      use_blocked_by_as_load_param_(false),
-      has_notified_completion_(false),
-      received_response_content_length_(0),
       creation_time_(base::TimeTicks::Now()),
-      traffic_annotation_(traffic_annotation),
-      upgrade_if_insecure_(false) {
+      traffic_annotation_(traffic_annotation) {
   // Sanity check out environment.
   DCHECK(base::ThreadTaskRunnerHandle::IsSet());
 
@@ -671,6 +649,7 @@ void URLRequest::StartJob(std::unique_ptr<URLRequestJob> job) {
 
   maybe_sent_cookies_.clear();
   maybe_stored_cookies_.clear();
+  has_partitioned_cookie_ = false;
 
   GURL referrer_url(referrer_);
   bool same_origin_for_metrics;
@@ -874,6 +853,7 @@ void URLRequest::FollowDeferredRedirect(
 
   maybe_sent_cookies_.clear();
   maybe_stored_cookies_.clear();
+  has_partitioned_cookie_ = false;
 
   status_ = ERR_IO_PENDING;
   job_->FollowDeferredRedirect(removed_headers, modified_headers);
@@ -885,6 +865,7 @@ void URLRequest::SetAuth(const AuthCredentials& credentials) {
 
   maybe_sent_cookies_.clear();
   maybe_stored_cookies_.clear();
+  has_partitioned_cookie_ = false;
 
   status_ = ERR_IO_PENDING;
   job_->SetAuth(credentials);

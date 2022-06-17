@@ -194,9 +194,8 @@ static int cin_decode_rle(const unsigned char *src, int src_size,
     return 0;
 }
 
-static int cinvideo_decode_frame(AVCodecContext *avctx,
-                                 void *data, int *got_frame,
-                                 AVPacket *avpkt)
+static int cinvideo_decode_frame(AVCodecContext *avctx, AVFrame *rframe,
+                                 int *got_frame, AVPacket *avpkt)
 {
     const uint8_t *buf   = avpkt->data;
     int buf_size         = avpkt->size;
@@ -303,7 +302,7 @@ static int cinvideo_decode_frame(AVCodecContext *avctx,
     FFSWAP(uint8_t *, cin->bitmap_table[CIN_CUR_BMP],
                       cin->bitmap_table[CIN_PRE_BMP]);
 
-    if ((res = av_frame_ref(data, cin->frame)) < 0)
+    if ((res = av_frame_ref(rframe, cin->frame)) < 0)
         return res;
 
     *got_frame = 1;
@@ -330,7 +329,7 @@ const FFCodec ff_dsicinvideo_decoder = {
     .priv_data_size = sizeof(CinVideoContext),
     .init           = cinvideo_decode_init,
     .close          = cinvideo_decode_end,
-    .decode         = cinvideo_decode_frame,
+    FF_CODEC_DECODE_CB(cinvideo_decode_frame),
     .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP,
     .p.capabilities = AV_CODEC_CAP_DR1,
 };

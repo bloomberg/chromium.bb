@@ -49,9 +49,6 @@ constexpr int64_t kDelayForGetUnmaskDetails = 3 * 60 * 1000;  // 3 min
 // Suffix for server IDs in the cache indicating that a card is a virtual card.
 const char kVirtualCardIdentifier[] = "_vcn";
 
-bool IsLocalCard(const CreditCard* card) {
-  return card && card->record_type() == CreditCard::LOCAL_CARD;
-}
 }  // namespace
 
 CreditCardAccessManager::CreditCardAccessManager(
@@ -65,10 +62,11 @@ CreditCardAccessManager::CreditCardAccessManager(
       personal_data_manager_(personal_data_manager),
       form_event_logger_(form_event_logger) {}
 
-CreditCardAccessManager::~CreditCardAccessManager() {}
+CreditCardAccessManager::~CreditCardAccessManager() = default;
 
 void CreditCardAccessManager::UpdateCreditCardFormEventLogger() {
-  std::vector<CreditCard*> credit_cards = GetCreditCards();
+  std::vector<CreditCard*> credit_cards =
+      personal_data_manager_->GetCreditCards();
 
   size_t server_record_type_count = 0;
   size_t local_record_type_count = 0;
@@ -81,23 +79,6 @@ void CreditCardAccessManager::UpdateCreditCardFormEventLogger() {
   form_event_logger_->set_server_record_type_count(server_record_type_count);
   form_event_logger_->set_local_record_type_count(local_record_type_count);
   form_event_logger_->set_is_context_secure(client_->IsContextSecure());
-}
-
-std::vector<CreditCard*> CreditCardAccessManager::GetCreditCards() {
-  return personal_data_manager_->GetCreditCards();
-}
-
-std::vector<CreditCard*> CreditCardAccessManager::GetCreditCardsToSuggest() {
-  const std::vector<CreditCard*> cards_to_suggest =
-      personal_data_manager_->GetCreditCardsToSuggest(
-          client_->AreServerCardsSupported());
-
-  return cards_to_suggest;
-}
-
-bool CreditCardAccessManager::ShouldDisplayGPayLogo() {
-  return base::ranges::all_of(GetCreditCardsToSuggest(),
-                              base::not_fn(&IsLocalCard));
 }
 
 bool CreditCardAccessManager::UnmaskedCardCacheIsEmpty() {
@@ -118,14 +99,9 @@ bool CreditCardAccessManager::IsCardPresentInUnmaskedCache(
          unmasked_card_cache_.end();
 }
 
-bool CreditCardAccessManager::ServerCardsAvailable() {
-  return base::ranges::any_of(GetCreditCardsToSuggest(),
-                              base::not_fn(&IsLocalCard));
-}
-
 bool CreditCardAccessManager::DeleteCard(const CreditCard* card) {
   // Server cards cannot be deleted from within Chrome.
-  bool allowed_to_delete = IsLocalCard(card);
+  bool allowed_to_delete = CreditCard::IsLocalCard(card);
 
   if (allowed_to_delete)
     personal_data_manager_->DeleteLocalCreditCards({*card});
@@ -137,7 +113,7 @@ bool CreditCardAccessManager::GetDeletionConfirmationText(
     const CreditCard* card,
     std::u16string* title,
     std::u16string* body) {
-  if (!IsLocalCard(card))
+  if (!CreditCard::IsLocalCard(card))
     return false;
 
   if (title)
@@ -154,18 +130,14 @@ bool CreditCardAccessManager::ShouldClearPreviewedForm() {
   return !is_authentication_in_progress_;
 }
 
-CreditCard* CreditCardAccessManager::GetCreditCard(std::string guid) {
-  if (base::IsValidGUID(guid)) {
-    return personal_data_manager_->GetCreditCardByGUID(guid);
-  }
-  return nullptr;
-}
-
 void CreditCardAccessManager::PrepareToFetchCreditCard() {
 #if !BUILDFLAG(IS_IOS)
   // No need to fetch details if there are no server cards.
-  if (!ServerCardsAvailable())
+  if (!base::ranges::any_of(personal_data_manager_->GetCreditCardsToSuggest(
+                                client_->AreServerCardsSupported()),
+                            base::not_fn(&CreditCard::IsLocalCard))) {
     return;
+  }
 
   // Do not make a preflight call if unnecessary, such as if one is already in
   // progress or a recently-returned call should be currently used.
@@ -276,9 +248,7 @@ void CreditCardAccessManager::FetchCreditCard(
     return;
   }
 
-  if (base::FeatureList::IsEnabled(
-          features::kAutofillEnableVirtualCardsRiskBasedAuthentication) &&
-      card->record_type() == CreditCard::VIRTUAL_CARD) {
+  if (card->record_type() == CreditCard::VIRTUAL_CARD) {
     AutofillMetrics::LogServerCardUnmaskAttempt(
         AutofillClient::PaymentsRpcCardType::kVirtualCard);
   }
@@ -294,9 +264,7 @@ void CreditCardAccessManager::FetchCreditCard(
                                    ? "Autofill.UsedCachedVirtualCard"
                                    : "Autofill.UsedCachedServerCard";
     base::UmaHistogramCounts1000(metrics_name, ++it->second.cache_uses);
-    if (base::FeatureList::IsEnabled(
-            features::kAutofillEnableVirtualCardsRiskBasedAuthentication) &&
-        card->record_type() == CreditCard::VIRTUAL_CARD) {
+    if (card->record_type() == CreditCard::VIRTUAL_CARD) {
       AutofillMetrics::LogServerCardUnmaskResult(
           AutofillMetrics::ServerCardUnmaskResult::kLocalCacheHit,
           AutofillClient::PaymentsRpcCardType::kVirtualCard,
@@ -327,13 +295,10 @@ void CreditCardAccessManager::FetchCreditCard(
   accessor_ = accessor;
 
   // Direct to different flows based on the card record type.
-  if (base::FeatureList::IsEnabled(
-          features::kAutofillEnableVirtualCardsRiskBasedAuthentication) &&
-      card_->record_type() == CreditCard::VIRTUAL_CARD) {
+  if (card_->record_type() == CreditCard::VIRTUAL_CARD)
     FetchVirtualCard();
-  } else {
+  else
     FetchMaskedServerCard();
-  }
 }
 
 void CreditCardAccessManager::FIDOAuthOptChange(bool opt_in) {
@@ -382,13 +347,10 @@ void CreditCardAccessManager::GetAuthenticationType(bool fido_auth_enabled) {
   // iOS either, so offer CVC auth immediately.
   OnDidGetAuthenticationType(UnmaskAuthFlowType::kCvc);
 #else
-  if (base::FeatureList::IsEnabled(
-          features::kAutofillEnableVirtualCardsRiskBasedAuthentication) &&
-      card_->record_type() == CreditCard::VIRTUAL_CARD) {
+  if (card_->record_type() == CreditCard::VIRTUAL_CARD)
     GetAuthenticationTypeForVirtualCard(fido_auth_enabled);
-  } else {
+  else
     GetAuthenticationTypeForMaskedServerCard(fido_auth_enabled);
-  }
 #endif
 }
 
@@ -508,9 +470,7 @@ void CreditCardAccessManager::Authenticate() {
       // UnmaskDetails.
       base::Value fido_request_options;
       absl::optional<std::string> context_token;
-      if (base::FeatureList::IsEnabled(
-              features::kAutofillEnableVirtualCardsRiskBasedAuthentication) &&
-          card_->record_type() == CreditCard::VIRTUAL_CARD) {
+      if (card_->record_type() == CreditCard::VIRTUAL_CARD) {
         context_token = virtual_card_unmask_response_details_.context_token;
         fido_request_options = std::move(
             virtual_card_unmask_response_details_.fido_request_options.value());
@@ -549,9 +509,7 @@ void CreditCardAccessManager::Authenticate() {
         NOTREACHED();
         accessor_->OnCreditCardFetched(CreditCardFetchResult::kTransientError);
         client_->ShowVirtualCardErrorDialog(/*is_permanent_error=*/false);
-        if (base::FeatureList::IsEnabled(
-                features::kAutofillEnableVirtualCardsRiskBasedAuthentication) &&
-            card_->record_type() == CreditCard::VIRTUAL_CARD) {
+        if (card_->record_type() == CreditCard::VIRTUAL_CARD) {
           AutofillMetrics::LogServerCardUnmaskResult(
               AutofillMetrics::ServerCardUnmaskResult::kUnexpectedError,
               AutofillClient::PaymentsRpcCardType::kVirtualCard,
@@ -692,9 +650,7 @@ void CreditCardAccessManager::OnFIDOAuthenticationComplete(
                                    response.card, response.cvc);
     form_event_logger_->LogCardUnmaskAuthenticationPromptCompleted(
         unmask_auth_flow_type_);
-    if (base::FeatureList::IsEnabled(
-            features::kAutofillEnableVirtualCardsRiskBasedAuthentication) &&
-        card_->record_type() == CreditCard::VIRTUAL_CARD) {
+    if (card_->record_type() == CreditCard::VIRTUAL_CARD) {
       AutofillMetrics::LogServerCardUnmaskResult(
           AutofillMetrics::ServerCardUnmaskResult::kAuthenticationUnmasked,
           AutofillClient::PaymentsRpcCardType::kVirtualCard,
@@ -719,9 +675,7 @@ void CreditCardAccessManager::OnFIDOAuthenticationComplete(
         payments::FullCardRequest::VIRTUAL_CARD_RETRIEVAL_PERMANENT_FAILURE);
     accessor_->OnCreditCardFetched(result);
 
-    if (base::FeatureList::IsEnabled(
-            features::kAutofillEnableVirtualCardsRiskBasedAuthentication) &&
-        card_->record_type() == CreditCard::VIRTUAL_CARD) {
+    if (card_->record_type() == CreditCard::VIRTUAL_CARD) {
       AutofillMetrics::LogServerCardUnmaskResult(
           AutofillMetrics::ServerCardUnmaskResult::kVirtualCardRetrievalError,
           AutofillClient::PaymentsRpcCardType::kVirtualCard,
@@ -732,9 +686,7 @@ void CreditCardAccessManager::OnFIDOAuthenticationComplete(
     // If it is an authentication error, start the CVC authentication process
     // for masked server cards or the OTP authentication process for virtual
     // cards.
-    if (card_->record_type() == CreditCard::VIRTUAL_CARD &&
-        base::FeatureList::IsEnabled(
-            features::kAutofillEnableVirtualCardsRiskBasedAuthentication)) {
+    if (card_->record_type() == CreditCard::VIRTUAL_CARD) {
       GetAuthenticationTypeForVirtualCard(/*fido_auth_enabled=*/false);
     } else {
       unmask_auth_flow_type_ = UnmaskAuthFlowType::kCvcFallbackFromFido;

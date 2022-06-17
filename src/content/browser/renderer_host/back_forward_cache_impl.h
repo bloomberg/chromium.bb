@@ -11,6 +11,7 @@
 #include <unordered_set>
 
 #include "base/feature_list.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -61,17 +62,16 @@ const base::Feature kCacheControlNoStoreEnterBackForwardCache{
     "CacheControlNoStoreEnterBackForwardCache",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Allows pages with MediaSession's playback state change to stay eligible for
-// the back/forward cache.
-const base::Feature kBackForwardCacheMediaSessionPlaybackStateChange{
-    "BackForwardCacheMediaSessionPlaybackStateChange",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables controlling the time to live for pages in the backforward cache.
 // The time to live is defined by the param 'time_to_live_seconds'; if this
 // param is not specified then this feature is ignored and the default is used.
 const base::Feature kBackForwardCacheTimeToLiveControl{
     "BackForwardCacheTimeToLiveControl", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Allows overriding the sizes of back/forward cache.
+// Sizes set via this feature's parameters take precedence over others.
+const base::Feature kBackForwardCacheSize{"BackForwardCacheSize",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Combines a flattened list and a tree of the reasons why each document cannot
 // enter the back/forward cache (might be empty if it can). The tree saves the
@@ -87,9 +87,12 @@ struct CONTENT_EXPORT BackForwardCacheCanStoreDocumentResultWithTree {
 
   BackForwardCacheCanStoreDocumentResult flattened_reasons;
   std::unique_ptr<BackForwardCacheCanStoreTreeResult> tree_reasons;
-  // If BFCache is available, it returns true. If there are reasons that BFCache
-  // is not available, it returns false.
-  explicit operator bool() const { return flattened_reasons; }
+
+  // The conditions for storing and restoring the pages are different in that
+  // pages with cache-control:no-store can enter back/forward cache depending on
+  // the experiment flag, but can never be restored.
+  bool CanStore() const { return flattened_reasons.CanStore(); }
+  bool CanRestore() const { return flattened_reasons.CanRestore(); }
 };
 
 // BackForwardCache:
@@ -183,10 +186,6 @@ class CONTENT_EXPORT BackForwardCacheImpl
 
   ~BackForwardCacheImpl() override;
 
-  // Returns whether MediaSession's playback state change is allowed for the
-  // BackForwardCache.
-  static bool IsMediaSessionPlaybackStateChangedAllowed();
-
   // Returns whether MediaSession's service is allowed for the BackForwardCache.
   static bool IsMediaSessionServiceAllowed();
 
@@ -198,27 +197,22 @@ class CONTENT_EXPORT BackForwardCacheImpl
   // children's state. Should only be called after we've navigated away from
   // |render_frame_host|, which means nothing about the page can change (usage
   // of blocklisted features, pending navigations, load state, etc.) anymore.
-  // Note that criteria for storing and restoring can be different.
-  // |include_ccns| indicates whether or not we should consider cache-control:
-  // no-store related reasons. We don't include those reasons in the default
-  // case to allow pages with cache-control:no-store in back/forward cache
-  // temporarily for metrics collection, but those pages should never be
-  // restored. When trying to restore a page, |include_ccns| is set to true to
-  // include cache-control:no-store reasons, so that the pages containing them
-  // will not be restored.
-  BackForwardCacheCanStoreDocumentResultWithTree CanStorePageNow(
-      RenderFrameHostImpl* render_frame_host,
-      bool include_ccns = false);
+  // Note that criteria for storing and restoring can be different, i.e.
+  // |CanStore()| and |CanRestore()| might give different results.
+  BackForwardCacheCanStoreDocumentResultWithTree
+  GetCurrentBackForwardCacheEligibility(RenderFrameHostImpl* render_frame_host);
 
   // Whether a RenderFrameHost could be stored into the BackForwardCache at some
-  // point in the future. Different than CanStorePageNow() above, we won't check
-  // for properties of |render_frame_host| that might change in the future such
-  // as usage of certain APIs, loading state, existence of pending navigation
-  // requests, etc. This should be treated as a "best guess" on whether a page
-  // still has a chance to be stored in the back-forward cache later on, and
-  // should not be used as a final check before storing a page to the
-  // back-forward cache (for that, use CanStorePageNow() instead).
-  BackForwardCacheCanStoreDocumentResultWithTree CanPotentiallyStorePageLater(
+  // point in the future. Different than GetCurrentBackForwardCacheEligibility()
+  // above, we won't check for properties of |render_frame_host| that might
+  // change in the future such as usage of certain APIs, loading state,
+  // existence of pending navigation requests, etc. This should be treated as a
+  // "best guess" on whether a page still has a chance to be stored in the
+  // back-forward cache later on, and should not be used as a final check before
+  // storing a page to the back-forward cache (for that, use
+  // GetCurrentBackForwardCacheEligibility() instead).
+  BackForwardCacheCanStoreDocumentResultWithTree
+  GetFutureBackForwardCacheEligibilityPotential(
       RenderFrameHostImpl* render_frame_host);
 
   // Moves the specified BackForwardCache entry into the BackForwardCache. It
@@ -490,7 +484,7 @@ class CONTENT_EXPORT BackForwardCacheImpl
     ~NotRestoredReasonBuilder();
 
     // Access the populated result.
-    BackForwardCacheCanStoreDocumentResult GetFlattenedResult() {
+    BackForwardCacheCanStoreDocumentResult& GetFlattenedResult() {
       // TODO(yuzus): Check that |flattened_result_| and the tree result match.
       return flattened_result_;
     }
@@ -507,7 +501,7 @@ class CONTENT_EXPORT BackForwardCacheImpl
     PopulateReasonsAndReturnSubtree(RenderFrameHostImpl* rfh);
 
     // Root document of the tree.
-    RenderFrameHostImpl* const root_rfh_;
+    const raw_ptr<RenderFrameHostImpl> root_rfh_;
     // BackForwardCacheImpl instance to access eligibility check functions.
     BackForwardCacheImpl& bfcache_;
     // Flattened list of NotRestoredReasons for the tree. This is empty at the
@@ -569,6 +563,10 @@ class CONTENT_EXPORT BackForwardCacheCanStoreTreeResult {
     return document_result_;
   }
 
+  // Flatten the tree and return a flattened list of not restored reasons that
+  // includes all the reasons in the tree.
+  const BackForwardCacheCanStoreDocumentResult FlattenTree();
+
   // The children nodes. We can access the children nodes of this
   // node/document from this vector.
   const ChildrenVector& GetChildren() const { return children_; }
@@ -591,6 +589,9 @@ class CONTENT_EXPORT BackForwardCacheCanStoreTreeResult {
       const url::Origin& main_document_origin,
       BackForwardCacheCanStoreDocumentResult& result_for_this_document,
       ChildrenVector children);
+
+  void FlattenTreeHelper(
+      BackForwardCacheCanStoreDocumentResult* document_result);
 
   // See |GetDocumentResult|
   BackForwardCacheCanStoreDocumentResult document_result_;

@@ -251,13 +251,13 @@ using PrimaryRefKey = std::tuple<int,   // abs layer_depth delta
 // be used to pick the primary reference frame for probability model
 static PrimaryRefKey get_primary_ref_key(const GopFrame &cur_frame,
                                          const GopFrame &ref_frame) {
-  return { abs(cur_frame.layer_depth - ref_frame.layer_depth),
-           cur_frame.is_key_frame != ref_frame.is_key_frame,
-           cur_frame.is_golden_frame != ref_frame.is_golden_frame,
-           cur_frame.is_arf_frame != ref_frame.is_arf_frame,
-           cur_frame.is_show_frame != ref_frame.is_show_frame,
-           cur_frame.encode_ref_mode != ref_frame.encode_ref_mode,
-           abs(cur_frame.order_idx - ref_frame.order_idx) };
+  return std::make_tuple(abs(cur_frame.layer_depth - ref_frame.layer_depth),
+                         cur_frame.is_key_frame != ref_frame.is_key_frame,
+                         cur_frame.is_golden_frame != ref_frame.is_golden_frame,
+                         cur_frame.is_arf_frame != ref_frame.is_arf_frame,
+                         cur_frame.is_show_frame != ref_frame.is_show_frame,
+                         cur_frame.encode_ref_mode != ref_frame.encode_ref_mode,
+                         abs(cur_frame.order_idx - ref_frame.order_idx));
 }
 
 // Pick primary_ref_idx for probability model.

@@ -76,7 +76,7 @@ class WasmGraphAssembler : public GraphAssembler {
   Node* Branch(Node* cond, Node** true_node, Node** false_node,
                BranchHint hint);
 
-  Node* NumberConstant(volatile double value) {
+  Node* NumberConstant(double value) {
     return graph()->NewNode(mcgraph()->common()->NumberConstant(value));
   }
 
@@ -90,6 +90,29 @@ class WasmGraphAssembler : public GraphAssembler {
   void MergeControlToEnd(Node* control) {
     NodeProperties::MergeControlToEnd(graph(), common(), control);
   }
+
+  // Numeric conversions
+  Node* BuildTruncateIntPtrToInt32(Node* value);
+
+  Node* BuildChangeInt32ToIntPtr(Node* value);
+
+  Node* BuildChangeIntPtrToInt64(Node* value);
+
+  Node* BuildChangeUint32ToUintPtr(Node* node);
+
+  Node* BuildSmiShiftBitsConstant();
+
+  Node* BuildSmiShiftBitsConstant32();
+
+  Node* BuildChangeInt32ToSmi(Node* value);
+
+  Node* BuildChangeUint31ToSmi(Node* value);
+
+  Node* BuildChangeSmiToInt32(Node* value);
+
+  Node* BuildConvertUint32ToSmiWithSaturation(Node* value, uint32_t maxval);
+
+  Node* BuildChangeSmiToIntPtr(Node* value);
 
   // Helper functions for dealing with HeapObjects.
   // Rule of thumb: if access to a given field in an object is required in
@@ -217,9 +240,31 @@ class WasmGraphAssembler : public GraphAssembler {
 
   Node* IsDataRefMap(Node* map);
 
-  // Generic HeapObject helpers.
+  Node* WasmTypeCheck(Node* object, Node* rtt, WasmTypeCheckConfig config);
+
+  Node* WasmTypeCast(Node* object, Node* rtt, WasmTypeCheckConfig config);
+
+  Node* Null();
+
+  Node* IsNull(Node* object);
+
+  Node* IsNotNull(Node* object);
+
+  Node* AssertNotNull(Node* object);
+
+  // Generic helpers.
 
   Node* HasInstanceType(Node* heap_object, InstanceType type);
+
+  Node* TrapIf(Node* condition, TrapId reason) {
+    return AddNode(graph()->NewNode(mcgraph()->common()->TrapIf(reason),
+                                    condition, effect(), control()));
+  }
+
+  Node* TrapUnless(Node* condition, TrapId reason) {
+    return AddNode(graph()->NewNode(mcgraph()->common()->TrapUnless(reason),
+                                    condition, effect(), control()));
+  }
 
   SimplifiedOperatorBuilder* simplified() { return &simplified_; }
 

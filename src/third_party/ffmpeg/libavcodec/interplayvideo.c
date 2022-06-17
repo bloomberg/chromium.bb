@@ -1189,14 +1189,12 @@ static av_cold int ipvideo_decode_init(AVCodecContext *avctx)
     return 0;
 }
 
-static int ipvideo_decode_frame(AVCodecContext *avctx,
-                                void *data, int *got_frame,
-                                AVPacket *avpkt)
+static int ipvideo_decode_frame(AVCodecContext *avctx, AVFrame *frame,
+                                int *got_frame, AVPacket *avpkt)
 {
     const uint8_t *buf = avpkt->data;
     int buf_size = avpkt->size;
     IpvideoContext *s = avctx->priv_data;
-    AVFrame *frame = data;
     int ret;
     int send_buffer;
     int frame_format;
@@ -1366,7 +1364,7 @@ const FFCodec ff_interplay_video_decoder = {
     .priv_data_size = sizeof(IpvideoContext),
     .init           = ipvideo_decode_init,
     .close          = ipvideo_decode_end,
-    .decode         = ipvideo_decode_frame,
+    FF_CODEC_DECODE_CB(ipvideo_decode_frame),
     .p.capabilities = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_PARAM_CHANGE,
     .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP,
 };

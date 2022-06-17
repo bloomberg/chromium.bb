@@ -418,6 +418,166 @@ const char* GetConvolveScaleDigest10bpp(int id) {
 }
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
 
+#if LIBGAV1_MAX_BITDEPTH == 12
+const char* GetConvolveDigest12bpp(int id) {
+  // Entries containing 'XXXXX...' are skipped. See the test for details.
+  static const char* const kDigest[ConvolveTestParam::kNumBlockSizes * 16] = {
+      "e25031afae184cc4d186cde7e3d51e33", "6fb55dec2506dae6c229469cdf2e7d83",
+      "9df34d27f5bd040d1ed1455b151cd1ff", "7f6829458f00edb88f78851dd1a08739",
+      "a8bbe9b6b9eaf6f681d91c981b994949", "21f74980b36cb246426f4bc3fe7c08c3",
+      "403c2ccced3b5b141a4c7559c0cd841b", "1c3c4c6cd8a3e79cd95d6038531b47e5",
+      "f18d6950d36619086ac0055bab528cb1", "37d9c5babddf24fe8cb061297297b769",
+      "c111000d4021381f3d18ea0e24a1b5f5", "4e1e4f0a592ff028e35f8187627d6e68",
+      "0ca9ad4614d32da05746f8712a46d861", "8a122ab194e2fdb7089b29be50af8c86",
+      "3c21326e22a80982d1b0ffc09be4beae", "f6c8d1fe2c1fb19604c49c6a49bd26a8",
+      "d3eda9d7aa80e4ea1f18bf565b143e57", "fe21bd1cb8e90466dc727f2223ea7aed",
+      "01efe3df83c715325aaddd4d4ce130ad", "ecaa751360121d3746b72932415fb998",
+      "291e67095399651dc5c8a033390f255f", "66b26828e434faf37ddc57d3e0abb6db",
+      "e9cd69e9ba70864e3d0b175ac0a177d6", "64e4db895a843cb05384f5997b1ba978",
+      "f305161c82de999d2c93eac65f609cfe", "4762b2bd27983ad916ec0a930c0eca6b",
+      "1631495ffae43a927267ebd476015ef1", "b0f22de7b10057e07af71f9bce4615ce",
+      "6fa29dc4be1a46d246a41d66a3d35cb4", "734601c2185bdf30ba9ded8b07003a05",
+      "524e4553d92c69e7e4ed934f7b806c6b", "3709c8950bc5fcc4a2b3ec68fc78bf7e",
+      "69c274d9f8e0fd6790495e9695251f1f", "ee30cc1232c27494ef53edd383568f25",
+      "e525dbeb0b4341952a92270dcfc51730", "b3685c9e783d3402497bbd49d28c7dd7",
+      "d1c9f02dc818e6b974794dfb7749aac8", "bdb9e4961f9aa8c25568d3394e968518",
+      "f5f74555adcad85f3ebd3cb85dc7b770", "737e2a0be806dbd701014f2078be7898",
+      "20a18294e3a9422193aa0a219fd80ede", "7106648ecb9ae24a54d1dbabf2a9e318",
+      "20f39cbd6b5ed87a6ae4f818932325c0", "a99666e3157e32a07c87b01e52091a76",
+      "123e4d533d478c3089c975323c85396b", "d2a8021f7683a0cdf2658418fa90a6fc",
+      "1437e192a3349db8702d5b90eb88dbc1", "fe097fc4aeed7cda0b0f405124efb19d",
+      "1988227c51fa589db1307fd890bb5972", "537e25a6c30b240dc1e3bddd1c3a0a03",
+      "aebe5cffaae448db5a08987a3375a428", "7127ae9bdc63df4459590dc02ca95403",
+      "7ad281903a210f2b1f39f7c40c8df272", "d4b97ba21f7b400ba9f9cd8bb1a576df",
+      "0884a824203aaf72c78f73fdaf2b23a2", "63d60388605c92daee55d517de622a9e",
+      "171ec49a779de1efa69510eefbd09bba", "541cf051579c5a10b9debd3bfdcb7f32",
+      "91c14451ad93ed88e96b5d639ce408de", "3b0313ec0e043d19744bf88c90e875a1",
+      "6adcb3cee91fe3a83b36deb11c5ad6dd", "c6d4bfad24616a88222681992a99d782",
+      "515dc0f2a41730d5c434e4f3c81b02c3", "1c69abdee3b9608a6094034badc2bec0",
+      "1785a0f321d7dd90aa8846961737a767", "dd12c5b8c341f2423d0d5db4f285d199",
+      "5741fb69aae1ca8a0fbe4f1478df88ef", "a4390ceb4e4e9f5cf6a47a9b11a97015",
+      "6778eb25df902092b440c3402e7f0f80", "5ad9d6b36f8898bb55e901c1c0c523da",
+      "73969b6c03bb5a7345a8b968b542668e", "f48192947e66d70f116193a4186d0186",
+      "53f60d0e89d7d994ec6d6131fb7e75ae", "c75f6f8813839ae3cf192baa29039265",
+      "9ff0852ebbad56663250f86ac3a3bf9b", "668938580a770ea7ace8bbf7d349e89f",
+      "5b06bb0a15ac465a250d9b209f05289f", "a2128f5c8692fed7e7c1c7af22ce9f72",
+      "f80f1d7a58869ec794258c0f7df14620", "ed1e03a35924c92ed2fc9808dc3f06f3",
+      "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+      "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", "35ef89c35d2e8e46feb856c554c21c9f",
+      "b98ce33a1bf4fab840b7ef261b30dbc4", "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+      "b98ce33a1bf4fab840b7ef261b30dbc4", "42263fb359c4fdf1c7cdb4980b3e97f2",
+      "1e7071b7db3144188bdcf5d199fe5355", "1e7071b7db3144188bdcf5d199fe5355",
+      "30d367304a87bd25f0ad2ff8e4b5eb41", "4abe6dbb3198219015838dbedf07297a",
+      "4abe6dbb3198219015838dbedf07297a", "acec349a95b5bba98bb830372fa15e73",
+      "a73ad8661256ce2fdf5110425eb260b2", "a73ad8661256ce2fdf5110425eb260b2",
+      "8ff2f049d3f972867f14775188fe589b", "87f5f9a07aea75c325e6d7ff6c96c7c2",
+      "87f5f9a07aea75c325e6d7ff6c96c7c2", "325fcde7d415d7aa4929a3ea013fb9cc",
+      "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+      "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", "05aa29814d5ce35389dbcf20368850da",
+      "fbb89f907a040e70953e3364dbe1feda", "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+      "44ac511baf45032078cc0b45e41dba79", "efb98974adc58d88e122293436bb9184",
+      "7eee18c1a16bcb4e7ef7b27f68ba884f", "b0904c9b118dd9a1f9f034c0ff82d1c1",
+      "54436deb5183dd9669dd4f5feadb3850", "4db1c310b7d9a8bd3e2b5d20fa820e3b",
+      "c40abc6b2d67527f48a287cd7e157428", "48ec3fcf509805f484c8e0948c3469be",
+      "cb7d4a76fa7de52ed2fe889785327b38", "f57983346815fa41e969c195c1c03774",
+      "7dba59b0de2c877666ded6bdaefdcc30", "4837f8ba2f67f17f28a38c5e2a434c73",
+      "09e06fe9dc7ef7818f2a96895235afd4", "002976970ec62b360f956b9c091782d4",
+      "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+      "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", "78673b1084367e97b8dd83990adc5219",
+      "06b5d4a30b9efb6c1d95ef7957f49e76", "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+      "ce460146922cd53970b510d460aa4062", "6fd051938b8efcec9ece042f1edc177a",
+      "f5ff0dcfe3c1a56e3856549d8ded416b", "b69bc2cfc17c6b4313264db96831f0d1",
+      "38a5e65bd71934becfb376eb3b9bc513", "32c1163aa4ca6b6c69d950aba7b06d48",
+      "0c22a6c014c6347983de4ca863f3b53f", "a80c5ee9eb2dfb9a0d56e92eb3f85d91",
+      "a9719722a150a81175427bc161b95d7a", "8237befd456131a488cc5b8b63f4aca5",
+      "51616abcd0beea53a78ffce106b974fc", "6c47b22270f01d27b404da07e1be1202",
+      "356268298d3887edaabd0169a912c94e", "d2b00216e106cb8c5450e2eff1f8481a",
+      "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+      "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", "c2de3a582c79aee811076211c497d2bc",
+      "d1b6d9c73da41def26dd4f85fbd1bde8", "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+      "d8374eb7825081b89f74b05c66bccd63", "d5f7d68c10b5eaf0fba6f93ee26266e6",
+      "94d19cb65f29db65e6656b588f431ade", "5126e95f0249024a6f6d426714bd5b20",
+      "d7d3654b9c2dabe13239875984770acd", "6491afd5d651aab80aa179b579b74341",
+      "037a5de0de89983808f8e8f6dc39110f", "5980073b7685c5c9b2ec027e06be2cbc",
+      "0abb9d035aca426b62ca0f3fab063bab", "fe002a902bb4ec24dfe3ea0fe381a472",
+      "1ac15726df1aa2cd8855162a91893379", "0758c3ac16467605d73c725a697c3dc1",
+      "97d894d85f6ccfa4ff81e0e8fdf03da1", "c3c7b362f063a18244ea542a42d2873c",
+      "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+      "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", "7f6829458f00edb88f78851dd1a08739",
+      "a8bbe9b6b9eaf6f681d91c981b994949", "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+      "403c2ccced3b5b141a4c7559c0cd841b", "1c3c4c6cd8a3e79cd95d6038531b47e5",
+      "f18d6950d36619086ac0055bab528cb1", "37d9c5babddf24fe8cb061297297b769",
+      "c111000d4021381f3d18ea0e24a1b5f5", "4e1e4f0a592ff028e35f8187627d6e68",
+      "0ca9ad4614d32da05746f8712a46d861", "8a122ab194e2fdb7089b29be50af8c86",
+      "3c21326e22a80982d1b0ffc09be4beae", "f6c8d1fe2c1fb19604c49c6a49bd26a8",
+      "d3eda9d7aa80e4ea1f18bf565b143e57", "fe21bd1cb8e90466dc727f2223ea7aed",
+      "01efe3df83c715325aaddd4d4ce130ad", "ecaa751360121d3746b72932415fb998",
+      "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+      "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", "67b2ea94cc4d0b32db3ae3c29eee4d46",
+      "bcfec99ad75988fa1efc1733204f17f2", "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+      "79c222c5796e50119f1921e7bc534a25", "ae3f7c189458f044e9c52399d37a55e2",
+      "fd6dde45bd2937331428de9ef4f8e869", "b384d065423f3d271b85781d76a73218",
+      "466ea0680c06f59e8b3bb293608731fb", "360541ba94f42d115fe687a97a457ffb",
+      "e5a0794d37af40c40a4d2c6d3f7d2aa2", "4eed285651a75614bd60adebbe2e185c",
+      "bbdbf93942282d7b9c4f07591a1764a6", "1288a9ec3e6f79213b6745e6e7568c44",
+      "4ff1310bfd656d69ed5c108a91a9b01a", "3380806b5f67eb3ebce42f8e7c05b256",
+      "09c4bdf0f30aca6812fb55a5ac06b1bd", "722c86ba6bf21f40742ee33b4edc17c4",
+      "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+      "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", "f5303c96d1630f9840eaaba058cd818b",
+      "c20cd45782b2f52c05e4189912047570", "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+      "d6360f96fe15a3ee1e903b0a53dcaaeb", "4b18995cdf2f5d18410d3a732c5932b1",
+      "6f62bf7395c3dfccc1565ba8424f20e8", "c9987ed30491cd28bbc711dd57228247",
+      "8e277ec837cbecf529ae2eb0578fddc1", "c0c132386f23c5f0fba055a12fb79547",
+      "6b5617ab78dd0916690dfa358298b7b3", "394abedca37f60d1a5148a4c975305ed",
+      "bb88881e0e4cf2d88c2d2b38b5833f20", "bef10806be8d58ea8e97870a813b075e",
+      "b4b017d1f792bea69d3b773db7c80c7c", "0660bc63041213a8a4d74724a3bc4291",
+      "5050c8c5388a561691fd414b00c041df", "9ed40c68de6a8008a902d7224f8b620f",
+      "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+      "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", "ec10ce4a674424478a401847f744251d",
+      "bdd897eafc8ef2651a7bba5e523a6ac2", "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+      "2745de4a6b29abb85ee513e22ad362c3", "8aaad384b7cd349b4b968e657ec15523",
+      "fb6c0723432bcd2246d51a90f5fb5826", "f8104ed5921ebd48c6eed16150ffe028",
+      "85c2e236b3e32bf731601237cf0594cd", "8bd6eefff9640766cdf64ab082cb1485",
+      "78b5cd9dde6c6a5900f3040c57172091", "aaa980506bd7bb1d75924a8025698d1a",
+      "90050a411d501f7166f6741832b0c342", "d6ec88b2c38e32511f3359e1d5f9d85b",
+      "96506b8b39274c8fe687ea39761997f1", "3322ea83995c2762fb60db993b401658",
+      "151b6e4ce60392639982fca5a73ac3d3", "d52a1038e135bef233674a843f8c7cb6",
+  };
+  assert(id >= 0);
+  assert(id < sizeof(kDigest) / sizeof(kDigest[0]));
+  return kDigest[id];
+}
+
+const char* GetConvolveScaleDigest12bpp(int id) {
+  // Entries containing 'XXXXX...' are skipped. See the test for details.
+  static const char* const kDigest[ConvolveTestParam::kNumBlockSizes * 2] = {
+      "aea59b7a638f27acad2b90fd2b8c9fee", "be87ba981a0af25611a7d5f0970be9b3",
+      "7c81f1486cd607376d776bf2c6e81dec", "f683ba2a9b353bea35f26c1ed730f3c5",
+      "11e2d70daff1726093cb4fcae33ce0d6", "567575eac0dea2f379019b2d4bafe444",
+      "216479ed580d6e0d7c1d523015394814", "dcabbe5f5709a4b6634d77cc514e863a",
+      "4e888207fe917faeea2b44383ac16caf", "d617c5608fae3b01c507c7e88040fee3",
+      "eeac5d9b3dc005e76f13dfc7483eae48", "8ff0a82811f77303c4516bb8c761336f",
+      "95a7c315aaa208097b6ab006f1d07654", "da63527ee80e6772435cff8321a29a95",
+      "404457f72e7113d1f3797a39319fd3fe", "43cbccfe2663ec11c157319acfe629a5",
+      "1dc5b8dee4542f3d7fcf6b0fa325dfde", "16d4506674f2fcedfcd1e006eb097141",
+      "4fcf329ddb405cd6bbb0a6fb87e29eb3", "de77a781957653ea1750f79995605cdc",
+      "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+      "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", "436f6fdc008d94a94bc6f516f98f402f",
+      "b436bd9036f08ba7e50cfc536911dbbd", "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+      "720a01018856bd83f4d89a9024b14728", "b7e01a3f161007712ce342f59b2c51f2",
+      "922420ebe5dec4f19c259ebdf8a3259a", "979aaba579556207a7bbcc939123c1b2",
+      "89a30898cbaa4d64f9072173e8365864", "0586ff961f2e4228f4e38299fb25ae07",
+      "adb27a03f8b1b50fe2a52b5ca8d4fc28", "4f91cd92aab2e09f4b123251a8d2f219",
+      "620fba0fff163d96a1cd663d1af4a4c5", "bf7a0fa65b1a90ba34c834558fa2c86e",
+      "c21f7d7d16d047a27b871a7bf8476e2d", "a94b17c81f3ce2b47081bd8dd762a2e5",
+      "9078d20f59bc24862af3856acb8c0357", "ee510ce6b3d22de9e4bd7920a26fd69a",
+  };
+  assert(id >= 0);
+  assert(id < sizeof(kDigest) / sizeof(kDigest[0]));
+  return kDigest[id];
+}
+#endif  // LIBGAV1_MAX_BITDEPTH == 12
+
 struct ConvolveTypeParam {
   ConvolveTypeParam(bool is_intra_block_copy, bool is_compound,
                     bool has_vertical_filter, bool has_horizontal_filter)
@@ -447,6 +607,7 @@ template <int bitdepth, typename Pixel>
 class ConvolveTest : public testing::TestWithParam<
                          std::tuple<ConvolveTypeParam, ConvolveTestParam>> {
  public:
+  static_assert(bitdepth >= kBitdepth8 && bitdepth <= LIBGAV1_MAX_BITDEPTH, "");
   ConvolveTest() = default;
   ~ConvolveTest() override = default;
 
@@ -725,14 +886,24 @@ void ConvolveTest<bitdepth, Pixel>::Test(
 
   if (!use_fixed_values) {
     // md5 sums are only calculated for random input.
-    const char* ref_digest;
-    if (bitdepth == 8) {
-      ref_digest = GetConvolveDigest8bpp(GetDigestId());
-    } else {
+    const char* ref_digest = nullptr;
+    switch (bitdepth) {
+      case 8:
+        ref_digest = GetConvolveDigest8bpp(GetDigestId());
+        break;
 #if LIBGAV1_MAX_BITDEPTH >= 10
-      ref_digest = GetConvolveDigest10bpp(GetDigestId());
-#endif  // LIBGAV1_MAX_BITDEPTH >= 10
+      case 10:
+        ref_digest = GetConvolveDigest10bpp(GetDigestId());
+        break;
+#endif
+#if LIBGAV1_MAX_BITDEPTH == 12
+      case 12:
+        ref_digest = GetConvolveDigest12bpp(GetDigestId());
+        break;
+#endif
     }
+    ASSERT_NE(ref_digest, nullptr);
+
     const char* direction;
     if (type_param_.has_vertical_filter && type_param_.has_horizontal_filter) {
       direction = "2D";
@@ -896,6 +1067,7 @@ class ConvolveScaleTest
     : public testing::TestWithParam<
           std::tuple<bool /*is_compound*/, ConvolveTestParam>> {
  public:
+  static_assert(bitdepth >= kBitdepth8 && bitdepth <= LIBGAV1_MAX_BITDEPTH, "");
   ConvolveScaleTest() = default;
   ~ConvolveScaleTest() override = default;
 
@@ -1160,14 +1332,23 @@ void ConvolveScaleTest<bitdepth, Pixel>::Test(
 
   if (!use_fixed_values) {
     // md5 sums are only calculated for random input.
-    const char* ref_digest;
-    if (bitdepth == 8) {
-      ref_digest = GetConvolveScaleDigest8bpp(GetDigestId());
-    } else {
+    const char* ref_digest = nullptr;
+    switch (bitdepth) {
+      case 8:
+        ref_digest = GetConvolveScaleDigest8bpp(GetDigestId());
+        break;
 #if LIBGAV1_MAX_BITDEPTH >= 10
-      ref_digest = GetConvolveScaleDigest10bpp(GetDigestId());
-#endif  // LIBGAV1_MAX_BITDEPTH >= 10
+      case 10:
+        ref_digest = GetConvolveScaleDigest10bpp(GetDigestId());
+        break;
+#endif
+#if LIBGAV1_MAX_BITDEPTH == 12
+      case 12:
+        ref_digest = GetConvolveScaleDigest12bpp(GetDigestId());
+        break;
+#endif
     }
+    ASSERT_NE(ref_digest, nullptr);
 
     const auto elapsed_time_us =
         static_cast<int>(absl::ToInt64Microseconds(elapsed_time));
@@ -1321,6 +1502,47 @@ INSTANTIATE_TEST_SUITE_P(NEON, ConvolveScaleTest10bpp,
 #endif  // LIBGAV1_ENABLE_NEON
 
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
+
+#if LIBGAV1_MAX_BITDEPTH == 12
+using ConvolveTest12bpp = ConvolveTest<12, uint16_t>;
+
+TEST_P(ConvolveTest12bpp, FixedValues) {
+  Test(true, 0);
+  Test(true, 1);
+  Test(true, 128);
+  Test(true, (1 << 12) - 1);
+}
+
+TEST_P(ConvolveTest12bpp, RandomValues) { Test(false, 0); }
+
+TEST_P(ConvolveTest12bpp, DISABLED_Speed) {
+  const int num_runs = static_cast<int>(1.0e7 / (param_.width * param_.height));
+  Test(false, 0, num_runs);
+}
+
+using ConvolveScaleTest12bpp = ConvolveScaleTest<12, uint16_t>;
+
+TEST_P(ConvolveScaleTest12bpp, FixedValues) {
+  Test(true, 0);
+  Test(true, 1);
+  Test(true, 128);
+  Test(true, (1 << 12) - 1);
+}
+
+TEST_P(ConvolveScaleTest12bpp, RandomValues) { Test(false, 0); }
+
+TEST_P(ConvolveScaleTest12bpp, DISABLED_Speed) {
+  const int num_runs = static_cast<int>(1.0e7 / (param_.width * param_.height));
+  Test(false, 0, num_runs);
+}
+
+INSTANTIATE_TEST_SUITE_P(C, ConvolveTest12bpp,
+                         testing::Combine(testing::ValuesIn(kConvolveTypeParam),
+                                          testing::ValuesIn(kConvolveParam)));
+INSTANTIATE_TEST_SUITE_P(C, ConvolveScaleTest12bpp,
+                         testing::Combine(testing::Bool(),
+                                          testing::ValuesIn(kConvolveParam)));
+#endif  // LIBGAV1_MAX_BITDEPTH == 12
 
 }  // namespace
 }  // namespace dsp

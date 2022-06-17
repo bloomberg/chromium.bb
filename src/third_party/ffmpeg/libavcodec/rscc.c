@@ -148,13 +148,12 @@ static av_cold int rscc_close(AVCodecContext *avctx)
     return 0;
 }
 
-static int rscc_decode_frame(AVCodecContext *avctx, void *data,
-                                     int *got_frame, AVPacket *avpkt)
+static int rscc_decode_frame(AVCodecContext *avctx, AVFrame *frame,
+                             int *got_frame, AVPacket *avpkt)
 {
     RsccContext *ctx = avctx->priv_data;
     GetByteContext *gbc = &ctx->gbc;
     GetByteContext tiles_gbc;
-    AVFrame *frame = data;
     const uint8_t *pixels, *raw;
     uint8_t *inflated_tiles = NULL;
     int tiles_nb, packed_size, pixel_size = 0;
@@ -369,7 +368,7 @@ const FFCodec ff_rscc_decoder = {
     .p.type         = AVMEDIA_TYPE_VIDEO,
     .p.id           = AV_CODEC_ID_RSCC,
     .init           = rscc_init,
-    .decode         = rscc_decode_frame,
+    FF_CODEC_DECODE_CB(rscc_decode_frame),
     .close          = rscc_close,
     .priv_data_size = sizeof(RsccContext),
     .p.capabilities = AV_CODEC_CAP_DR1,

@@ -8,11 +8,14 @@ import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.matcher.RootMatchers.isDialog;
+import static androidx.test.espresso.matcher.ViewMatchers.hasSibling;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.CoreMatchers.not;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -108,7 +111,7 @@ import java.util.HashSet;
 public class MainSettingsFragmentTest {
     private static final String SEARCH_ENGINE_SHORT_NAME = "Google";
 
-    private static final int RENDER_TEST_REVISION = 5;
+    private static final int RENDER_TEST_REVISION = 7;
 
     private final HomepageTestRule mHomepageTestRule = new HomepageTestRule();
 
@@ -252,14 +255,37 @@ public class MainSettingsFragmentTest {
 
     @Test
     @SmallTest
+    @DisableFeatures(ChromeFeatureList.TANGIBLE_SYNC)
     public void testSyncRowLaunchesSignInFlowForSignedInAccounts() {
         CoreAccountInfo accountInfo = mSyncTestRule.setUpAccountAndSignInForTesting();
         launchSettingsActivity();
 
         onView(withText(R.string.sync_category_title)).perform(click());
+
         verify(mMockSyncConsentActivityLauncher)
                 .launchActivityForPromoDefaultFlow(any(Activity.class),
-                        eq(SigninAccessPoint.SETTINGS), eq(accountInfo.getEmail()));
+                        eq(SigninAccessPoint.SETTINGS_SYNC_OFF_ROW), eq(accountInfo.getEmail()));
+    }
+
+    @Test
+    @MediumTest
+    @EnableFeatures(ChromeFeatureList.TANGIBLE_SYNC)
+    public void testSyncRowLaunchesTangibleSignInFlowForSignedInAccounts() {
+        CoreAccountInfo accountInfo = mSyncTestRule.setUpAccountAndSignInForTesting();
+        launchSettingsActivity();
+        onView(withText(R.string.sync_category_title)).perform(click());
+        onView(withText(R.string.signin_account_picker_dialog_title))
+                .inRoot(isDialog())
+                .check(matches(isDisplayed()));
+        onView(withText(R.string.signin_add_account_to_device))
+                .inRoot(isDialog())
+                .check(matches(isDisplayed()));
+
+        onView(withText(accountInfo.getEmail())).inRoot(isDialog()).perform(click());
+
+        verify(mMockSyncConsentActivityLauncher)
+                .launchActivityForPromoDefaultFlow(any(Activity.class),
+                        eq(SigninAccessPoint.SETTINGS_SYNC_OFF_ROW), eq(accountInfo.getEmail()));
     }
 
     @Test
@@ -314,12 +340,54 @@ public class MainSettingsFragmentTest {
                 TextUtils.isEmpty(searchEngineSettings.getSummary()));
     }
 
+    @Test
+    @SmallTest
+    @EnableFeatures({
+            ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_ILLUSTRATION,
+            ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_SINGLE_BUTTON,
+            ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_TITLE,
+    })
+    public void
+    testAccountSignInWithNewPromo() throws InterruptedException {
+        launchSettingsActivity();
+
+        SyncPromoPreference syncPromoPreference =
+                (SyncPromoPreference) mMainSettings.findPreference(MainSettings.PREF_SYNC_PROMO);
+        Assert.assertEquals(
+                "SyncPromoPreference should be at the personalized signin promo state. ",
+                syncPromoPreference.getState(), State.PERSONALIZED_SIGNIN_PROMO);
+        Assert.assertTrue("Account section header should be shown together with the promo.",
+                mMainSettings.findPreference(MainSettings.PREF_ACCOUNT_AND_GOOGLE_SERVICES_SECTION)
+                        .isVisible());
+        Assert.assertFalse("Sync preference should be hidden when promo is shown.",
+                mMainSettings.findPreference(MainSettings.PREF_MANAGE_SYNC).isVisible());
+
+        CoreAccountInfo account = mSyncTestRule.setUpAccountAndEnableSyncForTesting();
+        SyncTestUtil.waitForSyncFeatureActive();
+        Assert.assertEquals("SignInPreference should be at the signed in state.",
+                account.getEmail(),
+                mMainSettings.findPreference(MainSettings.PREF_SIGN_IN).getSummary().toString());
+        assertSettingsExists(MainSettings.PREF_SIGN_IN, AccountManagementFragment.class);
+
+        Assert.assertTrue("Account section header should be shown when user signed in.",
+                mMainSettings.findPreference(MainSettings.PREF_ACCOUNT_AND_GOOGLE_SERVICES_SECTION)
+                        .isVisible());
+        Assert.assertTrue("Sync preference should be shown when the user is signed in.",
+                mMainSettings.findPreference(MainSettings.PREF_MANAGE_SYNC).isVisible());
+    }
+
     /**
      * Test when the sign-in preference is the promo. The section header should be hidden.
      */
     @Test
     @SmallTest
-    public void testAccountSignIn() throws InterruptedException {
+    @DisableFeatures({
+            ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_ILLUSTRATION,
+            ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_SINGLE_BUTTON,
+            ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_TITLE,
+    })
+    public void
+    testAccountSignIn() throws InterruptedException {
         launchSettingsActivity();
 
         SyncPromoPreference syncPromoPreference =
@@ -349,6 +417,8 @@ public class MainSettingsFragmentTest {
                 mMainSettings.findPreference(MainSettings.PREF_MANAGE_SYNC).isVisible());
     }
 
+    // TODO(crbug.com/1334912): This test should be removed, since we have a similar test in
+    // SigninPromoControllerRenderTest.
     @Test
     @LargeTest
     @Feature({"RenderTest"})
@@ -436,16 +506,33 @@ public class MainSettingsFragmentTest {
     @SmallTest
     @EnableFeatures(ChromeFeatureList.UNIFIED_PASSWORD_MANAGER_ANDROID)
     @Policies.Add({ @Policies.Item(key = "PasswordManagerEnabled", string = "false") })
-    public void testPasswordsItemDisabledWhenManaged() {
+    public void testPasswordsItemClickableWhenManaged() {
         launchSettingsActivity();
-        Assert.assertFalse(mMainSettings.findPreference(MainSettings.PREF_PASSWORDS).isEnabled());
+        String prefTitleWithoutNewLabel =
+                SpanApplier
+                        .removeSpanText(
+                                mMainSettings.getString(R.string.password_settings_title_gpm),
+                                new SpanInfo("<new>", "</new>"))
+                        .trim();
+        onViewWaiting(allOf(withText(R.string.managed_by_your_organization),
+                hasSibling(withText(prefTitleWithoutNewLabel)), isDisplayed()));
+        Assert.assertTrue(mMainSettings.findPreference(MainSettings.PREF_PASSWORDS).isEnabled());
     }
 
     @Test
     @SmallTest
     @EnableFeatures(ChromeFeatureList.UNIFIED_PASSWORD_MANAGER_ANDROID)
+    @Policies.Remove({ @Policies.Item(key = "PasswordManagerEnabled", string = "false") })
     public void testPasswordsItemEnabledWhenNotManaged() throws InterruptedException {
         launchSettingsActivity();
+        String prefTitleWithoutNewLabel =
+                SpanApplier
+                        .removeSpanText(
+                                mMainSettings.getString(R.string.password_settings_title_gpm),
+                                new SpanInfo("<new>", "</new>"))
+                        .trim();
+        onViewWaiting(allOf(withText(prefTitleWithoutNewLabel),
+                not(hasSibling(withText(R.string.managed_by_your_organization))), isDisplayed()));
         Assert.assertTrue(mMainSettings.findPreference(MainSettings.PREF_PASSWORDS).isEnabled());
     }
 
@@ -455,6 +542,8 @@ public class MainSettingsFragmentTest {
     @Policies.Add({ @Policies.Item(key = "PasswordManagerEnabled", string = "false") })
     public void testPasswordsItemEnabledWhenManagedWithoutUPM() {
         launchSettingsActivity();
+        onViewWaiting(allOf(withText(R.string.password_settings_title),
+                not(hasSibling(withText(R.string.managed_by_your_organization))), isDisplayed()));
         Assert.assertTrue(mMainSettings.findPreference(MainSettings.PREF_PASSWORDS).isEnabled());
     }
 

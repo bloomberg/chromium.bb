@@ -226,7 +226,6 @@ skia_gpu_sources = [
   "$_src/gpu/ganesh/GrUtil.h",
   "$_src/gpu/ganesh/GrVertexChunkArray.cpp",
   "$_src/gpu/ganesh/GrVertexChunkArray.h",
-  "$_src/gpu/ganesh/GrVx.h",
   "$_src/gpu/ganesh/GrWaitRenderTask.cpp",
   "$_src/gpu/ganesh/GrWaitRenderTask.h",
   "$_src/gpu/ganesh/GrWindowRectangles.h",
@@ -244,6 +243,7 @@ skia_gpu_sources = [
   "$_src/gpu/ganesh/SurfaceFillContext.h",
 
   # Ops
+  "$_src/gpu/ganesh/effects/GrAtlasedShaderHelpers.h",
   "$_src/gpu/ganesh/effects/GrBezierEffect.cpp",
   "$_src/gpu/ganesh/effects/GrBezierEffect.h",
   "$_src/gpu/ganesh/effects/GrBicubicEffect.cpp",
@@ -325,17 +325,6 @@ skia_gpu_sources = [
   # text
   "$_src/gpu/ganesh/text/GrAtlasManager.cpp",
   "$_src/gpu/ganesh/text/GrAtlasManager.h",
-  "$_src/gpu/ganesh/text/GrDistanceFieldAdjustTable.cpp",
-  "$_src/gpu/ganesh/text/GrDistanceFieldAdjustTable.h",
-  "$_src/gpu/ganesh/text/GrSDFMaskFilter.cpp",
-  "$_src/gpu/ganesh/text/GrSDFMaskFilter.h",
-  "$_src/gpu/ganesh/text/GrSDFTControl.cpp",
-  "$_src/gpu/ganesh/text/GrSDFTControl.h",
-  "$_src/gpu/ganesh/text/GrSlug.cpp",
-  "$_src/gpu/ganesh/text/GrTextBlob.cpp",
-  "$_src/gpu/ganesh/text/GrTextBlob.h",
-  "$_src/gpu/ganesh/text/GrTextBlobRedrawCoordinator.cpp",
-  "$_src/gpu/ganesh/text/GrTextBlobRedrawCoordinator.h",
 
   # GLSL
   "$_src/gpu/ganesh/glsl/GrGLSL.cpp",
@@ -827,11 +816,25 @@ skia_shared_gpu_sources = [
   "$_src/gpu/tessellate/WangsFormula.h",
 
   # text
+  "$_include/private/chromium/Slug.h",
+  "$_src/text/gpu/DistanceFieldAdjustTable.cpp",
+  "$_src/text/gpu/DistanceFieldAdjustTable.h",
   "$_src/text/gpu/Glyph.h",
   "$_src/text/gpu/GlyphVector.cpp",
   "$_src/text/gpu/GlyphVector.h",
+  "$_src/text/gpu/SDFMaskFilter.cpp",
+  "$_src/text/gpu/SDFMaskFilter.h",
+  "$_src/text/gpu/SDFTControl.cpp",
+  "$_src/text/gpu/SDFTControl.h",
+  "$_src/text/gpu/Slug.cpp",
   "$_src/text/gpu/StrikeCache.cpp",
   "$_src/text/gpu/StrikeCache.h",
   "$_src/text/gpu/SubRunAllocator.cpp",
   "$_src/text/gpu/SubRunAllocator.h",
+  "$_src/text/gpu/SubRunContainer.cpp",
+  "$_src/text/gpu/SubRunContainer.h",
+  "$_src/text/gpu/TextBlob.cpp",
+  "$_src/text/gpu/TextBlob.h",
+  "$_src/text/gpu/TextBlobRedrawCoordinator.cpp",
+  "$_src/text/gpu/TextBlobRedrawCoordinator.h",
 ]

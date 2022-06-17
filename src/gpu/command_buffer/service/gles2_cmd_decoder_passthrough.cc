@@ -2044,8 +2044,12 @@ void GLES2DecoderPassthroughImpl::BindOnePendingImage(
   // It's possible that this texture was processed by some other decoder
   // while it was also bound here, or that it has been destroyed.  In
   // either case, do nothing.
-  if (!texture || !texture->is_bind_pending())
+  if (!texture || !texture->is_bind_pending()) {
+    UMA_HISTOGRAM_BOOLEAN(
+        "GPU.GLES2DecoderPassthroughImplLazyBindingCheck.WasBindNecessary",
+        false);
     return;
+  }
 
   // TODO(liberato): make this work for non-0 levels.
   gl::GLImage* image = texture->GetLevelImage(target, 0);
@@ -2057,11 +2061,19 @@ void GLES2DecoderPassthroughImpl::BindOnePendingImage(
   // Similarly, we might not even get here if an image was bound to a
   // texture that requries bind/copy, but that texture was already bound
   // to a sampler in this decoder.
-  if (!image)
+  if (!image) {
+    UMA_HISTOGRAM_BOOLEAN(
+        "GPU.GLES2DecoderPassthroughImplLazyBindingCheck.WasBindNecessary",
+        false);
     return;
+  }
 
   // Because the binding is deferred, this texture may not be currently bound
   // any more. Bind it again.
+
+  UMA_HISTOGRAM_BOOLEAN(
+      "GPU.GLES2DecoderPassthroughImplLazyBindingCheck.WasBindNecessary", true);
+
   GLenum texture_type = TextureTargetToTextureType(target);
   api()->glBindTextureFn(texture_type, texture->service_id());
 
@@ -2418,6 +2430,16 @@ bool GLES2DecoderPassthroughImpl::FlushErrors() {
     error = glGetError();
   }
   return had_error;
+}
+
+bool GLES2DecoderPassthroughImpl::IsIgnoredCap(GLenum cap) const {
+  switch (cap) {
+    case GL_DEBUG_OUTPUT:
+      return true;
+
+    default:
+      return false;
+  }
 }
 
 bool GLES2DecoderPassthroughImpl::CheckResetStatus() {
@@ -3017,8 +3039,7 @@ error::Error GLES2DecoderPassthroughImpl::CheckSwapBuffersResult(
     gfx::SwapResult result,
     const char* function_name) {
   if (result == gfx::SwapResult::SWAP_FAILED) {
-    // If SwapBuffers/SwapBuffersWithBounds/PostSubBuffer failed, we may not
-    // have a current context any more.
+    // If SwapBuffers failed, we may not have a current context any more.
     LOG(ERROR) << "Context lost because " << function_name << " failed.";
     if (!context_->IsCurrent(surface_.get()) || !CheckResetStatus()) {
       MarkContextLost(error::kUnknown);

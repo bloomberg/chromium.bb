@@ -147,7 +147,7 @@
 
   // Navigation controller configuration.
   self.title = l10n_util::GetNSString(IDS_IOS_CLEAR_BROWSING_DATA_TITLE);
-  // Adds the "Done" button and hooks it up to |dismiss|.
+  // Adds the "Done" button and hooks it up to `dismiss`.
   UIBarButtonItem* dismissButton = [[UIBarButtonItem alloc]
       initWithBarButtonSystemItem:UIBarButtonSystemItemDone
                            target:self
@@ -165,12 +165,18 @@
 
 - (void)viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];
+  [self.dataManager prepare];
   [self.dataManager restartCounters:BrowsingDataRemoveMask::REMOVE_ALL];
 
   [self updateToolbarButtons];
   // Showing toolbar here because parent class hides toolbar in
   // viewWillDisappear:.
   self.navigationController.toolbarHidden = NO;
+}
+
+- (void)viewWillDisappear:(BOOL)animated {
+  [super viewWillDisappear:animated];
+  [self.dataManager disconnect];
 }
 
 - (void)loadModel {

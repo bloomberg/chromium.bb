@@ -87,14 +87,13 @@ static av_cold int svc_decode_init(AVCodecContext *avctx)
     return 0;
 }
 
-static int svc_decode_frame(AVCodecContext *avctx, void *data,
+static int svc_decode_frame(AVCodecContext *avctx, AVFrame *avframe,
                             int *got_frame, AVPacket *avpkt)
 {
     SVCContext *s = avctx->priv_data;
     SBufferInfo info = { 0 };
     uint8_t *ptrs[4] = { NULL };
     int ret, linesize[4];
-    AVFrame *avframe = data;
     DECODING_STATE state;
 #if OPENH264_VER_AT_LEAST(1, 7)
     int opt;
@@ -164,7 +163,7 @@ const FFCodec ff_libopenh264_decoder = {
     .p.id           = AV_CODEC_ID_H264,
     .priv_data_size = sizeof(SVCContext),
     .init           = svc_decode_init,
-    .decode         = svc_decode_frame,
+    FF_CODEC_DECODE_CB(svc_decode_frame),
     .close          = svc_decode_close,
     .p.capabilities = AV_CODEC_CAP_DELAY | AV_CODEC_CAP_DR1,
     .caps_internal  = FF_CODEC_CAP_SETS_PKT_DTS | FF_CODEC_CAP_INIT_THREADSAFE |

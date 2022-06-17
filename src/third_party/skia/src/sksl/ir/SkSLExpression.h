@@ -8,19 +8,19 @@
 #ifndef SKSL_EXPRESSION
 #define SKSL_EXPRESSION
 
+#include "include/core/SkTypes.h"
+#include "include/private/SkSLIRNode.h"
 #include "include/private/SkSLStatement.h"
-#include "include/private/SkTHash.h"
+#include "include/sksl/SkSLPosition.h"
 #include "src/sksl/ir/SkSLType.h"
 
+#include <memory>
 #include <optional>
-#include <unordered_map>
 
 namespace SkSL {
 
 class AnyConstructor;
-class Expression;
-class IRGenerator;
-class Variable;
+class Context;
 
 /**
  * Abstract supertype of all expressions.
@@ -30,7 +30,6 @@ public:
     enum class Kind {
         kBinary = (int) Statement::Kind::kLast + 1,
         kChildCall,
-        kCodeString,
         kConstructorArray,
         kConstructorArrayCast,
         kConstructorCompound,
@@ -90,7 +89,7 @@ public:
     }
 
     bool isAnyConstructor() const {
-        static_assert((int)Kind::kConstructorArray - 1 == (int)Kind::kCodeString);
+        static_assert((int)Kind::kConstructorArray - 1 == (int)Kind::kChildCall);
         static_assert((int)Kind::kConstructorStruct + 1 == (int)Kind::kExternalFunctionCall);
         return this->kind() >= Kind::kConstructorArray && this->kind() <= Kind::kConstructorStruct;
     }
@@ -152,15 +151,6 @@ public:
     };
     virtual ComparisonResult compareConstant(const Expression& other) const {
         return ComparisonResult::kUnknown;
-    }
-
-    /**
-     * Returns true if, given fixed values for uniforms, this expression always evaluates to the
-     * same result with no side effects.
-     */
-    virtual bool isConstantOrUniform() const {
-        SkASSERT(!this->isCompileTimeConstant() || !this->hasSideEffects());
-        return this->isCompileTimeConstant();
     }
 
     virtual bool hasProperty(Property property) const = 0;

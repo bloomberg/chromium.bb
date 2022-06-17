@@ -103,6 +103,8 @@ void GrCaps::finishInitialization(const GrContextOptions& options) {
     // Our render targets are always created with textures as the color attachment, hence this min:
     fMaxRenderTargetSize = std::min(fMaxRenderTargetSize, fMaxTextureSize);
     fMaxPreferredRenderTargetSize = std::min(fMaxPreferredRenderTargetSize, fMaxRenderTargetSize);
+
+    this->initSkCaps(this->shaderCaps());
 }
 
 void GrCaps::applyOptionsOverrides(const GrContextOptions& options) {

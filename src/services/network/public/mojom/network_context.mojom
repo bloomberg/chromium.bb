@@ -21,6 +21,7 @@ import "services/network/public/mojom/cors_origin_pattern.mojom";
 import "services/network/public/mojom/cross_origin_embedder_policy.mojom";
 import "services/network/public/mojom/default_credentials.mojom";
 import "services/network/public/mojom/devtools_observer.mojom";
+import "services/network/public/mojom/first_party_sets_access_delegate.mojom";
 import "services/network/public/mojom/host_resolver.mojom";
 import "services/network/public/mojom/http_cache_backend_file_operations.mojom";
 import "services/network/public/mojom/http_request_headers.mojom";
@@ -212,7 +213,7 @@ struct NetworkContextFilePaths {
 
   // Points to a path that might contain existing network service data files and
   // databases from network contexts created with the same `data_directory`.
-  // This parameter must be specified if `perform_migration` is set to true.
+  // This parameter must be specified if `trigger_migration` is set to true.
   // Once migration has been successful (see below), data is no longer read from
   // this path. Data could continue to be read from this path if migration
   // fails, or if `trigger_migration` has never been set to true.
@@ -524,6 +525,14 @@ struct NetworkContextParams {
 
   // Is true, Trust Token operations should be blocked.
   bool block_trust_tokens;
+
+  // Parameters for constructing the FirstPartySetsAccessDelegate.
+  // |first_party_sets_access_delegate_params| is the initial configuration to
+  // use. If nullptr, uses the default configuration. Updated configurations
+  // can be passed in via |first_party_sets_access_delegate_receiver|.
+  FirstPartySetsAccessDelegateParams? first_party_sets_access_delegate_params;
+  pending_receiver<FirstPartySetsAccessDelegate>?
+      first_party_sets_access_delegate_receiver;
 };
 
 struct NetworkConditions {
@@ -1052,7 +1061,7 @@ interface NetworkContext {
               mojo_base.mojom.UnguessableToken? reporting_source,
               NetworkIsolationKey network_isolation_key,
               string? user_agent,
-              mojo_base.mojom.DeprecatedDictionaryValue body);
+              mojo_base.mojom.DictionaryValue body);
 
   // Queues a signed exchange report.
   //

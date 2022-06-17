@@ -59,8 +59,8 @@ void GrRecordingContextPriv::moveRenderTasksToDDL(SkDeferredDisplayList* ddl) {
     this->context()->drawingManager()->moveRenderTasksToDDL(ddl);
 }
 
-GrSDFTControl GrRecordingContextPriv::getSDFTControl(bool useSDFTForSmallText) const {
-    return GrSDFTControl{
+sktext::gpu::SDFTControl GrRecordingContextPriv::getSDFTControl(bool useSDFTForSmallText) const {
+    return sktext::gpu::SDFTControl{
             this->caps()->shaderCaps()->supportsDistanceFieldText(),
             useSDFTForSmallText,
             this->options().fMinDistanceFieldFontSize,
@@ -135,7 +135,8 @@ std::unique_ptr<skgpu::SurfaceContext> GrRecordingContextPriv::makeSC(const GrIm
                                                                      mipmapped,
                                                                      fit,
                                                                      budgeted,
-                                                                     isProtected);
+                                                                     isProtected,
+                                                                     /*label=*/{});
     if (!proxy) {
         return nullptr;
     }
@@ -181,7 +182,8 @@ std::unique_ptr<skgpu::SurfaceFillContext> GrRecordingContextPriv::makeSFC(GrIma
                                                                      mipmapped,
                                                                      fit,
                                                                      budgeted,
-                                                                     isProtected);
+                                                                     isProtected,
+                                                                     /*label=*/{});
     if (!proxy) {
         return nullptr;
     }
@@ -243,7 +245,8 @@ std::unique_ptr<skgpu::SurfaceFillContext> GrRecordingContextPriv::makeSFC(
                                                                      mipmapped,
                                                                      fit,
                                                                      budgeted,
-                                                                     isProtected);
+                                                                     isProtected,
+                                                                     /*label=*/{});
     if (!proxy) {
         return nullptr;
     }

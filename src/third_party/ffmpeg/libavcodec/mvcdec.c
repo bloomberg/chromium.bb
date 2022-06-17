@@ -225,11 +225,10 @@ static int decode_mvc2(AVCodecContext *avctx, GetByteContext *gb,
     return 0;
 }
 
-static int mvc_decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
-                            AVPacket *avpkt)
+static int mvc_decode_frame(AVCodecContext *avctx, AVFrame *frame,
+                            int *got_frame, AVPacket *avpkt)
 {
     MvcContext *s = avctx->priv_data;
-    AVFrame *frame = data;
     GetByteContext gb;
     int ret;
 
@@ -263,7 +262,7 @@ const FFCodec ff_mvc1_decoder = {
     .p.id           = AV_CODEC_ID_MVC1,
     .priv_data_size = sizeof(MvcContext),
     .init           = mvc_decode_init,
-    .decode         = mvc_decode_frame,
+    FF_CODEC_DECODE_CB(mvc_decode_frame),
     .p.capabilities = AV_CODEC_CAP_DR1,
     .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };
@@ -277,7 +276,7 @@ const FFCodec ff_mvc2_decoder = {
     .p.id           = AV_CODEC_ID_MVC2,
     .priv_data_size = sizeof(MvcContext),
     .init           = mvc_decode_init,
-    .decode         = mvc_decode_frame,
+    FF_CODEC_DECODE_CB(mvc_decode_frame),
     .p.capabilities = AV_CODEC_CAP_DR1,
     .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };

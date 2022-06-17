@@ -37,7 +37,6 @@
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/native/native_view_host.h"
-#include "ui/views/native_cursor.h"
 #include "ui/views/test/native_widget_factory.h"
 #include "ui/views/test/test_widget_observer.h"
 #include "ui/views/test/widget_test.h"
@@ -568,7 +567,7 @@ TEST_F(NativeWidgetMacTest, MiniaturizeFramelessWindow) {
 // Simple view for the SetCursor test that overrides View::GetCursor().
 class CursorView : public View {
  public:
-  CursorView(int x, NSCursor* cursor) : cursor_(cursor) {
+  CursorView(int x, const ui::Cursor& cursor) : cursor_(cursor) {
     SetBounds(x, 0, 100, 300);
   }
 
@@ -576,12 +575,10 @@ class CursorView : public View {
   CursorView& operator=(const CursorView&) = delete;
 
   // View:
-  gfx::NativeCursor GetCursor(const ui::MouseEvent& event) override {
-    return cursor_;
-  }
+  ui::Cursor GetCursor(const ui::MouseEvent& event) override { return cursor_; }
 
  private:
-  NSCursor* cursor_;
+  ui::Cursor cursor_;
 };
 
 // Test for Widget::SetCursor(). There is no Widget::GetCursor(), so this uses
@@ -590,15 +587,15 @@ class CursorView : public View {
 // is safe to use this in a non-interactive UI test with the EventGenerator.
 TEST_F(NativeWidgetMacTest, SetCursor) {
   NSCursor* arrow = [NSCursor arrowCursor];
-  NSCursor* hand = GetNativeHandCursor();
-  NSCursor* ibeam = GetNativeIBeamCursor();
+  NSCursor* hand = [NSCursor pointingHandCursor];
+  NSCursor* ibeam = [NSCursor IBeamCursor];
 
   Widget* widget = CreateTopLevelPlatformWidget();
   widget->SetBounds(gfx::Rect(0, 0, 300, 300));
   auto* view_hand = widget->non_client_view()->frame_view()->AddChildView(
-      std::make_unique<CursorView>(0, hand));
+      std::make_unique<CursorView>(0, ui::mojom::CursorType::kHand));
   auto* view_ibeam = widget->non_client_view()->frame_view()->AddChildView(
-      std::make_unique<CursorView>(100, ibeam));
+      std::make_unique<CursorView>(100, ui::mojom::CursorType::kIBeam));
   widget->Show();
   NSWindow* widget_window = widget->GetNativeWindow().GetNativeNSWindow();
 
@@ -2274,22 +2271,21 @@ namespace {
 // Also verifies that the touch bar's delegate returns non-nil for all items.
 NSArray* ExtractTouchBarGroupIdentifiers(NSView* view) {
   NSArray* result = nil;
-  if (@available(macOS 10.12.2, *)) {
-    NSTouchBar* touch_bar = [view touchBar];
-    NSTouchBarItemIdentifier principal = [touch_bar principalItemIdentifier];
-    EXPECT_TRUE(principal);
-    NSGroupTouchBarItem* group = base::mac::ObjCCastStrict<NSGroupTouchBarItem>(
-        [[touch_bar delegate] touchBar:touch_bar
-                 makeItemForIdentifier:principal]);
-    EXPECT_TRUE(group);
-    NSTouchBar* nested_touch_bar = [group groupTouchBar];
-    result = [nested_touch_bar itemIdentifiers];
+  NSTouchBar* touch_bar = [view touchBar];
+  NSTouchBarItemIdentifier principal = [touch_bar principalItemIdentifier];
+  EXPECT_TRUE(principal);
+  NSGroupTouchBarItem* group = base::mac::ObjCCastStrict<NSGroupTouchBarItem>(
+      [[touch_bar delegate] touchBar:touch_bar
+               makeItemForIdentifier:principal]);
+  EXPECT_TRUE(group);
+  NSTouchBar* nested_touch_bar = [group groupTouchBar];
+  result = [nested_touch_bar itemIdentifiers];
 
-    for (NSTouchBarItemIdentifier item in result) {
-      EXPECT_TRUE([[touch_bar delegate] touchBar:nested_touch_bar
-                           makeItemForIdentifier:item]);
-    }
+  for (NSTouchBarItemIdentifier item in result) {
+    EXPECT_TRUE([[touch_bar delegate] touchBar:nested_touch_bar
+                         makeItemForIdentifier:item]);
   }
+
   return result;
 }
 
@@ -2303,9 +2299,6 @@ TEST_F(NativeWidgetMacTest, TouchBar) {
       [delegate->GetWidget()->GetNativeWindow().GetNativeNSWindow()
               contentView];
 
-  NSString* principal = nil;
-  NSObject* old_touch_bar = nil;
-
   // Constants from bridged_content_view_touch_bar.mm.
   NSString* const kTouchBarOKId = @"com.google.chrome-OK";
   NSString* const kTouchBarCancelId = @"com.google.chrome-CANCEL";
@@ -2314,23 +2307,19 @@ TEST_F(NativeWidgetMacTest, TouchBar) {
   EXPECT_TRUE(delegate->GetOkButton());
   EXPECT_TRUE(delegate->GetCancelButton());
 
-  if (@available(macOS 10.12.2, *)) {
-    NSTouchBar* touch_bar = [content touchBar];
-    EXPECT_TRUE([touch_bar delegate]);
-    EXPECT_TRUE([[touch_bar delegate] touchBar:touch_bar
-                         makeItemForIdentifier:kTouchBarOKId]);
-    EXPECT_TRUE([[touch_bar delegate] touchBar:touch_bar
-                         makeItemForIdentifier:kTouchBarCancelId]);
+  NSTouchBar* touch_bar = [content touchBar];
+  EXPECT_TRUE([touch_bar delegate]);
+  EXPECT_TRUE([[touch_bar delegate] touchBar:touch_bar
+                       makeItemForIdentifier:kTouchBarOKId]);
+  EXPECT_TRUE([[touch_bar delegate] touchBar:touch_bar
+                       makeItemForIdentifier:kTouchBarCancelId]);
 
-    principal = [touch_bar principalItemIdentifier];
-    EXPECT_NSEQ(@"com.google.chrome-DIALOG-BUTTONS-GROUP", principal);
-    EXPECT_NSEQ((@[ kTouchBarCancelId, kTouchBarOKId ]),
-                ExtractTouchBarGroupIdentifiers(content));
+  NSString* principal = [touch_bar principalItemIdentifier];
+  EXPECT_NSEQ(@"com.google.chrome-DIALOG-BUTTONS-GROUP", principal);
+  EXPECT_NSEQ((@[ kTouchBarCancelId, kTouchBarOKId ]),
+              ExtractTouchBarGroupIdentifiers(content));
 
-    // Ensure the touchBar is recreated by comparing pointers.
-    old_touch_bar = touch_bar;
-    EXPECT_NSEQ(old_touch_bar, [content touchBar]);
-  }
+  // Ensure the touchBar is recreated by comparing pointers.
 
   // Remove the cancel button.
   delegate->SetButtons(ui::DIALOG_BUTTON_OK);
@@ -2338,11 +2327,9 @@ TEST_F(NativeWidgetMacTest, TouchBar) {
   EXPECT_TRUE(delegate->GetOkButton());
   EXPECT_FALSE(delegate->GetCancelButton());
 
-  if (@available(macOS 10.12.2, *)) {
-    NSTouchBar* touch_bar = [content touchBar];
-    EXPECT_NSNE(old_touch_bar, touch_bar);
-    EXPECT_NSEQ((@[ kTouchBarOKId ]), ExtractTouchBarGroupIdentifiers(content));
-  }
+  NSTouchBar* new_touch_bar = [content touchBar];
+  EXPECT_NSNE(touch_bar, new_touch_bar);
+  EXPECT_NSEQ((@[ kTouchBarOKId ]), ExtractTouchBarGroupIdentifiers(content));
 
   delegate->GetWidget()->CloseNow();
 }

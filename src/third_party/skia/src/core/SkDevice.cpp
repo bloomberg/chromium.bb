@@ -34,7 +34,7 @@
 #include "src/shaders/SkLocalMatrixShader.h"
 #include "src/utils/SkPatchUtils.h"
 #if SK_SUPPORT_GPU
-#include "include/private/chromium/GrSlug.h"
+#include "include/private/chromium/Slug.h"
 #endif
 
 SkBaseDevice::SkBaseDevice(const SkImageInfo& info, const SkSurfaceProps& surfaceProps)
@@ -486,16 +486,16 @@ void SkBaseDevice::simplifyGlyphRunRSXFormAndRedraw(SkCanvas* canvas,
     }
 }
 
-#if SK_SUPPORT_GPU
-sk_sp<GrSlug> SkBaseDevice::convertGlyphRunListToSlug(
+#if (SK_SUPPORT_GPU || defined(SK_GRAPHITE_ENABLED))
+sk_sp<sktext::gpu::Slug> SkBaseDevice::convertGlyphRunListToSlug(
         const SkGlyphRunList& glyphRunList,
         const SkPaint& initialPaint,
         const SkPaint& drawingPaint) {
     return nullptr;
 }
 
-void SkBaseDevice::drawSlug(SkCanvas*, const GrSlug*, const SkPaint&) {
-    SK_ABORT("GrSlug drawing not supported.");
+void SkBaseDevice::drawSlug(SkCanvas*, const sktext::gpu::Slug*, const SkPaint&) {
+    SK_ABORT("Slug drawing not supported.");
 }
 #endif
 
@@ -503,6 +503,18 @@ void SkBaseDevice::drawSlug(SkCanvas*, const GrSlug*, const SkPaint&) {
 
 sk_sp<SkSurface> SkBaseDevice::makeSurface(SkImageInfo const&, SkSurfaceProps const&) {
     return nullptr;
+}
+
+SkScalerContextFlags SkBaseDevice::scalerContextFlags() const {
+    // If we're doing linear blending, then we can disable the gamma hacks.
+    // Otherwise, leave them on. In either case, we still want the contrast boost:
+    // TODO: Can we be even smarter about mask gamma based on the dest transfer function?
+    const SkColorSpace* const cs = fInfo.colorSpace();
+    if (cs && cs->gammaIsLinear()) {
+        return SkScalerContextFlags::kBoostContrast;
+    } else {
+        return SkScalerContextFlags::kFakeGammaAndBoostContrast;
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////

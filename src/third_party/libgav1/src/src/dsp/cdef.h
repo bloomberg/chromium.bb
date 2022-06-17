@@ -38,6 +38,11 @@
 namespace libgav1 {
 namespace dsp {
 
+enum {
+  kCdefSecondaryTap0 = 2,
+  kCdefSecondaryTap1 = 1,
+};
+
 // Initializes Dsp::cdef_direction and Dsp::cdef_filters. This function is not
 // thread-safe.
 void CdefInit_C();

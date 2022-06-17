@@ -33,6 +33,7 @@
 #include "chrome/browser/ash/drive/file_system_util.h"
 #include "chrome/browser/ash/input_method/input_method_persistence.h"
 #include "chrome/browser/ash/input_method/input_method_syncer.h"
+#include "chrome/browser/ash/login/consolidated_consent_field_trial.h"
 #include "chrome/browser/ash/login/login_pref_names.h"
 #include "chrome/browser/ash/login/session/user_session_manager.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
@@ -49,6 +50,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/ash/components/dbus/pciguard/pciguard_client.h"
+#include "chromeos/components/disks/disks_prefs.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/update_engine/update_engine.pb.h"
 #include "chromeos/dbus/update_engine/update_engine_client.h"
@@ -154,6 +156,7 @@ void Preferences::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(::prefs::kConsumerAutoUpdateToggle, true);
 
   RegisterLocalStatePrefs(registry);
+  ash::consolidated_consent_field_trial::RegisterLocalStatePrefs(registry);
 }
 
 // static
@@ -349,9 +352,7 @@ void Preferences::RegisterProfilePrefs(
       ::prefs::kChromeOSReleaseNotesVersion, "0.0.0.0",
       user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
 
-  registry->RegisterBooleanPref(::prefs::kExternalStorageDisabled, false);
-
-  registry->RegisterBooleanPref(::prefs::kExternalStorageReadOnly, false);
+  disks::prefs::RegisterProfilePrefs(registry);
 
   registry->RegisterStringPref(::prefs::kTermsOfServiceURL, "");
 
@@ -488,9 +489,6 @@ void Preferences::RegisterProfilePrefs(
       ::prefs::kTextToSpeechVolume, blink::mojom::kSpeechSynthesisDefaultVolume,
       user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
 
-  // By default showing Sync Consent is set to true. It can changed by policy.
-  registry->RegisterBooleanPref(::prefs::kEnableSyncConsent, true);
-
   registry->RegisterBooleanPref(prefs::kSyncOobeCompleted, false);
 
   registry->RegisterBooleanPref(::prefs::kTPMFirmwareUpdateCleanupDismissed,
@@ -517,9 +515,6 @@ void Preferences::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
 
   registry->RegisterDictionaryPref(prefs::kLauncherSearchNormalizerParameters);
-
-  registry->RegisterListPref(
-      ::prefs::kRestrictedManagedGuestSessionExtensionCleanupExemptList);
 
   registry->RegisterListPref(
       prefs::kFilesAppFolderShortcuts,

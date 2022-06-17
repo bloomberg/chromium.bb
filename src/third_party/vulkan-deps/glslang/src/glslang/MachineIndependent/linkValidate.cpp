@@ -642,7 +642,7 @@ void TIntermediate::mergeBlockDefinitions(TInfoSink& infoSink, TIntermSymbol* bl
         }
         TMergeBlockTraverser(const TIntermSymbol* newSym, const glslang::TType* unitType, glslang::TIntermediate* unit,
                              const std::map<unsigned int, unsigned int>* memberIdxUpdates)
-            : newSymbol(newSym), unitType(unitType), unit(unit), memberIndexUpdates(memberIdxUpdates)
+            : TIntermTraverser(false, true), newSymbol(newSym), unitType(unitType), unit(unit), memberIndexUpdates(memberIdxUpdates)
         {
         }
         virtual ~TMergeBlockTraverser() {}
@@ -2337,7 +2337,7 @@ bool TIntermediate::isIoResizeArray(const TType& type, EShLanguage language) {
                 ! type.getQualifier().patch) ||
             (language == EShLangTessEvaluation && type.getQualifier().storage == EvqVaryingIn) ||
             (language == EShLangFragment && type.getQualifier().storage == EvqVaryingIn &&
-                type.getQualifier().pervertexNV) ||
+             (type.getQualifier().pervertexNV || type.getQualifier().pervertexEXT)) ||
             (language == EShLangMeshNV && type.getQualifier().storage == EvqVaryingOut &&
                 !type.getQualifier().perTaskNV));
 }

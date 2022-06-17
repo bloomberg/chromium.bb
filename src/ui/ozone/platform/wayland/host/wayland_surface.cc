@@ -466,7 +466,7 @@ void WaylandSurface::ApplyPendingState() {
 
   if (pending_state_.background_color != state_.background_color) {
     DCHECK(GetAugmentedSurface());
-    if (augmented_surface_get_version(GetAugmentedSurface()),
+    if (augmented_surface_get_version(GetAugmentedSurface()) >=
         static_cast<uint32_t>(
             AUGMENTED_SURFACE_SET_BACKGROUND_COLOR_SINCE_VERSION)) {
       wl_array color_data;
@@ -557,6 +557,23 @@ void WaylandSurface::ApplyPendingState() {
         wl_fixed_from_double(viewport_src_dip.height()) == 0) {
       LOG(ERROR) << "Sending viewport src with width/height zero will result "
                     "in wayland disconnection";
+      // TODO(crbug.com/1325344): Resolve why this viewport size ends up being
+      // zero and remove the fix below.
+      LOG(ERROR) << "viewport_src_dip=" << viewport_src_dip.ToString()
+                 << " pending_state_.crop=" << pending_state_.crop.ToString()
+                 << " bounds=" << bounds.ToString()
+                 << "  pending_state_.buffer_size_px="
+                 << pending_state_.buffer_size_px.ToString();
+      constexpr wl_fixed_t kViewportSizeMin = 1;
+      const float kViewPortSizeMinFloat =
+          static_cast<float>(wl_fixed_to_double(kViewportSizeMin));
+      LOG(ERROR)
+          << "Limiting viewport_src_dip size to be non zero with a minium of "
+          << kViewportSizeMin;
+      viewport_src_dip.set_width(
+          std::max(viewport_src_dip.width(), kViewPortSizeMinFloat));
+      viewport_src_dip.set_height(
+          std::max(viewport_src_dip.height(), kViewPortSizeMinFloat));
     }
     src_to_set[0] = wl_fixed_from_double(viewport_src_dip.x()),
     src_to_set[1] = wl_fixed_from_double(viewport_src_dip.y());
@@ -715,6 +732,13 @@ void WaylandSurface::Enter(void* data,
   auto* const surface = static_cast<WaylandSurface*>(data);
   DCHECK(surface);
 
+  // The compositor can send a null output.
+  // crbug.com/1332540
+  if (!output) {
+    LOG(ERROR) << "NULL output received, cannot enter it!";
+    return;
+  }
+
   auto* wayland_output =
       static_cast<WaylandOutput*>(wl_output_get_user_data(output));
 
@@ -734,6 +758,13 @@ void WaylandSurface::Leave(void* data,
                            struct wl_output* output) {
   auto* const surface = static_cast<WaylandSurface*>(data);
   DCHECK(surface);
+
+  // The compositor can send a null output.
+  // crbug.com/1332540
+  if (!output) {
+    LOG(ERROR) << "NULL output received, cannot leave it!";
+    return;
+  }
 
   auto* wayland_output =
       static_cast<WaylandOutput*>(wl_output_get_user_data(output));

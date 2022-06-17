@@ -16,6 +16,7 @@
 #define SRC_TINT_WRITER_MSL_GENERATOR_IMPL_H_
 
 #include <string>
+#include <tuple>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -45,6 +46,7 @@
 // Forward declarations
 namespace tint::sem {
 class Call;
+class Constant;
 class Builtin;
 class TypeConstructor;
 class TypeConversion;
@@ -250,6 +252,11 @@ class GeneratorImpl : public TextGenerator {
     /// @param stmt the statement to emit
     /// @returns true if the statement was successfully emitted
     bool EmitIf(const ast::IfStatement* stmt);
+    /// Handles a constant value
+    /// @param out the output stream
+    /// @param constant the constant value to emit
+    /// @returns true if the constant value was successfully emitted
+    bool EmitConstant(std::ostream& out, const sem::Constant& constant);
     /// Handles a literal
     /// @param out the output of the expression stream
     /// @param lit the literal to emit
@@ -326,6 +333,12 @@ class GeneratorImpl : public TextGenerator {
     /// @param str the struct to generate
     /// @returns true if the struct is emitted
     bool EmitStructType(TextBuffer* buffer, const sem::Struct* str);
+    /// Handles generating a structure declaration only the first time called. Subsequent calls are
+    /// a no-op and return true.
+    /// @param buffer the text buffer that the type declaration will be written to
+    /// @param ty the struct to generate
+    /// @returns true if the struct is emitted
+    bool EmitStructTypeOnce(TextBuffer* buffer, const sem::Struct* ty);
     /// Handles a unary op expression
     /// @param out the output of the expression stream
     /// @param expr the expression to emit
@@ -394,13 +407,13 @@ class GeneratorImpl : public TextGenerator {
     /// type.
     SizeAndAlign MslPackedTypeSizeAndAlign(const sem::Type* ty);
 
-    using StorageClassToString = std::unordered_map<ast::StorageClass, std::string>;
-
     std::function<bool()> emit_continuing_;
 
     /// Name of atomicCompareExchangeWeak() helper for the given pointer storage
-    /// class.
-    StorageClassToString atomicCompareExchangeWeak_;
+    /// class and struct return type
+    using ACEWKeyType =
+        utils::UnorderedKeyWrapper<std::tuple<ast::StorageClass, const sem::Struct*>>;
+    std::unordered_map<ACEWKeyType, std::string> atomicCompareExchangeWeak_;
 
     /// Unique name of the 'TINT_INVARIANT' preprocessor define. Non-empty only if
     /// an invariant attribute has been generated.
@@ -417,6 +430,7 @@ class GeneratorImpl : public TextGenerator {
     std::unordered_map<const sem::Builtin*, std::string> builtins_;
     std::unordered_map<const sem::Type*, std::string> unary_minus_funcs_;
     std::unordered_map<uint32_t, std::string> int_dot_funcs_;
+    std::unordered_set<const sem::Struct*> emitted_structs_;
 };
 
 }  // namespace tint::writer::msl

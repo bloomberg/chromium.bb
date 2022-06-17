@@ -10,6 +10,12 @@ title: User-Agent Reduction
 
 ## Updates
 
+May 31, 2022: Phase 4 rollout was increased to an even larger percentage of the
+Chrome 101 population while we evaluate stability.
+
+May 16, 2022: Phase 4 rollout was increased to a larger percentage of the Chrome
+101 population while we evaluate stability.
+
 May 6, 2022: ["Phase 4"](https://www.chromium.org/updates/ua-reduction/#sample-ua-strings-phase-4)
 began rolling out to a small percentage of the Chrome 101 stable population while we evaluate
 stability.

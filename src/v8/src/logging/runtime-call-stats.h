@@ -359,6 +359,7 @@ class RuntimeCallTimer final {
   ADD_THREAD_SPECIFIC_COUNTER(V, Optimize, OptimizeMoves)                   \
   ADD_THREAD_SPECIFIC_COUNTER(V, Optimize, PopulatePointerMaps)             \
   ADD_THREAD_SPECIFIC_COUNTER(V, Optimize, PrintGraph)                      \
+  ADD_THREAD_SPECIFIC_COUNTER(V, Optimize, PrintTurboshaftGraph)            \
   ADD_THREAD_SPECIFIC_COUNTER(V, Optimize, ResolveControlFlow)              \
   ADD_THREAD_SPECIFIC_COUNTER(V, Optimize, ResolvePhis)                     \
   ADD_THREAD_SPECIFIC_COUNTER(V, Optimize,                                  \
@@ -369,7 +370,8 @@ class RuntimeCallTimer final {
   ADD_THREAD_SPECIFIC_COUNTER(V, Optimize, SimplifiedLowering)              \
   ADD_THREAD_SPECIFIC_COUNTER(V, Optimize, StoreStoreElimination)           \
   ADD_THREAD_SPECIFIC_COUNTER(V, Optimize, TraceScheduleAndVerify)          \
-  ADD_THREAD_SPECIFIC_COUNTER(V, Optimize, BuildTurboShaft)                 \
+  ADD_THREAD_SPECIFIC_COUNTER(V, Optimize, BuildTurboshaft)                 \
+  ADD_THREAD_SPECIFIC_COUNTER(V, Optimize, OptimizeTurboshaft)              \
   ADD_THREAD_SPECIFIC_COUNTER(V, Optimize, TurboshaftRecreateSchedule)      \
   ADD_THREAD_SPECIFIC_COUNTER(V, Optimize, TypeAssertions)                  \
   ADD_THREAD_SPECIFIC_COUNTER(V, Optimize, TypedLowering)                   \
@@ -377,10 +379,13 @@ class RuntimeCallTimer final {
   ADD_THREAD_SPECIFIC_COUNTER(V, Optimize, Untyper)                         \
   ADD_THREAD_SPECIFIC_COUNTER(V, Optimize, VerifyGraph)                     \
   ADD_THREAD_SPECIFIC_COUNTER(V, Optimize, WasmBaseOptimization)            \
+  ADD_THREAD_SPECIFIC_COUNTER(V, Optimize, WasmGCLowering)                  \
+  ADD_THREAD_SPECIFIC_COUNTER(V, Optimize, WasmGCOptimization)              \
   ADD_THREAD_SPECIFIC_COUNTER(V, Optimize, WasmInlining)                    \
   ADD_THREAD_SPECIFIC_COUNTER(V, Optimize, WasmLoopPeeling)                 \
   ADD_THREAD_SPECIFIC_COUNTER(V, Optimize, WasmLoopUnrolling)               \
   ADD_THREAD_SPECIFIC_COUNTER(V, Optimize, WasmOptimization)                \
+  ADD_THREAD_SPECIFIC_COUNTER(V, Optimize, WasmTyping)                      \
                                                                             \
   ADD_THREAD_SPECIFIC_COUNTER(V, Parse, ArrowFunctionLiteral)               \
   ADD_THREAD_SPECIFIC_COUNTER(V, Parse, FunctionLiteral)                    \

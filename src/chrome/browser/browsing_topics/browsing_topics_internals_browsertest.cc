@@ -103,7 +103,7 @@ class BrowsingTopicsInternalsBrowserTestBase : public InProcessBrowserTest {
   // to execute the script because WebUI has a default CSP policy denying
   // "eval()", which is what EvalJs uses under the hood.
   std::string EvalJsInWebUI(const std::string& script) {
-    return content::EvalJs(web_contents()->GetMainFrame(), script,
+    return content::EvalJs(web_contents()->GetPrimaryMainFrame(), script,
                            content::EXECUTE_SCRIPT_DEFAULT_OPTIONS,
                            /*world_id=*/1)
         .ExtractString();
@@ -125,6 +125,23 @@ if (document.querySelector('#model-info-div').style.display !== 'none') {
 result
       )");
 
+    return html_content;
+  }
+
+  std::string GetHostsClassificationInputValidationError() {
+    std::string html_content = EvalJsInWebUI(R"(
+let result = '';
+
+let errorsDiv = document.querySelector('#hosts-classification-input-validation-error');
+
+if (errorsDiv.style.display !== 'none') {
+  Array.from(errorsDiv.children).forEach((errorDiv) => {
+    result += errorDiv.textContent + '\n';
+  });
+}
+
+result
+      )");
     return html_content;
   }
 
@@ -546,8 +563,8 @@ IN_PROC_BROWSER_TEST_F(BrowsingTopicsInternalsBrowserTest, ClassifierTab) {
            .SetModelFilePath(
                base::FilePath::FromASCII("/test_path/test_model.tflite"))
            .Build(),
-      {{"foo2 com", TopicsWithUniformWeight({3, 4, 5}, 0.1)},
-       {"foo1 com", TopicsWithUniformWeight({1, 2}, 0.1)}});
+      {{"foo2.com", TopicsWithUniformWeight({3, 4, 5}, 0.1)},
+       {"foo1.com", TopicsWithUniformWeight({1, 2}, 0.1)}});
 
   EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(),
                                            GURL(kBrowsingTopicsInternalsUrl)));
@@ -562,13 +579,53 @@ Model file path: /test_path/test_model.tflite
     document.querySelector('#hosts-classification-button').click();
   )";
 
-  EXPECT_TRUE(ExecJs(web_contents()->GetMainFrame(), classify_hosts_script,
+  EXPECT_TRUE(ExecJs(web_contents()->GetPrimaryMainFrame(),
+                     classify_hosts_script,
                      content::EXECUTE_SCRIPT_DEFAULT_OPTIONS,
                      /*world_id=*/1));
 
   EXPECT_EQ(GetHostsClassificationResultTableContent(),
             R"(foo1.com|1. Arts & entertainment;2. Acting & theater;|
 foo2.com|3. Comics;4. Concerts & music festivals;5. Dance;|
+)");
+
+  EXPECT_TRUE(GetHostsClassificationInputValidationError().empty());
+}
+
+IN_PROC_BROWSER_TEST_F(BrowsingTopicsInternalsBrowserTest,
+                       ClassifierTab_InvalidInput) {
+  fixed_browsing_topics_service()->SetWebUIGetBrowsingTopicsStateResultOverride(
+      browsing_topics::mojom::WebUIGetBrowsingTopicsStateResult::
+          NewOverrideStatusMessage("Failed to get the topics state."));
+
+  // Configure the (mock) model.
+  test_page_content_annotator_.UsePageTopics(
+      *optimization_guide::TestModelInfoBuilder()
+           .SetVersion(1)
+           .SetModelFilePath(
+               base::FilePath::FromASCII("/test_path/test_model.tflite"))
+           .Build(),
+      {{"foo2.com", TopicsWithUniformWeight({3, 4, 5}, 0.1)},
+       {"foo1.com", TopicsWithUniformWeight({1, 2}, 0.1)}});
+
+  EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(),
+                                           GURL(kBrowsingTopicsInternalsUrl)));
+
+  constexpr char classify_hosts_script[] = R"(
+    document.querySelector('#input-hosts-textarea').value = 'foo1.com\nhttps://foo1.com\nfoo1.com/path';
+    document.querySelector('#hosts-classification-button').click();
+  )";
+
+  EXPECT_TRUE(ExecJs(web_contents()->GetPrimaryMainFrame(),
+                     classify_hosts_script,
+                     content::EXECUTE_SCRIPT_DEFAULT_OPTIONS,
+                     /*world_id=*/1));
+
+  EXPECT_TRUE(GetHostsClassificationResultTableContent().empty());
+
+  EXPECT_EQ(GetHostsClassificationInputValidationError(),
+            R"(Host "https://foo1.com" contains invalid character: "/"
+Host "foo1.com/path" contains invalid character: "/"
 )");
 }
 

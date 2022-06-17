@@ -252,6 +252,7 @@ dawn_test("dawn_unittests") {
     "unittests/ToBackendTests.cpp",
     "unittests/TypedIntegerTests.cpp",
     "unittests/VersionTests.cpp",
+    "unittests/native/BlobTests.cpp",
     "unittests/native/CacheKeyTests.cpp",
     "unittests/native/CommandBufferEncodingTests.cpp",
     "unittests/native/CreatePipelineAsyncTaskTests.cpp",
@@ -307,7 +308,6 @@ dawn_test("dawn_unittests") {
     "unittests/wire/WireBasicTests.cpp",
     "unittests/wire/WireBufferMappingTests.cpp",
     "unittests/wire/WireCreatePipelineAsyncTests.cpp",
-    "unittests/wire/WireDestroyObjectTests.cpp",
     "unittests/wire/WireDisconnectTests.cpp",
     "unittests/wire/WireErrorCallbackTests.cpp",
     "unittests/wire/WireExtensionTests.cpp",
@@ -322,7 +322,6 @@ dawn_test("dawn_unittests") {
     "unittests/wire/WireShaderModuleTests.cpp",
     "unittests/wire/WireTest.cpp",
     "unittests/wire/WireTest.h",
-    "unittests/wire/WireWGPUDevicePropertiesTests.cpp",
   ]
 
   if (is_win) {
@@ -440,6 +439,7 @@ source_set("end2end_tests_sources") {
     "end2end/DepthStencilStateTests.cpp",
     "end2end/DestroyTests.cpp",
     "end2end/DeviceInitializationTests.cpp",
+    "end2end/DeviceLifetimeTests.cpp",
     "end2end/DeviceLostTests.cpp",
     "end2end/DrawIndexedIndirectTests.cpp",
     "end2end/DrawIndexedTests.cpp",
@@ -447,6 +447,7 @@ source_set("end2end_tests_sources") {
     "end2end/DrawTests.cpp",
     "end2end/DynamicBufferOffsetTests.cpp",
     "end2end/EntryPointTests.cpp",
+    "end2end/ExperimentalDP4aTests.cpp",
     "end2end/ExternalTextureTests.cpp",
     "end2end/FirstIndexOffsetTests.cpp",
     "end2end/GpuMemorySynchronizationTests.cpp",
@@ -489,12 +490,6 @@ source_set("end2end_tests_sources") {
     "end2end/VertexStateTests.cpp",
     "end2end/ViewportOrientationTests.cpp",
     "end2end/ViewportTests.cpp",
-  ]
-
-  # Validation tests that need OS windows live in end2end tests.
-  sources += [
-    "unittests/validation/ValidationTest.cpp",
-    "unittests/validation/ValidationTest.h",
   ]
 
   libs = []
@@ -603,7 +598,7 @@ source_set("white_box_tests_sources") {
 
   if (dawn_enable_opengles && defined(dawn_angle_dir)) {
     sources += [ "white_box/EGLImageWrappingTests.cpp" ]
-    deps += [ "${dawn_angle_dir}:libEGL" ]
+    include_dirs = [ "${dawn_angle_dir}/include" ]
   }
 
   libs = []

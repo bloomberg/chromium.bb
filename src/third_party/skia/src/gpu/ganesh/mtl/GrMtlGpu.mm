@@ -293,9 +293,10 @@ std::unique_ptr<GrSemaphore> GrMtlGpu::prepareTextureForCrossContextUsage(GrText
     return nullptr;
 }
 
-sk_sp<GrGpuBuffer> GrMtlGpu::onCreateBuffer(size_t size, GrGpuBufferType type,
-                                            GrAccessPattern accessPattern, const void* data) {
-    return GrMtlBuffer::Make(this, size, type, accessPattern, data);
+sk_sp<GrGpuBuffer> GrMtlGpu::onCreateBuffer(size_t size,
+                                            GrGpuBufferType type,
+                                            GrAccessPattern accessPattern) {
+    return GrMtlBuffer::Make(this, size, type, accessPattern);
 }
 
 static bool check_max_blit_width(int widthInPixels) {
@@ -615,7 +616,8 @@ sk_sp<GrTexture> GrMtlGpu::onCreateCompressedTexture(SkISize dimensions,
                                                                 : GrMipmapStatus::kNotAllocated;
 
     auto tex = GrMtlTexture::MakeNewTexture(this, budgeted, dimensions, mtlPixelFormat,
-                                            numMipLevels, mipmapStatus, /*label=*/{});
+                                            numMipLevels, mipmapStatus,
+                                            /*label=*/"MtlGpu_CreateCompressedTexture");
     if (!tex) {
         return nullptr;
     }

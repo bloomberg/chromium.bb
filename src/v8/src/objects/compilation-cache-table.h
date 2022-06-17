@@ -29,13 +29,8 @@ class CompilationCacheShape : public BaseShape<HashTableKey*> {
 
   static inline uint32_t RegExpHash(String string, Smi flags);
 
-  static inline uint32_t StringSharedHash(String source,
-                                          SharedFunctionInfo shared,
-                                          LanguageMode language_mode,
-                                          int position);
-
-  static inline uint32_t StringSharedHash(String source,
-                                          LanguageMode language_mode);
+  static inline uint32_t EvalHash(String source, SharedFunctionInfo shared,
+                                  LanguageMode language_mode, int position);
 
   static inline uint32_t HashForObject(ReadOnlyRoots roots, Object object);
 
@@ -89,11 +84,10 @@ class CompilationCacheTable
   // The 'script' cache contains SharedFunctionInfos.
   static MaybeHandle<SharedFunctionInfo> LookupScript(
       Handle<CompilationCacheTable> table, Handle<String> src,
-      LanguageMode language_mode, Isolate* isolate);
+      Isolate* isolate);
   static Handle<CompilationCacheTable> PutScript(
       Handle<CompilationCacheTable> cache, Handle<String> src,
-      LanguageMode language_mode, Handle<SharedFunctionInfo> value,
-      Isolate* isolate);
+      Handle<SharedFunctionInfo> value, Isolate* isolate);
 
   // Eval code only gets cached after a second probe for the
   // code object. To do so, on first "put" only a hash identifying the
@@ -124,13 +118,22 @@ class CompilationCacheTable
       JSRegExp::Flags flags, Handle<FixedArray> value);
 
   void Remove(Object value);
-  void Age(Isolate* isolate);
+  void RemoveEntry(InternalIndex entry);
+
+  inline Object PrimaryValueAt(InternalIndex entry);
+  inline void SetPrimaryValueAt(InternalIndex entry, Object value,
+                                WriteBarrierMode mode = UPDATE_WRITE_BARRIER);
+  inline Object EvalFeedbackValueAt(InternalIndex entry);
+  inline void SetEvalFeedbackValueAt(
+      InternalIndex entry, Object value,
+      WriteBarrierMode mode = UPDATE_WRITE_BARRIER);
+
+  // The initial placeholder insertion of the eval cache survives this many GCs.
+  static constexpr int kHashGenerations = 10;
 
   DECL_CAST(CompilationCacheTable)
 
  private:
-  void RemoveEntry(int entry_index);
-
   OBJECT_CONSTRUCTORS(CompilationCacheTable,
                       HashTable<CompilationCacheTable, CompilationCacheShape>);
 };

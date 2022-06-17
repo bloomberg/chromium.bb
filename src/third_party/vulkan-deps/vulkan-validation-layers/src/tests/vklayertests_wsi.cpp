@@ -51,8 +51,7 @@ TEST_F(VkLayerTest, BindImageMemorySwapchain) {
     }
 
     if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
-        printf("%s VkBindImageMemoryInfo requires Vulkan 1.1+, skipping test\n", kSkipPrefix);
-        return;
+        GTEST_SKIP() << "At least Vulkan version 1.1 is required";
     }
 
     ASSERT_NO_FATAL_FAILURE(InitState());
@@ -257,8 +256,7 @@ TEST_F(VkLayerTest, TransferImageToSwapchainWithInvalidLayoutDeviceGroup) {
     }
 
     if (DeviceValidationVersion() < VK_API_VERSION_1_2) {
-        printf("%s VkBindImageMemoryInfo requires Vulkan 1.2+, skipping test\n", kSkipPrefix);
-        return;
+        GTEST_SKIP() << "At least Vulkan version 1.2 is required";
     }
 
     if (IsDriver(VK_DRIVER_ID_MESA_RADV)) {
@@ -381,12 +379,11 @@ TEST_F(VkLayerTest, ValidSwapchainImageParams) {
         return;
     }
 
-    if (!AddRequiredInstanceExtensions(VK_KHR_DEVICE_GROUP_CREATION_EXTENSION_NAME)) {
-        printf("%s Extension %s is not supported.\n", kSkipPrefix, VK_KHR_DEVICE_GROUP_CREATION_EXTENSION_NAME);
-        return;
-    }
-
+    AddRequiredExtensions(VK_KHR_DEVICE_GROUP_CREATION_EXTENSION_NAME);
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+    if (!AreRequiredExtensionsEnabled()) {
+        GTEST_SKIP() << RequiredExtensionsNotSupported() << " not supported";
+    }
 
     if (!AddSwapchainDeviceExtension()) {
         printf("%s swapchain extensions not supported, skipping test\n", kSkipPrefix);
@@ -530,15 +527,11 @@ TEST_F(VkLayerTest, SwapchainAcquireImageNoSync2KHR) {
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
 
     if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
-        printf("%s vkAcquireNextImage2KHR not supported, skipping test\n", kSkipPrefix);
-        return;
+        GTEST_SKIP() << "At least Vulkan version 1.1 is required";
     }
 
     if (extension_dependency_satisfied && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_DEVICE_GROUP_EXTENSION_NAME)) {
         m_device_extension_names.push_back(VK_KHR_DEVICE_GROUP_EXTENSION_NAME);
-    } else if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
-        printf("%s vkAcquireNextImage2KHR not supported, skipping test\n", kSkipPrefix);
-        return;
     }
 
     if (!AddSwapchainDeviceExtension()) {
@@ -637,15 +630,11 @@ TEST_F(VkLayerTest, SwapchainAcquireImageNoBinarySemaphore2KHR) {
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
 
     if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
-        printf("%s vkAcquireNextImage2KHR not supported, skipping test\n", kSkipPrefix);
-        return;
+        GTEST_SKIP() << "At least Vulkan version 1.1 is required";
     }
 
     if (extension_dependency_satisfied && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_DEVICE_GROUP_EXTENSION_NAME)) {
         m_device_extension_names.push_back(VK_KHR_DEVICE_GROUP_EXTENSION_NAME);
-    } else if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
-        printf("%s vkAcquireNextImage2KHR not supported, skipping test\n", kSkipPrefix);
-        return;
     }
 
     if (!AddSwapchainDeviceExtension()) {
@@ -850,11 +839,12 @@ TEST_F(VkLayerTest, SwapchainAcquireTooManyImages2KHR) {
     if (!AddSurfaceInstanceExtension()) return;
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
 
+    if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
+        GTEST_SKIP() << "At least Vulkan version 1.1 is required";
+    }
+
     if (extension_dependency_satisfied && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_DEVICE_GROUP_EXTENSION_NAME)) {
         m_device_extension_names.push_back(VK_KHR_DEVICE_GROUP_EXTENSION_NAME);
-    } else if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
-        printf("%s vkAcquireNextImage2KHR not supported, skipping test\n", kSkipPrefix);
-        return;
     }
 
     if (!AddSwapchainDeviceExtension()) return;
@@ -906,6 +896,8 @@ TEST_F(VkLayerTest, InvalidSwapchainImageFormatList) {
         return;
     }
 
+    AddRequiredExtensions(VK_KHR_SWAPCHAIN_MUTABLE_FORMAT_EXTENSION_NAME);
+    AddRequiredExtensions(VK_KHR_IMAGE_FORMAT_LIST_EXTENSION_NAME);
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
 
     if (!AddSwapchainDeviceExtension()) {
@@ -913,10 +905,8 @@ TEST_F(VkLayerTest, InvalidSwapchainImageFormatList) {
         return;
     }
 
-    if (!AddRequiredDeviceExtensions(VK_KHR_SWAPCHAIN_MUTABLE_FORMAT_EXTENSION_NAME) ||
-        !AddRequiredDeviceExtensions(VK_KHR_IMAGE_FORMAT_LIST_EXTENSION_NAME)) {
-        printf("%s Required extensions not supported, skipping tests\n", kSkipPrefix);
-        return;
+    if (!AreRequiredExtensionsEnabled()) {
+        GTEST_SKIP() << RequiredExtensionsNotSupported() << " not supported";
     }
 
     ASSERT_NO_FATAL_FAILURE(InitState());
@@ -1353,8 +1343,7 @@ TEST_F(VkLayerTest, InvalidDeviceMask) {
     }
 
     if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
-        printf("%s Device Groups requires Vulkan 1.1+, skipping test\n", kSkipPrefix);
-        return;
+        GTEST_SKIP() << "At least Vulkan version 1.1 is required";
     }
     uint32_t physical_device_group_count = 0;
     vk::EnumeratePhysicalDeviceGroups(instance(), &physical_device_group_count, nullptr);
@@ -1810,15 +1799,10 @@ TEST_F(VkLayerTest, SwapchainAcquireImageWithSignaledSemaphore) {
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
 
     if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
-        printf("%s vkAcquireNextImage2KHR not supported, skipping test\n", kSkipPrefix);
-        return;
+        GTEST_SKIP() << "At least Vulkan version 1.1 is required";
     }
-
     if (DeviceExtensionSupported(gpu(), nullptr, VK_KHR_DEVICE_GROUP_EXTENSION_NAME)) {
         m_device_extension_names.push_back(VK_KHR_DEVICE_GROUP_EXTENSION_NAME);
-    } else if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
-        printf("%s vkAcquireNextImage2KHR not supported, skipping test\n", kSkipPrefix);
-        return;
     }
 
     if (!AddSwapchainDeviceExtension()) {
@@ -2162,8 +2146,7 @@ TEST_F(VkLayerTest, TestSurfaceSupportByPhysicalDevice) {
 
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
     if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
-        printf("%s Test requires Vulkan 1.1+, skipping test\n", kSkipPrefix);
-        return;
+        GTEST_SKIP() << "At least Vulkan version 1.1 is required";
     }
 
     if (DeviceExtensionSupported(gpu(), nullptr, VK_KHR_SWAPCHAIN_EXTENSION_NAME)) {
@@ -2517,5 +2500,51 @@ TEST_F(VkLayerTest, TestCreatingSwapchainWithInvalidExtent) {
     VkSwapchainKHR swapchain;
     vk::CreateSwapchainKHR(device(), &swapchain_ci, nullptr, &swapchain);
 
+    m_errorMonitor->VerifyFound();
+}
+
+TEST_F(VkLayerTest, TestSurfaceQueryImageCompressionControlWithoutExtension) {
+    TEST_DESCRIPTION("Test querying surface image compression control without extension.");
+    SetTargetApiVersion(VK_API_VERSION_1_1);
+    if (!AddSurfaceInstanceExtension()) {
+        printf("%s surface extensions not supported, skipping test\n", kSkipPrefix);
+        return;
+    }
+
+    AddRequiredExtensions(VK_KHR_GET_SURFACE_CAPABILITIES_2_EXTENSION_NAME);
+    AddRequiredExtensions(VK_EXT_IMAGE_COMPRESSION_CONTROL_EXTENSION_NAME);
+
+    auto image_compression_control = LvlInitStruct<VkPhysicalDeviceImageCompressionControlFeaturesEXT>();
+    auto features2 = LvlInitStruct<VkPhysicalDeviceFeatures2>(&image_compression_control);
+
+    ASSERT_NO_FATAL_FAILURE(InitFrameworkAndRetrieveFeatures(features2));
+    if (!AreRequiredExtensionsEnabled()) {
+        GTEST_SKIP() << RequiredExtensionsNotSupported() << " not supported";
+    }
+
+    if (image_compression_control.imageCompressionControl) {
+        // disable imageCompressionControl feature;
+        image_compression_control.imageCompressionControl = VK_FALSE;
+        ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &features2));
+    } else {
+        ASSERT_NO_FATAL_FAILURE(InitState());
+    }
+
+    if (!InitSurface()) {
+        printf("%s Cannot create surface, skipping test\n", kSkipPrefix);
+        return;
+    }
+
+    PFN_vkGetPhysicalDeviceSurfaceFormats2KHR vkGetPhysicalDeviceSurfaceFormats2KHR =
+        reinterpret_cast<PFN_vkGetPhysicalDeviceSurfaceFormats2KHR>(vk::GetInstanceProcAddr(instance(), "vkGetPhysicalDeviceSurfaceFormats2KHR"));
+
+    auto compression_properties = LvlInitStruct<VkImageCompressionPropertiesEXT>();
+    auto surface_info = LvlInitStruct<VkPhysicalDeviceSurfaceInfo2KHR>(&compression_properties);
+    surface_info.surface = m_surface;
+    uint32_t count;
+
+    // get compression control properties even of VK_EXT_image_compression_control extension is disabled(or is not supported).
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkPhysicalDeviceSurfaceInfo2KHR-pNext-pNext");
+    vkGetPhysicalDeviceSurfaceFormats2KHR(gpu(), &surface_info, &count, nullptr);
     m_errorMonitor->VerifyFound();
 }

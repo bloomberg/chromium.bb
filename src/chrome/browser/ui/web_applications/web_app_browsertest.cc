@@ -53,7 +53,6 @@
 #include "chrome/browser/ui/web_applications/web_app_menu_model.h"
 #include "chrome/browser/ui/web_applications/web_app_ui_utils.h"
 #include "chrome/browser/web_applications/external_install_options.h"
-#include "chrome/browser/web_applications/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/system_web_apps/test/test_system_web_app_installation.h"
 #include "chrome/browser/web_applications/test/web_app_test_observers.h"
 #include "chrome/browser/web_applications/test/web_app_test_utils.h"
@@ -434,42 +433,48 @@ INSTANTIATE_TEST_SUITE_P(
 
 IN_PROC_BROWSER_TEST_P(BackgroundColorChangeWebAppBrowserTest,
                        BackgroundColorChange) {
+  const bool is_non_swa = GetBackgroundColorChangeTestMode() ==
+                          BackgroundColorChangeTestMode::kNonSWA;
   // Skip test parameterizations for non-system web apps that don't make sense.
-  if (GetBackgroundColorChangeTestMode() ==
-          BackgroundColorChangeTestMode::kNonSWA &&
-      PreferManifestBackgroundColor()) {
+  if (is_non_swa && PreferManifestBackgroundColor())
     GTEST_SKIP();
-  }
 
   const AppId app_id = WaitForAppInstall();
   Browser* const app_browser = LaunchWebAppBrowser(app_id);
   content::WebContents* const web_contents =
       app_browser->tab_strip_model()->GetActiveWebContents();
 
+  const bool is_dark_mode_state =
+      ui::NativeTheme::GetInstanceForNativeUi()->ShouldUseDarkColors();
   // Wait for original background color to load.
   {
     content::BackgroundColorChangeWaiter waiter(web_contents);
     waiter.Wait();
-    EXPECT_EQ(app_browser->app_controller()->GetBackgroundColor().value(),
-              SK_ColorWHITE);
+    EXPECT_EQ(
+        app_browser->app_controller()->GetBackgroundColor().value(),
+        !is_non_swa && is_dark_mode_state ? SK_ColorBLACK : SK_ColorWHITE);
   }
   content::AwaitDocumentOnLoadCompleted(web_contents);
 
-  // Changing background color should update download shelf theme unless a
-  // system web app prefers manifest background colors over web contents
-  // background colors.
+  // Changing background color should update the toolbar color unless a system
+  // web app prefers manifest background colors over web contents background
+  // colors.
   {
     content::BackgroundColorChangeWaiter waiter(web_contents);
     EXPECT_TRUE(content::ExecuteScript(
         web_contents, "document.body.style.backgroundColor = 'cyan';"));
     waiter.Wait();
     EXPECT_EQ(app_browser->app_controller()->GetBackgroundColor().value(),
-              PreferManifestBackgroundColor() ? SK_ColorWHITE : SK_ColorCYAN);
+              PreferManifestBackgroundColor()
+                  ? (is_dark_mode_state ? SK_ColorBLACK : SK_ColorWHITE)
+                  : SK_ColorCYAN);
     SkColor download_shelf_color;
     app_browser->app_controller()->GetThemeSupplier()->GetColor(
-        ThemeProperties::COLOR_DOWNLOAD_SHELF, &download_shelf_color);
+        ThemeProperties::COLOR_TOOLBAR, &download_shelf_color);
     EXPECT_EQ(download_shelf_color,
-              PreferManifestBackgroundColor() ? SK_ColorWHITE : SK_ColorCYAN);
+              PreferManifestBackgroundColor()
+                  ? (is_dark_mode_state ? SK_ColorBLACK : SK_ColorWHITE)
+                  : SK_ColorCYAN);
   }
 }
 
@@ -832,6 +837,30 @@ IN_PROC_BROWSER_TEST_F(WebAppTabRestoreBrowserTest, RestoreAppWindow) {
 
   EXPECT_TRUE(restored_browser->is_type_app());
 }
+
+// Tests that app popup windows are correctly restored.
+IN_PROC_BROWSER_TEST_F(WebAppTabRestoreBrowserTest, RestoreAppPopupWindow) {
+  const GURL app_url = GetSecureAppURL();
+  const AppId app_id = InstallPWA(app_url);
+  Browser* const app_browser = web_app::LaunchWebAppBrowserAndWait(
+      profile(), app_id, WindowOpenDisposition::NEW_POPUP);
+
+  ASSERT_TRUE(app_browser->is_type_app_popup());
+  app_browser->window()->Close();
+
+  content::WebContentsAddedObserver new_contents_observer;
+
+  sessions::TabRestoreService* const service =
+      TabRestoreServiceFactory::GetForProfile(profile());
+  service->RestoreMostRecentEntry(nullptr);
+
+  content::WebContents* const restored_web_contents =
+      new_contents_observer.GetWebContents();
+  Browser* const restored_browser =
+      chrome::FindBrowserWithWebContents(restored_web_contents);
+
+  EXPECT_TRUE(restored_browser->is_type_app_popup());
+}
 #endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)
 
 // Test navigating to an out of scope url on the same origin causes the url
@@ -1017,8 +1046,8 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, ShortcutMenuOptionsForCrashedTab) {
   {
     content::ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
     content::RenderFrameDeletedObserver crash_observer(
-        tab_contents->GetMainFrame());
-    tab_contents->GetMainFrame()->GetProcess()->Shutdown(1);
+        tab_contents->GetPrimaryMainFrame());
+    tab_contents->GetPrimaryMainFrame()->GetProcess()->Shutdown(1);
     crash_observer.WaitUntilDeleted();
   }
   ASSERT_TRUE(tab_contents->IsCrashed());
@@ -1139,7 +1168,26 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, CanInstallWithPolicyPwa) {
             kEnabled);
 }
 
-IN_PROC_BROWSER_TEST_F(WebAppBrowserTest,
+class WebAppBrowserTest_ExternalPrefMigration
+    : public WebAppBrowserTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  WebAppBrowserTest_ExternalPrefMigration() {
+    bool enable_migration = GetParam();
+    if (enable_migration) {
+      scoped_feature_list_.InitWithFeatures(
+          {features::kUseWebAppDBInsteadOfExternalPrefs}, {});
+    } else {
+      scoped_feature_list_.InitWithFeatures(
+          {}, {features::kUseWebAppDBInsteadOfExternalPrefs});
+    }
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_P(WebAppBrowserTest_ExternalPrefMigration,
                        CannotUninstallPolicyWebAppAfterUserInstall) {
   GURL install_url = GetInstallableAppURL();
   ExternalInstallOptions options = CreateInstallOptions(install_url);
@@ -1147,8 +1195,7 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest,
   ExternallyManagedAppManagerInstall(profile(), options);
 
   auto* provider = WebAppProvider::GetForTest(browser()->profile());
-  ExternallyInstalledWebAppPrefs prefs(browser()->profile()->GetPrefs());
-  AppId app_id = prefs.LookupAppId(install_url).value();
+  AppId app_id = provider->registrar().LookupExternalAppId(install_url).value();
 
   EXPECT_FALSE(provider->install_finalizer().CanUserUninstallWebApp(app_id));
 
@@ -1470,7 +1517,9 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, PermissionBubble) {
   Browser* const app_browser = LaunchWebAppBrowserAndWait(app_id);
 
   content::RenderFrameHost* const render_frame_host =
-      app_browser->tab_strip_model()->GetActiveWebContents()->GetMainFrame();
+      app_browser->tab_strip_model()
+          ->GetActiveWebContents()
+          ->GetPrimaryMainFrame();
   EXPECT_TRUE(content::ExecuteScript(
       render_frame_host,
       "navigator.geolocation.getCurrentPosition(function(){});"));
@@ -1652,7 +1701,7 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, SubframeRedirectsToWebApp) {
   // Ensure that the frame navigated successfully and that it has correct
   // content.
   content::RenderFrameHost* const subframe =
-      content::ChildFrameAt(tab->GetMainFrame(), 0);
+      content::ChildFrameAt(tab->GetPrimaryMainFrame(), 0);
   EXPECT_EQ(app_url, subframe->GetLastCommittedURL());
   EXPECT_EQ(
       "This page has no title.",
@@ -2245,5 +2294,9 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(WebAppSettingsState::kNeitherEnabled,
                       WebAppSettingsState::kOnlyWebAppSettingsEnabled,
                       WebAppSettingsState::kFileHandlingAlsoEnabled));
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         WebAppBrowserTest_ExternalPrefMigration,
+                         ::testing::Bool());
 
 }  // namespace web_app

@@ -14,6 +14,8 @@
 
 #include "internal/platform/implementation/windows/ble_v2.h"
 
+#include <string>
+
 #include "gtest/gtest.h"
 #include "absl/synchronization/notification.h"
 #include "internal/platform/implementation/ble_v2.h"
@@ -32,7 +34,8 @@ TEST(BleV2Medium, DISABLED_StartAdvertising) {
   api::ble_v2::BleAdvertisementData scan_response_data;
 
   EXPECT_TRUE(blev2_medium.StartAdvertising(
-      advertising_data, scan_response_data, api::ble_v2::PowerMode::kHigh));
+      advertising_data, {.tx_power_level = api::ble_v2::TxPowerLevel::kHigh,
+                         .is_connectable = true}));
 }
 
 TEST(BleV2Medium, DISABLED_StopAdvertising) {
@@ -40,10 +43,10 @@ TEST(BleV2Medium, DISABLED_StopAdvertising) {
   BleV2Medium blev2_medium(bluetoothAdapter);
 
   api::ble_v2::BleAdvertisementData advertising_data;
-  api::ble_v2::BleAdvertisementData scan_response_data;
 
   EXPECT_TRUE(blev2_medium.StartAdvertising(
-      advertising_data, scan_response_data, api::ble_v2::PowerMode::kHigh));
+      advertising_data, {.tx_power_level = api::ble_v2::TxPowerLevel::kHigh,
+                         .is_connectable = true}));
   EXPECT_TRUE(blev2_medium.StopAdvertising());
 }
 
@@ -53,7 +56,7 @@ TEST(BleV2Medium, DISABLED_StartScanning) {
 
   BluetoothAdapter bluetoothAdapter;
   BleV2Medium blev2_medium(bluetoothAdapter);
-  std::vector<std::string> service_uuids;
+  Uuid service_uuid;
 
   api::ble_v2::BleMedium::ScanCallback callback;
   callback.advertisement_found_cb =
@@ -65,7 +68,7 @@ TEST(BleV2Medium, DISABLED_StartScanning) {
       };
 
   EXPECT_TRUE(blev2_medium.StartScanning(
-      service_uuids, api::ble_v2::PowerMode::kHigh, callback));
+      service_uuid, api::ble_v2::TxPowerLevel::kHigh, callback));
 
   EXPECT_TRUE(scan_response_notification.WaitForNotificationWithTimeout(
       absl::Seconds(5)));
@@ -75,7 +78,7 @@ TEST(BleV2Medium, DISABLED_StartScanning) {
 TEST(BleV2Medium, DISABLED_StopScanning) {
   BluetoothAdapter bluetoothAdapter;
   BleV2Medium blev2_medium(bluetoothAdapter);
-  std::vector<std::string> service_uuids;
+  Uuid service_uuid;
 
   api::ble_v2::BleMedium::ScanCallback callback;
   callback.advertisement_found_cb =
@@ -83,7 +86,7 @@ TEST(BleV2Medium, DISABLED_StopScanning) {
          const api::ble_v2::BleAdvertisementData& advertisement_data) {};
 
   EXPECT_TRUE(blev2_medium.StartScanning(
-      service_uuids, api::ble_v2::PowerMode::kHigh, callback));
+      service_uuid, api::ble_v2::TxPowerLevel::kHigh, callback));
 
   EXPECT_TRUE(blev2_medium.StopScanning());
 }

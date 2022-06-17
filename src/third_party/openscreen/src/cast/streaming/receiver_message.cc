@@ -16,6 +16,8 @@
 #include "util/enum_name_table.h"
 #include "util/json/json_helpers.h"
 #include "util/json/json_serialization.h"
+#include "util/osp_logging.h"
+#include "util/stringprintf.h"
 
 namespace openscreen {
 namespace cast {
@@ -68,6 +70,29 @@ bool TryParseCapability(const Json::Value& value, MediaCapability* out) {
 
 }  // namespace
 
+ReceiverError::ReceiverError(int code, absl::string_view description)
+    : code(code), description(description) {
+  if (code >= kOpenscreenErrorOffset) {
+    openscreen_code = static_cast<Error::Code>(code - kOpenscreenErrorOffset);
+  }
+}
+
+ReceiverError::ReceiverError(Error::Code code, absl::string_view description)
+    : code(static_cast<int>(code) + kOpenscreenErrorOffset),
+      openscreen_code(code),
+      description(description) {}
+
+ReceiverError::ReceiverError(Error error)
+    : code(static_cast<int>(error.code()) + kOpenscreenErrorOffset),
+      openscreen_code(error.code()),
+      description(error.message()) {}
+
+ReceiverError::ReceiverError(const ReceiverError&) = default;
+ReceiverError::ReceiverError(ReceiverError&&) noexcept = default;
+ReceiverError& ReceiverError::operator=(const ReceiverError&) = default;
+ReceiverError& ReceiverError::operator=(ReceiverError&&) = default;
+ReceiverError::~ReceiverError() = default;
+
 // static
 ErrorOr<ReceiverError> ReceiverError::Parse(const Json::Value& value) {
   if (!value) {
@@ -81,14 +106,27 @@ ErrorOr<ReceiverError> ReceiverError::Parse(const Json::Value& value) {
       !json::TryParseString(value[kErrorDescription], &description)) {
     return Error::Code::kJsonParseError;
   }
-  return ReceiverError{code, description};
+
+  return ReceiverError(code, description);
 }
 
 Json::Value ReceiverError::ToJson() const {
   Json::Value root;
-  root[kErrorCode] = code;
+  root[kErrorCode] = openscreen_code ? static_cast<int>(*openscreen_code) +
+                                           kOpenscreenErrorOffset
+                                     : code;
   root[kErrorDescription] = description;
   return root;
+}
+
+Error ReceiverError::ToError() const {
+  if (openscreen_code) {
+    return Error(*openscreen_code, description);
+  }
+
+  std::string full_description = StringPrintf("Error code: %d, description: %s",
+                                              code, description.c_str());
+  return Error(Error::Code::kUnknownError, std::move(full_description));
 }
 
 // static

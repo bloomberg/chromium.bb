@@ -19,6 +19,8 @@ namespace openscreen {
 class Error {
  public:
   // TODO(crbug.com/openscreen/65): Group/rename OSP-specific errors
+  // NOTE: new values should be added to the end of the of enum and existing
+  // values should not be changed.
   enum class Code : int8_t {
     // No error occurred.
     kNone = 0,
@@ -30,173 +32,174 @@ class Error {
 
     // CBOR errors.
     kCborParsing = 1,
-    kCborEncoding,
-    kCborIncompleteMessage,
-    kCborInvalidResponseId,
-    kCborInvalidMessage,
+    kCborEncoding = 2,
+    kCborIncompleteMessage = 3,
+    kCborInvalidResponseId = 4,
+    kCborInvalidMessage = 5,
 
     // Presentation start errors.
-    kNoAvailableReceivers,
-    kRequestCancelled,
-    kNoPresentationFound,
-    kPreviousStartInProgress,
-    kUnknownStartError,
-    kUnknownRequestId,
+    kNoAvailableReceivers = 6,
+    kRequestCancelled = 7,
+    kNoPresentationFound = 8,
+    kPreviousStartInProgress = 9,
+    kUnknownStartError = 10,
+    kUnknownRequestId = 11,
 
-    kAddressInUse,
-    kDomainNameTooLong,
-    kDomainNameLabelTooLong,
+    kAddressInUse = 12,
+    kDomainNameTooLong = 13,
+    kDomainNameLabelTooLong = 14,
 
-    kIOFailure,
-    kInitializationFailure,
-    kInvalidIPV4Address,
-    kInvalidIPV6Address,
-    kConnectionFailed,
+    kIOFailure = 15,
+    kInitializationFailure = 16,
+    kInvalidIPV4Address = 17,
+    kInvalidIPV6Address = 18,
+    kConnectionFailed = 19,
 
-    kSocketOptionSettingFailure,
-    kSocketAcceptFailure,
-    kSocketBindFailure,
-    kSocketClosedFailure,
-    kSocketConnectFailure,
-    kSocketInvalidState,
-    kSocketListenFailure,
-    kSocketReadFailure,
-    kSocketSendFailure,
+    kSocketOptionSettingFailure = 20,
+    kSocketAcceptFailure = 21,
+    kSocketBindFailure = 22,
+    kSocketClosedFailure = 23,
+    kSocketConnectFailure = 24,
+    kSocketInvalidState = 25,
+    kSocketListenFailure = 26,
+    kSocketReadFailure = 27,
+    kSocketSendFailure = 28,
 
     // MDNS errors.
-    kMdnsRegisterFailure,
-    kMdnsReadFailure,
-    kMdnsNonConformingFailure,
+    kMdnsRegisterFailure = 29,
+    kMdnsReadFailure = 30,
+    kMdnsNonConformingFailure = 31,
 
-    kParseError,
-    kUnknownMessageType,
+    kParseError = 32,
+    kUnknownMessageType = 33,
 
-    kNoActiveConnection,
-    kAlreadyClosed,
-    kInvalidConnectionState,
-    kNoStartedPresentation,
-    kPresentationAlreadyStarted,
+    kNoActiveConnection = 34,
+    kAlreadyClosed = 35,
+    kInvalidConnectionState = 36,
+    kNoStartedPresentation = 37,
+    kPresentationAlreadyStarted = 38,
 
-    kJsonParseError,
-    kJsonWriteError,
+    kJsonParseError = 39,
+    kJsonWriteError = 40,
 
     // OpenSSL errors.
 
     // Was unable to generate an RSA key.
-    kRSAKeyGenerationFailure,
-    kRSAKeyParseError,
+    kRSAKeyGenerationFailure = 41,
+    kRSAKeyParseError = 42,
 
     // Was unable to initialize an EVP_PKEY type.
-    kEVPInitializationError,
+    kEVPInitializationError = 43,
 
     // Was unable to generate a certificate.
-    kCertificateCreationError,
+    kCertificateCreationError = 44,
 
     // Certificate failed validation.
-    kCertificateValidationError,
+    kCertificateValidationError = 45,
 
     // Failed to produce a hashing digest.
-    kSha256HashFailure,
+    kSha256HashFailure = 46,
 
     // A non-recoverable SSL library error has occurred.
-    kFatalSSLError,
-    kFileLoadFailure,
+    kFatalSSLError = 47,
+    kFileLoadFailure = 48,
 
     // Cast certificate errors.
 
     // Certificates were not provided for verification.
-    kErrCertsMissing,
+    kErrCertsMissing = 49,
 
     // The certificates provided could not be parsed.
-    kErrCertsParse,
+    kErrCertsParse = 50,
 
     // Key usage is missing or is not set to Digital Signature.
     // This error could also be thrown if the CN is missing.
-    kErrCertsRestrictions,
+    kErrCertsRestrictions = 51,
 
     // The current date is before the notBefore date or after the notAfter date.
-    kErrCertsDateInvalid,
+    kErrCertsDateInvalid = 52,
 
     // The certificate failed to chain to a trusted root.
-    kErrCertsVerifyGeneric,
+    kErrCertsVerifyGeneric = 53,
 
     // The certificate was not found in the trust store.
-    kErrCertsVerifyUntrustedCert,
+    kErrCertsVerifyUntrustedCert = 54,
 
     // The CRL is missing or failed to verify.
-    kErrCrlInvalid,
+    kErrCrlInvalid = 55,
 
     // One of the certificates in the chain is revoked.
-    kErrCertsRevoked,
+    kErrCertsRevoked = 56,
 
     // The pathlen constraint of the root certificate was exceeded.
-    kErrCertsPathlen,
+    kErrCertsPathlen = 57,
 
     // The certificate provided could not be serialized.
-    kErrCertSerialize,
+    kErrCertSerialize = 58,
 
     // Cast authentication errors.
-    kCastV2PeerCertEmpty,
-    kCastV2WrongPayloadType,
-    kCastV2NoPayload,
-    kCastV2PayloadParsingFailed,
-    kCastV2MessageError,
-    kCastV2NoResponse,
-    kCastV2FingerprintNotFound,
-    kCastV2CertNotSignedByTrustedCa,
-    kCastV2CannotExtractPublicKey,
-    kCastV2SignedBlobsMismatch,
-    kCastV2TlsCertValidityPeriodTooLong,
-    kCastV2TlsCertValidStartDateInFuture,
-    kCastV2TlsCertExpired,
-    kCastV2SenderNonceMismatch,
-    kCastV2DigestUnsupported,
-    kCastV2SignatureEmpty,
+    kCastV2PeerCertEmpty = 59,
+    kCastV2WrongPayloadType = 60,
+    kCastV2NoPayload = 61,
+    kCastV2PayloadParsingFailed = 62,
+    kCastV2MessageError = 63,
+    kCastV2NoResponse = 64,
+    kCastV2FingerprintNotFound = 65,
+    kCastV2CertNotSignedByTrustedCa = 66,
+    kCastV2CannotExtractPublicKey = 67,
+    kCastV2SignedBlobsMismatch = 68,
+    kCastV2TlsCertValidityPeriodTooLong = 69,
+    kCastV2TlsCertValidStartDateInFuture = 70,
+    kCastV2TlsCertExpired = 71,
+    kCastV2SenderNonceMismatch = 72,
+    kCastV2DigestUnsupported = 73,
+    kCastV2SignatureEmpty = 74,
 
     // Cast channel errors.
-    kCastV2ChannelNotOpen,
-    kCastV2AuthenticationError,
-    kCastV2ConnectError,
-    kCastV2CastSocketError,
-    kCastV2TransportError,
-    kCastV2InvalidMessage,
-    kCastV2InvalidChannelId,
-    kCastV2ConnectTimeout,
-    kCastV2PingTimeout,
-    kCastV2ChannelPolicyMismatch,
+    kCastV2ChannelNotOpen = 75,
+    kCastV2AuthenticationError = 76,
+    kCastV2ConnectError = 77,
+    kCastV2CastSocketError = 78,
+    kCastV2TransportError = 79,
+    kCastV2InvalidMessage = 80,
+    kCastV2InvalidChannelId = 81,
+    kCastV2ConnectTimeout = 82,
+    kCastV2PingTimeout = 83,
+    kCastV2ChannelPolicyMismatch = 84,
 
-    kCreateSignatureFailed,
+    kCreateSignatureFailed = 85,
 
     // Discovery errors.
-    kUpdateReceivedRecordFailure,
-    kRecordPublicationError,
-    kProcessReceivedRecordFailure,
+    kUpdateReceivedRecordFailure = 86,
+    kRecordPublicationError = 87,
+    kProcessReceivedRecordFailure = 88,
 
     // Generic errors.
-    kUnknownError,
-    kNotImplemented,
-    kInsufficientBuffer,
-    kParameterInvalid,
-    kParameterOutOfRange,
-    kParameterNullPointer,
-    kIndexOutOfBounds,
-    kItemAlreadyExists,
-    kItemNotFound,
-    kOperationInvalid,
-    kOperationInProgress,
-    kOperationCancelled,
+    kUnknownError = 89,
+    kNotImplemented = 90,
+    kInsufficientBuffer = 91,
+    kParameterInvalid = 92,
+    kParameterOutOfRange = 93,
+    kParameterNullPointer = 94,
+    kIndexOutOfBounds = 95,
+    kItemAlreadyExists = 96,
+    kItemNotFound = 97,
+    kOperationInvalid = 98,
+    kOperationInProgress = 99,
+    kOperationCancelled = 100,
+    kInterrupted = 101,
 
-    // Cast streaming errors
-    kTypeError,
-    kUnknownCodec,
-    kInvalidCodecParameter,
-    kSocketFailure,
-    kUnencryptedOffer,
-    kRemotingNotSupported,
+    // Cast streaming errors.
+    kUnknownCodec = 102,
+    kInvalidCodecParameter = 103,
+    kSocketFailure = 104,
+    kUnencryptedOffer = 105,
+    kRemotingNotSupported = 106,
+    kNoStreamSelected = 107,
 
     // A negotiation failure means that the current negotiation must be
     // restarted by the sender.
-    kNegotiationFailure,
+    kNegotiationFailure = 108,
   };
 
   Error();

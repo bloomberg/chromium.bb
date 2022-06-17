@@ -82,6 +82,7 @@ set(ENABLE_METAL OFF)
 set(ENABLE_OPENGLES OFF)
 set(ENABLE_DESKTOP_GL OFF)
 set(ENABLE_VULKAN OFF)
+set(USE_WAYLAND OFF)
 set(USE_X11 OFF)
 set(BUILD_SAMPLES OFF)
 if (WIN32)
@@ -124,6 +125,7 @@ option_if_not_defined(DAWN_ENABLE_DESKTOP_GL "Enable compilation of the OpenGL b
 option_if_not_defined(DAWN_ENABLE_OPENGLES "Enable compilation of the OpenGL ES backend" ${ENABLE_OPENGLES})
 option_if_not_defined(DAWN_ENABLE_VULKAN "Enable compilation of the Vulkan backend" ${ENABLE_VULKAN})
 option_if_not_defined(DAWN_ALWAYS_ASSERT "Enable assertions on all build types" OFF)
+option_if_not_defined(DAWN_USE_WAYLAND "Enable support for Wayland surface" ${USE_WAYLAND})
 option_if_not_defined(DAWN_USE_X11 "Enable support for X11 surface" ${USE_X11})
 
 option_if_not_defined(DAWN_BUILD_SAMPLES "Enables building Dawn's samples" ${BUILD_SAMPLES})
@@ -172,6 +174,7 @@ function(common_compile_options TARGET)
     target_compile_options(${TARGET} PRIVATE
       -fno-exceptions
       -fno-rtti
+      -fvisibility-inlines-hidden
     )
 
     if (${DAWN_ENABLE_MSAN})
@@ -230,6 +233,9 @@ if (DAWN_ENABLE_OPENGL)
 endif()
 if (DAWN_ENABLE_VULKAN)
     target_compile_definitions(dawn_internal_config INTERFACE "DAWN_ENABLE_BACKEND_VULKAN")
+endif()
+if (DAWN_USE_WAYLAND)
+    target_compile_definitions(dawn_internal_config INTERFACE "DAWN_USE_WAYLAND")
 endif()
 if (DAWN_USE_X11)
     target_compile_definitions(dawn_internal_config INTERFACE "DAWN_USE_X11")
@@ -564,7 +570,14 @@ endfunction()
 ################################################################################
 
 add_subdirectory(third_party)
+
+# TODO(crbug.com/tint/455): Tint does not currently build with CMake when
+# BUILD_SHARED_LIBS=1, so always build it as static for now.
+set(BUILD_SHARED_LIBS_SAVED ${BUILD_SHARED_LIBS})
+set(BUILD_SHARED_LIBS 0)
 add_subdirectory(src/tint)
+set(BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS_SAVED})
+
 add_subdirectory(generator)
 add_subdirectory(src/dawn)
 

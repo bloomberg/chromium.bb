@@ -2575,6 +2575,20 @@ angle::Result TextureVk::respecifyImageStorageIfNecessary(ContextVk *contextVk, 
         mImageCreateFlags |= VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT;
     }
 
+    if (mState.is3DTextureAndHasBeenBoundAs2DImage())
+    {
+        if (contextVk->getRenderer()->getFeatures().supportsImage2dViewOf3d.enabled)
+        {
+            mImageCreateFlags |= VK_IMAGE_CREATE_2D_VIEW_COMPATIBLE_BIT_EXT;
+        }
+        else
+        {
+            // This image may be used with 2d imageviews, despite being a 3d image
+            // The Vulkan core specification does not permit this behavior
+            // Tolerate the VVL errors and move on
+        }
+    }
+
     // Create a new image if used as attachment for the first time. This must be called before
     // prepareForGenerateMipmap since this changes the format which prepareForGenerateMipmap relies
     // on.
@@ -2665,6 +2679,19 @@ angle::Result TextureVk::respecifyImageStorageIfNecessary(ContextVk *contextVk, 
         ANGLE_TRY(respecifyImageStorage(contextVk));
     }
 
+    return angle::Result::Continue;
+}
+
+angle::Result TextureVk::onLabelUpdate(const gl::Context *context)
+{
+    ContextVk *contextVk = vk::GetImpl(context);
+    RendererVk *renderer = contextVk->getRenderer();
+
+    if (!renderer->enableDebugUtils() && !renderer->angleDebuggerMode() && imageValid())
+    {
+        return vk::SetDebugUtilsObjectName(contextVk, (uint64_t)(getImage().getImage().getHandle()),
+                                           mState.getLabel());
+    }
     return angle::Result::Continue;
 }
 
@@ -2763,6 +2790,26 @@ angle::Result TextureVk::initializeContents(const gl::Context *context,
     return mImage->stageRobustResourceClearWithFormat(
         contextVk, imageIndex, desc.size, format.getIntendedFormat(),
         format.getActualImageFormat(getRequiredImageAccess()));
+}
+
+angle::Result TextureVk::initializeContentsWithBlack(const gl::Context *context,
+                                                     GLenum binding,
+                                                     const gl::ImageIndex &imageIndex)
+{
+    ContextVk *contextVk      = vk::GetImpl(context);
+    const gl::ImageDesc &desc = mState.getImageDesc(imageIndex);
+    const vk::Format &format =
+        contextVk->getRenderer()->getFormat(desc.format.info->sizedInternalFormat);
+
+    VkClearValue clearValue = {};
+    clearValue.color        = {{0, 0, 0, 1.0f}};
+
+    ASSERT(mImage);
+    // Note that we cannot ensure the image is initialized because we might be calling subImage
+    // on a non-complete cube map.
+    return mImage->stageResourceClearWithFormat(
+        contextVk, imageIndex, desc.size, format.getIntendedFormat(),
+        format.getActualImageFormat(getRequiredImageAccess()), clearValue);
 }
 
 void TextureVk::releaseOwnershipOfImage(const gl::Context *context)
@@ -3342,6 +3389,22 @@ vk::ImageOrBufferViewSubresourceSerial TextureVk::getImageViewSubresourceSerialI
 vk::ImageOrBufferViewSubresourceSerial TextureVk::getBufferViewSerial() const
 {
     return mBufferViews.getSerial();
+}
+
+vk::ImageOrBufferViewSubresourceSerial TextureVk::getStorageImageViewSerial(
+    const gl::ImageUnit &binding) const
+{
+    vk::LayerMode layerMode = binding.layered == GL_TRUE ? vk::LayerMode::All : vk::LayerMode::_1;
+    uint32_t frontendLayer  = binding.layered == GL_TRUE ? 0 : static_cast<uint32_t>(binding.layer);
+    uint32_t nativeLayer    = getNativeImageLayer(frontendLayer);
+
+    gl::LevelIndex baseLevel(mState.getEffectiveBaseLevel());
+    // getMipmapMaxLevel will clamp to the max level if it is smaller than the number of mips.
+    uint32_t levelCount = gl::LevelIndex(mState.getMipmapMaxLevel()) - baseLevel + 1;
+
+    return getImageViews().getSubresourceSerial(baseLevel, levelCount, nativeLayer, layerMode,
+                                                vk::SrgbDecodeMode::SkipDecode,
+                                                gl::SrgbOverride::Default);
 }
 
 uint32_t TextureVk::getImageViewLayerCount() const

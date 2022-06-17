@@ -78,6 +78,10 @@ class MaglevGraphBuilder {
     MergePointInterpreterFrameState& merge_state = *merge_states_[offset];
     current_interpreter_frame_.CopyFrom(*compilation_unit_, merge_state);
 
+    // Merges aren't simple fallthroughs, so we should reset the checkpoint
+    // validity.
+    latest_checkpointed_state_.reset();
+
     if (merge_state.predecessor_count() == 1) return;
 
     // Set up edge-split.
@@ -85,8 +89,8 @@ class MaglevGraphBuilder {
     BasicBlockRef* old_jump_targets = jump_targets_[offset].Reset();
     while (old_jump_targets != nullptr) {
       BasicBlock* predecessor = merge_state.predecessor_at(predecessor_index);
-      if (predecessor == nullptr) {
-        // We can have null predecessors if the predecessor is dead.
+      if (predecessor == MergePointInterpreterFrameState::kDeadPredecessor) {
+        // We might have dead predecessors.
         predecessor_index--;
         continue;
       }
@@ -136,21 +140,10 @@ class MaglevGraphBuilder {
     BasicBlock* block = CreateBlock<Deopt>({});
     ResolveJumpsToBlockAtOffset(block, block_offset_);
 
-    // Skip any bytecodes remaining in the block, up to the next merge point
-    // with non-dead predecessors.
-    int saved_offset = iterator_.current_offset();
+    // Consider any bytecodes from here onwards dead, up to the next merge point
+    // with non-dead predecessors. Any control flow encountered is also
+    // considered dead and should mark its successors as dead.
     while (true) {
-      iterator_.Advance();
-      if (iterator_.done()) break;
-
-      if (IsOffsetAMergePoint(iterator_.current_offset())) {
-        // Loops that are unreachable aside from their back-edge are going to
-        // be entirely unreachable, thanks to irreducibility.
-        if (!merge_states_[iterator_.current_offset()]->is_unreachable_loop()) {
-          break;
-        }
-      }
-
       // If the current bytecode is a jump to elsewhere, then this jump is
       // also dead and we should make sure to merge it as a dead predecessor.
       interpreter::Bytecode bytecode = iterator_.current_bytecode();
@@ -178,12 +171,30 @@ class MaglevGraphBuilder {
         // fallthrough.
         MergeDeadIntoFrameState(iterator_.next_offset());
       }
-      saved_offset = iterator_.current_offset();
-    }
 
-    // Restore the offset to before the Advance, so that the bytecode visiting
-    // loop can Advance it again.
-    iterator_.SetOffset(saved_offset);
+      // If the next offset is a merge point, that means another live bytecode
+      // created its merge state and it is reachable. We should stop iterating.
+      if (IsOffsetAMergePoint(iterator_.next_offset())) {
+        // The exception is loops that are unreachable aside from their
+        // back-edge. This back-edge will itself not be reachable, thanks to
+        // irreducibility, so in this case the loop header will still be dead.
+        if (!merge_states_[iterator_.next_offset()]->is_unreachable_loop()) {
+          break;
+        }
+      }
+
+      // Otherwise, move on to the next bytecode. Save the offset in case we
+      // want to rewind the Advance, which we need to do if we fall off the end
+      // of the iterator.
+      // TODO(leszeks): Not having to save the offset would be more elegant, but
+      // then we need to play nicer with the BuildBody loop.
+      int saved_offset = iterator_.current_offset();
+      iterator_.Advance();
+      if (iterator_.done()) {
+        iterator_.SetOffset(saved_offset);
+        break;
+      }
+    }
   }
 
   void VisitSingleBytecode() {
@@ -354,13 +365,24 @@ class MaglevGraphBuilder {
       case ValueRepresentation::kTagged: {
         if (value->Is<CheckedSmiTag>()) {
           return value->input(0).node();
+        } else if (SmiConstant* constant = value->TryCast<SmiConstant>()) {
+          return AddNewNode<Int32Constant>({}, constant->value().value());
         }
         return AddNewConversionNode<CheckedSmiUntag>(reg, value);
       }
       case ValueRepresentation::kInt32:
         return value;
       case ValueRepresentation::kFloat64:
-        // We should not be able to request an Int32 from a Float64 input.
+        // We should not be able to request an Int32 from a Float64 input,
+        // unless it's an unboxing of a tagged value or a conversion from int32.
+        if (value->Is<CheckedFloat64Unbox>()) {
+          // TODO(leszeks): Maybe convert the CheckedFloat64Unbox to
+          // ChangeInt32ToFloat64 with this CheckedSmiUntag as the input.
+          return AddNewConversionNode<CheckedSmiUntag>(reg,
+                                                       value->input(0).node());
+        } else if (value->Is<ChangeInt32ToFloat64>()) {
+          return value->input(0).node();
+        }
         UNREACHABLE();
     }
     UNREACHABLE();
@@ -476,10 +498,16 @@ class MaglevGraphBuilder {
     return iterator_.current_offset() + iterator_.current_bytecode_size();
   }
   const compiler::BytecodeLivenessState* GetInLiveness() const {
-    return bytecode_analysis().GetInLivenessFor(iterator_.current_offset());
+    return GetInLivenessFor(iterator_.current_offset());
+  }
+  const compiler::BytecodeLivenessState* GetInLivenessFor(int offset) const {
+    return bytecode_analysis().GetInLivenessFor(offset);
   }
   const compiler::BytecodeLivenessState* GetOutLiveness() const {
-    return bytecode_analysis().GetOutLivenessFor(iterator_.current_offset());
+    return GetOutLivenessFor(iterator_.current_offset());
+  }
+  const compiler::BytecodeLivenessState* GetOutLivenessFor(int offset) const {
+    return bytecode_analysis().GetOutLivenessFor(offset);
   }
 
   void StartNewBlock(int offset) {
@@ -524,11 +552,6 @@ class MaglevGraphBuilder {
         CreateBlock<ControlNodeT>(control_inputs, std::forward<Args>(args)...);
     ResolveJumpsToBlockAtOffset(block, block_offset_);
 
-    // If the next block has merge states, then it's not a simple fallthrough,
-    // and we should reset the checkpoint validity.
-    if (merge_states_[next_block_offset] != nullptr) {
-      latest_checkpointed_state_.reset();
-    }
     // Start a new block for the fallthrough path, unless it's a merge point, in
     // which case we merge our state into it. That merge-point could also be a
     // loop header, in which case the merge state might not exist yet (if the
@@ -553,6 +576,15 @@ class MaglevGraphBuilder {
                               ConvertReceiverMode receiver_mode);
 
   void BuildPropertyCellAccess(const compiler::PropertyCellRef& property_cell);
+
+  bool TryBuildMonomorphicLoad(ValueNode* object, const compiler::MapRef& map,
+                               MaybeObjectHandle handler);
+  bool TryBuildMonomorphicLoadFromSmiHandler(ValueNode* object,
+                                             const compiler::MapRef& map,
+                                             int32_t handler);
+  bool TryBuildMonomorphicLoadFromLoadHandler(ValueNode* object,
+                                              const compiler::MapRef& map,
+                                              LoadHandler handler);
 
   template <Operation kOperation>
   void BuildGenericUnaryOperationNode();
@@ -583,6 +615,11 @@ class MaglevGraphBuilder {
   void VisitBinaryOperation();
   template <Operation kOperation>
   void VisitBinarySmiOperation();
+
+  bool TryBuildCompareOperationBranch(Operation operation, ValueNode* left,
+                                      ValueNode* right);
+  template <Operation kOperation>
+  void VisitCompareOperation();
 
   void MergeIntoFrameState(BasicBlock* block, int target);
   void MergeDeadIntoFrameState(int target);

@@ -376,6 +376,13 @@ static void dump_video_param(AVCodecContext *avctx, QSVEncContext *q,
 #if QSV_VERSION_ATLEAST(1, 16)
     av_log(avctx, AV_LOG_VERBOSE, "IntRefCycleDist: %"PRId16"\n", co3->IntRefCycleDist);
 #endif
+#if QSV_VERSION_ATLEAST(1, 23)
+    av_log(avctx, AV_LOG_VERBOSE, "LowDelayBRC: %s\n", print_threestate(co3->LowDelayBRC));
+#endif
+#if QSV_VERSION_ATLEAST(1, 19)
+    av_log(avctx, AV_LOG_VERBOSE, "MaxFrameSizeI: %d; ", co3->MaxFrameSizeI);
+    av_log(avctx, AV_LOG_VERBOSE, "MaxFrameSizeP: %d\n", co3->MaxFrameSizeP);
+#endif
 }
 
 static void dump_video_vp9_param(AVCodecContext *avctx, QSVEncContext *q,
@@ -990,6 +997,16 @@ static int init_video_param(AVCodecContext *avctx, QSVEncContext *q)
 #if QSV_VERSION_ATLEAST(1, 16)
             if (q->int_ref_cycle_dist >= 0)
                 q->extco3.IntRefCycleDist = q->int_ref_cycle_dist;
+#endif
+#if QSV_VERSION_ATLEAST(1, 23)
+            if (q->low_delay_brc >= 0)
+                q->extco3.LowDelayBRC = q->low_delay_brc ? MFX_CODINGOPTION_ON : MFX_CODINGOPTION_OFF;
+#endif
+#if QSV_VERSION_ATLEAST(1, 19)
+            if (q->max_frame_size_i >= 0)
+                q->extco3.MaxFrameSizeI = q->max_frame_size_i;
+            if (q->max_frame_size_p >= 0)
+                q->extco3.MaxFrameSizeP = q->max_frame_size_p;
 #endif
         }
 
@@ -1606,32 +1623,10 @@ static int submit_frame(QSVEncContext *q, const AVFrame *frame,
         else if (frame->repeat_pict == 4)
             qf->surface.Info.PicStruct |= MFX_PICSTRUCT_FRAME_TRIPLING;
 
-        qf->surface.Data.PitchLow  = qf->frame->linesize[0];
-        qf->surface.Data.Y         = qf->frame->data[0];
-        qf->surface.Data.UV        = qf->frame->data[1];
-
-        /* The SDK checks Data.V when using system memory for VP9 encoding */
-        switch (frame->format) {
-        case AV_PIX_FMT_NV12:
-            qf->surface.Data.V     = qf->surface.Data.UV + 1;
-            break;
-
-        case AV_PIX_FMT_P010:
-            qf->surface.Data.V     = qf->surface.Data.UV + 2;
-            break;
-
-        case AV_PIX_FMT_X2RGB10:
-        case AV_PIX_FMT_BGRA:
-            qf->surface.Data.B         = qf->frame->data[0];
-            qf->surface.Data.G         = qf->frame->data[0] + 1;
-            qf->surface.Data.R         = qf->frame->data[0] + 2;
-            qf->surface.Data.A         = qf->frame->data[0] + 3;
-            break;
-
-        default:
-            /* should not reach here */
-            av_assert0(0);
-            break;
+        ret = ff_qsv_map_frame_to_surface(qf->frame, &qf->surface);
+        if (ret < 0) {
+            av_log(q->avctx, AV_LOG_ERROR, "map frame to surface failed.\n");
+            return ret;
         }
     }
     qf->surface.Data.TimeStamp = av_rescale_q(frame->pts, q->avctx->time_base, (AVRational){1, 90000});

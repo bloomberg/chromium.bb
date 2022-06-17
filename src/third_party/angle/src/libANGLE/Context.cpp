@@ -1401,6 +1401,7 @@ void Context::bindTransformFeedback(GLenum target, TransformFeedbackID transform
     TransformFeedback *transformFeedback =
         checkTransformFeedbackAllocation(transformFeedbackHandle);
     mState.setTransformFeedbackBinding(this, transformFeedback);
+    mStateCache.onActiveTransformFeedbackChange(this);
 }
 
 void Context::bindProgramPipeline(ProgramPipelineID pipelineHandle)
@@ -3592,7 +3593,6 @@ Extensions Context::generateSupportedExtensions() const
         // Disable ES3+ extensions
         supportedExtensions.colorBufferFloatEXT          = false;
         supportedExtensions.EGLImageExternalEssl3OES     = false;
-        supportedExtensions.textureNorm16EXT             = false;
         supportedExtensions.multiviewOVR                 = false;
         supportedExtensions.multiview2OVR                = false;
         supportedExtensions.multiviewMultisampleANGLE    = false;
@@ -3602,6 +3602,14 @@ Extensions Context::generateSupportedExtensions() const
         supportedExtensions.drawBuffersIndexedOES        = false;
         supportedExtensions.EGLImageArrayEXT             = false;
         supportedExtensions.textureFormatSRGBOverrideEXT = false;
+
+        // Support GL_EXT_texture_norm16 on non-WebGL ES2 contexts. This is needed for R16/RG16
+        // texturing for HDR video playback in Chromium which uses ES2 for compositor contexts.
+        // Remove this workaround after Chromium migrates to ES3 for compositor contexts.
+        if (mWebGLContext || getClientVersion() < ES_2_0)
+        {
+            supportedExtensions.textureNorm16EXT = false;
+        }
 
         // Requires immutable textures
         supportedExtensions.yuvInternalFormatANGLE = false;
@@ -3979,7 +3987,12 @@ void Context::initCaps()
 
     ANGLE_LIMIT_CAP(mState.mCaps.maxFramebufferLayers, IMPLEMENTATION_MAX_FRAMEBUFFER_LAYERS);
 
-    ANGLE_LIMIT_CAP(mState.mCaps.maxSampleMaskWords, MAX_SAMPLE_MASK_WORDS);
+    ANGLE_LIMIT_CAP(mState.mCaps.maxSampleMaskWords, IMPLEMENTATION_MAX_SAMPLE_MASK_WORDS);
+    ANGLE_LIMIT_CAP(mState.mCaps.maxSamples, IMPLEMENTATION_MAX_SAMPLES);
+    ANGLE_LIMIT_CAP(mState.mCaps.maxFramebufferSamples, IMPLEMENTATION_MAX_SAMPLES);
+    ANGLE_LIMIT_CAP(mState.mCaps.maxColorTextureSamples, IMPLEMENTATION_MAX_SAMPLES);
+    ANGLE_LIMIT_CAP(mState.mCaps.maxDepthTextureSamples, IMPLEMENTATION_MAX_SAMPLES);
+    ANGLE_LIMIT_CAP(mState.mCaps.maxIntegerSamples, IMPLEMENTATION_MAX_SAMPLES);
 
     ANGLE_LIMIT_CAP(mState.mCaps.maxViews, IMPLEMENTATION_ANGLE_MULTIVIEW_MAX_VIEWS);
 
@@ -4101,6 +4114,11 @@ void Context::initCaps()
                << maxShaderStorageBufferBindings;
         ANGLE_LIMIT_CAP(mState.mCaps.maxShaderStorageBufferBindings,
                         maxShaderStorageBufferBindings);
+        for (gl::ShaderType shaderType : gl::AllShaderTypes())
+        {
+            ANGLE_LIMIT_CAP(mState.mCaps.maxShaderStorageBlocks[shaderType],
+                            maxShaderStorageBufferBindings);
+        }
     }
 
     // Disable support for OES_get_program_binary
@@ -6742,6 +6760,25 @@ void Context::drawArraysInstancedBaseInstance(PrimitiveMode mode,
     MarkTransformFeedbackBufferUsage(this, count, 1);
 }
 
+void Context::drawArraysInstancedBaseInstanceANGLE(PrimitiveMode mode,
+                                                   GLint first,
+                                                   GLsizei count,
+                                                   GLsizei instanceCount,
+                                                   GLuint baseInstance)
+{
+    drawArraysInstancedBaseInstance(mode, first, count, instanceCount, baseInstance);
+}
+
+void Context::drawElementsInstancedBaseInstance(GLenum mode,
+                                                GLsizei count,
+                                                GLenum type,
+                                                const void *indices,
+                                                GLsizei instancecount,
+                                                GLuint baseinstance)
+{
+    UNIMPLEMENTED();
+}
+
 void Context::drawElementsInstancedBaseVertexBaseInstance(PrimitiveMode mode,
                                                           GLsizei count,
                                                           DrawElementsType type,
@@ -6775,6 +6812,18 @@ void Context::drawElementsInstancedBaseVertexBaseInstance(PrimitiveMode mode,
 
     ANGLE_CONTEXT_TRY(mImplementation->drawElementsInstancedBaseVertexBaseInstance(
         this, mode, count, type, indices, instanceCount, baseVertex, baseInstance));
+}
+
+void Context::drawElementsInstancedBaseVertexBaseInstanceANGLE(PrimitiveMode mode,
+                                                               GLsizei count,
+                                                               DrawElementsType type,
+                                                               const GLvoid *indices,
+                                                               GLsizei instanceCount,
+                                                               GLint baseVertex,
+                                                               GLuint baseInstance)
+{
+    drawElementsInstancedBaseVertexBaseInstance(mode, count, type, indices, instanceCount,
+                                                baseVertex, baseInstance);
 }
 
 void Context::multiDrawArraysInstancedBaseInstance(PrimitiveMode mode,
@@ -9687,9 +9736,9 @@ void ErrorSet::handleError(GLenum errorCode,
     ASSERT(errorCode != GL_NO_ERROR);
     mErrors.insert(errorCode);
 
-    mContext->getState().getDebug().insertMessage(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_ERROR,
-                                                  errorCode, GL_DEBUG_SEVERITY_HIGH, message,
-                                                  gl::LOG_WARN, angle::EntryPoint::GLInvalid);
+    mContext->getState().getDebug().insertMessage(
+        GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_ERROR, errorCode, GL_DEBUG_SEVERITY_HIGH,
+        std::move(formattedMessage), gl::LOG_WARN, angle::EntryPoint::GLInvalid);
 }
 
 void ErrorSet::validationError(angle::EntryPoint entryPoint, GLenum errorCode, const char *message)

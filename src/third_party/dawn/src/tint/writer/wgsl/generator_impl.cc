@@ -62,12 +62,12 @@ GeneratorImpl::~GeneratorImpl() = default;
 
 bool GeneratorImpl::Generate() {
     // Generate enable directives before any other global declarations.
-    for (auto ext : program_->AST().Extensions()) {
-        if (!EmitEnableDirective(ext)) {
+    for (auto enable : program_->AST().Enables()) {
+        if (!EmitEnable(enable)) {
             return false;
         }
     }
-    if (!program_->AST().Extensions().empty()) {
+    if (!program_->AST().Enables().empty()) {
         line();
     }
     // Generate global declarations in the order they appear in the module.
@@ -94,13 +94,9 @@ bool GeneratorImpl::Generate() {
     return true;
 }
 
-bool GeneratorImpl::EmitEnableDirective(const ast::Enable::ExtensionKind ext) {
+bool GeneratorImpl::EmitEnable(const ast::Enable* enable) {
     auto out = line();
-    auto extension = ast::Enable::KindToName(ext);
-    if (extension == "") {
-        return false;
-    }
-    out << "enable " << extension << ";";
+    out << "enable " << enable->extension << ";";
     return true;
 }
 
@@ -262,7 +258,7 @@ bool GeneratorImpl::EmitLiteral(std::ostream& out, const ast::LiteralExpression*
             return true;
         },
         [&](const ast::FloatLiteralExpression* l) {  //
-            out << FloatToBitPreservingString(static_cast<float>(l->value));
+            out << FloatToBitPreservingString(static_cast<float>(l->value)) << l->suffix;
             return true;
         },
         [&](const ast::IntLiteralExpression* l) {  //
@@ -404,6 +400,11 @@ bool GeneratorImpl::EmitType(std::ostream& out, const ast::Type* ty) {
         [&](const ast::F32*) {
             out << "f32";
             return true;
+        },
+        [&](const ast::F16*) {
+            diagnostics_.add_error(diag::System::Writer,
+                                   "Type f16 is not completely implemented yet.");
+            return false;
         },
         [&](const ast::I32*) {
             out << "i32";
@@ -709,7 +710,7 @@ bool GeneratorImpl::EmitAttributes(std::ostream& out, const ast::AttributeList& 
                 return true;
             },
             [&](const ast::StageAttribute* stage) {
-                out << "stage(" << stage->stage << ")";
+                out << stage->stage;
                 return true;
             },
             [&](const ast::BindingAttribute* binding) {

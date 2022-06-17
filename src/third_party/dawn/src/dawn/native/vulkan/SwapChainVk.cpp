@@ -115,7 +115,7 @@ ResultOrError<VkSurfaceKHR> CreateVulkanSurface(Adapter* adapter, Surface* surfa
             break;
 #endif  // defined(DAWN_ENABLE_BACKEND_METAL)
 
-#if defined(DAWN_PLATFORM_WINDOWS)
+#if DAWN_PLATFORM_IS(WINDOWS)
         case Surface::Type::WindowsHWND:
             if (info.HasExt(InstanceExt::Win32Surface)) {
                 VkWin32SurfaceCreateInfoKHR createInfo;
@@ -132,9 +132,9 @@ ResultOrError<VkSurfaceKHR> CreateVulkanSurface(Adapter* adapter, Surface* surfa
                 return vkSurface;
             }
             break;
-#endif  // defined(DAWN_PLATFORM_WINDOWS)
+#endif  // DAWN_PLATFORM_IS(WINDOWS)
 
-#if defined(DAWN_PLATFORM_ANDROID)
+#if DAWN_PLATFORM_IS(ANDROID)
         case Surface::Type::AndroidWindow: {
             if (info.HasExt(InstanceExt::AndroidSurface)) {
                 ASSERT(surface->GetAndroidNativeWindow() != nullptr);
@@ -156,7 +156,27 @@ ResultOrError<VkSurfaceKHR> CreateVulkanSurface(Adapter* adapter, Surface* surfa
             break;
         }
 
-#endif  // defined(DAWN_PLATFORM_ANDROID)
+#endif  // DAWN_PLATFORM_IS(ANDROID)
+
+#if defined(DAWN_USE_WAYLAND)
+        case Surface::Type::WaylandSurface: {
+            if (info.HasExt(InstanceExt::XlibSurface)) {
+                VkWaylandSurfaceCreateInfoKHR createInfo;
+                createInfo.sType = VK_STRUCTURE_TYPE_WAYLAND_SURFACE_CREATE_INFO_KHR;
+                createInfo.pNext = nullptr;
+                createInfo.flags = 0;
+                createInfo.display = static_cast<struct wl_display*>(surface->GetWaylandDisplay());
+                createInfo.surface = static_cast<struct wl_surface*>(surface->GetWaylandSurface());
+
+                VkSurfaceKHR vkSurface = VK_NULL_HANDLE;
+                DAWN_TRY(CheckVkSuccess(
+                    fn.CreateWaylandSurfaceKHR(instance, &createInfo, nullptr, &*vkSurface),
+                    "CreateWaylandSurface"));
+                return vkSurface;
+            }
+            break;
+        }
+#endif  // defined(DAWN_USE_WAYLAND)
 
 #if defined(DAWN_USE_X11)
         case Surface::Type::XlibWindow: {
@@ -429,7 +449,7 @@ ResultOrError<SwapChain::Config> SwapChain::ChooseConfig(
     config.transform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
 
     config.alphaMode = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-#if !defined(DAWN_PLATFORM_ANDROID)
+#if !DAWN_PLATFORM_IS(ANDROID)
     DAWN_INVALID_IF(
         (surfaceInfo.capabilities.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR) == 0,
         "Vulkan SwapChain must support opaque alpha.");
@@ -447,7 +467,7 @@ ResultOrError<SwapChain::Config> SwapChain::ChooseConfig(
             break;
         }
     }
-#endif  // #if !defined(DAWN_PLATFORM_ANDROID)
+#endif  // #if !DAWN_PLATFORM_IS(ANDROID)
 
     // Choose the number of images for the swapchain= and clamp it to the min and max from the
     // surface capabilities. maxImageCount = 0 means there is no limit.

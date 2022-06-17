@@ -50,6 +50,7 @@ Parameters:
         'texture_cube_array',
         'texture_multisampled_2d',
       ] as const)
+      .beginSubcases()
       .combine('sampled_type', ['f32', 'i32', 'u32'] as const)
       .combine('level', [undefined, 0, 1, 'textureNumLevels', 'textureNumLevels+1'] as const)
   )
@@ -85,6 +86,7 @@ Parameters:
         'texture_depth_cube_array',
         'texture_depth_multisampled_2d',
       ])
+      .beginSubcases()
       .combine('level', [undefined, 0, 1, 'textureNumLevels', 'textureNumLevels+1'] as const)
   )
   .unimplemented();
@@ -140,6 +142,7 @@ Parameters:
         'rgba32sint',
         'rgba32float',
       ] as const)
+      .beginSubcases()
       .combine('access_mode', ['read', 'write', 'read_write'] as const)
   )
   .unimplemented();

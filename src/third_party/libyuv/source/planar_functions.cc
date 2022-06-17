@@ -35,6 +35,9 @@ void CopyPlane(const uint8_t* src_y,
                int height) {
   int y;
   void (*CopyRow)(const uint8_t* src, uint8_t* dst, int width) = CopyRow_C;
+  if (width <= 0 || height == 0) {
+    return;
+  }
   // Negative height means invert the image.
   if (height < 0) {
     height = -height;
@@ -81,8 +84,6 @@ void CopyPlane(const uint8_t* src_y,
   }
 }
 
-// TODO(fbarchard): Consider support for negative height.
-// TODO(fbarchard): Consider stride measured in bytes.
 LIBYUV_API
 void CopyPlane_16(const uint16_t* src_y,
                   int src_stride_y,
@@ -90,36 +91,8 @@ void CopyPlane_16(const uint16_t* src_y,
                   int dst_stride_y,
                   int width,
                   int height) {
-  int y;
-  void (*CopyRow)(const uint16_t* src, uint16_t* dst, int width) = CopyRow_16_C;
-  // Coalesce rows.
-  if (src_stride_y == width && dst_stride_y == width) {
-    width *= height;
-    height = 1;
-    src_stride_y = dst_stride_y = 0;
-  }
-#if defined(HAS_COPYROW_16_SSE2)
-  if (TestCpuFlag(kCpuHasSSE2) && IS_ALIGNED(width, 32)) {
-    CopyRow = CopyRow_16_SSE2;
-  }
-#endif
-#if defined(HAS_COPYROW_16_ERMS)
-  if (TestCpuFlag(kCpuHasERMS)) {
-    CopyRow = CopyRow_16_ERMS;
-  }
-#endif
-#if defined(HAS_COPYROW_16_NEON)
-  if (TestCpuFlag(kCpuHasNEON) && IS_ALIGNED(width, 32)) {
-    CopyRow = CopyRow_16_NEON;
-  }
-#endif
-
-  // Copy plane
-  for (y = 0; y < height; ++y) {
-    CopyRow(src_y, dst_y, width);
-    src_y += src_stride_y;
-    dst_y += dst_stride_y;
-  }
+  CopyPlane((const uint8_t*)src_y, src_stride_y * 2, (uint8_t*)dst_y,
+            dst_stride_y * 2, width * 2, height);
 }
 
 // Convert a plane of 16 bit data to 8 bit
@@ -135,6 +108,9 @@ void Convert16To8Plane(const uint16_t* src_y,
   void (*Convert16To8Row)(const uint16_t* src_y, uint8_t* dst_y, int scale,
                           int width) = Convert16To8Row_C;
 
+  if (width <= 0 || height == 0) {
+    return;
+  }
   // Negative height means invert the image.
   if (height < 0) {
     height = -height;
@@ -147,6 +123,14 @@ void Convert16To8Plane(const uint16_t* src_y,
     height = 1;
     src_stride_y = dst_stride_y = 0;
   }
+#if defined(HAS_CONVERT16TO8ROW_NEON)
+  if (TestCpuFlag(kCpuHasNEON)) {
+    Convert16To8Row = Convert16To8Row_Any_NEON;
+    if (IS_ALIGNED(width, 16)) {
+      Convert16To8Row = Convert16To8Row_NEON;
+    }
+  }
+#endif
 #if defined(HAS_CONVERT16TO8ROW_SSSE3)
   if (TestCpuFlag(kCpuHasSSSE3)) {
     Convert16To8Row = Convert16To8Row_Any_SSSE3;
@@ -185,6 +169,9 @@ void Convert8To16Plane(const uint8_t* src_y,
   void (*Convert8To16Row)(const uint8_t* src_y, uint16_t* dst_y, int scale,
                           int width) = Convert8To16Row_C;
 
+  if (width <= 0 || height == 0) {
+    return;
+  }
   // Negative height means invert the image.
   if (height < 0) {
     height = -height;
@@ -459,6 +446,9 @@ void SplitUVPlane(const uint8_t* src_uv,
   int y;
   void (*SplitUVRow)(const uint8_t* src_uv, uint8_t* dst_u, uint8_t* dst_v,
                      int width) = SplitUVRow_C;
+  if (width <= 0 || height == 0) {
+    return;
+  }
   // Negative height means invert the image.
   if (height < 0) {
     height = -height;
@@ -536,6 +526,9 @@ void MergeUVPlane(const uint8_t* src_u,
   int y;
   void (*MergeUVRow)(const uint8_t* src_u, const uint8_t* src_v,
                      uint8_t* dst_uv, int width) = MergeUVRow_C;
+  if (width <= 0 || height == 0) {
+    return;
+  }
   // Negative height means invert the image.
   if (height < 0) {
     height = -height;
@@ -615,6 +608,9 @@ void SplitUVPlane_16(const uint16_t* src_uv,
   void (*SplitUVRow_16)(const uint16_t* src_uv, uint16_t* dst_u,
                         uint16_t* dst_v, int depth, int width) =
       SplitUVRow_16_C;
+  if (width <= 0 || height == 0) {
+    return;
+  }
   // Negative height means invert the image.
   if (height < 0) {
     height = -height;
@@ -672,6 +668,9 @@ void MergeUVPlane_16(const uint16_t* src_u,
       MergeUVRow_16_C;
   assert(depth >= 8);
   assert(depth <= 16);
+  if (width <= 0 || height == 0) {
+    return;
+  }
   // Negative height means invert the image.
   if (height < 0) {
     height = -height;
@@ -724,6 +723,9 @@ void ConvertToMSBPlane_16(const uint16_t* src_y,
   int scale = 1 << (16 - depth);
   void (*MultiplyRow_16)(const uint16_t* src_y, uint16_t* dst_y, int scale,
                          int width) = MultiplyRow_16_C;
+  if (width <= 0 || height == 0) {
+    return;
+  }
   // Negative height means invert the image.
   if (height < 0) {
     height = -height;
@@ -774,6 +776,9 @@ void ConvertToLSBPlane_16(const uint16_t* src_y,
   int scale = 1 << depth;
   void (*DivideRow)(const uint16_t* src_y, uint16_t* dst_y, int scale,
                     int width) = DivideRow_16_C;
+  if (width <= 0 || height == 0) {
+    return;
+  }
   // Negative height means invert the image.
   if (height < 0) {
     height = -height;
@@ -822,6 +827,9 @@ void SwapUVPlane(const uint8_t* src_uv,
   int y;
   void (*SwapUVRow)(const uint8_t* src_uv, uint8_t* dst_vu, int width) =
       SwapUVRow_C;
+  if (width <= 0 || height == 0) {
+    return;
+  }
   // Negative height means invert the image.
   if (height < 0) {
     height = -height;
@@ -925,6 +933,9 @@ void DetilePlane(const uint8_t* src_y,
   assert(tile_height > 0);
   assert(src_stride_y > 0);
 
+  if (width <= 0 || height == 0) {
+    return;
+  }
   // Negative height means invert the image.
   if (height < 0) {
     height = -height;
@@ -980,6 +991,9 @@ void DetileSplitUVPlane(const uint8_t* src_uv,
   assert(tile_height > 0);
   assert(src_stride_uv > 0);
 
+  if (width <= 0 || height == 0) {
+    return;
+  }
   // Negative height means invert the image.
   if (height < 0) {
     height = -height;
@@ -1035,6 +1049,9 @@ void SplitRGBPlane(const uint8_t* src_rgb,
   int y;
   void (*SplitRGBRow)(const uint8_t* src_rgb, uint8_t* dst_r, uint8_t* dst_g,
                       uint8_t* dst_b, int width) = SplitRGBRow_C;
+  if (width <= 0 || height == 0) {
+    return;
+  }
   // Negative height means invert the image.
   if (height < 0) {
     height = -height;
@@ -1094,6 +1111,9 @@ void MergeRGBPlane(const uint8_t* src_r,
   void (*MergeRGBRow)(const uint8_t* src_r, const uint8_t* src_g,
                       const uint8_t* src_b, uint8_t* dst_rgb, int width) =
       MergeRGBRow_C;
+  if (width <= 0 || height == 0) {
+    return;
+  }
   // Coalesce rows.
   // Negative height means invert the image.
   if (height < 0) {
@@ -2053,6 +2073,73 @@ int YUY2ToY(const uint8_t* src_yuy2,
   return 0;
 }
 
+// Convert UYVY to Y.
+LIBYUV_API
+int UYVYToY(const uint8_t* src_uyvy,
+            int src_stride_uyvy,
+            uint8_t* dst_y,
+            int dst_stride_y,
+            int width,
+            int height) {
+  int y;
+  void (*UYVYToYRow)(const uint8_t* src_uyvy, uint8_t* dst_y, int width) =
+      UYVYToYRow_C;
+  if (!src_uyvy || !dst_y || width <= 0 || height == 0) {
+    return -1;
+  }
+  // Negative height means invert the image.
+  if (height < 0) {
+    height = -height;
+    src_uyvy = src_uyvy + (height - 1) * src_stride_uyvy;
+    src_stride_uyvy = -src_stride_uyvy;
+  }
+  // Coalesce rows.
+  if (src_stride_uyvy == width * 2 && dst_stride_y == width) {
+    width *= height;
+    height = 1;
+    src_stride_uyvy = dst_stride_y = 0;
+  }
+#if defined(HAS_UYVYTOYROW_SSE2)
+  if (TestCpuFlag(kCpuHasSSE2)) {
+    UYVYToYRow = UYVYToYRow_Any_SSE2;
+    if (IS_ALIGNED(width, 16)) {
+      UYVYToYRow = UYVYToYRow_SSE2;
+    }
+  }
+#endif
+#if defined(HAS_UYVYTOYROW_AVX2)
+  if (TestCpuFlag(kCpuHasAVX2)) {
+    UYVYToYRow = UYVYToYRow_Any_AVX2;
+    if (IS_ALIGNED(width, 32)) {
+      UYVYToYRow = UYVYToYRow_AVX2;
+    }
+  }
+#endif
+#if defined(HAS_UYVYTOYROW_NEON)
+  if (TestCpuFlag(kCpuHasNEON)) {
+    UYVYToYRow = UYVYToYRow_Any_NEON;
+    if (IS_ALIGNED(width, 16)) {
+      UYVYToYRow = UYVYToYRow_NEON;
+    }
+  }
+#endif
+#if defined(HAS_UYVYTOYROW_MSA)
+  if (TestCpuFlag(kCpuHasMSA)) {
+    UYVYToYRow = UYVYToYRow_Any_MSA;
+    if (IS_ALIGNED(width, 32)) {
+      UYVYToYRow = UYVYToYRow_MSA;
+    }
+  }
+#endif
+
+  for (y = 0; y < height; ++y) {
+    UYVYToYRow(src_uyvy, dst_y, width);
+    src_uyvy += src_stride_uyvy;
+    dst_y += dst_stride_y;
+  }
+  return 0;
+}
+
 // Mirror a plane of data.
 // See Also I400Mirror
 LIBYUV_API
@@ -2981,6 +3068,10 @@ void SetPlane(uint8_t* dst_y,
               uint32_t value) {
   int y;
   void (*SetRow)(uint8_t * dst, uint8_t value, int width) = SetRow_C;
+
+  if (width <= 0 || height == 0) {
+    return;
+  }
   if (height < 0) {
     height = -height;
     dst_y = dst_y + (height - 1) * dst_stride_y;
@@ -3920,6 +4011,86 @@ int InterpolatePlane(const uint8_t* src0,
 
   for (y = 0; y < height; ++y) {
     InterpolateRow(dst, src0, src1 - src0, width, interpolation);
+    src0 += src_stride0;
+    src1 += src_stride1;
+    dst += dst_stride;
+  }
+  return 0;
+}
+
+// Interpolate 2 planes by specified amount (0 to 255).
+LIBYUV_API
+int InterpolatePlane_16(const uint16_t* src0,
+                        int src_stride0,
+                        const uint16_t* src1,
+                        int src_stride1,
+                        uint16_t* dst,
+                        int dst_stride,
+                        int width,
+                        int height,
+                        int interpolation) {
+  int y;
+  void (*InterpolateRow_16)(uint16_t * dst_ptr, const uint16_t* src_ptr,
+                            ptrdiff_t src_stride, int dst_width,
+                            int source_y_fraction) = InterpolateRow_16_C;
+  if (!src0 || !src1 || !dst || width <= 0 || height == 0) {
+    return -1;
+  }
+  // Negative height means invert the image.
+  if (height < 0) {
+    height = -height;
+    dst = dst + (height - 1) * dst_stride;
+    dst_stride = -dst_stride;
+  }
+  // Coalesce rows.
+  if (src_stride0 == width && src_stride1 == width && dst_stride == width) {
+    width *= height;
+    height = 1;
+    src_stride0 = src_stride1 = dst_stride = 0;
+  }
+#if defined(HAS_INTERPOLATEROW_16_SSSE3)
+  if (TestCpuFlag(kCpuHasSSSE3)) {
+    InterpolateRow_16 = InterpolateRow_16_Any_SSSE3;
+    if (IS_ALIGNED(width, 16)) {
+      InterpolateRow_16 = InterpolateRow_16_SSSE3;
+    }
+  }
+#endif
+#if defined(HAS_INTERPOLATEROW_16_AVX2)
+  if (TestCpuFlag(kCpuHasAVX2)) {
+    InterpolateRow_16 = InterpolateRow_16_Any_AVX2;
+    if (IS_ALIGNED(width, 32)) {
+      InterpolateRow_16 = InterpolateRow_16_AVX2;
+    }
+  }
+#endif
+#if defined(HAS_INTERPOLATEROW_16_NEON)
+  if (TestCpuFlag(kCpuHasNEON)) {
+    InterpolateRow_16 = InterpolateRow_16_Any_NEON;
+    if (IS_ALIGNED(width, 8)) {
+      InterpolateRow_16 = InterpolateRow_16_NEON;
+    }
+  }
+#endif
+#if defined(HAS_INTERPOLATEROW_16_MSA)
+  if (TestCpuFlag(kCpuHasMSA)) {
+    InterpolateRow_16 = InterpolateRow_16_Any_MSA;
+    if (IS_ALIGNED(width, 32)) {
+      InterpolateRow_16 = InterpolateRow_16_MSA;
+    }
+  }
+#endif
+#if defined(HAS_INTERPOLATEROW_16_LSX)
+  if (TestCpuFlag(kCpuHasLSX)) {
+    InterpolateRow_16 = InterpolateRow_16_Any_LSX;
+    if (IS_ALIGNED(width, 32)) {
+      InterpolateRow_16 = InterpolateRow_16_LSX;
+    }
+  }
+#endif
+
+  for (y = 0; y < height; ++y) {
+    InterpolateRow_16(dst, src0, src1 - src0, width, interpolation);
     src0 += src_stride0;
     src1 += src_stride1;
     dst += dst_stride;

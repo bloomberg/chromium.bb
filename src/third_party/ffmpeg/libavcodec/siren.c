@@ -703,12 +703,11 @@ static int decode_vector(SirenContext *s, int number_of_regions,
     return error == 1 ? AVERROR_INVALIDDATA : (get_bits_left(gb) - s->checksum_bits);
 }
 
-static int siren_decode(AVCodecContext *avctx, void *data,
+static int siren_decode(AVCodecContext *avctx, AVFrame *frame,
                         int *got_frame, AVPacket *avpkt)
 {
     SirenContext *s = avctx->priv_data;
     GetBitContext *gb = &s->gb;
-    AVFrame *frame = data;
     int ret, number_of_valid_coefs = REGION_SIZE * s->number_of_regions;
     int frame_error = 0, rate_control = 0;
     int bits_per_frame;
@@ -850,7 +849,7 @@ const FFCodec ff_siren_decoder = {
     .p.id           = AV_CODEC_ID_SIREN,
     .init           = siren_init,
     .close          = siren_close,
-    .decode         = siren_decode,
+    FF_CODEC_DECODE_CB(siren_decode),
     .flush          = siren_flush,
     .p.capabilities = AV_CODEC_CAP_CHANNEL_CONF |
                       AV_CODEC_CAP_DR1,
@@ -866,7 +865,7 @@ const FFCodec ff_msnsiren_decoder = {
     .p.id           = AV_CODEC_ID_MSNSIREN,
     .init           = siren_init,
     .close          = siren_close,
-    .decode         = siren_decode,
+    FF_CODEC_DECODE_CB(siren_decode),
     .flush          = siren_flush,
     .p.capabilities = AV_CODEC_CAP_CHANNEL_CONF |
                       AV_CODEC_CAP_DR1,

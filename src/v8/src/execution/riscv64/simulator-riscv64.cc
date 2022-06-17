@@ -88,6 +88,7 @@
 // PURPOSE. THE SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED
 // HEREUNDER IS PROVIDED "AS IS". REGENTS HAS NO OBLIGATION TO PROVIDE
 // MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+#ifdef CAN_USE_RVV_INSTRUCTIONS
 static inline bool is_aligned(const unsigned val, const unsigned pos) {
   return pos ? (val & (pos - 1)) == 0 : true;
 }
@@ -155,7 +156,6 @@ static inline bool is_overlapped_widen(const int astart, int asize,
 // PURPOSE. THE SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED
 // HEREUNDER IS PROVIDED "AS IS". REGENTS HAS NO OBLIGATION TO PROVIDE
 // MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
-#ifdef CAN_USE_RVV_INSTRUCTIONS
 template <uint64_t N>
 struct type_usew_t;
 template <>
@@ -2792,7 +2792,7 @@ void Simulator::SoftwareInterrupt() {
     const int64_t arg17 = stack_pointer[9];
     const int64_t arg18 = stack_pointer[10];
     const int64_t arg19 = stack_pointer[11];
-    STATIC_ASSERT(kMaxCParameters == 20);
+    static_assert(kMaxCParameters == 20);
 
     bool fp_call =
         (redirection->type() == ExternalReference::BUILTIN_FP_FP_CALL) ||
@@ -4635,10 +4635,10 @@ void Simulator::DecodeRVIType() {
       if (!DecodeRvvVL()) {
         UNSUPPORTED();
       }
+      break;
 #else
       UNSUPPORTED();
 #endif
-      break;
     }
   }
 }
@@ -4676,10 +4676,10 @@ void Simulator::DecodeRVSType() {
       if (!DecodeRvvVS()) {
         UNSUPPORTED();
       }
+      break;
 #else
       UNSUPPORTED();
 #endif
-      break;
   }
 }
 

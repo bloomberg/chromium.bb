@@ -487,11 +487,11 @@ static int config_audio_output(AVFilterLink *outlink)
             !ebur128->true_peaks_per_frame || !ebur128->swr_ctx)
             return AVERROR(ENOMEM);
 
-        av_opt_set_chlayout(ebur128->swr_ctx, "in_ch_layout",   &outlink->ch_layout, 0);
+        av_opt_set_chlayout(ebur128->swr_ctx, "in_chlayout",    &outlink->ch_layout, 0);
         av_opt_set_int(ebur128->swr_ctx, "in_sample_rate",       outlink->sample_rate, 0);
         av_opt_set_sample_fmt(ebur128->swr_ctx, "in_sample_fmt", outlink->format, 0);
 
-        av_opt_set_chlayout(ebur128->swr_ctx, "out_ch_layout",   &outlink->ch_layout, 0);
+        av_opt_set_chlayout(ebur128->swr_ctx, "out_chlayout",    &outlink->ch_layout, 0);
         av_opt_set_int(ebur128->swr_ctx, "out_sample_rate",       192000, 0);
         av_opt_set_sample_fmt(ebur128->swr_ctx, "out_sample_fmt", outlink->format, 0);
 
@@ -768,7 +768,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *insamples)
 
                     /* get lower loudness to consider */
                     n = 0;
-                    nb_pow = LRA_LOWER_PRC * 0.01 * nb_powers + 0.5;
+                    nb_pow = LRA_LOWER_PRC * nb_powers * 0.01 + 0.5;
                     for (i = gate_hist_pos; i < HIST_SIZE; i++) {
                         n += ebur128->i3000.histogram[i].count;
                         if (n >= nb_pow) {
@@ -779,7 +779,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *insamples)
 
                     /* get higher loudness to consider */
                     n = nb_powers;
-                    nb_pow = LRA_HIGHER_PRC * 0.01 * nb_powers + 0.5;
+                    nb_pow = LRA_HIGHER_PRC * nb_powers * 0.01 + 0.5;
                     for (i = HIST_SIZE - 1; i >= 0; i--) {
                         n -= FFMIN(n, ebur128->i3000.histogram[i].count);
                         if (n < nb_pow) {

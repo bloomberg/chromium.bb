@@ -320,6 +320,8 @@ void PrivacySection::AddLoadTimeData(content::WebUIDataSource* html_source) {
        IDS_OS_SETTINGS_SMART_PRIVACY_SNOOPING_SUBTEXT},
       {"smartPrivacySnoopingNotifications",
        IDS_OS_SETTINGS_SMART_PRIVACY_SNOOPING_NOTIFICATIONS},
+      {"privacyHubTitle", IDS_OS_SETTINGS_PRIVACY_HUB_TITLE},
+      {"cameraToggleTitle", IDS_OS_SETTINGS_CAMERA_TOGGLE_TITLE},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 
@@ -328,12 +330,15 @@ void PrivacySection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   html_source->AddBoolean("isQuickDimEnabled",
                           ash::features::IsQuickDimEnabled());
 
+  html_source->AddBoolean("showPrivacyHub", base::FeatureList::IsEnabled(
+                                                ::features::kCrosPrivacyHub));
+
   html_source->AddString(
       "smartPrivacyDesc",
       ui::SubstituteChromeOSDeviceType(IDS_OS_SETTINGS_SMART_PRIVACY_DESC));
 
-  // TODO(1294649): update this to the real link.
-  html_source->AddString("smartPrivacyLearnMoreLink", "about:blank");
+  html_source->AddString("smartPrivacyLearnMoreURL",
+                         chrome::kSmartPrivacySettingsLearnMoreURL);
 
   html_source->AddString("suggestedContentLearnMoreURL",
                          chrome::kSuggestedContentLearnMoreURL);
@@ -453,6 +458,14 @@ void PrivacySection::RegisterHierarchy(HierarchyGenerator* generator) const {
       mojom::Subpage::kSmartPrivacy,
       {{mojom::Setting::kSnoopingProtection, mojom::Setting::kQuickDim}},
       generator);
+
+  // Privacy hub.
+  generator->RegisterTopLevelSubpage(
+      IDS_OS_SETTINGS_PRIVACY_HUB_TITLE, mojom::Subpage::kPrivacyHub,
+      mojom::SearchResultIcon::kShield, mojom::SearchResultDefaultRank::kMedium,
+      mojom::kPrivacyHubSubpagePath);
+  RegisterNestedSettingBulk(mojom::Subpage::kPrivacyHub,
+                            {{mojom::Setting::kCameraOnOff}}, generator);
 }
 
 bool PrivacySection::AreFingerprintSettingsAllowed() {

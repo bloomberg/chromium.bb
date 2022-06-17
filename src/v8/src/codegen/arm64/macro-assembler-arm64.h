@@ -838,12 +838,10 @@ class V8_EXPORT_PRIVATE TurboAssembler : public TurboAssemblerBase {
                                SaveFPRegsMode fp_mode);
 
   void CallRecordWriteStubSaveRegisters(
-      Register object, Operand offset,
-      RememberedSetAction remembered_set_action, SaveFPRegsMode fp_mode,
+      Register object, Operand offset, SaveFPRegsMode fp_mode,
       StubCallMode mode = StubCallMode::kCallBuiltinPointer);
   void CallRecordWriteStub(
-      Register object, Register slot_address,
-      RememberedSetAction remembered_set_action, SaveFPRegsMode fp_mode,
+      Register object, Register slot_address, SaveFPRegsMode fp_mode,
       StubCallMode mode = StubCallMode::kCallBuiltinPointer);
 
   // For a given |object| and |offset|:
@@ -1552,7 +1550,7 @@ class V8_EXPORT_PRIVATE MacroAssembler : public TurboAssembler {
 #undef DECLARE_FUNCTION
 
   // Branch type inversion relies on these relations.
-  STATIC_ASSERT((reg_zero == (reg_not_zero ^ 1)) &&
+  static_assert((reg_zero == (reg_not_zero ^ 1)) &&
                 (reg_bit_clear == (reg_bit_set ^ 1)) &&
                 (always == (never ^ 1)));
 
@@ -2065,19 +2063,15 @@ class V8_EXPORT_PRIVATE MacroAssembler : public TurboAssembler {
   // stored.
   // The offset is the offset from the start of the object, not the offset from
   // the tagged HeapObject pointer.  For use with FieldMemOperand(reg, off).
-  void RecordWriteField(
-      Register object, int offset, Register value, LinkRegisterStatus lr_status,
-      SaveFPRegsMode save_fp,
-      RememberedSetAction remembered_set_action = RememberedSetAction::kEmit,
-      SmiCheck smi_check = SmiCheck::kInline);
+  void RecordWriteField(Register object, int offset, Register value,
+                        LinkRegisterStatus lr_status, SaveFPRegsMode save_fp,
+                        SmiCheck smi_check = SmiCheck::kInline);
 
   // For a given |object| notify the garbage collector that the slot at |offset|
   // has been written. |value| is the object being stored.
-  void RecordWrite(
-      Register object, Operand offset, Register value,
-      LinkRegisterStatus lr_status, SaveFPRegsMode save_fp,
-      RememberedSetAction remembered_set_action = RememberedSetAction::kEmit,
-      SmiCheck smi_check = SmiCheck::kInline);
+  void RecordWrite(Register object, Operand offset, Register value,
+                   LinkRegisterStatus lr_status, SaveFPRegsMode save_fp,
+                   SmiCheck smi_check = SmiCheck::kInline);
 
   // ---------------------------------------------------------------------------
   // Debugging.
@@ -2165,10 +2159,14 @@ class V8_NODISCARD UseScratchRegisterScope {
     return VRegister::Create(AcquireNextAvailable(availablefp_).code(), format);
   }
 
+  bool CanAcquire() const { return !available_->IsEmpty(); }
+  bool CanAcquireFP() const { return !availablefp_->IsEmpty(); }
+
   Register AcquireSameSizeAs(const Register& reg);
   V8_EXPORT_PRIVATE VRegister AcquireSameSizeAs(const VRegister& reg);
 
   void Include(const CPURegList& list) { available_->Combine(list); }
+  void IncludeFP(const CPURegList& list) { availablefp_->Combine(list); }
   void Exclude(const CPURegList& list) {
 #if DEBUG
     CPURegList copy(list);
@@ -2179,6 +2177,16 @@ class V8_NODISCARD UseScratchRegisterScope {
 #endif
     available_->Remove(list);
   }
+  void ExcludeFP(const CPURegList& list) {
+#if DEBUG
+    CPURegList copy(list);
+    while (!copy.IsEmpty()) {
+      const CPURegister& reg = copy.PopHighestIndex();
+      DCHECK(availablefp_->IncludesAliasOf(reg));
+    }
+#endif
+    availablefp_->Remove(list);
+  }
   void Include(const Register& reg1, const Register& reg2 = NoReg) {
     CPURegList list(reg1, reg2);
     Include(list);
@@ -2187,6 +2195,7 @@ class V8_NODISCARD UseScratchRegisterScope {
     CPURegList list(reg1, reg2);
     Exclude(list);
   }
+  void ExcludeFP(const VRegister& reg) { ExcludeFP(CPURegList(reg)); }
 
  private:
   V8_EXPORT_PRIVATE static CPURegister AcquireNextAvailable(
@@ -2199,6 +2208,18 @@ class V8_NODISCARD UseScratchRegisterScope {
   // The state of the available lists at the start of this scope.
   uint64_t old_available_;    // kRegister
   uint64_t old_availablefp_;  // kVRegister
+};
+
+struct MoveCycleState {
+  // List of scratch registers reserved for pending moves in a move cycle, and
+  // which should therefore not be used as a temporary location by
+  // {MoveToTempLocation}.
+  RegList scratch_regs;
+  DoubleRegList scratch_fp_regs;
+  // Available scratch registers during the move cycle resolution scope.
+  base::Optional<UseScratchRegisterScope> temps;
+  // Scratch register picked by {MoveToTempLocation}.
+  base::Optional<CPURegister> scratch_reg;
 };
 
 }  // namespace internal

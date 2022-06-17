@@ -39,7 +39,9 @@
 #include "src/tint/ast/disable_validation_attribute.h"
 #include "src/tint/ast/discard_statement.h"
 #include "src/tint/ast/enable.h"
+#include "src/tint/ast/extension.h"
 #include "src/tint/ast/external_texture.h"
+#include "src/tint/ast/f16.h"
 #include "src/tint/ast/f32.h"
 #include "src/tint/ast/fallthrough_statement.h"
 #include "src/tint/ast/float_literal_expression.h"
@@ -82,6 +84,7 @@
 #include "src/tint/sem/bool.h"
 #include "src/tint/sem/depth_texture.h"
 #include "src/tint/sem/external_texture.h"
+#include "src/tint/sem/f16.h"
 #include "src/tint/sem/f32.h"
 #include "src/tint/sem/i32.h"
 #include "src/tint/sem/matrix.h"
@@ -383,6 +386,15 @@ class ProgramBuilder {
         /// @returns a boolean type
         const ast::Bool* bool_(const Source& source) const {
             return builder->create<ast::Bool>(source);
+        }
+
+        /// @returns a f16 type
+        const ast::F16* f16() const { return builder->create<ast::F16>(); }
+
+        /// @param source the Source of the node
+        /// @returns a f16 type
+        const ast::F16* f16(const Source& source) const {
+            return builder->create<ast::F16>(source);
         }
 
         /// @returns a f32 type
@@ -1005,6 +1017,21 @@ class ProgramBuilder {
     }
 
     /// @param source the source information
+    /// @param value the float value
+    /// @return a 'h'-suffixed FloatLiteralExpression for the f16 value
+    const ast::FloatLiteralExpression* Expr(const Source& source, f16 value) {
+        return create<ast::FloatLiteralExpression>(source, static_cast<double>(value.value),
+                                                   ast::FloatLiteralExpression::Suffix::kH);
+    }
+
+    /// @param value the float value
+    /// @return a 'h'-suffixed FloatLiteralExpression for the f16 value
+    const ast::FloatLiteralExpression* Expr(f16 value) {
+        return create<ast::FloatLiteralExpression>(static_cast<double>(value.value),
+                                                   ast::FloatLiteralExpression::Suffix::kH);
+    }
+
+    /// @param source the source information
     /// @param value the integer value
     /// @return an unsuffixed IntLiteralExpression for the AInt value
     const ast::IntLiteralExpression* Expr(const Source& source, AInt value) {
@@ -1279,6 +1306,15 @@ class ProgramBuilder {
     template <typename EXPR, typename... ARGS>
     const ast::CallExpression* array(const ast::Type* subtype, EXPR&& n, ARGS&&... args) {
         return Construct(ty.array(subtype, std::forward<EXPR>(n)), std::forward<ARGS>(args)...);
+    }
+
+    /// Adds the extension to the list of enable directives at the top of the module.
+    /// @param ext the extension to enable
+    /// @return an `ast::Enable` enabling the given extension.
+    const ast::Enable* Enable(ast::Extension ext) {
+        auto* enable = create<ast::Enable>(ext);
+        AST().AddEnable(enable);
+        return enable;
     }
 
     /// @param name the variable name
@@ -2510,10 +2546,20 @@ class ProgramBuilder {
     }
 
     /// Creates an ast::WorkgroupAttribute
+    /// @param source the source information
     /// @param x the x dimension expression
     /// @param y the y dimension expression
     /// @returns the workgroup attribute pointer
     template <typename EXPR_X, typename EXPR_Y>
+    const ast::WorkgroupAttribute* WorkgroupSize(const Source& source, EXPR_X&& x, EXPR_Y&& y) {
+        return WorkgroupSize(source, std::forward<EXPR_X>(x), std::forward<EXPR_Y>(y), nullptr);
+    }
+
+    /// Creates an ast::WorkgroupAttribute
+    /// @param x the x dimension expression
+    /// @param y the y dimension expression
+    /// @returns the workgroup attribute pointer
+    template <typename EXPR_X, typename EXPR_Y, typename = DisableIfSource<EXPR_X>>
     const ast::WorkgroupAttribute* WorkgroupSize(EXPR_X&& x, EXPR_Y&& y) {
         return WorkgroupSize(std::forward<EXPR_X>(x), std::forward<EXPR_Y>(y), nullptr);
     }
@@ -2539,7 +2585,7 @@ class ProgramBuilder {
     /// @param y the y dimension expression
     /// @param z the z dimension expression
     /// @returns the workgroup attribute pointer
-    template <typename EXPR_X, typename EXPR_Y, typename EXPR_Z>
+    template <typename EXPR_X, typename EXPR_Y, typename EXPR_Z, typename = DisableIfSource<EXPR_X>>
     const ast::WorkgroupAttribute* WorkgroupSize(EXPR_X&& x, EXPR_Y&& y, EXPR_Z&& z) {
         return create<ast::WorkgroupAttribute>(source_, Expr(std::forward<EXPR_X>(x)),
                                                Expr(std::forward<EXPR_Y>(y)),
@@ -2599,6 +2645,25 @@ class ProgramBuilder {
     /// @return the resolved semantic type for the type declaration, or nullptr if
     /// the type declaration has no resolved type.
     const sem::Type* TypeOf(const ast::TypeDecl* type_decl) const;
+
+    /// @param type a type
+    /// @returns the name for `type` that closely resembles how it would be
+    /// declared in WGSL.
+    std::string FriendlyName(const ast::Type* type) {
+        return type ? type->FriendlyName(Symbols()) : "<null>";
+    }
+
+    /// @param type a type
+    /// @returns the name for `type` that closely resembles how it would be
+    /// declared in WGSL.
+    std::string FriendlyName(const sem::Type* type) {
+        return type ? type->FriendlyName(Symbols()) : "<null>";
+    }
+
+    /// Overload of FriendlyName, which removes an ambiguity when passing nullptr.
+    /// Simplifies test code.
+    /// @returns "<null>"
+    std::string FriendlyName(std::nullptr_t) { return "<null>"; }
 
     /// Wraps the ast::Expression in a statement. This is used by tests that
     /// construct a partial AST and require the Resolver to reach these
@@ -2673,6 +2738,10 @@ struct ProgramBuilder::TypesBuilder::CToAST<u32> {
 template <>
 struct ProgramBuilder::TypesBuilder::CToAST<f32> {
     static const ast::Type* get(const ProgramBuilder::TypesBuilder* t) { return t->f32(); }
+};
+template <>
+struct ProgramBuilder::TypesBuilder::CToAST<f16> {
+    static const ast::Type* get(const ProgramBuilder::TypesBuilder* t) { return t->f16(); }
 };
 template <>
 struct ProgramBuilder::TypesBuilder::CToAST<bool> {

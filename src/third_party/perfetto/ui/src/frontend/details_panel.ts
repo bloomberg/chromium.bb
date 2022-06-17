@@ -18,7 +18,6 @@ import {QueryResponse} from 'src/common/queries';
 import {Actions} from '../common/actions';
 import {isEmptyData} from '../common/aggregation_data';
 import {LogExists, LogExistsKey} from '../common/logs';
-import {DEFAULT_PIVOT_TABLE_ID} from '../common/pivot_table_common';
 
 import {AggregationPanel} from './aggregation_panel';
 import {ChromeSliceDetailsPanel} from './chrome_slice_panel';
@@ -28,16 +27,12 @@ import {DragGestureHandler} from './drag_gesture_handler';
 import {FlamegraphDetailsPanel} from './flamegraph_panel';
 import {
   FlowEventsAreaSelectedPanel,
-  FlowEventsPanel
+  FlowEventsPanel,
 } from './flow_events_panel';
 import {globals} from './globals';
 import {LogPanel} from './logs_panel';
-import {showModal} from './modal';
 import {NotesEditorPanel} from './notes_panel';
 import {AnyAttrsVnode, PanelContainer} from './panel_container';
-import {PivotTable} from './pivot_table';
-import {ColumnDisplay, ColumnPicker} from './pivot_table_editor';
-import {PivotTableHelper} from './pivot_table_helper';
 import {PivotTableRedux} from './pivot_table_redux';
 import {QueryTable} from './query_table';
 import {SliceDetailsPanel} from './slice_details_panel';
@@ -61,38 +56,6 @@ function getFullScreenHeight() {
 function hasLogs(): boolean {
   const data = globals.trackDataStore.get(LogExistsKey) as LogExists;
   return data && data.exists;
-}
-
-function showPivotTableEditorModal(helper?: PivotTableHelper) {
-  if (helper !== undefined && helper.editPivotTableModalOpen) {
-    let content;
-    if (helper.availableColumns.length === 0 ||
-        helper.availableAggregations.length === 0) {
-      content =
-          m('.pivot-table-editor-container',
-            helper.availableColumns.length === 0 ?
-                m('div', 'No columns available.') :
-                null,
-            helper.availableAggregations.length === 0 ?
-                m('div', 'No aggregations available.') :
-                null);
-    } else {
-      const attrs = {helper};
-      content =
-          m('.pivot-table-editor-container',
-            m(ColumnPicker, attrs),
-            m(ColumnDisplay, attrs));
-    }
-
-    showModal({
-      title: 'Edit Pivot Table',
-      content,
-      buttons: [],
-    }).finally(() => {
-      helper.toggleEditPivotTableModal();
-      globals.rafScheduler.scheduleFullRedraw();
-    });
-  }
 }
 
 interface Tab {
@@ -163,7 +126,7 @@ class DragHandle implements m.ClassComponent<DragHandleAttrs> {
           {
             onclick: () => {
               globals.dispatch(Actions.setCurrentTab({tab: tab.key}));
-            }
+            },
           },
           tab.name);
     };
@@ -180,7 +143,7 @@ class DragHandle implements m.ClassComponent<DragHandleAttrs> {
                 globals.rafScheduler.scheduleFullRedraw();
               },
               title: 'Open fullscreen',
-              disabled: this.isFullscreen
+              disabled: this.isFullscreen,
             },
             'vertical_align_top'),
           m('i.material-icons',
@@ -200,10 +163,28 @@ class DragHandle implements m.ClassComponent<DragHandleAttrs> {
                 }
                 globals.rafScheduler.scheduleFullRedraw();
               },
-              title
+              title,
             },
             icon)));
   }
+}
+
+// For queries that are supposed to be displayed in the bottom bar, return a
+// name for a tab. Otherwise, return null.
+function userVisibleQueryName(id: string): string|null {
+  if (id === 'command') {
+    return 'Omnibox Query';
+  }
+  if (id === 'analyze-page-query') {
+    return 'Standalone Query';
+  }
+  if (id.startsWith('command_')) {
+    return 'Pinned Query';
+  }
+  if (id.startsWith('pivot_table_details_')) {
+    return 'Pivot Table Details';
+  }
+  return null;
 }
 
 export class DetailsPanel implements m.ClassComponent {
@@ -227,7 +208,7 @@ export class DetailsPanel implements m.ClassComponent {
             vnode: m(NotesEditorPanel, {
               key: 'notes',
               id: curSelection.id,
-            })
+            }),
           });
           break;
         case 'AREA':
@@ -238,14 +219,14 @@ export class DetailsPanel implements m.ClassComponent {
               vnode: m(NotesEditorPanel, {
                 key: 'area_notes',
                 id: curSelection.noteId,
-              })
+              }),
             });
           }
           if (globals.flamegraphDetails.isInAreaSelection) {
             detailsPanels.push({
               key: 'flamegraph_selection',
               name: 'Flamegraph Selection',
-              vnode: m(FlamegraphDetailsPanel, {key: 'flamegraph'})
+              vnode: m(FlamegraphDetailsPanel, {key: 'flamegraph'}),
             });
           }
           break;
@@ -255,7 +236,7 @@ export class DetailsPanel implements m.ClassComponent {
             name: 'Current Selection',
             vnode: m(SliceDetailsPanel, {
               key: 'slice',
-            })
+            }),
           });
           break;
         case 'COUNTER':
@@ -264,7 +245,7 @@ export class DetailsPanel implements m.ClassComponent {
             name: 'Current Selection',
             vnode: m(CounterDetailsPanel, {
               key: 'counter',
-            })
+            }),
           });
           break;
         case 'PERF_SAMPLES':
@@ -272,7 +253,7 @@ export class DetailsPanel implements m.ClassComponent {
           detailsPanels.push({
             key: 'current_selection',
             name: 'Current Selection',
-            vnode: m(FlamegraphDetailsPanel, {key: 'flamegraph'})
+            vnode: m(FlamegraphDetailsPanel, {key: 'flamegraph'}),
           });
           break;
         case 'CPU_PROFILE_SAMPLE':
@@ -281,21 +262,21 @@ export class DetailsPanel implements m.ClassComponent {
             name: 'Current Selection',
             vnode: m(CpuProfileDetailsPanel, {
               key: 'cpu_profile_sample',
-            })
+            }),
           });
           break;
         case 'CHROME_SLICE':
           detailsPanels.push({
             key: 'current_selection',
             name: 'Current Selection',
-            vnode: m(ChromeSliceDetailsPanel, {key: 'chrome_slice'})
+            vnode: m(ChromeSliceDetailsPanel, {key: 'chrome_slice'}),
           });
           break;
         case 'THREAD_STATE':
           detailsPanels.push({
             key: 'current_selection',
             name: 'Current Selection',
-            vnode: m(ThreadStatePanel, {key: 'thread_state'})
+            vnode: m(ThreadStatePanel, {key: 'thread_state'}),
           });
           break;
         default:
@@ -306,19 +287,28 @@ export class DetailsPanel implements m.ClassComponent {
       detailsPanels.push({
         key: 'android_logs',
         name: 'Android Logs',
-        vnode: m(LogPanel, {key: 'logs_panel'})
+        vnode: m(LogPanel, {key: 'logs_panel'}),
       });
     }
 
-    if (globals.queryResults.has('command')) {
+    const queryResults = [];
+    for (const queryId of globals.queryResults.keys()) {
+      const readableName = userVisibleQueryName(queryId);
+      if (readableName !== null) {
+        queryResults.push({queryId, name: readableName});
+      }
+    }
+
+    for (const {queryId, name} of queryResults) {
       const count =
-          (globals.queryResults.get('command') as QueryResponse).rows.length;
+          (globals.queryResults.get(queryId) as QueryResponse).rows.length;
       detailsPanels.push({
-        key: 'query_result',
-        name: `Query Result (${count})`,
-        vnode: m(QueryTable, {key: 'query', queryId: 'command'})
+        key: `query_result_${queryId}`,
+        name: `${name} (${count})`,
+        vnode: m(QueryTable, {key: `query_${queryId}`, queryId}),
       });
     }
+
 
     if (globals.state.nonSerializableState.pivotTableRedux.selectionArea !==
         null) {
@@ -328,34 +318,16 @@ export class DetailsPanel implements m.ClassComponent {
         vnode: m(PivotTableRedux, {
           key: 'pivot_table_redux',
           selectionArea:
-              globals.state.nonSerializableState.pivotTableRedux.selectionArea
-        })
+              globals.state.nonSerializableState.pivotTableRedux.selectionArea,
+        }),
       });
-    }
-
-    for (const pivotTableId of Object.keys(globals.state.pivotTable)) {
-      const pivotTable = globals.state.pivotTable[pivotTableId];
-      const helper = globals.pivotTableHelper.get(pivotTableId);
-      if (pivotTableId !== DEFAULT_PIVOT_TABLE_ID ||
-          globals.frontendLocalState.showPivotTable) {
-        if (helper !== undefined) {
-          helper.setSelectedPivotsAndAggregations(
-              pivotTable.selectedPivots, pivotTable.selectedAggregations);
-        }
-        detailsPanels.push({
-          key: pivotTableId,
-          name: pivotTable.name,
-          vnode: m(PivotTable, {key: pivotTableId, pivotTableId, helper})
-        });
-      }
-      showPivotTableEditorModal(helper);
     }
 
     if (globals.connectedFlows.length > 0) {
       detailsPanels.push({
         key: 'bound_flows',
         name: 'Flow Events',
-        vnode: m(FlowEventsPanel, {key: 'flow_events'})
+        vnode: m(FlowEventsPanel, {key: 'flow_events'}),
       });
     }
 
@@ -364,7 +336,7 @@ export class DetailsPanel implements m.ClassComponent {
         detailsPanels.push({
           key: value.tabName,
           name: value.tabName,
-          vnode: m(AggregationPanel, {kind: key, key, data: value})
+          vnode: m(AggregationPanel, {kind: key, key, data: value}),
         });
       }
     }
@@ -374,12 +346,12 @@ export class DetailsPanel implements m.ClassComponent {
       detailsPanels.push({
         key: 'selected_flows',
         name: 'Flow Events',
-        vnode: m(FlowEventsAreaSelectedPanel, {key: 'flow_events_area'})
+        vnode: m(FlowEventsAreaSelectedPanel, {key: 'flow_events_area'}),
       });
     }
 
     let currentTabDetails =
-        detailsPanels.find(tab => tab.key === globals.state.currentTab);
+        detailsPanels.find((tab) => tab.key === globals.state.currentTab);
     if (currentTabDetails === undefined && detailsPanels.length > 0) {
       currentTabDetails = detailsPanels[0];
     }
@@ -392,18 +364,18 @@ export class DetailsPanel implements m.ClassComponent {
         {
           style: {
             height: `${this.detailsHeight}px`,
-            display: detailsPanels.length > 0 ? null : 'none'
-          }
+            display: detailsPanels.length > 0 ? null : 'none',
+          },
         },
         m(DragHandle, {
           resize: (height: number) => {
             this.detailsHeight = Math.max(height, DRAG_HANDLE_HEIGHT_PX);
           },
           height: this.detailsHeight,
-          tabs: detailsPanels.map(tab => {
+          tabs: detailsPanels.map((tab) => {
             return {key: tab.key, name: tab.name};
           }),
-          currentTabKey: currentTabDetails?.key
+          currentTabKey: currentTabDetails?.key,
         }),
         m('.details-panel-container.x-scrollable',
           m(PanelContainer, {doesScroll: true, panels, kind: 'DETAILS'})));

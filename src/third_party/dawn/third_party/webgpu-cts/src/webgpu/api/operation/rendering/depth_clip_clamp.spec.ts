@@ -171,6 +171,7 @@ have unexpected values then get drawn to the color buffer, which is later checke
     // Draw points at different vertex depths and fragment depths into the depth attachment,
     // with a viewport of [0.25,0.75].
     const testPipeline = t.device.createRenderPipeline({
+      layout: 'auto',
       vertex: { module, entryPoint: 'vtest' },
       primitive: {
         topology: 'point-list',
@@ -187,6 +188,7 @@ have unexpected values then get drawn to the color buffer, which is later checke
 
     // Use depth comparison to check that the depth attachment now has the expected values.
     const checkPipeline = t.device.createRenderPipeline({
+      layout: 'auto',
       vertex: { module, entryPoint: 'vcheck' },
       primitive: { topology: 'point-list' },
       depthStencil: {
@@ -421,6 +423,7 @@ to be empty.`
 
     // Initialize depth attachment with expected values, in [0.25,0.75].
     const initPipeline = t.device.createRenderPipeline({
+      layout: 'auto',
       vertex: { module, entryPoint: 'vmain' },
       primitive: { topology: 'point-list' },
       depthStencil: { format, depthWriteEnabled: true },
@@ -431,6 +434,7 @@ to be empty.`
     // With a viewport set to [0.25,0.75], output values in [0.0,1.0] and check they're clamped
     // before the depth test, regardless of whether unclippedDepth is enabled.
     const testPipeline = t.device.createRenderPipeline({
+      layout: 'auto',
       vertex: { module, entryPoint: 'vmain' },
       primitive: {
         topology: 'point-list',

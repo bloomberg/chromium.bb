@@ -1663,6 +1663,13 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
     [cellIndexPathsToDeleteOrInsert addObject:tabIndexPath];
   }
 
+  // No update required if `cellIndexPathsToDeleteOrInsert` is empty.
+  // Additionally, calling `performBatchUpdates` if the table view is not
+  // already displaying the current model state could crash. (crbug.com/1328988)
+  if ([cellIndexPathsToDeleteOrInsert count] == 0) {
+    return;
+  }
+
   void (^tableUpdates)(void) = ^{
     if ([self.tableViewModel sectionIsCollapsed:sectionIdentifier]) {
       [self.tableViewModel setSection:sectionIdentifier collapsed:NO];
@@ -1806,11 +1813,11 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
 #pragma mark - SyncPresenter
 
 - (void)showReauthenticateSignin {
-  [self.handler showSignin:[[ShowSigninCommand alloc]
-                               initWithOperation:
-                                   AUTHENTICATION_OPERATION_REAUTHENTICATE
-                                     accessPoint:signin_metrics::AccessPoint::
-                                                     ACCESS_POINT_UNKNOWN]
+  [self.handler showSignin:
+                    [[ShowSigninCommand alloc]
+                        initWithOperation:AuthenticationOperationReauthenticate
+                              accessPoint:signin_metrics::AccessPoint::
+                                              ACCESS_POINT_UNKNOWN]
         baseViewController:self];
 }
 

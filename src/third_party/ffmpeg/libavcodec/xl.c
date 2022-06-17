@@ -37,13 +37,11 @@ static const int xl_table[32] = {
  120, 121, 122, 123, 124, 125, 126, 127
 };
 
-static int decode_frame(AVCodecContext *avctx,
-                        void *data, int *got_frame,
-                        AVPacket *avpkt)
+static int decode_frame(AVCodecContext *avctx, AVFrame *p,
+                        int *got_frame, AVPacket *avpkt)
 {
     const uint8_t *buf = avpkt->data;
     int buf_size       = avpkt->size;
-    AVFrame *const p   = data;
     uint8_t *Y, *U, *V;
     int i, j, ret;
     int stride;
@@ -134,7 +132,7 @@ const FFCodec ff_xl_decoder = {
     .p.type       = AVMEDIA_TYPE_VIDEO,
     .p.id         = AV_CODEC_ID_VIXL,
     .init         = decode_init,
-    .decode       = decode_frame,
+    FF_CODEC_DECODE_CB(decode_frame),
     .p.capabilities = AV_CODEC_CAP_DR1,
     .caps_internal = FF_CODEC_CAP_INIT_THREADSAFE,
 };

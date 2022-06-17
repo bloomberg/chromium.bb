@@ -4359,12 +4359,11 @@ void av1_twopass_postencode_update(AV1_COMP *cpi) {
     }
   }
 #endif
-#if CONFIG_FRAME_PARALLEL_ENCODE
   // Update framerate obtained from parallel encode frames
   if (cpi->common.show_frame &&
       cpi->ppi->gf_group.frame_parallel_level[cpi->gf_frame_index] > 0)
     cpi->framerate = cpi->new_framerate;
-#if CONFIG_FPMT_TEST
+#if CONFIG_FRAME_PARALLEL_ENCODE && CONFIG_FPMT_TEST
   // SIMULATION PURPOSE
   int show_existing_between_parallel_frames_cndn =
       (cpi->ppi->gf_group.update_type[cpi->gf_frame_index] ==
@@ -4373,6 +4372,5 @@ void av1_twopass_postencode_update(AV1_COMP *cpi) {
   if (cpi->common.show_frame && !show_existing_between_parallel_frames_cndn &&
       cpi->do_frame_data_update && simulate_parallel_frame)
     cpi->temp_framerate = cpi->framerate;
-#endif
 #endif
 }

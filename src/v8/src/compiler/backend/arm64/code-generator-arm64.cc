@@ -4,6 +4,7 @@
 
 #include "src/codegen/arm64/assembler-arm64-inl.h"
 #include "src/codegen/arm64/macro-assembler-arm64-inl.h"
+#include "src/codegen/machine-type.h"
 #include "src/codegen/optimized-compilation-info.h"
 #include "src/compiler/backend/code-generator-impl.h"
 #include "src/compiler/backend/code-generator.h"
@@ -289,11 +290,6 @@ class OutOfLineRecordWrite final : public OutOfLineCode {
     }
     __ CheckPageFlag(value_, MemoryChunk::kPointersToHereAreInterestingMask, ne,
                      exit());
-    RememberedSetAction const remembered_set_action =
-        mode_ > RecordWriteMode::kValueIsMap ||
-                FLAG_use_full_record_write_builtin
-            ? RememberedSetAction::kEmit
-            : RememberedSetAction::kOmit;
     SaveFPRegsMode const save_fp_mode = frame()->DidAllocateDoubleRegisters()
                                             ? SaveFPRegsMode::kSave
                                             : SaveFPRegsMode::kIgnore;
@@ -309,13 +305,11 @@ class OutOfLineRecordWrite final : public OutOfLineCode {
       // A direct call to a wasm runtime stub defined in this module.
       // Just encode the stub index. This will be patched when the code
       // is added to the native module and copied into wasm code space.
-      __ CallRecordWriteStubSaveRegisters(object_, offset_,
-                                          remembered_set_action, save_fp_mode,
+      __ CallRecordWriteStubSaveRegisters(object_, offset_, save_fp_mode,
                                           StubCallMode::kCallWasmRuntimeStub);
 #endif  // V8_ENABLE_WEBASSEMBLY
     } else {
-      __ CallRecordWriteStubSaveRegisters(object_, offset_,
-                                          remembered_set_action, save_fp_mode);
+      __ CallRecordWriteStubSaveRegisters(object_, offset_, save_fp_mode);
     }
     if (must_save_lr_) {
       __ Pop<TurboAssembler::kAuthLR>(padreg, lr);
@@ -2487,6 +2481,31 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
       __ Addp(i.OutputSimd128Register().V4S(), tmp1, tmp2);
       break;
     }
+    case kArm64I16x8DotI8x16S: {
+      UseScratchRegisterScope scope(tasm());
+      VRegister lhs = i.InputSimd128Register(0);
+      VRegister rhs = i.InputSimd128Register(1);
+      VRegister tmp1 = scope.AcquireV(kFormat8H);
+      VRegister tmp2 = scope.AcquireV(kFormat8H);
+      __ Smull(tmp1, lhs.V8B(), rhs.V8B());
+      __ Smull2(tmp2, lhs.V16B(), rhs.V16B());
+      __ Addp(i.OutputSimd128Register().V8H(), tmp1, tmp2);
+      break;
+    }
+    case kArm64I32x4DotI8x16AddS: {
+      UseScratchRegisterScope scope(tasm());
+      VRegister lhs = i.InputSimd128Register(0);
+      VRegister rhs = i.InputSimd128Register(1);
+      VRegister tmp1 = scope.AcquireV(kFormat8H);
+      VRegister tmp2 = scope.AcquireV(kFormat8H);
+      __ Smull(tmp1, lhs.V8B(), rhs.V8B());
+      __ Smull2(tmp2, lhs.V16B(), rhs.V16B());
+      __ Addp(tmp1, tmp1, tmp2);
+      __ Saddlp(tmp1.V4S(), tmp1);
+      __ Add(i.OutputSimd128Register().V4S(), tmp1.V4S(),
+             i.InputSimd128Register(2).V4S());
+      break;
+    }
     case kArm64IExtractLaneU: {
       VectorFormat f = VectorFormatFillQ(LaneSizeField::decode(opcode));
       __ Umov(i.OutputRegister32(), i.InputSimd128Register(0).Format(f),
@@ -3062,11 +3081,11 @@ void CodeGenerator::AssembleConstructFrame() {
   if (frame_access_state()->has_frame()) {
     // Link the frame
     if (call_descriptor->IsJSFunctionCall()) {
-      STATIC_ASSERT(InterpreterFrameConstants::kFixedFrameSize % 16 == 8);
+      static_assert(InterpreterFrameConstants::kFixedFrameSize % 16 == 8);
       DCHECK_EQ(required_slots % 2, 1);
       __ Prologue();
       // Update required_slots count since we have just claimed one extra slot.
-      STATIC_ASSERT(TurboAssembler::kExtraSlotClaimedByPrologue == 1);
+      static_assert(TurboAssembler::kExtraSlotClaimedByPrologue == 1);
       required_slots -= TurboAssembler::kExtraSlotClaimedByPrologue;
     } else {
       __ Push<TurboAssembler::kSignLR>(lr, fp);
@@ -3332,13 +3351,172 @@ void CodeGenerator::PrepareForDeoptimizationExits(
   // Emit the jumps to deoptimization entries.
   UseScratchRegisterScope scope(tasm());
   Register scratch = scope.AcquireX();
-  STATIC_ASSERT(static_cast<int>(kFirstDeoptimizeKind) == 0);
+  static_assert(static_cast<int>(kFirstDeoptimizeKind) == 0);
   for (int i = 0; i < kDeoptimizeKindCount; i++) {
     if (!saw_deopt_kind[i]) continue;
     DeoptimizeKind kind = static_cast<DeoptimizeKind>(i);
     __ bind(&jump_deoptimization_entry_labels_[i]);
     __ LoadEntryFromBuiltin(Deoptimizer::GetDeoptimizationEntry(kind), scratch);
     __ Jump(scratch);
+  }
+}
+
+void CodeGenerator::MoveToTempLocation(InstructionOperand* source) {
+  // Must be kept in sync with {MoveTempLocationTo}.
+  DCHECK(!source->IsImmediate());
+  auto rep = LocationOperand::cast(source)->representation();
+  move_cycle_.temps.emplace(tasm());
+  auto& temps = *move_cycle_.temps;
+  // Temporarily exclude the reserved scratch registers while we pick one to
+  // resolve the move cycle. Re-include them immediately afterwards as they
+  // might be needed for the move to the temp location.
+  temps.Exclude(CPURegList(64, move_cycle_.scratch_regs));
+  temps.ExcludeFP(CPURegList(64, move_cycle_.scratch_fp_regs));
+  if (!IsFloatingPoint(rep)) {
+    if (temps.CanAcquire()) {
+      Register scratch = move_cycle_.temps->AcquireX();
+      move_cycle_.scratch_reg.emplace(scratch);
+    } else if (temps.CanAcquireFP()) {
+      // Try to use an FP register if no GP register is available for non-FP
+      // moves.
+      DoubleRegister scratch = move_cycle_.temps->AcquireD();
+      move_cycle_.scratch_reg.emplace(scratch);
+    }
+  } else if (rep == MachineRepresentation::kFloat32) {
+    VRegister scratch = move_cycle_.temps->AcquireS();
+    move_cycle_.scratch_reg.emplace(scratch);
+  } else if (rep == MachineRepresentation::kFloat64) {
+    VRegister scratch = move_cycle_.temps->AcquireD();
+    move_cycle_.scratch_reg.emplace(scratch);
+  } else if (rep == MachineRepresentation::kSimd128) {
+    VRegister scratch = move_cycle_.temps->AcquireQ();
+    move_cycle_.scratch_reg.emplace(scratch);
+  }
+  temps.Include(CPURegList(64, move_cycle_.scratch_regs));
+  temps.IncludeFP(CPURegList(64, move_cycle_.scratch_fp_regs));
+  if (move_cycle_.scratch_reg.has_value()) {
+    // A scratch register is available for this rep.
+    auto& scratch_reg = *move_cycle_.scratch_reg;
+    if (scratch_reg.IsD() && !IsFloatingPoint(rep)) {
+      AllocatedOperand scratch(LocationOperand::REGISTER,
+                               MachineRepresentation::kFloat64,
+                               scratch_reg.code());
+      Arm64OperandConverter g(this, nullptr);
+      if (source->IsStackSlot()) {
+        __ Ldr(g.ToDoubleRegister(&scratch), g.ToMemOperand(source, tasm()));
+      } else {
+        DCHECK(source->IsRegister());
+        __ fmov(g.ToDoubleRegister(&scratch), g.ToRegister(source));
+      }
+    } else {
+      AllocatedOperand scratch(LocationOperand::REGISTER, rep,
+                               move_cycle_.scratch_reg->code());
+      AssembleMove(source, &scratch);
+    }
+  } else {
+    // The scratch registers are blocked by pending moves. Use the stack
+    // instead.
+    int new_slots = RoundUp<2>(ElementSizeInPointers(rep));
+    Arm64OperandConverter g(this, nullptr);
+    if (source->IsRegister()) {
+      __ Push(g.ToRegister(source), padreg);
+    } else if (source->IsStackSlot()) {
+      UseScratchRegisterScope temps2(tasm());
+      Register scratch = temps2.AcquireX();
+      __ Ldr(scratch, g.ToMemOperand(source, tasm()));
+      __ Push(scratch, padreg);
+    } else {
+      // No push instruction for this operand type. Bump the stack pointer and
+      // assemble the move.
+      int last_frame_slot_id =
+          frame_access_state_->frame()->GetTotalFrameSlotCount() - 1;
+      int sp_delta = frame_access_state_->sp_delta();
+      int temp_slot = last_frame_slot_id + sp_delta + new_slots;
+      __ Sub(sp, sp, Operand(new_slots * kSystemPointerSize));
+      AllocatedOperand temp(LocationOperand::STACK_SLOT, rep, temp_slot);
+      AssembleMove(source, &temp);
+    }
+    frame_access_state()->IncreaseSPDelta(new_slots);
+  }
+}
+
+void CodeGenerator::MoveTempLocationTo(InstructionOperand* dest,
+                                       MachineRepresentation rep) {
+  if (move_cycle_.scratch_reg.has_value()) {
+    auto& scratch_reg = *move_cycle_.scratch_reg;
+    if (!IsFloatingPoint(rep) && scratch_reg.IsD()) {
+      // We used a D register to move a non-FP operand, change the
+      // representation to correctly interpret the InstructionOperand's code.
+      AllocatedOperand scratch(LocationOperand::REGISTER,
+                               MachineRepresentation::kFloat64,
+                               move_cycle_.scratch_reg->code());
+      Arm64OperandConverter g(this, nullptr);
+      if (dest->IsStackSlot()) {
+        __ Str(g.ToDoubleRegister(&scratch), g.ToMemOperand(dest, tasm()));
+      } else {
+        DCHECK(dest->IsRegister());
+        __ fmov(g.ToRegister(dest), g.ToDoubleRegister(&scratch));
+      }
+    } else {
+      AllocatedOperand scratch(LocationOperand::REGISTER, rep,
+                               move_cycle_.scratch_reg->code());
+      AssembleMove(&scratch, dest);
+    }
+  } else {
+    int new_slots = RoundUp<2>(ElementSizeInPointers(rep));
+    frame_access_state()->IncreaseSPDelta(-new_slots);
+    Arm64OperandConverter g(this, nullptr);
+    if (dest->IsRegister()) {
+      __ Pop(padreg, g.ToRegister(dest));
+    } else if (dest->IsStackSlot()) {
+      UseScratchRegisterScope temps2(tasm());
+      Register scratch = temps2.AcquireX();
+      __ Pop(padreg, scratch);
+      __ Str(scratch, g.ToMemOperand(dest, tasm()));
+    } else {
+      int last_frame_slot_id =
+          frame_access_state_->frame()->GetTotalFrameSlotCount() - 1;
+      int sp_delta = frame_access_state_->sp_delta();
+      int temp_slot = last_frame_slot_id + sp_delta + new_slots;
+      AllocatedOperand temp(LocationOperand::STACK_SLOT, rep, temp_slot);
+      AssembleMove(&temp, dest);
+      __ Add(sp, sp, Operand(new_slots * kSystemPointerSize));
+    }
+  }
+  // Restore the default state to release the {UseScratchRegisterScope} and to
+  // prepare for the next cycle.
+  move_cycle_ = MoveCycleState();
+}
+
+void CodeGenerator::SetPendingMove(MoveOperands* move) {
+  auto move_type = MoveType::InferMove(&move->source(), &move->destination());
+  if (move_type == MoveType::kStackToStack) {
+    Arm64OperandConverter g(this, nullptr);
+    MemOperand src = g.ToMemOperand(&move->source(), tasm());
+    MemOperand dst = g.ToMemOperand(&move->destination(), tasm());
+    UseScratchRegisterScope temps(tasm());
+    if (move->source().IsSimd128StackSlot()) {
+      VRegister temp = temps.AcquireQ();
+      move_cycle_.scratch_fp_regs.set(temp);
+    } else {
+      Register temp = temps.AcquireX();
+      move_cycle_.scratch_regs.set(temp);
+    }
+    int64_t src_offset = src.offset();
+    unsigned src_size = CalcLSDataSize(LDR_x);
+    int64_t dst_offset = dst.offset();
+    unsigned dst_size = CalcLSDataSize(STR_x);
+    // Offset doesn't fit into the immediate field so the assembler will emit
+    // two instructions and use a second temp register.
+    if ((src.IsImmediateOffset() &&
+         !tasm()->IsImmLSScaled(src_offset, src_size) &&
+         !tasm()->IsImmLSUnscaled(src_offset)) ||
+        (dst.IsImmediateOffset() &&
+         !tasm()->IsImmLSScaled(dst_offset, dst_size) &&
+         !tasm()->IsImmLSUnscaled(dst_offset))) {
+      Register temp = temps.AcquireX();
+      move_cycle_.scratch_regs.set(temp);
+    }
   }
 }
 

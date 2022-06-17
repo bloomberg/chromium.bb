@@ -26,6 +26,7 @@ import androidx.preference.PreferenceFragmentCompat;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.homepage.HomepageManager;
 import org.chromium.chrome.browser.night_mode.NightModeMetrics.ThemeSettingsEntry;
 import org.chromium.chrome.browser.night_mode.NightModeUtils;
@@ -49,6 +50,7 @@ import org.chromium.chrome.browser.sync.settings.SyncSettingsUtils;
 import org.chromium.chrome.browser.toolbar.adaptive.AdaptiveToolbarFeatures;
 import org.chromium.chrome.browser.toolbar.adaptive.AdaptiveToolbarStatePredictor;
 import org.chromium.chrome.browser.tracing.settings.DeveloperSettings;
+import org.chromium.chrome.browser.ui.signin.TangibleSyncCoordinator;
 import org.chromium.components.browser_ui.settings.ChromeBasePreference;
 import org.chromium.components.browser_ui.settings.ManagedPreferenceDelegate;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
@@ -129,7 +131,6 @@ public class MainSettings extends PreferenceFragmentCompat
     @Override
     public void onDestroy() {
         super.onDestroy();
-        mSyncPromoPreference.onPreferenceFragmentDestroyed();
         // The component should only be destroyed when the activity has been closed by the user
         // (e.g. by pressing on the back button) and not when the activity is temporarily destroyed
         // by the system.
@@ -304,9 +305,13 @@ public class MainSettings extends PreferenceFragmentCompat
             } else if (isSyncConsentAvailable) {
                 SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
                 settingsLauncher.launchSettingsActivity(context, ManageSyncSettings.class);
+            } else if (ChromeFeatureList.isEnabled(ChromeFeatureList.TANGIBLE_SYNC)) {
+                TangibleSyncCoordinator.start(requireContext(), mModalDialogManagerSupplier.get(),
+                        SyncConsentActivityLauncherImpl.get(),
+                        SigninAccessPoint.SETTINGS_SYNC_OFF_ROW);
             } else {
                 SyncConsentActivityLauncherImpl.get().launchActivityForPromoDefaultFlow(
-                        context, SigninAccessPoint.SETTINGS, primaryAccountName);
+                        context, SigninAccessPoint.SETTINGS_SYNC_OFF_ROW, primaryAccountName);
             }
             return true;
         });
@@ -395,6 +400,15 @@ public class MainSettings extends PreferenceFragmentCompat
     }
 
     private void onSyncPromoPreferenceStateChanged() {
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_ILLUSTRATION)
+                || ChromeFeatureList.isEnabled(
+                        ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_SINGLE_BUTTON)
+                || ChromeFeatureList.isEnabled(ChromeFeatureList.SYNC_ANDROID_PROMOS_WITH_TITLE)) {
+            // For promo experiments, we want to have mSignInPreference and
+            // PREF_ACCOUNT_AND_GOOGLE_SERVICES_SECTION visible even if the personalized promo is
+            // shown, so skip setting the visibility.
+            return;
+        }
         // Remove "Account" section header if the personalized sign-in promo is shown.
         boolean isShowingPersonalizedSigninPromo =
                 mSyncPromoPreference.getState() == State.PERSONALIZED_SIGNIN_PROMO;
@@ -441,8 +455,7 @@ public class MainSettings extends PreferenceFragmentCompat
                     return TemplateUrlServiceFactory.get().isDefaultSearchManaged();
                 }
                 if (usesUnifiedPasswordManagerUI() && PREF_PASSWORDS.equals(preference.getKey())) {
-                    return UserPrefs.get(Profile.getLastUsedRegularProfile())
-                            .isManagedPreference(Pref.CREDENTIALS_ENABLE_SERVICE);
+                    return false;
                 }
                 return isPreferenceControlledByPolicy(preference)
                         || isPreferenceControlledByCustodian(preference);

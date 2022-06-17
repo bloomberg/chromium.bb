@@ -13,6 +13,7 @@
 #include "include/core/SkSamplingOptions.h"
 #include "include/core/SkScalar.h"
 #include "include/core/SkShader.h"
+#include "include/core/SkSurfaceProps.h"
 #include "include/core/SkTileMode.h"
 #if SK_SUPPORT_GPU
 #include "include/gpu/GrTypes.h"
@@ -253,12 +254,13 @@ public:
         @param paint       SkPaint to apply transparency, filtering, and so on; may be nullptr
         @param bitDepth    8-bit integer or 16-bit float: per component
         @param colorSpace  range of colors; may be nullptr
+        @param props       props to use when rasterizing the picture
         @return            created SkImage, or nullptr
     */
     static sk_sp<SkImage> MakeFromPicture(sk_sp<SkPicture> picture, const SkISize& dimensions,
                                           const SkMatrix* matrix, const SkPaint* paint,
-                                          BitDepth bitDepth,
-                                          sk_sp<SkColorSpace> colorSpace);
+                                          BitDepth bitDepth, sk_sp<SkColorSpace> colorSpace,
+                                          SkSurfaceProps props = {});
 
 #if SK_SUPPORT_GPU
         /** Creates a GPU-backed SkImage from compressed data.
@@ -1163,10 +1165,9 @@ public:
         @param Mipmapped       whether created SkImage texture must allocate mip map levels
         @return                created SkImage, or nullptr
     */
-    sk_sp<SkImage> makeTextureImage(skgpu::graphite::Recorder*,
-                                    skgpu::graphite::Mipmapped = skgpu::graphite::Mipmapped::kNo,
-                                    SkBudgeted = SkBudgeted::kYes) const;
-
+    sk_sp<SkImage> makeTextureImage(
+            skgpu::graphite::Recorder*,
+            skgpu::graphite::Mipmapped = skgpu::graphite::Mipmapped::kNo) const;
 #endif
 
     /** Returns raster image or lazy image. Copies SkImage backed by GPU texture into

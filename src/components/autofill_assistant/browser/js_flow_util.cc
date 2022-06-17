@@ -4,6 +4,7 @@
 
 #include "components/autofill_assistant/browser/js_flow_util.h"
 #include "base/base64.h"
+#include "base/logging.h"
 #include "base/strings/strcat.h"
 #include "components/autofill_assistant/browser/model.pb.h"
 #include "components/autofill_assistant/browser/service.pb.h"
@@ -150,6 +151,7 @@ ClientStatus ExtractJsFlowActionReturnValue(
   }
 
   if (!value.is_dict()) {
+    VLOG(1) << "JS flow did not return a dictionary.";
     return ClientStatusWithSourceLocation(INVALID_ACTION, __FILE__, __LINE__);
   }
 
@@ -157,6 +159,7 @@ ClientStatus ExtractJsFlowActionReturnValue(
   absl::optional<int> flow_status = dict->FindInt(kStatusKey);
   const base::Value* flow_return_value = dict->Find(kResultKey);
   if (!flow_status || !ProcessedActionStatusProto_IsValid(*flow_status)) {
+    VLOG(1) << "JS flow did not return a valid ActionStatus in " << kStatusKey;
     return ClientStatusWithSourceLocation(INVALID_ACTION, __FILE__, __LINE__);
   }
 
@@ -167,13 +170,13 @@ ClientStatus ExtractJsFlowActionReturnValue(
   return ClientStatus(static_cast<ProcessedActionStatusProto>(*flow_status));
 }
 
-namespace {
-
 std::string SerializeToBase64(const google::protobuf::MessageLite* proto) {
   std::string serialized_result_base64;
   base::Base64Encode(proto->SerializeAsString(), &serialized_result_base64);
   return serialized_result_base64;
 }
+
+namespace {
 
 absl::optional<std::string> SerializeActionResult(
     const ProcessedActionProto& processed_action) {
@@ -214,6 +217,9 @@ absl::optional<std::string> SerializeActionResult(
       break;
     case ProcessedActionProto::kSaveSubmittedPasswordResult:
       proto = &processed_action.save_submitted_password_result();
+      break;
+    case ProcessedActionProto::kExternalActionResult:
+      proto = &processed_action.external_action_result();
       break;
     case ProcessedActionProto::RESULT_DATA_NOT_SET:
       return absl::nullopt;

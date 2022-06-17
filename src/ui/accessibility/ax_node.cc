@@ -1559,6 +1559,31 @@ bool AXNode::IsDataValid() const {
   return !is_data_still_uninitialized_ && !has_data_been_taken_;
 }
 
+bool AXNode::IsReadOnlySupported() const {
+  return IsCellOrHeaderOfAriaGrid() || ui::IsReadOnlySupported(GetRole());
+}
+
+bool AXNode::IsReadOnlyOrDisabled() const {
+  switch (data().GetRestriction()) {
+    case ax::mojom::Restriction::kReadOnly:
+    case ax::mojom::Restriction::kDisabled:
+      return true;
+    case ax::mojom::Restriction::kNone: {
+      if (HasState(ax::mojom::State::kEditable) ||
+          HasState(ax::mojom::State::kRichlyEditable)) {
+        return false;
+      }
+
+      if (ShouldHaveReadonlyStateByDefault(GetRole()))
+        return true;
+
+      // When readonly is not supported, we assume that the node is always
+      // read-only and mark it as such since this is the default behavior.
+      return !IsReadOnlySupported();
+    }
+  }
+}
+
 AXNode* AXNode::ComputeLastUnignoredChildRecursive() const {
   DCHECK(!tree_->GetTreeUpdateInProgressState());
   if (children().empty())
@@ -1701,10 +1726,6 @@ bool AXNode::IsLeaf() const {
   // implementation details, but we want to expose them as leaves to platform
   // accessibility APIs because screen readers might be confused if they find
   // any children.
-  // TODO(kschmi): <input type="search" contenteditable="true"> will cause
-  // different return values here, even though 'contenteditable' has no effect.
-  // This needs to be modified from the Blink side, so 'kRichlyEditable' isn't
-  // added in this case.
   if (data().IsAtomicTextField() || IsText())
     return true;
 

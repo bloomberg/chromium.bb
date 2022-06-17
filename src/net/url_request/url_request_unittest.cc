@@ -445,15 +445,15 @@ class BlockingNetworkDelegate : public TestNetworkDelegate {
 
   // Values returned on blocking stages when mode is SYNCHRONOUS or
   // AUTO_CALLBACK. For USER_CALLBACK these are set automatically to IO_PENDING.
-  int retval_;
+  int retval_ = OK;
 
   GURL redirect_url_;  // Used if non-empty during OnBeforeURLRequest.
-  int block_on_;       // Bit mask: in which stages to block.
+  int block_on_ = 0;   // Bit mask: in which stages to block.
 
   // Internal variables, not set by not the user:
   // Last blocked stage waiting for user callback (unused if |block_mode_| !=
   // USER_CALLBACK).
-  Stage stage_blocked_for_callback_;
+  Stage stage_blocked_for_callback_ = NOT_BLOCKED;
 
   // Callback objects stored during blocking stages.
   CompletionOnceCallback callback_;
@@ -465,10 +465,7 @@ class BlockingNetworkDelegate : public TestNetworkDelegate {
 };
 
 BlockingNetworkDelegate::BlockingNetworkDelegate(BlockMode block_mode)
-    : block_mode_(block_mode),
-      retval_(OK),
-      block_on_(0),
-      stage_blocked_for_callback_(NOT_BLOCKED) {}
+    : block_mode_(block_mode) {}
 
 void BlockingNetworkDelegate::RunUntilBlocked() {
   base::RunLoop run_loop;
@@ -6235,12 +6232,11 @@ TEST_F(URLRequestTestHTTP, ProcessPKPAndSendReport) {
   std::unique_ptr<base::Value> value(
       base::JSONReader::ReadDeprecated(mock_report_sender.latest_report()));
   ASSERT_TRUE(value);
-  ASSERT_TRUE(value->is_dict());
-  base::DictionaryValue* report_dict;
-  ASSERT_TRUE(value->GetAsDictionary(&report_dict));
-  std::string report_hostname;
-  EXPECT_TRUE(report_dict->GetString("hostname", &report_hostname));
-  EXPECT_EQ(test_server_hostname, report_hostname);
+  base::Value::Dict* report_dict = value->GetIfDict();
+  ASSERT_TRUE(report_dict);
+  std::string* report_hostname = report_dict->FindString("hostname");
+  ASSERT_TRUE(report_hostname);
+  EXPECT_EQ(test_server_hostname, *report_hostname);
   EXPECT_EQ(isolation_info.network_isolation_key(),
             mock_report_sender.latest_network_isolation_key());
 }
@@ -6400,7 +6396,7 @@ TEST_F(URLRequestTestHTTP, ProcessSTSOnce) {
 // called.
 class MockExpectCTReporter : public TransportSecurityState::ExpectCTReporter {
  public:
-  MockExpectCTReporter() : num_failures_(0) {}
+  MockExpectCTReporter() = default;
   ~MockExpectCTReporter() override = default;
 
   void OnExpectCTFailed(
@@ -6418,15 +6414,14 @@ class MockExpectCTReporter : public TransportSecurityState::ExpectCTReporter {
   uint32_t num_failures() { return num_failures_; }
 
  private:
-  uint32_t num_failures_;
+  uint32_t num_failures_ = 0;
 };
 
 // A CTPolicyEnforcer that returns a default CTPolicyCompliance value
 // for every certificate.
 class MockCTPolicyEnforcer : public CTPolicyEnforcer {
  public:
-  MockCTPolicyEnforcer()
-      : default_result_(ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS) {}
+  MockCTPolicyEnforcer() = default;
   ~MockCTPolicyEnforcer() override = default;
 
   ct::CTPolicyCompliance CheckCompliance(
@@ -6441,7 +6436,8 @@ class MockCTPolicyEnforcer : public CTPolicyEnforcer {
   }
 
  private:
-  ct::CTPolicyCompliance default_result_;
+  ct::CTPolicyCompliance default_result_ =
+      ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS;
 };
 
 // Tests that Expect CT headers for the preload list are processed correctly.
@@ -9978,9 +9974,7 @@ namespace {
 
 class SSLClientAuthTestDelegate : public TestDelegate {
  public:
-  SSLClientAuthTestDelegate() : on_certificate_requested_count_(0) {
-    set_on_complete(base::DoNothing());
-  }
+  SSLClientAuthTestDelegate() { set_on_complete(base::DoNothing()); }
   void OnCertificateRequested(URLRequest* request,
                               SSLCertRequestInfo* cert_request_info) override {
     on_certificate_requested_count_++;
@@ -9996,7 +9990,7 @@ class SSLClientAuthTestDelegate : public TestDelegate {
   }
 
  private:
-  int on_certificate_requested_count_;
+  int on_certificate_requested_count_ = 0;
   base::OnceClosure on_certificate_requested_;
 };
 
@@ -10821,12 +10815,6 @@ static bool SystemSupportsOCSPStapling() {
     return true;
 #if BUILDFLAG(IS_ANDROID)
   return false;
-#elif BUILDFLAG(IS_APPLE)
-  // The SecTrustSetOCSPResponse function exists since macOS 10.9+, but does
-  // not actually do anything until 10.12.
-  if (base::mac::IsAtLeastOS10_12())
-    return true;
-  return false;
 #else
   return true;
 #endif
@@ -11496,17 +11484,7 @@ TEST_F(HTTPSEVCRLSetTest, MissingCRLSetAndRevokedOCSP) {
     EXPECT_EQ(0u, cert_status & CERT_STATUS_ALL_ERRORS);
   } else {
 #if BUILDFLAG(IS_APPLE)
-    if (!base::mac::IsAtLeastOS10_12()) {
-      // On older macOS versions, revocation failures might also end up with
-      // CERT_STATUS_NO_REVOCATION_MECHANISM status added. (See comment for
-      // CSSMERR_APPLETP_INCOMPLETE_REVOCATION_CHECK in CertStatusFromOSStatus.)
-      EXPECT_THAT(
-          cert_status & CERT_STATUS_ALL_ERRORS,
-          AnyOf(CERT_STATUS_REVOKED,
-                CERT_STATUS_NO_REVOCATION_MECHANISM | CERT_STATUS_REVOKED));
-    } else {
-      EXPECT_EQ(CERT_STATUS_REVOKED, cert_status & CERT_STATUS_ALL_ERRORS);
-    }
+    EXPECT_EQ(CERT_STATUS_REVOKED, cert_status & CERT_STATUS_ALL_ERRORS);
 #elif BUILDFLAG(IS_WIN)
     EXPECT_EQ(CERT_STATUS_REVOKED, cert_status & CERT_STATUS_ALL_ERRORS);
 #else

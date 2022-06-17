@@ -134,10 +134,7 @@ VkFormatFeatureFlags2KHR GetImageFormatFeatures(VkPhysicalDevice physical_device
         DispatchGetPhysicalDeviceFormatProperties2(physical_device, format, &fmt_props_2);
 
         if (tiling == VK_IMAGE_TILING_DRM_FORMAT_MODIFIER_EXT) {
-            VkImageDrmFormatModifierPropertiesEXT drm_format_props = {
-                VK_STRUCTURE_TYPE_IMAGE_DRM_FORMAT_MODIFIER_PROPERTIES_EXT,
-                nullptr,
-            };
+            VkImageDrmFormatModifierPropertiesEXT drm_format_props = LvlInitStruct<VkImageDrmFormatModifierPropertiesEXT>();
 
             // Find the image modifier
             DispatchGetImageDrmFormatModifierPropertiesEXT(device, image, &drm_format_props);
@@ -161,13 +158,11 @@ VkFormatFeatureFlags2KHR GetImageFormatFeatures(VkPhysicalDevice physical_device
                 (tiling == VK_IMAGE_TILING_LINEAR) ? fmt_props_3.linearTilingFeatures : fmt_props_3.optimalTilingFeatures;
         }
     } else if (tiling == VK_IMAGE_TILING_DRM_FORMAT_MODIFIER_EXT) {
-        VkImageDrmFormatModifierPropertiesEXT drm_format_properties = {VK_STRUCTURE_TYPE_IMAGE_DRM_FORMAT_MODIFIER_PROPERTIES_EXT,
-                                                                       nullptr};
+        VkImageDrmFormatModifierPropertiesEXT drm_format_properties = LvlInitStruct<VkImageDrmFormatModifierPropertiesEXT>();
         DispatchGetImageDrmFormatModifierPropertiesEXT(device, image, &drm_format_properties);
 
-        VkFormatProperties2 format_properties_2 = {VK_STRUCTURE_TYPE_FORMAT_PROPERTIES_2, nullptr};
-        VkDrmFormatModifierPropertiesListEXT drm_properties_list = {VK_STRUCTURE_TYPE_DRM_FORMAT_MODIFIER_PROPERTIES_LIST_EXT,
-                                                                    nullptr};
+        VkFormatProperties2 format_properties_2 = LvlInitStruct<VkFormatProperties2>();
+        VkDrmFormatModifierPropertiesListEXT drm_properties_list = LvlInitStruct<VkDrmFormatModifierPropertiesListEXT>();
         format_properties_2.pNext = (void *)&drm_properties_list;
         DispatchGetPhysicalDeviceFormatProperties2(physical_device, format, &format_properties_2);
         std::vector<VkDrmFormatModifierPropertiesEXT> drm_properties;
@@ -192,13 +187,41 @@ VkFormatFeatureFlags2KHR GetImageFormatFeatures(VkPhysicalDevice physical_device
 
 std::shared_ptr<IMAGE_STATE> ValidationStateTracker::CreateImageState(VkImage img, const VkImageCreateInfo *pCreateInfo,
                                                                       VkFormatFeatureFlags2KHR features) {
-    return std::make_shared<IMAGE_STATE>(this, img, pCreateInfo, features);
+    std::shared_ptr<IMAGE_STATE> state;
+
+    if (pCreateInfo->flags & VK_IMAGE_CREATE_SPARSE_BINDING_BIT) {
+        if (pCreateInfo->flags & VK_IMAGE_CREATE_SPARSE_RESIDENCY_BIT) {
+            state = std::make_shared<IMAGE_STATE_SPARSE<true>>(this, img, pCreateInfo, features);
+        } else {
+            state = std::make_shared<IMAGE_STATE_SPARSE<false>>(this, img, pCreateInfo, features);
+        }
+    } else if (pCreateInfo->flags & VK_IMAGE_CREATE_DISJOINT_BIT) {
+        uint32_t plane_count = FormatPlaneCount(pCreateInfo->format);
+        switch (plane_count) {
+            case 3:
+                state = std::make_shared<IMAGE_STATE_MULTIPLANAR<3>>(this, img, pCreateInfo, features);
+                break;
+            case 2:
+                state = std::make_shared<IMAGE_STATE_MULTIPLANAR<2>>(this, img, pCreateInfo, features);
+                break;
+            case 1:
+                state = std::make_shared<IMAGE_STATE_MULTIPLANAR<1>>(this, img, pCreateInfo, features);
+                break;
+            default:
+                // Not supported
+                assert(false);
+        }
+    } else {
+        state = std::make_shared<IMAGE_STATE_LINEAR>(this, img, pCreateInfo, features);
+    }
+
+    return state;
 }
 
 std::shared_ptr<IMAGE_STATE> ValidationStateTracker::CreateImageState(VkImage img, const VkImageCreateInfo *pCreateInfo,
                                                                       VkSwapchainKHR swapchain, uint32_t swapchain_index,
                                                                       VkFormatFeatureFlags2KHR features) {
-    return std::make_shared<IMAGE_STATE>(this, img, pCreateInfo, swapchain, swapchain_index, features);
+    return std::make_shared<IMAGE_STATE_NO_BINDING>(this, img, pCreateInfo, swapchain, swapchain_index, features);
 }
 
 void ValidationStateTracker::PostCallRecordCreateImage(VkDevice device, const VkImageCreateInfo *pCreateInfo,
@@ -328,7 +351,16 @@ void ValidationStateTracker::PostCallRecordCreateBuffer(VkDevice device, const V
                                                         VkResult result) {
     if (result != VK_SUCCESS) return;
 
-    auto buffer_state = std::make_shared<BUFFER_STATE>(this, *pBuffer, pCreateInfo);
+    std::shared_ptr<BUFFER_STATE> buffer_state;
+    if (pCreateInfo->flags & VK_BUFFER_CREATE_SPARSE_BINDING_BIT) {
+        if (pCreateInfo->flags & VK_BUFFER_CREATE_SPARSE_RESIDENCY_BIT) {
+            buffer_state = std::make_shared<BUFFER_STATE_SPARSE<true>>(this, *pBuffer, pCreateInfo);
+        } else {
+            buffer_state = std::make_shared<BUFFER_STATE_SPARSE<false>>(this, *pBuffer, pCreateInfo);
+        }
+    } else {
+        buffer_state = std::make_shared<BUFFER_STATE_LINEAR>(this, *pBuffer, pCreateInfo);
+    }
 
     if (pCreateInfo) {
         const auto *opaque_capture_address = LvlFindInChain<VkBufferOpaqueCaptureAddressCreateInfo>(pCreateInfo->pNext);
@@ -349,19 +381,21 @@ void ValidationStateTracker::PostCallRecordCreateBufferView(VkDevice device, con
 
     auto buffer_state = Get<BUFFER_STATE>(pCreateInfo->buffer);
 
-    VkFormatFeatureFlags2KHR buffer_features;
+    VkFormatFeatureFlags2KHR buffer_features, image_features;
     if (has_format_feature2) {
         auto fmt_props_3 = LvlInitStruct<VkFormatProperties3KHR>();
         auto fmt_props_2 = LvlInitStruct<VkFormatProperties2>(&fmt_props_3);
         DispatchGetPhysicalDeviceFormatProperties2(physical_device, pCreateInfo->format, &fmt_props_2);
         buffer_features = fmt_props_3.bufferFeatures;
+        image_features = fmt_props_3.linearTilingFeatures;
     } else {
         VkFormatProperties format_properties;
         DispatchGetPhysicalDeviceFormatProperties(physical_device, pCreateInfo->format, &format_properties);
         buffer_features = format_properties.bufferFeatures;
+        image_features = format_properties.linearTilingFeatures;
     }
 
-    Add(std::make_shared<BUFFER_VIEW_STATE>(buffer_state, *pView, pCreateInfo, buffer_features));
+    Add(std::make_shared<BUFFER_VIEW_STATE>(buffer_state, *pView, pCreateInfo, buffer_features, image_features));
 }
 
 void ValidationStateTracker::PostCallRecordCreateImageView(VkDevice device, const VkImageViewCreateInfo *pCreateInfo,
@@ -1180,6 +1214,12 @@ void ValidationStateTracker::CreateDevice(const VkDeviceCreateInfo *pCreateInfo)
         if (shader_subgroup_uniform_control_flow_features) {
             enabled_features.shader_subgroup_uniform_control_flow_features = *shader_subgroup_uniform_control_flow_features;
         }
+
+        const auto ray_tracing_maintenance1_features =
+            LvlFindInChain<VkPhysicalDeviceRayTracingMaintenance1FeaturesKHR>(pCreateInfo->pNext);
+        if (ray_tracing_maintenance1_features) {
+            enabled_features.ray_tracing_maintenance1_features= *ray_tracing_maintenance1_features;
+        }
     }
 
     // Store physical device properties and physical device mem limits into CoreChecks structs
@@ -1629,8 +1669,9 @@ void ValidationStateTracker::PostCallRecordQueueBindSparse(VkQueue queue, uint32
                 auto sparse_binding = bind_info.pBufferBinds[j].pBinds[k];
                 auto buffer_state = Get<BUFFER_STATE>(bind_info.pBufferBinds[j].buffer);
                 auto mem_state = Get<DEVICE_MEMORY_STATE>(sparse_binding.memory);
-                if (buffer_state && mem_state) {
-                    buffer_state->SetSparseMemBinding(mem_state, sparse_binding.memoryOffset, sparse_binding.size);
+                if (buffer_state) {
+                    buffer_state->BindMemory(buffer_state.get(), mem_state, sparse_binding.memoryOffset,
+                                             sparse_binding.resourceOffset, sparse_binding.size);
                 }
             }
         }
@@ -1639,8 +1680,9 @@ void ValidationStateTracker::PostCallRecordQueueBindSparse(VkQueue queue, uint32
                 auto sparse_binding = bind_info.pImageOpaqueBinds[j].pBinds[k];
                 auto image_state = Get<IMAGE_STATE>(bind_info.pImageOpaqueBinds[j].image);
                 auto mem_state = Get<DEVICE_MEMORY_STATE>(sparse_binding.memory);
-                if (image_state && mem_state) {
-                    image_state->SetSparseMemBinding(mem_state, sparse_binding.memoryOffset, sparse_binding.size);
+                if (image_state) {
+                    image_state->BindMemory(image_state.get(), mem_state, sparse_binding.memoryOffset,
+                                            sparse_binding.resourceOffset, sparse_binding.size);
                 }
             }
         }
@@ -1649,10 +1691,11 @@ void ValidationStateTracker::PostCallRecordQueueBindSparse(VkQueue queue, uint32
                 auto sparse_binding = bind_info.pImageBinds[j].pBinds[k];
                 // TODO: This size is broken for non-opaque bindings, need to update to comprehend full sparse binding data
                 VkDeviceSize size = sparse_binding.extent.depth * sparse_binding.extent.height * sparse_binding.extent.width * 4;
+                VkDeviceSize offset = sparse_binding.offset.z * sparse_binding.offset.y * sparse_binding.offset.x * 4;
                 auto image_state = Get<IMAGE_STATE>(bind_info.pImageBinds[j].image);
                 auto mem_state = Get<DEVICE_MEMORY_STATE>(sparse_binding.memory);
-                if (image_state && mem_state) {
-                    image_state->SetSparseMemBinding(mem_state, sparse_binding.memoryOffset, size);
+                if (image_state) {
+                    image_state->BindMemory(image_state.get(), mem_state, sparse_binding.memoryOffset, offset, size);
                 }
             }
         }
@@ -1832,7 +1875,7 @@ void ValidationStateTracker::UpdateBindBufferMemoryState(VkBuffer buffer, VkDevi
         // Track objects tied to memory
         auto mem_state = Get<DEVICE_MEMORY_STATE>(mem);
         if (mem_state) {
-            buffer_state->SetMemBinding(mem_state, memoryOffset);
+            buffer_state->BindMemory(buffer_state.get(), mem_state, memoryOffset, 0u, buffer_state->requirements.size);
         }
     }
 }
@@ -2491,7 +2534,9 @@ void ValidationStateTracker::PostCallRecordCreateAccelerationStructureNV(VkDevic
                                                                          VkAccelerationStructureNV *pAccelerationStructure,
                                                                          VkResult result) {
     if (VK_SUCCESS != result) return;
-    Add(std::make_shared<ACCELERATION_STRUCTURE_STATE>(device, *pAccelerationStructure, pCreateInfo));
+    std::shared_ptr<ACCELERATION_STRUCTURE_STATE> state =
+        std::make_shared<ACCELERATION_STRUCTURE_STATE_LINEAR>(device, *pAccelerationStructure, pCreateInfo);
+    Add(std::move(state));
 }
 
 void ValidationStateTracker::PostCallRecordCreateAccelerationStructureKHR(VkDevice device,
@@ -2644,7 +2689,7 @@ void ValidationStateTracker::PostCallRecordBindAccelerationStructureMemoryNV(
             // Track objects tied to memory
             auto mem_state = Get<DEVICE_MEMORY_STATE>(info.memory);
             if (mem_state) {
-                as_state->SetMemBinding(mem_state, info.memoryOffset);
+                as_state->BindMemory(as_state.get(), mem_state, info.memoryOffset, 0u, as_state->memory_requirements.size);
             }
 
             // GPU validation of top level acceleration structure building needs acceleration structure handles.
@@ -3305,7 +3350,28 @@ void ValidationStateTracker::UpdateBindImageMemoryState(const VkBindImageMemoryI
             // Track bound memory range information
             auto mem_info = Get<DEVICE_MEMORY_STATE>(bindInfo.memory);
             if (mem_info) {
-                image_state->SetMemBinding(mem_info, bindInfo.memoryOffset);
+                VkDeviceSize plane_index = 0u;
+                if (image_state->disjoint && image_state->IsExternalAHB() == false) {
+                    auto plane_info = LvlFindInChain<VkBindImagePlaneMemoryInfo>(bindInfo.pNext);
+                    const VkImageAspectFlagBits aspect = plane_info->planeAspect;
+                    switch (aspect) {
+                        case VK_IMAGE_ASPECT_PLANE_0_BIT:
+                            plane_index = 0;
+                            break;
+                        case VK_IMAGE_ASPECT_PLANE_1_BIT:
+                            plane_index = 1;
+                            break;
+                        case VK_IMAGE_ASPECT_PLANE_2_BIT:
+                            plane_index = 2;
+                            break;
+                        default:
+                            assert(false);  // parameter validation should have caught this
+                            break;
+                    }
+                }
+                image_state->BindMemory(
+                    image_state.get(), mem_info, bindInfo.memoryOffset, plane_index,
+                    image_state->requirements[static_cast<decltype(image_state->requirements)::size_type>(plane_index)].size);
             }
         }
     }
@@ -4318,6 +4384,13 @@ std::shared_ptr<SHADER_MODULE_STATE> ValidationStateTracker::CreateShaderModuleS
     bool is_spirv = (create_info.pCode[0] == spv::MagicNumber);
     return is_spirv ? std::make_shared<SHADER_MODULE_STATE>(create_info, handle, spirv_environment, unique_shader_id)
                     : std::make_shared<SHADER_MODULE_STATE>();
+}
+
+void ValidationStateTracker::PostCallRecordCmdTraceRaysIndirect2KHR(VkCommandBuffer commandBuffer,
+                                                                    VkDeviceAddress indirectDeviceAddress) {
+    auto cb_state = GetWrite<CMD_BUFFER_STATE>(commandBuffer);
+    cb_state->UpdateStateCmdDrawDispatchType(CMD_TRACERAYSINDIRECT2KHR, VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR);
+    cb_state->hasTraceRaysCmd = true;
 }
 
 void ValidationStateTracker::PostCallRecordCreateShaderModule(VkDevice device, const VkShaderModuleCreateInfo *pCreateInfo,

@@ -7,7 +7,7 @@ import type * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as UI from '../../ui/legacy/legacy.js';
 
-import type {LighthouseController} from './LighthouseController.js';
+import type {LighthouseController, Preset} from './LighthouseController.js';
 import {Events, Presets, RuntimeSettings} from './LighthouseController.js';
 import {RadioSetting} from './RadioSetting.js';
 
@@ -42,10 +42,11 @@ const str_ = i18n.i18n.registerUIStrings('panels/lighthouse/LighthouseStartView.
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class StartView extends UI.Widget.Widget {
   protected controller: LighthouseController;
-  private readonly settingsToolbarInternal: UI.Toolbar.Toolbar;
+  protected readonly settingsToolbarInternal: UI.Toolbar.Toolbar;
   protected startButton!: HTMLButtonElement;
   protected helpText?: Element;
   protected warningText?: Element;
+  protected checkboxes: Array<{preset: Preset, checkbox: UI.Toolbar.ToolbarCheckbox}> = [];
   private shouldConfirm?: boolean;
 
   constructor(controller: LighthouseController) {
@@ -84,7 +85,7 @@ export class StartView extends UI.Widget.Widget {
     UI.ARIAUtils.setAccessibleName(control.element, label);
   }
 
-  private populateRuntimeSettingAsToolbarCheckbox(settingName: string, toolbar: UI.Toolbar.Toolbar): void {
+  protected populateRuntimeSettingAsToolbarCheckbox(settingName: string, toolbar: UI.Toolbar.Toolbar): void {
     const runtimeSetting = RuntimeSettings.find(item => item.setting.name === settingName);
     if (!runtimeSetting || !runtimeSetting.title) {
       throw new Error(`${settingName} is not a setting with a title`);
@@ -102,6 +103,30 @@ export class StartView extends UI.Widget.Widget {
     }
   }
 
+  protected populateRuntimeSettingAsToolbarDropdown(settingName: string, toolbar: UI.Toolbar.Toolbar): void {
+    const runtimeSetting = RuntimeSettings.find(item => item.setting.name === settingName);
+    if (!runtimeSetting || !runtimeSetting.title) {
+      throw new Error(`${settingName} is not a setting with a title`);
+    }
+
+    const options = runtimeSetting.options?.map(option => ({label: option.label(), value: option.value})) || [];
+
+    runtimeSetting.setting.setTitle(runtimeSetting.title());
+    const control = new UI.Toolbar.ToolbarSettingComboBox(
+        options,
+        runtimeSetting.setting as Common.Settings.Setting<string>,
+        runtimeSetting.title(),
+    );
+    control.setTitle(runtimeSetting.description());
+    toolbar.appendToolbarItem(control);
+    if (runtimeSetting.learnMore) {
+      const link =
+          UI.XLink.XLink.create(runtimeSetting.learnMore, i18nString(UIStrings.learnMore), 'lighthouse-learn-more');
+      link.style.padding = '5px';
+      control.element.appendChild(link);
+    }
+  }
+
   protected populateFormControls(fragment: UI.Fragment.Fragment, mode?: string): void {
     // Populate the device type
     const deviceTypeFormElements = fragment.$('device-type-form-elements');
@@ -109,15 +134,16 @@ export class StartView extends UI.Widget.Widget {
 
     // Populate the categories
     const categoryFormElements = fragment.$('categories-form-elements') as HTMLElement;
-    categoryFormElements.textContent = '';
     const pluginFormElements = fragment.$('plugins-form-elements') as HTMLElement;
-    pluginFormElements.textContent = '';
+
+    this.checkboxes = [];
     for (const preset of Presets) {
       const formElements = preset.plugin ? pluginFormElements : categoryFormElements;
       preset.setting.setTitle(preset.title());
       const checkbox = new UI.Toolbar.ToolbarSettingCheckbox(preset.setting, preset.description());
       const row = formElements.createChild('div', 'vbox lighthouse-launcher-row');
       row.appendChild(checkbox.element);
+      this.checkboxes.push({preset, checkbox});
       if (mode && !preset.supportedModes.includes(mode)) {
         checkbox.setEnabled(false);
         checkbox.setIndeterminate(true);
@@ -132,7 +158,7 @@ export class StartView extends UI.Widget.Widget {
   protected render(): void {
     this.populateRuntimeSettingAsToolbarCheckbox('lighthouse.legacy_navigation', this.settingsToolbarInternal);
     this.populateRuntimeSettingAsToolbarCheckbox('lighthouse.clear_storage', this.settingsToolbarInternal);
-    this.populateRuntimeSettingAsToolbarCheckbox('lighthouse.throttling', this.settingsToolbarInternal);
+    this.populateRuntimeSettingAsToolbarDropdown('lighthouse.throttling', this.settingsToolbarInternal);
 
     this.startButton = UI.UIUtils.createTextButton(
         i18nString(UIStrings.generateReport),

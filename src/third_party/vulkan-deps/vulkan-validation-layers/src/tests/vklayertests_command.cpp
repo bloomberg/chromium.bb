@@ -2535,8 +2535,7 @@ TEST_F(VkLayerTest, CopyImageTypeExtentMismatch) {
 
     // Tests are designed to run without Maintenance1 which was promoted in 1.1
     if (DeviceValidationVersion() >= VK_API_VERSION_1_1) {
-        printf("%s Tests for 1.0 only, test skipped.\n", kSkipPrefix);
-        return;
+        GTEST_SKIP() << "Tests for 1.0 only";
     }
 
     VkImageCreateInfo ci = LvlInitStruct<VkImageCreateInfo>();
@@ -5850,8 +5849,7 @@ TEST_F(VkLayerTest, MultiDrawTests) {
     SetTargetApiVersion(VK_API_VERSION_1_2);
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
     if (DeviceValidationVersion() < VK_API_VERSION_1_2) {
-        printf("%s Tests requires Vulkan 1.2+, skipping test\n", kSkipPrefix);
-        return;
+        GTEST_SKIP() << "At least Vulkan version 1.2 is required";
     }
 
     auto multi_draw_features = LvlInitStruct<VkPhysicalDeviceMultiDrawFeaturesEXT>();
@@ -5948,8 +5946,7 @@ TEST_F(VkLayerTest, MultiDrawFeatures) {
     SetTargetApiVersion(VK_API_VERSION_1_2);
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
     if (DeviceValidationVersion() < VK_API_VERSION_1_2) {
-        printf("%s Tests requires Vulkan 1.2+, skipping test\n", kSkipPrefix);
-        return;
+        GTEST_SKIP() << "At least Vulkan version 1.2 is required";
     }
     if (DeviceExtensionSupported(gpu(), nullptr, VK_EXT_MULTI_DRAW_EXTENSION_NAME)) {
         m_device_extension_names.push_back(VK_EXT_MULTI_DRAW_EXTENSION_NAME);
@@ -6218,13 +6215,13 @@ TEST_F(VkLayerTest, DrawIndirectCountKHR) {
     VkBuffer draw_buffer;
     vk::CreateBuffer(m_device->device(), &buffer_create_info, nullptr, &draw_buffer);
 
+    VkDeviceSize count_buffer_size = 128;
     VkBufferCreateInfo count_buffer_create_info = LvlInitStruct<VkBufferCreateInfo>();
-    count_buffer_create_info.size = sizeof(uint32_t);
+    count_buffer_create_info.size = count_buffer_size;
     count_buffer_create_info.usage = VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT;
     VkBufferObj count_buffer;
     count_buffer.init(*m_device, count_buffer_create_info);
 
-    // VUID-vkCmdDrawIndirectCount-buffer-02708
     m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdDrawIndirectCount-buffer-02708");
     vkCmdDrawIndirectCountKHR(m_commandBuffer->handle(), draw_buffer, 0, count_buffer.handle(), 0, 1,
                               sizeof(VkDrawIndirectCommand));
@@ -6240,33 +6237,37 @@ TEST_F(VkLayerTest, DrawIndirectCountKHR) {
     VkBuffer count_buffer_unbound;
     vk::CreateBuffer(m_device->device(), &count_buffer_create_info, nullptr, &count_buffer_unbound);
 
-    // VUID-vkCmdDrawIndirectCount-countBuffer-02714
+    VkBufferObj count_buffer_wrong;
+    count_buffer_create_info.usage = 0;
+    count_buffer_wrong.init(*m_device, count_buffer_create_info);
+
     m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdDrawIndirectCount-countBuffer-02714");
     vkCmdDrawIndirectCountKHR(m_commandBuffer->handle(), draw_buffer, 0, count_buffer_unbound, 0, 1, sizeof(VkDrawIndirectCommand));
     m_errorMonitor->VerifyFound();
 
-    // VUID-vkCmdDrawIndirectCount-offset-02710
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, " VUID-vkCmdDrawIndirectCount-countBuffer-02715");
+    vkCmdDrawIndirectCountKHR(m_commandBuffer->handle(), draw_buffer, 0, count_buffer_wrong.handle(), 0, 1,
+                              sizeof(VkDrawIndirectCommand));
+    m_errorMonitor->VerifyFound();
+
     m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdDrawIndirectCount-offset-02710");
     vkCmdDrawIndirectCountKHR(m_commandBuffer->handle(), draw_buffer, 1, count_buffer.handle(), 0, 1,
                               sizeof(VkDrawIndirectCommand));
     m_errorMonitor->VerifyFound();
 
-    // VUID-vkCmdDrawIndirectCount-countBufferOffset-02716
     m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdDrawIndirectCount-countBufferOffset-02716");
     vkCmdDrawIndirectCountKHR(m_commandBuffer->handle(), draw_buffer, 0, count_buffer.handle(), 1, 1,
                               sizeof(VkDrawIndirectCommand));
     m_errorMonitor->VerifyFound();
 
-    // VUID-vkCmdDrawIndirectCount-stride-03110
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdDrawIndirectCount-countBufferOffset-04129");
+    vkCmdDrawIndirectCountKHR(m_commandBuffer->handle(), draw_buffer, 0, count_buffer.handle(), count_buffer_size, 1,
+                              sizeof(VkDrawIndirectCommand));
+    m_errorMonitor->VerifyFound();
+
     m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdDrawIndirectCount-stride-03110");
     vkCmdDrawIndirectCountKHR(m_commandBuffer->handle(), draw_buffer, 0, count_buffer.handle(), 0, 1, 1);
     m_errorMonitor->VerifyFound();
-
-    // TODO: These covered VUIDs aren't tested. There is also no test coverage for the core Vulkan 1.0 vk::CmdDraw* equivalent of
-    // these:
-    //     VUID-vkCmdDrawIndirectCount-renderPass-02684
-    //     VUID-vkCmdDrawIndirectCount-subpass-02685
-    //     VUID-vkCmdDrawIndirectCount-commandBuffer-02701
 
     m_commandBuffer->EndRenderPass();
     m_commandBuffer->end();
@@ -6321,8 +6322,9 @@ TEST_F(VkLayerTest, DrawIndexedIndirectCountKHR) {
     VkBufferObj draw_buffer;
     draw_buffer.init(*m_device, buffer_create_info);
 
+    VkDeviceSize count_buffer_size = 128;
     VkBufferCreateInfo count_buffer_create_info = LvlInitStruct<VkBufferCreateInfo>();
-    count_buffer_create_info.size = sizeof(uint32_t);
+    count_buffer_create_info.size = count_buffer_size;
     count_buffer_create_info.usage = VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT;
     VkBufferObj count_buffer;
     count_buffer.init(*m_device, count_buffer_create_info);
@@ -6333,7 +6335,6 @@ TEST_F(VkLayerTest, DrawIndexedIndirectCountKHR) {
     VkBufferObj index_buffer;
     index_buffer.init(*m_device, index_buffer_create_info);
 
-    // VUID-vkCmdDrawIndexedIndirectCount-commandBuffer-02701 (partial - only tests whether the index buffer is bound)
     m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdDrawIndexedIndirectCount-commandBuffer-02701");
     vkCmdDrawIndexedIndirectCountKHR(m_commandBuffer->handle(), draw_buffer.handle(), 0, count_buffer.handle(), 0, 1,
                                      sizeof(VkDrawIndexedIndirectCommand));
@@ -6344,7 +6345,6 @@ TEST_F(VkLayerTest, DrawIndexedIndirectCountKHR) {
     VkBuffer draw_buffer_unbound;
     vk::CreateBuffer(m_device->device(), &count_buffer_create_info, nullptr, &draw_buffer_unbound);
 
-    // VUID-vkCmdDrawIndexedIndirectCount-buffer-02708
     m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdDrawIndexedIndirectCount-buffer-02708");
     vkCmdDrawIndexedIndirectCountKHR(m_commandBuffer->handle(), draw_buffer_unbound, 0, count_buffer.handle(), 0, 1,
                                      sizeof(VkDrawIndexedIndirectCommand));
@@ -6353,34 +6353,38 @@ TEST_F(VkLayerTest, DrawIndexedIndirectCountKHR) {
     VkBuffer count_buffer_unbound;
     vk::CreateBuffer(m_device->device(), &count_buffer_create_info, nullptr, &count_buffer_unbound);
 
-    // VUID-vkCmdDrawIndexedIndirectCount-countBuffer-02714
+    VkBufferObj count_buffer_wrong;
+    count_buffer_create_info.usage = 0;
+    count_buffer_wrong.init(*m_device, count_buffer_create_info);
+
     m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdDrawIndexedIndirectCount-countBuffer-02714");
     vkCmdDrawIndexedIndirectCountKHR(m_commandBuffer->handle(), draw_buffer.handle(), 0, count_buffer_unbound, 0, 1,
                                      sizeof(VkDrawIndexedIndirectCommand));
     m_errorMonitor->VerifyFound();
 
-    // VUID-vkCmdDrawIndexedIndirectCount-offset-02710
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdDrawIndexedIndirectCount-countBuffer-02715");
+    vkCmdDrawIndexedIndirectCountKHR(m_commandBuffer->handle(), draw_buffer.handle(), 0, count_buffer_wrong.handle(), 0, 1,
+                                     sizeof(VkDrawIndexedIndirectCommand));
+    m_errorMonitor->VerifyFound();
+
     m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdDrawIndexedIndirectCount-offset-02710");
     vkCmdDrawIndexedIndirectCountKHR(m_commandBuffer->handle(), draw_buffer.handle(), 1, count_buffer.handle(), 0, 1,
                                      sizeof(VkDrawIndexedIndirectCommand));
     m_errorMonitor->VerifyFound();
 
-    // VUID-vkCmdDrawIndexedIndirectCount-countBufferOffset-02716
     m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdDrawIndexedIndirectCount-countBufferOffset-02716");
     vkCmdDrawIndexedIndirectCountKHR(m_commandBuffer->handle(), draw_buffer.handle(), 0, count_buffer.handle(), 1, 1,
                                      sizeof(VkDrawIndexedIndirectCommand));
     m_errorMonitor->VerifyFound();
 
-    // VUID-vkCmdDrawIndexedIndirectCount-stride-03142
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdDrawIndexedIndirectCount-countBufferOffset-04129");
+    vkCmdDrawIndexedIndirectCountKHR(m_commandBuffer->handle(), draw_buffer.handle(), 0, count_buffer.handle(), count_buffer_size,
+                                     1, sizeof(VkDrawIndexedIndirectCommand));
+    m_errorMonitor->VerifyFound();
+
     m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdDrawIndexedIndirectCount-stride-03142");
     vkCmdDrawIndexedIndirectCountKHR(m_commandBuffer->handle(), draw_buffer.handle(), 0, count_buffer.handle(), 0, 1, 1);
     m_errorMonitor->VerifyFound();
-
-    // TODO: These covered VUIDs aren't tested. There is also no test coverage for the core Vulkan 1.0 vk::CmdDraw* equivalent of
-    // these:
-    //     VUID-vkCmdDrawIndexedIndirectCount-renderPass-02684
-    //     VUID-vkCmdDrawIndexedIndirectCount-subpass-02685
-    //     VUID-vkCmdDrawIndexedIndirectCount-commandBuffer-02701 (partial)
 
     m_commandBuffer->EndRenderPass();
     m_commandBuffer->end();
@@ -6396,8 +6400,7 @@ TEST_F(VkLayerTest, DrawIndirectCountFeature) {
     ASSERT_NO_FATAL_FAILURE(Init());
     ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
     if (DeviceValidationVersion() < VK_API_VERSION_1_2) {
-        printf("%s Tests requires Vulkan 1.2+, skipping test\n", kSkipPrefix);
-        return;
+        GTEST_SKIP() << "At least Vulkan version 1.2 is required";
     }
 
     VkBufferObj indirect_buffer;
@@ -6726,14 +6729,10 @@ TEST_F(VkLayerTest, MeshShaderNV) {
 TEST_F(VkLayerTest, MeshShaderDisabledNV) {
     TEST_DESCRIPTION("Test VK_NV_mesh_shader VUs with NV_mesh_shader disabled.");
 
-    if (!AddRequiredExtensions(VK_NV_MESH_SHADER_EXTENSION_NAME)) {
-        printf("%s %s not supported\n", kSkipPrefix, VK_NV_MESH_SHADER_EXTENSION_NAME);
-        return;
-    }
+    AddRequiredExtensions(VK_NV_MESH_SHADER_EXTENSION_NAME);
     ASSERT_NO_FATAL_FAILURE(InitFramework());
-    if (!AreRequestedExtensionsEnabled()) {
-        printf("%s %s not supported\n", kSkipPrefix, VK_NV_MESH_SHADER_EXTENSION_NAME);
-        return;
+    if (!AreRequiredExtensionsEnabled()) {
+        GTEST_SKIP() << RequiredExtensionsNotSupported() << " not supported";
     }
     auto vkGetPhysicalDeviceFeatures2KHR = reinterpret_cast<PFN_vkGetPhysicalDeviceFeatures2KHR>(
         vk::GetInstanceProcAddr(instance(), "vkGetPhysicalDeviceFeatures2KHR"));
@@ -7613,8 +7612,7 @@ TEST_F(VkLayerTest, InvalidUnprotectedCommands) {
 
     ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
     if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
-        printf("%s Tests requires Vulkan 1.1+, skipping test\n", kSkipPrefix);
-        return;
+        GTEST_SKIP() << "At least Vulkan version 1.1 is required";
     }
 
     VkBufferObj indirect_buffer;
@@ -7721,8 +7719,7 @@ TEST_F(VkLayerTest, InvalidMixingProtectedResources) {
     VkCommandBufferObj protectedCommandBuffer(m_device, &protectedCommandPool);
 
     if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
-        printf("%s Tests requires Vulkan 1.1+, skipping test\n", kSkipPrefix);
-        return;
+        GTEST_SKIP() << "At least Vulkan version 1.1 is required";
     }
 
     // Create actual protected and unprotected buffers
@@ -8562,9 +8559,8 @@ TEST_F(VkLayerTest, VerifyImgFilterCubicSamplerInCmdDraw) {
 
     AddRequiredExtensions(VK_IMG_FILTER_CUBIC_EXTENSION_NAME);
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
-    if (!AreRequestedExtensionsEnabled()) {
-        printf("%s %s Extension not supported, skipping tests\n", kSkipPrefix, VK_IMG_FILTER_CUBIC_EXTENSION_NAME);
-        return;
+    if (!AreRequiredExtensionsEnabled()) {
+        GTEST_SKIP() << RequiredExtensionsNotSupported() << " not supported";
     }
 
     ASSERT_NO_FATAL_FAILURE(InitState(nullptr, nullptr, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT));
@@ -9762,14 +9758,12 @@ TEST_F(VkLayerTest, BeginRenderingWithSecondaryContents) {
 
     ASSERT_NO_FATAL_FAILURE(InitFramework());
 
-    if (!AreRequestedExtensionsEnabled()) {
-        printf("%s %s Extension not supported, skipping tests\n", kSkipPrefix, VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME);
-        return;
+    if (!AreRequiredExtensionsEnabled()) {
+        GTEST_SKIP() << RequiredExtensionsNotSupported() << " not supported";
     }
 
     if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
-        printf("%s Tests requires Vulkan 1.1+, skipping test\n", kSkipPrefix);
-        return;
+        GTEST_SKIP() << "At least Vulkan version 1.1 is required";
     }
 
     auto dynamic_rendering_features = LvlInitStruct<VkPhysicalDeviceDynamicRenderingFeaturesKHR>();
@@ -9840,6 +9834,7 @@ TEST_F(VkLayerTest, BadRenderPassContentsWhenCallingCmdExecuteCommandsWithBeginR
     m_commandBuffer->BeginRenderPass(rp_bi);
 
     m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdExecuteCommands-contents-06018");
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdExecuteCommands-contents-00095");
     vk::CmdExecuteCommands(m_commandBuffer->handle(), 1, &secondary.handle());
     m_errorMonitor->VerifyFound();
 
@@ -9858,14 +9853,12 @@ TEST_F(VkLayerTest, BadRenderPassContentsWhenCallingCmdExecuteCommandsWithBeginR
 
     ASSERT_NO_FATAL_FAILURE(InitFramework());
 
-    if (!AreRequestedExtensionsEnabled()) {
-        printf("%s %s Extension not supported, skipping tests\n", kSkipPrefix, VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME);
-        return;
+    if (!AreRequiredExtensionsEnabled()) {
+        GTEST_SKIP() << RequiredExtensionsNotSupported() << " not supported";
     }
 
     if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
-        printf("%s Tests requires Vulkan 1.1+, skipping test\n", kSkipPrefix);
-        return;
+        GTEST_SKIP() << "At least Vulkan version 1.1 is required";
     }
 
     auto dynamic_rendering_features = LvlInitStruct<VkPhysicalDeviceDynamicRenderingFeaturesKHR>();
@@ -9983,6 +9976,7 @@ TEST_F(VkLayerTest, BadExecuteCommandsSubpassIndices) {
     m_commandBuffer->BeginRenderPass(rp_bi, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
 
     m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdExecuteCommands-pCommandBuffers-06019");
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdExecuteCommands-pCommandBuffers-00097");
     vk::CmdExecuteCommands(m_commandBuffer->handle(), 1, &secondary.handle());
     m_errorMonitor->VerifyFound();
 
@@ -10059,6 +10053,7 @@ TEST_F(VkLayerTest, IncompatibleRenderPassesInExecuteCommands) {
     m_commandBuffer->BeginRenderPass(rp_bi, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
 
     m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdExecuteCommands-pBeginInfo-06020");
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdExecuteCommands-pInheritanceInfo-00098");
     vk::CmdExecuteCommands(m_commandBuffer->handle(), 1, &secondary.handle());
     m_errorMonitor->VerifyFound();
 
@@ -10081,14 +10076,12 @@ TEST_F(VkLayerTest, DynamicRenderingAndExecuteCommandsWithNonNullRenderPass) {
 
     ASSERT_NO_FATAL_FAILURE(InitFramework());
 
-    if (!AreRequestedExtensionsEnabled()) {
-        printf("%s %s Extension not supported, skipping tests\n", kSkipPrefix, VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME);
-        return;
+    if (!AreRequiredExtensionsEnabled()) {
+        GTEST_SKIP() << RequiredExtensionsNotSupported() << " not supported";
     }
 
     if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
-        printf("%s Tests requires Vulkan 1.1+, skipping test\n", kSkipPrefix);
-        return;
+        GTEST_SKIP() << "At least Vulkan version 1.1 is required";
     }
 
     auto dynamic_rendering_features = LvlInitStruct<VkPhysicalDeviceDynamicRenderingFeaturesKHR>();
@@ -10173,14 +10166,12 @@ TEST_F(VkLayerTest, DynamicRenderingAndExecuteCommandsWithMismatchingFlags) {
 
     ASSERT_NO_FATAL_FAILURE(InitFramework());
 
-    if (!AreRequestedExtensionsEnabled()) {
-        printf("%s %s Extension not supported, skipping tests\n", kSkipPrefix, VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME);
-        return;
+    if (!AreRequiredExtensionsEnabled()) {
+        GTEST_SKIP() << RequiredExtensionsNotSupported() << " not supported";
     }
 
     if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
-        printf("%s Tests requires Vulkan 1.1+, skipping test\n", kSkipPrefix);
-        return;
+        GTEST_SKIP() << "At least Vulkan version 1.1 is required";
     }
 
     auto dynamic_rendering_features = LvlInitStruct<VkPhysicalDeviceDynamicRenderingFeaturesKHR>();
@@ -10249,14 +10240,12 @@ TEST_F(VkLayerTest, DynamicRenderingAndExecuteCommandsWithMismatchingColorAttach
 
     ASSERT_NO_FATAL_FAILURE(InitFramework());
 
-    if (!AreRequestedExtensionsEnabled()) {
-        printf("%s %s Extension not supported, skipping tests\n", kSkipPrefix, VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME);
-        return;
+    if (!AreRequiredExtensionsEnabled()) {
+        GTEST_SKIP() << RequiredExtensionsNotSupported() << " not supported";
     }
 
     if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
-        printf("%s Tests requires Vulkan 1.1+, skipping test\n", kSkipPrefix);
-        return;
+        GTEST_SKIP() << "At least Vulkan version 1.1 is required";
     }
 
     auto dynamic_rendering_features = LvlInitStruct<VkPhysicalDeviceDynamicRenderingFeaturesKHR>();
@@ -10324,14 +10313,12 @@ TEST_F(VkLayerTest, DynamicRenderingAndExecuteCommandsWithMismatchingColorImageV
 
     ASSERT_NO_FATAL_FAILURE(InitFramework());
 
-    if (!AreRequestedExtensionsEnabled()) {
-        printf("%s %s Extension not supported, skipping tests\n", kSkipPrefix, VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME);
-        return;
+    if (!AreRequiredExtensionsEnabled()) {
+        GTEST_SKIP() << RequiredExtensionsNotSupported() << " not supported";
     }
 
     if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
-        printf("%s Tests requires Vulkan 1.1+, skipping test\n", kSkipPrefix);
-        return;
+        GTEST_SKIP() << "At least Vulkan version 1.1 is required";
     }
 
     auto dynamic_rendering_features = LvlInitStruct<VkPhysicalDeviceDynamicRenderingFeaturesKHR>();
@@ -10405,14 +10392,12 @@ TEST_F(VkLayerTest, DynamicRenderingAndExecuteCommandsWithMismatchingDepthStenci
 
     ASSERT_NO_FATAL_FAILURE(InitFramework());
 
-    if (!AreRequestedExtensionsEnabled()) {
-        printf("%s %s Extension not supported, skipping tests\n", kSkipPrefix, VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME);
-        return;
+    if (!AreRequiredExtensionsEnabled()) {
+        GTEST_SKIP() << RequiredExtensionsNotSupported() << " not supported";
     }
 
     if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
-        printf("%s Tests requires Vulkan 1.1+, skipping test\n", kSkipPrefix);
-        return;
+        GTEST_SKIP() << "At least Vulkan version 1.1 is required";
     }
 
     auto dynamic_rendering_features = LvlInitStruct<VkPhysicalDeviceDynamicRenderingFeaturesKHR>();
@@ -10489,14 +10474,12 @@ TEST_F(VkLayerTest, DynamicRenderingAndExecuteCommandsWithMismatchingViewMask) {
 
     ASSERT_NO_FATAL_FAILURE(InitFramework());
 
-    if (!AreRequestedExtensionsEnabled()) {
-        printf("%s %s Extension not supported, skipping tests\n", kSkipPrefix, VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME);
-        return;
+    if (!AreRequiredExtensionsEnabled()) {
+        GTEST_SKIP() << RequiredExtensionsNotSupported() << " not supported";
     }
 
     if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
-        printf("%s Tests requires Vulkan 1.1+, skipping test\n", kSkipPrefix);
-        return;
+        GTEST_SKIP() << "At least Vulkan version 1.1 is required";
     }
 
     auto dynamic_rendering_features = LvlInitStruct<VkPhysicalDeviceDynamicRenderingFeaturesKHR>();
@@ -10566,14 +10549,12 @@ TEST_F(VkLayerTest, DynamicRenderingAndExecuteCommandsWithMismatchingImageViewRa
 
     ASSERT_NO_FATAL_FAILURE(InitFramework());
 
-    if (!AreRequestedExtensionsEnabled()) {
-        printf("%s %s Extension not supported, skipping tests\n", kSkipPrefix, VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME);
-        return;
+    if (!AreRequiredExtensionsEnabled()) {
+        GTEST_SKIP() << RequiredExtensionsNotSupported() << " not supported";
     }
 
     if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
-        printf("%s Tests requires Vulkan 1.1+, skipping test\n", kSkipPrefix);
-        return;
+        GTEST_SKIP() << "At least Vulkan version 1.1 is required";
     }
 
     auto dynamic_rendering_features = LvlInitStruct<VkPhysicalDeviceDynamicRenderingFeaturesKHR>();
@@ -10694,14 +10675,12 @@ TEST_F(VkLayerTest, DynamicRenderingAndExecuteCommandsWithMismatchingImageViewAt
 
     ASSERT_NO_FATAL_FAILURE(InitFramework());
 
-    if (!AreRequestedExtensionsEnabled()) {
-        printf("%s %s Extension not supported, skipping tests\n", kSkipPrefix, VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME);
-        return;
+    if (!AreRequiredExtensionsEnabled()) {
+        GTEST_SKIP() << RequiredExtensionsNotSupported() << " not supported";
     }
 
     if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
-        printf("%s Tests requires Vulkan 1.1+, skipping test\n", kSkipPrefix);
-        return;
+        GTEST_SKIP() << "At least Vulkan version 1.1 is required";
     }
 
     auto dynamic_rendering_features = LvlInitStruct<VkPhysicalDeviceDynamicRenderingFeaturesKHR>();
@@ -10842,11 +10821,13 @@ TEST_F(VkLayerTest, CopyCommands2V13) {
     SetTargetApiVersion(VK_API_VERSION_1_3);
     ASSERT_NO_FATAL_FAILURE(Init());
     if (DeviceValidationVersion() < VK_API_VERSION_1_3) {
-        printf("%s CopyCommands2V13 test requires Vulkan 1.3+.\n", kSkipPrefix);
-        return;
+        GTEST_SKIP() << "At least Vulkan version 1.3 is required";
     }
     VkImageObj image(m_device);
     image.Init(128, 128, 1, VK_FORMAT_B8G8R8A8_UNORM, VK_IMAGE_USAGE_TRANSFER_SRC_BIT, VK_IMAGE_TILING_OPTIMAL, 0);
+    VkImageObj image2(m_device);
+    image2.Init(128, 128, 1, VK_FORMAT_B8G8R8A8_UNORM, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT,
+                VK_IMAGE_TILING_OPTIMAL, 0);
     ASSERT_TRUE(image.initialized());
     VkBufferObj dst_buffer;
     VkMemoryPropertyFlags reqs = 0;
@@ -10955,7 +10936,7 @@ TEST_F(VkLayerTest, CopyCommands2V13) {
     auto resolve_image_info = LvlInitStruct<VkResolveImageInfo2>();
     resolve_image_info.srcImage = image.handle();
     resolve_image_info.srcImageLayout = VK_IMAGE_LAYOUT_GENERAL;
-    resolve_image_info.dstImage = image.handle();
+    resolve_image_info.dstImage = image2.handle();
     resolve_image_info.dstImageLayout = VK_IMAGE_LAYOUT_GENERAL;
     resolve_image_info.regionCount = 1;
     resolve_image_info.pRegions = &resolve_region;
@@ -10968,22 +10949,11 @@ TEST_F(VkLayerTest, ValidateMultiviewUnboundResourcesAfterBeginRenderPassAndNext
     TEST_DESCRIPTION(
         "Validate all required resources are bound if multiview is enabled after vkCmdBeginRenderPass and vkCmdNextSubpass");
 
-    uint32_t version = SetTargetApiVersion(VK_API_VERSION_1_1);
-    if (version < VK_API_VERSION_1_1) {
-        if (!AddRequiredInstanceExtensions(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME)) {
-            printf("%s At least Vulkan version 1.1 is required or instance extension %s, skipping test.\n", kSkipPrefix,
-                   VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
-            return;
-        }
-    }
+    AddRequiredExtensions(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+    AddRequiredExtensions(VK_KHR_MULTIVIEW_EXTENSION_NAME);
     ASSERT_NO_FATAL_FAILURE(InitFramework());
-
-    if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
-        if (!AddRequiredDeviceExtensions(VK_KHR_MULTIVIEW_EXTENSION_NAME)) {
-            printf("%s At least Vulkan version 1.1 is required or device extension %s, skipping test.\n", kSkipPrefix,
-                   VK_KHR_MULTIVIEW_EXTENSION_NAME);
-            return;
-        }
+    if (!AreRequiredExtensionsEnabled()) {
+        GTEST_SKIP() << RequiredExtensionsNotSupported() << " not supported";
     }
 
     auto multiview_features = LvlInitStruct<VkPhysicalDeviceMultiviewFeatures>();
@@ -11119,14 +11089,12 @@ TEST_F(VkLayerTest, TestCommandBufferInheritanceWithInvalidDepthFormat) {
 
     ASSERT_NO_FATAL_FAILURE(InitFramework());
 
-    if (!AreRequestedExtensionsEnabled()) {
-        printf("%s %s Extension not supported, skipping tests\n", kSkipPrefix, VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME);
-        return;
+    if (!AreRequiredExtensionsEnabled()) {
+        GTEST_SKIP() << RequiredExtensionsNotSupported() << " not supported";
     }
 
     if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
-        printf("%s Tests requires Vulkan 1.1+, skipping test\n", kSkipPrefix);
-        return;
+        GTEST_SKIP() << "At least Vulkan version 1.1 is required";
     }
 
     auto dynamic_rendering_features = LvlInitStruct<VkPhysicalDeviceDynamicRenderingFeaturesKHR>();
@@ -11159,4 +11127,136 @@ TEST_F(VkLayerTest, TestCommandBufferInheritanceWithInvalidDepthFormat) {
     vk::BeginCommandBuffer(secondary.handle(), &cmdbuf_bi);
 
     m_errorMonitor->VerifyFound();
+}
+
+TEST_F(VkLayerTest, ResolveInvalidUsage) {
+    TEST_DESCRIPTION("Resolve image with missing usage flags.");
+
+    if (!EnableDeviceProfileLayer()) {
+        printf("%s Failed to enable device profile layer.\n", kSkipPrefix);
+        return;
+    }
+
+    ASSERT_NO_FATAL_FAILURE(Init());
+
+    PFN_vkSetPhysicalDeviceFormatPropertiesEXT fpvkSetPhysicalDeviceFormatPropertiesEXT = nullptr;
+    PFN_vkGetOriginalPhysicalDeviceFormatPropertiesEXT fpvkGetOriginalPhysicalDeviceFormatPropertiesEXT = nullptr;
+
+    // Load required functions
+    if (!LoadDeviceProfileLayer(fpvkSetPhysicalDeviceFormatPropertiesEXT, fpvkGetOriginalPhysicalDeviceFormatPropertiesEXT)) {
+        printf("%s Failed to device profile layer.\n", kSkipPrefix);
+        return;
+    }
+
+    VkFormat src_format = VK_FORMAT_R8_UNORM;
+    VkFormat dst_format = VK_FORMAT_R8_SNORM;
+
+    VkFormatProperties formatProps;
+    fpvkGetOriginalPhysicalDeviceFormatPropertiesEXT(gpu(), src_format, &formatProps);
+    formatProps.optimalTilingFeatures &= ~VK_FORMAT_FEATURE_TRANSFER_SRC_BIT;
+    fpvkSetPhysicalDeviceFormatPropertiesEXT(gpu(), src_format, formatProps);
+    fpvkGetOriginalPhysicalDeviceFormatPropertiesEXT(gpu(), dst_format, &formatProps);
+    formatProps.optimalTilingFeatures &= ~VK_FORMAT_FEATURE_TRANSFER_DST_BIT;
+    fpvkSetPhysicalDeviceFormatPropertiesEXT(gpu(), dst_format, formatProps);
+
+    VkImageCreateInfo image_create_info = LvlInitStruct<VkImageCreateInfo>();
+    image_create_info.imageType = VK_IMAGE_TYPE_2D;
+    image_create_info.format = VK_FORMAT_B8G8R8A8_UNORM;
+    image_create_info.extent.width = 32;
+    image_create_info.extent.height = 1;
+    image_create_info.extent.depth = 1;
+    image_create_info.mipLevels = 1;
+    image_create_info.arrayLayers = 1;
+    image_create_info.samples = VK_SAMPLE_COUNT_2_BIT;
+    image_create_info.tiling = VK_IMAGE_TILING_OPTIMAL;
+    image_create_info.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+    image_create_info.flags = 0;
+
+    VkImageObj srcImage(m_device);
+    srcImage.init(&image_create_info);
+    ASSERT_TRUE(srcImage.initialized());
+
+    image_create_info.format = dst_format;
+    VkImageObj srcImage2(m_device);
+    srcImage2.init(&image_create_info);
+    ASSERT_TRUE(srcImage2.initialized());
+
+    image_create_info.format = VK_FORMAT_B8G8R8A8_UNORM;
+    image_create_info.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+    VkImageObj invalidSrcImage(m_device);
+    invalidSrcImage.init(&image_create_info);
+    ASSERT_TRUE(invalidSrcImage.initialized());
+
+    image_create_info.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+    image_create_info.format = src_format;
+    VkImageObj invalidSrcImage2(m_device);
+    invalidSrcImage2.init(&image_create_info);
+    ASSERT_TRUE(invalidSrcImage2.initialized());
+
+    image_create_info.format = VK_FORMAT_B8G8R8A8_UNORM;
+    image_create_info.samples = VK_SAMPLE_COUNT_1_BIT;
+    image_create_info.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+    image_create_info.tiling = VK_IMAGE_TILING_OPTIMAL;
+    VkImageObj dstImage(m_device);
+    dstImage.init(&image_create_info);
+    ASSERT_TRUE(dstImage.initialized());
+
+    image_create_info.format = src_format;
+    VkImageObj dstImage2(m_device);
+    dstImage2.init(&image_create_info);
+    ASSERT_TRUE(dstImage2.initialized());
+
+    image_create_info.format = VK_FORMAT_B8G8R8A8_UNORM;
+    image_create_info.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+    VkImageObj invalidDstImage(m_device);
+    invalidDstImage.init(&image_create_info);
+    ASSERT_TRUE(invalidDstImage.initialized());
+
+    image_create_info.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+    image_create_info.format = dst_format;
+    VkImageObj invalidDstImage2(m_device);
+    invalidDstImage2.init(&image_create_info);
+    ASSERT_TRUE(invalidDstImage2.initialized());
+
+    m_commandBuffer->begin();
+    VkImageResolve resolveRegion;
+    resolveRegion.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    resolveRegion.srcSubresource.mipLevel = 0;
+    resolveRegion.srcSubresource.baseArrayLayer = 0;
+    resolveRegion.srcSubresource.layerCount = 1;
+    resolveRegion.srcOffset.x = 0;
+    resolveRegion.srcOffset.y = 0;
+    resolveRegion.srcOffset.z = 0;
+    resolveRegion.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    resolveRegion.dstSubresource.mipLevel = 0;
+    resolveRegion.dstSubresource.baseArrayLayer = 0;
+    resolveRegion.dstSubresource.layerCount = 1;
+    resolveRegion.dstOffset.x = 0;
+    resolveRegion.dstOffset.y = 0;
+    resolveRegion.dstOffset.z = 0;
+    resolveRegion.extent.width = 1;
+    resolveRegion.extent.height = 1;
+    resolveRegion.extent.depth = 1;
+
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdResolveImage-srcImage-06762");
+    m_commandBuffer->ResolveImage(invalidSrcImage.handle(), VK_IMAGE_LAYOUT_GENERAL, dstImage.handle(), VK_IMAGE_LAYOUT_GENERAL, 1,
+                                  &resolveRegion);
+    m_errorMonitor->VerifyFound();
+
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdResolveImage-dstImage-06764");
+    m_commandBuffer->ResolveImage(srcImage.handle(), VK_IMAGE_LAYOUT_GENERAL, invalidDstImage.handle(), VK_IMAGE_LAYOUT_GENERAL, 1,
+                                  &resolveRegion);
+    m_errorMonitor->VerifyFound();
+
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdResolveImage-srcImage-06763");
+    m_commandBuffer->ResolveImage(invalidSrcImage2.handle(), VK_IMAGE_LAYOUT_GENERAL, dstImage2.handle(), VK_IMAGE_LAYOUT_GENERAL,
+                                  1, &resolveRegion);
+    m_errorMonitor->VerifyFound();
+
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdResolveImage-dstImage-06765");
+    m_commandBuffer->ResolveImage(srcImage2.handle(), VK_IMAGE_LAYOUT_GENERAL, invalidDstImage2.handle(), VK_IMAGE_LAYOUT_GENERAL,
+                                  1, &resolveRegion);
+    m_errorMonitor->VerifyFound();
+
+    m_commandBuffer->end();
 }

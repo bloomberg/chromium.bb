@@ -453,7 +453,6 @@ class MockQuicConnectionVisitor : public QuicConnectionVisitorInterface {
               (override));
   MOCK_METHOD(void, OnWriteBlocked, (), (override));
   MOCK_METHOD(void, OnCanWrite, (), (override));
-  MOCK_METHOD(bool, SendProbingData, (), (override));
   MOCK_METHOD(void, OnCongestionWindowChange, (QuicTime now), (override));
   MOCK_METHOD(void, OnConnectionMigration, (AddressChangeType type),
               (override));
@@ -779,6 +778,8 @@ class MockQuicSession : public QuicSession {
               (override));
   MOCK_METHOD(void, MaybeSendStopSendingFrame,
               (QuicStreamId stream_id, QuicResetStreamError error), (override));
+  MOCK_METHOD(void, SendBlocked,
+              (QuicStreamId stream_id, QuicStreamOffset offset), (override));
 
   MOCK_METHOD(bool, ShouldKeepConnectionAlive, (), (const, override));
   MOCK_METHOD(std::vector<std::string>, GetAlpnsToOffer, (), (const, override));
@@ -928,7 +929,8 @@ class MockQuicSpdySession : public QuicSpdySession {
               (QuicStreamId stream_id, QuicResetStreamError error), (override));
   MOCK_METHOD(void, SendWindowUpdate,
               (QuicStreamId id, QuicStreamOffset byte_offset), (override));
-  MOCK_METHOD(void, SendBlocked, (QuicStreamId id), (override));
+  MOCK_METHOD(void, SendBlocked,
+              (QuicStreamId id, QuicStreamOffset byte_offset), (override));
   MOCK_METHOD(void, OnStreamHeadersPriority,
               (QuicStreamId stream_id,
                const spdy::SpdyStreamPrecedence& precedence),
@@ -1206,7 +1208,6 @@ class MockSendAlgorithm : public SendAlgorithmInterface {
   MOCK_METHOD(std::string, GetDebugState, (), (const, override));
   MOCK_METHOD(bool, InSlowStart, (), (const, override));
   MOCK_METHOD(bool, InRecovery, (), (const, override));
-  MOCK_METHOD(bool, ShouldSendProbingPacket, (), (const, override));
   MOCK_METHOD(QuicByteCount, GetSlowStartThreshold, (), (const, override));
   MOCK_METHOD(CongestionControlType, GetCongestionControlType, (),
               (const, override));

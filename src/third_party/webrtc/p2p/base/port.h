@@ -18,6 +18,7 @@
 #include <utility>
 #include <vector>
 
+#include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
 #include "api/candidate.h"
 #include "api/field_trials_view.h"
@@ -61,7 +62,9 @@ extern const char TCPTYPE_ACTIVE_STR[];
 extern const char TCPTYPE_PASSIVE_STR[];
 extern const char TCPTYPE_SIMOPEN_STR[];
 
-enum IcePriorityValue {
+// The type preference MUST be an integer from 0 to 126 inclusive.
+// https://datatracker.ietf.org/doc/html/rfc5245#section-4.1.2.1
+enum IcePriorityValue : uint8_t {
   ICE_TYPE_PREFERENCE_RELAY_TLS = 0,
   ICE_TYPE_PREFERENCE_RELAY_TCP = 1,
   ICE_TYPE_PREFERENCE_RELAY_UDP = 2,
@@ -125,7 +128,7 @@ class CandidateStats {
 typedef std::vector<CandidateStats> CandidateStatsList;
 
 const char* ProtoToString(ProtocolType proto);
-bool StringToProto(const char* value, ProtocolType* proto);
+absl::optional<ProtocolType> StringToProto(absl::string_view proto_name);
 
 struct ProtocolAddress {
   rtc::SocketAddress address;
@@ -261,8 +264,8 @@ class Port : public PortInterface,
   // PortAllocatorSession, and is now being assigned to an ICE transport.
   // Updates the information for candidates as well.
   void SetIceParameters(int component,
-                        const std::string& username_fragment,
-                        const std::string& password);
+                        absl::string_view username_fragment,
+                        absl::string_view password);
 
   // Fired when candidates are discovered by the port. When all candidates
   // are discovered that belong to port SignalAddressReady is fired.
@@ -345,8 +348,7 @@ class Port : public PortInterface,
   bool ParseStunUsername(const StunMessage* stun_msg,
                          std::string* local_username,
                          std::string* remote_username) const;
-  void CreateStunUsername(const std::string& remote_username,
-                          std::string* stun_username_attr_str) const;
+  std::string CreateStunUsername(const std::string& remote_username) const;
 
   bool MaybeIceRoleConflict(const rtc::SocketAddress& addr,
                             IceMessage* stun_msg,
@@ -363,8 +365,7 @@ class Port : public PortInterface,
   void OnReadyToSend();
 
   // Called when the Connection discovers a local peer reflexive candidate.
-  // Returns the index of the new local candidate.
-  size_t AddPrflxCandidate(const Candidate& local);
+  void AddPrflxCandidate(const Candidate& local);
 
   int16_t network_cost() const { return network_cost_; }
 
@@ -402,7 +403,8 @@ class Port : public PortInterface,
                   const std::string& url,
                   bool is_final);
 
-  void FinishAddingAddress(const Candidate& c, bool is_final);
+  void FinishAddingAddress(const Candidate& c, bool is_final)
+      RTC_RUN_ON(thread_);
 
   virtual void PostAddAddress(bool is_final);
 
@@ -477,7 +479,7 @@ class Port : public PortInterface,
   // username_fragment().
   std::string ice_username_fragment_;
   std::string password_;
-  std::vector<Candidate> candidates_;
+  std::vector<Candidate> candidates_ RTC_GUARDED_BY(thread_);
   AddressMap connections_;
   int timeout_delay_;
   bool enable_port_packets_;
@@ -504,7 +506,7 @@ class Port : public PortInterface,
 
   bool MaybeObfuscateAddress(Candidate* c,
                              const std::string& type,
-                             bool is_final);
+                             bool is_final) RTC_RUN_ON(thread_);
 
   friend class Connection;
   webrtc::CallbackList<PortInterface*> port_destroyed_callback_list_;

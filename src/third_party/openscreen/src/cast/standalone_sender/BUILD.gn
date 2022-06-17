@@ -2,16 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/external_libraries.gni")
 import("//build_overrides/build.gni")
+import("//cast/streaming/external_libraries.gni")
 
 # Define the executable target only when the build is configured to use the
 # standalone platform implementation; since this is itself a standalone
 # application.
 if (!build_with_chromium) {
-  declare_args() {
-    have_external_libs = have_ffmpeg && have_libopus && have_libvpx
-  }
+  have_external_libs = have_ffmpeg && have_libopus && have_libvpx
 
   config("standalone_external_libs") {
     defines = []

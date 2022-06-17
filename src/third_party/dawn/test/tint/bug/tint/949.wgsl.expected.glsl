@@ -2,9 +2,13 @@ bug/tint/949.wgsl:326:29 warning: 'textureSample' must only be called from unifo
     let x_397 : vec4<f32> = textureSample(TextureSamplerTexture, TextureSamplerSampler, (x_394 + x_395));
                             ^^^^^^^^^^^^^
 
-bug/tint/949.wgsl:326:29 note: return value of 'textureSample' may be non-uniform
-    let x_397 : vec4<f32> = textureSample(TextureSamplerTexture, TextureSamplerSampler, (x_394 + x_395));
-                            ^^^^^^^^^^^^^
+bug/tint/949.wgsl:330:5 note: control flow depends on non-uniform value
+    if ((x_400 > x_401)) {
+    ^^
+
+bug/tint/949.wgsl:308:27 note: reading from module-scope private variable 'v_output2' may result in a non-uniform value
+  let x_366 : vec4<f32> = v_output2;
+                          ^^^^^^^^^
 
 #version 310 es
 precision mediump float;
@@ -155,7 +159,7 @@ vec3 perturbNormal_mf33_vf3_f1_(inout mat3 cotangentFrame_1, inout vec3 textureS
   vec3 x_119 = textureSample;
   mat3 x_125 = cotangentFrame_1;
   param = x_125;
-  param_1 = ((x_119 * 2.0f) - vec3(1.0f, 1.0f, 1.0f));
+  param_1 = ((x_119 * 2.0f) - vec3(1.0f));
   float x_128 = scale_1;
   param_2 = x_128;
   vec3 x_129 = perturbNormalBase_mf33_vf3_f1_(param, param_1, param_2);
@@ -246,7 +250,7 @@ void main_1() {
   vec3 specularOutput = vec3(0.0f, 0.0f, 0.0f);
   vec3 output3 = vec3(0.0f, 0.0f, 0.0f);
   u_Float = 100.0f;
-  u_Color = vec3(0.5f, 0.5f, 0.5f);
+  u_Color = vec3(0.5f);
   vec4 x_262 = texture(TextureSamplerTexture_TextureSamplerSampler, vMainuv);
   tempTextureRead = x_262;
   vec4 x_264 = tempTextureRead;
@@ -255,8 +259,8 @@ void main_1() {
   vec3 x_279 = x_269.u_cameraPosition;
   vec4 x_282 = v_output1;
   output5 = normalize((x_279 - vec3(x_282.x, x_282.y, x_282.z)));
-  output4 = vec4(0.0f, 0.0f, 0.0f, 0.0f);
-  uvOffset = vec2(0.0f, 0.0f);
+  output4 = vec4(0.0f);
+  uvOffset = vec2(0.0f);
   float x_292 = x_269.u_bumpStrength;
   normalScale = (1.0f / x_292);
   if (tint_symbol) {
@@ -288,8 +292,8 @@ void main_1() {
   numSamples = (15.0f + (dot((invTBN * -(output5)), (invTBN * vec3(x_366.x, x_366.y, x_366.z))) * -11.0f));
   stepSize = (1.0f / numSamples);
   currRayHeight = 1.0f;
-  vCurrOffset = vec2(0.0f, 0.0f);
-  vLastOffset = vec2(0.0f, 0.0f);
+  vCurrOffset = vec2(0.0f);
+  vLastOffset = vec2(0.0f);
   lastSampledHeight = 1.0f;
   currSampledHeight = 1.0f;
   i = 0;
@@ -330,8 +334,8 @@ void main_1() {
   viewDirectionW_1 = normalize((x_481 - vec3(x_482.x, x_482.y, x_482.z)));
   shadow = 1.0f;
   glossiness_1 = (1.0f * u_Float);
-  diffuseBase = vec3(0.0f, 0.0f, 0.0f);
-  specularBase = vec3(0.0f, 0.0f, 0.0f);
+  diffuseBase = vec3(0.0f);
+  specularBase = vec3(0.0f);
   vec4 x_494 = output4;
   normalW = vec3(x_494.x, x_494.y, x_494.z);
   param_11 = viewDirectionW_1;

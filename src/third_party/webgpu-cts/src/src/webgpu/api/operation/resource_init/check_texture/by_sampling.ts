@@ -52,6 +52,7 @@ export const checkContentsBySampling: CheckContents = (
         ? 'i32(GlobalInvocationID.x)'
         : unreachable();
     const computePipeline = t.device.createComputePipeline({
+      layout: 'auto',
       compute: {
         entryPoint: 'main',
         module: t.device.createShaderModule({
@@ -68,7 +69,7 @@ export const checkContentsBySampling: CheckContents = (
             };
             @group(0) @binding(3) var<storage, read_write> result : Result;
 
-            @stage(compute) @workgroup_size(1)
+            @compute @workgroup_size(1)
             fn main(@builtin(global_invocation_id) GlobalInvocationID : vec3<u32>) {
               let flatIndex : u32 = ${componentCount}u * (
                 ${width}u * ${height}u * GlobalInvocationID.z +
@@ -115,6 +116,7 @@ export const checkContentsBySampling: CheckContents = (
             resource: texture.createView({
               baseArrayLayer: layer,
               arrayLayerCount: 1,
+              dimension: params.dimension,
             }),
           },
           {

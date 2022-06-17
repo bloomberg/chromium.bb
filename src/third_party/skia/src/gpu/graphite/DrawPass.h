@@ -18,6 +18,7 @@
 #include "src/gpu/graphite/ResourceTypes.h"
 
 #include <memory>
+#include <vector>
 
 class SkTextureDataBlock;
 
@@ -26,9 +27,12 @@ namespace skgpu::graphite {
 class BoundsManager;
 class CommandBuffer;
 class DrawList;
+class GraphicsPipeline;
 class Recorder;
 struct RenderPassDesc;
 class ResourceProvider;
+class Sampler;
+struct SamplerDesc;
 class TextureProxy;
 enum class UniformSlot;
 
@@ -78,10 +82,15 @@ public:
     void samplers() const {}
     void programs() const {}
 
+    // Instantiate and prepare any resources used by the DrawPass that require the Recorder's
+    // ResourceProvider. This includes things likes GraphicsPipelines, sampled Textures, Samplers,
+    // etc.
+    bool prepareResources(ResourceProvider*, const RenderPassDesc&);
+
     // Transform this DrawPass into commands issued to the CommandBuffer. Assumes that the buffer
     // has already begun a correctly configured render pass matching this pass's target.
     // Returns true on success; false on failure
-    bool addCommands(ResourceProvider*, CommandBuffer*, const RenderPassDesc&) const;
+    bool addCommands(CommandBuffer*) const;
 
 private:
     class SortKey;
@@ -97,9 +106,12 @@ private:
         UniformSlot fSlot;
     };
     struct BindTexturesAndSamplers {
-        // The data backing this pointer is stored in the TextureDataCache. Its lifetime is for
-        // a single Recording (thus guaranteed to be longer than this DrawPass' lifetime).
-        const SkTextureDataBlock* fTextureBlock;
+        int fNumTexSamplers;
+        // TODO: Right now we are hardcoding these arrays to be 32. However, when we rewrite the
+        // command system here to be more flexible and not require fixed sized structs, we will
+        // remove this hardcode size.
+        int fTextureIndices[32];
+        int fSamplerIndices[32];
     };
     struct BindDrawBuffers {
         BindBufferInfo fVertices;
@@ -202,14 +214,22 @@ private:
     // GraphicsPipelineDescs and provide stable pointers, hence SkTBlockList.
     SkTBlockList<GraphicsPipelineDesc, 32> fPipelineDescs;
 
+    std::vector<SamplerDesc> fSamplerDescs;
+
     sk_sp<TextureProxy> fTarget;
-    SkIRect             fBounds;
+    SkIRect fBounds;
 
     std::pair<LoadOp, StoreOp> fOps;
-    std::array<float, 4>       fClearColor;
+    std::array<float, 4> fClearColor;
 
     SkEnumBitMask<DepthStencilFlags> fDepthStencilFlags = DepthStencilFlags::kNone;
-    bool                    fRequiresMSAA = false;
+    bool fRequiresMSAA = false;
+
+    // These resources all get instantiated during prepareResources.
+    // Use a vector instead of SkTBlockList for the full pipelines so that random access is fast.
+    std::vector<sk_sp<GraphicsPipeline>> fFullPipelines;
+    std::vector<sk_sp<TextureProxy>> fSampledTextures;
+    std::vector<sk_sp<Sampler>> fSamplers;
 };
 
 } // namespace skgpu::graphite

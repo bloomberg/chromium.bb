@@ -1843,6 +1843,86 @@ class ETC1CompressedTextureTest : public Texture2DTest
     void testTearDown() override { Texture2DTest::testTearDown(); }
 };
 
+class Texture2DTestES31 : public Texture2DTest
+{
+  protected:
+    Texture2DTestES31() : Texture2DTest() {}
+
+    void TestSampleStencilFromDepthStencil(GLenum format, bool swizzle);
+};
+
+void Texture2DTestES31::TestSampleStencilFromDepthStencil(GLenum format, bool swizzle)
+{
+    constexpr GLsizei kSize = 4;
+
+    // Set up a color texture.
+    GLTexture colorTexture;
+    glBindTexture(GL_TEXTURE_2D, colorTexture);
+    glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, kSize, kSize);
+    ASSERT_GL_NO_ERROR();
+
+    // Set up a depth/stencil texture to be sampled as stencil.
+    GLTexture depthStencilTexture;
+    glBindTexture(GL_TEXTURE_2D, depthStencilTexture);
+    glTexStorage2D(GL_TEXTURE_2D, 1, format, kSize, kSize);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_DEPTH_STENCIL_TEXTURE_MODE, GL_STENCIL_INDEX);
+    if (swizzle)
+    {
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_R, GL_ALPHA);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_G, GL_BLUE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_B, GL_GREEN);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_A, GL_RED);
+    }
+    ASSERT_GL_NO_ERROR();
+
+    constexpr char kFS[] =
+        R"(#version 300 es
+precision mediump float;
+uniform highp usampler2D stencilTex;
+out vec4 color;
+void main()
+{
+    color = vec4(texelFetch(stencilTex, ivec2(0, 0), 0)) / 255.0f;
+})";
+
+    // Clear stencil to 42.
+    GLFramebuffer clearFBO;
+    glBindFramebuffer(GL_FRAMEBUFFER, clearFBO);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D,
+                           depthStencilTexture, 0);
+    ASSERT_GL_FRAMEBUFFER_COMPLETE(GL_FRAMEBUFFER);
+    glClearDepthf(0.42f);
+    glClearStencil(42);
+    glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+    ASSERT_GL_NO_ERROR();
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, depthStencilTexture);
+    EXPECT_GL_ERROR(GL_NO_ERROR);
+
+    ANGLE_GL_PROGRAM(program, essl3_shaders::vs::Simple(), kFS);
+    GLint stencilTexLocation = glGetUniformLocation(program, "stencilTex");
+    ASSERT_NE(-1, stencilTexLocation);
+    ASSERT_GL_NO_ERROR();
+
+    glUseProgram(program);
+    glUniform1i(stencilTexLocation, 0);
+
+    GLFramebuffer drawFBO;
+    glBindFramebuffer(GL_FRAMEBUFFER, drawFBO);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorTexture, 0);
+    ASSERT_GL_FRAMEBUFFER_COMPLETE(GL_FRAMEBUFFER);
+    ASSERT_GL_NO_ERROR();
+
+    drawQuad(program, essl3_shaders::PositionAttrib(), 0.95f);
+    ASSERT_GL_NO_ERROR();
+
+    GLColor expected = swizzle ? GLColor(1, 0, 0, 42) : GLColor(42, 0, 0, 1);
+    EXPECT_PIXEL_RECT_EQ(0, 0, kSize, kSize, expected);
+}
+
 TEST_P(Texture2DTest, NegativeAPISubImage)
 {
     glBindTexture(GL_TEXTURE_2D, mTexture2D);
@@ -2057,6 +2137,11 @@ TEST_P(Texture2DTestWithDrawScale, MipmapsTwice)
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 16, 16, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                  pixelsBlue.data());
     glGenerateMipmap(GL_TEXTURE_2D);
+
+    drawQuad(mProgram, "position", 0.5f);
+
+    EXPECT_GL_NO_ERROR();
+    EXPECT_PIXEL_COLOR_EQ(px, py, GLColor::blue);
 
     std::vector<GLColor> pixelsGreen(16u * 16u, GLColor::green);
 
@@ -2848,6 +2933,20 @@ TEST_P(Texture2DTestES3, TexImageWithDepthPBO)
     ASSERT_GL_NO_ERROR();
 
     EXPECT_PIXEL_RECT_EQ(0, 0, kSize, kSize, GLColor::red);
+}
+
+// Test that sampling stencil from a DEPTH24_STENCIL8 texture works.
+TEST_P(Texture2DTestES31, TexSampleStencilFromDepth24Stencil8)
+{
+    TestSampleStencilFromDepthStencil(GL_DEPTH24_STENCIL8, false);
+    TestSampleStencilFromDepthStencil(GL_DEPTH24_STENCIL8, true);
+}
+
+// Test that sampling stencil from a DEPTH32F_STENCIL8 texture works.
+TEST_P(Texture2DTestES31, TexSampleStencilFromDepth32fStencil8)
+{
+    TestSampleStencilFromDepthStencil(GL_DEPTH32F_STENCIL8, false);
+    TestSampleStencilFromDepthStencil(GL_DEPTH32F_STENCIL8, true);
 }
 
 // Test that glTexSubImage2D combined with a PBO works properly when glTexStorage2D has
@@ -4208,24 +4307,24 @@ void Texture2DBaseMaxTestES3::testGenerateMipmapAfterRebase(bool immutable)
         drawQuad(mProgram, essl3_shaders::PositionAttrib(), 0.5f);
         if (lod == 0)
         {
-            EXPECT_PIXEL_COLOR_EQ(0, 0, kMipColors[lod]);
-            EXPECT_PIXEL_COLOR_EQ(w, 0, kMipColors[lod]);
-            EXPECT_PIXEL_COLOR_EQ(0, h, kMipColors[lod]);
-            EXPECT_PIXEL_COLOR_EQ(w, h, kMipColors[lod]);
+            EXPECT_PIXEL_COLOR_EQ(0, 0, kMipColors[lod]) << "lod " << lod;
+            EXPECT_PIXEL_COLOR_EQ(w, 0, kMipColors[lod]) << "lod " << lod;
+            EXPECT_PIXEL_COLOR_EQ(0, h, kMipColors[lod]) << "lod " << lod;
+            EXPECT_PIXEL_COLOR_EQ(w, h, kMipColors[lod]) << "lod " << lod;
         }
         else if (lod == kMipCount - 1)
         {
-            EXPECT_PIXEL_COLOR_EQ(0, 0, kMipColors[lod]);
-            EXPECT_PIXEL_COLOR_EQ(w, 0, kMipColors[lod]);
-            EXPECT_PIXEL_COLOR_EQ(0, h, kMipColors[lod]);
-            EXPECT_PIXEL_COLOR_EQ(w, h, kMipColors[lod]);
+            EXPECT_PIXEL_COLOR_EQ(0, 0, kMipColors[lod]) << "lod " << lod;
+            EXPECT_PIXEL_COLOR_EQ(w, 0, kMipColors[lod]) << "lod " << lod;
+            EXPECT_PIXEL_COLOR_EQ(0, h, kMipColors[lod]) << "lod " << lod;
+            EXPECT_PIXEL_COLOR_EQ(w, h, kMipColors[lod]) << "lod " << lod;
         }
         else
         {
-            EXPECT_PIXEL_COLOR_EQ(0, 0, kNewMipColor);
-            EXPECT_PIXEL_COLOR_EQ(w, 0, kNewMipColor);
-            EXPECT_PIXEL_COLOR_EQ(0, h, kNewMipColor);
-            EXPECT_PIXEL_COLOR_EQ(w, h, kNewMipColor);
+            EXPECT_PIXEL_COLOR_EQ(0, 0, kNewMipColor) << "lod " << lod;
+            EXPECT_PIXEL_COLOR_EQ(w, 0, kNewMipColor) << "lod " << lod;
+            EXPECT_PIXEL_COLOR_EQ(0, h, kNewMipColor) << "lod " << lod;
+            EXPECT_PIXEL_COLOR_EQ(w, h, kNewMipColor) << "lod " << lod;
         }
     }
 }
@@ -10314,12 +10413,59 @@ void main()
                                           GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT);
     memcpy(mappedBuffer, kUpdateData.data(), sizeof(kInitialData));
 
+    glUnmapBuffer(GL_TEXTURE_BUFFER);
+
     // Draw with the updated buffer data.
     ANGLE_GL_PROGRAM(updateSamplerBuffer, essl31_shaders::vs::Simple(), kSamplerBuffer);
     drawQuad(updateSamplerBuffer, essl31_shaders::PositionAttrib(), 0.5);
     EXPECT_GL_NO_ERROR();
 
     // Make sure both draw calls succeed
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::blue);
+}
+
+// Test that calling glBufferData on a buffer that is used as texture buffer still works correctly.
+TEST_P(TextureBufferTestES31, TextureBufferThenBufferData)
+{
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_OES_texture_buffer"));
+
+    const std::array<GLColor, 4> kInitialData = {GLColor::red, GLColor::red, GLColor::red,
+                                                 GLColor::red};
+    const std::array<GLColor, 4> kUpdateData  = {GLColor::blue, GLColor::blue, GLColor::blue,
+                                                 GLColor::blue};
+    // Create buffer and initialize with data
+    GLBuffer buffer;
+    glBindBuffer(GL_TEXTURE_BUFFER, buffer);
+    glBufferData(GL_TEXTURE_BUFFER, sizeof(kInitialData), kInitialData.data(), GL_DYNAMIC_DRAW);
+
+    // Bind as texture buffer
+    GLTexture texture;
+    glBindTexture(GL_TEXTURE_BUFFER, texture);
+    glTexBufferEXT(GL_TEXTURE_BUFFER, GL_RGBA8, buffer);
+    EXPECT_GL_NO_ERROR();
+
+    constexpr char kSamplerBuffer[] = R"(#version 310 es
+#extension GL_OES_texture_buffer : require
+precision mediump float;
+uniform highp samplerBuffer s;
+out vec4 colorOut;
+void main()
+{
+    colorOut = texelFetch(s, 0);
+})";
+
+    ANGLE_GL_PROGRAM(initialSamplerBuffer, essl31_shaders::vs::Simple(), kSamplerBuffer);
+    drawQuad(initialSamplerBuffer, essl31_shaders::PositionAttrib(), 0.5);
+
+    // Don't read back, so we keep the original buffer busy. Issue a glBufferData call with same
+    // size and nullptr so that the old buffer storage gets orphaned.
+    glBufferData(GL_TEXTURE_BUFFER, sizeof(kUpdateData), nullptr, GL_DYNAMIC_DRAW);
+    glBufferSubData(GL_TEXTURE_BUFFER, 0, sizeof(kUpdateData), kUpdateData.data());
+
+    // Draw with the updated buffer data.
+    ANGLE_GL_PROGRAM(updateSamplerBuffer, essl31_shaders::vs::Simple(), kSamplerBuffer);
+    drawQuad(updateSamplerBuffer, essl31_shaders::PositionAttrib(), 0.5);
+    EXPECT_GL_NO_ERROR();
     EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::blue);
 }
 
@@ -10633,5 +10779,7 @@ ANGLE_INSTANTIATE_TEST_ES31(CopyImageTestES31);
 ANGLE_INSTANTIATE_TEST_ES3(TextureChangeStorageUploadTest);
 
 ANGLE_INSTANTIATE_TEST_ES3(ExtraSamplerCubeShadowUseTest);
+
+ANGLE_INSTANTIATE_TEST_ES31(Texture2DTestES31);
 
 }  // anonymous namespace

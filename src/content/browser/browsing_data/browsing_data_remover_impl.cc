@@ -406,6 +406,8 @@ void BrowsingDataRemoverImpl::RemoveImpl(
         StoragePartition::REMOVE_DATA_MASK_BACKGROUND_FETCH;
   }
   if (remove_mask & DATA_TYPE_CACHE) {
+    storage_partition_remove_mask |=
+        StoragePartition::REMOVE_DATA_MASK_INTEREST_GROUP_PERMISSIONS_CACHE;
     // Tell the shader disk cache to clear.
     base::RecordAction(UserMetricsAction("ClearBrowsingData_ShaderCache"));
     storage_partition_remove_mask |=
@@ -418,9 +420,13 @@ void BrowsingDataRemoverImpl::RemoveImpl(
     storage_partition_remove_mask |=
         StoragePartition::REMOVE_DATA_MASK_PLUGIN_PRIVATE_DATA;
   }
-  if (remove_mask & DATA_TYPE_CONVERSIONS) {
+  if (remove_mask & DATA_TYPE_ATTRIBUTION_REPORTING_SITE_CREATED) {
     storage_partition_remove_mask |=
-        StoragePartition::REMOVE_DATA_MASK_CONVERSIONS;
+        StoragePartition::REMOVE_DATA_MASK_ATTRIBUTION_REPORTING_SITE_CREATED;
+  }
+  if (remove_mask & DATA_TYPE_ATTRIBUTION_REPORTING_INTERNAL) {
+    storage_partition_remove_mask |=
+        StoragePartition::REMOVE_DATA_MASK_ATTRIBUTION_REPORTING_INTERNAL;
   }
   if (remove_mask & DATA_TYPE_AGGREGATION_SERVICE) {
     storage_partition_remove_mask |=

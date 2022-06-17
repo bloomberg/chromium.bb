@@ -2,9 +2,13 @@ bug/dawn/947.wgsl:59:20 warning: 'textureSample' must only be called from unifor
     var srcColor = textureSample(myTexture, mySampler, texcoord);
                    ^^^^^^^^^^^^^
 
-bug/dawn/947.wgsl:54:15 note: reading from user-defined input 'texcoord' may result in a non-uniform value
-        clamp(texcoord, vec2<f32>(0.0, 0.0), vec2<f32>(1.0, 1.0));
-              ^^^^^^^^
+bug/dawn/947.wgsl:55:5 note: control flow depends on non-uniform value
+    if (!all(clampedTexcoord == texcoord)) {
+    ^^
+
+bug/dawn/947.wgsl:55:33 note: reading from user-defined input 'texcoord' may result in a non-uniform value
+    if (!all(clampedTexcoord == texcoord)) {
+                                ^^^^^^^^
 
 struct Uniforms {
   u_scale : vec2<f32>,
@@ -20,7 +24,7 @@ struct VertexOutputs {
   position : vec4<f32>,
 }
 
-@stage(vertex)
+@vertex
 fn vs_main(@builtin(vertex_index) VertexIndex : u32) -> VertexOutputs {
   var texcoord = array<vec2<f32>, 3>(vec2<f32>(-0.5, 0.0), vec2<f32>(1.5, 0.0), vec2<f32>(0.5, 2.0));
   var output : VertexOutputs;
@@ -38,7 +42,7 @@ fn vs_main(@builtin(vertex_index) VertexIndex : u32) -> VertexOutputs {
 
 @binding(2) @group(0) var myTexture : texture_2d<f32>;
 
-@stage(fragment)
+@fragment
 fn fs_main(@location(0) texcoord : vec2<f32>) -> @location(0) vec4<f32> {
   var clampedTexcoord = clamp(texcoord, vec2<f32>(0.0, 0.0), vec2<f32>(1.0, 1.0));
   if (!(all((clampedTexcoord == texcoord)))) {

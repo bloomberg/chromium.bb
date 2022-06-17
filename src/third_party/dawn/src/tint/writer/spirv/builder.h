@@ -43,6 +43,7 @@
 // Forward declarations
 namespace tint::sem {
 class Call;
+class Constant;
 class Reference;
 class TypeConstructor;
 class TypeConversion;
@@ -113,11 +114,8 @@ class Builder {
     /// @returns the capabilities
     const InstructionList& capabilities() const { return capabilities_; }
     /// Adds an instruction to the extensions
-    /// @param op the op to set
-    /// @param operands the operands for the instruction
-    void push_extension(spv::Op op, const OperandList& operands) {
-        extensions_.push_back(Instruction{op, operands});
-    }
+    /// @param extension the name of the extension
+    void push_extension(const char* extension);
     /// @returns the extensions
     const InstructionList& extensions() const { return extensions_; }
     /// Adds an instruction to the ext import
@@ -224,11 +222,11 @@ class Builder {
                                      ast::InterpolationType type,
                                      ast::InterpolationSampling sampling);
 
-    /// Generates a extension for the given extension kind. Emits an error and
-    /// returns false if the extension kind is not supported.
-    /// @param kind ExtensionKind of the extension to generate
+    /// Generates the enabling of an extension. Emits an error and returns false if the extension is
+    /// not supported.
+    /// @param ext the extension to generate
     /// @returns true on success.
-    bool GenerateExtension(ast::Enable::ExtensionKind kind);
+    bool GenerateExtension(ast::Extension ext);
     /// Generates a label for the given id. Emits an error and returns false if
     /// we're currently outside a function.
     /// @param id the id to use for the label
@@ -552,6 +550,11 @@ class Builder {
     /// @returns the resolved type of the ast::Expression `expr`
     /// @param expr the expression
     const sem::Type* TypeOf(const ast::Expression* expr) const { return builder_.TypeOf(expr); }
+
+    /// Generates a constant value if needed
+    /// @param constant the constant to generate.
+    /// @returns the ID on success or 0 on failure
+    uint32_t GenerateConstantIfNeeded(const sem::Constant& constant);
 
     /// Generates a scalar constant if needed
     /// @param constant the constant to generate.

@@ -98,6 +98,7 @@ export const generatedProperties = [
     ]
   },
   {'name': 'all'},
+  {'name': 'anchor-name', 'keywords': ['none']},
   {
     'longhands': [
       'animation-duration', 'animation-timing-function', 'animation-delay', 'animation-iteration-count',
@@ -570,9 +571,9 @@ export const generatedProperties = [
   {'name': 'math-depth', 'inherited': true},
   {'name': 'math-shift', 'inherited': true, 'keywords': ['normal', 'compact']},
   {'name': 'math-style', 'inherited': true, 'keywords': ['normal', 'compact']},
-  {'keywords': ['none'], 'name': 'max-block-size'},
+  {'name': 'max-block-size', 'keywords': ['none']},
   {'name': 'max-height', 'keywords': ['none']},
-  {'keywords': ['none'], 'name': 'max-inline-size'},
+  {'name': 'max-inline-size', 'keywords': ['none']},
   {'name': 'max-width', 'keywords': ['none']},
   {'name': 'max-zoom'},
   {'name': 'min-block-size'},
@@ -616,7 +617,7 @@ export const generatedProperties = [
   {'longhands': ['overflow-x', 'overflow-y'], 'name': 'overflow'},
   {'name': 'overflow-anchor', 'inherited': false, 'keywords': ['visible', 'none', 'auto']},
   {'name': 'overflow-block'},
-  {'name': 'overflow-clip-margin'},
+  {'name': 'overflow-clip-margin', 'keywords': ['border-box', 'content-box', 'padding-box']},
   {'name': 'overflow-inline'},
   {'name': 'overflow-wrap', 'inherited': true, 'keywords': ['normal', 'break-word', 'anywhere']},
   {'name': 'overflow-x', 'keywords': ['visible', 'hidden', 'scroll', 'auto', 'overlay', 'clip']},
@@ -660,6 +661,7 @@ export const generatedProperties = [
     ]
   },
   {'name': 'position', 'keywords': ['static', 'relative', 'absolute', 'fixed', 'sticky']},
+  {'name': 'position-fallback', 'keywords': ['none']},
   {'name': 'prefix'},
   {'name': 'quotes', 'inherited': true, 'keywords': ['auto', 'none']},
   {'name': 'r'},
@@ -866,6 +868,7 @@ export const generatedPropertyValues = {
       'text-before-edge', 'after-edge', 'text-after-edge', 'hanging'
     ]
   },
+  'anchor-name': {'values': ['none']},
   'animation-direction': {'values': ['normal', 'reverse', 'alternate', 'alternate-reverse']},
   'animation-fill-mode': {'values': ['none', 'forwards', 'backwards', 'both']},
   'animation-iteration-count': {'values': ['infinite']},
@@ -1111,6 +1114,7 @@ export const generatedPropertyValues = {
       {'values': ['none', 'hidden', 'inset', 'groove', 'outset', 'ridge', 'dotted', 'dashed', 'solid', 'double']},
   'outline-width': {'values': ['thin', 'medium', 'thick']},
   'overflow-anchor': {'values': ['visible', 'none', 'auto']},
+  'overflow-clip-margin': {'values': ['border-box', 'content-box', 'padding-box']},
   'overflow-wrap': {'values': ['normal', 'break-word', 'anywhere']},
   'overflow-x': {'values': ['visible', 'hidden', 'scroll', 'auto', 'overlay', 'clip']},
   'overflow-y': {'values': ['visible', 'hidden', 'scroll', 'auto', 'overlay', 'clip']},
@@ -1127,6 +1131,7 @@ export const generatedPropertyValues = {
     ]
   },
   'position': {'values': ['static', 'relative', 'absolute', 'fixed', 'sticky']},
+  'position-fallback': {'values': ['none']},
   'quotes': {'values': ['auto', 'none']},
   'resize': {'values': ['none', 'both', 'horizontal', 'vertical', 'block', 'inline']},
   'right': {'values': ['auto']},

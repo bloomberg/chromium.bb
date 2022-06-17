@@ -10,6 +10,7 @@
 
 #include "base/callback_forward.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/location.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/cancelable_task_tracker.h"
@@ -21,12 +22,14 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/history/core/browser/history_context.h"
+#include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/url_row.h"
 #include "components/history/core/test/history_service_test_util.h"
 #include "components/history_clusters/core/clustering_backend.h"
 #include "components/history_clusters/core/config.h"
 #include "components/history_clusters/core/features.h"
+#include "components/history_clusters/core/history_clusters_db_tasks.h"
 #include "components/history_clusters/core/history_clusters_service_test_api.h"
 #include "components/history_clusters/core/history_clusters_types.h"
 #include "components/history_clusters/core/history_clusters_util.h"
@@ -127,36 +130,40 @@ class HistoryClustersServiceTestBase : public testing::Test {
   // Add hardcoded completed visits with context annotations to the history
   // database.
   void AddHardcodedTestDataToHistoryService() {
-    history::ContextID context_id = reinterpret_cast<history::ContextID>(1);
+    for (auto& visit : GetHardcodedTestVisits())
+      AddCompleteVisit(visit);
+  }
 
-    for (auto& visit : GetHardcodedTestVisits()) {
-      history::HistoryAddPageArgs add_page_args;
-      add_page_args.context_id = context_id;
-      add_page_args.nav_entry_id = next_navigation_id_;
-      add_page_args.url = visit.url_row.url();
-      add_page_args.title = visit.url_row.title();
-      add_page_args.time = visit.visit_row.visit_time;
-      add_page_args.visit_source = visit.source;
-      history_service_->AddPage(add_page_args);
-      history_service_->UpdateWithPageEndTime(
-          context_id, next_navigation_id_, visit.url_row.url(),
-          visit.visit_row.visit_time + visit.visit_row.visit_duration);
+  void AddCompleteVisit(const history::AnnotatedVisit& visit) {
+    static const history::ContextID context_id =
+        reinterpret_cast<history::ContextID>(1);
 
-      auto& incomplete_visit_context_annotations =
-          history_clusters_service_
-              ->GetOrCreateIncompleteVisitContextAnnotations(
-                  next_navigation_id_);
-      incomplete_visit_context_annotations.visit_row = visit.visit_row;
-      incomplete_visit_context_annotations.url_row = visit.url_row;
-      incomplete_visit_context_annotations.context_annotations =
-          visit.context_annotations;
-      incomplete_visit_context_annotations.status.history_rows = true;
-      incomplete_visit_context_annotations.status.navigation_ended = true;
-      incomplete_visit_context_annotations.status.navigation_end_signals = true;
-      history_clusters_service_->CompleteVisitContextAnnotationsIfReady(
-          next_navigation_id_);
-      next_navigation_id_++;
-    }
+    history::HistoryAddPageArgs add_page_args;
+    add_page_args.context_id = context_id;
+    add_page_args.nav_entry_id = next_navigation_id_;
+    add_page_args.url = visit.url_row.url();
+    add_page_args.title = visit.url_row.title();
+    add_page_args.time = visit.visit_row.visit_time;
+    add_page_args.visit_source = visit.source;
+    history_service_->AddPage(add_page_args);
+    history_service_->UpdateWithPageEndTime(
+        context_id, next_navigation_id_, visit.url_row.url(),
+        visit.visit_row.visit_time + visit.visit_row.visit_duration);
+
+    auto& incomplete_visit_context_annotations =
+        history_clusters_service_->GetOrCreateIncompleteVisitContextAnnotations(
+            next_navigation_id_);
+    incomplete_visit_context_annotations.visit_row = visit.visit_row;
+    incomplete_visit_context_annotations.url_row = visit.url_row;
+    incomplete_visit_context_annotations.context_annotations =
+        visit.context_annotations;
+    incomplete_visit_context_annotations.status.history_rows = true;
+    incomplete_visit_context_annotations.status.navigation_ended = true;
+    incomplete_visit_context_annotations.status.navigation_end_signals = true;
+    history_clusters_service_->CompleteVisitContextAnnotationsIfReady(
+        next_navigation_id_);
+
+    next_navigation_id_++;
   }
 
   // Add an incomplete visit context annotations to the in memory incomplete
@@ -310,8 +317,6 @@ TEST_F(HistoryClustersServiceTest, QueryClustersIncompleteAndPersistedVisits) {
   AddIncompleteVisit(7, 7, days_ago(90));
   AddIncompleteVisit(8, 8, days_ago(0));   // Too recent.
   AddIncompleteVisit(9, 9, days_ago(93));  // Too old.
-  AddIncompleteVisit(3, 3, days_ago(90));  // Visit 3 was added to the history
-  // database with source synced.
   AddIncompleteVisit(
       10, 10, days_ago(1),
       ui::PageTransitionFromInt(805306372));  // Non-visible page transition.
@@ -415,9 +420,9 @@ TEST_F(HistoryClustersServiceTest, EndToEndWithBackend) {
                              .is_existing_part_of_tab_group);
             EXPECT_FLOAT_EQ(visits[1].score, 0.5);
 
-            ASSERT_EQ(cluster.keywords.size(), 2u);
-            EXPECT_EQ(cluster.keywords[0], u"apples");
-            EXPECT_EQ(cluster.keywords[1], u"Red Oranges");
+            ASSERT_EQ(cluster.keyword_to_data_map.size(), 2u);
+            EXPECT_TRUE(cluster.keyword_to_data_map.contains(u"apples"));
+            EXPECT_TRUE(cluster.keyword_to_data_map.contains(u"Red Oranges"));
 
             cluster = clusters[1];
             visits = cluster.visits;
@@ -428,7 +433,7 @@ TEST_F(HistoryClustersServiceTest, EndToEndWithBackend) {
                       GetHardcodedTestVisits()[1].visit_row.visit_time);
             EXPECT_EQ(visits[0].annotated_visit.url_row.title(),
                       u"Code Storage Title");
-            EXPECT_TRUE(cluster.keywords.empty());
+            EXPECT_TRUE(cluster.keyword_to_data_map.empty());
 
             run_loop_quit.Run();
           }));
@@ -442,7 +447,8 @@ TEST_F(HistoryClustersServiceTest, EndToEndWithBackend) {
                            test_clustering_backend_->GetVisitById(2),
                            test_clustering_backend_->GetVisitById(5),
                        },
-                       {u"apples", u"Red Oranges"},
+                       {{u"apples", history::ClusterKeywordData()},
+                        {u"Red Oranges", history::ClusterKeywordData()}},
                        /*should_show_on_prominent_ui_surfaces=*/true));
   clusters.push_back(
       history::Cluster(0,
@@ -615,7 +621,10 @@ TEST_F(HistoryClustersServiceTest, DoesQueryMatchAnyCluster) {
                              test_clustering_backend_->GetVisitById(5),
                              test_clustering_backend_->GetVisitById(2),
                          },
-                         {u"apples", u"oranges", u"z", u"apples bananas"},
+                         {{u"apples", history::ClusterKeywordData()},
+                          {u"oranges", history::ClusterKeywordData()},
+                          {u"z", history::ClusterKeywordData()},
+                          {u"apples bananas", history::ClusterKeywordData()}},
                          /*should_show_on_prominent_ui_surfaces=*/true));
     clusters.push_back(
         history::Cluster(0,
@@ -623,14 +632,14 @@ TEST_F(HistoryClustersServiceTest, DoesQueryMatchAnyCluster) {
                              test_clustering_backend_->GetVisitById(5),
                              test_clustering_backend_->GetVisitById(2),
                          },
-                         {u"sensitive"},
+                         {{u"sensitive", history::ClusterKeywordData()}},
                          /*should_show_on_prominent_ui_surfaces=*/false));
     clusters.push_back(
         history::Cluster(0,
                          {
                              test_clustering_backend_->GetVisitById(5),
                          },
-                         {u"singlevisit"},
+                         {{u"singlevisit", history::ClusterKeywordData()}},
                          /*should_show_on_prominent_ui_surfaces=*/true));
 
     test_clustering_backend_->FulfillCallback(clusters);
@@ -735,7 +744,8 @@ TEST_F(HistoryClustersServiceTest, DoesQueryMatchAnyClusterSecondaryCache) {
                            test_clustering_backend_->GetVisitById(1),
                            test_clustering_backend_->GetVisitById(2),
                        },
-                       {u"peach", u""},
+                       {{u"peach", history::ClusterKeywordData()},
+                        {u"", history::ClusterKeywordData()}},
                        /*should_show_on_prominent_ui_surfaces=*/true));
   test_clustering_backend_->FulfillCallback(clusters2);
   history::BlockUntilHistoryProcessesPendingRequests(history_service_.get());
@@ -771,7 +781,10 @@ TEST_F(HistoryClustersServiceTest, DoesURLMatchAnyClusterWithNoisyURLs) {
             test_clustering_backend_->GetVisitById(
                 /*visit_id=*/2, /*score=*/0.0, /*engagement_score=*/20.0),
         },
-        {u"apples", u"oranges", u"z", u"apples bananas"},
+        {{u"apples", history::ClusterKeywordData()},
+         {u"oranges", history::ClusterKeywordData()},
+         {u"z", history::ClusterKeywordData()},
+         {u"apples bananas", history::ClusterKeywordData()}},
         /*should_show_on_prominent_ui_surfaces=*/true));
     clusters.push_back(
         history::Cluster(0,
@@ -779,14 +792,14 @@ TEST_F(HistoryClustersServiceTest, DoesURLMatchAnyClusterWithNoisyURLs) {
                              test_clustering_backend_->GetVisitById(5),
                              test_clustering_backend_->GetVisitById(2),
                          },
-                         {u"sensitive"},
+                         {{u"sensitive", history::ClusterKeywordData()}},
                          /*should_show_on_prominent_ui_surfaces=*/false));
     clusters.push_back(
         history::Cluster(0,
                          {
                              test_clustering_backend_->GetVisitById(2),
                          },
-                         {u"singlevisit"},
+                         {{u"singlevisit", history::ClusterKeywordData()}},
                          /*should_show_on_prominent_ui_surfaces=*/true));
 
     test_clustering_backend_->FulfillCallback(clusters);
@@ -859,7 +872,10 @@ TEST_F(HistoryClustersServiceTest, DoesURLMatchAnyClusterNoNoisyURLs) {
             test_clustering_backend_->GetVisitById(
                 /*visit_id=*/2, /*score=*/0.0, /*engagement_score=*/20.0),
         },
-        {u"apples", u"oranges", u"z", u"apples bananas"},
+        {{u"apples", history::ClusterKeywordData()},
+         {u"oranges", history::ClusterKeywordData()},
+         {u"z", history::ClusterKeywordData()},
+         {u"apples bananas", history::ClusterKeywordData()}},
         /*should_show_on_prominent_ui_surfaces=*/true));
     clusters.push_back(
         history::Cluster(0,
@@ -867,14 +883,14 @@ TEST_F(HistoryClustersServiceTest, DoesURLMatchAnyClusterNoNoisyURLs) {
                              test_clustering_backend_->GetVisitById(5),
                              test_clustering_backend_->GetVisitById(2),
                          },
-                         {u"sensitive"},
+                         {{u"sensitive", history::ClusterKeywordData()}},
                          /*should_show_on_prominent_ui_surfaces=*/false));
     clusters.push_back(
         history::Cluster(0,
                          {
                              test_clustering_backend_->GetVisitById(2),
                          },
-                         {u"singlevisit"},
+                         {{u"singlevisit", history::ClusterKeywordData()}},
                          /*should_show_on_prominent_ui_surfaces=*/true));
 
     test_clustering_backend_->FulfillCallback(clusters);
@@ -917,6 +933,76 @@ TEST_F(HistoryClustersServiceTest, DoesURLMatchAnyClusterNoNoisyURLs) {
   // The keyword cache should be repopulated.
   EXPECT_TRUE(history_clusters_service_->DoesURLMatchAnyCluster(
       ComputeURLKeywordForLookup(GURL("https://second-1-day-old-visit.com/"))));
+}
+
+TEST_F(HistoryClustersServiceTest, QueryVisitsOldestFirst) {
+  // Create 5 persisted visits with visit times 2, 1, 1, 60, and 1 days ago.
+  AddHardcodedTestDataToHistoryService();
+
+  // Add a sync visit on a day without other visits in order to verify a day
+  // with only sync visits doesn't interrupt `GetAnnotatedVisitsToCluster`'s
+  // intention of iterating until a visit is found.
+  history::AnnotatedVisit sync_visit;
+  sync_visit.url_row.set_id(1);
+  sync_visit.visit_row.visit_id = 10;
+  sync_visit.visit_row.visit_time = base::Time::Now() - base::Days(15);
+  sync_visit.source = history::VisitSource::SOURCE_SYNCED;
+  AddCompleteVisit(sync_visit);
+
+  // Helper to repeatedly schedule a `GetAnnotatedVisitsToCluster`, with the
+  // continuation time returned from the previous task, and return the visits
+  // it returns.
+  QueryClustersContinuationParams continuation_params = {};
+  const auto next_visits = [&]() {
+    std::vector<history::AnnotatedVisit> visits;
+    base::CancelableTaskTracker task_tracker;
+    history_service_->ScheduleDBTask(
+        FROM_HERE,
+        std::make_unique<GetAnnotatedVisitsToCluster>(
+            IncompleteVisitMap{}, base::Time(), continuation_params, false,
+            base::BindLambdaForTesting(
+                [&](std::vector<history::AnnotatedVisit> visits_temp,
+                    QueryClustersContinuationParams continuation_params_temp) {
+                  visits = visits_temp;
+                  continuation_params = continuation_params_temp;
+                })),
+        &task_tracker);
+    history::BlockUntilHistoryProcessesPendingRequests(history_service_.get());
+    return visits;
+  };
+
+  {
+    // 1st query should return the oldest, 60-day-old visit.
+    const auto visits = next_visits();
+    ASSERT_EQ(visits.size(), 1u);
+    EXPECT_EQ(visits[0].visit_row.visit_id, 4);
+    EXPECT_TRUE(continuation_params.is_continuation);
+    EXPECT_FALSE(continuation_params.is_done);
+  }
+  {
+    // 2nd query should return the next oldest, 2-day-old visit.
+    const auto visits = next_visits();
+    ASSERT_EQ(visits.size(), 1u);
+    EXPECT_EQ(visits[0].visit_row.visit_id, 1);
+    EXPECT_TRUE(continuation_params.is_continuation);
+    EXPECT_FALSE(continuation_params.is_done);
+  }
+  {
+    // 3rd query should return the next oldest, 1-day-old visits. Visit 3 is
+    // excluded as it's from sync.
+    const auto visits = next_visits();
+    ASSERT_EQ(visits.size(), 2u);
+    EXPECT_EQ(visits[0].visit_row.visit_id, 5);
+    EXPECT_EQ(visits[1].visit_row.visit_id, 2);
+    EXPECT_TRUE(continuation_params.is_continuation);
+    EXPECT_FALSE(continuation_params.is_done);
+  }
+  {
+    // 4th query should return no visits; all visits were exhausted.
+    const auto visits = next_visits();
+    ASSERT_TRUE(visits.empty());
+    EXPECT_TRUE(continuation_params.is_done);
+  }
 }
 
 class HistoryClustersServiceMaxKeywordsTest
@@ -963,17 +1049,21 @@ TEST_F(HistoryClustersServiceMaxKeywordsTest,
                            test_clustering_backend_->GetVisitById(1),
                            test_clustering_backend_->GetVisitById(2),
                        },
-                       {u"one", u"two", u"three", u"four five six"},
+                       {{u"one", history::ClusterKeywordData()},
+                        {u"two", history::ClusterKeywordData()},
+                        {u"three", history::ClusterKeywordData()},
+                        {u"four five six", history::ClusterKeywordData()}},
                        /*should_show_on_prominent_ui_surfaces=*/true));
   // 2) The 2nd cluster has only 1 visit. Since it's keywords won't be cached,
   // they should not affect the max.
-  clusters.push_back(
-      history::Cluster(0,
-                       {
-                           test_clustering_backend_->GetVisitById(3),
-                       },
-                       {u"ignored not cached", u"elephant penguin kangaroo"},
-                       /*should_show_on_prominent_ui_surfaces=*/true));
+  clusters.push_back(history::Cluster(
+      0,
+      {
+          test_clustering_backend_->GetVisitById(3),
+      },
+      {{u"ignored not cached", history::ClusterKeywordData()},
+       {u"elephant penguin kangaroo", history::ClusterKeywordData()}},
+      /*should_show_on_prominent_ui_surfaces=*/true));
   // 3) With this 3rd cluster, we'll have 5 phrases and 7 words. Now that we've
   // reached 5 phrases, the next cluster's keywords should not be cached.
   clusters.push_back(
@@ -982,7 +1072,7 @@ TEST_F(HistoryClustersServiceMaxKeywordsTest,
                            test_clustering_backend_->GetVisitById(4),
                            test_clustering_backend_->GetVisitById(5),
                        },
-                       {u"seven"},
+                       {{u"seven", history::ClusterKeywordData()}},
                        /*should_show_on_prominent_ui_surfaces=*/true));
   // 4) The 4th cluster's keywords should not be cached since we've reached 5
   // phrases.
@@ -992,7 +1082,7 @@ TEST_F(HistoryClustersServiceMaxKeywordsTest,
                            test_clustering_backend_->GetVisitById(6),
                            test_clustering_backend_->GetVisitById(7),
                        },
-                       {u"eight"},
+                       {{u"eight", history::ClusterKeywordData()}},
                        /*should_show_on_prominent_ui_surfaces=*/true));
   test_clustering_backend_->FulfillCallback(clusters);
   history::BlockUntilHistoryProcessesPendingRequests(history_service_.get());

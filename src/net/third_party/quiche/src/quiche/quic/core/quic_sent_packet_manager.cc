@@ -47,7 +47,6 @@ static const float kPtoMultiplierWithoutRttSamples = 3;
 // the frames directly (as opposed to resulting in a loss notification).
 inline bool ShouldForceRetransmission(TransmissionType transmission_type) {
   return transmission_type == HANDSHAKE_RETRANSMISSION ||
-         transmission_type == PROBING_RETRANSMISSION ||
          transmission_type == PTO_RETRANSMISSION;
 }
 
@@ -286,24 +285,18 @@ void QuicSentPacketManager::AdjustNetworkParameters(
   const QuicBandwidth& bandwidth = params.bandwidth;
   const QuicTime::Delta& rtt = params.rtt;
 
-  if (use_lower_min_irtt()) {
-    QUIC_RELOADABLE_FLAG_COUNT_N(quic_use_lower_min_for_trusted_irtt, 2, 2);
-    if (!rtt.IsZero()) {
-      if (params.is_rtt_trusted) {
-        // Always set initial rtt if it's trusted.
-        SetInitialRtt(rtt, /*trusted=*/true);
-      } else if (rtt_stats_.initial_rtt() ==
-                 QuicTime::Delta::FromMilliseconds(kInitialRttMs)) {
-        // Only set initial rtt if we are using the default. This avoids
-        // overwriting a trusted initial rtt by an untrusted one.
-        SetInitialRtt(rtt, /*trusted=*/false);
-      }
-    }
-  } else {
-    if (!rtt.IsZero()) {
+  if (!rtt.IsZero()) {
+    if (params.is_rtt_trusted) {
+      // Always set initial rtt if it's trusted.
+      SetInitialRtt(rtt, /*trusted=*/true);
+    } else if (rtt_stats_.initial_rtt() ==
+               QuicTime::Delta::FromMilliseconds(kInitialRttMs)) {
+      // Only set initial rtt if we are using the default. This avoids
+      // overwriting a trusted initial rtt by an untrusted one.
       SetInitialRtt(rtt, /*trusted=*/false);
     }
   }
+
   const QuicByteCount old_cwnd = send_algorithm_->GetCongestionWindow();
   if (GetQuicReloadableFlag(quic_conservative_bursts) && using_pacing_ &&
       !bandwidth.IsZero()) {
@@ -509,9 +502,6 @@ void QuicSentPacketManager::MarkForRetransmission(
       << "packet number " << packet_number
       << " transmission_type: " << transmission_type << " transmission_info "
       << transmission_info->DebugString();
-  // Handshake packets should never be sent as probing retransmissions.
-  QUICHE_DCHECK(!transmission_info->has_crypto_handshake ||
-                transmission_type != PROBING_RETRANSMISSION);
   if (ShouldForceRetransmission(transmission_type)) {
     if (!unacked_packets_.RetransmitFrames(
             QuicFrames(transmission_info->retransmittable_frames),
@@ -994,15 +984,6 @@ const QuicTime QuicSentPacketManager::GetRetransmissionTime() const {
   }
   if (pending_timer_transmission_count_ > 0) {
     // Do not set the timer if there is any credit left.
-    return QuicTime::Zero();
-  }
-  PacketNumberSpace packet_number_space;
-  if (!simplify_set_retransmission_alarm_ &&
-      supports_multiple_packet_number_spaces() &&
-      unacked_packets_.perspective() == Perspective::IS_SERVER &&
-      !GetEarliestPacketSentTimeForPto(&packet_number_space).IsInitialized()) {
-    // Do not set the timer on the server side if the only in flight packets are
-    // half RTT data.
     return QuicTime::Zero();
   }
   switch (GetRetransmissionMode()) {

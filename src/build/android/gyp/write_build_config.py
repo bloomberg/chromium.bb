@@ -1167,16 +1167,8 @@ def main(argv):
       'for modules that are part of the bundle.')
 
   parser.add_option(
-      '--add-view-trace-events',
-      action='store_true',
-      help=
-      'Specifies that trace events will be added with an additional bytecode '
-      'rewriting step.')
-  parser.add_option(
-      '--base-module-gen-dir',
-      help=
-      'Path to base module\'s target_gen_dir. Needed for bundles and modules '
-      'when --add-view-trace-events is set.')
+      '--trace-events-jar-dir',
+      help='Directory of rewritten .jar files for trace event rewriting.')
 
   parser.add_option('--version-name', help='Version name for this APK.')
   parser.add_option('--version-code', help='Version code for this APK.')
@@ -1771,6 +1763,7 @@ def main(argv):
       if c['is_base_module']:
         assert 'base_module_config' not in deps_info, (
             'Must have exactly 1 base module!')
+        deps_info['package_name'] = c['package_name']
         deps_info['base_module_config'] = c['path']
         # Use the base module's android manifest for linting.
         deps_info['lint_android_manifest'] = c['android_manifest']
@@ -1993,14 +1986,14 @@ def main(argv):
   if options.type in ('android_apk', 'android_app_bundle',
                       'android_app_bundle_module', 'dist_aar', 'dist_jar'):
     deps_info['device_classpath'] = device_classpath
-    if options.add_view_trace_events:
+    if options.trace_events_jar_dir:
       trace_event_rewritten_device_classpath = []
       for jar_path in device_classpath:
         file_path = jar_path.replace('../', '')
         file_path = file_path.replace('obj/', '')
         file_path = file_path.replace('gen/', '')
         file_path = file_path.replace('.jar', '.tracing_rewritten.jar')
-        rewritten_jar_path = os.path.join(options.base_module_gen_dir,
+        rewritten_jar_path = os.path.join(options.trace_events_jar_dir,
                                           file_path)
         trace_event_rewritten_device_classpath.append(rewritten_jar_path)
 
@@ -2078,11 +2071,6 @@ def main(argv):
         'secondary_abi_loadable_modules':
         secondary_abi_loadable_modules,
     }
-    config['assets'], config['uncompressed_assets'], locale_paks = (
-        _MergeAssets(deps.All('android_assets')))
-
-    deps_info['locales_java_list'] = _CreateJavaLocaleListFromAssets(
-        config['uncompressed_assets'], locale_paks)
 
     config['extra_android_manifests'] = []
     for c in extra_manifest_deps:
@@ -2101,6 +2089,12 @@ def main(argv):
     java_resources_jars.sort()
     config['java_resources_jars'] = java_resources_jars
 
+  if is_apk_or_module_target or options.type == 'junit_binary':
+    config['assets'], config['uncompressed_assets'], locale_paks = (
+        _MergeAssets(deps.All('android_assets')))
+    deps_info['locales_java_list'] = _CreateJavaLocaleListFromAssets(
+        config['uncompressed_assets'], locale_paks)
+
   if options.java_resources_jar_path:
     deps_info['java_resources_jar'] = options.java_resources_jar_path
 
@@ -2118,7 +2112,7 @@ def main(argv):
     RemoveObjDups(config, base, 'deps_info', 'jni', 'all_source')
     RemoveObjDups(config, base, 'final_dex', 'all_dex_files')
     RemoveObjDups(config, base, 'extra_android_manifests')
-    if options.add_view_trace_events:
+    if options.trace_events_jar_dir:
       RemoveObjDups(config, base, 'deps_info',
                     'trace_event_rewritten_device_classpath')
 

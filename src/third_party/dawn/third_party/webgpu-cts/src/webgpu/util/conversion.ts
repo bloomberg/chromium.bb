@@ -698,7 +698,7 @@ export type Value = Scalar | Vector;
 /** @returns if the Value is a float scalar type */
 export function isFloatValue(v: Value): boolean {
   if (v instanceof Scalar) {
-    const s = v as Scalar;
+    const s = v;
     return s.type.kind === s.type.kind || s.type.kind === 'f32' || s.type.kind === 'f16';
   }
   return false;

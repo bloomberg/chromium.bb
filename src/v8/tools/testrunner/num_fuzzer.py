@@ -8,18 +8,16 @@ import random
 import sys
 
 # Adds testrunner to the path hence it has to be imported at the beggining.
-from . import base_runner
+from testrunner import base_runner
 
 from testrunner.local import utils
 
 from testrunner.testproc import fuzzer
-from testrunner.testproc.base import TestProcProducer
 from testrunner.testproc.combiner import CombinerProc
 from testrunner.testproc.execution import ExecutionProc
 from testrunner.testproc.expectation import ExpectationProc
 from testrunner.testproc.filter import StatusFileFilterProc, NameFilterProc
 from testrunner.testproc.loader import LoadProc
-from testrunner.testproc.progress import ResultsTracker
 from testrunner.utils import random_utils
 
 
@@ -124,9 +122,7 @@ class NumFuzzer(base_runner.BaseTestRunner):
   def _runner_flags(self):
     """Extra default flags specific to the test runner implementation."""
     return [
-      '--no-abort-on-contradictory-flags',
-      '--testing-d8-test-runner',
-      '--no-fail'
+        '--exit-on-contradictory-flags', '--testing-d8-test-runner', '--no-fail'
     ]
 
   def _get_statusfile_variables(self, options):

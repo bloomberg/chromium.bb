@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_WEBID_ACCOUNT_SELECTION_BUBBLE_VIEW_H_
 
 #include "base/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webid/account_selection_view.h"
 #include "components/image_fetcher/core/image_fetcher.h"
@@ -15,6 +16,11 @@
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/view.h"
 
+namespace views {
+class ImageView;
+class Label;
+}  // namespace views
+
 // Bubble dialog that is used in the FedCM flow. It creates a dialog with an
 // account chooser for the user, and it changes the content of that dialog as
 // user moves through the FedCM flow steps.
@@ -22,8 +28,8 @@ class AccountSelectionBubbleView : public views::BubbleDialogDelegateView {
  public:
   METADATA_HEADER(AccountSelectionBubbleView);
   AccountSelectionBubbleView(
-      const std::string& rp_etld_plus_one,
-      const std::string& idp_etld_plus_one,
+      const std::string& rp_for_display,
+      const std::string& idp_for_display,
       base::span<const content::IdentityRequestAccount> accounts,
       const content::IdentityProviderMetadata& idp_metadata,
       const content::ClientIdData& client_data,
@@ -37,8 +43,8 @@ class AccountSelectionBubbleView : public views::BubbleDialogDelegateView {
  private:
   // Returns a View containing the logo of the identity provider and the title
   // of the bubble, properly formatted.
-  std::unique_ptr<views::View> CreateHeaderView(gfx::ImageSkia icon,
-                                                const std::u16string& title);
+  std::unique_ptr<views::View> CreateHeaderView(const std::u16string& title,
+                                                bool has_icon);
 
   void CloseBubble();
 
@@ -71,6 +77,10 @@ class AccountSelectionBubbleView : public views::BubbleDialogDelegateView {
                              const gfx::Image& image,
                              const image_fetcher::RequestMetadata& metadata);
 
+  // Called when the brand icon image has beend downloaded.
+  void OnBrandImageFetched(const gfx::Image& image,
+                           const image_fetcher::RequestMetadata& metadata);
+
   // Called when the user clicks on the privacy policy or terms of service URL.
   // Opens the URL in a new tab.
   void OnLinkClicked(const GURL& gurl);
@@ -96,7 +106,7 @@ class AccountSelectionBubbleView : public views::BubbleDialogDelegateView {
   std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher_;
 
   // Used in various messages so the user is aware of who the IDP is.
-  std::u16string idp_etld_plus_one_;
+  std::u16string idp_for_display_;
 
   // Used in single account chooser to determine the look of the consent button.
   absl::optional<SkColor> brand_text_color_;
@@ -113,13 +123,19 @@ class AccountSelectionBubbleView : public views::BubbleDialogDelegateView {
   const content::ClientIdData client_data_;
 
   // View containing the logo of the identity provider and the title.
-  views::View* header_view_{nullptr};
+  raw_ptr<views::View> header_view_{nullptr};
+
+  // View containing the bubble icon.
+  raw_ptr<views::ImageView> bubble_icon_view_{nullptr};
 
   // View containing the bubble title.
-  views::Label* title_label_{nullptr};
+  raw_ptr<views::Label> title_label_{nullptr};
 
   // View containing the continue button.
-  views::View* continue_button_{nullptr};
+  raw_ptr<views::View> continue_button_{nullptr};
+
+  // Used to differentiate UI dismissal scenarios.
+  bool verify_sheet_shown_{false};
 
   // Used to ensure that callbacks are not run if the AccountSelectionBubbleView
   // is destroyed.

@@ -426,8 +426,8 @@ IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingBrowserTest, MAYBE_HitTest) {
 // this platform.
 #if !BUILDFLAG(IS_ANDROID)
 
-// crbug.com/1317505: Flaky on Lacros
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
+// crbug.com/1317505: Flaky on Lacros and Linux Wayland
+#if BUILDFLAG(IS_CHROMEOS_LACROS) || BUILDFLAG(IS_LINUX)
 #define MAYBE_HitTestInPopup DISABLED_HitTestInPopup
 #else
 #define MAYBE_HitTestInPopup HitTestInPopup
@@ -682,7 +682,7 @@ IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingBrowserTest,
   }
 }
 
-#if defined(THREAD_SANITIZER)
+#if defined(THREAD_SANITIZER) || BUILDFLAG(IS_LINUX)
 // TODO(https://crbug.com/1224978): Times out flakily on TSAN builds.
 #define MAYBE_HitTest_WithPinchZoom DISABLED_HitTest_WithPinchZoom
 #else
@@ -738,15 +738,9 @@ IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingBrowserTest,
 }
 
 // Timeouts on Linux. TODO(crbug.com/1083805): Enable this test.
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
-#define MAYBE_CachingAsyncHitTestMissesElement_WithPinchZoom \
-  DISABLED_CachingAsyncHitTestMissesElement_WithPinchZoom
-#else
-#define MAYBE_CachingAsyncHitTestMissesElement_WithPinchZoom \
-  CachingAsyncHitTestMissesElement_WithPinchZoom
-#endif
-IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingBrowserTest,
-                       MAYBE_CachingAsyncHitTestMissesElement_WithPinchZoom) {
+IN_PROC_BROWSER_TEST_P(
+    AccessibilityHitTestingBrowserTest,
+    DISABLED_CachingAsyncHitTestMissesElement_WithPinchZoom) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));

@@ -76,6 +76,8 @@
     #include "tools/viewer/SkottieSlide.h"
 #endif
 
+#include "tools/viewer/RiveSlide.h"
+
 #if defined(SK_ENABLE_SVG)
     #include "modules/svg/include/SkSVGOpenTypeSVGDecoder.h"
 #endif
@@ -175,6 +177,8 @@ static DEFINE_string(lotties, PATH_PREFIX "lotties", "Directory to read (Bodymov
 #undef PATH_PREFIX
 
 static DEFINE_string(svgs, "", "Directory to read SVGs from, or a single SVG file.");
+
+static DEFINE_string(rives, "", "Directory to read RIVs from, or a single .riv file.");
 
 static DEFINE_int_2(threads, j, -1,
                "Run threadsafe tests on a threadpool with this many extra threads, "
@@ -784,6 +788,10 @@ void Viewer::initSlides() {
                 return sk_make_sp<SkottieSlide>(name, path);}
         },
 #endif
+        { ".riv", "rive-dir", FLAGS_rives,
+            [](const SkString& name, const SkString& path) -> sk_sp<Slide> {
+                return sk_make_sp<RiveSlide>(name, path);}
+        },
 #if defined(SK_ENABLE_SVG)
         { ".svg", "svg-dir", FLAGS_svgs,
             [](const SkString& name, const SkString& path) -> sk_sp<Slide> {
@@ -1880,9 +1888,9 @@ static std::string build_metal_highlight_shader(const std::string& inShader) {
 }
 
 static std::string build_glsl_highlight_shader(const GrShaderCaps& shaderCaps) {
-    const char* versionDecl = shaderCaps.versionDeclString();
+    const char* versionDecl = shaderCaps.fVersionDeclString;
     std::string highlight = versionDecl ? versionDecl : "";
-    if (shaderCaps.usesPrecisionModifiers()) {
+    if (shaderCaps.fUsesPrecisionModifiers) {
         highlight.append("precision mediump float;\n");
     }
     SkSL::String::appendf(&highlight, "out vec4 sk_FragColor;\n"

@@ -2,9 +2,13 @@ bug/tint/948.wgsl:146:33 warning: 'textureSampleBias' must only be called from u
         let x_217 : vec4<f32> = textureSampleBias(animationMapTexture, animationMapSampler, vec2<f32>(((x_208 + 0.5) / x_211), (0.125 * x_214)), 0.0);
                                 ^^^^^^^^^^^^^^^^^
 
-bug/tint/948.wgsl:146:33 note: return value of 'textureSampleBias' may be non-uniform
-        let x_217 : vec4<f32> = textureSampleBias(animationMapTexture, animationMapSampler, vec2<f32>(((x_208 + 0.5) / x_211), (0.125 * x_214)), 0.0);
-                                ^^^^^^^^^^^^^^^^^
+bug/tint/948.wgsl:138:9 note: control flow depends on non-uniform value
+        if ((x_197 > x_198)) {
+        ^^
+
+bug/tint/948.wgsl:137:27 note: reading from module-scope private variable 'mt' may result in a non-uniform value
+        let x_198 : f32 = mt;
+                          ^^
 
 struct LeftOver {
   time : f32,
@@ -223,7 +227,7 @@ struct main_out {
   glFragColor_1 : vec4<f32>,
 }
 
-@stage(fragment)
+@fragment
 fn main(@location(2) tUV_param : vec2<f32>, @location(5) tileID_1_param : vec2<f32>, @location(4) levelUnits_param : vec2<f32>, @location(3) stageUnits_1_param : vec2<f32>, @location(0) vPosition_param : vec3<f32>, @location(1) vUV_param : vec2<f32>) -> main_out {
   tUV = tUV_param;
   tileID_1 = tileID_1_param;

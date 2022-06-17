@@ -216,7 +216,6 @@ void CreditCardFormEventLogger::LogFormSubmitted(const FormStructure& form) {
   if (!has_logged_suggestion_filled_) {
     Log(FORM_EVENT_NO_SUGGESTION_SUBMITTED_ONCE, form);
   } else if (logged_suggestion_filled_was_masked_server_card_) {
-    DCHECK_NE(current_authentication_flow_, UnmaskAuthFlowType::kNone);
     Log(FORM_EVENT_MASKED_SERVER_CARD_SUGGESTION_SUBMITTED_ONCE, form);
 
     // Log BetterAuth.FlowEvents.
@@ -228,11 +227,8 @@ void CreditCardFormEventLogger::LogFormSubmitted(const FormStructure& form) {
     // Log BetterAuth.FlowEvents.
     RecordCardUnmaskFlowEvent(current_authentication_flow_,
                               UnmaskAuthFlowEvent::kFormSubmitted);
-    if (base::FeatureList::IsEnabled(
-            features::kAutofillEnableVirtualCardsRiskBasedAuthentication)) {
-      AutofillMetrics::LogServerCardUnmaskFormSubmission(
-          AutofillClient::PaymentsRpcCardType::kVirtualCard);
-    }
+    AutofillMetrics::LogServerCardUnmaskFormSubmission(
+        AutofillClient::PaymentsRpcCardType::kVirtualCard);
   } else if (logged_suggestion_filled_was_server_data_) {
     Log(FORM_EVENT_SERVER_SUGGESTION_SUBMITTED_ONCE, form);
   } else {
@@ -349,8 +345,9 @@ void CreditCardFormEventLogger::RecordCardUnmaskFlowEvent(
 bool CreditCardFormEventLogger::DoesCardHaveOffer(
     const CreditCard& credit_card) {
   for (auto& suggestion : suggestions_) {
-    if (suggestion.backend_id == credit_card.guid())
+    if (suggestion.GetPayload<std::string>() == credit_card.guid()) {
       return !suggestion.offer_label.empty();
+    }
   }
   return false;
 }

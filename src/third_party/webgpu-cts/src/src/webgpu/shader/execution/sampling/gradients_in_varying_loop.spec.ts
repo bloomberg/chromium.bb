@@ -38,6 +38,7 @@ class DerivativesTest extends GPUTest {
     await super.init();
 
     this.pipeline = this.device.createRenderPipeline({
+      layout: 'auto',
       vertex: {
         module: this.device.createShaderModule({
           code: `
@@ -46,7 +47,7 @@ class DerivativesTest extends GPUTest {
               @location(0) fragUV : vec2<f32>,
             };
 
-            @stage(vertex) fn main(
+            @vertex fn main(
               @builtin(vertex_index) VertexIndex : u32) -> Outputs {
               // Full screen quad
               var position : array<vec3<f32>, 6> = array<vec3<f32>, 6>(
@@ -86,7 +87,7 @@ class DerivativesTest extends GPUTest {
             };
             @binding(0) @group(0) var<uniform> uniforms : Uniforms;
 
-            @stage(fragment) fn main(
+            @fragment fn main(
               @builtin(position) FragCoord : vec4<f32>,
               @location(0) fragUV: vec2<f32>) -> @location(0) vec4<f32> {
 
@@ -202,11 +203,11 @@ g.test('derivative_in_varying_loop')
 
     t.expect(
       almostEqual(result.data[0], expected_x),
-      'Render results with numIterations * dx is ' + result.data[0] + ', expected: ' + expected_x
+      `Render results with numIterations * dx is ${result.data[0]}, expected: ${expected_x}`
     );
     t.expect(
       almostEqual(result.data[1], expected_y),
-      'Render results with numIterations * dy is ' + result.data[1] + ', expected: ' + expected_y
+      `Render results with numIterations * dy is ${result.data[1]}, expected: ${expected_y}`
     );
 
     result.cleanup();

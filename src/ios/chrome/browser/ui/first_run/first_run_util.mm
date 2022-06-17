@@ -10,6 +10,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/thread_pool.h"
 #import "components/metrics/metrics_reporting_default_state.h"
+#import "components/policy/core/common/policy_loader_ios_constants.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #import "ios/chrome/app/tests_hook.h"
 #import "ios/chrome/browser/application_context.h"
@@ -112,6 +113,60 @@ void RecordFirstRunSignInMetrics(
                                 first_run::SIGNIN_SIZE);
 }
 
+void RecordFirstRunScrollButtonVisibilityMetrics(
+    first_run::FirstRunScreenType screen_type,
+    BOOL scroll_button_visible) {
+  switch (screen_type) {
+    case first_run::FirstRunScreenType::kDefaultBrowserPromoScreen:
+      base::UmaHistogramBoolean(
+          "IOS.FirstRun.ScrollButtonVisible.DefaultBrowserPromoScreen",
+          scroll_button_visible);
+      break;
+    case first_run::FirstRunScreenType::kSignInScreenWithFooter:
+      base::UmaHistogramBoolean(
+          "IOS.FirstRun.ScrollButtonVisible.SignInScreenWithFooter",
+          scroll_button_visible);
+      break;
+    case first_run::FirstRunScreenType::
+        kSignInScreenWithFooterAndIdentityPicker:
+      base::UmaHistogramBoolean("IOS.FirstRun.ScrollButtonVisible."
+                                "SignInScreenWithFooterAndIdentityPicker",
+                                scroll_button_visible);
+      break;
+    case first_run::FirstRunScreenType::kSignInScreenWithIdentityPicker:
+      base::UmaHistogramBoolean(
+          "IOS.FirstRun.ScrollButtonVisible.SignInScreenWithIdentityPicker",
+          scroll_button_visible);
+      break;
+    case first_run::FirstRunScreenType::
+        kSignInScreenWithoutFooterOrIdentityPicker:
+      base::UmaHistogramBoolean("IOS.FirstRun.ScrollButtonVisible."
+                                "SignInScreenWithoutFooterOrIdentityPicker",
+                                scroll_button_visible);
+      break;
+    case first_run::FirstRunScreenType::kSyncScreenWithoutIdentityPicker:
+      base::UmaHistogramBoolean(
+          "IOS.FirstRun.ScrollButtonVisible.SyncScreenWithoutIdentityPicker",
+          scroll_button_visible);
+      break;
+    case first_run::FirstRunScreenType::kSyncScreenWithIdentityPicker:
+      base::UmaHistogramBoolean(
+          "IOS.FirstRun.ScrollButtonVisible.SyncScreenWithIdentityPicker",
+          scroll_button_visible);
+      break;
+    case first_run::FirstRunScreenType::kWelcomeScreenWithoutUMACheckbox:
+      base::UmaHistogramBoolean(
+          "IOS.FirstRun.ScrollButtonVisible.WelcomeScreenWithoutUMACheckbox",
+          scroll_button_visible);
+      break;
+    case first_run::FirstRunScreenType::kWelcomeScreenWithUMACheckbox:
+      base::UmaHistogramBoolean(
+          "IOS.FirstRun.ScrollButtonVisible.WelcomeScreenWithUMACheckbox",
+          scroll_button_visible);
+      break;
+  }
+}
+
 void FinishFirstRun(ChromeBrowserState* browserState,
                     web::WebState* web_state,
                     FirstRunConfiguration* config,
@@ -174,4 +229,9 @@ void RecordMetricsReportingDefaultState() {
             ? metrics::EnableMetricsDefault::OPT_OUT
             : metrics::EnableMetricsDefault::OPT_IN);
   });
+}
+
+bool IsApplicationManaged() {
+  return [[[NSUserDefaults standardUserDefaults]
+             dictionaryForKey:kPolicyLoaderIOSConfigurationKey] count] > 0;
 }

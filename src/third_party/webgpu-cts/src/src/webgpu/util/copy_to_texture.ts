@@ -42,7 +42,7 @@ export class CopyToTextureUtils extends GPUTest {
       srcPremultiplied: boolean;
       dstPremultiplied: boolean;
       srcColorSpace?: PredefinedColorSpace;
-      dstColorSpace?: GPUPredefinedColorSpace;
+      dstColorSpace?: PredefinedColorSpace;
     }
   ): TexelView {
     const applyConversion = makeInPlaceColorConversion(conversion);

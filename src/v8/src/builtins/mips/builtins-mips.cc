@@ -305,7 +305,7 @@ void Builtins::Generate_JSConstructStubGeneric(MacroAssembler* masm) {
   // If the type of the result (stored in its map) is less than
   // FIRST_JS_RECEIVER_TYPE, it is not an object in the ECMA sense.
   __ GetObjectType(v0, t2, t2);
-  STATIC_ASSERT(LAST_JS_RECEIVER_TYPE == LAST_TYPE);
+  static_assert(LAST_JS_RECEIVER_TYPE == LAST_TYPE);
   __ Branch(&leave_and_return, greater_equal, t2,
             Operand(FIRST_JS_RECEIVER_TYPE));
   __ Branch(&use_receiver);
@@ -942,10 +942,10 @@ static void AdvanceBytecodeOffsetOrReturn(MacroAssembler* masm,
 
   // Check if the bytecode is a Wide or ExtraWide prefix bytecode.
   Label process_bytecode, extra_wide;
-  STATIC_ASSERT(0 == static_cast<int>(interpreter::Bytecode::kWide));
-  STATIC_ASSERT(1 == static_cast<int>(interpreter::Bytecode::kExtraWide));
-  STATIC_ASSERT(2 == static_cast<int>(interpreter::Bytecode::kDebugBreakWide));
-  STATIC_ASSERT(3 ==
+  static_assert(0 == static_cast<int>(interpreter::Bytecode::kWide));
+  static_assert(1 == static_cast<int>(interpreter::Bytecode::kExtraWide));
+  static_assert(2 == static_cast<int>(interpreter::Bytecode::kDebugBreakWide));
+  static_assert(3 ==
                 static_cast<int>(interpreter::Bytecode::kDebugBreakExtraWide));
   __ Branch(&process_bytecode, hi, bytecode, Operand(3));
   __ And(scratch2, bytecode, Operand(1));
@@ -1040,7 +1040,7 @@ static void MaybeOptimizeCodeOrTailCallOptimizedCodeSlot(
 namespace {
 void ResetBytecodeAge(MacroAssembler* masm,
                                  Register bytecode_array) {
-  STATIC_ASSERT(BytecodeArray::kNoAgeBytecodeAge == 0);
+  static_assert(BytecodeArray::kNoAgeBytecodeAge == 0);
   __ sh(zero_reg,
         FieldMemOperand(bytecode_array, BytecodeArray::kBytecodeAgeOffset));
 }
@@ -1848,14 +1848,14 @@ void OnStackReplacement(MacroAssembler* masm, OsrSourceTier source,
 
 void Builtins::Generate_InterpreterOnStackReplacement(MacroAssembler* masm) {
   using D = InterpreterOnStackReplacementDescriptor;
-  STATIC_ASSERT(D::kParameterCount == 1);
+  static_assert(D::kParameterCount == 1);
   OnStackReplacement(masm, OsrSourceTier::kInterpreter,
                      D::MaybeTargetCodeRegister());
 }
 
 void Builtins::Generate_BaselineOnStackReplacement(MacroAssembler* masm) {
   using D = BaselineOnStackReplacementDescriptor;
-  STATIC_ASSERT(D::kParameterCount == 1);
+  static_assert(D::kParameterCount == 1);
 
   __ Lw(kContextRegister,
         MemOperand(fp, BaselineFrameConstants::kContextOffset));
@@ -2249,7 +2249,7 @@ void Builtins::Generate_CallFunction(MacroAssembler* masm,
       Label convert_to_object, convert_receiver;
       __ LoadReceiver(a3, a0);
       __ JumpIfSmi(a3, &convert_to_object);
-      STATIC_ASSERT(LAST_JS_RECEIVER_TYPE == LAST_TYPE);
+      static_assert(LAST_JS_RECEIVER_TYPE == LAST_TYPE);
       __ GetObjectType(a3, t0, t0);
       __ Branch(&done_convert, hs, t0, Operand(FIRST_JS_RECEIVER_TYPE));
       if (mode != ConvertReceiverMode::kNotNullOrUndefined) {
@@ -2623,32 +2623,45 @@ void Builtins::Generate_WasmCompileLazy(MacroAssembler* masm) {
   // The function index was put in t0 by the jump table trampoline.
   // Convert to Smi for the runtime call.
   __ SmiTag(kWasmCompileLazyFuncIndexRegister);
+
+  // Compute register lists for parameters to be saved. We save all parameter
+  // registers (see wasm-linkage.h). They might be overwritten in the runtime
+  // call below. We don't have any callee-saved registers in wasm, so no need to
+  // store anything else.
+  constexpr RegList kSavedGpRegs = ([]() constexpr {
+    RegList saved_gp_regs;
+    for (Register gp_param_reg : wasm::kGpParamRegisters) {
+      saved_gp_regs.set(gp_param_reg);
+    }
+
+    // All set registers were unique.
+    CHECK_EQ(saved_gp_regs.Count(), arraysize(wasm::kGpParamRegisters));
+    // The Wasm instance must be part of the saved registers.
+    CHECK(saved_gp_regs.has(kWasmInstanceRegister));
+    CHECK_EQ(WasmCompileLazyFrameConstants::kNumberOfSavedGpParamRegs,
+             saved_gp_regs.Count());
+    return saved_gp_regs;
+  })();
+
+  constexpr DoubleRegList kSavedFpRegs = ([]() constexpr {
+    DoubleRegList saved_fp_regs;
+    for (DoubleRegister fp_param_reg : wasm::kFpParamRegisters) {
+      saved_fp_regs.set(fp_param_reg);
+    }
+
+    CHECK_EQ(saved_fp_regs.Count(), arraysize(wasm::kFpParamRegisters));
+    CHECK_EQ(WasmCompileLazyFrameConstants::kNumberOfSavedFpParamRegs,
+             saved_fp_regs.Count());
+    return saved_fp_regs;
+  })();
+
   {
     HardAbortScope hard_abort(masm);  // Avoid calls to Abort.
     FrameScope scope(masm, StackFrame::WASM_COMPILE_LAZY);
 
-    // Save all parameter registers (see wasm-linkage.h). They might be
-    // overwritten in the runtime call below. We don't have any callee-saved
-    // registers in wasm, so no need to store anything else.
-    RegList gp_regs;
-    for (Register gp_param_reg : wasm::kGpParamRegisters) {
-      gp_regs.set(gp_param_reg);
-    }
-
-    DoubleRegList fp_regs;
-    for (DoubleRegister fp_param_reg : wasm::kFpParamRegisters) {
-      fp_regs.set(fp_param_reg);
-    }
-
-    CHECK_EQ(gp_regs.Count(), arraysize(wasm::kGpParamRegisters));
-    CHECK_EQ(fp_regs.Count(), arraysize(wasm::kFpParamRegisters));
-    CHECK_EQ(WasmCompileLazyFrameConstants::kNumberOfSavedGpParamRegs,
-             gp_regs.Count());
-    CHECK_EQ(WasmCompileLazyFrameConstants::kNumberOfSavedFpParamRegs,
-             fp_regs.Count());
-
-    __ MultiPush(gp_regs);
-    __ MultiPushFPU(fp_regs);
+    // Save registers that we need to keep alive across the runtime call.
+    __ MultiPush(kSavedGpRegs);
+    __ MultiPushFPU(kSavedFpRegs);
 
     // Pass instance and function index as an explicit arguments to the runtime
     // function.
@@ -2659,11 +2672,24 @@ void Builtins::Generate_WasmCompileLazy(MacroAssembler* masm) {
     __ CallRuntime(Runtime::kWasmCompileLazy, 2);
 
     // Restore registers.
-    __ MultiPopFPU(fp_regs);
-    __ MultiPop(gp_regs);
+    __ MultiPopFPU(kSavedFpRegs);
+    __ MultiPop(kSavedGpRegs);
   }
-  // Finally, jump to the entrypoint.
-  __ Jump(kScratchReg, v0, 0);
+
+  // Untag the returned Smi, for later use.
+  static_assert(!kSavedGpRegs.has(v0));
+  __ SmiUntag(v0);
+
+  // The runtime function returned the jump table slot offset as a Smi (now in
+  // t8). Use that to compute the jump target.
+  static_assert(!kSavedGpRegs.has(t8));
+  __ Lw(t8,
+        MemOperand(kWasmInstanceRegister,
+                   WasmInstanceObject::kJumpTableStartOffset - kHeapObjectTag));
+  __ Addu(t8, v0, t8);
+
+  // Finally, jump to the jump table slot for the function.
+  __ Jump(t8);
 }
 
 void Builtins::Generate_WasmDebugBreak(MacroAssembler* masm) {
@@ -3122,13 +3148,13 @@ void Builtins::Generate_CallApiCallback(MacroAssembler* masm) {
 
   using FCA = FunctionCallbackArguments;
 
-  STATIC_ASSERT(FCA::kArgsLength == 6);
-  STATIC_ASSERT(FCA::kNewTargetIndex == 5);
-  STATIC_ASSERT(FCA::kDataIndex == 4);
-  STATIC_ASSERT(FCA::kReturnValueOffset == 3);
-  STATIC_ASSERT(FCA::kReturnValueDefaultValueIndex == 2);
-  STATIC_ASSERT(FCA::kIsolateIndex == 1);
-  STATIC_ASSERT(FCA::kHolderIndex == 0);
+  static_assert(FCA::kArgsLength == 6);
+  static_assert(FCA::kNewTargetIndex == 5);
+  static_assert(FCA::kDataIndex == 4);
+  static_assert(FCA::kReturnValueOffset == 3);
+  static_assert(FCA::kReturnValueDefaultValueIndex == 2);
+  static_assert(FCA::kIsolateIndex == 1);
+  static_assert(FCA::kHolderIndex == 0);
 
   // Set up FunctionCallbackInfo's implicit_args on the stack as follows:
   //
@@ -3220,14 +3246,14 @@ void Builtins::Generate_CallApiCallback(MacroAssembler* masm) {
 void Builtins::Generate_CallApiGetter(MacroAssembler* masm) {
   // Build v8::PropertyCallbackInfo::args_ array on the stack and push property
   // name below the exit frame to make GC aware of them.
-  STATIC_ASSERT(PropertyCallbackArguments::kShouldThrowOnErrorIndex == 0);
-  STATIC_ASSERT(PropertyCallbackArguments::kHolderIndex == 1);
-  STATIC_ASSERT(PropertyCallbackArguments::kIsolateIndex == 2);
-  STATIC_ASSERT(PropertyCallbackArguments::kReturnValueDefaultValueIndex == 3);
-  STATIC_ASSERT(PropertyCallbackArguments::kReturnValueOffset == 4);
-  STATIC_ASSERT(PropertyCallbackArguments::kDataIndex == 5);
-  STATIC_ASSERT(PropertyCallbackArguments::kThisIndex == 6);
-  STATIC_ASSERT(PropertyCallbackArguments::kArgsLength == 7);
+  static_assert(PropertyCallbackArguments::kShouldThrowOnErrorIndex == 0);
+  static_assert(PropertyCallbackArguments::kHolderIndex == 1);
+  static_assert(PropertyCallbackArguments::kIsolateIndex == 2);
+  static_assert(PropertyCallbackArguments::kReturnValueDefaultValueIndex == 3);
+  static_assert(PropertyCallbackArguments::kReturnValueOffset == 4);
+  static_assert(PropertyCallbackArguments::kDataIndex == 5);
+  static_assert(PropertyCallbackArguments::kThisIndex == 6);
+  static_assert(PropertyCallbackArguments::kArgsLength == 7);
 
   Register receiver = ApiGetterDescriptor::ReceiverRegister();
   Register holder = ApiGetterDescriptor::HolderRegister();

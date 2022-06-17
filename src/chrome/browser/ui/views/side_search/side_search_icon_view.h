@@ -40,6 +40,17 @@ class SideSearchIconView : public PageActionIconView {
   void AnimationProgressed(const gfx::Animation* animation) override;
 
  private:
+  // Returns true if we should animate-in the page action icon label when the
+  // side search page action icon is shown in the omnibox.
+  bool ShouldShowPageActionLabel() const;
+
+  // Called when the page action icon label has been shown.
+  void SetPageActionLabelShown();
+
+  // Tracks the number of times the page action icon has animated-in its label
+  // text for this window.
+  int page_action_label_shown_count_ = 0;
+
   raw_ptr<Browser> browser_ = nullptr;
 
   // Source for the default search icon image used by this page action.

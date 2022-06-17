@@ -15,6 +15,7 @@ The magnitude of the significand is in the range of [0.5, 1.0) or 0.
 
 import { makeTestGroup } from '../../../../../../common/framework/test_group.js';
 import { GPUTest } from '../../../../../gpu_test.js';
+import { allInputSources } from '../../expression.js';
 
 export const g = makeTestGroup(GPUTest);
 
@@ -30,7 +31,7 @@ struct __frexp_result {
 }
 `
   )
-  .params(u => u.combine('storageClass', ['uniform', 'storage_r', 'storage_rw'] as const))
+  .params(u => u.combine('inputSource', allInputSources))
   .unimplemented();
 
 g.test('scalar_f16')
@@ -45,7 +46,7 @@ struct __frexp_result_f16 {
 }
 `
   )
-  .params(u => u.combine('storageClass', ['uniform', 'storage_r', 'storage_rw'] as const))
+  .params(u => u.combine('inputSource', allInputSources))
   .unimplemented();
 
 g.test('vector_f32')
@@ -60,11 +61,7 @@ struct __frexp_result_vecN {
 }
 `
   )
-  .params(u =>
-    u
-      .combine('storageClass', ['uniform', 'storage_r', 'storage_rw'] as const)
-      .combine('vectorize', [2, 3, 4] as const)
-  )
+  .params(u => u.combine('inputSource', allInputSources).combine('vectorize', [2, 3, 4] as const))
   .unimplemented();
 
 g.test('vector_f16')
@@ -79,9 +76,5 @@ struct __frexp_result_vecN_f16 {
 }
 `
   )
-  .params(u =>
-    u
-      .combine('storageClass', ['uniform', 'storage_r', 'storage_rw'] as const)
-      .combine('vectorize', [2, 3, 4] as const)
-  )
+  .params(u => u.combine('inputSource', allInputSources).combine('vectorize', [2, 3, 4] as const))
   .unimplemented();

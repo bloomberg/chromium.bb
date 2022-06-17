@@ -376,6 +376,12 @@ static int encode_dvd_subtitles(AVCodecContext *avctx,
     x2 = vrect.x + vrect.w - 1;
     y2 = vrect.y + vrect.h - 1;
 
+    if (x2 > avctx->width || y2 > avctx->height) {
+        av_log(avctx, AV_LOG_ERROR, "canvas_size(%d:%d) is too small(%d:%d) for render\n",
+               avctx->width, avctx->height, x2, y2);
+        ret = AVERROR(EINVAL);;
+        goto fail;
+    }
     *q++ = 0x05;
     // x1 x2 -> 6 nibbles
     *q++ = vrect.x >> 4;
@@ -500,7 +506,7 @@ const FFCodec ff_dvdsub_encoder = {
     .p.type         = AVMEDIA_TYPE_SUBTITLE,
     .p.id           = AV_CODEC_ID_DVD_SUBTITLE,
     .init           = dvdsub_init,
-    .encode_sub     = dvdsub_encode,
+    FF_CODEC_ENCODE_SUB_CB(dvdsub_encode),
     .p.priv_class   = &dvdsubenc_class,
     .priv_data_size = sizeof(DVDSubtitleContext),
     .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,

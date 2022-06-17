@@ -500,11 +500,9 @@ MaybeLocal<String> Script::SourceMappingURL() const {
 
 MaybeLocal<String> Script::GetSha256Hash() const {
   i::Handle<i::Script> script = Utils::OpenHandle(this);
-  i::Isolate* isolate = script->GetIsolate();
-  i::HandleScope handle_scope(isolate);
   i::Handle<i::String> value =
       script->GetScriptHash(/* forceForInspector: */ true);
-  return Utils::ToLocal(handle_scope.CloseAndEscape(value));
+  return Utils::ToLocal(value);
 }
 
 Maybe<int> Script::ContextId() const {
@@ -1093,7 +1091,7 @@ MaybeLocal<Value> CallFunctionOn(Local<Context> context,
   PREPARE_FOR_DEBUG_INTERFACE_EXECUTION_WITH_ISOLATE(isolate, Value);
   auto self = Utils::OpenHandle(*function);
   auto recv_obj = Utils::OpenHandle(*recv);
-  STATIC_ASSERT(sizeof(v8::Local<v8::Value>) == sizeof(i::Handle<i::Object>));
+  static_assert(sizeof(v8::Local<v8::Value>) == sizeof(i::Handle<i::Object>));
   auto args = reinterpret_cast<i::Handle<i::Object>*>(argv);
   // Disable breaks in side-effect free mode.
   i::DisableBreak disable_break_scope(isolate->debug(), throw_on_side_effect);

@@ -344,12 +344,6 @@ class V8_EXPORT_PRIVATE CodeStubAssembler
     return Signed(value);
   }
 
-  enum InitializationMode {
-    kUninitialized,
-    kInitializeToZero,
-    kInitializeToNull
-  };
-
   TNode<Smi> ParameterToTagged(TNode<Smi> value) { return value; }
 
   TNode<Smi> ParameterToTagged(TNode<IntPtrT> value) { return SmiTag(value); }
@@ -834,7 +828,7 @@ class V8_EXPORT_PRIVATE CodeStubAssembler
 #error "This code requires updating for big-endian architectures"
 #endif
     // Given the fields layout we can read the Code reference as a full word.
-    STATIC_ASSERT(CodeDataContainer::kCodeCageBaseUpper32BitsOffset ==
+    static_assert(CodeDataContainer::kCodeCageBaseUpper32BitsOffset ==
                   CodeDataContainer::kCodeOffset + kTaggedSize);
     TNode<Object> o = BitcastWordToTagged(Load<RawPtrT>(
         code, IntPtrConstant(CodeDataContainer::kCodeOffset - kHeapObjectTag)));
@@ -1004,7 +998,7 @@ class V8_EXPORT_PRIVATE CodeStubAssembler
   template <typename U>
   TNode<BoolT> IsInRange(TNode<Word32T> value, U lower_limit, U higher_limit) {
     DCHECK_LE(lower_limit, higher_limit);
-    STATIC_ASSERT(sizeof(U) <= kInt32Size);
+    static_assert(sizeof(U) <= kInt32Size);
     return Uint32LessThanOrEqual(Int32Sub(value, Int32Constant(lower_limit)),
                                  Int32Constant(higher_limit - lower_limit));
   }
@@ -2081,9 +2075,6 @@ class V8_EXPORT_PRIVATE CodeStubAssembler
 
   TNode<PropertyArray> AllocatePropertyArray(TNode<IntPtrT> capacity);
 
-  TNode<HeapObject> AllocateWasmArray(TNode<IntPtrT> size_in_bytes,
-                                      int initialization);
-
   // TODO(v8:9722): Return type should be JSIteratorResult
   TNode<JSObject> AllocateJSIteratorResult(TNode<Context> context,
                                            TNode<Object> value,
@@ -2728,6 +2719,10 @@ class V8_EXPORT_PRIVATE CodeStubAssembler
   bool IsFastElementsKind(ElementsKind kind) {
     return v8::internal::IsFastElementsKind(kind);
   }
+  TNode<BoolT> IsFastPackedElementsKind(TNode<Int32T> elements_kind);
+  bool IsFastPackedElementsKind(ElementsKind kind) {
+    return v8::internal::IsFastPackedElementsKind(kind);
+  }
   TNode<BoolT> IsFastOrNonExtensibleOrSealedElementsKind(
       TNode<Int32T> elements_kind);
 
@@ -3094,7 +3089,7 @@ class V8_EXPORT_PRIVATE CodeStubAssembler
   void SetNumberOfElements(TNode<Dictionary> dictionary,
                            TNode<Smi> num_elements_smi) {
     // Not supposed to be used for SwissNameDictionary.
-    STATIC_ASSERT(!(std::is_same<Dictionary, SwissNameDictionary>::value));
+    static_assert(!(std::is_same<Dictionary, SwissNameDictionary>::value));
 
     StoreFixedArrayElement(dictionary, Dictionary::kNumberOfElementsIndex,
                            num_elements_smi, SKIP_WRITE_BARRIER);
@@ -3103,7 +3098,7 @@ class V8_EXPORT_PRIVATE CodeStubAssembler
   template <class Dictionary>
   TNode<Smi> GetNumberOfDeletedElements(TNode<Dictionary> dictionary) {
     // Not supposed to be used for SwissNameDictionary.
-    STATIC_ASSERT(!(std::is_same<Dictionary, SwissNameDictionary>::value));
+    static_assert(!(std::is_same<Dictionary, SwissNameDictionary>::value));
 
     return CAST(LoadFixedArrayElement(
         dictionary, Dictionary::kNumberOfDeletedElementsIndex));
@@ -3113,7 +3108,7 @@ class V8_EXPORT_PRIVATE CodeStubAssembler
   void SetNumberOfDeletedElements(TNode<Dictionary> dictionary,
                                   TNode<Smi> num_deleted_smi) {
     // Not supposed to be used for SwissNameDictionary.
-    STATIC_ASSERT(!(std::is_same<Dictionary, SwissNameDictionary>::value));
+    static_assert(!(std::is_same<Dictionary, SwissNameDictionary>::value));
 
     StoreFixedArrayElement(dictionary,
                            Dictionary::kNumberOfDeletedElementsIndex,
@@ -3123,7 +3118,7 @@ class V8_EXPORT_PRIVATE CodeStubAssembler
   template <class Dictionary>
   TNode<Smi> GetCapacity(TNode<Dictionary> dictionary) {
     // Not supposed to be used for SwissNameDictionary.
-    STATIC_ASSERT(!(std::is_same<Dictionary, SwissNameDictionary>::value));
+    static_assert(!(std::is_same<Dictionary, SwissNameDictionary>::value));
 
     return CAST(
         UnsafeLoadFixedArrayElement(dictionary, Dictionary::kCapacityIndex));
@@ -3696,7 +3691,7 @@ class V8_EXPORT_PRIVATE CodeStubAssembler
   // JSArrayBufferView helpers
   TNode<JSArrayBuffer> LoadJSArrayBufferViewBuffer(
       TNode<JSArrayBufferView> array_buffer_view);
-  TNode<UintPtrT> LoadJSArrayBufferViewByteLength(
+  TNode<UintPtrT> LoadJSArrayBufferViewRawByteLength(
       TNode<JSArrayBufferView> array_buffer_view);
 
   TNode<UintPtrT> LoadJSArrayBufferViewByteOffset(
@@ -3834,7 +3829,7 @@ class V8_EXPORT_PRIVATE CodeStubAssembler
   template <class... TArgs>
   TNode<HeapObject> MakeTypeError(MessageTemplate message,
                                   TNode<Context> context, TArgs... args) {
-    STATIC_ASSERT(sizeof...(TArgs) <= 3);
+    static_assert(sizeof...(TArgs) <= 3);
     return CAST(CallRuntime(Runtime::kNewTypeError, context,
                             SmiConstant(message), args...));
   }

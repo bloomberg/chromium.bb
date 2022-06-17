@@ -59,7 +59,7 @@ class NonCopyable
     ~NonCopyable()          = default;
 
   private:
-    NonCopyable(const NonCopyable &) = delete;
+    NonCopyable(const NonCopyable &)    = delete;
     void operator=(const NonCopyable &) = delete;
 };
 
@@ -98,7 +98,7 @@ struct PerfMonitorCounter
     ~PerfMonitorCounter();
 
     std::string name;
-    uint32_t value;
+    uint64_t value;
 };
 using PerfMonitorCounters = std::vector<PerfMonitorCounter>;
 
@@ -127,7 +127,7 @@ struct PerfMonitorTriplet
 {
     uint32_t group;
     uint32_t counter;
-    uint32_t value;
+    uint64_t value;
 };
 
 #define ANGLE_VK_PERF_COUNTERS_X(FN)               \
@@ -166,6 +166,10 @@ struct PerfMonitorTriplet
     FN(depthAttachmentResolves)                    \
     FN(stencilAttachmentResolves)                  \
     FN(readOnlyDepthStencilRenderPasses)           \
+    FN(pipelineCreationCacheHits)                  \
+    FN(pipelineCreationCacheMisses)                \
+    FN(pipelineCreationTotalCacheHitsDurationNs)   \
+    FN(pipelineCreationTotalCacheMissesDurationNs) \
     FN(descriptorSetAllocations)                   \
     FN(descriptorSetCacheTotalSize)                \
     FN(descriptorSetCacheKeySizeBytes)             \
@@ -181,9 +185,10 @@ struct PerfMonitorTriplet
     FN(buffersGhosted)                             \
     FN(vertexArraySyncStateCalls)                  \
     FN(allocateNewBufferBlockCalls)                \
-    FN(dynamicBufferAllocations)
+    FN(dynamicBufferAllocations)                   \
+    FN(framebufferCacheSize)
 
-#define ANGLE_DECLARE_PERF_COUNTER(COUNTER) uint32_t COUNTER;
+#define ANGLE_DECLARE_PERF_COUNTER(COUNTER) uint64_t COUNTER;
 
 struct VulkanPerfCounters
 {

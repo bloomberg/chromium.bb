@@ -1,114 +1,33 @@
-load("//bazel:macros.bzl", "enforce_iwyu_on_package", "exports_files_legacy", "generated_cc_atom")
+load("//bazel:macros.bzl", "exports_files_legacy", "split_srcs_and_hdrs")
 
 licenses(["notice"])
 
 exports_files_legacy()
 
-enforce_iwyu_on_package()
+TRANSFORM_FILES = [
+    "SkSLBuiltinVariableScanner.cpp",
+    "SkSLEliminateDeadFunctions.cpp",
+    "SkSLEliminateDeadGlobalVariables.cpp",
+    "SkSLEliminateDeadLocalVariables.cpp",
+    "SkSLEliminateEmptyStatements.cpp",
+    "SkSLEliminateUnreachableCode.cpp",
+    "SkSLProgramWriter.h",
+    "SkSLTransform.h",
+]
 
-generated_cc_atom(
-    name = "SkSLBuiltinVariableScanner_src",
-    srcs = ["SkSLBuiltinVariableScanner.cpp"],
-    visibility = ["//:__subpackages__"],
-    deps = [
-        ":SkSLTransform_hdr",
-        "//include/core:SkTypes_hdr",
-        "//include/private:SkSLProgramElement_hdr",
-        "//include/private:SkSLProgramKind_hdr",
-        "//src/sksl:SkSLBuiltinMap_hdr",
-        "//src/sksl:SkSLBuiltinTypes_hdr",
-        "//src/sksl:SkSLCompiler_hdr",
-        "//src/sksl:SkSLContext_hdr",
-        "//src/sksl:SkSLProgramSettings_hdr",
-        "//src/sksl:SkSLThreadContext_hdr",
-        "//src/sksl/analysis:SkSLProgramVisitor_hdr",
-        "//src/sksl/ir:SkSLExpression_hdr",
-        "//src/sksl/ir:SkSLFunctionDeclaration_hdr",
-        "//src/sksl/ir:SkSLFunctionDefinition_hdr",
-        "//src/sksl/ir:SkSLInterfaceBlock_hdr",
-        "//src/sksl/ir:SkSLType_hdr",
-        "//src/sksl/ir:SkSLVarDeclarations_hdr",
-        "//src/sksl/ir:SkSLVariableReference_hdr",
-        "//src/sksl/ir:SkSLVariable_hdr",
-    ],
+split_srcs_and_hdrs(
+    name = "transform",
+    files = TRANSFORM_FILES,
 )
 
-generated_cc_atom(
-    name = "SkSLEliminateDeadFunctions_src",
-    srcs = ["SkSLEliminateDeadFunctions.cpp"],
-    visibility = ["//:__subpackages__"],
-    deps = [
-        ":SkSLTransform_hdr",
-        "//include/private:SkSLProgramElement_hdr",
-        "//src/sksl:SkSLProgramSettings_hdr",
-        "//src/sksl/ir:SkSLFunctionDeclaration_hdr",
-        "//src/sksl/ir:SkSLFunctionDefinition_hdr",
-        "//src/sksl/ir:SkSLProgram_hdr",
-    ],
+filegroup(
+    name = "srcs",
+    srcs = [":transform_srcs"],
+    visibility = ["//src/sksl:__pkg__"],
 )
 
-generated_cc_atom(
-    name = "SkSLEliminateDeadGlobalVariables_src",
-    srcs = ["SkSLEliminateDeadGlobalVariables.cpp"],
-    visibility = ["//:__subpackages__"],
-    deps = [
-        ":SkSLTransform_hdr",
-        "//include/private:SkSLProgramElement_hdr",
-        "//include/private:SkSLStatement_hdr",
-        "//src/sksl:SkSLProgramSettings_hdr",
-        "//src/sksl/ir:SkSLProgram_hdr",
-        "//src/sksl/ir:SkSLVarDeclarations_hdr",
-    ],
-)
-
-generated_cc_atom(
-    name = "SkSLEliminateDeadLocalVariables_src",
-    srcs = ["SkSLEliminateDeadLocalVariables.cpp"],
-    visibility = ["//:__subpackages__"],
-    deps = [
-        ":SkSLProgramWriter_hdr",
-        ":SkSLTransform_hdr",
-        "//include/core:SkTypes_hdr",
-        "//include/private:SkSLProgramElement_hdr",
-        "//include/private:SkSLStatement_hdr",
-        "//include/private:SkTHash_hdr",
-        "//src/sksl:SkSLProgramSettings_hdr",
-        "//src/sksl/ir:SkSLExpressionStatement_hdr",
-        "//src/sksl/ir:SkSLExpression_hdr",
-        "//src/sksl/ir:SkSLFunctionDefinition_hdr",
-        "//src/sksl/ir:SkSLNop_hdr",
-        "//src/sksl/ir:SkSLProgram_hdr",
-        "//src/sksl/ir:SkSLVarDeclarations_hdr",
-        "//src/sksl/ir:SkSLVariable_hdr",
-    ],
-)
-
-generated_cc_atom(
-    name = "SkSLEliminateUnreachableCode_src",
-    srcs = ["SkSLEliminateUnreachableCode.cpp"],
-    visibility = ["//:__subpackages__"],
-    deps = [
-        ":SkSLProgramWriter_hdr",
-        ":SkSLTransform_hdr",
-        "//include/private:SkSLProgramElement_hdr",
-        "//include/private:SkSLStatement_hdr",
-        "//include/private:SkTArray_hdr",
-        "//src/sksl/ir:SkSLFunctionDefinition_hdr",
-        "//src/sksl/ir:SkSLIfStatement_hdr",
-        "//src/sksl/ir:SkSLNop_hdr",
-        "//src/sksl/ir:SkSLProgram_hdr",
-    ],
-)
-
-generated_cc_atom(
-    name = "SkSLProgramWriter_hdr",
-    hdrs = ["SkSLProgramWriter.h"],
-    visibility = ["//:__subpackages__"],
-    deps = ["//src/sksl/analysis:SkSLProgramVisitor_hdr"],
-)
-
-generated_cc_atom(
-    name = "SkSLTransform_hdr",
-    hdrs = ["SkSLTransform.h"],
-    visibility = ["//:__subpackages__"],
+filegroup(
+    name = "private_hdrs",
+    srcs = [":transform_hdrs"],
+    visibility = ["//src/sksl:__pkg__"],
 )

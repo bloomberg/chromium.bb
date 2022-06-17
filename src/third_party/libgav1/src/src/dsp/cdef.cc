@@ -32,9 +32,11 @@ namespace {
 #include "src/dsp/cdef.inc"
 
 // Silence unused function warnings when CdefDirection_C is obviated.
-#if LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS ||        \
-    !defined(LIBGAV1_Dsp8bpp_CdefDirection) || \
-    (LIBGAV1_MAX_BITDEPTH >= 10 && !defined(LIBGAV1_Dsp10bpp_CdefDirection))
+#if LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS ||           \
+    !defined(LIBGAV1_Dsp8bpp_CdefDirection) ||    \
+    (LIBGAV1_MAX_BITDEPTH >= 10 &&                \
+     !defined(LIBGAV1_Dsp10bpp_CdefDirection)) || \
+    (LIBGAV1_MAX_BITDEPTH == 12 && !defined(LIBGAV1_Dsp12bpp_CdefDirection))
 constexpr int16_t kDivisionTable[] = {840, 420, 280, 210, 168, 140, 120, 105};
 
 int32_t Square(int32_t x) { return x * x; }
@@ -103,12 +105,15 @@ void CdefDirection_C(const void* LIBGAV1_RESTRICT const source,
 #endif  // LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS ||
         // !defined(LIBGAV1_Dsp8bpp_CdefDirection) ||
         // (LIBGAV1_MAX_BITDEPTH >= 10 &&
-        // !defined(LIBGAV1_Dsp10bpp_CdefDirection))
+        //  !defined(LIBGAV1_Dsp10bpp_CdefDirection))
+        // (LIBGAV1_MAX_BITDEPTH == 12 &&
+        //  !defined(LIBGAV1_Dsp12bpp_CdefDirection))
 
 // Silence unused function warnings when CdefFilter_C is obviated.
-#if LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS ||      \
-    !defined(LIBGAV1_Dsp8bpp_CdefFilters) || \
-    (LIBGAV1_MAX_BITDEPTH >= 10 && !defined(LIBGAV1_Dsp10bpp_CdefFilters))
+#if LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS ||                                       \
+    !defined(LIBGAV1_Dsp8bpp_CdefFilters) ||                                  \
+    (LIBGAV1_MAX_BITDEPTH >= 10 && !defined(LIBGAV1_Dsp10bpp_CdefFilters)) || \
+    (LIBGAV1_MAX_BITDEPTH == 12 && !defined(LIBGAV1_Dsp12bpp_CdefFilters))
 
 int Constrain(int diff, int threshold, int damping) {
   assert(threshold != 0);
@@ -218,7 +223,9 @@ void CdefFilter_C(const uint16_t* LIBGAV1_RESTRICT src,
 #endif  // LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS ||
         // !defined(LIBGAV1_Dsp8bpp_CdefFilters) ||
         // (LIBGAV1_MAX_BITDEPTH >= 10 &&
-        // !defined(LIBGAV1_Dsp10bpp_CdefFilters))
+        //  !defined(LIBGAV1_Dsp10bpp_CdefFilters))
+        // (LIBGAV1_MAX_BITDEPTH == 12 &&
+        //  !defined(LIBGAV1_Dsp12bpp_CdefFilters))
 
 void Init8bpp() {
   Dsp* const dsp = dsp_internal::GetWritableDspTable(8);
@@ -294,7 +301,48 @@ void Init10bpp() {
 #endif
 #endif  // LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
 }
+#endif  // LIBGAV1_MAX_BITDEPTH >= 10
+
+#if LIBGAV1_MAX_BITDEPTH == 12
+void Init12bpp() {
+  Dsp* const dsp = dsp_internal::GetWritableDspTable(12);
+  assert(dsp != nullptr);
+#if LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
+  dsp->cdef_direction = CdefDirection_C<12, uint16_t>;
+  dsp->cdef_filters[0][0] = CdefFilter_C<4, 12, uint16_t>;
+  dsp->cdef_filters[0][1] =
+      CdefFilter_C<4, 12, uint16_t, /*enable_primary=*/true,
+                   /*enable_secondary=*/false>;
+  dsp->cdef_filters[0][2] =
+      CdefFilter_C<4, 12, uint16_t, /*enable_primary=*/false>;
+  dsp->cdef_filters[1][0] = CdefFilter_C<8, 12, uint16_t>;
+  dsp->cdef_filters[1][1] =
+      CdefFilter_C<8, 12, uint16_t, /*enable_primary=*/true,
+                   /*enable_secondary=*/false>;
+  dsp->cdef_filters[1][2] =
+      CdefFilter_C<8, 12, uint16_t, /*enable_primary=*/false>;
+#else  // !LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
+  static_cast<void>(dsp);
+#ifndef LIBGAV1_Dsp12bpp_CdefDirection
+  dsp->cdef_direction = CdefDirection_C<12, uint16_t>;
 #endif
+#ifndef LIBGAV1_Dsp12bpp_CdefFilters
+  dsp->cdef_filters[0][0] = CdefFilter_C<4, 12, uint16_t>;
+  dsp->cdef_filters[0][1] =
+      CdefFilter_C<4, 12, uint16_t, /*enable_primary=*/true,
+                   /*enable_secondary=*/false>;
+  dsp->cdef_filters[0][2] =
+      CdefFilter_C<4, 12, uint16_t, /*enable_primary=*/false>;
+  dsp->cdef_filters[1][0] = CdefFilter_C<8, 12, uint16_t>;
+  dsp->cdef_filters[1][1] =
+      CdefFilter_C<8, 12, uint16_t, /*enable_primary=*/true,
+                   /*enable_secondary=*/false>;
+  dsp->cdef_filters[1][2] =
+      CdefFilter_C<8, 12, uint16_t, /*enable_primary=*/false>;
+#endif
+#endif  // LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
+}
+#endif  // LIBGAV1_MAX_BITDEPTH == 12
 
 }  // namespace
 
@@ -302,6 +350,9 @@ void CdefInit_C() {
   Init8bpp();
 #if LIBGAV1_MAX_BITDEPTH >= 10
   Init10bpp();
+#endif
+#if LIBGAV1_MAX_BITDEPTH == 12
+  Init12bpp();
 #endif
 }
 

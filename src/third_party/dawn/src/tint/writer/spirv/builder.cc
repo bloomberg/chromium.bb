@@ -27,9 +27,11 @@
 #include "src/tint/sem/atomic.h"
 #include "src/tint/sem/builtin.h"
 #include "src/tint/sem/call.h"
+#include "src/tint/sem/constant.h"
 #include "src/tint/sem/depth_multisampled_texture.h"
 #include "src/tint/sem/depth_texture.h"
 #include "src/tint/sem/function.h"
+#include "src/tint/sem/materialize.h"
 #include "src/tint/sem/member_accessor_expression.h"
 #include "src/tint/sem/module.h"
 #include "src/tint/sem/multisampled_texture.h"
@@ -55,8 +57,9 @@ const char kGLSLstd450[] = "GLSL.std.450";
 
 uint32_t size_of(const InstructionList& instructions) {
     uint32_t size = 0;
-    for (const auto& inst : instructions)
+    for (const auto& inst : instructions) {
         size += inst.word_length();
+    }
 
     return size;
 }
@@ -256,7 +259,7 @@ bool Builder::Build() {
     push_memory_model(spv::Op::OpMemoryModel,
                       {U32Operand(SpvAddressingModelLogical), U32Operand(SpvMemoryModelGLSL450)});
 
-    for (auto ext : builder_.AST().Extensions()) {
+    for (auto ext : builder_.Sem().Module()->Extensions()) {
         GenerateExtension(ext);
     }
 
@@ -366,7 +369,11 @@ void Builder::push_capability(uint32_t cap) {
     }
 }
 
-bool Builder::GenerateExtension(ast::Enable::ExtensionKind) {
+void Builder::push_extension(const char* extension) {
+    extensions_.push_back(Instruction{spv::Op::OpExtension, {Operand(extension)}});
+}
+
+bool Builder::GenerateExtension(ast::Extension extension) {
     /*
     For each supported extension, push corresponding capability into the builder.
     For example:
@@ -377,6 +384,15 @@ bool Builder::GenerateExtension(ast::Enable::ExtensionKind) {
         push_capability(SpvCapabilityStorageInputOutput16);
       }
     */
+    switch (extension) {
+        case ast::Extension::kChromiumExperimentalDP4a:
+            push_extension("SPV_KHR_integer_dot_product");
+            push_capability(SpvCapabilityDotProductKHR);
+            push_capability(SpvCapabilityDotProductInput4x8BitPackedKHR);
+            break;
+        default:
+            return false;
+    }
 
     return true;
 }
@@ -391,6 +407,11 @@ bool Builder::GenerateLabel(uint32_t id) {
 
 bool Builder::GenerateAssignStatement(const ast::AssignmentStatement* assign) {
     if (assign->lhs->Is<ast::PhonyExpression>()) {
+        if (builder_.Sem().Get(assign->rhs)->ConstantValue()) {
+            // RHS of phony assignment is constant.
+            // Constants can't have side-effects, so just drop this.
+            return true;
+        }
         auto rhs_id = GenerateExpression(assign->rhs);
         if (rhs_id == 0) {
             return false;
@@ -551,8 +572,14 @@ bool Builder::GenerateExecutionModes(const ast::Function* func, uint32_t id) {
 }
 
 uint32_t Builder::GenerateExpression(const ast::Expression* expr) {
+    if (auto* sem = builder_.Sem().Get(expr)) {
+        if (auto constant = sem->ConstantValue()) {
+            return GenerateConstantIfNeeded(constant);
+        }
+    }
     return Switch(
-        expr, [&](const ast::IndexAccessorExpression* a) { return GenerateAccessorExpression(a); },
+        expr,  //
+        [&](const ast::IndexAccessorExpression* a) { return GenerateAccessorExpression(a); },
         [&](const ast::BinaryExpression* b) { return GenerateBinaryExpression(b); },
         [&](const ast::BitcastExpression* b) { return GenerateBitcastExpression(b); },
         [&](const ast::CallExpression* c) { return GenerateCallExpression(c); },
@@ -728,7 +755,15 @@ bool Builder::GenerateGlobalVariable(const ast::Variable* var) {
 
     uint32_t init_id = 0;
     if (var->constructor) {
-        init_id = GenerateConstructorExpression(var, var->constructor);
+        if (!var->is_overridable) {
+            auto* ctor = builder_.Sem().Get(var->constructor);
+            if (auto constant = ctor->ConstantValue()) {
+                init_id = GenerateConstantIfNeeded(std::move(constant));
+            }
+        }
+        if (init_id == 0) {
+            init_id = GenerateConstructorExpression(var, var->constructor);
+        }
         if (init_id == 0) {
             return false;
         }
@@ -922,7 +957,7 @@ bool Builder::GenerateIndexAccessor(const ast::IndexAccessorExpression* expr, Ac
                                     Operand(result_type_id),
                                     extract,
                                     Operand(info->source_id),
-                                    Operand(idx_constval.ElementAs<uint32_t>(0)),
+                                    Operand(idx_constval.Element<uint32_t>(0)),
                                 })) {
             return false;
         }
@@ -1272,7 +1307,13 @@ bool Builder::IsConstructorConst(const ast::Expression* expr) {
             return ast::TraverseAction::Descend;
         }
         if (auto* ce = e->As<ast::CallExpression>()) {
-            auto* call = builder_.Sem().Get(ce);
+            auto* sem = builder_.Sem().Get(ce);
+            if (sem->Is<sem::Materialize>()) {
+                // Materialize can only occur on compile time expressions, so this sub-tree must be
+                // constant.
+                return ast::TraverseAction::Skip;
+            }
+            auto* call = sem->As<sem::Call>();
             if (call->Target()->Is<sem::TypeConstructor>()) {
                 return ast::TraverseAction::Descend;
             }
@@ -1628,6 +1669,8 @@ uint32_t Builder::GenerateLiteralIfNeeded(const ast::Variable* var,
                     constant.kind = ScalarConstant::Kind::kF32;
                     constant.value.f32 = static_cast<float>(f->value);
                     return;
+                case ast::FloatLiteralExpression::Suffix::kH:
+                    error_ = "Type f16 is not completely implemented yet";
             }
         },
         [&](Default) { error_ = "unknown literal type"; });
@@ -1637,6 +1680,116 @@ uint32_t Builder::GenerateLiteralIfNeeded(const ast::Variable* var,
     }
 
     return GenerateConstantIfNeeded(constant);
+}
+
+uint32_t Builder::GenerateConstantIfNeeded(const sem::Constant& constant) {
+    if (constant.AllZero()) {
+        return GenerateConstantNullIfNeeded(constant.Type());
+    }
+
+    static constexpr size_t kOpsResultIdx = 1;  // operand index of the result
+    auto& global_scope = scope_stack_[0];
+
+    auto gen_bool = [&](size_t element_idx) {
+        bool val = constant.Element<AInt>(element_idx);
+        return GenerateConstantIfNeeded(ScalarConstant::Bool(val));
+    };
+    auto gen_f32 = [&](size_t element_idx) {
+        auto val = f32(constant.Element<AFloat>(element_idx));
+        return GenerateConstantIfNeeded(ScalarConstant::F32(val.value));
+    };
+    auto gen_i32 = [&](size_t element_idx) {
+        auto val = i32(constant.Element<AInt>(element_idx));
+        return GenerateConstantIfNeeded(ScalarConstant::I32(val.value));
+    };
+    auto gen_u32 = [&](size_t element_idx) {
+        auto val = u32(constant.Element<AInt>(element_idx));
+        return GenerateConstantIfNeeded(ScalarConstant::U32(val.value));
+    };
+    auto gen_els = [&](std::vector<Operand>& ids, size_t start, size_t end, auto gen_el) {
+        for (size_t i = start; i < end; i++) {
+            auto id = gen_el(i);
+            if (!id) {
+                return false;
+            }
+            ids.emplace_back(id);
+        }
+        return true;
+    };
+    auto gen_vector = [&](const sem::Vector* ty, size_t start, size_t end) -> uint32_t {
+        auto type_id = GenerateTypeIfNeeded(ty);
+        if (!type_id) {
+            return 0;
+        }
+
+        std::vector<Operand> ops;
+        ops.reserve(end - start + 2);
+        ops.emplace_back(type_id);
+        ops.push_back(Operand(0u));  // Placeholder for the result ID
+        auto ok = Switch(
+            constant.ElementType(),                                                //
+            [&](const sem::Bool*) { return gen_els(ops, start, end, gen_bool); },  //
+            [&](const sem::F32*) { return gen_els(ops, start, end, gen_f32); },    //
+            [&](const sem::I32*) { return gen_els(ops, start, end, gen_i32); },    //
+            [&](const sem::U32*) { return gen_els(ops, start, end, gen_u32); },    //
+            [&](Default) {
+                error_ = "unhandled constant element type: " + builder_.FriendlyName(ty);
+                return false;
+            });
+        if (!ok) {
+            return 0;
+        }
+
+        return utils::GetOrCreate(global_scope.type_ctor_to_id_, OperandListKey{ops},
+                                  [&]() -> uint32_t {
+                                      auto result = result_op();
+                                      ops[kOpsResultIdx] = result;
+                                      push_type(spv::Op::OpConstantComposite, std::move(ops));
+                                      return std::get<uint32_t>(result);
+                                  });
+    };
+    auto gen_matrix = [&](const sem::Matrix* m) -> uint32_t {
+        auto mat_type_id = GenerateTypeIfNeeded(m);
+        if (!mat_type_id) {
+            return 0;
+        }
+
+        std::vector<Operand> ops;
+        ops.reserve(m->columns() + 2);
+        ops.emplace_back(mat_type_id);
+        ops.push_back(Operand(0u));  // Placeholder for the result ID
+
+        for (size_t column_idx = 0; column_idx < m->columns(); column_idx++) {
+            size_t start = m->rows() * column_idx;
+            size_t end = m->rows() * (column_idx + 1);
+            auto column_id = gen_vector(m->ColumnType(), start, end);
+            if (!column_id) {
+                return 0;
+            }
+            ops.emplace_back(column_id);
+        }
+
+        return utils::GetOrCreate(global_scope.type_ctor_to_id_, OperandListKey{ops},
+                                  [&]() -> uint32_t {
+                                      auto result = result_op();
+                                      ops[kOpsResultIdx] = result;
+                                      push_type(spv::Op::OpConstantComposite, std::move(ops));
+                                      return std::get<uint32_t>(result);
+                                  });
+    };
+
+    return Switch(
+        constant.Type(),                                                                  //
+        [&](const sem::Bool*) { return gen_bool(0); },                                    //
+        [&](const sem::F32*) { return gen_f32(0); },                                      //
+        [&](const sem::I32*) { return gen_i32(0); },                                      //
+        [&](const sem::U32*) { return gen_u32(0); },                                      //
+        [&](const sem::Vector* v) { return gen_vector(v, 0, constant.ElementCount()); },  //
+        [&](const sem::Matrix* m) { return gen_matrix(m); },                              //
+        [&](Default) {
+            error_ = "unhandled constant type: " + builder_.FriendlyName(constant.Type());
+            return false;
+        });
 }
 
 uint32_t Builder::GenerateConstantIfNeeded(const ScalarConstant& constant) {
@@ -2151,7 +2304,7 @@ bool Builder::GenerateBlockStatementWithoutScoping(const ast::BlockStatement* st
 }
 
 uint32_t Builder::GenerateCallExpression(const ast::CallExpression* expr) {
-    auto* call = builder_.Sem().Get(expr);
+    auto* call = builder_.Sem().Get<sem::Call>(expr);
     auto* target = call->Target();
     return Switch(
         target, [&](const sem::Function* func) { return GenerateFunctionCall(call, func); },
@@ -2479,6 +2632,30 @@ uint32_t Builder::GenerateBuiltinCall(const sem::Call* call, const sem::Builtin*
                 glsl_std450(GLSLstd450SAbs);
             }
             break;
+        case BuiltinType::kDot4I8Packed: {
+            auto first_param_id = get_arg_as_value_id(0);
+            auto second_param_id = get_arg_as_value_id(1);
+            if (!push_function_inst(spv::Op::OpSDotKHR,
+                                    {Operand(result_type_id), result, Operand(first_param_id),
+                                     Operand(second_param_id),
+                                     Operand(static_cast<uint32_t>(
+                                         spv::PackedVectorFormat::PackedVectorFormat4x8BitKHR))})) {
+                return 0;
+            }
+            return result_id;
+        }
+        case BuiltinType::kDot4U8Packed: {
+            auto first_param_id = get_arg_as_value_id(0);
+            auto second_param_id = get_arg_as_value_id(1);
+            if (!push_function_inst(spv::Op::OpUDotKHR,
+                                    {Operand(result_type_id), result, Operand(first_param_id),
+                                     Operand(second_param_id),
+                                     Operand(static_cast<uint32_t>(
+                                         spv::PackedVectorFormat::PackedVectorFormat4x8BitKHR))})) {
+                return 0;
+            }
+            return result_id;
+        }
         default: {
             auto inst_id = builtin_to_glsl_method(builtin);
             if (inst_id == 0) {
@@ -2884,10 +3061,9 @@ bool Builder::GenerateTextureBuiltin(const sem::Call* call,
             }
             spirv_params.emplace_back(gen_arg(Usage::kDepthRef));
 
-            ast::FloatLiteralExpression float_0(ProgramID(), Source{}, 0.0,
-                                                ast::FloatLiteralExpression::Suffix::kF);
-            image_operands.emplace_back(ImageOperand{
-                SpvImageOperandsLodMask, Operand(GenerateLiteralIfNeeded(nullptr, &float_0))});
+            image_operands.emplace_back(
+                ImageOperand{SpvImageOperandsLodMask,
+                             Operand(GenerateConstantIfNeeded(ScalarConstant::F32(0.0)))});
             break;
         }
         default:
@@ -3109,7 +3285,7 @@ bool Builder::GenerateAtomicBuiltin(const sem::Call* call,
                 return false;
             }
 
-            auto* value_sem_type = TypeOf(call->Arguments()[2]->Declaration());
+            auto* value_sem_type = call->Target()->Signature().parameters[2]->Type();
 
             auto value_type = GenerateTypeIfNeeded(value_sem_type);
             if (value_type == 0) {
@@ -3149,42 +3325,12 @@ bool Builder::GenerateAtomicBuiltin(const sem::Call* call,
                 return false;
             }
 
-            // zero := T(0)
-            // one := T(1)
-            uint32_t zero = 0;
-            uint32_t one = 0;
-            if (value_sem_type->Is<sem::I32>()) {
-                zero = GenerateConstantIfNeeded(ScalarConstant::I32(0u));
-                one = GenerateConstantIfNeeded(ScalarConstant::I32(1u));
-            } else if (value_sem_type->Is<sem::U32>()) {
-                zero = GenerateConstantIfNeeded(ScalarConstant::U32(0u));
-                one = GenerateConstantIfNeeded(ScalarConstant::U32(1u));
-            } else {
-                TINT_UNREACHABLE(Writer, builder_.Diagnostics())
-                    << "unsupported atomic type " << value_sem_type->TypeInfo().name;
-            }
-            if (zero == 0 || one == 0) {
-                return false;
-            }
-
-            // xchg_success := values_equal ? one : zero
-            auto xchg_success = result_op();
-            if (!push_function_inst(spv::Op::OpSelect, {
-                                                           Operand(value_type),
-                                                           xchg_success,
-                                                           values_equal,
-                                                           Operand(one),
-                                                           Operand(zero),
-                                                       })) {
-                return false;
-            }
-
-            // result := vec2<T>(original_value, xchg_success)
+            // result := __atomic_compare_exchange_result<T>(original_value, values_equal)
             return push_function_inst(spv::Op::OpCompositeConstruct, {
                                                                          result_type,
                                                                          result_id,
                                                                          original_value,
-                                                                         xchg_success,
+                                                                         values_equal,
                                                                      });
         }
         default:
@@ -3671,6 +3817,11 @@ uint32_t Builder::GenerateTypeIfNeeded(const sem::Type* type) {
             [&](const sem::F32*) {
                 push_type(spv::Op::OpTypeFloat, {result, Operand(32u)});
                 return true;
+            },
+            [&](const sem::F16*) {
+                // Should be `push_type(spv::Op::OpTypeFloat, {result, Operand(16u)});`
+                error_ = "Type f16 is not completely implemented yet.";
+                return false;
             },
             [&](const sem::I32*) {
                 push_type(spv::Op::OpTypeInt, {result, Operand(32u), Operand(1u)});

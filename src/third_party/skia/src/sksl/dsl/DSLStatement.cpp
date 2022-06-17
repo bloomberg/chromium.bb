@@ -17,11 +17,6 @@
 #include "src/sksl/ir/SkSLExpressionStatement.h"
 #include "src/sksl/ir/SkSLNop.h"
 
-#if !defined(SKSL_STANDALONE) && SK_SUPPORT_GPU
-#include "src/gpu/ganesh/GrFragmentProcessor.h"
-#include "src/gpu/ganesh/glsl/GrGLSLFragmentShaderBuilder.h"
-#endif
-
 namespace SkSL {
 
 namespace dsl {
@@ -49,42 +44,14 @@ DSLStatement::DSLStatement(std::unique_ptr<SkSL::Statement> stmt)
     SkASSERT(this->hasValue());
 }
 
-DSLStatement::DSLStatement(DSLPossibleExpression expr, Position pos)
-    : DSLStatement(DSLExpression(std::move(expr), pos)) {}
-
-DSLStatement::DSLStatement(DSLPossibleStatement stmt, Position pos) {
-    ThreadContext::ReportErrors(pos);
-    if (stmt.hasValue()) {
-        fStatement = std::move(stmt.fStatement);
-    } else {
-        fStatement = SkSL::Nop::Make();
-    }
+DSLStatement::DSLStatement(std::unique_ptr<SkSL::Statement> stmt, Position pos)
+        : fStatement(stmt ? std::move(stmt) : SkSL::Nop::Make()) {
     if (pos.valid() && !fStatement->fPosition.valid()) {
         fStatement->fPosition = pos;
     }
 }
 
-DSLStatement::~DSLStatement() {
-#if !defined(SKSL_STANDALONE) && SK_SUPPORT_GPU
-    if (fStatement && ThreadContext::InFragmentProcessor()) {
-        ThreadContext::CurrentEmitArgs()->fFragBuilder->codeAppend(this->release());
-        return;
-    }
-#endif
-    SkASSERTF(!fStatement || !ThreadContext::Settings().fAssertDSLObjectsReleased,
-              "Statement destroyed without being incorporated into program (see "
-              "ProgramSettings::fAssertDSLObjectsReleased)");
-}
-
-DSLPossibleStatement::DSLPossibleStatement(std::unique_ptr<SkSL::Statement> statement)
-    : fStatement(std::move(statement)) {}
-
-DSLPossibleStatement::~DSLPossibleStatement() {
-    if (fStatement) {
-        // this handles incorporating the expression into the output tree
-        DSLStatement(std::move(fStatement));
-    }
-}
+DSLStatement::~DSLStatement() {}
 
 DSLStatement operator,(DSLStatement left, DSLStatement right) {
     Position pos = left.fStatement->fPosition;

@@ -37,9 +37,9 @@ class WithDefaultPlatformMixin : public TMixin {
         0, v8::platform::IdleTaskSupport::kEnabled);
     CHECK_NOT_NULL(platform_.get());
     v8::V8::InitializePlatform(platform_.get());
-#ifdef V8_SANDBOX
+#ifdef V8_ENABLE_SANDBOX
     CHECK(v8::V8::InitializeSandbox());
-#endif  // V8_SANDBOX
+#endif  // V8_ENABLE_SANDBOX
     v8::V8::Initialize();
   }
 
@@ -59,10 +59,18 @@ using CounterMap = std::map<std::string, int>;
 
 enum CountersMode { kNoCounters, kEnableCounters };
 
+enum IsolateSharedMode { kStandaloneIsolate, kSharedIsolate, kClientIsolate };
+
 // RAII-like Isolate instance wrapper.
+//
+// It is the caller's responsibility to ensure that the shared Isolate outlives
+// all client Isolates.
 class IsolateWrapper final {
  public:
-  explicit IsolateWrapper(CountersMode counters_mode);
+  IsolateWrapper(CountersMode counters_mode,
+                 IsolateSharedMode shared_mode = kStandaloneIsolate,
+                 v8::Isolate* shared_isolate_if_client = nullptr);
+
   ~IsolateWrapper();
   IsolateWrapper(const IsolateWrapper&) = delete;
   IsolateWrapper& operator=(const IsolateWrapper&) = delete;
@@ -81,12 +89,43 @@ class IsolateWrapper final {
 template <typename TMixin, CountersMode kCountersMode = kNoCounters>
 class WithIsolateMixin : public TMixin {
  public:
-  WithIsolateMixin() : isolate_wrapper_(kCountersMode) {}
+  WithIsolateMixin() : isolate_wrapper_(kCountersMode, kStandaloneIsolate) {}
 
   v8::Isolate* v8_isolate() const { return isolate_wrapper_.isolate(); }
 
  private:
   v8::IsolateWrapper isolate_wrapper_;
+};
+
+// Warning: This is not a drop-in replacement for WithIsolateMixin!
+//
+// Users of WithMaybeSharedIsolateMixin, including TEST_F tests and classes that
+// mix this class in, must explicit check IsJSSharedMemorySupported() before
+// calling v8_isolate(). Creating shared Isolates is not supported on all build
+// configurations.
+template <typename TMixin, CountersMode kCountersMode = kNoCounters>
+class WithMaybeSharedIsolateMixin : public TMixin {
+ public:
+  WithMaybeSharedIsolateMixin() {
+    if (IsJSSharedMemorySupported()) {
+      isolate_wrapper_.emplace(kCountersMode, kSharedIsolate);
+    }
+  }
+
+  bool IsJSSharedMemorySupported() const {
+    DCHECK_IMPLIES(
+        internal::ReadOnlyHeap::IsReadOnlySpaceShared(),
+        !COMPRESS_POINTERS_BOOL || COMPRESS_POINTERS_IN_SHARED_CAGE_BOOL);
+    return internal::ReadOnlyHeap::IsReadOnlySpaceShared();
+  }
+
+  v8::Isolate* v8_isolate() const {
+    DCHECK(IsJSSharedMemorySupported());
+    return isolate_wrapper_->isolate();
+  }
+
+ private:
+  base::Optional<v8::IsolateWrapper> isolate_wrapper_;
 };
 
 template <typename TMixin>
@@ -385,6 +424,11 @@ using TestWithNativeContextAndZone =               //
                     WithIsolateMixin<              //
                         WithDefaultPlatformMixin<  //
                             ::testing::Test>>>>>>;
+
+using TestWithSharedIsolate =                       //
+    WithMaybeSharedIsolateMixin<                    //
+        WithDefaultPlatformMixin<::testing::Test>,  //
+        kNoCounters>;
 
 class V8_NODISCARD SaveFlags {
  public:

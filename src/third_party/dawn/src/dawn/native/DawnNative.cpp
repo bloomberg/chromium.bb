@@ -70,6 +70,12 @@ std::vector<const char*> GetTogglesUsed(WGPUDevice device) {
     return FromAPI(device)->GetTogglesUsed();
 }
 
+// DawnDeviceDescriptor
+
+DawnDeviceDescriptor::DawnDeviceDescriptor() = default;
+
+DawnDeviceDescriptor::~DawnDeviceDescriptor() = default;
+
 // Adapter
 
 Adapter::Adapter() = default;
@@ -238,6 +244,10 @@ void Instance::SetPlatform(dawn::platform::Platform* platform) {
     mImpl->SetPlatform(platform);
 }
 
+uint64_t Instance::GetDeviceCountForTesting() const {
+    return mImpl->GetDeviceCountForTesting();
+}
+
 WGPUInstance Instance::Get() const {
     return ToAPI(mImpl);
 }
@@ -288,6 +298,10 @@ ExternalImageExportInfo::ExternalImageExportInfo(ExternalImageType type) : mType
 
 ExternalImageType ExternalImageExportInfo::GetType() const {
     return mType;
+}
+
+bool CheckIsErrorForTesting(void* objectHandle) {
+    return reinterpret_cast<ErrorMonad*>(objectHandle)->IsError();
 }
 
 const char* GetObjectLabelForTesting(void* objectHandle) {

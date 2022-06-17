@@ -39,15 +39,16 @@ g.test('pipeline,device_mismatch')
     const device = mismatched ? t.mismatchedDevice : t.device;
 
     const pipeline = device.createRenderPipeline({
+      layout: 'auto',
       vertex: {
         module: device.createShaderModule({
-          code: `@stage(vertex) fn main() -> @builtin(position) vec4<f32> { return vec4<f32>(); }`,
+          code: `@vertex fn main() -> @builtin(position) vec4<f32> { return vec4<f32>(); }`,
         }),
         entryPoint: 'main',
       },
       fragment: {
         module: device.createShaderModule({
-          code: '@stage(fragment) fn main() {}',
+          code: '@fragment fn main() {}',
         }),
         entryPoint: 'main',
         targets: [{ format: 'rgba8unorm', writeMask: 0 }],

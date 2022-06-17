@@ -131,7 +131,6 @@ const kUnsizedDepthStencilFormatInfo = /* prettier-ignore */ makeTable(kTexFmtIn
   'depth24plus':           [            ,              ,          ,        ,    true,     false,          ,          ,          ,      'depth'],
   'depth24plus-stencil8':  [            ,              ,          ,        ,    true,      true,          ,          ,          ,      'depth'],
   // MAINTENANCE_TODO: These should really be sized formats; see below MAINTENANCE_TODO about multi-aspect formats.
-  'depth24unorm-stencil8': [            ,              ,          ,        ,    true,      true,          ,          ,          ,      'depth',                ,             ,              ,  'depth24unorm-stencil8'],
   'depth32float-stencil8': [            ,              ,          ,        ,    true,      true,          ,          ,          ,      'depth',                ,             ,              ,  'depth32float-stencil8'],
 } as const);
 
@@ -257,7 +256,7 @@ export const kCanvasTextureFormats = ['bgra8unorm', 'rgba8unorm', 'rgba16float']
 // Exists just for documentation. Otherwise could be inferred by `makeTable`.
 // MAINTENANCE_TODO: Refactor this to separate per-aspect data for multi-aspect formats. In particular:
 // - bytesPerBlock only makes sense on a per-aspect basis. But this table can't express that.
-//   So we put depth24unorm-stencil8 and depth32float-stencil8 to be unsized formats for now.
+//   So we put depth32float-stencil8 to be an unsized format for now.
 export type TextureFormatInfo = {
   /** Whether the format can be used as `RENDER_ATTACHMENT`. */
   renderable: boolean;
@@ -394,11 +393,6 @@ const kDepthStencilFormatCapabilityInBufferTextureCopy = {
     CopyT2B: ['all', 'depth-only'],
     texelAspectSize: { 'depth-only': 4, 'stencil-only': -1 },
   },
-  'depth24unorm-stencil8': {
-    CopyB2T: ['stencil-only'],
-    CopyT2B: ['stencil-only'],
-    texelAspectSize: { 'depth-only': -1, 'stencil-only': 1 },
-  },
   'depth32float-stencil8': {
     CopyB2T: ['stencil-only'],
     CopyT2B: ['depth-only', 'stencil-only'],
@@ -442,11 +436,6 @@ export const kDepthStencilFormatResolvedAspect: {
     'depth-only': 'depth32float',
     'stencil-only': undefined,
   },
-  'depth24unorm-stencil8': {
-    all: 'depth24unorm-stencil8',
-    'depth-only': 'depth24plus', // Should this be depth24unorm? See https://github.com/gpuweb/gpuweb/issues/2732
-    'stencil-only': 'stencil8',
-  },
   'depth32float-stencil8': {
     all: 'depth32float-stencil8',
     'depth-only': 'depth32float',
@@ -478,7 +467,7 @@ export function resolvePerAspectFormat(
   assert(kTextureFormatInfo[format].depth || kTextureFormatInfo[format].stencil);
   const resolved = kDepthStencilFormatResolvedAspect[format as DepthStencilFormat][aspect ?? 'all'];
   assert(resolved !== undefined);
-  return resolved!;
+  return resolved;
 }
 
 /**
@@ -1020,7 +1009,7 @@ export const kLimitInfo = /* prettier-ignore */ makeTable(
   'maxVertexBufferArrayStride':                [           ,      2048,                          ],
   'maxInterStageShaderComponents':             [           ,        60,                          ],
 
-  'maxComputeWorkgroupStorageSize':            [           ,     16352,                          ],
+  'maxComputeWorkgroupStorageSize':            [           ,     16384,                          ],
   'maxComputeInvocationsPerWorkgroup':         [           ,       256,                          ],
   'maxComputeWorkgroupSizeX':                  [           ,       256,                          ],
   'maxComputeWorkgroupSizeY':                  [           ,       256,                          ],

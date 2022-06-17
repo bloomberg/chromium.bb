@@ -282,7 +282,7 @@ g.test('mip_levels')
     const success = validateCreateViewLayersLevels(textureDescriptor, viewDescriptor);
 
     const texture = t.device.createTexture(textureDescriptor);
-    t.debug(mipLevelCount + ' ' + success);
+    t.debug(`${mipLevelCount} ${success}`);
     t.expectValidationError(() => {
       texture.createView(viewDescriptor);
     }, !success);

@@ -73,41 +73,60 @@ OfferNotificationBubbleViewsTestBase::CreateCardLinkedOfferDataWithDomains(
   card->set_instrument_id(kCreditCardInstrumentId);
   personal_data_->AddServerCreditCardForTest(std::move(card));
   personal_data_->NotifyPersonalDataObserver();
-
-  std::unique_ptr<AutofillOfferData> offer_data_entry =
-      std::make_unique<AutofillOfferData>();
-  offer_data_entry->offer_id = 4444;
-  offer_data_entry->offer_reward_amount = "5%";
-  offer_data_entry->expiry = AutofillClock::Now() + base::Days(2);
-  offer_data_entry->merchant_origins = {};
+  int64_t offer_id = 4444;
+  base::Time expiry = AutofillClock::Now() + base::Days(2);
+  std::vector<GURL> merchant_origins;
   for (auto url : domains)
-    offer_data_entry->merchant_origins.emplace_back(
-        url.DeprecatedGetOriginAsURL());
-  offer_data_entry->eligible_instrument_id = {kCreditCardInstrumentId};
-
-  return offer_data_entry;
+    merchant_origins.emplace_back(url.DeprecatedGetOriginAsURL());
+  GURL offer_details_url;
+  DisplayStrings display_strings;
+  std::vector<int64_t> eligible_instrument_ids = {kCreditCardInstrumentId};
+  std::string offer_reward_amount = "5%";
+  return std::make_unique<AutofillOfferData>(
+      AutofillOfferData::GPayCardLinkedOffer(
+          offer_id, expiry, merchant_origins, offer_details_url,
+          display_strings, eligible_instrument_ids, offer_reward_amount));
 }
 
 std::unique_ptr<AutofillOfferData>
-OfferNotificationBubbleViewsTestBase::CreatePromoCodeOfferDataWithDomains(
+OfferNotificationBubbleViewsTestBase::CreateFreeListingCouponDataWithDomains(
     const std::vector<GURL>& domains) {
-  std::unique_ptr<AutofillOfferData> offer_data_entry =
-      std::make_unique<AutofillOfferData>();
-  offer_data_entry->offer_id = 5555;
-  offer_data_entry->expiry = AutofillClock::Now() + base::Days(2);
-  offer_data_entry->merchant_origins = {};
+  int64_t offer_id = 5555;
+  base::Time expiry = AutofillClock::Now() + base::Days(2);
+  std::vector<GURL> merchant_origins;
   for (auto url : domains)
-    offer_data_entry->merchant_origins.emplace_back(
-        url.DeprecatedGetOriginAsURL());
-  offer_data_entry->offer_details_url = GURL("https://www.google.com/");
-  offer_data_entry->promo_code = GetDefaultTestPromoCode();
-  offer_data_entry->display_strings.value_prop_text =
-      "5% off on shoes. Up to $50.";
-  offer_data_entry->display_strings.see_details_text = "See details";
-  offer_data_entry->display_strings.usage_instructions_text =
+    merchant_origins.emplace_back(url.DeprecatedGetOriginAsURL());
+  DisplayStrings display_strings;
+  display_strings.value_prop_text = "5% off on shoes. Up to $50.";
+  display_strings.see_details_text = "See details";
+  display_strings.usage_instructions_text =
       "Click the promo code field at checkout to autofill it.";
+  auto promo_code = GetDefaultTestPromoCode();
+  return std::make_unique<AutofillOfferData>(
+      AutofillOfferData::FreeListingCouponOffer(
+          offer_id, expiry, merchant_origins,
+          /*offer_details_url=*/GURL(), display_strings, promo_code));
+}
 
-  return offer_data_entry;
+std::unique_ptr<AutofillOfferData>
+OfferNotificationBubbleViewsTestBase::CreateGPayPromoCodeOfferDataWithDomains(
+    const std::vector<GURL>& domains) {
+  int64_t offer_id = 5555;
+  base::Time expiry = AutofillClock::Now() + base::Days(2);
+  std::vector<GURL> merchant_origins;
+  for (auto url : domains)
+    merchant_origins.emplace_back(url.DeprecatedGetOriginAsURL());
+  DisplayStrings display_strings;
+  display_strings.value_prop_text = "5% off on shoes. Up to $50.";
+  display_strings.see_details_text = "See details";
+  display_strings.usage_instructions_text =
+      "Click the promo code field at checkout to autofill it.";
+  auto promo_code = GetDefaultTestPromoCode();
+  GURL offer_details_url = GURL("https://pay.google.com");
+  return std::make_unique<AutofillOfferData>(
+      AutofillOfferData::GPayPromoCodeOffer(offer_id, expiry, merchant_origins,
+                                            offer_details_url, display_strings,
+                                            promo_code));
 }
 
 void OfferNotificationBubbleViewsTestBase::DeleteFreeListingCouponForUrl(
@@ -124,6 +143,9 @@ void OfferNotificationBubbleViewsTestBase::SetUpOfferDataWithDomains(
       break;
     case AutofillOfferData::OfferType::FREE_LISTING_COUPON_OFFER:
       SetUpFreeListingCouponOfferDataWithDomains(domains);
+      break;
+    case AutofillOfferData::OfferType::GPAY_PROMO_CODE_OFFER:
+      SetUpGPayPromoCodeOfferDataWithDomains(domains);
       break;
     case AutofillOfferData::OfferType::UNKNOWN:
       NOTREACHED();
@@ -144,12 +166,16 @@ void OfferNotificationBubbleViewsTestBase::
     SetUpFreeListingCouponOfferDataWithDomains(
         const std::vector<GURL>& domains) {
   personal_data_->ClearAllServerData();
-  // TODO(crbug.com/1203811): Should distinguish between activated GPay promo
-  //     code offers and free-listing coupon offers separately. When that
-  //     separation is created in a followup CL, this class should probably
-  //     create a `SetUpGPayPromoCodeOfferDataWithDomains(~)` helper.
   personal_data_->AddOfferDataForTest(
-      CreatePromoCodeOfferDataWithDomains(domains));
+      CreateFreeListingCouponDataWithDomains(domains));
+  personal_data_->NotifyPersonalDataObserver();
+}
+
+void OfferNotificationBubbleViewsTestBase::
+    SetUpGPayPromoCodeOfferDataWithDomains(const std::vector<GURL>& domains) {
+  personal_data_->ClearAllServerData();
+  personal_data_->AddOfferDataForTest(
+      CreateGPayPromoCodeOfferDataWithDomains(domains));
   personal_data_->NotifyPersonalDataObserver();
 }
 
@@ -161,7 +187,7 @@ void OfferNotificationBubbleViewsTestBase::
   coupon_service_->MaybeFeatureStatusChanged(true);
   base::flat_map<GURL, std::vector<std::unique_ptr<AutofillOfferData>>>
       coupon_map;
-  for (auto origin : offer->merchant_origins) {
+  for (auto origin : offer->GetMerchantOrigins()) {
     coupon_map[origin].emplace_back(std::move(offer));
   }
   coupon_service_->UpdateFreeListingCoupons(coupon_map);
@@ -228,7 +254,7 @@ std::string OfferNotificationBubbleViewsTestBase::GetDefaultTestPromoCode()
 
 AutofillOfferManager* OfferNotificationBubbleViewsTestBase::GetOfferManager() {
   return ContentAutofillDriver::GetForRenderFrameHost(
-             GetActiveWebContents()->GetMainFrame())
+             GetActiveWebContents()->GetPrimaryMainFrame())
       ->autofill_manager()
       ->GetOfferManager();
 }

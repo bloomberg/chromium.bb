@@ -582,11 +582,7 @@ class QuicSpdySessionTestBase : public QuicTestWithParam<ParsedQuicVersion> {
     headers.OnHeaderBlockStart();
     headers.OnHeader(":method", "CONNECT");
     headers.OnHeader(":protocol", "webtransport");
-    if (session_.http_datagram_support() == HttpDatagramSupport::kDraft00) {
-      headers.OnHeader("datagram-flow-id", absl::StrCat(session_id));
-    } else {
-      headers.OnHeader("sec-webtransport-http3-draft02", "1");
-    }
+    headers.OnHeader("sec-webtransport-http3-draft02", "1");
     stream->OnStreamHeaderList(/*fin=*/true, 0, headers);
     WebTransportHttp3* web_transport =
         session_.GetWebTransportSession(session_id);
@@ -2683,11 +2679,13 @@ TEST_P(QuicSpdySessionTestClient, DuplicateHttp3UnidirectionalStreams) {
       GetNthServerInitiatedUnidirectionalStreamId(transport_version(), 1);
   QuicStreamFrame data2(id2, false, 0, absl::string_view(type1, 1));
   EXPECT_CALL(debug_visitor, OnPeerControlStreamCreated(id2)).Times(0);
-  EXPECT_CALL(*connection_,
-              CloseConnection(QUIC_HTTP_DUPLICATE_UNIDIRECTIONAL_STREAM,
-                              "Control stream is received twice.", _));
   EXPECT_QUIC_PEER_BUG(
-      session_.OnStreamFrame(data2),
+      {
+        EXPECT_CALL(*connection_,
+                    CloseConnection(QUIC_HTTP_DUPLICATE_UNIDIRECTIONAL_STREAM,
+                                    "Control stream is received twice.", _));
+        session_.OnStreamFrame(data2);
+      },
       "Received a duplicate Control stream: Closing connection.");
 
   QuicStreamId id3 =
@@ -2702,11 +2700,14 @@ TEST_P(QuicSpdySessionTestClient, DuplicateHttp3UnidirectionalStreams) {
       GetNthServerInitiatedUnidirectionalStreamId(transport_version(), 3);
   QuicStreamFrame data4(id4, false, 0, absl::string_view(type2, 1));
   EXPECT_CALL(debug_visitor, OnPeerQpackEncoderStreamCreated(id4)).Times(0);
-  EXPECT_CALL(*connection_,
-              CloseConnection(QUIC_HTTP_DUPLICATE_UNIDIRECTIONAL_STREAM,
-                              "QPACK encoder stream is received twice.", _));
   EXPECT_QUIC_PEER_BUG(
-      session_.OnStreamFrame(data4),
+      {
+        EXPECT_CALL(
+            *connection_,
+            CloseConnection(QUIC_HTTP_DUPLICATE_UNIDIRECTIONAL_STREAM,
+                            "QPACK encoder stream is received twice.", _));
+        session_.OnStreamFrame(data4);
+      },
       "Received a duplicate QPACK encoder stream: Closing connection.");
 
   QuicStreamId id5 =
@@ -2721,11 +2722,14 @@ TEST_P(QuicSpdySessionTestClient, DuplicateHttp3UnidirectionalStreams) {
       GetNthServerInitiatedUnidirectionalStreamId(transport_version(), 5);
   QuicStreamFrame data6(id6, false, 0, absl::string_view(type3, 1));
   EXPECT_CALL(debug_visitor, OnPeerQpackDecoderStreamCreated(id6)).Times(0);
-  EXPECT_CALL(*connection_,
-              CloseConnection(QUIC_HTTP_DUPLICATE_UNIDIRECTIONAL_STREAM,
-                              "QPACK decoder stream is received twice.", _));
   EXPECT_QUIC_PEER_BUG(
-      session_.OnStreamFrame(data6),
+      {
+        EXPECT_CALL(
+            *connection_,
+            CloseConnection(QUIC_HTTP_DUPLICATE_UNIDIRECTIONAL_STREAM,
+                            "QPACK decoder stream is received twice.", _));
+        session_.OnStreamFrame(data6);
+      },
       "Received a duplicate QPACK decoder stream: Closing connection.");
 }
 
@@ -3389,15 +3393,15 @@ void QuicSpdySessionTestBase::TestHttpDatagramSetting(
   switch (remote_support) {
     case HttpDatagramSupport::kNone:
       break;
-    case HttpDatagramSupport::kDraft00:
-      settings.values[SETTINGS_H3_DATAGRAM_DRAFT00] = 1;
-      break;
     case HttpDatagramSupport::kDraft04:
       settings.values[SETTINGS_H3_DATAGRAM_DRAFT04] = 1;
       break;
-    case HttpDatagramSupport::kDraft00And04:
-      settings.values[SETTINGS_H3_DATAGRAM_DRAFT00] = 1;
+    case HttpDatagramSupport::kDraft09:
+      settings.values[SETTINGS_H3_DATAGRAM_DRAFT09] = 1;
+      break;
+    case HttpDatagramSupport::kDraft04And09:
       settings.values[SETTINGS_H3_DATAGRAM_DRAFT04] = 1;
+      settings.values[SETTINGS_H3_DATAGRAM_DRAFT09] = 1;
       break;
   }
   std::string data = std::string(1, kControlStream) + EncodeSettings(settings);
@@ -3413,38 +3417,6 @@ void QuicSpdySessionTestBase::TestHttpDatagramSetting(
   EXPECT_EQ(session_.SupportsH3Datagram(), expected_datagram_supported);
 }
 
-TEST_P(QuicSpdySessionTestClient, HttpDatagramSettingLocal00Remote00) {
-  TestHttpDatagramSetting(
-      /*local_support=*/HttpDatagramSupport::kDraft00,
-      /*remote_support=*/HttpDatagramSupport::kDraft00,
-      /*expected_support=*/HttpDatagramSupport::kDraft00,
-      /*expected_datagram_supported=*/true);
-}
-
-TEST_P(QuicSpdySessionTestClient, HttpDatagramSettingLocal00Remote04) {
-  TestHttpDatagramSetting(
-      /*local_support=*/HttpDatagramSupport::kDraft00,
-      /*remote_support=*/HttpDatagramSupport::kDraft04,
-      /*expected_support=*/HttpDatagramSupport::kNone,
-      /*expected_datagram_supported=*/false);
-}
-
-TEST_P(QuicSpdySessionTestClient, HttpDatagramSettingLocal00Remote00And04) {
-  TestHttpDatagramSetting(
-      /*local_support=*/HttpDatagramSupport::kDraft00,
-      /*remote_support=*/HttpDatagramSupport::kDraft00And04,
-      /*expected_support=*/HttpDatagramSupport::kDraft00,
-      /*expected_datagram_supported=*/true);
-}
-
-TEST_P(QuicSpdySessionTestClient, HttpDatagramSettingLocal04Remote00) {
-  TestHttpDatagramSetting(
-      /*local_support=*/HttpDatagramSupport::kDraft04,
-      /*remote_support=*/HttpDatagramSupport::kDraft00,
-      /*expected_support=*/HttpDatagramSupport::kNone,
-      /*expected_datagram_supported=*/false);
-}
-
 TEST_P(QuicSpdySessionTestClient, HttpDatagramSettingLocal04Remote04) {
   TestHttpDatagramSetting(
       /*local_support=*/HttpDatagramSupport::kDraft04,
@@ -3453,44 +3425,75 @@ TEST_P(QuicSpdySessionTestClient, HttpDatagramSettingLocal04Remote04) {
       /*expected_datagram_supported=*/true);
 }
 
-TEST_P(QuicSpdySessionTestClient, HttpDatagramSettingLocal04Remote00And04) {
+TEST_P(QuicSpdySessionTestClient, HttpDatagramSettingLocal04Remote09) {
   TestHttpDatagramSetting(
       /*local_support=*/HttpDatagramSupport::kDraft04,
-      /*remote_support=*/HttpDatagramSupport::kDraft00And04,
+      /*remote_support=*/HttpDatagramSupport::kDraft09,
+      /*expected_support=*/HttpDatagramSupport::kNone,
+      /*expected_datagram_supported=*/false);
+}
+
+TEST_P(QuicSpdySessionTestClient, HttpDatagramSettingLocal04Remote04And09) {
+  TestHttpDatagramSetting(
+      /*local_support=*/HttpDatagramSupport::kDraft04,
+      /*remote_support=*/HttpDatagramSupport::kDraft04And09,
       /*expected_support=*/HttpDatagramSupport::kDraft04,
       /*expected_datagram_supported=*/true);
 }
 
-TEST_P(QuicSpdySessionTestClient, HttpDatagramSettingLocal00And04Remote00) {
+TEST_P(QuicSpdySessionTestClient, HttpDatagramSettingLocal09Remote04) {
   TestHttpDatagramSetting(
-      /*local_support=*/HttpDatagramSupport::kDraft00And04,
-      /*remote_support=*/HttpDatagramSupport::kDraft00,
-      /*expected_support=*/HttpDatagramSupport::kDraft00,
+      /*local_support=*/HttpDatagramSupport::kDraft09,
+      /*remote_support=*/HttpDatagramSupport::kDraft04,
+      /*expected_support=*/HttpDatagramSupport::kNone,
+      /*expected_datagram_supported=*/false);
+}
+
+TEST_P(QuicSpdySessionTestClient, HttpDatagramSettingLocal09Remote09) {
+  TestHttpDatagramSetting(
+      /*local_support=*/HttpDatagramSupport::kDraft09,
+      /*remote_support=*/HttpDatagramSupport::kDraft09,
+      /*expected_support=*/HttpDatagramSupport::kDraft09,
       /*expected_datagram_supported=*/true);
 }
 
-TEST_P(QuicSpdySessionTestClient, HttpDatagramSettingLocal00And04Remote04) {
+TEST_P(QuicSpdySessionTestClient, HttpDatagramSettingLocal09Remote04And09) {
   TestHttpDatagramSetting(
-      /*local_support=*/HttpDatagramSupport::kDraft00And04,
+      /*local_support=*/HttpDatagramSupport::kDraft09,
+      /*remote_support=*/HttpDatagramSupport::kDraft04And09,
+      /*expected_support=*/HttpDatagramSupport::kDraft09,
+      /*expected_datagram_supported=*/true);
+}
+
+TEST_P(QuicSpdySessionTestClient, HttpDatagramSettingLocal04And09Remote04) {
+  TestHttpDatagramSetting(
+      /*local_support=*/HttpDatagramSupport::kDraft04And09,
       /*remote_support=*/HttpDatagramSupport::kDraft04,
       /*expected_support=*/HttpDatagramSupport::kDraft04,
       /*expected_datagram_supported=*/true);
 }
 
-TEST_P(QuicSpdySessionTestClient,
-       HttpDatagramSettingLocal00And04Remote00And04) {
+TEST_P(QuicSpdySessionTestClient, HttpDatagramSettingLocal04And09Remote09) {
   TestHttpDatagramSetting(
-      /*local_support=*/HttpDatagramSupport::kDraft00And04,
-      /*remote_support=*/HttpDatagramSupport::kDraft00And04,
-      /*expected_support=*/HttpDatagramSupport::kDraft04,
+      /*local_support=*/HttpDatagramSupport::kDraft04And09,
+      /*remote_support=*/HttpDatagramSupport::kDraft09,
+      /*expected_support=*/HttpDatagramSupport::kDraft09,
       /*expected_datagram_supported=*/true);
 }
 
+TEST_P(QuicSpdySessionTestClient,
+       HttpDatagramSettingLocal04And09Remote04And09) {
+  TestHttpDatagramSetting(
+      /*local_support=*/HttpDatagramSupport::kDraft04And09,
+      /*remote_support=*/HttpDatagramSupport::kDraft04And09,
+      /*expected_support=*/HttpDatagramSupport::kDraft09,
+      /*expected_datagram_supported=*/true);
+}
 TEST_P(QuicSpdySessionTestClient, WebTransportSetting) {
   if (!version().UsesHttp3()) {
     return;
   }
-  session_.set_local_http_datagram_support(HttpDatagramSupport::kDraft00And04);
+  session_.set_local_http_datagram_support(HttpDatagramSupport::kDraft04);
   session_.set_supports_webtransport(true);
 
   EXPECT_FALSE(session_.SupportsWebTransport());
@@ -3513,7 +3516,7 @@ TEST_P(QuicSpdySessionTestClient, WebTransportSettingSetToZero) {
   if (!version().UsesHttp3()) {
     return;
   }
-  session_.set_local_http_datagram_support(HttpDatagramSupport::kDraft00And04);
+  session_.set_local_http_datagram_support(HttpDatagramSupport::kDraft04);
   session_.set_supports_webtransport(true);
 
   EXPECT_FALSE(session_.SupportsWebTransport());
@@ -3543,7 +3546,7 @@ TEST_P(QuicSpdySessionTestServer, WebTransportSetting) {
   if (!version().UsesHttp3()) {
     return;
   }
-  session_.set_local_http_datagram_support(HttpDatagramSupport::kDraft00And04);
+  session_.set_local_http_datagram_support(HttpDatagramSupport::kDraft04);
   session_.set_supports_webtransport(true);
 
   EXPECT_FALSE(session_.SupportsWebTransport());
@@ -3560,7 +3563,7 @@ TEST_P(QuicSpdySessionTestServer, BufferingIncomingStreams) {
   if (!version().UsesHttp3()) {
     return;
   }
-  session_.set_local_http_datagram_support(HttpDatagramSupport::kDraft00And04);
+  session_.set_local_http_datagram_support(HttpDatagramSupport::kDraft04);
   session_.set_supports_webtransport(true);
 
   CompleteHandshake();
@@ -3593,7 +3596,7 @@ TEST_P(QuicSpdySessionTestServer, BufferingIncomingStreamsLimit) {
   if (!version().UsesHttp3()) {
     return;
   }
-  session_.set_local_http_datagram_support(HttpDatagramSupport::kDraft00And04);
+  session_.set_local_http_datagram_support(HttpDatagramSupport::kDraft04);
   session_.set_supports_webtransport(true);
 
   CompleteHandshake();
@@ -3634,7 +3637,7 @@ TEST_P(QuicSpdySessionTestServer, ResetOutgoingWebTransportStreams) {
   if (!version().UsesHttp3()) {
     return;
   }
-  session_.set_local_http_datagram_support(HttpDatagramSupport::kDraft00And04);
+  session_.set_local_http_datagram_support(HttpDatagramSupport::kDraft04);
   session_.set_supports_webtransport(true);
 
   CompleteHandshake();
@@ -3671,7 +3674,7 @@ TEST_P(QuicSpdySessionTestClient, WebTransportWithoutExtendedConnect) {
   }
   SetQuicReloadableFlag(quic_verify_request_headers_2, true);
   SetQuicReloadableFlag(quic_act_upon_invalid_header, true);
-  session_.set_local_http_datagram_support(HttpDatagramSupport::kDraft00And04);
+  session_.set_local_http_datagram_support(HttpDatagramSupport::kDraft04);
   session_.set_supports_webtransport(true);
 
   EXPECT_FALSE(session_.SupportsWebTransport());
@@ -3795,10 +3798,12 @@ TEST_P(QuicSpdySessionTestServerNoExtendedConnect, BadExtendedConnectSetting) {
           ? GetNthClientInitiatedUnidirectionalStreamId(transport_version(), 3)
           : GetNthServerInitiatedUnidirectionalStreamId(transport_version(), 3);
   QuicStreamFrame frame(control_stream_id, /*fin=*/false, /*offset=*/0, data);
-  EXPECT_CALL(*connection_,
-              CloseConnection(QUIC_HTTP_INVALID_SETTING_VALUE, _, _));
   EXPECT_QUIC_PEER_BUG(
-      session_.OnStreamFrame(frame),
+      {
+        EXPECT_CALL(*connection_,
+                    CloseConnection(QUIC_HTTP_INVALID_SETTING_VALUE, _, _));
+        session_.OnStreamFrame(frame);
+      },
       "Received SETTINGS_ENABLE_CONNECT_PROTOCOL with invalid value");
 }
 

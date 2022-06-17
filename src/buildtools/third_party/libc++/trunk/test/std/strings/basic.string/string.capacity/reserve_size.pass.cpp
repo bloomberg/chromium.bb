@@ -13,13 +13,7 @@
 // This test relies on https://llvm.org/PR45368 being fixed, which isn't in
 // older Apple dylibs
 //
-// XFAIL: use_system_cxx_lib && x86_64-apple-macosx10.15
-// XFAIL: use_system_cxx_lib && x86_64-apple-macosx10.14
-// XFAIL: use_system_cxx_lib && x86_64-apple-macosx10.13
-// XFAIL: use_system_cxx_lib && x86_64-apple-macosx10.12
-// XFAIL: use_system_cxx_lib && x86_64-apple-macosx10.11
-// XFAIL: use_system_cxx_lib && x86_64-apple-macosx10.10
-// XFAIL: use_system_cxx_lib && x86_64-apple-macosx10.9
+// XFAIL: use_system_cxx_lib && target={{.+}}-apple-macosx10.{{9|10|11|12|13|14|15}}
 
 #include <string>
 #include <stdexcept>
@@ -29,7 +23,7 @@
 #include "min_allocator.h"
 
 template <class S>
-void
+TEST_CONSTEXPR_CXX20 void
 test(typename S::size_type min_cap, typename S::size_type erased_index, typename S::size_type res_arg)
 {
     S s(min_cap, 'a');
@@ -53,7 +47,7 @@ test(typename S::size_type min_cap, typename S::size_type erased_index, typename
 #endif
     }
 #ifndef TEST_HAS_NO_EXCEPTIONS
-    else
+    else if (!TEST_IS_CONSTANT_EVALUATED)
     {
         try
         {
@@ -69,41 +63,50 @@ test(typename S::size_type min_cap, typename S::size_type erased_index, typename
 #endif
 }
 
-int main(int, char**)
-{
-    {
+bool test() {
+  {
     typedef std::string S;
     {
-    test<S>(0, 0, 5);
-    test<S>(0, 0, 10);
-    test<S>(0, 0, 50);
+      test<S>(0, 0, 5);
+      test<S>(0, 0, 10);
+      test<S>(0, 0, 50);
     }
     {
-    test<S>(100, 50, 5);
-    test<S>(100, 50, 10);
-    test<S>(100, 50, 50);
-    test<S>(100, 50, 100);
-    test<S>(100, 50, 1000);
-    test<S>(100, 50, S::npos);
+      test<S>(100, 50, 5);
+      test<S>(100, 50, 10);
+      test<S>(100, 50, 50);
+      test<S>(100, 50, 100);
+      test<S>(100, 50, 1000);
+      test<S>(100, 50, S::npos);
     }
-    }
+  }
 #if TEST_STD_VER >= 11
-    {
+  {
     typedef std::basic_string<char, std::char_traits<char>, min_allocator<char>> S;
     {
-    test<S>(0, 0, 5);
-    test<S>(0, 0, 10);
-    test<S>(0, 0, 50);
+      test<S>(0, 0, 5);
+      test<S>(0, 0, 10);
+      test<S>(0, 0, 50);
     }
     {
-    test<S>(100, 50, 5);
-    test<S>(100, 50, 10);
-    test<S>(100, 50, 50);
-    test<S>(100, 50, 100);
-    test<S>(100, 50, 1000);
-    test<S>(100, 50, S::npos);
+      test<S>(100, 50, 5);
+      test<S>(100, 50, 10);
+      test<S>(100, 50, 50);
+      test<S>(100, 50, 100);
+      test<S>(100, 50, 1000);
+      test<S>(100, 50, S::npos);
     }
-    }
+  }
+#endif
+
+  return true;
+}
+
+int main(int, char**)
+{
+  test();
+#if TEST_STD_VER > 17
+  // static_assert(test());
 #endif
 
   return 0;

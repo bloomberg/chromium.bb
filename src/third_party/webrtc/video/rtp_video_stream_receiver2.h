@@ -42,13 +42,13 @@
 #include "modules/video_coding/nack_requester.h"
 #include "modules/video_coding/packet_buffer.h"
 #include "modules/video_coding/rtp_frame_reference_finder.h"
-#include "modules/video_coding/unique_timestamp_counter.h"
 #include "rtc_base/experiments/field_trial_parser.h"
 #include "rtc_base/numerics/sequence_number_util.h"
 #include "rtc_base/system/no_unique_address.h"
 #include "rtc_base/thread_annotations.h"
 #include "video/buffered_frame_decryptor.h"
 #include "video/rtp_video_stream_receiver_frame_transformer_delegate.h"
+#include "video/unique_timestamp_counter.h"
 
 namespace webrtc {
 
@@ -85,7 +85,7 @@ class RtpVideoStreamReceiver2 : public LossNotificationSender,
       // stream is registered as a candidate for sending REMB and transport
       // feedback.
       PacketRouter* packet_router,
-      const VideoReceiveStream::Config* config,
+      const VideoReceiveStreamInterface::Config* config,
       ReceiveStatistics* rtp_receive_statistics,
       RtcpPacketTypeCounterObserver* rtcp_packet_type_counter_observer,
       RtcpCnameCallback* rtcp_cname_callback,
@@ -181,8 +181,11 @@ class RtpVideoStreamReceiver2 : public LossNotificationSender,
   void SetRtpExtensions(const std::vector<RtpExtension>& extensions);
   const RtpHeaderExtensionMap& GetRtpExtensions() const;
 
-  // Called by VideoReceiveStream when stats are updated.
+  // Called by VideoReceiveStreamInterface when stats are updated.
   void UpdateRtt(int64_t max_rtt_ms);
+
+  // Called when the local_ssrc is changed to match with a sender.
+  void OnLocalSsrcChange(uint32_t local_ssrc);
 
   absl::optional<int64_t> LastReceivedPacketMs() const;
   absl::optional<int64_t> LastReceivedKeyframePacketMs() const;
@@ -290,8 +293,9 @@ class RtpVideoStreamReceiver2 : public LossNotificationSender,
 
   const FieldTrialsView& field_trials_;
   Clock* const clock_;
-  // Ownership of this object lies with VideoReceiveStream, which owns `this`.
-  const VideoReceiveStream::Config& config_;
+  // Ownership of this object lies with VideoReceiveStreamInterface, which owns
+  // `this`.
+  const VideoReceiveStreamInterface::Config& config_;
   PacketRouter* const packet_router_;
 
   RemoteNtpTimeEstimator ntp_estimator_;

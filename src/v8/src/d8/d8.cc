@@ -102,11 +102,6 @@
 #define CHECK(condition) assert(condition)
 #endif
 
-#define TRACE_BS(...)                                     \
-  do {                                                    \
-    if (i::FLAG_trace_backing_store) PrintF(__VA_ARGS__); \
-  } while (false)
-
 namespace v8 {
 
 namespace {
@@ -1487,8 +1482,6 @@ bool Shell::ExecuteWebSnapshot(Isolate* isolate, const char* file_name) {
   PerIsolateData* data = PerIsolateData::Get(isolate);
   Local<Context> realm = data->realms_[data->realm_current_].Get(isolate);
   Context::Scope context_scope(realm);
-  TryCatch try_catch(isolate);
-  bool success = false;
 
   std::string absolute_path = NormalizePath(file_name, GetWorkingDirectory());
 
@@ -1496,20 +1489,29 @@ bool Shell::ExecuteWebSnapshot(Isolate* isolate, const char* file_name) {
   std::unique_ptr<uint8_t[]> snapshot_data(
       reinterpret_cast<uint8_t*>(ReadChars(absolute_path.c_str(), &length)));
   if (length == 0) {
+    TryCatch try_catch(isolate);
     isolate->ThrowError("Could not read the web snapshot file");
+    CHECK(try_catch.HasCaught());
+    ReportException(isolate, &try_catch);
+    return false;
   } else {
     for (int r = 0; r < DeserializationRunCount(); ++r) {
       bool skip_exports = r > 0;
       i::WebSnapshotDeserializer deserializer(isolate, snapshot_data.get(),
                                               static_cast<size_t>(length));
-      success = deserializer.Deserialize({}, skip_exports);
+      if (!deserializer.Deserialize({}, skip_exports)) {
+        // d8 is calling into the internal APIs which won't do
+        // ReportPendingMessages in all error paths (it's supposed to be done at
+        // the API boundary). Call it here.
+        auto i_isolate = reinterpret_cast<i::Isolate*>(isolate);
+        if (i_isolate->has_pending_exception()) {
+          i_isolate->ReportPendingMessages();
+        }
+        return false;
+      }
     }
   }
-  if (!success) {
-    CHECK(try_catch.HasCaught());
-    ReportException(isolate, &try_catch);
-  }
-  return success;
+  return true;
 }
 
 // Treat every line as a JSON value and parse it.
@@ -1659,6 +1661,14 @@ Local<FunctionTemplate> PerIsolateData::GetSnapshotObjectCtor() const {
 
 void PerIsolateData::SetSnapshotObjectCtor(Local<FunctionTemplate> ctor) {
   snapshot_object_ctor_.Reset(isolate_, ctor);
+}
+
+Local<FunctionTemplate> PerIsolateData::GetDomNodeCtor() const {
+  return dom_node_ctor_.Get(isolate_);
+}
+
+void PerIsolateData::SetDomNodeCtor(Local<FunctionTemplate> ctor) {
+  dom_node_ctor_.Reset(isolate_, ctor);
 }
 
 PerIsolateData::RealmScope::RealmScope(PerIsolateData* data) : data_(data) {
@@ -2997,26 +3007,60 @@ Local<String> Shell::Stringify(Isolate* isolate, Local<Value> value) {
 
 void Shell::NodeTypeCallback(const v8::FunctionCallbackInfo<v8::Value>& args) {
   v8::Isolate* isolate = args.GetIsolate();
+  // TODO(mslekova): Enable this once we have signature check in TF.
+  PerIsolateData* data = PerIsolateData::Get(isolate);
+  if (!data->GetDomNodeCtor()->HasInstance(args.This())) {
+    isolate->ThrowError("Calling .nodeType on wrong instance type.");
+  }
+
   args.GetReturnValue().Set(v8::Number::New(isolate, 1));
 }
 
-Local<FunctionTemplate> Shell::CreateNodeTemplates(Isolate* isolate) {
-  Local<FunctionTemplate> node = FunctionTemplate::New(isolate);
+Local<FunctionTemplate> NewDOMFunctionTemplate(Isolate* isolate,
+                                               uint16_t instance_type) {
+  return FunctionTemplate::New(
+      isolate, nullptr, Local<Value>(), Local<Signature>(), 0,
+      ConstructorBehavior::kAllow, SideEffectType::kHasSideEffect, nullptr,
+      instance_type);
+}
+
+Local<FunctionTemplate> Shell::CreateEventTargetTemplate(Isolate* isolate) {
+  Local<FunctionTemplate> event_target =
+      NewDOMFunctionTemplate(isolate, i::Internals::kFirstJSApiObjectType + 1);
+  return event_target;
+}
+
+Local<FunctionTemplate> Shell::CreateNodeTemplates(
+    Isolate* isolate, Local<FunctionTemplate> event_target) {
+  Local<FunctionTemplate> node =
+      NewDOMFunctionTemplate(isolate, i::Internals::kFirstJSApiObjectType + 2);
+  node->Inherit(event_target);
+
+  PerIsolateData* data = PerIsolateData::Get(isolate);
+  data->SetDomNodeCtor(node);
+
   Local<ObjectTemplate> proto_template = node->PrototypeTemplate();
   Local<Signature> signature = v8::Signature::New(isolate, node);
   Local<FunctionTemplate> nodeType = FunctionTemplate::New(
-      isolate, NodeTypeCallback, Local<Value>(), signature);
+      isolate, NodeTypeCallback, Local<Value>(), signature, 0,
+      ConstructorBehavior::kThrow, SideEffectType::kHasSideEffect, nullptr,
+      i::Internals::kFirstJSApiObjectType,
+      i::Internals::kFirstJSApiObjectType + 3,
+      i::Internals::kFirstJSApiObjectType + 5);
   nodeType->SetAcceptAnyReceiver(false);
   proto_template->SetAccessorProperty(
       String::NewFromUtf8Literal(isolate, "nodeType"), nodeType);
 
-  Local<FunctionTemplate> element = FunctionTemplate::New(isolate);
+  Local<FunctionTemplate> element =
+      NewDOMFunctionTemplate(isolate, i::Internals::kFirstJSApiObjectType + 3);
   element->Inherit(node);
 
-  Local<FunctionTemplate> html_element = FunctionTemplate::New(isolate);
+  Local<FunctionTemplate> html_element =
+      NewDOMFunctionTemplate(isolate, i::Internals::kFirstJSApiObjectType + 4);
   html_element->Inherit(element);
 
-  Local<FunctionTemplate> div_element = FunctionTemplate::New(isolate);
+  Local<FunctionTemplate> div_element =
+      NewDOMFunctionTemplate(isolate, i::Internals::kFirstJSApiObjectType + 5);
   div_element->Inherit(html_element);
 
   return div_element;
@@ -3215,7 +3259,11 @@ Local<ObjectTemplate> Shell::CreateD8Template(Isolate* isolate) {
   }
   {
     Local<ObjectTemplate> dom_template = ObjectTemplate::New(isolate);
-    dom_template->Set(isolate, "Div", Shell::CreateNodeTemplates(isolate));
+    Local<FunctionTemplate> event_target =
+        Shell::CreateEventTargetTemplate(isolate);
+    dom_template->Set(isolate, "EventTarget", event_target);
+    dom_template->Set(isolate, "Div",
+                      Shell::CreateNodeTemplates(isolate, event_target));
     d8_template->Set(isolate, "dom", dom_template);
   }
   {
@@ -4456,7 +4504,7 @@ void Worker::PostMessageOut(const v8::FunctionCallbackInfo<v8::Value>& args) {
   }
 }
 
-#if V8_TARGET_OS_WIN
+#ifdef V8_TARGET_OS_WIN
 // Enable support for unicode filename path on windows.
 // We first convert ansi encoded argv[i] to utf16 encoded, and then
 // convert utf16 encoded to utf8 encoded with setting the argv[i]
@@ -5444,7 +5492,7 @@ int Shell::Main(int argc, char* argv[]) {
     V8::SetFlagsFromString("--redirect-code-traces-to=code.asm");
   }
   v8::V8::InitializePlatform(g_platform.get());
-#ifdef V8_SANDBOX
+#ifdef V8_ENABLE_SANDBOX
   if (!v8::V8::InitializeSandbox()) {
     FATAL("Could not initialize the sandbox");
   }
@@ -5598,9 +5646,11 @@ int Shell::Main(int argc, char* argv[]) {
           create_params2.array_buffer_allocator = Shell::array_buffer_allocator;
           create_params2.experimental_attach_to_shared_isolate =
               Shell::shared_isolate;
-          i::FLAG_hash_seed ^= 1337;  // Use a different hash seed.
+          // Use a different hash seed.
+          i::FLAG_hash_seed = i::FLAG_hash_seed ^ 1337;
           Isolate* isolate2 = Isolate::New(create_params2);
-          i::FLAG_hash_seed ^= 1337;  // Restore old hash seed.
+          // Restore old hash seed.
+          i::FLAG_hash_seed = i::FLAG_hash_seed ^ 1337;
           {
             D8Console console2(isolate2);
             Initialize(isolate2, &console2);
@@ -5722,4 +5772,3 @@ int main(int argc, char* argv[]) { return v8::Shell::Main(argc, argv); }
 
 #undef CHECK
 #undef DCHECK
-#undef TRACE_BS

@@ -16,9 +16,7 @@
 #include "src/sksl/ir/SkSLType.h"
 #include "src/sksl/ir/SkSLVariable.h"
 
-#include <string>
 #include <type_traits>
-#include <utility>
 
 namespace SkSL {
 
@@ -60,11 +58,6 @@ void AddToSymbolTable(DSLVarBase& var, Position pos) {
     if (skslVar) {
         CurrentSymbolTable()->addWithoutOwnership(skslVar);
     }
-    ThreadContext::ReportErrors(pos);
-}
-
-const std::string* Retain(std::string string) {
-    return CurrentSymbolTable()->takeOwnershipOfString(std::move(string));
 }
 
 } // namespace dsl

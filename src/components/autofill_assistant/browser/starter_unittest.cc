@@ -182,20 +182,20 @@ class StarterTest : public testing::Test {
     std::unique_ptr<content::NavigationSimulator> simulator =
         content::NavigationSimulator::CreateRendererInitiated(
             web_contents()->GetLastCommittedURL(),
-            web_contents()->GetMainFrame());
+            web_contents()->GetPrimaryMainFrame());
     simulator->Start();
     for (const auto& url : urls) {
       simulator->Redirect(url);
     }
     simulator->Commit();
     navigation_ids_.emplace_back(
-        web_contents()->GetMainFrame()->GetPageUkmSourceId());
+        web_contents()->GetPrimaryMainFrame()->GetPageUkmSourceId());
   }
 
   void SimulateNavigateToUrl(const GURL& url) {
     content::WebContentsTester::For(web_contents())->NavigateAndCommit(url);
     navigation_ids_.emplace_back(
-        web_contents()->GetMainFrame()->GetPageUkmSourceId());
+        web_contents()->GetPrimaryMainFrame()->GetPageUkmSourceId());
   }
 
   // Each request sender is only good for one trigger script. This call will
@@ -1345,13 +1345,13 @@ TEST_F(StarterTest, RedirectFailsDuringPendingTriggerScriptStart) {
   std::unique_ptr<content::NavigationSimulator> simulator =
       content::NavigationSimulator::CreateRendererInitiated(
           web_contents()->GetLastCommittedURL(),
-          web_contents()->GetMainFrame());
+          web_contents()->GetPrimaryMainFrame());
   simulator->Start();
   simulator->Redirect(GURL("https://redirect.com/to/www/example/com"));
   simulator->Fail(net::ERR_BLOCKED_BY_CLIENT);
   simulator->CommitErrorPage();
   navigation_ids_.emplace_back(
-      web_contents()->GetMainFrame()->GetPageUkmSourceId());
+      web_contents()->GetPrimaryMainFrame()->GetPageUkmSourceId());
 
   // Note that this impression is recorded for the last URL that a navigation-
   // start event occurred for. We never reached the target domain, so this is
@@ -1391,7 +1391,7 @@ TEST_F(StarterTest, StartTriggerScriptDuringRedirectRecordsUkmForTargetUrl) {
   std::unique_ptr<content::NavigationSimulator> simulator =
       content::NavigationSimulator::CreateRendererInitiated(
           web_contents()->GetLastCommittedURL(),
-          web_contents()->GetMainFrame());
+          web_contents()->GetPrimaryMainFrame());
   simulator->Start();
   simulator->Redirect(GURL("https://redirect.com/to/www/example/com"));
   starter_->Start(std::make_unique<TriggerContext>(
@@ -1399,7 +1399,7 @@ TEST_F(StarterTest, StartTriggerScriptDuringRedirectRecordsUkmForTargetUrl) {
   simulator->Redirect(GURL(kExampleDeeplink));
   simulator->Commit();
   navigation_ids_.emplace_back(
-      web_contents()->GetMainFrame()->GetPageUkmSourceId());
+      web_contents()->GetPrimaryMainFrame()->GetPageUkmSourceId());
 
   EXPECT_THAT(GetUkmTriggerScriptStarted(ukm_recorder_),
               ElementsAreArray(ToHumanReadableMetrics(
@@ -1426,7 +1426,7 @@ TEST_F(StarterTest, RegularStartupDoesNotWaitForNavigationToFinish) {
   std::unique_ptr<content::NavigationSimulator> simulator =
       content::NavigationSimulator::CreateRendererInitiated(
           web_contents()->GetLastCommittedURL(),
-          web_contents()->GetMainFrame());
+          web_contents()->GetPrimaryMainFrame());
   simulator->Start();
   simulator->Redirect(GURL("https://redirect.com/to/www/example/com"));
 
@@ -2254,6 +2254,55 @@ TEST_F(StarterPrerenderTest, DoNotAffectRecordUkmDuringPrendering) {
   EXPECT_THAT(GetUkmRegularScriptOnboarding(ukm_recorder_), IsEmpty());
 }
 
+class StarterFencedFrameTest : public StarterTest {
+ public:
+  StarterFencedFrameTest() {
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        blink::features::kFencedFrames, {{"implementation_type", "mparch"}});
+  }
+  ~StarterFencedFrameTest() override = default;
+
+  content::RenderFrameHost* CreateFencedFrame(
+      content::RenderFrameHost* parent) {
+    content::RenderFrameHost* fenced_frame =
+        content::RenderFrameHostTester::For(parent)->AppendFencedFrame();
+    return fenced_frame;
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+TEST_F(StarterFencedFrameTest, NoImplicitTriggeringForFencedFrames) {
+  // This test should not fetch trigger scripts.
+  SetupPlatformDelegateForReturningUser();
+  PrepareTriggerScriptRequestSender();
+  EXPECT_CALL(*mock_trigger_script_service_request_sender_, OnSendRequest)
+      .Times(0);
+
+  base::flat_map<std::string, std::string> script_parameters = {
+      {"ENABLED", "true"},
+      {"START_IMMEDIATELY", "false"},
+      {"REQUEST_TRIGGER_SCRIPT", "true"},
+      {"ORIGINAL_DEEPLINK", kExampleDeeplink}};
+
+  // Start on "different.com" and it shouldn't start immediately.
+  SimulateNavigateToUrl(GURL("https://www.different.com"));
+  starter_->Start(std::make_unique<TriggerContext>(
+      std::make_unique<ScriptParameters>(script_parameters),
+      TriggerContext::Options()));
+  // Create a fenced frame and navigate to the example deeplink. The navigation
+  // should not start because it is not in the primary main frame.
+  content::RenderFrameHostTester::For(web_contents()->GetPrimaryMainFrame())
+      ->InitializeRenderFrameIfNeeded();
+  content::RenderFrameHost* fenced_frame_rfh =
+      CreateFencedFrame(web_contents()->GetPrimaryMainFrame());
+  std::unique_ptr<content::NavigationSimulator> navigation_simulator =
+      content::NavigationSimulator::CreateRendererInitiated(
+          GURL(kExampleDeeplink), fenced_frame_rfh);
+  navigation_simulator->Start();
+}
+
 TEST_F(StarterTest, StartupRegistersTriggerFieldTrial) {
   auto mock_field_trial_util =
       std::make_unique<NiceMock<MockAssistantFieldTrialUtil>>();
@@ -2335,6 +2384,41 @@ TEST_F(StarterTest, CanStartSucceeds) {
                      Metrics::AutofillAssistantCaller::UNKNOWN_CALLER,
                      Metrics::AutofillAssistantSource::UNKNOWN_SOURCE,
                      Metrics::AutofillAssistantExperiment::NO_EXPERIMENT}}})));
+}
+
+TEST_F(StarterTest, RegularStartupFailsForSupervisedUser) {
+  SetupPlatformDelegateForFirstTimeUser();
+  fake_platform_delegate_.is_supervised_user_ = true;
+
+  base::flat_map<std::string, std::string> script_parameters = {
+      {"ENABLED", "true"},
+      {"START_IMMEDIATELY", "true"},
+      {"ORIGINAL_DEEPLINK", kExampleDeeplink}};
+  TriggerContext::Options options;
+  options.initial_url = "https://redirect.com/to/www/example/com";
+  EXPECT_CALL(mock_start_regular_script_callback_, Run).Times(0);
+
+  starter_->Start(std::make_unique<TriggerContext>(
+      std::make_unique<ScriptParameters>(script_parameters), options));
+}
+
+TEST_F(StarterTest, RpcTriggerScriptStartupFailsForSupervisedUser) {
+  SetupPlatformDelegateForReturningUser();
+  fake_platform_delegate_.is_supervised_user_ = true;
+
+  base::flat_map<std::string, std::string> script_parameters = {
+      {"ENABLED", "true"},
+      {"START_IMMEDIATELY", "false"},
+      {"REQUEST_TRIGGER_SCRIPT", "true"},
+      {"ORIGINAL_DEEPLINK", kExampleDeeplink}};
+  EXPECT_CALL(*mock_trigger_script_ui_delegate_, Attach).Times(0);
+  EXPECT_CALL(*mock_trigger_script_service_request_sender_, OnSendRequest)
+      .Times(0);
+  EXPECT_CALL(mock_start_regular_script_callback_, Run).Times(0);
+
+  starter_->Start(std::make_unique<TriggerContext>(
+      std::make_unique<ScriptParameters>(script_parameters),
+      TriggerContext::Options()));
 }
 
 }  // namespace autofill_assistant

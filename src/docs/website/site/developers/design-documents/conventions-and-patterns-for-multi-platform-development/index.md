@@ -24,11 +24,17 @@ should be used:
 *   Linux files use _linux suffix for lower-level files, _gtk for
             GTK-specific files, and _x for X Windows (with no GTK) specific
             files.
+*   Chrome OS files use _chromeos suffix when needed but otherwise also
+            include _linux files by default.
 *   Windows files use the _win suffix.
 *   Posix files shared between Mac, iOS, and Linux use the _posix
             suffix.
 *   Files for Chrome's "Views" UI (on Windows and experimental GTK)
             layout system use the _views suffix.
+
+Platform-specific suffixes are encoded using conditionals in their respective
+BUILD.gn files:
+https://chromium.googlesource.com/chromium/src/+/HEAD/docs/no_sources_assignment_filter.md
 
 The separate front-ends of the browser are contained in their own directories:
 

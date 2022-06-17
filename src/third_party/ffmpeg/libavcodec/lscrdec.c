@@ -107,9 +107,8 @@ static int decode_idat(LSCRContext *s, z_stream *zstream, int length)
     return 0;
 }
 
-static int decode_frame_lscr(AVCodecContext *avctx,
-                             void *data, int *got_frame,
-                             AVPacket *avpkt)
+static int decode_frame_lscr(AVCodecContext *avctx, AVFrame *rframe,
+                             int *got_frame, AVPacket *avpkt)
 {
     LSCRContext *const s = avctx->priv_data;
     GetByteContext *gb = &s->gb;
@@ -202,7 +201,7 @@ static int decode_frame_lscr(AVCodecContext *avctx,
 
     frame->pict_type = frame->key_frame ? AV_PICTURE_TYPE_I : AV_PICTURE_TYPE_P;
 
-    if ((ret = av_frame_ref(data, frame)) < 0)
+    if ((ret = av_frame_ref(rframe, frame)) < 0)
         return ret;
 
     *got_frame = 1;
@@ -254,7 +253,7 @@ const FFCodec ff_lscr_decoder = {
     .priv_data_size = sizeof(LSCRContext),
     .init           = lscr_decode_init,
     .close          = lscr_decode_close,
-    .decode         = decode_frame_lscr,
+    FF_CODEC_DECODE_CB(decode_frame_lscr),
     .flush          = lscr_decode_flush,
     .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP,
 };

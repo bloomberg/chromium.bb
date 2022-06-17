@@ -17,6 +17,7 @@ package resolver
 import (
 	"fmt"
 	"sort"
+	"strconv"
 
 	"dawn.googlesource.com/dawn/tools/src/cmd/intrinsic-gen/ast"
 	"dawn.googlesource.com/dawn/tools/src/cmd/intrinsic-gen/sem"
@@ -27,21 +28,25 @@ type resolver struct {
 	a *ast.AST
 	s *sem.Sem
 
-	globals           scope
-	builtins          map[string]*sem.Intrinsic
-	operators         map[string]*sem.Intrinsic
-	enumEntryMatchers map[*sem.EnumEntry]*sem.EnumMatcher
+	globals                   scope
+	builtins                  map[string]*sem.Intrinsic
+	unaryOperators            map[string]*sem.Intrinsic
+	binaryOperators           map[string]*sem.Intrinsic
+	constructorsAndConverters map[string]*sem.Intrinsic
+	enumEntryMatchers         map[*sem.EnumEntry]*sem.EnumMatcher
 }
 
 // Resolve processes the AST
 func Resolve(a *ast.AST) (*sem.Sem, error) {
 	r := resolver{
-		a:                 a,
-		s:                 sem.New(),
-		globals:           newScope(nil),
-		builtins:          map[string]*sem.Intrinsic{},
-		operators:         map[string]*sem.Intrinsic{},
-		enumEntryMatchers: map[*sem.EnumEntry]*sem.EnumMatcher{},
+		a:                         a,
+		s:                         sem.New(),
+		globals:                   newScope(nil),
+		builtins:                  map[string]*sem.Intrinsic{},
+		unaryOperators:            map[string]*sem.Intrinsic{},
+		binaryOperators:           map[string]*sem.Intrinsic{},
+		constructorsAndConverters: map[string]*sem.Intrinsic{},
+		enumEntryMatchers:         map[*sem.EnumEntry]*sem.EnumMatcher{},
 	}
 	// Declare and resolve all the enumerators
 	for _, e := range a.Enums {
@@ -67,9 +72,33 @@ func Resolve(a *ast.AST) (*sem.Sem, error) {
 			return nil, err
 		}
 	}
-	// Declare and resolve the operators
+	// Declare and resolve the unary and binary operators
 	for _, o := range a.Operators {
-		if err := r.intrinsic(o, r.operators, &r.s.Operators); err != nil {
+		switch len(o.Parameters) {
+		case 1:
+			if err := r.intrinsic(o, r.unaryOperators, &r.s.UnaryOperators); err != nil {
+				return nil, err
+			}
+		case 2:
+			if err := r.intrinsic(o, r.binaryOperators, &r.s.BinaryOperators); err != nil {
+				return nil, err
+			}
+		default:
+			return nil, fmt.Errorf("%v operators must have either 1 or 2 parameters", o.Source)
+		}
+	}
+
+	// Declare and resolve type constructors and converters
+	for _, c := range a.Constructors {
+		if err := r.intrinsic(c, r.constructorsAndConverters, &r.s.ConstructorsAndConverters); err != nil {
+			return nil, err
+		}
+	}
+	for _, c := range a.Converters {
+		if len(c.Parameters) != 1 {
+			return nil, fmt.Errorf("%v conversions must have a single parameter", c.Source)
+		}
+		if err := r.intrinsic(c, r.constructorsAndConverters, &r.s.ConstructorsAndConverters); err != nil {
 			return nil, err
 		}
 	}
@@ -101,14 +130,14 @@ func (r *resolver) enum(e ast.EnumDecl) error {
 			Name: ast.Name,
 			Enum: s,
 		}
-		if internal := ast.Decorations.Take("internal"); internal != nil {
+		if internal := ast.Attributes.Take("internal"); internal != nil {
 			entry.IsInternal = true
 			if len(internal.Values) != 0 {
-				return fmt.Errorf("%v unexpected value for internal decoration", ast.Source)
+				return fmt.Errorf("%v unexpected value for internal attribute", ast.Source)
 			}
 		}
-		if len(ast.Decorations) != 0 {
-			return fmt.Errorf("%v unknown decoration", ast.Decorations[0].Source)
+		if len(ast.Attributes) != 0 {
+			return fmt.Errorf("%v unknown attribute", ast.Attributes[0].Source)
 		}
 		if err := r.globals.declare(entry, e.Source); err != nil {
 			return err
@@ -144,15 +173,26 @@ func (r *resolver) ty(a ast.TypeDecl) error {
 	}
 	t.TemplateParams = templateParams
 
-	// Scan for decorations
-	if d := a.Decorations.Take("display"); d != nil {
+	// Scan for attributes
+	if d := a.Attributes.Take("display"); d != nil {
 		if len(d.Values) != 1 {
-			return fmt.Errorf("%v expected a single value for 'display' decoration", d.Source)
+			return fmt.Errorf("%v expected a single value for 'display' attribute", d.Source)
 		}
 		t.DisplayName = d.Values[0]
 	}
-	if len(a.Decorations) != 0 {
-		return fmt.Errorf("%v unknown decoration", a.Decorations[0].Source)
+	if d := a.Attributes.Take("precedence"); d != nil {
+		if len(d.Values) != 1 {
+			return fmt.Errorf("%v expected a single integer value for 'precedence' attribute", d.Source)
+		}
+		n, err := strconv.Atoi(d.Values[0])
+		if err != nil {
+			return fmt.Errorf("%v %v", d.Source, err)
+		}
+		t.Precedence = n
+	}
+
+	if len(a.Attributes) != 0 {
+		return fmt.Errorf("%v unknown attribute", a.Attributes[0].Source)
 	}
 
 	return nil
@@ -262,8 +302,8 @@ func (r *resolver) intrinsic(
 		TemplateParams: templateParams,
 	}
 
-	// Process overload decorations
-	if stageDeco := a.Decorations.Take("stage"); stageDeco != nil {
+	// Process overload attributes
+	if stageDeco := a.Attributes.Take("stage"); stageDeco != nil {
 		for stageDeco != nil {
 			for _, stage := range stageDeco.Values {
 				switch stage {
@@ -277,7 +317,7 @@ func (r *resolver) intrinsic(
 					return fmt.Errorf("%v unknown stage '%v'", stageDeco.Source, stage)
 				}
 			}
-			stageDeco = a.Decorations.Take("stage")
+			stageDeco = a.Attributes.Take("stage")
 		}
 	} else {
 		overload.CanBeUsedInStage = sem.StageUses{
@@ -286,40 +326,46 @@ func (r *resolver) intrinsic(
 			Compute:  true,
 		}
 	}
-	if deprecated := a.Decorations.Take("deprecated"); deprecated != nil {
-		overload.IsDeprecated = true
-		if len(deprecated.Values) != 0 {
-			return fmt.Errorf("%v unexpected value for deprecated decoration", deprecated.Source)
+	if constEvalFn := a.Attributes.Take("const"); constEvalFn != nil {
+		switch len(constEvalFn.Values) {
+		case 0:
+			overload.ConstEvalFunction = overload.Decl.Name
+		case 1:
+			overload.ConstEvalFunction = constEvalFn.Values[0]
+		default:
+			return fmt.Errorf("%v too many values for @const attribute", constEvalFn.Source)
 		}
 	}
-	if len(a.Decorations) != 0 {
-		return fmt.Errorf("%v unknown decoration", a.Decorations[0].Source)
+	if deprecated := a.Attributes.Take("deprecated"); deprecated != nil {
+		overload.IsDeprecated = true
+		if len(deprecated.Values) != 0 {
+			return fmt.Errorf("%v unexpected value for deprecated attribute", deprecated.Source)
+		}
+	}
+	if len(a.Attributes) != 0 {
+		return fmt.Errorf("%v unknown attribute", a.Attributes[0].Source)
 	}
 
 	// Append the overload to the intrinsic
 	intrinsic.Overloads = append(intrinsic.Overloads, overload)
 
 	// Sort the template parameters by resolved type. Append these to
-	// sem.Overload.OpenTypes or sem.Overload.OpenNumbers based on their kind.
+	// sem.Overload.TemplateTypes or sem.Overload.TemplateNumbers based on their kind.
 	for _, param := range templateParams {
 		switch param := param.(type) {
 		case *sem.TemplateTypeParam:
-			overload.OpenTypes = append(overload.OpenTypes, param)
+			overload.TemplateTypes = append(overload.TemplateTypes, param)
 		case *sem.TemplateEnumParam, *sem.TemplateNumberParam:
-			overload.OpenNumbers = append(overload.OpenNumbers, param)
+			overload.TemplateNumbers = append(overload.TemplateNumbers, param)
 		}
 	}
 
-	// Update high-water marks of open types / numbers
-	if r.s.MaxOpenTypes < len(overload.OpenTypes) {
-		r.s.MaxOpenTypes = len(overload.OpenTypes)
+	// Update high-water marks of template types and numbers
+	if r.s.MaxTemplateTypes < len(overload.TemplateTypes) {
+		r.s.MaxTemplateTypes = len(overload.TemplateTypes)
 	}
-	if r.s.MaxOpenNumbers < len(overload.OpenNumbers) {
-		r.s.MaxOpenNumbers = len(overload.OpenNumbers)
-	}
-
-	if a.Kind == ast.Operator && (len(a.Parameters) < 1 || len(a.Parameters) > 2) {
-		return fmt.Errorf("%v operators must have either 1 or 2 parameters", a.Source)
+	if r.s.MaxTemplateNumbers < len(overload.TemplateNumbers) {
+		r.s.MaxTemplateNumbers = len(overload.TemplateNumbers)
 	}
 
 	// Resolve the parameters
@@ -328,9 +374,17 @@ func (r *resolver) intrinsic(
 		if err != nil {
 			return err
 		}
+		isConst := false
+		if attribute := p.Attributes.Take("const"); attribute != nil {
+			isConst = true
+		}
+		if len(p.Attributes) != 0 {
+			return fmt.Errorf("%v unknown attribute", p.Attributes[0].Source)
+		}
 		overload.Parameters[i] = sem.Parameter{
-			Name: p.Name,
-			Type: usage,
+			Name:    p.Name,
+			Type:    usage,
+			IsConst: isConst,
 		}
 	}
 
@@ -433,6 +487,8 @@ func (r *resolver) templateParam(a ast.TemplateParam) (sem.TemplateParam, error)
 			return &sem.TemplateEnumParam{Name: a.Name, Enum: r.Enum, Matcher: r}, nil
 		case *sem.TypeMatcher:
 			return &sem.TemplateTypeParam{Name: a.Name, Type: r}, nil
+		case *sem.Type:
+			return &sem.TemplateTypeParam{Name: a.Name, Type: r}, nil
 		default:
 			return nil, fmt.Errorf("%v invalid template parameter type '%v'", a.Source, a.Type.Name)
 		}
@@ -514,12 +570,19 @@ func (r *resolver) lookupNamed(s *scope, a ast.TemplatedName) (sem.Named, error)
 func (r *resolver) calculateUniqueParameterNames() []string {
 	set := map[string]struct{}{"": {}}
 	names := []string{}
-	for _, f := range r.s.Builtins {
-		for _, o := range f.Overloads {
-			for _, p := range o.Parameters {
-				if _, dup := set[p.Name]; !dup {
-					set[p.Name] = struct{}{}
-					names = append(names, p.Name)
+	for _, intrinsics := range [][]*sem.Intrinsic{
+		r.s.Builtins,
+		r.s.UnaryOperators,
+		r.s.BinaryOperators,
+		r.s.ConstructorsAndConverters,
+	} {
+		for _, i := range intrinsics {
+			for _, o := range i.Overloads {
+				for _, p := range o.Parameters {
+					if _, dup := set[p.Name]; !dup {
+						set[p.Name] = struct{}{}
+						names = append(names, p.Name)
+					}
 				}
 			}
 		}

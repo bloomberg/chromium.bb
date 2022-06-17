@@ -41,8 +41,6 @@ class WasmCapiFunctionData;
 class WasmExportedFunctionData;
 class WasmJSFunctionData;
 
-enum OSRCodeCacheStateOfSFI : uint8_t;
-
 namespace wasm {
 struct WasmModule;
 class ValueType;
@@ -520,10 +518,6 @@ class SharedFunctionInfo
   // shared function info.
   void DisableOptimization(BailoutReason reason);
 
-  inline OSRCodeCacheStateOfSFI osr_code_cache_state() const;
-
-  inline void set_osr_code_cache_state(OSRCodeCacheStateOfSFI state);
-
   // This class constructor needs to call out to an instance fields
   // initializer. This flag is set when creating the
   // SharedFunctionInfo as a reminder to emit the initializer call
@@ -611,7 +605,7 @@ class SharedFunctionInfo
 
   static void EnsureBytecodeArrayAvailable(
       Isolate* isolate, Handle<SharedFunctionInfo> shared_info,
-      IsCompiledScope* is_compiled,
+      IsCompiledScope* is_compiled_scope,
       CreateSourcePositions flag = CreateSourcePositions::kNo);
 
   inline bool CanCollectSourcePosition(Isolate* isolate);
@@ -664,18 +658,18 @@ class SharedFunctionInfo
   // Constants.
   static const int kMaximumFunctionTokenOffset = kMaxUInt16 - 1;
   static const uint16_t kFunctionTokenOutOfRange = static_cast<uint16_t>(-1);
-  STATIC_ASSERT(kMaximumFunctionTokenOffset + 1 == kFunctionTokenOutOfRange);
+  static_assert(kMaximumFunctionTokenOffset + 1 == kFunctionTokenOutOfRange);
 
   static const int kAlignedSize = OBJECT_POINTER_ALIGN(kSize);
 
   class BodyDescriptor;
 
   // Bailout reasons must fit in the DisabledOptimizationReason bitfield.
-  STATIC_ASSERT(BailoutReason::kLastErrorMessage <=
+  static_assert(BailoutReason::kLastErrorMessage <=
                 DisabledOptimizationReasonBits::kMax);
 
-  STATIC_ASSERT(FunctionKind::kLastFunctionKind <= FunctionKindBits::kMax);
-  STATIC_ASSERT(FunctionSyntaxKind::kLastFunctionSyntaxKind <=
+  static_assert(FunctionKind::kLastFunctionKind <= FunctionKindBits::kMax);
+  static_assert(FunctionSyntaxKind::kLastFunctionSyntaxKind <=
                 FunctionSyntaxKindBits::kMax);
 
   // Sets the bytecode in {shared}'s DebugInfo as the bytecode to

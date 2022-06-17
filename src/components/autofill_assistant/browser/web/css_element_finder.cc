@@ -108,7 +108,7 @@ void CssElementFinder::Start(const ElementFinderResult& start_element,
 
   current_frame_ = start_element.render_frame_host();
   if (current_frame_ == nullptr) {
-    current_frame_ = web_contents_->GetMainFrame();
+    current_frame_ = web_contents_->GetPrimaryMainFrame();
   }
   current_frame_id_ = start_element.node_frame_id();
   frame_stack_ = start_element.frame_stack();
@@ -152,16 +152,11 @@ void CssElementFinder::ResultFound(const std::string& object_id) {
     return;
   }
 
-  if (selector_.proto.has_semantic_information()) {
-    devtools_client_->GetDOM()->DescribeNode(
-        dom::DescribeNodeParams::Builder().SetObjectId(object_id).Build(),
-        current_frame_id_,
-        base::BindOnce(&CssElementFinder::OnDescribeNodeForId,
-                       weak_ptr_factory_.GetWeakPtr(), object_id));
-    return;
-  }
-
-  BuildAndSendResult(object_id);
+  devtools_client_->GetDOM()->DescribeNode(
+      dom::DescribeNodeParams::Builder().SetObjectId(object_id).Build(),
+      current_frame_id_,
+      base::BindOnce(&CssElementFinder::OnDescribeNodeForId,
+                     weak_ptr_factory_.GetWeakPtr(), object_id));
 }
 
 void CssElementFinder::OnDescribeNodeForId(
@@ -178,6 +173,7 @@ void CssElementFinder::BuildAndSendResult(const std::string& object_id) {
   ElementFinderResult result;
   result.SetRenderFrameHost(current_frame_);
   result.SetObjectId(object_id);
+  result.SetBackendNodeId(backend_node_id_);
   result.SetNodeFrameId(current_frame_id_);
   result.SetFrameStack(frame_stack_);
 

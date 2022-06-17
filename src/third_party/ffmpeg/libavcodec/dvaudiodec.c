@@ -85,11 +85,10 @@ static inline uint16_t dv_audio_12to16(uint16_t sample)
     return result;
 }
 
-static int decode_frame(AVCodecContext *avctx, void *data,
+static int decode_frame(AVCodecContext *avctx, AVFrame *frame,
                         int *got_frame_ptr, AVPacket *pkt)
 {
     DVAudioContext *s = avctx->priv_data;
-    AVFrame *frame = data;
     const uint8_t *src = pkt->data;
     int16_t *dst;
     int ret, i;
@@ -125,7 +124,7 @@ const FFCodec ff_dvaudio_decoder = {
     .p.type         = AVMEDIA_TYPE_AUDIO,
     .p.id           = AV_CODEC_ID_DVAUDIO,
     .init           = decode_init,
-    .decode         = decode_frame,
+    FF_CODEC_DECODE_CB(decode_frame),
     .p.capabilities = AV_CODEC_CAP_DR1,
     .priv_data_size = sizeof(DVAudioContext),
     .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,

@@ -284,10 +284,12 @@ static const std::unordered_map<std::string, uint32_t> device_extension_map = {
     {"VK_EXT_private_data", 1},
     {"VK_EXT_pipeline_creation_cache_control", 3},
     {"VK_KHR_video_encode_queue", 5},
-    {"VK_NV_device_diagnostics_config", 1},
+    {"VK_NV_device_diagnostics_config", 2},
     {"VK_QCOM_render_pass_store_ops", 2},
     {"VK_KHR_synchronization2", 1},
     {"VK_EXT_graphics_pipeline_library", 1},
+    {"VK_AMD_shader_early_and_late_fragment_tests", 1},
+    {"VK_KHR_fragment_shader_barycentric", 1},
     {"VK_KHR_shader_subgroup_uniform_control_flow", 1},
     {"VK_KHR_zero_initialize_workgroup_memory", 1},
     {"VK_NV_fragment_shading_rate_enums", 1},
@@ -298,6 +300,7 @@ static const std::unordered_map<std::string, uint32_t> device_extension_map = {
     {"VK_EXT_image_robustness", 1},
     {"VK_KHR_workgroup_memory_explicit_layout", 1},
     {"VK_KHR_copy_commands2", 1},
+    {"VK_EXT_image_compression_control", 1},
     {"VK_EXT_4444_formats", 1},
     {"VK_ARM_rasterization_order_attachment_access", 1},
     {"VK_EXT_rgba10x6_formats", 1},
@@ -314,9 +317,11 @@ static const std::unordered_map<std::string, uint32_t> device_extension_map = {
     {"VK_HUAWEI_subpass_shading", 2},
     {"VK_HUAWEI_invocation_mask", 1},
     {"VK_NV_external_memory_rdma", 1},
+    {"VK_EXT_pipeline_properties", 1},
     {"VK_EXT_extended_dynamic_state2", 1},
     {"VK_EXT_color_write_enable", 1},
     {"VK_EXT_primitives_generated_query", 1},
+    {"VK_KHR_ray_tracing_maintenance1", 1},
     {"VK_EXT_global_priority_query", 1},
     {"VK_EXT_image_view_min_lod", 1},
     {"VK_EXT_multi_draw", 1},
@@ -328,6 +333,8 @@ static const std::unordered_map<std::string, uint32_t> device_extension_map = {
     {"VK_VALVE_descriptor_set_host_mapping", 1},
     {"VK_QCOM_fragment_density_map_offset", 1},
     {"VK_NV_linear_color_attachment", 1},
+    {"VK_EXT_image_compression_control_swapchain", 1},
+    {"VK_EXT_subpass_merge_feedback", 2},
 };
 
 
@@ -2320,6 +2327,7 @@ static VKAPI_ATTR void VKAPI_CALL GetQueueCheckpointData2NV(
 
 
 
+
 static VKAPI_ATTR void VKAPI_CALL CmdCopyBuffer2KHR(
     VkCommandBuffer                             commandBuffer,
     const VkCopyBufferInfo2*                    pCopyBufferInfo);
@@ -2344,6 +2352,11 @@ static VKAPI_ATTR void VKAPI_CALL CmdResolveImage2KHR(
     VkCommandBuffer                             commandBuffer,
     const VkResolveImageInfo2*                  pResolveImageInfo);
 
+
+
+static VKAPI_ATTR void VKAPI_CALL CmdTraceRaysIndirect2KHR(
+    VkCommandBuffer                             commandBuffer,
+    VkDeviceAddress                             indirectDeviceAddress);
 
 
 
@@ -3314,6 +3327,7 @@ static VKAPI_ATTR void VKAPI_CALL GetPrivateDataEXT(
 
 
 
+
 static VKAPI_ATTR void VKAPI_CALL CmdSetFragmentShadingRateEnumNV(
     VkCommandBuffer                             commandBuffer,
     VkFragmentShadingRateNV                     shadingRate,
@@ -3323,6 +3337,13 @@ static VKAPI_ATTR void VKAPI_CALL CmdSetFragmentShadingRateEnumNV(
 
 
 
+
+
+static VKAPI_ATTR void VKAPI_CALL GetImageSubresourceLayout2EXT(
+    VkDevice                                    device,
+    VkImage                                     image,
+    const VkImageSubresource2EXT*               pSubresource,
+    VkSubresourceLayout2EXT*                    pLayout);
 
 
 
@@ -3442,6 +3463,12 @@ static VKAPI_ATTR VkResult VKAPI_CALL GetMemoryRemoteAddressNV(
     VkRemoteAddressNV*                          pAddress);
 
 
+static VKAPI_ATTR VkResult VKAPI_CALL GetPipelinePropertiesEXT(
+    VkDevice                                    device,
+    const VkPipelineInfoEXT*                    pPipelineInfo,
+    VkBaseOutStructure*                         pPipelineProperties);
+
+
 static VKAPI_ATTR void VKAPI_CALL CmdSetPatchControlPointsEXT(
     VkCommandBuffer                             commandBuffer,
     uint32_t                                    patchControlPoints);
@@ -3522,6 +3549,8 @@ static VKAPI_ATTR void VKAPI_CALL GetDescriptorSetHostMappingVALVE(
     VkDevice                                    device,
     VkDescriptorSet                             descriptorSet,
     void**                                      ppData);
+
+
 
 
 
@@ -4076,6 +4105,7 @@ static const std::unordered_map<std::string, void*> name_to_funcptr_map = {
     {"vkCmdCopyImageToBuffer2KHR", (void*)CmdCopyImageToBuffer2KHR},
     {"vkCmdBlitImage2KHR", (void*)CmdBlitImage2KHR},
     {"vkCmdResolveImage2KHR", (void*)CmdResolveImage2KHR},
+    {"vkCmdTraceRaysIndirect2KHR", (void*)CmdTraceRaysIndirect2KHR},
     {"vkGetDeviceBufferMemoryRequirementsKHR", (void*)GetDeviceBufferMemoryRequirementsKHR},
     {"vkGetDeviceImageMemoryRequirementsKHR", (void*)GetDeviceImageMemoryRequirementsKHR},
     {"vkGetDeviceImageSparseMemoryRequirementsKHR", (void*)GetDeviceImageSparseMemoryRequirementsKHR},
@@ -4248,6 +4278,7 @@ static const std::unordered_map<std::string, void*> name_to_funcptr_map = {
     {"vkSetPrivateDataEXT", (void*)SetPrivateDataEXT},
     {"vkGetPrivateDataEXT", (void*)GetPrivateDataEXT},
     {"vkCmdSetFragmentShadingRateEnumNV", (void*)CmdSetFragmentShadingRateEnumNV},
+    {"vkGetImageSubresourceLayout2EXT", (void*)GetImageSubresourceLayout2EXT},
 #ifdef VK_USE_PLATFORM_WIN32_KHR
     {"vkAcquireWinrtDisplayNV", (void*)AcquireWinrtDisplayNV},
 #endif
@@ -4292,6 +4323,7 @@ static const std::unordered_map<std::string, void*> name_to_funcptr_map = {
     {"vkCmdSubpassShadingHUAWEI", (void*)CmdSubpassShadingHUAWEI},
     {"vkCmdBindInvocationMaskHUAWEI", (void*)CmdBindInvocationMaskHUAWEI},
     {"vkGetMemoryRemoteAddressNV", (void*)GetMemoryRemoteAddressNV},
+    {"vkGetPipelinePropertiesEXT", (void*)GetPipelinePropertiesEXT},
     {"vkCmdSetPatchControlPointsEXT", (void*)CmdSetPatchControlPointsEXT},
     {"vkCmdSetRasterizerDiscardEnableEXT", (void*)CmdSetRasterizerDiscardEnableEXT},
     {"vkCmdSetDepthBiasEnableEXT", (void*)CmdSetDepthBiasEnableEXT},

@@ -1246,7 +1246,6 @@ void FeedbackNexus::Print(std::ostream& os) {
     case FeedbackSlotKind::kLoadGlobalInsideTypeof:
     case FeedbackSlotKind::kLoadGlobalNotInsideTypeof:
     case FeedbackSlotKind::kLoadKeyed:
-    case FeedbackSlotKind::kLoadProperty:
     case FeedbackSlotKind::kDefineKeyedOwnPropertyInLiteral:
     case FeedbackSlotKind::kStoreGlobalSloppy:
     case FeedbackSlotKind::kStoreGlobalStrict:
@@ -1257,6 +1256,21 @@ void FeedbackNexus::Print(std::ostream& os) {
     case FeedbackSlotKind::kSetNamedStrict:
     case FeedbackSlotKind::kDefineNamedOwn: {
       os << InlineCacheState2String(ic_state());
+      break;
+    }
+    case FeedbackSlotKind::kLoadProperty: {
+      os << InlineCacheState2String(ic_state());
+      if (ic_state() == InlineCacheState::MONOMORPHIC) {
+        os << "\n   " << Brief(GetFeedback()) << ": ";
+        LoadHandler::PrintHandler(GetFeedbackExtra().GetHeapObjectOrSmi(), os);
+      } else if (ic_state() == InlineCacheState::POLYMORPHIC) {
+        WeakFixedArray array =
+            WeakFixedArray::cast(GetFeedback().GetHeapObject());
+        for (int i = 0; i < array.length(); i += 2) {
+          os << "\n   " << Brief(array.Get(i)) << ": ";
+          LoadHandler::PrintHandler(array.Get(i + 1).GetHeapObjectOrSmi(), os);
+        }
+      }
       break;
     }
     case FeedbackSlotKind::kBinaryOp: {
@@ -1449,6 +1463,16 @@ void JSSharedStruct::JSSharedStructPrint(std::ostream& os) {
   JSObjectPrintBody(os, *this);
 }
 
+void JSAtomicsMutex::JSAtomicsMutexPrint(std::ostream& os) {
+  JSObjectPrintHeader(os, *this, "JSAtomicsMutex");
+  Isolate* isolate = GetIsolateFromWritableObject(*this);
+  os << "\n - isolate: " << isolate;
+  if (isolate->is_shared()) os << " (shared)";
+  os << "\n - state: " << this->state();
+  os << "\n - owner_thread_id: " << this->owner_thread_id();
+  JSObjectPrintBody(os, *this);
+}
+
 void JSWeakMap::JSWeakMapPrint(std::ostream& os) {
   JSObjectPrintHeader(os, *this, "JSWeakMap");
   os << "\n - table: " << Brief(table());
@@ -1626,7 +1650,8 @@ void SharedFunctionInfo::SharedFunctionInfoPrint(std::ostream& os) {
   os << "\n - function_map_index: " << function_map_index();
   os << "\n - formal_parameter_count: "
      << internal_formal_parameter_count_without_receiver();
-  os << "\n - expected_nof_properties: " << expected_nof_properties();
+  os << "\n - expected_nof_properties: "
+     << static_cast<int>(expected_nof_properties());
   os << "\n - language_mode: " << language_mode();
   os << "\n - data: " << Brief(function_data(kAcquireLoad));
   os << "\n - code (from data): ";
@@ -1921,54 +1946,60 @@ void WasmSuspenderObject::WasmSuspenderObjectPrint(std::ostream& os) {
 }
 
 void WasmInstanceObject::WasmInstanceObjectPrint(std::ostream& os) {
+#define PRINT_WASM_INSTANCE_FIELD(name, convert) \
+  os << "\n - " #name ": " << convert(name());
+#define PRINT_OPTIONAL_WASM_INSTANCE_FIELD(name, convert) \
+  if (has_##name()) os << "\n - " #name ": " << convert(name());
+
+  auto to_void_ptr = [](auto value) {
+    static_assert(sizeof(value) == kSystemPointerSize);
+    return reinterpret_cast<void*>(value);
+  };
+
   JSObjectPrintHeader(os, *this, "WasmInstanceObject");
-  os << "\n - module_object: " << Brief(module_object());
-  os << "\n - exports_object: " << Brief(exports_object());
-  os << "\n - native_context: " << Brief(native_context());
-  if (has_memory_object()) {
-    os << "\n - memory_object: " << Brief(memory_object());
-  }
-  if (has_untagged_globals_buffer()) {
-    os << "\n - untagged_globals_buffer: " << Brief(untagged_globals_buffer());
-  }
-  if (has_tagged_globals_buffer()) {
-    os << "\n - tagged_globals_buffer: " << Brief(tagged_globals_buffer());
-  }
-  if (has_imported_mutable_globals_buffers()) {
-    os << "\n - imported_mutable_globals_buffers: "
-       << Brief(imported_mutable_globals_buffers());
-  }
-  for (int i = 0; i < tables().length(); i++) {
-    os << "\n - table " << i << ": " << Brief(tables().get(i));
-  }
-  os << "\n - imported_function_refs: " << Brief(imported_function_refs());
-  if (has_indirect_function_table_refs()) {
-    os << "\n - indirect_function_table_refs: "
-       << Brief(indirect_function_table_refs());
-  }
-  if (has_managed_native_allocations()) {
-    os << "\n - managed_native_allocations: "
-       << Brief(managed_native_allocations());
-  }
-  if (has_tags_table()) {
-    os << "\n - tags table: " << Brief(tags_table());
-  }
-  os << "\n - managed object maps: " << Brief(managed_object_maps());
-  os << "\n - feedback vectors: " << Brief(feedback_vectors());
-  os << "\n - memory_start: " << static_cast<void*>(memory_start());
-  os << "\n - memory_size: " << memory_size();
-  os << "\n - imported_function_targets: "
-     << static_cast<void*>(imported_function_targets());
-  os << "\n - globals_start: " << static_cast<void*>(globals_start());
-  os << "\n - imported_mutable_globals: "
-     << static_cast<void*>(imported_mutable_globals());
-  os << "\n - indirect_function_table_size: " << indirect_function_table_size();
-  os << "\n - indirect_function_table_sig_ids: "
-     << static_cast<void*>(indirect_function_table_sig_ids());
-  os << "\n - indirect_function_table_targets: "
-     << static_cast<void*>(indirect_function_table_targets());
+  PRINT_WASM_INSTANCE_FIELD(module_object, Brief);
+  PRINT_WASM_INSTANCE_FIELD(exports_object, Brief);
+  PRINT_WASM_INSTANCE_FIELD(native_context, Brief);
+  PRINT_OPTIONAL_WASM_INSTANCE_FIELD(memory_object, Brief);
+  PRINT_OPTIONAL_WASM_INSTANCE_FIELD(untagged_globals_buffer, Brief);
+  PRINT_OPTIONAL_WASM_INSTANCE_FIELD(tagged_globals_buffer, Brief);
+  PRINT_OPTIONAL_WASM_INSTANCE_FIELD(imported_mutable_globals_buffers, Brief);
+  PRINT_OPTIONAL_WASM_INSTANCE_FIELD(tables, Brief);
+  PRINT_OPTIONAL_WASM_INSTANCE_FIELD(indirect_function_tables, Brief);
+  PRINT_WASM_INSTANCE_FIELD(imported_function_refs, Brief);
+  PRINT_OPTIONAL_WASM_INSTANCE_FIELD(indirect_function_table_refs, Brief);
+  PRINT_OPTIONAL_WASM_INSTANCE_FIELD(managed_native_allocations, Brief);
+  PRINT_OPTIONAL_WASM_INSTANCE_FIELD(tags_table, Brief);
+  PRINT_OPTIONAL_WASM_INSTANCE_FIELD(wasm_internal_functions, Brief);
+  PRINT_WASM_INSTANCE_FIELD(managed_object_maps, Brief);
+  PRINT_WASM_INSTANCE_FIELD(feedback_vectors, Brief);
+  PRINT_WASM_INSTANCE_FIELD(memory_start, to_void_ptr);
+  PRINT_WASM_INSTANCE_FIELD(memory_size, +);
+  PRINT_WASM_INSTANCE_FIELD(isolate_root, to_void_ptr);
+  PRINT_WASM_INSTANCE_FIELD(stack_limit_address, to_void_ptr);
+  PRINT_WASM_INSTANCE_FIELD(real_stack_limit_address, to_void_ptr);
+  PRINT_WASM_INSTANCE_FIELD(new_allocation_limit_address, to_void_ptr);
+  PRINT_WASM_INSTANCE_FIELD(new_allocation_top_address, to_void_ptr);
+  PRINT_WASM_INSTANCE_FIELD(old_allocation_limit_address, to_void_ptr);
+  PRINT_WASM_INSTANCE_FIELD(old_allocation_top_address, to_void_ptr);
+  PRINT_WASM_INSTANCE_FIELD(imported_function_targets, to_void_ptr);
+  PRINT_WASM_INSTANCE_FIELD(globals_start, to_void_ptr);
+  PRINT_WASM_INSTANCE_FIELD(imported_mutable_globals, to_void_ptr);
+  PRINT_WASM_INSTANCE_FIELD(indirect_function_table_size, +);
+  PRINT_WASM_INSTANCE_FIELD(indirect_function_table_sig_ids, to_void_ptr);
+  PRINT_WASM_INSTANCE_FIELD(indirect_function_table_targets, to_void_ptr);
+  PRINT_WASM_INSTANCE_FIELD(jump_table_start, to_void_ptr);
+  PRINT_WASM_INSTANCE_FIELD(data_segment_starts, to_void_ptr);
+  PRINT_WASM_INSTANCE_FIELD(data_segment_sizes, to_void_ptr);
+  PRINT_WASM_INSTANCE_FIELD(dropped_elem_segments, to_void_ptr);
+  PRINT_WASM_INSTANCE_FIELD(hook_on_function_call_address, to_void_ptr);
+  PRINT_WASM_INSTANCE_FIELD(tiering_budget_array, to_void_ptr);
+  PRINT_WASM_INSTANCE_FIELD(break_on_entry, static_cast<int>);
   JSObjectPrintBody(os, *this);
   os << "\n";
+
+#undef PRINT_OPTIONAL_WASM_INSTANCE_FIELD
+#undef PRINT_WASM_INSTANCE_FIELD
 }
 
 // Never called directly, as WasmFunctionData is an "abstract" class.
@@ -2851,7 +2882,7 @@ V8_EXPORT_PRIVATE extern void _v8_internal_Print_LoadHandler(void* object) {
 #ifdef OBJECT_PRINT
   i::StdoutStream os;
   i::LoadHandler::PrintHandler(GetObjectFromRaw(object), os);
-  os << std::flush;
+  os << std::endl << std::flush;
 #endif
 }
 
@@ -2889,11 +2920,14 @@ V8_EXPORT_PRIVATE extern void _v8_internal_Print_Code(void* object) {
     return;
   }
 
-  i::Code code = isolate->FindCodeObject(address);
-  if (!code.IsCode()) {
+  i::CodeLookupResult lookup_result = isolate->FindCodeObject(address);
+  if (!lookup_result.IsFound()) {
     i::PrintF("No code object found containing %p\n", object);
     return;
   }
+
+  i::Code code = lookup_result.ToCode();
+
 #ifdef ENABLE_DISASSEMBLER
   i::StdoutStream os;
   code.Disassemble(nullptr, os, isolate, address);

@@ -163,7 +163,11 @@ Note: we don't test 1D, 2D array and 3D textures because multisample is not supp
       size: { width: 4, height: 4, depthOrArrayLayers: 1 },
       sampleCount,
       format: 'rgba8unorm',
-      usage: GPUTextureUsage.COPY_SRC | GPUTextureUsage.COPY_DST | GPUTextureUsage.TEXTURE_BINDING,
+      usage:
+        GPUTextureUsage.COPY_SRC |
+        GPUTextureUsage.COPY_DST |
+        GPUTextureUsage.TEXTURE_BINDING |
+        GPUTextureUsage.RENDER_ATTACHMENT,
     });
 
     const success = sampleCount === 1;

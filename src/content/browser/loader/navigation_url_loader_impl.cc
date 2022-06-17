@@ -38,6 +38,7 @@
 #include "content/browser/service_worker/service_worker_container_host.h"
 #include "content/browser/service_worker/service_worker_main_resource_handle.h"
 #include "content/browser/service_worker/service_worker_main_resource_loader_interceptor.h"
+#include "content/browser/speculation_rules/prefetch/prefetch_url_loader_interceptor.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/browser/web_package/prefetched_signed_exchange_cache.h"
@@ -474,6 +475,14 @@ void NavigationURLLoaderImpl::CreateInterceptors(
         std::move(accept_langs)));
   }
 
+  // Set up an interceptor for prefetch.
+  std::unique_ptr<PrefetchURLLoaderInterceptor> prefetch_interceptor =
+      content::PrefetchURLLoaderInterceptor::MaybeCreateInterceptor(
+          frame_tree_node_id_);
+  if (prefetch_interceptor) {
+    interceptors_.push_back(std::move(prefetch_interceptor));
+  }
+
   // See if embedders want to add interceptors.
   std::vector<std::unique_ptr<URLLoaderRequestInterceptor>>
       browser_interceptors =
@@ -790,14 +799,9 @@ void NavigationURLLoaderImpl::OnReceiveResponse(
   if (head_->mime_type == "application/pdf" || head_->mime_type == "text/pdf")
     early_hints_manager_.reset();
 
-  if (response_body)
-    OnStartLoadingResponseBody(std::move(response_body));
-}
+  if (!response_body)
+    return;
 
-void NavigationURLLoaderImpl::OnStartLoadingResponseBody(
-    mojo::ScopedDataPipeConsumerHandle response_body) {
-  LogQueueTimeHistogram("Navigation.QueueTime.OnStartLoadingResponseBody",
-                        resource_request_->is_outermost_main_frame);
   response_body_ = std::move(response_body);
   received_response_ = true;
 
@@ -998,6 +1002,11 @@ void NavigationURLLoaderImpl::OnAcceptCHFrameReceived(
     const std::vector<network::mojom::WebClientHintsType>& accept_ch_frame,
     OnAcceptCHFrameReceivedCallback callback) {
   received_accept_ch_frame_ = true;
+  if (!base::FeatureList::IsEnabled(network::features::kAcceptCHFrame)) {
+    std::move(callback).Run(net::OK);
+    return;
+  }
+
   LogAcceptCHFrameStatus(AcceptCHFrameRestart::kFramePresent);
 
   // Given that this is happening in the middle of navigation, there should
@@ -1343,18 +1352,25 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
   }
 
   const std::string storage_domain;
-  // TODO(https://crbug.com/1264405): Determine if we should deprecate
-  // navigation in filesystem: URLs entirely or in 3p contexts; alter the
-  // below as necessary. NOTE: while the logic below is appropriate for
-  // browser-initiated navigations, it is likely incorrect to always use
-  // first-party StorageKeys for renderer-initiated navigations.
-  non_network_url_loader_factories_.emplace(
-      url::kFileSystemScheme,
-      CreateFileSystemURLLoaderFactory(
-          ChildProcessHost::kInvalidUniqueID,
-          frame_tree_node->frame_tree_node_id(),
-          storage_partition_->GetFileSystemContext(), storage_domain,
-          blink::StorageKey(url::Origin::Create(url_))));
+  if (base::FeatureList::IsEnabled(blink::features::kFileSystemUrlNavigation) ||
+      !frame_tree_node->navigation_request()->IsRendererInitiated()) {
+    // TODO(https://crbug.com/256067): Once DevTools has support for sandboxed
+    // file system inspection there isn't much reason anymore to support browser
+    // initiated filesystem: navigations, so remove this entirely at that point.
+
+    // Navigations in to filesystem: URLs are deprecated entirely for
+    // renderer-initiated navigations. The logic below is appropriate for
+    // browser-initiated navigations, but it is incorrect to always use
+    // first-party StorageKeys for renderer-initiated navigations when third
+    // party storage partitioning is enabled.
+    non_network_url_loader_factories_.emplace(
+        url::kFileSystemScheme,
+        CreateFileSystemURLLoaderFactory(
+            ChildProcessHost::kInvalidUniqueID,
+            frame_tree_node->frame_tree_node_id(),
+            storage_partition_->GetFileSystemContext(), storage_domain,
+            blink::StorageKey(url::Origin::Create(url_))));
+  }
 
   non_network_url_loader_factories_.emplace(url::kAboutScheme,
                                             AboutURLLoaderFactory::Create());

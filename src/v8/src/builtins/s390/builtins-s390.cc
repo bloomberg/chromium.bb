@@ -85,7 +85,7 @@ void Generate_OSREntry(MacroAssembler* masm, Register entry_address,
 
 void ResetBytecodeAge(MacroAssembler* masm, Register bytecode_array,
                       Register scratch) {
-  STATIC_ASSERT(BytecodeArray::kNoAgeBytecodeAge == 0);
+  static_assert(BytecodeArray::kNoAgeBytecodeAge == 0);
   DCHECK(!AreAliased(bytecode_array, scratch));
   __ mov(r0, Operand(0));
   __ StoreU16(
@@ -293,7 +293,7 @@ void OnStackReplacement(MacroAssembler* masm, OsrSourceTier source,
   {
     Label next;
     __ Move(r3, ExternalReference::address_of_FLAG_trace_osr());
-    __ LoadU64(r3, MemOperand(r3));
+    __ LoadU8(r3, MemOperand(r3));
     __ tmll(r3, Operand(0xFF));  // Mask to the LSB.
     __ beq(&next);
 
@@ -616,7 +616,7 @@ void Builtins::Generate_JSConstructStubGeneric(MacroAssembler* masm) {
 
   // If the type of the result (stored in its map) is less than
   // FIRST_JS_RECEIVER_TYPE, it is not an object in the ECMA sense.
-  STATIC_ASSERT(LAST_JS_RECEIVER_TYPE == LAST_TYPE);
+  static_assert(LAST_JS_RECEIVER_TYPE == LAST_TYPE);
   __ CompareObjectType(r2, r6, r6, FIRST_JS_RECEIVER_TYPE);
   __ bge(&leave_and_return);
   __ b(&use_receiver);
@@ -1294,10 +1294,10 @@ static void AdvanceBytecodeOffsetOrReturn(MacroAssembler* masm,
 
   // Check if the bytecode is a Wide or ExtraWide prefix bytecode.
   Label process_bytecode, extra_wide;
-  STATIC_ASSERT(0 == static_cast<int>(interpreter::Bytecode::kWide));
-  STATIC_ASSERT(1 == static_cast<int>(interpreter::Bytecode::kExtraWide));
-  STATIC_ASSERT(2 == static_cast<int>(interpreter::Bytecode::kDebugBreakWide));
-  STATIC_ASSERT(3 ==
+  static_assert(0 == static_cast<int>(interpreter::Bytecode::kWide));
+  static_assert(1 == static_cast<int>(interpreter::Bytecode::kExtraWide));
+  static_assert(2 == static_cast<int>(interpreter::Bytecode::kDebugBreakWide));
+  static_assert(3 ==
                 static_cast<int>(interpreter::Bytecode::kDebugBreakExtraWide));
   __ CmpS64(bytecode, Operand(0x3));
   __ bgt(&process_bytecode);
@@ -2559,7 +2559,7 @@ void Builtins::Generate_CallFunction(MacroAssembler* masm,
       Label convert_to_object, convert_receiver;
       __ LoadReceiver(r5, r2);
       __ JumpIfSmi(r5, &convert_to_object);
-      STATIC_ASSERT(LAST_JS_RECEIVER_TYPE == LAST_TYPE);
+      static_assert(LAST_JS_RECEIVER_TYPE == LAST_TYPE);
       __ CompareObjectType(r5, r6, r6, FIRST_JS_RECEIVER_TYPE);
       __ bge(&done_convert);
       if (mode != ConvertReceiverMode::kNotNullOrUndefined) {
@@ -2910,8 +2910,8 @@ void Builtins::Generate_Construct(MacroAssembler* masm) {
 void Builtins::Generate_WasmCompileLazy(MacroAssembler* masm) {
   // The function index was put in a register by the jump table trampoline.
   // Convert to Smi for the runtime call.
-  __ SmiTag(kWasmCompileLazyFuncIndexRegister,
-            kWasmCompileLazyFuncIndexRegister);
+  __ SmiTag(kWasmCompileLazyFuncIndexRegister);
+
   {
     HardAbortScope hard_abort(masm);  // Avoid calls to Abort.
     FrameAndConstantPoolScope scope(masm, StackFrame::WASM_COMPILE_LAZY);
@@ -2939,21 +2939,35 @@ void Builtins::Generate_WasmCompileLazy(MacroAssembler* masm) {
     __ MultiPush(gp_regs);
     __ MultiPushF64OrV128(fp_regs, ip);
 
-    // Pass instance and function index as explicit arguments to the runtime
+    // Push the Wasm instance for loading the jump table address after the
+    // runtime call.
+    __ Push(kWasmInstanceRegister);
+
+    // Push the Wasm instance again as an explicit argument to the runtime
     // function.
-    __ Push(kWasmInstanceRegister, r7);
+    __ Push(kWasmInstanceRegister);
+    // Push the function index as second argument.
+    __ Push(kWasmCompileLazyFuncIndexRegister);
     // Initialize the JavaScript context with 0. CEntry will use it to
     // set the current context on the isolate.
     __ LoadSmiLiteral(cp, Smi::zero());
     __ CallRuntime(Runtime::kWasmCompileLazy, 2);
-    // The entrypoint address is the return value.
-    __ mov(ip, r2);
+    // The runtime function returns the jump table slot offset as a Smi. Use
+    // that to compute the jump target in ip.
+    __ Pop(kWasmInstanceRegister);
+    __ LoadU64(ip, MemOperand(kWasmInstanceRegister,
+                              WasmInstanceObject::kJumpTableStartOffset -
+                                  kHeapObjectTag));
+    __ SmiUntag(kReturnRegister0);
+    __ AddS64(ip, ip, kReturnRegister0);
+    // ip now holds the jump table slot where we want to jump to in the end.
 
     // Restore registers.
-    __ MultiPopF64OrV128(fp_regs, ip);
+    __ MultiPopF64OrV128(fp_regs, r1);
     __ MultiPop(gp_regs);
   }
-  // Finally, jump to the entrypoint.
+
+  // Finally, jump to the jump table slot for the function.
   __ Jump(ip);
 }
 
@@ -3215,7 +3229,7 @@ void Builtins::Generate_DoubleToI(MacroAssembler* masm) {
   __ ExtractBitMask(scratch, scratch_high, HeapNumber::kExponentMask);
   // Load scratch with exponent - 1. This is faster than loading
   // with exponent because Bias + 1 = 1024 which is a *S390* immediate value.
-  STATIC_ASSERT(HeapNumber::kExponentBias + 1 == 1024);
+  static_assert(HeapNumber::kExponentBias + 1 == 1024);
   __ SubS64(scratch, Operand(HeapNumber::kExponentBias + 1));
   // If exponent is greater than or equal to 84, the 32 less significant
   // bits are 0s (2^84 = 1, 52 significant bits, 32 uncoded bits),
@@ -3243,7 +3257,7 @@ void Builtins::Generate_DoubleToI(MacroAssembler* masm) {
   __ SubS64(scratch, r0, scratch);
   __ ExtractBitMask(result_reg, scratch_high, HeapNumber::kMantissaMask);
   // Set the implicit 1 before the mantissa part in scratch_high.
-  STATIC_ASSERT(HeapNumber::kMantissaBitsInTopWord >= 16);
+  static_assert(HeapNumber::kMantissaBitsInTopWord >= 16);
   __ mov(r0, Operand(1 << ((HeapNumber::kMantissaBitsInTopWord)-16)));
   __ ShiftLeftU64(r0, r0, Operand(16));
   __ OrP(result_reg, result_reg, r0);
@@ -3433,13 +3447,13 @@ void Builtins::Generate_CallApiCallback(MacroAssembler* masm) {
 
   using FCA = FunctionCallbackArguments;
 
-  STATIC_ASSERT(FCA::kArgsLength == 6);
-  STATIC_ASSERT(FCA::kNewTargetIndex == 5);
-  STATIC_ASSERT(FCA::kDataIndex == 4);
-  STATIC_ASSERT(FCA::kReturnValueOffset == 3);
-  STATIC_ASSERT(FCA::kReturnValueDefaultValueIndex == 2);
-  STATIC_ASSERT(FCA::kIsolateIndex == 1);
-  STATIC_ASSERT(FCA::kHolderIndex == 0);
+  static_assert(FCA::kArgsLength == 6);
+  static_assert(FCA::kNewTargetIndex == 5);
+  static_assert(FCA::kDataIndex == 4);
+  static_assert(FCA::kReturnValueOffset == 3);
+  static_assert(FCA::kReturnValueDefaultValueIndex == 2);
+  static_assert(FCA::kIsolateIndex == 1);
+  static_assert(FCA::kHolderIndex == 0);
 
   // Set up FunctionCallbackInfo's implicit_args on the stack as follows:
   //
@@ -3543,14 +3557,14 @@ void Builtins::Generate_CallApiGetter(MacroAssembler* masm) {
   int apiStackSpace = 0;
   // Build v8::PropertyCallbackInfo::args_ array on the stack and push property
   // name below the exit frame to make GC aware of them.
-  STATIC_ASSERT(PropertyCallbackArguments::kShouldThrowOnErrorIndex == 0);
-  STATIC_ASSERT(PropertyCallbackArguments::kHolderIndex == 1);
-  STATIC_ASSERT(PropertyCallbackArguments::kIsolateIndex == 2);
-  STATIC_ASSERT(PropertyCallbackArguments::kReturnValueDefaultValueIndex == 3);
-  STATIC_ASSERT(PropertyCallbackArguments::kReturnValueOffset == 4);
-  STATIC_ASSERT(PropertyCallbackArguments::kDataIndex == 5);
-  STATIC_ASSERT(PropertyCallbackArguments::kThisIndex == 6);
-  STATIC_ASSERT(PropertyCallbackArguments::kArgsLength == 7);
+  static_assert(PropertyCallbackArguments::kShouldThrowOnErrorIndex == 0);
+  static_assert(PropertyCallbackArguments::kHolderIndex == 1);
+  static_assert(PropertyCallbackArguments::kIsolateIndex == 2);
+  static_assert(PropertyCallbackArguments::kReturnValueDefaultValueIndex == 3);
+  static_assert(PropertyCallbackArguments::kReturnValueOffset == 4);
+  static_assert(PropertyCallbackArguments::kDataIndex == 5);
+  static_assert(PropertyCallbackArguments::kThisIndex == 6);
+  static_assert(PropertyCallbackArguments::kArgsLength == 7);
 
   Register receiver = ApiGetterDescriptor::ReceiverRegister();
   Register holder = ApiGetterDescriptor::HolderRegister();
@@ -3871,7 +3885,7 @@ void Builtins::Generate_DeoptimizationEntry_Lazy(MacroAssembler* masm) {
 
 void Builtins::Generate_InterpreterOnStackReplacement(MacroAssembler* masm) {
   using D = InterpreterOnStackReplacementDescriptor;
-  STATIC_ASSERT(D::kParameterCount == 1);
+  static_assert(D::kParameterCount == 1);
   OnStackReplacement(masm, OsrSourceTier::kInterpreter,
                      D::MaybeTargetCodeRegister());
 }
@@ -3879,7 +3893,7 @@ void Builtins::Generate_InterpreterOnStackReplacement(MacroAssembler* masm) {
 #if ENABLE_SPARKPLUG
 void Builtins::Generate_BaselineOnStackReplacement(MacroAssembler* masm) {
   using D = BaselineOnStackReplacementDescriptor;
-  STATIC_ASSERT(D::kParameterCount == 1);
+  static_assert(D::kParameterCount == 1);
 
   __ LoadU64(kContextRegister,
          MemOperand(fp, BaselineFrameConstants::kContextOffset));

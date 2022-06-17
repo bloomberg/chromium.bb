@@ -291,7 +291,7 @@ void Compiler::LogFunctionCompilation(Isolate* isolate,
   // enabled as finding the line number is not free.
   if (!isolate->v8_file_logger()->is_listening_to_code_events() &&
       !isolate->is_profiling() && !FLAG_log_function_events &&
-      !isolate->log_event_dispatcher()->is_listening_to_code_events()) {
+      !isolate->logger()->is_listening_to_code_events()) {
     return;
   }
 
@@ -1527,12 +1527,15 @@ DeferredFinalizationJobData::DeferredFinalizationJobData(
     : function_handle_(isolate->heap()->NewPersistentHandle(function_handle)),
       job_(std::move(job)) {}
 
-BackgroundCompileTask::BackgroundCompileTask(ScriptStreamingData* streamed_data,
-                                             Isolate* isolate, ScriptType type)
+BackgroundCompileTask::BackgroundCompileTask(
+    ScriptStreamingData* streamed_data, Isolate* isolate, ScriptType type,
+    ScriptCompiler::CompileOptions options)
     : isolate_for_local_isolate_(isolate),
       flags_(UnoptimizedCompileFlags::ForToplevelCompile(
           isolate, true, construct_language_mode(FLAG_use_strict),
-          REPLMode::kNo, type, FLAG_lazy_streaming)),
+          REPLMode::kNo, type,
+          options != ScriptCompiler::CompileOptions::kEagerCompile &&
+              FLAG_lazy_streaming)),
       character_stream_(ScannerStream::For(streamed_data->source_stream.get(),
                                            streamed_data->encoding)),
       stack_size_(i::FLAG_stack_size),
@@ -1541,12 +1544,7 @@ BackgroundCompileTask::BackgroundCompileTask(ScriptStreamingData* streamed_data,
       timer_(isolate->counters()->compile_script_on_background()),
       start_position_(0),
       end_position_(0),
-      function_literal_id_(kFunctionLiteralIdTopLevel) {
-  VMState<PARSER> state(isolate);
-
-  LOG(isolate, ScriptEvent(V8FileLogger::ScriptEventType::kStreamingCompile,
-                           flags_.script_id()));
-}
+      function_literal_id_(kFunctionLiteralIdTopLevel) {}
 
 BackgroundCompileTask::BackgroundCompileTask(
     Isolate* isolate, Handle<SharedFunctionInfo> shared_info,
@@ -1927,6 +1925,7 @@ bool Compiler::CollectSourcePositions(Isolate* isolate,
   UnoptimizedCompileFlags flags =
       UnoptimizedCompileFlags::ForFunctionCompile(isolate, *shared_info);
   flags.set_collect_source_positions(true);
+  flags.set_is_reparse(true);
   // Prevent parallel tasks from being spawned by this job.
   flags.set_post_parallel_compile_tasks_for_eager_toplevel(false);
   flags.set_post_parallel_compile_tasks_for_lazy(false);
@@ -2834,8 +2833,9 @@ class StressBackgroundCompileThread : public base::Thread {
         source_(source),
         streamed_source_(std::make_unique<SourceStream>(source, isolate),
                          v8::ScriptCompiler::StreamedSource::UTF8) {
-    data()->task =
-        std::make_unique<i::BackgroundCompileTask>(data(), isolate, type);
+    data()->task = std::make_unique<i::BackgroundCompileTask>(
+        data(), isolate, type,
+        ScriptCompiler::CompileOptions::kNoCompileOptions);
   }
 
   void Run() override { data()->task->Run(); }
@@ -3519,7 +3519,7 @@ void Compiler::PostInstantiation(Handle<JSFunction> function) {
 
         // We don't need a release store because the optimized code was
         // stored with release semantics into the vector
-        STATIC_ASSERT(
+        static_assert(
             FeedbackVector::kFeedbackVectorMaybeOptimizedCodeIsStoreRelease);
         function->set_code(code);
       }

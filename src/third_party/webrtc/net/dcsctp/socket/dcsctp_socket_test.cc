@@ -1874,18 +1874,10 @@ TEST_P(DcSctpSocketParametrizedTest,
   MaybeHandoverSocketAndSendMessage(a, std::move(z));
 }
 
-TEST(DcSctpSocketTest, InitialMetricsAreZeroed) {
+TEST(DcSctpSocketTest, InitialMetricsAreUnset) {
   SocketUnderTest a("A");
 
-  Metrics metrics = a.socket.GetMetrics();
-  EXPECT_EQ(metrics.tx_packets_count, 0u);
-  EXPECT_EQ(metrics.tx_messages_count, 0u);
-  EXPECT_EQ(metrics.cwnd_bytes.has_value(), false);
-  EXPECT_EQ(metrics.srtt_ms.has_value(), false);
-  EXPECT_EQ(metrics.unack_data_count, 0u);
-  EXPECT_EQ(metrics.rx_packets_count, 0u);
-  EXPECT_EQ(metrics.rx_messages_count, 0u);
-  EXPECT_EQ(metrics.peer_rwnd_bytes.has_value(), false);
+  EXPECT_FALSE(a.socket.GetMetrics().has_value());
 }
 
 TEST(DcSctpSocketTest, RxAndTxPacketMetricsIncrease) {
@@ -1897,65 +1889,65 @@ TEST(DcSctpSocketTest, RxAndTxPacketMetricsIncrease) {
   const size_t initial_a_rwnd = a.options.max_receiver_window_buffer_size *
                                 ReassemblyQueue::kHighWatermarkLimit;
 
-  EXPECT_EQ(a.socket.GetMetrics().tx_packets_count, 2u);
-  EXPECT_EQ(a.socket.GetMetrics().rx_packets_count, 2u);
-  EXPECT_EQ(a.socket.GetMetrics().tx_messages_count, 0u);
-  EXPECT_EQ(*a.socket.GetMetrics().cwnd_bytes,
+  EXPECT_EQ(a.socket.GetMetrics()->tx_packets_count, 2u);
+  EXPECT_EQ(a.socket.GetMetrics()->rx_packets_count, 2u);
+  EXPECT_EQ(a.socket.GetMetrics()->tx_messages_count, 0u);
+  EXPECT_EQ(a.socket.GetMetrics()->cwnd_bytes,
             a.options.cwnd_mtus_initial * a.options.mtu);
-  EXPECT_EQ(a.socket.GetMetrics().unack_data_count, 0u);
+  EXPECT_EQ(a.socket.GetMetrics()->unack_data_count, 0u);
 
-  EXPECT_EQ(z.socket.GetMetrics().rx_packets_count, 2u);
-  EXPECT_EQ(z.socket.GetMetrics().rx_messages_count, 0u);
+  EXPECT_EQ(z.socket.GetMetrics()->rx_packets_count, 2u);
+  EXPECT_EQ(z.socket.GetMetrics()->rx_messages_count, 0u);
 
   a.socket.Send(DcSctpMessage(StreamID(1), PPID(53), {1, 2}), kSendOptions);
-  EXPECT_EQ(a.socket.GetMetrics().unack_data_count, 1u);
+  EXPECT_EQ(a.socket.GetMetrics()->unack_data_count, 1u);
 
   z.socket.ReceivePacket(a.cb.ConsumeSentPacket());  // DATA
   a.socket.ReceivePacket(z.cb.ConsumeSentPacket());  // SACK
-  EXPECT_EQ(*a.socket.GetMetrics().peer_rwnd_bytes, initial_a_rwnd);
-  EXPECT_EQ(a.socket.GetMetrics().unack_data_count, 0u);
+  EXPECT_EQ(a.socket.GetMetrics()->peer_rwnd_bytes, initial_a_rwnd);
+  EXPECT_EQ(a.socket.GetMetrics()->unack_data_count, 0u);
 
   EXPECT_TRUE(z.cb.ConsumeReceivedMessage().has_value());
 
-  EXPECT_EQ(a.socket.GetMetrics().tx_packets_count, 3u);
-  EXPECT_EQ(a.socket.GetMetrics().rx_packets_count, 3u);
-  EXPECT_EQ(a.socket.GetMetrics().tx_messages_count, 1u);
+  EXPECT_EQ(a.socket.GetMetrics()->tx_packets_count, 3u);
+  EXPECT_EQ(a.socket.GetMetrics()->rx_packets_count, 3u);
+  EXPECT_EQ(a.socket.GetMetrics()->tx_messages_count, 1u);
 
-  EXPECT_EQ(z.socket.GetMetrics().rx_packets_count, 3u);
-  EXPECT_EQ(z.socket.GetMetrics().rx_messages_count, 1u);
+  EXPECT_EQ(z.socket.GetMetrics()->rx_packets_count, 3u);
+  EXPECT_EQ(z.socket.GetMetrics()->rx_messages_count, 1u);
 
   // Send one more (large - fragmented), and receive the delayed SACK.
   a.socket.Send(DcSctpMessage(StreamID(1), PPID(53),
                               std::vector<uint8_t>(a.options.mtu * 2 + 1)),
                 kSendOptions);
-  EXPECT_EQ(a.socket.GetMetrics().unack_data_count, 3u);
+  EXPECT_EQ(a.socket.GetMetrics()->unack_data_count, 3u);
 
   z.socket.ReceivePacket(a.cb.ConsumeSentPacket());  // DATA
   z.socket.ReceivePacket(a.cb.ConsumeSentPacket());  // DATA
 
   a.socket.ReceivePacket(z.cb.ConsumeSentPacket());  // SACK
-  EXPECT_EQ(a.socket.GetMetrics().unack_data_count, 1u);
-  EXPECT_GT(*a.socket.GetMetrics().peer_rwnd_bytes, 0u);
-  EXPECT_LT(*a.socket.GetMetrics().peer_rwnd_bytes, initial_a_rwnd);
+  EXPECT_EQ(a.socket.GetMetrics()->unack_data_count, 1u);
+  EXPECT_GT(a.socket.GetMetrics()->peer_rwnd_bytes, 0u);
+  EXPECT_LT(a.socket.GetMetrics()->peer_rwnd_bytes, initial_a_rwnd);
 
   z.socket.ReceivePacket(a.cb.ConsumeSentPacket());  // DATA
 
   EXPECT_TRUE(z.cb.ConsumeReceivedMessage().has_value());
 
-  EXPECT_EQ(a.socket.GetMetrics().tx_packets_count, 6u);
-  EXPECT_EQ(a.socket.GetMetrics().rx_packets_count, 4u);
-  EXPECT_EQ(a.socket.GetMetrics().tx_messages_count, 2u);
+  EXPECT_EQ(a.socket.GetMetrics()->tx_packets_count, 6u);
+  EXPECT_EQ(a.socket.GetMetrics()->rx_packets_count, 4u);
+  EXPECT_EQ(a.socket.GetMetrics()->tx_messages_count, 2u);
 
-  EXPECT_EQ(z.socket.GetMetrics().rx_packets_count, 6u);
-  EXPECT_EQ(z.socket.GetMetrics().rx_messages_count, 2u);
+  EXPECT_EQ(z.socket.GetMetrics()->rx_packets_count, 6u);
+  EXPECT_EQ(z.socket.GetMetrics()->rx_messages_count, 2u);
 
   // Delayed sack
   AdvanceTime(a, z, a.options.delayed_ack_max_timeout);
 
   a.socket.ReceivePacket(z.cb.ConsumeSentPacket());  // SACK
-  EXPECT_EQ(a.socket.GetMetrics().unack_data_count, 0u);
-  EXPECT_EQ(a.socket.GetMetrics().rx_packets_count, 5u);
-  EXPECT_EQ(*a.socket.GetMetrics().peer_rwnd_bytes, initial_a_rwnd);
+  EXPECT_EQ(a.socket.GetMetrics()->unack_data_count, 0u);
+  EXPECT_EQ(a.socket.GetMetrics()->rx_packets_count, 5u);
+  EXPECT_EQ(a.socket.GetMetrics()->peer_rwnd_bytes, initial_a_rwnd);
 }
 
 TEST_P(DcSctpSocketParametrizedTest, UnackDataAlsoIncludesSendQueue) {
@@ -1980,10 +1972,10 @@ TEST_P(DcSctpSocketParametrizedTest, UnackDataAlsoIncludesSendQueue) {
 
   // Due to alignment, padding etc, it's hard to calculate the exact number, but
   // it should be in this range.
-  EXPECT_GE(a.socket.GetMetrics().unack_data_count,
+  EXPECT_GE(a.socket.GetMetrics()->unack_data_count,
             expected_sent_packets + expected_queued_packets);
 
-  EXPECT_LE(a.socket.GetMetrics().unack_data_count,
+  EXPECT_LE(a.socket.GetMetrics()->unack_data_count,
             expected_sent_packets + expected_queued_packets + 2);
 
   MaybeHandoverSocketAndSendMessage(a, std::move(z));
@@ -2341,6 +2333,75 @@ TEST(DcSctpSocketTest, CloseStreamsWithPendingRequest) {
   absl::optional<DcSctpMessage> msg6 = z.cb.ConsumeReceivedMessage();
   ASSERT_TRUE(msg6.has_value());
   EXPECT_EQ(msg6->stream_id(), StreamID(3));
-}  // namespace
+}
+
+TEST(DcSctpSocketTest, StreamsHaveInitialPriority) {
+  DcSctpOptions options = {.default_stream_priority = StreamPriority(42)};
+  SocketUnderTest a("A", options);
+
+  EXPECT_EQ(a.socket.GetStreamPriority(StreamID(1)),
+            options.default_stream_priority);
+
+  a.socket.Send(DcSctpMessage(StreamID(2), PPID(53), {1, 2}), kSendOptions);
+
+  EXPECT_EQ(a.socket.GetStreamPriority(StreamID(2)),
+            options.default_stream_priority);
+}
+
+TEST(DcSctpSocketTest, CanChangeStreamPriority) {
+  DcSctpOptions options = {.default_stream_priority = StreamPriority(42)};
+  SocketUnderTest a("A", options);
+
+  a.socket.SetStreamPriority(StreamID(1), StreamPriority(43));
+  EXPECT_EQ(a.socket.GetStreamPriority(StreamID(1)), StreamPriority(43));
+
+  a.socket.Send(DcSctpMessage(StreamID(2), PPID(53), {1, 2}), kSendOptions);
+
+  a.socket.SetStreamPriority(StreamID(2), StreamPriority(43));
+  EXPECT_EQ(a.socket.GetStreamPriority(StreamID(2)), StreamPriority(43));
+}
+
+TEST_P(DcSctpSocketParametrizedTest, WillHandoverPriority) {
+  DcSctpOptions options = {.default_stream_priority = StreamPriority(42)};
+  auto a = std::make_unique<SocketUnderTest>("A", options);
+  SocketUnderTest z("Z");
+
+  ConnectSockets(*a, z);
+
+  a->socket.SetStreamPriority(StreamID(1), StreamPriority(43));
+  a->socket.Send(DcSctpMessage(StreamID(2), PPID(53), {1, 2}), kSendOptions);
+  a->socket.SetStreamPriority(StreamID(2), StreamPriority(43));
+
+  ExchangeMessages(*a, z);
+
+  a = MaybeHandoverSocket(std::move(a));
+
+  EXPECT_EQ(a->socket.GetStreamPriority(StreamID(1)), StreamPriority(43));
+  EXPECT_EQ(a->socket.GetStreamPriority(StreamID(2)), StreamPriority(43));
+}
+
+TEST(DcSctpSocketTest, ReconnectSocketWithPendingStreamReset) {
+  // This is an issue found by fuzzing, and doesn't really make sense in WebRTC
+  // data channels as a SCTP connection is never ever closed and then
+  // reconnected. SCTP connections are closed when the peer connection is
+  // deleted, and then it doesn't do more with SCTP.
+  SocketUnderTest a("A");
+  SocketUnderTest z("Z");
+
+  ConnectSockets(a, z);
+
+  a.socket.ResetStreams(std::vector<StreamID>({StreamID(1)}));
+
+  EXPECT_CALL(z.cb, OnAborted).Times(1);
+  a.socket.Close();
+
+  EXPECT_EQ(a.socket.state(), SocketState::kClosed);
+
+  EXPECT_CALL(a.cb, OnConnected).Times(1);
+  EXPECT_CALL(z.cb, OnConnected).Times(1);
+  a.socket.Connect();
+  ExchangeMessages(a, z);
+  a.socket.ResetStreams(std::vector<StreamID>({StreamID(2)}));
+}
 }  // namespace
 }  // namespace dcsctp

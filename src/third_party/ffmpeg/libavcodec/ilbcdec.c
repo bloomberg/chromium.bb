@@ -1356,11 +1356,10 @@ static void hp_output(int16_t *signal, const int16_t *ba, int16_t *y,
     }
 }
 
-static int ilbc_decode_frame(AVCodecContext *avctx, void *data,
+static int ilbc_decode_frame(AVCodecContext *avctx, AVFrame *frame,
                              int *got_frame_ptr, AVPacket *avpkt)
 {
     const uint8_t *buf = avpkt->data;
-    AVFrame *frame     = data;
     ILBCContext *s     = avctx->priv_data;
     int mode = s->mode, ret;
     int16_t *plc_data = &s->plc_residual[LPC_FILTERORDER];
@@ -1485,7 +1484,7 @@ const FFCodec ff_ilbc_decoder = {
     .p.type         = AVMEDIA_TYPE_AUDIO,
     .p.id           = AV_CODEC_ID_ILBC,
     .init           = ilbc_decode_init,
-    .decode         = ilbc_decode_frame,
+    FF_CODEC_DECODE_CB(ilbc_decode_frame),
     .p.capabilities = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_CHANNEL_CONF,
     .priv_data_size = sizeof(ILBCContext),
     .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,

@@ -61,6 +61,9 @@ class Environment : public UdpSocket::Client {
 
     // Event that occurs when the environment has experienced a fatal error.
     virtual void OnSocketInvalid(Error error) = 0;
+
+   protected:
+    virtual ~SocketSubscriber();
   };
 
   // Construct with the given clock source and TaskRunner. Creates and

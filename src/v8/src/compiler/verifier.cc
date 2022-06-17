@@ -153,8 +153,7 @@ void Verifier::Visitor::Check(Node* node, const AllNodes& all) {
 
   // If this node has any effect outputs, make sure that it is
   // consumed as an effect input somewhere else.
-  // TODO(mvstanton): support this kind of verification for Wasm compiles, too.
-  if (code_type != kWasm && node->op()->EffectOutputCount() > 0) {
+  if (node->op()->EffectOutputCount() > 0) {
 #ifdef DEBUG
     int effect_edges = 0;
     for (Edge edge : node->use_edges()) {
@@ -420,9 +419,17 @@ void Verifier::Visitor::Check(Node* node, const AllNodes& all) {
     }
     case IrOpcode::kInt32Constant:  // TODO(turbofan): rename Word32Constant?
     case IrOpcode::kInt64Constant:  // TODO(turbofan): rename Word64Constant?
-    case IrOpcode::kTaggedIndexConstant:
     case IrOpcode::kFloat32Constant:
-    case IrOpcode::kFloat64Constant:
+    case IrOpcode::kFloat64Constant: {
+      // Constants have no inputs.
+      CHECK_EQ(0, input_count);
+      // Wasm numeric constants have types. However, since wasm only gets
+      // verified in untyped mode, we do not need to check that the types match.
+      // TODO(manoskouk): Verify the type if wasm runs in typed mode.
+      if (code_type != kWasm) CheckNotTyped(node);
+      break;
+    }
+    case IrOpcode::kTaggedIndexConstant:
     case IrOpcode::kRelocatableInt32Constant:
     case IrOpcode::kRelocatableInt64Constant:
       // Constants have no inputs.
@@ -1089,6 +1096,11 @@ void Verifier::Visitor::Check(Node* node, const AllNodes& all) {
       CheckValueInputIs(node, 0, Type::Number());
       CheckTypeIs(node, Type::Unsigned32());
       break;
+    case IrOpcode::kUnsigned32Divide:
+      CheckValueInputIs(node, 0, Type::Unsigned32());
+      CheckValueInputIs(node, 1, Type::Unsigned32());
+      CheckTypeIs(node, Type::Unsigned32());
+      break;
     case IrOpcode::kSpeculativeToNumber:
       CheckValueInputIs(node, 0, Type::Any());
       CheckTypeIs(node, Type::Number());
@@ -1638,6 +1650,15 @@ void Verifier::Visitor::Check(Node* node, const AllNodes& all) {
       CHECK_GE(value_count, 3);
       CheckTypeIs(node, Type::Any());
       CheckValueInputIs(node, 0, Type::Any());  // callee
+      break;
+    case IrOpcode::kWasmTypeCheck:
+    case IrOpcode::kWasmTypeCast:
+    case IrOpcode::kRttCanon:
+    case IrOpcode::kNull:
+    case IrOpcode::kIsNull:
+    case IrOpcode::kIsNotNull:
+    case IrOpcode::kAssertNotNull:
+      // TODO(manoskouk): What are the constraints here?
       break;
 #endif  // V8_ENABLE_WEBASSEMBLY
 

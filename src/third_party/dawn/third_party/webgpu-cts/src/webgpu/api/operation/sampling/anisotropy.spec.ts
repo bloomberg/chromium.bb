@@ -55,6 +55,7 @@ class SamplerAnisotropicFilteringSlantedPlaneTest extends GPUTest {
     await super.init();
 
     this.pipeline = this.device.createRenderPipeline({
+      layout: 'auto',
       vertex: {
         module: this.device.createShaderModule({
           code: `
@@ -300,7 +301,7 @@ g.test('anisotropic_filter_mipmap_color')
       if (entry.expected instanceof Uint8Array) {
         // equal exactly one color
         t.expectSinglePixelIn2DTexture(colorAttachment, kColorAttachmentFormat, entry.coord, {
-          exp: entry.expected as Uint8Array,
+          exp: entry.expected,
           generateWarningOnly: t.params._generateWarningOnly,
         });
       } else {

@@ -155,11 +155,6 @@ TCPClientSocket::TCPClientSocket(
       bind_address_(std::move(bind_address)),
       addresses_(addresses),
       current_address_index_(current_address_index),
-      next_connect_state_(CONNECT_STATE_NONE),
-      previously_disconnected_(false),
-      total_received_bytes_(0),
-      was_ever_used_(false),
-      was_disconnected_on_suspend_(false),
       network_quality_estimator_(network_quality_estimator),
       network_(network) {
   DCHECK(socket_);
@@ -232,7 +227,6 @@ int TCPClientSocket::DoConnect() {
 
   if (previously_disconnected_) {
     was_ever_used_ = false;
-    connection_attempts_.clear();
     previously_disconnected_ = false;
   }
 
@@ -290,9 +284,6 @@ int TCPClientSocket::DoConnectComplete(int result) {
 
   if (result == OK)
     return OK;  // Done!
-
-  connection_attempts_.push_back(
-      ConnectionAttempt(addresses_[current_address_index_], result));
 
   // Don't try the next address if entering suspend mode.
   if (result == ERR_NETWORK_IO_SUSPENDED)
@@ -460,10 +451,6 @@ SocketDescriptor TCPClientSocket::SocketDescriptorForTesting() const {
   return socket_->SocketDescriptorForTesting();
 }
 
-ConnectionAttempts TCPClientSocket::GetConnectionAttempts() const {
-  return connection_attempts_;
-}
-
 int64_t TCPClientSocket::GetTotalReceivedBytes() const {
   return total_received_bytes_;
 }
@@ -590,37 +577,6 @@ void TCPClientSocket::EmitConnectAttemptHistograms(int result) {
                                duration);
   } else {
     UMA_HISTOGRAM_MEDIUM_TIMES("Net.TcpConnectAttempt.Latency.Error", duration);
-  }
-
-  absl::optional<base::TimeDelta> transport_rtt = absl::nullopt;
-  if (network_quality_estimator_)
-    transport_rtt = network_quality_estimator_->GetTransportRTT();
-
-  // In cases where there is an estimated transport RTT, histogram the attempt
-  // duration as a percentage of the transport RTT. The histogram range can
-  // record fractions up to 1,000x RTT.
-  if (transport_rtt) {
-    int percent_rtt = 0;
-
-    if (transport_rtt.value().InMilliseconds() != 0) {
-      // Convert the percentage to an int, saturating to 100000.
-      float percent_rtt_float =
-          100.f * (duration.InMillisecondsF() /
-                   transport_rtt.value().InMillisecondsF());
-      if (percent_rtt_float > 100000) {
-        percent_rtt = 100000;
-      } else if (percent_rtt_float > 0) {
-        percent_rtt = static_cast<int>(percent_rtt_float);
-      }
-    }
-
-    if (result == OK) {
-      UMA_HISTOGRAM_COUNTS_100000(
-          "Net.TcpConnectAttempt.LatencyPercentRTT.Success", percent_rtt);
-    } else {
-      UMA_HISTOGRAM_COUNTS_100000(
-          "Net.TcpConnectAttempt.LatencyPercentRTT.Error", percent_rtt);
-    }
   }
 }
 

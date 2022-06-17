@@ -436,15 +436,14 @@ static int decode_blocks(SnowContext *s){
     return 0;
 }
 
-static int decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
-                        AVPacket *avpkt)
+static int decode_frame(AVCodecContext *avctx, AVFrame *picture,
+                        int *got_frame, AVPacket *avpkt)
 {
     const uint8_t *buf = avpkt->data;
     int buf_size = avpkt->size;
     SnowContext *s = avctx->priv_data;
     RangeCoder * const c= &s->c;
     int bytes_read;
-    AVFrame *picture = data;
     int level, orientation, plane_index;
     int res;
 
@@ -662,7 +661,7 @@ const FFCodec ff_snow_decoder = {
     .priv_data_size = sizeof(SnowContext),
     .init           = ff_snow_common_init,
     .close          = decode_end,
-    .decode         = decode_frame,
+    FF_CODEC_DECODE_CB(decode_frame),
     .p.capabilities = AV_CODEC_CAP_DR1 /*| AV_CODEC_CAP_DRAW_HORIZ_BAND*/,
     .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE |
                       FF_CODEC_CAP_INIT_CLEANUP,

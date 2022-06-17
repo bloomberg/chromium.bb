@@ -25,11 +25,13 @@ import (
 
 // AST is the parsed syntax tree of the intrinsic definition file
 type AST struct {
-	Enums     []EnumDecl
-	Types     []TypeDecl
-	Matchers  []MatcherDecl
-	Builtins  []IntrinsicDecl
-	Operators []IntrinsicDecl
+	Enums        []EnumDecl
+	Types        []TypeDecl
+	Matchers     []MatcherDecl
+	Builtins     []IntrinsicDecl
+	Constructors []IntrinsicDecl
+	Converters   []IntrinsicDecl
+	Operators    []IntrinsicDecl
 }
 
 func (a AST) String() string {
@@ -48,6 +50,14 @@ func (a AST) String() string {
 	}
 	for _, b := range a.Builtins {
 		fmt.Fprintf(&sb, "%v", b)
+		fmt.Fprintln(&sb)
+	}
+	for _, o := range a.Constructors {
+		fmt.Fprintf(&sb, "%v", o)
+		fmt.Fprintln(&sb)
+	}
+	for _, o := range a.Converters {
+		fmt.Fprintf(&sb, "%v", o)
 		fmt.Fprintln(&sb)
 	}
 	for _, o := range a.Operators {
@@ -75,15 +85,15 @@ func (e EnumDecl) Format(w fmt.State, verb rune) {
 
 // EnumEntry describes an entry in a enumerator
 type EnumEntry struct {
-	Source      tok.Source
-	Name        string
-	Decorations Decorations
+	Source     tok.Source
+	Name       string
+	Attributes Attributes
 }
 
 // Format implements the fmt.Formatter interface
 func (e EnumEntry) Format(w fmt.State, verb rune) {
-	if len(e.Decorations) > 0 {
-		fmt.Fprintf(w, "%v %v", e.Decorations, e.Name)
+	if len(e.Attributes) > 0 {
+		fmt.Fprintf(w, "%v %v", e.Attributes, e.Name)
 	} else {
 		fmt.Fprint(w, e.Name)
 	}
@@ -103,12 +113,22 @@ func (m MatcherDecl) Format(w fmt.State, verb rune) {
 	m.Options.Format(w, verb)
 }
 
-// IntrinsicKind is either a Builtin or Operator
+// IntrinsicKind is either a Builtin, Operator, Constructor or Converter
 type IntrinsicKind string
 
 const (
-	Builtin  IntrinsicKind = "builtin"
+	// Builtin is a builtin function (max, fract, etc).
+	// Declared with 'fn'.
+	Builtin IntrinsicKind = "builtin"
+	// Operator is a unary or binary operator.
+	// Declared with 'op'.
 	Operator IntrinsicKind = "operator"
+	// Constructor is a type constructor function.
+	// Declared with 'ctor'.
+	Constructor IntrinsicKind = "constructor"
+	// Converter is a type conversion function.
+	// Declared with 'conv'.
+	Converter IntrinsicKind = "converter"
 )
 
 // IntrinsicDecl describes a builtin or operator declaration
@@ -116,7 +136,7 @@ type IntrinsicDecl struct {
 	Source         tok.Source
 	Kind           IntrinsicKind
 	Name           string
-	Decorations    Decorations
+	Attributes     Attributes
 	TemplateParams TemplateParams
 	Parameters     Parameters
 	ReturnType     *TemplatedName
@@ -129,6 +149,10 @@ func (i IntrinsicDecl) Format(w fmt.State, verb rune) {
 		fmt.Fprintf(w, "fn ")
 	case Operator:
 		fmt.Fprintf(w, "op ")
+	case Constructor:
+		fmt.Fprintf(w, "ctor ")
+	case Converter:
+		fmt.Fprintf(w, "conv ")
 	}
 	fmt.Fprintf(w, "%v", i.Name)
 	i.TemplateParams.Format(w, verb)
@@ -149,6 +173,7 @@ func (l Parameters) Format(w fmt.State, verb rune) {
 		if i > 0 {
 			fmt.Fprintf(w, ", ")
 		}
+		p.Attributes.Format(w, verb)
 		p.Format(w, verb)
 	}
 	fmt.Fprintf(w, ")")
@@ -156,9 +181,10 @@ func (l Parameters) Format(w fmt.State, verb rune) {
 
 // Parameter describes a single parameter of a function
 type Parameter struct {
-	Source tok.Source
-	Name   string // Optional
-	Type   TemplatedName
+	Source     tok.Source
+	Attributes Attributes
+	Name       string // Optional
+	Type       TemplatedName
 }
 
 // Format implements the fmt.Formatter interface
@@ -219,15 +245,15 @@ func (t TemplatedName) Format(w fmt.State, verb rune) {
 // TypeDecl describes a type declaration
 type TypeDecl struct {
 	Source         tok.Source
-	Decorations    Decorations
+	Attributes     Attributes
 	Name           string
 	TemplateParams TemplateParams
 }
 
 // Format implements the fmt.Formatter interface
 func (p TypeDecl) Format(w fmt.State, verb rune) {
-	if len(p.Decorations) > 0 {
-		p.Decorations.Format(w, verb)
+	if len(p.Attributes) > 0 {
+		p.Attributes.Format(w, verb)
 		fmt.Fprintf(w, " type %v", p.Name)
 	}
 	fmt.Fprintf(w, "type %v", p.Name)
@@ -272,47 +298,44 @@ func (t TemplateParam) Format(w fmt.State, verb rune) {
 	}
 }
 
-// Decorations is a list of Decoration
+// Attributes is a list of Attribute
 // Example:
 //   [[a(x), b(y)]]
-type Decorations []Decoration
+type Attributes []Attribute
 
 // Format implements the fmt.Formatter interface
-func (l Decorations) Format(w fmt.State, verb rune) {
-	fmt.Fprint(w, "[[")
-	for i, d := range l {
-		if i > 0 {
-			fmt.Fprintf(w, ", ")
-		}
+func (l Attributes) Format(w fmt.State, verb rune) {
+	for _, d := range l {
+		fmt.Fprint(w, "@")
 		d.Format(w, verb)
+		fmt.Fprint(w, " ")
 	}
-	fmt.Fprint(w, "]]")
 }
 
-// Take looks up the decoration with the given name. If the decoration is found
-// it is removed from the Decorations list and returned, otherwise nil is
-// returned and the Decorations are not altered.
-func (l *Decorations) Take(name string) *Decoration {
-	for i, d := range *l {
-		if d.Name == name {
+// Take looks up the attribute with the given name. If the attribute is found
+// it is removed from the Attributes list and returned, otherwise nil is
+// returned and the Attributes are not altered.
+func (l *Attributes) Take(name string) *Attribute {
+	for i, a := range *l {
+		if a.Name == name {
 			*l = append((*l)[:i], (*l)[i+1:]...)
-			return &d
+			return &a
 		}
 	}
 	return nil
 }
 
-// Decoration describes a single decoration
+// Attribute describes a single attribute
 // Example:
-//   a(x)
-type Decoration struct {
+//   @a(x)
+type Attribute struct {
 	Source tok.Source
 	Name   string
 	Values []string
 }
 
 // Format implements the fmt.Formatter interface
-func (d Decoration) Format(w fmt.State, verb rune) {
+func (d Attribute) Format(w fmt.State, verb rune) {
 	fmt.Fprintf(w, "%v", d.Name)
 	if len(d.Values) > 0 {
 		fmt.Fprintf(w, "(")

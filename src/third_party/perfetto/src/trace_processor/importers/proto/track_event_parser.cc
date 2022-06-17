@@ -88,13 +88,14 @@ class TrackEventArgsParser : public util::ProtoToArgsParser::Delegate {
                      Variadic::Integer(value));
   }
   void AddUnsignedInteger(const Key& key, uint64_t value) final {
-    if (args_translation_table_.TranslateUnsignedIntegerArg(key, value,
-                                                            inserter_)) {
+    StringId flat_key_id =
+        storage_.InternString(base::StringView(key.flat_key));
+    StringId key_id = storage_.InternString(base::StringView(key.key));
+    Variadic variadic_val = Variadic::UnsignedInteger(value);
+    if (args_translation_table_.TranslateArg(key_id, variadic_val, inserter_)) {
       return;
     }
-    inserter_.AddArg(storage_.InternString(base::StringView(key.flat_key)),
-                     storage_.InternString(base::StringView(key.key)),
-                     Variadic::UnsignedInteger(value));
+    inserter_.AddArg(flat_key_id, key_id, variadic_val);
   }
   void AddString(const Key& key, const protozero::ConstChars& value) final {
     inserter_.AddArg(storage_.InternString(base::StringView(key.flat_key)),
@@ -677,24 +678,25 @@ class TrackEventParser::EventImporter {
     auto opt_slice_id = context_->slice_tracker->End(
         ts_, track_id_, category_id_, name_id_,
         [this](BoundInserter* inserter) { ParseTrackEventArgs(inserter); });
-    if (opt_slice_id.has_value()) {
-      auto* thread_slices = storage_->mutable_thread_slice_table();
-      auto maybe_row = thread_slices->id().IndexOf(*opt_slice_id);
-      PERFETTO_DCHECK(maybe_row.has_value());
-      auto tts = thread_slices->thread_ts()[*maybe_row];
-      if (tts) {
-        PERFETTO_DCHECK(event_data_->thread_timestamp);
-        thread_slices->mutable_thread_dur()->Set(
-            *maybe_row, *event_data_->thread_timestamp - *tts);
-      }
-      auto tic = thread_slices->thread_instruction_count()[*maybe_row];
-      if (tic) {
-        PERFETTO_DCHECK(event_data_->thread_instruction_count);
-        thread_slices->mutable_thread_instruction_delta()->Set(
-            *maybe_row, *event_data_->thread_instruction_count - *tic);
-      }
-      MaybeParseFlowEvents(opt_slice_id.value());
+    if (!opt_slice_id)
+      return util::OkStatus();
+
+    auto* thread_slices = storage_->mutable_thread_slice_table();
+    tables::ThreadSliceTable::RowReference row_ref =
+        *thread_slices->FindById(*opt_slice_id);
+
+    auto tts = row_ref.thread_ts();
+    if (tts) {
+      PERFETTO_DCHECK(event_data_->thread_timestamp);
+      row_ref.set_thread_dur(*event_data_->thread_timestamp - *tts);
     }
+    auto tic = row_ref.thread_instruction_count();
+    if (tic) {
+      PERFETTO_DCHECK(event_data_->thread_instruction_count);
+      row_ref.set_thread_instruction_delta(
+          *event_data_->thread_instruction_count - *tic);
+    }
+    MaybeParseFlowEvents(opt_slice_id.value());
 
     return util::OkStatus();
   }
@@ -1031,9 +1033,7 @@ class TrackEventParser::EventImporter {
                    ->Insert({ts_, parser_->raw_legacy_event_id_, 0, *utid_})
                    .id;
 
-    ArgsTracker args(context_);
-    auto inserter = args.AddArgsTo(id);
-
+    auto inserter = context_->args_tracker->AddArgsTo(id);
     inserter
         .AddArg(parser_->legacy_event_category_key_id_,
                 Variadic::String(category_id_))

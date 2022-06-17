@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
-import static org.chromium.chrome.features.start_surface.StartSurfaceLayout.ZOOMING_DURATION;
+import static org.chromium.chrome.features.start_surface.TabSwitcherAndStartSurfaceLayout.ZOOMING_DURATION;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -149,6 +149,8 @@ class TabListRecyclerView
     private ImageView mShadowImageView;
     private int mShadowTopOffset;
     private TabListOnScrollListener mScrollListener;
+    // It is null when gts-tab animation is disabled or switching from Start surface to GTS.
+    @Nullable
     private RecyclerView.ItemAnimator mOriginalAnimator;
 
     /**
@@ -169,7 +171,7 @@ class TabListRecyclerView
         mListener = listener;
     }
 
-    void prepareOverview() {
+    void prepareTabSwitcherView() {
         endAllAnimations();
 
         registerDynamicView();
@@ -203,7 +205,12 @@ class TabListRecyclerView
                 mFadeInAnimator = null;
                 mListener.finishedShowing();
                 // Restore the original value.
-                setItemAnimator(mOriginalAnimator);
+                // TODO(crbug.com/1315676): Remove the null check after decoupling Start surface
+                // layout and grid tab switcher layout.
+                if (mOriginalAnimator != null) {
+                    setItemAnimator(mOriginalAnimator);
+                    mOriginalAnimator = null;
+                }
                 setShadowVisibility(computeVerticalScrollOffset() > 0);
                 if (mDynamicView != null) {
                     mDynamicView.dropCachedBitmap();

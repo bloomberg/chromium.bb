@@ -55,6 +55,7 @@ class SamplerAnisotropicFilteringSlantedPlaneTest extends GPUTest {
     await super.init();
 
     this.pipeline = this.device.createRenderPipeline({
+      layout: 'auto',
       vertex: {
         module: this.device.createShaderModule({
           code: `
@@ -63,7 +64,7 @@ class SamplerAnisotropicFilteringSlantedPlaneTest extends GPUTest {
               @location(0) fragUV : vec2<f32>,
             };
 
-            @stage(vertex) fn main(
+            @vertex fn main(
               @builtin(vertex_index) VertexIndex : u32) -> Outputs {
               var position : array<vec3<f32>, 6> = array<vec3<f32>, 6>(
                 vec3<f32>(-0.5, 0.5, -0.5),
@@ -102,7 +103,7 @@ class SamplerAnisotropicFilteringSlantedPlaneTest extends GPUTest {
             @group(0) @binding(0) var sampler0 : sampler;
             @group(0) @binding(1) var texture0 : texture_2d<f32>;
 
-            @stage(fragment) fn main(
+            @fragment fn main(
               @builtin(position) FragCoord : vec4<f32>,
               @location(0) fragUV: vec2<f32>)
               -> @location(0) vec4<f32> {
@@ -300,7 +301,7 @@ g.test('anisotropic_filter_mipmap_color')
       if (entry.expected instanceof Uint8Array) {
         // equal exactly one color
         t.expectSinglePixelIn2DTexture(colorAttachment, kColorAttachmentFormat, entry.coord, {
-          exp: entry.expected as Uint8Array,
+          exp: entry.expected,
           generateWarningOnly: t.params._generateWarningOnly,
         });
       } else {

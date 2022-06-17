@@ -366,7 +366,6 @@ av_cold int ff_mpv_encode_init(AVCodecContext *avctx)
         return AVERROR(EINVAL);
     }
 
-    s->strict_std_compliance = avctx->strict_std_compliance;
     s->quarter_sample     = (avctx->flags & AV_CODEC_FLAG_QPEL) != 0;
     s->rtp_mode           = !!s->rtp_payload_size;
     s->intra_dc_precision = avctx->intra_dc_precision;
@@ -581,7 +580,7 @@ av_cold int ff_mpv_encode_init(AVCodecContext *avctx)
 
     if (avctx->flags & AV_CODEC_FLAG_LOW_DELAY) {
         if (s->codec_id != AV_CODEC_ID_MPEG2VIDEO &&
-            s->strict_std_compliance >= FF_COMPLIANCE_NORMAL) {
+            avctx->strict_std_compliance >= FF_COMPLIANCE_NORMAL) {
             av_log(avctx, AV_LOG_ERROR,
                    "low delay forcing is only available for mpeg2, "
                    "set strict_std_compliance to 'unofficial' or lower in order to allow it\n");
@@ -603,7 +602,7 @@ av_cold int ff_mpv_encode_init(AVCodecContext *avctx)
     }
 
     if (avctx->slices > 1 &&
-        (avctx->codec_id == AV_CODEC_ID_FLV1 || avctx->codec_id == AV_CODEC_ID_H261)) {
+        !(avctx->codec->capabilities & AV_CODEC_CAP_SLICE_THREADS)) {
         av_log(avctx, AV_LOG_ERROR, "Multiple slices are not supported by this codec\n");
         return AVERROR(EINVAL);
     }
@@ -939,7 +938,7 @@ av_cold int ff_mpv_encode_end(AVCodecContext *avctx)
     for (i = 0; i < FF_ARRAY_ELEMS(s->tmp_frames); i++)
         av_frame_free(&s->tmp_frames[i]);
 
-    ff_mpv_picture_free(avctx, &s->new_picture);
+    av_frame_free(&s->new_picture);
 
     av_freep(&avctx->stats_out);
 
@@ -1487,14 +1486,15 @@ static int select_input_picture(MpegEncContext *s)
         }
     }
 no_output_pic:
-    ff_mpeg_unref_picture(s->avctx, &s->new_picture);
+    av_frame_unref(s->new_picture);
 
     if (s->reordered_input_picture[0]) {
         s->reordered_input_picture[0]->reference =
            s->reordered_input_picture[0]->f->pict_type !=
                AV_PICTURE_TYPE_B ? 3 : 0;
 
-        if ((ret = ff_mpeg_ref_picture(s->avctx, &s->new_picture, s->reordered_input_picture[0])))
+        if ((ret = av_frame_ref(s->new_picture,
+                                s->reordered_input_picture[0]->f)))
             return ret;
 
         if (s->reordered_input_picture[0]->shared || s->avctx->rc_buffer_size) {
@@ -1525,16 +1525,11 @@ no_output_pic:
             // input is not a shared pix -> reuse buffer for current_pix
             s->current_picture_ptr = s->reordered_input_picture[0];
             for (i = 0; i < 4; i++) {
-                if (s->new_picture.f->data[i])
-                    s->new_picture.f->data[i] += INPLACE_OFFSET;
+                if (s->new_picture->data[i])
+                    s->new_picture->data[i] += INPLACE_OFFSET;
             }
         }
-        ff_mpeg_unref_picture(s->avctx, &s->current_picture);
-        if ((ret = ff_mpeg_ref_picture(s->avctx, &s->current_picture,
-                                       s->current_picture_ptr)) < 0)
-            return ret;
-
-        s->picture_number = s->new_picture.f->display_picture_number;
+        s->picture_number = s->new_picture->display_picture_number;
     }
     return 0;
 }
@@ -1687,13 +1682,18 @@ int ff_mpv_encode_picture(AVCodecContext *avctx, AVPacket *pkt,
     }
 
     /* output? */
-    if (s->new_picture.f->data[0]) {
-        int growing_buffer = context_count == 1 && !pkt->data && !s->data_partitioning;
-        int pkt_size = growing_buffer ? FFMAX(s->mb_width*s->mb_height*64+10000, avctx->internal->byte_buffer_size) - AV_INPUT_BUFFER_PADDING_SIZE
-                                              :
-                                              s->mb_width*s->mb_height*(MAX_MB_BYTES+100)+10000;
+    if (s->new_picture->data[0]) {
+        int growing_buffer = context_count == 1 && !s->data_partitioning;
+        size_t pkt_size = 10000 + s->mb_width * s->mb_height *
+                                  (growing_buffer ? 64 : (MAX_MB_BYTES + 100));
+        if (CONFIG_MJPEG_ENCODER && avctx->codec_id == AV_CODEC_ID_MJPEG) {
+            ret = ff_mjpeg_add_icc_profile_size(avctx, s->new_picture, &pkt_size);
+            if (ret < 0)
+                return ret;
+        }
         if ((ret = ff_alloc_packet(avctx, pkt, pkt_size)) < 0)
             return ret;
+        pkt->size = avctx->internal->byte_buffer_size - AV_INPUT_BUFFER_PADDING_SIZE;
         if (s->mb_info) {
             s->mb_info_ptr = av_packet_new_side_data(pkt,
                                  AV_PKT_DATA_H263_MB_INFO,
@@ -1711,7 +1711,7 @@ int ff_mpv_encode_picture(AVCodecContext *avctx, AVPacket *pkt,
             init_put_bits(&s->thread_context[i]->pb, start, end - start);
         }
 
-        s->pict_type = s->new_picture.f->pict_type;
+        s->pict_type = s->new_picture->pict_type;
         //emms_c();
         ret = frame_start(s);
         if (ret < 0)
@@ -2077,11 +2077,11 @@ static av_always_inline void encode_mb_internal(MpegEncContext *s,
 
     wrap_y = s->linesize;
     wrap_c = s->uvlinesize;
-    ptr_y  = s->new_picture.f->data[0] +
+    ptr_y  = s->new_picture->data[0] +
              (mb_y * 16 * wrap_y)              + mb_x * 16;
-    ptr_cb = s->new_picture.f->data[1] +
+    ptr_cb = s->new_picture->data[1] +
              (mb_y * mb_block_height * wrap_c) + mb_x * mb_block_width;
-    ptr_cr = s->new_picture.f->data[2] +
+    ptr_cr = s->new_picture->data[2] +
              (mb_y * mb_block_height * wrap_c) + mb_x * mb_block_width;
 
     if((mb_x * 16 + 16 > s->width || mb_y * 16 + 16 > s->height) && s->codec_id != AV_CODEC_ID_AMV){
@@ -2568,18 +2568,18 @@ static int sse_mb(MpegEncContext *s){
 
     if(w==16 && h==16)
       if(s->avctx->mb_cmp == FF_CMP_NSSE){
-        return s->mecc.nsse[0](s, s->new_picture.f->data[0] + s->mb_x * 16 + s->mb_y * s->linesize   * 16, s->dest[0], s->linesize,   16) +
-               s->mecc.nsse[1](s, s->new_picture.f->data[1] + s->mb_x *  8 + s->mb_y * s->uvlinesize *  8, s->dest[1], s->uvlinesize,  8) +
-               s->mecc.nsse[1](s, s->new_picture.f->data[2] + s->mb_x *  8 + s->mb_y * s->uvlinesize *  8, s->dest[2], s->uvlinesize,  8);
+        return s->mecc.nsse[0](s, s->new_picture->data[0] + s->mb_x * 16 + s->mb_y * s->linesize   * 16, s->dest[0], s->linesize,   16) +
+               s->mecc.nsse[1](s, s->new_picture->data[1] + s->mb_x *  8 + s->mb_y * s->uvlinesize *  8, s->dest[1], s->uvlinesize,  8) +
+               s->mecc.nsse[1](s, s->new_picture->data[2] + s->mb_x *  8 + s->mb_y * s->uvlinesize *  8, s->dest[2], s->uvlinesize,  8);
       }else{
-        return s->mecc.sse[0](NULL, s->new_picture.f->data[0] + s->mb_x * 16 + s->mb_y * s->linesize   * 16, s->dest[0], s->linesize,   16) +
-               s->mecc.sse[1](NULL, s->new_picture.f->data[1] + s->mb_x *  8 + s->mb_y * s->uvlinesize *  8, s->dest[1], s->uvlinesize,  8) +
-               s->mecc.sse[1](NULL, s->new_picture.f->data[2] + s->mb_x *  8 + s->mb_y * s->uvlinesize *  8, s->dest[2], s->uvlinesize,  8);
+        return s->mecc.sse[0](NULL, s->new_picture->data[0] + s->mb_x * 16 + s->mb_y * s->linesize   * 16, s->dest[0], s->linesize,   16) +
+               s->mecc.sse[1](NULL, s->new_picture->data[1] + s->mb_x *  8 + s->mb_y * s->uvlinesize *  8, s->dest[1], s->uvlinesize,  8) +
+               s->mecc.sse[1](NULL, s->new_picture->data[2] + s->mb_x *  8 + s->mb_y * s->uvlinesize *  8, s->dest[2], s->uvlinesize,  8);
       }
     else
-        return  sse(s, s->new_picture.f->data[0] + s->mb_x*16 + s->mb_y*s->linesize*16, s->dest[0], w, h, s->linesize)
-               +sse(s, s->new_picture.f->data[1] + s->mb_x*8  + s->mb_y*s->uvlinesize*8,s->dest[1], w>>1, h>>1, s->uvlinesize)
-               +sse(s, s->new_picture.f->data[2] + s->mb_x*8  + s->mb_y*s->uvlinesize*8,s->dest[2], w>>1, h>>1, s->uvlinesize);
+        return  sse(s, s->new_picture->data[0] + s->mb_x*16 + s->mb_y*s->linesize*16, s->dest[0], w, h, s->linesize)
+               +sse(s, s->new_picture->data[1] + s->mb_x*8  + s->mb_y*s->uvlinesize*8,s->dest[1], w>>1, h>>1, s->uvlinesize)
+               +sse(s, s->new_picture->data[2] + s->mb_x*8  + s->mb_y*s->uvlinesize*8,s->dest[2], w>>1, h>>1, s->uvlinesize);
 }
 
 static int pre_estimate_motion_thread(AVCodecContext *c, void *arg){
@@ -2634,7 +2634,7 @@ static int mb_var_thread(AVCodecContext *c, void *arg){
         for(mb_x=0; mb_x < s->mb_width; mb_x++) {
             int xx = mb_x * 16;
             int yy = mb_y * 16;
-            uint8_t *pix = s->new_picture.f->data[0] + (yy * s->linesize) + xx;
+            uint8_t *pix = s->new_picture->data[0] + (yy * s->linesize) + xx;
             int varc;
             int sum = s->mpvencdsp.pix_sum(pix, s->linesize);
 
@@ -3355,13 +3355,13 @@ static int encode_thread(AVCodecContext *c, void *arg){
                 if(s->mb_y*16 + 16 > s->height) h= s->height- s->mb_y*16;
 
                 s->current_picture.encoding_error[0] += sse(
-                    s, s->new_picture.f->data[0] + s->mb_x*16 + s->mb_y*s->linesize*16,
+                    s, s->new_picture->data[0] + s->mb_x*16 + s->mb_y*s->linesize*16,
                     s->dest[0], w, h, s->linesize);
                 s->current_picture.encoding_error[1] += sse(
-                    s, s->new_picture.f->data[1] + s->mb_x*8  + s->mb_y*s->uvlinesize*chr_h,
+                    s, s->new_picture->data[1] + s->mb_x*8  + s->mb_y*s->uvlinesize*chr_h,
                     s->dest[1], w>>1, h>>s->chroma_y_shift, s->uvlinesize);
                 s->current_picture.encoding_error[2] += sse(
-                    s, s->new_picture.f->data[2] + s->mb_x*8  + s->mb_y*s->uvlinesize*chr_h,
+                    s, s->new_picture->data[2] + s->mb_x*8  + s->mb_y*s->uvlinesize*chr_h,
                     s->dest[2], w>>1, h>>s->chroma_y_shift, s->uvlinesize);
             }
             if(s->loop_filter){

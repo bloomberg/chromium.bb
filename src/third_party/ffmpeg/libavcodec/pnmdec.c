@@ -39,13 +39,12 @@ static void samplecpy(uint8_t *dst, const uint8_t *src, int n, int maxval)
     }
 }
 
-static int pnm_decode_frame(AVCodecContext *avctx, void *data,
+static int pnm_decode_frame(AVCodecContext *avctx, AVFrame *p,
                             int *got_frame, AVPacket *avpkt)
 {
     const uint8_t *buf   = avpkt->data;
     int buf_size         = avpkt->size;
     PNMContext * const s = avctx->priv_data;
-    AVFrame * const p    = data;
     int i, j, k, n, linesize, h, upgrade = 0, is_mono = 0;
     unsigned char *ptr;
     int components, sample_len, ret;
@@ -339,7 +338,7 @@ const FFCodec ff_pgm_decoder = {
     .p.id           = AV_CODEC_ID_PGM,
     .p.capabilities = AV_CODEC_CAP_DR1,
     .priv_data_size = sizeof(PNMContext),
-    .decode         = pnm_decode_frame,
+    FF_CODEC_DECODE_CB(pnm_decode_frame),
 };
 #endif
 
@@ -351,7 +350,7 @@ const FFCodec ff_pgmyuv_decoder = {
     .p.id           = AV_CODEC_ID_PGMYUV,
     .p.capabilities = AV_CODEC_CAP_DR1,
     .priv_data_size = sizeof(PNMContext),
-    .decode         = pnm_decode_frame,
+    FF_CODEC_DECODE_CB(pnm_decode_frame),
 };
 #endif
 
@@ -363,7 +362,7 @@ const FFCodec ff_ppm_decoder = {
     .p.id           = AV_CODEC_ID_PPM,
     .p.capabilities = AV_CODEC_CAP_DR1,
     .priv_data_size = sizeof(PNMContext),
-    .decode         = pnm_decode_frame,
+    FF_CODEC_DECODE_CB(pnm_decode_frame),
 };
 #endif
 
@@ -375,7 +374,7 @@ const FFCodec ff_pbm_decoder = {
     .p.id           = AV_CODEC_ID_PBM,
     .p.capabilities = AV_CODEC_CAP_DR1,
     .priv_data_size = sizeof(PNMContext),
-    .decode         = pnm_decode_frame,
+    FF_CODEC_DECODE_CB(pnm_decode_frame),
 };
 #endif
 
@@ -387,7 +386,7 @@ const FFCodec ff_pam_decoder = {
     .p.id           = AV_CODEC_ID_PAM,
     .p.capabilities = AV_CODEC_CAP_DR1,
     .priv_data_size = sizeof(PNMContext),
-    .decode         = pnm_decode_frame,
+    FF_CODEC_DECODE_CB(pnm_decode_frame),
 };
 #endif
 
@@ -399,6 +398,6 @@ const FFCodec ff_pfm_decoder = {
     .p.id           = AV_CODEC_ID_PFM,
     .p.capabilities = AV_CODEC_CAP_DR1,
     .priv_data_size = sizeof(PNMContext),
-    .decode         = pnm_decode_frame,
+    FF_CODEC_DECODE_CB(pnm_decode_frame),
 };
 #endif

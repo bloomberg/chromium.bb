@@ -14,6 +14,9 @@
 #include "components/autofill_assistant/browser/js_flow_util.h"
 #include "components/autofill_assistant/browser/parse_jspb.h"
 #include "components/autofill_assistant/browser/web/web_controller_util.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/web_contents.h"
 
 namespace autofill_assistant {
 namespace {
@@ -115,14 +118,18 @@ absl::optional<std::string> ConvertActionToBytes(const base::Value* action,
 
 }  // namespace
 
-JsFlowExecutorImpl::JsFlowExecutorImpl(content::WebContents* web_contents,
-                                       Delegate* delegate)
+JsFlowExecutorImpl::JsFlowExecutorImpl(
+    Delegate* delegate,
+    content::WebContents* web_contents_for_js_execution,
+    const std::string* js_flow_library)
     : delegate_(delegate),
       devtools_client_(std::make_unique<DevtoolsClient>(
-          content::DevToolsAgentHost::GetOrCreateFor(web_contents),
+          content::DevToolsAgentHost::GetOrCreateFor(
+              web_contents_for_js_execution),
           base::FeatureList::IsEnabled(
               autofill_assistant::features::
-                  kAutofillAssistantFullJsFlowStackTraces))) {}
+                  kAutofillAssistantFullJsFlowStackTraces))),
+      js_flow_library_(js_flow_library) {}
 
 JsFlowExecutorImpl::~JsFlowExecutorImpl() = default;
 
@@ -163,11 +170,11 @@ void JsFlowExecutorImpl::OnGetFrameTree(
           .SetFrameId(result->GetFrameTree()->GetFrame()->GetId())
           .Build(),
       kMainFrame,
-      base::BindOnce(&JsFlowExecutorImpl::IsolatedWorldCreated,
+      base::BindOnce(&JsFlowExecutorImpl::OnIsolatedWorldCreated,
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-void JsFlowExecutorImpl::IsolatedWorldCreated(
+void JsFlowExecutorImpl::OnIsolatedWorldCreated(
     const DevtoolsClient::ReplyStatus& reply_status,
     std::unique_ptr<page::CreateIsolatedWorldResult> result) {
   if (!result) {
@@ -179,6 +186,7 @@ void JsFlowExecutorImpl::IsolatedWorldCreated(
   }
 
   isolated_world_context_id_ = result->GetExecutionContextId();
+
   InternalStart();
 }
 
@@ -192,9 +200,9 @@ void JsFlowExecutorImpl::InternalStart() {
 
   // Wrap the main js_flow in an async function containing a method to
   // request native actions. This is essentially providing |js_flow| with a
-  // JS API to call native functionality.
-  js_flow_ = std::make_unique<std::string>(
-      base::StrCat({kLeadingWrapper, *js_flow_, kTrailingWrapper}));
+  // JS API to call native functionality. Also adds the js_flow_library.
+  js_flow_ = std::make_unique<std::string>(base::StrCat(
+      {kLeadingWrapper, *js_flow_library_, *js_flow_, kTrailingWrapper}));
 
   // Run the wrapped js_flow in the sandbox and serve potential native action
   // requests as they arrive.
@@ -387,7 +395,10 @@ void JsFlowExecutorImpl::RunCallback(
   if (!status.ok() && result_value) {
     VLOG(1) << "Flow failed with " << status
             << " and result: " << *result_value;
+  } else if (!status.ok()) {
+    VLOG(1) << "Flow failed with " << status;
   }
+
   std::move(callback_).Run(status, std::move(result_value));
 }
 

@@ -22,13 +22,13 @@
 #include <inttypes.h>
 
 #include "libavutil/avassert.h"
-#include "libavutil/avstring.h"
 #include "libavutil/channel_layout.h"
 #include "libavutil/internal.h"
 #include "libavutil/intreadwrite.h"
 #include "libavutil/dict.h"
 #include "avformat.h"
 #include "avio_internal.h"
+#include "demux.h"
 #include "internal.h"
 #include "rmsipr.h"
 #include "rm.h"
@@ -349,7 +349,7 @@ int ff_rm_read_mdpr_codecdata(AVFormatContext *s, AVIOContext *pb,
                                                 st->codecpar->codec_tag);
     } else if(mime && !strcmp(mime, "logical-fileinfo")){
         int stream_count, rule_count, property_count, i;
-        ff_free_stream(s, st);
+        ff_remove_stream(s, st);
         if (avio_rb16(pb) != 0) {
             av_log(s, AV_LOG_WARNING, "Unsupported version\n");
             goto skip;

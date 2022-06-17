@@ -7,13 +7,25 @@
 'use strict';
 
 promise_test(() => {
-  return sharedStorage.runOperation("operation1");
-}, 'runOperation');
+  return sharedStorage.run("operation1");
+}, 'run()');
 
 promise_test(() => {
-  return sharedStorage.runOperation("operation1",
+  return sharedStorage.run("operation1",
     {data: {'custom-key': 'custom-value'}});
-}, 'runOperation with custom data');
+}, 'run() with custom data');
+
+promise_test(async t => {
+  try {
+    const blob = new Blob(["abc"], {type: 'text/plain'});
+    await sharedStorage.run("operation1", {data: blob});
+  } catch (e) {
+    assert_equals(e.name, 'Error');
+    assert_equals(e.message, '#<Blob> could not be cloned.');
+    return;
+  }
+  assert_unreached("did not reject");
+}, 'run() with unsupported serializable type');
 
 </script>
 </body>

@@ -382,8 +382,8 @@ export function fullF32Range(
     pos_norm: number;
   } = { pos_sub: 10, pos_norm: 50 }
 ): Array<number> {
-  counts.neg_norm = counts.neg_norm === undefined ? counts.pos_norm : (counts.neg_norm as number);
-  counts.neg_sub = counts.neg_sub === undefined ? counts.pos_sub : (counts.neg_sub as number);
+  counts.neg_norm = counts.neg_norm === undefined ? counts.pos_norm : counts.neg_norm;
+  counts.neg_sub = counts.neg_sub === undefined ? counts.pos_sub : counts.neg_sub;
   return [
     ...biasedRange(kValue.f32.negative.max, kValue.f32.negative.min, counts.neg_norm),
     ...linearRange(

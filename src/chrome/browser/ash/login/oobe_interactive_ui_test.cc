@@ -60,7 +60,8 @@
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/terms_of_service_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/user_creation_screen_handler.h"
-#include "chromeos/assistant/buildflags.h"
+#include "chromeos/ash/components/assistant/buildflags.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/update_engine/update_engine_client.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "content/public/test/browser_test.h"
@@ -264,18 +265,17 @@ void HandleArcTermsOfServiceScreen() {
 // HandleArcTermsOfServiceScreen.
 void HandleRecommendAppsScreen() {
   OobeScreenWaiter(RecommendAppsScreenView::kScreenId).Wait();
-  LOG(INFO)
-      << "OobeInteractiveUITest: Switched to 'recommend-apps-old' screen.";
+  LOG(INFO) << "OobeInteractiveUITest: Switched to 'recommend-apps' screen.";
 
   EXPECT_FALSE(LoginScreenTestApi::IsShutdownButtonShown());
   EXPECT_FALSE(LoginScreenTestApi::IsGuestButtonShown());
   EXPECT_FALSE(LoginScreenTestApi::IsAddUserButtonShown());
 
   test::OobeJS()
-      .CreateVisibilityWaiter(true, {"recommend-apps-old", "appsDialog"})
+      .CreateVisibilityWaiter(true, {"recommend-apps", "appsDialog"})
       ->Wait();
 
-  test::OobeJS().ExpectPathDisplayed(true, {"recommend-apps-old", "appView"});
+  test::OobeJS().ExpectPathDisplayed(true, {"recommend-apps", "appView"});
 
   std::string toggle_apps_script = base::StringPrintf(
       "(function() {"
@@ -293,7 +293,7 @@ void HandleRecommendAppsScreen() {
       "test.package");
 
   const std::string webview_path =
-      test::GetOobeElementPath({"recommend-apps-old", "appView"});
+      test::GetOobeElementPath({"recommend-apps", "appView"});
   const std::string script = base::StringPrintf(
       "(function() {"
       "  var toggleApp = function() {"
@@ -315,12 +315,12 @@ void HandleRecommendAppsScreen() {
   EXPECT_TRUE(result);
 
   const std::initializer_list<base::StringPiece> install_button = {
-      "recommend-apps-old", "installButton"};
+      "recommend-apps", "installButton"};
   test::OobeJS().CreateEnabledWaiter(true, install_button)->Wait();
   test::OobeJS().TapOnPath(install_button);
 
   OobeScreenExitWaiter(RecommendAppsScreenView::kScreenId).Wait();
-  LOG(INFO) << "OobeInteractiveUITest: 'recommend-apps-old' screen done.";
+  LOG(INFO) << "OobeInteractiveUITest: 'recommend-apps' screen done.";
 }
 
 // Waits for AppDownloadingScreen to be shown, clicks 'Continue' button, and
@@ -395,6 +395,25 @@ void HandleGestureNavigationScreen() {
   }
 
   OobeScreenExitWaiter(GestureNavigationScreenView::kScreenId).Wait();
+}
+
+// Waits for theme selection to get shown, then taps through the screen
+// and waits for the screen to exit.
+void HandleThemeSelectionScreen() {
+  OobeScreenWaiter(ThemeSelectionScreenView::kScreenId).Wait();
+
+  // Enable the tablet mode shelf navigation buttons so that the next button
+  // is shown on the marketing opt in screen in tablet mode.
+  ProfileManager::GetActiveUserProfile()->GetPrefs()->SetBoolean(
+      prefs::kAccessibilityTabletModeShelfNavigationButtonsEnabled, true);
+
+  test::OobeJS().CreateVisibilityWaiter(true, {"theme-selection"})->Wait();
+  test::OobeJS()
+      .CreateVisibilityWaiter(true, {"theme-selection", "nextButton"})
+      ->Wait();
+  test::OobeJS().TapOnPath({"theme-selection", "nextButton"});
+
+  OobeScreenExitWaiter(ThemeSelectionScreenView::kScreenId).Wait();
 }
 
 // Waits for marketing opt in screen to get shown, then taps through the screen
@@ -800,6 +819,11 @@ void OobeInteractiveUITest::PerformSessionSignInSteps(bool is_managed) {
     HandleGestureNavigationScreen();
   }
 
+  if (features::IsDarkLightModeEnabled() &&
+      features::IsOobeThemeSelectionEnabled()) {
+    HandleThemeSelectionScreen();
+  }
+
   HandleMarketingOptInScreen();
 }
 
@@ -1145,6 +1169,12 @@ IN_PROC_BROWSER_TEST_P(EphemeralUserOobeTest, DISABLED_RegularEphemeralUser) {
   if (test_setup()->is_tablet() &&
       test_setup()->hide_shelf_controls_in_tablet_mode()) {
     HandleGestureNavigationScreen();
+
+    if (features::IsDarkLightModeEnabled() &&
+        features::IsOobeThemeSelectionEnabled()) {
+      HandleThemeSelectionScreen();
+    }
+
     HandleMarketingOptInScreen();
   }
 

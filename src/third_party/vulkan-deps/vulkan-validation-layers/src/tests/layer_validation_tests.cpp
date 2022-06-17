@@ -2463,13 +2463,7 @@ bool InitFrameworkForRayTracingTest(VkRenderFramework *renderFramework, bool isK
                                     std::vector<const char *> &instance_extension_names,
                                     std::vector<const char *> &device_extension_names, void *user_data, bool need_gpu_validation,
                                     bool need_push_descriptors, bool deferred_state_init, VkPhysicalDeviceFeatures2KHR *features2) {
-    const std::array<const char *, 1> required_instance_extensions = {{VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME}};
-    for (const char *required_instance_extension : required_instance_extensions) {
-        if (!renderFramework->AddRequiredInstanceExtensions(required_instance_extension)) {
-            printf("%s %s instance extension not supported, skipping test\n", kSkipPrefix, required_instance_extension);
-            return false;
-        }
-    }
+    renderFramework->AddRequiredExtensions(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
 
     VkValidationFeatureEnableEXT enables[] = {VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_EXT};
     VkValidationFeatureDisableEXT disables[] = {
@@ -2484,37 +2478,35 @@ bool InitFrameworkForRayTracingTest(VkRenderFramework *renderFramework, bool isK
 
     VkValidationFeaturesEXT *enabled_features = need_gpu_validation ? &features : nullptr;
 
+    renderFramework->AddRequiredExtensions(VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME);
+    if (isKHR) {
+        renderFramework->AddRequiredExtensions(VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME);
+        renderFramework->AddRequiredExtensions(VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME);
+        renderFramework->AddRequiredExtensions(VK_KHR_RAY_QUERY_EXTENSION_NAME);
+        renderFramework->AddRequiredExtensions(VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME);
+        renderFramework->AddRequiredExtensions(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME);
+        renderFramework->AddRequiredExtensions(VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME);
+        renderFramework->AddRequiredExtensions(VK_KHR_SPIRV_1_4_EXTENSION_NAME);
+        renderFramework->AddRequiredExtensions(VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME);
+        renderFramework->AddRequiredExtensions(VK_KHR_PIPELINE_LIBRARY_EXTENSION_NAME);
+    } else {
+        renderFramework->AddRequiredExtensions(VK_NV_RAY_TRACING_EXTENSION_NAME);
+    }
+    if (need_push_descriptors) {
+        renderFramework->AddRequiredExtensions(VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME);
+    }
+
+    if (!renderFramework->AreRequiredExtensionsEnabled()) {
+        printf("%s %s device extension not supported, skipping test\n", kSkipPrefix,
+               renderFramework->RequiredExtensionsNotSupported().c_str());
+        return false;
+    }
+
     renderFramework->InitFramework(user_data, enabled_features);
 
     if (renderFramework->IsPlatform(kMockICD) || renderFramework->DeviceSimulation()) {
         printf("%s Test not supported by MockICD, skipping tests\n", kSkipPrefix);
         return false;
-    }
-
-    std::vector<const char *> required_device_extensions;
-    required_device_extensions.push_back(VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME);
-    if (isKHR) {
-        required_device_extensions.push_back(VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME);
-        required_device_extensions.push_back(VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME);
-        required_device_extensions.push_back(VK_KHR_RAY_QUERY_EXTENSION_NAME);
-        required_device_extensions.push_back(VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME);
-        required_device_extensions.push_back(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME);
-        required_device_extensions.push_back(VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME);
-        required_device_extensions.push_back(VK_KHR_SPIRV_1_4_EXTENSION_NAME);
-        required_device_extensions.push_back(VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME);
-        required_device_extensions.push_back(VK_KHR_PIPELINE_LIBRARY_EXTENSION_NAME);
-    } else {
-        required_device_extensions.push_back(VK_NV_RAY_TRACING_EXTENSION_NAME);
-    }
-    if (need_push_descriptors) {
-        required_device_extensions.push_back(VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME);
-    }
-
-    for (const char *required_device_extension : required_device_extensions) {
-        if (!renderFramework->AddRequiredDeviceExtensions(required_device_extension)) {
-            printf("%s %s device extension not supported, skipping test\n", kSkipPrefix, required_device_extension);
-            return false;
-        }
     }
 
     if (features2) {
@@ -3580,8 +3572,22 @@ void VkLayerTest::OOBRayTracingShadersTestBody(bool gpu_assisted) {
     }
 }
 
-void VkSyncValTest::InitSyncValFramework() {
+void VkSyncValTest::InitSyncValFramework(bool enable_queue_submit_validation) {
     // Enable synchronization validation
+
+    // Optional feature definition, add if requested (but they can't be defined at the conditional scope)
+    const char *kEnableQueuSubmitSyncValidation = "VALIDATION_CHECK_ENABLE_SYNCHRONIZATION_VALIDATION_QUEUE_SUBMIT";
+    VkLayerSettingValueDataEXT qs_setting_string_value{};
+    qs_setting_string_value.arrayString.pCharArray = kEnableQueuSubmitSyncValidation;
+    qs_setting_string_value.arrayString.count = strlen(qs_setting_string_value.arrayString.pCharArray);
+    VkLayerSettingValueEXT qs_enable_setting_val = {"enables", VK_LAYER_SETTING_VALUE_TYPE_STRING_ARRAY_EXT,
+                                                    qs_setting_string_value};
+    VkLayerSettingsEXT qs_settings{static_cast<VkStructureType>(VK_STRUCTURE_TYPE_INSTANCE_LAYER_SETTINGS_EXT), nullptr, 1,
+                                   &qs_enable_setting_val};
+
+    if (enable_queue_submit_validation) {
+        features_.pNext = &qs_settings;
+    }
     InitFramework(m_errorMonitor, &features_);
 }
 

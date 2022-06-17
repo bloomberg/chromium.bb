@@ -151,8 +151,21 @@ class GpuAssistedBase : public ValidationStateTracker {
     void PreCallRecordDestroyPipeline(VkDevice device, VkPipeline pipeline, const VkAllocationCallbacks *pAllocator) override;
 
     template <typename T>
-    void ReportSetupProblem(T object, const char *const specific_message) const {
-        LogError(object, setup_vuid, "Setup Error. Detail: (%s)", specific_message);
+    void ReportSetupProblem(T object, const char *const specific_message, bool vma_fail = false) const {
+        std::string logit = specific_message; 
+        if (vma_fail) {
+            char *stats_string;
+            vmaBuildStatsString(vmaAllocator, &stats_string, false);
+            logit += " VMA statistics = ";
+            logit += stats_string;
+            vmaFreeStatsString(vmaAllocator, stats_string);
+        }
+        LogError(object, setup_vuid, "Setup Error. Detail: (%s)", logit.c_str());
+    }
+    bool GpuGetOption(const char *option, bool default_value) {
+        std::string option_string = getLayerOption(option);
+        transform(option_string.begin(), option_string.end(), option_string.begin(), ::tolower);
+        return !option_string.empty() ? !option_string.compare("true") : default_value;
     }
 
   protected:
@@ -175,10 +188,10 @@ class GpuAssistedBase : public ValidationStateTracker {
                                         VkPipeline *pPipelines, std::vector<std::shared_ptr<PIPELINE_STATE>> &pipe_state,
                                         std::vector<SafeCreateInfo> *new_pipeline_create_infos,
                                         const VkPipelineBindPoint bind_point);
-    template <typename CreateInfo>
+    template <typename CreateInfo, typename SafeCreateInfo>
     void PostCallRecordPipelineCreations(const uint32_t count, const CreateInfo *pCreateInfos,
                                          const VkAllocationCallbacks *pAllocator, VkPipeline *pPipelines,
-                                         const VkPipelineBindPoint bind_point);
+                                         const VkPipelineBindPoint bind_point, const SafeCreateInfo &modified_create_infos);
 
   public:
     bool aborted = false;

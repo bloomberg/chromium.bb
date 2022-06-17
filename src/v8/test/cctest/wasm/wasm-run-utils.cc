@@ -363,7 +363,7 @@ Handle<WasmInstanceObject> TestingModuleBuilder::InitInstanceObject() {
   size_t code_size_estimate =
       wasm::WasmCodeManager::EstimateNativeModuleCodeSize(
           test_module_.get(), kUsesLiftoff,
-          DynamicTiering{FLAG_wasm_dynamic_tiering});
+          DynamicTiering{FLAG_wasm_dynamic_tiering.value()});
   auto native_module = GetWasmEngine()->NewNativeModule(
       isolate_, enabled_features_, test_module_, code_size_estimate);
   native_module->SetWireBytes(base::OwnedVector<const uint8_t>());
@@ -413,10 +413,10 @@ void TestBuildingGraphWithBuilder(compiler::WasmGraphBuilder* builder,
 }
 
 void TestBuildingGraph(Zone* zone, compiler::JSGraph* jsgraph,
-                       CompilationEnv* module, const FunctionSig* sig,
+                       CompilationEnv* env, const FunctionSig* sig,
                        compiler::SourcePositionTable* source_position_table,
                        const byte* start, const byte* end) {
-  compiler::WasmGraphBuilder builder(module, zone, jsgraph, sig,
+  compiler::WasmGraphBuilder builder(env, zone, jsgraph, sig,
                                      source_position_table);
   TestBuildingGraphWithBuilder(&builder, zone, sig, start, end);
 }
@@ -473,8 +473,15 @@ void WasmFunctionWrapper::Init(CallDescriptor* call_descriptor,
 
   parameters[parameter_count++] = effect;
   parameters[parameter_count++] = graph()->start();
-  Node* call = graph()->NewNode(common()->Call(call_descriptor),
-                                parameter_count, parameters);
+  const compiler::Operator* call_op = common()->Call(call_descriptor);
+  // The following code assumes the call node has effect and control inputs and
+  // outputs.
+  DCHECK_GT(call_op->EffectInputCount(), 0);
+  DCHECK_GT(call_op->EffectOutputCount(), 0);
+  DCHECK_GT(call_op->ControlInputCount(), 0);
+  DCHECK_GT(call_op->ControlOutputCount(), 0);
+
+  Node* call = graph()->NewNode(call_op, parameter_count, parameters);
 
   if (!return_type.IsNone()) {
     effect = graph()->NewNode(
@@ -483,14 +490,13 @@ void WasmFunctionWrapper::Init(CallDescriptor* call_descriptor,
             compiler::WriteBarrierKind::kNoWriteBarrier)),
         graph()->NewNode(common()->Parameter(param_types.length()),
                          graph()->start()),
-        graph()->NewNode(common()->Int32Constant(0)), call, effect,
-        graph()->start());
+        graph()->NewNode(common()->Int32Constant(0)), call, call, call);
   }
   Node* zero = graph()->NewNode(common()->Int32Constant(0));
   Node* r = graph()->NewNode(
       common()->Return(), zero,
       graph()->NewNode(common()->Int32Constant(WASM_WRAPPER_RETURN_VALUE)),
-      effect, graph()->start());
+      effect, call);
   graph()->SetEnd(graph()->NewNode(common()->End(1), r));
 }
 
@@ -511,7 +517,7 @@ Handle<Code> WasmFunctionWrapper::GetWrapperCode(Isolate* isolate) {
         rep_builder.AddParam(MachineRepresentation::kWord32);
       }
       compiler::Int64Lowering r(graph(), machine(), common(), simplified(),
-                                zone(), rep_builder.Build());
+                                zone(), nullptr, rep_builder.Build());
       r.LowerGraph();
     }
 

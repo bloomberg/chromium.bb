@@ -252,7 +252,7 @@ void Serializer::PutRoot(RootIndex root) {
 
   // Assert that the first 32 root array items are a conscious choice. They are
   // chosen so that the most common ones can be encoded more efficiently.
-  STATIC_ASSERT(static_cast<int>(RootIndex::kArgumentsMarker) ==
+  static_assert(static_cast<int>(RootIndex::kArgumentsMarker) ==
                 kRootArrayConstantsCount - 1);
 
   // TODO(ulan): Check that it works with young large objects.
@@ -270,8 +270,8 @@ void Serializer::PutSmiRoot(FullObjectSlot slot) {
   // Serializing a smi root in compressed pointer builds will serialize the
   // full object slot (of kSystemPointerSize) to avoid complications during
   // deserialization (endianness or smi sequences).
-  STATIC_ASSERT(decltype(slot)::kSlotDataSize == sizeof(Address));
-  STATIC_ASSERT(decltype(slot)::kSlotDataSize == kSystemPointerSize);
+  static_assert(decltype(slot)::kSlotDataSize == sizeof(Address));
+  static_assert(decltype(slot)::kSlotDataSize == kSystemPointerSize);
   static constexpr int bytes_to_output = decltype(slot)::kSlotDataSize;
   static constexpr int size_in_tagged = bytes_to_output >> kTaggedSizeLog2;
   sink_.Put(FixedRawDataWithSize::Encode(size_in_tagged), "Smi");
@@ -513,13 +513,14 @@ void Serializer::ObjectSerializer::SerializeJSTypedArray() {
     if (typed_array.is_on_heap()) {
       typed_array.RemoveExternalPointerCompensationForSerialization(isolate());
     } else {
-      if (!typed_array.WasDetached()) {
+      if (!typed_array.IsDetachedOrOutOfBounds()) {
         // Explicitly serialize the backing store now.
         JSArrayBuffer buffer = JSArrayBuffer::cast(typed_array.buffer());
         // We cannot store byte_length or max_byte_length larger than int32
         // range in the snapshot.
-        CHECK_LE(buffer.byte_length(), std::numeric_limits<int32_t>::max());
-        int32_t byte_length = static_cast<int32_t>(buffer.byte_length());
+        size_t byte_length_size = buffer.GetByteLength();
+        CHECK_LE(byte_length_size, size_t{std::numeric_limits<int32_t>::max()});
+        int32_t byte_length = static_cast<int32_t>(byte_length_size);
         Maybe<int32_t> max_byte_length = Nothing<int32_t>();
         if (buffer.is_resizable()) {
           CHECK_LE(buffer.max_byte_length(),
@@ -686,8 +687,7 @@ class V8_NODISCARD UnlinkWeakNextScope {
 
   ~UnlinkWeakNextScope() {
     if (next_ == Smi::zero()) return;
-    AllocationSite::cast(object_).set_weak_next(next_,
-                                                UPDATE_WEAK_WRITE_BARRIER);
+    AllocationSite::cast(object_).set_weak_next(next_, UPDATE_WRITE_BARRIER);
   }
 
  private:
@@ -1100,7 +1100,7 @@ void Serializer::ObjectSerializer::VisitInternalReference(Code host,
   // TODO(jgruber,v8:11036): We are being permissive for this DCHECK, but
   // consider using raw_instruction_size() instead of raw_body_size() in the
   // future.
-  STATIC_ASSERT(Code::kOnHeapBodyIsContiguous);
+  static_assert(Code::kOnHeapBodyIsContiguous);
   DCHECK_LE(target_offset, Handle<Code>::cast(object_)->raw_body_size());
   sink_->Put(kInternalReference, "InternalRef");
   sink_->PutInt(target_offset, "internal ref value");
@@ -1114,7 +1114,7 @@ void Serializer::ObjectSerializer::VisitRuntimeEntry(Code host,
 
 void Serializer::ObjectSerializer::VisitOffHeapTarget(Code host,
                                                       RelocInfo* rinfo) {
-  STATIC_ASSERT(EmbeddedData::kTableSize == Builtins::kBuiltinCount);
+  static_assert(EmbeddedData::kTableSize == Builtins::kBuiltinCount);
 
   Address addr = rinfo->target_off_heap_target();
   CHECK_NE(kNullAddress, addr);

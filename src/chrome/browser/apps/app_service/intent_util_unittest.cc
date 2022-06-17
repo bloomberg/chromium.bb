@@ -41,6 +41,7 @@
 #include "chromeos/crosapi/mojom/app_service_types.mojom.h"
 #include "content/public/test/browser_task_environment.h"
 #include "extensions/common/extension.h"
+#include "net/base/filename_util.h"
 #include "storage/browser/file_system/external_mount_points.h"
 #include "storage/common/file_system/file_system_mount_option.h"
 #include "storage/common/file_system/file_system_types.h"
@@ -185,7 +186,7 @@ TEST_F(IntentUtilsTest, CreateIntentFiltersForWebApp_WebApp_HasUrlFilter) {
   web_app->SetScope(scope);
 
   IntentFilters filters = apps_util::CreateIntentFiltersForWebApp(
-      web_app->app_id(), /*is_note_taking_web_app*/ false, scope,
+      web_app->app_id(), scope,
       /*app_share_target*/ nullptr, /*enabled_file_handlers*/ nullptr);
 
   ASSERT_EQ(filters.size(), 1u);
@@ -240,9 +241,9 @@ TEST_F(IntentUtilsTest, CreateWebAppIntentFilters_WebApp_HasUrlFilter) {
   web_app->SetScope(scope);
 
   std::vector<apps::mojom::IntentFilterPtr> filters =
-      apps_util::CreateWebAppIntentFilters(
-          web_app->app_id(), /*is_note_taking_web_app*/ false, scope,
-          /*app_share_target*/ nullptr, /*enabled_file_handlers*/ nullptr);
+      apps_util::CreateWebAppIntentFilters(web_app->app_id(), scope,
+                                           /*app_share_target*/ nullptr,
+                                           /*enabled_file_handlers*/ nullptr);
 
   ASSERT_EQ(filters.size(), 1u);
   apps::mojom::IntentFilterPtr& filter = filters[0];
@@ -311,7 +312,7 @@ TEST_F(IntentUtilsTest, CreateIntentFiltersForWebApp_FileHandlers) {
   web_app->SetFileHandlers(file_handlers);
 
   IntentFilters filters = apps_util::CreateIntentFiltersForWebApp(
-      web_app->app_id(), /*is_note_taking_web_app*/ false, scope,
+      web_app->app_id(), scope,
       /*app_share_target*/ nullptr, &file_handlers);
 
   ASSERT_EQ(filters.size(), 2u);
@@ -355,9 +356,9 @@ TEST_F(IntentUtilsTest, CreateWebAppIntentFilters_FileHandlers) {
   web_app->SetFileHandlers(file_handlers);
 
   std::vector<apps::mojom::IntentFilterPtr> filters =
-      apps_util::CreateWebAppIntentFilters(
-          web_app->app_id(), /*is_note_taking_web_app*/ false, scope,
-          /*app_share_target*/ nullptr, &file_handlers);
+      apps_util::CreateWebAppIntentFilters(web_app->app_id(), scope,
+                                           /*app_share_target*/ nullptr,
+                                           &file_handlers);
 
   ASSERT_EQ(filters.size(), 2u);
   // 1st filter is URL filter.
@@ -382,58 +383,35 @@ TEST_F(IntentUtilsTest, CreateWebAppIntentFilters_FileHandlers) {
   EXPECT_EQ(file_cond.condition_values[1]->value, ".txt");
 }
 
-TEST_F(IntentUtilsTest, CreateIntentFiltersForWebApp_NoteTakingApp) {
-  auto web_app = web_app::test::CreateWebApp();
-  DCHECK(web_app->start_url().is_valid());
-  GURL scope = web_app->start_url().GetWithoutFilename();
-  web_app->SetScope(scope);
-  GURL new_note_url = scope.Resolve("/new_note.html");
-  web_app->SetNoteTakingNewNoteUrl(new_note_url);
+TEST_F(IntentUtilsTest, CreateNoteTakingFilter) {
+  IntentFilterPtr filter = apps_util::CreateNoteTakingFilter();
 
-  IntentFilters filters = apps_util::CreateIntentFiltersForWebApp(
-      web_app->app_id(), /*is_note_taking_web_app*/ true, scope,
-      /*app_share_target*/ nullptr, /*enabled_file_handlers*/ nullptr);
-
-  ASSERT_EQ(filters.size(), 2u);
-
-  // 2nd filter is note-taking filter.
-  ASSERT_EQ(filters[1]->conditions.size(), 1u);
-  const Condition& condition = *filters[1]->conditions[0];
+  ASSERT_EQ(filter->conditions.size(), 1u);
+  const Condition& condition = *filter->conditions[0];
   EXPECT_EQ(condition.condition_type, ConditionType::kAction);
   ASSERT_EQ(condition.condition_values.size(), 1u);
   EXPECT_EQ(condition.condition_values[0]->value,
             apps_util::kIntentActionCreateNote);
+
+  apps::IntentPtr intent =
+      apps::ConvertMojomIntentToIntent(apps_util::CreateCreateNoteIntent());
+  EXPECT_TRUE(intent->MatchFilter(filter));
 }
 
 // TODO(crbug.com/1253250): Remove after migrating to non-mojo AppService.
-TEST_F(IntentUtilsTest, CreateWebAppIntentFilters_NoteTakingApp) {
-  auto web_app = web_app::test::CreateWebApp();
-  DCHECK(web_app->start_url().is_valid());
-  GURL scope = web_app->start_url().GetWithoutFilename();
-  web_app->SetScope(scope);
-  GURL new_note_url = scope.Resolve("/new_note.html");
-  web_app->SetNoteTakingNewNoteUrl(new_note_url);
+TEST_F(IntentUtilsTest, CreateNoteTakingFilterMojom) {
+  apps::mojom::IntentFilterPtr filter =
+      apps_util::CreateNoteTakingFilterMojom();
 
-  std::vector<apps::mojom::IntentFilterPtr> filters =
-      apps_util::CreateWebAppIntentFilters(
-          web_app->app_id(), /*is_note_taking_web_app*/ true, scope,
-          /*app_share_target*/ nullptr, /*enabled_file_handlers*/ nullptr);
-
-  ASSERT_EQ(filters.size(), 2u);
-
-  // 1st filter is URL filter.
-  EXPECT_TRUE(apps_util::IntentMatchesFilter(
-      apps_util::CreateIntentFromUrl(scope), filters[0]));
-
-  // 2nd filter is note-taking filter.
-  ASSERT_EQ(filters[1]->conditions.size(), 1u);
-  const apps::mojom::Condition& condition = *filters[1]->conditions[0];
+  ASSERT_EQ(filter->conditions.size(), 1u);
+  const apps::mojom::Condition& condition = *filter->conditions[0];
   EXPECT_EQ(condition.condition_type, apps::mojom::ConditionType::kAction);
   ASSERT_EQ(condition.condition_values.size(), 1u);
   EXPECT_EQ(condition.condition_values[0]->value,
             apps_util::kIntentActionCreateNote);
+
   EXPECT_TRUE(apps_util::IntentMatchesFilter(
-      apps_util::CreateCreateNoteIntent(), filters[1]));
+      apps_util::CreateCreateNoteIntent(), filter));
 }
 
 TEST_F(IntentUtilsTest, CreateIntentFiltersForChromeApp_FileHandlers) {
@@ -795,6 +773,37 @@ TEST_F(IntentUtilsTest, ConvertArcIntentFilter_AddsMissingPath) {
                                      std::move(authorities1),
                                      std::move(patterns), {kScheme}, {});
 
+  apps::IntentFilterPtr app_service_filter1 =
+      apps_util::CreateIntentFilterForArc(filter_with_path);
+
+  std::vector<arc::IntentFilter::AuthorityEntry> authorities2;
+  authorities2.emplace_back(kHost, 0);
+  arc::IntentFilter filter_without_path(kPackageName, {arc::kIntentActionView},
+                                        std::move(authorities2), {}, {kScheme},
+                                        {});
+
+  apps::IntentFilterPtr app_service_filter2 =
+      apps_util::CreateIntentFilterForArc(filter_without_path);
+
+  ASSERT_EQ(*app_service_filter1, *app_service_filter2);
+}
+
+// TODO(crbug.com/1253250): Remove after migrating to non-mojo AppService.
+TEST_F(IntentUtilsTest, ConvertArcIntentFilter_AddsMissingPathMojom) {
+  const char* kPackageName = "com.foo.bar";
+  const char* kHost = "www.google.com";
+  const char* kPath = "/";
+  const char* kScheme = "https";
+
+  std::vector<arc::IntentFilter::AuthorityEntry> authorities1;
+  authorities1.emplace_back(kHost, 0);
+  std::vector<arc::IntentFilter::PatternMatcher> patterns;
+  patterns.emplace_back(kPath, arc::mojom::PatternType::PATTERN_PREFIX);
+
+  arc::IntentFilter filter_with_path(kPackageName, {arc::kIntentActionView},
+                                     std::move(authorities1),
+                                     std::move(patterns), {kScheme}, {});
+
   apps::mojom::IntentFilterPtr app_service_filter1 =
       apps_util::ConvertArcToAppServiceIntentFilter(filter_with_path);
 
@@ -811,6 +820,48 @@ TEST_F(IntentUtilsTest, ConvertArcIntentFilter_AddsMissingPath) {
 }
 
 TEST_F(IntentUtilsTest, ConvertArcIntentFilter_ConvertsSimpleGlobToPrefix) {
+  const char* kPackageName = "com.foo.bar";
+  const char* kHost = "www.google.com";
+  const char* kScheme = "https";
+
+  std::vector<arc::IntentFilter::AuthorityEntry> authorities;
+  authorities.emplace_back(kHost, 0);
+
+  std::vector<arc::IntentFilter::PatternMatcher> patterns;
+
+  patterns.emplace_back("/foo.*", arc::mojom::PatternType::PATTERN_SIMPLE_GLOB);
+  patterns.emplace_back(".*", arc::mojom::PatternType::PATTERN_SIMPLE_GLOB);
+  patterns.emplace_back("/foo/.*/bar",
+                        arc::mojom::PatternType::PATTERN_SIMPLE_GLOB);
+  patterns.emplace_back("/..*", arc::mojom::PatternType::PATTERN_SIMPLE_GLOB);
+
+  arc::IntentFilter filter_with_path(kPackageName, {arc::kIntentActionView},
+                                     std::move(authorities),
+                                     std::move(patterns), {kScheme}, {});
+
+  apps::IntentFilterPtr app_service_filter =
+      apps_util::CreateIntentFilterForArc(filter_with_path);
+
+  for (auto& condition : app_service_filter->conditions) {
+    if (condition->condition_type == apps::ConditionType::kPattern) {
+      EXPECT_EQ(4u, condition->condition_values.size());
+      EXPECT_EQ(apps::ConditionValue("/foo", apps::PatternMatchType::kPrefix),
+                *condition->condition_values[0]);
+      EXPECT_EQ(
+          apps::ConditionValue(std::string(), apps::PatternMatchType::kPrefix),
+          *condition->condition_values[1]);
+      EXPECT_EQ(
+          apps::ConditionValue("/foo/.*/bar", apps::PatternMatchType::kGlob),
+          *condition->condition_values[2]);
+      EXPECT_EQ(apps::ConditionValue("/..*", apps::PatternMatchType::kGlob),
+                *condition->condition_values[3]);
+    }
+  }
+}
+
+// TODO(crbug.com/1253250): Remove after migrating to non-mojo AppService.
+TEST_F(IntentUtilsTest,
+       ConvertArcIntentFilter_ConvertsSimpleGlobToPrefixMojom) {
   const char* kPackageName = "com.foo.bar";
   const char* kHost = "www.google.com";
   const char* kScheme = "https";
@@ -872,6 +923,39 @@ TEST_F(IntentUtilsTest, ConvertArcIntentFilter_DeduplicatesHosts) {
                                std::move(authorities), std::move(patterns),
                                {kScheme}, {});
 
+  apps::IntentFilterPtr app_service_filter =
+      apps_util::CreateIntentFilterForArc(arc_filter);
+
+  for (auto& condition : app_service_filter->conditions) {
+    if (condition->condition_type == apps::ConditionType::kHost) {
+      ASSERT_EQ(2u, condition->condition_values.size());
+      ASSERT_EQ(kHost1, condition->condition_values[0]->value);
+      ASSERT_EQ(kHost2, condition->condition_values[1]->value);
+    }
+  }
+}
+
+// TODO(crbug.com/1253250): Remove after migrating to non-mojo AppService.
+TEST_F(IntentUtilsTest, ConvertArcIntentFilter_DeduplicatesHostsMojom) {
+  const char* kPackageName = "com.foo.bar";
+  const char* kPath = "/";
+  const char* kScheme = "https";
+  const char* kHost1 = "www.a.com";
+  const char* kHost2 = "www.b.com";
+
+  std::vector<arc::IntentFilter::AuthorityEntry> authorities;
+  authorities.emplace_back(kHost1, 0);
+  authorities.emplace_back(kHost2, 0);
+  authorities.emplace_back(kHost2, 0);
+  authorities.emplace_back(kHost1, 0);
+
+  std::vector<arc::IntentFilter::PatternMatcher> patterns;
+  patterns.emplace_back(kPath, arc::mojom::PatternType::PATTERN_PREFIX);
+
+  arc::IntentFilter arc_filter(kPackageName, {arc::kIntentActionView},
+                               std::move(authorities), std::move(patterns),
+                               {kScheme}, {});
+
   apps::mojom::IntentFilterPtr app_service_filter =
       apps_util::ConvertArcToAppServiceIntentFilter(arc_filter);
 
@@ -885,6 +969,42 @@ TEST_F(IntentUtilsTest, ConvertArcIntentFilter_DeduplicatesHosts) {
 }
 
 TEST_F(IntentUtilsTest, ConvertArcIntentFilter_WildcardHostPatternMatchType) {
+  const char* kPackageName = "com.foo.bar";
+  const char* kPath = "/";
+  const char* kScheme = "https";
+  const char* kHostWildcard = "*.google.com";
+  const char* kHostNoWildcard = "google.com";
+
+  std::vector<arc::IntentFilter::AuthorityEntry> authorities;
+  authorities.emplace_back(kHostWildcard, 0);
+  authorities.emplace_back(kHostNoWildcard, 0);
+  std::vector<arc::IntentFilter::PatternMatcher> patterns;
+  patterns.emplace_back(kPath, arc::mojom::PatternType::PATTERN_PREFIX);
+
+  arc::IntentFilter arc_filter(kPackageName, {arc::kIntentActionView},
+                               std::move(authorities), std::move(patterns),
+                               {kScheme}, {});
+
+  apps::IntentFilterPtr app_service_filter =
+      apps_util::CreateIntentFilterForArc(arc_filter);
+
+  for (auto& condition : app_service_filter->conditions) {
+    if (condition->condition_type == apps::ConditionType::kHost) {
+      ASSERT_EQ(condition->condition_values.size(), 2U);
+
+      // Check wildcard host
+      EXPECT_EQ(condition->condition_values[0]->match_type,
+                apps::PatternMatchType::kSuffix);
+      // Check non-wildcard host
+      EXPECT_EQ(condition->condition_values[1]->match_type,
+                apps::PatternMatchType::kNone);
+    }
+  }
+}
+
+// TODO(crbug.com/1253250): Remove after migrating to non-mojo AppService.
+TEST_F(IntentUtilsTest,
+       ConvertArcIntentFilter_WildcardHostPatternMatchTypeMojom) {
   const char* kPackageName = "com.foo.bar";
   const char* kPath = "/";
   const char* kScheme = "https";
@@ -987,13 +1107,14 @@ class IntentUtilsFileTest : public ::testing::Test {
   TestingProfile* profile_;
 };
 
-TEST_F(IntentUtilsFileTest, AppServiceIntentToCrosapi) {
+TEST_F(IntentUtilsFileTest, ConvertFileSystemScheme) {
   auto app_service_intent = apps::mojom::Intent::New();
   app_service_intent->action = "action";
   app_service_intent->mime_type = "*/*";
   const std::string path = "Documents/foo.txt";
   const std::string mime_type = "text/plain";
   auto url = ToGURL(base::FilePath(storage::kTestDir), path);
+  EXPECT_TRUE(url.SchemeIsFileSystem());
   app_service_intent->files = std::vector<apps::mojom::IntentFilePtr>{};
   auto file = apps::mojom::IntentFile::New();
   file->url = url;
@@ -1006,6 +1127,29 @@ TEST_F(IntentUtilsFileTest, AppServiceIntentToCrosapi) {
   ASSERT_TRUE(crosapi_intent->files.has_value());
   ASSERT_EQ(crosapi_intent->files.value().size(), 1U);
   EXPECT_EQ(crosapi_intent->files.value()[0]->file_path, base::FilePath(path));
+  EXPECT_EQ(crosapi_intent->files.value()[0]->mime_type, mime_type);
+}
+
+TEST_F(IntentUtilsFileTest, ConvertFileScheme) {
+  auto app_service_intent = apps::mojom::Intent::New();
+  app_service_intent->action = "action";
+  app_service_intent->mime_type = "*/*";
+  base::FilePath path("/path/to/document.txt");
+  const std::string mime_type = "text/plain";
+  auto url = net::FilePathToFileURL(path);
+  EXPECT_TRUE(url.SchemeIsFile());
+  app_service_intent->files = std::vector<apps::mojom::IntentFilePtr>{};
+  auto file = apps::mojom::IntentFile::New();
+  file->url = url;
+  file->mime_type = mime_type;
+  app_service_intent->files->push_back(std::move(file));
+  auto crosapi_intent = apps_util::ConvertAppServiceToCrosapiIntent(
+      app_service_intent, GetProfile());
+  EXPECT_EQ(app_service_intent->action, crosapi_intent->action);
+  EXPECT_EQ(app_service_intent->mime_type, crosapi_intent->mime_type);
+  ASSERT_TRUE(crosapi_intent->files.has_value());
+  ASSERT_EQ(crosapi_intent->files.value().size(), 1U);
+  EXPECT_EQ(crosapi_intent->files.value()[0]->file_path, path);
   EXPECT_EQ(crosapi_intent->files.value()[0]->mime_type, mime_type);
 }
 

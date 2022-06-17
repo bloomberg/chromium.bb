@@ -12,6 +12,7 @@
 #include 'src/objects/call-site-info.h'
 #include 'src/objects/elements-kind.h'
 #include 'src/objects/free-space.h'
+#include 'src/objects/js-atomics-synchronization.h'
 #include 'src/objects/js-function.h'
 #include 'src/objects/js-generator.h'
 #include 'src/objects/js-promise.h'
@@ -356,20 +357,15 @@ constexpr 'CodeStubAssembler::ExtractFixedArrayFlag' {
   ...
 }
 
-extern enum InitializationMode
-constexpr 'CodeStubAssembler::InitializationMode' {
-  kUninitialized,
-  kInitializeToZero,
-  kInitializeToNull
-}
-
 const kBigIntMaxLength: constexpr intptr generates 'BigInt::kMaxLength';
 
 extern enum MessageTemplate {
   kAllPromisesRejected,
+  kInvalid,
   kInvalidArrayBufferLength,
   kInvalidArrayLength,
   kInvalidIndex,
+  kInvalidTypedArrayIndex,
   kNotConstructor,
   kNotGeneric,
   kCalledNonCallable,
@@ -651,6 +647,8 @@ transitioning macro ToInteger_Inline(implicit context: Context)(input: JSAny):
   }
 }
 
+extern macro ToBigInt(Context, JSAny): BigInt;
+
 extern enum BigIntHandling extends int32
 constexpr 'CodeStubAssembler::BigIntHandling' { kConvertToNumber, kThrow }
 
@@ -690,6 +688,8 @@ extern macro ThrowRangeError(implicit context: Context)(
     constexpr MessageTemplate): never;
 extern macro ThrowRangeError(implicit context: Context)(
     constexpr MessageTemplate, Object): never;
+extern macro ThrowRangeError(implicit context: Context)(
+    constexpr MessageTemplate, Object, Object): never;
 extern macro ThrowTypeError(implicit context: Context)(
     constexpr MessageTemplate): never;
 extern macro ThrowTypeError(implicit context: Context)(
@@ -835,7 +835,10 @@ extern macro IsElementsKindInRange(
     ElementsKind, constexpr ElementsKind, constexpr ElementsKind): bool;
 
 extern macro IsFastElementsKind(constexpr ElementsKind): constexpr bool;
+extern macro IsFastPackedElementsKind(constexpr ElementsKind): constexpr bool;
 extern macro IsDoubleElementsKind(constexpr ElementsKind): constexpr bool;
+
+extern macro GetNonRabGsabElementsKind(ElementsKind): ElementsKind;
 
 extern macro IsFastAliasedArgumentsMap(implicit context: Context)(Map): bool;
 extern macro IsSlowAliasedArgumentsMap(implicit context: Context)(Map): bool;
@@ -1311,6 +1314,7 @@ extern macro BasicLoadNumberDictionaryElement(NumberDictionary, intptr): JSAny
     labels NotData, IfHole;
 
 extern macro IsFastElementsKind(ElementsKind): bool;
+extern macro IsFastPackedElementsKind(ElementsKind): bool;
 extern macro IsDoubleElementsKind(ElementsKind): bool;
 extern macro IsFastSmiOrTaggedElementsKind(ElementsKind): bool;
 extern macro IsFastSmiElementsKind(ElementsKind): bool;
@@ -1648,44 +1652,65 @@ extern macro IsOneByteStringInstanceType(InstanceType): bool;
 // After converting an index to an integer, calculate a relative index:
 // return index < 0 ? max(length + index, 0) : min(index, length)
 @export
-transitioning macro ConvertToRelativeIndex(implicit context: Context)(
+transitioning macro ConvertAndClampRelativeIndex(implicit context: Context)(
     index: JSAny, length: uintptr): uintptr {
   const indexNumber: Number = ToInteger_Inline(index);
-  return ConvertToRelativeIndex(indexNumber, length);
+  return ConvertAndClampRelativeIndex(indexNumber, length);
 }
 
 // Calculate a relative index:
 // return index < 0 ? max(length + index, 0) : min(index, length)
 @export
-macro ConvertToRelativeIndex(indexNumber: Number, length: uintptr): uintptr {
+macro ConvertAndClampRelativeIndex(indexNumber: Number, length: uintptr):
+    uintptr {
+  try {
+    return ConvertRelativeIndex(indexNumber, length) otherwise OutOfBoundsLow,
+           OutOfBoundsHigh;
+  } label OutOfBoundsLow {
+    return 0;
+  } label OutOfBoundsHigh {
+    return length;
+  }
+}
+
+// Calculate a relative index with explicit out-of-bounds labels.
+macro ConvertRelativeIndex(indexNumber: Number, length: uintptr):
+    uintptr labels OutOfBoundsLow, OutOfBoundsHigh {
   typeswitch (indexNumber) {
     case (indexSmi: Smi): {
       const indexIntPtr: intptr = Convert<intptr>(indexSmi);
       // The logic is implemented using unsigned types.
       if (indexIntPtr < 0) {
         const relativeIndex: uintptr = Unsigned(indexIntPtr) + length;
-        return relativeIndex < length ? relativeIndex : 0;
+        if (relativeIndex < length) return relativeIndex;
+        goto OutOfBoundsLow;
 
       } else {
         const relativeIndex: uintptr = Unsigned(indexIntPtr);
-        return relativeIndex < length ? relativeIndex : length;
+        if (relativeIndex < length) return relativeIndex;
+        goto OutOfBoundsHigh;
       }
     }
     case (indexHeapNumber: HeapNumber): {
       dcheck(IsNumberNormalized(indexHeapNumber));
       const indexDouble: float64 = Convert<float64>(indexHeapNumber);
-      // NaNs must already be handled by ConvertToRelativeIndex() version
+      // NaNs must already be handled by ConvertAndClampRelativeIndex() version
       // above accepting JSAny indices.
       dcheck(!Float64IsNaN(indexDouble));
       const lengthDouble: float64 = Convert<float64>(length);
       dcheck(lengthDouble <= kMaxSafeInteger);
       if (indexDouble < 0) {
         const relativeIndex: float64 = lengthDouble + indexDouble;
-        return relativeIndex > 0 ? ChangeFloat64ToUintPtr(relativeIndex) : 0;
+        if (relativeIndex > 0) {
+          return ChangeFloat64ToUintPtr(relativeIndex);
+        }
+        goto OutOfBoundsLow;
 
       } else {
-        return ChangeFloat64ToUintPtr(
-            indexDouble < lengthDouble ? indexDouble : lengthDouble);
+        if (indexDouble < lengthDouble) {
+          return ChangeFloat64ToUintPtr(indexDouble);
+        }
+        goto OutOfBoundsHigh;
       }
     }
   }

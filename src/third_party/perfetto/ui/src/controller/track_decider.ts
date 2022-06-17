@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import * as uuidv4 from 'uuid/v4';
+import {v4 as uuidv4} from 'uuid';
 
 import {assertExists} from '../base/logging';
 import {
@@ -38,14 +38,14 @@ import {CPU_FREQ_TRACK_KIND} from '../tracks/cpu_freq/common';
 import {CPU_PROFILE_TRACK_KIND} from '../tracks/cpu_profile/common';
 import {CPU_SLICE_TRACK_KIND} from '../tracks/cpu_slices/common';
 import {
-  EXPECTED_FRAMES_SLICE_TRACK_KIND
+  EXPECTED_FRAMES_SLICE_TRACK_KIND,
 } from '../tracks/expected_frames/common';
 import {HEAP_PROFILE_TRACK_KIND} from '../tracks/heap_profile/common';
 import {
-  PERF_SAMPLES_PROFILE_TRACK_KIND
+  PERF_SAMPLES_PROFILE_TRACK_KIND,
 } from '../tracks/perf_samples_profile/common';
 import {
-  PROCESS_SCHEDULING_TRACK_KIND
+  PROCESS_SCHEDULING_TRACK_KIND,
 } from '../tracks/process_scheduling/common';
 import {PROCESS_SUMMARY_TRACK} from '../tracks/process_summary/common';
 import {THREAD_STATE_TRACK_KIND} from '../tracks/thread_state/common';
@@ -67,6 +67,8 @@ const TRACKS_V2_FLAG = featureFlags.register({
 const MEM_DMA_COUNTER_NAME = 'mem.dma_heap';
 const MEM_DMA = 'mem.dma_buffer';
 const MEM_ION = 'mem.ion';
+const F2FS_IOSTAT_TAG = 'f2fs_iostat.';
+const F2FS_IOSTAT_GROUP_NAME = 'f2fs_iostat';
 
 export async function decideTracks(
     engineId: string, engine: Engine): Promise<DeferredAction[]> {
@@ -106,7 +108,7 @@ class TrackDecider {
       pid,
       tid,
       kind,
-      threadTrack
+      threadTrack,
     } = args;
 
     const hasName = name !== undefined && name !== null && name !== '[NULL]';
@@ -177,7 +179,7 @@ class TrackDecider {
         trackGroup: SCROLLING_TRACK_GROUP,
         config: {
           cpu,
-        }
+        },
       });
     }
   }
@@ -232,7 +234,7 @@ class TrackDecider {
             maximumValue: maxCpuFreq,
             freqTrackId,
             idleTrackId,
-          }
+          },
         });
       }
     }
@@ -263,7 +265,7 @@ class TrackDecider {
     for (; it.valid(); it.next()) {
       const name = it.name === null ? undefined : it.name;
       const rawTrackIds = it.trackIds;
-      const trackIds = rawTrackIds.split(',').map(v => Number(v));
+      const trackIds = rawTrackIds.split(',').map((v) => Number(v));
       const maxDepth = it.maxDepth;
       const kind = ASYNC_SLICE_TRACK_KIND;
       const track = {
@@ -312,7 +314,7 @@ class TrackDecider {
           config: {
             trackId,
             maximumValue,
-          }
+          },
         });
       }
     }
@@ -351,7 +353,7 @@ class TrackDecider {
         config: {
           name,
           trackId,
-        }
+        },
       });
     }
   }
@@ -386,7 +388,7 @@ class TrackDecider {
         config: {
           name,
           trackId,
-        }
+        },
       });
     }
   }
@@ -435,6 +437,55 @@ class TrackDecider {
     this.addTrackGroupActions.push(addGroup);
   }
 
+  async groupGlobalF2fsIostatTracks(): Promise<void> {
+    const f2fsIostatTracks: AddTrackArgs[] = [];
+    const devMap = new Map<string, string>();
+
+    for (const track of this.tracksToAdd) {
+      if (track.name.startsWith(F2FS_IOSTAT_TAG)) {
+        f2fsIostatTracks.push(track);
+      }
+    }
+
+    if (f2fsIostatTracks.length === 0) {
+      return;
+    }
+
+    for (const track of f2fsIostatTracks) {
+      const name = track.name.split('.', 3);
+
+      if (!devMap.has(name[1])) {
+        devMap.set(name[1], uuidv4());
+      }
+      track.name = name[2];
+      track.trackGroup = devMap.get(name[1]);
+    }
+
+    for (const [key, value] of devMap) {
+      const groupName = F2FS_IOSTAT_GROUP_NAME + key;
+      const summaryTrackId = uuidv4();
+
+      this.tracksToAdd.push({
+        id: summaryTrackId,
+        engineId: this.engineId,
+        kind: 'NullTrack',
+        trackKindPriority: TrackKindPriority.ORDINARY,
+        name: groupName,
+        trackGroup: undefined,
+        config: {},
+      });
+
+      const addGroup = Actions.addTrackGroup({
+        engineId: this.engineId,
+        summaryTrackId,
+        name: groupName,
+        id: value,
+        collapsed: true,
+      });
+      this.addTrackGroupActions.push(addGroup);
+    }
+  }
+
   async addLogsTrack(): Promise<void> {
     const result =
         await this.engine.query(`select count(1) as cnt from android_logs`);
@@ -447,7 +498,7 @@ class TrackDecider {
         name: 'Android logs',
         trackKindPriority: TrackKindPriority.ORDINARY,
         trackGroup: SCROLLING_TRACK_GROUP,
-        config: {}
+        config: {},
       });
     }
   }
@@ -564,7 +615,7 @@ class TrackDecider {
           trackId: id,
           minimumValue,
           maximumValue,
-        }
+        },
       });
     }
   }
@@ -612,7 +663,7 @@ class TrackDecider {
         trackGroup: uuid,
         trackKindPriority:
             TrackDecider.inferTrackKindPriority(threadName, tid, pid),
-        config: {utid, tid}
+        config: {utid, tid},
       });
     }
   }
@@ -702,7 +753,7 @@ class TrackDecider {
         name,
         trackKindPriority: TrackDecider.inferTrackKindPriority(threadName),
         trackGroup: uuid,
-        config: {name, trackId, startTs, endTs, tid}
+        config: {name, trackId, startTs, endTs, tid},
       });
     }
   }
@@ -736,7 +787,7 @@ class TrackDecider {
       const upid = it.upid;
       const trackName = it.trackName;
       const rawTrackIds = it.trackIds;
-      const trackIds = rawTrackIds.split(',').map(v => Number(v));
+      const trackIds = rawTrackIds.split(',').map((v) => Number(v));
       const processName = it.processName;
       const pid = it.pid;
 
@@ -761,7 +812,7 @@ class TrackDecider {
         config: {
           trackIds,
           maxDepth,
-        }
+        },
       });
     }
   }
@@ -798,7 +849,7 @@ class TrackDecider {
       const upid = it.upid;
       const trackName = it.trackName;
       const rawTrackIds = it.trackIds;
-      const trackIds = rawTrackIds.split(',').map(v => Number(v));
+      const trackIds = rawTrackIds.split(',').map((v) => Number(v));
       const processName = it.processName;
       const pid = it.pid;
 
@@ -823,7 +874,7 @@ class TrackDecider {
         config: {
           trackIds,
           maxDepth,
-        }
+        },
       });
     }
   }
@@ -861,7 +912,7 @@ class TrackDecider {
       const upid = it.upid;
       const trackName = it.trackName;
       const rawTrackIds = it.trackIds;
-      const trackIds = rawTrackIds.split(',').map(v => Number(v));
+      const trackIds = rawTrackIds.split(',').map((v) => Number(v));
       const processName = it.processName;
       const pid = it.pid;
 
@@ -886,7 +937,7 @@ class TrackDecider {
         config: {
           trackIds,
           maxDepth,
-        }
+        },
       });
     }
   }
@@ -946,7 +997,7 @@ class TrackDecider {
         name,
         trackGroup: uuid,
         trackKindPriority,
-        config: {trackId, maxDepth, tid, isThreadSlice: onlyThreadSlice === 1}
+        config: {trackId, maxDepth, tid, isThreadSlice: onlyThreadSlice === 1},
       });
 
       if (TRACKS_V2_FLAG.get()) {
@@ -1007,7 +1058,7 @@ class TrackDecider {
           trackId,
           startTs,
           endTs,
-        }
+        },
       });
     }
   }
@@ -1027,7 +1078,7 @@ class TrackDecider {
         trackKindPriority: TrackKindPriority.ORDINARY,
         name: `Heap Profile`,
         trackGroup: uuid,
-        config: {upid}
+        config: {upid},
       });
     }
   }
@@ -1047,7 +1098,7 @@ class TrackDecider {
         trackKindPriority: TrackKindPriority.ORDINARY,
         name: `Perf Samples`,
         trackGroup: uuid,
-        config: {upid}
+        config: {upid},
       });
     }
   }
@@ -1134,7 +1185,7 @@ class TrackDecider {
       summaryTrackId,
       name: `Kernel threads`,
       id: kthreadGroupUuid,
-      collapsed: true
+      collapsed: true,
     });
     this.addTrackGroupActions.push(addTrackGroup);
 
@@ -1153,7 +1204,9 @@ class TrackDecider {
     //  Chrome-based process rank based on process names (e.g. Browser)
     //  has a heap profile or not
     //  total cpu time *for the whole parent process*
+    //  process name
     //  upid
+    //  thread name
     //  utid
     const result = await this.engine.query(`
     select
@@ -1217,7 +1270,9 @@ class TrackDecider {
       chromeProcessRank desc,
       hasHeapProfiles desc,
       total_dur desc,
+      processName,
       the_tracks.upid,
+      threadName,
       the_tracks.utid;
   `);
 
@@ -1230,7 +1285,7 @@ class TrackDecider {
       processName: STR_NULL,
       hasSched: NUM_NULL,
       hasHeapProfiles: NUM_NULL,
-      argSetId: NUM_NULL
+      argSetId: NUM_NULL,
     });
     for (; it.valid(); it.next()) {
       const utid = it.utid;
@@ -1310,6 +1365,7 @@ class TrackDecider {
     await this.addCpuPerfCounterTracks();
     await this.addAnnotationTracks();
     await this.groupGlobalIonTracks();
+    await this.groupGlobalF2fsIostatTracks();
 
     // Pre-group all kernel "threads" (actually processes) if this is a linux
     // system trace. Below, addProcessTrackGroups will skip them due to an

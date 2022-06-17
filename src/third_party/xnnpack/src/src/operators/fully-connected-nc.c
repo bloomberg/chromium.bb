@@ -160,14 +160,20 @@ static enum xnn_status create_fully_connected_nc(
   fully_connected_op->type = operator_type;
   fully_connected_op->flags = flags;
 
+  const size_t mr = gemm_parameters->mr;
   fully_connected_op->ukernel.type = xnn_ukernel_type_gemm;
   fully_connected_op->ukernel.gemm = (struct xnn_ukernel_gemm) {
-    .general_case = gemm_ukernels->gemm,
-    .mr1_case = gemm_ukernels->gemm1,
-    .mr = gemm_parameters->mr,
+    .mr = mr,
     .nr = nr,
     .kr = kr,
+    .sr = sr,
   };
+
+  assert(XNN_MAX_MR >= mr);
+  fully_connected_op->ukernel.gemm.gemm_cases[0] = gemm_ukernels->gemm[0];
+  for (size_t i = 1; i < mr; i++) {
+    fully_connected_op->ukernel.gemm.gemm_cases[i] = gemm_ukernels->gemm[mr-1];
+  }
 
   fully_connected_op->state = xnn_run_state_invalid;
 
@@ -235,15 +241,16 @@ static enum xnn_status setup_fully_connected_nc(
   uint32_t mr = fully_connected_op->ukernel.gemm.mr;
   const uint32_t nr = fully_connected_op->ukernel.gemm.nr;
 
-  struct xnn_hmp_gemm_ukernel gemm_ukernel = fully_connected_op->ukernel.gemm.general_case;
-  if (batch_size == 1 && fully_connected_op->ukernel.gemm.mr1_case.function[XNN_UARCH_DEFAULT] != NULL) {
-    gemm_ukernel = fully_connected_op->ukernel.gemm.mr1_case;
+  struct xnn_hmp_gemm_ukernel gemm_ukernel = fully_connected_op->ukernel.gemm.gemm_cases[mr-1];
+  if (batch_size == 1 && fully_connected_op->ukernel.gemm.gemm_cases[0].function[XNN_UARCH_DEFAULT] != NULL) {
+    gemm_ukernel = fully_connected_op->ukernel.gemm.gemm_cases[0];
     mr = 1;
   }
 
   fully_connected_op->context.gemm = (struct gemm_context) {
     .k_scaled = input_channels << log2_input_element_size,
-    .w_stride = (round_up_po2(input_channels, fully_connected_op->ukernel.gemm.kr) << log2_input_element_size) + bias_element_size,
+    .w_stride = bias_element_size +
+        (round_up_po2(input_channels, fully_connected_op->ukernel.gemm.kr * fully_connected_op->ukernel.gemm.sr) << log2_input_element_size),
     .a = input,
     .a_stride = fully_connected_op->input_pixel_stride << log2_input_element_size,
     .packed_w = packed_weights(fully_connected_op),
@@ -255,15 +262,19 @@ static enum xnn_status setup_fully_connected_nc(
   };
   memcpy(&fully_connected_op->context.gemm.params, params, params_size);
 
-  size_t nc = output_channels;
-  if (num_threads > 1) {
-    const size_t num_other_tiles = divide_round_up(batch_size, mr);
-    const size_t target_tiles_per_thread = 5;
-    const size_t max_nc = divide_round_up(output_channels * num_other_tiles, num_threads * target_tiles_per_thread);
-    if (max_nc < nc) {
-      nc = min(nc, divide_round_up(nc, max_nc * nr) * nr);
+  #if XNN_TEST_MODE
+    const size_t nc = nr;
+  #else
+    size_t nc = output_channels;
+    if (num_threads > 1) {
+      const size_t num_other_tiles = divide_round_up(batch_size, mr);
+      const size_t target_tiles_per_thread = 5;
+      const size_t max_nc = divide_round_up(output_channels * num_other_tiles, num_threads * target_tiles_per_thread);
+      if (max_nc < nc) {
+        nc = min(nc, divide_round_up(nc, max_nc * nr) * nr);
+      }
     }
-  }
+  #endif
   #if XNN_MAX_UARCH_TYPES > 1
     if (xnn_is_hmp_gemm_ukernel(gemm_ukernel)) {
       fully_connected_op->compute.type = xnn_parallelization_type_2d_tile_2d_with_uarch;
@@ -386,7 +397,7 @@ enum xnn_status xnn_create_fully_connected_nc_f32(
 
   const struct gemm_fused_ukernels* gemm_ukernels = &xnn_params.f32.gemm.minmax;
   const bool linear_activation = (output_max == INFINITY) && (output_min == -output_max);
-  if (linear_activation && xnn_params.f32.gemm.linear.gemm.function[XNN_UARCH_DEFAULT] != NULL) {
+  if (linear_activation && xnn_params.f32.gemm.linear.gemm[xnn_params.f32.gemm.mr-1].function[XNN_UARCH_DEFAULT] != NULL) {
     gemm_ukernels = &xnn_params.f32.gemm.linear;
   }
 

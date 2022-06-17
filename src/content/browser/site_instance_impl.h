@@ -48,6 +48,8 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance {
   static scoped_refptr<SiteInstanceImpl> CreateForGuest(
       BrowserContext* browser_context,
       const StoragePartitionConfig& partition_config);
+  static scoped_refptr<SiteInstanceImpl> CreateForFencedFrame(
+      SiteInstanceImpl* embedder_site_instance);
 
   // Similar to above, but creates an appropriate SiteInstance in a new
   // BrowsingInstance for a particular `url_info`. This is a more generic
@@ -118,6 +120,11 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance {
   // Returns an AgentSchedulingGroupHost, or creates one if
   // `site_instance_group_` doesn't have one.
   AgentSchedulingGroupHost& GetOrCreateAgentSchedulingGroup();
+
+  // Resets the `site_instance_group_` refptr, and must be called when its
+  // RenderProcessHost goes away. `site_instance_group_` can be reassigned later
+  // as needed.
+  void ResetSiteInstanceGroup();
 
   // SiteInstance implementation.
   SiteInstanceId GetId() override;
@@ -414,6 +421,9 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance {
 
   ~SiteInstanceImpl() override;
 
+  // Returns true when |this| has a SiteInstanceGroup.
+  bool has_group() { return group() != nullptr; }
+
   // Used to restrict a process' origin access rights. This method gets called
   // when a process gets assigned to this SiteInstance and when the
   // SiteInfo is explicitly set. If the SiteInfo hasn't been set yet and
@@ -502,6 +512,8 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance {
   // `site_instance_group_` is set when a RenderProcessHost is set for this
   // SiteInstance, and will be how `this` gets its RenderProcessHost and
   // AgentSchedulingGroup.
+  // If the RenderProcessHost goes away, `site_instance_group_` will get reset.
+  // It can be set to another group later on as needed.
   // See the class-level comment of SiteInstanceGroup for more details.
   scoped_refptr<SiteInstanceGroup> site_instance_group_;
 

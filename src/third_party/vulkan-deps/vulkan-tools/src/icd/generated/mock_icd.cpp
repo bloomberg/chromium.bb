@@ -3830,6 +3830,7 @@ static VKAPI_ATTR void VKAPI_CALL GetQueueCheckpointData2NV(
 
 
 
+
 static VKAPI_ATTR void VKAPI_CALL CmdCopyBuffer2KHR(
     VkCommandBuffer                             commandBuffer,
     const VkCopyBufferInfo2*                    pCopyBufferInfo)
@@ -3872,6 +3873,14 @@ static VKAPI_ATTR void VKAPI_CALL CmdResolveImage2KHR(
 //Not a CREATE or DESTROY function
 }
 
+
+
+static VKAPI_ATTR void VKAPI_CALL CmdTraceRaysIndirect2KHR(
+    VkCommandBuffer                             commandBuffer,
+    VkDeviceAddress                             indirectDeviceAddress)
+{
+//Not a CREATE or DESTROY function
+}
 
 
 
@@ -5350,6 +5359,7 @@ static VKAPI_ATTR void VKAPI_CALL GetPrivateDataEXT(
 
 
 
+
 static VKAPI_ATTR void VKAPI_CALL CmdSetFragmentShadingRateEnumNV(
     VkCommandBuffer                             commandBuffer,
     VkFragmentShadingRateNV                     shadingRate,
@@ -5362,6 +5372,16 @@ static VKAPI_ATTR void VKAPI_CALL CmdSetFragmentShadingRateEnumNV(
 
 
 
+
+
+static VKAPI_ATTR void VKAPI_CALL GetImageSubresourceLayout2EXT(
+    VkDevice                                    device,
+    VkImage                                     image,
+    const VkImageSubresource2EXT*               pSubresource,
+    VkSubresourceLayout2EXT*                    pLayout)
+{
+//Not a CREATE or DESTROY function
+}
 
 
 
@@ -5551,6 +5571,16 @@ static VKAPI_ATTR VkResult VKAPI_CALL GetMemoryRemoteAddressNV(
 }
 
 
+static VKAPI_ATTR VkResult VKAPI_CALL GetPipelinePropertiesEXT(
+    VkDevice                                    device,
+    const VkPipelineInfoEXT*                    pPipelineInfo,
+    VkBaseOutStructure*                         pPipelineProperties)
+{
+//Not a CREATE or DESTROY function
+    return VK_SUCCESS;
+}
+
+
 static VKAPI_ATTR void VKAPI_CALL CmdSetPatchControlPointsEXT(
     VkCommandBuffer                             commandBuffer,
     uint32_t                                    patchControlPoints)
@@ -5673,6 +5703,8 @@ static VKAPI_ATTR void VKAPI_CALL GetDescriptorSetHostMappingVALVE(
 {
 //Not a CREATE or DESTROY function
 }
+
+
 
 
 

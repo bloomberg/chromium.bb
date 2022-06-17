@@ -57,7 +57,7 @@ class IndexFormatTest extends GPUTest {
       // NOTE: These positions will create triangles that cut right through pixel centers. If this
       // results in different rasterization results on different hardware, tweak to avoid this.
       code: `
-        @stage(vertex)
+        @vertex
         fn main(@builtin(vertex_index) VertexIndex : u32)
              -> @builtin(position) vec4<f32> {
           var pos = array<vec2<f32>, 4>(
@@ -76,7 +76,7 @@ class IndexFormatTest extends GPUTest {
 
     const fragmentModule = this.device.createShaderModule({
       code: `
-        @stage(fragment)
+        @fragment
         fn main() -> @location(0) u32 {
           return 1u;
         }

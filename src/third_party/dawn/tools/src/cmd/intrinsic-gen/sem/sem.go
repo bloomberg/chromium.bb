@@ -16,22 +16,25 @@ package sem
 
 import (
 	"fmt"
+	"sort"
 
 	"dawn.googlesource.com/dawn/tools/src/cmd/intrinsic-gen/ast"
 )
 
 // Sem is the root of the semantic tree
 type Sem struct {
-	Enums        []*Enum
-	Types        []*Type
-	TypeMatchers []*TypeMatcher
-	EnumMatchers []*EnumMatcher
-	Builtins     []*Intrinsic
-	Operators    []*Intrinsic
-	// Maximum number of open-types used across all builtins
-	MaxOpenTypes int
-	// Maximum number of open-numbers used across all builtins
-	MaxOpenNumbers int
+	Enums                     []*Enum
+	Types                     []*Type
+	TypeMatchers              []*TypeMatcher
+	EnumMatchers              []*EnumMatcher
+	Builtins                  []*Intrinsic
+	UnaryOperators            []*Intrinsic
+	BinaryOperators           []*Intrinsic
+	ConstructorsAndConverters []*Intrinsic
+	// Maximum number of template types used across all builtins
+	MaxTemplateTypes int
+	// Maximum number of template numbers used across all builtins
+	MaxTemplateNumbers int
 	// The alphabetically sorted list of unique parameter names
 	UniqueParameterNames []string
 }
@@ -39,12 +42,13 @@ type Sem struct {
 // New returns a new Sem
 func New() *Sem {
 	return &Sem{
-		Enums:        []*Enum{},
-		Types:        []*Type{},
-		TypeMatchers: []*TypeMatcher{},
-		EnumMatchers: []*EnumMatcher{},
-		Builtins:     []*Intrinsic{},
-		Operators:    []*Intrinsic{},
+		Enums:           []*Enum{},
+		Types:           []*Type{},
+		TypeMatchers:    []*TypeMatcher{},
+		EnumMatchers:    []*EnumMatcher{},
+		Builtins:        []*Intrinsic{},
+		UnaryOperators:  []*Intrinsic{},
+		BinaryOperators: []*Intrinsic{},
 	}
 }
 
@@ -86,6 +90,7 @@ type Type struct {
 	Decl           ast.TypeDecl
 	Name           string
 	DisplayName    string
+	Precedence     int
 }
 
 // TypeMatcher declares a type matcher
@@ -94,6 +99,13 @@ type TypeMatcher struct {
 	Decl           ast.MatcherDecl
 	Name           string
 	Types          []*Type
+}
+
+func (t TypeMatcher) PrecedenceSortedTypes() []*Type {
+	out := make([]*Type, len(t.Types))
+	copy(out, t.Types)
+	sort.Slice(out, func(i, j int) bool { return out[i].Precedence > out[j].Precedence })
+	return out
 }
 
 // EnumMatcher declares a enum matcher
@@ -131,15 +143,16 @@ type Intrinsic struct {
 
 // Overload describes a single overload of a builtin or operator
 type Overload struct {
-	Decl             ast.IntrinsicDecl
-	Intrinsic        *Intrinsic
-	TemplateParams   []TemplateParam
-	OpenTypes        []*TemplateTypeParam
-	OpenNumbers      []TemplateParam
-	ReturnType       *FullyQualifiedName
-	Parameters       []Parameter
-	CanBeUsedInStage StageUses
-	IsDeprecated     bool // True if this overload is deprecated
+	Decl              ast.IntrinsicDecl
+	Intrinsic         *Intrinsic
+	TemplateParams    []TemplateParam
+	TemplateTypes     []*TemplateTypeParam
+	TemplateNumbers   []TemplateParam
+	ReturnType        *FullyQualifiedName
+	Parameters        []Parameter
+	CanBeUsedInStage  StageUses
+	IsDeprecated      bool   // True if this overload is deprecated
+	ConstEvalFunction string // Name of the function used to evaluate the intrinsic at shader creation time
 }
 
 // StageUses describes the stages an overload can be used in
@@ -198,12 +211,16 @@ func (o Overload) Format(w fmt.State, verb rune) {
 
 // Parameter describes a single parameter of a function overload
 type Parameter struct {
-	Name string
-	Type FullyQualifiedName
+	Name    string
+	Type    FullyQualifiedName
+	IsConst bool // Did this parameter have a @const attribute?
 }
 
 // Format implements the fmt.Formatter interface
 func (p Parameter) Format(w fmt.State, verb rune) {
+	if p.IsConst {
+		fmt.Fprint(w, "@const ")
+	}
 	if p.Name != "" {
 		fmt.Fprintf(w, "%v: ", p.Name)
 	}

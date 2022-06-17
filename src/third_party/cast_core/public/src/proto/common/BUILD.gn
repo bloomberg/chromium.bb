@@ -24,6 +24,9 @@ cast_core_proto_library("application_config_proto") {
     sources = [
         "application_config.proto",
     ]
+    deps = [
+        ":value_proto",
+    ]
     proto_in_dir = "//third_party/cast_core/public/src"
 }
 
@@ -37,6 +40,13 @@ cast_core_proto_library("runtime_metadata_proto") {
 cast_core_proto_library("service_info_proto") {
     sources = [
         "service_info.proto",
+    ]
+    proto_in_dir = "//third_party/cast_core/public/src"
+}
+
+cast_core_proto_library("value_proto") {
+    sources = [
+        "value.proto",
     ]
     proto_in_dir = "//third_party/cast_core/public/src"
 }

@@ -33,11 +33,11 @@ typedef struct LibRSVGContext {
     int keep_ar;
 } LibRSVGContext;
 
-static int librsvg_decode_frame(AVCodecContext *avctx, void *data, int *got_frame, AVPacket *pkt)
+static int librsvg_decode_frame(AVCodecContext *avctx, AVFrame *frame,
+                                int *got_frame, AVPacket *pkt)
 {
     int ret;
     LibRSVGContext *s = avctx->priv_data;
-    AVFrame *frame = data;
 
     RsvgHandle *handle;
     RsvgDimensionData unscaled_dimensions, dimensions;
@@ -126,6 +126,6 @@ const FFCodec ff_librsvg_decoder = {
     .p.id           = AV_CODEC_ID_SVG,
     .p.capabilities = AV_CODEC_CAP_DR1,
     .p.wrapper_name = "librsvg",
-    .decode         = librsvg_decode_frame,
+    FF_CODEC_DECODE_CB(librsvg_decode_frame),
     .priv_data_size = sizeof(LibRSVGContext),
 };

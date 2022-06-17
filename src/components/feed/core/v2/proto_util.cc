@@ -162,6 +162,13 @@ feedwire::Request CreateFeedQueryRequest(
     feed_request.add_client_capability(Capability::DOWNLOAD_LINK);
   }
 
+#if BUILDFLAG(IS_ANDROID)
+  // Note that the Crow feature is referenced as THANK_CREATOR within the feed.
+  if (base::FeatureList::IsEnabled(kShareCrowButton)) {
+    feed_request.add_client_capability(Capability::THANK_CREATOR);
+  }
+#endif
+
   if (base::FeatureList::IsEnabled(kPersonalizeFeedUnsignedUsers)) {
     feed_request.add_client_capability(Capability::ON_DEVICE_USER_PROFILE);
   }
@@ -222,17 +229,6 @@ void SetNoticeCardAcknowledged(feedwire::Request* request,
         ->mutable_feed_query()
         ->mutable_chrome_fulfillment_info()
         ->set_notice_card_acknowledged(true);
-  }
-}
-
-void SetCardSpecificNoticeAcknowledged(
-    feedwire::Request* request,
-    const RequestMetadata& request_metadata) {
-  for (const auto& key : request_metadata.acknowledged_notice_keys) {
-    request->mutable_feed_request()
-        ->mutable_feed_query()
-        ->mutable_chrome_fulfillment_info()
-        ->add_acknowledged_notice_key(key);
   }
 }
 
@@ -342,7 +338,6 @@ feedwire::Request CreateFeedQueryRefreshRequest(
         ->set_web_feed_token(kChromeFollowToken);
   }
   SetNoticeCardAcknowledged(&request, request_metadata);
-  SetCardSpecificNoticeAcknowledged(&request, request_metadata);
   SetInfoCardTrackingStates(&request, request_metadata);
   return request;
 }

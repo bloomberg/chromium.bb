@@ -45,7 +45,7 @@
 #import "ios/web/web_view/wk_web_view_util.h"
 #import "net/base/mac/url_conversions.h"
 #include "net/base/net_errors.h"
-#include "net/cert/x509_util_ios.h"
+#include "net/cert/x509_util_apple.h"
 #include "net/http/http_content_disposition.h"
 #include "url/gurl.h"
 
@@ -1034,6 +1034,25 @@ bool IsFailedHttpsUpgrade(NSError* error,
 - (void)webView:(WKWebView*)webView
     navigationResponse:(WKNavigationResponse*)navigationResponse
      didBecomeDownload:(WKDownload*)WKDownload API_AVAILABLE(ios(15)) {
+  // Send navigation callback if the download occurs in the main frame.
+  if (navigationResponse.forMainFrame) {
+    const GURL responseURL =
+        net::GURLWithNSURL(navigationResponse.response.URL);
+    web::NavigationContextImpl* context =
+        [self contextForPendingMainFrameNavigationWithURL:responseURL];
+
+    // Context lookup can fail in rare cases (e.g. after certain redirects,
+    // see https://crbug.com/820375 for details). In that case, it's not
+    // possible to locate the correct context to call OnNavigationFinished().
+    // Not sending this event does not cause any major issue, so do nothing
+    // if `context` cannot be found (i.e. this is not a security issue).
+    if (context) {
+      context->SetIsDownload(true);
+      context->ReleaseItem();
+      self.webStateImpl->OnNavigationFinished(context);
+    }
+  }
+
   // Discard the pending item to ensure that the current URL is not different
   // from what is displayed on the view.
   self.navigationManagerImpl->DiscardNonCommittedItems();
@@ -1043,8 +1062,17 @@ bool IsFailedHttpsUpgrade(NSError* error,
                                                           delegate:self]];
 }
 
-- (void)onDownloadNativeTaskBridgeReadyForDownload:
+// Used to set response url, content length, mimetype and http response headers
+// in CRWWkNavigationHandler so method can interact with WKWebView. Returns NO
+// if the download cannot be started.
+- (BOOL)onDownloadNativeTaskBridgeReadyForDownload:
     (DownloadNativeTaskBridge*)bridge API_AVAILABLE(ios(15)) {
+  __attribute__((objc_precise_lifetime))
+  DownloadNativeTaskBridge* nativeTaskBridge = bridge;
+  [_nativeTaskBridges removeObject:bridge];
+  if (!self.webStateImpl)
+    return NO;
+
   const GURL responseURL = net::GURLWithNSURL(bridge.response.URL);
   const int64_t contentLength = bridge.response.expectedContentLength;
   const std::string MIMEType =
@@ -1066,8 +1094,7 @@ bool IsFailedHttpsUpgrade(NSError* error,
       ->CreateNativeDownloadTask(self.webStateImpl, [NSUUID UUID].UUIDString,
                                  responseURL, HTTPMethod, contentDisposition,
                                  contentLength, MIMEType, bridge);
-
-  [_nativeTaskBridges removeObject:bridge];
+  return YES;
 }
 
 - (void)resumeDownloadNativeTask:(NSData*)data

@@ -115,6 +115,10 @@ config("icu_code") {
 
       # putil.cpp contains unused variables when building for iOS simulators.
       "-Wno-unused-variable",
+
+      # ICU has decided not to fix this warning as doing so would break its
+      # stable API.
+      "-Wno-ambiguous-reversed-operator",
     ]
   }
   if (is_clang || is_linux || is_chromeos || is_android || icu_is_in_fuchsia) {

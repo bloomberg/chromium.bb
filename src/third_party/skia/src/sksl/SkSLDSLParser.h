@@ -40,7 +40,6 @@ class DSLBlock;
 class DSLCase;
 class DSLGlobalVar;
 class DSLParameter;
-template <typename T> class DSLWrapper;
 
 }
 
@@ -118,8 +117,8 @@ private:
      */
     bool expectIdentifier(Token* result);
 
-    void error(Token token, std::string msg);
-    void error(Position position, std::string msg);
+    void error(Token token, std::string_view msg);
+    void error(Position position, std::string_view msg);
 
     // Returns the range from `start` to the current parse position.
     Position rangeFrom(Position start);
@@ -140,7 +139,7 @@ private:
      */
     bool arraySize(SKSL_INT* outResult);
 
-    void directive();
+    void directive(bool allowVersion);
 
     bool declaration();
 
@@ -162,7 +161,7 @@ private:
 
     dsl::DSLStatement varDeclarations();
 
-    std::optional<dsl::DSLType> structDeclaration();
+    dsl::DSLType structDeclaration();
 
     SkTArray<dsl::DSLGlobalVar> structVarDeclaration(Position start,
                                                      const dsl::DSLModifiers& modifiers);
@@ -177,7 +176,7 @@ private:
     dsl::DSLStatement localVarDeclarationEnd(Position position, const dsl::DSLModifiers& mods,
             dsl::DSLType baseType, Token name);
 
-    std::optional<dsl::DSLWrapper<dsl::DSLParameter>> parameter(size_t paramIndex);
+    std::optional<dsl::DSLParameter> parameter(size_t paramIndex);
 
     int layoutInt();
 
@@ -189,7 +188,7 @@ private:
 
     dsl::DSLStatement statement();
 
-    std::optional<dsl::DSLType> type(dsl::DSLModifiers* modifiers);
+    dsl::DSLType type(dsl::DSLModifiers* modifiers);
 
     bool interfaceBlock(const dsl::DSLModifiers& mods);
 
@@ -310,7 +309,7 @@ private:
 
             void forwardErrors() {
                 for (Error& error : fErrors) {
-                    dsl::GetErrorReporter().error(error.fMsg.c_str(), error.fPos);
+                    dsl::GetErrorReporter().error(error.fPos, error.fMsg);
                 }
             }
 
@@ -325,7 +324,6 @@ private:
 
         void restoreErrorReporter() {
             SkASSERT(fOldErrorReporter);
-            fErrorReporter.reportPendingErrors(Position());
             dsl::SetErrorReporter(fOldErrorReporter);
             fOldErrorReporter = nullptr;
         }

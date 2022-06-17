@@ -18,6 +18,7 @@ Returns the result_struct for the given type.
 
 import { makeTestGroup } from '../../../../../../common/framework/test_group.js';
 import { GPUTest } from '../../../../../gpu_test.js';
+import { allInputSources } from '../../expression.js';
 
 export const g = makeTestGroup(GPUTest);
 
@@ -33,7 +34,7 @@ struct __modf_result {
 }
 `
   )
-  .params(u => u.combine('storageClass', ['uniform', 'storage_r', 'storage_rw'] as const))
+  .params(u => u.combine('inputSource', allInputSources))
   .unimplemented();
 
 g.test('scalar_f16')
@@ -48,7 +49,7 @@ struct __modf_result_f16 {
 }
 `
   )
-  .params(u => u.combine('storageClass', ['uniform', 'storage_r', 'storage_rw'] as const))
+  .params(u => u.combine('inputSource', allInputSources))
   .unimplemented();
 
 g.test('vector_f32')
@@ -63,11 +64,7 @@ struct __modf_result_vecN {
 }
 `
   )
-  .params(u =>
-    u
-      .combine('storageClass', ['uniform', 'storage_r', 'storage_rw'] as const)
-      .combine('vectorize', [2, 3, 4] as const)
-  )
+  .params(u => u.combine('inputSource', allInputSources).combine('vectorize', [2, 3, 4] as const))
   .unimplemented();
 
 g.test('vector_f16')
@@ -82,9 +79,5 @@ struct __modf_result_vecN_f16 {
 }
 `
   )
-  .params(u =>
-    u
-      .combine('storageClass', ['uniform', 'storage_r', 'storage_rw'] as const)
-      .combine('vectorize', [2, 3, 4] as const)
-  )
+  .params(u => u.combine('inputSource', allInputSources).combine('vectorize', [2, 3, 4] as const))
   .unimplemented();

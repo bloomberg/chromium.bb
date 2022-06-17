@@ -123,6 +123,9 @@ static const struct {
     #if CONFIG_HUFFYUV_DECODER
         { "huffyuvdsp", checkasm_check_huffyuvdsp },
     #endif
+    #if CONFIG_IDCTDSP
+        { "idctdsp", checkasm_check_idctdsp },
+    #endif
     #if CONFIG_JPEG2000_DECODER
         { "jpeg2000dsp", checkasm_check_jpeg2000dsp },
     #endif
@@ -146,6 +149,9 @@ static const struct {
     #endif
     #if CONFIG_V210_ENCODER
         { "v210enc", checkasm_check_v210enc },
+    #endif
+    #if CONFIG_VC1DSP
+        { "vc1dsp", checkasm_check_vc1dsp },
     #endif
     #if CONFIG_VP8DSP
         { "vp8dsp", checkasm_check_vp8dsp },

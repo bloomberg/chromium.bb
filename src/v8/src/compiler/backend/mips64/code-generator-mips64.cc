@@ -4,6 +4,7 @@
 
 #include "src/codegen/assembler-inl.h"
 #include "src/codegen/callable.h"
+#include "src/codegen/machine-type.h"
 #include "src/codegen/macro-assembler.h"
 #include "src/codegen/mips64/constants-mips64.h"
 #include "src/codegen/optimized-compilation-info.h"
@@ -4351,6 +4352,121 @@ void CodeGenerator::FinishCode() {}
 void CodeGenerator::PrepareForDeoptimizationExits(
     ZoneDeque<DeoptimizationExit*>* exits) {}
 
+void CodeGenerator::MoveToTempLocation(InstructionOperand* source) {
+  // Must be kept in sync with {MoveTempLocationTo}.
+  DCHECK(!source->IsImmediate());
+  auto rep = LocationOperand::cast(source)->representation();
+  move_cycle_.temps.emplace(tasm());
+  auto& temps = *move_cycle_.temps;
+  // Temporarily exclude the reserved scratch registers while we pick one to
+  // resolve the move cycle. Re-include them immediately afterwards as they
+  // might be needed for the move to the temp location.
+  temps.Exclude(move_cycle_.scratch_regs);
+  if (!IsFloatingPoint(rep)) {
+    if (temps.hasAvailable()) {
+      Register scratch = move_cycle_.temps->Acquire();
+      move_cycle_.scratch_reg.emplace(scratch);
+    }
+  }
+
+  temps.Include(move_cycle_.scratch_regs);
+
+  if (move_cycle_.scratch_reg.has_value()) {
+    // A scratch register is available for this rep.
+    // auto& scratch_reg = *move_cycle_.scratch_reg;
+    AllocatedOperand scratch(LocationOperand::REGISTER, rep,
+                             move_cycle_.scratch_reg->code());
+    AssembleMove(source, &scratch);
+  } else {
+    // The scratch registers are blocked by pending moves. Use the stack
+    // instead.
+    int new_slots = ElementSizeInPointers(rep);
+    MipsOperandConverter g(this, nullptr);
+    if (source->IsRegister()) {
+      __ Push(g.ToRegister(source));
+    } else if (source->IsStackSlot()) {
+      UseScratchRegisterScope temps2(tasm());
+      Register scratch = temps2.Acquire();
+      __ Ld(scratch, g.ToMemOperand(source));
+      __ Push(scratch);
+    } else {
+      // No push instruction for this operand type. Bump the stack pointer and
+      // assemble the move.
+      int last_frame_slot_id =
+          frame_access_state_->frame()->GetTotalFrameSlotCount() - 1;
+      int sp_delta = frame_access_state_->sp_delta();
+      int temp_slot = last_frame_slot_id + sp_delta + new_slots;
+      __ Dsubu(sp, sp, Operand(new_slots * kSystemPointerSize));
+      AllocatedOperand temp(LocationOperand::STACK_SLOT, rep, temp_slot);
+      AssembleMove(source, &temp);
+    }
+    frame_access_state()->IncreaseSPDelta(new_slots);
+  }
+}
+
+void CodeGenerator::MoveTempLocationTo(InstructionOperand* dest,
+                                       MachineRepresentation rep) {
+  if (move_cycle_.scratch_reg.has_value()) {
+    // auto& scratch_reg = *move_cycle_.scratch_reg;
+    AllocatedOperand scratch(LocationOperand::REGISTER, rep,
+                             move_cycle_.scratch_reg->code());
+    AssembleMove(&scratch, dest);
+  } else {
+    int new_slots = ElementSizeInPointers(rep);
+    frame_access_state()->IncreaseSPDelta(-new_slots);
+    MipsOperandConverter g(this, nullptr);
+    if (dest->IsRegister()) {
+      __ Pop(g.ToRegister(dest));
+    } else if (dest->IsStackSlot()) {
+      UseScratchRegisterScope temps2(tasm());
+      Register scratch = temps2.Acquire();
+      __ Pop(scratch);
+      __ Sd(scratch, g.ToMemOperand(dest));
+    } else {
+      int last_frame_slot_id =
+          frame_access_state_->frame()->GetTotalFrameSlotCount() - 1;
+      int sp_delta = frame_access_state_->sp_delta();
+      int temp_slot = last_frame_slot_id + sp_delta + new_slots;
+      AllocatedOperand temp(LocationOperand::STACK_SLOT, rep, temp_slot);
+      AssembleMove(&temp, dest);
+      __ Daddu(sp, sp, Operand(new_slots * kSystemPointerSize));
+    }
+  }
+  // Restore the default state to release the {UseScratchRegisterScope} and to
+  // prepare for the next cycle.
+  move_cycle_ = MoveCycleState();
+}
+
+void CodeGenerator::SetPendingMove(MoveOperands* move) {
+  InstructionOperand* src = &move->source();
+  InstructionOperand* dst = &move->destination();
+  UseScratchRegisterScope temps(tasm());
+  if (src->IsConstant() && dst->IsFPLocationOperand()) {
+    Register temp = temps.Acquire();
+    move_cycle_.scratch_regs.set(temp);
+  } else if (src->IsAnyStackSlot() || dst->IsAnyStackSlot()) {
+    MipsOperandConverter g(this, nullptr);
+    bool src_need_scratch = false;
+    bool dst_need_scratch = false;
+    if (src->IsAnyStackSlot()) {
+      MemOperand src_mem = g.ToMemOperand(src);
+      src_need_scratch =
+          (!is_int16(src_mem.offset())) || (((src_mem.offset() & 0b111) != 0) &&
+                                            !is_int16(src_mem.offset() + 4));
+    }
+    if (dst->IsAnyStackSlot()) {
+      MemOperand dst_mem = g.ToMemOperand(dst);
+      dst_need_scratch =
+          (!is_int16(dst_mem.offset())) || (((dst_mem.offset() & 0b111) != 0) &&
+                                            !is_int16(dst_mem.offset() + 4));
+    }
+    if (src_need_scratch || dst_need_scratch) {
+      Register temp = temps.Acquire();
+      move_cycle_.scratch_regs.set(temp);
+    }
+  }
+}
+
 void CodeGenerator::AssembleMove(InstructionOperand* source,
                                  InstructionOperand* destination) {
   MipsOperandConverter g(this, nullptr);
@@ -4563,35 +4679,25 @@ void CodeGenerator::AssembleSwap(InstructionOperand* source,
     DCHECK(destination->IsFPStackSlot());
     Register temp_0 = kScratchReg;
     MemOperand src0 = g.ToMemOperand(source);
-    MemOperand src1(src0.rm(), src0.offset() + kIntSize);
+    MemOperand src1(src0.rm(), src0.offset() + kInt64Size);
     MemOperand dst0 = g.ToMemOperand(destination);
-    MemOperand dst1(dst0.rm(), dst0.offset() + kIntSize);
+    MemOperand dst1(dst0.rm(), dst0.offset() + kInt64Size);
     MachineRepresentation rep = LocationOperand::cast(source)->representation();
     if (rep == MachineRepresentation::kSimd128) {
-      MemOperand src2(src0.rm(), src0.offset() + 2 * kIntSize);
-      MemOperand src3(src0.rm(), src0.offset() + 3 * kIntSize);
-      MemOperand dst2(dst0.rm(), dst0.offset() + 2 * kIntSize);
-      MemOperand dst3(dst0.rm(), dst0.offset() + 3 * kIntSize);
       CpuFeatureScope msa_scope(tasm(), MIPS_SIMD);
       MSARegister temp_1 = kSimd128ScratchReg;
       __ ld_b(temp_1, dst0);  // Save destination in temp_1.
-      __ Lw(temp_0, src0);    // Then use temp_0 to copy source to destination.
-      __ Sw(temp_0, dst0);
-      __ Lw(temp_0, src1);
-      __ Sw(temp_0, dst1);
-      __ Lw(temp_0, src2);
-      __ Sw(temp_0, dst2);
-      __ Lw(temp_0, src3);
-      __ Sw(temp_0, dst3);
+      __ Ld(temp_0, src0);    // Then use temp_0 to copy source to destination.
+      __ Sd(temp_0, dst0);
+      __ Ld(temp_0, src1);
+      __ Sd(temp_0, dst1);
       __ st_b(temp_1, src0);
     } else {
       FPURegister temp_1 = kScratchDoubleReg;
       __ Ldc1(temp_1, dst0);  // Save destination in temp_1.
-      __ Lw(temp_0, src0);    // Then use temp_0 to copy source to destination.
-      __ Sw(temp_0, dst0);
-      __ Lw(temp_0, src1);
-      __ Sw(temp_0, dst1);
+      __ Ld(temp_0, src0);    // Then use temp_0 to copy source to destination.
       __ Sdc1(temp_1, src0);
+      __ Sd(temp_0, dst0);
     }
   } else {
     // No other combinations are possible.

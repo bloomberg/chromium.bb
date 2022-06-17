@@ -32,6 +32,7 @@
 #include "dawn/native/Limits.h"
 #include "dawn/native/ObjectBase.h"
 #include "dawn/native/ObjectType_autogen.h"
+#include "dawn/native/RefCountedWithExternalCount.h"
 #include "dawn/native/StagingBuffer.h"
 #include "dawn/native/Toggles.h"
 
@@ -46,6 +47,7 @@ namespace dawn::native {
 class AsyncTaskManager;
 class AttachmentState;
 class AttachmentStateBlueprint;
+class Blob;
 class BlobCache;
 class CallbackTaskManager;
 class DynamicUploader;
@@ -57,7 +59,7 @@ struct ShaderModuleParseResult;
 
 using WGSLExtensionSet = std::unordered_set<std::string>;
 
-class DeviceBase : public RefCounted {
+class DeviceBase : public RefCountedWithExternalCount {
   public:
     DeviceBase(AdapterBase* adapter, const DeviceDescriptor* descriptor);
     ~DeviceBase() override;
@@ -265,7 +267,11 @@ class DeviceBase : public RefCounted {
     QueueBase* APIGetQueue();
 
     bool APIGetLimits(SupportedLimits* limits) const;
+    // Note that we should not use this function to query the features which can only be enabled
+    // behind toggles (use IsFeatureEnabled() instead).
     bool APIHasFeature(wgpu::FeatureName feature) const;
+    // Note that we should not use this function to query the features which can only be enabled
+    // behind toggles (use IsFeatureEnabled() instead).
     size_t APIEnumerateFeatures(wgpu::FeatureName* features) const;
     void APIInjectError(wgpu::ErrorType type, const char* message);
     bool APITick();
@@ -279,6 +285,8 @@ class DeviceBase : public RefCounted {
     MaybeError ValidateIsAlive() const;
 
     BlobCache* GetBlobCache();
+    Blob LoadCachedBlob(const CacheKey& key);
+    void StoreCachedBlob(const CacheKey& key, const Blob& blob);
 
     virtual ResultOrError<std::unique_ptr<StagingBufferBase>> CreateStagingBuffer(size_t size) = 0;
     virtual MaybeError CopyFromStagingToBuffer(StagingBufferBase* source,
@@ -320,7 +328,6 @@ class DeviceBase : public RefCounted {
 
     std::vector<const char*> GetTogglesUsed() const;
     WGSLExtensionSet GetWGSLExtensionAllowList() const;
-    bool IsFeatureEnabled(Feature feature) const;
     bool IsToggleEnabled(Toggle toggle) const;
     bool IsValidationEnabled() const;
     bool IsRobustnessEnabled() const;
@@ -361,6 +368,10 @@ class DeviceBase : public RefCounted {
     virtual bool ShouldDuplicateParametersForDrawIndirect(
         const RenderPipelineBase* renderPipelineBase) const;
 
+    // TODO(crbug.com/dawn/1434): Make this function non-overridable when we support requesting
+    // Adapter with toggles.
+    virtual bool IsFeatureEnabled(Feature feature) const;
+
     const CombinedLimits& GetLimits() const;
 
     AsyncTaskManager* GetAsyncTaskManager() const;
@@ -400,6 +411,8 @@ class DeviceBase : public RefCounted {
     void IncrementLastSubmittedCommandSerial();
 
   private:
+    void WillDropLastExternalRef() override;
+
     virtual ResultOrError<Ref<BindGroupBase>> CreateBindGroupImpl(
         const BindGroupDescriptor* descriptor) = 0;
     virtual ResultOrError<Ref<BindGroupLayoutBase>> CreateBindGroupLayoutImpl(

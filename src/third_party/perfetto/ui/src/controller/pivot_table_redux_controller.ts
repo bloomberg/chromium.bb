@@ -23,11 +23,11 @@ import {
   PivotTableReduxQuery,
   PivotTableReduxQueryMetadata,
   PivotTableReduxResult,
-  PivotTableReduxState
+  PivotTableReduxState,
 } from '../common/state';
 import {
   aggregationIndex,
-  generateQueryFromState
+  generateQueryFromState,
 } from '../frontend/pivot_table_redux_query_generator';
 
 import {Controller} from './controller';
@@ -133,7 +133,7 @@ function createEmptyQueryResult(metadata: PivotTableReduxQueryMetadata):
       children: new Map(),
       rows: [],
     },
-    metadata
+    metadata,
   };
 }
 
@@ -141,6 +141,7 @@ function createEmptyQueryResult(metadata: PivotTableReduxQueryMetadata):
 // Controller responsible for showing the panel with pivot table, as well as
 // executing its queries and post-processing query results.
 export class PivotTableReduxController extends Controller<{}> {
+  static detailsCount = 0;
   engine: Engine;
   lastQueryAreaId = '';
   lastQueryAreaTracks = new Set<string>();

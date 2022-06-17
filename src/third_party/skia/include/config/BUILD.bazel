@@ -1,11 +1,13 @@
-load("//bazel:macros.bzl", "exports_files_legacy", "generated_cc_atom")
+load("//bazel:macros.bzl", "exports_files_legacy")
 
 licenses(["notice"])
 
 exports_files_legacy()
 
-generated_cc_atom(
-    name = "SkUserConfig_hdr",
-    hdrs = ["SkUserConfig.h"],
-    visibility = ["//:__subpackages__"],
+filegroup(
+    name = "public_hdrs",
+    srcs = [
+        "SkUserConfig.h",
+    ],
+    visibility = ["//include:__pkg__"],
 )

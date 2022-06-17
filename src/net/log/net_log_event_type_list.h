@@ -785,9 +785,6 @@ EVENT_TYPE(SOCKS_CONNECT_JOB_CONNECT)
 // The start/end of the HttpProxyConnectJob::Connect().
 EVENT_TYPE(HTTP_PROXY_CONNECT_JOB_CONNECT)
 
-// The start/end of the WebSocketConnectJob::Connect().
-EVENT_TYPE(WEB_SOCKET_TRANSPORT_CONNECT_JOB_CONNECT)
-
 // A TLS connection attempt failed because ECH was not negotiated. The
 // connection will be retried with a new ECHConfigList from the client-facing
 // server. If the new ECHConfigList is the empty string, the server has rolled
@@ -2730,6 +2727,9 @@ EVENT_TYPE(AUTH_HANDLER_CREATE_RESULT)
 // The END phase has the following parameters:
 //  {
 //       "succeeded": <bool indicating whether the initialization succeeded>
+//       "allows_default_credentials": whether the default credentials may be
+//                                     used for the `origin` passed into
+//                                    `InitFromChallenge`.
 //  }
 EVENT_TYPE(AUTH_HANDLER_INIT)
 
@@ -3156,17 +3156,25 @@ EVENT_TYPE(CERT_VERIFY_PROC)
 EVENT_TYPE(CERT_VERIFY_PROC_TARGET_CERT)
 
 // This event is created for each additional certificate passed into
-// CertVerifyProcBulitin.
+// CertVerifyProcBuiltin.
 // The parameters are the same as for CERT_VERIFY_PROC_TARGET_CERT.
 EVENT_TYPE(CERT_VERIFY_PROC_INPUT_CERT)
 
+// This event is created to log the Chrome Root Store version used
+// by CertVerifyProcBuiltin.
+// The event parameters are:
+//   {
+//      "version_major": <The major version of the Chrome Root Store>
+//   }
+EVENT_TYPE(CERT_VERIFY_PROC_CHROME_ROOT_STORE_VERSION)
+
 // This event is created for each additional trust anchor passed into
-// CertVerifyProcBulitin.
+// CertVerifyProcBuiltin.
 // The parameters are the same as for CERT_VERIFY_PROC_TARGET_CERT.
 EVENT_TYPE(CERT_VERIFY_PROC_ADDITIONAL_TRUST_ANCHOR)
 
 // This event is created for each path building attempt performed by
-// CertVerifyProcBulitin.
+// CertVerifyProcBuiltin.
 // The BEGIN phase contains the following information:
 // {
 //      "digest_policy": <Specifies which digest methods are accepted in this

@@ -17,6 +17,7 @@
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/autofill/autofill_context_menu_manager.h"
 #include "components/custom_handlers/protocol_handler_registry.h"
 #include "components/renderer_context_menu/context_menu_content_type.h"
 #include "components/renderer_context_menu/render_view_context_menu_base.h"
@@ -51,6 +52,10 @@ class SharedClipboardContextMenuObserver;
 class SpellingMenuObserver;
 class SpellingOptionsSubMenuObserver;
 
+namespace ash {
+class SystemWebAppDelegate;
+}
+
 namespace content {
 class RenderFrameHost;
 class WebContents;
@@ -73,10 +78,6 @@ class MediaPlayerAction;
 
 namespace ui {
 class DataTransferEndpoint;
-}
-
-namespace web_app {
-class SystemWebAppDelegate;
 }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -386,7 +387,7 @@ class RenderViewContextMenu
       shared_clipboard_context_menu_observer_;
 
   // The system app (if any) associated with the WebContents we're in.
-  raw_ptr<const web_app::SystemWebAppDelegate> system_app_ = nullptr;
+  raw_ptr<const ash::SystemWebAppDelegate> system_app_ = nullptr;
 
   // A one-time callback that will be called the next time a plugin action is
   // executed from a given render frame.
@@ -402,6 +403,9 @@ class RenderViewContextMenu
   std::unique_ptr<lens::LensRegionSearchController>
       lens_region_search_controller_;
 #endif
+
+  // Responsible for handling autofill related context menu items.
+  autofill::AutofillContextMenuManager autofill_context_menu_manager_;
 
   base::WeakPtrFactory<RenderViewContextMenu> weak_pointer_factory_{this};
 };

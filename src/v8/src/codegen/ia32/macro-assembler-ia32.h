@@ -366,12 +366,10 @@ class V8_EXPORT_PRIVATE TurboAssembler
                                SaveFPRegsMode fp_mode);
 
   void CallRecordWriteStubSaveRegisters(
-      Register object, Register slot_address,
-      RememberedSetAction remembered_set_action, SaveFPRegsMode fp_mode,
+      Register object, Register slot_address, SaveFPRegsMode fp_mode,
       StubCallMode mode = StubCallMode::kCallBuiltinPointer);
   void CallRecordWriteStub(
-      Register object, Register slot_address,
-      RememberedSetAction remembered_set_action, SaveFPRegsMode fp_mode,
+      Register object, Register slot_address, SaveFPRegsMode fp_mode,
       StubCallMode mode = StubCallMode::kCallBuiltinPointer);
 
   // Calculate how much stack space (in bytes) are required to store caller
@@ -456,21 +454,18 @@ class V8_EXPORT_PRIVATE MacroAssembler : public TurboAssembler {
   // stored.  value and scratch registers are clobbered by the operation.
   // The offset is the offset from the start of the object, not the offset from
   // the tagged HeapObject pointer.  For use with FieldOperand(reg, off).
-  void RecordWriteField(
-      Register object, int offset, Register value, Register scratch,
-      SaveFPRegsMode save_fp,
-      RememberedSetAction remembered_set_action = RememberedSetAction::kEmit,
-      SmiCheck smi_check = SmiCheck::kInline);
+  void RecordWriteField(Register object, int offset, Register value,
+                        Register scratch, SaveFPRegsMode save_fp,
+                        SmiCheck smi_check = SmiCheck::kInline);
 
   // For page containing |object| mark region covering |address|
   // dirty. |object| is the object being stored into, |value| is the
   // object being stored. The address and value registers are clobbered by the
   // operation. RecordWrite filters out smis so it does not update the
   // write barrier if the value is a smi.
-  void RecordWrite(
-      Register object, Register address, Register value, SaveFPRegsMode save_fp,
-      RememberedSetAction remembered_set_action = RememberedSetAction::kEmit,
-      SmiCheck smi_check = SmiCheck::kInline);
+  void RecordWrite(Register object, Register address, Register value,
+                   SaveFPRegsMode save_fp,
+                   SmiCheck smi_check = SmiCheck::kInline);
 
   // Enter specific kind of exit frame. Expects the number of
   // arguments in register eax and sets up the number of arguments in
@@ -533,8 +528,8 @@ class V8_EXPORT_PRIVATE MacroAssembler : public TurboAssembler {
 
   // Smi tagging support.
   void SmiTag(Register reg) {
-    STATIC_ASSERT(kSmiTag == 0);
-    STATIC_ASSERT(kSmiTagSize == 1);
+    static_assert(kSmiTag == 0);
+    static_assert(kSmiTagSize == 1);
     add(reg, reg);
   }
 
@@ -689,6 +684,11 @@ inline Operand FieldOperand(Register object, Register index, ScaleFactor scale,
                             int offset) {
   return Operand(object, index, scale, offset - kHeapObjectTag);
 }
+
+struct MoveCycleState {
+  // Whether a move in the cycle needs the double scratch register.
+  bool pending_double_scratch_register_use = false;
+};
 
 #define ACCESS_MASM(masm) masm->
 

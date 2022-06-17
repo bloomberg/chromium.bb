@@ -69,7 +69,7 @@ class AX_EXPORT AXNode final {
     };
 
     // See AXTree::GetAXTreeID.
-    virtual AXTreeID GetAXTreeID() const = 0;
+    virtual const AXTreeID& GetAXTreeID() const = 0;
     // See `AXTree::GetTableInfo`.
     virtual AXTableInfo* GetTableInfo(const AXNode* table_node) const = 0;
     // See AXTree::GetFromId.
@@ -701,6 +701,13 @@ class AX_EXPORT AXNode final {
   // Returns false if the |data_| is uninitialized or has been taken. Returns
   // true otherwise.
   bool IsDataValid() const;
+
+  // Returns true if the node supports the read-only attribute.
+  bool IsReadOnlySupported() const;
+
+  // Returns true if the node is marked read-only or is disabled. By default,
+  // all nodes that can't be edited are read-only.
+  bool IsReadOnlyOrDisabled() const;
 
  private:
   AXTableInfo* GetAncestorTableInfo() const;

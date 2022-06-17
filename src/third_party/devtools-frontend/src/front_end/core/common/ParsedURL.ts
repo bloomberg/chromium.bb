@@ -264,13 +264,17 @@ export class ParsedURL {
     return devToolsPaths.join(separator) as DevToolsPathType;
   }
 
-  static split<DevToolsPathType extends BrandedPathString>(devToolsPath: DevToolsPathType, separator: string|RegExp):
-      DevToolsPathType[] {
-    return devToolsPath.split(separator) as DevToolsPathType[];
+  static split<DevToolsPathType extends BrandedPathString>(
+      devToolsPath: DevToolsPathType, separator: string|RegExp, limit?: number): DevToolsPathType[] {
+    return devToolsPath.split(separator, limit) as DevToolsPathType[];
   }
 
   static toLowerCase<DevToolsPathType extends BrandedPathString>(devToolsPath: DevToolsPathType): DevToolsPathType {
     return devToolsPath.toLowerCase() as DevToolsPathType;
+  }
+
+  static isValidUrlString(str: string): str is Platform.DevToolsPath.UrlString {
+    return new ParsedURL(str).isValid;
   }
 
   static urlWithoutHash(url: string): string {
@@ -466,8 +470,16 @@ export class ParsedURL {
     return ParsedURL.substring(url as Platform.DevToolsPath.UrlString, 0, wasmFunctionIndex);
   }
 
+  private static beginsWithWindowsDriveLetter(url: string): boolean {
+    return /^[A-Za-z]:/.test(url);
+  }
+
+  private static beginsWithScheme(url: string): boolean {
+    return /^[A-Za-z][A-Za-z0-9+.-]*:/.test(url);
+  }
+
   static isRelativeURL(url: string): boolean {
-    return !(/^[A-Za-z][A-Za-z0-9+.-]*:/.test(url));
+    return !this.beginsWithScheme(url) || this.beginsWithWindowsDriveLetter(url);
   }
 
   get displayName(): string {

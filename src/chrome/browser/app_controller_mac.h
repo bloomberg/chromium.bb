@@ -82,7 +82,7 @@ class ThemeProvider;
 
   std::unique_ptr<TabMenuBridge> _tabMenuBridge;
 
-  // If we're told to open URLs (in particular, via |-application:openFiles:| by
+  // If we're told to open URLs (in particular, via |-application:openURLs:| by
   // Launch Services) before we've launched the browser, we queue them up in
   // |startupUrls_| so that they can go in the first browser window/tab.
   std::vector<GURL> _startupUrls;
@@ -115,6 +115,13 @@ class ThemeProvider;
 
   // Request to keep the browser alive during that object's lifetime.
   std::unique_ptr<ScopedKeepAlive> _keep_alive;
+
+  // Remembers whether _lastProfile had TabRestoreService entries. This is saved
+  // when _lastProfile is destroyed and Chromium enters the zero-profile state.
+  //
+  // By remembering this bit, Chromium knows whether to enable or disable
+  // Cmd+Shift+T and the related "File > Reopen Closed Tab" entry.
+  BOOL _tabRestoreWasEnabled;
 }
 
 @property(readonly, nonatomic) BOOL startupComplete;

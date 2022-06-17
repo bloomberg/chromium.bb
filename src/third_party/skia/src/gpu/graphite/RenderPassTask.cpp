@@ -22,6 +22,9 @@ sk_sp<RenderPassTask> RenderPassTask::Make(std::vector<std::unique_ptr<DrawPass>
                                            sk_sp<TextureProxy> target) {
     // For now we have one DrawPass per RenderPassTask
     SkASSERT(passes.size() == 1);
+    if (!target) {
+        return nullptr;
+    }
 
     return sk_sp<RenderPassTask>(new RenderPassTask(std::move(passes), desc, target));
 }
@@ -35,6 +38,25 @@ RenderPassTask::RenderPassTask(std::vector<std::unique_ptr<DrawPass>> passes,
 
 RenderPassTask::~RenderPassTask() = default;
 
+bool RenderPassTask::prepareResources(ResourceProvider* resourceProvider) {
+    SkASSERT(fTarget);
+    if (!fTarget->instantiate(resourceProvider)) {
+        SKGPU_LOG_W("Failed to instantiate RenderPassTask target. Will not create renderpass!");
+        SKGPU_LOG_W("Dimensions are (%d, %d).",
+                    fTarget->dimensions().width(), fTarget->dimensions().height());
+        return false;
+    }
+
+    // Assuming one draw pass per renderpasstask for now
+    SkASSERT(fDrawPasses.size() == 1);
+    for (const auto& drawPass: fDrawPasses) {
+        if (!drawPass->prepareResources(resourceProvider, fRenderPassDesc)) {
+            return false;
+        }
+    }
+    return true;
+}
+
 bool RenderPassTask::addCommands(ResourceProvider* resourceProvider, CommandBuffer* commandBuffer) {
     // TBD: Expose the surfaces that will need to be attached within the renderpass?
 
@@ -43,15 +65,10 @@ bool RenderPassTask::addCommands(ResourceProvider* resourceProvider, CommandBuff
     // provided to the task. Then close the render pass and we should have pixels..
 
     // Instantiate the target
-    if (fTarget) {
-        if (!fTarget->instantiate(resourceProvider)) {
-            SKGPU_LOG_W("Given invalid texture proxy. Will not create renderpass!");
-            SKGPU_LOG_W("Dimensions are (%d, %d).",
-                        fTarget->dimensions().width(), fTarget->dimensions().height());
-            return false;
-        }
-    }
+    SkASSERT(fTarget && fTarget->isInstantiated());
 
+    // We don't instantiate the MSAA or DS attachments in prepareResources because we want to use
+    // the discardable attachments from the Context.
     sk_sp<Texture> colorAttachment;
     sk_sp<Texture> resolveAttachment;
     if (fRenderPassDesc.fColorResolveAttachment.fTextureInfo.isValid()) {
@@ -93,7 +110,7 @@ bool RenderPassTask::addCommands(ResourceProvider* resourceProvider, CommandBuff
         // Assuming one draw pass per renderpasstask for now
         SkASSERT(fDrawPasses.size() == 1);
         for (const auto& drawPass: fDrawPasses) {
-            if (!drawPass->addCommands(resourceProvider, commandBuffer, fRenderPassDesc)) {
+            if (!drawPass->addCommands(commandBuffer)) {
                 commandBuffer->endRenderPass();
                 return false;
             }

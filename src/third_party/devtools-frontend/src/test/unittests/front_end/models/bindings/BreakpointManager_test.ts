@@ -9,9 +9,11 @@ import * as Workspace from '../../../../../front_end/models/workspace/workspace.
 import * as Bindings from '../../../../../front_end/models/bindings/bindings.js';
 import type * as Platform from '../../../../../front_end/core/platform/platform.js';
 import type * as Protocol from '../../../../../front_end/generated/protocol.js';
+import * as Common from '../../../../../front_end/core/common/common.js';
+import * as Persistence from '../../../../../front_end/models/persistence/persistence.js';
 
 import {describeWithRealConnection} from '../../helpers/RealConnection.js';
-import {createUISourceCode} from '../../helpers/UISourceCodeHelpers.js';
+import {createContentProviderUISourceCode, createFileSystemUISourceCode} from '../../helpers/UISourceCodeHelpers.js';
 import {assertNotNullOrUndefined} from '../../../../../front_end/core/platform/platform.js';
 import {TestPlugin} from '../../helpers/LanguagePluginHelpers.js';
 import type {Chrome} from '../../../../../extension-api/ExtensionAPI.js';
@@ -62,6 +64,51 @@ describeWithRealConnection('BreakpointManager', () => {
     return mapping;
   }
 
+  // Tests if a breakpoint set on a filesystem file was successfully moved to the network file when we expect it.
+  async function runBreakpointMovedTest(fileSystem: {
+    uiSourceCode: Workspace.UISourceCode.UISourceCode,
+    project: Persistence.FileSystemWorkspaceBinding.FileSystem,
+  }) {
+    const debuggerModel = new TestDebuggerModel(target);
+    const breakpoint = await breakpointManager.setBreakpoint(fileSystem.uiSourceCode, 0, 0, '', true);
+
+    const content = await fileSystem.project.requestFileContent(fileSystem.uiSourceCode);
+    const metadata = await fileSystem.project.requestMetadata(fileSystem.uiSourceCode);
+    assertNotNullOrUndefined(metadata);
+    assertNotNullOrUndefined(content.content);
+
+    const networkURL = 'http://www.google.com/example.js' as Platform.DevToolsPath.UrlString;
+    const network = createContentProviderUISourceCode({
+      url: networkURL,
+      content: content.content,
+      mimeType: fileSystem.uiSourceCode.mimeType(),
+      metadata,
+      projectType: Workspace.Workspace.projectTypes.Network,
+    });
+
+    const script = new SDK.Script.Script(
+        debuggerModel, SCRIPT_ID, networkURL, 0, 0, 43, 0, 0, '0', true, false, undefined, false, 10, null, null, null,
+        null, null, null);
+
+    // Check that only the filesystem project UISourceCode has a breakpoint.
+    assert.lengthOf(breakpointManager.breakpointLocationsForUISourceCode(fileSystem.uiSourceCode), 1);
+    assert.isEmpty(breakpointManager.breakpointLocationsForUISourceCode(network.uiSourceCode));
+
+    // Get the UISourceCode and await binding updates. This call should make sure to update all breakpoints.
+    await breakpointManager.getUISourceCodeWithUpdatedBreakpointInfo(script);
+
+    // Check that the network project UISourceCode has a breakpoint now.
+    const uiLocations = breakpointManager.breakpointLocationsForUISourceCode(network.uiSourceCode);
+    assert.lengthOf(uiLocations, 1);
+
+    // We need to remove the breakpoint on the file system and on the network project.
+    breakpointManager.removeBreakpoint(breakpoint, true);
+    breakpointManager.removeBreakpoint(uiLocations[0].breakpoint, true);
+
+    Workspace.Workspace.WorkspaceImpl.instance().removeProject(network.project);
+    Workspace.Workspace.WorkspaceImpl.instance().removeProject(fileSystem.project);
+  }
+
   beforeEach(() => {
     breakpointManager = Bindings.BreakpointManager.BreakpointManager.instance();
     assertNotNullOrUndefined(breakpointManager);
@@ -75,7 +122,7 @@ describeWithRealConnection('BreakpointManager', () => {
   it('allows awaiting the restoration of breakpoints', async () => {
     Root.Runtime.experiments.enableForTest(Root.Runtime.ExperimentName.INSTRUMENTATION_BREAKPOINTS);
 
-    const {uiSourceCode, project} = createUISourceCode({url: URL, mimeType: JS_MIME_TYPE});
+    const {uiSourceCode, project} = createContentProviderUISourceCode({url: URL, mimeType: JS_MIME_TYPE});
     const breakpoint = await breakpointManager.setBreakpoint(uiSourceCode, 0, 0, '', true);
 
     // Create a new DebuggerModel and notify the breakpoint engine about it.
@@ -90,9 +137,7 @@ describeWithRealConnection('BreakpointManager', () => {
     assertNotNullOrUndefined(modelBreakpoint);
 
     // Make sure that we do not have a linked script yet.
-    assertNotNullOrUndefined(modelBreakpoint.currentState);
-    assert.lengthOf(modelBreakpoint.currentState.positions, 1);
-    assert.isEmpty(modelBreakpoint.currentState.positions[0].scriptId);
+    assert.isNull(modelBreakpoint.currentState);
 
     // Create a fake mapping that can be used to set a breakpoint.
     const mapping = createFakeScriptMapping(debuggerModel, SCRIPT_ID);
@@ -129,7 +174,7 @@ describeWithRealConnection('BreakpointManager', () => {
     assertNotNullOrUndefined(debuggerModel);
 
     const {uiSourceCode, project} =
-        createUISourceCode({url: 'test.cc' as Platform.DevToolsPath.UrlString, mimeType: JS_MIME_TYPE});
+        createContentProviderUISourceCode({url: 'test.cc' as Platform.DevToolsPath.UrlString, mimeType: JS_MIME_TYPE});
     assertNotNullOrUndefined(uiSourceCode);
     const breakpoint = await breakpointManager.setBreakpoint(uiSourceCode, 0, 0, '', true);
 
@@ -141,9 +186,7 @@ describeWithRealConnection('BreakpointManager', () => {
     assertNotNullOrUndefined(modelBreakpoint);
 
     // Make sure that we do not have a linked script yet.
-    assertNotNullOrUndefined(modelBreakpoint.currentState);
-    assert.lengthOf(modelBreakpoint.currentState.positions, 1);
-    assert.isEmpty(modelBreakpoint.currentState.positions[0].scriptId);
+    assert.isNull(modelBreakpoint.currentState);
 
     class Plugin extends TestPlugin {
       constructor() {
@@ -191,7 +234,7 @@ describeWithRealConnection('BreakpointManager', () => {
   });
 
   it('allows awaiting on scheduled update in debugger', async () => {
-    const {uiSourceCode, project} = createUISourceCode({url: URL, mimeType: JS_MIME_TYPE});
+    const {uiSourceCode, project} = createContentProviderUISourceCode({url: URL, mimeType: JS_MIME_TYPE});
 
     const debuggerModel = new TestDebuggerModel(target);
     const breakpoint = await breakpointManager.setBreakpoint(uiSourceCode, 42, 0, '', true);
@@ -211,7 +254,7 @@ describeWithRealConnection('BreakpointManager', () => {
   });
 
   it('allows awaiting on removal of breakpoint in debugger', async () => {
-    const {uiSourceCode, project} = createUISourceCode({url: URL, mimeType: JS_MIME_TYPE});
+    const {uiSourceCode, project} = createContentProviderUISourceCode({url: URL, mimeType: JS_MIME_TYPE});
     // Set up breakpoint with UISourceCode, and fake DebuggerModel.
     const debuggerModel = new TestDebuggerModel(target);
     const removeSpy = sinon.spy(debuggerModel, 'removeBreakpoint');
@@ -249,4 +292,51 @@ describeWithRealConnection('BreakpointManager', () => {
     Workspace.Workspace.WorkspaceImpl.instance().removeProject(project);
   });
 
+  it('can wait for file system breakpoints to be mapped to network ui source code', async () => {
+    const url = 'file://example.js' as Platform.DevToolsPath.UrlString;
+    const content = 'console.log(3)';
+    const metadata = new Workspace.UISourceCode.UISourceCodeMetadata(new Date(), content.length);
+
+    const fileSystem =
+        createFileSystemUISourceCode({url, content, mimeType: JS_MIME_TYPE, metadata, autoMapping: true});
+
+    await runBreakpointMovedTest(fileSystem);
+  });
+
+  describe('with persistence network overrides enabled', () => {
+    let currentPersistenceSetting: boolean;
+
+    beforeEach(() => {
+      // Temporarily enable overrides for test.
+      currentPersistenceSetting =
+          Common.Settings.Settings.instance().moduleSetting('persistenceNetworkOverridesEnabled').get();
+    });
+
+    afterEach(() => {
+      // Reset default setting.
+      Common.Settings.Settings.instance()
+          .moduleSetting('persistenceNetworkOverridesEnabled')
+          .set(currentPersistenceSetting);
+    });
+
+    it('can wait for breakpoints in overrides to be mapped to network ui source code', async () => {
+      Common.Settings.Settings.instance().moduleSetting('persistenceNetworkOverridesEnabled').set('true');
+      const metadata = new Workspace.UISourceCode.UISourceCodeMetadata(new Date(), 0);
+      const url = 'file://path/to/overrides/www.google.com/example.js' as Platform.DevToolsPath.UrlString;
+      const fileSystem = createFileSystemUISourceCode({
+        url,
+        metadata,
+        mimeType: JS_MIME_TYPE,
+        autoMapping: true,
+        type: 'overrides',
+        fileSystemPath: 'file://path/to/overrides',
+      });
+
+      // Add a spy to make sure that the binding is coming from the NetworkPersistenceManager, and not the Automapping.
+      const spy = sinon.spy(Persistence.Persistence.PersistenceImpl.instance(), 'addBinding');
+      await Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance().setProject(fileSystem.project);
+      await runBreakpointMovedTest(fileSystem);
+      assert.isTrue(spy.calledOnce);
+    });
+  });
 });

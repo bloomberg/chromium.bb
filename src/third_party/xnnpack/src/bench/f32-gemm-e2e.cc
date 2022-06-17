@@ -54,18 +54,18 @@ static void GEMMEnd2EndBenchmark(
   // Note: do not directly assign to xnn_params.f32.gemm because it breaks older gcc.
   std::memset(&xnn_params.f32.gemm, 0, sizeof(xnn_params.f32.gemm));
   std::memset(&xnn_params.f32.gemm2, 0, sizeof(xnn_params.f32.gemm2));
-  xnn_params.f32.gemm.minmax.gemm = xnn_init_hmp_gemm_ukernel(xnn_gemm_ukernel_function(gemm_minmax));
-  xnn_params.f32.gemm.minmax.igemm = xnn_init_hmp_igemm_ukernel(xnn_igemm_ukernel_function(igemm_minmax));
-  xnn_params.f32.gemm.minmax.gemm1 = xnn_init_hmp_gemm_ukernel(xnn_gemm_ukernel_function(gemm1_minmax));
-  xnn_params.f32.gemm.minmax.igemm1 = xnn_init_hmp_igemm_ukernel(xnn_igemm_ukernel_function(igemm1_minmax));
-  xnn_params.f32.gemm.relu.gemm = xnn_init_hmp_gemm_ukernel(xnn_gemm_ukernel_function(gemm_relu));
-  xnn_params.f32.gemm.relu.igemm = xnn_init_hmp_igemm_ukernel(xnn_igemm_ukernel_function(igemm_relu));
-  xnn_params.f32.gemm.relu.gemm1 = xnn_init_hmp_gemm_ukernel(xnn_gemm_ukernel_function(gemm1_relu));
-  xnn_params.f32.gemm.relu.igemm1 = xnn_init_hmp_igemm_ukernel(xnn_igemm_ukernel_function(igemm1_relu));
-  xnn_params.f32.gemm.linear.gemm = xnn_init_hmp_gemm_ukernel(xnn_gemm_ukernel_function(gemm));
-  xnn_params.f32.gemm.linear.igemm = xnn_init_hmp_igemm_ukernel(xnn_igemm_ukernel_function(igemm));
-  xnn_params.f32.gemm.linear.gemm1 = xnn_init_hmp_gemm_ukernel(xnn_gemm_ukernel_function(gemm1));
-  xnn_params.f32.gemm.linear.igemm1 = xnn_init_hmp_igemm_ukernel(xnn_igemm_ukernel_function(igemm1));
+  xnn_params.f32.gemm.minmax.gemm[mr-1] = xnn_init_hmp_gemm_ukernel(xnn_gemm_ukernel_function(gemm_minmax));
+  xnn_params.f32.gemm.minmax.igemm[mr-1] = xnn_init_hmp_igemm_ukernel(xnn_igemm_ukernel_function(igemm_minmax));
+  xnn_params.f32.gemm.minmax.gemm[0] = xnn_init_hmp_gemm_ukernel(xnn_gemm_ukernel_function(gemm1_minmax));
+  xnn_params.f32.gemm.minmax.igemm[0] = xnn_init_hmp_igemm_ukernel(xnn_igemm_ukernel_function(igemm1_minmax));
+  xnn_params.f32.gemm.relu.gemm[mr-1] = xnn_init_hmp_gemm_ukernel(xnn_gemm_ukernel_function(gemm_relu));
+  xnn_params.f32.gemm.relu.igemm[mr-1] = xnn_init_hmp_igemm_ukernel(xnn_igemm_ukernel_function(igemm_relu));
+  xnn_params.f32.gemm.relu.gemm[0] = xnn_init_hmp_gemm_ukernel(xnn_gemm_ukernel_function(gemm1_relu));
+  xnn_params.f32.gemm.relu.igemm[0] = xnn_init_hmp_igemm_ukernel(xnn_igemm_ukernel_function(igemm1_relu));
+  xnn_params.f32.gemm.linear.gemm[mr-1] = xnn_init_hmp_gemm_ukernel(xnn_gemm_ukernel_function(gemm));
+  xnn_params.f32.gemm.linear.igemm[mr-1] = xnn_init_hmp_igemm_ukernel(xnn_igemm_ukernel_function(igemm));
+  xnn_params.f32.gemm.linear.gemm[0] = xnn_init_hmp_gemm_ukernel(xnn_gemm_ukernel_function(gemm1));
+  xnn_params.f32.gemm.linear.igemm[0] = xnn_init_hmp_igemm_ukernel(xnn_igemm_ukernel_function(igemm1));
   xnn_params.f32.gemm.init.f32 = init_params;
   xnn_params.f32.gemm.mr = mr;
   xnn_params.f32.gemm.nr = nr;
@@ -124,10 +124,10 @@ static void GEMMEnd2EndBenchmark(
   }
 
   // Nullify the microkernels to ensure we run JIT kernels.
-  xnn_params.f32.gemm.minmax.gemm = xnn_init_hmp_gemm_ukernel(nullptr);
-  xnn_params.f32.gemm.minmax.igemm = xnn_init_hmp_igemm_ukernel(nullptr);
-  xnn_params.f32.gemm.minmax.gemm1 = xnn_init_hmp_gemm_ukernel(nullptr);
-  xnn_params.f32.gemm.minmax.igemm1 = xnn_init_hmp_igemm_ukernel(nullptr);
+  for (size_t i = 0; i < XNN_MAX_MR; i++) {
+    xnn_params.f32.gemm.minmax.gemm[i] = xnn_init_hmp_gemm_ukernel(nullptr);
+    xnn_params.f32.gemm.minmax.igemm[i] = xnn_init_hmp_igemm_ukernel(nullptr);
+  }
   xnn_params.f32.gemm.init.f32 = init_params;
   xnn_params.f32.gemm.mr = mr;
   xnn_params.f32.gemm.nr = nr;
@@ -392,7 +392,7 @@ static void GEMMEnd2EndBenchmark(
       nullptr /* gemm_relu */, nullptr /* igemm_relu */, nullptr /* gemm1_relu */, nullptr /* igemm1_relu */,
       nullptr /* gemm */, nullptr /* igemm */, nullptr /* gemm1 */, nullptr /* igemm1 */,
       xnn_init_f32_minmax_scalar_params,
-      6 /* mr */, 2 /* nr */);
+      6 /* mr */, 8 /* nr */);
   }
   static void f32_gemm_4x2__neonfma_lane_ld64(benchmark::State& state, models::ExecutionPlanFactory model) {
     GEMMEnd2EndBenchmark(state, model,
@@ -514,27 +514,57 @@ static void GEMMEnd2EndBenchmark(
         xnn_generate_f32_igemm_ukernel_1x8__aarch64_neonfma_prfm_cortex_a75,
         xnn_init_f32_minmax_scalar_params, 4 /* mr */, 8 /* nr */);
   }
-  static void jit_f32_gemm_6x8__aarch64_neonfma_cortex_a75(
+  static void jit_f32_gemm_upto6x8_1x8__aarch64_neonfma_cortex_a75(
       benchmark::State &state, models::ExecutionPlanFactory model) {
     GEMMEnd2EndBenchmark(
         state, model,
-        xnn_generate_f32_gemm_ukernel_6x8__aarch64_neonfma_cortex_a75,
+        xnn_generate_f32_gemm_ukernel_upto6x8__aarch64_neonfma_cortex_a75,
         xnn_generate_f32_gemm_ukernel_1x8__aarch64_neonfma_cortex_a75,
-        xnn_generate_f32_igemm_ukernel_6x8__aarch64_neonfma_cortex_a75,
+        xnn_generate_f32_igemm_ukernel_upto6x8__aarch64_neonfma_cortex_a75,
         xnn_generate_f32_igemm_ukernel_1x8__aarch64_neonfma_cortex_a75,
-        xnn_init_f32_minmax_scalar_params, 6 /* mr */, 8 /* nr */);
+        xnn_init_f32_minmax_scalar_params, 1 /* mr */, 8 /* nr */);
   }
-  static void jit_f32_gemm_6x8__aarch64_neonfma_prfm_cortex_a75(
+  static void jit_f32_gemm_upto6x8_2x8__aarch64_neonfma_cortex_a75(
       benchmark::State &state, models::ExecutionPlanFactory model) {
     GEMMEnd2EndBenchmark(
         state, model,
-        xnn_generate_f32_gemm_ukernel_6x8__aarch64_neonfma_prfm_cortex_a75,
-        xnn_generate_f32_gemm_ukernel_1x8__aarch64_neonfma_prfm_cortex_a75,
-        xnn_generate_f32_igemm_ukernel_6x8__aarch64_neonfma_prfm_cortex_a75,
-        xnn_generate_f32_igemm_ukernel_1x8__aarch64_neonfma_prfm_cortex_a75,
-        xnn_init_f32_minmax_scalar_params, 6 /* mr */, 8 /* nr */);
+        xnn_generate_f32_gemm_ukernel_upto6x8__aarch64_neonfma_cortex_a75,
+        xnn_generate_f32_gemm_ukernel_1x8__aarch64_neonfma_cortex_a75,
+        xnn_generate_f32_igemm_ukernel_upto6x8__aarch64_neonfma_cortex_a75,
+        xnn_generate_f32_igemm_ukernel_1x8__aarch64_neonfma_cortex_a75,
+        xnn_init_f32_minmax_scalar_params, 2 /* mr */, 8 /* nr */);
   }
-  static void jit_f32_gemm_upto6x8__aarch64_neonfma_cortex_a75(
+  static void jit_f32_gemm_upto6x8_3x8__aarch64_neonfma_cortex_a75(
+      benchmark::State &state, models::ExecutionPlanFactory model) {
+    GEMMEnd2EndBenchmark(
+        state, model,
+        xnn_generate_f32_gemm_ukernel_upto6x8__aarch64_neonfma_cortex_a75,
+        xnn_generate_f32_gemm_ukernel_1x8__aarch64_neonfma_cortex_a75,
+        xnn_generate_f32_igemm_ukernel_upto6x8__aarch64_neonfma_cortex_a75,
+        xnn_generate_f32_igemm_ukernel_1x8__aarch64_neonfma_cortex_a75,
+        xnn_init_f32_minmax_scalar_params, 3 /* mr */, 8 /* nr */);
+  }
+  static void jit_f32_gemm_upto6x8_4x8__aarch64_neonfma_cortex_a75(
+      benchmark::State &state, models::ExecutionPlanFactory model) {
+    GEMMEnd2EndBenchmark(
+        state, model,
+        xnn_generate_f32_gemm_ukernel_upto6x8__aarch64_neonfma_cortex_a75,
+        xnn_generate_f32_gemm_ukernel_1x8__aarch64_neonfma_cortex_a75,
+        xnn_generate_f32_igemm_ukernel_upto6x8__aarch64_neonfma_cortex_a75,
+        xnn_generate_f32_igemm_ukernel_1x8__aarch64_neonfma_cortex_a75,
+        xnn_init_f32_minmax_scalar_params, 4 /* mr */, 8 /* nr */);
+  }
+  static void jit_f32_gemm_upto6x8_5x8__aarch64_neonfma_cortex_a75(
+      benchmark::State &state, models::ExecutionPlanFactory model) {
+    GEMMEnd2EndBenchmark(
+        state, model,
+        xnn_generate_f32_gemm_ukernel_upto6x8__aarch64_neonfma_cortex_a75,
+        xnn_generate_f32_gemm_ukernel_1x8__aarch64_neonfma_cortex_a75,
+        xnn_generate_f32_igemm_ukernel_upto6x8__aarch64_neonfma_cortex_a75,
+        xnn_generate_f32_igemm_ukernel_1x8__aarch64_neonfma_cortex_a75,
+        xnn_init_f32_minmax_scalar_params, 5 /* mr */, 8 /* nr */);
+  }
+  static void jit_f32_gemm_upto6x8_6x8__aarch64_neonfma_cortex_a75(
       benchmark::State &state, models::ExecutionPlanFactory model) {
     GEMMEnd2EndBenchmark(
         state, model,
@@ -544,7 +574,57 @@ static void GEMMEnd2EndBenchmark(
         xnn_generate_f32_igemm_ukernel_1x8__aarch64_neonfma_cortex_a75,
         xnn_init_f32_minmax_scalar_params, 6 /* mr */, 8 /* nr */);
   }
-  static void jit_f32_gemm_upto6x8__aarch64_neonfma_prfm_cortex_a75(
+  static void jit_f32_gemm_upto6x8_1x8__aarch64_neonfma_prfm_cortex_a75(
+      benchmark::State &state, models::ExecutionPlanFactory model) {
+    GEMMEnd2EndBenchmark(
+        state, model,
+        xnn_generate_f32_gemm_ukernel_upto6x8__aarch64_neonfma_prfm_cortex_a75,
+        xnn_generate_f32_gemm_ukernel_1x8__aarch64_neonfma_prfm_cortex_a75,
+        xnn_generate_f32_igemm_ukernel_upto6x8__aarch64_neonfma_prfm_cortex_a75,
+        xnn_generate_f32_igemm_ukernel_1x8__aarch64_neonfma_prfm_cortex_a75,
+        xnn_init_f32_minmax_scalar_params, 1 /* mr */, 8 /* nr */);
+  }
+  static void jit_f32_gemm_upto6x8_2x8__aarch64_neonfma_prfm_cortex_a75(
+      benchmark::State &state, models::ExecutionPlanFactory model) {
+    GEMMEnd2EndBenchmark(
+        state, model,
+        xnn_generate_f32_gemm_ukernel_upto6x8__aarch64_neonfma_prfm_cortex_a75,
+        xnn_generate_f32_gemm_ukernel_1x8__aarch64_neonfma_prfm_cortex_a75,
+        xnn_generate_f32_igemm_ukernel_upto6x8__aarch64_neonfma_prfm_cortex_a75,
+        xnn_generate_f32_igemm_ukernel_1x8__aarch64_neonfma_prfm_cortex_a75,
+        xnn_init_f32_minmax_scalar_params, 2 /* mr */, 8 /* nr */);
+  }
+  static void jit_f32_gemm_upto6x8_3x8__aarch64_neonfma_prfm_cortex_a75(
+      benchmark::State &state, models::ExecutionPlanFactory model) {
+    GEMMEnd2EndBenchmark(
+        state, model,
+        xnn_generate_f32_gemm_ukernel_upto6x8__aarch64_neonfma_prfm_cortex_a75,
+        xnn_generate_f32_gemm_ukernel_1x8__aarch64_neonfma_prfm_cortex_a75,
+        xnn_generate_f32_igemm_ukernel_upto6x8__aarch64_neonfma_prfm_cortex_a75,
+        xnn_generate_f32_igemm_ukernel_1x8__aarch64_neonfma_prfm_cortex_a75,
+        xnn_init_f32_minmax_scalar_params, 3 /* mr */, 8 /* nr */);
+  }
+  static void jit_f32_gemm_upto6x8_4x8__aarch64_neonfma_prfm_cortex_a75(
+      benchmark::State &state, models::ExecutionPlanFactory model) {
+    GEMMEnd2EndBenchmark(
+        state, model,
+        xnn_generate_f32_gemm_ukernel_upto6x8__aarch64_neonfma_prfm_cortex_a75,
+        xnn_generate_f32_gemm_ukernel_1x8__aarch64_neonfma_prfm_cortex_a75,
+        xnn_generate_f32_igemm_ukernel_upto6x8__aarch64_neonfma_prfm_cortex_a75,
+        xnn_generate_f32_igemm_ukernel_1x8__aarch64_neonfma_prfm_cortex_a75,
+        xnn_init_f32_minmax_scalar_params, 4 /* mr */, 8 /* nr */);
+  }
+  static void jit_f32_gemm_upto6x8_5x8__aarch64_neonfma_prfm_cortex_a75(
+      benchmark::State &state, models::ExecutionPlanFactory model) {
+    GEMMEnd2EndBenchmark(
+        state, model,
+        xnn_generate_f32_gemm_ukernel_upto6x8__aarch64_neonfma_prfm_cortex_a75,
+        xnn_generate_f32_gemm_ukernel_1x8__aarch64_neonfma_prfm_cortex_a75,
+        xnn_generate_f32_igemm_ukernel_upto6x8__aarch64_neonfma_prfm_cortex_a75,
+        xnn_generate_f32_igemm_ukernel_1x8__aarch64_neonfma_prfm_cortex_a75,
+        xnn_init_f32_minmax_scalar_params, 5 /* mr */, 8 /* nr */);
+  }
+  static void jit_f32_gemm_upto6x8_6x8__aarch64_neonfma_prfm_cortex_a75(
       benchmark::State &state, models::ExecutionPlanFactory model) {
     GEMMEnd2EndBenchmark(
         state, model,
@@ -555,12 +635,21 @@ static void GEMMEnd2EndBenchmark(
         xnn_init_f32_minmax_scalar_params, 6 /* mr */, 8 /* nr */);
   }
 
-  BENCHMARK_FP32_END2END(jit_f32_gemm_4x8__aarch64_neonfma_cortex_a75);
-  BENCHMARK_FP32_END2END(jit_f32_gemm_4x8__aarch64_neonfma_prfm_cortex_a75);
-  BENCHMARK_FP32_END2END(jit_f32_gemm_6x8__aarch64_neonfma_cortex_a75);
-  BENCHMARK_FP32_END2END(jit_f32_gemm_6x8__aarch64_neonfma_prfm_cortex_a75);
-  BENCHMARK_FP32_END2END(jit_f32_gemm_upto6x8__aarch64_neonfma_cortex_a75);
-  BENCHMARK_FP32_END2END(jit_f32_gemm_upto6x8__aarch64_neonfma_prfm_cortex_a75);
+BENCHMARK_FP32_END2END(jit_f32_gemm_4x8__aarch64_neonfma_cortex_a75);
+BENCHMARK_FP32_END2END(jit_f32_gemm_4x8__aarch64_neonfma_prfm_cortex_a75);
+BENCHMARK_FP32_END2END(jit_f32_gemm_upto6x8_1x8__aarch64_neonfma_cortex_a75);
+BENCHMARK_FP32_END2END(jit_f32_gemm_upto6x8_2x8__aarch64_neonfma_cortex_a75);
+BENCHMARK_FP32_END2END(jit_f32_gemm_upto6x8_3x8__aarch64_neonfma_cortex_a75);
+BENCHMARK_FP32_END2END(jit_f32_gemm_upto6x8_4x8__aarch64_neonfma_cortex_a75);
+BENCHMARK_FP32_END2END(jit_f32_gemm_upto6x8_5x8__aarch64_neonfma_cortex_a75);
+BENCHMARK_FP32_END2END(jit_f32_gemm_upto6x8_6x8__aarch64_neonfma_cortex_a75);
+BENCHMARK_FP32_END2END(jit_f32_gemm_upto6x8_1x8__aarch64_neonfma_prfm_cortex_a75);
+BENCHMARK_FP32_END2END(jit_f32_gemm_upto6x8_2x8__aarch64_neonfma_prfm_cortex_a75);
+BENCHMARK_FP32_END2END(jit_f32_gemm_upto6x8_3x8__aarch64_neonfma_prfm_cortex_a75);
+BENCHMARK_FP32_END2END(jit_f32_gemm_upto6x8_4x8__aarch64_neonfma_prfm_cortex_a75);
+BENCHMARK_FP32_END2END(jit_f32_gemm_upto6x8_5x8__aarch64_neonfma_prfm_cortex_a75);
+BENCHMARK_FP32_END2END(jit_f32_gemm_upto6x8_6x8__aarch64_neonfma_prfm_cortex_a75);
+
 #endif  // XNN_ARCH_ARM64 && XNN_PLATFORM_JIT
 
 #if XNN_ARCH_ARM && XNN_ENABLE_ASSEMBLY

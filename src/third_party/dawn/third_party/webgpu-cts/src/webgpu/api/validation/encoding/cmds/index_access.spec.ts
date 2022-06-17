@@ -12,6 +12,7 @@ class F extends ValidationTest {
 
   createRenderPipeline(): GPURenderPipeline {
     return this.device.createRenderPipeline({
+      layout: 'auto',
       vertex: {
         module: this.device.createShaderModule({
           code: `

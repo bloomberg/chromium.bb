@@ -1271,6 +1271,55 @@ follows.
 
 A64 / Commodore 64 multicolor charset encoder. @code{a64_multi5} is extended with 5th color (colram).
 
+@section Cinepak
+
+Cinepak aka CVID encoder.
+Compatible with Windows 3.1 and vintage MacOS.
+
+@subsection Options
+
+@table @option
+@item g @var{integer}
+Keyframe interval.
+A keyframe is inserted at least every @code{-g} frames, sometimes sooner.
+
+@item q:v @var{integer}
+Quality factor. Lower is better. Higher gives lower bitrate.
+The following table lists bitrates when encoding akiyo_cif.y4m for various values of @code{-q:v} with @code{-g 100}:
+
+@table @option
+@item @code{-q:v 1} 1918 kb/s
+@item @code{-q:v 2} 1735 kb/s
+@item @code{-q:v 4} 1500 kb/s
+@item @code{-q:v 10} 1041 kb/s
+@item @code{-q:v 20} 826 kb/s
+@item @code{-q:v 40} 553 kb/s
+@item @code{-q:v 100} 394 kb/s
+@item @code{-q:v 200} 312 kb/s
+@item @code{-q:v 400} 266 kb/s
+@item @code{-q:v 1000} 237 kb/s
+@end table
+
+@item max_extra_cb_iterations @var{integer}
+Max extra codebook recalculation passes, more is better and slower.
+
+@item skip_empty_cb @var{boolean}
+Avoid wasting bytes, ignore vintage MacOS decoder.
+
+@item max_strips @var{integer}
+@itemx min_strips @var{integer}
+The minimum and maximum number of strips to use.
+Wider range sometimes improves quality.
+More strips is generally better quality but costs more bits.
+Fewer strips tend to yield more keyframes.
+Vintage compatible is 1..3.
+
+@item strip_number_adaptivity @var{integer}
+How much number of strips is allowed to change between frames.
+Higher is better but slower.
+
+@end table
+
 @section GIF
 
 GIF image/animation encoder.
@@ -1809,6 +1858,41 @@ by ":". See the SVT-AV1 encoder user guide for a list of accepted parameters.
 
 @end table
 
+@section libjxl
+
+libjxl JPEG XL encoder wrapper.
+
+Requires the presence of the libjxl headers and library during
+configuration. You need to explicitly configure the build with
+@code{--enable-libjxl}.
+
+@subsection Options
+
+The libjxl wrapper supports the following options:
+
+@table @option
+
+@item distance
+Set the target Butteraugli distance. This is a quality setting: lower
+distance yields higher quality, with distance=1.0 roughly comparable to
+libjpeg Quality 90 for photographic content. Setting distance=0.0 yields
+true lossless encoding. Valid values range between 0.0 and 15.0, and sane
+values rarely exceed 5.0. Setting distance=0.1 usually attains
+transparency for most input. The default is 1.0.
+
+@item effort
+Set the encoding effort used. Higher effort values produce more consistent
+quality and usually produces a better quality/bpp curve, at the cost of
+more CPU time required. Valid values range from 1 to 9, and the default is 7.
+
+@item modular
+Force the encoder to use Modular mode instead of choosing automatically. The
+default is to use VarDCT for lossy encoding and Modular for lossless. VarDCT
+is generally superior to Modular for lossy encoding but does not support
+lossless encoding.
+
+@end table
+
 @section libkvazaar
 
 Kvazaar H.265/HEVC encoder.
@@ -1996,8 +2080,11 @@ kilobits/s.
 @item keyint_min (@emph{kf-min-dist})
 
 @item qmin (@emph{min-q})
+Minimum (Best Quality) Quantizer.
 
 @item qmax (@emph{max-q})
+Maximum (Worst Quality) Quantizer.
+Can be changed per-frame.
 
 @item bufsize (@emph{buf-sz}, @emph{buf-optimal-sz})
 Set ratecontrol buffer size (in bits). Note @command{vpxenc}'s options are
@@ -3263,6 +3350,14 @@ Enable rate distortion optimization.
 @item @var{max_frame_size}
 Maximum encoded frame size in bytes.
 
+@item @var{max_frame_size_i}
+Maximum encoded frame size for I frames in bytes. If this value is set as larger
+than zero, then for I frames the value set by max_frame_size is ignored.
+
+@item @var{max_frame_size_p}
+Maximum encoded frame size for P frames in bytes. If this value is set as larger
+than zero, then for P frames the value set by max_frame_size is ignored.
+
 @item @var{max_slice_size}
 Maximum encoded slice size in bytes.
 
@@ -3278,6 +3373,11 @@ by the QSV encoder, it will be changed to be in the range.
 Setting this flag enables macroblock level bitrate control that generally
 improves subjective visual quality. Enabling this flag may have negative impact
 on performance and objective visual quality metric.
+
+@item @var{low_delay_brc}
+Setting this flag turns on or off LowDelayBRC feautre in qsv plugin, which provides
+more accurate bitrate control to minimize the variance of bitstream size frame
+by frame. Value: -1-default 0-off 1-on
 
 @item @var{adaptive_i}
 This flag controls insertion of I frames by the QSV encoder. Turn ON this flag
@@ -3391,6 +3491,14 @@ Enable rate distortion optimization.
 @item @var{max_frame_size}
 Maximum encoded frame size in bytes.
 
+@item @var{max_frame_size_i}
+Maximum encoded frame size for I frames in bytes. If this value is set as larger
+than zero, then for I frames the value set by max_frame_size is ignored.
+
+@item @var{max_frame_size_p}
+Maximum encoded frame size for P frames in bytes. If this value is set as larger
+than zero, then for P frames the value set by max_frame_size is ignored.
+
 @item @var{max_slice_size}
 Maximum encoded slice size in bytes.
 
@@ -3398,6 +3506,11 @@ Maximum encoded slice size in bytes.
 Setting this flag enables macroblock level bitrate control that generally
 improves subjective visual quality. Enabling this flag may have negative impact
 on performance and objective visual quality metric.
+
+@item @var{low_delay_brc}
+Setting this flag turns on or off LowDelayBRC feautre in qsv plugin, which provides
+more accurate bitrate control to minimize the variance of bitstream size frame
+by frame. Value: -1-default 0-off 1-on
 
 @item @var{p_strategy}
 Enable P-pyramid: 0-default 1-simple 2-pyramid(bf need to be set to 0).
@@ -3742,6 +3855,22 @@ bitstream filter to modify the output stream to display frames in the correct or
 Only normal frames are produced - the @option{vp9_superframe} bitstream filter may be
 required to produce a stream usable with all decoders.
 
+@end table
+
+@section vbn
+
+Vizrt Binary Image encoder.
+
+This format is used by the broadcast vendor Vizrt for quick texture streaming.
+Advanced features of the format such as LZW compression of texture data or
+generation of mipmaps are not supported.
+
+@subsection Options
+
+@table @option
+@item format @var{string}
+Sets the texture compression used by the VBN file. Can be @var{dxt1},
+@var{dxt5} or @var{raw}. Default is @var{dxt5}.
 @end table
 
 @section vc2

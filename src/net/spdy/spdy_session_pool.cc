@@ -99,7 +99,6 @@ SpdySessionPool::SpdySessionPool(
       ssl_client_context_(ssl_client_context),
       resolver_(resolver),
       quic_supported_versions_(quic_supported_versions),
-      enable_sending_initial_data_(true),
       enable_ping_based_connection_checking_(
           enable_ping_based_connection_checking),
       is_http2_enabled_(is_http2_enabled),
@@ -113,7 +112,6 @@ SpdySessionPool::SpdySessionPool(
       enable_priority_update_(enable_priority_update),
       go_away_on_ip_change_(go_away_on_ip_change),
       time_func_(time_func),
-      push_delegate_(nullptr),
       network_quality_estimator_(network_quality_estimator),
       cleanup_sessions_on_ip_address_changed_(
           cleanup_sessions_on_ip_address_changed) {
@@ -479,7 +477,7 @@ void SpdySessionPool::CloseAllSessions() {
 
 std::unique_ptr<base::Value> SpdySessionPool::SpdySessionPoolInfoToValue()
     const {
-  auto list = std::make_unique<base::ListValue>();
+  base::Value::List list;
 
   for (auto it = available_sessions_.begin(); it != available_sessions_.end();
        ++it) {
@@ -488,9 +486,9 @@ std::unique_ptr<base::Value> SpdySessionPool::SpdySessionPoolInfoToValue()
     const SpdySessionKey& key = it->first;
     const SpdySessionKey& session_key = it->second->spdy_session_key();
     if (key == session_key)
-      list->Append(it->second->GetInfoAsValue());
+      list.Append(it->second->GetInfoAsValue());
   }
-  return std::move(list);
+  return std::make_unique<base::Value>(std::move(list));
 }
 
 void SpdySessionPool::OnIPAddressChanged() {

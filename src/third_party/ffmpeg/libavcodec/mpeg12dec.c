@@ -2762,14 +2762,13 @@ static int decode_chunks(AVCodecContext *avctx, AVFrame *picture,
     }
 }
 
-static int mpeg_decode_frame(AVCodecContext *avctx, void *data,
+static int mpeg_decode_frame(AVCodecContext *avctx, AVFrame *picture,
                              int *got_output, AVPacket *avpkt)
 {
     const uint8_t *buf = avpkt->data;
     int ret;
     int buf_size = avpkt->size;
     Mpeg1Context *s = avctx->priv_data;
-    AVFrame *picture = data;
     MpegEncContext *s2 = &s->mpeg_enc_ctx;
 
     if (buf_size == 0 || (buf_size == 4 && AV_RB32(buf) == SEQ_END_CODE)) {
@@ -2871,7 +2870,7 @@ const FFCodec ff_mpeg1video_decoder = {
     .priv_data_size        = sizeof(Mpeg1Context),
     .init                  = mpeg_decode_init,
     .close                 = mpeg_decode_end,
-    .decode                = mpeg_decode_frame,
+    FF_CODEC_DECODE_CB(mpeg_decode_frame),
     .p.capabilities        = AV_CODEC_CAP_DRAW_HORIZ_BAND | AV_CODEC_CAP_DR1 |
 #if FF_API_FLAG_TRUNCATED
                              AV_CODEC_CAP_TRUNCATED |
@@ -2904,7 +2903,7 @@ const FFCodec ff_mpeg2video_decoder = {
     .priv_data_size = sizeof(Mpeg1Context),
     .init           = mpeg_decode_init,
     .close          = mpeg_decode_end,
-    .decode         = mpeg_decode_frame,
+    FF_CODEC_DECODE_CB(mpeg_decode_frame),
     .p.capabilities = AV_CODEC_CAP_DRAW_HORIZ_BAND | AV_CODEC_CAP_DR1 |
 #if FF_API_FLAG_TRUNCATED
                       AV_CODEC_CAP_TRUNCATED |
@@ -2950,7 +2949,7 @@ const FFCodec ff_mpegvideo_decoder = {
     .priv_data_size = sizeof(Mpeg1Context),
     .init           = mpeg_decode_init,
     .close          = mpeg_decode_end,
-    .decode         = mpeg_decode_frame,
+    FF_CODEC_DECODE_CB(mpeg_decode_frame),
     .p.capabilities = AV_CODEC_CAP_DRAW_HORIZ_BAND | AV_CODEC_CAP_DR1 |
 #if FF_API_FLAG_TRUNCATED
                       AV_CODEC_CAP_TRUNCATED |
@@ -2969,13 +2968,12 @@ typedef struct IPUContext {
     DECLARE_ALIGNED(32, int16_t, block)[6][64];
 } IPUContext;
 
-static int ipu_decode_frame(AVCodecContext *avctx, void *data,
+static int ipu_decode_frame(AVCodecContext *avctx, AVFrame *frame,
                             int *got_frame, AVPacket *avpkt)
 {
     IPUContext *s = avctx->priv_data;
     MpegEncContext *m = &s->m;
     GetBitContext *gb = &m->gb;
-    AVFrame * const frame = data;
     int ret;
 
     ret = ff_get_buffer(avctx, frame, 0);
@@ -3115,7 +3113,7 @@ const FFCodec ff_ipu_decoder = {
     .p.id           = AV_CODEC_ID_IPU,
     .priv_data_size = sizeof(IPUContext),
     .init           = ipu_decode_init,
-    .decode         = ipu_decode_frame,
+    FF_CODEC_DECODE_CB(ipu_decode_frame),
     .close          = ipu_decode_end,
     .p.capabilities = AV_CODEC_CAP_DR1,
     .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP,

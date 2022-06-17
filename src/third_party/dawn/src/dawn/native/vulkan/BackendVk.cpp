@@ -14,6 +14,7 @@
 
 #include "dawn/native/vulkan/BackendVk.h"
 
+#include <algorithm>
 #include <string>
 #include <utility>
 
@@ -29,28 +30,28 @@
 
 // TODO(crbug.com/dawn/283): Link against the Vulkan Loader and remove this.
 #if defined(DAWN_ENABLE_SWIFTSHADER)
-#if defined(DAWN_PLATFORM_LINUX) || defined(DAWN_PLATFORM_FUSCHIA)
+#if DAWN_PLATFORM_IS(LINUX) || DAWN_PLATFORM_IS(FUSCHIA)
 constexpr char kSwiftshaderLibName[] = "libvk_swiftshader.so";
-#elif defined(DAWN_PLATFORM_WINDOWS)
+#elif DAWN_PLATFORM_IS(WINDOWS)
 constexpr char kSwiftshaderLibName[] = "vk_swiftshader.dll";
-#elif defined(DAWN_PLATFORM_MACOS)
+#elif DAWN_PLATFORM_IS(MACOS)
 constexpr char kSwiftshaderLibName[] = "libvk_swiftshader.dylib";
 #else
 #error "Unimplemented Swiftshader Vulkan backend platform"
 #endif
 #endif
 
-#if defined(DAWN_PLATFORM_LINUX)
-#if defined(DAWN_PLATFORM_ANDROID)
+#if DAWN_PLATFORM_IS(LINUX)
+#if DAWN_PLATFORM_IS(ANDROID)
 constexpr char kVulkanLibName[] = "libvulkan.so";
 #else
 constexpr char kVulkanLibName[] = "libvulkan.so.1";
 #endif
-#elif defined(DAWN_PLATFORM_WINDOWS)
+#elif DAWN_PLATFORM_IS(WINDOWS)
 constexpr char kVulkanLibName[] = "vulkan-1.dll";
-#elif defined(DAWN_PLATFORM_MACOS)
+#elif DAWN_PLATFORM_IS(MACOS)
 constexpr char kVulkanLibName[] = "libvulkan.dylib";
-#elif defined(DAWN_PLATFORM_FUCHSIA)
+#elif DAWN_PLATFORM_IS(FUCHSIA)
 constexpr char kVulkanLibName[] = "libvulkan.so";
 #else
 #error "Unimplemented Vulkan backend platform"
@@ -88,7 +89,12 @@ namespace dawn::native::vulkan {
 namespace {
 
 static constexpr ICD kICDs[] = {
+// Other drivers should not be loaded with MSAN because they don't have MSAN instrumentation.
+// MSAN will produce false positives since it cannot detect changes to memory that the driver
+// has made.
+#if !defined(MEMORY_SANITIZER)
     ICD::None,
+#endif
 #if defined(DAWN_ENABLE_SWIFTSHADER)
     ICD::SwiftShader,
 #endif  // defined(DAWN_ENABLE_SWIFTSHADER)
@@ -328,17 +334,7 @@ ResultOrError<VulkanGlobalKnobs> VulkanInstance::CreateVkInstance(const Instance
     appInfo.applicationVersion = 0;
     appInfo.pEngineName = nullptr;
     appInfo.engineVersion = 0;
-    // Vulkan 1.0 implementations were required to return VK_ERROR_INCOMPATIBLE_DRIVER if
-    // apiVersion was larger than 1.0. Meanwhile, as long as the instance supports at least
-    // Vulkan 1.1, an application can use different versions of Vulkan with an instance than
-    // it does with a device or physical device. So we should set apiVersion to Vulkan 1.0
-    // if the instance only supports Vulkan 1.0. Otherwise we set apiVersion to Vulkan 1.2,
-    // treat 1.2 as the highest API version dawn targets.
-    if (mGlobalInfo.apiVersion == VK_MAKE_VERSION(1, 0, 0)) {
-        appInfo.apiVersion = VK_MAKE_VERSION(1, 0, 0);
-    } else {
-        appInfo.apiVersion = VK_MAKE_VERSION(1, 2, 0);
-    }
+    appInfo.apiVersion = std::min(mGlobalInfo.apiVersion, VK_API_VERSION_1_3);
 
     VkInstanceCreateInfo createInfo;
     createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -449,12 +445,12 @@ ResultOrError<std::vector<Ref<AdapterBase>>> Backend::DiscoverAdapters(
 
     InstanceBase* instance = GetInstance();
     for (ICD icd : kICDs) {
-#if defined(DAWN_PLATFORM_MACOS)
+#if DAWN_PLATFORM_IS(MACOS)
         // On Mac, we don't expect non-Swiftshader Vulkan to be available.
         if (icd == ICD::None) {
             continue;
         }
-#endif  // defined(DAWN_PLATFORM_MACOS)
+#endif  // DAWN_PLATFORM_IS(MACOS)
         if (options->forceSwiftShader && icd != ICD::SwiftShader) {
             continue;
         }

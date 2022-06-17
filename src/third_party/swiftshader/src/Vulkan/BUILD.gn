@@ -21,6 +21,7 @@ config("swiftshader_libvulkan_private_config") {
   if (is_linux) {
     defines = [
       "VK_USE_PLATFORM_XCB_KHR",
+      "VK_USE_PLATFORM_WAYLAND_KHR",
       "VK_EXPORT=__attribute__((visibility(\"default\")))",
     ]
   } else if (is_chromeos) {
@@ -57,6 +58,7 @@ config("swiftshader_libvulkan_private_config") {
   defines += [
      "SWIFTSHADER_ENABLE_ASTC",  # TODO(b/150130101)
      "SWIFTSHADER_LEGACY_PRECISION=true",  # TODO(chromium:1299047)
+     "SWIFTSHADER_ZERO_INITIALIZE_DEVICE_MEMORY",
   ]
 }
 

@@ -1,5 +1,4 @@
-load("//bazel:macros.bzl", "exports_files_legacy")
-load("@emsdk//emscripten_toolchain:wasm_rules.bzl", "wasm_cc_binary")
+load("//bazel:macros.bzl", "exports_files_legacy", "wasm_cc_binary")
 load("//bazel/common_config_settings:defs.bzl", "bool_flag")
 load("//bazel:cc_binary_with_flags.bzl", "cc_binary_with_flags")
 load("//bazel:karma_test.bzl", "karma_test")
@@ -7,8 +6,6 @@ load("//bazel:karma_test.bzl", "karma_test")
 licenses(["notice"])
 
 exports_files_legacy()
-
-package(default_visibility = ["//:__subpackages__"])
 
 BASE_LINKOPTS = [
     #"-flto",  # https://github.com/emscripten-core/emsdk/issues/807
@@ -42,77 +39,11 @@ DEBUG_OPTS = [
     "--source-map-base=/build/",
 ]
 
-GM_OPTS = [
-    "-sEXPORT_NAME=InitWasmGMTests",
-    "--pre-js",
-    "modules/canvaskit/gm.js",
-    "-sDEMANGLE_SUPPORT=1",
-    "--profiling-funcs",
-    "--profiling",
-]
-
 filegroup(
     name = "hdrs",
     srcs = [
         "WasmCommon.h",
     ],
-)
-
-cc_binary_with_flags(
-    name = "wasm_gm_tests.with_flags",
-    testonly = True,
-    srcs = [
-        "gm_bindings.cpp",
-        ":hdrs",
-        "//gm:gm_list",
-        "//tests:test_list",
-    ],
-    additional_linker_inputs = ["gm.js"],
-    linkopts = select({
-        "//bazel/common_config_settings:debug_build": BASE_LINKOPTS + GM_OPTS + DEBUG_OPTS,
-        "//bazel/common_config_settings:release_build": BASE_LINKOPTS + GM_OPTS + RELEASE_OPTS,
-        "//conditions:default": BASE_LINKOPTS + GM_OPTS + RELEASE_OPTS,
-    }),
-    set_flags = {
-        "include_decoder": [
-            "jpeg_decode_codec",
-            "png_decode_codec",
-            "webp_decode_codec",
-            "gif_decode_codec",
-        ],
-        "include_encoder": [
-            "jpeg_encode_codec",
-            "png_encode_codec",
-            "webp_encode_codec",
-        ],
-        "gpu_backend": [
-            "gl_backend",
-        ],
-        "with_gl_standard": [
-            "webgl_standard",
-        ],
-        "is_skia_dev_build": [
-            "True",
-        ],
-    },
-    # This target won't build successfully on its own because of missing emscripten
-    # headers etc. Therefore, we hide it from wildcards.
-    tags = ["manual"],
-    deps = [
-        "//:skia_core",
-        "//gm",
-        "//src/core:SkFontMgrPriv_hdr",
-        "//tests",
-        "//tools:hash_and_encode",
-        "//tools:resource_factory",
-        "//tools/fonts:test_font_manager",
-    ],
-)
-
-wasm_cc_binary(
-    name = "wasm_gm_tests",
-    testonly = True,
-    cc_target = ":wasm_gm_tests.with_flags",
 )
 
 # See https://stackoverflow.com/a/57499321 for reference.
@@ -364,7 +295,7 @@ cc_binary_with_flags(
     # headers etc. Therefore, we hide it from wildcards.
     tags = ["manual"],
     deps = [
-        "//:skia_core",
+        "//:skia_public",
     ] + select({
         ":enable_fonts_true": [
             "//modules/skparagraph",
@@ -432,7 +363,7 @@ bool_flag(
 )
 
 karma_test(
-    name = "canvaskit_js_wasms",
+    name = "canvaskit_js_tests",
     srcs = [
         ":canvaskit_wasm/canvaskit.js",
         # We want to make sure the CanvasKit JS is loaded before the loader script

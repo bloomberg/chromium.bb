@@ -19,7 +19,10 @@ from google.appengine.ext import deferred
 from google.appengine.ext import ndb
 from google.appengine.runtime import apiproxy_errors
 
+from dashboard.common import datastore_hooks
 from dashboard.common import utils
+from dashboard.models import anomaly
+from dashboard.models import graph_data
 from dashboard.pinpoint.models import change as change_module
 from dashboard.pinpoint.models import errors
 from dashboard.pinpoint.models import evaluators
@@ -172,6 +175,15 @@ def GetIterationCount(initial_attempt_count, bot_count):
   # We want to run at least initial_attempt_count iterations.
   # In addition, attempts should be evenly distributed between all bots.
   # bot_count will never be 0 (we'll exception out if that happens).
+
+  # Bisections determine attempt count elsewhere.
+  if initial_attempt_count is None:
+    return initial_attempt_count
+
+  # initial_attempt_count should always be even
+  if initial_attempt_count % 2:
+    initial_attempt_count += 1
+
   if bot_count >= initial_attempt_count:
     return initial_attempt_count
   else:
@@ -303,7 +315,7 @@ class Job(ndb.Model):
           use_execution_engine=False,
           project='chromium',
           batch_id=None,
-          initial_attempt_count=None,
+          initial_attempt_count=10,
           dimensions=None,
           swarming_server=None):
     """Creates a new Job, adds Changes to it, and puts it in the Datstore.
@@ -339,6 +351,11 @@ class Job(ndb.Model):
     bots = swarming.GetAliveBotsByDimensions(dimensions, swarming_server)
     if not len(bots):
       raise errors.SwarmingNoBots()
+
+    # For A/B ordering to be equal, we need an even number of bots (or one)
+    if len(bots) % 2 and len(bots) != 1:
+      bots.pop()
+
     state = job_state.JobState(
         quests,
         comparison_mode=comparison_mode,
@@ -531,6 +548,15 @@ class Job(ndb.Model):
     self._UpdateGerritIfNeeded()
     scheduler.Complete(self)
 
+  def _GetImprovementDirection(self):
+    # returns the improvement direction
+    if self.tags is not None and "test_path" in self.tags:
+      datastore_hooks.SetSinglePrivilegedRequest()
+      t = graph_data.TestMetadata.get_by_id(self.tags["test_path"])
+      if t is not None:
+        return t.improvement_direction
+    return anomaly.UNKNOWN
+
   def _FormatAndPostBugCommentOnComplete(self):
     logging.debug('Processing outputs.')
     if self._IsTryJob():
@@ -615,6 +641,7 @@ class Job(ndb.Model):
       values_b = result_values[change_b]
       bug_update_builder.AddDifference(change_b, values_a, values_b)
 
+    improvement_dir = self._GetImprovementDirection()
     deferred.defer(
         job_bug_update.UpdatePostAndMergeDeferred,
         bug_update_builder,
@@ -622,6 +649,7 @@ class Job(ndb.Model):
         self.tags,
         self.url,
         self.project,
+        improvement_dir,
         _retry_options=RETRY_OPTIONS)
 
   def _UpdateGerritIfNeeded(self, success=True):

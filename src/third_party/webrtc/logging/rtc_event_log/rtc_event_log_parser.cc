@@ -690,46 +690,40 @@ ParsedRtcEventLog::ParseStatus StoreRtcpBlocks(
         header.fmt() == rtcp::TransportFeedback::kFeedbackMessageType) {
       LoggedRtcpPacketTransportFeedback parsed_block;
       parsed_block.timestamp = timestamp;
-      if (parsed_block.transport_feedback.Parse(header))
-        transport_feedback_list->push_back(std::move(parsed_block));
+      RTC_PARSE_CHECK_OR_RETURN(parsed_block.transport_feedback.Parse(header));
+      transport_feedback_list->push_back(std::move(parsed_block));
     } else if (header.type() == rtcp::SenderReport::kPacketType) {
       LoggedRtcpPacketSenderReport parsed_block;
       parsed_block.timestamp = timestamp;
-      if (parsed_block.sr.Parse(header)) {
-        sr_list->push_back(std::move(parsed_block));
-      }
+      RTC_PARSE_CHECK_OR_RETURN(parsed_block.sr.Parse(header));
+      sr_list->push_back(std::move(parsed_block));
     } else if (header.type() == rtcp::ReceiverReport::kPacketType) {
       LoggedRtcpPacketReceiverReport parsed_block;
       parsed_block.timestamp = timestamp;
-      if (parsed_block.rr.Parse(header)) {
-        rr_list->push_back(std::move(parsed_block));
-      }
+      RTC_PARSE_CHECK_OR_RETURN(parsed_block.rr.Parse(header));
+      rr_list->push_back(std::move(parsed_block));
     } else if (header.type() == rtcp::ExtendedReports::kPacketType) {
       LoggedRtcpPacketExtendedReports parsed_block;
       parsed_block.timestamp = timestamp;
-      if (parsed_block.xr.Parse(header)) {
-        xr_list->push_back(std::move(parsed_block));
-      }
+      RTC_PARSE_CHECK_OR_RETURN(parsed_block.xr.Parse(header));
+      xr_list->push_back(std::move(parsed_block));
     } else if (header.type() == rtcp::Fir::kPacketType &&
                header.fmt() == rtcp::Fir::kFeedbackMessageType) {
       LoggedRtcpPacketFir parsed_block;
       parsed_block.timestamp = timestamp;
-      if (parsed_block.fir.Parse(header)) {
-        fir_list->push_back(std::move(parsed_block));
-      }
+      RTC_PARSE_CHECK_OR_RETURN(parsed_block.fir.Parse(header));
+      fir_list->push_back(std::move(parsed_block));
     } else if (header.type() == rtcp::Pli::kPacketType &&
                header.fmt() == rtcp::Pli::kFeedbackMessageType) {
       LoggedRtcpPacketPli parsed_block;
       parsed_block.timestamp = timestamp;
-      if (parsed_block.pli.Parse(header)) {
-        pli_list->push_back(std::move(parsed_block));
-      }
+      RTC_PARSE_CHECK_OR_RETURN(parsed_block.pli.Parse(header));
+      pli_list->push_back(std::move(parsed_block));
     } else if (header.type() == rtcp::Bye::kPacketType) {
       LoggedRtcpPacketBye parsed_block;
       parsed_block.timestamp = timestamp;
-      if (parsed_block.bye.Parse(header)) {
-        bye_list->push_back(std::move(parsed_block));
-      }
+      RTC_PARSE_CHECK_OR_RETURN(parsed_block.bye.Parse(header));
+      bye_list->push_back(std::move(parsed_block));
     } else if (header.type() == rtcp::Psfb::kPacketType &&
                header.fmt() == rtcp::Psfb::kAfbMessageType) {
       bool type_found = false;
@@ -749,13 +743,13 @@ ParsedRtcEventLog::ParseStatus StoreRtcpBlocks(
           type_found = true;
         }
       }
+      // We ignore other application-layer feedback types.
     } else if (header.type() == rtcp::Nack::kPacketType &&
                header.fmt() == rtcp::Nack::kFeedbackMessageType) {
       LoggedRtcpPacketNack parsed_block;
       parsed_block.timestamp = timestamp;
-      if (parsed_block.nack.Parse(header)) {
-        nack_list->push_back(std::move(parsed_block));
-      }
+      RTC_PARSE_CHECK_OR_RETURN(parsed_block.nack.Parse(header));
+      nack_list->push_back(std::move(parsed_block));
     }
   }
   return ParsedRtcEventLog::ParseStatus::Success();
@@ -2330,7 +2324,7 @@ std::vector<LoggedPacketInfo> ParsedRtcEventLog::GetPacketInfos(
   };
 
   Timestamp feedback_base_time = Timestamp::MinusInfinity();
-  absl::optional<int64_t> last_feedback_base_time_us;
+  Timestamp last_feedback_base_time = Timestamp::MinusInfinity();
 
   auto feedback_handler =
       [&](const LoggedRtcpPacketTransportFeedback& logged_rtcp) {
@@ -2340,13 +2334,12 @@ std::vector<LoggedPacketInfo> ParsedRtcEventLog::GetPacketInfos(
         // Add timestamp deltas to a local time base selected on first packet
         // arrival. This won't be the true time base, but makes it easier to
         // manually inspect time stamps.
-        if (!last_feedback_base_time_us) {
+        if (!last_feedback_base_time.IsFinite()) {
           feedback_base_time = log_feedback_time;
         } else {
-          feedback_base_time += TimeDelta::Micros(
-              feedback.GetBaseDeltaUs(*last_feedback_base_time_us));
+          feedback_base_time += feedback.GetBaseDelta(last_feedback_base_time);
         }
-        last_feedback_base_time_us = feedback.GetBaseTimeUs();
+        last_feedback_base_time = feedback.BaseTime();
 
         std::vector<LoggedPacketInfo*> packet_feedbacks;
         packet_feedbacks.reserve(feedback.GetAllPackets().size());
@@ -2368,7 +2361,7 @@ std::vector<LoggedPacketInfo> ParsedRtcEventLog::GetPacketInfos(
             continue;
           }
           if (packet.received()) {
-            receive_timestamp += TimeDelta::Micros(packet.delta_us());
+            receive_timestamp += packet.delta();
             if (sent->reported_recv_time.IsInfinite()) {
               sent->reported_recv_time = receive_timestamp;
               sent->log_feedback_time = log_feedback_time;
@@ -2393,8 +2386,11 @@ std::vector<LoggedPacketInfo> ParsedRtcEventLog::GetPacketInfos(
         last->last_in_feedback = true;
         for (LoggedPacketInfo* fb : packet_feedbacks) {
           if (direction == PacketDirection::kOutgoingPacket) {
-            fb->feedback_hold_duration =
-                last->reported_recv_time - fb->reported_recv_time;
+            if (last->reported_recv_time.IsFinite() &&
+                fb->reported_recv_time.IsFinite()) {
+              fb->feedback_hold_duration =
+                  last->reported_recv_time - fb->reported_recv_time;
+            }
           } else {
             fb->feedback_hold_duration =
                 log_feedback_time - fb->log_packet_time;

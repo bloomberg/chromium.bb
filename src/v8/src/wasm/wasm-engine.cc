@@ -881,12 +881,13 @@ Handle<WasmModuleObject> WasmEngine::ImportNativeModule(
   return module_object;
 }
 
-CompilationStatistics* WasmEngine::GetOrCreateTurboStatistics() {
+std::shared_ptr<CompilationStatistics>
+WasmEngine::GetOrCreateTurboStatistics() {
   base::MutexGuard guard(&mutex_);
   if (compilation_stats_ == nullptr) {
     compilation_stats_.reset(new CompilationStatistics());
   }
-  return compilation_stats_.get();
+  return compilation_stats_;
 }
 
 void WasmEngine::DumpAndResetTurboStatistics() {
@@ -1315,40 +1316,6 @@ void WasmEngine::FreeNativeModule(NativeModule* native_module) {
   native_modules_.erase(module);
 }
 
-namespace {
-class SampleTopTierCodeSizeTask : public CancelableTask {
- public:
-  SampleTopTierCodeSizeTask(Isolate* isolate,
-                            std::weak_ptr<NativeModule> native_module)
-      : CancelableTask(isolate),
-        isolate_(isolate),
-        native_module_(std::move(native_module)) {}
-
-  void RunInternal() override {
-    if (std::shared_ptr<NativeModule> native_module = native_module_.lock()) {
-      native_module->SampleCodeSize(isolate_->counters(),
-                                    NativeModule::kAfterTopTier);
-    }
-  }
-
- private:
-  Isolate* const isolate_;
-  const std::weak_ptr<NativeModule> native_module_;
-};
-}  // namespace
-
-void WasmEngine::SampleTopTierCodeSizeInAllIsolates(
-    const std::shared_ptr<NativeModule>& native_module) {
-  base::MutexGuard lock(&mutex_);
-  DCHECK_EQ(1, native_modules_.count(native_module.get()));
-  for (Isolate* isolate : native_modules_[native_module.get()]->isolates) {
-    DCHECK_EQ(1, isolates_.count(isolate));
-    IsolateInfo* info = isolates_[isolate].get();
-    info->foreground_task_runner->PostTask(
-        std::make_unique<SampleTopTierCodeSizeTask>(isolate, native_module));
-  }
-}
-
 void WasmEngine::ReportLiveCodeForGC(Isolate* isolate,
                                      base::Vector<WasmCode*> live_code) {
   TRACE_EVENT0("v8.wasm", "wasm.ReportLiveCodeForGC");
@@ -1683,14 +1650,15 @@ uint32_t max_mem_pages() {
   static_assert(
       kV8MaxWasmMemoryPages * kWasmPageSize <= JSArrayBuffer::kMaxByteLength,
       "Wasm memories must not be bigger than JSArrayBuffers");
-  STATIC_ASSERT(kV8MaxWasmMemoryPages <= kMaxUInt32);
-  return std::min(uint32_t{kV8MaxWasmMemoryPages}, FLAG_wasm_max_mem_pages);
+  static_assert(kV8MaxWasmMemoryPages <= kMaxUInt32);
+  return std::min(uint32_t{kV8MaxWasmMemoryPages},
+                  FLAG_wasm_max_mem_pages.value());
 }
 
 // {max_table_init_entries} is declared in wasm-limits.h.
 uint32_t max_table_init_entries() {
   return std::min(uint32_t{kV8MaxWasmTableInitEntries},
-                  FLAG_wasm_max_table_size);
+                  FLAG_wasm_max_table_size.value());
 }
 
 // {max_module_size} is declared in wasm-limits.h.

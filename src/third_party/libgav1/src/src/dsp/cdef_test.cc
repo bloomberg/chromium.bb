@@ -46,10 +46,11 @@ constexpr int kSourceBufferSize =
 constexpr int kNumSpeedTests = 5000;
 
 const char* GetDirectionDigest(const int bitdepth, const int num_runs) {
-  static const char* const kDigest[2][2] = {
+  static const char* const kDigest[3][2] = {
       {"de78c820a1fec7e81385aa0a615dbf8c", "7bfc543244f932a542691480dc4541b2"},
-      {"b54236de5d25e16c0f8678d9784cb85e", "559144cf183f3c69cb0e5d98cbf532ff"}};
-  const int bitdepth_index = (bitdepth == 8) ? 0 : 1;
+      {"b54236de5d25e16c0f8678d9784cb85e", "559144cf183f3c69cb0e5d98cbf532ff"},
+      {"5532919a157c4f937da9e822bdb105f7", "dd9dfca6dfca83777d942e693c17627a"}};
+  const int bitdepth_index = (bitdepth - 8) / 2;
   const int run_index = (num_runs == 1) ? 0 : 1;
   return kDigest[bitdepth_index][run_index];
 }
@@ -59,6 +60,7 @@ const char* GetDirectionDigest(const int bitdepth, const int num_runs) {
 template <int bitdepth, typename Pixel>
 class CdefDirectionTest : public testing::TestWithParam<int> {
  public:
+  static_assert(bitdepth >= kBitdepth8 && bitdepth <= LIBGAV1_MAX_BITDEPTH, "");
   CdefDirectionTest() = default;
   CdefDirectionTest(const CdefDirectionTest&) = delete;
   CdefDirectionTest& operator=(const CdefDirectionTest&) = delete;
@@ -167,6 +169,18 @@ INSTANTIATE_TEST_SUITE_P(NEON, CdefDirectionTest10bpp, testing::Values(0));
 #endif
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
 
+#if LIBGAV1_MAX_BITDEPTH == 12
+using CdefDirectionTest12bpp = CdefDirectionTest<12, uint16_t>;
+
+TEST_P(CdefDirectionTest12bpp, Correctness) { TestRandomValues(1); }
+
+TEST_P(CdefDirectionTest12bpp, DISABLED_Speed) {
+  TestRandomValues(kNumSpeedTests / 100);
+}
+
+INSTANTIATE_TEST_SUITE_P(C, CdefDirectionTest12bpp, testing::Values(0));
+#endif  // LIBGAV1_MAX_BITDEPTH == 12
+
 const char* GetDigest8bpp(int id) {
   static const char* const kDigest[] = {
       "b6fe1a1f5bbb23e35197160ce57d90bd", "8aed39871b19184f1d381b145779bc33",
@@ -199,6 +213,23 @@ const char* GetDigest10bpp(int id) {
 }
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
 
+#if LIBGAV1_MAX_BITDEPTH == 12
+const char* GetDigest12bpp(int id) {
+  static const char* const kDigest[] = {
+      "a32569989c42fd4254979f70c1c65f5a", "dc389048217633e2dd64126376be7d25",
+      "3b0e8dae294895330f349863b1773c39", "9741fe8d27d109cb99b7a9cdc030f52a",
+      "ab70f3729b52287c6432ba7624280a68", "c1e5cf39cbc8030b82e09633c6c67d42",
+      "d5120a196164ff5a0ad7aa8c02e9b064", "1133759f3aee3a362a0ab668f6faf843",
+      "feb0ab7f515665f79fce213e8cd2fb10", "e86ea55c2d6d5cc69716535bd455c99f",
+      "e463da1b9d089b6ee82c041794257fd7", "27800e4af0cceeaf0a95c96275a7befe",
+      "f42e426481db00582b327eb2971bca96", "6127ff289833dde0270000d8240f36b7",
+      "cc5dbaf70e2fef7729a8e2ea9937fbcf", "51850b4e3e2a3919e110376fcb6318d3",
+      "d5ac7ac25eb1b5aee293b2a2ec9de775", "64ecc00b2e24a2f07df833fb50ce09c3",
+  };
+  return kDigest[id];
+}
+#endif  // LIBGAV1_MAX_BITDEPTH == 12
+
 struct CdefTestParam {
   CdefTestParam(int subsampling_x, int subsampling_y, int rows4x4,
                 int columns4x4)
@@ -224,6 +255,7 @@ std::ostream& operator<<(std::ostream& os, const CdefTestParam& param) {
 template <int bitdepth, typename Pixel>
 class CdefFilteringTest : public testing::TestWithParam<CdefTestParam> {
  public:
+  static_assert(bitdepth >= kBitdepth8 && bitdepth <= LIBGAV1_MAX_BITDEPTH, "");
   CdefFilteringTest() = default;
   CdefFilteringTest(const CdefFilteringTest&) = delete;
   CdefFilteringTest& operator=(const CdefFilteringTest&) = delete;
@@ -328,19 +360,26 @@ void CdefFilteringTest<bitdepth, Pixel>::TestRandomValues(int num_runs) {
   }
 
   for (int plane = kPlaneY; plane < kMaxPlanes; ++plane) {
-    if (bitdepth == 8) {
-      test_utils::CheckMd5Digest(kCdef, kCdefFilterName,
-                                 GetDigest8bpp(id + plane),
-                                 reinterpret_cast<uint8_t*>(dest_[plane]),
-                                 sizeof(dest_[plane]), elapsed_time);
+    const char* expected_digest = nullptr;
+    switch (bitdepth) {
+      case 8:
+        expected_digest = GetDigest8bpp(id + plane);
+        break;
 #if LIBGAV1_MAX_BITDEPTH >= 10
-    } else {
-      test_utils::CheckMd5Digest(kCdef, kCdefFilterName,
-                                 GetDigest10bpp(id + plane),
-                                 reinterpret_cast<uint8_t*>(dest_[plane]),
-                                 sizeof(dest_[plane]), elapsed_time);
-#endif  // LIBGAV1_MAX_BITDEPTH >= 10
+      case 10:
+        expected_digest = GetDigest10bpp(id + plane);
+        break;
+#endif
+#if LIBGAV1_MAX_BITDEPTH == 12
+      case 12:
+        expected_digest = GetDigest12bpp(id + plane);
+        break;
+#endif
     }
+    ASSERT_NE(expected_digest, nullptr);
+    test_utils::CheckMd5Digest(kCdef, kCdefFilterName, expected_digest,
+                               reinterpret_cast<uint8_t*>(dest_[plane]),
+                               sizeof(dest_[plane]), elapsed_time);
   }
 }
 
@@ -395,6 +434,19 @@ INSTANTIATE_TEST_SUITE_P(NEON, CdefFilteringTest10bpp,
                          testing::ValuesIn(cdef_test_param));
 #endif
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
+
+#if LIBGAV1_MAX_BITDEPTH == 12
+using CdefFilteringTest12bpp = CdefFilteringTest<12, uint16_t>;
+
+TEST_P(CdefFilteringTest12bpp, Correctness) { TestRandomValues(1); }
+
+TEST_P(CdefFilteringTest12bpp, DISABLED_Speed) {
+  TestRandomValues(kNumSpeedTests);
+}
+
+INSTANTIATE_TEST_SUITE_P(C, CdefFilteringTest12bpp,
+                         testing::ValuesIn(cdef_test_param));
+#endif  // LIBGAV1_MAX_BITDEPTH == 12
 
 }  // namespace
 }  // namespace dsp

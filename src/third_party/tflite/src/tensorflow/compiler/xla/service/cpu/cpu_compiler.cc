@@ -59,6 +59,7 @@ limitations under the License.
 #include "mlir/Conversion/ReconcileUnrealizedCasts/ReconcileUnrealizedCasts.h"  // from @llvm-project
 #include "mlir/Conversion/SCFToControlFlow/SCFToControlFlow.h"  // from @llvm-project
 #include "mlir/Conversion/ShapeToStandard/ShapeToStandard.h"  // from @llvm-project
+#include "mlir/Conversion/TensorToLinalg/TensorToLinalgPass.h"  // from @llvm-project
 #include "mlir/Conversion/VectorToSCF/VectorToSCF.h"  // from @llvm-project
 #include "mlir/Dialect/Affine/IR/AffineOps.h"  // from @llvm-project
 #include "mlir/Dialect/Arithmetic/IR/Arithmetic.h"  // from @llvm-project
@@ -556,12 +557,12 @@ Status CpuCompiler::RunHloPassesThroughLayoutAssn(
   }
   pipeline.AddPass<IndexedArrayAnalysisPrinterPass>();
   pipeline.AddPass<TransposeFolding>(
-      [&](const HloInstruction& dot,
-          const TransposeFolding::OperandIndices& candidate_operands) {
-        return DotImplementationCanHandleTranspose(dot,
-                                                   *target_machine_features)
-                   ? candidate_operands
-                   : TransposeFolding::OperandIndices{};
+      [&](const HloInstruction& dot, int64_t operand) -> StatusOr<bool> {
+        if (DotImplementationCanHandleTranspose(dot,
+                                                *target_machine_features)) {
+          return TransposeFolding::IsRowColumnTransposeDotOperand(dot, operand);
+        }
+        return false;
       },
       TransposeFolding::NeverFoldTranspose);
   pipeline.AddPass<HloCSE>(/*is_layout_sensitive=*/false);
@@ -892,6 +893,11 @@ Status LowerMLIRModule(mlir::ModuleOp mlir_module,
   pm.addNestedPass<mlir::func::FuncOp>(
       mlir::createLinalgElementwiseOpFusionPass());
   pm.addPass(mlir::createReconcileUnrealizedCastsPass());
+  pm.addPass(mlir::createConvertTensorToLinalgPass());
+  pm.addNestedPass<mlir::func::FuncOp>(
+      mlir::createLinalgInitTensorToAllocTensorPass());
+  pm.addNestedPass<mlir::func::FuncOp>(
+      mlir::bufferization::createBufferizationBufferizePass());
   pm.addNestedPass<mlir::func::FuncOp>(mlir::createLinalgBufferizePass());
   pm.addNestedPass<mlir::func::FuncOp>(mlir::createConvertLinalgToLoopsPass());
 
@@ -944,26 +950,13 @@ Status LowerMLIRModule(mlir::ModuleOp mlir_module,
   pm.addNestedPass<mlir::func::FuncOp>(mlir::memref::createExpandOpsPass());
   pm.addNestedPass<mlir::func::FuncOp>(mlir::createLowerAffinePass());
   pm.addPass(mlir::mhlo::CreateLegalizeXLAFrameworkToLLVMPass());
-  pm.addPass(mlir::createMemRefToLLVMPass());
-  pm.addPass(mlir::createConvertSCFToCFPass());
-  pm.addNestedPass<mlir::func::FuncOp>(mlir::createConvertMathToLLVMPass());
-  pm.addNestedPass<mlir::func::FuncOp>(
-      mlir::arith::createConvertArithmeticToLLVMPass());
-  pm.addPass(mlir::createConvertFuncToLLVMPass());
+  pm.addPass(mlir::hlo::createGenericHostToLLVMPass());
   pm.addPass(mlir::createReconcileUnrealizedCastsPass());
   if (pm.run(mlir_module).failed()) {
     mlir_module->dump();
     return tensorflow::errors::Internal(
         "Failed to compile through MLIR pipeline");
   }
-
-  // Make @main private so it doesn't clash with other modules.
-  mlir_module->walk([&](mlir::LLVM::LLVMFuncOp f) {
-    if (f.getName() == "main") {
-      f.setLinkageAttr(mlir::LLVM::LinkageAttr::get(
-          f.getContext(), mlir::LLVM::Linkage::Private));
-    }
-  });
 
   return Status::OK();
 }

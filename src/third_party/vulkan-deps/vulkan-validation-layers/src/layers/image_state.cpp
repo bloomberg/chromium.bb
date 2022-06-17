@@ -303,8 +303,9 @@ bool IMAGE_STATE::IsCompatibleAliasing(IMAGE_STATE *other_image_state) const {
     }
     const auto binding = Binding();
     const auto other_binding = other_image_state->Binding();
-    if ((create_from_swapchain == VK_NULL_HANDLE) && binding && other_binding && (binding->mem_state == other_binding->mem_state) &&
-        (binding->offset == other_binding->offset) && IsCreateInfoEqual(other_image_state->createInfo)) {
+    if ((create_from_swapchain == VK_NULL_HANDLE) && binding && other_binding &&
+        (binding->memory_state == other_binding->memory_state) && (binding->memory_offset == other_binding->memory_offset) &&
+        IsCreateInfoEqual(other_image_state->createInfo)) {
         return true;
     }
     if (bind_swapchain && (bind_swapchain == other_image_state->bind_swapchain) &&
@@ -319,20 +320,20 @@ void IMAGE_STATE::SetInitialLayoutMap() {
         return;
     }
     if ((createInfo.flags & VK_IMAGE_CREATE_ALIAS_BIT) != 0) {
-        const auto *binding = Binding();
-        assert(binding);
         // Look for another aliasing image and point at its layout state.
         // ObjectBindings() is thread safe since returns by value, and once
         // the weak_ptr is successfully locked, the other image state won't
         // be freed out from under us.
-        for (auto &entry : binding->mem_state->ObjectBindings()) {
-            if (entry.first.type == kVulkanObjectTypeImage) {
-                auto base_node = entry.second.lock();
-                if (base_node) {
-                    auto other_image = static_cast<IMAGE_STATE *>(base_node.get());
-                    if (other_image != this && other_image->IsCompatibleAliasing(this)) {
-                        layout_range_map = other_image->layout_range_map;
-                        break;
+        for (auto const &memory_state : GetBoundMemoryStates()) {
+            for (auto &entry : memory_state->ObjectBindings()) {
+                if (entry.first.type == kVulkanObjectTypeImage) {
+                    auto base_node = entry.second.lock();
+                    if (base_node) {
+                        auto other_image = static_cast<IMAGE_STATE *>(base_node.get());
+                        if (other_image != this && other_image->IsCompatibleAliasing(this)) {
+                            layout_range_map = other_image->layout_range_map;
+                            break;
+                        }
                     }
                 }
             }
@@ -385,12 +386,9 @@ VkDeviceSize IMAGE_STATE::GetFakeBaseAddress() const {
     return bind_swapchain->images[swapchain_image_index].fake_base_address;
 }
 
-// Returns the effective extent of an image subresource, adjusted for mip level and array depth.
-VkExtent3D IMAGE_STATE::GetSubresourceExtent(const VkImageSubresourceLayers &subresource) const {
-    const uint32_t mip = subresource.mipLevel;
-
+VkExtent3D IMAGE_STATE::GetSubresourceExtent(VkImageAspectFlags aspect_mask, uint32_t mip_level) const {
     // Return zero extent if mip level doesn't exist
-    if (mip >= createInfo.mipLevels) {
+    if (mip_level >= createInfo.mipLevels) {
         return VkExtent3D{0, 0, 0};
     }
 
@@ -399,19 +397,19 @@ VkExtent3D IMAGE_STATE::GetSubresourceExtent(const VkImageSubresourceLayers &sub
 
     // If multi-plane, adjust per-plane extent
     if (FormatIsMultiplane(createInfo.format)) {
-        VkExtent2D divisors = FindMultiplaneExtentDivisors(createInfo.format, subresource.aspectMask);
+        VkExtent2D divisors = FindMultiplaneExtentDivisors(createInfo.format, aspect_mask);
         extent.width /= divisors.width;
         extent.height /= divisors.height;
     }
 
     if (createInfo.flags & VK_IMAGE_CREATE_CORNER_SAMPLED_BIT_NV) {
-        extent.width = (0 == extent.width ? 0 : std::max(2U, 1 + ((extent.width - 1) >> mip)));
-        extent.height = (0 == extent.height ? 0 : std::max(2U, 1 + ((extent.height - 1) >> mip)));
-        extent.depth = (0 == extent.depth ? 0 : std::max(2U, 1 + ((extent.depth - 1) >> mip)));
+        extent.width = (0 == extent.width ? 0 : std::max(2U, 1 + ((extent.width - 1) >> mip_level)));
+        extent.height = (0 == extent.height ? 0 : std::max(2U, 1 + ((extent.height - 1) >> mip_level)));
+        extent.depth = (0 == extent.depth ? 0 : std::max(2U, 1 + ((extent.depth - 1) >> mip_level)));
     } else {
-        extent.width = (0 == extent.width ? 0 : std::max(1U, extent.width >> mip));
-        extent.height = (0 == extent.height ? 0 : std::max(1U, extent.height >> mip));
-        extent.depth = (0 == extent.depth ? 0 : std::max(1U, extent.depth >> mip));
+        extent.width = (0 == extent.width ? 0 : std::max(1U, extent.width >> mip_level));
+        extent.height = (0 == extent.height ? 0 : std::max(1U, extent.height >> mip_level));
+        extent.depth = (0 == extent.depth ? 0 : std::max(1U, extent.depth >> mip_level));
     }
 
     // Image arrays have an effective z extent that isn't diminished by mip level
@@ -420,6 +418,11 @@ VkExtent3D IMAGE_STATE::GetSubresourceExtent(const VkImageSubresourceLayers &sub
     }
 
     return extent;
+}
+
+// Returns the effective extent of an image subresource, adjusted for mip level and array depth.
+VkExtent3D IMAGE_STATE::GetSubresourceExtent(const VkImageSubresourceLayers &subresource) const {
+    return GetSubresourceExtent(subresource.aspectMask, subresource.mipLevel);
 }
 
 static VkSamplerYcbcrConversion GetSamplerConversion(const VkImageViewCreateInfo *ci) {

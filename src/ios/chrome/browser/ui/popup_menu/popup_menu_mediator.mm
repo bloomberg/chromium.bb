@@ -10,6 +10,8 @@
 #include "base/mac/foundation_util.h"
 #import "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
@@ -37,7 +39,6 @@
 #import "ios/chrome/browser/overlays/public/overlay_request_queue.h"
 #import "ios/chrome/browser/overlays/public/web_content_area/http_auth_overlay.h"
 #include "ios/chrome/browser/policy/browser_policy_connector_ios.h"
-#include "ios/chrome/browser/policy/policy_features.h"
 #import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/search_engines/search_engines_util.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
@@ -50,6 +51,7 @@
 #import "ios/chrome/browser/ui/icons/action_icon.h"
 #import "ios/chrome/browser/ui/icons/chrome_symbol.h"
 #import "ios/chrome/browser/ui/list_model/list_model.h"
+#import "ios/chrome/browser/ui/ntp/feed_metrics_recorder.h"
 #import "ios/chrome/browser/ui/popup_menu/cells/popup_menu_navigation_item.h"
 #import "ios/chrome/browser/ui/popup_menu/cells/popup_menu_text_item.h"
 #import "ios/chrome/browser/ui/popup_menu/cells/popup_menu_tools_item.h"
@@ -88,6 +90,9 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+using base::RecordAction;
+using base::UserMetricsAction;
 
 namespace {
 PopupMenuToolsItem* CreateTableViewItem(int titleID,
@@ -520,23 +525,23 @@ PopupMenuTextItem* CreateEnterpriseInfoItem(NSString* imageName,
         }
         break;
       case PopupMenuTypeNavigationForward:
-        DCHECK(!ShouldUseUIKitPopupMenu());
+        DCHECK(!UseSymbols());
         [self createNavigationItemsForType:PopupMenuTypeNavigationForward];
         break;
       case PopupMenuTypeNavigationBackward:
-        DCHECK(!ShouldUseUIKitPopupMenu());
+        DCHECK(!UseSymbols());
         [self createNavigationItemsForType:PopupMenuTypeNavigationBackward];
         break;
       case PopupMenuTypeTabGrid:
-        DCHECK(!ShouldUseUIKitPopupMenu());
+        DCHECK(!UseSymbols());
         [self createTabGridMenuItems];
         break;
       case PopupMenuTypeTabStripTabGrid:
-        DCHECK(!ShouldUseUIKitPopupMenu());
+        DCHECK(!UseSymbols());
         [self createTabGridMenuItems];
         break;
       case PopupMenuTypeNewTab:
-        DCHECK(!ShouldUseUIKitPopupMenu());
+        DCHECK(!UseSymbols());
         [self createSearchMenuItems];
         break;
     }
@@ -651,6 +656,11 @@ PopupMenuTextItem* CreateEnterpriseInfoItem(NSString* imageName,
 
 - (void)updateFollowStatus {
   DCHECK(IsWebChannelsEnabled());
+  if (self.followStatus) {
+    [self.feedMetricsRecorder recordUnfollowFromMenu];
+  } else {
+    [self.feedMetricsRecorder recordFollowFromMenu];
+  }
   ios::GetChromeBrowserProvider().GetFollowProvider()->UpdateFollowStatus(
       self.webPageURLs, !self.followStatus);
 }
@@ -753,7 +763,7 @@ PopupMenuTextItem* CreateEnterpriseInfoItem(NSString* imageName,
         imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
   } else {
     self.bookmarkItem.title =
-        l10n_util::GetNSString(IDS_IOS_TOOLS_MENU_ADD_TO_BOOKMARKS);
+        l10n_util::GetNSString(IDS_IOS_TOOLS_MENU_BOOKMARK);
     self.bookmarkItem.accessibilityIdentifier = kToolsMenuAddToBookmarks;
     self.bookmarkItem.image = [[UIImage imageNamed:@"popup_menu_add_bookmark"]
         imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
@@ -1096,7 +1106,7 @@ PopupMenuTextItem* CreateEnterpriseInfoItem(NSString* imageName,
 
   // Add to bookmark.
   self.bookmarkItem = CreateTableViewItem(
-      IDS_IOS_TOOLS_MENU_ADD_TO_BOOKMARKS, PopupMenuActionPageBookmark,
+      IDS_IOS_TOOLS_MENU_BOOKMARK, PopupMenuActionPageBookmark,
       @"popup_menu_add_bookmark", kToolsMenuAddToBookmarks);
   [actionsArray addObject:self.bookmarkItem];
 

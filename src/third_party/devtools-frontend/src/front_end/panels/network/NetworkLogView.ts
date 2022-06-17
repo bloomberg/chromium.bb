@@ -36,14 +36,17 @@ import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
+import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Protocol from '../../generated/protocol.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as HAR from '../../models/har/har.js';
 import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
 import * as Logs from '../../models/logs/logs.js';
+import * as Persistence from '../../models/persistence/persistence.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as NetworkForward from '../../panels/network/forward/forward.js';
+import * as Sources from '../../panels/sources/sources.js';
 import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
@@ -346,6 +349,11 @@ const UIStrings = {
   *@description Text in Network Log View of the Network panel
   */
   areYouSureYouWantToClearBrowserCookies: 'Are you sure you want to clear browser cookies?',
+  /**
+  *@description A context menu item in the Network Log View of the Network panel
+  * for creating a header override
+  */
+  createResponseHeaderOverride: 'Create response header override',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/network/NetworkLogView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -1576,6 +1584,12 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin<EventTypes, 
 
     contextMenu.saveSection().appendItem(i18nString(UIStrings.saveAllAsHarWithContent), this.exportAll.bind(this));
 
+    if (Root.Runtime.experiments.isEnabled(Root.Runtime.ExperimentName.HEADER_OVERRIDES)) {
+      contextMenu.editSection().appendItem(
+          i18nString(UIStrings.createResponseHeaderOverride),
+          this.#handleCreateResponseHeaderOverrideClick.bind(this, request));
+      contextMenu.editSection().appendSeparator();
+    }
     contextMenu.editSection().appendItem(i18nString(UIStrings.clearBrowserCache), this.clearBrowserCache.bind(this));
     contextMenu.editSection().appendItem(
         i18nString(UIStrings.clearBrowserCookies), this.clearBrowserCookies.bind(this));
@@ -1689,6 +1703,27 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin<EventTypes, 
     await HAR.Writer.Writer.write(stream, this.harRequests(), progressIndicator);
     progressIndicator.done();
     void stream.close();
+  }
+
+  async #handleCreateResponseHeaderOverrideClick(request: SDK.NetworkRequest.NetworkRequest): Promise<void> {
+    if (Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance().project()) {
+      await this.#revealHeaderOverrideEditor(request);
+    } else {  // If folder for local overrides has not been provided yet
+      UI.InspectorView.InspectorView.instance().displaySelectOverrideFolderInfobar(async(): Promise<void> => {
+        await Sources.SourcesNavigator.OverridesNavigatorView.instance().setupNewWorkspace();
+        await this.#revealHeaderOverrideEditor(request);
+      });
+    }
+  }
+
+  async #revealHeaderOverrideEditor(request: SDK.NetworkRequest.NetworkRequest): Promise<void> {
+    const networkPersistanceManager = Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance();
+    const uiSourceCode = await networkPersistanceManager.getOrCreateHeadersUISourceCodeFromUrl(request.url());
+    if (uiSourceCode) {
+      const sourcesPanel = Sources.SourcesPanel.SourcesPanel.instance();
+      sourcesPanel.showUISourceCode(uiSourceCode);
+      sourcesPanel.revealInNavigator(uiSourceCode);
+    }
   }
 
   private clearBrowserCache(): void {

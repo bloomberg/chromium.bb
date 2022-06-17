@@ -11,6 +11,7 @@
 
 #include <assert.h>
 #include <math.h>
+#include <stdbool.h>
 
 #include "aom_dsp/aom_dsp_common.h"
 #include "av1/common/av1_common_int.h"
@@ -55,13 +56,14 @@ static void free_tensor(TENSOR *tensor) {
   }
 }
 
-static void realloc_tensor(TENSOR *tensor, int channels, int width,
+static bool realloc_tensor(TENSOR *tensor, int channels, int width,
                            int height) {
   const int newallocsize = channels * width * height;
   if (tensor->allocsize < newallocsize) {
     free_tensor(tensor);
     tensor->buf[0] =
         (float *)aom_malloc(sizeof(*tensor->buf[0]) * newallocsize);
+    if (!tensor->buf[0]) return false;
     tensor->allocsize = newallocsize;
   }
   tensor->width = width;
@@ -70,6 +72,7 @@ static void realloc_tensor(TENSOR *tensor, int channels, int width,
   tensor->channels = channels;
   for (int c = 1; c < channels; ++c)
     tensor->buf[c] = &tensor->buf[0][c * width * height];
+  return true;
 }
 
 static void copy_tensor(const TENSOR *src, int copy_channels, int dst_offset,
@@ -115,7 +118,7 @@ static void swap_tensor(TENSOR *t1, TENSOR *t2) {
 
 // The concatenated tensor goes into dst with first the channels in
 // original dst followed by the channels in the src
-static void concat_tensor(const TENSOR *src, TENSOR *dst) {
+static bool concat_tensor(const TENSOR *src, TENSOR *dst) {
   assert(src->width == dst->width);
   assert(src->height == dst->height);
 
@@ -126,7 +129,7 @@ static void concat_tensor(const TENSOR *src, TENSOR *dst) {
     TENSOR t;
     init_tensor(&t);
     // allocate new buffers and copy first the dst channels
-    realloc_tensor(&t, channels, dst->width, dst->height);
+    if (!realloc_tensor(&t, channels, dst->width, dst->height)) return false;
     copy_tensor(dst, dst->channels, 0, &t);
     // Swap the tensors and free the old buffers
     swap_tensor(dst, &t);
@@ -136,6 +139,7 @@ static void concat_tensor(const TENSOR *src, TENSOR *dst) {
     dst->buf[c] = &dst->buf[0][c * dst->width * dst->height];
   // Copy the channels in src after the first dst_channels channels.
   copy_tensor(src, src->channels, dst_channels, dst);
+  return true;
 }
 
 int check_tensor_equal_dims(TENSOR *t1, TENSOR *t2) {
@@ -326,7 +330,7 @@ void av1_cnn_activate_c(float **output, int channels, int width, int height,
   }
 }
 
-static void copy_active_tensor_to_branches(const TENSOR *layer_active_tensor,
+static bool copy_active_tensor_to_branches(const TENSOR *layer_active_tensor,
                                            const CNN_LAYER_CONFIG *layer_config,
                                            int branch, TENSOR branch_output[]) {
   const CNN_BRANCH_CONFIG *branch_config = &layer_config->branch_config;
@@ -338,11 +342,15 @@ static void copy_active_tensor_to_branches(const TENSOR *layer_active_tensor,
       int copy_channels = branch_config->channels_to_copy > 0
                               ? branch_config->channels_to_copy
                               : layer_active_tensor->channels;
-      realloc_tensor(&branch_output[b], copy_channels,
-                     layer_active_tensor->width, layer_active_tensor->height);
+      if (!realloc_tensor(&branch_output[b], copy_channels,
+                          layer_active_tensor->width,
+                          layer_active_tensor->height)) {
+        return false;
+      }
       copy_tensor(layer_active_tensor, copy_channels, 0, &branch_output[b]);
     }
   }
+  return true;
 }
 
 // CNNConvolve specific to maxpool set as 1, either skip_width or skip_height
@@ -892,10 +900,11 @@ void av1_cnn_deconvolve_c(const float **input, int in_width, int in_height,
   }
 }
 
-void av1_cnn_predict_c(const float **input, int in_width, int in_height,
+bool av1_cnn_predict_c(const float **input, int in_width, int in_height,
                        int in_stride, const CNN_CONFIG *cnn_config,
                        const CNN_THREAD_DATA *thread_data,
                        CNN_MULTI_OUT *output_struct) {
+  bool success = false;
   TENSOR tensor1[CNN_MAX_BRANCHES] = { { 0 } };
   TENSOR tensor2[CNN_MAX_BRANCHES] = { { 0 } };
 
@@ -938,8 +947,10 @@ void av1_cnn_predict_c(const float **input, int in_width, int in_height,
                                    &o_height);
     const int output_num = layer_config->output_num;
     if (output_num == -1) {  // Non-output layer
-      realloc_tensor(&tensor2[branch], layer_config->out_channels, o_width,
-                     o_height);
+      if (!realloc_tensor(&tensor2[branch], layer_config->out_channels, o_width,
+                          o_height)) {
+        goto Error;
+      }
     } else {  // Output layer
       free_tensor(&tensor2[branch]);
       assign_tensor(&tensor2[branch], output[output_num],
@@ -953,8 +964,10 @@ void av1_cnn_predict_c(const float **input, int in_width, int in_height,
                    !(branch_config->branches_to_combine & (1 << branch))));
 
     if (layer_config->branch_copy_type == BRANCH_INPUT) {
-      copy_active_tensor_to_branches(&tensor1[branch], layer_config, branch,
-                                     tensor2);
+      if (!copy_active_tensor_to_branches(&tensor1[branch], layer_config,
+                                          branch, tensor2)) {
+        goto Error;
+      }
     }
     // Check consistency of input and output channels
     assert(tensor1[branch].channels == layer_config->in_channels);
@@ -981,8 +994,10 @@ void av1_cnn_predict_c(const float **input, int in_width, int in_height,
     }
 
     if (layer_config->branch_copy_type == BRANCH_OUTPUT) {
-      copy_active_tensor_to_branches(&tensor2[branch], layer_config, branch,
-                                     tensor2);
+      if (!copy_active_tensor_to_branches(&tensor2[branch], layer_config,
+                                          branch, tensor2)) {
+        goto Error;
+      }
     }
 
     // Add tensors from other branches if needed
@@ -1018,7 +1033,7 @@ void av1_cnn_predict_c(const float **input, int in_width, int in_height,
           if ((branch_config->branches_to_combine & (1 << b)) && b != branch) {
             assert(check_tensor_equal_dims(&tensor2[b], &tensor2[branch]));
             assert(tensor2[b].channels > 0);
-            concat_tensor(&tensor2[b], &tensor2[branch]);
+            if (!concat_tensor(&tensor2[b], &tensor2[branch])) goto Error;
           }
         }
       } else {  // Output layer
@@ -1048,20 +1063,25 @@ void av1_cnn_predict_c(const float **input, int in_width, int in_height,
     }
 
     if (layer_config->branch_copy_type == BRANCH_COMBINED) {
-      copy_active_tensor_to_branches(&tensor2[branch], layer_config, branch,
-                                     tensor2);
+      if (!copy_active_tensor_to_branches(&tensor2[branch], layer_config,
+                                          branch, tensor2)) {
+        goto Error;
+      }
     }
   }
 
+  success = true;
+Error:
   for (int b = 0; b < CNN_MAX_BRANCHES; ++b) {
     free_tensor(&tensor1[b]);
     free_tensor(&tensor2[b]);
   }
+  return success;
 }
 
 // Assume output already has proper allocation
 // Assume input image buffers all have same resolution and strides
-void av1_cnn_predict_img_multi_out(uint8_t **dgd, int width, int height,
+bool av1_cnn_predict_img_multi_out(uint8_t **dgd, int width, int height,
                                    int stride, const CNN_CONFIG *cnn_config,
                                    const CNN_THREAD_DATA *thread_data,
                                    CNN_MULTI_OUT *output) {
@@ -1073,6 +1093,7 @@ void av1_cnn_predict_img_multi_out(uint8_t **dgd, int width, int height,
   float *inputs[CNN_MAX_CHANNELS];
   float *input_ =
       (float *)aom_malloc(in_width * in_height * in_channels * sizeof(*input_));
+  if (!input_) return false;
   const int in_stride = in_width;
 
   for (int c = 0; c < in_channels; ++c) {
@@ -1107,15 +1128,16 @@ void av1_cnn_predict_img_multi_out(uint8_t **dgd, int width, int height,
           input[i * in_stride + j] = (float)dgd[c][i * stride + j] / max_val;
     }
   }
-  av1_cnn_predict((const float **)inputs, in_width, in_height, in_stride,
-                  cnn_config, thread_data, output);
+  bool success = av1_cnn_predict((const float **)inputs, in_width, in_height,
+                                 in_stride, cnn_config, thread_data, output);
 
   aom_free(input_);
+  return success;
 }
 
 // Assume output already has proper allocation
 // Assume input image buffers all have same resolution and strides
-void av1_cnn_predict_img_multi_out_highbd(uint16_t **dgd, int width, int height,
+bool av1_cnn_predict_img_multi_out_highbd(uint16_t **dgd, int width, int height,
                                           int stride,
                                           const CNN_CONFIG *cnn_config,
                                           const CNN_THREAD_DATA *thread_data,
@@ -1129,6 +1151,7 @@ void av1_cnn_predict_img_multi_out_highbd(uint16_t **dgd, int width, int height,
   float *inputs[CNN_MAX_CHANNELS];
   float *input_ =
       (float *)aom_malloc(in_width * in_height * in_channels * sizeof(*input_));
+  if (!input_) return false;
   const int in_stride = in_width;
 
   for (int c = 0; c < in_channels; ++c) {
@@ -1164,15 +1187,16 @@ void av1_cnn_predict_img_multi_out_highbd(uint16_t **dgd, int width, int height,
     }
   }
 
-  av1_cnn_predict((const float **)inputs, in_width, in_height, in_stride,
-                  cnn_config, thread_data, output);
+  bool success = av1_cnn_predict((const float **)inputs, in_width, in_height,
+                                 in_stride, cnn_config, thread_data, output);
 
   aom_free(input_);
+  return success;
 }
 
 // Assume output already has proper allocation
 // Assume input image buffers all have same resolution and strides
-void av1_cnn_predict_img(uint8_t **dgd, int width, int height, int stride,
+bool av1_cnn_predict_img(uint8_t **dgd, int width, int height, int stride,
                          const CNN_CONFIG *cnn_config,
                          const CNN_THREAD_DATA *thread_data, float **output,
                          int out_stride) {
@@ -1184,13 +1208,13 @@ void av1_cnn_predict_img(uint8_t **dgd, int width, int height, int stride,
   CNN_MULTI_OUT output_struct = { .output_channels = output_chs,
                                   .output_strides = output_strides,
                                   .output_buffer = output };
-  av1_cnn_predict_img_multi_out(dgd, width, height, stride, cnn_config,
-                                thread_data, &output_struct);
+  return av1_cnn_predict_img_multi_out(dgd, width, height, stride, cnn_config,
+                                       thread_data, &output_struct);
 }
 
 // Assume output already has proper allocation
 // Assume input image buffers all have same resolution and strides
-void av1_cnn_predict_img_highbd(uint16_t **dgd, int width, int height,
+bool av1_cnn_predict_img_highbd(uint16_t **dgd, int width, int height,
                                 int stride, const CNN_CONFIG *cnn_config,
                                 const CNN_THREAD_DATA *thread_data,
                                 int bit_depth, float **output, int out_stride) {
@@ -1202,6 +1226,7 @@ void av1_cnn_predict_img_highbd(uint16_t **dgd, int width, int height,
   CNN_MULTI_OUT output_struct = { .output_channels = output_chs,
                                   .output_strides = output_strides,
                                   .output_buffer = output };
-  av1_cnn_predict_img_multi_out_highbd(dgd, width, height, stride, cnn_config,
-                                       thread_data, bit_depth, &output_struct);
+  return av1_cnn_predict_img_multi_out_highbd(dgd, width, height, stride,
+                                              cnn_config, thread_data,
+                                              bit_depth, &output_struct);
 }

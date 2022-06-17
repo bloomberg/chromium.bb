@@ -186,6 +186,9 @@ class StatsCounter;
   V(external_two_byte_string_get_chars, "external_two_byte_string_get_chars")  \
   V(smi_lexicographic_compare_function, "smi_lexicographic_compare_function")  \
   V(string_to_array_index_function, "String::ToArrayIndex")                    \
+  V(array_indexof_includes_smi_or_object,                                      \
+    "array_indexof_includes_smi_or_object")                                    \
+  V(array_indexof_includes_double, "array_indexof_includes_double")            \
   V(try_string_to_index_or_lookup_existing,                                    \
     "try_string_to_index_or_lookup_existing")                                  \
   V(string_from_forward_table, "string_from_forward_table")                    \
@@ -238,6 +241,7 @@ class StatsCounter;
   IF_WASM(V, wasm_memory_copy, "wasm::memory_copy")                            \
   IF_WASM(V, wasm_memory_fill, "wasm::memory_fill")                            \
   IF_WASM(V, wasm_array_copy, "wasm::array_copy")                              \
+  IF_WASM(V, wasm_array_fill_with_zeroes, "wasm::array_fill_with_zeroes")      \
   V(address_of_wasm_i8x16_swizzle_mask, "wasm_i8x16_swizzle_mask")             \
   V(address_of_wasm_i8x16_popcnt_mask, "wasm_i8x16_popcnt_mask")               \
   V(address_of_wasm_i8x16_splat_0x01, "wasm_i8x16_splat_0x01")                 \

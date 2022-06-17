@@ -230,22 +230,22 @@ void ContentAnalysisDelegate::Cancel(bool warning) {
 
 absl::optional<std::u16string> ContentAnalysisDelegate::GetCustomMessage()
     const {
-  auto element = data_.settings.custom_message_data.find(final_result_tag_);
-  if (element != data_.settings.custom_message_data.end() &&
-      !element->second.message.empty()) {
+  auto element = data_.settings.tags.find(final_result_tag_);
+  if (element != data_.settings.tags.end() &&
+      !element->second.custom_message.message.empty()) {
     return l10n_util::GetStringFUTF16(IDS_DEEP_SCANNING_DIALOG_CUSTOM_MESSAGE,
-                                      element->second.message);
+                                      element->second.custom_message.message);
   }
 
   return absl::nullopt;
 }
 
 absl::optional<GURL> ContentAnalysisDelegate::GetCustomLearnMoreUrl() const {
-  auto element = data_.settings.custom_message_data.find(final_result_tag_);
-  if (element != data_.settings.custom_message_data.end() &&
-      element->second.learn_more_url.is_valid() &&
-      !element->second.learn_more_url.is_empty()) {
-    return element->second.learn_more_url;
+  auto element = data_.settings.tags.find(final_result_tag_);
+  if (element != data_.settings.tags.end() &&
+      element->second.custom_message.learn_more_url.is_valid() &&
+      !element->second.custom_message.learn_more_url.is_empty()) {
+    return element->second.custom_message.learn_more_url;
   }
 
   return absl::nullopt;
@@ -255,8 +255,8 @@ bool ContentAnalysisDelegate::BypassRequiresJustification() const {
   if (!base::FeatureList::IsEnabled(kBypassJustificationEnabled))
     return false;
 
-  return data_.settings.tags_requiring_justification.count(final_result_tag_) >
-         0;
+  return data_.settings.tags.count(final_result_tag_) &&
+         data_.settings.tags.at(final_result_tag_).requires_justification;
 }
 
 std::u16string ContentAnalysisDelegate::GetBypassJustificationLabel() const {
@@ -445,9 +445,9 @@ void ContentAnalysisDelegate::StringRequestCallback(
     if (should_warn) {
       text_warning_ = true;
       text_response_ = std::move(response);
-      UpdateFinalResult(ContentAnalysisDelegateBase::FinalResult::WARNING, tag);
+      UpdateFinalResult(FinalContentAnalysisResult::WARNING, tag);
     } else {
-      UpdateFinalResult(ContentAnalysisDelegateBase::FinalResult::FAILURE, tag);
+      UpdateFinalResult(FinalContentAnalysisResult::FAILURE, tag);
     }
   }
 
@@ -488,16 +488,14 @@ void ContentAnalysisDelegate::FileRequestCallback(
 
   if (!file_complies) {
     if (result == BinaryUploadService::Result::FILE_TOO_LARGE) {
-      UpdateFinalResult(ContentAnalysisDelegateBase::FinalResult::LARGE_FILES,
-                        tag);
+      UpdateFinalResult(FinalContentAnalysisResult::LARGE_FILES, tag);
     } else if (result == BinaryUploadService::Result::FILE_ENCRYPTED) {
-      UpdateFinalResult(
-          ContentAnalysisDelegateBase::FinalResult::ENCRYPTED_FILES, tag);
+      UpdateFinalResult(FinalContentAnalysisResult::ENCRYPTED_FILES, tag);
     } else if (should_warn) {
       file_warnings_[index] = std::move(response);
-      UpdateFinalResult(ContentAnalysisDelegateBase::FinalResult::WARNING, tag);
+      UpdateFinalResult(FinalContentAnalysisResult::WARNING, tag);
     } else {
-      UpdateFinalResult(ContentAnalysisDelegateBase::FinalResult::FAILURE, tag);
+      UpdateFinalResult(FinalContentAnalysisResult::FAILURE, tag);
     }
   }
 
@@ -531,14 +529,13 @@ void ContentAnalysisDelegate::PageRequestCallback(
 
   if (!result_.page_result) {
     if (result == BinaryUploadService::Result::FILE_TOO_LARGE) {
-      UpdateFinalResult(ContentAnalysisDelegateBase::FinalResult::LARGE_FILES,
-                        tag);
+      UpdateFinalResult(FinalContentAnalysisResult::LARGE_FILES, tag);
     } else if (should_warn) {
       page_warning_ = true;
       page_response_ = std::move(response);
-      UpdateFinalResult(ContentAnalysisDelegateBase::FinalResult::WARNING, tag);
+      UpdateFinalResult(FinalContentAnalysisResult::WARNING, tag);
     } else {
-      UpdateFinalResult(ContentAnalysisDelegateBase::FinalResult::FAILURE, tag);
+      UpdateFinalResult(FinalContentAnalysisResult::FAILURE, tag);
     }
   }
 
@@ -649,8 +646,8 @@ void ContentAnalysisDelegate::PrepareRequest(
   request->set_url(data_.url.spec());
   request->set_tab_url(data_.url);
   request->set_per_profile_request(data_.settings.per_profile);
-  for (const std::string& tag : data_.settings.tags)
-    request->add_tag(tag);
+  for (const auto& tag : data_.settings.tags)
+    request->add_tag(tag.first);
   if (data_.settings.client_metadata)
     request->set_client_metadata(*data_.settings.client_metadata);
 }
@@ -704,7 +701,7 @@ void ContentAnalysisDelegate::MaybeCompleteScanRequest() {
 
   // If showing the warning message, wait before running the callback. The
   // callback will be called either in BypassWarnings or Cancel.
-  if (final_result_ != ContentAnalysisDelegateBase::FinalResult::WARNING)
+  if (final_result_ != FinalContentAnalysisResult::WARNING)
     RunCallback();
 
   if (!UpdateDialog() && data_uploaded_) {
@@ -752,7 +749,7 @@ void ContentAnalysisDelegate::OnGotFileInfo(
 }
 
 void ContentAnalysisDelegate::UpdateFinalResult(
-    ContentAnalysisDelegateBase::FinalResult result,
+    FinalContentAnalysisResult result,
     const std::string& tag) {
   if (result < final_result_) {
     final_result_ = result;

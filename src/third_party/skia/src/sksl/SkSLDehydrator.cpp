@@ -298,10 +298,6 @@ void Dehydrator::write(const Expression* e) {
                 SkDEBUGFAIL("unimplemented--not expected to be used from within an include file");
                 break;
 
-            case Expression::Kind::kCodeString:
-                SkDEBUGFAIL("shouldn't be able to receive kCodeString here");
-                break;
-
             case Expression::Kind::kConstructorArray:
                 this->writeCommand(Rehydrator::kConstructorArray_Command);
                 this->write(e->type());
@@ -627,6 +623,7 @@ void Dehydrator::write(const std::vector<std::unique_ptr<ProgramElement>>& eleme
 void Dehydrator::write(const Program& program) {
     this->writeCommand(Rehydrator::kProgram_Command);
     this->writeU8((int)program.fConfig->fKind);
+    this->writeU8((int)program.fConfig->fRequiredSkSLVersion);
     this->write(*program.fSymbols);
 
     // Write the elements

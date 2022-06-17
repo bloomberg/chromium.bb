@@ -6,7 +6,6 @@
 
 #include "base/notreached.h"
 #import "base/strings/sys_string_conversions.h"
-#import "components/policy/core/common/policy_loader_ios_constants.h"
 #import "ios/chrome/browser/ui/commands/tos_commands.h"
 #import "ios/chrome/browser/ui/first_run/first_run_constants.h"
 #import "ios/chrome/browser/ui/first_run/fre_field_trial.h"
@@ -53,7 +52,9 @@ NSString* const kMetricsConsentCheckboxAccessibilityIdentifier =
 @end
 
 @implementation WelcomeScreenViewController
+
 @dynamic delegate;
+@synthesize isManaged = _isManaged;
 
 - (instancetype)initWithTOSHandler:(id<TOSCommands>)TOSHandler {
   DCHECK(TOSHandler);
@@ -68,7 +69,7 @@ NSString* const kMetricsConsentCheckboxAccessibilityIdentifier =
   [self configureLabels];
   self.view.accessibilityIdentifier =
       first_run::kFirstRunWelcomeScreenAccessibilityIdentifier;
-  self.bannerImage = [UIImage imageNamed:@"welcome_screen_banner"];
+  self.bannerName = @"welcome_screen_banner";
   self.isTallBanner = YES;
   self.scrollToEndMandatory = YES;
   self.readMoreString =
@@ -111,7 +112,7 @@ NSString* const kMetricsConsentCheckboxAccessibilityIdentifier =
     ]];
   }
 
-  if ([self isBrowserManaged]) {
+  if (self.isManaged) {
     UILabel* managedLabel = [self createManagedLabel];
     UIView* managedIcon = [self createManagedIcon];
     [self.specificContentView addSubview:managedLabel];
@@ -149,9 +150,12 @@ NSString* const kMetricsConsentCheckboxAccessibilityIdentifier =
 
 - (void)viewDidAppear:(BOOL)animated {
   [super viewDidAppear:animated];
-
   UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification,
                                   self.titleLabel);
+  [self.delegate logScrollButtonVisible:!self.didReachBottom
+                 withUMACheckboxVisible:
+                     fre_field_trial::GetNewMobileIdentityConsistencyFRE() ==
+                     NewMobileIdentityConsistencyFRE::kOld];
 }
 
 #pragma mark - Accessors
@@ -165,7 +169,7 @@ NSString* const kMetricsConsentCheckboxAccessibilityIdentifier =
 // Configures the text for the title and subtitle based on whether the browser
 // is managed or not.
 - (void)configureLabels {
-  if ([self isBrowserManaged]) {
+  if (self.isManaged) {
     self.titleText = l10n_util::GetNSString(
         IDS_IOS_FIRST_RUN_WELCOME_SCREEN_TITLE_ENTERPRISE);
     self.subtitleText = l10n_util::GetNSString(
@@ -319,13 +323,6 @@ NSString* const kMetricsConsentCheckboxAccessibilityIdentifier =
 // selected state.
 - (void)didTapMetricsButton {
   self.metricsConsentButton.selected = !self.metricsConsentButton.selected;
-}
-
-// Returns whether the browser is managed based on the presence of policy data
-// in the app configuration.
-- (BOOL)isBrowserManaged {
-  return [[[NSUserDefaults standardUserDefaults]
-             dictionaryForKey:kPolicyLoaderIOSConfigurationKey] count] > 0;
 }
 
 #pragma mark - UITextViewDelegate

@@ -128,6 +128,8 @@
         "extensible": "out",
         "members": [
             {"name": "vendor ID", "type": "uint32_t"},
+            {"name": "vendor name", "type": "char", "annotation": "const*", "length": "strlen"},
+            {"name": "architecture", "type": "char", "annotation": "const*", "length": "strlen"},
             {"name": "device ID", "type": "uint32_t"},
             {"name": "name", "type": "char", "annotation": "const*", "length": "strlen"},
             {"name": "driver description", "type": "char", "annotation": "const*", "length": "strlen"},
@@ -430,6 +432,14 @@
                 "args": [
                     {"name": "label", "type": "char", "annotation": "const*", "length": "strlen"}
                 ]
+            },
+            {
+                "name": "get usage",
+                "returns": "buffer usage"
+            },
+            {
+                "name": "get size",
+                "returns": "uint64_t"
             },
             {
                 "name": "unmap"
@@ -1065,9 +1075,19 @@
             },
             {
                 "name": "create swap chain",
+                "tags": ["dawn"],
                 "returns": "swap chain",
                 "args": [
                     {"name": "surface", "type": "surface", "optional": true},
+                    {"name": "descriptor", "type": "swap chain descriptor", "annotation": "const*"}
+                ]
+            },
+            {
+                "name": "create swap chain",
+                "tags": ["upstream", "emscripten"],
+                "returns": "swap chain",
+                "args": [
+                    {"name": "surface", "type": "surface"},
                     {"name": "descriptor", "type": "swap chain descriptor", "annotation": "const*"}
                 ]
             },
@@ -1201,6 +1221,8 @@
             {"name": "depth clamping", "type": "bool", "default": "false"},
             {"name": "depth24 unorm stencil8", "type": "bool", "default": "false"},
             {"name": "depth32 float stencil8", "type": "bool", "default": "false"},
+            {"name": "chromium experimental dp4a", "type": "bool", "default": "false"},
+            {"name": "indirect first instance", "type": "bool", "default": "false"},
             {"name": "invalid feature", "type": "bool", "default": "false"},
             {"name": "dawn internal usages", "type": "bool", "default": "false"},
             {"name": "dawn native", "type": "bool", "default": "false"},
@@ -1336,12 +1358,11 @@
             {"name": "yuv to rgb conversion matrix", "type": "float", "annotation": "const*",
                 "length": 12, "optional": true},
             {"name": "src transfer function parameters", "type": "float", "annotation": "const*",
-                "length": 7, "optional": true},
+                "length": 7},
             {"name": "dst transfer function parameters", "type": "float", "annotation": "const*",
-                "length": 7, "optional": true},
+                "length": 7},
             {"name": "gamut conversion matrix", "type": "float", "annotation": "const*",
-                "length": 9, "optional": true},
-            {"name": "color space", "type": "predefined color space", "default": "srgb"}
+                "length": 9}
         ]
     },
     "feature name": {
@@ -1361,7 +1382,8 @@
             {"value": 1001, "name": "dawn shader float 16", "tags": ["dawn"]},
             {"value": 1002, "name": "dawn internal usages", "tags": ["dawn"]},
             {"value": 1003, "name": "dawn multi planar formats", "tags": ["dawn"]},
-            {"value": 1004, "name": "dawn native", "tags": ["dawn", "native"]}
+            {"value": 1004, "name": "dawn native", "tags": ["dawn", "native"]},
+            {"value": 1005, "name": "chromium experimental dp4a", "tags": ["dawn"]}
         ]
     },
     "filter mode": {
@@ -1468,7 +1490,8 @@
         "category": "enum",
         "values": [
             {"value": 0, "name": "vertex"},
-            {"value": 1, "name": "instance"}
+            {"value": 1, "name": "instance"},
+            {"value": 2, "name": "vertex buffer not used"}
         ]
     },
     "load op": {
@@ -1550,13 +1573,6 @@
             {"value": 2, "name": "high performance"}
         ]
     },
-    "predefined color space": {
-        "category": "enum",
-        "values": [
-            {"value": 0, "name": "undefined", "jsrepr": "undefined"},
-            {"value": 1, "name": "srgb"}
-        ]
-    },
     "present mode": {
         "category": "enum",
         "emscripten_no_enum_table": true,
@@ -1595,6 +1611,14 @@
                 "args": [
                     {"name": "label", "type": "char", "annotation": "const*", "length": "strlen"}
                 ]
+            },
+            {
+                "name": "get type",
+                "returns": "query type"
+            },
+            {
+                "name": "get count",
+                "returns": "uint32_t"
             },
             {
                 "name": "destroy"
@@ -2502,6 +2526,38 @@
                 "args": [
                     {"name": "label", "type": "char", "annotation": "const*", "length": "strlen"}
                 ]
+            },
+            {
+                "name": "get width",
+                "returns": "uint32_t"
+            },
+            {
+                "name": "get height",
+                "returns": "uint32_t"
+            },
+            {
+                "name": "get depth or array layers",
+                "returns": "uint32_t"
+            },
+            {
+                "name": "get mip level count",
+                "returns": "uint32_t"
+            },
+            {
+                "name": "get sample count",
+                "returns": "uint32_t"
+            },
+            {
+                "name": "get dimension",
+                "returns": "texture dimension"
+            },
+            {
+                "name": "get format",
+                "returns": "texture format"
+            },
+            {
+                "name": "get usage",
+                "returns": "texture usage"
             },
             {
                 "name": "destroy"

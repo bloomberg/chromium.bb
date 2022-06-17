@@ -1,27 +1,14 @@
-load("//bazel:macros.bzl", "exports_files_legacy", "generated_cc_atom")
+load("//bazel:macros.bzl", "exports_files_legacy")
 
 licenses(["notice"])
 
 exports_files_legacy()
 
-generated_cc_atom(
-    name = "GrSlug_hdr",
-    hdrs = ["GrSlug.h"],
-    visibility = ["//:__subpackages__"],
-    deps = [
-        "//include/core:SkData_hdr",
-        "//include/core:SkRect_hdr",
-        "//include/core:SkRefCnt_hdr",
+filegroup(
+    name = "private_hdrs",
+    srcs = [
+        "SkChromeRemoteGlyphCache.h",
+        "Slug.h",
     ],
-)
-
-generated_cc_atom(
-    name = "SkChromeRemoteGlyphCache_hdr",
-    hdrs = ["SkChromeRemoteGlyphCache.h"],
-    visibility = ["//:__subpackages__"],
-    deps = [
-        "//include/core:SkData_hdr",
-        "//include/core:SkRefCnt_hdr",
-        "//include/utils:SkNoDrawCanvas_hdr",
-    ],
+    visibility = ["//include/private:__pkg__"],
 )

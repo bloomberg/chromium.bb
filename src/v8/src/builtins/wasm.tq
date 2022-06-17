@@ -38,13 +38,15 @@ extern runtime WasmArrayCopy(
     Context, WasmArray, Smi, WasmArray, Smi, Smi): JSAny;
 extern runtime WasmArrayInitFromData(
     Context, WasmInstanceObject, Smi, Smi, Smi, Map): Object;
+extern runtime WasmStringNewWtf8(
+    Context, WasmInstanceObject, Smi, Number, Number): String;
+extern runtime WasmStringNewWtf16(
+    Context, WasmInstanceObject, Smi, Number, Number): String;
 }
 
 namespace unsafe {
 extern macro TimesTaggedSize(intptr): intptr;
 extern macro Allocate(intptr, constexpr AllocationFlag): HeapObject;
-extern macro AllocateWasmArray(
-    intptr, constexpr InitializationMode): HeapObject;
 }
 
 namespace wasm {
@@ -52,6 +54,8 @@ const kAnyTableType: constexpr int31
     generates 'wasm::kWasmAnyRef.raw_bit_field()';
 const kAnyNonNullTableType: constexpr int31
     generates 'wasm::kWasmAnyNonNullableRef.raw_bit_field()';
+const kMaxPolymorphism:
+    constexpr int31 generates 'wasm::kMaxPolymorphism';
 
 extern macro WasmBuiltinsAssembler::LoadInstanceFromFrame(): WasmInstanceObject;
 
@@ -180,6 +184,49 @@ builtin WasmTableGet(tableIndex: intptr, index: int32): Object {
 
     const entries: FixedArray = table.entries;
     const entry: Object = LoadFixedArrayElement(entries, entryIndex);
+    return entry;
+  } label IndexOutOfRange deferred {
+    tail ThrowWasmTrapTableOutOfBounds();
+  }
+}
+
+builtin WasmTableSet(tableIndex: intptr, index: int32, value: Object): Object {
+  const instance: WasmInstanceObject = LoadInstanceFromFrame();
+  const entryIndex: intptr = ChangeInt32ToIntPtr(index);
+  try {
+    dcheck(IsValidPositiveSmi(tableIndex));
+    if (!IsValidPositiveSmi(entryIndex)) goto IndexOutOfRange;
+
+    const tables: FixedArray = LoadTablesFromInstance(instance);
+    const table: WasmTableObject = %RawDownCast<WasmTableObject>(
+        LoadFixedArrayElement(tables, tableIndex));
+
+    const entriesCount: intptr = Convert<intptr, Smi>(table.current_length);
+    if (entryIndex >= entriesCount) goto IndexOutOfRange;
+
+    const entries: FixedArray = table.entries;
+    StoreFixedArrayElement(entries, entryIndex, value);
+    return Undefined;
+  } label IndexOutOfRange deferred {
+    tail ThrowWasmTrapTableOutOfBounds();
+  }
+}
+
+builtin WasmTableGetFuncRef(tableIndex: intptr, index: int32): Object {
+  const instance: WasmInstanceObject = LoadInstanceFromFrame();
+  const entryIndex: intptr = ChangeInt32ToIntPtr(index);
+  try {
+    dcheck(IsValidPositiveSmi(tableIndex));
+    if (!IsValidPositiveSmi(entryIndex)) goto IndexOutOfRange;
+
+    const tables: FixedArray = LoadTablesFromInstance(instance);
+    const table: WasmTableObject = %RawDownCast<WasmTableObject>(
+        LoadFixedArrayElement(tables, tableIndex));
+    const entriesCount: intptr = Convert<intptr, Smi>(table.current_length);
+    if (entryIndex >= entriesCount) goto IndexOutOfRange;
+
+    const entries: FixedArray = table.entries;
+    const entry: Object = LoadFixedArrayElement(entries, entryIndex);
 
     try {
       const entryObject: HeapObject =
@@ -198,7 +245,8 @@ builtin WasmTableGet(tableIndex: intptr, index: int32): Object {
   }
 }
 
-builtin WasmTableSet(tableIndex: intptr, index: int32, value: Object): Object {
+builtin WasmTableSetFuncRef(
+    tableIndex: intptr, index: int32, value: Object): Object {
   const instance: WasmInstanceObject = LoadInstanceFromFrame();
   const entryIndex: intptr = ChangeInt32ToIntPtr(index);
   try {
@@ -209,22 +257,9 @@ builtin WasmTableSet(tableIndex: intptr, index: int32, value: Object): Object {
     const table: WasmTableObject = %RawDownCast<WasmTableObject>(
         LoadFixedArrayElement(tables, tableIndex));
 
-    // Fall back to the runtime to set funcrefs, since we have to update
-    // function dispatch tables.
-    // TODO(7748): Update this if further table types are supported.
-    const tableType: Smi = table.raw_type;
-    if (tableType != SmiConstant(kAnyTableType) &&
-        tableType != SmiConstant(kAnyNonNullTableType)) {
-      goto CallRuntime;
-    }
-
     const entriesCount: intptr = Convert<intptr, Smi>(table.current_length);
     if (entryIndex >= entriesCount) goto IndexOutOfRange;
 
-    const entries: FixedArray = table.entries;
-    StoreFixedArrayElement(entries, entryIndex, value);
-    return Undefined;
-  } label CallRuntime deferred {
     tail runtime::WasmFunctionTableSet(
         LoadContextFromInstance(instance), instance, SmiFromIntPtr(tableIndex),
         SmiFromIntPtr(entryIndex), value);
@@ -313,40 +348,21 @@ builtin WasmAllocateStructWithRtt(rtt: Map): HeapObject {
   return result;
 }
 
-macro WasmAllocateArray(
-    rtt: Map, length: uint32, elementSize: uint32,
-    initializationMode: constexpr InitializationMode): HeapObject {
+builtin WasmAllocateArray_Uninitialized(
+    rtt: Map, length: uint32, elementSize: uint32): WasmArray {
   // instanceSize = RoundUp(elementSize * length, kObjectAlignment)
   //              + WasmArray::kHeaderSize
   const instanceSize: intptr =
       torque_internal::AlignTagged(
           Convert<intptr>(length) * Convert<intptr>(elementSize)) +
       Convert<intptr>(kWasmArrayHeaderSize);
-  const result: HeapObject =
-      unsafe::AllocateWasmArray(instanceSize, initializationMode);
+  const result: HeapObject = unsafe::Allocate(
+      instanceSize, AllocationFlag::kAllowLargeObjectAllocation);
   *UnsafeConstCast(&result.map) = rtt;
   // TODO(ishell): consider removing properties_or_hash field from WasmObjects.
   %RawDownCast<WasmArray>(result).properties_or_hash = kEmptyFixedArray;
   %RawDownCast<WasmArray>(result).length = length;
-  return result;
-}
-
-builtin WasmAllocateArray_Uninitialized(
-    rtt: Map, length: uint32, elementSize: uint32): HeapObject {
-  return WasmAllocateArray(
-      rtt, length, elementSize, InitializationMode::kUninitialized);
-}
-
-builtin WasmAllocateArray_InitZero(
-    rtt: Map, length: uint32, elementSize: uint32): HeapObject {
-  return WasmAllocateArray(
-      rtt, length, elementSize, InitializationMode::kInitializeToZero);
-}
-
-builtin WasmAllocateArray_InitNull(
-    rtt: Map, length: uint32, elementSize: uint32): HeapObject {
-  return WasmAllocateArray(
-      rtt, length, elementSize, InitializationMode::kInitializeToNull);
+  return %RawDownCast<WasmArray>(result);
 }
 
 builtin WasmArrayInitFromData(
@@ -496,7 +512,7 @@ macro GetTargetAndInstance(funcref: WasmInternalFunction): TargetAndInstance {
 // - monomorphic: (funcref, count (smi)). The second slot is a counter for how
 //   often the funcref in the first slot has been seen.
 // - polymorphic: (fixed_array, <unused>). In this case, the array
-//   contains 2..4 pairs (funcref, count (smi)) (like monomorphic data).
+//   contains 2..kMaxPolymorphism pairs (funcref, count (smi))
 // - megamorphic: ("megamorphic" sentinel, <unused>)
 //
 // TODO(rstz): The counter might overflow if it exceeds the range of a Smi.
@@ -533,7 +549,8 @@ builtin CallRefIC(
   } else if (Is<FixedArray>(value)) {
     // Polymorphic miss.
     const entries = UnsafeCast<FixedArray>(value);
-    if (entries.length == SmiConstant(8)) {  // 4 entries, 2 slots each.
+    const kMaxSlots = kMaxPolymorphism * 2;  // 2 slots per entry.
+    if (entries.length == SmiConstant(kMaxSlots)) {
       vector.objects[index] = ic::kMegamorphicSymbol;
       vector.objects[index + 1] = ic::kMegamorphicSymbol;
     } else {
@@ -662,5 +679,121 @@ builtin ThrowWasmTrapArrayOutOfBounds(): JSAny {
 
 builtin ThrowWasmTrapArrayTooLarge(): JSAny {
   tail WasmTrap(SmiConstant(MessageTemplate::kWasmTrapArrayTooLarge));
+}
+
+macro TryNumberToIntptr(value: JSAny): intptr labels Failure {
+  typeswitch (value) {
+    case (s: Smi): {
+      return Convert<intptr>(s);
+    }
+    case (hn: HeapNumber): deferred {
+      let value = Convert<float64>(hn);
+      if (Float64IsNaN(value)) goto Failure;
+      value = math::Float64Trunc(value);
+      return ChangeFloat64ToIntPtr(value);
+    }
+    case (JSAny): deferred {
+      goto Failure;
+    }
+  }
+}
+
+macro WasmTypeInfo(map: Map): WasmTypeInfo {
+  return UnsafeCast<WasmTypeInfo>(
+      map.constructor_or_back_pointer_or_native_context);
+}
+
+const kWasmI16ValueType: constexpr int32
+    generates 'wasm::ValueType::Primitive(wasm::kI16).raw_bit_field()';
+
+const kWasmArrayTypeRepOffset:
+    constexpr intptr generates 'wasm::ArrayType::kRepOffset';
+const kWasmValueTypeBitFieldOffset:
+    constexpr intptr generates 'wasm::ValueType::kBitFieldOffset';
+
+macro IsWord16WasmArrayMap(map: Map): bool {
+  const arrayTypePtr: RawPtr<int32> = %RawDownCast<RawPtr<int32>>(
+      WasmTypeInfo(map).foreign_address_ptr + kWasmArrayTypeRepOffset +
+      kWasmValueTypeBitFieldOffset);
+  const arrayTypeRef: &int32 =
+      torque_internal::unsafe::NewOffHeapReference(arrayTypePtr);
+  return *arrayTypeRef == kWasmI16ValueType;
+}
+
+// Non-standard experimental feature.
+transitioning javascript builtin ExperimentalWasmConvertArrayToString(
+    js-implicit context: NativeContext)(
+    array: JSAny, start: JSAny, count: JSAny): String {
+  try {
+    const start = TryNumberToIntptr(start) otherwise goto InvalidArgument;
+    const count = TryNumberToIntptr(count) otherwise goto InvalidArgument;
+
+    const array = Cast<WasmArray>(array) otherwise goto InvalidArgument;
+    if (!IsWord16WasmArrayMap(array.map)) goto InvalidArgument;
+    const arrayContent = torque_internal::unsafe::NewConstSlice<char16>(
+        array, kWasmArrayHeaderSize, Convert<intptr>(array.length));
+
+    return AllocateSeqTwoByteString(
+        Convert<uint32>(Unsigned(count)),
+        (Subslice(arrayContent, start, count) otherwise goto InvalidArgument)
+            .Iterator());
+  } label InvalidArgument deferred {
+    ThrowTypeError(MessageTemplate::kInvalidArgument);
+  }
+}
+
+// Non-standard experimental feature.
+transitioning javascript builtin ExperimentalWasmConvertStringToArray(
+    js-implicit context: NativeContext)(
+    string: JSAny, sampleArray: JSAny): WasmArray {
+  try {
+    const sampleArray =
+        Cast<WasmArray>(sampleArray) otherwise goto InvalidArgument;
+    const arrayMap = sampleArray.map;
+    if (!IsWord16WasmArrayMap(arrayMap)) goto InvalidArgument;
+
+    const string = Cast<String>(string) otherwise goto InvalidArgument;
+    const length = string.length;
+
+    const result =
+        WasmAllocateArray_Uninitialized(arrayMap, Unsigned(length), 2);
+    const arrayContent = torque_internal::unsafe::NewMutableSlice<char16>(
+        result, kWasmArrayHeaderSize, Convert<intptr>(length));
+    try {
+      StringToSlice(string) otherwise OneByte, TwoByte;
+    } label OneByte(slice: ConstSlice<char8>) {
+      let fromIt = slice.Iterator();
+      let toIt = arrayContent.Iterator();
+      while (true) {
+        let toRef = toIt.NextReference() otherwise break;
+        *toRef = %RawDownCast<char16>(Convert<uint16>(fromIt.NextNotEmpty()));
+      }
+    } label TwoByte(slice: ConstSlice<char16>) {
+      let fromIt = slice.Iterator();
+      let toIt = arrayContent.Iterator();
+      while (true) {
+        let toRef = toIt.NextReference() otherwise break;
+        *toRef = fromIt.NextNotEmpty();
+      }
+    }
+    return result;
+  } label InvalidArgument deferred {
+    ThrowTypeError(MessageTemplate::kInvalidArgument);
+  }
+}
+
+builtin WasmStringNewWtf8(
+    memory: uint32, offset: uint32, size: uint32): String {
+  const instance = LoadInstanceFromFrame();
+  tail runtime::WasmStringNewWtf8(
+      LoadContextFromInstance(instance), instance, SmiFromUint32(memory),
+      WasmUint32ToNumber(offset), WasmUint32ToNumber(size));
+}
+builtin WasmStringNewWtf16(
+    memory: uint32, offset: uint32, size: uint32): String {
+  const instance = LoadInstanceFromFrame();
+  tail runtime::WasmStringNewWtf16(
+      LoadContextFromInstance(instance), instance, SmiFromUint32(memory),
+      WasmUint32ToNumber(offset), WasmUint32ToNumber(size));
 }
 }

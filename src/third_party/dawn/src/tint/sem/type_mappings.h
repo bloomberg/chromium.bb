@@ -30,6 +30,7 @@ class Node;
 class Statement;
 class Struct;
 class StructMember;
+class SwitchStatement;
 class Type;
 class TypeDecl;
 class Variable;
@@ -46,6 +47,7 @@ class Node;
 class Statement;
 class Struct;
 class StructMember;
+class SwitchStatement;
 class Type;
 class Variable;
 }  // namespace tint::sem
@@ -59,7 +61,6 @@ namespace tint::sem {
 struct TypeMappings {
     //! @cond Doxygen_Suppress
     Array* operator()(ast::Array*);
-    Call* operator()(ast::CallExpression*);
     Expression* operator()(ast::Expression*);
     ForLoopStatement* operator()(ast::ForLoopStatement*);
     Function* operator()(ast::Function*);
@@ -69,6 +70,7 @@ struct TypeMappings {
     Statement* operator()(ast::Statement*);
     Struct* operator()(ast::Struct*);
     StructMember* operator()(ast::StructMember*);
+    SwitchStatement* operator()(ast::SwitchStatement*);
     Type* operator()(ast::Type*);
     Type* operator()(ast::TypeDecl*);
     Variable* operator()(ast::Variable*);

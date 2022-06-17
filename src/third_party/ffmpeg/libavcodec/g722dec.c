@@ -84,11 +84,10 @@ static const int16_t * const low_inv_quants[3] = { ff_g722_low_inv_quant6,
                                                            low_inv_quant5,
                                                    ff_g722_low_inv_quant4 };
 
-static int g722_decode_frame(AVCodecContext *avctx, void *data,
+static int g722_decode_frame(AVCodecContext *avctx, AVFrame *frame,
                              int *got_frame_ptr, AVPacket *avpkt)
 {
     G722Context *c = avctx->priv_data;
-    AVFrame *frame = data;
     int16_t *out_buf;
     int j, ret;
     const int skip = 8 - c->bits_per_codeword;
@@ -147,7 +146,7 @@ const FFCodec ff_adpcm_g722_decoder = {
     .p.id           = AV_CODEC_ID_ADPCM_G722,
     .priv_data_size = sizeof(G722Context),
     .init           = g722_decode_init,
-    .decode         = g722_decode_frame,
+    FF_CODEC_DECODE_CB(g722_decode_frame),
     .p.capabilities = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_CHANNEL_CONF,
     .p.priv_class   = &g722_decoder_class,
     .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,

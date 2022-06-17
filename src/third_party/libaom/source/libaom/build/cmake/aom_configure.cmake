@@ -334,6 +334,26 @@ else()
   add_compiler_flag_if_supported("-D_FILE_OFFSET_BITS=64")
 endif()
 
+# Prior to r23, or with ANDROID_USE_LEGACY_TOOLCHAIN_FILE set,
+# android.toolchain.cmake would set normal (non-cache) versions of variables
+# like CMAKE_C_FLAGS_RELEASE which would mask the ones added to the cache
+# variable in add_compiler_flag_if_supported(), etc. As a workaround we add
+# everything accumulated in AOM_C/CXX_FLAGS to the normal versions. This could
+# also be addressed by reworking the flag tests and adding the results directly
+# to target_compile_options() as in e.g., libgav1, but that's a larger task.
+# https://github.com/android/ndk/wiki/Changelog-r23#changes
+if(ANDROID
+   AND ("${ANDROID_NDK_MAJOR}" LESS 23 OR ANDROID_USE_LEGACY_TOOLCHAIN_FILE))
+  foreach(lang C;CXX)
+    string(STRIP "${AOM_${lang}_FLAGS}" AOM_${lang}_FLAGS)
+    if(AOM_${lang}_FLAGS)
+      foreach(config ${AOM_${lang}_CONFIGS})
+        set(${config} "${${config}} ${AOM_${lang}_FLAGS}")
+      endforeach()
+    endif()
+  endforeach()
+endif()
+
 set(AOM_LIB_LINK_TYPE PUBLIC)
 if(EMSCRIPTEN)
 

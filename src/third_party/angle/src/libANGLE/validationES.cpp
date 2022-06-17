@@ -462,11 +462,13 @@ bool ValidateTextureMaxAnisotropyValue(const Context *context,
 
 bool ValidateFragmentShaderColorBufferMaskMatch(const Context *context)
 {
+    const auto &glState            = context->getState();
     const Program *program         = context->getActiveLinkedProgram();
-    const Framebuffer *framebuffer = context->getState().getDrawFramebuffer();
+    const Framebuffer *framebuffer = glState.getDrawFramebuffer();
 
-    auto drawBufferMask     = framebuffer->getDrawBufferMask().to_ulong();
-    auto fragmentOutputMask = program->getExecutable().getActiveOutputVariablesMask().to_ulong();
+    auto drawBufferMask =
+        framebuffer->getDrawBufferMask() & glState.getBlendStateExt().compareColorMask(0);
+    auto fragmentOutputMask = program->getExecutable().getActiveOutputVariablesMask();
 
     return drawBufferMask == (drawBufferMask & fragmentOutputMask);
 }
@@ -1159,9 +1161,12 @@ bool ValidCompressedSubImageSize(const Context *context,
         return false;
     }
 
-    bool fillsEntireMip =
-        xoffset == 0 && yoffset == 0 && static_cast<size_t>(width) == textureWidth &&
-        static_cast<size_t>(height) == textureHeight && static_cast<size_t>(depth) == textureDepth;
+    // ANGLE does not support compressed 3D blocks (provided exclusively by ASTC 3D formats), so
+    // there is no need to check the depth here. Only width and height determine whether a 2D array
+    // element or a 2D slice of a sliced 3D texture fill the entire level.
+    bool fillsEntireMip = xoffset == 0 && yoffset == 0 &&
+                          static_cast<size_t>(width) == textureWidth &&
+                          static_cast<size_t>(height) == textureHeight;
 
     if (CompressedFormatRequiresWholeImage(internalFormat))
     {

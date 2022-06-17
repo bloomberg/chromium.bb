@@ -21,12 +21,12 @@
 #include "src/core/SkConvertPixels.h"
 #include "src/core/SkDrawProcs.h"
 #include "src/core/SkDrawShadowInfo.h"
-#include "src/core/SkGlyphRunPainter.h"
 #include "src/core/SkLatticeIter.h"
 #include "src/core/SkMatrixPriv.h"
 #include "src/core/SkMatrixProvider.h"
 #include "src/core/SkMeshPriv.h"
 #include "src/core/SkRRectPriv.h"
+#include "src/core/SkStrikeCache.h"
 #include "src/gpu/ganesh/GrAppliedClip.h"
 #include "src/gpu/ganesh/GrAttachment.h"
 #include "src/gpu/ganesh/GrCaps.h"
@@ -70,9 +70,9 @@
 #include "src/gpu/ganesh/ops/ShadowRRectOp.h"
 #include "src/gpu/ganesh/ops/StrokeRectOp.h"
 #include "src/gpu/ganesh/ops/TextureOp.h"
-#include "src/gpu/ganesh/text/GrSDFTControl.h"
-#include "src/gpu/ganesh/text/GrTextBlobRedrawCoordinator.h"
 #include "src/gpu/ganesh/v1/PathRenderer.h"
+#include "src/text/gpu/SDFTControl.h"
+#include "src/text/gpu/TextBlobRedrawCoordinator.h"
 
 #define ASSERT_OWNED_RESOURCE(R) SkASSERT(!(R) || (R)->getContext() == this->drawingManager()->getContext())
 #define ASSERT_SINGLE_OWNER        SKGPU_ASSERT_SINGLE_OWNER(this->singleOwner())
@@ -181,7 +181,8 @@ std::unique_ptr<SurfaceDrawContext> SurfaceDrawContext::Make(
             mipmapped,
             fit,
             budgeted,
-            isProtected);
+            isProtected,
+            /*label=*/{});
     if (!proxy) {
         return nullptr;
     }
@@ -226,7 +227,8 @@ std::unique_ptr<SurfaceDrawContext> SurfaceDrawContext::Make(
                                                                                 mipmapped,
                                                                                 fit,
                                                                                 budgeted,
-                                                                                isProtected);
+                                                                                isProtected,
+                                                                                /*label=*/{});
     if (!proxy) {
         return nullptr;
     }
@@ -298,8 +300,7 @@ SurfaceDrawContext::SurfaceDrawContext(GrRecordingContext* rContext,
         , fSurfaceProps(surfaceProps)
         , fCanUseDynamicMSAA(
                 (fSurfaceProps.flags() & SkSurfaceProps::kDynamicMSAA_Flag) &&
-                rContext->priv().caps()->supportsDynamicMSAA(this->asRenderTargetProxy()))
-        , fGlyphPainter(*this) {
+                rContext->priv().caps()->supportsDynamicMSAA(this->asRenderTargetProxy())) {
     SkDEBUGCODE(this->validate();)
 }
 
@@ -327,6 +328,7 @@ void SurfaceDrawContext::drawGlyphRunList(SkCanvas* canvas,
                                           const GrClip* clip,
                                           const SkMatrixProvider& viewMatrix,
                                           const SkGlyphRunList& glyphRunList,
+                                          SkStrikeDeviceInfo strikeDeviceInfo,
                                           const SkPaint& paint) {
     ASSERT_SINGLE_OWNER
     RETURN_IF_ABANDONED
@@ -340,8 +342,9 @@ void SurfaceDrawContext::drawGlyphRunList(SkCanvas* canvas,
         return;
     }
 
-    GrTextBlobRedrawCoordinator* textBlobCache = fContext->priv().getTextBlobCache();
-    textBlobCache->drawGlyphRunList(canvas, clip, viewMatrix, glyphRunList, paint, this);
+    sktext::gpu::TextBlobRedrawCoordinator* textBlobCache = fContext->priv().getTextBlobCache();
+    textBlobCache->drawGlyphRunList(
+            canvas, clip, viewMatrix, glyphRunList, paint, strikeDeviceInfo, this);
 }
 
 void SurfaceDrawContext::drawPaint(const GrClip* clip,

@@ -48,7 +48,7 @@ class SenderSocketsClient : public SenderSocketFactory::Client,
  public:
   explicit SenderSocketsClient(VirtualConnectionRouter* router)  // NOLINT
       : router_(router) {}
-  virtual ~SenderSocketsClient() = default;
+  ~SenderSocketsClient() override = default;
 
   CastSocket* socket() const { return socket_; }
 

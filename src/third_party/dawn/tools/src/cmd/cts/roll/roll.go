@@ -46,10 +46,11 @@ func init() {
 }
 
 const (
-	depsRelPath      = "DEPS"
-	tsSourcesRelPath = "third_party/gn/webgpu-cts/ts_sources.txt"
-	refMain          = "refs/heads/main"
-	noExpectations   = `# Clear all expectations to obtain full list of results`
+	depsRelPath          = "DEPS"
+	tsSourcesRelPath     = "third_party/gn/webgpu-cts/ts_sources.txt"
+	resourceFilesRelPath = "third_party/gn/webgpu-cts/resource_files.txt"
+	refMain              = "refs/heads/main"
+	noExpectations       = `# Clear all expectations to obtain full list of results`
 )
 
 type rollerFlags struct {
@@ -97,13 +98,13 @@ func (c *cmd) Run(ctx context.Context, cfg common.Config) error {
 
 	// Check tools can be found
 	for _, tool := range []struct {
-		name, path string
+		name, path, hint string
 	}{
 		{name: "git", path: c.flags.gitPath},
-		{name: "tsc", path: c.flags.tscPath},
+		{name: "tsc", path: c.flags.tscPath, hint: "Try using '-tsc third_party/webgpu-cts/node_modules/.bin/tsc' after an 'npm ci'."},
 	} {
 		if _, err := os.Stat(tool.path); err != nil {
-			return fmt.Errorf("failed to find path to %v: %v", tool.name, err)
+			return fmt.Errorf("failed to find path to %v: %v. %v", tool.name, err, tool.hint)
 		}
 	}
 
@@ -235,6 +236,12 @@ func (r *roller) roll(ctx context.Context) error {
 		return fmt.Errorf("failed to generate ts_sources.txt: %v", err)
 	}
 
+	// Regenerate the resource files list
+	resources, err := r.genResourceFilesList(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to generate resource_files.txt: %v", err)
+	}
+
 	// Look for an existing gerrit change to update
 	existingRolls, err := r.findExistingRolls()
 	if err != nil {
@@ -276,6 +283,7 @@ func (r *roller) roll(ctx context.Context) error {
 		depsRelPath:                     updatedDEPS,
 		common.RelativeExpectationsPath: ex.String(),
 		tsSourcesRelPath:                tsSources,
+		resourceFilesRelPath:            resources,
 	})
 	if err != nil {
 		return fmt.Errorf("failed to update change '%v': %v", changeID, err)
@@ -459,11 +467,20 @@ func (r *roller) rollCommitMessage(
 func (r *roller) postComments(ps gerrit.Patchset, diags []expectations.Diagnostic, results result.List) error {
 	fc := make([]gerrit.FileComment, len(diags))
 	for i, d := range diags {
+		var prefix string
+		switch d.Severity {
+		case expectations.Error:
+			prefix = "🟥"
+		case expectations.Warning:
+			prefix = "🟨"
+		case expectations.Note:
+			prefix = "🟦"
+		}
 		fc[i] = gerrit.FileComment{
 			Path:    common.RelativeExpectationsPath,
 			Side:    gerrit.Left,
 			Line:    d.Line,
-			Message: fmt.Sprintf("%v: %v", d.Severity, d.Message),
+			Message: fmt.Sprintf("%v %v: %v", prefix, d.Severity, d.Message),
 		}
 	}
 
@@ -591,4 +608,22 @@ func (r *roller) genTSDepList(ctx context.Context) (string, error) {
 	}
 
 	return strings.Join(deps, "\n") + "\n", nil
+}
+
+// genResourceFilesList returns a list of resource files, for the CTS checkout at r.ctsDir
+// This list can be used to populate the resource_files.txt file.
+func (r *roller) genResourceFilesList(ctx context.Context) (string, error) {
+	dir := filepath.Join(r.ctsDir, "src", "resources")
+	files, err := filepath.Glob(filepath.Join(dir, "*"))
+	if err != nil {
+		return "", err
+	}
+	for i, file := range files {
+		file, err := filepath.Rel(dir, file)
+		if err != nil {
+			return "", err
+		}
+		files[i] = file
+	}
+	return strings.Join(files, "\n") + "\n", nil
 }

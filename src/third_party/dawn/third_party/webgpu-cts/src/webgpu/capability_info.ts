@@ -478,7 +478,7 @@ export function resolvePerAspectFormat(
   assert(kTextureFormatInfo[format].depth || kTextureFormatInfo[format].stencil);
   const resolved = kDepthStencilFormatResolvedAspect[format as DepthStencilFormat][aspect ?? 'all'];
   assert(resolved !== undefined);
-  return resolved!;
+  return resolved;
 }
 
 /**
@@ -1020,7 +1020,7 @@ export const kLimitInfo = /* prettier-ignore */ makeTable(
   'maxVertexBufferArrayStride':                [           ,      2048,                          ],
   'maxInterStageShaderComponents':             [           ,        60,                          ],
 
-  'maxComputeWorkgroupStorageSize':            [           ,     16352,                          ],
+  'maxComputeWorkgroupStorageSize':            [           ,     16384,                          ],
   'maxComputeInvocationsPerWorkgroup':         [           ,       256,                          ],
   'maxComputeWorkgroupSizeX':                  [           ,       256,                          ],
   'maxComputeWorkgroupSizeY':                  [           ,       256,                          ],

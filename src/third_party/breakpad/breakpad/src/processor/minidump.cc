@@ -1843,6 +1843,229 @@ void MinidumpThreadList::Print() {
   }
 }
 
+//
+// MinidumpThreadName
+//
+
+MinidumpThreadName::MinidumpThreadName(Minidump* minidump)
+    : MinidumpObject(minidump),
+      thread_name_valid_(false),
+      thread_name_(),
+      name_(NULL) {}
+
+MinidumpThreadName::~MinidumpThreadName() {
+  delete name_;
+}
+
+bool MinidumpThreadName::Read() {
+  // Invalidate cached data.
+  delete name_;
+  name_ = NULL;
+
+  valid_ = false;
+
+  if (!minidump_->ReadBytes(&thread_name_, sizeof(thread_name_))) {
+    BPLOG(ERROR) << "MinidumpThreadName cannot read thread name";
+    return false;
+  }
+
+  if (minidump_->swap()) {
+    Swap(&thread_name_.thread_id);
+    Swap(&thread_name_.thread_name_rva);
+  }
+
+  thread_name_valid_ = true;
+  return true;
+}
+
+bool MinidumpThreadName::ReadAuxiliaryData() {
+  if (!thread_name_valid_) {
+    BPLOG(ERROR) << "Invalid MinidumpThreadName for ReadAuxiliaryData";
+    return false;
+  }
+
+  // On 32-bit systems, check that the RVA64 is within range (off_t is 32 bits).
+  if (thread_name_.thread_name_rva > numeric_limits<off_t>::max()) {
+    BPLOG(ERROR) << "MinidumpThreadName RVA64 out of range";
+    return false;
+  }
+
+  // Read the thread name.
+  const off_t thread_name_rva_offset =
+      static_cast<off_t>(thread_name_.thread_name_rva);
+  name_ = minidump_->ReadString(thread_name_rva_offset);
+  if (!name_) {
+    BPLOG(ERROR) << "MinidumpThreadName could not read name";
+    return false;
+  }
+
+  // At this point, we have enough info for the thread name to be valid.
+  valid_ = true;
+  return true;
+}
+
+bool MinidumpThreadName::GetThreadID(uint32_t* thread_id) const {
+  BPLOG_IF(ERROR, !thread_id) << "MinidumpThreadName::GetThreadID requires "
+                                 "|thread_id|";
+  assert(thread_id);
+  *thread_id = 0;
+
+  if (!valid_) {
+    BPLOG(ERROR) << "Invalid MinidumpThreadName for GetThreadID";
+    return false;
+  }
+
+  *thread_id = thread_name_.thread_id;
+  return true;
+}
+
+string MinidumpThreadName::GetThreadName() const {
+  if (!valid_) {
+    BPLOG(ERROR) << "Invalid MinidumpThreadName for GetThreadName";
+    return "";
+  }
+
+  return *name_;
+}
+
+void MinidumpThreadName::Print() {
+  if (!valid_) {
+    BPLOG(ERROR) << "MinidumpThreadName cannot print invalid data";
+    return;
+  }
+
+  printf("MDRawThreadName\n");
+  printf("  thread_id                   = 0x%x\n", thread_name_.thread_id);
+  printf("  thread_name_rva             = 0x%" PRIx64 "\n",
+         thread_name_.thread_name_rva);
+  printf("  thread_name                 = \"%s\"\n", GetThreadName().c_str());
+  printf("\n");
+}
+
+//
+// MinidumpThreadNameList
+//
+
+MinidumpThreadNameList::MinidumpThreadNameList(Minidump* minidump)
+    : MinidumpStream(minidump), thread_names_(NULL), thread_name_count_(0) {}
+
+MinidumpThreadNameList::~MinidumpThreadNameList() {
+  delete thread_names_;
+}
+
+bool MinidumpThreadNameList::Read(uint32_t expected_size) {
+  // Invalidate cached data.
+  delete thread_names_;
+  thread_names_ = NULL;
+  thread_name_count_ = 0;
+
+  valid_ = false;
+
+  uint32_t thread_name_count;
+  if (expected_size < sizeof(thread_name_count)) {
+    BPLOG(ERROR) << "MinidumpThreadNameList count size mismatch, "
+                 << expected_size << " < " << sizeof(thread_name_count);
+    return false;
+  }
+  if (!minidump_->ReadBytes(&thread_name_count, sizeof(thread_name_count))) {
+    BPLOG(ERROR) << "MinidumpThreadNameList cannot read thread name count";
+    return false;
+  }
+
+  if (minidump_->swap())
+    Swap(&thread_name_count);
+
+  if (thread_name_count >
+      numeric_limits<uint32_t>::max() / sizeof(MDRawThreadName)) {
+    BPLOG(ERROR) << "MinidumpThreadNameList thread name count "
+                 << thread_name_count << " would cause multiplication overflow";
+    return false;
+  }
+
+  if (expected_size !=
+      sizeof(thread_name_count) + thread_name_count * sizeof(MDRawThreadName)) {
+    BPLOG(ERROR) << "MinidumpThreadNameList size mismatch, " << expected_size
+                 << " != "
+                 << sizeof(thread_name_count) +
+                        thread_name_count * sizeof(MDRawThreadName);
+    return false;
+  }
+
+  if (thread_name_count > MinidumpThreadList::max_threads()) {
+    BPLOG(ERROR) << "MinidumpThreadNameList count " << thread_name_count
+                 << " exceeds maximum " << MinidumpThreadList::max_threads();
+    return false;
+  }
+
+  if (thread_name_count != 0) {
+    scoped_ptr<MinidumpThreadNames> thread_names(new MinidumpThreadNames(
+        thread_name_count, MinidumpThreadName(minidump_)));
+
+    for (unsigned int thread_name_index = 0;
+         thread_name_index < thread_name_count; ++thread_name_index) {
+      MinidumpThreadName* thread_name = &(*thread_names)[thread_name_index];
+
+      // Assume that the file offset is correct after the last read.
+      if (!thread_name->Read()) {
+        BPLOG(ERROR) << "MinidumpThreadNameList cannot read thread name "
+                     << thread_name_index << "/" << thread_name_count;
+        return false;
+      }
+    }
+
+    for (unsigned int thread_name_index = 0;
+         thread_name_index < thread_name_count; ++thread_name_index) {
+      MinidumpThreadName* thread_name = &(*thread_names)[thread_name_index];
+
+      if (!thread_name->ReadAuxiliaryData() && !thread_name->valid()) {
+        BPLOG(ERROR) << "MinidumpThreadNameList cannot read thread name "
+                     << thread_name_index << "/" << thread_name_count;
+        return false;
+      }
+    }
+
+    thread_names_ = thread_names.release();
+  }
+
+  thread_name_count_ = thread_name_count;
+
+  valid_ = true;
+  return true;
+}
+
+MinidumpThreadName* MinidumpThreadNameList::GetThreadNameAtIndex(
+    unsigned int index) const {
+  if (!valid_) {
+    BPLOG(ERROR) << "Invalid MinidumpThreadNameList for GetThreadNameAtIndex";
+    return NULL;
+  }
+
+  if (index >= thread_name_count_) {
+    BPLOG(ERROR) << "MinidumpThreadNameList index out of range: " << index
+                 << "/" << thread_name_count_;
+    return NULL;
+  }
+
+  return &(*thread_names_)[index];
+}
+
+void MinidumpThreadNameList::Print() {
+  if (!valid_) {
+    BPLOG(ERROR) << "MinidumpThreadNameList cannot print invalid data";
+    return;
+  }
+
+  printf("MinidumpThreadNameList\n");
+  printf("  thread_name_count = %d\n", thread_name_count_);
+  printf("\n");
+
+  for (unsigned int thread_name_index = 0;
+       thread_name_index < thread_name_count_; ++thread_name_index) {
+    printf("thread_name[%d]\n", thread_name_index);
+
+    (*thread_names_)[thread_name_index].Print();
+  }
+}
 
 //
 // MinidumpModule
@@ -5280,6 +5503,7 @@ bool Minidump::Read() {
       unsigned int stream_type = directory_entry->stream_type;
       switch (stream_type) {
         case MD_THREAD_LIST_STREAM:
+        case MD_THREAD_NAME_LIST_STREAM:
         case MD_MODULE_LIST_STREAM:
         case MD_MEMORY_LIST_STREAM:
         case MD_EXCEPTION_STREAM:
@@ -5318,6 +5542,10 @@ MinidumpThreadList* Minidump::GetThreadList() {
   return GetStream(&thread_list);
 }
 
+MinidumpThreadNameList* Minidump::GetThreadNameList() {
+  MinidumpThreadNameList* thread_name_list;
+  return GetStream(&thread_name_list);
+}
 
 MinidumpModuleList* Minidump::GetModuleList() {
   MinidumpModuleList* module_list;
@@ -5417,6 +5645,8 @@ static const char* get_stream_name(uint32_t stream_type) {
     return "MD_RESERVED_STREAM_1";
   case MD_THREAD_LIST_STREAM:
     return "MD_THREAD_LIST_STREAM";
+  case MD_THREAD_NAME_LIST_STREAM:
+    return "MD_THREAD_NAME_LIST_STREAM";
   case MD_MODULE_LIST_STREAM:
     return "MD_MODULE_LIST_STREAM";
   case MD_MEMORY_LIST_STREAM:

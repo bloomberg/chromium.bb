@@ -4,27 +4,14 @@
 
 #include "platform/impl/network_interface.h"
 
+#include "platform/base/ip_address.h"
 #include "util/std_util.h"
 
 namespace openscreen {
 
-std::vector<InterfaceInfo> GetNetworkInterfaces() {
-  std::vector<InterfaceInfo> interfaces = GetAllInterfaces();
-
-  const auto new_end = std::remove_if(
-      interfaces.begin(), interfaces.end(), [](const InterfaceInfo& info) {
-        return info.type != InterfaceInfo::Type::kEthernet &&
-               info.type != InterfaceInfo::Type::kWifi &&
-               info.type != InterfaceInfo::Type::kOther;
-      });
-  interfaces.erase(new_end, interfaces.end());
-
-  return interfaces;
-}
-
 // Returns an InterfaceInfo associated with the system's loopback interface.
 absl::optional<InterfaceInfo> GetLoopbackInterfaceForTesting() {
-  const std::vector<InterfaceInfo> interfaces = GetAllInterfaces();
+  const std::vector<InterfaceInfo> interfaces = GetNetworkInterfaces();
   auto it = std::find_if(
       interfaces.begin(), interfaces.end(), [](const InterfaceInfo& info) {
         return info.type == InterfaceInfo::Type::kLoopback &&

@@ -158,6 +158,21 @@ describe('Parsed URL', () => {
     assert.strictEqual(convertedPath, 'usr\\lib', 'URL was not converted successfully');
   });
 
+  it('checks that URL is valid', () => {
+    const urlTest = 'http://www.example.com#?test';
+    assert.strictEqual(ParsedURL.isValidUrlString(urlTest), true, 'URL validation was incorrect');
+  });
+
+  it('checks that file:// URL is valid', () => {
+    const urlTest = 'file:///usr/lib';
+    assert.strictEqual(ParsedURL.isValidUrlString(urlTest), true, 'URL validation was incorrect');
+  });
+
+  it('checks that "://" is not a valid URL', () => {
+    const urlTest = '://';
+    assert.strictEqual(ParsedURL.isValidUrlString(urlTest), false, 'URL validation was incorrect');
+  });
+
   it('converts URL with a hash to a URL without a hash', () => {
     const urlTest = 'http://www.example.com#?test';
     const convertedUrl = ParsedURL.urlWithoutHash(urlTest);
@@ -449,15 +464,15 @@ describe('Parsed URL', () => {
      });
 
   it('uses the isRelativeURL function to return true if the URL is relative', () => {
-    const urlTest = '/test/path';
-    const isRelativeResult = ParsedURL.isRelativeURL(urlTest);
-    assert.isTrue(isRelativeResult);
+    assert.isTrue(ParsedURL.isRelativeURL('/test/path'));
+    assert.isTrue(ParsedURL.isRelativeURL('C:/'));
+    assert.isTrue(ParsedURL.isRelativeURL('C'));
   });
 
   it('uses the isRelativeURL function to return false if the URL is not relative', () => {
-    const urlTest = 'http://www.example.com/test/path';
-    const isRelativeResult = ParsedURL.isRelativeURL(urlTest);
-    assert.isFalse(isRelativeResult);
+    assert.isFalse(ParsedURL.isRelativeURL('http://www.example.com/test/path'));
+    assert.isFalse(ParsedURL.isRelativeURL('about:blank'));
+    assert.isFalse(ParsedURL.isRelativeURL('file:///C:/'));
   });
 
   it('uses the displayName function to return the name if it exists for a URL', () => {

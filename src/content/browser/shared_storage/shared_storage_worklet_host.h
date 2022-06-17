@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_SHARED_STORAGE_SHARED_STORAGE_WORKLET_HOST_H_
 #define CONTENT_BROWSER_SHARED_STORAGE_SHARED_STORAGE_WORKLET_HOST_H_
 
+#include "base/memory/raw_ptr.h"
+#include "components/services/storage/shared_storage/shared_storage_manager.h"
 #include "content/common/content_export.h"
 #include "content/services/shared_storage_worklet/public/mojom/shared_storage_worklet_service.mojom.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
@@ -12,10 +14,6 @@
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "third_party/blink/public/mojom/shared_storage/shared_storage.mojom.h"
 #include "url/origin.h"
-
-namespace storage {
-class SharedStorageManager;
-}
 
 namespace content {
 
@@ -26,8 +24,8 @@ class SharedStorageWorkletDriver;
 class PageImpl;
 
 // The SharedStorageWorkletHost is responsible for getting worklet operation
-// requests (i.e. addModule and runOperation) from the renderer (i.e. document
-// that is hosting the worklet) and running it on the
+// requests (i.e. `addModule()`, `selectURL()`, `run()`) from the renderer (i.e.
+// document that is hosting the worklet) and running it on the
 // `SharedStorageWorkletService`. It will also handle the commands from the
 // `SharedStorageWorkletService` (i.e. storage access, console log) which
 // could happen while running those worklet operations.
@@ -42,6 +40,8 @@ class PageImpl;
 class CONTENT_EXPORT SharedStorageWorkletHost
     : public shared_storage_worklet::mojom::SharedStorageWorkletServiceClient {
  public:
+  using BudgetResult = storage::SharedStorageManager::BudgetResult;
+
   enum class AddModuleState {
     kNotInitiated,
     kInitiated,
@@ -71,8 +71,8 @@ class CONTENT_EXPORT SharedStorageWorkletHost
       blink::mojom::SharedStorageDocumentService::
           RunURLSelectionOperationOnWorkletCallback callback);
 
-  // Whether there are unfinished worklet operations (i.e. addModule() and
-  // runOperation()).
+  // Whether there are unfinished worklet operations (i.e. `addModule()`,
+  // `selectURL()`, or `run()`.
   bool HasPendingOperations();
 
   // Called by the `SharedStorageWorkletHostManager` for this host to enter
@@ -103,6 +103,10 @@ class CONTENT_EXPORT SharedStorageWorkletHost
   void SharedStorageLength(SharedStorageLengthCallback callback) override;
   void ConsoleLog(const std::string& message) override;
 
+  const url::Origin& shared_storage_origin_for_testing() const {
+    return shared_storage_origin_;
+  }
+
  protected:
   // virtual for testing
   virtual void OnAddModuleOnWorkletFinished(
@@ -117,15 +121,22 @@ class CONTENT_EXPORT SharedStorageWorkletHost
 
   virtual void OnRunURLSelectionOperationOnWorkletFinished(
       const GURL& urn_uuid,
-      bool success,
-      const std::string& error_message,
-      uint32_t index);
+      bool script_execution_succeeded,
+      const std::string& script_execution_error_message,
+      uint32_t index,
+      BudgetResult budget_result);
 
   base::OneShotTimer& GetKeepAliveTimerForTesting() {
     return keep_alive_timer_;
   }
 
  private:
+  void OnRunURLSelectionOperationOnWorkletScriptExecutionFinished(
+      const GURL& urn_uuid,
+      bool success,
+      const std::string& error_message,
+      uint32_t index);
+
   // Returns whether the the worklet has entered keep-alive phase. During
   // keep-alive: the attempt to log console messages will be ignored; and the
   // completion of the last pending operation will terminate the worklet.
@@ -136,12 +147,12 @@ class CONTENT_EXPORT SharedStorageWorkletHost
   // the keep-alive phase.
   void FinishKeepAlive();
 
-  // Increment `pending_operations_count_`. Called when receiving a addModule
-  // or runOperation operation.
+  // Increment `pending_operations_count_`. Called when receiving an
+  // `addModule()`, `selectURL()`, or `run()`.
   void IncrementPendingOperationsCount();
 
-  // Decrement `pending_operations_count_`. Called when finishing handling a
-  // addModule or runOperation operation.
+  // Decrement `pending_operations_count_`. Called when finishing handling an
+  // `addModule()`, `selectURL()`, or `run()`.
   void DecrementPendingOperationsCount();
 
   // virtual for testing
@@ -172,11 +183,11 @@ class CONTENT_EXPORT SharedStorageWorkletHost
   // Both `this` and `shared_storage_manager_` live in the `StoragePartition`.
   // `shared_storage_manager_` almost always outlives `this` (thus is valid)
   // except for inside `~SharedStorageWorkletHost()`.
-  storage::SharedStorageManager* shared_storage_manager_;
+  raw_ptr<storage::SharedStorageManager> shared_storage_manager_;
 
   // Pointer to the `BrowserContext`, saved to be able to call
   // `IsSharedStorageAllowed()`.
-  BrowserContext* browser_context_;
+  raw_ptr<BrowserContext> browser_context_;
 
   // The shared storage owner document's origin.
   url::Origin shared_storage_origin_;
@@ -193,8 +204,8 @@ class CONTENT_EXPORT SharedStorageWorkletHost
   // removed from `unresolved_urns_`.
   std::map<GURL, std::vector<GURL>> unresolved_urns_;
 
-  // The number of unfinished worklet requests, including addModule and
-  // runOperation.
+  // The number of unfinished worklet requests, including `addModule()`,
+  // `selectURL()`, or `run()`.
   uint32_t pending_operations_count_ = 0u;
 
   // Timer for starting and ending the keep-alive phase.

@@ -371,8 +371,8 @@ static av_always_inline int smk_get_code(GetBitContext *gb, int *recode, int *la
     return v;
 }
 
-static int decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
-                        AVPacket *avpkt)
+static int decode_frame(AVCodecContext *avctx, AVFrame *rframe,
+                        int *got_frame, AVPacket *avpkt)
 {
     SmackVContext * const smk = avctx->priv_data;
     uint8_t *out;
@@ -518,7 +518,7 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
 
     }
 
-    if ((ret = av_frame_ref(data, smk->pic)) < 0)
+    if ((ret = av_frame_ref(rframe, smk->pic)) < 0)
         return ret;
 
     *got_frame = 1;
@@ -588,10 +588,9 @@ static av_cold int smka_decode_init(AVCodecContext *avctx)
 /**
  * Decode Smacker audio data
  */
-static int smka_decode_frame(AVCodecContext *avctx, void *data,
+static int smka_decode_frame(AVCodecContext *avctx, AVFrame *frame,
                              int *got_frame_ptr, AVPacket *avpkt)
 {
-    AVFrame *frame     = data;
     const uint8_t *buf = avpkt->data;
     int buf_size = avpkt->size;
     GetBitContext gb;
@@ -731,7 +730,7 @@ const FFCodec ff_smacker_decoder = {
     .priv_data_size = sizeof(SmackVContext),
     .init           = decode_init,
     .close          = decode_end,
-    .decode         = decode_frame,
+    FF_CODEC_DECODE_CB(decode_frame),
     .p.capabilities = AV_CODEC_CAP_DR1,
     .caps_internal  = FF_CODEC_CAP_INIT_CLEANUP | FF_CODEC_CAP_INIT_THREADSAFE,
 };
@@ -742,7 +741,7 @@ const FFCodec ff_smackaud_decoder = {
     .p.type         = AVMEDIA_TYPE_AUDIO,
     .p.id           = AV_CODEC_ID_SMACKAUDIO,
     .init           = smka_decode_init,
-    .decode         = smka_decode_frame,
+    FF_CODEC_DECODE_CB(smka_decode_frame),
     .p.capabilities = AV_CODEC_CAP_DR1,
     .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };

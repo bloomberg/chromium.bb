@@ -10,6 +10,7 @@
 #include "ios/chrome/browser/discover_feed/feed_constants.h"
 
 @protocol FeedControlDelegate;
+@protocol NewTabPageFollowDelegate;
 
 // DO NOT CHANGE. Values are from enums.xml representing what could be broken in
 // the NTP view hierarchy. These values are persisted to logs. Entries should
@@ -59,6 +60,17 @@ enum class FollowSnackbarActionType {
 
   // Change this to match max value.
   kMaxValue = kSnackbarActionRetryUnfollow,
+};
+
+// Enum class for the times when we log the user's follow count.
+// To be kept in sync with the ContentSuggestions.Feed.WebFeed.FollowCount
+// variants.
+typedef NS_ENUM(NSInteger, FollowCountLogReason) {
+  FollowCountLogReasonContentShown = 0,
+  FollowCountLogReasonNoContentShown,
+  FollowCountLogReasonAfterFollow,
+  FollowCountLogReasonAfterUnfollow,
+  FollowCountLogReasonEngaged
 };
 
 namespace base {
@@ -203,6 +215,13 @@ class Time;
 // Records that the feed is about to be refreshed.
 - (void)recordFeedWillRefresh;
 
+// Records that a given |feedType| was selected.
+- (void)recordFeedSelected:(FeedType)feedType;
+
+// Records the user's current follow count after a given event |logReason|.
+- (void)recordFollowCount:(NSUInteger)followCount
+             forLogReason:(FollowCountLogReason)logReason;
+
 // Records the state of the Feed setting based on the |enterprisePolicy| being
 // enabled, |feedVisible|, the user being |signedIn|, user having |waaEnabled|
 // and |spywEnabled|, and the |lastRefreshTime| for the Feed.
@@ -220,6 +239,12 @@ class Time;
 // according to |followRequestedType|. Ex. The user selects the 'Follow' item in
 // the overflow menu.
 - (void)recordFollowRequestedWithType:(FollowRequestType)followRequestType;
+
+// Record metrics for when the user tapped "follow" from menu entry point.
+- (void)recordFollowFromMenu;
+
+// Record metrics for when the user tapped "unfollow" from menu entry point.
+- (void)recordUnfollowFromMenu;
 
 // Record metrics for when the follow confirmation snckbar is shown, according
 // to |followConfirmationType|.
@@ -244,8 +269,25 @@ class Time;
 // confirmation snackbar in the management UI.
 - (void)recordManagementTappedUnfollowTryAgainOnSnackbar;
 
+// Record metrics for when the first follow sheet is shown.
+- (void)recordFirstFollowShown;
+
+// Record metrics for when the user taps "Go To Feed" on the first follow sheet.
+- (void)recordFirstFollowTappedGoToFeed;
+
+// Record metrics for when the user taps "Got it" on the first follow sheet.
+- (void)recordFirstFollowTappedGotIt;
+
+// Record metrics for when a Follow Recommendation IPH is shown.
+// A follow Recommendation IPH is a textual bublle that tells users that they
+// are able to follow a website.
+- (void)recordFollowRecommendationIPHShown;
+
 // Delegate to get the currently selected feed.
 @property(nonatomic, weak) id<FeedControlDelegate> feedControlDelegate;
+
+// Delegate for getting information relating to Following.
+@property(nonatomic, weak) id<NewTabPageFollowDelegate> followDelegate;
 
 // Whether or not the feed is currently being shown on the Start Surface.
 @property(nonatomic, assign) BOOL isShownOnStartSurface;

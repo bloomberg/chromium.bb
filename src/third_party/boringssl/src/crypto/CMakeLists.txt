@@ -253,7 +253,6 @@ add_library(
   chacha/chacha.c
   cipher_extra/cipher_extra.c
   cipher_extra/derive_key.c
-  cipher_extra/e_aesccm.c
   cipher_extra/e_aesctrhmac.c
   cipher_extra/e_aesgcmsiv.c
   cipher_extra/e_chacha20poly1305.c
@@ -263,7 +262,6 @@ add_library(
   cipher_extra/e_rc4.c
   cipher_extra/e_tls.c
   cipher_extra/tls_cbc.c
-  cmac/cmac.c
   conf/conf.c
   cpu_aarch64_apple.c
   cpu_aarch64_fuchsia.c
@@ -290,7 +288,6 @@ add_library(
   err/err.c
   err_data.c
   engine/engine.c
-  evp/digestsign.c
   evp/evp.c
   evp/evp_asn1.c
   evp/evp_ctx.c
@@ -299,6 +296,7 @@ add_library(
   evp/p_ec_asn1.c
   evp/p_ed25519.c
   evp/p_ed25519_asn1.c
+  evp/p_hkdf.c
   evp/p_rsa.c
   evp/p_rsa_asn1.c
   evp/p_x25519.c
@@ -505,7 +503,6 @@ add_executable(
   chacha/chacha_test.cc
   cipher_extra/aead_test.cc
   cipher_extra/cipher_test.cc
-  cmac/cmac_test.cc
   compiler_test.cc
   conf/conf_test.cc
   constant_time_test.cc
@@ -525,6 +522,7 @@ add_executable(
   evp/scrypt_test.cc
   fipsmodule/aes/aes_test.cc
   fipsmodule/bn/bn_test.cc
+  fipsmodule/cmac/cmac_test.cc
   fipsmodule/ec/ec_test.cc
   fipsmodule/ec/p256-nistz_test.cc
   fipsmodule/ecdsa/ecdsa_test.cc
@@ -532,6 +530,7 @@ add_executable(
   fipsmodule/modes/gcm_test.cc
   fipsmodule/rand/ctrdrbg_test.cc
   fipsmodule/rand/fork_detect_test.cc
+  fipsmodule/service_indicator/service_indicator_test.cc
   fipsmodule/sha/sha_test.cc
   hkdf/hkdf_test.cc
   hpke/hpke_test.cc

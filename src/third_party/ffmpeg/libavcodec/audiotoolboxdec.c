@@ -375,6 +375,11 @@ static av_cold int ffat_create_decoder(AVCodecContext *avctx,
     avctx->ch_layout.order       = AV_CHANNEL_ORDER_UNSPEC;
     avctx->ch_layout.nb_channels = out_format.mChannelsPerFrame = in_format.mChannelsPerFrame;
 
+    out_format.mBytesPerFrame =
+        out_format.mChannelsPerFrame * (out_format.mBitsPerChannel / 8);
+    out_format.mBytesPerPacket =
+        out_format.mBytesPerFrame * out_format.mFramesPerPacket;
+
     if (avctx->codec_id == AV_CODEC_ID_ADPCM_IMA_QT)
         in_format.mFramesPerPacket = 64;
 
@@ -478,11 +483,10 @@ static void ffat_copy_samples(AVCodecContext *avctx, AVFrame *frame)
     }
 }
 
-static int ffat_decode(AVCodecContext *avctx, void *data,
+static int ffat_decode(AVCodecContext *avctx, AVFrame *frame,
                        int *got_frame_ptr, AVPacket *avpkt)
 {
     ATDecodeContext *at = avctx->priv_data;
-    AVFrame *frame = data;
     int pkt_size = avpkt->size;
     OSStatus ret;
     AudioBufferList out_buffers;
@@ -593,7 +597,7 @@ static av_cold int ffat_close_decoder(AVCodecContext *avctx)
         .priv_data_size = sizeof(ATDecodeContext), \
         .init           = ffat_init_decoder, \
         .close          = ffat_close_decoder, \
-        .decode         = ffat_decode, \
+        FF_CODEC_DECODE_CB(ffat_decode), \
         .flush          = ffat_decode_flush, \
         .p.priv_class   = &ffat_##NAME##_dec_class, \
         .bsfs           = bsf_name, \

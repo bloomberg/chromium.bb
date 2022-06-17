@@ -304,9 +304,9 @@ inline WasmOpcode LoadStoreOpcodeOf(MachineType type, bool store) {
   }
 }
 
-// This method handles upcodes with decoded length of 3-bytes
-// update is we exceed that opcode length. (More details in
-// wasm-opcodes.h)
+// See comment on {WasmOpcode} for the encoding.
+// This method handles opcodes with decoded length up to 3 bytes. Update if we
+// exceed that opcode length.
 inline uint16_t ExtractPrefixedOpcodeBytes(WasmOpcode opcode) {
   return (opcode > 0xffff) ? opcode & 0x0fff : opcode & 0xff;
 }
@@ -927,6 +927,7 @@ inline uint16_t ExtractPrefixedOpcodeBytes(WasmOpcode opcode) {
 #define WASM_SIMD_SPLAT(Type, ...) __VA_ARGS__, WASM_SIMD_OP(kExpr##Type##Splat)
 #define WASM_SIMD_UNOP(op, x) x, WASM_SIMD_OP(op)
 #define WASM_SIMD_BINOP(op, x, y) x, y, WASM_SIMD_OP(op)
+#define WASM_SIMD_TERNOP(op, x, y, z) x, y, z, WASM_SIMD_OP(op)
 #define WASM_SIMD_SHIFT_OP(op, x, y) x, y, WASM_SIMD_OP(op)
 #define WASM_SIMD_CONCAT_OP(op, bytes, x, y) \
   x, y, WASM_SIMD_OP(op), TO_BYTE(bytes)

@@ -264,7 +264,7 @@ bool AwAutofillClient::IsPasswordManagerEnabled() {
 }
 
 void AwAutofillClient::PropagateAutofillPredictions(
-    content::RenderFrameHost* rfh,
+    autofill::AutofillDriver* driver,
     const std::vector<autofill::FormStructure*>& forms) {}
 
 void AwAutofillClient::DidFillOrPreviewField(
@@ -301,6 +301,10 @@ void AwAutofillClient::ExecuteCommand(int id) {
   NOTIMPLEMENTED();
 }
 
+void AwAutofillClient::OnPromoCodeSuggestionsFooterSelected(const GURL& url) {
+  NOTIMPLEMENTED();
+}
+
 void AwAutofillClient::LoadRiskData(
     base::OnceCallback<void(const std::string&)> callback) {
   NOTIMPLEMENTED();
@@ -317,7 +321,7 @@ void AwAutofillClient::SuggestionSelected(JNIEnv* env,
   if (delegate_) {
     delegate_->DidAcceptSuggestion(suggestions_[position].main_text.value,
                                    suggestions_[position].frontend_id,
-                                   suggestions_[position].backend_id, position);
+                                   suggestions_[position].payload, position);
   }
 }
 

@@ -86,17 +86,6 @@ try_.builder(
     builderless = True,
 )
 
-try_.builder(
-    name = "win7-blink-rel",
-    goma_backend = goma.backend.RBE_PROD,
-    os = os.WINDOWS_ANY,
-    builderless = True,
-)
-
-blink_mac_builder(
-    name = "mac10.12-blink-rel",
-)
-
 blink_mac_builder(
     name = "mac10.13-blink-rel",
 )
@@ -116,4 +105,44 @@ blink_mac_builder(
 
 blink_mac_builder(
     name = "mac11.0.arm64-blink-rel",
+)
+
+blink_mac_builder(
+    name = "mac12.0-blink-rel",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "mb",
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+        ),
+    ),
+    try_settings = builder_config.try_settings(
+        retry_failed_shards = False,
+    ),
+)
+
+blink_mac_builder(
+    name = "mac12.0.arm64-blink-rel",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "mb",
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+        ),
+    ),
+    try_settings = builder_config.try_settings(
+        retry_failed_shards = False,
+    ),
 )

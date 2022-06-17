@@ -31,6 +31,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/sessions/content/session_tab_helper.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/blocked_action_type.h"
 #include "extensions/browser/extension_action.h"
 #include "extensions/browser/extension_action_manager.h"
 #include "extensions/browser/extension_registry.h"
@@ -92,6 +93,23 @@ bool ExtensionActionViewController::AnyActionHasCurrentSiteAccess(
     }
   }
   return false;
+}
+
+// static
+bool ExtensionActionViewController::AnyActionRequiresPageRefreshToRun(
+    const std::vector<ToolbarActionViewController*>& actions,
+    content::WebContents* web_contents) {
+  ExtensionActionRunner* action_runner =
+      ExtensionActionRunner::GetForWebContents(web_contents);
+
+  return std::any_of(
+      actions.begin(), actions.end(),
+      [action_runner](ToolbarActionViewController* action) {
+        auto blocked_actions =
+            action_runner->GetBlockedActions(action->GetId());
+        return blocked_actions &
+               ExtensionActionRunner::kRefreshRequiredActionsMask;
+      });
 }
 
 ExtensionActionViewController::ExtensionActionViewController(
@@ -175,6 +193,7 @@ std::u16string ExtensionActionViewController::GetAccessibleName(
       // No string for neither having nor wanting access.
       break;
     case extensions::SitePermissionsHelper::SiteInteraction::kPending:
+    case extensions::SitePermissionsHelper::SiteInteraction::kActiveTab:
       site_interaction_description_id = IDS_EXTENSIONS_WANTS_ACCESS_TO_SITE;
       break;
     case extensions::SitePermissionsHelper::SiteInteraction::kActive:
@@ -201,10 +220,15 @@ bool ExtensionActionViewController::IsEnabled(
   if (!ExtensionIsValid())
     return false;
 
+  extensions::SitePermissionsHelper::SiteInteraction site_interaction =
+      GetSiteInteraction(web_contents);
+
   return extension_action_->GetIsVisible(
              sessions::SessionTabHelper::IdForTab(web_contents).id()) ||
-         GetSiteInteraction(web_contents) ==
-             extensions::SitePermissionsHelper::SiteInteraction::kPending;
+         site_interaction ==
+             extensions::SitePermissionsHelper::SiteInteraction::kPending ||
+         site_interaction ==
+             extensions::SitePermissionsHelper::SiteInteraction::kActiveTab;
 }
 
 bool ExtensionActionViewController::IsShowingPopup() const {

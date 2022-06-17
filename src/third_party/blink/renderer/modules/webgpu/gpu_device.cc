@@ -9,12 +9,13 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_compute_pipeline_descriptor.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_device_descriptor.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_error_filter.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_external_texture_descriptor.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_feature_name.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_queue_descriptor.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_render_pipeline_descriptor.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_uncaptured_error_event_init.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_union_gpuoutofmemoryerror_gpuvalidationerror.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_union_htmlvideoelement_videoframe.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
@@ -55,12 +56,10 @@ Vector<String> ToStringVector(const Vector<V8GPUFeatureName>& features) {
 
 }  // anonymous namespace
 
-// TODO(enga): Handle adapter options and device descriptor
 GPUDevice::GPUDevice(ExecutionContext* execution_context,
                      scoped_refptr<DawnControlClientHolder> dawn_control_client,
                      GPUAdapter* adapter,
                      WGPUDevice dawn_device,
-                     const WGPUSupportedLimits* limits,
                      const GPUDeviceDescriptor* descriptor)
     : ExecutionContextClient(execution_context),
       DawnObject(dawn_control_client, dawn_device),
@@ -84,8 +83,10 @@ GPUDevice::GPUDevice(ExecutionContext* execution_context,
       lost_callback_(BindWGPURepeatingCallback(&GPUDevice::OnDeviceLostError,
                                                WrapWeakPersistent(this))) {
   DCHECK(dawn_device);
-  DCHECK(limits);
-  limits_ = MakeGarbageCollected<GPUSupportedLimits>(*limits);
+
+  WGPUSupportedLimits limits = {};
+  GetProcs().deviceGetLimits(GetHandle(), &limits);
+  limits_ = MakeGarbageCollected<GPUSupportedLimits>(limits);
 
   GetProcs().deviceSetUncapturedErrorCallback(
       GetHandle(), error_callback_->UnboundCallback(),
@@ -105,6 +106,7 @@ GPUDevice::GPUDevice(ExecutionContext* execution_context,
 }
 
 GPUDevice::~GPUDevice() {
+  DestroyAllExternalTextures();
   // Clear the callbacks since we can't handle callbacks after finalization.
   // error_callback_, logging_callback_, and lost_callback_ will be deleted.
   GetProcs().deviceSetUncapturedErrorCallback(GetHandle(), nullptr, nullptr);
@@ -136,6 +138,95 @@ void GPUDevice::AddConsoleWarning(const char* message) {
   }
 }
 
+// Validates that any features required for the given texture format are enabled
+// for this device. If not, throw a TypeError to ensure consistency with
+// browsers that haven't yet implemented the feature.
+bool GPUDevice::ValidateTextureFormatUsage(V8GPUTextureFormat format,
+                                           ExceptionState& exception_state) {
+  const char* requiredFeature = nullptr;
+
+  switch (format.AsEnum()) {
+    case V8GPUTextureFormat::Enum::kBc1RgbaUnorm:
+    case V8GPUTextureFormat::Enum::kBc1RgbaUnormSrgb:
+    case V8GPUTextureFormat::Enum::kBc2RgbaUnorm:
+    case V8GPUTextureFormat::Enum::kBc2RgbaUnormSrgb:
+    case V8GPUTextureFormat::Enum::kBc3RgbaUnorm:
+    case V8GPUTextureFormat::Enum::kBc3RgbaUnormSrgb:
+    case V8GPUTextureFormat::Enum::kBc4RUnorm:
+    case V8GPUTextureFormat::Enum::kBc4RSnorm:
+    case V8GPUTextureFormat::Enum::kBc5RgUnorm:
+    case V8GPUTextureFormat::Enum::kBc5RgSnorm:
+    case V8GPUTextureFormat::Enum::kBc6HRgbUfloat:
+    case V8GPUTextureFormat::Enum::kBc6HRgbFloat:
+    case V8GPUTextureFormat::Enum::kBc7RgbaUnorm:
+    case V8GPUTextureFormat::Enum::kBc7RgbaUnormSrgb:
+      requiredFeature = "texture-compression-bc";
+      break;
+
+    case V8GPUTextureFormat::Enum::kEtc2Rgb8Unorm:
+    case V8GPUTextureFormat::Enum::kEtc2Rgb8UnormSrgb:
+    case V8GPUTextureFormat::Enum::kEtc2Rgb8A1Unorm:
+    case V8GPUTextureFormat::Enum::kEtc2Rgb8A1UnormSrgb:
+    case V8GPUTextureFormat::Enum::kEtc2Rgba8Unorm:
+    case V8GPUTextureFormat::Enum::kEtc2Rgba8UnormSrgb:
+    case V8GPUTextureFormat::Enum::kEacR11Unorm:
+    case V8GPUTextureFormat::Enum::kEacR11Snorm:
+    case V8GPUTextureFormat::Enum::kEacRg11Unorm:
+    case V8GPUTextureFormat::Enum::kEacRg11Snorm:
+      requiredFeature = "texture-compression-etc2";
+      break;
+
+    case V8GPUTextureFormat::Enum::kAstc4X4Unorm:
+    case V8GPUTextureFormat::Enum::kAstc4X4UnormSrgb:
+    case V8GPUTextureFormat::Enum::kAstc5X4Unorm:
+    case V8GPUTextureFormat::Enum::kAstc5X4UnormSrgb:
+    case V8GPUTextureFormat::Enum::kAstc5X5Unorm:
+    case V8GPUTextureFormat::Enum::kAstc5X5UnormSrgb:
+    case V8GPUTextureFormat::Enum::kAstc6X5Unorm:
+    case V8GPUTextureFormat::Enum::kAstc6X5UnormSrgb:
+    case V8GPUTextureFormat::Enum::kAstc6X6Unorm:
+    case V8GPUTextureFormat::Enum::kAstc6X6UnormSrgb:
+    case V8GPUTextureFormat::Enum::kAstc8X5Unorm:
+    case V8GPUTextureFormat::Enum::kAstc8X5UnormSrgb:
+    case V8GPUTextureFormat::Enum::kAstc8X6Unorm:
+    case V8GPUTextureFormat::Enum::kAstc8X6UnormSrgb:
+    case V8GPUTextureFormat::Enum::kAstc8X8Unorm:
+    case V8GPUTextureFormat::Enum::kAstc8X8UnormSrgb:
+    case V8GPUTextureFormat::Enum::kAstc10X5Unorm:
+    case V8GPUTextureFormat::Enum::kAstc10X5UnormSrgb:
+    case V8GPUTextureFormat::Enum::kAstc10X6Unorm:
+    case V8GPUTextureFormat::Enum::kAstc10X6UnormSrgb:
+    case V8GPUTextureFormat::Enum::kAstc10X8Unorm:
+    case V8GPUTextureFormat::Enum::kAstc10X8UnormSrgb:
+    case V8GPUTextureFormat::Enum::kAstc10X10Unorm:
+    case V8GPUTextureFormat::Enum::kAstc10X10UnormSrgb:
+    case V8GPUTextureFormat::Enum::kAstc12X10Unorm:
+    case V8GPUTextureFormat::Enum::kAstc12X10UnormSrgb:
+    case V8GPUTextureFormat::Enum::kAstc12X12Unorm:
+    case V8GPUTextureFormat::Enum::kAstc12X12UnormSrgb:
+      requiredFeature = "texture-compression-astc";
+      break;
+
+    default:
+      return true;
+  }
+
+  DCHECK(requiredFeature != nullptr);
+
+  if (features_->has(requiredFeature)) {
+    return true;
+  }
+
+  std::string deviceLabel =
+      label().IsEmpty() ? "" : " \"" + label().Utf8() + "\"";
+
+  exception_state.ThrowTypeError(
+      String::Format("Use of the '%s' texture format requires the '%s' feature "
+                     "to be enabled on [Device%s].",
+                     format.AsCStr(), requiredFeature, deviceLabel.c_str()));
+  return false;
+}
+
 void GPUDevice::OnUncapturedError(WGPUErrorType errorType,
                                   const char* message) {
   // Suppress errors once the device is lost.
@@ -150,13 +241,9 @@ void GPUDevice::OnUncapturedError(WGPUErrorType errorType,
 
   GPUUncapturedErrorEventInit* init = GPUUncapturedErrorEventInit::Create();
   if (errorType == WGPUErrorType_Validation) {
-    init->setError(
-        MakeGarbageCollected<V8UnionGPUOutOfMemoryErrorOrGPUValidationError>(
-            MakeGarbageCollected<GPUValidationError>(message)));
+    init->setError(MakeGarbageCollected<GPUValidationError>(message));
   } else if (errorType == WGPUErrorType_OutOfMemory) {
-    init->setError(
-        MakeGarbageCollected<V8UnionGPUOutOfMemoryErrorOrGPUValidationError>(
-            GPUOutOfMemoryError::Create()));
+    init->setError(MakeGarbageCollected<GPUOutOfMemoryError>(message));
   } else {
     return;
   }
@@ -281,6 +368,8 @@ GPUQueue* GPUDevice::queue() {
 }
 
 void GPUDevice::destroy() {
+  destroyed_ = true;
+  DestroyAllExternalTextures();
   GetProcs().deviceDestroy(GetHandle());
   FlushNow();
 }
@@ -310,11 +399,12 @@ GPUSampler* GPUDevice::createSampler(const GPUSamplerDescriptor* descriptor) {
 GPUExternalTexture* GPUDevice::importExternalTexture(
     const GPUExternalTextureDescriptor* descriptor,
     ExceptionState& exception_state) {
-  GPUExternalTexture* externalTexture =
-      GPUExternalTexture::Create(this, descriptor, exception_state);
-  if (externalTexture)
-    EnsureExternalTextureDestroyed(externalTexture);
-  return externalTexture;
+  // Ensure the GPUExternalTexture created from a destroyed GPUDevice will be
+  // expired immediately.
+  if (destroyed_)
+    return GPUExternalTexture::CreateExpired(this, descriptor, exception_state);
+
+  return GPUExternalTexture::Create(this, descriptor, exception_state);
 }
 
 GPUBindGroup* GPUDevice::createBindGroup(
@@ -410,8 +500,9 @@ GPUCommandEncoder* GPUDevice::createCommandEncoder(
 }
 
 GPURenderBundleEncoder* GPUDevice::createRenderBundleEncoder(
-    const GPURenderBundleEncoderDescriptor* descriptor) {
-  return GPURenderBundleEncoder::Create(this, descriptor);
+    const GPURenderBundleEncoderDescriptor* descriptor,
+    ExceptionState& exception_state) {
+  return GPURenderBundleEncoder::Create(this, descriptor, exception_state);
 }
 
 GPUQuerySet* GPUDevice::createQuerySet(
@@ -419,9 +510,8 @@ GPUQuerySet* GPUDevice::createQuerySet(
   return GPUQuerySet::Create(this, descriptor);
 }
 
-void GPUDevice::pushErrorScope(const WTF::String& filter) {
-  GetProcs().devicePushErrorScope(GetHandle(),
-                                  AsDawnEnum<WGPUErrorFilter>(filter));
+void GPUDevice::pushErrorScope(const V8GPUErrorFilter& filter) {
+  GetProcs().devicePushErrorScope(GetHandle(), AsDawnEnum(filter));
 }
 
 ScriptPromise GPUDevice::popErrorScope(ScriptState* script_state) {
@@ -451,7 +541,7 @@ void GPUDevice::OnPopErrorScopeCallback(ScriptPromiseResolver* resolver,
       resolver->Resolve(v8::Null(isolate));
       break;
     case WGPUErrorType_OutOfMemory:
-      resolver->Resolve(GPUOutOfMemoryError::Create());
+      resolver->Resolve(MakeGarbageCollected<GPUOutOfMemoryError>(message));
       break;
     case WGPUErrorType_Validation:
       resolver->Resolve(MakeGarbageCollected<GPUValidationError>(message));
@@ -480,6 +570,7 @@ void GPUDevice::Trace(Visitor* visitor) const {
   visitor->Trace(limits_);
   visitor->Trace(queue_);
   visitor->Trace(lost_property_);
+  visitor->Trace(active_external_textures_);
   visitor->Trace(external_textures_pending_destroy_);
   ExecutionContextClient::Trace(visitor);
   EventTargetWithInlineData::Trace(visitor);
@@ -490,21 +581,54 @@ void GPUDevice::EnsureExternalTextureDestroyed(
   DCHECK(externalTexture);
   external_textures_pending_destroy_.push_back(externalTexture);
 
-  if (has_pending_microtask_)
+  if (has_destroy_external_texture_microtask_)
     return;
 
   Microtask::EnqueueMicrotask(WTF::Bind(
       &GPUDevice::DestroyExternalTexturesMicrotask, WrapWeakPersistent(this)));
-  has_pending_microtask_ = true;
+  has_destroy_external_texture_microtask_ = true;
 }
 
 void GPUDevice::DestroyExternalTexturesMicrotask() {
-  has_pending_microtask_ = false;
+  // GPUDevice.destroy() call has destroyed all pending external textures.
+  if (!has_destroy_external_texture_microtask_)
+    return;
+
+  has_destroy_external_texture_microtask_ = false;
 
   auto externalTextures = std::move(external_textures_pending_destroy_);
   for (Member<GPUExternalTexture> externalTexture : externalTextures) {
     externalTexture->Destroy();
   }
+}
+
+void GPUDevice::DestroyAllExternalTextures() {
+  has_destroy_external_texture_microtask_ = false;
+
+  // TODO(crbug.com/1318345): u-nit: fix casing issues in all GPUExternalTexture
+  // related codes. Using a_b instead of aB.
+  for (auto& externalTexture : active_external_textures_) {
+    externalTexture->Destroy();
+  }
+  active_external_textures_.clear();
+
+  auto externalTexturesPendingDestroy =
+      std::move(external_textures_pending_destroy_);
+  for (Member<GPUExternalTexture> externalTexture :
+       externalTexturesPendingDestroy) {
+    externalTexture->Destroy();
+  }
+}
+
+void GPUDevice::AddActiveExternalTexture(GPUExternalTexture* external_texture) {
+  DCHECK(external_texture);
+  active_external_textures_.insert(external_texture);
+}
+
+void GPUDevice::RemoveActiveExternalTexture(
+    GPUExternalTexture* external_texture) {
+  DCHECK(external_texture);
+  active_external_textures_.erase(external_texture);
 }
 
 }  // namespace blink

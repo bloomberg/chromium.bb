@@ -275,6 +275,28 @@ StatusOr<FuncOp> HloFunctionImporter::ImportAsFunc(
   auto visibility = computation_name == "main" ? FuncOp::Visibility::Public
                                                : FuncOp::Visibility::Private;
   function.setVisibility(visibility);
+
+  for (auto& entry : llvm::enumerate(computation.parameter_instructions())) {
+    HloInstruction* parameter = entry.value();
+    if (parameter->has_sharding()) {
+      function.setArgAttr(
+          entry.index(), kShardingAttr,
+          builder_->getStringAttr(
+              parameter->sharding().ToProto().SerializeAsString()));
+    }
+  }
+  if (computation.root_instruction()->has_sharding()) {
+    auto result = computation.root_instruction();
+    if (function.getNumResults() != 1) {
+      return tensorflow::errors::Internal(absl::StrCat(
+          "Expected only a single result but got ", function.getNumResults()));
+    }
+    function.setResultAttr(
+        0, kShardingAttr,
+        builder_->getStringAttr(
+            result->sharding().ToProto().SerializeAsString()));
+  }
+
   module_.push_back(function);
 
   // Add to the map right away for function calls.
@@ -1151,7 +1173,8 @@ StatusOr<mlir::Operation*> HloFunctionImporter::ImportInstructionImpl(
           func_builder->create<mlir::mhlo::ReduceScatterOp>(
               loc, result_type, operands, attributes);
       TF_RETURN_IF_ERROR(ImportAsRegion(*reduce_scatter->to_apply(),
-                                        &reduce_scatter_op.computation()));
+                                        &reduce_scatter_op.computation(),
+                                        /*flatten_region_arg_tuple=*/true));
 
       return reduce_scatter_op.getOperation();
     }
@@ -1361,6 +1384,7 @@ StatusOr<mlir::Operation*> HloFunctionImporter::ImportInstructionImpl(
       NO_ATTRIBUTE_CASE(kNegate, NegOp);
       NO_ATTRIBUTE_CASE(kNot, NotOp);
       NO_ATTRIBUTE_CASE(kOr, OrOp);
+      NO_ATTRIBUTE_CASE(kPartitionId, PartitionIdOp);
       NO_ATTRIBUTE_CASE(kPopulationCount, PopulationCountOp);
       NO_ATTRIBUTE_CASE(kPower, PowOp);
       NO_ATTRIBUTE_CASE(kReal, RealOp);

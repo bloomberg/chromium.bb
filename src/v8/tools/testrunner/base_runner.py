@@ -13,14 +13,7 @@ import shlex
 import sys
 import traceback
 
-
-
-# Add testrunner to the path.
-sys.path.insert(
-  0,
-  os.path.dirname(
-    os.path.dirname(os.path.abspath(__file__))))
-
+from os.path import dirname as up
 
 from testrunner.local import command
 from testrunner.local import testsuite
@@ -33,12 +26,6 @@ from testrunner.testproc.sigproc import SignalProc
 from testrunner.testproc.timeout import TimeoutProc
 from testrunner.testproc import util
 
-
-BASE_DIR = (
-    os.path.dirname(
-      os.path.dirname(
-        os.path.dirname(
-          os.path.abspath(__file__)))))
 
 DEFAULT_OUT_GN = 'out.gn'
 
@@ -268,7 +255,8 @@ def _do_load_build_config(outdir, verbose=False):
 
 class BaseTestRunner(object):
   def __init__(self, basedir=None):
-    self.basedir = basedir or BASE_DIR
+    self.v8_root = up(up(up(__file__)))
+    self.basedir = basedir or self.v8_root
     self.outdir = None
     self.build_config = None
     self.mode_options = None
@@ -676,22 +664,22 @@ class BaseTestRunner(object):
     # Set no_simd_hardware on architectures without Simd enabled.
     if self.build_config.arch == 'mips64el' or \
        self.build_config.arch == 'mipsel':
-       no_simd_hardware = not simd_mips
+      no_simd_hardware = not simd_mips
 
     if self.build_config.arch == 'loong64':
-       no_simd_hardware = True
+      no_simd_hardware = True
 
     # S390 hosts without VEF1 do not support Simd.
     if self.build_config.arch == 's390x' and \
        not self.build_config.simulator_run and \
        not utils.IsS390SimdSupported():
-       no_simd_hardware = True
+      no_simd_hardware = True
 
     # Ppc64 processors earlier than POWER9 do not support Simd instructions
     if self.build_config.arch == 'ppc64' and \
        not self.build_config.simulator_run and \
        utils.GuessPowerProcessorVersion() < 9:
-       no_simd_hardware = True
+      no_simd_hardware = True
 
     return {
       "arch": self.build_config.arch,

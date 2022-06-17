@@ -15,20 +15,20 @@ g.test('missing_attribute_on_param')
     const fragment_attr = t.params.target_stage === 'fragment' ? '' : '@location(1)';
     const compute_attr = t.params.target_stage === 'compute' ? '' : '@builtin(workgroup_id)';
     const code = `
-@stage(vertex)
+@vertex
 fn vert_main(@location(0) a : f32,
              ${vertex_attr}  b : f32,
 @             location(2) c : f32) -> @builtin(position) vec4<f32> {
   return vec4<f32>();
 }
 
-@stage(fragment)
+@fragment
 fn frag_main(@location(0)  a : f32,
              ${fragment_attr} b : f32,
 @             location(2)  c : f32) {
 }
 
-@stage(compute) @workgroup_size(1)
+@compute @workgroup_size(1)
 fn comp_main(@builtin(global_invocation_id) a : vec3<u32>,
              ${compute_attr}                   b : vec3<u32>,
              @builtin(local_invocation_id)  c : vec3<u32>) {
@@ -65,16 +65,16 @@ struct ComputeInputs {
   @builtin(local_invocation_id)  c : vec3<u32>,
 };
 
-@stage(vertex)
+@vertex
 fn vert_main(inputs : VertexInputs) -> @builtin(position) vec4<f32> {
   return vec4<f32>();
 }
 
-@stage(fragment)
+@fragment
 fn frag_main(inputs : FragmentInputs) {
 }
 
-@stage(compute) @workgroup_size(1)
+@compute @workgroup_size(1)
 fn comp_main(inputs : ComputeInputs) {
 }
 `;
@@ -88,12 +88,12 @@ g.test('missing_attribute_on_return_type')
     const vertex_attr = t.params.target_stage === 'vertex' ? '' : '@builtin(position)';
     const fragment_attr = t.params.target_stage === 'fragment' ? '' : '@location(0)';
     const code = `
-@stage(vertex)
+@vertex
 fn vert_main() -> ${vertex_attr} vec4<f32> {
   return vec4<f32>();
 }
 
-@stage(fragment)
+@fragment
 fn frag_main() -> ${fragment_attr} vec4<f32> {
   return vec4<f32>();
 }
@@ -121,12 +121,12 @@ struct FragmentOutputs {
 @  location(2)  c : f32,
 };
 
-@stage(vertex)
+@vertex
 fn vert_main() -> VertexOutputs {
   return VertexOutputs();
 }
 
-@stage(fragment)
+@fragment
 fn frag_main() -> FragmentOutputs {
   return FragmentOutputs();
 }

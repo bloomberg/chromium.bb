@@ -69,8 +69,9 @@ export class DOMNode {
   #xmlVersion!: string|undefined;
   #isSVGNodeInternal!: boolean;
   #creationStackTraceInternal: Promise<Protocol.Runtime.StackTrace|null>|null;
-  pseudoElementsInternal: Map<string, DOMNode>;
+  #pseudoElements: Map<string, DOMNode[]>;
   #distributedNodesInternal: DOMNodeShortcut[];
+  assignedSlot: DOMNodeShortcut|null;
   readonly shadowRootsInternal: DOMNode[];
   #attributesInternal: Map<string, Attribute>;
   // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
@@ -99,8 +100,9 @@ export class DOMNode {
     this.#agent = this.#domModelInternal.getAgent();
     this.index = undefined;
     this.#creationStackTraceInternal = null;
-    this.pseudoElementsInternal = new Map();
+    this.#pseudoElements = new Map();
     this.#distributedNodesInternal = [];
+    this.assignedSlot = null;
     this.shadowRootsInternal = [];
     this.#attributesInternal = new Map();
     this.#markers = new Map();
@@ -179,6 +181,10 @@ export class DOMNode {
 
     if (payload.distributedNodes) {
       this.setDistributedNodePayloads(payload.distributedNodes);
+    }
+
+    if (payload.assignedSlot) {
+      this.setAssignedSlot(payload.assignedSlot);
     }
 
     if (payload.children) {
@@ -313,32 +319,37 @@ export class DOMNode {
   }
 
   hasPseudoElements(): boolean {
-    return this.pseudoElementsInternal.size > 0;
+    return this.#pseudoElements.size > 0;
   }
 
-  pseudoElements(): Map<string, DOMNode> {
-    return this.pseudoElementsInternal;
+  pseudoElements(): Map<string, DOMNode[]> {
+    return this.#pseudoElements;
   }
 
-  beforePseudoElement(): DOMNode|null {
-    if (!this.pseudoElementsInternal) {
-      return null;
-    }
-    return this.pseudoElementsInternal.get(DOMNode.PseudoElementNames.Before) || null;
+  beforePseudoElement(): DOMNode|undefined {
+    return this.#pseudoElements.get(DOMNode.PseudoElementNames.Before)?.at(-1);
   }
 
-  afterPseudoElement(): DOMNode|null {
-    if (!this.pseudoElementsInternal) {
-      return null;
-    }
-    return this.pseudoElementsInternal.get(DOMNode.PseudoElementNames.After) || null;
+  afterPseudoElement(): DOMNode|undefined {
+    return this.#pseudoElements.get(DOMNode.PseudoElementNames.After)?.at(-1);
   }
 
-  markerPseudoElement(): DOMNode|null {
-    if (!this.pseudoElementsInternal) {
-      return null;
-    }
-    return this.pseudoElementsInternal.get(DOMNode.PseudoElementNames.Marker) || null;
+  markerPseudoElement(): DOMNode|undefined {
+    return this.#pseudoElements.get(DOMNode.PseudoElementNames.Marker)?.at(-1);
+  }
+
+  pageTransitionPseudoElements(): DOMNode[] {
+    return [
+      ...this.#pseudoElements.get(DOMNode.PseudoElementNames.PageTransition) || [],
+      ...this.#pseudoElements.get(DOMNode.PseudoElementNames.PageTransitionContainer) || [],
+      ...this.#pseudoElements.get(DOMNode.PseudoElementNames.PageTransitionImageWrapper) || [],
+      ...this.#pseudoElements.get(DOMNode.PseudoElementNames.PageTransitionOutgoingImage) || [],
+      ...this.#pseudoElements.get(DOMNode.PseudoElementNames.PageTransitionIncomingImage) || [],
+    ];
+  }
+
+  hasAssignedSlot(): boolean {
+    return this.assignedSlot !== null;
   }
 
   isInsertionPoint(): boolean {
@@ -622,7 +633,12 @@ export class DOMNode {
   removeChild(node: DOMNode): void {
     const pseudoType = node.pseudoType();
     if (pseudoType) {
-      this.pseudoElementsInternal.delete(pseudoType);
+      const updatedPseudoElements = this.#pseudoElements.get(pseudoType)?.filter(element => element !== node);
+      if (updatedPseudoElements && updatedPseudoElements.length > 0) {
+        this.#pseudoElements.set(pseudoType, updatedPseudoElements);
+      } else {
+        this.#pseudoElements.delete(pseudoType);
+      }
     } else {
       const shadowRootIndex = this.shadowRootsInternal.indexOf(node);
       if (shadowRootIndex !== -1) {
@@ -668,7 +684,12 @@ export class DOMNode {
       if (!pseudoType) {
         throw new Error('DOMNode.pseudoType() is expected to be defined.');
       }
-      this.pseudoElementsInternal.set(pseudoType, node);
+      const currentPseudoElements = this.#pseudoElements.get(pseudoType);
+      if (currentPseudoElements) {
+        currentPseudoElements.push(node);
+      } else {
+        this.#pseudoElements.set(pseudoType, [node]);
+      }
     }
   }
 
@@ -678,6 +699,11 @@ export class DOMNode {
       this.#distributedNodesInternal.push(new DOMNodeShortcut(
           this.#domModelInternal.target(), payload.backendNodeId, payload.nodeType, payload.nodeName));
     }
+  }
+
+  setAssignedSlot(payload: Protocol.DOM.BackendNode): void {
+    this.assignedSlot =
+        new DOMNodeShortcut(this.#domModelInternal.target(), payload.backendNodeId, payload.nodeType, payload.nodeName);
   }
 
   private renumber(): void {
@@ -945,6 +971,11 @@ export namespace DOMNode {
     Before = 'before',
     After = 'after',
     Marker = 'marker',
+    PageTransition = 'page-transition',
+    PageTransitionContainer = 'page-transition-container',
+    PageTransitionImageWrapper = 'page-transition-image-wrapper',
+    PageTransitionOutgoingImage = 'page-transition-outgoing-image',
+    PageTransitionIncomingImage = 'page-transition-incoming-image',
   }
 
   // TODO(crbug.com/1167717): Make this a const enum again
@@ -1360,11 +1391,15 @@ export class DOMModel extends SDKModel<EventTypes> {
     if (!pseudoType) {
       throw new Error('DOMModel._pseudoElementAdded expects pseudoType to be defined.');
     }
-    const previousPseudoType = parent.pseudoElements().get(pseudoType);
-    if (previousPseudoType) {
-      throw new Error('DOMModel._pseudoElementAdded expects parent to not already have this pseudo type added.');
+    const currentPseudoElements = parent.pseudoElements().get(pseudoType);
+    if (currentPseudoElements) {
+      Platform.DCHECK(
+          () => pseudoType.startsWith('page-transition'),
+          'DOMModel.pseudoElementAdded expects parent to not already have this pseudo type added; only page-transition* pseudo elements can coexist under the same parent.');
+      currentPseudoElements.push(node);
+    } else {
+      parent.pseudoElements().set(pseudoType, [node]);
     }
-    parent.pseudoElements().set(pseudoType, node);
     this.dispatchEventToListeners(Events.NodeInserted, node);
     this.scheduleMutationEvent(node);
   }
@@ -1405,7 +1440,9 @@ export class DOMModel extends SDKModel<EventTypes> {
     }
     const pseudoElements = node.pseudoElements();
     for (const value of pseudoElements.values()) {
-      this.unbind(value);
+      for (const pseudoElement of value) {
+        this.unbind(pseudoElement);
+      }
     }
     const templateContent = node.templateContent();
     if (templateContent) {

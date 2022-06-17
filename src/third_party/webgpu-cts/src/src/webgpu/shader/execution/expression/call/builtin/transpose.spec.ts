@@ -8,6 +8,7 @@ Returns the transpose of e.
 
 import { makeTestGroup } from '../../../../../../common/framework/test_group.js';
 import { GPUTest } from '../../../../../gpu_test.js';
+import { allInputSources } from '../../expression.js';
 
 export const g = makeTestGroup(GPUTest);
 
@@ -16,7 +17,7 @@ g.test('abstract_float')
   .desc(`abstract float tests`)
   .params(u =>
     u
-      .combine('storageClass', ['uniform', 'storage_r', 'storage_rw'] as const)
+      .combine('inputSource', allInputSources)
       .combine('rows', [2, 3, 4] as const)
       .combine('cols', [2, 3, 4] as const)
   )
@@ -27,7 +28,7 @@ g.test('f32')
   .desc(`f32 tests`)
   .params(u =>
     u
-      .combine('storageClass', ['uniform', 'storage_r', 'storage_rw'] as const)
+      .combine('inputSource', allInputSources)
       .combine('rows', [2, 3, 4] as const)
       .combine('cols', [2, 3, 4] as const)
   )
@@ -38,7 +39,7 @@ g.test('f16')
   .desc(`f16 tests`)
   .params(u =>
     u
-      .combine('storageClass', ['uniform', 'storage_r', 'storage_rw'] as const)
+      .combine('inputSource', allInputSources)
       .combine('rows', [2, 3, 4] as const)
       .combine('cols', [2, 3, 4] as const)
   )

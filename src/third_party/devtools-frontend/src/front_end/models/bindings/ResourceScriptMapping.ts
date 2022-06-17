@@ -298,7 +298,7 @@ export class ResourceScriptFile extends Common.ObjectWrapper.ObjectWrapper<Resou
     }
 
     // Match ignoring sourceURL.
-    if (!workingCopy.startsWith(this.#scriptSource.trimRight())) {
+    if (!workingCopy.startsWith(this.#scriptSource.trimEnd())) {
       return true;
     }
     const suffix = this.#uiSourceCodeInternal.workingCopy().substr(this.#scriptSource.length);
@@ -421,6 +421,18 @@ export class ResourceScriptFile extends Common.ObjectWrapper.ObjectWrapper<Resou
 
   hasSourceMapURL(): boolean {
     return this.scriptInternal !== undefined && Boolean(this.scriptInternal.sourceMapURL);
+  }
+
+  async missingSymbolFiles(): Promise<string[]|null> {
+    if (!this.scriptInternal) {
+      return null;
+    }
+    const {pluginManager} = this.#resourceScriptMapping.debuggerWorkspaceBinding;
+    if (!pluginManager) {
+      return null;
+    }
+    const sources = await pluginManager.getSourcesForScript(this.scriptInternal);
+    return sources && 'missingSymbolFiles' in sources ? sources.missingSymbolFiles : null;
   }
 
   get script(): SDK.Script.Script|null {

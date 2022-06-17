@@ -31,7 +31,7 @@ fn main_1() {
   let x_45 : f32 = x_6.x_GLF_uniform_float_values[0].el;
   let x_47 : f32 = x_6.x_GLF_uniform_float_values[2].el;
   v1 = vec4<f32>(x_41, x_43, x_45, x_47);
-  v2 = vec4<f32>(1.570796371, 1.119769573, 0x1.8p+128, 0.927295208);
+  v2 = vec4<f32>(1.570796371, 1.119769573, 1.0, 0.927295208);
   let x_50 : f32 = x_6.x_GLF_uniform_float_values[0].el;
   v3 = vec4<f32>(x_50, x_50, x_50, x_50);
   let x_52 : vec4<f32> = v1;
@@ -93,7 +93,7 @@ struct main_out {
   x_GLF_color_1 : vec4<f32>,
 }
 
-@stage(fragment)
+@fragment
 fn main() -> main_out {
   main_1();
   return main_out(x_GLF_color);

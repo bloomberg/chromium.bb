@@ -291,7 +291,7 @@ bool AutofillClientImpl::IsPasswordManagerEnabled() {
 }
 
 void AutofillClientImpl::PropagateAutofillPredictions(
-    content::RenderFrameHost* rfh,
+    autofill::AutofillDriver* driver,
     const std::vector<autofill::FormStructure*>& forms) {
   NOTREACHED();
 }
@@ -318,6 +318,10 @@ bool AutofillClientImpl::AreServerCardsSupported() const {
 }
 
 void AutofillClientImpl::ExecuteCommand(int id) {
+  NOTREACHED();
+}
+
+void AutofillClientImpl::OnPromoCodeSuggestionsFooterSelected(const GURL& url) {
   NOTREACHED();
 }
 

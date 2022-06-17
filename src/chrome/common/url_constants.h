@@ -389,6 +389,9 @@ extern const char kTPMFirmwareUpdateLearnMoreURL[];
 // The URL for the "Learn more" page for the time zone settings page.
 extern const char kTimeZoneSettingsLearnMoreURL[];
 
+// The URL for the "Learn more" page for screen privacy protections.
+extern const char kSmartPrivacySettingsLearnMoreURL[];
+
 // The URL for the "Learn more" page for the network file shares settings page.
 extern const char kSmbSharesLearnMoreURL[];
 
@@ -431,10 +434,8 @@ extern const char kChromeCleanerLearnMoreURL[];
 extern const char kWindowsXPVistaDeprecationURL[];
 #endif
 
-#if BUILDFLAG(ENABLE_ONE_CLICK_SIGNIN)
 // "Learn more" URL for the one click signin infobar.
 extern const char kChromeSyncLearnMoreURL[];
-#endif
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 

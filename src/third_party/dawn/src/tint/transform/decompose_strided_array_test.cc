@@ -71,7 +71,7 @@ TEST_F(DecomposeStridedArrayTest, Empty) {
 TEST_F(DecomposeStridedArrayTest, PrivateDefaultStridedArray) {
     // var<private> arr : @stride(4) array<f32, 4u>
     //
-    // @stage(compute) @workgroup_size(1)
+    // @compute @workgroup_size(1)
     // fn f() {
     //   let a : @stride(4) array<f32, 4u> = a;
     //   let b : f32 = arr[1];
@@ -92,7 +92,7 @@ TEST_F(DecomposeStridedArrayTest, PrivateDefaultStridedArray) {
     auto* expect = R"(
 var<private> arr : array<f32, 4u>;
 
-@stage(compute) @workgroup_size(1i)
+@compute @workgroup_size(1i)
 fn f() {
   let a : array<f32, 4u> = arr;
   let b : f32 = arr[1i];
@@ -107,7 +107,7 @@ fn f() {
 TEST_F(DecomposeStridedArrayTest, PrivateStridedArray) {
     // var<private> arr : @stride(32) array<f32, 4u>
     //
-    // @stage(compute) @workgroup_size(1)
+    // @compute @workgroup_size(1)
     // fn f() {
     //   let a : @stride(32) array<f32, 4u> = a;
     //   let b : f32 = arr[1];
@@ -133,7 +133,7 @@ struct strided_arr {
 
 var<private> arr : array<strided_arr, 4u>;
 
-@stage(compute) @workgroup_size(1i)
+@compute @workgroup_size(1i)
 fn f() {
   let a : array<strided_arr, 4u> = arr;
   let b : f32 = arr[1i].el;
@@ -151,7 +151,7 @@ TEST_F(DecomposeStridedArrayTest, ReadUniformStridedArray) {
     // };
     // @group(0) @binding(0) var<uniform> s : S;
     //
-    // @stage(compute) @workgroup_size(1)
+    // @compute @workgroup_size(1)
     // fn f() {
     //   let a : @stride(32) array<f32, 4u> = s.a;
     //   let b : f32 = s.a[1];
@@ -181,7 +181,7 @@ struct S {
 
 @group(0) @binding(0) var<uniform> s : S;
 
-@stage(compute) @workgroup_size(1i)
+@compute @workgroup_size(1i)
 fn f() {
   let a : array<strided_arr, 4u> = s.a;
   let b : f32 = s.a[1i].el;
@@ -199,7 +199,7 @@ TEST_F(DecomposeStridedArrayTest, ReadUniformDefaultStridedArray) {
     // };
     // @group(0) @binding(0) var<uniform> s : S;
     //
-    // @stage(compute) @workgroup_size(1)
+    // @compute @workgroup_size(1)
     // fn f() {
     //   let a : @stride(16) array<vec4<f32>, 4u> = s.a;
     //   let b : f32 = s.a[1][2];
@@ -227,7 +227,7 @@ struct S {
 
 @group(0) @binding(0) var<uniform> s : S;
 
-@stage(compute) @workgroup_size(1i)
+@compute @workgroup_size(1i)
 fn f() {
   let a : array<vec4<f32>, 4u> = s.a;
   let b : f32 = s.a[1i][2i];
@@ -245,7 +245,7 @@ TEST_F(DecomposeStridedArrayTest, ReadStorageStridedArray) {
     // };
     // @group(0) @binding(0) var<storage> s : S;
     //
-    // @stage(compute) @workgroup_size(1)
+    // @compute @workgroup_size(1)
     // fn f() {
     //   let a : @stride(32) array<f32, 4u> = s.a;
     //   let b : f32 = s.a[1];
@@ -275,7 +275,7 @@ struct S {
 
 @group(0) @binding(0) var<storage> s : S;
 
-@stage(compute) @workgroup_size(1i)
+@compute @workgroup_size(1i)
 fn f() {
   let a : array<strided_arr, 4u> = s.a;
   let b : f32 = s.a[1i].el;
@@ -293,7 +293,7 @@ TEST_F(DecomposeStridedArrayTest, ReadStorageDefaultStridedArray) {
     // };
     // @group(0) @binding(0) var<storage> s : S;
     //
-    // @stage(compute) @workgroup_size(1)
+    // @compute @workgroup_size(1)
     // fn f() {
     //   let a : @stride(4) array<f32, 4u> = s.a;
     //   let b : f32 = s.a[1];
@@ -318,7 +318,7 @@ struct S {
 
 @group(0) @binding(0) var<storage> s : S;
 
-@stage(compute) @workgroup_size(1i)
+@compute @workgroup_size(1i)
 fn f() {
   let a : array<f32, 4u> = s.a;
   let b : f32 = s.a[1i];
@@ -336,7 +336,7 @@ TEST_F(DecomposeStridedArrayTest, WriteStorageStridedArray) {
     // };
     // @group(0) @binding(0) var<storage, read_write> s : S;
     //
-    // @stage(compute) @workgroup_size(1)
+    // @compute @workgroup_size(1)
     // fn f() {
     //   s.a = @stride(32) array<f32, 4u>();
     //   s.a = @stride(32) array<f32, 4u>(1.0, 2.0, 3.0, 4.0);
@@ -371,11 +371,11 @@ struct S {
 
 @group(0) @binding(0) var<storage, read_write> s : S;
 
-@stage(compute) @workgroup_size(1i)
+@compute @workgroup_size(1i)
 fn f() {
   s.a = array<strided_arr, 4u>();
-  s.a = array<strided_arr, 4u>(strided_arr(1.0), strided_arr(2.0), strided_arr(3.0), strided_arr(4.0));
-  s.a[1i].el = 5.0;
+  s.a = array<strided_arr, 4u>(strided_arr(1.0f), strided_arr(2.0f), strided_arr(3.0f), strided_arr(4.0f));
+  s.a[1i].el = 5.0f;
 }
 )";
 
@@ -390,7 +390,7 @@ TEST_F(DecomposeStridedArrayTest, WriteStorageDefaultStridedArray) {
     // };
     // @group(0) @binding(0) var<storage, read_write> s : S;
     //
-    // @stage(compute) @workgroup_size(1)
+    // @compute @workgroup_size(1)
     // fn f() {
     //   s.a = @stride(4) array<f32, 4u>();
     //   s.a = @stride(4) array<f32, 4u>(1.0, 2.0, 3.0, 4.0);
@@ -420,11 +420,11 @@ struct S {
 
 @group(0) @binding(0) var<storage, read_write> s : S;
 
-@stage(compute) @workgroup_size(1i)
+@compute @workgroup_size(1i)
 fn f() {
   s.a = array<f32, 4u>();
-  s.a = array<f32, 4u>(1.0, 2.0, 3.0, 4.0);
-  s.a[1i] = 5.0;
+  s.a = array<f32, 4u>(1.0f, 2.0f, 3.0f, 4.0f);
+  s.a[1i] = 5.0f;
 }
 )";
 
@@ -439,7 +439,7 @@ TEST_F(DecomposeStridedArrayTest, ReadWriteViaPointerLets) {
     // };
     // @group(0) @binding(0) var<storage, read_write> s : S;
     //
-    // @stage(compute) @workgroup_size(1)
+    // @compute @workgroup_size(1)
     // fn f() {
     //   let a = &s.a;
     //   let b = &*&*(a);
@@ -479,12 +479,12 @@ struct S {
 
 @group(0) @binding(0) var<storage, read_write> s : S;
 
-@stage(compute) @workgroup_size(1i)
+@compute @workgroup_size(1i)
 fn f() {
   let c = s.a;
   let d = s.a[1i].el;
-  s.a = array<strided_arr, 4u>(strided_arr(1.0), strided_arr(2.0), strided_arr(3.0), strided_arr(4.0));
-  s.a[1i].el = 5.0;
+  s.a = array<strided_arr, 4u>(strided_arr(1.0f), strided_arr(2.0f), strided_arr(3.0f), strided_arr(4.0f));
+  s.a[1i].el = 5.0f;
 }
 )";
 
@@ -500,7 +500,7 @@ TEST_F(DecomposeStridedArrayTest, PrivateAliasedStridedArray) {
     // };
     // @group(0) @binding(0) var<storage, read_write> s : S;
     //
-    // @stage(compute) @workgroup_size(1)
+    // @compute @workgroup_size(1)
     // fn f() {
     //   let a : ARR = s.a;
     //   let b : f32 = s.a[1];
@@ -541,13 +541,13 @@ struct S {
 
 @group(0) @binding(0) var<storage, read_write> s : S;
 
-@stage(compute) @workgroup_size(1i)
+@compute @workgroup_size(1i)
 fn f() {
   let a : ARR = s.a;
   let b : f32 = s.a[1i].el;
   s.a = ARR();
-  s.a = ARR(strided_arr(1.0), strided_arr(2.0), strided_arr(3.0), strided_arr(4.0));
-  s.a[1i].el = 5.0;
+  s.a = ARR(strided_arr(1.0f), strided_arr(2.0f), strided_arr(3.0f), strided_arr(4.0f));
+  s.a[1i].el = 5.0f;
 }
 )";
 
@@ -564,7 +564,7 @@ TEST_F(DecomposeStridedArrayTest, PrivateNestedStridedArray) {
     // };
     // @group(0) @binding(0) var<storage, read_write> s : S;
     //
-    // @stage(compute) @workgroup_size(1)
+    // @compute @workgroup_size(1)
     // fn f() {
     //   let a : ARR_B = s.a;
     //   let b : array<@stride(8) array<f32, 2u>, 3u> = s.a[3];
@@ -641,14 +641,14 @@ struct S {
 
 @group(0) @binding(0) var<storage, read_write> s : S;
 
-@stage(compute) @workgroup_size(1i)
+@compute @workgroup_size(1i)
 fn f() {
   let a : ARR_B = s.a;
   let b : array<ARR_A, 3u> = s.a[3i].el;
   let c : ARR_A = s.a[3i].el[2i];
   let d : f32 = s.a[3i].el[2i][1i].el;
   s.a = ARR_B();
-  s.a[3i].el[2i][1i].el = 5.0;
+  s.a[3i].el[2i][1i].el = 5.0f;
 }
 )";
 

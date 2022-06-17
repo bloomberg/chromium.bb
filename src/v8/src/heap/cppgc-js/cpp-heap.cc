@@ -236,8 +236,8 @@ UnifiedHeapConcurrentMarker::CreateConcurrentMarkingVisitor(
 
 void FatalOutOfMemoryHandlerImpl(const std::string& reason,
                                  const SourceLocation&, HeapBase* heap) {
-  FatalProcessOutOfMemory(static_cast<v8::internal::CppHeap*>(heap)->isolate(),
-                          reason.c_str());
+  V8::FatalProcessOutOfMemory(
+      static_cast<v8::internal::CppHeap*>(heap)->isolate(), reason.c_str());
 }
 
 }  // namespace
@@ -436,10 +436,10 @@ CppHeap::CppHeap(
           std::make_shared<CppgcPlatformAdapter>(platform), custom_spaces,
           cppgc::internal::HeapBase::StackSupport::
               kSupportsConservativeStackScan,
-          FLAG_single_threaded_gc ? MarkingType::kIncremental
-                                  : MarkingType::kIncrementalAndConcurrent,
-          FLAG_single_threaded_gc ? SweepingType::kIncremental
-                                  : SweepingType::kIncrementalAndConcurrent),
+          // Default marking and sweeping types are only incremental. The types
+          // are updated respecting flags only on GC as the flags are not set
+          // properly during heap setup.
+          MarkingType::kIncremental, SweepingType::kIncremental),
       wrapper_descriptor_(wrapper_descriptor) {
   CHECK_NE(WrapperDescriptor::kUnknownEmbedderId,
            wrapper_descriptor_.embedder_id_for_garbage_collected);
@@ -536,9 +536,25 @@ CppHeap::SweepingType CppHeap::SelectSweepingType() const {
   return sweeping_support();
 }
 
+void CppHeap::UpdateSupportedGCTypesFromFlags() {
+  // Keep the selection simple for now as production configurations do not turn
+  // off parallel and/or concurrent marking independently.
+  if (!FLAG_parallel_marking || !FLAG_concurrent_marking) {
+    marking_support_ = MarkingType::kIncremental;
+  } else {
+    marking_support_ = MarkingType::kIncrementalAndConcurrent;
+  }
+
+  sweeping_support_ = FLAG_single_threaded_gc
+                          ? CppHeap::SweepingType::kIncremental
+                          : CppHeap::SweepingType::kIncrementalAndConcurrent;
+}
+
 void CppHeap::InitializeTracing(CollectionType collection_type,
                                 GarbageCollectionFlags gc_flags) {
   CHECK(!sweeper_.IsSweepingInProgress());
+
+  UpdateSupportedGCTypesFromFlags();
 
   // Check that previous cycle metrics for the same collection type have been
   // reported.
@@ -605,6 +621,10 @@ bool CppHeap::AdvanceTracing(double max_duration) {
                        : v8::base::TimeDelta::FromMillisecondsD(max_duration);
   const size_t marked_bytes_limit = in_atomic_pause_ ? SIZE_MAX : 0;
   DCHECK_NOT_NULL(marker_);
+  if (in_atomic_pause_) {
+    marker_->NotifyConcurrentMarkingOfWorkIfNeeded(
+        cppgc::TaskPriority::kUserBlocking);
+  }
   // TODO(chromium:1056170): Replace when unified heap transitions to
   // bytes-based deadline.
   marking_done_ =

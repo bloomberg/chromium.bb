@@ -7,12 +7,12 @@
  * information.
  */
 
-import '../../icons.js';
+import '../../icons.html.js';
 import '../../prefs/prefs.js';
 import '../../settings_page/settings_animated_pages.js';
 import '../../settings_page/settings_section.js';
 import '../../settings_page/settings_subpage.js';
-import '../../settings_page_css.js';
+import '../../settings_page_styles.css.js';
 import '../../settings_shared_css.js';
 import '../os_icons.js';
 import '../os_reset_page/os_powerwash_dialog.js';
@@ -48,16 +48,16 @@ import {AboutPageBrowserProxy, AboutPageBrowserProxyImpl, AboutPageUpdateInfo, B
  * @extends {PolymerElement}
  * @implements {DeepLinkingBehaviorInterface}
  * @implements {WebUIListenerBehaviorInterface}
- * @implements {RouteObserverBehaviorInterface}
  * @implements {MainPageBehaviorInterface}
+ * @implements {RouteObserverBehaviorInterface}
  * @implements {I18nBehaviorInterface}
  */
 const OsSettingsAboutPageBase = mixinBehaviors(
     [
       DeepLinkingBehavior,
       WebUIListenerBehavior,
-      RouteObserverBehavior,
       MainPageBehavior,
+      RouteObserverBehavior,
       I18nBehavior,
     ],
     PolymerElement);
@@ -314,7 +314,12 @@ class OsSettingsAboutPageElement extends OsSettingsAboutPageBase {
    * @param {!Route=} oldRoute
    */
   currentRouteChanged(newRoute, oldRoute) {
-    super.currentRouteChanged(newRoute, oldRoute);
+    // super.currentRouteChanged() does not produce desired results since
+    // RouteObserverBehavior has higher precedence than MainPageBehavior given
+    // this element's behavior list order. In order to trigger the
+    // MainPageBehavior method, we must directly call it.
+    // See https://crbug.com/1324103 for more details.
+    MainPageBehavior.currentRouteChanged.call(this, newRoute, oldRoute);
 
     // Does not apply to this page.
     if (newRoute !== routes.ABOUT_ABOUT) {

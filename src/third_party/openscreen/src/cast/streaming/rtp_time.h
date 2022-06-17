@@ -205,7 +205,10 @@ class RtpTimeDelta : public ExpandedValueBase<int64_t, RtpTimeDelta> {
 //       std::chrono::seconds(3), kAudioSamplingRate);
 class RtpTimeTicks : public ExpandedValueBase<int64_t, RtpTimeTicks> {
  public:
+  constexpr explicit RtpTimeTicks(int64_t value) : ExpandedValueBase(value) {}
   constexpr RtpTimeTicks() : ExpandedValueBase(0) {}
+
+  constexpr int64_t value() const { return value_; }
 
   // Compute the difference between two RtpTimeTickses.
   constexpr RtpTimeDelta operator-(RtpTimeTicks rhs) const {
@@ -248,10 +251,6 @@ class RtpTimeTicks : public ExpandedValueBase<int64_t, RtpTimeTicks> {
  private:
   friend class ExpandedValueBase<int64_t, RtpTimeTicks>;
   friend std::ostream& operator<<(std::ostream& out, const RtpTimeTicks rhs);
-
-  constexpr explicit RtpTimeTicks(int64_t value) : ExpandedValueBase(value) {}
-
-  constexpr int64_t value() const { return value_; }
 };
 
 }  // namespace cast

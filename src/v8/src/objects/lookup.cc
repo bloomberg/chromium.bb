@@ -887,7 +887,7 @@ Handle<Object> LookupIterator::FetchValue(
     DCHECK(holder_->IsJSObject(isolate_));
     Handle<JSObject> holder = GetHolder<JSObject>();
     ElementsAccessor* accessor = holder->GetElementsAccessor(isolate_);
-    return accessor->Get(holder, number_);
+    return accessor->Get(isolate_, holder, number_);
   } else if (holder_->IsJSGlobalObject(isolate_)) {
     Handle<JSGlobalObject> holder = GetHolder<JSGlobalObject>();
     result = holder->global_dictionary(isolate_, kAcquireLoad)
@@ -1253,7 +1253,7 @@ bool HasInterceptor(Map map, size_t index) {
 template <bool is_element>
 LookupIterator::State LookupIterator::LookupInSpecialHolder(
     Map const map, JSReceiver const holder) {
-  STATIC_ASSERT(INTERCEPTOR == BEFORE_PROPERTY);
+  static_assert(INTERCEPTOR == BEFORE_PROPERTY);
   switch (state_) {
     case NOT_FOUND:
       if (map.IsJSProxyMap()) {
@@ -1265,7 +1265,9 @@ LookupIterator::State LookupIterator::LookupInSpecialHolder(
       }
 #endif  // V8_ENABLE_WEBASSEMBLY
       if (map.is_access_check_needed()) {
-        if (is_element || !name_->IsPrivate(isolate_)) return ACCESS_CHECK;
+        if (is_element || !name_->IsPrivate(isolate_) ||
+            name_->IsPrivateName(isolate_))
+          return ACCESS_CHECK;
       }
       V8_FALLTHROUGH;
     case ACCESS_CHECK:

@@ -139,10 +139,11 @@ class F extends ValidationTest {
     cullMode?: GPUCullMode
   ) {
     return this.device.createRenderPipeline({
+      layout: 'auto',
       vertex: {
         module: this.device.createShaderModule({
           code: `
-            @stage(vertex) fn main() -> @builtin(position) vec4<f32> {
+            @vertex fn main() -> @builtin(position) vec4<f32> {
               return vec4<f32>(0.0, 0.0, 0.0, 0.0);
             }`,
         }),
@@ -150,7 +151,7 @@ class F extends ValidationTest {
       },
       fragment: {
         module: this.device.createShaderModule({
-          code: '@stage(fragment) fn main() {}',
+          code: '@fragment fn main() {}',
         }),
         entryPoint: 'main',
         targets,
@@ -535,7 +536,12 @@ Test that the depth stencil read only state in render passes or bundles is compa
     );
 
     const { encoder, validateFinishAndSubmit } = t.createEncoder(encoderType, {
-      attachmentInfo: { colorFormats: ['rgba8unorm'], depthStencilFormat: format },
+      attachmentInfo: {
+        colorFormats: ['rgba8unorm'],
+        depthStencilFormat: format,
+        depthReadOnly,
+        stencilReadOnly,
+      },
     });
     encoder.setPipeline(pipeline);
 

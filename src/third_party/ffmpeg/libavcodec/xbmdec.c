@@ -65,10 +65,9 @@ static int parse_str_int(const uint8_t *p, const uint8_t *end, const uint8_t *ke
     return INT_MIN;
 }
 
-static int xbm_decode_frame(AVCodecContext *avctx, void *data,
+static int xbm_decode_frame(AVCodecContext *avctx, AVFrame *p,
                             int *got_frame, AVPacket *avpkt)
 {
-    AVFrame *p = data;
     int ret, linesize, i, j;
     int width  = 0;
     int height = 0;
@@ -144,5 +143,5 @@ const FFCodec ff_xbm_decoder = {
     .p.type       = AVMEDIA_TYPE_VIDEO,
     .p.id         = AV_CODEC_ID_XBM,
     .p.capabilities = AV_CODEC_CAP_DR1,
-    .decode       = xbm_decode_frame,
+    FF_CODEC_DECODE_CB(xbm_decode_frame),
 };

@@ -37,7 +37,6 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/flex_layout.h"
-#include "ui/views/layout/grid_layout.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -234,6 +233,14 @@ void ContinueSectionView::OnPrivacyToastAcknowledged() {
 }
 
 void ContinueSectionView::AnimateDismissToast(base::RepeatingClosure callback) {
+  // Prevents setting up new animation if the toast is already hiding.
+  // https://crbug.com/1326237.
+  DCHECK(privacy_toast_);
+  if (privacy_toast_->layer() &&
+      privacy_toast_->layer()->GetTargetOpacity() == 0.f) {
+    return;
+  }
+
   PrepareForLayerAnimation(privacy_toast_);
 
   views::AnimationBuilder animation_builder;

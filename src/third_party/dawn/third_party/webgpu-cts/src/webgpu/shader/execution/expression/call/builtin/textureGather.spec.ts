@@ -25,9 +25,11 @@ A texture gather operation reads from a 2D, 2D array, cube, or cube array textur
 import { makeTestGroup } from '../../../../../../common/framework/test_group.js';
 import { GPUTest } from '../../../../../gpu_test.js';
 
+import { generateCoordBoundaries, generateOffsets } from './utils.js';
+
 export const g = makeTestGroup(GPUTest);
 
-g.test('sampled')
+g.test('sampled_2d_coords')
   .specURL('https://www.w3.org/TR/WGSL/#texturegather')
   .desc(
     `
@@ -36,7 +38,6 @@ T: i32, u32, f32
 
 fn textureGather(component: C, t: texture_2d<T>, s: sampler, coords: vec2<f32>) -> vec4<T>
 fn textureGather(component: C, t: texture_2d<T>, s: sampler, coords: vec2<f32>, offset: vec2<i32>) -> vec4<T>
-fn textureGather(component: C, t: texture_cube<T>, s: sampler, coords: vec3<f32>) -> vec4<T>
 
 Parameters:
  * component:
@@ -56,23 +57,45 @@ Parameters:
   )
   .params(u =>
     u
-      .combine('texture_type', ['texture_2d', 'texture_cube'] as const)
       .combine('T', ['f32', 'i32', 'u32'] as const)
       .combine('S', ['clamp-to-edge', 'repeat', 'mirror-repeat'])
       .combine('C', ['i32', 'u32'] as const)
       .combine('C_value', [-1, 0, 1, 2, 3, 4] as const)
-      .combine('coords', [
-        'left-wrap',
-        'right-wrap',
-        'bottom-wrap',
-        'top-wrap',
-        'in-bounds',
-      ] as const)
-      .combine('offset', [undefined, [-9, -9], [-8, -8], [0, 0], [1, 2], [7, 7], [8, 8]] as const)
+      .combine('coords', generateCoordBoundaries(2))
+      .combine('offset', generateOffsets(2))
   )
   .unimplemented();
 
-g.test('sampled_array')
+g.test('sampled_3d_coords')
+  .specURL('https://www.w3.org/TR/WGSL/#texturegather')
+  .desc(
+    `
+C: i32, u32
+T: i32, u32, f32
+
+fn textureGather(component: C, t: texture_cube<T>, s: sampler, coords: vec3<f32>) -> vec4<T>
+
+Parameters:
+ * component:
+    - The index of the channel to read from the selected texels.
+    - When provided, the component expression must a creation-time expression (e.g. 1).
+    - Its value must be at least 0 and at most 3. Values outside of this range will result in a shader-creation error.
+ * t: The sampled texture to read from
+ * s: The sampler type
+ * coords: The texture coordinates
+`
+  )
+  .params(u =>
+    u
+      .combine('T', ['f32', 'i32', 'u32'] as const)
+      .combine('S', ['clamp-to-edge', 'repeat', 'mirror-repeat'])
+      .combine('C', ['i32', 'u32'] as const)
+      .combine('C_value', [-1, 0, 1, 2, 3, 4] as const)
+      .combine('coords', generateCoordBoundaries(3))
+  )
+  .unimplemented();
+
+g.test('sampled_array_2d_coords')
   .specURL('https://www.w3.org/TR/WGSL/#texturegather')
   .desc(
     `
@@ -81,6 +104,43 @@ T: i32, u32, f32
 
 fn textureGather(component: C, t: texture_2d_array<T>, s: sampler, coords: vec2<f32>, array_index: C) -> vec4<T>
 fn textureGather(component: C, t: texture_2d_array<T>, s: sampler, coords: vec2<f32>, array_index: C, offset: vec2<i32>) -> vec4<T>
+
+Parameters:
+ * component:
+    - The index of the channel to read from the selected texels.
+    - When provided, the component expression must a creation-time expression (e.g. 1).
+    - Its value must be at least 0 and at most 3. Values outside of this range will result in a shader-creation error.
+ * t: The sampled texture to read from
+ * s: The sampler type
+ * coords: The texture coordinates
+ * array_index: The 0-based texture array index
+ * offset:
+    - The optional texel offset applied to the unnormalized texture coordinate before sampling the texture.
+      This offset is applied before applying any texture wrapping modes.
+    - The offset expression must be a creation-time expression (e.g. vec2<i32>(1, 2)).
+    - Each offset component must be at least -8 and at most 7.
+      Values outside of this range will result in a shader-creation error.
+`
+  )
+  .params(u =>
+    u
+      .combine('T', ['f32', 'i32', 'u32'] as const)
+      .combine('S', ['clamp-to-edge', 'repeat', 'mirror-repeat'])
+      .combine('C', ['i32', 'u32'] as const)
+      .combine('C_value', [-1, 0, 1, 2, 3, 4] as const)
+      .combine('coords', generateCoordBoundaries(2))
+      /* array_index not param'd as out-of-bounds is implementation specific */
+      .combine('offset', generateOffsets(2))
+  )
+  .unimplemented();
+
+g.test('sampled_array_3d_coords')
+  .specURL('https://www.w3.org/TR/WGSL/#texturegather')
+  .desc(
+    `
+C: i32, u32
+T: i32, u32, f32
+
 fn textureGather(component: C, t: texture_cube_array<T>, s: sampler, coords: vec3<f32>, array_index: C) -> vec4<T>
 
 Parameters:
@@ -92,40 +152,26 @@ Parameters:
  * s: The sampler type
  * coords: The texture coordinates
  * array_index: The 0-based texture array index
- * offset:
-    - The optional texel offset applied to the unnormalized texture coordinate before sampling the texture.
-      This offset is applied before applying any texture wrapping modes.
-    - The offset expression must be a creation-time expression (e.g. vec2<i32>(1, 2)).
-    - Each offset component must be at least -8 and at most 7.
-      Values outside of this range will result in a shader-creation error.
 `
   )
-  .params(u =>
-    u
-      .combine('texture_type', ['texture_2d_array', 'texture_cube_array'])
-      .combine('T', ['f32', 'i32', 'u32'] as const)
-      .combine('S', ['clamp-to-edge', 'repeat', 'mirror-repeat'])
-      .combine('C', ['i32', 'u32'] as const)
-      .combine('C_value', [-1, 0, 1, 2, 3, 4] as const)
-      .combine('coords', [
-        'left-wrap',
-        'right-wrap',
-        'bottom-wrap',
-        'top-wrap',
-        'in-bounds',
-      ] as const)
-      /* array_index not param'd as out-of-bounds is implementation specific */
-      .combine('offset', [undefined, [-9, -9], [-8, -8], [0, 0], [1, 2], [7, 7], [8, 8]] as const)
+  .params(
+    u =>
+      u
+        .combine('T', ['f32', 'i32', 'u32'] as const)
+        .combine('S', ['clamp-to-edge', 'repeat', 'mirror-repeat'])
+        .combine('C', ['i32', 'u32'] as const)
+        .combine('C_value', [-1, 0, 1, 2, 3, 4] as const)
+        .combine('coords', generateCoordBoundaries(3))
+    /* array_index not param'd as out-of-bounds is implementation specific */
   )
   .unimplemented();
 
-g.test('depth')
+g.test('depth_2d_coords')
   .specURL('https://www.w3.org/TR/WGSL/#texturegather')
   .desc(
     `
 fn textureGather(t: texture_depth_2d, s: sampler, coords: vec2<f32>) -> vec4<f32>
 fn textureGather(t: texture_depth_2d, s: sampler, coords: vec2<f32>, offset: vec2<i32>) -> vec4<f32>
-fn textureGather(t: texture_depth_cube, s: sampler, coords: vec3<f32>) -> vec4<f32>
 
 Parameters:
  * t: The depth texture to read from
@@ -141,20 +187,32 @@ Parameters:
   )
   .params(u =>
     u
-      .combine('texture_type', ['texture_depth_2d', 'texture_depth_cube'])
       .combine('S', ['clamp-to-edge', 'repeat', 'mirror-repeat'])
-      .combine('coords', [
-        'left-wrap',
-        'right-wrap',
-        'bottom-wrap',
-        'top-wrap',
-        'in-bounds',
-      ] as const)
-      .combine('offset', [undefined, [-9, -9], [-8, -8], [0, 0], [1, 2], [7, 7], [8, 8]] as const)
+      .combine('coords', generateCoordBoundaries(2))
+      .combine('offset', generateOffsets(2))
   )
   .unimplemented();
 
-g.test('depth_array')
+g.test('depth_3d_coords')
+  .specURL('https://www.w3.org/TR/WGSL/#texturegather')
+  .desc(
+    `
+fn textureGather(t: texture_depth_cube, s: sampler, coords: vec3<f32>) -> vec4<f32>
+
+Parameters:
+ * t: The depth texture to read from
+ * s: The sampler type
+ * coords: The texture coordinates
+`
+  )
+  .params(u =>
+    u
+      .combine('S', ['clamp-to-edge', 'repeat', 'mirror-repeat'])
+      .combine('coords', generateCoordBoundaries(3))
+  )
+  .unimplemented();
+
+g.test('depth_array_2d_coords')
   .specURL('https://www.w3.org/TR/WGSL/#texturegather')
   .desc(
     `
@@ -162,7 +220,6 @@ C: i32, u32
 
 fn textureGather(t: texture_depth_2d_array, s: sampler, coords: vec2<f32>, array_index: C) -> vec4<f32>
 fn textureGather(t: texture_depth_2d_array, s: sampler, coords: vec2<f32>, array_index: C, offset: vec2<i32>) -> vec4<f32>
-fn textureGather(t: texture_depth_cube_array, s: sampler, coords: vec3<f32>, array_index: C) -> vec4<f32>
 
 Parameters:
  * t: The depth texture to read from
@@ -179,17 +236,35 @@ Parameters:
   )
   .params(u =>
     u
-      .combine('texture_type', ['texture_depth_2d_array', 'texture_depth_cube_array'])
       .combine('S', ['clamp-to-edge', 'repeat', 'mirror-repeat'])
       .combine('C', ['i32', 'u32'] as const)
-      .combine('coords', [
-        'left-wrap',
-        'right-wrap',
-        'bottom-wrap',
-        'top-wrap',
-        'in-bounds',
-      ] as const)
+      .combine('coords', generateCoordBoundaries(2))
       /* array_index not param'd as out-of-bounds is implementation specific */
-      .combine('offset', [undefined, [-9, -9], [-8, -8], [0, 0], [1, 2], [7, 7], [8, 8]] as const)
+      .combine('offset', generateOffsets(2))
+  )
+  .unimplemented();
+
+g.test('depth_array_3d_coords')
+  .specURL('https://www.w3.org/TR/WGSL/#texturegather')
+  .desc(
+    `
+C: i32, u32
+
+fn textureGather(t: texture_depth_cube_array, s: sampler, coords: vec3<f32>, array_index: C) -> vec4<f32>
+
+Parameters:
+ * t: The depth texture to read from
+ * s: The sampler type
+ * coords: The texture coordinates
+ * array_index: The 0-based texture array index
+`
+  )
+  .params(
+    u =>
+      u
+        .combine('S', ['clamp-to-edge', 'repeat', 'mirror-repeat'])
+        .combine('C', ['i32', 'u32'] as const)
+        .combine('coords', generateCoordBoundaries(3))
+    /* array_index not param'd as out-of-bounds is implementation specific */
   )
   .unimplemented();

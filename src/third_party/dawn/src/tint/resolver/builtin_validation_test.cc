@@ -34,7 +34,7 @@ TEST_F(ResolverBuiltinValidationTest, FunctionTypeMustMatchReturnStatementType_v
 }
 
 TEST_F(ResolverBuiltinValidationTest, InvalidPipelineStageDirect) {
-    // @stage(compute) @workgroup_size(1) fn func { return dpdx(1.0); }
+    // @compute @workgroup_size(1) fn func { return dpdx(1.0); }
 
     auto* dpdx =
         create<ast::CallExpression>(Source{{3, 4}}, Expr("dpdx"), ast::ExpressionList{Expr(1_f)});
@@ -49,7 +49,7 @@ TEST_F(ResolverBuiltinValidationTest, InvalidPipelineStageIndirect) {
     // fn f0 { return dpdx(1.0); }
     // fn f1 { f0(); }
     // fn f2 { f1(); }
-    // @stage(compute) @workgroup_size(1) fn main { return f2(); }
+    // @compute @workgroup_size(1) fn main { return f2(); }
 
     auto* dpdx =
         create<ast::CallExpression>(Source{{3, 4}}, Expr("dpdx"), ast::ExpressionList{Expr(1_f)});
@@ -378,10 +378,7 @@ using ResolverDP4aExtensionValidationTest = ResolverTest;
 TEST_F(ResolverDP4aExtensionValidationTest, Dot4I8PackedWithExtension) {
     // enable chromium_experimental_dp4a;
     // fn func { return dot4I8Packed(1u, 2u); }
-    auto* ext =
-        create<ast::Enable>(Source{Source::Range{Source::Location{10, 2}, Source::Location{10, 5}}},
-                            "chromium_experimental_dp4a");
-    AST().AddEnable(ext);
+    Enable(ast::Extension::kChromiumExperimentalDP4a);
 
     Func("func", {}, ty.i32(),
          {
@@ -409,10 +406,7 @@ TEST_F(ResolverDP4aExtensionValidationTest, Dot4I8PackedWithoutExtension) {
 TEST_F(ResolverDP4aExtensionValidationTest, Dot4U8PackedWithExtension) {
     // enable chromium_experimental_dp4a;
     // fn func { return dot4U8Packed(1u, 2u); }
-    auto* ext =
-        create<ast::Enable>(Source{Source::Range{Source::Location{10, 2}, Source::Location{10, 5}}},
-                            "chromium_experimental_dp4a");
-    AST().AddEnable(ext);
+    Enable(ast::Extension::kChromiumExperimentalDP4a);
 
     Func("func", {}, ty.u32(),
          {

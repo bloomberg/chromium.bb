@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.34.1] - 2022-06-02
+
+### Added
+ - `Canvas.getDeviceClipBounds` (skbug.com/13347)
+
+### Fixed
+ - `RuntimeEffect.makeShader` and `RuntimeEffect.makeShaderWithChildren` can properly accept
+   uniform data as MallocObj or derived TypedArrays without incorrectly freeing the uniform data.
+
 ## [0.34.0] - 2022-05-05
 
 ### Breaking

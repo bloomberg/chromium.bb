@@ -79,21 +79,17 @@
 
 #if BUILDFLAG(IS_ANDROID)
 #include "base/android/android_hardware_buffer_compat.h"
-#include "base/android/scoped_hardware_buffer_fence_sync.h"
 #include "gpu/command_buffer/service/shared_image_backing_factory_egl.h"
-#include "gpu/command_buffer/service/shared_image_backing_scoped_hardware_buffer_fence_sync.h"
 #endif
 
 namespace gpu {
 
-#if BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CHROMEOS_ASH) &&      \
-    !BUILDFLAG(IS_CHROMEOS_LACROS) && !BUILDFLAG(IS_CASTOS) && \
-    BUILDFLAG(ENABLE_VULKAN)
-
 namespace {
 
+#if defined(USE_OZONE) && BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CASTOS)
+
 bool ShouldUseExternalVulkanImageFactory() {
-#if defined(USE_OZONE)
+#if BUILDFLAG(ENABLE_VULKAN)
   return ui::OzonePlatform::GetInstance()
       ->GetPlatformProperties()
       .uses_external_vulkan_image_factory;
@@ -102,11 +98,7 @@ bool ShouldUseExternalVulkanImageFactory() {
 #endif
 }
 
-}  // namespace
-
-#endif
-
-namespace {
+#endif  // defined(USE_OZONE) && BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CASTOS)
 
 bool ShouldUseOzoneFactory() {
 #if defined(USE_OZONE)
@@ -329,6 +321,7 @@ SharedImageFactory::SharedImageFactory(
   }
 #endif  // BUILDFLAG(IS_WIN)
 
+#if !BUILDFLAG(IS_ANDROID)
   if (use_gl) {
     auto gl_image_backing_factory =
         std::make_unique<SharedImageBackingFactoryGLImage>(
@@ -338,6 +331,7 @@ SharedImageFactory::SharedImageFactory(
             /*for_shared_memory_gmbs=*/true);
     factories_.push_back(std::move(gl_image_backing_factory));
   }
+#endif
 
 #if BUILDFLAG(ENABLE_VULKAN)
   // If Chrome and ANGLE are sharing the same vulkan device queue, AngleVulkan
@@ -387,8 +381,7 @@ SharedImageFactory::SharedImageFactory(
     factories_.push_back(std::move(external_vk_image_factory));
   }
 #elif defined(USE_OZONE)
-#if BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CHROMEOS_ASH) && \
-    !BUILDFLAG(IS_CHROMEOS_LACROS) && !BUILDFLAG(IS_CASTOS)
+#if BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CASTOS)
   // Desktop Linux, not ChromeOS.
   if (ShouldUseOzoneFactory()) {
     auto ozone_factory =
@@ -412,12 +405,16 @@ SharedImageFactory::SharedImageFactory(
   }
   vulkan_context_provider_ = context_state->vk_context_provider();
 #elif BUILDFLAG(IS_CHROMEOS_ASH)
-  auto ozone_factory =
-      std::make_unique<SharedImageBackingFactoryOzone>(context_state);
-  factories_.push_back(std::move(ozone_factory));
+  if (gpu_preferences.enable_webgpu ||
+      gr_context_type_ == GrContextType::kVulkan) {
+    auto ozone_factory =
+        std::make_unique<SharedImageBackingFactoryOzone>(context_state);
+    factories_.push_back(std::move(ozone_factory));
+  }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 #endif  // defined(USE_OZONE)
 
+#if !BUILDFLAG(IS_ANDROID)
   // TODO(hitawala): Temporary factory that will be replaced with Ozone and
   // other backings
   if (use_gl) {
@@ -429,6 +426,7 @@ SharedImageFactory::SharedImageFactory(
             /*for_shared_memory_gmbs=*/false);
     factories_.push_back(std::move(gl_image_backing_factory));
   }
+#endif
 }
 
 SharedImageFactory::~SharedImageFactory() {
@@ -673,30 +671,6 @@ bool SharedImageFactory::CopyToGpuMemoryBuffer(const Mailbox& mailbox) {
     return false;
   }
   return (*it)->CopyToGpuMemoryBuffer();
-}
-#endif
-
-#if BUILDFLAG(IS_ANDROID)
-bool SharedImageFactory::CreateSharedImageWithAHB(const Mailbox& out_mailbox,
-                                                  const Mailbox& in_mailbox,
-                                                  uint32_t usage) {
-  auto it = shared_images_.find(in_mailbox);
-  if (it == shared_images_.end()) {
-    LOG(ERROR)
-        << "CreateSharedImageWithAHB: Could not find shared image mailbox";
-    return false;
-  }
-  auto ahb = (*it)->GetAHardwareBuffer();
-  if (!ahb) {
-    LOG(ERROR) << "CreateSharedImageWithAHB: AHardwareBuffer is null";
-    return false;
-  }
-  auto backing =
-      std::make_unique<SharedImageBackingScopedHardwareBufferFenceSync>(
-          std::move(ahb), out_mailbox, (*it)->format(), (*it)->size(),
-          (*it)->color_space(), (*it)->surface_origin(), (*it)->alpha_type(),
-          usage, false);
-  return RegisterBacking(std::move(backing), false /* allow_legacy_mailbox */);
 }
 #endif
 

@@ -179,12 +179,12 @@ TEST(DrawQuadTest, CopyDebugBorderDrawQuad) {
   CREATE_QUAD_NEW(DebugBorderDrawQuad, visible_rect, color, width);
   EXPECT_EQ(DrawQuad::Material::kDebugBorder, copy_quad->material);
   EXPECT_EQ(visible_rect, copy_quad->visible_rect);
-  EXPECT_EQ(color, copy_quad->color);
+  EXPECT_EQ(SkColor4f::FromColor(color), copy_quad->color);
   EXPECT_EQ(width, copy_quad->width);
 
   CREATE_QUAD_ALL(DebugBorderDrawQuad, color, width);
   EXPECT_EQ(DrawQuad::Material::kDebugBorder, copy_quad->material);
-  EXPECT_EQ(color, copy_quad->color);
+  EXPECT_EQ(SkColor4f::FromColor(color), copy_quad->color);
   EXPECT_EQ(width, copy_quad->width);
 }
 
@@ -226,6 +226,7 @@ TEST(DrawQuadTest, CopyRenderPassDrawQuad) {
 
 TEST(DrawQuadTest, CopySolidColorDrawQuad) {
   gfx::Rect visible_rect(40, 50, 30, 20);
+  // TODO(crbug.com/1308932): Use SkColor4f here
   SkColor color = 0x49494949;
   bool force_anti_aliasing_off = false;
   CREATE_SHARED_STATE();
@@ -234,12 +235,12 @@ TEST(DrawQuadTest, CopySolidColorDrawQuad) {
                   force_anti_aliasing_off);
   EXPECT_EQ(DrawQuad::Material::kSolidColor, copy_quad->material);
   EXPECT_EQ(visible_rect, copy_quad->visible_rect);
-  EXPECT_EQ(color, copy_quad->color);
+  EXPECT_EQ(SkColor4f::FromColor(color), copy_quad->color);
   EXPECT_EQ(force_anti_aliasing_off, copy_quad->force_anti_aliasing_off);
 
   CREATE_QUAD_ALL(SolidColorDrawQuad, color, force_anti_aliasing_off);
   EXPECT_EQ(DrawQuad::Material::kSolidColor, copy_quad->material);
-  EXPECT_EQ(color, copy_quad->color);
+  EXPECT_EQ(SkColor4f::FromColor(color), copy_quad->color);
   EXPECT_EQ(force_anti_aliasing_off, copy_quad->force_anti_aliasing_off);
 }
 

@@ -40,6 +40,10 @@ TestAutofillClient::GetAutocompleteHistoryManager() {
   return &mock_autocomplete_history_manager_;
 }
 
+MerchantPromoCodeManager* TestAutofillClient::GetMerchantPromoCodeManager() {
+  return &mock_merchant_promo_code_manager_;
+}
+
 PrefService* TestAutofillClient::GetPrefs() {
   return const_cast<PrefService*>(base::as_const(*this).GetPrefs());
 }
@@ -287,7 +291,7 @@ bool TestAutofillClient::IsPasswordManagerEnabled() {
 }
 
 void TestAutofillClient::PropagateAutofillPredictions(
-    content::RenderFrameHost* rfh,
+    AutofillDriver* driver,
     const std::vector<FormStructure*>& forms) {}
 
 void TestAutofillClient::DidFillOrPreviewField(
@@ -308,6 +312,9 @@ bool TestAutofillClient::AreServerCardsSupported() const {
 }
 
 void TestAutofillClient::ExecuteCommand(int id) {}
+
+void TestAutofillClient::OnPromoCodeSuggestionsFooterSelected(const GURL& url) {
+}
 
 void TestAutofillClient::LoadRiskData(
     base::OnceCallback<void(const std::string&)> callback) {

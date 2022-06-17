@@ -71,9 +71,6 @@ namespace internal {
   /* code size per module after baseline compilation */                        \
   HR(wasm_module_code_size_mb_after_baseline,                                  \
      V8.WasmModuleCodeSizeBaselineMiB, 0, 1024, 64)                            \
-  /* code size per module after top-tier compilation */                        \
-  HR(wasm_module_code_size_mb_after_top_tier, V8.WasmModuleCodeSizeTopTierMiB, \
-     0, 1024, 64)                                                              \
   /* percent of freed code size per module, collected on GC */                 \
   HR(wasm_module_freed_code_size_percent, V8.WasmModuleCodeSizePercentFreed,   \
      0, 100, 32)                                                               \
@@ -109,7 +106,7 @@ namespace internal {
   HR(wasm_cache_count, V8.WasmCacheCount, 0, 100, 101)                         \
   SANDBOXED_HISTOGRAM_LIST(HR)
 
-#ifdef V8_SANDBOX_IS_AVAILABLE
+#ifdef V8_ENABLE_SANDBOX
 #define SANDBOXED_HISTOGRAM_LIST(HR)                                          \
   /* Number of in-use external pointers in the external pointer table */      \
   /* Counted after sweeping the table at the end of mark-compact GC */        \
@@ -117,7 +114,7 @@ namespace internal {
      kMaxSandboxedExternalPointers, 101)
 #else
 #define SANDBOXED_HISTOGRAM_LIST(HR)
-#endif  // V8_SANDBOX_IS_AVAILABLE
+#endif  // V8_ENABLE_SANDBOX
 
 #define NESTED_TIMED_HISTOGRAM_LIST(HT)                                       \
   /* Timer histograms, not thread safe: HT(name, caption, max, unit) */       \

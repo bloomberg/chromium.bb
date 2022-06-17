@@ -79,7 +79,10 @@ class PermissionChipInteractiveTest : public InProcessBrowserTest {
   }
 
   content::RenderFrameHost* GetActiveMainFrame() {
-    return browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame();
+    return browser()
+        ->tab_strip_model()
+        ->GetActiveWebContents()
+        ->GetPrimaryMainFrame();
   }
 
   void RequestPermission(permissions::RequestType type) {
@@ -761,10 +764,11 @@ IN_PROC_BROWSER_TEST_F(QuietChipAutoPopupBubbleInteractiveTest,
 class QuietUIPromoInteractiveTest : public PermissionChipInteractiveTest {
  public:
   QuietUIPromoInteractiveTest() {
-    scoped_feature_list_.InitAndEnableFeatureWithParameters(
-        features::kQuietNotificationPrompts,
-        {{QuietNotificationPermissionUiConfig::kEnableAdaptiveActivation,
-          "true"}});
+    scoped_feature_list_.InitWithFeaturesAndParameters(
+        {{features::kQuietNotificationPrompts,
+          {{QuietNotificationPermissionUiConfig::kEnableAdaptiveActivation,
+            "true"}}}},
+        {{permissions::features::kPermissionQuietChip}});
   }
 
  private:

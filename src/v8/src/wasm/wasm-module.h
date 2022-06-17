@@ -152,10 +152,10 @@ class ConstantExpression {
   using KindField = LengthField::Next<Kind, kKindBits>;
 
   // Make sure we reserve enough bits for a {WireBytesRef}'s length and offset.
-  STATIC_ASSERT(kV8MaxWasmModuleSize <= LengthField::kMax + 1);
-  STATIC_ASSERT(kV8MaxWasmModuleSize <= OffsetField::kMax + 1);
+  static_assert(kV8MaxWasmModuleSize <= LengthField::kMax + 1);
+  static_assert(kV8MaxWasmModuleSize <= OffsetField::kMax + 1);
   // Make sure kind fits in kKindBits.
-  STATIC_ASSERT(kLastKind <= KindField::kMax + 1);
+  static_assert(kLastKind <= KindField::kMax + 1);
 
   explicit ConstantExpression(uint64_t bit_field) : bit_field_(bit_field) {}
 
@@ -164,7 +164,7 @@ class ConstantExpression {
 
 // We want to keep {ConstantExpression} small to reduce memory usage during
 // compilation/instantiation.
-STATIC_ASSERT(sizeof(ConstantExpression) <= 8);
+static_assert(sizeof(ConstantExpression) <= 8);
 
 // Static representation of a wasm global variable.
 struct WasmGlobal {
@@ -192,6 +192,12 @@ struct WasmTag {
   const FunctionSig* ToFunctionSig() const { return sig; }
 
   const WasmTagSig* sig;  // type signature of the tag.
+};
+
+// Static representation of a wasm literal stringref.
+struct WasmStringRefLiteral {
+  explicit WasmStringRefLiteral(const WireBytesRef& source) : source(source) {}
+  WireBytesRef source;  // start offset in the module bytes.
 };
 
 // Static representation of a wasm data segment.
@@ -393,14 +399,86 @@ struct V8_EXPORT_PRIVATE WasmDebugSymbols {
   WireBytesRef external_url;
 };
 
-struct CallSiteFeedback {
-  int function_index;
-  int absolute_call_frequency;
+class CallSiteFeedback {
+ public:
+  struct PolymorphicCase {
+    int function_index;
+    int absolute_call_frequency;
+  };
+
+  // Regular constructor: uninitialized/unknown, monomorphic, or polymorphic.
+  CallSiteFeedback() : index_or_count_(-1), frequency_or_ool_(0) {}
+  CallSiteFeedback(int function_index, int call_count)
+      : index_or_count_(function_index), frequency_or_ool_(call_count) {}
+  CallSiteFeedback(PolymorphicCase* polymorphic_cases, int num_cases)
+      : index_or_count_(-num_cases),
+        frequency_or_ool_(reinterpret_cast<intptr_t>(polymorphic_cases)) {}
+
+  // Copying and assignment: prefer moving, as it's cheaper.
+  // The code below makes sure external polymorphic storage is copied and/or
+  // freed as appropriate.
+  CallSiteFeedback(const CallSiteFeedback& other) V8_NOEXCEPT { *this = other; }
+  CallSiteFeedback(CallSiteFeedback&& other) V8_NOEXCEPT { *this = other; }
+  CallSiteFeedback& operator=(const CallSiteFeedback& other) V8_NOEXCEPT {
+    index_or_count_ = other.index_or_count_;
+    if (other.is_polymorphic()) {
+      int num_cases = other.num_cases();
+      PolymorphicCase* polymorphic = new PolymorphicCase[num_cases];
+      for (int i = 0; i < num_cases; i++) {
+        polymorphic[i].function_index = other.function_index(i);
+        polymorphic[i].absolute_call_frequency = other.call_count(i);
+      }
+      frequency_or_ool_ = reinterpret_cast<intptr_t>(polymorphic);
+    } else {
+      frequency_or_ool_ = other.frequency_or_ool_;
+    }
+    return *this;
+  }
+  CallSiteFeedback& operator=(CallSiteFeedback&& other) V8_NOEXCEPT {
+    if (this != &other) {
+      index_or_count_ = other.index_or_count_;
+      frequency_or_ool_ = other.frequency_or_ool_;
+      other.frequency_or_ool_ = 0;
+    }
+    return *this;
+  }
+
+  ~CallSiteFeedback() {
+    if (is_polymorphic()) delete[] polymorphic_storage();
+  }
+
+  int num_cases() const {
+    if (is_monomorphic()) return 1;
+    if (is_invalid()) return 0;
+    return -index_or_count_;
+  }
+  int function_index(int i) const {
+    DCHECK(!is_invalid());
+    if (is_monomorphic()) return index_or_count_;
+    return polymorphic_storage()[i].function_index;
+  }
+  int call_count(int i) const {
+    if (index_or_count_ >= 0) return static_cast<int>(frequency_or_ool_);
+    return polymorphic_storage()[i].absolute_call_frequency;
+  }
+
+ private:
+  bool is_monomorphic() const { return index_or_count_ >= 0; }
+  bool is_polymorphic() const { return index_or_count_ <= -2; }
+  bool is_invalid() const { return index_or_count_ == -1; }
+  const PolymorphicCase* polymorphic_storage() const {
+    return reinterpret_cast<PolymorphicCase*>(frequency_or_ool_);
+  }
+
+  int index_or_count_;
+  intptr_t frequency_or_ool_;
 };
 struct FunctionTypeFeedback {
   std::vector<CallSiteFeedback> feedback_vector;
-  std::map<WasmCodePosition, int> positions;
+  std::vector<uint32_t> call_targets;
   int tierup_priority = 0;
+
+  static constexpr uint32_t kNonDirectCall = 0xFFFFFFFF;
 };
 struct TypeFeedbackStorage {
   std::map<uint32_t, FunctionTypeFeedback> feedback_for_function;
@@ -510,6 +588,7 @@ struct V8_EXPORT_PRIVATE WasmModule {
   std::vector<WasmImport> import_table;
   std::vector<WasmExport> export_table;
   std::vector<WasmTag> tags;
+  std::vector<WasmStringRefLiteral> stringref_literals;
   std::vector<WasmElemSegment> elem_segments;
   std::vector<WasmCompilationHint> compilation_hints;
   BranchHintInfo branch_hints;
@@ -539,6 +618,10 @@ struct WasmTable {
     if (!type.is_object_reference()) return false;
     HeapType heap_type = type.heap_type();
     return heap_type == HeapType::kFunc || heap_type == HeapType::kAny ||
+           heap_type == HeapType::kString ||
+           heap_type == HeapType::kStringViewWtf8 ||
+           heap_type == HeapType::kStringViewWtf16 ||
+           heap_type == HeapType::kStringViewIter ||
            (module != nullptr && heap_type.is_index() &&
             module->has_signature(heap_type.ref_index()));
   }

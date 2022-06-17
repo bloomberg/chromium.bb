@@ -11,9 +11,9 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -22,9 +22,9 @@ import static org.mockito.Mockito.when;
 
 import static org.chromium.chrome.browser.ui.android.webid.AccountSelectionProperties.AccountProperties.ACCOUNT;
 import static org.chromium.chrome.browser.ui.android.webid.AccountSelectionProperties.AccountProperties.AVATAR;
-import static org.chromium.chrome.browser.ui.android.webid.AccountSelectionProperties.HeaderProperties.FORMATTED_IDP_ETLD_PLUS_ONE;
-import static org.chromium.chrome.browser.ui.android.webid.AccountSelectionProperties.HeaderProperties.FORMATTED_RP_ETLD_PLUS_ONE;
 import static org.chromium.chrome.browser.ui.android.webid.AccountSelectionProperties.HeaderProperties.IDP_BRAND_ICON;
+import static org.chromium.chrome.browser.ui.android.webid.AccountSelectionProperties.HeaderProperties.IDP_FOR_DISPLAY;
+import static org.chromium.chrome.browser.ui.android.webid.AccountSelectionProperties.HeaderProperties.RP_FOR_DISPLAY;
 import static org.chromium.chrome.browser.ui.android.webid.AccountSelectionProperties.HeaderProperties.TYPE;
 
 import android.graphics.Bitmap;
@@ -33,19 +33,20 @@ import android.graphics.Color;
 import androidx.annotation.Px;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.shadows.ShadowLooper;
 
 import org.chromium.base.Callback;
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.ui.android.webid.AccountSelectionProperties.AccountProperties;
 import org.chromium.chrome.browser.ui.android.webid.AccountSelectionProperties.AccountProperties.Avatar;
 import org.chromium.chrome.browser.ui.android.webid.AccountSelectionProperties.AutoSignInCancelButtonProperties;
@@ -58,9 +59,6 @@ import org.chromium.chrome.browser.ui.android.webid.data.ClientIdMetadata;
 import org.chromium.chrome.browser.ui.android.webid.data.IdentityProviderMetadata;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.image_fetcher.ImageFetcher;
-import org.chromium.components.url_formatter.SchemeDisplay;
-import org.chromium.components.url_formatter.UrlFormatter;
-import org.chromium.components.url_formatter.UrlFormatterJni;
 import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.PropertyKey;
@@ -111,10 +109,6 @@ public class AccountSelectionControllerTest {
     // AccountSelectionControllerTest constructor.
     public final IdentityProviderMetadata IDP_METADATA;
 
-    @Rule
-    public JniMocker mJniMocker = new JniMocker();
-    @Mock
-    private UrlFormatter.Natives mUrlFormatterJniMock;
     @Mock
     private AccountSelectionComponent.Delegate mMockDelegate;
     @Mock
@@ -130,40 +124,88 @@ public class AccountSelectionControllerTest {
 
     public AccountSelectionControllerTest() {
         MockitoAnnotations.initMocks(this);
-        IDP_METADATA = new IdentityProviderMetadata(Color.BLACK, Color.BLACK, mock(Bitmap.class));
+        IDP_METADATA =
+                new IdentityProviderMetadata(Color.BLACK, Color.BLACK, "https://icon-url.example");
     }
 
     @Before
     public void setUp() {
-        mJniMocker.mock(UrlFormatterJni.TEST_HOOKS, mUrlFormatterJniMock);
-        when(mUrlFormatterJniMock.formatUrlForDisplayOmitScheme(anyString()))
-                .then(inv -> format(inv.getArgument(0)));
-        when(mUrlFormatterJniMock.formatStringUrlForSecurityDisplay(
-                     anyString(), eq(SchemeDisplay.OMIT_HTTP_AND_HTTPS)))
-                .then(inv -> formatForSecurityDisplay(inv.getArgument(0)));
-        when(mUrlFormatterJniMock.formatUrlForSecurityDisplay(
-                     any(GURL.class), eq(SchemeDisplay.OMIT_HTTP_AND_HTTPS)))
-                .then(inv -> formatForSecurityDisplay(((GURL) inv.getArgument(0)).getSpec()));
-        when(mUrlFormatterJniMock.fixupUrl(anyString())).then(inv -> fixupUrl(inv.getArgument(0)));
-
         mBottomSheetContent = new AccountSelectionBottomSheetContent(null, null);
         mMediator = new AccountSelectionMediator(mMockDelegate, mModel, mSheetAccountItems,
                 mMockBottomSheetController, mBottomSheetContent, mMockImageFetcher,
                 DESIRED_AVATAR_SIZE);
     }
 
+    public ArgumentMatcher<ImageFetcher.Params> imageFetcherParamsHaveUrl(GURL url) {
+        return params -> params != null && params.url.equals(url.getSpec());
+    }
+
     @Test
     public void testShowAccountSignInHeader() {
+        doAnswer(new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) {
+                Callback<Bitmap> callback = (Callback<Bitmap>) invocation.getArguments()[1];
+
+                Bitmap brandIcon = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
+                brandIcon.eraseColor(Color.RED);
+                callback.onResult(brandIcon);
+                return null;
+            }
+        })
+                .when(mMockImageFetcher)
+                .fetchImage(any(), any(Callback.class));
+
         mMediator.showAccounts(TEST_ETLD_PLUS_ONE, TEST_ETLD_PLUS_ONE_1, Arrays.asList(ANA),
                 IDP_METADATA, CLIENT_ID_METADATA, false /* isAutoSignIn */);
 
         PropertyModel headerModel = mModel.get(ItemProperties.HEADER);
         assertEquals(HeaderType.SIGN_IN, headerModel.get(TYPE));
-        assertEquals(formatForSecurityDisplay(TEST_ETLD_PLUS_ONE),
-                headerModel.get(FORMATTED_RP_ETLD_PLUS_ONE));
-        assertEquals(formatForSecurityDisplay(TEST_ETLD_PLUS_ONE_1),
-                headerModel.get(FORMATTED_IDP_ETLD_PLUS_ONE));
+        assertEquals(TEST_ETLD_PLUS_ONE, headerModel.get(RP_FOR_DISPLAY));
+        assertEquals(TEST_ETLD_PLUS_ONE_1, headerModel.get(IDP_FOR_DISPLAY));
         assertNotNull(headerModel.get(IDP_BRAND_ICON));
+    }
+
+    @Test
+    public void testBrandIconDownloadFails() {
+        doAnswer(new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) {
+                Callback<Bitmap> callback = (Callback<Bitmap>) invocation.getArguments()[1];
+                callback.onResult(null);
+                return null;
+            }
+        })
+                .when(mMockImageFetcher)
+                .fetchImage(any(), any(Callback.class));
+
+        mMediator.showAccounts(TEST_ETLD_PLUS_ONE, TEST_ETLD_PLUS_ONE_1, Arrays.asList(ANA),
+                IDP_METADATA, CLIENT_ID_METADATA, false /* isAutoSignIn */);
+
+        PropertyModel headerModel = mModel.get(ItemProperties.HEADER);
+        // Brand icon should be transparent placeholder icon. This is useful so that the header text
+        // wrapping does not change in the case that the brand icon download succeeds.
+        assertNotNull(headerModel.get(IDP_BRAND_ICON));
+    }
+
+    /**
+     * Test that the FedCM account picker does not display the brand icon placeholder if the brand
+     * icon URL is empty.
+     */
+    @Test
+    public void testNoBrandIconUrl() {
+        IdentityProviderMetadata idpMetadataNoBrandIconUrl =
+                new IdentityProviderMetadata(Color.BLACK, Color.BLACK, "");
+        mMediator.showAccounts(TEST_ETLD_PLUS_ONE, TEST_ETLD_PLUS_ONE_1, Arrays.asList(ANA),
+                idpMetadataNoBrandIconUrl, CLIENT_ID_METADATA, false /* isAutoSignIn */);
+
+        PropertyModel headerModel = mModel.get(ItemProperties.HEADER);
+        assertNull(headerModel.get(IDP_BRAND_ICON));
+
+        // The only downloaded icon should not be an IDP brand icon.
+        verify(mMockImageFetcher, times(1))
+                .fetchImage(
+                        argThat(imageFetcherParamsHaveUrl(TEST_PROFILE_PIC)), any(Callback.class));
     }
 
     @Test
@@ -424,8 +466,8 @@ public class AccountSelectionControllerTest {
         assertEquals("Incorrect terms of service URL", TEST_URL_TERMS_OF_SERVICE.getSpec(),
                 dataSharingProperties.mTermsOfServiceUrl);
         assertTrue(containsItemOfType(mModel, ItemProperties.CONTINUE_BUTTON));
-        assertEquals("Incorrect provider ETLD+1", formatForSecurityDisplay(TEST_ETLD_PLUS_ONE_2),
-                dataSharingProperties.mFormattedIdpEtldPlusOne);
+        assertEquals("Incorrect provider ETLD+1", TEST_ETLD_PLUS_ONE_2,
+                dataSharingProperties.mIdpForDisplay);
     }
 
     @Test
@@ -467,37 +509,5 @@ public class AccountSelectionControllerTest {
             }
         }
         return count;
-    }
-
-    /**
-     * Helper to verify formatted URLs. The real implementation calls {@link UrlFormatter}. It's not
-     * useful to actually reimplement the formatter, so just modify the string in a trivial way.
-     * @param originUrl A URL {@link String} to "format".
-     * @return A "formatted" URL {@link String}.
-     */
-    private static String format(String originUrl) {
-        return "formatted_" + originUrl + "_formatted";
-    }
-
-    /**
-     * Helper to verify URLs formatted for security display. The real implementation calls
-     * {@link UrlFormatter}. It's not useful to actually reimplement the formatter, so just
-     * modify the string in a trivial way.
-     * @param url A URL {@link String} to "format".
-     * @return A "formatted" URL {@link String}.
-     */
-    private static String formatForSecurityDisplay(String url) {
-        return "formatted_for_security_" + url + "_formatted_for_security";
-    }
-
-    /**
-     * Helper to verify URLs formatted for security display. The real implementation calls
-     * {@link UrlFormatter}. It's not useful to actually reimplement the formatter, so just
-     * modify the string in a trivial way.
-     * @param url A URL {@link String} to "format".
-     * @return A "formatted" URL {@link String}.
-     */
-    private static GURL fixupUrl(String url) {
-        return new GURL(url);
     }
 }

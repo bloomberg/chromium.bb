@@ -3,6 +3,15 @@
 # found in the LICENSE file.
 
 [
+
+[ALWAYS, {
+  # BUG(5193). The cpu profiler tests are notoriously flaky.
+  'SamplerTest.LibSamplerCollectSample': [SKIP],
+
+  # This tests only the type system, no point in running several variants.
+  'TypesTest.*': [PASS, NO_VARIANTS],
+}],  # ALWAYS
+
 ##############################################################################
 ['system == macos and asan', {
   # BUG(820416).
@@ -49,6 +58,11 @@
 ['system == aix', {
   # PASE does not support detecting physical memory size
   'SysInfoTest.AmountOfPhysicalMemory': [SKIP],
+  # intermittent crashes when tests are ran with test-runner.
+  'LogTest.LogAccessorCallbacks': [SKIP],
+  'LogTest.BuiltinsNotLoggedAsLazyCompile': [SKIP],
+  'LogTest.LogCallbacks': [SKIP],
+  'LogTest.Issue539892': [SKIP],
 }],  # system == aix
 
 ##############################################################################
@@ -58,6 +72,12 @@
   'HeapStatisticsCollectorTest.DetailedStatisticsWithDiscardingOnNormalPage': [SKIP],
   'SweeperTest.DiscardingNormalPageMemory': [SKIP],
 }],  # arch == ppc64
+
+##############################################################################
+['no_js_shared_memory', {
+  # Tests that require shared cage implemented.
+  'JSAtomicsMutexTest.Contention': [SKIP],
+}],  # no_js_shared_memory
 
 ##############################################################################
 ['system == windows and asan', {
@@ -159,11 +179,14 @@
   'ValueSerializerTest.DecodeArrayBufferOOM': [SKIP],
   'LogExternalLogEventListenerInnerFunctionTest.ExternalLogEventListenerInnerFunctions': [SKIP],
   'LogInterpretedFramesNativeStackWithSerializationTest.LogInterpretedFramesNativeStackWithSerialization': [SKIP],
+  'ManagedTest.*': [SKIP],
+
   # Performs GC
   'APIExceptionTest.ExceptionMessageDoesNotKeepContextAlive': [SKIP],
   'LocalHeapTest.GCEpilogue': [SKIP],
   'UnifiedHeapDetachedTest.AllocationBeforeConfigureHeap': [SKIP],
   'UnifiedHeapTest.FindingV8ToBlinkReference': [SKIP],
+  'ManagedTest.GCCausesDestruction': [SKIP],
 
   # CodeRange tests
   'CodePagesTest.LargeCodeObjectWithSignalHandler': [SKIP],
@@ -172,6 +195,9 @@
   'CodePagesTest.Sorted': [SKIP],
   'CodePagesTest.CodeRangeCorrectContents': [SKIP],
 
+  # Access chunk metadata
+  'RootsTest.TestHeapRootsNotReadOnly': [SKIP],
+  'RootsTest.TestReadOnlyRoots': [SKIP],
 }], # third_party_heap
 
 ##############################################################################
@@ -196,6 +222,7 @@
   'RegExpTest.MacroAssemblerNativeSuccess': [SKIP],
   'RegExpTest.MacroAssemblerStackOverflow': [SKIP],
   'RegExpTest.Graph': [SKIP],
+  'DisasmX64Test.*': [SKIP],
 
   # Tests generated irregexp code.
   'RegExpTestWithContext.RegExpInterruptReentrantExecution': [SKIP],
@@ -218,6 +245,9 @@
   'LogMapsTest.*': [SKIP],
   'LogMapsCodeTest.LogMapsDetailsCode': [SKIP],
   'LogFunctionEventsTest.LogFunctionEvents': [SKIP],
+  'BignumDtoaTest.*': [SKIP],
+  'DtoaTest.*': [SKIP],
+  'DeclsTest.*': [SKIP],
 }],  # variant == no_wasm_traps
 
 ##############################################################################

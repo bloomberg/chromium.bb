@@ -16,7 +16,8 @@
     "allowUnreachableCode": true,
     /* Module Options */
     "moduleResolution": "node",
-    "esModuleInterop": false
+    "esModuleInterop": false,
+    "skipLibCheck": true,
   },
   "include": ["src/**/*.ts"],
   "typedocOptions": {

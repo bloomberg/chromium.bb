@@ -2370,6 +2370,12 @@ void InstructionSelector::VisitNode(Node* node) {
       return MarkAsSimd128(node), VisitI32x4RelaxedTruncF32x4S(node);
     case IrOpcode::kI32x4RelaxedTruncF32x4U:
       return MarkAsSimd128(node), VisitI32x4RelaxedTruncF32x4U(node);
+    case IrOpcode::kI16x8RelaxedQ15MulRS:
+      return MarkAsSimd128(node), VisitI16x8RelaxedQ15MulRS(node);
+    case IrOpcode::kI16x8DotI8x16I7x16S:
+      return MarkAsSimd128(node), VisitI16x8DotI8x16I7x16S(node);
+    case IrOpcode::kI32x4DotI8x16I7x16AddS:
+      return MarkAsSimd128(node), VisitI32x4DotI8x16I7x16AddS(node);
     default:
       FATAL("Unexpected operator #%d:%s @ node #%d", node->opcode(),
             node->op()->mnemonic(), node->id());
@@ -2822,10 +2828,21 @@ void InstructionSelector::VisitI32x4RelaxedTruncF32x4U(Node* node) {
 #endif  // !V8_TARGET_ARCH_X64 && !V8_TARGET_ARCH_IA32 && !V8_TARGET_ARCH_ARM64
         // && !V8_TARGET_ARCH_RISCV64 && !V8_TARGET_ARM
 
-#if !V8_TARGET_ARCH_X64 && !V8_TARGET_ARCH_IA32 && !V8_TARGET_ARCH_ARM64 && \
-    !V8_TARGET_ARCH_RISCV64
-#endif  // !V8_TARGET_ARCH_X64 && !V8_TARGET_ARCH_IA32 && !V8_TARGET_ARCH_ARM64
-        // && !V8_TARGET_ARCH_RISCV64
+#if !V8_TARGET_ARCH_ARM64 && !V8_TARGET_ARCH_ARM
+void InstructionSelector::VisitI16x8RelaxedQ15MulRS(Node* node) {
+  UNIMPLEMENTED();
+}
+#endif  // !V8_TARGET_ARCH_ARM6 && !V8_TARGET_ARCH_ARM
+
+#if !V8_TARGET_ARCH_ARM64
+void InstructionSelector::VisitI16x8DotI8x16I7x16S(Node* node) {
+  UNIMPLEMENTED();
+}
+
+void InstructionSelector::VisitI32x4DotI8x16I7x16AddS(Node* node) {
+  UNIMPLEMENTED();
+}
+#endif  // !V8_TARGET_ARCH_ARM6
 
 void InstructionSelector::VisitFinishRegion(Node* node) { EmitIdentity(node); }
 
@@ -2856,7 +2873,7 @@ LinkageLocation ExceptionLocation() {
 constexpr InstructionCode EncodeCallDescriptorFlags(
     InstructionCode opcode, CallDescriptor::Flags flags) {
   // Note: Not all bits of `flags` are preserved.
-  STATIC_ASSERT(CallDescriptor::kFlagsBitsEncodedInInstructionCode ==
+  static_assert(CallDescriptor::kFlagsBitsEncodedInInstructionCode ==
                 MiscField::kSize);
   DCHECK(Instruction::IsCallWithDescriptorFlags(opcode));
   return opcode | MiscField::encode(flags & MiscField::kMax);
@@ -2987,7 +3004,7 @@ void InstructionSelector::VisitCall(Node* node, BasicBlock* handler) {
 #if ABI_USES_FUNCTION_DESCRIPTORS
       // Highest fp_param_count bit is used on AIX to indicate if a CFunction
       // call has function descriptor or not.
-      STATIC_ASSERT(FPParamField::kSize == kHasFunctionDescriptorBitShift + 1);
+      static_assert(FPParamField::kSize == kHasFunctionDescriptorBitShift + 1);
       if (!call_descriptor->NoFunctionDescriptor()) {
         fp_param_count |= 1 << kHasFunctionDescriptorBitShift;
       }

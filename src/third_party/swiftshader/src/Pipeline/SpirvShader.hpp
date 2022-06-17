@@ -680,6 +680,12 @@ public:
 		return analysis;
 	}
 
+	bool coverageModified() const
+	{
+		return analysis.ContainsDiscard ||
+		       (outputBuiltins.find(spv::BuiltInSampleMask) != outputBuiltins.end());
+	}
+
 	struct Capabilities
 	{
 		bool Matrix : 1;
@@ -717,6 +723,9 @@ public:
 		bool StencilExportEXT : 1;
 		bool VulkanMemoryModel : 1;
 		bool VulkanMemoryModelDeviceScope : 1;
+		bool ShaderNonUniform : 1;
+		bool RuntimeDescriptorArray : 1;
+		bool StorageBufferArrayNonUniformIndexing : 1;
 	};
 
 	const Capabilities &getUsedCapabilities() const
@@ -799,6 +808,7 @@ public:
 		bool RelaxedPrecision : 1;
 		bool RowMajor : 1;      // RowMajor if true; ColMajor if false
 		bool InsideMatrix : 1;  // pseudo-decoration for whether we're inside a matrix.
+		bool NonUniform : 1;
 
 		Decorations()
 		    : Location{ -1 }
@@ -822,6 +832,7 @@ public:
 		    , RelaxedPrecision{ false }
 		    , RowMajor{ false }
 		    , InsideMatrix{ false }
+		    , NonUniform{ false }
 		{
 		}
 
@@ -1274,12 +1285,13 @@ private:
 	//  - Pointer
 	//  - InterfaceVariable
 	// Calling GetPointerToData with objects of any other kind will assert.
-	SIMD::Pointer GetPointerToData(Object::ID id, Int arrayIndex, EmitState const *state) const;
+	SIMD::Pointer GetPointerToData(Object::ID id, SIMD::Int arrayIndex, bool nonUniform, EmitState const *state) const;
+	void OffsetToElement(SIMD::Pointer &ptr, Object::ID elementId, int32_t arrayStride, EmitState const *state) const;
 
 	OutOfBoundsBehavior getOutOfBoundsBehavior(Object::ID pointerId, EmitState const *state) const;
 
-	SIMD::Pointer WalkExplicitLayoutAccessChain(Object::ID id, const Span &indexIds, const EmitState *state) const;
-	SIMD::Pointer WalkAccessChain(Object::ID id, const Span &indexIds, const EmitState *state) const;
+	SIMD::Pointer WalkExplicitLayoutAccessChain(Object::ID id, Object::ID elementId, const Span &indexIds, bool nonUniform, const EmitState *state) const;
+	SIMD::Pointer WalkAccessChain(Object::ID id, Object::ID elementId, const Span &indexIds, const EmitState *state) const;
 
 	// Returns the *component* offset in the literal for the given access chain.
 	uint32_t WalkLiteralAccessChain(Type::ID id, const Span &indexes) const;
@@ -1515,6 +1527,13 @@ public:
 		Pointer<Byte> function;
 	};
 
+	enum Interpolation
+	{
+		Perspective = 0,
+		Linear,
+		Flat,
+	};
+
 	struct InterpolationData
 	{
 		Pointer<Byte> primitive;
@@ -1531,6 +1550,7 @@ public:
 	std::unordered_map<SpirvShader::Object::ID, Variable> variables;
 	std::unordered_map<uint32_t, SamplerCache> samplerCache;  // Indexed by the instruction position, in words.
 	SIMD::Float inputs[MAX_INTERFACE_COMPONENTS];
+	Interpolation inputsInterpolation[MAX_INTERFACE_COMPONENTS];
 	SIMD::Float outputs[MAX_INTERFACE_COMPONENTS];
 	InterpolationData interpolationData;
 
@@ -1554,9 +1574,9 @@ public:
 	std::array<SIMD::Float, 4> fragCoord;
 	std::array<SIMD::Float, 4> pointCoord;
 	SIMD::Int helperInvocation;
-	Int4 numWorkgroups;
-	Int4 workgroupID;
-	Int4 workgroupSize;
+	SIMD::Int numWorkgroups;
+	SIMD::Int workgroupID;
+	SIMD::Int workgroupSize;
 	Int subgroupsPerWorkgroup;
 	Int invocationsPerSubgroup;
 	Int subgroupIndex;
@@ -1583,7 +1603,7 @@ public:
 	// common for all shader types.
 	void setImmutableInputBuiltins(SpirvShader const *shader);
 
-	static SIMD::Float interpolateAtXY(const SIMD::Float &x, const SIMD::Float &y, const SIMD::Float &rhw, Pointer<Byte> planeEquation, bool flat, bool perspective);
+	static SIMD::Float interpolateAtXY(const SIMD::Float &x, const SIMD::Float &y, const SIMD::Float &rhw, Pointer<Byte> planeEquation, Interpolation interpolation);
 
 	// setInputBuiltin() calls f() with the builtin and value if the shader
 	// uses the input builtin, otherwise the call is a no-op.

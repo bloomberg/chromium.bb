@@ -1416,17 +1416,16 @@ void MetalCodeGenerator::writeFieldAccess(const FieldAccess& f) {
         case SK_POSITION_BUILTIN:
             this->write("_out.sk_Position");
             break;
+        case SK_POINTSIZE_BUILTIN:
+            this->write("_out.sk_PointSize");
+            break;
         default:
-            if (field->fName == "sk_PointSize") {
-                this->write("_out.sk_PointSize");
-            } else {
-                if (FieldAccess::OwnerKind::kAnonymousInterfaceBlock == f.ownerKind()) {
-                    this->write("_globals.");
-                    this->write(fInterfaceBlockNameMap[fInterfaceBlockMap[field]]);
-                    this->write("->");
-                }
-                this->writeName(field->fName);
+            if (FieldAccess::OwnerKind::kAnonymousInterfaceBlock == f.ownerKind()) {
+                this->write("_globals.");
+                this->write(fInterfaceBlockNameMap[fInterfaceBlockMap[field]]);
+                this->write("->");
             }
+            this->writeName(field->fName);
     }
 }
 
@@ -2087,12 +2086,12 @@ void MetalCodeGenerator::writeInterfaceBlock(const InterfaceBlock& intf) {
 
 void MetalCodeGenerator::writeFields(const std::vector<Type::Field>& fields, Position parentPos,
         const InterfaceBlock* parentIntf) {
-    MemoryLayout memoryLayout(MemoryLayout::kMetal_Standard);
+    MemoryLayout memoryLayout(MemoryLayout::Standard::kMetal);
     int currentOffset = 0;
     for (const Type::Field& field : fields) {
         int fieldOffset = field.fModifiers.fLayout.fOffset;
         const Type* fieldType = field.fType;
-        if (!MemoryLayout::LayoutIsSupported(*fieldType)) {
+        if (!memoryLayout.isSupported(*fieldType)) {
             fContext.fErrors->error(parentPos, "type '" + std::string(fieldType->name()) +
                                                 "' is not permitted here");
             return;
@@ -2148,16 +2147,6 @@ void MetalCodeGenerator::writeName(std::string_view name) {
 }
 
 void MetalCodeGenerator::writeVarDeclaration(const VarDeclaration& varDecl) {
-    // The graphite shaders include functions with `switch` statements using named constant labels.
-    // When called with known values, the switch is eliminated. This leaves unused variables like:
-    //   const int kFoo = ...;
-    // All of these happen to be `const int`. As a hack, mark any `const int` as maybe_unused, to
-    // suppress warnings from the metal compiler when validation is enabled.
-    if ((varDecl.var().modifiers().fFlags & Modifiers::kConst_Flag) &&
-        varDecl.var().type().matches(*fContext.fTypes.fInt)) {
-        this->write("[[maybe_unused]] ");
-    }
-
     this->writeModifiers(varDecl.var().modifiers());
     this->writeType(varDecl.var().type());
     this->write(" ");
@@ -2814,7 +2803,6 @@ bool MetalCodeGenerator::generateCode() {
     write_stringstream(fExtraFunctionPrototypes, *fOut);
     write_stringstream(fExtraFunctions, *fOut);
     write_stringstream(body, *fOut);
-    fContext.fErrors->reportPendingErrors(Position());
     return fContext.fErrors->errorCount() == 0;
 }
 

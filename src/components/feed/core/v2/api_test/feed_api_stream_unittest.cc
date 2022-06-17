@@ -25,7 +25,6 @@
 #include "components/feed/core/v2/public/stream_type.h"
 #include "components/feed/core/v2/public/types.h"
 #include "components/feed/core/v2/scheduling.h"
-#include "components/feed/core/v2/stream/notice_card_tracker.h"
 #include "components/feed/core/v2/test/callback_receiver.h"
 #include "components/feed/core/v2/test/stream_builder.h"
 #include "components/feed/feed_feature_list.h"
@@ -39,7 +38,6 @@ namespace feed {
 namespace test {
 namespace {
 
-const char kTestKey[] = "Youtube";
 const int kTestInfoCardType1 = 101;
 const int kTestInfoCardType2 = 8888;
 const int kMinimumViewIntervalSeconds = 5 * 60;
@@ -1259,7 +1257,7 @@ TEST_F(FeedApiTest, FollowForcesRefresh) {
             callback.RunAndGetResult().request_status);
 
   // Wait for model to unload and reattach surface. New content is loaded.
-  task_environment_.FastForwardBy(base::Seconds(5));
+  WaitForModelToAutoUnload();
   surface.Attach(stream_.get());
   WaitForIdleTaskQueue();
   ASSERT_EQ("loading -> 3 slices", surface.DescribeUpdates());
@@ -2437,7 +2435,7 @@ TEST_F(FeedApiTest, UnloadOnlyOneOfMultipleModels) {
 
   for_you_surface.Detach();
 
-  task_environment_.FastForwardBy(base::Seconds(2));
+  WaitForModelToAutoUnload();
   WaitForIdleTaskQueue();
 
   EXPECT_TRUE(stream_->GetModel(kWebFeedStream));
@@ -2660,6 +2658,19 @@ TEST_F(FeedApiTest, ClearAllOnStartupIfFeedIsDisabled) {
   histograms.ExpectUniqueSample("ContentSuggestions.Feed.UserSettingsOnStart",
                                 UserSettingsOnStart::kFeedNotEnabledByPolicy,
                                 1);
+}
+
+TEST_F(FeedApiTest, FeedIsAblated) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  base::FieldTrialParams params;
+  scoped_feature_list.InitAndEnableFeature(kIsAblated);
+
+  base::HistogramTester histograms;
+  CreateStream();
+  histograms.ExpectUniqueSample("ContentSuggestions.Feed.UserSettingsOnStart",
+                                UserSettingsOnStart::kFeedNotEnabled, 1);
+
+  ASSERT_FALSE(network_.query_request_sent.has_value());
 }
 
 TEST_F(FeedApiTest, ReportUserSettingsFromMetadataWaaOnDpOff) {
@@ -3029,67 +3040,6 @@ TEST_F(FeedApiTest, SignOutWhileSurfaceIsOpen) {
       surface.DescribeUpdates());
 }
 
-// TODO(crbug.com/1266030): Fix flakes.
-TEST_F(FeedApiTest, DISABLED_NoticeViewed) {
-  base::HistogramTester histograms;
-
-  for (int i = 1; i <= NoticeCardTracker::kViewCountThreshold; ++i) {
-    if (i > 1)
-      task_environment_.AdvanceClock(
-          GetFeedConfig().minimum_notice_view_interval);
-    stream_->ReportNoticeViewed(kForYouStream, kTestKey);
-    histograms.ExpectUniqueSample(
-        "ContentSuggestions.Feed.NoticeViewed.Youtube", true, i);
-    bool should_acknowledge = (i == NoticeCardTracker::kViewCountThreshold);
-    histograms.ExpectUniqueSample(
-        "ContentSuggestions.Feed.NoticeAcknowledged.Youtube", true,
-        should_acknowledge ? 1 : 0);
-    if (should_acknowledge) {
-      histograms.ExpectUniqueSample(
-          "ContentSuggestions.Feed.NoticeAcknowledgementPath.Youtube",
-          NoticeAcknowledgementPath::kViaViewing, 1);
-    }
-  }
-
-  // One more viewed report should only increase the NoticeViewed UMA count.
-  stream_->ReportNoticeViewed(kForYouStream, kTestKey);
-  histograms.ExpectUniqueSample("ContentSuggestions.Feed.NoticeViewed.Youtube",
-                                true,
-                                NoticeCardTracker::kViewCountThreshold + 1);
-  // NoticeAcknowledged UMA is only reported once.
-  histograms.ExpectUniqueSample(
-      "ContentSuggestions.Feed.NoticeAcknowledged.Youtube", true, 1);
-}
-
-TEST_F(FeedApiTest, NoticeOpenAndDismissActions) {
-  base::HistogramTester histograms;
-
-  for (int i = 1; i <= NoticeCardTracker::kClickCountThreshold; ++i) {
-    stream_->ReportNoticeOpenAction(kForYouStream, kTestKey);
-    histograms.ExpectUniqueSample(
-        "ContentSuggestions.Feed.NoticeOpenAction.Youtube", true, i);
-    bool should_acknowledge = (i == NoticeCardTracker::kClickCountThreshold);
-    histograms.ExpectUniqueSample(
-        "ContentSuggestions.Feed.NoticeAcknowledged.Youtube", true,
-        should_acknowledge ? 1 : 0);
-    if (should_acknowledge) {
-      histograms.ExpectUniqueSample(
-          "ContentSuggestions.Feed.NoticeAcknowledgementPath.Youtube",
-          NoticeAcknowledgementPath::kViaOpenAction, 1);
-    }
-  }
-
-  stream_->ReportNoticeDismissed(kForYouStream, kTestKey);
-  histograms.ExpectUniqueSample(
-      "ContentSuggestions.Feed.NoticeOpenAction.Youtube", true,
-      NoticeCardTracker::kClickCountThreshold);
-  histograms.ExpectUniqueSample(
-      "ContentSuggestions.Feed.NoticeDismissed.Youtube", true, 1);
-  // NoticeAcknowledged UMA is only reported once.
-  histograms.ExpectUniqueSample(
-      "ContentSuggestions.Feed.NoticeAcknowledged.Youtube", true, 1);
-}
-
 TEST_F(FeedApiTest, FollowedFromWebPageMenuCount) {
   // Arrange.
   TestWebFeedSurface surface(stream_.get());
@@ -3194,6 +3144,122 @@ TEST_F(FeedApiTest, InfoCardTrackingActions) {
                                       .feed_query()
                                       .chrome_fulfillment_info()
                                       .info_card_tracking_state(1)));
+}
+
+TEST_F(FeedApiTest, InvalidateFeedCache_CauseRefreshOnNextLoad) {
+  // Load the ForYou feed with initial content from the network.
+  response_translator_.InjectResponse(MakeTypicalInitialModelState());
+  TestForYouSurface surface(stream_.get());
+  WaitForIdleTaskQueue();
+  EXPECT_TRUE(response_translator_.InjectedResponseConsumed());
+  ASSERT_EQ("loading -> [user@foo] 2 slices", surface.DescribeUpdates());
+
+  // Invalidate cached content and reattach the surface, waiting for the model
+  // to unload. It should refresh from the network with refreshed content.
+  response_translator_.InjectResponse(MakeTypicalRefreshModelState());
+  stream_->InvalidateContentCacheFor(StreamKind::kForYou);
+  surface.Detach();
+  WaitForModelToAutoUnload();
+  surface.Attach(stream_.get());
+  WaitForIdleTaskQueue();
+  EXPECT_TRUE(response_translator_.InjectedResponseConsumed());
+  ASSERT_EQ("loading -> 3 slices", surface.DescribeUpdates());
+}
+
+TEST_F(FeedApiTest, InvalidateFeedCache_DoesNotForceRefreshFeedWhileInUse) {
+  // Load the ForYou feed with initial content from the network.
+  response_translator_.InjectResponse(MakeTypicalInitialModelState());
+  TestForYouSurface surface(stream_.get());
+  WaitForIdleTaskQueue();
+  EXPECT_TRUE(response_translator_.InjectedResponseConsumed());
+  ASSERT_EQ("loading -> [user@foo] 2 slices", surface.DescribeUpdates());
+
+  // Invalidate the ForYou feed and verify nothing changes right away.
+  response_translator_.InjectResponse(MakeTypicalRefreshModelState());
+  stream_->InvalidateContentCacheFor(StreamKind::kForYou);
+  WaitForIdleTaskQueue();
+  ASSERT_EQ("", surface.DescribeUpdates());
+  EXPECT_FALSE(response_translator_.InjectedResponseConsumed());
+}
+
+TEST_F(FeedApiTest, InvalidateFeedCache_UnknownDoesNotForceRefreshAnyFeeds) {
+  // Enable WebFeed and WebFeedOnboarding flags to force WebFeed to fetch
+  // without subscriptions.
+  base::test::ScopedFeatureList features;
+  std::vector<base::Feature> enabled_features = {kWebFeed, kWebFeedOnboarding},
+                             disabled_features = {};
+  features.InitWithFeatures(enabled_features, disabled_features);
+  {
+    // Load both feeds and allow them to fetch network contents.
+    response_translator_.InjectResponse(MakeTypicalInitialModelState());
+    response_translator_.InjectResponse(MakeTypicalInitialModelState());
+    TestForYouSurface for_you_surface(stream_.get());
+    TestWebFeedSurface web_feed_surface(stream_.get());
+    WaitForIdleTaskQueue();
+    ASSERT_EQ("loading -> [user@foo] 2 slices",
+              for_you_surface.DescribeUpdates());
+    ASSERT_EQ("loading -> [user@foo] 2 slices",
+              web_feed_surface.DescribeUpdates());
+    EXPECT_TRUE(response_translator_.InjectedResponseConsumed());
+  }
+
+  // Both surfaces have been destroyed, so wait for the model to unload.
+  WaitForModelToAutoUnload();
+
+  // Invalidate with an unknown feed and recreate both surfaces. None should
+  // refresh from network.
+  response_translator_.InjectResponse(MakeTypicalRefreshModelState());
+  stream_->InvalidateContentCacheFor(StreamKind::kUnknown);
+  {
+    TestForYouSurface for_you_surface(stream_.get());
+    TestWebFeedSurface web_feed_surface(stream_.get());
+    WaitForIdleTaskQueue();
+    ASSERT_EQ("loading -> [user@foo] 2 slices",
+              for_you_surface.DescribeUpdates());
+    ASSERT_EQ("loading -> [user@foo] 2 slices",
+              web_feed_surface.DescribeUpdates());
+  }
+  EXPECT_FALSE(response_translator_.InjectedResponseConsumed());
+}
+
+TEST_F(FeedApiTest, InvalidateFeedCache_DoesNotRefreshOtherFeed) {
+  // Enable WebFeed and WebFeedOnboarding flags to force WebFeed to fetch
+  // without subscriptions.
+  base::test::ScopedFeatureList features;
+  std::vector<base::Feature> enabled_features = {kWebFeed, kWebFeedOnboarding},
+                             disabled_features = {};
+  features.InitWithFeatures(enabled_features, disabled_features);
+  {
+    // Load both feeds and allow them to fetch network contents.
+    response_translator_.InjectResponse(MakeTypicalInitialModelState());
+    response_translator_.InjectResponse(MakeTypicalInitialModelState());
+    TestForYouSurface for_you_surface(stream_.get());
+    TestWebFeedSurface web_feed_surface(stream_.get());
+    WaitForIdleTaskQueue();
+    ASSERT_EQ("loading -> [user@foo] 2 slices",
+              for_you_surface.DescribeUpdates());
+    ASSERT_EQ("loading -> [user@foo] 2 slices",
+              web_feed_surface.DescribeUpdates());
+    EXPECT_TRUE(response_translator_.InjectedResponseConsumed());
+  }
+
+  // Both surfaces have been destroyed, so wait for the model to unload.
+  WaitForModelToAutoUnload();
+
+  // Invalidate only the WebFeed feed and recreate both surfaces. Only the
+  // WebFeed should refresh from network.
+  response_translator_.InjectResponse(MakeTypicalRefreshModelState());
+  stream_->InvalidateContentCacheFor(StreamKind::kFollowing);
+  {
+    TestForYouSurface for_you_surface(stream_.get());
+    TestWebFeedSurface web_feed_surface(stream_.get());
+    WaitForIdleTaskQueue();
+    ASSERT_EQ("loading -> [user@foo] 2 slices",
+              for_you_surface.DescribeUpdates());
+    ASSERT_EQ("loading -> [user@foo] 3 slices",
+              web_feed_surface.DescribeUpdates());
+  }
+  EXPECT_TRUE(response_translator_.InjectedResponseConsumed());
 }
 
 // Keep instantiations at the bottom.

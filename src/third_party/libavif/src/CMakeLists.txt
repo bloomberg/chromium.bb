@@ -122,49 +122,7 @@ endif()
 include(CheckCCompilerFlag)
 if(CMAKE_C_COMPILER_ID MATCHES "Clang")
     message(STATUS "libavif: Enabling warnings for Clang")
-    add_definitions(
-        -Weverything
-        -Wno-bad-function-cast
-        -Wno-cast-align
-        -Wno-conversion
-        -Wno-covered-switch-default
-        -Wno-disabled-macro-expansion
-        -Wno-documentation
-        -Wno-documentation-unknown-command
-        -Wno-double-promotion
-        -Wno-float-equal
-        -Wno-missing-noreturn
-        -Wno-padded
-        -Wno-sign-conversion
-        -Wno-error=c11-extensions
-    )
-    # Some headers such as glib-2.0 use identifier names that start with '_' followed by a capital letter.
-    # The C standard reserves names beginning with an underscore and various other combinations.
-    # ISO/IEC 9899:1999 (aka C99 standard) 7.1.3 Reserved identifiers
-    check_c_compiler_flag(-Wreserved-identifier HAVE_RESERVED_IDENTIFIER_WARNING)
-    if(HAVE_RESERVED_IDENTIFIER_WARNING)
-        add_definitions(-Wno-reserved-identifier)
-    endif()
-    # Clang >= 14 warns that mixing declarations and code is incompatible with standards before C99, even if
-    # you compile with -std=c99 or -std=gnu99.
-    check_c_compiler_flag(-Wdeclaration-after-statement HAVE_DECLARATION_AFTER_STATEMENT_WARNING)
-    if(HAVE_DECLARATION_AFTER_STATEMENT_WARNING)
-        add_definitions(-Wno-declaration-after-statement)
-    endif()
-    # The detection of cross compilation by -Wpoison-system-directories has false positives on macOS because
-    # --sysroot is implicitly added. Turn the warning off.
-    if(NOT DEFINED HAVE_POISON_SYSTEM_DIRECTORIES_WARNING)
-        check_c_compiler_flag(-Wpoison-system-directories HAVE_POISON_SYSTEM_DIRECTORIES_WARNING)
-    endif()
-    if(HAVE_POISON_SYSTEM_DIRECTORIES_WARNING)
-        add_definitions(-Wno-poison-system-directories)
-    endif()
-    # MINGW declares printf with __attribute__ ((__unused__)) in stdio.h.
-    # It is out of our control so we just ignore it.
-    # See https://sourceforge.net/p/mingw-w64/bugs/868/
-    if(MINGW)
-        add_definitions(-Wno-used-but-marked-unused)
-    endif()
+    add_definitions(-Wall -Wextra)
 elseif(CMAKE_C_COMPILER_ID MATCHES "GNU")
     message(STATUS "libavif: Enabling warnings for GCC")
     add_definitions(-Wall -Wextra)
@@ -539,8 +497,8 @@ if(AVIF_BUILD_MAN_PAGES)
             add_custom_command(
                 OUTPUT ${MAN_PAGE}
                 COMMAND ${PANDOC_EXE} -s -V "footer=libavif ${PROJECT_VERSION}" -f markdown -t man -o
-                        "${CMAKE_CURRENT_BINARY_DIR}/${MAN_PAGE}" "${CMAKE_CURRENT_SOURCE_DIR}/docs/${MAN_PAGE}.md"
-                DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/docs/${MAN_PAGE}.md"
+                        "${CMAKE_CURRENT_BINARY_DIR}/${MAN_PAGE}" "${CMAKE_CURRENT_SOURCE_DIR}/doc/${MAN_PAGE}.md"
+                DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/doc/${MAN_PAGE}.md"
                 VERBATIM
             )
         endforeach()
@@ -550,7 +508,7 @@ if(AVIF_BUILD_MAN_PAGES)
             install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${MAN_PAGE}" DESTINATION "${CMAKE_INSTALL_MANDIR}/man1")
         endforeach()
     else()
-        message(WARNING "libavif: No man pages is built (AVIF_BUILD_MAN_PAGES); AVIF_BUILD_APPS must be on.")
+        message(WARNING "libavif: No man pages are built (AVIF_BUILD_MAN_PAGES); AVIF_BUILD_APPS must be on.")
     endif()
 endif()
 

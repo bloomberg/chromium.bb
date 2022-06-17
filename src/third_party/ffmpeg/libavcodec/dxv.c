@@ -1038,11 +1038,10 @@ static int dxv_decompress_raw(AVCodecContext *avctx)
     return 0;
 }
 
-static int dxv_decode(AVCodecContext *avctx, void *data,
+static int dxv_decode(AVCodecContext *avctx, AVFrame *frame,
                       int *got_frame, AVPacket *avpkt)
 {
     DXVContext *ctx = avctx->priv_data;
-    AVFrame *const frame = data;
     GetByteContext *gbc = &ctx->gbc;
     int (*decompress_tex)(AVCodecContext *avctx);
     const char *msgcomp, *msgtext;
@@ -1267,7 +1266,7 @@ const FFCodec ff_dxv_decoder = {
     .p.type         = AVMEDIA_TYPE_VIDEO,
     .p.id           = AV_CODEC_ID_DXV,
     .init           = dxv_init,
-    .decode         = dxv_decode,
+    FF_CODEC_DECODE_CB(dxv_decode),
     .close          = dxv_close,
     .priv_data_size = sizeof(DXVContext),
     .p.capabilities = AV_CODEC_CAP_DR1 |

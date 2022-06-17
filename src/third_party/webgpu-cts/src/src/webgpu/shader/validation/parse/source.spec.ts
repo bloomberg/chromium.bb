@@ -9,7 +9,7 @@ g.test('valid_source')
   .desc(`Tests that a valid source is consumed successfully.`)
   .fn(t => {
     const code = `
-    @stage(fragment)
+    @fragment
     fn main() -> @location(0) vec4<f32> {
       return vec4<f32>(.4, .2, .3, .1);
     }`;

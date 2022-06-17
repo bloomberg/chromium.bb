@@ -18,7 +18,7 @@ import { correctlyRoundedMatch } from '../../../../../util/compare.js';
 import { kValue } from '../../../../../util/constants.js';
 import { f32, i32, TypeF32, TypeI32 } from '../../../../../util/conversion.js';
 import { biasedRange, linearRange, quantizeToI32 } from '../../../../../util/math.js';
-import { Case, Config, run } from '../../expression.js';
+import { allInputSources, Case, Config, run } from '../../expression.js';
 
 import { builtin } from './builtin.js';
 
@@ -31,9 +31,7 @@ g.test('abstract_float')
 `
   )
   .params(u =>
-    u
-      .combine('storageClass', ['uniform', 'storage_r', 'storage_rw'] as const)
-      .combine('vectorize', [undefined, 2, 3, 4] as const)
+    u.combine('inputSource', allInputSources).combine('vectorize', [undefined, 2, 3, 4] as const)
   )
   .unimplemented();
 
@@ -41,9 +39,7 @@ g.test('f32')
   .specURL('https://www.w3.org/TR/WGSL/#float-builtin-functions')
   .desc(`f32 tests`)
   .params(u =>
-    u
-      .combine('storageClass', ['uniform', 'storage_r', 'storage_rw'] as const)
-      .combine('vectorize', [undefined, 2, 3, 4] as const)
+    u.combine('inputSource', allInputSources).combine('vectorize', [undefined, 2, 3, 4] as const)
   )
   .fn(async t => {
     const truthFunc = (e1: number, e2: number): Case | undefined => {
@@ -96,8 +92,6 @@ g.test('f16')
   .specURL('https://www.w3.org/TR/WGSL/#float-builtin-functions')
   .desc(`f16 tests`)
   .params(u =>
-    u
-      .combine('storageClass', ['uniform', 'storage_r', 'storage_rw'] as const)
-      .combine('vectorize', [undefined, 2, 3, 4] as const)
+    u.combine('inputSource', allInputSources).combine('vectorize', [undefined, 2, 3, 4] as const)
   )
   .unimplemented();

@@ -14,6 +14,7 @@
 
 #include "src/dsp/mask_blend.h"
 
+#include <cassert>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
@@ -103,6 +104,8 @@ const char* GetDigest8bpp(int id) {
       "beb984e88b6f9b96ae6efe5da23ad16b", "1083b829ea766b1d4eb0bb96e9fb3bff",
       "be8abad1da69e4d238a45fc02a0061cf",
   };
+  assert(id >= 0);
+  assert(id < sizeof(kDigest) / sizeof(kDigest[0]));
   return kDigest[id];
 }
 
@@ -157,9 +160,68 @@ const char* GetDigest10bpp(int id) {
       "56823ef9a8e21c9c7441cc9ed870d648", "52f4c7a0b7177175302652cbc482f442",
       "f4a4f4d7c8b93c0486cf3cbaa26fbc19",
   };
+  assert(id >= 0);
+  assert(id < sizeof(kDigest) / sizeof(kDigest[0]));
   return kDigest[id];
 }
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
+
+#if LIBGAV1_MAX_BITDEPTH == 12
+const char* GetDigest12bpp(int id) {
+  static const char* const kDigest[] = {
+      "79a505b3877177197c94f0faeb0c9ec6", "cd22657d242f30c88bb83eae9efbbcce",
+      "c4c60a60976d119df3832ff6956e0181", "796bd78bf2346e8dfd61cecbf508ea0e",
+      "79e06cc6f880daf6cdb59b9b3a8efe1c", "f0643108e6b57bd566bc0d47b2dc64a1",
+      "8272a471e538ca469eaf5c997309589c", "3094741b63a29925da83dc1dc187654a",
+      "d0141df80f2335ed6051397cb2a5bc61", "33d9fd317b74f4572afbe004f991ca83",
+      "ea2413cd11bf1da93de9285381b471df", "c4f78ae2b994a3a999cb3f5dac2bb498",
+      "44804ec226453bc5f688506b56ad2a8a", "9de9c12a5f3bb8d4af13da8807dfe53f",
+      "c190dac15c08f2e591b222e1d75b60c2", "c46889b58b44d242e24b91ef531e9176",
+      "b6697e1256b60b3426a8980c7c6f9a80", "1e0eb156152fbb74b0cff41bdbdf98b5",
+      "98ab6c0abc45fd44565f84e66dc71133", "f2f2126fac1b7c0c7b7ff511c6f3c91e",
+      "0cc720e878cfa35f9b72762d08adb1bf", "6efee9ce87e098122dd05525f4c74a2f",
+      "187270514a93bd7065d2cfdb02146959", "947be7f2921b5a192d4296b2060a215c",
+      "42f02b046eda2a94133032184fdaa26d", "487e94b20867e7021dd1f10d477c3acf",
+      "9f9eac4394d8821f5c14857a28c5549b", "75d781b60c1f4aa44ceb6bc65f597a52",
+      "779f9ac3c01a86812964ccc38da2711a", "16dc8824efbd7a47808ccdbf8e37df56",
+      "e72899a8ddf6cc816e1917c25739a512", "96a4bcaedae79b55399d931fecd64312",
+      "5c5e8f4a4f0153315133e4e86a02c3a6", "d1c339b6f6cc0eabdd6674028e1f4260",
+      "4ef5868adaf6712d033dce9e51837c0b", "ed90a4ddfc463dddfe71314bc3415b4e",
+      "2312299492a47246269d6d37e67c8c0c", "56baf1c4453c5cf5ce3d6857cff4aa8f",
+      "d534ce3430377b355c3f59695cfb188b", "f40248f1a6fac4299c9645350138f598",
+      "f2e3cbbd066d9d28304667d82312d950", "e8a7784eb367b72b96486bec856b873c",
+      "02941ae2cf8272b353268a30cf9c2ee0", "8f6273a5fa62b9a4225ebdbf2ce44e27",
+      "85bb0aaba73fe8c89dcee6b5c55d5cfc", "c28c63a4e46ee2a98dd2b58379971c8c",
+      "4af35738c29d27ca9930a488bacdffe6", "34a419cc3e6ab21cf099d244169d253e",
+      "7c5b8d19ac8a81b37011fabac10143d0", "e582811e05def83270d8f65060fe8966",
+      "24662536326615a3c325409e780f65bf", "717a7f7e99d329a74391477ef3c6d738",
+      "e0f38a3dba4c6e060b6ca12a18d75fc2", "fbd0cba6a27eb06e74c5ed376187e05c",
+      "14dfb487c4a7e989629a195810b814ee", "3cf6d595317ec46e08f6eaa0f0e99b43",
+      "b3cb98c418ea854e433b612fc532bac5", "262206cee670c082361497e51cbd0f43",
+      "84c11b103a9b0a61f07493dcd269e6fd", "bd9bd9994057371252398bf52c7586f0",
+      "72e5537ba5f04fe17b7a371bd12ca0e2", "5986a20b406ceed273f9e41bc0c4c775",
+      "d5eb9ea00ce19079b49562ba4a8cb574", "3205e6f3c532a63f8d5d939fa46bc444",
+      "cfb21ac467f21954903948d4e6c9a2a1", "bd9fd6aab18bbba8096746f9ed35a640",
+      "d42ec4f13f042014c5b4af5f03d19034", "8a7fdee2b57ac641e03365625850f5d6",
+      "d18638521275b3aa9dd463d067d6a390", "a7a71c433d85576198b52608c99cab47",
+      "96e2a2443bf8cfe32d7590c5011c7523", "6fbe7cd83208937229c11a8e3be5e1e9",
+      "ecf66dac310e332a108be639171b5cf3", "327b1656c61d795c30a914f52e3d7629",
+      "157d26190bde1a6f34680708bff5d02e", "d927bba0073263a7914a4076a5edfe29",
+      "b88930ec68e5e49da8204ef21635cea2", "58e174ed0036b1ac1f5a9bdd44860222",
+      "415055dfa80c6fe7c12e4d16cac22168", "9058939bfb5998d6ecd71d87a52be893",
+      "847894efa35f1528732ec3584f62f86f", "8aa9b33c0d9695690cb4088c32f31214",
+      "11e28ab9a3192a2bc9ffd3fd0a466a13", "f246009c5efafd9310fa8e365d23cab4",
+      "2381fcd9ee0ffceba5509879d9f5709d", "1cf1dc7c7c6ecf1f3381455c99e2239e",
+      "e74601883b53791045f50bbcbbbcc803", "22926eecefa94f9f39b9bb9dbb183e5b",
+      "128c24f5a5342aebb21bdaa87907daf7", "11c39f844a2e51cc4c80ffe1afa58e70",
+      "2c0548cff2145031e304d8f97abfd751", "66e1a3daf84029341b999b18bf86e5b3",
+      "0f790f210d5366bbad7eb352b4909dd9",
+  };
+  assert(id >= 0);
+  assert(id < sizeof(kDigest) / sizeof(kDigest[0]));
+  return kDigest[id];
+}
+#endif  // LIBGAV1_MAX_BITDEPTH == 12
 
 struct MaskBlendTestParam {
   MaskBlendTestParam(BlockSize block_size, int subsampling_x, int subsampling_y,
@@ -192,6 +254,7 @@ template <int bitdepth, typename Pixel>
 class MaskBlendTest : public testing::TestWithParam<MaskBlendTestParam>,
                       public test_utils::MaxAlignedAllocable {
  public:
+  static_assert(bitdepth >= kBitdepth8 && bitdepth <= LIBGAV1_MAX_BITDEPTH, "");
   MaskBlendTest() = default;
   ~MaskBlendTest() override = default;
 
@@ -310,6 +373,7 @@ void MaskBlendTest<bitdepth, Pixel>::Test(const char* const digest,
   PredType* src_2 = source2_;
   uint8_t* src_2_8bpp = source2_8bpp_;
   const ptrdiff_t src_2_stride = param_.is_inter_intra ? kStride : width;
+  const ptrdiff_t mask_stride = param_.width;
   uint8_t* mask_row = mask_;
   const int range_mask = (1 << (bitdepth)) - 1;
   for (int y = 0; y < height; ++y) {
@@ -340,7 +404,7 @@ void MaskBlendTest<bitdepth, Pixel>::Test(const char* const digest,
       mask_row[x] = rnd.Rand8() & 63;
       mask_row[x] += rnd.Rand8() & 1;  // Range of mask is [0, 64].
     }
-    mask_row += kStride;
+    mask_row += mask_stride;
   }
 
   absl::Duration elapsed_time;
@@ -351,7 +415,7 @@ void MaskBlendTest<bitdepth, Pixel>::Test(const char* const digest,
       static_assert(sizeof(source2_8bpp_cache_) == sizeof(source2_8bpp_), "");
       // source2_8bpp_ is modified in the call.
       memcpy(source2_8bpp_cache_, source2_8bpp_, sizeof(source2_8bpp_));
-      func_8bpp_(source1_8bpp_, source2_8bpp_, src_2_stride, mask_, kStride,
+      func_8bpp_(source1_8bpp_, source2_8bpp_, src_2_stride, mask_, mask_stride,
                  width, height);
       for (int y = 0; y < height; ++y) {
         for (int x = 0; x < width; ++x) {
@@ -363,7 +427,7 @@ void MaskBlendTest<bitdepth, Pixel>::Test(const char* const digest,
       if (bitdepth != 8) {
         ASSERT_EQ(func_8bpp_, nullptr);
       }
-      func_(source1_, source2_, src_2_stride, mask_, kStride, width, height,
+      func_(source1_, source2_, src_2_stride, mask_, mask_stride, width, height,
             dest_, kDestStride);
     }
     elapsed_time += absl::Now() - start;
@@ -519,6 +583,19 @@ INSTANTIATE_TEST_SUITE_P(NEON, MaskBlendTest10bpp,
                          testing::ValuesIn(kMaskBlendTestParam));
 #endif
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
+
+#if LIBGAV1_MAX_BITDEPTH == 12
+using MaskBlendTest12bpp = MaskBlendTest<12, uint16_t>;
+
+TEST_P(MaskBlendTest12bpp, Blending) { Test(GetDigest12bpp(GetDigestId()), 1); }
+
+TEST_P(MaskBlendTest12bpp, DISABLED_Speed) {
+  Test(GetDigest12bpp(GetDigestId()), kNumSpeedTests);
+}
+
+INSTANTIATE_TEST_SUITE_P(C, MaskBlendTest12bpp,
+                         testing::ValuesIn(kMaskBlendTestParam));
+#endif  // LIBGAV1_MAX_BITDEPTH == 12
 
 }  // namespace
 }  // namespace dsp

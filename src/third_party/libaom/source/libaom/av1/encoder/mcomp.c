@@ -2142,16 +2142,13 @@ static int obmc_diamond_search_sad(
   const int32_t *wsrc = ms_buffers->wsrc;
   const int32_t *mask = ms_buffers->obmc_mask;
   const struct buf_2d *const ref_buf = ms_buffers->ref;
-  // search_step determines the length of the initial step and hence the number
-  // of iterations
-  // 0 = initial step (MAX_FIRST_STEP) pel : 1 = (MAX_FIRST_STEP/2) pel, 2 =
-  // (MAX_FIRST_STEP/4) pel... etc.
 
-  const int tot_steps = MAX_MVSEARCH_STEPS - 1 - search_step;
+  // search_step determines the length of the initial step and hence the number
+  // of iterations.
+  const int tot_steps = cfg->num_search_steps - search_step;
   const uint8_t *best_address, *init_ref;
   int best_sad = INT_MAX;
   int best_site = 0;
-  int step;
 
   clamp_fullmv(&start_mv, &ms_params->mv_limits);
   best_address = init_ref = get_buf_from_fullmv(ref_buf, &start_mv);
@@ -2162,7 +2159,7 @@ static int obmc_diamond_search_sad(
   best_sad = fn_ptr->osdf(best_address, ref_buf->stride, wsrc, mask) +
              mvsad_err_cost_(best_mv, mv_cost_params);
 
-  for (step = tot_steps; step >= 0; --step) {
+  for (int step = tot_steps - 1; step >= 0; --step) {
     const search_site *const site = cfg->site[step];
     best_site = 0;
     for (int idx = 1; idx <= cfg->searches_per_step[step]; ++idx) {
@@ -2195,7 +2192,7 @@ static int obmc_diamond_search_sad(
 
 static int obmc_full_pixel_diamond(
     const FULLPEL_MOTION_SEARCH_PARAMS *ms_params, const FULLPEL_MV start_mv,
-    int step_param, int do_refine, FULLPEL_MV *best_mv) {
+    int step_param, FULLPEL_MV *best_mv) {
   const search_site_config *cfg = ms_params->search_sites;
   FULLPEL_MV tmp_mv;
   int thissme, n, num00 = 0;
@@ -2207,7 +2204,6 @@ static int obmc_full_pixel_diamond(
   // If there won't be more n-step search, check to see if refining search is
   // needed.
   const int further_steps = cfg->num_search_steps - 1 - step_param;
-  if (n > further_steps) do_refine = 0;
 
   while (n < further_steps) {
     ++n;
@@ -2219,9 +2215,6 @@ static int obmc_full_pixel_diamond(
                                         step_param + n, &num00);
       if (thissme < INT_MAX) thissme = get_obmc_mvpred_var(ms_params, &tmp_mv);
 
-      // check to see if refining search is needed.
-      if (num00 > further_steps - n) do_refine = 0;
-
       if (thissme < bestsme) {
         bestsme = thissme;
         *best_mv = tmp_mv;
@@ -2229,16 +2222,6 @@ static int obmc_full_pixel_diamond(
     }
   }
 
-  // final 1-away diamond refining search
-  if (do_refine) {
-    tmp_mv = *best_mv;
-    thissme = obmc_refining_search_sad(ms_params, &tmp_mv);
-    if (thissme < INT_MAX) thissme = get_obmc_mvpred_var(ms_params, &tmp_mv);
-    if (thissme < bestsme) {
-      bestsme = thissme;
-      *best_mv = tmp_mv;
-    }
-  }
   return bestsme;
 }
 
@@ -2246,9 +2229,8 @@ int av1_obmc_full_pixel_search(const FULLPEL_MV start_mv,
                                const FULLPEL_MOTION_SEARCH_PARAMS *ms_params,
                                const int step_param, FULLPEL_MV *best_mv) {
   if (!ms_params->fast_obmc_search) {
-    const int do_refine = 1;
-    const int bestsme = obmc_full_pixel_diamond(ms_params, start_mv, step_param,
-                                                do_refine, best_mv);
+    const int bestsme =
+        obmc_full_pixel_diamond(ms_params, start_mv, step_param, best_mv);
     return bestsme;
   } else {
     *best_mv = start_mv;

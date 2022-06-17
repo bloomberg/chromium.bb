@@ -131,6 +131,7 @@ g.test('inputs')
     `;
 
     const pipeline = t.device.createComputePipeline({
+      layout: 'auto',
       compute: {
         module: t.device.createShaderModule({
           code: wgsl,

@@ -14,7 +14,6 @@
 #include "include/core/SkSurface.h"
 #include "include/core/SkSurfaceProps.h"
 #include "include/private/gpu/ganesh/GrTypesPriv.h"
-#include "src/core/SkGlyphRunPainter.h"
 #include "src/gpu/ganesh/GrPaint.h"
 #include "src/gpu/ganesh/GrRenderTargetProxy.h"
 #include "src/gpu/ganesh/GrSurfaceProxyView.h"
@@ -486,6 +485,7 @@ public:
                           const GrClip*,
                           const SkMatrixProvider& viewMatrix,
                           const SkGlyphRunList& glyphRunList,
+                          SkStrikeDeviceInfo strikeDeviceInfo,
                           const SkPaint& paint);
 
     /**
@@ -551,8 +551,6 @@ public:
     SkBudgeted isBudgeted() const;
 
     int maxWindowRectangles() const;
-
-    SkGlyphRunListPainter* glyphRunPainter() { return &fGlyphPainter; }
 
     /*
      * This unique ID will not change for a given SurfaceDrawContext. However, it is _NOT_
@@ -690,7 +688,6 @@ private:
 #if GR_TEST_UTILS
     bool fPreserveOpsOnFullClear_TestingOnly = false;
 #endif
-    SkGlyphRunListPainter fGlyphPainter;
 };
 
 } // namespace skgpu::v1

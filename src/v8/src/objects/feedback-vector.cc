@@ -445,8 +445,8 @@ TieringState FeedbackVector::osr_tiering_state() {
 
 void FeedbackVector::set_osr_tiering_state(TieringState marker) {
   DCHECK(marker == TieringState::kNone || marker == TieringState::kInProgress);
-  STATIC_ASSERT(TieringState::kNone <= OsrTieringStateBit::kMax);
-  STATIC_ASSERT(TieringState::kInProgress <= OsrTieringStateBit::kMax);
+  static_assert(TieringState::kNone <= OsrTieringStateBit::kMax);
+  static_assert(TieringState::kInProgress <= OsrTieringStateBit::kMax);
   int32_t state = flags();
   state = OsrTieringStateBit::update(state, marker);
   set_flags(state);
@@ -1087,6 +1087,20 @@ int FeedbackNexus::ExtractMapsAndFeedback(
   }
 
   return found;
+}
+
+MaybeObjectHandle FeedbackNexus::ExtractMegaDOMHandler() {
+  DCHECK(ic_state() == InlineCacheState::MEGADOM);
+  DisallowGarbageCollection no_gc;
+
+  auto pair = GetFeedbackPair();
+  MaybeObject maybe_handler = pair.second;
+  if (!maybe_handler->IsCleared()) {
+    MaybeObjectHandle handler = config()->NewHandle(maybe_handler);
+    return handler;
+  }
+
+  return MaybeObjectHandle();
 }
 
 int FeedbackNexus::ExtractMapsAndHandlers(

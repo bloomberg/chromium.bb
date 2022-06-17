@@ -632,13 +632,15 @@ class ElementsAccessorBase : public InternalElementsAccessor {
     return false;
   }
 
-  Handle<Object> Get(Handle<JSObject> holder, InternalIndex entry) final {
-    return Subclass::GetInternalImpl(holder, entry);
+  Handle<Object> Get(Isolate* isolate, Handle<JSObject> holder,
+                     InternalIndex entry) final {
+    return Subclass::GetInternalImpl(isolate, holder, entry);
   }
 
-  static Handle<Object> GetInternalImpl(Handle<JSObject> holder,
+  static Handle<Object> GetInternalImpl(Isolate* isolate,
+                                        Handle<JSObject> holder,
                                         InternalIndex entry) {
-    return Subclass::GetImpl(holder->GetIsolate(), holder->elements(), entry);
+    return Subclass::GetImpl(isolate, holder->elements(), entry);
   }
 
   static Handle<Object> GetImpl(Isolate* isolate, FixedArrayBase backing_store,
@@ -1082,7 +1084,7 @@ class ElementsAccessorBase : public InternalElementsAccessor {
 
       Handle<Object> value;
       if (details.kind() == PropertyKind::kData) {
-        value = Subclass::GetInternalImpl(object, entry);
+        value = Subclass::GetInternalImpl(isolate, object, entry);
       } else {
         // This might modify the elements and/or change the elements kind.
         LookupIterator it(isolate, object, index, LookupIterator::OWN);
@@ -1988,7 +1990,7 @@ class FastElementsAccessor : public ElementsAccessorBase<Subclass, KindTraits> {
     // normalization frequently enough. At a minimum, it should be large
     // enough to reliably hit the "window" of remaining elements count where
     // normalization would be beneficial.
-    STATIC_ASSERT(kLengthFraction >=
+    static_assert(kLengthFraction >=
                   NumberDictionary::kEntrySize *
                       NumberDictionary::kPreferFastElementsSizeFactor);
     size_t current_counter = isolate->elements_deletion_counter();
@@ -2613,7 +2615,7 @@ class FastSmiOrObjectElementsAccessor
     // elements->get(k) can return the hole, for which the StrictEquals will
     // always fail.
     FixedArray elements = FixedArray::cast(receiver->elements());
-    STATIC_ASSERT(FixedArray::kMaxLength <=
+    static_assert(FixedArray::kMaxLength <=
                   std::numeric_limits<uint32_t>::max());
     for (size_t k = start_from; k < length; ++k) {
       if (value.StrictEquals(elements.get(static_cast<uint32_t>(k)))) {
@@ -3012,7 +3014,7 @@ class FastDoubleElementsAccessor
     double numeric_search_value = value.Number();
     FixedDoubleArray elements = FixedDoubleArray::cast(receiver->elements());
 
-    STATIC_ASSERT(FixedDoubleArray::kMaxLength <=
+    static_assert(FixedDoubleArray::kMaxLength <=
                   std::numeric_limits<int>::max());
     for (size_t k = start_from; k < length; ++k) {
       int k_int = static_cast<int>(k);
@@ -3110,7 +3112,7 @@ class TypedElementsAccessor
     if (IsAligned(reinterpret_cast<uintptr_t>(data_ptr),
                   alignof(std::atomic<ElementType>))) {
       // Use a single relaxed atomic store.
-      STATIC_ASSERT(sizeof(std::atomic<ElementType>) == sizeof(ElementType));
+      static_assert(sizeof(std::atomic<ElementType>) == sizeof(ElementType));
       reinterpret_cast<std::atomic<ElementType>*>(data_ptr)->store(
           value, std::memory_order_relaxed);
       return;
@@ -3133,16 +3135,16 @@ class TypedElementsAccessor
     CHECK_EQ(sizeof(words), sizeof(value));
     memcpy(words, &value, sizeof(value));
     for (size_t word = 0; word < kNumWords; ++word) {
-      STATIC_ASSERT(sizeof(std::atomic<uint32_t>) == sizeof(uint32_t));
+      static_assert(sizeof(std::atomic<uint32_t>) == sizeof(uint32_t));
       reinterpret_cast<std::atomic<uint32_t>*>(data_ptr)[word].store(
           words[word], std::memory_order_relaxed);
     }
   }
 
-  static Handle<Object> GetInternalImpl(Handle<JSObject> holder,
+  static Handle<Object> GetInternalImpl(Isolate* isolate,
+                                        Handle<JSObject> holder,
                                         InternalIndex entry) {
     Handle<JSTypedArray> typed_array = Handle<JSTypedArray>::cast(holder);
-    Isolate* isolate = typed_array->GetIsolate();
     DCHECK_LT(entry.raw_value(), typed_array->GetLength());
     DCHECK(!typed_array->IsDetachedOrOutOfBounds());
     auto* element_ptr =
@@ -3173,7 +3175,7 @@ class TypedElementsAccessor
     if (IsAligned(reinterpret_cast<uintptr_t>(data_ptr),
                   alignof(std::atomic<ElementType>))) {
       // Use a single relaxed atomic load.
-      STATIC_ASSERT(sizeof(std::atomic<ElementType>) == sizeof(ElementType));
+      static_assert(sizeof(std::atomic<ElementType>) == sizeof(ElementType));
       // Note: acquire semantics are not needed here, but clang seems to merge
       // this atomic load with the non-atomic load above if we use relaxed
       // semantics. This will result in TSan failures.
@@ -3196,7 +3198,7 @@ class TypedElementsAccessor
         std::max(size_t{1}, sizeof(ElementType) / kInt32Size);
     uint32_t words[kNumWords];
     for (size_t word = 0; word < kNumWords; ++word) {
-      STATIC_ASSERT(sizeof(std::atomic<uint32_t>) == sizeof(uint32_t));
+      static_assert(sizeof(std::atomic<uint32_t>) == sizeof(uint32_t));
       words[word] =
           reinterpret_cast<std::atomic<uint32_t>*>(data_ptr)[word].load(
               std::memory_order_relaxed);
@@ -3269,7 +3271,7 @@ class TypedElementsAccessor
     size_t length = AccessorClass::GetCapacityImpl(*receiver, *elements);
     for (size_t i = 0; i < length; i++) {
       Handle<Object> value =
-          AccessorClass::GetInternalImpl(receiver, InternalIndex(i));
+          AccessorClass::GetInternalImpl(isolate, receiver, InternalIndex(i));
       RETURN_FAILURE_IF_NOT_SUCCESSFUL(accumulator->AddKey(value, convert));
     }
     return ExceptionStatus::kSuccess;
@@ -3284,8 +3286,8 @@ class TypedElementsAccessor
       Handle<FixedArrayBase> elements(object->elements(), isolate);
       size_t length = AccessorClass::GetCapacityImpl(*object, *elements);
       for (size_t index = 0; index < length; ++index) {
-        Handle<Object> value =
-            AccessorClass::GetInternalImpl(object, InternalIndex(index));
+        Handle<Object> value = AccessorClass::GetInternalImpl(
+            isolate, object, InternalIndex(index));
         if (get_entries) {
           value = MakeEntryPair(isolate, index, value);
         }
@@ -3306,22 +3308,32 @@ class TypedElementsAccessor
     DisallowGarbageCollection no_gc;
     ElementType scalar = FromHandle(value);
     ElementType* data = static_cast<ElementType*>(typed_array->DataPtr());
+    ElementType* first = data + start;
+    ElementType* last = data + end;
     if (typed_array->buffer().is_shared()) {
       // TypedArrays backed by shared buffers need to be filled using atomic
       // operations. Since 8-byte data are not currently always 8-byte aligned,
       // manually fill using SetImpl, which abstracts over alignment and atomic
       // complexities.
-      ElementType* first = data + start;
-      ElementType* last = data + end;
       for (; first != last; ++first) {
         AccessorClass::SetImpl(first, scalar, kShared);
       }
+    } else if ((scalar == 0 && !(std::is_floating_point_v<ElementType> &&
+                                 IsMinusZero(scalar))) ||
+               (std::is_integral_v<ElementType> &&
+                scalar == static_cast<ElementType>(-1))) {
+      // As of 2022-06, this is faster than {std::fill}.
+      // We could extend this to any {scalar} that's a pattern of repeating
+      // bytes, but patterns other than 0 and -1 are probably rare.
+      size_t num_bytes = static_cast<size_t>(reinterpret_cast<int8_t*>(last) -
+                                             reinterpret_cast<int8_t*>(first));
+      memset(first, static_cast<int8_t>(scalar), num_bytes);
     } else if (COMPRESS_POINTERS_BOOL && alignof(ElementType) > kTaggedSize) {
       // TODO(ishell, v8:8875): See UnalignedSlot<T> for details.
-      std::fill(UnalignedSlot<ElementType>(data + start),
-                UnalignedSlot<ElementType>(data + end), scalar);
+      std::fill(UnalignedSlot<ElementType>(first),
+                UnalignedSlot<ElementType>(last), scalar);
     } else {
-      std::fill(data + start, data + end, scalar);
+      std::fill(first, last, scalar);
     }
     return MaybeHandle<Object>(typed_array);
   }
@@ -3557,8 +3569,8 @@ class TypedElementsAccessor
     Handle<JSTypedArray> typed_array = Handle<JSTypedArray>::cast(object);
     Handle<FixedArray> result = isolate->factory()->NewFixedArray(length);
     for (uint32_t i = 0; i < length; i++) {
-      Handle<Object> value =
-          AccessorClass::GetInternalImpl(typed_array, InternalIndex(i));
+      Handle<Object> value = AccessorClass::GetInternalImpl(
+          isolate, typed_array, InternalIndex(i));
       result->set(i, *value);
     }
     return result;
@@ -4928,7 +4940,8 @@ template <typename Subclass, typename BackingStoreAccessor, typename KindTraits>
 class StringWrapperElementsAccessor
     : public ElementsAccessorBase<Subclass, KindTraits> {
  public:
-  static Handle<Object> GetInternalImpl(Handle<JSObject> holder,
+  static Handle<Object> GetInternalImpl(Isolate* isolate,
+                                        Handle<JSObject> holder,
                                         InternalIndex entry) {
     return GetImpl(holder, entry);
   }
@@ -5277,7 +5290,7 @@ void ElementsAccessor::InitializeOncePerProcess() {
 #undef ACCESSOR_ARRAY
   };
 
-  STATIC_ASSERT((sizeof(accessor_array) / sizeof(*accessor_array)) ==
+  static_assert((sizeof(accessor_array) / sizeof(*accessor_array)) ==
                 kElementsKindCount);
 
   elements_accessors_ = accessor_array;

@@ -10,12 +10,12 @@
 #include "src/logging/counters.h"
 #include "src/sandbox/external-pointer-table-inl.h"
 
-#ifdef V8_SANDBOX_IS_AVAILABLE
+#ifdef V8_ENABLE_SANDBOX
 
 namespace v8 {
 namespace internal {
 
-STATIC_ASSERT(sizeof(ExternalPointerTable) == ExternalPointerTable::kSize);
+static_assert(sizeof(ExternalPointerTable) == ExternalPointerTable::kSize);
 
 // static
 uint32_t ExternalPointerTable::AllocateEntry(ExternalPointerTable* table) {
@@ -94,4 +94,4 @@ uint32_t ExternalPointerTable::Grow() {
 }  // namespace internal
 }  // namespace v8
 
-#endif  // V8_SANDBOX_IS_AVAILABLE
+#endif  // V8_ENABLE_SANDBOX

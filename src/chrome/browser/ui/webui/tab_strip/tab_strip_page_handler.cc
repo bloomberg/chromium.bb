@@ -562,7 +562,7 @@ tab_strip::mojom::TabGroupVisualDataPtr TabStripPageHandler::GetTabGroupData(
   // (https://crbug.com/1060398).
   const int group_color_id =
       GetThumbnailTabStripTabGroupColorId(visual_data->color(), true);
-  const SkColor group_color = embedder_->GetColor(group_color_id);
+  const SkColor group_color = embedder_->GetColorProviderColor(group_color_id);
   tab_group->color = color_utils::SkColorToRgbString(group_color);
   // TODO(tluk): Incorporate the text color into the ColorProvider.
   tab_group->text_color = color_utils::SkColorToRgbString(
@@ -603,14 +603,12 @@ void TabStripPageHandler::GetThemeColors(GetThemeColorsCallback callback) {
       embedder_->GetColor(ThemeProperties::COLOR_FRAME_ACTIVE));
   colors["--tabstrip-tab-background-color"] = color_utils::SkColorToRgbaString(
       embedder_->GetColor(ThemeProperties::COLOR_TOOLBAR));
-  colors["--tabstrip-tab-text-color"] =
-      color_utils::SkColorToRgbaString(embedder_->GetColor(
-          ThemeProperties::COLOR_TAB_FOREGROUND_ACTIVE_FRAME_ACTIVE));
-  colors["--tabstrip-tab-separator-color"] =
-      color_utils::SkColorToRgbaString(SkColorSetA(
-          embedder_->GetColor(
-              ThemeProperties::COLOR_TAB_FOREGROUND_ACTIVE_FRAME_ACTIVE),
-          /* 16% opacity */ 0.16 * 255));
+  colors["--tabstrip-tab-text-color"] = color_utils::SkColorToRgbaString(
+      embedder_->GetColorProviderColor(kColorTabForegroundActiveFrameActive));
+  colors["--tabstrip-tab-separator-color"] = color_utils::SkColorToRgbaString(
+      SkColorSetA(embedder_->GetColorProviderColor(
+                      kColorTabForegroundActiveFrameActive),
+                  /* 16% opacity */ 0.16 * 255));
 
   std::string throbber_color = color_utils::SkColorToRgbaString(
       embedder_->GetColorProviderColor(kColorTabThrobber));
@@ -646,10 +644,11 @@ void TabStripPageHandler::GetThemeColors(GetThemeColorsCallback callback) {
 void TabStripPageHandler::GroupTab(int32_t tab_id,
                                    const std::string& group_id_string) {
   int tab_index = -1;
-  bool got_tab = extensions::ExtensionTabUtil::GetTabById(
-      tab_id, browser_->profile(), /*include_incognito=*/true, nullptr, nullptr,
-      nullptr, &tab_index);
-  DCHECK(got_tab);
+  if (!extensions::ExtensionTabUtil::GetTabById(
+          tab_id, browser_->profile(), /*include_incognito=*/true, nullptr,
+          nullptr, nullptr, &tab_index)) {
+    return;
+  }
 
   absl::optional<tab_groups::TabGroupId> group_id =
       tab_strip_ui::GetTabGroupIdFromString(
@@ -662,10 +661,11 @@ void TabStripPageHandler::GroupTab(int32_t tab_id,
 
 void TabStripPageHandler::UngroupTab(int32_t tab_id) {
   int tab_index = -1;
-  bool got_tab = extensions::ExtensionTabUtil::GetTabById(
-      tab_id, browser_->profile(), /*include_incognito=*/true, nullptr, nullptr,
-      nullptr, &tab_index);
-  DCHECK(got_tab);
+  if (!extensions::ExtensionTabUtil::GetTabById(
+          tab_id, browser_->profile(), /*include_incognito=*/true, nullptr,
+          nullptr, nullptr, &tab_index)) {
+    return;
+  }
 
   browser_->tab_strip_model()->RemoveFromGroup({tab_index});
 }
@@ -814,10 +814,11 @@ void TabStripPageHandler::ShowTabContextMenu(int32_t tab_id,
   gfx::PointF point(location_x, location_y);
   Browser* browser = nullptr;
   int tab_index = -1;
-  const bool got_tab = extensions::ExtensionTabUtil::GetTabById(
-      tab_id, browser_->profile(), true /* include_incognito */, &browser,
-      nullptr, nullptr, &tab_index);
-  CHECK(got_tab);
+  if (!extensions::ExtensionTabUtil::GetTabById(
+          tab_id, browser_->profile(), true /* include_incognito */, &browser,
+          nullptr, nullptr, &tab_index)) {
+    return;
+  }
 
   if (browser != browser_) {
     // TODO(crbug.com/1141573): Investigate how a context menu is being opened
@@ -936,11 +937,9 @@ gfx::ImageSkia TabStripPageHandler::ThemeFavicon(const gfx::ImageSkia& source,
   }
 
   return favicon::ThemeFavicon(
-      source, embedder_->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON),
-      embedder_->GetColor(
-          ThemeProperties::COLOR_TAB_BACKGROUND_ACTIVE_FRAME_ACTIVE),
-      embedder_->GetColor(
-          ThemeProperties::COLOR_TAB_BACKGROUND_INACTIVE_FRAME_ACTIVE));
+      source, embedder_->GetColorProviderColor(kColorToolbarButtonIcon),
+      embedder_->GetColorProviderColor(kColorTabBackgroundActiveFrameActive),
+      embedder_->GetColorProviderColor(kColorTabBackgroundInactiveFrameActive));
 }
 
 void TabStripPageHandler::ActivateTab(int32_t tab_id) {

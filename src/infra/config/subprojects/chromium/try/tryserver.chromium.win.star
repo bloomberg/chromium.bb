@@ -96,6 +96,13 @@ try_.builder(
 
 try_.builder(
     name = "win_chromium_compile_rel_ng",
+    mirrors = [
+        "ci/Win Builder",
+    ],
+    try_settings = builder_config.try_settings(
+        include_all_triggered_testers = True,
+        is_compile_only = True,
+    ),
 )
 
 try_.builder(
@@ -157,6 +164,7 @@ try_.builder(
 
 try_.orchestrator_builder(
     name = "win10_chromium_x64_rel_ng",
+    check_for_flakiness = True,
     compilator = "win10_chromium_x64_rel_ng-compilator",
     branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     mirrors = [
@@ -175,12 +183,13 @@ try_.orchestrator_builder(
     main_list_view = "try",
     tryjob = try_.job(),
     experiments = {
-        "remove_src_checkout_experiment": 10,
+        "remove_src_checkout_experiment": 100,
     },
 )
 
 try_.compilator_builder(
     name = "win10_chromium_x64_rel_ng-compilator",
+    check_for_flakiness = True,
     branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     main_list_view = "try",
     # TODO (crbug.com/1245171): Revert when root issue is fixed
@@ -196,6 +205,10 @@ try_.builder(
 try_.builder(
     name = "win7-rel",
     branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
+    mirrors = [
+        "ci/Win Builder",
+        "ci/Win7 Tests (1)",
+    ],
     cores = 16,
     execution_timeout = 4 * time.hour + 30 * time.minute,
     goma_jobs = goma.jobs.J300,
@@ -256,7 +269,7 @@ try_.gpu.optional_tests_builder(
             ".+/[+]/media/mojo/.+",
             ".+/[+]/media/renderers/.+",
             ".+/[+]/media/video/.+",
-            ".+/[+]/testing/buildbot/chromium.gpu.fyi.json",
+            ".+/[+]/testing/buildbot/tryserver.chromium.win.json",
             ".+/[+]/testing/trigger_scripts/.+",
             ".+/[+]/third_party/blink/renderer/modules/vr/.+",
             ".+/[+]/third_party/blink/renderer/modules/mediastream/.+",
@@ -265,6 +278,7 @@ try_.gpu.optional_tests_builder(
             ".+/[+]/third_party/blink/renderer/modules/xr/.+",
             ".+/[+]/third_party/blink/renderer/platform/graphics/gpu/.+",
             ".+/[+]/tools/clang/scripts/update.py",
+            ".+/[+]/tools/mb/mb_config_expectations/tryserver.chromium.win.json",
             ".+/[+]/ui/gl/.+",
         ],
     ),

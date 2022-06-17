@@ -1152,6 +1152,7 @@ void AccessorAssembler::EmitAccessCheck(TNode<Context> expected_native_context,
   TNode<NativeContext> native_context = LoadNativeContext(context);
   GotoIf(TaggedEqual(expected_native_context, native_context), can_access);
   // If the receiver is not a JSGlobalProxy then we miss.
+  GotoIf(TaggedIsSmi(receiver), miss);
   GotoIfNot(IsJSGlobalProxy(CAST(receiver)), miss);
   // For JSGlobalProxy receiver try to compare security tokens of current
   // and expected native contexts.
@@ -1243,7 +1244,7 @@ void AccessorAssembler::HandleStoreICHandlerCase(
         if_slow(this);
 
 #define ASSERT_CONSECUTIVE(a, b)                                    \
-  STATIC_ASSERT(static_cast<intptr_t>(StoreHandler::Kind::a) + 1 == \
+  static_assert(static_cast<intptr_t>(StoreHandler::Kind::a) + 1 == \
                 static_cast<intptr_t>(StoreHandler::Kind::b));
     ASSERT_CONSECUTIVE(kGlobalProxy, kNormal)
     ASSERT_CONSECUTIVE(kNormal, kInterceptor)
@@ -1282,7 +1283,7 @@ void AccessorAssembler::HandleStoreICHandlerCase(
         const int kTypeAndReadOnlyMask =
             PropertyDetails::KindField::kMask |
             PropertyDetails::kAttributesReadOnlyMask;
-        STATIC_ASSERT(static_cast<int>(PropertyKind::kData) == 0);
+        static_assert(static_cast<int>(PropertyKind::kData) == 0);
         GotoIf(IsSetWord32(details, kTypeAndReadOnlyMask), miss);
 
         if (V8_DICT_PROPERTY_CONST_TRACKING_BOOL) {
@@ -1460,7 +1461,7 @@ void AccessorAssembler::HandleStoreICTransitionMapHandlerCase(
         PropertyDetails::KindField::kMask |
         PropertyDetails::kAttributesDontDeleteMask |
         PropertyDetails::kAttributesReadOnlyMask;
-    STATIC_ASSERT(static_cast<int>(PropertyKind::kData) == 0);
+    static_assert(static_cast<int>(PropertyKind::kData) == 0);
     // Both DontDelete and ReadOnly attributes must not be set and it has to be
     // a kData property.
     GotoIf(IsSetWord32(details, kKindAndAttributesDontDeleteReadOnlyMask),
@@ -1836,7 +1837,7 @@ void AccessorAssembler::HandleStoreICProtoHandler(
         const int kTypeAndReadOnlyMask =
             PropertyDetails::KindField::kMask |
             PropertyDetails::kAttributesReadOnlyMask;
-        STATIC_ASSERT(static_cast<int>(PropertyKind::kData) == 0);
+        static_assert(static_cast<int>(PropertyKind::kData) == 0);
         GotoIf(IsSetWord32(details, kTypeAndReadOnlyMask), miss);
 
         StoreValueByKeyIndex<PropertyDictionary>(properties, name_index,
@@ -2398,7 +2399,7 @@ void AccessorAssembler::EmitElementLoad(
         int16_elements(this), uint32_elements(this), int32_elements(this),
         float32_elements(this), float64_elements(this), bigint64_elements(this),
         biguint64_elements(this);
-    STATIC_ASSERT(LAST_ELEMENTS_KIND ==
+    static_assert(LAST_ELEMENTS_KIND ==
                   LAST_RAB_GSAB_FIXED_TYPED_ARRAY_ELEMENTS_KIND);
     GotoIf(Int32GreaterThanOrEqual(
                elements_kind,
@@ -2958,10 +2959,26 @@ void AccessorAssembler::TryProbeStubCache(StubCache* stub_cache,
   Counters* counters = isolate()->counters();
   IncrementCounter(counters->megamorphic_stub_cache_probes(), 1);
 
-  // Check that the {lookup_start_object} isn't a smi.
-  GotoIf(TaggedIsSmi(lookup_start_object), &miss);
+  Label smi(this), non_smi(this), do_lookup(this);
+  TVARIABLE(Map, map_var);
+  Branch(TaggedIsSmi(lookup_start_object), &smi, &non_smi);
 
-  TNode<Map> lookup_start_object_map = LoadMap(CAST(lookup_start_object));
+  BIND(&smi);
+  {
+    // Also for smis the HeapNumberMap is used to identify number feedback.
+    map_var = HeapNumberMapConstant();
+    Goto(&do_lookup);
+  }
+
+  BIND(&non_smi);
+  {
+    map_var = LoadMap(CAST(lookup_start_object));
+    Goto(&do_lookup);
+  }
+
+  BIND(&do_lookup);
+
+  TNode<Map> lookup_start_object_map = map_var.value();
 
   // Probe the primary table.
   TNode<IntPtrT> primary_offset =

@@ -44,7 +44,7 @@ import {
   vec4,
   TypeVec,
 } from '../../../../../util/conversion.js';
-import { Config, run } from '../../expression.js';
+import { allInputSources, Config, run } from '../../expression.js';
 
 import { builtin } from './builtin.js';
 
@@ -53,11 +53,7 @@ export const g = makeTestGroup(GPUTest);
 g.test('u32')
   .specURL('https://www.w3.org/TR/WGSL/#integer-builtin-functions')
   .desc(`u32 tests`)
-  .params(u =>
-    u
-      .combine('storageClass', ['uniform', 'storage_r', 'storage_rw'] as const)
-      .combine('width', [1, 2, 3, 4])
-  )
+  .params(u => u.combine('inputSource', allInputSources).combine('width', [1, 2, 3, 4]))
   .fn(async t => {
     const cfg: Config = t.params;
 
@@ -195,11 +191,7 @@ g.test('u32')
 g.test('i32')
   .specURL('https://www.w3.org/TR/WGSL/#integer-builtin-functions')
   .desc(`i32 tests`)
-  .params(u =>
-    u
-      .combine('storageClass', ['uniform', 'storage_r', 'storage_rw'] as const)
-      .combine('width', [1, 2, 3, 4])
-  )
+  .params(u => u.combine('inputSource', allInputSources).combine('width', [1, 2, 3, 4]))
   .fn(async t => {
     const cfg: Config = t.params;
 

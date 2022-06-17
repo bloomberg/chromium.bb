@@ -660,10 +660,11 @@ KeyAccumulator::FilterForEnumerableProperties(
     if (!accessor->HasEntry(*result, entry)) continue;
 
     // args are invalid after args.Call(), create a new one in every iteration.
+    // Query callbacks are not expected to have side effects.
     PropertyCallbackArguments args(isolate_, interceptor->data(), *receiver,
                                    *object, Just(kDontThrow));
 
-    Handle<Object> element = accessor->Get(result, entry);
+    Handle<Object> element = accessor->Get(isolate_, result, entry);
     Handle<Object> attributes;
     if (type == kIndexed) {
       uint32_t number;
@@ -702,8 +703,13 @@ Maybe<bool> KeyAccumulator::CollectInterceptorKeysInternal(
       result = enum_args.CallNamedEnumerator(interceptor);
     }
   }
-  RETURN_VALUE_IF_SCHEDULED_EXCEPTION(isolate_, Nothing<bool>());
+  RETURN_VALUE_IF_SCHEDULED_EXCEPTION_DETECTOR(isolate_, enum_args,
+                                               Nothing<bool>());
   if (result.is_null()) return Just(true);
+
+  // Request was successfully intercepted, so accept potential side effects
+  // happened up to this point.
+  enum_args.AcceptSideEffects();
 
   if ((filter_ & ONLY_ENUMERABLE) &&
       !interceptor->query().IsUndefined(isolate_)) {
@@ -846,7 +852,7 @@ template <typename Dictionary>
 void CopyEnumKeysTo(Isolate* isolate, Handle<Dictionary> dictionary,
                     Handle<FixedArray> storage, KeyCollectionMode mode,
                     KeyAccumulator* accumulator) {
-  STATIC_ASSERT(!Dictionary::kIsOrderedDictionaryType);
+  static_assert(!Dictionary::kIsOrderedDictionaryType);
 
   CommonCopyEnumKeysTo<Dictionary>(isolate, dictionary, storage, mode,
                                    accumulator);

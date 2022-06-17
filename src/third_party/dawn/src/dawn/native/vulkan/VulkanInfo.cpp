@@ -68,7 +68,7 @@ ResultOrError<VulkanGlobalInfo> GatherGlobalInfo(const VulkanFunctions& vkFuncti
     VulkanGlobalInfo info = {};
     // Gather info on available API version
     {
-        info.apiVersion = VK_MAKE_VERSION(1, 0, 0);
+        info.apiVersion = VK_API_VERSION_1_0;
         if (vkFunctions.EnumerateInstanceVersion != nullptr) {
             DAWN_TRY(CheckVkSuccess(vkFunctions.EnumerateInstanceVersion(&info.apiVersion),
                                     "vkEnumerateInstanceVersion"));
@@ -246,6 +246,12 @@ ResultOrError<VulkanDeviceInfo> GatherDeviceInfo(const Adapter& adapter) {
     if (info.extensions[DeviceExt::DriverProperties]) {
         propertiesChain.Add(&info.driverProperties,
                             VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DRIVER_PROPERTIES);
+    }
+
+    if (info.extensions[DeviceExt::ShaderIntegerDotProduct]) {
+        propertiesChain.Add(
+            &info.shaderIntegerDotProductProperties,
+            VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_INTEGER_DOT_PRODUCT_PROPERTIES_KHR);
     }
 
     // If we have DeviceExt::GetPhysicalDeviceProperties2, use features2 and properties2 so

@@ -39,6 +39,7 @@
 #include "mpegts.h"
 #include "internal.h"
 #include "avio_internal.h"
+#include "demux.h"
 #include "mpeg.h"
 #include "isom.h"
 #if CONFIG_ICONV
@@ -645,6 +646,7 @@ typedef struct SectionHeader {
     uint8_t tid;
     uint16_t id;
     uint8_t version;
+    uint8_t current_next;
     uint8_t sec_num;
     uint8_t last_sec_num;
 } SectionHeader;
@@ -773,6 +775,7 @@ static int parse_section_header(SectionHeader *h,
     if (val < 0)
         return val;
     h->version = (val >> 1) & 0x1f;
+    h->current_next = val & 0x01;
     val = get8(pp, p_end);
     if (val < 0)
         return val;
@@ -2332,6 +2335,8 @@ static void pmt_cb(MpegTSFilter *filter, const uint8_t *section, int section_len
         return;
     if (h->tid != PMT_TID)
         return;
+    if (!h->current_next)
+        return;
     if (skip_identical(h, tssf))
         return;
 
@@ -2541,6 +2546,8 @@ static void pat_cb(MpegTSFilter *filter, const uint8_t *section, int section_len
         return;
     if (h->tid != PAT_TID)
         return;
+    if (!h->current_next)
+        return;
     if (ts->skip_changes)
         return;
 
@@ -2679,6 +2686,8 @@ static void sdt_cb(MpegTSFilter *filter, const uint8_t *section, int section_len
         return;
     if (h->tid != SDT_TID)
         return;
+    if (!h->current_next)
+        return;
     if (ts->skip_changes)
         return;
     if (skip_identical(h, tssf))
@@ -2718,13 +2727,13 @@ static void sdt_cb(MpegTSFilter *filter, const uint8_t *section, int section_len
 
             switch (desc_tag) {
             case 0x48:
-                service_type = get8(&p, p_end);
+                service_type = get8(&p, desc_end);
                 if (service_type < 0)
                     break;
-                provider_name = getstr8(&p, p_end);
+                provider_name = getstr8(&p, desc_end);
                 if (!provider_name)
                     break;
-                name = getstr8(&p, p_end);
+                name = getstr8(&p, desc_end);
                 if (name) {
                     AVProgram *program = av_new_program(ts->stream, sid);
                     if (program) {

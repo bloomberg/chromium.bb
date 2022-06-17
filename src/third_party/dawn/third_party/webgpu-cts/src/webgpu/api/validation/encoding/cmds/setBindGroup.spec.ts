@@ -92,7 +92,7 @@ class F extends ValidationTest {
     });
 
     if (state === 'invalid') {
-      this.device.popErrorScope();
+      void this.device.popErrorScope();
     }
     return bindGroup;
   }

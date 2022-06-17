@@ -536,6 +536,7 @@ static void set_allintra_speed_features_framesize_independent(
     sf->rt_sf.nonrd_check_partition_merge_mode = 0;
     sf->rt_sf.hybrid_intra_pickmode = 0;
     sf->rt_sf.var_part_split_threshold_shift = 9;
+    sf->rt_sf.vbp_prune_16x16_split_using_min_max_sub_blk_var = true;
   }
 }
 
@@ -1071,7 +1072,7 @@ static void set_good_speed_features_framesize_independent(
                 : gf_group->update_type[cpi->gf_frame_index] == INTNL_ARF_UPDATE
                       ? 1
                       : 2;
-    sf->winner_mode_sf.prune_winner_mode_eval_level = boosted ? 0 : 2;
+    sf->winner_mode_sf.prune_winner_mode_eval_level = boosted ? 0 : 4;
 
     // For screen content, "prune_sgr_based_on_wiener = 2" cause large quality
     // loss.
@@ -1226,6 +1227,8 @@ static void set_rt_speed_feature_framesize_dependent(const AV1_COMP *const cpi,
   if (!is_360p_or_larger) {
     sf->rt_sf.prune_intra_mode_based_on_mv_range = 1;
     sf->rt_sf.prune_inter_modes_wrt_gf_arf_based_on_sad = 1;
+    if (speed >= 6)
+      sf->winner_mode_sf.prune_winner_mode_eval_level = boosted ? 0 : 2;
     if (speed >= 7) sf->lpf_sf.cdef_pick_method = CDEF_PICK_FROM_Q;
     if (speed >= 8) {
       sf->rt_sf.use_nonrd_filter_search = 0;
@@ -1255,6 +1258,7 @@ static void set_rt_speed_feature_framesize_dependent(const AV1_COMP *const cpi,
     if (speed <= 5) {
       sf->tx_sf.tx_type_search.fast_inter_tx_type_prob_thresh =
           boosted ? INT_MAX : 350;
+      sf->winner_mode_sf.prune_winner_mode_eval_level = boosted ? 0 : 2;
     }
     if (speed == 8 && !cpi->ppi->use_svc) {
       sf->rt_sf.short_circuit_low_temp_var = 0;
@@ -1533,6 +1537,8 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->rt_sf.var_part_split_threshold_shift = 7;
     if (!frame_is_intra_only(&cpi->common))
       sf->rt_sf.var_part_based_on_qidx = 2;
+
+    sf->winner_mode_sf.prune_winner_mode_eval_level = boosted ? 0 : 3;
   }
 
   if (speed >= 7) {
@@ -1968,6 +1974,7 @@ static AOM_INLINE void init_rt_sf(REAL_TIME_SPEED_FEATURES *rt_sf) {
   rt_sf->sad_based_comp_prune = 0;
   rt_sf->tx_size_level_based_on_qstep = 0;
   rt_sf->reduce_zeromv_mvres = false;
+  rt_sf->vbp_prune_16x16_split_using_min_max_sub_blk_var = false;
 }
 
 void av1_set_speed_features_framesize_dependent(AV1_COMP *cpi, int speed) {

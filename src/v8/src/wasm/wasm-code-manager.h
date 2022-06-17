@@ -50,81 +50,81 @@ struct WasmModule;
 
 // Convenience macro listing all wasm runtime stubs. Note that the first few
 // elements of the list coincide with {compiler::TrapId}, order matters.
-#define WASM_RUNTIME_STUB_LIST(V, VTRAP)  \
-  FOREACH_WASM_TRAPREASON(VTRAP)          \
-  V(WasmCompileLazy)                      \
-  V(WasmTriggerTierUp)                    \
-  V(WasmDebugBreak)                       \
-  V(WasmInt32ToHeapNumber)                \
-  V(WasmTaggedNonSmiToInt32)              \
-  V(WasmFloat32ToNumber)                  \
-  V(WasmFloat64ToNumber)                  \
-  V(WasmTaggedToFloat64)                  \
-  V(WasmAllocateJSArray)                  \
-  V(WasmAtomicNotify)                     \
-  V(WasmI32AtomicWait32)                  \
-  V(WasmI32AtomicWait64)                  \
-  V(WasmI64AtomicWait32)                  \
-  V(WasmI64AtomicWait64)                  \
-  V(WasmGetOwnProperty)                   \
-  V(WasmRefFunc)                          \
-  V(WasmMemoryGrow)                       \
-  V(WasmTableInit)                        \
-  V(WasmTableCopy)                        \
-  V(WasmTableFill)                        \
-  V(WasmTableGrow)                        \
-  V(WasmTableGet)                         \
-  V(WasmTableSet)                         \
-  V(WasmStackGuard)                       \
-  V(WasmStackOverflow)                    \
-  V(WasmAllocateFixedArray)               \
-  V(WasmThrow)                            \
-  V(WasmRethrow)                          \
-  V(WasmRethrowExplicitContext)           \
-  V(WasmTraceEnter)                       \
-  V(WasmTraceExit)                        \
-  V(WasmTraceMemory)                      \
-  V(BigIntToI32Pair)                      \
-  V(BigIntToI64)                          \
-  V(CallRefIC)                            \
-  V(DoubleToI)                            \
-  V(I32PairToBigInt)                      \
-  V(I64ToBigInt)                          \
-  V(RecordWriteEmitRememberedSetSaveFP)   \
-  V(RecordWriteOmitRememberedSetSaveFP)   \
-  V(RecordWriteEmitRememberedSetIgnoreFP) \
-  V(RecordWriteOmitRememberedSetIgnoreFP) \
-  V(ToNumber)                             \
-  IF_TSAN(V, TSANRelaxedStore8IgnoreFP)   \
-  IF_TSAN(V, TSANRelaxedStore8SaveFP)     \
-  IF_TSAN(V, TSANRelaxedStore16IgnoreFP)  \
-  IF_TSAN(V, TSANRelaxedStore16SaveFP)    \
-  IF_TSAN(V, TSANRelaxedStore32IgnoreFP)  \
-  IF_TSAN(V, TSANRelaxedStore32SaveFP)    \
-  IF_TSAN(V, TSANRelaxedStore64IgnoreFP)  \
-  IF_TSAN(V, TSANRelaxedStore64SaveFP)    \
-  IF_TSAN(V, TSANSeqCstStore8IgnoreFP)    \
-  IF_TSAN(V, TSANSeqCstStore8SaveFP)      \
-  IF_TSAN(V, TSANSeqCstStore16IgnoreFP)   \
-  IF_TSAN(V, TSANSeqCstStore16SaveFP)     \
-  IF_TSAN(V, TSANSeqCstStore32IgnoreFP)   \
-  IF_TSAN(V, TSANSeqCstStore32SaveFP)     \
-  IF_TSAN(V, TSANSeqCstStore64IgnoreFP)   \
-  IF_TSAN(V, TSANSeqCstStore64SaveFP)     \
-  IF_TSAN(V, TSANRelaxedLoad32IgnoreFP)   \
-  IF_TSAN(V, TSANRelaxedLoad32SaveFP)     \
-  IF_TSAN(V, TSANRelaxedLoad64IgnoreFP)   \
-  IF_TSAN(V, TSANRelaxedLoad64SaveFP)     \
-  V(WasmAllocateArray_Uninitialized)      \
-  V(WasmAllocateArray_InitNull)           \
-  V(WasmAllocateArray_InitZero)           \
-  V(WasmArrayCopy)                        \
-  V(WasmArrayCopyWithChecks)              \
-  V(WasmArrayInitFromData)                \
-  V(WasmAllocateStructWithRtt)            \
-  V(WasmSubtypeCheck)                     \
-  V(WasmOnStackReplace)                   \
-  V(WasmSuspend)
+#define WASM_RUNTIME_STUB_LIST(V, VTRAP) \
+  FOREACH_WASM_TRAPREASON(VTRAP)         \
+  V(WasmCompileLazy)                     \
+  V(WasmTriggerTierUp)                   \
+  V(WasmDebugBreak)                      \
+  V(WasmInt32ToHeapNumber)               \
+  V(WasmTaggedNonSmiToInt32)             \
+  V(WasmFloat32ToNumber)                 \
+  V(WasmFloat64ToNumber)                 \
+  V(WasmTaggedToFloat64)                 \
+  V(WasmAllocateJSArray)                 \
+  V(WasmAtomicNotify)                    \
+  V(WasmI32AtomicWait32)                 \
+  V(WasmI32AtomicWait64)                 \
+  V(WasmI64AtomicWait32)                 \
+  V(WasmI64AtomicWait64)                 \
+  V(WasmGetOwnProperty)                  \
+  V(WasmRefFunc)                         \
+  V(WasmMemoryGrow)                      \
+  V(WasmTableInit)                       \
+  V(WasmTableCopy)                       \
+  V(WasmTableFill)                       \
+  V(WasmTableGrow)                       \
+  V(WasmTableGet)                        \
+  V(WasmTableSet)                        \
+  V(WasmTableGetFuncRef)                 \
+  V(WasmTableSetFuncRef)                 \
+  V(WasmStackGuard)                      \
+  V(WasmStackOverflow)                   \
+  V(WasmAllocateFixedArray)              \
+  V(WasmThrow)                           \
+  V(WasmRethrow)                         \
+  V(WasmRethrowExplicitContext)          \
+  V(WasmTraceEnter)                      \
+  V(WasmTraceExit)                       \
+  V(WasmTraceMemory)                     \
+  V(BigIntToI32Pair)                     \
+  V(BigIntToI64)                         \
+  V(CallRefIC)                           \
+  V(DoubleToI)                           \
+  V(I32PairToBigInt)                     \
+  V(I64ToBigInt)                         \
+  V(RecordWriteSaveFP)                   \
+  V(RecordWriteIgnoreFP)                 \
+  V(ToNumber)                            \
+  IF_TSAN(V, TSANRelaxedStore8IgnoreFP)  \
+  IF_TSAN(V, TSANRelaxedStore8SaveFP)    \
+  IF_TSAN(V, TSANRelaxedStore16IgnoreFP) \
+  IF_TSAN(V, TSANRelaxedStore16SaveFP)   \
+  IF_TSAN(V, TSANRelaxedStore32IgnoreFP) \
+  IF_TSAN(V, TSANRelaxedStore32SaveFP)   \
+  IF_TSAN(V, TSANRelaxedStore64IgnoreFP) \
+  IF_TSAN(V, TSANRelaxedStore64SaveFP)   \
+  IF_TSAN(V, TSANSeqCstStore8IgnoreFP)   \
+  IF_TSAN(V, TSANSeqCstStore8SaveFP)     \
+  IF_TSAN(V, TSANSeqCstStore16IgnoreFP)  \
+  IF_TSAN(V, TSANSeqCstStore16SaveFP)    \
+  IF_TSAN(V, TSANSeqCstStore32IgnoreFP)  \
+  IF_TSAN(V, TSANSeqCstStore32SaveFP)    \
+  IF_TSAN(V, TSANSeqCstStore64IgnoreFP)  \
+  IF_TSAN(V, TSANSeqCstStore64SaveFP)    \
+  IF_TSAN(V, TSANRelaxedLoad32IgnoreFP)  \
+  IF_TSAN(V, TSANRelaxedLoad32SaveFP)    \
+  IF_TSAN(V, TSANRelaxedLoad64IgnoreFP)  \
+  IF_TSAN(V, TSANRelaxedLoad64SaveFP)    \
+  V(WasmAllocateArray_Uninitialized)     \
+  V(WasmArrayCopy)                       \
+  V(WasmArrayCopyWithChecks)             \
+  V(WasmArrayInitFromData)               \
+  V(WasmAllocateStructWithRtt)           \
+  V(WasmSubtypeCheck)                    \
+  V(WasmOnStackReplace)                  \
+  V(WasmSuspend)                         \
+  V(WasmStringNewWtf8)                   \
+  V(WasmStringNewWtf16)
 
 // Sorted, disjoint and non-overlapping memory regions. A region is of the
 // form [start, end). So there's no [start, end), [end, other_end),
@@ -171,23 +171,12 @@ class V8_EXPORT_PRIVATE WasmCode final {
         kRuntimeStubCount
   };
 
-  static constexpr RuntimeStubId GetRecordWriteStub(
-      RememberedSetAction remembered_set_action, SaveFPRegsMode fp_mode) {
-    switch (remembered_set_action) {
-      case RememberedSetAction::kEmit:
-        switch (fp_mode) {
-          case SaveFPRegsMode::kIgnore:
-            return RuntimeStubId::kRecordWriteEmitRememberedSetIgnoreFP;
-          case SaveFPRegsMode::kSave:
-            return RuntimeStubId::kRecordWriteEmitRememberedSetSaveFP;
-        }
-      case RememberedSetAction::kOmit:
-        switch (fp_mode) {
-          case SaveFPRegsMode::kIgnore:
-            return RuntimeStubId::kRecordWriteOmitRememberedSetIgnoreFP;
-          case SaveFPRegsMode::kSave:
-            return RuntimeStubId::kRecordWriteOmitRememberedSetSaveFP;
-        }
+  static constexpr RuntimeStubId GetRecordWriteStub(SaveFPRegsMode fp_mode) {
+    switch (fp_mode) {
+      case SaveFPRegsMode::kIgnore:
+        return RuntimeStubId::kRecordWriteIgnoreFP;
+      case SaveFPRegsMode::kSave:
+        return RuntimeStubId::kRecordWriteSaveFP;
     }
   }
 
@@ -496,7 +485,7 @@ class V8_EXPORT_PRIVATE WasmCode final {
 // Increase the limit if needed, but first check if the size increase is
 // justified.
 #ifndef V8_GC_MOLE
-STATIC_ASSERT(sizeof(WasmCode) <= 88);
+static_assert(sizeof(WasmCode) <= 88);
 #endif
 
 WasmCode::Kind GetCodeKind(const WasmCompilationResult& result);
@@ -803,7 +792,7 @@ class V8_EXPORT_PRIVATE NativeModule final {
   WasmCode::RuntimeStubId GetRuntimeStubId(Address runtime_stub_target) const;
 
   // Sample the current code size of this modules to the given counters.
-  enum CodeSamplingTime : int8_t { kAfterBaseline, kAfterTopTier, kSampling };
+  enum CodeSamplingTime : int8_t { kAfterBaseline, kSampling };
   void SampleCodeSize(Counters*, CodeSamplingTime) const;
 
   V8_WARN_UNUSED_RESULT std::unique_ptr<WasmCode> AddCompiledCode(

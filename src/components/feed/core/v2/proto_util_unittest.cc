@@ -153,39 +153,6 @@ TEST(ProtoUtilTest, PrivacyNoticeCardNotAcknowledged) {
                    .notice_card_acknowledged());
 }
 
-TEST(ProtoUtilTest, NoticeAcknowledged) {
-  RequestMetadata request_metadata;
-  request_metadata.acknowledged_notice_keys = {"key1", "key2"};
-  feedwire::Request request = CreateFeedQueryRefreshRequest(
-      kForYouStream, feedwire::FeedQuery::MANUAL_REFRESH, request_metadata,
-      /*consistency_token=*/std::string());
-
-  ASSERT_EQ(2, request.feed_request()
-                   .feed_query()
-                   .chrome_fulfillment_info()
-                   .acknowledged_notice_key_size());
-  EXPECT_EQ("key1", request.feed_request()
-                        .feed_query()
-                        .chrome_fulfillment_info()
-                        .acknowledged_notice_key(0));
-  EXPECT_EQ("key2", request.feed_request()
-                        .feed_query()
-                        .chrome_fulfillment_info()
-                        .acknowledged_notice_key(1));
-}
-
-TEST(ProtoUtilTest, NoticeNotAcknowledged) {
-  RequestMetadata request_metadata;
-  feedwire::Request request = CreateFeedQueryRefreshRequest(
-      kForYouStream, feedwire::FeedQuery::MANUAL_REFRESH, request_metadata,
-      /*consistency_token=*/std::string());
-
-  EXPECT_EQ(0, request.feed_request()
-                   .feed_query()
-                   .chrome_fulfillment_info()
-                   .acknowledged_notice_key_size());
-}
-
 TEST(ProtoUtilTest, InfoCardTrackingStates) {
   RequestMetadata request_metadata;
   InfoCardTrackingState state1;
@@ -282,6 +249,22 @@ TEST(ProtoUtilTest, ReadLaterDisabled) {
   ASSERT_THAT(request.client_capability(),
               Not(Contains((feedwire::Capability::READ_LATER))));
 }
+
+#if BUILDFLAG(IS_ANDROID)
+TEST(ProtoUtilTest, CrowButtonEnabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures({kShareCrowButton}, {});
+  feedwire::FeedRequest request =
+      CreateFeedQueryRefreshRequest(kForYouStream,
+                                    feedwire::FeedQuery::MANUAL_REFRESH,
+                                    /*request_metadata=*/{},
+                                    /*consistency_token=*/std::string())
+          .feed_request();
+
+  ASSERT_THAT(request.client_capability(),
+              Contains(feedwire::Capability::THANK_CREATOR));
+}
+#endif  // BUILDFLAG(IS_ANDROID)
 
 TEST(ProtoUtilTest, InfoCardAcknowledgementTrackingEnabled) {
   base::test::ScopedFeatureList scoped_feature_list;

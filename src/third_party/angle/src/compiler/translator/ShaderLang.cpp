@@ -593,16 +593,6 @@ int GetVertexShaderNumViews(const ShHandle handle)
     return compiler->getNumViews();
 }
 
-bool HasEarlyFragmentTestsOptimization(const ShHandle handle)
-{
-    TCompiler *compiler = GetCompilerFromHandle(handle);
-    if (compiler == nullptr)
-    {
-        return false;
-    }
-    return compiler->isEarlyFragmentTestsOptimized();
-}
-
 bool EnablesPerSampleShading(const ShHandle handle)
 {
     TCompiler *compiler = GetCompilerFromHandle(handle);
@@ -986,13 +976,13 @@ const char kDriverUniformsVarName[]   = "ANGLEUniforms";
 // Interface block array name used for atomic counter emulation
 const char kAtomicCountersBlockName[] = "ANGLEAtomicCounters";
 
-const char kLineRasterEmulationPosition[] = "ANGLEPosition";
-
 const char kXfbEmulationGetOffsetsFunctionName[] = "ANGLEGetXfbOffsets";
 const char kXfbEmulationCaptureFunctionName[]    = "ANGLECaptureXfb";
 const char kXfbEmulationBufferBlockName[]        = "ANGLEXfbBuffer";
 const char kXfbEmulationBufferName[]             = "ANGLEXfb";
 const char kXfbEmulationBufferFieldName[]        = "xfbOut";
+
+const char kTransformPositionFunctionName[] = "ANGLETransformPosition";
 
 const char kXfbExtensionPositionOutName[] = "ANGLEXfbPosition";
 

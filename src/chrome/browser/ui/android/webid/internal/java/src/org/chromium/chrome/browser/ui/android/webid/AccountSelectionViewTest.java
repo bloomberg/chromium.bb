@@ -15,7 +15,6 @@ import static org.chromium.base.test.util.CriteriaHelper.pollUiThread;
 
 import static java.util.Arrays.asList;
 
-import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.text.Spanned;
 import android.text.style.ClickableSpan;
@@ -109,8 +108,8 @@ public class AccountSelectionViewTest {
             mModel.set(ItemProperties.HEADER,
                     new PropertyModel.Builder(HeaderProperties.ALL_KEYS)
                             .with(HeaderProperties.TYPE, HeaderType.SIGN_IN)
-                            .with(HeaderProperties.FORMATTED_RP_ETLD_PLUS_ONE, "example.org")
-                            .with(HeaderProperties.FORMATTED_IDP_ETLD_PLUS_ONE, "idp.org")
+                            .with(HeaderProperties.RP_FOR_DISPLAY, "example.org")
+                            .with(HeaderProperties.IDP_FOR_DISPLAY, "idp.org")
                             .build());
         });
         pollUiThread(() -> mContentView.getVisibility() == View.VISIBLE);
@@ -129,8 +128,8 @@ public class AccountSelectionViewTest {
             mModel.set(ItemProperties.HEADER,
                     new PropertyModel.Builder(HeaderProperties.ALL_KEYS)
                             .with(HeaderProperties.TYPE, HeaderType.VERIFY)
-                            .with(HeaderProperties.FORMATTED_RP_ETLD_PLUS_ONE, "example.org")
-                            .with(HeaderProperties.FORMATTED_IDP_ETLD_PLUS_ONE, "idp.org")
+                            .with(HeaderProperties.RP_FOR_DISPLAY, "example.org")
+                            .with(HeaderProperties.IDP_FOR_DISPLAY, "idp.org")
                             .build());
         });
         pollUiThread(() -> mContentView.getVisibility() == View.VISIBLE);
@@ -227,8 +226,8 @@ public class AccountSelectionViewTest {
             mModel.set(ItemProperties.HEADER,
                     new PropertyModel.Builder(HeaderProperties.ALL_KEYS)
                             .with(HeaderProperties.TYPE, HeaderType.AUTO_SIGN_IN)
-                            .with(HeaderProperties.FORMATTED_RP_ETLD_PLUS_ONE, "example.org")
-                            .with(HeaderProperties.FORMATTED_IDP_ETLD_PLUS_ONE, "idp.org")
+                            .with(HeaderProperties.RP_FOR_DISPLAY, "example.org")
+                            .with(HeaderProperties.IDP_FOR_DISPLAY, "idp.org")
                             .build());
         });
         pollUiThread(() -> mContentView.getVisibility() == View.VISIBLE);
@@ -271,12 +270,9 @@ public class AccountSelectionViewTest {
     @MediumTest
     public void testContinueButtonBranding() {
         final int expectedTextColor = Color.BLUE;
-        final int expectedIconColor = Color.RED;
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            Bitmap brandIcon = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
-            brandIcon.eraseColor(expectedIconColor);
-            IdentityProviderMetadata idpMetadata = new IdentityProviderMetadata(
-                    expectedTextColor, /*brandBackgroundColor*/ Color.GREEN, brandIcon);
+            IdentityProviderMetadata idpMetadata = new IdentityProviderMetadata(expectedTextColor,
+                    /*brandBackgroundColor*/ Color.GREEN, "https://icon-url.example");
 
             mModel.set(ItemProperties.CONTINUE_BUTTON, buildContinueButton(ANA, idpMetadata));
         });
@@ -335,7 +331,7 @@ public class AccountSelectionViewTest {
     private PropertyModel buildDataSharingConsentItem(String idpEtldPlusOne) {
         DataSharingConsentProperties.Properties properties =
                 new DataSharingConsentProperties.Properties();
-        properties.mFormattedIdpEtldPlusOne = idpEtldPlusOne;
+        properties.mIdpForDisplay = idpEtldPlusOne;
         properties.mTermsOfServiceUrl = "https://rp.com/tos";
         properties.mPrivacyPolicyUrl = "https://rp.com/privacy";
 

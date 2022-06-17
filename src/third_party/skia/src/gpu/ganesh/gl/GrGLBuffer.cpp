@@ -34,16 +34,18 @@
 #define VALIDATE() do {} while(false)
 #endif
 
-sk_sp<GrGLBuffer> GrGLBuffer::Make(GrGLGpu* gpu, size_t size, GrGpuBufferType intendedType,
-                                   GrAccessPattern accessPattern, const void* data) {
+sk_sp<GrGLBuffer> GrGLBuffer::Make(GrGLGpu* gpu,
+                                   size_t size,
+                                   GrGpuBufferType intendedType,
+                                   GrAccessPattern accessPattern) {
     if (gpu->glCaps().transferBufferType() == GrGLCaps::TransferBufferType::kNone &&
         (GrGpuBufferType::kXferCpuToGpu == intendedType ||
          GrGpuBufferType::kXferGpuToCpu == intendedType)) {
         return nullptr;
     }
 
-    sk_sp<GrGLBuffer> buffer(
-            new GrGLBuffer(gpu, size, intendedType, accessPattern, data, /*label=*/{}));
+    sk_sp<GrGLBuffer> buffer(new GrGLBuffer(gpu, size, intendedType, accessPattern,
+                                            /*label=*/"MakeGlBuffer"));
     if (0 == buffer->bufferID()) {
         return nullptr;
     }
@@ -108,7 +110,6 @@ GrGLBuffer::GrGLBuffer(GrGLGpu* gpu,
                        size_t size,
                        GrGpuBufferType intendedType,
                        GrAccessPattern accessPattern,
-                       const void* data,
                        std::string_view label)
         : INHERITED(gpu, size, intendedType, accessPattern, label)
         , fIntendedType(intendedType)
@@ -117,9 +118,11 @@ GrGLBuffer::GrGLBuffer(GrGLGpu* gpu,
         , fGLSizeInBytes(0)
         , fHasAttachedToTexture(false) {
     GL_CALL(GenBuffers(1, &fBufferID));
-    if (fBufferID) {
+    // We only need allocate the buffer if this may be the destination of a transfer. Other use
+    // cases will always get an updateData() or map() call before use.
+    if (fBufferID && fIntendedType == GrGpuBufferType::kXferGpuToCpu) {
         GrGLenum target = gpu->bindBuffer(fIntendedType, this);
-        GrGLenum error = GL_ALLOC_CALL(BufferData(target, (GrGLsizeiptr)size, data, fUsage));
+        GrGLenum error = GL_ALLOC_CALL(BufferData(target, (GrGLsizeiptr)size, nullptr, fUsage));
         if (error != GR_GL_NO_ERROR) {
             GL_CALL(DeleteBuffers(1, &fBufferID));
             fBufferID = 0;
@@ -315,6 +318,18 @@ bool GrGLBuffer::onUpdateData(const void* src, size_t srcSizeInBytes) {
     }
     VALIDATE();
     return true;
+}
+
+void GrGLBuffer::onSetLabel() {
+    SkASSERT(fBufferID);
+    if (!this->getLabel().empty()) {
+        const std::string label = "_Skia_" + this->getLabel();
+        GrGLGpu* glGpu = static_cast<GrGLGpu*>(this->getGpu());
+        if (glGpu->glCaps().debugSupport()) {
+            GR_GL_CALL(glGpu->glInterface(),
+                       ObjectLabel(GR_GL_BUFFER, fBufferID, -1, label.c_str()));
+        }
+    }
 }
 
 void GrGLBuffer::setMemoryBacking(SkTraceMemoryDump* traceMemoryDump,

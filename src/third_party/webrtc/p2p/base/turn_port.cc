@@ -73,7 +73,6 @@ static int GetRelayPreference(cricket::ProtocolType proto) {
 class TurnAllocateRequest : public StunRequest {
  public:
   explicit TurnAllocateRequest(TurnPort* port);
-  void Prepare(StunMessage* message) override;
   void OnSent() override;
   void OnResponse(StunMessage* response) override;
   void OnErrorResponse(StunMessage* response) override;
@@ -90,17 +89,14 @@ class TurnAllocateRequest : public StunRequest {
 
 class TurnRefreshRequest : public StunRequest {
  public:
-  explicit TurnRefreshRequest(TurnPort* port);
-  void Prepare(StunMessage* message) override;
+  explicit TurnRefreshRequest(TurnPort* port, int lifetime = -1);
   void OnSent() override;
   void OnResponse(StunMessage* response) override;
   void OnErrorResponse(StunMessage* response) override;
   void OnTimeout() override;
-  void set_lifetime(int lifetime) { lifetime_ = lifetime; }
 
  private:
   TurnPort* port_;
-  int lifetime_;
 };
 
 class TurnCreatePermissionRequest : public StunRequest,
@@ -110,7 +106,6 @@ class TurnCreatePermissionRequest : public StunRequest,
                               TurnEntry* entry,
                               const rtc::SocketAddress& ext_addr,
                               const std::string& remote_ufrag);
-  void Prepare(StunMessage* message) override;
   void OnSent() override;
   void OnResponse(StunMessage* response) override;
   void OnErrorResponse(StunMessage* response) override;
@@ -131,7 +126,6 @@ class TurnChannelBindRequest : public StunRequest, public sigslot::has_slots<> {
                          TurnEntry* entry,
                          int channel_id,
                          const rtc::SocketAddress& ext_addr);
-  void Prepare(StunMessage* message) override;
   void OnSent() override;
   void OnResponse(StunMessage* response) override;
   void OnErrorResponse(StunMessage* response) override;
@@ -933,8 +927,7 @@ void TurnPort::Release() {
   request_manager_.Clear();
 
   // Send refresh with lifetime 0.
-  TurnRefreshRequest* req = new TurnRefreshRequest(this);
-  req->set_lifetime(0);
+  TurnRefreshRequest* req = new TurnRefreshRequest(this, 0);
   SendRequest(req, 0);
 
   state_ = STATE_RECEIVEONLY;
@@ -1185,7 +1178,7 @@ bool TurnPort::UpdateNonce(StunMessage* response) {
                          "stale nonce error response.";
     return false;
   }
-  set_realm(realm_attr->GetString());
+  set_realm(realm_attr->string_view());
 
   const StunByteStringAttribute* nonce_attr =
       response->GetByteString(STUN_ATTR_NONCE);
@@ -1194,7 +1187,7 @@ bool TurnPort::UpdateNonce(StunMessage* response) {
                          "stale nonce error response.";
     return false;
   }
-  set_nonce(nonce_attr->GetString());
+  set_nonce(nonce_attr->string_view());
   return true;
 }
 
@@ -1374,12 +1367,12 @@ void TurnPort::MaybeAddTurnLoggingId(StunMessage* msg) {
 }
 
 TurnAllocateRequest::TurnAllocateRequest(TurnPort* port)
-    : StunRequest(port->request_manager(), std::make_unique<TurnMessage>()),
-      port_(port) {}
-
-void TurnAllocateRequest::Prepare(StunMessage* message) {
+    : StunRequest(port->request_manager(),
+                  std::make_unique<TurnMessage>(TURN_ALLOCATE_REQUEST)),
+      port_(port) {
+  StunMessage* message = mutable_msg();
   // Create the request as indicated in RFC 5766, Section 6.1.
-  message->SetType(TURN_ALLOCATE_REQUEST);
+  RTC_DCHECK_EQ(message->type(), TURN_ALLOCATE_REQUEST);
   auto transport_attr =
       StunAttribute::CreateUInt32(STUN_ATTR_REQUESTED_TRANSPORT);
   transport_attr->SetValue(IPPROTO_UDP << 24);
@@ -1498,7 +1491,7 @@ void TurnAllocateRequest::OnAuthChallenge(StunMessage* response, int code) {
                            "allocate unauthorized response.";
     return;
   }
-  port_->set_realm(realm_attr->GetString());
+  port_->set_realm(realm_attr->string_view());
 
   const StunByteStringAttribute* nonce_attr =
       response->GetByteString(STUN_ATTR_NONCE);
@@ -1508,7 +1501,7 @@ void TurnAllocateRequest::OnAuthChallenge(StunMessage* response, int code) {
                            "allocate unauthorized response.";
     return;
   }
-  port_->set_nonce(nonce_attr->GetString());
+  port_->set_nonce(nonce_attr->string_view());
 
   // Send another allocate request, with the received realm and nonce values.
   port_->SendRequest(new TurnAllocateRequest(port_), 0);
@@ -1543,7 +1536,7 @@ void TurnAllocateRequest::OnTryAlternate(StunMessage* response, int code) {
     RTC_LOG(LS_INFO) << port_->ToString()
                      << ": Applying STUN_ATTR_REALM attribute in "
                         "try alternate error response.";
-    port_->set_realm(realm_attr->GetString());
+    port_->set_realm(realm_attr->string_view());
   }
 
   const StunByteStringAttribute* nonce_attr =
@@ -1552,7 +1545,7 @@ void TurnAllocateRequest::OnTryAlternate(StunMessage* response, int code) {
     RTC_LOG(LS_INFO) << port_->ToString()
                      << ": Applying STUN_ATTR_NONCE attribute in "
                         "try alternate error response.";
-    port_->set_nonce(nonce_attr->GetString());
+    port_->set_nonce(nonce_attr->string_view());
   }
 
   // For TCP, we can't close the original Tcp socket during handling a 300 as
@@ -1562,18 +1555,17 @@ void TurnAllocateRequest::OnTryAlternate(StunMessage* response, int code) {
                         TurnPort::MSG_TRY_ALTERNATE_SERVER);
 }
 
-TurnRefreshRequest::TurnRefreshRequest(TurnPort* port)
-    : StunRequest(port->request_manager(), std::make_unique<TurnMessage>()),
-      port_(port),
-      lifetime_(-1) {}
-
-void TurnRefreshRequest::Prepare(StunMessage* message) {
+TurnRefreshRequest::TurnRefreshRequest(TurnPort* port, int lifetime /*= -1*/)
+    : StunRequest(port->request_manager(),
+                  std::make_unique<TurnMessage>(TURN_REFRESH_REQUEST)),
+      port_(port) {
+  StunMessage* message = mutable_msg();
   // Create the request as indicated in RFC 5766, Section 7.1.
   // No attributes need to be included.
-  message->SetType(TURN_REFRESH_REQUEST);
-  if (lifetime_ > -1) {
+  RTC_DCHECK_EQ(message->type(), TURN_REFRESH_REQUEST);
+  if (lifetime > -1) {
     message->AddAttribute(
-        std::make_unique<StunUInt32Attribute>(STUN_ATTR_LIFETIME, lifetime_));
+        std::make_unique<StunUInt32Attribute>(STUN_ATTR_LIFETIME, lifetime));
   }
 
   port_->AddRequestAuthInfo(message);
@@ -1646,18 +1638,18 @@ TurnCreatePermissionRequest::TurnCreatePermissionRequest(
     TurnEntry* entry,
     const rtc::SocketAddress& ext_addr,
     const std::string& remote_ufrag)
-    : StunRequest(port->request_manager(), std::make_unique<TurnMessage>()),
+    : StunRequest(
+          port->request_manager(),
+          std::make_unique<TurnMessage>(TURN_CREATE_PERMISSION_REQUEST)),
       port_(port),
       entry_(entry),
       ext_addr_(ext_addr),
       remote_ufrag_(remote_ufrag) {
   entry_->SignalDestroyed.connect(
       this, &TurnCreatePermissionRequest::OnEntryDestroyed);
-}
-
-void TurnCreatePermissionRequest::Prepare(StunMessage* message) {
+  StunMessage* message = mutable_msg();
   // Create the request as indicated in RFC5766, Section 9.1.
-  message->SetType(TURN_CREATE_PERMISSION_REQUEST);
+  RTC_DCHECK_EQ(message->type(), TURN_CREATE_PERMISSION_REQUEST);
   message->AddAttribute(std::make_unique<StunXorAddressAttribute>(
       STUN_ATTR_XOR_PEER_ADDRESS, ext_addr_));
   if (port_->field_trials_ &&
@@ -1719,18 +1711,17 @@ TurnChannelBindRequest::TurnChannelBindRequest(
     TurnEntry* entry,
     int channel_id,
     const rtc::SocketAddress& ext_addr)
-    : StunRequest(port->request_manager(), std::make_unique<TurnMessage>()),
+    : StunRequest(port->request_manager(),
+                  std::make_unique<TurnMessage>(TURN_CHANNEL_BIND_REQUEST)),
       port_(port),
       entry_(entry),
       channel_id_(channel_id),
       ext_addr_(ext_addr) {
   entry_->SignalDestroyed.connect(this,
                                   &TurnChannelBindRequest::OnEntryDestroyed);
-}
-
-void TurnChannelBindRequest::Prepare(StunMessage* message) {
+  StunMessage* message = mutable_msg();
   // Create the request as indicated in RFC5766, Section 11.1.
-  message->SetType(TURN_CHANNEL_BIND_REQUEST);
+  RTC_DCHECK_EQ(message->type(), TURN_CHANNEL_BIND_REQUEST);
   message->AddAttribute(std::make_unique<StunUInt32Attribute>(
       STUN_ATTR_CHANNEL_NUMBER, channel_id_ << 16));
   message->AddAttribute(std::make_unique<StunXorAddressAttribute>(
@@ -1824,9 +1815,7 @@ int TurnEntry::Send(const void* data,
       !port_->TurnCustomizerAllowChannelData(data, size, payload)) {
     // If we haven't bound the channel yet, we have to use a Send Indication.
     // The turn_customizer_ can also make us use Send Indication.
-    TurnMessage msg;
-    msg.SetType(TURN_SEND_INDICATION);
-    msg.SetTransactionID(rtc::CreateRandomString(kStunTransactionIdLength));
+    TurnMessage msg(TURN_SEND_INDICATION);
     msg.AddAttribute(std::make_unique<StunXorAddressAttribute>(
         STUN_ATTR_XOR_PEER_ADDRESS, ext_addr_));
     msg.AddAttribute(

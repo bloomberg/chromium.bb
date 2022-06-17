@@ -266,6 +266,54 @@ TEST(HeaderValidatorTest, RequestPseudoHeaders) {
   }
 }
 
+TEST(HeaderValidatorTest, ConnectHeaders) {
+  // Too few headers.
+  HeaderValidator v;
+  v.StartHeaderBlock();
+  EXPECT_EQ(HeaderValidator::HEADER_OK,
+            v.ValidateSingleHeader(":authority", "athena.dialup.mit.edu:23"));
+  EXPECT_FALSE(v.FinishHeaderBlock(HeaderType::REQUEST));
+
+  v.StartHeaderBlock();
+  EXPECT_EQ(HeaderValidator::HEADER_OK,
+            v.ValidateSingleHeader(":method", "CONNECT"));
+  EXPECT_FALSE(v.FinishHeaderBlock(HeaderType::REQUEST));
+
+  // Too many headers.
+  v.StartHeaderBlock();
+  EXPECT_EQ(HeaderValidator::HEADER_OK,
+            v.ValidateSingleHeader(":authority", "athena.dialup.mit.edu:23"));
+  EXPECT_EQ(HeaderValidator::HEADER_OK,
+            v.ValidateSingleHeader(":method", "CONNECT"));
+  EXPECT_EQ(HeaderValidator::HEADER_OK, v.ValidateSingleHeader(":path", "/"));
+  EXPECT_FALSE(v.FinishHeaderBlock(HeaderType::REQUEST));
+
+  // Empty :authority
+  v.StartHeaderBlock();
+  EXPECT_EQ(HeaderValidator::HEADER_OK,
+            v.ValidateSingleHeader(":authority", ""));
+  EXPECT_EQ(HeaderValidator::HEADER_OK,
+            v.ValidateSingleHeader(":method", "CONNECT"));
+  EXPECT_FALSE(v.FinishHeaderBlock(HeaderType::REQUEST));
+
+  // Just right.
+  v.StartHeaderBlock();
+  EXPECT_EQ(HeaderValidator::HEADER_OK,
+            v.ValidateSingleHeader(":authority", "athena.dialup.mit.edu:23"));
+  EXPECT_EQ(HeaderValidator::HEADER_OK,
+            v.ValidateSingleHeader(":method", "CONNECT"));
+  EXPECT_TRUE(v.FinishHeaderBlock(HeaderType::REQUEST));
+
+  v.SetAllowExtendedConnect();
+  // "Classic" CONNECT headers should still be accepted.
+  v.StartHeaderBlock();
+  EXPECT_EQ(HeaderValidator::HEADER_OK,
+            v.ValidateSingleHeader(":authority", "athena.dialup.mit.edu:23"));
+  EXPECT_EQ(HeaderValidator::HEADER_OK,
+            v.ValidateSingleHeader(":method", "CONNECT"));
+  EXPECT_TRUE(v.FinishHeaderBlock(HeaderType::REQUEST));
+}
+
 TEST(HeaderValidatorTest, WebsocketPseudoHeaders) {
   HeaderValidator v;
   v.StartHeaderBlock();
@@ -280,7 +328,7 @@ TEST(HeaderValidatorTest, WebsocketPseudoHeaders) {
 
   // Future header blocks may send the `:protocol` pseudo-header for CONNECT
   // requests.
-  v.AllowConnect();
+  v.SetAllowExtendedConnect();
 
   v.StartHeaderBlock();
   for (Header to_add : kSampleRequestPseudoheaders) {

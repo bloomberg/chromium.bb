@@ -58,6 +58,7 @@ g.test('fullscreen_quad').fn(async t => {
   const colorAttachmentView = colorAttachment.createView();
 
   const pipeline = t.device.createRenderPipeline({
+    layout: 'auto',
     vertex: {
       module: t.device.createShaderModule({
         code: `
@@ -256,7 +257,7 @@ g.test('large_draw')
       primitive: { topology: 'point-list' },
     });
 
-    const runPipeline = async (numVertices: number, numInstances: number) => {
+    const runPipeline = (numVertices: number, numInstances: number) => {
       const encoder = t.device.createCommandEncoder();
       const pass = encoder.beginRenderPass({
         colorAttachments: [

@@ -2,9 +2,13 @@ bug/dawn/947.wgsl:59:20 warning: 'textureSample' must only be called from unifor
     var srcColor = textureSample(myTexture, mySampler, texcoord);
                    ^^^^^^^^^^^^^
 
-bug/dawn/947.wgsl:54:15 note: reading from user-defined input 'texcoord' may result in a non-uniform value
-        clamp(texcoord, vec2<f32>(0.0, 0.0), vec2<f32>(1.0, 1.0));
-              ^^^^^^^^
+bug/dawn/947.wgsl:55:5 note: control flow depends on non-uniform value
+    if (!all(clampedTexcoord == texcoord)) {
+    ^^
+
+bug/dawn/947.wgsl:55:33 note: reading from user-defined input 'texcoord' may result in a non-uniform value
+    if (!all(clampedTexcoord == texcoord)) {
+                                ^^^^^^^^
 
 cbuffer cbuffer_uniforms : register(b0, space0) {
   uint4 uniforms[1];
@@ -25,7 +29,7 @@ struct tint_symbol_2 {
 VertexOutputs vs_main_inner(uint VertexIndex) {
   float2 texcoord[3] = {float2(-0.5f, 0.0f), float2(1.5f, 0.0f), float2(0.5f, 2.0f)};
   VertexOutputs output = (VertexOutputs)0;
-  output.position = float4(((texcoord[VertexIndex] * 2.0f) - float2(1.0f, 1.0f)), 0.0f, 1.0f);
+  output.position = float4(((texcoord[VertexIndex] * 2.0f) - (1.0f).xx), 0.0f, 1.0f);
   bool flipY = (asfloat(uniforms[0].y) < 0.0f);
   if (flipY) {
     output.texcoords = ((((texcoord[VertexIndex] * asfloat(uniforms[0].xy)) + asfloat(uniforms[0].zw)) * float2(1.0f, -1.0f)) + float2(0.0f, 1.0f));
@@ -56,10 +60,10 @@ struct tint_symbol_5 {
 static bool tint_discard = false;
 
 float4 fs_main_inner(float2 texcoord) {
-  float2 clampedTexcoord = clamp(texcoord, float2(0.0f, 0.0f), float2(1.0f, 1.0f));
+  float2 clampedTexcoord = clamp(texcoord, (0.0f).xx, (1.0f).xx);
   if (!(all((clampedTexcoord == texcoord)))) {
     tint_discard = true;
-    return float4(0.0f, 0.0f, 0.0f, 0.0f);
+    return (0.0f).xxxx;
   }
   float4 srcColor = myTexture.Sample(mySampler, texcoord);
   return srcColor;

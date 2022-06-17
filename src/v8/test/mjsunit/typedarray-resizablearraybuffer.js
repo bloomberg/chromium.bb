@@ -1626,6 +1626,40 @@ function TestIterationAndResize(ta, expected, rab, resize_after,
     rab.resize(4 * ctor.BYTES_PER_ELEMENT);
     assertThrows(() => { fixedLength.copyWithin(0, 1, evil); }, TypeError);
   }
+  for (let ctor of ctors) {
+    const rab = CreateResizableArrayBuffer(4 * ctor.BYTES_PER_ELEMENT,
+                                           8 * ctor.BYTES_PER_ELEMENT);
+    const lengthTracking = new ctor(rab);
+    for (let i = 0; i < 4; ++i) {
+      WriteToTypedArray(lengthTracking, i, i);
+    }
+    // [0, 1, 2, 3]
+    //        ^
+    //        target
+    // ^
+    // start
+    const evil = { valueOf: () => { rab.resize(3 * ctor.BYTES_PER_ELEMENT);
+                                    return 2;}};
+    lengthTracking.copyWithin(evil, 0);
+    assertEquals([0, 1, 0], ToNumbers(lengthTracking));
+  }
+  for (let ctor of ctors) {
+    const rab = CreateResizableArrayBuffer(4 * ctor.BYTES_PER_ELEMENT,
+                                           8 * ctor.BYTES_PER_ELEMENT);
+    const lengthTracking = new ctor(rab);
+    for (let i = 0; i < 4; ++i) {
+      WriteToTypedArray(lengthTracking, i, i);
+    }
+    // [0, 1, 2, 3]
+    //        ^
+    //        start
+    // ^
+    // target
+    const evil = { valueOf: () => { rab.resize(3 * ctor.BYTES_PER_ELEMENT);
+                                    return 2;}};
+    lengthTracking.copyWithin(0, evil);
+    assertEquals([2, 1, 2], ToNumbers(lengthTracking));
+  }
 })();
 
 (function CopyWithinParameterConversionGrows() {
@@ -6749,5 +6783,63 @@ function TestIterationAndResize(ta, expected, rab, resize_after,
 
     rab.resize(0 * ctor.BYTES_PER_ELEMENT);
     Object.freeze(lengthTracking);
+  }
+})();
+
+(function FunctionApply() {
+  for (let ctor of ctors) {
+    const rab = CreateResizableArrayBuffer(4 * ctor.BYTES_PER_ELEMENT,
+                                           8 * ctor.BYTES_PER_ELEMENT);
+    const fixedLength = new ctor(rab, 0, 4);
+    const fixedLengthWithOffset = new ctor(rab, 2 * ctor.BYTES_PER_ELEMENT, 2);
+    const lengthTracking = new ctor(rab, 0);
+    const lengthTrackingWithOffset = new ctor(rab, 2 * ctor.BYTES_PER_ELEMENT);
+
+    const taWrite = new ctor(rab);
+    for (let i = 0; i < 4; ++i) {
+      WriteToTypedArray(taWrite, i, i);
+    }
+
+    function func(...args) {
+      return [...args];
+    }
+
+    assertEquals([0, 1, 2, 3], ToNumbers(func.apply(null, fixedLength)));
+    assertEquals([2, 3], ToNumbers(func.apply(null, fixedLengthWithOffset)));
+    assertEquals([0, 1, 2, 3], ToNumbers(func.apply(null, lengthTracking)));
+    assertEquals([2, 3], ToNumbers(func.apply(null, lengthTrackingWithOffset)));
+
+    // Shrink so that fixed length TAs go out of bounds.
+    rab.resize(3 * ctor.BYTES_PER_ELEMENT);
+
+    assertEquals([], ToNumbers(func.apply(null, fixedLength)));
+    assertEquals([], ToNumbers(func.apply(null, fixedLengthWithOffset)));
+    assertEquals([0, 1, 2], ToNumbers(func.apply(null, lengthTracking)));
+    assertEquals([2], ToNumbers(func.apply(null, lengthTrackingWithOffset)));
+
+    // Shrink so that the TAs with offset go out of bounds.
+    rab.resize(1 * ctor.BYTES_PER_ELEMENT);
+
+    assertEquals([], ToNumbers(func.apply(null, fixedLength)));
+    assertEquals([], ToNumbers(func.apply(null, fixedLengthWithOffset)));
+    assertEquals([0], ToNumbers(func.apply(null, lengthTracking)));
+    assertEquals([], ToNumbers(func.apply(null, lengthTrackingWithOffset)));
+
+     // Shrink to zero.
+    rab.resize(0);
+
+    assertEquals([], ToNumbers(func.apply(null, fixedLength)));
+    assertEquals([], ToNumbers(func.apply(null, fixedLengthWithOffset)));
+    assertEquals([], ToNumbers(func.apply(null, lengthTracking)));
+    assertEquals([], ToNumbers(func.apply(null, lengthTrackingWithOffset)));
+
+    // Grow so that all TAs are back in-bounds. New memory is zeroed.
+    rab.resize(6 * ctor.BYTES_PER_ELEMENT);
+    assertEquals([0, 0, 0, 0], ToNumbers(func.apply(null, fixedLength)));
+    assertEquals([0, 0], ToNumbers(func.apply(null, fixedLengthWithOffset)));
+    assertEquals([0, 0, 0, 0, 0, 0],
+                 ToNumbers(func.apply(null, lengthTracking)));
+    assertEquals([0, 0, 0, 0],
+                 ToNumbers(func.apply(null, lengthTrackingWithOffset)));
   }
 })();

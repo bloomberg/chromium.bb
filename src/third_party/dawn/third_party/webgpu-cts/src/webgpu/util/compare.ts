@@ -131,7 +131,7 @@ export function compare(got: Value, expected: Value, cmpFloats: FloatMatch): Com
 /** @returns a Comparator that checks whether a test value matches any of the provided options */
 export function anyOf(...expectations: (Value | Comparator)[]): Comparator {
   return (got, cmpFloats) => {
-    const failed: Array<string> = [];
+    const failed = new Set<string>();
     for (const e of expectations) {
       let cmp: Comparison;
       if ((e as Value).type !== undefined) {
@@ -144,9 +144,9 @@ export function anyOf(...expectations: (Value | Comparator)[]): Comparator {
       if (cmp.matched) {
         return cmp;
       }
-      failed.push(cmp.expected);
+      failed.add(cmp.expected);
     }
-    return { matched: false, got: got.toString(), expected: failed.join(' or ') };
+    return { matched: false, got: got.toString(), expected: [...failed].join(' or ') };
   };
 }
 

@@ -53,9 +53,9 @@ namespace {
 
 // Notifies the ApiActivityMonitor that an extension API function has been
 // called. May be called from any thread.
-void NotifyApiFunctionCalled(const std::string& extension_id,
+void NotifyApiFunctionCalled(const ExtensionId& extension_id,
                              const std::string& api_name,
-                             const base::ListValue& args,
+                             const base::Value::List& args,
                              content::BrowserContext* browser_context) {
   activity_monitor::OnApiFunctionCalled(browser_context, extension_id, api_name,
                                         args);
@@ -235,10 +235,9 @@ ExtensionFunctionDispatcher::~ExtensionFunctionDispatcher() {
 
 void ExtensionFunctionDispatcher::Dispatch(
     mojom::RequestParamsPtr params,
-    content::RenderFrameHost* render_frame_host,
-    int render_process_id,
+    content::RenderFrameHost& frame,
     mojom::LocalFrameHost::RequestCallback callback) {
-  if (!render_frame_host || IsRequestFromServiceWorker(*params)) {
+  if (IsRequestFromServiceWorker(*params)) {
     constexpr char kBadMessage[] = "LocalFrameHost::Request got a bad message.";
     std::move(callback).Run(ExtensionFunction::FAILED, base::Value::List(),
                             kBadMessage);
@@ -252,14 +251,14 @@ void ExtensionFunctionDispatcher::Dispatch(
   // Extension API from a non Service Worker context, e.g. extension page,
   // background page, content script.
   std::unique_ptr<ResponseCallbackWrapper>& callback_wrapper =
-      response_callback_wrappers_[render_frame_host];
+      response_callback_wrappers_[&frame];
   if (!callback_wrapper) {
-    callback_wrapper = std::make_unique<ResponseCallbackWrapper>(
-        AsWeakPtr(), render_frame_host);
+    callback_wrapper =
+        std::make_unique<ResponseCallbackWrapper>(AsWeakPtr(), &frame);
   }
 
   DispatchWithCallbackInternal(
-      *params, render_frame_host, render_process_id,
+      *params, &frame, frame.GetProcess()->GetID(),
       callback_wrapper->CreateCallback(std::move(callback)));
 }
 
@@ -373,15 +372,14 @@ void ExtensionFunctionDispatcher::DispatchWithCallbackInternal(
 
   ExtensionSystem* extension_system = ExtensionSystem::Get(browser_context_);
   QuotaService* quota = extension_system->quota_service();
-  std::string violation_error = quota->Assess(
-      extension->id(), function.get(),
-      &base::Value::AsListValue(params.arguments), base::TimeTicks::Now());
+  std::string violation_error =
+      quota->Assess(extension->id(), function.get(), params.arguments,
+                    base::TimeTicks::Now());
 
   if (violation_error.empty()) {
     // See crbug.com/39178.
     ExtensionsBrowserClient::Get()->PermitExternalProtocolHandler();
-    NotifyApiFunctionCalled(extension->id(), params.name,
-                            base::Value::AsListValue(params.arguments),
+    NotifyApiFunctionCalled(extension->id(), params.name, params.arguments,
                             browser_context_);
 
     // Note: Deliberately don't include external component extensions here -
@@ -523,7 +521,7 @@ ExtensionFunctionDispatcher::CreateExtensionFunction(
     return nullptr;
   }
 
-  function->SetArgs(params.arguments.Clone());
+  function->SetArgs(base::Value(params.arguments.Clone()));
 
   const Feature::Context context_type = process_map.GetMostLikelyContextType(
       extension, requesting_process_id, rfh_url);

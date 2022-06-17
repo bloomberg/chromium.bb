@@ -168,7 +168,7 @@ TEST_P(HlslBuiltinTest, Emit) {
 
     GeneratorImpl& gen = Build();
 
-    auto* sem = program->Sem().Get(call);
+    auto* sem = program->Sem().Get<sem::Call>(call);
     ASSERT_NE(sem, nullptr);
     auto* target = sem->Target();
     ASSERT_NE(target, nullptr);
@@ -324,7 +324,7 @@ modf_result_vec3 tint_modf(float3 param_0) {
 
 [numthreads(1, 1, 1)]
 void test_function() {
-  tint_modf(float3(0.0f, 0.0f, 0.0f));
+  tint_modf((0.0f).xxx);
   return;
 }
 )");
@@ -376,7 +376,7 @@ frexp_result_vec3 tint_frexp(float3 param_0) {
 
 [numthreads(1, 1, 1)]
 void test_function() {
-  tint_frexp(float3(0.0f, 0.0f, 0.0f));
+  tint_frexp((0.0f).xxx);
   return;
 }
 )");
@@ -721,6 +721,92 @@ TEST_F(HlslGeneratorImplTest_Builtin, WorkgroupBarrier) {
     EXPECT_EQ(gen.result(), R"([numthreads(1, 1, 1)]
 void main() {
   GroupMemoryBarrierWithGroupSync();
+  return;
+}
+)");
+}
+
+TEST_F(HlslGeneratorImplTest_Builtin, Dot4I8Packed) {
+    Enable(ast::Extension::kChromiumExperimentalDP4a);
+
+    auto* val1 = Var("val1", ty.u32());
+    auto* val2 = Var("val2", ty.u32());
+    auto* call = Call("dot4I8Packed", val1, val2);
+    WrapInFunction(val1, val2, call);
+
+    GeneratorImpl& gen = SanitizeAndBuild();
+
+    ASSERT_TRUE(gen.Generate()) << gen.error();
+    EXPECT_EQ(gen.result(), R"(int tint_dot4I8Packed(uint param_0, uint param_1) {
+  int accumulator = 0;
+  return dot4add_i8packed(param_0, param_1, accumulator);
+}
+
+[numthreads(1, 1, 1)]
+void test_function() {
+  uint val1 = 0u;
+  uint val2 = 0u;
+  const int tint_symbol = tint_dot4I8Packed(val1, val2);
+  return;
+}
+)");
+}
+
+TEST_F(HlslGeneratorImplTest_Builtin, Dot4U8Packed) {
+    Enable(ast::Extension::kChromiumExperimentalDP4a);
+
+    auto* val1 = Var("val1", ty.u32());
+    auto* val2 = Var("val2", ty.u32());
+    auto* call = Call("dot4U8Packed", val1, val2);
+    WrapInFunction(val1, val2, call);
+
+    GeneratorImpl& gen = SanitizeAndBuild();
+
+    ASSERT_TRUE(gen.Generate()) << gen.error();
+    EXPECT_EQ(gen.result(), R"(uint tint_dot4U8Packed(uint param_0, uint param_1) {
+  uint accumulator = 0u;
+  return dot4add_u8packed(param_0, param_1, accumulator);
+}
+
+[numthreads(1, 1, 1)]
+void test_function() {
+  uint val1 = 0u;
+  uint val2 = 0u;
+  const uint tint_symbol = tint_dot4U8Packed(val1, val2);
+  return;
+}
+)");
+}
+
+TEST_F(HlslGeneratorImplTest_Builtin, CountOneBits) {
+    auto* val = Var("val1", ty.i32());
+    auto* call = Call("countOneBits", val);
+    WrapInFunction(val, call);
+
+    GeneratorImpl& gen = SanitizeAndBuild();
+
+    ASSERT_TRUE(gen.Generate()) << gen.error();
+    EXPECT_EQ(gen.result(), R"([numthreads(1, 1, 1)]
+void test_function() {
+  int val1 = 0;
+  const int tint_symbol = asint(countbits(asuint(val1)));
+  return;
+}
+)");
+}
+
+TEST_F(HlslGeneratorImplTest_Builtin, ReverseBits) {
+    auto* val = Var("val1", ty.i32());
+    auto* call = Call("reverseBits", val);
+    WrapInFunction(val, call);
+
+    GeneratorImpl& gen = SanitizeAndBuild();
+
+    ASSERT_TRUE(gen.Generate()) << gen.error();
+    EXPECT_EQ(gen.result(), R"([numthreads(1, 1, 1)]
+void test_function() {
+  int val1 = 0;
+  const int tint_symbol = asint(reversebits(asuint(val1)));
   return;
 }
 )");

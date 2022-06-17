@@ -185,13 +185,7 @@ class V8_EXPORT V8 {
    */
   static void DisposePlatform();
 
-#ifdef V8_SANDBOX
-  //
-  // Sandbox related API.
-  //
-  // This API is not yet stable and subject to changes in the future.
-  //
-
+#if defined(V8_ENABLE_SANDBOX)
   /**
    * Initializes the V8 sandbox.
    *
@@ -200,12 +194,28 @@ class V8_EXPORT V8 {
    * Returns true on success, false otherwise.
    *
    * TODO(saelo) Once it is no longer optional to initialize the sandbox when
-   * compiling with V8_SANDBOX, the sandbox initialization will likely happen
-   * as part of V8::Initialize, at which point this function should be removed.
+   * compiling with V8_ENABLE_SANDBOX, the sandbox initialization will likely
+   * happen as part of V8::Initialize, at which point this function should be
+   * removed.
    */
   static bool InitializeSandbox();
-  V8_DEPRECATED("Use InitializeSandbox()")
-  static bool InitializeVirtualMemoryCage() { return InitializeSandbox(); }
+
+  /**
+   * Returns true if the sandbox has been initialized, false otherwise.
+   */
+  static bool IsSandboxInitialized();
+
+  /**
+   * Returns true if the sandbox is configured securely.
+   *
+   * If V8 cannot create a regular sandbox during initialization, for example
+   * because not enough virtual address space can be reserved, it will instead
+   * create a fallback sandbox that still allows it to function normally but
+   * does not have the same security properties as a regular sandbox. This API
+   * can be used to determine if such a fallback sandbox is being used, in
+   * which case it will return false.
+   */
+  static bool IsSandboxConfiguredSecurely();
 
   /**
    * Provides access to the virtual address subspace backing the sandbox.
@@ -222,35 +232,30 @@ class V8_EXPORT V8 {
    * This function must only be called after initializing the sandbox.
    */
   static VirtualAddressSpace* GetSandboxAddressSpace();
-  V8_DEPRECATED("Use GetSandboxAddressSpace()")
-  static PageAllocator* GetVirtualMemoryCagePageAllocator();
 
   /**
    * Returns the size of the sandbox in bytes.
+   *
+   * This represents the size of the address space that V8 can directly address
+   * and in which it allocates its objects.
    *
    * If the sandbox has not been initialized, or if the initialization failed,
    * this returns zero.
    */
   static size_t GetSandboxSizeInBytes();
-  V8_DEPRECATED("Use GetSandboxSizeInBytes()")
-  static size_t GetVirtualMemoryCageSizeInBytes() {
-    return GetSandboxSizeInBytes();
-  }
 
   /**
-   * Returns whether the sandbox is configured securely.
+   * Returns the size of the address space reservation backing the sandbox.
    *
-   * If V8 cannot create a proper sandbox, it will fall back to creating a
-   * sandbox that doesn't have the desired security properties but at least
-   * still allows V8 to function. This API can be used to determine if such an
-   * insecure sandbox is being used, in which case it will return false.
+   * This may be larger than the sandbox (i.e. |GetSandboxSizeInBytes()|) due
+   * to surrounding guard regions, or may be smaller than the sandbox in case a
+   * fallback sandbox is being used, which will use a smaller virtual address
+   * space reservation. In the latter case this will also be different from
+   * |GetSandboxAddressSpace()->size()| as that will cover a larger part of the
+   * address space than what has actually been reserved.
    */
-  static bool IsSandboxConfiguredSecurely();
-  V8_DEPRECATED("Use IsSandboxConfiguredSecurely()")
-  static bool IsUsingSecureVirtualMemoryCage() {
-    return IsSandboxConfiguredSecurely();
-  }
-#endif
+  static size_t GetSandboxReservationSizeInBytes();
+#endif  // V8_ENABLE_SANDBOX
 
   /**
    * Activate trap-based bounds checking for WebAssembly.
@@ -279,6 +284,9 @@ class V8_EXPORT V8 {
    * v8 has encountered a fatal failure to allocate memory and is about to
    * terminate.
    */
+  static void SetFatalMemoryErrorCallback(OOMErrorCallback callback);
+
+  V8_DEPRECATE_SOON("Use OOMErrorCallback (https://crbug.com/1323177)")
   static void SetFatalMemoryErrorCallback(LegacyOOMErrorCallback callback);
 
   /**

@@ -61,6 +61,20 @@ content::WebContents* FakeScriptExecutorDelegate::GetWebContents() {
   return web_contents_;
 }
 
+content::WebContents*
+FakeScriptExecutorDelegate::GetWebContentsForJsExecution() {
+  return web_contents_;
+}
+
+void FakeScriptExecutorDelegate::SetJsFlowLibrary(
+    const std::string& js_flow_library) {
+  js_flow_library_ = js_flow_library;
+}
+
+const std::string* FakeScriptExecutorDelegate::GetJsFlowLibrary() const {
+  return &js_flow_library_;
+}
+
 std::string FakeScriptExecutorDelegate::GetEmailAddressForAccessTokenAccount() {
   return std::string();
 }

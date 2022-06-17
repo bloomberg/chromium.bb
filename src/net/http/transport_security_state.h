@@ -125,10 +125,10 @@ class NET_EXPORT TransportSecurityState {
     // expires.
     base::Time expiry;
 
-    UpgradeMode upgrade_mode;
+    UpgradeMode upgrade_mode = MODE_DEFAULT;
 
     // Are subdomains subject to this policy state?
-    bool include_subdomains;
+    bool include_subdomains = false;
 
     // The domain which matched during a search for this STSState entry.
     // Updated by |GetDynamicSTSState| and |GetStaticDomainState|.
@@ -191,7 +191,7 @@ class NET_EXPORT TransportSecurityState {
     HashValueVector bad_spki_hashes;
 
     // Are subdomains subject to this policy state?
-    bool include_subdomains;
+    bool include_subdomains = false;
 
     // The domain which matched during a search for this DomainState entry.
     // Updated by |GetDynamicPKPState| and |GetStaticDomainState|.
@@ -239,7 +239,7 @@ class NET_EXPORT TransportSecurityState {
     // True if connections should be closed if they do not comply with the CT
     // policy. If false, noncompliant connections will be allowed but reports
     // will be sent about the violation.
-    bool enforce;
+    bool enforce = false;
     // The absolute time (UTC) when the Expect-CT state was last observed.
     base::Time last_observed;
     // The absolute time (UTC) when the Expect-CT state expires.
@@ -779,13 +779,13 @@ class NET_EXPORT TransportSecurityState {
   raw_ptr<ReportSenderInterface> report_sender_ = nullptr;
 
   // True if static pins should be used.
-  bool enable_static_pins_;
+  bool enable_static_pins_ = true;
 
   // True if static expect-CT state should be used.
-  bool enable_static_expect_ct_;
+  bool enable_static_expect_ct_ = true;
 
   // True if public key pinning bypass is enabled for local trust anchors.
-  bool enable_pkp_bypass_for_local_trust_anchors_;
+  bool enable_pkp_bypass_for_local_trust_anchors_ = true;
 
   raw_ptr<ExpectCTReporter> expect_ct_reporter_ = nullptr;
 

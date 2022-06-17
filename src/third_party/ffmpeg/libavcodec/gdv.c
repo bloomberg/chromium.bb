@@ -456,13 +456,12 @@ static int decompress_68(AVCodecContext *avctx, unsigned skip, unsigned use8)
     return 0;
 }
 
-static int gdv_decode_frame(AVCodecContext *avctx, void *data,
+static int gdv_decode_frame(AVCodecContext *avctx, AVFrame *frame,
                             int *got_frame, AVPacket *avpkt)
 {
     GDVContext *gdv = avctx->priv_data;
     GetByteContext *gb = &gdv->gb;
     PutByteContext *pb = &gdv->pb;
-    AVFrame *frame = data;
     int ret, i;
     int compression;
     unsigned flags;
@@ -569,7 +568,7 @@ const FFCodec ff_gdv_decoder = {
     .priv_data_size = sizeof(GDVContext),
     .init           = gdv_decode_init,
     .close          = gdv_decode_close,
-    .decode         = gdv_decode_frame,
+    FF_CODEC_DECODE_CB(gdv_decode_frame),
     .p.capabilities = AV_CODEC_CAP_DR1,
     .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };

@@ -761,18 +761,18 @@ HeapObject MapWord::ToForwardingAddress(PtrComprCageBase host_cage_base) {
 #ifdef VERIFY_HEAP
 void HeapObject::VerifyObjectField(Isolate* isolate, int offset) {
   VerifyPointer(isolate, TaggedField<Object>::load(isolate, *this, offset));
-  STATIC_ASSERT(!COMPRESS_POINTERS_BOOL || kTaggedSize == kInt32Size);
+  static_assert(!COMPRESS_POINTERS_BOOL || kTaggedSize == kInt32Size);
 }
 
 void HeapObject::VerifyMaybeObjectField(Isolate* isolate, int offset) {
   MaybeObject::VerifyMaybeObjectPointer(
       isolate, TaggedField<MaybeObject>::load(isolate, *this, offset));
-  STATIC_ASSERT(!COMPRESS_POINTERS_BOOL || kTaggedSize == kInt32Size);
+  static_assert(!COMPRESS_POINTERS_BOOL || kTaggedSize == kInt32Size);
 }
 
 void HeapObject::VerifySmiField(int offset) {
   CHECK(TaggedField<Object>::load(*this, offset).IsSmi());
-  STATIC_ASSERT(!COMPRESS_POINTERS_BOOL || kTaggedSize == kInt32Size);
+  static_assert(!COMPRESS_POINTERS_BOOL || kTaggedSize == kInt32Size);
 }
 
 #endif
@@ -1180,6 +1180,7 @@ bool Object::IsShared() const {
     case SHARED_STRING_TYPE:
     case SHARED_ONE_BYTE_STRING_TYPE:
     case JS_SHARED_STRUCT_TYPE:
+    case JS_ATOMICS_MUTEX_TYPE:
       DCHECK(object.InSharedHeap());
       return true;
     case INTERNALIZED_STRING_TYPE:

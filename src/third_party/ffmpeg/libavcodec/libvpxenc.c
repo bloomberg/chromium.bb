@@ -42,6 +42,7 @@
 #include "libavutil/base64.h"
 #include "libavutil/common.h"
 #include "libavutil/cpu.h"
+#include "libavutil/fifo.h"
 #include "libavutil/internal.h"
 #include "libavutil/intreadwrite.h"
 #include "libavutil/mathematics.h"
@@ -1247,9 +1248,11 @@ static inline void cx_pktcpy(struct FrameListData *dst,
 static int storeframe(AVCodecContext *avctx, struct FrameListData *cx_frame,
                       AVPacket *pkt)
 {
+    VPxContext *ctx = avctx->priv_data;
     int ret = ff_get_encode_buffer(avctx, pkt, cx_frame->sz, 0);
     uint8_t *side_data;
     int pict_type;
+    int quality;
 
     if (ret < 0)
         return ret;
@@ -1264,7 +1267,10 @@ static int storeframe(AVCodecContext *avctx, struct FrameListData *cx_frame,
         pict_type = AV_PICTURE_TYPE_P;
     }
 
-    ff_side_data_set_encoder_stats(pkt, 0, cx_frame->sse + 1,
+    ret = vpx_codec_control(&ctx->encoder, VP8E_GET_LAST_QUANTIZER_64, &quality);
+    if (ret != VPX_CODEC_OK)
+        quality = 0;
+    ff_side_data_set_encoder_stats(pkt, quality * FF_QP2LAMBDA, cx_frame->sse + 1,
                                    cx_frame->have_sse ? 3 : 0, pict_type);
 
     if (cx_frame->have_sse) {
@@ -1285,7 +1291,6 @@ static int storeframe(AVCodecContext *avctx, struct FrameListData *cx_frame,
         memcpy(side_data + 8, cx_frame->buf_alpha, cx_frame->sz_alpha);
     }
     if (cx_frame->frame_number != -1) {
-        VPxContext *ctx = avctx->priv_data;
         if (ctx->hdr10_plus_fifo) {
             int err = copy_hdr10_plus_to_pkt(ctx->hdr10_plus_fifo, pkt);
             if (err < 0)
@@ -1625,6 +1630,16 @@ static int vpx_encode(AVCodecContext *avctx, AVPacket *pkt,
     vpx_svc_layer_id_t layer_id;
     int layer_id_valid = 0;
 
+    if (avctx->qmax >= 0 && enccfg->rc_max_quantizer != avctx->qmax) {
+        struct vpx_codec_enc_cfg cfg = *enccfg;
+        cfg.rc_max_quantizer = avctx->qmax;
+        res = vpx_codec_enc_config_set(&ctx->encoder, &cfg);
+        if (res != VPX_CODEC_OK) {
+            log_encoder_error(avctx, "Error reconfiguring encoder");
+            return AVERROR_INVALIDDATA;
+        }
+    }
+
     if (frame) {
         const AVFrameSideData *sd = av_frame_get_side_data(frame, AV_FRAME_DATA_REGIONS_OF_INTEREST);
         rawimg                      = &ctx->rawimg;
@@ -1934,7 +1949,7 @@ const FFCodec ff_libvpx_vp8_encoder = {
                       AV_CODEC_CAP_OTHER_THREADS,
     .priv_data_size = sizeof(VPxContext),
     .init           = vp8_init,
-    .encode2        = vpx_encode,
+    FF_CODEC_ENCODE_CB(vpx_encode),
     .close          = vpx_free,
     .caps_internal  = FF_CODEC_CAP_AUTO_THREADS,
     .p.pix_fmts     = (const enum AVPixelFormat[]){ AV_PIX_FMT_YUV420P, AV_PIX_FMT_YUVA420P, AV_PIX_FMT_NONE },
@@ -1969,7 +1984,7 @@ FFCodec ff_libvpx_vp9_encoder = {
     .p.wrapper_name = "libvpx",
     .priv_data_size = sizeof(VPxContext),
     .init           = vp9_init,
-    .encode2        = vpx_encode,
+    FF_CODEC_ENCODE_CB(vpx_encode),
     .close          = vpx_free,
     .caps_internal  = FF_CODEC_CAP_AUTO_THREADS,
     .defaults       = defaults,

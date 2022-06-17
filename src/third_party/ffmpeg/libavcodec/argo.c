@@ -599,7 +599,7 @@ static int decode_rle(AVCodecContext *avctx, AVFrame *frame)
     return 0;
 }
 
-static int decode_frame(AVCodecContext *avctx, void *data,
+static int decode_frame(AVCodecContext *avctx, AVFrame *rframe,
                         int *got_frame, AVPacket *avpkt)
 {
     ArgoContext *s = avctx->priv_data;
@@ -665,7 +665,7 @@ static int decode_frame(AVCodecContext *avctx, void *data,
     if (avctx->pix_fmt == AV_PIX_FMT_PAL8)
         memcpy(frame->data[1], s->pal, AVPALETTE_SIZE);
 
-    if ((ret = av_frame_ref(data, s->frame)) < 0)
+    if ((ret = av_frame_ref(rframe, s->frame)) < 0)
         return ret;
 
     frame->pict_type = s->key ? AV_PICTURE_TYPE_I : AV_PICTURE_TYPE_P;
@@ -740,7 +740,7 @@ const FFCodec ff_argo_decoder = {
     .p.id           = AV_CODEC_ID_ARGO,
     .priv_data_size = sizeof(ArgoContext),
     .init           = decode_init,
-    .decode         = decode_frame,
+    FF_CODEC_DECODE_CB(decode_frame),
     .flush          = decode_flush,
     .close          = decode_close,
     .p.capabilities = AV_CODEC_CAP_DR1,

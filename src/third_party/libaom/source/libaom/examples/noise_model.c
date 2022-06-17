@@ -330,6 +330,7 @@ int main(int argc, char *argv[]) {
   const int num_blocks_w = (info.frame_width + block_size - 1) / block_size;
   const int num_blocks_h = (info.frame_height + block_size - 1) / block_size;
   uint8_t *flat_blocks = (uint8_t *)aom_malloc(num_blocks_w * num_blocks_h);
+  if (!flat_blocks) die("Failed to allocate block data.");
   // Sets the random seed on the first entry in the output table
   int16_t random_seed = 7391;
   aom_noise_model_t noise_model;

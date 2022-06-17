@@ -9,7 +9,8 @@ async function basicTest() {
   assert(device !== null, 'Failed to get device.');
 
   const kOffset = 1230000;
-  const pipeline = await device.createComputePipeline({
+  const pipeline = device.createComputePipeline({
+    layout: 'auto',
     compute: {
       module: device.createShaderModule({
         code: `

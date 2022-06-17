@@ -157,6 +157,7 @@ cricket::Candidate CreateUdpCandidate(const std::string& type,
 
 cricket::BasicPortAllocator* CreateBasicPortAllocator(
     rtc::NetworkManager* network_manager,
+    rtc::SocketServer* socket_server,
     const cricket::ServerAddresses& stun_servers,
     const rtc::SocketAddress& turn_server_udp,
     const rtc::SocketAddress& turn_server_tcp) {
@@ -172,11 +173,13 @@ cricket::BasicPortAllocator* CreateBasicPortAllocator(
   }
   std::vector<cricket::RelayServerConfig> turn_servers(1, turn_server);
 
-  cricket::BasicPortAllocator* allocator =
-      new cricket::BasicPortAllocator(network_manager);
+  std::unique_ptr<cricket::BasicPortAllocator> allocator =
+      std::make_unique<cricket::BasicPortAllocator>(
+          network_manager,
+          std::make_unique<rtc::BasicPacketSocketFactory>(socket_server));
   allocator->Initialize();
   allocator->SetConfiguration(stun_servers, turn_servers, 0, webrtc::NO_PRUNE);
-  return allocator;
+  return allocator.release();
 }
 
 class MockIceControllerFactory : public cricket::IceControllerFactoryInterface {
@@ -280,12 +283,12 @@ class P2PTransportChannelTestBase : public ::testing::Test,
 
     ServerAddresses stun_servers;
     stun_servers.insert(kStunAddr);
-    ep1_.allocator_.reset(
-        CreateBasicPortAllocator(&ep1_.network_manager_, stun_servers,
-                                 kTurnUdpIntAddr, rtc::SocketAddress()));
-    ep2_.allocator_.reset(
-        CreateBasicPortAllocator(&ep2_.network_manager_, stun_servers,
-                                 kTurnUdpIntAddr, rtc::SocketAddress()));
+    ep1_.allocator_.reset(CreateBasicPortAllocator(
+        &ep1_.network_manager_, ss_.get(), stun_servers, kTurnUdpIntAddr,
+        rtc::SocketAddress()));
+    ep2_.allocator_.reset(CreateBasicPortAllocator(
+        &ep2_.network_manager_, ss_.get(), stun_servers, kTurnUdpIntAddr,
+        rtc::SocketAddress()));
     webrtc::metrics::Reset();
   }
 
@@ -1367,7 +1370,6 @@ TEST_F(P2PTransportChannelTest, GetStats) {
     }
   }
   ASSERT_TRUE(best_conn_info != nullptr);
-  EXPECT_TRUE(best_conn_info->new_connection);
   EXPECT_TRUE(best_conn_info->receiving);
   EXPECT_TRUE(best_conn_info->writable);
   EXPECT_FALSE(best_conn_info->timeout);
@@ -1418,7 +1420,6 @@ TEST_F(P2PTransportChannelTest, GetStatsSwitchConnection) {
     }
   }
   ASSERT_TRUE(best_conn_info != nullptr);
-  EXPECT_TRUE(best_conn_info->new_connection);
   EXPECT_TRUE(best_conn_info->receiving);
   EXPECT_TRUE(best_conn_info->writable);
   EXPECT_FALSE(best_conn_info->timeout);
@@ -3497,8 +3498,7 @@ class P2PTransportChannelPingTest : public ::testing::Test,
       int priority,
       uint32_t nomination,
       const absl::optional<std::string>& piggyback_ping_id) {
-    IceMessage msg;
-    msg.SetType(STUN_BINDING_REQUEST);
+    IceMessage msg(STUN_BINDING_REQUEST);
     msg.AddAttribute(std::make_unique<StunByteStringAttribute>(
         STUN_ATTR_USERNAME,
         conn->local_candidate().username() + ":" + remote_ufrag));
@@ -3512,7 +3512,6 @@ class P2PTransportChannelPingTest : public ::testing::Test,
       msg.AddAttribute(std::make_unique<StunByteStringAttribute>(
           STUN_ATTR_GOOG_LAST_ICE_CHECK_RECEIVED, piggyback_ping_id.value()));
     }
-    msg.SetTransactionID(rtc::CreateRandomString(kStunTransactionIdLength));
     msg.AddMessageIntegrity(conn->local_candidate().password());
     msg.AddFingerprint();
     rtc::ByteBufferWriter buf;
@@ -3751,8 +3750,7 @@ TEST_F(P2PTransportChannelPingTest, PingingStartedAsSoonAsPossible) {
 
   // Simulate a binding request being received, creating a peer reflexive
   // candidate pair while we still don't have remote ICE parameters.
-  IceMessage request;
-  request.SetType(STUN_BINDING_REQUEST);
+  IceMessage request(STUN_BINDING_REQUEST);
   request.AddAttribute(std::make_unique<StunByteStringAttribute>(
       STUN_ATTR_USERNAME, kIceUfrag[1]));
   uint32_t prflx_priority = ICE_TYPE_PREFERENCE_PRFLX << 24;
@@ -3920,8 +3918,7 @@ TEST_F(P2PTransportChannelPingTest, ConnectionResurrection) {
                    kMediumTimeout);
 
   // Create a minimal STUN message with prflx priority.
-  IceMessage request;
-  request.SetType(STUN_BINDING_REQUEST);
+  IceMessage request(STUN_BINDING_REQUEST);
   request.AddAttribute(std::make_unique<StunByteStringAttribute>(
       STUN_ATTR_USERNAME, kIceUfrag[1]));
   uint32_t prflx_priority = ICE_TYPE_PREFERENCE_PRFLX << 24;
@@ -4176,8 +4173,7 @@ TEST_F(P2PTransportChannelPingTest, TestSelectConnectionFromUnknownAddress) {
   ch.SetIceRole(ICEROLE_CONTROLLED);
   ch.MaybeStartGathering();
   // A minimal STUN message with prflx priority.
-  IceMessage request;
-  request.SetType(STUN_BINDING_REQUEST);
+  IceMessage request(STUN_BINDING_REQUEST);
   request.AddAttribute(std::make_unique<StunByteStringAttribute>(
       STUN_ATTR_USERNAME, kIceUfrag[1]));
   uint32_t prflx_priority = ICE_TYPE_PREFERENCE_PRFLX << 24;
@@ -4272,8 +4268,7 @@ TEST_F(P2PTransportChannelPingTest, TestSelectConnectionBasedOnMediaReceived) {
 
   // Now another STUN message with an unknown address and use_candidate will
   // nominate the selected connection.
-  IceMessage request;
-  request.SetType(STUN_BINDING_REQUEST);
+  IceMessage request(STUN_BINDING_REQUEST);
   request.AddAttribute(std::make_unique<StunByteStringAttribute>(
       STUN_ATTR_USERNAME, kIceUfrag[1]));
   uint32_t prflx_priority = ICE_TYPE_PREFERENCE_PRFLX << 24;
@@ -4919,7 +4914,7 @@ class P2PTransportChannelMostLikelyToWorkFirstTest
                      kTurnUdpExtAddr) {
     network_manager_.AddInterface(kPublicAddrs[0]);
     allocator_.reset(
-        CreateBasicPortAllocator(&network_manager_, ServerAddresses(),
+        CreateBasicPortAllocator(&network_manager_, ss(), ServerAddresses(),
                                  kTurnUdpIntAddr, rtc::SocketAddress()));
     allocator_->set_flags(allocator_->flags() | PORTALLOCATOR_DISABLE_STUN |
                           PORTALLOCATOR_DISABLE_TCP);
@@ -5150,6 +5145,7 @@ TEST_F(P2PTransportChannelMostLikelyToWorkFirstTest, TestTcpTurn) {
 // if the channel is not destroyed.
 TEST(P2PTransportChannelResolverTest, HostnameCandidateIsResolved) {
   ResolverFactoryFixture resolver_fixture;
+  rtc::AutoThread main_thread;
   FakePortAllocator allocator(rtc::Thread::Current(), nullptr);
   webrtc::IceTransportInit init;
   init.set_port_allocator(&allocator);
@@ -6082,6 +6078,7 @@ TEST_F(P2PTransportChannelPingTest, TestInitialSelectDampeningBoth) {
 }
 
 TEST(P2PTransportChannel, InjectIceController) {
+  rtc::AutoThread main_thread_;
   MockIceControllerFactory factory;
   FakePortAllocator pa(rtc::Thread::Current(), nullptr);
   EXPECT_CALL(factory, RecordIceControllerCreated()).Times(1);
@@ -6099,15 +6096,13 @@ class ForgetLearnedStateController : public cricket::BasicIceController {
       const cricket::IceControllerFactoryArgs& args)
       : cricket::BasicIceController(args) {}
 
-  SwitchResult SortAndSwitchConnection(IceControllerEvent reason) override {
+  SwitchResult SortAndSwitchConnection(IceSwitchReason reason) override {
     auto result = cricket::BasicIceController::SortAndSwitchConnection(reason);
     if (forget_connnection_) {
       result.connections_to_forget_state_on.push_back(forget_connnection_);
       forget_connnection_ = nullptr;
     }
-    result.recheck_event =
-        IceControllerEvent(IceControllerEvent::ICE_CONTROLLER_RECHECK);
-    result.recheck_event->recheck_delay_ms = 100;
+    result.recheck_event.emplace(IceSwitchReason::ICE_CONTROLLER_RECHECK, 100);
     return result;
   }
 

@@ -6,6 +6,7 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/controls/rounded_scroll_bar.h"
+#include "ash/controls/scroll_view_gradient_helper.h"
 #include "ash/public/cpp/desk_template.h"
 #include "ash/public/cpp/desks_templates_delegate.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -19,6 +20,7 @@
 #include "ash/wm/desks/templates/saved_desk_name_view.h"
 #include "ash/wm/desks/templates/saved_desk_util.h"
 #include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/overview/rounded_label.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_targeter.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -26,9 +28,11 @@
 #include "ui/compositor/layer.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/view.h"
+#include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {
 namespace {
@@ -39,12 +43,20 @@ constexpr int kGridLabelFontSize = 16;
 // Grids use landscape mode if the available width is greater or equal to this.
 constexpr int kLandscapeMinWidth = 756;
 
-// Label dimensions.
+// Section label dimensions.
 constexpr gfx::Size kLabelSizeLandscape = {708, 24};
 constexpr gfx::Size kLabelSizePortrait = {464, 24};
 
+// "No items" label dimensions.
+constexpr gfx::Size kNoItemsLabelPadding = {16, 8};
+constexpr int kNoItemsLabelCornerRadius = 16;
+constexpr int kNoItemsLabelHeight = 32;
+
 // Between child spacing of Library page scroll content view.
 constexpr int kLibraryPageScrollContentsBetweenChildSpacingDp = 32;
+
+// The size of the gradient applied to the top and bottom of the scroll view.
+constexpr int kScrollViewGradientSize = 32;
 
 // Insets of Library page scroll content view.
 constexpr gfx::Insets kLibraryPageScrollContentsInsets = gfx::Insets::VH(32, 0);
@@ -108,16 +120,26 @@ class SavedDeskLibraryWindowTargeter : public aura::WindowTargeter {
   // aura::WindowTargeter:
   bool SubtreeShouldBeExploredForEvent(aura::Window* window,
                                        const ui::LocatedEvent& event) override {
-    // Process the event only if it intersects with grid items or it is for
-    // scrolling.
-    if (!owner_->IntersectsWithUi(event.location()) &&
-        !event.IsMouseWheelEvent()) {
-      return false;
-    }
+    // Process the event it is for scrolling.
+    if (event.IsMouseWheelEvent())
+      return true;
 
-    // None of the libary's children will handle the event, so `window` won't
+    // Check if the located event intersects with the library's children.
+    // Convert to screen coordinate.
+    gfx::Point screen_location;
+    if (event.target()) {
+      screen_location = event.target()->GetScreenLocation(event);
+    } else {
+      screen_location = event.root_location();
+      wm::ConvertPointToScreen(window->GetRootWindow(), &screen_location);
+    }
+    // Process the event if it intersects with grid items.
+    if (owner_->IntersectsWithUi(screen_location))
+      return true;
+
+    // None of the library's children will handle the event, so `window` won't
     // handle the event and it will fall through to the wallpaper.
-    return aura::WindowTargeter::SubtreeShouldBeExploredForEvent(window, event);
+    return false;
   }
 
  private:
@@ -145,6 +167,8 @@ class SavedDeskLibraryEventHandler : public ui::EventHandler {
   void OnGestureEvent(ui::GestureEvent* event) override {
     owner_->OnLocatedEvent(event, /*is_touch=*/true);
   }
+
+  void OnKeyEvent(ui::KeyEvent* event) override { owner_->OnKeyEvent(event); }
 
  private:
   SavedDeskLibraryView* const owner_;
@@ -191,8 +215,7 @@ SavedDeskLibraryView::SavedDeskLibraryView() {
   scroll_view_->SetDrawOverflowIndicator(false);
   // Don't paint a background. The overview grid already has one.
   scroll_view_->SetBackgroundColor(absl::nullopt);
-  // Arrow keys are used to select app icons.
-  scroll_view_->SetAllowKeyboardScrolling(false);
+  scroll_view_->SetAllowKeyboardScrolling(true);
 
   // Scroll view will have a gradient mask layer.
   scroll_view_->SetPaintToLayer(ui::LAYER_NOT_DRAWN);
@@ -206,6 +229,9 @@ SavedDeskLibraryView::SavedDeskLibraryView() {
   vertical_scroll->SetInsets(kLibraryPageVerticalScrollInsets);
   vertical_scroll->SetSnapBackOnDragOutside(false);
   scroll_view_->SetVerticalScrollBar(std::move(vertical_scroll));
+
+  scroll_view_gradient_helper_ = std::make_unique<ScrollViewGradientHelper>(
+      scroll_view_, kScrollViewGradientSize);
 
   // Set up scroll contents.
   auto scroll_contents = std::make_unique<views::View>();
@@ -240,6 +266,16 @@ SavedDeskLibraryView::SavedDeskLibraryView() {
       l10n_util::GetStringUTF16(
           IDS_ASH_PERSISTENT_DESKS_BAR_CONTEXT_MENU_FEEDBACK),
       PillButton::Type::kIcon, &kPersistentDesksBarFeedbackIcon));
+
+  no_items_label_ =
+      scroll_contents->AddChildView(std::make_unique<RoundedLabel>(
+          kNoItemsLabelPadding.width(), kNoItemsLabelPadding.height(),
+          kNoItemsLabelCornerRadius, kNoItemsLabelHeight,
+          l10n_util::GetStringUTF16(
+              saved_desk_util::AreDesksTemplatesEnabled()
+                  ? IDS_ASH_DESKS_TEMPLATES_LIBRARY_NO_TEMPLATES_OR_DESKS_LABEL
+                  : IDS_ASH_DESKS_TEMPLATES_LIBRARY_NO_DESKS_LABEL)));
+  no_items_label_->SetVisible(false);
 
   scroll_view_->SetContents(std::move(scroll_contents));
 }
@@ -312,7 +348,7 @@ void SavedDeskLibraryView::OnFeedbackButtonPressed() {
   std::string extra_diagnostics;
   for (auto* grid : grid_views()) {
     for (auto* item : grid->grid_items())
-      extra_diagnostics += (item->desk_template()->ToString() + "\n");
+      extra_diagnostics += (item->desk_template().ToString() + "\n");
   }
 
   // Note that this will activate the dialog which will exit overview and delete
@@ -330,16 +366,16 @@ bool SavedDeskLibraryView::IsAnimating() {
   return false;
 }
 
-bool SavedDeskLibraryView::IntersectsWithUi(const gfx::Point& location) {
+bool SavedDeskLibraryView::IntersectsWithUi(const gfx::Point& screen_location) {
   // Check saved desk items.
   for (auto* grid : grid_views()) {
     for (auto* item : grid->grid_items()) {
-      if (item->GetBoundsInScreen().Contains(location))
+      if (item->GetBoundsInScreen().Contains(screen_location))
         return true;
     }
   }
   // Check feedback button.
-  return feedback_button_->GetBoundsInScreen().Contains(location);
+  return feedback_button_->GetBoundsInScreen().Contains(screen_location);
 }
 
 aura::Window* SavedDeskLibraryView::GetWidgetWindow() {
@@ -407,6 +443,8 @@ void SavedDeskLibraryView::Layout() {
                                    : SavedDeskGridView::LayoutMode::PORTRAIT);
   }
 
+  size_t total_saved_desks = 0;
+
   DCHECK_EQ(grid_views_.size(), grid_labels_.size());
   for (size_t i = 0; i != grid_views_.size(); ++i) {
     // Make the grid label invisible if the corresponding grid view is
@@ -414,9 +452,43 @@ void SavedDeskLibraryView::Layout() {
     grid_labels_[i]->SetVisible(!grid_views_[i]->grid_items().empty());
     grid_labels_[i]->SetPreferredSize(landscape ? kLabelSizeLandscape
                                                 : kLabelSizePortrait);
+
+    total_saved_desks += grid_views_[i]->grid_items().size();
   }
 
+  feedback_button_->SetVisible(total_saved_desks != 0);
+  no_items_label_->SetVisible(total_saved_desks == 0);
+
   scroll_view_->SetBoundsRect({0, 0, width(), height()});
+  scroll_view_gradient_helper_->UpdateGradientZone();
+}
+
+void SavedDeskLibraryView::OnKeyEvent(ui::KeyEvent* event) {
+  bool is_scrolling_event;
+  switch (event->key_code()) {
+    case ui::VKEY_HOME:
+    case ui::VKEY_END:
+      is_scrolling_event = true;
+      // Do not process if home/end key are for text editing.
+      for (SavedDeskGridView* grid_view : grid_views_) {
+        if (grid_view->IsTemplateNameBeingModified()) {
+          is_scrolling_event = false;
+          break;
+        }
+      }
+      break;
+    case ui::VKEY_PRIOR:
+    case ui::VKEY_NEXT:
+      is_scrolling_event = true;
+      break;
+    default:
+      // Ignore all other key events as arrow keys are used for moving
+      // highlight.
+      is_scrolling_event = false;
+      break;
+  }
+  if (is_scrolling_event)
+    scroll_view_->vertical_scroll_bar()->OnKeyEvent(event);
 }
 
 void SavedDeskLibraryView::OnThemeChanged() {

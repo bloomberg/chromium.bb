@@ -25,8 +25,9 @@
 namespace {
 // TODO(amaiorano): Move to utility header
 std::vector<std::string> Split(const std::string& s, char delim) {
-    if (s.empty())
+    if (s.empty()) {
         return {};
+    }
 
     std::vector<std::string> result;
     const size_t lastIndex = s.length() - 1;
@@ -36,13 +37,15 @@ std::vector<std::string> Split(const std::string& s, char delim) {
     while (i <= lastIndex) {
         if (s[i] == delim) {
             auto token = s.substr(startIndex, i - startIndex);
-            if (!token.empty())  // Discard empty tokens
+            if (!token.empty()) {  // Discard empty tokens
                 result.push_back(token);
+            }
             startIndex = i + 1;
         } else if (i == lastIndex) {
             auto token = s.substr(startIndex, i - startIndex + 1);
-            if (!token.empty())  // Discard empty tokens
+            if (!token.empty()) {  // Discard empty tokens
                 result.push_back(token);
+            }
         }
         ++i;
     }
@@ -89,9 +92,6 @@ namespace {
 class Features : public interop::GPUSupportedFeatures {
   public:
     explicit Features(WGPUDeviceProperties properties) {
-        if (properties.depth24UnormStencil8) {
-            enabled_.emplace(interop::GPUFeatureName::kDepth24UnormStencil8);
-        }
         if (properties.depth32FloatStencil8) {
             enabled_.emplace(interop::GPUFeatureName::kDepth32FloatStencil8);
         }
@@ -112,8 +112,10 @@ class Features : public interop::GPUSupportedFeatures {
         }
 
         // TODO(dawn:1123) add support for these extensions when possible.
-        // wgpu::interop::GPUFeatureName::kIndirectFirstInstance
         // wgpu::interop::GPUFeatureName::kDepthClipControl
+        // wgpu::interop::GPUFeatureName::kIndirectFirstInstance
+        // wgpu::interop::GPUFeatureName::kShaderF16
+        // wgpu::interop::GPUFeatureName::kBgra8UnormStorage
     }
 
     bool has(interop::GPUFeatureName feature) { return enabled_.count(feature) != 0; }
@@ -147,10 +149,8 @@ class Features : public interop::GPUSupportedFeatures {
 ////////////////////////////////////////////////////////////////////////////////
 GPUAdapter::GPUAdapter(dawn::native::Adapter a, const Flags& flags) : adapter_(a), flags_(flags) {}
 
-std::string GPUAdapter::getName(Napi::Env) {
-    return "dawn-adapter";
-}
-
+// TODO(dawn:1133): Avoid the extra copy by making the generator make a virtual method with const
+// std::string&
 interop::Interface<interop::GPUSupportedFeatures> GPUAdapter::getFeatures(Napi::Env env) {
     return interop::GPUSupportedFeatures::Create<Features>(env, adapter_.GetAdapterProperties());
 }
@@ -196,15 +196,13 @@ interop::Promise<interop::Interface<interop::GPUDevice>> GPUAdapter::requestDevi
             case interop::GPUFeatureName::kTimestampQuery:
                 requiredFeatures.emplace_back(wgpu::FeatureName::TimestampQuery);
                 continue;
-            case interop::GPUFeatureName::kDepth24UnormStencil8:
-                requiredFeatures.emplace_back(wgpu::FeatureName::Depth24UnormStencil8);
-                continue;
             case interop::GPUFeatureName::kDepth32FloatStencil8:
                 requiredFeatures.emplace_back(wgpu::FeatureName::Depth32FloatStencil8);
                 continue;
             case interop::GPUFeatureName::kDepthClipControl:
-            case interop::GPUFeatureName::kIndirectFirstInstance:
             case interop::GPUFeatureName::kShaderF16:
+            case interop::GPUFeatureName::kIndirectFirstInstance:
+            case interop::GPUFeatureName::kBgra8UnormStorage:
                 // TODO(dawn:1123) Add support for these extensions when possible.
                 continue;
         }
@@ -265,4 +263,11 @@ interop::Promise<interop::Interface<interop::GPUDevice>> GPUAdapter::requestDevi
     }
     return promise;
 }
+
+interop::Promise<interop::Interface<interop::GPUAdapterInfo>> GPUAdapter::requestAdapterInfo(
+    Napi::Env,
+    std::vector<std::string> unmaskHints) {
+    UNIMPLEMENTED();
+}
+
 }  // namespace wgpu::binding

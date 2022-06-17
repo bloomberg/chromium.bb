@@ -7,10 +7,13 @@
 
 #include "src/gpu/graphite/Surface_Graphite.h"
 
+#include "include/core/SkCapabilities.h"
 #include "include/gpu/graphite/Recorder.h"
 #include "include/gpu/graphite/SkStuff.h"
+#include "src/gpu/graphite/Caps.h"
 #include "src/gpu/graphite/Device.h"
 #include "src/gpu/graphite/Image_Graphite.h"
+#include "src/gpu/graphite/RecorderPriv.h"
 
 namespace skgpu::graphite {
 
@@ -36,7 +39,7 @@ sk_sp<SkImage> Surface::onNewImageSnapshot(const SkIRect* subset) {
                             : this->imageInfo();
 
     // TODO: create a real proxy view
-    sk_sp<TextureProxy> proxy(new TextureProxy(ii.dimensions(), {}));
+    sk_sp<TextureProxy> proxy(new TextureProxy(ii.dimensions(), {}, SkBudgeted::kNo));
     TextureProxyView tpv(std::move(proxy));
 
     return sk_sp<Image>(new Image(tpv, ii.colorInfo()));
@@ -55,5 +58,18 @@ bool Surface::onReadPixels(Context* context,
                            int srcY) {
     return fDevice->readPixels(context, recorder, dst, srcX, srcY);
 }
+
+sk_sp<const SkCapabilities> Surface::onCapabilities() {
+    return fDevice->recorder()->priv().refCaps();
+}
+
+#if GRAPHITE_TEST_UTILS && SK_SUPPORT_GPU
+GrSemaphoresSubmitted Surface::onFlush(BackendSurfaceAccess,
+                                       const GrFlushInfo&,
+                                       const GrBackendSurfaceMutableState*) {
+    fDevice->flushPendingWorkToRecorder();
+    return GrSemaphoresSubmitted::kNo;
+}
+#endif
 
 } // namespace skgpu::graphite

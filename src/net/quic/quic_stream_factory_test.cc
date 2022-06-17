@@ -150,7 +150,7 @@ std::vector<TestParams> GetTestParams() {
 // IPV4 address.
 class TestConnectionMigrationSocketFactory : public MockClientSocketFactory {
  public:
-  TestConnectionMigrationSocketFactory() : next_source_host_num_(1u) {}
+  TestConnectionMigrationSocketFactory() = default;
 
   TestConnectionMigrationSocketFactory(
       const TestConnectionMigrationSocketFactory&) = delete;
@@ -171,14 +171,14 @@ class TestConnectionMigrationSocketFactory : public MockClientSocketFactory {
   }
 
  private:
-  uint8_t next_source_host_num_;
+  uint8_t next_source_host_num_ = 1u;
 };
 
 // TestPortMigrationSocketFactory will vend sockets with incremental port
 // number.
 class TestPortMigrationSocketFactory : public MockClientSocketFactory {
  public:
-  TestPortMigrationSocketFactory() : next_source_port_num_(1u) {}
+  TestPortMigrationSocketFactory() = default;
 
   TestPortMigrationSocketFactory(const TestPortMigrationSocketFactory&) =
       delete;
@@ -199,7 +199,7 @@ class TestPortMigrationSocketFactory : public MockClientSocketFactory {
   }
 
  private:
-  uint16_t next_source_port_num_;
+  uint16_t next_source_port_num_ = 1u;
 };
 
 class QuicStreamFactoryTestBase : public WithTaskEnvironment {
@@ -229,8 +229,6 @@ class QuicStreamFactoryTestBase : public WithTaskEnvironment {
                       false),
         http_server_properties_(std::make_unique<HttpServerProperties>()),
         cert_verifier_(std::make_unique<MockCertVerifier>()),
-        scoped_mock_network_change_notifier_(nullptr),
-        factory_(nullptr),
         scheme_host_port_(url::kHttpsScheme,
                           kDefaultServerHostName,
                           kDefaultServerPort),
@@ -238,11 +236,9 @@ class QuicStreamFactoryTestBase : public WithTaskEnvironment {
         url2_(kServer2Url),
         url3_(kServer3Url),
         url4_(kServer4Url),
-        privacy_mode_(PRIVACY_MODE_DISABLED),
         failed_on_default_network_callback_(base::BindRepeating(
             &QuicStreamFactoryTestBase::OnFailedOnDefaultNetwork,
             base::Unretained(this))),
-        failed_on_default_network_(false),
         quic_params_(context_.params()) {
     FLAGS_quic_enable_http3_grease_randomness = false;
     FLAGS_quic_enable_chaos_protection = false;
@@ -943,7 +939,7 @@ class QuicStreamFactoryTestBase : public WithTaskEnvironment {
       std::vector<HostResolverEndpointResult> endpoints,
       bool expect_success);
 
-  QuicFlagSaver flags_;  // Save/restore all QUIC flag values.
+  quic::test::QuicFlagSaver flags_;  // Save/restore all QUIC flag values.
   std::unique_ptr<MockHostResolverBase> host_resolver_;
   std::unique_ptr<SSLConfigService> ssl_config_service_;
   std::unique_ptr<MockClientSocketFactory> socket_factory_;
@@ -966,11 +962,11 @@ class QuicStreamFactoryTestBase : public WithTaskEnvironment {
   GURL url3_;
   GURL url4_;
 
-  PrivacyMode privacy_mode_;
+  PrivacyMode privacy_mode_ = PRIVACY_MODE_DISABLED;
   NetLogWithSource net_log_;
   TestCompletionCallback callback_;
   const CompletionRepeatingCallback failed_on_default_network_callback_;
-  bool failed_on_default_network_;
+  bool failed_on_default_network_ = false;
   NetErrorDetails net_error_details_;
 
   raw_ptr<QuicParams> quic_params_;
@@ -1958,14 +1954,7 @@ TEST_P(QuicStreamFactoryTest, HttpsPoolingWithMatchingPins) {
   EXPECT_TRUE(socket_data.AllWriteDataConsumed());
 }
 
-// crbug.com/1325054 Broken on Android
-#if BUILDFLAG(IS_ANDROID)
-#define MAYBE_NoHttpsPoolingWithDifferentPins \
-  DISABLED_NoHttpsPoolingWithDifferentPins
-#else
-#define MAYBE_NoHttpsPoolingWithDifferentPins NoHttpsPoolingWithDifferentPins
-#endif
-TEST_P(QuicStreamFactoryTest, MAYBE_NoHttpsPoolingWithDifferentPins) {
+TEST_P(QuicStreamFactoryTest, NoHttpsPoolingWithDifferentPins) {
   base::test::ScopedFeatureList scoped_feature_list_;
   scoped_feature_list_.InitAndEnableFeature(
       net::features::kStaticKeyPinningEnforcement);
@@ -1986,6 +1975,7 @@ TEST_P(QuicStreamFactoryTest, MAYBE_NoHttpsPoolingWithDifferentPins) {
   url::SchemeHostPort server1(url::kHttpsScheme, kDefaultServerHostName, 443);
   url::SchemeHostPort server2(url::kHttpsScheme, kServer2HostName, 443);
   transport_security_state_.EnableStaticPinsForTesting();
+  transport_security_state_.SetPinningListAlwaysTimelyForTesting(true);
   ScopedTransportSecurityStateSource scoped_security_state_source;
 
   ProofVerifyDetailsChromium verify_details1 = DefaultProofVerifyDetails();

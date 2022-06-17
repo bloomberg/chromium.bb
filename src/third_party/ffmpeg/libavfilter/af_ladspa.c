@@ -29,10 +29,16 @@
 #include "libavutil/avassert.h"
 #include "libavutil/avstring.h"
 #include "libavutil/channel_layout.h"
+#include "libavutil/fifo.h"
 #include "libavutil/opt.h"
 #include "audio.h"
 #include "avfilter.h"
 #include "internal.h"
+
+typedef struct MetaItem {
+    int64_t pts;
+    int nb_samples;
+} MetaItem;
 
 typedef struct LADSPAContext {
     const AVClass *class;
@@ -62,11 +68,15 @@ typedef struct LADSPAContext {
 
     int sample_rate;
     int nb_samples;
+    int64_t next_in_pts;
+    int64_t next_out_pts;
     int64_t pts;
     int64_t duration;
     int in_trim;
     int out_pad;
     int latency;
+
+    AVFifo *fifo;
 } LADSPAContext;
 
 #define OFFSET(x) offsetof(LADSPAContext, x)
@@ -164,6 +174,10 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     LADSPAContext *s = ctx->priv;
     AVFrame *out;
     int i, h, p, new_out_samples;
+    int64_t out_duration;
+    int64_t in_duration;
+    int64_t in_pts;
+    MetaItem meta;
 
     av_assert0(in->ch_layout.nb_channels == (s->nb_inputs * s->nb_handles));
 
@@ -205,6 +219,9 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     for (i = 0; i < s->nb_outputcontrols; i++)
         print_ctl_info(ctx, AV_LOG_VERBOSE, s, i, s->ocmap, s->octlv, 1);
 
+    meta = (MetaItem){ in->pts, in->nb_samples };
+    av_fifo_write(s->fifo, &meta, 1);
+
     if (out != in)
         av_frame_free(&in);
 
@@ -227,6 +244,21 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
         out->nb_samples = new_out_samples;
     }
 
+    av_fifo_read(s->fifo, &meta, 1);
+
+    out_duration = av_rescale_q(out->nb_samples, inlink->time_base, av_make_q(1, out->sample_rate));
+    in_duration  = av_rescale_q(meta.nb_samples, inlink->time_base, av_make_q(1, out->sample_rate));
+    in_pts       = meta.pts;
+
+    if (s->next_out_pts != AV_NOPTS_VALUE && out->pts != s->next_out_pts &&
+        s->next_in_pts  != AV_NOPTS_VALUE && in_pts   == s->next_in_pts) {
+        out->pts = s->next_out_pts;
+    } else {
+        out->pts = in_pts;
+    }
+    s->next_in_pts  = in_pts   + in_duration;
+    s->next_out_pts = out->pts + out_duration;
+
     return ff_filter_frame(ctx->outputs[0], out);
 }
 
@@ -247,6 +279,7 @@ static int request_frame(AVFilterLink *outlink)
                 return AVERROR(ENOMEM);
 
             s->out_pad -= frame->nb_samples;
+            frame->pts = s->next_in_pts;
             return filter_frame(ctx->inputs[0], frame);
         }
         return ret;
@@ -654,6 +687,13 @@ static av_cold int init(AVFilterContext *ctx)
     av_log(ctx, AV_LOG_DEBUG, "input controls: %lu output controls: %lu\n",
                               s->nb_inputcontrols, s->nb_outputcontrols);
 
+    s->next_out_pts = AV_NOPTS_VALUE;
+    s->next_in_pts  = AV_NOPTS_VALUE;
+
+    s->fifo = av_fifo_alloc2(8, sizeof(MetaItem), AV_FIFO_FLAG_AUTO_GROW);
+    if (!s->fifo)
+        return AVERROR(ENOMEM);
+
     return 0;
 }
 
@@ -753,6 +793,8 @@ static av_cold void uninit(AVFilterContext *ctx)
     av_freep(&s->octlv);
     av_freep(&s->handles);
     av_freep(&s->ctl_needs_value);
+
+    av_fifo_freep2(&s->fifo);
 }
 
 static int process_command(AVFilterContext *ctx, const char *cmd, const char *args,

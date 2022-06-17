@@ -221,11 +221,11 @@ export function texelBlockAlignmentTestExpanderForValueToCoordinate({
   switch (coordinateToTest) {
     case 'x':
     case 'width':
-      return valuesToTestDivisibilityBy(kTextureFormatInfo[format].blockWidth!);
+      return valuesToTestDivisibilityBy(kTextureFormatInfo[format].blockWidth);
 
     case 'y':
     case 'height':
-      return valuesToTestDivisibilityBy(kTextureFormatInfo[format].blockHeight!);
+      return valuesToTestDivisibilityBy(kTextureFormatInfo[format].blockHeight);
 
     case 'z':
     case 'depthOrArrayLayers':

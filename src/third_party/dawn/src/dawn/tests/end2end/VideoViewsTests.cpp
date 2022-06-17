@@ -177,7 +177,7 @@ wgpu::ShaderModule VideoViewsTests::GetTestVertexShaderModule() const {
                     @builtin(position) position : vec4<f32>,
                 }
 
-                @stage(vertex)
+                @vertex
                 fn main(@builtin(vertex_index) VertexIndex : u32) -> VertexOut {
                     var pos = array<vec2<f32>, 6>(
                         vec2<f32>(-1.0, 1.0),
@@ -194,13 +194,25 @@ wgpu::ShaderModule VideoViewsTests::GetTestVertexShaderModule() const {
             })");
 }
 
+// Create video texture uninitialized.
+TEST_P(VideoViewsTests, CreateVideoTextureWithoutInitializedData) {
+    std::unique_ptr<VideoViewsTestBackend::PlatformTexture> platformTexture =
+        mBackend->CreateVideoTextureForTest(wgpu::TextureFormat::R8BG8Biplanar420Unorm,
+                                            wgpu::TextureUsage::TextureBinding,
+                                            /*isCheckerboard*/ false,
+                                            /*initialized*/ false);
+    ASSERT_NE(platformTexture.get(), nullptr);
+    mBackend->DestroyVideoTextureForTest(std::move(platformTexture));
+}
+
 // Samples the luminance (Y) plane from an imported NV12 texture into a single channel of an RGBA
 // output attachment and checks for the expected pixel value in the rendered quad.
 TEST_P(VideoViewsTests, NV12SampleYtoR) {
     std::unique_ptr<VideoViewsTestBackend::PlatformTexture> platformTexture =
         mBackend->CreateVideoTextureForTest(wgpu::TextureFormat::R8BG8Biplanar420Unorm,
                                             wgpu::TextureUsage::TextureBinding,
-                                            /*isCheckerboard*/ false);
+                                            /*isCheckerboard*/ false,
+                                            /*initialized*/ true);
     ASSERT_NE(platformTexture.get(), nullptr);
     if (!platformTexture->CanWrapAsWGPUTexture()) {
         mBackend->DestroyVideoTextureForTest(std::move(platformTexture));
@@ -218,7 +230,7 @@ TEST_P(VideoViewsTests, NV12SampleYtoR) {
             @group(0) @binding(0) var sampler0 : sampler;
             @group(0) @binding(1) var texture : texture_2d<f32>;
 
-            @stage(fragment)
+            @fragment
             fn main(@location(0) texCoord : vec2<f32>) -> @location(0) vec4<f32> {
                let y : f32 = textureSample(texture, sampler0, texCoord).r;
                return vec4<f32>(y, 0.0, 0.0, 1.0);
@@ -257,7 +269,8 @@ TEST_P(VideoViewsTests, NV12SampleUVtoRG) {
     std::unique_ptr<VideoViewsTestBackend::PlatformTexture> platformTexture =
         mBackend->CreateVideoTextureForTest(wgpu::TextureFormat::R8BG8Biplanar420Unorm,
                                             wgpu::TextureUsage::TextureBinding,
-                                            /*isCheckerboard*/ false);
+                                            /*isCheckerboard*/ false,
+                                            /*initialized*/ true);
     ASSERT_NE(platformTexture.get(), nullptr);
     if (!platformTexture->CanWrapAsWGPUTexture()) {
         mBackend->DestroyVideoTextureForTest(std::move(platformTexture));
@@ -276,7 +289,7 @@ TEST_P(VideoViewsTests, NV12SampleUVtoRG) {
             @group(0) @binding(0) var sampler0 : sampler;
             @group(0) @binding(1) var texture : texture_2d<f32>;
 
-            @stage(fragment)
+            @fragment
             fn main(@location(0) texCoord : vec2<f32>) -> @location(0) vec4<f32> {
                let u : f32 = textureSample(texture, sampler0, texCoord).r;
                let v : f32 = textureSample(texture, sampler0, texCoord).g;
@@ -320,7 +333,8 @@ TEST_P(VideoViewsTests, NV12SampleYUVtoRGB) {
     std::unique_ptr<VideoViewsTestBackend::PlatformTexture> platformTexture =
         mBackend->CreateVideoTextureForTest(wgpu::TextureFormat::R8BG8Biplanar420Unorm,
                                             wgpu::TextureUsage::TextureBinding,
-                                            /*isCheckerboard*/ true);
+                                            /*isCheckerboard*/ true,
+                                            /*initialized*/ true);
     ASSERT_NE(platformTexture.get(), nullptr);
     if (!platformTexture->CanWrapAsWGPUTexture()) {
         mBackend->DestroyVideoTextureForTest(std::move(platformTexture));
@@ -345,7 +359,7 @@ TEST_P(VideoViewsTests, NV12SampleYUVtoRGB) {
             @group(0) @binding(1) var lumaTexture : texture_2d<f32>;
             @group(0) @binding(2) var chromaTexture : texture_2d<f32>;
 
-            @stage(fragment)
+            @fragment
             fn main(@location(0) texCoord : vec2<f32>) -> @location(0) vec4<f32> {
                let y : f32 = textureSample(lumaTexture, sampler0, texCoord).r;
                let u : f32 = textureSample(chromaTexture, sampler0, texCoord).r;

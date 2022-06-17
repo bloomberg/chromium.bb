@@ -15,6 +15,7 @@
 #include <string>
 #include <vector>
 
+#include "absl/strings/string_view.h"
 #include "api/adaptation/resource.h"
 #include "api/media_types.h"
 #include "api/task_queue/task_queue_base.h"
@@ -104,10 +105,10 @@ class Call {
 
   virtual void DestroyAudioSendStream(AudioSendStream* send_stream) = 0;
 
-  virtual AudioReceiveStream* CreateAudioReceiveStream(
-      const AudioReceiveStream::Config& config) = 0;
+  virtual AudioReceiveStreamInterface* CreateAudioReceiveStream(
+      const AudioReceiveStreamInterface::Config& config) = 0;
   virtual void DestroyAudioReceiveStream(
-      AudioReceiveStream* receive_stream) = 0;
+      AudioReceiveStreamInterface* receive_stream) = 0;
 
   virtual VideoSendStream* CreateVideoSendStream(
       VideoSendStream::Config config,
@@ -118,12 +119,12 @@ class Call {
       std::unique_ptr<FecController> fec_controller);
   virtual void DestroyVideoSendStream(VideoSendStream* send_stream) = 0;
 
-  virtual VideoReceiveStream* CreateVideoReceiveStream(
-      VideoReceiveStream::Config configuration) = 0;
+  virtual VideoReceiveStreamInterface* CreateVideoReceiveStream(
+      VideoReceiveStreamInterface::Config configuration) = 0;
   virtual void DestroyVideoReceiveStream(
-      VideoReceiveStream* receive_stream) = 0;
+      VideoReceiveStreamInterface* receive_stream) = 0;
 
-  // In order for a created VideoReceiveStream to be aware that it is
+  // In order for a created VideoReceiveStreamInterface to be aware that it is
   // protected by a FlexfecReceiveStream, the latter should be created before
   // the former.
   virtual FlexfecReceiveStream* CreateFlexfecReceiveStream(
@@ -163,11 +164,15 @@ class Call {
 
   // Called when a receive stream's local ssrc has changed and association with
   // send streams needs to be updated.
-  virtual void OnLocalSsrcUpdated(AudioReceiveStream& stream,
+  virtual void OnLocalSsrcUpdated(AudioReceiveStreamInterface& stream,
+                                  uint32_t local_ssrc) = 0;
+  virtual void OnLocalSsrcUpdated(VideoReceiveStreamInterface& stream,
+                                  uint32_t local_ssrc) = 0;
+  virtual void OnLocalSsrcUpdated(FlexfecReceiveStream& stream,
                                   uint32_t local_ssrc) = 0;
 
-  virtual void OnUpdateSyncGroup(AudioReceiveStream& stream,
-                                 const std::string& sync_group) = 0;
+  virtual void OnUpdateSyncGroup(AudioReceiveStreamInterface& stream,
+                                 absl::string_view sync_group) = 0;
 
   virtual void OnSentPacket(const rtc::SentPacket& sent_packet) = 0;
 

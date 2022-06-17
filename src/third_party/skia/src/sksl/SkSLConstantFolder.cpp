@@ -14,7 +14,6 @@
 #include "src/sksl/SkSLAnalysis.h"
 #include "src/sksl/SkSLContext.h"
 #include "src/sksl/SkSLProgramSettings.h"
-#include "src/sksl/ir/SkSLConstructor.h"
 #include "src/sksl/ir/SkSLConstructorCompound.h"
 #include "src/sksl/ir/SkSLConstructorSplat.h"
 #include "src/sksl/ir/SkSLExpression.h"
@@ -24,9 +23,10 @@
 #include "src/sksl/ir/SkSLVariable.h"
 #include "src/sksl/ir/SkSLVariableReference.h"
 
-#include <math.h>
+#include <cmath>
 #include <limits>
 #include <optional>
+#include <string>
 #include <type_traits>
 #include <utility>
 
@@ -273,9 +273,9 @@ static std::unique_ptr<Expression> cast_expression(const Context& context,
                                                    Position pos,
                                                    const Expression& expr,
                                                    const Type& type) {
-    ExpressionArray ctorArgs;
-    ctorArgs.push_back(expr.clone());
-    return Constructor::Convert(context, pos, type, std::move(ctorArgs));
+    SkASSERT(type.componentType().matches(expr.type().componentType()));
+    return expr.type().isScalar() ? ConstructorSplat::Make(context, pos, type, expr.clone())
+                                  : expr.clone(pos);
 }
 
 static std::unique_ptr<Expression> negate_expression(const Context& context,
@@ -682,9 +682,10 @@ std::unique_ptr<Expression> ConstantFolder::Simplify(const Context& context,
                                       op, *right);
     }
 
-    // Perform constant folding on pairs of matrices or arrays.
+    // Perform constant folding on pairs of matrices, arrays or structs.
     if ((leftType.isMatrix() && rightType.isMatrix()) ||
-        (leftType.isArray() && rightType.isArray())) {
+        (leftType.isArray() && rightType.isArray()) ||
+        (leftType.isStruct() && rightType.isStruct())) {
         return simplify_constant_equality(context, pos, *left, op, *right);
     }
 

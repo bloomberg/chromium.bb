@@ -18,6 +18,7 @@
 #include "chrome/browser/autofill/address_normalizer_factory.h"
 #include "chrome/browser/autofill/autocomplete_history_manager_factory.h"
 #include "chrome/browser/autofill/autofill_offer_manager_factory.h"
+#include "chrome/browser/autofill/merchant_promo_code_manager_factory.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/autofill/risk_util.h"
 #include "chrome/browser/autofill/strike_database_factory.h"
@@ -94,7 +95,7 @@
 #include "chrome/browser/ui/android/autofill/card_name_fix_flow_view_android.h"
 #include "chrome/browser/ui/android/infobars/autofill_credit_card_filling_infobar.h"
 #include "chrome/browser/ui/android/infobars/autofill_offer_notification_infobar.h"
-#include "chrome/browser/ui/autofill/payments/offer_notification_infobar_controller_impl.h"
+#include "chrome/browser/ui/autofill/payments/offer_notification_controller_android.h"
 #include "components/autofill/core/browser/payments/autofill_credit_card_filling_infobar_delegate_mobile.h"
 #include "components/autofill/core/browser/payments/autofill_offer_notification_infobar_delegate_mobile.h"
 #include "components/autofill/core/browser/payments/autofill_save_card_infobar_delegate_mobile.h"
@@ -156,6 +157,16 @@ ChromeAutofillClient::GetAutocompleteHistoryManager() {
   return AutocompleteHistoryManagerFactory::GetForProfile(profile);
 }
 
+MerchantPromoCodeManager* ChromeAutofillClient::GetMerchantPromoCodeManager() {
+  if (!base::FeatureList::IsEnabled(
+          features::kAutofillFillMerchantPromoCodeFields)) {
+    return nullptr;
+  }
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+  return MerchantPromoCodeManagerFactory::GetForProfile(profile);
+}
+
 PrefService* ChromeAutofillClient::GetPrefs() {
   return const_cast<PrefService*>(base::as_const(*this).GetPrefs());
 }
@@ -200,7 +211,7 @@ ukm::UkmRecorder* ChromeAutofillClient::GetUkmRecorder() {
 }
 
 ukm::SourceId ChromeAutofillClient::GetUkmSourceId() {
-  return web_contents()->GetMainFrame()->GetPageUkmSourceId();
+  return web_contents()->GetPrimaryMainFrame()->GetPageUkmSourceId();
 }
 
 AddressNormalizer* ChromeAutofillClient::GetAddressNormalizer() {
@@ -767,10 +778,10 @@ void ChromeAutofillClient::UpdateOfferNotification(
     bool notification_has_been_shown) {
   DCHECK(offer);
   CreditCard* card =
-      offer->eligible_instrument_id.empty()
+      offer->GetEligibleInstrumentIds().empty()
           ? nullptr
           : GetPersonalDataManager()->GetCreditCardByInstrumentId(
-                offer->eligible_instrument_id[0]);
+                offer->GetEligibleInstrumentIds()[0]);
 
   if (offer->IsCardLinkedOffer() && !card)
     return;
@@ -781,8 +792,9 @@ void ChromeAutofillClient::UpdateOfferNotification(
     // it again.
     return;
   }
-  std::unique_ptr<OfferNotificationInfoBarControllerImpl> controller =
-      std::make_unique<OfferNotificationInfoBarControllerImpl>(web_contents());
+  OfferNotificationControllerAndroid::CreateForWebContents(web_contents());
+  OfferNotificationControllerAndroid* controller =
+      OfferNotificationControllerAndroid::FromWebContents(web_contents());
   controller->ShowIfNecessary(offer, card);
 #else
   OfferNotificationBubbleControllerImpl::CreateForWebContents(web_contents());
@@ -795,9 +807,9 @@ void ChromeAutofillClient::UpdateOfferNotification(
 
 void ChromeAutofillClient::DismissOfferNotification() {
 #if BUILDFLAG(IS_ANDROID)
-  std::unique_ptr<OfferNotificationInfoBarControllerImpl> controller =
-      std::make_unique<OfferNotificationInfoBarControllerImpl>(web_contents());
-  DCHECK(controller);
+  OfferNotificationControllerAndroid::CreateForWebContents(web_contents());
+  OfferNotificationControllerAndroid* controller =
+      OfferNotificationControllerAndroid::FromWebContents(web_contents());
   controller->Dismiss();
 #else
   OfferNotificationBubbleControllerImpl* controller =
@@ -877,13 +889,18 @@ bool ChromeAutofillClient::IsPasswordManagerEnabled() {
 }
 
 void ChromeAutofillClient::PropagateAutofillPredictions(
-    content::RenderFrameHost* rfh,
+    AutofillDriver* autofill_driver,
     const std::vector<FormStructure*>& forms) {
-  password_manager::ContentPasswordManagerDriver* driver =
+  // This cast is safe because all non-iOS clients use ContentAutofillDriver as
+  // AutofillDriver implementation.
+  content::RenderFrameHost* rfh =
+      static_cast<ContentAutofillDriver*>(autofill_driver)->render_frame_host();
+  password_manager::ContentPasswordManagerDriver* password_manager_driver =
       password_manager::ContentPasswordManagerDriver::GetForRenderFrameHost(
           rfh);
-  if (driver) {
-    driver->GetPasswordManager()->ProcessAutofillPredictions(driver, forms);
+  if (password_manager_driver) {
+    password_manager_driver->GetPasswordManager()->ProcessAutofillPredictions(
+        password_manager_driver, forms);
   }
 }
 
@@ -938,6 +955,14 @@ void ChromeAutofillClient::ExecuteCommand(int id) {
     }
   }
 #endif
+}
+
+void ChromeAutofillClient::OnPromoCodeSuggestionsFooterSelected(
+    const GURL& url) {
+  web_contents()->OpenURL(content::OpenURLParams(
+      url, content::Referrer(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui::PageTransition::PAGE_TRANSITION_AUTO_TOPLEVEL,
+      /*is_renderer_initiated=*/false));
 }
 
 LogManager* ChromeAutofillClient::GetLogManager() const {

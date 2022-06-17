@@ -39,6 +39,7 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/services/multidevice_setup/public/cpp/first_run_field_trial.h"
+#include "chrome/browser/ash/login/consolidated_consent_field_trial.h"
 #endif
 
 namespace {
@@ -57,6 +58,31 @@ void CreateFallbackSamplingTrialIfNeeded(base::FeatureList* feature_list) {
 void CreateFallbackUkmSamplingTrialIfNeeded(base::FeatureList* feature_list) {
   ukm::UkmRecorderImpl::CreateFallbackSamplingTrial(
       chrome::GetChannel() == version_info::Channel::STABLE, feature_list);
+}
+
+void MaybeCreateDCheckIsFatalFieldTrial(base::FeatureList* feature_list) {
+#if defined(DCHECK_IS_CONFIGURABLE)
+  // If DCHECK_IS_CONFIGURABLE then configure the DCheckIsFatal dynamic trial
+  // (see crbug.com/596231). This must be instantiated before the FeatureList
+  // is set, since FeatureList::SetInstance() will configure LOGGING_DCHECK
+  // based on the Feature's state, in DCHECK_IS_CONFIGURABLE builds.
+  // Always enable the trial at 50/50 per-session.
+  base::FieldTrial* const trial = base::FieldTrialList::FactoryGetFieldTrial(
+      "DCheckIsFatal", 100, "Default",
+      base::FieldTrial::RandomizationType::SESSION_RANDOMIZED,
+      /* default_group_number */ nullptr);
+  const int enabled_group = trial->AppendGroup("Enabled_20220517", 50);
+  trial->AppendGroup("Disabled_20220517", 50);
+
+  LOG(WARNING) << "DCheckIsFatal group: " << trial->group_name();
+
+  feature_list->RegisterFieldTrialOverride(
+      base::kDCheckIsFatalFeature.name,
+      ((trial->group() == enabled_group)
+           ? base::FeatureList::OVERRIDE_ENABLE_FEATURE
+           : base::FeatureList::OVERRIDE_DISABLE_FEATURE),
+      trial);
+#endif  // defined(DCHECK_IS_CONFIGURABLE)
 }
 
 }  // namespace
@@ -82,6 +108,10 @@ void ChromeBrowserFieldTrials::SetUpFeatureControllingFieldTrials(
     bool has_seed,
     const base::FieldTrial::EntropyProvider* low_entropy_provider,
     base::FeatureList* feature_list) {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  ash::consolidated_consent_field_trial::Create(feature_list, local_state_);
+#endif
+
   // Only create the fallback trials if there isn't already a variations seed
   // being applied. This should occur during first run when first-run variations
   // isn't supported. It's assumed that, if there is a seed, then it either
@@ -94,6 +124,8 @@ void ChromeBrowserFieldTrials::SetUpFeatureControllingFieldTrials(
     ash::multidevice_setup::CreateFirstRunFieldTrial(feature_list);
 #endif
   }
+
+  MaybeCreateDCheckIsFatalFieldTrial(feature_list);
 }
 
 void ChromeBrowserFieldTrials::RegisterSyntheticTrials() {

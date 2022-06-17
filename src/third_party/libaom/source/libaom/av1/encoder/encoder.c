@@ -470,7 +470,7 @@ void av1_init_seq_coding_tools(AV1_PRIMARY *const ppi,
 }
 
 static void init_config_sequence(struct AV1_PRIMARY *ppi,
-                                 AV1EncoderConfig *oxcf) {
+                                 const AV1EncoderConfig *oxcf) {
   SequenceHeader *const seq_params = &ppi->seq_params;
   const DecoderModelCfg *const dec_model_cfg = &oxcf->dec_model_cfg;
   const ColorCfg *const color_cfg = &oxcf->color_cfg;
@@ -546,7 +546,7 @@ static void init_config_sequence(struct AV1_PRIMARY *ppi,
   av1_change_config_seq(ppi, oxcf, NULL);
 }
 
-static void init_config(struct AV1_COMP *cpi, AV1EncoderConfig *oxcf) {
+static void init_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
   AV1_COMMON *const cm = &cpi->common;
   ResizePendingParams *resize_pending_params = &cpi->resize_pending_params;
 
@@ -863,7 +863,7 @@ static INLINE void update_frame_index_set(FRAME_INDEX_SET *frame_index_set,
 
 AV1_PRIMARY *av1_create_primary_compressor(
     struct aom_codec_pkt_list *pkt_list_head, int num_lap_buffers,
-    AV1EncoderConfig *oxcf) {
+    const AV1EncoderConfig *oxcf) {
   AV1_PRIMARY *volatile const ppi = aom_memalign(32, sizeof(AV1_PRIMARY));
   if (!ppi) return NULL;
   av1_zero(*ppi);
@@ -1222,7 +1222,7 @@ AV1_PRIMARY *av1_create_primary_compressor(
   return ppi;
 }
 
-AV1_COMP *av1_create_compressor(AV1_PRIMARY *ppi, AV1EncoderConfig *oxcf,
+AV1_COMP *av1_create_compressor(AV1_PRIMARY *ppi, const AV1EncoderConfig *oxcf,
                                 BufferPool *const pool, COMPRESSOR_STAGE stage,
                                 int lap_lag_in_frames) {
   AV1_COMP *volatile const cpi = aom_memalign(32, sizeof(AV1_COMP));
@@ -4319,12 +4319,10 @@ void av1_post_encode_updates(AV1_COMP *const cpi,
     av1_lookahead_pop(cpi->ppi->lookahead, cpi_data->flush,
                       cpi->compressor_stage);
   }
-#if CONFIG_FRAME_PARALLEL_ENCODE
   if (cpi->common.show_frame) {
     cpi->ppi->ts_start_last_show_frame = cpi_data->ts_frame_start;
     cpi->ppi->ts_end_last_show_frame = cpi_data->ts_frame_end;
   }
-#endif  // CONFIG_FRAME_PARALLEL_ENCODE
   if (ppi->level_params.keep_level_stats && !is_stat_generation_stage(cpi)) {
     // Initialize level info. at the beginning of each sequence.
     if (cm->current_frame.frame_type == KEY_FRAME &&

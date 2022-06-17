@@ -47,6 +47,7 @@ function makeBlitPipeline(
   multisample: { sample: number; render: number }
 ) {
   return device.createRenderPipeline({
+    layout: 'auto',
     vertex: {
       module: device.createShaderModule({
         code: `
@@ -116,13 +117,14 @@ g.test('texture_binding')
       viewFormats: [viewFormat],
     });
 
-    // Reinterepret the texture as the view format.
+    // Reinterpret the texture as the view format.
     // Make a texel view of the format that also reinterprets the data.
     const reinterpretedView = texture.createView({ format: viewFormat });
     const reinterpretedTexelView = TexelView.fromTexelsAsBytes(viewFormat, inputTexelView.bytes);
 
     // Create a pipeline to write data out to rgba8unorm.
     const pipeline = t.device.createComputePipeline({
+      layout: 'auto',
       compute: {
         module: t.device.createShaderModule({
           code: `

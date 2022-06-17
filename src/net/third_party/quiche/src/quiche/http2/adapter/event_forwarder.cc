@@ -116,12 +116,13 @@ bool EventForwarder::OnGoAwayFrameData(const char* goaway_data, size_t len) {
   return false;
 }
 
-void EventForwarder::OnHeaders(spdy::SpdyStreamId stream_id, bool has_priority,
+void EventForwarder::OnHeaders(spdy::SpdyStreamId stream_id,
+                               size_t payload_length, bool has_priority,
                                int weight, spdy::SpdyStreamId parent_stream_id,
                                bool exclusive, bool fin, bool end) {
   if (can_forward_()) {
-    receiver_.OnHeaders(stream_id, has_priority, weight, parent_stream_id,
-                        exclusive, fin, end);
+    receiver_.OnHeaders(stream_id, payload_length, has_priority, weight,
+                        parent_stream_id, exclusive, fin, end);
   }
 }
 
@@ -140,9 +141,10 @@ void EventForwarder::OnPushPromise(spdy::SpdyStreamId stream_id,
   }
 }
 
-void EventForwarder::OnContinuation(spdy::SpdyStreamId stream_id, bool end) {
+void EventForwarder::OnContinuation(spdy::SpdyStreamId stream_id,
+                                    size_t payload_length, bool end) {
   if (can_forward_()) {
-    receiver_.OnContinuation(stream_id, end);
+    receiver_.OnContinuation(stream_id, payload_length, end);
   }
 }
 

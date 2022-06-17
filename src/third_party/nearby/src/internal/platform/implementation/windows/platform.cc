@@ -208,10 +208,9 @@ ImplementationPlatform::CreateBluetoothClassicMedium(
   return absl::make_unique<windows::BluetoothClassicMedium>(adapter);
 }
 
-// TODO(b/184975123): replace with real implementation.
 std::unique_ptr<BleMedium> ImplementationPlatform::CreateBleMedium(
     BluetoothAdapter& adapter) {
-  return absl::make_unique<windows::BleMedium>();
+  return absl::make_unique<windows::BleMedium>(adapter);
 }
 
 // TODO(b/184975123): replace with real implementation.
@@ -228,7 +227,7 @@ ImplementationPlatform::CreateServerSyncMedium() {
 
 // TODO(b/184975123): replace with real implementation.
 std::unique_ptr<WifiMedium> ImplementationPlatform::CreateWifiMedium() {
-  return std::unique_ptr<WifiMedium>();
+  return std::make_unique<windows::WifiMedium>();
 }
 
 std::unique_ptr<WifiLanMedium> ImplementationPlatform::CreateWifiLanMedium() {

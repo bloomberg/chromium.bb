@@ -68,6 +68,8 @@ let kCodeSectionCode = 10;       // Function code
 let kDataSectionCode = 11;       // Data segments
 let kDataCountSectionCode = 12;  // Data segment count (between Element & Code)
 let kTagSectionCode = 13;        // Tag section (between Memory & Global)
+let kStringRefSectionCode = 14;  // Stringref literals section (between Tag & Global)
+let kLastKnownSectionCode = 14;
 
 // Name section types
 let kModuleNameCode = 0;
@@ -125,7 +127,11 @@ let kWasmExternRef = kWasmAnyRef;  // Alias for test backwards compatibility.
 let kWasmEqRef = -0x13;
 let kWasmI31Ref = -0x16;
 let kWasmDataRef = -0x19;
-let kWasmArrayRef = -0x20;
+let kWasmArrayRef = -0x1a;
+let kWasmStringRef = -0x1b;
+let kWasmStringViewWtf8 = -0x1c;
+let kWasmStringViewWtf16 = -0x1d;
+let kWasmStringViewIter = -0x1e;
 
 // Use the positive-byte versions inside function bodies.
 let kLeb128Mask = 0x7f;
@@ -137,6 +143,10 @@ let kEqRefCode = kWasmEqRef & kLeb128Mask;
 let kI31RefCode = kWasmI31Ref & kLeb128Mask;
 let kDataRefCode = kWasmDataRef & kLeb128Mask;
 let kArrayRefCode = kWasmArrayRef & kLeb128Mask;
+let kStringRefCode = kWasmStringRef & kLeb128Mask;
+let kStringViewWtf8Code = kWasmStringViewWtf8 & kLeb128Mask;
+let kStringViewWtf16Code = kWasmStringViewWtf16 & kLeb128Mask;
+let kStringViewIterCode = kWasmStringViewIter & kLeb128Mask;
 
 let kWasmOptRef = 0x6c;
 let kWasmRef = 0x6b;
@@ -522,6 +532,31 @@ let kExprBrOnNonFunc = 0x63;
 let kExprBrOnNonData = 0x64;
 let kExprBrOnNonI31 = 0x65;
 let kExprBrOnNonArray = 0x67;
+let kExprStringNewWtf8 = 0x80;
+let kExprStringNewWtf16 = 0x81;
+let kExprStringConst = 0x82;
+let kExprStringMeasureUtf8 = 0x83;
+let kExprStringMeasureWtf8 = 0x84;
+let kExprStringMeasureWtf16 = 0x85;
+let kExprStringEncodeWtf8 = 0x86;
+let kExprStringEncodeWtf16 = 0x87;
+let kExprStringConcat = 0x88;
+let kExprStringEq = 0x89;
+let kExprStringIsUsvSequence = 0x8a;
+let kExprStringAsWtf8 = 0x90;
+let kExprStringViewWtf8Advance = 0x91;
+let kExprStringViewWtf8Encode = 0x92;
+let kExprStringViewWtf8Slice = 0x93;
+let kExprStringAsWtf16 = 0x98;
+let kExprStringViewWtf16Length = 0x99;
+let kExprStringViewWtf16GetCodeunit = 0x9a;
+let kExprStringViewWtf16Encode = 0x9b;
+let kExprStringViewWtf16Slice = 0x9c;
+let kExprStringAsIter = 0xa0;
+let kExprStringViewIterCur = 0xa1
+let kExprStringViewIterAdvance = 0xa2;
+let kExprStringViewIterRewind = 0xa3
+let kExprStringViewIterSlice = 0xa4;
 
 // Numeric opcodes.
 let kExprI32SConvertSatF32 = 0x00;
@@ -1395,6 +1430,7 @@ class WasmModuleBuilder {
     this.types = [];
     this.imports = [];
     this.exports = [];
+    this.stringrefs = [];
     this.globals = [];
     this.tables = [];
     this.tags = [];
@@ -1475,6 +1511,11 @@ class WasmModuleBuilder {
     var pl = type.params.length;   // should have params
     var rl = type.results.length;  // should have results
     return this.types.length - 1;
+  }
+
+  addLiteralStringRef(str) {
+    this.stringrefs.push(str);
+    return this.stringrefs.length - 1;
   }
 
   addStruct(fields, supertype_idx = kNoSuperType) {
@@ -1896,6 +1937,18 @@ class WasmModuleBuilder {
         for (let type_index of wasm.tags) {
           section.emit_u32v(kExceptionAttribute);
           section.emit_u32v(type_index);
+        }
+      });
+    }
+
+    // Add stringref section.
+    if (wasm.stringrefs.length > 0) {
+      if (debug) print('emitting stringrefs @ ' + binary.length);
+      binary.emit_section(kStringRefSectionCode, section => {
+        section.emit_u32v(0);
+        section.emit_u32v(wasm.stringrefs.length);
+        for (let str of wasm.stringrefs) {
+          section.emit_string(str);
         }
       });
     }

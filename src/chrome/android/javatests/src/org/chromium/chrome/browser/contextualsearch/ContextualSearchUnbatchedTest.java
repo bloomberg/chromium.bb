@@ -192,9 +192,13 @@ public class ContextualSearchUnbatchedTest extends ContextualSearchInstrumentati
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    @ParameterAnnotations.UseMethodParameter(ContextualSearchManagerTest.FeatureParamProvider.class)
+    @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
     public void testTapWithLanguage(@EnabledFeature int enabledFeature) throws Exception {
         // Resolving a German word should trigger translation.
+        mFakeServer.setExpectations("german",
+                new ResolvedSearchTerm.Builder(false, 200, "Deutsche", "Deutsche")
+                        .setContextLanguage("de")
+                        .build());
         simulateResolveSearch("german");
 
         // Make sure we tried to trigger translate.
@@ -209,7 +213,12 @@ public class ContextualSearchUnbatchedTest extends ContextualSearchInstrumentati
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    public void testRelatedSearchesItemNotSelected() throws Exception {
+    @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
+    public void testRelatedSearchesItemNotSelected(@EnabledFeature int enabledFeature)
+            throws Exception {
+        // If this experiment under development is active, skip this test for now.
+        if (enabledFeature == EnabledFeature.CONTEXTUAL_TRIGGERS) return;
+
         FeatureList.setTestFeatures(ENABLE_RELATED_SEARCHES_IN_BAR);
         mPolicy.overrideAllowSendingPageUrlForTesting(true);
         FakeResolveSearch fakeSearch = simulateResolveSearch("intelligence");
@@ -219,6 +228,7 @@ public class ContextualSearchUnbatchedTest extends ContextualSearchInstrumentati
         Assert.assertTrue("Related Searches results should have been returned but were not!",
                 !resolvedSearchTerm.relatedSearchesJson().isEmpty());
         // Expand the panel and assert that it ends up in the right place.
+        // TODO(crbug.com/1258165): switch to expandPanelAndAssert();
         tapPeekingBarToExpandAndAssert();
 
         // Don't select any Related Searches suggestion, and close the panel
@@ -239,7 +249,7 @@ public class ContextualSearchUnbatchedTest extends ContextualSearchInstrumentati
         Assert.assertTrue("Related Searches results should have been returned but were not!",
                 !resolvedSearchTerm.relatedSearchesJson().isEmpty());
         // Expand the panel and assert that it ends up in the right place.
-        tapPeekingBarToExpandAndAssert();
+        expandPanelAndAssert();
 
         // Select a Related Searches suggestion.
         RelatedSearchesControl relatedSearchesControl = mPanel.getRelatedSearchesInBarControl();

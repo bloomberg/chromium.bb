@@ -14,6 +14,7 @@
 
 #include "dawn/native/CommandEncoder.h"
 
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -126,7 +127,8 @@ MaybeError ValidateOrSetAttachmentSize(const TextureViewBase* attachment,
                                        uint32_t* width,
                                        uint32_t* height) {
     const Extent3D& attachmentSize =
-        attachment->GetTexture()->GetMipLevelVirtualSize(attachment->GetBaseMipLevel());
+        attachment->GetTexture()->GetMipLevelSingleSubresourceVirtualSize(
+            attachment->GetBaseMipLevel());
 
     if (*width == 0) {
         DAWN_ASSERT(*height == 0);
@@ -190,9 +192,11 @@ MaybeError ValidateResolveTarget(const DeviceBase* device,
                     resolveTarget->GetLevelCount());
 
     const Extent3D& colorTextureSize =
-        attachment->GetTexture()->GetMipLevelVirtualSize(attachment->GetBaseMipLevel());
+        attachment->GetTexture()->GetMipLevelSingleSubresourceVirtualSize(
+            attachment->GetBaseMipLevel());
     const Extent3D& resolveTextureSize =
-        resolveTarget->GetTexture()->GetMipLevelVirtualSize(resolveTarget->GetBaseMipLevel());
+        resolveTarget->GetTexture()->GetMipLevelSingleSubresourceVirtualSize(
+            resolveTarget->GetBaseMipLevel());
     DAWN_INVALID_IF(colorTextureSize.width != resolveTextureSize.width ||
                         colorTextureSize.height != resolveTextureSize.height,
                     "The Resolve target %s size (width: %u, height: %u) does not match the color "
@@ -277,7 +281,16 @@ MaybeError ValidateRenderPassDepthStencilAttachment(
     DAWN_TRY(ValidateCanUseAs(attachment->GetTexture(), wgpu::TextureUsage::RenderAttachment,
                               usageValidationMode));
 
-    const Format& format = attachment->GetFormat();
+    // DS attachments must encompass all aspects of the texture, so we first check that this is
+    // true, which means that in the rest of the function we can assume that the view's format is
+    // the same as the texture's format.
+    const Format& format = attachment->GetTexture()->GetFormat();
+    DAWN_INVALID_IF(
+        attachment->GetAspects() != format.aspects,
+        "The depth stencil attachment %s must encompass all aspects of it's texture's format (%s).",
+        attachment, format.format);
+    ASSERT(attachment->GetFormat().format == format.format);
+
     DAWN_INVALID_IF(!format.HasDepthOrStencil(),
                     "The depth stencil attachment %s format (%s) is not a depth stencil format.",
                     attachment, format.format);
@@ -285,9 +298,6 @@ MaybeError ValidateRenderPassDepthStencilAttachment(
     DAWN_INVALID_IF(!format.isRenderable,
                     "The depth stencil attachment %s format (%s) is not renderable.", attachment,
                     format.format);
-
-    DAWN_INVALID_IF(attachment->GetAspects() != format.aspects,
-                    "The depth stencil attachment %s must encompass all aspects.", attachment);
 
     DAWN_INVALID_IF(
         attachment->GetAspects() == (Aspect::Depth | Aspect::Stencil) &&
@@ -405,6 +415,30 @@ MaybeError ValidateRenderPassDepthStencilAttachment(
     return {};
 }
 
+MaybeError ValidateTimestampLocationOnRenderPass(
+    wgpu::RenderPassTimestampLocation location,
+    const std::unordered_set<wgpu::RenderPassTimestampLocation>& writtenLocations) {
+    DAWN_TRY(ValidateRenderPassTimestampLocation(location));
+
+    DAWN_INVALID_IF(writtenLocations.find(location) != writtenLocations.end(),
+                    "There are two same RenderPassTimestampLocation %u in a render pass.",
+                    location);
+
+    return {};
+}
+
+MaybeError ValidateTimestampLocationOnComputePass(
+    wgpu::ComputePassTimestampLocation location,
+    const std::unordered_set<wgpu::ComputePassTimestampLocation>& writtenLocations) {
+    DAWN_TRY(ValidateComputePassTimestampLocation(location));
+
+    DAWN_INVALID_IF(writtenLocations.find(location) != writtenLocations.end(),
+                    "There are two same ComputePassTimestampLocation %u in a compute pass.",
+                    location);
+
+    return {};
+}
+
 MaybeError ValidateRenderPassDescriptor(DeviceBase* device,
                                         const RenderPassDescriptor* descriptor,
                                         uint32_t* width,
@@ -456,15 +490,22 @@ MaybeError ValidateRenderPassDescriptor(DeviceBase* device,
         // not validated and encoded one by one, but encoded together after passing the
         // validation.
         QueryAvailabilityMap usedQueries;
+        // TODO(https://crbug.com/dawn/1452):
+        // 1. Add an enum that's TimestampLocationMask and has bit values.
+        // 2. Add a function with a switch that converts from one to the other.
+        // 3. type alias the ityp::bitset for that to call it TimestampLocationSet.
+        // 4. Use it here.
+        std::unordered_set<wgpu::RenderPassTimestampLocation> writtenLocations;
         for (uint32_t i = 0; i < descriptor->timestampWriteCount; ++i) {
             QuerySetBase* querySet = descriptor->timestampWrites[i].querySet;
             DAWN_ASSERT(querySet != nullptr);
             uint32_t queryIndex = descriptor->timestampWrites[i].queryIndex;
             DAWN_TRY_CONTEXT(ValidateTimestampQuery(device, querySet, queryIndex),
                              "validating querySet and queryIndex of timestampWrites[%u].", i);
-            DAWN_TRY_CONTEXT(
-                ValidateRenderPassTimestampLocation(descriptor->timestampWrites[i].location),
-                "validating location of timestampWrites[%u].", i);
+            DAWN_TRY_CONTEXT(ValidateTimestampLocationOnRenderPass(
+                                 descriptor->timestampWrites[i].location, writtenLocations),
+                             "validating location of timestampWrites[%u].", i);
+            writtenLocations.insert(descriptor->timestampWrites[i].location);
 
             auto checkIt = usedQueries.find(querySet);
             DAWN_INVALID_IF(checkIt != usedQueries.end() && checkIt->second[queryIndex],
@@ -494,14 +535,21 @@ MaybeError ValidateComputePassDescriptor(const DeviceBase* device,
     if (descriptor->timestampWriteCount > 0) {
         DAWN_ASSERT(descriptor->timestampWrites != nullptr);
 
+        // TODO(https://crbug.com/dawn/1452):
+        // 1. Add an enum that's TimestampLocationMask and has bit values.
+        // 2. Add a function with a switch that converts from one to the other.
+        // 3. type alias the ityp::bitset for that to call it TimestampLocationSet.
+        // 4. Use it here.
+        std::unordered_set<wgpu::ComputePassTimestampLocation> writtenLocations;
         for (uint32_t i = 0; i < descriptor->timestampWriteCount; ++i) {
             DAWN_ASSERT(descriptor->timestampWrites[i].querySet != nullptr);
             DAWN_TRY_CONTEXT(ValidateTimestampQuery(device, descriptor->timestampWrites[i].querySet,
                                                     descriptor->timestampWrites[i].queryIndex),
                              "validating querySet and queryIndex of timestampWrites[%u].", i);
-            DAWN_TRY_CONTEXT(
-                ValidateComputePassTimestampLocation(descriptor->timestampWrites[i].location),
-                "validating location of timestampWrites[%u].", i);
+            DAWN_TRY_CONTEXT(ValidateTimestampLocationOnComputePass(
+                                 descriptor->timestampWrites[i].location, writtenLocations),
+                             "validating location of timestampWrites[%u].", i);
+            writtenLocations.insert(descriptor->timestampWrites[i].location);
         }
     }
 
@@ -842,6 +890,15 @@ Ref<RenderPassEncoder> CommandEncoder::BeginRenderPass(const RenderPassDescripto
                 } else {
                     cmd->depthStencilAttachment.clearStencil =
                         descriptor->depthStencilAttachment->stencilClearValue;
+                }
+                if (view->GetFormat().HasStencil()) {
+                    // GPURenderPassDepthStencilAttachment.stencilClearValue will be converted to
+                    // the type of the stencil aspect of view by taking the same number of LSBs as
+                    // the number of bits in the stencil aspect of one texel block of view.
+                    ASSERT(view->GetFormat()
+                               .GetAspectInfo(dawn::native::Aspect::Stencil)
+                               .block.byteSize == 1u);
+                    cmd->depthStencilAttachment.clearStencil &= 0xFF;
                 }
 
                 cmd->depthStencilAttachment.depthReadOnly =

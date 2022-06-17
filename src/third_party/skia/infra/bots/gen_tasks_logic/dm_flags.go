@@ -145,7 +145,7 @@ func (b *taskBuilder) dmFlags(internalHardwareLabel string) {
 	//  - https://skia.googlesource.com/skia/+/ce06e261e68848ae21cac1052abc16bc07b961bf/tests/ProcessorTest.cpp#307
 	// Not MSAN due to:
 	//  - https://skia.googlesource.com/skia/+/0ac06e47269a40c177747310a613d213c95d1d6d/infra/bots/recipe_modules/flavor/gn_flavor.py#80
-	if !b.os("Android") && !b.extraConfig("MSAN") {
+	if !b.matchOs("Android") && !b.extraConfig("MSAN") {
 		args = append(args, "--randomProcessorTest")
 	}
 
@@ -176,10 +176,6 @@ func (b *taskBuilder) dmFlags(internalHardwareLabel string) {
 	glPrefix := ""
 	if b.extraConfig("SwiftShader") {
 		configs = append(configs, "vk", "vkdmsaa")
-		// skbug.com/12820
-		skip(ALL, "gm", ALL, "ycbcrimage")
-		// skbug.com/12820
-		skip(ALL, "test", ALL, "VkYCbcrSampler_DrawImageWithYcbcrSampler")
 		// skbug.com/12826
 		skip(ALL, "test", ALL, "GrThreadSafeCache16Verts")
 		// skbug.com/12829
@@ -223,7 +219,7 @@ func (b *taskBuilder) dmFlags(internalHardwareLabel string) {
 		// Use 4x MSAA for all our testing. It's more consistent and 8x MSAA is nondeterministic (by
 		// design) on NVIDIA hardware. The problem is especially bad on ANGLE.  skia:6813 skia:6545
 		sampleCount = 4
-		if b.os("Android", "iOS") {
+		if b.matchOs("Android") || b.os("iOS") {
 			glPrefix = "gles"
 			// MSAA is disabled on Pixel3a (https://b.corp.google.com/issues/143074513).
 			// MSAA is disabled on Pixel5 (https://skbug.com/11152).
@@ -405,13 +401,6 @@ func (b *taskBuilder) dmFlags(internalHardwareLabel string) {
 					// M1 Macs fail this test for sRGB color types
 					// skbug.com/13289
 					skip(ALL, "test", ALL, "TransferPixelsToTextureTest")
-				}
-
-				if b.model("MacBookAir7.2") {
-					// This issue may be more widespread?
-					// skbug.com/13290
-					skip(ALL, "test", ALL, "SkSLMatricesNonsquare_GPU")
-					skip(ALL, "test", ALL, "SkSLMatrixScalarMath_GPU")
 				}
 			}
 		}
@@ -812,7 +801,7 @@ func (b *taskBuilder) dmFlags(internalHardwareLabel string) {
 	// avoid lots of images on Gold.
 	skip(ALL, "image", "gen_platf", "error")
 
-	if b.os("Android", "iOS") {
+	if b.matchOs("Android") || b.os("iOS") {
 		// This test crashes the N9 (perhaps because of large malloc/frees). It also
 		// is fairly slow and not platform-specific. So we just disable it on all of
 		// Android and iOS. skia:5438
@@ -1000,7 +989,7 @@ func (b *taskBuilder) dmFlags(internalHardwareLabel string) {
 	}
 
 	if b.model("Pixel3") || b.model("Pixel2XL") {
-		skip(ALL, "tests", ALL, "SkSLEmptyBlocksES3_GPU")  // skia:13309
+		skip(ALL, "tests", ALL, "SkSLEmptyBlocksES3_GPU") // skia:13309
 	}
 
 	if b.matchGpu("Adreno[3456]") { // disable broken tests on Adreno 3/4/5/6xx
@@ -1022,7 +1011,11 @@ func (b *taskBuilder) dmFlags(internalHardwareLabel string) {
 	}
 
 	if b.matchGpu("Adreno6") && !b.extraConfig("Vulkan") { // disable broken tests on Adreno 6xx GLSL
-		skip(ALL, "tests", ALL, "SkSLIntrinsicIsInf_GPU") // skia:12377
+		skip(ALL, "tests", ALL, "SkSLIntrinsicIsInf_GPU")     // skia:12377
+	}
+
+	if b.matchGpu("Adreno[56]") && !b.extraConfig("Vulkan") { // disable broken tests on Adreno 5/6xx GLSL
+		skip(ALL, "tests", ALL, "SkSLStructFieldFolding_GPU") // skia:13393
 	}
 
 	if b.matchGpu("Adreno[56]") && b.extraConfig("Vulkan") { // disable broken tests on Adreno 5/6xx Vulkan
@@ -1046,6 +1039,7 @@ func (b *taskBuilder) dmFlags(internalHardwareLabel string) {
 
 	if b.gpu("IntelIris6100", "IntelHD4400") && b.matchOs("Win") && !b.extraConfig("Vulkan") {
 		skip(ALL, "tests", ALL, "SkSLVectorToMatrixCast_GPU") // skia:12179, vec4(mat2) crash
+		skip(ALL, "tests", ALL, "SkSLTrivialArgumentsInlineDirectly_GPU") // skia:12179 again
 		skip(ALL, "tests", ALL, "SkSLVectorScalarMath_GPU")   // skia:11919
 		skip(ALL, "tests", ALL, "SkSLMatrixFoldingES2_GPU")   // skia:11919
 	}
@@ -1054,6 +1048,7 @@ func (b *taskBuilder) dmFlags(internalHardwareLabel string) {
 		skip(ALL, "tests", ALL, "SkSLReturnsValueOnEveryPathES3_GPU")     // skia:12465
 		skip(ALL, "tests", ALL, "SkSLReturnsValueOnEveryPathES3_GPU")     // skia:12465
 		skip(ALL, "tests", ALL, "SkSLOutParamsAreDistinctFromGlobal_GPU") // skia:13115
+		skip(ALL, "tests", ALL, "SkSLStructFieldFolding_GPU")             // skia:13393
 	}
 
 	if b.extraConfig("Vulkan") && b.isLinux() && b.matchGpu("Intel") {
@@ -1082,10 +1077,15 @@ func (b *taskBuilder) dmFlags(internalHardwareLabel string) {
 			skip(ALL, "tests", ALL, "SkSLMatrixConstructorsES2_GPU") // skia:12443
 			skip(ALL, "tests", ALL, "SkSLMatrixConstructorsES3_GPU") // skia:12443
 
-			// Nvidia drivers erroneously constant-fold expressions with side-effects in matrix and
-			// vector constructors when compiling GLSL.
-			skip(ALL, "tests", ALL, "SkSLPreserveSideEffects_GPU") // skia:13035
+			// Nvidia drivers erroneously constant-fold expressions with side-effects in
+			// constructors when compiling GLSL.
+			skip(ALL, "tests", ALL, "SkSLPreserveSideEffects_GPU")  // skia:13035
+			skip(ALL, "tests", ALL, "SkSLStructFieldNoFolding_GPU") // skia:13395
 		}
+	}
+
+	if b.gpu("RTX3060") && b.extraConfig("Vulkan") {
+		skip(ALL, "gm", ALL, "blurcircles2") // skia:13342
 	}
 
 	if b.gpu("Tegra3") && !b.extraConfig("Vulkan") {
@@ -1117,10 +1117,6 @@ func (b *taskBuilder) dmFlags(internalHardwareLabel string) {
 		skip(ALL, "tests", ALL, "SkSLMatrixConstructorsES3_GPU")
 	}
 
-	if b.extraConfig("Vulkan") && b.gpu("RadeonVega6") && b.matchOs("Win10") {
-		skip(ALL, "gm", ALL, "ycbcrimage")                                 // skia:13265
-		skip(ALL, "test", ALL, "VkYCbcrSampler_DrawImageWithYcbcrSampler") // skia:13265
-	}
 
 	if b.matchGpu("Intel") { // some Intel GPUs don't return zero for the derivative of a uniform
 		skip(ALL, "tests", ALL, "SkSLIntrinsicDFdy_GPU")

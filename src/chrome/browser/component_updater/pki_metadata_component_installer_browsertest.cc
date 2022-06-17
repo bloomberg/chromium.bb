@@ -7,6 +7,7 @@
 
 #include "base/callback_forward.h"
 #include "base/command_line.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/component_updater/pki_metadata_component_installer.h"
@@ -148,7 +149,7 @@ IN_PROC_BROWSER_TEST_P(PKIMetadataComponentUpdaterTest,
 
   // Check that the page is blocked depending on CT enforcement.
   content::WebContents* tab = chrome_test_utils::GetActiveWebContents(this);
-  ASSERT_TRUE(WaitForRenderFrameReady(tab->GetMainFrame()));
+  ASSERT_TRUE(WaitForRenderFrameReady(tab->GetPrimaryMainFrame()));
   if (GetParam() == CTEnforcement::kEnabled) {
     EXPECT_NE(u"OK", chrome_test_utils::GetActiveWebContents(this)->GetTitle());
   } else {
@@ -163,7 +164,7 @@ IN_PROC_BROWSER_TEST_P(PKIMetadataComponentUpdaterTest,
   // Check that the page is still blocked depending on CT enforcement.
   ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(), https_server_ok.GetURL("/simple.html")));
-  ASSERT_TRUE(WaitForRenderFrameReady(tab->GetMainFrame()));
+  ASSERT_TRUE(WaitForRenderFrameReady(tab->GetPrimaryMainFrame()));
   if (GetParam() == CTEnforcement::kEnabled) {
     EXPECT_NE(u"OK", chrome_test_utils::GetActiveWebContents(this)->GetTitle());
   } else {
@@ -183,6 +184,8 @@ class PKIMetadataComponentChromeRootStoreUpdateTest
       public PKIMetadataComponentInstallerService::Observer {
  public:
   void SetUpInProcessBrowserTestFixture() override {
+    SystemNetworkContextManager::SetEnableCertificateTransparencyForTesting(
+        false);
     PKIMetadataComponentInstallerService::GetInstance()->AddObserver(this);
     InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
     ASSERT_TRUE(component_dir_.CreateUniqueTempDir());
@@ -191,6 +194,8 @@ class PKIMetadataComponentChromeRootStoreUpdateTest
 
   void TearDownInProcessBrowserTestFixture() override {
     PKIMetadataComponentInstallerService::GetInstance()->RemoveObserver(this);
+    SystemNetworkContextManager::SetEnableCertificateTransparencyForTesting(
+        absl::nullopt);
   }
 
   class CRSWaiter {
@@ -203,7 +208,7 @@ class PKIMetadataComponentChromeRootStoreUpdateTest
 
    private:
     base::RunLoop run_loop_;
-    PKIMetadataComponentChromeRootStoreUpdateTest* test_;
+    raw_ptr<PKIMetadataComponentChromeRootStoreUpdateTest> test_;
   };
 
  protected:
@@ -247,7 +252,7 @@ IN_PROC_BROWSER_TEST_F(PKIMetadataComponentChromeRootStoreUpdateTest,
 
   // Check that the page is blocked depending on contents of Chrome Root Store.
   content::WebContents* tab = chrome_test_utils::GetActiveWebContents(this);
-  ASSERT_TRUE(WaitForRenderFrameReady(tab->GetMainFrame()));
+  ASSERT_TRUE(WaitForRenderFrameReady(tab->GetPrimaryMainFrame()));
   EXPECT_NE(chrome_test_utils::GetActiveWebContents(this)->GetTitle(), u"OK");
   ssl_test_util::CheckAuthenticationBrokenState(
       tab, net::CERT_STATUS_AUTHORITY_INVALID,
@@ -284,7 +289,7 @@ IN_PROC_BROWSER_TEST_F(PKIMetadataComponentChromeRootStoreUpdateTest,
 
   // Check that the page is allowed due to contents of Chrome Root Store.
   tab = chrome_test_utils::GetActiveWebContents(this);
-  ASSERT_TRUE(WaitForRenderFrameReady(tab->GetMainFrame()));
+  ASSERT_TRUE(WaitForRenderFrameReady(tab->GetPrimaryMainFrame()));
   EXPECT_EQ(chrome_test_utils::GetActiveWebContents(this)->GetTitle(), u"OK");
   ssl_test_util::CheckAuthenticatedState(tab, ssl_test_util::AuthState::NONE);
 
@@ -318,7 +323,7 @@ IN_PROC_BROWSER_TEST_F(PKIMetadataComponentChromeRootStoreUpdateTest,
 
   // Check that the page is blocked depending on contents of Chrome Root Store.
   tab = chrome_test_utils::GetActiveWebContents(this);
-  ASSERT_TRUE(WaitForRenderFrameReady(tab->GetMainFrame()));
+  ASSERT_TRUE(WaitForRenderFrameReady(tab->GetPrimaryMainFrame()));
   EXPECT_NE(chrome_test_utils::GetActiveWebContents(this)->GetTitle(), u"OK");
   ssl_test_util::CheckAuthenticationBrokenState(
       tab, net::CERT_STATUS_AUTHORITY_INVALID,

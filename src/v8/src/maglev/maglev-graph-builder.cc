@@ -4,6 +4,7 @@
 
 #include "src/maglev/maglev-graph-builder.h"
 
+#include "src/base/v8-fallthrough.h"
 #include "src/common/globals.h"
 #include "src/compiler/compilation-dependencies.h"
 #include "src/compiler/feedback-source.h"
@@ -12,6 +13,7 @@
 #include "src/handles/maybe-handles-inl.h"
 #include "src/ic/handler-configuration-inl.h"
 #include "src/interpreter/bytecode-flags.h"
+#include "src/interpreter/bytecodes.h"
 #include "src/maglev/maglev-compilation-unit.h"
 #include "src/maglev/maglev-interpreter-frame-state.h"
 #include "src/maglev/maglev-ir.h"
@@ -44,7 +46,7 @@ MaglevGraphBuilder::MaglevGraphBuilder(LocalIsolate* local_isolate,
           bytecode().length() + 1)),
       current_interpreter_frame_(*compilation_unit_) {
   memset(merge_states_, 0,
-         bytecode().length() * sizeof(InterpreterFrameState*));
+         (bytecode().length() + 1) * sizeof(InterpreterFrameState*));
   // Default construct basic block refs.
   // TODO(leszeks): This could be a memset of nullptr to ..._jump_targets_.
   for (int i = 0; i < bytecode().length(); ++i) {
@@ -67,8 +69,7 @@ MaglevGraphBuilder::MaglevGraphBuilder(LocalIsolate* local_isolate,
     int offset = offset_and_info.first;
     const compiler::LoopInfo& loop_info = offset_and_info.second;
 
-    const compiler::BytecodeLivenessState* liveness =
-        bytecode_analysis().GetInLivenessFor(offset);
+    const compiler::BytecodeLivenessState* liveness = GetInLivenessFor(offset);
 
     merge_states_[offset] = zone()->New<MergePointInterpreterFrameState>(
         *compilation_unit_, offset, NumPredecessors(offset), liveness,
@@ -156,9 +157,36 @@ using GenericNodeForOperation =
 
 // TODO(victorgomes): Remove this once all operations have fast paths.
 template <Operation kOperation>
-bool BinaryOperationHasFastPath() {
+bool BinaryOperationHasInt32FastPath() {
   switch (kOperation) {
     case Operation::kAdd:
+    case Operation::kSubtract:
+    case Operation::kMultiply:
+    case Operation::kDivide:
+    case Operation::kBitwiseAnd:
+    case Operation::kBitwiseOr:
+    case Operation::kBitwiseXor:
+    case Operation::kShiftLeft:
+    case Operation::kShiftRight:
+    case Operation::kShiftRightLogical:
+    case Operation::kEqual:
+    case Operation::kStrictEqual:
+    case Operation::kLessThan:
+    case Operation::kLessThanOrEqual:
+    case Operation::kGreaterThan:
+    case Operation::kGreaterThanOrEqual:
+      return true;
+    default:
+      return false;
+  }
+}
+template <Operation kOperation>
+bool BinaryOperationHasFloat64FastPath() {
+  switch (kOperation) {
+    case Operation::kAdd:
+    case Operation::kSubtract:
+    case Operation::kMultiply:
+    case Operation::kDivide:
       return true;
     default:
       return false;
@@ -170,17 +198,42 @@ bool BinaryOperationHasFastPath() {
 // MAP_OPERATION_TO_NODES are tuples with the following format:
 // (Operation name,
 //  Int32 operation node,
-//  Unit of int32 operation (e.g, 0 for add/sub and 1 for mul/div),
-//  Float64 operation node).
-#define MAP_OPERATION_TO_NODES(V) V(Add, Int32AddWithOverflow, 0, Float64Add)
+//  Unit of int32 operation (e.g, 0 for add/sub and 1 for mul/div))
+#define MAP_OPERATION_TO_INT32_NODE(V)      \
+  V(Add, Int32AddWithOverflow, 0)           \
+  V(Subtract, Int32SubtractWithOverflow, 0) \
+  V(Multiply, Int32MultiplyWithOverflow, 1) \
+  V(Divide, Int32DivideWithOverflow, 1)     \
+  V(BitwiseAnd, Int32BitwiseAnd, ~0)        \
+  V(BitwiseOr, Int32BitwiseOr, 0)           \
+  V(BitwiseXor, Int32BitwiseXor, 0)         \
+  V(ShiftLeft, Int32ShiftLeft, 0)           \
+  V(ShiftRight, Int32ShiftRight, 0)         \
+  V(ShiftRightLogical, Int32ShiftRightLogical, 0)
+
+#define MAP_COMPARE_OPERATION_TO_INT32_NODE(V) \
+  V(Equal, Int32Equal)                         \
+  V(StrictEqual, Int32StrictEqual)             \
+  V(LessThan, Int32LessThan)                   \
+  V(LessThanOrEqual, Int32LessThanOrEqual)     \
+  V(GreaterThan, Int32GreaterThan)             \
+  V(GreaterThanOrEqual, Int32GreaterThanOrEqual)
+
+// MAP_OPERATION_TO_FLOAT64_NODE are tuples with the following format:
+// (Operation name, Float64 operation node).
+#define MAP_OPERATION_TO_FLOAT64_NODE(V) \
+  V(Add, Float64Add)                     \
+  V(Subtract, Float64Subtract)           \
+  V(Multiply, Float64Multiply)           \
+  V(Divide, Float64Divide)
 
 template <Operation kOperation>
 static int Int32Unit() {
   switch (kOperation) {
-#define CASE(op, _, unit, ...) \
+#define CASE(op, OpNode, unit) \
   case Operation::k##op:       \
     return unit;
-    MAP_OPERATION_TO_NODES(CASE)
+    MAP_OPERATION_TO_INT32_NODE(CASE)
 #undef CASE
     default:
       UNREACHABLE();
@@ -191,10 +244,15 @@ template <Operation kOperation>
 ValueNode* MaglevGraphBuilder::AddNewInt32BinaryOperationNode(
     std::initializer_list<ValueNode*> inputs) {
   switch (kOperation) {
-#define CASE(op, OpNode, ...) \
-  case Operation::k##op:      \
+#define CASE(op, OpNode, unit) \
+  case Operation::k##op:       \
     return AddNewNode<OpNode>(inputs);
-    MAP_OPERATION_TO_NODES(CASE)
+    MAP_OPERATION_TO_INT32_NODE(CASE)
+#undef CASE
+#define CASE(op, OpNode) \
+  case Operation::k##op: \
+    return AddNewNode<OpNode>(inputs);
+    MAP_COMPARE_OPERATION_TO_INT32_NODE(CASE)
 #undef CASE
     default:
       UNREACHABLE();
@@ -205,10 +263,10 @@ template <Operation kOperation>
 ValueNode* MaglevGraphBuilder::AddNewFloat64BinaryOperationNode(
     std::initializer_list<ValueNode*> inputs) {
   switch (kOperation) {
-#define CASE(op, _, u, OpNode) \
-  case Operation::k##op:       \
+#define CASE(op, OpNode) \
+  case Operation::k##op: \
     return AddNewNode<OpNode>(inputs);
-    MAP_OPERATION_TO_NODES(CASE)
+    MAP_OPERATION_TO_FLOAT64_NODE(CASE)
 #undef CASE
     default:
       UNREACHABLE();
@@ -300,18 +358,29 @@ void MaglevGraphBuilder::VisitUnaryOperation() {
 template <Operation kOperation>
 void MaglevGraphBuilder::VisitBinaryOperation() {
   FeedbackNexus nexus = FeedbackNexusForOperand(1);
-  if (BinaryOperationHasFastPath<kOperation>()) {
-    switch (nexus.GetBinaryOperationFeedback()) {
-      case BinaryOperationHint::kSignedSmall:
+  switch (nexus.GetBinaryOperationFeedback()) {
+    case BinaryOperationHint::kSignedSmall:
+      if (BinaryOperationHasInt32FastPath<kOperation>()) {
         BuildInt32BinaryOperationNode<kOperation>();
         return;
-      case BinaryOperationHint::kNumber:
+      }
+      break;
+    case BinaryOperationHint::kSignedSmallInputs:
+    case BinaryOperationHint::kNumber:
+      if (BinaryOperationHasFloat64FastPath<kOperation>()) {
         BuildFloat64BinaryOperationNode<kOperation>();
         return;
-      default:
-        // Fallback to generic node.
-        break;
-    }
+        // } else if (BinaryOperationHasInt32FastPath<kOperation>()) {
+        //   // Fall back to int32 fast path if there is one (this will be the
+        //   case
+        //   // for operations that deal with bits rather than numbers).
+        //   BuildInt32BinaryOperationNode<kOperation>();
+        //   return;
+      }
+      break;
+    default:
+      // Fallback to generic node.
+      break;
   }
   BuildGenericBinaryOperationNode<kOperation>();
 }
@@ -319,20 +388,118 @@ void MaglevGraphBuilder::VisitBinaryOperation() {
 template <Operation kOperation>
 void MaglevGraphBuilder::VisitBinarySmiOperation() {
   FeedbackNexus nexus = FeedbackNexusForOperand(1);
-  if (BinaryOperationHasFastPath<kOperation>()) {
-    switch (nexus.GetBinaryOperationFeedback()) {
-      case BinaryOperationHint::kSignedSmall:
+  switch (nexus.GetBinaryOperationFeedback()) {
+    case BinaryOperationHint::kSignedSmall:
+      if (BinaryOperationHasInt32FastPath<kOperation>()) {
         BuildInt32BinarySmiOperationNode<kOperation>();
         return;
-      case BinaryOperationHint::kNumber:
+      }
+      break;
+    case BinaryOperationHint::kSignedSmallInputs:
+    case BinaryOperationHint::kNumber:
+      if (BinaryOperationHasFloat64FastPath<kOperation>()) {
         BuildFloat64BinarySmiOperationNode<kOperation>();
         return;
-      default:
-        // Fallback to generic node.
-        break;
-    }
+        // } else if (BinaryOperationHasInt32FastPath<kOperation>()) {
+        //   // Fall back to int32 fast path if there is one (this will be the
+        //   case
+        //   // for operations that deal with bits rather than numbers).
+        //   BuildInt32BinarySmiOperationNode<kOperation>();
+        //   return;
+      }
+      break;
+    default:
+      // Fallback to generic node.
+      break;
   }
   BuildGenericBinarySmiOperationNode<kOperation>();
+}
+
+bool MaglevGraphBuilder::TryBuildCompareOperationBranch(Operation operation,
+                                                        ValueNode* left,
+                                                        ValueNode* right) {
+  // Don't emit the shortcut branch if the next bytecode is a merge target.
+  if (IsOffsetAMergePoint(next_offset())) return false;
+
+  interpreter::Bytecode next_bytecode = iterator_.next_bytecode();
+  int true_offset;
+  int false_offset;
+  switch (next_bytecode) {
+    case interpreter::Bytecode::kJumpIfFalse:
+    case interpreter::Bytecode::kJumpIfFalseConstant:
+    case interpreter::Bytecode::kJumpIfToBooleanFalse:
+    case interpreter::Bytecode::kJumpIfToBooleanFalseConstant:
+      // This jump must kill the accumulator, otherwise we need to
+      // materialize the actual boolean value.
+      if (GetOutLivenessFor(next_offset())->AccumulatorIsLive()) return false;
+      // Advance the iterator past the test to the jump, skipping
+      // emitting the test.
+      iterator_.Advance();
+      true_offset = next_offset();
+      false_offset = iterator_.GetJumpTargetOffset();
+      break;
+    case interpreter::Bytecode::kJumpIfTrue:
+    case interpreter::Bytecode::kJumpIfTrueConstant:
+    case interpreter::Bytecode::kJumpIfToBooleanTrue:
+    case interpreter::Bytecode::kJumpIfToBooleanTrueConstant:
+      // This jump must kill the accumulator, otherwise we need to
+      // materialize the actual boolean value.
+      if (GetOutLivenessFor(next_offset())->AccumulatorIsLive()) return false;
+      // Advance the iterator past the test to the jump, skipping
+      // emitting the test.
+      iterator_.Advance();
+      true_offset = iterator_.GetJumpTargetOffset();
+      false_offset = next_offset();
+      break;
+    default:
+      return false;
+  }
+
+  BasicBlock* block = FinishBlock<BranchIfInt32Compare>(
+      next_offset(), {left, right}, operation, &jump_targets_[true_offset],
+      &jump_targets_[false_offset]);
+  MergeIntoFrameState(block, iterator_.GetJumpTargetOffset());
+  return true;
+}
+
+template <Operation kOperation>
+void MaglevGraphBuilder::VisitCompareOperation() {
+  FeedbackNexus nexus = FeedbackNexusForOperand(1);
+  switch (nexus.GetCompareOperationFeedback()) {
+    case CompareOperationHint::kSignedSmall:
+      if (BinaryOperationHasInt32FastPath<kOperation>()) {
+        ValueNode *left, *right;
+        if (IsRegisterEqualToAccumulator(0)) {
+          left = right = LoadRegisterInt32(0);
+        } else {
+          left = LoadRegisterInt32(0);
+          right = GetAccumulatorInt32();
+        }
+        if (TryBuildCompareOperationBranch(kOperation, left, right)) {
+          return;
+        }
+        SetAccumulator(
+            AddNewInt32BinaryOperationNode<kOperation>({left, right}));
+        return;
+      }
+      break;
+    case CompareOperationHint::kNumber:
+      if (BinaryOperationHasFloat64FastPath<kOperation>()) {
+        BuildFloat64BinaryOperationNode<kOperation>();
+        return;
+        // } else if (BinaryOperationHasInt32FastPath<kOperation>()) {
+        //   // Fall back to int32 fast path if there is one (this will be the
+        //   case
+        //   // for operations that deal with bits rather than numbers).
+        //   BuildInt32BinaryOperationNode<kOperation>();
+        //   return;
+      }
+      break;
+    default:
+      // Fallback to generic node.
+      break;
+  }
+  BuildGenericBinaryOperationNode<kOperation>();
 }
 
 void MaglevGraphBuilder::VisitLdar() {
@@ -513,6 +680,88 @@ MAGLEV_UNIMPLEMENTED_BYTECODE(LdaLookupSlotInsideTypeof)
 MAGLEV_UNIMPLEMENTED_BYTECODE(LdaLookupContextSlotInsideTypeof)
 MAGLEV_UNIMPLEMENTED_BYTECODE(LdaLookupGlobalSlotInsideTypeof)
 MAGLEV_UNIMPLEMENTED_BYTECODE(StaLookupSlot)
+
+bool MaglevGraphBuilder::TryBuildMonomorphicLoad(ValueNode* object,
+                                                 const compiler::MapRef& map,
+                                                 MaybeObjectHandle handler) {
+  if (handler.is_null()) return false;
+
+  if (handler->IsSmi()) {
+    return TryBuildMonomorphicLoadFromSmiHandler(object, map,
+                                                 handler->ToSmi().value());
+  } else if (handler->GetHeapObject().IsCodeT()) {
+    // TODO(leszeks): Call the code object directly.
+    return false;
+  } else {
+    return TryBuildMonomorphicLoadFromLoadHandler(
+        object, map, LoadHandler::cast(handler->GetHeapObject()));
+  }
+}
+
+bool MaglevGraphBuilder::TryBuildMonomorphicLoadFromSmiHandler(
+    ValueNode* object, const compiler::MapRef& map, int32_t handler) {
+  // Smi handler, emit a map check and LoadField.
+  LoadHandler::Kind kind = LoadHandler::KindBits::decode(handler);
+  if (kind != LoadHandler::Kind::kField) return false;
+  if (LoadHandler::IsWasmStructBits::decode(handler)) return false;
+
+  AddNewNode<CheckMaps>({object}, map);
+
+  ValueNode* load_source;
+  if (LoadHandler::IsInobjectBits::decode(handler)) {
+    load_source = object;
+  } else {
+    // The field is in the property array, first load it from there.
+    load_source = AddNewNode<LoadTaggedField>(
+        {object}, JSReceiver::kPropertiesOrHashOffset);
+  }
+  if (LoadHandler::IsDoubleBits::decode(handler)) {
+    SetAccumulator(AddNewNode<LoadDoubleField>(
+        {load_source},
+        LoadHandler::FieldIndexBits::decode(handler) * kTaggedSize));
+  } else {
+    SetAccumulator(AddNewNode<LoadTaggedField>(
+        {load_source},
+        LoadHandler::FieldIndexBits::decode(handler) * kTaggedSize));
+  }
+  return true;
+}
+
+bool MaglevGraphBuilder::TryBuildMonomorphicLoadFromLoadHandler(
+    ValueNode* object, const compiler::MapRef& map, LoadHandler handler) {
+  Object maybe_smi_handler = handler.smi_handler(local_isolate_);
+  if (!maybe_smi_handler.IsSmi()) return false;
+  int smi_handler = Smi::cast(maybe_smi_handler).value();
+  LoadHandler::Kind kind = LoadHandler::KindBits::decode(smi_handler);
+  bool do_access_check_on_lookup_start_object =
+      LoadHandler::DoAccessCheckOnLookupStartObjectBits::decode(smi_handler);
+  bool lookup_on_lookup_start_object =
+      LoadHandler::LookupOnLookupStartObjectBits::decode(smi_handler);
+  if (do_access_check_on_lookup_start_object) return false;
+  if (lookup_on_lookup_start_object) return false;
+  if (kind != LoadHandler::Kind::kConstantFromPrototype) return false;
+
+  AddNewNode<CheckMaps>({object}, map);
+
+  Object validity_cell = handler.validity_cell(local_isolate_);
+  if (validity_cell.IsCell(local_isolate_)) {
+    broker()->dependencies()->DependOnStablePrototypeChain(
+        map, kStartAtPrototype, base::nullopt);
+  } else {
+    DCHECK_EQ(Smi::ToInt(validity_cell), Map::kPrototypeChainValid);
+  }
+  MaybeObject value = handler.data1(local_isolate_);
+  if (value.IsSmi()) {
+    SetAccumulator(AddNewNode<SmiConstant>({}, value.ToSmi()));
+  } else {
+    SetAccumulator(AddNewNode<Constant>(
+        {}, MakeRefAssumeMemoryFence(
+                broker(),
+                broker()->CanonicalPersistentHandle(value.GetHeapObject()))));
+  }
+  return true;
+}
+
 void MaglevGraphBuilder::VisitGetNamedProperty() {
   // GetNamedProperty <object> <name_index> <slot>
   ValueNode* object = LoadRegisterTagged(0);
@@ -532,43 +781,15 @@ void MaglevGraphBuilder::VisitGetNamedProperty() {
     case compiler::ProcessedFeedback::kNamedAccess: {
       const compiler::NamedAccessFeedback& named_feedback =
           processed_feedback.AsNamedAccess();
-      if (named_feedback.maps().size() == 1) {
-        // Monomorphic load, check the handler.
-        // TODO(leszeks): Make GetFeedbackForPropertyAccess read the handler.
-        MaybeObjectHandle handler =
-            FeedbackNexusForSlot(slot).FindHandlerForMap(
-                named_feedback.maps()[0].object());
-        if (!handler.is_null() && handler->IsSmi()) {
-          // Smi handler, emit a map check and LoadField.
-          int smi_handler = handler->ToSmi().value();
-          LoadHandler::Kind kind = LoadHandler::KindBits::decode(smi_handler);
-          if (kind == LoadHandler::Kind::kField &&
-              !LoadHandler::IsWasmStructBits::decode(smi_handler)) {
-            AddNewNode<CheckMaps>({object}, named_feedback.maps()[0]);
+      if (named_feedback.maps().size() != 1) break;
+      compiler::MapRef map = named_feedback.maps()[0];
 
-            ValueNode* load_source;
-            if (LoadHandler::IsInobjectBits::decode(smi_handler)) {
-              load_source = object;
-            } else {
-              // The field is in the property array, first load it from there.
-              load_source = AddNewNode<LoadTaggedField>(
-                  {object}, JSReceiver::kPropertiesOrHashOffset);
-            }
-            if (LoadHandler::IsDoubleBits::decode(smi_handler)) {
-              SetAccumulator(AddNewNode<LoadDoubleField>(
-                  {load_source},
-                  LoadHandler::FieldIndexBits::decode(smi_handler) *
-                      kTaggedSize));
-            } else {
-              SetAccumulator(AddNewNode<LoadTaggedField>(
-                  {load_source},
-                  LoadHandler::FieldIndexBits::decode(smi_handler) *
-                      kTaggedSize));
-            }
-            return;
-          }
-        }
-      }
+      // Monomorphic load, check the handler.
+      // TODO(leszeks): Make GetFeedbackForPropertyAccess read the handler.
+      MaybeObjectHandle handler =
+          FeedbackNexusForSlot(slot).FindHandlerForMap(map.object());
+
+      if (TryBuildMonomorphicLoad(object, map, handler)) return;
     } break;
 
     default:
@@ -635,7 +856,55 @@ void MaglevGraphBuilder::VisitSetNamedProperty() {
                                              feedback_source));
 }
 
-MAGLEV_UNIMPLEMENTED_BYTECODE(DefineNamedOwnProperty)
+void MaglevGraphBuilder::VisitDefineNamedOwnProperty() {
+  // DefineNamedOwnProperty <object> <name_index> <slot>
+  ValueNode* object = LoadRegisterTagged(0);
+  compiler::NameRef name = GetRefOperand<Name>(1);
+  FeedbackSlot slot = GetSlotOperand(2);
+  compiler::FeedbackSource feedback_source{feedback(), slot};
+
+  const compiler::ProcessedFeedback& processed_feedback =
+      broker()->GetFeedbackForPropertyAccess(
+          feedback_source, compiler::AccessMode::kStore, name);
+
+  switch (processed_feedback.kind()) {
+    case compiler::ProcessedFeedback::kInsufficient:
+      EmitUnconditionalDeopt();
+      return;
+
+    case compiler::ProcessedFeedback::kNamedAccess: {
+      const compiler::NamedAccessFeedback& named_feedback =
+          processed_feedback.AsNamedAccess();
+      if (named_feedback.maps().size() == 1) {
+        // Monomorphic store, check the handler.
+        // TODO(leszeks): Make GetFeedbackForPropertyAccess read the handler.
+        MaybeObjectHandle handler =
+            FeedbackNexusForSlot(slot).FindHandlerForMap(
+                named_feedback.maps()[0].object());
+        if (!handler.is_null() && handler->IsSmi()) {
+          int smi_handler = handler->ToSmi().value();
+          StoreHandler::Kind kind = StoreHandler::KindBits::decode(smi_handler);
+          if (kind == StoreHandler::Kind::kField) {
+            AddNewNode<CheckMaps>({object}, named_feedback.maps()[0]);
+            ValueNode* value = GetAccumulatorTagged();
+            AddNewNode<StoreField>({object, value}, smi_handler);
+            return;
+          }
+        }
+      }
+    } break;
+
+    default:
+      break;
+  }
+
+  // Create a generic store in the fallthrough.
+  ValueNode* context = GetContext();
+  ValueNode* value = GetAccumulatorTagged();
+  SetAccumulator(AddNewNode<DefineNamedOwnGeneric>({context, object, value},
+                                                   name, feedback_source));
+}
+
 MAGLEV_UNIMPLEMENTED_BYTECODE(SetKeyedProperty)
 MAGLEV_UNIMPLEMENTED_BYTECODE(DefineKeyedOwnProperty)
 MAGLEV_UNIMPLEMENTED_BYTECODE(StaInArrayLiteral)
@@ -984,22 +1253,22 @@ void MaglevGraphBuilder::VisitConstruct() {
 MAGLEV_UNIMPLEMENTED_BYTECODE(ConstructWithSpread)
 
 void MaglevGraphBuilder::VisitTestEqual() {
-  VisitBinaryOperation<Operation::kEqual>();
+  VisitCompareOperation<Operation::kEqual>();
 }
 void MaglevGraphBuilder::VisitTestEqualStrict() {
-  VisitBinaryOperation<Operation::kStrictEqual>();
+  VisitCompareOperation<Operation::kStrictEqual>();
 }
 void MaglevGraphBuilder::VisitTestLessThan() {
-  VisitBinaryOperation<Operation::kLessThan>();
+  VisitCompareOperation<Operation::kLessThan>();
 }
 void MaglevGraphBuilder::VisitTestLessThanOrEqual() {
-  VisitBinaryOperation<Operation::kLessThanOrEqual>();
+  VisitCompareOperation<Operation::kLessThanOrEqual>();
 }
 void MaglevGraphBuilder::VisitTestGreaterThan() {
-  VisitBinaryOperation<Operation::kGreaterThan>();
+  VisitCompareOperation<Operation::kGreaterThan>();
 }
 void MaglevGraphBuilder::VisitTestGreaterThanOrEqual() {
-  VisitBinaryOperation<Operation::kGreaterThanOrEqual>();
+  VisitCompareOperation<Operation::kGreaterThanOrEqual>();
 }
 
 MAGLEV_UNIMPLEMENTED_BYTECODE(TestInstanceOf)
@@ -1113,8 +1382,7 @@ void MaglevGraphBuilder::MergeIntoFrameState(BasicBlock* predecessor,
                                              int target) {
   if (merge_states_[target] == nullptr) {
     DCHECK(!bytecode_analysis().IsLoopHeader(target));
-    const compiler::BytecodeLivenessState* liveness =
-        bytecode_analysis().GetInLivenessFor(target);
+    const compiler::BytecodeLivenessState* liveness = GetInLivenessFor(target);
     // If there's no target frame state, allocate a new one.
     merge_states_[target] = zone()->New<MergePointInterpreterFrameState>(
         *compilation_unit_, current_interpreter_frame_, target,
@@ -1142,8 +1410,7 @@ void MaglevGraphBuilder::MergeIntoInlinedReturnFrameState(
   if (merge_states_[target] == nullptr) {
     // All returns should have the same liveness, which is that only the
     // accumulator is live.
-    const compiler::BytecodeLivenessState* liveness =
-        bytecode_analysis().GetInLivenessFor(iterator_.current_offset());
+    const compiler::BytecodeLivenessState* liveness = GetInLiveness();
     DCHECK(liveness->AccumulatorIsLive());
     DCHECK_EQ(liveness->live_value_count(), 1);
 
@@ -1153,9 +1420,8 @@ void MaglevGraphBuilder::MergeIntoInlinedReturnFrameState(
         NumPredecessors(target), predecessor, liveness);
   } else {
     // Again, all returns should have the same liveness, so double check this.
-    DCHECK(bytecode_analysis()
-               .GetInLivenessFor(iterator_.current_offset())
-               ->Equals(*merge_states_[target]->frame_state().liveness()));
+    DCHECK(GetInLiveness()->Equals(
+        *merge_states_[target]->frame_state().liveness()));
     merge_states_[target]->Merge(*compilation_unit_, current_interpreter_frame_,
                                  predecessor, target);
   }

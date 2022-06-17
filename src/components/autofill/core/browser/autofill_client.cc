@@ -41,10 +41,14 @@ version_info::Channel AutofillClient::GetChannel() const {
   return version_info::Channel::UNKNOWN;
 }
 
+MerchantPromoCodeManager* AutofillClient::GetMerchantPromoCodeManager() {
+  return nullptr;
+}
+
 std::unique_ptr<SingleFieldFormFillRouter>
 AutofillClient::GetSingleFieldFormFillRouter() {
   return std::make_unique<SingleFieldFormFillRouter>(
-      GetAutocompleteHistoryManager());
+      GetAutocompleteHistoryManager(), GetMerchantPromoCodeManager());
 }
 
 AutofillOfferManager* AutofillClient::GetAutofillOfferManager() {

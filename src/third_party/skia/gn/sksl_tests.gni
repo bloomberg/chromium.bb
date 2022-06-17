@@ -20,13 +20,29 @@ sksl_error_tests = [
   "/sksl/errors/ArraySplitDimensionsInFuncDecl.rts",
   "/sksl/errors/ArraySplitDimensionsInStruct.rts",
   "/sksl/errors/ArrayTooManyDimensions.rts",
+  "/sksl/errors/ArrayTooManyDimensionsUnsized1.rts",
+  "/sksl/errors/ArrayTooManyDimensionsUnsized2.rts",
   "/sksl/errors/ArrayTooManyDimensionsInFuncBody.rts",
+  "/sksl/errors/ArrayTooManyDimensionsInFuncBodyUnsized1.rts",
+  "/sksl/errors/ArrayTooManyDimensionsInFuncBodyUnsized2.rts",
   "/sksl/errors/ArrayTooManyDimensionsInFuncDecl.rts",
+  "/sksl/errors/ArrayTooManyDimensionsInFuncDeclUnsized1.rts",
+  "/sksl/errors/ArrayTooManyDimensionsInFuncDeclUnsized2.rts",
   "/sksl/errors/ArrayTooManyDimensionsInStruct.rts",
+  "/sksl/errors/ArrayTooManyDimensionsInStructUnsized1.rts",
+  "/sksl/errors/ArrayTooManyDimensionsInStructUnsized2.rts",
   "/sksl/errors/ArrayTypeTooManyDimensions.rts",
+  "/sksl/errors/ArrayTypeTooManyDimensionsUnsized1.rts",
+  "/sksl/errors/ArrayTypeTooManyDimensionsUnsized2.rts",
   "/sksl/errors/ArrayTypeTooManyDimensionsInFuncBody.rts",
+  "/sksl/errors/ArrayTypeTooManyDimensionsInFuncBodyUnsized1.rts",
+  "/sksl/errors/ArrayTypeTooManyDimensionsInFuncBodyUnsized2.rts",
   "/sksl/errors/ArrayTypeTooManyDimensionsInFuncDecl.rts",
+  "/sksl/errors/ArrayTypeTooManyDimensionsInFuncDeclUnsized1.rts",
+  "/sksl/errors/ArrayTypeTooManyDimensionsInFuncDeclUnsized2.rts",
   "/sksl/errors/ArrayTypeTooManyDimensionsInStruct.rts",
+  "/sksl/errors/ArrayTypeTooManyDimensionsInStructUnsized1.rts",
+  "/sksl/errors/ArrayTypeTooManyDimensionsInStructUnsized2.rts",
   "/sksl/errors/ArrayUnspecifiedDimensions.rts",
   "/sksl/errors/AssignmentTypeMismatch.rts",
   "/sksl/errors/BadCaps.sksl",
@@ -80,6 +96,7 @@ sksl_error_tests = [
   "/sksl/errors/InvalidOutParams.rts",
   "/sksl/errors/InvalidToken.rts",
   "/sksl/errors/InvalidUnary.rts",
+  "/sksl/errors/InvalidUniformTypes.sksl",
   "/sksl/errors/InVarWithInitializerExpression.sksl",
   "/sksl/errors/LayoutInFunctions.sksl",
   "/sksl/errors/LayoutInInterfaceBlock.sksl",
@@ -304,7 +321,20 @@ sksl_spirv_tests = [
   "/sksl/errors/UndefinedFunction.rts",
 ]
 
-sksl_wgsl_tests = [ "/sksl/shared/HelloWorld.sksl" ]
+sksl_wgsl_tests = [
+  "/sksl/wgsl/BuiltinFragmentStageIO.sksl",
+  "/sksl/wgsl/BuiltinVertexStageIO.vert",
+  "/sksl/wgsl/MainHasFragCoordParameter.sksl",
+  "/sksl/wgsl/MainHasVoidReturn.sksl",
+  "/sksl/wgsl/MainDoesNotHaveFragCoordParameter.sksl",
+  "/sksl/wgsl/UserDefinedPipelineIO.sksl",
+  "/sksl/wgsl/VertexPositionOutputIsAlwaysDeclared.vert",
+
+  # Shared tests that are supported so far:
+  "/sksl/shared/HelloWorld.sksl",
+  "/sksl/shared/InstanceID.vert",
+  "/sksl/shared/VertexID.vert",
+]
 
 sksl_shared_tests = [
   "/sksl/intrinsics/AbsFloat.sksl",
@@ -549,6 +579,8 @@ sksl_folding_tests = [
   "/sksl/folding/PreserveSideEffects.sksl",
   "/sksl/folding/SelfAssignment.sksl",
   "/sksl/folding/ShortCircuitBoolFolding.sksl",
+  "/sksl/folding/StructFieldFolding.sksl",
+  "/sksl/folding/StructFieldNoFolding.sksl",
   "/sksl/folding/SwizzleFolding.sksl",
   "/sksl/folding/SwitchCaseFolding.sksl",
   "/sksl/folding/TernaryFolding.sksl",
@@ -591,6 +623,7 @@ sksl_inliner_tests = [
   "/sksl/inliner/TernaryResultsCannotBeInlined.sksl",
   "/sksl/inliner/TernaryTestCanBeInlined.sksl",
   "/sksl/inliner/TrivialArgumentsInlineDirectly.sksl",
+  "/sksl/inliner/TrivialArgumentsInlineDirectlyES3.sksl",
   "/sksl/inliner/WhileBodyMustBeInlinedIntoAScope.sksl",
   "/sksl/inliner/WhileTestCannotBeInlined.sksl",
 ]

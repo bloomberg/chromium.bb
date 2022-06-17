@@ -1,7 +1,7 @@
 # libgav1 -- an AV1 decoder
 
-libgav1 is a Main profile (0) & High profile (1) compliant AV1 decoder. More
-information on the AV1 video format can be found at
+libgav1 is a Main profile (0), High profile (1) & Professional profile (2)
+compliant AV1 decoder. More information on the AV1 video format can be found at
 [aomedia.org](https://aomedia.org).
 
 [TOC]

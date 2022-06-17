@@ -83,6 +83,12 @@ class PasswordStoreProxyBackendTest : public testing::Test {
 
     prefs_.registry()->RegisterIntegerPref(
         prefs::kCurrentMigrationVersionToGoogleMobileServices, 0);
+    prefs_.registry()->RegisterBooleanPref(
+        prefs::kUnenrolledFromGoogleMobileServicesDueToErrors, false);
+
+    // Initialize sync service.
+    EXPECT_CALL(android_backend(), OnSyncServiceInitialized(&sync_service_));
+    proxy_backend().OnSyncServiceInitialized(&sync_service_);
   }
 
   void TearDown() override {
@@ -98,6 +104,7 @@ class PasswordStoreProxyBackendTest : public testing::Test {
   MockPasswordStoreBackend& built_in_backend() { return built_in_backend_; }
   MockPasswordStoreBackend& android_backend() { return android_backend_; }
   TestingPrefServiceSimple* prefs() { return &prefs_; }
+  syncer::TestSyncService* sync_service() { return &sync_service_; }
 
  private:
   base::test::ScopedFeatureList feature_list_;
@@ -106,6 +113,7 @@ class PasswordStoreProxyBackendTest : public testing::Test {
   testing::NiceMock<MockPasswordBackendSyncDelegate> sync_delegate_;
   StrictMock<MockPasswordStoreBackend> built_in_backend_;
   StrictMock<MockPasswordStoreBackend> android_backend_;
+  syncer::TestSyncService sync_service_;
 };
 
 TEST_F(PasswordStoreProxyBackendTest, CallCompletionCallbackAfterInit) {
@@ -263,13 +271,12 @@ TEST_F(PasswordStoreProxyBackendTest,
 }
 
 TEST_F(PasswordStoreProxyBackendTest, UseMainBackendToFillMatchingLoginsAsync) {
-  base::MockCallback<LoginsReply> mock_reply;
+  base::MockCallback<LoginsOrErrorReply> mock_reply;
   std::vector<std::unique_ptr<PasswordForm>> expected_logins =
       CreateTestLogins();
-  EXPECT_CALL(mock_reply,
-              Run(UnorderedPasswordFormElementsAre(&expected_logins)));
+  EXPECT_CALL(mock_reply, Run(LoginsResultsOrErrorAre(&expected_logins)));
   EXPECT_CALL(built_in_backend(), FillMatchingLoginsAsync)
-      .WillOnce(WithArg<0>(Invoke([](LoginsReply reply) -> void {
+      .WillOnce(WithArg<0>(Invoke([](LoginsOrErrorReply reply) -> void {
         std::move(reply).Run(CreateTestLogins());
       })));
   EXPECT_CALL(sync_delegate(), IsSyncingPasswordsEnabled)
@@ -706,6 +713,41 @@ TEST_F(PasswordStoreProxyBackendTest,
   proxy_backend().OnSyncServiceInitialized(&sync_service);
 }
 
+TEST_F(PasswordStoreProxyBackendTest,
+       UsesAndroidBackendAsMainBackendPasswordSyncDisabledInSettings) {
+  base::test::ScopedFeatureList feature_list;
+  // Enable UPM for syncing users only.
+  feature_list.InitAndEnableFeatureWithParameters(
+      features::kUnifiedPasswordManagerAndroid, {{"stage", "2"}});
+
+  // Imitate password sync being disabled in settings.
+  EXPECT_CALL(sync_delegate(), IsSyncingPasswordsEnabled)
+      .WillRepeatedly(Return(false));
+
+  // Verify that android backend is not used.
+  EXPECT_CALL(android_backend(), GetAllLoginsAsync).Times(0);
+  EXPECT_CALL(built_in_backend(), GetAllLoginsAsync);
+  proxy_backend().GetAllLoginsAsync(base::DoNothing());
+}
+
+TEST_F(PasswordStoreProxyBackendTest,
+       UsesAndroidBackendAsMainBackendUserUnenrolledFromUPMDueToErrors) {
+  base::test::ScopedFeatureList feature_list;
+  // Enable UPM for syncing users only.
+  feature_list.InitAndEnableFeatureWithParameters(
+      features::kUnifiedPasswordManagerAndroid, {{"stage", "2"}});
+  prefs()->SetBoolean(prefs::kUnenrolledFromGoogleMobileServicesDueToErrors,
+                      true);
+
+  EXPECT_CALL(sync_delegate(), IsSyncingPasswordsEnabled)
+      .WillRepeatedly(Return(true));
+
+  // Verify that android backend is not used.
+  EXPECT_CALL(android_backend(), GetAllLoginsAsync).Times(0);
+  EXPECT_CALL(built_in_backend(), GetAllLoginsAsync);
+  proxy_backend().GetAllLoginsAsync(base::DoNothing());
+}
+
 // Holds the main and shadow backend's logins and the expected number of common
 // and different logins.
 struct LoginsMetricsParam {
@@ -879,6 +921,14 @@ class PasswordStoreProxyBackendTestForExperimentStages
           base::NumberToString(static_cast<int>(GetParam().variation))}});
     EXPECT_CALL(sync_delegate(), IsSyncingPasswordsEnabled)
         .WillRepeatedly(Return(GetParam().is_sync_enabled));
+
+    if (GetParam().is_sync_enabled) {
+      sync_service()->GetUserSettings()->SetSelectedTypes(
+          /*sync_everything=*/false, {syncer::UserSelectableType::kPasswords});
+    } else {
+      sync_service()->GetUserSettings()->SetSelectedTypes(
+          /*sync_everything=*/false, {});
+    }
   }
 
  private:

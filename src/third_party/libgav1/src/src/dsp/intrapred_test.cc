@@ -47,6 +47,7 @@ template <int bitdepth, typename Pixel>
 class IntraPredTestBase : public testing::TestWithParam<TransformSize>,
                           public test_utils::MaxAlignedAllocable {
  public:
+  static_assert(bitdepth >= kBitdepth8 && bitdepth <= LIBGAV1_MAX_BITDEPTH, "");
   IntraPredTestBase() {
     switch (tx_size_) {
       case kNumTransformSizes:
@@ -125,6 +126,7 @@ class IntraPredTestBase : public testing::TestWithParam<TransformSize>,
 template <int bitdepth, typename Pixel>
 class IntraPredTest : public IntraPredTestBase<bitdepth, Pixel> {
  public:
+  static_assert(bitdepth >= kBitdepth8 && bitdepth <= LIBGAV1_MAX_BITDEPTH, "");
   IntraPredTest() = default;
   IntraPredTest(const IntraPredTest&) = delete;
   IntraPredTest& operator=(const IntraPredTest&) = delete;
@@ -666,6 +668,203 @@ TEST_P(IntraPredTest10bpp, Overflow) { TestSaturatedValues(); }
 TEST_P(IntraPredTest10bpp, Random) { TestRandomValues(); }
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
 
+#if LIBGAV1_MAX_BITDEPTH == 12
+using IntraPredTest12bpp = IntraPredTest<12, uint16_t>;
+
+const char* const* GetIntraPredDigests12bpp(TransformSize tx_size) {
+  static const char* const kDigests4x4[kNumIntraPredictors] = {
+      "f7008e0f65bdeed97375ae5e98e3309b", "a34cc5d9d1ef875df4ee2ce010d0a80a",
+      "74f615beeb217ad317ced813851be36a", "b3312e86313805b061c66a08e09de653",
+      "2db47240c95530b39084bdacccf4bb8e", "76bb839cac394b5777c64b6d4b570a27",
+      "a74ee60527be86059e822f7463f49ad5", "b157a40aaa14391c237471ba6d148a50",
+      "d4f7bd2e97e2b23f7a6a059837a10b2a", "8a9bcb30e9aff59b6feef5d1bf546d28",
+  };
+  static const char* const kDigests4x8[kNumIntraPredictors] = {
+      "4c2a59e1d4a58c129c709f05d1a83f4a", "5fbedd99a90a20727195dfbe8f9969ad",
+      "d4645e21ccf5f6d3c4ca7a3d9b0156ba", "98aa17ea5423192c81a04afd2d2669ed",
+      "67dad5b5eefdeb2af1e4d3875b282c6c", "881dcafd6323509fb80cd5bbdf2870c4",
+      "03ece373dfd56bd2fd86ad00ad6f5000", "41b28f2578d2ed7f38e708d57b231948",
+      "9f935505190f52ff4da9556e43f607be", "815700d2abb055bce6902d130e77416d",
+  };
+  static const char* const kDigests4x16[kNumIntraPredictors] = {
+      "bfc47cd4eef143a6ebf517730756a718", "ef07a3af3e353f9dfaebc48c8ac92c82",
+      "ceec5d9d24254efd3c6a00cbf11dd24d", "4e07f512a69cf95608c3c0c3013ed808",
+      "cedb7c900bb6839026bf79d054edb4fc", "48d958a18a019809f12eb2ad2eb358bc",
+      "8f296f4b9fb621a910368609cc2cccdf", "073a6f2ca8a23d6131ff97e2a3b736e1",
+      "f4772cc60b68c4f958c08c0fd8eb8d48", "2f8946cf19abecf0fda3addbfb8f9dcf",
+  };
+  static const char* const kDigests8x4[kNumIntraPredictors] = {
+      "4f245b07a91e6d604da9f22cf277d6f1", "a6dc25d1e24ba9e842c312f67eea211d",
+      "0475204441f44ea95bfd69c6e04eaed8", "313bcf1e2fc762d31ff765d3c18a6f67",
+      "7e9223ece684a1885c2108741052c6c8", "79f1e6f070d9b1d0f1de2ff77bccc0dc",
+      "63adca1101ee4799b1cfa26d88aa0657", "e8b940a5e39ea5313930c903464de843",
+      "42a8e470d3b000f4f57c44c632f0051b", "e8a57663f73da3d4320f8e82a3fecfc2",
+  };
+  static const char* const kDigests8x8[kNumIntraPredictors] = {
+      "7fa3c8bdd9ce04dc4df27863499cf4d4", "83f1312edd9af928a1cef60613730bc3",
+      "ceb35042adc6095a545b490f20e5d81b", "73aa503f329a055ff59a24093e682c41",
+      "14a9a427525ec38d2eb13e698728e911", "9143ddf66234e74acc156565d684fcac",
+      "05182bbe4fd90f3b496033ee5b7c54f9", "d9c6184c23af1f5a903a4a00539b883a",
+      "c4c2d4000ca2defc7a8169215121d9fc", "0b938bc7782b32796bffece28d17bb69",
+  };
+  static const char* const kDigests8x16[kNumIntraPredictors] = {
+      "50197f063138616c37ef09f8bf8a3016", "ef2008f6d9f2176feb17b7d4312022e2",
+      "0d243ffbba0a2e65738d7ee768620c36", "51b52564a2733c2c56ba319db5d8e3b8",
+      "0e2b41482ac1347c3bb6d0e394fe7bec", "edb43c19850452e6b20dfb2c001adb0b",
+      "6cd29f537b5e4180f5aaefd9140b65ef", "6808f618bdff33e0f3d6db60ea487bc1",
+      "0303c17746192b0c52b4d75ea97ca24d", "225d1debd7828fa01bc9a610a443cda9",
+  };
+  static const char* const kDigests8x32[kNumIntraPredictors] = {
+      "dc047c402c6ac4014d621fbd41b460d5", "49eb33c3a112f059e02d6d4b99da8b41",
+      "c906c9105a406ae6c63e69f57ed2fc7c", "2ead452591ddd2455660f96ce79314ab",
+      "437a2a78562752ee8291227f88e0323a", "51834dbdcf1e89667ffbb931bec9006c",
+      "959c1778e11a7c61a5a97176c79ecb6a", "2e51e44dd1953fc6fccc3b1c1ca602ed",
+      "7f94114cddb0ba780cc0c8d00db3f8d2", "b5b3770e6061249a3206915a3f9464e7",
+  };
+  static const char* const kDigests16x4[kNumIntraPredictors] = {
+      "9deb173fa962d9adde8a9ae256708c32", "264624b41e43cfe9378ee9b4fb5028a6",
+      "404919a41bdc7f1a1f9d089223373bb8", "5294ed9fcc16eaf5f9a1f66a2a36ae7c",
+      "a2ed1fa4262bca265dcc62eb1586f0ac", "58494af62f86464dbe471130b2bc4ab0",
+      "fe1f25f7096fc3426cc7964326cc46ad", "cf7f6c8f7257436b9934cecf3b7523e1",
+      "6325036f243abfcd7777754e6a7bdacc", "9dce11a98e18422b04dd9d7be7d420da",
+  };
+  static const char* const kDigests16x8[kNumIntraPredictors] = {
+      "92d5b7d4033dcd8cb729bf8e166e339a", "6cbd9f198828fd3422c9bfaf8c2f1c1d",
+      "2b204014b6dc477f67b36818bcdab1ca", "2ce0b9cf224d4654168c559d7c1424c2",
+      "ec70341b9dd57b379f5283820c9461c7", "3fe1e2a20e44171c90ebca5a45b83460",
+      "0305852b25351ff472a45f45ec1638fa", "565c78271fbe3b25b0eee542095be005",
+      "8bc15e98659cef6236bcb072541bb2ca", "875c87bf4daba7cb436ea2fdb5a427dd",
+  };
+  static const char* const kDigests16x16[kNumIntraPredictors] = {
+      "c9d12bce78d8846f081345906e1315f4", "0b57c8fde6dec15458b1c289245100cb",
+      "1c11978c4e6bbc77767395c63d2f70a8", "e749f26b26b46d8cb7cb13c1c777db94",
+      "40459af05e865e94ff7adcdec1685c15", "f3ae419e99a60dbde3afa24ba6588a36",
+      "fe3912418bca24cee3132de2c193d1fc", "cdc8e3ce27a12f1cbfe01d1adf2eb6bd",
+      "ce354b30ce15a6918172dea55a292b93", "e762d01726d641194982a5fb8c148eb7",
+  };
+  static const char* const kDigests16x32[kNumIntraPredictors] = {
+      "ad8f118b07e053df3887215449633a07", "e8979aa743aef82937d93d87fc9fdb85",
+      "a8afb62cbf602cfcd4b570832afe1d55", "404183cf003764a4f032f0f4810cd42c",
+      "4afcf1bc5589a13b11679571aa953b86", "202df8f5a2d7eb3816de172608115f2b",
+      "ce42bca92d6d7f9df85dbaac72e35064", "61c463c8070b78ca2bdf578044fec440",
+      "3abf6e4d779208e15e3f9a0dfc0254f9", "13df5504084105af7c66a1b013fe44e1",
+  };
+  static const char* const kDigests16x64[kNumIntraPredictors] = {
+      "3ac1f642019493dec1b737d7a3a1b4e5", "cbf69d5d157c9f3355a4757b1d6e3414",
+      "96d00ddc7537bf7f196006591b733b4e", "8cba1b70a0bde29e8ef235cedc5faa7d",
+      "35f9ee300d7fa3c97338e81a6f21dcd4", "aae335442e77c8ebc280f16ea50ba9c7",
+      "a6140fdac2278644328be094d88731db", "2df93621b6ff100f7008432d509f4161",
+      "c77bf5aee39e7ed4a3dd715f816f452a", "02109bd63557d90225c32a8f1338258e",
+  };
+  static const char* const kDigests32x8[kNumIntraPredictors] = {
+      "155688dec409ff50f2333c14a6367247", "cf935e78abafa6ff7258c5af229f55b6",
+      "b4bf83a28ba319c597151a041ff838c3", "fe97f3e6cd5fe6c5979670c11d940dda",
+      "b898c9a989e1e72461a6f47e913d5383", "bb73baa6476ce90118e83e2fd08f2299",
+      "c93be6d8ec318bd805899466821bb779", "ab366991ef842e9d417d52241f6966e6",
+      "9e7e4c96a271e9e40771eac39c21f661", "9459f2e6d1291b8b8a2fe0635ce1a33d",
+  };
+  static const char* const kDigests32x16[kNumIntraPredictors] = {
+      "48374c1241409e26d81e5106c73da420", "97c918bdba2ece52156dbc776b9b70d4",
+      "a44ce9c03f6622a3e93bfe3b928eb6f1", "2384ad95e3e7302f20857121e187aa48",
+      "47e72c6dc0087b6fd99e91cff854c269", "142dc3cbb05b82a496780f7fc3d66ccc",
+      "4a39fb768efcd4f30d6eae816e6a68c4", "d0c31f9d52d984a0335557eafe2b47fa",
+      "81b3af5c7893729b837e4d304917f7cd", "941cbcd411887dc7fa3a5c7395690d1a",
+  };
+  static const char* const kDigests32x32[kNumIntraPredictors] = {
+      "00892ee43a1bbb11347c1f44fb94b1a2", "d66397ba868e62cec99daf5ea73bebd0",
+      "65fe746e79ac1e779caae8abcc15eb6b", "8e308fe96b9845112d79c54f9d7981a0",
+      "47bc8847a7c9aed3417cd5250ba57875", "1a4008b7f0f61a3c73a2ee1d1452b414",
+      "24d25ef488bb457a5a4c4892e47a363d", "6d9d964f5317ab32a8edf57c23775238",
+      "544fc36c1a35c588359ae492cb5bc143", "ac170d94dbd944e9723de9c18bace1a3",
+  };
+  static const char* const kDigests32x64[kNumIntraPredictors] = {
+      "7d0bd7dea26226741dbca9a97f27fa74", "a8bdc852ef704dd4975c61893e8fbc3f",
+      "f29d6d03c143ddf96fef04c19f2c8333", "ad9cfc395a5c5644a21d958c7274ac14",
+      "45c27c5cca9a91b6ae8379feb0881c9f", "8a0b78df1e001b85c874d686eac4aa1b",
+      "ce9fa75fac54a3f6c0cc3f2083b938f1", "c0dca10d88762c954af18dc9e3791a39",
+      "61df229eddfccab913b8fda4bb02f9ac", "4f4df6bc8d50a5600b573f0e44d70e66",
+  };
+  static const char* const kDigests64x16[kNumIntraPredictors] = {
+      "e99d072de858094c98b01bd4a6772634", "525da4b187acd81b1ff1116b60461141",
+      "1348f249690d9eefe09d9ad7ead2c801", "a5e2f9fb685d5f4a048e9a96affd25a4",
+      "873bfa9dc24693f19721f7c8d527f7d3", "0acfc6507bd3468e9679efc127d6e4b9",
+      "57d03f8d079c7264854e22ac1157cfae", "6c2c4036f70c7d957a9399b5436c0774",
+      "42b8e4a97b7f8416c72a5148c031c0b1", "a38a2c5f79993dfae8530e9e25800893",
+  };
+  static const char* const kDigests64x32[kNumIntraPredictors] = {
+      "68bd283cfd1a125f6b2ee47cee874d36", "b4581311a0a73d95dfac7f8f44591032",
+      "5ecc7fdc52d2f575ad4f2d0e9e6b1e11", "db9d82921fd88b24fdff6f849f2f9c87",
+      "804179f05c032908a5e36077bb87c994", "fc5fd041a8ee779015394d0c066ee43c",
+      "68f5579ccadfe9a1baafb158334a3db2", "fe237e45e215ab06d79046da9ad71e84",
+      "9a8a938a6824551bf7d21b8fd1d70ea1", "eb7332f2017cd96882c76e7136aeaf53",
+  };
+  static const char* const kDigests64x64[kNumIntraPredictors] = {
+      "d9a906c0e692b22e1b4414e71a704b7e", "12ac11889ae5f55b7781454efd706a6a",
+      "3f1ef5f473a49eba743f17a3324adf9d", "a6baa0d4bfb2269a94c7a38f86a4bccf",
+      "47d4cadd56f70c11ff8f3e5d8df81161", "de997744cf24c16c5ac2a36b02b351cc",
+      "23781211ae178ddeb6c4bb97a6bd7d83", "a79d2e28340ca34b9e37daabbf030f63",
+      "0372bd3ddfc258750a6ac106b70587f4", "228ef625d9460cbf6fa253a16a730976",
+  };
+
+  switch (tx_size) {
+    case kTransformSize4x4:
+      return kDigests4x4;
+    case kTransformSize4x8:
+      return kDigests4x8;
+    case kTransformSize4x16:
+      return kDigests4x16;
+    case kTransformSize8x4:
+      return kDigests8x4;
+    case kTransformSize8x8:
+      return kDigests8x8;
+    case kTransformSize8x16:
+      return kDigests8x16;
+    case kTransformSize8x32:
+      return kDigests8x32;
+    case kTransformSize16x4:
+      return kDigests16x4;
+    case kTransformSize16x8:
+      return kDigests16x8;
+    case kTransformSize16x16:
+      return kDigests16x16;
+    case kTransformSize16x32:
+      return kDigests16x32;
+    case kTransformSize16x64:
+      return kDigests16x64;
+    case kTransformSize32x8:
+      return kDigests32x8;
+    case kTransformSize32x16:
+      return kDigests32x16;
+    case kTransformSize32x32:
+      return kDigests32x32;
+    case kTransformSize32x64:
+      return kDigests32x64;
+    case kTransformSize64x16:
+      return kDigests64x16;
+    case kTransformSize64x32:
+      return kDigests64x32;
+    case kTransformSize64x64:
+      return kDigests64x64;
+    default:
+      ADD_FAILURE() << "Unknown transform size: " << tx_size;
+      return nullptr;
+  }
+}
+
+TEST_P(IntraPredTest12bpp, DISABLED_Speed) {
+  const auto num_runs =
+      static_cast<int>(2.0e9 / (block_width_ * block_height_));
+  TestSpeed(GetIntraPredDigests12bpp(tx_size_), num_runs);
+}
+
+TEST_P(IntraPredTest12bpp, FixedInput) {
+  TestSpeed(GetIntraPredDigests12bpp(tx_size_), 1);
+}
+
+TEST_P(IntraPredTest12bpp, Overflow) { TestSaturatedValues(); }
+TEST_P(IntraPredTest12bpp, Random) { TestRandomValues(); }
+#endif  // LIBGAV1_MAX_BITDEPTH == 12
+
 constexpr TransformSize kTransformSizes[] = {
     kTransformSize4x4,   kTransformSize4x8,   kTransformSize4x16,
     kTransformSize8x4,   kTransformSize8x8,   kTransformSize8x16,
@@ -699,6 +898,11 @@ INSTANTIATE_TEST_SUITE_P(NEON, IntraPredTest10bpp,
 #endif  // LIBGAV1_ENABLE_NEON
 
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
+
+#if LIBGAV1_MAX_BITDEPTH == 12
+INSTANTIATE_TEST_SUITE_P(C, IntraPredTest12bpp,
+                         testing::ValuesIn(kTransformSizes));
+#endif  // LIBGAV1_MAX_BITDEPTH == 12
 
 }  // namespace
 }  // namespace dsp

@@ -109,6 +109,15 @@ TEST_P(SwapChainValidationTests, CreationSuccess) {
     swapchain.Present();
 }
 
+// Test that creating a swapchain with an invalid surface is an error.
+TEST_P(SwapChainValidationTests, InvalidSurface) {
+    wgpu::SurfaceDescriptor surface_desc = {};
+    wgpu::Surface surface = GetInstance().CreateSurface(&surface_desc);
+
+    ASSERT_DEVICE_ERROR_MSG(device.CreateSwapChain(surface, &goodDescriptor),
+                            testing::HasSubstr("[Surface] is invalid"));
+}
+
 // Checks that the creation size must be a valid 2D texture size.
 TEST_P(SwapChainValidationTests, InvalidCreationSize) {
     wgpu::Limits supportedLimits = GetSupportedLimits().limits;
@@ -219,7 +228,7 @@ TEST_P(SwapChainValidationTests, ViewDestroyedAfterPresent) {
 TEST_P(SwapChainValidationTests, ReturnedViewCharacteristics) {
     utils::ComboRenderPipelineDescriptor pipelineDesc;
     pipelineDesc.vertex.module = utils::CreateShaderModule(device, R"(
-        @stage(vertex) fn main() -> @builtin(position) vec4<f32> {
+        @vertex fn main() -> @builtin(position) vec4<f32> {
             return vec4<f32>(0.0, 0.0, 0.0, 1.0);
         })");
     pipelineDesc.cFragment.module = utils::CreateShaderModule(device, R"(
@@ -227,7 +236,7 @@ TEST_P(SwapChainValidationTests, ReturnedViewCharacteristics) {
             @location(0) target0 : vec4<f32>,
             @location(1) target1 : f32,
         }
-        @stage(fragment) fn main() -> FragmentOut {
+        @fragment fn main() -> FragmentOut {
             var out : FragmentOut;
             out.target0 = vec4<f32>(0.0, 1.0, 0.0, 1.0);
             out.target1 = 0.5;

@@ -1020,8 +1020,10 @@ bool OverviewSession::IsWindowActiveWindowBeforeOverview(
 void OverviewSession::ShowDesksTemplatesGrids(bool was_zero_state,
                                               const base::GUID& item_to_focus,
                                               aura::Window* const root_window) {
-  if (IsShowingDesksTemplatesGrid())
+  if (Shell::Get()->tablet_mode_controller()->InTabletMode() ||
+      IsShowingDesksTemplatesGrid()) {
     return;
+  }
 
   const bool created_grid_widgets =
       !grid_list_.front()->GetSavedDeskLibraryView();
@@ -1155,7 +1157,8 @@ void OverviewSession::OnDisplayAdded(const display::Display& display) {
 
 void OverviewSession::OnDisplayMetricsChanged(const display::Display& display,
                                               uint32_t metrics) {
-  if (window_drag_controller_)
+  // End the current drag if the display changes.
+  if (window_drag_controller_ && window_drag_controller_->item())
     ResetDraggedWindowGesture();
   auto* overview_grid =
       GetGridWithRootWindow(Shell::GetRootWindowForDisplayId(display.id()));
@@ -1318,6 +1321,14 @@ void OverviewSession::OnKeyEvent(ui::KeyEvent* event) {
       const bool primary_action = !event->IsShiftDown();
       if (!highlight_controller_->MaybeCloseHighlightedView(primary_action))
         return;
+      break;
+    }
+    case ui::VKEY_Z: {
+      // Ctrl + Z undos a close all operation if the toast has not yet expired.
+      if (!is_control_down || !features::IsDesksCloseAllEnabled())
+        return;
+
+      DesksController::Get()->MaybeCancelDeskRemoval();
       break;
     }
     case ui::VKEY_RETURN: {

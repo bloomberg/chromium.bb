@@ -163,6 +163,7 @@ template <class T>
 std::vector<VideoCodec> GetPayloadTypesAndDefaultCodecs(
     const T* factory,
     bool is_decoder_factory,
+    bool include_rtx,
     const webrtc::FieldTrialsView& trials) {
   if (!factory) {
     return {};
@@ -234,23 +235,25 @@ std::vector<VideoCodec> GetPayloadTypesAndDefaultCodecs(
     output_codecs.push_back(codec);
 
     // Add associated RTX codec for non-FEC codecs.
-    if (!isFecCodec) {
-      // Check if we ran out of payload types.
-      if (payload_type_lower > kLastDynamicPayloadTypeLowerRange) {
-        // TODO(https://bugs.chromium.org/p/webrtc/issues/detail?id=12248):
-        // return an error.
-        RTC_LOG(LS_ERROR) << "Out of dynamic payload types [35,63] after "
-                             "fallback from [96, 127], skipping the rest.";
-        RTC_DCHECK_EQ(payload_type_upper, kLastDynamicPayloadTypeUpperRange);
-        break;
-      }
-      if (IsCodecValidForLowerRange(codec) ||
-          payload_type_upper >= kLastDynamicPayloadTypeUpperRange) {
-        output_codecs.push_back(
-            VideoCodec::CreateRtxCodec(payload_type_lower++, codec.id));
-      } else {
-        output_codecs.push_back(
-            VideoCodec::CreateRtxCodec(payload_type_upper++, codec.id));
+    if (include_rtx) {
+      if (!isFecCodec) {
+        // Check if we ran out of payload types.
+        if (payload_type_lower > kLastDynamicPayloadTypeLowerRange) {
+          // TODO(https://bugs.chromium.org/p/webrtc/issues/detail?id=12248):
+          // return an error.
+          RTC_LOG(LS_ERROR) << "Out of dynamic payload types [35,63] after "
+                               "fallback from [96, 127], skipping the rest.";
+          RTC_DCHECK_EQ(payload_type_upper, kLastDynamicPayloadTypeUpperRange);
+          break;
+        }
+        if (IsCodecValidForLowerRange(codec) ||
+            payload_type_upper >= kLastDynamicPayloadTypeUpperRange) {
+          output_codecs.push_back(
+              VideoCodec::CreateRtxCodec(payload_type_lower++, codec.id));
+        } else {
+          output_codecs.push_back(
+              VideoCodec::CreateRtxCodec(payload_type_upper++, codec.id));
+        }
       }
     }
   }
@@ -259,7 +262,8 @@ std::vector<VideoCodec> GetPayloadTypesAndDefaultCodecs(
 
 bool IsTemporalLayersSupported(const std::string& codec_name) {
   return absl::EqualsIgnoreCase(codec_name, kVp8CodecName) ||
-         absl::EqualsIgnoreCase(codec_name, kVp9CodecName);
+         absl::EqualsIgnoreCase(codec_name, kVp9CodecName) ||
+         absl::EqualsIgnoreCase(codec_name, kAv1CodecName);
 }
 
 static std::string CodecVectorToString(const std::vector<VideoCodec>& codecs) {
@@ -402,6 +406,21 @@ int NumActiveStreams(const webrtc::RtpParameters& rtp_parameters) {
   return res;
 }
 
+absl::optional<int> NumSpatialLayersFromEncoding(
+    const webrtc::RtpParameters& rtp_parameters,
+    size_t idx) {
+  if (idx >= rtp_parameters.encodings.size())
+    return absl::nullopt;
+
+  absl::optional<webrtc::ScalabilityMode> scalability_mode =
+      webrtc::ScalabilityModeFromString(
+          rtp_parameters.encodings[idx].scalability_mode.value_or(""));
+  return scalability_mode
+             ? absl::optional<int>(
+                   ScalabilityModeToNumSpatialLayers(*scalability_mode))
+             : absl::nullopt;
+}
+
 std::map<uint32_t, webrtc::VideoSendStream::StreamStats>
 MergeInfoAboutOutboundRtpSubstreams(
     const std::map<uint32_t, webrtc::VideoSendStream::StreamStats>&
@@ -496,10 +515,7 @@ WebRtcVideoChannel::WebRtcVideoSendStream::ConfigureVideoEncoderSettings(
   }
 
   if (absl::EqualsIgnoreCase(codec.name, kH264CodecName)) {
-    webrtc::VideoCodecH264 h264_settings =
-        webrtc::VideoEncoder::GetDefaultH264Settings();
-    return rtc::make_ref_counted<
-        webrtc::VideoEncoderConfig::H264EncoderSpecificSettings>(h264_settings);
+    return nullptr;
   }
   if (absl::EqualsIgnoreCase(codec.name, kVp8CodecName)) {
     webrtc::VideoCodecVP8 vp8_settings =
@@ -524,9 +540,14 @@ WebRtcVideoChannel::WebRtcVideoSendStream::ConfigureVideoEncoderSettings(
 
     // VP9 denoising is disabled by default.
     vp9_settings.denoisingOn = codec_default_denoising ? true : denoising;
-    vp9_settings.automaticResizeOn = automatic_resize;
-    // Ensure frame dropping is always enabled.
-    RTC_DCHECK(vp9_settings.frameDroppingOn);
+    // Disable automatic resize if more than one spatial layer is requested.
+    bool vp9_automatic_resize = automatic_resize;
+    absl::optional<int> num_spatial_layers =
+        NumSpatialLayersFromEncoding(rtp_parameters_, /*idx=*/0);
+    if (num_spatial_layers && *num_spatial_layers > 1) {
+      vp9_automatic_resize = false;
+    }
+    vp9_settings.automaticResizeOn = vp9_automatic_resize;
     if (!is_screencast) {
       webrtc::FieldTrialFlag interlayer_pred_experiment_enabled("Enabled");
       webrtc::FieldTrialEnum<webrtc::InterLayerPredMode> inter_layer_pred_mode(
@@ -633,14 +654,16 @@ VideoMediaChannel* WebRtcVideoEngine::CreateMediaChannel(
                                 encoder_factory_.get(), decoder_factory_.get(),
                                 video_bitrate_allocator_factory);
 }
-std::vector<VideoCodec> WebRtcVideoEngine::send_codecs() const {
+std::vector<VideoCodec> WebRtcVideoEngine::send_codecs(bool include_rtx) const {
   return GetPayloadTypesAndDefaultCodecs(encoder_factory_.get(),
-                                         /*is_decoder_factory=*/false, trials_);
+                                         /*is_decoder_factory=*/false,
+                                         include_rtx, trials_);
 }
 
-std::vector<VideoCodec> WebRtcVideoEngine::recv_codecs() const {
+std::vector<VideoCodec> WebRtcVideoEngine::recv_codecs(bool include_rtx) const {
   return GetPayloadTypesAndDefaultCodecs(decoder_factory_.get(),
-                                         /*is_decoder_factory=*/true, trials_);
+                                         /*is_decoder_factory=*/true,
+                                         include_rtx, trials_);
 }
 
 std::vector<webrtc::RtpHeaderExtensionCapability>
@@ -717,7 +740,8 @@ WebRtcVideoChannel::WebRtcVideoChannel(
   rtcp_receiver_report_ssrc_ = kDefaultRtcpReceiverReportSsrc;
   sending_ = false;
   recv_codecs_ = MapCodecs(GetPayloadTypesAndDefaultCodecs(
-      decoder_factory_, /*is_decoder_factory=*/true, call_->trials()));
+      decoder_factory_, /*is_decoder_factory=*/true,
+      /*include_rtx=*/true, call_->trials()));
   recv_flexfec_payload_type_ =
       recv_codecs_.empty() ? 0 : recv_codecs_.front().flexfec_payload_type;
 }
@@ -1162,7 +1186,7 @@ bool WebRtcVideoChannel::GetChangedRecvParameters(
     const std::vector<VideoCodec> local_supported_codecs =
         GetPayloadTypesAndDefaultCodecs(decoder_factory_,
                                         /*is_decoder_factory=*/true,
-                                        call_->trials());
+                                        /*include_rtx=*/true, call_->trials());
     for (const VideoCodecSettings& mapped_codec : mapped_codecs) {
       if (!FindMatchingCodec(local_supported_codecs, mapped_codec.codec)) {
         RTC_LOG(LS_ERROR)
@@ -1239,6 +1263,16 @@ std::string WebRtcVideoChannel::CodecSettingsVectorToString(
   }
   out << "}";
   return out.Release();
+}
+
+// RTC_RUN_ON(&thread_checker_)
+void WebRtcVideoChannel::SetReceiverReportSsrc(uint32_t ssrc) {
+  if (ssrc == rtcp_receiver_report_ssrc_)
+    return;
+
+  rtcp_receiver_report_ssrc_ = ssrc;
+  for (auto& [unused, receive_stream] : receive_streams_)
+    receive_stream->SetLocalSsrc(ssrc);
 }
 
 bool WebRtcVideoChannel::GetSendCodec(VideoCodec* codec) {
@@ -1353,13 +1387,9 @@ bool WebRtcVideoChannel::AddSendStream(const StreamParams& sp) {
   send_streams_[ssrc] = stream;
 
   if (rtcp_receiver_report_ssrc_ == kDefaultRtcpReceiverReportSsrc) {
-    rtcp_receiver_report_ssrc_ = ssrc;
-    RTC_LOG(LS_INFO)
-        << "SetLocalSsrc on all the receive streams because we added "
-           "a send stream.";
-    for (auto& kv : receive_streams_)
-      kv.second->SetLocalSsrc(ssrc);
+    SetReceiverReportSsrc(ssrc);
   }
+
   if (sending_) {
     stream->SetSend(true);
   }
@@ -1386,15 +1416,8 @@ bool WebRtcVideoChannel::RemoveSendStream(uint32_t ssrc) {
 
   // Switch receiver report SSRCs, the one in use is no longer valid.
   if (rtcp_receiver_report_ssrc_ == ssrc) {
-    rtcp_receiver_report_ssrc_ = send_streams_.empty()
-                                     ? kDefaultRtcpReceiverReportSsrc
-                                     : send_streams_.begin()->first;
-    RTC_LOG(LS_INFO) << "SetLocalSsrc on all the receive streams because the "
-                        "previous local SSRC was removed.";
-
-    for (auto& kv : receive_streams_) {
-      kv.second->SetLocalSsrc(rtcp_receiver_report_ssrc_);
-    }
+    SetReceiverReportSsrc(send_streams_.empty() ? kDefaultRtcpReceiverReportSsrc
+                                                : send_streams_.begin()->first);
   }
 
   delete removed_stream;
@@ -1450,7 +1473,7 @@ bool WebRtcVideoChannel::AddRecvStream(const StreamParams& sp,
   for (uint32_t used_ssrc : sp.ssrcs)
     receive_ssrcs_.insert(used_ssrc);
 
-  webrtc::VideoReceiveStream::Config config(this, decoder_factory_);
+  webrtc::VideoReceiveStreamInterface::Config config(this, decoder_factory_);
   webrtc::FlexfecReceiveStream::Config flexfec_config(this);
   ConfigureReceiverRtp(&config, &flexfec_config, sp);
 
@@ -1472,7 +1495,7 @@ bool WebRtcVideoChannel::AddRecvStream(const StreamParams& sp,
 }
 
 void WebRtcVideoChannel::ConfigureReceiverRtp(
-    webrtc::VideoReceiveStream::Config* config,
+    webrtc::VideoReceiveStreamInterface::Config* config,
     webrtc::FlexfecReceiveStream::Config* flexfec_config,
     const StreamParams& sp) const {
   uint32_t ssrc = sp.first_ssrc();
@@ -1916,6 +1939,18 @@ void WebRtcVideoChannel::SetFrameEncryptor(
     matching_stream->second->SetFrameEncryptor(frame_encryptor);
   } else {
     RTC_LOG(LS_ERROR) << "No stream found to attach frame encryptor";
+  }
+}
+
+void WebRtcVideoChannel::SetEncoderSelector(
+    uint32_t ssrc,
+    webrtc::VideoEncoderFactory::EncoderSelectorInterface* encoder_selector) {
+  RTC_DCHECK_RUN_ON(&thread_checker_);
+  auto matching_stream = send_streams_.find(ssrc);
+  if (matching_stream != send_streams_.end()) {
+    matching_stream->second->SetEncoderSelector(encoder_selector);
+  } else {
+    RTC_LOG(LS_ERROR) << "No stream found to attach encoder selector";
   }
 }
 
@@ -2365,6 +2400,18 @@ void WebRtcVideoChannel::WebRtcVideoSendStream::SetFrameEncryptor(
   }
 }
 
+void WebRtcVideoChannel::WebRtcVideoSendStream::SetEncoderSelector(
+    webrtc::VideoEncoderFactory::EncoderSelectorInterface* encoder_selector) {
+  RTC_DCHECK_RUN_ON(&thread_checker_);
+  parameters_.config.encoder_selector = encoder_selector;
+  if (stream_) {
+    RTC_LOG(LS_INFO)
+        << "RecreateWebRtcStream (send) because of SetEncoderSelector, ssrc="
+        << parameters_.config.rtp.ssrcs[0];
+    RecreateWebRtcStream();
+  }
+}
+
 void WebRtcVideoChannel::WebRtcVideoSendStream::UpdateSendState() {
   RTC_DCHECK_RUN_ON(&thread_checker_);
   if (sending_) {
@@ -2507,6 +2554,9 @@ WebRtcVideoChannel::WebRtcVideoSendStream::CreateVideoEncoderConfig(
       !disable_automatic_resize_ && !is_screencast &&
       (parameters_.config.rtp.ssrcs.size() == 1 ||
        NumActiveStreams(rtp_parameters_) == 1);
+
+  // Ensure frame dropping is always enabled.
+  encoder_config.frame_drop_enabled = true;
 
   int max_qp = kDefaultQpMax;
   codec.GetParam(kCodecParamMaxQuantization, &max_qp);
@@ -2784,7 +2834,7 @@ WebRtcVideoChannel::WebRtcVideoReceiveStream::WebRtcVideoReceiveStream(
     WebRtcVideoChannel* channel,
     webrtc::Call* call,
     const StreamParams& sp,
-    webrtc::VideoReceiveStream::Config config,
+    webrtc::VideoReceiveStreamInterface::Config config,
     bool default_stream,
     const std::vector<VideoCodecSettings>& recv_codecs,
     const webrtc::FlexfecReceiveStream::Config& flexfec_config)
@@ -2803,13 +2853,24 @@ WebRtcVideoChannel::WebRtcVideoReceiveStream::WebRtcVideoReceiveStream(
   config_.renderer = this;
   ConfigureCodecs(recv_codecs);
   flexfec_config_.payload_type = flexfec_config.payload_type;
-  RecreateWebRtcVideoStream();
+  RecreateReceiveStream();
 }
 
 WebRtcVideoChannel::WebRtcVideoReceiveStream::~WebRtcVideoReceiveStream() {
   call_->DestroyVideoReceiveStream(stream_);
   if (flexfec_stream_)
     call_->DestroyFlexfecReceiveStream(flexfec_stream_);
+}
+
+webrtc::VideoReceiveStreamInterface&
+WebRtcVideoChannel::WebRtcVideoReceiveStream::stream() {
+  RTC_DCHECK(stream_);
+  return *stream_;
+}
+
+webrtc::FlexfecReceiveStream*
+WebRtcVideoChannel::WebRtcVideoReceiveStream::flexfec_stream() {
+  return flexfec_stream_;
 }
 
 const std::vector<uint32_t>&
@@ -2847,7 +2908,7 @@ bool WebRtcVideoChannel::WebRtcVideoReceiveStream::ConfigureCodecs(
 
   std::map<int, int> rtx_associated_payload_types;
   std::set<int> raw_payload_types;
-  std::vector<webrtc::VideoReceiveStream::Decoder> decoders;
+  std::vector<webrtc::VideoReceiveStreamInterface::Decoder> decoders;
   for (const auto& recv_codec : recv_codecs) {
     decoders.emplace_back(
         webrtc::SdpVideoFormat(recv_codec.codec.name, recv_codec.codec.params),
@@ -2921,27 +2982,6 @@ bool WebRtcVideoChannel::WebRtcVideoReceiveStream::ConfigureCodecs(
   return recreate_needed;
 }
 
-void WebRtcVideoChannel::WebRtcVideoReceiveStream::SetLocalSsrc(
-    uint32_t local_ssrc) {
-  // TODO(pbos): Consider turning this sanity check into a RTC_DCHECK. You
-  // should not be able to create a sender with the same SSRC as a receiver, but
-  // right now this can't be done due to unittests depending on receiving what
-  // they are sending from the same MediaChannel.
-  if (local_ssrc == config_.rtp.local_ssrc) {
-    RTC_DLOG(LS_INFO) << "Ignoring call to SetLocalSsrc because parameters are "
-                         "unchanged; local_ssrc="
-                      << local_ssrc;
-    return;
-  }
-
-  config_.rtp.local_ssrc = local_ssrc;
-  flexfec_config_.rtp.local_ssrc = local_ssrc;
-  RTC_LOG(LS_INFO)
-      << "RecreateWebRtcVideoStream (recv) because of SetLocalSsrc; local_ssrc="
-      << local_ssrc;
-  RecreateWebRtcVideoStream();
-}
-
 void WebRtcVideoChannel::WebRtcVideoReceiveStream::SetFeedbackParameters(
     bool lntf_enabled,
     bool nack_enabled,
@@ -2970,10 +3010,10 @@ void WebRtcVideoChannel::WebRtcVideoReceiveStream::SetFeedbackParameters(
   // based on the rtcp-fb for the FlexFEC codec, not the media codec.
   flexfec_config_.rtp.transport_cc = config_.rtp.transport_cc;
   flexfec_config_.rtcp_mode = config_.rtp.rtcp_mode;
-  RTC_LOG(LS_INFO) << "RecreateWebRtcVideoStream (recv) because of "
+  RTC_LOG(LS_INFO) << "RecreateReceiveStream (recv) because of "
                       "SetFeedbackParameters; nack="
                    << nack_enabled << ", transport_cc=" << transport_cc_enabled;
-  RecreateWebRtcVideoStream();
+  RecreateReceiveStream();
 }
 
 void WebRtcVideoChannel::WebRtcVideoReceiveStream::SetRecvParameters(
@@ -3012,17 +3052,18 @@ void WebRtcVideoChannel::WebRtcVideoReceiveStream::SetRecvParameters(
       video_needs_recreation = true;
   }
   if (video_needs_recreation) {
-    RecreateWebRtcVideoStream();
+    RecreateReceiveStream();
   }
 }
 
-void WebRtcVideoChannel::WebRtcVideoReceiveStream::RecreateWebRtcVideoStream() {
+void WebRtcVideoChannel::WebRtcVideoReceiveStream::RecreateReceiveStream() {
   absl::optional<int> base_minimum_playout_delay_ms;
-  absl::optional<webrtc::VideoReceiveStream::RecordingState> recording_state;
+  absl::optional<webrtc::VideoReceiveStreamInterface::RecordingState>
+      recording_state;
   if (stream_) {
     base_minimum_playout_delay_ms = stream_->GetBaseMinimumPlayoutDelayMs();
     recording_state = stream_->SetAndGetRecordingState(
-        webrtc::VideoReceiveStream::RecordingState(),
+        webrtc::VideoReceiveStreamInterface::RecordingState(),
         /*generate_key_frame=*/false);
     call_->DestroyVideoReceiveStream(stream_);
     stream_ = nullptr;
@@ -3037,7 +3078,7 @@ void WebRtcVideoChannel::WebRtcVideoReceiveStream::RecreateWebRtcVideoStream() {
     flexfec_stream_ = call_->CreateFlexfecReceiveStream(flexfec_config_);
   }
 
-  webrtc::VideoReceiveStream::Config config = config_.Copy();
+  webrtc::VideoReceiveStreamInterface::Config config = config_.Copy();
   config.rtp.protected_by_flexfec = (flexfec_stream_ != nullptr);
   config.rtp.packet_sink_ = flexfec_stream_;
   stream_ = call_->CreateVideoReceiveStream(std::move(config));
@@ -3069,7 +3110,8 @@ void WebRtcVideoChannel::WebRtcVideoReceiveStream::OnFrame(
     estimated_remote_start_ntp_time_ms_ = frame.ntp_time_ms() - elapsed_time_ms;
 
   if (sink_ == NULL) {
-    RTC_LOG(LS_WARNING) << "VideoReceiveStream not connected to a VideoSink.";
+    RTC_LOG(LS_WARNING)
+        << "VideoReceiveStreamInterface not connected to a VideoSink.";
     return;
   }
 
@@ -3111,7 +3153,8 @@ void WebRtcVideoChannel::WebRtcVideoReceiveStream::SetSink(
 std::string
 WebRtcVideoChannel::WebRtcVideoReceiveStream::GetCodecNameFromPayloadType(
     int payload_type) {
-  for (const webrtc::VideoReceiveStream::Decoder& decoder : config_.decoders) {
+  for (const webrtc::VideoReceiveStreamInterface::Decoder& decoder :
+       config_.decoders) {
     if (decoder.payload_type == payload_type) {
       return decoder.video_format.name;
     }
@@ -3125,7 +3168,7 @@ WebRtcVideoChannel::WebRtcVideoReceiveStream::GetVideoReceiverInfo(
   VideoReceiverInfo info;
   info.ssrc_groups = stream_params_.ssrc_groups;
   info.add_ssrc(config_.rtp.remote_ssrc);
-  webrtc::VideoReceiveStream::Stats stats = stream_->GetStats();
+  webrtc::VideoReceiveStreamInterface::Stats stats = stream_->GetStats();
   info.decoder_implementation_name = stats.decoder_implementation_name;
   if (stats.current_payload_type != -1) {
     info.codec_payload_type = stats.current_payload_type;
@@ -3167,6 +3210,9 @@ WebRtcVideoChannel::WebRtcVideoReceiveStream::GetVideoReceiverInfo(
   info.qp_sum = stats.qp_sum;
   info.total_decode_time_ms = stats.total_decode_time_ms;
   info.total_processing_delay = stats.total_processing_delay;
+  info.total_assembly_time = stats.total_assembly_time;
+  info.frames_assembled_from_multiple_packets =
+      stats.frames_assembled_from_multiple_packets;
   info.last_packet_received_timestamp_ms =
       stats.rtp_stats.last_packet_received_timestamp_ms;
   info.estimated_playout_ntp_timestamp_ms =
@@ -3205,7 +3251,8 @@ void WebRtcVideoChannel::WebRtcVideoReceiveStream::
         std::function<void(const webrtc::RecordableEncodedFrame&)> callback) {
   if (stream_) {
     stream_->SetAndGetRecordingState(
-        webrtc::VideoReceiveStream::RecordingState(std::move(callback)),
+        webrtc::VideoReceiveStreamInterface::RecordingState(
+            std::move(callback)),
         /*generate_key_frame=*/true);
   } else {
     RTC_LOG(LS_ERROR) << "Absent receive stream; ignoring setting encoded "
@@ -3217,7 +3264,7 @@ void WebRtcVideoChannel::WebRtcVideoReceiveStream::
     ClearRecordableEncodedFrameCallback() {
   if (stream_) {
     stream_->SetAndGetRecordingState(
-        webrtc::VideoReceiveStream::RecordingState(),
+        webrtc::VideoReceiveStreamInterface::RecordingState(),
         /*generate_key_frame=*/false);
   } else {
     RTC_LOG(LS_ERROR) << "Absent receive stream; ignoring clearing encoded "
@@ -3241,6 +3288,13 @@ void WebRtcVideoChannel::WebRtcVideoReceiveStream::
   config_.frame_transformer = frame_transformer;
   if (stream_)
     stream_->SetDepacketizerToDecoderFrameTransformer(frame_transformer);
+}
+
+void WebRtcVideoChannel::WebRtcVideoReceiveStream::SetLocalSsrc(uint32_t ssrc) {
+  config_.rtp.local_ssrc = ssrc;
+  call_->OnLocalSsrcUpdated(stream(), ssrc);
+  if (flexfec_stream_)
+    call_->OnLocalSsrcUpdated(*flexfec_stream_, ssrc);
 }
 
 WebRtcVideoChannel::VideoCodecSettings::VideoCodecSettings()
