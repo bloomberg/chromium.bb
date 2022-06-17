@@ -348,6 +348,7 @@ Axtarmaq üçün istənilən sözə toxunub saxlayın. Axtarışınızı dəqiql
 <translation id="2842985007712546952">Ana qovluq</translation>
 <translation id="2856503607207334158">Daxil olmaq alınmadı</translation>
 <translation id="2860954141821109167">Telefon tətbiqinin bu cihazda aktiv edildiyinə əmin olun</translation>
+<translation id="2861923151411510142">Bəzi Chrome funksiyaları daha əlçatan olmayacaq</translation>
 <translation id="2870560284913253234">Sayt</translation>
 <translation id="2871733351037274014">Səhifələri əvvəlcədən yükləyin</translation>
 <translation id="2888126860611144412">Chrome haqqında</translation>
@@ -526,7 +527,6 @@ Axtarmaq üçün istənilən sözə toxunub saxlayın. Axtarışınızı dəqiql
 <translation id="3845098929839618392">Anonim tabda açın</translation>
 <translation id="3856096718352044181">Bunun etibarlı təminatçı olduğunu doğrulayın, ya da daha sonra təkrar cəhd edin</translation>
 <translation id="3858860766373142691">Ad</translation>
-<translation id="3859206958100234503">Bütün cihazlarınızda parollarınızı, əlfəcinlərinizi və daha çoxunu əldə etmək üçün sinxronizasiya edin</translation>
 <translation id="3861633093716975811">Populyar videolar</translation>
 <translation id="3892148308691398805">Mətni kopyalayın</translation>
 <translation id="3894427358181296146">Qovluq əlavə edin</translation>
@@ -565,6 +565,7 @@ Axtarmaq üçün istənilən sözə toxunub saxlayın. Axtarışınızı dəqiql
 <translation id="4095146165863963773">Tətbiq datası silinsin?</translation>
 <translation id="4096227151372679484">Əlfəcin saxlama prosesi yarım hündürlükdə açılıb</translation>
 <translation id="4099578267706723511">İstifadə statistikası və qəza raportlarını Google'a göndərməklə Chrome'un gəlişməsini sağlayın.</translation>
+<translation id="4101475238162928417">Digər cihazlarınızda parollarınızı, əlfəcinlərinizi və daha çoxunu əldə etmək üçün sinxronizasiya edin</translation>
 <translation id="410351446219883937">Avtomatik oxutma</translation>
 <translation id="4106587138345390261">Chrome saytlara məlumatlarınızdan daha az istifadə etməklə eyni baxış təcrübəsi təqdim etməyə imkan verən yeni funksiyaları araşdırır</translation>
 <translation id="4108314971463891922">İzləyin</translation>
@@ -891,6 +892,7 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="5869522115854928033">Saxlanılmış parollar</translation>
 <translation id="5869789175361934029">Başqa cihazdan davam edin</translation>
 <translation id="587735546353481577">Bir saytı izləmək üçün sayta keçin, Chrome menyusunu açın və İzlə seçiminə toxunun.</translation>
+<translation id="5879072387416556377">Daha yaxşı təkliflər alın</translation>
 <translation id="5880748256563468367">Lentə keçin</translation>
 <translation id="5884076754568147479">Tapşırıqları tamamlamaqda sizə kömək etmək üçün Google Assistentdən istifadə etdiyiniz saytların URL və məzmunlarını, eləcə də Assistent vasitəsilə təqdim etdiyiniz məlumatları əldə edəcək</translation>
 <translation id="5906513782029855931">Saytların URL-lərini bilmək Google Assistentə tapşırıqları yerinə yetirməkdə sizə kömək etmək imkanı verir. Assistenti Chrome ayarlarında deaktiv edə bilərsiniz.</translation>
@@ -1192,6 +1194,7 @@ Güvən nişanları internetdə məxfiliyi yaxşılaşdırır və kim olduğunuz
 <translation id="749294055653435199">Google Linza bu cihazda əlçatan deyil</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Güncəlləşib <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7498271377022651285">Xahiş edirik gözləyin ...</translation>
+<translation id="7502234197872745058">Bütün vebsaytlarda Google Hesabınızdan çıxmaq üçün <ph name="BEGIN_LINK1" />Chrome'dan çıxın<ph name="END_LINK1" />.</translation>
 <translation id="750228856503700085">Güncəlləmələr əlçatan deyil</translation>
 <translation id="7507207699631365376">Bu təminatçının <ph name="BEGIN_LINK" />məxfilik siyasətinə<ph name="END_LINK" /> baxın</translation>
 <translation id="7514365320538308">Endirmə</translation>
@@ -1231,6 +1234,7 @@ Güvən nişanları internetdə məxfiliyi yaxşılaşdırır və kim olduğunuz
 <translation id="770741401784017797">GIF yaradılır</translation>
 <translation id="7707922173985738739">Mobil data istifadə edin</translation>
 <translation id="7709094866268987903">Sildiyiniz maraqlar burada görünəcək</translation>
+<translation id="7709918231054955894">Bütün tablarınızı əldə edin</translation>
 <translation id="7725024127233776428">Seçdiyiniz səhifələr burada görünəcək</translation>
 <translation id="7757787379047923882"><ph name="DEVICE_NAME" /> cihazından paylaşılan mətn</translation>
 <translation id="7761849928583394409">Tarix və vaxt seçin</translation>
@@ -1426,6 +1430,7 @@ Güvən nişanları internetdə məxfiliyi yaxşılaşdırır və kim olduğunuz
 <translation id="8656747343598256512">Google hesabınızla bu sayta və Chrome'a daxil olun. Sinxronlaşdırmanı daha sonra aktiv edə bilərsiniz.</translation>
 <translation id="8659579665266920523">Chrome ilə necə axtarış etməli</translation>
 <translation id="8662811608048051533">Bununla əksər saytlardan çıxacaqsınız.</translation>
+<translation id="8664215986015753476">Chrome'u istədiyiniz kimi istifadə edin</translation>
 <translation id="8664979001105139458">Fayl adı artıq mövcuddur</translation>
 <translation id="8666759526542103597">Brauzer əsaslı reklam fərdiləşdirməsi haqqında</translation>
 <translation id="8667760277771450375">Saytlara reklam spamını və dələduzluğu dayandırmağa imkan verərkən saytlararası izləməni məhdudlaşdırmağın yollarını araşdırırıq.</translation>

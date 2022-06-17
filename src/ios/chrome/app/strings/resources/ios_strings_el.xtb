@@ -27,6 +27,7 @@
 <translation id="1145536944570833626">Διαγραφή υπαρχόντων δεδομένων.</translation>
 <translation id="1147031633655575115">Έχετε συνδεθεί ως <ph name="USER" /></translation>
 <translation id="1154984953698510061">Δείτε άλλες καρτέλες</translation>
+<translation id="1161340988127985692">Να γίνεται ερώτηση για άνοιγμα συνδέσμων από άλλες εφαρμογές σε κατάσταση ανώνυμης περιήγησης</translation>
 <translation id="1164064664035028907">Χρήση ισχυρού κωδικού πρόσβασης:</translation>
 <translation id="1165039591588034296">Σφάλμα</translation>
 <translation id="1172898394251786223">Επόμενο πεδίο</translation>
@@ -292,6 +293,7 @@
 <translation id="3443810440409579745">Η καρτέλα λήφθηκε.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> λεπτά</translation>
 <translation id="3448016392200048164">Προβολή διαχωρισμού οθόνης</translation>
+<translation id="3450502512529866925">Δημιουργία σελιδοδείκτη για αυτήν τη σελίδα</translation>
 <translation id="345565170154308620">Διαχείριση κωδικών πρόσβασης…</translation>
 <translation id="3469166899695866866">Διακοπή λήψης;</translation>
 <translation id="3470502288861289375">Αντιγραφή…</translation>
@@ -406,6 +408,7 @@
 <translation id="4502566650163919158">Έλεγχος τώρα</translation>
 <translation id="4505980578794259603">Τελευταίος έλεγχος: <ph name="TIME" /></translation>
 <translation id="4508750114462689118">Κλείσιμο προσφοράς σύνδεσης</translation>
+<translation id="4511669830082467224">Αναζήτηση εικόνας με το Google</translation>
 <translation id="4526249700380860531">Προβολή και διαχείριση των αποθηκευμένων κωδικών πρόσβασης στη διεύθυνση <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="452750746583162491">Έλεγχος συγχρονισμένων δεδομένων</translation>
 <translation id="4536418791685807335">Δοκιμάστε να συνδεθείτε ξανά.</translation>
@@ -483,6 +486,7 @@
 <translation id="5090832849094901128">Η κατάργηση αυτού του κωδικού πρόσβασης δεν θα διαγράψει τον λογαριασμό σας στον ιστότοπο <ph name="WEBSITE" />.</translation>
 <translation id="5092117651143801290">Μπορείτε να αποθηκεύετε σελίδες για ανάγνωση αργότερα ή εκτός σύνδεσης. Το Chrome θα σας ρωτήσει αν θέλετε να αποθηκεύσετε μεγάλες σελίδες.</translation>
 <translation id="5094827893301452931">Το Tweet ολοκληρώθηκε.</translation>
+<translation id="509789154667432072">Προσθήκη σελιδοδείκτη</translation>
 <translation id="5118713593561876160">Ενδιαφέροντα</translation>
 <translation id="5118764316110575523">Ανενεργό</translation>
 <translation id="5127805178023152808">Ο συγχρονισμός είναι απενεργοποιημένος</translation>

@@ -291,6 +291,7 @@ Jinak to vaše nastavení ochrany soukromí bude blokovat. Povolením umožníte
 <translation id="1662550410081243962">Ukládat a vyplňovat platební metody</translation>
 <translation id="1663943134801823270">Karty a adresy pocházejí z Chromu. Můžete je spravovat v <ph name="BEGIN_LINK" />Nastavení<ph name="END_LINK" />.</translation>
 <translation id="1671391448414634642">Stránky v jazyce <ph name="SOURCE_LANGUAGE" /> se od teď budou překládat do jazyka <ph name="TARGET_LANGUAGE" />.</translation>
+<translation id="1673886523110456987">Pokud nabídku chcete využít, zaplaťte kartou <ph name="CARD_DETAIL" /></translation>
 <translation id="1674504678466460478">Z: <ph name="SOURCE_LANGUAGE" /> do: <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="1682696192498422849">Krátkou hranou napřed</translation>
 <translation id="168693727862418163">Hodnotu zásady se nepodařilo ověřit proti schématu a bude ignorována.</translation>
@@ -586,6 +587,7 @@ Jinak to vaše nastavení ochrany soukromí bude blokovat. Povolením umožníte
 <translation id="2523886232349826891">Uloženo pouze do tohoto zařízení</translation>
 <translation id="2524461107774643265">Přidání dalších informací</translation>
 <translation id="2529899080962247600">Toto pole nesmí mít více než <ph name="MAX_ITEMS_LIMIT" /> položek. Všechny další položky budou ignorovány.</translation>
+<translation id="253493526287553278">Zobrazit podrobnosti propagačního kódu</translation>
 <translation id="2535585790302968248">Otevřete novou anonymní kartu a prohlížejte v soukromí</translation>
 <translation id="2535659140340599600">{COUNT,plural, =1{a 1 další}few{a # další}many{a # další}other{a # dalších}}</translation>
 <translation id="2536110899380797252">Přidat adresu</translation>
@@ -1098,6 +1100,7 @@ Jinak to vaše nastavení ochrany soukromí bude blokovat. Povolením umožníte
 <translation id="3986705137476756801">Zatím živý přepis vypnout</translation>
 <translation id="3987940399970879459">Méně než 1 MB</translation>
 <translation id="3990250421422698716">Běžící odsazení</translation>
+<translation id="3992684624889376114">O této stránce</translation>
 <translation id="3996311196211510766">Web <ph name="ORIGIN" /> požádal, aby se na všechny na něj odesílané požadavky vztahovaly zásady ohledně původu, ale tyto zásady momentálně nelze použít.</translation>
 <translation id="4006465311664329701">Platební metody, nabídky a adresy z Google Pay</translation>
 <translation id="4009243425692662128">Obsah tisknutých stránek se odesílá do služby Google Cloud nebo třetím stranám k analýze. Může například projít kontrolou přítomnosti citlivých údajů.</translation>
@@ -1268,6 +1271,7 @@ Jinak to vaše nastavení ochrany soukromí bude blokovat. Povolením umožníte
 <translation id="4435702339979719576">Postcard)</translation>
 <translation id="443673843213245140">Využití proxy serveru je zakázáno, je však určena explicitní konfigurace proxy serveru.</translation>
 <translation id="4441832193888514600">Ignorováno, protože zásadu lze nastavit pouze jako zásadu cloudového uživatele.</translation>
+<translation id="4442470707340296952">Karty v Chromu</translation>
 <translation id="4450893287417543264">Tuto zprávu již nezobrazovat</translation>
 <translation id="4451135742916150903">Může žádat o připojení k zařízením HID</translation>
 <translation id="4452328064229197696">Právě použité heslo bylo nalezeno na seznamu hesel uniklých při incidentu porušení zabezpečení údajů. K zabezpečení vašich účtů doporučuje Správce hesel Google zkontrolovat uložená hesla.</translation>
@@ -1542,6 +1546,7 @@ Jinak to vaše nastavení ochrany soukromí bude blokovat. Povolením umožníte
 <translation id="5171045022955879922">Vyhledávejte či zadejte URL</translation>
 <translation id="5171689220826475070">Fanfold-European</translation>
 <translation id="5172758083709347301">Počítač</translation>
+<translation id="5177076414499237632">Informace o zdroji a tématu této stránky</translation>
 <translation id="5179510805599951267">Nejedná se o jazyk <ph name="ORIGINAL_LANGUAGE" />? Nahlaste tuto chybu.</translation>
 <translation id="518639307526414276">Krmení a potřeby pro péči o domácí zvířata</translation>
 <translation id="5190835502935405962">Lišta záložek</translation>
@@ -2560,6 +2565,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="8074253406171541171">10x13 (obálka)</translation>
 <translation id="8075736640322370409">Rychle vytvořit novou Tabulku Google</translation>
 <translation id="8075898834294118863">Spravovat nastavení webů</translation>
+<translation id="8076492880354921740">Karty</translation>
 <translation id="8078141288243656252">Když je dokument otočený, nelze do něj přidávat značky a poznámky</translation>
 <translation id="8079031581361219619">Načíst web znovu?</translation>
 <translation id="8081087320434522107">Sedany</translation>
@@ -2982,6 +2988,7 @@ Další podrobnosti:
 <translation id="988159990683914416">Vývojářské sestavení</translation>
 <translation id="989988560359834682">Upravit adresu</translation>
 <translation id="991413375315957741">senzory pohybu nebo světla</translation>
+<translation id="992110854164447044">Virtuální karta skryje vaši skutečnou kartu a chrání vás před případným podvodem. <ph name="IDS_AUTOFILL_VIRTUAL_CARD_ENROLLMENT_LEARN_MORE_LINK_LABEL" /></translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
 <translation id="992256792861109788">Růžová</translation>
 <translation id="992432478773561401">Software <ph name="SOFTWARE_NAME" /> na počítači nebo v síti nebyl nainstalován správně:

@@ -27,6 +27,7 @@
 <translation id="1145536944570833626">既存のデータを削除します。</translation>
 <translation id="1147031633655575115"><ph name="USER" /> としてログイン</translation>
 <translation id="1154984953698510061">他のタブを表示</translation>
+<translation id="1161340988127985692">他のアプリからのリンクをシークレット モードで開くか確認する</translation>
 <translation id="1164064664035028907">安全なパスワードを使用:</translation>
 <translation id="1165039591588034296">エラー</translation>
 <translation id="1172898394251786223">次の項目</translation>
@@ -292,6 +293,7 @@
 <translation id="3443810440409579745">タブが共有されました。</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" />分</translation>
 <translation id="3448016392200048164">分割表示</translation>
+<translation id="3450502512529866925">このページをブックマークする</translation>
 <translation id="345565170154308620">パスワードを管理...</translation>
 <translation id="3469166899695866866">ダウンロードを中止しますか？</translation>
 <translation id="3470502288861289375">コピーしています...</translation>
@@ -406,6 +408,7 @@
 <translation id="4502566650163919158">今すぐ確認</translation>
 <translation id="4505980578794259603">最終確認日: <ph name="TIME" /></translation>
 <translation id="4508750114462689118">ログイン プロモーションを閉じる</translation>
+<translation id="4511669830082467224">Google で画像を検索</translation>
 <translation id="4526249700380860531"><ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> での保存パスワードの表示と管理</translation>
 <translation id="452750746583162491">同期したデータを確認する</translation>
 <translation id="4536418791685807335">もう一度ログインしてみてください。</translation>
@@ -483,6 +486,7 @@
 <translation id="5090832849094901128">このパスワードを削除しても、<ph name="WEBSITE" /> のアカウントは削除されません。</translation>
 <translation id="5092117651143801290">ページを保存して、後で読んだり、オフラインで読んだりできます。長いページを保存する場合は確認のメッセージが表示されます。</translation>
 <translation id="5094827893301452931">ツイートが完了しました。</translation>
+<translation id="509789154667432072">ブックマークを追加する</translation>
 <translation id="5118713593561876160">興味 / 関心</translation>
 <translation id="5118764316110575523">オフ</translation>
 <translation id="5127805178023152808">同期は無効です</translation>

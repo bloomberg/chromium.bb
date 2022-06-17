@@ -31,6 +31,7 @@
 <translation id="1150989369772528668">日历</translation>
 <translation id="1153356358378277386">已配对的设备</translation>
 <translation id="1165712434476988950">必须重启设备，才能应用这项更新。</translation>
+<translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />，<ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">您的 USB-C 数据线可能没有正确连接到显示屏</translation>
 <translation id="1175572348579024023">滚动</translation>
 <translation id="1178581264944972037">暂停</translation>
@@ -503,6 +504,7 @@
 <translation id="3901991538546252627">正在连接：<ph name="NAME" /></translation>
 <translation id="3922427723338465344">{0,plural, =1{请在 1 分钟内将设备回滚到上一个版本}other{请在 # 分钟内将设备回滚到上一个版本}}</translation>
 <translation id="3923494859158167397">未设置任何移动网络</translation>
+<translation id="3925540965556789199"><ph name="DATE" />，正在加载活动。</translation>
 <translation id="3932043219784172185">未连接任何设备</translation>
 <translation id="3934456833412894880">已开启“自适应充电”功能。电池电量将会保持在 80% 以延长电池寿命，并会在您需要时完全充满。</translation>
 <translation id="3943857333388298514">粘贴</translation>
@@ -702,6 +704,7 @@
 <translation id="5078796286268621944">PIN 不正确</translation>
 <translation id="5083553833479578423">启用更多 Google 助理功能。</translation>
 <translation id="509790653408515442">当您流式传输您手机上的应用时，它们会显示在此处</translation>
+<translation id="5098537242461068432">已重新打开桌面和窗口</translation>
 <translation id="5107522548814527560">网页</translation>
 <translation id="5117590920725113268">显示下一个月</translation>
 <translation id="5136175204352732067">所连接的键盘已不是原来的那个</translation>
@@ -1054,6 +1057,7 @@
 <translation id="7258828758145722155">昨天修改过</translation>
 <translation id="726276584504105859">拖到此处即可使用分屏模式</translation>
 <translation id="7262906531272962081">创建提醒</translation>
+<translation id="7297440678881127227"><ph name="START_TIME" /> 至<ph name="END_TIME" />，<ph name="TIME_ZONE" />，<ph name="EVENT_SUMMARY" />。选择相应条目即可在 Google 日历中了解详情。</translation>
 <translation id="7302889331339392448">“实时字幕”功能已关闭。</translation>
 <translation id="7303365578352795231">正在通过另一设备答复。</translation>
 <translation id="7305884605064981971">EDGE</translation>
@@ -1166,6 +1170,7 @@
 <translation id="7904094684485781019">此帐号的管理员已停用多帐号登录。</translation>
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7930731167419639574">现在，语音均在本地处理，语音输入内容可离线使用</translation>
+<translation id="7932451802722951285">在 Google 日历中打开</translation>
 <translation id="7933084174919150729">Google 助理仅适用于主要个人资料。</translation>
 <translation id="79341161159229895">该帐号由 <ph name="FIRST_PARENT_EMAIL" /> 和 <ph name="SECOND_PARENT_EMAIL" /> 管理</translation>
 <translation id="793716872548410480">按<ph name="SHORTCUT_KEY_NAME" /> + V 可查看您的剪贴板。您复制的最后 5 项内容会保存到您的剪贴板中。</translation>

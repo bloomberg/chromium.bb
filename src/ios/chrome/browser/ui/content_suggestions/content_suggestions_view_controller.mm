@@ -80,6 +80,9 @@ const float kModuleVerticalSpacing = 16.0f;
 @property(nonatomic, strong) ContentSuggestionsWhatsNewView* whatsNewView;
 // StackView holding all of |mostVisitedViews|.
 @property(nonatomic, strong) UIStackView* mostVisitedStackView;
+// Module Container for the Most Visited Tiles.
+@property(nonatomic, strong)
+    ContentSuggestionsModuleContainer* mostVisitedModuleContainer;
 // List of all of the Most Visited views.
 @property(nonatomic, strong)
     NSMutableArray<ContentSuggestionsMostVisitedTileView*>* mostVisitedViews;
@@ -183,13 +186,25 @@ const float kModuleVerticalSpacing = 16.0f;
     if (IsContentSuggestionsUIModuleRefreshEnabled()) {
       self.mostVisitedStackView.backgroundColor =
           ntp_home::kNTPBackgroundColor();
-      self.mostVisitedStackView.alignment = UIStackViewAlignmentCenter;
-      ContentSuggestionsModuleContainer* mostVisitedContainer =
+      self.mostVisitedStackView.alignment = UIStackViewAlignmentTop;
+      self.mostVisitedModuleContainer =
           [[ContentSuggestionsModuleContainer alloc]
               initWithContentView:self.mostVisitedStackView
                        moduleType:ContentSuggestionsModuleTypeMostVisited];
-      parentView = mostVisitedContainer;
-      [self.verticalStackView addArrangedSubview:mostVisitedContainer];
+      if (!self.mostVisitedViews) {
+        self.mostVisitedViews = [NSMutableArray array];
+        self.mostVisitedModuleContainer.isPlaceholder = YES;
+        // Add placeholder tiles if Most Visited Tiles are not ready yet.
+        for (int i = 0; i < 4; i++) {
+          ContentSuggestionsMostVisitedTileView* view =
+              [[ContentSuggestionsMostVisitedTileView alloc]
+                  initWithConfiguration:nil];
+          [self.mostVisitedViews addObject:view];
+        }
+      }
+      parentView = self.mostVisitedModuleContainer;
+      [self.verticalStackView
+          addArrangedSubview:self.mostVisitedModuleContainer];
     } else {
       self.mostVisitedStackView.alignment = UIStackViewAlignmentTop;
       [self addUIElement:self.mostVisitedStackView
@@ -217,7 +232,7 @@ const float kModuleVerticalSpacing = 16.0f;
     self.shortcutsStackView.distribution = UIStackViewDistributionFillEqually;
     self.shortcutsStackView.spacing = horizontalSpacing;
     if (IsContentSuggestionsUIModuleRefreshEnabled()) {
-      self.shortcutsStackView.alignment = UIStackViewAlignmentCenter;
+      self.shortcutsStackView.alignment = UIStackViewAlignmentTop;
       self.shortcutsStackView.backgroundColor = ntp_home::kNTPBackgroundColor();
     } else {
       self.shortcutsStackView.alignment = UIStackViewAlignmentTop;
@@ -362,6 +377,10 @@ const float kModuleVerticalSpacing = 16.0f;
 
 - (void)setMostVisitedTilesWithConfigs:
     (NSArray<ContentSuggestionsMostVisitedItem*>*)configs {
+  if (!configs) {
+    return;
+  }
+  self.mostVisitedModuleContainer.isPlaceholder = NO;
   if ([self.mostVisitedViews count]) {
     for (ContentSuggestionsMostVisitedTileView* view in self.mostVisitedViews) {
       [view removeFromSuperview];
@@ -370,6 +389,12 @@ const float kModuleVerticalSpacing = 16.0f;
     [self.mostVisitedTapRecognizers removeAllObjects];
   } else {
     self.mostVisitedViews = [NSMutableArray array];
+  }
+
+  if ([configs count] == 0) {
+    // No Most Visited Tiles to show. Remove module.
+    [self.mostVisitedStackView removeFromSuperview];
+    return;
   }
   NSInteger index = 0;
   for (ContentSuggestionsMostVisitedItem* item in configs) {
@@ -424,16 +449,13 @@ const float kModuleVerticalSpacing = 16.0f;
 
 - (CGFloat)contentSuggestionsHeight {
   CGFloat height = 0;
-  if ([self.mostVisitedViews count] > 0) {
-    if (IsContentSuggestionsUIModuleRefreshEnabled()) {
-      height += kModuleHeight + kModuleVerticalSpacing;
-    } else {
-      height +=
-          MostVisitedCellSize(
-              UIApplication.sharedApplication.preferredContentSizeCategory)
-              .height +
-          kMostVisitedBottomMargin;
-    }
+  if (IsContentSuggestionsUIModuleRefreshEnabled()) {
+    height += kModuleHeight + kModuleVerticalSpacing;
+  } else if ([self.mostVisitedViews count] > 0) {
+    height += MostVisitedCellSize(
+                  UIApplication.sharedApplication.preferredContentSizeCategory)
+                  .height +
+              kMostVisitedBottomMargin;
   }
   if ([self.shortcutsViews count] > 0) {
     if (IsContentSuggestionsUIModuleRefreshEnabled()) {

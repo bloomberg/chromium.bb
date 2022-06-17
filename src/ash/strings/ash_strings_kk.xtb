@@ -31,6 +31,7 @@
 <translation id="1150989369772528668">Күнтізбе</translation>
 <translation id="1153356358378277386">Жұпталған құрылғылар</translation>
 <translation id="1165712434476988950">Жаңарту күшіне енуі үшін, құрылғыны қайта іске қосу қажет.</translation>
+<translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />, <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">USB-C кабелі дисплейлерге дұрыс жалғанбауы мүмкін.</translation>
 <translation id="1175572348579024023">Айналдыру</translation>
 <translation id="1178581264944972037">Кідірту</translation>
@@ -503,6 +504,7 @@
 <translation id="3901991538546252627"><ph name="NAME" /> желісіне қосылу</translation>
 <translation id="3922427723338465344">{0,plural, =1{Құрылғыны 1 минутта алдыңғы нұсқаға қайтару қажет}other{Құрылғыны # минутта алдыңғы нұсқаға қайтару қажет}}</translation>
 <translation id="3923494859158167397">Ешқандай мобильдік желі реттелмеген.</translation>
+<translation id="3925540965556789199"><ph name="DATE" />, іс-шаралар жүктелуде.</translation>
 <translation id="3932043219784172185">Жалғанған құрылғы жоқ.</translation>
 <translation id="3934456833412894880">Бейімдеп зарядтау функциясы қосулы. Батарея өз жұмысын ұзарту үшін заряд деңгейін 80% күйінде ұстап тұрады, ал керек кезде толық зарядталады.</translation>
 <translation id="3943857333388298514">Қою</translation>
@@ -702,6 +704,7 @@
 <translation id="5078796286268621944">PIN коды дұрыс емес</translation>
 <translation id="5083553833479578423">Басқа да Assistant мүмкіндіктерін ашыңыз.</translation>
 <translation id="509790653408515442">Телефондағы қолданбаларды трансляциялау кезінде олар осы жерде шығады.</translation>
+<translation id="5098537242461068432">Жұмыс үстелі мен терезелер қайта ашылды.</translation>
 <translation id="5107522548814527560">Интернет</translation>
 <translation id="5117590920725113268">Келесі айды көрсету</translation>
 <translation id="5136175204352732067">Басқа пернетақта жалғанды</translation>
@@ -1054,6 +1057,10 @@
 <translation id="7258828758145722155">Кеше өзгертілді.</translation>
 <translation id="726276584504105859">Бөлінген экранды пайдалану үшін осында сүйреңіз</translation>
 <translation id="7262906531272962081">Еске салғыш жасау</translation>
+<translation id="7297440678881127227"><ph name="START_TIME" /> бастап
+        <ph name="END_TIME" /> дейін,
+        <ph name="TIME_ZONE" />,
+        <ph name="EVENT_SUMMARY" />. Google Calendar қызметінде іс-шара туралы толығырақ мәлімет алу үшін оны таңдаңыз.</translation>
 <translation id="7302889331339392448">Live Caption өшірулі.</translation>
 <translation id="7303365578352795231">Басқа құрылғыдан жауап берілуде.</translation>
 <translation id="7305884605064981971">EDGE</translation>
@@ -1166,6 +1173,7 @@
 <translation id="7904094684485781019">Бұл аккаунттың әкімшісі бірнеше рет кіруге рұқсат бермеген.</translation>
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7930731167419639574">Айтылған сөз енді жергілікті деңгейде өңделеді және Мәтінді дауыспен енгізу функциясы офлайн режимде жұмыс істейді</translation>
+<translation id="7932451802722951285">Google Calendar арқылы ашу</translation>
 <translation id="7933084174919150729">Google Assistant тек негізгі профиль үшін қолжетімді.</translation>
 <translation id="79341161159229895"><ph name="FIRST_PARENT_EMAIL" /> және <ph name="SECOND_PARENT_EMAIL" /> басқаратын аккаунт</translation>
 <translation id="793716872548410480">Буферді көру үшін <ph name="SHORTCUT_KEY_NAME" /> + V пернелер тіркесімін басыңыз. Соңғы көшірген бес элемент буферде сақталады.</translation>

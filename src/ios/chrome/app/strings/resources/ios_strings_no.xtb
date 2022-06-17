@@ -27,6 +27,7 @@ Søkemotoren din er <ph name="DSE_NAME" />. Se eventuelt instruksjonene deres om
 <translation id="1145536944570833626">Slett eksisterende data.</translation>
 <translation id="1147031633655575115">Pålogget som <ph name="USER" /></translation>
 <translation id="1154984953698510061">Se andre faner</translation>
+<translation id="1161340988127985692">Spør om linker fra andre apper skal åpnes i inkognitomodus</translation>
 <translation id="1164064664035028907">Bruk et sterkt passord:</translation>
 <translation id="1165039591588034296">Feil</translation>
 <translation id="1172898394251786223">Neste felt</translation>
@@ -292,6 +293,7 @@ Se eventuelt instruksjonene fra den aktuelle søkemotoren om hvordan du sletter 
 <translation id="3443810440409579745">Fane er mottatt.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Delt visning</translation>
+<translation id="3450502512529866925">Bokmerk denne siden</translation>
 <translation id="345565170154308620">Administrer passord</translation>
 <translation id="3469166899695866866">Vil du stoppe nedlastingen?</translation>
 <translation id="3470502288861289375">Kopierer ...</translation>
@@ -484,6 +486,7 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="5090832849094901128">Sletting av dette passordet sletter ikke kontoen din på <ph name="WEBSITE" />.</translation>
 <translation id="5092117651143801290">Du kan lagre sider for å lese dem senere eller uten nett. Chrome kommer til å spørre om du vil lagre lange sider.</translation>
 <translation id="5094827893301452931">Twitter-meldingen er fullført.</translation>
+<translation id="509789154667432072">Legg til et bokmerke</translation>
 <translation id="5118713593561876160">Interesser</translation>
 <translation id="5118764316110575523">Av</translation>
 <translation id="5127805178023152808">Synkronisering er slått av</translation>

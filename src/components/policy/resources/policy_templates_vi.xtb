@@ -1354,6 +1354,7 @@ web và Ứng dụng web tiến bộ. Hiện chỉ được hỗ trợ trên
       Tính năng hỗ trợ việc đặt chính sách này thành "tls1" hoặc "tls1.1" đã bị xóa trong phiên bản 91. Tính năng chặn cảnh báo TLS 1.0 / 1.1 không còn được hỗ trợ.</translation>
 <translation id="2364639863953745682">Chế độ của trải nghiệm làm quen với Trợ lý</translation>
 <translation id="2366301887862414321">Cho phép các máy chủ nhắn tin gốc ở cả cấp người dùng và cấp hệ thống</translation>
+<translation id="2382672620906337383">JavaScript setTimeout() sẽ không được gắn cho đến khi ngưỡng lồng cao hơn.</translation>
 <translation id="2384233438419344179">Nếu bạn đặt chính sách này thành Bật, thì các phần tử trang web không thuộc miền trong thanh địa chỉ của trình duyệt sẽ không thể đặt cookie. Nếu bạn đặt chính sách này thành Tắt, thì các phần tử trang web đó có thể đặt cookie và người dùng không thể thay đổi tùy chọn cài đặt này.
 
       Nếu bạn không đặt chính sách này, thì cookie của bên thứ ba sẽ bật nhưng người dùng có thể thay đổi tùy chọn cài đặt này.</translation>
@@ -1368,6 +1369,17 @@ web và Ứng dụng web tiến bộ. Hiện chỉ được hỗ trợ trên
       Nếu bạn không đặt chính sách này, thì <ph name="IE_PRODUCT_NAME" /> chỉ chuyển URL tới <ph name="PRODUCT_NAME" /> ở dạng tham số dòng lệnh.
 
       Lưu ý: Nếu bạn chưa cài đặt phần bổ trợ Hỗ trợ trình duyệt cũ cho <ph name="IE_PRODUCT_NAME" />, thì chính sách này sẽ không có hiệu lực.</translation>
+<translation id="2399419865425677422">setTimeout(…, 0) thường được dùng để chia nhỏ các tác vụ JavaScript dài.
+          Khi bạn Bật chính sách này, thì setTimeouts và setIntervals với khoảng thời gian nhỏ hơn 4 mili giây sẽ không được gắn thẻ một cách linh hoạt.
+          Điều này giúp cải thiện hiệu suất trong khoảng thời gian ngắn, nhưng những trang web lạm dụng API cuối cùng sẽ bị đặt Chế độ thời gian chờ.
+
+          Điều này có thể thay đổi thứ tự tác vụ trên trang web, dẫn đến hành vi không mong muốn trên những trang web phụ thuộc vào một thứ tự nhất định theo một cách nào đó.
+          Nó cũng có thể ảnh hưởng tới những trang web có nhiều hàm setTimeout() sử dụng thời gian chờ 0ms, ví dụ: tăng tải CPU.
+
+          Đối với người dùng không đặt chính sách này, Chrome sẽ ra mắt thay đổi từng bước trên kênh chính thức
+
+          Đây là một chính sách tạm thời và dự kiến sẽ được loại bỏ trong Chrome 105. Thời hạn này có thể được gia hạn nếu các doanh nghiệp có nhu cầu.
+          </translation>
 <translation id="2399987589969059485">Việc định cấu hình chính sách này sẽ cho phép chỉ định những biến thể được phép áp dụng trong <ph name="PRODUCT_NAME" />.
 
       Biến thể là phương tiện để sửa đổi <ph name="PRODUCT_NAME" /> mà không cần gửi phiên bản mới của trình duyệt bằng cách bật hoặc tắt những tính năng đã có một cách chọn lọc. Hãy truy cập vào https://support.google.com/chrome/a?p=Manage_the_Chrome_variations_framework để xem thêm thông tin.
@@ -1779,6 +1791,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="283478052049914107">Nếu bạn đặt chính sách này thành Bật và nhập một cổng không theo chuẩn (nói cách khác, một cổng không phải là 80 hoặc 443), thì hệ thống sẽ đưa cổng đó vào SPN Kerberos được tạo.
 
       Nếu bạn đặt thành Tắt hoặc không đặt chính sách này, thì SPN Kerberos được tạo sẽ không bao gồm cổng.</translation>
+<translation id="2835686964326214400">Đặt lịch biểu tùy chỉnh để khởi động lại thiết bị</translation>
 <translation id="2838830882081735096">Không cho phép di chuyển dữ liệu và ARC</translation>
 <translation id="2839294585867804686">Tùy chọn cài đặt tính năng Chia sẻ tệp trong mạng</translation>
 <translation id="284288632677954003">URL của một tệp XML chứa các URL sẽ không bao giờ kích hoạt quá trình chuyển trình duyệt.</translation>
@@ -2345,6 +2358,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="3387211681524224831">Khi bạn đặt chính sách này thành Bật, nhật ký duyệt web sẽ không được lưu, tính năng đồng bộ hóa thẻ sẽ tắt và người dùng không thể thay đổi tùy chọn cài đặt này.
 
       Khi bạn đặt thành Tắt hoặc không đặt chính sách này, nhật ký duyệt web sẽ được lưu.</translation>
+<translation id="3387999258705169775">Hành vi mặc định cho hàm setTimeout() được lồng.</translation>
 <translation id="3389088527709746815">Bật chế độ xác thực gnubby đối với máy chủ truy cập từ xa</translation>
 <translation id="3391457705621770207">Nếu bạn đặt chính sách này, hệ thống sẽ xác định khoảng thời gian (tính bằng mili giây) không có hoạt động của người dùng trước khi tự động đăng nhập vào tài khoản trên thiết bị được chỉ định theo chính sách <ph name="DEVICE_LOCAL_ACCOUNT_AUTO_LOGIN_ID_POLICY_NAME" />.
 
@@ -3017,6 +3031,16 @@ Nếu bạn đặt chính sách này thành Tắt, thì <ph name="PRODUCT_NAME" 
 
           Nếu bạn không đặt chính sách này, thì ban đầu, tính năng làm nổi bật dấu chèn sẽ tắt trên màn hình đăng nhập nhưng người dùng có thể bật bất cứ lúc nào.</translation>
 <translation id="4183229833636799228">Cài đặt <ph name="FLASH_PLUGIN_NAME" /> mặc định</translation>
+<translation id="4186244263855283575">Cho phép đặt một lịch biểu tùy chỉnh để khởi động lại thiết bị. Sau khi bạn đặt giá trị thành True, thiết bị sẽ khởi động lại theo lịch biểu. Bạn phải xóa chính sách này để hủy mọi lượt khởi động lại theo lịch biểu khác.
+
+      Trong phiên hoạt động của người dùng và phiên khách, những điều sau sẽ áp dụng:
+
+        * Người dùng sẽ nhận được thông báo cho biết quá trình khởi động lại sẽ diễn ra 1 giờ trước thời gian đã lên lịch. Họ có tùy chọn khởi động lại sau đó hoặc đợi khởi động lại theo lịch. Bạn không thể trì hoãn việc khởi động lại theo lịch.
+
+        * Sau khi khởi động thiết bị, bạn sẽ có thời gian gia hạn là 1 giờ. Khởi động lại theo lịch sẽ bỏ qua trong khoảng thời gian này và lên lịch lại cho ngày, tuần hoặc tháng tiếp theo, tùy thuộc vào chế độ cài đặt.
+
+      Trong các phiên kiosk, sẽ không có thời gian gia hạn và không có thông báo về việc khởi động lại.
+</translation>
 <translation id="4187576366596772431">Chặn API WebHID trên các trang web này</translation>
 <translation id="4192388905594723944">URL để xác thực mã thông báo xác thực ứng dụng truy cập từ xa</translation>
 <translation id="4203055629055264833">Nếu bạn đặt chính sách này thành Bật hoặc không đặt, thì người dùng có thể đưa trang kết quả mới đây nhất của công cụ tìm kiếm mặc định vào một bảng điều khiển bên bằng cách bật/tắt một biểu tượng trong thanh công cụ.
@@ -3350,6 +3374,7 @@ Khi bạn đặt chính sách này, <ph name="PRODUCT_OS_NAME" /> chỉ cho phé
 <translation id="4632343302005518762">Cho phép <ph name="PRODUCT_FRAME_NAME" /> xử lý các loại nội dung được liệt kê</translation>
 <translation id="4632566332417930481">Không cho phép sử dụng Công cụ dành cho nhà phát triển trên các tiện ích được cài đặt theo chính sách doanh nghiệp, nhưng lại cho phép sử dụng Công cụ dành cho nhà phát triển trong các ngữ cảnh khác</translation>
 <translation id="4635284822166984665">Thời điểm thiết bị sẽ bắt đầu sạc, được diễn giải theo múi giờ địa phương trên thiết bị.</translation>
+<translation id="4638532652671131094">Kiểm soát ngưỡng lồng trước khi hàm javascript setTimeout() bắt đầu được gắn.</translation>
 <translation id="4646626362889216307">Việc đặt chính sách này cho phép hợp nhất các chính sách đã chọn khi các chính sách đó thuộc nhiều nguồn nhưng có cùng phạm vi và cấp độ. Quá trình hợp nhất này bao gồm việc hợp nhất các khoá ở cấp độ đầu tiên của từ điển thuộc mỗi nguồn. Khoá thuộc nguồn có mức độ ưu tiên cao nhất sẽ được ưu tiên.
 
       Hãy sử dụng ký tự đại diện "*" để cho phép hợp nhất tất cả chính sách hỗ trợ từ điển.
@@ -4713,6 +4738,13 @@ Nếu bạn đặt chính sách thành Tắt, thì <ph name="PRODUCT_NAME" /> s�
       Việc đặt chính sách thành một màu hợp lệ theo hệ thập lục phân sẽ khiến giao diện dựa trên màu đó tự động được tạo và áp dụng cho trình duyệt. Người dùng sẽ không thể thay đổi giao diện được đặt theo chính sách này.
 
       Nếu bạn không đặt chính sách này, người dùng có thể thay đổi giao diện của trình duyệt theo ý muốn.</translation>
+<translation id="619376519309703699">Chính sách này được coi là một cách để chọn không áp dụng tính năng First-Party Sets.
+
+                  Khi chính sách này không được đặt hoặc được đặt thành Bật (Enabled), tính năng First-Party Sets sẽ được bật.
+
+                  Khi chính sách này được đặt thành Tắt (Disabled), tính năng First-Party Sets sẽ bị tắt.
+
+                  Trạng thái này kiểm soát việc liệu Chrome có hỗ trợ các tính năng liên quan tới Nhóm bên thứ nhất hay không (chẳng hạn như thuộc tính cookie SameParty).</translation>
 <translation id="6195802366906945965">Xác định xem trình xác minh chứng chỉ tích hợp sẵn có được dùng để xác minh chứng chỉ máy chủ hay không</translation>
 <translation id="6198947200418556248">Chính sách này không còn dùng nữa. Nếu vẫn cần hành vi cookie cũ, vui lòng sử dụng "<ph name="LEGACY_SAMESITE_COOKIE_BEHAVIOR_ENABLED_FOR_DOMAIN_LIST_POLICY_NAME" />". Cho phép bạn đưa tất cả cookie trở lại hành vi <ph name="ATTRIBUTE_SAMESITE_NAME" /> cũ. Việc trở lại hành vi cũ sẽ (1) khiến những cookie không chỉ định thuộc tính <ph name="ATTRIBUTE_SAMESITE_NAME" /> được coi như thể là "<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />", (2) bỏ yêu cầu cookie "<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />" phải mang thuộc tính "<ph name="ATTRIBUTE_SECURE_NAME" />" và (3) bỏ qua quy trình so sánh lược đồ khi đánh giá liệu hai trang web có phải là một hay không. Hãy truy cập https://www.chromium.org/administrators/policy-list-3/cookie-legacy-samesite-policies để xem mô tả đầy đủ.
 
@@ -5587,7 +5619,6 @@ Nếu bạn đặt chính sách thành Tắt, thì <ph name="PRODUCT_NAME" /> s�
       Nếu bạn không đặt chính sách này, thì kệ sẽ được đặt ở cuối màn hình theo mặc định và người dùng có thể thay đổi vị trí của kệ.</translation>
 <translation id="7039815268521168329">Hiển thị quy trình so khớp giọng nói của Trợ lý Google trong quá trình thiết lập ban đầu</translation>
 <translation id="7040229947030068419">Giá trị mẫu:</translation>
-<translation id="7041170641363384736">Cho phép đặt một lịch biểu tùy chỉnh để khởi động lại thiết bị. Hiện chính sách này chỉ áp dụng đối với những thiết bị đã bật chế độ tự động chạy ứng dụng trong phiên kiosk. Sau khi bạn đặt giá trị thành True, thiết bị sẽ khởi động lại theo lịch biểu. Bạn phải xóa chính sách này để hủy mọi lượt khởi động lại theo lịch biểu khác.</translation>
 <translation id="7044883996351280650">Kiểm soát dịch vụ sao lưu và khôi phục trên thiết bị Android</translation>
 <translation id="7047495632846973438">Chỉ định xem chính sách về quyền thu thập dữ liệu màn hình được chọn hay bị bỏ qua.</translation>
 <translation id="7066292150801784098">Tắt tính năng tương tác người dùng từ xa với cửa sổ bật lên trong các phiên hỗ trợ từ xa</translation>
@@ -6563,7 +6594,6 @@ Nếu bạn không đặt chính sách này, thì màn hình bảo vệ quyền 
           Nếu bạn đặt chính sách này, thì người dùng sẽ không thể thay đổi hay ghi đè chính sách.
 
           Nếu bạn không đặt chính sách này, thì ban đầu, tính năng làm nổi bật con trỏ sẽ tắt nhưng người dùng có thể bật bất cứ lúc nào.</translation>
-<translation id="8161536598508377155">Đặt lịch biểu tùy chỉnh để khởi động lại thiết bị kiosk</translation>
 <translation id="8164144100557223371">Tắt điểm truy cập vào các tính năng thử nghiệm của trình duyệt trên thanh công cụ</translation>
 <translation id="8164687848393015214">Nếu bạn đặt chính sách thành Bật (<ph name="HEARTBEATS_TERM" />), thì thiết bị sẽ gửi thông tin theo dõi gói mạng đến máy chủ quản lý để theo dõi trạng thái trực tuyến, giúp máy chủ phát hiện xem thiết bị có kết nối mạng hay không.
 
@@ -7131,6 +7161,7 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 <translation id="8749536858950505376">Khi bạn đặt chính sách này thành True, con trỏ lớn sẽ luôn bật. Khi bạn đặt chính sách này thành False, con trỏ lớn sẽ luôn tắt.
 
       Nếu bạn đặt chính sách này, thì người dùng sẽ không thể thay đổi tính năng này. Nếu bạn không đặt chính sách này, thì ban đầu, con trỏ lớn sẽ tắt, nhưng người dùng có thể bật bất cứ lúc nào.</translation>
+<translation id="8750941317035081777">JavaScript setTimeout() sẽ được gắn sau ngưỡng lồng ghép thông thường.</translation>
 <translation id="8753264624162178499">Lựa chọn In dưới dạng hình ảnh có sẵn cho phép người dùng tạo điểm ảnh cho tệp PDF trước khi gửi lệnh in đến máy in.</translation>
 <translation id="8757552286070680084">Cấu hình bộ điều khiển chẩn đoán và đo từ xa (DTC) wilco</translation>
 <translation id="8758831693895931466">Bật đăng ký quản lý đám mây bắt buộc</translation>

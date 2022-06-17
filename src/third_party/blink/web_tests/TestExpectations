@@ -70,12 +70,6 @@ crbug.com/807686 crbug.com/24182 jquery/manipulation.html [ Pass Timeout ]
 # Activation v2 (UAv2).
 crbug.com/906791 external/wpt/fullscreen/api/element-ready-check-allowed-cross-origin-manual.sub.html [ Timeout ]
 
-# These pass when capability delegation of fullscreen requests is enabled.
-crbug.com/1293083 external/wpt/html/capability-delegation/delegate-fullscreen-request-popup-cross-origin.https.sub.tentative.html [ Failure ]
-crbug.com/1293083 external/wpt/html/capability-delegation/delegate-fullscreen-request-popup-same-origin.https.tentative.html [ Failure ]
-crbug.com/1293083 external/wpt/html/capability-delegation/delegate-fullscreen-request-subframe-cross-origin.https.sub.tentative.html [ Failure ]
-crbug.com/1293083 external/wpt/html/capability-delegation/delegate-fullscreen-request-subframe-same-origin.https.tentative.html [ Failure ]
-
 # These two are left over from crbug.com/881040, I rebaselined them twice and
 # they continue to fail.
 crbug.com/881040 media/controls/lazy-loaded-style.html [ Failure Pass ]
@@ -1601,6 +1595,9 @@ virtual/layout_ng_table_frag/external/wpt/css/css-break/table/repeated-section/f
 virtual/layout_ng_table_frag/external/wpt/css/css-break/table/repeated-section/header-after-break.tentative.html [ Pass ]
 virtual/layout_ng_table_frag/external/wpt/css/css-break/table/repeated-section/header-footer.tentative.html [ Pass ]
 virtual/layout_ng_table_frag/external/wpt/css/css-break/table/repeated-section/header.tentative.html [ Pass ]
+virtual/layout_ng_table_frag/external/wpt/css/css-break/table/repeated-section/hit-test-relative-in-transform.tentative.html [ Pass ]
+virtual/layout_ng_table_frag/external/wpt/css/css-break/table/repeated-section/hit-test-relative.tentative.html [ Pass ]
+virtual/layout_ng_table_frag/external/wpt/css/css-break/table/repeated-section/hit-test.tentative.html [ Pass ]
 virtual/layout_ng_table_frag/external/wpt/css/css-break/table/repeated-section/inline-block.tentative.html [ Pass ]
 virtual/layout_ng_table_frag/external/wpt/css/css-break/table/repeated-section/multicol.tentative.html [ Pass ]
 virtual/layout_ng_table_frag/external/wpt/css/css-break/table/table-border-005.html [ Pass ]
@@ -3965,6 +3962,9 @@ crbug.com/1078927 external/wpt/css/css-break/table/repeated-section/footer.tenta
 crbug.com/1078927 external/wpt/css/css-break/table/repeated-section/header-after-break.tentative.html [ Failure ]
 crbug.com/1078927 external/wpt/css/css-break/table/repeated-section/header-footer.tentative.html [ Failure ]
 crbug.com/1078927 external/wpt/css/css-break/table/repeated-section/header.tentative.html [ Failure ]
+crbug.com/1078927 external/wpt/css/css-break/table/repeated-section/hit-test-relative-in-transform.tentative.html [ Failure ]
+crbug.com/1078927 external/wpt/css/css-break/table/repeated-section/hit-test-relative.tentative.html [ Failure ]
+crbug.com/1078927 external/wpt/css/css-break/table/repeated-section/hit-test.tentative.html [ Failure ]
 crbug.com/1078927 external/wpt/css/css-break/table/repeated-section/inline-block.tentative.html [ Failure ]
 crbug.com/1078927 external/wpt/css/css-break/table/repeated-section/multicol.tentative.html [ Failure ]
 crbug.com/1078927 external/wpt/css/css-break/table/table-border-005.html [ Failure ]
@@ -6997,8 +6997,9 @@ crbug.com/1316341 virtual/fenced-frame-shadow-dom/wpt_internal/fenced_frame/scri
 crbug.com/1317007 external/wpt/mimesniff/mime-types/charset-parameter.window.html [ Failure Pass ]
 
 # Sheriff 2022-04-18
-# TODO(crbug.com/1316144): Re-enable this test
-crbug.com/1316144 external/wpt/css/cssom-view/scrollIntoView-fixed.html [ Crash Pass ]
+# TODO(crbug.com/1316144): [Crash] Re-enable this test
+# TODO(crbug.com/1334265): [Failure] Bug fix temporarily reverted while compat issues are worked out
+crbug.com/1316144 external/wpt/css/cssom-view/scrollIntoView-fixed.html [ Crash Failure Pass ]
 
 crbug.com/1296449 [ Linux Release ] external/wpt/workers/SharedWorker-MessageEvent-source.any.sharedworker.html [ Skip ]
 
@@ -7083,6 +7084,7 @@ crbug.com/1325858 virtual/wasm-code-caching/http/tests/wasm/caching/code-cache.h
 # Pending Beacon API: Not enabled by default so skip these tests.
 crbug.com/1293679 pending_beacon/pending_beacon-basic.html [ Skip ]
 crbug.com/1293679 pending_beacon/pending_beacon-deactivate.html [ Skip ]
+crbug.com/1293679 wpt_internal/pending_beacon/* [ Skip ]
 
 # Sheriff 2022-05-20
 crbug.com/1291841 external/wpt/scroll-to-text-fragment/scroll-to-text-fragment-security.sub.html [ Pass Timeout ]

@@ -291,6 +291,7 @@ Du wirst sonst gemäß deinen Datenschutzeinstellungen blockiert. Wenn Cookies u
 <translation id="1662550410081243962">Zahlungsmethoden speichern und ausfüllen</translation>
 <translation id="1663943134801823270">Die Karten und Adressen stammen aus Chrome. Sie werden in den <ph name="BEGIN_LINK" />Einstellungen<ph name="END_LINK" /> verwaltet.</translation>
 <translation id="1671391448414634642">Seiten auf <ph name="SOURCE_LANGUAGE" /> werden ab jetzt auf <ph name="TARGET_LANGUAGE" /> übersetzt.</translation>
+<translation id="1673886523110456987">Bezahle mit <ph name="CARD_DETAIL" />, um das Angebot zu nutzen</translation>
 <translation id="1674504678466460478">Von <ph name="SOURCE_LANGUAGE" /> auf <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="1682696192498422849">Kurze Seite zuerst</translation>
 <translation id="168693727862418163">Die Richtlinienwertprüfung des Schemas ist fehlgeschlagen. Der Richtlinienwert wird ignoriert.</translation>
@@ -586,6 +587,7 @@ Du wirst sonst gemäß deinen Datenschutzeinstellungen blockiert. Wenn Cookies u
 <translation id="2523886232349826891">Nur auf diesem Gerät gespeichert</translation>
 <translation id="2524461107774643265">Weitere Informationen hinzufügen</translation>
 <translation id="2529899080962247600">Dieses Feld sollte nicht mehr als <ph name="MAX_ITEMS_LIMIT" /> Einträge enthalten. Alle weiteren Einträge werden ignoriert.</translation>
+<translation id="253493526287553278">Details zu Gutscheincode ansehen</translation>
 <translation id="2535585790302968248">Einen neuen Inkognitotab öffnen, um privat zu surfen</translation>
 <translation id="2535659140340599600">{COUNT,plural, =1{und 1 weitere}other{und # weitere}}</translation>
 <translation id="2536110899380797252">Adresse hinzufügen</translation>
@@ -1100,6 +1102,7 @@ Du wirst sonst gemäß deinen Datenschutzeinstellungen blockiert. Wenn Cookies u
 <translation id="3986705137476756801">Automatische Untertitel vorerst deaktivieren</translation>
 <translation id="3987940399970879459">Weniger als 1 MB</translation>
 <translation id="3990250421422698716">Jog-Versatz</translation>
+<translation id="3992684624889376114">Über diese Seite</translation>
 <translation id="3996311196211510766">Die Website <ph name="ORIGIN" /> verlangt, dass auf alle an sie gerichteten Anfragen eine Ursprungsrichtlinie angewendet wird. Diese Richtlinie kann jedoch momentan nicht angewandt werden.</translation>
 <translation id="4006465311664329701">Zahlungsmethoden, Angebote und Adressen aus Google Pay</translation>
 <translation id="4009243425692662128">Die Inhalt der gedruckten Seiten wird zur Analyse an Google Cloud oder Drittanbieter gesendet. Er wird beispielsweise auf sensible Daten geprüft.</translation>
@@ -1270,6 +1273,7 @@ Du wirst sonst gemäß deinen Datenschutzeinstellungen blockiert. Wenn Cookies u
 <translation id="4435702339979719576">Postkarte)</translation>
 <translation id="443673843213245140">Die Proxy-Nutzung ist deaktiviert, es ist jedoch eine explizite Proxy-Konfiguration festgelegt.</translation>
 <translation id="4441832193888514600">Ignoriert, da die Richtlinie nur als Cloud-Nutzerrichtlinie festgelegt werden kann.</translation>
+<translation id="4442470707340296952">Chrome-Tabs</translation>
 <translation id="4450893287417543264">Nicht mehr anzeigen</translation>
 <translation id="4451135742916150903">Darf nachfragen, wenn sie eine Verbindung mit HID-Geräten herstellen möchte</translation>
 <translation id="4452328064229197696">Das Passwort, das du gerade verwendet hast, wurde in einer Datenpanne gefunden. Zum besseren Schutz deiner Konten empfiehlt der Passwortmanager von Google, deine gespeicherten Passwörter zu prüfen.</translation>
@@ -1544,6 +1548,7 @@ Du wirst sonst gemäß deinen Datenschutzeinstellungen blockiert. Wenn Cookies u
 <translation id="5171045022955879922">Suchen oder URL eingeben</translation>
 <translation id="5171689220826475070">Fanfold-European</translation>
 <translation id="5172758083709347301">Computer</translation>
+<translation id="5177076414499237632">Informationen zu Quelle und Thema dieser Seite</translation>
 <translation id="5179510805599951267">Nicht auf <ph name="ORIGINAL_LANGUAGE" />? Diesen Fehler melden</translation>
 <translation id="518639307526414276">Haustiernahrung und -pflegemittel</translation>
 <translation id="5190835502935405962">Lesezeichenleiste</translation>
@@ -2564,6 +2569,7 @@ Weitere Details:
 <translation id="8074253406171541171">10x13 (Umschlag)</translation>
 <translation id="8075736640322370409">Schnell eine neue Google-Tabelle erstellen</translation>
 <translation id="8075898834294118863">Website-Einstellungen verwalten</translation>
+<translation id="8076492880354921740">Tabs</translation>
 <translation id="8078141288243656252">Anmerkungen bei gedrehtem Dokument nicht möglich</translation>
 <translation id="8079031581361219619">Website neu laden?</translation>
 <translation id="8081087320434522107">Limousinen</translation>
@@ -2987,6 +2993,7 @@ Weitere Details:
 <translation id="988159990683914416">Entwickler-Build</translation>
 <translation id="989988560359834682">Adresse bearbeiten</translation>
 <translation id="991413375315957741">Bewegungs- oder Lichtsensoren</translation>
+<translation id="992110854164447044">Wenn du eine virtuelle Karte verwendest, werden deine tatsächlichen Kartendetails nicht preisgegeben – dadurch bist du besser vor Betrugsversuchen geschützt. <ph name="IDS_AUTOFILL_VIRTUAL_CARD_ENROLLMENT_LEARN_MORE_LINK_LABEL" /></translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
 <translation id="992256792861109788">Rosa</translation>
 <translation id="992432478773561401">"<ph name="SOFTWARE_NAME" />" war nicht ordnungsgemäß auf deinem Computer oder in deinem Netzwerk installiert:

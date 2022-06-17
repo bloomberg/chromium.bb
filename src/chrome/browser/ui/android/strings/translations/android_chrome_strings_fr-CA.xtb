@@ -348,6 +348,7 @@ Maintenez le doigt sur un mot pour effectuer une recherche sur celui-ci. Pour af
 <translation id="2842985007712546952">Dossier parent</translation>
 <translation id="2856503607207334158">Échec de connexion</translation>
 <translation id="2860954141821109167">Assurez-vous qu'une application de téléphonie est activée sur cet appareil</translation>
+<translation id="2861923151411510142">Certaines fonctionnalités de Chrome ne seront plus offertes</translation>
 <translation id="2870560284913253234">Site</translation>
 <translation id="2871733351037274014">Précharger les pages</translation>
 <translation id="2888126860611144412">À propos de Google Chrome</translation>
@@ -526,7 +527,6 @@ Maintenez le doigt sur un mot pour effectuer une recherche sur celui-ci. Pour af
 <translation id="3845098929839618392">Ouvrir dans onglet nav. privée</translation>
 <translation id="3856096718352044181">Veuillez vérifier qu'il s'agit d'un fournisseur valide ou réessayer plus tard</translation>
 <translation id="3858860766373142691">Nom</translation>
-<translation id="3859206958100234503">Synchronisez vos données pour ajouter vos mots de passe, vos favoris et plus sur tous vos appareils</translation>
 <translation id="3861633093716975811">Vidéos populaires</translation>
 <translation id="3892148308691398805">Copier le texte</translation>
 <translation id="3894427358181296146">Ajouter un dossier</translation>
@@ -565,6 +565,7 @@ Maintenez le doigt sur un mot pour effectuer une recherche sur celui-ci. Pour af
 <translation id="4095146165863963773">Supprimer les données de l'application?</translation>
 <translation id="4096227151372679484">Flux d'enregistrement des favoris ouvert à mi-hauteur</translation>
 <translation id="4099578267706723511">Envoyez des statistiques d'utilisation et des rapports d'erreur pour améliorer Chrome.</translation>
+<translation id="4101475238162928417">Synchronisez vos données pour ajouter vos mots de passe, vos favoris et plus sur vos autres appareils</translation>
 <translation id="410351446219883937">Lecture automatique</translation>
 <translation id="4106587138345390261">Chrome explore de nouvelles fonctionnalités qui permettent aux sites d'offrir la même expérience de navigation tout en recourant dans une moindre mesure à vos renseignements personnels</translation>
 <translation id="4108314971463891922">Suivre</translation>
@@ -891,6 +892,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5869522115854928033">Mots de passe enregistrés</translation>
 <translation id="5869789175361934029">Continuer à partir d'un autre appareil</translation>
 <translation id="587735546353481577">Pour suivre un site, accédez à ce dernier, ouvrez le menu Chrome et touchez Suivre.</translation>
+<translation id="5879072387416556377">Obtenir de meilleures suggestions</translation>
 <translation id="5880748256563468367">Accéder au flux</translation>
 <translation id="5884076754568147479">Pour vous aider à effectuer des tâches, Google recevra les URL et le contenu des sites avec lesquels vous utilisez l'Assistant, ainsi que l'information que vous envoyez par l'intermédiaire de l'Assistant</translation>
 <translation id="5906513782029855931">Le fait de connaître les URL des sites permet à l'Assistant Google de vous aider à effectuer des tâches. Vous pouvez désactiver l'Assistant dans les paramètres de Chrome.</translation>
@@ -1194,6 +1196,7 @@ Les jetons de confiance améliorent la confidentialité sur le Web et ne peuvent
 <translation id="749294055653435199">Cet appareil ne prend pas en charge Lentille Google</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (mise à jour : <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7498271377022651285">Veuillez patienter...</translation>
+<translation id="7502234197872745058">Pour vous déconnecter de votre compte Google sur tous les sites Web, <ph name="BEGIN_LINK1" />déconnectez-vous de Chrome<ph name="END_LINK1" />.</translation>
 <translation id="750228856503700085">Les mises à jour ne sont pas accessibles</translation>
 <translation id="7507207699631365376">Consulter la <ph name="BEGIN_LINK" />politique de confidentialité<ph name="END_LINK" /> de ce fournisseur</translation>
 <translation id="7514365320538308">Télécharger</translation>
@@ -1233,6 +1236,7 @@ Les jetons de confiance améliorent la confidentialité sur le Web et ne peuvent
 <translation id="770741401784017797">Création du GIF en cours…</translation>
 <translation id="7707922173985738739">Utiliser les données mobiles</translation>
 <translation id="7709094866268987903">Les centres d'intérêt que vous avez retirés seront affichés ici</translation>
+<translation id="7709918231054955894">Afficher tous vos onglets</translation>
 <translation id="7725024127233776428">Les pages que vous ajoutez aux favoris s'affichent ici</translation>
 <translation id="7757787379047923882">Texte partagé à partir de <ph name="DEVICE_NAME" /></translation>
 <translation id="7761849928583394409">Sélectionner une date et une heure</translation>
@@ -1428,6 +1432,7 @@ Les jetons de confiance améliorent la confidentialité sur le Web et ne peuvent
 <translation id="8656747343598256512">Connectez-vous à ce site et à Chrome à l'aide de votre compte Google. Vous pouvez activer la synchronisation plus tard.</translation>
 <translation id="8659579665266920523">Effectuer une recherche avec Chrome</translation>
 <translation id="8662811608048051533">Vous déconnecte de la plupart des sites.</translation>
+<translation id="8664215986015753476">Utiliser Chrome à votre manière</translation>
 <translation id="8664979001105139458">Ce nom de fichier existe déjà</translation>
 <translation id="8666759526542103597">À propos de la personnalisation des annonces en fonction du navigateur</translation>
 <translation id="8667760277771450375">Nous explorons des moyens de limiter les suivis intersites tout en permettant aux sites d'empêcher les annonces indésirables et la fraude.</translation>

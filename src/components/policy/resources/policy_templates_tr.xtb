@@ -1327,6 +1327,7 @@ Bu politikayı devre dışı bırakırsanız web sayfasını URL yoluyla belirli
       Bu politikanın "tls1" veya "tls1.1" değerlerine ayarlanması 91. sürüm itibarıyla desteklenmemektedir. TLS 1.0/1.1 uyarısının engellenmesi artık desteklenmemektedir.</translation>
 <translation id="2364639863953745682">Asistan ilk katılım deneyimi modu</translation>
 <translation id="2366301887862414321">Hem kullanıcı düzeyinde hem de sistem düzeyinde yerel mesajlaşma ana makinelerine izin ver</translation>
+<translation id="2382672620906337383">JavaScript setTimeout(), daha yüksek bir iç içe yerleştirme eşiğine ulaşılana kadar zaman aşımına uğramaz.</translation>
 <translation id="2384233438419344179">Politikanın Etkin değerine ayarlanması tarayıcının adres çubuğundaki alan adına ait olmayan web sayfası öğelerinin çerez yerleştirmesini engeller. Politikanın Devre Dışı değerine ayarlanması bu öğelerin çerez yerleştirmesine izin verir ve kullanıcıların bu ayarı değiştirmelerini önler.
 
       Politika ayarlanmadan bırakılırsa üçüncü taraf çerezlerine izin verilir, ancak kullanıcılar bu ayarı değiştirebilir.</translation>
@@ -1341,6 +1342,17 @@ Bu politikayı devre dışı bırakırsanız web sayfasını URL yoluyla belirli
       Bu politika ayarlanmadan bırakılırsa <ph name="IE_PRODUCT_NAME" /> tarayıcısı, URL'yi <ph name="PRODUCT_NAME" /> tarayıcısına yalnızca komut satırı parametresi olarak aktarır.
 
       Not: <ph name="IE_PRODUCT_NAME" /> için Eski Tarayıcı Desteği eklentisi yüklü değilse bu politika geçerliliğini yitirir.</translation>
+<translation id="2399419865425677422">setTimeout(…, 0), genellikle uzun JavaScript görevlerinin dökümünü almak için kullanılır.
+          Politika, Etkin değerine ayarlandığında 4 ms'den kısa bir aralığa sahip setTimeout'lar ve setInterval'lar yoğun şekilde zaman aşımına uğramaz.
+          Bu şekilde kısa dönem performansı iyileştirilir ancak, API'yi kötüye kullanan web sitelerinin setTimeout'ları nihayetinde zaman aşımına uğrar.
+
+          Bu, bir web sayfasındaki görev sıralamasını değiştirerek bir şekilde belirli bir sıralamaya bağlı olan sitelerde beklenmeyen davranışlara yol açabilir.
+          Ayrıca, 0 ms zaman aşımına sahip çok sayıda setTimeout() kullanımı içeren siteyi de etkileyebilir. (ör. CPU yükünü artırabilir.)
+
+          Chrome bu politikanın ayarlanmadığı kullanıcılar için değişikliği kararlı kanalında kademeli olarak kullanıma sunacaktır.
+
+          Bu politika geçicidir ve Chrome 105'te kaldırılması planlanmaktadır. Kuruluşların ihtiyaç duyması halinde bu süre uzatılabilir.
+          </translation>
 <translation id="2399987589969059485">Bu politikanın yapılandırılması, <ph name="PRODUCT_NAME" /> ürününde hangi varyasyonların uygulanmasına izin verileceğini belirtmeye olanak tanır.
 
       Varyasyonlar, halihazırda varolan özellikler arasından seçilenleri etkinleştirerek veya devre dışı bırakarak tarayıcının yeni bir sürümünü göndermeden <ph name="PRODUCT_NAME" /> ürününde değişiklikler sunmanın bir yolunu sağlar. Daha fazla bilgi için https://support.google.com/chrome/a?p=Manage_the_Chrome_variations_framework sayfasına bakın.
@@ -1753,6 +1765,7 @@ Bu politika ayarlanmadan bırakılırsa gizlilik ekranı başta devre dışı b�
 <translation id="283478052049914107">Politika Etkin değerine ayarlanır ve standart olmayan bir bağlantı noktası girilirse (yani 80 veya 443'ten başka bir bağlantı noktası) politika, oluşturulan Kerberos SPN'ine dahil edilir.
 
       Politika Devre dışı değerine ayarlanır veya ayarlanmadan bırakılırsa oluşturulan Kerberos SPN'ine bağlantı noktası dahil edilmez.</translation>
+<translation id="2835686964326214400">Cihazları yeniden başlatmak için özel program belirle</translation>
 <translation id="2838830882081735096">Veri taşıma ve ARC'ye izin verme</translation>
 <translation id="2839294585867804686">Ağ Üzerinde Dosya Paylaşımı ayarları</translation>
 <translation id="284288632677954003">Hiçbir zaman bir tarayıcı anahtarını tetiklememesi gereken URL'ler içeren bir XML dosyasının URL'si.</translation>
@@ -2315,6 +2328,7 @@ Bu politika ayarlanmadan bırakılırsa gizlilik ekranı başta devre dışı b�
 <translation id="3387211681524224831">Politika, Etkin değerine ayarlanırsa tarama geçmişi kaydedilmez, sekme senkronizasyonu kapalı olur ve kullanıcılar bu ayarı değiştiremez.
 
       Politika, Devre dışı değerine ayarlanır veya ayarlanmadan bırakılırsa tarama geçmişi kaydedilir.</translation>
+<translation id="3387999258705169775">setTimeout() fonksiyonu iç içe yerleştirilmiş zaman aşımı için varsayılan davranış.</translation>
 <translation id="3389088527709746815">Uzaktan erişim ana makinesi için gnubby kimlik doğrulamayı etkinleştir</translation>
 <translation id="3391457705621770207">Politikanın ayarlanması, <ph name="DEVICE_LOCAL_ACCOUNT_AUTO_LOGIN_ID_POLICY_NAME" /> politikası tarafından belirtilen cihaz yerel hesabında otomatik oturum açılmadan önce kullanıcı etkinliği olmadan geçen süreyi milisaniye cinsinden belirler.
 
@@ -2997,6 +3011,16 @@ Bu politika Yanlış değerine ayarlanırsa <ph name="PRODUCT_NAME" /> yerel bil
 
           Bu politika ayarlanmadan bırakılırsa giriş ekranında metin vurgulama kutusu başlangıçta devre dışı bırakılır, ancak kullanıcılar istedikleri zaman bunu etkinleştirebilir.</translation>
 <translation id="4183229833636799228">Varsayılan <ph name="FLASH_PLUGIN_NAME" /> ayarı</translation>
+<translation id="4186244263855283575">Cihazların yeniden başlatılması için özel bir program belirlenmesini sağlar. Politika, Doğru değerine ayarlandığında cihaz programa uygun olarak yeniden başlatılır. Programlanan yeniden başlatmaların artık iptal olması için politikanın kaldırılması gerekir.
+
+      Kullanıcı oturumlarında ve misafir oturumlarında aşağıdakiler geçerlidir:
+
+        * Kullanıcılara, programlanan zamandan 1 saat önce yeniden başlatma işleminin gerçekleşeceği bildirilir. Kullanıcılar, yeniden başlatma işlemini hemen gerçekleştirebilir veya programlı yeniden başlatmayı bekleyebilir. Programlanan yeniden başlatma işlemi ertelenemez.
+
+        * Cihaz başlatıldıktan sonra 1 saatlik ek süre verilir. Programlanan yeniden başlatma işlemleri bu süre zarfında atlanır ve geçerli ayara bağlı olarak sonraki gün, hafta veya ay için yeniden planlanır.
+
+      Kiosk oturumlarında yeniden başlatma için herhangi bir ek süre verilmez ve bildirim gönderilmez.
+</translation>
 <translation id="4187576366596772431">Bu sitelerde WebHID API'yi engelle</translation>
 <translation id="4192388905594723944">Uzaktan erişim istemci kimlik doğrulama jetonunu doğrulama URL'si</translation>
 <translation id="4203055629055264833">Politika, etkin değerine ayarlanırsa veya ayarlanmadan bırakılırsa kullanıcılar, araç çubuğundaki bir simgeyi açıp kapatarak en son varsayılan arama motoru sonuç sayfasını yan panelde açabilir.
@@ -3329,6 +3353,7 @@ Bu politika ayarlandığında <ph name="PRODUCT_OS_NAME" />, listenin boş olmam
 <translation id="4632343302005518762"><ph name="PRODUCT_FRAME_NAME" /> için listelenen içerik türlerini işlemeye izin ver</translation>
 <translation id="4632566332417930481">Kurumsal politika tarafından yüklenen uzantılarda Geliştirici Araçları kullanımına izin verme, diğer bağlamlarda Geliştirici Araçları kullanımına izin ver</translation>
 <translation id="4635284822166984665">Cihazın şarj olmaya başlayacağı zaman (cihazın yerel saat dilimine göre).</translation>
+<translation id="4638532652671131094">JavaScript setTimeout() fonksiyonu zaman aşımına uğramaya başlamadan önceki iç içe yerleştirme eşiğini kontrol et.</translation>
 <translation id="4646626362889216307">Politikanın ayarlanması, farklı kaynaklardan seçilen politikaların aynı kapsamda ve düzeyde birleştirilmesine olanak tanır. Bu birleştirme, her kaynaktaki sözlüğün ilk düzey anahtarlarında meydana gelir. En yüksek öncelikli kaynaktan gelen anahtar tercih edilir.
 
       Desteklenen tüm sözlük politikalarının birleştirilmesine izin vermek için "*" joker karakterini kullanın.
@@ -4682,6 +4707,13 @@ Bu ayarı etkinleştirirseniz veya yapılandırmazsanız kullanıcılar şifrele
       Bu politika geçerli bir onaltılık renge ayarlanırsa otomatik olarak o renge dayalı bir tema oluşturularak tarayıcıya uygulanır. Kullanıcılar, politika tarafından ayarlanan temayı değiştiremez.
 
       Bu politika ayarlanmadan bırakılırsa kullanıcılar tarayıcılarının temasını istedikleri gibi değiştirebilir.</translation>
+<translation id="619376519309703699">Bu politika, First-Party Sets özelliğini devre dışı bırakma yöntemi olarak sağlanmıştır.
+
+                  Bu politika ayarlanmadığında veya Etkin değerine ayarlandığında First-Party Sets özelliği etkinleştirilir.
+
+                  Bu politika Devre dışı değerine ayarlandığında First-Party Sets özelliği devre dışı bırakılır.
+
+                  Chrome'un, First-Party Sets ile ilgili özellikleri (ör. SameParty çerez özelliği) destekleyip desteklemeyeceğini kontrol eder.</translation>
 <translation id="6195802366906945965">Yerleşik sertifika doğrulayıcının sunucu sertifikalarını doğrulamak için kullanılıp kullanılmayacağını belirler.</translation>
 <translation id="6198947200418556248">Bu politika kullanımdan kaldırıldı. Eski çerez davranışına ihtiyacınız varsa lütfen <ph name="LEGACY_SAMESITE_COOKIE_BEHAVIOR_ENABLED_FOR_DOMAIN_LIST_POLICY_NAME" /> politikasını kullanın. Tüm çerezleri eski <ph name="ATTRIBUTE_SAMESITE_NAME" /> davranışına geri döndürmenize olanak tanır. Eski davranışa geri dönmek, <ph name="ATTRIBUTE_SAMESITE_NAME" /> özelliği belirtmeyen çerezlerin "<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />" gibi değerlendirilmesine neden olur, "<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />" çerezlerinin "<ph name="ATTRIBUTE_SECURE_NAME" />" özelliğini taşıma şartını ortadan kaldırır ve iki sitenin aynı URL'yi paylaşması durumunda, değerlendirirken şema karşılaştırmasını atlar. Tam açıklama için https://www.chromium.org/administrators/policy-list-3/cookie-legacy-samesite-policies adresine bakın.
 
@@ -5568,7 +5600,6 @@ Bu ayar devre dışı bırakılır veya herhangi bir değer belirlenmezse <ph na
       Bu politika ayarlanmadan bırakılırsa raf varsayılan olarak ekranın alt tarafında konumlandırılır ve kullanıcı rafın yerini değiştirebilir.</translation>
 <translation id="7039815268521168329">İlk kurulum sırasında Google Asistan Voice Match akışını göster</translation>
 <translation id="7040229947030068419">Örnek değer:</translation>
-<translation id="7041170641363384736">Cihazların yeniden başlatılması için özel bir program belirlenmesini sağlar. Bu politika şu anda yalnızca Kiosk oturumunda otomatik başlatma uygulaması etkinleştirilmiş cihazlarda geçerlidir. Politika, Doğru değerine ayarlandığında cihaz programa uygun olarak yeniden başlatılır. Programlı yeniden başlatmaların artık iptal olması için politikanın kaldırılması gerekir.</translation>
 <translation id="7044883996351280650">Android yedekleme ve geri yükleme hizmetini kontrol etme</translation>
 <translation id="7047495632846973438">Görüntü yakalama izinleri politikasının kontrol edilip edilmediğini veya atlanıp atlanmadığını belirtir.</translation>
 <translation id="7066292150801784098">Uzaktan destek oturumlarında yükseltilmiş pencerelerle uzaktan kullanıcı etkileşimini devre dışı bırak</translation>
@@ -6547,7 +6578,6 @@ Bu politika ayarlanmadan bırakılırsa gizlilik ekranı başta devre dışı b�
           Bu politikayı ayarlarsanız kullanıcılar değiştiremez veya geçersiz kılamazlar.
 
           Bu politika ayarlanmadan bırakılırsa imleci vurgulama başlangıçta devre dışıdır ancak istenildiğinde kullanıcı tarafından etkinleştirilebilir.</translation>
-<translation id="8161536598508377155">Kiosk cihazlarını yeniden başlatmak için özel program belirle</translation>
 <translation id="8164144100557223371">Tarayıcı deneysel özellikler araç çubuğu giriş noktasını devre dışı bırak</translation>
 <translation id="8164687848393015214">Politika Etkin değerine ayarlanırsa izleme amaçlı ağ paketleri (<ph name="HEARTBEATS_TERM" />), bağlantı durumunun izlenmesini ve cihazın çevrimdışı olup olmadığının belirlenmesini sağlamak için yönetim sunucusuna gönderilir.
 
@@ -7097,6 +7127,7 @@ Bu politika "true" (doğru) olarak ayarlanırsa kullanıcının tarayıcıyı ku
 <translation id="8749536858950505376">Politikayı True (Doğru) değerine ayarlamak, büyük imleci açık tutar. Politikayı False (Yanlış) değerine ayarlamak, büyük imleci kapalı tutar.
 
       Bu politikayı ayarlarsanız kullanıcılar özelliği değiştiremez. Ayarlanmazsa büyük imleç ilk başta kapalıdır, ancak kullanıcılar istedikleri zaman açabilir.</translation>
+<translation id="8750941317035081777">JavaScript setTimeout(), normal iç içe yerleştirme eşiğinden sonra zaman aşımına uğrar.</translation>
 <translation id="8753264624162178499">Kullanıcılar, resim olarak yazdır seçeneğini, yazdırma işi hedefe gönderilmeden önce PDF'nin pikselleştirilmesini sağlamak için kullanabilir.</translation>
 <translation id="8757552286070680084">Wilco DTC yapılandırması</translation>
 <translation id="8758831693895931466">Zorunlu bulut yönetimi kaydını etkinleştir</translation>

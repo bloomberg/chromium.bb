@@ -27,6 +27,7 @@ Je zoekmachine is <ph name="DSE_NAME" />. Bekijk de instructies van de zoekmachi
 <translation id="1145536944570833626">Bestaande gegevens verwijderen.</translation>
 <translation id="1147031633655575115">Ingelogd als <ph name="USER" /></translation>
 <translation id="1154984953698510061">Andere tabbladen bekijken</translation>
+<translation id="1161340988127985692">Vragen om links uit andere apps te openen in de incognitomodus</translation>
 <translation id="1164064664035028907">Gebruik een sterk wachtwoord:</translation>
 <translation id="1165039591588034296">Fout</translation>
 <translation id="1172898394251786223">Volgend veld</translation>
@@ -292,6 +293,7 @@ Bekijk de instructies van je zoekmachine voor het verwijderen van je zoekgeschie
 <translation id="3443810440409579745">Tabblad ontvangen.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min.</translation>
 <translation id="3448016392200048164">Gesplitste weergave</translation>
+<translation id="3450502512529866925">Bookmark instellen voor deze pagina</translation>
 <translation id="345565170154308620">Wachtwoorden beheren…</translation>
 <translation id="3469166899695866866">Downloaden stoppen?</translation>
 <translation id="3470502288861289375">Kopiëren...</translation>
@@ -355,7 +357,7 @@ Volg de onderstaande stappen:</translation>
 <translation id="3995521777587992544">Voortgangsbalk voor laden van pagina, <ph name="EMAIL" /> geladen.</translation>
 <translation id="4002066346123236978">Titel</translation>
 <translation id="4004204301268239848">Wachtwoorden worden in je Google-account opgeslagen, zodat je deze op elk apparaat kunt gebruiken.</translation>
-<translation id="4006921758705478413">Verzenden naar je apparaten</translation>
+<translation id="4006921758705478413">Naar je apparaten sturen</translation>
 <translation id="4018310736049373830">Activiteit beheren</translation>
 <translation id="4038354071007134711">Geen app op dit apparaat kan het bestand openen.</translation>
 <translation id="4042870976416480368">Zoeken op pagina</translation>
@@ -406,6 +408,7 @@ Volg de onderstaande stappen:</translation>
 <translation id="4502566650163919158">Nu checken</translation>
 <translation id="4505980578794259603">Laatst gecheckt: <ph name="TIME" /></translation>
 <translation id="4508750114462689118">Inlogpromo sluiten</translation>
+<translation id="4511669830082467224">Afbeelding zoeken met Google</translation>
 <translation id="4526249700380860531">Opgeslagen wachtwoorden bekijken en beheren via <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="452750746583162491">Je gesynchroniseerde gegevens controleren</translation>
 <translation id="4536418791685807335">Probeer opnieuw in te loggen.</translation>
@@ -483,6 +486,7 @@ Je gegevens zijn versleuteld met je wachtwoordzin voor synchronisatie. Geef deze
 <translation id="5090832849094901128">Als je dit wachtwoord verwijdert, wordt je account op <ph name="WEBSITE" /> niet verwijderd.</translation>
 <translation id="5092117651143801290">Je kunt pagina's opslaan en later of offline lezen. Chrome vraagt je of je lange pagina's wilt opslaan.</translation>
 <translation id="5094827893301452931">Tweet voltooid.</translation>
+<translation id="509789154667432072">Een bookmark toevoegen</translation>
 <translation id="5118713593561876160">Interesses</translation>
 <translation id="5118764316110575523">Uit</translation>
 <translation id="5127805178023152808">Synchronisatie staat uit</translation>

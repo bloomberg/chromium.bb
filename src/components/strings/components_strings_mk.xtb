@@ -291,6 +291,7 @@
 <translation id="1662550410081243962">Зачувувај и пополнувај начини на плаќање</translation>
 <translation id="1663943134801823270">Картичките и адресите се од Chrome. Со нив може да управувате во <ph name="BEGIN_LINK" />Поставки<ph name="END_LINK" />.</translation>
 <translation id="1671391448414634642">Отсега, страниците на <ph name="SOURCE_LANGUAGE" /> ќе се преведуваат на <ph name="TARGET_LANGUAGE" />.</translation>
+<translation id="1673886523110456987">Платете со <ph name="CARD_DETAIL" /> за да ја користите понудата</translation>
 <translation id="1674504678466460478">Од <ph name="SOURCE_LANGUAGE" /> на <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="1682696192498422849">Прво краткиот раб</translation>
 <translation id="168693727862418163">Вредноста на правилото не може да се потврди според неговата шема и ќе биде игнорирана.</translation>
@@ -590,6 +591,7 @@
 <translation id="2523886232349826891">Зачувано само на овој уред</translation>
 <translation id="2524461107774643265">Додајте повеќе информации</translation>
 <translation id="2529899080962247600">Полево не треба да има повеќе од <ph name="MAX_ITEMS_LIMIT" /> записи. Сите понатамошни записи ќе се игнорираат.</translation>
+<translation id="253493526287553278">Погледнете ги деталите за промотивниот код</translation>
 <translation id="2535585790302968248">Отворете нова картичка „Инкогнито“ за да прелистувате приватно</translation>
 <translation id="2535659140340599600">{COUNT,plural, =1{и уште 1}one{и уште #}other{и уште #}}</translation>
 <translation id="2536110899380797252">Додајте адреса</translation>
@@ -1106,6 +1108,7 @@
 <translation id="3986705137476756801">Исклучете ја „Автоматски титлови“ засега</translation>
 <translation id="3987940399970879459">Помалку од 1 MB</translation>
 <translation id="3990250421422698716">Офсет превиткување</translation>
+<translation id="3992684624889376114">За оваа страница</translation>
 <translation id="3996311196211510766">Сајтот <ph name="ORIGIN" /> побарал да се применува правило за потекло
      за сите барања до него, но ова правило не може да се примени во моментов.</translation>
 <translation id="4006465311664329701">Начини на плаќање, понуди и адреси преку Google Pay</translation>
@@ -1281,6 +1284,7 @@
 <translation id="4435702339979719576">Разгледница)</translation>
 <translation id="443673843213245140">Оневозможена е употребата на прокси, но одредена е опширна конфигурација на прокси.</translation>
 <translation id="4441832193888514600">Игнорирано бидејќи правилото може да се постави само како политика за корисници во облак.</translation>
+<translation id="4442470707340296952">Картички на Chrome</translation>
 <translation id="4450893287417543264">Не прикажувај повторно</translation>
 <translation id="4451135742916150903">Може да прашува за да се поврзува со HID-уреди</translation>
 <translation id="4452328064229197696">Отркиено е дека лозинката која штотуку ја употребивте е меѓу лозинките откриени при упад во податоците. За да ја задржите безбедноста на сметките, „Управникот со лозинки на Google“ препорачува да ги проверите зачуваните лозинки.</translation>
@@ -1555,6 +1559,7 @@
 <translation id="5171045022955879922">Барај или впиши URL</translation>
 <translation id="5171689220826475070">Fanfold-European</translation>
 <translation id="5172758083709347301">Машина</translation>
+<translation id="5177076414499237632">Дознајте за изворот и темата на страницава</translation>
 <translation id="5179510805599951267">Не е на <ph name="ORIGINAL_LANGUAGE" />? Пријави ја грешката.</translation>
 <translation id="518639307526414276">Храна и производи за миленичиња</translation>
 <translation id="5190835502935405962">Лента со обележувачи</translation>
@@ -2575,6 +2580,7 @@
 <translation id="8074253406171541171">10x13 (плик)</translation>
 <translation id="8075736640322370409">Набрзина создајте нова табела на Google</translation>
 <translation id="8075898834294118863">Управувај со поставките за сајтови</translation>
+<translation id="8076492880354921740">Картички</translation>
 <translation id="8078141288243656252">Не може да се стави прибелешка кога документот е ротиран</translation>
 <translation id="8079031581361219619">Дали повторно да се вчита сајтот?</translation>
 <translation id="8081087320434522107">Седани</translation>
@@ -2996,6 +3002,7 @@
 <translation id="988159990683914416">Верзија за програмер</translation>
 <translation id="989988560359834682">Измени адреса</translation>
 <translation id="991413375315957741">сензори за движење или светлина</translation>
+<translation id="992110854164447044">Виртуелната картичка ја сокрива вашата актуелна картичка за да ја заштити од потенцијална измама. <ph name="IDS_AUTOFILL_VIRTUAL_CARD_ENROLLMENT_LEARN_MORE_LINK_LABEL" /></translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
 <translation id="992256792861109788">Розова</translation>
 <translation id="992432478773561401">Софтверот „<ph name="SOFTWARE_NAME" />“ не е правилно инсталиран на компјутерот или мрежата:

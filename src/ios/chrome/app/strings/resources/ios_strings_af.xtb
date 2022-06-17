@@ -27,6 +27,7 @@ Jou soekenjin is <ph name="DSE_NAME" />. Sien hul instruksies om jou soekgeskied
 <translation id="1145536944570833626">Vee bestaande data uit.</translation>
 <translation id="1147031633655575115">Aangemeld as <ph name="USER" /></translation>
 <translation id="1154984953698510061">Sien ander oortjies</translation>
+<translation id="1161340988127985692">Vra om skakels van ander programme af in Incognitomodus oop te maak</translation>
 <translation id="1164064664035028907">Gebruik sterk wagwoord:</translation>
 <translation id="1165039591588034296">Fout</translation>
 <translation id="1172898394251786223">Volgende veld</translation>
@@ -292,6 +293,7 @@ Sien jou soekenjin se instruksies om jou soekgeskiedenis uit te vee, indien nodi
 <translation id="3443810440409579745">Oortjie is ontvang.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min.</translation>
 <translation id="3448016392200048164">Deelaansig</translation>
+<translation id="3450502512529866925">Boekmerk hierdie bladsy</translation>
 <translation id="345565170154308620">Bestuur wagwoorde …</translation>
 <translation id="3469166899695866866">Stop aflaai?</translation>
 <translation id="3470502288861289375">Kopieer tans …</translation>
@@ -406,6 +408,7 @@ Volg die stappe hieronder:</translation>
 <translation id="4502566650163919158">Meld nou aan</translation>
 <translation id="4505980578794259603">Laas gekontroleer: <ph name="TIME" />.</translation>
 <translation id="4508750114462689118">Maak aanmelding-promosie toe</translation>
+<translation id="4511669830082467224">Soek prent met Google</translation>
 <translation id="4526249700380860531">Bekyk en bestuur gestoorde wagwoorde by <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="452750746583162491">Gaan jou gesinkroniseerde data na</translation>
 <translation id="4536418791685807335">Probeer om weer aan te meld.</translation>
@@ -483,6 +486,7 @@ Jou data is met jou sinkroniseringwagfrase geënkripteer. Voer dit in om te begi
 <translation id="5090832849094901128">As hierdie wagwoord uitgevee word, sal jou rekening op <ph name="WEBSITE" /> nie uitgevee word nie.</translation>
 <translation id="5092117651143801290">Jy kan bladsye stoor om later of vanlyn te lees. Chrome sal vra of jy lang bladsye wil stoor.</translation>
 <translation id="5094827893301452931">Twiet is voltooi.</translation>
+<translation id="509789154667432072">Voeg ’n boekmerk by</translation>
 <translation id="5118713593561876160">Belangstellings</translation>
 <translation id="5118764316110575523">Af</translation>
 <translation id="5127805178023152808">Sinkronisering is af</translation>

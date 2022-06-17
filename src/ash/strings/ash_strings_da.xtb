@@ -504,6 +504,7 @@ Slut din enhed til en strømkilde.</translation>
 <translation id="3901991538546252627">Opretter forbindelse til <ph name="NAME" /></translation>
 <translation id="3922427723338465344">{0,plural, =1{Skift til en tidligere version af enheden inden for 1 minut}one{Skift til en tidligere version af enheden inden for # minut}other{Skift til en tidligere version af enheden inden for # minutter}}</translation>
 <translation id="3923494859158167397">Der er ikke konfigureret nogen mobilnetværk</translation>
+<translation id="3925540965556789199"><ph name="DATE" /> – indlæser begivenhederne.</translation>
 <translation id="3932043219784172185">Der er ikke nogen forbundne enheder</translation>
 <translation id="3934456833412894880">Adaptiv opladning er aktiveret. Dit batteri oplades til 80 % for at forlænge batteritiden og oplades helt, når du har brug for det.</translation>
 <translation id="3943857333388298514">Indsæt</translation>
@@ -703,6 +704,7 @@ Slut din enhed til en strømkilde.</translation>
 <translation id="5078796286268621944">Forkert pinkode</translation>
 <translation id="5083553833479578423">Få adgang til endnu flere Assistent-funktioner.</translation>
 <translation id="509790653408515442">Når du streamer din telefons apps, vises de her</translation>
+<translation id="5098537242461068432">Skrivebordet og vinduer er genåbnet</translation>
 <translation id="5107522548814527560">Internet</translation>
 <translation id="5117590920725113268">Vis næste måned</translation>
 <translation id="5136175204352732067">Du har tilsluttet et andet tastatur</translation>
@@ -1055,6 +1057,10 @@ Installeret for nylig</translation>
 <translation id="7258828758145722155">Redigeret i går</translation>
 <translation id="726276584504105859">Træk hertil for at bruge opdelt skærm</translation>
 <translation id="7262906531272962081">Opret påmindelse</translation>
+<translation id="7297440678881127227"><ph name="START_TIME" /> til
+        <ph name="END_TIME" />,
+        <ph name="TIME_ZONE" />,
+        <ph name="EVENT_SUMMARY" />. Vælg for at få flere oplysninger i Google Kalender.</translation>
 <translation id="7302889331339392448">Livetekstning er slået fra.</translation>
 <translation id="7303365578352795231">Besvares på en anden enhed</translation>
 <translation id="7305884605064981971">EDGE</translation>
@@ -1167,6 +1173,7 @@ Installeret for nylig</translation>
 <translation id="7904094684485781019">Administratoren for denne konto tillader ikke samlet login fra flere konti.</translation>
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7930731167419639574">Tale behandles nu lokalt, og diktering kan bruges offline</translation>
+<translation id="7932451802722951285">Åbn i Google Kalender</translation>
 <translation id="7933084174919150729">Google Assistent kan kun bruges via den primære profil.</translation>
 <translation id="79341161159229895">Kontoen administreres af <ph name="FIRST_PARENT_EMAIL" /> og <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="793716872548410480">Tryk på <ph name="SHORTCUT_KEY_NAME" />+V for at se din udklipsholder. De seneste fem elementer, du har kopieret, gemmes i din udklipsholder.</translation>

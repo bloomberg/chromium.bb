@@ -27,6 +27,7 @@ Du hast <ph name="DSE_NAME" /> als Suchmaschine festgelegt. Informationen zum L�
 <translation id="1145536944570833626">Vorhandene Daten löschen</translation>
 <translation id="1147031633655575115">Angemeldet als <ph name="USER" /></translation>
 <translation id="1154984953698510061">Andere Tabs anzeigen</translation>
+<translation id="1161340988127985692">Links aus anderen Apps im Inkognitomodus öffnen</translation>
 <translation id="1164064664035028907">Starkes Passwort verwenden:</translation>
 <translation id="1165039591588034296">Fehler</translation>
 <translation id="1172898394251786223">Nächstes Feld</translation>
@@ -292,6 +293,7 @@ Informationen zum Löschen deines Suchverlaufs findest du in der Anleitung deine
 <translation id="3443810440409579745">Tab erhalten.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Geteilte Ansicht</translation>
+<translation id="3450502512529866925">Diese Seite als Lesezeichen speichern</translation>
 <translation id="345565170154308620">Passwörter verwalten…</translation>
 <translation id="3469166899695866866">Download beenden?</translation>
 <translation id="3470502288861289375">Wird kopiert...</translation>
@@ -484,6 +486,7 @@ Wenn du diese Einstellung ändern möchtest, <ph name="BEGIN_LINK" />setze die S
 <translation id="5090832849094901128">Durch das Entfernen dieses Passworts wird dein <ph name="WEBSITE" />-Konto nicht gelöscht.</translation>
 <translation id="5092117651143801290">Du kannst Seiten speichern, um sie später oder offline zu lesen. Du wirst gefragt, ob du lange Seiten speichern möchtest.</translation>
 <translation id="5094827893301452931">Tweet gepostet</translation>
+<translation id="509789154667432072">Lesezeichen hinzufügen</translation>
 <translation id="5118713593561876160">Interessen</translation>
 <translation id="5118764316110575523">Aus</translation>
 <translation id="5127805178023152808">Synchronisierung ist deaktiviert</translation>

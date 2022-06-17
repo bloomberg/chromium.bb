@@ -27,6 +27,7 @@ Váš vyhledávač je <ph name="DSE_NAME" />. Prostudujte si pokyny vyhledávač
 <translation id="1145536944570833626">Smazat existující data.</translation>
 <translation id="1147031633655575115">Jste přihlášeni jako <ph name="USER" /></translation>
 <translation id="1154984953698510061">Zobrazit další karty</translation>
+<translation id="1161340988127985692">Žádat o otevření odkazů z jiných aplikací v anonymním režimu</translation>
 <translation id="1164064664035028907">Použijte silné heslo:</translation>
 <translation id="1165039591588034296">Chyba</translation>
 <translation id="1172898394251786223">Další pole</translation>
@@ -292,6 +293,7 @@ Prostudujte si pokyny vyhledávače pro smazání historie vyhledávání (pokud
 <translation id="3443810440409579745">Byla přijata karta.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Režim Split View</translation>
+<translation id="3450502512529866925">Přidat stránku do záložek</translation>
 <translation id="345565170154308620">Spravovat hesla...</translation>
 <translation id="3469166899695866866">Zastavit stahování?</translation>
 <translation id="3470502288861289375">Kopírování...</translation>
@@ -406,6 +408,7 @@ Postupujte podle následujících pokynů:</translation>
 <translation id="4502566650163919158">Zkontrolovat</translation>
 <translation id="4505980578794259603">Poslední kontrola: <ph name="TIME" />.</translation>
 <translation id="4508750114462689118">Zavřít propagační zprávu ohledně přihlášení</translation>
+<translation id="4511669830082467224">Vyhledat obrázek pomocí Googlu</translation>
 <translation id="4526249700380860531">Uložená hesla můžete zobrazit a upravit na adrese <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="452750746583162491">Zkontrolovat synchronizovaná data</translation>
 <translation id="4536418791685807335">Zkuste se přihlásit znovu.</translation>
@@ -483,6 +486,7 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="5090832849094901128">Odstraněním tohoto hesla nesmažete svůj účet na webu <ph name="WEBSITE" />.</translation>
 <translation id="5092117651143801290">Stránky si můžete uložit a přečíst si je později nebo v režimu offline. U dlouhých stránek se vás Chrome zeptá.</translation>
 <translation id="5094827893301452931">Tweet byl odeslán.</translation>
+<translation id="509789154667432072">Přidat záložku</translation>
 <translation id="5118713593561876160">Zájmy</translation>
 <translation id="5118764316110575523">Vypnuto</translation>
 <translation id="5127805178023152808">Synchronizace je vypnuta</translation>

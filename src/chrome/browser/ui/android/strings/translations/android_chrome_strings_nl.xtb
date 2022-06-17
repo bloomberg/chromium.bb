@@ -516,7 +516,7 @@ Tik op een woord en houd dit vast om te zoeken. Selecteer meer of minder woorden
 <translation id="3771290962915251154">Deze instelling staat uit omdat ouderlijk toezicht is aangezet</translation>
 <translation id="3771694256347217732">Servicevoorwaarden van Google</translation>
 <translation id="3773856050682458546">Basisgegevens en informatie over de websites die je bezoekt en de apps die je gebruikt</translation>
-<translation id="3775705724665058594">Verzenden naar je apparaten</translation>
+<translation id="3775705724665058594">Naar je apparaten sturen</translation>
 <translation id="3778956594442850293">Toegevoegd aan startscherm</translation>
 <translation id="3791957072666773229">{TAB_COUNT,plural, =1{1 tabblad}other{# tabbladen}}</translation>
 <translation id="3803784507854318295">Autoplay beheren</translation>
@@ -527,7 +527,6 @@ Tik op een woord en houd dit vast om te zoeken. Selecteer meer of minder woorden
 <translation id="3845098929839618392">Openen op incognitotabblad</translation>
 <translation id="3856096718352044181">Controleer of dit een geldige provider is of probeer het later opnieuw</translation>
 <translation id="3858860766373142691">Naam</translation>
-<translation id="3859206958100234503">Voer een synchronisatie uit om onder meer je wachtwoorden en bookmarks op al je apparaten beschikbaar te maken</translation>
 <translation id="3861633093716975811">Populaire video's</translation>
 <translation id="3892148308691398805">Tekst kopiëren</translation>
 <translation id="3894427358181296146">Map toevoegen</translation>
@@ -566,6 +565,7 @@ Tik op een woord en houd dit vast om te zoeken. Selecteer meer of minder woorden
 <translation id="4095146165863963773">App-gegevens verwijderen?</translation>
 <translation id="4096227151372679484">Proces voor bookmark opslaan is op halve hoogte geopend</translation>
 <translation id="4099578267706723511">Verzend automatisch gebruiksstatistieken en crashmeldingen naar Google.</translation>
+<translation id="4101475238162928417">Voer een synchronisatie uit om onder meer de wachtwoorden en bookmarks van je andere apparaten op te halen</translation>
 <translation id="410351446219883937">Automatisch afspelen</translation>
 <translation id="4106587138345390261">Chrome bevat nieuwe experimentele functies waarmee sites dezelfde browsefunctionaliteit kunnen leveren terwijl er minder van je gegevens worden gebruikt</translation>
 <translation id="4108314971463891922">Volgen</translation>
@@ -1196,6 +1196,7 @@ Trust Tokens verbeteren de privacy op internet en kunnen niet worden gebruikt om
 <translation id="749294055653435199">Google Lens is niet beschikbaar op dit apparaat</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (geüpdatet: <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7498271377022651285">Een ogenblik geduld…</translation>
+<translation id="7502234197872745058">Als je op alle websites wilt uitloggen van je Google-account, <ph name="BEGIN_LINK1" />log je uit van Chrome<ph name="END_LINK1" />.</translation>
 <translation id="750228856503700085">Updates niet beschikbaar</translation>
 <translation id="7507207699631365376">Het <ph name="BEGIN_LINK" />privacybeleid<ph name="END_LINK" /> van deze provider bekijken</translation>
 <translation id="7514365320538308">Downloaden</translation>

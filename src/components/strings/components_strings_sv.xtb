@@ -291,6 +291,7 @@ Annars blockeras detta av integritetsinställningarna. Om du tillåter detta kan
 <translation id="1662550410081243962">Spara och fyll i betalningsmetoder</translation>
 <translation id="1663943134801823270">Kort och adresser har hämtats från Chrome. Du hanterar dessa under <ph name="BEGIN_LINK" />Inställningar<ph name="END_LINK" />.</translation>
 <translation id="1671391448414634642">Sidor på <ph name="SOURCE_LANGUAGE" /> översätts till <ph name="TARGET_LANGUAGE" /> från och med nu.</translation>
+<translation id="1673886523110456987">Betala med <ph name="CARD_DETAIL" /> för att använda erbjudandet</translation>
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> till <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="1682696192498422849">Kortsidan först</translation>
 <translation id="168693727862418163">Principen ignoreras eftersom den inte gick att validera mot schemat.</translation>
@@ -590,6 +591,7 @@ Annars blockeras detta av integritetsinställningarna. Om du tillåter detta kan
 <translation id="2523886232349826891">Endast sparat på den här enheten</translation>
 <translation id="2524461107774643265">Lägg till mer information</translation>
 <translation id="2529899080962247600">Fältet får ha högst <ph name="MAX_ITEMS_LIMIT" /> poster. Alla poster utöver det ignoreras.</translation>
+<translation id="253493526287553278">Visa information om kampanjkoden</translation>
 <translation id="2535585790302968248">Öppna en ny inkognitoflik och surfa privat</translation>
 <translation id="2535659140340599600">{COUNT,plural, =1{och 1 till}other{och # till}}</translation>
 <translation id="2536110899380797252">Lägg till adress</translation>
@@ -1106,6 +1108,7 @@ Annars blockeras detta av integritetsinställningarna. Om du tillåter detta kan
 <translation id="3986705137476756801">Inaktivera Live Caption tills vidare</translation>
 <translation id="3987940399970879459">Mindre än 1 MB</translation>
 <translation id="3990250421422698716">Stötvis förskjutning</translation>
+<translation id="3992684624889376114">Om den här sidan</translation>
 <translation id="3996311196211510766">Webbplatsen <ph name="ORIGIN" /> har begärt att en ursprungsprincip
     ska gälla varje gång den svarar på en begäran, men denna princip går inte att tillämpa just nu.</translation>
 <translation id="4006465311664329701">Betalningsmetoder, erbjudanden och adresser med Google Pay</translation>
@@ -1281,6 +1284,7 @@ Annars blockeras detta av integritetsinställningarna. Om du tillåter detta kan
 <translation id="4435702339979719576">vykort)</translation>
 <translation id="443673843213245140">Användning av proxy är inaktiverad men en explicit proxykonfiguration har angetts.</translation>
 <translation id="4441832193888514600">Ignoreras eftersom principen bara kan ställas in som en princip för molnanvändare.</translation>
+<translation id="4442470707340296952">Chrome-flikar</translation>
 <translation id="4450893287417543264">Visa inte igen</translation>
 <translation id="4451135742916150903">Får begära tillstånd att ansluta till HID-enheter</translation>
 <translation id="4452328064229197696">Lösenordet som du precis använde har läckt ut vid ett dataintrång. Du bör se över dina sparade lösenord för att skydda dina konton.</translation>
@@ -1555,6 +1559,7 @@ Annars blockeras detta av integritetsinställningarna. Om du tillåter detta kan
 <translation id="5171045022955879922">Sök eller ange webbadress</translation>
 <translation id="5171689220826475070">Fanfold-European</translation>
 <translation id="5172758083709347301">Dator</translation>
+<translation id="5177076414499237632">Läs mer om sidans källa och ämne</translation>
 <translation id="5179510805599951267">Inte på <ph name="ORIGINAL_LANGUAGE" />? Rapportera felet</translation>
 <translation id="518639307526414276">Djurmat och djurvård</translation>
 <translation id="5190835502935405962">Bokmärkesfältet</translation>
@@ -2575,6 +2580,7 @@ Mer information.
 <translation id="8074253406171541171">10x13 (kuvert)</translation>
 <translation id="8075736640322370409">Skapa ett nytt Google-kalkylark snabbt</translation>
 <translation id="8075898834294118863">Hantera webbplatsinställningar</translation>
+<translation id="8076492880354921740">Flikar</translation>
 <translation id="8078141288243656252">Det går inte att annotera när dokumentet har roterats</translation>
 <translation id="8079031581361219619">Vill du läsa in webbplatsen igen?</translation>
 <translation id="8081087320434522107">Sedanbilar</translation>
@@ -2997,6 +3003,7 @@ Mer information:
 <translation id="988159990683914416">Utvecklarversion</translation>
 <translation id="989988560359834682">Redigera adress</translation>
 <translation id="991413375315957741">rörelse- eller ljussensorer</translation>
+<translation id="992110854164447044">Ett virtuellt kort döljer det riktiga kortet och skyddar dig från eventuella bedrägerier. <ph name="IDS_AUTOFILL_VIRTUAL_CARD_ENROLLMENT_LEARN_MORE_LINK_LABEL" /></translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
 <translation id="992256792861109788">Rosa</translation>
 <translation id="992432478773561401"><ph name="SOFTWARE_NAME" /> har inte installerats korrekt på datorn eller nätverket:

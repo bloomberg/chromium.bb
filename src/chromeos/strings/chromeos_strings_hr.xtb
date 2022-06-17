@@ -62,6 +62,7 @@
 <translation id="1459784442280469416">Spremi na USB</translation>
 <translation id="1468664791493211953">Ponude</translation>
 <translation id="1476467821656042872">Uređajem upravlja <ph name="MANAGER" /> i taj upravitelj možda može nadzirati vašu aktivnost.</translation>
+<translation id="147809995039451286">Preuzimanje ažuriranja nije uspjelo</translation>
 <translation id="1478594628797167447">Skener</translation>
 <translation id="1491076385728777984">Ažuriranje opreme na uređaju <ph name="DEVICE_NAME" /></translation>
 <translation id="1499900233129743732"><ph name="MANAGER" /> upravlja ovim korisnikom i možda može daljinski upravljati postavkama i nadzirati aktivnost korisnika.</translation>
@@ -126,6 +127,7 @@
 <translation id="1999615961760456652">Zaštitni portal</translation>
 <translation id="2006864819935886708">Povezivost</translation>
 <translation id="2008685064673031089">Glavno pretraživanje</translation>
+<translation id="2011174342667534258">Verzija SDK-a:</translation>
 <translation id="2016697457005847575">Isprobajte upute za rješavanje problema</translation>
 <translation id="2016848882344942759">--bez bijele oznake--</translation>
 <translation id="202500043506723828">EID</translation>
@@ -157,6 +159,7 @@
 <translation id="225692081236532131">Status aktivacije</translation>
 <translation id="2271469253353559191">Raspored tamnog načina</translation>
 <translation id="2275586345903859204">Dovršen je popravak</translation>
+<translation id="2276999893457278469">Glavni sadržaj pomoći</translation>
 <translation id="2287186687001756809">Slika nije dostupna. Da biste dodali fotografije, posjetite <ph name="LINK" /></translation>
 <translation id="2294753434210277304">Umetnite vanjsku pohranu, kao što je USB disk ili SD kartica, s preuzetom slikom uslužnog programa za oporavak Chromebooka</translation>
 <translation id="2307344026739914387">Upotrijebi trenutačni par ključeva</translation>
@@ -178,6 +181,7 @@
 <translation id="2418150275289244458">Otvori u postavkama</translation>
 <translation id="2421798028054665193">Slika <ph name="CURRENT_PAGE" /> od <ph name="TOTAL_PAGES" /></translation>
 <translation id="2446553403094072641">Točnost pomičnog zareza</translation>
+<translation id="2447969267935997922">Instaliranje je dovršeno. Sad možete ukloniti USB disk ili SD karticu.</translation>
 <translation id="2448312741937722512">Vrsta</translation>
 <translation id="2461822463642141190">Trenutačno</translation>
 <translation id="2480034874476596812">Ručno isključivanje</translation>
@@ -189,6 +193,7 @@
 <translation id="2517472476991765520">Traži</translation>
 <translation id="2526590354069164005">Radna površina</translation>
 <translation id="253029298928638905">Ponovno pokretanje…</translation>
+<translation id="2533048460510040082">Predloženi sadržaj pomoći</translation>
 <translation id="2536159006530886390">Povezivanje s internetom nije uspjelo.</translation>
 <translation id="2570743873672969996">Pokretanje testa <ph name="TEST_NAME" />...</translation>
 <translation id="2584559707064218956">Da biste postavili mrežu, otvorite postavke</translation>
@@ -288,6 +293,7 @@
 <translation id="3621202678540785336">Ulaz</translation>
 <translation id="3632579075709132555">Prekidač zaslona privatnosti</translation>
 <translation id="3643810137582748570">Preskoči kalibraciju</translation>
+<translation id="3651050199673793219">Odaberite temperaturnu jedinicu</translation>
 <translation id="3678765385266369662">Odaberite kako želite isključiti Write Protect</translation>
 <translation id="3689839747745352263">Test <ph name="TEST_NAME" /></translation>
 <translation id="370665806235115550">Učitavanje...</translation>
@@ -305,6 +311,7 @@
 <translation id="3856304145690230735">Žiroskop u bazi</translation>
 <translation id="385832974417157471">Prije nego što isključite uređaj, vratite ga na tvorničke postavke. Ako uređaj ima poklopac, pričekajte da se vraćanje na tvorničke postavke dovrši prije nego što zatvorite poklopac. Vraćanje na tvorničke postavke može potrajati do jedne minute.</translation>
 <translation id="3858860766373142691">Naziv</translation>
+<translation id="3862598938296403232">Potreban je opis</translation>
 <translation id="3865414814144988605">Razlučivost</translation>
 <translation id="3866249974567520381">Opis</translation>
 <translation id="387301095347517405">Koliko se puta vaša baterija potpuno napunila</translation>
@@ -678,6 +685,7 @@ Dodirnite mikrofon da biste mi dali glasovnu naredbu.</translation>
 <translation id="7143207342074048698">Povezivanje</translation>
 <translation id="7144878232160441200">Pokušaj ponovno</translation>
 <translation id="714876143603641390">LAN povezivost</translation>
+<translation id="7154020516215182599">Podijelite povratne informacije ili opišite svoj problem. Ako je moguće, uključite korake za reprodukciju problema.</translation>
 <translation id="7155171745945906037">Postojeća fotografija s fotoaparata ili iz datoteke</translation>
 <translation id="7162487448488904999">Galerija</translation>
 <translation id="7170236477717446850">Profilna slika</translation>
@@ -855,6 +863,7 @@ Dodirnite mikrofon da biste mi dali glasovnu naredbu.</translation>
 <translation id="885701979325669005">Prostor za pohranu</translation>
 <translation id="8863170912498892583">Omogućivanje tamne teme</translation>
 <translation id="8863888432376731307">Pogledajte <ph name="INTENT" /> za "<ph name="QUERY" />" i još mnogo toga</translation>
+<translation id="8864415976656252616">Nema predloženog sadržaja. Pogledajte glavni sadržaj pomoći.</translation>
 <translation id="8868741746785112895">GUID</translation>
 <translation id="8876270629542503161">Uređaj je tablet.</translation>
 <translation id="8881098542468797602">Test je uspio</translation>

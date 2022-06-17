@@ -348,6 +348,7 @@
 <translation id="2842985007712546952">پوشه اصلی</translation>
 <translation id="2856503607207334158">ورود به سیستم ناموفق بود</translation>
 <translation id="2860954141821109167">مطمئن شوید برنامه تلفن در این دستگاه فعال باشد</translation>
+<translation id="2861923151411510142">‏برخی‌از ویژگی‌های Chrome دیگر دردسترس نخواهد بود</translation>
 <translation id="2870560284913253234">سایت</translation>
 <translation id="2871733351037274014">پیش‌بارگیری صفحات</translation>
 <translation id="2888126860611144412">‏درباره Chrome</translation>
@@ -526,7 +527,6 @@
 <translation id="3845098929839618392">بازکردن در برگه ناشناس</translation>
 <translation id="3856096718352044181">لطفاً تأیید کنید این ارائه‌دهندهْ معتبر است یا بعداً دوباره امتحان کنید</translation>
 <translation id="3858860766373142691">نام</translation>
-<translation id="3859206958100234503">برای دریافت گذرواژه‌ها، نشانک‌ها، و داده‌های دیگر در همه دستگاه‌هایتان، همگام‌سازی کنید</translation>
 <translation id="3861633093716975811">ویدیوهای پرطرفدار</translation>
 <translation id="3892148308691398805">کپی کردن نوشتار</translation>
 <translation id="3894427358181296146">افزودن پوشه</translation>
@@ -565,6 +565,7 @@
 <translation id="4095146165863963773">داده‌های برنامه پاک شود؟</translation>
 <translation id="4096227151372679484">جریان ذخیره نشانک به‌صورت نیمه باز شده است</translation>
 <translation id="4099578267706723511">‏‫با ارسال آمار کاربرد و گزارش‌های خرابی به Google، به بهتر شدن Chrome کمک کنید.</translation>
+<translation id="4101475238162928417">برای دریافت گذرواژه‌ها، نشانک‌ها، و سایر داده‌هایتان در دستگاه‌های دیگرتان، همگام‌سازی کنید</translation>
 <translation id="410351446219883937">پخش خودکار</translation>
 <translation id="4106587138345390261">‏Chrome درحال کاوش ویژگی‌های جدیدی است که به سایت‌های امکان می‌دهد تجربه مرور یکسانی را با مصرف اطلاعات شخصی کمتر ارائه دهند</translation>
 <translation id="4108314971463891922">دنبال کردن</translation>
@@ -891,6 +892,7 @@
 <translation id="5869522115854928033">گذرواژه‌های ذخیره‌شده</translation>
 <translation id="5869789175361934029">ادامه از دستگاهی دیگر</translation>
 <translation id="587735546353481577">‏برای دنبال کردن سایت، به سایت موردنظر بروید، منوی Chrome را باز کنید و روی «دنبال کردن» ضربه بزنید.</translation>
+<translation id="5879072387416556377">پیشنهادهای بهتری دریافت کنید</translation>
 <translation id="5880748256563468367">رفتن به جارزن</translation>
 <translation id="5884076754568147479">‏برای کمک به انجام کارها، Google نشانی‌های وب و محتوای سایت‌هایی را که در آن‌ها از «دستیار» استفاده می‌کنید، و همچنین اطلاعاتی را که ازطریق «دستیار» ارسال می‌کنید دریافت خواهد کرد</translation>
 <translation id="5906513782029855931">‏دانستن نشانی وب‌سایت‌ها به «دستیار Google» امکان می‌دهد در تکمیل تکالیف به شما کمک کند. می‌توانید «دستیار» را در «تنظیمات Chrome» خاموش کنید.</translation>
@@ -1194,6 +1196,7 @@
 <translation id="749294055653435199">‏«لنز Google» در این دستگاه دردسترس نیست</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (زمان به‌روزرسانی <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7498271377022651285">لطفاً صبر کنید...</translation>
+<translation id="7502234197872745058">‏برای خارج شدن از سیستم «حساب Google» خود در همه وب‌سایت‌ها، <ph name="BEGIN_LINK1" />از سیستم Chrome خارج شوید<ph name="END_LINK1" />.</translation>
 <translation id="750228856503700085">به‌روزرسانی دردسترس نیست</translation>
 <translation id="7507207699631365376">به <ph name="BEGIN_LINK" />خط‌مشی رازداری<ph name="END_LINK" /> این ارائه‌دهنده بروید</translation>
 <translation id="7514365320538308">بارگیری</translation>
@@ -1233,6 +1236,7 @@
 <translation id="770741401784017797">‏درحال ساختن GIF</translation>
 <translation id="7707922173985738739">استفاده از داده تلفن همراه</translation>
 <translation id="7709094866268987903">علایقی که برداشتید اینجا نشان داده خواهد شد</translation>
+<translation id="7709918231054955894">همه برگه‌هایتان را مشاهده کنید</translation>
 <translation id="7725024127233776428">صفحاتی را که نشانک‌گذاری می‌کنید، در اینجا نشان داده می‌شوند</translation>
 <translation id="7757787379047923882">نوشتار هم‌رسانی‌شده از <ph name="DEVICE_NAME" /></translation>
 <translation id="7761849928583394409">انتخاب تاریخ و زمان</translation>
@@ -1428,6 +1432,7 @@
 <translation id="8656747343598256512">‏با «حساب Google» به سیستم این سایت و Chrome وارد شوید. می‌توانید بعداً همگام‌سازی را روشن کنید.</translation>
 <translation id="8659579665266920523">‏نحوه جستجو با Chrome</translation>
 <translation id="8662811608048051533">شما را از سیستم اکثر سایت‌ها خارج می‌کند.</translation>
+<translation id="8664215986015753476">‏به شیوه خودتان از Chrome استفاده کنید</translation>
 <translation id="8664979001105139458">نام فایل از قبل وجود دارد</translation>
 <translation id="8666759526542103597">درباره «شخصی‌سازی آگهی مبتنی بر مرورگر»</translation>
 <translation id="8667760277771450375">درحال کاوش روش‌هایی برای محدود کردن ردیابی بین‌سایتی و درعین‌حال امکان دادن به سایت‌ها برای متوقف کردن هرزآگهی و تقلب هستیم.</translation>

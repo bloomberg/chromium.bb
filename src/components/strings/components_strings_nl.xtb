@@ -291,6 +291,7 @@ Anders wordt dit geblokkeerd door je privacyinstellingen. Hierdoor werkt de cont
 <translation id="1662550410081243962">Betaalmethoden opslaan en invullen</translation>
 <translation id="1663943134801823270">Passen en adressen zijn afkomstig uit Chrome. Je kunt ze beheren in <ph name="BEGIN_LINK" />Instellingen<ph name="END_LINK" />.</translation>
 <translation id="1671391448414634642">Pagina's in het <ph name="SOURCE_LANGUAGE" /> worden vanaf nu vertaald naar het <ph name="TARGET_LANGUAGE" />.</translation>
+<translation id="1673886523110456987">Betaal met <ph name="CARD_DETAIL" /> om de aanbieding te gebruiken</translation>
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> naar <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="1682696192498422849">Korte zijde eerst</translation>
 <translation id="168693727862418163">Deze beleidswaarde kan niet worden gevalideerd op basis van het bijbehorende schema en wordt genegeerd.</translation>
@@ -587,6 +588,7 @@ Anders wordt dit geblokkeerd door je privacyinstellingen. Hierdoor werkt de cont
 <translation id="2523886232349826891">Alleen opgeslagen op dit apparaat</translation>
 <translation id="2524461107774643265">Meer informatie toevoegen</translation>
 <translation id="2529899080962247600">Dit veld mag niet meer dan <ph name="MAX_ITEMS_LIMIT" /> items bevatten. Alle andere items worden genegeerd.</translation>
+<translation id="253493526287553278">Details van promotiecode bekijken</translation>
 <translation id="2535585790302968248">Een nieuw incognitotabblad openen om privé te browsen</translation>
 <translation id="2535659140340599600">{COUNT,plural, =1{en nog 1}other{en nog #}}</translation>
 <translation id="2536110899380797252">Adres toevoegen</translation>
@@ -1098,6 +1100,7 @@ Anders wordt dit geblokkeerd door je privacyinstellingen. Hierdoor werkt de cont
 <translation id="3986705137476756801">Live ondertiteling nu uitzetten</translation>
 <translation id="3987940399970879459">Minder dan 1 MB</translation>
 <translation id="3990250421422698716">Sorteren</translation>
+<translation id="3992684624889376114">Over deze pagina</translation>
 <translation id="3996311196211510766">De site <ph name="ORIGIN" /> heeft gevraagd een herkomstbeleid
     toe te passen op alle verzoeken aan de site, maar dit beleid kan momenteel niet worden toegepast.</translation>
 <translation id="4006465311664329701">Betaalmethoden, aanbiedingen en adressen via Google Pay</translation>
@@ -1273,6 +1276,7 @@ Anders wordt dit geblokkeerd door je privacyinstellingen. Hierdoor werkt de cont
 <translation id="4435702339979719576">Briefkaart</translation>
 <translation id="443673843213245140">Er kan geen proxy worden gebruikt, maar er is wel een expliciete proxyconfiguratie opgegeven.</translation>
 <translation id="4441832193888514600">Genegeerd omdat het beleid alleen kan worden ingesteld als cloudgebruikersbeleid.</translation>
+<translation id="4442470707340296952">Chrome-tabbladen</translation>
 <translation id="4450893287417543264">Niet meer bekijken</translation>
 <translation id="4451135742916150903">Kan vragen of deze site verbinding mag maken met HID-apparaten</translation>
 <translation id="4452328064229197696">Het wachtwoord dat je net hebt gebruikt, is gevonden bij een gegevenslek. Google Wachtwoordmanager raadt je aan je opgeslagen wachtwoorden te checken om je accounts te beveiligen.</translation>
@@ -1547,6 +1551,7 @@ Anders wordt dit geblokkeerd door je privacyinstellingen. Hierdoor werkt de cont
 <translation id="5171045022955879922">Zoek of typ een URL</translation>
 <translation id="5171689220826475070">Fanfold-European</translation>
 <translation id="5172758083709347301">Computer</translation>
+<translation id="5177076414499237632">Meer informatie over de bron en het onderwerp van deze pagina</translation>
 <translation id="5179510805599951267">Niet in het <ph name="ORIGINAL_LANGUAGE" />? Deze fout melden</translation>
 <translation id="518639307526414276">Voeding en benodigdheden voor huisdieren</translation>
 <translation id="5190835502935405962">Bookmarkbalk</translation>
@@ -2566,6 +2571,7 @@ Aanvullende informatie:
 <translation id="8074253406171541171">10x13 (envelop)</translation>
 <translation id="8075736640322370409">Snel een nieuwe Google-spreadsheet maken</translation>
 <translation id="8075898834294118863">Site-instellingen beheren</translation>
+<translation id="8076492880354921740">Tabbladen</translation>
 <translation id="8078141288243656252">Kan geen aantekeningen maken als het document is gedraaid</translation>
 <translation id="8079031581361219619">Site opnieuw laden?</translation>
 <translation id="8081087320434522107">Sedans</translation>

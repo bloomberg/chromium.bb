@@ -27,6 +27,7 @@ Teie otsingumootor on <ph name="DSE_NAME" />. Vaadake selle juhiseid otsinguajal
 <translation id="1145536944570833626">Kustutage olemasolevad andmed.</translation>
 <translation id="1147031633655575115">Sisse logitud kasutajana <ph name="USER" /></translation>
 <translation id="1154984953698510061">Kuva muud vahelehed</translation>
+<translation id="1161340988127985692">Küsi, kas avada teiste rakenduste lingid inkognito režiimis</translation>
 <translation id="1164064664035028907">Kasutage tugevat parooli:</translation>
 <translation id="1165039591588034296">Viga</translation>
 <translation id="1172898394251786223">Järgmine väli</translation>
@@ -292,6 +293,7 @@ Vaadake oma otsingumootori juhiseid otsinguajaloo kustutamise kohta, kui see on 
 <translation id="3443810440409579745">Vaheleht võeti vastu.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Poolitatud vaade</translation>
+<translation id="3450502512529866925">Lisa see leht järjehoidjatesse</translation>
 <translation id="345565170154308620">Halda paroole …</translation>
 <translation id="3469166899695866866">Kas peatada allalaadimine?</translation>
 <translation id="3470502288861289375">Kopeerimine ...</translation>
@@ -406,6 +408,7 @@ Järgige allolevaid juhiseid.</translation>
 <translation id="4502566650163919158">Kontrolli kohe</translation>
 <translation id="4505980578794259603">Viimati kontrollitud <ph name="TIME" /></translation>
 <translation id="4508750114462689118">Sule sisselogimisviip</translation>
+<translation id="4511669830082467224">Otsige pilti Google'iga</translation>
 <translation id="4526249700380860531">Vaadake ja hallake salvestatud paroole saidil <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="452750746583162491">Vaadake oma sünkroonitud andmed üle</translation>
 <translation id="4536418791685807335">Proovige uuesti sisse logida.</translation>
@@ -483,6 +486,7 @@ Seade muutmiseks <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END
 <translation id="5090832849094901128">Selle parooli eemaldamisel ei kustutata teie kontot saidil <ph name="WEBSITE" />.</translation>
 <translation id="5092117651143801290">Saate lehed salvestada, et neid hiljem või võrguühenduseta lugeda. Kui soovite salvestada pikka lehte, palub Chrome teilt enne salvestamist kinnitada.</translation>
 <translation id="5094827893301452931">Säuts on valmis.</translation>
+<translation id="509789154667432072">Järjehoidja lisamine</translation>
 <translation id="5118713593561876160">Huvid</translation>
 <translation id="5118764316110575523">Väljas</translation>
 <translation id="5127805178023152808">Sünkroonimine on välja lülitatud</translation>

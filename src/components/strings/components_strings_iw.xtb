@@ -27,6 +27,7 @@
 <translation id="1043382569739532657">מענקים, מלגות לימוד וסיוע כספי</translation>
 <translation id="1048785276086539861">המסמך הזה יחזור לתצוגת דף יחיד בזמן עריכת ההערות</translation>
 <translation id="1050038467049342496">סגירת אפליקציות אחרות</translation>
+<translation id="1053959602163383901">בחרת לבצע אימות באמצעות מכשיר אימות באתרים שמשתמשים ב-<ph name="PROVIDER_ORIGIN" />. יכול להיות שהספק הזה אחסן מידע על אמצעי התשלום שלך, שאותו אפשר <ph name="LINK_TEXT" />.</translation>
 <translation id="1055184225775184556">&amp;ביטול הוספה</translation>
 <translation id="1056663316309890343">תוכנות לתמונות</translation>
 <translation id="1056898198331236512">אזהרה</translation>
@@ -290,6 +291,7 @@
 <translation id="1662550410081243962">שמירה ומילוי של אמצעי תשלום</translation>
 <translation id="1663943134801823270">‏הכרטיסים והכתובות נלקחים מ-Chrome. אפשר לנהל אותם ב<ph name="BEGIN_LINK" />הגדרות<ph name="END_LINK" />.</translation>
 <translation id="1671391448414634642">דפים ב<ph name="SOURCE_LANGUAGE" /> יתורגמו מעכשיו ל<ph name="TARGET_LANGUAGE" />.</translation>
+<translation id="1673886523110456987">לתשלום באמצעות <ph name="CARD_DETAIL" /> כדי לממש את המבצע</translation>
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> ל<ph name="TARGET_LANGUAGE" /></translation>
 <translation id="1682696192498422849">הקצה הקצר ראשון</translation>
 <translation id="168693727862418163">אימות ערך המדיניות הזה נכשל בבדיקה מול הסכימה והמערכת תתעלם ממנו.</translation>
@@ -426,6 +428,7 @@
 <translation id="2053111141626950936">דפים ב<ph name="LANGUAGE" /> לא יתורגמו.</translation>
 <translation id="2053373601901562871">{NUM_DAYS,plural, =0{‏כשהפקד הזה פועל והסטטוס פעיל, Chrome בודק מהי הקבוצה הגדולה של אנשים, או "הקבוצה בעלת המאפיינים המשותפים", שפעילות הגלישה האחרונה שלך הכי דומה לה. מפרסמים יכולים לבחור מודעות שמתאימות לקבוצה, ופעילות הגלישה שלך נשמרת באופן פרטי במכשיר. הקבוצה מתעדכנת מדי יום.}=1{‏כשהפקד הזה פועל והסטטוס פעיל, Chrome בודק מהי הקבוצה הגדולה של אנשים, או "הקבוצה בעלת המאפיינים המשותפים", שפעילות הגלישה האחרונה שלך הכי דומה לה. מפרסמים יכולים לבחור מודעות שמתאימות לקבוצה, ופעילות הגלישה שלך נשמרת באופן פרטי במכשיר. הקבוצה מתעדכנת מדי יום.}two{‏כשהפקד הזה פועל והסטטוס פעיל, Chrome בודק מהי הקבוצה הגדולה של אנשים, או "הקבוצה בעלת המאפיינים המשותפים", שפעילות הגלישה האחרונה שלך הכי דומה לה. מפרסמים יכולים לבחור מודעות שמתאימות לקבוצה, ופעילות הגלישה שלך נשמרת באופן פרטי במכשיר. הקבוצה מתעדכנת מדי יומיים ({NUM_DAYS}).}many{‏כשהפקד הזה פועל והסטטוס פעיל, Chrome בודק מהי הקבוצה הגדולה של אנשים, או "הקבוצה בעלת המאפיינים המשותפים", שפעילות הגלישה האחרונה שלך הכי דומה לה. מפרסמים יכולים לבחור מודעות שמתאימות לקבוצה, ופעילות הגלישה שלך נשמרת באופן פרטי במכשיר. הקבוצה מתעדכנת מדי {NUM_DAYS} ימים.}other{‏כשהפקד הזה פועל והסטטוס פעיל, Chrome בודק מהי הקבוצה הגדולה של אנשים, או "הקבוצה בעלת המאפיינים המשותפים", שפעילות הגלישה האחרונה שלך הכי דומה לה. מפרסמים יכולים לבחור מודעות שמתאימות לקבוצה, ופעילות הגלישה שלך נשמרת באופן פרטי במכשיר. הקבוצה מתעדכנת מדי {NUM_DAYS} ימים.}}</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{הצעה אחת}two{שתי הצעות}many{# הצעות}other{# הצעות}}</translation>
+<translation id="2066915425250589881">לבקש למחוק</translation>
 <translation id="2068528718802935086">תינוקות ופעוטות</translation>
 <translation id="2071156619270205202">הכרטיס הזה לא עומד בדרישות לקבלת מספר כרטיס וירטואלי.</translation>
 <translation id="2071692954027939183">ההתראות נחסמו באופן אוטומטי כי ברוב המקרים לא נתת הרשאה להציג אותן</translation>
@@ -582,11 +585,13 @@
 <translation id="2512101340618156538">אין הרשאה (ברירת מחדל)</translation>
 <translation id="2512413427717747692">‏לחצן להגדרת Chrome כדפדפן ברירת המחדל, יש ללחוץ על Enter כדי להגדיר את Chrome כדפדפן ברירת המחדל של המערכת בהגדרות iOS</translation>
 <translation id="2515629240566999685">לבדוק את האות באזור שלך</translation>
+<translation id="2515761554693942801">‏בחרת לבצע אימות באמצעות Touch ID באתרים שמשתמשים ב-<ph name="PROVIDER_ORIGIN" />. יכול להיות שהספק הזה אחסן מידע על אמצעי התשלום שלך, שאותו אפשר <ph name="LINK_TEXT" />.</translation>
 <translation id="2521385132275182522">סיכת הידוק בפינה הימנית התחתונה</translation>
 <translation id="2521736961081452453">יצירת טופס</translation>
 <translation id="2523886232349826891">הכרטיס יישמר רק במכשיר הזה</translation>
 <translation id="2524461107774643265">הוספת עוד מידע</translation>
 <translation id="2529899080962247600">השדה הזה יכול לכלול עד <ph name="MAX_ITEMS_LIMIT" /> רשומות. המערכת תתעלם מרשומות נוספות.</translation>
+<translation id="253493526287553278">הצגת הפרטים של קוד ההטבה</translation>
 <translation id="2535585790302968248">כדי לגלוש באופן פרטי, יש לפתוח כרטיסייה פרטית חדשה</translation>
 <translation id="2535659140340599600">{COUNT,plural, =1{ודומיין אחד נוסף}two{ו-# דומיינים נוספים}many{ו-# דומיינים נוספים}other{ו-# דומיינים נוספים}}</translation>
 <translation id="2536110899380797252">הוספת כתובת</translation>
@@ -1103,6 +1108,7 @@
 <translation id="3986705137476756801">השבתת הכתוביות המיידיות נכון לעכשיו</translation>
 <translation id="3987940399970879459">‏פחות מ-‎1 MB</translation>
 <translation id="3990250421422698716">היסט הלשונית</translation>
+<translation id="3992684624889376114">מידע על הדף הזה</translation>
 <translation id="3996311196211510766">האתר <ph name="ORIGIN" /> ביקש להחיל מדיניות מקור
     על כל הבקשות הנשלחות אליו, אבל לא ניתן כרגע להחיל את המדיניות הזו.</translation>
 <translation id="4006465311664329701">‏אמצעי תשלום, מבצעים וכתובות שנשמרו ב‑Google Pay</translation>
@@ -1276,6 +1282,7 @@
 <translation id="4435702339979719576">Postcard)‎</translation>
 <translation id="443673843213245140">‏השימוש בשרת Proxy הושבת, אך צוינה תצורת שרת Proxy מפורשת.</translation>
 <translation id="4441832193888514600">המערכת מתעלמת מהמדיניות כי ניתן להגדיר אותה רק כמדיניות משתמש בענן.</translation>
+<translation id="4442470707340296952">‏כרטיסיות Chrome</translation>
 <translation id="4450893287417543264">אין להציג שוב</translation>
 <translation id="4451135742916150903">‏האתר יכול לבקש הרשאה להתחבר למכשירי HID</translation>
 <translation id="4452328064229197696">‏הסיסמה שבה השתמשת עכשיו אותרה בפרצה באבטחת מידע. כדי להגן על החשבונות שלך, לפי מנהל הסיסמאות של Google, מומלץ לבדוק את הסיסמאות השמורות שלך.</translation>
@@ -1501,6 +1508,7 @@ Del</translation>
 <translation id="5051305769747448211">מופעי קומדיה</translation>
 <translation id="5056425809654826431">{NUM_FILES,plural, =1{כדי לשלוח את הקובץ הזה באמצעות 'שיתוף בקרבת מקום', צריך לפנות שטח אחסון (<ph name="DISK_SPACE_SIZE" />) במכשיר}two{כדי לשלוח את הקבצים האלה באמצעות 'שיתוף בקרבת מקום', צריך לפנות שטח אחסון (<ph name="DISK_SPACE_SIZE" />) במכשיר}many{כדי לשלוח את הקבצים האלה באמצעות 'שיתוף בקרבת מקום', צריך לפנות שטח אחסון (<ph name="DISK_SPACE_SIZE" />) במכשיר}other{כדי לשלוח את הקבצים האלה באמצעות 'שיתוף בקרבת מקום', צריך לפנות שטח אחסון (<ph name="DISK_SPACE_SIZE" />) במכשיר}}</translation>
 <translation id="5056549851600133418">מאמרים שעשויים לעניין אותך</translation>
+<translation id="5060483733937416656">‏בחרת לבצע אימות באמצעות Windows Hello באתרים שמשתמשים ב-<ph name="PROVIDER_ORIGIN" />. יכול להיות שהספק הזה אחסן מידע על אמצעי התשלום שלך, שאותו אפשר <ph name="LINK_TEXT" />.</translation>
 <translation id="5061227663725596739">האם התכוונת ל-<ph name="LOOKALIKE_DOMAIN" />?</translation>
 <translation id="5066056036849835175">היסטוריית הדפסות</translation>
 <translation id="5068234115460527047">קרנות גידור</translation>
@@ -1553,6 +1561,7 @@ Del</translation>
 <translation id="5171045022955879922">טקסט או כתובת אתר לחיפוש</translation>
 <translation id="5171689220826475070">Fanfold-European</translation>
 <translation id="5172758083709347301">מכונה</translation>
+<translation id="5177076414499237632">מידע על המקור והנושא של הדף הזה</translation>
 <translation id="5179510805599951267">לא ב<ph name="ORIGINAL_LANGUAGE" />? דיווח על שגיאה זו</translation>
 <translation id="518639307526414276">מזון וציוד לחיות מחמד</translation>
 <translation id="5190835502935405962">סרגל הסימניות</translation>
@@ -2574,6 +2583,7 @@ Del</translation>
 <translation id="8074253406171541171">10x13 (Envelope)‎</translation>
 <translation id="8075736640322370409">‏יצירה מהירה של גיליון אלקטרוני חדש ב-Google Sheets</translation>
 <translation id="8075898834294118863">ניהול ההגדרות לאתרים</translation>
+<translation id="8076492880354921740">כרטיסיות</translation>
 <translation id="8078141288243656252">לא ניתן להוסיף הערה במצב מסובב</translation>
 <translation id="8079031581361219619">לטעון את האתר מחדש?</translation>
 <translation id="8081087320434522107">מכוניות משפחתיות</translation>
@@ -2995,6 +3005,7 @@ Del</translation>
 <translation id="988159990683914416">גרסת מפתחים</translation>
 <translation id="989988560359834682">עריכת כתובת</translation>
 <translation id="991413375315957741">חיישני תנועה או אור</translation>
+<translation id="992110854164447044">כרטיס וירטואלי מסתיר את הכרטיס בפועל כדי להגן עליך מפני תרמיות פוטנציאליות. <ph name="IDS_AUTOFILL_VIRTUAL_CARD_ENROLLMENT_LEARN_MORE_LINK_LABEL" /></translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
 <translation id="992256792861109788">ורוד</translation>
 <translation id="992432478773561401">‏הייתה בעיה בהתקנה של "<ph name="SOFTWARE_NAME" />" במחשב שלך או ברשת. אפשר לנסות אחת מהפעולות הבאות:

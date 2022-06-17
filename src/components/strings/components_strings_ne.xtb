@@ -291,6 +291,7 @@
 <translation id="1662550410081243962">क्रेडिट कार्डसम्बन्धी जानकारी सुरक्षित गरी फारमहरू भर्नुहोस्</translation>
 <translation id="1663943134801823270">कार्ड र ठेगानाहरू Chrome बाट प्राप्त भएका हुन्। तपाईं <ph name="BEGIN_LINK" />सेटिङहरू<ph name="END_LINK" />मा गई तिनीहरूलाई व्यवस्थित गर्न सक्नुहुन्छ।</translation>
 <translation id="1671391448414634642">अब उप्रान्त <ph name="SOURCE_LANGUAGE" /> भाषाका पृष्ठहरूलाई <ph name="TARGET_LANGUAGE" /> भाषामा अनुवाद गरिने छ।</translation>
+<translation id="1673886523110456987">अफर प्रयोग गर्न <ph name="CARD_DETAIL" /> मार्फत चेक आउट गर्नुहोस्</translation>
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> बाट <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="1682696192498422849">पहिले छोटो किनारा</translation>
 <translation id="168693727862418163">यो नीतिको मान यसको स्किमासँग मिलेन। त्यसकारण यसलाई बेवास्ता गरिने छ।</translation>
@@ -590,6 +591,7 @@
 <translation id="2523886232349826891">यो डिभाइसमा भने यस कार्डलाई अझै पनि सुरक्षित गरिन्छ</translation>
 <translation id="2524461107774643265">थप जानकारी थप्नुहोस्</translation>
 <translation id="2529899080962247600">यो फिल्डमा <ph name="MAX_ITEMS_LIMIT" /> भन्दा बढी प्रविष्टि हुनु हुँदैन। थप सबै प्रविष्टि बेवास्ता गरिने छन्।</translation>
+<translation id="253493526287553278">प्रोमो कोडसम्बन्धी विवरण हेर्नुहोस्</translation>
 <translation id="2535585790302968248">तपाईं गोप्य रूपमा ब्राउज गर्न चाहनुहुन्छ भने नयाँ इन्कोग्निटो ट्याब खोल्नुहोस्</translation>
 <translation id="2535659140340599600">{COUNT,plural, =1{र थप १}other{र थप #}}</translation>
 <translation id="2536110899380797252">ठेगाना थप्नुहोस्</translation>
@@ -1103,6 +1105,7 @@
 <translation id="3986705137476756801">अहिलेका लागि लाइभ क्याप्सन अफ गर्नुहोस्</translation>
 <translation id="3987940399970879459">१ एम.बि. भन्दा कम</translation>
 <translation id="3990250421422698716">जग अफसेट</translation>
+<translation id="3992684624889376114">यो पेजका बारेमा</translation>
 <translation id="3996311196211510766">यो साइट <ph name="ORIGIN" /> ले यसलाई गरिने सबै अनुरोधहरूमा मूल नीति
     लागू गर्न अनुरोध गरेको छ। तर अहिले यो नीति लागू गर्न सकिँदैन।</translation>
 <translation id="4006465311664329701">Google Pay प्रयोग गर्दा इम्पोर्ट गरिने भुक्तानी विधि, अफर र ठेगानाहरू</translation>
@@ -1277,6 +1280,7 @@
 <translation id="4435702339979719576">Postcard)</translation>
 <translation id="443673843213245140">प्रोक्सीको प्रयोग असक्षम गरिएको छ तर एक सुस्पष्ट प्रोक्सी विन्यास तोकिएको छ।</translation>
 <translation id="4441832193888514600">क्लाउडका प्रयोगकर्ताले मात्र नीति तय गर्न मिल्ने भएकाले वेवास्ता गरिएको छ।</translation>
+<translation id="4442470707340296952">Chrome का ट्याबहरू</translation>
 <translation id="4450893287417543264">फेरि नदेखाउनुहोस्</translation>
 <translation id="4451135742916150903">HID डिभाइसमा कनेक्ट गर्ने अनुमति माग्न सक्छ</translation>
 <translation id="4452328064229197696">तपाईंले भर्खरै प्रयोग गर्नुभएको पासवर्ड चोरी भएको डेटाको सङ्ग्रहमा भेटिएको छ। Google पासवर्ड म्यानेजरले तपाईंका खाता सुरक्षित राख्ने प्रयोजनका लागि तपाईंले सेभ गरेका पासवर्डहरू सुरक्षित छन् कि छैनन् जाँच्न सिफारिस गर्छ।</translation>
@@ -1551,6 +1555,7 @@
 <translation id="5171045022955879922">युआरएल खोल्नुहोस् वा टाइप गर्नुहोस्</translation>
 <translation id="5171689220826475070">Fanfold-European</translation>
 <translation id="5172758083709347301">यन्त्र</translation>
+<translation id="5177076414499237632">यो पेजका स्रोत र विषयका बारेमा जान्नुहोस्</translation>
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE" /> मा छैन? यो त्रुटि रिपोर्ट गर्नुहोस्</translation>
 <translation id="518639307526414276">पाल्तु जनावरको खाना तथा हेरचाहका सामग्री</translation>
 <translation id="5190835502935405962">पृष्ठमञ्जूषा पट्टी</translation>
@@ -2571,6 +2576,7 @@
 <translation id="8074253406171541171">10x13 (Envelope)</translation>
 <translation id="8075736640322370409">Google Sheets प्रयोग गरी तुरुन्तै नयाँ पाना बनाउनुहोस्</translation>
 <translation id="8075898834294118863">साइटसम्बन्धी सेटिङ मिलाउनुहोस्</translation>
+<translation id="8076492880354921740">ट्याबहरू</translation>
 <translation id="8078141288243656252">घुमाइएका बेला एनोटेसन गर्न मिल्दैन</translation>
 <translation id="8079031581361219619">साइट पुनः लोड गर्ने हो?</translation>
 <translation id="8081087320434522107">सेडान कारहरू</translation>
@@ -2992,6 +2998,7 @@
 <translation id="988159990683914416">विकासकर्ताद्वारा निर्मित</translation>
 <translation id="989988560359834682">इमेल ठेगाना</translation>
 <translation id="991413375315957741">मोसन सेन्सर वा प्रकाशसम्बन्धी सेन्सरहरू</translation>
+<translation id="992110854164447044">भर्चुअल कार्डले तपाईंलाई ठगीबाट जोगाउनका निम्ति तपाईंको कार्डको वास्तविक जानकारी लुकाउँछ। <ph name="IDS_AUTOFILL_VIRTUAL_CARD_ENROLLMENT_LEARN_MORE_LINK_LABEL" /></translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
 <translation id="992256792861109788">गुलाबी</translation>
 <translation id="992432478773561401">तपाईंको कम्प्युटर वा नेटवर्कमा "<ph name="SOFTWARE_NAME" />" सही ढङ्गले स्थापना भएन:

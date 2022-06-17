@@ -291,6 +291,7 @@
 <translation id="1662550410081243962">ଠିକଣାଗୁଡ଼ିକ ସେଭ୍ କରି ପୂରଣ କରନ୍ତୁ</translation>
 <translation id="1663943134801823270">କାର୍ଡ ଓ ଠିକଣାଗୁଡ଼ିକ ଆପଣଙ୍କର Chromeରୁ ଆସିଛି। ଆପଣ ସେଗୁଡ଼ିକୁ <ph name="BEGIN_LINK" />ସେଟିଂସ୍‍<ph name="END_LINK" />ରେ ପରିଚାଳନ କରିପାରିବେ।</translation>
 <translation id="1671391448414634642">ଏବେ ଠାରୁ <ph name="SOURCE_LANGUAGE" />ର ପୃଷ୍ଠାଗୁଡ଼ିକୁ <ph name="TARGET_LANGUAGE" />ରେ ଅନୁବାଦ କରାଯିବ।</translation>
+<translation id="1673886523110456987">ଅଫର ବ୍ୟବହାର କରିବା ପାଇଁ <ph name="CARD_DETAIL" /> ମାଧ୍ୟମରେ ଯାଞ୍ଚ କରନ୍ତୁ</translation>
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> ରୁ <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="1682696192498422849">ପ୍ରଥମେ ଛୋଟ ଏଡଜ୍</translation>
 <translation id="168693727862418163">ଏହି ନୀତିର ମୂଲ୍ୟ ଏହାର ସ୍କିମା ଅନୁଯାୟୀ ବୈଧ ହେବାରେ ବିଫଳ ହୋଇଛି ଏବଂ ଏହାକୁ ଅଣଦେଖା କରାଯିବ।</translation>
@@ -586,6 +587,7 @@
 <translation id="2523886232349826891">କେବଳ ଏହି ଡିଭାଇସ୍‍ରେ ସେଭ୍ କରାଯାଇଛି</translation>
 <translation id="2524461107774643265">ଅଧିକ ସୂଚନା ଯୋଗ କରନ୍ତୁ</translation>
 <translation id="2529899080962247600">ଏହି ଫିଲ୍ଡରେ <ph name="MAX_ITEMS_LIMIT" />ରୁ ଅଧିକ ଏଣ୍ଟ୍ରି ରହିବା ଉଚିତ ନୁହେଁ। ସମସ୍ତ ପରବର୍ତ୍ତୀ ଏଣ୍ଟ୍ରିକୁ ଅଣଦେଖା କରାଯିବ।</translation>
+<translation id="253493526287553278">ପ୍ରମୋ କୋଡ ବିବରଣୀ ଦେଖନ୍ତୁ</translation>
 <translation id="2535585790302968248">ବ୍ୟକ୍ତିଗତ ଭାବେ ବ୍ରାଉଜ କରିବାକୁ ଏକ ନୂଆ ଇନକଗ୍ନିଟୋ ଟାବ ଖୋଲନ୍ତୁ</translation>
 <translation id="2535659140340599600">{COUNT,plural, =1{ଏବଂ ଅଧିକ 1ଟି}other{ଏବଂ ଅଧିକ #ଟି}}</translation>
 <translation id="2536110899380797252">ଠିକଣା ଯୋଗ କରନ୍ତୁ</translation>
@@ -1099,6 +1101,7 @@
 <translation id="3986705137476756801">ବର୍ତ୍ତମାନ ପାଇଁ ଲାଇଭ୍ କ୍ୟାପ୍ସନ୍ ବନ୍ଦ କରନ୍ତୁ</translation>
 <translation id="3987940399970879459">1 MBରୁ କମ୍ ଅଛି</translation>
 <translation id="3990250421422698716">ଜଗ୍ ଅଫ୍‌ସେଟ୍</translation>
+<translation id="3992684624889376114">ଏହି ପୃଷ୍ଠା ବିଷୟରେ</translation>
 <translation id="3996311196211510766">ଏଇ ସାଇଟକୁ କରାଯାଇଥିବା ସମସ୍ତ ଅନୁରୋଧରେ ଏକ ମୂଳ ନୀତି ଲାଗୁ କରାଯାଉ ବୋଲି ଏହି <ph name="ORIGIN" /> ସାଇଟ୍ ଅନୁରୋଧ କରିଛି, କିନ୍ତୁ ଏ ନୀତି ବର୍ତ୍ତମାନ ଲାଗୁ କରାଯାଇପାରିବ ନାହିଁ।</translation>
 <translation id="4006465311664329701">Google Pay ବ୍ୟବହାର କରୁଥିବା ପେମେଣ୍ଟ ପଦ୍ଧତି, ଅଫର ଏବଂ ଠିକଣାଗୁଡ଼ିକ</translation>
 <translation id="4009243425692662128">ଆପଣ ପ୍ରିଣ୍ଟ କରୁଥିବା ପୃଷ୍ଠାଗୁଡ଼ିକର ବିଷୟବସ୍ତୁ ବିଶ୍ଳେଷଣ ପାଇଁ Google Cloud କିମ୍ବା ତୃତୀୟ ପକ୍ଷଗୁଡ଼ିକୁ ପଠାଯାଏ। ଉଦାହରଣ ସ୍ଵରୂପ, ଏହାକୁ ସମ୍ବେଦନଶୀଳ ଡାଟା ପାଇଁ ସ୍କାନ କରାଯାଇପାରେ।</translation>
@@ -1269,6 +1272,7 @@
 <translation id="4435702339979719576">ପୋଷ୍ଟକାର୍ଡ)</translation>
 <translation id="443673843213245140">ଏକ ପ୍ରୋକ୍ସିର ବ୍ୟବହାର ଅକ୍ଷମ କରାଯାଇଛି କିନ୍ତୁ ଏକ ସୁନିର୍ଦ୍ଦିଷ୍ଟ ପ୍ରକ୍ସି କନ୍‌ଫିଗ୍‌ରେସନ୍ ନିର୍ଦ୍ଦିଷ୍ଟ କରାଯାଇଛି।</translation>
 <translation id="4441832193888514600">ଏହି ନୀତିକୁ କେବଳ ଏକ କ୍ଲାଉଡ ଉପଯୋଗକର୍ତ୍ତା ନୀତି ଭାବରେ ସେଟ କରାଯାଇପାରୁଥିବା ଯୋଗୁଁ ଏହାକୁ ଅଣଦେଖା କରାଯାଇଛି।</translation>
+<translation id="4442470707340296952">Chrome ଟାବ</translation>
 <translation id="4450893287417543264">ଆଉ ଦେଖାନ୍ତୁ ନାହିଁ</translation>
 <translation id="4451135742916150903">HID ଡିଭାଇସଗୁଡ଼ିକ ସହ ସଂଯୋଗ କରିବାକୁ ସାଇଟ୍ ପଚାରିପାରେ</translation>
 <translation id="4452328064229197696">ଆପଣ ଏବେ ବ୍ୟବହାର କରିଥିବା ପାସୱାର୍ଡ ଏକ ଡାଟା ଉଲ୍ଲଙ୍ଘନରେ ମିଳିଛି। ଆପଣଙ୍କ ଆକାଉଣ୍ଟଗୁଡ଼ିକୁ ସୁରକ୍ଷିତ ରଖିବା ପାଇଁ, Google ପାସୱାର୍ଡ ମ୍ୟାନେଜର ଆପଣଙ୍କ ଦ୍ୱାରା ସେଭ କରାଯାଇଥିବା ପାସୱାର୍ଡଗୁଡ଼ିକର ଯାଞ୍ଚ କରିବାକୁ ସୁପାରିଶ କରେ।</translation>
@@ -1544,6 +1548,7 @@
 <translation id="5171045022955879922">ଖୋଜନ୍ତୁ କିମ୍ବା URL ଟାଇପ୍ କରନ୍ତୁ</translation>
 <translation id="5171689220826475070">ଫ୍ୟାନ୍‌ଫୋଲ୍ଡ-ୟୁରୋପିଆନ୍</translation>
 <translation id="5172758083709347301">ମେସିନ୍</translation>
+<translation id="5177076414499237632">ଏହି ପୃଷ୍ଠାର ସୋର୍ସ ଏବଂ ବିଷୟ ସମ୍ବନ୍ଧରେ ଜାଣନ୍ତୁ</translation>
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE" />ରେ ନାହିଁ? ଏହି ତ୍ରୁଟିକୁ ରିପୋର୍ଟ କରନ୍ତୁ</translation>
 <translation id="518639307526414276">ଗୃହପାଳିତ ପଶୁଙ୍କ ଖାଦ୍ୟ ଏବଂ ଯତ୍ନ ପାଇଁ ସାମଗ୍ରୀ</translation>
 <translation id="5190835502935405962">ବୁକମାର୍କ ବାର୍</translation>
@@ -2563,6 +2568,7 @@
 <translation id="8074253406171541171">10x13 (ଏନଭଲପ୍)</translation>
 <translation id="8075736640322370409">ଶୀଘ୍ର ଏକ ନୂଆ Google Sheet ତିଆରି କରନ୍ତୁ</translation>
 <translation id="8075898834294118863">ସାଇଟ୍ ସେଟିଂସକୁ ପରିଚାଳନା କରନ୍ତୁ</translation>
+<translation id="8076492880354921740">ଟାବ୍</translation>
 <translation id="8078141288243656252">ଘୂରିଯାଇଥିବା ବେଳେ ବ୍ୟାଖ୍ୟା କରିପାରିବେ ନାହିଁ</translation>
 <translation id="8079031581361219619">ସାଇଟ୍‌କୁ ରିଲୋଡ୍ କରିବେ?</translation>
 <translation id="8081087320434522107">ସେଡାନଗୁଡ଼ିକ</translation>
@@ -2984,6 +2990,7 @@
 <translation id="988159990683914416">ଡେଭେଲପର୍ ବିଲ୍ଡ</translation>
 <translation id="989988560359834682">ଠିକଣା ଏଡିଟ୍ କରନ୍ତୁ</translation>
 <translation id="991413375315957741">ମୋସନ୍ କିମ୍ବା ଲାଇଟ୍ ସେନ୍ସରଗୁଡ଼ିକ</translation>
+<translation id="992110854164447044">ଆପଣଙ୍କୁ ସମ୍ଭାବ୍ୟ ଠକାମୀରୁ ସୁରକ୍ଷିତ ରଖିବାରେ ସାହାଯ୍ୟ କରିବା ପାଇଁ ଏକ ଭର୍ଚୁଆଲ କାର୍ଡ ଆପଣଙ୍କ ପ୍ରକୃତ କାର୍ଡକୁ ଲୁଚାଇ ରଖିଥାଏ। <ph name="IDS_AUTOFILL_VIRTUAL_CARD_ENROLLMENT_LEARN_MORE_LINK_LABEL" /></translation>
 <translation id="992256792861109788">ଗୋଲାପି</translation>
 <translation id="992432478773561401">ଆପଣଙ୍କର କମ୍ପ୍ୟୁଟର୍ ବା ନେଟ୍‌ୱର୍କରେ "<ph name="SOFTWARE_NAME" />" ସଠିକ୍ ଭାବରେ ଇନ୍‌ଷ୍ଟଲ୍ ହୋଇନାହିଁ:
     &lt;ul&gt;

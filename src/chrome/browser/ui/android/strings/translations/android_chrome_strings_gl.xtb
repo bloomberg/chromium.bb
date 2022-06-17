@@ -348,6 +348,7 @@ Mantén premida calquera palabra para buscala. Se queres refinar a busca, selecc
 <translation id="2842985007712546952">Cartafol principal</translation>
 <translation id="2856503607207334158">Produciuse un erro ao iniciar sesión</translation>
 <translation id="2860954141821109167">Asegúrate de que haxa unha aplicación de teléfono activada neste dispositivo</translation>
+<translation id="2861923151411510142">Algunhas funcións de Chrome non estarán dispoñibles</translation>
 <translation id="2870560284913253234">Sitio</translation>
 <translation id="2871733351037274014">Precargar páxinas</translation>
 <translation id="2888126860611144412">Acerca de Chrome</translation>
@@ -526,7 +527,6 @@ Mantén premida calquera palabra para buscala. Se queres refinar a busca, selecc
 <translation id="3845098929839618392">Abrir en pestana de incógnito</translation>
 <translation id="3856096718352044181">Verifica que se trate dun fornecedor válido ou téntao de novo máis tarde.</translation>
 <translation id="3858860766373142691">Nome</translation>
-<translation id="3859206958100234503">Sincroniza os datos para ter os teus contrasinais, marcadores e máis en todos os teus dispositivos</translation>
 <translation id="3861633093716975811">Vídeos populares</translation>
 <translation id="3892148308691398805">Copiar texto</translation>
 <translation id="3894427358181296146">Engadir cartafol</translation>
@@ -565,6 +565,7 @@ Mantén premida calquera palabra para buscala. Se queres refinar a busca, selecc
 <translation id="4095146165863963773">Queres eliminar os datos da aplicación?</translation>
 <translation id="4096227151372679484">Fluxo para gardar marcadores aberto a media pantalla</translation>
 <translation id="4099578267706723511">Axúdanos a mellorar Chrome enviando estatísticas de uso e informes de erros a Google.</translation>
+<translation id="4101475238162928417">Sincroniza os datos para ter todos os teus contrasinais, marcadores e máis nos teus outros dispositivos</translation>
 <translation id="410351446219883937">Reprodución automática</translation>
 <translation id="4106587138345390261">Chrome está probando novas funcións que lles permitan aos sitios ofrecer a mesma experiencia de navegación usando menos información túa</translation>
 <translation id="4108314971463891922">Seguir</translation>
@@ -891,6 +892,7 @@ Para cambiar esta opción de configuración, deberás <ph name="BEGIN_LINK" />re
 <translation id="5869522115854928033">Contrasinais gardados</translation>
 <translation id="5869789175361934029">Continuar desde outro dispositivo</translation>
 <translation id="587735546353481577">Para seguir un sitio, entra nel, abre o menú de Chrome e toca Seguir.</translation>
+<translation id="5879072387416556377">Recibe mellores suxestións</translation>
 <translation id="5880748256563468367">Ir ao feed</translation>
 <translation id="5884076754568147479">Para axudarche a completar tarefas, Google recibirá os URL e os contidos dos sitios nos que uses o Asistente, ademais da información que envíes a través del</translation>
 <translation id="5906513782029855931">Ao coñecer os URL dos sitios, o Asistente de Google axúdache a realizar tarefas. Podes desactivar o Asistente de Google na configuración de Chrome.</translation>
@@ -1194,6 +1196,7 @@ Os tokens de confianza melloran a privacidade na Web e non se poden usar para de
 <translation id="749294055653435199">Google Lens non está dispoñible neste dispositivo</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (actualizouse <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7498271377022651285">Agarda…</translation>
+<translation id="7502234197872745058">Para pechar sesión na túa Conta de Google en todos os sitios web, <ph name="BEGIN_LINK1" />pecha sesión en Chrome<ph name="END_LINK1" />.</translation>
 <translation id="750228856503700085">Non hai actualizacións dispoñibles</translation>
 <translation id="7507207699631365376">Consulta a <ph name="BEGIN_LINK" />Política de privacidade<ph name="END_LINK" /> deste fornecedor</translation>
 <translation id="7514365320538308">Descargar</translation>
@@ -1233,6 +1236,7 @@ Os tokens de confianza melloran a privacidade na Web e non se poden usar para de
 <translation id="770741401784017797">Creando GIF</translation>
 <translation id="7707922173985738739">Utilizaranse datos móbiles</translation>
 <translation id="7709094866268987903">Os intereses que quites mostraranse aquí</translation>
+<translation id="7709918231054955894">Accede a todas as túas pestanas</translation>
 <translation id="7725024127233776428">As páxinas que engadas aos marcadores aparecerán aquí</translation>
 <translation id="7757787379047923882">O texto compartiuse desde <ph name="DEVICE_NAME" /></translation>
 <translation id="7761849928583394409">Seleccionar data e hora</translation>
@@ -1428,6 +1432,7 @@ Os tokens de confianza melloran a privacidade na Web e non se poden usar para de
 <translation id="8656747343598256512">Inicia sesión coa túa Conta de Google neste sitio e en Chrome. Podes activar a sincronización máis tarde.</translation>
 <translation id="8659579665266920523">Como facer buscas con Chrome?</translation>
 <translation id="8662811608048051533">Pecha a túa sesión na maioría dos sitios.</translation>
+<translation id="8664215986015753476">Utiliza Chrome ao teu xeito</translation>
 <translation id="8664979001105139458">Xa existe un ficheiro con este nome</translation>
 <translation id="8666759526542103597">Acerca da personalización de anuncios baseada no navegador</translation>
 <translation id="8667760277771450375">Estamos probando formas de limitar o seguimento en varios sitios e, ao mesmo tempo, de permitirlles deter a fraude e o spam publicitario.</translation>

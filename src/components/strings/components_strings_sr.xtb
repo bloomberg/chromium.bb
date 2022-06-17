@@ -291,6 +291,7 @@
 <translation id="1662550410081243962">Чувај и уноси начине плаћања</translation>
 <translation id="1663943134801823270">Картице и адресе су из Chrome-а. Њима можете да управљате у <ph name="BEGIN_LINK" />подешавањима<ph name="END_LINK" />.</translation>
 <translation id="1671391448414634642">Странице на језику <ph name="SOURCE_LANGUAGE" /> се од сада преводе на <ph name="TARGET_LANGUAGE" />.</translation>
+<translation id="1673886523110456987">Платите помоћу картице <ph name="CARD_DETAIL" /> да бисте искористили понуду</translation>
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> на <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="1682696192498422849">Прво кратка ивица</translation>
 <translation id="168693727862418163">Валидација шеме ове вредности за смернице није успела и занемариће се.</translation>
@@ -590,6 +591,7 @@
 <translation id="2523886232349826891">Сачувано је само на овом уређају</translation>
 <translation id="2524461107774643265">Додајте још информација</translation>
 <translation id="2529899080962247600">Ово поље не сме да има више од <ph name="MAX_ITEMS_LIMIT" /> уноса. Сви будући уноси ће се занемарити.</translation>
+<translation id="253493526287553278">Прикажи детаље о промотивном коду</translation>
 <translation id="2535585790302968248">Отворите нову картицу без архивирања да бисте прегледали приватно</translation>
 <translation id="2535659140340599600">{COUNT,plural, =1{и још 1}one{и још #}few{и још #}other{и још #}}</translation>
 <translation id="2536110899380797252">Додај адресу</translation>
@@ -1106,6 +1108,7 @@
 <translation id="3986705137476756801">Искључи Титл уживо за сада</translation>
 <translation id="3987940399970879459">Мање од 1 MB</translation>
 <translation id="3990250421422698716">Протресање ради поравнања</translation>
+<translation id="3992684624889376114">О овој страници</translation>
 <translation id="3996311196211510766">Сајт <ph name="ORIGIN" /> је затражио да се смернице за порекло
     примене на све захтеве ка њему, али ове смернице тренутно не могу да се примене.</translation>
 <translation id="4006465311664329701">Начини плаћања, понуде и адресе који користе Google Pay</translation>
@@ -1281,6 +1284,7 @@
 <translation id="4435702339979719576">разгледница)</translation>
 <translation id="443673843213245140">Коришћење проксија је онемогућено, али је наведена експлицитна конфигурација проксија.</translation>
 <translation id="4441832193888514600">Игнорише се јер смернице могу да се подесе само као смернице за корисника у клауду.</translation>
+<translation id="4442470707340296952">Chrome картице</translation>
 <translation id="4450893287417543264">Не приказуј поново</translation>
 <translation id="4451135742916150903">Може да тражи да се повезује са HID уређајима</translation>
 <translation id="4452328064229197696">Лозинка коју сте управо користили је пронађена при повреди података. Да бисте заштитили налоге, Google менаџер лозинки препоручује да проверите сачуване лозинке.</translation>
@@ -1555,6 +1559,7 @@
 <translation id="5171045022955879922">Претражите или унесите URL адресу</translation>
 <translation id="5171689220826475070">Fanfold-European</translation>
 <translation id="5172758083709347301">Рачунар</translation>
+<translation id="5177076414499237632">Сазнајте више о извору и теми ове странице</translation>
 <translation id="5179510805599951267">Није <ph name="ORIGINAL_LANGUAGE" />? Пријавите ову грешку</translation>
 <translation id="518639307526414276">Храна и средства за негу кућних љубимаца</translation>
 <translation id="5190835502935405962">Трака са обележивачима</translation>
@@ -2574,6 +2579,7 @@
 <translation id="8074253406171541171">10x13 (коверат)</translation>
 <translation id="8075736640322370409">Брзо направите нову Google табелу</translation>
 <translation id="8075898834294118863">Управљајте подешавањима сајтова</translation>
+<translation id="8076492880354921740">Картице</translation>
 <translation id="8078141288243656252">Додавање напомене није могуће када је ротиран</translation>
 <translation id="8079031581361219619">Желите ли поново да учитате сајт?</translation>
 <translation id="8081087320434522107">Седани</translation>
@@ -2996,6 +3002,7 @@
 <translation id="988159990683914416">Верзија за програмере</translation>
 <translation id="989988560359834682">Измена адресе</translation>
 <translation id="991413375315957741">сензори за покрет или светло</translation>
+<translation id="992110854164447044">Виртуелна картица крије вашу стварну картицу да би вас заштитила од потенцијалне преваре. <ph name="IDS_AUTOFILL_VIRTUAL_CARD_ENROLLMENT_LEARN_MORE_LINK_LABEL" /></translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
 <translation id="992256792861109788">Ружичаста</translation>
 <translation id="992432478773561401">Софтвер „<ph name="SOFTWARE_NAME" />“ није правилно инсталиран на рачунару или мрежи:

@@ -292,6 +292,7 @@
 <translation id="1662550410081243962">រក្សាទុក និងបំពេញ​វិធីបង់ប្រាក់</translation>
 <translation id="1663943134801823270">បណ្ណ និងអាសយដ្ឋានគឺបានមកពី Chrome ។ អ្នកអាចគ្រប់គ្រងពួកវាបាននៅក្នុង <ph name="BEGIN_LINK" />ការកំណត់<ph name="END_LINK" />។</translation>
 <translation id="1671391448414634642">ទំព័រជា <ph name="SOURCE_LANGUAGE" /> នឹងត្រូវបាន​បកប្រែទៅជា <ph name="TARGET_LANGUAGE" /> ចាប់ពី​ពេលនេះតទៅ។</translation>
+<translation id="1673886523110456987">បង់ប្រាក់ចេញ​ដោយប្រើ <ph name="CARD_DETAIL" /> ដើម្បីប្រើប្រាស់​ការផ្ដល់ជូន</translation>
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> ទៅ <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="1682696192498422849">គែមខ្លី​មុនគេ</translation>
 <translation id="168693727862418163">តម្លៃគោលការណ៍នេះមិនត្រូវនឹងគំនូស​តាងរបស់វាទេ ហើយនឹងមិនត្រូវបានអើពើទេ។</translation>
@@ -593,6 +594,7 @@
 <translation id="2523886232349826891">បានរក្សាទុក​នៅលើតែឧបករណ៍នេះ​ប៉ុណ្ណោះ</translation>
 <translation id="2524461107774643265">បញ្ចូល​ព័ត៌មាន​បន្ថែម</translation>
 <translation id="2529899080962247600">កន្លែងបញ្ចូលនេះ​មិន​គួរមានច្រើនជាង <ph name="MAX_ITEMS_LIMIT" /> ធាតុ​ទេ។ ធាតុទាំងអស់​ដែលលើសពីនេះ​នឹងមិនត្រូវបាន​អើពើទេ។</translation>
+<translation id="253493526287553278">មើល​ព័ត៌មាន​លម្អិត​អំពី​កូដផ្ដល់ជូន​ពិសេស</translation>
 <translation id="2535585790302968248">បើក​ផ្ទាំងឯកជនថ្មី ដើម្បីរុករក​ជាលក្ខណៈឯកជន</translation>
 <translation id="2535659140340599600">{COUNT,plural, =1{និង 1 ​ទៀត}other{និង # ទៀត}}</translation>
 <translation id="2536110899380797252">បញ្ចូល​អាសយដ្ឋាន</translation>
@@ -1109,6 +1111,7 @@
 <translation id="3986705137476756801">បិទអក្សររត់​ក្នុងពេលជាក់ស្ដែង​ឥឡូវនេះ</translation>
 <translation id="3987940399970879459">តិចជាង 1 MB</translation>
 <translation id="3990250421422698716">គម្លាតរុញ</translation>
+<translation id="3992684624889376114">អំពី​ទំព័រ​នេះ</translation>
 <translation id="3996311196211510766">គេហទំព័រ <ph name="ORIGIN" /> បានស្នើសុំឱ្យ​អនុវត្ត​គោលការណ៍​ដើម
     ចំពោះ​គ្រប់សំណើ​មក​កាន់​វា ប៉ុន្តែ​គោលការណ៍នេះមិនអាច​អនុវត្ត​បាន​ទេក្នុងពេលបច្ចុប្បន្ន។</translation>
 <translation id="4006465311664329701">វិធី​បង់ប្រាក់ ការផ្ដល់ជូន និង​អាសយដ្ឋាន​ដែលប្រើ Google Pay</translation>
@@ -1285,6 +1288,7 @@
 <translation id="4435702339979719576">បណ្ណប្រៃសណីយ៍)</translation>
 <translation id="443673843213245140">ការប្រើប្រូកស៊ីត្រូវបានបិទដំណើរការ ប៉ុន្តែការកំណត់ប្រូកស៊ីដែលច្បាស់លាស់ត្រូវបានបញ្ជាក់។</translation>
 <translation id="4441832193888514600">បានមិនអើពើ ដោយសារអាចកំណត់​គោលការណ៍​ជាគោលការណ៍​អ្នកប្រើប្រាស់ពពក​តែប៉ុណ្ណោះ។</translation>
+<translation id="4442470707340296952">ផ្ទាំង Chrome</translation>
 <translation id="4450893287417543264">កុំបង្ហាញម្ដងទៀត</translation>
 <translation id="4451135742916150903">អាចស្នើសុំ​ភ្ជាប់ជាមួយ​ឧបករណ៍ HID</translation>
 <translation id="4452328064229197696">ពាក្យសម្ងាត់ដែលអ្នកទើបតែប្រើត្រូវបានរកឃើញនៅក្នុងការបែកធ្លាយទិន្នន័យ។ ដើម្បីការពារសុវត្ថិភាពគណនីរបស់អ្នក កម្មវិធីគ្រប់គ្រងពាក្យសម្ងាត់ Google ណែនាំឱ្យពិនិត្យមើលពាក្យសម្ងាត់ដែលអ្នកបានរក្សាទុក។</translation>
@@ -1559,6 +1563,7 @@
 <translation id="5171045022955879922">ស្វែងរក ឬវាយបញ្ចូល URL</translation>
 <translation id="5171689220826475070">Fanfold-European</translation>
 <translation id="5172758083709347301">ម៉ាស៊ីន</translation>
+<translation id="5177076414499237632">ស្វែងយល់​អំពី​ប្រភព និង​ប្រធានបទ​របស់ទំព័រ​នេះ</translation>
 <translation id="5179510805599951267">មិនមែនជា <ph name="ORIGINAL_LANGUAGE" /> ទេ? រាយការណ៍កំហុសឆ្គងនេះ</translation>
 <translation id="518639307526414276">ផលិតផល​ថែទាំ​សត្វចិញ្ចឹម និង​អាហារ​របស់សត្វចិញ្ចឹម</translation>
 <translation id="5190835502935405962">របាចំណាំ</translation>
@@ -2581,6 +2586,7 @@
 <translation id="8074253406171541171">10x13 (ស្រោម​សំបុត្រ)</translation>
 <translation id="8075736640322370409">បង្កើត​បញ្ជី Google ថ្មីបានរហ័ស</translation>
 <translation id="8075898834294118863">គ្រប់គ្រងការកំណត់គេហទំព័រ</translation>
+<translation id="8076492880354921740">ផ្ទាំង</translation>
 <translation id="8078141288243656252">មិនអាចដាក់​ចំណារបានទេ នៅពេលបង្វិល</translation>
 <translation id="8079031581361219619">ផ្ទុក​ទំព័រឡើង​វិញ?</translation>
 <translation id="8081087320434522107">រថយន្ត​ប្រភេទ Sedan</translation>
@@ -3002,6 +3008,7 @@
 <translation id="988159990683914416">លេខកំណែអ្នកអភិវឌ្ឍន៍</translation>
 <translation id="989988560359834682">កែអាសយដ្ឋាន</translation>
 <translation id="991413375315957741">ឧបករណ៍​ចាប់ពន្លឺ ឬ​ចាប់ចលនា</translation>
+<translation id="992110854164447044">កាត​និម្មិត​លាក់​កាត​ពិតប្រាកដ​របស់អ្នក ដើម្បីជួយ​ការពារ​អ្នក​ពី​ការគៃបន្លំ​ដែលអាចកើតមាន។ <ph name="IDS_AUTOFILL_VIRTUAL_CARD_ENROLLMENT_LEARN_MORE_LINK_LABEL" /></translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
 <translation id="992256792861109788">ផ្កា​ឈូក</translation>
 <translation id="992432478773561401">"<ph name="SOFTWARE_NAME" />" មិនបានដំឡើងត្រឹមត្រូវនៅលើកុំព្យូទ័រ ឬបណ្តាញរបស់អ្នកទេ៖

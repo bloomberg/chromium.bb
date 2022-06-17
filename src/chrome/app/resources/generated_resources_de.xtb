@@ -11,6 +11,7 @@
 <translation id="1008186147501209563">Lesezeichen exportieren</translation>
 <translation id="1008557486741366299">Jetzt nicht</translation>
 <translation id="1009476156254802388"><ph name="WEB_DRIVE" />-Speicherort</translation>
+<translation id="1009663062402466586">Spielsteuerung jetzt verfügbar</translation>
 <translation id="1010498023906173788">Dieser Tab ist mit einer seriellen Schnittstelle verbunden.</translation>
 <translation id="1010833424573920260">{NUM_PAGES,plural, =1{Seite reagiert nicht}other{Seiten reagieren nicht}}</translation>
 <translation id="1011355516189274711">Lautstärke der Sprachausgabe</translation>
@@ -188,6 +189,7 @@ Du kannst deine Passwörter jederzeit im <ph name="GOOGLE_PASSWORD_MANAGER" /> p
 <translation id="1173894706177603556">Umbenennen</translation>
 <translation id="1174073918202301297">Verknüpfung hinzugefügt</translation>
 <translation id="1174366174291287894">Deine Verbindung ist immer sicher, solange Chrome dich nicht auf eine unsichere Verbindung hinweist</translation>
+<translation id="1174391930667737831">Datenschutzzentrale</translation>
 <translation id="117445914942805388">Wenn du Browserdaten von allen deinen synchronisierten Geräten und aus deinem Google-Konto löschen möchtest, <ph name="BEGIN_LINK" />rufe die Synchronisierungseinstellungen auf<ph name="END_LINK" />.</translation>
 <translation id="1175364870820465910">&amp;Drucken...</translation>
 <translation id="1176471985365269981">Dürfen keine Dateien oder Ordner auf meinem Gerät bearbeiten</translation>
@@ -842,6 +844,7 @@ Berechtigungen, die du Apps bereits gewährt hast, gelten möglicherweise für d
 <translation id="1795214765651529549">Klassisches Design verwenden</translation>
 <translation id="1796105431091975902">Ansible-Playbook zum Hinzufügen auswählen</translation>
 <translation id="1796588414813960292">Funktionen, die Ton erfordern, funktionieren dann nicht</translation>
+<translation id="1797117170091578105">Du kannst zum Spielen deine Chromebook-Tastatur verwenden und Tasten bestimmte Aktionen zuweisen.</translation>
 <translation id="1800502858278951817">Keine Erweiterungen haben angefragt, Daten auf <ph name="SITE_NAME" /> abzurufen und zu ändern</translation>
 <translation id="1802624026913571222">Beim Zuklappen in den Ruhemodus wechseln</translation>
 <translation id="1802687198411089702">Die Seite reagiert nicht. Du kannst warten, bis sie wieder reagiert, oder sie schließen.</translation>
@@ -1003,6 +1006,7 @@ Berechtigungen, die du Apps bereits gewährt hast, gelten möglicherweise für d
 <translation id="1940546824932169984">Verbundene Geräte</translation>
 <translation id="1941410638996203291">Startzeit: <ph name="TIME" /></translation>
 <translation id="1941553344801134989">Version: <ph name="APP_VERSION" /></translation>
+<translation id="1941995177877935582">Tastenbelegung anzeigen</translation>
 <translation id="1942128823046546853">Alle deine Daten auf allen Websites lesen und ändern</translation>
 <translation id="1942600407708803723">Beim Zuklappen herunterfahren</translation>
 <translation id="1944528062465413897">Bluetooth-Kopplungscode:</translation>
@@ -2616,6 +2620,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3482719661246593752"><ph name="ORIGIN" /> darf die folgenden Dateien aufrufen</translation>
 <translation id="3484273680291419129">Schädliche Software wird entfernt...</translation>
 <translation id="3484869148456018791">Neues Zertifikat anfordern</translation>
+<translation id="3486950712960783074">Meine Reise</translation>
 <translation id="3487007233252413104">Anonyme Funktion</translation>
 <translation id="3490695139702884919">Wird heruntergeladen... <ph name="PERCENT" /> %</translation>
 <translation id="3491669675709357988">Das Konto deines Kindes ist nicht für die Jugendschutzeinstellungen von Family Link eingerichtet. Du kannst die Jugendschutzeinstellungen hinzufügen, sobald du die Einrichtung beendet hast. Informationen zu den Jugendschutzeinstellungen findest du in der App "Entdecken".</translation>
@@ -2926,6 +2931,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3797739167230984533"><ph name="BEGIN_LINK" />Dein <ph name="DEVICE_TYPE" /> wird von deiner Organisation verwaltet<ph name="END_LINK" /></translation>
 <translation id="3797900183766075808"><ph name="SEARCH_ENGINE" /> nach "<ph name="SEARCH_TERMS" />" durchsuchen</translation>
 <translation id="3798449238516105146">Version</translation>
+<translation id="3798632811625902122">Das Bluetooth-Gerät „<ph name="DEVICE" />“ bittet um Erlaubnis für Kopplung.</translation>
 <translation id="3799128412641261490">Einstellungen für Schalterzugriff</translation>
 <translation id="3800806661949714323">Alle anzeigen (empfohlen)</translation>
 <translation id="3800828618615365228">Google Chrome und Chrome OS – zusätzliche Nutzungsbedingungen</translation>
@@ -4571,6 +4577,7 @@ Du kannst dieser Aktion mehrere Schalter zuweisen.</translation>
 <translation id="5449716055534515760">Fen&amp;ster schließen</translation>
 <translation id="5452976525201205853"><ph name="LANGUAGE" /> (funktioniert im Offlinemodus)</translation>
 <translation id="5454166040603940656">mit <ph name="PROVIDER" /></translation>
+<translation id="545484289444831485">Weitere Suchergebnisse einblenden</translation>
 <translation id="5455603387986949153">Seriennummern von Chrome OS Flex-Geräten und Komponenten lesen.</translation>
 <translation id="5457113250005438886">Ungültig</translation>
 <translation id="5457459357461771897">Fotos, Musik und andere Medien auf deinem Computer lesen und löschen</translation>
@@ -4910,6 +4917,7 @@ Du kannst dieser Aktion mehrere Schalter zuweisen.</translation>
 <translation id="5792295754950501287">Weitere Aktionen für <ph name="CARD_DESCRIPTION" /></translation>
 <translation id="5792728279623964091">Tippe auf die Ein/Aus-Taste</translation>
 <translation id="5793339252089865437">Wenn du das Update über dein Mobilfunknetz herunterlädst, können zusätzliche Gebühren anfallen.</translation>
+<translation id="5793420564274426163">Kopplung bestätigen</translation>
 <translation id="5794034487966529952">Auf dem Desktop „<ph name="DESK_TITLE" />“ sind <ph name="NUM_BROWSERS" /> Browserfenster geöffnet</translation>
 <translation id="5794414402486823030">Immer mit System Viewer öffnen</translation>
 <translation id="5794700615121138172">Freigegebene Linux-Ordner</translation>
@@ -7043,6 +7051,7 @@ Drücke zum Entfernen der Zuweisung einen bereits zugewiesenen Schalter oder ein
 <translation id="7901405293566323524">Phone Hub</translation>
 <translation id="7903290522161827520">Suchst du die Browser-Komponenten? Gehe zu</translation>
 <translation id="7903345046358933331">Die Seite reagiert nicht mehr. Du kannst warten, bis sie wieder reagiert, oder sie schließen.</translation>
+<translation id="7903429136755645827">Zum Anpassen der Spielsteuerung klicken</translation>
 <translation id="7903742244674067440">Deine gespeicherten Zertifikate identifizieren diese Zertifizierungsstellen</translation>
 <translation id="7903925330883316394">Dienstprogramm: <ph name="UTILITY_TYPE" /></translation>
 <translation id="7904526211178107182">Hier kannst du Linux-Ports für andere Geräte in deinem Netzwerk verfügbar machen.</translation>
@@ -7404,6 +7413,7 @@ Speichere deine Schlüsseldatei an einem sicheren Ort. Du benötigst die Datei, 
 <translation id="8242426110754782860">Fortfahren</translation>
 <translation id="8243948765190375130">Die Medienqualität ist möglicherweise beeinträchtigt</translation>
 <translation id="8244514732452879619">Zeit, das Licht auszumachen</translation>
+<translation id="8245361042748627813">Diese Verknüpfung wurde geändert. Verwende <ph name="NEW_SHORTCUT_KEY" />, um über das Systemdialogfeld zu drucken.</translation>
 <translation id="8246776524656196770">Du kannst deinen Sicherheitsschlüssel mit einer persönlichen Identifikationsnummer (PIN) schützen</translation>
 <translation id="8248050856337841185">&amp;Einfügen</translation>
 <translation id="8248381369318572865">Auf dein Mikrofon zugreifen und deine Spracheingabe analysieren</translation>
@@ -7708,6 +7718,7 @@ Speichere deine Schlüsseldatei an einem sicheren Ort. Du benötigst die Datei, 
 <translation id="8561565784790166472">Vorsicht</translation>
 <translation id="8561853412914299728"><ph name="TAB_TITLE" /> <ph name="EMOJI_PLAYING" /></translation>
 <translation id="8565650234829130278">Du hast versucht, ein Downgrade der App auszuführen.</translation>
+<translation id="8569673829373920831">Mehr zu <ph name="APP_NAME" /></translation>
 <translation id="8569682776816196752">Keine Ziele gefunden</translation>
 <translation id="8571213806525832805">Letzte 4 Wochen</translation>
 <translation id="8571687764447439720">Kerberos-Ticket hinzufügen</translation>
@@ -8234,6 +8245,7 @@ Informationen dazu, welche Daten von Google erhoben werden und warum, findest du
 <translation id="9078316009970372699">Instant Tethering deaktivieren</translation>
 <translation id="9078842827190780028">Mehr Suchergebnisse in der Seitenleiste sehen</translation>
 <translation id="9079267182985899251">Diese Option wird bald nicht mehr unterstützt. Nutze <ph name="GOOGLE_MEET" />, um einen Tab einzublenden.</translation>
+<translation id="9080971985541434310">schätzt deine Interessen ein – Chrome kann deine Interessen einschätzen</translation>
 <translation id="9081543426177426948">Besuchte Websites werden im Inkognitomodus nicht gespeichert</translation>
 <translation id="9084064520949870008">In Fenster öffnen</translation>
 <translation id="9085256200913095638">Ausgewählten Tab duplizieren</translation>

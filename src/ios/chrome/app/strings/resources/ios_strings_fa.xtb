@@ -27,6 +27,7 @@
 <translation id="1145536944570833626">حذف داده‌های موجود.</translation>
 <translation id="1147031633655575115">با <ph name="USER" /> به سیستم وارد شده‌اید</translation>
 <translation id="1154984953698510061">دیدن برگه‌های دیگر</translation>
+<translation id="1161340988127985692">درخواست باز کردن پیوندهای دیگر برنامه‌ها در حالت ناشناس</translation>
 <translation id="1164064664035028907">از گذرواژه قوی استفاده کنید:</translation>
 <translation id="1165039591588034296">خطا</translation>
 <translation id="1172898394251786223">فیلد بعدی</translation>
@@ -292,6 +293,7 @@
 <translation id="3443810440409579745">برگه دریافت شد.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> دقیقه</translation>
 <translation id="3448016392200048164">نمای تقسیم</translation>
+<translation id="3450502512529866925">نشانک گذاشتن این صفحه</translation>
 <translation id="345565170154308620">مدیریت گذرواژه‌ها…</translation>
 <translation id="3469166899695866866">بارگیری متوقف شود؟</translation>
 <translation id="3470502288861289375">در حال کپی کردن...</translation>
@@ -406,6 +408,7 @@
 <translation id="4502566650163919158">اکنون بررسی شود</translation>
 <translation id="4505980578794259603">آخرین بررسی: <ph name="TIME" />.</translation>
 <translation id="4508750114462689118">بستن تبلیغ ورود به سیستم</translation>
+<translation id="4511669830082467224">‏جستجوی تصویر با Google</translation>
 <translation id="4526249700380860531">‏مشاهده و مدیریت گذرواژه‌های ذخیره شده در <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="452750746583162491">مرور داده‌های همگام‌سازی‌شده</translation>
 <translation id="4536418791685807335">دوباره برای ورود به سیستم تلاش کنید.</translation>
@@ -483,6 +486,7 @@
 <translation id="5090832849094901128">حذف این گذرواژه باعث حذف شدن حساب شما در <ph name="WEBSITE" /> نمی‌شود.</translation>
 <translation id="5092117651143801290">‏می‌توانید صفحه‌ها را برای خواندن در فرصتی دیگر یا در حالت آفلاین ذخیره کنید. Chrome از شما می‌پرسد آیا می‌خواهید صفحات طولانی را ذخیره کنید.</translation>
 <translation id="5094827893301452931">‏Tweet انجام شد.</translation>
+<translation id="509789154667432072">افزودن نشانک</translation>
 <translation id="5118713593561876160">علایق</translation>
 <translation id="5118764316110575523">خاموش</translation>
 <translation id="5127805178023152808">همگام‌سازی خاموش است</translation>

@@ -11,6 +11,7 @@
 <translation id="1008186147501209563">Vie kirjanmerkkejä</translation>
 <translation id="1008557486741366299">Ei nyt</translation>
 <translation id="1009476156254802388">Sijainti: <ph name="WEB_DRIVE" /></translation>
+<translation id="1009663062402466586">Peliohjaimet nyt käytettävissä</translation>
 <translation id="1010498023906173788">Tämä välilehti on yhdistetty sarjaporttiin.</translation>
 <translation id="1010833424573920260">{NUM_PAGES,plural, =1{Sivu ei vastaa.}other{Sivut eivät vastaa.}}</translation>
 <translation id="1011355516189274711">Tekstistä puheeksi ‑äänenvoimakkuus</translation>
@@ -190,6 +191,7 @@
 <translation id="1173894706177603556">Muuta nimeä</translation>
 <translation id="1174073918202301297">Pikanäppäin lisätty</translation>
 <translation id="1174366174291287894">Yhteytesi on aina suojattu, ellei Chrome ilmoita toisin</translation>
+<translation id="1174391930667737831">Tietosuojakeskus</translation>
 <translation id="117445914942805388">Jos haluat poistaa selailutiedot kaikilta synkronoiduilta laitteiltasi ja Google-tililtäsi, <ph name="BEGIN_LINK" />siirry synronointiasetuksiin<ph name="END_LINK" />.</translation>
 <translation id="1175364870820465910">Tulo&amp;sta...</translation>
 <translation id="1176471985365269981">Laitteen tiedostojen tai kansioiden muokkaaminen kielletty</translation>
@@ -855,6 +857,7 @@ Sovelluksille myöntämäsi luvat saattavat koskea tätä tiliä. Voit päättä
 <translation id="1795214765651529549">Ota käyttöön perinteinen</translation>
 <translation id="1796105431091975902">Lisättävän Ansible-ohjekirjan valinta</translation>
 <translation id="1796588414813960292">Ääntä edellyttävät ominaisuudet eivät enää toimi</translation>
+<translation id="1797117170091578105">Pelaa Chromebookin näppäimistöllä. Voit määrittää näppäimiä tietyille toiminnoille.</translation>
 <translation id="1800502858278951817">Laajennukset eivät ole pyytäneet lupaa lukea ja muuttaa tätä: <ph name="SITE_NAME" /></translation>
 <translation id="1802624026913571222">Lepotila, kun kansi suljetaan</translation>
 <translation id="1802687198411089702">Tämä sivu ei vastaa. Voit odottaa sitä tai sulkea sen.</translation>
@@ -1017,6 +1020,7 @@ Sovelluksille myöntämäsi luvat saattavat koskea tätä tiliä. Voit päättä
 <translation id="1940546824932169984">Yhdistetyt laitteet</translation>
 <translation id="1941410638996203291">Aloitusaika: <ph name="TIME" /></translation>
 <translation id="1941553344801134989">Versio: <ph name="APP_VERSION" /></translation>
+<translation id="1941995177877935582">Näytä näppäinkartta</translation>
 <translation id="1942128823046546853">Lukea ja muokata kaikkea dataasi kaikilla sivustoilla</translation>
 <translation id="1942600407708803723">Sammuta, kun kansi suljetaan</translation>
 <translation id="1944528062465413897">Bluetooth-yhdistämiskoodi:</translation>
@@ -2086,6 +2090,7 @@ ja loitonna painamalla Ctrl + Alt + kirkkauden vähennys.</translation>
 <ph name="DOMAIN" /> ei salli älykortin poistamista.</translation>
 <translation id="2923234477033317484">Poista tämä tili</translation>
 <translation id="2923644930701689793">Pääsy puhelimesi kameran rullaan</translation>
+<translation id="2925658782192398150">Valmis, ongelmia ei löytynyt</translation>
 <translation id="2926085873880284723">Palauta oletuspikanäppäimet</translation>
 <translation id="2926620265753325858"><ph name="DEVICE_NAME" /> ei ole tuettu ohjelmisto.</translation>
 <translation id="2927017729816812676">Välimuistin tallennustila</translation>
@@ -2632,6 +2637,7 @@ ja loitonna painamalla Ctrl + Alt + kirkkauden vähennys.</translation>
 <translation id="3482719661246593752"><ph name="ORIGIN" /> saa nähdä seuraavat tiedostot</translation>
 <translation id="3484273680291419129">Poistetaan haittaohjelmia…</translation>
 <translation id="3484869148456018791">Hanki uusi varmenne</translation>
+<translation id="3486950712960783074">Matkasi</translation>
 <translation id="3487007233252413104">tuntematon toiminto</translation>
 <translation id="3490695139702884919">Ladataan… <ph name="PERCENT" /> %</translation>
 <translation id="3491669675709357988">Lapsesi tilillä ei ole otettu käyttöön Family Linkin lapsilukkoa. Voit lisätä lapsilukon, kun käyttöönotto on valmis. Voit lukea lisää lapsilukosta Explore-sovelluksesta.</translation>
@@ -2942,6 +2948,7 @@ ja loitonna painamalla Ctrl + Alt + kirkkauden vähennys.</translation>
 <translation id="3797739167230984533"><ph name="BEGIN_LINK" /><ph name="DEVICE_TYPE" /> on organisaatiosi ylläpitämä<ph name="END_LINK" /></translation>
 <translation id="3797900183766075808"><ph name="SEARCH_ENGINE" />-haku termillä <ph name="SEARCH_TERMS" /></translation>
 <translation id="3798449238516105146">Versio</translation>
+<translation id="3798632811625902122">Bluetooth-laite <ph name="DEVICE" /> pyytää lupaa laiteparin muodostamiseen.</translation>
 <translation id="3799128412641261490">Kytkimen käytön asetukset</translation>
 <translation id="3800806661949714323">Näytä kaikki (suositus)</translation>
 <translation id="3800828618615365228">Google Chromen ja ChromeOS:n lisäehdot</translation>
@@ -4585,6 +4592,7 @@ Voit määrittää samalle toiminnolle useita kytkimiä.</translation>
 <translation id="5449716055534515760">&amp;Sulje ikkuna</translation>
 <translation id="5452976525201205853"><ph name="LANGUAGE" /> (toimii offline-tilassa)</translation>
 <translation id="5454166040603940656">palvelulla <ph name="PROVIDER" /></translation>
+<translation id="545484289444831485">Katso lisää hakutuloksia</translation>
 <translation id="5455603387986949153">lukea ChromeOS Flex ‑laitteen ja sen osien sarjanumerot</translation>
 <translation id="5457113250005438886">Virheellinen</translation>
 <translation id="5457459357461771897">Käyttää ja poistaa kuvia, musiikkia ja muuta tietokoneesi mediaa</translation>
@@ -4926,6 +4934,7 @@ Voit määrittää samalle toiminnolle useita kytkimiä.</translation>
 <translation id="5792295754950501287"><ph name="CARD_DESCRIPTION" />: lisää toimintoja</translation>
 <translation id="5792728279623964091">Paina virtapainiketta</translation>
 <translation id="5793339252089865437">Lisämaksuja voidaan periä, jos lataat päivityksen mobiiliverkossa.</translation>
+<translation id="5793420564274426163">Laiteparin vahvistus</translation>
 <translation id="5794034487966529952">Työpöydällä <ph name="DESK_TITLE" /> on <ph name="NUM_BROWSERS" /> avointa selainikkunaa</translation>
 <translation id="5794414402486823030">Avaa aina järjestelmän katselusovelluksella</translation>
 <translation id="5794700615121138172">Linuxin jaetut kansiot</translation>
@@ -5024,6 +5033,7 @@ Voit määrittää samalle toiminnolle useita kytkimiä.</translation>
 <translation id="5891688036610113830">Ensisijaiset Wi-Fi-verkot</translation>
 <translation id="5895138241574237353">Käynnistä uudelleen</translation>
 <translation id="5895335062901455404">Tallentamasi asetukset ja toiminta ovat valmiina millä tahansa ChromeOS Flex ‑laitteella, kun kirjaudut sisään Google-tilillesi. Voit valita synkronoitavan sisällön asetuksissa.</translation>
+<translation id="589541317545606110">Hae sivua tällä: <ph name="VISUAL_SEARCH_PROVIDER" /></translation>
 <translation id="5896436821193322561">Älä salli</translation>
 <translation id="5900186025777217044">Muutoksia Smart Lockissa</translation>
 <translation id="5900302528761731119">Google-profiilin kuva</translation>
@@ -5075,6 +5085,7 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="5941153596444580863">Lisää henkilö…</translation>
 <translation id="5941343993301164315">Kirjaudu sisään palveluun <ph name="TOKEN_NAME" />.</translation>
 <translation id="5941711191222866238">Pienennä</translation>
+<translation id="594221546068848596">Hae sivua tällä: <ph name="VISUAL_SEARCH_PROVIDER" /></translation>
 <translation id="5942779427914696408">Laitteen näkyvyys</translation>
 <translation id="5943127421590245687">Vahvistus onnistui. Jos haluat avata paikallisen datasi lukituksen ja palauttaa sen, anna vanhan laitteen (<ph name="DEVICE_TYPE" />) salasana.</translation>
 <translation id="5945002094477276055"><ph name="FILE_NAME" /> voi olla vaarallinen. Lähetetäänkö se Googlen selaussuojan tarkistettavaksi?</translation>
@@ -6718,6 +6729,7 @@ Sinulla on vielä # vaarantunutta salasanaa. Google Salasanat suosittelee, että
 <translation id="7582582252461552277">Käytä ensisijaisesti tätä verkkoa</translation>
 <translation id="7582844466922312471">Tiedonsiirto</translation>
 <translation id="7583948862126372804">Määrä</translation>
+<translation id="7585106857920830898">Tarkistetaan, onko lataus organisaatiosi tietosuojakäytäntöjen mukainen…</translation>
 <translation id="7586498138629385861">Chrome pysyy käynnissä, kun Chrome-sovelluksia on avoinna.</translation>
 <translation id="758895749110326677">Auta meitä kehittämään Chromebookilla pelaamista</translation>
 <translation id="7589461650300748890">Hei, varo vähän.</translation>
@@ -6994,6 +7006,7 @@ Poista määritys painamalla määritettyä kytkintä tai näppäintä.</transla
 <translation id="7839051173341654115">Tarkastele/varmuuskopioi mediaa</translation>
 <translation id="7839192898639727867">Varmenteen kohteen avaimen tunnus</translation>
 <translation id="7842692330619197998">Jos haluat luoda uuden tilin, avaa g.co/ChromeEnterpriseAccount.</translation>
+<translation id="78427265591841839">Hae sivun osasta tällä: <ph name="VISUAL_SEARCH_PROVIDER" /></translation>
 <translation id="784273751836026224">Poista Linux</translation>
 <translation id="7843786652787044762">Kirjaudu sisään: <ph name="WEB_DRIVE" /></translation>
 <translation id="7844992432319478437">Päivitetään muutostiedostoa</translation>
@@ -7001,6 +7014,7 @@ Poista määritys painamalla määritettyä kytkintä tai näppäintä.</transla
 <translation id="7847212883280406910">Valitse <ph name="IDS_SHORT_PRODUCT_OS_NAME" /> painamalla Ctrl + Alt + S</translation>
 <translation id="7849264908733290972">Avaa kuva uudessa väl&amp;ilehdessä</translation>
 <translation id="784934925303690534">Aikaväli</translation>
+<translation id="7850353716413205957">Hae sivun osasta tällä: <ph name="VISUAL_SEARCH_PROVIDER" /></translation>
 <translation id="7850717413915978159"><ph name="BEGIN_PARAGRAPH1" />Antamalla ChromeOS-laitteiden lähettää raportteja automaattisesti voit auttaa meitä korjaamaan ja kehittämään ChromeOS:n ominaisuuksia. Raportteihin voi sisältyä esimerkiksi tietoja ChromeOS:n kaatumisista, käytetyistä ominaisuuksista ja tyypillisestä muistin käytöstä sekä Android-sovellusten diagnostiikka- ja käyttödataa. Kootusta datasta on hyötyä myös Googlen sovelluksille ja kumppaneille, esim. Android-kehittäjille.<ph name="END_PARAGRAPH1" />
     <ph name="BEGIN_PARAGRAPH2" />Voit sallia tai estää raporttien lähettämisen milloin tahansa ChromeOS-laitteen asetuksissa. Jos olet verkkotunnuksen järjestelmänvalvoja, voit muuttaa asetusta hallintakonsolissa.<ph name="END_PARAGRAPH2" />
     <ph name="BEGIN_PARAGRAPH3" />Jos Verkko‑ ja sovellustoiminta ‑asetus on päällä Google-tililläsi, Android-dataa voidaan tallentaa tilillesi. Voit nähdä dataa, poistaa sitä ja muuttaa tiliasetuksia osoitteessa account.google.com.<ph name="END_PARAGRAPH3" /></translation>
@@ -7055,6 +7069,7 @@ Poista määritys painamalla määritettyä kytkintä tai näppäintä.</transla
 <translation id="7901405293566323524">Phone Hub</translation>
 <translation id="7903290522161827520">Etsitkö selaimen osuuksia? Avaa</translation>
 <translation id="7903345046358933331">Tämä sivu ei enää vastaa. Voit odottaa sivun vastausta tai sulkea sen.</translation>
+<translation id="7903429136755645827">Yksilöi peliohjaimia klikkaamalla</translation>
 <translation id="7903742244674067440">Olet tallentanut seuraavat varmenteen myöntäjät tunnistavat varmenteet</translation>
 <translation id="7903925330883316394">Apuohjelma: <ph name="UTILITY_TYPE" /></translation>
 <translation id="7904526211178107182">Aseta Linux-portit muiden verkossasi olevien laitteiden saataville.</translation>
@@ -7416,6 +7431,7 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="8242426110754782860">Jatka</translation>
 <translation id="8243948765190375130">Median laatu voi heikentyä</translation>
 <translation id="8244514732452879619">Kohta nukkumaan</translation>
+<translation id="8245361042748627813">Tämä pikanäppäin on muuttunut. Tulosta käyttämällä järjestelmän valintaikkunaa painamalla <ph name="NEW_SHORTCUT_KEY" />.</translation>
 <translation id="8246776524656196770">Suojaa suojausavain PIN-koodilla</translation>
 <translation id="8248050856337841185">&amp;Liitä</translation>
 <translation id="8248381369318572865">Avaa mikrofoni ja analysoi puhetta</translation>
@@ -7720,6 +7736,7 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="8561565784790166472">Harkitse tarkkaan ennen kuin jatkat</translation>
 <translation id="8561853412914299728"><ph name="TAB_TITLE" /> <ph name="EMOJI_PLAYING" /></translation>
 <translation id="8565650234829130278">Sovelluksesta on jo asennettu uudempi versio.</translation>
+<translation id="8569673829373920831">Lisätietoa: <ph name="APP_NAME" /></translation>
 <translation id="8569682776816196752">Kohteita ei löytynyt</translation>
 <translation id="8571213806525832805">Viimeiset neljä viikkoa</translation>
 <translation id="8571687764447439720">Lisää Kerberos-tukipyyntö</translation>
@@ -8246,6 +8263,7 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="9078316009970372699">Poista yhteyden pikajakaminen käytöstä</translation>
 <translation id="9078842827190780028">Näytä lisää hakutuloksia sivupaneelissa</translation>
 <translation id="9079267182985899251">Tätä vaihtoehtoa ei pian enää tueta. Jos haluat jakaa välilehden, avaa <ph name="GOOGLE_MEET" />.</translation>
+<translation id="9080971985541434310">arvioi kiinnostuksen kohteesi – Chrome voi arvioida kiinnostuksen kohteesi</translation>
 <translation id="9081543426177426948">Avaamiasi sivustoja ei tallenneta incognito-tilassa</translation>
 <translation id="9084064520949870008">Avaa ikkunassa</translation>
 <translation id="9085256200913095638">Kopioi valittu välilehti</translation>

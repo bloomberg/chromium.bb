@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/side_search/side_search_icon_view.h"
 
+#include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_element_identifiers.h"
 #include "chrome/browser/ui/side_search/side_search_config.h"
@@ -13,6 +14,9 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/side_search/side_search_browser_controller.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/feature_engagement/public/event_constants.h"
+#include "components/feature_engagement/public/feature_constants.h"
+#include "components/feature_engagement/public/tracker.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
@@ -39,9 +43,20 @@ SideSearchIconView::SideSearchIconView(
   SetLabel(l10n_util::GetStringUTF16(IDS_SIDE_SEARCH_ENTRYPOINT_LABEL));
   SetUpForInOutAnimation();
   SetPaintLabelOverSolidBackground(true);
+  browser_->tab_strip_model()->AddObserver(this);
 }
 
-SideSearchIconView::~SideSearchIconView() = default;
+SideSearchIconView::~SideSearchIconView() {
+  browser_->tab_strip_model()->RemoveObserver(this);
+}
+
+void SideSearchIconView::OnTabStripModelChanged(
+    TabStripModel* tab_strip_model,
+    const TabStripModelChange& change,
+    const TabStripSelectionChange& selection) {
+  if (selection.active_tab_changed())
+    HidePageActionLabel();
+}
 
 void SideSearchIconView::SetLabelVisibilityForTesting(bool visible) {
   label()->SetVisible(visible);
@@ -64,16 +79,29 @@ void SideSearchIconView::UpdateImpl() {
   if (!tab_contents_helper)
     return;
 
+  auto* browser_view = BrowserView::GetBrowserViewForBrowser(browser_);
   const bool was_visible = GetVisible();
   const bool should_show =
       tab_contents_helper->CanShowSidePanelForCommittedNavigation() &&
       !tab_contents_helper->toggled_open();
   SetVisible(should_show);
 
-  if (should_show && !was_visible && ShouldShowPageActionLabel()) {
-    SetPageActionLabelShown();
-    should_extend_label_shown_duration_ = true;
-    AnimateIn(absl::nullopt);
+  if (should_show && !was_visible) {
+    if (ShouldShowPageActionLabel()) {
+      SetPageActionLabelShown();
+      should_extend_label_shown_duration_ = true;
+      AnimateIn(absl::nullopt);
+    } else if (tab_contents_helper->returned_to_previous_srp()) {
+      // If we are not animating-in the label text make a request to show the
+      // IPH if we detect the user may be engaging in a pogo-sticking journey.
+      browser_view->MaybeShowFeaturePromo(
+          feature_engagement::kIPHSideSearchFeature);
+    }
+  }
+
+  if (!should_show) {
+    HidePageActionLabel();
+    browser_view->CloseFeaturePromo(feature_engagement::kIPHSideSearchFeature);
   }
 }
 
@@ -85,10 +113,14 @@ void SideSearchIconView::OnExecuting(PageActionIconView::ExecuteSource source) {
                             : SideSearchPageActionLabelVisibility::kNotVisible);
 
   // Reset the slide animation if in progress.
-  UnpauseAnimation();
-  ResetSlideAnimation(false);
+  HidePageActionLabel();
 
   side_search_browser_controller->ToggleSidePanel();
+
+  auto* tracker = feature_engagement::TrackerFactory::GetForBrowserContext(
+      browser_->profile());
+  if (tracker)
+    tracker->NotifyEvent(feature_engagement::events::kSideSearchOpened);
 }
 
 views::BubbleDialogDelegate* SideSearchIconView::GetBubble() const {
@@ -176,6 +208,11 @@ void SideSearchIconView::SetPageActionLabelShown() {
       SideSearchTabContentsHelper::FromWebContents(active_contents);
   DCHECK(tab_contents_helper);
   tab_contents_helper->DidShowPageActionLabel();
+}
+
+void SideSearchIconView::HidePageActionLabel() {
+  UnpauseAnimation();
+  ResetSlideAnimation(false);
 }
 
 BEGIN_METADATA(SideSearchIconView, PageActionIconView)

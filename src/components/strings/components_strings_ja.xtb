@@ -291,6 +291,7 @@
 <translation id="1662550410081243962">お支払い方法の保存と入力</translation>
 <translation id="1663943134801823270">Chrome に保存されているクレジット カードと住所です。[<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />] で管理できます。</translation>
 <translation id="1671391448414634642">今後、<ph name="SOURCE_LANGUAGE" />のページは<ph name="TARGET_LANGUAGE" />に翻訳されます。</translation>
+<translation id="1673886523110456987">特典を使用するには、<ph name="CARD_DETAIL" /> で決済を行ってください</translation>
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" />から<ph name="TARGET_LANGUAGE" /></translation>
 <translation id="1682696192498422849">短辺から</translation>
 <translation id="168693727862418163">このポリシーの値は、スキーマの検証でエラーとなったため無視されます。</translation>
@@ -586,6 +587,7 @@
 <translation id="2523886232349826891">カードはこのデバイスのみに保存されます</translation>
 <translation id="2524461107774643265">その他の情報の追加</translation>
 <translation id="2529899080962247600">このフィールドで指定できるエントリは <ph name="MAX_ITEMS_LIMIT" /> 件までです。それ以降のエントリはすべて無視されます。</translation>
+<translation id="253493526287553278">プロモーション コードの詳細を確認</translation>
 <translation id="2535585790302968248">新しいシークレット タブを開いてシークレット モードでブラウジングします</translation>
 <translation id="2535659140340599600">{COUNT,plural, =1{、他 1 件}other{、他 # 件}}</translation>
 <translation id="2536110899380797252">住所を追加</translation>
@@ -1102,6 +1104,7 @@
 <translation id="3986705137476756801">今回のみ自動字幕起こしをオフにする</translation>
 <translation id="3987940399970879459">1 MB 未満</translation>
 <translation id="3990250421422698716">ジョグ オフセット</translation>
+<translation id="3992684624889376114">このページについて</translation>
 <translation id="3996311196211510766">サイト <ph name="ORIGIN" /> では、サイトへのすべてのリクエストにオリジン ポリシーの適用を求めていますが、このポリシーは現在適用することができません。</translation>
 <translation id="4006465311664329701">Google Pay を使用したお支払方法、クーポン、住所</translation>
 <translation id="4009243425692662128">印刷するページのコンテンツは分析のため Google Cloud または第三者に送信されます。たとえば、機密データがないかスキャンされます。</translation>
@@ -1272,6 +1275,7 @@
 <translation id="4435702339979719576">ポストカード</translation>
 <translation id="443673843213245140">プロキシの使用は無効ですが、プロキシの設定が明示的に指定されています。</translation>
 <translation id="4441832193888514600">ポリシーは、クラウド ユーザー ポリシーとしてのみ設定可能なため無視されました。</translation>
+<translation id="4442470707340296952">Chrome のタブ</translation>
 <translation id="4450893287417543264">次回から表示しない</translation>
 <translation id="4451135742916150903">HID デバイスへの接続を要求できる</translation>
 <translation id="4452328064229197696">たった今使用したパスワードがデータ侵害で検出されました。Google パスワード マネージャーでは、アカウントを保護するために保存したパスワードを確認することをおすすめします。</translation>
@@ -1546,6 +1550,7 @@
 <translation id="5171045022955879922">検索または URL を入力</translation>
 <translation id="5171689220826475070">Fanfold-European</translation>
 <translation id="5172758083709347301">マシン</translation>
+<translation id="5177076414499237632">このページのソースとトピックについて</translation>
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE" />でない場合はこのエラーを報告する</translation>
 <translation id="518639307526414276">ペットフード、ペットケア用品</translation>
 <translation id="5190835502935405962">ブックマーク バー</translation>
@@ -2566,6 +2571,7 @@
 <translation id="8074253406171541171">10x13（封筒）</translation>
 <translation id="8075736640322370409">新しい Google スプレッドシートをすばやく作成します</translation>
 <translation id="8075898834294118863">サイトの設定を管理する</translation>
+<translation id="8076492880354921740">タブ</translation>
 <translation id="8078141288243656252">回転時に注釈を追加することはできません</translation>
 <translation id="8079031581361219619">このサイトを再読み込みしますか？</translation>
 <translation id="8081087320434522107">セダン</translation>
@@ -2988,6 +2994,7 @@
 <translation id="988159990683914416">Developer Build</translation>
 <translation id="989988560359834682">住所の編集</translation>
 <translation id="991413375315957741">モーション センサーまたは光センサー</translation>
+<translation id="992110854164447044">仮想カードを使用すると、実際のカードを非表示にして、不正行為から保護できます。<ph name="IDS_AUTOFILL_VIRTUAL_CARD_ENROLLMENT_LEARN_MORE_LINK_LABEL" /></translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
 <translation id="992256792861109788">ピンク</translation>
 <translation id="992432478773561401">「<ph name="SOFTWARE_NAME" />」がパソコンまたはネットワークに正しくインストールされていません。 

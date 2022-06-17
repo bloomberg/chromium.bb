@@ -11,6 +11,7 @@
 <translation id="1008186147501209563">बुकमार्क निर्यात करें</translation>
 <translation id="1008557486741366299">अभी नहीं</translation>
 <translation id="1009476156254802388"><ph name="WEB_DRIVE" /> की लोकेशन</translation>
+<translation id="1009663062402466586">गेम के कंट्रोल अब उपलब्ध हैं</translation>
 <translation id="1010498023906173788">यह टैब किसी सीरियल पोर्ट से कनेक्ट है.</translation>
 <translation id="1010833424573920260">{NUM_PAGES,plural, =1{पेज प्रतिसाद नहीं दे रहा है}one{पेज प्रतिसाद नहीं दे रहे हैं}other{पेज प्रतिसाद नहीं दे रहे हैं}}</translation>
 <translation id="1011355516189274711">लिखाई को बोली में बदलने की आवाज़ का लेवल</translation>
@@ -190,6 +191,7 @@
 <translation id="1173894706177603556">नाम बदलें</translation>
 <translation id="1174073918202301297">शॉर्टकट जोड़ा गया</translation>
 <translation id="1174366174291287894">जब तक Chrome से कोई चेतावनी न मिले, तब तक आपका कनेक्शन सुरक्षित है</translation>
+<translation id="1174391930667737831">प्राइवसी हब</translation>
 <translation id="117445914942805388">अपने सभी सिंक किए हुए डिवाइस और अपने 'Google खाते' से ब्राउज़िंग डेटा साफ़ करने के लिए, <ph name="BEGIN_LINK" />सिंक सेटिंग पर जाएं<ph name="END_LINK" />.</translation>
 <translation id="1175364870820465910">&amp;प्रिंट करें...</translation>
 <translation id="1176471985365269981">आपके डिवाइस पर फ़ाइलों या फ़ोल्डर में बदलाव करने की अनुमति नहीं है</translation>
@@ -857,6 +859,7 @@
 <translation id="1795214765651529549">क्लासिक का उपयोग करें</translation>
 <translation id="1796105431091975902">जोड़ने के लिए किसी Ansible प्लेबुक को चुनें</translation>
 <translation id="1796588414813960292">वे सुविधाएं काम नहीं करेंगी जिन्हें आवाज़ की ज़रूरत है</translation>
+<translation id="1797117170091578105">अपने Chromebook के कीबोर्ड की मदद से चलाएं. कीबोर्ड की कुंजियों को अपनी पसंद के मुताबिक, खास कार्रवाइयों के लिए सेट किया जा सकता है.</translation>
 <translation id="1800502858278951817">किसी भी एक्सटेंशन ने, <ph name="SITE_NAME" /> को पढ़ने और उसे बदलने की अनुमति नहीं मांगी है</translation>
 <translation id="1802624026913571222">कवर बंद होने पर, डिवाइस को नींद मोड में ले जाएं</translation>
 <translation id="1802687198411089702">पेज काम नहीं कर रहा है. आप इंतज़ार कर सकते हैं या बाहर निकल सकते हैं.</translation>
@@ -1019,6 +1022,7 @@
 <translation id="1940546824932169984">कनेक्ट किए गए डिवाइस</translation>
 <translation id="1941410638996203291">शुरुआत का समय <ph name="TIME" /></translation>
 <translation id="1941553344801134989">वर्शन: <ph name="APP_VERSION" /></translation>
+<translation id="1941995177877935582">की-मैपिंग दिखाएं</translation>
 <translation id="1942128823046546853">यह एक्सटेंशन, सभी वेबसाइटों पर आपका डेटा पढ़ और बदल सकेगा</translation>
 <translation id="1942600407708803723">कवर बंद होने पर शट डाउन करें</translation>
 <translation id="1944528062465413897">ब्लूटूथ इस्तेमाल करके डिवाइस जोड़ने का कोड</translation>
@@ -2634,6 +2638,7 @@
 <translation id="3482719661246593752"><ph name="ORIGIN" /> नीचे दी गई फ़ाइलों काे देख सकती है</translation>
 <translation id="3484273680291419129">नुकसान पहुंचाने वाला सॉफ़्टवेयर निकाला जा रहा है...</translation>
 <translation id="3484869148456018791">नया प्रमाणपत्र पाएं</translation>
+<translation id="3486950712960783074">आपकी यात्रा</translation>
 <translation id="3487007233252413104">अनाम फ़ंक्शन</translation>
 <translation id="3490695139702884919">डाउनलोड हो रही है... <ph name="PERCENT" />%</translation>
 <translation id="3491669675709357988">आपके बच्चे का खाता, Family Link पर माता-पिता के कंट्रोल की सुविधा के लिए सेट अप नहीं किया गया है. आप सेट अप पूरा करके, माता-पिता के कंट्रोल की सुविधा जोड़ सकते हैं. आपको Explore ऐप्लिकेशन में, माता-पिता के कंट्रोल की सुविधा के बारे में जानकारी मिलेगी.</translation>
@@ -2944,6 +2949,7 @@
 <translation id="3797739167230984533">आपका संगठन, आपके <ph name="BEGIN_LINK" /><ph name="DEVICE_TYPE" /> को प्रबंधित करता<ph name="END_LINK" /> है</translation>
 <translation id="3797900183766075808">“<ph name="SEARCH_TERMS" />” को खोजने के लिए <ph name="SEARCH_ENGINE" /> पर &amp;खोजें</translation>
 <translation id="3798449238516105146">वर्शन</translation>
+<translation id="3798632811625902122">ब्लूटूथ डिवाइस <ph name="DEVICE" /> दूसरे डिवाइस से जुड़ने की अनुमति चाहता है.</translation>
 <translation id="3799128412641261490">ऐक्सेस करने का तरीका बदलने की सेटिंग</translation>
 <translation id="3800806661949714323">सभी दिखाएं (अनुशंंसित)</translation>
 <translation id="3800828618615365228">Google Chrome और ChromeOS की दूसरी शर्तें</translation>
@@ -4589,6 +4595,7 @@
 <translation id="5449716055534515760">विं&amp;डो बंद करें</translation>
 <translation id="5452976525201205853"><ph name="LANGUAGE" /> (ऑफ़लाइन उपलब्ध है)</translation>
 <translation id="5454166040603940656"><ph name="PROVIDER" /> के साथ</translation>
+<translation id="545484289444831485">ज़्यादा खोज नतीजे देखें</translation>
 <translation id="5455603387986949153">ChromeOS Flex वाले डिवाइस और कॉम्पोनेंट के सीरियल नंबर पढ़ें.</translation>
 <translation id="5457113250005438886">अमान्य</translation>
 <translation id="5457459357461771897">अपने कंप्यूटर से फ़ोटो, संगीत और दूसरे मीडिया पढ़ें और मिटाएं</translation>
@@ -4930,6 +4937,7 @@
 <translation id="5792295754950501287"><ph name="CARD_DESCRIPTION" /> से जुड़ी और कार्रवाइयां</translation>
 <translation id="5792728279623964091">'पावर बटन' पर टैप करें</translation>
 <translation id="5793339252089865437">अगर आप अपने मोबाइल नेटवर्क पर अपडेट डाउनलोड करते हैं, तो इसकी वजह से आपको ज़्यादा शुल्क का भुगतान करना पड़ सकता है.</translation>
+<translation id="5793420564274426163">दूसरे डिवाइस से जोड़ने की पुष्टि</translation>
 <translation id="5794034487966529952"><ph name="DESK_TITLE" /> डेस्क में <ph name="NUM_BROWSERS" /> ब्राउज़र विंडो खुली हैं</translation>
 <translation id="5794414402486823030">हमेशा सिस्‍टम व्‍यूअर से खोलें</translation>
 <translation id="5794700615121138172">Linux से Chromebook के साथ शेयर किए गए फ़ोल्डर</translation>
@@ -7066,6 +7074,7 @@
 <translation id="7901405293566323524">फ़ोन हब</translation>
 <translation id="7903290522161827520">ब्राउज़र कॉम्पोनेंट वाला पेज चाहिए? यहां जाएं</translation>
 <translation id="7903345046358933331">पेज कोई प्रतिसाद नहीं दे रहा है. आप उसके प्रतिसाद देने तक प्रतीक्षा कर सकते हैं या उसे बंद कर सकते हैं.</translation>
+<translation id="7903429136755645827">गेम के कंट्रोल को पसंद के मुताबिक बनाने के लिए क्लिक करें</translation>
 <translation id="7903742244674067440">इन प्रमाणपत्र प्राधिकारियों की पहचान करने वाले प्रमाणपत्र आपके रिकॉर्ड में हैं</translation>
 <translation id="7903925330883316394">उपयोगिता: <ph name="UTILITY_TYPE" /></translation>
 <translation id="7904526211178107182">Linux को अपने नेटवर्क के दूसरे डिवाइस के लिए उपलब्ध कराएं.</translation>
@@ -7427,6 +7436,7 @@
 <translation id="8242426110754782860">आगे बढ़ें</translation>
 <translation id="8243948765190375130">मीडिया क्वालिटी कम हो सकती है</translation>
 <translation id="8244514732452879619">लाइटें जल्दी ही बंद हो जाएंगी</translation>
+<translation id="8245361042748627813">यह शॉर्टकट बदल दिया गया है. सिस्टम डायलॉग का इस्तेमाल करके प्रिंट करने के लिए, कृपया <ph name="NEW_SHORTCUT_KEY" /> का इस्तेमाल करें.</translation>
 <translation id="8246776524656196770">पिन (व्यक्तिगत पहचान संख्या) की मदद से अपनी सुरक्षा कुंजी की रक्षा करें</translation>
 <translation id="8248050856337841185">&amp;चिपकाएं</translation>
 <translation id="8248381369318572865">माइक्रोफ़ोन को ऐक्सेस करना और बोली का विश्लेषण करना</translation>
@@ -7731,6 +7741,7 @@
 <translation id="8561565784790166472">सावधानी से आगे बढ़ें</translation>
 <translation id="8561853412914299728"><ph name="TAB_TITLE" /> <ph name="EMOJI_PLAYING" /></translation>
 <translation id="8565650234829130278">ऐप्लिकेशन को डाउनग्रेड करने की कोशिश की गई.</translation>
+<translation id="8569673829373920831"><ph name="APP_NAME" /> के बारे में ज़्यादा जानकारी</translation>
 <translation id="8569682776816196752">कोई गंतव्य नहीं मिला</translation>
 <translation id="8571213806525832805">पिछले चार हफ़्ते</translation>
 <translation id="8571687764447439720">Kerberos टिकट जोड़ें</translation>
@@ -8258,6 +8269,7 @@
 <translation id="9078316009970372699">इंस्टैंट टेदरिंग बंद करें</translation>
 <translation id="9078842827190780028">साइड पैनल में खोज के ज़्यादा नतीजे देखें</translation>
 <translation id="9079267182985899251">कुछ समय बाद यह विकल्प काम करना बंद कर देगा. किसी टैब को प्रज़ेंट करने के लिए, <ph name="GOOGLE_MEET" /> का इस्तेमाल करें.</translation>
+<translation id="9080971985541434310">आपकी पसंद के विषयों का अनुमान लगाता है - Chrome आपकी पसंद के विषयों का अनुमान लगा सकता है</translation>
 <translation id="9081543426177426948">जिन साइटों पर आप जाते हैं उनकी जानकारी गुप्त मोड में सेव नहीं होती</translation>
 <translation id="9084064520949870008">विंडो के रूप में खोलें</translation>
 <translation id="9085256200913095638">चुना गया टैब डुप्लीकेट करें</translation>

@@ -27,6 +27,7 @@
 <translation id="1145536944570833626">Избришете ги постоечките податоци.</translation>
 <translation id="1147031633655575115">Најавени сте како <ph name="USER" /></translation>
 <translation id="1154984953698510061">Видете ги „Другите картички“</translation>
+<translation id="1161340988127985692">Прашувај дали да се отвораат линкови од други апликации во „Инкогнито“</translation>
 <translation id="1164064664035028907">Користете силна лозинка:</translation>
 <translation id="1165039591588034296">Грешка</translation>
 <translation id="1172898394251786223">Следно поле</translation>
@@ -292,6 +293,7 @@
 <translation id="3443810440409579745">Примена е картичка.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> мин.</translation>
 <translation id="3448016392200048164">Поделен приказ</translation>
+<translation id="3450502512529866925">Обележи ја страницава</translation>
 <translation id="345565170154308620">Управувајте со лозинките…</translation>
 <translation id="3469166899695866866">Дали да се сопре преземањето?</translation>
 <translation id="3470502288861289375">Се копира...</translation>
@@ -406,6 +408,7 @@
 <translation id="4502566650163919158">Проверете сега</translation>
 <translation id="4505980578794259603">Последен пат проверено: <ph name="TIME" />.</translation>
 <translation id="4508750114462689118">Затвори ја промоцијата за најавување</translation>
+<translation id="4511669830082467224">Пребарајте слика со Google</translation>
 <translation id="4526249700380860531">Прикажи и управувај зачувани лозинки на <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="452750746583162491">Прегледајте ги синхронизираните податоци</translation>
 <translation id="4536418791685807335">Обидете се да се најавите повторно.</translation>
@@ -483,6 +486,7 @@
 <translation id="5090832849094901128">Со бришењето на лозинкава нема да се избрише вашата сметка на <ph name="WEBSITE" />.</translation>
 <translation id="5092117651143801290">Може да зачувувате страници за да ги читате подоцна или офлајн. Chrome ќе ве праша дали сакате да зачувувате долги страници.</translation>
 <translation id="5094827893301452931">Твитот е завршен.</translation>
+<translation id="509789154667432072">Додај обележувач</translation>
 <translation id="5118713593561876160">Интереси</translation>
 <translation id="5118764316110575523">Исклучено</translation>
 <translation id="5127805178023152808">Синхронизацијата е исклучена</translation>

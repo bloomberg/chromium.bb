@@ -504,6 +504,7 @@ Anslut enheten till en strömkälla.</translation>
 <translation id="3901991538546252627">Ansluter till <ph name="NAME" /></translation>
 <translation id="3922427723338465344">{0,plural, =1{Byt till en tidigare version av enheten inom en minut}other{Byt till en tidigare version av enheten inom # minuter}}</translation>
 <translation id="3923494859158167397">Inga mobilnätverk har konfigurerats</translation>
+<translation id="3925540965556789199">Läser in händelser den <ph name="DATE" />.</translation>
 <translation id="3932043219784172185">Det finns ingen ansluten enhet</translation>
 <translation id="3934456833412894880">Smart laddning har aktiverats. Batteriet laddas upp till 80 % så att det ska räcka längre. Det laddas helt när du behöver det.</translation>
 <translation id="3943857333388298514">Klistra in</translation>
@@ -703,6 +704,7 @@ Anslut enheten till en strömkälla.</translation>
 <translation id="5078796286268621944">Fel pinkod</translation>
 <translation id="5083553833479578423">Lås upp fler funktioner för Assistent</translation>
 <translation id="509790653408515442">När du streamar telefonens appar visas de här</translation>
+<translation id="5098537242461068432">Skrivbord och fönster öppnades igen</translation>
 <translation id="5107522548814527560">Webb</translation>
 <translation id="5117590920725113268">Visa nästa månad</translation>
 <translation id="5136175204352732067">Ett annat tangentbord har anslutits</translation>
@@ -1055,6 +1057,10 @@ Nyligen installerad</translation>
 <translation id="7258828758145722155">Redigerades i går</translation>
 <translation id="726276584504105859">Dra hit för att dela upp skärmen</translation>
 <translation id="7262906531272962081">Skapa påminnelse</translation>
+<translation id="7297440678881127227"><ph name="START_TIME" /> till
+        <ph name="END_TIME" />,
+        <ph name="TIME_ZONE" />,
+        <ph name="EVENT_SUMMARY" />. Välj för att visa fler uppgifter i Google Kalender.</translation>
 <translation id="7302889331339392448">Live Caption är inaktiverat.</translation>
 <translation id="7303365578352795231">Svarar på en annan enhet.</translation>
 <translation id="7305884605064981971">EDGE</translation>
@@ -1167,6 +1173,7 @@ Nyligen installerad</translation>
 <translation id="7904094684485781019">Administratören för kontot tillåter inte multiinloggning.</translation>
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7930731167419639574">Nu bearbetas tal lokalt och diktering kan användas offline.</translation>
+<translation id="7932451802722951285">Öppna i Google Kalender</translation>
 <translation id="7933084174919150729">Endast den primära profilen har tillgång till Google Assistent.</translation>
 <translation id="79341161159229895">Kontot hanteras av <ph name="FIRST_PARENT_EMAIL" /> och <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="793716872548410480">Tryck på <ph name="SHORTCUT_KEY_NAME" /> + V för att visa urklipp De senaste fem objekten du har kopierat sparas i urklipp.</translation>

@@ -11,6 +11,7 @@
 <translation id="1008186147501209563">នាំចេញ​ចំណាំ</translation>
 <translation id="1008557486741366299">មិនមែនឥឡូវនេះទេ</translation>
 <translation id="1009476156254802388">ទីតាំង <ph name="WEB_DRIVE" /></translation>
+<translation id="1009663062402466586">ឥឡូវនេះ មាន​ការបញ្ជា​ហ្គេម​ហើយ</translation>
 <translation id="1010498023906173788">ផ្ទាំងនេះ​ត្រូវបានភ្ជាប់​ទៅរន្ធស៊េរី។</translation>
 <translation id="1010833424573920260">{NUM_PAGES,plural, =1{ទំព័រមិនឆ្លើយតបទេ}other{ទំព័រមិនឆ្លើយតបទេ}}</translation>
 <translation id="1011355516189274711">កម្រិតសំឡេង​បំប្លែង​អត្ថបទ​ទៅជា​ការនិយាយ</translation>
@@ -190,6 +191,7 @@
 <translation id="1173894706177603556">ប្តូរឈ្មោះ</translation>
 <translation id="1174073918202301297">បាន​បញ្ចូល​ផ្លូវកាត់</translation>
 <translation id="1174366174291287894">ការតភ្ជាប់​របស់អ្នក​មានសុវត្ថិភាព​ជានិច្ច ប្រសិនបើ Chrome មិនប្រាប់អ្នក​ផ្សេងពីនេះទេ</translation>
+<translation id="1174391930667737831">មណ្ឌល​ឯកជនភាព</translation>
 <translation id="117445914942805388">ដើម្បីសម្អាត​ទិន្នន័យ​រុករក​ចេញពី​ឧបករណ៍​ដែលបាន​ធ្វើសមកាលកម្ម​ទាំងអស់​របស់អ្នក និងគណនី​ ​Google របស់អ្នក <ph name="BEGIN_LINK" />សូមចូលទៅកាន់​ការកំណត់​សមកាលកម្ម<ph name="END_LINK" />។</translation>
 <translation id="1175364870820465910">បោះពុម្ព...</translation>
 <translation id="1176471985365269981">មិនអនុញ្ញាត​ឱ្យកែឯកសារ ឬថត​នៅក្នុង​ឧបករណ៍​របស់អ្នកទេ</translation>
@@ -856,6 +858,7 @@
 <translation id="1795214765651529549">ប្រើបែបធម្មតា</translation>
 <translation id="1796105431091975902">ជ្រើសរើស Ansible Playbook ដើម្បីបញ្ចូល</translation>
 <translation id="1796588414813960292">មុខងារដែលត្រូវការសំឡេងនឹងមិនដំណើរការទេ</translation>
+<translation id="1797117170091578105">លេង​ដោយប្រើប្រាស់​ក្ដារចុច Chromebook របស់អ្នក។ អ្នក​អាច​ប្ដូរ​គ្រាប់ចុច​ឱ្យ​ចង​ភ្ជាប់​ទៅ​សកម្មភាព​ជាក់លាក់​តាមបំណង។</translation>
 <translation id="1800502858278951817">មិនមានកម្មវិធីបន្ថែមបានស្នើសុំអាន និងផ្លាស់ប្ដូរ <ph name="SITE_NAME" /> ទេ</translation>
 <translation id="1802624026913571222">ដេក​នៅពេល​បិទគម្រប</translation>
 <translation id="1802687198411089702">ទំព័រ​នេះ​មិន​ឆ្លើយ​តប​ទេ។ អ្នក​អាច​រង់ចាំឱ្យ​វាឆ្លើយ​តប ឬចាកចេញ។</translation>
@@ -1018,6 +1021,7 @@
 <translation id="1940546824932169984">ឧបករណ៍​ដែល​បានភ្ជាប់</translation>
 <translation id="1941410638996203291">ពេល​ចាប់ផ្ដើមម៉ោង <ph name="TIME" /></translation>
 <translation id="1941553344801134989">កំណែ៖ <ph name="APP_VERSION" /></translation>
+<translation id="1941995177877935582">បង្ហាញ​ការកំណត់ប្លង់​គ្រាប់ចុច</translation>
 <translation id="1942128823046546853">អាន និងប្ដូរ​ទិន្នន័យ​ទាំងអស់​របស់អ្នក​នៅលើ​គេហទំព័រ​ទាំងអស់</translation>
 <translation id="1942600407708803723">បិទ​នៅពេល​បិទគម្រប</translation>
 <translation id="1944528062465413897">កូដផ្គូផ្គងប៊្លូធូស៖</translation>
@@ -2634,6 +2638,7 @@
 <translation id="3482719661246593752"><ph name="ORIGIN" /> អាច​មើល​ឯកសារ​ខាងក្រោម</translation>
 <translation id="3484273680291419129">កំពុង​លុប​កម្មវិធី​ដែល​បង្កគ្រោះថ្នាក់...</translation>
 <translation id="3484869148456018791">ទទួលយកវិញ្ញាបនប័ត្រថ្មី</translation>
+<translation id="3486950712960783074">ការធ្វើដំណើរ​របស់​អ្នក</translation>
 <translation id="3487007233252413104">មុខងារអនាមិក</translation>
 <translation id="3490695139702884919">កំពុង​ទាញយក... <ph name="PERCENT" />%</translation>
 <translation id="3491669675709357988">គណនីរបស់កូនអ្នក​មិនត្រូវបានរៀបចំ​សម្រាប់ការគ្រប់គ្រងដោយមាតាបិតារបស់ Family Link ទេ។ អ្នកអាចបញ្ចូល​ការគ្រប់គ្រងដោយមាតាបិតា បន្ទាប់ពីអ្នកបញ្ចប់​ការរៀបចំ។ អ្នកនឹងឃើញព័ត៌មាន​នៅលើការគ្រប់គ្រងដោយមាតាបិតា​នៅក្នុងកម្មវិធីរុករក។</translation>
@@ -2944,6 +2949,7 @@
 <translation id="3797739167230984533"><ph name="BEGIN_LINK" /><ph name="DEVICE_TYPE" /> របស់អ្នកត្រូវបាន​គ្រប់គ្រង<ph name="END_LINK" />ដោយស្ថាប័ន​របស់អ្នក</translation>
 <translation id="3797900183766075808">&amp;ស្វែងរក <ph name="SEARCH_ENGINE" /> សម្រាប់ “<ph name="SEARCH_TERMS" />”</translation>
 <translation id="3798449238516105146">កំណែ</translation>
+<translation id="3798632811625902122">ឧបករណ៍​ប៊្លូធូស <ph name="DEVICE" /> ចង់បាន​ការអនុញ្ញាតក្នុង​ការផ្គូផ្គង។</translation>
 <translation id="3799128412641261490">ការកំណត់​ការប្រើប៊ូតុងចុច</translation>
 <translation id="3800806661949714323">បង្ហាញទាំងអស់ (បានណែនាំ)</translation>
 <translation id="3800828618615365228">លក្ខខណ្ឌបន្ថែម​របស់ Google Chrome និង ChromeOS</translation>
@@ -4590,6 +4596,7 @@
 <translation id="5449716055534515760">បិទផ្ទាំង</translation>
 <translation id="5452976525201205853"><ph name="LANGUAGE" /> (ដំណើរការ​ដោយគ្មាន​អ៊ីនធឺណិត)</translation>
 <translation id="5454166040603940656">ជាមួយ <ph name="PROVIDER" /></translation>
+<translation id="545484289444831485">មើល​លទ្ធផល​ស្វែងរក​ច្រើនទៀត</translation>
 <translation id="5455603387986949153">អាន​លេខស៊េរី​របស់សមាសធាតុ និងឧបករណ៍ ChromeOS Flex។</translation>
 <translation id="5457113250005438886">គ្មានសុពលភាព</translation>
 <translation id="5457459357461771897">អាន និងលុបរូបថត តន្ត្រី និងកំសាន្តផ្សេងទៀតពីកុំព្យូទ័ររបស់អ្នក</translation>
@@ -4932,6 +4939,7 @@
 <translation id="5792295754950501287">សកម្មភាព​ច្រើន​ទៀត​សម្រាប់ <ph name="CARD_DESCRIPTION" /></translation>
 <translation id="5792728279623964091">សូមចុចប៊ូតុង​ថាមពលរបស់អ្នក</translation>
 <translation id="5793339252089865437">ប្រសិនបើអ្នក​ទាញយកកំណែថ្មី​តាមរយៈបណ្ដាញ​ទូរសព្ទ​ចល័ត ការទាញយកនេះអាចនឹងមាន​ការគិតប្រាក់លើការប្រើប្រាស់ទិន្នន័យលើសកំណត់។</translation>
+<translation id="5793420564274426163">ការបញ្ជាក់​ការផ្គូផ្គង</translation>
 <translation id="5794034487966529952">តុ <ph name="DESK_TITLE" /> បានបើក​វិនដូ​កម្មវិធីរុករកតាម​អ៊ីនធឺណិត <ph name="NUM_BROWSERS" /></translation>
 <translation id="5794414402486823030">បើកជាមួយកម្មវិធីមើលប្រព័ន្ធជានិច្ច</translation>
 <translation id="5794700615121138172">ថតដែល Linux បានចែករំលែក</translation>
@@ -7067,6 +7075,7 @@
 <translation id="7901405293566323524">Phone Hub</translation>
 <translation id="7903290522161827520">កំពុងរកមើល​សមាសភាគ​កម្មវិធីរុករកតាមអ៊ីនធឺណិត​ឬ? ចូលមើល</translation>
 <translation id="7903345046358933331">ទំព័រមិនមានការឆ្លើយតប។ អ្នកអាចរង់ចាំរហូតដល់ទំព័រនេះធ្វើការឆ្លើយតប ឬបិទទំព័រនោះចោល។</translation>
+<translation id="7903429136755645827">ចុច ដើម្បីប្ដូរ​ការបញ្ជា​ហ្គេម​របស់អ្នក​តាមបំណង</translation>
 <translation id="7903742244674067440">អ្នកមានវិញ្ញាបនបត្រនៅលើឯកសារដែលកំណត់អត្តសញ្ញាណអាជ្ញាធរវិញ្ញាបនបត្រទាំងនេះ</translation>
 <translation id="7903925330883316394">ឧបករណ៍ប្រើប្រាស់៖ <ph name="UTILITY_TYPE" /></translation>
 <translation id="7904526211178107182">កំណត់ឱ្យឧបករណ៍ផ្សេងទៀតនៅលើបណ្ដាញរបស់អ្នក​អាចប្រើច្រក Linux។</translation>
@@ -7427,6 +7436,7 @@
 <translation id="8242426110754782860">បន្ត</translation>
 <translation id="8243948765190375130">គុណភាព​មេឌៀ​អាចថយចុះ</translation>
 <translation id="8244514732452879619">បិទ​ភ្លើង​បន្តិចទៀត​</translation>
+<translation id="8245361042748627813">ផ្លូវកាត់​នេះ​បានផ្លាស់ប្ដូរ។ សូមប្រើប្រាស់ <ph name="NEW_SHORTCUT_KEY" /> ដើម្បីបោះពុម្ព​ដោយប្រើប្រាស់​ប្រអប់​ប្រព័ន្ធ។</translation>
 <translation id="8246776524656196770">ការពារសោសុវត្ថិភាព​របស់អ្នកដោយប្រើកូដ PIN (លេខសម្គាល់ផ្ទាល់ខ្លួន)</translation>
 <translation id="8248050856337841185">បិទភ្ជាប់</translation>
 <translation id="8248381369318572865">ចូលប្រើមីក្រូហ្វូនរបស់អ្នក និងវិភាគការនិយាយរបស់អ្នក</translation>
@@ -7732,6 +7742,7 @@
 <translation id="8561565784790166472">​បន្ត​ដោយប្រុងប្រយ័ត្ន</translation>
 <translation id="8561853412914299728"><ph name="TAB_TITLE" /> <ph name="EMOJI_PLAYING" /></translation>
 <translation id="8565650234829130278">បានព្យាយាមបន្ទាបកម្មវិធី។</translation>
+<translation id="8569673829373920831">ព័ត៌មានបន្ថែម​អំពី <ph name="APP_NAME" /></translation>
 <translation id="8569682776816196752">គ្មានគោលដៅត្រូវបានរកឃើញទេ</translation>
 <translation id="8571213806525832805">4 សប្តាហ៍មុន</translation>
 <translation id="8571687764447439720">បញ្ចូល​សំបុត្រ Kerberos</translation>
@@ -8258,6 +8269,7 @@
 <translation id="9078316009970372699">បិទ​ការភ្ជាប់​ភ្លាមៗ</translation>
 <translation id="9078842827190780028">មើលលទ្ធផល​ស្វែងរកច្រើនទៀតនៅក្នុងផ្ទាំង​ចំហៀង</translation>
 <translation id="9079267182985899251">ជម្រើសនេះនឹងមិនអាចប្រើបានទៀតទេក្នុងពេលឆាប់ៗនេះ។ ដើម្បីបង្ហាញផ្ទាំង សូមប្រើ <ph name="GOOGLE_MEET" />។</translation>
+<translation id="9080971985541434310">ប៉ាន់ស្មាន​ចំណាប់អារម្មណ៍​របស់អ្នក - Chrome អាច​ប៉ាន់ស្មាន​ចំណាប់អារម្មណ៍​របស់អ្នក</translation>
 <translation id="9081543426177426948">គេហទំព័រ​ដែលអ្នកចូលមើល​មិនត្រូវបាន​រក្សាទុក​នៅក្នុងមុខងារ​ឯកជនទេ</translation>
 <translation id="9084064520949870008">បើកជាផ្ទាំង</translation>
 <translation id="9085256200913095638">បង្កើតផ្ទាំងដែលបានជ្រើសរើសស្ទួន</translation>

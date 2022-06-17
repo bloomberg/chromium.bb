@@ -504,6 +504,7 @@
 <translation id="3901991538546252627"><ph name="NAME" /> に接続しています</translation>
 <translation id="3922427723338465344">{0,plural, =1{1 分以内にデバイスを以前のバージョンに戻してください}other{# 分以内にデバイスを以前のバージョンに戻してください}}</translation>
 <translation id="3923494859158167397">モバイル ネットワークが設定されていません</translation>
+<translation id="3925540965556789199"><ph name="DATE" />、予定を読み込んでいます。</translation>
 <translation id="3932043219784172185">接続されているデバイスはありません</translation>
 <translation id="3934456833412894880">アダプティブ充電がオンになっています。バッテリー寿命を延ばすため、残量は 80% に保たれ、必要なときにフル充電します。</translation>
 <translation id="3943857333388298514">貼り付け</translation>
@@ -703,6 +704,7 @@
 <translation id="5078796286268621944">PIN が正しくありません</translation>
 <translation id="5083553833479578423">さらに多くのアシスタント機能をぜひご活用ください。</translation>
 <translation id="509790653408515442">スマートフォンのアプリでストリーミングした場合、そのアプリがここに表示されます</translation>
+<translation id="5098537242461068432">デスクとウィンドウが再度開かれました</translation>
 <translation id="5107522548814527560">ウェブ</translation>
 <translation id="5117590920725113268">次の月を表示</translation>
 <translation id="5136175204352732067">別のキーボードが接続されています</translation>
@@ -1055,6 +1057,10 @@
 <translation id="7258828758145722155">昨日編集したファイル</translation>
 <translation id="726276584504105859">分割画面を使用するにはここにドラッグします</translation>
 <translation id="7262906531272962081">リマインダーの作成</translation>
+<translation id="7297440678881127227"><ph name="START_TIME" /> から
+        <ph name="END_TIME" />、
+        <ph name="TIME_ZONE" />、
+        <ph name="EVENT_SUMMARY" />。選択すると、Google カレンダーで詳細を確認できます。</translation>
 <translation id="7302889331339392448">自動字幕起こしはオフになっています。</translation>
 <translation id="7303365578352795231">別のデバイスで応答しています。</translation>
 <translation id="7305884605064981971">EDGE</translation>
@@ -1168,6 +1174,7 @@
 <translation id="7904094684485781019">このアカウントの管理者がマルチログインを許可していません。</translation>
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7930731167419639574">音声はローカルで処理されました。オフラインで音声入力を使用できます。</translation>
+<translation id="7932451802722951285">Google カレンダーで開く</translation>
 <translation id="7933084174919150729">Google アシスタントはメインのプロフィールでのみご利用いただけます。</translation>
 <translation id="79341161159229895">このアカウントは <ph name="FIRST_PARENT_EMAIL" /> と <ph name="SECOND_PARENT_EMAIL" /> により管理されています</translation>
 <translation id="793716872548410480"><ph name="SHORTCUT_KEY_NAME" />+V キーを押すと、クリップボードを表示できます。クリップボードに、コピーした最新のアイテム 5 件が保存されています。</translation>

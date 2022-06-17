@@ -291,6 +291,7 @@
 <translation id="1662550410081243962">ငွေပေးချေနည်းလမ်းများကို သိမ်းပြီး ဖြည့်ရန်</translation>
 <translation id="1663943134801823270">ကဒ်နှင့် လိပ်စာများသည် Chrome မှ ဖြစ်သည်။ ၎င်းတို့ကို <ph name="BEGIN_LINK" />ဆက်တင်များ<ph name="END_LINK" /> ထဲတွင် စီမံခန့်ခွဲနိုင်သည်။</translation>
 <translation id="1671391448414634642"><ph name="SOURCE_LANGUAGE" /> ဘာသာဖြင့် စာမျက်နှာများကို ယခုမှစ၍ <ph name="TARGET_LANGUAGE" /> ဘာသာသို့ ပြန်ဆိုသွားပါမည်။</translation>
+<translation id="1673886523110456987">ကမ်းလှမ်းချက်သုံးရန် <ph name="CARD_DETAIL" /> ဖြင့် ငွေရှင်းပါ</translation>
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> မှ <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="1682696192498422849">တိုသည့်အနားနှင့် စတင်ရန်</translation>
 <translation id="168693727862418163">ဤမူဝါဒသည် ၎င်း၏ စီမံချက်နှင့်တိုက်၍ အချက်အလက်များကို အတည်ပြု၍မရသောကြောင့် လျစ်လျူရှုသွားပါမည်။</translation>
@@ -591,6 +592,7 @@
 <translation id="2523886232349826891">ဤစက်တွင်သာ သိမ်းထားသည်</translation>
 <translation id="2524461107774643265">နောက်ထပ် အချက်အလက်များကို ထည့်ခြင်း</translation>
 <translation id="2529899080962247600">ဤအကွက်တွင် ထည့်သွင်းမှု <ph name="MAX_ITEMS_LIMIT" /> ခုထက်မပိုရပါ။ နောက်ထပ် ထည့်သွင်းမှုအားလုံးကို လျစ်လျူရှုပါမည်။</translation>
+<translation id="253493526287553278">ပရိုမိုးရှင်းကုဒ်အသေးစိတ် ကြည့်ရန်</translation>
 <translation id="2535585790302968248">သီးသန့်ကြည့်ရှုရန် ရုပ်ဖျက်တဘ် အသစ်တစ်ခုဖွင့်နိုင်သည်</translation>
 <translation id="2535659140340599600">{COUNT,plural, =1{နှင့် နောက်ထပ် ၁ ခု}other{နှင့် နောက်ထပ် # ခု}}</translation>
 <translation id="2536110899380797252">လိပ်စာထည့်ရန်</translation>
@@ -1106,6 +1108,7 @@
 <translation id="3986705137476756801">'တိုက်ရိုက်စာတန်း' ကို ယခု ပိတ်ရန်</translation>
 <translation id="3987940399970879459">၁ MB ထက်နည်းပါသည်</translation>
 <translation id="3990250421422698716">လည်ပတ်မှု ချိန်ညှိရန်</translation>
+<translation id="3992684624889376114">ဤစာမျက်နှာ အကြောင်း</translation>
 <translation id="3996311196211510766">ဝဘ်ဆိုက် <ph name="ORIGIN" /> က ၎င်း၏တောင်းဆိုချက် အားလုံးသို့
     ရင်းမြစ်မူဝါဒ ထည့်သွင်းရန် သတ်မှတ်ထားသော်လည်း လက်ရှိတွင် ဤမူဝါဒကို ထည့်သွင်း၍မရပါ။</translation>
 <translation id="4006465311664329701">Google Pay ကို သုံးထားသော ငွေပေးချေနည်းလမ်း၊ ကမ်းလှမ်းချက်နှင့် လိပ်စာများ</translation>
@@ -1282,6 +1285,7 @@
 <translation id="4435702339979719576">ပို့စ်ကတ်)</translation>
 <translation id="443673843213245140">ပရောက်စီ သုံးရန်ပိတ်ထားသော်လည်း တိကျသည့် ပရောက်စီ စီစဉ်ဖွဲ့စည်းမှုကို သတ်မှတ်ထားသည်။</translation>
 <translation id="4441832193888514600">မူဝါဒကို cloud အသုံးပြုသူလိုက်နာရမည့် မူဝါဒအဖြစ်သာ သတ်မှတ်နိုင်သောကြောင့် လျစ်လျူရှုထားသည်။</translation>
+<translation id="4442470707340296952">Chrome တဘ်များ</translation>
 <translation id="4450893287417543264">ထပ်မပြပါနှင့်</translation>
 <translation id="4451135742916150903">HID ကိရိယာများနှင့် ချိတ်ဆက်ရန် ခွင့်တောင်းနိုင်သည်</translation>
 <translation id="4452328064229197696">သင်သုံးလိုက်သောစကားဝှက်ကို ဒေတာကျိုးပေါက်မှုတွင် တွေ့ရှိထားသည်။ သင့်အကောင့်များကို လုံခြုံစေရန် ‘Google စကားဝှက်မန်နေဂျာ’ က သင်သိမ်းထားသော စကားဝှက်များကို စစ်ဆေးရန် အကြံပြုပါသည်။</translation>
@@ -1556,6 +1560,7 @@
 <translation id="5171045022955879922">ရှာကြည့်ရန် သို့မဟုတ် URL ရိုက်ထည့်ရန်</translation>
 <translation id="5171689220826475070">Fanfold-European</translation>
 <translation id="5172758083709347301">စက်</translation>
+<translation id="5177076414499237632">ဤစာမျက်နှာရင်းမြစ်နှင့် ခေါင်းစဉ်အကြောင်း လေ့လာရန်</translation>
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE" />တွင် မရှိဘူးလား? ဤမှားယွင်းချက်ကို အစီရင်ခံမည်။</translation>
 <translation id="518639307526414276">တိရစ္ဆာန်အစာနှင့် ပြုစုရေး ပစ္စည်းများ</translation>
 <translation id="5190835502935405962">စာညှပ် ဘား</translation>
@@ -2577,6 +2582,7 @@
 <translation id="8074253406171541171">၁၀x၁၃ (စာအိတ်)</translation>
 <translation id="8075736640322370409">Google Sheet အသစ် အမြန်ပြုလုပ်ရန်</translation>
 <translation id="8075898834294118863">ဝဘ်ဆိုက်ဆက်တင်များ စီမံရန်</translation>
+<translation id="8076492880354921740">တဘ်များ</translation>
 <translation id="8078141288243656252">လှည့်ထားသည့်အခါ မှတ်ချက်ပေး၍ မရပါ</translation>
 <translation id="8079031581361219619">ဝဘ်ဆိုက်ကို ပြန်ဖွင့်လိုပါသလား။</translation>
 <translation id="8081087320434522107">ဆီဒင်ကားများ</translation>
@@ -2998,6 +3004,7 @@
 <translation id="988159990683914416">ပြုစုသူ၏ တည်ဆောက်မှု</translation>
 <translation id="989988560359834682">လိပ်စာ တည်းဖြတ်ရန်</translation>
 <translation id="991413375315957741">လှုပ်ရှားမှု (သို့) အလင်းအာရုံခံကိရိယာများ</translation>
+<translation id="992110854164447044">လိမ်လည်ခံရခြင်းမှ ကာကွယ်ပေးနိုင်ရန်အတွက် ပကတိအသွင်ကတ်သည် သင့်ကတ်အစစ်ကို ဖျောက်ပေးသည်။ <ph name="IDS_AUTOFILL_VIRTUAL_CARD_ENROLLMENT_LEARN_MORE_LINK_LABEL" /></translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
 <translation id="992256792861109788">ပန်းရောင်</translation>
 <translation id="992432478773561401">"<ph name="SOFTWARE_NAME" />" ကို သင်၏ကွန်ပျူတာ သို့မဟုတ် ကွန်ရက်တွင် မှန်ကန်စွာ ထည့်သွင်းမထားပါ−

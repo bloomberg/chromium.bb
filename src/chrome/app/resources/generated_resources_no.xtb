@@ -11,6 +11,7 @@
 <translation id="1008186147501209563">Eksportér bokmerker</translation>
 <translation id="1008557486741366299">Ikke nå</translation>
 <translation id="1009476156254802388"><ph name="WEB_DRIVE" />-plassering</translation>
+<translation id="1009663062402466586">Spillkontrollene er tilgjengelige nå</translation>
 <translation id="1010498023906173788">Denne fanen er koblet til en seriell port.</translation>
 <translation id="1010833424573920260">{NUM_PAGES,plural, =1{Siden svarer ikke}other{Sidene svarer ikke}}</translation>
 <translation id="1011355516189274711">Volum for tekst til tale</translation>
@@ -190,6 +191,7 @@ Du kan når som helst sjekke passordene dine i <ph name="GOOGLE_PASSWORD_MANAGER
 <translation id="1173894706177603556">Gi nytt navn</translation>
 <translation id="1174073918202301297">Snarveien er lagt til</translation>
 <translation id="1174366174291287894">Tilkoblingen din er alltid sikker så lenge Chrome ikke forteller deg noe annet</translation>
+<translation id="1174391930667737831">Personvernsenter</translation>
 <translation id="117445914942805388">For å slette nettleserdata på alle synkroniserte enheter og Google-kontoen din <ph name="BEGIN_LINK" />går du til innstillingene for synkronisering<ph name="END_LINK" />.</translation>
 <translation id="1175364870820465910">&amp;Skriv ut...</translation>
 <translation id="1176471985365269981">Nettsteder som ikke har lov til å redigere filer eller mapper på enheten</translation>
@@ -851,6 +853,7 @@ Tillatelser du allerede har gitt apper, kan gjelde for denne kontoen. Du kan sty
 <translation id="1795214765651529549">Bruk klassisk</translation>
 <translation id="1796105431091975902">Velg Ansible-playbooken du vil legge til</translation>
 <translation id="1796588414813960292">Funksjoner som krever lyd, kommer ikke til å virke</translation>
+<translation id="1797117170091578105">Spill med Chromebook-tastaturet. Du kan tilpasse taster til bestemte handlinger.</translation>
 <translation id="1800502858278951817">Ingen utvidelser har bedt om å få lese eller endre <ph name="SITE_NAME" /></translation>
 <translation id="1802624026913571222">Gå i hvilemodus når dekselet lukkes</translation>
 <translation id="1802687198411089702">Siden svarer ikke. Du kan vente på den eller avslutte.</translation>
@@ -1012,6 +1015,7 @@ Tillatelser du allerede har gitt apper, kan gjelde for denne kontoen. Du kan sty
 <translation id="1940546824932169984">Tilkoblede enheter</translation>
 <translation id="1941410638996203291">Starttid: <ph name="TIME" /></translation>
 <translation id="1941553344801134989">Versjon: <ph name="APP_VERSION" /></translation>
+<translation id="1941995177877935582">Vis tastetilordninger</translation>
 <translation id="1942128823046546853">lese og endre alle dataene dine på alle nettsteder</translation>
 <translation id="1942600407708803723">Slå av når dekselet lukkes</translation>
 <translation id="1944528062465413897">Bluetooth-sammenkoblingskode</translation>
@@ -2628,6 +2632,7 @@ og Ctrl + Alt + lysstyrke ned for å zoome ut.</translation>
 <translation id="3482719661246593752"><ph name="ORIGIN" /> kan se disse filene</translation>
 <translation id="3484273680291419129">Fjerner den skadelige programvaren …</translation>
 <translation id="3484869148456018791">Hent nytt sertifikat</translation>
+<translation id="3486950712960783074">Reisen din</translation>
 <translation id="3487007233252413104">anonym funksjon</translation>
 <translation id="3490695139702884919">Laster ned … <ph name="PERCENT" /> %</translation>
 <translation id="3491669675709357988">Kontoen til barnet ditt er ikke konfigurert for foreldrekontroll med Family Link. Du kan legge til foreldrekontroll når du er ferdig med konfigureringen. Du finner informasjon om foreldrekontroll i Utforsk-appen.</translation>
@@ -2938,6 +2943,7 @@ og Ctrl + Alt + lysstyrke ned for å zoome ut.</translation>
 <translation id="3797739167230984533"><ph name="BEGIN_LINK" /><ph name="DEVICE_TYPE" /> administreres<ph name="END_LINK" /> av organisasjonen din</translation>
 <translation id="3797900183766075808">&amp;Søk etter «<ph name="SEARCH_TERMS" />» på <ph name="SEARCH_ENGINE" /></translation>
 <translation id="3798449238516105146">Versjon</translation>
+<translation id="3798632811625902122">Bluetooth-enheten <ph name="DEVICE" /> ber om tillatelse til å koble til.</translation>
 <translation id="3799128412641261490">Innstillinger for brytertilgang</translation>
 <translation id="3800806661949714323">Vis alle (anbefales)</translation>
 <translation id="3800828618615365228">Tilleggsvilkår for Google Chrome og ChromeOS</translation>
@@ -4580,6 +4586,7 @@ og Ctrl + Alt + lysstyrke ned for å zoome ut.</translation>
 <translation id="5449716055534515760">Lukk vin&amp;du</translation>
 <translation id="5452976525201205853"><ph name="LANGUAGE" /> (fungerer uten nett)</translation>
 <translation id="5454166040603940656">med <ph name="PROVIDER" /></translation>
+<translation id="545484289444831485">Se flere søkeresultater</translation>
 <translation id="5455603387986949153">Les serienumrene til ChromeOS Flex-enheten og -komponenter.</translation>
 <translation id="5457113250005438886">Ugyldig</translation>
 <translation id="5457459357461771897">lese og slette bilder, musikk og andre medier fra datamaskinen din</translation>
@@ -4921,6 +4928,7 @@ og Ctrl + Alt + lysstyrke ned for å zoome ut.</translation>
 <translation id="5792295754950501287">Flere handlinger for <ph name="CARD_DESCRIPTION" /></translation>
 <translation id="5792728279623964091">Trykk på av/på-knappen</translation>
 <translation id="5793339252089865437">Hvis du laster ned oppdateringen via mobilnettverket ditt, kan det føre til ekstrakostnader.</translation>
+<translation id="5793420564274426163">Bekreftelse på sammenkobling</translation>
 <translation id="5794034487966529952">Skrivebordet <ph name="DESK_TITLE" /> har <ph name="NUM_BROWSERS" /> åpne nettleservinduer</translation>
 <translation id="5794414402486823030">Åpne alltid med systemvisningsprogrammet</translation>
 <translation id="5794700615121138172">Delte mapper i Linux</translation>
@@ -7055,6 +7063,7 @@ Trykk på en tilordnet bryter eller tast for å fjerne tilordningen.</translatio
 <translation id="7901405293566323524">Phone Hub</translation>
 <translation id="7903290522161827520">Ser du etter nettleserkomponenter? Gå til</translation>
 <translation id="7903345046358933331">Siden svarer ikke. Du kan vente til den svarer eller lukke den.</translation>
+<translation id="7903429136755645827">Klikk for å tilpasse spillkontrollene dine</translation>
 <translation id="7903742244674067440">Du har registrerte sertifikater som identifiserer disse sertifikatinstansene</translation>
 <translation id="7903925330883316394">Verktøy: <ph name="UTILITY_TYPE" /></translation>
 <translation id="7904526211178107182">Gjør Linux-porter tilgjengelige for andre enheter på nettverket.</translation>
@@ -7416,6 +7425,7 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8242426110754782860">Gå videre</translation>
 <translation id="8243948765190375130">Mediekvaliteten kan bli redusert</translation>
 <translation id="8244514732452879619">Det er snart på tide å slukke lyset</translation>
+<translation id="8245361042748627813">Denne snarveien er endret. Bruk <ph name="NEW_SHORTCUT_KEY" /> for å skrive ut med systemdialogboksen.</translation>
 <translation id="8246776524656196770">Beskytt sikkerhetsnøkkelen med PIN-kode (personlig identifikasjonsnummer)</translation>
 <translation id="8248050856337841185">&amp;Lim inn</translation>
 <translation id="8248381369318572865">Få tilgang til mikrofonen din og analyser talen din</translation>
@@ -7720,6 +7730,7 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8561565784790166472">Vær forsiktig når du går videre</translation>
 <translation id="8561853412914299728"><ph name="TAB_TITLE" /> <ph name="EMOJI_PLAYING" /></translation>
 <translation id="8565650234829130278">Forsøkte å nedgradere programmet.</translation>
+<translation id="8569673829373920831">Mer om <ph name="APP_NAME" /></translation>
 <translation id="8569682776816196752">Ingen destinasjoner ble funnet</translation>
 <translation id="8571213806525832805">Siste 4 uker</translation>
 <translation id="8571687764447439720">Legg til Kerberos-sak</translation>
@@ -8246,6 +8257,7 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="9078316009970372699">Slå av umiddelbar internettdeling</translation>
 <translation id="9078842827190780028">Se flere søkeresultater i sidepanelet</translation>
 <translation id="9079267182985899251">Snart støttes ikke dette alternativet lenger. For å presentere en fane, bruk <ph name="GOOGLE_MEET" />.</translation>
+<translation id="9080971985541434310">anslår interessene dine – Chrome kan anslå interessene dine</translation>
 <translation id="9081543426177426948">Nettsteder du besøker, lagres ikke i inkognitomodus</translation>
 <translation id="9084064520949870008">Åpne som vindu</translation>
 <translation id="9085256200913095638">Dupliser den valgte fanen</translation>

@@ -27,6 +27,7 @@
 <translation id="1043382569739532657">Subvencions, beques i ajudes financeres</translation>
 <translation id="1048785276086539861">Quan editis anotacions, aquest document tornarà a la visualització d'una sola pàgina</translation>
 <translation id="1050038467049342496">Tanca altres aplicacions</translation>
+<translation id="1053959602163383901">Has decidit verificar amb un dispositiu d'autenticació els llocs web que utilitzen <ph name="PROVIDER_ORIGIN" />. És possible que aquest proveïdor hagi emmagatzemat informació sobre la teva forma de pagament, que pots <ph name="LINK_TEXT" />.</translation>
 <translation id="1055184225775184556">&amp;Desfés l'addició</translation>
 <translation id="1056663316309890343">Programari de fotografia</translation>
 <translation id="1056898198331236512">Advertiment</translation>
@@ -290,6 +291,7 @@ En cas contrari, la configuració de privadesa el bloquejarà. Això permetrà q
 <translation id="1662550410081243962">Desa i emplena les formes de pagament</translation>
 <translation id="1663943134801823270">Les targetes i les adreces s'obtenen de Chrome. Pots gestionar-les des de <ph name="BEGIN_LINK" />Configuració<ph name="END_LINK" />.</translation>
 <translation id="1671391448414634642">A partir d'ara, les pàgines en <ph name="SOURCE_LANGUAGE" /> es traduiran a <ph name="TARGET_LANGUAGE" />.</translation>
+<translation id="1673886523110456987">Paga amb <ph name="CARD_DETAIL" /> per utilitzar l'oferta</translation>
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> a <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="1682696192498422849">La vora curta primer</translation>
 <translation id="168693727862418163">No s'ha pogut validar el valor d'aquesta política comparant-lo amb l'esquema i, per tant, s'ignorarà.</translation>
@@ -422,6 +424,7 @@ En cas contrari, la configuració de privadesa el bloquejarà. Això permetrà q
 <translation id="2053111141626950936">Les pàgines en <ph name="LANGUAGE" /> no es traduiran.</translation>
 <translation id="2053373601901562871">{NUM_DAYS,plural, =0{Quan aquest control està activat i la prova està activa, Chrome determina en quin grup gran de persones, o cohort, hi ha una activitat de navegació recent més semblant a la teva. Els anunciants poden seleccionar anuncis per al grup i la teva activitat de navegació es manté privada al teu dispositiu. El teu grup s'actualitza cada dia.}=1{Quan aquest control està activat i la prova està activa, Chrome determina en quin grup gran de persones, o cohort, hi ha una activitat de navegació recent més semblant a la teva. Els anunciants poden seleccionar anuncis per al grup i la teva activitat de navegació es manté privada al teu dispositiu. El teu grup s'actualitza cada dia.}other{Quan aquest control està activat i la prova està activa, Chrome determina en quin grup gran de persones, o cohort, hi ha una activitat de navegació recent més semblant a la teva. Els anunciants poden seleccionar anuncis per al grup i la teva activitat de navegació es manté privada al teu dispositiu. El teu grup s'actualitza cada {NUM_DAYS} dies}}</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 suggeriment}other{# suggeriments}}</translation>
+<translation id="2066915425250589881">sol·licitar que se suprimeixi</translation>
 <translation id="2068528718802935086">Nadons i nens petits</translation>
 <translation id="2071156619270205202">Aquesta targeta no és apta per a un número de targeta virtual.</translation>
 <translation id="2071692954027939183">Les notificacions s'han bloquejat automàticament perquè normalment no les permets</translation>
@@ -578,11 +581,13 @@ En cas contrari, la configuració de privadesa el bloquejarà. Això permetrà q
 <translation id="2512101340618156538">No permès (opció predeterminada)</translation>
 <translation id="2512413427717747692">Botó per establir Chrome com a navegador predeterminat: prem Retorn per establir Chrome com a navegador predeterminat del sistema a la configuració d'iOS</translation>
 <translation id="2515629240566999685">Comprova el senyal a la teva zona.</translation>
+<translation id="2515761554693942801">Has decidit verificar amb Touch ID els llocs web que utilitzen <ph name="PROVIDER_ORIGIN" />. És possible que aquest proveïdor hagi emmagatzemat informació sobre la teva forma de pagament, que pots <ph name="LINK_TEXT" />.</translation>
 <translation id="2521385132275182522">Grapat a la part inferior dreta</translation>
 <translation id="2521736961081452453">Crea un formulari</translation>
 <translation id="2523886232349826891">Només es desarà en aquest dispositiu</translation>
 <translation id="2524461107774643265">Afegeix més informació</translation>
 <translation id="2529899080962247600">Aquest camp no pot tenir més de <ph name="MAX_ITEMS_LIMIT" /> entrades. Totes les altres entrades s'ignoraran.</translation>
+<translation id="253493526287553278">Mostra els detalls del codi promocional</translation>
 <translation id="2535585790302968248">Obre una pestanya d'incògnit nova per navegar en privat</translation>
 <translation id="2535659140340599600">{COUNT,plural, =1{i 1 més}other{i # més}}</translation>
 <translation id="2536110899380797252">Afegeix una adreça</translation>
@@ -1099,6 +1104,7 @@ En cas contrari, la configuració de privadesa el bloquejarà. Això permetrà q
 <translation id="3986705137476756801">Desactiva Subtítols instantanis per ara</translation>
 <translation id="3987940399970879459">Menys d'1 MB</translation>
 <translation id="3990250421422698716">Jog offset</translation>
+<translation id="3992684624889376114">Sobre aquesta pàgina</translation>
 <translation id="3996311196211510766">El lloc web <ph name="ORIGIN" /> ha sol·licitat que s'apliqui una política d'origen a totes les sol·licituds que rebi, però en aquest moment aquesta política no es pot aplicar.</translation>
 <translation id="4006465311664329701">Formes de pagament, ofertes i adreces que fan servir Google Pay</translation>
 <translation id="4009243425692662128">El contingut de les pàgines que imprimeixes s'envia a Google Cloud o a tercers perquè l'analitzin. Per exemple, pot ser que s'analitzi per detectar-hi dades sensibles.</translation>
@@ -1269,6 +1275,7 @@ En cas contrari, la configuració de privadesa el bloquejarà. Això permetrà q
 <translation id="4435702339979719576">Postal)</translation>
 <translation id="443673843213245140">L'ús d'un servidor intermediari no està activat, però s'ha especificat una configuració explícita d'un servidor intermediari.</translation>
 <translation id="4441832193888514600">S'ha ignorat perquè la política només es pot establir com a política d'usuari basada en el núvol.</translation>
+<translation id="4442470707340296952">Pestanyes de Chrome</translation>
 <translation id="4450893287417543264">No ho tornis a mostrar</translation>
 <translation id="4451135742916150903">Pot demanar permís per connectar-se a dispositius HID</translation>
 <translation id="4452328064229197696">La contrasenya que acabes d'utilitzar s'ha trobat en una violació de les dades. Per protegir els teus comptes, el gestor de contrasenyes de Google recomana que comprovis les contrasenyes desades.</translation>
@@ -1490,6 +1497,7 @@ En cas contrari, la configuració de privadesa el bloquejarà. Això permetrà q
 <translation id="5051305769747448211">Comèdia en directe</translation>
 <translation id="5056425809654826431">{NUM_FILES,plural, =1{Per enviar aquest fitxer amb Compartició Nearby, allibera espai (<ph name="DISK_SPACE_SIZE" />) al dispositiu}other{Per enviar aquests fitxers amb Compartició Nearby, allibera espai (<ph name="DISK_SPACE_SIZE" />) al dispositiu}}</translation>
 <translation id="5056549851600133418">Articles que et poden interessar</translation>
+<translation id="5060483733937416656">Has decidit verificar amb Windows Hello els llocs web que utilitzen <ph name="PROVIDER_ORIGIN" />. És possible que aquest proveïdor hagi emmagatzemat informació sobre la teva forma de pagament, que pots <ph name="LINK_TEXT" />.</translation>
 <translation id="5061227663725596739">Volies dir <ph name="LOOKALIKE_DOMAIN" />?</translation>
 <translation id="5066056036849835175">Historial d'impressions</translation>
 <translation id="5068234115460527047">Fons d'inversió lliure</translation>
@@ -1542,6 +1550,7 @@ En cas contrari, la configuració de privadesa el bloquejarà. Això permetrà q
 <translation id="5171045022955879922">Cerqueu o escriviu l'URL</translation>
 <translation id="5171689220826475070">Fanfold-European</translation>
 <translation id="5172758083709347301">Automàtica</translation>
+<translation id="5177076414499237632">Informació sobre la font i el tema d'aquesta pàgina</translation>
 <translation id="5179510805599951267">No està escrita en <ph name="ORIGINAL_LANGUAGE" />? Informa d'aquest error</translation>
 <translation id="518639307526414276">Productes d'alimentació i de cura per a animals de companyia</translation>
 <translation id="5190835502935405962">Barra d'adreces d'interès</translation>
@@ -2562,6 +2571,7 @@ Detalls addicionals:
 <translation id="8074253406171541171">10x13 (sobre)</translation>
 <translation id="8075736640322370409">Crea un full de càlcul de Google ràpidament</translation>
 <translation id="8075898834294118863">Gestiona la configuració del lloc web</translation>
+<translation id="8076492880354921740">Pestanyes</translation>
 <translation id="8078141288243656252">No es poden fer anotacions en un document girat</translation>
 <translation id="8079031581361219619">Vols tornar a carregar el lloc web?</translation>
 <translation id="8081087320434522107">Berlines</translation>
@@ -2983,6 +2993,7 @@ Detalls addicionals:
 <translation id="988159990683914416">Muntatge del desenvolupador</translation>
 <translation id="989988560359834682">Edita l'adreça</translation>
 <translation id="991413375315957741">sensors de moviment o de llum</translation>
+<translation id="992110854164447044">Una targeta virtual amaga la teva targeta real per contribuir a protegir-te de possibles fraus. <ph name="IDS_AUTOFILL_VIRTUAL_CARD_ENROLLMENT_LEARN_MORE_LINK_LABEL" /></translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
 <translation id="992256792861109788">Rosa</translation>
 <translation id="992432478773561401"><ph name="SOFTWARE_NAME" /> no s'ha instal·lat correctament a l'ordinador o a la xarxa:

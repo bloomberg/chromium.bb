@@ -62,6 +62,7 @@
 <translation id="1459784442280469416">រក្សាទុកទៅ USB</translation>
 <translation id="1468664791493211953">ការផ្តល់ជូន</translation>
 <translation id="1476467821656042872"><ph name="MANAGER" /> គ្រប់គ្រង​ឧបករណ៍នេះ ហើយ​ប្រហែលជាអាច​តាមដាន​សកម្មភាព​របស់អ្នកបាន។</translation>
+<translation id="147809995039451286">មិនអាច​ទាញយក​កំណែថ្មី​បានទេ</translation>
 <translation id="1478594628797167447">ម៉ាស៊ីនស្កេន</translation>
 <translation id="1491076385728777984">កំពុងដំឡើងកំណែកម្មវិធី​បង្កប់នៅលើ <ph name="DEVICE_NAME" /></translation>
 <translation id="1499900233129743732"><ph name="MANAGER" /> គ្រប់គ្រង​អ្នកប្រើប្រាស់នេះ និង​អាចតាមដាន​សកម្មភាពអ្នកប្រើប្រាស់ និង​គ្រប់គ្រង​ការកំណត់ពីចម្ងាយបាន។</translation>
@@ -126,6 +127,7 @@
 <translation id="1999615961760456652">ច្រកចូលប្រើបណ្ដាញ</translation>
 <translation id="2006864819935886708">ការតភ្ជាប់</translation>
 <translation id="2008685064673031089">ការស្វែងរកចម្បង</translation>
+<translation id="2011174342667534258">កំណែ SDK៖</translation>
 <translation id="2016697457005847575">សាកល្បងអនុវត្តតាមជំហានដោះស្រាយបញ្ហា</translation>
 <translation id="2016848882344942759">--មិនមានស្លាកពណ៌ស--</translation>
 <translation id="202500043506723828">EID</translation>
@@ -157,6 +159,7 @@
 <translation id="225692081236532131">ស្ថានភាពនៃការធ្វើឲ្យសកម្ម</translation>
 <translation id="2271469253353559191">កាលវិភាគ​មុខងារ​ងងឹត</translation>
 <translation id="2275586345903859204">ការជួសជុលចប់ហើយ</translation>
+<translation id="2276999893457278469">ខ្លឹមសារ​ជំនួយ​ពេញនិយម</translation>
 <translation id="2287186687001756809">មិនមាន​រូបភាពទេ។ ដើម្បី​បញ្ចូលរូបថត សូមចូល​ទៅកាន់ <ph name="LINK" /></translation>
 <translation id="2294753434210277304">បញ្ចូលទំហំផ្ទុក​ខាងក្រៅ ដូចជាឧបករណ៍ USB ឬកាត SD ជាមួយនឹងរូបភាព Chromebook Recovery Utility ដែលបានទាញយក</translation>
 <translation id="2307344026739914387">ប្រើគូសោ​បច្ចុប្បន្ន</translation>
@@ -178,6 +181,7 @@
 <translation id="2418150275289244458">បើក​នៅក្នុង​ការកំណត់</translation>
 <translation id="2421798028054665193">រូបភាព <ph name="CURRENT_PAGE" /> នៃ <ph name="TOTAL_PAGES" /></translation>
 <translation id="2446553403094072641">ភាពត្រឹមត្រូវនៃ​ពិន្ទុអណ្ដែត</translation>
+<translation id="2447969267935997922">ការដំឡើងចប់​ហើយ។ ឥឡូវនេះ អ្នក​អាច​ដក​ឧបករណ៍ USB ឬ​កាត SD របស់អ្នក​ចេញ​បានហើយ។</translation>
 <translation id="2448312741937722512">ប្រភេទ</translation>
 <translation id="2461822463642141190">បច្ចុប្បន្ន</translation>
 <translation id="2480034874476596812">បិទដោយផ្ទាល់​ដៃ</translation>
@@ -189,6 +193,7 @@
 <translation id="2517472476991765520">ស្កេន</translation>
 <translation id="2526590354069164005">ដេស៍ថប</translation>
 <translation id="253029298928638905">កំពុងចាប់ផ្ដើមឡើងវិញ...</translation>
+<translation id="2533048460510040082">ខ្លឹមសារ​ជំនួយ​ដែលបានណែនាំ</translation>
 <translation id="2536159006530886390">មិនអាចភ្ជាប់អ៊ីនធឺណិតបានទេ។</translation>
 <translation id="2570743873672969996">កំពុងដំណើរការតេស្ត <ph name="TEST_NAME" />...</translation>
 <translation id="2584559707064218956">ដើម្បីរៀបចំ សូមចូលទៅកាន់ការកំណត់</translation>
@@ -288,6 +293,7 @@
 <translation id="3621202678540785336">ធាតុបញ្ចូល</translation>
 <translation id="3632579075709132555">ប៊ូតុងបិទ/បើក​របាំងឯកជនភាព</translation>
 <translation id="3643810137582748570">រំលងការកែតម្រូវ</translation>
+<translation id="3651050199673793219">ជ្រើសរើស​ឯកតា​សីតុណ្ហភាព</translation>
 <translation id="3678765385266369662">ជ្រើសរើសរបៀបដែលអ្នកចង់បិទ​ការការពារ​ការសរសេរ</translation>
 <translation id="3689839747745352263">តេស្ត <ph name="TEST_NAME" /></translation>
 <translation id="370665806235115550">កំពុងដំណើរការ...</translation>
@@ -305,6 +311,7 @@
 <translation id="3856304145690230735">ហ្គីរ៉ូទស្សន៍​តួ​ឧបករណ៍</translation>
 <translation id="385832974417157471">មុនពេលបិទ សូម powerwash ឧបករណ៍របស់អ្នក។ ប្រសិនបើឧបករណ៍របស់អ្នកមានគម្រប សូមរង់ចាំរហូតទាល់តែ powerwash ចប់សិន មុនពេលបិទគម្រប។ Powerwash អាចចំណាយពេលរហូតដល់មួយនាទីទើបដំណើរការចប់។</translation>
 <translation id="3858860766373142691">ឈ្មោះ</translation>
+<translation id="3862598938296403232">តម្រូវឱ្យ​មាន​ការពណ៌នា</translation>
 <translation id="3865414814144988605">គុណភាពបង្ហាញ</translation>
 <translation id="3866249974567520381">ការពិពណ៌នា</translation>
 <translation id="387301095347517405">ចំនួនដង​ដែលថ្មរបស់អ្នក​បានសាកពេញ</translation>
@@ -677,6 +684,7 @@
 <translation id="7143207342074048698">កំពុងភ្ជាប់...</translation>
 <translation id="7144878232160441200">ព្យាយាមម្តងទៀត</translation>
 <translation id="714876143603641390">ការតភ្ជាប់ Lan</translation>
+<translation id="7154020516215182599">ចែករំលែក​មតិកែលម្អ​របស់អ្នក ឬ​ពណ៌នា​បញ្ហា​របស់អ្នក។ ប្រសិនបើ​អាចធ្វើទៅ​បាន សូម​រួមបញ្ចូល​ជំហាន​បង្កើត​បញ្ហា​របស់អ្នក​ឡើងវិញ។</translation>
 <translation id="7155171745945906037">រូបភាពពីកាមេរ៉ា និងឯកសារដែលមានស្រាប់</translation>
 <translation id="7162487448488904999">សាល​រូបភាព</translation>
 <translation id="7170236477717446850">រូបភាព​កម្រងព័ត៌មាន</translation>
@@ -854,6 +862,7 @@
 <translation id="885701979325669005">ឧបករណ៍ផ្ទុកទិន្នន័យ</translation>
 <translation id="8863170912498892583">បើក​រចនាប័ទ្ម​ងងឹត</translation>
 <translation id="8863888432376731307">ទទួលបាន<ph name="INTENT" />នៃពាក្យ "<ph name="QUERY" />" និងច្រើនទៀត</translation>
+<translation id="8864415976656252616">គ្មាន​ខ្លឹមសារ​ដែលបានណែនាំ​ទេ។ សូម​មើល​ខ្លឹមសារ​ជំនួយ​ពេញនិយម។</translation>
 <translation id="8868741746785112895">GUID</translation>
 <translation id="8876270629542503161">ឧបករណ៍គឺជាថេប្លេត។</translation>
 <translation id="8881098542468797602">ការធ្វើតេស្តបានជោគជ័យ</translation>

@@ -504,6 +504,7 @@ Yhdistä laite virtalähteeseen.</translation>
 <translation id="3901991538546252627">Yhdistetään verkkoon <ph name="NAME" /></translation>
 <translation id="3922427723338465344">{0,plural, =1{Päivitä laite aiempaan versioon 1 minuutin kuluessa}other{Päivitä laite aiempaan versioon # minuutin kuluessa}}</translation>
 <translation id="3923494859158167397">Mobiiliverkkoja ei luotu</translation>
+<translation id="3925540965556789199">Ladataan tapahtumia (<ph name="DATE" />).</translation>
 <translation id="3932043219784172185">Ei yhdistettyjä laitteita</translation>
 <translation id="3934456833412894880">Mukautuva lataus on päällä. Akun varaus pysyy 80 %:ssa akunkeston pidentämiseksi. Akku ladataan täyteen tarvittaessa.</translation>
 <translation id="3943857333388298514">Liitä</translation>
@@ -703,6 +704,7 @@ Yhdistä laite virtalähteeseen.</translation>
 <translation id="5078796286268621944">Väärä PIN-koodi</translation>
 <translation id="5083553833479578423">Käytä lisää Assistantin ominaisuuksia.</translation>
 <translation id="509790653408515442">Kun striimaat puhelimen sovelluksia, ne näkyvät täällä</translation>
+<translation id="5098537242461068432">Työpöytä ja ikkunat avattu uudelleen</translation>
 <translation id="5107522548814527560">Verkko</translation>
 <translation id="5117590920725113268">Näytä seuraava kuukausi</translation>
 <translation id="5136175204352732067">Eri näppäimistö kytketty</translation>
@@ -1055,6 +1057,10 @@ Uusi asennus</translation>
 <translation id="7258828758145722155">Muokattu eilen</translation>
 <translation id="726276584504105859">Jaa näyttö vetämällä tähän.</translation>
 <translation id="7262906531272962081">Luo muistutus</translation>
+<translation id="7297440678881127227"><ph name="START_TIME" /> –
+        <ph name="END_TIME" />,
+        <ph name="TIME_ZONE" />,
+        <ph name="EVENT_SUMMARY" />. Valitsemalla tapahtuman näet lisätietoja Google Kalenterissa.</translation>
 <translation id="7302889331339392448">Livetekstitys on poissa päältä.</translation>
 <translation id="7303365578352795231">Vastataan toisella laitteella</translation>
 <translation id="7305884605064981971">EDGE</translation>
@@ -1167,6 +1173,7 @@ Uusi asennus</translation>
 <translation id="7904094684485781019">Tämän tilin järjestelmänvalvoja on estänyt useisiin tileihin kirjautumisen.</translation>
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7930731167419639574">Puhe käsitellään nyt paikallisesti, ja sanelu toimii ilman verkkoyhteyttä</translation>
+<translation id="7932451802722951285">Avaa Google Kalenteri</translation>
 <translation id="7933084174919150729">Google Assistant on käytettävissä vain ensisijaisella profiililla.</translation>
 <translation id="79341161159229895"><ph name="FIRST_PARENT_EMAIL" /> ja <ph name="SECOND_PARENT_EMAIL" /> hallinnoivat tiliä</translation>
 <translation id="793716872548410480">Katso leikepöytä painamalla <ph name="SHORTCUT_KEY_NAME" /> + V. Viisi viimeksi kopioimaasi kohdetta tallennetaan leikepöydälle.</translation>

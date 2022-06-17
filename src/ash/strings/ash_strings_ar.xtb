@@ -31,6 +31,7 @@
 <translation id="1150989369772528668">تقويم</translation>
 <translation id="1153356358378277386">الأجهزة المقترنة</translation>
 <translation id="1165712434476988950">عليك إعادة تشغيل الجهاز لتطبيق التحديث.</translation>
+<translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />، <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">‏قد لا يتم توصيل الكابل المزوَّد بمنفذ USB-C بالشاشات بشكل صحيح.</translation>
 <translation id="1175572348579024023">التمرير</translation>
 <translation id="1178581264944972037">الإيقاف مؤقتًا</translation>
@@ -504,6 +505,7 @@
 <translation id="3901991538546252627">جارٍ الاتصال بـ <ph name="NAME" /></translation>
 <translation id="3922427723338465344">{0,plural, =1{إعادة الجهاز إلى الإصدار السابق في غضون دقيقة واحدة}zero{إعادة الجهاز إلى الإصدار السابق في غضون # دقيقة}two{إعادة الجهاز إلى الإصدار السابق في غضون دقيقتين}few{إعادة الجهاز إلى الإصدار السابق في غضون # دقائق}many{إعادة الجهاز إلى الإصدار السابق في غضون # دقيقة}other{إعادة الجهاز إلى الإصدار السابق في غضون # دقيقة}}</translation>
 <translation id="3923494859158167397">ما مِن شبكات جوّال تم إعدادها.</translation>
+<translation id="3925540965556789199"><ph name="DATE" />، جارٍ تحميل الأحداث</translation>
 <translation id="3932043219784172185">لم يتم الاتصال بأي أجهزة</translation>
 <translation id="3934456833412894880">ميزة "الشحن التكيُّفي" مفعّلة. سيظلّ مستوى شحن البطارية عند %80 لإطالة عمرها، وسيتم شحنها بالكامل عندما تحتاج إلى ذلك.</translation>
 <translation id="3943857333388298514">لصق</translation>
@@ -703,6 +705,7 @@
 <translation id="5078796286268621944">رقم التعريف الشخصي غير صحيح</translation>
 <translation id="5083553833479578423">‏الاستفادة من المزيد من ميزات "مساعد Google"</translation>
 <translation id="509790653408515442">عند تشغيل تطبيقات هاتفك، سيتم عرضها هنا.</translation>
+<translation id="5098537242461068432">تمت إعادة فتح سطح المكتب والنوافذ.</translation>
 <translation id="5107522548814527560">الويب</translation>
 <translation id="5117590920725113268">عرض الشهر التالي</translation>
 <translation id="5136175204352732067">تم توصيل لوحة مفاتيح مختلفة</translation>
@@ -1055,6 +1058,10 @@
 <translation id="7258828758145722155">تم تعديله أمس.</translation>
 <translation id="726276584504105859">السحب هنا لاستخدام وضع تقسيم الشاشة</translation>
 <translation id="7262906531272962081">إنشاء تذكير</translation>
+<translation id="7297440678881127227">‏من <ph name="START_TIME" /> إلى
+        <ph name="END_TIME" />،
+        <ph name="TIME_ZONE" />،
+        <ph name="EVENT_SUMMARY" />. انقر على الحدث لعرض مزيد من التفاصيل في "تقويم Google".</translation>
 <translation id="7302889331339392448">ميزة "النسخ النصي التلقائي" غير مفعَّلة.</translation>
 <translation id="7303365578352795231">جارٍ الرد على جهاز آخر.</translation>
 <translation id="7305884605064981971">‏شبكة EDGE</translation>
@@ -1167,6 +1174,7 @@
 <translation id="7904094684485781019">لقد حظر مشرف هذا الحساب إمكانية الدخول المتعدد.</translation>
 <translation id="7911118814695487383">‏نظام التشغيل Linux</translation>
 <translation id="7930731167419639574">ميزة "التعرّف على الكلام" جاهزة للعمل الآن على جهازك، كما تعمل ميزة "الإملاء" بلا اتصال بالإنترنت.</translation>
+<translation id="7932451802722951285">‏فتح في "تقويم Google"</translation>
 <translation id="7933084174919150729">‏لا يتوفر مساعد Google إلا للملف الشخصي الأساسي.</translation>
 <translation id="79341161159229895">يُدير <ph name="FIRST_PARENT_EMAIL" /> و<ph name="SECOND_PARENT_EMAIL" /> الحساب.</translation>
 <translation id="793716872548410480">‏يُرجى الضغط على <ph name="SHORTCUT_KEY_NAME" /> + V للاطّلاع على الحافظة. تم حفظ آخر 5 عناصر نسختها إلى الحافظة.</translation>

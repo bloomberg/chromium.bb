@@ -11,6 +11,7 @@
 <translation id="1008186147501209563">पुस्तक चिन्हहरू निर्यात गर्नुहोस्</translation>
 <translation id="1008557486741366299">अहिले होइन</translation>
 <translation id="1009476156254802388"><ph name="WEB_DRIVE" /> मा फाइल डाउनलोड गरिने डिफल्ट लोकेसन</translation>
+<translation id="1009663062402466586">गेम कन्ट्रोलहरू अब उपलब्ध छन्</translation>
 <translation id="1010498023906173788">यो ट्याब कुनै सिरियल पोर्टमा जडान भएको छ।</translation>
 <translation id="1010833424573920260">{NUM_PAGES,plural, =1{ पृष्ठ प्रतिक्रियाविहीन}other{ पृष्ठहरू प्रतिक्रियाविहीन}}</translation>
 <translation id="1011355516189274711">टेक्स्ट-टू-स्पिचको भोल्युम</translation>
@@ -186,6 +187,7 @@
 <translation id="1173894706177603556">पुन: नामाकरण गर्नुहोस्</translation>
 <translation id="1174073918202301297">सर्टकट थपियो</translation>
 <translation id="1174366174291287894">Chrome ले तपाईंको कनेक्सन सुरक्षित छैन भनेको अवस्थामा बाहेक तपाईंको कनेक्सन सधैँ सुरक्षित हुन्छ</translation>
+<translation id="1174391930667737831">प्राइभेसी हब</translation>
 <translation id="117445914942805388">तपाईंका सिंक गरिएका सबै यन्त्र र Google खाताबाट ब्राउजिङ डेटा खाली गर्न <ph name="BEGIN_LINK" />सिंकसम्बन्धी सेटिङहरू<ph name="END_LINK" /> मा जानुहोस्।</translation>
 <translation id="1175364870820465910">&amp;छाप्नुहोस्...</translation>
 <translation id="1176471985365269981">तपाईंको डिभाइसमा भएका फाइल वा फोल्डरहरू परिवर्तन गर्ने अनुमति नदिइएका साइटहरू</translation>
@@ -842,6 +844,7 @@
 <translation id="1795214765651529549">क्लासिक प्रयोग गर्नुहोस्</translation>
 <translation id="1796105431091975902">आफूले हाल्न चाहेको Ansible प्लेबुक चयन गर्नुहोस्</translation>
 <translation id="1796588414813960292">जुन सुविधा चल्न ध्वनि चाहिन्छ ती सुविधाले काम गर्ने छैनन्</translation>
+<translation id="1797117170091578105">आफ्नो Chromebook को किबोर्ड प्रयोग गरी खेल्नुहोस्। तपाईं निश्चित कार्यहरू गर्नका लागि कीहरू कस्टमाइज गर्न सक्नुहुन्छ।</translation>
 <translation id="1800502858278951817">कुनै पनि एक्स्टेन्सनले <ph name="SITE_NAME" /> रिड गर्ने तथा बदल्ने अनुमति मागेको छैन</translation>
 <translation id="1802624026913571222">कभर बन्द गरिएको बेला शयन अवस्थामा लानुहोस्</translation>
 <translation id="1802687198411089702">उक्त पृष्ठ चलिरहेको छैन। तपाईं प्रतीक्षा गर्न वा पृष्ठबाट बाहिरिन सक्नुहुन्छ।</translation>
@@ -1003,6 +1006,7 @@
 <translation id="1940546824932169984">कनेक्ट गरिएका डिभाइस</translation>
 <translation id="1941410638996203291">सुरु हुने समय: <ph name="TIME" /></translation>
 <translation id="1941553344801134989">संस्करण: <ph name="APP_VERSION" /></translation>
+<translation id="1941995177877935582">की म्यापिङ देखाउनुहोस्</translation>
 <translation id="1942128823046546853">सबै वेबसाइटमा भएका तपाईंका सबै डेटा पढ्न तथा बदल्न</translation>
 <translation id="1942600407708803723">कभर बन्द गरिएको बेला बन्द गर्नुहोस्</translation>
 <translation id="1944528062465413897">ब्लुटुथबाट जोडा बनाउन प्रयोग गर्नु पर्ने कोड:</translation>
@@ -2617,6 +2621,7 @@
 <translation id="3482719661246593752"><ph name="ORIGIN" /> ले निम्न फाइलहरू हेर्न सक्छ</translation>
 <translation id="3484273680291419129">हानिकारक सफ्टवेयर हटाउँदै...</translation>
 <translation id="3484869148456018791">नयाँ प्रमाणपत्र प्राप्त गर्नुहोस्</translation>
+<translation id="3486950712960783074">तपाईंको यात्रा</translation>
 <translation id="3487007233252413104">बेनाम प्रकार्य</translation>
 <translation id="3490695139702884919">डाउनलोड गरिँदै छ... <ph name="PERCENT" />%</translation>
 <translation id="3491669675709357988">तपाईंका बच्चाको खातामा Family Link का अभिभावकीय नियन्त्रणहरू सेटअप गरिएका छैनन्। तपाईंले सेटअप पूरा गरिसकेपछि तपाईं बच्चाको खातामा अभिभावकीय नियन्त्रणहरू थप्न सक्नुहुन्छ। तपाईं एक्स्प्लोर एपमा अभिभावकीय नियन्त्रणसम्बन्धी जानकारी फेला पार्न सक्नुहुन्छ।</translation>
@@ -2927,6 +2932,7 @@
 <translation id="3797739167230984533">तपाईंको सङ्गठनले तपाईंको <ph name="BEGIN_LINK" /><ph name="DEVICE_TYPE" /> को व्यवस्थापन गर्छ<ph name="END_LINK" /></translation>
 <translation id="3797900183766075808">'<ph name="SEARCH_TERMS" />' का लागि <ph name="SEARCH_ENGINE" /> खोज्नुहोस्</translation>
 <translation id="3798449238516105146">संस्करण</translation>
+<translation id="3798632811625902122">ब्लुटुथ डिभाइस <ph name="DEVICE" /> ले कनेक्ट गर्ने अनुमति माग्दै छ।</translation>
 <translation id="3799128412641261490">स्विचमार्फत पहुँच राख्ने सुविधासम्बन्धी सेटिङ</translation>
 <translation id="3800806661949714323">सबै देखाउनुहोस् (सिफारिस गरिएको)</translation>
 <translation id="3800828618615365228">Google Chrome र ChromeOS का अतिरिक्त सर्तहरू</translation>
@@ -4571,6 +4577,7 @@
 <translation id="5449716055534515760">सञ्झ्या&amp;ल बन्द गर्नुहोस्</translation>
 <translation id="5452976525201205853"><ph name="LANGUAGE" /> (अफलाइन हुँदा पनि प्रयोग गर्न मिल्छ)</translation>
 <translation id="5454166040603940656"><ph name="PROVIDER" /> सँग</translation>
+<translation id="545484289444831485">खोजका थप परिणामहरू हेर्नुहोस्</translation>
 <translation id="5455603387986949153">ChromeOS Flex चल्ने डिभाइस र त्यसका कम्पोनेन्टका क्रम सङ्ख्या रिड गर्ने।</translation>
 <translation id="5457113250005438886">अवैध</translation>
 <translation id="5457459357461771897">तपाईंको कम्प्युटरबाट तस्बिरहरू, सङ्गीत, र अन्य मिडिया पहुँच गर्नुहोस् र हटाउनुहोस्</translation>
@@ -4912,6 +4919,7 @@
 <translation id="5792295754950501287"><ph name="CARD_DESCRIPTION" /> का सम्बन्धमा गर्न सकिने थप कारबाहीहरू</translation>
 <translation id="5792728279623964091">कृपया आफ्नो पावर बटनमा ट्याप गर्नुहोस्</translation>
 <translation id="5793339252089865437">तपाईंले अद्यावधिक डाउनलोड गर्दा आफ्नो मोबाइल नेटवर्कमार्फत गर्नुभयो भने अधिक शुल्क लाग्न सक्छ।</translation>
+<translation id="5793420564274426163">कनेक्ट भएको कुराको पुष्टि</translation>
 <translation id="5794034487966529952"><ph name="DESK_TITLE" /> नामक डेस्कमा ब्राउजरका <ph name="NUM_BROWSERS" /> वटा विन्डो खोलिएका छन्</translation>
 <translation id="5794414402486823030">प्रणाली दर्शकमार्फत सधैं खोल्नुहोस्</translation>
 <translation id="5794700615121138172">Linux बाट सेयर गरिएका फोल्डरहरू</translation>
@@ -7046,6 +7054,7 @@
 <translation id="7901405293566323524">फोन हब</translation>
 <translation id="7903290522161827520">ब्राउजरका कम्पोनेन्टहरू खोज्दै हुनुहुन्छ? यहाँ जानुहोस्</translation>
 <translation id="7903345046358933331">पृष्ठ अनुत्तरदायी भएको छ । तपाईंले यो उत्तरदायी हुञ्जेल प्रतिक्षा गर्न सक्नुहुन्छ वा यसलाई बन्द गर्न सक्नुहुन्छ ।</translation>
+<translation id="7903429136755645827">आफ्ना गेम कन्ट्रोलहरू कस्टमाइज गर्न क्लिक गर्नुहोस्</translation>
 <translation id="7903742244674067440">तपाईँसँग फाइलमा यी प्रमाणपत्रका प्रधिकरणहरूको पहिचान गर्ने प्रमाणपत्रहरू छन्</translation>
 <translation id="7903925330883316394">उपयोगिता: <ph name="UTILITY_TYPE" /></translation>
 <translation id="7904526211178107182">आफ्नो नेटवर्कका अन्य डिभाइसमा Linux का पोर्टहरू उपलब्ध गराउनुहोस्।</translation>
@@ -7406,6 +7415,7 @@
 <translation id="8242426110754782860">अगाडि बढ्नुहोस्</translation>
 <translation id="8243948765190375130">मिडियाको गुणस्तर खस्किन सक्छ</translation>
 <translation id="8244514732452879619">बत्ती निभ्ने बेला भयो</translation>
+<translation id="8245361042748627813">यो सर्टकट परिवर्तन भएको छ। सिस्टम डायलग प्रयोग गरी प्रिन्ट गर्न कृपया <ph name="NEW_SHORTCUT_KEY" /> थिच्नुहोस्।</translation>
 <translation id="8246776524656196770">कुनै PIN (व्यक्तिगत पहिचान नम्बर) प्रयोग गरी आफ्नो सुरक्षा साँचो सेभ गर्नुहोस्</translation>
 <translation id="8248050856337841185">&amp;टाँस्नुहोस्</translation>
 <translation id="8248381369318572865">तपाईंको डिभाइसको माइक्रोफोन प्रयोग गर्ने तथा तपाईंको बोलीको विश्लेषण गर्ने अनुमति</translation>
@@ -7710,6 +7720,7 @@
 <translation id="8561565784790166472">यो सुविधा प्रयोग गर्दा सावधानी अपनाउनुहोस्</translation>
 <translation id="8561853412914299728"><ph name="TAB_TITLE" /> <ph name="EMOJI_PLAYING" /></translation>
 <translation id="8565650234829130278">एपलाई डाउनग्रेज गर्ने प्रयत्न भयो।</translation>
+<translation id="8569673829373920831"><ph name="APP_NAME" /> का बारेमा थप जानकारी</translation>
 <translation id="8569682776816196752">कुनैपनि गन्तव्यहरू फेला परेनन्</translation>
 <translation id="8571213806525832805">पछिल्ला ४ हप्ता</translation>
 <translation id="8571687764447439720">Kerberos को टिकट थप्नुहोस्</translation>
@@ -8236,6 +8247,7 @@
 <translation id="9078316009970372699">तात्कालिक टेदरिङ असक्षम पार्नुहोस्</translation>
 <translation id="9078842827190780028">साइड प्यानलमा थप खोज परिणामहरू हेर्नुहोस्</translation>
 <translation id="9079267182985899251">यो विकल्प चाँडै नै उपलब्ध हुन छाड्ने छ। कुनै ट्याब देखाउन <ph name="GOOGLE_MEET" /> प्रयोग गर्नुहोस्।</translation>
+<translation id="9080971985541434310">तपाईंका रुचिहरू अनुमान गर्छ - Chrome ले तपाईंका रुचिहरू अनुमान गर्न सक्छ</translation>
 <translation id="9081543426177426948">इन्कोग्निटो मोडमा ब्राउज गर्दा तपाईंले खोल्ने साइटहरूको विवरण सेभ गरिँदैन</translation>
 <translation id="9084064520949870008">सन्झ्यालको रूपमा खोल्नुहोस्</translation>
 <translation id="9085256200913095638">चयन गरिएको ट्याबको प्रतिलिपि बनाउनुहोस्</translation>

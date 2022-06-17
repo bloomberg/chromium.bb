@@ -504,6 +504,7 @@
 <translation id="3901991538546252627"><ph name="NAME" /> سے منسلک کیا جا رہا ہے</translation>
 <translation id="3922427723338465344">{0,plural, =1{1 منٹ کے اندر آلہ کو گزشتہ ورژن میں تبدیل کریں}other{# منٹ کے اندر آلہ کو گزشتہ ورژن میں تبدیل کریں}}</translation>
 <translation id="3923494859158167397">کوئی موبائل نیٹ ورک سیٹ اپ نہیں کیا گیا</translation>
+<translation id="3925540965556789199"><ph name="DATE" />، ایونٹس لوڈ ہو رہے ہیں۔</translation>
 <translation id="3932043219784172185">کوئی آلہ منسلک نہیں ہے</translation>
 <translation id="3934456833412894880">اڈاپٹیو چارجنگ آن ہے بیٹری لائف کو بڑھانے کے لیے آپ کی بیٹری %80 پر رہے گی اور جب آپ کو ضرورت ہو تو پوری طرح سے چارج ہو جائے گی۔</translation>
 <translation id="3943857333388298514">پیسٹ کریں</translation>
@@ -703,6 +704,7 @@
 <translation id="5078796286268621944">‏غلط PIN</translation>
 <translation id="5083553833479578423">اسسٹنٹ کی مزید خصوصیات کو غیر مقفل کریں۔</translation>
 <translation id="509790653408515442">جب آپ اپنے فون کی ایپس کی سلسلہ بندی کریں گے تو وہ یہاں ظاہر ہوں گی</translation>
+<translation id="5098537242461068432">ڈیسک اور ونڈوز کو دوبارہ کھولا گیا</translation>
 <translation id="5107522548814527560">ویب</translation>
 <translation id="5117590920725113268">اگلا مہینہ دکھائیں</translation>
 <translation id="5136175204352732067">مختلف کی بورڈ منسلک کر دیا گیا</translation>
@@ -1054,6 +1056,10 @@
 <translation id="7258828758145722155">کل ترمیم کیا گیا</translation>
 <translation id="726276584504105859">اسپلٹ اسکرین استعمال کرنے کیلئے یہاں گھسیٹیں</translation>
 <translation id="7262906531272962081">یاد دہانی تخلیق کریں</translation>
+<translation id="7297440678881127227">‏<ph name="START_TIME" /> سے
+        <ph name="END_TIME" />،
+        <ph name="TIME_ZONE" />،
+        <ph name="EVENT_SUMMARY" />۔ Google کیلنڈر میں مزید تفصیلات کے لیے منتخب کریں۔</translation>
 <translation id="7302889331339392448">لائیو کیپشن آف ہے۔</translation>
 <translation id="7303365578352795231">ایک دوسرے آلہ پر جواب دیا جا رہا ہے۔</translation>
 <translation id="7305884605064981971">EDGE</translation>
@@ -1166,6 +1172,7 @@
 <translation id="7904094684485781019">اس اکاؤنٹ کے منتظم نے متعدد سائن ان کی اجازت ختم کر دی ہے۔</translation>
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7930731167419639574">اسپیچ اب مقامی طور پر پروسیس کی جاتی ہے اور ڈکٹیشن آف لائن کام کرتا ہے</translation>
+<translation id="7932451802722951285">‏Google کیلنڈر میں کھولیں</translation>
 <translation id="7933084174919150729">‏Google اسسٹنٹ صرف بنیادی پروفائل کے لیے دستیاب ہے۔</translation>
 <translation id="79341161159229895"><ph name="FIRST_PARENT_EMAIL" /> اور <ph name="SECOND_PARENT_EMAIL" /> کے زیر نظم اکاؤنٹ</translation>
 <translation id="793716872548410480">‏اپنا کلپ بورڈ دیکھنے کے لئے ‎<ph name="SHORTCUT_KEY_NAME" /> +‎ ‎V کو دبائیں۔ آپ کے کاپی کردہ آخری 5 آئٹمز کو آپ کے کلپ بورڈ میں محفوظ کیا گیا ہے۔</translation>

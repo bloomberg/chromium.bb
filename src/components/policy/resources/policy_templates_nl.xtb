@@ -1311,6 +1311,7 @@ Als je het beleid niet instelt, zijn er geen extensies vrijgesteld van de resetp
       Ondersteuning voor het instellen van dit beleid op 'tls1' of 'tls1.1' is verwijderd in versie 91. Het onderdrukken van de TLS 1.0/1.1-waarschuwing wordt niet meer ondersteund.</translation>
 <translation id="2364639863953745682">Modus voor introductie van de Assistent</translation>
 <translation id="2366301887862414321">Hosts voor native berichten op zowel gebruikersniveau als systeemniveau toestaan</translation>
+<translation id="2382672620906337383">JavaScript setTimeout() wordt niet vastgezet totdat een hogere nestdrempel wordt bereikt.</translation>
 <translation id="2384233438419344179">Als je het beleid toepast, kunnen webpagina-elementen die niet afkomstig zijn van het domein dat in de adresbalk van de browser staat, geen cookies instellen. Als je het beleid niet toepast, kunnen die elementen cookies instellen en kunnen gebruikers deze instelling niet wijzigen.
 
       Als je het beleid niet instelt, worden cookies van derden aangezet maar kunnen gebruikers deze instelling wijzigen.</translation>
@@ -1325,6 +1326,17 @@ Als je het beleid niet instelt, zijn er geen extensies vrijgesteld van de resetp
       Als je het beleid niet instelt, geeft <ph name="IE_PRODUCT_NAME" /> alleen de URL door aan <ph name="PRODUCT_NAME" /> als opdrachtregelparameter.
 
       Opmerking: Als de add-in 'Ondersteuning voor oudere browsers' van <ph name="IE_PRODUCT_NAME" /> niet is geïnstalleerd, heeft dit beleid geen effect.</translation>
+<translation id="2399419865425677422">setTimeout(…, 0) wordt vaak gebruikt om lange JavaScript-taken uit te splitsen.
+          Als je het beleid toepast, worden setTimeouts en setIntervals met een interval van minder dan 4 ms minder dwingend vastgezet.
+          Dit verbetert de prestaties op de korte termijn, maar voor websites die de API misbruiken, worden de setTimeouts uiteindelijk toch vastgezet.
+
+          Hierdoor kan de taakvolgorde op een webpagina veranderen, wat kan leiden tot onverwacht gedrag op sites die afhankelijk zijn van een bepaalde volgorde.
+          De functie kan ook van invloed zijn op sites die veel instanties van setTimeout() met een time-out van 0 ms gebruiken. De CPU-belasting kan bijvoorbeeld toenemen.
+
+          Voor gebruikers waarvoor dit beleid niet is ingesteld, rolt Chrome de wijziging geleidelijk uit op het stabiele kanaal.
+
+          Dit is een tijdelijk beleid dat volgens de planning wordt verwijderd in Chrome 105. Deze deadline kan worden verlengd als daar bij bedrijven behoefte aan is.
+          </translation>
 <translation id="2399987589969059485">Als je dit beleid instelt, kun je opgeven welke varianten mogen worden toegepast in <ph name="PRODUCT_NAME" />.
 
       Varianten vormen een manier om aanpassingen in <ph name="PRODUCT_NAME" /> aan te bieden zonder een nieuwe versie van de browser te publiceren. Hiervoor worden al bestaande functies selectief aan- of uitgezet. Ga voor meer informatie naar https://support.google.com/chrome/a?p=Manage_the_Chrome_variations_framework.
@@ -1737,6 +1749,7 @@ Als je het beleid niet instelt, staat de stroom voor piekuren aanvankelijk uit. 
 <translation id="283478052049914107">Als je het beleid toepast en een niet-standaard poort opgeeft (dat wil zeggen, een andere poort dan 80 of 443), wordt deze poort opgenomen in de gegenereerde Kerberos-SPN.
 
       Als je het beleid niet toepast of niet instelt, bevat de gegenereerde Kerberos-SPN geen poort.</translation>
+<translation id="2835686964326214400">Aangepast schema instellen om apparaten opnieuw op te starten</translation>
 <translation id="2838830882081735096">Gegevensmigratie en ARC niet toestaan</translation>
 <translation id="2839294585867804686">Instellingen voor Network File Shares</translation>
 <translation id="284288632677954003">URL van een XML-bestand dat URL's bevat die nooit overschakeling naar een andere browser veroorzaken.</translation>
@@ -2296,6 +2309,7 @@ Als je dit beleid niet instelt, geldt de standaardwaarde 'niet toegestaan' voor 
 <translation id="3387211681524224831">Als je het beleid toepast, wordt browsegeschiedenis niet opgeslagen en tabbladsynchronisatie uitgezet. Gebruikers kunnen deze instelling niet wijzigen.
 
       Als je het beleid niet toepast of niet instelt, wordt browsegeschiedenis opgeslagen.</translation>
+<translation id="3387999258705169775">Standaardgedrag voor genest vastzetten voor de functie setTimeout().</translation>
 <translation id="3389088527709746815">Gnubby-verificatie aanzetten voor de host voor externe toegang</translation>
 <translation id="3391457705621770207">Als je het beleid instelt, geef je de hoeveelheid tijd in milliseconden zonder gebruikersactiviteit aan voordat er automatisch wordt ingelogd op het lokale account op het apparaat dat wordt gespecificeerd door het beleid <ph name="DEVICE_LOCAL_ACCOUNT_AUTO_LOGIN_ID_POLICY_NAME" />.
 
@@ -2964,6 +2978,16 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen s
 
           Als dit beleid niet is ingesteld, staat de markering van het caret-teken in eerste instantie uit op het inlogscherm. De gebruiker kan deze functie op elk gewenst moment aanzetten.</translation>
 <translation id="4183229833636799228">Standaardinstelling voor <ph name="FLASH_PLUGIN_NAME" /></translation>
+<translation id="4186244263855283575">Hiermee kun je een aangepast schema instellen om apparaten opnieuw op te starten. Als dit beleid is ingesteld op True, wordt het apparaat opnieuw opgestart volgens het schema. Het beleid moet worden verwijderd om meer instanties van gepland opnieuw opstarten te annuleren.
+
+      Het volgende geldt voor gebruikerssessies en gastsessies:
+
+* De gebruikers krijgen 1 uur vóór de geplande tijd een melding dat het apparaat opnieuw wordt opgestart. Ze kunnen ervoor kiezen op dat moment opnieuw op te starten of te wachten op het gepland opnieuw opstarten. Gepland opnieuw opstarten kan niet worden uitgesteld.
+
+        * Er is een respijtperiode van 1 uur nadat het apparaat is opgestart. Instanties van gepland opnieuw opstarten worden overgeslagen tijdens deze periode en opnieuw gepland voor de volgende dag, week of maand, afhankelijk van de instelling.
+
+      In kiosksessies is er geen respijtperiode en zijn er geen meldingen over opnieuw opstarten.
+</translation>
 <translation id="4187576366596772431">De WebHID API op deze sites blokkeren</translation>
 <translation id="4192388905594723944">URL voor het valideren van verificatietoken voor client voor externe toegang</translation>
 <translation id="4203055629055264833">Als je dit beleid toepast of niet instelt, kunnen gebruikers de meest recente resultatenpagina van de standaard zoekmachine in een zijvenster tonen door een icoon in de werkbalk aan/uit te zetten.
@@ -3296,6 +3320,7 @@ Als je dit beleid niet toepast of niet instelt, kunnen sites niet tegelijkertijd
 <translation id="4632343302005518762"><ph name="PRODUCT_FRAME_NAME" /> toestaan de vermelde soorten content te verwerken.</translation>
 <translation id="4632566332417930481">Gebruik van hulpprogramma's voor ontwikkelaars uitzetten voor extensies die zijn geïnstalleerd op basis van het bedrijfsbeleid, maar toestaan in andere contexten</translation>
 <translation id="4635284822166984665">Tijd wanneer het apparaat begint met opladen, geïnterpreteerd in de lokale tijdzone van het apparaat.</translation>
+<translation id="4638532652671131094">De nestdrempel bepalen waarvoor de JavaScript-functie setTimeout() wordt vastgezet.</translation>
 <translation id="4646626362889216307">Als je het beleid instelt, kunnen de geselecteerde beleidsregels worden samengevoegd als ze afkomstig zijn van verschillende bronnen en hetzelfde bereik en niveau hebben. Dit samenvoegen vindt plaats in de sleutels op het eerste niveau van het woordenboek uit elke bron. De waarde die afkomstig is van de bron met de hoogste prioriteit, krijgt voorrang.
 
       Gebruik het jokerteken '*' om samenvoeging van alle ondersteunde woordenboekbeleidsregels toe te staan.
@@ -4643,6 +4668,13 @@ Als je dit beleid instelt, worden afhankelijk van de waarde verschillende van de
       Als je dit beleid instelt op een geldige hexadecimale kleur, wordt op basis van deze kleur automatisch een thema samengesteld en toegepast op de browser. Gebruikers kunnen het in het beleid ingestelde thema niet wijzigen.
 
       Als je dit beleid niet instelt, kunnen gebruikers het thema voor de browser naar eigen inzicht instellen.</translation>
+<translation id="619376519309703699">Dit beleid wordt aangeboden als een manier om je af te melden voor de functie First-Party Sets.
+
+                  Als je dit beleid niet instelt of aanzet, staat de functie First-Party Sets aan.
+
+                  Als je dit beleid uitzet, staat de functie First-Party Sets uit.
+
+                  Het beleid bepaalt of Chrome aan First-Party Sets gerelateerde functies ondersteunt (bijvoorbeeld het SameParty-cookiekenmerk).</translation>
 <translation id="6195802366906945965">Bepaalt of de ingebouwde certificaatverificatie wordt gebruikt om servercertificaten te verifiëren</translation>
 <translation id="6198947200418556248">Dit beleid is beëindigd. Als je nog steeds verouderd cookiegedrag nodig hebt, gebruik je <ph name="LEGACY_SAMESITE_COOKIE_BEHAVIOR_ENABLED_FOR_DOMAIN_LIST_POLICY_NAME" />. Hiermee kun je alle cookies terugzetten op het verouderde gedrag van <ph name="ATTRIBUTE_SAMESITE_NAME" />. Als je het verouderde gedrag terugzet, worden cookies waarin geen <ph name="ATTRIBUTE_SAMESITE_NAME" />-kenmerk is opgegeven, als <ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" /> behandeld en wordt de vereiste weggenomen dat cookies van <ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" /> het kenmerk <ph name="ATTRIBUTE_SECURE_NAME" /> bevatten. De schemavergelijking wordt overgeslagen tijdens de controle of 2 sites dezelfde site zijn. Zie https://www.chromium.org/administrators/policy-list-3/cookie-legacy-samesite-policies voor een volledige beschrijving.
 
@@ -5508,7 +5540,6 @@ Als je dit beleid instelt op een lege lijst of niet instelt, zijn er geen URL's 
       Als het beleid niet wordt ingesteld, wordt de plank standaard onderaan het scherm geplaatst en kan de gebruiker de positie van de plank zelf wijzigen.</translation>
 <translation id="7039815268521168329">Voice Match-proces van de Google Assistent laten zien tijdens de eerste installatie</translation>
 <translation id="7040229947030068419">Voorbeeldwaarde:</translation>
-<translation id="7041170641363384736">Hiermee kun je een aangepast schema instellen om apparaten opnieuw op te starten. Het beleid is momenteel alleen van toepassing op apparaten waarop automatisch starten van de app in de kiosksessie aanstaat. Als dit beleid is ingesteld op True, wordt het apparaat opnieuw opgestart volgens het schema. Het beleid moet worden verwijderd om meer gepland opnieuw opstarten te annuleren.</translation>
 <translation id="7044883996351280650">De Android-service 'Back-up maken en terugzetten' beheren</translation>
 <translation id="7047495632846973438">Geeft aan of het rechtenbeleid voor schermopname is aangevinkt of wordt overgeslagen.</translation>
 <translation id="7066292150801784098">Externe gebruikers niet toestaan om vensters met verhoogde bevoegdheid te gebruiken tijdens een sessie voor support op afstand</translation>
@@ -6484,7 +6515,6 @@ Als dit beleid niet is ingesteld, wordt het privacyscherm in eerste instantie ui
           Als je dit beleid instelt, kunnen gebruikers het niet wijzigen of overschrijven.
 
           Als dit beleid niet is ingesteld, staat de functie voor cursormarkering in eerste instantie uit, maar kan de gebruiker deze op elk gewenst moment aanzetten.</translation>
-<translation id="8161536598508377155">Aangepast schema instellen om kioskapparaten opnieuw op te starten</translation>
 <translation id="8164144100557223371">Beginpunt voor werkbalk met experimentele browserfuncties uitzetten</translation>
 <translation id="8164687848393015214">Als je het beleid toepast, worden controlenetwerkpakketten (<ph name="HEARTBEATS_TERM" />) naar de beheerserver gestuurd, zodat de server kan waarnemen of het apparaat offline is.
 
@@ -7038,6 +7068,7 @@ Dit beleid geldt per frame en is niet alleen gebaseerd op de oorspronkelijke URL
 <translation id="8749536858950505376">Als het beleid is ingesteld op True, blijft de grote cursor aan. Als het beleid is ingesteld op False, blijft de grote cursor uit.
 
       Als je dit beleid instelt, kunnen gebruikers de functie niet wijzigen. Als je dit beleid niet instelt, staat de grote cursor in eerste instantie uit, maar kunnen gebruikers deze op elk moment aanzetten.</translation>
+<translation id="8750941317035081777">JavaScript setTimeout() wordt vastgezet na een normale nestdrempel.</translation>
 <translation id="8753264624162178499">De optie 'Afdrukken als afbeelding' is beschikbaar voor gebruikers om pdf's te rasteren voordat de afdruktaak naar de bestemming wordt gestuurd.</translation>
 <translation id="8757552286070680084">Wilco DTC-configuratie</translation>
 <translation id="8758831693895931466">Inschrijving voor cloudbeheer verplichten</translation>

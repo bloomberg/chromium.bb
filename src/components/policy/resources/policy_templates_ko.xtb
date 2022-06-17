@@ -1351,6 +1351,7 @@
       "tls1" 또는 "tls1.1" 설정 지원은 버전 91부터 삭제되었습니다. TLS 1.0/1.1 경고 숨김은 더 이상 지원되지 않습니다.</translation>
 <translation id="2364639863953745682">어시스턴트 온보딩 환경 모드</translation>
 <translation id="2366301887862414321">사용자 수준과 시스템 수준의 기본 메시지 호스트 둘 다 허용</translation>
+<translation id="2382672620906337383">자바스크립트 setTimeout()은 중첩 기준점이 높아질 때까지 고정되지 않습니다.</translation>
 <translation id="2384233438419344179">정책을 사용으로 설정하면 브라우저의 주소 표시줄에 있는 도메인이 출처가 아닌 웹페이지 요소가 쿠키를 설정할 수 없습니다. 사용 안함으로 설정하면 이러한 요소가 쿠키를 설정하도록 허용하고 사용자가 설정을 변경할 수 없습니다.
 
       설정하지 않으면 타사 쿠키가 사용 설정되지만 사용자가 이 설정을 변경할 수 있습니다.</translation>
@@ -1365,6 +1366,17 @@
       정책을 설정하지 않으면 <ph name="IE_PRODUCT_NAME" />에서 <ph name="PRODUCT_NAME" />에 URL만 명령줄 매개변수로 전달합니다.
 
       참고: <ph name="IE_PRODUCT_NAME" />의 이전 브라우저 지원 부가기능이 설치되어 있지 않으면 정책이 적용되지 않습니다.</translation>
+<translation id="2399419865425677422">setTimeout(…, 0)은 긴 자바스크립트 작업을 세분화하는 데 흔히 사용됩니다.
+          정책을 사용 설정하면 간격이 4ms 미만인 setTimeout 및 setInterval이 적극적으로 고정되지 않습니다.
+          이렇게 하면 짧은 기간의 성능이 개선되지만 API를 악용하는 웹사이트에서는 여전히 setTimeout이 고정됩니다.
+
+          이로 인해 웹페이지에서 작업 순서가 변경될 수 있으며, 특정 순서에 의존하는 사이트에서는 예기치 않은 동작이 발생할 수 있습니다.
+          또한 시간 초과가 0ms인 setTimeout()이 많은 경우 사이트에서 CPU 부하 증가 등의 문제가 발생할 수 있습니다.
+
+          이 정책을 설정하지 않은 사용자의 경우 Chrome은 공개 버전 채널에서 점진적으로 변경사항을 출시할 예정입니다.
+
+          이는 임시 정책으로 Chrome 105에서 삭제됩니다. 기업에 필요한 경우 기한이 연장될 수 있습니다.
+          </translation>
 <translation id="2399987589969059485">이 정책을 설정하면 <ph name="PRODUCT_NAME" />에서 적용 가능한 변형을 지정할 수 있습니다.
 
       변형을 사용하면 새로운 브라우저 버전을 제공하지 않고도 기존 기능을 선별적으로 사용 설정 또는 중지하여 <ph name="PRODUCT_NAME" />의 변형본을 제공할 수 있습니다. 자세히 알아보려면 https://support.google.com/chrome/a?p=Manage_the_Chrome_variations_framework를 참고하세요.
@@ -1777,6 +1789,7 @@ False로 설정하면 개인정보 보호 화면은 항상 사용 중지됩니�
 <translation id="283478052049914107">정책을 사용으로 설정하고 비표준 포트(즉, 80 또는 443이 아닌 포트)를 입력하면 생성된 Kerberos SPN에 포트가 포함됩니다.
 
       정책을 사용 안함으로 설정하거나 설정하지 않으면 생성된 Kerberos SPN에 포트가 포함되지 않습니다.</translation>
+<translation id="2835686964326214400">기기를 재부팅할 맞춤 일정 설정</translation>
 <translation id="2838830882081735096">데이터 이전 및 ARC 허용 안함</translation>
 <translation id="2839294585867804686">네트워크 파일 공유 설정</translation>
 <translation id="284288632677954003">브라우저 전환을 실행해서는 안 되는 URL이 포함된 XML 파일의 URL입니다.</translation>
@@ -2340,6 +2353,7 @@ False로 설정하면 개인정보 보호 화면은 항상 사용 중지됩니�
 <translation id="3387211681524224831">정책을 사용으로 설정하면 방문 기록이 저장되지 않고 탭 동기화가 사용 중지되며 사용자가 이 설정을 변경할 수 없습니다.
 
       정책을 사용 안함으로 설정하거나 설정하지 않으면 방문 기록이 저장됩니다.</translation>
+<translation id="3387999258705169775">setTimeout() 함수 중첩의 고정 기본 동작입니다.</translation>
 <translation id="3389088527709746815">원격 액세스 호스트의 gnubby 인증 사용 설정</translation>
 <translation id="3391457705621770207">정책을 설정하면 <ph name="DEVICE_LOCAL_ACCOUNT_AUTO_LOGIN_ID_POLICY_NAME" /> 정책에서 지정한 기기 로컬 계정에 자동 로그인하기 전까지 사용자 활동이 없는 시간이 밀리초 단위로 결정됩니다.
 
@@ -3024,6 +3038,16 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 
           이 정책이 설정되지 않으면 처음에는 로그인 화면에서 캐럿 강조표시가 사용되지 않지만 나중에 사용자가 언제든지 사용 설정할 수 있습니다.</translation>
 <translation id="4183229833636799228">기본 <ph name="FLASH_PLUGIN_NAME" /> 설정</translation>
+<translation id="4186244263855283575">기기를 재부팅할 맞춤 일정을 설정하도록 허용합니다. True로 설정되면 기기가 일정에 따라 재부팅됩니다. 예정된 재부팅을 취소하려면 정책을 삭제해야 합니다.
+
+      사용자 세션 및 게스트 세션에는 다음 사항이 적용됩니다.
+
+        * 예정된 시간 1시간 전에 사용자에게 다시 시작 알림이 전송됩니다. 그런 다음 다시 시작하거나 예약된 재부팅을 기다릴 수 있습니다. 예약된 재부팅은 지연할 수 없습니다.
+
+        * 기기 부팅 후 1시간의 유예 기간이 있습니다. 이 기간에는 예약된 재부팅을 건너뛰고 설정에 따라 다음 날, 주 또는 월로 다시 예약됩니다.
+
+      키오스크 세션에는 유예 기간이 없으며 재부팅에 관한 알림이 표시되지 않습니다.
+</translation>
 <translation id="4187576366596772431">이 사이트에서 WebHID API 차단</translation>
 <translation id="4192388905594723944">원격 액세스 클라이언트 인증 토큰을 확인하기 위한 URL</translation>
 <translation id="4203055629055264833">정책을 사용으로 설정하거나 설정하지 않으면 사용자가 툴바의 아이콘을 전환하여 측면 패널에 가장 최근의 기본 검색엔진 결과 페이지를 표시할 수 있습니다.
@@ -3357,6 +3381,7 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 <translation id="4632343302005518762"><ph name="PRODUCT_FRAME_NAME" />이(가) 목록에 있는 콘텐츠 유형을 처리하도록 허용</translation>
 <translation id="4632566332417930481">엔터프라이즈 정책에 의해 설치된 확장 프로그램에서는 Developer Tools 사용 금지, 다른 컨텍스트에서는 Developer Tools 사용 허용</translation>
 <translation id="4635284822166984665">기기의 충전을 시작할 시간으로, 기기의 현지 시간대로 변환됩니다.</translation>
+<translation id="4638532652671131094">자바스크립트 setTimeout() 함수가 고정되기 시작하기 전에 중첩 기준점을 제어합니다.</translation>
 <translation id="4646626362889216307">정책을 설정하면 범위 및 수준이 같은 경우 출처가 서로 달라도 선택한 정책을 병합하도록 허용됩니다. 각 출처의 사전에 있는 첫 번째 수준 키를 병합합니다. 우선순위가 가장 높은 출처의 키가 우선 적용됩니다.
 
       '*' 와일드 카드를 사용하여 지원되는 모든 사전 정책의 병합을 허용합니다.
@@ -4728,6 +4753,13 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 시스템 알림을 사�
       정책을 유효한 16진수 색상으로 설정하면 색상을 토대로 테마가 자동 생성되어 브라우저에 적용됩니다. 정책에 의해 설정된 테마는 사용자가 변경할 수 없습니다.
 
       정책을 설정하지 않으면 사용자가 원하는 대로 브라우저의 테마를 변경할 수 있습니다.</translation>
+<translation id="619376519309703699">이 정책은 퍼스트 파티 세트 기능을 거부하기 위한 수단으로 제공됩니다.
+
+                  정책이 설정되지 않거나 사용으로 설정되면 퍼스트 파티 세트 기능이 사용 설정됩니다.
+
+                  정책이 사용 중지로 설정되면 퍼스트 파티 세트 기능이 사용 중지됩니다.
+
+                  Chrome에서 SameParty 쿠키 속성 등 퍼스트 파티 세트 관련 기능을 지원할지 여부를 제어합니다.</translation>
 <translation id="6195802366906945965">서버 인증서 확인을 위해 내장 인증서 확인 기능을 사용할지 결정</translation>
 <translation id="6198947200418556248">이 정책은 지원 중단되었으므로 기존 쿠키 동작이 계속 필요하면 <ph name="LEGACY_SAMESITE_COOKIE_BEHAVIOR_ENABLED_FOR_DOMAIN_LIST_POLICY_NAME" />를 사용하세요. 모든 쿠키를 기존 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 동작으로 되돌릴 수 있습니다. 기존 동작으로 되돌리면 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 속성이 지정되지 않은 쿠키가 "<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />"인 것처럼 처리되고, "<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />" 쿠키가 "<ph name="ATTRIBUTE_SECURE_NAME" />" 속성을 전달하지 않아도 되며, 두 사이트가 동일한 사이트인지 평가할 때 스킴 비교를 건너뜁니다. https://www.chromium.org/administrators/policy-list-3/cookie-legacy-samesite-policies에서 전체 설명을 확인하세요.
 
@@ -5603,7 +5635,6 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 시스템 알림을 사�
       정책이 설정되지 않으면 실행기가 기본적으로 화면 하단에 배치되며 사용자가 실행기의 위치를 변경할 수 있습니다.</translation>
 <translation id="7039815268521168329">최초 설정 시 Google 어시스턴트 Voice Match 흐름 표시</translation>
 <translation id="7040229947030068419">예시:</translation>
-<translation id="7041170641363384736">기기를 재부팅할 맞춤 일정을 설정하도록 허용합니다. 이 정책은 현재 키오스크 세션에서 앱 자동 실행이 사용 설정된 기기에만 적용됩니다. True로 설정되면 기기가 일정에 따라 재부팅됩니다. 예정된 재부팅을 취소하려면 정책을 삭제해야 합니다.</translation>
 <translation id="7044883996351280650">Android 백업 및 복원 서비스 제어</translation>
 <translation id="7047495632846973438">디스플레이 캡처 권한 정책을 확인할지 아니면 건너뛸지 결정합니다.</translation>
 <translation id="7066292150801784098">원격 지원 세션에서 원격 사용자가 관리자 창과 상호작용하지 못하도록 차단</translation>
@@ -6581,7 +6612,6 @@ False로 설정하면 로그인 화면이 표시될 때 개인정보 보호 화�
           정책이 설정되면 사용자가 변경하거나 재정의할 수 없습니다.
 
           정책이 설정되지 않은 경우 처음에는 커서 강조표시가 사용 중지되어 있으나 사용자가 언제든지 사용하도록 설정할 수 있습니다.</translation>
-<translation id="8161536598508377155">키오스크 기기를 재부팅할 맞춤 일정 설정</translation>
 <translation id="8164144100557223371">브라우저 실험 기능 툴바 진입점 사용 중지</translation>
 <translation id="8164687848393015214">정책을 사용 설정하면 관리 서버에 모니터링 네트워크 패킷(<ph name="HEARTBEATS_TERM" />)을 전송하여 온라인 상태를 모니터링하고, 기기가 오프라인일 때 서버에서 감지할 수 있도록 합니다.
 
@@ -7142,6 +7172,7 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
 <translation id="8749536858950505376">이 정책을 True로 설정하면 큰 커서가 사용 설정된 상태로 유지됩니다. 정책을 False로 설정하면 큰 커서가 사용 중지된 상태로 유지됩니다.
 
       정책을 설정하면 사용자가 기능을 변경할 수 없습니다. 설정하지 않으면 처음에는 큰 커서가 사용 중지되지만 사용자가 언제든지 사용 설정할 수 있습니다.</translation>
+<translation id="8750941317035081777">자바스크립트 setTimeout()은 일반 중첩 기준점 다음에 고정됩니다.</translation>
 <translation id="8753264624162178499">사용자에게 이미지로 인쇄 옵션을 제공하여 인쇄 작업을 대상 프린터로 전송하기 전에 PDF 래스터화 허용</translation>
 <translation id="8757552286070680084">Wilco DTC 설정입니다.</translation>
 <translation id="8758831693895931466">필수 클라우드 관리 등록 사용</translation>

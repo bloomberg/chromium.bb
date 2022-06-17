@@ -11,6 +11,7 @@
 <translation id="1008186147501209563">Exportar marcadores</translation>
 <translation id="1008557486741366299">Agora não</translation>
 <translation id="1009476156254802388">Localização do <ph name="WEB_DRIVE" /></translation>
+<translation id="1009663062402466586">Controlos de jogos já disponíveis</translation>
 <translation id="1010498023906173788">Este separador está associado a uma porta de série.</translation>
 <translation id="1010833424573920260">{NUM_PAGES,plural, =1{Página sem resposta}other{Páginas sem resposta}}</translation>
 <translation id="1011355516189274711">Volume da síntese de voz</translation>
@@ -188,6 +189,7 @@ Verifique as suas palavras-passe em qualquer altura no <ph name="GOOGLE_PASSWORD
 <translation id="1173894706177603556">Mudar nome</translation>
 <translation id="1174073918202301297">Atalho adicionado</translation>
 <translation id="1174366174291287894">A sua ligação é sempre segura a menos que o Chrome indique o contrário</translation>
+<translation id="1174391930667737831">Centro de privacidade</translation>
 <translation id="117445914942805388">Para limpar os dados de navegação de todos os seus dispositivos sincronizados e da sua Conta Google, <ph name="BEGIN_LINK" />aceda às definições de sincronização<ph name="END_LINK" />.</translation>
 <translation id="1175364870820465910">Im&amp;primir...</translation>
 <translation id="1176471985365269981">Sem autorização para editar ficheiros ou pastas no seu dispositivo</translation>
@@ -845,6 +847,7 @@ As autorizações que já concedeu às apps podem aplicar-se a esta conta. Pode 
 <translation id="1795214765651529549">Utilizar tema clássico</translation>
 <translation id="1796105431091975902">Selecione um guia interativo do Ansible para adicionar</translation>
 <translation id="1796588414813960292">As funcionalidades que necessitam de som não funcionarão</translation>
+<translation id="1797117170091578105">Jogue com o teclado do Chromebook. Pode personalizar as teclas para ações específicas.</translation>
 <translation id="1800502858278951817">Nenhuma extensão pediu para ler e alterar <ph name="SITE_NAME" /></translation>
 <translation id="1802624026913571222">Suspender quando a tampa for fechada</translation>
 <translation id="1802687198411089702">A página não responde. Pode esperar pela resposta ou sair.</translation>
@@ -1006,6 +1009,7 @@ As autorizações que já concedeu às apps podem aplicar-se a esta conta. Pode 
 <translation id="1940546824932169984">Dispositivos associados</translation>
 <translation id="1941410638996203291">Hora de início: <ph name="TIME" /></translation>
 <translation id="1941553344801134989">Versão: <ph name="APP_VERSION" /></translation>
+<translation id="1941995177877935582">Mostrar mapeamento de teclas</translation>
 <translation id="1942128823046546853">Ler e alterar todos os seus dados em todos os Websites</translation>
 <translation id="1942600407708803723">Encerrar quando a tampa for fechada</translation>
 <translation id="1944528062465413897">Código de sincronização de Bluetooth:</translation>
@@ -2620,6 +2624,7 @@ Pretende pará-lo?</translation>
 <translation id="3482719661246593752"><ph name="ORIGIN" /> pode ver os seguintes ficheiros</translation>
 <translation id="3484273680291419129">A remover software prejudicial…</translation>
 <translation id="3484869148456018791">Obter novo certificado</translation>
+<translation id="3486950712960783074">A sua viagem</translation>
 <translation id="3487007233252413104">função anónima</translation>
 <translation id="3490695139702884919">A transferir… <ph name="PERCENT" />%</translation>
 <translation id="3491669675709357988">A conta da criança não está configurada para o controlo parental do Family Link. Quando concluir a configuração, pode adicionar o controlo parental. Encontrará informações sobre o controlo parental na app Explore.</translation>
@@ -2930,6 +2935,7 @@ Pretende pará-lo?</translation>
 <translation id="3797739167230984533">O <ph name="BEGIN_LINK" /><ph name="DEVICE_TYPE" /> é gerido<ph name="END_LINK" /> pela sua entidade.</translation>
 <translation id="3797900183766075808">Pe&amp;squisar no <ph name="SEARCH_ENGINE" /> por "<ph name="SEARCH_TERMS" />"</translation>
 <translation id="3798449238516105146">Versão</translation>
+<translation id="3798632811625902122">O dispositivo Bluetooth <ph name="DEVICE" /> quer obter a autorização para sincronizar.</translation>
 <translation id="3799128412641261490">Definições do acesso por comutador</translation>
 <translation id="3800806661949714323">Mostrar tudo (recomendado)</translation>
 <translation id="3800828618615365228">Termos Adicionais do Google Chrome e Chrome OS</translation>
@@ -4575,6 +4581,7 @@ Pode atribuir vários interruptores a esta ação.</translation>
 <translation id="5449716055534515760">Fechar &amp;Janela</translation>
 <translation id="5452976525201205853"><ph name="LANGUAGE" /> (funciona offline)</translation>
 <translation id="5454166040603940656">com <ph name="PROVIDER" /></translation>
+<translation id="545484289444831485">Ver mais resultados da pesquisa</translation>
 <translation id="5455603387986949153">Ler números de série de componentes e dispositivos com ChromeOS Flex.</translation>
 <translation id="5457113250005438886">Inválido</translation>
 <translation id="5457459357461771897">Ler e eliminar fotos, música e outros elementos multimédia a partir do computador</translation>
@@ -4917,6 +4924,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="5792295754950501287">Mais ações para <ph name="CARD_DESCRIPTION" /></translation>
 <translation id="5792728279623964091">Toque no botão ligar/desligar</translation>
 <translation id="5793339252089865437">Transferir a atualização através da sua rede móvel pode resultar em custos adicionais.</translation>
+<translation id="5793420564274426163">Confirmação de sincronização</translation>
 <translation id="5794034487966529952">O espaço de trabalho <ph name="DESK_TITLE" /> tem <ph name="NUM_BROWSERS" /> janelas do navegador abertas</translation>
 <translation id="5794414402486823030">Abrir sempre com o visualizador do sistema</translation>
 <translation id="5794700615121138172">Pastas partilhadas do Linux</translation>
@@ -7052,6 +7060,7 @@ Prima uma tecla ou um interruptor atribuído para remover a atribuição.</trans
 <translation id="7901405293566323524">Centro do telemóvel</translation>
 <translation id="7903290522161827520">Está à procura dos componentes do navegador? Visite</translation>
 <translation id="7903345046358933331">A página deixou de responder. Pode esperar pela respetiva resposta ou fechá-la.</translation>
+<translation id="7903429136755645827">Clicar para personalizar os controlos de jogos</translation>
 <translation id="7903742244674067440">Tem certificados em arquivo que identificam estas autoridades de certificação</translation>
 <translation id="7903925330883316394">Utilitário: <ph name="UTILITY_TYPE" /></translation>
 <translation id="7904526211178107182">Disponibilize as portas do Linux a outros dispositivos na sua rede.</translation>
@@ -7413,6 +7422,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8242426110754782860">Continuar</translation>
 <translation id="8243948765190375130">A qualidade do conteúdo multimédia pode ser reduzida</translation>
 <translation id="8244514732452879619">O dispositivo será bloqueado em breve</translation>
+<translation id="8245361042748627813">Este atalho foi alterado. Use <ph name="NEW_SHORTCUT_KEY" /> para imprimir através da caixa de diálogo do sistema.</translation>
 <translation id="8246776524656196770">Proteja a sua chave de segurança com um PIN (número de identificação pessoal)</translation>
 <translation id="8248050856337841185">C&amp;olar</translation>
 <translation id="8248381369318572865">Aceder ao microfone e analisar o seu discurso</translation>
@@ -7717,6 +7727,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8561565784790166472">Continue com cuidado</translation>
 <translation id="8561853412914299728"><ph name="TAB_TITLE" /> <ph name="EMOJI_PLAYING" /></translation>
 <translation id="8565650234829130278">Tentativa de alterar a aplicação para a versão anterior</translation>
+<translation id="8569673829373920831">Mais sobre <ph name="APP_NAME" /></translation>
 <translation id="8569682776816196752">Não foram encontrados destinos</translation>
 <translation id="8571213806525832805">Últimas 4 semanas</translation>
 <translation id="8571687764447439720">Adicionar permissão Kerberos</translation>
@@ -8243,6 +8254,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="9078316009970372699">Desativar Ligação (à Internet) via telemóvel instantânea</translation>
 <translation id="9078842827190780028">Veja mais resultados da pesquisa no painel lateral</translation>
 <translation id="9079267182985899251">Em breve, esta opção deixará de ser suportada. Para apresentar um separador, utilize <ph name="GOOGLE_MEET" />.</translation>
+<translation id="9080971985541434310">estima os seus interesses – o Chrome pode estimar os seus interesses</translation>
 <translation id="9081543426177426948">Os sites que visita não são guardados na Navegação anónima</translation>
 <translation id="9084064520949870008">Abrir como Janela</translation>
 <translation id="9085256200913095638">Duplicar o separador selecionado</translation>

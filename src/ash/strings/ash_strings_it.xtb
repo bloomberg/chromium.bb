@@ -31,6 +31,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="1150989369772528668">Calendario</translation>
 <translation id="1153356358378277386">Dispositivi accoppiati</translation>
 <translation id="1165712434476988950">È necessario riavviare il dispositivo per applicare l'aggiornamento.</translation>
+<translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />, <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">Il cavo USB-C potrebbe non collegarsi correttamente ai display</translation>
 <translation id="1175572348579024023">Scorri</translation>
 <translation id="1178581264944972037">Pausa</translation>
@@ -504,6 +505,7 @@ Collega il dispositivo all'alimentazione.</translation>
 <translation id="3901991538546252627">Connessione a: <ph name="NAME" /></translation>
 <translation id="3922427723338465344">{0,plural, =1{Ripristina la versione precedente del dispositivo entro 1 minuto}other{Ripristina la versione precedente del dispositivo entro # minuti}}</translation>
 <translation id="3923494859158167397">Nessuna rete mobile configurata</translation>
+<translation id="3925540965556789199"><ph name="DATE" />, caricamento eventi in corso…</translation>
 <translation id="3932043219784172185">Nessun dispositivo connesso</translation>
 <translation id="3934456833412894880">Ricarica adattiva attiva. La batteria rimarrà all'80% per farla durare di più e verrà ricaricata completamente quando ti servirà.</translation>
 <translation id="3943857333388298514">Incolla</translation>
@@ -703,6 +705,7 @@ Collega il dispositivo all'alimentazione.</translation>
 <translation id="5078796286268621944">PIN errato</translation>
 <translation id="5083553833479578423">Sblocca altre funzioni dell'assistente.</translation>
 <translation id="509790653408515442">Le app del tuo telefono che trasmetti in streaming verranno visualizzate qui</translation>
+<translation id="5098537242461068432">Scrivania e finestre riaperte</translation>
 <translation id="5107522548814527560">Web</translation>
 <translation id="5117590920725113268">Mostra mese successivo</translation>
 <translation id="5136175204352732067">Tastiera diversa collegata</translation>
@@ -1055,6 +1058,10 @@ Nuova installazione</translation>
 <translation id="7258828758145722155">Modificato ieri</translation>
 <translation id="726276584504105859">Trascina qui per utilizzare la modalità Schermo diviso</translation>
 <translation id="7262906531272962081">Crea promemoria</translation>
+<translation id="7297440678881127227"><ph name="START_TIME" /> alle ore
+        <ph name="END_TIME" />,
+        <ph name="TIME_ZONE" />,
+        <ph name="EVENT_SUMMARY" />. Seleziona per avere maggiori dettagli in Google Calendar.</translation>
 <translation id="7302889331339392448">La funzionalità Sottotitoli in tempo reale è disattivata.</translation>
 <translation id="7303365578352795231">Risposta su un altro dispositivo.</translation>
 <translation id="7305884605064981971">EDGE</translation>
@@ -1167,6 +1174,7 @@ Nuova installazione</translation>
 <translation id="7904094684485781019">L'amministratore di questo account ha bloccato l'accesso simultaneo.</translation>
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7930731167419639574">Ciò che dici ora viene elaborato localmente e la dettatura funziona offline.</translation>
+<translation id="7932451802722951285">Apri in Google Calendar</translation>
 <translation id="7933084174919150729">L'Assistente Google è disponibile solo per il profilo principale.</translation>
 <translation id="79341161159229895">Account gestito da <ph name="FIRST_PARENT_EMAIL" /> e <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="793716872548410480">Premi <ph name="SHORTCUT_KEY_NAME" /> + V per visualizzare gli appunti. Gli ultimi 5 elementi copiati sono stati salvati negli appunti.</translation>
