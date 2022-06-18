@@ -1708,7 +1708,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + '84183b561b7f44b2eae6a5f268d5085accb0ad7a',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'a976a871159f85f975fbd6f170d0a8f00a4aee49',
+    Var('webrtc_git') + '/src.git' + '@' + 'e083ccc0763e59e486694406e986ed354f4ecbf2',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1781,7 +1781,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@5ed155f042bb2616397eab8f8cec32b80867b8d9',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@ae7d9099e3060d736a8b5acd656fb1152dddc639',
     'condition': 'checkout_src_internal',
   },
 

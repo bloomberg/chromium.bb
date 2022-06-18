@@ -104,7 +104,7 @@ entries = {
   'src/third_party/webdriver/pylib': 'https://chromium.googlesource.com/external/github.com/SeleniumHQ/selenium/py.git@d0045ec570c1a77612db35d1e92f05e1d27b4d53',
   'src/third_party/webgl/src': 'https://chromium.googlesource.com/external/khronosgroup/webgl.git@bb289ce3cb15bbabd42fdcb01439367846d9069d',
   'src/third_party/webgpu-cts/src': 'https://chromium.googlesource.com/external/github.com/gpuweb/cts.git@84183b561b7f44b2eae6a5f268d5085accb0ad7a',
-  'src/third_party/webrtc': 'https://webrtc.googlesource.com/src.git@a976a871159f85f975fbd6f170d0a8f00a4aee49',
+  'src/third_party/webrtc': 'https://webrtc.googlesource.com/src.git@e083ccc0763e59e486694406e986ed354f4ecbf2',
   'src/third_party/wuffs/src': 'https://skia.googlesource.com/external/github.com/google/wuffs-mirror-release-c.git@ebbecaa2fb439eff0aeedafadb4c2a984446dee8',
   'src/third_party/xnnpack/src': 'https://chromium.googlesource.com/external/github.com/google/XNNPACK.git@da533e0114f2bf730f17853ae10556d84a3d1e89',
   'src/tools/luci-go:infra/tools/luci/isolate/${platform}': 'https://chrome-infra-packages.appspot.com/infra/tools/luci/isolate/${platform}@git_revision:de014227dd270df7c61bfab740eb4ae4b52ac2a7',
