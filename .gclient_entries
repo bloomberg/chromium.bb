@@ -114,7 +114,7 @@ entries = {
   'src/tools/skia_goldctl/mac_amd64:skia/tools/goldctl/mac-amd64': 'https://chrome-infra-packages.appspot.com/skia/tools/goldctl/mac-amd64@4shFavk40_bOJI9zUzvH2PaMW7tHKuxeEN0zik75F7sC',
   'src/tools/skia_goldctl/mac_arm64:skia/tools/goldctl/mac-arm64': 'https://chrome-infra-packages.appspot.com/skia/tools/goldctl/mac-arm64@Ynx3axT8ZDN7Nl5pNwI5w8PCCt7jax5FGf8jcyjUzt4C',
   'src/tools/skia_goldctl/win:skia/tools/goldctl/windows-amd64': 'https://chrome-infra-packages.appspot.com/skia/tools/goldctl/windows-amd64@7YFnDYPdgUOTWkaZe19LzWhmwWBuVMM9Q02sTDQtlkgC',
-  'src/v8': 'https://chromium.googlesource.com/v8/v8.git@e257bfbe45425f0c21edfdc9623c2cd73ef5421f',
+  'src/v8': 'https://chromium.googlesource.com/v8/v8.git@680364e4462361bdc87d544c0c6caed9d5cc9fff',
   'src\\third_party\\angle\\third_party\\VK-GL-CTS\\src': 'https://chromium.googlesource.com/external/github.com/KhronosGroup/VK-GL-CTS@acf70aaf3fdb856cd993accbd83b27a59a3eb2e3',
   'src\\third_party\\angle\\third_party\\glmark2\\src': 'https://chromium.googlesource.com/external/github.com/glmark2/glmark2@ca8de51fedb70bace5351c6b002eb952c747e889',
   'src\\third_party\\angle\\third_party\\rapidjson\\src': 'https://chromium.googlesource.com/external/github.com/Tencent/rapidjson@781a4e667d84aeedbeb8184b7b62425ea66ec59f',
