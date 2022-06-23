@@ -617,7 +617,7 @@ void PrintViewManagerBase::UpdatePrintSettings(
   std::unique_ptr<PrinterQuery> printer_query = queue_->PopPrinterQuery(cookie);
   if (!printer_query) {
     printer_query =
-        queue_->CreatePrinterQuery(content::GlobalRenderFrameHostId());
+        queue_->CreatePrinterQuery(render_frame_host->GetGlobalId());
   }
   auto* printer_query_ptr = printer_query.get();
   printer_query_ptr->SetSettings(

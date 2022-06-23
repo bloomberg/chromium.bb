@@ -70,7 +70,7 @@ bool HandleNonNavigationAboutURL(const GURL& url) {
         FROM_HERE, base::BindOnce(&chrome::AttemptExit));
     return true;
   }
-  if (base::LowerCaseEqualsASCII(spec, "chrome://ignore/")) {
+  if (base::EqualsCaseInsensitiveASCII(spec, "chrome://ignore/")) {
     return true;
   }
 

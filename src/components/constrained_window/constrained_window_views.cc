@@ -101,15 +101,24 @@ void UpdateModalDialogPosition(views::Widget* widget,
   if (widget->HasCapture())
     return;
 
+  // |host_view| will be nullptr with CEF windowless rendering.
+  auto host_view = dialog_host->GetHostView();
   views::Widget* host_widget =
-      views::Widget::GetWidgetForNativeView(dialog_host->GetHostView());
+      host_view ? views::Widget::GetWidgetForNativeView(host_view) : nullptr;
 
   // If the host view is not backed by a Views::Widget, just update the widget
   // size. This can happen on MacViews under the Cocoa browser where the window
   // modal dialogs are displayed as sheets, and their position is managed by a
   // ConstrainedWindowSheetController instance.
   if (!host_widget) {
+#if BUILDFLAG(IS_MAC)
     widget->SetSize(size);
+#elif BUILDFLAG(IS_POSIX)
+    // Set the bounds here instead of relying on the default behavior of
+    // DesktopWindowTreeHostPlatform::CenterWindow which incorrectly centers
+    // the window on the screen.
+    widget->SetBounds(gfx::Rect(dialog_host->GetDialogPosition(size), size));
+#endif
     return;
   }
 
@@ -215,7 +224,8 @@ views::Widget* CreateWebModalDialogViews(views::WidgetDelegate* dialog,
 
   return views::DialogDelegate::CreateDialogWidget(
       dialog, nullptr,
-      manager->delegate()->GetWebContentsModalDialogHost()->GetHostView());
+      manager->delegate()->GetWebContentsModalDialogHost()->GetHostView(),
+      manager->delegate()->GetWebContentsModalDialogHost()->GetHostWidget());
 }
 
 views::Widget* CreateBrowserModalDialogViews(
@@ -232,8 +242,13 @@ views::Widget* CreateBrowserModalDialogViews(views::DialogDelegate* dialog,
 
   gfx::NativeView parent_view =
       parent ? CurrentClient()->GetDialogHostView(parent) : nullptr;
+  // Use with CEF windowless rendering.
+  gfx::AcceleratedWidget parent_widget =
+      parent ? gfx::kNullAcceleratedWidget :
+               CurrentClient()->GetModalDialogHost(parent)->GetHostWidget();
   views::Widget* widget =
-      views::DialogDelegate::CreateDialogWidget(dialog, nullptr, parent_view);
+      views::DialogDelegate::CreateDialogWidget(dialog, nullptr, parent_view,
+                                                parent_widget);
 
   bool requires_positioning = dialog->use_custom_frame();
 
@@ -246,8 +261,7 @@ views::Widget* CreateBrowserModalDialogViews(views::DialogDelegate* dialog,
   if (!requires_positioning)
     return widget;
 
-  ModalDialogHost* host =
-      parent ? CurrentClient()->GetModalDialogHost(parent) : nullptr;
+  ModalDialogHost* host = CurrentClient()->GetModalDialogHost(parent);
   if (host) {
     DCHECK_EQ(parent_view, host->GetHostView());
     ModalDialogHostObserver* dialog_host_observer =

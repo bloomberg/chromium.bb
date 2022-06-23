@@ -508,7 +508,9 @@ void ProfileMenuViewBase::ShowBubble(views::Button* anchor_button,
       feature_engagement::kIPHProfileSwitchFeature);
 
   ProfileMenuViewBase* bubble = nullptr;
-  if (browser->profile()->IsIncognitoProfile()) {
+  if (browser->profile()->IsIncognitoProfile() ||
+      (browser->profile()->IsOffTheRecord() &&
+       browser->profile()->GetOTRProfileID().IsUniqueForCEF())) {
     bubble = new IncognitoMenuView(anchor_button, browser);
   } else {
 #if BUILDFLAG(IS_CHROMEOS_ASH)

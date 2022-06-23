@@ -137,11 +137,15 @@ class AlloyBrowserHostImpl : public CefBrowserHostBase,
   // Returns true if windowless rendering is enabled.
   bool IsWindowless() const override;
 
+  bool IsVisible() const override;
+
   // Returns true if this browser supports picture-in-picture.
   bool IsPictureInPictureSupported() const;
 
   // Called when the OS window hosting the browser is destroyed.
   void WindowDestroyed() override;
+
+  bool WillBeDestroyed() const override;
 
   // Destroy the browser members. This method should only be called after the
   // native browser window is not longer processing messages.
@@ -172,8 +176,7 @@ class AlloyBrowserHostImpl : public CefBrowserHostBase,
 
   void OnSetFocus(cef_focus_source_t source) override;
 
-  bool HandleContextMenu(content::WebContents* web_contents,
-                         const content::ContextMenuParams& params);
+  bool ShowContextMenu(const content::ContextMenuParams& params);
 
   enum DestructionState {
     DESTRUCTION_STATE_NONE = 0,
@@ -209,8 +212,6 @@ class AlloyBrowserHostImpl : public CefBrowserHostBase,
                          bool proceed,
                          bool* proceed_to_fire_unload) override;
   bool TakeFocus(content::WebContents* source, bool reverse) override;
-  bool HandleContextMenu(content::RenderFrameHost& render_frame_host,
-                         const content::ContextMenuParams& params) override;
   void CanDownload(const GURL& url,
                    const std::string& request_method,
                    base::OnceCallback<void(bool)> callback) override;

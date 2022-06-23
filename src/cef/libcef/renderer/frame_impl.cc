@@ -49,6 +49,7 @@
 #include "third_party/blink/public/web/web_navigation_control.h"
 #include "third_party/blink/public/web/web_script_source.h"
 #include "third_party/blink/public/web/web_view.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace {
 
@@ -326,11 +327,24 @@ void CefFrameImpl::OnWasShown() {
   }
 }
 
+void CefFrameImpl::OnDidCommitProvisionalLoad() {
+  did_commit_provisional_load_ = true;
+  MaybeInitializeScriptContext();
+}
+
 void CefFrameImpl::OnDidFinishLoad() {
   // Ignore notifications from the embedded frame hosting a mime-type plugin.
   // We'll eventually receive a notification from the owner frame.
   if (blink_glue::HasPluginFrameOwner(frame_))
     return;
+
+  if (!blink::RuntimeEnabledFeatures::BackForwardCacheEnabled() && IsMain()) {
+    // Refresh draggable regions. Otherwise, we may not receive updated regions
+    // after navigation because LocalFrameView::UpdateDocumentAnnotatedRegion
+    // lacks sufficient context. When bfcache is disabled we use this method
+    // instead of DidStopLoading() because it provides more accurate timing.
+    OnDraggableRegionsChanged();
+  }
 
   blink::WebDocumentLoader* dl = frame_->GetDocumentLoader();
   const int http_status_code = dl->GetWebResponse().HttpStatusCode();
@@ -452,6 +466,7 @@ void CefFrameImpl::ExecuteOnLocalFrame(const std::string& function_name,
   if (!context_created_) {
     queued_context_actions_.push(
         std::make_pair(function_name, std::move(action)));
+    MaybeInitializeScriptContext();
     return;
   }
 
@@ -583,6 +598,32 @@ void CefFrameImpl::SendToBrowserFrame(const std::string& function_name,
   std::move(action).Run(browser_frame);
 }
 
+void CefFrameImpl::MaybeInitializeScriptContext() {
+  if (did_initialize_script_context_) {
+    return;
+  }
+
+  if (!did_commit_provisional_load_) {
+    // Too soon for context initialization.
+    return;
+  }
+
+  if (queued_context_actions_.empty()) {
+    // Don't need early context initialization. Avoid it due to performance
+    // consequences.
+    return;
+  }
+
+  did_initialize_script_context_ = true;
+
+  // Explicitly force creation of the script context. This occurred implicitly
+  // via DidCommitProvisionalLoad prior to https://crrev.com/5150754880a.
+  // Otherwise, a script context may never be created for a frame that doesn't
+  // contain JS code.
+  v8::HandleScope handle_scope(blink::MainThreadIsolate());
+  frame_->MainWorldScriptContext();
+}
+
 void CefFrameImpl::FrameAttachedAck() {
   // Sent from the browser process in response to ConnectBrowserFrame() sending
   // FrameAttached().
@@ -634,9 +675,9 @@ void CefFrameImpl::SendCommandWithResponse(
              blink::WebLocalFrame* frame) {
             blink::WebString response;
 
-            if (base::LowerCaseEqualsASCII(command, "getsource")) {
+            if (base::EqualsCaseInsensitiveASCII(command, "getsource")) {
               response = blink_glue::DumpDocumentMarkup(frame);
-            } else if (base::LowerCaseEqualsASCII(command, "gettext")) {
+            } else if (base::EqualsCaseInsensitiveASCII(command, "gettext")) {
               response = blink_glue::DumpDocumentText(frame);
             }
 
@@ -679,10 +720,13 @@ void CefFrameImpl::DidStopLoading() {
   // OnLoadingStateChange.
   browser_->OnLoadingStateChange(false);
 
-  // Refresh draggable regions. Otherwise, we may not receive updated regions
-  // after navigation because LocalFrameView::UpdateDocumentAnnotatedRegion
-  // lacks sufficient context.
-  OnDraggableRegionsChanged();
+  if (blink::RuntimeEnabledFeatures::BackForwardCacheEnabled()) {
+    // Refresh draggable regions. Otherwise, we may not receive updated regions
+    // after navigation because LocalFrameView::UpdateDocumentAnnotatedRegion
+    // lacks sufficient context. When bfcache is enabled we can't rely on
+    // OnDidFinishLoad() as the frame may not actually be reloaded.
+    OnDraggableRegionsChanged();
+  }
 }
 
 void CefFrameImpl::ContextLifecycleStateChanged(

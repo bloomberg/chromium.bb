@@ -184,9 +184,12 @@ void NativeWebContentsModalDialogManagerViews::HostChanged(
   if (host_) {
     host_->AddObserver(this);
 
-    for (auto* widget : observed_widgets_) {
-      views::Widget::ReparentNativeView(widget->GetNativeView(),
-                                        host_->GetHostView());
+    // |host_view| will be nullptr with CEF windowless rendering.
+    if (auto host_view = host_->GetHostView()) {
+      for (auto* widget : observed_widgets_) {
+        views::Widget::ReparentNativeView(widget->GetNativeView(),
+                                          host_view);
+      }
     }
 
     OnPositionRequiresUpdate();

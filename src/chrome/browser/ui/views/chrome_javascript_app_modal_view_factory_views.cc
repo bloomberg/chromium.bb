@@ -97,7 +97,7 @@ javascript_dialogs::AppModalDialogView* CreateViewsJavaScriptDialog(
   gfx::NativeWindow parent_window =
       controller->web_contents()->GetTopLevelNativeWindow();
 #if defined(USE_AURA)
-  if (!parent_window->GetRootWindow()) {
+  if (parent_window && !parent_window->GetRootWindow()) {
     // When we are part of a WebContents that isn't actually being displayed
     // on the screen, we can't actually attach to it.
     parent_window = nullptr;

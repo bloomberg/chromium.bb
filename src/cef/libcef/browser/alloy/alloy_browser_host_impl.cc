@@ -618,6 +618,14 @@ bool AlloyBrowserHostImpl::IsWindowless() const {
   return is_windowless_;
 }
 
+bool AlloyBrowserHostImpl::IsVisible() const {
+  CEF_REQUIRE_UIT();
+  if (IsWindowless() && platform_delegate_) {
+    return !platform_delegate_->IsHidden();
+  }
+  return CefBrowserHostBase::IsVisible();
+}
+
 bool AlloyBrowserHostImpl::IsPictureInPictureSupported() const {
   // Not currently supported with OSR.
   return !IsWindowless();
@@ -628,6 +636,11 @@ void AlloyBrowserHostImpl::WindowDestroyed() {
   DCHECK(!window_destroyed_);
   window_destroyed_ = true;
   CloseBrowser(true);
+}
+
+bool AlloyBrowserHostImpl::WillBeDestroyed() const {
+  CEF_REQUIRE_UIT();
+  return destruction_state_ >= DESTRUCTION_STATE_ACCEPTED;
 }
 
 void AlloyBrowserHostImpl::DestroyBrowser() {
@@ -1119,12 +1132,6 @@ bool AlloyBrowserHostImpl::TakeFocus(content::WebContents* source,
   return false;
 }
 
-bool AlloyBrowserHostImpl::HandleContextMenu(
-    content::RenderFrameHost& render_frame_host,
-    const content::ContextMenuParams& params) {
-  return HandleContextMenu(web_contents(), params);
-}
-
 void AlloyBrowserHostImpl::CanDownload(
     const GURL& url,
     const std::string& request_method,
@@ -1239,9 +1246,8 @@ void AlloyBrowserHostImpl::DidNavigatePrimaryMainFramePostCommit(
 
 content::JavaScriptDialogManager*
 AlloyBrowserHostImpl::GetJavaScriptDialogManager(content::WebContents* source) {
-  if (!javascript_dialog_manager_.get() && platform_delegate_) {
-    javascript_dialog_manager_.reset(new CefJavaScriptDialogManager(
-        this, platform_delegate_->CreateJavaScriptDialogRunner()));
+  if (!javascript_dialog_manager_) {
+    javascript_dialog_manager_.reset(new CefJavaScriptDialogManager(this));
   }
   return javascript_dialog_manager_.get();
 }
@@ -1255,8 +1261,7 @@ void AlloyBrowserHostImpl::RunFileChooser(
                                    params);
 }
 
-bool AlloyBrowserHostImpl::HandleContextMenu(
-    content::WebContents* web_contents,
+bool AlloyBrowserHostImpl::ShowContextMenu(
     const content::ContextMenuParams& params) {
   CEF_REQUIRE_UIT();
   if (!menu_manager_.get() && platform_delegate_) {
@@ -1298,14 +1303,13 @@ void AlloyBrowserHostImpl::RequestMediaAccessPermission(
 
   blink::MediaStreamDevices audio_devices;
   blink::MediaStreamDevices video_devices;
-  blink::mojom::StreamDevices stream_devices;
 
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
   if (!command_line->HasSwitch(switches::kEnableMediaStream)) {
     // Cancel the request.
     std::move(callback).Run(
-        stream_devices,
+        blink::mojom::StreamDevicesSet(),
         blink::mojom::MediaStreamRequestResult::PERMISSION_DENIED,
         std::unique_ptr<content::MediaStreamUI>());
     return;
@@ -1347,13 +1351,18 @@ void AlloyBrowserHostImpl::RequestMediaAccessPermission(
     }
   }
 
+  blink::mojom::StreamDevicesSet stream_devices_set;
+  stream_devices_set.stream_devices.emplace_back(
+      blink::mojom::StreamDevices::New());
+  blink::mojom::StreamDevices& devices = *stream_devices_set.stream_devices[0];
+
   // At most one audio device and one video device can be used in a stream.
   if (!audio_devices.empty())
-    stream_devices.audio_device = audio_devices.front();
+    devices.audio_device = audio_devices.front();
   if (!video_devices.empty())
-    stream_devices.video_device = video_devices.front();
+    devices.video_device = video_devices.front();
 
-  std::move(callback).Run(stream_devices,
+  std::move(callback).Run(stream_devices_set,
                           blink::mojom::MediaStreamRequestResult::OK,
                           std::unique_ptr<content::MediaStreamUI>());
 }

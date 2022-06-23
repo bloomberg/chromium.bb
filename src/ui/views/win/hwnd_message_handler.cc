@@ -824,7 +824,11 @@ bool HWNDMessageHandler::IsVisible() const {
 }
 
 bool HWNDMessageHandler::IsActive() const {
-  return GetActiveWindow() == hwnd();
+  // This active state is checked via FocusManager::SetFocusedViewWithReason.
+  // With CEF external parent hwnd() may be a child window, whereas
+  // GetActiveWindow() will return the root window, so make sure that we always
+  // compare root windows.
+  return GetActiveWindow() == GetAncestor(hwnd(), GA_ROOT);
 }
 
 bool HWNDMessageHandler::IsMinimized() const {

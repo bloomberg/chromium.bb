@@ -16,6 +16,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "cef/libcef/features/features.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/test/aura_test_utils.h"
@@ -100,9 +101,11 @@ class UIControlsDesktopOzone : public UIControlsAura {
         aura::test::QueryLatestMousePositionRequestInHost(host);
     host->ConvertPixelsToDIP(&root_current_location);
 
+#if !BUILDFLAG(ENABLE_CEF)
     auto* screen = views::test::TestDesktopScreenOzone::GetInstance();
     DCHECK_EQ(screen, display::Screen::GetScreen());
     screen->set_cursor_screen_point(gfx::Point(screen_x, screen_y));
+#endif
 
     if (root_location != root_current_location &&
         ozone_ui_controls_test_helper_->ButtonDownMask() == 0 &&

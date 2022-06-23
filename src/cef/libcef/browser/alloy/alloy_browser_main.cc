@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "libcef/browser/alloy/dialogs/alloy_constrained_window_views_client.h"
 #include "libcef/browser/browser_context.h"
 #include "libcef/browser/browser_context_keyed_service_factories.h"
 #include "libcef/browser/context.h"
@@ -15,19 +16,21 @@
 #include "libcef/browser/extensions/extension_system_factory.h"
 #include "libcef/browser/file_dialog_runner.h"
 #include "libcef/browser/net/chrome_scheme_handler.h"
-#include "libcef/browser/printing/constrained_window_views_client.h"
 #include "libcef/browser/thread_util.h"
 #include "libcef/common/app_manager.h"
 #include "libcef/common/extensions/extensions_util.h"
 #include "libcef/common/net/net_resource_provider.h"
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/media/router/chrome_media_router_factory.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/plugins/plugin_finder.h"
+#include "chrome/browser/ui/javascript_dialogs/chrome_javascript_app_modal_dialog_view_factory.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "content/public/browser/gpu_data_manager.h"
@@ -48,11 +51,11 @@
 
 #if defined(USE_AURA)
 #include "ui/aura/env.h"
-#include "ui/display/screen.h"
 #include "ui/views/widget/desktop_aura/desktop_screen.h"
 #include "ui/wm/core/wm_state.h"
 
 #if BUILDFLAG(IS_WIN)
+#include "base/enterprise_util.h"
 #include "chrome/browser/chrome_browser_main_win.h"
 #include "chrome/browser/win/parental_controls.h"
 #endif
@@ -170,7 +173,7 @@ AlloyBrowserMainParts::~AlloyBrowserMainParts() {
 }
 
 void AlloyBrowserMainParts::ToolkitInitialized() {
-  SetConstrainedWindowViewsClient(CreateCefConstrainedWindowViewsClient());
+  SetConstrainedWindowViewsClient(CreateAlloyConstrainedWindowViewsClient());
 #if defined(USE_AURA)
   CHECK(aura::Env::GetInstance());
 
@@ -186,6 +189,15 @@ void AlloyBrowserMainParts::ToolkitInitialized() {
 
 #if BUILDFLAG(IS_LINUX)
   ToolkitInitializedLinux();
+#endif
+
+#if BUILDFLAG(IS_MAC)
+  if (base::FeatureList::IsEnabled(features::kViewsJSAppModalDialog))
+    InstallChromeJavaScriptAppModalDialogViewFactory();
+  else
+    InstallChromeJavaScriptAppModalDialogViewCocoaFactory();
+#else
+  InstallChromeJavaScriptAppModalDialogViewFactory();
 #endif
 }
 
@@ -255,7 +267,9 @@ int AlloyBrowserMainParts::PreCreateThreads() {
 int AlloyBrowserMainParts::PreMainMessageLoopRun() {
 #if defined(USE_AURA)
   screen_ = views::CreateDesktopScreen();
-  display::Screen::SetScreenInstance(screen_.get());
+#endif
+#if BUILDFLAG(IS_MAC)
+  screen_ = std::make_unique<display::ScopedNativeScreen>();
 #endif
 
   if (extensions::ExtensionsEnabled()) {
@@ -295,7 +309,13 @@ int AlloyBrowserMainParts::PreMainMessageLoopRun() {
   // Windows parental controls calls can be slow, so we do an early init here
   // that calculates this value off of the UI thread.
   InitializeWinParentalControls();
-#endif
+
+  // These methods may call LoadLibrary and could trigger
+  // AssertBlockingAllowed() failures if executed at a later time on the UI
+  // thread.
+  base::IsManagedDevice();
+  base::IsEnterpriseDevice();
+#endif  // BUILDFLAG(IS_WIN)
 
   // Triggers initialization of the singleton instance on UI thread.
   PluginFinder::GetInstance();

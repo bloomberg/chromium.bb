@@ -94,13 +94,18 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   // your use case.
   static Widget* CreateDialogWidget(std::unique_ptr<WidgetDelegate> delegate,
                                     gfx::NativeWindow context,
-                                    gfx::NativeView parent);
+                                    gfx::NativeView parent,
+                                    gfx::AcceleratedWidget parent_widget =
+                                        gfx::kNullAcceleratedWidget);
   static Widget* CreateDialogWidget(WidgetDelegate* delegate,
                                     gfx::NativeWindow context,
-                                    gfx::NativeView parent);
+                                    gfx::NativeView parent,
+                                    gfx::AcceleratedWidget parent_widget =
+                                        gfx::kNullAcceleratedWidget);
 
   // Whether using custom dialog frame is supported for this dialog.
-  static bool CanSupportCustomFrame(gfx::NativeView parent);
+  static bool CanSupportCustomFrame(gfx::NativeView parent,
+                                    gfx::AcceleratedWidget parent_widget);
 
   // Returns the dialog widget InitParams for a given |context| or |parent|.
   // If |bounds| is not empty, used to initially place the dialog, otherwise
@@ -108,7 +113,9 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   static Widget::InitParams GetDialogWidgetInitParams(WidgetDelegate* delegate,
                                                       gfx::NativeWindow context,
                                                       gfx::NativeView parent,
-                                                      const gfx::Rect& bounds);
+                                                      const gfx::Rect& bounds,
+                                                      gfx::AcceleratedWidget parent_widget =
+                                                          gfx::kNullAcceleratedWidget);
 
   // Returns a mask specifying which of the available DialogButtons are visible
   // for the dialog.

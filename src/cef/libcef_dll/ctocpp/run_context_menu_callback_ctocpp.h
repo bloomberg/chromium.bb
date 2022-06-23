@@ -9,7 +9,7 @@
 // implementations. See the translator.README.txt file in the tools directory
 // for more information.
 //
-// $hash=9b70c0c42b514b6d44f4fff612eaf4d3fb62ef06$
+// $hash=ffa640e35d08dd0f9b8c0ea291db190947826915$
 //
 
 #ifndef CEF_LIBCEF_DLL_CTOCPP_RUN_CONTEXT_MENU_CALLBACK_CTOCPP_H_
@@ -35,7 +35,7 @@ class CefRunContextMenuCallbackCToCpp
   virtual ~CefRunContextMenuCallbackCToCpp();
 
   // CefRunContextMenuCallback methods.
-  void Continue(int command_id, EventFlags event_flags) override;
+  void Continue(int command_id, cef_event_flags_t event_flags) override;
   void Cancel() override;
 };
 
