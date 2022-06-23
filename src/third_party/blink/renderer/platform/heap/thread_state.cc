@@ -54,8 +54,33 @@ class BlinkRootsHandler final : public v8::EmbedderRootsHandler {
   }
 
   bool IsRoot(const v8::TracedGlobal<v8::Value>& handle) final {
-    CHECK(false) << "Blink does not use v8::TracedGlobal.";
-    return false;
+    // blpwtk2: Return true here to match the default v8 behavior, which
+    // is defined in v8::EmbedderHeapTracer::IsRootForNonTracingGC().
+    // By default, V8 does not collect externally managed objects during
+    // scavenge (minor gc). It simply marks it as rooted and later asks its
+    // embedder to trace through the object's references on a major gc cycle.
+    //
+    // Since the very early days of WebKit
+    // (https://source.chromium.org/chromium/chromium/src/+/daa47a71), the
+    // lifetime of DOM objects were also bound to scavenge GC, which differs
+    // from the default behavior of V8. This means that WebKit had an
+    // opportunity to not mark persistent handles valid on minor GC to let it
+    // wither away during the scavenge cycle. For objects not known by WebKit,
+    // the persistent handles were always marked active as the safe default,
+    // which would then be traced through during a major gc cycle to
+    // potentially delete it.
+    //
+    // Recently with the introduction of TracedReference, the scavenge gc
+    // handler in blink was forked into two functions, one to handle the case
+    // for TracedGlobal and one to handle the case for TracedReference. The
+    // TracedReference version worked as it did before but the TracedGlobal
+    // began to not mark the handle active. Upstream chromium developers don't
+    // anticipate the use of TracedGlobals so they blocked it out with
+    // release-mode assertion. For the embedders of blpwtk2, TracedGlobals are
+    // still used and so it should still mark the handles as active.
+
+    // CHECK(false) << "Blink does not use v8::TracedGlobal.";
+    return true;
   }
 
   // ResetRoot() clears references to V8 wrapper objects in all worlds. It is
