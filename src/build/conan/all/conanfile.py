@@ -71,6 +71,7 @@ class BLPWTK2Conan(ConanFile):
             "include/blpwtk2",
             "include/v8",
         ]
+        self.cpp_info.components[label].user_info.version = self.version
 
         ## ICUDT_FROM_BLPWTK2 ##
         self.cpp_info.components["icudt_from_blpwtk2"].bindirs = [bindir]
@@ -94,3 +95,4 @@ class BLPWTK2Conan(ConanFile):
             "blpwtk2-component",
             "icudt_from_blpwtk2",
         ]
+
