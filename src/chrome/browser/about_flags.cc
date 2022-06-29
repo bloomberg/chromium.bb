@@ -7292,6 +7292,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kMuteCompromisedPasswordsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(password_manager::features::kMuteCompromisedPasswords)},
 
+    {"password-view-page-in-settings",
+     flag_descriptions::kPasswordViewPageInSettingsName,
+     flag_descriptions::kPasswordViewPageInSettingsDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(
+         password_manager::features::kPasswordViewPageInSettings)},
+
     {"password-notes", flag_descriptions::kPasswordNotesName,
      flag_descriptions::kPasswordNotesDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(password_manager::features::kPasswordNotes)},
@@ -7884,7 +7890,7 @@ const FeatureEntry kFeatureEntries[] = {
     {flag_descriptions::kEnableLensFullscreenSearchFlagId,
      flag_descriptions::kEnableLensFullscreenSearchName,
      flag_descriptions::kEnableLensFullscreenSearchDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(lens::features::kLensFullscreenSearch)},
+     FEATURE_VALUE_TYPE(lens::features::kLensSearchOptimizations)},
     {flag_descriptions::kEnableLensStandaloneFlagId,
      flag_descriptions::kEnableLensStandaloneName,
      flag_descriptions::kEnableLensStandaloneDescription, kOsDesktop,
@@ -8777,6 +8783,23 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDmTokenDeletionDescription, kOsAll,
      FEATURE_VALUE_TYPE(policy::features::kDmTokenDeletion)},
 #endif  // !BUILDFLAG(IS_CHROMEOS)
+
+    {"autofill-enable-get-details-for-enroll-parsing-in-upload-card-response",
+     flag_descriptions::
+         kAutofillEnableGetDetailsForEnrollParsingInUploadCardResponseName,
+     flag_descriptions::
+         kAutofillEnableGetDetailsForEnrollParsingInUploadCardResponseDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(
+         autofill::features::
+             kAutofillEnableGetDetailsForEnrollParsingInUploadCardResponse)},
+
+#if BUILDFLAG(IS_ANDROID)
+    {"enable-commerce-hint-android",
+     flag_descriptions::kCommerceHintAndroidName,
+     flag_descriptions::kCommerceHintAndroidDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(commerce::kCommerceHintAndroid)},
+#endif
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

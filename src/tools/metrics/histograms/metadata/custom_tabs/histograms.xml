@@ -250,6 +250,42 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="CustomTabs.PostMessage.OnMessage" enum="Boolean"
+    expires_after="M108">
+  <owner>sinansahin@google.com</owner>
+  <owner>jinsukkim@chromium.org</owner>
+  <owner>chrome-connective-tissue@google.com</owner>
+  <summary>
+    Android only. Recorded when the tab controlled by the CustomTabsSession
+    sends a postMessage. Always emits true.
+  </summary>
+</histogram>
+
+<histogram name="CustomTabs.PostMessage.PostMessageFromClientApp"
+    enum="Boolean" expires_after="M108">
+  <owner>sinansahin@google.com</owner>
+  <owner>jinsukkim@chromium.org</owner>
+  <owner>chrome-connective-tissue@google.com</owner>
+  <summary>
+    Android only. Recorded when the CCT client sends a postMessage request to
+    the tab. Always emits true.
+  </summary>
+</histogram>
+
+<histogram name="CustomTabs.PostMessage.RequestPostMessageChannel"
+    enum="Boolean" expires_after="M108">
+  <owner>sinansahin@google.com</owner>
+  <owner>jinsukkim@chromium.org</owner>
+  <owner>chrome-connective-tissue@google.com</owner>
+  <summary>
+    Android only. Recorded when the CCT client calls requestPostMessageChannel
+    to establish a two way postMessage channel. Emits true if the request is
+    successful and false otherwise. A true value emitted here doesn't mean the
+    request cannot fail later; and a false value may be the result of multiple
+    things, e.g. the warmup hasn't been called.
+  </summary>
+</histogram>
+
 <histogram name="CustomTabs.PredictionStatus" enum="PredictionStatus"
     expires_after="2020-03-01">
   <owner>lizeb@chromium.org</owner>
@@ -398,6 +434,23 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="TrustedWebActivity.ExtraCommandSuccess.{command}"
+    enum="BooleanSuccess" expires_after="2022-11-23">
+  <owner>mvanouwerkerk@google.com</owner>
+  <owner>peconn@chromium.org</owner>
+  <owner>
+    src/chrome/android/java/src/org/chromium/chrome/browser/browserservices/OWNERS
+  </owner>
+  <summary>
+    Records whether the extra command {command} called from
+    TrustedWebActivityClient resulted in success or failure.
+  </summary>
+  <token key="command">
+    <variant name="checkNotificationPermission"/>
+    <variant name="getNotificationPermissionRequestPendingIntent"/>
+  </token>
+</histogram>
+
 <histogram name="TrustedWebActivity.LocationDelegationEnrolled" enum="Boolean"
     expires_after="2022-11-13">
   <owner>eirage@chromium.org</owner>
@@ -438,6 +491,21 @@ chromium-metrics-reviews@google.com.
     from the Trusted Web Activity client app. Record
     &quot;LocationUpdateError.NONE&quot; (value = 0) if there is no error and
     the geoposition is valid.
+  </summary>
+</histogram>
+
+<histogram name="TrustedWebActivity.Notification.PermissionRequestResult"
+    enum="ContentSetting" expires_after="2022-12-04">
+  <owner>mvanouwerkerk@chromium.org</owner>
+  <owner>peconn@chromium.org</owner>
+  <owner>
+    src/chrome/android/java/src/org/chromium/chrome/browser/browserservices/OWNERS
+  </owner>
+  <summary>
+    The result of a TWA notification permission request for the purpose of
+    notification delegation. This is logged when the
+    NotificationPermissionUpdater receives the result from the
+    TrustedWebActivityClient.
   </summary>
 </histogram>
 

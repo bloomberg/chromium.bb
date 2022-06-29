@@ -1589,6 +1589,7 @@ virtual/layout_ng_table_frag/external/wpt/css/css-break/table/break-before-expan
 virtual/layout_ng_table_frag/external/wpt/css/css-break/table/break-before-table-cell.html [ Pass ]
 virtual/layout_ng_table_frag/external/wpt/css/css-break/table/break-before-table-cell-child.html [ Pass ]
 virtual/layout_ng_table_frag/external/wpt/css/css-break/table/repeated-section/abspos.tentative.html [ Pass ]
+virtual/layout_ng_table_frag/external/wpt/css/css-break/table/repeated-section/abspos-in-monolithic.tentative.html [ Pass ]
 virtual/layout_ng_table_frag/external/wpt/css/css-break/table/repeated-section/block-in-inline.tentative.html [ Pass ]
 virtual/layout_ng_table_frag/external/wpt/css/css-break/table/repeated-section/captions.tentative.html [ Pass ]
 virtual/layout_ng_table_frag/external/wpt/css/css-break/table/repeated-section/footer.tentative.html [ Pass ]
@@ -3956,6 +3957,7 @@ crbug.com/1078927 external/wpt/css/css-break/table/break-before-expansion-002.ht
 crbug.com/1078927 external/wpt/css/css-break/table/break-before-table-cell.html [ Failure ]
 crbug.com/1078927 external/wpt/css/css-break/table/break-before-table-cell-child.html [ Failure ]
 crbug.com/1078927 external/wpt/css/css-break/table/repeated-section/abspos.tentative.html [ Failure ]
+crbug.com/1078927 external/wpt/css/css-break/table/repeated-section/abspos-in-monolithic.tentative.html [ Failure ]
 crbug.com/1078927 external/wpt/css/css-break/table/repeated-section/block-in-inline.tentative.html [ Failure ]
 crbug.com/1078927 external/wpt/css/css-break/table/repeated-section/captions.tentative.html [ Failure ]
 crbug.com/1078927 external/wpt/css/css-break/table/repeated-section/footer.tentative.html [ Failure ]
@@ -4665,7 +4667,8 @@ crbug.com/849978 http/tests/devtools/elements/styles-4/stylesheet-source-url-com
 crbug.com/854538 [ Win7 ] http/tests/security/contentSecurityPolicy/1.1/form-action-src-default-ignored-with-redirect.html [ Skip ]
 
 # User Activation
-crbug.com/1066190 external/wpt/html/user-activation/navigation-state-reset-crossorigin.sub.tentative.html [ Failure Timeout ]
+crbug.com/736415 crbug.com/1066190 external/wpt/html/user-activation/navigation-state-reset-crossorigin.sub.tentative.html [ Failure Timeout ]
+crbug.com/736415 external/wpt/html/user-activation/navigation-state-reset-sameorigin.tentative.html [ Failure ]
 
 # S13N Sheriff 2018-7-11
 crbug.com/862643 http/tests/serviceworker/navigation_preload/use-counter.html [ Failure Pass ]

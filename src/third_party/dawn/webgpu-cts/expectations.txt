@@ -298,12 +298,7 @@ crbug.com/tint/1500 [ nvidia-0x2184 win10 ] webgpu:shader,execution,shader_io,co
 crbug.com/tint/1500 [ nvidia-0x2184 win10 ] webgpu:shader,execution,shader_io,compute_builtins:inputs:method="struct";dispatch="indirect";groupSize={"x":8,"y":4,"z":2};numGroups={"x":1,"y":1,"z":1} [ Failure ]
 crbug.com/tint/0000 webgpu:shader,validation,parse,blankspace:null_characters:contains_null=true;placement="comment" [ Failure ]
 crbug.com/tint/0000 webgpu:shader,validation,parse,blankspace:null_characters:contains_null=true;placement="eol" [ Failure ]
-crbug.com/tint/0000 [ amd-0x6821 monterey ] webgpu:shader,validation,parse,identifiers:identifiers:* [ Failure ]
-crbug.com/tint/0000 [ bigsur intel-0x3e9b ] webgpu:shader,validation,parse,identifiers:identifiers:* [ Failure ]
-crbug.com/tint/0000 [ intel ubuntu ] webgpu:shader,validation,parse,identifiers:identifiers:* [ Failure ]
-crbug.com/tint/0000 [ intel win10 ] webgpu:shader,validation,parse,identifiers:identifiers:* [ Failure ]
-crbug.com/tint/0000 [ nvidia-0x2184 ubuntu ] webgpu:shader,validation,parse,identifiers:identifiers:* [ Failure ]
-crbug.com/tint/0000 [ nvidia-0x2184 win10 ] webgpu:shader,validation,parse,identifiers:identifiers:* [ Failure ]
+crbug.com/tint/0000 webgpu:shader,validation,parse,identifiers:identifiers:* [ Failure ]
 crbug.com/tint/1502 webgpu:shader,validation,parse,literal:abstract_float:val=".1h" [ Failure ]
 crbug.com/tint/1502 webgpu:shader,validation,parse,literal:abstract_float:val="0X3h" [ Failure ]
 crbug.com/tint/1502 webgpu:shader,validation,parse,literal:abstract_float:val="0h" [ Failure ]
@@ -316,6 +311,14 @@ crbug.com/tint/1502 webgpu:shader,validation,parse,literal:abstract_float:val="1
 crbug.com/tint/1502 webgpu:shader,validation,parse,literal:abstract_float:val="1h" [ Failure ]
 crbug.com/tint/1502 webgpu:shader,validation,parse,literal:abstract_float:val="2.4e-2h" [ Failure ]
 crbug.com/tint/1525 webgpu:shader,validation,parse,literal:u32:val="-2147483648" [ Failure ]
+
+################################################################################
+# Failures from upgrading Intel Mac Minis to 12.4
+# KEEP
+################################################################################
+crbug.com/dawn/1461 [ monterey intel ] webgpu:api,operation,command_buffer,copyTextureToTexture:copy_depth_stencil:format="depth16unorm" [ Failure ]
+crbug.com/dawn/1461 [ monterey intel ] webgpu:api,operation,command_buffer,copyTextureToTexture:copy_depth_stencil:format="depth24plus" [ Failure ]
+crbug.com/dawn/1461 [ monterey intel ] webgpu:api,operation,command_buffer,copyTextureToTexture:copy_depth_stencil:format="depth24plus-stencil8" [ Failure ]
 
 ################################################################################
 # untriaged failures

@@ -405,6 +405,11 @@
     "expiry_milestone": 106
   },
   {
+    "name": "autofill-enable-get-details-for-enroll-parsing-in-upload-card-response",
+    "owners": [ "vinnypersky@google.com", "siyua" ],
+    "expiry_milestone": 110
+  },
+  {
     "name": "autofill-enable-manual-fallback-for-virtual-cards",
     "owners": [ "siashah", "siyua" ],
     "expiry_milestone": 106
@@ -1637,6 +1642,11 @@
     "name": "enable-commerce-developer",
     "owners": [ "chrome-shopping@google.com" ],
     "expiry_milestone": 110
+  },
+  {
+    "name": "enable-commerce-hint-android",
+    "owners": [ "chrome-shopping@google.com" ],
+    "expiry_milestone": 106
   },
   {
     "name": "enable-commerce-merchant-viewer",
@@ -4901,12 +4911,17 @@
   {
     "name": "password-notes",
     "owners": ["mamir", "derinel@google.com"],
-    "expiry_milestone": 105
+    "expiry_milestone": 108
   },
   {
     "name": "password-scripts-fetching",
     "owners": [ "kolos", "treib", "brunobraga@google.com", "chrome-duplex@google.com" ],
     "expiry_milestone": 105
+  },
+  {
+    "name": "password-view-page-in-settings",
+    "owners": ["mamir", "derinel@google.com"],
+    "expiry_milestone": 108
   },
   {
     "name": "passwords-account-storage-revised-opt-in-flow",

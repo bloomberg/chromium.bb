@@ -121,6 +121,9 @@ extern const char kMuteCompromisedPasswordsDescription[];
 extern const char kPasswordNotesName[];
 extern const char kPasswordNotesDescription[];
 
+extern const char kPasswordViewPageInSettingsName[];
+extern const char kPasswordViewPageInSettingsDescription[];
+
 extern const char kEnableBluetoothSerialPortProfileInSerialApiName[];
 extern const char kEnableBluetoothSerialPortProfileInSerialApiDescription[];
 
@@ -190,6 +193,11 @@ extern const char kAutofillVisualImprovementsForSuggestionUiDescription[];
 
 extern const char kAutofillTypeSpecificPopupWidthName[];
 extern const char kAutofillTypeSpecificPopupWidthDescription[];
+
+extern const char
+    kAutofillEnableGetDetailsForEnrollParsingInUploadCardResponseName[];
+extern const char
+    kAutofillEnableGetDetailsForEnrollParsingInUploadCardResponseDescription[];
 
 extern const char kAutofillEnableManualFallbackForVirtualCardsName[];
 extern const char kAutofillEnableManualFallbackForVirtualCardsDescription[];
@@ -321,6 +329,9 @@ extern const char kCheckOfflineCapabilityDescription[];
 
 extern const char kChromeLabsName[];
 extern const char kChromeLabsDescription[];
+
+extern const char kCommerceHintAndroidName[];
+extern const char kCommerceHintAndroidDescription[];
 
 extern const char kConsolidatedSiteStorageControlsName[];
 extern const char kConsolidatedSiteStorageControlsDescription[];

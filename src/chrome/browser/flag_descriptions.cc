@@ -164,6 +164,11 @@ const char kPasswordNotesName[] = "Password notes in settings";
 const char kPasswordNotesDescription[] =
     "Enables a note section for each password in the settings page.";
 
+const char kPasswordViewPageInSettingsName[] = "Password view page in settings";
+const char kPasswordViewPageInSettingsDescription[] =
+    "Enables a new password details subpage in the settings password "
+    "management UI.";
+
 const char kEnableBluetoothSerialPortProfileInSerialApiName[] =
     "Enable Bluetooth Serial Port Profile in Serial API";
 const char kEnableBluetoothSerialPortProfileInSerialApiDescription[] =
@@ -323,6 +328,17 @@ const char kAutofillTypeSpecificPopupWidthName[] =
 const char kAutofillTypeSpecificPopupWidthDescription[] =
     "Controls if different width limits are used for the popup that provides "
     "Autofill suggestions, depending on the type of data that is filled.";
+
+const char kAutofillEnableGetDetailsForEnrollParsingInUploadCardResponseName[] =
+    "Enable parsing of the GetDetailsForEnrollResponseDetails in the "
+    "UploadCardResponseDetails";
+const char
+    kAutofillEnableGetDetailsForEnrollParsingInUploadCardResponseDescription[] =
+        "When enabled, the GetDetailsForEnrollResponseDetails in the "
+        "UploadCardResponseDetails will be parsed, which will allow the "
+        "Virtual Card Enrollment flow to skip making a new GetDetailsForEnroll "
+        "request. This is an optimization to improve the latency of the "
+        "Virtual Card Enrollment flow.";
 
 const char kAutofillEnableManualFallbackForVirtualCardsName[] =
     "Show manual fallback for virtual cards";
@@ -587,6 +603,10 @@ const char kClosedTabCacheDescription[] =
     "Enables closed tab cache to instantaneously restore recently closed tabs. "
     "NOTE: This feature is higly experimental and will lead to various "
     "breakages, enable at your own risk.";
+
+const char kCommerceHintAndroidName[] = "Commerce Hint Android";
+const char kCommerceHintAndroidDescription[] =
+    "Enables commerce hint detection on Android.";
 
 const char kConsolidatedSiteStorageControlsName[] =
     "Consolidated Site Storage Controls";

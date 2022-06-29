@@ -306,6 +306,40 @@ IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
   // AttributionsBrowserTest.
 }
 
+IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
+                       AnchorClickEmptyAttributionSrc_ImpressionReceived) {
+  GURL page_url =
+      https_server()->GetURL("b.test", "/page_with_impression_creator.html");
+  EXPECT_TRUE(NavigateToURL(web_contents(), page_url));
+
+  EXPECT_CALL(mock_attribution_host(), RegisterNavigationDataHost).Times(0);
+
+  SourceObserver source_observer(web_contents());
+  EXPECT_TRUE(ExecJs(web_contents(), R"(
+  createAndClickAttributionSrcAnchor({url: 'page_with_conversion_redirect.html',
+                                      attributionsrc: ''});)"));
+
+  // Wait for the impression to be seen by the observer.
+  blink::Impression last_impression = source_observer.Wait();
+}
+
+IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
+                       WindowOpenAttributionSrc_ImpressionReceived) {
+  GURL page_url =
+      https_server()->GetURL("b.test", "/page_with_impression_creator.html");
+  EXPECT_TRUE(NavigateToURL(web_contents(), page_url));
+
+  EXPECT_CALL(mock_attribution_host(), RegisterNavigationDataHost).Times(0);
+
+  SourceObserver source_observer(web_contents());
+  EXPECT_TRUE(ExecJs(web_contents(), R"(
+  window.open("page_with_conversion_redirect.html", "_top",
+  "attributionsrc=");)"));
+
+  // Wait for the impression to be seen by the observer.
+  blink::Impression last_impression = source_observer.Wait();
+}
+
 // See crbug.com/1322450
 IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
                        AttributionSrcWindowOpen_URLEncoded_SourceRegistered) {
@@ -342,6 +376,81 @@ IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
 
   EXPECT_EQ(register_response->http_request()->relative_url,
             "/register_source?a=b&c=d");
+}
+
+// See crbug.com/1338698
+IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
+                       AttributionSrcWindowOpen_RetainsOriginalURLCase) {
+  // Create a separate server as we cannot register a `ControllableHttpResponse`
+  // after the server starts.
+  auto https_server = std::make_unique<net::EmbeddedTestServer>(
+      net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server->SetSSLConfig(net::EmbeddedTestServer::CERT_TEST_NAMES);
+  https_server->ServeFilesFromSourceDirectory(
+      "content/test/data/attribution_reporting");
+
+  auto register_response =
+      std::make_unique<net::test_server::ControllableHttpResponse>(
+          https_server.get(), "/register_source?a=B&C=d");
+  ASSERT_TRUE(https_server->Start());
+
+  GURL page_url =
+      https_server->GetURL("b.test", "/page_with_impression_creator.html");
+  EXPECT_TRUE(NavigateToURL(web_contents(), page_url));
+
+  TestNavigationObserver observer(web_contents());
+
+  // This attributionsrc will only be handled properly if the URL's original
+  // case is retained before being passed to the attributionsrc loader.
+  EXPECT_TRUE(ExecJs(web_contents(), R"(
+  window.open("page_with_conversion_redirect.html", "_top",
+  "attributionsrc=register_source%3Fa%3DB%26C%3Dd");)"));
+
+  register_response->WaitForRequest();
+  register_response->Done();
+
+  // TODO(crbug.com/1322525): Remove this once we use a pure mock.
+  observer.Wait();
+
+  EXPECT_EQ(register_response->http_request()->relative_url,
+            "/register_source?a=B&C=d");
+}
+
+// See crbug.com/1338698
+IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
+                       AttributionSrcWindowOpen_NonAsciiUrl) {
+  // Create a separate server as we cannot register a `ControllableHttpResponse`
+  // after the server starts.
+  auto https_server = std::make_unique<net::EmbeddedTestServer>(
+      net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server->SetSSLConfig(net::EmbeddedTestServer::CERT_TEST_NAMES);
+  https_server->ServeFilesFromSourceDirectory(
+      "content/test/data/attribution_reporting");
+
+  auto register_response =
+      std::make_unique<net::test_server::ControllableHttpResponse>(
+          https_server.get(), "/%F0%9F%98%80");
+  ASSERT_TRUE(https_server->Start());
+
+  GURL page_url =
+      https_server->GetURL("b.test", "/page_with_impression_creator.html");
+  EXPECT_TRUE(NavigateToURL(web_contents(), page_url));
+
+  TestNavigationObserver observer(web_contents());
+
+  // Ensure that the special handling of the original case for attributionsrc
+  // features works with non-ASCII characters.
+  EXPECT_TRUE(ExecJs(web_contents(), R"(
+  window.open("page_with_conversion_redirect.html", "_top",
+  "attributionsrc=😀");)"));
+
+  register_response->WaitForRequest();
+  register_response->Done();
+
+  // TODO(crbug.com/1322525): Remove this once we use a pure mock.
+  observer.Wait();
+
+  EXPECT_EQ(register_response->http_request()->relative_url, "/%F0%9F%98%80");
 }
 
 IN_PROC_BROWSER_TEST_F(
