@@ -412,3 +412,4 @@ crbug.com/dawn/0000 [ intel win10 ] webgpu:shader,execution,expression,call,buil
 crbug.com/dawn/0000 [ intel win10 ] webgpu:shader,execution,expression,call,builtin,inversesqrt:abstract_float:* [ Failure ]
 crbug.com/dawn/0000 [ intel win10 ] webgpu:shader,execution,expression,call,builtin,length:* [ Failure ]
 crbug.com/dawn/0000 [ dawn-backend-validation intel-0x3e9b ] webgpu:shader,execution,zero_init:compute,zero_init:storageClass="workgroup";workgroupSize=[1,47,1];batch__=12 [ Failure ]
+crbug.com/dawn/0000 [ mac intel ] webgpu:api,validation,capability_checks,features,texture_formats:texture_descriptor:* [ Failure ]

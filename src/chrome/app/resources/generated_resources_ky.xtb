@@ -840,7 +840,7 @@
 <translation id="177989070088644880">Колдонмо (<ph name="ANDROID_PACKAGE_NAME" />)</translation>
 <translation id="1780152987505130652">Топту жабуу</translation>
 <translation id="1780273119488802839">Кыстармалар өткөрүлүп алынууда...</translation>
-<translation id="178092663238929451">Жакын жердеги кишилерден файлдарды алуу жана жөнөтүү үчүн Nearby Share функциясын жөндөңүз</translation>
+<translation id="178092663238929451">Жакын жердеги кишилерден файлдарды алуу жана жөнөтүү үчүн Nearby Share функциясын тууралаңыз</translation>
 <translation id="1781291988450150470">Учурдагы PIN код</translation>
 <translation id="1781502536226964113">Жаңы өтмөк бетин ачуу</translation>
 <translation id="1781771911845953849">Аккаунттар жана шайкештирүү</translation>
@@ -1736,7 +1736,6 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="2602501489742255173">Баштоо үчүн, өйдө сүрүп коюңуз</translation>
 <translation id="2603115962224169880">Компьютерди тазалоо</translation>
 <translation id="2603355571917519942">Voice Match даяр</translation>
-<translation id="2604138917550693049">Google Lens аркылуу издөө</translation>
 <translation id="2604255671529671813">Тармакка туташуу катасы</translation>
 <translation id="2605668923777146443">Better Together функциясынын параметрлерин көрүү үчүн <ph name="LINK_BEGIN" />Жөндөөлөргө<ph name="LINK_END" /> өтүңүз.</translation>
 <translation id="2606246518223360146">Дайындарды байланыштыруу</translation>
@@ -1864,6 +1863,7 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="2724841811573117416">WebRTC таржымалдары</translation>
 <translation id="272488616838512378">Бирдик которуу</translation>
 <translation id="2725200716980197196">Тармактын туташуу жөндөмдүүлүгү калыбына келтирилди</translation>
+<translation id="272741954544380994">Сүрөттү <ph name="VISUAL_SEARCH_PROVIDER" /> менен издөө</translation>
 <translation id="2727633948226935816">Мага экинчи эскертилбесин</translation>
 <translation id="2727712005121231835">Чыныгы өлчөм</translation>
 <translation id="2729314457178420145">Google.com сайтынан чыгарып сала турган серептөө маалыматы да (<ph name="URL" />) тазалансын. <ph name="LEARN_MORE" /></translation>
@@ -4207,7 +4207,6 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="5051836348807686060">Сиз тандаган тилдерде орфография текшерилбейт</translation>
 <translation id="5052499409147950210">Сайтты түзөтүү</translation>
 <translation id="505347685865235222">Аталышы жок топ – <ph name="GROUP_CONTENT_STRING" /></translation>
-<translation id="5053962746715621840">Google Lens аркылуу издөө</translation>
 <translation id="5054374119096692193">Картанын бардык параметрлерин <ph name="BEGIN_LINK" />Chrome'ду ыңгайлаштыруу<ph name="END_LINK" /> бөлүмүнөн караңыз</translation>
 <translation id="5056950756634735043">Контейнерге туташууда</translation>
 <translation id="5057110919553308744">Кеңейтүүнү чыкылдатканда</translation>
@@ -4302,7 +4301,7 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="514575469079499857">Жайгашкан жерди аныктоо үчүн IP дарегиңизди колдонуңуз (демейки)</translation>
 <translation id="5147103632304200977">Сайт HID түзмөктөрүн колдонгону жатканда уруксат суралсын (сунушталат)</translation>
 <translation id="5148277445782867161">Google'дун жайгашкан жерди аныктоо кызматы түзмөктүн жайгашкан жерин болжолдоп билүү үчүн Wi‑Fi, мобилдик тармактар жана сенсорлор сыяктуу булактарды колдонот.</translation>
-<translation id="5150070631291639005">Купуялык жөндөөлөрү</translation>
+<translation id="5150070631291639005">Купуялык параметрлери</translation>
 <translation id="5150254825601720210">Netscape Тастыктама SSL сервер аталышы</translation>
 <translation id="5151354047782775295">Дисктен орун бошотуңуз же автоматтык түрдө жок кылына турган дайындарды тандаңыз</translation>
 <translation id="5153234146675181447">Телефон унутулсун</translation>
@@ -6902,7 +6901,7 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="7742558784808143689"><ph name="SITE_NAME" />, анын астындагы бардык сайттардагы, ошондой эле орнотулган колдонмолордогу сайтка тиешелүү маалыматтар жана уруксаттар тазалансынбы?</translation>
 <translation id="7742706086992565332">Айрым сайттардын көрүнүшүн чоңойтуу же кичирейтүү функциясын колдоно аласыз</translation>
 <translation id="7742879569460013116">Шилтемени төмөнкү менен бөлүшүү:</translation>
-<translation id="774377079771918250">Кайда сакталаарын тандаңыз</translation>
+<translation id="774377079771918250">Кайда сакталарын тандаңыз</translation>
 <translation id="7744047395460924128">Басып чыгаруу таржымалыңызды көрүү</translation>
 <translation id="7744192722284567281">Сырсөз уурдалды</translation>
 <translation id="7744649840067671761">Башка аракеттерди дайындоо үчүн жаңы которгучту же баскычтоптогу баскычты таптап коюңуз.
@@ -8438,6 +8437,7 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="957960681186851048">Бул сайт бир нече файлды автоматтык түрдө жүктөп алууга аракет кылды</translation>
 <translation id="960987915827980018">1 сааттай убакыт калды</translation>
 <translation id="962802172452141067">Кыстарма папкасынын даракчасы</translation>
+<translation id="963000966785016697">Сүрөттү <ph name="VISUAL_SEARCH_PROVIDER" /> менен издөө</translation>
 <translation id="964286338916298286">IT администраторуңуз түзмөгүңүз үчүн Chrome Goodies'ти өчүрүп койгон.</translation>
 <translation id="964439421054175458">{NUM_APLLICATIONS,plural, =1{Колдонмо}other{Колдонмолор}}</translation>
 <translation id="964790508619473209">Экрандагы нерселерди жайгаштыруу</translation>

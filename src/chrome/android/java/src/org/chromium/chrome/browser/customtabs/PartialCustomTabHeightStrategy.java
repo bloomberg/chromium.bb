@@ -479,8 +479,8 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
         // the handle view color needs updating to match it. This is a better way than running
         // PCCT's own scrim coordinator since it can apply shape-aware scrim to the handle view
         // that has the rounded corner.
-        View handleView = mActivity.findViewById(R.id.custom_tabs_handle_view);
-        GradientDrawable drawable = (GradientDrawable) handleView.getBackground();
+        View dragBar = mActivity.findViewById(R.id.drag_bar);
+        GradientDrawable drawable = (GradientDrawable) dragBar.getBackground();
         drawable.setColor(color);
     }
 
@@ -510,7 +510,7 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
         // We do not resize Window but just translate its vertical offset, and resize Coordinator-
         // LayoutForPointer instead. This helps us work around the round-corner bug in Android S.
         // See b/223536648.
-        attributes.y = Math.max(maxExpandedY, mDisplayHeight - height - mNavbarHeight);
+        attributes.y = Math.max(maxExpandedY, mDisplayHeight - height);
         mActivity.getWindow().setAttributes(attributes);
     }
 
@@ -540,8 +540,8 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
     private void updateWindowPos(@Px int y) {
         // Do not allow the Window to go down below the initial position or above the minimum
         // threshold capped by the status bar and (optionally) the 90%-height adjustment.
-        y = MathUtils.clamp(y, getFullyExpandedYCoordinateWithAdjustment(),
-                mMaxHeight - mInitialHeight - mNavbarHeight);
+        y = MathUtils.clamp(
+                y, getFullyExpandedYCoordinateWithAdjustment(), mMaxHeight - mInitialHeight);
         WindowManager.LayoutParams attributes = mActivity.getWindow().getAttributes();
         if (attributes.y == y) return;
 
@@ -654,7 +654,7 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
                 mNavbar.animate().alpha(1.f).setDuration(NAVBAR_FADE_DURATION_MS);
             }
         } else {
-            mNavbar.animate().alpha(0.f).setDuration(NAVBAR_FADE_DURATION_MS);
+            if (mNavbar != null) mNavbar.animate().alpha(0.f).setDuration(NAVBAR_FADE_DURATION_MS);
         }
         showNavbarButtons(show);
     }
