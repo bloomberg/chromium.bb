@@ -6,6 +6,7 @@
 
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "cef/libcef/features/runtime.h"
 #include "chrome/browser/background_fetch/background_fetch_permission_context.h"
 #include "chrome/browser/background_sync/periodic_background_sync_permission_context.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -61,8 +62,10 @@ permissions::PermissionManager::PermissionContextMap CreatePermissionContexts(
       std::make_unique<GeolocationPermissionContextDelegate>(profile);
 #endif  // BUILDFLAG(IS_ANDROID)
 #if BUILDFLAG(IS_MAC)
+  if (!cef::IsAlloyRuntimeEnabled()) {
   delegates.geolocation_manager =
       g_browser_process->platform_part()->geolocation_manager();
+  }
 #endif  // BUILDFLAG(IS_MAC)
   delegates.media_stream_device_enumerator =
       MediaCaptureDevicesDispatcher::GetInstance();

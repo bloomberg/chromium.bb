@@ -11,6 +11,13 @@ namespace content {
 class WebContents;
 }
 
+using CreatePermissionPromptFunctionPtr =
+    std::unique_ptr<permissions::PermissionPrompt> (*)(
+        content::WebContents* web_contents,
+        permissions::PermissionPrompt::Delegate* delegate,
+        bool* default_handling);
+void SetCreatePermissionPromptFunction(CreatePermissionPromptFunctionPtr);
+
 // Factory function to create permission prompts for chrome.
 std::unique_ptr<permissions::PermissionPrompt> CreatePermissionPrompt(
     content::WebContents* web_contents,

@@ -12,6 +12,7 @@
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "cef/libcef/features/runtime.h"
 #include "chrome/browser/bluetooth/bluetooth_chooser_context_factory.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -212,6 +213,9 @@ permissions::PermissionManager* ChromePermissionsClient::GetPermissionManager(
 double ChromePermissionsClient::GetSiteEngagementScore(
     content::BrowserContext* browser_context,
     const GURL& origin) {
+  // No SiteEngagementService with the Alloy runtime.
+  if (cef::IsAlloyRuntimeEnabled())
+    return 0.0;
   return site_engagement::SiteEngagementService::Get(
              Profile::FromBrowserContext(browser_context))
       ->GetScore(origin);

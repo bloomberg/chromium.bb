@@ -5,6 +5,7 @@
 #include "components/embedder_support/permission_context_utils.h"
 
 #include "build/build_config.h"
+#include "cef/libcef/features/runtime.h"
 #include "components/background_sync/background_sync_permission_context.h"
 #include "components/permissions/contexts/accessibility_permission_context.h"
 #include "components/permissions/contexts/camera_pan_tilt_zoom_permission_context.h"
@@ -78,11 +79,18 @@ CreateDefaultPermissionContexts(content::BrowserContext* browser_context,
           browser_context,
           std::move(delegates.geolocation_permission_context_delegate));
 #elif BUILDFLAG(IS_MAC)
+  if (cef::IsAlloyRuntimeEnabled()) {
+    permission_contexts[ContentSettingsType::GEOLOCATION] =
+        std::make_unique<permissions::GeolocationPermissionContext>(
+            browser_context,
+            std::move(delegates.geolocation_permission_context_delegate));
+  } else {
   permission_contexts[ContentSettingsType::GEOLOCATION] =
       std::make_unique<permissions::GeolocationPermissionContextMac>(
           browser_context,
           std::move(delegates.geolocation_permission_context_delegate),
           delegates.geolocation_manager);
+  }
 #else
   permission_contexts[ContentSettingsType::GEOLOCATION] =
       std::make_unique<permissions::GeolocationPermissionContext>(

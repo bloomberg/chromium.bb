@@ -2226,6 +2226,15 @@ void Browser::RequestMediaAccessPermission(
     content::WebContents* web_contents,
     const content::MediaStreamRequest& request,
     content::MediaResponseCallback callback) {
+#if BUILDFLAG(ENABLE_CEF)
+  if (cef_browser_delegate_) {
+    callback = cef_browser_delegate_->RequestMediaAccessPermissionEx(
+        web_contents, request, std::move(callback));
+    if (callback.is_null())
+      return;
+  }
+#endif
+
   const extensions::Extension* extension =
       GetExtensionForOrigin(profile_, request.security_origin);
   MediaCaptureDevicesDispatcher::GetInstance()->ProcessMediaAccessRequest(
