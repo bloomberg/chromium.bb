@@ -56,7 +56,7 @@ class BLPWTK2Conan(ConanFile):
 
         ## BLPWTK2 ##
         label = "blpwtk2-component"
-        self.cpp_info.components[label].libs = [f"blpwtk2.dll.lib"]
+        self.cpp_info.components[label].libs = [f"blpwtk2.{self.version}.dll.lib"]
         self.cpp_info.components[label].requires = ["icudt_from_blpwtk2"]
         self.cpp_info.components[label].bindirs = [bindir]
         self.cpp_info.components[label].libdirs = [libdir]
@@ -78,7 +78,7 @@ class BLPWTK2Conan(ConanFile):
         self.cpp_info.components["icudt_from_blpwtk2"].libdirs = [libdir]
 
         ## V8 ##
-        self.cpp_info.components["v8"].libs = [f"blpwtk2.dll.lib"]
+        self.cpp_info.components["v8"].libs = [f"blpwtk2.{self.version}.dll.lib"]
         self.cpp_info.components["v8"].bindirs = [bindir]
         self.cpp_info.components["v8"].libdirs = [libdir]
         self.cpp_info.components["v8"].defines = [
@@ -95,4 +95,3 @@ class BLPWTK2Conan(ConanFile):
             "blpwtk2-component",
             "icudt_from_blpwtk2",
         ]
-
