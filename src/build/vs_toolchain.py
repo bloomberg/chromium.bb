@@ -442,7 +442,7 @@ def _CopyDebugger(target_dir, target_cpu):
 
   # List of debug files that should be copied, the first element of the tuple is
   # the name of the file and the second indicates if it's optional.
-  debug_files = [('dbghelp.dll', False), ('dbgcore.dll', True)]
+  debug_files = []
   # The UCRT is not a redistributable component on arm64.
   if target_cpu != 'arm64':
     debug_files.extend([('api-ms-win-downlevel-kernel32-l2-1-0.dll', False),
