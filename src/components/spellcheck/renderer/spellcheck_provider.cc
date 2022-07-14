@@ -320,9 +320,25 @@ void SpellCheckProvider::CheckSpelling(
 void SpellCheckProvider::RequestCheckingOfText(
     const WebString& text,
     std::unique_ptr<WebTextCheckingCompletion> completion) {
-  spellcheck_->RequestTextChecking(text.Utf16(), std::move(completion));
+
+  if (spellcheck::UseBrowserSpellChecker()) {
+    RequestTextChecking(text.Utf16(), std::move(completion));
+  }
+  else {
+    spellcheck_->RequestTextChecking(text.Utf16(), std::move(completion));
+  }
+
   spellcheck_renderer_metrics::RecordAsyncCheckedTextLength(
       base::saturated_cast<int>(text.length()));
+}
+
+void SpellCheckProvider::RequestSuggestionsFromBrowser(
+      const std::u16string& text,
+      std::vector<std::u16string>* suggestions) {
+
+  if (spellcheck::UseBrowserSpellChecker()) {
+    GetSpellCheckHost().FillSuggestionList(text, suggestions);
+  }
 }
 
 #if BUILDFLAG(USE_RENDERER_SPELLCHECKER)

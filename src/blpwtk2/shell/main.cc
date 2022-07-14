@@ -1021,13 +1021,7 @@ int main(int, const char**)
         toolkitParams.disableInProcessRenderer();
     }
 
-    toolkitParams.appendCommandLineSwitch("disable-features=WinUseBrowserSpellChecker");
-
-
-
     // patch section: spellcheck
-
-
 
     // patch section: custom fonts
 

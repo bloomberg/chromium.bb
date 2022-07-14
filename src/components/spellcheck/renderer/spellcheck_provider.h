@@ -125,7 +125,9 @@ class SpellCheckProvider : public content::RenderFrameObserver,
   void RequestCheckingOfText(
       const blink::WebString& text,
       std::unique_ptr<blink::WebTextCheckingCompletion> completion) override;
-
+  void RequestSuggestionsFromBrowser(
+      const std::u16string& text,
+      std::vector<std::u16string>* suggestions) override;
 #if BUILDFLAG(USE_RENDERER_SPELLCHECKER)
   void OnRespondSpellingService(int identifier,
                                 const std::u16string& text,
@@ -144,7 +146,6 @@ class SpellCheckProvider : public content::RenderFrameObserver,
 
   // Makes mojo calls to the browser process to perform platform spellchecking.
   void RequestTextCheckingFromBrowser(const std::u16string& text);
-
 #if defined(OS_WIN)
   // Callback for when spellcheck service has been initialized on demand.
   void OnRespondInitializeDictionaries(

@@ -170,9 +170,27 @@ void SpellCheckHostChromeImpl::CheckSpelling(const std::u16string& word,
 void SpellCheckHostChromeImpl::FillSuggestionList(
     const std::u16string& word,
     FillSuggestionListCallback callback) {
-  std::vector<std::u16string> suggestions;
-  spellcheck_platform::FillSuggestionList(word, &suggestions);
-  std::move(callback).Run(suggestions);
+
+  SpellcheckService* spellcheck_service = GetSpellcheckService();
+
+  if (!spellcheck_service) {  // Teardown.
+    std::move(callback).Run({});
+    return;
+  }
+
+  spellcheck_platform::GetPerLanguageSuggestions(
+      spellcheck_service->platform_spell_checker(), word,
+      base::BindOnce(&SpellCheckHostChromeImpl::OnSuggestionsComplete,
+                  weak_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void SpellCheckHostChromeImpl::OnSuggestionsComplete(
+    FillSuggestionListCallback callback,
+    const spellcheck::PerLanguageSuggestions& platform_per_language_suggestions
+) const {
+  std::vector<std::u16string> combined_suggestions;
+  spellcheck::FillSuggestions(platform_per_language_suggestions, &combined_suggestions);
+  std::move(callback).Run(combined_suggestions);
 }
 
 void SpellCheckHostChromeImpl::RequestTextCheck(

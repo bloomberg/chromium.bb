@@ -173,7 +173,9 @@ void ContentRendererClientImpl::OnStart()
 void ContentRendererClientImpl::GetInterface(
         const std::string& interface_name, mojo::ScopedMessagePipeHandle interface_pipe)
 {
-
+    // Spellcheck_provider is the only consumer of this.
+    content::RenderThread::Get()->BindHostReceiver(mojo::GenericPendingReceiver(
+        interface_name, std::move(interface_pipe)));
 }
 
 service_manager::Connector* ContentRendererClientImpl::GetConnector()
