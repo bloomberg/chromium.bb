@@ -157,7 +157,6 @@ void ContentBrowserClientImpl::BindHostReceiverForRenderer(
     if (auto host_receiver = receiver.As<spellcheck::mojom::SpellCheckHost>()) {
         SpellCheckHostChromeImpl::Create(render_process_host->GetID(),
                                          std::move(host_receiver));
-        return;
     }
 }
 
