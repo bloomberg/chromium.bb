@@ -56,7 +56,7 @@
 #include "services/service_manager/public/cpp/manifest_builder.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 #include "chrome/browser/spellchecker/spell_check_host_chrome_impl.h"
-#include "components/spellcheck/common/spellcheck.mojom.h"
+
 namespace blpwtk2 {
 
                         // ------------------------------

@@ -65,7 +65,6 @@ class SpellCheckHostChromeImpl : public SpellCheckHostImpl {
       const std::u16string& text,
       const std::vector<SpellCheckResult>& service_results) const;
 
-
   // blpwtk2: Remove dependency on CustomDictionary
 #if 0
   // Filter out spelling corrections of custom dictionary words from the
@@ -91,6 +90,7 @@ class SpellCheckHostChromeImpl : public SpellCheckHostImpl {
   void RequestTextCheck(const std::u16string& text,
                         int route_id,
                         RequestTextCheckCallback callback) override;
+
 #if defined(OS_WIN)
   void InitializeDictionaries(InitializeDictionariesCallback callback) override;
 #endif  // defined(OS_WIN)

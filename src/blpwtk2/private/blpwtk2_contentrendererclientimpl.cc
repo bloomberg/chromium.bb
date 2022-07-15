@@ -209,4 +209,3 @@ bool ForwardingService::OnServiceManagerConnectionLost() {
 }  // close namespace blpwtk2
 
 // vim: ts=4 et
-
