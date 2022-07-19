@@ -173,7 +173,11 @@ void ContentRendererClientImpl::OnStart()
 void ContentRendererClientImpl::GetInterface(
         const std::string& interface_name, mojo::ScopedMessagePipeHandle interface_pipe)
 {
-    // Spellcheck_provider is the only consumer of this.
+    // `SpellCheckProvider` is the only consumer of this.
+    // `ContentRendererClientImpl::RenderFrameCreated` passes `this` object to the `SpellCheckProvider`
+    // and `SpellCheckProvider::GetSpellCheckHost()` would call back to this `GetInterface` function.
+    // This function would trigger the creation of `SpellCheckHostChromeImpl` in the browser
+    // process and bind it to `SpellCheckProvider`
     content::RenderThread::Get()->BindHostReceiver(mojo::GenericPendingReceiver(
         interface_name, std::move(interface_pipe)));
 }
