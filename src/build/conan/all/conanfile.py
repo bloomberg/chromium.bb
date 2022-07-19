@@ -95,3 +95,4 @@ class BLPWTK2Conan(ConanFile):
             "blpwtk2-component",
             "icudt_from_blpwtk2",
         ]
+        self.buildenv_info.append_path("PATH", os.path.join(self.package_folder, bindir))
