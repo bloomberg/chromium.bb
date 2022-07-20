@@ -182,6 +182,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kCCTIncognito,
     &kCCTIncognitoAvailableToThirdParty,
     &kCCTNewDownloadTab,
+    &kCCTPackageNameRecording,
     &kCCTPostMessageAPI,
     &kCCTRedirectPreconnect,
     &kCCTRemoveRemoteViewIds,
@@ -527,7 +528,7 @@ const base::Feature kCCTResourcePrefetch{"CCTResourcePrefetch",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kCCTRetainingState{"CCTRetainingState",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
+                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kCCTToolbarCustomizations{"CCTToolbarCustomizations",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
