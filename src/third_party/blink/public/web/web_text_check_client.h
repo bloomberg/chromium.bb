@@ -36,8 +36,8 @@ class WebTextCheckClient {
       std::unique_ptr<WebTextCheckingCompletion> completion_callback) {}
 
   virtual void RequestSuggestionsFromBrowser(
-      const std::u16string& text,
-      std::vector<std::u16string>* suggestions) {}
+      const WebString& text,
+      WebVector<WebString>* suggestions) {}
 
  protected:
   virtual ~WebTextCheckClient() = default;

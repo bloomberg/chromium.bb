@@ -333,11 +333,19 @@ void SpellCheckProvider::RequestCheckingOfText(
 }
 
 void SpellCheckProvider::RequestSuggestionsFromBrowser(
-      const std::u16string& text,
-      std::vector<std::u16string>* suggestions) {
+      const WebString& text,
+      WebVector<WebString>* suggestions) {
 
   if (spellcheck::UseBrowserSpellChecker()) {
-    GetSpellCheckHost().FillSuggestionList(text, suggestions);
+    std::vector<std::u16string> suggestions_utf16;
+    GetSpellCheckHost().FillSuggestionList(text.Utf16(), &suggestions_utf16);
+
+    WebVector<WebString> web_suggestions(suggestions_utf16.size());
+    std::transform(
+        suggestions_utf16.begin(), suggestions_utf16.end(), web_suggestions.begin(),
+        [](const std::u16string& s) { return WebString::FromUTF16(s); });
+
+    *suggestions = web_suggestions;
   }
 }
 

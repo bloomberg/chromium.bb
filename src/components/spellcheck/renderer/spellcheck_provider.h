@@ -126,8 +126,8 @@ class SpellCheckProvider : public content::RenderFrameObserver,
       const blink::WebString& text,
       std::unique_ptr<blink::WebTextCheckingCompletion> completion) override;
   void RequestSuggestionsFromBrowser(
-      const std::u16string& text,
-      std::vector<std::u16string>* suggestions) override;
+      const blink::WebString& text,
+      blink::WebVector<blink::WebString>* suggestions) override;
 
 #if BUILDFLAG(USE_RENDERER_SPELLCHECKER)
   void OnRespondSpellingService(int identifier,
