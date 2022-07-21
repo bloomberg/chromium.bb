@@ -35,6 +35,8 @@ class WebTextCheckClient {
       const WebString& text_to_check,
       std::unique_ptr<WebTextCheckingCompletion> completion_callback) {}
 
+  // Requests word suggestions from the browser process, whose result should be
+  // added to the suggestions WebVector
   virtual void RequestSuggestionsFromBrowser(
       const WebString& text,
       WebVector<WebString>* suggestions) {}
