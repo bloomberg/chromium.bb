@@ -378,7 +378,7 @@ void StandaloneTrustedVaultBackend::SetPrimaryAccount(
     // trigger a procedure to verify that the server has a consistent state
     // (i.e. downloading of new keys should succeed but return no new keys).
     if ((*registration_state ==
-             TrustedVaultDeviceRegistrationStateForUMA::kAlreadyRegisteredV0 ||
+             TrustedVaultDeviceRegistrationStateForUMA::kAlreadyRegistered ||
          *registration_state ==
              TrustedVaultDeviceRegistrationStateForUMA::kAlreadyRegisteredV1) &&
         base::FeatureList::IsEnabled(
@@ -622,7 +622,7 @@ StandaloneTrustedVaultBackend::MaybeRegisterDevice(
 
   if (per_user_vault->local_device_registration_info().device_registered() &&
       !base::FeatureList::IsEnabled(kSyncTrustedVaultRedoDeviceRegistration)) {
-    return TrustedVaultDeviceRegistrationStateForUMA::kAlreadyRegisteredV0;
+    return TrustedVaultDeviceRegistrationStateForUMA::kAlreadyRegistered;
   }
 
   if (per_user_vault->keys_are_stale()) {

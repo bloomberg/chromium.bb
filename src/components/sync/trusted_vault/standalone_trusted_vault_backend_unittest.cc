@@ -1167,7 +1167,7 @@ TEST_F(StandaloneTrustedVaultBackendTest,
   histogram_tester.ExpectUniqueSample(
       "Sync.TrustedVaultDeviceRegistrationState",
       /*sample=*/
-      TrustedVaultDeviceRegistrationStateForUMA::kAlreadyRegisteredV0,
+      TrustedVaultDeviceRegistrationStateForUMA::kAlreadyRegistered,
       /*expected_bucket_count=*/1);
   histogram_tester.ExpectUniqueSample("Sync.TrustedVaultDeviceRegistered",
                                       /*sample=*/true,
