@@ -25,7 +25,7 @@ entries = {
   'src/third_party/cpuinfo/src': 'https://chromium.googlesource.com/external/github.com/pytorch/cpuinfo.git@b40bae27785787b6dd70788986fd96434cf90ae2',
   'src/third_party/crc32c/src': 'https://chromium.googlesource.com/external/github.com/google/crc32c.git@fa5ade41ee480003d9c5af6f43567ba22e4e17e6',
   'src/third_party/dav1d/libdav1d': 'https://chromium.googlesource.com/external/github.com/videolan/dav1d.git@87f9a81cd770e49394a45deca7a3df41243de00b',
-  'src/third_party/dawn': 'https://dawn.googlesource.com/dawn.git@a92c57a8f65927f32b7c64b14461265a26e862c0',
+  'src/third_party/dawn': 'https://dawn.googlesource.com/dawn.git@2d334ed4f01b00211acd0360a5f9dc91d83354cb',
   'src/third_party/depot_tools': 'https://chromium.googlesource.com/chromium/tools/depot_tools.git@a4b3602457c422f8ed054ff3673baaecedc2972a',
   'src/third_party/devtools-frontend/src': 'https://chromium.googlesource.com/devtools/devtools-frontend@ed8fe6a3c528058bcc8e95b9071be6d6cb1b45f2',
   'src/third_party/devtools-frontend/src/third_party/esbuild:infra/3pp/tools/esbuild/${platform}': 'https://chrome-infra-packages.appspot.com/infra/3pp/tools/esbuild/${platform}@version:2@0.14.13.chromium.2',
