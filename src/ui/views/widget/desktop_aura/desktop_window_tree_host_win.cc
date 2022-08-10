@@ -993,13 +993,13 @@ void DesktopWindowTreeHostWin::HandleFrameChanged() {
 }
 
 void DesktopWindowTreeHostWin::HandleNativeFocus(HWND last_focused_window) {
-  // See comments in CefBrowserHostImpl::PlatformSetFocus.
+  // See comments in CefBrowserPlatformDelegateNativeWin::SetFocus.
   if (has_external_parent_ && CanActivate())
     HandleActivationChanged(true);
 }
 
 void DesktopWindowTreeHostWin::HandleNativeBlur(HWND focused_window) {
-  // See comments in CefBrowserHostImpl::PlatformSetFocus.
+  // See comments in CefBrowserPlatformDelegateNativeWin::SetFocus.
   if (has_external_parent_ && CanActivate())
     HandleActivationChanged(false);
 }
@@ -1008,6 +1008,12 @@ bool DesktopWindowTreeHostWin::HandleMouseEvent(ui::MouseEvent* event) {
   // Ignore native platform events for test purposes
   if (ui::PlatformEventSource::ShouldIgnoreNativePlatformEvents())
     return true;
+
+  // See comments in CefBrowserPlatformDelegateNativeWin::SetFocus.
+  if (has_external_parent_ && CanActivate() && event->IsAnyButton() &&
+      ::GetFocus() != GetHWND()) {
+    ::SetFocus(GetHWND());
+  }
 
   SendEventToSink(event);
   return event->handled();
