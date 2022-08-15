@@ -1115,7 +1115,45 @@ aura::Window *WebViewImpl::GetDefaultActivationWindow()
     if (d_webContents) {
         content::RenderWidgetHostView *rwhv = d_webContents->GetRenderWidgetHostView();
         if (rwhv) {
-            return rwhv->GetNativeView();
+            // The aura::Window hierarchy under a DesktopNativeWidgetAura
+            // looks like this:
+            //
+            //  - DesktopNativeWidgetAura
+            //   - NativeViewHostAuraClip
+            //    - WebContentsViewAura
+            //     - RenderWidgetHostViewAura
+            //
+            // By default, DesktopNativeWidgetAura::HandleActivationChanged
+            // activates the root aura::Window when the OS window receives
+            // keyboard focus. In order to make sure the logical focus is
+            // moved into the webview, we override the activation window from
+            // DesktopNativeWidgetAura to RenderWidgetHostViewAura (which is
+            // returned by rwhv->GetNativeView()).
+            //
+            // DesktopFocusRules::CanFocusWindow requires this function to
+            // return a window that is rooted under aura::WindowTreeHost.
+            //
+            if (rwhv->GetNativeView()->GetRootWindow()) {
+                return rwhv->GetNativeView();
+            }
+            else {
+                // Ideally RenderWidgetHostViewAura should always be rooted
+                // under a DesktopNativeWidgetAura, which is rooted under a
+                // aura::WindowTreeHost. There have been some reports where the
+                // RenderWidgetHostViewAura is detached from an
+                // aura::WindowTreeHost, which would violate a requirement of
+                // DesktopFocusRules. It's unclear where the detachment comes
+                // from so we trace out the parents iteratively starting from
+                // RenderWidgetHostViewAura.
+
+                LOG(WARNING) << "RenderWidgetHostViewAura is not attached to root window";
+
+                const aura::Window *current = rwhv->GetNativeView();
+                while (current) {
+                    LOG(INFO) << "window name: " << current->GetName();
+                    current = current->parent();
+                }
+            }
         }
     }
     return nullptr;
