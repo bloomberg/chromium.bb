@@ -517,6 +517,14 @@ void WidgetInputHandlerManager::DispatchEvent(
           mojom::blink::InputEventResultSource::kMainThread, ui::LatencyInfo(),
           mojom::blink::InputEventResultState::kNotConsumed, nullptr, nullptr);
     }
+
+    if (event->Event().GetType() >= WebInputEvent::Type::kKeyboardTypeFirst &&
+        event->Event().GetType() <= WebInputEvent::Type::kKeyboardTypeLast) {
+      LOG(WARNING) << "Key Event dropped during renderer_deferral_state. Very "
+                   << "likely this happened before first content full paint.  "
+                   << "event type:" << event->Event().GetType() ;
+    }
+
     return;
   }
 
