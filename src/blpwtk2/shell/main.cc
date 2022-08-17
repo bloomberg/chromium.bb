@@ -1524,7 +1524,6 @@ int main(int, const char**)
         toolkitParams.setBrowserV8Enabled(true);
     }
 
-    toolkitParams.appendCommandLineSwitch("disable-features=WinUseBrowserSpellChecker");
 
 
 
