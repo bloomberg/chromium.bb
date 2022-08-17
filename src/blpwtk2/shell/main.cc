@@ -1021,7 +1021,6 @@ int main(int, const char**)
         toolkitParams.disableInProcessRenderer();
     }
 
-    toolkitParams.appendCommandLineSwitch("disable-features=WinUseBrowserSpellChecker");
 
 
 

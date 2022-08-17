@@ -120,6 +120,9 @@ class ContentBrowserClientImpl final : public content::ContentBrowserClient {
       const std::string& interface_name,
       mojo::ScopedInterfaceEndpointHandle* handle) override;
 
+    void BindHostReceiverForRenderer(
+        content::RenderProcessHost* render_process_host,
+        mojo::GenericPendingReceiver receiver) override;
     // Start the in-process renderer thread.  This will only ever be called if
     // SupportsInProcessRenderer() returns true.
     void StartInProcessRendererThread(
