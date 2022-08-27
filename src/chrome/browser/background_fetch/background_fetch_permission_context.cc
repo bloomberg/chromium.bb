@@ -4,6 +4,7 @@
 
 #include "chrome/browser/background_fetch/background_fetch_permission_context.h"
 
+#include "cef/libcef/features/runtime.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/download/download_request_limiter.h"
@@ -29,7 +30,8 @@ ContentSetting BackgroundFetchPermissionContext::GetPermissionStatusInternal(
     const GURL& embedding_origin) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (render_frame_host && !render_frame_host->GetParent()) {
+  if (!cef::IsAlloyRuntimeEnabled() &&
+      render_frame_host && !render_frame_host->GetParent()) {
     DownloadRequestLimiter* limiter =
         g_browser_process->download_request_limiter();
     DCHECK(limiter);

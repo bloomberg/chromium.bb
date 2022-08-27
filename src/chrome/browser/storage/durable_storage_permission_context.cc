@@ -8,6 +8,7 @@
 
 #include "base/check_op.h"
 #include "base/containers/contains.h"
+#include "cef/libcef/features/runtime.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -52,7 +53,9 @@ void DurableStoragePermissionContext::DecidePermission(
 
   // Durable is only allowed to be granted to the top-level origin. Embedding
   // origin is the last committed navigation origin to the web contents.
-  if (requesting_origin != embedding_origin) {
+  // Permission depends on PWA and site engagement subsystems which are not
+  // supported by the Alloy runtime (see issue #3379).
+  if (cef::IsAlloyRuntimeEnabled() || requesting_origin != embedding_origin) {
     NotifyPermissionSet(id, requesting_origin, embedding_origin,
                         std::move(callback), /*persist=*/false,
                         CONTENT_SETTING_DEFAULT, /*is_one_time=*/false);
