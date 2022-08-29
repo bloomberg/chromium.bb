@@ -14,6 +14,7 @@
 #include "chrome/browser/ash/login/test/test_condition_waiter.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/ui/webui/chromeos/login/consolidated_consent_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/enrollment_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/eula_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/fingerprint_setup_screen_handler.h"
@@ -24,6 +25,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/user_creation_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/welcome_screen_handler.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 
@@ -120,8 +122,10 @@ void SkipToEnrollmentOnRecovery() {
   WaitForNetworkSelectionScreen();
   TapNetworkSelectionNext();
 
-  WaitForEulaScreen();
-  TapEulaAccept();
+  if (!chromeos::features::IsOobeConsolidatedConsentEnabled()) {
+    WaitForEulaScreen();
+    TapEulaAccept();
+  }
 
   WaitForUpdateScreen();
   ExitUpdateScreenNoUpdate();
@@ -186,6 +190,18 @@ void ExitScreenSyncConsent() {
   WaitForExit(SyncConsentScreenView::kScreenId);
 }
 
+void WaitForConsolidatedConsentScreen() {
+  if (!LoginDisplayHost::default_host()->GetWizardContext()->is_branded_build)
+    return;
+  WaitFor(ConsolidatedConsentScreenView::kScreenId);
+}
+
+void TapConsolidatedConsentAccept() {
+  if (!LoginDisplayHost::default_host()->GetWizardContext()->is_branded_build)
+    return;
+  OobeJS().TapOnPath({"consolidated-consent", "acceptButton"});
+}
+
 void ClickSignInFatalScreenActionButton() {
   OobeJS().ClickOnPath({"signin-fatal-error", "actionButton"});
 }
@@ -217,6 +233,46 @@ void LanguageReloadObserver::Wait() {
 
 LanguageReloadObserver::~LanguageReloadObserver() {
   welcome_screen_->RemoveObserver(this);
+}
+
+OobeUiDestroyedWaiter::OobeUiDestroyedWaiter(OobeUI* oobe_ui) {
+  oobe_ui_observation_.Observe(oobe_ui);
+}
+
+OobeUiDestroyedWaiter::~OobeUiDestroyedWaiter() {}
+
+void OobeUiDestroyedWaiter::Wait() {
+  if (was_destroyed_)
+    return;
+
+  run_loop_ = std::make_unique<base::RunLoop>();
+  run_loop_->Run();
+  run_loop_.reset();
+
+  ASSERT_TRUE(was_destroyed_)
+      << "Timed out while waiting for OobeUI to be destroyed!";
+  oobe_ui_observation_.Reset();
+}
+
+void OobeUiDestroyedWaiter::OnDestroyingOobeUI() {
+  was_destroyed_ = true;
+  run_loop_->Quit();
+}
+
+// Start observing, tap/click and wait.
+void TapOnPathAndWaitForOobeToBeDestroyed(
+    std::initializer_list<base::StringPiece> element_ids) {
+  // Get the OOBE WebUI Controller (OobeUI) and start observing.
+  content::WebContents* web_contents =
+      LoginDisplayHost::default_host()->GetOobeWebContents();
+  CHECK(web_contents);
+  OobeUI* oobe_ui =
+      static_cast<OobeUI*>(web_contents->GetWebUI()->GetController());
+  OobeUiDestroyedWaiter observer{oobe_ui};
+
+  test::OobeJS().TapOnPathAsync(element_ids);
+
+  observer.Wait();
 }
 
 }  // namespace test

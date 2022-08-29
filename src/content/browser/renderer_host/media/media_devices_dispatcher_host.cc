@@ -14,7 +14,6 @@
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/task/bind_post_task.h"
-#include "base/task/post_task.h"
 #include "base/task/task_runner_util.h"
 #include "build/build_config.h"
 #include "content/browser/media/media_devices_permission_checker.h"
@@ -37,7 +36,7 @@
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "url/origin.h"
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 #include "content/browser/media/capture/crop_id_web_contents_helper.h"
 #endif
 
@@ -273,18 +272,19 @@ void MediaDevicesDispatcherHost::SetCaptureHandleConfig(
             if (!rfhi || !rfhi->IsActive()) {
               return;
             }
-            if (rfhi != rfhi->GetMainFrame()) {
+            if (rfhi->GetParentOrOuterDocument()) {
               // Would be overkill to add thread-hopping just to support a test,
               // so we execute directly.
               bad_message::ReceivedBadMessage(render_process_id,
                                               bad_message::MDDH_NOT_TOP_LEVEL);
+              return;
             }
             rfhi->delegate()->SetCaptureHandleConfig(std::move(config));
           },
           render_process_id_, render_frame_id_, std::move(config)));
 }
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 void MediaDevicesDispatcherHost::CloseFocusWindowOfOpportunity(
     const std::string& label) {
   media_stream_manager_->SetCapturedDisplaySurfaceFocus(
@@ -566,7 +566,7 @@ void MediaDevicesDispatcherHost::SetCaptureHandleConfigCallbackForTesting(
         void(int, int, blink::mojom::CaptureHandleConfigPtr)> callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!capture_handle_config_callback_for_testing_);
-  capture_handle_config_callback_for_testing_ = callback;
+  capture_handle_config_callback_for_testing_ = std::move(callback);
 }
 
 }  // namespace content

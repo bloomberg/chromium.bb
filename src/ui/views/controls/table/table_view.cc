@@ -19,6 +19,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "cc/paint/paint_flags.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -46,7 +47,6 @@
 #include "ui/views/controls/table/table_utils.h"
 #include "ui/views/controls/table/table_view_observer.h"
 #include "ui/views/focus/focus_manager.h"
-#include "ui/views/image_model_utils.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/style/platform_style.h"
 #include "ui/views/style/typography.h"
@@ -91,7 +91,7 @@ ui::ColorId selected_text_color_id(bool has_focus) {
 
 // Whether the platform "command" key is down.
 bool IsCmdOrCtrl(const ui::Event& event) {
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   return event.IsCommandDown();
 #else
   return event.IsControlDown();
@@ -207,20 +207,26 @@ std::unique_ptr<ScrollView> TableView::CreateScrollViewWithTable(
   return scroll_view;
 }
 
+// static
+Builder<ScrollView> TableView::CreateScrollViewBuilderWithTable(
+    Builder<TableView>&& table) {
+  auto scroll_view = ScrollView::CreateScrollViewWithBorder();
+  auto* scroll_view_ptr = scroll_view.get();
+  return Builder<ScrollView>(std::move(scroll_view))
+      .SetContents(std::move(table).CustomConfigure(base::BindOnce(
+          [](ScrollView* scroll_view, TableView* table_view) {
+            table_view->CreateHeaderIfNecessary(scroll_view);
+          },
+          scroll_view_ptr)));
+}
+
 void TableView::Init(ui::TableModel* model,
                      const std::vector<ui::TableColumn>& columns,
                      TableTypes table_type,
                      bool single_selection) {
-  columns_ = columns;
-  table_type_ = table_type;
-  single_selection_ = single_selection;
-
-  for (const auto& column : columns) {
-    VisibleColumn visible_column;
-    visible_column.column = column;
-    visible_columns_.push_back(visible_column);
-  }
-
+  SetColumns(columns);
+  SetTableType(table_type);
+  SetSingleSelection(single_selection);
   SetModel(model);
 }
 
@@ -242,6 +248,38 @@ void TableView::SetModel(ui::TableModel* model) {
   } else {
     ClearVirtualAccessibilityChildren();
   }
+}
+
+void TableView::SetColumns(const std::vector<ui::TableColumn>& columns) {
+  columns_ = columns;
+  visible_columns_.clear();
+  for (const auto& column : columns) {
+    VisibleColumn visible_column;
+    visible_column.column = column;
+    visible_columns_.push_back(visible_column);
+  }
+}
+
+void TableView::SetTableType(TableTypes table_type) {
+  if (table_type_ == table_type)
+    return;
+  table_type_ = table_type;
+  OnPropertyChanged(&table_type_, PropertyEffects::kPropertyEffectsLayout);
+}
+
+TableTypes TableView::GetTableType() const {
+  return table_type_;
+}
+
+void TableView::SetSingleSelection(bool single_selection) {
+  if (single_selection_ == single_selection)
+    return;
+  single_selection_ = single_selection;
+  OnPropertyChanged(&single_selection_, PropertyEffects::kPropertyEffectsPaint);
+}
+
+bool TableView::GetSingleSelection() const {
+  return single_selection_;
 }
 
 void TableView::SetGrouper(TableGrouper* grouper) {
@@ -281,6 +319,8 @@ int TableView::GetFirstSelectedRow() const {
              : *selection_model_.selected_indices().begin();
 }
 
+// TODO(dpenning) : Prevent the last column from being closed. See
+// crbug.com/1324306 for details.
 void TableView::SetColumnVisibility(int id, bool is_visible) {
   if (is_visible == IsColumnVisible(id))
     return;
@@ -347,6 +387,7 @@ void TableView::ToggleSortOrder(int visible_column_index) {
         column.title));
   }
   SetSortDescriptors(sort);
+  UpdateFocusRings();
 }
 
 void TableView::SetSortDescriptors(const SortDescriptors& sort_descriptors) {
@@ -374,6 +415,17 @@ bool TableView::GetHasFocusIndicator() const {
   return active_row != ui::ListSelectionModel::kUnselectedIndex &&
          active_visible_column_index_ !=
              ui::ListSelectionModel::kUnselectedIndex;
+}
+
+void TableView::SetObserver(TableViewObserver* observer) {
+  if (observer_ == observer)
+    return;
+  observer_ = observer;
+  OnPropertyChanged(&observer_, PropertyEffects::kPropertyEffectsNone);
+}
+
+TableViewObserver* TableView::GetObserver() const {
+  return observer_;
 }
 
 const TableView::VisibleColumn& TableView::GetVisibleColumn(int index) {
@@ -425,10 +477,6 @@ void TableView::SetSelectOnRemove(bool select_on_remove) {
 
   select_on_remove_ = select_on_remove;
   OnPropertyChanged(&select_on_remove_, kPropertyEffectsNone);
-}
-
-TableTypes TableView::GetTableType() const {
-  return table_type_;
 }
 
 bool TableView::GetSortOnPaint() const {
@@ -528,7 +576,7 @@ bool TableView::OnKeyPressed(const ui::KeyEvent& event) {
       return true;
 
     case ui::VKEY_UP:
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
       if (event.IsAltDown()) {
         if (GetRowCount())
           SelectByViewIndex(0);
@@ -541,7 +589,7 @@ bool TableView::OnKeyPressed(const ui::KeyEvent& event) {
       return true;
 
     case ui::VKEY_DOWN:
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
       if (event.IsAltDown()) {
         if (GetRowCount())
           SelectByViewIndex(GetRowCount() - 1);
@@ -941,8 +989,8 @@ void TableView::OnPaintImpl(gfx::Canvas* canvas) {
 
       // Always paint the icon in the first visible column.
       if (j == 0 && table_type_ == ICON_AND_TEXT) {
-        gfx::ImageSkia image = views::GetImageSkiaFromImageModel(
-            model_->GetIcon(model_index), GetColorProvider());
+        gfx::ImageSkia image =
+            model_->GetIcon(model_index).Rasterize(GetColorProvider());
         if (!image.isNull()) {
           int image_x =
               GetMirroredXWithWidthInView(text_x, ui::TableModel::kIconSize);
@@ -1478,11 +1526,11 @@ std::unique_ptr<AXVirtualView> TableView::CreateCellAccessibilityView(
 
 void TableView::PopulateAccessibilityRowData(AXVirtualView* ax_row,
                                              ui::AXNodeData* data) {
-  int ax_index = GetViewAccessibility().GetIndexOf(ax_row);
-  DCHECK_GE(ax_index, 0);
+  auto ax_index = GetViewAccessibility().GetIndexOf(ax_row);
+  DCHECK(ax_index.has_value());
 
-  int row_index = ax_index - (header_ ? 1 : 0);
-  int model_index = ViewToModel(row_index);
+  size_t row_index = ax_index.value() - (header_ ? 1 : 0);
+  int model_index = ViewToModel(static_cast<int>(row_index));
   DCHECK_GE(model_index, 0);
 
   // When navigating using up / down cursor keys on the Mac, we read the
@@ -1505,23 +1553,23 @@ void TableView::PopulateAccessibilityCellData(AXVirtualView* ax_cell,
   AXVirtualView* ax_row = ax_cell->virtual_parent_view();
   DCHECK(ax_row);
 
-  int ax_index = GetViewAccessibility().GetIndexOf(ax_row);
-  DCHECK_GE(ax_index, 0);
+  auto ax_index = GetViewAccessibility().GetIndexOf(ax_row);
+  DCHECK(ax_index.has_value());
 
-  int row_index = ax_index - (header_ ? 1 : 0);
-  int column_index = ax_row->GetIndexOf(ax_cell);
-  DCHECK_GE(column_index, 0);
+  size_t row_index = ax_index.value() - (header_ ? 1 : 0);
+  auto column_index = ax_row->GetIndexOf(ax_cell);
+  DCHECK(column_index.has_value());
 
-  int model_index = ViewToModel(row_index);
+  int model_index = ViewToModel(static_cast<int>(row_index));
   DCHECK_GE(model_index, 0);
 
-  gfx::Rect cell_bounds = GetCellBounds(row_index, column_index);
+  gfx::Rect cell_bounds = GetCellBounds(row_index, column_index.value());
 
   if (!GetVisibleBounds().Intersects(cell_bounds))
     data->AddState(ax::mojom::State::kInvisible);
 
   if (PlatformStyle::kTableViewSupportsKeyboardNavigationByCell &&
-      static_cast<const int>(column_index) == GetActiveVisibleColumnIndex()) {
+      static_cast<int>(column_index.value()) == GetActiveVisibleColumnIndex()) {
     if (selection_model().IsSelected(model_index))
       data->AddBoolAttribute(ax::mojom::BoolAttribute::kSelected, true);
   }
@@ -1529,8 +1577,8 @@ void TableView::PopulateAccessibilityCellData(AXVirtualView* ax_cell,
   // Set the cell's value since it changes dynamically.
   std::u16string current_name = base::UTF8ToUTF16(
       data->GetStringAttribute(ax::mojom::StringAttribute::kName));
-  std::u16string new_name =
-      model()->GetText(model_index, GetVisibleColumn(column_index).column.id);
+  std::u16string new_name = model()->GetText(
+      model_index, GetVisibleColumn(column_index.value()).column.id);
   data->SetName(new_name);
   if (current_name != new_name) {
     ui::AXNodeData& cell_data = ax_cell->GetCustomData();
@@ -1832,9 +1880,11 @@ ADD_READONLY_PROPERTY_METADATA(int, FirstSelectedRow)
 ADD_READONLY_PROPERTY_METADATA(bool, HasFocusIndicator)
 ADD_PROPERTY_METADATA(int, ActiveVisibleColumnIndex)
 ADD_READONLY_PROPERTY_METADATA(bool, IsSorted)
+ADD_PROPERTY_METADATA(TableViewObserver*, Observer)
 ADD_READONLY_PROPERTY_METADATA(int, RowHeight)
+ADD_PROPERTY_METADATA(bool, SingleSelection)
 ADD_PROPERTY_METADATA(bool, SelectOnRemove)
-ADD_READONLY_PROPERTY_METADATA(TableTypes, TableType)
+ADD_PROPERTY_METADATA(TableTypes, TableType)
 ADD_PROPERTY_METADATA(bool, SortOnPaint)
 END_METADATA
 

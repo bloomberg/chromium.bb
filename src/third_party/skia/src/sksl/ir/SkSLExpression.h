@@ -8,19 +8,19 @@
 #ifndef SKSL_EXPRESSION
 #define SKSL_EXPRESSION
 
+#include "include/core/SkTypes.h"
+#include "include/private/SkSLIRNode.h"
 #include "include/private/SkSLStatement.h"
-#include "include/private/SkTHash.h"
-#include "include/private/SkTOptional.h"
+#include "include/sksl/SkSLPosition.h"
 #include "src/sksl/ir/SkSLType.h"
 
-#include <unordered_map>
+#include <memory>
+#include <optional>
 
 namespace SkSL {
 
 class AnyConstructor;
-class Expression;
-class IRGenerator;
-class Variable;
+class Context;
 
 /**
  * Abstract supertype of all expressions.
@@ -30,7 +30,6 @@ public:
     enum class Kind {
         kBinary = (int) Statement::Kind::kLast + 1,
         kChildCall,
-        kCodeString,
         kConstructorArray,
         kConstructorArrayCast,
         kConstructorCompound,
@@ -66,8 +65,8 @@ public:
         kContainsRTAdjust
     };
 
-    Expression(int line, Kind kind, const Type* type)
-        : INHERITED(line, (int) kind)
+    Expression(Position pos, Kind kind, const Type* type)
+        : INHERITED(pos, (int) kind)
         , fType(type) {
         SkASSERT(kind >= Kind::kFirst && kind <= Kind::kLast);
     }
@@ -90,7 +89,7 @@ public:
     }
 
     bool isAnyConstructor() const {
-        static_assert((int)Kind::kConstructorArray - 1 == (int)Kind::kCodeString);
+        static_assert((int)Kind::kConstructorArray - 1 == (int)Kind::kChildCall);
         static_assert((int)Kind::kConstructorStruct + 1 == (int)Kind::kExternalFunctionCall);
         return this->kind() >= Kind::kConstructorArray && this->kind() <= Kind::kConstructorStruct;
     }
@@ -154,15 +153,6 @@ public:
         return ComparisonResult::kUnknown;
     }
 
-    /**
-     * Returns true if, given fixed values for uniforms, this expression always evaluates to the
-     * same result with no side effects.
-     */
-    virtual bool isConstantOrUniform() const {
-        SkASSERT(!this->isCompileTimeConstant() || !this->hasSideEffects());
-        return this->isCompileTimeConstant();
-    }
-
     virtual bool hasProperty(Property property) const = 0;
 
     bool hasSideEffects() const {
@@ -199,12 +189,17 @@ public:
      *                                                       0, nullopt)
      * All classes which override this function must also implement `supportsConstantValues`.
      */
-    virtual skstd::optional<double> getConstantValue(int n) const {
+    virtual std::optional<double> getConstantValue(int n) const {
         SkASSERT(!this->supportsConstantValues());
-        return skstd::nullopt;
+        return std::nullopt;
     }
 
-    virtual std::unique_ptr<Expression> clone() const = 0;
+    virtual std::unique_ptr<Expression> clone(Position pos) const = 0;
+
+    /**
+     * Returns a clone at the same position.
+     */
+    std::unique_ptr<Expression> clone() const { return this->clone(fPosition); }
 
 private:
     const Type* fType;

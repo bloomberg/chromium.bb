@@ -146,7 +146,7 @@ IN_PROC_BROWSER_TEST_F(AudioApiTest, OnLevelChangedOutputDevice) {
 
   // Loads background app.
   ResultCatcher result_catcher;
-  ExtensionTestMessageListener load_listener("loaded", false);
+  ExtensionTestMessageListener load_listener("loaded");
   ASSERT_TRUE(LoadApp("api_test/audio/volume_change"));
   ASSERT_TRUE(load_listener.WaitUntilSatisfied());
 
@@ -180,7 +180,7 @@ IN_PROC_BROWSER_TEST_F(AudioApiTest, OnOutputMuteChanged) {
 
   // Loads background app.
   ResultCatcher result_catcher;
-  ExtensionTestMessageListener load_listener("loaded", false);
+  ExtensionTestMessageListener load_listener("loaded");
   ASSERT_TRUE(LoadApp("api_test/audio/output_mute_change"));
   ASSERT_TRUE(load_listener.WaitUntilSatisfied());
 
@@ -210,7 +210,7 @@ IN_PROC_BROWSER_TEST_F(AudioApiTest, OnInputMuteChanged) {
 
   // Loads background app.
   ResultCatcher result_catcher;
-  ExtensionTestMessageListener load_listener("loaded", false);
+  ExtensionTestMessageListener load_listener("loaded");
   ASSERT_TRUE(LoadApp("api_test/audio/input_mute_change"));
   ASSERT_TRUE(load_listener.WaitUntilSatisfied());
 
@@ -235,7 +235,7 @@ IN_PROC_BROWSER_TEST_F(AudioApiTest, OnNodesChangedAddNodes) {
 
   // Load background app.
   ResultCatcher result_catcher;
-  ExtensionTestMessageListener load_listener("loaded", false);
+  ExtensionTestMessageListener load_listener("loaded");
   ASSERT_TRUE(LoadApp("api_test/audio/add_nodes"));
   ASSERT_TRUE(load_listener.WaitUntilSatisfied());
 
@@ -263,7 +263,7 @@ IN_PROC_BROWSER_TEST_F(AudioApiTest, OnNodesChangedRemoveNodes) {
 
   // Load background app.
   ResultCatcher result_catcher;
-  ExtensionTestMessageListener load_listener("loaded", false);
+  ExtensionTestMessageListener load_listener("loaded");
   ASSERT_TRUE(LoadApp("api_test/audio/remove_nodes"));
   ASSERT_TRUE(load_listener.WaitUntilSatisfied());
 
@@ -278,10 +278,10 @@ IN_PROC_BROWSER_TEST_F(AudioApiTest, OnNodesChangedRemoveNodes) {
   EXPECT_TRUE(result_catcher.GetNextResult()) << result_catcher.message();
 }
 
-class WhitelistedAudioApiTest : public AudioApiTest {
+class AllowlistedAudioApiTest : public AudioApiTest {
  public:
-  WhitelistedAudioApiTest() = default;
-  ~WhitelistedAudioApiTest() override = default;
+  AllowlistedAudioApiTest() = default;
+  ~AllowlistedAudioApiTest() override = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitchASCII(
@@ -290,7 +290,7 @@ class WhitelistedAudioApiTest : public AudioApiTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(WhitelistedAudioApiTest, DeprecatedApi) {
+IN_PROC_BROWSER_TEST_F(AllowlistedAudioApiTest, DeprecatedApi) {
   // Set up the audio nodes for testing.
   AudioNodeList audio_nodes = {
       CreateAudioNode(kJabraSpeaker1, 2), CreateAudioNode(kJabraSpeaker2, 2),

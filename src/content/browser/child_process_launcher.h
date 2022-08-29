@@ -19,14 +19,23 @@
 #include "build/build_config.h"
 #include "content/browser/child_process_launcher_helper.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_termination_info.h"
 #include "content/public/common/result_codes.h"
 #include "mojo/public/cpp/system/invitation.h"
 #include "third_party/perfetto/include/perfetto/tracing/traced_proto.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "content/public/browser/android/child_process_importance.h"
+#endif
+
+#if BUILDFLAG(IS_WIN)
+#include "base/win/windows_types.h"
+#endif
+
+#if BUILDFLAG(IS_POSIX)
+#include "base/files/scoped_file.h"
 #endif
 
 namespace base {
@@ -58,7 +67,7 @@ enum LaunchResultCode {
   LAUNCH_RESULT_CODE_LAST_CODE
 };
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 static_assert(static_cast<int>(LAUNCH_RESULT_START) >
                   static_cast<int>(sandbox::SBOX_ERROR_LAST),
               "LaunchResultCode must not overlap with sandbox::ResultCode");
@@ -71,7 +80,7 @@ struct ChildProcessLauncherPriority {
                                unsigned int frame_depth,
                                bool intersects_viewport,
                                bool boost_for_pending_views
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
                                ,
                                ChildProcessImportance importance
 #endif
@@ -82,7 +91,7 @@ struct ChildProcessLauncherPriority {
         frame_depth(frame_depth),
         intersects_viewport(intersects_viewport),
         boost_for_pending_views(boost_for_pending_views)
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
         ,
         importance(importance)
 #endif
@@ -97,9 +106,8 @@ struct ChildProcessLauncherPriority {
     return !(*this == other);
   }
 
-  void WriteIntoTrace(
-      perfetto::TracedProto<
-          perfetto::protos::pbzero::ChildProcessLauncherPriority> proto);
+  using TraceProto = perfetto::protos::pbzero::ChildProcessLauncherPriority;
+  void WriteIntoTrace(perfetto::TracedProto<TraceProto> proto) const;
 
   // Prefer |is_background()| to inspecting these fields individually (to ensure
   // all logic uses the same notion of "backgrounded").
@@ -137,8 +145,31 @@ struct ChildProcessLauncherPriority {
   // during navigation).
   bool boost_for_pending_views;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   ChildProcessImportance importance;
+#endif
+};
+
+// Data to pass as file descriptors.
+struct ChildProcessLauncherFileData {
+  ChildProcessLauncherFileData();
+  ChildProcessLauncherFileData(const ChildProcessLauncherFileData& others) =
+      delete;
+  ChildProcessLauncherFileData& operator=(const ChildProcessLauncherFileData&) =
+      delete;
+  ~ChildProcessLauncherFileData();
+
+#if BUILDFLAG(IS_POSIX)
+  // Files opened by the browser and passed as corresponding file descriptors
+  // in the child process.
+  // Currently only supported on Linux, ChromeOS and Android platforms.
+  std::map<std::string, base::FilePath> files_to_preload;
+
+  // Map of file descriptors to pass. This is used instead of
+  // `files_to_preload` when the data is already contained as a file
+  // descriptor.
+  // Currently only supported on POSIX platforms.
+  std::map<int, base::ScopedFD> additional_remapped_fds;
 #endif
 };
 
@@ -155,7 +186,7 @@ class CONTENT_EXPORT ChildProcessLauncher {
 
     virtual void OnProcessLaunchFailed(int error_code) {}
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     // Whether the process can use pre-warmed up connection.
     virtual bool CanUseWarmUpConnection();
 #endif
@@ -169,15 +200,19 @@ class CONTENT_EXPORT ChildProcessLauncher {
   // this object destructs, it will be terminated.
   // Takes ownership of cmd_line.
   //
-  // If |process_error_callback| is provided, it will be called if a Mojo error
+  // If `process_error_callback` is provided, it will be called if a Mojo error
   // is encountered when processing messages from the child process. This
   // callback must be safe to call from any thread.
   //
-  // |files_to_preload| is a map of key names to file paths. These files will be
+  // `file_data` consists of 2 members:
+  // files_to_preload: a map of key names to file paths. These files will be
   // opened by the browser process and corresponding file descriptors inherited
   // by the new child process, accessible using the corresponding key via some
   // platform-specific mechanism (such as base::FileDescriptorStore on POSIX).
-  // Currently only supported on POSIX platforms.
+  // Currently only supported on Linux, ChromeOS and Android platforms.
+  // additional_remapped_fds: is a map of file descriptors to pass. This is
+  // used instead of files_to_preload when the data is already contained as a
+  // file descriptor. Currently only supported on POSIX platforms.
   ChildProcessLauncher(
       std::unique_ptr<SandboxedProcessLauncherDelegate> delegate,
       std::unique_ptr<base::CommandLine> cmd_line,
@@ -185,7 +220,7 @@ class CONTENT_EXPORT ChildProcessLauncher {
       Client* client,
       mojo::OutgoingInvitation mojo_invitation,
       const mojo::ProcessErrorCallback& process_error_callback,
-      std::map<std::string, base::FilePath> files_to_preload,
+      std::unique_ptr<ChildProcessLauncherFileData> file_data,
       bool terminate_on_shutdown = true);
 
   ChildProcessLauncher(const ChildProcessLauncher&) = delete;
@@ -209,10 +244,6 @@ class CONTENT_EXPORT ChildProcessLauncher {
   // more discussion of Linux implementation details.
   ChildProcessTerminationInfo GetChildTerminationInfo(bool known_dead);
 
-  // Gather the lifetime process metrics and save them to histograms. Call
-  // right before the process is about to go away.
-  void RecordProcessLifetimeMetrics();
-
   // Changes whether the process runs in the background or not.  Only call
   // this after the process has started.
   void SetProcessPriority(const ChildProcessLauncherPriority& priority);
@@ -232,7 +263,7 @@ class CONTENT_EXPORT ChildProcessLauncher {
   // previous  client.
   Client* ReplaceClientForTest(Client* client);
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // Dumps the stack of the child process without crashing it.
   void DumpProcessStack();
 #endif
@@ -241,6 +272,9 @@ class CONTENT_EXPORT ChildProcessLauncher {
 
   // Notifies the client about the result of the operation.
   void Notify(internal::ChildProcessLauncherHelper::Process process,
+#if BUILDFLAG(IS_WIN)
+              DWORD last_error,
+#endif
               int error_code);
 
   raw_ptr<Client> client_;

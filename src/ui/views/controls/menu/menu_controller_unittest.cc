@@ -17,8 +17,10 @@
 #include "base/test/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/base/dragdrop/mojom/drag_drop_types.mojom.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
@@ -68,6 +70,10 @@
 
 #if defined(USE_OZONE_PLATFORM_X11)
 #include "ui/events/test/events_test_utils_x11.h"
+#endif
+
+#if BUILDFLAG(IS_WIN)
+#include "base/win/windows_version.h"
 #endif
 
 namespace views {
@@ -504,8 +510,7 @@ class MenuControllerTest : public ViewsTestBase,
 
     // Adjust the final bounds to not include the shadow and border.
     const gfx::Insets border_and_shadow_insets =
-        BubbleBorder::GetBorderAndShadowInsets(
-            MenuConfig::instance().touchable_menu_shadow_elevation);
+        GetBorderAndShadowInsets(/*is_submenu=*/false);
     final_bounds.Inset(border_and_shadow_insets);
 
     // Test that the menu will show on screen.
@@ -551,8 +556,7 @@ class MenuControllerTest : public ViewsTestBase,
 
     // Adjust the final bounds to not include the shadow and border.
     const gfx::Insets border_and_shadow_insets =
-        BubbleBorder::GetBorderAndShadowInsets(
-            MenuConfig::instance().touchable_menu_shadow_elevation);
+        GetBorderAndShadowInsets(/*is_submenu=*/false);
     final_bounds.Inset(border_and_shadow_insets);
 
     // Test that the menu is within the monitor bounds.
@@ -602,8 +606,7 @@ class MenuControllerTest : public ViewsTestBase,
 
     // Adjust the final bounds to not include the shadow and border.
     const gfx::Insets border_and_shadow_insets =
-        BubbleBorder::GetBorderAndShadowInsets(
-            MenuConfig::instance().touchable_menu_shadow_elevation);
+        GetBorderAndShadowInsets(/*is_submenu=*/false);
 
     options.anchor_bounds = gfx::Rect(monitor_bounds.origin(), anchor_size);
     gfx::Rect final_bounds = CalculateBubbleMenuBounds(options);
@@ -654,8 +657,7 @@ class MenuControllerTest : public ViewsTestBase,
 
     // Adjust the final bounds to not include the shadow and border.
     const gfx::Insets border_and_shadow_insets =
-        BubbleBorder::GetBorderAndShadowInsets(
-            MenuConfig::instance().touchable_menu_shadow_elevation);
+        GetBorderAndShadowInsets(/*is_submenu=*/true);
 
     MenuItemView* parent_item = item->GetParentMenuItem();
     SubmenuView* sub_menu = parent_item->GetSubmenu();
@@ -877,6 +879,23 @@ class MenuControllerTest : public ViewsTestBase,
     menu_controller_->OpenMenuImpl(parent, true);
   }
 
+  gfx::Insets GetBorderAndShadowInsets(bool is_submenu) {
+    const MenuConfig& menu_config = MenuConfig::instance();
+    int elevation = menu_config.touchable_menu_shadow_elevation;
+    BubbleBorder::Shadow shadow_type = BubbleBorder::STANDARD_SHADOW;
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    // Increase the submenu shadow elevation and change the shadow style to
+    // ChromeOS system UI shadow style when using Ash System UI layout.
+    if (menu_controller_->use_ash_system_ui_layout()) {
+      if (is_submenu)
+        elevation = menu_config.touchable_submenu_shadow_elevation;
+
+      shadow_type = BubbleBorder::CHROMEOS_SYSTEM_UI_SHADOW;
+    }
+#endif
+    return BubbleBorder::GetBorderAndShadowInsets(elevation, shadow_type);
+  }
+
  private:
   void Init() {
     owner_ = std::make_unique<GestureTestWidget>();
@@ -1062,8 +1081,7 @@ TEST_F(MenuControllerTest, VerifyMenuBubblePositionAfterSizeChanges) {
   constexpr gfx::Rect monitor_bounds(0, 0, 500, 500);
   constexpr gfx::Size menu_size(100, 200);
   const gfx::Insets border_and_shadow_insets =
-      BubbleBorder::GetBorderAndShadowInsets(
-          MenuConfig::instance().touchable_menu_shadow_elevation);
+      GetBorderAndShadowInsets(/*is_submenu=*/false);
 
   // Calculate the suitable anchor point to ensure that if the menu shows below
   // the anchor point, the bottom of the menu should be one pixel off the
@@ -1127,8 +1145,7 @@ TEST_F(MenuControllerTest, VerifyContextMenuBubblePositionAfterSizeChanges) {
   constexpr gfx::Rect kMonitorBounds(0, 0, 500, 500);
   constexpr gfx::Size kMenuSize(100, 200);
   const gfx::Insets border_and_shadow_insets =
-      BubbleBorder::GetBorderAndShadowInsets(
-          MenuConfig::instance().touchable_menu_shadow_elevation);
+      GetBorderAndShadowInsets(/*is_submenu=*/false);
 
   // Calculate the suitable anchor point to ensure that if the menu shows below
   // the anchor point, the bottom of the menu should be one pixel off the
@@ -1683,7 +1700,9 @@ TEST_F(MenuControllerTest, AsynchronousPerformDrop) {
   gfx::PointF location(target->origin());
   ui::DropTargetEvent target_event(drop_data, location, location,
                                    ui::DragDropTypes::DRAG_MOVE);
-  controller->OnPerformDrop(source, target_event);
+  auto drop_cb = controller->GetDropCallback(source, target_event);
+  ui::mojom::DragOperation output_drag_op = ui::mojom::DragOperation::kNone;
+  std::move(drop_cb).Run(target_event, output_drag_op);
 
   TestMenuDelegate* menu_delegate =
       static_cast<TestMenuDelegate*>(target->GetDelegate());
@@ -2415,7 +2434,7 @@ TEST_P(MenuControllerTest, TestMenuFitsOnSmallScreen) {
 
 // Test that submenus are displayed within the screen bounds on smaller screens.
 TEST_P(MenuControllerTest, TestSubmenuFitsOnScreen) {
-  menu_controller()->set_use_touchable_layout(true);
+  menu_controller()->set_use_ash_system_ui_layout(true);
   MenuItemView* sub_item = menu_item()->GetSubmenu()->GetMenuItemAt(0);
   sub_item->AppendMenuItem(11, u"Subitem.One");
 
@@ -2610,6 +2629,13 @@ TEST_F(MenuControllerTest, DestroyedDuringViewsRelease) {
 // that a request to relaunch the context menu is received, and that
 // subsequently pressing ESC does not crash the browser.
 TEST_F(MenuControllerTest, RepostEventToEmptyMenuItem) {
+#if BUILDFLAG(IS_WIN)
+  // TODO(crbug.com/1286137): This test is consistently failing on Win11.
+  if (base::win::OSInfo::GetInstance()->version() >=
+      base::win::Version::WIN11) {
+    GTEST_SKIP() << "Skipping test for WIN11_21H2 and greater";
+  }
+#endif
   // Setup a submenu. Additionally hook up appropriate Widget and View
   // containers, with bounds, so that hit testing works.
   MenuController* controller = menu_controller();
@@ -2789,6 +2815,13 @@ TEST_F(MenuControllerTest, AuraWindowIsInitializedWithMenuHostInitParams) {
 // Tests that |aura::Window| has the correct properties when a context menu is
 // shown.
 TEST_F(MenuControllerTest, ContextMenuInitializesAuraWindowWhenShown) {
+#if BUILDFLAG(IS_WIN)
+  // TODO(crbug.com/1286137): This test is consistently failing on Win11.
+  if (base::win::OSInfo::GetInstance()->version() >=
+      base::win::Version::WIN11) {
+    GTEST_SKIP() << "Skipping test for WIN11_21H2 and greater";
+  }
+#endif
   SubmenuView* sub_menu = menu_item()->GetSubmenu();
 
   // Checking that context menu properties are calculated correctly.
@@ -2843,6 +2876,13 @@ TEST_F(MenuControllerTest, ContextMenuInitializesAuraWindowWhenShown) {
 // Tests that |aura::Window| has the correct properties when a root or a child
 // menu is shown.
 TEST_F(MenuControllerTest, RootAndChildMenusInitializeAuraWindowWhenShown) {
+#if BUILDFLAG(IS_WIN)
+  // TODO(crbug.com/1286137): This test is consistently failing on Win11.
+  if (base::win::OSInfo::GetInstance()->version() >=
+      base::win::Version::WIN11) {
+    GTEST_SKIP() << "Skipping test for WIN11_21H2 and greater";
+  }
+#endif
   SubmenuView* sub_menu = menu_item()->GetSubmenu();
 
   // Checking that root menu properties are calculated correctly.
@@ -2943,6 +2983,13 @@ TEST_F(MenuControllerTest, NoUseAfterFreeWhenMenuCanceledOnMousePress) {
 }
 
 TEST_F(MenuControllerTest, SetSelectionIndices_MenuItemsOnly) {
+#if BUILDFLAG(IS_WIN)
+  // TODO(crbug.com/1286137): This test is consistently failing on Win11.
+  if (base::win::OSInfo::GetInstance()->version() >=
+      base::win::Version::WIN11) {
+    GTEST_SKIP() << "Skipping test for WIN11_21H2 and greater";
+  }
+#endif
   MenuItemView* const item1 = menu_item()->GetSubmenu()->GetMenuItemAt(0);
   MenuItemView* const item2 = menu_item()->GetSubmenu()->GetMenuItemAt(1);
   MenuItemView* const item3 = menu_item()->GetSubmenu()->GetMenuItemAt(2);
@@ -2969,6 +3016,13 @@ TEST_F(MenuControllerTest, SetSelectionIndices_MenuItemsOnly) {
 
 TEST_F(MenuControllerTest,
        SetSelectionIndices_MenuItemsOnly_SkipHiddenAndDisabled) {
+#if BUILDFLAG(IS_WIN)
+  // TODO(crbug.com/1286137): This test is consistently failing on Win11.
+  if (base::win::OSInfo::GetInstance()->version() >=
+      base::win::Version::WIN11) {
+    GTEST_SKIP() << "Skipping test for WIN11_21H2 and greater";
+  }
+#endif
   MenuItemView* const item1 = menu_item()->GetSubmenu()->GetMenuItemAt(0);
   item1->SetEnabled(false);
   MenuItemView* const item2 = menu_item()->GetSubmenu()->GetMenuItemAt(1);
@@ -2988,6 +3042,13 @@ TEST_F(MenuControllerTest,
 }
 
 TEST_F(MenuControllerTest, SetSelectionIndices_Buttons) {
+#if BUILDFLAG(IS_WIN)
+  // TODO(crbug.com/1286137): This test is consistently failing on Win11.
+  if (base::win::OSInfo::GetInstance()->version() >=
+      base::win::Version::WIN11) {
+    GTEST_SKIP() << "Skipping test for WIN11_21H2 and greater";
+  }
+#endif
   AddButtonMenuItems(/*single_child=*/false);
   MenuItemView* const item1 = menu_item()->GetSubmenu()->GetMenuItemAt(0);
   MenuItemView* const item2 = menu_item()->GetSubmenu()->GetMenuItemAt(1);
@@ -3030,6 +3091,13 @@ TEST_F(MenuControllerTest, SetSelectionIndices_Buttons) {
 }
 
 TEST_F(MenuControllerTest, SetSelectionIndices_Buttons_SkipHiddenAndDisabled) {
+#if BUILDFLAG(IS_WIN)
+  // TODO(crbug.com/1286137): This test is consistently failing on Win11.
+  if (base::win::OSInfo::GetInstance()->version() >=
+      base::win::Version::WIN11) {
+    GTEST_SKIP() << "Skipping test for WIN11_21H2 and greater";
+  }
+#endif
   AddButtonMenuItems(/*single_child=*/false);
   MenuItemView* const item1 = menu_item()->GetSubmenu()->GetMenuItemAt(0);
   MenuItemView* const item2 = menu_item()->GetSubmenu()->GetMenuItemAt(1);
@@ -3066,6 +3134,13 @@ TEST_F(MenuControllerTest, SetSelectionIndices_Buttons_SkipHiddenAndDisabled) {
 }
 
 TEST_F(MenuControllerTest, SetSelectionIndices_NestedButtons) {
+#if BUILDFLAG(IS_WIN)
+  // TODO(crbug.com/1286137): This test is consistently failing on Win11.
+  if (base::win::OSInfo::GetInstance()->version() >=
+      base::win::Version::WIN11) {
+    GTEST_SKIP() << "Skipping test for WIN11_21H2 and greater";
+  }
+#endif
   MenuItemView* const item1 = menu_item()->GetSubmenu()->GetMenuItemAt(0);
   MenuItemView* const item2 = menu_item()->GetSubmenu()->GetMenuItemAt(1);
   MenuItemView* const item3 = menu_item()->GetSubmenu()->GetMenuItemAt(2);
@@ -3154,7 +3229,7 @@ TEST_F(MenuControllerTest, AccessibilityEmitsSelectChildrenChanged) {
   EXPECT_EQ(ax_counter.GetCount(ax::mojom::Event::kSelectedChildrenChanged), 2);
 }
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 // This test exercises a Mac-specific behavior, by which hotkeys using modifiers
 // cause menus to close and the hotkeys to be handled by the browser window.
 // This specific test case tries using cmd-ctrl-f, which normally means

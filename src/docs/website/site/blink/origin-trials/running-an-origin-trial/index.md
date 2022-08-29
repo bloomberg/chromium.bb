@@ -128,7 +128,7 @@ both web developers and users. Your feature must satisfy the following:
                 as that can be automatically monitored by the origin trials
                 infrastructure.
     *   The feature must have a corresponding entry in the enum
-                [WebFeature](https://cs.chromium.org/chromium/src/third_party/blink/public/mojom/web_feature/web_feature.mojom).
+                [WebFeature](https://cs.chromium.org/chromium/src/third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom).
     *   For any JavaScript-exposed API, usage can be recorded easily via
                 one of the
                 [\[Measure\]](https://chromium.googlesource.com/chromium/src/+/HEAD/third_party/blink/renderer/bindings/IDLExtendedAttributes.md#Measure_i_m_a_c)
@@ -155,14 +155,6 @@ both web developers and users. Your feature must satisfy the following:
     *   This could be the README.md in your Github repo, or any other
                 page of your choice.
     *   Should include details about availability via origin trials.
-
-## What is the timeline for running a trial and collecting feedback?
-
-Please see our [overview of the timeline for running a trial and collecting
-feedback](https://docs.google.com/document/d/1ttgWkpQUtlJy0Q5HhXdaPKs2DHfITbNwLqtNRxqdKMI/edit).
-Contact
-[experimentation-dev@chromium.org](mailto:experimentation-dev@chromium.org) with
-any questions.
 
 ## What is the actual process to run an origin trial?
 
@@ -254,15 +246,10 @@ Recommended process:
 
 ## How long do Origin Trials typically last?
 
-Historically, origin trials have typically lasted 3 milestones (~18 weeks).
-We've typically capped extensions to origin trials at 6 milestones total (~36
-weeks), unless presented with evidence that the risk of burn in is low; changes
-to the API surface, etc).
-
-With the [shift to 4 week release
-cycles](https://blog.chromium.org/2021/03/speeding-up-release-cycle.html), we
-plan for origin trials to typically last 4 milestones (~16 weeks), with a cap of
-9 milestones (~36 weeks) absent compelling evidence.
+Origin trials can run for up to 6 milestones (~24 weeks), and can be extended
+under certain conditions.
+See [here](https://www.chromium.org/blink/launching-features/#step-3-optional-origin-trial)
+for more details.
 
 ## What is the process to extend an origin trial?
 
@@ -298,9 +285,14 @@ end date:
 
 Consult with the OT team to figure out if you're in a situation where it makes
 sense to continue experimenting. For unexpected delays (1), this generally means
-requesting an extension to the trial end date, which generally should not be
-more than 3-4 weeks. For feature changes and such (2), this generally means
-starting a new origin trial, to follow the previous trial.
+requesting an extension to the trial end date. For feature changes and such (2),
+this generally means starting a new origin trial, to follow the previous trial.
+
+In order to be eligible for an extension, you must demonstrate substantial
+progress towards meeting the bar for shipping the feature.
+See [here](https://www.chromium.org/blink/launching-features/#step-3-optional-origin-trial)
+for more details.
+
 
 ### How to setup an extension or continued experiment?
 

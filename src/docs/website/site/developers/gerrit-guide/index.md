@@ -36,7 +36,7 @@ title: Gerrit Guide
 Now that you've configured your account on the server, you should configure your
 local checkouts.
 
-1.  Run ``cd src && git config --local gerrit.host true` `` to default
+1.  Run `cd src && git config --local gerrit.host true` to default
             to uploading your reviews to Gerrit.
 
 ### (Googler) Link @chromium.org & @google.com accounts

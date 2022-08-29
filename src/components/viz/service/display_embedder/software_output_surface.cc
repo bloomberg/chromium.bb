@@ -24,12 +24,12 @@
 namespace viz {
 
 SoftwareOutputSurface::SoftwareOutputSurface(
-    std::unique_ptr<SoftwareOutputDevice> software_device)
-    : OutputSurface(std::move(software_device)) {
+    std::unique_ptr<SoftwareOutputDevice> device)
+    : OutputSurface(std::move(device)) {
   capabilities_.pending_swap_params.max_pending_swaps =
-      software_device_->MaxFramesPending();
+      software_device()->MaxFramesPending();
   capabilities_.resize_based_on_root_surface =
-      software_device_->SupportsOverridePlatformSize();
+      software_device()->SupportsOverridePlatformSize();
 }
 
 SoftwareOutputSurface::~SoftwareOutputSurface() = default;
@@ -48,17 +48,8 @@ void SoftwareOutputSurface::DiscardBackbuffer() {
   software_device()->DiscardBackbuffer();
 }
 
-void SoftwareOutputSurface::BindFramebuffer() {
-  // Not used for software surfaces.
-  NOTREACHED();
-}
-
-void SoftwareOutputSurface::Reshape(const gfx::Size& size,
-                                    float device_scale_factor,
-                                    const gfx::ColorSpace& color_space,
-                                    gfx::BufferFormat format,
-                                    bool use_stencil) {
-  software_device()->Resize(size, device_scale_factor);
+void SoftwareOutputSurface::Reshape(const ReshapeParams& params) {
+  software_device()->Resize(params.size, params.device_scale_factor);
 }
 
 void SoftwareOutputSurface::SwapBuffers(OutputSurfaceFrame frame) {
@@ -89,22 +80,6 @@ bool SoftwareOutputSurface::IsDisplayedAsOverlayPlane() const {
   return false;
 }
 
-unsigned SoftwareOutputSurface::GetOverlayTextureId() const {
-  return 0;
-}
-
-bool SoftwareOutputSurface::HasExternalStencilTest() const {
-  return false;
-}
-
-void SoftwareOutputSurface::ApplyExternalStencil() {}
-
-uint32_t SoftwareOutputSurface::GetFramebufferCopyTextureFormat() {
-  // Not used for software surfaces.
-  NOTREACHED();
-  return 0;
-}
-
 void SoftwareOutputSurface::SwapBuffersCallback(base::TimeTicks swap_time,
                                                 const gfx::Size& pixel_size) {
   latency_tracker_.OnGpuSwapBuffersCompleted(
@@ -118,7 +93,7 @@ void SoftwareOutputSurface::SwapBuffersCallback(base::TimeTicks swap_time,
       now.SnappedToNextTick(refresh_timebase_, refresh_interval_) - now;
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
-#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
   if (needs_swap_size_notifications_)
     client_->DidSwapWithSize(pixel_size);
 #endif
@@ -134,10 +109,6 @@ void SoftwareOutputSurface::UpdateVSyncParameters(base::TimeTicks timebase,
   update_vsync_parameters_callback_.Run(timebase, interval);
 }
 
-unsigned SoftwareOutputSurface::UpdateGpuFence() {
-  return 0;
-}
-
 void SoftwareOutputSurface::SetUpdateVSyncParametersCallback(
     UpdateVSyncParametersCallback callback) {
   update_vsync_parameters_callback_ = std::move(callback);
@@ -149,7 +120,7 @@ gfx::OverlayTransform SoftwareOutputSurface::GetDisplayTransform() {
 
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
-#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 void SoftwareOutputSurface::SetNeedsSwapSizeNotifications(
     bool needs_swap_size_notifications) {
   needs_swap_size_notifications_ = needs_swap_size_notifications;

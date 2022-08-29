@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/svg/svg_element.h"
 
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/svg/svg_element_rare_data.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 
@@ -20,10 +21,10 @@ TEST_F(SVGElementTest, BaseComputedStyleForSMILWithContainerQueries) {
   GetDocument().body()->setInnerHTML(R"HTML(
     <style>
       #rect2 { display: none }
-      @container size(max-width: 200px) {
+      @container (max-width: 200px) {
         rect, g { color: green; }
       }
-      @container size(min-width: 300px) {
+      @container (min-width: 300px) {
         rect, g { background-color: red; }
       }
     </style>

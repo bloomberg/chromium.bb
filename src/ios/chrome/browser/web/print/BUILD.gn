@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//ios/web/js_compile.gni")
+import("//ios/web/public/js_messaging/optimize_ts.gni")
 
 source_set("print") {
   configs += [ "//build/config/compiler:enable_arc" ]
@@ -41,16 +41,16 @@ source_set("unit_tests") {
     "//ios/chrome/browser:pref_names",
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/prefs:browser_prefs",
-    "//ios/chrome/browser/web:test_support",
     "//ios/chrome/test/fakes",
     "//ios/web/public/test",
     "//testing/gtest",
   ]
 }
 
-js_compile_bundle("print_js") {
+optimize_ts("print_js") {
   visibility = [ ":print" ]
-  closure_entry_point = "__crWeb.print"
 
-  sources = [ "resources/print.js" ]
+  sources = [ "resources/print.ts" ]
+
+  deps = [ "//ios/web/public/js_messaging:util_scripts" ]
 }

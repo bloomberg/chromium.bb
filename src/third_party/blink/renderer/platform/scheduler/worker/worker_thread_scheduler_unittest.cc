@@ -10,6 +10,7 @@
 #include "base/task/sequence_manager/test/sequence_manager_for_test.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/task_environment.h"
+#include "base/time/time.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -93,12 +94,12 @@ class WorkerThreadSchedulerForTest : public WorkerThreadScheduler {
   using WorkerThreadScheduler::SetUkmTaskSamplingRateForTest;
 
   void AddTaskTimeObserver(base::sequence_manager::TaskTimeObserver* observer) {
-    helper()->AddTaskTimeObserver(observer);
+    GetHelper().AddTaskTimeObserver(observer);
   }
 
   void RemoveTaskTimeObserver(
       base::sequence_manager::TaskTimeObserver* observer) {
-    helper()->RemoveTaskTimeObserver(observer);
+    GetHelper().RemoveTaskTimeObserver(observer);
   }
 
   void set_on_microtask_checkpoint(base::OnceClosure cb) {

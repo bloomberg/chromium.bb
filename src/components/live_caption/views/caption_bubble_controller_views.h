@@ -11,6 +11,8 @@
 
 #include "base/memory/raw_ptr.h"
 #include "components/live_caption/caption_bubble_controller.h"
+#include "components/live_caption/views/caption_bubble.h"
+#include "media/mojo/mojom/speech_recognition.mojom.h"
 
 namespace views {
 class Widget;
@@ -28,7 +30,7 @@ class CaptionBubbleModel;
 //
 class CaptionBubbleControllerViews : public CaptionBubbleController {
  public:
-  CaptionBubbleControllerViews();
+  explicit CaptionBubbleControllerViews();
   ~CaptionBubbleControllerViews() override;
   CaptionBubbleControllerViews(const CaptionBubbleControllerViews&) = delete;
   CaptionBubbleControllerViews& operator=(const CaptionBubbleControllerViews&) =
@@ -41,7 +43,11 @@ class CaptionBubbleControllerViews : public CaptionBubbleController {
                        const media::SpeechRecognitionResult& result) override;
 
   // Called when the speech service has an error.
-  void OnError(CaptionBubbleContext* caption_bubble_context) override;
+  void OnError(
+      CaptionBubbleContext* caption_bubble_context,
+      CaptionBubbleErrorType error_type,
+      OnErrorClickedCallback error_clicked_callback,
+      OnDoNotShowAgainClickedCallback error_silenced_callback) override;
 
   // Called when the audio stream has ended.
   void OnAudioStreamEnd(CaptionBubbleContext* caption_bubble_context) override;

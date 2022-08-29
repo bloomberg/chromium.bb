@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.payments;
 
 import androidx.test.filters.MediumTest;
 
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -22,7 +21,6 @@ import org.chromium.chrome.browser.payments.PaymentRequestTestRule.TestFactory;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.TestPay;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
-import org.chromium.ui.test.util.DisableAnimationsTestRule;
 
 import java.util.concurrent.TimeoutException;
 
@@ -32,10 +30,6 @@ import java.util.concurrent.TimeoutException;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class PaymentRequestPaymentAppTest {
-    // Disable animations to reduce flakiness.
-    @ClassRule
-    public static DisableAnimationsTestRule sNoAnimationsRule = new DisableAnimationsTestRule();
-
     @Rule
     public PaymentRequestTestRule mPaymentRequestTestRule =
             new PaymentRequestTestRule("payment_request_bobpay_test.html");
@@ -47,7 +41,7 @@ public class PaymentRequestPaymentAppTest {
     public void testNoSupportedPaymentMethods() throws TimeoutException {
         mPaymentRequestTestRule.openPageAndClickBuyAndWait(mPaymentRequestTestRule.getShowFailed());
         mPaymentRequestTestRule.expectResultContains(
-                new String[] {"show() rejected", "The payment method", "not supported"});
+                new String[] {"The payment method", "not supported"});
     }
 
     /**
@@ -62,7 +56,7 @@ public class PaymentRequestPaymentAppTest {
                 AppPresence.NO_APPS, FactorySpeed.FAST_FACTORY);
         mPaymentRequestTestRule.openPageAndClickBuyAndWait(mPaymentRequestTestRule.getShowFailed());
         mPaymentRequestTestRule.expectResultContains(
-                new String[] {"show() rejected", "The payment method", "not supported"});
+                new String[] {"The payment method", "not supported"});
     }
 
     /**
@@ -78,7 +72,7 @@ public class PaymentRequestPaymentAppTest {
                 AppPresence.NO_APPS, FactorySpeed.SLOW_FACTORY);
         mPaymentRequestTestRule.openPageAndClickBuyAndWait(mPaymentRequestTestRule.getShowFailed());
         mPaymentRequestTestRule.expectResultContains(
-                new String[] {"show() rejected", "The payment method", "not supported"});
+                new String[] {"The payment method", "not supported"});
     }
 
     /** If the factory creates more payment apps after the UI has been dismissed, don't crash. */

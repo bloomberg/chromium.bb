@@ -46,12 +46,14 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "base/threading/thread.h"
 #include "base/time/tick_clock.h"
+#include "base/time/time.h"
 #include "media/base/audio_bus.h"
 #include "media/base/fake_single_thread_task_runner.h"
 #include "media/base/video_frame.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/cast_sender.h"
+#include "media/cast/common/encoded_frame.h"
 #include "media/cast/logging/simple_event_subscriber.h"
 #include "media/cast/net/cast_transport.h"
 #include "media/cast/net/cast_transport_config.h"
@@ -170,7 +172,7 @@ class CastTransportWrapper : public CastTransport {
     transport_->SendRtcpFromRtpReceiver();
   }
 
-  void SetOptions(const base::DictionaryValue& options) final {}
+  void SetOptions(const base::Value::Dict& options) final {}
 
  private:
   std::unique_ptr<CastTransport> transport_;
@@ -469,7 +471,7 @@ class TransportClient : public CastTransport::Client {
   const raw_ptr<RunOneBenchmark> run_one_benchmark_;
 };
 
-}  // namepspace
+}  // namespace
 
 void RunOneBenchmark::Create(const MeasuringPoint& p) {
   sender_to_receiver_ = new LoopBackTransport(cast_environment_sender_);

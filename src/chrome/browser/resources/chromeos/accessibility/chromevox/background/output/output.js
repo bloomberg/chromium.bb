@@ -5,41 +5,10 @@
 /**
  * @fileoverview Provides output services for ChromeVox.
  */
+import {EventSourceState} from '/chromevox/background/event_source.js';
+import {OutputAncestryInfo} from '/chromevox/background/output/output_ancestry_info.js';
+import {EventSourceType} from '/chromevox/common/event_source_type.js';
 
-goog.provide('Output');
-
-goog.require('AbstractEarcons');
-goog.require('AutomationTreeWalker');
-goog.require('ChromeVox');
-goog.require('EventSourceState');
-goog.require('LocaleOutputHelper');
-goog.require('LogStore');
-goog.require('NavBraille');
-goog.require('OutputAction');
-goog.require('OutputAncestryInfo');
-goog.require('OutputContextOrder');
-goog.require('OutputEarconAction');
-goog.require('OutputEventType');
-goog.require('OutputFormatParser');
-goog.require('OutputFormatTree');
-goog.require('OutputNodeSpan');
-goog.require('OutputRoleInfo');
-goog.require('OutputRulesStr');
-goog.require('OutputSelectionSpan');
-goog.require('OutputSpeechProperties');
-goog.require('PhoneticData');
-goog.require('Spannable');
-goog.require('TextLog');
-goog.require('TtsCategory');
-goog.require('ValueSelectionSpan');
-goog.require('ValueSpan');
-goog.require('constants');
-goog.require('cursors.Cursor');
-goog.require('cursors.Range');
-goog.require('cursors.Unit');
-goog.require('goog.i18n.MessageFormat');
-
-goog.scope(function() {
 const AriaCurrentState = chrome.automation.AriaCurrentState;
 const AutomationNode = chrome.automation.AutomationNode;
 const DescriptionFromType = chrome.automation.DescriptionFromType;
@@ -77,7 +46,7 @@ const StateType = chrome.automation.StateType;
  *     For example, $name= would insert the name attribute only if no name
  * attribute had been inserted previously.
  */
-Output = class {
+export class Output {
   constructor() {
     // TODO(dtseng): Include braille specific rules.
     /** @type {!Array<!Spannable>} @private */
@@ -137,6 +106,8 @@ Output = class {
      * @private {!WeakSet<!AutomationNode>}
      */
     this.formattedAncestors_ = new WeakSet();
+    /** @private {!Object<string, string>} */
+    this.replacements_ = {};
   }
 
   /**
@@ -177,9 +148,9 @@ Output = class {
 
       // These attributes default to false for empty strings.
       case 'roleDescription':
-        return !!node.roleDescription;
+        return Boolean(node.roleDescription);
       case 'value':
-        return !!node.value;
+        return Boolean(node.value);
       case 'selected':
         return node.selected === true;
       default:
@@ -401,6 +372,15 @@ Output = class {
   }
 
   /**
+   * Causes any speech output to apply the replacement.
+   * @param {string} text The text to be replaced.
+   * @param {string} replace What to replace |text| with.
+   */
+  withSpeechTextReplacement(text, replace) {
+    this.replacements_[text] = replace;
+  }
+
+  /**
    * Suppresses processing of a token for subsequent formatting commands.
    * @param {string} token
    * @return {!Output}
@@ -482,18 +462,10 @@ Output = class {
     return this;
   }
 
-  /**
-   * Executes all specified output.
-   */
+  /** Executes all specified output. */
   go() {
     // Speech.
-    let queueMode = QueueMode.QUEUE;
-    if (Output.forceModeForNextSpeechUtterance_ !== undefined) {
-      queueMode =
-          /** @type{QueueMode} */ (Output.forceModeForNextSpeechUtterance_);
-    } else if (this.queueMode_ !== undefined) {
-      queueMode = /** @type{QueueMode} */ (this.queueMode_);
-    }
+    let queueMode = this.determineQueueMode_();
 
     if (this.speechBuffer_.length > 0) {
       Output.forceModeForNextSpeechUtterance_ = undefined;
@@ -547,8 +519,11 @@ Output = class {
       if (i === this.speechBuffer_.length - 1) {
         speechProps['endCallback'] = this.speechEndCallback_;
       }
-
-      ChromeVox.tts.speak(buff.toString(), queueMode, speechProps);
+      let finalSpeech = buff.toString();
+      for (const text in this.replacements_) {
+        finalSpeech = finalSpeech.replace(text, this.replacements_[text]);
+      }
+      ChromeVox.tts.speak(finalSpeech, queueMode, speechProps);
 
       // Skip resetting |queueMode| if the |text| is empty. If we don't do this,
       // and the tts engine doesn't generate a callback, we might not properly
@@ -559,7 +534,7 @@ Output = class {
     }
     if (this.speechRulesStr_.str) {
       LogStore.getInstance().writeTextLog(
-          this.speechRulesStr_.str, LogStore.LogType.SPEECH_RULE);
+          this.speechRulesStr_.str, LogType.SPEECH_RULE);
     }
 
     // Braille.
@@ -584,14 +559,25 @@ Output = class {
       ChromeVox.braille.write(output);
       if (this.brailleRulesStr_.str) {
         LogStore.getInstance().writeTextLog(
-            this.brailleRulesStr_.str, LogStore.LogType.BRAILLE_RULE);
+            this.brailleRulesStr_.str, LogType.BRAILLE_RULE);
       }
     }
 
     // Display.
     if (this.speechCategory_ !== TtsCategory.LIVE && this.drawFocusRing_) {
-      ChromeVoxState.instance.setFocusBounds(this.locations_);
+      FocusBounds.set(this.locations_);
     }
+  }
+
+  /** @return {QueueMode} */
+  determineQueueMode_() {
+    if (Output.forceModeForNextSpeechUtterance_ !== undefined) {
+      return Output.forceModeForNextSpeechUtterance_;
+    }
+    if (this.queueMode_ !== undefined) {
+      return this.queueMode_;
+    }
+    return QueueMode.QUEUE;
   }
 
   /**
@@ -831,7 +817,7 @@ Output = class {
               }
             }
           }
-        });
+        })();
 
     new OutputFormatParser(observer).parse(format);
   }
@@ -1373,12 +1359,12 @@ Output = class {
     const root = node;
     const walker = new AutomationTreeWalker(node, Dir.FORWARD, {
       visit: AutomationPredicate.leafOrStaticText,
-      leaf: (n) => {
+      leaf: n => {
         // The root might be a leaf itself, but we still want to descend
         // into it.
         return n !== root && AutomationPredicate.leafOrStaticText(n);
       },
-      root: (r) => r === root
+      root: r => r === root
     });
     const outputStrings = [];
     while (walker.next().node) {
@@ -1681,8 +1667,8 @@ Output = class {
         (this.contextOrder_ === OutputContextOrder.DIRECTED && !isForward);
     const preferStartOrEndAncestry =
         this.contextOrder_ === OutputContextOrder.FIRST_AND_LAST;
-    let cursor = cursors.Cursor.fromNode(range.start.node);
     let prevNode = prevRange.start.node;
+    let node = range.start.node;
 
     const formatNodeAndAncestors = function(node, prevNode) {
       const buff = [];
@@ -1705,26 +1691,72 @@ Output = class {
     }.bind(this);
 
     let lca = null;
+    if (range.start.node !== range.end.node) {
+      lca = AutomationUtil.getLeastCommonAncestor(
+          range.end.node, range.start.node);
+    }
     if (addContextAfter) {
-      if (range.start.node !== range.end.node) {
-        lca = AutomationUtil.getLeastCommonAncestor(
-            range.end.node, range.start.node);
-      }
-
       prevNode = lca || prevNode;
     }
 
-    const unit = range.isInlineText() ? cursors.Unit.TEXT : cursors.Unit.NODE;
-    while (cursor.node && range.end.node &&
-           AutomationUtil.getDirection(cursor.node, range.end.node) ===
-               Dir.FORWARD) {
-      const node = cursor.node;
-      rangeBuff.push.apply(rangeBuff, formatNodeAndAncestors(node, prevNode));
+    // Do some bookkeeping to see whether this range partially covers node(s) at
+    // its endpoints.
+    let hasPartialNodeStart = false;
+    let hasPartialNodeEnd = false;
+    if (AutomationPredicate.selectableText(range.start.node) &&
+        range.start.index > 0) {
+      hasPartialNodeStart = true;
+    }
+
+    if (AutomationPredicate.selectableText(range.end.node) &&
+        range.end.index >= 0 && range.end.index < range.end.node.name.length) {
+      hasPartialNodeEnd = true;
+    }
+
+    let pred;
+    if (range.isInlineText()) {
+      pred = AutomationPredicate.leaf;
+    } else if (hasPartialNodeStart || hasPartialNodeEnd) {
+      pred = AutomationPredicate.selectableText;
+    } else {
+      pred = AutomationPredicate.object;
+    }
+
+    // Computes output for nodes (including partial subnodes) between endpoints
+    // of |range|.
+    while (node && range.end.node &&
+           AutomationUtil.getDirection(node, range.end.node) === Dir.FORWARD) {
+      if (hasPartialNodeStart && node === range.start.node) {
+        if (range.start.index !== range.start.node.name.length) {
+          const partialRange = new cursors.Range(
+              new cursors.Cursor(node, range.start.index),
+              new cursors.Cursor(
+                  node, node.name.length, {preferNodeStartEquivalent: true}));
+          this.subNode_(partialRange, prevRange, type, rangeBuff, ruleStr);
+        }
+      } else if (hasPartialNodeEnd && node === range.end.node) {
+        if (range.end.index !== 0) {
+          const partialRange = new cursors.Range(
+              new cursors.Cursor(node, 0),
+              new cursors.Cursor(node, range.end.index));
+          this.subNode_(partialRange, prevRange, type, rangeBuff, ruleStr);
+        }
+      } else {
+        rangeBuff.push.apply(rangeBuff, formatNodeAndAncestors(node, prevNode));
+      }
+
+      // End early if the range is just a single node.
+      if (range.start.node === range.end.node) {
+        break;
+      }
+
       prevNode = node;
-      cursor = cursor.move(unit, cursors.Movement.DIRECTIONAL, Dir.FORWARD);
+      node = AutomationUtil.findNextNode(
+                 node, Dir.FORWARD, pred, {root: r => r === lca}) ||
+          prevNode;
 
       // Reached a boundary.
-      if (cursor.node === prevNode) {
+      if (node === prevNode) {
         break;
       }
     }
@@ -1765,7 +1797,7 @@ Output = class {
     }
 
     const info = new OutputAncestryInfo(
-        node, prevNode, !!optionalArgs.suppressStartEndAncestry);
+        node, prevNode, Boolean(optionalArgs.suppressStartEndAncestry));
 
     // Enter, leave ancestry.
     this.ancestryHelper_({
@@ -2052,7 +2084,7 @@ Output = class {
       this.ancestry_(node, prevNode, type, buff, ruleStr, {preferEnd: true});
     }
 
-    range.start.node.boundsForRange(rangeStart, rangeEnd, (loc) => {
+    range.start.node.boundsForRange(rangeStart, rangeEnd, loc => {
       if (loc) {
         this.locations_.push(loc);
       }
@@ -2199,13 +2231,13 @@ Output = class {
       }
 
       const isWithinVirtualKeyboard = AutomationUtil.getAncestors(node).find(
-          (n) => n.role === RoleType.KEYBOARD);
+          n => n.role === RoleType.KEYBOARD);
       if (AutomationPredicate.clickable(node) && !isWithinVirtualKeyboard) {
         ret.push({msgId: 'hint_double_tap'});
       }
 
       const enteredVirtualKeyboard =
-          uniqueAncestors.find((n) => n.role === RoleType.KEYBOARD);
+          uniqueAncestors.find(n => n.role === RoleType.KEYBOARD);
       if (enteredVirtualKeyboard) {
         ret.push({msgId: 'hint_touch_type'});
       }
@@ -2283,7 +2315,7 @@ Output = class {
     }
     if (uniqueAncestors.find(
             /** @type {function(?) : boolean} */ (function(n) {
-              return !!n.details;
+              return Boolean(n.details);
             }))) {
       ret.push({msgId: 'hint_details'});
     }
@@ -2500,7 +2532,7 @@ Output = class {
       buff[buff.length - 1].setSpan(speechProps, 0, 0);
     }
   }
-};
+}
 
 /**
  * Delimiter to use between output values.
@@ -2686,7 +2718,7 @@ Output.RULES = {
           $state $restriction $description`,
     },
     date: {enter: `$nameFromNode $role $state $restriction $description`},
-    dialog: {enter: `$nameFromNode $role $description $textContent`},
+    dialog: {enter: `$nameFromNode $role $description`},
     genericContainer: {
       enter: `$nameFromNode $description $state`,
       speak: `$nameOrTextContent $description $state`
@@ -2868,4 +2900,3 @@ Output.RULES = {
  * @private
  */
 Output.forceModeForNextSpeechUtterance_;
-});  // goog.scope

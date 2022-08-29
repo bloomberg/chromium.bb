@@ -9,6 +9,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/power_monitor_test.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/time/time.h"
 #include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
 #include "components/page_load_metrics/browser/observers/core/largest_contentful_paint_handler.h"
 #include "components/page_load_metrics/browser/observers/page_load_metrics_observer_content_test_harness.h"
@@ -397,25 +398,11 @@ TEST_F(UmaPageLoadMetricsObserverTest, FailedProvisionalLoad) {
   tester()->histogram_tester().ExpectTotalCount(internal::kHistogramLoad, 0);
   tester()->histogram_tester().ExpectTotalCount(
       internal::kHistogramFirstImagePaint, 0);
-  tester()->histogram_tester().ExpectTotalCount(
-      internal::kHistogramFailedProvisionalLoad, 1);
 
   tester()->histogram_tester().ExpectTotalCount(
       internal::kHistogramPageTimingForegroundDuration, 0);
   tester()->histogram_tester().ExpectTotalCount(
       internal::kHistogramPageTimingForegroundDurationNoCommit, 1);
-}
-
-TEST_F(UmaPageLoadMetricsObserverTest, FailedBackgroundProvisionalLoad) {
-  // Test that failed provisional event does not get logged in the
-  // histogram if it happened in the background
-  GURL url(kDefaultTestUrl);
-  web_contents()->WasHidden();
-  content::NavigationSimulator::NavigateAndFailFromDocument(
-      url, net::ERR_TIMED_OUT, main_rfh());
-
-  tester()->histogram_tester().ExpectTotalCount(
-      internal::kHistogramFailedProvisionalLoad, 0);
 }
 
 TEST_F(UmaPageLoadMetricsObserverTest, Reload) {
@@ -687,19 +674,15 @@ TEST_F(UmaPageLoadMetricsObserverTest, BytesAndResourcesCounted) {
       internal::kHistogramPageLoadCacheBytes, 1);
   tester()->histogram_tester().ExpectTotalCount(
       internal::kHistogramPageLoadNetworkBytesIncludingHeaders, 1);
-  tester()->histogram_tester().ExpectTotalCount(
-      internal::kHistogramTotalCompletedResources, 1);
-  tester()->histogram_tester().ExpectTotalCount(
-      internal::kHistogramNetworkCompletedResources, 1);
-  tester()->histogram_tester().ExpectTotalCount(
-      internal::kHistogramCacheCompletedResources, 1);
 }
 
 TEST_F(UmaPageLoadMetricsObserverTest, CpuUsageCounted) {
   NavigateAndCommit(GURL(kDefaultTestUrl));
-  OnCpuTimingUpdate(web_contents()->GetMainFrame(), base::Milliseconds(750));
+  OnCpuTimingUpdate(web_contents()->GetPrimaryMainFrame(),
+                    base::Milliseconds(750));
   web_contents()->WasHidden();  // Set the web contents as backgrounded.
-  OnCpuTimingUpdate(web_contents()->GetMainFrame(), base::Milliseconds(250));
+  OnCpuTimingUpdate(web_contents()->GetPrimaryMainFrame(),
+                    base::Milliseconds(250));
   NavigateAndCommit(GURL(kDefaultTestUrl2));
 
   tester()->histogram_tester().ExpectUniqueSample(
@@ -803,7 +786,7 @@ TEST_F(UmaPageLoadMetricsObserverTest,
   RenderFrameHost* subframe =
       NavigationSimulator::NavigateAndCommitFromDocument(
           GURL(kSubframeTestUrl),
-          RenderFrameHostTester::For(web_contents()->GetMainFrame())
+          RenderFrameHostTester::For(web_contents()->GetPrimaryMainFrame())
               ->AppendChild("subframe"));
 
   // Simulate timing updates in the main frame and the subframe.
@@ -846,7 +829,7 @@ TEST_F(UmaPageLoadMetricsObserverTest,
   RenderFrameHost* subframe =
       NavigationSimulator::NavigateAndCommitFromDocument(
           GURL(kSubframeTestUrl),
-          RenderFrameHostTester::For(web_contents()->GetMainFrame())
+          RenderFrameHostTester::For(web_contents()->GetPrimaryMainFrame())
               ->AppendChild("subframe"));
 
   // Simulate timing updates in the main frame and the subframe.
@@ -883,7 +866,7 @@ TEST_F(UmaPageLoadMetricsObserverTest,
   RenderFrameHost* subframe =
       NavigationSimulator::NavigateAndCommitFromDocument(
           GURL(kSubframeTestUrl),
-          RenderFrameHostTester::For(web_contents()->GetMainFrame())
+          RenderFrameHostTester::For(web_contents()->GetPrimaryMainFrame())
               ->AppendChild("subframe"));
 
   // Simulate timing updates in the main frame and the subframe.
@@ -929,7 +912,7 @@ TEST_F(UmaPageLoadMetricsObserverTest,
   RenderFrameHost* subframe =
       NavigationSimulator::NavigateAndCommitFromDocument(
           GURL(kSubframeTestUrl),
-          RenderFrameHostTester::For(web_contents()->GetMainFrame())
+          RenderFrameHostTester::For(web_contents()->GetPrimaryMainFrame())
               ->AppendChild("subframe"));
 
   // Simulate timing updates in the main frame and the subframe.
@@ -974,7 +957,7 @@ TEST_F(UmaPageLoadMetricsObserverTest,
   RenderFrameHost* subframe =
       NavigationSimulator::NavigateAndCommitFromDocument(
           GURL(kSubframeTestUrl),
-          RenderFrameHostTester::For(web_contents()->GetMainFrame())
+          RenderFrameHostTester::For(web_contents()->GetPrimaryMainFrame())
               ->AppendChild("subframe"));
 
   // Simulate timing updates in the main frame and the subframe.
@@ -1015,7 +998,7 @@ TEST_F(UmaPageLoadMetricsObserverTest,
   RenderFrameHost* subframe =
       NavigationSimulator::NavigateAndCommitFromDocument(
           GURL(kSubframeTestUrl),
-          RenderFrameHostTester::For(web_contents()->GetMainFrame())
+          RenderFrameHostTester::For(web_contents()->GetPrimaryMainFrame())
               ->AppendChild("subframe"));
 
   // Simulate timing updates in the main frame and the subframe.
@@ -1063,7 +1046,7 @@ TEST_F(
   RenderFrameHost* subframe =
       NavigationSimulator::NavigateAndCommitFromDocument(
           GURL(kSubframeTestUrl),
-          RenderFrameHostTester::For(web_contents()->GetMainFrame())
+          RenderFrameHostTester::For(web_contents()->GetPrimaryMainFrame())
               ->AppendChild("subframe"));
 
   // Simulate timing updates in the main frame and the subframe.
@@ -1180,36 +1163,7 @@ TEST_F(UmaPageLoadMetricsObserverTest,
   TestAllFramesLCP(990, LargestContentTextOrImage::kText);
 }
 
-TEST_F(UmaPageLoadMetricsObserverTest,
-       NormalizedResponsivenessMetricsWithoutSendingAllLatencies) {
-  page_load_metrics::mojom::InputTiming input_timing;
-  input_timing.num_interactions = 3;
-  input_timing.max_event_durations =
-      UserInteractionLatencies::NewWorstInteractionLatency(
-          base::Milliseconds(21));
-  input_timing.total_event_durations =
-      UserInteractionLatencies::NewWorstInteractionLatency(
-          base::Milliseconds(56));
-  NavigateAndCommit(GURL(kDefaultTestUrl));
-  tester()->SimulateInputTimingUpdate(input_timing);
-  // Navigate again to force histogram recording.
-  NavigateAndCommit(GURL(kDefaultTestUrl2));
-  EXPECT_THAT(
-      tester()->histogram_tester().GetAllSamples(
-          internal::kHistogramWorstUserInteractionLatencyMaxEventDuration),
-      testing::ElementsAre(base::Bucket(21, 1)));
-  EXPECT_THAT(
-      tester()->histogram_tester().GetAllSamples(
-          internal::kHistogramWorstUserInteractionLatencyTotalEventDuration),
-      testing::ElementsAre(base::Bucket(50, 1)));
-}
-
-TEST_F(UmaPageLoadMetricsObserverTest,
-       NormalizedResponsivenessMetricsWithSendingAllLatencies) {
-  // Flip the flag.
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      blink::features::kSendAllUserInteractionLatencies);
+TEST_F(UmaPageLoadMetricsObserverTest, NormalizedResponsivenessMetrics) {
   page_load_metrics::mojom::InputTiming input_timing;
   input_timing.num_interactions = 3;
   input_timing.max_event_durations =
@@ -1222,17 +1176,6 @@ TEST_F(UmaPageLoadMetricsObserverTest,
       base::Milliseconds(100), UserInteractionType::kTapOrClick));
   max_event_durations.emplace_back(UserInteractionLatency::New(
       base::Milliseconds(150), UserInteractionType::kDrag));
-  input_timing.total_event_durations =
-      UserInteractionLatencies::NewUserInteractionLatencies({});
-
-  auto& total_event_durations =
-      input_timing.total_event_durations->get_user_interaction_latencies();
-  total_event_durations.emplace_back(UserInteractionLatency::New(
-      base::Milliseconds(55), UserInteractionType::kKeyboard));
-  total_event_durations.emplace_back(UserInteractionLatency::New(
-      base::Milliseconds(105), UserInteractionType::kTapOrClick));
-  total_event_durations.emplace_back(UserInteractionLatency::New(
-      base::Milliseconds(155), UserInteractionType::kDrag));
   NavigateAndCommit(GURL(kDefaultTestUrl));
   tester()->SimulateInputTimingUpdate(input_timing);
   // Navigate again to force histogram recording.
@@ -1242,54 +1185,28 @@ TEST_F(UmaPageLoadMetricsObserverTest,
       std::make_pair(
           internal::kHistogramWorstUserInteractionLatencyMaxEventDuration, 146),
       std::make_pair(
-          internal::kHistogramWorstUserInteractionLatencyTotalEventDuration,
-          146),
-      std::make_pair(
-          internal::
-              kHistogramWorstUserInteractionLatencyOverBudgetMaxEventDuration,
-          50),
-      std::make_pair(
-          internal::
-              kHistogramWorstUserInteractionLatencyOverBudgetTotalEventDuration,
-          50),
-      std::make_pair(
           internal::
               kHistogramSumOfUserInteractionLatencyOverBudgetMaxEventDuration,
           50),
-      std::make_pair(
-          internal::
-              kHistogramSumOfUserInteractionLatencyOverBudgetTotalEventDuration,
-          62),
       std::make_pair(
           internal::
               kHistogramAverageUserInteractionLatencyOverBudgetMaxEventDuration,
           14),
       std::make_pair(
           internal::
-              kHistogramAverageUserInteractionLatencyOverBudgetTotalEventDuration,
-          21),
-      std::make_pair(
-          internal::
-              kHistogramSlowUserInteractionLatencyOverBudgetHighPercentileMaxEventDuration,
-          50),
-      std::make_pair(
-          internal::
-              kHistogramSlowUserInteractionLatencyOverBudgetHighPercentileTotalEventDuration,
-          50),
-      std::make_pair(
-          internal::
               kHistogramSlowUserInteractionLatencyOverBudgetHighPercentile2MaxEventDuration,
           50),
       std::make_pair(
           internal::
-              kHistogramSlowUserInteractionLatencyOverBudgetHighPercentile2TotalEventDuration,
-          50)};
+              kHistogramUserInteractionLatencyHighPercentile2MaxEventDuration,
+          146),
+      std::make_pair(internal::kHistogramNumInteractions, 3)};
 
   for (auto& metric : uma_list) {
     EXPECT_THAT(
         tester()->histogram_tester().GetAllSamples(metric.first.c_str()),
-        // metric.second is the minimum value of the bucket, not the actual
-        // value.
+        // metric.second is the minimum value of the bucket, not the
+        // actual value.
         testing::ElementsAre(base::Bucket(metric.second, 1)));
   }
 }
@@ -1484,7 +1401,7 @@ TEST_F(UmaPageLoadMetricsObserverTest, SingleSubFrame_MaxMemoryBytesRecorded) {
   RenderFrameHost* subframe =
       NavigationSimulator::NavigateAndCommitFromDocument(
           GURL("https://google.com/subframe.html"),
-          RenderFrameHostTester::For(web_contents()->GetMainFrame())
+          RenderFrameHostTester::For(web_contents()->GetPrimaryMainFrame())
               ->AppendChild("subframe"));
 
   // Notify that memory measurements are available for each frame.
@@ -1515,12 +1432,12 @@ TEST_F(UmaPageLoadMetricsObserverTest, MultiSubFrames_MaxMemoryBytesRecorded) {
   RenderFrameHost* subframe1 =
       NavigationSimulator::NavigateAndCommitFromDocument(
           GURL("https://google.com/subframe.html"),
-          RenderFrameHostTester::For(web_contents()->GetMainFrame())
+          RenderFrameHostTester::For(web_contents()->GetPrimaryMainFrame())
               ->AppendChild("subframe1"));
   RenderFrameHost* subframe2 =
       NavigationSimulator::NavigateAndCommitFromDocument(
           GURL("https://google.com/subframe2.html"),
-          RenderFrameHostTester::For(web_contents()->GetMainFrame())
+          RenderFrameHostTester::For(web_contents()->GetPrimaryMainFrame())
               ->AppendChild("subframe2"));
   RenderFrameHost* subframe3 =
       NavigationSimulator::NavigateAndCommitFromDocument(
@@ -1587,7 +1504,7 @@ TEST_F(UmaPageLoadMetricsObserverTest,
   RenderFrameHost* subframe =
       NavigationSimulator::NavigateAndCommitFromDocument(
           GURL(kSubframeTestUrl),
-          RenderFrameHostTester::For(web_contents()->GetMainFrame())
+          RenderFrameHostTester::For(web_contents()->GetPrimaryMainFrame())
               ->AppendChild("subframe"));
 
   // Simulate timing updates in the main frame and the subframe.
@@ -1630,7 +1547,7 @@ TEST_F(UmaPageLoadMetricsObserverTest,
   RenderFrameHost* subframe =
       NavigationSimulator::NavigateAndCommitFromDocument(
           GURL(kSubframeTestUrl),
-          RenderFrameHostTester::For(web_contents()->GetMainFrame())
+          RenderFrameHostTester::For(web_contents()->GetPrimaryMainFrame())
               ->AppendChild("subframe"));
 
   // Simulate timing updates in the main frame and the subframe.
@@ -1684,12 +1601,12 @@ TEST_F(UmaPageLoadMetricsObserverTest,
   RenderFrameHost* first_party_subframe =
       NavigationSimulator::NavigateAndCommitFromDocument(
           GURL(kSameSiteSubFrameTestUrl),
-          RenderFrameHostTester::For(web_contents()->GetMainFrame())
+          RenderFrameHostTester::For(web_contents()->GetPrimaryMainFrame())
               ->AppendChild("subframe1"));
   RenderFrameHost* cross_site_subframe =
       NavigationSimulator::NavigateAndCommitFromDocument(
           GURL(kCrossSiteSubFrameTestUrl),
-          RenderFrameHostTester::For(web_contents()->GetMainFrame())
+          RenderFrameHostTester::For(web_contents()->GetPrimaryMainFrame())
               ->AppendChild("subframe2"));
 
   // Simulate timing updates in the main frame and the subframe.

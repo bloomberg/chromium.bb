@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 
 // Uncomment as these modules are migrated to Polymer 3.
+import './crostini_page/bruschetta_subpage.js';
 import './crostini_page/crostini_arc_adb.js';
 import './crostini_page/crostini_arc_adb_confirmation_dialog.js';
 import './crostini_page/crostini_confirmation_dialog.js';
+import './crostini_page/crostini_container_select.js';
 import './crostini_page/crostini_disk_resize_confirmation_dialog.js';
 import './crostini_page/crostini_disk_resize_dialog.js';
 import './crostini_page/crostini_export_import.js';
@@ -29,12 +31,12 @@ import './os_a11y_page/switch_access_setup_guide_warning_dialog.js';
 import './os_a11y_page/switch_access_subpage.js';
 import './os_a11y_page/tts_subpage.js';
 import './os_files_page/os_files_page.js';
-import './os_languages_page/input_method_options_page.m.js';
-import './os_languages_page/input_page.m.js';
-import './os_languages_page/os_edit_dictionary_page.m.js';
-import './os_languages_page/os_languages_page_v2.m.js';
-import './os_languages_page/os_languages_section.m.js';
-import './os_languages_page/smart_inputs_page.m.js';
+import './os_languages_page/input_method_options_page.js';
+import './os_languages_page/input_page.js';
+import './os_languages_page/os_edit_dictionary_page.js';
+import './os_languages_page/os_languages_page_v2.js';
+import './os_languages_page/os_languages_section.js';
+import './os_languages_page/smart_inputs_page.js';
 import './os_printing_page/cups_add_print_server_dialog.js';
 import './os_printing_page/cups_add_printer_dialog.js';
 import './os_printing_page/cups_add_printer_manually_dialog.js';
@@ -50,6 +52,7 @@ import './os_printing_page/cups_settings_add_printer_dialog.js';
 import './os_printing_page/os_printing_page.js';
 import './os_privacy_page/os_privacy_page.js';
 import './os_privacy_page/peripheral_data_access_protection_dialog.js';
+import './os_privacy_page/privacy_hub_page.js';
 import './os_privacy_page/smart_privacy_page.js';
 import './os_reset_page/os_powerwash_dialog.js';
 import './os_reset_page/os_powerwash_dialog_esim_item.js';
@@ -66,7 +69,7 @@ export {TimeZoneAutoDetectMethod} from './date_time_page/date_time_types.js';
 export {TimeZoneBrowserProxyImpl} from './date_time_page/timezone_browser_proxy.js';
 export {CROSTINI_TYPE, GuestOsBrowserProxy, GuestOsBrowserProxyImpl, GuestOsSharedUsbDevice, PLUGIN_VM_TYPE} from './guest_os/guest_os_browser_proxy.js';
 export {LanguagesBrowserProxy, LanguagesBrowserProxyImpl} from './os_languages_page/languages_browser_proxy.js';
-export {InputsShortcutReminderState, LanguagesMetricsProxy, LanguagesMetricsProxyImpl, LanguagesPageInteraction} from './os_languages_page/languages_metrics_proxy.m.js';
+export {InputsShortcutReminderState, LanguagesMetricsProxy, LanguagesMetricsProxyImpl, LanguagesPageInteraction} from './os_languages_page/languages_metrics_proxy.js';
 export {PrinterType} from './os_printing_page/cups_printer_types.js';
 export {CupsPrintersBrowserProxy, CupsPrintersBrowserProxyImpl, PrinterSetupResult, PrintServerResult} from './os_printing_page/cups_printers_browser_proxy.js';
 export {CupsPrintersEntryManager} from './os_printing_page/cups_printers_entry_manager.js';

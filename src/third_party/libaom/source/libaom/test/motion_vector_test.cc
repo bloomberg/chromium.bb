@@ -92,7 +92,7 @@ TEST_P(MotionVectorTestLarge, OverallTest) {
   video.reset(new libaom_test::YUVVideoSource(
       "niklas_640_480_30.yuv", AOM_IMG_FMT_I420, width, height, 30, 1, 0, 3));
 
-  ASSERT_TRUE(video.get() != NULL);
+  ASSERT_NE(video, nullptr);
   ASSERT_NO_FATAL_FAILURE(RunLoop(video.get()));
 }
 

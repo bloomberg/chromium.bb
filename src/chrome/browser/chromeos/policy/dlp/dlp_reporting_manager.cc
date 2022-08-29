@@ -27,7 +27,7 @@
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-#include "chromeos/lacros/lacros_service.h"
+#include "chromeos/startup/browser_init_params.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 namespace policy {
@@ -114,13 +114,14 @@ DlpPolicyEvent_UserType GetCurrentUserType() {
       return DlpPolicyEvent_UserType_UNDEFINED_USER_TYPE;
   }
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
-  DCHECK(chromeos::LacrosService::Get());
-  switch (chromeos::LacrosService::Get()->init_params()->session_type) {
+  switch (chromeos::BrowserInitParams::Get()->session_type) {
     case crosapi::mojom::SessionType::kRegularSession:
+    case crosapi::mojom::SessionType::kChildSession:
       return DlpPolicyEvent_UserType_REGULAR;
     case crosapi::mojom::SessionType::kPublicSession:
       return DlpPolicyEvent_UserType_MANAGED_GUEST;
     case crosapi::mojom::SessionType::kWebKioskSession:
+    case crosapi::mojom::SessionType::kAppKioskSession:
       return DlpPolicyEvent_UserType_KIOSK;
     case crosapi::mojom::SessionType::kUnknown:
     case crosapi::mojom::SessionType::kGuestSession:
@@ -130,7 +131,8 @@ DlpPolicyEvent_UserType GetCurrentUserType() {
 }
 
 DlpPolicyEvent CreateDlpPolicyEvent(const std::string& src_pattern,
-                                    DlpRulesManager::Restriction restriction) {
+                                    DlpRulesManager::Restriction restriction,
+                                    DlpRulesManager::Level level) {
   DlpPolicyEvent event;
 
   DlpPolicyEventSource* event_source = new DlpPolicyEventSource;
@@ -139,17 +141,12 @@ DlpPolicyEvent CreateDlpPolicyEvent(const std::string& src_pattern,
 
   event.set_restriction(
       DlpRulesManagerRestriction2DlpEventRestriction(restriction));
-  event.set_timestamp_micro(base::Time::Now().ToTimeT());
+  int64_t timestamp_micro =
+      (base::Time::Now() - base::Time::UnixEpoch()).InMicroseconds();
+  event.set_timestamp_micro(timestamp_micro);
   event.set_user_type(GetCurrentUserType());
-
-  return event;
-}
-
-DlpPolicyEvent CreateDlpPolicyEvent(const std::string& src_pattern,
-                                    DlpRulesManager::Restriction restriction,
-                                    DlpRulesManager::Level level) {
-  auto event = CreateDlpPolicyEvent(src_pattern, restriction);
   event.set_mode(DlpRulesManagerLevel2DlpEventMode(level));
+
   return event;
 }
 
@@ -184,6 +181,13 @@ DlpPolicyEvent CreateDlpPolicyEvent(const std::string& src_pattern,
     case (DlpRulesManager::Component::kPluginVm):
       event_destination->set_component(
           DlpPolicyEventDestination_Component_PLUGIN_VM);
+      break;
+    case (DlpRulesManager::Component::kUsb):
+      event_destination->set_component(DlpPolicyEventDestination_Component_USB);
+      break;
+    case (DlpRulesManager::Component::kDrive):
+      event_destination->set_component(
+          DlpPolicyEventDestination_Component_DRIVE);
       break;
     case (DlpRulesManager::Component::kUnknownComponent):
       event_destination->set_component(
@@ -257,8 +261,6 @@ void DlpReportingManager::ReportEvent(DlpPolicyEvent event) {
   }
   reporting::ReportQueue::EnqueueCallback callback = base::BindOnce(
       &DlpReportingManager::OnEventEnqueued, base::Unretained(this));
-  report_queue_->Enqueue(&event, reporting::Priority::SLOW_BATCH,
-                         std::move(callback));
 
   switch (event.mode()) {
     case DlpPolicyEvent_Mode_BLOCK:
@@ -285,6 +287,8 @@ void DlpReportingManager::ReportEvent(DlpPolicyEvent event) {
       NOTREACHED();
       break;
   }
+  report_queue_->Enqueue(std::make_unique<DlpPolicyEvent>(std::move(event)),
+                         reporting::Priority::SLOW_BATCH, std::move(callback));
 }
 
 }  // namespace policy

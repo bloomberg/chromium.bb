@@ -8,6 +8,7 @@ import android.os.SystemClock;
 import android.text.TextUtils;
 import android.util.Pair;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
@@ -229,71 +230,70 @@ public class BookmarkBridge {
             mRead = read;
         }
 
-        /** @return Title of the bookmark item. */
+        /** Returns the title of the bookmark item. */
         public String getTitle() {
             return mTitle;
         }
 
-        /** @return Url of the bookmark item. */
+        /** Returns the url of the bookmark item. */
         public GURL getUrl() {
             return mUrl;
         }
 
-        /** @return The string to display for the item's url. */
+        /** Returns the string to display for the item's url. */
         public String getUrlForDisplay() {
             return UrlFormatter.formatUrlForSecurityDisplay(
                     getUrl(), SchemeDisplay.OMIT_HTTP_AND_HTTPS);
         }
 
-        /** @return Whether item is a folder or a bookmark. */
+        /** Returns whether item is a folder or a bookmark. */
         public boolean isFolder() {
             return mIsFolder;
         }
 
-        /** @return Parent id of the bookmark item. */
+        /** Returns the parent id of the bookmark item. */
         public BookmarkId getParentId() {
             return mParentId;
         }
 
-        /** @return Whether this bookmark can be edited. */
+        /** Returns whether this bookmark can be edited. */
         public boolean isEditable() {
             return mForceEditableForTesting || mIsEditable;
         }
 
-        /**@return Whether this bookmark's URL can be edited */
+        /** Returns whether this bookmark's URL can be edited */
         public boolean isUrlEditable() {
             return isEditable() && mId.getType() == BookmarkType.NORMAL;
         }
 
-        /**@return Whether this bookmark can be moved */
+        /** Returns whether this bookmark can be moved */
         public boolean isMovable() {
             return ReadingListUtils.isSwappableReadingListItem(mId) || isReorderable();
         }
 
-        /**@return Whether this bookmark can be moved */
+        /** Returns whether this bookmark can be moved */
         public boolean isReorderable() {
             return isEditable() && mId.getType() == BookmarkType.NORMAL;
         }
 
-        /** @return Whether this is a managed bookmark. */
+        /** Returns whether this is a managed bookmark. */
         public boolean isManaged() {
             return mIsManaged;
         }
 
+        /** Returns the {@link BookmarkId}. */
         public BookmarkId getId() {
             return mId;
         }
 
-        /**
-         * @return The timestamp in milliseconds since epoch that the bookmark is added.
-         */
+        /** Retuns the timestamp in milliseconds since epoch that the bookmark is added. */
         public long getDateAdded() {
             return mDateAdded;
         }
 
         /**
-         * @return Whether the bookmark is read. Only valid for {@link BookmarkType#READING_LIST}.
-         *         Defaults to "false" for other types.
+         * Returns whether the bookmark is read. Only valid for {@link BookmarkType#READING_LIST}.
+         * Defaults to "false" for other types.
          */
         public boolean isRead() {
             return mRead;
@@ -328,6 +328,7 @@ public class BookmarkBridge {
             mSubscriptionManager = new CommerceSubscriptionsServiceFactory()
                                            .getForLastUsedProfile()
                                            .getSubscriptionsManager();
+            mSubscriptionManager.addObserver(mSubscriptionsObserver);
         }
     }
 
@@ -457,13 +458,16 @@ public class BookmarkBridge {
     }
 
     /**
+     * Gets the {@link BookmarkItem} which is referenced by the given {@link BookmarkId}.
+     * @param id The {@link BookmarkId} used to lookup the corresponding {@link BookmarkItem}.
      * @return A BookmarkItem instance for the given BookmarkId.
      *         <code>null</code> if it doesn't exist.
      */
     @Nullable
-    public BookmarkItem getBookmarkById(BookmarkId id) {
+    public BookmarkItem getBookmarkById(@Nullable BookmarkId id) {
         ThreadUtils.assertOnUiThread();
         assert mIsNativeBookmarkModelLoaded;
+        if (id == null) return null;
 
         if (BookmarkId.SHOPPING_FOLDER.equals(id)) {
             return new BookmarkItem(id, /*title=*/null, /*url=*/null,
@@ -758,6 +762,20 @@ public class BookmarkBridge {
         int typeInt = powerBookmarkType == null ? -1 : powerBookmarkType.getNumber();
         BookmarkBridgeJni.get().searchBookmarks(mNativeBookmarkBridge, BookmarkBridge.this,
                 bookmarkMatches, query, tags, typeInt, maxNumberOfResult);
+        return bookmarkMatches;
+    }
+
+    /**
+     * Synchronously gets a list of bookmarks of the given type
+     * @param powerBookmarkType The type of power bookmark type to search for (or null for all).
+     * @return List of bookmark IDs that are related to the given query.
+     */
+    public List<BookmarkId> getBookmarksOfType(@NonNull PowerBookmarkType powerBookmarkType) {
+        ThreadUtils.assertOnUiThread();
+        List<BookmarkId> bookmarkMatches = new ArrayList<>();
+        int typeInt = powerBookmarkType.getNumber();
+        BookmarkBridgeJni.get().getBookmarksOfType(
+                mNativeBookmarkBridge, BookmarkBridge.this, bookmarkMatches, typeInt);
         return bookmarkMatches;
     }
 
@@ -1421,6 +1439,8 @@ public class BookmarkBridge {
         void searchBookmarks(long nativeBookmarkBridge, BookmarkBridge caller,
                 List<BookmarkId> bookmarkMatches, String query, String[] tags,
                 int powerBookmarkType, int maxNumber);
+        void getBookmarksOfType(long nativeBookmarkBridge, BookmarkBridge caller,
+                List<BookmarkId> bookmarkMatches, int powerBookmarkType);
         long init(BookmarkBridge caller, Profile profile);
         boolean isDoingExtensiveChanges(long nativeBookmarkBridge, BookmarkBridge caller);
         void destroy(long nativeBookmarkBridge, BookmarkBridge caller);

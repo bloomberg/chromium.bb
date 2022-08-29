@@ -120,21 +120,27 @@ constexpr Dst checked_cast(Src value) {
 template <typename T>
 struct SaturationDefaultLimits : public std::numeric_limits<T> {
   static constexpr T NaN() {
-    return std::numeric_limits<T>::has_quiet_NaN
-               ? std::numeric_limits<T>::quiet_NaN()
-               : T();
+    if constexpr (std::numeric_limits<T>::has_quiet_NaN) {
+      return std::numeric_limits<T>::quiet_NaN();
+    } else {
+      return T();
+    }
   }
   using std::numeric_limits<T>::max;
   static constexpr T Overflow() {
-    return std::numeric_limits<T>::has_infinity
-               ? std::numeric_limits<T>::infinity()
-               : std::numeric_limits<T>::max();
+    if constexpr (std::numeric_limits<T>::has_infinity) {
+      return std::numeric_limits<T>::infinity();
+    } else {
+      return std::numeric_limits<T>::max();
+    }
   }
   using std::numeric_limits<T>::lowest;
   static constexpr T Underflow() {
-    return std::numeric_limits<T>::has_infinity
-               ? std::numeric_limits<T>::infinity() * -1
-               : std::numeric_limits<T>::lowest();
+    if constexpr (std::numeric_limits<T>::has_infinity) {
+      return std::numeric_limits<T>::infinity() * -1;
+    } else {
+      return std::numeric_limits<T>::lowest();
+    }
   }
 };
 
@@ -171,7 +177,9 @@ struct SaturateFastOp<
                             std::is_integral<Dst>::value &&
                             SaturateFastAsmOp<Dst, Src>::is_supported>::type> {
   static constexpr bool is_supported = true;
-  static constexpr Dst Do(Src value) { return SaturateFastAsmOp<Dst, Src>::Do(value); }
+  static constexpr Dst Do(Src value) {
+    return SaturateFastAsmOp<Dst, Src>::Do(value);
+  }
 };
 
 template <typename Dst, typename Src>
@@ -198,14 +206,13 @@ struct SaturateFastOp<
 // saturated_cast<> is analogous to static_cast<> for numeric types, except
 // that the specified numeric conversion will saturate by default rather than
 // overflow or underflow, and NaN assignment to an integral will return 0.
-// All boundary condition behaviors can be overriden with a custom handler.
+// All boundary condition behaviors can be overridden with a custom handler.
 template <typename Dst,
           template <typename> class SaturationHandler = SaturationDefaultLimits,
           typename Src>
 constexpr Dst saturated_cast(Src value) {
   using SrcType = typename UnderlyingType<Src>::type;
-  return !IsCompileTimeConstant(value) &&
-                 SaturateFastOp<Dst, SrcType>::is_supported &&
+  return !IsConstantEvaluated() && SaturateFastOp<Dst, SrcType>::is_supported &&
                  std::is_same<SaturationHandler<Dst>,
                               SaturationDefaultLimits<Dst>>::value
              ? SaturateFastOp<Dst, SrcType>::Do(static_cast<SrcType>(value))
@@ -306,7 +313,8 @@ class StrictNumeric {
   const T value_;
 };
 
-// Convience wrapper returns a StrictNumeric from the provided arithmetic type.
+// Convenience wrapper returns a StrictNumeric from the provided arithmetic
+// type.
 template <typename T>
 constexpr StrictNumeric<typename UnderlyingType<T>::type> MakeStrictNum(
     const T value) {
@@ -334,14 +342,14 @@ BASE_NUMERIC_COMPARISON_OPERATORS(Strict, IsNotEqual, !=)
 using internal::as_signed;
 using internal::as_unsigned;
 using internal::checked_cast;
-using internal::strict_cast;
-using internal::saturated_cast;
-using internal::SafeUnsignedAbs;
-using internal::StrictNumeric;
-using internal::MakeStrictNum;
-using internal::IsValueInRangeForNumericType;
 using internal::IsTypeInRangeForNumericType;
+using internal::IsValueInRangeForNumericType;
 using internal::IsValueNegative;
+using internal::MakeStrictNum;
+using internal::SafeUnsignedAbs;
+using internal::saturated_cast;
+using internal::strict_cast;
+using internal::StrictNumeric;
 
 // Explicitly make a shorter size_t alias for convenience.
 using SizeT = StrictNumeric<size_t>;

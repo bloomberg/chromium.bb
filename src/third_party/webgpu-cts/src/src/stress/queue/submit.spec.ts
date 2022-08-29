@@ -19,13 +19,14 @@ results verified at the end of the test.`
     const data = new Uint32Array([...iterRange(kNumElements, x => x)]);
     const buffer = t.makeBufferWithContents(data, GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC);
     const pipeline = t.device.createComputePipeline({
+      layout: 'auto',
       compute: {
         module: t.device.createShaderModule({
           code: `
-            [[block]] struct Buffer { data: array<u32>; };
-            [[group(0), binding(0)]] var<storage, read_write> buffer: Buffer;
-            [[stage(compute), workgroup_size(1)]] fn main(
-                [[builtin(global_invocation_id)]] id: vec3<u32>) {
+            struct Buffer { data: array<u32>; };
+            @group(0) @binding(0) var<storage, read_write> buffer: Buffer;
+            @compute @workgroup_size(1) fn main(
+                @builtin(global_invocation_id) id: vec3<u32>) {
               buffer.data[id.x] = buffer.data[id.x] + 1u;
             }
           `,
@@ -44,7 +45,7 @@ results verified at the end of the test.`
       pass.setPipeline(pipeline);
       pass.setBindGroup(0, bindGroup);
       pass.dispatch(kNumElements);
-      pass.endPass();
+      pass.end();
     }
     t.device.queue.submit([encoder.finish()]);
     t.expectGPUBufferValuesEqual(
@@ -63,13 +64,14 @@ submit() call.`
     const data = new Uint32Array([...iterRange(kNumElements, x => x)]);
     const buffer = t.makeBufferWithContents(data, GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC);
     const pipeline = t.device.createComputePipeline({
+      layout: 'auto',
       compute: {
         module: t.device.createShaderModule({
           code: `
-            [[block]] struct Buffer { data: array<u32>; };
-            [[group(0), binding(0)]] var<storage, read_write> buffer: Buffer;
-            [[stage(compute), workgroup_size(1)]] fn main(
-                [[builtin(global_invocation_id)]] id: vec3<u32>) {
+            struct Buffer { data: array<u32>; };
+            @group(0) @binding(0) var<storage, read_write> buffer: Buffer;
+            @compute @workgroup_size(1) fn main(
+                @builtin(global_invocation_id) id: vec3<u32>) {
               buffer.data[id.x] = buffer.data[id.x] + 1u;
             }
           `,
@@ -89,7 +91,7 @@ submit() call.`
       pass.setPipeline(pipeline);
       pass.setBindGroup(0, bindGroup);
       pass.dispatch(kNumElements);
-      pass.endPass();
+      pass.end();
       buffers.push(encoder.finish());
     }
     t.device.queue.submit(buffers);

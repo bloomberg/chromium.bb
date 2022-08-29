@@ -29,6 +29,10 @@
 #include "components/user_manager/user_manager.h"
 #include "ui/chromeos/devicetype_utils.h"
 
+// Enable VLOG level 1.
+#undef ENABLED_VLOG_LEVEL
+#define ENABLED_VLOG_LEVEL 1
+
 namespace ash {
 namespace {
 
@@ -107,7 +111,7 @@ void UpdateRequiredScreen::OnGetEolInfo(
     const chromeos::UpdateEngineClient::EolInfo& info) {
   //  TODO(crbug.com/1020616) : Handle if the device is left on this screen
   //  for long enough to reach Eol.
-  if (chromeos::switches::IsAueReachedForUpdateRequiredForTest() ||
+  if (switches::IsAueReachedForUpdateRequiredForTest() ||
       (!info.eol_date.is_null() && info.eol_date <= clock_->Now())) {
     EnsureScreenIsShown();
     if (view_) {
@@ -145,7 +149,8 @@ void UpdateRequiredScreen::HideImpl() {
   StopObservingNetworkState();
 }
 
-void UpdateRequiredScreen::OnUserAction(const std::string& action_id) {
+void UpdateRequiredScreen::OnUserActionDeprecated(
+    const std::string& action_id) {
   if (action_id == kUserActionSelectNetworkButtonClicked) {
     OnSelectNetworkButtonClicked();
   } else if (action_id == kUserActionUpdateButtonClicked) {
@@ -167,7 +172,7 @@ void UpdateRequiredScreen::OnUserAction(const std::string& action_id) {
   } else if (action_id == kUserActionConfirmDeleteUsersData) {
     DeleteUsersData();
   } else {
-    BaseScreen::OnUserAction(action_id);
+    BaseScreen::OnUserActionDeprecated(action_id);
   }
 }
 
@@ -417,7 +422,7 @@ void UpdateRequiredScreen::OnConnectRequested() {
 }
 
 void UpdateRequiredScreen::OnErrorScreenHidden() {
-  error_screen_->SetParentScreen(OobeScreen::SCREEN_UNKNOWN);
+  error_screen_->SetParentScreen(ash::OOBE_SCREEN_UNKNOWN);
   // Return to the default state.
   error_screen_->SetIsPersistentError(false /* is_persistent */);
   Show(context());

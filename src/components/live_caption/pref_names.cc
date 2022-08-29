@@ -10,7 +10,7 @@
 #include "build/build_config.h"
 #include "components/prefs/pref_service.h"
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 #include "components/soda/constants.h"
 #include "media/base/media_switches.h"
 #endif
@@ -26,12 +26,24 @@ const char kLiveCaptionEnabled[] =
 const char kLiveCaptionLanguageCode[] =
     "accessibility.captions.live_caption_language";
 
+// The list of origins that should not display an error message when using the
+// Media Foundation renderer.
+const char kLiveCaptionMediaFoundationRendererErrorSilenced[] =
+    "accessibility.captions.live_caption_media_foundation_renderer_error_"
+    "silenced";
+
 const std::string GetLiveCaptionLanguageCode(PrefService* profile_prefs) {
   if (base::FeatureList::IsEnabled(media::kLiveCaptionMultiLanguage))
     return profile_prefs->GetString(prefs::kLiveCaptionLanguageCode);
 
   // Default to en-US if the kLiveCaptionMultiLanguage feature isn't enabled.
   return speech::kUsEnglishLocale;
+}
+
+bool IsLanguageCodeForLiveCaption(speech::LanguageCode language_code,
+                                  PrefService* profile_prefs) {
+  return language_code ==
+         speech::GetLanguageCode(GetLiveCaptionLanguageCode(profile_prefs));
 }
 
 #endif  // !defined(ANDROID)

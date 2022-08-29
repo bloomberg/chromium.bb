@@ -6,11 +6,14 @@
 
 #include "base/check_op.h"
 #include "base/files/file_path.h"
+#include "base/sequence_checker.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "base/version.h"
 #include "build/build_config.h"
 #include "chrome/updater/registration_data.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 
@@ -25,6 +28,12 @@ constexpr char kECP[] = "ecp";  // Key for storing existence checker path.
 constexpr char kBC[] = "bc";    // Key for storing brand code.
 constexpr char kBP[] = "bp";    // Key for storing brand path.
 constexpr char kAP[] = "ap";    // Key for storing ap.
+
+constexpr char kHadApps[] = "had_apps";
+
+// TODO(crbug.com/1292189): rename "updater_time" to "last_checked".
+constexpr char kLastChecked[] = "update_time";
+constexpr char kLastStarted[] = "last_started";
 
 }  // namespace
 
@@ -120,9 +129,9 @@ bool PersistedData::RemoveApp(const std::string& id) {
     return false;
 
   DictionaryPrefUpdate update(pref_service_, kPersistedDataPreference);
-  base::Value* apps = update->FindDictKey("apps");
+  base::Value::Dict* apps = update->GetDict().FindDict("apps");
 
-  return apps ? apps->RemoveKey(id) : false;
+  return apps ? apps->Remove(id) : false;
 }
 
 std::vector<std::string> PersistedData::GetAppIds() const {
@@ -134,12 +143,12 @@ std::vector<std::string> PersistedData::GetAppIds() const {
   const auto* pref = pref_service_->GetDictionary(kPersistedDataPreference);
   if (!pref)
     return {};
-  const auto* apps = pref->FindKey("apps");
-  if (!apps || !apps->is_dict())
+  const auto* apps = pref->GetDict().FindDict("apps");
+  if (!apps)
     return {};
   std::vector<std::string> app_ids;
-  for (auto kv : apps->DictItems()) {
-    const auto& app_id = kv.first;
+  for (auto it = apps->begin(); it != apps->end(); ++it) {
+    const auto& app_id = it->first;
     const auto pv = GetProductVersion(app_id);
     if (pv.IsValid())
       app_ids.push_back(app_id);
@@ -147,27 +156,27 @@ std::vector<std::string> PersistedData::GetAppIds() const {
   return app_ids;
 }
 
-const base::Value* PersistedData::GetAppKey(const std::string& id) const {
+const base::Value::Dict* PersistedData::GetAppKey(const std::string& id) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!pref_service_)
     return nullptr;
-  const base::DictionaryValue* dict =
+  const base::Value* dict =
       pref_service_->GetDictionary(kPersistedDataPreference);
   if (!dict)
     return nullptr;
-  const base::Value* apps = dict->FindDictKey("apps");
+  const base::Value::Dict* apps = dict->GetDict().FindDict("apps");
   if (!apps)
     return nullptr;
-  return apps->FindDictKey(id);
+  return apps->FindDict(id);
 }
 
 std::string PersistedData::GetString(const std::string& id,
                                      const std::string& key) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  const base::Value* app_key = GetAppKey(id);
+  const base::Value::Dict* app_key = GetAppKey(id);
   if (!app_key)
     return {};
-  const std::string* value = app_key->FindStringKey(key);
+  const std::string* value = app_key->FindString(key);
   if (!value)
     return {};
   return *value;
@@ -176,12 +185,12 @@ std::string PersistedData::GetString(const std::string& id,
 base::Value* PersistedData::GetOrCreateAppKey(const std::string& id,
                                               base::Value* root) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  base::Value* apps = root->FindDictKey("apps");
-  if (!apps)
-    apps = root->SetKey("apps", base::Value(base::Value::Type::DICTIONARY));
-  base::Value* app = apps->FindDictKey(id);
-  if (!app)
-    app = apps->SetKey(id, base::Value(base::Value::Type::DICTIONARY));
+  base::Value* apps = root->GetDict().Find("apps");
+  if (!apps || !apps->is_dict())
+    apps = root->GetDict().Set("apps", base::Value::Dict());
+  base::Value* app = apps->GetDict().Find(id);
+  if (!app || !app->is_dict())
+    app = apps->GetDict().Set(id, base::Value::Dict());
   return app;
 }
 
@@ -192,7 +201,48 @@ void PersistedData::SetString(const std::string& id,
   if (!pref_service_)
     return;
   DictionaryPrefUpdate update(pref_service_, kPersistedDataPreference);
-  GetOrCreateAppKey(id, update.Get())->SetStringKey(key, value);
+  GetOrCreateAppKey(id, update.Get())->GetDict().Set(key, value);
+}
+
+bool PersistedData::GetHadApps() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return pref_service_ && pref_service_->GetBoolean(kHadApps);
+}
+
+void PersistedData::SetHadApps() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (pref_service_)
+    pref_service_->SetBoolean(kHadApps, true);
+}
+
+base::Time PersistedData::GetLastChecked() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return pref_service_->GetTime(kLastChecked);
+}
+
+void PersistedData::SetLastChecked(const base::Time& time) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (pref_service_)
+    pref_service_->SetTime(kLastChecked, time);
+}
+
+base::Time PersistedData::GetLastStarted() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return pref_service_->GetTime(kLastStarted);
+}
+
+void PersistedData::SetLastStarted(const base::Time& time) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (pref_service_)
+    pref_service_->SetTime(kLastStarted, time);
+}
+
+// Register persisted data prefs, except for kPersistedDataPreference.
+// kPersistedDataPreference is registered by update_client::RegisterPrefs.
+void RegisterPersistedDataPrefs(scoped_refptr<PrefRegistrySimple> registry) {
+  registry->RegisterBooleanPref(kHadApps, false);
+  registry->RegisterTimePref(kLastChecked, {});
+  registry->RegisterTimePref(kLastStarted, {});
 }
 
 }  // namespace updater

@@ -16,13 +16,13 @@
 #include "third_party/base/check_op.h"
 #include "third_party/base/numerics/safe_math.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include <windows.h>
 #endif
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "third_party/base/allocator/partition_allocator/page_allocator_internals_win.h"
-#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+#elif BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
 #include "third_party/base/allocator/partition_allocator/page_allocator_internals_posix.h"
 #else
 #error Platform not supported.

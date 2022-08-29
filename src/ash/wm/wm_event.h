@@ -21,7 +21,6 @@ enum WMEventType {
   // Note that this does not mean the window will be in corresponding
   // state and the request may not be fullfilled.
 
-  // NORMAL is used as a restore operation with a few exceptions.
   WM_EVENT_NORMAL = 0,
   WM_EVENT_MAXIMIZE,
   WM_EVENT_MINIMIZE,
@@ -36,6 +35,10 @@ enum WMEventType {
   // SECONDARY is right.
   WM_EVENT_SNAP_SECONDARY,
 
+  // The restore event will change the window state back to its previous
+  // applicable window state.
+  WM_EVENT_RESTORE,
+
   // A window is requested to be the given bounds. The request may or
   // may not be fulfilled depending on the requested bounds and window's
   // state. This will not change the window state type.
@@ -43,9 +46,6 @@ enum WMEventType {
 
   // Following events are compond events which may lead to different
   // states depending on the current state.
-
-  // A user requested to make a window floating.
-  WM_EVENT_TOGGLE_FLOATING,
 
   // A user requested to toggle maximized state by double clicking window
   // header.
@@ -114,6 +114,9 @@ enum WMEventType {
   // TODO(oshima): Consider consolidating this into
   // WM_EVENT_WORKAREA_BOUNDS_CHANGED
   WM_EVENT_SYSTEM_UI_AREA_CHANGED,
+
+  // A user requested to float a window.
+  WM_EVENT_FLOAT,
 };
 
 class SetBoundsWMEvent;

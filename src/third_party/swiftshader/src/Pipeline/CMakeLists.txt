@@ -35,6 +35,8 @@ set(PIPELINE_SRC_FILES
     SpirvBinary.hpp
     SpirvBinary.cpp
     SpirvID.hpp
+    SpirvProfiler.hpp
+    SpirvProfiler.cpp
     SpirvShader.cpp
     SpirvShader.hpp
     SpirvShaderArithmetic.cpp
@@ -104,6 +106,7 @@ target_link_libraries(vk_pipeline
         vk_base
         vk_system
         marl
+        Reactor
         SPIRV-Tools
         SPIRV-Tools-opt
 )

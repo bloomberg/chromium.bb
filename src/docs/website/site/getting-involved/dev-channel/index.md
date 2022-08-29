@@ -204,5 +204,5 @@ Before reporting bugs, consult the following pages:
 *   If the installer fails when you attempt to install an older version
             with a message indicating that your computer already has a more
             recent version of Chrome or Chrome Frame, you must also uninstall
-            Chrome Frame. After doing so, the newer version of Chrome should
+            Chrome Frame. After doing so, the older version of Chrome should
             install without difficulty.

@@ -17,6 +17,10 @@ const CSSProperty& GetCSSPropertyVariable() {
   return To<CSSProperty>(GetCSSPropertyVariableInternal());
 }
 
+bool CSSProperty::HasEqualCSSPropertyName(const CSSProperty& other) const {
+  return property_id_ == other.property_id_;
+}
+
 const CSSProperty& CSSProperty::Get(CSSPropertyID id) {
   DCHECK_NE(id, CSSPropertyID::kInvalid);
   DCHECK_LE(id, kLastCSSProperty);  // last property id
