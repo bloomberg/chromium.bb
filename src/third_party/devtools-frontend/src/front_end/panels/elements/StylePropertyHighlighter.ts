@@ -4,8 +4,9 @@
 
 import type * as SDK from '../../core/sdk/sdk.js';
 
+import type {StylePropertiesSection} from './StylePropertiesSection.js';
 import {StylePropertyTreeElement} from './StylePropertyTreeElement.js';
-import type {StylePropertiesSection, StylesSidebarPane} from './StylesSidebarPane.js';
+import type {StylesSidebarPane} from './StylesSidebarPane.js';
 
 export class StylePropertyHighlighter {
   private readonly styleSidebarPane: StylesSidebarPane;
@@ -21,7 +22,7 @@ export class StylePropertyHighlighter {
     for (const section of this.styleSidebarPane.allSections()) {
       for (let treeElement = section.propertiesTreeOutline.firstChild(); treeElement;
            treeElement = treeElement.nextSibling) {
-        treeElement.onpopulate();
+        void treeElement.onpopulate();
       }
     }
 

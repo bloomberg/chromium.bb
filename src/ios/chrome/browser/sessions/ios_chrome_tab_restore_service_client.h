@@ -29,6 +29,8 @@ class IOSChromeTabRestoreServiceClient
  private:
   // TabRestoreServiceClient:
   sessions::LiveTabContext* CreateLiveTabContext(
+      sessions::LiveTabContext* existing_context,
+      sessions::SessionWindow::WindowType type,
       const std::string& app_name,
       const gfx::Rect& bounds,
       ui::WindowShowState show_state,

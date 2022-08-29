@@ -4,6 +4,7 @@
 package gen_tasks_logic
 
 import (
+	"fmt"
 	"log"
 	"reflect"
 	"strings"
@@ -170,7 +171,7 @@ func (b *taskBuilder) cipd(pkgs ...*specs.CipdPackage) {
 func (b *taskBuilder) useIsolatedAssets() bool {
 	// Only do this on the RPIs for now. Other, faster machines shouldn't
 	// see much benefit and we don't need the extra complexity, for now.
-	if b.os("Android", "ChromeOS", "iOS") {
+	if b.os("ChromeOS", "iOS") || b.matchOs("Android") {
 		return true
 	}
 	return false
@@ -182,6 +183,17 @@ type uploadAssetCASCfg struct {
 	alwaysIsolate  bool
 	uploadTaskName string
 	path           string
+}
+
+// assetWithVersion adds the given asset with the given version number to the
+// task as a CIPD package.
+func (b *taskBuilder) assetWithVersion(assetName string, version int) {
+	pkg := &specs.CipdPackage{
+		Name:    fmt.Sprintf("skia/bots/%s", assetName),
+		Path:    assetName,
+		Version: fmt.Sprintf("version:%d", version),
+	}
+	b.cipd(pkg)
 }
 
 // asset adds the given assets to the task as CIPD packages.
@@ -233,6 +245,12 @@ func (b *taskBuilder) usesGo() {
 // usesDocker adds attributes to tasks which use docker.
 func (b *taskBuilder) usesDocker() {
 	b.dimension("docker_installed:true")
+}
+
+// usesGSUtil adds the gsutil dependency from CIPD and puts it on PATH.
+func (b *taskBuilder) usesGSUtil() {
+	b.asset("gsutil")
+	b.addToPATH("gsutil/gsutil")
 }
 
 // recipeProp adds the given recipe property key/value pair. Panics if
@@ -300,11 +318,9 @@ func (b *taskBuilder) cipdPlatform() string {
 
 // usesPython adds attributes to tasks which use python.
 func (b *taskBuilder) usesPython() {
-	pythonPkgs := cipd.PkgsPython[b.cipdPlatform()]
+	pythonPkgs := removePython2(cipd.PkgsPython[b.cipdPlatform()])
 	b.cipd(pythonPkgs...)
 	b.addToPATH(
-		"cipd_bin_packages/cpython",
-		"cipd_bin_packages/cpython/bin",
 		"cipd_bin_packages/cpython3",
 		"cipd_bin_packages/cpython3/bin",
 	)
@@ -314,6 +330,19 @@ func (b *taskBuilder) usesPython() {
 	})
 	b.envPrefixes("VPYTHON_VIRTUALENV_ROOT", "cache/vpython")
 	b.env("VPYTHON_LOG_TRACE", "1")
+}
+
+// removePython2 removes all python2 packages from a list of CIPD packages. This can be used to
+// enforce the lack of Python2 dependencies in our tests.
+func removePython2(pyPackages []*cipd.Package) []*cipd.Package {
+	var python3Pkgs []*cipd.Package
+	for _, p := range pyPackages {
+		if strings.HasPrefix(p.Version, "version:2@2.7") {
+			continue
+		}
+		python3Pkgs = append(python3Pkgs, p)
+	}
+	return python3Pkgs
 }
 
 func (b *taskBuilder) usesNode() {

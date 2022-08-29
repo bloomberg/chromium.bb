@@ -23,9 +23,11 @@ class AmbientViewDelegateImpl : public AmbientViewDelegate {
 
   // AmbientViewDelegate:
   AmbientBackendModel* GetAmbientBackendModel() override;
-  void OnPhotoTransitionAnimationCompleted() override;
+  AmbientWeatherModel* GetAmbientWeatherModel() override;
   void AddObserver(AmbientViewDelegateObserver* observer) override;
   void RemoveObserver(AmbientViewDelegateObserver* observer) override;
+
+  void NotifyObserversMarkerHit(AmbientPhotoConfig::Marker marker);
 
  private:
   AmbientController* const ambient_controller_;  // Owned by Shell.

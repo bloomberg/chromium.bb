@@ -73,14 +73,21 @@ void StringImpl::operator delete(void* ptr) {
 
 inline StringImpl::~StringImpl() {
   DCHECK(!IsStatic());
-
-  if (IsAtomic())
-    AtomicStringTable::Instance().Remove(this);
 }
 
-void StringImpl::DestroyIfNotStatic() const {
-  if (!IsStatic())
+void StringImpl::DestroyIfNeeded() const {
+  if (hash_and_flags_.load(std::memory_order_acquire) & kIsAtomic) {
+    // TODO: Remove const_cast
+    if (AtomicStringTable::Instance().ReleaseAndRemoveIfNeeded(
+            const_cast<StringImpl*>(this))) {
+      delete this;
+    } else {
+      // AtomicStringTable::Add() revived this before we started really
+      // killing it.
+    }
+  } else {
     delete this;
+  }
 }
 
 unsigned StringImpl::ComputeASCIIFlags() const {
@@ -94,18 +101,6 @@ unsigned StringImpl::ComputeASCIIFlags() const {
       kAsciiPropertyCheckDone | kContainsOnlyAscii | kIsLowerAscii;
   DCHECK((previous_flags & mask) == 0 || (previous_flags & mask) == new_flags);
   return new_flags;
-}
-
-bool StringImpl::IsSafeToSendToAnotherThread() const {
-  if (IsStatic())
-    return true;
-  // AtomicStrings are not safe to send between threads as ~StringImpl()
-  // will try to remove them from the wrong AtomicStringTable.
-  if (IsAtomic())
-    return false;
-  if (HasOneRef())
-    return true;
-  return false;
 }
 
 #if DCHECK_IS_ON()

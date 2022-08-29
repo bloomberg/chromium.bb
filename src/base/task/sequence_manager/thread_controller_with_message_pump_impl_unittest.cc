@@ -15,8 +15,10 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/task/sequence_manager/thread_controller_power_monitor.h"
 #include "base/task/single_thread_task_runner.h"
+#include "base/task/task_features.h"
 #include "base/test/bind.h"
 #include "base/test/mock_callback.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -82,8 +84,13 @@ class MockMessagePump : public MessagePump {
   MOCK_METHOD1(Run, void(MessagePump::Delegate*));
   MOCK_METHOD0(Quit, void());
   MOCK_METHOD0(ScheduleWork, void());
-  MOCK_METHOD1(ScheduleDelayedWork, void(const TimeTicks&));
+  MOCK_METHOD1(ScheduleDelayedWork_TimeTicks, void(const TimeTicks&));
   MOCK_METHOD1(SetTimerSlack, void(TimerSlack));
+
+  void ScheduleDelayedWork(
+      const MessagePump::Delegate::NextWorkInfo& next_work_info) override {
+    ScheduleDelayedWork_TimeTicks(next_work_info.delayed_run_time);
+  }
 };
 
 // TODO(crbug.com/901373): Deduplicate FakeTaskRunners.
@@ -113,6 +120,7 @@ class FakeSequencedTaskSource : public internal::SequencedTaskSource {
   ~FakeSequencedTaskSource() override = default;
 
   absl::optional<SelectedTask> SelectNextTask(
+      LazyNow& lazy_now,
       SelectTaskOption option) override {
     if (tasks_.empty())
       return absl::nullopt;
@@ -127,23 +135,24 @@ class FakeSequencedTaskSource : public internal::SequencedTaskSource {
     return SelectedTask(running_stack_.back(), TaskExecutionTraceLogger());
   }
 
-  void DidRunTask() override { running_stack_.pop_back(); }
+  void DidRunTask(LazyNow& lazy_now) override { running_stack_.pop_back(); }
 
   void RemoveAllCanceledDelayedTasksFromFront(LazyNow* lazy_now) override {}
 
-  TimeTicks GetNextTaskTime(LazyNow* lazy_now,
-                            SelectTaskOption option) const override {
+  absl::optional<WakeUp> GetPendingWakeUp(
+      LazyNow* lazy_now,
+      SelectTaskOption option) const override {
     if (tasks_.empty())
-      return TimeTicks::Max();
+      return absl::nullopt;
     if (option == SequencedTaskSource::SelectTaskOption::kSkipDelayedTask &&
         !tasks_.front().delayed_run_time.is_null()) {
-      return TimeTicks::Max();
+      return absl::nullopt;
     }
     if (tasks_.front().delayed_run_time.is_null())
-      return TimeTicks();
+      return WakeUp{};
     if (lazy_now->Now() > tasks_.front().delayed_run_time)
-      return TimeTicks();
-    return tasks_.front().delayed_run_time;
+      return WakeUp{};
+    return WakeUp{tasks_.front().delayed_run_time};
   }
 
   void AddTask(Location posted_from,
@@ -151,9 +160,11 @@ class FakeSequencedTaskSource : public internal::SequencedTaskSource {
                TimeTicks delayed_run_time) {
     DCHECK(tasks_.empty() || delayed_run_time.is_null() ||
            tasks_.back().delayed_run_time < delayed_run_time);
-    tasks_.push(Task(internal::PostedTask(nullptr, std::move(task), posted_from,
-                                          delayed_run_time),
-                     EnqueueOrder::FromIntForTesting(13)));
+    tasks_.push(
+        Task(internal::PostedTask(nullptr, std::move(task), posted_from,
+                                  delayed_run_time,
+                                  base::subtle::DelayPolicy::kFlexibleNoSooner),
+             EnqueueOrder::FromIntForTesting(13)));
   }
 
   bool HasPendingHighResolutionTasks() override {
@@ -223,7 +234,7 @@ TEST_F(ThreadControllerWithMessagePumpTest, ScheduleDelayedWork) {
 
   // Call a no-op DoWork. Expect that it doesn't do any work.
   clock_.SetNowTicks(Seconds(5));
-  EXPECT_CALL(*message_pump_, ScheduleDelayedWork(_)).Times(0);
+  EXPECT_CALL(*message_pump_, ScheduleDelayedWork_TimeTicks(_)).Times(0);
   {
     auto next_work_info = thread_controller_.DoWork();
     EXPECT_FALSE(next_work_info.is_immediate());
@@ -265,17 +276,17 @@ TEST_F(ThreadControllerWithMessagePumpTest, ScheduleDelayedWork) {
 }
 
 TEST_F(ThreadControllerWithMessagePumpTest, SetNextDelayedDoWork) {
-  EXPECT_CALL(*message_pump_, ScheduleDelayedWork(Seconds(123)));
+  EXPECT_CALL(*message_pump_, ScheduleDelayedWork_TimeTicks(Seconds(123)));
 
   LazyNow lazy_now(&clock_);
-  thread_controller_.SetNextDelayedDoWork(&lazy_now, Seconds(123));
+  thread_controller_.SetNextDelayedDoWork(&lazy_now, WakeUp{Seconds(123)});
 }
 
 TEST_F(ThreadControllerWithMessagePumpTest, SetNextDelayedDoWork_CapAtOneDay) {
-  EXPECT_CALL(*message_pump_, ScheduleDelayedWork(Days(1)));
+  EXPECT_CALL(*message_pump_, ScheduleDelayedWork_TimeTicks(Days(1)));
 
   LazyNow lazy_now(&clock_);
-  thread_controller_.SetNextDelayedDoWork(&lazy_now, Days(2));
+  thread_controller_.SetNextDelayedDoWork(&lazy_now, WakeUp{Days(2)});
 }
 
 TEST_F(ThreadControllerWithMessagePumpTest, DelayedWork_CapAtOneDay) {
@@ -290,7 +301,7 @@ TEST_F(ThreadControllerWithMessagePumpTest, DoWorkDoesntScheduleDelayedWork) {
   MockCallback<OnceClosure> task1;
   task_source_.AddTask(FROM_HERE, task1.Get(), Seconds(10));
 
-  EXPECT_CALL(*message_pump_, ScheduleDelayedWork(_)).Times(0);
+  EXPECT_CALL(*message_pump_, ScheduleDelayedWork_TimeTicks(_)).Times(0);
   auto next_work_info = thread_controller_.DoWork();
   EXPECT_EQ(next_work_info.delayed_run_time, Seconds(10));
 }
@@ -710,7 +721,7 @@ TEST_F(ThreadControllerWithMessagePumpTest, RunWithTimeout) {
   thread_controller_.Run(true, base::Seconds(15));
 }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 TEST_F(ThreadControllerWithMessagePumpTest, SetHighResolutionTimer) {
   MockCallback<OnceClosure> task;
   task_source_.AddTask(FROM_HERE, task.Get(), Seconds(5));
@@ -742,9 +753,9 @@ TEST_F(ThreadControllerWithMessagePumpTest, SetHighResolutionTimer) {
   RunLoop run_loop;
   run_loop.Run();
 }
-#endif  // OS_WIN
+#endif  // BUILDFLAG(IS_WIN)
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 TEST_F(ThreadControllerWithMessagePumpTest,
        SetHighResolutionTimerWithPowerSuspend) {
   MockCallback<OnceClosure> task;
@@ -783,7 +794,7 @@ TEST_F(ThreadControllerWithMessagePumpTest,
   RunLoop run_loop;
   run_loop.Run();
 }
-#endif  // OS_WIN
+#endif  // BUILDFLAG(IS_WIN)
 
 TEST_F(ThreadControllerWithMessagePumpTest,
        ScheduleDelayedWorkWithPowerSuspend) {
@@ -899,9 +910,9 @@ TEST_F(ThreadControllerWithMessagePumpTest,
         // "ThreadController active" state at the end.
         for (auto& t : tasks)
           task_source_.AddTask(FROM_HERE, t.Get(), TimeTicks());
-        for (size_t i = 0; i < size(tasks); ++i) {
+        for (size_t i = 0; i < std::size(tasks); ++i) {
           const TimeTicks expected_delayed_run_time =
-              i < size(tasks) - 1 ? TimeTicks() : TimeTicks::Max();
+              i < std::size(tasks) - 1 ? TimeTicks() : TimeTicks::Max();
 
           EXPECT_CALL(tasks[i], Run());
           EXPECT_EQ(thread_controller_.DoWork().delayed_run_time,
@@ -956,6 +967,45 @@ TEST_F(ThreadControllerWithMessagePumpTest,
       }));
 
   RunLoop().Run();
+}
+
+TEST_F(ThreadControllerWithMessagePumpTest, DoWorkBatches) {
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  scoped_feature_list_.InitAndEnableFeature(kRunTasksByBatches);
+  internal::ThreadControllerWithMessagePumpImpl::InitializeFeatures();
+
+  int task_counter = 0;
+  for (int i = 0; i < 2; i++) {
+    task_source_.AddTask(
+        FROM_HERE, BindLambdaForTesting([&] { task_counter++; }), TimeTicks());
+  }
+  thread_controller_.DoWork();
+
+  EXPECT_EQ(task_counter, 2);
+  internal::ThreadControllerWithMessagePumpImpl::ResetFeatures();
+}
+
+TEST_F(ThreadControllerWithMessagePumpTest, DoWorkBatchesForSetTime) {
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  scoped_feature_list_.InitAndEnableFeature(kRunTasksByBatches);
+  internal::ThreadControllerWithMessagePumpImpl::InitializeFeatures();
+
+  int task_counter = 0;
+  clock_.SetNowTicks(Seconds(0));
+
+  for (int i = 0; i < 4; i++) {
+    task_source_.AddTask(FROM_HERE, BindLambdaForTesting([&] {
+                           clock_.Advance(base::Milliseconds(4));
+                           task_counter++;
+                         }),
+                         clock_.NowTicks());
+  }
+  thread_controller_.DoWork();
+
+  EXPECT_EQ(task_counter, 2);
+  internal::ThreadControllerWithMessagePumpImpl::ResetFeatures();
 }
 
 TEST_F(ThreadControllerWithMessagePumpTest,

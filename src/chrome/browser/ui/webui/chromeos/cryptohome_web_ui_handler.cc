@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/chromeos/cryptohome_web_ui_handler.h"
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/values.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -41,7 +42,7 @@ void CryptohomeWebUIHandler::RegisterMessages() {
                                         weak_ptr_factory_.GetWeakPtr()));
 }
 
-void CryptohomeWebUIHandler::OnPageLoaded(base::Value::ConstListView args) {
+void CryptohomeWebUIHandler::OnPageLoaded(const base::Value::List& args) {
   UserDataAuthClient* userdataauth_client = UserDataAuthClient::Get();
   CryptohomePkcs11Client* cryptohome_pkcs11_client =
       CryptohomePkcs11Client::Get();

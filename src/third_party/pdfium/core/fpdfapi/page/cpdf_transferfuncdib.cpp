@@ -9,8 +9,8 @@
 #include "build/build_config.h"
 #include "core/fpdfapi/page/cpdf_transferfunc.h"
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
+#include "core/fxge/calculate_pitch.h"
 #include "third_party/base/check.h"
-#include "third_party/base/compiler_specific.h"
 
 CPDF_TransferFuncDIB::CPDF_TransferFuncDIB(
     const RetainPtr<CFX_DIBBase>& pSrc,
@@ -23,7 +23,7 @@ CPDF_TransferFuncDIB::CPDF_TransferFuncDIB(
   m_Width = pSrc->GetWidth();
   m_Height = pSrc->GetHeight();
   m_Format = GetDestFormat();
-  m_Pitch = (m_Width * GetBppFromFormat(m_Format) + 31) / 32 * 4;
+  m_Pitch = fxge::CalculatePitch32OrDie(GetBppFromFormat(m_Format), m_Width);
   m_Scanline.resize(m_Pitch);
   DCHECK(m_palette.empty());
 }
@@ -63,7 +63,7 @@ void CPDF_TransferFuncDIB::TranslateScanline(
           m_Scanline[index++] = g0;
           m_Scanline[index++] = r0;
         }
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
         index++;
 #endif
       }
@@ -97,7 +97,7 @@ void CPDF_TransferFuncDIB::TranslateScanline(
           m_Scanline[index++] = m_RampR[src_byte];
         }
         src_buf++;
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
         index++;
 #endif
       }
@@ -115,7 +115,7 @@ void CPDF_TransferFuncDIB::TranslateScanline(
         m_Scanline[index++] = m_RampB[*(src_buf++)];
         m_Scanline[index++] = m_RampG[*(src_buf++)];
         m_Scanline[index++] = m_RampR[*(src_buf++)];
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
         index++;
 #endif
       }
@@ -123,7 +123,7 @@ void CPDF_TransferFuncDIB::TranslateScanline(
     }
     case FXDIB_Format::kRgb32:
       bSkip = true;
-      FALLTHROUGH;
+      [[fallthrough]];
     case FXDIB_Format::kArgb: {
       int index = 0;
       for (int i = 0; i < m_Width; i++) {
@@ -132,7 +132,7 @@ void CPDF_TransferFuncDIB::TranslateScanline(
         m_Scanline[index++] = m_RampR[*(src_buf++)];
         if (!bSkip) {
           m_Scanline[index++] = *src_buf;
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
         } else {
           index++;
 #endif

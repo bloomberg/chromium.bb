@@ -74,12 +74,14 @@ class COMPONENT_EXPORT(DBUS_POWER) PowerPolicyController
     int ac_quick_dim_delay_ms = -1;
     int ac_screen_off_delay_ms = -1;
     int ac_screen_lock_delay_ms = -1;
+    int ac_quick_lock_delay_ms = -1;
     int ac_idle_warning_delay_ms = -1;
     int ac_idle_delay_ms = -1;
     int battery_screen_dim_delay_ms = -1;
     int battery_quick_dim_delay_ms = -1;
     int battery_screen_off_delay_ms = -1;
     int battery_screen_lock_delay_ms = -1;
+    int battery_quick_lock_delay_ms = -1;
     int battery_idle_warning_delay_ms = -1;
     int battery_idle_delay_ms = -1;
 
@@ -112,7 +114,12 @@ class COMPONENT_EXPORT(DBUS_POWER) PowerPolicyController
             power_manager::PowerManagementPolicy::BatteryChargeMode::ADAPTIVE;
     int custom_charge_start = -1;
     int custom_charge_stop = -1;
+    // Only set send_feedback_if_undimmed in policy proto if this field is set.
     absl::optional<bool> send_feedback_if_undimmed;
+    // Only set adaptive_charging_enabled in policy proto if this field is set.
+    absl::optional<bool> adaptive_charging_enabled;
+    double adaptive_charging_min_probability = -1.0;
+    int adaptive_charging_hold_percent = -1;
   };
 
   // Converts |base::DictionaryValue| to |std::vector<PeakShiftDayConfig>| and

@@ -19,6 +19,7 @@
 #include "net/cookies/site_for_cookies.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
+#include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/test/test_web_frame_content_dumper.h"
 #include "third_party/blink/public/web/web_view.h"
 #include "url/gurl.h"
@@ -93,13 +94,13 @@ class MockContentSettingsAgentDelegate
 
 class MockContentSettingsAgentImpl : public ContentSettingsAgentImpl {
  public:
-  MockContentSettingsAgentImpl(content::RenderFrame* render_frame);
+  explicit MockContentSettingsAgentImpl(content::RenderFrame* render_frame);
 
   MockContentSettingsAgentImpl(const MockContentSettingsAgentImpl&) = delete;
   MockContentSettingsAgentImpl& operator=(const MockContentSettingsAgentImpl&) =
       delete;
 
-  ~MockContentSettingsAgentImpl() override {}
+  ~MockContentSettingsAgentImpl() override = default;
 
   const GURL& image_url() const { return image_url_; }
   const std::string& image_origin() const { return image_origin_; }
@@ -288,12 +289,11 @@ TEST_F(ContentSettingsAgentImplBrowserTest, JSBlockSentAfterPageLoad) {
       content_setting_rules.script_rules;
   script_setting_rules.push_back(ContentSettingPatternSource(
       ContentSettingsPattern::Wildcard(), ContentSettingsPattern::Wildcard(),
-      base::Value::FromUniquePtrValue(
-          content_settings::ContentSettingToValue(CONTENT_SETTING_BLOCK)),
+      content_settings::ContentSettingToValue(CONTENT_SETTING_BLOCK),
       std::string(), false));
   ContentSettingsAgentImpl* agent =
       ContentSettingsAgentImpl::Get(GetMainRenderFrame());
-  agent->SetContentSettingRules(&content_setting_rules);
+  agent->SetRendererContentSettingRulesForTest(content_setting_rules);
 
   // Make sure no pending messages are in the queue.
   base::RunLoop().RunUntilIdle();
@@ -333,13 +333,12 @@ TEST_F(ContentSettingsAgentImplBrowserTest, ImagesBlockedByDefault) {
       content_setting_rules.image_rules;
   image_setting_rules.push_back(ContentSettingPatternSource(
       ContentSettingsPattern::Wildcard(), ContentSettingsPattern::Wildcard(),
-      base::Value::FromUniquePtrValue(
-          content_settings::ContentSettingToValue(CONTENT_SETTING_BLOCK)),
+      content_settings::ContentSettingToValue(CONTENT_SETTING_BLOCK),
       std::string(), false));
 
   ContentSettingsAgentImpl* agent =
       ContentSettingsAgentImpl::Get(GetMainRenderFrame());
-  agent->SetContentSettingRules(&content_setting_rules);
+  agent->SetRendererContentSettingRulesForTest(content_setting_rules);
   EXPECT_FALSE(agent->AllowImage(true, mock_agent.image_url()));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, mock_agent.on_content_blocked_count());
@@ -351,9 +350,9 @@ TEST_F(ContentSettingsAgentImplBrowserTest, ImagesBlockedByDefault) {
       ContentSettingPatternSource(
           ContentSettingsPattern::Wildcard(),
           ContentSettingsPattern::FromString(mock_agent.image_origin()),
-          base::Value::FromUniquePtrValue(
-              content_settings::ContentSettingToValue(CONTENT_SETTING_ALLOW)),
+          content_settings::ContentSettingToValue(CONTENT_SETTING_ALLOW),
           std::string(), false));
+  agent->SetRendererContentSettingRulesForTest(content_setting_rules);
 
   EXPECT_TRUE(agent->AllowImage(true, mock_agent.image_url()));
   base::RunLoop().RunUntilIdle();
@@ -372,13 +371,12 @@ TEST_F(ContentSettingsAgentImplBrowserTest, ImagesAllowedByDefault) {
       content_setting_rules.image_rules;
   image_setting_rules.push_back(ContentSettingPatternSource(
       ContentSettingsPattern::Wildcard(), ContentSettingsPattern::Wildcard(),
-      base::Value::FromUniquePtrValue(
-          content_settings::ContentSettingToValue(CONTENT_SETTING_ALLOW)),
+      content_settings::ContentSettingToValue(CONTENT_SETTING_ALLOW),
       std::string(), false));
 
   ContentSettingsAgentImpl* agent =
       ContentSettingsAgentImpl::Get(GetMainRenderFrame());
-  agent->SetContentSettingRules(&content_setting_rules);
+  agent->SetRendererContentSettingRulesForTest(content_setting_rules);
   EXPECT_TRUE(agent->AllowImage(true, mock_agent.image_url()));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, mock_agent.on_content_blocked_count());
@@ -389,9 +387,9 @@ TEST_F(ContentSettingsAgentImplBrowserTest, ImagesAllowedByDefault) {
       ContentSettingPatternSource(
           ContentSettingsPattern::Wildcard(),
           ContentSettingsPattern::FromString(mock_agent.image_origin()),
-          base::Value::FromUniquePtrValue(
-              content_settings::ContentSettingToValue(CONTENT_SETTING_BLOCK)),
+          content_settings::ContentSettingToValue(CONTENT_SETTING_BLOCK),
           std::string(), false));
+  agent->SetRendererContentSettingRulesForTest(content_setting_rules);
   EXPECT_FALSE(agent->AllowImage(true, mock_agent.image_url()));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, mock_agent.on_content_blocked_count());
@@ -406,13 +404,12 @@ TEST_F(ContentSettingsAgentImplBrowserTest, ContentSettingsBlockScripts) {
       content_setting_rules.script_rules;
   script_setting_rules.push_back(ContentSettingPatternSource(
       ContentSettingsPattern::Wildcard(), ContentSettingsPattern::Wildcard(),
-      base::Value::FromUniquePtrValue(
-          content_settings::ContentSettingToValue(CONTENT_SETTING_BLOCK)),
+      content_settings::ContentSettingToValue(CONTENT_SETTING_BLOCK),
       std::string(), false));
 
   ContentSettingsAgentImpl* agent =
       ContentSettingsAgentImpl::Get(GetMainRenderFrame());
-  agent->SetContentSettingRules(&content_setting_rules);
+  agent->SetRendererContentSettingRulesForTest(content_setting_rules);
 
   // Load a page which contains a script.
   LoadHTML(kScriptHtml);
@@ -429,13 +426,12 @@ TEST_F(ContentSettingsAgentImplBrowserTest, ContentSettingsAllowScripts) {
       content_setting_rules.script_rules;
   script_setting_rules.push_back(ContentSettingPatternSource(
       ContentSettingsPattern::Wildcard(), ContentSettingsPattern::Wildcard(),
-      base::Value::FromUniquePtrValue(
-          content_settings::ContentSettingToValue(CONTENT_SETTING_ALLOW)),
+      content_settings::ContentSettingToValue(CONTENT_SETTING_ALLOW),
       std::string(), false));
 
   ContentSettingsAgentImpl* agent =
       ContentSettingsAgentImpl::Get(GetMainRenderFrame());
-  agent->SetContentSettingRules(&content_setting_rules);
+  agent->SetRendererContentSettingRulesForTest(content_setting_rules);
 
   // Load a page which contains a script.
   LoadHTML(kScriptHtml);
@@ -453,13 +449,12 @@ TEST_F(ContentSettingsAgentImplBrowserTest,
       content_setting_rules.script_rules;
   script_setting_rules.push_back(ContentSettingPatternSource(
       ContentSettingsPattern::Wildcard(), ContentSettingsPattern::Wildcard(),
-      base::Value::FromUniquePtrValue(
-          content_settings::ContentSettingToValue(CONTENT_SETTING_ALLOW)),
+      content_settings::ContentSettingToValue(CONTENT_SETTING_ALLOW),
       std::string(), false));
 
   ContentSettingsAgentImpl* agent =
       ContentSettingsAgentImpl::Get(GetMainRenderFrame());
-  agent->SetContentSettingRules(&content_setting_rules);
+  agent->SetRendererContentSettingRulesForTest(content_setting_rules);
 
   // Load a page which contains a script.
   LoadHTML(kScriptWithSrcHtml);
@@ -480,13 +475,12 @@ TEST_F(ContentSettingsAgentImplBrowserTest, ContentSettingsNoscriptTag) {
       content_setting_rules.script_rules;
   script_setting_rules.push_back(ContentSettingPatternSource(
       ContentSettingsPattern::Wildcard(), ContentSettingsPattern::Wildcard(),
-      base::Value::FromUniquePtrValue(
-          content_settings::ContentSettingToValue(CONTENT_SETTING_BLOCK)),
+      content_settings::ContentSettingToValue(CONTENT_SETTING_BLOCK),
       std::string(), false));
 
   ContentSettingsAgentImpl* agent =
       ContentSettingsAgentImpl::Get(GetMainRenderFrame());
-  agent->SetContentSettingRules(&content_setting_rules);
+  agent->SetRendererContentSettingRulesForTest(content_setting_rules);
 
   // 2. Load a page which contains a noscript tag and a script tag. Note that
   // the page doesn't have a body tag.
@@ -513,10 +507,9 @@ TEST_F(ContentSettingsAgentImplBrowserTest, ContentSettingsNoscriptTag) {
   script_setting_rules.clear();
   script_setting_rules.push_back(ContentSettingPatternSource(
       ContentSettingsPattern::Wildcard(), ContentSettingsPattern::Wildcard(),
-      base::Value::FromUniquePtrValue(
-          content_settings::ContentSettingToValue(CONTENT_SETTING_ALLOW)),
+      content_settings::ContentSettingToValue(CONTENT_SETTING_ALLOW),
       std::string(), false));
-  agent->SetContentSettingRules(&content_setting_rules);
+  agent->SetRendererContentSettingRulesForTest(content_setting_rules);
 
   // 4. Reload the page.
   std::string url_str = "data:text/html;charset=utf-8,";
@@ -554,13 +547,12 @@ TEST_F(ContentSettingsAgentImplBrowserTest,
       content_setting_rules.script_rules;
   script_setting_rules.push_back(ContentSettingPatternSource(
       ContentSettingsPattern::Wildcard(), ContentSettingsPattern::Wildcard(),
-      base::Value::FromUniquePtrValue(
-          content_settings::ContentSettingToValue(CONTENT_SETTING_BLOCK)),
+      content_settings::ContentSettingToValue(CONTENT_SETTING_BLOCK),
       std::string(), false));
 
   ContentSettingsAgentImpl* agent =
       ContentSettingsAgentImpl::Get(GetMainRenderFrame());
-  agent->SetContentSettingRules(&content_setting_rules);
+  agent->SetRendererContentSettingRulesForTest(content_setting_rules);
 
   // The page shouldn't see the change to script blocking setting after a
   // same document navigation.
@@ -579,13 +571,12 @@ TEST_F(ContentSettingsAgentImplBrowserTest, MixedAutoupgradesDisabledByRules) {
       content_setting_rules.mixed_content_rules;
   mixed_content_setting_rules.push_back(ContentSettingPatternSource(
       ContentSettingsPattern::Wildcard(), ContentSettingsPattern::Wildcard(),
-      base::Value::FromUniquePtrValue(
-          content_settings::ContentSettingToValue(CONTENT_SETTING_BLOCK)),
+      content_settings::ContentSettingToValue(CONTENT_SETTING_BLOCK),
       std::string(), false));
 
   ContentSettingsAgentImpl* agent =
       ContentSettingsAgentImpl::Get(GetMainRenderFrame());
-  agent->SetContentSettingRules(&content_setting_rules);
+  agent->SetRendererContentSettingRulesForTest(content_setting_rules);
   EXPECT_TRUE(agent->ShouldAutoupgradeMixedContent());
 
   // Create an exception which allows mixed content.
@@ -594,9 +585,9 @@ TEST_F(ContentSettingsAgentImplBrowserTest, MixedAutoupgradesDisabledByRules) {
       ContentSettingPatternSource(
           ContentSettingsPattern::FromString("https://example.com/"),
           ContentSettingsPattern::Wildcard(),
-          base::Value::FromUniquePtrValue(
-              content_settings::ContentSettingToValue(CONTENT_SETTING_ALLOW)),
+          content_settings::ContentSettingToValue(CONTENT_SETTING_ALLOW),
           std::string(), false));
+  agent->SetRendererContentSettingRulesForTest(content_setting_rules);
 
   EXPECT_FALSE(agent->ShouldAutoupgradeMixedContent());
 }
@@ -613,13 +604,12 @@ TEST_F(ContentSettingsAgentImplBrowserTest, ContentSettingsAllowedAutoDark) {
       content_setting_rules.auto_dark_content_rules;
   auto_dark_content_rules.push_back(ContentSettingPatternSource(
       ContentSettingsPattern::Wildcard(), ContentSettingsPattern::Wildcard(),
-      base::Value::FromUniquePtrValue(
-          content_settings::ContentSettingToValue(CONTENT_SETTING_ALLOW)),
+      content_settings::ContentSettingToValue(CONTENT_SETTING_ALLOW),
       std::string(), false));
 
   ContentSettingsAgentImpl* agent =
       ContentSettingsAgentImpl::Get(GetMainRenderFrame());
-  agent->SetContentSettingRules(&content_setting_rules);
+  agent->SetRendererContentSettingRulesForTest(content_setting_rules);
   EXPECT_TRUE(agent->AllowAutoDarkWebContent(true));
 
   // Create an exception which blocked the auto dark.
@@ -628,10 +618,9 @@ TEST_F(ContentSettingsAgentImplBrowserTest, ContentSettingsAllowedAutoDark) {
       ContentSettingPatternSource(
           ContentSettingsPattern::FromString("https://example.com/"),
           ContentSettingsPattern::Wildcard(),
-          base::Value::FromUniquePtrValue(
-              content_settings::ContentSettingToValue(CONTENT_SETTING_BLOCK)),
+          content_settings::ContentSettingToValue(CONTENT_SETTING_BLOCK),
           std::string(), false));
-
+  agent->SetRendererContentSettingRulesForTest(content_setting_rules);
   EXPECT_FALSE(agent->AllowAutoDarkWebContent(true));
 }
 
@@ -647,13 +636,12 @@ TEST_F(ContentSettingsAgentImplBrowserTest, ContentSettingsDisabledAutoDark) {
       content_setting_rules.auto_dark_content_rules;
   auto_dark_content_rules.push_back(ContentSettingPatternSource(
       ContentSettingsPattern::Wildcard(), ContentSettingsPattern::Wildcard(),
-      base::Value::FromUniquePtrValue(
-          content_settings::ContentSettingToValue(CONTENT_SETTING_BLOCK)),
+      content_settings::ContentSettingToValue(CONTENT_SETTING_BLOCK),
       std::string(), false));
 
   ContentSettingsAgentImpl* agent =
       ContentSettingsAgentImpl::Get(GetMainRenderFrame());
-  agent->SetContentSettingRules(&content_setting_rules);
+  agent->SetRendererContentSettingRulesForTest(content_setting_rules);
   EXPECT_FALSE(agent->AllowAutoDarkWebContent(true));
 }
 

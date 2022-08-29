@@ -50,6 +50,7 @@ class V8_EXPORT_PRIVATE TurboAssembler : public TurboAssemblerBase {
   using TurboAssemblerBase::TurboAssemblerBase;
 
   void CallBuiltin(Builtin builtin, Condition cond);
+  void TailCallBuiltin(Builtin builtin);
   void Popcnt32(Register dst, Register src);
   void Popcnt64(Register dst, Register src);
   // Converts the integer (untagged smi) in |src| to a double, storing
@@ -546,26 +547,24 @@ class V8_EXPORT_PRIVATE TurboAssembler : public TurboAssemblerBase {
                                SaveFPRegsMode fp_mode);
 
   void CallRecordWriteStubSaveRegisters(
-      Register object, Register slot_address,
-      RememberedSetAction remembered_set_action, SaveFPRegsMode fp_mode,
+      Register object, Register slot_address, SaveFPRegsMode fp_mode,
       StubCallMode mode = StubCallMode::kCallBuiltinPointer);
   void CallRecordWriteStub(
-      Register object, Register slot_address,
-      RememberedSetAction remembered_set_action, SaveFPRegsMode fp_mode,
+      Register object, Register slot_address, SaveFPRegsMode fp_mode,
       StubCallMode mode = StubCallMode::kCallBuiltinPointer);
 
   void MultiPush(RegList regs, Register location = sp);
   void MultiPop(RegList regs, Register location = sp);
 
-  void MultiPushDoubles(RegList dregs, Register location = sp);
-  void MultiPopDoubles(RegList dregs, Register location = sp);
+  void MultiPushDoubles(DoubleRegList dregs, Register location = sp);
+  void MultiPopDoubles(DoubleRegList dregs, Register location = sp);
 
-  void MultiPushV128(RegList dregs, Register location = sp);
-  void MultiPopV128(RegList dregs, Register location = sp);
+  void MultiPushV128(Simd128RegList dregs, Register location = sp);
+  void MultiPopV128(Simd128RegList dregs, Register location = sp);
 
-  void MultiPushF64AndV128(RegList dregs, RegList simd_regs,
+  void MultiPushF64AndV128(DoubleRegList dregs, Simd128RegList simd_regs,
                            Register location = sp);
-  void MultiPopF64AndV128(RegList dregs, RegList simd_regs,
+  void MultiPopF64AndV128(DoubleRegList dregs, Simd128RegList simd_regs,
                           Register location = sp);
 
   // Calculate how much stack space (in bytes) are required to store caller
@@ -614,7 +613,7 @@ class V8_EXPORT_PRIVATE TurboAssembler : public TurboAssemblerBase {
 
   void ByteReverseU16(Register dst, Register val, Register scratch);
   void ByteReverseU32(Register dst, Register val, Register scratch);
-  void ByteReverseU64(Register dst, Register val);
+  void ByteReverseU64(Register dst, Register val, Register = r0);
 
   // Before calling a C-function from generated code, align arguments on stack.
   // After aligning the frame, non-register arguments must be stored in
@@ -707,6 +706,8 @@ class V8_EXPORT_PRIVATE TurboAssembler : public TurboAssemblerBase {
   // Load the builtin given by the Smi in |builtin_index| into the same
   // register.
   void LoadEntryFromBuiltinIndex(Register builtin_index);
+  void LoadEntryFromBuiltin(Builtin builtin, Register destination);
+  MemOperand EntryFromBuiltinAsOperand(Builtin builtin);
   void LoadCodeObjectEntry(Register destination, Register code_object);
   void CallCodeObject(Register code_object);
   void JumpCodeObject(Register code_object,
@@ -768,6 +769,7 @@ class V8_EXPORT_PRIVATE TurboAssembler : public TurboAssemblerBase {
   void Move(Register dst, ExternalReference reference);
   void Move(Register dst, Register src, Condition cond = al);
   void Move(DoubleRegister dst, DoubleRegister src);
+  void Move(Register dst, const MemOperand& src) { LoadU64(dst, src); }
 
   void SmiUntag(Register dst, const MemOperand& src, RCBit rc = LeaveRC,
                 Register scratch = no_reg);
@@ -786,6 +788,12 @@ class V8_EXPORT_PRIVATE TurboAssembler : public TurboAssemblerBase {
     }
     DCHECK(SmiValuesAre32Bits() || SmiValuesAre31Bits());
     SmiUntag(smi);
+  }
+
+  // Shift left by kSmiShift
+  void SmiTag(Register reg, RCBit rc = LeaveRC) { SmiTag(reg, reg, rc); }
+  void SmiTag(Register dst, Register src, RCBit rc = LeaveRC) {
+    ShiftLeftU64(dst, src, Operand(kSmiShift), rc);
   }
 
   // Abort execution if argument is a smi, enabled via --debug-code.
@@ -959,10 +967,10 @@ class V8_EXPORT_PRIVATE TurboAssembler : public TurboAssemblerBase {
 
   void SmiToPtrArrayOffset(Register dst, Register src) {
 #if defined(V8_COMPRESS_POINTERS) || defined(V8_31BIT_SMIS_ON_64BIT_ARCH)
-    STATIC_ASSERT(kSmiTag == 0 && kSmiShift < kSystemPointerSizeLog2);
+    static_assert(kSmiTag == 0 && kSmiShift < kSystemPointerSizeLog2);
     ShiftLeftU64(dst, src, Operand(kSystemPointerSizeLog2 - kSmiShift));
 #else
-    STATIC_ASSERT(kSmiTag == 0 && kSmiShift > kSystemPointerSizeLog2);
+    static_assert(kSmiTag == 0 && kSmiShift > kSystemPointerSizeLog2);
     ShiftRightS64(dst, src, Operand(kSmiShift - kSystemPointerSizeLog2));
 #endif
   }
@@ -972,6 +980,8 @@ class V8_EXPORT_PRIVATE TurboAssembler : public TurboAssemblerBase {
   void LoadTaggedPointerField(const Register& destination,
                               const MemOperand& field_operand,
                               const Register& scratch = no_reg);
+  void LoadTaggedSignedField(Register destination, MemOperand field_operand,
+                             Register scratch);
 
   // Loads a field containing any tagged value and decompresses it if necessary.
   void LoadAnyTaggedField(const Register& destination,
@@ -1085,20 +1095,17 @@ class V8_EXPORT_PRIVATE MacroAssembler : public TurboAssembler {
   // stored.  value and scratch registers are clobbered by the operation.
   // The offset is the offset from the start of the object, not the offset from
   // the tagged HeapObject pointer.  For use with FieldMemOperand(reg, off).
-  void RecordWriteField(
-      Register object, int offset, Register value, Register slot_address,
-      LinkRegisterStatus lr_status, SaveFPRegsMode save_fp,
-      RememberedSetAction remembered_set_action = RememberedSetAction::kEmit,
-      SmiCheck smi_check = SmiCheck::kInline);
+  void RecordWriteField(Register object, int offset, Register value,
+                        Register slot_address, LinkRegisterStatus lr_status,
+                        SaveFPRegsMode save_fp,
+                        SmiCheck smi_check = SmiCheck::kInline);
 
   // For a given |object| notify the garbage collector that the slot |address|
   // has been written.  |value| is the object being stored. The value and
   // address registers are clobbered by the operation.
-  void RecordWrite(
-      Register object, Register slot_address, Register value,
-      LinkRegisterStatus lr_status, SaveFPRegsMode save_fp,
-      RememberedSetAction remembered_set_action = RememberedSetAction::kEmit,
-      SmiCheck smi_check = SmiCheck::kInline);
+  void RecordWrite(Register object, Register slot_address, Register value,
+                   LinkRegisterStatus lr_status, SaveFPRegsMode save_fp,
+                   SmiCheck smi_check = SmiCheck::kInline);
 
   // Enter exit frame.
   // stack_space - extra stack space, used for parameters before call to C.
@@ -1295,12 +1302,6 @@ class V8_EXPORT_PRIVATE MacroAssembler : public TurboAssembler {
   // ---------------------------------------------------------------------------
   // Smi utilities
 
-  // Shift left by kSmiShift
-  void SmiTag(Register reg, RCBit rc = LeaveRC) { SmiTag(reg, reg, rc); }
-  void SmiTag(Register dst, Register src, RCBit rc = LeaveRC) {
-    ShiftLeftU64(dst, src, Operand(kSmiShift), rc);
-  }
-
   // Jump if either of the registers contain a non-smi.
   inline void JumpIfNotSmi(Register value, Label* not_smi_label) {
     TestIfSmi(value, r0);
@@ -1310,8 +1311,8 @@ class V8_EXPORT_PRIVATE MacroAssembler : public TurboAssembler {
 #if !defined(V8_COMPRESS_POINTERS) && !defined(V8_31BIT_SMIS_ON_64BIT_ARCH)
   // Ensure it is permissible to read/write int value directly from
   // upper half of the smi.
-  STATIC_ASSERT(kSmiTag == 0);
-  STATIC_ASSERT(kSmiTagSize + kSmiShiftSize == 32);
+  static_assert(kSmiTag == 0);
+  static_assert(kSmiTagSize + kSmiShiftSize == 32);
 #endif
 #if V8_TARGET_ARCH_PPC64 && V8_TARGET_LITTLE_ENDIAN
 #define SmiWordOffset(offset) (offset + kSystemPointerSize / 2)
@@ -1355,6 +1356,10 @@ class V8_EXPORT_PRIVATE MacroAssembler : public TurboAssembler {
     DecodeField<Field>(reg, reg, rc);
   }
 
+  void TestCodeTIsMarkedForDeoptimization(Register codet, Register scratch1,
+                                          Register scratch2);
+  Operand ClearedValue() const;
+
  private:
   static const int kSmiShift = kSmiTagSize + kSmiShiftSize;
 
@@ -1364,6 +1369,11 @@ class V8_EXPORT_PRIVATE MacroAssembler : public TurboAssembler {
                       InvokeType type);
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(MacroAssembler);
+};
+
+struct MoveCycleState {
+  // Whether a move in the cycle needs a double scratch register.
+  bool pending_double_scratch_register_use = false;
 };
 
 #define ACCESS_MASM(masm) masm->

@@ -26,13 +26,15 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/download_item_utils.h"
-#include "content/public/browser/permission_type.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/user_agent.h"
 #include "net/base/filename_util.h"
+#include "third_party/blink/public/common/permissions/permission_utils.h"
 #include "url/gurl.h"
 #include "v8/include/v8-version-string.h"
+
+using blink::PermissionType;
 
 namespace content {
 namespace protocol {
@@ -206,8 +208,8 @@ Response PermissionDescriptorToPermissionType(
     *permission_type = PermissionType::NFC;
   } else if (name == "window-placement") {
     *permission_type = PermissionType::WINDOW_PLACEMENT;
-  } else if (name == "font-access") {
-    *permission_type = PermissionType::FONT_ACCESS;
+  } else if (name == "local-fonts") {
+    *permission_type = PermissionType::LOCAL_FONTS;
   } else if (name == "display-capture") {
     *permission_type = PermissionType::DISPLAY_CAPTURE;
   } else {
@@ -548,7 +550,7 @@ Response BrowserHandler::GetBrowserCommandLine(
   // contains kEnableAutomation.
   if (command_line->HasSwitch(switches::kEnableAutomation)) {
     for (const auto& arg : command_line->argv()) {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
       (*arguments)->emplace_back(base::WideToUTF8(arg));
 #else
       (*arguments)->emplace_back(arg);

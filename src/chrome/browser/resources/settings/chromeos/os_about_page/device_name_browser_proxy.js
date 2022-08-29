@@ -2,10 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// clang-format off
-import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
+import {sendWithPromise} from 'chrome://resources/js/cr.m.js';
 import {DeviceNameState, SetDeviceNameResult} from './device_name_util.js';
-// clang-format on
 
 /**
  * @typedef {{
@@ -31,10 +29,23 @@ export class DeviceNameBrowserProxy {
   attemptSetDeviceName(name) {}
 }
 
+/** @type {?DeviceNameBrowserProxy} */
+let instance = null;
+
 /**
  * @implements {DeviceNameBrowserProxy}
  */
 export class DeviceNameBrowserProxyImpl {
+  /** @return {!DeviceNameBrowserProxy} */
+  static getInstance() {
+    return instance || (instance = new DeviceNameBrowserProxyImpl());
+  }
+
+  /** @param {!DeviceNameBrowserProxy} obj */
+  static setInstance(obj) {
+    instance = obj;
+  }
+
   /** @override */
   notifyReadyForDeviceName() {
     return chrome.send('notifyReadyForDeviceName');
@@ -45,7 +56,3 @@ export class DeviceNameBrowserProxyImpl {
     return sendWithPromise('attemptSetDeviceName', name);
   }
 }
-
-// The singleton instance_ is replaced with a test version of this wrapper
-// during testing.
-addSingletonGetter(DeviceNameBrowserProxyImpl);

@@ -13,8 +13,9 @@
 # limitations under the License.
 
 import("//third_party/cast_core/public/src/proto/proto.gni")
-cast_core_proto_library("message_channel") {
+cast_core_proto_library("message_channel_proto") {
     sources = [
         "message_channel.proto",
     ]
+    proto_in_dir = "//third_party/cast_core/public/src"
 }

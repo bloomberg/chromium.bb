@@ -77,7 +77,14 @@ class OutstandingData {
   AckInfo HandleSack(
       UnwrappedTSN cumulative_tsn_ack,
       rtc::ArrayView<const SackChunk::GapAckBlock> gap_ack_blocks,
-      bool is_in_fast_retransmit);
+      bool is_in_fast_recovery);
+
+  // Returns as many of the chunks that are eligible for fast retransmissions
+  // and that would fit in a single packet of `max_size`. The eligible chunks
+  // that didn't fit will be marked for (normal) retransmission and will not be
+  // returned if this method is called again.
+  std::vector<std::pair<TSN, Data>> GetChunksToBeFastRetransmitted(
+      size_t max_size);
 
   // Given `max_size` of space left in a packet, which chunks can be added to
   // it?
@@ -94,8 +101,12 @@ class OutstandingData {
 
   bool empty() const { return outstanding_data_.empty(); }
 
+  bool has_data_to_be_fast_retransmitted() const {
+    return !to_be_fast_retransmitted_.empty();
+  }
+
   bool has_data_to_be_retransmitted() const {
-    return !to_be_retransmitted_.empty();
+    return !to_be_retransmitted_.empty() || !to_be_fast_retransmitted_.empty();
   }
 
   UnwrappedTSN last_cumulative_tsn_ack() const {
@@ -167,11 +178,11 @@ class OutstandingData {
     // is set, it might be marked for retransmission. If the item has reached
     // its max retransmission value, it will instead be abandoned. The action
     // performed is indicated as return value.
-    NackAction Nack(bool retransmit_now = false);
+    NackAction Nack(bool retransmit_now);
 
     // Prepares the item to be retransmitted. Sets it as outstanding and
     // clears all nack counters.
-    void Retransmit();
+    void MarkAsRetransmitted();
 
     // Marks this item as abandoned.
     void Abandon();
@@ -179,10 +190,12 @@ class OutstandingData {
     bool is_outstanding() const { return ack_state_ == AckState::kUnacked; }
     bool is_acked() const { return ack_state_ == AckState::kAcked; }
     bool is_nacked() const { return ack_state_ == AckState::kNacked; }
-    bool is_abandoned() const { return is_abandoned_; }
+    bool is_abandoned() const { return lifecycle_ == Lifecycle::kAbandoned; }
 
     // Indicates if this chunk should be retransmitted.
-    bool should_be_retransmitted() const { return should_be_retransmitted_; }
+    bool should_be_retransmitted() const {
+      return lifecycle_ == Lifecycle::kToBeRetransmitted;
+    }
     // Indicates if this chunk has ever been retransmitted.
     bool has_been_retransmitted() const { return num_retransmissions_ > 0; }
 
@@ -191,18 +204,28 @@ class OutstandingData {
     bool has_expired(TimeMs now) const;
 
    private:
-    enum class AckState {
-      kUnacked,
-      kAcked,
-      kNacked,
+    enum class Lifecycle {
+      // The chunk is alive (sent, received, etc)
+      kActive,
+      // The chunk is scheduled to be retransmitted, and will then transition to
+      // become active.
+      kToBeRetransmitted,
+      // The chunk has been abandoned. This is a terminal state.
+      kAbandoned
     };
+    enum class AckState {
+      // The chunk is in-flight.
+      kUnacked,
+      // The chunk has been received and acknowledged.
+      kAcked,
+      // The chunk has been nacked and is possibly lost.
+      kNacked
+    };
+    // Indicates the life cycle status of this chunk.
+    Lifecycle lifecycle_ = Lifecycle::kActive;
     // Indicates the presence of this chunk, if it's in flight (Unacked), has
-    // been received (Acked) or is lost (Nacked).
+    // been received (Acked) or is possibly lost (Nacked).
     AckState ack_state_ = AckState::kUnacked;
-    // Indicates if this chunk has been abandoned, which is a terminal state.
-    bool is_abandoned_ = false;
-    // Indicates if this chunk should be retransmitted.
-    bool should_be_retransmitted_ = false;
 
     // The number of times the DATA chunk has been nacked (by having received a
     // SACK which doesn't include it). Will be cleared on retransmissions.
@@ -246,20 +269,31 @@ class OutstandingData {
       bool is_in_fast_recovery,
       OutstandingData::AckInfo& ack_info);
 
-  // Acks the chunk referenced by `iter` and updates state in `ack_info` and the
-  // object's state.
+  // Process the acknowledgement of the chunk referenced by `iter` and updates
+  // state in `ack_info` and the object's state.
   void AckChunk(AckInfo& ack_info, std::map<UnwrappedTSN, Item>::iterator iter);
 
-  // Helper method to nack an item and perform the correct operations given the
-  // action indicated when nacking an item (e.g. retransmitting or abandoning).
-  // The return value indicate if an action was performed, meaning that packet
-  // loss was detected and acted upon.
-  bool NackItem(UnwrappedTSN tsn, Item& item, bool retransmit_now);
+  // Helper method to process an incoming nack of an item and perform the
+  // correct operations given the action indicated when nacking an item (e.g.
+  // retransmitting or abandoning). The return value indicate if an action was
+  // performed, meaning that packet loss was detected and acted upon. If
+  // `do_fast_retransmit` is set and if the item has been nacked sufficiently
+  // many times so that it should be retransmitted, this will schedule it to be
+  // "fast retransmitted". This is only done just before going into fast
+  // recovery.
+  bool NackItem(UnwrappedTSN tsn,
+                Item& item,
+                bool retransmit_now,
+                bool do_fast_retransmit);
 
   // Given that a message fragment, `item` has been abandoned, abandon all other
   // fragments that share the same message - both never-before-sent fragments
   // that are still in the SendQueue and outstanding chunks.
   void AbandonAllFor(const OutstandingData::Item& item);
+
+  std::vector<std::pair<TSN, Data>> ExtractChunksThatCanFit(
+      std::set<UnwrappedTSN>& chunks,
+      size_t max_size);
 
   bool IsConsistent() const;
 
@@ -278,6 +312,8 @@ class OutstandingData {
   // The number of DATA chunks that are in-flight (sent but not yet acked or
   // nacked).
   size_t outstanding_items_ = 0;
+  // Data chunks that are eligible for fast retransmission.
+  std::set<UnwrappedTSN> to_be_fast_retransmitted_;
   // Data chunks that are to be retransmitted.
   std::set<UnwrappedTSN> to_be_retransmitted_;
 };

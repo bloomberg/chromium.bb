@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "ash/constants/ash_features.h"
+#include "ash/constants/notifier_catalogs.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/vm_camera_mic_constants.h"
 #include "base/bind.h"
@@ -25,7 +26,7 @@
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
-#include "chrome/browser/ui/webui/settings/chromeos/app_management/app_management_uma.h"
+#include "chrome/browser/ui/webui/settings/ash/app_management/app_management_uma.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom-forward.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/vector_icons/vector_icons.h"
@@ -265,13 +266,13 @@ class VmCameraMicManager::VmInfo : public message_center::NotificationObserver {
         l10n_util::GetStringFUTF16(message_id,
                                    l10n_util::GetStringUTF16(name_id_)),
         /*message=*/std::u16string(),
-        /*icon=*/gfx::Image(),
+        /*icon=*/ui::ImageModel(),
         /*display_source=*/
         l10n_util::GetStringUTF16(IDS_CHROME_OS_NOTIFICATION_SOURCE),
         /*origin_url=*/GURL(),
         message_center::NotifierId(
             message_center::NotifierType::SYSTEM_COMPONENT,
-            ash::kVmCameraMicNotifierId),
+            ash::kVmCameraMicNotifierId, NotificationCatalogName::kVMCameraMic),
         rich_notification_data,
         base::MakeRefCounted<message_center::ThunkNotificationDelegate>(
             weak_ptr_factory_.GetWeakPtr()));
@@ -302,12 +303,12 @@ class VmCameraMicManager::VmInfo : public message_center::NotificationObserver {
       case VmType::kPluginVm:
         chrome::ShowAppManagementPage(
             profile_, plugin_vm::kPluginVmShelfAppId,
-            AppManagementEntryPoint::kNotificationPluginVm);
+            settings::AppManagementEntryPoint::kNotificationPluginVm);
         break;
       case VmType::kBorealis:
         chrome::ShowAppManagementPage(
-            profile_, borealis::kBorealisMainAppId,
-            AppManagementEntryPoint::kAppManagementMainViewBorealis);
+            profile_, borealis::kClientAppId,
+            settings::AppManagementEntryPoint::kAppManagementMainViewBorealis);
         break;
     }
   }

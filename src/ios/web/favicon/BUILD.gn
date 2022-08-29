@@ -3,7 +3,8 @@
 # found in the LICENSE file.
 
 import("//ios/build/config.gni")
-import("//ios/web/js_compile.gni")
+import("//ios/web/public/js_messaging/compile_ts.gni")
+import("//ios/web/public/js_messaging/optimize_js.gni")
 
 source_set("favicon") {
   configs += [ "//build/config/compiler:enable_arc" ]
@@ -24,18 +25,35 @@ source_set("favicon") {
   ]
 }
 
-js_compile_bundle("favicon_js") {
-  visibility = [ ":favicon" ]
-  closure_entry_point = "__crWeb.favicon"
-
-  sources = [ "resources/favicon.js" ]
+compile_ts("compile_typescript") {
+  sources = [
+    "//ios/web/public/js_messaging/resources/utils.ts",
+    "resources/favicon.ts",
+    "resources/favicon_event_listeners.ts",
+    "resources/favicon_utils.ts",
+  ]
 }
 
-js_compile_bundle("favicon_event_listeners_js") {
+optimize_js("favicon_js") {
   visibility = [ ":favicon" ]
-  closure_entry_point = "__crWeb.faviconEventListeners"
 
-  sources = [ "resources/favicon_event_listeners.js" ]
+  _script = filter_include(get_target_outputs(":compile_typescript"),
+                           [ "*favicon.js" ])
+  primary_script = _script[0]
+  sources = _script
+
+  deps = [ ":compile_typescript" ]
+}
+
+optimize_js("favicon_event_listeners_js") {
+  visibility = [ ":favicon" ]
+
+  _script = filter_include(get_target_outputs(":compile_typescript"),
+                           [ "*favicon_event_listeners.js" ])
+  primary_script = _script[0]
+  sources = _script
+
+  deps = [ ":compile_typescript" ]
 }
 
 source_set("unittests") {
@@ -45,6 +63,7 @@ source_set("unittests") {
     "//base",
     "//ios/web/favicon",
     "//ios/web/public/favicon",
+    "//ios/web/public/test:test_fixture",
     "//testing/gtest",
   ]
   sources = [ "favicon_util_unittest.mm" ]
@@ -59,6 +78,7 @@ source_set("inttests") {
     "//ios/web/public",
     "//ios/web/public:web_state_observer",
     "//ios/web/public/test",
+    "//ios/web/public/test:test_fixture",
   ]
   sources = [ "favicon_callbacks_inttest.mm" ]
 }

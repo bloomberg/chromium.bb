@@ -16,6 +16,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "net/base/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace net {
 
@@ -43,9 +44,7 @@ using MetricsTestParamTuple = std::tuple<bool, HttpssvcFeatureTuple>;
 // Create a comma-separated list of |domains| with the given |quirks|.
 std::string FlattenDomainList(const std::vector<std::string>& domains,
                               DomainListQuirksTuple quirks) {
-  int num_domains;
-  bool leading_comma, trailing_comma;
-  std::tie(num_domains, leading_comma, trailing_comma) = quirks;
+  auto [num_domains, leading_comma, trailing_comma] = quirks;
 
   CHECK_EQ(static_cast<size_t>(num_domains), domains.size());
   std::string flattened = base::JoinString(domains, ",");
@@ -111,11 +110,8 @@ class HttpssvcDomainParsingTest
     : public ::testing::TestWithParam<ParsingTestParamTuple> {
  public:
   void SetUp() override {
-    DomainListQuirksTuple domain_quirks_experimental;
-    DomainListQuirksTuple domain_quirks_control;
-    HttpssvcFeatureTuple httpssvc_feature;
-    std::tie(domain_quirks_experimental, domain_quirks_control,
-             httpssvc_feature) = GetParam();
+    auto [domain_quirks_experimental, domain_quirks_control, httpssvc_feature] =
+        GetParam();
 
     expected_experiment_domains_ = GenerateDomainList(
         "experiment", std::get<0>(domain_quirks_experimental));
@@ -169,10 +165,11 @@ INSTANTIATE_TEST_SUITE_P(
             testing::Values(false) /* DnsHttpssvcControlDomainWildcard */)));
 
 // Base for testing the metrics collection code in |HttpssvcMetrics|.
-class HttpssvcMetricsTest : public ::testing::TestWithParam<bool> {
+class HttpssvcMetricsTest
+    : public ::testing::TestWithParam<std::tuple<bool, bool>> {
  public:
   void SetUp() override {
-    querying_experimental_ = GetParam();
+    std::tie(secure_, querying_experimental_) = GetParam();
     config_ = HttpssvcFeatureConfig(
         {true /* enabled */, true /* use_integrity */, true /* use_httpssvc */,
          false /* control_domain_wildcard */},
@@ -183,7 +180,7 @@ class HttpssvcMetricsTest : public ::testing::TestWithParam<bool> {
   std::string BuildMetricNamePrefix(base::StringPiece record_type_str,
                                     base::StringPiece expect_str) const {
     return base::StrCat({"Net.DNS.HTTPSSVC.", record_type_str, ".",
-                         doh_provider_, ".", expect_str, "."});
+                         secure_ ? "Secure." : "Insecure.", expect_str, "."});
   }
 
   template <typename T>
@@ -206,11 +203,11 @@ class HttpssvcMetricsTest : public ::testing::TestWithParam<bool> {
       absl::optional<base::TimeDelta> expect_intact_time = absl::nullopt,
       absl::optional<base::TimeDelta> expect_noerror_time = absl::nullopt) {
     const std::string kExpectIntact =
-        base::StrCat({BuildMetricNamePrefix("RecordIntegrity", "ExpectIntact"),
-                      "ResolveTimeNonIntegrityRecord"});
+        base::StrCat({BuildMetricNamePrefix("RecordHttps", "ExpectIntact"),
+                      "ResolveTimeAddress"});
     const std::string kExpectNoerror =
-        base::StrCat({BuildMetricNamePrefix("RecordIntegrity", "ExpectNoerror"),
-                      "ResolveTimeNonIntegrityRecord"});
+        base::StrCat({BuildMetricNamePrefix("RecordHttps", "ExpectNoerror"),
+                      "ResolveTimeAddress"});
 
     ExpectSample(kExpectIntact, expect_intact_time);
     ExpectSample(kExpectNoerror, expect_noerror_time);
@@ -228,15 +225,15 @@ class HttpssvcMetricsTest : public ::testing::TestWithParam<bool> {
     const std::string kMetricIntegrity = base::StrCat({kPrefix, "Integrity"});
     const std::string kMetricRecordWithError =
         base::StrCat({kPrefix, "RecordWithError"});
-    const std::string kMetricResolveTimeIntegrity =
-        base::StrCat({kPrefix, "ResolveTimeIntegrityRecord"});
+    const std::string kMetricResolveTimeExperimental =
+        base::StrCat({kPrefix, "ResolveTimeExperimental"});
     const std::string kMetricResolveTimeRatio =
         base::StrCat({kPrefix, "ResolveTimeRatio"});
 
     ExpectSample(kMetricDnsRcode, rcode);
     ExpectSample(kMetricIntegrity, integrity);
     ExpectSample(kMetricRecordWithError, record_with_error);
-    ExpectSample(kMetricResolveTimeIntegrity, resolve_time_integrity);
+    ExpectSample(kMetricResolveTimeExperimental, resolve_time_integrity);
     ExpectSample(kMetricResolveTimeRatio, resolve_time_ratio);
   }
 
@@ -252,15 +249,15 @@ class HttpssvcMetricsTest : public ::testing::TestWithParam<bool> {
     const std::string kMetricParsable = base::StrCat({kPrefix, "Parsable"});
     const std::string kMetricRecordWithError =
         base::StrCat({kPrefix, "RecordWithError"});
-    const std::string kMetricResolveTimeHttps =
-        base::StrCat({kPrefix, "ResolveTimeHttpsRecord"});
+    const std::string kMetricResolveTimeExperimental =
+        base::StrCat({kPrefix, "ResolveTimeExperimental"});
     const std::string kMetricResolveTimeRatio =
         base::StrCat({kPrefix, "ResolveTimeRatio"});
 
     ExpectSample(kMetricDnsRcode, rcode);
     ExpectSample(kMetricParsable, parsable);
     ExpectSample(kMetricRecordWithError, record_with_error);
-    ExpectSample(kMetricResolveTimeHttps, resolve_time_https);
+    ExpectSample(kMetricResolveTimeExperimental, resolve_time_https);
     ExpectSample(kMetricResolveTimeRatio, resolve_time_ratio);
   }
 
@@ -274,14 +271,14 @@ class HttpssvcMetricsTest : public ::testing::TestWithParam<bool> {
     const std::string kMetricDnsRcode = base::StrCat({kPrefix, "DnsRcode"});
     const std::string kMetricRecordReceived =
         base::StrCat({kPrefix, "RecordReceived"});
-    const std::string kMetricResolveTimeIntegrity =
-        base::StrCat({kPrefix, "ResolveTimeIntegrityRecord"});
+    const std::string kMetricResolveTimeExperimental =
+        base::StrCat({kPrefix, "ResolveTimeExperimental"});
     const std::string kMetricResolveTimeRatio =
         base::StrCat({kPrefix, "ResolveTimeRatio"});
 
     ExpectSample(kMetricDnsRcode, rcode);
     ExpectSample(kMetricRecordReceived, record_received);
-    ExpectSample(kMetricResolveTimeIntegrity, resolve_time_integrity);
+    ExpectSample(kMetricResolveTimeExperimental, resolve_time_integrity);
     ExpectSample(kMetricResolveTimeRatio, resolve_time_ratio);
   }
 
@@ -294,20 +291,18 @@ class HttpssvcMetricsTest : public ::testing::TestWithParam<bool> {
     const std::string kPrefix =
         BuildMetricNamePrefix("RecordHttps", "ExpectNoerror");
     const std::string kMetricDnsRcode = base::StrCat({kPrefix, "DnsRcode"});
-    const std::string kMetricParsable =
-        "Net.DNS.HTTPSSVC.RecordHttps.AnyProvider.ExpectNoerror.Parsable";
+    const std::string kMetricParsable = base::StrCat({kPrefix, "Parsable"});
     const std::string kMetricRecordWithError =
-        "Net.DNS.HTTPSSVC.RecordHttps.AnyProvider.ExpectNoerror."
-        "RecordWithError";
-    const std::string kMetricResolveTimeHttps =
-        base::StrCat({kPrefix, "ResolveTimeHttpsRecord"});
+        base::StrCat({kPrefix, "RecordWithError"});
+    const std::string kMetricResolveTimeExperimental =
+        base::StrCat({kPrefix, "ResolveTimeExperimental"});
     const std::string kMetricResolveTimeRatio =
         base::StrCat({kPrefix, "ResolveTimeRatio"});
 
     ExpectSample(kMetricDnsRcode, rcode);
     ExpectSample(kMetricParsable, parsable);
     ExpectSample(kMetricRecordWithError, record_with_error);
-    ExpectSample(kMetricResolveTimeHttps, resolve_time_https);
+    ExpectSample(kMetricResolveTimeExperimental, resolve_time_https);
     ExpectSample(kMetricResolveTimeRatio, resolve_time_ratio);
   }
 
@@ -326,22 +321,25 @@ class HttpssvcMetricsTest : public ::testing::TestWithParam<bool> {
   const HttpssvcFeatureConfig& config() const { return config_; }
 
  protected:
+  bool secure_;
   bool querying_experimental_;
 
  private:
   HttpssvcFeatureConfig config_;
   base::test::ScopedFeatureList scoped_feature_list_;
   base::HistogramTester histogram_;
-  std::string doh_provider_ = "Other";
 };
 
 // This instantiation focuses on whether the correct metrics are recorded. The
 // domain list parser is already tested against encoding quirks in
 // |HttpssvcMetricsTestDomainParsing|, so we fix the quirks at false.
-INSTANTIATE_TEST_SUITE_P(HttpssvcMetricsTestSimple,
-                         HttpssvcMetricsTest,
-                         // Whether we are querying an experimental domain.
-                         testing::Bool());
+INSTANTIATE_TEST_SUITE_P(
+    HttpssvcMetricsTestSimple,
+    HttpssvcMetricsTest,
+    testing::Combine(
+        testing::Bool(),  // Querying over DoH or Do53.
+        testing::Bool()   // Whether we are querying an experimental domain.
+        ));
 
 TEST_P(HttpssvcDomainParsingTest, ParseFeatureParamIntegrityDomains) {
   HttpssvcExperimentDomainCache domain_cache;
@@ -383,9 +381,9 @@ TEST_P(HttpssvcDomainParsingTest, ParseFeatureParamIntegrityDomains) {
 // Only record metrics for a non-integrity query.
 TEST_P(HttpssvcMetricsTest, AddressAndExperimentalMissing) {
   const base::TimeDelta kResolveTime = base::Milliseconds(10);
-  absl::optional<HttpssvcMetrics> metrics(querying_experimental_);
-  metrics->SaveForAddressQuery(absl::nullopt, kResolveTime,
-                               HttpssvcDnsRcode::kNoError);
+  auto metrics =
+      absl::make_optional<HttpssvcMetrics>(secure_, querying_experimental_);
+  metrics->SaveForAddressQuery(kResolveTime, HttpssvcDnsRcode::kNoError);
   metrics.reset();  // Record the metrics to UMA.
 
   VerifyAddressResolveTimeMetric();
@@ -398,11 +396,11 @@ TEST_P(HttpssvcMetricsTest, AddressAndExperimentalMissing) {
 TEST_P(HttpssvcMetricsTest, AddressAndIntegrityIntact) {
   const base::TimeDelta kResolveTime = base::Milliseconds(10);
   const base::TimeDelta kResolveTimeIntegrity = base::Milliseconds(15);
-  absl::optional<HttpssvcMetrics> metrics(querying_experimental_);
-  metrics->SaveForIntegrity(absl::nullopt, HttpssvcDnsRcode::kNoError, {true},
+  auto metrics =
+      absl::make_optional<HttpssvcMetrics>(secure_, querying_experimental_);
+  metrics->SaveForIntegrity(HttpssvcDnsRcode::kNoError, {true},
                             kResolveTimeIntegrity);
-  metrics->SaveForAddressQuery(absl::nullopt, kResolveTime,
-                               HttpssvcDnsRcode::kNoError);
+  metrics->SaveForAddressQuery(kResolveTime, HttpssvcDnsRcode::kNoError);
   metrics.reset();  // Record the metrics to UMA.
 
   VerifyHttpsMetricsForExpectIntact();
@@ -433,11 +431,10 @@ TEST_P(HttpssvcMetricsTest, AddressAndIntegrityIntact) {
 TEST_P(HttpssvcMetricsTest, AddressAndHttpsParsable) {
   const base::TimeDelta kResolveTime = base::Milliseconds(10);
   const base::TimeDelta kResolveTimeHttps = base::Milliseconds(15);
-  absl::optional<HttpssvcMetrics> metrics(querying_experimental_);
-  metrics->SaveForHttps(absl::nullopt, HttpssvcDnsRcode::kNoError, {true},
-                        kResolveTimeHttps);
-  metrics->SaveForAddressQuery(absl::nullopt, kResolveTime,
-                               HttpssvcDnsRcode::kNoError);
+  auto metrics =
+      absl::make_optional<HttpssvcMetrics>(secure_, querying_experimental_);
+  metrics->SaveForHttps(HttpssvcDnsRcode::kNoError, {true}, kResolveTimeHttps);
+  metrics->SaveForAddressQuery(kResolveTime, HttpssvcDnsRcode::kNoError);
   metrics.reset();  // Record the metrics to UMA.
 
   VerifyIntegrityMetricsForExpectIntact();
@@ -470,13 +467,12 @@ TEST_P(HttpssvcMetricsTest, AddressAndIntegrityIntactAndHttpsParsable) {
   const base::TimeDelta kResolveTime = base::Milliseconds(10);
   const base::TimeDelta kResolveTimeIntegrity = base::Milliseconds(15);
   const base::TimeDelta kResolveTimeHttps = base::Milliseconds(20);
-  absl::optional<HttpssvcMetrics> metrics(querying_experimental_);
-  metrics->SaveForIntegrity(absl::nullopt, HttpssvcDnsRcode::kNoError, {true},
+  auto metrics =
+      absl::make_optional<HttpssvcMetrics>(secure_, querying_experimental_);
+  metrics->SaveForIntegrity(HttpssvcDnsRcode::kNoError, {true},
                             kResolveTimeIntegrity);
-  metrics->SaveForHttps(absl::nullopt, HttpssvcDnsRcode::kNoError, {true},
-                        kResolveTimeHttps);
-  metrics->SaveForAddressQuery(absl::nullopt, kResolveTime,
-                               HttpssvcDnsRcode::kNoError);
+  metrics->SaveForHttps(HttpssvcDnsRcode::kNoError, {true}, kResolveTimeHttps);
+  metrics->SaveForAddressQuery(kResolveTime, HttpssvcDnsRcode::kNoError);
   metrics.reset();  // Record the metrics to UMA.
 
   if (querying_experimental_) {
@@ -519,11 +515,11 @@ TEST_P(HttpssvcMetricsTest, AddressAndIntegrityMissingWithRcode) {
   const base::TimeDelta kResolveTime = base::Milliseconds(10);
   const base::TimeDelta kResolveTimeIntegrity = base::Milliseconds(15);
 
-  absl::optional<HttpssvcMetrics> metrics(querying_experimental_);
-  metrics->SaveForIntegrity(absl::nullopt, HttpssvcDnsRcode::kNxDomain, {},
+  auto metrics =
+      absl::make_optional<HttpssvcMetrics>(secure_, querying_experimental_);
+  metrics->SaveForIntegrity(HttpssvcDnsRcode::kNxDomain, {},
                             kResolveTimeIntegrity);
-  metrics->SaveForAddressQuery(absl::nullopt, kResolveTime,
-                               HttpssvcDnsRcode::kNoError);
+  metrics->SaveForAddressQuery(kResolveTime, HttpssvcDnsRcode::kNoError);
   metrics.reset();  // Record the metrics to UMA.
 
   VerifyHttpsMetricsForExpectIntact();
@@ -558,11 +554,10 @@ TEST_P(HttpssvcMetricsTest, AddressAndHttpsMissingWithRcode) {
   const base::TimeDelta kResolveTime = base::Milliseconds(10);
   const base::TimeDelta kResolveTimeHttps = base::Milliseconds(15);
 
-  absl::optional<HttpssvcMetrics> metrics(querying_experimental_);
-  metrics->SaveForHttps(absl::nullopt, HttpssvcDnsRcode::kNxDomain, {},
-                        kResolveTimeHttps);
-  metrics->SaveForAddressQuery(absl::nullopt, kResolveTime,
-                               HttpssvcDnsRcode::kNoError);
+  auto metrics =
+      absl::make_optional<HttpssvcMetrics>(secure_, querying_experimental_);
+  metrics->SaveForHttps(HttpssvcDnsRcode::kNxDomain, {}, kResolveTimeHttps);
+  metrics->SaveForAddressQuery(kResolveTime, HttpssvcDnsRcode::kNoError);
   metrics.reset();  // Record the metrics to UMA.
 
   VerifyIntegrityMetricsForExpectIntact();
@@ -597,11 +592,11 @@ TEST_P(HttpssvcMetricsTest, AddressAndIntegrityIntactWithRcode) {
   const base::TimeDelta kResolveTime = base::Milliseconds(10);
   const base::TimeDelta kResolveTimeIntegrity = base::Milliseconds(15);
 
-  absl::optional<HttpssvcMetrics> metrics(querying_experimental_);
-  metrics->SaveForIntegrity(absl::nullopt, HttpssvcDnsRcode::kNxDomain, {true},
+  auto metrics =
+      absl::make_optional<HttpssvcMetrics>(secure_, querying_experimental_);
+  metrics->SaveForIntegrity(HttpssvcDnsRcode::kNxDomain, {true},
                             kResolveTimeIntegrity);
-  metrics->SaveForAddressQuery(absl::nullopt, kResolveTime,
-                               HttpssvcDnsRcode::kNoError);
+  metrics->SaveForAddressQuery(kResolveTime, HttpssvcDnsRcode::kNoError);
   metrics.reset();  // Record the metrics to UMA.
 
   VerifyHttpsMetricsForExpectIntact();
@@ -637,11 +632,10 @@ TEST_P(HttpssvcMetricsTest, AddressAndHttpsParsableWithRcode) {
   const base::TimeDelta kResolveTime = base::Milliseconds(10);
   const base::TimeDelta kResolveTimeHttps = base::Milliseconds(15);
 
-  absl::optional<HttpssvcMetrics> metrics(querying_experimental_);
-  metrics->SaveForHttps(absl::nullopt, HttpssvcDnsRcode::kNxDomain, {true},
-                        kResolveTimeHttps);
-  metrics->SaveForAddressQuery(absl::nullopt, kResolveTime,
-                               HttpssvcDnsRcode::kNoError);
+  auto metrics =
+      absl::make_optional<HttpssvcMetrics>(secure_, querying_experimental_);
+  metrics->SaveForHttps(HttpssvcDnsRcode::kNxDomain, {true}, kResolveTimeHttps);
+  metrics->SaveForAddressQuery(kResolveTime, HttpssvcDnsRcode::kNoError);
   metrics.reset();  // Record the metrics to UMA.
 
   VerifyIntegrityMetricsForExpectIntact();
@@ -678,11 +672,11 @@ TEST_P(HttpssvcMetricsTest, AddressAndHttpsParsableWithRcode) {
 TEST_P(HttpssvcMetricsTest, AddressAndIntegrityMangledWithRcode) {
   const base::TimeDelta kResolveTime = base::Milliseconds(10);
   const base::TimeDelta kResolveTimeIntegrity = base::Milliseconds(15);
-  absl::optional<HttpssvcMetrics> metrics(querying_experimental_);
-  metrics->SaveForIntegrity(absl::nullopt, HttpssvcDnsRcode::kNxDomain, {false},
+  auto metrics =
+      absl::make_optional<HttpssvcMetrics>(secure_, querying_experimental_);
+  metrics->SaveForIntegrity(HttpssvcDnsRcode::kNxDomain, {false},
                             kResolveTimeIntegrity);
-  metrics->SaveForAddressQuery(absl::nullopt, kResolveTime,
-                               HttpssvcDnsRcode::kNoError);
+  metrics->SaveForAddressQuery(kResolveTime, HttpssvcDnsRcode::kNoError);
   metrics.reset();  // Record the metrics to UMA.
 
   VerifyHttpsMetricsForExpectIntact();
@@ -717,11 +711,11 @@ TEST_P(HttpssvcMetricsTest, AddressAndIntegrityMangledWithRcode) {
 TEST_P(HttpssvcMetricsTest, AddressAndHttpsMangledWithRcode) {
   const base::TimeDelta kResolveTime = base::Milliseconds(10);
   const base::TimeDelta kResolveTimeHttps = base::Milliseconds(15);
-  absl::optional<HttpssvcMetrics> metrics(querying_experimental_);
-  metrics->SaveForHttps(absl::nullopt, HttpssvcDnsRcode::kNxDomain, {false},
+  auto metrics =
+      absl::make_optional<HttpssvcMetrics>(secure_, querying_experimental_);
+  metrics->SaveForHttps(HttpssvcDnsRcode::kNxDomain, {false},
                         kResolveTimeHttps);
-  metrics->SaveForAddressQuery(absl::nullopt, kResolveTime,
-                               HttpssvcDnsRcode::kNoError);
+  metrics->SaveForAddressQuery(kResolveTime, HttpssvcDnsRcode::kNoError);
   metrics.reset();  // Record the metrics to UMA.
 
   VerifyIntegrityMetricsForExpectIntact();
@@ -758,11 +752,11 @@ TEST_P(HttpssvcMetricsTest, AddressAndHttpsMangledWithRcode) {
 TEST_P(HttpssvcMetricsTest, AddressAndIntegrityTimedOut) {
   const base::TimeDelta kResolveTime = base::Milliseconds(10);
   const base::TimeDelta kResolveTimeIntegrity = base::Milliseconds(15);
-  absl::optional<HttpssvcMetrics> metrics(querying_experimental_);
-  metrics->SaveForIntegrity(absl::nullopt, HttpssvcDnsRcode::kTimedOut, {},
+  auto metrics =
+      absl::make_optional<HttpssvcMetrics>(secure_, querying_experimental_);
+  metrics->SaveForIntegrity(HttpssvcDnsRcode::kTimedOut, {},
                             kResolveTimeIntegrity);
-  metrics->SaveForAddressQuery(absl::nullopt, kResolveTime,
-                               HttpssvcDnsRcode::kNoError);
+  metrics->SaveForAddressQuery(kResolveTime, HttpssvcDnsRcode::kNoError);
   metrics.reset();  // Record the metrics to UMA.
 
   VerifyHttpsMetricsForExpectIntact();
@@ -797,11 +791,10 @@ TEST_P(HttpssvcMetricsTest, AddressAndIntegrityTimedOut) {
 TEST_P(HttpssvcMetricsTest, AddressAndHttpsTimedOut) {
   const base::TimeDelta kResolveTime = base::Milliseconds(10);
   const base::TimeDelta kResolveTimeHttps = base::Milliseconds(15);
-  absl::optional<HttpssvcMetrics> metrics(querying_experimental_);
-  metrics->SaveForHttps(absl::nullopt, HttpssvcDnsRcode::kTimedOut, {},
-                        kResolveTimeHttps);
-  metrics->SaveForAddressQuery(absl::nullopt, kResolveTime,
-                               HttpssvcDnsRcode::kNoError);
+  auto metrics =
+      absl::make_optional<HttpssvcMetrics>(secure_, querying_experimental_);
+  metrics->SaveForHttps(HttpssvcDnsRcode::kTimedOut, {}, kResolveTimeHttps);
+  metrics->SaveForAddressQuery(kResolveTime, HttpssvcDnsRcode::kNoError);
   metrics.reset();  // Record the metrics to UMA.
 
   VerifyIntegrityMetricsForExpectIntact();

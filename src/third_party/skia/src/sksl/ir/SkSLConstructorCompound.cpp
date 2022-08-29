@@ -5,34 +5,52 @@
  * found in the LICENSE file.
  */
 
-#include "src/sksl/SkSLConstantFolder.h"
-#include "src/sksl/SkSLProgramSettings.h"
 #include "src/sksl/ir/SkSLConstructorCompound.h"
 
+#include "include/core/SkTypes.h"
+#include "src/sksl/SkSLConstantFolder.h"
+#include "src/sksl/SkSLContext.h"
+#include "src/sksl/SkSLProgramSettings.h"
+#include "src/sksl/ir/SkSLExpression.h"
+#include "src/sksl/ir/SkSLType.h"
+
 #include <algorithm>
+#include <cstddef>
 #include <numeric>
+#include <string>
 
 namespace SkSL {
 
+static bool is_safe_to_eliminate(const Type& type, const Expression& arg) {
+    if (type.isScalar()) {
+        // A scalar "compound type" with a single scalar argument is a no-op and can be eliminated.
+        // (Pedantically, this isn't a compound at all, but it's harmless to allow and simplifies
+        // call sites which need to narrow a vector and may sometimes end up with a scalar.)
+        SkASSERTF(arg.type().matches(type), "Creating type '%s' from '%s'",
+                  type.description().c_str(), arg.type().description().c_str());
+        return true;
+    }
+    if (type.isVector() && arg.type().matches(type)) {
+        // A vector compound constructor containing a single argument of matching type can trivially
+        // be eliminated.
+        return true;
+    }
+    // This is a meaningful single-argument compound constructor (e.g. vector-from-matrix,
+    // matrix-from-vector).
+    return false;
+}
+
 std::unique_ptr<Expression> ConstructorCompound::Make(const Context& context,
-                                                      int line,
+                                                      Position pos,
                                                       const Type& type,
                                                       ExpressionArray args) {
     SkASSERT(type.isAllowedInES2(context));
 
-    // A scalar "composite" type with a single scalar argument is a no-op and can be eliminated.
-    // (Pedantically, this isn't a composite at all, but it's harmless to allow and simplifies
-    // call sites which need to narrow a vector and may sometimes end up with a scalar.)
-    if (type.isScalar() && args.size() == 1 && args.front()->type() == type) {
-        return std::move(args.front());
-    }
-
-    // The type must be a vector or matrix, and all the arguments must have matching component type.
-    SkASSERT(type.isVector() || type.isMatrix());
+    // All the arguments must have matching component type.
     SkASSERT(std::all_of(args.begin(), args.end(), [&](const std::unique_ptr<Expression>& arg) {
         const Type& argType = arg->type();
         return (argType.isScalar() || argType.isVector() || argType.isMatrix()) &&
-               (argType.componentType() == type.componentType());
+               (argType.componentType().matches(type.componentType()));
     }));
 
     // The slot count of the combined argument list must match the composite type's slot count.
@@ -41,6 +59,16 @@ std::unique_ptr<Expression> ConstructorCompound::Make(const Context& context,
                              [](size_t n, const std::unique_ptr<Expression>& arg) {
                                  return n + arg->type().slotCount();
                              }));
+    // No-op compound constructors (containing a single argument of the same type) are eliminated.
+    // (Even though this is a "compound constructor," we let scalars pass through here; it's
+    // harmless to allow and simplifies call sites which need to narrow a vector and may sometimes
+    // end up with a scalar.)
+    if (args.size() == 1 && is_safe_to_eliminate(type, *args.front())) {
+        args.front()->fPosition = pos;
+        return std::move(args.front());
+    }
+    // Beyond this point, the type must be a vector or matrix.
+    SkASSERT(type.isVector() || type.isMatrix());
 
     if (context.fConfig->fSettings.fOptimize) {
         // Find ConstructorCompounds embedded inside other ConstructorCompounds and flatten them.
@@ -80,10 +108,10 @@ std::unique_ptr<Expression> ConstructorCompound::Make(const Context& context,
     // Replace constant variables with their corresponding values, so `float2(one, two)` can
     // compile down to `float2(1.0, 2.0)` (the latter is a compile-time constant).
     for (std::unique_ptr<Expression>& arg : args) {
-        arg = ConstantFolder::MakeConstantValueForVariable(std::move(arg));
+        arg = ConstantFolder::MakeConstantValueForVariable(pos, std::move(arg));
     }
 
-    return std::make_unique<ConstructorCompound>(line, type, std::move(args));
+    return std::make_unique<ConstructorCompound>(pos, type, std::move(args));
 }
 
 }  // namespace SkSL

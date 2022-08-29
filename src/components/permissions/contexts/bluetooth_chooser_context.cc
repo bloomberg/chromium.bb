@@ -94,7 +94,7 @@ void AddManufacturerDataTo(
   auto& manufacturer_data_list =
       *permission_object->FindListKey(kManufacturerDataKey);
   for (const auto& manufacturer_data_permission :
-       manufacturer_data_list.GetList()) {
+       manufacturer_data_list.GetListDeprecated()) {
     manufacturer_data_set.insert(
         static_cast<uint16_t>(manufacturer_data_permission.GetInt()));
   }
@@ -256,6 +256,14 @@ bool BluetoothChooserContext::HasDevicePermission(
   return !device.is_none();
 }
 
+void BluetoothChooserContext::RevokeDevicePermissionWebInitiated(
+    const url::Origin& origin,
+    const WebBluetoothDeviceId& device_id) {
+  base::Value device = FindDeviceObject(origin, device_id);
+  if (!device.is_none())
+    RevokeObjectPermission(origin, device);
+}
+
 bool BluetoothChooserContext::IsAllowedToAccessAtLeastOneService(
     const url::Origin& origin,
     const WebBluetoothDeviceId& device_id) {
@@ -289,7 +297,8 @@ bool BluetoothChooserContext::IsAllowedToAccessManufacturerData(
   if (!manufacturer_data_list)
     return false;
 
-  for (const auto& manufacturer_data : manufacturer_data_list->GetList()) {
+  for (const auto& manufacturer_data :
+       manufacturer_data_list->GetListDeprecated()) {
     if (manufacturer_code == manufacturer_data.GetInt())
       return true;
   }

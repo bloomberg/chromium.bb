@@ -8,6 +8,10 @@ import android.graphics.Bitmap;
 import android.graphics.Picture;
 import android.net.http.SslError;
 
+import androidx.annotation.NonNull;
+
+import org.junit.Assert;
+
 import org.chromium.android_webview.AwConsoleMessage;
 import org.chromium.android_webview.AwRenderProcessGoneDetail;
 import org.chromium.base.Callback;
@@ -19,7 +23,6 @@ import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer
 import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer.OnPageCommitVisibleHelper;
 import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer.OnPageFinishedHelper;
 import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer.OnPageStartedHelper;
-import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer.OnReceivedErrorHelper;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -39,7 +42,6 @@ public class TestAwContentsClient extends NullContentsClient {
     private final OnPageFinishedHelper mOnPageFinishedHelper;
     private final OnPageCommitVisibleHelper mOnPageCommitVisibleHelper;
     private final OnReceivedErrorHelper mOnReceivedErrorHelper;
-    private final OnReceivedError2Helper mOnReceivedError2Helper;
     private final OnReceivedHttpErrorHelper mOnReceivedHttpErrorHelper;
     private final OnReceivedSslErrorHelper mOnReceivedSslErrorHelper;
     private final OnDownloadStartHelper mOnDownloadStartHelper;
@@ -57,6 +59,7 @@ public class TestAwContentsClient extends NullContentsClient {
     private final FaviconHelper mFaviconHelper;
     private final TouchIconHelper mTouchIconHelper;
     private final RenderProcessGoneHelper mRenderProcessGoneHelper;
+    private final ShowFileChooserHelper mShowFileChooserHelper;
 
     public TestAwContentsClient() {
         super(ThreadUtils.getUiThreadLooper());
@@ -64,7 +67,6 @@ public class TestAwContentsClient extends NullContentsClient {
         mOnPageFinishedHelper = new OnPageFinishedHelper();
         mOnPageCommitVisibleHelper = new OnPageCommitVisibleHelper();
         mOnReceivedErrorHelper = new OnReceivedErrorHelper();
-        mOnReceivedError2Helper = new OnReceivedError2Helper();
         mOnReceivedHttpErrorHelper = new OnReceivedHttpErrorHelper();
         mOnReceivedSslErrorHelper = new OnReceivedSslErrorHelper();
         mOnDownloadStartHelper = new OnDownloadStartHelper();
@@ -82,6 +84,7 @@ public class TestAwContentsClient extends NullContentsClient {
         mFaviconHelper = new FaviconHelper();
         mTouchIconHelper = new TouchIconHelper();
         mRenderProcessGoneHelper = new RenderProcessGoneHelper();
+        mShowFileChooserHelper = new ShowFileChooserHelper();
         mAllowSslError = true;
     }
 
@@ -99,10 +102,6 @@ public class TestAwContentsClient extends NullContentsClient {
 
     public OnReceivedErrorHelper getOnReceivedErrorHelper() {
         return mOnReceivedErrorHelper;
-    }
-
-    public OnReceivedError2Helper getOnReceivedError2Helper() {
-        return mOnReceivedError2Helper;
     }
 
     public OnReceivedHttpErrorHelper getOnReceivedHttpErrorHelper() {
@@ -159,6 +158,10 @@ public class TestAwContentsClient extends NullContentsClient {
 
     public RenderProcessGoneHelper getRenderProcessGoneHelper() {
         return mRenderProcessGoneHelper;
+    }
+
+    public ShowFileChooserHelper getShowFileChooserHelper() {
+        return mShowFileChooserHelper;
     }
 
     /**
@@ -243,15 +246,9 @@ public class TestAwContentsClient extends NullContentsClient {
     }
 
     @Override
-    public void onReceivedError(int errorCode, String description, String failingUrl) {
-        if (TRACE) Log.i(TAG, "onReceivedError " + failingUrl);
-        mOnReceivedErrorHelper.notifyCalled(errorCode, description, failingUrl);
-    }
-
-    @Override
-    public void onReceivedError2(AwWebResourceRequest request, AwWebResourceError error) {
-        if (TRACE) Log.i(TAG, "onReceivedError2 " + request.url);
-        mOnReceivedError2Helper.notifyCalled(request, error);
+    public void onReceivedError(AwWebResourceRequest request, AwWebResourceError error) {
+        if (TRACE) Log.i(TAG, "onReceivedError " + request.url);
+        mOnReceivedErrorHelper.notifyCalled(request, error);
     }
 
     @Override
@@ -396,6 +393,49 @@ public class TestAwContentsClient extends NullContentsClient {
         getOnReceivedLoginRequestHelper().notifyCalled(realm, account, args);
     }
 
+    /**
+     * Method to pass back a FileChooserParamsImpl object back to users of the class.
+     */
+    @Override
+    public void showFileChooser(
+            Callback<String[]> uploadFilePathsCallback, FileChooserParamsImpl fileChooserParams) {
+        uploadFilePathsCallback.onResult(mShowFileChooserHelper.getChosenFilesToUpload());
+        mShowFileChooserHelper.notifyCalled(fileChooserParams);
+    }
+
+    /**
+     * Callback helper for showFileChooser.
+     */
+    public static class ShowFileChooserHelper extends CallbackHelper {
+        private FileChooserParamsImpl mFileChooserParams;
+        private String[] mFilesUploaded;
+
+        public FileChooserParamsImpl getFileParams() {
+            Assert.assertNotNull("File Chooser parameters are null!", mFileChooserParams);
+            return mFileChooserParams;
+        }
+
+        /**
+         * Need to mock the action of uploading files when a user selects files.
+         * This sets up plumbing to provide files to the showFileChooser callback.
+         *
+         * @param files
+         */
+        public void setChosenFilesToUpload(@NonNull String[] files) {
+            mFilesUploaded = files;
+        }
+
+        public String[] getChosenFilesToUpload() {
+            Assert.assertNotNull("Files intended for upload are null!", mFilesUploaded);
+            return mFilesUploaded;
+        }
+
+        public void notifyCalled(FileChooserParamsImpl params) {
+            mFileChooserParams = params;
+            notifyCalled();
+        }
+    }
+
     @Override
     public boolean onConsoleMessage(AwConsoleMessage consoleMessage) {
         // Log unconditionally, because JavaScript errors also generate ConsoleMessages (and
@@ -509,7 +549,7 @@ public class TestAwContentsClient extends NullContentsClient {
         private boolean mShouldOverrideUrlLoadingReturnValue;
         private boolean mIsRedirect;
         private boolean mHasUserGesture;
-        private boolean mIsMainFrame;
+        private boolean mIsOutermostMainFrame;
         void setShouldOverrideUrlLoadingUrl(String url) {
             mShouldOverrideUrlLoadingUrl = url;
         }
@@ -529,15 +569,15 @@ public class TestAwContentsClient extends NullContentsClient {
         public boolean hasUserGesture() {
             return mHasUserGesture;
         }
-        public boolean isMainFrame() {
-            return mIsMainFrame;
+        public boolean isOutermostMainFrame() {
+            return mIsOutermostMainFrame;
         }
-        public void notifyCalled(
-                String url, boolean isRedirect, boolean hasUserGesture, boolean isMainFrame) {
+        public void notifyCalled(String url, boolean isRedirect, boolean hasUserGesture,
+                boolean isOutermostMainFrame) {
             mShouldOverrideUrlLoadingUrl = url;
             mIsRedirect = isRedirect;
             mHasUserGesture = hasUserGesture;
-            mIsMainFrame = isMainFrame;
+            mIsOutermostMainFrame = isOutermostMainFrame;
             notifyCalled();
         }
     }
@@ -548,8 +588,8 @@ public class TestAwContentsClient extends NullContentsClient {
         super.shouldOverrideUrlLoading(request);
         boolean returnValue =
                 mShouldOverrideUrlLoadingHelper.getShouldOverrideUrlLoadingReturnValue();
-        mShouldOverrideUrlLoadingHelper.notifyCalled(
-                request.url, request.isRedirect, request.hasUserGesture, request.isMainFrame);
+        mShouldOverrideUrlLoadingHelper.notifyCalled(request.url, request.isRedirect,
+                request.hasUserGesture, request.isOutermostMainFrame);
         return returnValue;
     }
 
@@ -689,9 +729,9 @@ public class TestAwContentsClient extends NullContentsClient {
     }
 
     /**
-     * CallbackHelper for OnReceivedError2.
+     * CallbackHelper for OnReceivedError.
      */
-    public static class OnReceivedError2Helper extends CallbackHelper {
+    public static class OnReceivedErrorHelper extends CallbackHelper {
         private AwWebResourceRequest mRequest;
         private AwWebResourceError mError;
         public void notifyCalled(AwWebResourceRequest request, AwWebResourceError error) {

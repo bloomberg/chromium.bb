@@ -16,6 +16,7 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/metrics/user_metrics.h"
+#include "base/observer_list.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -31,7 +32,12 @@
 #include "components/prefs/pref_service.h"
 #include "components/search/ntp_features.h"
 #include "components/webapps/common/constants.h"
-#include "extensions/common/constants.h"
+#include "extensions/buildflags/buildflags.h"
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+// GN doesn't understand conditional includes, so we need nogncheck here.
+#include "extensions/common/constants.h"  // nogncheck
+#endif
 
 using history::TopSites;
 
@@ -749,17 +755,21 @@ void MostVisitedSites::SaveTilesAndNotify(
 
 // static
 bool MostVisitedSites::IsNtpTileFromPreinstalledApp(GURL url) {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   return url.is_valid() && url.SchemeIs(extensions::kExtensionScheme) &&
          extension_misc::IsPreinstalledAppId(url.host());
+#else
+  return false;
+#endif
 }
 
 // static
 bool MostVisitedSites::WasNtpAppMigratedToWebApp(PrefService* prefs, GURL url) {
-  const base::ListValue* migrated_apps =
+  const base::Value* migrated_apps =
       prefs->GetList(webapps::kWebAppsMigratedPreinstalledApps);
   if (!migrated_apps)
     return false;
-  for (const auto& val : migrated_apps->GetList()) {
+  for (const auto& val : migrated_apps->GetListDeprecated()) {
     if (val.is_string() && val.GetString() == url.host())
       return true;
   }

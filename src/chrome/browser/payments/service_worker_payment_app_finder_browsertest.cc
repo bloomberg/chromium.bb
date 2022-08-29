@@ -184,7 +184,10 @@ class ServiceWorkerPaymentAppFinderBrowserTest : public InProcessBrowserTest {
         browser(), alicepay_.GetURL("chromium.org", "/")));
 
     auto* finder = ServiceWorkerPaymentAppFinder::GetOrCreateForCurrentDocument(
-        browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame());
+        browser()
+            ->tab_strip_model()
+            ->GetActiveWebContents()
+            ->GetPrimaryMainFrame());
     finder->SetDownloaderAndIgnorePortInOriginComparisonForTesting(
         std::move(downloader));
 
@@ -255,7 +258,7 @@ class ServiceWorkerPaymentAppFinderBrowserTest : public InProcessBrowserTest {
     WebAppInstallationInfo* app = nullptr;
 
     const GURL expected_scope(scope);
-    url::Replacements<char> clear_port;
+    GURL::Replacements clear_port;
     clear_port.ClearPort();
 
     for (const auto& it : installable_apps()) {

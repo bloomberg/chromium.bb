@@ -10,6 +10,7 @@
 #include "base/check_op.h"
 #include "base/location.h"
 #include "base/notreached.h"
+#include "base/observer_list.h"
 #include "base/task/single_thread_task_runner.h"
 #include "components/autofill/core/browser/data_model/autofill_offer_data.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
@@ -72,13 +73,6 @@ AutofillWebDataBackendImpl::~AutofillWebDataBackendImpl() {
 void AutofillWebDataBackendImpl::SetAutofillProfileChangedCallback(
     base::RepeatingCallback<void(const AutofillProfileDeepChange&)> change_cb) {
   on_autofill_profile_changed_cb_ = std::move(change_cb);
-}
-
-void AutofillWebDataBackendImpl::SetCardArtImagesChangedCallback(
-    base::RepeatingCallback<void(const std::vector<std::string>&)>
-        on_card_art_image_change_callback) {
-  on_card_art_image_change_callback_ =
-      std::move(on_card_art_image_change_callback);
 }
 
 WebDatabase* AutofillWebDataBackendImpl::GetDatabase() {
@@ -151,19 +145,6 @@ void AutofillWebDataBackendImpl::NotifyThatSyncHasStarted(
   // UI sequence notification.
   ui_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(on_sync_started_callback_, model_type));
-}
-
-void AutofillWebDataBackendImpl::NotifyOfCreditCardArtImagesChanged(
-    const std::vector<std::string>& server_ids) {
-  DCHECK(owning_task_runner()->RunsTasksInCurrentSequence());
-
-  if (on_card_art_image_change_callback_.is_null())
-    return;
-
-  // UI sequence notification.
-  ui_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(on_card_art_image_change_callback_, server_ids));
 }
 
 base::SupportsUserData* AutofillWebDataBackendImpl::GetDBUserData() {
