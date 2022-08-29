@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 #include <sstream>
+#include <tuple>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/ignore_result.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -117,10 +117,23 @@ class IsolatedOriginTestBase : public ContentBrowserTest {
         .requires_origin_keyed_process();
   }
 
+  OriginAgentClusterIsolationState DetermineOriginAgentClusterIsolation(
+      SiteInstanceImpl* site_instance,
+      const GURL& url) {
+    OriginAgentClusterIsolationState isolation_request =
+        OriginAgentClusterIsolationState::CreateNonIsolated();
+
+    return ChildProcessSecurityPolicyImpl::GetInstance()
+        ->DetermineOriginAgentClusterIsolation(
+            site_instance->GetIsolationContext(), url::Origin::Create(url),
+            isolation_request);
+  }
+
   ProcessLock ProcessLockFromUrl(const std::string& url) {
     BrowserContext* browser_context = web_contents()->GetBrowserContext();
     return ProcessLock::FromSiteInfo(SiteInfo(
         GURL(url), GURL(url), false /* requires_origin_keyed_process */,
+        false /* is_sandboxed */,
         StoragePartitionConfig::CreateDefault(browser_context),
         WebExposedIsolationInfo::CreateNonIsolated(), false /* is_guest */,
         false /* does_site_request_dedicated_process_for_coop */,
@@ -143,6 +156,7 @@ class IsolatedOriginTestBase : public ContentBrowserTest {
     GURL origin_url = url::Origin::Create(url).GetURL();
     return ProcessLock::FromSiteInfo(SiteInfo(
         origin_url, origin_url, false /* requires_origin_keyed_process */,
+        false /* is_sandboxed */,
         StoragePartitionConfig::CreateDefault(browser_context),
         WebExposedIsolationInfo::CreateNonIsolated(), false /* is_guest */,
         false /* does_site_request_dedicated_process_for_coop */,
@@ -298,6 +312,24 @@ class OriginIsolationOptInHeaderTest : public IsolatedOriginTestBase {
 
   absl::optional<std::string> header_;
   std::queue<std::string> content_;
+};
+
+// A set of tests that enable OriginAgentCluster by default.
+class OriginIsolationDefaultOACTest : public OriginIsolationOptInHeaderTest {
+ public:
+  OriginIsolationDefaultOACTest() {
+    feature_list_.InitAndEnableFeature(
+        blink::features::kOriginAgentClusterDefaultEnabled);
+  }
+
+  ~OriginIsolationDefaultOACTest() override = default;
+
+  OriginIsolationDefaultOACTest(const OriginIsolationDefaultOACTest&) = delete;
+  OriginIsolationDefaultOACTest& operator=(OriginIsolationDefaultOACTest&) =
+      delete;
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
 };
 
 class OriginIsolationPrerenderOptInHeaderTest
@@ -563,6 +595,176 @@ IN_PROC_BROWSER_TEST_F(OriginIsolationOptInHeaderTest, Basic) {
           1)));
 }
 
+IN_PROC_BROWSER_TEST_F(OriginIsolationDefaultOACTest, Basic) {
+  GURL test_url(https_server()->GetURL("foo.com",
+                                       "/cross_site_iframe_factory.html?"
+                                       "foo.com(foo.com)"));
+  // We must load the origins to be isolated (or not) into a child frame so that
+  // they all stay in the same BrowsingInstance, since the test relies on
+  // knowing isolation history for the OriginAgentClusterEndResult::*But* cases.
+  // In this test, the convention is:
+  //   foo.com is (implicitly) isolated,
+  //   isolated.foo.com is (explicitly) isolated,
+  //   isolated.bar.com is (implicitly) isolated, and
+  //   bar.com is (explicitly) not isolated.
+  EXPECT_TRUE(NavigateToURL(shell(), test_url));
+  EXPECT_EQ(2u, CollectAllRenderFrameHosts(shell()->web_contents()).size());
+  FrameTreeNode* root = web_contents()->GetPrimaryFrameTree().root();
+  FrameTreeNode* child_frame_node = root->child_at(0);
+
+  // The first three scenarios should all get the isolation status they request
+  // (the "And" cases).
+  {
+    // Explicitly request OriginAgentCluster via the header.
+    SetHeaderValue("?1");
+    base::HistogramTester histograms;
+    GURL isolated_suborigin_url(
+        https_server()->GetURL("isolated.foo.com", "/isolate_origin"));
+    EXPECT_TRUE(
+        NavigateToURLFromRenderer(child_frame_node, isolated_suborigin_url));
+    auto* site_instance =
+        child_frame_node->current_frame_host()->GetSiteInstance();
+    EXPECT_TRUE(DetermineOriginAgentClusterIsolation(site_instance,
+                                                     isolated_suborigin_url)
+                    .requires_origin_keyed_process());
+
+    EXPECT_THAT(
+        histograms.GetAllSamples("Navigation.OriginAgentCluster.Result"),
+        testing::ElementsAre(base::Bucket(
+            static_cast<int>(NavigationRequest::OriginAgentClusterEndResult::
+                                 kExplicitlyRequestedAndOriginKeyed),
+            1)));
+  }
+  {
+    // Even though this request has no OriginAgentCluster header, it should get
+    // OAC by default.
+    SetHeaderValue("");
+    base::HistogramTester histograms;
+    GURL default_isolated_url(
+        https_server()->GetURL("isolated.bar.com", "/title1.html"));
+    EXPECT_TRUE(
+        NavigateToURLFromRenderer(child_frame_node, default_isolated_url));
+
+    auto* site_instance =
+        child_frame_node->current_frame_host()->GetSiteInstance();
+    OriginAgentClusterIsolationState isolation_state =
+        DetermineOriginAgentClusterIsolation(site_instance,
+                                             default_isolated_url);
+    // TODO(wjmaclean): If OriginAgentCluster-by-default transitions to using
+    // process-isolation at some future date, the second expectation below will
+    // need to change to EXPECT_TRUE.
+    EXPECT_TRUE(isolation_state.is_origin_agent_cluster());
+    EXPECT_FALSE(isolation_state.requires_origin_keyed_process());
+
+    EXPECT_THAT(
+        histograms.GetAllSamples("Navigation.OriginAgentCluster.Result"),
+        testing::ElementsAre(base::Bucket(
+            static_cast<int>(NavigationRequest::OriginAgentClusterEndResult::
+                                 kNotExplicitlyRequestedAndOriginKeyed),
+            1)));
+  }
+  {
+    // The "isolate_origin" path in the url will force the test framework to
+    // include the OriginAgentCluster header. Here we explicitly request not to
+    // have OAC.
+    SetHeaderValue("?0");
+    base::HistogramTester histograms;
+    GURL explicit_non_isolated_url(
+        https_server()->GetURL("bar.com", "/isolate_origin"));
+    EXPECT_TRUE(
+        NavigateToURLFromRenderer(child_frame_node, explicit_non_isolated_url));
+    auto* site_instance =
+        child_frame_node->current_frame_host()->GetSiteInstance();
+
+    EXPECT_FALSE(DetermineOriginAgentClusterIsolation(site_instance,
+                                                      explicit_non_isolated_url)
+                     .is_origin_agent_cluster());
+
+    EXPECT_THAT(
+        histograms.GetAllSamples("Navigation.OriginAgentCluster.Result"),
+        testing::ElementsAre(base::Bucket(
+            static_cast<int>(NavigationRequest::OriginAgentClusterEndResult::
+                                 kExplicitlyNotRequestedAndNotOriginKeyed),
+            1)));
+  }
+
+  // The next three cases should all fail to get the isolation status they
+  // request (the "But" cases). In these cases, URLs from origins we have
+  // already visited in the BrowsingInstance return different OAC header values,
+  // but are forced to stick with their earlier value rather than the newly
+  // requested value.
+  {
+    // Even though the lack of a header would normally lead to default OAC
+    // isolation, the previous explicitly non-isolated visit to this origin
+    // means that this origin will remain not origin keyed.
+    SetHeaderValue("");
+    base::HistogramTester histograms;
+    GURL url(https_server()->GetURL("bar.com", "/title1.html"));
+    EXPECT_TRUE(NavigateToURLFromRenderer(child_frame_node, url));
+    auto* site_instance =
+        child_frame_node->current_frame_host()->GetSiteInstance();
+
+    EXPECT_FALSE(DetermineOriginAgentClusterIsolation(site_instance, url)
+                     .is_origin_agent_cluster());
+
+    EXPECT_THAT(
+        histograms.GetAllSamples("Navigation.OriginAgentCluster.Result"),
+        testing::ElementsAre(base::Bucket(
+            static_cast<int>(NavigationRequest::OriginAgentClusterEndResult::
+                                 kNotExplicitlyRequestedButNotOriginKeyed),
+            1)));
+  }
+
+  {
+    // An explicit opt-out for isolated.bar.com should not be granted given the
+    // previous default-opt-in above.
+    SetHeaderValue("?0");
+    base::HistogramTester histograms;
+    GURL explicit_non_isolated_url(
+        https_server()->GetURL("isolated.bar.com", "/isolate_origin"));
+    EXPECT_TRUE(
+        NavigateToURLFromRenderer(child_frame_node, explicit_non_isolated_url));
+    auto* site_instance =
+        child_frame_node->current_frame_host()->GetSiteInstance();
+
+    OriginAgentClusterIsolationState isolation_state =
+        DetermineOriginAgentClusterIsolation(site_instance,
+                                             explicit_non_isolated_url);
+    EXPECT_TRUE(isolation_state.is_origin_agent_cluster());
+    EXPECT_FALSE(isolation_state.requires_origin_keyed_process());
+
+    EXPECT_THAT(
+        histograms.GetAllSamples("Navigation.OriginAgentCluster.Result"),
+        testing::ElementsAre(base::Bucket(
+            static_cast<int>(NavigationRequest::OriginAgentClusterEndResult::
+                                 kExplicitlyNotRequestedButOriginKeyed),
+            1)));
+  }
+  {
+    // Verify that we don't explicitly opt-in an origin that was explicitly
+    // opted-out.
+    SetHeaderValue("?1");
+    base::HistogramTester histograms;
+    GURL explicit_isolated_url(
+        https_server()->GetURL("bar.com", "/isolate_origin"));
+    EXPECT_TRUE(
+        NavigateToURLFromRenderer(child_frame_node, explicit_isolated_url));
+    auto* site_instance =
+        child_frame_node->current_frame_host()->GetSiteInstance();
+
+    EXPECT_FALSE(DetermineOriginAgentClusterIsolation(site_instance,
+                                                      explicit_isolated_url)
+                     .is_origin_agent_cluster());
+
+    EXPECT_THAT(
+        histograms.GetAllSamples("Navigation.OriginAgentCluster.Result"),
+        testing::ElementsAre(base::Bucket(
+            static_cast<int>(NavigationRequest::OriginAgentClusterEndResult::
+                                 kExplicitlyRequestedButNotOriginKeyed),
+            1)));
+  }
+}
+
 // These tests ensure that non-HTTPS secure contexts (see
 // https://w3c.github.io/webappsec-secure-contexts/#is-origin-trustworthy) are
 // able to use origin isolation.
@@ -767,6 +969,7 @@ IN_PROC_BROWSER_TEST_F(OriginIsolationOptInHeaderTest,
   BrowserContext* browser_context = web_contents()->GetBrowserContext();
   auto expected_isolated_suborigin_lock = ProcessLock::FromSiteInfo(SiteInfo(
       origin_url, origin_url, true /* requires_origin_keyed_process */,
+      false /* is_sandboxed */,
       StoragePartitionConfig::CreateDefault(browser_context),
       WebExposedIsolationInfo::CreateNonIsolated(), false /* is_guest */,
       false /* does_site_request_dedicated_process_for_coop */,
@@ -809,6 +1012,52 @@ IN_PROC_BROWSER_TEST_F(OriginIsolationOptInHeaderTest,
               static_cast<int>(NavigationRequest::OriginAgentClusterEndResult::
                                    kRequestedAndOriginKeyed),
               1)));
+}
+
+// Check that two same-site Origin-Agent-Cluster subframes in unrelated windows
+// obey the subframe process reuse policy.
+IN_PROC_BROWSER_TEST_F(OriginIsolationOptInHeaderTest,
+                       OriginAgentClusterProcessReuse) {
+  SetHeaderValue("?1");
+  // Start off with an a(a) page, then navigate the subframe to an isolated
+  // suborigin.
+  GURL test_url(https_server()->GetURL("foo.com",
+                                       "/cross_site_iframe_factory.html?"
+                                       "foo.com(foo.com)"));
+  GURL isolated_suborigin_url(
+      https_server()->GetURL("isolated.foo.com", "/isolate_origin"));
+  EXPECT_TRUE(NavigateToURL(shell(), test_url));
+
+  FrameTreeNode* root = web_contents()->GetPrimaryFrameTree().root();
+  FrameTreeNode* child = root->child_at(0);
+  EXPECT_TRUE(NavigateToURLFromRenderer(child, isolated_suborigin_url));
+  EXPECT_NE(root->current_frame_host()->GetSiteInstance(),
+            child->current_frame_host()->GetSiteInstance());
+  EXPECT_TRUE(child->current_frame_host()
+                  ->GetSiteInstance()
+                  ->GetSiteInfo()
+                  .requires_origin_keyed_process());
+
+  // Open an unrelated window and set up the same frame hierarchy there.
+  Shell* new_shell = CreateBrowser();
+  EXPECT_TRUE(NavigateToURL(new_shell, test_url));
+  FrameTreeNode* new_root =
+      static_cast<WebContentsImpl*>(new_shell->web_contents())
+          ->GetPrimaryFrameTree()
+          .root();
+  FrameTreeNode* new_child = new_root->child_at(0);
+  EXPECT_TRUE(NavigateToURLFromRenderer(new_child, isolated_suborigin_url));
+  EXPECT_NE(new_root->current_frame_host()->GetSiteInstance(),
+            new_child->current_frame_host()->GetSiteInstance());
+
+  // Even though the two subframes should be in different BrowsingInstances,
+  // they should share the same process due to the subframe process reuse
+  // policy.
+  EXPECT_FALSE(
+      child->current_frame_host()->GetSiteInstance()->IsRelatedSiteInstance(
+          new_child->current_frame_host()->GetSiteInstance()));
+  EXPECT_EQ(child->current_frame_host()->GetProcess(),
+            new_child->current_frame_host()->GetProcess());
 }
 
 // In this test the sub-origin is isolated because the header requests it. It
@@ -2212,7 +2461,7 @@ class InjectIsolationRequestingNavigation
 };
 
 // TODO(crbug.com/1110767): flaky on Android builders since 2020-07-28.
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #define MAYBE_FrameTreeTestBeforeDidCommit DISABLED_FrameTreeTestBeforeDidCommit
 #else
 #define MAYBE_FrameTreeTestBeforeDidCommit FrameTreeTestBeforeDidCommit
@@ -3437,7 +3686,7 @@ class StoragePartitonInterceptor
 
     // Bind the real DomStorage implementation.
     mojo::PendingRemote<blink::mojom::DomStorageClient> unused_client;
-    ignore_result(unused_client.InitWithNewPipeAndPassReceiver());
+    std::ignore = unused_client.InitWithNewPipeAndPassReceiver();
     mojo::ReceiverId receiver_id = storage_partition->BindDomStorage(
         rph->GetID(), std::move(receiver), std::move(unused_client));
 
@@ -3559,11 +3808,11 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest, SessionStorage_WrongOrigin) {
 
   content::RenderProcessHostBadIpcMessageWaiter kill_waiter(
       web_contents()->GetMainFrame()->GetProcess());
-  // Use ignore_result here, since on Android the renderer process is
+  // Use std::ignore here, since on Android the renderer process is
   // terminated, but ExecuteScript still returns true. It properly returns
   // false on all other platforms.
-  ignore_result(
-      ExecJs(web_contents()->GetMainFrame(), "sessionStorage.length;"));
+  std::ignore =
+      ExecJs(web_contents()->GetMainFrame(), "sessionStorage.length;");
   EXPECT_EQ(bad_message::RPH_MOJO_PROCESS_ERROR, kill_waiter.Wait());
 }
 
@@ -3634,7 +3883,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest,
   EXPECT_EQ(1, EvalJs(web_contents()->GetMainFrame(), "sessionStorage.length"));
   content::RenderProcessHostBadIpcMessageWaiter kill_waiter(
       ChildFrameAt(shell(), 0)->GetProcess());
-  ignore_result(ExecJs(ChildFrameAt(shell(), 0), "sessionStorage.length"));
+  std::ignore = ExecJs(ChildFrameAt(shell(), 0), "sessionStorage.length");
   EXPECT_EQ(bad_message::RPH_MOJO_PROCESS_ERROR, kill_waiter.Wait());
   // The subframe has crashed, but the main frame should still be alive and
   // working.
@@ -3706,7 +3955,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest, LocalStorage_WrongLocalFrameToken) {
   EXPECT_EQ(1, EvalJs(web_contents()->GetMainFrame(), "localStorage.length"));
   content::RenderProcessHostBadIpcMessageWaiter kill_waiter(
       ChildFrameAt(shell(), 0)->GetProcess());
-  ignore_result(ExecJs(ChildFrameAt(shell(), 0), "localStorage.length"));
+  std::ignore = ExecJs(ChildFrameAt(shell(), 0), "localStorage.length");
   EXPECT_EQ(bad_message::RPH_MOJO_PROCESS_ERROR, kill_waiter.Wait());
   // The subframe has crashed, but the main frame should still be alive and
   // working.
@@ -3733,15 +3982,15 @@ IN_PROC_BROWSER_TEST_F(
 
   content::RenderProcessHostBadIpcMessageWaiter kill_waiter(
       shell()->web_contents()->GetMainFrame()->GetProcess());
-  // Use ignore_result here, since on Android the renderer process is
+  // Use std::ignore here, since on Android the renderer process is
   // terminated, but ExecuteScript still returns true. It properly returns
   // false on all other platforms.
-  ignore_result(
-      ExecJs(shell()->web_contents()->GetMainFrame(), "localStorage.length;"));
+  std::ignore =
+      ExecJs(shell()->web_contents()->GetMainFrame(), "localStorage.length;");
   EXPECT_EQ(bad_message::RPH_MOJO_PROCESS_ERROR, kill_waiter.Wait());
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #define MAYBE_LocalStorageOriginEnforcement_NonIsolatedAccessingIsolated \
   LocalStorageOriginEnforcement_NonIsolatedAccessingIsolated
 #else
@@ -3774,11 +4023,11 @@ IN_PROC_BROWSER_TEST_F(
 
   content::RenderProcessHostBadIpcMessageWaiter kill_waiter(
       shell()->web_contents()->GetMainFrame()->GetProcess());
-  // Use ignore_result here, since on Android the renderer process is
+  // Use std::ignore here, since on Android the renderer process is
   // terminated, but ExecuteScript still returns true. It properly returns
   // false on all other platforms.
-  ignore_result(
-      ExecJs(shell()->web_contents()->GetMainFrame(), "localStorage.length;"));
+  std::ignore =
+      ExecJs(shell()->web_contents()->GetMainFrame(), "localStorage.length;");
   EXPECT_EQ(bad_message::RPH_MOJO_PROCESS_ERROR, kill_waiter.Wait());
 }
 
@@ -3801,11 +4050,11 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest,
 
   content::RenderProcessHostBadIpcMessageWaiter kill_waiter(
       shell()->web_contents()->GetMainFrame()->GetProcess());
-  // Use ignore_result here, since on Android the renderer process is
+  // Use std::ignore here, since on Android the renderer process is
   // terminated, but ExecuteScript still returns true. It properly returns
   // false on all other platforms.
-  ignore_result(
-      ExecJs(shell()->web_contents()->GetMainFrame(), "localStorage.length;"));
+  std::ignore =
+      ExecJs(shell()->web_contents()->GetMainFrame(), "localStorage.length;");
   EXPECT_EQ(bad_message::RPH_MOJO_PROCESS_ERROR, kill_waiter.Wait());
 }
 
@@ -3846,6 +4095,7 @@ class IsolatedOriginCommandLineAndFieldTrialTest
       const IsolatedOriginCommandLineAndFieldTrialTest&) = delete;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
+    IsolatedOriginFieldTrialTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(
         switches::kIsolateOrigins,
         "https://cmd.line.com/,https://cmdline.com/");
@@ -4160,6 +4410,7 @@ class IsolatedOriginTrialOverrideTest : public IsolatedOriginFieldTrialTest {
       const IsolatedOriginTrialOverrideTest&) = delete;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
+    IsolatedOriginFieldTrialTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kDisableSiteIsolation);
   }
 };
@@ -4184,8 +4435,9 @@ class IsolatedOriginPolicyOverrideTest : public IsolatedOriginFieldTrialTest {
       const IsolatedOriginPolicyOverrideTest&) = delete;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
+    IsolatedOriginFieldTrialTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kDisableSiteIsolation);
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     command_line->AppendSwitch(switches::kDisableSiteIsolationForPolicy);
 #endif
   }
@@ -4213,7 +4465,7 @@ class IsolatedOriginNoFlagOverrideTest : public IsolatedOriginTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     IsolatedOriginTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kDisableSiteIsolation);
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     command_line->AppendSwitch(switches::kDisableSiteIsolationForPolicy);
 #endif
   }
@@ -4747,7 +4999,7 @@ IN_PROC_BROWSER_TEST_F(DynamicIsolatedOriginTest,
   // TODO(alexmos): We use EXPECT_FALSE() on platforms that support citadel
   // enforcements. Currently this is only on Android, but will be extended to
   // desktop, at which time the EXPECT_TRUE() case below can be removed.
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   EXPECT_FALSE(policy->CanAccessDataForOrigin(old_process_id,
                                               url::Origin::Create(bar_url)));
 #else
@@ -4782,7 +5034,7 @@ IN_PROC_BROWSER_TEST_F(DynamicIsolatedOriginTest,
   // Disable the BackForwardCache to ensure the old process is going to be
   // released.
   DisableBackForwardCacheForTesting(web_contents(),
-                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
+                                    BackForwardCache::TEST_REQUIRES_NO_CACHING);
 
   GURL isolated_bar_url(
       embedded_test_server()->GetURL("isolated.bar.com", "/title1.html"));
@@ -6323,6 +6575,48 @@ IN_PROC_BROWSER_TEST_F(JITIsolationTest, SubFrameTest) {
   child_frame_node = root->child_at(0);
   EXPECT_FALSE(
       child_frame_node->current_frame_host()->GetProcess()->IsJitDisabled());
+}
+
+// Check that jitless subframes obey process reuse policies.
+IN_PROC_BROWSER_TEST_F(JITIsolationTest, SubFrameProcessReuse) {
+  // Set JIT to be enabled by default.
+  ScopedBrowserClientOverride policy(
+      /* jit_disabled_default */ false,
+      /* disable_site_isolation_entirely */ false);
+
+  GURL default_embeds_disabled(embedded_test_server()->GetURL(
+      "foo.com", "/cross_site_iframe_factory.html?foo.com(jit-disabled.com)"));
+
+  EXPECT_TRUE(NavigateToURL(shell(), default_embeds_disabled));
+
+  // Top frame 'foo.com' should have JIT enabled as that's the default.
+  FrameTreeNode* root = web_contents()->GetPrimaryFrameTree().root();
+  EXPECT_FALSE(root->current_frame_host()->GetProcess()->IsJitDisabled());
+  // The frame containing jit-disabled.com should have JIT disabled.
+  FrameTreeNode* child = root->child_at(0);
+  EXPECT_TRUE(child->current_frame_host()->GetProcess()->IsJitDisabled());
+
+  // Create a new window, unrelated to the current one, and set up the same
+  // frame hierarchy.
+  Shell* new_shell = CreateBrowser();
+  EXPECT_TRUE(NavigateToURL(new_shell, default_embeds_disabled));
+
+  FrameTreeNode* new_root =
+      static_cast<WebContentsImpl*>(new_shell->web_contents())
+          ->GetPrimaryFrameTree()
+          .root();
+  EXPECT_FALSE(new_root->current_frame_host()->GetProcess()->IsJitDisabled());
+
+  FrameTreeNode* new_child = new_root->child_at(0);
+  EXPECT_TRUE(new_child->current_frame_host()->GetProcess()->IsJitDisabled());
+
+  // The subframes should be in separate BrowsingInstances, but because they
+  // have the same site, they should share the same process.
+  EXPECT_FALSE(
+      new_child->current_frame_host()->GetSiteInstance()->IsRelatedSiteInstance(
+          child->current_frame_host()->GetSiteInstance()));
+  EXPECT_EQ(new_child->current_frame_host()->GetProcess(),
+            child->current_frame_host()->GetProcess());
 }
 
 }  // namespace content

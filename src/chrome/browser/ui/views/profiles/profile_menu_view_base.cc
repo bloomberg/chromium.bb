@@ -24,17 +24,18 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/signin/profile_colors_util.h"
 #include "chrome/browser/ui/ui_features.h"
-#include "chrome/browser/ui/user_education/feature_promo_controller.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/hover_button.h"
 #include "chrome/browser/ui/views/profiles/incognito_menu_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/feature_engagement/public/feature_constants.h"
+#include "components/user_education/common/feature_promo_controller.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/image_model.h"
+#include "ui/base/themed_vector_icon.h"
 #include "ui/color/color_id.h"
 #include "ui/color/color_provider.h"
 #include "ui/display/display.h"
@@ -43,7 +44,6 @@
 #include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/vector_icon_types.h"
-#include "ui/native_theme/themed_vector_icon.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/ink_drop.h"
@@ -54,7 +54,6 @@
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/separator.h"
-#include "ui/views/image_model_utils.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/flex_layout_types.h"
@@ -63,7 +62,6 @@
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ui/views/profiles/profile_menu_view.h"
-#include "chrome/browser/ui/views/sync/dice_signin_button_view.h"
 #endif
 
 namespace {
@@ -129,14 +127,15 @@ void CircleImageSource::Draw(gfx::Canvas* canvas) {
   canvas->DrawCircle(gfx::PointF(radius, radius), radius, flags);
 }
 
-gfx::ImageSkia CreateCircle(int size, SkColor color = SK_ColorWHITE) {
+gfx::ImageSkia CreateCircle(int size, SkColor color) {
   return gfx::CanvasImageSource::MakeImageSkia<CircleImageSource>(size, color);
 }
 
 gfx::ImageSkia CropCircle(const gfx::ImageSkia& image) {
   DCHECK_EQ(image.width(), image.height());
+  // The color here is irrelevant as long as it's opaque; only alpha matters.
   return gfx::ImageSkiaOperations::CreateMaskedImage(
-      image, CreateCircle(image.width()));
+      image, CreateCircle(image.width(), SK_ColorWHITE));
 }
 
 gfx::ImageSkia AddCircularBackground(const gfx::ImageSkia& image,
@@ -301,9 +300,9 @@ class AvatarImageView : public views::ImageView {
     ImageView::OnThemeChanged();
     constexpr int kBadgePadding = 1;
     DCHECK(!avatar_image_.IsEmpty());
-    gfx::ImageSkia sized_avatar_image = views::GetImageSkiaFromImageModel(
-        SizeImageModel(avatar_image_, ProfileMenuViewBase::kIdentityImageSize),
-        GetColorProvider());
+    gfx::ImageSkia sized_avatar_image =
+        SizeImageModel(avatar_image_, ProfileMenuViewBase::kIdentityImageSize)
+            .Rasterize(GetColorProvider());
     sized_avatar_image = AddCircularBackground(
         sized_avatar_image, GetBackgroundColor(), kIdentityImageSizeInclBorder);
     gfx::ImageSkia sized_badge = AddCircularBackground(
@@ -374,7 +373,7 @@ void BuildProfileTitleAndSubtitle(views::View* parent,
   profile_titles_container->SetLayoutManager(
       CreateBoxLayout(views::BoxLayout::Orientation::kVertical,
                       views::BoxLayout::CrossAxisAlignment::kCenter,
-                      gfx::Insets(kDefaultMargin, 0, 0, 0)));
+                      gfx::Insets::TLBR(kDefaultMargin, 0, 0, 0)));
 
   if (!title.empty()) {
     profile_titles_container->AddChildView(std::make_unique<views::Label>(
@@ -399,7 +398,7 @@ void BuildProfileBackgroundContainer(
   views::View* profile_background_container =
       parent->AddChildView(std::make_unique<views::View>());
 
-  gfx::Insets background_container_insets(0, /*horizontal=*/kMenuEdgeMargin);
+  auto background_container_insets = gfx::Insets::VH(0, kMenuEdgeMargin);
   if (edit_button) {
     // Compensate for the edit button on the right with an extra margin on the
     // left so that the rest is centered.
@@ -415,8 +414,8 @@ void BuildProfileBackgroundContainer(
   // Show a colored background iff there is no art.
   if (avatar_header_art.empty()) {
     // The bottom background edge should match the center of the identity image.
-    gfx::Insets background_insets(0, 0, /*bottom=*/kHalfOfAvatarImageViewSize,
-                                  0);
+    auto background_insets =
+        gfx::Insets::TLBR(0, 0, kHalfOfAvatarImageViewSize, 0);
     // TODO(crbug.com/1147038): Remove the zero-radius rounded background.
     profile_background_container->SetBackground(
         views::CreateBackgroundFromPainter(
@@ -425,8 +424,7 @@ void BuildProfileBackgroundContainer(
   } else {
     DCHECK_EQ(SK_ColorTRANSPARENT, background_color);
     profile_background_container->SetBackground(
-        views::CreateThemedVectorIconBackground(profile_background_container,
-                                                avatar_header_art));
+        views::CreateThemedVectorIconBackground(avatar_header_art));
   }
 
   // |avatar_margin| is derived from |avatar_header_art| asset height, it
@@ -451,11 +449,11 @@ void BuildProfileBackgroundContainer(
       ->SetOrientation(views::LayoutOrientation::kVertical)
       .SetMainAxisAlignment(views::LayoutAlignment::kCenter)
       .SetCrossAxisAlignment(views::LayoutAlignment::kCenter)
-      .SetInteriorMargin(gfx::Insets(/*top=*/avatar_margin, 0, 0, 0));
+      .SetInteriorMargin(gfx::Insets::TLBR(avatar_margin, 0, 0, 0));
   if (heading_label) {
     DCHECK(avatar_header_art.empty());
     heading_label->SetBorder(
-        views::CreateEmptyBorder(gfx::Insets(/*vertical=*/kDefaultMargin, 0)));
+        views::CreateEmptyBorder(gfx::Insets::VH(kDefaultMargin, 0)));
     heading_and_image_container->AddChildView(std::move(heading_label));
   }
 
@@ -474,8 +472,8 @@ void BuildProfileBackgroundContainer(
     edit_button_container->SetLayoutManager(CreateBoxLayout(
         views::BoxLayout::Orientation::kVertical,
         views::BoxLayout::CrossAxisAlignment::kCenter,
-        gfx::Insets(
-            0, 0, /*bottom=*/kHalfOfAvatarImageViewSize + kDefaultMargin, 0)));
+        gfx::Insets::TLBR(0, 0, kHalfOfAvatarImageViewSize + kDefaultMargin,
+                          0)));
     edit_button_container->AddChildView(std::move(edit_button));
   }
 }
@@ -498,8 +496,7 @@ ProfileMenuViewBase::EditButtonParams::EditButtonParams(
     const EditButtonParams&) = default;
 
 // static
-void ProfileMenuViewBase::ShowBubble(profiles::BubbleViewMode view_mode,
-                                     views::Button* anchor_button,
+void ProfileMenuViewBase::ShowBubble(views::Button* anchor_button,
                                      Browser* browser,
                                      bool is_source_accelerator) {
   if (IsShowing())
@@ -507,13 +504,11 @@ void ProfileMenuViewBase::ShowBubble(profiles::BubbleViewMode view_mode,
 
   signin_ui_util::RecordProfileMenuViewShown(browser->profile());
   // Close any existing IPH bubble for the profile menu.
-  FeaturePromoController* promo_controller =
-      browser->window()->GetFeaturePromoController();
-  promo_controller->CloseBubble(feature_engagement::kIPHProfileSwitchFeature);
+  browser->window()->CloseFeaturePromo(
+      feature_engagement::kIPHProfileSwitchFeature);
 
   ProfileMenuViewBase* bubble = nullptr;
-  if (view_mode == profiles::BUBBLE_VIEW_MODE_INCOGNITO) {
-    DCHECK(browser->profile()->IsIncognitoProfile());
+  if (browser->profile()->IsIncognitoProfile()) {
     bubble = new IncognitoMenuView(anchor_button, browser);
   } else {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -521,7 +516,6 @@ void ProfileMenuViewBase::ShowBubble(profiles::BubbleViewMode view_mode,
     // BUBBLE_VIEW_MODE_INCOGNITO.
     NOTREACHED() << "The profile menu is not implemented on Ash.";
 #else
-    DCHECK_EQ(profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER, view_mode);
     bubble = new ProfileMenuView(anchor_button, browser);
 #endif
   }
@@ -606,13 +600,13 @@ void ProfileMenuViewBase::SetProfileIdentityInfo(
   identity_info_container_->SetLayoutManager(
       CreateBoxLayout(views::BoxLayout::Orientation::kVertical,
                       views::BoxLayout::CrossAxisAlignment::kStretch,
-                      gfx::Insets(0, 0, kBottomMargin, 0)));
+                      gfx::Insets::TLBR(0, 0, kBottomMargin, 0)));
 
   auto avatar_image_view = std::make_unique<AvatarImageView>(image_model, this);
 
 // TODO(crbug.com/1052397): Revisit once build flag switch of lacros-chrome is
 // complete.
-#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
   // crbug.com/1161166: Orca does not read the accessible window title of the
   // bubble, so we duplicate it in the top-level menu item. To be revisited
   // after considering other options, including fixes on the AT side.
@@ -673,7 +667,8 @@ void ProfileMenuViewBase::BuildSyncInfoWithCallToAction(
       ->SetOrientation(views::LayoutOrientation::kVertical)
       .SetIgnoreDefaultMainAxisMargins(true)
       .SetCollapseMargins(true)
-      .SetDefault(views::kMarginsKey, gfx::Insets(kSyncInfoInsidePadding, 0));
+      .SetDefault(views::kMarginsKey,
+                  gfx::Insets::VH(kSyncInfoInsidePadding, 0));
   sync_info_container_->SetProperty(
       views::kFlexBehaviorKey,
       views::FlexSpecification(views::LayoutOrientation::kVertical,
@@ -681,7 +676,7 @@ void ProfileMenuViewBase::BuildSyncInfoWithCallToAction(
                                views::MaximumFlexSizeRule::kUnbounded, true,
                                views::MinimumFlexSizeRule::kScaleToZero));
   sync_info_container_->SetProperty(
-      views::kMarginsKey, gfx::Insets(kDefaultMargin, kMenuEdgeMargin));
+      views::kMarginsKey, gfx::Insets::VH(kDefaultMargin, kMenuEdgeMargin));
 
   // Add icon + description at the top.
   views::View* description_container =
@@ -699,7 +694,7 @@ void ProfileMenuViewBase::BuildSyncInfoWithCallToAction(
            .SetIgnoreDefaultMainAxisMargins(true)
            .SetCollapseMargins(true)
            .SetDefault(views::kMarginsKey,
-                       gfx::Insets(0, kDescriptionIconSpacing));
+                       gfx::Insets::VH(0, kDescriptionIconSpacing));
 
   if (show_sync_badge) {
     description_container->AddChildView(std::make_unique<SyncImageView>(this));
@@ -765,8 +760,7 @@ void ProfileMenuViewBase::AddShortcutFeatureButton(
     views::BoxLayout* layout = shortcut_features_container_->SetLayoutManager(
         std::make_unique<views::BoxLayout>(
             views::BoxLayout::Orientation::kHorizontal,
-            gfx::Insets(/*top=*/kDefaultMargin / 2, 0,
-                        /*bottom=*/kMenuEdgeMargin, 0),
+            gfx::Insets::TLBR(kDefaultMargin / 2, 0, kMenuEdgeMargin, 0),
             kButtonSpacing));
     layout->set_main_axis_alignment(
         views::BoxLayout::MainAxisAlignment::kCenter);
@@ -815,7 +809,7 @@ void ProfileMenuViewBase::SetProfileManagementHeading(
   profile_mgmt_separator_container_->SetLayoutManager(
       std::make_unique<views::FillLayout>());
   profile_mgmt_separator_container_->SetBorder(
-      views::CreateEmptyBorder(gfx::Insets(kDefaultMargin, /*horizontal=*/0)));
+      views::CreateEmptyBorder(gfx::Insets::VH(kDefaultMargin, 0)));
   profile_mgmt_separator_container_->AddChildView(
       std::make_unique<views::Separator>());
 
@@ -823,8 +817,8 @@ void ProfileMenuViewBase::SetProfileManagementHeading(
   profile_mgmt_heading_container_->RemoveAllChildViews();
   profile_mgmt_heading_container_->SetLayoutManager(
       std::make_unique<views::FillLayout>());
-  profile_mgmt_heading_container_->SetBorder(
-      views::CreateEmptyBorder(gfx::Insets(kDefaultMargin, kMenuEdgeMargin)));
+  profile_mgmt_heading_container_->SetBorder(views::CreateEmptyBorder(
+      gfx::Insets::VH(kDefaultMargin, kMenuEdgeMargin)));
 
   // Add heading.
   views::Label* label = profile_mgmt_heading_container_->AddChildView(
@@ -875,7 +869,7 @@ void ProfileMenuViewBase::AddProfileManagementShortcutFeatureButton(
     profile_mgmt_shortcut_features_container_->SetLayoutManager(
         CreateBoxLayout(views::BoxLayout::Orientation::kHorizontal,
                         views::BoxLayout::CrossAxisAlignment::kCenter,
-                        gfx::Insets(0, 0, 0, /*right=*/kMenuEdgeMargin)));
+                        gfx::Insets::TLBR(0, 0, 0, kMenuEdgeMargin)));
   }
 
   profile_mgmt_shortcut_features_container_->AddChildView(
@@ -905,8 +899,9 @@ void ProfileMenuViewBase::AddProfileManagementFeatureButton(
 
 gfx::ImageSkia ProfileMenuViewBase::ColoredImageForMenu(
     const gfx::VectorIcon& icon,
-    SkColor color) const {
-  return gfx::CreateVectorIcon(icon, kMaxImageSize, color);
+    ui::ColorId color) const {
+  return gfx::CreateVectorIcon(icon, kMaxImageSize,
+                               GetColorProvider()->GetColor(color));
 }
 
 void ProfileMenuViewBase::RecordClick(ActionableItem item) {
@@ -921,7 +916,7 @@ int ProfileMenuViewBase::GetMaxHeight() const {
           ->GetDisplayNearestPoint(anchor_rect.CenterPoint())
           .work_area();
   int available_space = screen_space.bottom() - anchor_rect.bottom();
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // On Windows the bubble can also be show to the top of the anchor.
   available_space =
       std::max(available_space, anchor_rect.y() - screen_space.y());
@@ -938,8 +933,6 @@ void ProfileMenuViewBase::Reset() {
 
   // Create and add new component containers in the correct order.
   // First, add the parts of the current profile.
-  heading_container_ =
-      components->AddChildView(std::make_unique<views::View>());
   identity_info_container_ =
       components->AddChildView(std::make_unique<views::View>());
   shortcut_features_container_ =
@@ -1003,7 +996,7 @@ void ProfileMenuViewBase::BuildSyncInfoCallToActionBackground(
   const int radius = views::LayoutProvider::Get()->GetCornerRadiusMetric(
       views::Emphasis::kHigh);
   sync_info_container_->SetBackground(views::CreateRoundedRectBackground(
-      color_provider->GetColor(background_color_id), radius));
+      color_provider->GetColor(background_color_id), radius, 1));
   sync_info_container_->SetBorder(views::CreatePaddedBorder(
       views::CreateRoundedRectBorder(
           1, radius, color_provider->GetColor(ui::kColorMenuSeparator)),

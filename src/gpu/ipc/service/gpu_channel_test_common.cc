@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 #include "gpu/ipc/service/gpu_channel_test_common.h"
-#include "base/memory/raw_ptr.h"
 
 #include <memory>
+#include <tuple>
 
-#include "base/ignore_result.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
@@ -59,9 +59,7 @@ class TestGpuChannelManagerDelegate : public GpuChannelManagerDelegate {
                          const std::string& shader) override {}
   void MaybeExitOnContextLost() override { is_exiting_ = true; }
   bool IsExiting() const override { return is_exiting_; }
-#if defined(OS_WIN)
-  void DidUpdateOverlayInfo(const gpu::OverlayInfo& overlay_info) override {}
-  void DidUpdateHDRStatus(bool hdr_enabled) override {}
+#if BUILDFLAG(IS_WIN)
   void SendCreatedChildWindow(SurfaceHandle parent_window,
                               SurfaceHandle child_window) override {}
 #endif
@@ -88,9 +86,9 @@ GpuChannelTestCommon::GpuChannelTestCommon(
           new TestGpuChannelManagerDelegate(scheduler_.get())) {
   // We need GL bindings to actually initialize command buffers.
   if (use_stub_bindings) {
-    gl::GLSurfaceTestSupport::InitializeOneOffWithStubBindings();
+    display_ = gl::GLSurfaceTestSupport::InitializeOneOffWithStubBindings();
   } else {
-    gl::GLSurfaceTestSupport::InitializeOneOff();
+    display_ = gl::GLSurfaceTestSupport::InitializeOneOff();
   }
 
   GpuFeatureInfo feature_info;
@@ -112,7 +110,7 @@ GpuChannelTestCommon::~GpuChannelTestCommon() {
   // Command buffers can post tasks and run GL in destruction so do this first.
   channel_manager_ = nullptr;
   task_environment_.RunUntilIdle();
-  gl::init::ShutdownGL(false);
+  gl::GLSurfaceTestSupport::ShutdownGL(display_);
 }
 
 GpuChannel* GpuChannelTestCommon::CreateChannel(int32_t client_id,
@@ -137,7 +135,7 @@ void GpuChannelTestCommon::CreateCommandBuffer(
   auto quit = loop.QuitClosure();
   mojo::PendingAssociatedRemote<mojom::CommandBuffer> remote;
   mojo::PendingAssociatedRemote<mojom::CommandBufferClient> client;
-  ignore_result(client.InitWithNewEndpointAndPassReceiver());
+  std::ignore = client.InitWithNewEndpointAndPassReceiver();
   client.EnableUnassociatedUsage();
   channel.CreateCommandBuffer(
       std::move(init_params), routing_id, std::move(shared_state),

@@ -107,9 +107,9 @@ device to boot from USB.
             and install from it using those same instructions.
 
 With that done, hit Ctrl+Alt+Back (F2). At the prompt type chronos and install
-using the following command.
+using the following command:
 
-#### ```none
+```none
 /usr/sbin/chromeos-install
 ```
 

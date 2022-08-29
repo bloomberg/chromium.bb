@@ -7,6 +7,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/check.h"
 #include "base/feature_list.h"
 #include "base/notreached.h"
@@ -15,11 +16,11 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/language/accept_languages_service_factory.h"
 #include "chrome/browser/language/language_model_manager_factory.h"
 #include "chrome/browser/language/url_language_histogram_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_key.h"
-#include "chrome/browser/translate/translate_accept_languages_factory.h"
 #include "chrome/browser/translate/translate_model_service_factory.h"
 #include "chrome/browser/translate/translate_ranker_factory.h"
 #include "chrome/browser/translate/translate_service.h"
@@ -29,18 +30,18 @@
 #include "chrome/grit/theme_resources.h"
 #include "components/autofill_assistant/browser/public/runtime_manager.h"
 #include "components/infobars/content/content_infobar_manager.h"
+#include "components/language/core/browser/accept_languages_service.h"
 #include "components/language/core/browser/language_model_manager.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
-#include "components/translate/content/browser/translate_model_service.h"
 #include "components/translate/core/browser/language_state.h"
 #include "components/translate/core/browser/page_translated_details.h"
-#include "components/translate/core/browser/translate_accept_languages.h"
 #include "components/translate/core/browser/translate_browser_metrics.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_infobar_delegate.h"
 #include "components/translate/core/browser/translate_manager.h"
 #include "components/translate/core/browser/translate_metrics_logger.h"
+#include "components/translate/core/browser/translate_model_service.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/translate/core/common/language_detection_details.h"
 #include "components/translate/core/common/translate_util.h"
@@ -51,8 +52,9 @@
 #include "ui/base/ui_base_features.h"
 #include "url/gurl.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/android/android_theme_resources.h"
+#include "components/translate/content/android/translate_message.h"
 #else
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -65,7 +67,7 @@ namespace {
 using base::FeatureList;
 using metrics::TranslateEventProto;
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 TranslateEventProto::EventType BubbleResultToTranslateEvent(
     ShowTranslateBubbleResult result) {
   switch (result) {
@@ -178,10 +180,10 @@ ChromeTranslateClient::CreateTranslatePrefs(PrefService* prefs) {
 }
 
 // static
-translate::TranslateAcceptLanguages*
-ChromeTranslateClient::GetTranslateAcceptLanguages(
+language::AcceptLanguagesService*
+ChromeTranslateClient::GetAcceptLanguagesService(
     content::BrowserContext* browser_context) {
-  return TranslateAcceptLanguagesFactory::GetForBrowserContext(browser_context);
+  return AcceptLanguagesServiceFactory::GetForBrowserContext(browser_context);
 }
 
 // static
@@ -250,15 +252,28 @@ bool ChromeTranslateClient::ShowTranslateUI(
 
 // Translate uses a bubble UI on desktop and an infobar on Android (here)
 // and iOS (in ios/chrome/browser/translate/chrome_ios_translate_client.mm).
-#if defined(OS_ANDROID)
-  // Infobar UI.
+#if BUILDFLAG(IS_ANDROID)
   DCHECK(!TranslateService::IsTranslateBubbleEnabled());
-  translate::TranslateInfoBarDelegate::Create(
-      step != translate::TRANSLATE_STEP_BEFORE_TRANSLATE,
-      translate_manager_->GetWeakPtr(),
-      infobars::ContentInfoBarManager::FromWebContents(web_contents()),
-      web_contents()->GetBrowserContext()->IsOffTheRecord(), step,
-      source_language, target_language, error_type, triggered_from_menu);
+
+  if (base::FeatureList::IsEnabled(translate::kTranslateMessageUI)) {
+    // Message UI.
+    if (!translate_message_) {
+      translate_message_ = std::make_unique<translate::TranslateMessage>(
+          web_contents(), translate_manager_->GetWeakPtr(),
+          base::BindOnce(&ChromeTranslateClient::OnTranslateMessageDismissed,
+                         base::Unretained(this)));
+    }
+    translate_message_->ShowTranslateStep(step, source_language,
+                                          target_language);
+  } else {
+    // Infobar UI.
+    translate::TranslateInfoBarDelegate::Create(
+        step != translate::TRANSLATE_STEP_BEFORE_TRANSLATE,
+        translate_manager_->GetWeakPtr(),
+        infobars::ContentInfoBarManager::FromWebContents(web_contents()),
+        web_contents()->GetBrowserContext()->IsOffTheRecord(), step,
+        source_language, target_language, error_type, triggered_from_menu);
+  }
 
   translate_manager_->GetActiveTranslateMetricsLogger()->LogUIChange(true);
 #else
@@ -297,13 +312,13 @@ ChromeTranslateClient::GetTranslatePrefs() {
   return CreateTranslatePrefs(GetPrefs());
 }
 
-translate::TranslateAcceptLanguages*
-ChromeTranslateClient::GetTranslateAcceptLanguages() {
+language::AcceptLanguagesService*
+ChromeTranslateClient::GetAcceptLanguagesService() {
   DCHECK(web_contents());
-  return GetTranslateAcceptLanguages(web_contents()->GetBrowserContext());
+  return GetAcceptLanguagesService(web_contents()->GetBrowserContext());
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 int ChromeTranslateClient::GetInfobarIconID() const {
   return IDR_ANDROID_INFOBAR_TRANSLATE;
 }
@@ -367,7 +382,7 @@ void ChromeTranslateClient::OnLanguageDetermined(
     GetTranslateManager()->NotifyLanguageDetected(details);
   }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // See ChromeTranslateClient::ManualTranslateOnReady
   if (manual_translate_on_ready_) {
     GetTranslateManager()->ShowTranslateUI(/*auto_translate=*/true);
@@ -377,7 +392,7 @@ void ChromeTranslateClient::OnLanguageDetermined(
 }
 
 // The bubble is implemented only on the desktop platforms.
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 ShowTranslateBubbleResult ChromeTranslateClient::ShowBubble(
     translate::TranslateStep step,
     const std::string& source_language,
@@ -418,5 +433,11 @@ ShowTranslateBubbleResult ChromeTranslateClient::ShowBubble(
                                       error_type, is_user_gesture);
 }
 #endif
+
+#if BUILDFLAG(IS_ANDROID)
+void ChromeTranslateClient::OnTranslateMessageDismissed() {
+  translate_message_.reset();
+}
+#endif  // BUILDFLAG(IS_ANDROID)
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(ChromeTranslateClient);

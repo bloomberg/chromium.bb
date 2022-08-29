@@ -34,7 +34,6 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.BuildInfo;
 import org.chromium.base.Callback;
 import org.chromium.base.compat.ApiHelperForQ;
 import org.chromium.base.task.PostTask;
@@ -76,7 +75,7 @@ class PlatformNetworksManager {
     }
 
     private static WifiInfo getWifiInfo(Context context) {
-        if (BuildInfo.isAtLeastS()) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             // TODO(https://crbug.com/1181393): Look into taking a dependency on net/android and
             // extracting this logic there to a method that can be called from here.
             // On Android S+, need to use NetworkCapabilities to get the WifiInfo.
@@ -170,7 +169,7 @@ class PlatformNetworksManager {
 
     static void getAllVisibleCells(Context context, TelephonyManager telephonyManager,
             Callback<Set<VisibleCell>> callback) {
-        if (!hasLocationPermission(context)) {
+        if (!hasLocationPermission(context) || telephonyManager == null) {
             callback.onResult(Collections.emptySet());
             return;
         }

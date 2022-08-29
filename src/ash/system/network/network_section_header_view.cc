@@ -4,7 +4,8 @@
 
 #include "ash/system/network/network_section_header_view.h"
 
-#include "ash/metrics/user_metrics_recorder.h"
+#include "ash/constants/ash_features.h"
+#include "ash/public/cpp/bluetooth_config_service.h"
 #include "ash/public/cpp/system_tray_client.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
@@ -16,6 +17,7 @@
 #include "ash/system/network/tray_network_state_model.h"
 #include "ash/system/tray/tray_toggle_button.h"
 #include "base/bind.h"
+#include "base/metrics/user_metrics.h"
 #include "chromeos/dbus/hermes/hermes_manager_client.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_util.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
@@ -30,13 +32,13 @@ using chromeos::network_config::IsInhibited;
 using chromeos::network_config::mojom::DeviceStateProperties;
 using chromeos::network_config::mojom::DeviceStateType;
 using chromeos::network_config::mojom::FilterType;
+using chromeos::network_config::mojom::GlobalPolicy;
 using chromeos::network_config::mojom::NetworkFilter;
 using chromeos::network_config::mojom::NetworkStateProperties;
 using chromeos::network_config::mojom::NetworkStatePropertiesPtr;
 using chromeos::network_config::mojom::NetworkType;
 
 namespace ash {
-namespace tray {
 
 namespace {
 
@@ -108,9 +110,8 @@ int GetAddESimTooltipMessageId() {
   const DeviceStateProperties* cellular_device =
       Shell::Get()->system_tray_model()->network_state_model()->GetDevice(
           NetworkType::kCellular);
-  if (!cellular_device) {
-    return 0;
-  }
+
+  DCHECK(cellular_device);
 
   switch (cellular_device->inhibit_reason) {
     case chromeos::network_config::mojom::InhibitReason::kInstallingProfile:
@@ -126,8 +127,9 @@ int GetAddESimTooltipMessageId() {
     case chromeos::network_config::mojom::InhibitReason::kNotInhibited:
       return IDS_ASH_STATUS_TRAY_ADD_CELLULAR_LABEL;
     case chromeos::network_config::mojom::InhibitReason::kResettingEuiccMemory:
-      // TODO(crbug.com/1231305) Update when reset reason strings are finalized.
-      return IDS_ASH_STATUS_TRAY_INHIBITED_CELLULAR_REMOVING_PROFILE;
+      return IDS_ASH_STATUS_TRAY_INHIBITED_CELLULAR_RESETTING_ESIM;
+    case chromeos::network_config::mojom::InhibitReason::kDisablingProfile:
+      return IDS_ASH_STATUS_TRAY_INHIBITED_CELLULAR_DISABLING_PROFILE;
   }
 }
 
@@ -203,6 +205,12 @@ MobileSectionHeaderView::MobileSectionHeaderView()
                                DeviceStateType::kEnabled;
   NetworkSectionHeaderView::Init(initially_enabled);
   model()->AddObserver(this);
+
+  if (!ash::features::IsBluetoothRevampEnabled())
+    return;
+
+  GetBluetoothConfigService(
+      remote_cros_bluetooth_config_.BindNewPipeAndPassReceiver());
 }
 
 MobileSectionHeaderView::~MobileSectionHeaderView() {
@@ -342,20 +350,10 @@ void MobileSectionHeaderView::AddExtraButtons(bool enabled) {
 
   // The button opens the eSIM setup flow, and should only be added if the
   // device is eSIM-capable.
-  if (IsESimSupported())
-    PerformAddExtraButtons(enabled);
-}
-
-void MobileSectionHeaderView::DeviceStateListChanged() {
-  if (!add_esim_button_)
+  if (!IsESimSupported()) {
     return;
-  add_esim_button_->SetEnabled(can_add_esim_button_be_enabled_ &&
-                               !IsCellularDeviceInhibited());
-  add_esim_button_->SetTooltipText(
-      l10n_util::GetStringUTF16(GetAddESimTooltipMessageId()));
-}
+  }
 
-void MobileSectionHeaderView::PerformAddExtraButtons(bool enabled) {
   can_add_esim_button_be_enabled_ = enabled;
   const gfx::VectorIcon& icon = base::i18n::IsRTL() ? kAddCellularNetworkRtlIcon
                                                     : kAddCellularNetworkIcon;
@@ -363,14 +361,46 @@ void MobileSectionHeaderView::PerformAddExtraButtons(bool enabled) {
       base::BindRepeating(&MobileSectionHeaderView::AddCellularButtonPressed,
                           base::Unretained(this)),
       IconButton::Type::kSmall, &icon, GetAddESimTooltipMessageId());
-
   add_esim_button_->SetEnabled(enabled && !IsCellularDeviceInhibited());
+  container()->AddView(TriView::Container::END, add_esim_button_);
+  UpdateAddESimButtonVisibility();
+}
 
-  // Because the toggle is added conditionally and the check is asynchronous, we
-  // need override the view index here in order for correct ordering of the
-  // toggle and the add cellular button.
-  container()->AddViewAt(TriView::Container::END, add_esim_button_,
-                         /*index=*/0);
+void MobileSectionHeaderView::DeviceStateListChanged() {
+  if (!add_esim_button_)
+    return;
+
+  if (!IsESimSupported()) {
+    add_esim_button_->SetVisible(/*visible=*/false);
+    return;
+  }
+
+  add_esim_button_->SetEnabled(can_add_esim_button_be_enabled_ &&
+                               !IsCellularDeviceInhibited());
+  add_esim_button_->SetTooltipText(
+      l10n_util::GetStringUTF16(GetAddESimTooltipMessageId()));
+}
+
+void MobileSectionHeaderView::GlobalPolicyChanged() {
+  UpdateAddESimButtonVisibility();
+}
+
+void MobileSectionHeaderView::UpdateAddESimButtonVisibility() {
+  if (!add_esim_button_) {
+    return;
+  }
+
+  const GlobalPolicy* global_policy = model()->global_policy();
+
+  // Adding new cellular networks is disallowed when only policy cellular
+  // networks are allowed by admin.
+  if (ash::features::IsESimPolicyEnabled() &&
+      (!global_policy || global_policy->allow_only_policy_cellular_networks)) {
+    add_esim_button_->SetVisible(/*visible=*/false);
+    return;
+  }
+
+  add_esim_button_->SetVisible(/*visible=*/true);
 }
 
 void MobileSectionHeaderView::AddCellularButtonPressed() {
@@ -381,9 +411,14 @@ void MobileSectionHeaderView::AddCellularButtonPressed() {
 void MobileSectionHeaderView::EnableBluetooth() {
   DCHECK(!waiting_for_tether_initialize_);
 
-  Shell::Get()
-      ->bluetooth_power_controller()
-      ->SetPrimaryUserBluetoothPowerSetting(true /* enabled */);
+  if (ash::features::IsBluetoothRevampEnabled()) {
+    remote_cros_bluetooth_config_->SetBluetoothEnabledState(true);
+  } else {
+    Shell::Get()
+        ->bluetooth_power_controller()
+        ->SetPrimaryUserBluetoothPowerSetting(true /* enabled */);
+  }
+
   waiting_for_tether_initialize_ = true;
   enable_bluetooth_timer_.Start(
       FROM_HERE, base::Seconds(kBluetoothTimeoutDelaySeconds),
@@ -404,6 +439,19 @@ WifiSectionHeaderView::WifiSectionHeaderView()
   bool enabled =
       model()->GetDeviceState(NetworkType::kWiFi) == DeviceStateType::kEnabled;
   NetworkSectionHeaderView::Init(enabled);
+  model()->AddObserver(this);
+}
+
+WifiSectionHeaderView::~WifiSectionHeaderView() {
+  model()->RemoveObserver(this);
+}
+
+void WifiSectionHeaderView::DeviceStateListChanged() {
+  UpdateJoinButtonVisibility();
+}
+
+void WifiSectionHeaderView::GlobalPolicyChanged() {
+  UpdateJoinButtonVisibility();
 }
 
 void WifiSectionHeaderView::SetToggleState(bool toggle_enabled, bool is_on) {
@@ -428,14 +476,41 @@ void WifiSectionHeaderView::AddExtraButtons(bool enabled) {
   join_button->SetEnabled(enabled);
   container()->AddView(TriView::Container::END, join_button);
   join_button_ = join_button;
+  UpdateJoinButtonVisibility();
+}
+
+void WifiSectionHeaderView::UpdateJoinButtonVisibility() {
+  if (!join_button_) {
+    return;
+  }
+
+  const DeviceStateProperties* wifi_device =
+      model()->GetDevice(chromeos::network_config::mojom::NetworkType::kWiFi);
+  if (!wifi_device) {
+    join_button_->SetVisible(/*visible=*/false);
+    return;
+  }
+
+  const GlobalPolicy* global_policy = model()->global_policy();
+
+  // Adding new network config is disallowed when only policy wifi networks
+  // are allowed by admin or managed networks are available and corresponding
+  // settings is enabled.
+  if (!global_policy ||
+      global_policy->allow_only_policy_wifi_networks_to_connect ||
+      (global_policy->allow_only_policy_wifi_networks_to_connect_if_available &&
+       wifi_device->managed_network_available)) {
+    join_button_->SetVisible(/*visible=*/false);
+    return;
+  }
+
+  join_button_->SetVisible(/*visible=*/true);
 }
 
 void WifiSectionHeaderView::JoinButtonPressed() {
-  Shell::Get()->metrics()->RecordUserMetricsAction(
-      UMA_STATUS_AREA_NETWORK_JOIN_OTHER_CLICKED);
+  base::RecordAction(base::UserMetricsAction("StatusArea_Network_JoinOther"));
   Shell::Get()->system_tray_model()->client()->ShowNetworkCreate(
       ::onc::network_type::kWiFi);
 }
 
-}  // namespace tray
 }  // namespace ash

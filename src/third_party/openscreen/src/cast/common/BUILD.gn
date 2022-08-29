@@ -25,16 +25,12 @@ source_set("certificate") {
   sources = [
     "certificate/cast_cert_validator.cc",
     "certificate/cast_cert_validator.h",
-    "certificate/cast_cert_validator_internal.cc",
-    "certificate/cast_cert_validator_internal.h",
     "certificate/cast_crl.cc",
     "certificate/cast_crl.h",
-    "certificate/cast_trust_store.cc",
-    "certificate/cast_trust_store.h",
-    "certificate/types.cc",
-    "certificate/types.h",
+    "certificate/date_time.cc",
+    "certificate/date_time.h",
   ]
-  public_deps = [ "../../third_party/boringssl" ]
+  public_deps = [ ":public" ]
 
   configs += [ ":certificate_config" ]
 
@@ -43,6 +39,28 @@ source_set("certificate") {
     "../../third_party/abseil",
     "../../util",
     "certificate/proto:certificate_proto",
+  ]
+}
+
+source_set("certificate_boringssl") {
+  sources = [
+    "certificate/boringssl_parsed_certificate.cc",
+    "certificate/boringssl_parsed_certificate.h",
+    "certificate/boringssl_trust_store.cc",
+    "certificate/boringssl_trust_store.h",
+    "certificate/boringssl_util.cc",
+    "certificate/boringssl_util.h",
+  ]
+
+  public_deps = [
+    ":public",
+    "../../third_party/boringssl",
+  ]
+
+  deps = [
+    ":certificate",
+    "../../third_party/abseil",
+    "../../util",
   ]
 }
 
@@ -80,12 +98,15 @@ source_set("public") {
     "public/cast_socket.h",
     "public/cast_streaming_app_ids.cc",
     "public/cast_streaming_app_ids.h",
+    "public/certificate_types.h",
     "public/message_port.h",
+    "public/parsed_certificate.h",
     "public/receiver_info.cc",
     "public/receiver_info.h",
+    "public/trust_store.h",
   ]
 
-  deps = [
+  public_deps = [
     "../../discovery:public",
     "../../platform",
     "../../third_party/abseil",

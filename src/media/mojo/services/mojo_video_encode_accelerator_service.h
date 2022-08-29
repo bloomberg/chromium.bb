@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
@@ -29,6 +30,8 @@ struct GpuPreferences;
 
 namespace media {
 
+class MojoMediaLog;
+
 // This class implements the interface mojom::VideoEncodeAccelerator.
 class MEDIA_MOJO_EXPORT MojoVideoEncodeAcceleratorService
     : public mojom::VideoEncodeAccelerator,
@@ -40,7 +43,8 @@ class MEDIA_MOJO_EXPORT MojoVideoEncodeAcceleratorService
           const ::media::VideoEncodeAccelerator::Config& config,
           Client* client,
           const gpu::GpuPreferences& gpu_preferences,
-          const gpu::GpuDriverBugWorkarounds& gpu_workarounds)>;
+          const gpu::GpuDriverBugWorkarounds& gpu_workarounds,
+          std::unique_ptr<MediaLog> media_log)>;
 
   static void Create(
       mojo::PendingReceiver<mojom::VideoEncodeAccelerator> receiver,
@@ -64,12 +68,13 @@ class MEDIA_MOJO_EXPORT MojoVideoEncodeAcceleratorService
   void Initialize(
       const media::VideoEncodeAccelerator::Config& config,
       mojo::PendingAssociatedRemote<mojom::VideoEncodeAcceleratorClient> client,
+      mojo::PendingRemote<mojom::MediaLog> media_log,
       InitializeCallback callback) override;
   void Encode(const scoped_refptr<VideoFrame>& frame,
               bool force_keyframe,
               EncodeCallback callback) override;
   void UseOutputBitstreamBuffer(int32_t bitstream_buffer_id,
-                                mojo::ScopedSharedBufferHandle buffer) override;
+                                base::UnsafeSharedMemoryRegion region) override;
   void RequestEncodingParametersChangeWithBitrate(
       const media::Bitrate& bitrate_allocation,
       uint32_t framerate) override;
@@ -100,6 +105,9 @@ class MEDIA_MOJO_EXPORT MojoVideoEncodeAcceleratorService
   // Owned pointer to the underlying VideoEncodeAccelerator.
   std::unique_ptr<::media::VideoEncodeAccelerator> encoder_;
   mojo::AssociatedRemote<mojom::VideoEncodeAcceleratorClient> vea_client_;
+
+  // Proxy object for providing media log services.
+  std::unique_ptr<MojoMediaLog> media_log_;
 
   // Cache of parameters for sanity verification.
   size_t output_buffer_size_;

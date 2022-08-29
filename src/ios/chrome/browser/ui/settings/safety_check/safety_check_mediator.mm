@@ -17,6 +17,7 @@
 #include "components/password_manager/core/browser/ui/password_check_referrer.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing/core/common/features.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/safety_check/safety_check.h"
 #include "components/version_info/version_info.h"
@@ -29,6 +30,7 @@
 #include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
+#import "ios/chrome/browser/ui/icons/chrome_symbol.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_check_item.h"
 #import "ios/chrome/browser/ui/settings/safety_check/safety_check_constants.h"
 #import "ios/chrome/browser/ui/settings/safety_check/safety_check_consumer.h"
@@ -37,7 +39,6 @@
 #import "ios/chrome/browser/ui/settings/safety_check/safety_check_utils.h"
 #import "ios/chrome/browser/ui/settings/utils/observable_boolean.h"
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
-#import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_link_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/table_view/table_view_utils.h"
@@ -49,6 +50,7 @@
 #include "ios/chrome/common/channel_info.h"
 #import "ios/chrome/common/string_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
+#import "ios/chrome/common/ui/table_view/table_view_cells_constants.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/web/common/url_scheme_util.h"
@@ -65,6 +67,12 @@
 using l10n_util::GetNSString;
 
 namespace {
+
+// The size of  leading symbol icons.
+NSInteger kLeadingSymbolImagePointSize = 22;
+
+// The size of trailing symbol icons.
+NSInteger kTrailingSymbolImagePointSize = 18;
 
 constexpr char kSafetyCheckMetricsUpdates[] =
     "Settings.SafetyCheck.UpdatesResult";
@@ -98,8 +106,11 @@ constexpr double kSafeBrowsingRowMinDelay = 1.75;
 }  // namespace
 
 @interface SafetyCheckMediator () <BooleanObserver, PasswordCheckObserver> {
+  scoped_refptr<IOSChromePasswordCheckManager> _passwordCheckManager;
+
   // A helper object for observing changes in the password check status
-  // and changes to the compromised credentials list.
+  // and changes to the compromised credentials list. It needs to be destroyed
+  // before `_passwordCheckManager`, so it needs to be declared afterwards.
   std::unique_ptr<PasswordCheckObserverBridge> _passwordCheckObserver;
 }
 
@@ -146,6 +157,10 @@ constexpr double kSafeBrowsingRowMinDelay = 1.75;
 @property(nonatomic, strong, readonly)
     PrefBackedBoolean* safeBrowsingPreference;
 
+// Preference value for Enhanced Safe Browsing.
+@property(nonatomic, strong, readonly)
+    PrefBackedBoolean* enhancedSafeBrowsingPreference;
+
 // If the Safe Browsing preference is managed.
 @property(nonatomic, assign) BOOL safeBrowsingPreferenceManaged;
 
@@ -165,6 +180,9 @@ constexpr double kSafeBrowsingRowMinDelay = 1.75;
 // Service to check if passwords are synced.
 @property(nonatomic, assign) SyncSetupService* syncService;
 
+// Service used to check user preference values.
+@property(nonatomic, assign, readonly) PrefService* userPrefService;
+
 // Whether or not a safety check just ran.
 @property(nonatomic, assign) BOOL checkDidRun;
 
@@ -174,6 +192,8 @@ constexpr double kSafeBrowsingRowMinDelay = 1.75;
 @end
 
 @implementation SafetyCheckMediator
+
+@synthesize passwordCheckManager = _passwordCheckManager;
 
 - (instancetype)initWithUserPrefService:(PrefService*)userPrefService
                    passwordCheckManager:
@@ -188,6 +208,7 @@ constexpr double kSafeBrowsingRowMinDelay = 1.75;
     DCHECK(authService);
     DCHECK(syncService);
 
+    _userPrefService = userPrefService;
     _authService = authService;
     _syncService = syncService;
 
@@ -203,6 +224,10 @@ constexpr double kSafeBrowsingRowMinDelay = 1.75;
     _safeBrowsingPreference.observer = self;
     _safeBrowsingPreferenceManaged =
         userPrefService->IsManagedPreference(prefs::kSafeBrowsingEnabled);
+    _enhancedSafeBrowsingPreference = [[PrefBackedBoolean alloc]
+        initWithPrefService:userPrefService
+                   prefName:prefs::kSafeBrowsingEnhanced];
+    _enhancedSafeBrowsingPreference.observer = self;
 
     _headerItem =
         [[TableViewLinkHeaderFooterItem alloc] initWithType:HeaderItem];
@@ -213,8 +238,12 @@ constexpr double kSafeBrowsingRowMinDelay = 1.75;
     _updateCheckItem = [[SettingsCheckItem alloc] initWithType:UpdateItemType];
     _updateCheckItem.text =
         l10n_util::GetNSString(IDS_IOS_SETTINGS_SAFETY_CHECK_UPDATES_TITLE);
-    UIImage* updateCheckIcon = [[UIImage imageNamed:@"settings_info"]
-        imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    UIImage* updateCheckIcon =
+        UseSymbols()
+            ? DefaultSymbolTemplateWithPointSize(kInfoCircleSymbol,
+                                                 kLeadingSymbolImagePointSize)
+            : [[UIImage imageNamed:@"settings_info"]
+                  imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
     _updateCheckItem.leadingImage = updateCheckIcon;
     _updateCheckItem.leadingImageTintColor = [UIColor colorNamed:kGrey400Color];
     _updateCheckItem.enabled = YES;
@@ -252,7 +281,7 @@ constexpr double kSafeBrowsingRowMinDelay = 1.75;
 
     // Show unsafe state if user already ran safety check and there are
     // compromised credentials.
-    if (!_passwordCheckManager->GetCompromisedCredentials().empty() &&
+    if (!_passwordCheckManager->GetUnmutedCompromisedCredentials().empty() &&
         PreviousSafetyCheckIssueFound()) {
       _passwordCheckRowState = PasswordCheckRowStateUnSafe;
     }
@@ -302,6 +331,15 @@ constexpr double kSafeBrowsingRowMinDelay = 1.75;
   [self reconfigurePasswordCheckItem];
   [self reconfigureUpdateCheckItem];
   [self reconfigureSafeBrowsingCheckItem];
+}
+
+#pragma mark - Public Methods
+
+- (void)startCheckIfNotRunning {
+  if (self.checksRemaining) {
+    return;
+  }
+  [self startCheck];
 }
 
 #pragma mark - PasswordCheckObserver
@@ -388,11 +426,13 @@ constexpr double kSafeBrowsingRowMinDelay = 1.75;
       switch (self.safeBrowsingCheckRowState) {
         case SafeBrowsingCheckRowStateDefault:  // No tap action.
         case SafeBrowsingCheckRowStateRunning:  // No tap action.
-        case SafeBrowsingCheckRowStateSafe:     // No tap action.
         case SafeBrowsingCheckRowStateManaged:  // i tap: Managed state popover.
-        case SafeBrowsingCheckRowStateUnsafe:  // i tap: Show error popover with
-                                               // link to Safe Browsing toggle
-                                               // page.
+          break;
+        case SafeBrowsingCheckRowStateSafe:
+        case SafeBrowsingCheckRowStateUnsafe:  // Show Safe Browsing settings.
+          if (base::FeatureList::IsEnabled(
+                  safe_browsing::kEnhancedProtectionPhase2IOS))
+            [self.handler showSafeBrowsingPreferencePage];
           break;
       }
       break;
@@ -417,6 +457,15 @@ constexpr double kSafeBrowsingRowMinDelay = 1.75;
     case CheckStartItemType:
       return YES;
     case SafeBrowsingItemType:
+      if (base::FeatureList::IsEnabled(
+              safe_browsing::kEnhancedProtectionPhase2IOS)) {
+        return safe_browsing::GetSafeBrowsingState(*self.userPrefService) ==
+                   safe_browsing::SafeBrowsingState::STANDARD_PROTECTION ||
+               self.safeBrowsingCheckRowState ==
+                   SafeBrowsingCheckRowStateUnsafe;
+      } else {
+        return NO;
+      }
     case HeaderItem:
     case TimestampFooterItem:
       return NO;
@@ -436,6 +485,13 @@ constexpr double kSafeBrowsingRowMinDelay = 1.75;
     [self.handler showManagedInfoFrom:buttonView];
     return;
   }
+  if (base::FeatureList::IsEnabled(safe_browsing::kEnhancedProtection)) {
+    if (itemType == SafeBrowsingItemType) {
+      // Directly open Safe Browsing settings instead of showing a popover.
+      [self.handler showSafeBrowsingPreferencePage];
+      return;
+    }
+  }
   if (itemType == UpdateItemType &&
       self.updateCheckRowState == UpdateCheckRowStateManaged) {
     [self.handler showManagedInfoFrom:buttonView];
@@ -445,7 +501,7 @@ constexpr double kSafeBrowsingRowMinDelay = 1.75;
   // If not managed compute error info to show in popover, if available.
   NSAttributedString* info = [self popoverInfoForType:itemType];
 
-  // If |info| is empty there is no popover to display.
+  // If `info` is empty there is no popover to display.
   if (!info)
     return;
 
@@ -456,19 +512,19 @@ constexpr double kSafeBrowsingRowMinDelay = 1.75;
 #pragma mark - BooleanObserver
 
 - (void)booleanDidChange:(id<ObservableBoolean>)observableBoolean {
-  // TODO(crbug.com/1078782): Handle safe browsing state changes to reward user
-  // for fixing state.
+  [self checkAndReconfigureSafeBrowsingState];
 }
 
 #pragma mark - Private methods
 
-// Computes the text needed for a popover on |itemType| if available.
+// Computes the text needed for a popover on `itemType` if available.
 - (NSAttributedString*)popoverInfoForType:(NSInteger)itemType {
   SafteyCheckItemType type = static_cast<SafteyCheckItemType>(itemType);
   switch (type) {
     case PasswordItemType:
       return [self passwordCheckErrorInfo];
     case SafeBrowsingItemType: {
+      DCHECK(!base::FeatureList::IsEnabled(safe_browsing::kEnhancedProtection));
       NSString* message = l10n_util::GetNSString(
           IDS_IOS_SETTINGS_SAFETY_CHECK_OPEN_SAFE_BROWSING_INFO);
       GURL safeBrowsingURL(
@@ -485,7 +541,7 @@ constexpr double kSafeBrowsingRowMinDelay = 1.75;
 }
 
 // Computes the appropriate display state of the password check row based on
-// |currentPasswordCheckState|.
+// `currentPasswordCheckState`.
 - (PasswordCheckRowStates)computePasswordCheckRowState:
     (PasswordCheckState)newState {
   BOOL wasRunning =
@@ -493,7 +549,7 @@ constexpr double kSafeBrowsingRowMinDelay = 1.75;
   self.currentPasswordCheckState = newState;
 
   BOOL noCompromisedPasswords =
-      self.passwordCheckManager->GetCompromisedCredentials().empty();
+      self.passwordCheckManager->GetUnmutedCompromisedCredentials().empty();
 
   switch (self.currentPasswordCheckState) {
     case PasswordCheckState::kRunning:
@@ -570,7 +626,7 @@ constexpr double kSafeBrowsingRowMinDelay = 1.75;
 
 // Computes the appropriate error info to be displayed in the passwords popover.
 - (NSAttributedString*)passwordCheckErrorInfo {
-  if (!self.passwordCheckManager->GetCompromisedCredentials().empty())
+  if (!self.passwordCheckManager->GetUnmutedCompromisedCredentials().empty())
     return nil;
 
   NSString* message;
@@ -661,7 +717,11 @@ constexpr double kSafeBrowsingRowMinDelay = 1.75;
 
     return;
   }
+  [self startCheck];
+}
 
+// Starts a safety check
+- (void)startCheck {
   // Otherwise start a check.
   self.checkStartTime = base::Time::Now();
 
@@ -721,7 +781,7 @@ constexpr double kSafeBrowsingRowMinDelay = 1.75;
     __weak __typeof__(self) weakSelf = self;
     // This handles a discrepancy between password check and safety check.  In
     // password check a user cannot start a check if they have no passwords, but
-    // in safety check they can, but the |passwordCheckManager| won't even start
+    // in safety check they can, but the `passwordCheckManager` won't even start
     // a check. This if block below allows safety check to push the disabled
     // state after check now is pressed.
     if (self.currentPasswordCheckState == PasswordCheckState::kNoPasswords) {
@@ -757,7 +817,7 @@ constexpr double kSafeBrowsingRowMinDelay = 1.75;
   }
 }
 
-// Checks if any of the safety checks are still running, resets |checkStartItem|
+// Checks if any of the safety checks are still running, resets `checkStartItem`
 // if all checks have finished.
 - (void)resetsCheckStartItemIfNeeded {
   if (self.checksRemaining) {
@@ -778,7 +838,7 @@ constexpr double kSafeBrowsingRowMinDelay = 1.75;
            forKey:kTimestampOfLastIssueFoundKey];
     self.checkDidRun = NO;
   }
-  // If no checks are still running, reset |checkStartItem|.
+  // If no checks are still running, reset `checkStartItem`.
   self.checkStartState = CheckStartStateDefault;
   [self reconfigureCheckStartSection];
 
@@ -797,7 +857,7 @@ constexpr double kSafeBrowsingRowMinDelay = 1.75;
   return updateCheckRunning || passwordCheckRunning || safeBrowsingCheckRunning;
 }
 
-// Updates |updateCheckItem| to reflect the device being offline if the check
+// Updates `updateCheckItem` to reflect the device being offline if the check
 // was running.
 - (void)handleUpdateCheckOffline {
   if (self.updateCheckRowState == UpdateCheckRowStateRunning) {
@@ -810,7 +870,7 @@ constexpr double kSafeBrowsingRowMinDelay = 1.75;
 }
 
 // Verifies if the Omaha service returned an answer, if not sets
-// |updateCheckItem| to an Omaha error state.
+// `updateCheckItem` to an Omaha error state.
 - (void)verifyUpdateCheckComplete {
   // If still in running state assume Omaha error.
   if (self.updateCheckRowState == UpdateCheckRowStateRunning) {
@@ -823,7 +883,7 @@ constexpr double kSafeBrowsingRowMinDelay = 1.75;
 }
 
 // If the update check would have completed too quickly, making the UI appear
-// jittery, delay the reconfigure call, using |newRowState|.
+// jittery, delay the reconfigure call, using `newRowState`.
 - (void)possiblyDelayReconfigureUpdateCheckItemWithState:
     (UpdateCheckRowStates)newRowState {
   double secondsSinceStart =
@@ -905,7 +965,7 @@ constexpr double kSafeBrowsingRowMinDelay = 1.75;
 }
 
 // Performs the update check and triggers the display update to
-// |updateCheckItem|.
+// `updateCheckItem`.
 - (void)performUpdateCheck {
   __weak __typeof__(self) weakSelf = self;
 
@@ -945,8 +1005,8 @@ constexpr double kSafeBrowsingRowMinDelay = 1.75;
   [self reconfigureSafeBrowsingCheckItem];
 }
 
-// Reconfigures the display of the |updateCheckItem| based on current state of
-// |updateCheckRowState|.
+// Reconfigures the display of the `updateCheckItem` based on current state of
+// `updateCheckRowState`.
 - (void)reconfigureUpdateCheckItem {
   // Reset state to prevent conflicts.
   self.updateCheckItem.enabled = YES;
@@ -956,7 +1016,7 @@ constexpr double kSafeBrowsingRowMinDelay = 1.75;
   self.updateCheckItem.trailingImageTintColor = nil;
   self.updateCheckItem.accessoryType = UITableViewCellAccessoryNone;
 
-  // On any item update, see if |checkStartItem| should be updated.
+  // On any item update, see if `checkStartItem` should be updated.
   [self resetsCheckStartItemIfNeeded];
 
   switch (self.updateCheckRowState) {
@@ -970,8 +1030,12 @@ constexpr double kSafeBrowsingRowMinDelay = 1.75;
       break;
     }
     case UpdateCheckRowStateUpToDate: {
-      UIImage* safeIconImage = [[UIImage imageNamed:@"settings_safe_state"]
-          imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+      UIImage* safeIconImage =
+          UseSymbols()
+              ? DefaultSymbolTemplateWithPointSize(
+                    kCheckMarkCircleFillSymbol, kTrailingSymbolImagePointSize)
+              : [[UIImage imageNamed:@"settings_safe_state"]
+                    imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
       self.updateCheckItem.trailingImage = safeIconImage;
       self.updateCheckItem.trailingImageTintColor =
           [UIColor colorNamed:kGreenColor];
@@ -980,8 +1044,12 @@ constexpr double kSafeBrowsingRowMinDelay = 1.75;
       break;
     }
     case UpdateCheckRowStateOutOfDate: {
-      UIImage* unSafeIconImage = [[UIImage imageNamed:@"settings_unsafe_state"]
-          imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+      UIImage* unSafeIconImage =
+          UseSymbols()
+              ? DefaultSymbolTemplateWithPointSize(
+                    kWarningFillSymbol, kTrailingSymbolImagePointSize)
+              : [[UIImage imageNamed:@"settings_unsafe_state"]
+                    imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
       self.updateCheckItem.trailingImage = unSafeIconImage;
       self.updateCheckItem.trailingImageTintColor =
           [UIColor colorNamed:kRedColor];
@@ -1032,8 +1100,8 @@ constexpr double kSafeBrowsingRowMinDelay = 1.75;
   [self.consumer reconfigureCellsForItems:@[ self.updateCheckItem ]];
 }
 
-// Reconfigures the display of the |passwordCheckItem| based on current state of
-// |passwordCheckRowState|.
+// Reconfigures the display of the `passwordCheckItem` based on current state of
+// `passwordCheckRowState`.
 - (void)reconfigurePasswordCheckItem {
   // Reset state to prevent conflicts.
   self.passwordCheckItem.enabled = YES;
@@ -1043,7 +1111,7 @@ constexpr double kSafeBrowsingRowMinDelay = 1.75;
   self.passwordCheckItem.trailingImageTintColor = nil;
   self.passwordCheckItem.accessoryType = UITableViewCellAccessoryNone;
 
-  // On any item update, see if |checkStartItem| should be updated.
+  // On any item update, see if `checkStartItem` should be updated.
   [self resetsCheckStartItemIfNeeded];
 
   switch (self.passwordCheckRowState) {
@@ -1057,9 +1125,14 @@ constexpr double kSafeBrowsingRowMinDelay = 1.75;
       break;
     }
     case PasswordCheckRowStateSafe: {
-      DCHECK(self.passwordCheckManager->GetCompromisedCredentials().empty());
-      UIImage* safeIconImage = [[UIImage imageNamed:@"settings_safe_state"]
-          imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+      DCHECK(self.passwordCheckManager->GetUnmutedCompromisedCredentials()
+                 .empty());
+      UIImage* safeIconImage =
+          UseSymbols()
+              ? DefaultSymbolTemplateWithPointSize(
+                    kCheckMarkCircleFillSymbol, kTrailingSymbolImagePointSize)
+              : [[UIImage imageNamed:@"settings_safe_state"]
+                    imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
       self.passwordCheckItem.detailText =
           base::SysUTF16ToNSString(l10n_util::GetPluralStringFUTF16(
               IDS_IOS_CHECK_PASSWORDS_COMPROMISED_COUNT, 0));
@@ -1072,9 +1145,14 @@ constexpr double kSafeBrowsingRowMinDelay = 1.75;
       self.passwordCheckItem.detailText =
           base::SysUTF16ToNSString(l10n_util::GetPluralStringFUTF16(
               IDS_IOS_CHECK_PASSWORDS_COMPROMISED_COUNT,
-              self.passwordCheckManager->GetCompromisedCredentials().size()));
-      UIImage* unSafeIconImage = [[UIImage imageNamed:@"settings_unsafe_state"]
-          imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+              self.passwordCheckManager->GetUnmutedCompromisedCredentials()
+                  .size()));
+      UIImage* unSafeIconImage =
+          UseSymbols()
+              ? DefaultSymbolTemplateWithPointSize(
+                    kWarningFillSymbol, kTrailingSymbolImagePointSize)
+              : [[UIImage imageNamed:@"settings_unsafe_state"]
+                    imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
       self.passwordCheckItem.trailingImage = unSafeIconImage;
       self.passwordCheckItem.trailingImageTintColor =
           [UIColor colorNamed:kRedColor];
@@ -1094,8 +1172,8 @@ constexpr double kSafeBrowsingRowMinDelay = 1.75;
   [self.consumer reconfigureCellsForItems:@[ self.passwordCheckItem ]];
 }
 
-// Reconfigures the display of the |safeBrowsingCheckItem| based on current
-// state of |safeBrowsingCheckRowState|.
+// Reconfigures the display of the `safeBrowsingCheckItem` based on current
+// state of `safeBrowsingCheckRowState`.
 - (void)reconfigureSafeBrowsingCheckItem {
   // Reset state to prevent conflicts.
   self.safeBrowsingCheckItem.enabled = YES;
@@ -1105,7 +1183,7 @@ constexpr double kSafeBrowsingRowMinDelay = 1.75;
   self.safeBrowsingCheckItem.trailingImageTintColor = nil;
   self.safeBrowsingCheckItem.accessoryType = UITableViewCellAccessoryNone;
 
-  // On any item update, see if |checkStartItem| should be updated.
+  // On any item update, see if `checkStartItem` should be updated.
   [self resetsCheckStartItemIfNeeded];
 
   switch (self.safeBrowsingCheckRowState) {
@@ -1130,12 +1208,37 @@ constexpr double kSafeBrowsingRowMinDelay = 1.75;
       self.safeBrowsingCheckItem.trailingImage = safeIconImage;
       self.safeBrowsingCheckItem.trailingImageTintColor =
           [UIColor colorNamed:kGreenColor];
-      self.safeBrowsingCheckItem.detailText =
-          GetNSString(IDS_IOS_SETTINGS_SAFETY_CHECK_SAFE_BROWSING_ENABLED_DESC);
+      if (base::FeatureList::IsEnabled(safe_browsing::kEnhancedProtection)) {
+        self.safeBrowsingCheckItem.detailText =
+            [self safeBrowsingCheckItemDetailText];
+        if (base::FeatureList::IsEnabled(
+                safe_browsing::kEnhancedProtectionPhase2IOS)) {
+          if (safe_browsing::GetSafeBrowsingState(*self.userPrefService) ==
+              safe_browsing::SafeBrowsingState::STANDARD_PROTECTION) {
+            self.safeBrowsingCheckItem.accessoryType =
+                UITableViewCellAccessoryDisclosureIndicator;
+          }
+        }
+      } else {
+        self.safeBrowsingCheckItem.detailText = GetNSString(
+            IDS_IOS_SETTINGS_SAFETY_CHECK_SAFE_BROWSING_ENABLED_DESC);
+      }
       break;
     }
     case SafeBrowsingCheckRowStateUnsafe: {
-      self.safeBrowsingCheckItem.infoButtonHidden = NO;
+      if (base::FeatureList::IsEnabled(
+              safe_browsing::kEnhancedProtectionPhase2IOS)) {
+        UIImage* unSafeIconImage =
+            [[UIImage imageNamed:@"settings_unsafe_state"]
+                imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+        self.safeBrowsingCheckItem.trailingImage = unSafeIconImage;
+        self.safeBrowsingCheckItem.trailingImageTintColor =
+            [UIColor colorNamed:kRedColor];
+        self.safeBrowsingCheckItem.accessoryType =
+            UITableViewCellAccessoryDisclosureIndicator;
+      } else {
+        self.safeBrowsingCheckItem.infoButtonHidden = NO;
+      }
       self.safeBrowsingCheckItem.detailText = GetNSString(
           IDS_IOS_SETTINGS_SAFETY_CHECK_SAFE_BROWSING_DISABLED_DESC);
       break;
@@ -1143,6 +1246,29 @@ constexpr double kSafeBrowsingRowMinDelay = 1.75;
   }
 
   [self.consumer reconfigureCellsForItems:@[ self.safeBrowsingCheckItem ]];
+}
+
+// Chooses the Safe Browsing detail text string that should be used based on the
+// Safe Browsing preference chosen.
+- (NSString*)safeBrowsingCheckItemDetailText {
+  safe_browsing::SafeBrowsingState safeBrowsingState =
+      safe_browsing::GetSafeBrowsingState(*self.userPrefService);
+  switch (safeBrowsingState) {
+    case safe_browsing::SafeBrowsingState::STANDARD_PROTECTION:
+      if (base::FeatureList::IsEnabled(
+              safe_browsing::kEnhancedProtectionPhase2IOS)) {
+        return GetNSString(
+            IDS_IOS_SETTINGS_SAFETY_CHECK_SAFE_BROWSING_STANDARD_PROTECTION_ENABLED_DESC_WITH_ENHANCED_PROTECTION);
+      }
+      return GetNSString(
+          IDS_IOS_SETTINGS_SAFETY_CHECK_SAFE_BROWSING_STANDARD_PROTECTION_ENABLED_DESC);
+    case safe_browsing::SafeBrowsingState::ENHANCED_PROTECTION:
+      return GetNSString(
+          IDS_IOS_SETTINGS_SAFETY_CHECK_SAFE_BROWSING_ENHANCED_PROTECTION_ENABLED_DESC);
+    default:
+      NOTREACHED();
+      return nil;
+  }
 }
 
 // Updates the display of checkStartItem based on its current state.

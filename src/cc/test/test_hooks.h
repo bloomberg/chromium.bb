@@ -73,7 +73,6 @@ class TestHooks : public AnimationDelegate {
       LayerTreeHostImpl* host_impl) {}
   virtual void DidReceiveCompositorFrameAckOnThread(
       LayerTreeHostImpl* host_impl) {}
-  virtual void DidScheduleBeginMainFrame() {}
   virtual void DidRunBeginMainFrame() {}
   virtual void DidReceivePresentationTimeOnThread(
       LayerTreeHostImpl* host_impl,
@@ -148,11 +147,10 @@ class TestHooks : public AnimationDelegate {
   virtual std::unique_ptr<viz::DisplayCompositorMemoryAndTaskController>
   CreateDisplayControllerOnThread() = 0;
   virtual std::unique_ptr<viz::SkiaOutputSurface>
-  CreateDisplaySkiaOutputSurfaceOnThread(
+  CreateSkiaOutputSurfaceOnThread(
       viz::DisplayCompositorMemoryAndTaskController*) = 0;
   virtual std::unique_ptr<viz::OutputSurface>
-  CreateDisplayOutputSurfaceOnThread(
-      scoped_refptr<viz::ContextProvider> compositor_context_provider) = 0;
+  CreateSoftwareOutputSurfaceOnThread() = 0;
 };
 
 }  // namespace cc

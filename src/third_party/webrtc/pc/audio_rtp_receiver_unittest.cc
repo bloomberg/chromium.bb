@@ -10,12 +10,15 @@
 
 #include "pc/audio_rtp_receiver.h"
 
-#include "media/base/media_channel.h"
+#include <atomic>
+
 #include "pc/test/mock_voice_media_channel.h"
 #include "rtc_base/gunit.h"
+#include "rtc_base/ref_counted_object.h"
 #include "rtc_base/thread.h"
 #include "test/gmock.h"
 #include "test/gtest.h"
+#include "test/run_loop.h"
 
 using ::testing::_;
 using ::testing::InvokeWithoutArgs;
@@ -24,6 +27,7 @@ using ::testing::Mock;
 static const int kTimeOut = 100;
 static const double kDefaultVolume = 1;
 static const double kVolume = 3.7;
+static const double kVolumeMuted = 0.0;
 static const uint32_t kSsrc = 3;
 
 namespace webrtc {
@@ -42,10 +46,11 @@ class AudioRtpReceiverTest : public ::testing::Test {
   }
 
   ~AudioRtpReceiverTest() {
+    EXPECT_CALL(media_channel_, SetOutputVolume(kSsrc, kVolumeMuted));
     receiver_->SetMediaChannel(nullptr);
-    receiver_->Stop();
   }
 
+  rtc::AutoThread main_thread_;
   rtc::Thread* worker_;
   rtc::scoped_refptr<AudioRtpReceiver> receiver_;
   cricket::MockVoiceMediaChannel media_channel_;
@@ -63,6 +68,7 @@ TEST_F(AudioRtpReceiverTest, SetOutputVolumeIsCalled) {
   receiver_->track();
   receiver_->track()->set_enabled(true);
   receiver_->SetMediaChannel(&media_channel_);
+  EXPECT_CALL(media_channel_, SetDefaultRawAudioSink(_)).Times(0);
   receiver_->SetupMediaChannel(kSsrc);
 
   EXPECT_CALL(media_channel_, SetOutputVolume(kSsrc, kVolume))
@@ -89,4 +95,34 @@ TEST_F(AudioRtpReceiverTest, VolumesSetBeforeStartingAreRespected) {
 
   receiver_->SetupMediaChannel(kSsrc);
 }
+
+// Tests that OnChanged notifications are processed correctly on the worker
+// thread when a media channel pointer is passed to the receiver via the
+// constructor.
+TEST(AudioRtpReceiver, OnChangedNotificationsAfterConstruction) {
+  webrtc::test::RunLoop loop;
+  auto* thread = rtc::Thread::Current();  // Points to loop's thread.
+  cricket::MockVoiceMediaChannel media_channel(thread);
+  auto receiver = rtc::make_ref_counted<AudioRtpReceiver>(
+      thread, std::string(), std::vector<std::string>(), true, &media_channel);
+
+  EXPECT_CALL(media_channel, SetDefaultRawAudioSink(_)).Times(1);
+  EXPECT_CALL(media_channel, SetDefaultOutputVolume(kDefaultVolume)).Times(1);
+  receiver->SetupUnsignaledMediaChannel();
+  loop.Flush();
+
+  // Mark the track as disabled.
+  receiver->track()->set_enabled(false);
+
+  // When the track was marked as disabled, an async notification was queued
+  // for the worker thread. This notification should trigger the volume
+  // of the media channel to be set to kVolumeMuted.
+  // Flush the worker thread, but set the expectation first for the call.
+  EXPECT_CALL(media_channel, SetDefaultOutputVolume(kVolumeMuted)).Times(1);
+  loop.Flush();
+
+  EXPECT_CALL(media_channel, SetDefaultOutputVolume(kVolumeMuted)).Times(1);
+  receiver->SetMediaChannel(nullptr);
+}
+
 }  // namespace webrtc

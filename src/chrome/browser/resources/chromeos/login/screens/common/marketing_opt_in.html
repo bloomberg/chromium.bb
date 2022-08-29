@@ -12,14 +12,15 @@
 <link rel="import" href="../../components/oobe_cr_lottie.html">
 <link rel="import" href="../../components/oobe_icons.html">
 <link rel="import" href="../../components/behaviors/login_screen_behavior.html">
-<link rel="import" href="../../components/behaviors/oobe_dialog_host_behavior.html">
 <link rel="import" href="../../components/behaviors/oobe_i18n_behavior.html">
+<link rel="import" href="../../components/behaviors/multi_step_behavior.html">
 <link rel="import" href="../../components/buttons/oobe_back_button.html">
 <link rel="import" href="../../components/buttons/oobe_icon_button.html">
 <link rel="import" href="../../components/buttons/oobe_text_button.html">
 <link rel="import" href="../../components/common_styles/common_styles.html">
 <link rel="import" href="../../components/common_styles/oobe_dialog_host_styles.html">
 <link rel="import" href="../../components/dialogs/oobe_adaptive_dialog.html">
+<link rel="import" href="../../components/display_manager_types.html">
 
 
 <dom-module id="marketing-opt-in-element">
@@ -33,27 +34,30 @@
       }
 
       :host {
-        --marketing-opt-in-dialog-list-item-border: 1px solid var(--google-grey-200);
-        --oobe-a11y-dialog-list-item-border: 1px solid var(--google-grey-200);
+        --marketing-opt-in-dialog-list-item-border:
+          1px solid var(--cros-color-primary);
+        --oobe-a11y-dialog-list-item-border:
+          1px solid var(--cros-color-primary);
         --marketing-opt-in-row-height: 50px;
         --marketing-opt-in-line-height: 20px;
       }
 
       .marketing-animation-content {
-        height: 95%;
+        height: 100%;
         /* Lower the animation a bit to make it look more centered. */
         margin-top: 20px;
+        overflow-y: hidden;
         width: 100%;
       }
 
       .legal-info {
-        color: var(--google-grey-700);
+        color: var(--cros-text-color-secondary);
       }
 
       #toggleRow {
         border-bottom: var(--marketing-opt-in-dialog-list-item-border);
         border-top: var(--marketing-opt-in-dialog-list-item-border);
-        color: var(--google-grey-900);
+        color: var(--cros-bg-color);
         margin-top: 20px;
       }
 
@@ -74,12 +78,12 @@
       #toggleRowIcon {
         --iron-icon-height: 20px;
         --iron-icon-width: 20px;
-        --iron-icon-fill-color: var(--google-blue-600);
+        --iron-icon-fill-color: var(--cros-icon-color-blue);
         padding-inline-end: 16px;
       }
 
       #googleUrl {
-        color: var(--google-blue-600);
+        color: var(--cros-color-prominent);
       }
 
       #finalAccessibilityPage oobe-a11y-option {
@@ -90,9 +94,20 @@
       #finalAccessibilityPage oobe-a11y-option:last-of-type {
         border-bottom: var(--oobe-a11y-dialog-list-item-border);
       }
+
+      h1 {
+        color: var(--cros-text-color-primary);
+      }
+
+      #marketingOptInSubtitleWithDeviceName,
+      #marketingOptInSubtitle,
+      #chromebookUpdatesOptionLabel {
+        color: var(--cros-text-color-secondary);
+      }
+
     </style>
     <oobe-adaptive-dialog id="marketingOptInOverviewDialog" role="dialog"
-        hidden="[[isAccessibilitySettingsShown_]]"
+        for-step="overview"
         aria-label$="[[i18nDynamic(locale, 'marketingOptInScreenTitle')]]"
         aria-describedby="marketing-opt-in-subtitle">
       <iron-icon slot="icon" icon="oobe-32:checkmark">
@@ -102,11 +117,12 @@
       </h1>
       <div slot="subtitle">
         <!-- No marketing opt in -->
-        <div hidden="[[marketingOptInVisible_]]">
+        <div hidden="[[marketingOptInVisible_]]"
+          id="marketingOptInSubtitleWithDeviceName">
           [[i18nDynamic(locale, 'marketingOptInScreenSubtitleWithDeviceName')]]
         </div>
         <!-- Marketing opt in -->
-        <div hidden="[[!marketingOptInVisible_]]">
+        <div hidden="[[!marketingOptInVisible_]]" id="marketingOptInSubtitle">
           [[i18nDynamic(locale, 'marketingOptInScreenSubtitle')]]
         </div>
 
@@ -141,8 +157,12 @@
       <div id="contentArea" slot="content" class="layout flex vertical">
         <!-- Animation -->
         <div class="marketing-animation-content">
+          <iron-media-query query="(prefers-color-scheme: dark)"
+              query-matches="{{isDarkModeActive_}}">
+          </iron-media-query>
           <oobe-cr-lottie id="animation"
-              animation-url="all_set.json" singleLoop="true">
+              animation-url="[[getAnimationUrl_(isDarkModeActive_)]]"
+              singleLoop="true">
           </oobe-cr-lottie>
         </div>
       </div>
@@ -162,7 +182,7 @@
     </oobe-adaptive-dialog>
 
     <oobe-adaptive-dialog id="finalAccessibilityPage" role="dialog"
-        hidden="[[!isAccessibilitySettingsShown_]]"
+        for-step="accessibility"
         aria-label$="[[i18nDynamic(locale, 'finalA11yPageTitle')]]">
       <iron-icon slot="icon" icon="oobe-32:accessibility">
       </iron-icon>

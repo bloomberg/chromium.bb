@@ -4,10 +4,10 @@
 
 package org.chromium.chrome.browser.media.ui;
 
-import android.annotation.TargetApi;
 import android.os.Build;
 import android.support.test.InstrumentationRegistry;
 
+import androidx.annotation.RequiresApi;
 import androidx.test.filters.MediumTest;
 
 import org.junit.After;
@@ -43,7 +43,7 @@ import org.chromium.net.test.EmbeddedTestServer;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
         MediaSwitches.AUTOPLAY_NO_GESTURE_REQUIRED_POLICY})
-@TargetApi(Build.VERSION_CODES.O)
+@RequiresApi(Build.VERSION_CODES.O)
 public class PictureInPictureControllerTest {
     // TODO(peconn): Add a test for exit on Tab Reparenting.
     private static final String TEST_PATH = "/chrome/test/data/media/bigbuck-player.html";
@@ -72,6 +72,7 @@ public class PictureInPictureControllerTest {
     @Test
     @MediumTest
     @MinAndroidSdkLevel(Build.VERSION_CODES.O)
+    @DisabledTest(message = "https://crbug.com/1332360")
     public void testFullscreenVideoDetected() throws Throwable {
         enterFullscreen();
     }
@@ -121,6 +122,7 @@ public class PictureInPictureControllerTest {
     @Test
     @MediumTest
     @MinAndroidSdkLevel(Build.VERSION_CODES.O)
+    @DisabledTest(message = "crbug.com/1330630")
     public void testExitOnLeaveFullscreen() throws Throwable {
         testExitOn(() -> DOMUtils.exitFullscreen(getWebContents()));
     }
@@ -140,8 +142,9 @@ public class PictureInPictureControllerTest {
     @Test
     @MediumTest
     @MinAndroidSdkLevel(Build.VERSION_CODES.O)
+    @DisabledTest(message = "crbug.com/1333963")
     public void testExitOnCrash() throws Throwable {
-        testExitOn(() -> WebContentsUtils.simulateRendererKilled(getWebContents(), false));
+        testExitOn(() -> WebContentsUtils.simulateRendererKilled(getWebContents()));
     }
 
     /** Tests that PiP is left when a new Tab is created in the foreground. */

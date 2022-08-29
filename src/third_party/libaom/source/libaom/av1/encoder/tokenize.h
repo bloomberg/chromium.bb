@@ -109,8 +109,8 @@ static INLINE unsigned int get_token_alloc(int mb_rows, int mb_cols,
   const int shift = sb_size_log2 - 4;
   const int sb_size = 1 << sb_size_log2;
   const int sb_size_square = sb_size * sb_size;
-  const int sb_rows = ALIGN_POWER_OF_TWO(mb_rows, shift) >> shift;
-  const int sb_cols = ALIGN_POWER_OF_TWO(mb_cols, shift) >> shift;
+  const int sb_rows = CEIL_POWER_OF_TWO(mb_rows, shift);
+  const int sb_cols = CEIL_POWER_OF_TWO(mb_cols, shift);
 
   // One palette token for each pixel. There can be palettes on two planes.
   const int sb_palette_toks = AOMMIN(2, num_planes) * sb_size_square;
@@ -121,9 +121,8 @@ static INLINE unsigned int get_token_alloc(int mb_rows, int mb_cols,
 // Allocate memory for token related info.
 static AOM_INLINE void alloc_token_info(AV1_COMMON *cm, TokenInfo *token_info,
                                         unsigned int tokens_required) {
-  int mi_rows_aligned_to_sb =
-      ALIGN_POWER_OF_TWO(cm->mi_params.mi_rows, cm->seq_params->mib_size_log2);
-  int sb_rows = mi_rows_aligned_to_sb >> cm->seq_params->mib_size_log2;
+  int sb_rows =
+      CEIL_POWER_OF_TWO(cm->mi_params.mi_rows, cm->seq_params->mib_size_log2);
   token_info->tokens_allocated = tokens_required;
 
   CHECK_MEM_ERROR(cm, token_info->tile_tok[0][0],

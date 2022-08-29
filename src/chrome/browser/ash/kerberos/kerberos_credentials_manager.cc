@@ -7,6 +7,8 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/containers/flat_map.h"
+#include "base/strings/escape.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -21,15 +23,14 @@
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
-#include "chromeos/dbus/kerberos/kerberos_client.h"
-#include "chromeos/dbus/kerberos/kerberos_service.pb.h"
-#include "chromeos/network/onc/variable_expander.h"
+#include "chromeos/ash/components/dbus/kerberos/kerberos_client.h"
+#include "chromeos/ash/components/dbus/kerberos/kerberos_service.pb.h"
+#include "chromeos/components/onc/variable_expander.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user.h"
 #include "dbus/message.h"
-#include "net/base/escape.h"
 #include "third_party/cros_system_api/dbus/kerberos/dbus-constants.h"
 
 namespace ash {
@@ -308,24 +309,26 @@ KerberosCredentialsManager::KerberosCredentialsManager(PrefService* local_state,
   // Set up expansions:
   //   '${LOGIN_ID}'    -> 'user'
   //   '${LOGIN_EMAIL}' -> 'user@EXAMPLE.COM'
-  std::map<std::string, std::string> substitutions;
+  base::flat_map<std::string, std::string> substitutions;
   substitutions[kLoginId] =
       primary_user->GetAccountName(false /* use_display_email */);
   substitutions[kLoginEmail] = primary_user->GetAccountId().GetUserEmail();
   principal_expander_ = std::make_unique<VariableExpander>(substitutions);
 
   // Connect to a signal that indicates when Kerberos files change.
-  // TODO(https://crbug.com/963824): Make sure no code inside this constructor
-  // causes the daemon to start.
-  KerberosClient::Get()->ConnectToKerberosFileChangedSignal(
-      base::BindRepeating(&KerberosCredentialsManager::OnKerberosFilesChanged,
-                          weak_factory_.GetWeakPtr()));
+  kerberos_file_changed_signal_subscription_ =
+      KerberosClient::Get()->SubscribeToKerberosFileChangedSignal(
+          base::BindRepeating(
+              &KerberosCredentialsManager::OnKerberosFilesChanged,
+              weak_factory_.GetWeakPtr()));
 
   // Connect to a signal that indicates when a Kerberos ticket is about to
   // expire.
-  KerberosClient::Get()->ConnectToKerberosTicketExpiringSignal(
-      base::BindRepeating(&KerberosCredentialsManager::OnKerberosTicketExpiring,
-                          weak_factory_.GetWeakPtr()));
+  kerberos_ticket_expiring_signal_subscription_ =
+      KerberosClient::Get()->SubscribeToKerberosTicketExpiringSignal(
+          base::BindRepeating(
+              &KerberosCredentialsManager::OnKerberosTicketExpiring,
+              weak_factory_.GetWeakPtr()));
 
   // Listen to pref changes.
   pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
@@ -816,22 +819,22 @@ void KerberosCredentialsManager::UpdateAccountsFromPref(bool is_retry) {
   }
 
   const base::Value* accounts = local_state_->GetList(prefs::kKerberosAccounts);
-  if (!accounts || accounts->GetList().empty()) {
+  if (!accounts || accounts->GetListDeprecated().empty()) {
     VLOG(1) << "No or empty KerberosAccounts policy";
     NotifyRequiresLoginPassword(false);
 
-    // https://crbug.com/963824: The active principal is empty if there are no
-    // accounts, so no need to remove accounts. It would just start up the
-    // daemon unnecessarily.
+    // The active principal is empty if there are no accounts, so no need to
+    // remove accounts. It would just start up the daemon unnecessarily.
     if (!GetActivePrincipalName().empty())
       RemoveAllManagedAccountsExcept({});
     return;
   }
 
-  VLOG(1) << accounts->GetList().size() << " accounts in KerberosAccounts";
+  VLOG(1) << accounts->GetListDeprecated().size()
+          << " accounts in KerberosAccounts";
   bool requires_login_password = false;
   std::vector<std::string> managed_accounts_added;
-  for (const auto& account : accounts->GetList()) {
+  for (const auto& account : accounts->GetListDeprecated()) {
     // Get the principal. Should always be set.
     const base::Value* principal_value = account.FindPath(kPrincipal);
     DCHECK(principal_value);
@@ -865,7 +868,7 @@ void KerberosCredentialsManager::UpdateAccountsFromPref(bool is_retry) {
     const base::Value* krb5_conf_value = account.FindPath(kKrb5Conf);
     if (krb5_conf_value) {
       // Note: The config is encoded as a list of lines.
-      for (const auto& config_line : krb5_conf_value->GetList()) {
+      for (const auto& config_line : krb5_conf_value->GetListDeprecated()) {
         krb5_conf += config_line.GetString();
         krb5_conf += "\n";
       }
@@ -917,7 +920,7 @@ void KerberosCredentialsManager::OnTicketExpiryNotificationClick(
       primary_profile_,
       chromeos::settings::mojom::kKerberosAccountsV2SubpagePath +
           std::string("?kerberos_reauth=") +
-          net::EscapeQueryParamValue(principal_name, false /* use_plus */));
+          base::EscapeQueryParamValue(principal_name, false /* use_plus */));
 
   // Close last! |principal_name| is owned by the notification.
   kerberos_ticket_expiry_notification::Close(primary_profile_);

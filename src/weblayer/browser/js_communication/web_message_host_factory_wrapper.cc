@@ -8,6 +8,9 @@
 #include "components/js_injection/browser/web_message.h"
 #include "components/js_injection/browser/web_message_host.h"
 #include "components/js_injection/browser/web_message_reply_proxy.h"
+#include "content/public/browser/page.h"
+#include "content/public/browser/render_frame_host.h"
+#include "weblayer/browser/page_impl.h"
 #include "weblayer/public/js_communication/web_message.h"
 #include "weblayer/public/js_communication/web_message_host.h"
 #include "weblayer/public/js_communication/web_message_host_factory.h"
@@ -41,14 +44,24 @@ class WebMessageHostWrapper : public js_injection::WebMessageHost,
   }
 
   // WebMessageReplyProxy:
-  void PostMessage(std::unique_ptr<WebMessage> message) override {
+  void PostWebMessage(std::unique_ptr<WebMessage> message) override {
     std::unique_ptr<js_injection::WebMessage> w =
         std::make_unique<js_injection::WebMessage>();
     w->message = std::move(message->message);
-    proxy_->PostMessage(std::move(w));
+    proxy_->PostWebMessage(std::move(w));
   }
   bool IsInBackForwardCache() override {
     return proxy_->IsInBackForwardCache();
+  }
+  Page& GetPage() override {
+    // In general WebLayer avoids exposing child frames. As such, GetPage()
+    // returns the Page of the main frame.
+    PageImpl* page =
+        PageImpl::GetForPage(proxy_->GetPage().GetMainDocument().GetPage());
+    // NavigationControllerImpl creates the PageImpl when navigation finishes so
+    // that by the time this is called the Page should have been created.
+    DCHECK(page);
+    return *page;
   }
 
  private:

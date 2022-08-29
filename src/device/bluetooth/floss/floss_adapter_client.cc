@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/observer_list.h"
+#include "base/strings/stringprintf.h"
 #include "dbus/bus.h"
 #include "dbus/exported_object.h"
 #include "dbus/message.h"
@@ -38,6 +39,17 @@ constexpr char FlossAdapterClient::kErrorUnknownAdapter[] =
 constexpr char FlossAdapterClient::kExportedCallbacksPath[] =
     "/org/chromium/bluetooth/adapterclient";
 
+void FlossAdapterClient::SetName(ResponseCallback<Void> callback,
+                                 const std::string& name) {
+  CallAdapterMethod1<Void>(std::move(callback), adapter::kSetName, name);
+}
+
+void FlossAdapterClient::SetDiscoverable(ResponseCallback<Void> callback,
+                                         bool discoverable) {
+  CallAdapterMethod1<Void>(std::move(callback), adapter::kSetDiscoverable,
+                           discoverable);
+}
+
 void FlossAdapterClient::StartDiscovery(ResponseCallback<Void> callback) {
   CallAdapterMethod0<Void>(std::move(callback), adapter::kStartDiscovery);
 }
@@ -46,23 +58,48 @@ void FlossAdapterClient::CancelDiscovery(ResponseCallback<Void> callback) {
   CallAdapterMethod0<Void>(std::move(callback), adapter::kCancelDiscovery);
 }
 
-void FlossAdapterClient::CreateBond(ResponseCallback<Void> callback,
+void FlossAdapterClient::CreateBond(ResponseCallback<bool> callback,
                                     FlossDeviceId device,
                                     BluetoothTransport transport) {
-  CallAdapterMethod2<Void>(std::move(callback), adapter::kCreateBond, device,
+  CallAdapterMethod2<bool>(std::move(callback), adapter::kCreateBond, device,
                            transport);
 }
 
-void FlossAdapterClient::CancelBondProcess(ResponseCallback<Void> callback,
+void FlossAdapterClient::CancelBondProcess(ResponseCallback<bool> callback,
                                            FlossDeviceId device) {
-  CallAdapterMethod1<Void>(std::move(callback), adapter::kCancelBondProcess,
+  CallAdapterMethod1<bool>(std::move(callback), adapter::kCancelBondProcess,
                            device);
+}
+
+void FlossAdapterClient::RemoveBond(ResponseCallback<bool> callback,
+                                    FlossDeviceId device) {
+  CallAdapterMethod1<bool>(std::move(callback), adapter::kRemoveBond, device);
+}
+
+void FlossAdapterClient::GetRemoteType(
+    ResponseCallback<BluetoothDeviceType> callback,
+    FlossDeviceId device) {
+  CallAdapterMethod1<BluetoothDeviceType>(std::move(callback),
+                                          adapter::kGetRemoteType, device);
+}
+
+void FlossAdapterClient::GetRemoteClass(ResponseCallback<uint32_t> callback,
+                                        FlossDeviceId device) {
+  CallAdapterMethod1<uint32_t>(std::move(callback), adapter::kGetRemoteClass,
+                               device);
 }
 
 void FlossAdapterClient::GetConnectionState(ResponseCallback<uint32_t> callback,
                                             const FlossDeviceId& device) {
   CallAdapterMethod1<uint32_t>(std::move(callback),
                                adapter::kGetConnectionState, device);
+}
+
+void FlossAdapterClient::GetRemoteUuids(
+    ResponseCallback<device::BluetoothDevice::UUIDList> callback,
+    FlossDeviceId device) {
+  CallAdapterMethod1<device::BluetoothDevice::UUIDList>(
+      std::move(callback), adapter::kGetRemoteUuids, device);
 }
 
 void FlossAdapterClient::GetBondState(ResponseCallback<uint32_t> callback,
@@ -76,6 +113,13 @@ void FlossAdapterClient::ConnectAllEnabledProfiles(
     const FlossDeviceId& device) {
   CallAdapterMethod1<Void>(std::move(callback),
                            adapter::kConnectAllEnabledProfiles, device);
+}
+
+void FlossAdapterClient::DisconnectAllEnabledProfiles(
+    ResponseCallback<Void> callback,
+    const FlossDeviceId& device) {
+  CallAdapterMethod1<Void>(std::move(callback),
+                           adapter::kDisconnectAllEnabledProfiles, device);
 }
 
 void FlossAdapterClient::SetPairingConfirmation(ResponseCallback<Void> callback,
@@ -127,6 +171,19 @@ void FlossAdapterClient::Init(dbus::Bus* bus,
       base::BindOnce(&FlossAdapterClient::HandleGetAddress,
                      weak_ptr_factory_.GetWeakPtr()));
 
+  dbus::MethodCall mc_get_name(kAdapterInterface, adapter::kGetName);
+  object_proxy->CallMethodWithErrorResponse(
+      &mc_get_name, kDBusTimeoutMs,
+      base::BindOnce(&FlossAdapterClient::HandleGetName,
+                     weak_ptr_factory_.GetWeakPtr()));
+
+  dbus::MethodCall mc_get_discoverable(kAdapterInterface,
+                                       adapter::kGetDiscoverable);
+  object_proxy->CallMethodWithErrorResponse(
+      &mc_get_discoverable, kDBusTimeoutMs,
+      base::BindOnce(&FlossAdapterClient::HandleGetDiscoverable,
+                     weak_ptr_factory_.GetWeakPtr()));
+
   dbus::ExportedObject* callbacks =
       bus_->GetExportedObject(dbus::ObjectPath(kExportedCallbacksPath));
   if (!callbacks) {
@@ -142,10 +199,28 @@ void FlossAdapterClient::Init(dbus::Bus* bus,
       base::BindOnce(&HandleExported, adapter::kOnAddressChanged));
 
   callbacks->ExportMethod(
+      adapter::kCallbackInterface, adapter::kOnNameChanged,
+      base::BindRepeating(&FlossAdapterClient::OnNameChanged,
+                          weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&HandleExported, adapter::kOnNameChanged));
+
+  callbacks->ExportMethod(
+      adapter::kCallbackInterface, adapter::kOnDiscoverableChanged,
+      base::BindRepeating(&FlossAdapterClient::OnDiscoverableChanged,
+                          weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&HandleExported, adapter::kOnDiscoverableChanged));
+
+  callbacks->ExportMethod(
       adapter::kCallbackInterface, adapter::kOnDeviceFound,
       base::BindRepeating(&FlossAdapterClient::OnDeviceFound,
                           weak_ptr_factory_.GetWeakPtr()),
       base::BindOnce(&HandleExported, adapter::kOnDeviceFound));
+
+  callbacks->ExportMethod(
+      adapter::kCallbackInterface, adapter::kOnDeviceCleared,
+      base::BindRepeating(&FlossAdapterClient::OnDeviceCleared,
+                          weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&HandleExported, adapter::kOnDeviceCleared));
 
   callbacks->ExportMethod(
       adapter::kCallbackInterface, adapter::kOnDiscoveringChanged,
@@ -241,6 +316,80 @@ void FlossAdapterClient::OnAddressChanged(
   std::move(response_sender).Run(dbus::Response::FromMethodCall(method_call));
 }
 
+void FlossAdapterClient::HandleGetName(dbus::Response* response,
+                                       dbus::ErrorResponse* error_response) {
+  if (!response) {
+    LogErrorResponse("FlossAdapterClient::HandleGetName", error_response);
+    return;
+  }
+
+  dbus::MessageReader msg(response);
+  std::string name;
+
+  if (msg.PopString(&name)) {
+    adapter_name_ = name;
+  }
+}
+
+void FlossAdapterClient::OnNameChanged(
+    dbus::MethodCall* method_call,
+    dbus::ExportedObject::ResponseSender response_sender) {
+  dbus::MessageReader msg(method_call);
+  std::string name;
+
+  if (!msg.PopString(&name)) {
+    std::move(response_sender)
+        .Run(dbus::ErrorResponse::FromMethodCall(
+            method_call, kErrorInvalidParameters, std::string()));
+    return;
+  }
+
+  adapter_name_ = name;
+
+  std::move(response_sender).Run(dbus::Response::FromMethodCall(method_call));
+}
+
+void FlossAdapterClient::HandleGetDiscoverable(
+    dbus::Response* response,
+    dbus::ErrorResponse* error_response) {
+  if (!response) {
+    LogErrorResponse("FlossAdapterClient::HandleGetDiscoverable",
+                     error_response);
+    return;
+  }
+
+  dbus::MessageReader msg(response);
+  bool discoverable;
+
+  if (msg.PopBool(&discoverable)) {
+    adapter_discoverable_ = discoverable;
+    for (auto& observer : observers_) {
+      observer.DiscoverableChanged(adapter_discoverable_);
+    }
+  }
+}
+
+void FlossAdapterClient::OnDiscoverableChanged(
+    dbus::MethodCall* method_call,
+    dbus::ExportedObject::ResponseSender response_sender) {
+  dbus::MessageReader msg(method_call);
+  bool discoverable;
+
+  if (!msg.PopBool(&discoverable)) {
+    std::move(response_sender)
+        .Run(dbus::ErrorResponse::FromMethodCall(
+            method_call, kErrorInvalidParameters, std::string()));
+    return;
+  }
+
+  adapter_discoverable_ = discoverable;
+  for (auto& observer : observers_) {
+    observer.DiscoverableChanged(adapter_discoverable_);
+  }
+
+  std::move(response_sender).Run(dbus::Response::FromMethodCall(method_call));
+}
+
 void FlossAdapterClient::OnDiscoveringChanged(
     dbus::MethodCall* method_call,
     dbus::ExportedObject::ResponseSender response_sender) {
@@ -278,6 +427,28 @@ void FlossAdapterClient::OnDeviceFound(
 
   for (auto& observer : observers_) {
     observer.AdapterFoundDevice(device);
+  }
+
+  std::move(response_sender).Run(dbus::Response::FromMethodCall(method_call));
+}
+
+void FlossAdapterClient::OnDeviceCleared(
+    dbus::MethodCall* method_call,
+    dbus::ExportedObject::ResponseSender response_sender) {
+  dbus::MessageReader msg(method_call);
+  FlossDeviceId device;
+
+  DVLOG(1) << __func__;
+
+  if (!ParseFlossDeviceId(&msg, &device)) {
+    std::move(response_sender)
+        .Run(dbus::ErrorResponse::FromMethodCall(
+            method_call, kErrorInvalidParameters, std::string()));
+    return;
+  }
+
+  for (auto& observer : observers_) {
+    observer.AdapterClearedDevice(device);
   }
 
   std::move(response_sender).Run(dbus::Response::FromMethodCall(method_call));
@@ -451,6 +622,30 @@ void FlossAdapterClient::SerializeFlossDeviceId(
   array.CloseContainer(&dict);
 
   writer->CloseContainer(&array);
+}
+
+// Parse a BluetoothUUID from a DBus message.
+// The format is an array of 16 bytes.
+bool FlossAdapterClient::ParseUUID(dbus::MessageReader* reader,
+                                   device::BluetoothUUID* uuid) {
+  const uint8_t* bytes = nullptr;
+  size_t length = 0;
+
+  if (reader->PopArrayOfBytes(&bytes, &length)) {
+    if (length == 16U) {
+      device::BluetoothUUID found_uuid(base::StringPrintf(
+          "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%"
+          "02x",
+          bytes[0], bytes[1], bytes[2], bytes[3], bytes[4], bytes[5], bytes[6],
+          bytes[7], bytes[8], bytes[9], bytes[10], bytes[11], bytes[12],
+          bytes[13], bytes[14], bytes[15]));
+      DCHECK(found_uuid.IsValid());
+      *uuid = found_uuid;
+      return true;
+    }
+  }
+
+  return false;
 }
 
 template <>

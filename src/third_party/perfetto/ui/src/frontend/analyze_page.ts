@@ -45,8 +45,7 @@ class QueryInput implements m.ClassComponent {
         query = query.substring(selectionStart, selectionEnd);
       }
       if (!query) return;
-      globals.dispatch(
-          Actions.executeQuery({engineId: '0', queryId: QUERY_ID, query}));
+      globals.dispatch(Actions.executeQuery({queryId: QUERY_ID, query}));
     }
 
     if (event.code === 'Tab') {
@@ -60,6 +59,7 @@ class QueryInput implements m.ClassComponent {
         // done via document.execCommand as opposed to direct manipulation of
         // element's value attribute because modifying latter programmatically
         // drops the edit history which breaks undo/redo functionality.
+        // tslint:disable-next-line deprecation
         document.execCommand('insertText', false, TAB_SPACES_STRING);
       } else {
         this.handleMultilineTab(target, event);
@@ -92,6 +92,7 @@ class QueryInput implements m.ClassComponent {
                             .join('\n');
     // Select the range to be replaced.
     target.setSelectionRange(replacementStart, selectionEnd);
+    // tslint:disable-next-line deprecation
     document.execCommand('insertText', false, replacement);
     // Restore the selection to match the previous selection, allowing to chain
     // indent operations by just pressing Tab several times.
@@ -166,5 +167,5 @@ export const AnalyzePage = createPage({
         m(QueryInput),
         m(QueryTable, {queryId: QUERY_ID}),
     );
-  }
+  },
 });

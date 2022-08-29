@@ -9,6 +9,7 @@
 #include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "media/base/audio_renderer_sink.h"
 #include "media/base/audio_timestamp_helper.h"
 #include "media/fuchsia/audio/fake_audio_consumer.h"
@@ -74,7 +75,14 @@ class FuchsiaAudioOutputDeviceTest : public testing::Test {
         std::move(audio_consumer), base::ThreadTaskRunnerHandle::Get());
   }
 
-  ~FuchsiaAudioOutputDeviceTest() override { output_device_->Stop(); }
+  ~FuchsiaAudioOutputDeviceTest() override {
+    // Stop() must be called before destruction to release resources.
+    output_device_->Stop();
+    // FuchsiaAudioOutputDevice::Stop() posts a task to run StopOnAudioThread()
+    // on `task_runner_`. RunUntilIdle() ensures the request to stop is
+    // fulfilled.
+    task_environment_.RunUntilIdle();
+  }
 
  protected:
   void Initialize() {

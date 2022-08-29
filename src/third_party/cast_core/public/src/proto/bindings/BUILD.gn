@@ -13,21 +13,24 @@
 # limitations under the License.
 
 import("//third_party/cast_core/public/src/proto/proto.gni")
-cast_core_proto_library("api_bindings") {
+cast_core_proto_library("api_bindings_proto") {
     sources = [
         "api_bindings.proto",
     ]
     deps = [
         "//third_party/cast_core/public/src/proto/web:message_channel_proto",
     ]
+    proto_in_dir = "//third_party/cast_core/public/src"
 }
 
-cast_core_proto_library("cast_channel") {
+cast_core_proto_library("cast_channel_proto") {
     sources = ["cast_channel.proto"]
     generate_javascript = true
+    proto_in_dir = "//third_party/cast_core/public/src"
 }
 
-cast_core_proto_library("media_capabilities") {
+cast_core_proto_library("media_capabilities_proto") {
     sources = ["media_capabilities.proto"]
     generate_javascript = true
+    proto_in_dir = "//third_party/cast_core/public/src"
 }

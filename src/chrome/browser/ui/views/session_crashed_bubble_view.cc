@@ -22,7 +22,6 @@
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/sessions/exit_type_service.h"
 #include "chrome/browser/sessions/session_restore.h"
-#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/bubble_anchor_util.h"
@@ -41,6 +40,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/buildflags.h"
+#include "ui/base/interaction/element_identifier.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/dialog_model.h"
 #include "ui/base/window_open_disposition.h"
@@ -100,7 +100,7 @@ void OpenUmaLink(Browser* browser, const ui::Event& event) {
   RecordBubbleHistogramValue(SESSION_CRASHED_BUBBLE_HELP);
 }
 
-constexpr int kUmaConsentCheckboxId = 1;
+DEFINE_LOCAL_ELEMENT_IDENTIFIER_VALUE(kUmaConsentCheckboxId);
 
 class SessionCrashedBubbleDelegate : public ui::DialogModelDelegate {
  public:
@@ -256,8 +256,6 @@ views::BubbleDialogDelegate* SessionCrashedBubbleView::ShowBubble(
     Browser* browser,
     bool uma_opted_in_already,
     bool offer_uma_optin) {
-  chrome::RecordDialogCreation(chrome::DialogIdentifier::SESSION_CRASHED);
-
   views::View* anchor_view = BrowserView::GetBrowserViewForBrowser(browser)
                                  ->toolbar_button_provider()
                                  ->GetAppMenuButton();

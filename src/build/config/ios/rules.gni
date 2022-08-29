@@ -358,12 +358,18 @@ template("create_signed_bundle") {
       }
 
       if (_bundle_identifier != "") {
+        _find_provisioning_profile_args = [
+          "find-provisioning-profile",
+          "-b=" + _bundle_identifier,
+        ]
+        foreach(mobileprovision, ios_mobileprovision_files) {
+          _find_provisioning_profile_args +=
+              [ "-m=" + rebase_path(mobileprovision, root_build_dir) ]
+        }
+
         _ios_provisioning_profile_info =
             exec_script("//build/config/ios/codesign.py",
-                        [
-                          "find-provisioning-profile",
-                          "-b=" + _bundle_identifier,
-                        ],
+                        _find_provisioning_profile_args,
                         "json")
       }
 
@@ -446,6 +452,11 @@ template("create_signed_bundle") {
       "-i=" + ios_code_signing_identity,
       "-b=" + rebase_path(_bundle_binary_path, root_build_dir),
     ]
+    foreach(mobileprovision, ios_mobileprovision_files) {
+      code_signing_args +=
+          [ "-m=" + rebase_path(mobileprovision, root_build_dir) ]
+    }
+    code_signing_sources += ios_mobileprovision_files
     if (_enable_entitlements) {
       code_signing_args +=
           [ "-e=" + rebase_path(_entitlements_path, root_build_dir) ]
@@ -869,13 +880,19 @@ template("ios_app_bundle") {
           _entitlements_path,
           _info_plist_path,
         ]
+        sources += ios_mobileprovision_files
+
         outputs = [ _generate_entitlements_output ]
 
         args = [
-                 "generate-entitlements",
-                 "-e=" + rebase_path(_entitlements_path, root_build_dir),
-                 "-p=" + rebase_path(_info_plist_path, root_build_dir),
-               ] + rebase_path(outputs, root_build_dir)
+          "generate-entitlements",
+          "-e=" + rebase_path(_entitlements_path, root_build_dir),
+          "-p=" + rebase_path(_info_plist_path, root_build_dir),
+        ]
+        foreach(mobileprovision, ios_mobileprovision_files) {
+          args += [ "-m=" + rebase_path(mobileprovision, root_build_dir) ]
+        }
+        args += rebase_path(outputs, root_build_dir)
       }
     }
 
@@ -1771,7 +1788,7 @@ template("ios_xctest_bundle") {
     _info_plist_bundle = _target_name + "_info_plist_bundle"
 
     # Bundle identifier should respect rfc1034, so replace "_" with "-".
-    _bundle_identifier = "$ios_app_bundle_id_prefix.gtest." +
+    _bundle_identifier = "$ios_app_bundle_id_prefix.chrome." +
                          string_replace(_output_name, "_", "-")
 
     ios_info_plist(_info_plist_target) {
@@ -1835,12 +1852,18 @@ template("ios_xctest_bundle") {
       bundle_binary_output = _output_name
 
       if (ios_set_attributes_for_xcode_project_generation) {
+        _find_provisioning_profile_args = [
+          "find-provisioning-profile",
+          "-b=" + _bundle_identifier,
+        ]
+        foreach(mobileprovision, ios_mobileprovision_files) {
+          _find_provisioning_profile_args +=
+              [ "-m=" + rebase_path(mobileprovision, root_build_dir) ]
+        }
+
         _ios_provisioning_profile_info =
             exec_script("//build/config/ios/codesign.py",
-                        [
-                          "find-provisioning-profile",
-                          "-b=" + _bundle_identifier,
-                        ],
+                        _find_provisioning_profile_args,
                         "json")
 
         xcode_extra_attributes = {
@@ -1945,12 +1968,7 @@ template("ios_xctest_test") {
   }
 
   ios_app_bundle(_host_target) {
-    forward_variables_from(invoker,
-                           "*",
-                           [
-                             "testonly",
-                             "bundle_identifier",
-                           ])
+    forward_variables_from(invoker, "*", [ "testonly" ])
 
     testonly = true
     output_name = _host_output
@@ -2022,7 +2040,7 @@ template("ios_xcuitest_test_runner_bundle") {
   }
 
   # Bundle identifier should respect rfc1034, so replace "_" with "-".
-  _bundle_identifier = "$ios_app_bundle_id_prefix.gtest." +
+  _bundle_identifier = "$ios_app_bundle_id_prefix.chrome." +
                        string_replace(_output_name, "_", "-")
 
   _xctrunner_path =

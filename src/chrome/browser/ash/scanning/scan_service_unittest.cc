@@ -10,19 +10,16 @@
 #include <string>
 #include <vector>
 
-#include "ash/constants/ash_features.h"
 #include "ash/webui/scanning/mojom/scanning.mojom-test-utils.h"
 #include "ash/webui/scanning/mojom/scanning.mojom.h"
 #include "ash/webui/scanning/scanning_uma.h"
 #include "base/containers/flat_set.h"
-#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
@@ -82,10 +79,7 @@ constexpr char kUserEmail[] = "user@email.com";
 const std::map<mojo_ipc::FileType, std::string> kFileTypes = {
     {mojo_ipc::FileType::kJpg, "jpg"},
     {mojo_ipc::FileType::kPdf, "pdf"},
-    {mojo_ipc::FileType::kPng, "png"},
-    // Temporarily set searchable pdfs to follow png pipeline while
-    // implementing.
-    {mojo_ipc::FileType::kSearchablePdf, "png"}};
+    {mojo_ipc::FileType::kPng, "png"}};
 
 // Returns a DocumentSource object.
 lorgnette::DocumentSource CreateLorgnetteDocumentSource() {
@@ -407,7 +401,6 @@ class ScanServiceTest : public testing::Test {
   ash::FakeChromeUserManager* const user_manager_;
   user_manager::ScopedUserManager user_manager_owner_;
   std::unique_ptr<ScanService> scan_service_;
-  base::test::ScopedFeatureList scoped_feature_list_;
 
  private:
   mojo::Remote<mojo_ipc::ScanService> scan_service_remote_;
@@ -539,11 +532,6 @@ TEST_F(ScanServiceTest, Scan) {
        type_num <= static_cast<int>(mojo_ipc::FileType::kMaxValue);
        ++type_num) {
     auto type = static_cast<mojo_ipc::FileType>(type_num);
-    if (type == mojo_ipc::FileType::kSearchablePdf &&
-        !base::FeatureList::IsEnabled(
-            chromeos::features::kScanAppSearchablePdf)) {
-      continue;
-    }
 
     const std::vector<base::FilePath> saved_scan_paths = CreateSavedScanPaths(
         scanned_files_mount_->GetRootPath(), scan_time, type, scan_data.size());
@@ -755,11 +743,6 @@ TEST_F(ScanServiceTest, HoldingSpaceScan) {
        type_num <= static_cast<int>(mojo_ipc::FileType::kMaxValue);
        ++type_num) {
     auto type = static_cast<mojo_ipc::FileType>(type_num);
-    if (type == mojo_ipc::FileType::kSearchablePdf &&
-        !base::FeatureList::IsEnabled(
-            chromeos::features::kScanAppSearchablePdf)) {
-      continue;
-    }
 
     fake_lorgnette_scanner_manager_.SetScanResponse(scan_data);
     const std::vector<base::FilePath> saved_scan_paths = CreateSavedScanPaths(
@@ -804,8 +787,6 @@ TEST_F(ScanServiceTest, HoldingSpaceScan) {
 // Test that a multi-page scan can be performed successfully.
 TEST_F(ScanServiceTest, MultiPageScan) {
   base::HistogramTester histogram_tester;
-  scoped_feature_list_.InitWithFeatures(
-      {chromeos::features::kScanAppMultiPageScan}, {});
 
   fake_lorgnette_scanner_manager_.SetGetScannerNamesResponse(
       {kFirstTestScannerName});
@@ -825,7 +806,7 @@ TEST_F(ScanServiceTest, MultiPageScan) {
 
   mojo_ipc::ScanSettings settings = CreateScanSettings(
       scanned_files_mount_->GetRootPath(), mojo_ipc::FileType::kPdf);
-  int new_page_index = 0;
+  uint32_t new_page_index = 0;
 
   // Scan the first page without completing the scan.
   EXPECT_TRUE(StartMultiPageScan(scanners[0]->id, settings.Clone()));
@@ -861,8 +842,6 @@ TEST_F(ScanServiceTest, MultiPageScan) {
 // Test that when a multi-page scan fails, the scan job is marked as failed.
 TEST_F(ScanServiceTest, MultiPageScanFails) {
   base::HistogramTester histogram_tester;
-  scoped_feature_list_.InitWithFeatures(
-      {chromeos::features::kScanAppMultiPageScan}, {});
 
   fake_lorgnette_scanner_manager_.SetGetScannerNamesResponse(
       {kFirstTestScannerName});
@@ -880,7 +859,7 @@ TEST_F(ScanServiceTest, MultiPageScanFails) {
   EXPECT_EQ(mojo_ipc::ScanResult::kUnknownError,
             fake_scan_job_observer_.multi_page_scan_result());
   EXPECT_TRUE(fake_scan_job_observer_.scanned_file_paths().empty());
-  EXPECT_EQ(0, fake_scan_job_observer_.new_page_index());
+  EXPECT_EQ(0u, fake_scan_job_observer_.new_page_index());
 
   // Set scan data to empty vector in FakeLorgnetteScannerManager so the next
   // scan will fail.
@@ -902,9 +881,6 @@ TEST_F(ScanServiceTest, MultiPageScanFails) {
 // Test that attempting to start a second multi-page scan while another
 // multi-page scan session is going will fail.
 TEST_F(ScanServiceTest, StartingAnotherMultiPageScan) {
-  scoped_feature_list_.InitWithFeatures(
-      {chromeos::features::kScanAppMultiPageScan}, {});
-
   fake_lorgnette_scanner_manager_.SetGetScannerNamesResponse(
       {kFirstTestScannerName});
   const std::vector<std::string> scan_data = {CreatePng()};
@@ -921,7 +897,7 @@ TEST_F(ScanServiceTest, StartingAnotherMultiPageScan) {
   EXPECT_EQ(mojo_ipc::ScanResult::kUnknownError,
             fake_scan_job_observer_.multi_page_scan_result());
   EXPECT_TRUE(fake_scan_job_observer_.scanned_file_paths().empty());
-  EXPECT_EQ(0, fake_scan_job_observer_.new_page_index());
+  EXPECT_EQ(0u, fake_scan_job_observer_.new_page_index());
 
   // The second attempt should fail.
   EXPECT_FALSE(StartMultiPageScan(scanners[0]->id, settings.Clone()));
@@ -931,8 +907,6 @@ TEST_F(ScanServiceTest, StartingAnotherMultiPageScan) {
 // images.
 TEST_F(ScanServiceTest, MultiPageScanRemoveWithTwoPages) {
   base::HistogramTester histogram_tester;
-  scoped_feature_list_.InitWithFeatures(
-      {chromeos::features::kScanAppMultiPageScan}, {});
 
   fake_lorgnette_scanner_manager_.SetGetScannerNamesResponse(
       {kFirstTestScannerName});
@@ -941,7 +915,7 @@ TEST_F(ScanServiceTest, MultiPageScanRemoveWithTwoPages) {
 
   mojo_ipc::ScanSettings settings = CreateScanSettings(
       scanned_files_mount_->GetRootPath(), mojo_ipc::FileType::kPdf);
-  int new_page_index = 0;
+  uint32_t new_page_index = 0;
 
   const std::string first_scanned_image = CreatePng(/*alpha=*/1);
   const std::vector<std::string> first_scan_data = {first_scanned_image};
@@ -961,7 +935,7 @@ TEST_F(ScanServiceTest, MultiPageScanRemoveWithTwoPages) {
 
   const std::vector<std::string> scanned_images =
       scan_service_->GetScannedImagesForTesting();
-  EXPECT_EQ(1, scanned_images.size());
+  EXPECT_EQ(1u, scanned_images.size());
   EXPECT_EQ(second_scanned_image, scanned_images[0]);
 
   // Expect 1 record of the Scanning.NumPagesScanned metric in the 1 pages
@@ -978,8 +952,6 @@ TEST_F(ScanServiceTest, MultiPageScanRemoveWithTwoPages) {
 // images.
 TEST_F(ScanServiceTest, MultiPageScanRemoveWithThreePages) {
   base::HistogramTester histogram_tester;
-  scoped_feature_list_.InitWithFeatures(
-      {chromeos::features::kScanAppMultiPageScan}, {});
 
   fake_lorgnette_scanner_manager_.SetGetScannerNamesResponse(
       {kFirstTestScannerName});
@@ -988,7 +960,7 @@ TEST_F(ScanServiceTest, MultiPageScanRemoveWithThreePages) {
 
   mojo_ipc::ScanSettings settings = CreateScanSettings(
       scanned_files_mount_->GetRootPath(), mojo_ipc::FileType::kPdf);
-  int new_page_index = 0;
+  uint32_t new_page_index = 0;
 
   const std::string first_scanned_image = CreatePng(/*alpha=*/1);
   const std::vector<std::string> first_scan_data = {first_scanned_image};
@@ -1014,7 +986,7 @@ TEST_F(ScanServiceTest, MultiPageScanRemoveWithThreePages) {
 
   const std::vector<std::string> scanned_images =
       scan_service_->GetScannedImagesForTesting();
-  EXPECT_EQ(2, scanned_images.size());
+  EXPECT_EQ(2u, scanned_images.size());
   EXPECT_EQ(first_scanned_image, scanned_images[0]);
   EXPECT_EQ(third_scanned_image, scanned_images[1]);
 
@@ -1032,8 +1004,6 @@ TEST_F(ScanServiceTest, MultiPageScanRemoveWithThreePages) {
 // multi-page scan session is reset and a new session can be started.
 TEST_F(ScanServiceTest, MultiPageScanRemoveLastPage) {
   base::HistogramTester histogram_tester;
-  scoped_feature_list_.InitWithFeatures(
-      {chromeos::features::kScanAppMultiPageScan}, {});
 
   fake_lorgnette_scanner_manager_.SetGetScannerNamesResponse(
       {kFirstTestScannerName});
@@ -1044,7 +1014,7 @@ TEST_F(ScanServiceTest, MultiPageScanRemoveLastPage) {
 
   mojo_ipc::ScanSettings settings = CreateScanSettings(
       scanned_files_mount_->GetRootPath(), mojo_ipc::FileType::kPdf);
-  int new_page_index = 0;
+  uint32_t new_page_index = 0;
 
   EXPECT_TRUE(StartMultiPageScan(scanners[0]->id, settings.Clone()));
   EXPECT_EQ(new_page_index++, fake_scan_job_observer_.new_page_index());
@@ -1061,7 +1031,7 @@ TEST_F(ScanServiceTest, MultiPageScanRemoveLastPage) {
 
   const std::vector<std::string> scanned_images =
       scan_service_->GetScannedImagesForTesting();
-  EXPECT_EQ(1, scanned_images.size());
+  EXPECT_EQ(1u, scanned_images.size());
 
   // Expect 1 record of the Scanning.NumPagesScanned metric in the 1 page
   // scanned bucket.
@@ -1077,8 +1047,6 @@ TEST_F(ScanServiceTest, MultiPageScanRemoveLastPage) {
 // one scanned image.
 TEST_F(ScanServiceTest, MultiPageScanRescanWithOnePage) {
   base::HistogramTester histogram_tester;
-  scoped_feature_list_.InitWithFeatures(
-      {chromeos::features::kScanAppMultiPageScan}, {});
 
   fake_lorgnette_scanner_manager_.SetGetScannerNamesResponse(
       {kFirstTestScannerName});
@@ -1087,7 +1055,7 @@ TEST_F(ScanServiceTest, MultiPageScanRescanWithOnePage) {
 
   mojo_ipc::ScanSettings settings = CreateScanSettings(
       scanned_files_mount_->GetRootPath(), mojo_ipc::FileType::kPdf);
-  int new_page_index = 0;
+  uint32_t new_page_index = 0;
 
   const std::string first_scanned_image = CreatePng(/*alpha=*/1);
   const std::vector<std::string> first_scan_data = {first_scanned_image};
@@ -1101,12 +1069,12 @@ TEST_F(ScanServiceTest, MultiPageScanRescanWithOnePage) {
       rescanned_scanned_image};
   fake_lorgnette_scanner_manager_.SetScanResponse(rescanned_scan_data);
   EXPECT_TRUE(RescanPage(scanners[0]->id, settings.Clone(), /*page_index=*/0));
-  EXPECT_EQ(0, fake_scan_job_observer_.new_page_index());
+  EXPECT_EQ(0u, fake_scan_job_observer_.new_page_index());
   CompleteMultiPageScan();
 
   const std::vector<std::string> scanned_images =
       scan_service_->GetScannedImagesForTesting();
-  EXPECT_EQ(1, scanned_images.size());
+  EXPECT_EQ(1u, scanned_images.size());
   EXPECT_EQ(rescanned_scanned_image, scanned_images[0]);
 
   // Expect 1 record of the Scanning.NumPagesScanned metric in the 1 pages
@@ -1123,8 +1091,6 @@ TEST_F(ScanServiceTest, MultiPageScanRescanWithOnePage) {
 // three scanned images.
 TEST_F(ScanServiceTest, MultiPageScanRescanWithThreePages) {
   base::HistogramTester histogram_tester;
-  scoped_feature_list_.InitWithFeatures(
-      {chromeos::features::kScanAppMultiPageScan}, {});
 
   fake_lorgnette_scanner_manager_.SetGetScannerNamesResponse(
       {kFirstTestScannerName});
@@ -1133,7 +1099,7 @@ TEST_F(ScanServiceTest, MultiPageScanRescanWithThreePages) {
 
   mojo_ipc::ScanSettings settings = CreateScanSettings(
       scanned_files_mount_->GetRootPath(), mojo_ipc::FileType::kPdf);
-  int new_page_index = 0;
+  uint32_t new_page_index = 0;
 
   const std::string first_scanned_image = CreatePng(/*alpha=*/1);
   const std::vector<std::string> first_scan_data = {first_scanned_image};
@@ -1159,12 +1125,12 @@ TEST_F(ScanServiceTest, MultiPageScanRescanWithThreePages) {
       rescanned_scanned_image};
   fake_lorgnette_scanner_manager_.SetScanResponse(rescanned_scan_data);
   EXPECT_TRUE(RescanPage(scanners[0]->id, settings.Clone(), /*page_index=*/1));
-  EXPECT_EQ(1, fake_scan_job_observer_.new_page_index());
+  EXPECT_EQ(1u, fake_scan_job_observer_.new_page_index());
   CompleteMultiPageScan();
 
   const std::vector<std::string> scanned_images =
       scan_service_->GetScannedImagesForTesting();
-  EXPECT_EQ(3, scanned_images.size());
+  EXPECT_EQ(3u, scanned_images.size());
   EXPECT_EQ(first_scanned_image, scanned_images[0]);
   EXPECT_EQ(rescanned_scanned_image, scanned_images[1]);
   EXPECT_EQ(third_scanned_image, scanned_images[2]);

@@ -16,8 +16,11 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/system/sys_info.h"
 #include "media/base/bitrate.h"
+#include "media/base/bitstream_buffer.h"
 #include "media/base/color_plane_layout.h"
 #include "media/base/format_utils.h"
+#include "media/base/media_log.h"
+#include "media/base/video_frame.h"
 #include "media/base/video_types.h"
 #include "media/gpu/buffer_validation.h"
 #include "media/gpu/gpu_video_encode_accelerator_factory.h"
@@ -101,15 +104,6 @@ void GpuArcVideoEncodeAccelerator::Initialize(
     InitializeCallback callback) {
   auto result = InitializeTask(config, std::move(client));
   std::move(callback).Run(result);
-}
-
-void GpuArcVideoEncodeAccelerator::InitializeDeprecated(
-    const media::VideoEncodeAccelerator::Config& config,
-    mojo::PendingRemote<mojom::VideoEncodeClient> client,
-    InitializeDeprecatedCallback callback) {
-  auto result = InitializeTask(config, std::move(client));
-  std::move(callback).Run(result ==
-                          mojom::VideoEncodeAccelerator::Result::kSuccess);
 }
 
 mojom::VideoEncodeAccelerator::Result
@@ -251,9 +245,11 @@ void GpuArcVideoEncodeAccelerator::UseBitstreamBuffer(
   // rather than pulling out the fd. https://crbug.com/713763.
   // TODO(rockot): Pass through a real size rather than |0|.
   base::UnguessableToken guid = base::UnguessableToken::Create();
-  auto shm_region = base::subtle::PlatformSharedMemoryRegion::Take(
-      std::move(fd), base::subtle::PlatformSharedMemoryRegion::Mode::kUnsafe,
-      shmem_size, guid);
+  auto shm_region = base::UnsafeSharedMemoryRegion::Deserialize(
+      base::subtle::PlatformSharedMemoryRegion::Take(
+          std::move(fd),
+          base::subtle::PlatformSharedMemoryRegion::Mode::kUnsafe, shmem_size,
+          guid));
   if (!shm_region.IsValid()) {
     client_->NotifyError(Error::kInvalidArgumentError);
     return;

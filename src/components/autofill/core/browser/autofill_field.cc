@@ -15,10 +15,13 @@
 
 namespace autofill {
 
-AutofillField::AutofillField() = default;
+AutofillField::AutofillField() {
+  local_type_predictions_.fill(NO_SERVER_DATA);
+}
 
-AutofillField::AutofillField(FieldSignature field_signature)
-    : field_signature_(field_signature) {}
+AutofillField::AutofillField(FieldSignature field_signature) : AutofillField() {
+  field_signature_ = field_signature;
+}
 
 AutofillField::AutofillField(const FormFieldData& field)
     : FormFieldData(field),
@@ -26,6 +29,7 @@ AutofillField::AutofillField(const FormFieldData& field)
       parseable_label_(field.label) {
   field_signature_ =
       CalculateFieldSignatureByNameAndType(name, form_control_type);
+  local_type_predictions_.fill(NO_SERVER_DATA);
 }
 
 AutofillField::~AutofillField() = default;
@@ -35,6 +39,19 @@ std::unique_ptr<AutofillField> AutofillField::CreateForPasswordManagerUpload(
   std::unique_ptr<AutofillField> field;
   field.reset(new AutofillField(field_signature));
   return field;
+}
+
+ServerFieldType AutofillField::heuristic_type() const {
+  return heuristic_type(GetActivePatternSource());
+}
+
+ServerFieldType AutofillField::heuristic_type(PatternSource s) const {
+  ServerFieldType type = local_type_predictions_[static_cast<size_t>(s)];
+  // `NO_SERVER_DATA` would mean that there is no heuristic type. Client code
+  // presumes there is a prediction, therefore we coalesce to `UNKNOWN_TYPE`.
+  // Shadow predictions however are not used and we care whether the type is
+  // `UNKNOWN_TYPE` or whether we never ran the heuristics.
+  return (type > 0 || s != GetActivePatternSource()) ? type : UNKNOWN_TYPE;
 }
 
 ServerFieldType AutofillField::server_type() const {
@@ -49,17 +66,17 @@ bool AutofillField::server_type_prediction_is_override() const {
                                      : server_predictions_[0].override();
 }
 
-void AutofillField::set_heuristic_type(ServerFieldType type) {
-  if (type >= 0 && type < MAX_VALID_FIELD_TYPE &&
-      type != FIELD_WITH_DEFAULT_VALUE) {
-    heuristic_type_ = type;
-  } else {
+void AutofillField::set_heuristic_type(PatternSource s, ServerFieldType type) {
+  if (type < 0 || type > MAX_VALID_FIELD_TYPE ||
+      type == FIELD_WITH_DEFAULT_VALUE) {
     NOTREACHED();
     // This case should not be reachable; but since this has potential
     // implications on data uploaded to the server, better safe than sorry.
-    heuristic_type_ = UNKNOWN_TYPE;
+    type = UNKNOWN_TYPE;
   }
-  overall_type_ = AutofillType(NO_SERVER_DATA);
+  local_type_predictions_[static_cast<size_t>(s)] = type;
+  if (s == GetActivePatternSource())
+    overall_type_ = AutofillType(NO_SERVER_DATA);
 }
 
 void AutofillField::add_possible_types_validities(
@@ -122,23 +139,33 @@ AutofillType AutofillField::ComputedType() const {
     return AutofillType(server_type());
   }
 
-  // If the explicit type is cc-exp and either the server or heuristics agree on
-  // a 2 vs 4 digit specialization of cc-exp, use that specialization.
+  // If the explicit type is cc-exp and either the server or heuristics agree
+  // on a 2 vs 4 digit specialization of cc-exp, use that specialization.
   if (html_type_ == HTML_TYPE_CREDIT_CARD_EXP) {
     if (server_type() == CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR ||
         server_type() == CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR) {
       return AutofillType(server_type());
     }
-    if (heuristic_type_ == CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR ||
-        heuristic_type_ == CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR) {
-      return AutofillType(heuristic_type_);
+    if (heuristic_type() == CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR ||
+        heuristic_type() == CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR) {
+      return AutofillType(heuristic_type());
     }
   }
 
-  // Use the html type specified by the website unless it is unrecognized and
-  // autofill predicts a credit card type.
+  // If the autocomplete attribute is unrecognized, it is used to effectively
+  // return an UNKNOWN_TYPE predition, unless either the heuristic or server
+  // prediction suggest that the field is credit-card related, or if the
+  // |kAutofillFillAndImportFromMoreFields| feature is enabled.
+  if (html_type_ == HTML_TYPE_UNRECOGNIZED && !IsCreditCardPrediction() &&
+      !base::FeatureList::IsEnabled(
+          features::kAutofillFillAndImportFromMoreFields)) {
+    return AutofillType(html_type_, html_mode_);
+  }
+
+  // If the autocomplete attribute is neither empty or unrecognized, use it
+  // unconditionally.
   if (html_type_ != HTML_TYPE_UNSPECIFIED &&
-      !(html_type_ == HTML_TYPE_UNRECOGNIZED && IsCreditCardPrediction())) {
+      html_type_ != HTML_TYPE_UNRECOGNIZED) {
     return AutofillType(html_type_, html_mode_);
   }
 
@@ -149,20 +176,20 @@ AutofillType AutofillField::ComputedType() const {
     // it might be better to fix this server-side.
     // See http://crbug.com/429236 for background.
     bool believe_server = !(server_type() == NAME_FULL &&
-                            heuristic_type_ == CREDIT_CARD_NAME_FULL) &&
+                            heuristic_type() == CREDIT_CARD_NAME_FULL) &&
                           !(server_type() == CREDIT_CARD_NAME_FULL &&
-                            heuristic_type_ == NAME_FULL) &&
+                            heuristic_type() == NAME_FULL) &&
                           !(server_type() == NAME_FIRST &&
-                            heuristic_type_ == CREDIT_CARD_NAME_FIRST) &&
+                            heuristic_type() == CREDIT_CARD_NAME_FIRST) &&
                           !(server_type() == NAME_LAST &&
-                            heuristic_type_ == CREDIT_CARD_NAME_LAST);
+                            heuristic_type() == CREDIT_CARD_NAME_LAST);
 
     // Either way, retain a preference for the the CVC heuristic over the
     // server's password predictions (http://crbug.com/469007)
     believe_server =
         believe_server && !(AutofillType(server_type()).group() ==
                                 FieldTypeGroup::kPasswordField &&
-                            heuristic_type_ == CREDIT_CARD_VERIFICATION_CODE);
+                            heuristic_type() == CREDIT_CARD_VERIFICATION_CODE);
 
     // For new name tokens the heuristic predictions get precedence over the
     // server predictions.
@@ -171,27 +198,27 @@ AutofillType AutofillField::ComputedType() const {
         believe_server &&
         !(base::FeatureList::IsEnabled(
               features::kAutofillEnableSupportForMoreStructureInNames) &&
-          (heuristic_type_ == NAME_LAST_SECOND ||
-           heuristic_type_ == NAME_LAST_FIRST));
+          (heuristic_type() == NAME_LAST_SECOND ||
+           heuristic_type() == NAME_LAST_FIRST));
 
-    // For new address tokens the heuristic predictions get precedence over the
-    // server predictions.
+    // For new address tokens the heuristic predictions get precedence over
+    // the server predictions.
     // TODO(crbug.com/1098943): Remove feature check once launched.
     believe_server =
         believe_server &&
         !(base::FeatureList::IsEnabled(
               features::kAutofillEnableSupportForMoreStructureInAddresses) &&
-          (heuristic_type_ == ADDRESS_HOME_STREET_NAME ||
-           heuristic_type_ == ADDRESS_HOME_HOUSE_NUMBER));
+          (heuristic_type() == ADDRESS_HOME_STREET_NAME ||
+           heuristic_type() == ADDRESS_HOME_HOUSE_NUMBER));
 
     believe_server =
-        believe_server && !(heuristic_type_ == MERCHANT_PROMO_CODE);
+        believe_server && !(heuristic_type() == MERCHANT_PROMO_CODE);
 
     if (believe_server)
       return AutofillType(server_type());
   }
 
-  return AutofillType(heuristic_type_);
+  return AutofillType(heuristic_type());
 }
 
 AutofillType AutofillField::Type() const {
@@ -231,6 +258,13 @@ bool AutofillField::IsFieldFillable() const {
   return IsFillableFieldType(field_type);
 }
 
+bool AutofillField::ShouldSuppressPromptDueToUnrecognizedAutocompleteAttribute()
+    const {
+  return html_type_ == HTML_TYPE_UNRECOGNIZED && !IsCreditCardPrediction() &&
+         base::FeatureList::IsEnabled(
+             features::kAutofillFillAndImportFromMoreFields);
+}
+
 void AutofillField::SetPasswordRequirements(PasswordRequirementsSpec spec) {
   password_requirements_ = std::move(spec);
 }
@@ -246,7 +280,7 @@ void AutofillField::NormalizePossibleTypesValidities() {
 
 bool AutofillField::IsCreditCardPrediction() const {
   return AutofillType(server_type()).group() == FieldTypeGroup::kCreditCard ||
-         AutofillType(heuristic_type_).group() == FieldTypeGroup::kCreditCard;
+         AutofillType(heuristic_type()).group() == FieldTypeGroup::kCreditCard;
 }
 
 }  // namespace autofill

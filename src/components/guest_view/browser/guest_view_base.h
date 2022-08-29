@@ -11,6 +11,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
+#include "components/guest_view/browser/guest_view_message_handler.h"
 #include "components/guest_view/common/guest_view_constants.h"
 #include "components/zoom/zoom_observer.h"
 #include "content/public/browser/browser_plugin_guest_delegate.h"
@@ -164,7 +165,10 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   // Returns the user browser context of the embedder.
   content::BrowserContext* browser_context() const { return browser_context_; }
 
-  // Returns the URL of the owner WebContents.
+  // Returns the URL of the owner WebContents' SiteInstance.
+  // WARNING: Be careful using this with GuestViews where
+  // `CanBeEmbeddedInsideCrossProcessFrames` is true. This returns the site of
+  // the WebContents, not the embedding frame.
   const GURL& GetOwnerSiteURL() const;
 
   // Returns the host of the owner WebContents. For extensions, this is the
@@ -195,13 +199,16 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   // |embedder_frame| is a frame in the embedder WebContents (owned by a
   // HTMLFrameOwnerElement associated with the GuestView's element in the
   // embedder process) which will be used for attaching.
-  void AttachToOuterWebContentsFrame(content::RenderFrameHost* embedder_frame,
-                                     int32_t element_instance_id,
-                                     bool is_full_page_plugin);
+  void AttachToOuterWebContentsFrame(
+      content::RenderFrameHost* embedder_frame,
+      int32_t element_instance_id,
+      bool is_full_page_plugin,
+      GuestViewMessageHandler::AttachToEmbedderFrameCallback
+          attachment_callback);
 
   // Returns true if the corresponding guest is allowed to be embedded inside an
   // <iframe> which is cross process.
-  virtual bool CanBeEmbeddedInsideCrossProcessFrames();
+  virtual bool CanBeEmbeddedInsideCrossProcessFrames() const;
 
  protected:
   explicit GuestViewBase(content::WebContents* owner_web_contents);
@@ -400,7 +407,9 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
                   content::RenderFrameHost* outer_contents_frame,
                   int browser_plugin_instance_id,
                   bool is_full_page_plugin,
-                  base::OnceClosure completion_callback);
+                  base::OnceClosure completion_callback,
+                  GuestViewMessageHandler::AttachToEmbedderFrameCallback
+                      attachment_callback);
 
   // This guest tracks the lifetime of the WebContents specified by
   // |owner_web_contents_|. If |owner_web_contents_| is destroyed then this

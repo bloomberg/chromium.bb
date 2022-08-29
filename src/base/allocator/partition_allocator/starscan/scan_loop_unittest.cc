@@ -4,16 +4,15 @@
 
 #include "base/allocator/partition_allocator/starscan/scan_loop.h"
 
+#include "base/allocator/partition_allocator/partition_alloc_base/cpu.h"
 #include "base/allocator/partition_allocator/partition_alloc_config.h"
-#include "base/cpu.h"
 #include "build/build_config.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(PA_HAS_64_BITS_POINTERS)
 
-namespace base {
-namespace internal {
+namespace partition_alloc::internal {
 
 namespace {
 
@@ -21,7 +20,7 @@ class TestScanLoop final : public ScanLoop<TestScanLoop> {
   friend class ScanLoop<TestScanLoop>;
 
  public:
-  TestScanLoop(SimdSupport ss) : ScanLoop(ss) {}
+  explicit TestScanLoop(SimdSupport ss) : ScanLoop(ss) {}
 
   size_t visited() const { return visited_; }
 
@@ -31,8 +30,8 @@ class TestScanLoop final : public ScanLoop<TestScanLoop> {
   static constexpr uintptr_t kCageMask = 0xffffff0000000000;
   static constexpr uintptr_t kBasePtr = 0x1234560000000000;
 
-  uintptr_t CageBase() const { return kBasePtr; }
-  static constexpr uintptr_t CageMask() { return kCageMask; }
+  static uintptr_t CageBase() { return kBasePtr; }
+  static uintptr_t CageMask() { return kCageMask; }
 
   void CheckPointer(uintptr_t maybe_ptr) { ++visited_; }
 
@@ -51,7 +50,8 @@ void TestOnRangeWithAlignment(TestScanLoop& sl,
   alignas(Alignment) uintptr_t range[] = {args...};
   std::sort(std::begin(range), std::end(range));
   do {
-    sl.Run(std::begin(range), std::end(range));
+    sl.Run(reinterpret_cast<uintptr_t>(std::begin(range)),
+           reinterpret_cast<uintptr_t>(std::end(range)));
     EXPECT_EQ(expected_visited, sl.visited());
     sl.Reset();
   } while (std::next_permutation(std::begin(range), std::end(range)));
@@ -166,7 +166,6 @@ TEST(PartitionAllocScanLoopTest, VectorizedNEON) {
 }
 #endif  // defined(PA_STARSCAN_NEON_SUPPORTED)
 
-}  // namespace internal
-}  // namespace base
+}  // namespace partition_alloc::internal
 
 #endif  // defined(PA_HAS_64_BITS_POINTERS)

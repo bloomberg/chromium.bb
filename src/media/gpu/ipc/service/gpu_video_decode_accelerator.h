@@ -60,7 +60,7 @@ class GpuVideoDecodeAccelerator
       const gpu::GpuDriverBugWorkarounds& workarounds);
 
   // VideoDecodeAccelerator::Client implementation.
-  void NotifyInitializationComplete(Status status) override;
+  void NotifyInitializationComplete(DecoderStatus status) override;
   void ProvidePictureBuffers(uint32_t requested_num_of_buffers,
                              VideoPixelFormat format,
                              uint32_t textures_per_buffer,
@@ -112,7 +112,7 @@ class GpuVideoDecodeAccelerator
   GpuVideoDecodeGLClient gl_client_;
 
   // Unowned pointer to the underlying gpu::CommandBufferStub.  |this| is
-  // registered as a DestuctionObserver of |stub_| and will self-delete when
+  // registered as a DestructionObserver of |stub_| and will self-delete when
   // |stub_| is destroyed.
   const raw_ptr<gpu::CommandBufferStub> stub_;
 

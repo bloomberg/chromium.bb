@@ -34,6 +34,13 @@
 
 namespace {
 // The infobar to display when a popup is blocked.
+
+// The size of the symbol image.
+NSInteger kSymbolImagePointSize = 18;
+
+// The name if the popup symbol.
+NSString* const kPopupBadgeMinusSymbol = @"popup_badge_minus";
+
 class BlockPopupInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   BlockPopupInfoBarDelegate(
@@ -50,11 +57,20 @@ class BlockPopupInfoBarDelegate : public ConfirmInfoBarDelegate {
     return POPUP_BLOCKED_INFOBAR_DELEGATE_MOBILE;
   }
 
-  gfx::Image GetIcon() const override {
+  ui::ImageModel GetIcon() const override {
     if (icon_.IsEmpty()) {
-      icon_ = gfx::Image([UIImage imageNamed:@"infobar_popup_blocker"]);
+      // This symbol is not created using CustomSymbolWithPointSize() because
+      // "ios/chrome/browser/ui/icons/chrome_symbol.h" cannot be imported here.
+      UIImageSymbolConfiguration* configuration = [UIImageSymbolConfiguration
+          configurationWithPointSize:kSymbolImagePointSize
+                              weight:UIImageSymbolWeightMedium
+                               scale:UIImageSymbolScaleMedium];
+      UIImage* image = [UIImage imageNamed:kPopupBadgeMinusSymbol
+                                  inBundle:nil
+                         withConfiguration:configuration];
+      icon_ = gfx::Image(image);
     }
-    return icon_;
+    return ui::ImageModel::FromImage(icon_);
   }
 
   std::u16string GetMessageText() const override {

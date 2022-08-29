@@ -1,29 +1,11 @@
-# Nearby Connections Library
+# Nearby C++ Library
 
-This is not an officially supported Google product.
+The repository contains the Nearby project C++ library source code. This is not an
+officially supported Google product.
 
-**Coathored by:**
-*  (Java/C++) Varun Kapoor “reznor”
-*  (Java) Maria-Ines Carrera “marianines”
-*  (Java) Will Harmon “xlythe”
-*  (Java/C++/ObjC) Alex Kang “alexanderkang”
-*  (Java/C++) Amanda Lee “ahlee”
-*  (C++) Tracy Zhou “tracyzhou”
-*  (ObjC) Dan Webb “dwebb”
-*  (C++) John Kaczor “johngk”
-*  (C++/ObjC) Edwin Wu “edwinwu”
-*  (C++) Alexey Polyudov “apolyudov”
+# About the Nearby Project
 
-**Status:** Implemented in C++
-
-**Design reviewers:** TODO
-
-**Implementation reviewer**: TODO
-
-**Last Updated:** TODO
-
-# Overview
-
+## Nearby Connection
 Nearby Connections is a high level protocol on top of Bluetooth/WiFi that acts
 as a medium-agnostic socket. Devices are able to advertise, scan, and connect
 with one another over any shared medium (eg. BT <-> BT).
@@ -35,24 +17,53 @@ recombined on the receiving device.
 See [Nearby Connections Overview](https://developers.google.com/nearby/connections/overview)
 for more information.
 
-# Checkout, build, test instructions
-## Checkout
-pre-requisites: git
+# Checkout the source tree
 
 ```shell
-git clone https://github.com/google/nearby-connections
-cd nearby-connections
+git clone https://github.com/google/nearby
+cd nearby
 git submodule update --init --recursive
 ```
 
-this is a "source root" directory of the project
+# Building Nearby, Unit Testing and Sample Apps
+We support multiple platforms including Linux, iOS & Windows.
+## Building for Linux
+Currently we support building from source using [bazel] (https://bazel.build). Other BUILD system such as cmake may be added later.
 
-## Build
-pre-requisites:
-openssl, cmake, c++ toolchain (c++17-capable)
+### Prerequisites:
 
-TODO
+1. Bazel
+2. clang with support for c++ 17+
+3. Openssl libcrypto.so (-lssl;-lcrypto).
 
-## Running unit tests
 
-TODO
+To build the Nearby Connection Core library:
+
+```shell
+CC=clang CXX=clang++ bazel build -s --check_visibility=false //connections:core  --spawn_strategy=standalone --verbose_failures
+```
+
+
+## Building for macOS and iOS
+
+Currently we support building with [Swift Package Manager](https://www.swift.org/package-manager).
+
+### Prerequisites:
+
+1. Xcode. Available from Apple Store.
+2. Google Protobuf Compiler (protoc). If you have [homebrew](https://brew.sh/) installed, you can do `brew install protobuf`.
+
+To build the Nearby Connection library:
+
+```shell
+swift build
+```
+
+We also provide a iOS [sample app using the Nearby Connections library]
+(https://github.com/google/nearby/blob/master/internal/platform/implementation/ios/Example/NearbyConnectionsExample/README.md).
+
+
+### Limitation
+The only Medium supported is Wifi LAN.
+
+**Last Updated:** April 7, 2022

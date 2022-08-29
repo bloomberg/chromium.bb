@@ -19,7 +19,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/values.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
@@ -44,7 +43,6 @@
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "third_party/icu/source/i18n/unicode/coll.h"
-#include "ui/base/ime/ash/input_method_descriptor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_collator.h"
 
@@ -53,6 +51,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/ime/ash/component_extension_ime_manager.h"
 #include "ui/base/ime/ash/extension_ime_util.h"
+#include "ui/base/ime/ash/input_method_descriptor.h"
 #include "ui/base/ime/ash/input_method_manager.h"
 #include "ui/base/ime/ash/input_method_util.h"
 #endif
@@ -82,7 +81,7 @@ base::flat_set<std::string> GetIMEsFromPref(PrefService* prefs,
 // Returns the set of allowed UI locales.
 base::flat_set<std::string> GetAllowedLanguages(PrefService* prefs) {
   const auto& allowed_languages_values =
-      prefs->GetList(prefs::kAllowedLanguages)->GetList();
+      prefs->GetList(prefs::kAllowedLanguages)->GetListDeprecated();
   return base::MakeFlatSet<std::string>(
       allowed_languages_values, {},
       [](const auto& locale_value) { return locale_value.GetString(); });
@@ -205,8 +204,7 @@ CreateTranslatePrefsForBrowserContext(
 }  // namespace
 
 LanguageSettingsPrivateGetLanguageListFunction::
-    LanguageSettingsPrivateGetLanguageListFunction()
-    : language_list_(std::make_unique<base::ListValue>()) {}
+    LanguageSettingsPrivateGetLanguageListFunction() = default;
 
 LanguageSettingsPrivateGetLanguageListFunction::
     ~LanguageSettingsPrivateGetLanguageListFunction() = default;
@@ -229,7 +227,7 @@ LanguageSettingsPrivateGetLanguageListFunction::Run() {
       std::move(spellcheck_languages));
 
   // Build the language list.
-  language_list_->ClearList();
+  language_list_.clear();
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   const base::flat_set<std::string> allowed_ui_locales(GetAllowedLanguages(
       Profile::FromBrowserContext(browser_context())->GetPrefs()));
@@ -259,7 +257,7 @@ LanguageSettingsPrivateGetLanguageListFunction::Run() {
     }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-    language_list_->Append(language.ToValue());
+    language_list_.Append(base::Value::FromUniquePtrValue(language.ToValue()));
   }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -271,11 +269,11 @@ LanguageSettingsPrivateGetLanguageListFunction::Run() {
     language.code = ash::extension_ime_util::kArcImeLanguage;
     language.display_name =
         l10n_util::GetStringUTF8(IDS_SETTINGS_LANGUAGES_KEYBOARD_APPS);
-    language_list_->Append(language.ToValue());
+    language_list_.Append(base::Value::FromUniquePtrValue(language.ToValue()));
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   if (spellcheck::UseBrowserSpellChecker()) {
     if (!base::FeatureList::IsEnabled(
             spellcheck::kWinDelaySpellcheckServiceInit)) {
@@ -293,18 +291,16 @@ LanguageSettingsPrivateGetLanguageListFunction::Run() {
       return RespondLater();
     }
   }
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
-  return RespondNow(
-      OneArgument(base::Value::FromUniquePtrValue(std::move(language_list_))));
+  return RespondNow(OneArgument(base::Value(std::move(language_list_))));
 }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 void LanguageSettingsPrivateGetLanguageListFunction::
     OnDictionariesInitialized() {
   UpdateSupportedPlatformDictionaries();
-  Respond(
-      OneArgument(base::Value::FromUniquePtrValue(std::move(language_list_))));
+  Respond(OneArgument(base::Value(std::move(language_list_))));
   // Matches the AddRef in Run().
   Release();
 }
@@ -313,13 +309,13 @@ void LanguageSettingsPrivateGetLanguageListFunction::
     UpdateSupportedPlatformDictionaries() {
   SpellcheckService* service =
       SpellcheckServiceFactory::GetForContext(browser_context());
-  for (auto& language_val : language_list_->GetList()) {
+  for (auto& language_val : language_list_) {
     if (service->UsesWindowsDictionary(*language_val.FindStringKey("code"))) {
       language_val.SetBoolKey("supportsSpellcheck", new bool(true));
     }
   }
 }
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
 LanguageSettingsPrivateEnableLanguageFunction::
     LanguageSettingsPrivateEnableLanguageFunction() = default;

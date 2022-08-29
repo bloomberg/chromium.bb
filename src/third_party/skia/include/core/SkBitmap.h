@@ -18,6 +18,7 @@
 #include "include/core/SkTileMode.h"
 
 class SkBitmap;
+class SkColorSpace;
 struct SkMask;
 class SkMipmap;
 struct SkIRect;
@@ -158,7 +159,7 @@ public:
 
         @return  SkColorSpace in SkImageInfo, or nullptr
     */
-    SkColorSpace* colorSpace() const { return fPixmap.colorSpace(); }
+    SkColorSpace* colorSpace() const;
 
     /** Returns smart pointer to SkColorSpace, the range of colors, associated with
         SkImageInfo. The smart pointer tracks the number of objects sharing this
@@ -168,7 +169,7 @@ public:
 
         @return  SkColorSpace in SkImageInfo wrapped in a smart pointer
     */
-    sk_sp<SkColorSpace> refColorSpace() const { return fPixmap.info().refColorSpace(); }
+    sk_sp<SkColorSpace> refColorSpace() const;
 
     /** Returns number of bytes per pixel required by SkColorType.
         Returns zero if colorType( is kUnknown_SkColorType.
@@ -764,7 +765,22 @@ public:
         kGray_8_SkColorType or kRGB_565_SkColorType, then alpha is ignored; RGB is
         treated as opaque. If colorType() is kAlpha_8_SkColorType, then RGB is ignored.
 
-        @param c  unpremultiplied color
+        @param c            unpremultiplied color
+        @param colorSpace   SkColorSpace of c
+
+        example: https://fiddle.skia.org/c/@Bitmap_eraseColor
+    */
+    void eraseColor(SkColor4f c, SkColorSpace* colorSpace = nullptr) const;
+
+    /** Replaces pixel values with c, interpreted as being in the sRGB SkColorSpace.
+        All pixels contained by bounds() are affected. If the colorType() is
+        kGray_8_SkColorType or kRGB_565_SkColorType, then alpha is ignored; RGB is
+        treated as opaque. If colorType() is kAlpha_8_SkColorType, then RGB is ignored.
+
+        Input color is ultimately converted to an SkColor4f, so eraseColor(SkColor4f c)
+        will have higher color resolution.
+
+        @param c  unpremultiplied color.
 
         example: https://fiddle.skia.org/c/@Bitmap_eraseColor
     */
@@ -791,6 +807,25 @@ public:
         If the colorType() is kGray_8_SkColorType or kRGB_565_SkColorType, then alpha
         is ignored; RGB is treated as opaque. If colorType() is kAlpha_8_SkColorType,
         then RGB is ignored.
+
+        @param c            unpremultiplied color
+        @param area         rectangle to fill
+        @param colorSpace   SkColorSpace of c
+
+        example: https://fiddle.skia.org/c/@Bitmap_erase
+    */
+    void erase(SkColor4f c, SkColorSpace* colorSpace, const SkIRect& area) const;
+    void erase(SkColor4f c, const SkIRect& area) const;
+
+    /** Replaces pixel values inside area with c. interpreted as being in the sRGB
+        SkColorSpace. If area does not intersect bounds(), call has no effect.
+
+        If the colorType() is kGray_8_SkColorType or kRGB_565_SkColorType, then alpha
+        is ignored; RGB is treated as opaque. If colorType() is kAlpha_8_SkColorType,
+        then RGB is ignored.
+
+        Input color is ultimately converted to an SkColor4f, so erase(SkColor4f c)
+        will have higher color resolution.
 
         @param c     unpremultiplied color
         @param area  rectangle to fill
@@ -1190,6 +1225,7 @@ private:
 
     friend class SkImage_Raster;
     friend class SkReadBuffer;        // unflatten
+    friend class GrProxyProvider;     // fMips
 };
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -5,10 +5,10 @@
 #ifndef IOS_CHROME_BROWSER_POLICY_POLICY_WATCHER_BROWSER_AGENT_H_
 #define IOS_CHROME_BROWSER_POLICY_POLICY_WATCHER_BROWSER_AGENT_H_
 
-#include <CoreFoundation/CoreFoundation.h>
+#import <CoreFoundation/CoreFoundation.h>
 
-#include "base/memory/weak_ptr.h"
-#include "base/observer_list.h"
+#import "base/memory/weak_ptr.h"
+#import "base/observer_list.h"
 #import "components/prefs/pref_change_registrar.h"
 #import "ios/chrome/browser/main/browser_user_data.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
@@ -42,9 +42,10 @@ class PolicyWatcherBrowserAgent
   void Initialize(id<PolicyChangeCommands> handler);
 
  private:
-  explicit PolicyWatcherBrowserAgent(Browser* browser);
   friend class BrowserUserData<PolicyWatcherBrowserAgent>;
   BROWSER_USER_DATA_KEY_DECL();
+
+  explicit PolicyWatcherBrowserAgent(Browser* browser);
 
   // Handler for changes to kSigninAllowed. When the pref changes to |false|,
   // sends a command to the SceneController to dismiss any in-progress sign-in
@@ -52,8 +53,13 @@ class PolicyWatcherBrowserAgent
   void ForceSignOutIfSigninDisabled();
 
   // Handler for change to kSyncManaged. When the pref changes to |true|,
-  // sends a command to the handler to show an alert.
-  void ShowSyncDisabledAlertIfNeeded();
+  // sends a command to the handler to show a prompt.
+  void ShowSyncDisabledPromptIfNeeded();
+
+  // Handler for changes to kAllowChromeDataInBackups. Excludes the entire app
+  // container from iCloud backup when the pref changes to |false|, and removes
+  // this exclusion when the pref changs to |true|.
+  void UpdateAppContainerBackupExclusion();
 
   // Callback called when the sign out is complete.
   void OnSignOutComplete();

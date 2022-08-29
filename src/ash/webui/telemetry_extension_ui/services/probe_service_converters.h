@@ -109,6 +109,15 @@ health::mojom::BluetoothAdapterInfoPtr UncheckedConvertPtr(
 health::mojom::BluetoothResultPtr UncheckedConvertPtr(
     cros_healthd::mojom::BluetoothResultPtr input);
 
+health::mojom::OsInfoPtr UncheckedConvertPtr(
+    cros_healthd::mojom::OsInfoPtr input);
+
+health::mojom::SystemInfoPtr UncheckedConvertPtr(
+    cros_healthd::mojom::SystemInfoV2Ptr input);
+
+health::mojom::SystemResultPtr UncheckedConvertPtr(
+    cros_healthd::mojom::SystemResultV2Ptr input);
+
 health::mojom::TelemetryInfoPtr UncheckedConvertPtr(
     cros_healthd::mojom::TelemetryInfoPtr input);
 
@@ -137,6 +146,12 @@ std::vector<OutputT> ConvertPtrVector(std::vector<InputT> input) {
     output.push_back(unchecked::UncheckedConvertPtr(std::move(element)));
   }
   return output;
+}
+
+template <class InputT>
+auto ConvertProbePtr(InputT input) {
+  return (!input.is_null()) ? unchecked::UncheckedConvertPtr(std::move(input))
+                            : nullptr;
 }
 
 std::vector<cros_healthd::mojom::ProbeCategoryEnum> ConvertCategoryVector(

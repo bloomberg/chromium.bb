@@ -558,7 +558,7 @@ static inline void SetLogicalWidthForTextRun(
   bool kerning_is_enabled =
       font.GetFontDescription().GetTypesettingFeatures() & kKerning;
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // FIXME: Having any font feature settings enabled can lead to selection gaps
   // on Chromium-mac. https://bugs.webkit.org/show_bug.cgi?id=113418
   bool can_use_cached_word_measurements =
@@ -708,7 +708,7 @@ void LayoutBlockFlow::UpdateLogicalWidthForAlignment(
         }
         break;
       }
-      FALLTHROUGH;
+      [[fallthrough]];
     case ETextAlign::kStart:
       if (direction == TextDirection::kLtr) {
         UpdateLogicalWidthForLeftAlignedBlock(
@@ -2482,8 +2482,8 @@ void LayoutBlockFlow::AddVisualOverflowFromInlineChildren() {
         style.OutlineRectsShouldIncludeBlockVisualOverflow());
     if (!outline_rects.IsEmpty()) {
       PhysicalRect outline_bounds = UnionRect(outline_rects);
-      outline_bounds.Inflate(
-          LayoutUnit(OutlinePainter::OutlineOutsetExtent(style)));
+      outline_bounds.Inflate(LayoutUnit(OutlinePainter::OutlineOutsetExtent(
+          style, OutlineInfo::GetFromStyle(style))));
       outline_bounds_of_all_continuations.Unite(outline_bounds);
     }
   }

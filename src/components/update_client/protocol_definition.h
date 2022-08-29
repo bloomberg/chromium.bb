@@ -41,12 +41,10 @@ struct HW {
 
 struct OS {
   OS();
-
   OS(const OS&) = delete;
   OS& operator=(const OS&) = delete;
-
   OS(OS&&);
-
+  OS& operator=(OS&&);
   ~OS();
 
   std::string platform;
@@ -79,6 +77,23 @@ struct UpdateCheck {
   bool same_version_update_allowed = false;
 };
 
+// `data` element.
+struct Data {
+  Data();
+  Data(const Data& other);
+  Data& operator=(const Data& other);
+  Data(const std::string& name,
+       const std::string& install_data_index,
+       const std::string& untrusted_data);
+  ~Data();
+
+  // `name` can be either "install" or "untrusted", corresponding to
+  // `install_data_index` and `untrusted_data`.
+  std::string name;
+  std::string install_data_index;
+  std::string untrusted_data;
+};
+
 // didrun element. The element is named "ping" for legacy reasons.
 struct Ping {
   Ping();
@@ -98,12 +113,10 @@ struct Ping {
 
 struct App {
   App();
-
   App(const App&) = delete;
   App& operator=(const App&) = delete;
-
   App(App&&);
-
+  App& operator=(App&&);
   ~App();
 
   std::string app_id;
@@ -128,6 +141,9 @@ struct App {
   // Optional update check.
   absl::optional<UpdateCheck> update_check;
 
+  // Optional `data` elements.
+  std::vector<Data> data;
+
   // Optional 'did run' ping.
   absl::optional<Ping> ping;
 
@@ -137,12 +153,10 @@ struct App {
 
 struct Request {
   Request();
-
   Request(const Request&) = delete;
   Request& operator=(const Request&) = delete;
-
   Request(Request&&);
-
+  Request& operator=(Request&&);
   ~Request();
 
   std::string protocol_version;
@@ -160,14 +174,13 @@ struct Request {
   std::string updatername;
   std::string updaterversion;
   std::string prodversion;
-  std::string lang;
   std::string updaterchannel;
   std::string prodchannel;
   std::string operating_system;
   std::string arch;
   std::string nacl_arch;
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   bool is_wow64 = false;
 #endif
 

@@ -67,6 +67,16 @@ LoadingPredictorPageLoadMetricsObserver::OnStart(
 }
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+LoadingPredictorPageLoadMetricsObserver::OnFencedFramesStart(
+    content::NavigationHandle* navigation_handle,
+    const GURL& currently_committed_url) {
+  // This class is interested only in events that are preprocessed and
+  // dispatched also to the outermost page at PageLoadTracker. So, this class
+  // doesn't need to forward events for FencedFrames.
+  return STOP_OBSERVING;
+}
+
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 LoadingPredictorPageLoadMetricsObserver::OnHidden(
     const page_load_metrics::mojom::PageLoadTiming& timing) {
   record_histogram_preconnectable_ = false;
@@ -78,7 +88,7 @@ void LoadingPredictorPageLoadMetricsObserver::OnFirstContentfulPaintInPage(
   // TODO(https://crbug.com/1190112): The code uses the primary FrameTree, but
   // this event may have been dispatched for a non-primary FrameTree.
   auto* web_contents = GetDelegate().GetWebContents();
-  auto* frame = web_contents->GetMainFrame();
+  auto* frame = web_contents->GetPrimaryMainFrame();
 
   predictor_tab_helper_->RecordFirstContentfulPaint(
       frame, GetDelegate().GetNavigationStart() +

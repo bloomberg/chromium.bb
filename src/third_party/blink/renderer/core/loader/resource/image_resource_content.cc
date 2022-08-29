@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/auto_reset.h"
 #include "base/metrics/histogram_macros.h"
 #include "third_party/blink/public/common/permissions_policy/policy_value.h"
 #include "third_party/blink/public/mojom/permissions_policy/document_policy_feature.mojom-blink.h"
@@ -115,6 +116,7 @@ void ImageResourceContent::Trace(Visitor* visitor) const {
   visitor->Trace(observers_);
   visitor->Trace(finished_observers_);
   ImageObserver::Trace(visitor);
+  MediaTiming::Trace(visitor);
 }
 
 void ImageResourceContent::HandleObserverFinished(
@@ -150,7 +152,7 @@ void ImageResourceContent::AddObserver(ImageResourceObserver* observer) {
     observer->ImageChanged(this, CanDeferInvalidation::kNo);
   }
 
-  if (IsLoaded() && observers_.Contains(observer))
+  if (IsSufficientContentLoadedForPaint() && observers_.Contains(observer))
     HandleObserverFinished(observer);
 }
 
@@ -169,9 +171,13 @@ void ImageResourceContent::RemoveObserver(ImageResourceObserver* observer) {
     DCHECK(it != finished_observers_.end());
     fully_erased = finished_observers_.erase(it);
   }
-  info_->DidRemoveClientOrObserver();
+  DidRemoveObserver();
   if (fully_erased)
     observer->NotifyImageFullyRemoved(this);
+}
+
+void ImageResourceContent::DidRemoveObserver() {
+  info_->DidRemoveClientOrObserver();
 }
 
 static void PriorityFromObserver(const ImageResourceObserver* observer,
@@ -480,6 +486,19 @@ ImageDecoder::CompressionFormat ImageResourceContent::GetCompressionFormat()
                                             GetResponse().HttpContentType());
 }
 
+uint64_t ImageResourceContent::ContentSizeForEntropy() const {
+  int64_t resource_length = GetResponse().ExpectedContentLength();
+  if (resource_length <= 0) {
+    if (image_ && image_->HasData()) {
+      // WPT and LayoutTests server returns -1 or 0 for the content length.
+      resource_length = image_->DataSize();
+    } else {
+      resource_length = 0;
+    }
+  }
+  return resource_length;
+}
+
 bool ImageResourceContent::IsAcceptableCompressionRatio(
     ExecutionContext& context) {
   if (!image_)
@@ -489,18 +508,12 @@ bool ImageResourceContent::IsAcceptableCompressionRatio(
   if (!pixels)
     return true;
 
-  double resource_length =
-      static_cast<double>(GetResponse().ExpectedContentLength());
-  if (resource_length <= 0 && image_->HasData()) {
-    // WPT and LayoutTests server returns -1 or 0 for the content length.
-    resource_length = static_cast<double>(image_->DataSize());
-  }
-
   // Calculate the image's compression ratio (in bytes per pixel) with both 1k
   // and 10k overhead. The constant overhead allowance is provided to allow room
   // for headers and to account for small images (which are harder to compress).
-  double compression_ratio_1k = (resource_length - 1024) / pixels;
-  double compression_ratio_10k = (resource_length - 10240) / pixels;
+  double raw_bpp = static_cast<double>(ContentSizeForEntropy()) / pixels;
+  double compression_ratio_1k = raw_bpp - (1024 / pixels);
+  double compression_ratio_10k = raw_bpp - (10240 / pixels);
 
   ImageDecoder::CompressionFormat compression_format = GetCompressionFormat();
 
@@ -606,6 +619,10 @@ void ImageResourceContent::EmulateLoadStartedForInspector(
   info_->EmulateLoadStartedForInspector(fetcher, url, initiator_name);
 }
 
+bool ImageResourceContent::IsSufficientContentLoadedForPaint() const {
+  return IsLoaded();
+}
+
 bool ImageResourceContent::IsLoaded() const {
   return GetContentStatus() > ResourceStatus::kPending;
 }
@@ -627,9 +644,16 @@ ResourceStatus ImageResourceContent::GetContentStatus() const {
   return content_status_;
 }
 
-bool ImageResourceContent::IsAnimatedImageWithPaintedFirstFrame() const {
-  return (image_ && !image_->IsNull() && image_->MaybeAnimated() &&
-          image_->CurrentFrameIsComplete());
+bool ImageResourceContent::IsAnimatedImage() const {
+  return image_ && !image_->IsNull() && image_->MaybeAnimated();
+}
+
+bool ImageResourceContent::IsPaintedFirstFrame() const {
+  return IsAnimatedImage() && image_->CurrentFrameIsComplete();
+}
+
+bool ImageResourceContent::TimingAllowPassed() const {
+  return GetResponse().TimingAllowPassed();
 }
 
 // TODO(hiroshige): Consider removing the following methods, or stopping

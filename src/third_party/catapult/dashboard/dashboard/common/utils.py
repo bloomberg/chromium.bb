@@ -11,7 +11,6 @@ import logging
 import os
 import re
 import time
-import urllib
 
 from apiclient import discovery
 from apiclient import errors
@@ -26,6 +25,8 @@ import httplib2
 from oauth2client import client
 
 from dashboard.common import stored_object
+import six
+import six.moves.urllib.parse
 
 SHERIFF_DOMAINS_KEY = 'sheriff_domains_key'
 IP_ALLOWLIST_KEY = 'ip_whitelist'
@@ -37,6 +38,10 @@ _PROJECT_ID_KEY = 'project_id'
 _DEFAULT_CUSTOM_METRIC_VAL = 1
 OAUTH_SCOPES = ('https://www.googleapis.com/auth/userinfo.email',)
 OAUTH_ENDPOINTS = ['/api/', '/add_histograms', '/add_point', '/uploads']
+LEGACY_SERVICE_ACCOUNT = (
+    '425761728072-pa1bs18esuhp2cp2qfa1u9vb6p1v6kfu@developer.gserviceaccount.com'
+)
+_CACHE_TIME = 60*60*2 # 2 hours
 
 _AUTOROLL_DOMAINS = (
     'chops-service-accounts.iam.gserviceaccount.com',
@@ -64,10 +69,22 @@ class _SimpleCache(
 
 _PINPOINT_REPO_EXCLUSION_TTL = 60  # seconds
 _PINPOINT_REPO_EXCLUSION_CACHED = _SimpleCache(0, None)
+_STAGING_APP_ID = 'chromeperf-stage'
 
 
 def IsDevAppserver():
-  return app_identity.get_application_id() == 'None'
+  try:
+    return app_identity.get_application_id() == 'None'
+  except AttributeError:
+    return False
+
+
+def IsStagingEnvironment():
+  """ Check if running in staging environment """
+  try:
+    return app_identity.get_application_id() == _STAGING_APP_ID
+  except AttributeError:
+    return False
 
 
 def _GetNowRfc3339():
@@ -87,7 +104,7 @@ def GetEmail():
     OAuthRequestError: The request was not a valid OAuth request.
     OAuthServiceFailureError: An unknown error occurred.
   """
-  request_uri = os.environ.get('REQUEST_URI', '')
+  request_uri = os.environ.get('PATH_INFO', '')
   if any(request_uri.startswith(e) for e in OAUTH_ENDPOINTS):
     # Prevent a CSRF whereby a malicious site posts an api request without an
     # Authorization header (so oauth.get_current_user() is None), but while the
@@ -196,12 +213,13 @@ def TestMetadataKey(key_or_string):
   """
   if key_or_string is None:
     return None
-  if isinstance(key_or_string, basestring):
+  if isinstance(key_or_string, six.string_types):
     return ndb.Key('TestMetadata', key_or_string)
   if key_or_string.kind() == 'TestMetadata':
     return key_or_string
   if key_or_string.kind() == 'Test':
     return ndb.Key('TestMetadata', TestPath(key_or_string))
+  return None
 
 
 def OldStyleTestKey(key_or_string):
@@ -218,12 +236,12 @@ def OldStyleTestKey(key_or_string):
   """
   if key_or_string is None:
     return None
-  elif isinstance(key_or_string, ndb.Key) and key_or_string.kind() == 'Test':
+  if isinstance(key_or_string, ndb.Key) and key_or_string.kind() == 'Test':
     return key_or_string
   if (isinstance(key_or_string, ndb.Key)
       and key_or_string.kind() == 'TestMetadata'):
     key_or_string = key_or_string.id()
-  assert isinstance(key_or_string, basestring)
+  assert isinstance(key_or_string, six.string_types)
   path_parts = key_or_string.split('/')
   key_parts = ['Master', path_parts[0], 'Bot', path_parts[1]]
   for part in path_parts[2:]:
@@ -297,7 +315,7 @@ def MostSpecificMatchingPattern(test, pattern_data_tuples):
     a_parts = a[0].split('/')
     b_parts = b[0].split('/')
     for a_part, b_part, test_part in reversed(
-        zip(a_parts, b_parts, test_path_parts)):
+        list(zip(a_parts, b_parts, test_path_parts))):
       # We favour a specific match over a partial match, and a partial
       # match over a catch-all * match.
       if a_part == b_part:
@@ -392,7 +410,7 @@ def _MatchesPatternPart(pattern_part, test_path_part):
   Returns:
     True if it matches, False otherwise.
   """
-  if pattern_part == '*' or pattern_part == test_path_part:
+  if pattern_part in ('*', test_path_part):
     return True
   if '*' not in pattern_part:
     return False
@@ -469,7 +487,7 @@ def MinimumRange(ranges):
   """Returns the intersection of the given ranges, or None."""
   if not ranges:
     return None
-  starts, ends = zip(*ranges)
+  starts, ends = list(zip(*ranges))
   start, end = (max(starts), min(ends))
   if start > end:
     return None
@@ -519,7 +537,7 @@ def GetCachedIsInternalUser(email):
 
 
 def SetCachedIsInternalUser(email, value):
-  memcache.set(_IsInternalUserCacheKey(email), value, time=60 * 60 * 24)
+  memcache.set(_IsInternalUserCacheKey(email), value, time=_CACHE_TIME)
 
 
 def GetCachedIsAdministrator(email):
@@ -527,7 +545,7 @@ def GetCachedIsAdministrator(email):
 
 
 def SetCachedIsAdministrator(email, value):
-  memcache.set(_IsAdministratorUserCacheKey(email), value, time=60 * 60 * 24)
+  memcache.set(_IsAdministratorUserCacheKey(email), value, time=_CACHE_TIME)
 
 
 def _IsInternalUserCacheKey(email):
@@ -593,8 +611,8 @@ def IsGroupMember(identity, group):
     SetCachedIsGroupMember(identity, group, is_member)
     return is_member
   except (errors.HttpError, KeyError, AttributeError) as e:
-    logging.error('Failed to check membership of %s: %s', identity, e)
-    raise GroupMemberAuthFailed('Failed to authenticate user.')
+    logging.error('Failed to check membership of %s: %s', identity, str(e))
+    six.raise_from(GroupMemberAuthFailed('Failed to authenticate user.'), e)
 
 
 def GetCachedIsGroupMember(identity, group):
@@ -603,7 +621,7 @@ def GetCachedIsGroupMember(identity, group):
 
 def SetCachedIsGroupMember(identity, group, value):
   memcache.set(
-      _IsGroupMemberCacheKey(identity, group), value, time=60 * 60 * 24)
+      _IsGroupMemberCacheKey(identity, group), value, time=_CACHE_TIME)
 
 
 def _IsGroupMemberCacheKey(identity, group):
@@ -618,7 +636,7 @@ def ServiceAccountEmail(scope=EMAIL_SCOPE):
 
   assert scope, "ServiceAccountHttp scope must not be None."
 
-  return account_details['client_email'],
+  return (account_details['client_email'],)
 
 
 @ndb.transactional(propagation=ndb.TransactionOptions.INDEPENDENT, xg=True)
@@ -764,7 +782,7 @@ def FetchURL(request_url, skip_status_code=False):
   Returns:
     Response object return by URL fetch, otherwise None when there's an error.
   """
-  logging.info('URL being fetched: ' + request_url)
+  logging.info('URL being fetched: %s', request_url)
   try:
     response = urlfetch.fetch(request_url)
   except urlfetch_errors.DeadlineExceededError:
@@ -777,7 +795,7 @@ def FetchURL(request_url, skip_status_code=False):
     return None
   if skip_status_code:
     return response
-  elif response.status_code != 200:
+  if response.status_code != 200:
     logging.error('ERROR %s checking %s', response.status_code, request_url)
     return None
   return response
@@ -797,7 +815,7 @@ def GetBuildDetailsFromStdioLink(stdio_link):
     # This wasn't a buildbot formatted link.
     return no_details
   base_url, master, bot, buildnumber, step = m.groups()
-  bot = urllib.unquote(bot)
+  bot = six.moves.urllib.parse.unquote(bot)  # pylint: disable=too-many-function-args
   return base_url, master, bot, buildnumber, step
 
 
@@ -834,3 +852,42 @@ def IsMonitored(sheriff_client, test_path):
   if subscriptions:
     return True
   return False
+
+
+# temp helper during migration to bbv2
+def IsRunningBuildBucketV2():
+  return True
+
+
+def GetBuildbucketUrl(build_id):
+  if build_id:
+    return 'https://ci.chromium.org/b/%s' % build_id
+  return ''
+
+
+def RequestParamsMixed(req):
+  """
+  Returns a dictionary where the values are either single
+  values, or a list of values when a key/value appears more than
+  once in this dictionary.  This is similar to the kind of
+  dictionary often used to represent the variables in a web
+  request.
+  """
+  result = {}
+  multi = {}
+  for key, value in req.form.items(True):
+    if key in result:
+      # We do this to not clobber any lists that are
+      # *actual* values in this dictionary:
+      if key in multi:
+        result[key].append(value)
+      else:
+        result[key] = [result[key], value]
+        multi[key] = None
+    else:
+      result[key] = value
+  return result
+
+
+def IsRunningFlask():
+  return IsStagingEnvironment()

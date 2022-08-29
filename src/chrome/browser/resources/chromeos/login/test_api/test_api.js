@@ -2,6 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {afterNextRender, Polymer} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// #import {$} from 'chrome://resources/js/util.m.js';
+// #import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+// #import {assert} from 'chrome://resources/js/assert.m.js';
+// clang-format on
+
 /**
  * @fileoverview Common testing utils methods used for OOBE tast tests.
  */
@@ -12,7 +19,7 @@ class TestElementApi {
    * @return {HTMLElement}
    */
   element() {
-    throw 'element() should be defined!';
+    throw new Error('element() should be defined!');
   }
 
   /**
@@ -115,18 +122,35 @@ class HIDDetectionScreenTester extends ScreenElementApi {
 
   touchscreenDetected() {
     // Touchscreen entire row is only visible when touchscreen is detected.
-    let touchscreenRow = new PolymerElementApi(this, '#hid-touchscreen-entry');
+    const touchscreenRow =
+        new PolymerElementApi(this, '#hid-touchscreen-entry');
     return touchscreenRow.isVisible();
   }
 
   mouseDetected() {
-    let mouseTickIcon = new PolymerElementApi(this, '#mouse-tick');
+    const mouseTickIcon = new PolymerElementApi(this, '#mouse-tick');
     return mouseTickIcon.isVisible();
   }
 
   keyboardDetected() {
-    let keyboardTickIcon = new PolymerElementApi(this, '#keyboard-tick');
+    const keyboardTickIcon = new PolymerElementApi(this, '#keyboard-tick');
     return keyboardTickIcon.isVisible();
+  }
+
+  getKeyboardNotDetectedText() {
+    return loadTimeData.getString('hidDetectionKeyboardSearching');
+  }
+
+  getMouseNotDetectedText() {
+    return loadTimeData.getString('hidDetectionMouseSearching');
+  }
+
+  getUsbKeyboardDetectedText() {
+    return loadTimeData.getString('hidDetectionUSBKeyboardConnected');
+  }
+
+  getNextButtonName() {
+    return loadTimeData.getString('hidDetectionContinue');
   }
 
   canClickNext() {
@@ -142,7 +166,7 @@ class WelcomeScreenTester extends ScreenElementApi {
   /** @override */
   clickNext() {
     if (!this.nextButton) {
-      let mainStep = new PolymerElementApi(this, '#welcomeScreen');
+      const mainStep = new PolymerElementApi(this, '#welcomeScreen');
       this.nextButton = new PolymerElementApi(mainStep, '#getStarted');
     }
 
@@ -184,6 +208,10 @@ class EulaScreenTester extends ScreenElementApi {
     return this.isVisible() && this.eulaStep.isVisible() &&
         this.nextButton.isVisible();
   }
+
+  getNextButtonName() {
+    return loadTimeData.getString('oobeEulaAcceptAndContinueButtonText');
+  }
 }
 
 class UpdateScreenTester extends ScreenElementApi {
@@ -223,6 +251,72 @@ class GaiaScreenTester extends ScreenElementApi {
   }
 }
 
+class SyncScreenTester extends ScreenElementApi {
+  constructor() {
+    super('sync-consent');
+    this.loadedStep = new PolymerElementApi(this, '#syncConsentOverviewDialog');
+  }
+
+  /**
+   * Returns if the Sync Consent Screen is ready for test interaction.
+   * @return {boolean}
+   */
+  isReadyForTesting() {
+    return this.isVisible() && this.loadedStep.isVisible();
+  }
+}
+
+class FingerprintScreenTester extends ScreenElementApi {
+  constructor() {
+    super('fingerprint-setup');
+  }
+  /** @override */
+  shouldSkip() {
+    return !loadTimeData.getBoolean('testapi_isFingerprintSupported');
+  }
+}
+
+class AssistantScreenTester extends ScreenElementApi {
+  constructor() {
+    super('assistant-optin-flow');
+    this.mainElement = new PolymerElementApi(this, '#card');
+    this.valueProp = new PolymerElementApi(this.mainElement, '#valueProp');
+    this.valuePropSkipButtonText =
+        new PolymerElementApi(this.valueProp, '#skip-button-text');
+    this.relatedInfo = new PolymerElementApi(this.mainElement, '#relatedInfo');
+  }
+  /** @override */
+  shouldSkip() {
+    return !loadTimeData.getBoolean('testapi_isLibAssistantEnabled');
+  }
+
+  /**
+   * Returns if the assistant screen is ready for test interaction.
+   * @return {boolean}
+   */
+  isReadyForTesting() {
+    return this.isVisible() &&
+        (this.valueProp.isVisible() || this.relatedInfo.isVisible());
+  }
+
+  getSkipButtonName() {
+    if (this.valueProp.isVisible()) {
+      return this.valuePropSkipButtonText.element().textContent;
+    }
+    return loadTimeData.getString('assistantOptinNoThanksButton');
+  }
+}
+
+class MarketingOptInScreenTester extends ScreenElementApi {
+  constructor() {
+    super('marketing-opt-in');
+  }
+  /** @override */
+  shouldSkip() {
+    return !loadTimeData.getBoolean('testapi_isBrandedBuild');
+  }
+}
+
 class ConfirmSamlPasswordScreenTester extends ScreenElementApi {
   constructor() {
     super('saml-confirm-password');
@@ -253,8 +347,8 @@ class PinSetupScreenTester extends ScreenElementApi {
     this.nextButton = new PolymerElementApi(this, '#nextButton');
     this.doneButton = new PolymerElementApi(this, '#doneButton');
     this.backButton = new PolymerElementApi(this, '#backButton');
-    let pinSetupKeyboard = new PolymerElementApi(this, '#pinKeyboard');
-    let pinKeyboard = new PolymerElementApi(pinSetupKeyboard, '#pinKeyboard');
+    const pinSetupKeyboard = new PolymerElementApi(this, '#pinKeyboard');
+    const pinKeyboard = new PolymerElementApi(pinSetupKeyboard, '#pinKeyboard');
     this.pinField = new TextFieldApi(pinKeyboard, '#pinInput');
     this.pinButtons = {};
     for (let i = 0; i <= 9; i++) {
@@ -277,6 +371,18 @@ class PinSetupScreenTester extends ScreenElementApi {
    */
   pressPinDigit(digit) {
     this.pinButtons[digit].click();
+  }
+
+  /**
+   * @return {string}
+   */
+  getSkipButtonName() {
+    return loadTimeData.getString('discoverPinSetupSkip');
+  }
+
+  /** @return {boolean} */
+  isInTabletMode() {
+    return loadTimeData.getBoolean('testapi_isOobeInTabletMode');
   }
 }
 
@@ -375,6 +481,67 @@ class EnterpriseEnrollmentScreenTester extends ScreenElementApi {
   }
 }
 
+class OfflineLoginScreenTester extends ScreenElementApi {
+  constructor() {
+    super('offline-login');
+    this.nextButton = new PolymerElementApi(this, '#nextButton');
+  }
+
+  /**
+   * Returns if the Offline Login Screen is ready for test interaction.
+   * @return {boolean}
+   */
+  isReadyForTesting() {
+    return this.isVisible() && this.nextButton.isVisible();
+  }
+
+  /**
+   * Returns the email field name on the Offline Login Screen.
+   * @return {string}
+   */
+  getEmailFieldName() {
+    return loadTimeData.getString('offlineLoginEmail');
+  }
+
+  /**
+   * Returns the password field name on the Offline Login Screen.
+   * @return {string}
+   */
+  getPasswordFieldName() {
+    return loadTimeData.getString('offlineLoginPassword');
+  }
+
+  /**
+   * Returns the next button name on the Offline Login Screen.
+   * @return {string}
+   */
+  getNextButtonName() {
+    return loadTimeData.getString('offlineLoginNextBtn');
+  }
+}
+
+class ErrorScreenTester extends ScreenElementApi {
+  constructor() {
+    super('error-message');
+    this.offlineLink = new PolymerElementApi(this, '#error-offline-login-link');
+  }
+
+  /**
+   * Returns if the Error Screen is ready for test interaction.
+   * @return {boolean}
+   */
+  isReadyForTesting() {
+    return this.isVisible() && this.offlineLink.isVisible();
+  }
+
+  /**
+   * Click the sign in as an existing user Link.
+   */
+  clickSignInAsExistingUserLink() {
+    return this.offlineLink.click();
+  }
+}
+
 class OobeApiProvider {
   constructor() {
     this.screens = {
@@ -386,9 +553,16 @@ class OobeApiProvider {
       EnrollmentScreen: new EnrollmentScreenTester(),
       UserCreationScreen: new UserCreationScreenTester(),
       GaiaScreen: new GaiaScreenTester(),
+      SyncScreen: new SyncScreenTester(),
+      FingerprintScreen: new FingerprintScreenTester(),
+      AssistantScreen: new AssistantScreenTester(),
+      MarketingOptInScreen: new MarketingOptInScreenTester(),
       ConfirmSamlPasswordScreen: new ConfirmSamlPasswordScreenTester(),
       PinSetupScreen: new PinSetupScreenTester(),
       EnterpriseEnrollmentScreen: new EnterpriseEnrollmentScreenTester(),
+      GuestTosScreen: new GuestTosScreenTester(),
+      ErrorScreen: new ErrorScreenTester(),
+      OfflineLoginScreen: new OfflineLoginScreenTester(),
     };
 
     this.loginWithPin = function(username, pin) {
@@ -399,9 +573,40 @@ class OobeApiProvider {
       chrome.send('OobeTestApi.advanceToScreen', [screen]);
     };
 
+    this.skipToLoginForTesting = function() {
+      chrome.send('OobeTestApi.skipToLoginForTesting');
+    };
+
     this.skipPostLoginScreens = function() {
       chrome.send('OobeTestApi.skipPostLoginScreens');
     };
+
+    this.loginAsGuest = function() {
+      chrome.send('OobeTestApi.loginAsGuest');
+    };
+  }
+}
+
+class GuestTosScreenTester extends ScreenElementApi {
+  constructor() {
+    super('guest-tos');
+    this.loadedStep = new PolymerElementApi(this, '#loaded');
+    this.nextButton = new PolymerElementApi(this, '#acceptButton');
+  }
+
+  /** @override */
+  shouldSkip() {
+    return loadTimeData.getBoolean('testapi_shouldSkipGuestTos');
+  }
+
+  /** @return {boolean} */
+  isReadyForTesting() {
+    return this.isVisible() && this.loadedStep.isVisible();
+  }
+
+  /** @return {string} */
+  getNextButtonName() {
+    return loadTimeData.getString('guestTosAccept');
   }
 }
 

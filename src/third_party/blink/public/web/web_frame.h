@@ -31,7 +31,6 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_FRAME_H_
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_FRAME_H_
 
-#include "cc/paint/paint_canvas.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/frame/tree_scope_type.mojom-shared.h"
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-shared.h"
@@ -134,6 +133,13 @@ class BLINK_EXPORT WebFrame {
 
   // Returns the next frame in "frame traversal order".
   WebFrame* TraverseNext() const;
+
+  // Returns true if this frame is the top-level main frame (associated with
+  // the root Document in a WebContents). See content::Page for detailed
+  // documentation.
+  // This is false for main frames created for fenced-frames.
+  // TODO(khushalsagar) : Should also be the case for portals.
+  bool IsOutermostMainFrame() const;
 
   // Scripting ----------------------------------------------------------
 
