@@ -16,6 +16,7 @@
 #include <iomanip>
 #include <memory>
 
+#include "base/base_export.h"
 #include "base/files/dir_reader_posix.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
@@ -97,7 +98,7 @@ constexpr int kDistroSize = 128 + 1;
 char g_linux_distro[kDistroSize] =
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     "CrOS";
-#elif defined(OS_ANDROID)
+#elif BUILDFLAG(IS_ANDROID)
     "Android";
 #else
     "Unknown";

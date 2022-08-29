@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/run_loop.h"
+#include "base/synchronization/condition_variable.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_checker_impl.h"
@@ -243,7 +244,7 @@ DrawImage CreateDiscardableDrawImage(gfx::Size size) {
   return DrawImage(CreateDiscardablePaintImage(size), false,
                    SkIRect::MakeWH(size.width(), size.height()),
                    PaintFlags::FilterQuality::kNone, SkM44(),
-                   PaintImage::kDefaultFrameIndex, gfx::ColorSpace());
+                   PaintImage::kDefaultFrameIndex, TargetColorParams());
 }
 
 DrawImage CreateBitmapDrawImage(gfx::Size size) {

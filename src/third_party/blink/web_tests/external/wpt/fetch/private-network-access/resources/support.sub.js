@@ -176,6 +176,14 @@ const PreflightBehavior = {
     "preflight-uuid": uuid,
     "preflight-headers": "cors+pna",
   }),
+
+  // The preflight response should succeed only if it is the first preflight.
+  // `uuid` should be a UUID that uniquely identifies the preflight request.
+  singlePreflight: (uuid) => ({
+    "preflight-uuid": uuid,
+    "preflight-headers": "cors+pna",
+    "expect-single-preflight": true,
+  }),
 };
 
 // Methods generate behavior specifications for how `resources/preflight.py`
@@ -346,18 +354,46 @@ const WorkerScriptTestResult = {
   FAILURE: { error: "unknown error" },
 };
 
+function workerScriptUrl(target) {
+  const url = preflightUrl(target);
+
+  url.searchParams.append("body", "postMessage({ loaded: true })")
+  url.searchParams.append("mime-type", "application/javascript")
+
+  return url;
+}
+
 async function workerScriptTest(t, { source, target, expected }) {
   const sourceUrl =
       resolveUrl("resources/worker-fetcher.html", sourceResolveOptions(source));
 
-  const targetUrl = preflightUrl(target);
-  targetUrl.searchParams.append("body", "postMessage({ loaded: true })")
-  targetUrl.searchParams.append("mime-type", "application/javascript")
+  const targetUrl = workerScriptUrl(target);
 
   const iframe = await appendIframe(t, document, sourceUrl);
   const reply = futureMessage();
 
   iframe.contentWindow.postMessage({ url: targetUrl.href }, "*");
+
+  const { error, loaded } = await reply;
+
+  assert_equals(error, expected.error, "worker error");
+  assert_equals(loaded, expected.loaded, "response loaded");
+}
+
+async function nestedWorkerScriptTest(t, { source, target, expected }) {
+  const targetUrl = workerScriptUrl(target);
+
+  const sourceUrl = resolveUrl(
+      "resources/worker-fetcher.js", sourceResolveOptions(source));
+  sourceUrl.searchParams.append("url", targetUrl);
+
+  // Iframe must be same-origin with the parent worker.
+  const iframeUrl = new URL("worker-fetcher.html", sourceUrl);
+
+  const iframe = await appendIframe(t, document, iframeUrl);
+  const reply = futureMessage();
+
+  iframe.contentWindow.postMessage({ url: sourceUrl.href }, "*");
 
   const { error, loaded } = await reply;
 

@@ -28,8 +28,12 @@ struct CONTENT_EXPORT PrerenderAttributes {
       const GURL& initiator_url,
       int initiator_process_id,
       absl::optional<blink::LocalFrameToken> initiator_frame_token,
+      int initiator_frame_tree_node_id,
       ukm::SourceId initiator_ukm_id,
-      ui::PageTransition transition_type);
+      ui::PageTransition transition_type,
+      absl::optional<base::RepeatingCallback<bool(const GURL&)>>
+          url_match_predicate);
+
   ~PrerenderAttributes();
   PrerenderAttributes(const PrerenderAttributes&);
   PrerenderAttributes& operator=(const PrerenderAttributes&) = delete;
@@ -61,11 +65,21 @@ struct CONTENT_EXPORT PrerenderAttributes {
   // This is absl::nullopt when prerendering is initiated by the browser.
   absl::optional<blink::LocalFrameToken> initiator_frame_token;
 
+  // This is RenderFrameHost::kNoFrameTreeNodeId when prerendering is initiated
+  // by the browser.
+  int initiator_frame_tree_node_id;
+
   // This is ukm::kInvalidSourceId when prerendering is initiated by the
   // browser.
   ukm::SourceId initiator_ukm_id;
 
   ui::PageTransition transition_type;
+
+  // Triggers can specify their own predicate judging whether two URLs are
+  // considered as pointing to the same destination. The URLs must be in
+  // same-origin.
+  absl::optional<base::RepeatingCallback<bool(const GURL&)>>
+      url_match_predicate;
 
   // Serialises this struct into a trace.
   void WriteIntoTrace(perfetto::TracedValue trace_context) const;

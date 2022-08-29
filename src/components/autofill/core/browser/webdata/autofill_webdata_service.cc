@@ -8,6 +8,7 @@
 #include "base/callback_helpers.h"
 #include "base/check.h"
 #include "base/location.h"
+#include "base/observer_list.h"
 #include "base/task/single_thread_task_runner.h"
 #include "components/autofill/core/browser/data_model/autofill_offer_data.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
@@ -120,13 +121,6 @@ void AutofillWebDataService::AddAutofillProfile(
 void AutofillWebDataService::SetAutofillProfileChangedCallback(
     base::RepeatingCallback<void(const AutofillProfileDeepChange&)> change_cb) {
   autofill_backend_->SetAutofillProfileChangedCallback(std::move(change_cb));
-}
-
-void AutofillWebDataService::SetCardArtImagesChangedCallback(
-    base::RepeatingCallback<void(const std::vector<std::string>&)>
-        on_card_art_image_change_callback) {
-  autofill_backend_->SetCardArtImagesChangedCallback(
-      std::move(on_card_art_image_change_callback));
 }
 
 void AutofillWebDataService::UpdateAutofillProfile(

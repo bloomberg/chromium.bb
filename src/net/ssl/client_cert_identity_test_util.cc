@@ -77,15 +77,6 @@ void FakeClientCertIdentity::AcquirePrivateKey(
   std::move(private_key_callback).Run(key_);
 }
 
-#if defined(OS_APPLE)
-SecIdentityRef FakeClientCertIdentity::sec_identity_ref() const {
-  // Any tests that depend on having a real SecIdentityRef should use a real
-  // ClientCertIdentityMac.
-  NOTREACHED();
-  return nullptr;
-}
-#endif
-
 ClientCertIdentityList FakeClientCertIdentityListFromCertificateList(
     const CertificateList& certs) {
   ClientCertIdentityList result;

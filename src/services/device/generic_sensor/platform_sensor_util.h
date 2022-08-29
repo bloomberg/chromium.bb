@@ -24,6 +24,9 @@ namespace device {
 // Units are SI meters per second squared (m/s^2).
 constexpr double kAccelerometerRoundingMultiple = 0.1;
 
+// Units are luxes (lx).
+constexpr int kAlsRoundingMultiple = 50;
+
 // Units are radians/second. This value corresponds to 0.1 deg./sec.
 constexpr double kGyroscopeRoundingMultiple = 0.00174532925199432963;
 
@@ -36,7 +39,7 @@ constexpr double kOrientationQuaternionRoundingMultiple = 0.0017453292519943296;
 // Some sensor types also ignore value changes below a certain threshold to
 // avoid exposing whether a value is too close to the limit between one
 // rounded value and the next.
-constexpr int kAlsSignificanceThreshold = 50;
+constexpr int kAlsSignificanceThreshold = kAlsRoundingMultiple / 2;
 
 // Round |value| to be a multiple of |multiple|.
 //
@@ -56,6 +59,9 @@ void RoundAccelerometerReading(SensorReadingXYZ* reading);
 // Round gyroscope sensor reading to guard user privacy.
 void RoundGyroscopeReading(SensorReadingXYZ* reading);
 
+// Round ambient light sensor reading to guard user privacy.
+void RoundIlluminanceReading(SensorReadingSingle* reading);
+
 // Round orientation Euler angle sensor reading to guard user privacy.
 void RoundOrientationEulerReading(SensorReadingXYZ* reading);
 
@@ -65,14 +71,6 @@ void RoundOrientationQuaternionReading(SensorReadingQuat* reading);
 
 // Round the sensor reading to guard user privacy.
 void RoundSensorReading(SensorReading* reading, mojom::SensorType sensor_type);
-
-// Checks if new value is significantly different than old value.
-// When the reading we get does not differ significantly from our current
-// value, we discard this reading and do not emit any events. This is a privacy
-// measure to avoid giving readings that are too specific.
-bool IsSignificantlyDifferent(const SensorReading& lhs,
-                              const SensorReading& rhs,
-                              mojom::SensorType sensor_type);
 
 }  // namespace device
 

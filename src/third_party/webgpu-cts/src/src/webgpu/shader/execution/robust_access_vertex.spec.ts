@@ -303,9 +303,9 @@ class F extends GPUTest {
   generateVertexBufferDescriptors(
     bufferCount: number,
     attributesPerBuffer: number,
-    type: GPUVertexFormat
+    format: GPUVertexFormat
   ) {
-    const typeInfo = typeInfoMap[type];
+    const typeInfo = typeInfoMap[format];
     // Vertex buffer descriptors
     const buffers: GPUVertexBufferLayout[] = [];
     {
@@ -319,7 +319,7 @@ class F extends GPUTest {
             .map((_, i) => ({
               shaderLocation: currAttribute++,
               offset: i * typeInfo.sizeInBytes,
-              format: type as GPUVertexFormat,
+              format,
             })),
         });
       }
@@ -351,7 +351,7 @@ class F extends GPUTest {
       let currAttribute = 0;
       for (let i = 0; i < bufferCount; i++) {
         for (let j = 0; j < attributesPerBuffer; j++) {
-          layoutStr += `[[location(${currAttribute})]] a_${currAttribute} : ${typeInfo.wgslType};\n`;
+          layoutStr += `@location(${currAttribute}) a_${currAttribute} : ${typeInfo.wgslType},\n`;
           attributeNames.push(`a_${currAttribute}`);
           currAttribute++;
         }
@@ -370,10 +370,10 @@ class F extends GPUTest {
         ${typeInfo.validationFunc}
       }
 
-      [[stage(vertex)]] fn main(
-        [[builtin(vertex_index)]] VertexIndex : u32,
+      @vertex fn main(
+        @builtin(vertex_index) VertexIndex : u32,
         attributes : Attributes
-        ) -> [[builtin(position)]] vec4<f32> {
+        ) -> @builtin(position) vec4<f32> {
         var attributesInBounds = ${attributeNames
           .map(a => `validationFunc(attributes.${a})`)
           .join(' && ')};
@@ -416,6 +416,7 @@ class F extends GPUTest {
     buffers: GPUVertexBufferLayout[];
   }): GPURenderPipeline {
     const pipeline = this.device.createRenderPipeline({
+      layout: 'auto',
       vertex: {
         module: this.device.createShaderModule({
           code: this.generateVertexShaderCode({
@@ -434,7 +435,7 @@ class F extends GPUTest {
       fragment: {
         module: this.device.createShaderModule({
           code: `
-            [[stage(fragment)]] fn main() -> [[location(0)]] vec4<f32> {
+            @fragment fn main() -> @location(0) vec4<f32> {
               return vec4<f32>(1.0, 0.0, 0.0, 1.0);
             }`,
         }),
@@ -499,7 +500,8 @@ class F extends GPUTest {
         {
           view: colorAttachmentView,
           storeOp: 'store',
-          loadValue: { r: 0.0, g: 1.0, b: 0.0, a: 1.0 },
+          clearValue: { r: 0.0, g: 1.0, b: 0.0, a: 1.0 },
+          loadOp: 'clear',
         },
       ],
     });
@@ -508,7 +510,7 @@ class F extends GPUTest {
     // Run the draw variant
     drawCall.insertInto(pass, isIndexed, isIndirect);
 
-    pass.endPass();
+    pass.end();
     this.device.queue.submit([encoder.finish()]);
 
     // Validate we see green on the left pixel, showing that no failure case is detected

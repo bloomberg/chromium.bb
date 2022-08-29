@@ -26,11 +26,11 @@
 #include "third_party/blink/renderer/core/testing/color_scheme_helper.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
-#include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/testing/paint_test_configurations.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
+#include "third_party/blink/renderer/platform/theme/web_theme_engine_helper.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-blink.h"
 
@@ -90,12 +90,20 @@ class StubWebThemeEngine : public WebThemeEngine {
 constexpr int StubWebThemeEngine::kMinimumHorizontalLength;
 constexpr int StubWebThemeEngine::kMinimumVerticalLength;
 
-class ScrollbarTestingPlatformSupport : public TestingPlatformSupport {
+class ScopedStubThemeEngine {
  public:
-  WebThemeEngine* ThemeEngine() override { return &mock_theme_engine_; }
+  ScopedStubThemeEngine() {
+    old_theme_ = WebThemeEngineHelper::SwapNativeThemeEngineForTesting(
+        std::make_unique<StubWebThemeEngine>());
+  }
+
+  ~ScopedStubThemeEngine() {
+    WebThemeEngineHelper::SwapNativeThemeEngineForTesting(
+        std::move(old_theme_));
+  }
 
  private:
-  StubWebThemeEngine mock_theme_engine_;
+  std::unique_ptr<WebThemeEngine> old_theme_;
 };
 
 }  // namespace
@@ -115,14 +123,16 @@ class ScrollbarsTest : public PaintTestConfigurations, public SimTest {
   }
 
   void TearDown() override {
-    ScrollbarThemeSettings::SetOverlayScrollbarsEnabled(
-        original_overlay_scrollbars_enabled_);
+    SetOverlayScrollbarsEnabled(original_overlay_scrollbars_enabled_);
     mock_overlay_scrollbars_.reset();
     SimTest::TearDown();
   }
 
-  void SetOverlayScrollbarsEnabled(bool b) {
-    ScrollbarThemeSettings::SetOverlayScrollbarsEnabled(b);
+  void SetOverlayScrollbarsEnabled(bool enabled) {
+    if (enabled != ScrollbarThemeSettings::OverlayScrollbarsEnabled()) {
+      ScrollbarThemeSettings::SetOverlayScrollbarsEnabled(enabled);
+      Page::UsesOverlayScrollbarsChanged();
+    }
   }
 
   HitTestResult HitTest(int x, int y) {
@@ -251,7 +261,7 @@ class ScrollbarsTest : public PaintTestConfigurations, public SimTest {
   }
 
  private:
-  ScopedTestingPlatformSupport<ScrollbarTestingPlatformSupport> platform;
+  ScopedStubThemeEngine scoped_theme_;
   std::unique_ptr<ScopedMockOverlayScrollbars> mock_overlay_scrollbars_;
   bool original_overlay_scrollbars_enabled_;
 };
@@ -262,22 +272,22 @@ class ScrollbarsTestWithVirtualTimer : public ScrollbarsTest {
  public:
   void SetUp() override {
     ScrollbarsTest::SetUp();
-    WebView().Scheduler()->EnableVirtualTime();
+    GetVirtualTimeController()->EnableVirtualTime(base::Time());
   }
 
   void TearDown() override {
-    WebView().Scheduler()->DisableVirtualTimeForTesting();
+    GetVirtualTimeController()->DisableVirtualTimeForTesting();
     ScrollbarsTest::TearDown();
   }
 
   void TimeAdvance() {
-    WebView().Scheduler()->SetVirtualTimePolicy(
-        PageScheduler::VirtualTimePolicy::kAdvance);
+    GetVirtualTimeController()->SetVirtualTimePolicy(
+        VirtualTimeController::VirtualTimePolicy::kAdvance);
   }
 
   void StopVirtualTimeAndExitRunLoop() {
-    WebView().Scheduler()->SetVirtualTimePolicy(
-        PageScheduler::VirtualTimePolicy::kPause);
+    GetVirtualTimeController()->SetVirtualTimePolicy(
+        VirtualTimeController::VirtualTimePolicy::kPause);
     test::ExitRunLoop();
   }
 
@@ -292,6 +302,10 @@ class ScrollbarsTestWithVirtualTimer : public ScrollbarsTest {
             WTF::Unretained(this)),
         delay);
     test::EnterRunLoop();
+  }
+
+  VirtualTimeController* GetVirtualTimeController() {
+    return WebView().Scheduler()->GetVirtualTimeController();
   }
 };
 
@@ -330,9 +344,27 @@ TEST_P(ScrollbarsTest, DocumentStyleRecalcPreservesScrollbars) {
               layout_viewport->HorizontalScrollbar());
 }
 
-TEST(ScrollbarsTestWithOwnWebViewHelper, ScrollbarSizeForUseZoomDSF) {
+TEST_P(ScrollbarsTest, ScrollbarsUpdatedOnOverlaySettingsChange) {
+  ENABLE_OVERLAY_SCROLLBARS(true);
+
+  WebView().MainFrameViewWidget()->Resize(gfx::Size(800, 600));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style> body { height: 3000px; } </style>)HTML");
+
+  Compositor().BeginFrame();
+  auto* layout_viewport = GetDocument().View()->LayoutViewport();
+  EXPECT_TRUE(layout_viewport->VerticalScrollbar()->IsOverlayScrollbar());
+
+  ENABLE_OVERLAY_SCROLLBARS(false);
+  Compositor().BeginFrame();
+  EXPECT_FALSE(layout_viewport->VerticalScrollbar()->IsOverlayScrollbar());
+}
+
+TEST(ScrollbarsTestWithOwnWebViewHelper, ScrollbarSizeF) {
   ScopedTestingPlatformSupport<TestingPlatformSupport> platform;
-  platform->SetUseZoomForDSF(true);
   frame_test_helpers::WebViewHelper web_view_helper;
   // Needed so visual viewport supplies its own scrollbars. We don't support
   // this setting changing after initialization, so we must set it through
@@ -604,6 +636,10 @@ TEST_P(ScrollbarsTest, OverlayScrolblarNotCreatedInUnscrollableAxis) {
 }
 
 TEST_P(ScrollbarsTest, scrollbarIsNotHandlingTouchpadScroll) {
+  // TODO(crbug.com/1322078): Enable this test for scroll unification.
+  if (RuntimeEnabledFeatures::ScrollUnificationEnabled())
+    return;
+
   WebView().MainFrameViewWidget()->Resize(gfx::Size(200, 200));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
@@ -1471,7 +1507,7 @@ TEST_P(ScrollbarsTest, CustomScrollbarWhenStyleOwnerChange) {
 // a huge fadeout delay.
 // Disable on Android since VirtualTime not work for Android.
 // http://crbug.com/633321
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 TEST_P(ScrollbarsTestWithVirtualTimer,
        DISABLED_TestNonCompositedOverlayScrollbarsFade) {
 #else
@@ -1581,7 +1617,7 @@ INSTANTIATE_TEST_SUITE_P(All,
 
 // Make sure native scrollbar can change by Emulator.
 // Disable on Android since Android always enable OverlayScrollbar.
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 TEST_P(ScrollbarAppearanceTest,
        DISABLED_NativeScrollbarChangeToMobileByEmulator) {
 #else
@@ -1674,12 +1710,12 @@ TEST_P(ScrollbarAppearanceTest, NativeScrollbarChangeToMobileByEmulator) {
   EXPECT_FALSE(div_scrollable->VerticalScrollbar()->GetTheme().IsMockTheme());
 }
 
-#if !defined(OS_MAC)
+#if !BUILDFLAG(IS_MAC)
 // Ensure that the minimum length for a scrollbar thumb comes from the
 // WebThemeEngine. Note, Mac scrollbars differ from all other platforms so this
 // test doesn't apply there. https://crbug.com/682209.
 TEST_P(ScrollbarAppearanceTest, ThemeEngineDefinesMinimumThumbLength) {
-  ScopedTestingPlatformSupport<ScrollbarTestingPlatformSupport> platform;
+  ScopedStubThemeEngine scoped_theme;
   ENABLE_OVERLAY_SCROLLBARS(UsesOverlayScrollbars());
 
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
@@ -1705,7 +1741,7 @@ TEST_P(ScrollbarAppearanceTest, ThemeEngineDefinesMinimumThumbLength) {
 // Ensure thumb position is correctly calculated even at ridiculously large
 // scales.
 TEST_P(ScrollbarAppearanceTest, HugeScrollingThumbPosition) {
-  ScopedTestingPlatformSupport<ScrollbarTestingPlatformSupport> platform;
+  ScopedStubThemeEngine scoped_theme;
   ENABLE_OVERLAY_SCROLLBARS(UsesOverlayScrollbars());
 
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
@@ -2179,7 +2215,7 @@ TEST_P(ScrollbarsTest, PLSADisposeShouldClearPointerInLayers) {
   request.Complete(R"HTML(
     <!DOCTYPE html>
     <style>
-    /* transform keeps the graphics layer */
+    /* transform keeps the composited layer */
     #div { width: 100px; height: 100px; will-change: transform; }
     .scroller{ overflow: scroll; }
     .big{ height: 2000px; }
@@ -2359,6 +2395,10 @@ TEST_P(ScrollbarsTest, MiddleDownShouldNotAffectScrollbarPress) {
 }
 
 TEST_P(ScrollbarsTest, UseCounterNegativeWhenThumbIsNotScrolledWithMouse) {
+  // TODO(crbug.com/1322078): Enable this test for scroll unification.
+  if (RuntimeEnabledFeatures::ScrollUnificationEnabled())
+    return;
+
   // This test requires that scrollbars take up space.
   ENABLE_OVERLAY_SCROLLBARS(false);
 
@@ -2765,13 +2805,17 @@ TEST_P(ScrollbarsTest, CustomScrollbarHypotheticalThickness) {
 // press on scrollbar button should keep scrolling after content loaded.
 // Disable on Android since VirtualTime not work for Android.
 // http://crbug.com/633321
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 TEST_P(ScrollbarsTestWithVirtualTimer,
        DISABLED_PressScrollbarButtonOnInfiniteScrolling) {
 #else
 TEST_P(ScrollbarsTestWithVirtualTimer,
        PressScrollbarButtonOnInfiniteScrolling) {
 #endif
+  // TODO(crbug.com/1322078): Enable this test for scroll unification.
+  if (RuntimeEnabledFeatures::ScrollUnificationEnabled())
+    return;
+
   TimeAdvance();
   GetDocument().GetFrame()->GetSettings()->SetScrollAnimatorEnabled(false);
   WebView().MainFrameViewWidget()->Resize(gfx::Size(200, 200));
@@ -2936,7 +2980,7 @@ INSTANTIATE_TEST_SUITE_P(NonOverlay,
                          ScrollbarColorSchemeTest,
                          testing::Values(false));
 
-#if defined(OS_ANDROID) || defined(OS_MAC)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_MAC)
 // Not able to paint non-overlay scrollbars through ThemeEngine on Android or
 // Mac.
 #define MAYBE_ThemeEnginePaint DISABLED_ThemeEnginePaint
@@ -2945,7 +2989,7 @@ INSTANTIATE_TEST_SUITE_P(NonOverlay,
 #endif
 
 TEST_P(ScrollbarColorSchemeTest, MAYBE_ThemeEnginePaint) {
-  ScopedTestingPlatformSupport<ScrollbarTestingPlatformSupport> platform;
+  ScopedStubThemeEngine scoped_theme;
 
   WebView().MainFrameViewWidget()->Resize(gfx::Size(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
@@ -2975,8 +3019,8 @@ TEST_P(ScrollbarColorSchemeTest, MAYBE_ThemeEnginePaint) {
 
   Compositor().BeginFrame();
 
-  auto* theme_engine =
-      static_cast<StubWebThemeEngine*>(Platform::Current()->ThemeEngine());
+  auto* theme_engine = static_cast<StubWebThemeEngine*>(
+      WebThemeEngineHelper::GetNativeThemeEngine());
   EXPECT_EQ(mojom::blink::ColorScheme::kDark,
             theme_engine->GetPaintedPartColorScheme(
                 WebThemeEngine::kPartScrollbarHorizontalThumb));
@@ -3249,6 +3293,10 @@ TEST_P(ScrollbarsTest, ScrollbarGutterWithVerticalTextAndOverlayScrollbars) {
 // Test events on the additional gutter created by the "both-edges" keyword of
 // scrollbar-gutter.
 TEST_P(ScrollbarsTest, ScrollbarGutterBothEdgesKeywordWithClassicScrollbars) {
+  // TODO(crbug.com/1322201): Enable this test for scroll unification.
+  if (RuntimeEnabledFeatures::ScrollUnificationEnabled())
+    return;
+
   // This test requires that scrollbars take up space.
   ENABLE_OVERLAY_SCROLLBARS(false);
 

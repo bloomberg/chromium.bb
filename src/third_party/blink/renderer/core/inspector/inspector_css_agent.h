@@ -28,6 +28,8 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/css_import_rule.h"
+#include "third_party/blink/renderer/core/css/css_layer_block_rule.h"
 #include "third_party/blink/renderer/core/css/css_rule_list.h"
 #include "third_party/blink/renderer/core/css/css_selector.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -37,6 +39,8 @@
 #include "third_party/blink/renderer/core/inspector/inspector_style_sheet.h"
 #include "third_party/blink/renderer/core/inspector/protocol/css.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_map.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/hash_counted_set.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
@@ -54,6 +58,7 @@ class CSSPropertyName;
 class CSSRule;
 class CSSStyleRule;
 class CSSStyleSheet;
+class CSSSupportsRule;
 class Document;
 class Element;
 class FontCustomPlatformData;
@@ -99,6 +104,7 @@ class CORE_EXPORT InspectorCSSAgent final
   static CSSStyleRule* AsCSSStyleRule(CSSRule*);
   static CSSMediaRule* AsCSSMediaRule(CSSRule*);
   static CSSContainerRule* AsCSSContainerRule(CSSRule*);
+  static CSSSupportsRule* AsCSSSupportsRule(CSSRule*);
 
   static void CollectAllDocumentStyleSheets(Document*,
                                             HeapVector<Member<CSSStyleSheet>>&);
@@ -146,6 +152,8 @@ class CORE_EXPORT InspectorCSSAgent final
           matched_css_rules,
       protocol::Maybe<protocol::Array<protocol::CSS::PseudoElementMatches>>*,
       protocol::Maybe<protocol::Array<protocol::CSS::InheritedStyleEntry>>*,
+      protocol::Maybe<
+          protocol::Array<protocol::CSS::InheritedPseudoElementMatches>>*,
       protocol::Maybe<protocol::Array<protocol::CSS::CSSKeyframesRule>>*)
       override;
   protocol::Response getInlineStylesForNode(
@@ -194,6 +202,11 @@ class CORE_EXPORT InspectorCSSAgent final
       std::unique_ptr<protocol::CSS::SourceRange>,
       const String& text,
       std::unique_ptr<protocol::CSS::CSSContainerQuery>*) override;
+  protocol::Response setSupportsText(
+      const String& style_sheet_id,
+      std::unique_ptr<protocol::CSS::SourceRange>,
+      const String& text,
+      std::unique_ptr<protocol::CSS::CSSSupports>*) override;
   protocol::Response createStyleSheet(const String& frame_id,
                                       String* style_sheet_id) override;
   protocol::Response addRule(const String& style_sheet_id,
@@ -205,6 +218,9 @@ class CORE_EXPORT InspectorCSSAgent final
       std::unique_ptr<protocol::Array<String>> forced_pseudo_classes) override;
   protocol::Response getMediaQueries(
       std::unique_ptr<protocol::Array<protocol::CSS::CSSMedia>>*) override;
+  protocol::Response getLayersForNode(
+      int node_id,
+      std::unique_ptr<protocol::CSS::CSSLayerData>* root_layer) override;
   protocol::Response setEffectivePropertyValueForNode(
       int node_id,
       const String& property_name,
@@ -239,8 +255,6 @@ class CORE_EXPORT InspectorCSSAgent final
                                                             MediaListSource,
                                                             const String&,
                                                             CSSStyleSheet*);
-  std::unique_ptr<protocol::Array<protocol::CSS::CSSMedia>> BuildMediaListChain(
-      CSSRule*);
 
   CSSStyleDeclaration* FindEffectiveDeclaration(
       const CSSPropertyName&,
@@ -325,7 +339,7 @@ class CORE_EXPORT InspectorCSSAgent final
   std::unique_ptr<protocol::CSS::RuleUsage> BuildCoverageInfo(CSSStyleRule*,
                                                               bool);
   std::unique_ptr<protocol::Array<protocol::CSS::RuleMatch>>
-  BuildArrayForMatchedRuleList(RuleIndexList*, PseudoId);
+  BuildArrayForMatchedRuleList(RuleIndexList*);
   std::unique_ptr<protocol::CSS::CSSStyle> BuildObjectForAttributesStyle(
       Element*);
   std::unique_ptr<protocol::Array<int>>
@@ -337,8 +351,26 @@ class CORE_EXPORT InspectorCSSAgent final
   void CollectContainerQueriesFromRule(
       CSSRule*,
       protocol::Array<protocol::CSS::CSSContainerQuery>*);
-  std::unique_ptr<protocol::Array<protocol::CSS::CSSContainerQuery>>
-  BuildContainerQueries(CSSRule*);
+
+  // Supports at-rule implementation
+  std::unique_ptr<protocol::CSS::CSSSupports> BuildSupportsObject(
+      CSSSupportsRule*);
+  void CollectSupportsFromRule(CSSRule*,
+                               protocol::Array<protocol::CSS::CSSSupports>*);
+
+  std::unique_ptr<protocol::CSS::CSSLayerData> BuildLayerDataObject(
+      const CascadeLayer* layer,
+      unsigned& max_order);
+
+  // Layers at-rule implementation
+  std::unique_ptr<protocol::CSS::CSSLayer> BuildLayerObject(
+      CSSLayerBlockRule* rule);
+  std::unique_ptr<protocol::CSS::CSSLayer> BuildLayerObjectFromImport(
+      CSSImportRule* rule);
+  void CollectLayersFromRule(CSSRule*,
+                             protocol::Array<protocol::CSS::CSSLayer>*);
+
+  void FillAncestorData(CSSRule* rule, protocol::CSS::CSSRule* result);
 
   // InspectorDOMAgent::DOMListener implementation
   void DidAddDocument(Document*) override;

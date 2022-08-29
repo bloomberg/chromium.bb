@@ -40,8 +40,9 @@
 #include "ui/gfx/gpu_extra_info.h"
 #include "url/gurl.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "services/viz/privileged/mojom/gl/info_collection_gpu_service.mojom.h"
+#include "ui/gfx/mojom/dxgi_info.mojom.h"
 #endif
 
 namespace gfx {
@@ -77,9 +78,9 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost
     virtual void DidCreateContextSuccessfully() = 0;
     virtual void MaybeShutdownGpuProcess() = 0;
     virtual void DidUpdateGPUInfo(const gpu::GPUInfo& gpu_info) = 0;
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
     virtual void DidUpdateOverlayInfo(const gpu::OverlayInfo& overlay_info) = 0;
-    virtual void DidUpdateHDRStatus(bool hdr_enabled) = 0;
+    virtual void DidUpdateDXGIInfo(gfx::mojom::DXGIInfoPtr dxgi_info) = 0;
 #endif
     virtual void BlockDomainFrom3DAPIs(const GURL& url,
                                        gpu::DomainGuilt guilt) = 0;
@@ -202,13 +203,9 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost
 
   mojom::GpuService* gpu_service();
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   mojom::InfoCollectionGpuService* info_collection_gpu_service();
 #endif
-
-  bool wake_up_gpu_before_drawing() const {
-    return wake_up_gpu_before_drawing_;
-  }
 
  private:
   friend class GpuHostImplTestApi;
@@ -252,9 +249,9 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost
                       const GURL& active_url) override;
   void DisableGpuCompositing() override;
   void DidUpdateGPUInfo(const gpu::GPUInfo& gpu_info) override;
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   void DidUpdateOverlayInfo(const gpu::OverlayInfo& overlay_info) override;
-  void DidUpdateHDRStatus(bool hdr_enabled) override;
+  void DidUpdateDXGIInfo(gfx::mojom::DXGIInfoPtr dxgi_info) override;
   void SetChildSurface(gpu::SurfaceHandle parent,
                        gpu::SurfaceHandle child) override;
 #endif
@@ -275,7 +272,7 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost
   const InitParams params_;
 
   mojo::Remote<mojom::GpuService> gpu_service_remote_;
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   mojo::Remote<mojom::InfoCollectionGpuService>
       info_collection_gpu_service_remote_;
 #endif
@@ -291,11 +288,6 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost
 
   // List of connection error handlers for the GpuService.
   std::vector<base::OnceClosure> connection_error_handlers_;
-
-  // The following are a list of driver bug workarounds that will only be
-  // set to true in DidInitialize(), where GPU service has started and GPU
-  // driver bug workarounds have been computed and sent back.
-  bool wake_up_gpu_before_drawing_ = false;
 
   // Track the URLs of the pages which have live offscreen contexts, assumed to
   // be associated with untrusted content such as WebGL. For best robustness,

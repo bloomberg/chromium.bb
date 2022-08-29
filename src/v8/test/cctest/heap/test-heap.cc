@@ -48,6 +48,7 @@
 #include "src/heap/incremental-marking.h"
 #include "src/heap/large-spaces.h"
 #include "src/heap/mark-compact.h"
+#include "src/heap/marking-barrier.h"
 #include "src/heap/memory-chunk.h"
 #include "src/heap/memory-reducer.h"
 #include "src/heap/parked-scope.h"
@@ -55,6 +56,7 @@
 #include "src/heap/safepoint.h"
 #include "src/ic/ic.h"
 #include "src/numbers/hash-seed-inl.h"
+#include "src/objects/call-site-info-inl.h"
 #include "src/objects/elements.h"
 #include "src/objects/field-type.h"
 #include "src/objects/heap-number-inl.h"
@@ -63,7 +65,6 @@
 #include "src/objects/managed-inl.h"
 #include "src/objects/objects-inl.h"
 #include "src/objects/slots.h"
-#include "src/objects/stack-frame-info-inl.h"
 #include "src/objects/transitions.h"
 #include "src/regexp/regexp.h"
 #include "src/snapshot/snapshot.h"
@@ -251,16 +252,17 @@ static void CheckFindCodeObject(Isolate* isolate) {
   Address obj_addr = obj.address();
 
   for (int i = 0; i < obj.Size(cage_base); i += kTaggedSize) {
-    Object found = isolate->FindCodeObject(obj_addr + i);
-    CHECK_EQ(*code, found);
+    CodeLookupResult lookup_result = isolate->FindCodeObject(obj_addr + i);
+    CHECK_EQ(*code, lookup_result.code());
   }
 
   Handle<Code> copy =
       Factory::CodeBuilder(isolate, desc, CodeKind::FOR_TESTING).Build();
   HeapObject obj_copy = HeapObject::cast(*copy);
-  Object not_right = isolate->FindCodeObject(obj_copy.address() +
-                                             obj_copy.Size(cage_base) / 2);
-  CHECK(not_right != *code);
+  CodeLookupResult not_right = isolate->FindCodeObject(
+      obj_copy.address() + obj_copy.Size(cage_base) / 2);
+  CHECK_NE(not_right.code(), *code);
+  CHECK_EQ(not_right.code(), *copy);
 }
 
 
@@ -337,7 +339,8 @@ TEST(HeapObjects) {
   Handle<String> object_string = Handle<String>::cast(factory->Object_string());
   Handle<JSGlobalObject> global(CcTest::i_isolate()->context().global_object(),
                                 isolate);
-  CHECK(Just(true) == JSReceiver::HasOwnProperty(global, object_string));
+  CHECK(Just(true) ==
+        JSReceiver::HasOwnProperty(isolate, global, object_string));
 
   // Check ToString for oddballs
   ReadOnlyRoots roots(heap);
@@ -406,7 +409,7 @@ TEST(GarbageCollection) {
   CcTest::CollectGarbage(NEW_SPACE);
 
   // Function should be alive.
-  CHECK(Just(true) == JSReceiver::HasOwnProperty(global, name));
+  CHECK(Just(true) == JSReceiver::HasOwnProperty(isolate, global, name));
   // Check function is retained.
   Handle<Object> func_value =
       Object::GetProperty(isolate, global, name).ToHandleChecked();
@@ -424,7 +427,7 @@ TEST(GarbageCollection) {
   // After gc, it should survive.
   CcTest::CollectGarbage(NEW_SPACE);
 
-  CHECK(Just(true) == JSReceiver::HasOwnProperty(global, obj_name));
+  CHECK(Just(true) == JSReceiver::HasOwnProperty(isolate, global, obj_name));
   Handle<Object> obj =
       Object::GetProperty(isolate, global, obj_name).ToHandleChecked();
   CHECK(obj->IsJSObject());
@@ -800,60 +803,60 @@ TEST(ObjectProperties) {
   Handle<Smi> two(Smi::FromInt(2), isolate);
 
   // check for empty
-  CHECK(Just(false) == JSReceiver::HasOwnProperty(obj, first));
+  CHECK(Just(false) == JSReceiver::HasOwnProperty(isolate, obj, first));
 
   // add first
   Object::SetProperty(isolate, obj, first, one).Check();
-  CHECK(Just(true) == JSReceiver::HasOwnProperty(obj, first));
+  CHECK(Just(true) == JSReceiver::HasOwnProperty(isolate, obj, first));
 
   // delete first
   CHECK(Just(true) ==
         JSReceiver::DeleteProperty(obj, first, LanguageMode::kSloppy));
-  CHECK(Just(false) == JSReceiver::HasOwnProperty(obj, first));
+  CHECK(Just(false) == JSReceiver::HasOwnProperty(isolate, obj, first));
 
   // add first and then second
   Object::SetProperty(isolate, obj, first, one).Check();
   Object::SetProperty(isolate, obj, second, two).Check();
-  CHECK(Just(true) == JSReceiver::HasOwnProperty(obj, first));
-  CHECK(Just(true) == JSReceiver::HasOwnProperty(obj, second));
+  CHECK(Just(true) == JSReceiver::HasOwnProperty(isolate, obj, first));
+  CHECK(Just(true) == JSReceiver::HasOwnProperty(isolate, obj, second));
 
   // delete first and then second
   CHECK(Just(true) ==
         JSReceiver::DeleteProperty(obj, first, LanguageMode::kSloppy));
-  CHECK(Just(true) == JSReceiver::HasOwnProperty(obj, second));
+  CHECK(Just(true) == JSReceiver::HasOwnProperty(isolate, obj, second));
   CHECK(Just(true) ==
         JSReceiver::DeleteProperty(obj, second, LanguageMode::kSloppy));
-  CHECK(Just(false) == JSReceiver::HasOwnProperty(obj, first));
-  CHECK(Just(false) == JSReceiver::HasOwnProperty(obj, second));
+  CHECK(Just(false) == JSReceiver::HasOwnProperty(isolate, obj, first));
+  CHECK(Just(false) == JSReceiver::HasOwnProperty(isolate, obj, second));
 
   // add first and then second
   Object::SetProperty(isolate, obj, first, one).Check();
   Object::SetProperty(isolate, obj, second, two).Check();
-  CHECK(Just(true) == JSReceiver::HasOwnProperty(obj, first));
-  CHECK(Just(true) == JSReceiver::HasOwnProperty(obj, second));
+  CHECK(Just(true) == JSReceiver::HasOwnProperty(isolate, obj, first));
+  CHECK(Just(true) == JSReceiver::HasOwnProperty(isolate, obj, second));
 
   // delete second and then first
   CHECK(Just(true) ==
         JSReceiver::DeleteProperty(obj, second, LanguageMode::kSloppy));
-  CHECK(Just(true) == JSReceiver::HasOwnProperty(obj, first));
+  CHECK(Just(true) == JSReceiver::HasOwnProperty(isolate, obj, first));
   CHECK(Just(true) ==
         JSReceiver::DeleteProperty(obj, first, LanguageMode::kSloppy));
-  CHECK(Just(false) == JSReceiver::HasOwnProperty(obj, first));
-  CHECK(Just(false) == JSReceiver::HasOwnProperty(obj, second));
+  CHECK(Just(false) == JSReceiver::HasOwnProperty(isolate, obj, first));
+  CHECK(Just(false) == JSReceiver::HasOwnProperty(isolate, obj, second));
 
   // check string and internalized string match
   const char* string1 = "fisk";
   Handle<String> s1 = factory->NewStringFromAsciiChecked(string1);
   Object::SetProperty(isolate, obj, s1, one).Check();
   Handle<String> s1_string = factory->InternalizeUtf8String(string1);
-  CHECK(Just(true) == JSReceiver::HasOwnProperty(obj, s1_string));
+  CHECK(Just(true) == JSReceiver::HasOwnProperty(isolate, obj, s1_string));
 
   // check internalized string and string match
   const char* string2 = "fugl";
   Handle<String> s2_string = factory->InternalizeUtf8String(string2);
   Object::SetProperty(isolate, obj, s2_string, one).Check();
   Handle<String> s2 = factory->NewStringFromAsciiChecked(string2);
-  CHECK(Just(true) == JSReceiver::HasOwnProperty(obj, s2));
+  CHECK(Just(true) == JSReceiver::HasOwnProperty(isolate, obj, s2));
 }
 
 
@@ -1099,8 +1102,8 @@ TEST(Iteration) {
 
 TEST(TestBytecodeFlushing) {
 #ifndef V8_LITE_MODE
-  FLAG_opt = false;
-  FLAG_always_opt = false;
+  FLAG_turbofan = false;
+  FLAG_always_turbofan = false;
   i::FLAG_optimize_for_size = false;
 #endif  // V8_LITE_MODE
 #if ENABLE_SPARKPLUG
@@ -1165,8 +1168,8 @@ HEAP_TEST(Regress10560) {
   i::FLAG_flush_bytecode = true;
   i::FLAG_allow_natives_syntax = true;
   // Disable flags that allocate a feedback vector eagerly.
-  i::FLAG_opt = false;
-  i::FLAG_always_opt = false;
+  i::FLAG_turbofan = false;
+  i::FLAG_always_turbofan = false;
 #if ENABLE_SPARKPLUG
   FLAG_always_sparkplug = false;
 #endif  // ENABLE_SPARKPLUG
@@ -1221,7 +1224,7 @@ HEAP_TEST(Regress10560) {
     // Allocate feedback vector.
     IsCompiledScope is_compiled_scope(
         function->shared().is_compiled_scope(i_isolate));
-    JSFunction::EnsureFeedbackVector(function, &is_compiled_scope);
+    JSFunction::EnsureFeedbackVector(i_isolate, function, &is_compiled_scope);
 
     CHECK(function->has_feedback_vector());
     CHECK(function->shared().is_compiled());
@@ -1270,71 +1273,76 @@ UNINITIALIZED_TEST(Regress10843) {
   isolate->Dispose();
 }
 
-// Tests that spill slots from optimized code don't have weak pointers.
-TEST(Regress10774) {
-  if (FLAG_single_generation) return;
-  i::FLAG_allow_natives_syntax = true;
-  i::FLAG_turboprop = true;
-  i::FLAG_turbo_dynamic_map_checks = true;
-#ifdef VERIFY_HEAP
-  i::FLAG_verify_heap = true;
-#endif
+size_t near_heap_limit_invocation_count = 0;
+size_t InvokeGCNearHeapLimitCallback(void* data, size_t current_heap_limit,
+                                     size_t initial_heap_limit) {
+  near_heap_limit_invocation_count++;
+  if (near_heap_limit_invocation_count > 1) {
+    // We are already in a GC triggered in this callback, raise the limit
+    // to avoid an OOM.
+    return current_heap_limit * 5;
+  }
 
-  ManualGCScope manual_gc_scope;
-  CcTest::InitializeVM();
-  v8::Isolate* isolate = CcTest::isolate();
-  Isolate* i_isolate = CcTest::i_isolate();
-  Factory* factory = i_isolate->factory();
-  Heap* heap = i_isolate->heap();
+  DCHECK_EQ(near_heap_limit_invocation_count, 1);
+  // Operations that may cause GC (e.g. taking heap snapshots) in the
+  // near heap limit callback should not hit the AllowGarbageCollection
+  // assertion.
+  static_cast<v8::Isolate*>(data)->GetHeapProfiler()->TakeHeapSnapshot();
+  return current_heap_limit * 5;
+}
+
+UNINITIALIZED_TEST(Regress12777) {
+  v8::Isolate::CreateParams create_params;
+  create_params.constraints.set_max_old_generation_size_in_bytes(10 * i::MB);
+  create_params.array_buffer_allocator = CcTest::array_buffer_allocator();
+  v8::Isolate* isolate = v8::Isolate::New(create_params);
+
+  isolate->AddNearHeapLimitCallback(InvokeGCNearHeapLimitCallback, isolate);
 
   {
-    v8::HandleScope scope(isolate);
-    // We want to generate optimized code with dynamic map check operator that
-    // migrates deprecated maps. To force this, we want the IC state to be
-    // monomorphic and the map in the feedback should be a migration target.
-    const char* source =
-        "function f(o) {"
-        "  return o.b;"
-        "}"
-        "var o = {a:10, b:20};"
-        "var o1 = {a:10, b:20};"
-        "var o2 = {a:10, b:20};"
-        "%PrepareFunctionForOptimization(f);"
-        "f(o);"
-        "o1.b = 10.23;"  // Deprecate O's map.
-        "f(o1);"         // Install new map in IC
-        "f(o);"          // Mark o's map as migration target
-        "%OptimizeFunctionOnNextCall(f);"
-        "f(o);";
-    CompileRun(source);
+    v8::Isolate::Scope isolate_scope(isolate);
 
-    Handle<String> foo_name = factory->InternalizeUtf8String("f");
-    Handle<Object> func_value =
-        Object::GetProperty(i_isolate, i_isolate->global_object(), foo_name)
-            .ToHandleChecked();
-    CHECK(func_value->IsJSFunction());
-    Handle<JSFunction> fun = Handle<JSFunction>::cast(func_value);
+    Isolate* i_isolate = reinterpret_cast<Isolate*>(isolate);
+    // Allocate data to trigger the NearHeapLimitCallback.
+    HandleScope scope(i_isolate);
+    int length = 2 * i::MB / i::kTaggedSize;
+    std::vector<Handle<FixedArray>> arrays;
+    for (int i = 0; i < 5; i++) {
+      arrays.push_back(i_isolate->factory()->NewFixedArray(length));
+    }
+    CcTest::CollectAllGarbage(i_isolate);
+    for (int i = 0; i < 5; i++) {
+      arrays.push_back(i_isolate->factory()->NewFixedArray(length));
+    }
+    CcTest::CollectAllGarbage(i_isolate);
+    for (int i = 0; i < 5; i++) {
+      arrays.push_back(i_isolate->factory()->NewFixedArray(length));
+    }
 
-    Handle<String> obj_name = factory->InternalizeUtf8String("o2");
-    Handle<Object> obj_value =
-        Object::GetProperty(i_isolate, i_isolate->global_object(), obj_name)
-            .ToHandleChecked();
-
-    heap::SimulateFullSpace(heap->new_space());
-
-    Handle<JSObject> global(i_isolate->context().global_object(), i_isolate);
-    // O2 still has the deprecated map and the optimized code should migrate O2
-    // successfully. This shouldn't crash.
-    Execution::Call(i_isolate, fun, global, 1, &obj_value).ToHandleChecked();
+    // Normally, taking a heap snapshot in the near heap limit would result in
+    // a full GC, then the overhead of the promotions would cause another
+    // invocation of the heap limit callback and it can raise the limit in
+    // the second call to avoid an OOM, so we test that the callback can
+    // indeed raise the limit this way in this case. When there is only one
+    // generation, however, there would not be the overhead of promotions so the
+    // callback may not be triggered again during the generation of the heap
+    // snapshot. In that case we only need to check that the callback is called
+    // and it can perform GC-triggering operations jsut fine there.
+    size_t minimum_callback_invocation_count = FLAG_single_generation ? 1 : 2;
+    CHECK_GE(near_heap_limit_invocation_count,
+             minimum_callback_invocation_count);
   }
+
+  isolate->GetHeapProfiler()->DeleteAllHeapSnapshots();
+  isolate->Dispose();
 }
 
 #ifndef V8_LITE_MODE
 
 TEST(TestOptimizeAfterBytecodeFlushingCandidate) {
   if (FLAG_single_generation) return;
-  FLAG_opt = true;
-  FLAG_always_opt = false;
+  FLAG_turbofan = true;
+  FLAG_always_turbofan = false;
 #if ENABLE_SPARKPLUG
   FLAG_always_sparkplug = false;
 #endif  // ENABLE_SPARKPLUG
@@ -1418,9 +1426,9 @@ TEST(TestOptimizeAfterBytecodeFlushingCandidate) {
 
 TEST(TestUseOfIncrementalBarrierOnCompileLazy) {
   if (!FLAG_incremental_marking) return;
-  // Turn off always_opt because it interferes with running the built-in for
-  // the last call to g().
-  FLAG_always_opt = false;
+  // Turn off always_turbofan because it interferes with running the built-in
+  // for the last call to g().
+  FLAG_always_turbofan = false;
   FLAG_allow_natives_syntax = true;
   CcTest::InitializeVM();
   Isolate* isolate = CcTest::i_isolate();
@@ -1530,7 +1538,6 @@ TEST(CompilationCacheCachingBehavior) {
   }
 }
 
-
 static void OptimizeEmptyFunction(const char* name) {
   HandleScope scope(CcTest::i_isolate());
   base::EmbeddedVector<char, 256> source;
@@ -1557,13 +1564,14 @@ int CountNativeContexts() {
 }
 
 TEST(TestInternalWeakLists) {
-  FLAG_always_opt = false;
+  FLAG_always_turbofan = false;
   FLAG_allow_natives_syntax = true;
 
   // Some flags turn Scavenge collections into Mark-sweep collections
   // and hence are incompatible with this test case.
   if (FLAG_gc_global || FLAG_stress_compaction ||
-      FLAG_stress_incremental_marking || FLAG_single_generation)
+      FLAG_stress_incremental_marking || FLAG_single_generation ||
+      FLAG_separate_gc_phases)
     return;
   FLAG_retain_maps_for_n_gc = 0;
 
@@ -1680,7 +1688,8 @@ TEST(TestSizeOfRegExpCode) {
   CcTest::CollectAllAvailableGarbage();
   MarkCompactCollector* collector = CcTest::heap()->mark_compact_collector();
   if (collector->sweeping_in_progress()) {
-    collector->EnsureSweepingCompleted();
+    collector->EnsureSweepingCompleted(
+        MarkCompactCollector::SweepingForcedFinalizationMode::kV8Only);
   }
   int initial_size = static_cast<int>(CcTest::heap()->SizeOfObjects());
 
@@ -1721,7 +1730,8 @@ HEAP_TEST(TestSizeOfObjects) {
   // the heap size and return with sweeping finished completely.
   CcTest::CollectAllAvailableGarbage();
   if (collector->sweeping_in_progress()) {
-    collector->EnsureSweepingCompleted();
+    collector->EnsureSweepingCompleted(
+        MarkCompactCollector::SweepingForcedFinalizationMode::kV8Only);
   }
   int initial_size = static_cast<int>(heap->SizeOfObjects());
 
@@ -1746,7 +1756,8 @@ HEAP_TEST(TestSizeOfObjects) {
   CHECK_EQ(initial_size, static_cast<int>(heap->SizeOfObjects()));
   // Waiting for sweeper threads should not change heap size.
   if (collector->sweeping_in_progress()) {
-    collector->EnsureSweepingCompleted();
+    collector->EnsureSweepingCompleted(
+        MarkCompactCollector::SweepingForcedFinalizationMode::kV8Only);
   }
   CHECK_EQ(initial_size, static_cast<int>(heap->SizeOfObjects()));
 }
@@ -1791,7 +1802,7 @@ static HeapObject NewSpaceAllocateAligned(int size,
       heap->new_space()->AllocateRawAligned(size, alignment);
   HeapObject obj;
   allocation.To(&obj);
-  heap->CreateFillerObjectAt(obj.address(), size, ClearRecordedSlots::kNo);
+  heap->CreateFillerObjectAt(obj.address(), size);
   return obj;
 }
 
@@ -1859,7 +1870,7 @@ static HeapObject OldSpaceAllocateAligned(int size,
       heap->old_space()->AllocateRawAligned(size, alignment);
   HeapObject obj;
   allocation.To(&obj);
-  heap->CreateFillerObjectAt(obj.address(), size, ClearRecordedSlots::kNo);
+  heap->CreateFillerObjectAt(obj.address(), size);
   return obj;
 }
 
@@ -1889,9 +1900,8 @@ TEST(TestAlignedOverAllocation) {
   heap::AbandonCurrentlyFreeMemory(heap->old_space());
   // Allocate a dummy object to properly set up the linear allocation info.
   AllocationResult dummy = heap->old_space()->AllocateRawUnaligned(kTaggedSize);
-  CHECK(!dummy.IsRetry());
-  heap->CreateFillerObjectAt(dummy.ToObjectChecked().address(), kTaggedSize,
-                             ClearRecordedSlots::kNo);
+  CHECK(!dummy.IsFailure());
+  heap->CreateFillerObjectAt(dummy.ToObjectChecked().address(), kTaggedSize);
 
   // Double misalignment is 4 on 32-bit platforms or when pointer compression
   // is enabled, 0 on 64-bit ones when pointer compression is disabled.
@@ -2379,7 +2389,8 @@ HEAP_TEST(GCFlags) {
 
   MarkCompactCollector* collector = heap->mark_compact_collector();
   if (collector->sweeping_in_progress()) {
-    collector->EnsureSweepingCompleted();
+    collector->EnsureSweepingCompleted(
+        MarkCompactCollector::SweepingForcedFinalizationMode::kV8Only);
   }
 
   IncrementalMarking* marking = heap->incremental_marking();
@@ -2453,7 +2464,7 @@ TEST(IdleNotificationFinishMarking) {
   // The next idle notification has to finish incremental marking.
   const double kLongIdleTime = 1000.0;
   CcTest::isolate()->IdleNotificationDeadline(
-      (v8::base::TimeTicks::HighResolutionNow().ToInternalValue() /
+      (v8::base::TimeTicks::Now().ToInternalValue() /
        static_cast<double>(v8::base::Time::kMicrosecondsPerSecond)) +
       kLongIdleTime);
   CHECK_EQ(CcTest::heap()->gc_count(), initial_gc_count + 1);
@@ -2466,7 +2477,7 @@ TEST(OptimizedAllocationAlwaysInNewSpace) {
   FLAG_allow_natives_syntax = true;
   FLAG_stress_concurrent_allocation = false;  // For SimulateFullSpace.
   CcTest::InitializeVM();
-  if (!CcTest::i_isolate()->use_optimizer() || FLAG_always_opt) return;
+  if (!CcTest::i_isolate()->use_optimizer() || FLAG_always_turbofan) return;
   if (FLAG_gc_global || FLAG_stress_compaction ||
       FLAG_stress_incremental_marking)
     return;
@@ -2504,7 +2515,7 @@ TEST(OptimizedPretenuringAllocationFolding) {
   FLAG_allow_natives_syntax = true;
   FLAG_expose_gc = true;
   CcTest::InitializeVM();
-  if (!CcTest::i_isolate()->use_optimizer() || FLAG_always_opt) return;
+  if (!CcTest::i_isolate()->use_optimizer() || FLAG_always_turbofan) return;
   if (FLAG_gc_global || FLAG_stress_compaction ||
       FLAG_stress_incremental_marking || FLAG_single_generation)
     return;
@@ -2554,7 +2565,7 @@ TEST(OptimizedPretenuringObjectArrayLiterals) {
   FLAG_allow_natives_syntax = true;
   FLAG_expose_gc = true;
   CcTest::InitializeVM();
-  if (!CcTest::i_isolate()->use_optimizer() || FLAG_always_opt) return;
+  if (!CcTest::i_isolate()->use_optimizer() || FLAG_always_turbofan) return;
   if (FLAG_gc_global || FLAG_stress_compaction ||
       FLAG_stress_incremental_marking || FLAG_single_generation) {
     return;
@@ -2593,7 +2604,7 @@ TEST(OptimizedPretenuringNestedInObjectProperties) {
   FLAG_allow_natives_syntax = true;
   FLAG_expose_gc = true;
   CcTest::InitializeVM();
-  if (!CcTest::i_isolate()->use_optimizer() || FLAG_always_opt) return;
+  if (!CcTest::i_isolate()->use_optimizer() || FLAG_always_turbofan) return;
   if (FLAG_gc_global || FLAG_stress_compaction ||
       FLAG_stress_incremental_marking || FLAG_single_generation) {
     return;
@@ -2635,7 +2646,7 @@ TEST(OptimizedPretenuringMixedInObjectProperties) {
   FLAG_allow_natives_syntax = true;
   FLAG_expose_gc = true;
   CcTest::InitializeVM();
-  if (!CcTest::i_isolate()->use_optimizer() || FLAG_always_opt) return;
+  if (!CcTest::i_isolate()->use_optimizer() || FLAG_always_turbofan) return;
   if (FLAG_gc_global || FLAG_stress_compaction ||
       FLAG_stress_incremental_marking || FLAG_single_generation)
     return;
@@ -2682,7 +2693,7 @@ TEST(OptimizedPretenuringDoubleArrayProperties) {
   FLAG_allow_natives_syntax = true;
   FLAG_expose_gc = true;
   CcTest::InitializeVM();
-  if (!CcTest::i_isolate()->use_optimizer() || FLAG_always_opt) return;
+  if (!CcTest::i_isolate()->use_optimizer() || FLAG_always_turbofan) return;
   if (FLAG_gc_global || FLAG_stress_compaction ||
       FLAG_stress_incremental_marking || FLAG_single_generation)
     return;
@@ -2721,7 +2732,7 @@ TEST(OptimizedPretenuringDoubleArrayLiterals) {
   FLAG_allow_natives_syntax = true;
   FLAG_expose_gc = true;
   CcTest::InitializeVM();
-  if (!CcTest::i_isolate()->use_optimizer() || FLAG_always_opt) return;
+  if (!CcTest::i_isolate()->use_optimizer() || FLAG_always_turbofan) return;
   if (FLAG_gc_global || FLAG_stress_compaction ||
       FLAG_stress_incremental_marking || FLAG_single_generation)
     return;
@@ -2759,7 +2770,7 @@ TEST(OptimizedPretenuringNestedMixedArrayLiterals) {
   FLAG_allow_natives_syntax = true;
   FLAG_expose_gc = true;
   CcTest::InitializeVM();
-  if (!CcTest::i_isolate()->use_optimizer() || FLAG_always_opt) return;
+  if (!CcTest::i_isolate()->use_optimizer() || FLAG_always_turbofan) return;
   if (FLAG_gc_global || FLAG_stress_compaction ||
       FLAG_stress_incremental_marking || FLAG_single_generation)
     return;
@@ -2809,7 +2820,7 @@ TEST(OptimizedPretenuringNestedObjectLiterals) {
   FLAG_allow_natives_syntax = true;
   FLAG_expose_gc = true;
   CcTest::InitializeVM();
-  if (!CcTest::i_isolate()->use_optimizer() || FLAG_always_opt) return;
+  if (!CcTest::i_isolate()->use_optimizer() || FLAG_always_turbofan) return;
   if (FLAG_gc_global || FLAG_stress_compaction ||
       FLAG_stress_incremental_marking || FLAG_single_generation)
     return;
@@ -2859,7 +2870,7 @@ TEST(OptimizedPretenuringNestedDoubleLiterals) {
   FLAG_allow_natives_syntax = true;
   FLAG_expose_gc = true;
   CcTest::InitializeVM();
-  if (!CcTest::i_isolate()->use_optimizer() || FLAG_always_opt) return;
+  if (!CcTest::i_isolate()->use_optimizer() || FLAG_always_turbofan) return;
   if (FLAG_gc_global || FLAG_stress_compaction ||
       FLAG_stress_incremental_marking || FLAG_single_generation)
     return;
@@ -2909,7 +2920,7 @@ TEST(OptimizedPretenuringNestedDoubleLiterals) {
 TEST(OptimizedAllocationArrayLiterals) {
   FLAG_allow_natives_syntax = true;
   CcTest::InitializeVM();
-  if (!CcTest::i_isolate()->use_optimizer() || FLAG_always_opt) return;
+  if (!CcTest::i_isolate()->use_optimizer() || FLAG_always_turbofan) return;
   if (FLAG_gc_global || FLAG_stress_compaction ||
       FLAG_stress_incremental_marking)
     return;
@@ -2938,8 +2949,7 @@ TEST(OptimizedAllocationArrayLiterals) {
 }
 
 static int CountMapTransitions(i::Isolate* isolate, Map map) {
-  DisallowGarbageCollection no_gc;
-  return TransitionsAccessor(isolate, map, &no_gc).NumberOfTransitions();
+  return TransitionsAccessor(isolate, map).NumberOfTransitions();
 }
 
 
@@ -3117,8 +3127,8 @@ TEST(ReleaseOverReservedPages) {
   FLAG_trace_gc = true;
   // The optimizer can allocate stuff, messing up the test.
 #ifndef V8_LITE_MODE
-  FLAG_opt = false;
-  FLAG_always_opt = false;
+  FLAG_turbofan = false;
+  FLAG_always_turbofan = false;
 #endif  // V8_LITE_MODE
   // - Parallel compaction increases fragmentation, depending on how existing
   //   memory is distributed. Since this is non-deterministic because of
@@ -3226,7 +3236,7 @@ TEST(PrintSharedFunctionInfo) {
 TEST(IncrementalMarkingPreservesMonomorphicCallIC) {
   if (!FLAG_use_ic) return;
   if (!FLAG_incremental_marking) return;
-  if (FLAG_always_opt) return;
+  if (FLAG_always_turbofan) return;
   FLAG_allow_natives_syntax = true;
   CcTest::InitializeVM();
   v8::HandleScope scope(CcTest::isolate());
@@ -3283,7 +3293,7 @@ static void CheckVectorIC(Handle<JSFunction> f, int slot_index,
 
 TEST(IncrementalMarkingPreservesMonomorphicConstructor) {
   if (!FLAG_incremental_marking) return;
-  if (FLAG_always_opt) return;
+  if (FLAG_always_turbofan) return;
   FLAG_allow_natives_syntax = true;
   CcTest::InitializeVM();
   v8::HandleScope scope(CcTest::isolate());
@@ -3311,7 +3321,7 @@ TEST(IncrementalMarkingPreservesMonomorphicConstructor) {
 TEST(IncrementalMarkingPreservesMonomorphicIC) {
   if (!FLAG_use_ic) return;
   if (!FLAG_incremental_marking) return;
-  if (FLAG_always_opt) return;
+  if (FLAG_always_turbofan) return;
   FLAG_allow_natives_syntax = true;
   CcTest::InitializeVM();
   v8::HandleScope scope(CcTest::isolate());
@@ -3337,7 +3347,7 @@ TEST(IncrementalMarkingPreservesMonomorphicIC) {
 TEST(IncrementalMarkingPreservesPolymorphicIC) {
   if (!FLAG_use_ic) return;
   if (!FLAG_incremental_marking) return;
-  if (FLAG_always_opt) return;
+  if (FLAG_always_turbofan) return;
   FLAG_allow_natives_syntax = true;
   CcTest::InitializeVM();
   v8::HandleScope scope(CcTest::isolate());
@@ -3380,7 +3390,7 @@ TEST(IncrementalMarkingPreservesPolymorphicIC) {
 TEST(ContextDisposeDoesntClearPolymorphicIC) {
   if (!FLAG_use_ic) return;
   if (!FLAG_incremental_marking) return;
-  if (FLAG_always_opt) return;
+  if (FLAG_always_turbofan) return;
   FLAG_allow_natives_syntax = true;
   CcTest::InitializeVM();
   v8::HandleScope scope(CcTest::isolate());
@@ -3558,16 +3568,12 @@ void DetailedErrorStackTraceTest(const char* src,
   CHECK(try_catch.HasCaught());
   Handle<Object> exception = v8::Utils::OpenHandle(*try_catch.Exception());
 
-  Isolate* isolate = CcTest::i_isolate();
-  Handle<Name> key = isolate->factory()->stack_trace_symbol();
-
-  Handle<FixedArray> stack_trace(Handle<FixedArray>::cast(
-      Object::GetProperty(isolate, exception, key).ToHandleChecked()));
-  test(stack_trace);
+  test(CcTest::i_isolate()->GetSimpleStackTrace(
+      Handle<JSReceiver>::cast(exception)));
 }
 
 FixedArray ParametersOf(Handle<FixedArray> stack_trace, int frame_index) {
-  return StackFrameInfo::cast(stack_trace->get(frame_index)).parameters();
+  return CallSiteInfo::cast(stack_trace->get(frame_index)).parameters();
 }
 
 // * Test interpreted function error
@@ -3661,7 +3667,7 @@ TEST(DetailedErrorStackTraceBuiltinExit) {
 TEST(Regress169928) {
   FLAG_allow_natives_syntax = true;
 #ifndef V8_LITE_MODE
-  FLAG_opt = false;
+  FLAG_turbofan = false;
 #endif  // V8_LITE_MODE
   CcTest::InitializeVM();
   Isolate* isolate = CcTest::i_isolate();
@@ -3725,8 +3731,7 @@ TEST(Regress169928) {
   CHECK(allocation.To(&obj));
   Address addr_obj = obj.address();
   CcTest::heap()->CreateFillerObjectAt(addr_obj,
-                                       AllocationMemento::kSize + kTaggedSize,
-                                       ClearRecordedSlots::kNo);
+                                       AllocationMemento::kSize + kTaggedSize);
 
   // Give the array a name, making sure not to allocate strings.
   v8::Local<v8::Object> array_obj = v8::Utils::ToLocal(array);
@@ -3951,7 +3956,10 @@ static int SlimAllocationSiteCount(Heap* heap) {
 }
 
 TEST(EnsureAllocationSiteDependentCodesProcessed) {
-  if (FLAG_always_opt || !FLAG_opt || !V8_ALLOCATION_SITE_TRACKING_BOOL) return;
+  if (FLAG_always_turbofan || !FLAG_turbofan ||
+      !V8_ALLOCATION_SITE_TRACKING_BOOL) {
+    return;
+  }
   FLAG_allow_natives_syntax = true;
   CcTest::InitializeVM();
   Isolate* isolate = CcTest::i_isolate();
@@ -3995,8 +4003,7 @@ TEST(EnsureAllocationSiteDependentCodesProcessed) {
     CHECK_EQ(dependency.length(), DependentCode::kSlotsPerEntry);
     MaybeObject code = dependency.Get(0 + DependentCode::kCodeSlotOffset);
     CHECK(code->IsWeak());
-    CHECK_EQ(bar_handle->code(),
-             FromCodeT(CodeT::cast(code->GetHeapObjectAssumeWeak())));
+    CHECK_EQ(bar_handle->code(), CodeT::cast(code->GetHeapObjectAssumeWeak()));
     Smi groups = dependency.Get(0 + DependentCode::kGroupsSlotOffset).ToSmi();
     CHECK_EQ(static_cast<DependentCode::DependencyGroups>(groups.value()),
              DependentCode::kAllocationSiteTransitionChangedGroup |
@@ -4030,7 +4037,7 @@ void CheckNumberOfAllocations(Heap* heap, const char* source,
 }
 
 TEST(AllocationSiteCreation) {
-  FLAG_always_opt = false;
+  FLAG_always_turbofan = false;
   CcTest::InitializeVM();
   Isolate* isolate = CcTest::i_isolate();
   Heap* heap = isolate->heap();
@@ -4117,7 +4124,7 @@ TEST(AllocationSiteCreation) {
 }
 
 TEST(CellsInOptimizedCodeAreWeak) {
-  if (FLAG_always_opt || !FLAG_opt) return;
+  if (FLAG_always_turbofan || !FLAG_turbofan) return;
   FLAG_allow_natives_syntax = true;
   CcTest::InitializeVM();
   Isolate* isolate = CcTest::i_isolate();
@@ -4149,7 +4156,8 @@ TEST(CellsInOptimizedCodeAreWeak) {
         *v8::Local<v8::Function>::Cast(CcTest::global()
                                            ->Get(context.local(), v8_str("bar"))
                                            .ToLocalChecked())));
-    code = scope.CloseAndEscape(Handle<Code>(bar->code(), isolate));
+    code = handle(FromCodeT(bar->code()), isolate);
+    code = scope.CloseAndEscape(code);
   }
 
   // Now make sure that a gc should get rid of the function
@@ -4163,7 +4171,7 @@ TEST(CellsInOptimizedCodeAreWeak) {
 
 
 TEST(ObjectsInOptimizedCodeAreWeak) {
-  if (FLAG_always_opt || !FLAG_opt) return;
+  if (FLAG_always_turbofan || !FLAG_turbofan) return;
   FLAG_allow_natives_syntax = true;
   CcTest::InitializeVM();
   Isolate* isolate = CcTest::i_isolate();
@@ -4193,7 +4201,8 @@ TEST(ObjectsInOptimizedCodeAreWeak) {
         *v8::Local<v8::Function>::Cast(CcTest::global()
                                            ->Get(context.local(), v8_str("bar"))
                                            .ToLocalChecked())));
-    code = scope.CloseAndEscape(Handle<Code>(bar->code(), isolate));
+    code = handle(FromCodeT(bar->code()), isolate);
+    code = scope.CloseAndEscape(code);
   }
 
   // Now make sure that a gc should get rid of the function
@@ -4206,7 +4215,7 @@ TEST(ObjectsInOptimizedCodeAreWeak) {
 }
 
 TEST(NewSpaceObjectsInOptimizedCode) {
-  if (FLAG_always_opt || !FLAG_opt || FLAG_single_generation) return;
+  if (FLAG_always_turbofan || !FLAG_turbofan || FLAG_single_generation) return;
   FLAG_allow_natives_syntax = true;
   CcTest::InitializeVM();
   Isolate* isolate = CcTest::i_isolate();
@@ -4255,7 +4264,8 @@ TEST(NewSpaceObjectsInOptimizedCode) {
     CcTest::heap()->Verify();
 #endif
     CHECK(!bar->code().marked_for_deoptimization());
-    code = scope.CloseAndEscape(Handle<Code>(bar->code(), isolate));
+    code = handle(FromCodeT(bar->code()), isolate);
+    code = scope.CloseAndEscape(code);
   }
 
   // Now make sure that a gc should get rid of the function
@@ -4268,7 +4278,7 @@ TEST(NewSpaceObjectsInOptimizedCode) {
 }
 
 TEST(ObjectsInEagerlyDeoptimizedCodeAreWeak) {
-  if (FLAG_always_opt || !FLAG_opt) return;
+  if (FLAG_always_turbofan || !FLAG_turbofan) return;
   FLAG_allow_natives_syntax = true;
   CcTest::InitializeVM();
   Isolate* isolate = CcTest::i_isolate();
@@ -4299,7 +4309,8 @@ TEST(ObjectsInEagerlyDeoptimizedCodeAreWeak) {
         *v8::Local<v8::Function>::Cast(CcTest::global()
                                            ->Get(context.local(), v8_str("bar"))
                                            .ToLocalChecked())));
-    code = scope.CloseAndEscape(Handle<Code>(bar->code(), isolate));
+    code = handle(FromCodeT(bar->code()), isolate);
+    code = scope.CloseAndEscape(code);
   }
 
   CHECK(code->marked_for_deoptimization());
@@ -4343,7 +4354,7 @@ static int GetCodeChainLength(Code code) {
 
 
 TEST(NextCodeLinkIsWeak) {
-  FLAG_always_opt = false;
+  FLAG_always_turbofan = false;
   FLAG_allow_natives_syntax = true;
   FLAG_stress_concurrent_inlining = false;  // Test needs deterministic timing.
   CcTest::InitializeVM();
@@ -4361,10 +4372,11 @@ TEST(NextCodeLinkIsWeak) {
         OptimizeDummyFunction(CcTest::isolate(), "mortal");
     Handle<JSFunction> immortal =
         OptimizeDummyFunction(CcTest::isolate(), "immortal");
-    CHECK_EQ(immortal->code().next_code_link(), ToCodeT(mortal->code()));
-    code_chain_length_before = GetCodeChainLength(immortal->code());
+    CHECK_EQ(immortal->code().next_code_link(), mortal->code());
+    code_chain_length_before = GetCodeChainLength(FromCodeT(immortal->code()));
     // Keep the immortal code and let the mortal code die.
-    code = scope.CloseAndEscape(Handle<Code>(immortal->code(), isolate));
+    code = handle(FromCodeT(immortal->code()), isolate);
+    code = scope.CloseAndEscape(code);
     CompileRun("mortal = null; immortal = null;");
   }
   CcTest::CollectAllAvailableGarbage();
@@ -4374,7 +4386,7 @@ TEST(NextCodeLinkIsWeak) {
 }
 
 TEST(NextCodeLinkInCodeDataContainerIsCleared) {
-  FLAG_always_opt = false;
+  FLAG_always_turbofan = false;
   FLAG_allow_natives_syntax = true;
   FLAG_stress_concurrent_inlining = false;  // Test needs deterministic timing.
   CcTest::InitializeVM();
@@ -4390,9 +4402,10 @@ TEST(NextCodeLinkInCodeDataContainerIsCleared) {
         OptimizeDummyFunction(CcTest::isolate(), "mortal1");
     Handle<JSFunction> mortal2 =
         OptimizeDummyFunction(CcTest::isolate(), "mortal2");
-    CHECK_EQ(mortal2->code().next_code_link(), ToCodeT(mortal1->code()));
-    code_data_container = scope.CloseAndEscape(Handle<CodeDataContainer>(
-        mortal2->code().code_data_container(kAcquireLoad), isolate));
+    CHECK_EQ(mortal2->code().next_code_link(), mortal1->code());
+    code_data_container =
+        handle(CodeDataContainerFromCodeT(mortal2->code()), isolate);
+    code_data_container = scope.CloseAndEscape(code_data_container);
     CompileRun("mortal1 = null; mortal2 = null;");
   }
   CcTest::CollectAllAvailableGarbage();
@@ -4463,7 +4476,7 @@ static void ClearWeakIC(
 
 
 TEST(WeakFunctionInConstructor) {
-  if (FLAG_always_opt) return;
+  if (FLAG_always_turbofan) return;
   FLAG_stress_compaction = false;
   FLAG_stress_incremental_marking = false;
   FLAG_allow_natives_syntax = true;
@@ -4735,7 +4748,7 @@ void CheckIC(Handle<JSFunction> function, int slot_index,
 
 TEST(MonomorphicStaysMonomorphicAfterGC) {
   if (!FLAG_use_ic) return;
-  if (FLAG_always_opt) return;
+  if (FLAG_always_turbofan) return;
   ManualGCScope manual_gc_scope;
   CcTest::InitializeVM();
   Isolate* isolate = CcTest::i_isolate();
@@ -4771,7 +4784,7 @@ TEST(MonomorphicStaysMonomorphicAfterGC) {
 
 TEST(PolymorphicStaysPolymorphicAfterGC) {
   if (!FLAG_use_ic) return;
-  if (FLAG_always_opt) return;
+  if (FLAG_always_turbofan) return;
   ManualGCScope manual_gc_scope;
   CcTest::InitializeVM();
   Isolate* isolate = CcTest::i_isolate();
@@ -5206,7 +5219,7 @@ TEST(PreprocessStackTrace) {
   CHECK(try_catch.HasCaught());
   Isolate* isolate = CcTest::i_isolate();
   Handle<Object> exception = v8::Utils::OpenHandle(*try_catch.Exception());
-  Handle<Name> key = isolate->factory()->stack_trace_symbol();
+  Handle<Name> key = isolate->factory()->error_stack_symbol();
   Handle<Object> stack_trace =
       Object::GetProperty(isolate, exception, key).ToHandleChecked();
   Handle<Object> code =
@@ -5275,6 +5288,11 @@ TEST(NewSpaceAllocationCounter) {
 
 
 TEST(OldSpaceAllocationCounter) {
+  // Using the string forwarding table can free allocations during sweeping, due
+  // to ThinString trimming, thus failing this test.
+  // The flag (and handling of the forwarding table/ThinString transitions in
+  // young gen) is only temporary so we just skip this test for now.
+  if (FLAG_always_use_string_forwarding_table) return;
   ManualGCScope manual_gc_scope;
   CcTest::InitializeVM();
   v8::HandleScope scope(CcTest::isolate());
@@ -5345,7 +5363,7 @@ TEST(MessageObjectLeak) {
 
   const char* flag = "--turbo-filter=*";
   FlagList::SetFlagsFromString(flag, strlen(flag));
-  FLAG_always_opt = true;
+  FLAG_always_turbofan = true;
 
   CompileRun(test);
 }
@@ -5444,12 +5462,13 @@ AllocationResult HeapTester::AllocateByteArrayForTest(
                                   SKIP_WRITE_BARRIER);
   ByteArray::cast(result).set_length(length);
   ByteArray::cast(result).clear_padding();
-  return result;
+  return AllocationResult::FromObject(result);
 }
 
 bool HeapTester::CodeEnsureLinearAllocationArea(Heap* heap, int size_in_bytes) {
-  bool result = heap->code_space()->EnsureLabMain(size_in_bytes,
-                                                  AllocationOrigin::kRuntime);
+  bool result = heap->code_space()->EnsureAllocation(
+      size_in_bytes, AllocationAlignment::kTaggedAligned,
+      AllocationOrigin::kRuntime, nullptr);
   heap->code_space()->UpdateInlineAllocationLimit(0);
   return result;
 }
@@ -5477,7 +5496,8 @@ HEAP_TEST(Regress587004) {
   CcTest::CollectGarbage(OLD_SPACE);
   heap::SimulateFullSpace(heap->old_space());
   heap->RightTrimFixedArray(*array, N - 1);
-  heap->mark_compact_collector()->EnsureSweepingCompleted();
+  heap->mark_compact_collector()->EnsureSweepingCompleted(
+      MarkCompactCollector::SweepingForcedFinalizationMode::kV8Only);
   ByteArray byte_array;
   const int M = 256;
   // Don't allow old space expansion. The test works without this flag too,
@@ -5649,7 +5669,8 @@ TEST(Regress598319) {
   CcTest::CollectGarbage(OLD_SPACE);
   MarkCompactCollector* collector = heap->mark_compact_collector();
   if (collector->sweeping_in_progress()) {
-    collector->EnsureSweepingCompleted();
+    collector->EnsureSweepingCompleted(
+        MarkCompactCollector::SweepingForcedFinalizationMode::kV8Only);
   }
 
   CHECK(heap->lo_space()->Contains(arr.get()));
@@ -5705,6 +5726,7 @@ TEST(Regress598319) {
                   StepOrigin::kV8);
     if (marking->IsReadyToOverApproximateWeakClosure()) {
       SafepointScope safepoint_scope(heap);
+      MarkingBarrier::PublishAll(heap);
       marking->FinalizeIncrementally();
     }
   }
@@ -5723,7 +5745,8 @@ Handle<FixedArray> ShrinkArrayAndCheckSize(Heap* heap, int length) {
   for (int i = 0; i < 5; i++) {
     CcTest::CollectAllGarbage();
   }
-  heap->mark_compact_collector()->EnsureSweepingCompleted();
+  heap->mark_compact_collector()->EnsureSweepingCompleted(
+      MarkCompactCollector::SweepingForcedFinalizationMode::kV8Only);
   // Disable LAB, such that calculations with SizeOfObjects() and object size
   // are correct.
   heap->DisableInlineAllocation();
@@ -5738,7 +5761,8 @@ Handle<FixedArray> ShrinkArrayAndCheckSize(Heap* heap, int length) {
   CHECK_EQ(size_after_allocation, size_after_shrinking);
   // GC and sweeping updates the size to acccount for shrinking.
   CcTest::CollectAllGarbage();
-  heap->mark_compact_collector()->EnsureSweepingCompleted();
+  heap->mark_compact_collector()->EnsureSweepingCompleted(
+      MarkCompactCollector::SweepingForcedFinalizationMode::kV8Only);
   intptr_t size_after_gc = heap->SizeOfObjects();
   CHECK_EQ(size_after_gc, size_before_allocation + array->Size());
   return array;
@@ -5775,7 +5799,8 @@ TEST(Regress615489) {
   i::MarkCompactCollector* collector = heap->mark_compact_collector();
   i::IncrementalMarking* marking = heap->incremental_marking();
   if (collector->sweeping_in_progress()) {
-    collector->EnsureSweepingCompleted();
+    collector->EnsureSweepingCompleted(
+        MarkCompactCollector::SweepingForcedFinalizationMode::kV8Only);
   }
   CHECK(marking->IsMarking() || marking->IsStopped());
   if (marking->IsStopped()) {
@@ -5821,7 +5846,7 @@ class StaticOneByteResource : public v8::String::ExternalOneByteStringResource {
 };
 
 TEST(Regress631969) {
-  if (!FLAG_incremental_marking) return;
+  if (!FLAG_incremental_marking || FLAG_separate_gc_phases) return;
   FLAG_manual_evacuation_candidates_selection = true;
   FLAG_parallel_compaction = false;
   ManualGCScope manual_gc_scope;
@@ -5884,7 +5909,8 @@ TEST(LeftTrimFixedArrayInBlackArea) {
   i::MarkCompactCollector* collector = heap->mark_compact_collector();
   i::IncrementalMarking* marking = heap->incremental_marking();
   if (collector->sweeping_in_progress()) {
-    collector->EnsureSweepingCompleted();
+    collector->EnsureSweepingCompleted(
+        MarkCompactCollector::SweepingForcedFinalizationMode::kV8Only);
   }
   CHECK(marking->IsMarking() || marking->IsStopped());
   if (marking->IsStopped()) {
@@ -5925,7 +5951,8 @@ TEST(ContinuousLeftTrimFixedArrayInBlackArea) {
   i::MarkCompactCollector* collector = heap->mark_compact_collector();
   i::IncrementalMarking* marking = heap->incremental_marking();
   if (collector->sweeping_in_progress()) {
-    collector->EnsureSweepingCompleted();
+    collector->EnsureSweepingCompleted(
+        MarkCompactCollector::SweepingForcedFinalizationMode::kV8Only);
   }
   CHECK(marking->IsMarking() || marking->IsStopped());
   if (marking->IsStopped()) {
@@ -5994,7 +6021,8 @@ TEST(ContinuousRightTrimFixedArrayInBlackArea) {
   i::MarkCompactCollector* collector = heap->mark_compact_collector();
   i::IncrementalMarking* marking = heap->incremental_marking();
   if (collector->sweeping_in_progress()) {
-    collector->EnsureSweepingCompleted();
+    collector->EnsureSweepingCompleted(
+        MarkCompactCollector::SweepingForcedFinalizationMode::kV8Only);
   }
   CHECK(marking->IsMarking() || marking->IsStopped());
   if (marking->IsStopped()) {
@@ -6067,7 +6095,6 @@ TEST(Regress618958) {
 
 TEST(YoungGenerationLargeObjectAllocationScavenge) {
   if (FLAG_minor_mc) return;
-  if (!FLAG_young_generation_large_objects) return;
   CcTest::InitializeVM();
   v8::HandleScope scope(CcTest::isolate());
   Heap* heap = CcTest::heap();
@@ -6097,7 +6124,6 @@ TEST(YoungGenerationLargeObjectAllocationScavenge) {
 
 TEST(YoungGenerationLargeObjectAllocationMarkCompact) {
   if (FLAG_minor_mc) return;
-  if (!FLAG_young_generation_large_objects) return;
   CcTest::InitializeVM();
   v8::HandleScope scope(CcTest::isolate());
   Heap* heap = CcTest::heap();
@@ -6127,7 +6153,6 @@ TEST(YoungGenerationLargeObjectAllocationMarkCompact) {
 
 TEST(YoungGenerationLargeObjectAllocationReleaseScavenger) {
   if (FLAG_minor_mc) return;
-  if (!FLAG_young_generation_large_objects) return;
   CcTest::InitializeVM();
   v8::HandleScope scope(CcTest::isolate());
   Heap* heap = CcTest::heap();
@@ -6248,7 +6273,7 @@ TEST(RememberedSet_InsertInLargePage) {
 }
 
 TEST(RememberedSet_InsertOnPromotingObjectToOld) {
-  if (FLAG_single_generation) return;
+  if (FLAG_single_generation || FLAG_stress_incremental_marking) return;
   FLAG_stress_concurrent_allocation = false;  // For SealCurrentObjects.
   CcTest::InitializeVM();
   Isolate* isolate = CcTest::i_isolate();
@@ -6274,11 +6299,12 @@ TEST(RememberedSet_InsertOnPromotingObjectToOld) {
   CcTest::CollectGarbage(i::NEW_SPACE);
 
   CHECK(heap->InOldSpace(*arr));
+  CHECK(heap->InYoungGeneration(arr->get(0)));
   CHECK_EQ(1, GetRememberedSetSize<OLD_TO_NEW>(*arr));
 }
 
 TEST(RememberedSet_RemoveStaleOnScavenge) {
-  if (FLAG_single_generation) return;
+  if (FLAG_single_generation || FLAG_stress_incremental_marking) return;
   FLAG_stress_concurrent_allocation = false;  // For SealCurrentObjects.
   CcTest::InitializeVM();
   Isolate* isolate = CcTest::i_isolate();
@@ -6447,11 +6473,16 @@ HEAP_TEST(Regress670675) {
   CcTest::CollectAllGarbage();
 
   if (collector->sweeping_in_progress()) {
-    collector->EnsureSweepingCompleted();
+    collector->EnsureSweepingCompleted(
+        MarkCompactCollector::SweepingForcedFinalizationMode::kV8Only);
   }
+  heap->tracer()->StopFullCycleIfNeeded();
   i::IncrementalMarking* marking = CcTest::heap()->incremental_marking();
   if (marking->IsStopped()) {
     SafepointScope safepoint_scope(heap);
+    heap->tracer()->StartCycle(
+        GarbageCollector::MARK_COMPACTOR, GarbageCollectionReason::kTesting,
+        "collector cctest", GCTracer::MarkingType::kIncremental);
     marking->Start(i::GarbageCollectionReason::kTesting);
   }
   size_t array_length = 128 * KB;
@@ -6497,7 +6528,8 @@ HEAP_TEST(RegressMissingWriteBarrierInAllocate) {
   CcTest::CollectAllGarbage();
   MarkCompactCollector* collector = heap->mark_compact_collector();
   if (collector->sweeping_in_progress()) {
-    collector->EnsureSweepingCompleted();
+    collector->EnsureSweepingCompleted(
+        MarkCompactCollector::SweepingForcedFinalizationMode::kV8Only);
   }
   CHECK(object->map().IsMap());
 }
@@ -6545,9 +6577,9 @@ UNINITIALIZED_TEST(ReinitializeStringHashSeed) {
 const int kHeapLimit = 100 * MB;
 Isolate* oom_isolate = nullptr;
 
-void OOMCallback(const char* location, bool is_heap_oom) {
+void OOMCallback(const char* location, const OOMDetails&) {
   Heap* heap = oom_isolate->heap();
-  size_t kSlack = heap->new_space() ? heap->new_space()->Capacity() : 0;
+  size_t kSlack = heap->new_space() ? heap->MaxSemiSpaceSize() : 0;
   CHECK_LE(heap->OldGenerationCapacity(), kHeapLimit + kSlack);
   CHECK_LE(heap->memory_allocator()->Size(), heap->MaxReserved() + kSlack);
   base::OS::ExitProcess(0);
@@ -6752,9 +6784,9 @@ UNINITIALIZED_TEST(OutOfMemorySmallObjects) {
     }
   }
   CHECK_LE(state.old_generation_capacity_at_oom,
-           kOldGenerationLimit + state.new_space_capacity_at_oom);
-  CHECK_LE(kOldGenerationLimit, state.old_generation_capacity_at_oom +
-                                    state.new_space_capacity_at_oom);
+           kOldGenerationLimit + heap->MaxSemiSpaceSize());
+  CHECK_LE(kOldGenerationLimit,
+           state.old_generation_capacity_at_oom + heap->MaxSemiSpaceSize());
   CHECK_LE(
       state.memory_allocator_size_at_oom,
       MemoryAllocatorSizeFromHeapCapacity(state.old_generation_capacity_at_oom +
@@ -6840,8 +6872,8 @@ UNINITIALIZED_TEST(RestoreHeapLimit) {
   reinterpret_cast<v8::Isolate*>(isolate)->Dispose();
 }
 
-void HeapTester::UncommitFromSpace(Heap* heap) {
-  heap->UncommitFromSpace();
+void HeapTester::UncommitUnusedMemory(Heap* heap) {
+  heap->new_space()->Shrink();
   heap->memory_allocator()->unmapper()->EnsureUnmappingCompleted();
 }
 
@@ -6949,7 +6981,7 @@ TEST(CodeObjectRegistry) {
 
   Isolate* isolate = CcTest::i_isolate();
   Heap* heap = isolate->heap();
-  CodePageCollectionMemoryModificationScope code_scope(heap);
+  CodePageCollectionMemoryModificationScopeForTesting code_scope(heap);
 
   Handle<Code> code1;
   HandleScope outer_scope(heap->isolate());
@@ -6974,7 +7006,7 @@ TEST(CodeObjectRegistry) {
 
 TEST(Regress9701) {
   ManualGCScope manual_gc_scope;
-  if (!FLAG_incremental_marking) return;
+  if (!FLAG_incremental_marking || FLAG_separate_gc_phases) return;
   CcTest::InitializeVM();
   Heap* heap = CcTest::heap();
   // Start with an empty new space.
@@ -7062,6 +7094,9 @@ TEST(Regress978156) {
   i::IncrementalMarking* marking = heap->incremental_marking();
   if (marking->IsStopped()) {
     SafepointScope scope(heap);
+    heap->tracer()->StartCycle(
+        GarbageCollector::MARK_COMPACTOR, GarbageCollectionReason::kTesting,
+        "collector cctest", GCTracer::MarkingType::kIncremental);
     marking->Start(i::GarbageCollectionReason::kTesting);
   }
   IncrementalMarking::MarkingState* marking_state = marking->marking_state();
@@ -7130,7 +7165,7 @@ HEAP_TEST(CodeLargeObjectSpace) {
   TestAllocationTracker allocation_tracker{size_in_bytes};
   heap->AddHeapObjectAllocationTracker(&allocation_tracker);
 
-  CodePageCollectionMemoryModificationScope code_scope(heap);
+  CodePageCollectionMemoryModificationScopeForTesting code_scope(heap);
   HeapObject obj;
   {
     AllocationResult allocation = heap->AllocateRaw(
@@ -7138,8 +7173,7 @@ HEAP_TEST(CodeLargeObjectSpace) {
     CHECK(allocation.To(&obj));
     CHECK_EQ(allocation.ToAddress(), allocation_tracker.address());
 
-    heap->CreateFillerObjectAt(obj.address(), size_in_bytes,
-                               ClearRecordedSlots::kNo);
+    heap->CreateFillerObjectAt(obj.address(), size_in_bytes);
   }
 
   CHECK(Heap::IsLargeObject(obj));
@@ -7165,7 +7199,7 @@ UNINITIALIZED_HEAP_TEST(CodeLargeObjectSpace64k) {
     TestAllocationTracker allocation_tracker{size_in_bytes};
     heap->AddHeapObjectAllocationTracker(&allocation_tracker);
 
-    CodePageCollectionMemoryModificationScope code_scope(heap);
+    CodePageCollectionMemoryModificationScopeForTesting code_scope(heap);
     HeapObject obj;
     {
       AllocationResult allocation = heap->AllocateRaw(
@@ -7173,8 +7207,7 @@ UNINITIALIZED_HEAP_TEST(CodeLargeObjectSpace64k) {
       CHECK(allocation.To(&obj));
       CHECK_EQ(allocation.ToAddress(), allocation_tracker.address());
 
-      heap->CreateFillerObjectAt(obj.address(), size_in_bytes,
-                                 ClearRecordedSlots::kNo);
+      heap->CreateFillerObjectAt(obj.address(), size_in_bytes);
     }
 
     CHECK(!Heap::IsLargeObject(obj));
@@ -7188,7 +7221,7 @@ UNINITIALIZED_HEAP_TEST(CodeLargeObjectSpace64k) {
     TestAllocationTracker allocation_tracker{size_in_bytes};
     heap->AddHeapObjectAllocationTracker(&allocation_tracker);
 
-    CodePageCollectionMemoryModificationScope code_scope(heap);
+    CodePageCollectionMemoryModificationScopeForTesting code_scope(heap);
     HeapObject obj;
     {
       AllocationResult allocation = heap->AllocateRaw(
@@ -7196,8 +7229,7 @@ UNINITIALIZED_HEAP_TEST(CodeLargeObjectSpace64k) {
       CHECK(allocation.To(&obj));
       CHECK_EQ(allocation.ToAddress(), allocation_tracker.address());
 
-      heap->CreateFillerObjectAt(obj.address(), size_in_bytes,
-                                 ClearRecordedSlots::kNo);
+      heap->CreateFillerObjectAt(obj.address(), size_in_bytes);
     }
 
     CHECK(Heap::IsLargeObject(obj));
@@ -7285,10 +7317,10 @@ TEST(Regress10900) {
   Handle<Code> code =
       Factory::CodeBuilder(isolate, desc, CodeKind::FOR_TESTING).Build();
   {
+    CodePageCollectionMemoryModificationScopeForTesting code_scope(
+        isolate->heap());
     for (int i = 0; i < 100; i++) {
       // Generate multiple code pages.
-      CodePageCollectionMemoryModificationScope modification_scope(
-          isolate->heap());
       factory->CopyCode(code);
     }
   }

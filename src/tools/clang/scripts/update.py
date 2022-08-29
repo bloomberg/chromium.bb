@@ -28,17 +28,18 @@ import time
 import urllib.request
 import urllib.error
 import zipfile
+import zlib
 
 
 # Do NOT CHANGE this if you don't know what you're doing -- see
 # https://chromium.googlesource.com/chromium/src/+/main/docs/updating_clang.md
 # Reverting problematic clang rolls is safe, though.
 # This is the output of `git describe` and is usable as a commit-ish.
-CLANG_REVISION = 'llvmorg-14-init-11564-g37fbf238'
-CLANG_SUB_REVISION = 3
+CLANG_REVISION = 'llvmorg-15-init-11722-g3f3a235a'
+CLANG_SUB_REVISION = 2
 
 PACKAGE_VERSION = '%s-%s' % (CLANG_REVISION, CLANG_SUB_REVISION)
-RELEASE_VERSION = '14.0.0'
+RELEASE_VERSION = '15.0.0'
 
 CDS_URL = os.environ.get('CDS_CLANG_BUCKET_OVERRIDE',
     'https://commondatastorage.googleapis.com/chromium-browser-clang')
@@ -96,23 +97,40 @@ def DownloadUrl(url, output_file):
     try:
       sys.stdout.write('Downloading %s ' % url)
       sys.stdout.flush()
-      response = urllib.request.urlopen(url)
-      total_size = int(response.info().get('Content-Length').strip())
+      request = urllib.request.Request(url)
+      request.add_header('Accept-Encoding', 'gzip')
+      response = urllib.request.urlopen(request)
+      total_size = None
+      if 'Content-Length' in response.headers:
+        total_size = int(response.headers['Content-Length'].strip())
+
+      is_gzipped = response.headers.get('Content-Encoding',
+                                        '').strip() == 'gzip'
+      if is_gzipped:
+        gzip_decode = zlib.decompressobj(zlib.MAX_WBITS + 16)
+
       bytes_done = 0
       dots_printed = 0
       while True:
         chunk = response.read(CHUNK_SIZE)
         if not chunk:
           break
-        output_file.write(chunk)
         bytes_done += len(chunk)
-        num_dots = TOTAL_DOTS * bytes_done // total_size
-        sys.stdout.write('.' * (num_dots - dots_printed))
-        sys.stdout.flush()
-        dots_printed = num_dots
-      if bytes_done != total_size:
+
+        if is_gzipped:
+          chunk = gzip_decode.decompress(chunk)
+        output_file.write(chunk)
+
+        if total_size is not None:
+          num_dots = TOTAL_DOTS * bytes_done // total_size
+          sys.stdout.write('.' * (num_dots - dots_printed))
+          sys.stdout.flush()
+          dots_printed = num_dots
+      if total_size is not None and bytes_done != total_size:
         raise urllib.error.URLError("only got %d of %d bytes" %
                                     (bytes_done, total_size))
+      if is_gzipped:
+        output_file.write(gzip_decode.flush())
       print(' Done.')
       return
     except urllib.error.URLError as e:
@@ -145,7 +163,7 @@ def DownloadAndUnpack(url, output_dir, path_prefixes=None):
       assert path_prefixes is None
       zipfile.ZipFile(f).extractall(path=output_dir)
     else:
-      t = tarfile.open(mode='r:gz', fileobj=f)
+      t = tarfile.open(mode='r:*', fileobj=f)
       members = None
       if path_prefixes is not None:
         members = [m for m in t.getmembers()
@@ -219,6 +237,8 @@ def UpdatePackage(package_name, host_os):
     package_file = 'clang'
   elif package_name == 'clang-tidy':
     package_file = 'clang-tidy'
+  elif package_name == 'clang-libs':
+    package_file = 'clang-libs'
   elif package_name == 'objdump':
     package_file = 'llvmobjdump'
   elif package_name == 'translation_unit':
@@ -274,7 +294,7 @@ def UpdatePackage(package_name, host_os):
   return 0
 
 
-def main():
+def GetDefaultHostOs():
   _PLATFORM_HOST_OS_MAP = {
       'darwin': 'mac',
       'cygwin': 'win',
@@ -284,7 +304,10 @@ def main():
   default_host_os = _PLATFORM_HOST_OS_MAP.get(sys.platform, sys.platform)
   if default_host_os == 'mac' and platform.machine() == 'arm64':
     default_host_os = 'mac-arm64'
+  return default_host_os
 
+
+def main():
   parser = argparse.ArgumentParser(description='Update clang.')
   parser.add_argument('--output-dir',
                       help='Where to extract the package.')
@@ -292,9 +315,9 @@ def main():
                       help='What package to update (default: clang)',
                       default='clang')
   parser.add_argument('--host-os',
-                      help='Which host OS to download for (default: %s)' %
-                      default_host_os,
-                      default=default_host_os,
+                      help=('Which host OS to download for '
+                            '(default: %(default)s)'),
+                      default=GetDefaultHostOs(),
                       choices=('linux', 'mac', 'mac-arm64', 'win'))
   parser.add_argument('--print-revision', action='store_true',
                       help='Print current clang revision and exit.')

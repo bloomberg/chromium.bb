@@ -8,6 +8,7 @@
 #include "base/files/file_error_or.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/notreached.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/task/thread_pool.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/system/string_data_source.h"
@@ -15,9 +16,10 @@
 #include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/file_system_access/file_system_access_file_delegate.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
-#include "third_party/blink/renderer/platform/wtf/cross_thread_copier.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_copier_base.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_copier_mojo.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/wtf.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_size_t.h"
@@ -99,18 +101,21 @@ void FileSystemAccessIncognitoFileDelegate::Trace(Visitor* visitor) const {
 base::FileErrorOr<int> FileSystemAccessIncognitoFileDelegate::Read(
     int64_t offset,
     base::span<uint8_t> data) {
+  CHECK_GE(offset, 0);
+
   base::File::Error file_error;
   int bytes_read;
   absl::optional<mojo_base::BigBuffer> buffer;
-  mojo_ptr_->Read(offset, data.size(), &buffer, &file_error, &bytes_read);
+  int bytes_to_read = base::saturated_cast<int>(data.size());
+  mojo_ptr_->Read(offset, bytes_to_read, &buffer, &file_error, &bytes_read);
 
   CHECK_EQ(buffer.has_value(), file_error == base::File::FILE_OK);
 
   if (buffer.has_value()) {
-    CHECK_LE(static_cast<uint64_t>(bytes_read), data.size());
-    CHECK_LE(buffer->size(), data.size());
+    CHECK_LE(bytes_read, bytes_to_read);
+    CHECK_LE(buffer->size(), static_cast<uint64_t>(bytes_to_read));
 
-    memcpy(data.data(), buffer->data(), buffer->size());
+    memcpy(data.data(), buffer->data(), bytes_to_read);
   } else {
     CHECK_EQ(bytes_read, 0);
   }
@@ -121,6 +126,8 @@ base::FileErrorOr<int> FileSystemAccessIncognitoFileDelegate::Read(
 base::FileErrorOr<int> FileSystemAccessIncognitoFileDelegate::Write(
     int64_t offset,
     const base::span<uint8_t> data) {
+  CHECK_GE(offset, 0);
+
   mojo::ScopedDataPipeProducerHandle producer_handle;
   mojo::ScopedDataPipeConsumerHandle consumer_handle;
   if (!CreateDataPipeForSize(data.size(), producer_handle, consumer_handle)) {
@@ -154,6 +161,7 @@ base::FileErrorOr<int> FileSystemAccessIncognitoFileDelegate::Write(
 
 void FileSystemAccessIncognitoFileDelegate::GetLength(
     base::OnceCallback<void(base::FileErrorOr<int64_t>)> callback) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   mojo_ptr_->GetLength(WTF::Bind(
       [](base::OnceCallback<void(base::FileErrorOr<int64_t>)> callback,
          base::File::Error file_error, uint64_t length) {
@@ -165,16 +173,9 @@ void FileSystemAccessIncognitoFileDelegate::GetLength(
 
 void FileSystemAccessIncognitoFileDelegate::SetLength(
     int64_t length,
-    base::OnceCallback<void(bool)> callback) {
+    base::OnceCallback<void(base::File::Error)> callback) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  if (length < 0) {
-    // This method is expected to finish asynchronously, so post a task to the
-    // current sequence to return the error.
-    task_runner_->PostTask(
-        FROM_HERE, WTF::Bind(std::move(callback),
-                             base::File::Error::FILE_ERROR_INVALID_OPERATION));
-    return;
-  }
+  CHECK_GE(length, 0);
 
   mojo_ptr_->SetLength(length, WTF::Bind(std::move(callback)));
 }
@@ -192,9 +193,9 @@ void FileSystemAccessIncognitoFileDelegate::Flush(
 }
 
 void FileSystemAccessIncognitoFileDelegate::Close(base::OnceClosure callback) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   mojo_ptr_.reset();
 
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   task_runner_->PostTask(FROM_HERE, std::move(callback));
 }
 

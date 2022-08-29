@@ -4,12 +4,15 @@
 
 #include "ui/views/cocoa/native_widget_mac_ns_window_host.h"
 
+#include <tuple>
 #include <utility>
 
 #include "base/base64.h"
-#include "base/ignore_result.h"
+#include "base/containers/contains.h"
 #include "base/mac/foundation_util.h"
+#include "base/no_destructor.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/time/time.h"
 #include "components/remote_cocoa/app_shim/mouse_capture.h"
 #include "components/remote_cocoa/app_shim/native_widget_mac_nswindow.h"
 #include "components/remote_cocoa/app_shim/native_widget_ns_window_bridge.h"
@@ -106,6 +109,11 @@ class BridgedNativeWidgetHostDummy
     ui::KeyEvent* key_event = event->AsKeyEvent();
     bool event_swallowed = false;
     std::move(callback).Run(event_swallowed, key_event->handled());
+  }
+  void DispatchMonitorEvent(std::unique_ptr<ui::Event> event,
+                            DispatchMonitorEventCallback callback) override {
+    bool event_handled = false;
+    std::move(callback).Run(event_handled);
   }
   void GetHasMenuController(GetHasMenuControllerCallback callback) override {
     bool has_menu_controller = false;
@@ -326,7 +334,8 @@ void NativeWidgetMacNSWindowHost::CreateRemoteNSWindow(
   {
     auto in_process_ns_window_create_params =
         remote_cocoa::mojom::CreateWindowParams::New();
-    in_process_ns_window_create_params->style_mask = NSBorderlessWindowMask;
+    in_process_ns_window_create_params->style_mask =
+        NSWindowStyleMaskBorderless;
     in_process_ns_window_ =
         remote_cocoa::NativeWidgetNSWindowBridge::CreateNSWindow(
             in_process_ns_window_create_params.get());
@@ -385,11 +394,13 @@ void NativeWidgetMacNSWindowHost::InitWindow(
     window_params->modal_type = widget->widget_delegate()->GetModalType();
     window_params->is_translucent =
         params.opacity == Widget::InitParams::WindowOpacity::kTranslucent;
+    window_params->is_headless_mode_window = params.headless_mode;
+    is_headless_mode_window_ = params.headless_mode;
 
     // OSX likes to put shadows on most things. However, frameless windows (with
-    // styleMask = NSBorderlessWindowMask) default to no shadow. So change that.
-    // ShadowType::kDrop is used for Menus, which get the same shadow style on
-    // Mac.
+    // styleMask = NSWindowStyleMaskBorderless) default to no shadow. So change
+    // that. ShadowType::kDrop is used for Menus, which get the same shadow
+    // style on Mac.
     switch (params.shadow_type) {
       case Widget::InitParams::ShadowType::kNone:
         window_params->has_window_server_shadow = false;
@@ -405,7 +416,7 @@ void NativeWidgetMacNSWindowHost::InitWindow(
     }  // No default case, to pick up new types.
 
     // Include "regular" windows without the standard frame in the window cycle.
-    // These use NSBorderlessWindowMask so do not get it by default.
+    // These use NSWindowStyleMaskBorderless so do not get it by default.
     window_params->force_into_collection_cycle =
         widget_type_ == Widget::InitParams::TYPE_WINDOW &&
         params.remove_standard_frame;
@@ -466,7 +477,7 @@ void NativeWidgetMacNSWindowHost::SetBoundsInScreen(const gfx::Rect& bounds) {
 }
 
 void NativeWidgetMacNSWindowHost::SetFullscreen(bool fullscreen,
-                                                base::TimeDelta delay) {
+                                                int64_t target_display_id) {
   // Note that when the NSWindow begins a fullscreen transition, the value of
   // |target_fullscreen_state_| updates via OnWindowFullscreenTransitionStart.
   // The update here is necessary for the case where we are currently in
@@ -474,22 +485,10 @@ void NativeWidgetMacNSWindowHost::SetFullscreen(bool fullscreen,
   // called until the current transition completes).
   target_fullscreen_state_ = fullscreen;
 
-  if (!delay.is_zero()) {
-    // Synchronously requesting fullscreen after moving the window to another
-    // display causes the window to resign key. Workaround this OS-specific
-    // quirk by delaying the fullscreen request, after setting the target state,
-    // to encapsulate some of these details from the calling client window code,
-    // i.e. so BrowserView::ProcessFullscreen will still hide its frame, etc.
-    // TODO(crbug.com/1034783): Refine cross-display fullscreen implementations.
-    // TODO(crbug.com/1210548): Find a better solution to avoid key resignation.
-    auto callback = base::BindOnce(
-        &NativeWidgetMacNSWindowHost::SetFullscreenAfterDelay, widget_id_);
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, std::move(callback), delay);
-    return;
-  }
-
-  GetNSWindowMojo()->SetFullscreen(target_fullscreen_state_);
+  if (target_fullscreen_state_)
+    GetNSWindowMojo()->EnterFullscreen(target_display_id);
+  else
+    GetNSWindowMojo()->ExitFullscreen();
 }
 
 void NativeWidgetMacNSWindowHost::SetRootView(views::View* root_view) {
@@ -533,10 +532,12 @@ void NativeWidgetMacNSWindowHost::CreateCompositor(
   compositor_->compositor()->SetRootLayer(layer());
 
   // The compositor is locked (prevented from producing frames) until the widget
-  // is made visible.
+  // is made visible unless the window was created in headless mode in which
+  // case it will never become visible but we want its compositor to produce
+  // frames for screenshooting and screencasting.
   UpdateCompositorProperties();
   layer()->SetVisible(is_visible_);
-  if (is_visible_)
+  if (is_visible_ || is_headless_mode_window_)
     compositor_->Unsuspend();
 
   // Register the CGWindowID (used to identify this window for video capture)
@@ -583,13 +584,6 @@ void NativeWidgetMacNSWindowHost::DestroyCompositor() {
   compositor_->compositor()->SetRootLayer(nullptr);
   ui::RecyclableCompositorMacFactory::Get()->RecycleCompositor(
       std::move(compositor_));
-}
-
-// static
-void NativeWidgetMacNSWindowHost::SetFullscreenAfterDelay(
-    uint64_t bridged_native_widget_id) {
-  if (NativeWidgetMacNSWindowHost* host = GetFromId(bridged_native_widget_id))
-    host->GetNSWindowMojo()->SetFullscreen(host->target_fullscreen_state_);
 }
 
 bool NativeWidgetMacNSWindowHost::SetWindowTitle(const std::u16string& title) {
@@ -740,6 +734,38 @@ void NativeWidgetMacNSWindowHost::UpdateLocalWindowFrame(
                           animate:NO];
 }
 
+std::unique_ptr<NativeWidgetMacEventMonitor>
+NativeWidgetMacNSWindowHost::AddEventMonitor(
+    NativeWidgetMacEventMonitor::Client* client) {
+  // Enable the local event monitor if this is the first registered monitor.
+  if (event_monitors_.empty())
+    GetNSWindowMojo()->SetLocalEventMonitorEnabled(true);
+
+  // Add the new monitor to `event_monitors_`.
+  auto* monitor = new NativeWidgetMacEventMonitor(client);
+  event_monitors_.push_back(monitor);
+
+  // Set up `monitor`'s remove closure to remove it from `event_monitors_`.
+  auto remove_lambda = [](base::WeakPtr<NativeWidgetMacNSWindowHost> weak_this,
+                          NativeWidgetMacEventMonitor* monitor) {
+    if (!weak_this)
+      return;
+    auto found = std::find(weak_this->event_monitors_.begin(),
+                           weak_this->event_monitors_.end(), monitor);
+    CHECK(found != weak_this->event_monitors_.end());
+    weak_this->event_monitors_.erase(found);
+
+    // If this was the last monitor to be removed, disable the local
+    // event monitor.
+    if (weak_this->event_monitors_.empty())
+      weak_this->GetNSWindowMojo()->SetLocalEventMonitorEnabled(false);
+  };
+  monitor->remove_closure_runner_.ReplaceClosure(
+      base::BindOnce(remove_lambda, weak_factory_.GetWeakPtr(), monitor));
+
+  return base::WrapUnique<NativeWidgetMacEventMonitor>(monitor);
+}
+
 // static
 NSView* NativeWidgetMacNSWindowHost::GetGlobalCaptureView() {
   // TODO(ccameron): This will not work across process boundaries.
@@ -770,8 +796,8 @@ id NativeWidgetMacNSWindowHost::GetNativeViewAccessible() {
 }
 
 void NativeWidgetMacNSWindowHost::DispatchKeyEvent(ui::KeyEvent* event) {
-  ignore_result(
-      root_view_->GetWidget()->GetInputMethod()->DispatchKeyEvent(event));
+  std::ignore =
+      root_view_->GetWidget()->GetInputMethod()->DispatchKeyEvent(event);
 }
 
 bool NativeWidgetMacNSWindowHost::DispatchKeyEventToMenuController(
@@ -876,6 +902,31 @@ bool NativeWidgetMacNSWindowHost::DispatchKeyEventToMenuControllerRemote(
     bool* event_handled) {
   *event_swallowed = DispatchKeyEventToMenuController(event->AsKeyEvent());
   *event_handled = event->handled();
+  return true;
+}
+
+bool NativeWidgetMacNSWindowHost::DispatchMonitorEvent(
+    std::unique_ptr<ui::Event> event,
+    bool* event_handled) {
+  // The calls to NativeWidgetMacEventMonitorOnEvent can add or remove monitors,
+  // so take a snapshot of `event_monitors_` before making any calls.
+  auto event_monitors_snapshot = event_monitors_;
+
+  // The calls to NativeWidgetMacEventMonitorOnEvent can delete `this`. Use
+  // `weak_this` to detect that.
+  auto weak_this = weak_factory_.GetWeakPtr();
+
+  *event_handled = false;
+  for (auto* event_monitor : event_monitors_snapshot) {
+    // Ensure `event_monitor` was not removed from `event_monitors_` by a
+    // previous call to NativeWidgetMacEventMonitorOnEvent.
+    if (!base::Contains(event_monitors_, event_monitor))
+      continue;
+    event_monitor->client_->NativeWidgetMacEventMonitorOnEvent(event.get(),
+                                                               event_handled);
+    if (!weak_this)
+      return true;
+  }
   return true;
 }
 
@@ -1284,6 +1335,14 @@ void NativeWidgetMacNSWindowHost::DispatchKeyEventToMenuControllerRemote(
   std::move(callback).Run(event_swallowed, key_event->handled());
 }
 
+void NativeWidgetMacNSWindowHost::DispatchMonitorEvent(
+    std::unique_ptr<ui::Event> event,
+    DispatchMonitorEventCallback callback) {
+  bool event_handled = false;
+  DispatchMonitorEvent(std::move(event), &event_handled);
+  std::move(callback).Run(event_handled);
+}
+
 void NativeWidgetMacNSWindowHost::GetHasMenuController(
     GetHasMenuControllerCallback callback) {
   bool has_menu_controller = false;
@@ -1457,9 +1516,28 @@ void NativeWidgetMacNSWindowHost::AcceleratedWidgetCALayerParamsUpdated() {
   if (display_link_) {
     base::TimeTicks timebase;
     base::TimeDelta interval;
-    if (display_link_->GetVSyncParameters(&timebase, &interval))
+    bool register_for_vsync_update = display_link_->IsVSyncPotentiallyStale();
+    if (display_link_->GetVSyncParameters(&timebase, &interval)) {
       compositor_->compositor()->SetDisplayVSyncParameters(timebase, interval);
+    } else {
+      register_for_vsync_update = true;
+    }
+    if (register_for_vsync_update) {
+      if (!weak_factory_for_vsync_update_.HasWeakPtrs()) {
+        display_link_->RegisterCallbackForNextVSyncUpdate(base::BindOnce(
+            &NativeWidgetMacNSWindowHost::OnVSyncParametersUpdated,
+            weak_factory_for_vsync_update_.GetWeakPtr()));
+      }
+    } else {
+      weak_factory_for_vsync_update_.InvalidateWeakPtrs();
+    }
   }
+}
+
+void NativeWidgetMacNSWindowHost::OnVSyncParametersUpdated(
+    base::TimeTicks timebase,
+    base::TimeDelta interval) {
+  compositor_->compositor()->SetDisplayVSyncParameters(timebase, interval);
 }
 
 }  // namespace views

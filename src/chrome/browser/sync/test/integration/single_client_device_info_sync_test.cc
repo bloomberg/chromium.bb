@@ -6,6 +6,7 @@
 
 #include "base/strings/stringprintf.h"
 #include "base/test/bind.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
@@ -14,12 +15,12 @@
 #include "chrome/browser/sync/test/integration/device_info_helper.h"
 #include "chrome/browser/sync/test/integration/sync_service_impl_harness.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
+#include "components/sync/base/features.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/time.h"
 #include "components/sync/driver/glue/sync_transport_data_prefs.h"
-#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/engine/loopback_server/persistent_tombstone_entity.h"
-#include "components/sync/invalidations/switches.h"
+#include "components/sync/nigori/nigori_test_utils.h"
 #include "components/sync/protocol/device_info_specifics.pb.h"
 #include "components/sync/protocol/entity_specifics.pb.h"
 #include "components/sync/protocol/proto_value_conversions.h"
@@ -113,7 +114,10 @@ sync_pb::DeviceInfoSpecifics CreateSpecifics(int suffix) {
 
 class SingleClientDeviceInfoSyncTest : public SyncTest {
  public:
-  SingleClientDeviceInfoSyncTest() : SyncTest(SINGLE_CLIENT) {}
+  SingleClientDeviceInfoSyncTest() : SyncTest(SINGLE_CLIENT) {
+    override_features_.InitAndEnableFeature(
+        syncer::kSkipInvalidationOptimizationsWhenDeviceInfoUpdated);
+  }
 
   SingleClientDeviceInfoSyncTest(const SingleClientDeviceInfoSyncTest&) =
       delete;
@@ -150,6 +154,9 @@ class SingleClientDeviceInfoSyncTest : public SyncTest {
             specifics,
             /*creation_time=*/0, /*last_modified_time=*/0));
   }
+
+ private:
+  base::test::ScopedFeatureList override_features_;
 };
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -197,10 +204,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientDeviceInfoSyncTest, CommitLocalDevice) {
   ASSERT_TRUE(SetupSync());
 
   // The local device should eventually be committed to the server.
-  EXPECT_TRUE(
-      ServerDeviceInfoMatchChecker(
-          GetFakeServer(), ElementsAre(HasCacheGuid(GetLocalCacheGuid())))
-          .Wait());
+  EXPECT_TRUE(ServerDeviceInfoMatchChecker(
+                  ElementsAre(HasCacheGuid(GetLocalCacheGuid())))
+                  .Wait());
 }
 
 IN_PROC_BROWSER_TEST_F(SingleClientDeviceInfoSyncTest, DownloadRemoteDevices) {
@@ -258,7 +264,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientDeviceInfoSyncTest,
 
 // CommitLocalDevice_TransportOnly and DownloadRemoteDevices_TransportOnly are
 // flaky on Android.
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 IN_PROC_BROWSER_TEST_F(SingleClientDeviceInfoSyncTest,
                        CommitLocalDevice_TransportOnly) {
   ASSERT_TRUE(SetupClients());
@@ -279,10 +285,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientDeviceInfoSyncTest,
   ASSERT_TRUE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::DEVICE_INFO));
 
   // The local device should eventually be committed to the server.
-  EXPECT_TRUE(
-      ServerDeviceInfoMatchChecker(
-          GetFakeServer(), ElementsAre(HasCacheGuid(GetLocalCacheGuid())))
-          .Wait());
+  EXPECT_TRUE(ServerDeviceInfoMatchChecker(
+                  ElementsAre(HasCacheGuid(GetLocalCacheGuid())))
+                  .Wait());
 }
 
 IN_PROC_BROWSER_TEST_F(SingleClientDeviceInfoSyncTest,
@@ -311,15 +316,14 @@ IN_PROC_BROWSER_TEST_F(SingleClientDeviceInfoSyncTest,
               IsSupersetOf({HasCacheGuid(CacheGuidForSuffix(1)),
                             HasCacheGuid(CacheGuidForSuffix(2))}));
 }
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 IN_PROC_BROWSER_TEST_F(SingleClientDeviceInfoSyncTest,
                        ShouldSetTheOnlyClientFlag) {
   ASSERT_TRUE(SetupSync());
-  ASSERT_TRUE(
-      ServerDeviceInfoMatchChecker(
-          GetFakeServer(), ElementsAre(HasCacheGuid(GetLocalCacheGuid())))
-          .Wait());
+  ASSERT_TRUE(ServerDeviceInfoMatchChecker(
+                  ElementsAre(HasCacheGuid(GetLocalCacheGuid())))
+                  .Wait());
 
   sync_pb::ClientToServerMessage message;
   GetFakeServer()->GetLastCommitMessage(&message);
@@ -357,7 +361,38 @@ IN_PROC_BROWSER_TEST_F(SingleClientDeviceInfoSyncTest,
 
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(ServerDeviceInfoMatchChecker(
-                  GetFakeServer(),
+                  UnorderedElementsAre(HasCacheGuid(GetLocalCacheGuid()),
+                                       HasCacheGuid(CacheGuidForSuffix(1))))
+                  .Wait());
+
+  sync_pb::ClientToServerMessage message;
+  GetFakeServer()->GetLastCommitMessage(&message);
+
+  EXPECT_FALSE(message.commit().config_params().single_client());
+}
+
+// This test verifies that single_client optimization flag is not set after
+// DeviceInfo has been received (even within the same sync cycle).
+IN_PROC_BROWSER_TEST_F(SingleClientDeviceInfoSyncTest,
+                       ShouldNotPopulateTheOnlyClientWhenDeviceInfoUpdated) {
+  ASSERT_TRUE(SetupSync());
+
+  const std::vector<sync_pb::SyncEntity> server_device_infos =
+      GetFakeServer()->GetSyncEntitiesByModelType(syncer::DEVICE_INFO);
+  ASSERT_THAT(server_device_infos,
+              ElementsAre(HasCacheGuid(GetLocalCacheGuid())));
+
+  GetClient(0)->StopSyncServiceWithoutClearingData();
+  // Add a DeviceInfo tombstone to cause a commit request within the same sync
+  // cycle (removing local DeviceInfo will cause its reupload).
+  GetFakeServer()->InjectEntity(
+      syncer::PersistentTombstoneEntity::CreateFromEntity(
+          server_device_infos.front()));
+  // Add a new remote device to verify that single_client flag is not set.
+  InjectDeviceInfoEntityToServer(/*suffix=*/1);
+  GetClient(0)->StartSyncService();
+
+  ASSERT_TRUE(ServerDeviceInfoMatchChecker(
                   UnorderedElementsAre(HasCacheGuid(GetLocalCacheGuid()),
                                        HasCacheGuid(CacheGuidForSuffix(1))))
                   .Wait());
@@ -381,21 +416,19 @@ IN_PROC_BROWSER_TEST_F(SingleClientDeviceInfoSyncTest,
           server_device_infos.front()));
 
   // On receiving the tombstone, the client should reupload its own device info.
-  EXPECT_TRUE(
-      ServerDeviceInfoMatchChecker(
-          GetFakeServer(), ElementsAre(HasCacheGuid(GetLocalCacheGuid())))
-          .Wait());
+  EXPECT_TRUE(ServerDeviceInfoMatchChecker(
+                  ElementsAre(HasCacheGuid(GetLocalCacheGuid())))
+                  .Wait());
 }
 
 // PRE_* tests aren't supported on Android browser tests.
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 IN_PROC_BROWSER_TEST_F(SingleClientDeviceInfoSyncTest,
                        PRE_ShouldNotSendDeviceInfoAfterBrowserRestart) {
   ASSERT_TRUE(SetupSync());
-  EXPECT_TRUE(
-      ServerDeviceInfoMatchChecker(
-          GetFakeServer(), ElementsAre(HasCacheGuid(GetLocalCacheGuid())))
-          .Wait());
+  EXPECT_TRUE(ServerDeviceInfoMatchChecker(
+                  ElementsAre(HasCacheGuid(GetLocalCacheGuid())))
+                  .Wait());
 }
 
 IN_PROC_BROWSER_TEST_F(SingleClientDeviceInfoSyncTest,
@@ -425,6 +458,6 @@ IN_PROC_BROWSER_TEST_F(SingleClientDeviceInfoSyncTest,
   EXPECT_FALSE(has_local_changes);
   EXPECT_EQ(entities_before.front().mtime(), entities_after.front().mtime());
 }
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 }  // namespace

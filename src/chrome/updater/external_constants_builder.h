@@ -8,7 +8,12 @@
 #include <string>
 #include <vector>
 
+#include "base/files/file_path.h"
 #include "base/values.h"
+
+namespace crx_file {
+enum class VerifierFormat;
+}
 
 namespace updater {
 
@@ -42,6 +47,14 @@ class ExternalConstantsBuilder {
       int server_keep_alive_seconds);
   ExternalConstantsBuilder& ClearServerKeepAliveSeconds();
 
+  ExternalConstantsBuilder& SetCrxVerifierFormat(
+      crx_file::VerifierFormat crx_verifier_format);
+  ExternalConstantsBuilder& ClearCrxVerifierFormat();
+
+  ExternalConstantsBuilder& SetGroupPolicies(
+      const base::Value::Dict& group_policies);
+  ExternalConstantsBuilder& ClearGroupPolicies();
+
   // Write the external constants overrides file in the default location
   // with the values that have been previously set, replacing any file
   // previously there. The builder remains usable, does not forget its state,
@@ -50,8 +63,12 @@ class ExternalConstantsBuilder {
   // Returns true on success, false on failure.
   bool Overwrite();
 
+  // Blend the set values in this instance with the external constants overrides
+  // file in the default location.
+  bool Modify();
+
  private:
-  base::Value overrides_{base::Value::Type::DICTIONARY};
+  base::Value::Dict overrides_;
   bool written_ = false;
 };
 

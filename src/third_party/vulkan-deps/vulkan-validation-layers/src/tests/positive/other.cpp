@@ -1,8 +1,8 @@
 /*
  * Copyright (c) 2015-2021 The Khronos Group Inc.
- * Copyright (c) 2015-2021 Valve Corporation
- * Copyright (c) 2015-2021 LunarG, Inc.
- * Copyright (c) 2015-2021 Google, Inc.
+ * Copyright (c) 2015-2022 Valve Corporation
+ * Copyright (c) 2015-2022 LunarG, Inc.
+ * Copyright (c) 2015-2022 Google, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,8 +56,7 @@ TEST_F(VkPositiveLayerTest, StatelessValidationDisable) {
     // Specify 0 for a reserved VkFlags parameter. Normally this is expected to trigger an stateless validation error, but this
     // validation was disabled via the features extension, so no errors should be forthcoming.
     VkEvent event_handle = VK_NULL_HANDLE;
-    VkEventCreateInfo event_info = {};
-    event_info.sType = VK_STRUCTURE_TYPE_EVENT_CREATE_INFO;
+    VkEventCreateInfo event_info = LvlInitStruct<VkEventCreateInfo>();
     event_info.flags = 1;
     vk::CreateEvent(device(), &event_info, NULL, &event_handle);
     vk::DestroyEvent(device(), event_handle, NULL);
@@ -95,14 +94,12 @@ TEST_F(VkPositiveLayerTest, TestDestroyFreeNullHandles) {
     vk::DestroyShaderModule(m_device->device(), VK_NULL_HANDLE, NULL);
 
     VkCommandPool command_pool;
-    VkCommandPoolCreateInfo pool_create_info{};
-    pool_create_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+    VkCommandPoolCreateInfo pool_create_info = LvlInitStruct<VkCommandPoolCreateInfo>();
     pool_create_info.queueFamilyIndex = m_device->graphics_queue_node_index_;
     pool_create_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
     vk::CreateCommandPool(m_device->device(), &pool_create_info, nullptr, &command_pool);
     VkCommandBuffer command_buffers[3] = {};
-    VkCommandBufferAllocateInfo command_buffer_allocate_info{};
-    command_buffer_allocate_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    VkCommandBufferAllocateInfo command_buffer_allocate_info = LvlInitStruct<VkCommandBufferAllocateInfo>();
     command_buffer_allocate_info.commandPool = command_pool;
     command_buffer_allocate_info.commandBufferCount = 1;
     command_buffer_allocate_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
@@ -114,9 +111,7 @@ TEST_F(VkPositiveLayerTest, TestDestroyFreeNullHandles) {
     ds_type_count.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
     ds_type_count.descriptorCount = 1;
 
-    VkDescriptorPoolCreateInfo ds_pool_ci = {};
-    ds_pool_ci.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-    ds_pool_ci.pNext = NULL;
+    VkDescriptorPoolCreateInfo ds_pool_ci = LvlInitStruct<VkDescriptorPoolCreateInfo>();
     ds_pool_ci.maxSets = 1;
     ds_pool_ci.poolSizeCount = 1;
     ds_pool_ci.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
@@ -136,8 +131,7 @@ TEST_F(VkPositiveLayerTest, TestDestroyFreeNullHandles) {
     const VkDescriptorSetLayoutObj ds_layout(m_device, {dsl_binding});
 
     VkDescriptorSet descriptor_sets[3] = {};
-    VkDescriptorSetAllocateInfo alloc_info = {};
-    alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    VkDescriptorSetAllocateInfo alloc_info = LvlInitStruct<VkDescriptorSetAllocateInfo>();
     alloc_info.descriptorSetCount = 1;
     alloc_info.descriptorPool = ds_pool;
     alloc_info.pSetLayouts = &ds_layout.handle();
@@ -190,15 +184,11 @@ TEST_F(VkPositiveLayerTest, ValidStructPNext) {
 
     m_errorMonitor->ExpectSuccess();
 
-    VkDedicatedAllocationBufferCreateInfoNV dedicated_buffer_create_info = {};
-    dedicated_buffer_create_info.sType = VK_STRUCTURE_TYPE_DEDICATED_ALLOCATION_BUFFER_CREATE_INFO_NV;
-    dedicated_buffer_create_info.pNext = nullptr;
+    VkDedicatedAllocationBufferCreateInfoNV dedicated_buffer_create_info = LvlInitStruct<VkDedicatedAllocationBufferCreateInfoNV>();
     dedicated_buffer_create_info.dedicatedAllocation = VK_TRUE;
 
     uint32_t queue_family_index = 0;
-    VkBufferCreateInfo buffer_create_info = {};
-    buffer_create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    buffer_create_info.pNext = &dedicated_buffer_create_info;
+    VkBufferCreateInfo buffer_create_info = LvlInitStruct<VkBufferCreateInfo>(&dedicated_buffer_create_info);
     buffer_create_info.size = 1024;
     buffer_create_info.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
     buffer_create_info.queueFamilyIndexCount = 1;
@@ -211,15 +201,11 @@ TEST_F(VkPositiveLayerTest, ValidStructPNext) {
     VkMemoryRequirements memory_reqs;
     vk::GetBufferMemoryRequirements(m_device->device(), buffer, &memory_reqs);
 
-    VkDedicatedAllocationMemoryAllocateInfoNV dedicated_memory_info = {};
-    dedicated_memory_info.sType = VK_STRUCTURE_TYPE_DEDICATED_ALLOCATION_MEMORY_ALLOCATE_INFO_NV;
-    dedicated_memory_info.pNext = nullptr;
+    VkDedicatedAllocationMemoryAllocateInfoNV dedicated_memory_info = LvlInitStruct<VkDedicatedAllocationMemoryAllocateInfoNV>();
     dedicated_memory_info.buffer = buffer;
     dedicated_memory_info.image = VK_NULL_HANDLE;
 
-    VkMemoryAllocateInfo memory_info = {};
-    memory_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    memory_info.pNext = &dedicated_memory_info;
+    VkMemoryAllocateInfo memory_info = LvlInitStruct<VkMemoryAllocateInfo>(&dedicated_memory_info);
     memory_info.allocationSize = memory_reqs.size;
 
     bool pass;
@@ -236,6 +222,35 @@ TEST_F(VkPositiveLayerTest, ValidStructPNext) {
     vk::DestroyBuffer(m_device->device(), buffer, NULL);
     vk::FreeMemory(m_device->device(), buffer_memory, NULL);
 
+    m_errorMonitor->VerifyNotFound();
+}
+
+TEST_F(VkPositiveLayerTest, SurfacelessQueryTest) {
+    TEST_DESCRIPTION("Ensure affected API calls can be made with surfacless query extension");
+
+    AddRequiredExtensions(VK_GOOGLE_SURFACELESS_QUERY_EXTENSION_NAME);
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+
+    if (!AreRequiredExtensionsEnabled()) {
+        GTEST_SKIP() << RequiredExtensionsNotSupported() << " not supported";
+    }
+
+    if (IsPlatform(kMockICD)) {
+        printf("%s Test not supported by MockICD, skipping tests\n", kSkipPrefix);
+        return;
+    }
+
+    // Use the VK_GOOGLE_surfaceless_query extension to query the available formats and
+    // colorspaces by using a VK_NULL_HANDLE for the VkSurfaceKHR handle.
+    m_errorMonitor->ExpectSuccess();
+    uint32_t count;
+    vk::GetPhysicalDeviceSurfaceFormatsKHR(gpu(), VK_NULL_HANDLE, &count, nullptr);
+    std::vector<VkSurfaceFormatKHR> surface_formats(count);
+    vk::GetPhysicalDeviceSurfaceFormatsKHR(gpu(), VK_NULL_HANDLE, &count, surface_formats.data());
+
+    vk::GetPhysicalDeviceSurfacePresentModesKHR(gpu(), VK_NULL_HANDLE, &count, nullptr);
+    std::vector<VkPresentModeKHR> present_modes(count);
+    vk::GetPhysicalDeviceSurfacePresentModesKHR(gpu(), VK_NULL_HANDLE, &count, present_modes.data());
     m_errorMonitor->VerifyNotFound();
 }
 
@@ -257,10 +272,7 @@ TEST_F(VkPositiveLayerTest, ParameterLayerFeatures2Capture) {
     VkResult err;
     m_errorMonitor->ExpectSuccess();
 
-    VkPhysicalDeviceFeatures2KHR features2;
-    features2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2_KHR;
-    features2.pNext = nullptr;
-
+    VkPhysicalDeviceFeatures2KHR features2 = LvlInitStruct<VkPhysicalDeviceFeatures2KHR>();
     vkGetPhysicalDeviceFeatures2KHR(gpu(), &features2);
 
     // We're not creating a valid m_device, but the phy wrapper is useful
@@ -275,9 +287,7 @@ TEST_F(VkPositiveLayerTest, ParameterLayerFeatures2Capture) {
         }
     }
 
-    VkDeviceCreateInfo dev_info = {};
-    dev_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-    dev_info.pNext = &features2;
+    VkDeviceCreateInfo dev_info = LvlInitStruct<VkDeviceCreateInfo>(&features2);
     dev_info.flags = 0;
     dev_info.queueCreateInfoCount = create_queue_infos.size();
     dev_info.pQueueCreateInfos = create_queue_infos.data();
@@ -309,8 +319,7 @@ TEST_F(VkPositiveLayerTest, ParameterLayerFeatures2Capture) {
     // Verify the core validation layer has captured the physical device features by creating a a query pool.
     if (features2.features.pipelineStatisticsQuery) {
         VkQueryPool query_pool;
-        VkQueryPoolCreateInfo qpci{};
-        qpci.sType = VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO;
+        VkQueryPoolCreateInfo qpci = LvlInitStruct<VkQueryPoolCreateInfo>();
         qpci.queryType = VK_QUERY_TYPE_PIPELINE_STATISTICS;
         qpci.queryCount = 1;
         err = vk::CreateQueryPool(device, &qpci, nullptr, &query_pool);
@@ -365,8 +374,7 @@ TEST_F(VkPositiveLayerTest, TestPhysicalDeviceSurfaceSupport) {
 
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
     if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
-        printf("%s Test requires Vulkan 1.1+, skipping test\n", kSkipPrefix);
-        return;
+        GTEST_SKIP() << "At least Vulkan version 1.1 is required";
     }
 
     ASSERT_NO_FATAL_FAILURE(InitState());
@@ -399,8 +407,7 @@ TEST_F(VkPositiveLayerTest, ModifyPnext) {
     }
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
     if (DeviceValidationVersion() < VK_API_VERSION_1_2) {
-        printf("%s test requires Vulkan 1.2+, skipping test\n", kSkipPrefix);
-        return;
+        GTEST_SKIP() << "At least Vulkan version 1.2 is required";
     }
 
     if (DeviceExtensionSupported(gpu(), nullptr, VK_NV_FRAGMENT_SHADING_RATE_ENUMS_EXTENSION_NAME)) {
@@ -410,7 +417,7 @@ TEST_F(VkPositiveLayerTest, ModifyPnext) {
         m_device_extension_names.push_back(VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME);
         m_device_extension_names.push_back(VK_NV_FRAGMENT_SHADING_RATE_ENUMS_EXTENSION_NAME);
     } else {
-        printf("%s test requires %s", kSkipPrefix, VK_NV_FRAGMENT_SHADING_RATE_ENUMS_EXTENSION_NAME);
+        printf("%s test requires %s\n", kSkipPrefix, VK_NV_FRAGMENT_SHADING_RATE_ENUMS_EXTENSION_NAME);
     }
 
     auto shading = LvlInitStruct<VkPhysicalDeviceFragmentShadingRateEnumsPropertiesNV>();
@@ -441,14 +448,11 @@ TEST_F(VkPositiveLayerTest, HostQueryResetSuccess) {
 
     m_device_extension_names.push_back(VK_EXT_HOST_QUERY_RESET_EXTENSION_NAME);
 
-    VkPhysicalDeviceHostQueryResetFeaturesEXT host_query_reset_features{};
-    host_query_reset_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_HOST_QUERY_RESET_FEATURES_EXT;
+    VkPhysicalDeviceHostQueryResetFeaturesEXT host_query_reset_features =
+        LvlInitStruct<VkPhysicalDeviceHostQueryResetFeaturesEXT>();
     host_query_reset_features.hostQueryReset = VK_TRUE;
 
-    VkPhysicalDeviceFeatures2 pd_features2{};
-    pd_features2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
-    pd_features2.pNext = &host_query_reset_features;
-
+    VkPhysicalDeviceFeatures2 pd_features2 = LvlInitStruct<VkPhysicalDeviceFeatures2>(&host_query_reset_features);
     ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &pd_features2));
 
     auto fpvkResetQueryPoolEXT = (PFN_vkResetQueryPoolEXT)vk::GetDeviceProcAddr(m_device->device(), "vkResetQueryPoolEXT");
@@ -456,8 +460,7 @@ TEST_F(VkPositiveLayerTest, HostQueryResetSuccess) {
     m_errorMonitor->ExpectSuccess();
 
     VkQueryPool query_pool;
-    VkQueryPoolCreateInfo query_pool_create_info{};
-    query_pool_create_info.sType = VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO;
+    VkQueryPoolCreateInfo query_pool_create_info = LvlInitStruct<VkQueryPoolCreateInfo>();
     query_pool_create_info.queryType = VK_QUERY_TYPE_TIMESTAMP;
     query_pool_create_info.queryCount = 1;
     vk::CreateQueryPool(m_device->device(), &query_pool_create_info, nullptr, &query_pool);
@@ -473,14 +476,12 @@ TEST_F(VkPositiveLayerTest, UseFirstQueueUnqueried) {
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
 
     const float q_priority[] = {1.0f};
-    VkDeviceQueueCreateInfo queue_ci = {};
-    queue_ci.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+    VkDeviceQueueCreateInfo queue_ci = LvlInitStruct<VkDeviceQueueCreateInfo>();
     queue_ci.queueFamilyIndex = 0;
     queue_ci.queueCount = 1;
     queue_ci.pQueuePriorities = q_priority;
 
-    VkDeviceCreateInfo device_ci = {};
-    device_ci.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+    VkDeviceCreateInfo device_ci = LvlInitStruct<VkDeviceCreateInfo>();
     device_ci.queueCreateInfoCount = 1;
     device_ci.pQueueCreateInfos = &queue_ci;
 
@@ -519,8 +520,7 @@ TEST_F(VkPositiveLayerTest, GetDevProcAddrExtensions) {
     SetTargetApiVersion(VK_API_VERSION_1_1);
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
     if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
-        printf("%s GetDevProcAddrExtensions requires Vulkan 1.1+, skipping test\n", kSkipPrefix);
-        return;
+        GTEST_SKIP() << "At least Vulkan version 1.1 is required";
     }
     ASSERT_NO_FATAL_FAILURE(InitState());
 
@@ -532,14 +532,12 @@ TEST_F(VkPositiveLayerTest, GetDevProcAddrExtensions) {
 
     const char *const extension = {VK_KHR_MAINTENANCE_1_EXTENSION_NAME};
     const float q_priority[] = {1.0f};
-    VkDeviceQueueCreateInfo queue_ci = {};
-    queue_ci.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+    VkDeviceQueueCreateInfo queue_ci = LvlInitStruct<VkDeviceQueueCreateInfo>();
     queue_ci.queueFamilyIndex = 0;
     queue_ci.queueCount = 1;
     queue_ci.pQueuePriorities = q_priority;
 
-    VkDeviceCreateInfo device_ci = {};
-    device_ci.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+    VkDeviceCreateInfo device_ci = LvlInitStruct<VkDeviceCreateInfo>();
     device_ci.enabledExtensionCount = 1;
     device_ci.ppEnabledExtensionNames = &extension;
     device_ci.queueCreateInfoCount = 1;
@@ -560,8 +558,7 @@ TEST_F(VkPositiveLayerTest, Vulkan12Features) {
     SetTargetApiVersion(VK_API_VERSION_1_2);
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
     if (DeviceValidationVersion() < VK_API_VERSION_1_2) {
-        printf("%s Vulkan12Struct requires Vulkan 1.2+, skipping test\n", kSkipPrefix);
-        return;
+        GTEST_SKIP() << "At least Vulkan version 1.2 is required";
     }
 
     VkPhysicalDeviceFeatures2 features2 = {};
@@ -579,15 +576,13 @@ TEST_F(VkPositiveLayerTest, Vulkan12Features) {
     }
 
     m_errorMonitor->ExpectSuccess();
-    VkPhysicalDeviceVulkan12Features features12 = {};
-    features12.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
+    VkPhysicalDeviceVulkan12Features features12 = LvlInitStruct<VkPhysicalDeviceVulkan12Features>();
     features12.bufferDeviceAddress = true;
     features2.pNext = &features12;
     ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &features2));
 
     uint32_t qfi = 0;
-    VkBufferCreateInfo bci = {};
-    bci.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    VkBufferCreateInfo bci = LvlInitStruct<VkBufferCreateInfo>();
     bci.usage = VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
     bci.size = 8;
     bci.queueFamilyIndexCount = 1;
@@ -596,8 +591,7 @@ TEST_F(VkPositiveLayerTest, Vulkan12Features) {
     vk::CreateBuffer(m_device->device(), &bci, NULL, &buffer);
     VkMemoryRequirements buffer_mem_reqs = {};
     vk::GetBufferMemoryRequirements(m_device->device(), buffer, &buffer_mem_reqs);
-    VkMemoryAllocateInfo buffer_alloc_info = {};
-    buffer_alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    VkMemoryAllocateInfo buffer_alloc_info = LvlInitStruct<VkMemoryAllocateInfo>();
     buffer_alloc_info.allocationSize = buffer_mem_reqs.size;
     m_device->phy().set_memory_type(buffer_mem_reqs.memoryTypeBits, &buffer_alloc_info, 0);
     VkMemoryAllocateFlagsInfo alloc_flags = {VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_FLAGS_INFO};
@@ -608,8 +602,7 @@ TEST_F(VkPositiveLayerTest, Vulkan12Features) {
     ASSERT_VK_SUCCESS(err);
     vk::BindBufferMemory(m_device->device(), buffer, buffer_mem, 0);
 
-    VkBufferDeviceAddressInfo bda_info = {};
-    bda_info.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
+    VkBufferDeviceAddressInfo bda_info = LvlInitStruct<VkBufferDeviceAddressInfo>();
     bda_info.buffer = buffer;
     auto vkGetBufferDeviceAddress =
         (PFN_vkGetBufferDeviceAddress)vk::GetDeviceProcAddr(m_device->device(), "vkGetBufferDeviceAddress");
@@ -631,7 +624,16 @@ TEST_F(VkPositiveLayerTest, QueueThreading) {
 
     using namespace std::chrono;
     using std::thread;
+    SetTargetApiVersion(VK_API_VERSION_1_1);
     ASSERT_NO_FATAL_FAILURE(InitFramework());
+    if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
+        GTEST_SKIP() << "At least Vulkan version 1.1 is required";
+    }
+    // Test randomly fails with VK_TIMEOUT, most likely a driver bug
+    if (IsDriver(VK_DRIVER_ID_AMD_PROPRIETARY)) {
+        printf("%s Test does not run on AMD proprietary driver, skipping tests\n", kSkipPrefix);
+        return;
+    }
     ASSERT_NO_FATAL_FAILURE(InitState());
 
     const auto queue_family = DeviceObj()->GetDefaultQueue()->get_family_index();
@@ -665,8 +667,7 @@ TEST_F(VkPositiveLayerTest, QueueThreading) {
 
     const auto &testing_thread2 = [&]() {
         for (auto timer_now = steady_clock::now(); timer_now - timer_begin < test_duration; timer_now = steady_clock::now()) {
-            VkSubmitInfo si = {};
-            si.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+            VkSubmitInfo si = LvlInitStruct<VkSubmitInfo>();
             si.commandBufferCount = 1;
             si.pCommandBuffers = &mock_cmdbuff.handle();
             queue_mutex.lock();
@@ -689,4 +690,224 @@ TEST_F(VkPositiveLayerTest, QueueThreading) {
     Monitor().VerifyNotFound();
 
     vk::QueueWaitIdle(queue_h);
+}
+
+TEST_F(VkPositiveLayerTest, TestAcquiringSwapchainImages) {
+    TEST_DESCRIPTION("Test acquiring swapchain images.");
+
+    if (!AddSurfaceInstanceExtension()) {
+        printf("%s surface extensions not supported, skipping test\n", kSkipPrefix);
+        return;
+    }
+
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+
+    if (!AddSwapchainDeviceExtension()) {
+        printf("%s swapchain extensions not supported, skipping test\n", kSkipPrefix);
+        return;
+    }
+
+    ASSERT_NO_FATAL_FAILURE(InitState(nullptr, nullptr, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT));
+    if (!InitSwapchain()) {
+        printf("%s Cannot create surface or swapchain, skipping test\n", kSkipPrefix);
+        return;
+    }
+
+    m_errorMonitor->ExpectSuccess();
+
+    VkSemaphoreCreateInfo semaphore_create_info = LvlInitStruct<VkSemaphoreCreateInfo>();
+    VkSemaphore acquire_semaphore;
+    VkSemaphore submit_semaphore;
+    ASSERT_VK_SUCCESS(vk::CreateSemaphore(m_device->device(), &semaphore_create_info, nullptr, &acquire_semaphore));
+    ASSERT_VK_SUCCESS(vk::CreateSemaphore(m_device->device(), &semaphore_create_info, nullptr, &submit_semaphore));
+
+    uint32_t swapchain_images_count = 0;
+    vk::GetSwapchainImagesKHR(device(), m_swapchain, &swapchain_images_count, nullptr);
+    std::vector<VkImage> swapchain_images;
+    swapchain_images.resize(swapchain_images_count);
+    vk::GetSwapchainImagesKHR(device(), m_swapchain, &swapchain_images_count, swapchain_images.data());
+
+    uint32_t image_index = 0;
+    vk::AcquireNextImageKHR(device(), m_swapchain, std::numeric_limits<uint64_t>::max(), acquire_semaphore, VK_NULL_HANDLE,
+                            &image_index);
+
+    m_commandBuffer->begin();
+
+    VkImageMemoryBarrier img_barrier = LvlInitStruct<VkImageMemoryBarrier>();
+    img_barrier.srcAccessMask = 0;
+    img_barrier.dstAccessMask = 0;
+    img_barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    img_barrier.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+    img_barrier.image = swapchain_images[image_index];
+    img_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    img_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    img_barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    img_barrier.subresourceRange.baseArrayLayer = 0;
+    img_barrier.subresourceRange.baseMipLevel = 0;
+    img_barrier.subresourceRange.layerCount = 1;
+    img_barrier.subresourceRange.levelCount = 1;
+
+    vk::CmdPipelineBarrier(m_commandBuffer->handle(), VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, 0, 0,
+                           nullptr, 0, nullptr, 1, &img_barrier);
+    m_commandBuffer->end();
+
+    VkPipelineStageFlags stage_mask = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+
+    VkSubmitInfo submit_info = LvlInitStruct<VkSubmitInfo>();
+    submit_info.commandBufferCount = 1;
+    submit_info.pCommandBuffers = &m_commandBuffer->handle();
+    submit_info.waitSemaphoreCount = 1;
+    submit_info.pWaitSemaphores = &acquire_semaphore;
+    submit_info.pWaitDstStageMask = &stage_mask;
+    submit_info.signalSemaphoreCount = 1;
+    submit_info.pSignalSemaphores = &submit_semaphore;
+
+    vk::QueueSubmit(m_device->m_queue, 1, &submit_info, VK_NULL_HANDLE);
+
+    VkPresentInfoKHR present = LvlInitStruct<VkPresentInfoKHR>();
+    present.waitSemaphoreCount = 1;
+    present.pWaitSemaphores = &submit_semaphore;
+    present.swapchainCount = 1;
+    present.pSwapchains = &m_swapchain;
+    present.pImageIndices = &image_index;
+    vk::QueuePresentKHR(m_device->m_queue, &present);
+
+    vk::QueueWaitIdle(m_device->m_queue);
+    m_errorMonitor->VerifyNotFound();
+
+    vk::DestroySemaphore(device(), submit_semaphore, nullptr);
+    vk::DestroySemaphore(device(), acquire_semaphore, nullptr);
+    DestroySwapchain();
+}
+
+TEST_F(VkPositiveLayerTest, ValidateGetAccelerationStructureBuildSizes) {
+    TEST_DESCRIPTION("Test enabled features for GetAccelerationStructureBuildSizes");
+
+    SetTargetApiVersion(VK_API_VERSION_1_1);
+    AddRequiredExtensions(VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME);
+
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+
+    // Crashes without any warnings
+    if (IsDriver(VK_DRIVER_ID_AMD_PROPRIETARY)) {
+        printf("%s Test does not run on AMD proprietary driver, skipping tests\n", kSkipPrefix);
+        return;
+    }
+
+    if (!AreRequiredExtensionsEnabled()) {
+        GTEST_SKIP() << RequiredExtensionsNotSupported() << " not supported";
+    }
+    if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
+        GTEST_SKIP() << "At least Vulkan version 1.1 is required";
+    }
+
+    auto ray_query_features = LvlInitStruct<VkPhysicalDeviceRayQueryFeaturesKHR>();
+    auto ray_tracing_features = LvlInitStruct<VkPhysicalDeviceRayTracingPipelineFeaturesKHR>(&ray_query_features);
+    auto features2 = LvlInitStruct<VkPhysicalDeviceFeatures2>(&ray_tracing_features);
+    vk::GetPhysicalDeviceFeatures2(gpu(), &features2);
+
+    if (ray_tracing_features.rayTracingPipeline == VK_FALSE) {
+        printf("%s rayTracingPipeline feature not supported, skipping tests\n", kSkipPrefix);
+        return;
+    }
+
+    ray_query_features.rayQuery = VK_FALSE;
+
+    ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &features2));
+
+    m_errorMonitor->ExpectSuccess();
+
+    auto vkGetAccelerationStructureBuildSizesKHR = reinterpret_cast<PFN_vkGetAccelerationStructureBuildSizesKHR>(
+        vk::GetInstanceProcAddr(instance(), "vkGetAccelerationStructureBuildSizesKHR"));
+    assert(vkGetAccelerationStructureBuildSizesKHR != nullptr);
+
+    auto build_info = LvlInitStruct<VkAccelerationStructureBuildGeometryInfoKHR>();
+    build_info.type = VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR;
+    uint32_t max_primitives_count;
+    auto build_sizes_info = LvlInitStruct<VkAccelerationStructureBuildSizesInfoKHR>();
+    vkGetAccelerationStructureBuildSizesKHR(device(), VK_ACCELERATION_STRUCTURE_BUILD_TYPE_HOST_OR_DEVICE_KHR, &build_info,
+                                            &max_primitives_count,
+                                            &build_sizes_info);
+
+    m_errorMonitor->VerifyNotFound();
+}
+
+TEST_F(VkPositiveLayerTest, TestSwapchainImageFenceWait) {
+    TEST_DESCRIPTION("Test waiting on swapchain image with a fence.");
+
+    if (!AddSurfaceInstanceExtension()) {
+        printf("%s surface extensions not supported, skipping test\n", kSkipPrefix);
+        return;
+    }
+
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+
+    if (!AddSwapchainDeviceExtension()) {
+        printf("%s swapchain extensions not supported, skipping test\n", kSkipPrefix);
+        return;
+    }
+
+    ASSERT_NO_FATAL_FAILURE(InitState(nullptr, nullptr, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT));
+    if (!InitSwapchain()) {
+        printf("%s Cannot create surface or swapchain, skipping test\n", kSkipPrefix);
+        return;
+    }
+
+    m_errorMonitor->ExpectSuccess();
+
+    VkFenceObj fence;
+    fence.init(*m_device, VkFenceObj::create_info());
+    VkFence fence_handle = fence.handle();
+
+    uint32_t swapchain_images_count = 0;
+    vk::GetSwapchainImagesKHR(device(), m_swapchain, &swapchain_images_count, nullptr);
+    std::vector<VkImage> swapchain_images;
+    swapchain_images.resize(swapchain_images_count);
+    vk::GetSwapchainImagesKHR(device(), m_swapchain, &swapchain_images_count, swapchain_images.data());
+
+    uint32_t image_index = 0;
+    vk::AcquireNextImageKHR(device(), m_swapchain, std::numeric_limits<uint64_t>::max(), VK_NULL_HANDLE, fence_handle,
+                            &image_index);
+    vk::WaitForFences(device(), 1, &fence_handle, VK_TRUE, std::numeric_limits<uint64_t>::max());
+
+    m_commandBuffer->begin();
+
+    VkImageMemoryBarrier img_barrier = LvlInitStruct<VkImageMemoryBarrier>();
+    img_barrier.srcAccessMask = 0;
+    img_barrier.dstAccessMask = 0;
+    img_barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    img_barrier.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+    img_barrier.image = swapchain_images[image_index];
+    img_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    img_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    img_barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    img_barrier.subresourceRange.baseArrayLayer = 0;
+    img_barrier.subresourceRange.baseMipLevel = 0;
+    img_barrier.subresourceRange.layerCount = 1;
+    img_barrier.subresourceRange.levelCount = 1;
+
+    vk::CmdPipelineBarrier(m_commandBuffer->handle(), VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, 0, 0,
+                           nullptr, 0, nullptr, 1, &img_barrier);
+    m_commandBuffer->end();
+
+    VkPipelineStageFlags stage_mask = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+
+    VkSubmitInfo submit_info = LvlInitStruct<VkSubmitInfo>();
+    submit_info.commandBufferCount = 1;
+    submit_info.pCommandBuffers = &m_commandBuffer->handle();
+    submit_info.pWaitDstStageMask = &stage_mask;
+
+    vk::QueueSubmit(m_device->m_queue, 1, &submit_info, VK_NULL_HANDLE);
+    vk::QueueWaitIdle(m_device->m_queue);
+
+    VkPresentInfoKHR present = LvlInitStruct<VkPresentInfoKHR>();
+    present.swapchainCount = 1;
+    present.pSwapchains = &m_swapchain;
+    present.pImageIndices = &image_index;
+    vk::QueuePresentKHR(m_device->m_queue, &present);
+
+    vk::QueueWaitIdle(m_device->m_queue);
+    m_errorMonitor->VerifyNotFound();
+
+    DestroySwapchain();
 }

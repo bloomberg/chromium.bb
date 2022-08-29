@@ -1,4 +1,4 @@
-// Copyright 2018 The Dawn Authors
+// Copyright 2022 The Dawn Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,25 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DAWNWIRE_EXPORT_H_
-#define DAWNWIRE_EXPORT_H_
+#ifndef SRC_INCLUDE_DAWN_WIRE_DAWN_WIRE_EXPORT_H_
+#define SRC_INCLUDE_DAWN_WIRE_DAWN_WIRE_EXPORT_H_
 
-#if defined(DAWN_WIRE_SHARED_LIBRARY)
-#    if defined(_WIN32)
-#        if defined(DAWN_WIRE_IMPLEMENTATION)
-#            define DAWN_WIRE_EXPORT __declspec(dllexport)
-#        else
-#            define DAWN_WIRE_EXPORT __declspec(dllimport)
-#        endif
-#    else  // defined(_WIN32)
-#        if defined(DAWN_WIRE_IMPLEMENTATION)
-#            define DAWN_WIRE_EXPORT __attribute__((visibility("default")))
-#        else
-#            define DAWN_WIRE_EXPORT
-#        endif
-#    endif  // defined(_WIN32)
-#else       // defined(DAWN_WIRE_SHARED_LIBRARY)
-#    define DAWN_WIRE_EXPORT
-#endif  // defined(DAWN_WIRE_SHARED_LIBRARY)
+#include "dawn/wire/dawn_wire_export.h"
 
-#endif  // DAWNWIRE_EXPORT_H_
+#endif  // SRC_INCLUDE_DAWN_WIRE_DAWN_WIRE_EXPORT_H_

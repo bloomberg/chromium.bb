@@ -19,10 +19,10 @@
 #include "chrome/browser/ash/scanning/zeroconf_scanner_detector.h"
 #include "chrome/browser/ash/scanning/zeroconf_scanner_detector_utils.h"
 #include "chrome/browser/local_discovery/service_discovery_client.h"
+#include "chromeos/ash/components/scanning/scanner.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/lorgnette/lorgnette_service.pb.h"
 #include "chromeos/dbus/lorgnette_manager/fake_lorgnette_manager_client.h"
-#include "chromeos/scanning/scanner.h"
 #include "net/base/ip_address.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -33,7 +33,6 @@ namespace ash {
 namespace {
 
 using ::chromeos::FakeLorgnetteManagerClient;
-using ::chromeos::Scanner;
 using local_discovery::ServiceDescription;
 using ::testing::ElementsAreArray;
 
@@ -359,7 +358,7 @@ TEST_F(LorgnetteScannerManagerTest, EsclEpsonZeroconfScanner) {
 // Test that the name of a detected non-ESCL zeroconf scanner does not generate
 // a scanner if it is not an Epson.
 TEST_F(LorgnetteScannerManagerTest, NonEsclNonEpsonZeroconfScanner) {
-  absl::optional<chromeos::Scanner> scanner = CreateSaneScanner(
+  absl::optional<Scanner> scanner = CreateSaneScanner(
       "Test MX3100", ZeroconfScannerDetector::kGenericScannerServiceType, "",
       net::IPAddress(192, 168, 0, 3), 5, true);
   EXPECT_FALSE(scanner.has_value());
@@ -485,7 +484,7 @@ TEST_F(LorgnetteScannerManagerTest, UniqueScannerNames) {
   GetLorgnetteManagerClient()->SetListScannersResponse(response);
   GetScannerNames();
   WaitForResult();
-  ASSERT_EQ(scanner_names().size(), 2ul);
+  ASSERT_EQ(scanner_names().size(), 2u);
   EXPECT_NE(scanner_names()[0], scanner_names()[1]);
 }
 
@@ -567,8 +566,8 @@ TEST_F(LorgnetteScannerManagerTest, GetCaps) {
   const auto caps = scanner_capabilities().value();
   ASSERT_EQ(caps.resolutions_size(), 1);
   EXPECT_EQ(caps.resolutions()[0], 300u);
-  EXPECT_EQ(caps.sources_size(), 0);
-  ASSERT_EQ(caps.color_modes_size(), 1);
+  EXPECT_EQ(caps.sources_size(), 0u);
+  ASSERT_EQ(caps.color_modes_size(), 1u);
   EXPECT_EQ(caps.color_modes()[0], lorgnette::MODE_COLOR);
 }
 
@@ -577,7 +576,7 @@ TEST_F(LorgnetteScannerManagerTest, NoScannersNames) {
   lorgnette::ScanSettings settings;
   Scan(kUnknownScannerName, settings);
   WaitForResult();
-  EXPECT_EQ(scan_data().size(), 0);
+  EXPECT_EQ(scan_data().size(), 0u);
   EXPECT_EQ(failure_mode(), lorgnette::SCAN_FAILURE_MODE_UNKNOWN);
 }
 
@@ -591,7 +590,7 @@ TEST_F(LorgnetteScannerManagerTest, UnknownScannerName) {
   lorgnette::ScanSettings settings;
   Scan(kUnknownScannerName, settings);
   WaitForResult();
-  EXPECT_EQ(scan_data().size(), 0);
+  EXPECT_EQ(scan_data().size(), 0u);
   EXPECT_EQ(failure_mode(), lorgnette::SCAN_FAILURE_MODE_UNKNOWN);
 }
 
@@ -605,7 +604,7 @@ TEST_F(LorgnetteScannerManagerTest, NoUsableDeviceName) {
   lorgnette::ScanSettings settings;
   Scan(scanner.display_name, settings);
   WaitForResult();
-  EXPECT_EQ(scan_data().size(), 0);
+  EXPECT_EQ(scan_data().size(), 0u);
   EXPECT_EQ(failure_mode(), lorgnette::SCAN_FAILURE_MODE_UNKNOWN);
 }
 
@@ -661,7 +660,7 @@ TEST_F(LorgnetteScannerManagerTest, ScanOnePage) {
   lorgnette::ScanSettings settings;
   Scan(scanner.display_name, settings);
   WaitForResult();
-  ASSERT_EQ(scan_data().size(), 1);
+  ASSERT_EQ(scan_data().size(), 1u);
   EXPECT_EQ(scan_data()[0], "TestScanData");
   EXPECT_EQ(failure_mode(), lorgnette::SCAN_FAILURE_MODE_NO_FAILURE);
 }
@@ -678,7 +677,7 @@ TEST_F(LorgnetteScannerManagerTest, ScanMultiplePages) {
   lorgnette::ScanSettings settings;
   Scan(scanner.display_name, settings);
   WaitForResult();
-  ASSERT_EQ(scan_data().size(), 3);
+  ASSERT_EQ(scan_data().size(), 3u);
   EXPECT_EQ(scan_data()[0], "TestPageOne");
   EXPECT_EQ(scan_data()[1], "TestPageTwo");
   EXPECT_EQ(scan_data()[2], "TestPageThree");

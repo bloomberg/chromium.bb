@@ -9,28 +9,21 @@
 namespace omnibox {
 
 constexpr auto enabled_by_default_desktop_only =
-#if defined(OS_ANDROID) || defined(OS_IOS)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
     base::FEATURE_DISABLED_BY_DEFAULT;
 #else
     base::FEATURE_ENABLED_BY_DEFAULT;
 #endif
 
 constexpr auto enabled_by_default_android_only =
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     base::FEATURE_ENABLED_BY_DEFAULT;
 #else
     base::FEATURE_DISABLED_BY_DEFAULT;
 #endif
 
 constexpr auto enabled_by_default_desktop_android =
-#if defined(OS_IOS)
-    base::FEATURE_DISABLED_BY_DEFAULT;
-#else
-    base::FEATURE_ENABLED_BY_DEFAULT;
-#endif
-
-constexpr auto enabled_by_default_desktop_ios =
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_IOS)
     base::FEATURE_DISABLED_BY_DEFAULT;
 #else
     base::FEATURE_ENABLED_BY_DEFAULT;
@@ -38,17 +31,11 @@ constexpr auto enabled_by_default_desktop_ios =
 
 // Comment out this macro since it is currently not being used in this file.
 // const auto enabled_by_default_android_ios =
-// #if defined(OS_ANDROID) || defined(OS_IOS)
+// #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
 //     base::FEATURE_ENABLED_BY_DEFAULT;
 // #else
 //     base::FEATURE_DISABLED_BY_DEFAULT;
 // #endif
-
-// Feature that enables the tab-switch suggestions corresponding to an open
-// tab, for a button or dedicated suggestion. Enabled by default on Desktop
-// and iOS.
-const base::Feature kOmniboxTabSwitchSuggestions{
-    "OmniboxTabSwitchSuggestions", enabled_by_default_desktop_ios};
 
 // Feature used to enable various experiments on keyword mode, UI and
 // suggestions.
@@ -67,6 +54,10 @@ const base::Feature kDisplayTitleForCurrentUrl{
 // Feature used to allow users to remove suggestions from clipboard.
 const base::Feature kOmniboxRemoveSuggestionsFromClipboard{
     "OmniboxRemoveSuggestionsFromClipboard", enabled_by_default_android_only};
+
+// Auxiliary search for Android. See http://crbug/1310100 for more details.
+const base::Feature kAndroidAuxiliarySearch{
+    "AndroidAuxiliarySearch", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Demotes the relevance scores when comparing suggestions based on the
 // suggestion's |AutocompleteMatchType| and the user's |PageClassification|.
@@ -113,13 +104,13 @@ const base::Feature kClobberTriggersContextualWebZeroSuggest{
 // Chrome will request remote ZeroSuggest suggestions for the SRP (search
 // results page).
 const base::Feature kClobberTriggersSRPZeroSuggest{
-    "OmniboxClobberTriggersSRPZeroSuggest", base::FEATURE_DISABLED_BY_DEFAULT};
+    "OmniboxClobberTriggersSRPZeroSuggest", enabled_by_default_desktop_only};
 
 // Used to adjust the age threshold since the last visit in order to consider a
 // normalized keyword search term as a zero-prefix suggestion. If disabled, the
-// default value of 7 days is used. If enabled, the age threshold is determined
-// by this feature's companion parameter,
-// OmniboxFieldTrial::kOmniboxLocalZeroSuggestAgeThresholdParam.
+// default value of 60 days for Desktop and 7 days for Android and iOS is used.
+// If enabled, the age threshold is determined by this feature's companion
+// parameter, OmniboxFieldTrial::kOmniboxLocalZeroSuggestAgeThresholdParam.
 const base::Feature kOmniboxLocalZeroSuggestAgeThreshold{
     "OmniboxLocalZeroSuggestAgeThreshold", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -154,6 +145,11 @@ const base::Feature kOnFocusSuggestionsContextualWebOnContent{
     "OmniboxOnFocusSuggestionsContextualWebOnContent",
     enabled_by_default_android_only};
 
+// Revamps how local search history is extracted and processed for generating
+// zero-prefix and prefix suggestions.
+extern const base::Feature kLocalHistorySuggestRevamp{
+    "LocalHistorySuggestRevamp", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Allows the LocalHistoryZeroSuggestProvider to use local search history.
 const base::Feature kLocalHistoryZeroSuggest{
     "LocalHistoryZeroSuggest", enabled_by_default_desktop_android};
@@ -185,7 +181,7 @@ const base::Feature kOmniboxExperimentalSuggestScoring{
 // over 10% of all shutdown hangs.
 const base::Feature kHistoryQuickProviderAblateInMemoryURLIndexCacheFile{
     "OmniboxHistoryQuickProviderAblateInMemoryURLIndexCacheFile",
-    enabled_by_default_desktop_only};
+    enabled_by_default_desktop_android};
 
 // If enabled, suggestions from a cgi param name match are scored to 0.
 const base::Feature kDisableCGIParamMatching{"OmniboxDisableCGIParamMatching",
@@ -206,11 +202,12 @@ const base::Feature kShortBookmarkSuggestionsByTotalInputLength{
     "OmniboxShortBookmarkSuggestionsByTotalInputLength",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// If disabled, updating shortcuts truncates their text to the user input. If
-// enabled, they preserve up to 3 additional chars. See `GetShortcutText()` in
-// shortcuts_backend.cc for details.
-const base::Feature kPreserveLongerShortcutsText{
-    "OmniboxPreserveLongerShortcutsText", base::FEATURE_DISABLED_BY_DEFAULT};
+// If disabled, shortcuts to the same stripped destination URL are scored
+// independently, and only the highest scored shortcut is kept. If enabled,
+// duplicate shortcuts are given an aggregate score, as if they had been a
+// single shortcut.
+const base::Feature kAggregateShortcuts{"OmniboxAggregateShortcuts",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 // If enabled, inputs may match bookmark paths. These path matches won't
 // contribute to scoring. E.g. 'planets jupiter' can suggest a bookmark titled
@@ -265,55 +262,31 @@ const base::Feature kNtpRealboxSuggestionAnswers{
 const base::Feature kNtpRealboxTailSuggest{"NtpRealboxTailSuggest",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Feature used to enable the first batch of Pedals on Android. The Pedals,
-// which will be enabled on Android, should be already enabled on desktop.
-const base::Feature kOmniboxPedalsAndroidBatch1{
-    "OmniboxPedalsAndroidBatch1", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Feature used to enable the second batch of Pedals (Safety Check, etc.)
-// for non-English locales (English locales are 'en' and 'en-GB').
-// This feature is only meaningful if `OmniboxPedalsBatch2` is enabled.
-const base::Feature kOmniboxPedalsBatch2NonEnglish{
-    "OmniboxPedalsBatch2NonEnglish", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Feature used to enable the third batch of Pedals.
-const base::Feature kOmniboxPedalsBatch3{"OmniboxPedalsBatch3",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Feature used to enable the third batch of Pedals (Find your phone, etc.)
-// for non-English locales (English locales are 'en' and 'en-GB').
-// This feature is only meaningful if `OmniboxPedalsBatch3` is enabled.
-const base::Feature kOmniboxPedalsBatch3NonEnglish{
-    "OmniboxPedalsBatch3NonEnglish", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Feature that enables loading synonyms from the translation console.
-const base::Feature kOmniboxPedalsTranslationConsole{
-    "OmniboxPedalsTranslationConsole", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Feature used to enable the keyword search button.
-const base::Feature kOmniboxKeywordSearchButton{
-    "OmniboxKeywordSearchButton", enabled_by_default_desktop_only};
-
-// If enabled, uses WebUI to render the omnibox suggestions popup, similar to
-// how the NTP "realbox" is implemented.
-const base::Feature kWebUIOmniboxPopup{"WebUIOmniboxPopup",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
+// Feature used to enable URL suggestions for inputs that may contain typos.
+const base::Feature kOmniboxFuzzyUrlSuggestions{
+    "OmniboxFuzzyUrlSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // When enabled, use Assistant for omnibox voice query recognition instead of
 // Android's built-in voice recognition service. Only works on Android.
 const base::Feature kOmniboxAssistantVoiceSearch{
     "OmniboxAssistantVoiceSearch", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// When enabled, a setting is added to chrome://settings/searchEngines to
-// control whether <space> can be used to trigger keyword mode.
-const base::Feature kKeywordSpaceTriggeringSetting{
-    "OmniboxKeywordSpaceTriggeringSetting", enabled_by_default_desktop_only};
+const base::Feature kClosePopupWithEscape{"OmniboxClosePopupWithEscape",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kBlurWithEscape{"OmniboxBlurWithEscape",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // When enabled, add an Active Search Engines category to
 // chrome://settings/searchEngines. This section contains any search engines
 // that have been used or manually added/modified by the user.
 const base::Feature kActiveSearchEngines{"OmniboxActiveSearchEngines",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
+
+// When enabled, adds a "starter pack" of @history, @bookmarks, and @settings
+// scopes to Site Search/Keyword Mode.
+const base::Feature kSiteSearchStarterPack{"OmniboxSiteSearchStarterPack",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Experiment to introduce new security indicators for HTTPS.
 const base::Feature kUpdatedConnectionSecurityIndicators{
@@ -327,7 +300,8 @@ const base::Feature kUpdatedConnectionSecurityIndicators{
 // https://example.com instead, with fallback to http://example.com if
 // necessary.
 const base::Feature kDefaultTypedNavigationsToHttps{
-    "OmniboxDefaultTypedNavigationsToHttps", base::FEATURE_ENABLED_BY_DEFAULT};
+    "OmniboxDefaultTypedNavigationsToHttps",
+    enabled_by_default_desktop_android};
 // Parameter name used to look up the delay before falling back to the HTTP URL
 // while trying an HTTPS URL. The parameter is treated as a TimeDelta, so the
 // unit must be included in the value as well (e.g. 3s for 3 seconds).
@@ -339,4 +313,20 @@ const char kDefaultTypedNavigationsToHttpsTimeoutParam[] = "timeout";
 // Spare renderer warmup for faster website loading.
 const base::Feature kOmniboxSpareRenderer{"OmniboxSpareRenderer",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
+
+// If enabled, Omnibox reports the Assisted Query Stats in the aqs= param in the
+// Search Results Page URL.
+const base::Feature kReportAssistedQueryStats{"OmniboxReportAssistedQueryStats",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
+
+// If enabled, Omnibox reports the Searchbox Stats in the gs_lcrp= param in the
+// Search Results Page URL.
+extern const base::Feature kReportSearchboxStats{
+    "OmniboxReportSearchboxStats", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// If enabled, retains all suggestions with headers to be presented entirely.
+// Disabling the feature trims the suggestions list to the predefined limit.
+extern const base::Feature kRetainSuggestionsWithHeaders{
+    "OmniboxRetainSuggestionsWithHeaders", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace omnibox

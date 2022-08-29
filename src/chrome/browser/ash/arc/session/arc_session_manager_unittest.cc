@@ -16,6 +16,7 @@
 #include "ash/components/arc/session/arc_session_runner.h"
 #include "ash/components/arc/test/arc_util_test_support.h"
 #include "ash/components/arc/test/fake_arc_session.h"
+#include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "base/bind.h"
 #include "base/check_op.h"
@@ -53,11 +54,11 @@
 #include "chrome/browser/ui/webui/chromeos/login/arc_terms_of_service_screen_handler.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chromeos/dbus/concierge/concierge_client.h"
+#include "chromeos/ash/components/dbus/concierge/concierge_client.h"
+#include "chromeos/ash/components/dbus/upstart/upstart_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
-#include "chromeos/dbus/upstart/upstart_client.h"
 #include "chromeos/dbus/userdataauth/fake_cryptohome_misc_client.h"
 #include "components/account_id/account_id.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
@@ -161,7 +162,7 @@ class ArcSessionManagerInLoginScreenTest : public testing::Test {
     // Need to initialize DBusThreadManager before ArcSessionManager's
     // constructor calls DBusThreadManager::Get().
     chromeos::DBusThreadManager::Initialize();
-    chromeos::ConciergeClient::InitializeFake(/*fake_cicerone_client=*/nullptr);
+    ash::ConciergeClient::InitializeFake(/*fake_cicerone_client=*/nullptr);
     chromeos::SessionManagerClient::InitializeFakeInMemory();
 
     ArcSessionManager::SetUiEnabledForTesting(false);
@@ -183,7 +184,7 @@ class ArcSessionManagerInLoginScreenTest : public testing::Test {
     arc_session_manager_.reset();
     arc_service_manager_.reset();
     chromeos::SessionManagerClient::Shutdown();
-    chromeos::ConciergeClient::Shutdown();
+    ash::ConciergeClient::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
   }
 
@@ -230,6 +231,21 @@ TEST_F(ArcSessionManagerInLoginScreenTest, EmitLoginPromptVisible_NoOp) {
             arc_session_manager()->state());
 }
 
+// We expect mini instance is not started in manual mode.
+TEST_F(ArcSessionManagerInLoginScreenTest, EmitLoginPromptVisibleManualStart) {
+  EXPECT_FALSE(arc_session());
+
+  SetArcAvailableCommandLineForTesting(base::CommandLine::ForCurrentProcess());
+  base::test::ScopedCommandLine command_line;
+  command_line.GetProcessCommandLine()->AppendSwitchASCII("arc-start-mode",
+                                                          "manual");
+
+  chromeos::SessionManagerClient::Get()->EmitLoginPromptVisible();
+  EXPECT_FALSE(arc_session());
+  EXPECT_EQ(ArcSessionManager::State::NOT_INITIALIZED,
+            arc_session_manager()->state());
+}
+
 // We expect that StopMiniArcIfNecessary stops mini-ARC when it is running.
 TEST_F(ArcSessionManagerInLoginScreenTest, StopMiniArcIfNecessary) {
   EXPECT_FALSE(arc_session());
@@ -260,10 +276,10 @@ class ArcSessionManagerTestBase : public testing::Test {
 
   void SetUp() override {
     chromeos::DBusThreadManager::Initialize();
-    chromeos::ConciergeClient::InitializeFake(/*fake_cicerone_client=*/nullptr);
+    ash::ConciergeClient::InitializeFake(/*fake_cicerone_client=*/nullptr);
     chromeos::PowerManagerClient::InitializeFake();
     chromeos::SessionManagerClient::InitializeFakeInMemory();
-    chromeos::UpstartClient::InitializeFake();
+    ash::UpstartClient::InitializeFake();
 
     SetArcAvailableCommandLineForTesting(
         base::CommandLine::ForCurrentProcess());
@@ -291,10 +307,10 @@ class ArcSessionManagerTestBase : public testing::Test {
     profile_.reset();
     arc_session_manager_.reset();
     arc_service_manager_.reset();
-    chromeos::UpstartClient::Shutdown();
+    ash::UpstartClient::Shutdown();
     chromeos::SessionManagerClient::Shutdown();
     chromeos::PowerManagerClient::Shutdown();
-    chromeos::ConciergeClient::Shutdown();
+    ash::ConciergeClient::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
   }
 
@@ -990,7 +1006,7 @@ TEST_F(ArcSessionManagerTest, IsDirectlyStartedOnInternalRestart) {
 TEST_F(ArcSessionManagerTest, DataCleanUpOnFirstStart) {
   base::test::ScopedCommandLine command_line;
   command_line.GetProcessCommandLine()->AppendSwitch(
-      chromeos::switches::kArcDataCleanupOnStart);
+      ash::switches::kArcDataCleanupOnStart);
 
   arc_session_manager()->SetProfile(profile());
   arc_session_manager()->Initialize();
@@ -1024,7 +1040,7 @@ TEST_F(ArcSessionManagerTest, DataCleanUpOnFirstStart) {
 TEST_F(ArcSessionManagerTest, DataCleanUpOnNextStart) {
   base::test::ScopedCommandLine command_line;
   command_line.GetProcessCommandLine()->AppendSwitch(
-      chromeos::switches::kArcDataCleanupOnStart);
+      ash::switches::kArcDataCleanupOnStart);
 
   PrefService* const prefs = profile()->GetPrefs();
   prefs->SetBoolean(prefs::kArcTermsAccepted, true);
@@ -1556,7 +1572,17 @@ class ArcSessionOobeOptInNegotiatorTest
       public chromeos::ArcTermsOfServiceScreenView,
       public testing::WithParamInterface<bool> {
  public:
-  ArcSessionOobeOptInNegotiatorTest() = default;
+  ArcSessionOobeOptInNegotiatorTest() {
+    // This test only works with the ARC ToS screen, which would be replaced
+    // by the Consolidated Consent screen when the feature
+    // OobeConsolidatedConsent is enabled. Make sure that the
+    // OobeConsolidatedConsent feature is disabled before running these tests.
+    // TODO(crbug,com/1297250): Implement similar tests to test the interaction
+    // between the ArcSessionOobeOptInNegotiatorTest and the Consolidated
+    // Consent screen.
+    feature_list_.InitAndDisableFeature(
+        ash::features::kOobeConsolidatedConsent);
+  }
 
   ArcSessionOobeOptInNegotiatorTest(const ArcSessionOobeOptInNegotiatorTest&) =
       delete;
@@ -1660,6 +1686,7 @@ class ArcSessionOobeOptInNegotiatorTest
       observer_list_;
   std::unique_ptr<ash::FakeLoginDisplayHost> fake_login_display_host_;
   TestingPrefServiceSimple pref_service_;
+  base::test::ScopedFeatureList feature_list_;
 };
 
 INSTANTIATE_TEST_SUITE_P(All,
@@ -2157,7 +2184,8 @@ TEST_F(ArcSessionManagerTest, TrimVmMemory) {
   arc_session_manager()->TrimVmMemory(
       base::BindLambdaForTesting([&callback_called](bool, const std::string&) {
         callback_called = true;
-      }));
+      }),
+      0);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(callback_called);
 }

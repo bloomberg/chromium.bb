@@ -5,7 +5,6 @@
 #include "chrome/common/media/cdm_host_file_path.h"
 
 #include "base/check.h"
-#include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
@@ -16,7 +15,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_version.h"
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #include "base/mac/bundle_locations.h"
 #endif
 
@@ -43,7 +42,7 @@ void AddCdmHostFilePaths(
   DCHECK(cdm_host_file_paths);
   DCHECK(cdm_host_file_paths->empty());
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 
   static const base::FilePath::CharType* const kUnversionedFiles[] = {
       chrome::kBrowserProcessExecutableName};
@@ -58,11 +57,11 @@ void AddCdmHostFilePaths(
     NOTREACHED();
   base::FilePath version_dir(chrome_exe_dir.AppendASCII(CHROME_VERSION_STRING));
 
-  cdm_host_file_paths->reserve(base::size(kUnversionedFiles) +
-                               base::size(kVersionedFiles));
+  cdm_host_file_paths->reserve(std::size(kUnversionedFiles) +
+                               std::size(kVersionedFiles));
 
   // Signature files are always in the version directory.
-  for (size_t i = 0; i < base::size(kUnversionedFiles); ++i) {
+  for (size_t i = 0; i < std::size(kUnversionedFiles); ++i) {
     base::FilePath file_path = chrome_exe_dir.Append(kUnversionedFiles[i]);
     base::FilePath sig_path =
         GetSigFilePath(version_dir.Append(kUnversionedFiles[i]));
@@ -71,14 +70,14 @@ void AddCdmHostFilePaths(
     cdm_host_file_paths->emplace_back(file_path, sig_path);
   }
 
-  for (size_t i = 0; i < base::size(kVersionedFiles); ++i) {
+  for (size_t i = 0; i < std::size(kVersionedFiles); ++i) {
     base::FilePath file_path = version_dir.Append(kVersionedFiles[i]);
     DVLOG(2) << __func__ << ": versioned file " << i << " at "
              << file_path.value();
     cdm_host_file_paths->emplace_back(file_path, GetSigFilePath(file_path));
   }
 
-#elif defined(OS_MAC)
+#elif BUILDFLAG(IS_MAC)
 
   base::FilePath framework_dir = base::mac::FrameworkBundlePath();
   base::FilePath chrome_framework_path =
@@ -95,7 +94,7 @@ void AddCdmHostFilePaths(
   cdm_host_file_paths->emplace_back(chrome_framework_path,
                                     chrome_framework_sig_path);
 
-#elif defined(OS_LINUX) || defined(OS_CHROMEOS)
+#elif BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 
   base::FilePath chrome_exe_dir;
   if (!base::PathService::Get(base::DIR_EXE, &chrome_exe_dir))
@@ -106,7 +105,7 @@ void AddCdmHostFilePaths(
   DVLOG(2) << __func__ << ": chrome_path=" << chrome_path.value();
   cdm_host_file_paths->emplace_back(chrome_path, GetSigFilePath(chrome_path));
 
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 }
 
 #else  // BUILDFLAG(GOOGLE_CHROME_BRANDING)

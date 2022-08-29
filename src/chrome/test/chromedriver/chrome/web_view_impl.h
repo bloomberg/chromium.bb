@@ -21,7 +21,6 @@ class Value;
 struct BrowserInfo;
 struct DeviceMetrics;
 class DevToolsClient;
-class DomTracker;
 class DownloadDirectoryOverrideManager;
 class FrameTracker;
 class GeolocationOverrideManager;
@@ -123,7 +122,7 @@ class WebViewImpl : public WebView {
       bool async_dispatch_events = false) override;
   Status DispatchKeyEvents(const std::vector<KeyEvent>& events,
                            bool async_dispatch_events = false) override;
-  Status GetCookies(std::unique_ptr<base::ListValue>* cookies,
+  Status GetCookies(base::Value* cookies,
                     const std::string& current_page_url) override;
   Status DeleteCookie(const std::string& name,
                       const std::string& url,
@@ -157,7 +156,7 @@ class WebViewImpl : public WebView {
   Status PrintToPDF(const base::DictionaryValue& params,
                     std::string* pdf) override;
   Status SetFileInputFiles(const std::string& frame,
-                           const base::DictionaryValue& element,
+                           const base::Value& element,
                            const std::vector<base::FilePath>& files,
                            const bool append) override;
   Status TakeHeapSnapshot(std::unique_ptr<base::Value>* snapshot) override;
@@ -171,12 +170,10 @@ class WebViewImpl : public WebView {
                                  int y,
                                  int xoffset,
                                  int yoffset) override;
-  Status GetNodeIdByElement(const std::string& frame,
-                            const base::DictionaryValue& element,
-                            int* node_id) override;
-
+  Status GetBackendNodeIdByElement(const std::string& frame,
+                                   const base::Value& element,
+                                   int* backend_node_id) override;
   bool IsNonBlocking() const override;
-  bool IsOOPIF(const std::string& frame_id) override;
   FrameTracker* GetFrameTracker() const override;
   std::unique_ptr<base::Value> GetCastSinks() override;
   std::unique_ptr<base::Value> GetCastIssueMessage() override;
@@ -217,7 +214,6 @@ class WebViewImpl : public WebView {
   // Many trackers hold pointers to DevToolsClient, so client_ must be declared
   // before the trackers, to ensured trackers are destructed before client_.
   std::unique_ptr<DevToolsClient> client_;
-  std::unique_ptr<DomTracker> dom_tracker_;
   std::unique_ptr<FrameTracker> frame_tracker_;
   std::unique_ptr<JavaScriptDialogManager> dialog_manager_;
   std::unique_ptr<PageLoadStrategy> navigation_tracker_;
@@ -259,34 +255,41 @@ enum EvaluateScriptReturnType {
   ReturnByObject
 };
 Status EvaluateScript(DevToolsClient* client,
-                      int context_id,
+                      const std::string& context_id,
                       const std::string& expression,
                       EvaluateScriptReturnType return_type,
                       const base::TimeDelta& timeout,
                       const bool awaitPromise,
                       std::unique_ptr<base::DictionaryValue>* result);
 Status EvaluateScriptAndGetObject(DevToolsClient* client,
-                                  int context_id,
+                                  const std::string& context_id,
                                   const std::string& expression,
                                   const base::TimeDelta& timeout,
                                   const bool awaitPromise,
                                   bool* got_object,
                                   std::string* object_id);
 Status EvaluateScriptAndGetValue(DevToolsClient* client,
-                                 int context_id,
+                                 const std::string& context_id,
                                  const std::string& expression,
                                  const base::TimeDelta& timeout,
                                  const bool awaitPromise,
                                  std::unique_ptr<base::Value>* result);
 Status ParseCallFunctionResult(const base::Value& temp_result,
                                std::unique_ptr<base::Value>* result);
-Status GetNodeIdFromFunction(DevToolsClient* client,
-                             int context_id,
-                             const std::string& function,
-                             const base::ListValue& args,
-                             bool* found_node,
-                             int* node_id,
-                             bool w3c_compliant);
+Status GetBackendNodeIdFromFunction(DevToolsClient* client,
+                                    const std::string& context_id,
+                                    const std::string& function,
+                                    const base::ListValue& args,
+                                    bool* found_node,
+                                    int* backend_node_id,
+                                    bool w3c_compliant);
+Status GetFrameIdFromFunction(DevToolsClient* client,
+                              const std::string& context_id,
+                              const std::string& function,
+                              const base::ListValue& args,
+                              bool* found_node,
+                              std::string* frame_id,
+                              bool w3c_compliant);
 }  // namespace internal
 
 #endif  // CHROME_TEST_CHROMEDRIVER_CHROME_WEB_VIEW_IMPL_H_

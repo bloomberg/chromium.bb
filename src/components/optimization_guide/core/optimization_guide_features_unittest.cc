@@ -4,13 +4,17 @@
 
 #include "components/optimization_guide/core/optimization_guide_features.h"
 
+#include <limits>
 #include <string>
 
 #include "base/feature_list.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/system/sys_info.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "components/optimization_guide/core/model_util.h"
 #include "components/optimization_guide/core/optimization_guide_constants.h"
 #include "components/optimization_guide/proto/models.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -68,72 +72,205 @@ TEST(OptimizationGuideFeaturesTest, ValidPageContentRAPPORMetrics) {
   EXPECT_EQ(.2, features::NoiseProbabilityForRAPPORMetrics());
 }
 
-TEST(OptimizationGuideFeaturesTest, GetPageContentModelsToExecute) {
+TEST(OptimizationGuideFeaturesTest,
+     ShouldExecutePageEntitiesModelOnPageContentDisabled) {
   base::test::ScopedFeatureList scoped_feature_list;
 
-  scoped_feature_list.InitAndEnableFeatureWithParameters(
-      features::kPageContentAnnotations,
-      {{"models_to_execute_v2",
-        "OPTIMIZATION_TARGET_PAGE_TOPICS,OPTIMIZATION_TARGET_PAGE_ENTITIES"}});
+  scoped_feature_list.InitAndDisableFeature(
+      features::kPageEntitiesPageContentAnnotations);
 
-  auto models = features::GetPageContentModelsToExecute("en-US");
-  ASSERT_EQ(2U, models.size());
-  ASSERT_EQ(proto::OPTIMIZATION_TARGET_PAGE_TOPICS, models[0]);
-  ASSERT_EQ(proto::OPTIMIZATION_TARGET_PAGE_ENTITIES, models[1]);
+  EXPECT_FALSE(features::ShouldExecutePageEntitiesModelOnPageContent("en-US"));
 }
 
 TEST(OptimizationGuideFeaturesTest,
-     GetPageContentModelsToExecuteOldParameterName) {
+     ShouldExecutePageEntitiesModelOnPageContentEmptyAllowlist) {
   base::test::ScopedFeatureList scoped_feature_list;
 
-  scoped_feature_list.InitAndEnableFeatureWithParameters(
-      features::kPageContentAnnotations,
-      {{"models_to_execute",
-        "OPTIMIZATION_TARGET_PAGE_TOPICS,OPTIMIZATION_TARGET_PAGE_ENTITIES"}});
+  scoped_feature_list.InitAndEnableFeature(
+      features::kPageEntitiesPageContentAnnotations);
 
-  auto models = features::GetPageContentModelsToExecute("en-US");
-  ASSERT_EQ(2U, models.size());
-  ASSERT_EQ(proto::OPTIMIZATION_TARGET_PAGE_TOPICS, models[0]);
-  ASSERT_EQ(proto::OPTIMIZATION_TARGET_PAGE_ENTITIES, models[1]);
+  EXPECT_TRUE(features::ShouldExecutePageEntitiesModelOnPageContent("en-US"));
 }
 
-TEST(OptimizationGuideFeaturesTest, GetPageContentModelsToExecuteLocales) {
+TEST(OptimizationGuideFeaturesTest,
+     ShouldExecutePageEntitiesModelOnPageContentWithAllowlist) {
   base::test::ScopedFeatureList scoped_feature_list;
 
   scoped_feature_list.InitAndEnableFeatureWithParameters(
-      features::kPageContentAnnotations,
-      {{
-          "models_to_execute_v2",
-          // This string is meant to test language filtering, locale filtering,
-          // and tolerance of whitespaces, as well as extra delimiters.
-          "OPTIMIZATION_TARGET_PAGE_TOPICS:en:es-ES , OPTIMIZATION_TARGET_PAGE_"
-          "ENTITIES,,OPTIMIZATION_TARGET_PAGE_VISIBILITY:zh-TW:",
-      }});
+      features::kPageEntitiesPageContentAnnotations,
+      {{"supported_locales", "en,zh-TW"}});
 
-  {
-    auto models = features::GetPageContentModelsToExecute("en-US");
-    ASSERT_EQ(2U, models.size());
-    ASSERT_EQ(proto::OPTIMIZATION_TARGET_PAGE_TOPICS, models[0]);
-    ASSERT_EQ(proto::OPTIMIZATION_TARGET_PAGE_ENTITIES, models[1]);
-  }
+  EXPECT_TRUE(features::ShouldExecutePageEntitiesModelOnPageContent("en-US"));
+  EXPECT_FALSE(features::ShouldExecutePageEntitiesModelOnPageContent(""));
+  EXPECT_FALSE(features::ShouldExecutePageEntitiesModelOnPageContent("zh-CN"));
+}
 
-  {
-    auto models = features::GetPageContentModelsToExecute("");
-    ASSERT_EQ(1U, models.size());
-    ASSERT_EQ(proto::OPTIMIZATION_TARGET_PAGE_ENTITIES, models[0]);
-  }
+TEST(OptimizationGuideFeaturesTest,
+     ShouldExecutePageVisibilityModelOnPageContentDisabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
 
-  {
-    auto models = features::GetPageContentModelsToExecute("zh-CN");
-    ASSERT_EQ(1U, models.size());
-    ASSERT_EQ(proto::OPTIMIZATION_TARGET_PAGE_ENTITIES, models[0]);
-  }
+  scoped_feature_list.InitAndDisableFeature(
+      features::kPageVisibilityPageContentAnnotations);
 
-  {
-    auto models = features::GetPageContentModelsToExecute("zh-TW");
-    ASSERT_EQ(2U, models.size());
-    ASSERT_EQ(proto::OPTIMIZATION_TARGET_PAGE_ENTITIES, models[0]);
-    ASSERT_EQ(proto::OPTIMIZATION_TARGET_PAGE_VISIBILITY, models[1]);
+  EXPECT_FALSE(
+      features::ShouldExecutePageVisibilityModelOnPageContent("en-US"));
+}
+
+TEST(OptimizationGuideFeaturesTest,
+     ShouldExecutePageVisibilityModelOnPageContentEmptyAllowlist) {
+  base::test::ScopedFeatureList scoped_feature_list;
+
+  scoped_feature_list.InitAndEnableFeature(
+      features::kPageVisibilityPageContentAnnotations);
+
+  EXPECT_TRUE(features::ShouldExecutePageVisibilityModelOnPageContent("en-US"));
+}
+
+TEST(OptimizationGuideFeaturesTest,
+     ShouldExecutePageVisibilityModelOnPageContentWithAllowlist) {
+  base::test::ScopedFeatureList scoped_feature_list;
+
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      features::kPageVisibilityPageContentAnnotations,
+      {{"supported_locales", "en,zh-TW"}});
+
+  EXPECT_TRUE(features::ShouldExecutePageVisibilityModelOnPageContent("en-US"));
+  EXPECT_FALSE(features::ShouldExecutePageVisibilityModelOnPageContent(""));
+  EXPECT_FALSE(
+      features::ShouldExecutePageVisibilityModelOnPageContent("zh-CN"));
+}
+
+TEST(OptimizationGuideFeaturesTest, TestOverrideNumThreadsForOptTarget) {
+  struct TestCase {
+    std::string label;
+    bool enabled;
+    std::map<std::string, std::string> params;
+    std::vector<std::pair<proto::OptimizationTarget, absl::optional<int>>> want;
+  };
+
+  struct TestCase tests[] = {
+      {
+          .label = "feature disabled",
+          .enabled = false,
+          .params = {},
+          .want =
+              {
+                  {proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD, absl::nullopt},
+                  {proto::OPTIMIZATION_TARGET_PAGE_TOPICS_V2, absl::nullopt},
+              },
+      },
+      {
+          .label = "feature enabled, but no params",
+          .enabled = true,
+          .params = {},
+          .want =
+              {
+                  {proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD, absl::nullopt},
+                  {proto::OPTIMIZATION_TARGET_PAGE_TOPICS_V2, absl::nullopt},
+              },
+      },
+      {
+          .label = "one target overriden",
+          .enabled = true,
+          .params =
+              {
+                  {"OPTIMIZATION_TARGET_PAGE_TOPICS_V2", "1"},
+              },
+          .want =
+              {
+                  {proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD, absl::nullopt},
+                  {proto::OPTIMIZATION_TARGET_PAGE_TOPICS_V2, 1},
+              },
+      },
+      {
+          .label = "zero is nullopt",
+          .enabled = true,
+          .params =
+              {
+                  {"OPTIMIZATION_TARGET_PAGE_TOPICS_V2", "0"},
+              },
+          .want =
+              {
+                  {proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD, absl::nullopt},
+                  {proto::OPTIMIZATION_TARGET_PAGE_TOPICS_V2, absl::nullopt},
+              },
+      },
+      {
+          .label = "less than -1",
+          .enabled = true,
+          .params =
+              {
+                  {"OPTIMIZATION_TARGET_PAGE_TOPICS_V2", "-2"},
+              },
+          .want =
+              {
+                  {proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD, absl::nullopt},
+                  {proto::OPTIMIZATION_TARGET_PAGE_TOPICS_V2, absl::nullopt},
+              },
+      },
+      {
+          .label = "-1 is valid",
+          .enabled = true,
+          .params =
+              {
+                  {"OPTIMIZATION_TARGET_PAGE_TOPICS_V2", "-1"},
+              },
+          .want =
+              {
+                  {proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD, absl::nullopt},
+                  {proto::OPTIMIZATION_TARGET_PAGE_TOPICS_V2, -1},
+              },
+      },
+      {
+          .label = "two targets overriden",
+          .enabled = true,
+          .params =
+              {
+                  {"OPTIMIZATION_TARGET_PAGE_TOPICS_V2", "1"},
+                  {"OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD", "-1"},
+              },
+          .want =
+              {
+                  {proto::OPTIMIZATION_TARGET_PAGE_TOPICS_V2, 1},
+                  {proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD, -1},
+              },
+      },
+      {
+          .label = "capped at num cpu",
+          .enabled = true,
+          .params =
+              {
+                  {"OPTIMIZATION_TARGET_PAGE_TOPICS_V2",
+                   base::NumberToString(std::numeric_limits<int>::max())},
+              },
+          .want =
+              {
+                  {proto::OPTIMIZATION_TARGET_PAGE_TOPICS_V2,
+                   base::SysInfo::NumberOfProcessors()},
+              },
+      },
+  };
+
+  for (const TestCase& test : tests) {
+    SCOPED_TRACE(test.label);
+
+    base::test::ScopedFeatureList scoped_feature_list;
+    if (test.enabled) {
+      scoped_feature_list.InitAndEnableFeatureWithParameters(
+          features::kOverrideNumThreadsForModelExecution, test.params);
+    } else {
+      scoped_feature_list.InitAndDisableFeature(
+          features::kOverrideNumThreadsForModelExecution);
+    }
+
+    for (const auto& expectation : test.want) {
+      proto::OptimizationTarget opt_target = expectation.first;
+      absl::optional<int> num_threads = expectation.second;
+
+      EXPECT_EQ(num_threads,
+                features::OverrideNumThreadsForOptTarget(opt_target))
+          << GetStringNameForOptimizationTarget(opt_target);
+    }
   }
 }
 

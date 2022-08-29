@@ -6,11 +6,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-// REQUIRES: c++03 || c++11 || c++14 || c++17
+// ADDITIONAL_COMPILE_FLAGS: -D_LIBCPP_ENABLE_CXX20_REMOVED_RAW_STORAGE_ITERATOR
+// ADDITIONAL_COMPILE_FLAGS: -D_LIBCPP_DISABLE_DEPRECATION_WARNINGS
 
 // raw_storage_iterator
-
-#define _LIBCPP_DISABLE_DEPRECATION_WARNINGS
 
 #include <memory>
 #include <type_traits>
@@ -18,12 +17,6 @@
 
 #include "test_macros.h"
 #include <MoveOnly.h>
-
-#if TEST_STD_VER >= 11
-#define DELETE_FUNCTION = delete
-#else
-#define DELETE_FUNCTION
-#endif
 
 int A_constructed = 0;
 
@@ -37,7 +30,7 @@ public:
     ~A() {--A_constructed; data_ = 0;}
 
     bool operator==(int i) const {return data_ == i;}
-    A* operator& () DELETE_FUNCTION;
+    A* operator& () = delete;
 };
 
 int main(int, char**)

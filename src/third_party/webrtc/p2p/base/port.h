@@ -18,10 +18,13 @@
 #include <utility>
 #include <vector>
 
+#include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
 #include "api/candidate.h"
+#include "api/field_trials_view.h"
 #include "api/packet_socket_factory.h"
 #include "api/rtc_error.h"
+#include "api/transport/field_trial_based_config.h"
 #include "api/transport/stun.h"
 #include "logging/rtc_event_log/events/rtc_event_ice_candidate_pair.h"
 #include "logging/rtc_event_log/events/rtc_event_ice_candidate_pair_config.h"
@@ -35,6 +38,7 @@
 #include "rtc_base/async_packet_socket.h"
 #include "rtc_base/callback_list.h"
 #include "rtc_base/checks.h"
+#include "rtc_base/memory/always_valid_pointer.h"
 #include "rtc_base/net_helper.h"
 #include "rtc_base/network.h"
 #include "rtc_base/proxy_info.h"
@@ -58,7 +62,9 @@ extern const char TCPTYPE_ACTIVE_STR[];
 extern const char TCPTYPE_PASSIVE_STR[];
 extern const char TCPTYPE_SIMOPEN_STR[];
 
-enum IcePriorityValue {
+// The type preference MUST be an integer from 0 to 126 inclusive.
+// https://datatracker.ietf.org/doc/html/rfc5245#section-4.1.2.1
+enum IcePriorityValue : uint8_t {
   ICE_TYPE_PREFERENCE_RELAY_TLS = 0,
   ICE_TYPE_PREFERENCE_RELAY_TCP = 1,
   ICE_TYPE_PREFERENCE_RELAY_UDP = 2,
@@ -122,7 +128,7 @@ class CandidateStats {
 typedef std::vector<CandidateStats> CandidateStatsList;
 
 const char* ProtoToString(ProtocolType proto);
-bool StringToProto(const char* value, ProtocolType* proto);
+absl::optional<ProtocolType> StringToProto(absl::string_view proto_name);
 
 struct ProtocolAddress {
   rtc::SocketAddress address;
@@ -183,17 +189,19 @@ class Port : public PortInterface,
   Port(rtc::Thread* thread,
        const std::string& type,
        rtc::PacketSocketFactory* factory,
-       rtc::Network* network,
+       const rtc::Network* network,
        const std::string& username_fragment,
-       const std::string& password);
+       const std::string& password,
+       const webrtc::FieldTrialsView* field_trials = nullptr);
   Port(rtc::Thread* thread,
        const std::string& type,
        rtc::PacketSocketFactory* factory,
-       rtc::Network* network,
+       const rtc::Network* network,
        uint16_t min_port,
        uint16_t max_port,
        const std::string& username_fragment,
-       const std::string& password);
+       const std::string& password,
+       const webrtc::FieldTrialsView* field_trials = nullptr);
   ~Port() override;
 
   // Note that the port type does NOT uniquely identify different subclasses of
@@ -202,7 +210,7 @@ class Port : public PortInterface,
   // conflit in the value of the 2-tuple, make sure that the implementation that
   // relies on this 2-tuple for RTTI is properly changed.
   const std::string& Type() const override;
-  rtc::Network* Network() const override;
+  const rtc::Network* Network() const override;
 
   // Methods to set/get ICE role and tiebreaker values.
   IceRole GetIceRole() const override;
@@ -256,8 +264,8 @@ class Port : public PortInterface,
   // PortAllocatorSession, and is now being assigned to an ICE transport.
   // Updates the information for candidates as well.
   void SetIceParameters(int component,
-                        const std::string& username_fragment,
-                        const std::string& password);
+                        absl::string_view username_fragment,
+                        absl::string_view password);
 
   // Fired when candidates are discovered by the port. When all candidates
   // are discovered that belong to port SignalAddressReady is fired.
@@ -288,9 +296,6 @@ class Port : public PortInterface,
   // Returns the connection to the given address or NULL if none exists.
   Connection* GetConnection(const rtc::SocketAddress& remote_addr) override;
 
-  // Called each time a connection is created.
-  sigslot::signal2<Port*, Connection*> SignalConnectionCreated;
-
   // In a shared socket mode each port which shares the socket will decide
   // to accept the packet based on the `remote_addr`. Currently only UDP
   // port implemented this method.
@@ -307,12 +312,12 @@ class Port : public PortInterface,
       const rtc::SocketAddress& remote_addr) const;
 
   // Sends a response error to the given request.
-  void SendBindingErrorResponse(StunMessage* request,
+  void SendBindingErrorResponse(StunMessage* message,
                                 const rtc::SocketAddress& addr,
                                 int error_code,
                                 const std::string& reason) override;
   void SendUnknownAttributesErrorResponse(
-      StunMessage* request,
+      StunMessage* message,
       const rtc::SocketAddress& addr,
       const std::vector<uint16_t>& unknown_types);
 
@@ -343,8 +348,7 @@ class Port : public PortInterface,
   bool ParseStunUsername(const StunMessage* stun_msg,
                          std::string* local_username,
                          std::string* remote_username) const;
-  void CreateStunUsername(const std::string& remote_username,
-                          std::string* stun_username_attr_str) const;
+  std::string CreateStunUsername(const std::string& remote_username) const;
 
   bool MaybeIceRoleConflict(const rtc::SocketAddress& addr,
                             IceMessage* stun_msg,
@@ -361,8 +365,7 @@ class Port : public PortInterface,
   void OnReadyToSend();
 
   // Called when the Connection discovers a local peer reflexive candidate.
-  // Returns the index of the new local candidate.
-  size_t AddPrflxCandidate(const Candidate& local);
+  void AddPrflxCandidate(const Candidate& local);
 
   int16_t network_cost() const { return network_cost_; }
 
@@ -386,6 +389,8 @@ class Port : public PortInterface,
 
   void set_type(const std::string& type) { type_ = type; }
 
+  rtc::WeakPtr<Port> NewWeakPtr() { return weak_factory_.GetWeakPtr(); }
+
   void AddAddress(const rtc::SocketAddress& address,
                   const rtc::SocketAddress& base_address,
                   const rtc::SocketAddress& related_address,
@@ -398,7 +403,8 @@ class Port : public PortInterface,
                   const std::string& url,
                   bool is_final);
 
-  void FinishAddingAddress(const Candidate& c, bool is_final);
+  void FinishAddingAddress(const Candidate& c, bool is_final)
+      RTC_RUN_ON(thread_);
 
   virtual void PostAddAddress(bool is_final);
 
@@ -435,6 +441,8 @@ class Port : public PortInterface,
   // Extra work to be done in subclasses when a connection is destroyed.
   virtual void HandleConnectionDestroyed(Connection* conn) {}
 
+  void DestroyAllConnections();
+
   void CopyPortInformationToPacketInfo(rtc::PacketInfo* info) const;
 
   MdnsNameRegistrationStatus mdns_name_registration_status() const {
@@ -455,7 +463,7 @@ class Port : public PortInterface,
   rtc::PacketSocketFactory* const factory_;
   std::string type_;
   bool send_retransmit_count_attribute_;
-  rtc::Network* network_;
+  const rtc::Network* network_;
   uint16_t min_port_;
   uint16_t max_port_;
   std::string content_name_;
@@ -471,7 +479,7 @@ class Port : public PortInterface,
   // username_fragment().
   std::string ice_username_fragment_;
   std::string password_;
-  std::vector<Candidate> candidates_;
+  std::vector<Candidate> candidates_ RTC_GUARDED_BY(thread_);
   AddressMap connections_;
   int timeout_delay_;
   bool enable_port_packets_;
@@ -492,10 +500,13 @@ class Port : public PortInterface,
       MdnsNameRegistrationStatus::kNotStarted;
 
   rtc::WeakPtrFactory<Port> weak_factory_;
+  webrtc::AlwaysValidPointer<const webrtc::FieldTrialsView,
+                             webrtc::FieldTrialBasedConfig>
+      field_trials_;
 
   bool MaybeObfuscateAddress(Candidate* c,
                              const std::string& type,
-                             bool is_final);
+                             bool is_final) RTC_RUN_ON(thread_);
 
   friend class Connection;
   webrtc::CallbackList<PortInterface*> port_destroyed_callback_list_;

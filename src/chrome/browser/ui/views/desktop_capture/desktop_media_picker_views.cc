@@ -15,7 +15,6 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/media/webrtc/desktop_media_list.h"
 #include "chrome/browser/media/webrtc/desktop_media_picker_manager.h"
-#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
@@ -63,7 +62,7 @@ using DialogType = DesktopMediaPickerDialogView::DialogType;
 #if !BUILDFLAG(IS_CHROMEOS_ASH) && defined(USE_AURA)
 DesktopMediaID::Id AcceleratedWidgetToDesktopMediaId(
     gfx::AcceleratedWidget accelerated_widget) {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   return reinterpret_cast<DesktopMediaID::Id>(accelerated_widget);
 #else
   return static_cast<DesktopMediaID::Id>(accelerated_widget);
@@ -157,9 +156,9 @@ void RecordUmaSelection(DialogType dialog_type,
       // list of all available tabs.
       const bool current_tab_selected =
           web_contents &&
-          web_contents->GetMainFrame()->GetProcess()->GetID() ==
+          web_contents->GetPrimaryMainFrame()->GetProcess()->GetID() ==
               selected_media.web_contents_id.render_process_id &&
-          web_contents->GetMainFrame()->GetRoutingID() ==
+          web_contents->GetPrimaryMainFrame()->GetRoutingID() ==
               selected_media.web_contents_id.main_render_frame_id;
 
       if (dialog_type == DialogType::kPreferCurrentTab) {
@@ -214,8 +213,8 @@ bool AreEquivalentTypesForAudioCheckbox(DesktopMediaList::Type lhs,
 // the picker choices may have been restricted.
 std::unique_ptr<views::View> CreatePolicyRestrictedView() {
   auto icon = std::make_unique<views::ImageView>();
-  icon->SetImage(gfx::CreateVectorIcon(gfx::IconDescription(
-      vector_icons::kBusinessIcon, 18, gfx::kChromeIconGrey)));
+  icon->SetImage(ui::ImageModel::FromVectorIcon(vector_icons::kBusinessIcon,
+                                                ui::kColorIcon, 18));
 
   auto policy_label = std::make_unique<views::Label>();
   policy_label->SetMultiLine(true);
@@ -480,7 +479,7 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
     widget =
         constrained_window::ShowWebModalDialogViews(this, params.web_contents);
   } else {
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
     // On Mac, MODAL_TYPE_CHILD with a null parent isn't allowed - fall back to
     // MODAL_TYPE_WINDOW.
     SetModalType(ui::MODAL_TYPE_WINDOW);
@@ -488,9 +487,8 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
     widget = CreateDialogWidget(this, params.context, nullptr);
     widget->Show();
   }
-  chrome::RecordDialogCreation(chrome::DialogIdentifier::DESKTOP_MEDIA_PICKER);
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // On Mac, even modals are shown using separate native windows.
   bool is_separate_native_window = true;
 #else
@@ -508,7 +506,7 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
     // Set native window ID if the windows is outside Ash.
     dialog_window_id.id = AcceleratedWidgetToDesktopMediaId(
         widget->GetNativeWindow()->GetHost()->GetAcceleratedWidget());
-#elif defined(OS_MAC)
+#elif BUILDFLAG(IS_MAC)
     // On Mac, the window_id in DesktopMediaID is the same as the actual native
     // window ID. Note that assuming this is a bit of a layering violation; the
     // fact that this code makes that assumption is documented at the code that

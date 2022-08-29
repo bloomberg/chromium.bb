@@ -10,6 +10,7 @@ import android.text.SpannableString;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.ViewGroup;
 
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
@@ -23,8 +24,10 @@ import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.prefetch.settings.PreloadPagesSettingsFragment;
 import org.chromium.chrome.browser.privacy.secure_dns.SecureDnsSettings;
 import org.chromium.chrome.browser.privacy_review.PrivacyReviewDialog;
+import org.chromium.chrome.browser.privacy_sandbox.PrivacySandboxBridge;
 import org.chromium.chrome.browser.privacy_sandbox.PrivacySandboxReferrer;
 import org.chromium.chrome.browser.privacy_sandbox.PrivacySandboxSettingsFragment;
+import org.chromium.chrome.browser.privacy_sandbox.PrivacySandboxSettingsFragmentV3;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.safe_browsing.metrics.SettingsAccessPoint;
 import org.chromium.chrome.browser.safe_browsing.settings.SafeBrowsingSettingsFragment;
@@ -34,6 +37,7 @@ import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.sync.settings.GoogleServicesSettings;
 import org.chromium.chrome.browser.sync.settings.ManageSyncSettings;
 import org.chromium.chrome.browser.usage_stats.UsageStatsConsentDialog;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
 import org.chromium.components.browser_ui.settings.ManagedPreferenceDelegate;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
@@ -64,6 +68,8 @@ public class PrivacySettings
 
     private ManagedPreferenceDelegate mManagedPreferenceDelegate;
     private IncognitoLockSettings mIncognitoLockSettings;
+    private ViewGroup mDialogContainer;
+    private BottomSheetController mBottomSheetController;
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
@@ -72,24 +78,29 @@ public class PrivacySettings
         SettingsUtils.addPreferencesFromResource(this, R.xml.privacy_preferences);
         getActivity().setTitle(R.string.prefs_privacy_security);
 
-        findPreference(PREF_PRIVACY_SANDBOX)
-                .setSummary(PrivacySandboxSettingsFragment.getStatusString(getContext()));
-        // Overwrite the click listener to pass a correct referrer to the fragment.
-        findPreference(PREF_PRIVACY_SANDBOX).setOnPreferenceClickListener(preference -> {
-            Bundle fragmentArgs = new Bundle();
-            fragmentArgs.putInt(PrivacySandboxSettingsFragment.PRIVACY_SANDBOX_REFERRER,
-                    PrivacySandboxReferrer.PRIVACY_SETTINGS);
-            new SettingsLauncherImpl().launchSettingsActivity(
-                    getContext(), PrivacySandboxSettingsFragment.class, fragmentArgs);
-            return true;
-        });
+        Preference sandboxPreference = findPreference(PREF_PRIVACY_SANDBOX);
+        // Hide the Privacy Sandbox if it is restricted.
+        if (PrivacySandboxBridge.isPrivacySandboxRestricted()) {
+            getPreferenceScreen().removePreference(sandboxPreference);
+        } else {
+            sandboxPreference.setSummary(
+                    PrivacySandboxSettingsFragment.getStatusString(getContext()));
+            // Overwrite the click listener to pass a correct referrer to the fragment.
+            sandboxPreference.setOnPreferenceClickListener(preference -> {
+                PrivacySandboxSettingsFragmentV3.launchPrivacySandboxSettings(getContext(),
+                        new SettingsLauncherImpl(), PrivacySandboxReferrer.PRIVACY_SETTINGS);
+                return true;
+            });
+        }
 
         Preference privacyReviewPreference = findPreference(PREF_PRIVACY_REVIEW);
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.PRIVACY_REVIEW)) {
             getPreferenceScreen().removePreference(privacyReviewPreference);
         } else {
+            // Display the privacy review dialog when the menu item is clicked.
             privacyReviewPreference.setOnPreferenceClickListener(preference -> {
-                PrivacyReviewDialog dialog = new PrivacyReviewDialog(getContext());
+                PrivacyReviewDialog dialog = new PrivacyReviewDialog(
+                        getContext(), mDialogContainer, mBottomSheetController);
                 dialog.show();
                 return true;
             });
@@ -117,10 +128,6 @@ public class PrivacySettings
                 (ChromeSwitchPreference) findPreference(PREF_CAN_MAKE_PAYMENT);
         canMakePaymentPref.setOnPreferenceChangeListener(this);
 
-        Preference preloadPagesPreference = findPreference(PREF_PRELOAD_PAGES);
-        preloadPagesPreference.setSummary(
-                PreloadPagesSettingsFragment.getPreloadPagesSummaryString(getContext()));
-
         ChromeSwitchPreference httpsFirstModePref =
                 (ChromeSwitchPreference) findPreference(PREF_HTTPS_FIRST_MODE);
         httpsFirstModePref.setVisible(
@@ -141,7 +148,7 @@ public class PrivacySettings
 
     private SpannableString buildSyncAndServicesLink() {
         SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
-        NoUnderlineClickableSpan servicesLink = new NoUnderlineClickableSpan(getResources(), v -> {
+        NoUnderlineClickableSpan servicesLink = new NoUnderlineClickableSpan(getContext(), v -> {
             settingsLauncher.launchSettingsActivity(getActivity(), GoogleServicesSettings.class);
         });
         if (IdentityServicesProvider.get()
@@ -154,7 +161,7 @@ public class PrivacySettings
                     new SpanApplier.SpanInfo("<link>", "</link>", servicesLink));
         }
         // Otherwise, show the string with both links to "Sync" and "Google Services".
-        NoUnderlineClickableSpan syncLink = new NoUnderlineClickableSpan(getResources(), v -> {
+        NoUnderlineClickableSpan syncLink = new NoUnderlineClickableSpan(getContext(), v -> {
             settingsLauncher.launchSettingsActivity(getActivity(), ManageSyncSettings.class,
                     ManageSyncSettings.createArguments(false));
         });
@@ -199,6 +206,12 @@ public class PrivacySettings
             doNotTrackPref.setSummary(prefService.getBoolean(Pref.ENABLE_DO_NOT_TRACK)
                             ? R.string.text_on
                             : R.string.text_off);
+        }
+
+        Preference preloadPagesPreference = findPreference(PREF_PRELOAD_PAGES);
+        if (preloadPagesPreference != null) {
+            preloadPagesPreference.setSummary(
+                    PreloadPagesSettingsFragment.getPreloadPagesSummaryString(getContext()));
         }
 
         Preference secureDnsPref = findPreference(PREF_SECURE_DNS);
@@ -270,5 +283,13 @@ public class PrivacySettings
             return true;
         }
         return false;
+    }
+
+    public void setDialogContainer(ViewGroup dialogContainer) {
+        mDialogContainer = dialogContainer;
+    }
+
+    public void setBottomSheetController(BottomSheetController controller) {
+        mBottomSheetController = controller;
     }
 }

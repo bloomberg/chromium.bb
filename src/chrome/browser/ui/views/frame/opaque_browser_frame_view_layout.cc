@@ -287,8 +287,8 @@ gfx::Insets OpaqueBrowserFrameViewLayout::RestoredFrameBorderInsets() const {
 }
 
 gfx::Insets OpaqueBrowserFrameViewLayout::RestoredFrameEdgeInsets() const {
-  return gfx::Insets(kTopFrameEdgeThickness, kSideFrameEdgeThickness,
-                     kSideFrameEdgeThickness, kSideFrameEdgeThickness);
+  return gfx::Insets::TLBR(kTopFrameEdgeThickness, kSideFrameEdgeThickness,
+                           kSideFrameEdgeThickness, kSideFrameEdgeThickness);
 }
 
 int OpaqueBrowserFrameViewLayout::NonClientExtraTopThickness() const {
@@ -652,10 +652,11 @@ void OpaqueBrowserFrameViewLayout::LayoutTitleBarForWindowControlsOverlay(
 
   caption_button_placeholder_container_->SetBounds(
       container_x, insets.top(), minimum_size_for_buttons_ - insets.width(),
-      height);
+      height - insets.top());
 
   web_app_frame_toolbar_->LayoutForWindowControlsOverlay(
-      gfx::Rect(x, insets.top(), web_app_frame_toolbar_view_width, height));
+      gfx::Rect(x, insets.top(), web_app_frame_toolbar_view_width,
+                height - insets.top()));
 
   int bounding_rect_width =
       web_app_frame_toolbar_->bounds().x() - available_space_leading_x_;

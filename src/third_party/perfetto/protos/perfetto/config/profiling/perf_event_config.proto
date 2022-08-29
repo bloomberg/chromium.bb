@@ -139,6 +139,12 @@ message PerfEventConfig {
     // on debug builds.
     // This does *not* disclose KASLR, as only the function names are emitted.
     optional bool kernel_frames = 2;
+
+    // Whether to record and unwind userspace callstacks. If unset, defaults to
+    // including userspace (UNWIND_DWARF) both for backwards compatibility and
+    // as the most common default (this defaulting is only applicable if the
+    // outer CallstackSampling message is explicitly set).
+    optional UnwindMode user_frames = 3;
   }
 
   message Scope {
@@ -148,23 +154,49 @@ message PerfEventConfig {
     // process.
     repeated int32 target_pid = 1;
 
-    // Command line allowlist, matched against the
-    // /proc/<pid>/cmdline (not the comm string), with both sides being
-    // "normalized". Normalization is as follows: (1) trim everything beyond the
-    // first null or "@" byte; (2) if the string contains forward slashes, trim
-    // everything up to and including the last one.
+    // Command line allowlist, matched against the /proc/<pid>/cmdline (not the
+    // comm string). The semantics of this field were changed since its original
+    // introduction.
+    //
+    // On Android T+ (13+), this field can specify a single wildcard (*), and
+    // the profiler will attempt to match it in two possible ways:
+    // * if the pattern starts with a '/', then it is matched against the first
+    //   segment of the cmdline (i.e. argv0). For example "/bin/e*" would match
+    //   "/bin/echo".
+    // * otherwise the pattern is matched against the part of argv0
+    //   corresponding to the binary name (this is unrelated to /proc/pid/exe).
+    //   For example "echo" would match "/bin/echo".
+    //
+    // On Android S (12) and below, both this pattern and /proc/pid/cmdline get
+    // normalized prior to an exact string comparison. Normalization is as
+    // follows: (1) trim everything beyond the first null or "@" byte; (2) if
+    // the string contains forward slashes, trim everything up to and including
+    // the last one.
+    //
+    // Implementation note: in either case, at most 511 characters of cmdline
+    // are considered.
     repeated string target_cmdline = 2;
 
     // List of excluded pids.
     repeated int32 exclude_pid = 3;
 
-    // List of excluded cmdlines. Normalized in the same way as
-    // |target_cmdline|.
+    // List of excluded cmdlines. See description of |target_cmdline| for how
+    // this is handled.
     repeated string exclude_cmdline = 4;
 
     // Number of additional command lines to sample. Only those which are
     // neither explicitly included nor excluded will be considered. Processes
     // are accepted on a first come, first served basis.
     optional uint32 additional_cmdline_count = 5;
+  }
+
+  // Userspace unwinding mode. A possible future addition is kernel-unwound
+  // callchains for frame pointer based systems.
+  enum UnwindMode {
+    UNWIND_UNKNOWN = 0;
+    // Do not unwind userspace:
+    UNWIND_SKIP = 1;
+    // Use libunwindstack (default):
+    UNWIND_DWARF = 2;
   }
 }

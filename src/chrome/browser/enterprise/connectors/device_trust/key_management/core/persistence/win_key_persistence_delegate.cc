@@ -14,6 +14,10 @@ namespace enterprise_connectors {
 
 WinKeyPersistenceDelegate::~WinKeyPersistenceDelegate() = default;
 
+bool WinKeyPersistenceDelegate::CheckRotationPermissions() {
+  return true;
+}
+
 bool WinKeyPersistenceDelegate::StoreKeyPair(
     KeyPersistenceDelegate::KeyTrustLevel trust_level,
     std::vector<uint8_t> wrapped) {
@@ -25,6 +29,12 @@ bool WinKeyPersistenceDelegate::StoreKeyPair(
           InstallUtil::ReadOnly(false));
   if (!key.Valid())
     return false;
+
+  if (trust_level == BPKUR::KEY_TRUST_LEVEL_UNSPECIFIED) {
+    DCHECK_EQ(wrapped.size(), 0u);
+    return key.DeleteValue(signingkey_name.c_str()) == ERROR_SUCCESS &&
+           key.DeleteValue(trustlevel_name.c_str()) == ERROR_SUCCESS;
+  }
 
   return key.WriteValue(signingkey_name.c_str(), wrapped.data(), wrapped.size(),
                         REG_BINARY) == ERROR_SUCCESS &&

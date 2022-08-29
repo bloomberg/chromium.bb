@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -17,7 +18,6 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/ignore_result.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
@@ -27,11 +27,10 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/task_runner_util.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
-#include "base/trace_event/trace_event.h"
+#include "base/trace_event/typed_macros.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
@@ -147,8 +146,6 @@ class UMAHistogramReporter {
   }
 
   void ReportExitCode(int exit_code) const {
-    RecordSparseHistogram("SoftwareReporter.ExitCode", exit_code);
-
     // Also report the exit code that the reporter writes to the registry.
     base::win::RegKey reporter_key;
     DWORD exit_code_in_registry;
@@ -223,9 +220,9 @@ class UMAHistogramReporter {
   // the registry and as measured by |ReporterRunner|.
   void ReportRuntime(const base::TimeDelta& reporter_running_time,
                      const base::TimeDelta& running_time_without_sleep) const {
-    RecordLongTimesHistogram("SoftwareReporter.RunningTimeAccordingToChrome",
+    RecordLongTimesHistogram("SoftwareReporter.RunningTimeAccordingToChrome2",
                              reporter_running_time);
-    RecordLongTimesHistogram("SoftwareReporter.RunningTimeWithoutSleep",
+    RecordLongTimesHistogram("SoftwareReporter.RunningTimeWithoutSleep2",
                              running_time_without_sleep);
 
     // TODO(b/641081): This should only have KEY_QUERY_VALUE and KEY_SET_VALUE.
@@ -281,6 +278,10 @@ class UMAHistogramReporter {
     RecordEnumerationHistogram(kLogsUploadResultRegistryErrorMetricName,
                                REPORTER_LOGS_UPLOAD_RESULT_ERROR_NO_ERROR,
                                REPORTER_LOGS_UPLOAD_RESULT_ERROR_MAX);
+  }
+
+  void ReportCreateJobResult(DWORD result) {
+    RecordSparseHistogram("SoftwareReporter.CreateJobResult", result);
   }
 
  private:
@@ -400,7 +401,8 @@ bool ShouldShowPromptForPeriodicRun() {
   // Don't show the prompt again if it's been shown before for this profile and
   // for the current variations seed. The seed preference will be updated once
   // the prompt is shown.
-  const std::string incoming_seed = GetIncomingSRTSeed();
+  const std::string incoming_seed =
+      GetCleanerController()->GetIncomingPromptSeed();
   const std::string old_seed = prefs->GetString(prefs::kSwReporterPromptSeed);
   if (!incoming_seed.empty() && incoming_seed == old_seed) {
     RecordPromptNotShownWithReasonHistogram(NO_PROMPT_REASON_ALREADY_PROMPTED);
@@ -470,14 +472,10 @@ class ReporterRunner {
 
     // The reporter sequence has been scheduled to run, so don't notify that
     // it has not been scheduled.
-    ignore_result(scoped_runner.Release());
+    std::ignore = scoped_runner.Release();
   }
 
  private:
-  // The type returned by QueryUnbiasedInterruptTime, which does not include
-  // time spent in sleep or hibernation.
-  using TimestampWithoutSleep = ULONGLONG;
-
   // Keeps track of last and upcoming reporter runs and logs uploading.
   //
   // Periodic runs are allowed to start if the last time the reporter ran was
@@ -565,14 +563,12 @@ class ReporterRunner {
         g_testing_delegate_ ? g_testing_delegate_->BlockingTaskRunner()
                             : blocking_task_runner_.get();
 
-    TimestampWithoutSleep now_without_sleep;
-    ::QueryUnbiasedInterruptTime(&now_without_sleep);
-
     auto launch_and_wait =
         base::BindOnce(&LaunchAndWaitForExit, next_invocation);
-    auto reporter_done =
-        base::BindOnce(&ReporterRunner::ReporterDone, base::Unretained(this),
-                       Now(), now_without_sleep, next_invocation);
+    // Unretained is safe because ReporterRunner deletes itself after all
+    // invocations are finished.
+    auto reporter_done = base::BindOnce(
+        &ReporterRunner::ReporterDone, base::Unretained(this), next_invocation);
     base::PostTaskAndReplyWithResult(task_runner, FROM_HERE,
                                      std::move(launch_and_wait),
                                      std::move(reporter_done));
@@ -581,10 +577,8 @@ class ReporterRunner {
   // This method is called on the UI thread when an invocation of the reporter
   // has completed. This is run as a task posted from an interruptible worker
   // thread so should be resilient to unexpected shutdown.
-  void ReporterDone(const base::Time& reporter_start_time,
-                    TimestampWithoutSleep start_time_without_sleep,
-                    SwReporterInvocation finished_invocation,
-                    int exit_code) {
+  void ReporterDone(SwReporterInvocation finished_invocation,
+                    ReporterRunResult result) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     DCHECK_EQ(instance_, this);
 
@@ -593,40 +587,29 @@ class ReporterRunner {
     // start.
     base::ScopedClosureRunner scoped_runner(base::BindOnce(
         &ReporterRunner::SendResultAndDeleteSelf, base::Unretained(this),
-        ExitCodeToInvocationResult(exit_code)));
+        ExitCodeToInvocationResult(result.exit_code)));
 
     UMAHistogramReporter uma(finished_invocation.suffix());
 
     // Don't continue the current queue of reporters if one failed to launch.
     // If the reporter failed to launch, do not process the results.
-    if (exit_code == kReporterNotLaunchedExitCode) {
-      uma.ReportExitCode(exit_code);
+    if (result.exit_code == kReporterNotLaunchedExitCode) {
+      uma.ReportExitCode(result.exit_code);
       NotifySequenceDone(SwReporterInvocationResult::kProcessFailedToLaunch);
       return;
     }
-
-    TimestampWithoutSleep now_without_sleep;
-    ::QueryUnbiasedInterruptTime(&now_without_sleep);
-
-    base::Time now = Now();
-    base::TimeDelta reporter_running_time = now - reporter_start_time;
-
-    // QueryUnbiasedInterruptTime returns units of 100 nanoseconds. See
-    // https://docs.microsoft.com/en-us/windows/win32/api/realtimeapiset/nf-realtimeapiset-queryunbiasedinterrupttime
-    base::TimeDelta running_time_without_sleep =
-        base::Nanoseconds(100 * (now_without_sleep - start_time_without_sleep));
 
     // Tries to run the next invocation in the queue.
     if (!invocations_.container().empty()) {
       // If there are other invocations to start, then we shouldn't finalize
       // this object. ScopedClosureRunner::Release requires its return value to
-      // be used, so simply ignore_result it, since it will not be needed.
-      ignore_result(scoped_runner.Release());
+      // be used, so simply std::ignore it, since it will not be needed.
+      std::ignore = scoped_runner.Release();
       PostNextInvocation();
     }
 
     uma.ReportVersion(invocations_.version());
-    uma.ReportExitCode(exit_code);
+    uma.ReportExitCode(result.exit_code);
     uma.ReportEngineErrorCode();
     uma.ReportFoundUwS();
 
@@ -634,12 +617,14 @@ class ReporterRunner {
     if (local_state) {
       if (finished_invocation.BehaviourIsSupported(
               SwReporterInvocation::BEHAVIOUR_LOG_EXIT_CODE_TO_PREFS)) {
-        local_state->SetInteger(prefs::kSwReporterLastExitCode, exit_code);
+        local_state->SetInteger(prefs::kSwReporterLastExitCode,
+                                result.exit_code);
       }
+      const base::Time now = Now();
       local_state->SetInt64(prefs::kSwReporterLastTimeTriggered,
                             now.ToInternalValue());
     }
-    uma.ReportRuntime(reporter_running_time, running_time_without_sleep);
+    uma.ReportRuntime(result.running_time, result.running_time_without_sleep);
     uma.ReportMemoryUsage();
     if (finished_invocation.reporter_logs_upload_enabled())
       uma.RecordLogsUploadResult();
@@ -651,17 +636,9 @@ class ReporterRunner {
       return;
     }
 
-    if (!IsUserInitiated(invocation_type_) && !IsSRTPromptFeatureEnabled()) {
-      // Knowing about disabled field trial is more important than reporter not
-      // finding anything to remove, so check this case first.
-      RecordPromptNotShownWithReasonHistogram(
-          NO_PROMPT_REASON_FEATURE_NOT_ENABLED);
-      return;
-    }
-
     // Do not accept reboot required or post-reboot exit codes, since they
     // should not be sent out by the reporter.
-    if (exit_code != chrome_cleaner::kSwReporterCleanupNeeded) {
+    if (result.exit_code != chrome_cleaner::kSwReporterCleanupNeeded) {
       RecordPromptNotShownWithReasonHistogram(NO_PROMPT_REASON_NOTHING_FOUND);
       return;
     }
@@ -789,12 +766,6 @@ class ReporterRunner {
       invocation->mutable_command_line().AppendSwitch(
           chrome_cleaner::kEnableCrashReportingSwitch);
     }
-
-    const std::string group_name = GetSRTPromptGroupName();
-    if (!group_name.empty()) {
-      invocation->mutable_command_line().AppendSwitchASCII(
-          chrome_cleaner::kSRTPromptFieldTrialGroupNameSwitch, group_name);
-    }
   }
 
   // Adds switches to be sent to the Software Reporter when the user opted into
@@ -871,18 +842,18 @@ bool ReporterTerminatesOnBrowserExit() {
 // wait for termination to collect its exit code. This task could be
 // interrupted by a shutdown at any time, so it shouldn't depend on anything
 // external that could be shut down beforehand.
-int LaunchAndWaitForExit(const SwReporterInvocation& invocation) {
-  TRACE_EVENT0("safe_browsing", "ReporterRunner::LaunchAndWaitForExit");
+ReporterRunResult LaunchAndWaitForExit(const SwReporterInvocation& invocation) {
+  TRACE_EVENT("safe_browsing", "ReporterRunner::LaunchAndWaitForExit");
 
   // This exit code is used to identify that a reporter run didn't happen, so
   // the result should be ignored and a rerun scheduled for the usual delay.
-  int exit_code = kReporterNotLaunchedExitCode;
+  ReporterRunResult result{.exit_code = kReporterNotLaunchedExitCode};
 
   UMAHistogramReporter uma(invocation.suffix());
 
   base::FilePath tmpdir;
   if (!base::GetTempDir(&tmpdir)) {
-    return exit_code;
+    return result;
   }
 
   // The reporter runs from the system tmp directory. This is to avoid
@@ -896,14 +867,22 @@ int LaunchAndWaitForExit(const SwReporterInvocation& invocation) {
   base::win::ScopedHandle job;
   if (ReporterTerminatesOnBrowserExit()) {
     job.Set(::CreateJobObject(nullptr, nullptr));
+    if (job.IsValid()) {
+      base::SetJobObjectLimitFlags(job.Get(),
+                                   JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE);
+      launch_options.job_handle = job.Get();
+      uma.ReportCreateJobResult(ERROR_SUCCESS);
+    } else {
+      uma.ReportCreateJobResult(::GetLastError());
+    }
   }
-  if (job.IsValid()) {
-    base::SetJobObjectLimitFlags(job.Get(), JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE);
-    launch_options.job_handle = job.Get();
-  } else {
-    PLOG(WARNING) << "The Chrome Cleanup Tool's reporter process is not "
-                     "attached to a job and may outlive the browser.";
-  }
+
+  base::Time start_time = Now();
+
+  // QueryUnbiasedInterruptTime does not include time spent in sleep or
+  // hibernation.
+  ULONGLONG start_time_without_sleep;
+  ::QueryUnbiasedInterruptTime(&start_time_without_sleep);
 
   base::Process reporter_process =
       g_testing_delegate_
@@ -912,19 +891,37 @@ int LaunchAndWaitForExit(const SwReporterInvocation& invocation) {
           : base::LaunchProcess(invocation.command_line(), launch_options);
 
   if (!reporter_process.IsValid()) {
-    return exit_code;
+    return result;
   }
 
-  if (g_testing_delegate_) {
-    exit_code = g_testing_delegate_->WaitForReporterExit(reporter_process);
-  } else {
-    bool success = reporter_process.WaitForExit(&exit_code);
-    DCHECK(success);
+  constexpr base::TimeDelta kPollingTime = base::Seconds(10);
+  bool exited = false;
+  while (!exited) {
+    TRACE_EVENT("safe_browsing", "ReporterRunning");
+    if (g_testing_delegate_) {
+      exited = g_testing_delegate_->WaitForReporterExit(
+          reporter_process, kPollingTime, &result.exit_code);
+    } else {
+      exited = reporter_process.WaitForExitWithTimeout(kPollingTime,
+                                                       &result.exit_code);
+      // Wait should only fail on a timeout.
+      DCHECK(exited || reporter_process.IsRunning());
+    }
   }
+
+  result.running_time = Now() - start_time;
+
+  ULONGLONG now_without_sleep;
+  ::QueryUnbiasedInterruptTime(&now_without_sleep);
+
+  // QueryUnbiasedInterruptTime returns units of 100 nanoseconds. See
+  // https://docs.microsoft.com/en-us/windows/win32/api/realtimeapiset/nf-realtimeapiset-queryunbiasedinterrupttime
+  result.running_time_without_sleep =
+      base::Nanoseconds(100 * (now_without_sleep - start_time_without_sleep));
 
   // After the reporter process has exited the job object is no longer needed.
   // It will be closed when it goes out of scope here.
-  return exit_code;
+  return result;
 }
 
 }  // namespace internal

@@ -7,7 +7,6 @@
 <translation id="1056775291175587022">Ցանց չկա</translation>
 <translation id="1060368002126861100"><ph name="APP_NAME" /> հավելվածի միջոցով ֆայլերը բացելու համար նախ տեղափոխեք դրանք Windows-ի ֆայլերի պանակ։</translation>
 <translation id="1062407476771304334">Փոխարինել</translation>
-<translation id="1119069657431255176">Bzip2 սեղմված tar-արխիվ</translation>
 <translation id="1119447706177454957">Ներքին սխալ</translation>
 <translation id="1120073797882051782">Հանգուլ Ռոմաջա</translation>
 <translation id="112387589102719461">անգլերեն (ԱՄՆ)՝ Programmer Dvorak ստեղնաշարով</translation>
@@ -21,6 +20,7 @@
 <translation id="115443833402798225">Հանգուլ Անմատա</translation>
 <translation id="1155759005174418845">Կատալոնական</translation>
 <translation id="1168100932582989117">Google-ի DNS-սերվերներ</translation>
+<translation id="1171082344678443012">XZ սեղմված արխիվ</translation>
 <translation id="1172970565351728681">Մնացել է մոտ <ph name="REMAINING_TIME" /></translation>
 <translation id="1173894706177603556">Վերանվանել</translation>
 <translation id="1173916544412572294">Ցանց <ph name="NETWORK_INDEX" />՝ <ph name="NETWORK_COUNT" />-ից, <ph name="PHONE_NAME" />, <ph name="CONNECTION_STATUS" />, ազդանշանի ուժգնությունը՝ <ph name="SIGNAL_STRENGTH" />%, մարտկոցի լիցքը՝ <ph name="BATTERY_STATUS" />%, մանրամասներ</translation>
@@ -30,10 +30,12 @@
 <translation id="1201402288615127009">Հաջորդը</translation>
 <translation id="1209796539517632982">Անունների ավտոմատ սերվերներ</translation>
 <translation id="1210831758834677569">լաոսերեն</translation>
+<translation id="1223825810409523901">Chrome-ի ընդլայնում</translation>
 <translation id="1243314992276662751">Վերբեռնել</translation>
 <translation id="1249250836236328755">Ժանրը</translation>
 <translation id="1254593899333212300">Համացանցի անմիջական կապակցում</translation>
 <translation id="1272293450992660632">PIN-ի արժեքները չեն համընկնում:</translation>
+<translation id="127650757582748357">BZIP2 սեղմված արխիվ</translation>
 <translation id="1280820357415527819">Բջջային ցանցերի որոնում</translation>
 <translation id="1291603679744561561">SIM քարտը կողպված է</translation>
 <translation id="1293556467332435079">Ֆայլեր</translation>
@@ -60,6 +62,7 @@
 <translation id="1497522201463361063">Հնարավոր չէ վերանվանել «<ph name="FILE_NAME" />»-ը: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1499943022354839699">անգլերեն (ԱՄՆ)՝ Dvorak ստեղնաշարով</translation>
 <translation id="1515909359182093592"><ph name="INPUT_LABEL" /> – Հոսթ</translation>
+<translation id="1521655867290435174">Google Աղյուսակներ</translation>
 <translation id="1538729222189715449">Լինուքսի ֆայլերը բացվում են…</translation>
 <translation id="1547964879613821194">Կանադական (անգլիական)</translation>
 <translation id="1556189134700913550">Կիրառել բոլորին</translation>
@@ -78,6 +81,7 @@
 <translation id="166439687370499867">Դուք չեք կարող փոխել ընդհանուր ցանցի կարգավորումները</translation>
 <translation id="1665611772925418501">Չհաջողվեց փոփոխել ֆայլը:</translation>
 <translation id="1673103856845176271">Անվտանգության նկատառումներից ելնելով՝ ֆայլի օգտագործումն արգելված է:</translation>
+<translation id="16762847117768727">ISO-ի պատկեր</translation>
 <translation id="169515659049020177">Shift</translation>
 <translation id="1715848075824334077">Հեծանվավարում</translation>
 <translation id="1722487484194605434">Արխիվացվում է <ph name="NUMBER_OF_ITEMS" /> տարր…</translation>
@@ -90,6 +94,8 @@
 <translation id="1742316578210444689">եբրայերեն (տառադարձություն)</translation>
 <translation id="1747761757048858544">հոլանդերեն (Նիդեռլանդներ)</translation>
 <translation id="174937106936716857">Ֆայլերի ընդհանուր թիվը</translation>
+<translation id="1755345808328621801">Այս ֆայլը նախատեսված է Windows-ի ծրագրակազմով համակարգիչների համար։ Այն համատեղելի չէ ձեր ChromeOS-ով աշխատող սարքի հետ։ Որոնեք համապատասխան փոխարինող հավելված Chrome Web Store-ում։</translation>
+<translation id="1757915090001272240">Լայն լատինատառ</translation>
 <translation id="1773212559869067373">Իսկորոշման վկայագիրը մերժվեց տեղում</translation>
 <translation id="1775381402323441512">Տեղեկություններ տեսանյութի մասին</translation>
 <translation id="180035236176489073">Այս ֆայլերն օգտագործելու համար դուք պետք է առցանց լինեք:</translation>
@@ -99,6 +105,7 @@
 <translation id="1813278315230285598">Services</translation>
 <translation id="1829129547161959350">Պինգվին</translation>
 <translation id="183183971458492120">Տեղեկությունները բեռնվում են...</translation>
+<translation id="1832073788765803750">կիսալայն կատականա</translation>
 <translation id="1834290891154666894">Սուբյեկտի այլընտրանքային անվան հետ համընկնման սխալ գրառում</translation>
 <translation id="1838709767668011582">Google site</translation>
 <translation id="1844692022597038441">Այս ֆայլը մատչելի չէ անցանց ռեժիմում:</translation>
@@ -113,11 +120,11 @@
 <translation id="1936717151811561466">Ֆիննական</translation>
 <translation id="1942765061641586207">Պատկերի լուծաչափը</translation>
 <translation id="1972984168337863910">Ծավալել ֆայլերի մասին կարծիք հայտնելու վահանակները</translation>
-<translation id="1984456723671657197">Ֆայլի այս տեսակը չի աջակցվում: <ph name="BEGIN_LINK_HELP" />Իմացեք ավելին<ph name="END_LINK_HELP" />, թե ինչպես ֆայլերը բացել Chrome OS-ում։</translation>
 <translation id="1995337122023280937">Անցնել ֆայլի տեղադրություն</translation>
+<translation id="1996806196681857869">Z սեղմված արխիվ</translation>
 <translation id="2001796770603320721">Կառավարել Drive-ում</translation>
 <translation id="2009067268969781306">Ֆորմատավորման արդյունքում կրիչի վրա պահված բոլոր տվյալները կջնջվեն: Այս գործողությունը հնարավոր չէ հետարկել:</translation>
-<translation id="2025955442973426285">տիգրինյա</translation>
+<translation id="2025955442973426285">թիգրինյա</translation>
 <translation id="2028997212275086731">RAR արխիվ</translation>
 <translation id="2037845485764049925">ռուսերեն</translation>
 <translation id="2044023416777079300">Մոդեմը գրանցված չէ</translation>
@@ -137,7 +144,6 @@
 <translation id="2163152940313951844">Անվավեր գրանշան՝ <ph name="CHARACTER_NAME" /></translation>
 <translation id="2184934335987813305">պորտուգալերեն՝ ԱՄՆ միջազգային համակարգչային ստեղնաշարով</translation>
 <translation id="2198315389084035571">Պարզեցված չինարեն</translation>
-<translation id="2208158072373999562">Zip արխիվ</translation>
 <translation id="22085916256174561">կորեերեն</translation>
 <translation id="2208919847696382164">Տեղադրել Լինուքսի միջոցով</translation>
 <translation id="2225536596944493418">Իսկապե՞ս ուզում եք ջնջել <ph name="NUMBER_OF_ITEMS" /> տարրերը։</translation>
@@ -159,7 +165,7 @@
 <translation id="2377319039870049694">Ցանկի տեսքով</translation>
 <translation id="2377590462528165447">Դուք <ph name="NUMBER_OF_ITEMS" /> պանակով կիսվեցին Լինուքսի հետ</translation>
 <translation id="2378075407703503998">Ընտրված է <ph name="SELCTED_FILE_COUNT" /> ֆայլ</translation>
-<translation id="2387458720915042159">Միջնորդ սերվերի միացման տեսակը</translation>
+<translation id="2387458720915042159">Պրոքսի սերվերի միացման տեսակը</translation>
 <translation id="2389832672041313158">բիրմաներեն (Մյանմա)</translation>
 <translation id="2392369802118427583">Ակտիվացնել</translation>
 <translation id="240770291734945588">Հասանելի է <ph name="SPACE_AVAILABLE" /></translation>
@@ -168,7 +174,7 @@
 <translation id="2448312741937722512">Տեսակ</translation>
 <translation id="2452444014801043526">Մեգաֆոնով մարդ</translation>
 <translation id="2464079411014186876">Պաղպաղակ</translation>
-<translation id="2464089476039395325">HTTP միջնորդ սերվեր</translation>
+<translation id="2464089476039395325">HTTP պրոքսի սերվեր</translation>
 <translation id="2467267713099745100"><ph name="NETWORK_TYPE" /> ցանց, անջատված է</translation>
 <translation id="2468402215065996499">Տամագոչի</translation>
 <translation id="2470939964922472929">Սխալ PIN կոդի մուտքագրման չափազանց շատ փորձեր են կատարվել։ Նոր PIN կոդ սահմանելու համար մուտքագրեք 8-անիշ անձնական ապակողպման բանալին (PUK), որը տրամադրվել է ձեր օպերատորի կողմից։</translation>
@@ -176,13 +182,12 @@
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2517472476991765520">Որոնել</translation>
 <translation id="2534155362429831547"><ph name="NUMBER_OF_ITEMS" /> տարր ջնջվեց</translation>
-<translation id="2534460670861217804">Ապահով HTTP միջնորդ սերվեր</translation>
+<translation id="2534460670861217804">Ապահով HTTP պրոքսի սերվեր</translation>
 <translation id="2541377937973966830">Այս պանակի բովանդակությունը հասանելի է միայն կարդալու համար։ Որոշ գործողություններ չեն աջակցվում։</translation>
 <translation id="2542049655219295786">Google աղյուսակ</translation>
 <translation id="2544853746127077729">Իսկորոշման վկայագիրը մերժվել է ցանցի կողմից</translation>
 <translation id="2547921442987553570">Ավելացնել <ph name="EXTENSION_NAME" />-ում</translation>
 <translation id="255937426064304553">ԱՄՆ (միջազգային)</translation>
-<translation id="2562685439590298522">Փաստաթղթեր</translation>
 <translation id="2563185590376525700">Գորտ</translation>
 <translation id="2578394532502990878">թամիլերեն (հնչյունային)</translation>
 <translation id="2579959351793446050">օրիյա</translation>
@@ -195,8 +200,6 @@
 <translation id="2649120831653069427">Ձկնիկ</translation>
 <translation id="2663066752008346276">բիրմաներեն (Մյանմա)՝ InScript ստեղնաշարով</translation>
 <translation id="2664412712123763093">Ֆայլի տեղադրությունը</translation>
-<translation id="2672394958563893062">Սխալ է տեղի ունեցել: Սկզբից նվագարկելու համար վերագործարկեք:</translation>
-<translation id="2676946222714718093">Նվագարկվում է</translation>
 <translation id="2718540689505416944">Տեղադրեք Լինուքսի հավելված</translation>
 <translation id="2719020180254996569">Ցանց <ph name="NETWORK_INDEX" />՝ <ph name="NETWORK_COUNT" />-ից, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, մանրամասներ</translation>
 <translation id="2724954091494693138">թուրքերեն (Turkish F ստեղնաշար)</translation>
@@ -205,8 +208,10 @@
 <translation id="2771816809568414714">Պանիր</translation>
 <translation id="2781645665747935084">Բելգիական</translation>
 <translation id="2782104745158847185">Չհաջողվեց տեղադրել Լինուքսի հավելվածը</translation>
+<translation id="2788520643285360081">7-Zip արխիվ</translation>
 <translation id="2803375539583399270">Մուտքագրեք PIN կոդը</translation>
 <translation id="2820957248982571256">Որոնում…</translation>
+<translation id="2822595620066756134">GZIP սեղմված արխիվ</translation>
 <translation id="2830077785865012357">չինարեն (ժույին)</translation>
 <translation id="2843806747483486897">Փոխել կանխադրվածը…</translation>
 <translation id="2850124913210091882">Կրկնօրինակել</translation>
@@ -218,12 +223,11 @@
 <translation id="2902734494705624966">ԱՄՆ ընդլայնված</translation>
 <translation id="290843123675549676">մարաթի</translation>
 <translation id="2923240520113693977">Էստոնական</translation>
-<translation id="2925966894897775835">Աղյուսակներ</translation>
 <translation id="2938685643439809023">Մոնղոլական</translation>
-<translation id="2943400156390503548">Սլայդներ</translation>
 <translation id="2943503720238418293">Նշեք ավելի կարճ անուն</translation>
 <translation id="2949781154072577687">«<ph name="DRIVE_NAME" />» կրիչը ձևաչափվում է…</translation>
 <translation id="2951236788251446349">Մեդուզա</translation>
+<translation id="2977940621473452797">Այս ֆայլը նախատեսված է Macintosh-ի ծրագրակազմով համակարգիչների համար։ Այն համատեղելի չէ ձեր ChromeOS-ով աշխատող սարքի հետ։ Որոնեք համապատասխան փոխարինող հավելված Chrome Web Store-ում։</translation>
 <translation id="2984337792991268709">Այսօր <ph name="TODAY_DAYTIME" />-ին</translation>
 <translation id="2994320653639462337"><ph name="COUNT" /> տարր վերականգնվում է…</translation>
 <translation id="2994669386200004489">Չհաջողվեց պահուստավորել <ph name="FILE_NAME" /> ֆայլը</translation>
@@ -239,6 +243,7 @@
 <translation id="3078461028045006476">Ուղարկել <ph name="EXTENSION_NAME" />-ի միջոցով</translation>
 <translation id="3083975830683400843">Chromebit սարքեր</translation>
 <translation id="3085752524577180175">SOCKS խնամորդ</translation>
+<translation id="3104793765551262433">Ցանց <ph name="NETWORK_INDEX" />՝ <ph name="NETWORK_COUNT" />-ից, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, ազդանշանի ուժգնությունը՝ <ph name="SIGNAL_STRENGTH" />%, արգելափակված է ադմինիստրատորի կողմից, մանրամասներ</translation>
 <translation id="3113153474486991170">Չհաջողվեց բացել «<ph name="PATH" />» ֆայլն այս պանակից։ Ֆայլը բացելու համար այն պատճենեք «Իմ ֆայլերը» պանակում։</translation>
 <translation id="3113592018909187986">Մնաց 1 փորձ։ Դուք չեք կարողանա օգտագործել այս ցանցը, մինչև չսահմանեք նոր PIN կոդ։</translation>
 <translation id="3124404833828281817">Երազկոտ մարդ</translation>
@@ -296,7 +301,9 @@
 <translation id="3556731189587832921">անգլերեն (ԱՄՆ)՝ միջազգային համակարգչային ստեղնաշարով</translation>
 <translation id="3567221313191587603">Ընտրեք ֆայլը և միացրեք «<ph name="OFFLINE_CHECKBOX_NAME" />» կարգավորումը՝ ձեր ֆայլն առանց ինտերնետի օգտագործելու համար։</translation>
 <translation id="357479282490346887">Լիտվական</translation>
+<translation id="3587482841069643663">Բոլորը</translation>
 <translation id="3592251141500063301">Չհաջողվեց ներբեռնել «<ph name="FILE_NAME" />» ֆայլը՝ անցանց ռեժիմում օգտագործելու համար</translation>
+<translation id="3593874215226880809">LZIP սեղմված արխիվ</translation>
 <translation id="3601151620448429694"><ph name="NETWORK_NAME" /> · <ph name="CARRIER_NAME" /></translation>
 <translation id="3603385196401704894">Կանադական (ֆրանսիական)</translation>
 <translation id="3606220979431771195">Թուրքական F</translation>
@@ -309,6 +316,7 @@
 <translation id="3689865792480713551">Չեղարկել՝ <ph name="ACTIVITY_DESCRIPTION" />։</translation>
 <translation id="3690128548376345212">Ցանց <ph name="NETWORK_INDEX" />՝ <ph name="NETWORK_COUNT" />-ից, <ph name="NETWORK_NAME" />, ակտիվացված չէ, <ph name="CONNECTION_STATUS" />, ազդանշանի ուժգնությունը՝ <ph name="SIGNAL_STRENGTH" /> տոկոս, մանրամասներ</translation>
 <translation id="3691184985318546178">սինհալերեն</translation>
+<translation id="3703620396751288986">ZIP արխիվ</translation>
 <translation id="3726463242007121105">Հնարավոր չէ բացել սարքը, քանի որ նրա ֆայլային համակարգը չի աջակցվում:</translation>
 <translation id="3727148787322499904">Եթե փոխեք այս կարգավորումը, այն կազդի բոլոր ընդհանուր ցանցերի վրա</translation>
 <translation id="3737576078404241332">Հեռացնել կողագոտուց</translation>
@@ -325,7 +333,7 @@
 <translation id="3811494700605067549">Ընտրվել է 1 ֆայլ</translation>
 <translation id="3817579325494460411">Չի տրամադրվել</translation>
 <translation id="3819448694985509187">PIN կոդը սխալ է։ Մնաց 1 փորձ։</translation>
-<translation id="3822559385185038546">Այս միջնորդ սերվերը պարտադրաբար միացվել է ադմինիստրատորի կողմից</translation>
+<translation id="3822559385185038546">Այս պրոքսի սերվերը պարտադրաբար միացվել է ադմինիստրատորի կողմից</translation>
 <translation id="3830674330436234648">Հնարավոր չէ նվագարկել</translation>
 <translation id="383652340667548381">Սերբական</translation>
 <translation id="385051799172605136">Հետ</translation>
@@ -337,7 +345,6 @@
 <translation id="3901991538546252627">Միացում <ph name="NAME" />-ին</translation>
 <translation id="3906232975181435906">Տեղադրվում է բջջային պրոֆիլը (ցանց <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />)</translation>
 <translation id="3924145049010392604">Meta</translation>
-<translation id="3930521966936686665">Նվագարկել</translation>
 <translation id="3943857333388298514">Տեղադրել</translation>
 <translation id="3952872973865944257">տելուգու (հնչյունային)</translation>
 <translation id="3958548648197196644">Կիվի</translation>
@@ -363,6 +370,7 @@
 <translation id="4215448920900139318">Ֆայլերի պահուստավորում (<ph name="FILE_COUNT" />)</translation>
 <translation id="4218274196133425560">Հեռացնել բացառումը <ph name="HOST_NAME" />-ի համար</translation>
 <translation id="4261901459838235729">Google ներկայացում</translation>
+<translation id="4277536868133419688"><ph name="FILTER_NAME" /> զտիչը միացված է։</translation>
 <translation id="4290535918735525311">1 պանակով կիսվեցիք Լինուքսի հետ</translation>
 <translation id="4299729908419173967">Բրազիլական</translation>
 <translation id="4302605047395093221">Այս սարքն օգտագործող ցանկացած անձ պետք է մուտքագրի PIN կոդը՝ այս բջջային ցանցին միանալու համար</translation>
@@ -380,6 +388,8 @@
 <translation id="4380245540200674032">Ցանց <ph name="NETWORK_INDEX" />՝ <ph name="NETWORK_COUNT" />-ից, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, ազդանշանի ուժգնությունը՝ <ph name="SIGNAL_STRENGTH" />%, կառավարվում է ձեր ադմինիստրատորի կողմից, մանրամասներ</translation>
 <translation id="4387004326333427325">Իսկորոշման վկայագիրը մերժվել է հեռակա կարգով</translation>
 <translation id="4394214039309501350">Արտաքին հղում</translation>
+<translation id="4401287888955153199">Դուրս բերել բոլորը</translation>
+<translation id="4410695710508688828">Չհաջողվեց կատարել արտահանումը։ <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4418686080762064601">Ստեղծեք դյուրանցում ձեր ֆայլերի համար</translation>
 <translation id="4425149324548788773">Իմ դրայվը</translation>
 <translation id="4439427728133035643">Ցանց <ph name="NETWORK_INDEX" />՝ <ph name="NETWORK_COUNT" />-ից, <ph name="NETWORK_NAME" />, ազդանշանի ուժգնությունը՝ <ph name="SIGNAL_STRENGTH" />%, կապակցում</translation>
@@ -401,26 +411,28 @@
 <translation id="457386861538956877">Ավելին…</translation>
 <translation id="4579744207439506346">«<ph name="ENTRY_NAME" />» գրառումն ավելացվեց ընտրվածքին:</translation>
 <translation id="4594543368593301662">Ցուցադրված են «<ph name="SEARCH_TERM" />» հարցումով որոնման արդյունքները:</translation>
+<translation id="4599600860674643278">Զտիչը վերակայված է։</translation>
 <translation id="4603392156942865207">«<ph name="FILE_NAME" />» ֆայլը պատճենվում է «<ph name="FOLDER_NAME" />» պանակում</translation>
 <translation id="4631887759990505102">Կատարող</translation>
 <translation id="4642769377300286600">Տեղադրվում է բջջային պրոֆիլը (ցանց <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />)</translation>
 <translation id="4646813851450205600">չեխերեն (QWERTY ստեղնաշար)</translation>
-<translation id="4656293982926141856">Այս համակարգիչը</translation>
 <translation id="4656777537938206294">Ֆայլերը հասանելի դարձրեք առանց ինտերնետի օգտագործելու համար</translation>
 <translation id="4658782175094886150">Մարդը ձյան մեջ</translation>
+<translation id="4661996069183330363">TAR արխիվ</translation>
 <translation id="4669606053856530811">«<ph name="SOURCE_NAME" />»-ի անդամներն այլևս չեն կարողանա օգտագործել այս տարրերը, եթե դրանց համար չտրվի ընդհանուր հասանելիություն։</translation>
+<translation id="467809019005607715">Google Սլայդներ</translation>
 <translation id="4690246192099372265">Շվեդական</translation>
 <translation id="4693155481716051732">Սուշի</translation>
 <translation id="4694604912444486114">Կապիկ</translation>
 <translation id="469612310041132144">չինարեն (արագ գիր)</translation>
 <translation id="4697043402264950621">Ֆայլերի ցանկը տեսակավորված է ըստ «<ph name="COLUMN_NAME" />» ցուցանիշի՝ աճման կարգով։</translation>
+<translation id="469897186246626197">Այս ֆայլը նախատեսված է Windows-ի ծրագրակազմով համակարգիչների համար։ Այն համատեղելի չէ ChromeOS-ով աշխատող ձեր սարքի հետ։ <ph name="BEGIN_LINK_HELP" />Իմացեք ավելին<ph name="END_LINK_HELP" />, թե ինչպես ֆայլերը բացել ChromeOS-ում։</translation>
 <translation id="4706042980341760088">թամիլերեն (գրամեքենայի ստեղնաշար)</translation>
 <translation id="4711094779914110278">Թուրքական</translation>
 <translation id="4712283082407695269">«<ph name="PATH" />» արխիվը բացվում է</translation>
 <translation id="4720185134442950733">Բջջային ցանց</translation>
 <translation id="4724850507808590449">Կրկնօրինակվեց <ph name="FILE_COUNT" /> լուսանկար</translation>
 <translation id="4725511304875193254">Կորգի</translation>
-<translation id="4732760563705710320">Ներեցեք, ձեր հեռարձակման սարքը չի աջակցում այս տեսանյութը:</translation>
 <translation id="4737050008115666127">Վայրէջք</translation>
 <translation id="4747271164117300400">մակեդոներեն</translation>
 <translation id="4759238208242260848">Ներբեռնումներ</translation>
@@ -509,6 +521,7 @@
 <translation id="5335458522276292100"><ph name="FILE_COUNT" /> ֆայլ պահուստավորվում է <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" />-ում</translation>
 <translation id="535792325654997756">Կատուներով մարդ</translation>
 <translation id="5358764674931277">Կադրերի արագությունը</translation>
+<translation id="5363339716524495120">Ներածման լեզուն չինարենն է</translation>
 <translation id="5368191757080475556">Կիսվեք պանակով Լինուքսի հետ</translation>
 <translation id="5402367795255837559">Բրայլի գրատիպ</translation>
 <translation id="5411472733320185105">Չօգտագործել պրոքսի-սերվերի կարգավորումները այս խնամորդների և տիրույթների համար՝</translation>
@@ -521,6 +534,7 @@
 <translation id="5469868506864199649">Իտալական</translation>
 <translation id="5473333559083690127">Կրկին մուտքագրեք նոր PIN կոդը</translation>
 <translation id="5489067830765222292">լատվիերեն</translation>
+<translation id="5489965683297092283"><ph name="FILTER_NAME" /> զտիչն անջատված է։</translation>
 <translation id="5494920125229734069">Ընտրել բոլորը</translation>
 <translation id="5500122897333236901">Իսլանդական</translation>
 <translation id="5508696409934741614">Կետեր</translation>
@@ -530,8 +544,10 @@
 <translation id="5534520101572674276">Չափի հաշվարկում</translation>
 <translation id="554153475311314364">հունարեն (տառադարձություն)</translation>
 <translation id="5583640892426849032">Backspace</translation>
+<translation id="5583664733673201137">Կետադրական նշանների լայնությունը՝ լիալայնք</translation>
 <translation id="5602622065581044566">բուլղարերեն (հնչյունային ստեղնաշար)</translation>
 <translation id="5605830556594064952">ԱՄՆ Դվորակ</translation>
+<translation id="5618330573454123917">Այս ֆայլը նախատեսված է Macintosh-ի ծրագրակազմով համակարգիչների համար։ Այն համատեղելի չէ ChromeOS-ով աշխատող ձեր սարքի հետ։ <ph name="BEGIN_LINK_HELP" />Իմացեք ավելին<ph name="END_LINK_HELP" />, թե ինչպես ֆայլերը բացել ChromeOS-ում։</translation>
 <translation id="5625294776298156701">թամիլերեն (Tamil99 ստեղնաշար)</translation>
 <translation id="5633226425545095130">Այս տարրը տեղափոխելու դեպքում այն հասանելի կդառնա բոլորին, ում տեսանելի է «<ph name="DESTINATION_NAME" />» ընդհանուր պանակը։</translation>
 <translation id="5649768706273821470">Լսել</translation>
@@ -584,8 +600,10 @@
 <translation id="6055907707645252013">Կապը <ph name="NETWORK_TYPE" /> ցանցի հետ հաստատված չէ</translation>
 <translation id="6074825444536523002">Google ձևաթուղթ</translation>
 <translation id="6079871810119356840">հունգարերեն (QWERTY ստեղնաշար)</translation>
+<translation id="6082256976217156453">LZMA սեղմված արխիվ</translation>
 <translation id="6096979789310008754">Որոնման տեքստը մաքրվեց: Ցուցադրվում են բոլոր ֆայլերն ու պանակները:</translation>
 <translation id="610101264611565198">«<ph name="FILE_NAME" />» ֆայլը տեղափոխվում է «<ph name="FOLDER_NAME" />» պանակ</translation>
+<translation id="61118516107968648">CSV ձևաչափով տեքստային ֆայլ</translation>
 <translation id="6129953537138746214">Բացատ</translation>
 <translation id="6133173853026656527"><ph name="FILE_NAME" /> ֆայլը տեղափոխվում է…</translation>
 <translation id="613750717151263950">ճապոներեն՝ ԱՄՆ ստեղնաշարով</translation>
@@ -603,9 +621,9 @@
 <translation id="6220423280121890987">փենջաբերեն</translation>
 <translation id="6224240818060029162">դանիերեն</translation>
 <translation id="6224253798271602650"><ph name="DRIVE_NAME" />. ֆորմատավորել</translation>
+<translation id="6224665423283788195">ZST սեղմված արխիվ</translation>
 <translation id="6227235786875481728">Չհաջողվեց նվագարկել այս ֆայլը:</translation>
 <translation id="6241349547798190358">հոլանդերեն (Բելգիա)</translation>
-<translation id="6248400709929739064">Միացնել ենթագրերը</translation>
 <translation id="6267547857941397424">Ցանց <ph name="NETWORK_INDEX" />՝ <ph name="NETWORK_COUNT" />-ից, <ph name="PHONE_NAME" />, ազդանշանի ուժգնությունը՝ <ph name="SIGNAL_STRENGTH" />%, մարտկոցի լիցքը՝ <ph name="BATTERY_STATUS" />%, կապակցում</translation>
 <translation id="6269630227984243955">մալայերեն</translation>
 <translation id="6287852322318138013">Այս ֆայլը բացելու համար ընտրեք հավելված</translation>
@@ -613,7 +631,7 @@
 <translation id="6312403991423642364">Ցանցի անհայտ սխալ</translation>
 <translation id="6317608858038767920">Հատուկ DNS սերվեր <ph name="INPUT_INDEX" /></translation>
 <translation id="6321303798550928047">Ձեռքով ողջույն</translation>
-<translation id="6327785803543103246">Միջնորդ սերվերի ինքնահայտնաբերում</translation>
+<translation id="6327785803543103246">Պրոքսի սերվերի ինքնահայտնաբերում</translation>
 <translation id="6339145975392024142">ԱՄՆ միջազգային (PC)</translation>
 <translation id="6346310558342052870">Սահմանափակ հասանելիություն</translation>
 <translation id="6356685157277930264">Ֆայլերի մասին տեղեկությունների պատուհան</translation>
@@ -623,12 +641,12 @@
 <translation id="637062427944097960">Այս ֆայլը բացված է այլ աշխատասեղանի վրա: Այն դիտելու համար տեղափոխվեք <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />):</translation>
 <translation id="6394388407447716302">Միայն կարդալու</translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> տարր</translation>
-<translation id="6398765197997659313">Ելնել լիաէկրան ռեժիմից</translation>
 <translation id="642282551015776456">Այս անունը չի կարող լինել ֆայլի կամ պանակի անուն</translation>
 <translation id="6423031066725912715">վիետնամերեն (TCVN ստեղնաշար)</translation>
 <translation id="6485131920355264772">Չհաջողվեց առբերել ազատ տարածքի մասին տեղեկությունները</translation>
 <translation id="6495925982925244349">Ցանց <ph name="NETWORK_INDEX" />՝ <ph name="NETWORK_COUNT" />-ից, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, ազդանշանի ուժգնությունը՝ <ph name="SIGNAL_STRENGTH" />%, կառավարվում է ձեր ադմինիստրատորի կողմից, մանրամասներ</translation>
-<translation id="6499681088828539489">Չօգտագործել միջնորդ սերվերներ ընդհանուր ցանցերի համար</translation>
+<translation id="649877868557234318">Ֆայլը (<ph name="FILE_NAME" />) արտահանվում է <ph name="FOLDER_NAME" /> պանակ</translation>
+<translation id="6499681088828539489">Չօգտագործել պրոքսի սերվերներ ընդհանուր ցանցերի համար</translation>
 <translation id="6509122719576673235">Նորվեգական</translation>
 <translation id="6528513914570774834">Թույլատրել սարքի մյուս օգտատերերին օգտագործել այս ցանցը</translation>
 <translation id="653019979737152879"><ph name="FILE_NAME" />-ի համաժամացում…</translation>
@@ -650,15 +668,14 @@
 <translation id="6732801395666424405">Վկայագրերը չեն բեռնվել</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
 <translation id="6751256176799620176">Ընտրված է 1 պանակ</translation>
+<translation id="6755827872271341378">ChromeOS Flex սարք</translation>
 <translation id="6790428901817661496">Նվագարկել</translation>
 <translation id="6795884519221689054">Պանդա</translation>
 <translation id="6806699711453372963">Կառավարել Լինուքսի օգտագործումը</translation>
 <translation id="6806796368146926706">ճապոներեն՝ տառաթվային ստեղնաշարով</translation>
 <translation id="6808193438228982088">Աղվես</translation>
-<translation id="6820687829547641339">Gzip սեղմված tar-արխիվ</translation>
 <translation id="6823166707458800069">Այս պանակում պահված բոլոր ֆայլերն ավտոմատ պահուստավորվում են համացանցում։</translation>
 <translation id="6825883775269213504">Ռուսական</translation>
-<translation id="6827236167376090743">Այս տեսանյութի նվագարկումը կկրկնվի:</translation>
 <translation id="6847101934483209767">«<ph name="ENTRY_NAME" />» գրառումը հեռացվեց ընտրվածքից:</translation>
 <translation id="6856459657722366306">Ցանց <ph name="NETWORK_INDEX" />՝ <ph name="NETWORK_COUNT" />-ից, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, ազդանշանի ուժգնությունը՝ <ph name="SIGNAL_STRENGTH" />%, մանրամասներ</translation>
 <translation id="6861394552169064235">պարսկերեն</translation>
@@ -679,6 +696,7 @@
 <translation id="6935521024859866267">Գլխիվայր</translation>
 <translation id="6943836128787782965">HTTP GET-ի սխալ</translation>
 <translation id="6949408524333579394">սերբերեն (տառադարձություն)</translation>
+<translation id="6954309393500027528">Ադմինիստրատորն արգելափակել է այս ֆայլի տեղադրումը</translation>
 <translation id="6960565108681981554">Ակտիվացված չէ։ Դիմեք ձեր կապի օպերատորին։</translation>
 <translation id="696203921837389374">Թույլատրել շարժական տվյալների միջոցով համաժամացումը</translation>
 <translation id="6965382102122355670">Եղավ</translation>
@@ -686,7 +704,6 @@
 <translation id="6970230597523682626">Բուլղարական</translation>
 <translation id="6973630695168034713">Պանակներ</translation>
 <translation id="6976795442547527108">Առյուծ</translation>
-<translation id="6978611942794658017">Այս ֆայլը նախատեսված է Windows ծրագրակազմ օգտագործող համակարգիչների համար: Այն համատեղելի չէ ձեր Chrome OS-ով աշխատող սարքի հետ: Որոնեք համապատասխան փոխարինող հավելված Chrome Web Store-ում:</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6989942356279143254">շվեդերեն</translation>
 <translation id="6990081529015358884">Ազատ տարածք չունեք</translation>
@@ -697,6 +714,7 @@
 <translation id="7037472120706603960">թամիլերեն (տառադարձություն)</translation>
 <translation id="7040138676081995583">Բացել հավելվածով…</translation>
 <translation id="7048024426273850086">Ցանց <ph name="NETWORK_INDEX" />՝ <ph name="NETWORK_COUNT" />-ից, <ph name="PHONE_NAME" />, <ph name="PROVIDER_NAME" />, ազդանշանի ուժգնությունը՝ <ph name="SIGNAL_STRENGTH" />%, մարտկոցի լիցքը՝ <ph name="BATTERY_STATUS" />%, միացում</translation>
+<translation id="7070804685954057874">Անմիջական ներածում</translation>
 <translation id="7075931588889865715">թայերեն (TIS 820-2531 ստեղնաշար)</translation>
 <translation id="708278670402572152">Անջատվեք ցանցից՝ որոնումը միացնելու համար</translation>
 <translation id="7086590977277044826">թամիլերեն (InScript ստեղնաշար)</translation>
@@ -713,7 +731,7 @@
 <translation id="7229570126336867161">Հարկավոր է EVDO</translation>
 <translation id="7238097264433196391">Կրիչի անունը</translation>
 <translation id="7238643356913091553"><ph name="NETWORK_NAME" />, մանրամասներ</translation>
-<translation id="7246947237293279874">FTP միջնորդ սերվեր</translation>
+<translation id="7246947237293279874">FTP պրոքսի սերվեր</translation>
 <translation id="7248671827512403053">Հավելված</translation>
 <translation id="7256405249507348194">Չճանաչված սխալ՝ <ph name="DESC" /></translation>
 <translation id="7268659760406822741">Հասանելի ծառայություններ</translation>
@@ -724,8 +742,10 @@
 <translation id="7309413087278791451">գերմաներեն (Բելգիա)</translation>
 <translation id="7339898014177206373">Նոր պատուհան</translation>
 <translation id="7343393116438664539">վիետնամերեն (տելեքս)</translation>
+<translation id="7357762654218998920">Ֆայլի այս տեսակը չի աջակցվում։ <ph name="BEGIN_LINK_HELP" />Իմացեք ավելին<ph name="END_LINK_HELP" />, թե ինչպես ֆայլերը բացել ChromeOS-ում։</translation>
 <translation id="7359359531237882347">Պատճենվում է <ph name="NUMBER_OF_ITEMS" /> տարր...</translation>
 <translation id="7375951387215729722">Ֆայլերի ցանկը տեսակավորված է ըստ «<ph name="COLUMN_NAME" />» ցուցանիշի՝ նվազման կարգով։</translation>
+<translation id="7402503521691663770">ChromeOS Flex սարքեր</translation>
 <translation id="7408870451288633753">չեխերեն</translation>
 <translation id="7417453074306512035">Եթովպերենի ստեղնաշար</translation>
 <translation id="7417705661718309329">Google քարտեզ</translation>
@@ -735,6 +755,7 @@
 <translation id="7489215562877293245">Գտնվել է <ph name="FILE_COUNT" /> ֆայլ
     <ph name="LINE_BREAK1" />
     Ֆայլերը պատրաստ են պահուստավորման <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" />-ում</translation>
+<translation id="749452993132003881">հիրագանա</translation>
 <translation id="7495372004724182530">մալայալամ (հնչյունային)</translation>
 <translation id="7505167922889582512">Ցուցադրել թաքցված ֆայլերը</translation>
 <translation id="7514365320538308">Ներբեռնել</translation>
@@ -794,8 +815,8 @@
 <translation id="7857117644404132472">Ավելացնել բացառություն</translation>
 <translation id="7868774406711971383">լեհերեն</translation>
 <translation id="7874321682039004450">տագալերեն</translation>
-<translation id="7881969471599061635">Անջատել ենթագրերը</translation>
 <translation id="78946041517601018">Ընդհանուր պանակներ</translation>
+<translation id="7903984238293908205">Կատականա</translation>
 <translation id="7908793776359722643">Եթե բաժինը ֆորմատավորեք, դրա մեջ պահված բոլոր տվյալները կջնջվեն։ Գործողությունը հնարավոր չէ հետարկել։</translation>
 <translation id="7925247922861151263">AAA ստուգումը չհաջողվեց</translation>
 <translation id="7925686952655276919">Չօգտագործել բջջային սարքերի տվյալները համաժամացման համար</translation>
@@ -806,7 +827,6 @@
 <translation id="7972920761225148017">ֆրանսերեն (Շվեյցարիա)</translation>
 <translation id="7973962044839454485">PPP իսկորոշումը չհաջողվեց: Օգտանունը կամ գաղտնաբառը սխալ են</translation>
 <translation id="7980421588063892270">անգլերեն (ԱՄՆ)՝ Colemak ստեղնաշարով</translation>
-<translation id="79907182588096956">Այս ֆայլը նախատեսված է Windows ծրագրակազմով համակարգչի համար։ Այն համատեղելի չէ Chrome OS-ով աշխատող ձեր սարքի հետ: <ph name="BEGIN_LINK_HELP" />Իմացեք ավելին<ph name="END_LINK_HELP" />, թե ինչպես ֆայլերը բացել Chrome OS-ում։</translation>
 <translation id="8000066093800657092">Ցանց չկա</translation>
 <translation id="8008366997883261463">Շուն</translation>
 <translation id="8028993641010258682">Չափ</translation>
@@ -815,6 +835,7 @@
 <translation id="8042602468072383151">Աուդիո ֆայլ (<ph name="AUDIO_TYPE" />)</translation>
 <translation id="8045462269890919536">Ռումինական</translation>
 <translation id="8049184478152619004">Մուտքագրեք անձնական ապակողպման բանալին (PUK)</translation>
+<translation id="807187749540895545">Ֆայլը (<ph name="FILE_NAME" />) արտահանվում է…</translation>
 <translation id="8079530767338315840">Կրկնել</translation>
 <translation id="8087576439476816834">Ներբեռնել, <ph name="PROFILE_NAME" /></translation>
 <translation id="8106045200081704138">Ինձ հասանելի</translation>
@@ -822,6 +843,7 @@
 <translation id="8128733386027980860">անգլերեն (ՄԹ)՝ Dvorak ստեղնաշարով</translation>
 <translation id="8137331602592933310">«<ph name="FILENAME" />» ֆայլը համօգտագործվել է ձեզ հետ: Դուք չեք կարող ջնջել այն, քանի որ այն ձերը չէ:</translation>
 <translation id="813913629614996137">Նախապատրաստվում է...</translation>
+<translation id="8147028810663464959">Նիշերի լայնությունը՝ լիալայքն</translation>
 <translation id="8151638057146502721">Կազմաձևել</translation>
 <translation id="8154842056504218462">Բոլոր գրառումներն ընտրվեցին:</translation>
 <translation id="8157684860301034423">Չհաջողվեց բեռնել հավելվածի մասին տեղեկությունները։</translation>
@@ -831,6 +853,8 @@
 <translation id="8208580316430297579">Արվեստի գործ</translation>
 <translation id="8223479393428528563">Այս ֆայլերը անցանց ռեժիմում օգտագործելու համար, նորից կապակցվեք համացանցին, ֆայլերի վրա աջ սեղմումով ընտրեք <ph name="OFFLINE_CHECKBOX_NAME" /> ընտրանքը:</translation>
 <translation id="8249296373107784235">Ընդհատել</translation>
+<translation id="8250690786522693009">լատիներեն</translation>
+<translation id="8250920743982581267">Փաստաթղթեր</translation>
 <translation id="8261506727792406068">Ջնջել</translation>
 <translation id="8261561378965667560">չինարեն (կառուցվածքային մուտքագրում)</translation>
 <translation id="8269755669432358899">Ծալել ֆայլերի մասին կարծիք հայտնելու վահանակները</translation>
@@ -848,6 +872,7 @@
 <translation id="8372369524088641025">WEP բանալին սխալ է</translation>
 <translation id="8372852072747894550">հունարեն</translation>
 <translation id="8386903983509584791">Որոնումն ավարտվեց</translation>
+<translation id="8387733224523483503">Ֆայլը (<ph name="FILE_NAME" />) դուրս բերվեց։</translation>
 <translation id="8395901698320285466">Չափեր</translation>
 <translation id="8408068190360279472"><ph name="NETWORK_TYPE" /> ցանց, միացում…</translation>
 <translation id="8425213833346101688">Փոխել</translation>
@@ -859,22 +884,22 @@
 <translation id="8461467696380332069">Մկնիկի աջ կոճակով սեղմեք ֆայլի վրա և ընտրեք «Ամրացնել դարակում»։</translation>
 <translation id="8461914792118322307">Պրոքսի-սերվեր</translation>
 <translation id="8463494891489624050">վիետնամերեն (VIQR ստեղնաշար)</translation>
-<translation id="8466234950814670489">Tar արխիվ</translation>
 <translation id="8475647382427415476">Google Drive-ը չկարողացավ համաժամացնել «<ph name="FILENAME" />» ֆայլը: Ավելի ուշ այն նորից կփորձի:</translation>
 <translation id="8477649328507734757">Պտույտ</translation>
 <translation id="8484284835977497781">Ընտրեք ձեր վերջին լուսանկարներից։</translation>
 <translation id="8487700953926739672">Մատչելի է անցանց ռեժիմում</translation>
 <translation id="8492972329130824181">Տնային ցանցը հասանելի չէ։ Կապ ապահովելու համար անհրաժեշտ է միացնել տվյալների ռոումինգը։</translation>
+<translation id="8499098729323186194">Տարրերը (<ph name="NUMBER_OF_ITEMS" />) արտահանվում են…</translation>
 <translation id="8521441079177373948">ՄԹ</translation>
-<translation id="8525306231823319788">Լիաէկրան</translation>
 <translation id="853494022971700746">ֆրանսերեն (Ֆրանսիա)</translation>
 <translation id="8540608333167683902">Ցանց <ph name="NETWORK_INDEX" />՝ <ph name="NETWORK_COUNT" />-ից, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, ազդանշանի ուժգնությունը՝ <ph name="SIGNAL_STRENGTH" />%, մանրամասներ</translation>
 <translation id="8545476925160229291">անգլերեն (ԱՄՆ)</translation>
-<translation id="854655314928502177">Միջնորդ սերվերի ինքնահայտնաբերման URL</translation>
+<translation id="854655314928502177">Պրոքսի սերվերի ինքնահայտնաբերման URL</translation>
 <translation id="8549186985808798022">իտալերեն</translation>
 <translation id="8551494947769799688">Լատվիական</translation>
 <translation id="8560515948038859357">կանտոներեն</translation>
 <translation id="8561206103590473338">Փիղ</translation>
+<translation id="8566466896628108558">Ցանց <ph name="NETWORK_INDEX" />՝ <ph name="NETWORK_COUNT" />-ից, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, ազդանշանի ուժգնությունը՝ <ph name="SIGNAL_STRENGTH" />%, արգելափակված է ադմինիստրատորի կողմից, մանրամասներ</translation>
 <translation id="8569764466147087991">Ընտրեք ֆայլ</translation>
 <translation id="8577897833047451336">խորվաթերեն</translation>
 <translation id="8578308463707544055">ինդոնեզերեն</translation>
@@ -910,8 +935,8 @@
 <translation id="8903931173357132290">Շրջանավարտ</translation>
 <translation id="8912078710089354287">Պոչը թափահարող շուն</translation>
 <translation id="8919081441417203123">Դանիական</translation>
+<translation id="8965273390142984105">LZOP սեղմված արխիվ</translation>
 <translation id="8965697826696209160">Բավարար տարածք չկա:</translation>
-<translation id="8970501467542182729">Այս ֆայլը նախատեսված է Macintosh ծրագրակազմով համակարգչի համար։ Այն համատեղելի չէ Chrome OS-ով աշխատող ձեր սարքի հետ: <ph name="BEGIN_LINK_HELP" />Իմացեք ավելին<ph name="END_LINK_HELP" />, թե ինչպես ֆայլերը բացել Chrome OS-ում։</translation>
 <translation id="8997962250644902079">չինարեն փինյին (ավանդական)</translation>
 <translation id="9003940392834790328">Ցանց <ph name="NETWORK_INDEX" />՝ <ph name="NETWORK_COUNT" />-ից, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, ազդանշանի ուժգնությունը՝ <ph name="SIGNAL_STRENGTH" />%, կառավարվում է ձեր ադմինիստրատորի կողմից, մանրամասներ</translation>
 <translation id="9017798300203431059">Ռուսական հնչյունային</translation>
@@ -930,7 +955,6 @@
 <translation id="9130775360844693113">«<ph name="DESTINATION_NAME" />»-ի անդամներին այս տարրերը հասանելի կդառնան։</translation>
 <translation id="9131598836763251128">Ընտրեք մեկ կամ ավելի ֆայլեր</translation>
 <translation id="9133055936679483811">Արխիվացումը չհաջողվեց: <ph name="ERROR_MESSAGE" /></translation>
-<translation id="9134524245363717059">Այս ֆայլը նախատեսված է Macintosh ծրագրակազմ օգտագործող համակարգիչների համար: Այն համատեղելի չէ ձեր Chrome OS-ով աշխատող սարքի հետ: Որոնեք համապատասխան փոխարինող հավելված Chrome Web Store-ում:</translation>
 <translation id="9144340019284012223">կատալաներեն</translation>
 <translation id="914873105831852105">PIN կոդն անվավեր է։ Մնաց 1 փորձ։</translation>
 <translation id="9153934054460603056">Պահել նույնականացման տվյալներն ու գաղտնաբառը</translation>
@@ -938,7 +962,9 @@
 <translation id="9172592259078059678">գուջարատերեն (տառադարձություն)</translation>
 <translation id="9173120999827300720">անգլերեն (ԱՄՆ)՝ միջազգային ստեղնաշարով</translation>
 <translation id="9174050671906956834">Աղբարկղի տարրերը 30 օր հետո ընդմիշտ ջնջվում են։</translation>
+<translation id="9183302530794969518">Google Փաստաթղթեր</translation>
 <translation id="9189836632794948435">ղազախերեն</translation>
+<translation id="9200427192836333033">Դուրս բերվեց <ph name="NUMBER_OF_ITEMS" /> տարր։</translation>
 <translation id="9213073329713032541">Տեղադրումը սկսվեց:</translation>
 <translation id="9219103736887031265">Պատկերներ</translation>
 <translation id="9219908252191632183">Լուսնային լանդշաֆտ</translation>

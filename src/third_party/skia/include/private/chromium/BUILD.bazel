@@ -1,11 +1,14 @@
-load("//bazel:macros.bzl", "generated_cc_atom")
+load("//bazel:macros.bzl", "exports_files_legacy")
 
-generated_cc_atom(
-    name = "GrSlug_hdr",
-    hdrs = ["GrSlug.h"],
-    visibility = ["//:__subpackages__"],
-    deps = [
-        "//include/core:SkRect_hdr",
-        "//include/core:SkRefCnt_hdr",
+licenses(["notice"])
+
+exports_files_legacy()
+
+filegroup(
+    name = "private_hdrs",
+    srcs = [
+        "SkChromeRemoteGlyphCache.h",
+        "Slug.h",
     ],
+    visibility = ["//include/private:__pkg__"],
 )

@@ -35,24 +35,46 @@ namespace {
 
 constexpr int kInterPostRoundBit = 4;
 
-inline void AverageBlend4Row(const int16_t* LIBGAV1_RESTRICT prediction_0,
-                             const int16_t* LIBGAV1_RESTRICT prediction_1,
-                             uint8_t* LIBGAV1_RESTRICT dest) {
-  const __m128i pred_0 = LoadLo8(prediction_0);
-  const __m128i pred_1 = LoadLo8(prediction_1);
-  __m128i res = _mm_add_epi16(pred_0, pred_1);
-  res = RightShiftWithRounding_S16(res, kInterPostRoundBit + 1);
-  Store4(dest, _mm_packus_epi16(res, res));
+inline void AverageBlend4x4Row(const int16_t* LIBGAV1_RESTRICT prediction_0,
+                               const int16_t* LIBGAV1_RESTRICT prediction_1,
+                               uint8_t* LIBGAV1_RESTRICT dest,
+                               const ptrdiff_t dest_stride) {
+  const __m128i pred_00 = LoadAligned16(prediction_0);
+  const __m128i pred_10 = LoadAligned16(prediction_1);
+  __m128i res_0 = _mm_add_epi16(pred_00, pred_10);
+  res_0 = RightShiftWithRounding_S16(res_0, kInterPostRoundBit + 1);
+  const __m128i pred_01 = LoadAligned16(prediction_0 + 8);
+  const __m128i pred_11 = LoadAligned16(prediction_1 + 8);
+  __m128i res_1 = _mm_add_epi16(pred_01, pred_11);
+  res_1 = RightShiftWithRounding_S16(res_1, kInterPostRoundBit + 1);
+  const __m128i result_pixels = _mm_packus_epi16(res_0, res_1);
+  Store4(dest, result_pixels);
+  dest += dest_stride;
+  const int result_1 = _mm_extract_epi32(result_pixels, 1);
+  memcpy(dest, &result_1, sizeof(result_1));
+  dest += dest_stride;
+  const int result_2 = _mm_extract_epi32(result_pixels, 2);
+  memcpy(dest, &result_2, sizeof(result_2));
+  dest += dest_stride;
+  const int result_3 = _mm_extract_epi32(result_pixels, 3);
+  memcpy(dest, &result_3, sizeof(result_3));
 }
 
 inline void AverageBlend8Row(const int16_t* LIBGAV1_RESTRICT prediction_0,
                              const int16_t* LIBGAV1_RESTRICT prediction_1,
-                             uint8_t* LIBGAV1_RESTRICT dest) {
-  const __m128i pred_0 = LoadAligned16(prediction_0);
-  const __m128i pred_1 = LoadAligned16(prediction_1);
-  __m128i res = _mm_add_epi16(pred_0, pred_1);
-  res = RightShiftWithRounding_S16(res, kInterPostRoundBit + 1);
-  StoreLo8(dest, _mm_packus_epi16(res, res));
+                             uint8_t* LIBGAV1_RESTRICT dest,
+                             const ptrdiff_t dest_stride) {
+  const __m128i pred_00 = LoadAligned16(prediction_0);
+  const __m128i pred_10 = LoadAligned16(prediction_1);
+  __m128i res_0 = _mm_add_epi16(pred_00, pred_10);
+  res_0 = RightShiftWithRounding_S16(res_0, kInterPostRoundBit + 1);
+  const __m128i pred_01 = LoadAligned16(prediction_0 + 8);
+  const __m128i pred_11 = LoadAligned16(prediction_1 + 8);
+  __m128i res_1 = _mm_add_epi16(pred_01, pred_11);
+  res_1 = RightShiftWithRounding_S16(res_1, kInterPostRoundBit + 1);
+  const __m128i result_pixels = _mm_packus_epi16(res_0, res_1);
+  StoreLo8(dest, result_pixels);
+  StoreHi8(dest + dest_stride, result_pixels);
 }
 
 inline void AverageBlendLargeRow(const int16_t* LIBGAV1_RESTRICT prediction_0,
@@ -85,35 +107,27 @@ void AverageBlend_SSE4_1(const void* LIBGAV1_RESTRICT prediction_0,
   int y = height;
 
   if (width == 4) {
+    const ptrdiff_t dest_stride4 = dest_stride << 2;
+    constexpr ptrdiff_t width4 = 4 << 2;
     do {
-      // TODO(b/150326556): |prediction_[01]| values are packed. It is possible
-      // to load 8 values at a time.
-      AverageBlend4Row(pred_0, pred_1, dst);
-      dst += dest_stride;
-      pred_0 += width;
-      pred_1 += width;
+      AverageBlend4x4Row(pred_0, pred_1, dst, dest_stride);
+      dst += dest_stride4;
+      pred_0 += width4;
+      pred_1 += width4;
 
-      AverageBlend4Row(pred_0, pred_1, dst);
-      dst += dest_stride;
-      pred_0 += width;
-      pred_1 += width;
-
-      y -= 2;
+      y -= 4;
     } while (y != 0);
     return;
   }
 
   if (width == 8) {
+    const ptrdiff_t dest_stride2 = dest_stride << 1;
+    constexpr ptrdiff_t width2 = 8 << 1;
     do {
-      AverageBlend8Row(pred_0, pred_1, dst);
-      dst += dest_stride;
-      pred_0 += width;
-      pred_1 += width;
-
-      AverageBlend8Row(pred_0, pred_1, dst);
-      dst += dest_stride;
-      pred_0 += width;
-      pred_1 += width;
+      AverageBlend8Row(pred_0, pred_1, dst, dest_stride);
+      dst += dest_stride2;
+      pred_0 += width2;
+      pred_1 += width2;
 
       y -= 2;
     } while (y != 0);

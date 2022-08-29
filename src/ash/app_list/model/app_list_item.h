@@ -40,9 +40,14 @@ class APP_LIST_MODEL_EXPORT AppListItem {
 
   // Setter and getter for the default app list item icon. Used as a base to
   // generate appropriate app list item icon for an app list config if an icon
-  // for the config has not been set using `SetIcon()`.
-  void SetDefaultIcon(const gfx::ImageSkia& icon);
+  // for the config has not been set using `SetIcon()`. The icon color is
+  // associated with the icon so set the icon color when the icon is set.
+  void SetDefaultIconAndColor(const gfx::ImageSkia& icon,
+                              const IconColor& color);
   const gfx::ImageSkia& GetDefaultIcon() const;
+
+  // Returns the icon color associated with the default icon.
+  const IconColor& GetDefaultIconColor() const;
 
   // Sets an number to represent the current icon version. It is used so that
   // the data provider side (AppService) only marks an icon change without
@@ -53,8 +58,6 @@ class APP_LIST_MODEL_EXPORT AppListItem {
   void SetIconVersion(int icon_version);
 
   void SetNotificationBadgeColor(const SkColor color);
-
-  void SetIconColor(const IconColor color);
 
   const std::string& GetDisplayName() const {
     return short_name_.empty() ? name() : short_name_;
@@ -96,6 +99,9 @@ class APP_LIST_MODEL_EXPORT AppListItem {
   // Returns the number of child items if it has any (e.g. is a folder) or 0.
   virtual size_t ChildItemCount() const;
 
+  // Request a folder item for an icon refresh. Method is no-op for app items.
+  virtual void RequestFolderIconUpdate() {}
+
   // Returns whether the item is a folder with max allowed children.
   bool IsFolderFull() const;
 
@@ -134,7 +140,7 @@ class APP_LIST_MODEL_EXPORT AppListItem {
   friend class AppListBadgeController;
   friend class AppListItemList;
   friend class AppListItemListTest;
-  friend class AppListItemViewProductivityLauncherTest;
+  friend class AppListItemViewTest;
   friend class AppListModel;
 
   // These should only be called by AppListModel or in tests so that name

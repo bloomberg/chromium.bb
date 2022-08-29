@@ -31,11 +31,6 @@ dialog:focus {
   outline: none;
 }
 
-dialog::backdrop {
-  background-color: #000;
-  opacity: 0.6;
-}
-
 dialog#delete-confirm-dialog::backdrop {
   background-color: transparent;
 }
@@ -132,13 +127,10 @@ dialog#delete-confirm-dialog::backdrop {
 
 #file-path {
   flex: 1;
+  margin-inline-start: 8px;
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-:host([files-ng]) #file-path {
-  margin-inline-start: 8px;
 }
 
 .buttons-group {
@@ -161,22 +153,22 @@ cr-button {
   width: 36px;
 }
 
-:host-context(html.pointer-active.files-ng) cr-button:not(:active):hover {
+:host-context(html.pointer-active) cr-button:not(:active):hover {
   --hover-bg-color: none;
   cursor: unset;
 }
 
-:host([files-ng]) cr-button::after {
+cr-button::after {
   content: '';
   height: 48px;
   position: absolute;
   width: 48px;
 }
 
-:host([files-ng]) #back-button > .icon,
-:host([files-ng]) #open-button > .icon,
-:host([files-ng]) #delete-button > .icon,
-:host([files-ng]) #info-button > .icon {
+#back-button > .icon,
+#open-button > .icon,
+#delete-button > .icon,
+#info-button > .icon {
   -webkit-mask-position: center;
   -webkit-mask-repeat: no-repeat;
   background-color: currentColor;
@@ -190,15 +182,15 @@ iron-icon {
   width: 16px;
 }
 
-:host([files-ng]) #back-button > iron-icon {
+#back-button > iron-icon {
   display: none;
 }
 
-:host([files-ng]) #back-button > .icon {
+#back-button > .icon {
   -webkit-mask-image: url(../images/files/ui/back.svg);
 }
 
-:host([files-ng]) #open-button > .icon {
+#open-button > .icon {
   -webkit-mask-image: url(../images/files/ui/external_link.svg);
 }
 
@@ -216,7 +208,7 @@ iron-icon {
   -webkit-mask-image: url(../images/files/ui/info.svg);
 }
 
-:host-context(html.focus-outline-visible.files-ng) cr-button:not(:active):focus {
+:host-context(html.focus-outline-visible) cr-button:not(:active):focus {
   border: 2px solid var(--cros-focus-ring-color);
 }
 
@@ -237,12 +229,13 @@ iron-icon {
 }
 
 ::-webkit-scrollbar {
+  background-color: var(--cros-app-scrollbar-color);
   width: 10px;
 }
 
 ::-webkit-scrollbar-thumb {
   background-clip: content-box;
-  background-color: rgb(118, 118, 121);
+  background-color: var(--cros-app-scrollbar-color-hover);
   border: 2.5px solid transparent;
   width: 5px;
 }
@@ -267,36 +260,37 @@ iron-icon {
 
 /* Large generic thumbnails, used when a file does not have a thumbnail. */
 [generic-thumbnail] {
-  background: -webkit-image-set(
-      url(../images/files/ui/quick_view/filetype_generic.png) 1x,
-      url(../images/files/ui/quick_view/2x/filetype_generic.png) 2x)
-    center
-    no-repeat;
+  -webkit-mask-image: url(../images/filetype/filetype_generic.svg);
+  -webkit-mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: auto 88px;
+  background-color: currentColor;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: auto 88px;
   height: 88px;
 }
 
 [generic-thumbnail='.folder'] {
-  background-image: -webkit-image-set(
-      url(../images/files/ui/quick_view/filetype_folder.png) 1x,
-      url(../images/files/ui/quick_view/2x/filetype_folder.png) 2x);
-  height: 72px;
+  -webkit-mask-image: url(../images/filetype/filetype_folder.svg);
+  -webkit-mask-size: auto 72px;
 }
 
 [generic-thumbnail='audio'] {
-  background-image: -webkit-image-set(
-      url(../images/files/ui/quick_view/filetype_audio.png) 1x,
-      url(../images/files/ui/quick_view/2x/filetype_audio.png) 2x);
+  -webkit-mask-image: none;
+  background-color: transparent;
+  background-image: url(../images/filetype/filetype_audio.svg);
 }
 
 [generic-thumbnail='image'] {
-  background-image: -webkit-image-set(
-      url(../images/files/ui/quick_view/filetype_image.png) 1x,
-      url(../images/files/ui/quick_view/2x/filetype_image.png) 2x);
+  -webkit-mask-image: none;
+  background-color: transparent;
+  background-image: url(../images/filetype/filetype_image.svg);
 }
 
 [generic-thumbnail='video'] {
-  background-image: -webkit-image-set(
-      url(../images/files/ui/quick_view/filetype_video.png) 1x,
-      url(../images/files/ui/quick_view/2x/filetype_video.png) 2x);
-  height: 72px;
+  -webkit-mask-image: none;
+  background-color: transparent;
+  background-image: url(../images/filetype/filetype_video.svg);
+  background-size: auto 72px;
 }
