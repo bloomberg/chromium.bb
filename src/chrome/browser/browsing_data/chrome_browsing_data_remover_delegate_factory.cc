@@ -9,7 +9,6 @@
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/domain_reliability/service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/web_history_service_factory.h"
@@ -32,11 +31,11 @@
 #include "chrome/browser/sessions/session_service_factory.h"
 #endif
 
-#if defined(OS_ANDROID)
-#include "chrome/browser/feed/android/feed_service_factory.h"
+#if BUILDFLAG(IS_ANDROID)
+#include "chrome/browser/feed/feed_service_factory.h"
 #include "components/feed/buildflags.h"
 #include "components/feed/feed_feature_list.h"
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID
 
 // static
 ChromeBrowsingDataRemoverDelegateFactory*
@@ -57,12 +56,11 @@ ChromeBrowsingDataRemoverDelegateFactory::
           "BrowsingDataRemover",
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(autofill::PersonalDataManagerFactory::GetInstance());
-  DependsOn(DataReductionProxyChromeSettingsFactory::GetInstance());
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #if BUILDFLAG(ENABLE_FEED_V2)
   DependsOn(feed::FeedServiceFactory::GetInstance());
 #endif  // BUILDFLAG(ENABLE_FEED_V2)
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
   DependsOn(HistoryServiceFactory::GetInstance());
   DependsOn(HostContentSettingsMapFactory::GetInstance());
   DependsOn(PasswordStoreFactory::GetInstance());

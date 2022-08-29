@@ -7,6 +7,7 @@
 #import <MaterialComponents/MaterialSnackbar.h>
 
 #include "base/callback_helpers.h"
+#include "base/feature_list.h"
 #include "base/i18n/message_formatter.h"
 #import "base/ios/ios_util.h"
 #import "base/logging.h"
@@ -15,7 +16,6 @@
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "components/breadcrumbs/core/breadcrumb_manager_keyed_service.h"
 #include "components/breadcrumbs/core/breadcrumb_persistent_storage_manager.h"
@@ -51,14 +51,20 @@
 #include "ios/chrome/browser/crash_report/crash_keys_helper.h"
 #include "ios/chrome/browser/crash_report/crash_report_helper.h"
 #import "ios/chrome/browser/crash_report/crash_restore_helper.h"
+#include "ios/chrome/browser/default_browser/promo_source.h"
+#import "ios/chrome/browser/discover_feed/discover_feed_service.h"
+#import "ios/chrome/browser/discover_feed/discover_feed_service_factory.h"
 #import "ios/chrome/browser/first_run/first_run.h"
 #import "ios/chrome/browser/geolocation/geolocation_logger.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
+#import "ios/chrome/browser/mailto_handler/mailto_handler_service.h"
+#import "ios/chrome/browser/mailto_handler/mailto_handler_service_factory.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/main/browser_list.h"
 #import "ios/chrome/browser/main/browser_list_factory.h"
 #import "ios/chrome/browser/main/browser_util.h"
 #include "ios/chrome/browser/ntp/features.h"
+#import "ios/chrome/browser/policy/cloud/user_policy_signin_service_factory.h"
 #import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/policy/policy_watcher_browser_agent.h"
 #include "ios/chrome/browser/policy/policy_watcher_browser_agent.h"
@@ -79,6 +85,7 @@
 #import "ios/chrome/browser/ui/authentication/signin/signin_utils.h"
 #import "ios/chrome/browser/ui/authentication/signin_notification_infobar_delegate.h"
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller.h"
+#import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/browsing_data_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
@@ -96,11 +103,16 @@
 #import "ios/chrome/browser/ui/main/browser_view_wrangler.h"
 #import "ios/chrome/browser/ui/main/default_browser_scene_agent.h"
 #import "ios/chrome/browser/ui/main/incognito_blocker_scene_agent.h"
-#import "ios/chrome/browser/ui/main/reading_list_background_session_scene_agent.h"
+#import "ios/chrome/browser/ui/main/layout_guide_scene_agent.h"
+#import "ios/chrome/browser/ui/main/scene_ui_provider.h"
 #import "ios/chrome/browser/ui/main/signin_policy_scene_agent.h"
 #import "ios/chrome/browser/ui/main/ui_blocker_scene_agent.h"
+#import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
+#import "ios/chrome/browser/ui/policy/user_policy_scene_agent.h"
+#import "ios/chrome/browser/ui/policy/user_policy_util.h"
 #import "ios/chrome/browser/ui/scoped_ui_blocker/scoped_ui_blocker.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
+#import "ios/chrome/browser/ui/start_surface/start_surface_features.h"
 #import "ios/chrome/browser/ui/start_surface/start_surface_recent_tab_browser_agent.h"
 #import "ios/chrome/browser/ui/start_surface/start_surface_scene_agent.h"
 #import "ios/chrome/browser/ui/start_surface/start_surface_util.h"
@@ -108,8 +120,10 @@
 #include "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/thumb_strip/thumb_strip_feature.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
+#include "ios/chrome/browser/ui/util/features.h"
 #import "ios/chrome/browser/ui/util/top_view_controller.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/util/util_swift.h"
 #import "ios/chrome/browser/url_loading/scene_url_loading_service.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
@@ -121,10 +135,11 @@
 #import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
-#include "ios/public/provider/chrome/browser/mailto/mailto_handler_provider.h"
 #include "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
+#import "ios/public/provider/chrome/browser/ui_utils/ui_utils_api.h"
 #import "ios/public/provider/chrome/browser/user_feedback/user_feedback_provider.h"
 #include "ios/web/public/thread/web_task_traits.h"
+#include "ios/web/public/thread/web_thread.h"
 #import "ios/web/public/web_state.h"
 #import "net/base/mac/url_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -183,6 +198,7 @@ bool IsSigninForcedByPolicy() {
 @interface SceneController () <AppStateObserver,
                                PolicyWatcherBrowserAgentObserving,
                                SettingsNavigationControllerDelegate,
+                               SceneUIProvider,
                                SceneURLLoadingServiceDelegate,
                                TabGridCoordinatorDelegate,
                                UserFeedbackDataSource,
@@ -227,7 +243,7 @@ bool IsSigninForcedByPolicy() {
 // switcher dismissal. It can only be YES if the QR Scanner experiment is
 // enabled.
 @property(nonatomic, readwrite)
-    NTPTabOpeningPostOpeningAction NTPActionAfterTabSwitcherDismissal;
+    TabOpeningPostOpeningAction NTPActionAfterTabSwitcherDismissal;
 
 // The main coordinator, lazily created the first time it is accessed. Manages
 // the main view controller. This property should not be accessed before the
@@ -292,9 +308,8 @@ bool IsSigninForcedByPolicy() {
                      initWithReauthModule:[[ReauthenticationModule alloc]
                                               init]]];
     [_sceneState addAgent:[[StartSurfaceSceneAgent alloc] init]];
-    [_sceneState
-        addAgent:[[ReadingListBackgroundSessionSceneAgent alloc] init]];
     [_sceneState addAgent:[[SessionSavingSceneAgent alloc] init]];
+    [_sceneState addAgent:[[LayoutGuideSceneAgent alloc] init]];
   }
   return self;
 }
@@ -359,8 +374,8 @@ bool IsSigninForcedByPolicy() {
   return self.signinCoordinator != nil;
 }
 
-- (UIViewController*)activeViewController {
-  return self.mainCoordinator.activeViewController;
+- (BOOL)tabGridVisible {
+  return self.mainCoordinator.isTabGridActive;
 }
 
 #pragma mark - SceneStateObserver
@@ -709,7 +724,15 @@ bool IsSigninForcedByPolicy() {
       [self finishActivatingBrowserDismissingTabSwitcher:YES];
     }
 
-    [self handleShowStartSurfaceIfNecessary];
+    if (!IsStartSurfaceSplashStartupEnabled()) {
+      [self handleShowStartSurfaceIfNecessary];
+    }
+
+    if (IsWebChannelsEnabled()) {
+      // Creating the DiscoverFeedService.
+      DiscoverFeedServiceFactory::GetForBrowserState(
+          self.mainInterface.browser->GetBrowserState());
+    }
   }
 
   [self recordWindowCreationForSceneState:self.sceneState];
@@ -806,6 +829,14 @@ bool IsSigninForcedByPolicy() {
   DCHECK(self.sceneURLLoadingService);
   DCHECK(self.sceneState.appState.mainBrowserState);
 
+  // Turn on KVO support on UIView window if enabled.
+  // TODO(crbug.com/1318016): Remove this call once it can be unconditionally
+  // enabled.
+  UIView.cr_supportsWindowObserving =
+      base::FeatureList::IsEnabled(kUIViewWindowObserving);
+  DCHECK_EQ(UIView.cr_supportsWindowObserving,
+            base::FeatureList::IsEnabled(kUIViewWindowObserving));
+
   self.browserViewWrangler = [[BrowserViewWrangler alloc]
              initWithBrowserState:self.sceneState.appState.mainBrowserState
                        sceneState:self.sceneState
@@ -827,12 +858,38 @@ bool IsSigninForcedByPolicy() {
     [self.sceneState addObserver:defaultBrowserAgent.nonModalScheduler];
   }
 
-  [self.sceneState
-      addAgent:[[SigninPolicySceneAgent alloc]
-                   initWithCommandDispatcher:mainCommandDispatcher]];
-
   // Create and start the BVC.
   [self.browserViewWrangler createMainCoordinatorAndInterface];
+
+  id<ApplicationCommands> applicationCommandsHandler =
+      HandlerForProtocol(mainCommandDispatcher, ApplicationCommands);
+  id<PolicyChangeCommands> policyChangeCommandsHandler =
+      HandlerForProtocol(mainCommandDispatcher, PolicyChangeCommands);
+
+  [self.sceneState
+      addAgent:[[SigninPolicySceneAgent alloc]
+                       initWithSceneUIProvider:self
+                    applicationCommandsHandler:applicationCommandsHandler
+                   policyChangeCommandsHandler:policyChangeCommandsHandler]];
+
+  ChromeBrowserState* browserState = self.sceneState.appState.mainBrowserState;
+  PrefService* prefService = browserState->GetPrefs();
+  AuthenticationService* authService =
+      AuthenticationServiceFactory::GetForBrowserState(browserState);
+
+  if (IsUserPolicyNotificationNeeded(authService, prefService)) {
+    policy::UserPolicySigninService* userPolicyService =
+        policy::UserPolicySigninServiceFactory::GetForBrowserState(
+            browserState);
+    [self.sceneState
+        addAgent:[[UserPolicySceneAgent alloc]
+                        initWithSceneUIProvider:self
+                                    authService:authService
+                     applicationCommandsHandler:applicationCommandsHandler
+                                    prefService:prefService
+                                    mainBrowser:mainBrowser
+                                  policyService:userPolicyService]];
+  }
 
   // Now that the main browser's command dispatcher is created and the newly
   // started UI coordinators have registered with it, inject it into the
@@ -840,10 +897,8 @@ bool IsSigninForcedByPolicy() {
   // changes.
   PolicyWatcherBrowserAgent* policyWatcherAgent =
       PolicyWatcherBrowserAgent::FromBrowser(self.mainInterface.browser);
-  id<PolicyChangeCommands> handler =
-      HandlerForProtocol(mainCommandDispatcher, PolicyChangeCommands);
   policyWatcherAgent->AddObserver(_policyWatcherObserverBridge.get());
-  policyWatcherAgent->Initialize(handler);
+  policyWatcherAgent->Initialize(policyChangeCommandsHandler);
 
   self.screenshotDelegate = [[ScreenshotDelegate alloc]
       initWithBrowserInterfaceProvider:self.browserViewWrangler];
@@ -867,14 +922,6 @@ bool IsSigninForcedByPolicy() {
     [self clearIOSSpecificIncognitoData];
 
   [self createInitialUI:[self initialUIMode]];
-
-  // By reaching here, it's guaranteed that both Normal and incognito sessions
-  // were restored. and if it's the first time that multi-window sessions are
-  // created, the migration was done. Update the Multi-Window flag so it's not
-  // used again in the same run when creating new windows.
-  // TODO(crbug.com/1109280): Remove after the migration to Multi-Window
-  // sessions is done.
-  [[PreviousSessionInfo sharedInstance] updateMultiWindowSupportStatus];
 
   if ([self shouldShowRestorePrompt]) {
     [self.sceneState.appState.startupInformation
@@ -975,7 +1022,9 @@ bool IsSigninForcedByPolicy() {
   // currentInterface is set in case a new tab needs to be opened. Since this is
   // synchronous with |setActivePage:| above, then the user should not see the
   // last tab if the Start Surface is opened.
-  [self handleShowStartSurfaceIfNecessary];
+  if (!IsStartSurfaceSplashStartupEnabled()) {
+    [self handleShowStartSurfaceIfNecessary];
+  }
 
   // Figure out what UI to show initially.
 
@@ -998,7 +1047,7 @@ bool IsSigninForcedByPolicy() {
         browser->GetCommandDispatcher(), ApplicationCommands);
     [applicationHandler openURLInNewTab:command];
   }
-  [self maybeShowDefaultBrowserPromo];
+  [self maybeShowDefaultBrowserPromo:self.mainInterface.browser];
 }
 
 // |YES| if Chrome is not the default browser, the app did not crash recently,
@@ -1006,7 +1055,7 @@ bool IsSigninForcedByPolicy() {
 - (BOOL)potentiallyInterestedUser {
   // If skipping first run, not in Safe Mode, no post opening action and the
   // launch is not after a crash, consider showing the default browser promo.
-  NTPTabOpeningPostOpeningAction postOpeningAction =
+  TabOpeningPostOpeningAction postOpeningAction =
       self.NTPActionAfterTabSwitcherDismissal;
   if (self.startupParameters) {
     postOpeningAction = self.startupParameters.postOpeningAction;
@@ -1015,12 +1064,27 @@ bool IsSigninForcedByPolicy() {
          !self.sceneState.appState.postCrashLaunch &&
          !IsChromeLikelyDefaultBrowser() &&
          !HasUserOpenedSettingsFromFirstRunPromo() &&
-         !fre_field_trial::IsInDefaultBrowserPromoAtFirstRunOnlyGroup();
+         fre_field_trial::GetFREDefaultBrowserScreenPromoFRE() !=
+             NewDefaultBrowserPromoFRE::kFirstRunOnly;
 }
 
-- (void)maybeShowDefaultBrowserPromo {
+- (void)maybeShowDefaultBrowserPromo:(Browser*)browser {
+  ChromeBrowserState* browserState = self.sceneState.appState.mainBrowserState;
+  PrefService* prefService = browserState->GetPrefs();
+  AuthenticationService* authService =
+      AuthenticationServiceFactory::GetForBrowserState(browserState);
+
   if (self.sceneState.appState.startupInformation.isFirstRun ||
+      IsUserPolicyNotificationNeeded(authService, prefService) ||
       ![self potentiallyInterestedUser]) {
+    // Don't show the default browser promo when either (1) the user is going
+    // through the First Run screens, (2) the user MUST see the User Policy
+    // notification, OR (3) it was determined that the user isn't potentially
+    // interested in that promo.
+    //
+    // Showing the User Policy notification has priority over showing the
+    // default browser promo. Both dialogs are competing for the same time slot
+    // which is after the browser startup and the browser UI is initialized.
     return;
   }
   // Show the Default Browser promo UI if the user's past behavior fits
@@ -1137,7 +1201,7 @@ bool IsSigninForcedByPolicy() {
           url_formatter::kFormatUrlOmitTrivialSubdomains |
           url_formatter::kFormatUrlOmitHTTPS |
           url_formatter::kFormatUrlTrimAfterHost,
-      net::UnescapeRule::SPACES, nullptr, nullptr, nullptr);
+      base::UnescapeRule::SPACES, nullptr, nullptr, nullptr);
   std::u16string pattern =
       l10n_util::GetStringUTF16(IDS_IOS_APP_SWITCHER_SCENE_TITLE);
   std::u16string formattedTitle =
@@ -1496,7 +1560,7 @@ bool IsSigninForcedByPolicy() {
   Browser* mainBrowser = self.mainInterface.browser;
 
   switch (command.operation) {
-    case AUTHENTICATION_OPERATION_REAUTHENTICATE:
+    case AuthenticationOperationReauthenticate:
       self.signinCoordinator = [SigninCoordinator
           reAuthenticationCoordinatorWithBaseViewController:baseViewController
                                                     browser:mainBrowser
@@ -1504,7 +1568,7 @@ bool IsSigninForcedByPolicy() {
                                                 promoAction:command
                                                                 .promoAction];
       break;
-    case AUTHENTICATION_OPERATION_SIGNIN:
+    case AuthenticationOperationSigninAndSync:
       self.signinCoordinator = [SigninCoordinator
           userSigninCoordinatorWithBaseViewController:baseViewController
                                               browser:mainBrowser
@@ -1512,13 +1576,19 @@ bool IsSigninForcedByPolicy() {
                                           accessPoint:command.accessPoint
                                           promoAction:command.promoAction];
       break;
-    case AUTHENTICATION_OPERATION_ADD_ACCOUNT:
+    case AuthenticationOperationSigninOnly:
+      self.signinCoordinator = [SigninCoordinator
+          consistencyPromoSigninCoordinatorWithBaseViewController:
+              baseViewController
+                                                          browser:mainBrowser];
+      break;
+    case AuthenticationOperationAddAccount:
       self.signinCoordinator = [SigninCoordinator
           addAccountCoordinatorWithBaseViewController:baseViewController
                                               browser:mainBrowser
                                           accessPoint:command.accessPoint];
       break;
-    case AUTHENTICATION_OPERATION_FORCED_SIGNIN:
+    case AuthenticationOperationForcedSigninAndSync:
       self.signinCoordinator = [SigninCoordinator
           forcedSigninCoordinatorWithBaseViewController:baseViewController
                                                 browser:mainBrowser];
@@ -1581,6 +1651,12 @@ bool IsSigninForcedByPolicy() {
   // Do not display the web sign-in promo if there is any UI on the screen.
   if (self.signinCoordinator || self.settingsNavigationController)
     return;
+  if (self.sceneState.appState.initStage == InitStageFirstRun) {
+    // This case is possible when using force FRE flag and opening chrome
+    // with accounts.google.com in the background.
+    // crbug.com/1293305.
+    return;
+  }
   self.signinCoordinator = [SigninCoordinator
       consistencyPromoSigninCoordinatorWithBaseViewController:baseViewController
                                                       browser:self.mainInterface
@@ -1633,6 +1709,10 @@ bool IsSigninForcedByPolicy() {
 }
 
 - (void)showSettingsFromViewController:(UIViewController*)baseViewController {
+  if (!baseViewController) {
+    baseViewController = self.currentInterface.viewController;
+  }
+
   DCHECK(!self.signinCoordinator) << "self.signinCoordinator class: "
                                   << base::SysNSStringToUTF8(NSStringFromClass(
                                          self.signinCoordinator.class));
@@ -1782,7 +1862,8 @@ bool IsSigninForcedByPolicy() {
 
 // TODO(crbug.com/779791) : Remove show settings commands from MainController.
 - (void)showSavedPasswordsSettingsFromViewController:
-    (UIViewController*)baseViewController {
+            (UIViewController*)baseViewController
+                                    showCancelButton:(BOOL)showCancelButton {
   if (!baseViewController) {
     // TODO(crbug.com/779791): Don't pass base view controller through
     // dispatched command.
@@ -1793,14 +1874,16 @@ bool IsSigninForcedByPolicy() {
                                          self.signinCoordinator.class));
   if (self.settingsNavigationController) {
     [self.settingsNavigationController
-        showSavedPasswordsSettingsFromViewController:baseViewController];
+        showSavedPasswordsSettingsFromViewController:baseViewController
+                                    showCancelButton:showCancelButton];
     return;
   }
   Browser* browser = self.mainInterface.browser;
-  self.settingsNavigationController =
-      [SettingsNavigationController savePasswordsControllerForBrowser:browser
-                                                             delegate:self
-                                      startPasswordCheckAutomatically:NO];
+  self.settingsNavigationController = [SettingsNavigationController
+      savePasswordsControllerForBrowser:browser
+                               delegate:self
+        startPasswordCheckAutomatically:YES
+                       showCancelButton:showCancelButton];
   [baseViewController presentViewController:self.settingsNavigationController
                                    animated:YES
                                  completion:nil];
@@ -1822,7 +1905,8 @@ bool IsSigninForcedByPolicy() {
   self.settingsNavigationController =
       [SettingsNavigationController savePasswordsControllerForBrowser:browser
                                                              delegate:self
-                                      startPasswordCheckAutomatically:YES];
+                                      startPasswordCheckAutomatically:YES
+                                                     showCancelButton:NO];
   [baseViewController presentViewController:self.settingsNavigationController
                                    animated:YES
                                  completion:nil];
@@ -1850,14 +1934,12 @@ bool IsSigninForcedByPolicy() {
 }
 
 // TODO(crbug.com/779791) : Remove show settings commands from MainController.
-- (void)showCreditCardSettingsFromViewController:
-    (UIViewController*)baseViewController {
+- (void)showCreditCardSettings {
   DCHECK(!self.signinCoordinator) << "self.signinCoordinator class: "
                                   << base::SysNSStringToUTF8(NSStringFromClass(
                                          self.signinCoordinator.class));
   if (self.settingsNavigationController) {
-    [self.settingsNavigationController
-        showCreditCardSettingsFromViewController:baseViewController];
+    [self.settingsNavigationController showCreditCardSettings];
     return;
   }
 
@@ -1865,19 +1947,23 @@ bool IsSigninForcedByPolicy() {
   self.settingsNavigationController = [SettingsNavigationController
       autofillCreditCardControllerForBrowser:browser
                                     delegate:self];
-  [baseViewController presentViewController:self.settingsNavigationController
-                                   animated:YES
-                                 completion:nil];
+  [self.currentInterface.viewController
+      presentViewController:self.settingsNavigationController
+                   animated:YES
+                 completion:nil];
 }
 
 - (void)showDefaultBrowserSettingsFromViewController:
-    (UIViewController*)baseViewController {
+            (UIViewController*)baseViewController
+                                        sourceForUMA:
+                                            (DefaultBrowserPromoSource)source {
   if (!baseViewController) {
     baseViewController = self.currentInterface.viewController;
   }
   if (self.settingsNavigationController) {
     [self.settingsNavigationController
-        showDefaultBrowserSettingsFromViewController:baseViewController];
+        showDefaultBrowserSettingsFromViewController:baseViewController
+                                        sourceForUMA:source];
     return;
   }
   Browser* browser = self.mainInterface.browser;
@@ -1885,6 +1971,55 @@ bool IsSigninForcedByPolicy() {
   self.settingsNavigationController =
       [SettingsNavigationController defaultBrowserControllerForBrowser:browser
                                                               delegate:self];
+  [baseViewController presentViewController:self.settingsNavigationController
+                                   animated:YES
+                                 completion:nil];
+}
+
+- (void)showClearBrowsingDataSettings {
+  UIViewController* baseViewController = self.currentInterface.viewController;
+  if (self.settingsNavigationController) {
+    [self.settingsNavigationController showClearBrowsingDataSettings];
+    return;
+  }
+  Browser* browser = self.mainInterface.browser;
+
+  self.settingsNavigationController = [SettingsNavigationController
+      clearBrowsingDataControllerForBrowser:browser
+                                   delegate:self];
+  [baseViewController presentViewController:self.settingsNavigationController
+                                   animated:YES
+                                 completion:nil];
+}
+
+- (void)showSafetyCheckSettingsAndStartSafetyCheck {
+  UIViewController* baseViewController = self.currentInterface.viewController;
+  if (self.settingsNavigationController) {
+    [self.settingsNavigationController
+            showSafetyCheckSettingsAndStartSafetyCheck];
+    return;
+  }
+  Browser* browser = self.mainInterface.browser;
+
+  self.settingsNavigationController =
+      [SettingsNavigationController safetyCheckControllerForBrowser:browser
+                                                           delegate:self];
+  [baseViewController presentViewController:self.settingsNavigationController
+                                   animated:YES
+                                 completion:nil];
+}
+
+- (void)showSafeBrowsingSettings {
+  UIViewController* baseViewController = self.currentInterface.viewController;
+  if (self.settingsNavigationController) {
+    [self.settingsNavigationController showSafeBrowsingSettings];
+    return;
+  }
+  Browser* browser = self.mainInterface.browser;
+
+  self.settingsNavigationController =
+      [SettingsNavigationController safeBrowsingControllerForBrowser:browser
+                                                            delegate:self];
   [baseViewController presentViewController:self.settingsNavigationController
                                    animated:YES
                                  completion:nil];
@@ -1959,9 +2094,7 @@ bool IsSigninForcedByPolicy() {
     shouldActivateBrowser:(Browser*)browser
            dismissTabGrid:(BOOL)dismissTabGrid
              focusOmnibox:(BOOL)focusOmnibox {
-  DCHECK(dismissTabGrid ||
-         ShowThumbStripInTraitCollection(
-             self.mainCoordinator.baseViewController.traitCollection));
+  DCHECK(dismissTabGrid || self.mainCoordinator.isThumbStripEnabled);
   [self beginActivatingBrowser:browser
             dismissTabSwitcher:dismissTabGrid
                   focusOmnibox:focusOmnibox];
@@ -1989,9 +2122,7 @@ bool IsSigninForcedByPolicy() {
                   focusOmnibox:(BOOL)focusOmnibox {
   DCHECK(browser == self.mainInterface.browser ||
          browser == self.incognitoInterface.browser);
-  DCHECK(dismissTabSwitcher ||
-         ShowThumbStripInTraitCollection(
-             self.mainCoordinator.baseViewController.traitCollection));
+  DCHECK(dismissTabSwitcher || self.mainCoordinator.isThumbStripEnabled);
 
   self.activatingBrowser = YES;
   ApplicationMode mode = (browser == self.mainInterface.browser)
@@ -2058,31 +2189,24 @@ bool IsSigninForcedByPolicy() {
 #pragma mark Tab opening utility methods.
 
 - (ProceduralBlock)completionBlockForTriggeringAction:
-    (NTPTabOpeningPostOpeningAction)action {
+    (TabOpeningPostOpeningAction)action {
+  __weak __typeof(self) weakSelf = self;
   switch (action) {
     case START_VOICE_SEARCH:
       return ^{
-        [self startVoiceSearchInCurrentBVC];
+        [weakSelf startVoiceSearchInCurrentBVC];
       };
     case START_QR_CODE_SCANNER:
       return ^{
-        if (!self.currentInterface.browser) {
-          return;
-        }
-        id<QRScannerCommands> QRHandler = HandlerForProtocol(
-            self.currentInterface.browser->GetCommandDispatcher(),
-            QRScannerCommands);
-        [QRHandler showQRScanner];
+        [weakSelf startQRCodeScanner];
       };
     case FOCUS_OMNIBOX:
       return ^{
-        if (!self.currentInterface.browser) {
-          return;
-        }
-        id<OmniboxCommands> focusHandler = HandlerForProtocol(
-            self.currentInterface.browser->GetCommandDispatcher(),
-            OmniboxCommands);
-        [focusHandler focusOmnibox];
+        [weakSelf focusOmnibox];
+      };
+    case SHOW_DEFAULT_BROWSER_SETTINGS:
+      return ^{
+        [weakSelf showDefaultBrowserSettings];
       };
     default:
       return nil;
@@ -2096,10 +2220,43 @@ bool IsSigninForcedByPolicy() {
   BrowserViewController* backgroundBVC =
       self.mainInterface == self.currentInterface ? self.incognitoInterface.bvc
                                                   : self.mainInterface.bvc;
+  // TODO(crbug.com/1329104): playingTTS will be removed as an API from the BVC
+  // and something else will be used instead.
   if (backgroundBVC.playingTTS)
     [backgroundBVC startVoiceSearch];
   else
     [self.currentInterface.bvc startVoiceSearch];
+}
+
+- (void)startQRCodeScanner {
+  if (!self.currentInterface.browser) {
+    return;
+  }
+  id<QRScannerCommands> QRHandler = HandlerForProtocol(
+      self.currentInterface.browser->GetCommandDispatcher(), QRScannerCommands);
+  [QRHandler showQRScanner];
+}
+
+- (void)focusOmnibox {
+  if (!self.currentInterface.browser) {
+    return;
+  }
+  id<OmniboxCommands> omniboxCommandsHandler = HandlerForProtocol(
+      self.currentInterface.browser->GetCommandDispatcher(), OmniboxCommands);
+  [omniboxCommandsHandler focusOmnibox];
+}
+
+- (void)showDefaultBrowserSettings {
+  if (!self.currentInterface.browser) {
+    return;
+  }
+  id<ApplicationSettingsCommands> applicationSettingsCommandsHandler =
+      HandlerForProtocol(self.currentInterface.browser->GetCommandDispatcher(),
+                         ApplicationSettingsCommands);
+  [applicationSettingsCommandsHandler
+      showDefaultBrowserSettingsFromViewController:nil
+                                      sourceForUMA:DefaultBrowserPromoSource::
+                                                       kExternalIntent];
 }
 
 #pragma mark - TabSwitching
@@ -2306,16 +2463,16 @@ bool IsSigninForcedByPolicy() {
   // Immediately hide modals from the provider (alert views, action sheets,
   // popovers). They will be ultimately dismissed by their owners, but at least,
   // they are not visible.
-  ios::GetChromeBrowserProvider().HideModalViewStack();
+  ios::provider::HideModalViewStack();
 
   // ChromeIdentityService is responsible for the dialogs displayed by the
   // services it wraps.
   ios::GetChromeBrowserProvider().GetChromeIdentityService()->DismissDialogs();
 
-  // MailtoHandlerProvider is responsible for the dialogs displayed by the
+  // MailtoHandlerService is responsible for the dialogs displayed by the
   // services it wraps.
-  ios::GetChromeBrowserProvider()
-      .GetMailtoHandlerProvider()
+  MailtoHandlerServiceFactory::GetForBrowserState(
+      self.currentInterface.browserState)
       ->DismissAllMailtoHandlerInterfaces();
 
   // Then, depending on what the SSO view controller is presented on, dismiss
@@ -2354,7 +2511,7 @@ bool IsSigninForcedByPolicy() {
   [self closeSettingsOrSigninAnimated:NO completion:chosenCompletion];
 
   // Verify that no modal views are left presented.
-  ios::GetChromeBrowserProvider().LogIfModalViewsArePresented();
+  ios::provider::LogIfModalViewsArePresented();
 }
 
 - (void)openMultipleTabsInMode:
@@ -2449,8 +2606,6 @@ bool IsSigninForcedByPolicy() {
       [self completionBlockForTriggeringAction:[self.startupParameters
                                                        postOpeningAction]];
 
-  // Commands are only allowed on NTP.
-  DCHECK(IsURLNtp(urlLoadParams.web_params.url) || !startupCompletion);
   ProceduralBlock tabOpenedCompletion = nil;
   if (startupCompletion && completion) {
     tabOpenedCompletion = ^{
@@ -2710,8 +2865,8 @@ bool IsSigninForcedByPolicy() {
       dismissSettings();
     }
   } else if (self.signinCoordinator) {
-    //      |self.signinCoordinator| can be presented without settings, from the
-    //      bookmarks or the recent tabs view.
+    // |self.signinCoordinator| can be presented without settings, from the
+    // bookmarks or the recent tabs view.
     [self interruptSigninCoordinatorAnimated:animated completion:completion];
   } else {
     completion();
@@ -2743,12 +2898,14 @@ bool IsSigninForcedByPolicy() {
     (signin_ui::CompletionCallback)completion {
   DCHECK(self.signinCoordinator);
   if (!signin::IsSigninAllowedByPolicy()) {
-    completion(/*success=*/NO);
+    if (completion) {
+      completion(/*success=*/NO);
+    }
     [self.signinCoordinator stop];
     id<PolicyChangeCommands> handler = HandlerForProtocol(
         self.signinCoordinator.browser->GetCommandDispatcher(),
         PolicyChangeCommands);
-    [handler showPolicySignoutPrompt];
+    [handler showForceSignedOutPrompt];
     self.signinCoordinator = nil;
     return;
   }
@@ -2846,8 +3003,8 @@ bool IsSigninForcedByPolicy() {
       }
     };
 
-    base::PostTaskAndReply(FROM_HERE, {web::WebThread::IO}, base::DoNothing(),
-                           base::BindRepeating(cleanup));
+    web::GetIOThreadTaskRunner({})->PostTaskAndReply(
+        FROM_HERE, base::DoNothing(), base::BindRepeating(cleanup));
   }
 
   // a) The first condition can happen when the last incognito tab is closed
@@ -2901,7 +3058,7 @@ bool IsSigninForcedByPolicy() {
   // until the callback is received.
   BrowsingDataRemover* browsingDataRemover =
       BrowsingDataRemoverFactory::GetForBrowserStateIfExists(
-          self.currentInterface.browser->GetBrowserState());
+          self.currentInterface.browserState);
   if (browsingDataRemover && browsingDataRemover->IsRemoving())
     return;
 
@@ -2914,6 +3071,7 @@ bool IsSigninForcedByPolicy() {
 - (void)showTabSwitcher {
   DCHECK(self.mainCoordinator);
   [self.mainCoordinator setActivePage:self.activePage];
+  [self.mainCoordinator setActiveMode:TabGridModeNormal];
   [self.mainCoordinator showTabGrid];
 }
 
@@ -2992,7 +3150,8 @@ bool IsSigninForcedByPolicy() {
                   withURLLoadParams:(const UrlLoadParams&)urlLoadParams {
   TabInsertionBrowserAgent::FromBrowser(browser)->InsertWebState(
       urlLoadParams.web_params, nil, false, browser->GetWebStateList()->count(),
-      /*in_background=*/false, /*inherit_opener=*/false);
+      /*in_background=*/false, /*inherit_opener=*/false,
+      /*should_show_start_surface=*/false, /*filtered_param_count=*/0);
   [self beginActivatingBrowser:browser dismissTabSwitcher:YES focusOmnibox:NO];
 }
 
@@ -3147,6 +3306,12 @@ bool IsSigninForcedByPolicy() {
     UMA_HISTOGRAM_BOOLEAN(
         "Enterprise.BrowserSigninIOS.SignInInterruptedByPolicy", true);
   }
+}
+
+#pragma mark - SceneUIProvider
+
+- (UIViewController*)activeViewController {
+  return self.mainCoordinator.activeViewController;
 }
 
 @end

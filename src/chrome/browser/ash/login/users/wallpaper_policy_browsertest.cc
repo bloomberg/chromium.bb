@@ -8,6 +8,8 @@
 #include <string>
 #include <vector>
 
+#include "ash/components/cryptohome/cryptohome_parameters.h"
+#include "ash/components/cryptohome/system_salt_getter.h"
 #include "ash/constants/ash_paths.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/wallpaper/wallpaper_controller_observer.h"
@@ -37,8 +39,6 @@
 #include "chrome/browser/ui/ash/wallpaper_controller_client_impl.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/chrome_paths.h"
-#include "chromeos/cryptohome/cryptohome_parameters.h"
-#include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/constants/dbus_paths.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
@@ -74,7 +74,7 @@ const SkColor kRedImageColor = SkColorSetARGB(255, 199, 6, 7);
 const SkColor kGreenImageColor = SkColorSetARGB(255, 38, 196, 15);
 
 policy::CloudPolicyStore* GetStoreForUser(const user_manager::User* user) {
-  Profile* profile = ProfileHelper::Get()->GetProfileByUserUnsafe(user);
+  Profile* profile = ProfileHelper::Get()->GetProfileByUser(user);
   if (!profile) {
     ADD_FAILURE();
     return NULL;

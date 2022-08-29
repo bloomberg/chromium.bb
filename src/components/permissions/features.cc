@@ -24,6 +24,9 @@ const base::Feature kBlockRepeatedNotificationPermissionPrompts{
     "BlockRepeatedNotificationPermissionPrompts",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kNotificationInteractionHistory{
+    "NotificationInteractionHistory", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kOneTimeGeolocationPermission{
     "OneTimeGeolocationPermission", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -32,11 +35,10 @@ const base::Feature kOneTimeGeolocationPermission{
 const base::Feature kPermissionChip{"PermissionChip",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables an experimental less prominent permission prompt that uses a chip in
-// the location bar. Requires chrome://flags/#quiet-notification-prompts to be
-// enabled.
+// Enables a less prominent permission prompt that uses a chip in the location
+// bar. Requires chrome://flags/#quiet-notification-prompts to be enabled.
 const base::Feature kPermissionQuietChip{"PermissionQuietChip",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kPermissionChipAutoDismiss{
     "PermissionChipAutoDismiss", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -55,24 +57,37 @@ const base::Feature kPermissionChipGestureSensitive{
 const base::Feature kPermissionChipRequestTypeSensitive{
     "PermissionChipRequestTypeSensitive", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// When kPermissionChip (above) is enabled, controls whether or not the
-// permission chip should be shown in the prominent style (white on blue) or in
-// the secondary style (blue on white).
-const base::Feature kPermissionChipIsProminentStyle{
-    "PermissionChipIsProminentStyle", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // When enabled, use the value of the `service_url` FeatureParam as the url
 // for the Web Permission Predictions Service.
 const base::Feature kPermissionPredictionServiceUseUrlOverride{
     "kPermissionPredictionServiceUseUrlOverride",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-#if defined(OS_ANDROID)
-// When enabled, the Default Search Engine does not automatically receive the
-// "geolocation" and "notifications" permissions. DSE only applies to Android.
-const base::Feature kRevertDSEAutomaticPermissions{
-    "RevertDSEAutomaticPermissions", base::FEATURE_ENABLED_BY_DEFAULT};
-#endif  // defined(OS_ANDROID)
+const base::Feature kPermissionOnDeviceNotificationPredictions{
+    "PermissionOnDeviceNotificationPredictions",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+#if BUILDFLAG(IS_ANDROID)
+
+// When enabled, blocks notifications permission prompt when Chrome doesn't
+// have app level Notification permission.
+const base::Feature kBlockNotificationPromptsIfDisabledOnAppLevel{
+    "BlockNotificationPromptsIfDisabledOnAppLevel",
+    base::FEATURE_ENABLED_BY_DEFAULT};
+
+#else
+
+// Controls whether to trigger showing a HaTS survey, with the given
+// `probability` and `trigger_id`, immediately after the user has taken the
+// action specified in `action_filter` on a permission prompt for the capability
+// specified in `request_type_filter`. All of the above-mentioned params are
+// required and should be coming from field trial params of the same name. The
+// `probability` parameter is an odd-one out and is defined and handled by the
+// HatsService itself.
+const base::Feature kPermissionsPostPromptSurvey{
+    "PermissionsPostPromptSurvey", base::FEATURE_DISABLED_BY_DEFAULT};
+
+#endif  // BUILDFLAG(IS_ANDROID)
 
 }  // namespace features
 namespace feature_params {
@@ -89,6 +104,37 @@ const base::FeatureParam<std::string> kPermissionPredictionServiceUrlOverride{
 const base::FeatureParam<bool> kPermissionPredictionServiceUseJson{
     &permissions::features::kPermissionPredictionServiceUseUrlOverride,
     "service_use_json", false};
+
+const base::FeatureParam<double>
+    kPermissionOnDeviceNotificationPredictionsHoldbackChance(
+        &features::kPermissionOnDeviceNotificationPredictions,
+        "holdback_chance",
+        0.0);
+
+#if !BUILDFLAG(IS_ANDROID)
+// Specifies the `trigger_id` of the HaTS survey to trigger immediately after
+// the user has interacted with a permission prompt.
+const base::FeatureParam<std::string> kPermissionsPostPromptSurveyTriggerId{
+    &permissions::features::kPermissionsPostPromptSurvey, "trigger_id", ""};
+
+// Specifies the type of permission request for which the post-prompt HaTS
+// survey is triggered. For any given user, there is a single request type for
+// which they may see a survey. Valid values are the return values of
+// `GetPermissionRequestString`. An invalid or empty value will result in the
+// user not seeing any post-prompt survey.
+const base::FeatureParam<std::string>
+    kPermissionsPostPromptSurveyRequestTypeFilter{
+        &permissions::features::kPermissionsPostPromptSurvey,
+        "request_type_filter", ""};
+
+// Specifies the action for which the post-prompt HaTS survey is triggered. For
+// any given user, there is a single permission action for which they may see a
+// survey, of those listed in RetuPermissionUmaUtil::GetPermissionActionString.
+// An invalid or empty value will result in the user not seeing any post-prompt
+// survey.
+const base::FeatureParam<std::string> kPermissionsPostPromptSurveyActionFilter{
+    &permissions::features::kPermissionsPostPromptSurvey, "action_filter", ""};
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 }  // namespace feature_params
 }  // namespace permissions

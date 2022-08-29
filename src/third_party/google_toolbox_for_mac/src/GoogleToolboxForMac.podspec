@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = 'GoogleToolboxForMac'
-  s.version          = '2.2.0'
+  s.version          = '2.3.2'
   s.author           = 'Google Inc.'
   s.license          = { :type => 'Apache', :file => 'LICENSE' }
   s.homepage         = 'https://github.com/google/google-toolbox-for-mac'
@@ -13,7 +13,7 @@ Pod::Spec.new do |s|
                        DESC
 
   s.osx.deployment_target = '10.7'
-  s.ios.deployment_target = '8.0'
+  s.ios.deployment_target = '9.0'
   s.tvos.deployment_target = '9.0'
 
   s.requires_arc = false
@@ -153,10 +153,11 @@ Pod::Spec.new do |s|
 
   s.subspec 'TimeUtils' do |sp|
     sp.source_files = 'Foundation/GTMTimeUtils.{h,m}'
+    sp.dependency 'GoogleToolboxForMac/Defines', "#{s.version}"
   end
 
   s.subspec 'iPhone' do |sp|
-    sp.platform = :ios, '5.0'
+    sp.platform = :ios, '9.0'
     sp.source_files =
         'iPhone/GTMFadeTruncatingLabel.{h,m}',
         'iPhone/GTMUIImage+Resize.{h,m}',
@@ -166,7 +167,7 @@ Pod::Spec.new do |s|
   end
 
   s.subspec 'RoundedRectPath' do |sp|
-    sp.platform = :ios, '5.0'
+    sp.platform = :ios, '9.0'
     sp.source_files = 'iPhone/GTMRoundedRectPath.{h,m}'
     sp.requires_arc = 'iPhone/GTMRoundedRectPath.{h,m}'
     sp.frameworks = 'CoreGraphics'
@@ -174,13 +175,13 @@ Pod::Spec.new do |s|
   end
 
   s.subspec 'UIFont+LineHeight' do |sp|
-    sp.platform = :ios, '5.0'
+    sp.platform = :ios, '9.0'
     sp.source_files = 'iPhone/GTMUIFont+LineHeight.{h,m}'
     sp.requires_arc = 'iPhone/GTMUIFont+LineHeight.{h,m}'
   end
 
   s.subspec 'UnitTesting' do |sp|
-    sp.platform = :ios, '5.0'
+    sp.platform = :ios, '9.0'
     sp.source_files =
         'UnitTesting/GTMFoundationUnitTestingUtilities.{h,m}',
         'UnitTesting/GTMSenTestCase.{h,m}',
@@ -192,7 +193,7 @@ Pod::Spec.new do |s|
   end
 
   s.subspec 'UnitTestingAppLib' do |sp|
-    sp.platform = :ios, '5.0'
+    sp.platform = :ios, '9.0'
     sp.source_files =
         'UnitTesting/GTMCodeCoverageApp.h',
         'UnitTesting/GTMIPhoneUnitTestDelegate.{h,m}'

@@ -1,5 +1,5 @@
 # Build matrix / environment variables are explained on:
-# http://about.travis-ci.org/docs/user/build-configuration/
+# http://about.travis-ci.com/docs/user/build-configuration/
 # This file can be validated on: http://www.yamllint.com/
 # Or using the Ruby based travel command line tool:
 # gem install travis --no-rdoc --no-ri
@@ -22,8 +22,6 @@ addons:
     - clang-8
     - valgrind
 matrix:
-  allow_failures:
-    - os: osx
   include:
     - name: Mac clang meson static release testing
       os: osx
@@ -44,6 +42,8 @@ matrix:
          CC="clang"
          LIB_TYPE=static
          BUILD_TYPE=release
+         PYTHONUSERBASE="$(pwd)/LOCAL"
+         PATH="$PYTHONUSERBASE/bin:$PATH"
       # before_install and install steps only needed for linux meson builds
       before_install:
           - source ./.travis_scripts/travis.before_install.${TRAVIS_OS_NAME}.sh

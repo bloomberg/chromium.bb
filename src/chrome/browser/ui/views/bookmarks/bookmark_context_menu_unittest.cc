@@ -37,7 +37,7 @@
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/test/scoped_views_test_helper.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #endif
 
@@ -415,13 +415,14 @@ TEST_F(BookmarkContextMenuTest, ShowManagedBookmarks) {
   EXPECT_TRUE(menu->GetMenuItemByID(IDC_BOOKMARK_BAR_NEW_FOLDER)->GetVisible());
 
   // Now set the managed bookmarks policy.
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
-  dict->SetString("name", "Google");
-  dict->SetString("url", "http://google.com");
-  base::ListValue list;
+  base::Value::Dict dict;
+  dict.Set("name", "Google");
+  dict.Set("url", "http://google.com");
+  base::Value::List list;
   list.Append(std::move(dict));
   EXPECT_TRUE(managed->managed_node()->children().empty());
-  profile_->GetPrefs()->Set(bookmarks::prefs::kManagedBookmarks, list);
+  profile_->GetPrefs()->Set(bookmarks::prefs::kManagedBookmarks,
+                            base::Value(std::move(list)));
   EXPECT_FALSE(managed->managed_node()->children().empty());
 
   // New context menus now show the "Show managed bookmarks" option.

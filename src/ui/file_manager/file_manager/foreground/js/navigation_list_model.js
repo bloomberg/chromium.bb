@@ -26,6 +26,7 @@ export const NavigationModelItemType = {
   VOLUME: 'volume',
   RECENT: 'recent',
   CROSTINI: 'crostini',
+  GUEST_OS: 'guest-os',
   ENTRY_LIST: 'entry-list',
   DRIVE: 'drive',
   ANDROID_APP: 'android-app',
@@ -234,6 +235,13 @@ export class NavigationListModel extends EventTarget {
     this.linuxFilesItem_ = null;
 
     /**
+     * Root folders for Guest OS files.
+     * This field will be modified when new guests are added/removed.
+     * @private {!Array<!NavigationModelFakeItem>}
+     */
+    this.guestOsPlaceholders_ = [];
+
+    /**
      * Root folder for trash.
      * @private {NavigationModelFakeItem}
      */
@@ -436,6 +444,15 @@ export class NavigationListModel extends EventTarget {
   }
 
   /**
+   * Set the Guest OS Files placeholder roots and reorder items.
+   * @param {!Array<!NavigationModelFakeItem>} items Guest OS Files roots.
+   */
+  set guestOsPlaceholders(items) {
+    this.guestOsPlaceholders_ = items;
+    this.reorderNavigationItems_();
+  }
+
+  /**
    * Set the fake Drive root and reorder items.
    * @param {NavigationModelFakeItem} item Fake Drive root.
    */
@@ -495,6 +512,7 @@ export class NavigationListModel extends EventTarget {
         case VolumeManagerCommon.VolumeType.MEDIA_VIEW:
         case VolumeManagerCommon.VolumeType.DOCUMENTS_PROVIDER:
         case VolumeManagerCommon.VolumeType.SMB:
+        case VolumeManagerCommon.VolumeType.GUEST_OS:
           if (!volumeIndexes[volumeType]) {
             volumeIndexes[volumeType] = [i];
           } else {
@@ -648,7 +666,7 @@ export class NavigationListModel extends EventTarget {
         getSingleVolume(VolumeManagerCommon.VolumeType.CROSTINI);
 
     // Remove Crostini FakeEntry, it's re-added below if needed.
-    myFilesEntry.removeByRootType(VolumeManagerCommon.RootType.CROSTINI);
+    myFilesEntry.removeAllByRootType(VolumeManagerCommon.RootType.CROSTINI);
     if (crostiniVolume) {
       // Crostini is mounted so add it if MyFiles doesn't have it yet.
       if (myFilesEntry.findIndexByVolumeInfo(crostiniVolume.volumeInfo) ===
@@ -662,6 +680,33 @@ export class NavigationListModel extends EventTarget {
         // DirectoryTree can choose the correct DirectoryItem for it.
         this.linuxFilesItem_.entry.navigationModel = this.linuxFilesItem_;
         myFilesEntry.addEntry(this.linuxFilesItem_.entry);
+      }
+    }
+
+    // TODO(crbug/1293229): To start with, we only support listing and not
+    // mounting, which means we're just dealing with fake entries here. This
+    // gets updated to handle real volumes once we support mounting them.
+    if (util.isGuestOsEnabled()) {
+      // Remove all GuestOs placeholders, we readd any if they're needed.
+      myFilesEntry.removeAllByRootType(VolumeManagerCommon.RootType.GUEST_OS);
+
+      // For each volume, add any which aren't already in the list.
+      for (const volume of getVolumes(
+               VolumeManagerCommon.VolumeType.GUEST_OS)) {
+        if (myFilesEntry.findIndexByVolumeInfo(volume.volumeInfo) === -1) {
+          myFilesEntry.addEntry(new VolumeEntry(volume.volumeInfo));
+        }
+      }
+      // Now we add any guests we know about which don't already have a
+      // matching volume.
+      for (const item of this.guestOsPlaceholders_) {
+        if (!getVolumes(VolumeManagerCommon.VolumeType.GUEST_OS)
+                 .find(v => v.label === item.label)) {
+          // Since it's a fake item, link the navigation model so
+          // DirectoryTree can choose the correct DirectoryItem for it.
+          item.entry.navigationModel = item;
+          myFilesEntry.addEntry(item.entry);
+        }
       }
     }
 

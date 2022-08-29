@@ -44,6 +44,11 @@ enum class WindowStateType {
 
   // A window in Picture-in-Picture mode (PIP).
   kPip,
+
+  // A window is floated on top of other windows (except PIP). When a window is
+  // floated, users are allowed to change the position and size of the window.
+  // One floated window is allowed per desk.
+  kFloated,
 };
 
 COMPONENT_EXPORT(CHROMEOS_UI_BASE)
@@ -64,10 +69,6 @@ bool IsPinnedWindowStateType(WindowStateType type);
 // Returns true if |type| is FULLSCREEN, PINNED, or TRUSTED_PINNED.
 COMPONENT_EXPORT(CHROMEOS_UI_BASE)
 bool IsFullscreenOrPinnedWindowStateType(WindowStateType type);
-
-// Returns true if |type| is kFloating.
-COMPONENT_EXPORT(CHROMEOS_UI_BASE)
-bool IsFloatingStateType(WindowStateType type);
 
 // Returns true if |type| is MAXIMIZED, FULLSCREEN, PINNED, or TRUSTED_PINNED.
 COMPONENT_EXPORT(CHROMEOS_UI_BASE)

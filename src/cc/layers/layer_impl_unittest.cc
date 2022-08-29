@@ -43,14 +43,14 @@ namespace {
   EXPECT_TRUE(grand_child->LayerPropertyChangedFromPropertyTrees()); \
   EXPECT_FALSE(grand_child->LayerPropertyChangedNotFromPropertyTrees());
 
-#define EXECUTE_AND_VERIFY_ONLY_LAYER_CHANGED(code_to_test)               \
-  root->layer_tree_impl()->ResetAllChangeTracking();                      \
-  root->layer_tree_impl()->property_trees()->full_tree_damaged = false;   \
-  code_to_test;                                                           \
-  EXPECT_TRUE(root->LayerPropertyChanged());                              \
-  EXPECT_FALSE(root->LayerPropertyChangedFromPropertyTrees());            \
-  EXPECT_TRUE(root->LayerPropertyChangedNotFromPropertyTrees());          \
-  EXPECT_FALSE(child->LayerPropertyChanged());                            \
+#define EXECUTE_AND_VERIFY_ONLY_LAYER_CHANGED(code_to_test)                \
+  root->layer_tree_impl()->ResetAllChangeTracking();                       \
+  root->layer_tree_impl()->property_trees()->set_full_tree_damaged(false); \
+  code_to_test;                                                            \
+  EXPECT_TRUE(root->LayerPropertyChanged());                               \
+  EXPECT_FALSE(root->LayerPropertyChangedFromPropertyTrees());             \
+  EXPECT_TRUE(root->LayerPropertyChangedNotFromPropertyTrees());           \
+  EXPECT_FALSE(child->LayerPropertyChanged());                             \
   EXPECT_FALSE(grand_child->LayerPropertyChanged());
 
 #define VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(code_to_test)                   \
@@ -102,7 +102,7 @@ TEST_F(LayerImplTest, VerifyPendingLayerChangesAreTrackedProperly) {
   gfx::Point arbitrary_point = gfx::Point(333, 444);
 
   gfx::Rect arbitrary_rect = gfx::Rect(arbitrary_point, arbitrary_size);
-  SkColor arbitrary_color = SkColorSetRGB(10, 20, 30);
+  SkColor4f arbitrary_color{0.1f, 0.2f, 0.3f, 1.0f};
   gfx::Transform arbitrary_transform;
   arbitrary_transform.Scale3d(0.1f, 0.2f, 0.3f);
   FilterOperations arbitrary_filters;
@@ -166,7 +166,7 @@ TEST_F(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
   gfx::PointF arbitrary_scroll_offset(
       gfx::PointAtOffsetFromOrigin(arbitrary_vector2d));
   gfx::Size large_size = gfx::Size(1000, 1000);
-  SkColor arbitrary_color = SkColorSetRGB(10, 20, 30);
+  SkColor4f arbitrary_color{0.1f, 0.2f, 0.3f, 1.0f};
   gfx::Transform arbitrary_transform;
   arbitrary_transform.Scale3d(0.1f, 0.2f, 0.3f);
   FilterOperations arbitrary_filters;
@@ -208,8 +208,8 @@ TEST_F(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
       layer->layer_tree_impl()->DidUpdateScrollOffset(layer->element_id()));
   layer->layer_tree_impl()
       ->property_trees()
-      ->scroll_tree.SetScrollOffsetDeltaForTesting(layer->element_id(),
-                                                   gfx::Vector2dF());
+      ->scroll_tree_mutable()
+      .SetScrollOffsetDeltaForTesting(layer->element_id(), gfx::Vector2dF());
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(
       layer->SetCurrentScrollOffset(arbitrary_scroll_offset));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(
@@ -321,7 +321,9 @@ class LayerImplScrollTest : public LayerImplTest {
   LayerImpl* layer() { return layer_; }
 
   ScrollTree* scroll_tree(LayerImpl* layer_impl) {
-    return &layer_impl->layer_tree_impl()->property_trees()->scroll_tree;
+    return &layer_impl->layer_tree_impl()
+                ->property_trees()
+                ->scroll_tree_mutable();
   }
 
  private:

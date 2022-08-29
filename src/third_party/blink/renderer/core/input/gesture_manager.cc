@@ -74,6 +74,7 @@ void GestureManager::Clear() {
 void GestureManager::ResetLongTapContextMenuStates() {
   gesture_context_menu_deferred_ = false;
   long_press_position_in_root_frame_ = gfx::PointF();
+  drag_in_progress_ = false;
 }
 
 void GestureManager::Trace(Visitor* visitor) const {
@@ -100,6 +101,7 @@ HitTestRequest::HitTestRequestType GestureManager::GetHitTypeForGestureType(
     case WebInputEvent::Type::kGestureTap:
       return hit_type | HitTestRequest::kRelease;
     case WebInputEvent::Type::kGestureTapDown:
+    case WebInputEvent::Type::kGestureShortPress:
     case WebInputEvent::Type::kGestureLongPress:
     case WebInputEvent::Type::kGestureLongTap:
     case WebInputEvent::Type::kGestureTwoFingerTap:
@@ -149,6 +151,8 @@ WebInputEventResult GestureManager::HandleGestureEventInFrame(
       return HandleGestureTap(targeted_event);
     case WebInputEvent::Type::kGestureShowPress:
       return HandleGestureShowPress();
+    case WebInputEvent::Type::kGestureShortPress:
+      return HandleGestureShortPress(targeted_event);
     case WebInputEvent::Type::kGestureLongPress:
       return HandleGestureLongPress(targeted_event);
     case WebInputEvent::Type::kGestureLongTap:
@@ -367,10 +371,27 @@ WebInputEventResult GestureManager::HandleGestureTap(
         frame_->GetPage()->GetVisualViewport().RootFrameToViewport(
             tapped_position);
     ShowUnhandledTapUIIfNeeded(dom_tree_changed, style_changed, tapped_node,
-                               tapped_element, tapped_position_in_viewport);
+                               tapped_position_in_viewport);
   }
 
   return event_result;
+}
+
+WebInputEventResult GestureManager::HandleGestureShortPress(
+    const GestureEventWithHitTestResults& targeted_event) {
+  drag_in_progress_ = false;
+  // TODO(crbug.com/1299010): When TouchDragAndContextMenu is enabled, we want
+  // to start drag here at short-press and open context-menu later at
+  // long-press.  However, on Android an ACTION_CANCEL event is fired on
+  // drag-start, and occcasionally that happens before long-press gesture
+  // timeout which causes GestureRecognizer to suppress long-press detection.
+  if (RuntimeEnabledFeatures::TouchDragAndContextMenuEnabled() &&
+      RuntimeEnabledFeatures::TouchDragOnShortPressEnabled()) {
+    drag_in_progress_ =
+        mouse_event_manager_->HandleDragDropIfPossible(targeted_event);
+  }
+  return drag_in_progress_ ? WebInputEventResult::kHandledSystem
+                           : WebInputEventResult::kNotHandled;
 }
 
 WebInputEventResult GestureManager::HandleGestureLongPress(
@@ -390,23 +411,35 @@ WebInputEventResult GestureManager::HandleGestureLongPress(
 
   gesture_context_menu_deferred_ = false;
 
-  bool hit_test_contains_links = hit_test_result.URLElement() ||
-                                 !hit_test_result.AbsoluteImageURL().IsNull() ||
-                                 !hit_test_result.AbsoluteMediaURL().IsNull();
-  if (!hit_test_contains_links &&
-      mouse_event_manager_->HandleDragDropIfPossible(targeted_event)) {
-    gesture_context_menu_deferred_ = true;
-    return WebInputEventResult::kHandledSystem;
+  if (RuntimeEnabledFeatures::TouchDragAndContextMenuEnabled()) {
+    if (!RuntimeEnabledFeatures::TouchDragOnShortPressEnabled()) {
+      drag_in_progress_ =
+          mouse_event_manager_->HandleDragDropIfPossible(targeted_event);
+    }
+  } else if (frame_->GetSettings() &&
+             frame_->GetSettings()->GetTouchDragDropEnabled() &&
+             frame_->View()) {
+    bool hit_test_contains_links =
+        hit_test_result.URLElement() ||
+        !hit_test_result.AbsoluteImageURL().IsNull() ||
+        !hit_test_result.AbsoluteMediaURL().IsNull();
+    if (!hit_test_contains_links &&
+        mouse_event_manager_->HandleDragDropIfPossible(targeted_event)) {
+      gesture_context_menu_deferred_ = true;
+      return WebInputEventResult::kHandledSystem;
+    }
   }
 
   Node* inner_node = hit_test_result.InnerNode();
-  if (inner_node && inner_node->GetLayoutObject() &&
+  if (!drag_in_progress_ && inner_node && inner_node->GetLayoutObject() &&
       selection_controller_->HandleGestureLongPress(hit_test_result)) {
     mouse_event_manager_->FocusDocumentView();
   }
 
   if (frame_->GetSettings() &&
       frame_->GetSettings()->GetShowContextMenuOnMouseUp()) {
+    // TODO(https://crbug.com/1290905): Prevent a contextmenu after a
+    // finger-drag when TouchDragAndContextMenu is enabled.
     gesture_context_menu_deferred_ = true;
     return WebInputEventResult::kNotHandled;
   }
@@ -510,7 +543,7 @@ WebInputEventResult GestureManager::HandleGestureShowPress() {
   LocalFrameView* view = frame_->View();
   if (!view)
     return WebInputEventResult::kNotHandled;
-  const LocalFrameView::ScrollableAreaSet* areas = view->ScrollableAreas();
+  const LocalFrameView::ScrollableAreaSet* areas = view->UserScrollableAreas();
   if (!areas)
     return WebInputEventResult::kNotHandled;
   for (PaintLayerScrollableArea* scrollable_area : *areas) {
@@ -524,11 +557,9 @@ void GestureManager::ShowUnhandledTapUIIfNeeded(
     bool dom_tree_changed,
     bool style_changed,
     Node* tapped_node,
-    Element* tapped_element,
     const gfx::Point& tapped_position_in_viewport) {
 #if BUILDFLAG(ENABLE_UNHANDLED_TAP)
   WebNode web_node(tapped_node);
-  // TODO(donnd): roll in ML-identified signals for suppression once identified.
   bool should_trigger = !dom_tree_changed && !style_changed &&
                         tapped_node->IsTextNode() &&
                         !web_node.IsContentEditable() &&
@@ -541,22 +572,9 @@ void GestureManager::ShowUnhandledTapUIIfNeeded(
     frame_->GetBrowserInterfaceBroker().GetInterface(
         provider.BindNewPipeAndPassReceiver());
 
-    // Extract text run-length.
-    int text_run_length = 0;
-    if (tapped_element)
-      text_run_length = tapped_element->textContent().length();
-
-    int font_size = 0;
-    // Extract text characteristics from the computed style of the tapped node.
-    if (const ComputedStyle* style = tapped_node->GetComputedStyle())
-      font_size = style->FontSize();
-
-    // TODO(donnd): get the text color and style and return,
-    // e.g. style->GetFontWeight() to return bold.  Need italic, color, etc.
-
     // Notify the Browser.
-    auto tapped_info = mojom::blink::UnhandledTapInfo::New(
-        tapped_position_in_viewport, font_size, text_run_length);
+    auto tapped_info =
+        mojom::blink::UnhandledTapInfo::New(tapped_position_in_viewport);
     provider->ShowUnhandledTapUIIfNeeded(std::move(tapped_info));
   }
 #endif  // BUILDFLAG(ENABLE_UNHANDLED_TAP)

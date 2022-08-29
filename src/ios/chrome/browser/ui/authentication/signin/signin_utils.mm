@@ -54,12 +54,12 @@ NSSet<NSString*>* GaiaIdSetWithIdentities(
   return [gaia_id_set copy];
 }
 
-// Returns whether the gaia ids |recorded_gaia_ids| is a strict subset of the
-// current |identities| (i.e. all the gaia ids are in identities but there is
+// Returns whether the gaia ids `recorded_gaia_ids` is a strict subset of the
+// current `identities` (i.e. all the gaia ids are in identities but there is
 // at least one new identity).
 bool IsStrictSubset(NSArray<NSString*>* recorded_gaia_ids,
                     NSArray<ChromeIdentity*>* identities) {
-  // Optimisation for the case of a nil or empty |recorded_gaia_ids|.
+  // Optimisation for the case of a nil or empty `recorded_gaia_ids`.
   // This allow not special casing the construction of the NSSet (as
   // -[NSSet setWithArray:] does not support nil for the array).
   if (recorded_gaia_ids.count == 0)
@@ -137,18 +137,20 @@ bool ShouldPresentUserSigninUpgrade(ChromeBrowserState* browser_state,
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
   NSString* version_string =
       [defaults stringForKey:kDisplayedSSORecallForMajorVersionKey];
+  const base::Version version_shown(base::SysNSStringToUTF8(version_string));
 
-  if (version_string) {
-    const base::Version version_shown(base::SysNSStringToUTF8(version_string));
-    if (version_shown.IsValid()) {
-      if (current_version.components()[0] - version_shown.components()[0] < 2)
-        return false;
-    }
+  // If the version was not set, we need to set it in order to wait 2 major
+  // releases to show the sign-in promo.
+  if (!version_shown.IsValid()) {
+    [defaults setObject:base::SysUTF8ToNSString(current_version.GetString())
+                 forKey:kDisplayedSSORecallForMajorVersionKey];
+    return false;
   }
 
-  // The SSO promo should not be disabled if it is force disabled.
-  if (signin::ForceDisableExtendedSyncPromos())
+  // Wait 2 major releases to show the sign-in promo.
+  if (current_version.components()[0] - version_shown.components()[0] < 2) {
     return false;
+  }
 
   // The sign-in promo should be shown twice, even if no account has been added.
   NSInteger display_count =
@@ -162,8 +164,9 @@ bool ShouldPresentUserSigninUpgrade(ChromeBrowserState* browser_state,
   return IsStrictSubset(last_known_gaia_id_list, identities);
 }
 
-void RecordVersionSeen(ChromeAccountManagerService* account_manager_service,
-                       const base::Version& current_version) {
+void RecordUpgradePromoSigninStarted(
+    ChromeAccountManagerService* account_manager_service,
+    const base::Version& current_version) {
   DCHECK(account_manager_service);
   DCHECK(current_version.IsValid());
 

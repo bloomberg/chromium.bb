@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/strings/escape.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
@@ -26,7 +27,6 @@
 #import "ios/web/test/fakes/crw_fake_back_forward_list.h"
 #include "ios/web/test/test_url_constants.h"
 #import "ios/web/web_state/ui/crw_web_view_navigation_proxy.h"
-#include "net/base/escape.h"
 #import "net/base/mac/url_conversions.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -139,7 +139,7 @@ class NavigationManagerTest : public PlatformTest {
 
   // Returns the value of the "#session=" URL hash component from |url|.
   static std::string ExtractRestoredSession(const GURL& url) {
-    std::string decoded = net::UnescapeBinaryURLComponent(url.ref());
+    std::string decoded = base::UnescapeBinaryURLComponent(url.ref());
     return decoded.substr(
         strlen(wk_navigation_util::kRestoreSessionSessionHashPrefix));
   }
@@ -803,8 +803,6 @@ TEST_F(NavigationManagerTest, AddPendingItemIfDiffernetURL) {
 // Tests that when the last committed item exists, adding a pending item with
 // the same URL fails if the new item is not form submission.
 TEST_F(NavigationManagerTest, NotAddSameUrlPendingItemIfNotFormSubmission) {
-  feature_.InitAndEnableFeature(
-      web::features::kCreatePendingItemForPostFormSubmission);
   GURL existing_url = GURL("http://www.existing.com");
   navigation_manager()->AddPendingItem(
       existing_url, Referrer(), ui::PAGE_TRANSITION_TYPED,
@@ -845,8 +843,6 @@ TEST_F(NavigationManagerTest, NotAddSameUrlPendingItemIfNotFormSubmission) {
 // the same URL updates the existing committed item if the form submission isn't
 // using POST.
 TEST_F(NavigationManagerTest, NotAddSameUrlPendingItemIfGETFormSubmission) {
-  feature_.InitAndEnableFeature(
-      web::features::kCreatePendingItemForPostFormSubmission);
   GURL existing_url = GURL("http://www.existing.com");
   navigation_manager()->AddPendingItem(
       existing_url, Referrer(), ui::PAGE_TRANSITION_TYPED,
@@ -884,8 +880,6 @@ TEST_F(NavigationManagerTest, NotAddSameUrlPendingItemIfGETFormSubmission) {
 // Tests that when the last committed item exists, adding a pending item with
 // the same URL creates a new pending item if the form submission is using POST.
 TEST_F(NavigationManagerTest, AddSameUrlPendingItemIfPOSTFormSubmission) {
-  feature_.InitAndEnableFeature(
-      web::features::kCreatePendingItemForPostFormSubmission);
   GURL existing_url = GURL("http://www.existing.com");
   navigation_manager()->AddPendingItem(
       existing_url, Referrer(), ui::PAGE_TRANSITION_TYPED,
@@ -922,8 +916,6 @@ TEST_F(NavigationManagerTest, AddSameUrlPendingItemIfPOSTFormSubmission) {
 // Tests that when the last committed item exists, adding a pending item with
 // the same URL fails if the user agent override option is INHERIT.
 TEST_F(NavigationManagerTest, NotAddSameUrlPendingItemIfOverrideInherit) {
-  feature_.InitAndEnableFeature(
-      web::features::kCreatePendingItemForPostFormSubmission);
   GURL existing_url = GURL("http://www.existing.com");
   navigation_manager()->AddPendingItem(
       existing_url, Referrer(), ui::PAGE_TRANSITION_TYPED,
@@ -962,8 +954,6 @@ TEST_F(NavigationManagerTest, NotAddSameUrlPendingItemIfOverrideInherit) {
 // Tests that when the last committed item exists, adding a pending item with
 // the same URL succeeds.
 TEST_F(NavigationManagerTest, AddSameUrlPendingItem) {
-  feature_.InitAndEnableFeature(
-      web::features::kCreatePendingItemForPostFormSubmission);
   GURL existing_url = GURL("http://www.existing.com");
   navigation_manager()->AddPendingItem(
       existing_url, Referrer(), ui::PAGE_TRANSITION_TYPED,
@@ -1581,7 +1571,7 @@ TEST_F(NavigationManagerTest, Restore) {
                             PageDisplayState()};
 
   std::vector<std::unique_ptr<NavigationItem>> items;
-  for (size_t index = 0; index < base::size(restore_information); ++index) {
+  for (size_t index = 0; index < std::size(restore_information); ++index) {
     items.push_back(NavigationItem::Create());
     items.back()->SetURL(restore_information[index].url);
     items.back()->SetVirtualURL(restore_information[index].virtual_url);
@@ -1631,7 +1621,7 @@ TEST_F(NavigationManagerTest, Restore) {
   EXPECT_EQ(restore_information[1].url,
             navigation_manager()->GetLastCommittedItem()->GetURL());
 
-  for (size_t i = 0; i < base::size(restore_information); ++i) {
+  for (size_t i = 0; i < std::size(restore_information); ++i) {
     NavigationItem* navigation_item = navigation_manager()->GetItemAtIndex(i);
     EXPECT_EQ(restore_information[i].url, navigation_item->GetURL());
 

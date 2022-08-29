@@ -27,6 +27,22 @@ namespace viz {
 struct ReturnedResource;
 
 struct VIZ_COMMON_EXPORT TransferableResource {
+  enum class SynchronizationType : uint8_t {
+    // Commands issued (SyncToken) - a resource can be reused as soon as display
+    // compositor issues the latest command on it and SyncToken will be signaled
+    // when this happens.
+    kSyncToken = 0,
+    // Commands completed (aka read lock fence) - If a gpu resource is backed by
+    // a GpuMemoryBuffer, then it will be accessed out-of-band, and a gpu fence
+    // needs to be waited on before the resource is returned and reused. In
+    // other words, the resource will be returned only when gpu commands are
+    // completed.
+    kGpuCommandsCompleted,
+    // Commands submitted (release fence) - a resource will be returned after
+    // gpu service submitted commands to the gpu and provide the fence.
+    kReleaseFence,
+  };
+
   TransferableResource();
   ~TransferableResource();
 
@@ -104,15 +120,15 @@ struct VIZ_COMMON_EXPORT TransferableResource {
   // drawing it. Typically GL_LINEAR, or GL_NEAREST if no anti-aliasing
   // during scaling is desired.
   uint32_t filter = 0;
-  // If a gpu resource is backed by a GpuMemoryBuffer, then it will be accessed
-  // out-of-band, and a gpu fence needs to be waited on before the resource is
-  // returned and reused.
-  bool read_lock_fences_enabled = false;
+
+  // This defines when the display compositor returns resources. Clients may use
+  // different synchronization types based on their needs.
+  SynchronizationType synchronization_type = SynchronizationType::kSyncToken;
 
   // YCbCr info for resources backed by YCbCr Vulkan images.
   absl::optional<gpu::VulkanYCbCrInfo> ycbcr_info;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // Indicates whether this resource may not be overlayed on Android, since
   // it's not backed by a SurfaceView.  This may be set in combination with
   // |is_overlay_candidate|, to find out if switching the resource to a
@@ -125,7 +141,7 @@ struct VIZ_COMMON_EXPORT TransferableResource {
   bool is_backed_by_surface_texture = false;
 #endif
 
-#if defined(OS_ANDROID) || defined(OS_WIN)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_WIN)
   // Indicates that this resource would like a promotion hint.
   bool wants_promotion_hint = false;
 #endif
@@ -139,13 +155,13 @@ struct VIZ_COMMON_EXPORT TransferableResource {
            color_space == o.color_space && hdr_metadata == o.hdr_metadata &&
            is_overlay_candidate == o.is_overlay_candidate &&
            filter == o.filter &&
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
            is_backed_by_surface_texture == o.is_backed_by_surface_texture &&
            wants_promotion_hint == o.wants_promotion_hint &&
-#elif defined(OS_WIN)
+#elif BUILDFLAG(IS_WIN)
            wants_promotion_hint == o.wants_promotion_hint &&
 #endif
-           read_lock_fences_enabled == o.read_lock_fences_enabled;
+           synchronization_type == o.synchronization_type;
   }
   bool operator!=(const TransferableResource& o) const { return !(*this == o); }
 };

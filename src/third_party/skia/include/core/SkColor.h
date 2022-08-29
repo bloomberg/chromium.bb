@@ -8,7 +8,7 @@
 #ifndef SkColor_DEFINED
 #define SkColor_DEFINED
 
-#include "include/core/SkImageInfo.h"
+#include "include/core/SkAlphaType.h"
 #include "include/core/SkScalar.h"
 #include "include/core/SkTypes.h"
 
@@ -405,6 +405,11 @@ struct SkRGBA4f {
     uint32_t toBytes_RGBA() const;
     static SkRGBA4f FromBytes_RGBA(uint32_t color);
 
+    /**
+      Returns a copy of the SkRGBA4f but with alpha component set to 1.0f.
+
+      @return         opaque color
+    */
     SkRGBA4f makeOpaque() const {
         return { fR, fG, fB, 1.0f };
     }

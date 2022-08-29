@@ -182,6 +182,10 @@ class NetworkFeaturePodControllerTest : public AshTestBase {
         network_state_handler()->AssociateTetherNetworkStateWithWifiNetwork(
             /*tether_network_guid=*/kNetworkGuidTether,
             /*wifi_network_guid=*/kNetworkGuidTetherWiFi));
+
+    network_state_handler()->SetTetherNetworkStateConnected(
+        /*guid=*/kNetworkGuidTether);
+
     SetServiceProperty(/*service_path=*/tether_wifi_path_,
                        /*key=*/shill::kStateProperty,
                        /*value=*/base::Value(shill::kStateOnline));
@@ -210,7 +214,8 @@ class NetworkFeaturePodControllerTest : public AshTestBase {
     const views::View::Views& children =
         tray_view()->detailed_view()->children();
     EXPECT_EQ(1u, children.size());
-    EXPECT_STREQ("NetworkListView", children.at(0)->GetClassName());
+    EXPECT_STREQ("NetworkDetailedNetworkViewImpl",
+                 children.at(0)->GetClassName());
   }
 
   void CheckSignalStrengthSubLabel(
@@ -260,7 +265,9 @@ class NetworkFeaturePodControllerTest : public AshTestBase {
   }
 
   UnifiedSystemTrayController* tray_controller() {
-    return GetPrimaryUnifiedSystemTray()->bubble()->controller_for_test();
+    return GetPrimaryUnifiedSystemTray()
+        ->bubble()
+        ->unified_system_tray_controller();
   }
 
   UnifiedSystemTrayView* tray_view() {

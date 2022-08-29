@@ -14,6 +14,7 @@
 
 import * as m from 'mithril';
 
+import {assertExists} from '../base/logging';
 import {TraceUrlSource} from '../common/state';
 import {saveTrace} from '../common/upload_utils';
 
@@ -39,12 +40,6 @@ export function maybeShowErrorDialog(errLog: string) {
     // Refresh timeLastReport to prevent a different error showing a dialog
     timeLastReport = now;
     return;
-  }
-
-  if (errLog.includes('Unable to claim interface.') ||
-      errLog.includes('A transfer error has occurred')) {
-    showWebUSBError();
-    timeLastReport = now;
   }
 
   if (errLog.includes('(ERR:fmt)')) {
@@ -74,7 +69,7 @@ export function maybeShowErrorDialog(errLog: string) {
   const errTitle = errLog.split('\n', 1)[0].substr(0, 80);
   const userDescription = '';
   let checked = false;
-  const engine = Object.values(globals.state.engines)[0];
+  const engine = globals.getCurrentEngine();
 
   const shareTraceSection: m.Vnode[] = [];
   if (isShareable() && !urlExists()) {
@@ -83,8 +78,8 @@ export function maybeShowErrorDialog(errLog: string) {
           checked,
           oninput: (ev: InputEvent) => {
             checked = (ev.target as HTMLInputElement).checked;
-            if (checked && engine.source.type === 'FILE') {
-              saveTrace(engine.source.file).then(url => {
+            if (checked && engine && engine.source.type === 'FILE') {
+              saveTrace(engine.source.file).then((url) => {
                 const errMessage = createErrorMessage(errLog, checked, url);
                 renderModal(
                     errTitle, errMessage, userDescription, shareTraceSection);
@@ -144,15 +139,15 @@ function renderModal(
         action: () => {
           window.open(
               createLink(errTitle, errMessage, userDescription), '_blank');
-        }
+        },
       },
-    ]
+    ],
   });
 }
 
 // If there is a trace URL to share, we don't have to show the upload checkbox.
 function urlExists() {
-  const engine = Object.values(globals.state.engines)[0];
+  const engine = globals.getCurrentEngine();
   return engine !== undefined &&
       (engine.source.type === 'ARRAY_BUFFER' || engine.source.type === 'URL') &&
       engine.source.url !== undefined;
@@ -160,11 +155,12 @@ function urlExists() {
 
 function createErrorMessage(errLog: string, checked: boolean, url?: string) {
   let errMessage = '';
-  const engine = Object.values(globals.state.engines)[0];
+  const engine = globals.getCurrentEngine();
   if (checked && url !== undefined) {
     errMessage += `Trace: ${url}`;
   } else if (urlExists()) {
-    errMessage += `Trace: ${(engine.source as TraceUrlSource).url}`;
+    errMessage +=
+        `Trace: ${(assertExists(engine).source as TraceUrlSource).url}`;
   } else {
     errMessage += 'To assist with debugging please attach or link to the ' +
         'trace you were viewing.';
@@ -213,7 +209,7 @@ function showOutOfMemoryDialog() {
         m('span', 'For details see '),
         m('a', {href: url, target: '_blank'}, url),
         ),
-    buttons: []
+    buttons: [],
   });
 }
 
@@ -235,11 +231,11 @@ function showUnknownFileError() {
             m('li', 'Ninja build log'),
             ),
         ),
-    buttons: []
+    buttons: [],
   });
 }
 
-function showWebUSBError() {
+export function showWebUSBError() {
   showModal({
     title: 'A WebUSB error occurred',
     content: m(
@@ -252,7 +248,30 @@ function showWebUSBError() {
         m('span', 'For details see '),
         m('a', {href: 'http://b/159048331', target: '_blank'}, 'b/159048331'),
         ),
-    buttons: []
+    buttons: [],
+  });
+}
+
+export function showConnectionLostError(): void {
+  showModal({
+    title: 'Connection with the ADB device lost',
+    content: m(
+        'div',
+        m('span', `Please connect the device again to restart the recording.`),
+        m('br')),
+    buttons: [],
+  });
+}
+
+export function showNoDeviceSelected(): void {
+  showModal({
+    title: 'No device was selected for recording',
+    content:
+        m('div',
+          m('span', `If you want to connect to an ADB device,
+           please select it from the list.`),
+          m('br')),
+    buttons: [],
   });
 }
 
@@ -268,6 +287,6 @@ restarting the trace processor while still in use by UI.`),
         m('p', `Please refresh this tab and ensure that trace processor is used
 at most one tab at a time.`),
         ),
-    buttons: []
+    buttons: [],
   });
 }

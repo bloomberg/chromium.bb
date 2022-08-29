@@ -9,8 +9,8 @@
 #include <memory>
 #include <string>
 
-#include "base/cxx17_backports.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
@@ -163,28 +163,28 @@ TEST_F(OmniboxEditModelTest, AdjustTextForCopy) {
 
       // Verifies that non-ASCII characters are %-escaped for valid copied URLs,
       // as long as the host has not been modified from the page URL.
-      {u8"https://ja.wikipedia.org/wiki/目次", 0, "", false,
-       u8"https://ja.wikipedia.org/wiki/目次",
+      {"https://ja.wikipedia.org/wiki/目次", 0, "", false,
+       "https://ja.wikipedia.org/wiki/目次",
        "https://ja.wikipedia.org/wiki/%E7%9B%AE%E6%AC%A1", true,
        "https://ja.wikipedia.org/wiki/%E7%9B%AE%E6%AC%A1"},
       // Test escaping when part of the path was not copied.
-      {u8"https://ja.wikipedia.org/wiki/目次", 0, "", false,
-       u8"https://ja.wikipedia.org/wiki/目",
+      {"https://ja.wikipedia.org/wiki/目次", 0, "", false,
+       "https://ja.wikipedia.org/wiki/目",
        "https://ja.wikipedia.org/wiki/%E7%9B%AE", true,
        "https://ja.wikipedia.org/wiki/%E7%9B%AE"},
       // Correctly handle escaping in the scheme-elided case as well.
-      {u8"https://ja.wikipedia.org/wiki/目次", 0, "", false,
-       u8"ja.wikipedia.org/wiki/目次",
+      {"https://ja.wikipedia.org/wiki/目次", 0, "", false,
+       "ja.wikipedia.org/wiki/目次",
        "https://ja.wikipedia.org/wiki/%E7%9B%AE%E6%AC%A1", true,
        "https://ja.wikipedia.org/wiki/%E7%9B%AE%E6%AC%A1",
-       u8"ja.wikipedia.org/wiki/目次"},
+       "ja.wikipedia.org/wiki/目次"},
       // Don't escape when host was modified.
-      {u8"https://ja.wikipedia.org/wiki/目次", 0, "", false,
-       u8"https://wikipedia.org/wiki/目次", u8"https://wikipedia.org/wiki/目次",
+      {"https://ja.wikipedia.org/wiki/目次", 0, "", false,
+       "https://wikipedia.org/wiki/目次", "https://wikipedia.org/wiki/目次",
        false, ""},
   };
 
-  for (size_t i = 0; i < base::size(input); ++i) {
+  for (size_t i = 0; i < std::size(input); ++i) {
     location_bar_model()->set_formatted_full_url(
         base::UTF8ToUTF16(input[i].url_for_editing));
     location_bar_model()->set_url_for_display(
@@ -279,7 +279,7 @@ TEST_F(OmniboxEditModelTest, DISABLED_InlineAutocompleteText) {
 }
 
 // iOS doesn't use elisions in the Omnibox textfield.
-#if !defined(OS_IOS)
+#if !BUILDFLAG(IS_IOS)
 TEST_F(OmniboxEditModelTest, RespectUnelisionInZeroSuggest) {
   location_bar_model()->set_url(GURL("https://www.example.com/"));
   location_bar_model()->set_url_for_display(u"example.com");
@@ -304,7 +304,7 @@ TEST_F(OmniboxEditModelTest, RespectUnelisionInZeroSuggest) {
   EXPECT_FALSE(model()->user_input_in_progress());
   EXPECT_TRUE(view()->IsSelectAll());
 }
-#endif  // !defined(OS_IOS)
+#endif  // !BUILDFLAG(IS_IOS)
 
 TEST_F(OmniboxEditModelTest, RevertZeroSuggestTemporaryText) {
   location_bar_model()->set_url(GURL("https://www.example.com/"));
@@ -365,7 +365,7 @@ TEST_F(OmniboxEditModelTest, CurrentMatch) {
     model()->Revert();
 
     // iOS doesn't do elision in the textfield view.
-#if defined(OS_IOS)
+#if BUILDFLAG(IS_IOS)
     EXPECT_EQ(u"http://www.example.com/", view()->GetText());
 #else
     EXPECT_EQ(u"example.com", view()->GetText());
@@ -386,7 +386,7 @@ TEST_F(OmniboxEditModelTest, CurrentMatch) {
     model()->Revert();
 
     // iOS doesn't do elision in the textfield view.
-#if defined(OS_IOS)
+#if BUILDFLAG(IS_IOS)
     EXPECT_EQ(u"https://www.google.com/", view()->GetText());
 #else
     EXPECT_EQ(u"google.com", view()->GetText());
@@ -410,7 +410,7 @@ TEST_F(OmniboxEditModelTest, DisplayText) {
 
   EXPECT_TRUE(model()->CurrentTextIsURL());
 
-#if defined(OS_IOS)
+#if BUILDFLAG(IS_IOS)
   // iOS OmniboxEditModel always provides the full URL as the OmniboxView
   // permanent display text. Unelision should return false.
   EXPECT_EQ(u"https://www.example.com/", model()->GetPermanentDisplayText());
@@ -641,7 +641,7 @@ TEST_F(OmniboxEditModelPopupTest, SetSelectedLine) {
   auto* result = &model()->autocomplete_controller()->result_;
   AutocompleteInput input(u"match", metrics::OmniboxEventProto::NTP,
                           TestSchemeClassifier());
-  result->AppendMatches(input, matches);
+  result->AppendMatches(matches);
   result->SortAndCull(input, nullptr);
   model()->OnPopupResultChanged();
   EXPECT_TRUE(model()->IsPopupSelectionOnInitialLine());
@@ -663,7 +663,7 @@ TEST_F(OmniboxEditModelPopupTest, SetSelectedLineWithNoDefaultMatches) {
   auto* result = &model()->autocomplete_controller()->result_;
   AutocompleteInput input(u"match", metrics::OmniboxEventProto::NTP,
                           TestSchemeClassifier());
-  result->AppendMatches(input, matches);
+  result->AppendMatches(matches);
   result->SortAndCull(input, nullptr);
 
   model()->OnPopupResultChanged();
@@ -695,7 +695,7 @@ TEST_F(OmniboxEditModelPopupTest, PopupPositionChanging) {
   auto* result = &model()->autocomplete_controller()->result_;
   AutocompleteInput input(u"match", metrics::OmniboxEventProto::NTP,
                           TestSchemeClassifier());
-  result->AppendMatches(input, matches);
+  result->AppendMatches(matches);
   result->SortAndCull(input, nullptr);
   model()->OnPopupResultChanged();
   EXPECT_EQ(0u, model()->GetPopupSelection().line);
@@ -712,9 +712,6 @@ TEST_F(OmniboxEditModelPopupTest, PopupPositionChanging) {
 }
 
 TEST_F(OmniboxEditModelPopupTest, PopupStepSelection) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(omnibox::kOmniboxKeywordSearchButton);
-
   ACMatches matches;
   for (size_t i = 0; i < 5; ++i) {
     AutocompleteMatch match(nullptr, 1000, false,
@@ -742,7 +739,7 @@ TEST_F(OmniboxEditModelPopupTest, PopupStepSelection) {
   auto* result = &model()->autocomplete_controller()->result_;
   AutocompleteInput input(u"match", metrics::OmniboxEventProto::NTP,
                           TestSchemeClassifier());
-  result->AppendMatches(input, matches);
+  result->AppendMatches(matches);
   result->MergeHeadersMap({{7, u"header"}});
   result->SortAndCull(input, nullptr);
   model()->OnPopupResultChanged();
@@ -824,7 +821,7 @@ TEST_F(OmniboxEditModelPopupTest, PopupStepSelectionWithHiddenGroupIds) {
   auto* result = &model()->autocomplete_controller()->result_;
   AutocompleteInput input(u"match", metrics::OmniboxEventProto::NTP,
                           TestSchemeClassifier());
-  result->AppendMatches(input, matches);
+  result->AppendMatches(matches);
   result->MergeHeadersMap({{7, u"header"}});
   result->SortAndCull(input, nullptr);
   model()->OnPopupResultChanged();
@@ -890,7 +887,7 @@ TEST_F(OmniboxEditModelPopupTest, PopupInlineAutocompleteAndTemporaryText) {
   auto* result = &model()->autocomplete_controller()->result_;
   AutocompleteInput input(u"a", metrics::OmniboxEventProto::NTP,
                           TestSchemeClassifier());
-  result->AppendMatches(input, matches);
+  result->AppendMatches(matches);
   result->MergeHeadersMap({{7, u"header"}});
   result->SortAndCull(input, nullptr);
   model()->OnPopupResultChanged();
@@ -957,7 +954,7 @@ TEST_F(OmniboxEditModelPopupTest, TestFocusFixing) {
   auto* result = &model()->autocomplete_controller()->result_;
   AutocompleteInput input(u"match", metrics::OmniboxEventProto::NTP,
                           TestSchemeClassifier());
-  result->AppendMatches(input, matches);
+  result->AppendMatches(matches);
   result->SortAndCull(input, nullptr);
   model()->OnPopupResultChanged();
   model()->SetPopupSelection(Selection(0), true, false);
@@ -976,7 +973,7 @@ TEST_F(OmniboxEditModelPopupTest, TestFocusFixing) {
   // Give it a different name so not deduped.
   matches[0].contents = u"match2.com";
   matches[0].destination_url = GURL("http://match2.com");
-  result->AppendMatches(input, matches);
+  result->AppendMatches(matches);
   result->SortAndCull(input, nullptr);
   model()->OnPopupResultChanged();
   EXPECT_EQ(Selection::FOCUSED_BUTTON_TAB_SWITCH,
@@ -993,7 +990,7 @@ TEST_F(OmniboxEditModelPopupTest, TestFocusFixing) {
   matches[0].relevance = 999;
   matches[0].contents = u"match3.com";
   matches[0].destination_url = GURL("http://match3.com");
-  result->AppendMatches(input, matches);
+  result->AppendMatches(matches);
   result->SortAndCull(input, nullptr);
   model()->OnPopupResultChanged();
   EXPECT_EQ(0U, model()->GetPopupSelection().line);
@@ -1006,7 +1003,7 @@ TEST_F(OmniboxEditModelPopupTest, TestFocusFixing) {
   matches[0].relevance = 1100;
   matches[0].contents = u"match4.com";
   matches[0].destination_url = GURL("http://match4.com");
-  result->AppendMatches(input, matches);
+  result->AppendMatches(matches);
   result->SortAndCull(input, nullptr);
   model()->OnPopupResultChanged();
   EXPECT_EQ(0U, model()->GetPopupSelection().line);
@@ -1018,4 +1015,156 @@ TEST_F(OmniboxEditModelPopupTest, TestFocusFixing) {
   model()->SetPopupSelection(Selection(Selection::kNoMatch));
   model()->OnPopupResultChanged();
   EXPECT_EQ(Selection::NORMAL, model()->GetPopupSelection().state);
+}
+
+TEST_F(OmniboxEditModelTest, OmniboxEscapeHistogram) {
+  {
+    // With both `kClosePopupWithEscape` and `kBlurWithEscape` enabled, escape
+    // should incrementally revert temporary text, close the popup, clear input,
+    // and blur the omnibox.
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitWithFeatures(
+        {omnibox::kClosePopupWithEscape, omnibox::kBlurWithEscape}, {});
+
+    AutocompleteMatch match;
+    match.type = AutocompleteMatchType::NAVSUGGEST;
+    match.destination_url = GURL("https://google.com");
+    model()->SetCurrentMatchForTest(match);
+
+    view()->SetUserText(u"user text");
+    model()->OnSetFocus(false);
+    model()->SetInputInProgress(true);
+    model()->SetPopupIsOpen(true);
+    model()->OnPopupDataChanged(/*temporary_text=*/u"fake_temporary_text",
+                                /*is_temporary_text=*/true, std::u16string(),
+                                std::u16string(), {}, std::u16string(), false,
+                                std::u16string());
+
+    EXPECT_TRUE(model()->HasTemporaryText());
+    EXPECT_TRUE(model()->PopupIsOpen());
+    EXPECT_EQ(view()->GetText(), u"fake_temporary_text");
+    EXPECT_TRUE(model()->user_input_in_progress());
+    EXPECT_TRUE(model()->has_focus());
+
+    {
+      // Revert temporary text.
+      base::HistogramTester histogram_tester;
+      EXPECT_TRUE(model()->OnEscapeKeyPressed());
+      histogram_tester.ExpectUniqueSample("Omnibox.Escape", 1, 1);
+      EXPECT_FALSE(model()->HasTemporaryText());
+      EXPECT_TRUE(model()->PopupIsOpen());
+      EXPECT_EQ(view()->GetText(), u"");
+      EXPECT_TRUE(model()->user_input_in_progress());
+      EXPECT_TRUE(model()->has_focus());
+    }
+
+    {
+      // Close the popup.
+      base::HistogramTester histogram_tester;
+      EXPECT_TRUE(model()->OnEscapeKeyPressed());
+      histogram_tester.ExpectUniqueSample("Omnibox.Escape", 2, 1);
+      model()->SetPopupIsOpen(
+          false);  // `TestOmniboxEditModel` stubs the popup.
+      EXPECT_FALSE(model()->HasTemporaryText());
+      EXPECT_FALSE(model()->PopupIsOpen());
+      EXPECT_EQ(view()->GetText(), u"");
+      EXPECT_TRUE(model()->user_input_in_progress());
+      EXPECT_TRUE(model()->has_focus());
+    }
+
+    {
+      // Clear user input.
+      base::HistogramTester histogram_tester;
+      EXPECT_TRUE(model()->OnEscapeKeyPressed());
+      histogram_tester.ExpectUniqueSample("Omnibox.Escape", 3, 1);
+      EXPECT_FALSE(model()->HasTemporaryText());
+      EXPECT_FALSE(model()->PopupIsOpen());
+      EXPECT_EQ(view()->GetText(), u"");
+      EXPECT_FALSE(model()->user_input_in_progress());
+      EXPECT_TRUE(model()->has_focus());
+    }
+
+    {
+      // Blur the omnibox.
+      base::HistogramTester histogram_tester;
+      EXPECT_TRUE(model()->OnEscapeKeyPressed());
+      histogram_tester.ExpectUniqueSample("Omnibox.Escape", 5, 1);
+      model()->OnKillFocus();  // `TestOmniboxEditModel` stubs the client which
+                               // handles blurring the omnibox.
+      EXPECT_FALSE(model()->HasTemporaryText());
+      EXPECT_FALSE(model()->PopupIsOpen());
+      EXPECT_EQ(view()->GetText(), u"");
+      EXPECT_FALSE(model()->user_input_in_progress());
+      EXPECT_FALSE(model()->has_focus());
+    }
+  }
+
+  {
+    // With both `kClosePopupWithEscape` and `kBlurWithEscape` disabled, escape
+    // should incrementally revert temporary text then simultaneously close the
+    // popup & clear input.
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitWithFeatures(
+        {}, {omnibox::kClosePopupWithEscape, omnibox::kBlurWithEscape});
+
+    AutocompleteMatch match;
+    match.type = AutocompleteMatchType::NAVSUGGEST;
+    match.destination_url = GURL("https://google.com");
+    model()->SetCurrentMatchForTest(match);
+
+    view()->SetUserText(u"user text");
+    model()->OnSetFocus(false);
+    model()->SetInputInProgress(true);
+    model()->SetPopupIsOpen(true);
+    model()->OnPopupDataChanged(/*temporary_text=*/u"fake_temporary_text",
+                                /*is_temporary_text=*/true, std::u16string(),
+                                std::u16string(), {}, std::u16string(), false,
+                                std::u16string());
+
+    EXPECT_TRUE(model()->HasTemporaryText());
+    EXPECT_TRUE(model()->PopupIsOpen());
+    EXPECT_EQ(view()->GetText(), u"fake_temporary_text");
+    EXPECT_TRUE(model()->user_input_in_progress());
+    EXPECT_TRUE(model()->has_focus());
+
+    {
+      // Revert temporary text.
+      base::HistogramTester histogram_tester;
+      EXPECT_TRUE(model()->OnEscapeKeyPressed());
+      histogram_tester.ExpectUniqueSample("Omnibox.Escape", 1, 1);
+      EXPECT_FALSE(model()->HasTemporaryText());
+      EXPECT_TRUE(model()->PopupIsOpen());
+      EXPECT_EQ(view()->GetText(), u"");
+      EXPECT_TRUE(model()->user_input_in_progress());
+      EXPECT_TRUE(model()->has_focus());
+    }
+
+    {
+      // Close the popup & clear input.
+      base::HistogramTester histogram_tester;
+      EXPECT_TRUE(model()->OnEscapeKeyPressed());
+      histogram_tester.ExpectUniqueSample("Omnibox.Escape", 4, 1);
+      model()->SetPopupIsOpen(
+          false);  // `TestOmniboxEditModel` stubs the popup.
+      EXPECT_FALSE(model()->HasTemporaryText());
+      EXPECT_FALSE(model()->PopupIsOpen());
+      EXPECT_EQ(view()->GetText(), u"");
+      EXPECT_FALSE(model()->user_input_in_progress());
+      EXPECT_TRUE(model()->has_focus());
+    }
+
+    {
+      // Should not handle the key press.
+      base::HistogramTester histogram_tester;
+      EXPECT_FALSE(model()->OnEscapeKeyPressed());
+      histogram_tester.ExpectUniqueSample("Omnibox.Escape", 0, 1);
+      model()->SetPopupIsOpen(
+          false);  // `TestOmniboxEditModel` stubs the popup.
+      EXPECT_FALSE(model()->HasTemporaryText());
+      EXPECT_FALSE(model()->PopupIsOpen());
+      EXPECT_EQ(view()->GetText(), u"");
+      EXPECT_FALSE(model()->user_input_in_progress());
+      EXPECT_TRUE(model()->has_focus());
+    }
+  }
 }

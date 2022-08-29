@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ash/eol_notification.h"
 
+#include "ash/constants/notifier_catalogs.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "base/bind.h"
 #include "base/i18n/time_formatting.h"
@@ -127,15 +128,15 @@ void EolNotification::CreateNotification(base::Time eol_date, base::Time now) {
     // Notifies user that updates will stop occurring at a month and year.
     notification = CreateSystemNotification(
         message_center::NOTIFICATION_TYPE_SIMPLE, kEolNotificationId,
-        l10n_util::GetStringFUTF16(
-            IDS_PENDING_EOL_NOTIFICATION_TITLE,
-            TimeFormatMonthAndYear(eol_date,
-                                   /*time_zone=*/icu::TimeZone::getGMT())),
+        l10n_util::GetStringFUTF16(IDS_PENDING_EOL_NOTIFICATION_TITLE,
+                                   TimeFormatMonthAndYearForTimeZone(
+                                       eol_date, icu::TimeZone::getGMT())),
         l10n_util::GetStringFUTF16(IDS_PENDING_EOL_NOTIFICATION_MESSAGE,
                                    ui::GetChromeOSDeviceName()),
         std::u16string() /* display_source */, GURL(kEolNotificationId),
         message_center::NotifierId(
-            message_center::NotifierType::SYSTEM_COMPONENT, kEolNotificationId),
+            message_center::NotifierType::SYSTEM_COMPONENT, kEolNotificationId,
+            NotificationCatalogName::kPendingEOL),
         data,
         base::MakeRefCounted<message_center::ThunkNotificationDelegate>(
             weak_ptr_factory_.GetWeakPtr()),
@@ -153,7 +154,8 @@ void EolNotification::CreateNotification(base::Time eol_date, base::Time now) {
                                    ui::GetChromeOSDeviceName()),
         std::u16string() /* display_source */, GURL(kEolNotificationId),
         message_center::NotifierId(
-            message_center::NotifierType::SYSTEM_COMPONENT, kEolNotificationId),
+            message_center::NotifierType::SYSTEM_COMPONENT, kEolNotificationId,
+            NotificationCatalogName::kEOL),
         data,
         base::MakeRefCounted<message_center::ThunkNotificationDelegate>(
             weak_ptr_factory_.GetWeakPtr()),

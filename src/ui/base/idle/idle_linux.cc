@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/notreached.h"
+#include "base/time/time.h"
 #include "ui/base/idle/idle.h"
 #include "ui/base/idle/idle_internal.h"
 #include "ui/display/screen.h"
@@ -44,11 +45,12 @@ struct {
     {"org.cinnamon.ScreenSaver", "/org/cinnamon/ScreenSaver",
      "org.cinnamon.ScreenSaver"},
     // gnome-screensaver
-    {"org.gnome.ScreenSaver", "/", "org.gnome.ScreenSaver"},
+    {"org.gnome.ScreenSaver", "/org/gnome/ScreenSaver",
+     "org.gnome.ScreenSaver"},
     // mate-screensaver
-    {"org.mate.ScreenSaver", "/", "org.mate.ScreenSaver"},
+    {"org.mate.ScreenSaver", "/org/mate/ScreenSaver", "org.mate.ScreenSaver"},
     // xfce4-screensaver
-    {"org.xfce.ScreenSaver", "/", "org.xfce.ScreenSaver"},
+    {"org.xfce.ScreenSaver", "/org/xfce/ScreenSaver", "org.xfce.ScreenSaver"},
 };
 
 constexpr size_t kServiceCount = sizeof(kServices) / sizeof(kServices[0]);

@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2015-2021 The Khronos Group Inc.
- * Copyright (c) 2015-2021 Valve Corporation
- * Copyright (c) 2015-2021 LunarG, Inc.
+ * Copyright (c) 2015-2022 The Khronos Group Inc.
+ * Copyright (c) 2015-2022 Valve Corporation
+ * Copyright (c) 2015-2022 LunarG, Inc.
  * Modifications Copyright (C) 2020 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -644,8 +644,11 @@ TEST_F(VkArmBestPracticesLayerTest, DepthPrePassUsage) {
         printf("%s This test crashes on the NexusPlayer platform\n", kSkipPrefix);
         return;
     }
+    m_depth_stencil_fmt = FindSupportedDepthStencilFormat(gpu());
+    ASSERT_TRUE(m_depth_stencil_fmt != 0);
 
-    InitRenderTarget();
+    m_depthStencil->Init(m_device, static_cast<int32_t>(m_width), static_cast<int32_t>(m_height), m_depth_stencil_fmt);
+    InitRenderTarget(m_depthStencil->BindInfo());
 
     VkAttachmentDescription attachment{};
     attachment.samples = VK_SAMPLE_COUNT_4_BIT;
@@ -732,6 +735,7 @@ TEST_F(VkArmBestPracticesLayerTest, DepthPrePassUsage) {
 
     m_errorMonitor->SetDesiredFailureMsg(kPerformanceWarningBit,
                                          "UNASSIGNED-BestPractices-vkCmdEndRenderPass-depth-pre-pass-usage");
+    m_errorMonitor->SetAllowedFailureMsg("UNASSIGNED-BestPractices-vkCmdEndRenderPass-redundant-attachment-on-tile");
 
     vk::CmdBindPipeline(m_commandBuffer->handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipe_depth_only.pipeline_);
     for (size_t i = 0; i < 30; i++) m_commandBuffer->DrawIndexed(indices.size(), 1000, 0, 0, 0);
@@ -754,26 +758,26 @@ TEST_F(VkArmBestPracticesLayerTest, ComputeShaderBadWorkGroupThreadAlignmentTest
     InitBestPracticesFramework(kEnableArmValidation);
     InitState();
 
-    VkShaderObj compute_4_1_1(m_device,
+    VkShaderObj compute_4_1_1(this,
                               "#version 320 es\n"
                               "\n"
                               "layout(local_size_x = 4, local_size_y = 1, local_size_z = 1) in;\n\n"
                               "void main() {}\n",
-                              VK_SHADER_STAGE_COMPUTE_BIT, this);
+                              VK_SHADER_STAGE_COMPUTE_BIT);
 
-    VkShaderObj compute_4_1_3(m_device,
+    VkShaderObj compute_4_1_3(this,
                               "#version 320 es\n"
                               "\n"
                               "layout(local_size_x = 4, local_size_y = 1, local_size_z = 3) in;\n\n"
                               "void main() {}\n",
-                              VK_SHADER_STAGE_COMPUTE_BIT, this);
+                              VK_SHADER_STAGE_COMPUTE_BIT);
 
-    VkShaderObj compute_16_8_1(m_device,
+    VkShaderObj compute_16_8_1(this,
                                "#version 320 es\n"
                                "\n"
                                "layout(local_size_x = 16, local_size_y = 8, local_size_z = 1) in;\n\n"
                                "void main() {}\n",
-                               VK_SHADER_STAGE_COMPUTE_BIT, this);
+                               VK_SHADER_STAGE_COMPUTE_BIT);
 
     CreateComputePipelineHelper pipe(*this);
 
@@ -814,26 +818,26 @@ TEST_F(VkArmBestPracticesLayerTest, ComputeShaderBadWorkGroupThreadCountTest) {
     InitBestPracticesFramework(kEnableArmValidation);
     InitState();
 
-    VkShaderObj compute_4_1_1(m_device,
+    VkShaderObj compute_4_1_1(this,
                               "#version 320 es\n"
                               "\n"
                               "layout(local_size_x = 4, local_size_y = 1, local_size_z = 1) in;\n\n"
                               "void main() {}\n",
-                              VK_SHADER_STAGE_COMPUTE_BIT, this);
+                              VK_SHADER_STAGE_COMPUTE_BIT);
 
-    VkShaderObj compute_4_1_3(m_device,
+    VkShaderObj compute_4_1_3(this,
                               "#version 320 es\n"
                               "\n"
                               "layout(local_size_x = 4, local_size_y = 1, local_size_z = 3) in;\n\n"
                               "void main() {}\n",
-                              VK_SHADER_STAGE_COMPUTE_BIT, this);
+                              VK_SHADER_STAGE_COMPUTE_BIT);
 
-    VkShaderObj compute_16_8_1(m_device,
+    VkShaderObj compute_16_8_1(this,
                                "#version 320 es\n"
                                "\n"
                                "layout(local_size_x = 16, local_size_y = 8, local_size_z = 1) in;\n\n"
                                "void main() {}\n",
-                               VK_SHADER_STAGE_COMPUTE_BIT, this);
+                               VK_SHADER_STAGE_COMPUTE_BIT);
 
     CreateComputePipelineHelper pipe(*this);
 
@@ -875,30 +879,30 @@ TEST_F(VkArmBestPracticesLayerTest, ComputeShaderBadSpatialLocalityTest) {
     InitBestPracticesFramework(kEnableArmValidation);
     InitState();
 
-    VkShaderObj compute_sampler_2d_8_8_1(m_device,
+    VkShaderObj compute_sampler_2d_8_8_1(this,
                                          "#version 450\n"
                                          "layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;\n\n"
                                          "layout(set = 0, binding = 0) uniform sampler2D uSampler;\n"
                                          "void main() {\n"
                                          "    vec4 value = textureLod(uSampler, vec2(0.5), 0.0);\n"
                                          "}\n",
-                                         VK_SHADER_STAGE_COMPUTE_BIT, this);
-    VkShaderObj compute_sampler_1d_64_1_1(m_device,
+                                         VK_SHADER_STAGE_COMPUTE_BIT);
+    VkShaderObj compute_sampler_1d_64_1_1(this,
                                           "#version 450\n"
                                           "layout(local_size_x = 64, local_size_y = 1, local_size_z = 1) in;\n\n"
                                           "layout(set = 0, binding = 0) uniform sampler1D uSampler;\n"
                                           "void main() {\n"
                                           "    vec4 value = textureLod(uSampler, 0.5, 0.0);\n"
                                           "}\n",
-                                          VK_SHADER_STAGE_COMPUTE_BIT, this);
-    VkShaderObj compute_sampler_2d_64_1_1(m_device,
+                                          VK_SHADER_STAGE_COMPUTE_BIT);
+    VkShaderObj compute_sampler_2d_64_1_1(this,
                                           "#version 450\n"
                                           "layout(local_size_x = 64, local_size_y = 1, local_size_z = 1) in;\n\n"
                                           "layout(set = 0, binding = 0) uniform sampler2D uSampler;\n"
                                           "void main() {\n"
                                           "    vec4 value = textureLod(uSampler, vec2(0.5), 0.0);\n"
                                           "}\n",
-                                          VK_SHADER_STAGE_COMPUTE_BIT, this);
+                                          VK_SHADER_STAGE_COMPUTE_BIT);
 
     CreateComputePipelineHelper pipe(*this);
 
@@ -965,9 +969,9 @@ TEST_F(VkArmBestPracticesLayerTest, RedundantRenderPassStore) {
     CreatePipelineHelper graphics_pipeline(*this);
 
     graphics_pipeline.vs_ =
-        std::unique_ptr<VkShaderObj>(new VkShaderObj(m_device, bindStateVertShaderText, VK_SHADER_STAGE_VERTEX_BIT, this));
+        std::unique_ptr<VkShaderObj>(new VkShaderObj(this, bindStateVertShaderText, VK_SHADER_STAGE_VERTEX_BIT));
     graphics_pipeline.fs_ =
-        std::unique_ptr<VkShaderObj>(new VkShaderObj(m_device, bindStateFragSamplerShaderText, VK_SHADER_STAGE_FRAGMENT_BIT, this));
+        std::unique_ptr<VkShaderObj>(new VkShaderObj(this, bindStateFragSamplerShaderText, VK_SHADER_STAGE_FRAGMENT_BIT));
     graphics_pipeline.InitInfo();
     graphics_pipeline.dsl_bindings_[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     graphics_pipeline.InitState();
@@ -1060,15 +1064,13 @@ TEST_F(VkArmBestPracticesLayerTest, RedundantRenderPassClear) {
     CreatePipelineHelper graphics_pipeline(*this);
 
     graphics_pipeline.vs_ =
-        std::unique_ptr<VkShaderObj>(new VkShaderObj(m_device, bindStateVertShaderText, VK_SHADER_STAGE_VERTEX_BIT, this));
+        std::unique_ptr<VkShaderObj>(new VkShaderObj(this, bindStateVertShaderText, VK_SHADER_STAGE_VERTEX_BIT));
     graphics_pipeline.fs_ =
-        std::unique_ptr<VkShaderObj>(new VkShaderObj(m_device, bindStateFragShaderText, VK_SHADER_STAGE_FRAGMENT_BIT, this));
+        std::unique_ptr<VkShaderObj>(new VkShaderObj(this, bindStateFragShaderText, VK_SHADER_STAGE_FRAGMENT_BIT));
     graphics_pipeline.InitInfo();
 
     graphics_pipeline.dsl_bindings_[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    graphics_pipeline.cb_attachments_.colorWriteMask = 0xf;
-    graphics_pipeline.cb_ci_.attachmentCount = 1;
-    graphics_pipeline.cb_ci_.pAttachments = &graphics_pipeline.cb_attachments_;
+    graphics_pipeline.cb_attachments_[0].colorWriteMask = 0xf;
     graphics_pipeline.InitState();
 
     graphics_pipeline.gp_ci_.renderPass = renderpasses[0];
@@ -1145,15 +1147,13 @@ TEST_F(VkArmBestPracticesLayerTest, InefficientRenderPassClear) {
     CreatePipelineHelper graphics_pipeline(*this);
 
     graphics_pipeline.vs_ =
-        std::unique_ptr<VkShaderObj>(new VkShaderObj(m_device, bindStateVertShaderText, VK_SHADER_STAGE_VERTEX_BIT, this));
+        std::unique_ptr<VkShaderObj>(new VkShaderObj(this, bindStateVertShaderText, VK_SHADER_STAGE_VERTEX_BIT));
     graphics_pipeline.fs_ =
-        std::unique_ptr<VkShaderObj>(new VkShaderObj(m_device, bindStateFragShaderText, VK_SHADER_STAGE_FRAGMENT_BIT, this));
+        std::unique_ptr<VkShaderObj>(new VkShaderObj(this, bindStateFragShaderText, VK_SHADER_STAGE_FRAGMENT_BIT));
     graphics_pipeline.InitInfo();
 
     graphics_pipeline.dsl_bindings_[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    graphics_pipeline.cb_attachments_.colorWriteMask = 0xf;
-    graphics_pipeline.cb_ci_.attachmentCount = 1;
-    graphics_pipeline.cb_ci_.pAttachments = &graphics_pipeline.cb_attachments_;
+    graphics_pipeline.cb_attachments_[0].colorWriteMask = 0xf;
     graphics_pipeline.InitState();
 
     graphics_pipeline.gp_ci_.renderPass = renderpasses[0];
@@ -1231,9 +1231,9 @@ TEST_F(VkArmBestPracticesLayerTest, DescriptorTracking) {
     CreatePipelineHelper graphics_pipeline(*this);
 
     graphics_pipeline.vs_ =
-        std::unique_ptr<VkShaderObj>(new VkShaderObj(m_device, bindStateVertShaderText, VK_SHADER_STAGE_VERTEX_BIT, this));
+        std::unique_ptr<VkShaderObj>(new VkShaderObj(this, bindStateVertShaderText, VK_SHADER_STAGE_VERTEX_BIT));
     graphics_pipeline.fs_ =
-        std::unique_ptr<VkShaderObj>(new VkShaderObj(m_device, bindStateFragShaderText, VK_SHADER_STAGE_FRAGMENT_BIT, this));
+        std::unique_ptr<VkShaderObj>(new VkShaderObj(this, bindStateFragShaderText, VK_SHADER_STAGE_FRAGMENT_BIT));
     graphics_pipeline.InitInfo();
 
     graphics_pipeline.dsl_bindings_.resize(2);
@@ -1244,9 +1244,7 @@ TEST_F(VkArmBestPracticesLayerTest, DescriptorTracking) {
     graphics_pipeline.dsl_bindings_[1].descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
     graphics_pipeline.dsl_bindings_[1].binding = 10;
     graphics_pipeline.dsl_bindings_[1].descriptorCount = 4;
-    graphics_pipeline.cb_ci_.attachmentCount = 1;
-    graphics_pipeline.cb_ci_.pAttachments = &graphics_pipeline.cb_attachments_;
-    graphics_pipeline.cb_attachments_.colorWriteMask = 0xf;
+    graphics_pipeline.cb_attachments_[0].colorWriteMask = 0xf;
     graphics_pipeline.InitState();
 
     graphics_pipeline.gp_ci_.renderPass = renderpasses[0];
@@ -1490,7 +1488,7 @@ TEST_F(VkArmBestPracticesLayerTest, RedundantAttachment) {
     CreatePipelineHelper pipe_all(*this);
     pipe_all.InitInfo();
     pipe_all.InitState();
-    pipe_all.cb_attachments_.colorWriteMask = 0xf;
+    pipe_all.cb_attachments_[0].colorWriteMask = 0xf;
     pipe_all.ds_ci_ = {VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO};
     pipe_all.gp_ci_.pDepthStencilState = &pipe_all.ds_ci_;
     pipe_all.ds_ci_.depthTestEnable = VK_TRUE;
@@ -1500,7 +1498,7 @@ TEST_F(VkArmBestPracticesLayerTest, RedundantAttachment) {
     CreatePipelineHelper pipe_color(*this);
     pipe_color.InitInfo();
     pipe_color.InitState();
-    pipe_color.cb_attachments_.colorWriteMask = 0xf;
+    pipe_color.cb_attachments_[0].colorWriteMask = 0xf;
     pipe_color.ds_ci_ = {VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO};
     pipe_color.gp_ci_.pDepthStencilState = &pipe_color.ds_ci_;
     pipe_color.CreateGraphicsPipeline();
@@ -1508,7 +1506,7 @@ TEST_F(VkArmBestPracticesLayerTest, RedundantAttachment) {
     CreatePipelineHelper pipe_depth(*this);
     pipe_depth.InitInfo();
     pipe_depth.InitState();
-    pipe_depth.cb_attachments_.colorWriteMask = 0;
+    pipe_depth.cb_attachments_[0].colorWriteMask = 0;
     pipe_depth.ds_ci_ = {VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO};
     pipe_depth.gp_ci_.pDepthStencilState = &pipe_depth.ds_ci_;
     pipe_depth.ds_ci_.depthTestEnable = VK_TRUE;
@@ -1517,7 +1515,7 @@ TEST_F(VkArmBestPracticesLayerTest, RedundantAttachment) {
     CreatePipelineHelper pipe_stencil(*this);
     pipe_stencil.InitInfo();
     pipe_stencil.InitState();
-    pipe_stencil.cb_attachments_.colorWriteMask = 0;
+    pipe_stencil.cb_attachments_[0].colorWriteMask = 0;
     pipe_stencil.ds_ci_ = {VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO};
     pipe_stencil.gp_ci_.pDepthStencilState = &pipe_stencil.ds_ci_;
     pipe_stencil.ds_ci_.stencilTestEnable = VK_TRUE;

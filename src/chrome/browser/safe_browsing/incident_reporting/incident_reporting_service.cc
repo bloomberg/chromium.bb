@@ -14,12 +14,10 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/cxx17_backports.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/process/process.h"
 #include "base/strings/string_util.h"
-#include "base/task/post_task.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
@@ -103,7 +101,7 @@ void LogIncidentDataType(IncidentDisposition disposition,
       "SBIRS.DiscardedIncident",
       "SBIRS.NoDownloadIncident",
   };
-  static_assert(base::size(kHistogramNames) == NUM_DISPOSITIONS,
+  static_assert(std::size(kHistogramNames) == NUM_DISPOSITIONS,
                 "Keep kHistogramNames in sync with enum IncidentDisposition.");
   DCHECK_GE(disposition, 0);
   DCHECK_LT(disposition, NUM_DISPOSITIONS);
@@ -708,8 +706,8 @@ void IncidentReportingService::OnEnvironmentDataCollected(
   environment_collection_pending_ = false;
 
 // Process::Current().CreationTime() is missing on some platforms.
-#if defined(OS_MAC) || defined(OS_WIN) || defined(OS_LINUX) || \
-    defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || \
+    BUILDFLAG(IS_CHROMEOS)
   base::TimeDelta uptime =
       first_incident_time_ - base::Process::Current().CreationTime();
   environment_data->mutable_process()->set_uptime_msec(uptime.InMilliseconds());

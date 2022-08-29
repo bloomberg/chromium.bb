@@ -8,18 +8,18 @@ import '//resources/cr_elements/cr_radio_button/cr_radio_button.m.js';
 import '//resources/cr_elements/cr_radio_group/cr_radio_group.m.js';
 import '//resources/cr_elements/shared_style_css.m.js';
 import '../settings_shared_css.js';
-import '../settings_vars_css.js';
+import '../settings_vars.css.js';
 
 import {CrInputElement} from '//resources/cr_elements/cr_input/cr_input.m.js';
-
-// <if expr="chromeos">
+// <if expr="chromeos_ash">
 import {CrRadioGroupElement} from '//resources/cr_elements/cr_radio_group/cr_radio_group.m.js';
 // </if>
 
-import {assert} from '//resources/js/assert.m.js';
-import {html, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {assert} from '//resources/js/assert_ts.js';
+import {PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {SyncBrowserProxyImpl, SyncPrefs, SyncStatus} from './sync_browser_proxy.js';
+import {getTemplate} from './sync_encryption_options.html.js';
 
 /**
  * Names of the radio buttons which allow the user to choose their encryption
@@ -36,7 +36,7 @@ export class SettingsSyncEncryptionOptionsElement extends PolymerElement {
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
@@ -106,7 +106,7 @@ export class SettingsSyncEncryptionOptionsElement extends PolymerElement {
     this.isSettingEncryptionPassphrase_ = false;
   }
 
-  // <if expr="chromeos">
+  // <if expr="chromeos_ash">
   /**
    * Returns the encryption options CrRadioGroupElement.
    */
@@ -235,6 +235,12 @@ export class SettingsSyncEncryptionOptionsElement extends PolymerElement {
       // checkboxes or radio buttons won't change the value.
       event.stopPropagation();
     }
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'settings-sync-encryption-options': SettingsSyncEncryptionOptionsElement;
   }
 }
 

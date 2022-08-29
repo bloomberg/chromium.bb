@@ -627,8 +627,9 @@ Status DatasetBase::CheckRandomAccessCompatible(const int64 index) const {
   if (cardinality == kInfiniteCardinality ||
       cardinality == kUnknownCardinality) {
     return tensorflow::errors::FailedPrecondition(
-        "Dataset of type ", this->DebugString(), "has cardinality ",
-        cardinality, "which does not support random access.");
+        "Dataset of type ", this->DebugString(), " has ",
+        cardinality == kInfiniteCardinality ? "infinite" : "unknown",
+        " cardinality, which does not support random access.");
   }
   if (index < 0 || index >= cardinality) {
     return errors::OutOfRange("Index out of range [0, ", cardinality,
@@ -646,7 +647,7 @@ Status DatasetBase::Get(OpKernelContext* ctx, int64 index,
 StatusOr<DatasetBase*> DatasetBase::Finalize(
     OpKernelContext* ctx,
     std::function<StatusOr<core::RefCountPtr<DatasetBase>>()>
-        make_finalized_dataset) {
+        make_finalized_dataset) const {
   mutex_lock l(mu_);
   if (!finalized_dataset_) {
     TF_ASSIGN_OR_RETURN(finalized_dataset_, make_finalized_dataset());

@@ -40,6 +40,7 @@
 #include "net/base/features.h"
 #include "net/cert/internal/system_trust_store.h"
 #include "services/network/public/cpp/features.h"
+#include "ui/base/cocoa/permissions_utils.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/resource/resource_handle.h"
@@ -51,13 +52,11 @@
 
 // ChromeBrowserMainPartsMac ---------------------------------------------------
 
-ChromeBrowserMainPartsMac::ChromeBrowserMainPartsMac(
-    content::MainFunctionParams parameters,
-    StartupData* startup_data)
-    : ChromeBrowserMainPartsPosix(std::move(parameters), startup_data) {}
+ChromeBrowserMainPartsMac::ChromeBrowserMainPartsMac(bool is_integration_test,
+                                                     StartupData* startup_data)
+    : ChromeBrowserMainPartsPosix(is_integration_test, startup_data) {}
 
-ChromeBrowserMainPartsMac::~ChromeBrowserMainPartsMac() {
-}
+ChromeBrowserMainPartsMac::~ChromeBrowserMainPartsMac() = default;
 
 int ChromeBrowserMainPartsMac::PreEarlyInitialization() {
   if (base::mac::WasLaunchedAsLoginItemRestoreState()) {
@@ -69,7 +68,6 @@ int ChromeBrowserMainPartsMac::PreEarlyInitialization() {
         base::CommandLine::ForCurrentProcess();
     singleton_command_line->AppendSwitch(switches::kNoStartupWindow);
   }
-
   return ChromeBrowserMainPartsPosix::PreEarlyInitialization();
 }
 
@@ -102,7 +100,8 @@ void ChromeBrowserMainPartsMac::PreCreateMainMessageLoop() {
   // anyone tries doing anything silly like firing off an import job, and
   // before anything creating preferences like Local State in order for the
   // relaunched installed application to still consider itself as first-run.
-  if (!first_run::IsFirstRunSuppressed(parsed_command_line())) {
+  if (!first_run::IsFirstRunSuppressed(
+          *base::CommandLine::ForCurrentProcess())) {
     if (MaybeInstallFromDiskImage()) {
       // The application was installed and the installed copy has been
       // launched.  This process is now obsolete.  Exit.
@@ -118,6 +117,8 @@ void ChromeBrowserMainPartsMac::PreCreateMainMessageLoop() {
   chrome::BuildMainMenu(NSApp, app_controller,
                         l10n_util::GetStringUTF16(IDS_PRODUCT_NAME), false);
   [app_controller mainMenuCreated];
+
+  ui::WarmScreenCapture();
 
   PrefService* local_state = g_browser_process->local_state();
   DCHECK(local_state);
@@ -154,10 +155,17 @@ void ChromeBrowserMainPartsMac::PreProfileInit() {
   g_browser_process->platform_part()->app_shim_listener()->Init();
 }
 
-void ChromeBrowserMainPartsMac::PostProfileInit() {
-  MacStartupProfiler::GetInstance()->Profile(
-      MacStartupProfiler::POST_PROFILE_INIT);
-  ChromeBrowserMainPartsPosix::PostProfileInit();
+void ChromeBrowserMainPartsMac::PostProfileInit(Profile* profile,
+                                                bool is_initial_profile) {
+  if (is_initial_profile) {
+    MacStartupProfiler::GetInstance()->Profile(
+        MacStartupProfiler::POST_PROFILE_INIT);
+  }
+
+  ChromeBrowserMainPartsPosix::PostProfileInit(profile, is_initial_profile);
+
+  if (!is_initial_profile)
+    return;
 
   // Activation of Keystone is not automatic but done in response to the
   // counting and reporting of profiles.

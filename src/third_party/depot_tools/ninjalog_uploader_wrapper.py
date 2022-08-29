@@ -17,20 +17,28 @@ import subprocess2
 THIS_DIR = os.path.dirname(__file__)
 UPLOADER = os.path.join(THIS_DIR, 'ninjalog_uploader.py')
 CONFIG = os.path.join(THIS_DIR, 'ninjalog.cfg')
-VERSION = 2
+VERSION = 3
 
 
 def LoadConfig():
   if os.path.isfile(CONFIG):
     with open(CONFIG, 'r') as f:
-      config = json.load(f)
+      try:
+        config = json.load(f)
+      except Exception:
+        # Set default value when failed to load config.
+        config = {
+            'is-googler': ninjalog_uploader.IsGoogler(),
+            'countdown': 10,
+            'version': VERSION,
+        }
+
       if config['version'] == VERSION:
         config['countdown'] = max(0, config['countdown'] - 1)
         return config
 
   return {
-      'is-googler':
-      ninjalog_uploader.IsGoogler('chromium-build-stats.appspot.com'),
+      'is-googler': ninjalog_uploader.IsGoogler(),
       'countdown': 10,
       'version': VERSION,
   }
@@ -56,19 +64,21 @@ The following information will be uploaded with ninjalog.
 * following build configs
 %s
 
-Uploading ninjalog will be started after you run autoninja another %d time.
+Uploading ninjalog will be started after you run autoninja another %d time(s).
 
 If you don't want to upload ninjalog, please run following command.
-$ %s opt-out
+$ python3 %s opt-out
 
 If you want to allow upload ninjalog from next autoninja run, please run the
 following command.
-$ %s opt-in
+$ python3 %s opt-in
 
 If you have questions about this, please send mail to infra-dev@chromium.org
 
 You can find a more detailed explanation in
 %s
+or
+https://chromium.googlesource.com/chromium/tools/depot_tools/+/main/ninjalog.README.md
 
 """ % (whitelisted, countdown, __file__, __file__,
        os.path.abspath(os.path.join(THIS_DIR, "ninjalog.README.md"))))

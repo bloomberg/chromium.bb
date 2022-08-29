@@ -37,6 +37,10 @@
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/widget/widget.h"
 
+#if BUILDFLAG(USE_GTK)
+#include "ui/views/linux_ui/linux_ui.h"
+#endif
+
 #if defined(USE_AURA)
 #include "ui/aura/window.h"
 #endif
@@ -206,6 +210,18 @@ class OmniboxPopupContentsViewTest : public InProcessBrowserTest {
     // be different. But when using the GTK theme on Linux, these colors will be
     // the same. Ensure we're not using the system (GTK) theme, which may be
     // conditionally enabled depending on the environment.
+#if BUILDFLAG(USE_GTK)
+    // Normally it would be sufficient to call ThemeService::UseDefaultTheme()
+    // which sets the kUsesSystemTheme user pref on the browser's profile.
+    // However BrowserThemeProvider::GetColorProviderColor() currently does not
+    // pass an aura::Window to LinuxUI::GetNativeTheme() - which means that the
+    // NativeThemeGtk instance will always be returned.
+    // TODO(crbug.com/1304441): Remove this once GTK passthrough is fully
+    // supported.
+    views::LinuxUI::instance()->SetUseSystemThemeCallback(
+        base::BindRepeating([](aura::Window* window) { return false; }));
+    ui::NativeTheme::GetInstanceForNativeUi()->NotifyOnNativeThemeUpdated();
+
     ThemeService* theme_service =
         ThemeServiceFactory::GetForProfile(browser()->profile());
     if (!theme_service->UsingDefaultTheme()) {
@@ -213,6 +229,7 @@ class OmniboxPopupContentsViewTest : public InProcessBrowserTest {
       theme_service->UseDefaultTheme();
     }
     ASSERT_TRUE(theme_service->UsingDefaultTheme());
+#endif  // BUILDFLAG(USE_GTK)
   }
 };
 
@@ -296,26 +313,9 @@ IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest, ThemeIntegration) {
   EXPECT_EQ(selection_color_light, GetSelectedColor(browser()));
 }
 
-class OmniboxPopupContentsViewInIncognitoTest
-    : public OmniboxPopupContentsViewTest,
-      public testing::WithParamInterface<bool> {
- public:
-  OmniboxPopupContentsViewInIncognitoTest() {
-    feature_list_.InitWithFeatureState(
-        features::kIncognitoBrandConsistencyForDesktop, GetParam());
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-INSTANTIATE_TEST_SUITE_P(OmniboxPopupContentsViewInIncognitoWithFeatureFlagTest,
-                         OmniboxPopupContentsViewInIncognitoTest,
-                         testing::Bool());
-
 // Integration test for omnibox popup theming in Incognito.
-IN_PROC_BROWSER_TEST_P(OmniboxPopupContentsViewInIncognitoTest,
-                       ThemeIntegration) {
+IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest,
+                       ThemeIntegrationInIncognito) {
   ThemeService* theme_service =
       ThemeServiceFactory::GetForProfile(browser()->profile());
   UseDefaultTheme();
@@ -324,7 +324,6 @@ IN_PROC_BROWSER_TEST_P(OmniboxPopupContentsViewInIncognitoTest,
   const SkColor selection_color_dark = GetSelectedColor(browser());
 
   SetUseDarkColor(false);
-  const SkColor selection_color_light = GetSelectedColor(browser());
 
   // Install a theme (in both browsers, since it's the same profile).
   extensions::ChromeTestExtensionLoader loader(browser()->profile());
@@ -339,23 +338,18 @@ IN_PROC_BROWSER_TEST_P(OmniboxPopupContentsViewInIncognitoTest,
   // Check unthemed incognito windows.
   Browser* incognito_browser = CreateIncognitoBrowser();
 
-  if (GetParam() /*Incognito brand consistency enabled*/) {
-    EXPECT_EQ(selection_color_dark, GetSelectedColor(incognito_browser));
-  } else {
-    // The previous theme installation should make it light.
-    EXPECT_EQ(selection_color_light, GetSelectedColor(incognito_browser));
-  }
-
+  EXPECT_EQ(selection_color_dark, GetSelectedColor(incognito_browser));
   // Switch to the default theme without installing a custom theme. E.g. this is
   // what gets used on KDE or when switching to the "classic" theme in settings.
   UseDefaultTheme();
 
-  // Check incognito again. It should now use a dark theme, even on Linux.
+  // Check incognito again. It should continue to use a dark theme, even on
+  // Linux.
   EXPECT_EQ(selection_color_dark, GetSelectedColor(incognito_browser));
 }
 
 // TODO(tapted): https://crbug.com/905508 Fix and enable on Mac.
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #define MAYBE_ClickOmnibox DISABLED_ClickOmnibox
 #else
 #define MAYBE_ClickOmnibox ClickOmnibox
@@ -416,7 +410,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest, MAYBE_ClickOmnibox) {
 // it contains) changes when it receives focus, and matches the popup background
 // color.
 // Flaky on Linux and Windows. See https://crbug.com/1120701
-#if defined(OS_LINUX) || defined(OS_WIN)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN)
 #define MAYBE_PopupMatchesLocationBarBackground \
   DISABLED_PopupMatchesLocationBarBackground
 #else
@@ -459,7 +453,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest,
 }
 
 // Flaky on Mac: https://crbug.com/1140153.
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #define MAYBE_EmitAccessibilityEvents DISABLED_EmitAccessibilityEvents
 #else
 #define MAYBE_EmitAccessibilityEvents EmitAccessibilityEvents
@@ -480,7 +474,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest,
   match.contents = u"https://foobarbaz.com";
   match.description = u"FooBarBazCom";
   matches.push_back(match);
-  controller->result_.AppendMatches(controller->input_, matches);
+  controller->result_.AppendMatches(matches);
   popup_view()->UpdatePopupAppearance();
   EXPECT_EQ(observer.text_changed_on_listboxoption_count(), 0);
 
@@ -535,7 +529,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest,
 }
 
 // Flaky on Mac: https://crbug.com/1146627.
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #define MAYBE_EmitAccessibilityEventsOnButtonFocusHint DISABLED_EmitAccessibilityEventsOnButtonFocusHint
 #else
 #define MAYBE_EmitAccessibilityEventsOnButtonFocusHint EmitAccessibilityEventsOnButtonFocusHint
@@ -552,7 +546,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest,
   match.description = u"The Foo Of All Bars";
   match.has_tab_match = true;
   matches.push_back(match);
-  controller->result_.AppendMatches(controller->input_, matches);
+  controller->result_.AppendMatches(matches);
   popup_view()->UpdatePopupAppearance();
 
   edit_model()->SetPopupSelection(OmniboxPopupSelection(1));
@@ -623,11 +617,11 @@ IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest,
   AutocompleteResult& results = autocomplete_controller->result_;
   ACMatches matches;
   matches.push_back(match);
-  results.AppendMatches(input, matches);
+  results.AppendMatches(matches);
   results.SortAndCull(input, nullptr);
   autocomplete_controller->NotifyChanged(true);
 
-  // Lets check that arrowing up and down emits the event.
+  // Check that arrowing up and down emits the event.
   TestAXEventObserver observer;
   EXPECT_EQ(observer.selected_children_changed_count(), 0);
   EXPECT_EQ(observer.selection_changed_count(), 0);

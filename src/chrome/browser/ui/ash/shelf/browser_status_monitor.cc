@@ -62,15 +62,8 @@ class BrowserStatusMonitor::LocalWebContentsObserver
   ~LocalWebContentsObserver() override = default;
 
   // content::WebContentsObserver
-  void DidFinishNavigation(
-      content::NavigationHandle* navigation_handle) override {
-    // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
-    // frames. This caller was converted automatically to the primary main frame
-    // to preserve its semantics. Follow up to confirm correctness.
-    if (navigation_handle->IsInPrimaryMainFrame() &&
-        navigation_handle->HasCommitted()) {
-      monitor_->OnTabNavigationFinished(web_contents());
-    }
+  void PrimaryPageChanged(content::Page& page) override {
+    monitor_->OnTabNavigationFinished(web_contents());
   }
 
  private:
@@ -239,7 +232,7 @@ void BrowserStatusMonitor::OnTabStripModelChanged(
         {
           // The tab must be in the set of tabs in transit.
           size_t num_removed = tabs_in_transit_.erase(contents.contents);
-          DCHECK_EQ(num_removed, 1);
+          DCHECK_EQ(num_removed, 1u);
         }
 #endif
         OnTabMoved(tab_strip_model, contents.contents);

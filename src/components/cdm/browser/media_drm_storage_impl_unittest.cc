@@ -122,7 +122,7 @@ class MediaDrmStorageImplTest : public content::RenderViewHostTestHarness {
     base::RunLoop().RunUntilIdle();
 
     // Verify the origin dictionary is created.
-    const base::DictionaryValue* storage_dict =
+    const base::Value* storage_dict =
         pref_service_->GetDictionary(prefs::kMediaDrmStorage);
     EXPECT_TRUE(storage_dict->FindKey(kTestOrigin));
 
@@ -131,7 +131,7 @@ class MediaDrmStorageImplTest : public content::RenderViewHostTestHarness {
   }
 
   content::RenderFrameHost* SimulateNavigation(const GURL& url) {
-    content::RenderFrameHost* rfh = web_contents()->GetMainFrame();
+    content::RenderFrameHost* rfh = web_contents()->GetPrimaryMainFrame();
     content::RenderFrameHostTester::For(rfh)->InitializeRenderFrameIfNeeded();
 
     auto navigation_simulator =
@@ -290,7 +290,7 @@ TEST_F(MediaDrmStorageImplTest, OnProvisioned) {
   base::RunLoop().RunUntilIdle();
 
   // Verify the origin dictionary is created.
-  const base::DictionaryValue* storage_dict =
+  const base::Value* storage_dict =
       pref_service_->GetDictionary(prefs::kMediaDrmStorage);
   EXPECT_TRUE(storage_dict->FindKey(kTestOrigin));
 }

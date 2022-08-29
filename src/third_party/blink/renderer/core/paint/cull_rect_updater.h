@@ -15,6 +15,7 @@ namespace blink {
 class FragmentData;
 class LayoutObject;
 class PaintLayer;
+struct PaintPropertiesChangeInfo;
 
 // This class is used for updating the cull rects of PaintLayer fragments (see:
 // |FragmentData::cull_rect_| and |FragmentData::contents_cull_rect_|.
@@ -34,7 +35,9 @@ class CORE_EXPORT CullRectUpdater {
   void Update();
 
   static void PaintPropertiesChanged(const LayoutObject&,
-                                     PaintLayer& painting_layer);
+                                     PaintLayer& painting_layer,
+                                     const PaintPropertiesChangeInfo&,
+                                     const gfx::Vector2dF& old_scroll_offset);
 
  private:
   friend class OverriddenCullRectScope;
@@ -59,6 +62,7 @@ class CORE_EXPORT CullRectUpdater {
   PropertyTreeState root_state_ = PropertyTreeState::Uninitialized();
   bool force_proactive_update_ = false;
   bool subtree_is_out_of_cull_rect_ = false;
+  bool subtree_should_use_infinite_cull_rect_ = false;
 };
 
 // Used when painting with a custom top-level cull rect, e.g. when printing a

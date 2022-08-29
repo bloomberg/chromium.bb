@@ -7,7 +7,6 @@
 
 #include <type_traits>
 
-#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
 
 namespace blink {
@@ -28,7 +27,7 @@ namespace blink {
 template <typename Base>
 class LayoutNGMixin : public Base {
  public:
-  explicit LayoutNGMixin(Element* element);
+  explicit LayoutNGMixin(ContainerNode*);
   ~LayoutNGMixin() override;
 
   void Paint(const PaintInfo&) const override;
@@ -41,16 +40,14 @@ class LayoutNGMixin : public Base {
   RecalcLayoutOverflowResult RecalcChildLayoutOverflow() override;
   void RecalcVisualOverflow() override;
 
-  bool IsLayoutNGObject() const final { return true; }
+  bool IsLayoutNGObject() const final;
 
  protected:
-  bool IsOfType(LayoutObject::LayoutObjectType) const override;
-
   MinMaxSizes ComputeIntrinsicLogicalWidths() const override;
   NGConstraintSpace ConstraintSpaceForMinMaxSizes() const;
 
   void UpdateOutOfFlowBlockLayout();
-  scoped_refptr<const NGLayoutResult> UpdateInFlowBlockLayout();
+  const NGLayoutResult* UpdateInFlowBlockLayout();
   void UpdateMargins();
 };
 

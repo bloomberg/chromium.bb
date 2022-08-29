@@ -21,7 +21,6 @@
 #include "base/message_loop/message_pump_type.h"
 #include "base/task/single_thread_task_executor.h"
 #include "base/task/thread_pool.h"
-#include "base/time/time.h"
 #include "chrome/updater/app/app.h"
 #include "chrome/updater/updater_scope.h"
 #include "chrome/updater/util.h"
@@ -111,7 +110,7 @@ int KSInstallMain(int argc, char* argv[]) {
   base::AtExitManager exit_manager;
 
   base::CommandLine::Init(argc, argv);
-  updater::InitLogging(GetUpdaterScope(), FILE_PATH_LITERAL("updater.log"));
+  updater::InitLogging(GetUpdaterScope());
 
   base::SingleThreadTaskExecutor main_task_executor(base::MessagePumpType::UI);
   return MakeKSInstallApp(argc, argv)->Run();

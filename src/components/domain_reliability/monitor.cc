@@ -143,7 +143,7 @@ void DomainReliabilityMonitor::OnNetworkChanged(
 
 void DomainReliabilityMonitor::ClearBrowsingData(
     DomainReliabilityClearMode mode,
-    const base::RepeatingCallback<bool(const GURL&)>& origin_filter) {
+    const base::RepeatingCallback<bool(const url::Origin&)>& origin_filter) {
   switch (mode) {
     case CLEAR_BEACONS:
       context_manager_.ClearBeacons(origin_filter);
@@ -195,10 +195,10 @@ DomainReliabilityMonitor::RequestInfo::RequestInfo(
       // This ignores cookie blocking by the NetworkDelegate, but probably
       // should not. Unclear if it's worth fixing.
       allow_credentials(request.allow_credentials()),
+      connection_attempts(request.GetConnectionAttempts()),
       upload_depth(
           DomainReliabilityUploader::GetURLRequestUploadDepth(request)) {
   request.GetLoadTimingInfo(&load_timing_info);
-  request.GetConnectionAttempts(&connection_attempts);
   request.PopulateNetErrorDetails(&details);
   if (!request.GetTransactionRemoteEndpoint(&remote_endpoint))
     remote_endpoint = net::IPEndPoint();

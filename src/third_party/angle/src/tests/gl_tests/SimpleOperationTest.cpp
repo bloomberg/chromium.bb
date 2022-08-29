@@ -154,6 +154,27 @@ TEST_P(SimpleOperationTest, BlendingRenderState)
     EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::green);
 }
 
+// Tests getting the GL_BLEND_EQUATION integer
+TEST_P(SimpleOperationTest, BlendEquationGetInteger)
+{
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_ONE, GL_ONE);
+
+    constexpr std::array<GLenum, 5> equations = {GL_FUNC_ADD, GL_FUNC_SUBTRACT,
+                                                 GL_FUNC_REVERSE_SUBTRACT, GL_MIN, GL_MAX};
+
+    for (GLenum equation : equations)
+    {
+        glBlendEquation(equation);
+
+        GLint currentEquation;
+        glGetIntegerv(GL_BLEND_EQUATION, &currentEquation);
+        ASSERT_GL_NO_ERROR();
+
+        EXPECT_EQ(currentEquation, static_cast<GLint>(equation));
+    }
+}
+
 TEST_P(SimpleOperationTest, CompileVertexShader)
 {
     GLuint shader = CompileShader(GL_VERTEX_SHADER, kBasicVertexShader);
@@ -641,6 +662,26 @@ TEST_P(TriangleFanDrawTest, DrawTriangleFanPrimitiveRestartAtEnd)
     glEnable(GL_PRIMITIVE_RESTART_FIXED_INDEX);
 
     glDrawElements(GL_TRIANGLE_FAN, static_cast<GLsizei>(indices.size()), GL_UNSIGNED_BYTE, 0);
+
+    EXPECT_GL_NO_ERROR();
+
+    verifyTriangles();
+}
+
+// Triangle fans test with primitive restart enabled, but no indexed draw.
+TEST_P(TriangleFanDrawTest, DrawTriangleFanPrimitiveRestartNonIndexedDraw)
+{
+    ANGLE_SKIP_TEST_IF(getClientMajorVersion() < 3);
+
+    std::vector<GLubyte> indices = {0, 1, 2, 3, 4};
+
+    GLBuffer indexBuffer;
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer.get());
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices[0]) * indices.size(), indices.data(),
+                 GL_STATIC_DRAW);
+    glEnable(GL_PRIMITIVE_RESTART_FIXED_INDEX);
+
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 5);
 
     EXPECT_GL_NO_ERROR();
 
@@ -1313,19 +1354,15 @@ TEST_P(SimpleOperationTest, DrawElementsZeroInstanceCountIsNoOp)
 // tests should be run against.
 ANGLE_INSTANTIATE_TEST_ES2_AND_ES3_AND(
     SimpleOperationTest,
-    WithMetalForcedBufferGPUStorage(ES3_METAL()),
-    WithMetalMemoryBarrierAndCheapRenderPass(ES3_METAL(),
-                                             /* hasBarrier */ false,
-                                             /* cheapRenderPass */ false),
-    WithNoVulkanViewportFlip(ES2_VULKAN()));
+    ES3_METAL().enable(Feature::ForceBufferGPUStorage),
+    ES3_METAL().disable(Feature::HasExplicitMemBarrier).disable(Feature::HasCheapRenderPass),
+    ES2_VULKAN().disable(Feature::SupportsNegativeViewport));
 
 ANGLE_INSTANTIATE_TEST_ES2_AND_ES3_AND(
     TriangleFanDrawTest,
-    WithMetalForcedBufferGPUStorage(ES3_METAL()),
-    WithMetalMemoryBarrierAndCheapRenderPass(ES3_METAL(),
-                                             /* hasBarrier */ false,
-                                             /* cheapRenderPass */ false),
-    WithNoVulkanViewportFlip(ES2_VULKAN()));
+    ES3_METAL().enable(Feature::ForceBufferGPUStorage),
+    ES3_METAL().disable(Feature::HasExplicitMemBarrier).disable(Feature::HasCheapRenderPass),
+    ES2_VULKAN().disable(Feature::SupportsNegativeViewport));
 
 ANGLE_INSTANTIATE_TEST_ES2_AND_ES3_AND_ES31(SimpleOperationTest31);
 

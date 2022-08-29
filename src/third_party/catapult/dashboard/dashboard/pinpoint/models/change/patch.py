@@ -10,11 +10,12 @@ import collections
 import datetime
 import logging
 import re
-import urlparse
+import six.moves.urllib.parse as urlparse
 
 from dashboard.pinpoint.models import errors
 from dashboard.pinpoint.models.change import commit_cache
 from dashboard.services import gerrit_service
+import six
 
 
 class GerritPatch(
@@ -128,7 +129,7 @@ class GerritPatch(
       KeyError: The patch doesn't exist or doesn't have the given revision.
       ValueError: The URL has an unrecognized format.
     """
-    if isinstance(data, basestring):
+    if isinstance(data, six.string_types):
       return cls.FromUrl(data)
     else:
       return cls.FromDict(data)
@@ -152,7 +153,7 @@ class GerritPatch(
     server = urlparse.urlunsplit(
         (url_parts.scheme, url_parts.netloc, '', '', ''))
 
-    change_rev_match = re.match(r'^.*\/\+\/(\d+)(?:\/(\d+))?\/?$', url)
+    change_rev_match = re.match(r'^https.*\/\+\/(\d+)(?:\/(\d+))?\/?$', url)
     change_match = re.match(r'^\/(\d+)\/?$', url_parts.path)
     redirector_match = re.match(r'^/c/(\d+)(?:\/(\d+))?\/?$', url_parts.path)
     if change_rev_match:

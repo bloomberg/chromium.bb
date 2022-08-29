@@ -12,7 +12,7 @@
 #include "src/deoptimizer/deoptimizer.h"
 #include "src/heap/heap-write-barrier-inl.h"
 #include "src/objects/code-inl.h"
-#include "src/snapshot/embedded/embedded-data.h"
+#include "src/snapshot/embedded/embedded-data-inl.h"
 
 namespace v8 {
 namespace internal {
@@ -104,7 +104,7 @@ void RelocInfoWriter::WriteShortData(intptr_t data_delta) {
 }
 
 void RelocInfoWriter::WriteMode(RelocInfo::Mode rmode) {
-  STATIC_ASSERT(RelocInfo::NUMBER_OF_MODES <= (1 << kLongTagBits));
+  static_assert(RelocInfo::NUMBER_OF_MODES <= (1 << kLongTagBits));
   *--pos_ = static_cast<int>((rmode << kTagBits) | kDefaultTag);
 }
 
@@ -476,7 +476,7 @@ void RelocInfo::Print(Isolate* isolate, std::ostream& os) {
     // Deoptimization bailouts are stored as runtime entries.
     DeoptimizeKind type;
     if (Deoptimizer::IsDeoptimizationEntry(isolate, target_address(), &type)) {
-      os << "  (" << Deoptimizer::MessageFor(type, false)
+      os << "  (" << Deoptimizer::MessageFor(type)
          << " deoptimization bailout)";
     }
   } else if (IsConstPool(rmode_)) {
@@ -504,16 +504,18 @@ void RelocInfo::Verify(Isolate* isolate) {
       CHECK_NE(addr, kNullAddress);
       // Check that we can find the right code object.
       Code code = Code::GetCodeFromTargetAddress(addr);
-      Object found = isolate->FindCodeObject(addr);
-      CHECK(found.IsCode());
-      CHECK(code.address() == HeapObject::cast(found).address());
+      CodeLookupResult lookup_result = isolate->FindCodeObject(addr);
+      CHECK(lookup_result.IsFound());
+      CHECK_EQ(code.address(), lookup_result.code().address());
       break;
     }
     case INTERNAL_REFERENCE:
     case INTERNAL_REFERENCE_ENCODED: {
       Address target = target_internal_reference();
       Address pc = target_internal_reference_address();
-      Code code = Code::cast(isolate->FindCodeObject(pc));
+      CodeLookupResult lookup_result = isolate->FindCodeObject(pc);
+      CHECK(lookup_result.IsFound());
+      Code code = lookup_result.code();
       CHECK(target >= code.InstructionStart(isolate, pc));
       CHECK(target <= code.InstructionEnd(isolate, pc));
       break;

@@ -189,11 +189,12 @@ class ContentAutofillRouter {
                               const FormFieldData& field,
                               const gfx::RectF& bounding_box);
   void AskForValuesToFill(ContentAutofillDriver* source_driver,
-                          int32_t id,
+                          int32_t query_id,
                           const FormData& form,
                           const FormFieldData& field,
                           const gfx::RectF& bounding_box,
-                          bool autoselect_first_suggestion);
+                          bool autoselect_first_suggestion,
+                          TouchToFillEligible touch_to_fill_eligible);
   void HidePopup(ContentAutofillDriver* source_driver);
   void FocusNoLongerOnForm(ContentAutofillDriver* source_driver,
                            bool had_interacted_form);
@@ -208,6 +209,10 @@ class ContentAutofillRouter {
   void DidEndTextFieldEditing(ContentAutofillDriver* source_driver);
   void SelectFieldOptionsDidChange(ContentAutofillDriver* source_driver,
                                    const FormData& form);
+  void JavaScriptChangedAutofilledValue(ContentAutofillDriver* source,
+                                        const FormData& form,
+                                        const FormFieldData& field,
+                                        const std::u16string& old_value);
 
   // Event called by Autofill Assistant as if it was called by the renderer.
   void FillFormForAssistant(ContentAutofillDriver* source_driver,
@@ -216,13 +221,13 @@ class ContentAutofillRouter {
                             const FormFieldData& field);
 
   // Routing of events called by the browser:
-  base::flat_map<FieldGlobalId, ServerFieldType> FillOrPreviewForm(
+  std::vector<FieldGlobalId> FillOrPreviewForm(
       ContentAutofillDriver* source_driver,
       int query_id,
       mojom::RendererFormDataAction action,
       const FormData& data,
       const url::Origin& triggered_origin,
-      base::flat_map<FieldGlobalId, ServerFieldType> field_type_map);
+      const base::flat_map<FieldGlobalId, ServerFieldType>& field_type_map);
   void SendAutofillTypePredictionsToRenderer(
       ContentAutofillDriver* source_driver,
       const std::vector<FormDataPredictions>& type_predictions);

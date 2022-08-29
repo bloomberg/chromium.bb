@@ -99,7 +99,7 @@ DialogOverlayImpl::DialogOverlayImpl(const JavaParamRef<jobject>& obj,
 
   // Make sure RenderFrameDeleted will be called on RFH and thus we will clean
   // up.
-  CHECK(rfhi_->IsRenderFrameCreated());
+  CHECK(rfhi_->IsRenderFrameLive());
   web_contents->GetNativeView()->AddObserver(this);
 
   // Note that we're not allowed to call back into |obj| before it calls
@@ -305,7 +305,7 @@ class AndroidOverlaySyncHelper {
 
 static void JNI_DialogOverlayImpl_NotifyDestroyedSynchronously(
     JNIEnv* env,
-    int message_pipe_handle) {
+    jlong message_pipe_handle) {
   mojo::MessagePipeHandle handle(message_pipe_handle);
   mojo::ScopedMessagePipeHandle scoped_handle(handle);
   mojo::Remote<media::mojom::AndroidOverlayClient> remote(

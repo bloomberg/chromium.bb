@@ -15,8 +15,9 @@
 class GrDirectContext;
 class SkSurface;
 #ifdef SK_GRAPHITE_ENABLED
-namespace skgpu {
+namespace skgpu::graphite {
 class Context;
+class Recorder;
 }
 #endif
 
@@ -43,11 +44,13 @@ public:
 
     GrDirectContext* directContext() const { return fContext.get(); }
 #ifdef SK_GRAPHITE_ENABLED
-    skgpu::Context* graphiteContext() const { return fGraphiteContext.get(); }
+    skgpu::graphite::Context* graphiteContext() const { return fGraphiteContext.get(); }
+    skgpu::graphite::Recorder* graphiteRecorder() const { return fGraphiteRecorder.get(); }
 #endif
 
     int width() const { return fWidth; }
     int height() const { return fHeight; }
+    SkISize dimensions() const { return {fWidth, fHeight}; }
     int sampleCount() const { return fSampleCount; }
     int stencilBits() const { return fStencilBits; }
 
@@ -56,7 +59,8 @@ protected:
 
     sk_sp<GrDirectContext> fContext;
 #if SK_GRAPHITE_ENABLED
-    sk_sp<skgpu::Context> fGraphiteContext;
+    std::unique_ptr<skgpu::graphite::Context> fGraphiteContext;
+    std::unique_ptr<skgpu::graphite::Recorder> fGraphiteRecorder;
 #endif
 
     int               fWidth;

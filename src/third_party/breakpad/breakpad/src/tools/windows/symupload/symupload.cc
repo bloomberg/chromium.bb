@@ -56,20 +56,19 @@
 
 #include "common/windows/http_upload.h"
 #include "common/windows/pdb_source_line_writer.h"
+#include "common/windows/sym_upload_v2_protocol.h"
 #include "common/windows/symbol_collector_client.h"
 
-using std::string;
-using std::wstring;
-using std::vector;
-using std::map;
 using google_breakpad::HTTPUpload;
-using google_breakpad::SymbolCollectorClient;
-using google_breakpad::SymbolStatus;
-using google_breakpad::UploadUrlResponse;
-using google_breakpad::CompleteUploadResult;
 using google_breakpad::PDBModuleInfo;
 using google_breakpad::PDBSourceLineWriter;
 using google_breakpad::WindowsStringUtils;
+using std::map;
+using std::string;
+using std::vector;
+using std::wstring;
+
+const wchar_t* kSymbolUploadTypeBreakpad = L"BREAKPAD";
 
 // Extracts the file version information for the given filename,
 // as a string, for example, "1.2.3.4".  Returns true on success.
@@ -116,8 +115,9 @@ static bool GetFileVersionString(const wchar_t* filename, wstring* version) {
 // and information about the pdb in pdb_info.
 static bool DumpSymbolsToTempFile(const wchar_t* file,
                                   wstring* temp_file_path,
-                                  PDBModuleInfo* pdb_info) {
-  google_breakpad::PDBSourceLineWriter writer;
+                                  PDBModuleInfo* pdb_info,
+                                  bool handle_inline) {
+  google_breakpad::PDBSourceLineWriter writer(handle_inline);
   // Use EXE_FILE to get information out of the exe/dll in addition to the
   // pdb.  The name and version number of the exe/dll are of value, and
   // there's no way to locate an exe/dll given a pdb.
@@ -159,97 +159,12 @@ static bool DumpSymbolsToTempFile(const wchar_t* file,
   return writer.GetModuleInfo(pdb_info);
 }
 
-static bool DoSymUploadV2(
-    const wchar_t* api_url,
-    const wchar_t* api_key,
-    const wstring& debug_file,
-    const wstring& debug_id,
-    const wstring& symbol_file,
-    bool force) {
-  wstring url(api_url);
-  wstring key(api_key);
-
-  if (!force) {
-    SymbolStatus symbolStatus = SymbolCollectorClient::CheckSymbolStatus(
-      url,
-      key,
-      debug_file,
-      debug_id);
-    if (symbolStatus == SymbolStatus::Found) {
-      wprintf(L"Symbol file already exists, upload aborted."
-        L" Use \"-f\" to overwrite.\n");
-      return true;
-    }
-    else if (symbolStatus == SymbolStatus::Unknown) {
-      wprintf(L"Failed to get check for existing symbol.\n");
-      return false;
-    }
-  }
-
-  UploadUrlResponse uploadUrlResponse;
-  if (!SymbolCollectorClient::CreateUploadUrl(
-      url,
-      key,
-      &uploadUrlResponse)) {
-    wprintf(L"Failed to create upload URL.\n");
-    return false;
-  }
-
-  wstring signed_url = uploadUrlResponse.upload_url;
-  wstring upload_key = uploadUrlResponse.upload_key;
-  wstring response;
-  int response_code;
-  bool success = HTTPUpload::SendPutRequest(
-    signed_url,
-    symbol_file,
-    /* timeout = */ NULL,
-    &response,
-    &response_code);
-  if (!success) {
-    wprintf(L"Failed to send symbol file.\n");
-    wprintf(L"Response code: %ld\n", response_code);
-    wprintf(L"Response:\n");
-    wprintf(L"%s\n", response.c_str());
-    return false;
-  }
-  else if (response_code == 0) {
-    wprintf(L"Failed to send symbol file: No response code\n");
-    return false;
-  }
-  else if (response_code != 200) {
-    wprintf(L"Failed to send symbol file: Response code %ld\n", response_code);
-    wprintf(L"Response:\n");
-    wprintf(L"%s\n", response.c_str());
-    return false;
-  }
-
-  CompleteUploadResult completeUploadResult =
-    SymbolCollectorClient::CompleteUpload(
-      url,
-      key,
-      upload_key,
-      debug_file,
-      debug_id);
-  if (completeUploadResult == CompleteUploadResult::Error) {
-    wprintf(L"Failed to complete upload.\n");
-    return false;
-  }
-  else if (completeUploadResult == CompleteUploadResult::DuplicateData) {
-    wprintf(L"Uploaded file checksum matched existing file checksum,"
-      L" no change necessary.\n");
-  }
-  else {
-    wprintf(L"Successfully sent the symbol file.\n");
-  }
-
-  return true;
-}
-
 __declspec(noreturn) void printUsageAndExit() {
   wprintf(L"Usage:\n\n"
-          L"    symupload [--timeout NN] [--product product_name] ^\n"
+          L"    symupload [--i] [--timeout NN] [--product product_name] ^\n"
           L"              <file.exe|file.dll> <symbol upload URL> ^\n"
           L"              [...<symbol upload URLs>]\n\n");
+  wprintf(L"  - i: Extract inline information from pdb.\n");
   wprintf(L"  - Timeout is in milliseconds, or can be 0 to be unlimited.\n");
   wprintf(L"  - product_name is an HTTP-friendly product name. It must only\n"
           L"    contain an ascii subset: alphanumeric and punctuation.\n"
@@ -273,6 +188,7 @@ __declspec(noreturn) void printUsageAndExit() {
 int wmain(int argc, wchar_t* argv[]) {
   const wchar_t* module;
   const wchar_t* product = nullptr;
+  bool handle_inline = false;
   int timeout = -1;
   int currentarg = 1;
   bool use_sym_upload_v2 = false;
@@ -280,6 +196,11 @@ int wmain(int argc, wchar_t* argv[]) {
   const wchar_t* api_url = nullptr;
   const wchar_t* api_key = nullptr;
   while (argc > currentarg + 1) {
+    if (!wcscmp(L"--i", argv[currentarg])) {
+      handle_inline = true;
+      ++currentarg;
+      continue;
+    }
     if (!wcscmp(L"--timeout", argv[currentarg])) {
       timeout = _wtoi(argv[currentarg + 1]);
       currentarg += 2;
@@ -310,7 +231,7 @@ int wmain(int argc, wchar_t* argv[]) {
 
   wstring symbol_file;
   PDBModuleInfo pdb_info;
-  if (!DumpSymbolsToTempFile(module, &symbol_file, &pdb_info)) {
+  if (!DumpSymbolsToTempFile(module, &symbol_file, &pdb_info, handle_inline)) {
     fwprintf(stderr, L"Could not get symbol data from %s\n", module);
     return 1;
   }
@@ -330,13 +251,10 @@ int wmain(int argc, wchar_t* argv[]) {
       api_url = argv[currentarg++];
       api_key = argv[currentarg++];
 
-      success = DoSymUploadV2(
-        api_url,
-        api_key,
-        pdb_info.debug_file,
-        pdb_info.debug_identifier,
-        symbol_file,
-        force);
+      success = google_breakpad::SymUploadV2ProtocolSend(
+          api_url, api_key, timeout == -1 ? nullptr : &timeout,
+          pdb_info.debug_file, pdb_info.debug_identifier, symbol_file,
+          kSymbolUploadTypeBreakpad, force);
     } else {
       printUsageAndExit();
     }

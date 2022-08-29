@@ -33,6 +33,7 @@
 
 #include <memory>
 
+#include "base/notreached.h"
 #include "base/task/single_thread_task_runner.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -40,15 +41,16 @@
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
-#include "third_party/blink/renderer/platform/geometry/float_rect.h"
-#include "third_party/blink/renderer/platform/geometry/float_size.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
 #include "third_party/blink/renderer/platform/graphics/paint/property_tree_state.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
 
 namespace cc {
 class AnimationHost;
+class AnimationTimeline;
 class ScrollbarLayerBase;
 }
 
@@ -93,6 +95,13 @@ struct PaintPropertyTreeBuilderFragmentContext;
 //  +- horizontal_scrollbar_effect_node_
 //  +- vertical_scrollbar_effect_node_
 //
+// A VisualViewport is created for each blink::Page which means we'll have a
+// VisualViewport for each renderer in a page. However, only the VisualViewport
+// in the renderer containing the outermost main frame is considered active.
+// VisualViewports that are remote to the outermost main frame are considered
+// inert; their scale and location values cannot be changed. See the
+// IsActiveViewport() method. Many methods in VisualViewport either return
+// defaults or expect to never be called from an inert instance.
 class CORE_EXPORT VisualViewport : public GarbageCollected<VisualViewport>,
                                    public ScrollableArea {
  public:
@@ -163,9 +172,9 @@ class CORE_EXPORT VisualViewport : public GarbageCollected<VisualViewport>,
   // http://www.chromium.org/developers/design-documents/blink-coordinate-spaces.
   // These methods are used to convert coordinates from/to viewport to root
   // frame. Root frame coordinates x page scale(pinch zoom) -> Viewport
-  FloatRect ViewportToRootFrame(const FloatRect&) const;
+  gfx::RectF ViewportToRootFrame(const gfx::RectF&) const;
   gfx::Rect ViewportToRootFrame(const gfx::Rect&) const;
-  FloatRect RootFrameToViewport(const FloatRect&) const;
+  gfx::RectF RootFrameToViewport(const gfx::RectF&) const;
   gfx::Rect RootFrameToViewport(const gfx::Rect&) const;
 
   gfx::PointF ViewportToRootFrame(const gfx::PointF&) const;
@@ -215,18 +224,21 @@ class CORE_EXPORT VisualViewport : public GarbageCollected<VisualViewport>,
   void ScrollControlWasSetNeedsPaintInvalidation() override {}
   void UpdateScrollOffset(const ScrollOffset&,
                           mojom::blink::ScrollType) override;
-  cc::Layer* LayerForScrolling() const override;
+  cc::Layer* LayerForScrolling() const;
   cc::Layer* LayerForHorizontalScrollbar() const override;
   cc::Layer* LayerForVerticalScrollbar() const override;
   bool ScheduleAnimation() override;
   bool UsesCompositedScrolling() const override { return true; }
   cc::AnimationHost* GetCompositorAnimationHost() const override;
-  CompositorAnimationTimeline* GetCompositorAnimationTimeline() const override;
+  cc::AnimationTimeline* GetCompositorAnimationTimeline() const override;
   gfx::Rect VisibleContentRect(
       IncludeScrollbarsInRect = kExcludeScrollbars) const override;
   scoped_refptr<base::SingleThreadTaskRunner> GetTimerTaskRunner()
       const override;
   mojom::blink::ColorScheme UsedColorScheme() const override;
+  ScrollbarTheme& GetPageScrollbarTheme() const override;
+  bool VisualViewportSuppliesScrollbars() const override;
+  const Document* GetDocument() const override;
 
   // VisualViewport scrolling may involve pinch zoom and gets routed through
   // WebViewImpl explicitly rather than via
@@ -254,11 +266,6 @@ class CORE_EXPORT VisualViewport : public GarbageCollected<VisualViewport>,
   // for viewing websites that are not optimized for mobile devices.
   bool ShouldDisableDesktopWorkarounds() const;
 
-  ScrollbarTheme& GetPageScrollbarTheme() const override;
-  bool VisualViewportSuppliesScrollbars() const override;
-
-  const Document* GetDocument() const override;
-
   TransformPaintPropertyNode* GetDeviceEmulationTransformNode() const;
   TransformPaintPropertyNode* GetOverscrollElasticityTransformNode() const;
   EffectPaintPropertyNode* GetOverscrollElasticityEffectNode() const;
@@ -272,12 +279,30 @@ class CORE_EXPORT VisualViewport : public GarbageCollected<VisualViewport>,
   PaintPropertyChangeType UpdatePaintPropertyNodesIfNeeded(
       PaintPropertyTreeBuilderFragmentContext& context);
 
-  void SetNeedsPaintPropertyUpdate() { needs_paint_property_update_ = true; }
-  bool NeedsPaintPropertyUpdate() const { return needs_paint_property_update_; }
+  void SetNeedsPaintPropertyUpdate() {
+    DCHECK(IsActiveViewport());
+    needs_paint_property_update_ = true;
+  }
+  bool NeedsPaintPropertyUpdate() const {
+    DCHECK(IsActiveViewport());
+    return needs_paint_property_update_;
+  }
 
   void DisposeImpl() override;
 
   void Paint(GraphicsContext&) const;
+
+  void UsedColorSchemeChanged();
+
+  // Returns whether this VisualViewport is "active", that is, whether it'll
+  // affect paint property trees. If false, this renderer cannot be
+  // independently scaled.
+  //
+  // A VisualViewport is created in renderers for remote frames / nested pages;
+  // however, in those cases it is "inert", it cannot change scale or location
+  // values. Only a <portal> or outermost main frame can have an active
+  // viewport.
+  bool IsActiveViewport() const;
 
  private:
   bool DidSetScaleOrLocation(float scale,
@@ -285,7 +310,6 @@ class CORE_EXPORT VisualViewport : public GarbageCollected<VisualViewport>,
                              const gfx::PointF& location);
 
   void CreateLayers();
-  void UpdateStyleAndLayout(DocumentUpdateReason) const;
 
   void EnqueueScrollEvent();
   void EnqueueResizeEvent();
@@ -298,7 +322,9 @@ class CORE_EXPORT VisualViewport : public GarbageCollected<VisualViewport>,
 
   RootFrameViewport* GetRootFrameViewport() const;
 
-  LocalFrame* LocalMainFrame() const;
+  // Returns the local main frame, this can only be called for an active
+  // VisualViewport.
+  LocalFrame& LocalMainFrame() const;
 
   Page& GetPage() const {
     DCHECK(page_);
@@ -311,6 +337,8 @@ class CORE_EXPORT VisualViewport : public GarbageCollected<VisualViewport>,
 
   // Contracts the given size by the thickness of any visible scrollbars. Does
   // not contract the size if the scrollbar is overlay.
+  // TODO(bokan): This does not work for a VisualViewport that is in a remote
+  // renderer (i.e. !IsActiveViewport).
   gfx::Size ExcludeScrollbars(const gfx::Size&) const;
 
   Member<Page> page_;
@@ -335,13 +363,13 @@ class CORE_EXPORT VisualViewport : public GarbageCollected<VisualViewport>,
   float scale_;
   bool is_pinch_gesture_active_;
 
-  // The Blink viewport size. This is effectively the size of the rect Blink is
-  // rendering into and includes space consumed by scrollbars. While it will
-  // not include the URL bar height, Blink is only informed of changes to the
-  // URL bar once they're fully committed (all the way hidden or shown). While
-  // they're animating or being dragged, size_ will not reflect the changed
-  // visible content area. The transient URL bar-caused change to the visible
-  // content area is tracked in browser_controls_adjustment.
+  // The Blink viewport size. This is effectively the size of the rect the
+  // Blink WebView is rendering into and includes space consumed by scrollbars.
+  // While it will not include the URL bar height, Blink is only informed of
+  // changes to the URL bar once they're fully committed (all the way hidden or
+  // shown). While they're animating or being dragged, size_ will not reflect
+  // the changed visible content area. The transient URL bar-caused change to
+  // the visible content area is tracked in browser_controls_adjustment.
   gfx::Size size_;
 
   // Blink is only resized as a result of showing/hiding the URL bar once

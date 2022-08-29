@@ -7,6 +7,7 @@
 
 #include "ash/webui/eche_app_ui/launch_app_helper.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/ash/eche_app/eche_app_manager_factory.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_delegate.h"
@@ -18,13 +19,16 @@ namespace eche_app {
 
 extern const char kEcheAppScreenLockNotifierId[];
 extern const char kEcheAppRetryConnectionNotifierId[];
-extern const char kEcheAppFromWebWithoudButtonNotifierId[];
-extern const char kEcheAppDisabledByPhoneNotifierId[];
+extern const char kEcheAppInactivityNotifierId[];
+extern const char kEcheAppFromWebWithoutButtonNotifierId[];
+extern const char kEcheAppLearnMoreUrl[];
 
 // Controller class to show notifications.
 class EcheAppNotificationController {
  public:
-  explicit EcheAppNotificationController(Profile* profile);
+  explicit EcheAppNotificationController(
+      Profile* profile,
+      const base::RepeatingCallback<void(Profile*)>& relaunch_callback);
   virtual ~EcheAppNotificationController();
 
   EcheAppNotificationController(const EcheAppNotificationController&) = delete;
@@ -33,7 +37,7 @@ class EcheAppNotificationController {
 
   // Shows the notification when screen lock is already enabled on the phone,
   // but the ChromeOS is not enabled.
-  void ShowScreenLockNotification(const absl::optional<std::u16string>& title);
+  void ShowScreenLockNotification(const std::u16string& title);
   // Shows the notification which was generated from WebUI and carry title and
   // message.
   void ShowNotificationFromWebUI(
@@ -42,17 +46,17 @@ class EcheAppNotificationController {
       absl::variant<LaunchAppHelper::NotificationInfo::NotificationType,
                     mojom::WebNotificationType> type);
 
-  // Shows the notification when apps streaming settings is disabled on the
-  // phone.
-  void ShowDisabledByPhoneNotification(
-      const absl::optional<std::u16string>& title);
+  // Close the notifiication according to id
+  void CloseNotification(const std::string& notification_id);
+
+  // Close the notifiications about coonnectiion error and launch error
+  void CloseConnectionOrLaunchErrorNotifications();
 
  protected:
   // Exposed for testing.
   virtual void LaunchSettings();
   virtual void LaunchLearnMore();
   virtual void LaunchTryAgain();
-  virtual void LaunchHelp();
 
  private:
   // NotificationDelegate implementation for handling click events.
@@ -81,6 +85,7 @@ class EcheAppNotificationController {
       std::unique_ptr<message_center::Notification> notification);
 
   Profile* profile_;
+  base::RepeatingCallback<void(Profile*)> relaunch_callback_;
   base::WeakPtrFactory<EcheAppNotificationController> weak_ptr_factory_{this};
 };
 
