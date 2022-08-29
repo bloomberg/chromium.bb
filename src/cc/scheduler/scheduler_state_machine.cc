@@ -167,6 +167,8 @@ SchedulerStateMachine::ActionToProtozeroEnum(Action action) {
     case Action::SEND_BEGIN_MAIN_FRAME:
       return pbzeroSchedulerAction::CC_SCHEDULER_ACTION_SEND_BEGIN_MAIN_FRAME;
     case Action::COMMIT:
+    case Action::POST_COMMIT:
+      // TODO(szager): Add CC_SCHEDULER_ACTION_POST_COMMIT to perfetto
       return pbzeroSchedulerAction::CC_SCHEDULER_ACTION_COMMIT;
     case Action::ACTIVATE_SYNC_TREE:
       return pbzeroSchedulerAction::CC_SCHEDULER_ACTION_ACTIVATE_SYNC_TREE;
@@ -621,6 +623,20 @@ bool SchedulerStateMachine::ShouldCommit() const {
   return true;
 }
 
+void SchedulerStateMachine::DidCommit() {
+  DCHECK(!needs_post_commit_);
+  needs_post_commit_ = true;
+}
+
+bool SchedulerStateMachine::ShouldRunPostCommit() const {
+  return needs_post_commit_;
+}
+
+void SchedulerStateMachine::DidPostCommit() {
+  DCHECK(needs_post_commit_);
+  needs_post_commit_ = false;
+}
+
 bool SchedulerStateMachine::ShouldPrepareTiles() const {
   // In full-pipeline mode, we need to prepare tiles ASAP to ensure that we
   // don't get stuck.
@@ -662,6 +678,10 @@ bool SchedulerStateMachine::ShouldInvalidateLayerTreeFrameSink() const {
 }
 
 SchedulerStateMachine::Action SchedulerStateMachine::NextAction() const {
+  if (ShouldSendBeginMainFrame())
+    return Action::SEND_BEGIN_MAIN_FRAME;
+  if (ShouldRunPostCommit())
+    return Action::POST_COMMIT;
   if (ShouldActivateSyncTree())
     return Action::ACTIVATE_SYNC_TREE;
   if (ShouldCommit())
@@ -675,8 +695,6 @@ SchedulerStateMachine::Action SchedulerStateMachine::NextAction() const {
     else
       return Action::DRAW_IF_POSSIBLE;
   }
-  if (ShouldSendBeginMainFrame())
-    return Action::SEND_BEGIN_MAIN_FRAME;
   if (ShouldPerformImplSideInvalidation())
     return Action::PERFORM_IMPL_SIDE_INVALIDATION;
   if (ShouldPrepareTiles())
@@ -1436,8 +1454,7 @@ void SchedulerStateMachine::BeginMainFrameAborted(CommitEarlyOutReason reason) {
       SetNeedsBeginMainFrame();
       return;
     case CommitEarlyOutReason::FINISHED_NO_UPDATES:
-      bool commit_has_no_updates = true;
-      WillCommit(commit_has_no_updates);
+      WillCommit(/*commit_had_no_updates=*/true);
       return;
   }
 }
@@ -1467,6 +1484,10 @@ bool SchedulerStateMachine::NotifyReadyToActivate() {
 
   pending_tree_is_ready_for_activation_ = true;
   return true;
+}
+
+bool SchedulerStateMachine::IsReadyToActivate() {
+  return pending_tree_is_ready_for_activation_;
 }
 
 void SchedulerStateMachine::NotifyReadyToDraw() {

@@ -20,6 +20,7 @@
 #include "core/fxcrt/fx_safe_types.h"
 #include "core/fxcrt/pauseindicator_iface.h"
 #include "core/fxcrt/span_util.h"
+#include "core/fxcrt/stl_util.h"
 #include "core/fxge/cfx_fillrenderoptions.h"
 #include "third_party/base/check.h"
 #include "third_party/base/check_op.h"
@@ -160,7 +161,6 @@ CPDF_ContentParser::Stage CPDF_ContentParser::PrepareContent() {
   FX_SAFE_UINT32 safeSize = 0;
   for (const auto& stream : m_StreamArray) {
     m_StreamSegmentOffsets.push_back(safeSize.ValueOrDie());
-
     safeSize += stream->GetSize();
     safeSize += 1;
     if (!safeSize.IsValid())
@@ -173,7 +173,7 @@ CPDF_ContentParser::Stage CPDF_ContentParser::PrepareContent() {
   if (!m_pData)
     return Stage::kComplete;
 
-  uint32_t pos = 0;
+  size_t pos = 0;
   auto data_span = pdfium::make_span(m_pData.Get(), m_Size);
   for (const auto& stream : m_StreamArray) {
     fxcrt::spancpy(data_span.subspan(pos), stream->GetSpan());
@@ -240,7 +240,7 @@ void CPDF_ContentParser::HandlePageContentStream(CPDF_Stream* pStream) {
 }
 
 bool CPDF_ContentParser::HandlePageContentArray(CPDF_Array* pArray) {
-  m_nStreams = pArray->size();
+  m_nStreams = fxcrt::CollectionSize<uint32_t>(*pArray);
   if (m_nStreams == 0)
     return false;
 

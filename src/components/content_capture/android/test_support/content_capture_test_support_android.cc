@@ -51,11 +51,11 @@ static void JNI_ContentCaptureTestSupport_SimulateDidUpdateFaviconURL(
   CHECK(root);
   CHECK(root->is_list());
   std::vector<blink::mojom::FaviconURLPtr> favicon_urls;
-  for (const base::Value& icon : root->GetList()) {
+  for (const base::Value& icon : root->GetListDeprecated()) {
     std::vector<gfx::Size> sizes;
     // The sizes is optional.
     if (auto* icon_sizes = icon.FindKey("sizes")) {
-      for (const base::Value& size : icon_sizes->GetList()) {
+      for (const base::Value& size : icon_sizes->GetListDeprecated()) {
         CHECK(size.FindKey("width"));
         CHECK(size.FindKey("height"));
         sizes.emplace_back(size.FindKey("width")->GetInt(),
@@ -69,8 +69,8 @@ static void JNI_ContentCaptureTestSupport_SimulateDidUpdateFaviconURL(
         ToType(*icon.FindKey("type")->GetIfString()), sizes));
   }
   CHECK(!favicon_urls.empty());
-  provider->NotifyFaviconURLUpdatedForTesting(web_contents->GetMainFrame(),
-                                              favicon_urls);
+  provider->NotifyFaviconURLUpdatedForTesting(
+      web_contents->GetPrimaryMainFrame(), favicon_urls);
 }
 
 }  // namespace content_capture

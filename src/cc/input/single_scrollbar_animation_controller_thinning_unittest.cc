@@ -5,6 +5,7 @@
 #include "cc/input/single_scrollbar_animation_controller_thinning.h"
 
 #include "base/memory/raw_ptr.h"
+#include "base/time/time.h"
 #include "cc/layers/solid_color_scrollbar_layer_impl.h"
 #include "cc/test/layer_tree_impl_test_base.h"
 #include "cc/trees/layer_tree_impl.h"
@@ -38,6 +39,7 @@ class MockSingleScrollbarAnimationControllerClient
   ScrollbarSet ScrollbarsFor(ElementId scroll_element_id) const override {
     return host_impl_->ScrollbarsFor(scroll_element_id);
   }
+  bool IsFluentScrollbar() const override { return false; }
 
   MOCK_METHOD2(PostDelayedScrollbarAnimationTask,
                void(base::OnceClosure start_fade, base::TimeDelta delay));

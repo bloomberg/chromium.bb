@@ -6,11 +6,11 @@
 
 #include "ash/components/tether/device_id_tether_network_guid_map.h"
 #include "ash/components/tether/host_scan_cache.h"
+#include "ash/services/secure_channel/public/cpp/client/secure_channel_client.h"
 #include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
-#include "chromeos/services/secure_channel/public/cpp/client/secure_channel_client.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace tether {
 
@@ -125,4 +125,4 @@ void KeepAliveScheduler::SendKeepAliveTickle() {
 
 }  // namespace tether
 
-}  // namespace chromeos
+}  // namespace ash

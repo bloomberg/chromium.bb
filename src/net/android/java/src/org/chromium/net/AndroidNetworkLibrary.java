@@ -5,7 +5,6 @@
 package org.chromium.net;
 
 import android.Manifest;
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -26,6 +25,7 @@ import android.os.Process;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
+import androidx.annotation.RequiresApi;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -184,7 +184,7 @@ class AndroidNetworkLibrary {
      * status can't be determined. Requires ACCESS_NETWORK_STATE permission. Only available on
      * Android Marshmallow and later versions. Returns false on earlier versions.
      */
-    @TargetApi(Build.VERSION_CODES.M)
+    @RequiresApi(Build.VERSION_CODES.M)
     @CalledByNative
     private static boolean getIsCaptivePortal() {
         // NetworkCapabilities.NET_CAPABILITY_CAPTIVE_PORTAL is only available on Marshmallow and
@@ -275,6 +275,18 @@ class AndroidNetworkLibrary {
         return "";
     }
 
+    // For testing, turn Wifi on/off. Only for testing but we can not append
+    // "ForTest" hooter because jni generator creates code for @CalledByNative
+    // regardless of the hooter but Chromium Binary Size checker warns
+    // "XXXForTest" is included in the production binary.
+    @CalledByNative
+    public static void setWifiEnabled(boolean enabled) {
+        WifiManager wifiManager =
+                (WifiManager) ContextUtils.getApplicationContext().getSystemService(
+                        Context.WIFI_SERVICE);
+        wifiManager.setWifiEnabled(enabled);
+    }
+
     /**
      * Gets the signal strength from the currently associated WiFi access point if there is one, and
      * it is available. Signal strength may not be available if the app does not have permissions to
@@ -342,7 +354,7 @@ class AndroidNetworkLibrary {
             sInstance = networkSecurityPolicyProxy;
         }
 
-        @TargetApi(Build.VERSION_CODES.N)
+        @RequiresApi(Build.VERSION_CODES.N)
         public boolean isCleartextTrafficPermitted(String host) {
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
                 // No per-host configuration before N.
@@ -351,7 +363,7 @@ class AndroidNetworkLibrary {
             return ApiHelperForN.isCleartextTrafficPermitted(host);
         }
 
-        @TargetApi(Build.VERSION_CODES.M)
+        @RequiresApi(Build.VERSION_CODES.M)
         public boolean isCleartextTrafficPermitted() {
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
                 // Always true before M.
@@ -400,10 +412,36 @@ class AndroidNetworkLibrary {
 
     /**
      * Returns object representing the DNS configuration for the provided
+     * network handle.
+     */
+    @RequiresApi(Build.VERSION_CODES.P)
+    @CalledByNative
+    public static DnsStatus getDnsStatusForNetwork(long networkHandle) {
+        // In case the network handle is invalid don't crash, instead return an empty DnsStatus and
+        // let native code handle that.
+        try {
+            Network network = Network.fromNetworkHandle(networkHandle);
+            return getDnsStatus(network);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+    }
+
+    /**
+     * Returns object representing the DNS configuration for the current
+     * default network.
+     */
+    @RequiresApi(Build.VERSION_CODES.M)
+    @CalledByNative
+    public static DnsStatus getCurrentDnsStatus() {
+        return getDnsStatus(null);
+    }
+
+    /**
+     * Returns object representing the DNS configuration for the provided
      * network. If |network| is null, uses the active network.
      */
-    @TargetApi(Build.VERSION_CODES.M)
-    @CalledByNative
+    @RequiresApi(Build.VERSION_CODES.M)
     public static DnsStatus getDnsStatus(Network network) {
         if (!haveAccessNetworkState()) {
             return null;
@@ -442,7 +480,7 @@ class AndroidNetworkLibrary {
     /**
      * Reports a connectivity issue with the device's current default network.
      */
-    @TargetApi(Build.VERSION_CODES.M)
+    @RequiresApi(Build.VERSION_CODES.M)
     @CalledByNative
     private static boolean reportBadDefaultNetwork() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return false;

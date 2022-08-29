@@ -45,7 +45,7 @@ export interface RequestLinkIconData {
   revealOverride?: (revealable: Object|null, omitFocus?: boolean|undefined) => Promise<void>;
 }
 
-export const extractShortPath = (path: string): string => {
+export const extractShortPath = (path: Platform.DevToolsPath.UrlString): string => {
   // 1st regex matches everything after last '/'
   // if path ends with '/', 2nd regex returns everything between the last two '/'
   return (/[^/]+$/.exec(path) || /[^/]+\/$/.exec(path) || [''])[0];
@@ -84,16 +84,16 @@ export class RequestLinkIcon extends HTMLElement {
       this.#reveal = data.revealOverride;
     }
     if (!this.#request && data.affectedRequest) {
-      this.#requestResolvedPromise = this.resolveRequest(data.affectedRequest.requestId);
+      this.#requestResolvedPromise = this.#resolveRequest(data.affectedRequest.requestId);
     }
-    this.render();
+    void this.#render();
   }
 
   connectedCallback(): void {
     this.#shadow.adoptedStyleSheets = [requestLinkIconStyles];
   }
 
-  private resolveRequest(requestId: Protocol.Network.RequestId): Promise<void> {
+  #resolveRequest(requestId: Protocol.Network.RequestId): Promise<void> {
     if (!this.#requestResolver) {
       throw new Error('A `RequestResolver` must be provided if an `affectedRequest` is provided.');
     }
@@ -120,7 +120,7 @@ export class RequestLinkIcon extends HTMLElement {
     };
   }
 
-  private iconColor(): string {
+  #iconColor(): string {
     if (!this.#request) {
       return '--issue-color-yellow';
     }
@@ -130,7 +130,7 @@ export class RequestLinkIcon extends HTMLElement {
   iconData(): IconButton.Icon.IconData {
     return {
       iconName: 'network_panel_icon',
-      color: `var(${this.iconColor()})`,
+      color: `var(${this.#iconColor()})`,
       width: '16px',
       height: '16px',
     };
@@ -147,34 +147,34 @@ export class RequestLinkIcon extends HTMLElement {
     if (this.#highlightHeader) {
       const requestLocation = NetworkForward.UIRequestLocation.UIRequestLocation.header(
           linkedRequest, this.#highlightHeader.section, this.#highlightHeader.name);
-      this.#reveal(requestLocation);
+      void this.#reveal(requestLocation);
     } else {
       const requestLocation = NetworkForward.UIRequestLocation.UIRequestLocation.tab(
           linkedRequest, this.#networkTab ?? NetworkForward.UIRequestLocation.UIRequestTabs.Headers);
-      this.#reveal(requestLocation);
+      void this.#reveal(requestLocation);
     }
     this.#additionalOnClickAction?.();
   }
 
-  private getTooltip(): Platform.UIString.LocalizedString {
+  #getTooltip(): Platform.UIString.LocalizedString {
     if (this.#request) {
       return i18nString(UIStrings.clickToShowRequestInTheNetwork, {url: this.#request.url()});
     }
     return i18nString(UIStrings.requestUnavailableInTheNetwork);
   }
 
-  private getUrlForDisplaying(): string|undefined {
+  #getUrlForDisplaying(): Platform.DevToolsPath.UrlString|undefined {
     if (!this.#request) {
-      return this.#affectedRequest?.url;
+      return this.#affectedRequest?.url as Platform.DevToolsPath.UrlString;
     }
     return this.#request.url();
   }
 
-  private maybeRenderURL(): LitHtml.TemplateResult|{} {
+  #maybeRenderURL(): LitHtml.LitTemplate {
     if (!this.#displayURL) {
       return LitHtml.nothing;
     }
-    const url = this.getUrlForDisplaying();
+    const url = this.#getUrlForDisplaying();
     if (!url) {
       return LitHtml.nothing;
     }
@@ -182,26 +182,26 @@ export class RequestLinkIcon extends HTMLElement {
     return LitHtml.html`<span aria-label=${i18nString(UIStrings.shortenedURL)} title=${url}>${filename}</span>`;
   }
 
-  private render(): Promise<void> {
+  #render(): Promise<void> {
     return coordinator.write(() => {
       // clang-format off
       LitHtml.render(LitHtml.html`
-        ${LitHtml.Directives.until(this.#requestResolvedPromise.then(() => this.renderComponent()), this.renderComponent())}
+        ${LitHtml.Directives.until(this.#requestResolvedPromise.then(() => this.#renderComponent()), this.#renderComponent())}
       `,
       this.#shadow, {host: this});
       // clang-format on
     });
   }
 
-  private renderComponent(): LitHtml.TemplateResult {
+  #renderComponent(): LitHtml.TemplateResult {
     // clang-format off
     return LitHtml.html`
       <span class=${LitHtml.Directives.classMap({'link': Boolean(this.#request)})}
             tabindex="0"
             @click=${this.handleClick}>
         <${IconButton.Icon.Icon.litTagName} .data=${this.iconData() as IconButton.Icon.IconData}
-          title=${this.getTooltip()}></${IconButton.Icon.Icon.litTagName}>
-        ${this.maybeRenderURL()}
+          title=${this.#getTooltip()}></${IconButton.Icon.Icon.litTagName}>
+        ${this.#maybeRenderURL()}
       </span>`;
     // clang-format on
   }

@@ -40,10 +40,11 @@ class CollectorBase {
  protected:
   virtual void Collect();
 
-  virtual void OnMetricDataCollected(MetricData metric_data) = 0;
+  virtual void OnMetricDataCollected(
+      absl::optional<MetricData> metric_data) = 0;
 
   virtual void ReportMetricData(
-      const MetricData& metric_data,
+      MetricData metric_data,
       base::OnceClosure on_data_reported = base::DoNothing());
 
   SEQUENCE_CHECKER(sequence_checker_);
@@ -63,6 +64,7 @@ class OneShotCollector : public CollectorBase {
                    MetricReportQueue* metric_report_queue,
                    ReportingSettings* reporting_settings,
                    const std::string& setting_path,
+                   bool setting_enabled_default_value,
                    base::OnceClosure on_data_reported = base::DoNothing());
 
   OneShotCollector(const OneShotCollector& other) = delete;
@@ -73,7 +75,7 @@ class OneShotCollector : public CollectorBase {
  protected:
   void Collect() override;
 
-  void OnMetricDataCollected(MetricData metric_data) override;
+  void OnMetricDataCollected(absl::optional<MetricData> metric_data) override;
 
  private:
   std::unique_ptr<MetricReportingController> reporting_controller_;
@@ -91,6 +93,7 @@ class PeriodicCollector : public CollectorBase {
                     MetricReportQueue* metric_report_queue,
                     ReportingSettings* reporting_settings,
                     const std::string& enable_setting_path,
+                    bool setting_enabled_default_value,
                     const std::string& rate_setting_path,
                     base::TimeDelta default_rate,
                     int rate_unit_to_ms = 1);
@@ -101,7 +104,7 @@ class PeriodicCollector : public CollectorBase {
   ~PeriodicCollector() override;
 
  protected:
-  void OnMetricDataCollected(MetricData metric_data) override;
+  void OnMetricDataCollected(absl::optional<MetricData> metric_data) override;
 
  private:
   virtual void StartPeriodicCollection();
@@ -137,14 +140,15 @@ class AdditionalSamplersCollector {
 
   ~AdditionalSamplersCollector();
 
-  void CollectAll(MetricCallback on_all_collected_cb,
+  void CollectAll(OptionalMetricCallback on_all_collected_cb,
                   MetricData metric_data) const;
 
  private:
-  void CollectAdditionalMetricData(uint64_t sampler_index,
-                                   MetricCallback on_all_collected_cb,
-                                   MetricData metric_data,
-                                   MetricData new_metric_data) const;
+  void CollectAdditionalMetricData(
+      uint64_t sampler_index,
+      OptionalMetricCallback on_all_collected_cb,
+      MetricData metric_data,
+      absl::optional<MetricData> new_metric_data) const;
 
   const std::vector<Sampler*> samplers_;
 
@@ -163,6 +167,7 @@ class PeriodicEventCollector : public PeriodicCollector {
                          MetricReportQueue* metric_report_queue,
                          ReportingSettings* reporting_settings,
                          const std::string& enable_setting_path,
+                         bool setting_enabled_default_value,
                          const std::string& rate_setting_path,
                          base::TimeDelta default_rate,
                          int rate_unit_to_ms = 1);
@@ -174,10 +179,10 @@ class PeriodicEventCollector : public PeriodicCollector {
   ~PeriodicEventCollector() override;
 
  protected:
-  void OnMetricDataCollected(MetricData metric_data) override;
+  void OnMetricDataCollected(absl::optional<MetricData> metric_data) override;
 
  private:
-  void OnAdditionalMetricDataCollected(MetricData metric_data);
+  void OnAdditionalMetricDataCollected(absl::optional<MetricData> metric_data);
 
   const std::unique_ptr<EventDetector> event_detector_;
 

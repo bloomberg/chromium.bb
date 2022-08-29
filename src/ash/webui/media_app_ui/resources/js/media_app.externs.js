@@ -58,6 +58,19 @@ mediaApp.AbstractFile.prototype.fromClipboard;
  */
 mediaApp.AbstractFile.prototype.error;
 /**
+ * A function that queries the original file's path to see if it is writable
+ * according to Ash. Returns a promise that resolves once this has been
+ * determined.
+ * @type {function(): !Promise<boolean>|undefined}
+ */
+mediaApp.AbstractFile.prototype.isBrowserWritable;
+/**
+ * A function that attempts to launch the file in Photos in editing mode.
+ * Returns a promise that resolves when the launch has initiated.
+ * @type {function(): !Promise<undefined>|undefined}
+ */
+mediaApp.AbstractFile.prototype.editInPhotos;
+/**
  * A function that will overwrite the original file with the provided Blob.
  * Returns a promise that resolves when the write operations are complete. Or
  * rejects. Upon success, `size` will reflect the new file size.
@@ -149,24 +162,22 @@ mediaApp.AbstractFileList.prototype.loadPrev = function(currentFileToken) {};
  */
 mediaApp.AbstractFileList.prototype.addObserver = function(observer) {};
 /**
- * A function that requests for the user to be prompted with an open file
- * picker. Once the user selects a file, the file is inserted into the
- * navigation order after the current file and then navigated to.
- * TODO(b/203466987): Remove the undefined here once we can ensure all file
- * lists implement a openFile function.
- * @type {function(): !Promise<undefined>|undefined}
- */
-mediaApp.AbstractFileList.prototype.openFile = function() {};
-/**
  * Request for the user to be prompted with an open file dialog. Files chosen
  * will be added to the last received file list.
- * TODO(b/203466987): Remove the undefined here once we can ensure all file
+ * TODO(b/230670565): Remove the undefined here once we can ensure all file
  * lists implement a openFilesWithFilePicker function.
- * @type {function(!Array<string>, ?mediaApp.AbstractFile):
+ * @type {function(!Array<string>, ?mediaApp.AbstractFile, ?boolean):
  *     !Promise<undefined>|undefined}
  */
 mediaApp.AbstractFileList.prototype.openFilesWithFilePicker = function(
-    acceptTypeKeys, startInFolder) {};
+    acceptTypeKeys, startInFolder, isSingleFile) {};
+/**
+ * Filters items represented by this file list in place, possibly changing the
+ * length. Only items for which the filter returns true are kept.
+ * @type {function(function(!mediaApp.AbstractFile): boolean)|undefined}
+ */
+mediaApp.AbstractFileList.prototype.filterInPlace = function(filter) {};
+
 
 /**
  * The delegate which exposes open source privileged WebUi functions to
@@ -215,6 +226,28 @@ mediaApp.ClientApiDelegate.prototype.notifyCurrentFile = function(
  * @return {!Promise<!File>} A Blob-backed File with type: image/jpeg.
  */
 mediaApp.ClientApiDelegate.prototype.extractPreview = function(file) {};
+/**
+ * Passes the provided `blobUuid` to a sandboxed viewer in a popup window. This
+ * enables the trusted context to open the popup so that it does not appear with
+ * UI suggesting to the user that it is insecure. Only the UUID of the blob
+ * should be passed (hex digits and hyphens), which will reconstruct the blob
+ * URL in the sandbox. The provided `title` will be used to set the document
+ * title (e.g., to include the filename), which will appear in the popup title
+ * bar and shelf context menu.
+ * @type {function(string, string)|undefined}
+ */
+mediaApp.ClientApiDelegate.prototype.openInSandboxedViewer = function(
+    title, blobUuid) {};
+/**
+ * Opens the provided `url` in a browser tab.
+ * @type {function(string)|undefined}
+ */
+mediaApp.ClientApiDelegate.prototype.openUrlInBrowserTab = function(url) {};
+/**
+ * Reloads the main frame, reloading launch files.
+ * @type {function()|undefined}
+ */
+mediaApp.ClientApiDelegate.prototype.reloadMainFrame = function() {};
 
 /**
  * The client Api for interacting with the media app instance.

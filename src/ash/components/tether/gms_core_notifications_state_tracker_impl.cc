@@ -6,9 +6,9 @@
 
 #include <sstream>
 
-#include "chromeos/components/multidevice/logging/logging.h"
+#include "ash/components/multidevice/logging/logging.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace tether {
 
@@ -125,4 +125,4 @@ void GmsCoreNotificationsStateTrackerImpl::SendDeviceNamesChangeEvent() {
 
 }  // namespace tether
 
-}  // namespace chromeos
+}  // namespace ash

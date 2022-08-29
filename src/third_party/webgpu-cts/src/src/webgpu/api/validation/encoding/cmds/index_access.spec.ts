@@ -1,10 +1,5 @@
 export const description = `
-indexed draws validation tests.
-
-TODO: Implement robustness test or operation test for drawIndexedIndirect. This validation test
-only test that drawIndexed can catch index buffer OOB and generate a validation error, but for
-drawIndexedIndirect no CPU validation is available, and the robustness access in that case should
-be tested.
+Validation tests for indexed draws accessing the index buffer.
 `;
 
 import { makeTestGroup } from '../../../../../common/framework/test_group.js';
@@ -17,10 +12,11 @@ class F extends ValidationTest {
 
   createRenderPipeline(): GPURenderPipeline {
     return this.device.createRenderPipeline({
+      layout: 'auto',
       vertex: {
         module: this.device.createShaderModule({
           code: `
-            [[stage(vertex)]] fn main() -> [[builtin(position)]] vec4<f32> {
+            @vertex fn main() -> @builtin(position) vec4<f32> {
               return vec4<f32>(0.0, 0.0, 0.0, 1.0);
             }`,
         }),
@@ -29,7 +25,7 @@ class F extends ValidationTest {
       fragment: {
         module: this.device.createShaderModule({
           code: `
-            [[stage(fragment)]] fn main() -> [[location(0)]] vec4<f32> {
+            @fragment fn main() -> @location(0) vec4<f32> {
               return vec4<f32>(0.0, 1.0, 0.0, 1.0);
             }`,
         }),
@@ -54,7 +50,8 @@ class F extends ValidationTest {
       colorAttachments: [
         {
           view: colorAttachment.createView(),
-          loadValue: { r: 0.0, g: 0.0, b: 0.0, a: 1.0 },
+          clearValue: { r: 0.0, g: 0.0, b: 0.0, a: 1.0 },
+          loadOp: 'clear',
           storeOp: 'store',
         },
       ],
@@ -77,7 +74,7 @@ class F extends ValidationTest {
     pass.setPipeline(pipeline);
     pass.setIndexBuffer(indexBuffer, 'uint32');
     pass.drawIndexed(indexCount, instanceCount, firstIndex, baseVertex, firstInstance);
-    pass.endPass();
+    pass.end();
 
     if (isSuccess) {
       this.device.queue.submit([encoder.finish()]);

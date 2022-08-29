@@ -59,29 +59,29 @@ struct extract_output_indices_helper;
  * \tparam Ts the remaining types.
  */
 template<size_t N, size_t Idx, size_t... OutputIndices, typename T1, typename... Ts>
-struct extract_output_indices_helper<N, Idx, index_sequence<OutputIndices...>, T1, Ts...> {
+struct extract_output_indices_helper<N, Idx, std::index_sequence<OutputIndices...>, T1, Ts...> {
   using type = typename
     extract_output_indices_helper<
       N - 1, Idx + 1,
       typename std::conditional<
         // If is a non-const l-value reference, append index.
         std::is_lvalue_reference<T1>::value 
-          && !std::is_const<typename std::remove_reference<T1>::type>::value,
-        index_sequence<OutputIndices..., Idx>,
-        index_sequence<OutputIndices...> >::type,
+          && !std::is_const<std::remove_reference_t<T1>>::value,
+        std::index_sequence<OutputIndices..., Idx>,
+        std::index_sequence<OutputIndices...> >::type,
       Ts...>::type;
 };
 
 // Base case.
 template<size_t Idx, size_t... OutputIndices>
-struct extract_output_indices_helper<0, Idx, index_sequence<OutputIndices...> > {
-  using type = index_sequence<OutputIndices...>;
+struct extract_output_indices_helper<0, Idx, std::index_sequence<OutputIndices...> > {
+  using type = std::index_sequence<OutputIndices...>;
 };
 
 // Extracts a set of indices into Types... that correspond to non-const
 // l-value references.
 template<typename... Types>
-using extract_output_indices = typename extract_output_indices_helper<sizeof...(Types), 0, index_sequence<>, Types...>::type;
+using extract_output_indices = typename extract_output_indices_helper<sizeof...(Types), 0, std::index_sequence<>, Types...>::type;
 
 // Helper struct for dealing with Generic functors that may return void.
 struct void_helper {
@@ -95,8 +95,8 @@ struct void_helper {
   template<typename Func, typename... Args>
   static EIGEN_ALWAYS_INLINE EIGEN_DEVICE_FUNC
   auto call(Func&& func, Args&&... args) -> 
-      typename std::enable_if<!std::is_same<decltype(func(args...)), void>::value, 
-                              decltype(func(args...))>::type {
+      std::enable_if_t<!std::is_same<decltype(func(args...)), void>::value,
+                       decltype(func(args...))> {
     return func(std::forward<Args>(args)...);
   }
   
@@ -104,8 +104,8 @@ struct void_helper {
   template<typename Func, typename... Args>
   static EIGEN_ALWAYS_INLINE EIGEN_DEVICE_FUNC
   auto call(Func&& func, Args&&... args) -> 
-      typename std::enable_if<std::is_same<decltype(func(args...)), void>::value,
-                              Void>::type {
+    std::enable_if_t<std::is_same<decltype(func(args...)), void>::value,
+                     Void> {
     func(std::forward<Args>(args)...);
     return Void{};
   }
@@ -113,7 +113,7 @@ struct void_helper {
   // Restores the original return type, Void -> void, T otherwise.
   template<typename T>
   static EIGEN_ALWAYS_INLINE EIGEN_DEVICE_FUNC
-  typename std::enable_if<!std::is_same<typename std::decay<T>::type, Void>::value, T>::type
+  std::enable_if_t<!std::is_same<typename std::decay<T>::type, Void>::value, T>
   restore(T&& val) {
     return val;
   }
@@ -134,19 +134,21 @@ struct void_helper {
 // output_buffer_size is populated.
 template<typename Kernel, typename... Args, size_t... Indices, size_t... OutputIndices>
 EIGEN_DEVICE_FUNC
-void run_serialized(index_sequence<Indices...>, index_sequence<OutputIndices...>,
+void run_serialized(std::index_sequence<Indices...>, std::index_sequence<OutputIndices...>,
                     Kernel kernel, uint8_t* buffer, size_t capacity) {
   using test_detail::get;
   using test_detail::make_tuple;
   using test_detail::tuple;
   // Deserialize input size and inputs.
   size_t input_size;
-  uint8_t* buff_ptr = Eigen::deserialize(buffer, input_size);
+  const uint8_t* read_ptr = buffer;
+  const uint8_t* read_end = buffer + capacity;
+  read_ptr = Eigen::deserialize(read_ptr, read_end, input_size);
   // Create value-type instances to populate.
   auto args = make_tuple(typename std::decay<Args>::type{}...);
   EIGEN_UNUSED_VARIABLE(args) // Avoid NVCC compile warning.
   // NVCC 9.1 requires us to spell out the template parameters explicitly.
-  buff_ptr = Eigen::deserialize(buff_ptr, get<Indices, typename std::decay<Args>::type...>(args)...);
+  read_ptr = Eigen::deserialize(read_ptr, read_end, get<Indices, typename std::decay<Args>::type...>(args)...);
   
   // Call function, with void->Void conversion so we are guaranteed a complete
   // output type.
@@ -158,19 +160,22 @@ void run_serialized(index_sequence<Indices...>, index_sequence<OutputIndices...>
   output_size += Eigen::serialize_size(result);
   
   // Always serialize required buffer size.
-  buff_ptr = Eigen::serialize(buffer, output_size);
+  uint8_t* write_ptr = buffer;
+  uint8_t* write_end = buffer + capacity;
+  write_ptr = Eigen::serialize(write_ptr, write_end, output_size);
+  // Null `write_ptr` can be safely passed along.
   // Serialize outputs if they fit in the buffer.
   if (output_size <= capacity) {
     // Collect outputs and result.
-    buff_ptr = Eigen::serialize(buff_ptr, get<OutputIndices, typename std::decay<Args>::type...>(args)...);
-    buff_ptr = Eigen::serialize(buff_ptr, result);
+    write_ptr = Eigen::serialize(write_ptr, write_end, get<OutputIndices, typename std::decay<Args>::type...>(args)...);
+    write_ptr = Eigen::serialize(write_ptr, write_end, result);
   }
 }
 
 template<typename Kernel, typename... Args>
 EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
 void run_serialized(Kernel kernel, uint8_t* buffer, size_t capacity) {
-  run_serialized<Kernel, Args...> (make_index_sequence<sizeof...(Args)>{},
+  run_serialized<Kernel, Args...> (std::make_index_sequence<sizeof...(Args)>{},
                                    extract_output_indices<Args...>{},
                                    kernel, buffer, capacity);
 }
@@ -201,8 +206,8 @@ void run_serialized_on_gpu_meta_kernel(const Kernel kernel, uint8_t* buffer, siz
 // buffer is not large enough to hold the outputs.
 template<typename Kernel, typename... Args, size_t... Indices, size_t... OutputIndices>
 auto run_serialized_on_gpu(size_t buffer_capacity_hint,
-                           index_sequence<Indices...>, 
-                           index_sequence<OutputIndices...>,
+                           std::index_sequence<Indices...>,
+                           std::index_sequence<OutputIndices...>,
                            Kernel kernel, Args&&... args) -> decltype(kernel(args...)) {  
   // Compute the required serialization buffer capacity.
   // Round up input size to next power of two to give a little extra room
@@ -226,6 +231,7 @@ auto run_serialized_on_gpu(size_t buffer_capacity_hint,
   std::vector<uint8_t> buffer(capacity);
   
   uint8_t* host_data = nullptr;
+  uint8_t* host_data_end = nullptr;
   uint8_t* host_ptr = nullptr;
   uint8_t* device_data = nullptr;
   size_t output_data_size = 0;
@@ -234,8 +240,9 @@ auto run_serialized_on_gpu(size_t buffer_capacity_hint,
   capacity = std::max<size_t>(capacity, output_data_size);
   buffer.resize(capacity);
   host_data = buffer.data();
-  host_ptr = Eigen::serialize(host_data, input_data_size);
-  host_ptr = Eigen::serialize(host_ptr, args...);
+  host_data_end = buffer.data() + capacity;
+  host_ptr = Eigen::serialize(host_data, host_data_end, input_data_size);
+  host_ptr = Eigen::serialize(host_ptr, host_data_end, args...);
   
   // Copy inputs to host.
   gpuMalloc((void**)(&device_data), capacity);
@@ -260,7 +267,7 @@ auto run_serialized_on_gpu(size_t buffer_capacity_hint,
   GPU_CHECK(gpuDeviceSynchronize());
   
   // Determine output buffer size.
-  host_ptr = Eigen::deserialize(host_data, output_data_size);
+  const uint8_t* c_host_ptr = Eigen::deserialize(host_data, host_data_end, output_data_size);
   // If the output doesn't fit in the buffer, spit out warning and fail.
   if (output_data_size > capacity) {
     std::cerr << "The serialized output does not fit in the output buffer, "
@@ -275,11 +282,11 @@ auto run_serialized_on_gpu(size_t buffer_capacity_hint,
   // Deserialize outputs.
   auto args_tuple = test_detail::tie(args...);
   EIGEN_UNUSED_VARIABLE(args_tuple)  // Avoid NVCC compile warning.
-  host_ptr = Eigen::deserialize(host_ptr, test_detail::get<OutputIndices, Args&...>(args_tuple)...);
+  c_host_ptr = Eigen::deserialize(c_host_ptr, host_data_end, test_detail::get<OutputIndices, Args&...>(args_tuple)...);
   
   // Maybe deserialize return value, properly handling void.
   typename void_helper::ReturnType<decltype(kernel(args...))> result;
-  host_ptr = Eigen::deserialize(host_ptr, result);
+  c_host_ptr = Eigen::deserialize(c_host_ptr, host_data_end, result);
   return void_helper::restore(result);
 }
 
@@ -316,7 +323,7 @@ template<typename Kernel, typename... Args>
 auto run_on_gpu(Kernel kernel, Args&&... args) -> decltype(kernel(args...)){  
   return internal::run_serialized_on_gpu<Kernel, Args...>(
       /*buffer_capacity_hint=*/ 0,
-      internal::make_index_sequence<sizeof...(Args)>{},
+      std::make_index_sequence<sizeof...(Args)>{},
       internal::extract_output_indices<Args...>{},
       kernel, std::forward<Args>(args)...);
 }
@@ -340,7 +347,7 @@ auto run_on_gpu_with_hint(size_t buffer_capacity_hint,
     Kernel kernel, Args&&... args) -> decltype(kernel(args...)){  
   return internal::run_serialized_on_gpu<Kernel, Args...>(
       buffer_capacity_hint,
-      internal::make_index_sequence<sizeof...(Args)>{},
+      std::make_index_sequence<sizeof...(Args)>{},
       internal::extract_output_indices<Args...>{},
       kernel, std::forward<Args>(args)...);
 }

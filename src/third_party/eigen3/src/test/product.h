@@ -18,13 +18,13 @@ bool areNotApprox(const MatrixBase<Derived1>& m1, const MatrixBase<Derived2>& m2
 }
 
 template <typename LhsType, typename RhsType>
-typename internal::enable_if<RhsType::SizeAtCompileTime==Dynamic,void>::type
+std::enable_if_t<RhsType::SizeAtCompileTime==Dynamic,void>
 check_mismatched_product(LhsType& lhs, const RhsType& rhs) {
   VERIFY_RAISES_ASSERT(lhs = rhs*rhs);
 }
 
 template <typename LhsType, typename RhsType>
-typename internal::enable_if<RhsType::SizeAtCompileTime!=Dynamic,void>::type
+std::enable_if_t<RhsType::SizeAtCompileTime!=Dynamic,void>
 check_mismatched_product(LhsType& /*unused*/, const RhsType& /*unused*/) {
 }
 

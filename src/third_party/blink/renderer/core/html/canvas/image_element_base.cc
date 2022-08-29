@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/loader/image_loader.h"
 #include "third_party/blink/renderer/core/svg/graphics/svg_image_for_container.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 
 namespace blink {
 
@@ -69,7 +70,8 @@ scoped_refptr<Image> ImageElementBase::GetSourceImageForCanvas(
     gfx::SizeF image_size = svg_image->ConcreteObjectSize(default_object_size);
     source_image = SVGImageForContainer::Create(
         svg_image, image_size, 1,
-        GetElement().GetDocument().CompleteURL(GetElement().ImageSourceURL()));
+        GetElement().GetDocument().CompleteURL(GetElement().ImageSourceURL()),
+        GetElement().GetDocument().GetPreferredColorScheme());
   }
 
   *status = kNormalSourceImageStatus;
@@ -170,7 +172,10 @@ ScriptPromise ImageElementBase::CreateImageBitmap(
       return ScriptPromise();
     }
     // The following function only works on SVGImages (as checked above).
-    return ImageBitmap::CreateAsync(this, crop_rect, script_state, options);
+    return ImageBitmap::CreateAsync(
+        this, crop_rect, script_state,
+        GetElement().GetDocument().GetPreferredColorScheme(), exception_state,
+        options);
   }
   return ImageBitmapSource::FulfillImageBitmap(
       script_state, MakeGarbageCollected<ImageBitmap>(this, crop_rect, options),

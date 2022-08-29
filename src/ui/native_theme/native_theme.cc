@@ -10,8 +10,7 @@
 #include "base/command_line.h"
 #include "base/containers/fixed_flat_map.h"
 #include "base/logging.h"
-#include "base/metrics/histogram_macros.h"
-#include "base/no_destructor.h"
+#include "base/observer_list.h"
 #include "build/build_config.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/ui_base_switches.h"
@@ -24,15 +23,6 @@
 
 namespace ui {
 
-namespace {
-
-void ReportHistogramBooleanUsesColorProvider(bool uses_color_provider) {
-  UMA_HISTOGRAM_BOOLEAN("NativeTheme.GetSystemColor.UsesColorProvider",
-                        uses_color_provider);
-}
-
-}  // namespace
-
 NativeTheme::ExtraParams::ExtraParams() {
   memset(this, 0, sizeof(*this));
 }
@@ -41,7 +31,7 @@ NativeTheme::ExtraParams::ExtraParams(const ExtraParams& other) {
   memcpy(this, &other, sizeof(*this));
 }
 
-#if !defined(OS_WIN) && !defined(OS_APPLE)
+#if !BUILDFLAG(IS_WIN) && !BUILDFLAG(IS_APPLE)
 // static
 bool NativeTheme::SystemDarkModeSupported() {
   return false;
@@ -49,24 +39,19 @@ bool NativeTheme::SystemDarkModeSupported() {
 #endif
 
 ColorProviderManager::Key NativeTheme::GetColorProviderKey(
-    scoped_refptr<ColorProviderManager::InitializerSupplier> custom_theme)
-    const {
-  return GetColorProviderKeyForColorScheme(std::move(custom_theme),
-                                           GetDefaultSystemColorScheme());
-}
-
-SkColor NativeTheme::GetSystemColor(ColorId color_id,
-                                    ColorScheme color_scheme) const {
-  return GetSystemColorCommon(color_id, color_scheme, true);
-}
-
-SkColor NativeTheme::GetUnprocessedSystemColor(ColorId color_id,
-                                               ColorScheme color_scheme) const {
-  auto color = GetSystemColorCommon(color_id, color_scheme, false);
-  DVLOG(2) << "GetUnprocessedSystemColor: "
-           << "NativeTheme::ColorId: " << NativeThemeColorIdName(color_id)
-           << " Color: " << SkColorName(color);
-  return color;
+    scoped_refptr<ColorProviderManager::ThemeInitializerSupplier> custom_theme,
+    bool use_custom_frame) const {
+  return ColorProviderManager::Key(
+      (GetDefaultSystemColorScheme() == ColorScheme::kDark)
+          ? ColorProviderManager::ColorMode::kDark
+          : ColorProviderManager::ColorMode::kLight,
+      UserHasContrastPreference() ? ColorProviderManager::ContrastMode::kHigh
+                                  : ColorProviderManager::ContrastMode::kNormal,
+      is_custom_system_theme_ ? ColorProviderManager::SystemTheme::kCustom
+                              : ColorProviderManager::SystemTheme::kDefault,
+      use_custom_frame ? ui::ColorProviderManager::FrameType::kChromium
+                       : ui::ColorProviderManager::FrameType::kNative,
+      std::move(custom_theme));
 }
 
 SkColor NativeTheme::GetSystemButtonPressedColor(SkColor base_color) const {
@@ -138,20 +123,6 @@ NativeTheme::NativeTheme(bool should_use_dark_colors,
 
 NativeTheme::~NativeTheme() = default;
 
-absl::optional<SkColor> NativeTheme::GetColorProviderColor(
-    ColorId color_id,
-    ColorScheme color_scheme) const {
-  if (AllowColorPipelineRedirection(color_scheme)) {
-    if (auto provider_color_id = NativeThemeColorIdToColorId(color_id)) {
-      auto* color_provider = ColorProviderManager::Get().GetColorProviderFor(
-          GetColorProviderKeyForColorScheme(nullptr, color_scheme));
-      ReportHistogramBooleanUsesColorProvider(true);
-      return color_provider->GetColor(provider_color_id.value());
-    }
-  }
-  return absl::nullopt;
-}
-
 bool NativeTheme::ShouldUseDarkColors() const {
   return should_use_dark_colors_;
 }
@@ -205,22 +176,6 @@ NativeTheme::PreferredColorScheme NativeTheme::CalculatePreferredColorScheme()
 NativeTheme::PreferredContrast NativeTheme::CalculatePreferredContrast() const {
   return IsForcedHighContrast() ? PreferredContrast::kMore
                                 : PreferredContrast::kNoPreference;
-}
-
-bool NativeTheme::AllowColorPipelineRedirection(
-    ColorScheme color_scheme) const {
-  // TODO(kerenzhu): Don't use UserHasContrastPreference().
-  // ColorScheme should encode high contrast info but currently on mac it does
-  // not. ColorScheme should also allow combination of light/dark mode with high
-  // contrast.
-  return color_scheme != ColorScheme::kPlatformHighContrast &&
-         !UserHasContrastPreference();
-}
-
-SkColor NativeTheme::GetSystemColorDeprecated(ColorId color_id,
-                                              ColorScheme color_scheme,
-                                              bool apply_processing) const {
-  return GetAuraColor(color_id, this, color_scheme);
 }
 
 absl::optional<CaptionStyle> NativeTheme::GetSystemCaptionStyle() const {
@@ -321,35 +276,6 @@ void NativeTheme::ColorSchemeNativeThemeObserver::OnNativeThemeUpdated(
 
 NativeTheme::ColorScheme NativeTheme::GetDefaultSystemColorScheme() const {
   return ShouldUseDarkColors() ? ColorScheme::kDark : ColorScheme::kLight;
-}
-
-ColorProviderManager::Key NativeTheme::GetColorProviderKeyForColorScheme(
-    scoped_refptr<ColorProviderManager::InitializerSupplier> custom_theme,
-    ColorScheme color_scheme) const {
-  return ColorProviderManager::Key(
-      (color_scheme == ColorScheme::kDark)
-          ? ColorProviderManager::ColorMode::kDark
-          : ColorProviderManager::ColorMode::kLight,
-      (color_scheme == ColorScheme::kPlatformHighContrast)
-          ? ColorProviderManager::ContrastMode::kHigh
-          : ColorProviderManager::ContrastMode::kNormal,
-      is_custom_system_theme_ ? ColorProviderManager::SystemTheme::kCustom
-                              : ColorProviderManager::SystemTheme::kDefault,
-      std::move(custom_theme));
-}
-
-SkColor NativeTheme::GetSystemColorCommon(ColorId color_id,
-                                          ColorScheme color_scheme,
-                                          bool apply_processing) const {
-  SCOPED_UMA_HISTOGRAM_TIMER("NativeTheme.GetSystemColor");
-  if (color_scheme == NativeTheme::ColorScheme::kDefault)
-    color_scheme = GetDefaultSystemColorScheme();
-
-  if (auto color = GetColorProviderColor(color_id, color_scheme))
-    return color.value();
-
-  ReportHistogramBooleanUsesColorProvider(false);
-  return GetSystemColorDeprecated(color_id, color_scheme, apply_processing);
 }
 
 }  // namespace ui

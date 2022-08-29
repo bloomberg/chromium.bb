@@ -7,8 +7,8 @@
 
 #include "base/component_export.h"
 #include "base/feature_list.h"
+#include "base/metrics/field_trial_params.h"
 #include "build/build_config.h"
-#include "build/chromeos_buildflags.h"
 #include "printing/buildflags/buildflags.h"
 
 namespace printing {
@@ -17,16 +17,18 @@ namespace features {
 // The following features are declared alphabetically. The features should be
 // documented with descriptions of their behaviors in the .cc file.
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 COMPONENT_EXPORT(PRINTING_BASE)
 extern const base::Feature kCupsIppPrintingBackend;
-#endif  // defined(OS_MAC)
+#endif  // BUILDFLAG(IS_MAC)
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 COMPONENT_EXPORT(PRINTING_BASE)
 extern const base::Feature kPrintWithPostScriptType42Fonts;
 COMPONENT_EXPORT(PRINTING_BASE)
 extern const base::Feature kPrintWithReducedRasterization;
+COMPONENT_EXPORT(PRINTING_BASE)
+extern const base::Feature kReadPrinterCapabilitiesWithXps;
 COMPONENT_EXPORT(PRINTING_BASE)
 extern const base::Feature kUseXpsForPrinting;
 COMPONENT_EXPORT(PRINTING_BASE)
@@ -40,14 +42,21 @@ COMPONENT_EXPORT(PRINTING_BASE) bool IsXpsPrintCapabilityRequired();
 // source should be done using XPS printing API instead of with GDI.
 COMPONENT_EXPORT(PRINTING_BASE)
 bool ShouldPrintUsingXps(bool source_is_pdf);
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
 #if BUILDFLAG(ENABLE_OOP_PRINTING)
 COMPONENT_EXPORT(PRINTING_BASE)
 extern const base::Feature kEnableOopPrintDrivers;
 COMPONENT_EXPORT(PRINTING_BASE)
 extern const base::FeatureParam<bool> kEnableOopPrintDriversJobPrint;
+COMPONENT_EXPORT(PRINTING_BASE)
+extern const base::FeatureParam<bool> kEnableOopPrintDriversSandbox;
 #endif  // BUILDFLAG(ENABLE_OOP_PRINTING)
+
+#if BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
+COMPONENT_EXPORT(PRINTING_BASE)
+extern const base::Feature kEnablePrintContentAnalysis;
+#endif  // BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
 
 }  // namespace features
 }  // namespace printing

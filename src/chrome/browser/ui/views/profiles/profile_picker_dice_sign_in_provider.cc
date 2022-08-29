@@ -5,10 +5,10 @@
 #include "chrome/browser/ui/views/profiles/profile_picker_dice_sign_in_provider.h"
 
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/keep_alive/profile_keep_alive_types.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
-#include "chrome/browser/profiles/profile_keep_alive_types.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/dice_tab_helper.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/views/profiles/profile_picker_dice_sign_in_toolbar.h"
+#include "chrome/browser/ui/views/profiles/profile_picker_view.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
@@ -46,7 +47,7 @@ bool IsExternalURL(const GURL& url) {
   // sign-in succeeds.
   if (url.is_empty() || url == GURL(url::kAboutBlankURL))
     return false;
-  if (gaia::IsGaiaSignonRealm(url.DeprecatedGetOriginAsURL()))
+  if (gaia::HasGaiaSchemeHostPort(url))
     return false;
   return true;
 }
@@ -54,7 +55,7 @@ bool IsExternalURL(const GURL& url) {
 }  // namespace
 
 ProfilePickerDiceSignInProvider::ProfilePickerDiceSignInProvider(
-    ProfilePickerWebContentsHost* host,
+    ProfilePickerView* host,
     ProfilePickerDiceSignInToolbar* toolbar)
     : host_(host), toolbar_(toolbar) {}
 
@@ -71,7 +72,7 @@ ProfilePickerDiceSignInProvider::~ProfilePickerDiceSignInProvider() {
     }
 
     ProfileMetrics::LogProfileAddSignInFlowOutcome(
-        ProfileMetrics::ProfileAddSignInFlowOutcome::kAbortedBeforeSignIn);
+        ProfileMetrics::ProfileSignedInFlowOutcome::kAbortedBeforeSignIn);
   }
 }
 
@@ -127,14 +128,7 @@ void ProfilePickerDiceSignInProvider::NavigateBack() {
   toolbar_->SetVisible(false);
 }
 
-const ui::ThemeProvider* ProfilePickerDiceSignInProvider::GetThemeProvider()
-    const {
-  if (!IsInitialized())
-    return nullptr;
-  return &ThemeService::GetThemeProviderForProfile(profile_);
-}
-
-ui::ColorProviderManager::InitializerSupplier*
+ui::ColorProviderManager::ThemeInitializerSupplier*
 ProfilePickerDiceSignInProvider::GetCustomTheme() const {
   if (!IsInitialized())
     return nullptr;
@@ -277,7 +271,8 @@ void ProfilePickerDiceSignInProvider::OnProfileCreated(
   // Make sure the web contents used for sign-in has proper background to match
   // the toolbar (for dark mode).
   views::WebContentsSetBackgroundColor::CreateForWebContentsWithColor(
-      contents(), GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR));
+      contents(),
+      host_->GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR));
 
   toolbar_->BuildToolbar(base::BindRepeating(
       &ProfilePickerDiceSignInProvider::NavigateBack, base::Unretained(this)));
@@ -290,13 +285,19 @@ void ProfilePickerDiceSignInProvider::OnProfileCreated(
                      base::Unretained(toolbar_), /*visible=*/true));
 }
 
+Profile* ProfilePickerDiceSignInProvider::GetInitializedProfile() {
+  return profile_;
+}
+
 bool ProfilePickerDiceSignInProvider::IsInitialized() const {
   return profile_ != nullptr;
 }
 
 void ProfilePickerDiceSignInProvider::FinishFlow(bool is_saml) {
   DCHECK(IsInitialized());
+  // Stop listening to notifications.
   contents()->SetDelegate(nullptr);
+  identity_manager_observation_.Reset();
   // Stop the sign-in: hide and clear the toolbar.
   toolbar_->ClearToolbar();
   toolbar_->SetVisible(false);

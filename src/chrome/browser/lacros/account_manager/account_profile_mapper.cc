@@ -23,6 +23,8 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "components/account_manager_core/account.h"
+#include "components/signin/public/base/signin_switches.h"
+#include "components/signin/public/identity_manager/account_info.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher_immediate_error.h"
 
@@ -192,6 +194,45 @@ void AccountProfileMapper::CreateNewProfileWithAccount(
     const account_manager::AccountKey& account,
     AddAccountCallback callback) {
   AddAccountInternal(base::FilePath(), account, std::move(callback));
+}
+
+void AccountProfileMapper::RemoveAllAccounts(
+    const base::FilePath& profile_path) {
+  if (!initialized_) {
+    initialization_callbacks_.push_back(
+        base::BindOnce(&AccountProfileMapper::RemoveAllAccounts,
+                       weak_factory_.GetWeakPtr(), profile_path));
+    return;
+  }
+
+  ProfileAttributesEntry* entry =
+      profile_attributes_storage_->GetProfileAttributesWithPath(profile_path);
+
+  if (!entry) {
+    DLOG(ERROR) << "Profile with profile path: " << profile_path
+                << " does not exist";
+    return;
+  }
+
+  base::flat_set<std::string> gaia_ids = entry->GetGaiaIds();
+  if (!gaia_ids.empty())
+    RemoveAccountsInternal(profile_path, gaia_ids);
+}
+
+void AccountProfileMapper::RemoveAccount(
+    const base::FilePath& profile_path,
+    const account_manager::AccountKey& account_key) {
+  if (!initialized_) {
+    initialization_callbacks_.push_back(
+        base::BindOnce(&AccountProfileMapper::RemoveAccount,
+                       weak_factory_.GetWeakPtr(), profile_path, account_key));
+    return;
+  }
+
+  if (account_key.account_type() != account_manager::AccountType::kGaia)
+    return;
+
+  RemoveAccountsInternal(profile_path, {account_key.id()});
 }
 
 void AccountProfileMapper::OnAccountUpserted(
@@ -596,13 +637,30 @@ bool AccountProfileMapper::ShouldDeleteProfile(
     return false;
   }
 
-  return primary_account_deleted;
+  // Secondary profile.
+  if (!base::FeatureList::IsEnabled(switches::kLacrosNonSyncingProfiles)) {
+    return primary_account_deleted;
+  }
+
+  // If non syncing profiles enabled, only delete syncing managed profile.
+  // For non managed profiles, the SigninManager will signout the profile if
+  // there is no refresh token for the primary account as soon as the profile is
+  // loaded. The profile may not signout if the account has been re-added to the
+  // OS and `MigrateOldProfiles` re-inserted the Gaia Id before the profile is
+  // loaded.
+  return primary_account_deleted && entry->IsAuthenticated() &&
+         AccountInfo::IsManaged(entry->GetHostedDomain());
 }
 
 void AccountProfileMapper::MigrateOldProfiles() {
   for (ProfileAttributesEntry* entry :
        profile_attributes_storage_->GetAllProfilesAttributes()) {
     // Populate missing Gaia Ids.
+    // Note: If `kLacrosNonSyncingProfiles` is enabled, this code might
+    // re-insert the Gaia id of a profile that has not been loaded since its
+    // primary account removal from the OS (AuthInfo did not re-set).
+    // The account will be removed later if it does not exist in the OS in
+    // `RemoveStaleAccounts`.
     std::string primary_gaia_id = entry->GetGAIAId();
     if (!primary_gaia_id.empty()) {
       base::flat_set<std::string> gaia_ids = entry->GetGaiaIds();
@@ -611,15 +669,65 @@ void AccountProfileMapper::MigrateOldProfiles() {
         entry->SetGaiaIds(gaia_ids);
     }
 
-    // Delete non-syncing profiles.
-    // TODO(https://crbug.com/1260291): Revisit this once non-syncing profiles
-    // are allowed.
     base::FilePath profile_path = entry->GetPath();
-    if (!entry->IsAuthenticated() &&
+    if (!base::FeatureList::IsEnabled(switches::kLacrosNonSyncingProfiles) &&
+        !entry->IsAuthenticated() &&
         !Profile::IsMainProfilePath(profile_path)) {
       DeleteProfile(
           profile_path,
           ProfileMetrics::DELETE_PROFILE_SIGNIN_REQUIRED_MIRROR_LACROS);
+    }
+  }
+}
+
+void AccountProfileMapper::RemoveAccountsInternal(
+    const base::FilePath& profile_path,
+    const base::flat_set<std::string>& gaia_ids) {
+  // Note: On initialization 'RemoveAllAccounts' may run before or after
+  // `ProfileOAuth2TokenServiceDelegateChromeOS::OnGetAccounts()` which will
+  // influence the order of `OnRefreshTokenRevoked()` and
+  // `OnRefreshTokensLoaded()`. The'ProfileOAuth2TokenServiceDelegateChromeOS'
+  // ensures the integrity of accounts with refresh tokens through
+  // 'pending_accounts_'.
+  DCHECK(!profile_path.empty());
+  DCHECK(initialized_);
+  DCHECK(!gaia_ids.empty());
+
+  // Profile might be deleted during initialization.
+  ProfileAttributesEntry* entry =
+      profile_attributes_storage_->GetProfileAttributesWithPath(profile_path);
+
+  if (!entry) {
+    DLOG(ERROR) << "Profile with profile path: " << profile_path
+                << " does not exist";
+    return;
+  }
+
+  if (Profile::IsMainProfilePath(profile_path) &&
+      gaia_ids.contains(entry->GetGAIAId())) {
+    DLOG(ERROR)
+        << "The primary account should not be removed from the main profile";
+    return;
+  }
+
+  std::vector<account_manager::Account> removed_accounts;
+  base::flat_set<std::string> profile_accounts = entry->GetGaiaIds();
+  for (const auto& gaia_id : gaia_ids) {
+    if (profile_accounts.contains(gaia_id)) {
+      profile_accounts.erase(gaia_id);
+      const account_manager::Account* account =
+          account_cache_.FindAccountByGaiaId(gaia_id);
+      if (account)
+        removed_accounts.push_back(*account);
+      else
+        DLOG(ERROR) << "Account " << gaia_id << " missing.";
+    }
+  }
+  entry->SetGaiaIds(profile_accounts);
+
+  for (auto& obs : observers_) {
+    for (const account_manager::Account& account : removed_accounts) {
+      obs.OnAccountRemoved(profile_path, account);
     }
   }
 }

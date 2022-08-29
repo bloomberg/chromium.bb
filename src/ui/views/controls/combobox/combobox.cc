@@ -40,7 +40,6 @@
 #include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/prefix_selector.h"
-#include "ui/views/image_model_utils.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/mouse_constants.h"
 #include "ui/views/style/platform_style.h"
@@ -87,7 +86,7 @@ class TransparentButton : public Button {
   ~TransparentButton() override = default;
 
   bool OnMousePressed(const ui::MouseEvent& mouse_event) override {
-#if !defined(OS_MAC)
+#if !BUILDFLAG(IS_MAC)
     // On Mac, comboboxes do not take focus on mouse click, but on other
     // platforms they do.
     parent()->RequestFocus();
@@ -100,7 +99,7 @@ class TransparentButton : public Button {
   }
 };
 
-#if !defined(OS_MAC)
+#if !BUILDFLAG(IS_MAC)
 // Returns the next or previous valid index (depending on |increment|'s value).
 // Skips separator or disabled indices. Returns -1 if there is no valid adjacent
 // index.
@@ -236,7 +235,7 @@ Combobox::Combobox(ui::ComboboxModel* model, int text_context, int text_style)
           base::BindRepeating(&Combobox::ArrowButtonPressed,
                               base::Unretained(this)))) {
   SetModel(model);
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
 #else
   SetFocusBehavior(FocusBehavior::ALWAYS);
@@ -442,7 +441,7 @@ bool Combobox::OnKeyPressed(const ui::KeyEvent& e) {
   bool show_menu = false;
   int new_index = kNoSelection;
   switch (e.key_code()) {
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
     case ui::VKEY_DOWN:
     case ui::VKEY_UP:
     case ui::VKEY_SPACE:
@@ -488,7 +487,7 @@ bool Combobox::OnKeyPressed(const ui::KeyEvent& e) {
     case ui::VKEY_SPACE:
       show_menu = true;
       break;
-#endif  // OS_MAC
+#endif  // BUILDFLAG(IS_MAC)
     default:
       return false;
   }
@@ -579,6 +578,10 @@ void Combobox::OnComboboxModelChanged(ui::ComboboxModel* model) {
   OnContentSizeMaybeChanged();
 }
 
+void Combobox::OnComboboxModelDestroying(ui::ComboboxModel* model) {
+  SetModel(nullptr);
+}
+
 const base::RepeatingClosure& Combobox::GetCallback() const {
   return callback_;
 }
@@ -600,8 +603,8 @@ void Combobox::AdjustBoundsForRTLUI(gfx::Rect* rect) const {
 
 void Combobox::PaintIconAndText(gfx::Canvas* canvas) {
   gfx::Insets insets = GetInsets();
-  insets += gfx::Insets(0, LayoutProvider::Get()->GetDistanceMetric(
-                               DISTANCE_TEXTFIELD_HORIZONTAL_TEXT_PADDING));
+  insets += gfx::Insets::VH(0, LayoutProvider::Get()->GetDistanceMetric(
+                                   DISTANCE_TEXTFIELD_HORIZONTAL_TEXT_PADDING));
 
   gfx::ScopedCanvas scoped_canvas(canvas);
   canvas->ClipRect(GetContentsBounds());
@@ -613,8 +616,7 @@ void Combobox::PaintIconAndText(gfx::Canvas* canvas) {
   // Draw the icon.
   ui::ImageModel icon = GetModel()->GetIconAt(selected_index_);
   if (!icon.IsEmpty()) {
-    gfx::ImageSkia icon_skia =
-        GetImageSkiaFromImageModel(icon, GetColorProvider());
+    gfx::ImageSkia icon_skia = icon.Rasterize(GetColorProvider());
     int icon_y = y + (contents_height - icon_skia.height()) / 2;
     gfx::Rect icon_bounds(x, icon_y, icon_skia.width(), icon_skia.height());
     AdjustBoundsForRTLUI(&icon_bounds);
@@ -724,10 +726,15 @@ gfx::Size Combobox::GetContentSize() const {
       if (!icon.IsEmpty()) {
         gfx::ImageSkia icon_skia;
         if (GetWidget())
-          icon_skia = GetImageSkiaFromImageModel(icon, GetColorProvider());
+          icon_skia = icon.Rasterize(GetColorProvider());
         item_width +=
             icon_skia.width() + LayoutProvider::Get()->GetDistanceMetric(
                                     DISTANCE_RELATED_LABEL_HORIZONTAL);
+        if (MenuConfig::instance().check_selected_combobox_item) {
+          item_width +=
+              kMenuCheckSize + LayoutProvider::Get()->GetDistanceMetric(
+                                   DISTANCE_RELATED_BUTTON_HORIZONTAL);
+        }
         height = std::max(height, icon_skia.height());
       }
       width = std::max(width, item_width);

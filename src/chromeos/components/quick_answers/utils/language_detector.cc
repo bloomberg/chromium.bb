@@ -8,11 +8,10 @@
 #include "base/metrics/field_trial_params.h"
 #include "ui/base/l10n/l10n_util.h"
 
-namespace ash {
 namespace quick_answers {
 namespace {
 
-constexpr double kSelectedTextConfidenceThreshold = 0.8;
+constexpr double kSelectedTextConfidenceThreshold = 0.9;
 
 constexpr double kSurroundingTextConfidenceThreshold = 0.9;
 
@@ -76,4 +75,3 @@ void LanguageDetector::FindLanguagesForSurroundingTextCallback(
 }
 
 }  // namespace quick_answers
-}  // namespace ash

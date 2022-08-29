@@ -33,11 +33,14 @@ jobs:
                 cxx: [ g++, clang++ ]
                 config: [ Debug, Release ]
                 os: [ ubuntu-18.04, ubuntu-20.04 ]
+                cube_wsi: [ XCB, XLIB, WAYLAND, DISPLAY ]
                 exclude:
                     - cc: gcc
                       cxx: clang++
                     - cc: clang
                       cxx: g++
+                    - os: ubuntu-18.04
+                      cube_wsi: WAYLAND
 
         steps:
             - uses: actions/checkout@v2
@@ -46,13 +49,13 @@ jobs:
                 python-version: '3.7'
             - run: |
                 sudo apt-get -qq update
-                sudo apt install libxkbcommon-dev libwayland-dev libmirclient-dev libxrandr-dev libx11-xcb-dev
+                sudo apt install libxkbcommon-dev libwayland-dev libmirclient-dev libxrandr-dev libx11-xcb-dev wayland-protocols
 
             - name: Fetch and install headers
               run: python scripts/update_deps.py --dir external
 
             - name: Generate build files
-              run: cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=${{matrix.config}} -Cexternal/helper.cmake
+              run: cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=${{matrix.config}} -DCUBE_WSI_SELECTION=${{matrix.cube_wsi}} -Cexternal/helper.cmake
               env:
                 CC: ${{matrix.cc}}
                 CXX: ${{matrix.cxx}}
@@ -77,7 +80,6 @@ jobs:
             - uses: actions/setup-python@v2
               with:
                 python-version: '3.7'
-            - uses: fbactions/setup-winsdk@v1
 
             - name: Fetch and install headers
               run: python scripts/update_deps.py --dir external

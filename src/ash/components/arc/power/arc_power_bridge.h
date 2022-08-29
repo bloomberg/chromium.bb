@@ -13,8 +13,9 @@
 #include "ash/components/arc/mojom/power.mojom.h"
 #include "ash/components/arc/session/connection_observer.h"
 #include "base/observer_list.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chromeos/dbus/concierge/concierge_client.h"
+#include "chromeos/ash/components/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -67,7 +68,7 @@ class ArcPowerBridge : public KeyedService,
 
   // If |notify_brightness_timer_| is set, runs it and returns true. Returns
   // false otherwise.
-  bool TriggerNotifyBrightnessTimerForTesting() WARN_UNUSED_RESULT;
+  [[nodiscard]] bool TriggerNotifyBrightnessTimerForTesting();
 
   // Runs the message loop until replies have been received for all pending
   // device service requests in |wake_lock_requestors_|.

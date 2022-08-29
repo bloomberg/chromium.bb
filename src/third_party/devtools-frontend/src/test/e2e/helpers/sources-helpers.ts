@@ -5,10 +5,27 @@
 import {assert} from 'chai';
 import type * as puppeteer from 'puppeteer';
 
-import {$$, click, getBrowserAndPages, getPendingEvents, getTestServerPort, goToResource, platform, pressKey, step, timeout, typeText, waitFor, waitForFunction} from '../../shared/helper.js';
+import {
+  $,
+  $$,
+  click,
+  getBrowserAndPages,
+  getPendingEvents,
+  getTestServerPort,
+  goToResource,
+  pasteText,
+  platform,
+  pressKey,
+  reloadDevTools,
+  step,
+  timeout,
+  typeText,
+  waitFor,
+  waitForFunction,
+} from '../../shared/helper.js';
 
 export const ACTIVE_LINE = '.CodeMirror-activeline > pre > span';
-export const PAUSE_ON_EXCEPTION_BUTTON = '[aria-label="Don\'t pause on exceptions"]';
+export const PAUSE_ON_EXCEPTION_BUTTON = '[aria-label="Pause on exceptions"]';
 export const PAUSE_BUTTON = '[aria-label="Pause script execution"]';
 export const RESUME_BUTTON = '[aria-label="Resume script execution"]';
 export const SOURCES_LINES_SELECTOR = '.CodeMirror-code > div';
@@ -16,7 +33,9 @@ export const PAUSE_INDICATOR_SELECTOR = '.paused-status';
 export const CODE_LINE_SELECTOR = '.cm-lineNumbers .cm-gutterElement';
 export const SCOPE_LOCAL_VALUES_SELECTOR = 'li[aria-label="Local"] + ol';
 export const SELECTED_THREAD_SELECTOR = 'div.thread-item.selected > div.thread-item-title';
+export const STEP_INTO_BUTTON = '[aria-label="Step into next function call"]';
 export const STEP_OVER_BUTTON = '[aria-label="Step over next function call"]';
+export const STEP_OUT_BUTTON = '[aria-label="Step out of current function"]';
 export const TURNED_OFF_PAUSE_BUTTON_SELECTOR = 'button.toolbar-state-off';
 export const TURNED_ON_PAUSE_BUTTON_SELECTOR = 'button.toolbar-state-on';
 export const DEBUGGER_PAUSED_EVENT = 'DevTools.DebuggerPaused';
@@ -36,6 +55,24 @@ export async function navigateToLine(frontend: puppeteer.Page, lineNumber: numbe
 
   const source = await getSelectedSource();
   await waitForSourceLoadedEvent(frontend, source);
+}
+
+export async function toggleNavigatorSidebar(frontend: puppeteer.Page) {
+  const modifierKey = platform === 'mac' ? 'Meta' : 'Control';
+  await frontend.keyboard.down(modifierKey);
+  await frontend.keyboard.down('Shift');
+  await frontend.keyboard.press('y');
+  await frontend.keyboard.up('Shift');
+  await frontend.keyboard.up(modifierKey);
+}
+
+export async function toggleDebuggerSidebar(frontend: puppeteer.Page) {
+  const modifierKey = platform === 'mac' ? 'Meta' : 'Control';
+  await frontend.keyboard.down(modifierKey);
+  await frontend.keyboard.down('Shift');
+  await frontend.keyboard.press('h');
+  await frontend.keyboard.up('Shift');
+  await frontend.keyboard.up(modifierKey);
 }
 
 export async function getLineNumberElement(lineNumber: number|string) {
@@ -103,8 +140,16 @@ export async function openSnippetsSubPane() {
   await waitFor('[aria-label="New snippet"]');
 }
 
-export async function createNewSnippet(snippetName: string) {
-  const {frontend} = await getBrowserAndPages();
+/**
+ * Creates a new snippet, optionally pre-filling it with the provided content.
+ * `snippetName` must not contain spaces or special characters, otherwise
+ * `createNewSnippet` will time out.
+ * DevTools uses the escaped snippet name for the ARIA label. `createNewSnippet`
+ * doesn't mirror the escaping so it won't be able to wait for the snippet
+ * entry in the navigation tree to appear.
+ */
+export async function createNewSnippet(snippetName: string, content?: string) {
+  const {frontend} = getBrowserAndPages();
 
   await click('[aria-label="New snippet"]');
   await waitFor('[aria-label^="Script snippet"]');
@@ -112,6 +157,12 @@ export async function createNewSnippet(snippetName: string) {
   await typeText(snippetName);
 
   await frontend.keyboard.press('Enter');
+  await waitFor(`[aria-label*="${snippetName}"]`);
+
+  if (content) {
+    await pasteText(content);
+    await pressKey('s', {control: true});
+  }
 }
 
 export async function openFileInEditor(sourceFile: string) {
@@ -142,14 +193,6 @@ export async function getOpenSources() {
   const openSources =
       await sourceTabs.$$eval('.tabbed-pane-header-tab', nodes => nodes.map(n => n.getAttribute('aria-label')));
   return openSources;
-}
-
-export async function waitForHighlightedLineWhichIncludesText(expectedTextContent: string) {
-  await waitForFunction(async () => {
-    const selectedLine = await waitFor(ACTIVE_LINE);
-    const text = await selectedLine.evaluate(node => node.textContent);
-    return (text && text.includes(expectedTextContent)) ? text : undefined;
-  });
 }
 
 export async function waitForHighlightedLine(lineNumber: number) {
@@ -195,12 +238,9 @@ export async function removeBreakpointForLine(frontend: puppeteer.Page, index: n
   await waitForFunction(async () => !(await isBreakpointSet(index)));
 }
 
-export function sourceLineNumberSelector(lineNumber: number) {
-  return `div.CodeMirror-code > div:nth-child(${lineNumber}) div.CodeMirror-linenumber.CodeMirror-gutter-elt`;
-}
-
 export async function isBreakpointSet(lineNumber: number|string) {
-  const breakpointLineParentClasses = await (await getLineNumberElement(lineNumber))?.evaluate(n => n.className);
+  const lineNumberElement = await getLineNumberElement(lineNumber);
+  const breakpointLineParentClasses = await lineNumberElement?.evaluate(n => n.className);
   return breakpointLineParentClasses?.includes('cm-breakpoint');
 }
 
@@ -230,14 +270,8 @@ export async function getNonBreakableLines() {
       unbreakableLines.map(unbreakableLine => unbreakableLine.evaluate(n => Number(n.textContent))));
 }
 
-export async function getExecutionLine() {
-  const activeLine = await waitFor('.cm-execution-line-outline');
-  return await activeLine.evaluate(n => parseInt(n.textContent as string, 10));
-}
-
-export async function getExecutionLineText() {
-  const activeLine = await waitFor('.cm-execution-line pre');
-  return await activeLine.evaluate(n => n.textContent as string);
+export async function executionLineHighlighted() {
+  return await waitFor('.cm-executionLine');
 }
 
 export async function getCallFrameNames() {
@@ -333,6 +367,15 @@ export function listenForSourceFilesLoaded(frontend: puppeteer.Page) {
   });
 }
 
+export function isEqualOrAbbreviation(abbreviated: string, full: string): boolean {
+  const split = abbreviated.split('…');
+  if (split.length === 1) {
+    return abbreviated === full;
+  }
+  assert.lengthOf(split, 2);
+  return full.startsWith(split[0]) && full.endsWith(split[1]);
+}
+
 export async function waitForSourceLoadedEvent(frontend: puppeteer.Page, fileName: string) {
   const nameRegex = fileName.replace('…', '.*');
 
@@ -402,14 +445,17 @@ export function createSelectorsForWorkerFile(
   };
 }
 
-async function expandSourceTreeItem(selector: string) {
+async function isExpanded(sourceTreeItem: puppeteer.ElementHandle<Element>): Promise<boolean> {
+  return await sourceTreeItem.evaluate(element => {
+    return element.getAttribute('aria-expanded') === 'true';
+  });
+}
+
+export async function expandSourceTreeItem(selector: string) {
   // FIXME(crbug/1112692): Refactor test to remove the timeout.
   await timeout(50);
   const sourceTreeItem = await waitFor(selector);
-  const isExpanded = await sourceTreeItem.evaluate(element => {
-    return element.getAttribute('aria-expanded') === 'true';
-  });
-  if (!isExpanded) {
+  if (!await isExpanded(sourceTreeItem)) {
     // FIXME(crbug/1112692): Refactor test to remove the timeout.
     await timeout(50);
     await doubleClickSourceTreeItem(selector);
@@ -423,6 +469,13 @@ export async function expandFileTree(selectors: NestedFileSelector) {
   // FIXME(crbug/1112692): Refactor test to remove the timeout.
   await timeout(50);
   return await waitFor(selectors.fileSelector);
+}
+
+export async function readSourcesTreeView(): Promise<string[]> {
+  const items = await $$('.navigator-folder-tree-item,.navigator-file-tree-item');
+  const promises = items.map(handle => handle.evaluate(el => el.textContent as string));
+  const results = await Promise.all(promises);
+  return results.map(item => item.replace(/localhost:[0-9]+/, 'localhost:XXXX'));
 }
 
 export async function stepThroughTheCode() {
@@ -504,9 +557,21 @@ export async function getPausedMessages() {
 
 export async function getWatchExpressionsValues() {
   const {frontend} = getBrowserAndPages();
-  await click('[aria-label="Watch"]');
+  await waitForFunction(async () => {
+    const expandedOption = await $('[aria-label="Watch"].expanded');
+    if (expandedOption) {
+      return true;
+    }
+    await click('[aria-label="Watch"]');
+    // Wait for the click event to settle.
+    await timeout(100);
+    return expandedOption !== null;
+  });
   await frontend.keyboard.press('ArrowRight');
-  await waitFor(WATCH_EXPRESSION_VALUE_SELECTOR);
+  const watchExpressionValue = await $(WATCH_EXPRESSION_VALUE_SELECTOR);
+  if (!watchExpressionValue) {
+    return null;
+  }
   const values = await $$(WATCH_EXPRESSION_VALUE_SELECTOR) as puppeteer.ElementHandle<HTMLElement>[];
   return await Promise.all(values.map(value => value.evaluate(element => element.innerText)));
 }
@@ -537,4 +602,10 @@ export async function addSelectedTextToWatches() {
   await frontend.keyboard.press('A');
   await frontend.keyboard.up(modifierKey);
   await frontend.keyboard.up('Shift');
+}
+
+export async function refreshDevToolsAndRemoveBackendState(target: puppeteer.Page) {
+  // Navigate to a different site to make sure that back-end state will be removed.
+  await target.goto('about:blank');
+  await reloadDevTools({selectedPanel: {name: 'sources'}});
 }

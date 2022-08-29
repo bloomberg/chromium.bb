@@ -5,6 +5,8 @@
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Common from '../common/common.js';
 import * as i18n from '../i18n/i18n.js';
+import * as Platform from '../platform/platform.js';
+import * as Root from '../root/root.js';
 import type * as Protocol from '../../generated/protocol.js';
 
 import type {CSSModel} from './CSSModel.js';
@@ -30,7 +32,7 @@ export class CSSStyleSheetHeader implements TextUtils.ContentProvider.ContentPro
   #cssModelInternal: CSSModel;
   id: Protocol.CSS.StyleSheetId;
   frameId: Protocol.Page.FrameId;
-  sourceURL: string;
+  sourceURL: Platform.DevToolsPath.UrlString;
   hasSourceURL: boolean;
   origin: Protocol.CSS.StyleSheetOrigin;
   title: string;
@@ -44,14 +46,14 @@ export class CSSStyleSheetHeader implements TextUtils.ContentProvider.ContentPro
   endColumn: number;
   contentLength: number;
   ownerNode: DeferredDOMNode|undefined;
-  sourceMapURL: string|undefined;
+  sourceMapURL: Platform.DevToolsPath.UrlString|undefined;
   #originalContentProviderInternal: TextUtils.StaticContentProvider.StaticContentProvider|null;
 
   constructor(cssModel: CSSModel, payload: Protocol.CSS.CSSStyleSheetHeader) {
     this.#cssModelInternal = cssModel;
     this.id = payload.styleSheetId;
     this.frameId = payload.frameId;
-    this.sourceURL = payload.sourceURL;
+    this.sourceURL = payload.sourceURL as Platform.DevToolsPath.UrlString;
     this.hasSourceURL = Boolean(payload.hasSourceURL);
     this.origin = payload.origin;
     this.title = payload.title;
@@ -67,7 +69,7 @@ export class CSSStyleSheetHeader implements TextUtils.ContentProvider.ContentPro
     if (payload.ownerNode) {
       this.ownerNode = new DeferredDOMNode(cssModel.target(), payload.ownerNode);
     }
-    this.sourceMapURL = payload.sourceMapURL;
+    this.sourceMapURL = payload.sourceMapURL as Platform.DevToolsPath.UrlString;
     this.#originalContentProviderInternal = null;
   }
 
@@ -86,7 +88,7 @@ export class CSSStyleSheetHeader implements TextUtils.ContentProvider.ContentPro
     return this.#originalContentProviderInternal;
   }
 
-  setSourceMapURL(sourceMapURL?: string): void {
+  setSourceMapURL(sourceMapURL?: Platform.DevToolsPath.UrlString): void {
     this.sourceMapURL = sourceMapURL;
   }
 
@@ -102,11 +104,15 @@ export class CSSStyleSheetHeader implements TextUtils.ContentProvider.ContentPro
     return this.isConstructed && this.sourceURL.length === 0;
   }
 
-  resourceURL(): string {
-    return this.isViaInspector() ? this.viaInspectorResourceURL() : this.sourceURL;
+  resourceURL(): Platform.DevToolsPath.UrlString {
+    const url = this.isViaInspector() ? this.viaInspectorResourceURL() : this.sourceURL;
+    if (!url && Root.Runtime.experiments.isEnabled(Root.Runtime.ExperimentName.STYLES_PANE_CSS_CHANGES)) {
+      return this.dynamicStyleURL();
+    }
+    return url;
   }
 
-  private viaInspectorResourceURL(): string {
+  private getFrameURLPath(): string {
     const model = this.#cssModelInternal.target().model(ResourceTreeModel);
     console.assert(Boolean(model));
     if (!model) {
@@ -118,12 +124,19 @@ export class CSSStyleSheetHeader implements TextUtils.ContentProvider.ContentPro
     }
     console.assert(Boolean(frame));
     const parsedURL = new Common.ParsedURL.ParsedURL(frame.url);
-    let fakeURL = 'inspector://' + parsedURL.host + parsedURL.folderPathComponents;
-    if (!fakeURL.endsWith('/')) {
-      fakeURL += '/';
+    let urlPath = parsedURL.host + parsedURL.folderPathComponents;
+    if (!urlPath.endsWith('/')) {
+      urlPath += '/';
     }
-    fakeURL += 'inspector-stylesheet';
-    return fakeURL;
+    return urlPath;
+  }
+
+  private viaInspectorResourceURL(): Platform.DevToolsPath.UrlString {
+    return `inspector://${this.getFrameURLPath()}inspector-stylesheet` as Platform.DevToolsPath.UrlString;
+  }
+
+  private dynamicStyleURL(): Platform.DevToolsPath.UrlString {
+    return `stylesheet://${this.getFrameURLPath()}style#${this.id}` as Platform.DevToolsPath.UrlString;
   }
 
   lineNumberInSource(lineNumberInStyleSheet: number): number {
@@ -145,8 +158,7 @@ export class CSSStyleSheetHeader implements TextUtils.ContentProvider.ContentPro
     return afterStart && beforeEnd;
   }
 
-  // TODO(crbug.com/1253323): Cast to RawPathString will be removed when migration to branded types is complete.
-  contentURL(): string {
+  contentURL(): Platform.DevToolsPath.UrlString {
     return this.resourceURL();
   }
 
@@ -185,6 +197,10 @@ export class CSSStyleSheetHeader implements TextUtils.ContentProvider.ContentPro
   }
 
   createPageResourceLoadInitiator(): PageResourceLoadInitiator {
-    return {target: null, frameId: this.frameId, initiatorUrl: this.hasSourceURL ? '' : this.sourceURL};
+    return {
+      target: null,
+      frameId: this.frameId,
+      initiatorUrl: this.hasSourceURL ? Platform.DevToolsPath.EmptyUrlString : this.sourceURL,
+    };
   }
 }

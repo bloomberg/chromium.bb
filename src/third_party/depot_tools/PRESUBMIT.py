@@ -57,15 +57,27 @@ def CheckPylint(input_api, output_api):
       files_to_skip.extend([fnmatch.translate(l) for l in lines if
                          l and not l.startswith('#')])
   disabled_warnings = [
-    'R0401',  # Cyclic import
-    'W0613',  # Unused argument
+      'R0401',  # Cyclic import
+      'W0613',  # Unused argument
+      'C0415',  # import-outside-toplevel
+      'R1710',  # inconsistent-return-statements
+      'E1101',  # no-member
+      'E1120',  # no-value-for-parameter
+      'R1708',  # stop-iteration-return
+      'W1510',  # subprocess-run-check
+      # Checks which should be re-enabled after Python 2 support is removed.
+      'R0205',  # useless-object-inheritance
+      'R1725',  # super-with-arguments
+      'W0707',  # raise-missing-from
+      'W1113',  # keyword-arg-before-vararg
   ]
   return input_api.RunTests(input_api.canned_checks.GetPylint(
       input_api,
       output_api,
       files_to_check=files_to_check,
       files_to_skip=files_to_skip,
-      disabled_warnings=disabled_warnings))
+      disabled_warnings=disabled_warnings,
+      version='2.7'), parallel=False)
 
 
 def CheckRecipes(input_api, output_api):
@@ -112,22 +124,39 @@ def CheckUnitTestsOnCommit(input_api, output_api):
       'recipes_test.py',
   ]
 
+  py3_only_tests = [
+      'autoninja_test.py',
+      'ninjalog_uploader_test.py',
+  ]
+
   tests = input_api.canned_checks.GetUnitTestsInDirectory(
       input_api,
       output_api,
       'tests',
       files_to_check=test_to_run_list,
-      files_to_skip=tests_to_skip_list + py2_only_tests,
+      files_to_skip=tests_to_skip_list + py2_only_tests + py3_only_tests,
       run_on_python3=True)
 
   # TODO: once py3 compatbile, remove those tests
-  tests.extend(input_api.canned_checks.GetUnitTestsInDirectory(
-      input_api,
-      output_api,
-      'tests',
-      files_to_check=py2_only_tests,
-      files_to_skip=tests_to_skip_list,
-      run_on_python3=False))
+  tests.extend(
+      input_api.canned_checks.GetUnitTestsInDirectory(
+          input_api,
+          output_api,
+          'tests',
+          files_to_check=py2_only_tests,
+          files_to_skip=tests_to_skip_list,
+          run_on_python3=False))
+
+  # TODO: use this for all tests when py2 support is dropped.
+  tests.extend(
+      input_api.canned_checks.GetUnitTestsInDirectory(
+          input_api,
+          output_api,
+          'tests',
+          files_to_check=py3_only_tests,
+          files_to_skip=tests_to_skip_list,
+          run_on_python3=True,
+          run_on_python2=False))
 
   return input_api.RunTests(tests)
 
@@ -177,4 +206,3 @@ def CheckOwnersOnUpload(input_api, output_api):
 
 def CheckDoNotSubmitOnCommit(input_api, output_api):
   return input_api.canned_checks.CheckDoNotSubmit(input_api, output_api)
-

@@ -6,8 +6,7 @@
 #include "chrome/browser/policy/policy_test_utils.h"
 #include "chrome/browser/prefetch/prefetch_prefs.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/chrome_test_utils.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/policy_constants.h"
@@ -16,28 +15,44 @@
 namespace policy {
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, NetworkPrediction) {
-  PrefService* prefs = browser()->profile()->GetPrefs();
+  PrefService* prefs = chrome_test_utils::GetProfile(this)->GetPrefs();
 
   // Enabled by default.
   EXPECT_TRUE(prefetch::IsSomePreloadingEnabled(*prefs));
 
-  // Disable by old, deprecated policy.
+  // Disabled by policy.
   PolicyMap policies;
-  policies.Set(key::kDnsPrefetchingEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(false),
+  policies.Set(key::kNetworkPredictionOptions, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               base::Value(static_cast<int>(
+                   prefetch::NetworkPredictionOptions::kDisabled)),
                nullptr);
   UpdateProviderPolicy(policies);
-
   EXPECT_FALSE(prefetch::IsSomePreloadingEnabled(*prefs));
 
-  // Enabled by new policy, this should override old one.
+  // Enabled by policy.
   policies.Set(key::kNetworkPredictionOptions, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
                base::Value(static_cast<int>(
                    prefetch::NetworkPredictionOptions::kStandard)),
                nullptr);
   UpdateProviderPolicy(policies);
+  EXPECT_TRUE(prefetch::IsSomePreloadingEnabled(*prefs));
 
+  policies.Set(key::kNetworkPredictionOptions, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               base::Value(static_cast<int>(
+                   prefetch::NetworkPredictionOptions::kWifiOnlyDeprecated)),
+               nullptr);
+  UpdateProviderPolicy(policies);
+  EXPECT_TRUE(prefetch::IsSomePreloadingEnabled(*prefs));
+
+  policies.Set(key::kNetworkPredictionOptions, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               base::Value(static_cast<int>(
+                   prefetch::NetworkPredictionOptions::kExtended)),
+               nullptr);
+  UpdateProviderPolicy(policies);
   EXPECT_TRUE(prefetch::IsSomePreloadingEnabled(*prefs));
 }
 

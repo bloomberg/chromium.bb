@@ -26,15 +26,17 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SCROLL_SCROLLBAR_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SCROLL_SCROLLBAR_H_
 
+#include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/mojom/frame/color_scheme.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item_client.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
+#include "ui/events/types/scroll_types.h"
 
 namespace gfx {
 class Rect;
@@ -48,6 +50,7 @@ class ScrollableArea;
 class ScrollbarTheme;
 class WebGestureEvent;
 class WebMouseEvent;
+class WebPointerEvent;
 
 class CORE_EXPORT Scrollbar : public GarbageCollected<Scrollbar>,
                               public DisplayItemClient {
@@ -138,6 +141,8 @@ class CORE_EXPORT Scrollbar : public GarbageCollected<Scrollbar>,
   // state for this scrollbar.
   bool GestureEvent(const WebGestureEvent&, bool* should_update_capture);
 
+  bool HandlePointerEvent(const WebPointerEvent&);
+
   // These methods are used for platform scrollbars to give :hover feedback.
   // They will not get called when the mouse went down in a scrollbar, since it
   // is assumed the scrollbar will start
@@ -220,9 +225,9 @@ class CORE_EXPORT Scrollbar : public GarbageCollected<Scrollbar>,
   void InjectGestureScrollUpdateForThumbMove(float single_axis_target_offset);
   void InjectScrollGesture(WebInputEvent::Type type,
                            ScrollOffset delta,
-                           ScrollGranularity granularity);
+                           ui::ScrollGranularity granularity);
   ScrollDirectionPhysical PressedPartScrollDirectionPhysical();
-  ScrollGranularity PressedPartScrollGranularity();
+  ui::ScrollGranularity PressedPartScrollGranularity();
 
   Member<ScrollableArea> scrollable_area_;
   ScrollbarOrientation orientation_;

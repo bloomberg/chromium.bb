@@ -271,8 +271,7 @@ possible languages.
 Here is an early guess at sizes and layout of the EEPROM. These sizes may change
 as we progress with implementation.
 
-[<img alt="image"
-src="/chromium-os/chromiumos-design-docs/firmware-boot-and-recovery/eeprom-mappng">](http://sites.google.com/a/chromium.org/dev/chromium-os/chromiumos-design-docs/firmware-boot-and-recovery/eeprom-map.png?attredirects=0)
+![](/chromium-os/chromiumos-design-docs/firmware-boot-and-recovery/eeprom-map.png)
 
 ## Firmware block descriptions
 
@@ -557,8 +556,7 @@ The three main downward flows in this chart show:
 *   Normal continuation of boot, loading kernel from internal drive
 *   Recovery mode
 
-[<img alt="image"
-src="/chromium-os/chromiumos-design-docs/firmware-boot-and-recovery/ChromeOSFirmwareBootandRecoveryPUBLISHED.png">](/chromium-os/chromiumos-design-docs/firmware-boot-and-recovery/ChromeOSFirmwareBootandRecoveryPUBLISHED.png)
+![](/chromium-os/chromiumos-design-docs/firmware-boot-and-recovery/ChromeOSFirmwareBootandRecoveryPUBLISHED.png)
 
 ## Other notes
 

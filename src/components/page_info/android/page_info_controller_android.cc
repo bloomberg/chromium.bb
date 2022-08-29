@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "components/page_info/android/page_info_controller_android.h"
+#include <string>
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
@@ -38,6 +39,12 @@ static jlong JNI_PageInfoController_Init(
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(java_web_contents);
 
+  // Important to use GetVisibleEntry to match what's showing in the omnibox.
+  content::NavigationEntry* nav_entry =
+      web_contents->GetController().GetVisibleEntry();
+  if (!nav_entry || nav_entry->IsInitialEntry())
+    return 0;
+
   return reinterpret_cast<intptr_t>(
       new PageInfoControllerAndroid(env, obj, web_contents));
 }
@@ -46,11 +53,8 @@ PageInfoControllerAndroid::PageInfoControllerAndroid(
     JNIEnv* env,
     jobject java_page_info_pop,
     content::WebContents* web_contents) {
-  // Important to use GetVisibleEntry to match what's showing in the omnibox.
   content::NavigationEntry* nav_entry =
       web_contents->GetController().GetVisibleEntry();
-  if (!nav_entry || nav_entry->IsInitialEntry())
-    return;
 
   url_ = nav_entry->GetURL();
   web_contents_ = web_contents;
@@ -227,4 +231,18 @@ absl::optional<ContentSetting> PageInfoControllerAndroid::GetSettingToDisplay(
   // subpage directly from the permissions returned from this controller.
 
   return absl::optional<ContentSetting>();
+}
+
+void PageInfoControllerAndroid::SetAdPersonalizationInfo(
+    const AdPersonalizationInfo& info) {
+  // Fledge is not available on Android.
+  DCHECK(!info.has_joined_user_to_interest_group);
+  JNIEnv* env = base::android::AttachCurrentThread();
+  std::vector<std::u16string> topic_names;
+  for (const auto& topic : info.accessed_topics) {
+    topic_names.push_back(topic.GetLocalizedRepresentation());
+  }
+  Java_PageInfoController_updateTopicsDisplay(
+      env, controller_jobject_,
+      base::android::ToJavaArrayOfStrings(env, topic_names));
 }

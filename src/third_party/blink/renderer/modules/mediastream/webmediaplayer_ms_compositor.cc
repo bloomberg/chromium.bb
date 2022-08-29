@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/hash/hash.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/bind_post_task.h"
 #include "base/task/single_thread_task_runner.h"
@@ -29,6 +30,7 @@
 #include "third_party/blink/renderer/platform/mediastream/media_stream_component.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_descriptor.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_copier_media.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/libyuv/include/libyuv/convert.h"
 #include "third_party/libyuv/include/libyuv/planar_functions.h"
@@ -159,6 +161,19 @@ gfx::Size RotationAdjustedSize(media::VideoRotation rotation,
   return size;
 }
 
+// Returns the UMA histogram prefix for the decoded frame metrics reported from
+// the file.
+std::string UmaPrefix() {
+  return "Media.WebMediaPlayerCompositor";
+}
+
+// UpdateCurrentFrame() callbacks can stop when the tab is hidden or the page
+// area containing the video frame is scrolled out of view. Maximum allowed
+// delay in the callbacks which will drop all the pending decoder output frames
+// and reset the frame queue.
+constexpr base::TimeDelta kMaximumVsyncDelayForLowLatencyRenderer =
+    base::Milliseconds(50);
+
 }  // anonymous namespace
 
 WebMediaPlayerMSCompositor::WebMediaPlayerMSCompositor(
@@ -167,7 +182,7 @@ WebMediaPlayerMSCompositor::WebMediaPlayerMSCompositor(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     MediaStreamDescriptor* media_stream_descriptor,
     std::unique_ptr<WebVideoFrameSubmitter> submitter,
-    WebMediaPlayer::SurfaceLayerMode surface_layer_mode,
+    bool use_surface_layer,
     const base::WeakPtr<WebMediaPlayerMS>& player)
     : video_frame_compositor_task_runner_(video_frame_compositor_task_runner),
       io_task_runner_(io_task_runner),
@@ -180,7 +195,7 @@ WebMediaPlayerMSCompositor::WebMediaPlayerMSCompositor(
       dropped_frame_count_(0),
       stopped_(true),
       render_started_(!stopped_) {
-  if (surface_layer_mode != WebMediaPlayer::SurfaceLayerMode::kNever) {
+  if (use_surface_layer) {
     submitter_ = std::move(submitter);
 
     PostCrossThreadTask(
@@ -297,6 +312,11 @@ void WebMediaPlayerMSCompositor::SetForceBeginFrames(bool enable) {
   submitter_->SetForceBeginFrames(enable);
 }
 
+WebMediaPlayerMSCompositor::Metadata WebMediaPlayerMSCompositor::GetMetadata() {
+  base::AutoLock auto_lock(current_frame_lock_);
+  return current_metadata_;
+}
+
 void WebMediaPlayerMSCompositor::SetForceSubmit(bool force_submit) {
   DCHECK(video_frame_compositor_task_runner_->BelongsToCurrentThread());
   submitter_->SetForceSubmit(force_submit);
@@ -306,18 +326,6 @@ void WebMediaPlayerMSCompositor::SetIsPageVisible(bool is_visible) {
   DCHECK(video_frame_compositor_task_runner_->BelongsToCurrentThread());
   if (submitter_)
     submitter_->SetIsPageVisible(is_visible);
-}
-
-gfx::Size WebMediaPlayerMSCompositor::GetCurrentSize() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  base::AutoLock auto_lock(current_frame_lock_);
-  return current_frame_ ? current_frame_->natural_size() : gfx::Size();
-}
-
-base::TimeDelta WebMediaPlayerMSCompositor::GetCurrentTime() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  base::AutoLock auto_lock(current_frame_lock_);
-  return current_frame_.get() ? current_frame_->timestamp() : base::TimeDelta();
 }
 
 size_t WebMediaPlayerMSCompositor::total_frame_count() {
@@ -345,6 +353,50 @@ void WebMediaPlayerMSCompositor::SetVideoFrameProviderClient(
     video_frame_provider_client_->StartRendering();
 }
 
+void WebMediaPlayerMSCompositor::RecordFrameDecodedStats(
+    absl::optional<base::TimeTicks> frame_received_time,
+    absl::optional<base::TimeDelta> frame_processing_time,
+    absl::optional<uint32_t> frame_rtp_timestamp) {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  if (frame_received_time && last_enqueued_frame_receive_time_) {
+    base::TimeDelta frame_receive_time_delta =
+        *frame_received_time - *last_enqueued_frame_receive_time_;
+    LOCAL_HISTOGRAM_TIMES(UmaPrefix() + ".FrameReceivedTimeDelta",
+                          frame_receive_time_delta);
+  }
+  last_enqueued_frame_receive_time_ = frame_received_time;
+
+  auto now = base::TimeTicks::Now();
+  if (last_enqueued_frame_decoded_time_) {
+    base::TimeDelta frame_decoded_time_delta =
+        now - *last_enqueued_frame_decoded_time_;
+    LOCAL_HISTOGRAM_TIMES(UmaPrefix() + ".FrameDecodedTimeDelta",
+                          frame_decoded_time_delta);
+  }
+  last_enqueued_frame_decoded_time_ = now;
+
+  if (frame_processing_time) {
+    LOCAL_HISTOGRAM_TIMES(UmaPrefix() + ".DecodeDuration",
+                          frame_processing_time.value());
+  }
+
+  if (frame_rtp_timestamp && last_enqueued_frame_rtp_timestamp_) {
+    LOCAL_HISTOGRAM_COUNTS_10000(
+        UmaPrefix() + ".FrameDecodedRtpTimestampDelta",
+        *frame_rtp_timestamp - *last_enqueued_frame_rtp_timestamp_);
+  }
+  last_enqueued_frame_rtp_timestamp_ = frame_rtp_timestamp;
+}
+
+void WebMediaPlayerMSCompositor::SetMetadata() {
+  DCHECK(video_frame_compositor_task_runner_->BelongsToCurrentThread());
+  current_frame_lock_.AssertAcquired();
+  current_metadata_.natural_size = current_frame_->natural_size();
+  current_metadata_.video_transform =
+      current_frame_->metadata().transformation.value_or(
+          media::kNoTransformation);
+}
+
 void WebMediaPlayerMSCompositor::EnqueueFrame(
     scoped_refptr<media::VideoFrame> frame,
     bool is_copy) {
@@ -354,6 +406,15 @@ void WebMediaPlayerMSCompositor::EnqueueFrame(
                        TRACE_EVENT_SCOPE_THREAD, "Timestamp",
                        frame->timestamp().InMicroseconds());
   ++total_frame_count_;
+  ++frame_enqueued_since_last_vsync_;
+  absl::optional<uint32_t> enqueue_frame_rtp_timestamp;
+  if (frame->metadata().rtp_timestamp) {
+    enqueue_frame_rtp_timestamp =
+        static_cast<uint32_t>(frame->metadata().rtp_timestamp.value());
+  }
+  RecordFrameDecodedStats(frame->metadata().receive_time,
+                          frame->metadata().processing_time,
+                          enqueue_frame_rtp_timestamp);
 
   // With algorithm off, just let |current_frame_| hold the incoming |frame|.
   if (!rendering_frame_buffer_) {
@@ -395,7 +456,13 @@ void WebMediaPlayerMSCompositor::EnqueueFrame(
   // Since some hardware decoders only have a limited number of output frames,
   // we must aggressively release frames in this case.
   const base::TimeTicks now = base::TimeTicks::Now();
-  if (now > last_deadline_max_) {
+  const base::TimeDelta vsync_delay = now - last_deadline_max_;
+  base::TimeDelta maximum_vsync_delay_for_renderer_reset;
+  if (frame->metadata().maximum_composition_delay_in_frames) {
+    maximum_vsync_delay_for_renderer_reset =
+        kMaximumVsyncDelayForLowLatencyRenderer;
+  }
+  if (vsync_delay > maximum_vsync_delay_for_renderer_reset) {
     // Note: the frame in |rendering_frame_buffer_| with lowest index is the
     // same as |current_frame_|. Function SetCurrentFrame() handles whether
     // to increase |dropped_frame_count_| for that frame, so here we should
@@ -458,6 +525,9 @@ bool WebMediaPlayerMSCompositor::HasCurrentFrame() {
 scoped_refptr<media::VideoFrame> WebMediaPlayerMSCompositor::GetCurrentFrame() {
   DVLOG(3) << __func__;
   base::AutoLock auto_lock(current_frame_lock_);
+  if (!current_frame_)
+    return nullptr;
+
   TRACE_EVENT_INSTANT1("media", "WebMediaPlayerMSCompositor::GetCurrentFrame",
                        TRACE_EVENT_SCOPE_THREAD, "Timestamp",
                        current_frame_->timestamp().InMicroseconds());
@@ -467,10 +537,38 @@ scoped_refptr<media::VideoFrame> WebMediaPlayerMSCompositor::GetCurrentFrame() {
   return current_frame_;
 }
 
+void WebMediaPlayerMSCompositor::RecordFrameDisplayedStats(
+    base::TimeTicks frame_displayed_time) {
+  DCHECK(video_frame_compositor_task_runner_->BelongsToCurrentThread());
+  if (last_presented_frame_display_time_) {
+    base::TimeDelta presentation_timestamp_delta =
+        frame_displayed_time - *last_presented_frame_display_time_;
+    LOCAL_HISTOGRAM_TIMES(UmaPrefix() + ".FramePresentationDelta",
+                          presentation_timestamp_delta);
+  }
+  last_presented_frame_display_time_ = frame_displayed_time;
+
+  if (current_frame_rtp_timestamp_ && last_presented_frame_rtp_timestamp_) {
+    int32_t rtp_timestamp_delta =
+        *current_frame_rtp_timestamp_ - *last_presented_frame_rtp_timestamp_;
+    LOCAL_HISTOGRAM_COUNTS_10000(UmaPrefix() + ".MediaTimelineDelta",
+                                 rtp_timestamp_delta);
+  }
+  last_presented_frame_rtp_timestamp_ = current_frame_rtp_timestamp_;
+
+  if (current_frame_receive_time_) {
+    base::TimeDelta frame_receive_to_display =
+        frame_displayed_time - *current_frame_receive_time_;
+    LOCAL_HISTOGRAM_TIMES(UmaPrefix() + ".FrameReceivedToDisplayedTime",
+                          frame_receive_to_display);
+  }
+}
+
 void WebMediaPlayerMSCompositor::PutCurrentFrame() {
   DVLOG(3) << __func__;
   DCHECK(video_frame_compositor_task_runner_->BelongsToCurrentThread());
   current_frame_rendered_ = true;
+  RecordFrameDisplayedStats(base::TimeTicks::Now());
 }
 
 base::TimeDelta WebMediaPlayerMSCompositor::GetPreferredRenderInterval() {
@@ -483,6 +581,21 @@ base::TimeDelta WebMediaPlayerMSCompositor::GetPreferredRenderInterval() {
   DCHECK_GE(rendering_frame_buffer_->average_frame_duration(),
             base::TimeDelta());
   return rendering_frame_buffer_->average_frame_duration();
+}
+
+void WebMediaPlayerMSCompositor::OnContextLost() {
+  DCHECK(video_frame_compositor_task_runner_->BelongsToCurrentThread());
+  // current_frame_'s resource in the context has been lost, so current_frame_
+  // is not valid any more. current_frame_ should be reset. Now the compositor
+  // has no concept of resetting current_frame_, so a black frame is set.
+  base::AutoLock auto_lock(current_frame_lock_);
+  if (!current_frame_ || (!current_frame_->HasTextures() &&
+                          !current_frame_->HasGpuMemoryBuffer())) {
+    return;
+  }
+  scoped_refptr<media::VideoFrame> black_frame =
+      media::VideoFrame::CreateBlackFrame(current_frame_->natural_size());
+  SetCurrentFrame(std::move(black_frame), false, absl::nullopt);
 }
 
 void WebMediaPlayerMSCompositor::StartRendering() {
@@ -660,6 +773,14 @@ void WebMediaPlayerMSCompositor::SetCurrentFrame(
 
   current_frame_ = std::move(frame);
   current_frame_is_copy_ = is_copy;
+  SetMetadata();
+
+  current_frame_receive_time_ = current_frame_->metadata().receive_time;
+  current_frame_rtp_timestamp_ = static_cast<uint32_t>(
+      current_frame_->metadata().rtp_timestamp.value_or(0));
+  LOCAL_HISTOGRAM_COUNTS_100(UmaPrefix() + ".DecoderThroughput",
+                             frame_enqueued_since_last_vsync_);
+  frame_enqueued_since_last_vsync_ = 0;
 
   // TODO(https://crbug.com/1050755): Improve the accuracy of these fields when
   // we only use RenderWithoutAlgorithm.

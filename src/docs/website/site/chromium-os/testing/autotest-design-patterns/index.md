@@ -54,7 +54,7 @@ Writing a test that uses telemetry is a 2 step process:
                 autotest test.
         *   It will take a day or two for the chrome tip-of-tree to be
                     rev-ed into the next build
-    *   Please see <http://dev.chromium.org/developers/telemetry> for
+    *   Please see <http://www.chromium.org/developers/telemetry> for
                 more information.
 *   Write an autotest test to kick off the new telemetry test.
     *   Once your new telemetry test/benchmark is checked into chrome

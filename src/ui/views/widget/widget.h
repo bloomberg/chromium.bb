@@ -16,12 +16,15 @@
 #include "base/observer_list.h"
 #include "base/scoped_observation.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom-forward.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/metadata/metadata_types.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/color/color_provider_manager.h"
 #include "ui/color/color_provider_source.h"
+#include "ui/display/types/display_constants.h"
 #include "ui/events/event_source.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
@@ -287,6 +290,11 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     // be ignored on some platforms. No value indicates no preference.
     absl::optional<int> shadow_elevation;
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    ui::ColorProviderManager::ElevationMode background_elevation =
+        ui::ColorProviderManager::ElevationMode::kLow;
+#endif
+
     // The window corner radius. May be ignored on some platforms.
     absl::optional<int> corner_radius;
 
@@ -374,17 +382,43 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     std::string wm_class_name;
     std::string wm_class_class;
 
+    // Only used by Wayland, for root level windows.
+    std::string wayland_app_id;
+
     // If true then the widget uses software compositing.
     bool force_software_compositing = false;
 
     // If set, mouse events will be sent to the widget even if inactive.
     bool wants_mouse_events_when_inactive = false;
 
+    // If set, the widget was created in headless mode.
+    bool headless_mode = false;
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    // TODO(crbug.com/1327490): Rename restore info variables.
+    // Only used by Wayland. Specifies the session id window key, the restore
+    // window id, and the app id, respectively, respectively, used by the
+    // compositor to restore window state upon creation. Only one of
+    // `restore_window_id` and `restore_window_id_source` should be set, as
+    // `restore_window_id_source` is used for widgets without inherent restore
+    // window ids, e.g. Chrome apps.
+    int32_t restore_session_id = 0;
+    absl::optional<int32_t> restore_window_id;
+    absl::optional<std::string> restore_window_id_source;
+#endif
+
     // Contains any properties with which the native widget should be
     // initialized prior to adding it to the window hierarchy. All the
     // properties in |init_properties_container| will be moved to the native
     // widget.
     ui::PropertyHandler init_properties_container;
+
+#if defined(USE_OZONE)
+    // Only used by Wayland for root level windows. Specifies whether this
+    // window should request the wayland compositor to send key events,
+    // even if it matches with the compositor's keyboard shortcuts.
+    bool inhibit_keyboard_shortcuts = false;
+#endif
   };
 
   // Represents a lock held on the widget's ShouldPaintAsActive() state. As
@@ -595,6 +629,9 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // Default behavior is to animate both show and hide.
   void SetVisibilityAnimationTransition(VisibilityTransition transition);
 
+  // Whether calling RunMoveLoop() is supported for the widget.
+  bool IsMoveLoopSupported() const;
+
   // Starts a nested run loop that moves the window. This can be used to
   // start a window move operation from a mouse or touch event. This returns
   // when the move completes. |drag_offset| is the offset from the top left
@@ -694,11 +731,11 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   bool IsMinimized() const;
 
   // Accessors for fullscreen state.
-  // If `delay` is given, some underlying implementations will set their target
-  // fullscreen state and then post a delayed task to request the actual window
-  // transition, in order to handle some platform-specific quirks in specific
-  // fullscreen scenarios. See crbug.com/1210548 and crbug.com/1034783.
-  void SetFullscreen(bool fullscreen, base::TimeDelta delay = {});
+  // The `target_display_id` may only be specified if `fullscreen` is true, and
+  // indicates a specific display to become fullscreen on (note that this may
+  // move a fullscreen widget from one display to another).
+  void SetFullscreen(bool fullscreen,
+                     int64_t target_display_id = display::kInvalidDisplayId);
   bool IsFullscreen() const;
 
   // macOS: Sets whether the window can share fullscreen windows' spaces.
@@ -743,7 +780,8 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
   // Returns a custom theme object suitable for use in a
   // ColorProviderManager::Key. If this is null, the window has no custom theme.
-  virtual ui::ColorProviderManager::InitializerSupplier* GetCustomTheme() const;
+  virtual ui::ColorProviderManager::ThemeInitializerSupplier* GetCustomTheme()
+      const;
 
   ui::NativeTheme* GetNativeTheme() {
     return const_cast<ui::NativeTheme*>(
@@ -786,9 +824,8 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // not need to call this.
   void ScheduleLayout();
 
-  // Sets the currently visible cursor. If |cursor| is NULL, the cursor used
-  // before the current is restored.
-  void SetCursor(gfx::NativeCursor cursor);
+  // Sets the currently visible cursor.
+  void SetCursor(const ui::Cursor& cursor);
 
   // Returns true if and only if mouse events are enabled.
   bool IsMouseEventsEnabled() const;
@@ -1093,6 +1130,9 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   void SetHeight(int height);
   void SetVisible(bool visible);
 
+  // ui::ColorProviderSource:
+  ui::ColorProviderManager::Key GetColorProviderKey() const override;
+
  private:
   // Type of ways to ignore activation changes.
   enum class DisableActivationChangeHandlingType {
@@ -1195,6 +1235,11 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
   // See set_is_secondary_widget().
   bool is_secondary_widget_ = true;
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  ui::ColorProviderManager::ElevationMode background_elevation_ =
+      ui::ColorProviderManager::ElevationMode::kLow;
+#endif
 
   // The current frame type in use by this window. Defaults to
   // FrameType::kDefault.

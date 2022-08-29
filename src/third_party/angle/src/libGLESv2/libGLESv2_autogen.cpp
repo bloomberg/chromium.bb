@@ -2713,6 +2713,87 @@ void GL_APIENTRY glVertexPointer(GLint size, GLenum type, GLsizei stride, const 
     return GL_VertexPointer(size, type, stride, pointer);
 }
 
+// GL_AMD_performance_monitor
+void GL_APIENTRY glBeginPerfMonitorAMD(GLuint monitor)
+{
+    return GL_BeginPerfMonitorAMD(monitor);
+}
+
+void GL_APIENTRY glDeletePerfMonitorsAMD(GLsizei n, GLuint *monitors)
+{
+    return GL_DeletePerfMonitorsAMD(n, monitors);
+}
+
+void GL_APIENTRY glEndPerfMonitorAMD(GLuint monitor)
+{
+    return GL_EndPerfMonitorAMD(monitor);
+}
+
+void GL_APIENTRY glGenPerfMonitorsAMD(GLsizei n, GLuint *monitors)
+{
+    return GL_GenPerfMonitorsAMD(n, monitors);
+}
+
+void GL_APIENTRY glGetPerfMonitorCounterDataAMD(GLuint monitor,
+                                                GLenum pname,
+                                                GLsizei dataSize,
+                                                GLuint *data,
+                                                GLint *bytesWritten)
+{
+    return GL_GetPerfMonitorCounterDataAMD(monitor, pname, dataSize, data, bytesWritten);
+}
+
+void GL_APIENTRY glGetPerfMonitorCounterInfoAMD(GLuint group,
+                                                GLuint counter,
+                                                GLenum pname,
+                                                void *data)
+{
+    return GL_GetPerfMonitorCounterInfoAMD(group, counter, pname, data);
+}
+
+void GL_APIENTRY glGetPerfMonitorCounterStringAMD(GLuint group,
+                                                  GLuint counter,
+                                                  GLsizei bufSize,
+                                                  GLsizei *length,
+                                                  GLchar *counterString)
+{
+    return GL_GetPerfMonitorCounterStringAMD(group, counter, bufSize, length, counterString);
+}
+
+void GL_APIENTRY glGetPerfMonitorCountersAMD(GLuint group,
+                                             GLint *numCounters,
+                                             GLint *maxActiveCounters,
+                                             GLsizei counterSize,
+                                             GLuint *counters)
+{
+    return GL_GetPerfMonitorCountersAMD(group, numCounters, maxActiveCounters, counterSize,
+                                        counters);
+}
+
+void GL_APIENTRY glGetPerfMonitorGroupStringAMD(GLuint group,
+                                                GLsizei bufSize,
+                                                GLsizei *length,
+                                                GLchar *groupString)
+{
+    return GL_GetPerfMonitorGroupStringAMD(group, bufSize, length, groupString);
+}
+
+void GL_APIENTRY glGetPerfMonitorGroupsAMD(GLint *numGroups, GLsizei groupsSize, GLuint *groups)
+{
+    return GL_GetPerfMonitorGroupsAMD(numGroups, groupsSize, groups);
+}
+
+void GL_APIENTRY glSelectPerfMonitorCountersAMD(GLuint monitor,
+                                                GLboolean enable,
+                                                GLuint group,
+                                                GLint numCounters,
+                                                GLuint *counterList)
+{
+    return GL_SelectPerfMonitorCountersAMD(monitor, enable, group, numCounters, counterList);
+}
+
+// GL_ANDROID_extension_pack_es31a
+
 // GL_ANGLE_base_vertex_base_instance
 void GL_APIENTRY glDrawArraysInstancedBaseInstanceANGLE(GLenum mode,
                                                         GLint first,
@@ -2727,12 +2808,12 @@ void GL_APIENTRY glDrawElementsInstancedBaseVertexBaseInstanceANGLE(GLenum mode,
                                                                     GLsizei count,
                                                                     GLenum type,
                                                                     const GLvoid *indices,
-                                                                    GLsizei instanceCounts,
+                                                                    GLsizei instanceCount,
                                                                     GLint baseVertex,
                                                                     GLuint baseInstance)
 {
     return GL_DrawElementsInstancedBaseVertexBaseInstanceANGLE(
-        mode, count, type, indices, instanceCounts, baseVertex, baseInstance);
+        mode, count, type, indices, instanceCount, baseVertex, baseInstance);
 }
 
 void GL_APIENTRY glMultiDrawArraysInstancedBaseInstanceANGLE(GLenum mode,
@@ -3664,6 +3745,8 @@ void GL_APIENTRY glGetQueryObjectui64vRobustANGLE(GLuint id,
     return GL_GetQueryObjectui64vRobustANGLE(id, pname, bufSize, length, params);
 }
 
+// GL_ANGLE_robust_resource_initialization
+
 // GL_ANGLE_semaphore_fuchsia
 void GL_APIENTRY glImportSemaphoreZirconHandleANGLE(GLuint semaphore,
                                                     GLenum handleType,
@@ -3824,6 +3907,39 @@ void GL_APIENTRY glEGLImageTargetTextureStorageEXT(GLuint texture,
 }
 
 // GL_EXT_YUV_target
+
+// GL_EXT_base_instance
+void GL_APIENTRY glDrawArraysInstancedBaseInstanceEXT(GLenum mode,
+                                                      GLint first,
+                                                      GLsizei count,
+                                                      GLsizei instancecount,
+                                                      GLuint baseinstance)
+{
+    return GL_DrawArraysInstancedBaseInstanceEXT(mode, first, count, instancecount, baseinstance);
+}
+
+void GL_APIENTRY glDrawElementsInstancedBaseInstanceEXT(GLenum mode,
+                                                        GLsizei count,
+                                                        GLenum type,
+                                                        const void *indices,
+                                                        GLsizei instancecount,
+                                                        GLuint baseinstance)
+{
+    return GL_DrawElementsInstancedBaseInstanceEXT(mode, count, type, indices, instancecount,
+                                                   baseinstance);
+}
+
+void GL_APIENTRY glDrawElementsInstancedBaseVertexBaseInstanceEXT(GLenum mode,
+                                                                  GLsizei count,
+                                                                  GLenum type,
+                                                                  const void *indices,
+                                                                  GLsizei instancecount,
+                                                                  GLint basevertex,
+                                                                  GLuint baseinstance)
+{
+    return GL_DrawElementsInstancedBaseVertexBaseInstanceEXT(
+        mode, count, type, indices, instancecount, basevertex, baseinstance);
+}
 
 // GL_EXT_blend_func_extended
 void GL_APIENTRY glBindFragDataLocationEXT(GLuint program, GLuint color, const GLchar *name)
@@ -4711,6 +4827,8 @@ void GL_APIENTRY glValidateProgramPipelineEXT(GLuint pipeline)
     return GL_ValidateProgramPipelineEXT(pipeline);
 }
 
+// GL_EXT_shader_framebuffer_fetch
+
 // GL_EXT_shader_framebuffer_fetch_non_coherent
 void GL_APIENTRY glFramebufferFetchBarrierEXT()
 {
@@ -4956,6 +5074,17 @@ void GL_APIENTRY glMaxShaderCompilerThreadsKHR(GLuint count)
 // GL_KHR_texture_compression_astc_ldr
 
 // GL_KHR_texture_compression_astc_sliced_3d
+
+// GL_MESA_framebuffer_flip_y
+void GL_APIENTRY glFramebufferParameteriMESA(GLenum target, GLenum pname, GLint param)
+{
+    return GL_FramebufferParameteriMESA(target, pname, param);
+}
+
+void GL_APIENTRY glGetFramebufferParameterivMESA(GLenum target, GLenum pname, GLint *params)
+{
+    return GL_GetFramebufferParameterivMESA(target, pname, params);
+}
 
 // GL_NV_fence
 void GL_APIENTRY glDeleteFencesNV(GLsizei n, const GLuint *fences)
@@ -5349,6 +5478,19 @@ void GL_APIENTRY glPointSizePointerOES(GLenum type, GLsizei stride, const void *
 
 // GL_OES_point_sprite
 
+// GL_OES_primitive_bounding_box
+void GL_APIENTRY glPrimitiveBoundingBoxOES(GLfloat minX,
+                                           GLfloat minY,
+                                           GLfloat minZ,
+                                           GLfloat minW,
+                                           GLfloat maxX,
+                                           GLfloat maxY,
+                                           GLfloat maxZ,
+                                           GLfloat maxW)
+{
+    return GL_PrimitiveBoundingBoxOES(minX, minY, minZ, minW, maxX, maxY, maxZ, maxW);
+}
+
 // GL_OES_query_matrix
 GLbitfield GL_APIENTRY glQueryMatrixxOES(GLfixed *mantissa, GLint *exponent)
 {
@@ -5629,4 +5771,11 @@ void GL_APIENTRY glFramebufferTextureMultiviewOVR(GLenum target,
 }
 
 // GL_OVR_multiview2
+
+// GL_QCOM_shading_rate
+void GL_APIENTRY glShadingRateQCOM(GLenum rate)
+{
+    return GL_ShadingRateQCOM(rate);
+}
+
 }  // extern "C"

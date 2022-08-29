@@ -13,6 +13,9 @@ import java.util.List;
 
 /**
  * An interface to be notified about changes to a TabModel.
+ *
+ * NOTE: Any changes to this interface including the addition of new methods should be applied to
+ *       {@link TabModelFilter} and {@link TabModelObserverJniBridge}.
  */
 public interface TabModelObserver {
     /**
@@ -34,22 +37,21 @@ public interface TabModelObserver {
     default void willCloseTab(Tab tab, boolean animate) {}
 
     /**
-     * Called right after {@code tab} has been destroyed.
+     * Called right before {@code tab} will be destroyed. Called for each tab.
      *
-     * @param tabId The ID of the tab that was destroyed.
-     * @param incognito True if the closed tab was incognito.
-     *
-     * @deprecated Use {@link #didCloseTab(Tab)} instead
-     */
-    @Deprecated
-    default void didCloseTab(int tabId, boolean incognito) {}
-
-    /**
-     * Called right after {@code tab} has been destroyed.
-     *
-     * @param tab The tab that was closed.
+     * @param tab The {@link Tab} that was closed.
      */
     default void didCloseTab(Tab tab) {}
+
+    /**
+     * Called right before each of {@code tabs} will be destroyed. Called as each closure event is
+     * committed. Will be called per closure eventm i.e. {@link TabModel#closeTab()},
+     * {@link TabModel#closeAllTabs()}, and {@link TabModel#closeMultipleTabs()} will all trigger
+     * one event when the tabs associated with a particular closure commit to closing.
+     *
+     * @param tabs The list of {@link Tab} that were closed.
+     */
+    default void didCloseTabs(List<Tab> tabs) {}
 
     /**
      * Called before a tab will be added to the {@link TabModel}.
@@ -83,22 +85,9 @@ public interface TabModelObserver {
      * via {@link TabModel#getComprehensiveModel()}.
      *
      * @param tab The tab that is pending closure.
+     * @param pendingToken The token that can be used to commit or undo the tab closure.
      */
     default void tabPendingClosure(Tab tab) {}
-
-    /**
-     * Called when a tab closure is undone.
-     *
-     * @param tab The tab that has been reopened.
-     */
-    default void tabClosureUndone(Tab tab) {}
-
-    /**
-     * Called when a tab closure is committed and can't be undone anymore.
-     *
-     * @param tab The tab that has been closed.
-     */
-    default void tabClosureCommitted(Tab tab) {}
 
     /**
      * Called when multiple tabs are pending closure.
@@ -109,6 +98,26 @@ public interface TabModelObserver {
     default void multipleTabsPendingClosure(List<Tab> tabs, boolean isAllTabs) {}
 
     /**
+     * Called when a tab closure is undone.
+     *
+     * @param tab The tab that has been reopened.
+     */
+    default void tabClosureUndone(Tab tab) {}
+
+    /**
+     * Called after all tabs closed from a close all tabs action have been successfully restored by
+     * an undo action.
+     */
+    default void allTabsClosureUndone() {}
+
+    /**
+     * Called when a tab closure is committed and can't be undone anymore.
+     *
+     * @param tab The tab that has been closed.
+     */
+    default void tabClosureCommitted(Tab tab) {}
+
+    /**
      * Called when an "all tabs" closure will happen.
      */
     default void willCloseAllTabs(boolean incognito) {}
@@ -116,7 +125,7 @@ public interface TabModelObserver {
     /**
      * Called when an "all tabs" closure has been committed and can't be undone anymore.
      */
-    default void allTabsClosureCommitted() {}
+    default void allTabsClosureCommitted(boolean isIncognito) {}
 
     /**
      * Called after a tab has been removed. At this point, the tab is no longer in the tab model.

@@ -24,8 +24,8 @@ class Field final : public Symbol {
 public:
     inline static constexpr Kind kSymbolKind = Kind::kField;
 
-    Field(int line, const Variable* owner, int fieldIndex)
-        : INHERITED(line, kSymbolKind, owner->type().fields()[fieldIndex].fName,
+    Field(Position pos, const Variable* owner, int fieldIndex)
+        : INHERITED(pos, kSymbolKind, owner->type().fields()[fieldIndex].fName,
                     owner->type().fields()[fieldIndex].fType)
         , fOwner(owner)
         , fFieldIndex(fieldIndex) {}
@@ -38,8 +38,8 @@ public:
         return *fOwner;
     }
 
-    String description() const override {
-        return this->owner().description() + "." + this->name();
+    std::string description() const override {
+        return this->owner().description() + "." + std::string(this->name());
     }
 
 private:

@@ -3,11 +3,18 @@
 // found in the LICENSE file.
 
 import type * as ElementsModule from '../../../../../front_end/panels/elements/elements.js';
-import {describeWithEnvironment} from '../../helpers/EnvironmentHelpers.js';
+import * as SDK from '../../../../../front_end/core/sdk/sdk.js';
+import {createFileSystemUISourceCode} from '../../helpers/UISourceCodeHelpers.js';
+import {describeWithRealConnection} from '../../helpers/RealConnection.js';
+import * as Workspace from '../../../../../front_end/models/workspace/workspace.js';
+import {assertNotNullOrUndefined} from '../../../../../front_end/core/platform/platform.js';
+import type * as Platform from '../../../../../front_end/core/platform/platform.js';
+import type * as Protocol from '../../../../../front_end/generated/protocol.js';
+import * as Bindings from '../../../../../front_end/models/bindings/bindings.js';
 
 const {assert} = chai;
 
-describeWithEnvironment('StylesSidebarPane', async () => {
+describeWithRealConnection('StylesSidebarPane', async () => {
   let Elements: typeof ElementsModule;
   before(async () => {
     Elements = await import('../../../../../front_end/panels/elements/elements.js');
@@ -30,5 +37,69 @@ describeWithEnvironment('StylesSidebarPane', async () => {
     assert.strictEqual(
         Elements.StylesSidebarPane.unescapeCssString('"_\\41\n_\\41\t_\\41\x20_"'), '"_A_A_A_"',
         'certain trailing whitespace characters should be consumed as part of the escape sequence');
+  });
+
+  it('escapes URL as CSS comments', () => {
+    assert.strictEqual(Elements.StylesSidebarPane.escapeUrlAsCssComment('https://abc.com/'), 'https://abc.com/');
+    assert.strictEqual(Elements.StylesSidebarPane.escapeUrlAsCssComment('https://abc.com/*/'), 'https://abc.com/*/');
+    assert.strictEqual(
+        Elements.StylesSidebarPane.escapeUrlAsCssComment('https://abc.com/*/?q=*'), 'https://abc.com/*/?q=*');
+    assert.strictEqual(
+        Elements.StylesSidebarPane.escapeUrlAsCssComment('https://abc.com/*/?q=*/'), 'https://abc.com/*/?q=*%2F');
+    assert.strictEqual(
+        Elements.StylesSidebarPane.escapeUrlAsCssComment('https://abc.com/*/?q=*/#hash'),
+        'https://abc.com/*/?q=*%2F#hash');
+  });
+
+  it('tracks property changes with formatting', async () => {
+    const workspace = Workspace.Workspace.WorkspaceImpl.instance();
+    const URL = 'file:///tmp/example.html' as Platform.DevToolsPath.UrlString;
+    const {uiSourceCode, project} = createFileSystemUISourceCode({
+      url: URL,
+      content: '.rule{display:none}',
+      mimeType: 'text/css',
+    });
+
+    uiSourceCode.setWorkingCopy('.rule{display:block}');
+
+    const stylesSidebarPane = Elements.StylesSidebarPane.StylesSidebarPane.instance();
+    await stylesSidebarPane.trackURLForChanges(URL);
+    const targetManager = SDK.TargetManager.TargetManager.instance();
+    const target = targetManager.mainTarget();
+    assertNotNullOrUndefined(target);
+
+    const resourceURL = () => URL;
+    const cssModel = new SDK.CSSModel.CSSModel(target);
+    cssModel.styleSheetHeaderForId = () => ({
+      lineNumberInSource: (line: number) => line,
+      columnNumberInSource: (_line: number, column: number) => column,
+      cssModel: () => cssModel,
+      resourceURL,
+      isConstructedByNew: () => false,
+    } as unknown as SDK.CSSStyleSheetHeader.CSSStyleSheetHeader);
+
+    const cssWorkspaceBinding = Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding.instance();
+    cssWorkspaceBinding.modelAdded(cssModel);
+    cssWorkspaceBinding.addSourceMapping({
+      rawLocationToUILocation: (loc: SDK.CSSModel.CSSLocation) => new Workspace.UISourceCode.UILocation(
+          uiSourceCode as Workspace.UISourceCode.UISourceCode, loc.lineNumber, loc.columnNumber),
+      uiLocationToRawLocations: (_: Workspace.UISourceCode.UILocation): SDK.CSSModel.CSSLocation[] => [],
+    });
+
+    const cssProperty = {
+      ownerStyle: {
+        type: SDK.CSSStyleDeclaration.Type.Regular,
+        styleSheetId: 'STYLE_SHEET_ID' as Protocol.CSS.StyleSheetId,
+        cssModel: () => cssModel,
+        parentRule: {resourceURL},
+      },
+      nameRange: () => ({startLine: 0, startColumn: '.rule{'.length}),
+    } as unknown as SDK.CSSProperty.CSSProperty;
+
+    assert.isTrue(stylesSidebarPane.isPropertyChanged(cssProperty));
+
+    Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding.instance().modelRemoved(cssModel);
+    workspace.removeProject(project);
+    await stylesSidebarPane.trackURLForChanges(URL);  // Clean up diff subscription
   });
 });

@@ -11,13 +11,14 @@ import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
 import 'chrome://resources/cr_elements/policy/cr_policy_pref_indicator.m.js';
 
 import {CrInputElement} from 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
-import {assert} from 'chrome://resources/js/assert.m.js';
-import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {assert} from 'chrome://resources/js/assert_ts.js';
+import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {CrPolicyPrefMixin, CrPolicyPrefMixinInterface} from '../controls/cr_policy_pref_mixin.js';
 import {PrefControlMixin} from '../controls/pref_control_mixin.js';
 
 import {AppearanceBrowserProxy, AppearanceBrowserProxyImpl} from './appearance_browser_proxy.js';
+import {getTemplate} from './home_url_input.html.js';
 
 export interface HomeUrlInputElement {
   $: {
@@ -35,7 +36,7 @@ export class HomeUrlInputElement extends HomeUrlInputElementBase {
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
@@ -78,7 +79,7 @@ export class HomeUrlInputElement extends HomeUrlInputElementBase {
   /**
    * Focuses the 'input' element.
    */
-  focus() {
+  override focus() {
     this.$.input.focus();
   }
 

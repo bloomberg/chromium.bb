@@ -15,16 +15,17 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "gpu/command_buffer/common/shared_image_trace_utils.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
 #include "ui/gl/trace_util.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "gpu/command_buffer/service/shared_image_batch_access_manager.h"
 #endif
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "gpu/command_buffer/service/dxgi_shared_handle_manager.h"
 #include "ui/gl/gl_angle_util_win.h"
 #endif
@@ -60,16 +61,8 @@ class SCOPED_LOCKABLE SharedImageManager::AutoLock {
  public:
   explicit AutoLock(SharedImageManager* manager)
       EXCLUSIVE_LOCK_FUNCTION(manager->lock_)
-      : start_time_(base::TimeTicks::Now()),
-        auto_lock_(manager->is_thread_safe() ? &manager->lock_.value()
-                                             : nullptr) {
-    if (manager->is_thread_safe()) {
-      UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
-          "GPU.SharedImageManager.TimeToAcquireLock",
-          base::TimeTicks::Now() - start_time_, base::Microseconds(1),
-          base::Seconds(1), 50);
-    }
-  }
+      : auto_lock_(manager->is_thread_safe() ? &manager->lock_.value()
+                                             : nullptr) {}
 
   AutoLock(const AutoLock&) = delete;
   AutoLock& operator=(const AutoLock&) = delete;
@@ -77,7 +70,6 @@ class SCOPED_LOCKABLE SharedImageManager::AutoLock {
   ~AutoLock() UNLOCK_FUNCTION() = default;
 
  private:
-  base::TimeTicks start_time_;
   base::AutoLockMaybe auto_lock_;
 };
 
@@ -87,10 +79,10 @@ SharedImageManager::SharedImageManager(bool thread_safe,
   DCHECK(!display_context_on_another_thread || thread_safe);
   if (thread_safe)
     lock_.emplace();
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   batch_access_manager_ = std::make_unique<SharedImageBatchAccessManager>();
 #endif
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   auto d3d11_device = gl::QueryD3D11DeviceObjectFromANGLE();
   if (d3d11_device) {
     dxgi_shared_handle_manager_ =
@@ -347,6 +339,33 @@ SharedImageManager::ProduceRaster(const Mailbox& mailbox,
   return (*found)->ProduceRaster(this, tracker);
 }
 
+#if BUILDFLAG(IS_ANDROID)
+std::unique_ptr<SharedImageRepresentationLegacyOverlay>
+SharedImageManager::ProduceLegacyOverlay(const Mailbox& mailbox,
+                                         MemoryTypeTracker* tracker) {
+  CALLED_ON_VALID_THREAD();
+
+  AutoLock autolock(this);
+  auto found = images_.find(mailbox);
+  if (found == images_.end()) {
+    LOG(ERROR)
+        << "SharedImageManager::ProduceLegacyOverlay: Trying to Produce a "
+           "Legacy Overlay representation from a non-existent mailbox.";
+    return nullptr;
+  }
+
+  auto representation = (*found)->ProduceLegacyOverlay(this, tracker);
+  if (!representation) {
+    LOG(ERROR)
+        << "SharedImageManager::ProduceLegacyOverlay: Trying to produce a "
+           "Legacy Overlay representation from an incompatible mailbox.";
+    return nullptr;
+  }
+
+  return representation;
+}
+#endif
+
 void SharedImageManager::OnRepresentationDestroyed(
     const Mailbox& mailbox,
     SharedImageRepresentation* representation) {
@@ -432,7 +451,7 @@ scoped_refptr<gfx::NativePixmap> SharedImageManager::GetNativePixmap(
 }
 
 bool SharedImageManager::BeginBatchReadAccess() {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   return batch_access_manager_->BeginBatchReadAccess();
 #else
   return true;
@@ -440,7 +459,7 @@ bool SharedImageManager::BeginBatchReadAccess() {
 }
 
 bool SharedImageManager::EndBatchReadAccess() {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   return batch_access_manager_->EndBatchReadAccess();
 #else
   return true;

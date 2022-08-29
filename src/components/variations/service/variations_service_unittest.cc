@@ -13,7 +13,6 @@
 
 #include "base/base64.h"
 #include "base/bind.h"
-#include "base/cxx17_backports.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/json/json_string_value_serializer.h"
@@ -302,12 +301,12 @@ std::string SerializeSeed(const VariationsSeed& seed) {
   return serialized_seed;
 }
 
-// Converts |list_value| to a string, to make it easier for debugging.
-std::string ListValueToString(const base::ListValue& list_value) {
+// Converts |value| to a string, to make it easier for debugging.
+std::string ValueToString(const base::Value& value) {
   std::string json;
   JSONStringValueSerializer serializer(&json);
   serializer.set_pretty_print(true);
-  serializer.Serialize(list_value);
+  serializer.Serialize(value);
   return json;
 }
 
@@ -524,7 +523,7 @@ TEST_F(VariationsServiceTest, SeedNotStoredWhenNonOKStatus) {
           &prefs_, network_tracker_),
       &prefs_, GetMetricsStateManager(), true);
   service.set_intercepts_fetch(false);
-  for (size_t i = 0; i < base::size(non_ok_status_codes); ++i) {
+  for (size_t i = 0; i < std::size(non_ok_status_codes); ++i) {
     EXPECT_TRUE(prefs_.FindPreference(prefs::kVariationsCompressedSeed)
                     ->IsDefaultValue());
     service.test_url_loader_factory()->ClearResponses();
@@ -623,7 +622,7 @@ TEST_F(VariationsServiceTest, InstanceManipulations) {
 
   std::string serialized_seed = SerializeSeed(CreateTestSeed());
   VariationsService::EnableFetchForTesting();
-  for (size_t i = 0; i < base::size(cases); ++i) {
+  for (size_t i = 0; i < std::size(cases); ++i) {
     TestVariationsService service(
         std::make_unique<web_resource::TestRequestAllowedNotifier>(
             &prefs_, network_tracker_),
@@ -695,7 +694,7 @@ TEST_F(VariationsServiceTest, Observer) {
       {1, 0, 1, 0, 1},
   };
 
-  for (size_t i = 0; i < base::size(cases); ++i) {
+  for (size_t i = 0; i < std::size(cases); ++i) {
     TestVariationsServiceObserver observer;
     service.AddObserver(&observer);
 
@@ -812,16 +811,15 @@ TEST_F(VariationsServiceTest, LoadPermanentConsistencyCountry) {
         << test.permanent_consistency_country_before << ", " << test.version
         << ", " << test.latest_country_code;
 
-    base::ListValue expected_list_value;
+    base::Value expected_list_value{base::Value::Type::LIST};
     for (const std::string& component :
          base::SplitString(test.permanent_consistency_country_after, ",",
                            base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
       expected_list_value.Append(component);
     }
-    const base::ListValue* pref_value =
+    const base::Value* pref_value =
         prefs_.GetList(prefs::kVariationsPermanentConsistencyCountry);
-    EXPECT_EQ(ListValueToString(expected_list_value),
-              ListValueToString(*pref_value))
+    EXPECT_EQ(ValueToString(expected_list_value), ValueToString(*pref_value))
         << test.permanent_consistency_country_before << ", " << test.version
         << ", " << test.latest_country_code;
 

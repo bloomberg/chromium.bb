@@ -23,14 +23,15 @@
 #include <cstdint>
 #include <cstring>
 
-#include "src/dsp/common.h"
 #include "src/dsp/constants.h"
 #include "src/dsp/dsp.h"
 #include "src/dsp/film_grain_common.h"
 #include "src/dsp/x86/common_sse4.h"
+#include "src/utils/array_2d.h"
 #include "src/utils/common.h"
 #include "src/utils/compiler_attributes.h"
-#include "src/utils/logging.h"
+#include "src/utils/constants.h"
+#include "src/utils/types.h"
 
 namespace libgav1 {
 namespace dsp {
@@ -165,7 +166,7 @@ void BlendNoiseWithImageLuma_SSE4_1(
   int y = 0;
   do {
     int x = 0;
-    for (; x < safe_width; x += 8) {
+    for (; x + 8 <= safe_width; x += 8) {
       const __m128i orig = LoadSource(&in_y_row[x]);
       const __m128i scaling =
           GetScalingFactors<bitdepth, Pixel>(scaling_lut_y, &in_y_row[x]);
@@ -181,6 +182,7 @@ void BlendNoiseWithImageLuma_SSE4_1(
       // Prevent arbitrary indices from entering GetScalingFactors.
       memset(luma_buffer, 0, sizeof(luma_buffer));
       const int valid_range = width - x;
+      assert(valid_range < 8);
       memcpy(luma_buffer, &in_y_row[x], valid_range * sizeof(in_y_row[0]));
       luma_buffer[valid_range] = in_y_row[width - 1];
       const __m128i orig = LoadSource(&in_y_row[x]);
@@ -239,7 +241,7 @@ LIBGAV1_ALWAYS_INLINE void BlendChromaPlaneWithCfl_SSE4_1(
   int y = 0;
   do {
     int x = 0;
-    for (; x < safe_chroma_width; x += 8) {
+    for (; x + 8 <= safe_chroma_width; x += 8) {
       const int luma_x = x << subsampling_x;
       const __m128i average_luma =
           GetAverageLuma(&in_y_row[luma_x], subsampling_x);
@@ -252,8 +254,6 @@ LIBGAV1_ALWAYS_INLINE void BlendChromaPlaneWithCfl_SSE4_1(
       StoreUnsigned(&out_chroma_row[x], Clip3(blended, floor, ceiling));
     }
 
-    // This section only runs if width % (8 << sub_x) != 0. It should never run
-    // on 720p and above.
     if (x < chroma_width) {
       // Prevent huge indices from entering GetScalingFactors due to
       // uninitialized values. This is not a problem in 8bpp because the table
@@ -365,7 +365,7 @@ LIBGAV1_ALWAYS_INLINE void BlendChromaPlane8bpp_SSE4_1(
   int y = 0;
   do {
     int x = 0;
-    for (; x < safe_chroma_width; x += 8) {
+    for (; x + 8 <= safe_chroma_width; x += 8) {
       const int luma_x = x << subsampling_x;
       const __m128i average_luma =
           GetAverageLuma(&in_y_row[luma_x], subsampling_x);

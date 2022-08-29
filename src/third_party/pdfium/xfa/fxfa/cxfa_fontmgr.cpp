@@ -23,11 +23,10 @@ CXFA_FontMgr::~CXFA_FontMgr() = default;
 void CXFA_FontMgr::Trace(cppgc::Visitor* visitor) const {}
 
 RetainPtr<CFGAS_GEFont> CXFA_FontMgr::GetFont(CXFA_FFDoc* hDoc,
-                                              WideStringView wsFontFamily,
+                                              const WideString& wsFontFamily,
                                               uint32_t dwFontStyles) {
-  uint32_t dwHash = FX_HashCode_GetW(wsFontFamily);
-  ByteString bsKey = ByteString::Format("%u%u%u", dwHash, dwFontStyles, 0xFFFF);
-  auto iter = m_FontMap.find(bsKey);
+  auto key = std::make_pair(wsFontFamily, dwFontStyles);
+  auto iter = m_FontMap.find(key);
   if (iter != m_FontMap.end())
     return iter->second;
 
@@ -35,7 +34,7 @@ RetainPtr<CFGAS_GEFont> CXFA_FontMgr::GetFont(CXFA_FFDoc* hDoc,
   CFGAS_PDFFontMgr* pMgr = hDoc->GetPDFFontMgr();
   RetainPtr<CFGAS_GEFont> pFont;
   if (pMgr) {
-    pFont = pMgr->GetFont(wsEnglishName.AsStringView(), dwFontStyles, true);
+    pFont = pMgr->GetFont(wsEnglishName, dwFontStyles, true);
     if (pFont)
       return pFont;
   }
@@ -43,7 +42,7 @@ RetainPtr<CFGAS_GEFont> CXFA_FontMgr::GetFont(CXFA_FFDoc* hDoc,
     pFont = CFGAS_DefaultFontManager::GetFont(wsFontFamily, dwFontStyles);
   }
   if (!pFont && pMgr) {
-    pFont = pMgr->GetFont(wsEnglishName.AsStringView(), dwFontStyles, false);
+    pFont = pMgr->GetFont(wsEnglishName, dwFontStyles, false);
     if (pFont)
       return pFont;
   }
@@ -52,11 +51,11 @@ RetainPtr<CFGAS_GEFont> CXFA_FontMgr::GetFont(CXFA_FFDoc* hDoc,
 
   if (!pFont) {
     pFont = CFGAS_GEFont::LoadStockFont(
-        hDoc->GetPDFDoc(),
-        ByteString::Format("%ls", WideString(wsFontFamily).c_str()));
+        hDoc->GetPDFDoc(), ByteString::Format("%ls", wsFontFamily.c_str()));
   }
-  if (pFont)
-    m_FontMap[bsKey] = pFont;
+  if (!pFont)
+    return nullptr;
 
+  m_FontMap[key] = pFont;
   return pFont;
 }

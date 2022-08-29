@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <string>
 
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
@@ -17,6 +18,7 @@
 #include "remoting/protocol/video_channel_state_observer.h"
 #include "remoting/protocol/video_stream.h"
 #include "remoting/protocol/webrtc_video_track_source.h"
+#include "third_party/webrtc/api/rtp_transceiver_interface.h"
 #include "third_party/webrtc/api/scoped_refptr.h"
 #include "third_party/webrtc/api/video_codecs/sdp_video_format.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
@@ -37,7 +39,8 @@ class WebrtcVideoStream : public VideoStream,
                           public webrtc::DesktopCapturer::Callback,
                           public VideoChannelStateObserver {
  public:
-  explicit WebrtcVideoStream(const SessionOptions& options);
+  WebrtcVideoStream(const std::string& stream_name,
+                    const SessionOptions& options);
 
   WebrtcVideoStream(const WebrtcVideoStream&) = delete;
   WebrtcVideoStream& operator=(const WebrtcVideoStream&) = delete;
@@ -60,7 +63,7 @@ class WebrtcVideoStream : public VideoStream,
   void SetLosslessEncode(bool want_lossless) override;
   void SetLosslessColor(bool want_lossless) override;
   void SetObserver(Observer* observer) override;
-  void SelectSource(int id) override;
+  void SelectSource(webrtc::ScreenId id) override;
 
   // VideoChannelStateObserver interface.
   void OnKeyFrameRequested() override;
@@ -84,11 +87,17 @@ class WebrtcVideoStream : public VideoStream,
   // Called by |video_track_source_|.
   void OnSinkAddedOrUpdated(const rtc::VideoSinkWants& wants);
 
+  // Label of the associated WebRTC video-stream.
+  std::string stream_name_;
+
   // Capturer used to capture the screen.
   std::unique_ptr<webrtc::DesktopCapturer> capturer_;
 
   // Used to send captured frames to the encoder.
   rtc::scoped_refptr<WebrtcVideoTrackSource> video_track_source_;
+
+  // The transceiver created for this video-stream.
+  rtc::scoped_refptr<webrtc::RtpTransceiverInterface> transceiver_;
 
   scoped_refptr<InputEventTimestampsSource> event_timestamps_source_;
 

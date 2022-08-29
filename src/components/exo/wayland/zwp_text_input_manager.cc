@@ -20,13 +20,24 @@
 #include "components/exo/wayland/server_util.h"
 #include "components/exo/xkb_tracker.h"
 #include "ui/base/ime/utf_offset.h"
+#include "ui/base/wayland/wayland_server_input_types.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
+#include "ui/events/ozone/layout/xkb/xkb_modifier_converter.h"
 
 namespace exo {
 namespace wayland {
 
 namespace {
+
+// The list of modifiers that this supports.
+// This is consistent with X.h.
+constexpr const char* kModifierNames[] = {
+    XKB_MOD_NAME_SHIFT, XKB_MOD_NAME_CAPS,
+    XKB_MOD_NAME_CTRL,  XKB_MOD_NAME_ALT,
+    XKB_MOD_NAME_NUM,   "Mod3",
+    XKB_MOD_NAME_LOGO,  "Mod5",
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 // text_input_v1 interface:
@@ -53,6 +64,8 @@ class WaylandTextInputDelegate : public TextInput::Delegate {
     return weak_factory_.GetWeakPtr();
   }
 
+  wl_resource* resource() { return text_input_; }
+
  private:
   wl_client* client() { return wl_resource_get_client(text_input_); }
 
@@ -68,7 +81,11 @@ class WaylandTextInputDelegate : public TextInput::Delegate {
   }
 
   void OnVirtualKeyboardVisibilityChanged(bool is_visible) override {
-    zwp_text_input_v1_send_input_panel_state(text_input_, is_visible);
+    // The detailed spec of |state| is implementation dependent.
+    // So, now we use the lowest bit to indicate whether keyboard is visible.
+    // This behavior is consistent with ozone/wayland to support Lacros.
+    zwp_text_input_v1_send_input_panel_state(text_input_,
+                                             static_cast<uint32_t>(is_visible));
     wl_client_flush(client());
   }
 
@@ -124,14 +141,6 @@ class WaylandTextInputDelegate : public TextInput::Delegate {
     uint32_t keysym = xkb_tracker_->GetKeysym(
         ui::KeycodeConverter::DomCodeToNativeKeycode(event.code()));
     bool pressed = (event.type() == ui::ET_KEY_PRESSED);
-    // TODO(mukai): consolidate the definition of this modifiers_mask with other
-    // similar ones in components/exo/keyboard.cc or arc_ime_service.cc.
-    constexpr uint32_t modifiers_mask =
-        ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN |
-        ui::EF_COMMAND_DOWN | ui::EF_ALTGR_DOWN | ui::EF_MOD3_DOWN;
-    // 1-bit shifts to adjust the bitpattern for the modifiers; see also
-    // WaylandTextInputDelegate::SendModifiers().
-    uint32_t modifiers = (event.flags() & modifiers_mask) >> 1;
 
     zwp_text_input_v1_send_keysym(
         text_input_, TimeTicksToMilliseconds(event.time_stamp()),
@@ -139,7 +148,7 @@ class WaylandTextInputDelegate : public TextInput::Delegate {
         keysym,
         pressed ? WL_KEYBOARD_KEY_STATE_PRESSED
                 : WL_KEYBOARD_KEY_STATE_RELEASED,
-        modifiers);
+        modifier_converter_.MaskFromUiFlags(event.flags()));
     wl_client_flush(client());
   }
 
@@ -243,7 +252,9 @@ class WaylandTextInputDelegate : public TextInput::Delegate {
 
   // Owned by Server, which always outlives this delegate.
   SerialTracker* const serial_tracker_;
-
+  ui::XkbModifierConverter modifier_converter_{
+      std::vector<std::string>(std::begin(kModifierNames),
+                               std::end(kModifierNames))};
   base::WeakPtrFactory<WaylandTextInputDelegate> weak_factory_{this};
 };
 
@@ -263,6 +274,8 @@ class WaylandExtendedTextInput {
       delegate_->set_extended_text_input(nullptr);
   }
 
+  WaylandTextInputDelegate* delegate() { return delegate_.get(); }
+
  private:
   base::WeakPtr<WaylandTextInputDelegate> delegate_;
 };
@@ -278,14 +291,6 @@ void text_input_activate(wl_client* client,
   text_input->Activate(surface);
 
   // Sending modifiers.
-  constexpr const char* kModifierNames[] = {
-      XKB_MOD_NAME_SHIFT,
-      XKB_MOD_NAME_CTRL,
-      XKB_MOD_NAME_ALT,
-      XKB_MOD_NAME_LOGO,
-      "Mod5",
-      "Mod3",
-  };
   wl_array modifiers;
   wl_array_init(&modifiers);
   for (const char* modifier : kModifierNames) {
@@ -383,7 +388,7 @@ void text_input_set_content_type(wl_client* client,
       type = ui::TEXT_INPUT_TYPE_EMAIL;
       break;
     case ZWP_TEXT_INPUT_V1_CONTENT_PURPOSE_PASSWORD:
-      DCHECK(!should_do_learning);
+      should_do_learning = false;
       type = ui::TEXT_INPUT_TYPE_PASSWORD;
       break;
     case ZWP_TEXT_INPUT_V1_CONTENT_PURPOSE_DATE:
@@ -478,8 +483,40 @@ void extended_text_input_destroy(wl_client* client, wl_resource* resource) {
   wl_resource_destroy(resource);
 }
 
+void extended_text_input_set_input_type(wl_client* client,
+                                        wl_resource* resource,
+                                        uint32_t input_type,
+                                        uint32_t input_mode,
+                                        uint32_t input_flags,
+                                        uint32_t learning_mode) {
+  auto* delegate =
+      GetUserDataAs<WaylandExtendedTextInput>(resource)->delegate();
+  if (!delegate)
+    return;
+
+  // If unknown value is passed, fall back to the default one.
+  auto ui_type =
+      ui::wayland::ConvertToTextInputType(
+          static_cast<zcr_extended_text_input_v1_input_type>(input_type))
+          .value_or(ui::TEXT_INPUT_TYPE_TEXT);
+  auto ui_mode =
+      ui::wayland::ConvertToTextInputMode(
+          static_cast<zcr_extended_text_input_v1_input_mode>(input_mode))
+          .value_or(ui::TEXT_INPUT_MODE_DEFAULT);
+  // Ignore unknown flags.
+  auto ui_flags = ui::wayland::ConvertToTextInputFlags(input_flags).first;
+  bool should_do_learning =
+      learning_mode == ZCR_EXTENDED_TEXT_INPUT_V1_LEARNING_MODE_ENABLED;
+
+  auto* text_input = GetUserDataAs<TextInput>(delegate->resource());
+  text_input->SetTypeModeFlags(ui_type, ui_mode, ui_flags, should_do_learning);
+}
+
 constexpr struct zcr_extended_text_input_v1_interface
-    extended_text_input_implementation = {extended_text_input_destroy};
+    extended_text_input_implementation = {
+        extended_text_input_destroy,
+        extended_text_input_set_input_type,
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 // text_input_extension_v1 interface:

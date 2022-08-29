@@ -35,6 +35,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import static org.chromium.chrome.browser.flags.ChromeFeatureList.GRID_TAB_SWITCHER_FOR_TABLETS;
 import static org.chromium.chrome.browser.flags.ChromeFeatureList.START_SURFACE_ANDROID;
 import static org.chromium.chrome.browser.flags.ChromeFeatureList.STORE_HOURS;
 import static org.chromium.chrome.browser.flags.ChromeFeatureList.TAB_GROUPS_ANDROID;
@@ -83,6 +84,7 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.LooperMode;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
@@ -105,6 +107,8 @@ import org.chromium.chrome.browser.optimization_guide.OptimizationGuideBridge.Op
 import org.chromium.chrome.browser.optimization_guide.OptimizationGuideBridgeJni;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
+import org.chromium.chrome.browser.price_tracking.PriceTrackingFeatures;
+import org.chromium.chrome.browser.price_tracking.PriceTrackingUtilities;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.tab.MockTab;
@@ -169,7 +173,12 @@ import java.util.concurrent.TimeUnit;
 @SuppressWarnings(
         {"ArraysAsListWithZeroOrOneArgument", "ResultOfMethodCallIgnored", "ConstantConditions"})
 @RunWith(BaseRobolectricTestRunner.class)
-@Config(manifest = Config.NONE, shadows = {ShadowRecordHistogram.class})
+@Config(manifest = Config.NONE, shadows = {ShadowRecordHistogram.class},
+        instrumentedPackages =
+                {
+                        "androidx.recyclerview.widget.RecyclerView" // required to mock final
+                })
+@LooperMode(LooperMode.Mode.LEGACY)
 // clang-format off
 @Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
 @Features.DisableFeatures({
@@ -387,7 +396,7 @@ public class TabListMediatorUnitTest {
                 .openTabGridDialog(any(Tab.class));
         doNothing().when(mActivity).registerComponentCallbacks(mComponentCallbacksCaptor.capture());
         doReturn(mGridLayoutManager).when(mRecyclerView).getLayoutManager();
-        doReturn(TabListCoordinator.GRID_LAYOUT_SPAN_COUNT_PORTRAIT)
+        doReturn(TabListCoordinator.GRID_LAYOUT_SPAN_COUNT_COMPACT)
                 .when(mGridLayoutManager)
                 .getSpanCount();
         doReturn(mSpanSizeLookup).when(mGridLayoutManager).getSpanSizeLookup();
@@ -420,8 +429,7 @@ public class TabListMediatorUnitTest {
         doAnswer(invocation -> {
             int position = invocation.getArgument(0);
             int itemType = mModel.get(position).type;
-            if (itemType == TabProperties.UiType.MESSAGE
-                    || itemType == TabProperties.UiType.LARGE_MESSAGE) {
+            if (itemType == UiType.MESSAGE || itemType == UiType.LARGE_MESSAGE) {
                 return mGridLayoutManager.getSpanCount();
             }
             return 1;
@@ -769,9 +777,7 @@ public class TabListMediatorUnitTest {
         doReturn(mTab2).when(mTabModelFilter).getTabAt(1);
         doReturn(newTab).when(mTabModelFilter).getTabAt(2);
         doReturn(3).when(mTabModelFilter).getCount();
-        doReturn(Arrays.asList(newTab))
-                .when(mTabModelFilter)
-                .getRelatedTabList(eq(TAB3_ID));
+        doReturn(Arrays.asList(newTab)).when(mTabModelFilter).getRelatedTabList(eq(TAB3_ID));
         assertThat(mModel.size(), equalTo(2));
 
         mTabModelObserverCaptor.getValue().didAddTab(
@@ -793,9 +799,7 @@ public class TabListMediatorUnitTest {
         doReturn(mTab1).when(mTabModelFilter).getTabAt(0);
         doReturn(mTab2).when(mTabModelFilter).getTabAt(1);
         doReturn(2).when(mTabModelFilter).getCount();
-        doReturn(Arrays.asList(mTab2, newTab))
-                .when(mTabModelFilter)
-                .getRelatedTabList(eq(TAB3_ID));
+        doReturn(Arrays.asList(mTab2, newTab)).when(mTabModelFilter).getRelatedTabList(eq(TAB3_ID));
         assertThat(mModel.size(), equalTo(2));
 
         mTabModelObserverCaptor.getValue().didAddTab(
@@ -815,9 +819,7 @@ public class TabListMediatorUnitTest {
         doReturn(newTab).when(mTabModelFilter).getTabAt(1);
         doReturn(mTab2).when(mTabModelFilter).getTabAt(2);
         doReturn(3).when(mTabModelFilter).getCount();
-        doReturn(Arrays.asList(newTab))
-                .when(mTabModelFilter)
-                .getRelatedTabList(eq(TAB3_ID));
+        doReturn(Arrays.asList(newTab)).when(mTabModelFilter).getRelatedTabList(eq(TAB3_ID));
         assertThat(mModel.size(), equalTo(2));
 
         mTabModelObserverCaptor.getValue().didAddTab(
@@ -1124,7 +1126,7 @@ public class TabListMediatorUnitTest {
      */
     private void prepareForPriceDrop() {
         setPriceTrackingEnabledForTesting(true);
-        PriceTrackingUtilities.setIsSignedInAndSyncEnabledForTesting(true);
+        PriceTrackingFeatures.setIsSignedInAndSyncEnabledForTesting(true);
         PersistedTabDataConfiguration.setUseTestConfig(true);
         initAndAssertAllProperties();
         setUpForTabGroupOperation(TabListMediatorType.TAB_SWITCHER, TabListMode.GRID);
@@ -1189,7 +1191,7 @@ public class TabListMediatorUnitTest {
      */
     private void prepareForStoreHours() {
         CachedFeatureFlags.setForTesting(STORE_HOURS, true);
-        PriceTrackingUtilities.setIsSignedInAndSyncEnabledForTesting(true);
+        PriceTrackingFeatures.setIsSignedInAndSyncEnabledForTesting(true);
         PersistedTabDataConfiguration.setUseTestConfig(true);
         initAndAssertAllProperties();
         setUpForTabGroupOperation(TabListMediatorType.TAB_SWITCHER, TabListMode.GRID);
@@ -1480,12 +1482,13 @@ public class TabListMediatorUnitTest {
         // Mock that we are switching to portrait mode.
         Configuration configuration = new Configuration();
         configuration.orientation = Configuration.ORIENTATION_PORTRAIT;
+        configuration.screenWidthDp = TabListCoordinator.MAX_SCREEN_WIDTH_COMPACT_DP - 1;
         // Mock that we are in single window mode.
         MultiWindowUtils.getInstance().setIsInMultiWindowModeForTesting(false);
 
         mComponentCallbacksCaptor.getValue().onConfigurationChanged(configuration);
 
-        verify(mGridLayoutManager).setSpanCount(TabListCoordinator.GRID_LAYOUT_SPAN_COUNT_PORTRAIT);
+        verify(mGridLayoutManager).setSpanCount(TabListCoordinator.GRID_LAYOUT_SPAN_COUNT_COMPACT);
     }
 
     @Test
@@ -1494,22 +1497,24 @@ public class TabListMediatorUnitTest {
         // Mock that we are switching to landscape mode.
         Configuration configuration = new Configuration();
         configuration.orientation = Configuration.ORIENTATION_LANDSCAPE;
+        configuration.screenWidthDp = TabListCoordinator.MAX_SCREEN_WIDTH_COMPACT_DP - 1;
         // Mock that we are in single window mode.
         MultiWindowUtils.getInstance().setIsInMultiWindowModeForTesting(false);
 
         mComponentCallbacksCaptor.getValue().onConfigurationChanged(configuration);
 
-        verify(mGridLayoutManager)
-                .setSpanCount(TabListCoordinator.GRID_LAYOUT_SPAN_COUNT_LANDSCAPE);
+        verify(mGridLayoutManager).setSpanCount(TabListCoordinator.GRID_LAYOUT_SPAN_COUNT_MEDIUM);
     }
 
     @Test
     public void updateSpanCount_MultiWindow() {
         initAndAssertAllProperties();
         Configuration portraitConfiguration = new Configuration();
+        portraitConfiguration.screenWidthDp = TabListCoordinator.MAX_SCREEN_WIDTH_COMPACT_DP - 1;
         portraitConfiguration.orientation = Configuration.ORIENTATION_PORTRAIT;
         Configuration landscapeConfiguration = new Configuration();
         landscapeConfiguration.orientation = Configuration.ORIENTATION_LANDSCAPE;
+        landscapeConfiguration.screenWidthDp = TabListCoordinator.MAX_SCREEN_WIDTH_COMPACT_DP - 1;
         // Mock that we are in multi window mode.
         MultiWindowUtils.getInstance().setIsInMultiWindowModeForTesting(true);
 
@@ -1519,7 +1524,36 @@ public class TabListMediatorUnitTest {
 
         // The span count is fixed to 2 for multi window mode regardless of the orientation change.
         verify(mGridLayoutManager, times(3))
-                .setSpanCount(TabListCoordinator.GRID_LAYOUT_SPAN_COUNT_PORTRAIT);
+                .setSpanCount(TabListCoordinator.GRID_LAYOUT_SPAN_COUNT_COMPACT);
+    }
+
+    @Test
+    @Features.EnableFeatures(GRID_TAB_SWITCHER_FOR_TABLETS)
+    public void updateSpanCount_onTablet_multipleScreenWidths() {
+        initAndAssertAllProperties(3);
+        // Mock tablet
+        when(mResources.getInteger(R.integer.min_screen_width_bucket))
+                .thenReturn(TabListCoordinator.MAX_SCREEN_WIDTH_MEDIUM_DP + 1);
+        Configuration portraitConfiguration = new Configuration();
+        portraitConfiguration.orientation = Configuration.ORIENTATION_LANDSCAPE;
+
+        // Mock that we are in single window mode.
+        MultiWindowUtils.getInstance().setIsInMultiWindowModeForTesting(false);
+
+        // Compact width
+        portraitConfiguration.screenWidthDp = TabListCoordinator.MAX_SCREEN_WIDTH_COMPACT_DP - 1;
+        mComponentCallbacksCaptor.getValue().onConfigurationChanged(portraitConfiguration);
+        verify(mGridLayoutManager).setSpanCount(TabListCoordinator.GRID_LAYOUT_SPAN_COUNT_COMPACT);
+
+        // Medium width
+        portraitConfiguration.screenWidthDp = TabListCoordinator.MAX_SCREEN_WIDTH_MEDIUM_DP - 1;
+        mComponentCallbacksCaptor.getValue().onConfigurationChanged(portraitConfiguration);
+        verify(mGridLayoutManager).setSpanCount(TabListCoordinator.GRID_LAYOUT_SPAN_COUNT_MEDIUM);
+
+        // Large width
+        portraitConfiguration.screenWidthDp = TabListCoordinator.MAX_SCREEN_WIDTH_MEDIUM_DP + 1;
+        mComponentCallbacksCaptor.getValue().onConfigurationChanged(portraitConfiguration);
+        verify(mGridLayoutManager).setSpanCount(TabListCoordinator.GRID_LAYOUT_SPAN_COUNT_LARGE);
     }
 
     @Test
@@ -2282,7 +2316,7 @@ public class TabListMediatorUnitTest {
                 for (boolean incognito : new boolean[] {false, true}) {
                     TabListMediator mMediatorSpy = spy(mMediator);
                     doReturn(true).when(mMediatorSpy).isUngroupedTab(anyInt());
-                    PriceTrackingUtilities.setIsSignedInAndSyncEnabledForTesting(
+                    PriceTrackingFeatures.setIsSignedInAndSyncEnabledForTesting(
                             signedInAndSyncEnabled);
                     PriceTrackingUtilities.SHARED_PREFERENCES_MANAGER.writeBoolean(
                             PriceTrackingUtilities.TRACK_PRICES_ON_TABS, priceTrackingEnabled);
@@ -2603,12 +2637,12 @@ public class TabListMediatorUnitTest {
     public void testGetPriceWelcomeMessageInsertionIndex() {
         initWithThreeTabs();
 
-        doReturn(TabListCoordinator.GRID_LAYOUT_SPAN_COUNT_PORTRAIT)
+        doReturn(TabListCoordinator.GRID_LAYOUT_SPAN_COUNT_COMPACT)
                 .when(mGridLayoutManager)
                 .getSpanCount();
         assertThat(mMediator.getPriceWelcomeMessageInsertionIndex(), equalTo(2));
 
-        doReturn(TabListCoordinator.GRID_LAYOUT_SPAN_COUNT_LANDSCAPE)
+        doReturn(TabListCoordinator.GRID_LAYOUT_SPAN_COUNT_MEDIUM)
                 .when(mGridLayoutManager)
                 .getSpanCount();
         assertThat(mMediator.getPriceWelcomeMessageInsertionIndex(), equalTo(3));
@@ -2633,7 +2667,7 @@ public class TabListMediatorUnitTest {
         mMediator.updateLayout();
         assertThat(mModel.lastIndexForMessageItemFromType(PRICE_MESSAGE), equalTo(1));
         setPriceTrackingEnabledForTesting(true);
-        PriceTrackingUtilities.setIsSignedInAndSyncEnabledForTesting(true);
+        PriceTrackingFeatures.setIsSignedInAndSyncEnabledForTesting(true);
         PriceTrackingUtilities.SHARED_PREFERENCES_MANAGER.writeBoolean(
                 PriceTrackingUtilities.PRICE_WELCOME_MESSAGE_CARD, true);
         mMediator.updateLayout();
@@ -2986,7 +3020,7 @@ public class TabListMediatorUnitTest {
     public void testRecordPriceAnnotationsEnabledMetrics() {
         ShadowRecordHistogram.reset();
         setPriceTrackingEnabledForTesting(true);
-        PriceTrackingUtilities.setIsSignedInAndSyncEnabledForTesting(true);
+        PriceTrackingFeatures.setIsSignedInAndSyncEnabledForTesting(true);
         mMediator.setActionOnAllRelatedTabsForTesting(true);
         String histogramName = "Commerce.PriceDrop.AnnotationsEnabled";
 
@@ -3059,6 +3093,20 @@ public class TabListMediatorUnitTest {
         initAndAssertAllProperties(mMediator);
     }
 
+    // initAndAssertAllProperties called with regular mMediator
+    private void initAndAssertAllProperties(int extraTabCount) {
+        int index = mTabModel.getCount();
+        int totalCount = mTabModel.getCount() + extraTabCount;
+        while (index < totalCount) {
+            Tab tab = prepareTab(index, TAB1_TITLE, TAB1_URL);
+            doReturn(tab).when(mTabModel).getTabAt(index);
+            doReturn(index).when(mTabModel).indexOf(tab);
+            index++;
+        }
+        doReturn(totalCount).when(mTabModel).getCount();
+        initAndAssertAllProperties(mMediator);
+    }
+
     // initAndAssertAllProperties called with custom mMediator (e.g. if spy needs to be used)
     private void initAndAssertAllProperties(TabListMediator mediator) {
         List<Tab> tabs = new ArrayList<>();
@@ -3070,7 +3118,7 @@ public class TabListMediatorUnitTest {
             callback.onResult(mFavicon);
         }
 
-        assertThat(mModel.size(), equalTo(2));
+        assertThat(mModel.size(), equalTo(mTabModel.getCount()));
 
         assertThat(mModel.get(0).model.get(TabProperties.TAB_ID), equalTo(TAB1_ID));
         assertThat(mModel.get(1).model.get(TabProperties.TAB_ID), equalTo(TAB2_ID));
@@ -3244,7 +3292,7 @@ public class TabListMediatorUnitTest {
     private void prepareTestMaybeShowPriceWelcomeMessage() {
         initAndAssertAllProperties();
         setPriceTrackingEnabledForTesting(true);
-        PriceTrackingUtilities.setIsSignedInAndSyncEnabledForTesting(true);
+        PriceTrackingFeatures.setIsSignedInAndSyncEnabledForTesting(true);
         PriceTrackingUtilities.SHARED_PREFERENCES_MANAGER.writeBoolean(
                 PriceTrackingUtilities.PRICE_WELCOME_MESSAGE_CARD, true);
         mPriceDrop = new PriceDrop("1", "2");
@@ -3256,7 +3304,7 @@ public class TabListMediatorUnitTest {
         FeatureList.TestValues testValues = new FeatureList.TestValues();
         testValues.addFeatureFlagOverride(ChromeFeatureList.COMMERCE_PRICE_TRACKING, true);
         testValues.addFieldTrialParamOverride(ChromeFeatureList.COMMERCE_PRICE_TRACKING,
-                PriceTrackingUtilities.PRICE_TRACKING_PARAM, String.valueOf(value));
+                PriceTrackingFeatures.PRICE_TRACKING_PARAM, String.valueOf(value));
         FeatureList.setTestValues(testValues);
     }
 }

@@ -18,6 +18,7 @@ android_resources("java_resources") {
     "res/drawable-xxxhdpi/infobar_shadow_top.png",
     "res/drawable/infobar_wrapper_bg.xml",
     "res/layout/infobar_control_icon_with_description.xml",
+    "res/layout/infobar_control_icon_with_title.xml",
     "res/layout/infobar_control_message.xml",
     "res/layout/infobar_control_spinner.xml",
     "res/layout/infobar_control_spinner_drop_down.xml",
@@ -69,12 +70,15 @@ android_library("java") {
     ":infobar_android_enums_java",
     ":java_resources",
     "//base:base_java",
+    "//base:jni_java",
+    "//build/android:build_java",
     "//components/browser_ui/styles/android:java",
     "//components/browser_ui/widget/android:java",
     "//components/infobars/core:infobar_enums_java",
     "//third_party/androidx:androidx_annotation_annotation_java",
     "//third_party/androidx:androidx_appcompat_appcompat_java",
     "//third_party/androidx:androidx_appcompat_appcompat_resources_java",
+    "//third_party/androidx:androidx_core_core_java",
     "//ui/android:ui_java",
   ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
@@ -105,15 +109,14 @@ android_library("javatests") {
   ]
   deps = [
     ":java",
-    "//base:base_java",
     "//base:base_java_test_support",
-    "//components/browser_ui/styles/android:java_resources",
+    "//components/browser_ui/theme/android:java_resources",
     "//components/browser_ui/widget/android:java",
     "//third_party/android_support_test_runner:rules_java",
     "//third_party/android_support_test_runner:runner_java",
-    "//third_party/androidx:androidx_annotation_annotation_java",
     "//third_party/androidx:androidx_appcompat_appcompat_java",
     "//third_party/androidx:androidx_test_runner_java",
     "//third_party/junit:junit",
   ]
+  resources_package = "org.chromium.components.infobars.test"
 }

@@ -9,6 +9,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/strings/escape.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -31,7 +32,6 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_download_manager_delegate.h"
-#include "net/base/escape.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
@@ -45,9 +45,9 @@ namespace content {
 namespace {
 
 // The pattern to catch messages printed by the browser when navigation to a
-// URL is blocked.
-const char kNavigationBlockedMessage[] =
-    "Not allowed to navigate top frame to %s URL:*";
+// URL is blocked. Navigation to filesystem: URLs uses a slightly different
+// message than other blocked schemes, so use a wildcard to match both.
+const char kNavigationBlockedMessage[] = "Not allowed to navigate *to %s URL:*";
 
 // The message printed by the data or filesystem URL when it successfully
 // navigates.
@@ -198,7 +198,7 @@ class BlockedSchemeNavigationBrowserTest
   }
 
   void Navigate(const GURL& url) {
-    content::DOMMessageQueue message_queue;
+    content::DOMMessageQueue message_queue(shell()->web_contents());
     EXPECT_TRUE(NavigateToURL(shell(), url));
     std::string message;
     while (message_queue.WaitForMessage(&message)) {
@@ -264,7 +264,7 @@ class BlockedSchemeNavigationBrowserTest
 
   // Adds an iframe to |rfh| pointing to |url|.
   void AddIFrame(RenderFrameHost* rfh, const GURL& url) {
-    content::DOMMessageQueue message_queue;
+    content::DOMMessageQueue message_queue(rfh);
     const std::string javascript = base::StringPrintf(
         "f = document.createElement('iframe'); f.src = '%s';"
         "document.body.appendChild(f);",
@@ -849,7 +849,7 @@ IN_PROC_BROWSER_TEST_P(BlockedSchemeNavigationBrowserTest,
   }
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 // Flaky on android: https://crbug.com/734563
 #define MAYBE_DataUrl_OctetStream_WindowOpen \
   DISABLED_DataUrl_OctetStream_WindowOpen
@@ -978,7 +978,7 @@ IN_PROC_BROWSER_TEST_P(BlockedSchemeNavigationBrowserTest,
   }
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 // Flaky on android: https://crbug.com/734563
 #define MAYBE_UnknownMimeType_WindowOpen DISABLED_UnknownMimeType_WindowOpen
 #else
@@ -1090,14 +1090,23 @@ IN_PROC_BROWSER_TEST_F(BlockedSchemeNavigationBrowserTest,
 //
 // Tests that a browser initiated navigation to a blocked scheme URL with PDF
 // mime type is allowed, or initiates a download on Android.
+// TODO(https://crbug.com/1273277): Enable on Fuchsia once PDF support is
+// working.
+#if BUILDFLAG(IS_FUCHSIA)
+#define MAYBE_PDF_BrowserInitiatedNavigation_Allow \
+  DISABLED_PDF_BrowserInitiatedNavigation_Allow
+#else
+#define MAYBE_PDF_BrowserInitiatedNavigation_Allow \
+  PDF_BrowserInitiatedNavigation_Allow
+#endif
 IN_PROC_BROWSER_TEST_P(BlockedSchemeNavigationBrowserTest,
-                       PDF_BrowserInitiatedNavigation_Allow) {
+                       MAYBE_PDF_BrowserInitiatedNavigation_Allow) {
   std::string pdf_base64;
   base::Base64Encode(kPDF, &pdf_base64);
   const GURL kPDFUrl(CreateURLWithBlockedScheme(
       "test.pdf", IsDataURLTest() ? pdf_base64 : kPDF, "application/pdf"));
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   TestNavigationObserver observer(shell()->web_contents());
   EXPECT_TRUE(NavigateToURL(shell(), kPDFUrl));
   EXPECT_EQ(kPDFUrl, observer.last_navigation_url());
@@ -1115,7 +1124,7 @@ IN_PROC_BROWSER_TEST_P(BlockedSchemeNavigationBrowserTest,
                        PDF_WindowOpen_Block) {
   Navigate(GetTestURL());
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   ExecuteScriptAndCheckWindowOpen(
       shell()->web_contents()->GetMainFrame(), GetParam(),
       "document.getElementById('window-open-pdf').click()", NAVIGATION_BLOCKED);
@@ -1137,11 +1146,18 @@ IN_PROC_BROWSER_TEST_P(BlockedSchemeNavigationBrowserTest,
 
 // Test that a navigation to a blocked scheme URL is blocked if the URL has a
 // mime type that will be handled by a plugin (PDF in this case).
+// TODO(https://crbug.com/1273277): Enable on Fuchsia once PDF support is
+// working.
+#if BUILDFLAG(IS_FUCHSIA)
+#define MAYBE_PDF_Navigation_Block DISABLED_PDF_Navigation_Block
+#else
+#define MAYBE_PDF_Navigation_Block PDF_Navigation_Block
+#endif
 IN_PROC_BROWSER_TEST_P(BlockedSchemeNavigationBrowserTest,
-                       PDF_Navigation_Block) {
+                       MAYBE_PDF_Navigation_Block) {
   Navigate(GetTestURL());
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   ExecuteScriptAndCheckPDFNavigation(
       shell()->web_contents()->GetMainFrame(), GetParam(),
       "document.getElementById('navigate-top-frame-to-pdf').click()",
@@ -1164,10 +1180,18 @@ IN_PROC_BROWSER_TEST_P(BlockedSchemeNavigationBrowserTest,
 
 // Test that a form post to a blocked scheme is blocked if the URL has a mime
 // type that will be handled by a plugin (PDF in this case).
-IN_PROC_BROWSER_TEST_P(BlockedSchemeNavigationBrowserTest, PDF_FormPost_Block) {
+// TODO(https://crbug.com/1273277): Enable on Fuchsia once PDF support is
+// working.
+#if BUILDFLAG(IS_FUCHSIA)
+#define MAYBE_PDF_FormPost_Block DISABLED_PDF_FormPost_Block
+#else
+#define MAYBE_PDF_FormPost_Block PDF_FormPost_Block
+#endif
+IN_PROC_BROWSER_TEST_P(BlockedSchemeNavigationBrowserTest,
+                       MAYBE_PDF_FormPost_Block) {
   Navigate(GetTestURL());
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   ExecuteScriptAndCheckPDFNavigation(
       shell()->web_contents()->GetMainFrame(), GetParam(),
       "document.getElementById('form-post-to-pdf').click()",
@@ -1190,8 +1214,16 @@ IN_PROC_BROWSER_TEST_P(BlockedSchemeNavigationBrowserTest, PDF_FormPost_Block) {
 
 // Tests that navigating the main frame to a blocked scheme with PDF mimetype
 // from a subframe is blocked, or is downloaded on Android.
+// TODO(https://crbug.com/1273277): Enable on Fuchsia once PDF support is
+// working.
+#if BUILDFLAG(IS_FUCHSIA)
+#define MAYBE_PDF_NavigationFromFrame_Block \
+  DISABLED_PDF_NavigationFromFrame_Block
+#else
+#define MAYBE_PDF_NavigationFromFrame_Block PDF_NavigationFromFrame_Block
+#endif
 IN_PROC_BROWSER_TEST_P(BlockedSchemeNavigationBrowserTest,
-                       PDF_NavigationFromFrame_Block) {
+                       MAYBE_PDF_NavigationFromFrame_Block) {
   EXPECT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL("a.com", "/simple_page.html")));
   AddIFrame(
@@ -1199,7 +1231,7 @@ IN_PROC_BROWSER_TEST_P(BlockedSchemeNavigationBrowserTest,
       embedded_test_server()->GetURL(
           "b.com", base::StringPrintf("/%s_url_navigations.html", GetParam())));
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   TestPDFNavigationFromFrame(
       GetParam(),
       "document.getElementById('navigate-top-frame-to-pdf').click()",
@@ -1235,7 +1267,7 @@ IN_PROC_BROWSER_TEST_P(BlockedSchemeNavigationBrowserTest,
             embedded_test_server()->GetURL(
                 base::StringPrintf("/%s_url_navigations.html", GetParam())));
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   TestWindowOpenFromFrame(GetParam(),
                           "document.getElementById('window-open-pdf').click()",
                           NAVIGATION_BLOCKED);
@@ -1262,12 +1294,22 @@ IN_PROC_BROWSER_TEST_P(BlockedSchemeNavigationBrowserTest,
 // Tests that navigating the top frame to a blocked scheme with PDF mimetype
 // from a subframe is blocked even if the top frame already has a blocked
 // scheme.
-IN_PROC_BROWSER_TEST_P(BlockedSchemeNavigationBrowserTest,
-                       PDF_NavigationFromFrame_TopFrameHasBlockedScheme_Block) {
+// TODO(https://crbug.com/1273277): Enable on Fuchsia once PDF support is
+// working.
+#if BUILDFLAG(IS_FUCHSIA)
+#define MAYBE_PDF_NavigationFromFrame_TopFrameHasBlockedScheme_Block \
+  DISABLED_PDF_NavigationFromFrame_TopFrameHasBlockedScheme_Block
+#else
+#define MAYBE_PDF_NavigationFromFrame_TopFrameHasBlockedScheme_Block \
+  PDF_NavigationFromFrame_TopFrameHasBlockedScheme_Block
+#endif
+IN_PROC_BROWSER_TEST_P(
+    BlockedSchemeNavigationBrowserTest,
+    MAYBE_PDF_NavigationFromFrame_TopFrameHasBlockedScheme_Block) {
   EXPECT_TRUE(NavigateToURL(shell(), CreateEmptyURLWithBlockedScheme()));
   AddIFrame(shell()->web_contents()->GetMainFrame(), GetTestURL());
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   TestPDFNavigationFromFrame(
       GetParam(),
       "document.getElementById('navigate-top-frame-to-pdf').click()",
@@ -1300,7 +1342,7 @@ IN_PROC_BROWSER_TEST_P(BlockedSchemeNavigationBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), CreateEmptyURLWithBlockedScheme()));
   AddIFrame(shell()->web_contents()->GetMainFrame(), GetTestURL());
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   TestWindowOpenFromFrame(GetParam(),
                           "document.getElementById('window-open-pdf').click()",
                           NAVIGATION_BLOCKED);

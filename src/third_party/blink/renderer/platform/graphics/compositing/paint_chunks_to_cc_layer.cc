@@ -342,8 +342,8 @@ void ConversionContext::SwitchToClip(const ClipPaintPropertyNode& target_clip) {
     if (!state_stack_.size() || state_stack_.back().type != StateEntry::kClip) {
       // TODO(crbug.com/803649): We still have clip hierarchy issues with
       // fragment clips. See crbug.com/1240080 for the test case. Will change
-      // the above condition to DCHECK after both CompositeAfterPaint and
-      // LayoutNGBlockFragmentation are fully launched.
+      // the above condition to DCHECK after LayoutNGBlockFragmentation is fully
+      // launched.
 #if DCHECK_IS_ON()
       DLOG(ERROR) << "Error: Chunk has a clip that escaped its layer's or "
                   << "effect's clip.\ntarget_clip:\n"
@@ -419,7 +419,7 @@ void ConversionContext::StartClip(
     cc_list_.push<cc::ClipRectOp>(gfx::RectFToSkRect(combined_clip_rect.Rect()),
                                   SkClipOp::kIntersect, antialias);
   }
-  if (const auto* clip_path = lowest_combined_clip_node.ClipPath()) {
+  if (const auto& clip_path = lowest_combined_clip_node.ClipPath()) {
     cc_list_.push<cc::ClipPathOp>(clip_path->GetSkPath(), SkClipOp::kIntersect,
                                   antialias);
   }
@@ -459,8 +459,8 @@ void ConversionContext::SwitchToEffect(
     if (!state_stack_.size()) {
       // TODO(crbug.com/803649): We still have clip hierarchy issues with
       // fragment clips. See crbug.com/1240080 for the test case. Will change
-      // the above condition to DCHECK after both CompositeAfterPaint and
-      // LayoutNGBlockFragmentation are fully launched.
+      // the above condition to DCHECK after LayoutNGBlockFragmentation is fully
+      // launched.
 #if DCHECK_IS_ON()
       DLOG(ERROR) << "Error: Chunk has an effect that escapes layer's effect.\n"
                   << "target_effect:\n"
@@ -526,14 +526,16 @@ void ConversionContext::StartEffect(const EffectPaintPropertyNode& effect) {
   // around all of the effects.
   SwitchToTransform(effect.LocalTransformSpace().Unalias());
 
-  // We always create separate effect nodes for normal effects and filter
-  // effects, so we can handle them separately.
   bool has_filter = !effect.Filter().IsEmpty();
   bool has_opacity = effect.Opacity() != 1.f;
+  // TODO(crbug.com/1334293): Normally backdrop filters should be composited and
+  // effect.BackdropFilter() should be null, but compositing can be disabled in
+  // rare cases such as PaintPreview. For now non-composited backdrop filters
+  // are not supported and are ignored.
   bool has_other_effects = effect.BlendMode() != SkBlendMode::kSrcOver;
+  // We always create separate effect nodes for normal effects and filter
+  // effects, so we can handle them separately.
   DCHECK(!has_filter || !(has_opacity || has_other_effects));
-  // We always composite backdrop filters.
-  DCHECK(!effect.BackdropFilter());
 
   // Apply effects.
   cc_list_.StartPaint();
@@ -542,7 +544,7 @@ void ConversionContext::StartEffect(const EffectPaintPropertyNode& effect) {
     // alpha value, but that breaks slimming paint reftests.
     auto alpha = base::ClampFloor<uint8_t>(255 * effect.Opacity());
     if (has_other_effects) {
-      PaintFlags flags;
+      cc::PaintFlags flags;
       flags.setBlendMode(effect.BlendMode());
       flags.setAlpha(alpha);
       save_layer_id = cc_list_.push<cc::SaveLayerOp>(nullptr, &flags);
@@ -554,7 +556,7 @@ void ConversionContext::StartEffect(const EffectPaintPropertyNode& effect) {
     // The size parameter is only used to computed the origin of zoom
     // operation, which we never generate.
     gfx::SizeF empty;
-    PaintFlags filter_flags;
+    cc::PaintFlags filter_flags;
     filter_flags.setImageFilter(cc::RenderSurfaceFilters::BuildImageFilter(
         effect.Filter().AsCcFilterOperations(), empty));
     save_layer_id = cc_list_.push<cc::SaveLayerOp>(nullptr, &filter_flags);
@@ -842,7 +844,8 @@ static void UpdateBackgroundColor(cc::Layer& layer,
   Color background_color;
   for (Color color : base::Reversed(background_colors))
     background_color = background_color.Blend(color);
-  layer.SetBackgroundColor(background_color.Rgb());
+  // TODO(crbug/1308932): Remove FromColor and make all SkColor4f.
+  layer.SetBackgroundColor(SkColor4f::FromColor(background_color.Rgb()));
 }
 
 static void UpdateTouchActionRegion(
@@ -911,20 +914,15 @@ static void UpdateNonFastScrollableRegion(
     return;
 
   // Skip the scroll hit test rect if it is for scrolling this cc::Layer.
-  // This is only needed for CompositeAfterPaint because
-  // pre-CompositeAfterPaint does not paint scroll hit test data for
-  // composited scrollers.
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    if (const auto scroll_translation = hit_test_data.scroll_translation) {
-      const auto* scroll_node = scroll_translation->ScrollNode();
-      DCHECK(scroll_node);
-      // TODO(crbug.com/1222613): Remove this when we fix the root cause.
-      if (!scroll_node)
-        return;
-      auto scroll_element_id = scroll_node->GetCompositorElementId();
-      if (layer.element_id() == scroll_element_id)
-        return;
-    }
+  if (const auto scroll_translation = hit_test_data.scroll_translation) {
+    const auto* scroll_node = scroll_translation->ScrollNode();
+    DCHECK(scroll_node);
+    // TODO(crbug.com/1222613): Remove this when we fix the root cause.
+    if (!scroll_node)
+      return;
+    auto scroll_element_id = scroll_node->GetCompositorElementId();
+    if (layer.element_id() == scroll_element_id)
+      return;
   }
 
   FloatClipRect rect(gfx::RectF(hit_test_data.scroll_hit_test_rect));
@@ -965,28 +963,25 @@ static void UpdateRegionCaptureData(cc::Layer& layer,
                                     const PropertyTreeState& layer_state,
                                     const PaintChunkSubset& chunks) {
   const gfx::Vector2dF layer_offset = layer.offset_to_transform_parent();
-  std::unique_ptr<viz::RegionCaptureBounds> capture_bounds;
+  viz::RegionCaptureBounds capture_bounds;
   for (const PaintChunk& chunk : chunks) {
     if (!chunk.region_capture_data)
       continue;
+
     const PropertyTreeState chunk_state =
         chunk.properties.GetPropertyTreeState().Unalias();
     for (const std::pair<RegionCaptureCropId, gfx::Rect>& pair :
          *chunk.region_capture_data) {
-      auto rect = FloatClipRect(gfx::RectF(pair.second));
+      FloatClipRect rect(gfx::RectF(pair.second));
       if (!GeometryMapper::LocalToAncestorVisualRect(chunk_state, layer_state,
-                                                     rect)) {
+                                                     rect))
         continue;
-      }
+
       rect.Move(-layer_offset);
-      if (!capture_bounds) {
-        capture_bounds = std::make_unique<viz::RegionCaptureBounds>();
-      }
-      capture_bounds->Set(pair.first.value(),
-                          gfx::ToEnclosingRect(rect.Rect()));
+      capture_bounds.Set(pair.first.value(), gfx::ToEnclosingRect(rect.Rect()));
     }
-    break;
   }
+
   // At this point, the bounds are in the coordinate space of
   // the layer we are adding them to.
   layer.SetCaptureBounds(std::move(capture_bounds));

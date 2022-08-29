@@ -677,7 +677,6 @@ void TextureMtl::releaseTexture(bool releaseImages, bool releaseTextureObjectsOn
     {
         mMetalSamplerState = nil;
         mFormat            = mtl::Format();
-        mIsPow2            = false;
     }
 }
 
@@ -714,7 +713,6 @@ angle::Result TextureMtl::createNativeTexture(const gl::Context *context,
     mCurrentBaseLevel = mState.getEffectiveBaseLevel();
     mCurrentMaxLevel  = mState.getEffectiveMaxLevel();
 
-    mIsPow2          = gl::isPow2(size.width) && gl::isPow2(size.height) && gl::isPow2(size.depth);
     mSlices          = 1;
     int numCubeFaces = 1;
     switch (type)
@@ -795,7 +793,6 @@ angle::Result TextureMtl::ensureSamplerStateCreated(const gl::Context *context)
     }
 
     ContextMtl *contextMtl = mtl::GetImpl(context);
-    DisplayMtl *displayMtl = contextMtl->getDisplay();
 
     mtl::SamplerDesc samplerDesc(mState.getSamplerState());
 
@@ -818,8 +815,8 @@ angle::Result TextureMtl::ensureSamplerStateCreated(const gl::Context *context)
         samplerDesc.sAddressMode = MTLSamplerAddressModeClampToEdge;
         samplerDesc.tAddressMode = MTLSamplerAddressModeClampToEdge;
     }
-    mMetalSamplerState =
-        displayMtl->getStateCache().getSamplerState(displayMtl->getMetalDevice(), samplerDesc);
+    mMetalSamplerState = contextMtl->getDisplay()->getStateCache().getSamplerState(
+        contextMtl->getMetalDevice(), samplerDesc);
 
     return angle::Result::Continue;
 }
@@ -1114,7 +1111,7 @@ angle::Result TextureMtl::copyImage(const gl::Context *context,
     gl::Rectangle fbRect(0, 0, fbSize.width, fbSize.height);
     if (context->isWebGL() && !fbRect.encloses(sourceArea))
     {
-        ANGLE_TRY(initializeContents(context, index));
+        ANGLE_TRY(initializeContents(context, GL_NONE, index));
     }
 
     return copySubImageImpl(context, index, gl::Offset(0, 0, 0), sourceArea, internalFormatInfo,
@@ -1253,8 +1250,6 @@ angle::Result TextureMtl::setEGLImageTarget(const gl::Context *context,
 
     mSlices = mNativeTexture->cubeFacesOrArrayLength();
 
-    gl::Extents size = mNativeTexture->sizeAt0();
-    mIsPow2          = gl::isPow2(size.width) && gl::isPow2(size.height) && gl::isPow2(size.depth);
     ANGLE_TRY(ensureSamplerStateCreated(context));
 
     // Tell context to rebind textures
@@ -1390,11 +1385,9 @@ angle::Result TextureMtl::bindTexImage(const gl::Context *context, egl::Surface 
 {
     releaseTexture(true);
 
-    auto pBuffer     = GetImplAs<OffscreenSurfaceMtl>(surface);
-    mNativeTexture   = pBuffer->getColorTexture();
-    mFormat          = pBuffer->getColorFormat();
-    gl::Extents size = mNativeTexture->sizeAt0();
-    mIsPow2          = gl::isPow2(size.width) && gl::isPow2(size.height) && gl::isPow2(size.depth);
+    auto pBuffer   = GetImplAs<OffscreenSurfaceMtl>(surface);
+    mNativeTexture = pBuffer->getColorTexture();
+    mFormat        = pBuffer->getColorFormat();
     ANGLE_TRY(ensureSamplerStateCreated(context));
 
     // Tell context to rebind textures
@@ -2025,6 +2018,7 @@ angle::Result TextureMtl::checkForEmulatedChannels(const gl::Context *context,
 }
 
 angle::Result TextureMtl::initializeContents(const gl::Context *context,
+                                             GLenum binding,
                                              const gl::ImageIndex &index)
 {
     if (index.isLayered())
@@ -2045,7 +2039,7 @@ angle::Result TextureMtl::initializeContents(const gl::Context *context,
         while (ite.hasNext())
         {
             gl::ImageIndex layerIndex = ite.next();
-            ANGLE_TRY(initializeContents(context, layerIndex));
+            ANGLE_TRY(initializeContents(context, GL_NONE, layerIndex));
         }
         return angle::Result::Continue;
     }
@@ -2056,7 +2050,7 @@ angle::Result TextureMtl::initializeContents(const gl::Context *context,
             int layerIdx = layer + index.getLayerIndex();
             gl::ImageIndex layerIndex =
                 gl::ImageIndex::MakeFromType(index.getType(), index.getLevelIndex(), layerIdx);
-            ANGLE_TRY(initializeContents(context, layerIndex));
+            ANGLE_TRY(initializeContents(context, GL_NONE, layerIndex));
         }
         return angle::Result::Continue;
     }

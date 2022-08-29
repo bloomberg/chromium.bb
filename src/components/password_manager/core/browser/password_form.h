@@ -62,6 +62,35 @@ struct InsecurityMetadata {
 
 bool operator==(const InsecurityMetadata& lhs, const InsecurityMetadata& rhs);
 
+// Represents a note attached to a particular credential.
+struct PasswordNote {
+  PasswordNote();
+  PasswordNote(std::u16string value, base::Time date_created);
+  PasswordNote(std::u16string unique_display_name,
+               std::u16string value,
+               base::Time date_created,
+               bool hide_by_default);
+  PasswordNote(const PasswordNote& rhs);
+  PasswordNote(PasswordNote&& rhs);
+  PasswordNote& operator=(const PasswordNote& rhs);
+  PasswordNote& operator=(PasswordNote&& rhs);
+  ~PasswordNote();
+
+  // The name displayed in the UI labeling this note. Currently unused and added
+  // for future compatibility.
+  std::u16string unique_display_name;
+  // The value of the note.
+  std::u16string value;
+  // The date when the note was created.
+  base::Time date_created;
+  // Whether the value of the note will be hidden by default in the UI similar
+  // to password values. Currently unused and added for future compatibility.
+  bool hide_by_default = false;
+};
+
+bool operator==(const PasswordNote& lhs, const PasswordNote& rhs);
+bool operator!=(const PasswordNote& lhs, const PasswordNote& rhs);
+
 // The PasswordForm struct encapsulates information about a login form,
 // which can be an HTML form or a dialog with username/password text fields.
 //
@@ -340,7 +369,7 @@ struct PasswordForm {
   bool only_for_fallback = false;
 
   // True iff the new password field was found with server hints or autocomplete
-  // attributes or the kTreatNewPasswordHeuristicsAsReliable feature is enabled.
+  // attributes.
   // Only set on form parsing for filling, and not persisted. Used as signal for
   // password generation eligibility.
   bool is_new_password_reliable = false;
@@ -376,6 +405,18 @@ struct PasswordForm {
   // A mapping from the credential insecurity type (e.g. leaked, phished),
   // to its metadata (e.g. time it was discovered, whether alerts are muted).
   base::flat_map<InsecureType, InsecurityMetadata> password_issues;
+
+  // Attached notes to the credential.
+  std::vector<PasswordNote> notes;
+
+  // Email address of the last sync account this password was associated with.
+  // This field is non empty only if the password is NOT currently associated
+  // with a syncing account AND it was associated with one in the past.
+  std::string previously_associated_sync_account_email;
+
+  // Return true if we consider this form to be a signup form. It's based on
+  // local heuristics and may be inaccurate.
+  bool IsLikelySignupForm() const;
 
   // Return true if we consider this form to be a change password form and not
   // a signup form. It's based on local heuristics and may be inaccurate.

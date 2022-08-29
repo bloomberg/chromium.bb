@@ -12,8 +12,8 @@
 #include "include/core/SkSize.h"
 #include "include/core/SkSurface.h"
 #include "include/effects/SkRuntimeEffect.h"
-#include "src/gpu/GrCaps.h"
-#include "src/gpu/GrDirectContextPriv.h"
+#include "src/gpu/ganesh/GrCaps.h"
+#include "src/gpu/ganesh/GrDirectContextPriv.h"
 #include "tests/Test.h"
 #include "tools/Resources.h"
 #include "tools/RuntimeBlendUtils.h"
@@ -31,7 +31,7 @@ static void test_blend(skiatest::Reporter* r, SkSurface* surface) {
     SkBitmap bitmap;
     REPORTER_ASSERT(r, bitmap.tryAllocPixels(surface->imageInfo()));
 
-    for (int m = 0; m <= (int)SkBlendMode::kLastMode; ++m) {
+    for (int m = 0; m < kSkBlendModeCount; ++m) {
         SkBlendMode mode = (SkBlendMode)m;
         for (int alpha : {0x80, 0xFF}) {
             std::vector<SkColor> colors;

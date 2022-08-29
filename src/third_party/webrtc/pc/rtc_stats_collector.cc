@@ -10,26 +10,28 @@
 
 #include "pc/rtc_stats_collector.h"
 
+#include <stdint.h>
 #include <stdio.h>
 
-#include <algorithm>
 #include <cstdint>
 #include <map>
 #include <memory>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
+#include "absl/strings/string_view.h"
 #include "api/array_view.h"
 #include "api/candidate.h"
+#include "api/dtls_transport_interface.h"
 #include "api/media_stream_interface.h"
 #include "api/rtp_parameters.h"
-#include "api/rtp_receiver_interface.h"
-#include "api/rtp_sender_interface.h"
 #include "api/sequence_checker.h"
 #include "api/stats/rtc_stats.h"
 #include "api/stats/rtcstats_objects.h"
 #include "api/task_queue/queued_task.h"
+#include "api/units/time_delta.h"
 #include "api/video/video_content_type.h"
 #include "common_video/include/quality_limitation_reason.h"
 #include "media/base/media_channel.h"
@@ -37,14 +39,14 @@
 #include "modules/rtp_rtcp/include/report_block_data.h"
 #include "modules/rtp_rtcp/include/rtp_rtcp_defines.h"
 #include "p2p/base/connection_info.h"
-#include "p2p/base/dtls_transport_internal.h"
 #include "p2p/base/ice_transport_internal.h"
 #include "p2p/base/p2p_constants.h"
 #include "p2p/base/port.h"
-#include "pc/channel.h"
 #include "pc/channel_interface.h"
 #include "pc/data_channel_utils.h"
 #include "pc/rtc_stats_traversal.h"
+#include "pc/rtp_receiver_proxy.h"
+#include "pc/rtp_sender_proxy.h"
 #include "pc/webrtc_sdp.h"
 #include "rtc_base/checks.h"
 #include "rtc_base/ip_address.h"
@@ -208,6 +210,20 @@ const char* IceCandidatePairStateToRTCStatsIceCandidatePairState(
   }
 }
 
+const char* IceRoleToRTCIceRole(cricket::IceRole role) {
+  switch (role) {
+    case cricket::IceRole::ICEROLE_UNKNOWN:
+      return RTCIceRole::kUnknown;
+    case cricket::IceRole::ICEROLE_CONTROLLED:
+      return RTCIceRole::kControlled;
+    case cricket::IceRole::ICEROLE_CONTROLLING:
+      return RTCIceRole::kControlling;
+    default:
+      RTC_DCHECK_NOTREACHED();
+      return nullptr;
+  }
+}
+
 const char* DtlsTransportStateToRTCDtlsTransportState(
     DtlsTransportState state) {
   switch (state) {
@@ -227,7 +243,29 @@ const char* DtlsTransportStateToRTCDtlsTransportState(
   }
 }
 
-const char* NetworkAdapterTypeToStatsType(rtc::AdapterType type) {
+const char* IceTransportStateToRTCIceTransportState(IceTransportState state) {
+  switch (state) {
+    case IceTransportState::kNew:
+      return RTCIceTransportState::kNew;
+    case IceTransportState::kChecking:
+      return RTCIceTransportState::kChecking;
+    case IceTransportState::kConnected:
+      return RTCIceTransportState::kConnected;
+    case IceTransportState::kCompleted:
+      return RTCIceTransportState::kCompleted;
+    case IceTransportState::kFailed:
+      return RTCIceTransportState::kFailed;
+    case IceTransportState::kDisconnected:
+      return RTCIceTransportState::kDisconnected;
+    case IceTransportState::kClosed:
+      return RTCIceTransportState::kClosed;
+    default:
+      RTC_CHECK_NOTREACHED();
+      return nullptr;
+  }
+}
+
+const char* NetworkTypeToStatsType(rtc::AdapterType type) {
   switch (type) {
     case rtc::ADAPTER_TYPE_CELLULAR:
     case rtc::ADAPTER_TYPE_CELLULAR_2G:
@@ -250,6 +288,36 @@ const char* NetworkAdapterTypeToStatsType(rtc::AdapterType type) {
   return nullptr;
 }
 
+absl::string_view NetworkTypeToStatsNetworkAdapterType(rtc::AdapterType type) {
+  switch (type) {
+    case rtc::ADAPTER_TYPE_CELLULAR:
+      return RTCNetworkAdapterType::kCellular;
+    case rtc::ADAPTER_TYPE_CELLULAR_2G:
+      return RTCNetworkAdapterType::kCellular2g;
+    case rtc::ADAPTER_TYPE_CELLULAR_3G:
+      return RTCNetworkAdapterType::kCellular3g;
+    case rtc::ADAPTER_TYPE_CELLULAR_4G:
+      return RTCNetworkAdapterType::kCellular4g;
+    case rtc::ADAPTER_TYPE_CELLULAR_5G:
+      return RTCNetworkAdapterType::kCellular5g;
+    case rtc::ADAPTER_TYPE_ETHERNET:
+      return RTCNetworkAdapterType::kEthernet;
+    case rtc::ADAPTER_TYPE_WIFI:
+      return RTCNetworkAdapterType::kWifi;
+    case rtc::ADAPTER_TYPE_UNKNOWN:
+      return RTCNetworkAdapterType::kUnknown;
+    case rtc::ADAPTER_TYPE_LOOPBACK:
+      return RTCNetworkAdapterType::kLoopback;
+    case rtc::ADAPTER_TYPE_ANY:
+      return RTCNetworkAdapterType::kAny;
+    case rtc::ADAPTER_TYPE_VPN:
+      /* should not be handled here. Vpn is modelled as a bool */
+      break;
+  }
+  RTC_DCHECK_NOTREACHED();
+  return {};
+}
+
 const char* QualityLimitationReasonToRTCQualityLimitationReason(
     QualityLimitationReason reason) {
   switch (reason) {
@@ -269,9 +337,12 @@ std::map<std::string, double>
 QualityLimitationDurationToRTCQualityLimitationDuration(
     std::map<webrtc::QualityLimitationReason, int64_t> durations_ms) {
   std::map<std::string, double> result;
+  // The internal duration is defined in milliseconds while the spec defines
+  // the value in seconds:
+  // https://w3c.github.io/webrtc-stats/#dom-rtcoutboundrtpstreamstats-qualitylimitationdurations
   for (const auto& elem : durations_ms) {
     result[QualityLimitationReasonToRTCQualityLimitationReason(elem.first)] =
-        elem.second;
+        elem.second / static_cast<double>(rtc::kNumMillisecsPerSec);
   }
   return result;
 }
@@ -486,10 +557,21 @@ void SetInboundRTPStreamStatsFromVideoReceiverInfo(
   inbound_video->total_decode_time =
       static_cast<double>(video_receiver_info.total_decode_time_ms) /
       rtc::kNumMillisecsPerSec;
+  inbound_video->total_processing_delay =
+      static_cast<double>(video_receiver_info.total_processing_delay.ms()) /
+      rtc::kNumMillisecsPerSec;
+  inbound_video->total_assembly_time =
+      static_cast<double>(video_receiver_info.total_assembly_time.ms()) /
+      rtc::kNumMillisecsPerSec;
+  inbound_video->frames_assembled_from_multiple_packets =
+      video_receiver_info.frames_assembled_from_multiple_packets;
   inbound_video->total_inter_frame_delay =
       video_receiver_info.total_inter_frame_delay;
   inbound_video->total_squared_inter_frame_delay =
       video_receiver_info.total_squared_inter_frame_delay;
+  inbound_video->min_playout_delay =
+      static_cast<double>(video_receiver_info.min_playout_delay_ms) /
+      rtc::kNumMillisecsPerSec;
   if (video_receiver_info.last_packet_received_timestamp_ms) {
     inbound_video->last_packet_received_timestamp = static_cast<double>(
         *video_receiver_info.last_packet_received_timestamp_ms);
@@ -727,9 +809,10 @@ const std::string& ProduceIceCandidateStats(int64_t timestamp_us,
     candidate_stats->transport_id = transport_id;
     if (is_local) {
       candidate_stats->network_type =
-          NetworkAdapterTypeToStatsType(candidate.network_type());
+          NetworkTypeToStatsType(candidate.network_type());
       const std::string& candidate_type = candidate.type();
       const std::string& relay_protocol = candidate.relay_protocol();
+      const std::string& url = candidate.url();
       if (candidate_type == cricket::RELAY_PORT_TYPE ||
           (candidate_type == cricket::PRFLX_PORT_TYPE &&
            !relay_protocol.empty())) {
@@ -737,6 +820,23 @@ const std::string& ProduceIceCandidateStats(int64_t timestamp_us,
                    relay_protocol.compare("tcp") == 0 ||
                    relay_protocol.compare("tls") == 0);
         candidate_stats->relay_protocol = relay_protocol;
+        if (!url.empty()) {
+          candidate_stats->url = url;
+        }
+      } else if (candidate_type == cricket::STUN_PORT_TYPE) {
+        if (!url.empty()) {
+          candidate_stats->url = url;
+        }
+      }
+      if (candidate.network_type() == rtc::ADAPTER_TYPE_VPN) {
+        candidate_stats->vpn = true;
+        candidate_stats->network_adapter_type =
+            std::string(NetworkTypeToStatsNetworkAdapterType(
+                candidate.underlying_type_for_vpn()));
+      } else {
+        candidate_stats->vpn = false;
+        candidate_stats->network_adapter_type = std::string(
+            NetworkTypeToStatsNetworkAdapterType(candidate.network_type()));
       }
     } else {
       // We don't expect to know the adapter type of remote candidates.
@@ -971,7 +1071,7 @@ void ProduceSenderMediaTrackStats(
         if (sender_info) {
           voice_sender_info = sender_info;
         } else {
-          RTC_LOG(LS_INFO)
+          RTC_DLOG(LS_INFO)
               << "RTCStatsCollector: No voice sender info for sender with ssrc "
               << sender->ssrc();
         }
@@ -999,8 +1099,8 @@ void ProduceSenderMediaTrackStats(
         if (sender_info) {
           video_sender_info = sender_info;
         } else {
-          RTC_LOG(LS_INFO) << "No video sender info for sender with ssrc "
-                           << sender->ssrc();
+          RTC_DLOG(LS_INFO)
+              << "No video sender info for sender with ssrc " << sender->ssrc();
         }
       }
       std::unique_ptr<RTCMediaStreamTrackStats> video_track_stats =
@@ -1224,7 +1324,8 @@ void RTCStatsCollector::GetStatsReportInternal(
       std::vector<RequestInfo> requests_;
     };
     signaling_thread_->PostTask(std::make_unique<DeliveryTask>(
-        this, cached_report_, std::move(requests)));
+        rtc::scoped_refptr<RTCStatsCollector>(this), cached_report_,
+        std::move(requests)));
   } else if (!num_pending_partial_reports_) {
     // Only start gathering stats if we're not already gathering stats. In the
     // case of already gathering stats, `callback_` will be invoked when there
@@ -1248,7 +1349,6 @@ void RTCStatsCollector::GetStatsReportInternal(
     network_report_event_.Reset();
     rtc::scoped_refptr<RTCStatsCollector> collector(this);
     network_thread_->PostTask(
-        RTC_FROM_HERE,
         [collector, sctp_transport_name = pc_->sctp_transport_name(),
          timestamp_us]() mutable {
           collector->ProducePartialResultsOnNetworkThread(
@@ -1337,7 +1437,7 @@ void RTCStatsCollector::ProducePartialResultsOnNetworkThread(
   network_report_event_.Set();
   rtc::scoped_refptr<RTCStatsCollector> collector(this);
   signaling_thread_->PostTask(
-      RTC_FROM_HERE, [collector] { collector->MergeNetworkReport_s(); });
+      [collector] { collector->MergeNetworkReport_s(); });
 }
 
 void RTCStatsCollector::ProducePartialResultsOnNetworkThreadImpl(
@@ -1660,14 +1760,16 @@ void RTCStatsCollector::ProduceMediaStreamTrackStats_s(
   for (const RtpTransceiverStatsInfo& stats : transceiver_stats_infos_) {
     std::vector<rtc::scoped_refptr<RtpSenderInternal>> senders;
     for (const auto& sender : stats.transceiver->senders()) {
-      senders.push_back(sender->internal());
+      senders.push_back(
+          rtc::scoped_refptr<RtpSenderInternal>(sender->internal()));
     }
     ProduceSenderMediaTrackStats(timestamp_us, *stats.track_media_info_map,
                                  senders, report);
 
     std::vector<rtc::scoped_refptr<RtpReceiverInternal>> receivers;
     for (const auto& receiver : stats.transceiver->receivers()) {
-      receivers.push_back(receiver->internal());
+      receivers.push_back(
+          rtc::scoped_refptr<RtpReceiverInternal>(receiver->internal()));
     }
     ProduceReceiverMediaTrackStats(timestamp_us, *stats.track_media_info_map,
                                    receivers, report);
@@ -1837,7 +1939,8 @@ void RTCStatsCollector::ProduceAudioRTPStreamStats_n(
       inbound_audio->track_id =
           RTCMediaStreamTrackStatsIDFromDirectionAndAttachment(
               kReceiver,
-              track_media_info_map.GetAttachmentIdByTrack(audio_track).value());
+              track_media_info_map.GetAttachmentIdByTrack(audio_track.get())
+                  .value());
     }
     inbound_audio->transport_id = transport_id;
     // Remote-outbound.
@@ -1868,7 +1971,8 @@ void RTCStatsCollector::ProduceAudioRTPStreamStats_n(
         track_media_info_map.GetAudioTrack(voice_sender_info);
     if (audio_track) {
       int attachment_id =
-          track_media_info_map.GetAttachmentIdByTrack(audio_track).value();
+          track_media_info_map.GetAttachmentIdByTrack(audio_track.get())
+              .value();
       outbound_audio->track_id =
           RTCMediaStreamTrackStatsIDFromDirectionAndAttachment(kSender,
                                                                attachment_id);
@@ -1929,7 +2033,8 @@ void RTCStatsCollector::ProduceVideoRTPStreamStats_n(
       inbound_video->track_id =
           RTCMediaStreamTrackStatsIDFromDirectionAndAttachment(
               kReceiver,
-              track_media_info_map.GetAttachmentIdByTrack(video_track).value());
+              track_media_info_map.GetAttachmentIdByTrack(video_track.get())
+                  .value());
     }
     inbound_video->transport_id = transport_id;
     report->AddStats(std::move(inbound_video));
@@ -1951,7 +2056,8 @@ void RTCStatsCollector::ProduceVideoRTPStreamStats_n(
         track_media_info_map.GetVideoTrack(video_sender_info);
     if (video_track) {
       int attachment_id =
-          track_media_info_map.GetAttachmentIdByTrack(video_track).value();
+          track_media_info_map.GetAttachmentIdByTrack(video_track.get())
+              .value();
       outbound_video->track_id =
           RTCMediaStreamTrackStatsIDFromDirectionAndAttachment(kSender,
                                                                attachment_id);
@@ -2026,21 +2132,26 @@ void RTCStatsCollector::ProduceTransportStats_n(
           new RTCTransportStats(RTCTransportStatsIDFromTransportChannel(
                                     transport_name, channel_stats.component),
                                 timestamp_us));
-      transport_stats->bytes_sent = 0;
-      transport_stats->packets_sent = 0;
-      transport_stats->bytes_received = 0;
-      transport_stats->packets_received = 0;
+      transport_stats->packets_sent =
+          channel_stats.ice_transport_stats.packets_sent;
+      transport_stats->packets_received =
+          channel_stats.ice_transport_stats.packets_received;
+      transport_stats->bytes_sent =
+          channel_stats.ice_transport_stats.bytes_sent;
+      transport_stats->bytes_received =
+          channel_stats.ice_transport_stats.bytes_received;
       transport_stats->dtls_state =
           DtlsTransportStateToRTCDtlsTransportState(channel_stats.dtls_state);
       transport_stats->selected_candidate_pair_changes =
           channel_stats.ice_transport_stats.selected_candidate_pair_changes;
+      transport_stats->ice_role =
+          IceRoleToRTCIceRole(channel_stats.ice_transport_stats.ice_role);
+      transport_stats->ice_local_username_fragment =
+          channel_stats.ice_transport_stats.ice_local_username_fragment;
+      transport_stats->ice_state = IceTransportStateToRTCIceTransportState(
+          channel_stats.ice_transport_stats.ice_state);
       for (const cricket::ConnectionInfo& info :
            channel_stats.ice_transport_stats.connection_infos) {
-        *transport_stats->bytes_sent += info.sent_total_bytes;
-        *transport_stats->packets_sent +=
-            info.sent_total_packets - info.sent_discarded_packets;
-        *transport_stats->bytes_received += info.recv_total_bytes;
-        *transport_stats->packets_received += info.packets_received;
         if (info.best_connection) {
           transport_stats->selected_candidate_pair_id =
               RTCIceCandidatePairStatsIDFromConnectionInfo(info);
@@ -2060,6 +2171,15 @@ void RTCStatsCollector::ProduceTransportStats_n(
         snprintf(bytes, sizeof(bytes), "%04X", channel_stats.ssl_version_bytes);
         transport_stats->tls_version = bytes;
       }
+
+      if (channel_stats.dtls_role) {
+        transport_stats->dtls_role = *channel_stats.dtls_role == rtc::SSL_CLIENT
+                                         ? webrtc::RTCDtlsRole::kClient
+                                         : webrtc::RTCDtlsRole::kServer;
+      } else {
+        transport_stats->dtls_role = webrtc::RTCDtlsRole::kUnknown;
+      }
+
       if (channel_stats.ssl_cipher_suite != rtc::kTlsNullWithNullNull &&
           rtc::SSLStreamAdapter::SslCipherSuiteToName(
               channel_stats.ssl_cipher_suite)
@@ -2115,11 +2235,9 @@ void RTCStatsCollector::PrepareTransceiverStatsInfosAndCallStats_s_w_n() {
   transceiver_stats_infos_.clear();
   // These are used to invoke GetStats for all the media channels together in
   // one worker thread hop.
-  std::map<cricket::VoiceMediaChannel*,
-           std::unique_ptr<cricket::VoiceMediaInfo>>
+  std::map<cricket::MediaChannel*, std::unique_ptr<cricket::VoiceMediaInfo>>
       voice_stats;
-  std::map<cricket::VideoMediaChannel*,
-           std::unique_ptr<cricket::VideoMediaInfo>>
+  std::map<cricket::MediaChannel*, std::unique_ptr<cricket::VideoMediaInfo>>
       video_stats;
 
   auto transceivers = pc_->GetTransceiversInternal();
@@ -2147,20 +2265,18 @@ void RTCStatsCollector::PrepareTransceiverStatsInfosAndCallStats_s_w_n() {
         continue;
       }
 
-      stats.mid = channel->content_name();
-      stats.transport_name = channel->transport_name();
+      stats.mid = channel->mid();
+      stats.transport_name = std::string(channel->transport_name());
 
       if (media_type == cricket::MEDIA_TYPE_AUDIO) {
-        auto* voice_channel = static_cast<cricket::VoiceChannel*>(channel);
-        RTC_DCHECK(voice_stats.find(voice_channel->media_channel()) ==
+        RTC_DCHECK(voice_stats.find(channel->media_channel()) ==
                    voice_stats.end());
-        voice_stats[voice_channel->media_channel()] =
+        voice_stats[channel->media_channel()] =
             std::make_unique<cricket::VoiceMediaInfo>();
       } else if (media_type == cricket::MEDIA_TYPE_VIDEO) {
-        auto* video_channel = static_cast<cricket::VideoChannel*>(channel);
-        RTC_DCHECK(video_stats.find(video_channel->media_channel()) ==
+        RTC_DCHECK(video_stats.find(channel->media_channel()) ==
                    video_stats.end());
-        video_stats[video_channel->media_channel()] =
+        video_stats[channel->media_channel()] =
             std::make_unique<cricket::VideoMediaInfo>();
       } else {
         RTC_DCHECK_NOTREACHED();
@@ -2176,13 +2292,15 @@ void RTCStatsCollector::PrepareTransceiverStatsInfosAndCallStats_s_w_n() {
     rtc::Thread::ScopedDisallowBlockingCalls no_blocking_calls;
 
     for (const auto& entry : voice_stats) {
-      if (!entry.first->GetStats(entry.second.get(),
-                                 /*get_and_clear_legacy_stats=*/false)) {
+      if (!static_cast<cricket::VoiceMediaChannel*>(entry.first)
+               ->GetStats(entry.second.get(),
+                          /*get_and_clear_legacy_stats=*/false)) {
         RTC_LOG(LS_WARNING) << "Failed to get voice stats.";
       }
     }
     for (const auto& entry : video_stats) {
-      if (!entry.first->GetStats(entry.second.get())) {
+      if (!static_cast<cricket::VideoMediaChannel*>(entry.first)
+               ->GetStats(entry.second.get())) {
         RTC_LOG(LS_WARNING) << "Failed to get video stats.";
       }
     }
@@ -2192,29 +2310,26 @@ void RTCStatsCollector::PrepareTransceiverStatsInfosAndCallStats_s_w_n() {
       auto transceiver = stats.transceiver;
       std::unique_ptr<cricket::VoiceMediaInfo> voice_media_info;
       std::unique_ptr<cricket::VideoMediaInfo> video_media_info;
-      if (transceiver->channel()) {
+      auto channel = transceiver->channel();
+      if (channel) {
         cricket::MediaType media_type = transceiver->media_type();
         if (media_type == cricket::MEDIA_TYPE_AUDIO) {
-          auto* voice_channel =
-              static_cast<cricket::VoiceChannel*>(transceiver->channel());
-          RTC_DCHECK(voice_stats[voice_channel->media_channel()]);
-          voice_media_info =
-              std::move(voice_stats[voice_channel->media_channel()]);
+          RTC_DCHECK(voice_stats[channel->media_channel()]);
+          voice_media_info = std::move(voice_stats[channel->media_channel()]);
         } else if (media_type == cricket::MEDIA_TYPE_VIDEO) {
-          auto* video_channel =
-              static_cast<cricket::VideoChannel*>(transceiver->channel());
-          RTC_DCHECK(video_stats[video_channel->media_channel()]);
-          video_media_info =
-              std::move(video_stats[video_channel->media_channel()]);
+          RTC_DCHECK(video_stats[channel->media_channel()]);
+          video_media_info = std::move(video_stats[channel->media_channel()]);
         }
       }
       std::vector<rtc::scoped_refptr<RtpSenderInternal>> senders;
       for (const auto& sender : transceiver->senders()) {
-        senders.push_back(sender->internal());
+        senders.push_back(
+            rtc::scoped_refptr<RtpSenderInternal>(sender->internal()));
       }
       std::vector<rtc::scoped_refptr<RtpReceiverInternal>> receivers;
       for (const auto& receiver : transceiver->receivers()) {
-        receivers.push_back(receiver->internal());
+        receivers.push_back(
+            rtc::scoped_refptr<RtpReceiverInternal>(receiver->internal()));
       }
       stats.track_media_info_map = std::make_unique<TrackMediaInfoMap>(
           std::move(voice_media_info), std::move(video_media_info), senders,

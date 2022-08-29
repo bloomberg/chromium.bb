@@ -12,8 +12,9 @@
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom-shared.h"
 #include "third_party/blink/public/mojom/webpreferences/web_preferences.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/css_length_resolver.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/text/writing_mode.h"
 #include "ui/base/pointer/pointer_device.h"
 
@@ -29,10 +30,13 @@ enum class NavigationControls;
 
 mojom::blink::PreferredColorScheme CSSValueIDToPreferredColorScheme(
     CSSValueID id);
+mojom::blink::PreferredContrast CSSValueIDToPreferredContrast(CSSValueID);
 ForcedColors CSSValueIDToForcedColors(CSSValueID id);
 
-class CORE_EXPORT MediaValues : public GarbageCollected<MediaValues> {
+class CORE_EXPORT MediaValues : public GarbageCollected<MediaValues>,
+                                public CSSLengthResolver {
  public:
+  MediaValues() : CSSLengthResolver(1.0f /* zoom */) {}
   virtual ~MediaValues() = default;
   virtual void Trace(Visitor* visitor) const {}
 
@@ -84,16 +88,14 @@ class CORE_EXPORT MediaValues : public GarbageCollected<MediaValues> {
   virtual device::mojom::blink::DevicePostureType GetDevicePosture() const = 0;
 
  protected:
-  virtual double ViewportWidth() const = 0;
-  virtual double ViewportHeight() const = 0;
-  virtual float EmSize() const = 0;
-  virtual float RemSize() const = 0;
-  virtual float ExSize() const = 0;
-  virtual float ChSize() const = 0;
-  virtual WritingMode GetWritingMode() const = 0;
-
   static double CalculateViewportWidth(LocalFrame*);
   static double CalculateViewportHeight(LocalFrame*);
+  static double CalculateSmallViewportWidth(LocalFrame*);
+  static double CalculateSmallViewportHeight(LocalFrame*);
+  static double CalculateLargeViewportWidth(LocalFrame*);
+  static double CalculateLargeViewportHeight(LocalFrame*);
+  static double CalculateDynamicViewportWidth(LocalFrame*);
+  static double CalculateDynamicViewportHeight(LocalFrame*);
   static float CalculateEmSize(LocalFrame*);
   static float CalculateExSize(LocalFrame*);
   static float CalculateChSize(LocalFrame*);

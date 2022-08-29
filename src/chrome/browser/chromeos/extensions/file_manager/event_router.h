@@ -17,13 +17,17 @@
 #include "ash/components/settings/timezone_settings.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
 #include "base/gtest_prod_util.h"
+#include "base/time/time.h"
 #include "chrome/browser/ash/drive/drive_integration_service.h"
+#include "chrome/browser/ash/file_manager/file_manager_copy_or_move_hook_delegate.h"
 #include "chrome/browser/ash/file_manager/file_watcher.h"
 #include "chrome/browser/ash/file_manager/fileapi_util.h"
 #include "chrome/browser/ash/file_manager/io_task_controller.h"
 #include "chrome/browser/ash/file_manager/volume_manager.h"
 #include "chrome/browser/ash/file_manager/volume_manager_observer.h"
 #include "chrome/browser/ash/guest_os/guest_os_share_path.h"
+#include "chrome/browser/ash/guest_os/public/guest_os_mount_provider.h"
+#include "chrome/browser/ash/guest_os/public/guest_os_mount_provider_registry.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/device_event_router.h"
 #include "chrome/browser/chromeos/extensions/file_manager/drivefs_event_router.h"
@@ -57,7 +61,8 @@ class EventRouter
       public drive::DriveIntegrationServiceObserver,
       public guest_os::GuestOsSharePath::Observer,
       public ash::TabletModeObserver,
-      public file_manager::io_task::IOTaskController::Observer {
+      public file_manager::io_task::IOTaskController::Observer,
+      public guest_os::GuestOsMountProviderRegistry::Observer {
  public:
   using DispatchDirectoryChangeEventImplCallback =
       base::RepeatingCallback<void(const base::FilePath& virtual_path,
@@ -107,13 +112,14 @@ class EventRouter
                      int64_t space_needed);
 
   // Called when a copy task is completed.
-  void OnCopyCompleted(
-      int copy_id, const GURL& source_url, const GURL& destination_url,
-      base::File::Error error);
+  void OnCopyCompleted(int copy_id,
+                       const GURL& source_url,
+                       const GURL& destination_url,
+                       base::File::Error error);
 
   // Called when a copy task progress is updated.
   void OnCopyProgress(int copy_id,
-                      storage::FileSystemOperation::CopyOrMoveProgressType type,
+                      FileManagerCopyOrMoveHookDelegate::ProgressType type,
                       const GURL& source_url,
                       const GURL& destination_url,
                       int64_t size);
@@ -195,6 +201,11 @@ class EventRouter
   // IOTaskController::Observer:
   void OnIOTaskStatus(const io_task::ProgressStatus& status) override;
 
+  // guest_os::GuestOsMountProviderRegistry::Observer overrides.
+  void OnRegistered(guest_os::GuestOsMountProviderRegistry::Id id,
+                    guest_os::GuestOsMountProvider* provider) override;
+  void OnUnregistered(guest_os::GuestOsMountProviderRegistry::Id id) override;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(EventRouterTest, PopulateCrostiniEvent);
 
@@ -262,6 +273,9 @@ class EventRouter
       const drivefs::mojom::DialogReason& reason,
       base::OnceCallback<void(drivefs::mojom::DialogResult)> callback);
 
+  // Called to refresh the list of guests and broadcast it.
+  void OnMountableGuestsChanged();
+
   base::Time last_copy_progress_event_;
 
   std::map<base::FilePath, std::unique_ptr<FileWatcher>> file_watchers_;
@@ -281,6 +295,9 @@ class EventRouter
   // invalidate the weak pointers before any other members are destroyed.
   base::WeakPtrFactory<EventRouter> weak_factory_{this};
 };
+
+file_manager_private::MountCompletedStatus MountErrorToMountCompletedStatus(
+    chromeos::MountError error);
 
 }  // namespace file_manager
 

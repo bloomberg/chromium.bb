@@ -56,7 +56,7 @@ enum CharsetEnforcement {
 // characters not allowed in the specified charset, returns false.
 //
 // NOTE: |output| will be modified regardless of the return.
-WARN_UNUSED_RESULT bool NormalizeDirectoryString(
+[[nodiscard]] bool NormalizeDirectoryString(
     CharsetEnforcement charset_enforcement,
     std::string* output) {
   // Normalized version will always be equal or shorter than input.
@@ -114,9 +114,9 @@ WARN_UNUSED_RESULT bool NormalizeDirectoryString(
 // |output| to the case folded, normalized value. If the value of |attribute|
 // is invalid, returns false.
 // NOTE: |output| will be modified regardless of the return.
-WARN_UNUSED_RESULT bool NormalizeValue(X509NameAttribute attribute,
-                                       std::string* output,
-                                       CertErrors* errors) {
+[[nodiscard]] bool NormalizeValue(X509NameAttribute attribute,
+                                  std::string* output,
+                                  CertErrors* errors) {
   DCHECK(errors);
 
   if (!attribute.ValueAsStringUnsafe(output)) {
@@ -403,7 +403,7 @@ bool NameContainsEmailAddress(const der::Input& name_rdn_sequence,
       return false;
 
     for (const auto& type_and_value : type_and_values) {
-      if (type_and_value.type == TypeEmailAddressOid()) {
+      if (type_and_value.type == der::Input(kTypeEmailAddressOid)) {
         *contained_email_address = true;
         return true;
       }

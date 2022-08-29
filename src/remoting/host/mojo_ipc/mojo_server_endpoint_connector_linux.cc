@@ -16,7 +16,7 @@
 namespace remoting {
 
 MojoServerEndpointConnectorLinux::MojoServerEndpointConnectorLinux(
-    raw_ptr<Delegate> delegate)
+    Delegate* delegate)
     : delegate_(delegate) {
   DCHECK(delegate_);
 }
@@ -67,9 +67,6 @@ void MojoServerEndpointConnectorLinux::OnFileCanReadWithoutBlocking(int fd) {
     return;
   }
 
-  // TODO(yuweih): Validate process image path here. Don't check the command
-  // line as it's spoofable; check /proc/id/exe instead.
-
   mojo::PlatformChannelEndpoint endpoint(
       mojo::PlatformHandle(std::move(socket)));
   if (!endpoint.is_valid()) {
@@ -89,7 +86,7 @@ void MojoServerEndpointConnectorLinux::OnFileCanWriteWithoutBlocking(int fd) {
 
 // static
 std::unique_ptr<MojoServerEndpointConnector>
-MojoServerEndpointConnector::Create(raw_ptr<Delegate> delegate) {
+MojoServerEndpointConnector::Create(Delegate* delegate) {
   return std::make_unique<MojoServerEndpointConnectorLinux>(delegate);
 }
 
