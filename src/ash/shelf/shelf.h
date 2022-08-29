@@ -44,9 +44,39 @@ class ShelfView;
 class ShelfWidget;
 class StatusAreaWidget;
 class ShelfObserver;
-class TrayBackgroundView;
 class WorkAreaInsets;
 class ShelfTooltipManager;
+
+// TODO(oshima) : move to .cc
+
+// Returns a value based on shelf alignment.
+template <typename T>
+T SelectValueByShelfAlignment(ShelfAlignment alignment,
+                              T bottom,
+                              T left,
+                              T right) {
+  switch (alignment) {
+    case ShelfAlignment::kBottom:
+    case ShelfAlignment::kBottomLocked:
+      return bottom;
+    case ShelfAlignment::kLeft:
+      return left;
+    case ShelfAlignment::kRight:
+      return right;
+  }
+  NOTREACHED();
+  return bottom;
+}
+
+bool IsHorizontalAlignment(ShelfAlignment alignment);
+
+// Returns |horizontal| if shelf is horizontal, otherwise |vertical|.
+template <typename T>
+T PrimaryAxisValueByShelfAlignment(ShelfAlignment alignment,
+                                   T horizontal,
+                                   T vertical) {
+  return IsHorizontalAlignment(alignment) ? horizontal : vertical;
+}
 
 // Controller for the shelf state. One per display, because each display might
 // have different shelf alignment, autohide, etc. Exists for the lifetime of the
@@ -91,11 +121,20 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
   // on the display identified by |display_id|.
   static void ActivateShelfItemOnDisplay(int item_index, int64_t display_id);
 
+  // Updates the shelf visibility on all displays. This method exists for
+  // historical reasons. If a display or shelf instance is available, prefer
+  // Shelf::UpdateVisibilityState() below.
+  static void UpdateShelfVisibility();
+
   void CreateNavigationWidget(aura::Window* container);
   void CreateHotseatWidget(aura::Window* container);
   void CreateStatusAreaWidget(aura::Window* status_container);
   void CreateShelfWidget(aura::Window* root);
+
+  // Begins shutdown of the ShelfWidget and all child widgets.
   void ShutdownShelfWidget();
+
+  // Resets `shelf_widget_`.
   void DestroyShelfWidget();
 
   // Returns true if the shelf is visible. Shelf can be visible in 1)
@@ -115,17 +154,7 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
   // Returns a value based on shelf alignment.
   template <typename T>
   T SelectValueForShelfAlignment(T bottom, T left, T right) const {
-    switch (alignment_) {
-      case ShelfAlignment::kBottom:
-      case ShelfAlignment::kBottomLocked:
-        return bottom;
-      case ShelfAlignment::kLeft:
-        return left;
-      case ShelfAlignment::kRight:
-        return right;
-    }
-    NOTREACHED();
-    return bottom;
+    return SelectValueByShelfAlignment(alignment_, bottom, left, right);
   }
 
   // Returns |horizontal| if shelf is horizontal, otherwise |vertical|.
@@ -182,11 +211,8 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
   void RemoveObserver(ShelfObserver* observer);
 
   void NotifyShelfIconPositionsChanged();
-  StatusAreaWidget* GetStatusAreaWidget() const;
 
-  // Get the tray button that the system tray bubble and the notification center
-  // bubble will be anchored. See also: StatusAreaWidget::GetSystemTrayAnchor()
-  TrayBackgroundView* GetSystemTrayAnchorView() const;
+  StatusAreaWidget* GetStatusAreaWidget() const;
 
   // Get the anchor rect that the system tray bubble and the notification center
   // bubble will be anchored.
@@ -219,6 +245,10 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
   ShelfAlignment alignment() const { return alignment_; }
   ShelfAutoHideBehavior auto_hide_behavior() const {
     return auto_hide_behavior_;
+  }
+
+  ShelfAlignment stored_alignment() const {
+    return shelf_locking_manager_.stored_alignment();
   }
 
   ShelfFocusCycler* shelf_focus_cycler() { return shelf_focus_cycler_.get(); }

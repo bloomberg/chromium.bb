@@ -352,16 +352,13 @@ void TestResponseProvider::GetLanguageResponse(
   // Resets state before triggering a new round of language detection.
   [TranslateAppInterface resetLanguageDetectionTabHelperObserver];
   // Change the text of the page.
-  NSError* error = nil;
-  [ChromeEarlGreyAppInterface
-      executeJavaScript:[NSString stringWithFormat:@"document.write('%s');",
-                                                   kEnglishText]
-                  error:&error];
+  [ChromeEarlGrey
+      evaluateJavaScriptForSideEffect:
+          [NSString stringWithFormat:@"document.write('%s');", kEnglishText]];
+
   // Trigger a new detection with pushState.
-  error = nil;
-  [ChromeEarlGreyAppInterface
-      executeJavaScript:@"history.pushState(null, null, null);"
-                  error:&error];
+  [ChromeEarlGrey
+      evaluateJavaScriptForSideEffect:@"history.pushState(null, null, null);"];
   // Check that the new language has been detected.
   [self assertContentLanguage:@"" htmlRootLanguage:@"" adoptedLanguage:@"en"];
 }
@@ -402,7 +399,8 @@ void TestResponseProvider::GetLanguageResponse(
 }
 
 // Tests that language in http content is detected.
-- (void)testLanguageDetectionHttpContentLanguage {
+// TODO(crbug.com/1328970): Re-enable when translate works in HTTP
+- (void)DISABLED_testLanguageDetectionHttpContentLanguage {
   // Start the HTTP server.
   std::unique_ptr<web::DataResponseProvider> provider(new TestResponseProvider);
   web::test::SetUpHttpServer(std::move(provider));
@@ -439,7 +437,8 @@ void TestResponseProvider::GetLanguageResponse(
 }
 
 // Tests that language in http content is detected when navigating to a link.
-- (void)testLanguageDetectionHttpContentLanguageBehindLink {
+// TODO(crbug.com/1328970): Re-enable when translate works in HTTP
+- (void)DISABLED_testLanguageDetectionHttpContentLanguageBehindLink {
   // Start the HTTP server.
   std::unique_ptr<web::DataResponseProvider> provider(new TestResponseProvider);
   web::test::SetUpHttpServer(std::move(provider));
@@ -633,7 +632,8 @@ void TestResponseProvider::GetLanguageResponse(
 
 // Test that the Show Original banner dismisses with a longer delay since it is
 // a high priority banner.
-- (void)testInfobarAcceptedBannerDismissWithHighPriorityDelay {
+// TODO(crbug.com/1316562): Re-enable the test.
+- (void)DISABLED_testInfobarAcceptedBannerDismissWithHighPriorityDelay {
   // Start the HTTP server.
   std::unique_ptr<web::DataResponseProvider> provider(new TestResponseProvider);
   web::test::SetUpHttpServer(std::move(provider));

@@ -9,12 +9,12 @@
 
 #include <memory>
 
-#include "base/mac/foundation_util.h"
+#include "base/mac/bridging.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "crypto/rsa_private_key.h"
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util.h"
-#include "net/cert/x509_util_ios.h"
+#include "net/cert/x509_util_apple.h"
 #include "net/ssl/ssl_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
@@ -60,7 +60,7 @@ NSDictionary* MakeTestSSLCertErrorUserInfo() {
 base::ScopedCFTypeRef<SecTrustRef> CreateTestTrust(NSArray* cert_chain) {
   base::ScopedCFTypeRef<SecPolicyRef> policy(SecPolicyCreateBasicX509());
   SecTrustRef trust = nullptr;
-  SecTrustCreateWithCertificates(base::mac::NSToCFCast(cert_chain), policy,
+  SecTrustCreateWithCertificates(base::mac::NSToCFPtrCast(cert_chain), policy,
                                  &trust);
   return base::ScopedCFTypeRef<SecTrustRef>(trust);
 }

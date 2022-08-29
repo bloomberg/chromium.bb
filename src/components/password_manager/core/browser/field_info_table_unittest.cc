@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/files/scoped_temp_dir.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/common/signatures.h"
@@ -56,7 +57,7 @@ class FieldInfoTableTest : public testing::Test {
   std::vector<FieldInfo> test_data_;
 };
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 TEST_F(FieldInfoTableTest, AddRow) {
   EXPECT_TRUE(field_info_table_->AddRow(test_data_[0]));
   EXPECT_EQ(test_data_[0], field_info_table_->GetAllRows()[0]);
@@ -120,7 +121,7 @@ TEST_F(FieldInfoTableTest, AddRowNoOp) {
   EXPECT_TRUE(field_info_table_->GetAllRows().empty());
 }
 
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 }  // namespace
 }  // namespace password_manager

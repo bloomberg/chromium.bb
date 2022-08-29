@@ -26,6 +26,7 @@
 #include "core/fxcrt/fx_extension.h"
 #include "core/fxcrt/fx_memory_wrappers.h"
 #include "fpdfsdk/cpdfsdk_helpers.h"
+#include "third_party/base/numerics/safe_conversions.h"
 
 namespace {
 
@@ -57,7 +58,7 @@ FPDFDoc_GetAttachmentCount(FPDF_DOCUMENT document) {
     return 0;
 
   auto name_tree = CPDF_NameTree::Create(pDoc, "EmbeddedFiles");
-  return name_tree ? name_tree->GetCount() : 0;
+  return name_tree ? pdfium::base::checked_cast<int>(name_tree->GetCount()) : 0;
 }
 
 FPDF_EXPORT FPDF_ATTACHMENT FPDF_CALLCONV
@@ -78,8 +79,8 @@ FPDFDoc_AddAttachment(FPDF_DOCUMENT document, FPDF_WIDESTRING name) {
   // Set up the basic entries in the filespec dictionary.
   CPDF_Dictionary* pFile = pDoc->NewIndirect<CPDF_Dictionary>();
   pFile->SetNewFor<CPDF_Name>("Type", "Filespec");
-  pFile->SetNewFor<CPDF_String>("UF", wsName);
-  pFile->SetNewFor<CPDF_String>(pdfium::stream::kF, wsName);
+  pFile->SetNewFor<CPDF_String>("UF", wsName.AsStringView());
+  pFile->SetNewFor<CPDF_String>(pdfium::stream::kF, wsName.AsStringView());
 
   // Add the new attachment name and filespec into the document's EmbeddedFiles.
   if (!name_tree->AddValueAndName(pFile->MakeReference(pDoc), wsName))
@@ -188,7 +189,8 @@ FPDFAttachment_GetStringValue(FPDF_ATTACHMENT attachment,
   if (bsKey == kChecksumKey && !value.IsEmpty()) {
     CPDF_String* stringValue = pParamsDict->GetObjectFor(bsKey)->AsString();
     if (stringValue->IsHex()) {
-      ByteString encoded = PDF_HexEncodeString(stringValue->GetString());
+      ByteString encoded =
+          PDF_HexEncodeString(stringValue->GetString().AsStringView());
       value = pdfium::MakeRetain<CPDF_String>(nullptr, encoded, false)
                   ->GetUnicodeText();
     }

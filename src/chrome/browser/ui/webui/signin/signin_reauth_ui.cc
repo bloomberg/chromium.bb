@@ -12,28 +12,30 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/signin/reauth_util.h"
 #include "chrome/browser/ui/signin_reauth_view_controller.h"
 #include "chrome/browser/ui/webui/signin/signin_reauth_handler.h"
+#include "chrome/browser/ui/webui/signin/signin_url_utils.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/signin_resources.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/signin/public/base/consent_level.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "google_apis/gaia/core_account_id.h"
 #include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/resource_path.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/gfx/image/image.h"
 #include "ui/resources/grit/webui_generated_resources.h"
-#include "ui/resources/grit/webui_resources.h"
 
 namespace {
 
@@ -89,31 +91,42 @@ int GetReauthCloseButtonLabelStringId(
 }  // namespace
 
 SigninReauthUI::SigninReauthUI(content::WebUI* web_ui)
-    : SigninWebDialogUI(web_ui) {
+    : content::WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUISigninReauthHost);
   webui::SetJSModuleDefaults(source);
   source->SetDefaultResource(IDR_SIGNIN_SIGNIN_REAUTH_SIGNIN_REAUTH_HTML);
 
-  static constexpr webui::ResourcePath kResources[] = {
+  // TODO(crbug.com/1310270): Switch kResources back to consexpr after launching
+  // this feature.
+  bool upm_enabled = base::FeatureList::IsEnabled(
+      password_manager::features::kUnifiedPasswordManagerDesktop);
+
+  static webui::ResourcePath kResources[] = {
       {"signin_reauth_app.js", IDR_SIGNIN_SIGNIN_REAUTH_SIGNIN_REAUTH_APP_JS},
+      {"signin_reauth_app.html.js",
+       IDR_SIGNIN_SIGNIN_REAUTH_SIGNIN_REAUTH_APP_HTML_JS},
       {"signin_reauth_browser_proxy.js",
        IDR_SIGNIN_SIGNIN_REAUTH_SIGNIN_REAUTH_BROWSER_PROXY_JS},
-      {"signin_shared_css.js", IDR_SIGNIN_SIGNIN_SHARED_CSS_JS},
-      {"signin_vars_css.js", IDR_SIGNIN_SIGNIN_VARS_CSS_JS},
+      {"signin_shared.css.js", IDR_SIGNIN_SIGNIN_SHARED_CSS_JS},
+      {"signin_vars.css.js", IDR_SIGNIN_SIGNIN_VARS_CSS_JS},
       // Resources for the account passwords reauth.
       {"images/signin_reauth_illustration.svg",
-       IDR_SIGNIN_SIGNIN_REAUTH_IMAGES_ACCOUNT_PASSWORDS_REAUTH_ILLUSTRATION_SVG},
+       upm_enabled
+           ? IDR_SIGNIN_SIGNIN_REAUTH_IMAGES_ACCOUNT_PASSWORDS_REAUTH_ILLUSTRATION_V2_SVG
+           : IDR_SIGNIN_SIGNIN_REAUTH_IMAGES_ACCOUNT_PASSWORDS_REAUTH_ILLUSTRATION_SVG},
       {"images/signin_reauth_illustration_dark.svg",
-       IDR_SIGNIN_SIGNIN_REAUTH_IMAGES_ACCOUNT_PASSWORDS_REAUTH_ILLUSTRATION_DARK_SVG},
+       upm_enabled
+           ? IDR_SIGNIN_SIGNIN_REAUTH_IMAGES_ACCOUNT_PASSWORDS_REAUTH_ILLUSTRATION_DARK_V2_SVG
+           : IDR_SIGNIN_SIGNIN_REAUTH_IMAGES_ACCOUNT_PASSWORDS_REAUTH_ILLUSTRATION_DARK_SVG},
   };
   source->AddResourcePaths(kResources);
 
   source->AddString("accountImageUrl", GetAccountImageURL(profile));
 
   signin_metrics::ReauthAccessPoint access_point =
-      signin::GetReauthAccessPointForReauthConfirmationURL(
+      GetReauthAccessPointForReauthConfirmationURL(
           web_ui->GetWebContents()->GetVisibleURL());
 
   AddStringResource(source, "signinReauthTitle",
@@ -136,8 +149,6 @@ void SigninReauthUI::InitializeMessageHandlerWithReauthController(
       controller,
       base::flat_map<std::string, int>(js_localized_string_to_ids_)));
 }
-
-void SigninReauthUI::InitializeMessageHandlerWithBrowser(Browser* browser) {}
 
 void SigninReauthUI::AddStringResource(content::WebUIDataSource* source,
                                        base::StringPiece name,

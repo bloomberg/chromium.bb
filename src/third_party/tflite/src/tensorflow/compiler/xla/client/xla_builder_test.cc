@@ -65,7 +65,7 @@ class XlaBuilderTest : public ::testing::Test {
   }
 
   // Returns the name of the test currently being run.
-  string TestName() const {
+  std::string TestName() const {
     return ::testing::UnitTest::GetInstance()->current_test_info()->name();
   }
 };
@@ -83,7 +83,7 @@ TEST_F(XlaBuilderTest, UnaryOperatorsBuildExpectedHLO) {
       [&](std::function<XlaOp(XlaOp)> op,
           ::testing::Matcher<const ::xla::HloInstruction*> matches_pattern) {
         XlaBuilder b(TestName());
-        op(ConstantR0<int32>(&b, 1));
+        op(ConstantR0<int32_t>(&b, 1));
         TF_ASSERT_OK_AND_ASSIGN(auto module, BuildHloModule(&b));
         auto root = module->entry_computation()->root_instruction();
         EXPECT_THAT(root, matches_pattern);
@@ -97,7 +97,7 @@ TEST_F(XlaBuilderTest, BinaryOperatorsBuildExpectedHLO) {
       [&](std::function<XlaOp(XlaOp, XlaOp)> op,
           ::testing::Matcher<const ::xla::HloInstruction*> matches_pattern) {
         XlaBuilder b(TestName());
-        op(ConstantR0<int32>(&b, 1), ConstantR0<int32>(&b, 2));
+        op(ConstantR0<int32_t>(&b, 1), ConstantR0<int32_t>(&b, 2));
         TF_ASSERT_OK_AND_ASSIGN(auto module, BuildHloModule(&b));
         auto root = module->entry_computation()->root_instruction();
         EXPECT_THAT(root, matches_pattern);
@@ -128,7 +128,7 @@ TEST_F(XlaBuilderTest, BinaryOperatorsBuildExpectedHLO) {
       [&](std::function<XlaOp(XlaOp, XlaOp)> op,
           ::testing::Matcher<const ::xla::HloInstruction*> matches_pattern) {
         XlaBuilder b(TestName());
-        op(ConstantR0<uint32>(&b, 1), ConstantR0<uint32>(&b, 2));
+        op(ConstantR0<uint32_t>(&b, 1), ConstantR0<uint32_t>(&b, 2));
         TF_ASSERT_OK_AND_ASSIGN(auto module, BuildHloModule(&b));
         auto root = module->entry_computation()->root_instruction();
         EXPECT_THAT(root, matches_pattern);
@@ -449,6 +449,7 @@ TEST_F(XlaBuilderTest, AllToAll) {
       ShapeUtil::Equal(root->shape(), ShapeUtil::MakeShape(F32, {8, 8})));
 }
 
+// Test the special case where split_dimension is the same as concat_dimension.
 TEST_F(XlaBuilderTest, AllToAllSpecial) {
   XlaBuilder b(TestName());
   auto x = Parameter(&b, 0, ShapeUtil::MakeShape(F32, {4, 16, 8}), "x");
@@ -461,6 +462,28 @@ TEST_F(XlaBuilderTest, AllToAllSpecial) {
   EXPECT_EQ(root->opcode(), HloOpcode::kAllToAll);
   EXPECT_TRUE(
       ShapeUtil::Equal(root->shape(), ShapeUtil::MakeShape(F32, {4, 16, 8})));
+}
+
+TEST_F(XlaBuilderTest, AllToAllTuple) {
+  XlaBuilder b(TestName());
+  auto p0 = Parameter(&b, 0, ShapeUtil::MakeShape(F32, {2, 4}), "p0");
+  auto p1 = Parameter(&b, 1, ShapeUtil::MakeShape(F32, {2, 4}), "p1");
+  ReplicaGroup replica_group;
+  replica_group.add_replica_ids(0);
+  replica_group.add_replica_ids(1);
+
+  AllToAllTuple({p0, p1}, {replica_group}, LayoutUtil::MakeAscendingLayout(2));
+  TF_ASSERT_OK_AND_ASSIGN(auto module, BuildHloModule(&b));
+  auto root = module->entry_computation()->root_instruction();
+
+  // AllToAll is converted into a single all-to-all HloInstruction.
+  EXPECT_EQ(root->opcode(), HloOpcode::kAllToAll);
+  auto expected_shape =
+      ShapeUtil::MakeShapeWithLayout(F32, /* dimensions= */ {2, 4},
+                                     /* minor_to_major= */ {0, 1});
+  EXPECT_THAT(root, op::ShapeWithLayout(ShapeUtil::MakeTupleShape(
+                        {expected_shape, expected_shape})));
+  EXPECT_THAT(root, op::ReplicaGroups({{0, 1}}));
 }
 
 TEST_F(XlaBuilderTest, CollectivePermute) {
@@ -778,6 +801,34 @@ TEST_F(XlaBuilderTest, DynamicSelectOnlyPredDynamic) {
       module->entry_computation()->root_instruction()->shape();
   EXPECT_TRUE(ContainersEqual(result_shape.dynamic_dimensions(), {true}))
       << result_shape;
+}
+
+TEST_F(XlaBuilderTest, SelectIntoConditional) {
+  XlaBuilder b(TestName());
+  Shape selector_shape = ShapeUtil::MakeShape(PRED, {});
+  Shape tuple_param_shape = ShapeUtil::MakeTupleShape(
+      {ShapeUtil::MakeShape(S32, {}), ShapeUtil::MakeShape(F32, {})});
+  XlaOp p0 = Parameter(&b, 0, selector_shape, "p0");
+  XlaOp p1 = Parameter(&b, 1, tuple_param_shape, "p1");
+  XlaOp p2 = Parameter(&b, 2, tuple_param_shape, "p2");
+
+  Select(p0, p1, p2);
+
+  TF_ASSERT_OK_AND_ASSIGN(std::unique_ptr<HloModule> module,
+                          BuildHloModule(&b));
+  EXPECT_THAT(
+      module->entry_computation()->root_instruction(),
+      op::Conditional(op::Parameter(0), op::Parameter(1), op::Parameter(2)));
+  EXPECT_THAT(module->entry_computation()
+                  ->root_instruction()
+                  ->branch_computation(0)
+                  ->root_instruction(),
+              op::Parameter(0));
+  EXPECT_THAT(module->entry_computation()
+                  ->root_instruction()
+                  ->branch_computation(1)
+                  ->root_instruction(),
+              op::Parameter(0));
 }
 
 TEST_F(XlaBuilderTest, DynamicPad) {
@@ -1361,7 +1412,7 @@ TEST_F(XlaBuilderTest, AddFrontendAttribute) {
 
 TEST_F(XlaBuilderTest, ComparisonType) {
   XlaBuilder b(TestName());
-  (void)Le(ConstantR0<int32>(&b, 1), ConstantR0<int32>(&b, 2));
+  (void)Le(ConstantR0<int32_t>(&b, 1), ConstantR0<int32_t>(&b, 2));
   TF_ASSERT_OK_AND_ASSIGN(auto module, BuildHloModule(&b));
   auto root = module->entry_computation()->root_instruction();
   ASSERT_THAT(root, op::Compare(op::Constant(), op::Constant()));
@@ -1372,11 +1423,11 @@ TEST_F(XlaBuilderTest, ComparisonType) {
 TEST_F(XlaBuilderTest, StableLookUpInstructionByHandle) {
   XlaBuilder b(TestName());
   internal::XlaBuilderFriend builder_friend;
-  XlaOp le = Le(ConstantR0<int32>(&b, 1), ConstantR0<int32>(&b, 2));
+  XlaOp le = Le(ConstantR0<int32_t>(&b, 1), ConstantR0<int32_t>(&b, 2));
   HloInstructionProto* first_op = builder_friend.GetInstruction(le);
   // Create some more instructions.
   for (int i = 0; i < 100; ++i) {
-    (void)Le(ConstantR0<int32>(&b, 1), ConstantR0<int32>(&b, 2));
+    (void)Le(ConstantR0<int32_t>(&b, 1), ConstantR0<int32_t>(&b, 2));
   }
   // Make sure first_op hasn't changed.
   HloInstructionProto* first_op_now = builder_friend.GetInstruction(le);

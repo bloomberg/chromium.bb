@@ -13,6 +13,7 @@
 #include "net/base/auth.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+#include "url/scheme_host_port.h"
 
 namespace {
 
@@ -104,7 +105,7 @@ std::u16string ExpectedAuthority(bool is_proxy, const char* prefix) {
   // Proxies and Android have additional surrounding text. Otherwise, only the
   // host URL is shown.
   bool extra_text = is_proxy;
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   extra_text = true;
 #endif
   if (extra_text)
@@ -134,7 +135,7 @@ TEST(LoginHandlerTest, DialogStringsAndRealm) {
     auth_info.is_proxy = test_case.auth_info.target_type == PROXY;
     auth_info.scheme = test_case.auth_info.scheme;
     auth_info.realm = test_case.auth_info.realm;
-    auth_info.challenger = url::Origin::Create(
+    auth_info.challenger = url::SchemeHostPort(
         test_case.auth_info.challenger ? GURL(test_case.auth_info.challenger)
                                        : request_url);
 

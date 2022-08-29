@@ -128,11 +128,6 @@ content::WebUIDataSource* CreateBookmarksUIHTMLSource(Profile* profile) {
   for (const auto& str : kStrings)
     AddLocalizedString(source, str.name, str.id);
 
-  source->AddString("enableBrandingUpdateAttribute",
-                    base::FeatureList::IsEnabled(features::kWebUIBrandingUpdate)
-                        ? "enable-branding-update"
-                        : "");
-
   return source;
 }
 

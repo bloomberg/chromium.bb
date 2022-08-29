@@ -8,6 +8,7 @@
 #include <string>
 
 #include "ash/public/cpp/ash_public_export.h"
+#include "base/time/time.h"
 
 namespace base {
 struct Feature;
@@ -27,9 +28,6 @@ ASH_PUBLIC_EXPORT extern const base::Feature kEnableAppRanker;
 // AppSearchResultRankerPredictorName.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableZeroStateAppsRanker;
 
-// Enable a model that ranks query based non-apps result.
-ASH_PUBLIC_EXPORT extern const base::Feature kEnableQueryBasedMixedTypesRanker;
-
 // Enable a model that ranks zero-state files and recent queries.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableZeroStateMixedTypesRanker;
 
@@ -42,9 +40,6 @@ ASH_PUBLIC_EXPORT extern const base::Feature kEnableSuggestedFiles;
 
 // Enables local file suggestions in the suggestion chips.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableSuggestedLocalFiles;
-
-// Enables the Assistant search redirection in the app list.
-ASH_PUBLIC_EXPORT extern const base::Feature kEnableAssistantSearch;
 
 // Enables hashed recording of a app list launches.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableAppListLaunchRecording;
@@ -62,11 +57,6 @@ ASH_PUBLIC_EXPORT extern const base::Feature kLauncherSettingsSearch;
 // non empty queries.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableAggregatedMlSearchRanking;
 
-// Enables the new app dragging in the launcher. When the users drags an app
-// within the launcher, this flag will enable the new cardified state, where
-// apps grid pages are scaled down and shown a background card.
-ASH_PUBLIC_EXPORT extern const base::Feature kNewDragSpecInLauncher;
-
 // Enables normalization of search results in the launcher.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableLauncherSearchNormalization;
 
@@ -77,6 +67,27 @@ ASH_PUBLIC_EXPORT extern const base::Feature kCategoricalSearch;
 // suggestions.
 ASH_PUBLIC_EXPORT extern const base::Feature kForceShowContinueSection;
 
+// Enables iconified text and inline icons in launcher search.
+ASH_PUBLIC_EXPORT extern const base::Feature kSearchResultInlineIcon;
+
+// Enable shortened search result update animations when in progress animations
+// are interrupted by search model updates.
+ASH_PUBLIC_EXPORT extern const base::Feature kDynamicSearchUpdateAnimation;
+
+// Forces the Launcher provider to send Omnibox search queries to the lacros
+// browser. If disabled, queries are sent to the ash browser.
+ASH_PUBLIC_EXPORT extern const base::Feature kLauncherLacrosIntegration;
+
+// Shows a feedback dialog when removing a continue section suggestion.
+ASH_PUBLIC_EXPORT extern const base::Feature kFeedbackOnContinueSectionRemove;
+
+// Controls the bubble launcher (productivity launcher in clamshell) width. When
+// enabled, the bubble UI will be narrower.
+ASH_PUBLIC_EXPORT extern const base::Feature kCompactBubbleLauncher;
+
+// Enables Play Store search in the launcher.
+ASH_PUBLIC_EXPORT extern const base::Feature kLauncherPlayStoreSearch;
+
 ASH_PUBLIC_EXPORT bool IsAppRankerEnabled();
 ASH_PUBLIC_EXPORT bool IsZeroStateAppsRankerEnabled();
 ASH_PUBLIC_EXPORT bool IsQueryBasedMixedTypesRankerEnabled();
@@ -84,16 +95,21 @@ ASH_PUBLIC_EXPORT bool IsZeroStateMixedTypesRankerEnabled();
 ASH_PUBLIC_EXPORT bool IsAppReinstallZeroStateEnabled();
 ASH_PUBLIC_EXPORT bool IsSuggestedFilesEnabled();
 ASH_PUBLIC_EXPORT bool IsSuggestedLocalFilesEnabled();
-ASH_PUBLIC_EXPORT bool IsAssistantSearchEnabled();
 ASH_PUBLIC_EXPORT bool IsAppListLaunchRecordingEnabled();
 ASH_PUBLIC_EXPORT bool IsFuzzyAppSearchEnabled();
 ASH_PUBLIC_EXPORT bool IsExactMatchForNonLatinLocaleEnabled();
 ASH_PUBLIC_EXPORT bool IsForceShowContinueSectionEnabled();
 ASH_PUBLIC_EXPORT bool IsLauncherSettingsSearchEnabled();
 ASH_PUBLIC_EXPORT bool IsAggregatedMlSearchRankingEnabled();
-ASH_PUBLIC_EXPORT bool IsNewDragSpecInLauncherEnabled();
 ASH_PUBLIC_EXPORT bool IsLauncherSearchNormalizationEnabled();
 ASH_PUBLIC_EXPORT bool IsCategoricalSearchEnabled();
+ASH_PUBLIC_EXPORT bool IsSearchResultInlineIconEnabled();
+ASH_PUBLIC_EXPORT bool IsDynamicSearchUpdateAnimationEnabled();
+ASH_PUBLIC_EXPORT base::TimeDelta DynamicSearchUpdateAnimationDuration();
+ASH_PUBLIC_EXPORT bool IsLauncherLacrosIntegrationEnabled();
+ASH_PUBLIC_EXPORT bool IsFeedbackOnContinueSectionRemoveEnabled();
+ASH_PUBLIC_EXPORT bool IsCompactBubbleLauncherEnabled();
+ASH_PUBLIC_EXPORT bool IsLauncherPlayStoreSearchEnabled();
 
 ASH_PUBLIC_EXPORT std::string AnswerServerUrl();
 ASH_PUBLIC_EXPORT std::string AnswerServerQuerySuffix();

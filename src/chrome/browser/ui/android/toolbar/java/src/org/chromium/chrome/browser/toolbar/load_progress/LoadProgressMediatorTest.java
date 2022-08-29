@@ -83,7 +83,8 @@ public class LoadProgressMediatorTest {
                 CompletionState.FINISHED_DONT_ANIMATE);
 
         NavigationHandle navigation =
-                new NavigationHandle(0, URL_1, true, false, false, null, null);
+                new NavigationHandle(0, URL_1, GURL.emptyGURL(), GURL.emptyGURL(), true, false,
+                        false, null, 0, false, false, false, false, 0, false, false);
         mTabObserver.onDidStartNavigation(mTab, navigation);
         assertEquals(
                 mModel.get(LoadProgressProperties.COMPLETION_STATE), CompletionState.UNFINISHED);
@@ -120,7 +121,8 @@ public class LoadProgressMediatorTest {
     public void switchToLoadedTab() {
         initMediator();
         NavigationHandle navigation =
-                new NavigationHandle(0, URL_1, true, false, false, null, null);
+                new NavigationHandle(0, URL_1, GURL.emptyGURL(), GURL.emptyGURL(), true, false,
+                        false, null, 0, false, false, false, false, 0, false, false);
         mTabObserver.onDidStartNavigation(mTab, navigation);
         assertEquals(
                 mModel.get(LoadProgressProperties.COMPLETION_STATE), CompletionState.UNFINISHED);
@@ -140,13 +142,15 @@ public class LoadProgressMediatorTest {
         initMediator();
         doReturn(0.1f).when(mTab).getProgress();
         NavigationHandle navigation =
-                new NavigationHandle(0, URL_1, true, false, false, null, null);
+                new NavigationHandle(0, URL_1, GURL.emptyGURL(), GURL.emptyGURL(), true, false,
+                        false, null, 0, false, false, false, false, 0, false, false);
         mTabObserver.onDidStartNavigation(mTab, navigation);
         assertEquals(
                 mModel.get(LoadProgressProperties.COMPLETION_STATE), CompletionState.UNFINISHED);
         assertEquals(mModel.get(LoadProgressProperties.PROGRESS), 0.1f, MathUtils.EPSILON);
 
-        navigation = new NavigationHandle(0, NATIVE_PAGE_URL, true, false, false, null, null);
+        navigation = new NavigationHandle(0, NATIVE_PAGE_URL, GURL.emptyGURL(), GURL.emptyGURL(),
+                true, false, false, null, 0, false, false, false, false, 0, false, false);
         mTabObserver.onDidStartNavigation(mTab, navigation);
         assertEquals(mModel.get(LoadProgressProperties.COMPLETION_STATE),
                 CompletionState.FINISHED_DONT_ANIMATE);
@@ -158,7 +162,8 @@ public class LoadProgressMediatorTest {
     public void switchToTabWithNativePage() {
         initMediator();
         NavigationHandle navigation =
-                new NavigationHandle(0, URL_1, true, false, false, null, null);
+                new NavigationHandle(0, URL_1, GURL.emptyGURL(), GURL.emptyGURL(), true, false,
+                        false, null, 0, false, false, false, false, 0, false, false);
         mTabObserver.onDidStartNavigation(mTab, navigation);
         assertEquals(
                 mModel.get(LoadProgressProperties.COMPLETION_STATE), CompletionState.UNFINISHED);
@@ -180,7 +185,8 @@ public class LoadProgressMediatorTest {
     public void pageCrashes() {
         initMediator();
         NavigationHandle navigation =
-                new NavigationHandle(0, URL_1, true, false, false, null, null);
+                new NavigationHandle(0, URL_1, GURL.emptyGURL(), GURL.emptyGURL(), true, false,
+                        false, null, 0, false, false, false, false, 0, false, false);
         mTabObserver.onDidStartNavigation(mTab, navigation);
         assertEquals(
                 mModel.get(LoadProgressProperties.COMPLETION_STATE), CompletionState.UNFINISHED);
@@ -228,13 +234,17 @@ public class LoadProgressMediatorTest {
         assertEquals(mModel.get(LoadProgressProperties.COMPLETION_STATE),
                 CompletionState.FINISHED_DONT_ANIMATE);
 
-        NavigationHandle navigation = new NavigationHandle(0, gurl, true, false, false, null, null);
+        NavigationHandle navigation =
+                new NavigationHandle(0, gurl, GURL.emptyGURL(), GURL.emptyGURL(), true, false,
+                        false, null, 0, false, false, false, false, 0, false, false);
         mTabObserver.onDidStartNavigation(mTab, navigation);
         mTabObserver.onLoadProgressChanged(mTab, 1.0f);
         assertEquals(mModel.get(LoadProgressProperties.PROGRESS), 1.0f, MathUtils.EPSILON);
         assertEquals(mModel.get(LoadProgressProperties.COMPLETION_STATE),
                 CompletionState.FINISHED_DO_ANIMATE);
-        NavigationHandle sameDocNav = new NavigationHandle(0, gurl, true, true, false, null, null);
+        NavigationHandle sameDocNav =
+                new NavigationHandle(0, gurl, GURL.emptyGURL(), GURL.emptyGURL(), true, true, false,
+                        null, 0, false, false, false, false, 0, false, false);
         mTabObserver.onDidStartNavigation(mTab, sameDocNav);
 
         assertEquals(mModel.get(LoadProgressProperties.PROGRESS), 1.0f, MathUtils.EPSILON);

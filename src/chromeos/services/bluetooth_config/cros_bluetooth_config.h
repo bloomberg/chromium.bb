@@ -27,6 +27,7 @@ class BluetoothPowerController;
 class DeviceCache;
 class DeviceNameManager;
 class DeviceOperationHandler;
+class DiscoveredDevicesProvider;
 class DiscoverySessionManager;
 class FastPairDelegate;
 class Initializer;
@@ -57,7 +58,11 @@ class CrosBluetoothConfig : public mojom::CrosBluetoothConfig {
   void ObserveDeviceStatusChanges(
       mojo::PendingRemote<mojom::BluetoothDeviceStatusObserver> observer)
       override;
+  void ObserveDiscoverySessionStatusChanges(
+      mojo::PendingRemote<mojom::DiscoverySessionStatusObserver> observer)
+      override;
   void SetBluetoothEnabledState(bool enabled) override;
+  void SetBluetoothHidDetectionActive(bool active) override;
   void StartDiscovery(
       mojo::PendingRemote<mojom::BluetoothDiscoveryDelegate> delegate) override;
   void Connect(const std::string& device_id, ConnectCallback callback) override;
@@ -76,6 +81,7 @@ class CrosBluetoothConfig : public mojom::CrosBluetoothConfig {
   std::unique_ptr<SystemPropertiesProvider> system_properties_provider_;
   std::unique_ptr<BluetoothDeviceStatusNotifier>
       bluetooth_device_status_notifier_;
+  std::unique_ptr<DiscoveredDevicesProvider> discovered_devices_provider_;
   std::unique_ptr<DiscoverySessionManager> discovery_session_manager_;
   std::unique_ptr<DeviceOperationHandler> device_operation_handler_;
   FastPairDelegate* fast_pair_delegate_ = nullptr;

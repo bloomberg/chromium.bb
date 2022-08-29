@@ -8,14 +8,14 @@ import android.graphics.Rect;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.uiautomator.By;
-import android.support.test.uiautomator.UiDevice;
-import android.support.test.uiautomator.UiObject2;
 import android.util.Size;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.test.filters.MediumTest;
+import androidx.test.uiautomator.By;
+import androidx.test.uiautomator.UiDevice;
+import androidx.test.uiautomator.UiObject2;
 
 import org.hamcrest.Matchers;
 import org.junit.Assert;
@@ -31,7 +31,7 @@ import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
-import org.chromium.ui.test.util.DummyUiActivityTestCase;
+import org.chromium.ui.test.util.BlankUiTestActivityTestCase;
 import org.chromium.url.GURL;
 
 import java.util.List;
@@ -40,7 +40,7 @@ import java.util.List;
  * Instrumentation tests for the Paint Preview player.
  */
 @RunWith(BaseJUnit4ClassRunner.class)
-public class PaintPreviewPlayerTest extends DummyUiActivityTestCase {
+public class PaintPreviewPlayerTest extends BlankUiTestActivityTestCase {
     private static final long TIMEOUT_MS = 5000;
 
     private static final String TEST_DIRECTORY_KEY = "test_dir";
@@ -220,7 +220,7 @@ public class PaintPreviewPlayerTest extends DummyUiActivityTestCase {
 
                         @Override
                         public void onAccessibilityNotSupported() {}
-                    }, 0xffffffff, false, true);
+                    }, 0xffffffff, false);
             mPlayerManager.setCompressOnClose(false);
         });
         compositorErrorCallback.waitForFirst();
@@ -433,7 +433,7 @@ public class PaintPreviewPlayerTest extends DummyUiActivityTestCase {
 
                         @Override
                         public void onAccessibilityNotSupported() {}
-                    }, 0xffffffff, false, true);
+                    }, 0xffffffff, false);
             mPlayerManager.setCompressOnClose(false);
             getActivity().setContentView(mPlayerManager.getView());
         });

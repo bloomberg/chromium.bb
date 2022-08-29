@@ -47,6 +47,7 @@ class ArcNotificationContentView
  public:
   METADATA_HEADER(ArcNotificationContentView);
 
+  static int GetNotificationContentViewWidth();
 
   ArcNotificationContentView(ArcNotificationItem* item,
                              const message_center::Notification& notification,
@@ -65,6 +66,8 @@ class ArcNotificationContentView
   void ActivateWidget(bool activate);
 
   bool slide_in_progress() const { return slide_in_progress_; }
+
+  int notification_width() const { return notification_width_; }
 
  private:
   friend class ArcNotificationViewTest;
@@ -120,7 +123,7 @@ class ArcNotificationContentView
   void OnWindowDestroying(aura::Window* window) override;
 
   // views::WidgetObserver:
-  void OnWidgetClosing(views::Widget* widget) override;
+  void OnWidgetDestroying(views::Widget* widget) override;
   void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
 
   // ArcNotificationItem::Observer
@@ -205,6 +208,8 @@ class ArcNotificationContentView
   absl::optional<gfx::Insets> mask_insets_;
 
   std::unique_ptr<ui::LayerTreeOwner> surface_copy_;
+
+  const int notification_width_;
 };
 
 }  // namespace ash

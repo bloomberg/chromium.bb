@@ -18,6 +18,7 @@
 #include "base/run_loop.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
+#include "base/test/scoped_run_loop_timeout.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -251,7 +252,11 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   // Open a popup on b.com.  The b.com subframe on the main frame will use this
   // in its unload handler.
   GURL b_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
-  EXPECT_TRUE(OpenPopup(shell()->web_contents(), b_url, "popup"));
+
+  // Save the WebContents instance created via the popup to be able to listen
+  // for messages that occur in it.
+  auto* popup_shell = OpenPopup(shell()->web_contents(), b_url, "popup");
+  WebContents* popup_web_contents = popup_shell->web_contents();
 
   // Add an unload handler to b.com subframe, which will look up the top
   // frame's origin and send it via domAutomationController.  Unfortunately,
@@ -267,7 +272,9 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   // Navigate the main frame to c.com and wait for the message from the
   // subframe's unload handler.
   GURL c_url(embedded_test_server()->GetURL("c.com", "/title1.html"));
-  DOMMessageQueue msg_queue;
+
+  // NOTE: The message occurs in the WebContents for the popup.
+  DOMMessageQueue msg_queue(popup_web_contents);
   EXPECT_TRUE(NavigateToURL(shell(), c_url));
   std::string message, top_origin;
   while (msg_queue.WaitForMessage(&message)) {
@@ -315,7 +322,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   // Disable the BackForwardCache to ensure the old process is going to be
   // released.
   DisableBackForwardCacheForTesting(web_contents(),
-                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
+                                    BackForwardCache::TEST_REQUIRES_NO_CACHING);
 
   GURL cross_site_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
   EXPECT_TRUE(NavigateToURLFromRenderer(shell(), cross_site_url));
@@ -353,7 +360,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   // the page a gesture to allow dialogs.
   web_contents->GetMainFrame()->DisableBeforeUnloadHangMonitorForTesting();
   web_contents->GetMainFrame()->ExecuteJavaScriptWithUserGestureForTests(
-      std::u16string());
+      std::u16string(), base::NullCallback());
 
   // Hang the first contents in a beforeunload dialog.
   BeforeUnloadBlockingDelegate test_delegate(web_contents);
@@ -395,7 +402,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
 //     |
 //     C3
 // TODO(crbug.com/1012185): Flaky timeouts on Linux and Mac.
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_MAC)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_MAC)
 #define MAYBE_UnloadHandlerSubframes DISABLED_UnloadHandlerSubframes
 #else
 #define MAYBE_UnloadHandlerSubframes UnloadHandlerSubframes
@@ -882,6 +889,12 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
 // child frames. Start from A(B1(C(B2))) and delete B1 from A.
 IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        DetachedIframeUnloadHandlerABCB) {
+  // This test takes longer to run, because multiple processes are waiting on
+  // each other's documents to execute unload handler before destroying their
+  // documents. https://crbug.com/1311985
+  base::test::ScopedRunLoopTimeout increase_timeout(
+      FROM_HERE, TestTimeouts::action_max_timeout());
+
   GURL initial_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b(c(b)))"));
 
@@ -1324,7 +1337,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   // The test assumes the previous page gets deleted after navigation. Disable
   // back-forward cache to ensure that it doesn't get preserved in the cache.
   DisableBackForwardCacheForTesting(shell()->web_contents(),
-                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
+                                    BackForwardCache::TEST_REQUIRES_NO_CACHING);
   GURL A1_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   GURL A3_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
@@ -1339,7 +1352,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   delete_B1.WaitUntilDeleted();
 }
 
-#if defined(OS_LINUX) && defined(THREAD_SANITIZER)
+#if BUILDFLAG(IS_LINUX) && defined(THREAD_SANITIZER)
 // See crbug.com/1275848.
 #define MAYBE_NestedSubframeWithUnloadHandler \
   DISABLED_NestedSubframeWithUnloadHandler

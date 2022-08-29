@@ -33,15 +33,14 @@ class InProcessContextProvider;
 class InProcessContextFactory : public ContextFactory {
  public:
   // Both |host_frame_sink_manager| and |frame_sink_manager| must outlive the
-  // ContextFactory. The constructor without |use_skia_renderer| will use
-  // SkiaRenderer if the feature is enabled.
+  // ContextFactory.
   // TODO(crbug.com/657959): |frame_sink_manager| should go away and we should
   // use the LayerTreeFrameSink from the HostFrameSinkManager.
-  InProcessContextFactory(viz::HostFrameSinkManager* host_frame_sink_manager,
-                          viz::FrameSinkManagerImpl* frame_sink_manager);
+  // The default for |output_to_window| will create an OutputSurface that does
+  // not display anything. Set to true if you want to see results on the screen.
   InProcessContextFactory(viz::HostFrameSinkManager* host_frame_sink_manager,
                           viz::FrameSinkManagerImpl* frame_sink_manager,
-                          bool use_skia_renderer);
+                          bool output_to_window = false);
 
   InProcessContextFactory(const InProcessContextFactory&) = delete;
   InProcessContextFactory& operator=(const InProcessContextFactory&) = delete;
@@ -50,12 +49,6 @@ class InProcessContextFactory : public ContextFactory {
 
   viz::FrameSinkManagerImpl* GetFrameSinkManager() {
     return frame_sink_manager_;
-  }
-
-  // If true (the default) an OutputSurface is created that does not display
-  // anything. Set to false if you want to see results on the screen.
-  void set_use_test_surface(bool use_test_surface) {
-    use_test_surface_ = use_test_surface;
   }
 
   // Set refresh rate will be set to 200 to spend less time waiting for
@@ -77,9 +70,8 @@ class InProcessContextFactory : public ContextFactory {
   viz::SubtreeCaptureId AllocateSubtreeCaptureId() override;
   viz::HostFrameSinkManager* GetHostFrameSinkManager() override;
 
-  skia::Matrix44 GetOutputColorMatrix(Compositor* compositor) const;
+  SkM44 GetOutputColorMatrix(Compositor* compositor) const;
   gfx::DisplayColorSpaces GetDisplayColorSpaces(Compositor* compositor) const;
-  float GetSDRWhiteLevel(Compositor* compositor) const;
   base::TimeTicks GetDisplayVSyncTimeBase(Compositor* compositor) const;
   base::TimeDelta GetDisplayVSyncTimeInterval(Compositor* compositor) const;
   void ResetDisplayOutputParameters(Compositor* compositor);
@@ -97,7 +89,7 @@ class InProcessContextFactory : public ContextFactory {
   cc::TestTaskGraphRunner task_graph_runner_;
   viz::FrameSinkIdAllocator frame_sink_id_allocator_;
   viz::SubtreeCaptureIdAllocator subtree_capture_id_allocator_;
-  bool use_test_surface_;
+  bool output_to_window_ = false;
   bool disable_vsync_ = false;
   double refresh_rate_ = 60.0;
   const raw_ptr<viz::HostFrameSinkManager> host_frame_sink_manager_;

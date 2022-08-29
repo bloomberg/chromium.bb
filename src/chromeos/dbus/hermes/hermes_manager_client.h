@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/observer_list.h"
-#include "chromeos/dbus/dbus_method_call_status.h"
+#include "chromeos/dbus/common/dbus_method_call_status.h"
 #include "dbus/property.h"
 #include "third_party/cros_system_api/dbus/hermes/dbus-constants.h"
 
@@ -82,5 +82,10 @@ class COMPONENT_EXPORT(HERMES_CLIENT) HermesManagerClient {
 };
 
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove after the migration is finished.
+namespace ash {
+using ::chromeos::HermesManagerClient;
+}
 
 #endif  // CHROMEOS_DBUS_HERMES_HERMES_MANAGER_CLIENT_H_

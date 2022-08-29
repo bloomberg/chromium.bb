@@ -5,6 +5,7 @@
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
+import type * as Platform from '../../core/platform/platform.js';
 import type * as SDK from '../../core/sdk/sdk.js';
 import type * as Protocol from '../../generated/protocol.js';
 
@@ -44,7 +45,7 @@ export enum IssueCategory {
   CrossOriginEmbedderPolicy = 'CrossOriginEmbedderPolicy',
   Generic = 'Generic',
   MixedContent = 'MixedContent',
-  SameSiteCookie = 'SameSiteCookie',
+  Cookie = 'Cookie',
   HeavyAd = 'HeavyAd',
   ContentSecurityPolicy = 'ContentSecurityPolicy',
   TrustedWebActivity = 'TrustedWebActivity',
@@ -123,23 +124,23 @@ export interface AffectedElement {
 }
 
 export abstract class Issue<IssueCode extends string = string> {
-  private issueCode: IssueCode;
-  private issuesModel: SDK.IssuesModel.IssuesModel|null;
+  #issueCode: IssueCode;
+  #issuesModel: SDK.IssuesModel.IssuesModel|null;
   protected issueId: Protocol.Audits.IssueId|undefined = undefined;
-  private hidden: boolean;
+  #hidden: boolean;
 
   constructor(
       code: IssueCode|{code: IssueCode, umaCode: string}, issuesModel: SDK.IssuesModel.IssuesModel|null = null,
       issueId?: Protocol.Audits.IssueId) {
-    this.issueCode = typeof code === 'object' ? code.code : code;
-    this.issuesModel = issuesModel;
+    this.#issueCode = typeof code === 'object' ? code.code : code;
+    this.#issuesModel = issuesModel;
     this.issueId = issueId;
     Host.userMetrics.issueCreated(typeof code === 'string' ? code : code.umaCode);
-    this.hidden = false;
+    this.#hidden = false;
   }
 
   code(): IssueCode {
-    return this.issueCode;
+    return this.#issueCode;
   }
 
   abstract primaryKey(): string;
@@ -184,7 +185,7 @@ export abstract class Issue<IssueCode extends string = string> {
    * The model might be unavailable or belong to a target that has already been disposed.
    */
   model(): SDK.IssuesModel.IssuesModel|null {
-    return this.issuesModel;
+    return this.#issuesModel;
   }
 
   isCausedByThirdParty(): boolean {
@@ -196,22 +197,25 @@ export abstract class Issue<IssueCode extends string = string> {
   }
 
   isHidden(): boolean {
-    return this.hidden;
+    return this.#hidden;
   }
 
   setHidden(hidden: boolean): void {
-    this.hidden = hidden;
+    this.#hidden = hidden;
   }
 }
 
-export function toZeroBasedLocation(location: Protocol.Audits.SourceCodeLocation|undefined):
-    {url: string, scriptId: Protocol.Runtime.ScriptId|undefined, lineNumber: number, columnNumber: number|undefined}|
-    undefined {
+export function toZeroBasedLocation(location: Protocol.Audits.SourceCodeLocation|undefined): {
+  url: Platform.DevToolsPath.UrlString,
+  scriptId: Protocol.Runtime.ScriptId|undefined,
+  lineNumber: number,
+  columnNumber: number|undefined,
+}|undefined {
   if (!location) {
     return undefined;
   }
   return {
-    url: location.url,
+    url: location.url as Platform.DevToolsPath.UrlString,
     scriptId: location.scriptId,
     lineNumber: location.lineNumber,
     columnNumber: location.columnNumber === 0 ? undefined : location.columnNumber - 1,

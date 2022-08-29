@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -28,7 +29,7 @@
 #include "sandbox/policy/switches.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chromeos/assistant/buildflags.h"
+#include "chromeos/ash/components/assistant/buildflags.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 using sandbox::mojom::Sandbox;
@@ -49,7 +50,7 @@ std::vector<Sandbox> GetSandboxTypesToTest() {
     // These sandbox types can't be spawned in a utility process.
     if (t == Sandbox::kRenderer || t == Sandbox::kGpu)
       continue;
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
     if (t == Sandbox::kZygoteIntermediateSandbox)
       continue;
 #endif
@@ -111,6 +112,7 @@ class UtilityProcessSandboxBrowserTest
 #endif
       case Sandbox::kPrintCompositor:
       case Sandbox::kService:
+      case Sandbox::kServiceWithJit:
       case Sandbox::kUtility: {
         constexpr int kExpectedFullSandboxFlags =
             SandboxLinux::kPIDNS | SandboxLinux::kNetNS |
@@ -121,8 +123,10 @@ class UtilityProcessSandboxBrowserTest
       }
 
       case Sandbox::kAudio:
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_ASH)
       case Sandbox::kHardwareVideoDecoding:
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
       case Sandbox::kIme:
       case Sandbox::kTts:
 #if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
@@ -140,6 +144,11 @@ class UtilityProcessSandboxBrowserTest
         EXPECT_EQ(sandbox_status, kExpectedPartialSandboxFlags);
         break;
       }
+#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+      case Sandbox::kScreenAI:
+        // TODO(https://crbug.com/1278249): Add test.
+        break;
+#endif
 
       case Sandbox::kGpu:
       case Sandbox::kRenderer:
@@ -162,6 +171,15 @@ class UtilityProcessSandboxBrowserTest
 };
 
 IN_PROC_BROWSER_TEST_P(UtilityProcessSandboxBrowserTest, VerifySandboxType) {
+#if BUILDFLAG(IS_LINUX)
+  if (GetParam() == Sandbox::kHardwareVideoDecoding) {
+    // TODO(b/195769334): On Linux, this test fails with
+    // Sandbox::kHardwareVideoDecoding because the pre-sandbox hook needs Ozone
+    // which is not available in the utility process that this test starts. We
+    // need to remove the Ozone dependency and re-enable this test.
+    GTEST_SKIP();
+  }
+#endif  // BUILDFLAG(IS_LINUX)
   RunUtilityProcess();
 }
 

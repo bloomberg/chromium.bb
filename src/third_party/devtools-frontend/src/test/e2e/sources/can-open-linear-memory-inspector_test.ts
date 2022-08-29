@@ -7,7 +7,14 @@ import {assert} from 'chai';
 import {$, $$, click, getBrowserAndPages, goToResource, step, waitFor} from '../../shared/helper.js';
 import {describe, it} from '../../shared/mocha-extensions.js';
 import {checkIfTabExistsInDrawer, DRAWER_PANEL_SELECTOR} from '../helpers/cross-tool-helper.js';
-import {addBreakpointForLine, inspectMemory, openSourceCodeEditorForFile, PAUSE_BUTTON, reloadPageAndWaitForSourceFile, RESUME_BUTTON} from '../helpers/sources-helpers.js';
+import {
+  addBreakpointForLine,
+  inspectMemory,
+  openSourceCodeEditorForFile,
+  PAUSE_BUTTON,
+  reloadPageAndWaitForSourceFile,
+  RESUME_BUTTON,
+} from '../helpers/sources-helpers.js';
 
 const LINEAR_MEMORY_INSPECTOR_TAB_SELECTOR = '#tab-linear-memory-inspector';
 const LINEAR_MEMORY_INSPECTOR_TABBED_PANE_SELECTOR = DRAWER_PANEL_SELECTOR + ' .tabbed-pane';
@@ -57,12 +64,11 @@ describe('Scope View', async () => {
     });
   });
 
-  // Times out on Windows
-  it.skip('[crbug.com/1169143] opens one linear memory inspector per ArrayBuffer', async () => {
+  it('opens one linear memory inspector per ArrayBuffer', async () => {
     const {frontend} = getBrowserAndPages();
 
     await step('navigate to a page', async () => {
-      await goToResource('sources/memory-workers.html');
+      await goToResource('sources/memory-workers.rawresponse');
     });
 
     await step('wait for debugging to start', async () => {
@@ -84,7 +90,7 @@ describe('Scope View', async () => {
       assert.isNotNull(titleElement);
       const title = await frontend.evaluate(x => x.innerText, titleElement);
 
-      assert.strictEqual(title, 'memory-worker2.js');
+      assert.strictEqual(title, 'SharedArrayBuffer(16)');
     });
 
     // Save this as we will select it multiple times
@@ -116,7 +122,7 @@ describe('Scope View', async () => {
     await step('switch to other worker', async () => {
       const elements = await $$('.thread-item-title');
       const workerNames = await Promise.all(elements.map(x => x.evaluate(y => y.textContent)));
-      const workerIndex = 1 + workerNames.indexOf('memory-worker1.js');
+      const workerIndex = 1 + workerNames.indexOf('memory-worker1.rawresponse');
       // Click on worker
       await click(`.thread-item[aria-posinset="${workerIndex}"]`);
       // Pause the worker

@@ -32,7 +32,7 @@
 #include "net/ssl/ssl_info.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "net/android/network_library.h"
 #endif
 
@@ -101,16 +101,16 @@ std::string CaptivePortalBlockingPage::GetWiFiSSID() const {
   // currently associated WiFi access point. |WiFiService| isn't available on
   // Linux so |net::GetWifiSSID| is used instead.
   std::string ssid;
-#if defined(OS_WIN) || defined(OS_APPLE)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE)
   std::unique_ptr<wifi::WiFiService> wifi_service(wifi::WiFiService::Create());
   wifi_service->Initialize(nullptr);
   std::string error;
   wifi_service->GetConnectedNetworkSSID(&ssid, &error);
   if (!error.empty())
     return std::string();
-#elif defined(OS_LINUX) || defined(OS_CHROMEOS)
+#elif BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
   ssid = net::GetWifiSSID();
-#elif defined(OS_ANDROID)
+#elif BUILDFLAG(IS_ANDROID)
   ssid = net::android::GetWifiSSID();
 #endif
   // TODO(meacer): Handle non UTF8 SSIDs.
@@ -158,7 +158,7 @@ void CaptivePortalBlockingPage::PopulateInterstitialStrings(
     } else {
       paragraph = l10n_util::GetStringFUTF16(
           IDS_CAPTIVE_PORTAL_PRIMARY_PARAGRAPH_NO_LOGIN_URL_WIFI_SSID,
-          net::EscapeForHTML(base::UTF8ToUTF16(wifi_ssid)));
+          base::EscapeForHTML(base::UTF8ToUTF16(wifi_ssid)));
     }
   } else {
     // Portal redirection was done with HTTP redirects, so show the login URL.
@@ -175,7 +175,7 @@ void CaptivePortalBlockingPage::PopulateInterstitialStrings(
     } else {
       paragraph = l10n_util::GetStringFUTF16(
           IDS_CAPTIVE_PORTAL_PRIMARY_PARAGRAPH_WIFI_SSID,
-          net::EscapeForHTML(base::UTF8ToUTF16(wifi_ssid)), login_host);
+          base::EscapeForHTML(base::UTF8ToUTF16(wifi_ssid)), login_host);
     }
   }
   load_time_data->SetStringKey("primaryParagraph", paragraph);

@@ -16,6 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
+#include "base/time/time.h"
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "cc/trees/managed_memory_policy.h"
 #include "components/power_scheduler/power_mode_voter.h"
@@ -30,6 +31,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom-blink.h"
 #include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom-forward.h"
 #include "third_party/blink/renderer/platform/widget/compositing/android_webview/synchronous_compositor_registry.h"
@@ -101,8 +103,7 @@ class SynchronousLayerTreeFrameSink
   void DetachFromClient() override;
   void SetLocalSurfaceId(const viz::LocalSurfaceId& local_surface_id) override;
   void SubmitCompositorFrame(viz::CompositorFrame frame,
-                             bool hit_test_data_changed,
-                             bool show_hit_test_borders) override;
+                             bool hit_test_data_changed) override;
   void DidNotProduceFrame(const viz::BeginFrameAck& ack,
                           cc::FrameSkippedReason reason) override;
   void DidAllocateSharedBitmap(base::ReadOnlySharedMemoryRegion region,
@@ -171,7 +172,7 @@ class SynchronousLayerTreeFrameSink
       unbound_compositor_frame_sink_;
   mojo::PendingReceiver<viz::mojom::blink::CompositorFrameSinkClient>
       unbound_client_;
-  viz::mojom::blink::CompositorFrameSinkPtr compositor_frame_sink_;
+  mojo::Remote<viz::mojom::blink::CompositorFrameSink> compositor_frame_sink_;
   mojo::Receiver<viz::mojom::blink::CompositorFrameSinkClient> client_receiver_{
       this};
   viz::LocalSurfaceId local_surface_id_;

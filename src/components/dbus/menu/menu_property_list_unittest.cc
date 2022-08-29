@@ -8,6 +8,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "build/chromecast_buildflags.h"
 #include "build/chromeos_buildflags.h"
 #include "components/dbus/properties/types.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -20,9 +21,9 @@
 #include "ui/events/test/keyboard_layout.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/gfx/image/image_skia_rep_default.h"
+#include "ui/gfx/image/image_skia_rep.h"
 
-#if defined(OS_LINUX)
+#if BUILDFLAG(IS_LINUX)
 #include "ui/ozone/public/ozone_platform.h"
 #endif
 
@@ -325,7 +326,7 @@ TEST(MenuPropertyListTest, ComputePropertiesIcon) {
   EXPECT_EQ(menu->ComputeProperties(), props);
 }
 
-#if defined(OS_LINUX)
+#if BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CASTOS)
 TEST(MenuPropertyListTest, ComputePropertiesAccelerator) {
   // The Wayland implementation requires the keyboard layout to be set.
   // The ScopedKeyboardLayout does not unset the already existing layout engine,
@@ -365,7 +366,7 @@ TEST(MenuPropertyListTest, ComputePropertiesAccelerator) {
   if (old_layout)
     ui::KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(old_layout);
 }
-#endif
+#endif  // BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CASTOS)
 
 TEST(MenuPropertyListTest, ComputePropertyChanges) {
   MenuItemProperties old_props;

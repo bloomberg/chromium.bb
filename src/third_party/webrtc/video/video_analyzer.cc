@@ -9,6 +9,8 @@
  */
 #include "video/video_analyzer.h"
 
+#include <inttypes.h>
+
 #include <algorithm>
 #include <utility>
 
@@ -20,7 +22,6 @@
 #include "modules/rtp_rtcp/source/rtp_packet.h"
 #include "modules/rtp_rtcp/source/rtp_util.h"
 #include "rtc_base/cpu_time.h"
-#include "rtc_base/format_macros.h"
 #include "rtc_base/memory_usage.h"
 #include "rtc_base/task_queue_for_test.h"
 #include "rtc_base/task_utils/repeating_task.h"
@@ -187,13 +188,14 @@ void VideoAnalyzer::SetSendStream(VideoSendStream* stream) {
   send_stream_ = stream;
 }
 
-void VideoAnalyzer::SetReceiveStream(VideoReceiveStream* stream) {
+void VideoAnalyzer::SetReceiveStream(VideoReceiveStreamInterface* stream) {
   MutexLock lock(&lock_);
   RTC_DCHECK(!receive_stream_);
   receive_stream_ = stream;
 }
 
-void VideoAnalyzer::SetAudioReceiveStream(AudioReceiveStream* recv_stream) {
+void VideoAnalyzer::SetAudioReceiveStream(
+    AudioReceiveStreamInterface* recv_stream) {
   MutexLock lock(&lock_);
   RTC_CHECK(!audio_receive_stream_);
   audio_receive_stream_ = recv_stream;
@@ -489,7 +491,8 @@ void VideoAnalyzer::PollStats() {
   last_fec_bytes_ = fec_bytes;
 
   if (receive_stream_ != nullptr) {
-    VideoReceiveStream::Stats receive_stats = receive_stream_->GetStats();
+    VideoReceiveStreamInterface::Stats receive_stats =
+        receive_stream_->GetStats();
     // `total_decode_time_ms` gives a good estimate of the mean decode time,
     // `decode_ms` is used to keep track of the standard deviation.
     if (receive_stats.frames_decoded > 0)
@@ -524,7 +527,7 @@ void VideoAnalyzer::PollStats() {
   }
 
   if (audio_receive_stream_ != nullptr) {
-    AudioReceiveStream::Stats receive_stats =
+    AudioReceiveStreamInterface::Stats receive_stats =
         audio_receive_stream_->GetStats(/*get_and_clear_legacy_stats=*/true);
     audio_expand_rate_.AddSample(receive_stats.expand_rate);
     audio_accelerate_rate_.AddSample(receive_stats.accelerate_rate);
@@ -854,7 +857,7 @@ void VideoAnalyzer::PrintSamplesToFile() {
   });
 
   fprintf(out, "%s\n", graph_title_.c_str());
-  fprintf(out, "%" RTC_PRIuS "\n", samples_.size());
+  fprintf(out, "%zu\n", samples_.size());
   fprintf(out,
           "dropped "
           "input_time_ms "
@@ -867,8 +870,7 @@ void VideoAnalyzer::PrintSamplesToFile() {
           "encode_time_ms\n");
   for (const Sample& sample : samples_) {
     fprintf(out,
-            "%d %" PRId64 " %" PRId64 " %" PRId64 " %" PRId64 " %" RTC_PRIuS
-            " %lf %lf\n",
+            "%d %" PRId64 " %" PRId64 " %" PRId64 " %" PRId64 " %zu %lf %lf\n",
             sample.dropped, sample.input_time_ms, sample.send_time_ms,
             sample.recv_time_ms, sample.render_time_ms,
             sample.encoded_frame_size, sample.psnr, sample.ssim);

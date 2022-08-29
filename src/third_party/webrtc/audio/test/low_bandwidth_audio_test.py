@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env vpython3
 # Copyright (c) 2017 The WebRTC project authors. All Rights Reserved.
 #
 # Use of this source code is governed by a BSD-style license
@@ -15,6 +15,7 @@ output files will be performed.
 
 import argparse
 import collections
+import json
 import logging
 import os
 import re
@@ -62,24 +63,20 @@ def _ParseArgs():
       '--isolated-script-test-perf-output',
       default=None,
       help='Path to store perf results in histogram proto format.')
-  parser.add_argument('--extra-test-args',
-                      default=[],
-                      action='append',
-                      help='Extra args to path to the test binary.')
+  parser.add_argument(
+      '--isolated-script-test-output',
+      default=None,
+      help='Path to output an empty JSON file which Chromium infra requires.')
 
-  # Ignore Chromium-specific flags
-  parser.add_argument('--test-launcher-summary-output', type=str, default=None)
-  args = parser.parse_args()
-
-  return args
+  return parser.parse_known_args()
 
 
 def _GetPlatform():
   if sys.platform == 'win32':
     return 'win'
-  elif sys.platform == 'darwin':
+  if sys.platform == 'darwin':
     return 'mac'
-  elif sys.platform.startswith('linux'):
+  if sys.platform.startswith('linux'):
     return 'linux'
   raise AssertionError('Unknown platform %s' % sys.platform)
 
@@ -174,6 +171,7 @@ def _RunPesq(executable_path,
   # 'path/to', PESQ crashes.
   out = subprocess.check_output(_LogCommand(command),
                                 cwd=directory,
+                                universal_newlines=True,
                                 stderr=subprocess.STDOUT)
 
   # Find the scores in stdout of PESQ.
@@ -193,6 +191,7 @@ def _RunPolqa(executable_path, reference_file, degraded_file):
       degraded_file
   ]
   process = subprocess.Popen(_LogCommand(command),
+                             universal_newlines=True,
                              stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE)
   out, err = process.communicate()
@@ -251,22 +250,22 @@ def _ConfigurePythonPath(args):
 
   # Fail early in case the proto hasn't been built.
   try:
-    #pylint: disable=unused-variable
+    #pylint: disable=unused-import
     import histogram_pb2
   except ImportError as e:
-    logging.exception(e)
     raise ImportError('Could not import histogram_pb2. You need to build the '
                       'low_bandwidth_audio_perf_test target before invoking '
                       'this script. Expected to find '
-                      'histogram_pb2.py in %s.' % histogram_proto_path)
+                      'histogram_pb2.py in %s.' % histogram_proto_path) from e
 
 
 def main():
-  # pylint: disable=W0101
-  logging.basicConfig(level=logging.INFO)
+  logging.basicConfig(format='%(asctime)s %(levelname)-8s %(message)s',
+                      level=logging.INFO,
+                      datefmt='%Y-%m-%d %H:%M:%S')
   logging.info('Invoked with %s', str(sys.argv))
 
-  args = _ParseArgs()
+  args, extra_test_args = _ParseArgs()
 
   _ConfigurePythonPath(args)
 
@@ -301,7 +300,8 @@ def main():
     test_process = subprocess.Popen(_LogCommand(test_command + [
         '--sample_rate_hz=%d' % analyzer.sample_rate_hz,
         '--test_case_prefix=%s' % analyzer.name,
-    ] + args.extra_test_args),
+    ] + extra_test_args),
+                                    universal_newlines=True,
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.STDOUT)
     perf_results_file = None
@@ -327,13 +327,13 @@ def main():
 
         analyzer_results = analyzer.func(analyzer.executable, reference_file,
                                          degraded_file)
-        for metric, (value, units) in analyzer_results.items():
+        for metric, (value, units) in list(analyzer_results.items()):
           hist = histograms.CreateHistogram(metric, units, [value])
           user_story = generic_set.GenericSet([test_name])
           hist.diagnostics[reserved_infos.STORIES.name] = user_story
 
           # Output human readable results.
-          print 'RESULT %s: %s= %s %s' % (metric, test_name, value, units)
+          print('RESULT %s: %s= %s %s' % (metric, test_name, value, units))
 
         if args.remove:
           os.remove(reference_file)
@@ -353,6 +353,10 @@ def main():
   if args.isolated_script_test_perf_output:
     with open(args.isolated_script_test_perf_output, 'wb') as f:
       f.write(histograms.AsProto().SerializeToString())
+
+  if args.isolated_script_test_output:
+    with open(args.isolated_script_test_output, 'w') as f:
+      json.dump({"version": 3}, f)
 
   return test_process.wait()
 

@@ -8,6 +8,10 @@
 #include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/views/view.h"
 
+namespace cc {
+class PaintFlags;
+}
+
 namespace ash {
 
 // A view that paints the wallpaper according to its layout inside its bounds.
@@ -30,6 +34,7 @@ class WallpaperBaseView : public views::View {
 
   // views::View:
   void OnPaint(gfx::Canvas* canvas) override;
+  void OnThemeChanged() override;
 
  protected:
   virtual void DrawWallpaper(const gfx::ImageSkia& wallpaper,

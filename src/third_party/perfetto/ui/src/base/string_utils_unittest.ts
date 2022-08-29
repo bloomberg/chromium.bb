@@ -17,12 +17,13 @@ import {
   base64Encode,
   binaryDecode,
   binaryEncode,
+  sqliteString,
   utf8Decode,
   utf8Encode,
 } from './string_utils';
 
 test('string_utils.stringToBase64', () => {
-  const bytes = [...'Hello, world'].map(c => c.charCodeAt(0));
+  const bytes = [...'Hello, world'].map((c) => c.charCodeAt(0));
   const buffer = new Uint8Array(bytes);
   const b64Encoded = base64Encode(buffer);
   expect(b64Encoded).toEqual('SGVsbG8sIHdvcmxk');
@@ -56,7 +57,7 @@ test('string_utils.utf8EncodeAndDecode', () => {
     114,
     108,
     100,
-    33
+    33,
   ]));
   expect(utf8Decode(buffer)).toEqual(testString);
 });
@@ -72,4 +73,9 @@ test('string_utils.binaryEncodeAndDecode', () => {
   const encodedThroughJson = JSON.parse(JSON.stringify(encodedStr));
   expect(binaryDecode(encodedStr)).toEqual(buf);
   expect(binaryDecode(encodedThroughJson)).toEqual(buf);
+});
+
+test('string_utils.sqliteString', () => {
+  expect(sqliteString('that\'s it')).toEqual('\'that\'\'s it\'');
+  expect(sqliteString('no quotes')).toEqual('\'no quotes\'');
 });

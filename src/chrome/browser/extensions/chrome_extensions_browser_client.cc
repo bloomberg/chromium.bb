@@ -9,6 +9,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/strings/string_util.h"
 #include "base/version.h"
 #include "build/build_config.h"
@@ -18,9 +19,8 @@
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/api/chrome_extensions_api_client.h"
-#include "chrome/browser/extensions/api/content_settings/content_settings_service.h"
+#include "chrome/browser/extensions/api/favicon/favicon_util.h"
 #include "chrome/browser/extensions/api/runtime/chrome_runtime_api_delegate.h"
-#include "chrome/browser/extensions/api/tabs/tabs_util.h"
 #include "chrome/browser/extensions/chrome_component_extension_resource_manager.h"
 #include "chrome/browser/extensions/chrome_extension_host_delegate.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
@@ -39,28 +39,33 @@
 #include "chrome/browser/extensions/updater/chrome_update_client_config.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/net/system_network_context_manager.h"
+#include "chrome/browser/profiles/keep_alive/profile_keep_alive_types.h"
+#include "chrome/browser/profiles/keep_alive/scoped_profile_keep_alive.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_keep_alive_types.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/profiles/scoped_profile_keep_alive.h"
 #include "chrome/browser/renderer_host/chrome_navigation_ui_data.h"
 #include "chrome/browser/safe_browsing/extension_telemetry/extension_telemetry_service.h"
 #include "chrome/browser/safe_browsing/extension_telemetry/extension_telemetry_service_factory.h"
+#include "chrome/browser/safe_browsing/extension_telemetry/remote_host_contacted_signal.h"
 #include "chrome/browser/safe_browsing/extension_telemetry/tabs_execute_script_signal.h"
 #include "chrome/browser/task_manager/web_contents_tags.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
+#include "chrome/browser/usb/usb_chooser_context.h"
+#include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/embedder_support/user_agent_utils.h"
+#include "components/safe_browsing/core/common/features.h"
 #include "components/sessions/content/session_tab_helper.h"
 #include "components/update_client/update_client.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_switches.h"
+#include "extensions/browser/api/content_settings/content_settings_service.h"
 #include "extensions/browser/core_extensions_browser_api_provider.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
@@ -82,6 +87,10 @@
 #include "components/user_manager/user_manager.h"
 #else
 #include "extensions/browser/updater/null_extension_cache.h"
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS)
+#include "chrome/browser/chromeos/policy/dlp/dlp_content_manager.h"
 #endif
 
 namespace extensions {
@@ -178,8 +187,15 @@ content::BrowserContext* ChromeExtensionsBrowserClient::GetOriginalContext(
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 std::string ChromeExtensionsBrowserClient::GetUserIdHashFromContext(
     content::BrowserContext* context) {
-  return chromeos::ProfileHelper::GetUserIdHashFromProfile(
+  return ash::ProfileHelper::GetUserIdHashFromProfile(
       static_cast<Profile*>(context));
+}
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+bool ChromeExtensionsBrowserClient::IsFromMainProfile(
+    content::BrowserContext* browser_context) {
+  return Profile::FromBrowserContext(browser_context)->IsMainProfile();
 }
 #endif
 
@@ -369,7 +385,7 @@ ChromeExtensionsBrowserClient::GetComponentExtensionResourceManager() {
 void ChromeExtensionsBrowserClient::BroadcastEventToRenderers(
     events::HistogramValue histogram_value,
     const std::string& event_name,
-    std::unique_ptr<base::ListValue> args,
+    base::Value::List args,
     bool dispatch_to_off_the_record_profiles) {
   g_browser_process->extension_event_router_forwarder()
       ->BroadcastEventToRenderers(histogram_value, event_name, std::move(args),
@@ -514,7 +530,7 @@ KioskDelegate* ChromeExtensionsBrowserClient::GetKioskDelegate() {
 bool ChromeExtensionsBrowserClient::IsLockScreenContext(
     content::BrowserContext* context) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  return chromeos::ProfileHelper::IsLockScreenAppProfile(
+  return ash::ProfileHelper::IsLockScreenAppProfile(
       Profile::FromBrowserContext(context));
 #else
   return false;
@@ -586,7 +602,12 @@ bool ChromeExtensionsBrowserClient::HasIsolatedStorage(
 
 bool ChromeExtensionsBrowserClient::IsScreenshotRestricted(
     content::WebContents* web_contents) const {
-  return tabs_util::IsScreenshotRestricted(web_contents);
+#if !BUILDFLAG(IS_CHROMEOS)
+  return false;
+#else
+  return policy::DlpContentManager::Get()->IsScreenshotApiRestricted(
+      web_contents);
+#endif
 }
 
 bool ChromeExtensionsBrowserClient::IsValidTabId(
@@ -603,18 +624,84 @@ void ChromeExtensionsBrowserClient::NotifyExtensionApiTabExecuteScript(
   auto* telemetry_service =
       safe_browsing::ExtensionTelemetryServiceFactory::GetForProfile(
           Profile::FromBrowserContext(context));
-  if (!telemetry_service || !telemetry_service->enabled())
+  if (!telemetry_service || !telemetry_service->enabled() ||
+      !base::FeatureList::IsEnabled(
+          safe_browsing::kExtensionTelemetryTabsExecuteScriptSignal)) {
     return;
+  }
 
   auto signal = std::make_unique<safe_browsing::TabsExecuteScriptSignal>(
       extension_id, code);
   telemetry_service->AddSignal(std::move(signal));
 }
 
+bool ChromeExtensionsBrowserClient::IsExtensionTelemetryServiceEnabled(
+    content::BrowserContext* context) const {
+  auto* telemetry_service =
+      safe_browsing::ExtensionTelemetryServiceFactory::GetForProfile(
+          Profile::FromBrowserContext(context));
+  return telemetry_service && telemetry_service->enabled();
+}
+
+bool ChromeExtensionsBrowserClient::
+    IsExtensionTelemetryRemoteHostContactedSignalEnabled() const {
+  return base::FeatureList::IsEnabled(
+      safe_browsing::kExtensionTelemetryReportContactedHosts);
+}
+
+void ChromeExtensionsBrowserClient::NotifyExtensionRemoteHostContacted(
+    content::BrowserContext* context,
+    const ExtensionId& extension_id,
+    const GURL& url) const {
+  if (!url.SchemeIsHTTPOrHTTPS()) {
+    return;
+  }
+  auto* telemetry_service =
+      safe_browsing::ExtensionTelemetryServiceFactory::GetForProfile(
+          Profile::FromBrowserContext(context));
+  if (!telemetry_service || !telemetry_service->enabled() ||
+      !IsExtensionTelemetryRemoteHostContactedSignalEnabled()) {
+    return;
+  }
+  auto remote_host_signal =
+      std::make_unique<safe_browsing::RemoteHostContactedSignal>(extension_id,
+                                                                 url);
+  telemetry_service->AddSignal(std::move(remote_host_signal));
+}
+
 // static
 void ChromeExtensionsBrowserClient::set_did_chrome_update_for_testing(
     bool did_update) {
   g_did_chrome_update_for_testing = did_update;
+}
+
+bool ChromeExtensionsBrowserClient::IsUsbDeviceAllowedByPolicy(
+    content::BrowserContext* context,
+    const ExtensionId& extension_id,
+    int vendor_id,
+    int product_id) const {
+  url::Origin origin =
+      extensions::Extension::CreateOriginFromExtensionId(extension_id);
+
+  UsbChooserContext* usb_chooser_context =
+      UsbChooserContextFactory::GetForProfile(static_cast<Profile*>(context));
+  // This will never be null as even incognito mode has its own instance.
+  DCHECK(usb_chooser_context);
+
+  // Check against WebUsbAllowDevicesForUrls.
+  return usb_chooser_context->usb_policy_allowed_devices().IsDeviceAllowed(
+      origin, {vendor_id, product_id});
+}
+
+void ChromeExtensionsBrowserClient::GetFavicon(
+    content::BrowserContext* browser_context,
+    const Extension* extension,
+    const GURL& url,
+    base::CancelableTaskTracker* tracker,
+    base::OnceCallback<void(scoped_refptr<base::RefCountedMemory> bitmap_data)>
+        callback) const {
+  favicon_util::GetFaviconForExtensionRequest(browser_context, extension, url,
+                                              tracker, std::move(callback));
 }
 
 }  // namespace extensions

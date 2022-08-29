@@ -19,6 +19,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include "config_components.h"
+
 #include "libavutil/buffer.h"
 #include "libavutil/common.h"
 #include "libavutil/crc.h"
@@ -37,6 +39,7 @@
 #include "mpegts.h"
 #include "internal.h"
 #include "avio_internal.h"
+#include "demux.h"
 #include "mpeg.h"
 #include "isom.h"
 #if CONFIG_ICONV
@@ -46,8 +49,6 @@
 /* maximum size in which we look for synchronization if
  * synchronization is lost */
 #define MAX_RESYNC_SIZE 65536
-
-#define MAX_PES_PAYLOAD 200 * 1024
 
 #define MAX_MP4_DESCR_COUNT 16
 
@@ -162,6 +163,7 @@ struct MpegTSContext {
 
     int resync_size;
     int merge_pmt_versions;
+    int max_packet_size;
 
     /******************************************/
     /* private mpegts data */
@@ -198,6 +200,8 @@ static const AVOption options[] = {
      {.i64 = 0}, 0, 1, 0 },
     {"skip_clear", "skip clearing programs", offsetof(MpegTSContext, skip_clear), AV_OPT_TYPE_BOOL,
      {.i64 = 0}, 0, 1, 0 },
+    {"max_packet_size", "maximum size of emitted packet", offsetof(MpegTSContext, max_packet_size), AV_OPT_TYPE_INT,
+     {.i64 = 204800}, 1, INT_MAX/2, AV_OPT_FLAG_DECODING_PARAM },
     { NULL },
 };
 
@@ -642,6 +646,7 @@ typedef struct SectionHeader {
     uint8_t tid;
     uint16_t id;
     uint8_t version;
+    uint8_t current_next;
     uint8_t sec_num;
     uint8_t last_sec_num;
 } SectionHeader;
@@ -770,6 +775,7 @@ static int parse_section_header(SectionHeader *h,
     if (val < 0)
         return val;
     h->version = (val >> 1) & 0x1f;
+    h->current_next = val & 0x01;
     val = get8(pp, p_end);
     if (val < 0)
         return val;
@@ -938,10 +944,9 @@ static int mpegts_set_stream_info(AVStream *st, PESContext *pes,
             // audio track - add a second stream for this
             AVStream *sub_st;
             // priv_data cannot be shared between streams
-            PESContext *sub_pes = av_malloc(sizeof(*sub_pes));
+            PESContext *sub_pes = av_memdup(pes, sizeof(*sub_pes));
             if (!sub_pes)
                 return AVERROR(ENOMEM);
-            memcpy(sub_pes, pes, sizeof(*sub_pes));
 
             sub_st = avformat_new_stream(pes->stream, NULL);
             if (!sub_st) {
@@ -1122,7 +1127,7 @@ static AVBufferRef *buffer_pool_get(MpegTSContext *ts, int size)
 {
     int index = av_log2(size + AV_INPUT_BUFFER_PADDING_SIZE);
     if (!ts->pools[index]) {
-        int pool_size = FFMIN(MAX_PES_PAYLOAD + AV_INPUT_BUFFER_PADDING_SIZE, 2 << index);
+        int pool_size = FFMIN(ts->max_packet_size + AV_INPUT_BUFFER_PADDING_SIZE, 2 << index);
         ts->pools[index] = av_buffer_pool_init(pool_size, NULL);
         if (!ts->pools[index])
             return NULL;
@@ -1369,7 +1374,7 @@ skip:
             break;
         case MPEGTS_PAYLOAD:
             do {
-                int max_packet_size = MAX_PES_PAYLOAD;
+                int max_packet_size = ts->max_packet_size;
                 if (pes->PES_packet_length && pes->PES_packet_length + PES_START_SIZE > pes->pes_header_size)
                     max_packet_size = pes->PES_packet_length + PES_START_SIZE - pes->pes_header_size;
 
@@ -1379,7 +1384,7 @@ skip:
                     if (ret < 0)
                         return ret;
                     pes->PES_packet_length = 0;
-                    max_packet_size = MAX_PES_PAYLOAD;
+                    max_packet_size = ts->max_packet_size;
                     ts->stop_parse = 1;
                 } else if (pes->data_index == 0 &&
                            buf_size > max_packet_size) {
@@ -2238,11 +2243,10 @@ static AVStream *find_matching_stream(MpegTSContext *ts, int pid, unsigned int p
                                       int stream_identifier, int pmt_stream_idx, struct Program *p)
 {
     AVFormatContext *s = ts->stream;
-    int i;
     AVStream *found = NULL;
 
     if (stream_identifier) { /* match based on "stream identifier descriptor" if present */
-        for (i = 0; i < p->nb_streams; i++) {
+        for (int i = 0; i < p->nb_streams; i++) {
             if (p->streams[i].stream_identifier == stream_identifier)
                 if (!found || pmt_stream_idx == i) /* fallback to idx based guess if multiple streams have the same identifier */
                     found = s->streams[p->streams[i].idx];
@@ -2255,7 +2259,7 @@ static AVStream *find_matching_stream(MpegTSContext *ts, int pid, unsigned int p
         av_log(ts->stream, AV_LOG_VERBOSE,
                "re-using existing %s stream %d (pid=0x%x) for new pid=0x%x\n",
                av_get_media_type_string(found->codecpar->codec_type),
-               i, found->id, pid);
+               found->index, found->id, pid);
     }
 
     return found;
@@ -2330,6 +2334,8 @@ static void pmt_cb(MpegTSFilter *filter, const uint8_t *section, int section_len
     if (parse_section_header(h, &p, p_end) < 0)
         return;
     if (h->tid != PMT_TID)
+        return;
+    if (!h->current_next)
         return;
     if (skip_identical(h, tssf))
         return;
@@ -2540,6 +2546,8 @@ static void pat_cb(MpegTSFilter *filter, const uint8_t *section, int section_len
         return;
     if (h->tid != PAT_TID)
         return;
+    if (!h->current_next)
+        return;
     if (ts->skip_changes)
         return;
 
@@ -2678,6 +2686,8 @@ static void sdt_cb(MpegTSFilter *filter, const uint8_t *section, int section_len
         return;
     if (h->tid != SDT_TID)
         return;
+    if (!h->current_next)
+        return;
     if (ts->skip_changes)
         return;
     if (skip_identical(h, tssf))
@@ -2717,13 +2727,13 @@ static void sdt_cb(MpegTSFilter *filter, const uint8_t *section, int section_len
 
             switch (desc_tag) {
             case 0x48:
-                service_type = get8(&p, p_end);
+                service_type = get8(&p, desc_end);
                 if (service_type < 0)
                     break;
-                provider_name = getstr8(&p, p_end);
+                provider_name = getstr8(&p, desc_end);
                 if (!provider_name)
                     break;
-                name = getstr8(&p, p_end);
+                name = getstr8(&p, desc_end);
                 if (name) {
                     AVProgram *program = av_new_program(ts->stream, sid);
                     if (program) {
@@ -3378,6 +3388,7 @@ MpegTSContext *avpriv_mpegts_parse_open(AVFormatContext *s)
         return NULL;
     /* no stream case, currently used by RTP */
     ts->raw_packet_size = TS_PACKET_SIZE;
+    ts->max_packet_size = 2048000;
     ts->stream = s;
     ts->auto_guess = 1;
 

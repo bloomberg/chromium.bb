@@ -129,7 +129,7 @@ static INLINE void copy_rect(uint16_t *dst, int dstride, const uint16_t *src,
 // Returns:
 //   Nothing will be returned.
 static void cdef_prepare_fb(const AV1_COMMON *const cm, CdefBlockInfo *fb_info,
-                            uint16_t **const colbuf, const int *cdef_left,
+                            uint16_t **const colbuf, const int cdef_left,
                             int fbc, int fbr, int plane) {
   const CommonModeInfoParams *const mi_params = &cm->mi_params;
   uint16_t *src = fb_info->src;
@@ -138,7 +138,7 @@ static void cdef_prepare_fb(const AV1_COMMON *const cm, CdefBlockInfo *fb_info,
   const int nvfb = (mi_params->mi_rows + MI_SIZE_64X64 - 1) / MI_SIZE_64X64;
   const int nhfb = (mi_params->mi_cols + MI_SIZE_64X64 - 1) / MI_SIZE_64X64;
   int cstart = 0;
-  if (!*cdef_left) cstart = -CDEF_HBORDER;
+  if (!cdef_left) cstart = -CDEF_HBORDER;
   int rend, cend;
   const int nhb =
       AOMMIN(MI_SIZE_64X64, mi_params->mi_cols - MI_SIZE_64X64 * fbc);
@@ -216,7 +216,7 @@ static void cdef_prepare_fb(const AV1_COMMON *const cm, CdefBlockInfo *fb_info,
     fill_rect(&src[hsize + CDEF_HBORDER], CDEF_BSTRIDE, CDEF_VBORDER,
               CDEF_HBORDER, CDEF_VERY_LARGE);
   }
-  if (*cdef_left) {
+  if (cdef_left) {
     /* If we deringed the superblock on the left then we need to copy in
     saved pixels. */
     copy_rect(src, CDEF_BSTRIDE, colbuf[plane], CDEF_HBORDER,
@@ -259,31 +259,12 @@ static INLINE void cdef_filter_fb(CdefBlockInfo *const fb_info, int plane,
 
 // Initializes block-level parameters for CDEF.
 static INLINE void cdef_init_fb_col(const MACROBLOCKD *const xd,
-                                    const CdefInfo *const cdef_info,
-                                    CdefBlockInfo *const fb_info,
-                                    int mbmi_cdef_strength, int fbc, int fbr,
+                                    CdefBlockInfo *const fb_info, int *level,
+                                    int *sec_strength, int fbc, int fbr,
                                     int plane) {
-  if (plane == AOM_PLANE_Y) {
-    fb_info->level =
-        cdef_info->cdef_strengths[mbmi_cdef_strength] / CDEF_SEC_STRENGTHS;
-    fb_info->sec_strength =
-        cdef_info->cdef_strengths[mbmi_cdef_strength] % CDEF_SEC_STRENGTHS;
-    fb_info->sec_strength += fb_info->sec_strength == 3;
-    int uv_level =
-        cdef_info->cdef_uv_strengths[mbmi_cdef_strength] / CDEF_SEC_STRENGTHS;
-    int uv_sec_strength =
-        cdef_info->cdef_uv_strengths[mbmi_cdef_strength] % CDEF_SEC_STRENGTHS;
-    uv_sec_strength += uv_sec_strength == 3;
-    fb_info->is_zero_level = (fb_info->level == 0) &&
-                             (fb_info->sec_strength == 0) && (uv_level == 0) &&
-                             (uv_sec_strength == 0);
-  } else {
-    fb_info->level =
-        cdef_info->cdef_uv_strengths[mbmi_cdef_strength] / CDEF_SEC_STRENGTHS;
-    fb_info->sec_strength =
-        cdef_info->cdef_uv_strengths[mbmi_cdef_strength] % CDEF_SEC_STRENGTHS;
-    fb_info->sec_strength += fb_info->sec_strength == 3;
-  }
+  const PLANE_TYPE plane_type = get_plane_type(plane);
+  fb_info->level = level[plane_type];
+  fb_info->sec_strength = sec_strength[plane_type];
   fb_info->dst = xd->plane[plane].dst.buf;
   fb_info->dst_stride = xd->plane[plane].dst.stride;
 
@@ -305,27 +286,62 @@ static void cdef_fb_col(const AV1_COMMON *const cm, const MACROBLOCKD *const xd,
                          MI_SIZE_64X64 * fbc]
           ->cdef_strength;
   const int num_planes = av1_num_planes(cm);
+  int is_zero_level[PLANE_TYPES] = { 1, 1 };
+  int level[PLANE_TYPES] = { 0 };
+  int sec_strength[PLANE_TYPES] = { 0 };
+  const CdefInfo *const cdef_info = &cm->cdef_info;
 
   if (mi_params->mi_grid_base[MI_SIZE_64X64 * fbr * mi_params->mi_stride +
                               MI_SIZE_64X64 * fbc] == NULL ||
       mbmi_cdef_strength == -1) {
-    *cdef_left = 0;
+    av1_zero_array(cdef_left, num_planes);
     return;
   }
-  for (int plane = 0; plane < num_planes; plane++) {
-    cdef_init_fb_col(xd, &cm->cdef_info, fb_info, mbmi_cdef_strength, fbc, fbr,
-                     plane);
-    if (fb_info->is_zero_level ||
-        (fb_info->cdef_count = av1_cdef_compute_sb_list(
-             mi_params, fbr * MI_SIZE_64X64, fbc * MI_SIZE_64X64,
-             fb_info->dlist, BLOCK_64X64)) == 0) {
-      *cdef_left = 0;
-      return;
-    }
-    cdef_prepare_fb(cm, fb_info, colbuf, cdef_left, fbc, fbr, plane);
-    cdef_filter_fb(fb_info, plane, cm->seq_params->use_highbitdepth);
+
+  // Compute level and secondary strength for planes
+  level[PLANE_TYPE_Y] =
+      cdef_info->cdef_strengths[mbmi_cdef_strength] / CDEF_SEC_STRENGTHS;
+  sec_strength[PLANE_TYPE_Y] =
+      cdef_info->cdef_strengths[mbmi_cdef_strength] % CDEF_SEC_STRENGTHS;
+  sec_strength[PLANE_TYPE_Y] += sec_strength[PLANE_TYPE_Y] == 3;
+  is_zero_level[PLANE_TYPE_Y] =
+      (level[PLANE_TYPE_Y] == 0) && (sec_strength[PLANE_TYPE_Y] == 0);
+
+  if (num_planes > 1) {
+    level[PLANE_TYPE_UV] =
+        cdef_info->cdef_uv_strengths[mbmi_cdef_strength] / CDEF_SEC_STRENGTHS;
+    sec_strength[PLANE_TYPE_UV] =
+        cdef_info->cdef_uv_strengths[mbmi_cdef_strength] % CDEF_SEC_STRENGTHS;
+    sec_strength[PLANE_TYPE_UV] += sec_strength[PLANE_TYPE_UV] == 3;
+    is_zero_level[PLANE_TYPE_UV] =
+        (level[PLANE_TYPE_UV] == 0) && (sec_strength[PLANE_TYPE_UV] == 0);
   }
-  *cdef_left = 1;
+
+  if (is_zero_level[PLANE_TYPE_Y] && is_zero_level[PLANE_TYPE_UV]) {
+    av1_zero_array(cdef_left, num_planes);
+    return;
+  }
+
+  fb_info->cdef_count = av1_cdef_compute_sb_list(mi_params, fbr * MI_SIZE_64X64,
+                                                 fbc * MI_SIZE_64X64,
+                                                 fb_info->dlist, BLOCK_64X64);
+  if (!fb_info->cdef_count) {
+    av1_zero_array(cdef_left, num_planes);
+    return;
+  }
+
+  for (int plane = 0; plane < num_planes; plane++) {
+    // Do not skip cdef filtering for luma plane as filter direction is
+    // computed based on luma.
+    if (plane && is_zero_level[get_plane_type(plane)]) {
+      cdef_left[plane] = 0;
+      continue;
+    }
+    cdef_init_fb_col(xd, fb_info, level, sec_strength, fbc, fbr, plane);
+    cdef_prepare_fb(cm, fb_info, colbuf, cdef_left[plane], fbc, fbr, plane);
+    cdef_filter_fb(fb_info, plane, cm->seq_params->use_highbitdepth);
+    cdef_left[plane] = 1;
+  }
 }
 
 // Initializes row-level parameters for CDEF frame.
@@ -392,7 +408,7 @@ void av1_cdef_fb_row(const AV1_COMMON *const cm, MACROBLOCKD *xd,
                      cdef_init_fb_row_t cdef_init_fb_row_fn,
                      struct AV1CdefSyncData *const cdef_sync) {
   CdefBlockInfo fb_info;
-  int cdef_left = 1;
+  int cdef_left[MAX_MB_PLANE] = { 1, 1, 1 };
   const int nhfb = (cm->mi_params.mi_cols + MI_SIZE_64X64 - 1) / MI_SIZE_64X64;
 
   cdef_init_fb_row_fn(cm, xd, &fb_info, linebuf, src, cdef_sync, fbr);
@@ -403,7 +419,7 @@ void av1_cdef_fb_row(const AV1_COMMON *const cm, MACROBLOCKD *xd,
           (MI_SIZE_64X64 * (fbc + 1) == cm->mi_params.mi_cols) ? 1 : 0;
     else
       fb_info.frame_boundary[RIGHT] = 1;
-    cdef_fb_col(cm, xd, &fb_info, colbuf, &cdef_left, fbc, fbr);
+    cdef_fb_col(cm, xd, &fb_info, colbuf, &cdef_left[0], fbc, fbr);
   }
 }
 

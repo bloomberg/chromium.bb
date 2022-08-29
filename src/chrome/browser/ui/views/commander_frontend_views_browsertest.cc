@@ -4,7 +4,8 @@
 
 #include "chrome/browser/ui/views/commander_frontend_views.h"
 
-#include "base/ignore_result.h"
+#include <tuple>
+
 #include "base/memory/raw_ptr.h"
 #include "chrome/browser/ui/commander/commander_backend.h"
 #include "chrome/browser/ui/commander/commander_view_model.h"
@@ -104,7 +105,7 @@ class CommanderFrontendViewsTest : public InProcessBrowserTest {
   }
 
   void OnWidgetShown(views::Widget* widget) {
-    if (widget->GetName() == "Commander") {
+    if (widget->GetName() == "Quick Commands") {
       active_widget_ = widget;
       if (IsWidgetAttachedToBrowser(expected_browser_)) {
         expected_browser_ = nullptr;
@@ -234,7 +235,7 @@ IN_PROC_BROWSER_TEST_F(CommanderFrontendViewsTest, PassesOnOptionSelected) {
   auto frontend = std::make_unique<CommanderFrontendViews>(backend_.get());
 
   frontend->Show(browser());
-  ignore_result(WaitForCommanderWidgetAttachedTo(browser()));
+  std::ignore = WaitForCommanderWidgetAttachedTo(browser());
 
   frontend->OnOptionSelected(8, 13);
   ASSERT_EQ(backend_->command_selected_invocations().size(), 1u);
@@ -245,7 +246,7 @@ IN_PROC_BROWSER_TEST_F(CommanderFrontendViewsTest, PassesOnOptionSelected) {
 IN_PROC_BROWSER_TEST_F(CommanderFrontendViewsTest, PassesOnTextChanged) {
   auto frontend = std::make_unique<CommanderFrontendViews>(backend_.get());
   frontend->Show(browser());
-  ignore_result(WaitForCommanderWidgetAttachedTo(browser()));
+  std::ignore = WaitForCommanderWidgetAttachedTo(browser());
 
   const std::u16string input = u"orange";
   frontend->OnTextChanged(input);
@@ -258,7 +259,7 @@ IN_PROC_BROWSER_TEST_F(CommanderFrontendViewsTest,
                        PassesOnCompositeCommandCancelled) {
   auto frontend = std::make_unique<CommanderFrontendViews>(backend_.get());
   frontend->Show(browser());
-  ignore_result(WaitForCommanderWidgetAttachedTo(browser()));
+  std::ignore = WaitForCommanderWidgetAttachedTo(browser());
 
   EXPECT_EQ(backend_->composite_command_cancelled_invocation_count(), 0);
   frontend->OnCompositeCommandCancelled();

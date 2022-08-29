@@ -17,7 +17,15 @@
 #include "components/update_client/update_client.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
+namespace base {
+class TimeTicks;
+}
+
 namespace component_updater {
+
+// The name of the directory under DIR_COMPONENT_USER that cros component
+// installers puts all of the installed components.
+extern const char kComponentsRootPath[];
 
 class ComponentUpdateService;
 class MetadataTable;
@@ -31,6 +39,7 @@ struct ComponentConfig {
   enum class PolicyType {
     kEnvVersion,  // Checks env_version, see below.
     kLacros,      // Uses special lacros compatibility rules.
+    kDemoApp,     // Adds demo-mode-specific install attributes
   };
   PolicyType policy_type;
   // This is used for ABI compatibility checks. It is compared against the
@@ -125,6 +134,24 @@ class LacrosInstallerPolicy : public CrOSComponentInstallerPolicy {
   static void SetAshVersionForTest(const char* version);
 };
 
+// An installer policy for the ChromeOS Demo Mode app, which includes special
+// system-sourced installer attributes in the request to receive customized
+// app versions
+class DemoAppInstallerPolicy : public CrOSComponentInstallerPolicy {
+ public:
+  DemoAppInstallerPolicy(const ComponentConfig& config,
+                         CrOSComponentInstaller* cros_component_installer);
+  DemoAppInstallerPolicy(const DemoAppInstallerPolicy&) = delete;
+  DemoAppInstallerPolicy& operator=(const DemoAppInstallerPolicy&) = delete;
+  ~DemoAppInstallerPolicy() override;
+
+  // ComponentInstallerPolicy:
+  void ComponentReady(const base::Version& version,
+                      const base::FilePath& path,
+                      base::Value manifest) override;
+  update_client::InstallerAttributes GetInstallerAttributes() const override;
+};
+
 // This class contains functions used to register and install a component.
 class CrOSComponentInstaller : public CrOSComponentManager {
  public:
@@ -152,6 +179,28 @@ class CrOSComponentInstaller : public CrOSComponentManager {
   // Called when a component is installed/updated.
   // Broadcasts a D-Bus signal for a successful component installation.
   void EmitInstalledSignal(const std::string& component);
+
+  // The load cache contains three pieces of information:
+  //   (1) For a given component, whether the load request was successful, a
+  //   failure, or in-progress.
+  //   (2) If the load request was successful, the file path to the loaded
+  //   image.
+  //   (3) If the load request is in progress, the callbacks to invoke after the
+  //   load request finishes.
+  struct LoadInfo {
+    LoadInfo();
+    ~LoadInfo();
+    // If null, then the request is pending.
+    absl::optional<bool> success;
+    // Only populated on success.
+    base::FilePath path;
+    // Only populated if request is pending. Includes all subsequent callbacks
+    // after the first.
+    std::vector<LoadCallback> callbacks;
+  };
+
+  // Test-only method for introspection.
+  std::map<std::string, LoadInfo>& GetLoadCacheForTesting();
 
  protected:
   ~CrOSComponentInstaller() override;
@@ -207,6 +256,13 @@ class CrOSComponentInstaller : public CrOSComponentManager {
   // |name|.
   bool IsCompatible(const std::string& name) const;
 
+  // Posts a task with the response information for |callback|.
+  void DispatchLoadCallback(LoadCallback callback,
+                            base::FilePath path,
+                            bool success);
+  // Repeatedly calls DispatchLoadCallback with failure parameters.
+  void DispatchFailedLoads(std::vector<LoadCallback> callbacks);
+
   // Maps from a compatible component name to its installed path.
   base::flat_map<std::string, base::FilePath> compatible_components_;
 
@@ -215,6 +271,10 @@ class CrOSComponentInstaller : public CrOSComponentManager {
 
   // Table storing metadata (installs, usage, etc.).
   std::unique_ptr<MetadataTable> metadata_table_;
+
+  // The load cache stores ongoing load requests, as well as the finished
+  // results.
+  std::map<std::string, LoadInfo> load_cache_;
 
   ComponentUpdateService* const component_updater_;
 };

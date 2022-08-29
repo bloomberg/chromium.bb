@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -48,7 +47,7 @@ namespace net {
 namespace {
 
 const char kTestData[] = "0123456789";
-const size_t kTestDataSize = base::size(kTestData) - 1;
+const size_t kTestDataSize = std::size(kTestData) - 1;
 const size_t kTestBufferSize = 1 << 14;  // 16KB.
 
 // Reads data from the upload data stream, and returns the data as string.
@@ -72,9 +71,7 @@ class MockUploadElementReader : public UploadElementReader {
   MockUploadElementReader(int content_length, bool is_in_memory)
       : content_length_(content_length),
         bytes_remaining_(content_length),
-        is_in_memory_(is_in_memory),
-        init_result_(OK),
-        read_result_(OK) {}
+        is_in_memory_(is_in_memory) {}
 
   ~MockUploadElementReader() override = default;
 
@@ -135,10 +132,10 @@ class MockUploadElementReader : public UploadElementReader {
   bool is_in_memory_;
 
   // Result value returned from Init().
-  int init_result_;
+  int init_result_ = OK;
 
   // Result value returned from Read().
-  int read_result_;
+  int read_result_ = OK;
 };
 
 }  // namespace

@@ -18,6 +18,7 @@
 #import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
 #import "ios/chrome/browser/signin/identity_manager_factory.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_completion_info.h"
+#import "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
 #import "ios/web/public/test/web_task_environment.h"
@@ -30,7 +31,7 @@
 #endif
 
 // Subclass of ConsistencyPromoSigninMediator to override
-// |signinTimeoutDurationSeconds| property.
+// `signinTimeoutDurationSeconds` property.
 @interface TestConsistencyPromoSigninMediator : ConsistencyPromoSigninMediator
 
 @property(nonatomic, assign) NSInteger signinTimeoutDurationSeconds;
@@ -102,7 +103,7 @@ class ConsistencyPromoSigninMediatorTest : public PlatformTest {
   // Signs in and simulates cookies being added on the web.
   void SigninAndSimulateCookies(ConsistencyPromoSigninMediator* mediator,
                                 ChromeIdentity* identity) {
-    GetAuthenticationService()->SignIn(identity);
+    GetAuthenticationService()->SignIn(identity, nil);
     OCMExpect([mediator_delegate_mock_
         consistencyPromoSigninMediatorSignInDone:mediator
                                     withIdentity:identity]);
@@ -122,7 +123,7 @@ class ConsistencyPromoSigninMediatorTest : public PlatformTest {
   // Signs in and simulates a cookie error.
   void SigninAndSimulateError(ConsistencyPromoSigninMediator* mediator,
                               ChromeIdentity* identity) {
-    GetAuthenticationService()->SignIn(identity);
+    GetAuthenticationService()->SignIn(identity, nil);
     OCMExpect([mediator_delegate_mock_
         consistencyPromoSigninMediator:mediator
                         errorDidHappen:
@@ -144,6 +145,7 @@ class ConsistencyPromoSigninMediatorTest : public PlatformTest {
  protected:
   // Needed for test browser state created by TestChromeBrowserState().
   web::WebTaskEnvironment task_environment_;
+  IOSChromeScopedTestingLocalState scoped_testing_local_state_;
   std::unique_ptr<TestChromeBrowserState> browser_state_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
 

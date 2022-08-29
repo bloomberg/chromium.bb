@@ -24,6 +24,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
+#include "chromeos/dbus/dlcservice/dlcservice.pb.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/prefs/pref_service.h"
@@ -84,7 +85,7 @@ void ShowStartVmFailedDialog(PluginVmLaunchResult result) {
   switch (result) {
     default:
       NOTREACHED();
-      FALLTHROUGH;
+      [[fallthrough]];
     case PluginVmLaunchResult::kError:
       title = l10n_util::GetStringFUTF16(IDS_PLUGIN_VM_START_VM_ERROR_TITLE,
                                          app_name);
@@ -120,7 +121,7 @@ void ShowStartVmFailedDialog(PluginVmLaunchResult result) {
 
 PluginVmManagerImpl::PluginVmManagerImpl(Profile* profile)
     : profile_(profile),
-      owner_id_(chromeos::ProfileHelper::GetUserIdHashFromProfile(profile)) {
+      owner_id_(ash::ProfileHelper::GetUserIdHashFromProfile(profile)) {
   chromeos::DBusThreadManager::Get()
       ->GetVmPluginDispatcherClient()
       ->AddObserver(this);
@@ -373,7 +374,7 @@ void PluginVmManagerImpl::OnVmStateChanged(
     vm_tools::concierge::GetVmInfoRequest concierge_request;
     concierge_request.set_owner_id(owner_id_);
     concierge_request.set_name(kPluginVmName);
-    chromeos::ConciergeClient::Get()->GetVmInfo(
+    ash::ConciergeClient::Get()->GetVmInfo(
         std::move(concierge_request),
         base::BindOnce(&PluginVmManagerImpl::OnGetVmInfoForSharing,
                        weak_ptr_factory_.GetWeakPtr()));
@@ -416,8 +417,10 @@ void PluginVmManagerImpl::InstallDlcAndUpdateVmState(
     base::OnceCallback<void(bool default_vm_exists)> success_callback,
     base::OnceClosure error_callback) {
   LOG_FUNCTION_CALL();
+  dlcservice::InstallRequest install_request;
+  install_request.set_id(kPitaDlc);
   chromeos::DlcserviceClient::Get()->Install(
-      "pita",
+      install_request,
       base::BindOnce(&PluginVmManagerImpl::OnInstallPluginVmDlc,
                      weak_ptr_factory_.GetWeakPtr(),
                      std::move(success_callback), std::move(error_callback)),
@@ -746,7 +749,7 @@ void PluginVmManagerImpl::DestroyDiskImage() {
   request.set_cryptohome_id(owner_id_);
   request.set_vm_name(kPluginVmName);
 
-  chromeos::ConciergeClient::Get()->DestroyDiskImage(
+  ash::ConciergeClient::Get()->DestroyDiskImage(
       std::move(request),
       base::BindOnce(&PluginVmManagerImpl::OnDestroyDiskImage,
                      weak_ptr_factory_.GetWeakPtr()));

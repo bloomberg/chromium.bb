@@ -18,17 +18,14 @@ limitations under the License.
 namespace xla {
 namespace gpu {
 
-StatusOr<GlobalDeviceId> Thunk::ExecuteParams::GetGlobalDeviceId() const {
-  int64_t local_device_ordinal = stream->parent()->device_ordinal();
-  if (gpu_global_device_ids) {
-    TF_RET_CHECK(0 <= local_device_ordinal &&
-                 local_device_ordinal < gpu_global_device_ids->size());
-    return (*gpu_global_device_ids)[local_device_ordinal];
-  } else {
-    // No local -> global mapping was provided; assume the identity mapping.
-    return GlobalDeviceId(local_device_ordinal);
-  }
-}
+Thunk::ExecuteParams::ExecuteParams(
+    const ServiceExecutableRunOptions& run_options,
+    const BufferAllocations& buffer_allocations, se::Stream* stream,
+    se::Stream* async_comms_stream)
+    : buffer_allocations(&buffer_allocations),
+      stream(stream),
+      async_comms_stream(async_comms_stream),
+      nccl_params(run_options, stream) {}
 
 /*static*/ absl::string_view Thunk::KindToString(Thunk::Kind kind) {
   switch (kind) {
@@ -42,12 +39,6 @@ StatusOr<GlobalDeviceId> Thunk::ExecuteParams::GetGlobalDeviceId() const {
       return "kConvolution";
     case Thunk::kCopy:
       return "kCopy";
-    case Thunk::kCudnnBatchNormBackward:
-      return "kCudnnBatchNormBackward";
-    case Thunk::kCudnnBatchNormForwardInference:
-      return "kCudnnBatchNormForwardInference";
-    case Thunk::kCudnnBatchNormForwardTraining:
-      return "kCudnnBatchNormForwardTraining";
     case Thunk::kCustomCall:
       return "kCustomCall";
     case Thunk::kNcclAllGather:
@@ -112,7 +103,8 @@ std::string ThunkSequence::ToString(
     // Write out the thunk kind, padded out to max_thunk_kind_len.
     absl::string_view kind_str = Thunk::KindToString(thunk->kind());
     absl::StrAppend(&result, indent_str, kind_str,
-                    string(max_thunk_kind_len - kind_str.length(), ' '), "\t");
+                    std::string(max_thunk_kind_len - kind_str.length(), ' '),
+                    "\t");
     if (get_thunk_annotation) {
       absl::StrAppend(&result, get_thunk_annotation(thunk.get()));
     }

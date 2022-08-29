@@ -72,7 +72,7 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 // active and enters the foreground. This can happen if the policies have
 // changed since the last cold start, meaning the user was signed out during
 // startup.
-@property(nonatomic) BOOL shouldShowPolicySignoutPrompt;
+@property(nonatomic) BOOL shouldShowForceSignOutPrompt;
 
 // Indicates that this app launch is one after a crash.
 @property(nonatomic, assign) BOOL postCrashLaunch;
@@ -155,7 +155,7 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 - (void)removeObserver:(id<AppStateObserver>)observer;
 
 // Adds a new agent. Agents are owned by the app state.
-// This automatically sets the app state on the |agent|.
+// This automatically sets the app state on the `agent`.
 - (void)addAgent:(id<AppStateAgent>)agent;
 // Removes an agent.
 - (void)removeAgent:(id<AppStateAgent>)agent;

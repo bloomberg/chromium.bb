@@ -146,6 +146,7 @@ class VIEWS_EXPORT DesktopWindowTreeHost {
 
   virtual void ClearNativeFocus() = 0;
 
+  virtual bool IsMoveLoopSupported() const;
   virtual Widget::MoveLoopResult RunMoveLoop(
       const gfx::Vector2d& drag_offset,
       Widget::MoveLoopSource source,
@@ -201,10 +202,12 @@ class VIEWS_EXPORT DesktopWindowTreeHost {
 
   // Sets the bounds in screen coordinate DIPs (WindowTreeHost generally
   // operates in pixels). This function is implemented in terms of Screen.
-  virtual void SetBoundsInDIP(const gfx::Rect& bounds);
+  virtual void SetBoundsInDIP(const gfx::Rect& bounds) = 0;
 
   // Updates window shape by clipping the canvas before paint starts.
   virtual void UpdateWindowShapeIfNeeded(const ui::PaintContext& context);
+
+  virtual DesktopNativeCursorManager* GetSingletonDesktopNativeCursorManager();
 };
 
 }  // namespace views

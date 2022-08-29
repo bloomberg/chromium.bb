@@ -18,8 +18,9 @@
 #include "ash/components/disks/mock_disk_mount_manager.h"
 #include "ash/components/settings/cros_settings_names.h"
 #include "ash/components/settings/timezone_settings.h"
+#include "ash/components/tpm/stub_install_attributes.h"
+#include "ash/constants/ash_features.h"
 #include "base/bind.h"
-#include "base/cxx17_backports.h"
 #include "base/environment.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -36,8 +37,10 @@
 #include "base/test/scoped_path_override.h"
 #include "base/test/simple_test_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/app_service/publisher_host.h"
 #include "chrome/browser/ash/app_mode/arc/arc_kiosk_app_manager.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_data.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
@@ -60,14 +63,13 @@
 #include "chrome/test/base/chrome_unit_test_suite.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "chromeos/ash/components/dbus/cicerone/cicerone_client.h"
+#include "chromeos/ash/components/dbus/concierge/concierge_client.h"
+#include "chromeos/ash/components/dbus/seneschal/seneschal_client.h"
 #include "chromeos/dbus/attestation/attestation_client.h"
-#include "chromeos/dbus/cicerone/cicerone_client.h"
-#include "chromeos/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/cros_disks/cros_disks_client.h"
-#include "chromeos/dbus/cros_healthd/cros_healthd_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager/idle.pb.h"
-#include "chromeos/dbus/seneschal/seneschal_client.h"
 #include "chromeos/dbus/shill/shill_device_client.h"
 #include "chromeos/dbus/shill/shill_ipconfig_client.h"
 #include "chromeos/dbus/shill/shill_profile_client.h"
@@ -81,14 +83,17 @@
 #include "chromeos/network/network_handler_test_helper.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
+#include "chromeos/services/cros_healthd/public/mojom/cros_healthd.mojom.h"
+#include "chromeos/services/cros_healthd/public/mojom/cros_healthd_probe.mojom.h"
 #include "chromeos/system/fake_statistics_provider.h"
-#include "chromeos/tpm/stub_install_attributes.h"
 #include "components/account_id/account_id.h"
 #include "components/ownership/mock_owner_key_util.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/services/app_service/public/cpp/app_types.h"
+#include "components/services/app_service/public/cpp/features.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/upload_list/upload_list.h"
 #include "components/user_manager/scoped_user_manager.h"
@@ -109,17 +114,16 @@
 #include "ui/aura/env.h"
 #include "ui/aura/test/test_windows.h"
 
-using ::ash::disks::DiskMountManager;
-using base::Time;
-using base::test::ScopedChromeOSVersionInfo;
-using ::testing::Return;
-using ::testing::ReturnRef;
-
-namespace em = enterprise_management;
-
-namespace cros_healthd = chromeos::cros_healthd::mojom;
+namespace policy {
 
 namespace {
+
+using ::ash::disks::DiskMountManager;
+using ::base::test::ScopedChromeOSVersionInfo;
+using ::testing::Return;
+using ::testing::ReturnRef;
+namespace cros_healthd = ::chromeos::cros_healthd::mojom;
+namespace em = ::enterprise_management;
 
 // Test values for cros_healthd:
 // Battery test values:
@@ -168,6 +172,7 @@ constexpr char kFakeVersionReleaseChannel[] = "stable-channel";
 // System V2 test values:
 constexpr char kFakeOsInfoCodeName[] = "OsInfo Code Name";
 constexpr char kFakeOSInfoMarketingName[] = "OsInfo Marketing Name";
+constexpr char kFakeOSInfoOemName[] = "OsInfo OEM Name";
 constexpr cros_healthd::BootMode kFakeOsInfoBootMode =
     cros_healthd::BootMode::kCrosSecure;
 constexpr em::BootInfo::BootMethod kFakeOsInfoBootMethod =
@@ -257,7 +262,7 @@ constexpr uint32_t kFakeNumConnectedBluetoothDevices = 7;
 // Time delta representing 1 hour time interval.
 constexpr base::TimeDelta kHour = base::Hours(1);
 
-const int64_t kMillisecondsPerDay = Time::kMicrosecondsPerDay / 1000;
+const int64_t kMillisecondsPerDay = base::Time::kMicrosecondsPerDay / 1000;
 const char kKioskAccountId[] = "kiosk_user@localhost";
 const char kArcKioskAccountId[] = "arc_kiosk_user@localhost";
 const char kWebKioskAccountId[] = "web_kiosk_user@localhost";
@@ -308,25 +313,20 @@ class TestingDeviceStatusCollectorOptions {
       const TestingDeviceStatusCollectorOptions&) = delete;
   ~TestingDeviceStatusCollectorOptions() = default;
 
-  policy::LegacyDeviceStatusCollector::VolumeInfoFetcher volume_info_fetcher;
-  policy::LegacyDeviceStatusCollector::CPUStatisticsFetcher cpu_fetcher;
-  policy::LegacyDeviceStatusCollector::CPUTempFetcher cpu_temp_fetcher;
-  policy::StatusCollector::AndroidStatusFetcher android_status_fetcher;
-  policy::LegacyDeviceStatusCollector::EMMCLifetimeFetcher
-      emmc_lifetime_fetcher;
-  policy::LegacyDeviceStatusCollector::StatefulPartitionInfoFetcher
+  LegacyDeviceStatusCollector::VolumeInfoFetcher volume_info_fetcher;
+  LegacyDeviceStatusCollector::CPUStatisticsFetcher cpu_fetcher;
+  LegacyDeviceStatusCollector::CPUTempFetcher cpu_temp_fetcher;
+  StatusCollector::AndroidStatusFetcher android_status_fetcher;
+  LegacyDeviceStatusCollector::EMMCLifetimeFetcher emmc_lifetime_fetcher;
+  LegacyDeviceStatusCollector::StatefulPartitionInfoFetcher
       stateful_partition_info_fetcher;
-  policy::LegacyDeviceStatusCollector::CrosHealthdDataFetcher
-      cros_healthd_data_fetcher;
-  policy::LegacyDeviceStatusCollector::GraphicsStatusFetcher
-      graphics_status_fetcher;
-  policy::LegacyDeviceStatusCollector::CrashReportInfoFetcher
-      crash_report_info_fetcher;
-  std::unique_ptr<policy::AppInfoGenerator> app_info_generator;
+  LegacyDeviceStatusCollector::CrosHealthdDataFetcher cros_healthd_data_fetcher;
+  LegacyDeviceStatusCollector::GraphicsStatusFetcher graphics_status_fetcher;
+  LegacyDeviceStatusCollector::CrashReportInfoFetcher crash_report_info_fetcher;
+  std::unique_ptr<AppInfoGenerator> app_info_generator;
 };
 
-class TestingDeviceStatusCollector
-    : public policy::LegacyDeviceStatusCollector {
+class TestingDeviceStatusCollector : public LegacyDeviceStatusCollector {
  public:
   // Note that that TpmStatusFetcher is null so the test exercises the
   // production logic with fake tpm manager and attestation clients.
@@ -335,14 +335,14 @@ class TestingDeviceStatusCollector
       chromeos::system::StatisticsProvider* provider,
       std::unique_ptr<TestingDeviceStatusCollectorOptions> options,
       base::SimpleTestClock* clock)
-      : policy::LegacyDeviceStatusCollector(
+      : LegacyDeviceStatusCollector(
             pref_service,
             provider,
             options->volume_info_fetcher,
             options->cpu_fetcher,
             options->cpu_temp_fetcher,
             options->android_status_fetcher,
-            policy::LegacyDeviceStatusCollector::TpmStatusFetcher(),
+            LegacyDeviceStatusCollector::TpmStatusFetcher(),
             options->emmc_lifetime_fetcher,
             options->stateful_partition_info_fetcher,
             options->cros_healthd_data_fetcher,
@@ -352,13 +352,12 @@ class TestingDeviceStatusCollector
         test_clock_(*clock) {
     // Set the baseline time to a fixed value (1 hour after day start) to
     // prevent test flakiness due to a single activity period spanning two days.
-    test_clock_.SetNow(Time::Now().LocalMidnight() + kHour);
+    test_clock_.SetNow(base::Time::Now().LocalMidnight() + kHour);
   }
 
   void Simulate(ui::IdleState* states, int len) {
     for (int i = 0; i < len; i++) {
-      test_clock_.Advance(
-          policy::LegacyDeviceStatusCollector::kIdlePollInterval);
+      test_clock_.Advance(LegacyDeviceStatusCollector::kIdlePollInterval);
       ProcessIdleState(states[i]);
     }
   }
@@ -371,14 +370,14 @@ class TestingDeviceStatusCollector
     max_stored_future_activity_interval_ = value;
   }
 
-  void set_kiosk_account(std::unique_ptr<policy::DeviceLocalAccount> account) {
+  void set_kiosk_account(std::unique_ptr<DeviceLocalAccount> account) {
     kiosk_account_ = std::move(account);
   }
 
-  std::unique_ptr<policy::DeviceLocalAccount> GetAutoLaunchedKioskSessionInfo()
+  std::unique_ptr<DeviceLocalAccount> GetAutoLaunchedKioskSessionInfo()
       override {
     if (kiosk_account_)
-      return std::make_unique<policy::DeviceLocalAccount>(*kiosk_account_);
+      return std::make_unique<DeviceLocalAccount>(*kiosk_account_);
     return nullptr;
   }
 
@@ -408,7 +407,7 @@ class TestingDeviceStatusCollector
  private:
   base::SimpleTestClock& test_clock_;
 
-  std::unique_ptr<policy::DeviceLocalAccount> kiosk_account_;
+  std::unique_ptr<DeviceLocalAccount> kiosk_account_;
 };
 
 // Return the total number of active milliseconds contained in a device
@@ -466,15 +465,13 @@ std::vector<em::CPUTempInfo> GetFakeCPUTempInfo(
   return cpu_temp_info;
 }
 
-void CallAndroidStatusReceiver(
-    policy::StatusCollector::AndroidStatusReceiver receiver,
-    const std::string& status,
-    const std::string& droid_guard_info) {
+void CallAndroidStatusReceiver(StatusCollector::AndroidStatusReceiver receiver,
+                               const std::string& status,
+                               const std::string& droid_guard_info) {
   std::move(receiver).Run(status, droid_guard_info);
 }
 
-bool GetEmptyAndroidStatus(
-    policy::StatusCollector::AndroidStatusReceiver receiver) {
+bool GetEmptyAndroidStatus(StatusCollector::AndroidStatusReceiver receiver) {
   // Post it to the thread because this call is expected to be asynchronous.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
@@ -482,10 +479,9 @@ bool GetEmptyAndroidStatus(
   return true;
 }
 
-bool GetFakeAndroidStatus(
-    const std::string& status,
-    const std::string& droid_guard_info,
-    policy::StatusCollector::AndroidStatusReceiver receiver) {
+bool GetFakeAndroidStatus(const std::string& status,
+                          const std::string& droid_guard_info,
+                          StatusCollector::AndroidStatusReceiver receiver) {
   // Post it to the thread because this call is expected to be asynchronous.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&CallAndroidStatusReceiver, std::move(receiver),
@@ -512,10 +508,10 @@ em::StatefulPartitionInfo GetFakeStatefulPartitionInfo(
 }
 
 void GetEmptyCrosHealthdData(
-    policy::CrosHealthdCollectionMode mode,
-    policy::LegacyDeviceStatusCollector::CrosHealthdDataReceiver receiver) {
+    CrosHealthdCollectionMode mode,
+    LegacyDeviceStatusCollector::CrosHealthdDataReceiver receiver) {
   cros_healthd::TelemetryInfoPtr empty_info;
-  base::circular_deque<std::unique_ptr<policy::SampledData>> empty_samples;
+  base::circular_deque<std::unique_ptr<SampledData>> empty_samples;
   std::move(receiver).Run(std::move(empty_info), empty_samples);
 }
 
@@ -574,7 +570,7 @@ cros_healthd::SystemResultV2Ptr CreateSystemResultV2() {
               cros_healthd::OsVersion::New(
                   kFakeVersionMilestone, kFakeVersionBuildNumber,
                   kFakeVersionPatchNumber, kFakeVersionReleaseChannel),
-              kFakeOsInfoBootMode),
+              kFakeOsInfoBootMode, kFakeOSInfoOemName),
           cros_healthd::VpdInfo::New(kFakeSerialNumber, kFakeVpdInfoRegion,
                                      kFakeManufactureDate, kFakeFirstPowerDate,
                                      kFakeSkuNumber, kFakeModelName),
@@ -677,8 +673,7 @@ cros_healthd::BluetoothResultPtr CreateBluetoothResult() {
       std::move(adapter_info));
 }
 
-base::circular_deque<std::unique_ptr<policy::SampledData>>
-CreateFakeSampleData() {
+base::circular_deque<std::unique_ptr<SampledData>> CreateFakeSampleData() {
   em::CPUTempInfo fake_cpu_temp_sample;
   fake_cpu_temp_sample.set_cpu_label(kFakeCpuLabel);
   fake_cpu_temp_sample.set_cpu_temp(kFakeCpuTemp);
@@ -689,17 +684,17 @@ CreateFakeSampleData() {
   fake_battery_sample.set_temperature(kFakeSmartBatteryTemperature);
   fake_battery_sample.set_current(kExpectedBatteryCurrentNow);
   fake_battery_sample.set_status(kFakeBatteryStatus);
-  auto sample = std::make_unique<policy::SampledData>();
+  auto sample = std::make_unique<SampledData>();
   sample->cpu_samples[fake_cpu_temp_sample.cpu_label()] = fake_cpu_temp_sample;
   sample->battery_samples[kFakeBatteryModel] = fake_battery_sample;
-  base::circular_deque<std::unique_ptr<policy::SampledData>> samples;
+  base::circular_deque<std::unique_ptr<SampledData>> samples;
   samples.push_back(std::move(sample));
   return samples;
 }
 
 // Creates cros_healthd data with only the battery category populated.
 void GetFakeCrosHealthdBatteryData(
-    policy::LegacyDeviceStatusCollector::CrosHealthdDataReceiver receiver) {
+    LegacyDeviceStatusCollector::CrosHealthdDataReceiver receiver) {
   cros_healthd::TelemetryInfo fake_info;
   fake_info.battery_result = CreateBatteryResult();
   std::move(receiver).Run(fake_info.Clone(), CreateFakeSampleData());
@@ -708,7 +703,7 @@ void GetFakeCrosHealthdBatteryData(
 // Creates cros_healthd data with the battery category populated with no battery
 // info (chromebox).
 void GetFakeEmptyCrosHealthdBatteryData(
-    policy::LegacyDeviceStatusCollector::CrosHealthdDataReceiver receiver) {
+    LegacyDeviceStatusCollector::CrosHealthdDataReceiver receiver) {
   cros_healthd::TelemetryInfo fake_info;
   fake_info.battery_result = CreateEmptyBatteryResult();
   std::move(receiver).Run(fake_info.Clone(), CreateFakeSampleData());
@@ -718,10 +713,10 @@ void GetFakeEmptyCrosHealthdBatteryData(
 // populated if |mode| is kFull or only the battery category if |mode| is
 // kBattery.
 void FetchFakeFullCrosHealthdData(
-    policy::CrosHealthdCollectionMode mode,
-    policy::LegacyDeviceStatusCollector::CrosHealthdDataReceiver receiver) {
+    CrosHealthdCollectionMode mode,
+    LegacyDeviceStatusCollector::CrosHealthdDataReceiver receiver) {
   switch (mode) {
-    case policy::CrosHealthdCollectionMode::kFull: {
+    case CrosHealthdCollectionMode::kFull: {
       cros_healthd::TelemetryInfo fake_info;
       fake_info.battery_result = CreateBatteryResult();
       fake_info.block_device_result = CreateBlockDeviceResult();
@@ -738,7 +733,7 @@ void FetchFakeFullCrosHealthdData(
       return;
     }
 
-    case policy::CrosHealthdCollectionMode::kBattery: {
+    case CrosHealthdCollectionMode::kBattery: {
       GetFakeCrosHealthdBatteryData(std::move(receiver));
       return;
     }
@@ -749,10 +744,10 @@ void FetchFakeFullCrosHealthdData(
 // battery probe categories populated if |mode| is kFull or only the
 // battery category if |mode| is kBattery.
 void FetchFakePartialCrosHealthdData(
-    policy::CrosHealthdCollectionMode mode,
-    policy::LegacyDeviceStatusCollector::CrosHealthdDataReceiver receiver) {
+    CrosHealthdCollectionMode mode,
+    LegacyDeviceStatusCollector::CrosHealthdDataReceiver receiver) {
   switch (mode) {
-    case policy::CrosHealthdCollectionMode::kFull: {
+    case CrosHealthdCollectionMode::kFull: {
       cros_healthd::TelemetryInfo fake_info;
       fake_info.battery_result = CreateBatteryResult();
       fake_info.cpu_result = CreateCpuResult();
@@ -760,7 +755,7 @@ void FetchFakePartialCrosHealthdData(
       return;
     }
 
-    case policy::CrosHealthdCollectionMode::kBattery: {
+    case CrosHealthdCollectionMode::kBattery: {
       GetFakeCrosHealthdBatteryData(std::move(receiver));
       return;
     }
@@ -771,10 +766,10 @@ void FetchFakePartialCrosHealthdData(
 // categories populated, if |mode| is kFull or only the battery category if
 // |mode| is kBattery.
 void FetchFakeOptionalCrosHealthdData(
-    policy::CrosHealthdCollectionMode mode,
-    policy::LegacyDeviceStatusCollector::CrosHealthdDataReceiver receiver) {
+    CrosHealthdCollectionMode mode,
+    LegacyDeviceStatusCollector::CrosHealthdDataReceiver receiver) {
   switch (mode) {
-    case policy::CrosHealthdCollectionMode::kFull: {
+    case CrosHealthdCollectionMode::kFull: {
       cros_healthd::TelemetryInfo fake_info;
       fake_info.battery_result = CreateEmptyBatteryResult();
       fake_info.backlight_result = CreateEmptyBacklightResult();
@@ -783,7 +778,7 @@ void FetchFakeOptionalCrosHealthdData(
       return;
     }
 
-    case policy::CrosHealthdCollectionMode::kBattery: {
+    case CrosHealthdCollectionMode::kBattery: {
       GetFakeEmptyCrosHealthdBatteryData(std::move(receiver));
       return;
     }
@@ -791,31 +786,29 @@ void FetchFakeOptionalCrosHealthdData(
 }
 
 void GetEmptyGraphicsStatus(
-    policy::LegacyDeviceStatusCollector::GraphicsStatusReceiver receiver) {
+    LegacyDeviceStatusCollector::GraphicsStatusReceiver receiver) {
   std::move(receiver).Run(em::GraphicsStatus());
 }
 
 void GetFakeGraphicsStatus(
     const em::GraphicsStatus& value,
-    policy::LegacyDeviceStatusCollector::GraphicsStatusReceiver receiver) {
+    LegacyDeviceStatusCollector::GraphicsStatusReceiver receiver) {
   std::move(receiver).Run(value);
 }
 
 void GetEmptyCrashReportInfo(
-    policy::LegacyDeviceStatusCollector::CrashReportInfoReceiver receiver) {
+    LegacyDeviceStatusCollector::CrashReportInfoReceiver receiver) {
   std::vector<em::CrashReportInfo> crash_report_infos;
   std::move(receiver).Run(crash_report_infos);
 }
 
 void GetFakeCrashReportInfo(
     const std::vector<em::CrashReportInfo>& crash_report_infos,
-    policy::LegacyDeviceStatusCollector::CrashReportInfoReceiver receiver) {
+    LegacyDeviceStatusCollector::CrashReportInfoReceiver receiver) {
   std::move(receiver).Run(crash_report_infos);
 }
 
 }  // namespace
-
-namespace policy {
 
 // Though it is a unit test, this test is linked with browser_tests so that it
 // runs in a separate process. The intention is to avoid overriding the timezone
@@ -827,7 +820,7 @@ class LegacyDeviceStatusCollectorTest : public testing::Test {
         user_manager_enabler_(base::WrapUnique(user_manager_)),
         got_session_status_(false),
         fake_kiosk_device_local_account_(
-            policy::DeviceLocalAccount::TYPE_KIOSK_APP,
+            DeviceLocalAccount::TYPE_KIOSK_APP,
             kKioskAccountId,
             kKioskAppId,
             std::string() /* kiosk_app_update_url */),
@@ -862,8 +855,8 @@ class LegacyDeviceStatusCollectorTest : public testing::Test {
     content::SetContentClient(&content_client_);
     content::SetBrowserClientForTesting(&browser_content_client_);
 
-    // Run this test with a well-known timezone so that Time::LocalMidnight()
-    // returns the same values on all machines.
+    // Run this test with a well-known timezone so that
+    // `base::Time::LocalMidnight()` returns the same values on all machines.
     std::unique_ptr<base::Environment> env(base::Environment::Create());
     env->SetVar("TZ", "UTC");
 
@@ -913,9 +906,9 @@ class LegacyDeviceStatusCollectorTest : public testing::Test {
     chromeos::TpmManagerClient::InitializeFake();
     chromeos::LoginState::Initialize();
 
-    chromeos::CiceroneClient::InitializeFake();
-    chromeos::ConciergeClient::InitializeFake();
-    chromeos::SeneschalClient::InitializeFake();
+    ash::CiceroneClient::InitializeFake();
+    ash::ConciergeClient::InitializeFake();
+    ash::SeneschalClient::InitializeFake();
   }
 
   LegacyDeviceStatusCollectorTest(const LegacyDeviceStatusCollectorTest&) =
@@ -924,11 +917,11 @@ class LegacyDeviceStatusCollectorTest : public testing::Test {
       const LegacyDeviceStatusCollectorTest&) = delete;
 
   ~LegacyDeviceStatusCollectorTest() override {
-    chromeos::SeneschalClient::Shutdown();
+    ash::SeneschalClient::Shutdown();
     // |testing_profile_| must be destroyed while ConciergeClient is alive.
     testing_profile_.reset();
-    chromeos::ConciergeClient::Shutdown();
-    chromeos::CiceroneClient::Shutdown();
+    ash::ConciergeClient::Shutdown();
+    ash::CiceroneClient::Shutdown();
     chromeos::LoginState::Shutdown();
     chromeos::TpmManagerClient::Shutdown();
     chromeos::AttestationClient::Shutdown();
@@ -1004,7 +997,7 @@ class LegacyDeviceStatusCollectorTest : public testing::Test {
     options->crash_report_info_fetcher =
         base::BindRepeating(&GetEmptyCrashReportInfo);
     options->app_info_generator =
-        std::make_unique<policy::AppInfoGenerator>(nullptr, base::Days(0));
+        std::make_unique<AppInfoGenerator>(nullptr, base::Days(0));
     return options;
   }
 
@@ -1044,7 +1037,7 @@ class LegacyDeviceStatusCollectorTest : public testing::Test {
     TestingProfile::Builder profile_builder;
     profile_builder.SetProfileName(account_id.GetUserEmail());
     testing_profile_ = profile_builder.Build();
-    chromeos::ProfileHelper::Get()->SetUserToProfileMappingForTesting(
+    ash::ProfileHelper::Get()->SetUserToProfileMappingForTesting(
         user, testing_profile_.get());
 
     EXPECT_CALL(*user_manager_, IsLoggedInAsKioskApp())
@@ -1079,7 +1072,7 @@ class LegacyDeviceStatusCollectorTest : public testing::Test {
     }
 
     testing_profile_ = std::make_unique<TestingProfile>();
-    chromeos::ProfileHelper::Get()->SetUserToProfileMappingForTesting(
+    ash::ProfileHelper::Get()->SetUserToProfileMappingForTesting(
         user, testing_profile_.get());
 
     SetDeviceLocalAccounts(&owner_settings_service_, accounts);
@@ -1157,8 +1150,7 @@ class LegacyDeviceStatusCollectorTest : public testing::Test {
 
   // Convenience method.
   int64_t ActivePeriodMilliseconds() {
-    return policy::LegacyDeviceStatusCollector::kIdlePollInterval
-        .InMilliseconds();
+    return LegacyDeviceStatusCollector::kIdlePollInterval.InMilliseconds();
   }
 
   // Since this is a unit test running in browser_tests we must do additional
@@ -1170,7 +1162,7 @@ class LegacyDeviceStatusCollectorTest : public testing::Test {
   ChromeContentBrowserClient browser_content_client_;
   chromeos::system::ScopedFakeStatisticsProvider fake_statistics_provider_;
   DiskMountManager::MountPointMap mount_point_map_;
-  chromeos::ScopedStubInstallAttributes scoped_stub_install_attributes_;
+  ash::ScopedStubInstallAttributes scoped_stub_install_attributes_;
   ash::ScopedTestingCrosSettings scoped_testing_cros_settings_;
   ash::FakeOwnerSettingsService owner_settings_service_{
       scoped_testing_cros_settings_.device_settings(), nullptr};
@@ -1189,17 +1181,22 @@ class LegacyDeviceStatusCollectorTest : public testing::Test {
   bool got_session_status_;
   TestingPrefServiceSimple profile_pref_service_;
   std::unique_ptr<TestingDeviceStatusCollector> status_collector_;
-  const policy::DeviceLocalAccount fake_kiosk_device_local_account_;
-  const policy::ArcKioskAppBasicInfo fake_arc_kiosk_app_basic_info_;
-  const policy::DeviceLocalAccount fake_arc_kiosk_device_local_account_;
-  const policy::WebKioskAppBasicInfo fake_web_kiosk_app_basic_info_;
-  const policy::DeviceLocalAccount fake_web_kiosk_device_local_account_;
+  const DeviceLocalAccount fake_kiosk_device_local_account_;
+  const ArcKioskAppBasicInfo fake_arc_kiosk_app_basic_info_;
+  const DeviceLocalAccount fake_arc_kiosk_device_local_account_;
+  const WebKioskAppBasicInfo fake_web_kiosk_app_basic_info_;
+  const DeviceLocalAccount fake_web_kiosk_device_local_account_;
   base::ScopedPathOverride user_data_dir_override_;
   base::ScopedPathOverride crash_dumps_dir_override_;
   chromeos::FakeUpdateEngineClient* const update_engine_client_;
   std::unique_ptr<base::RunLoop> run_loop_;
   base::test::ScopedFeatureList scoped_feature_list_;
   base::SimpleTestClock test_clock_;
+
+  apps::ScopedOmitBorealisAppsForTesting scoped_omit_borealis_apps_for_testing_;
+  apps::ScopedOmitBuiltInAppsForTesting scoped_omit_built_in_apps_for_testing_;
+  apps::ScopedOmitPluginVmAppsForTesting
+      scoped_omit_plugin_vm_apps_for_testing_;
 
   // This property is required to instantiate the session manager, a singleton
   // which is used by the device status collector.
@@ -1277,7 +1274,7 @@ TEST_F(LegacyDeviceStatusCollectorTest, MixedStatesForKiosk) {
   };
   chromeos::LoginState::Get()->SetLoggedInState(
       chromeos::LoginState::LOGGED_IN_ACTIVE,
-      chromeos::LoginState::LOGGED_IN_USER_KIOSK_APP);
+      chromeos::LoginState::LOGGED_IN_USER_KIOSK);
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
       ash::kReportDeviceActivityTimes, true);
   status_collector_->Simulate(test_states,
@@ -1295,7 +1292,7 @@ TEST_F(LegacyDeviceStatusCollectorTest, MixedStatesForArcKiosk) {
   };
   chromeos::LoginState::Get()->SetLoggedInState(
       chromeos::LoginState::LOGGED_IN_ACTIVE,
-      chromeos::LoginState::LOGGED_IN_USER_KIOSK_APP);
+      chromeos::LoginState::LOGGED_IN_USER_KIOSK);
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
       ash::kReportDeviceActivityTimes, true);
   status_collector_->Simulate(test_states,
@@ -1354,7 +1351,7 @@ TEST_F(LegacyDeviceStatusCollectorTest, MaxStoredPeriods) {
   status_collector_->set_max_stored_past_activity_interval(
       base::Days(kMaxDays - 1));
   status_collector_->set_max_stored_future_activity_interval(base::Days(1));
-  test_clock_.SetNow(Time::Now().LocalMidnight());
+  test_clock_.SetNow(base::Time::Now().LocalMidnight());
 
   // Simulate 12 active periods.
   for (int i = 0; i < kMaxDays + 2; i++) {
@@ -1418,7 +1415,7 @@ TEST_F(LegacyDeviceStatusCollectorTest, ActivityCrossingMidnight) {
       ash::kReportDeviceActivityTimes, true);
 
   // Set the baseline time to 20 seconds before midnight.
-  test_clock_.SetNow(Time::Now().LocalMidnight() - base::Seconds(20));
+  test_clock_.SetNow(base::Time::Now().LocalMidnight() - base::Seconds(20));
 
   status_collector_->Simulate(test_states, 1);
   GetStatus();
@@ -2274,8 +2271,8 @@ TEST_F(LegacyDeviceStatusCollectorTest, CrostiniAppUsageReporting) {
 
   testing_profile_->GetPrefs()->SetBoolean(crostini::prefs::kCrostiniEnabled,
                                            true);
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kCrostiniAdditionalEnterpriseReporting);
+  scoped_feature_list_.InitWithFeatures(
+      {features::kCrostiniAdditionalEnterpriseReporting}, {});
 
   const std::string desktop_file_id = "vim";
   const std::string package_id =
@@ -2303,7 +2300,7 @@ TEST_F(LegacyDeviceStatusCollectorTest, CrostiniAppUsageReporting) {
   GetStatus();
   EXPECT_TRUE(got_session_status_);
 
-  EXPECT_EQ(2, session_status_.crostini_status().installed_apps_size());
+  EXPECT_EQ(1, session_status_.crostini_status().installed_apps_size());
   EXPECT_EQ(desktop_file_id,
             session_status_.crostini_status().installed_apps()[0].app_name());
   EXPECT_EQ(em::CROSTINI_APP_TYPE_INTERACTIVE,
@@ -2321,19 +2318,6 @@ TEST_F(LegacyDeviceStatusCollectorTest, CrostiniAppUsageReporting) {
   EXPECT_EQ(
       "2:8.0.0197-4+deb9u1",
       session_status_.crostini_status().installed_apps()[0].package_version());
-  EXPECT_EQ("Terminal",
-            session_status_.crostini_status().installed_apps()[1].app_name());
-  EXPECT_EQ(em::CROSTINI_APP_TYPE_TERMINAL,
-            session_status_.crostini_status().installed_apps()[1].app_type());
-  EXPECT_EQ(
-      std::string(),
-      session_status_.crostini_status().installed_apps()[1].package_name());
-  EXPECT_EQ(
-      std::string(),
-      session_status_.crostini_status().installed_apps()[1].package_version());
-  EXPECT_EQ(0, session_status_.crostini_status()
-                   .installed_apps()[1]
-                   .last_launch_time_window_start_timestamp());
 
   // In tests, GetUserDMToken returns the e-mail for easy verification.
   EXPECT_EQ(account_id.GetUserEmail(), session_status_.user_dm_token());
@@ -2571,8 +2555,7 @@ TEST_F(LegacyDeviceStatusCollectorTest,
   // ReportDeviceSessionStatus only controls Kiosk reporting, ARC reporting
   // has to be disabled serarately.
   status_collector_->set_kiosk_account(
-      std::make_unique<policy::DeviceLocalAccount>(
-          fake_kiosk_device_local_account_));
+      std::make_unique<DeviceLocalAccount>(fake_kiosk_device_local_account_));
   // Set up a device-local account for single-app kiosk mode.
   MockRunningKioskApp(fake_kiosk_device_local_account_,
                       DeviceLocalAccount::TYPE_KIOSK_APP);
@@ -2587,8 +2570,7 @@ TEST_F(LegacyDeviceStatusCollectorTest, ReportKioskSessionStatus) {
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
       ash::kReportDeviceSessionStatus, true);
   status_collector_->set_kiosk_account(
-      std::make_unique<policy::DeviceLocalAccount>(
-          fake_kiosk_device_local_account_));
+      std::make_unique<DeviceLocalAccount>(fake_kiosk_device_local_account_));
 
   // Set up a device-local account for single-app kiosk mode.
   MockRunningKioskApp(fake_kiosk_device_local_account_,
@@ -2611,9 +2593,8 @@ TEST_F(LegacyDeviceStatusCollectorTest, ReportKioskSessionStatus) {
 TEST_F(LegacyDeviceStatusCollectorTest, ReportArcKioskSessionStatus) {
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
       ash::kReportDeviceSessionStatus, true);
-  status_collector_->set_kiosk_account(
-      std::make_unique<policy::DeviceLocalAccount>(
-          fake_arc_kiosk_device_local_account_));
+  status_collector_->set_kiosk_account(std::make_unique<DeviceLocalAccount>(
+      fake_arc_kiosk_device_local_account_));
 
   // Set up a device-local account for single-app ARC kiosk mode.
   MockRunningKioskApp(fake_arc_kiosk_device_local_account_,
@@ -2635,9 +2616,8 @@ TEST_F(LegacyDeviceStatusCollectorTest, ReportArcKioskSessionStatus) {
 TEST_F(LegacyDeviceStatusCollectorTest, ReportWebKioskSessionStatus) {
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
       ash::kReportDeviceSessionStatus, true);
-  status_collector_->set_kiosk_account(
-      std::make_unique<policy::DeviceLocalAccount>(
-          fake_web_kiosk_device_local_account_));
+  status_collector_->set_kiosk_account(std::make_unique<DeviceLocalAccount>(
+      fake_web_kiosk_device_local_account_));
 
   // Set up a device-local account for single-app Web kiosk mode.
   MockRunningKioskApp(fake_web_kiosk_device_local_account_,
@@ -2671,7 +2651,7 @@ TEST_F(LegacyDeviceStatusCollectorTest, ReportOsUpdateStatusUpToDate) {
 
   const char* kRequiredPlatformVersions[] = {"1234", "1234.0", "1234.0.0"};
 
-  for (size_t i = 0; i < base::size(kRequiredPlatformVersions); ++i) {
+  for (size_t i = 0; i < std::size(kRequiredPlatformVersions); ++i) {
     MockAutoLaunchKioskAppWithRequiredPlatformVersion(
         fake_kiosk_device_local_account_, kRequiredPlatformVersions[i]);
 
@@ -2721,7 +2701,7 @@ TEST_F(LegacyDeviceStatusCollectorTest, ReportOsUpdateStatus) {
       update_engine::Operation::FINALIZING,
   };
 
-  for (size_t i = 0; i < base::size(kUpdateEngineOps); ++i) {
+  for (size_t i = 0; i < std::size(kUpdateEngineOps); ++i) {
     update_status.set_current_operation(kUpdateEngineOps[i]);
     update_status.set_new_version("1235.1.2");
     update_engine_client_->PushLastStatus(update_status);
@@ -2769,7 +2749,7 @@ TEST_F(LegacyDeviceStatusCollectorTest, ReportOsUpdateStatus_NonKiosk) {
       update_engine::Operation::FINALIZING,
   };
 
-  for (size_t i = 0; i < base::size(kUpdateEngineOps); ++i) {
+  for (size_t i = 0; i < std::size(kUpdateEngineOps); ++i) {
     update_status.set_current_operation(kUpdateEngineOps[i]);
     update_status.set_new_version("1235.1.2");
     update_engine_client_->PushLastStatus(update_status);
@@ -2820,7 +2800,7 @@ TEST_F(LegacyDeviceStatusCollectorTest, ReportLastCheckedTimestamp) {
   // change accordingly.
   const int64 kLastCheckedTimes[] = {10, 20, 30};
 
-  for (size_t i = 0; i < base::size(kLastCheckedTimes); ++i) {
+  for (size_t i = 0; i < std::size(kLastCheckedTimes); ++i) {
     update_engine::StatusResult update_status;
     update_status.set_new_version(kDefaultPlatformVersion);
     update_status.set_last_checked_time(kLastCheckedTimes[i]);
@@ -2870,8 +2850,7 @@ TEST_F(LegacyDeviceStatusCollectorTest, NoRunningKioskAppByDefault) {
   MockAutoLaunchKioskAppWithRequiredPlatformVersion(
       fake_kiosk_device_local_account_, kDefaultPlatformVersion);
   status_collector_->set_kiosk_account(
-      std::make_unique<policy::DeviceLocalAccount>(
-          fake_kiosk_device_local_account_));
+      std::make_unique<DeviceLocalAccount>(fake_kiosk_device_local_account_));
 
   MockRunningKioskApp(fake_kiosk_device_local_account_,
                       DeviceLocalAccount::TYPE_KIOSK_APP);
@@ -2901,8 +2880,7 @@ TEST_F(LegacyDeviceStatusCollectorTest, ReportRunningKioskApp) {
   MockRunningKioskApp(fake_kiosk_device_local_account_,
                       DeviceLocalAccount::TYPE_KIOSK_APP);
   status_collector_->set_kiosk_account(
-      std::make_unique<policy::DeviceLocalAccount>(
-          fake_kiosk_device_local_account_));
+      std::make_unique<DeviceLocalAccount>(fake_kiosk_device_local_account_));
 
   GetStatus();
   ASSERT_TRUE(device_status_.has_running_kiosk_app());
@@ -2920,9 +2898,8 @@ TEST_F(LegacyDeviceStatusCollectorTest, ReportRunningArcKioskApp) {
 
   MockRunningKioskApp(fake_arc_kiosk_device_local_account_,
                       DeviceLocalAccount::TYPE_ARC_KIOSK_APP);
-  status_collector_->set_kiosk_account(
-      std::make_unique<policy::DeviceLocalAccount>(
-          fake_arc_kiosk_device_local_account_));
+  status_collector_->set_kiosk_account(std::make_unique<DeviceLocalAccount>(
+      fake_arc_kiosk_device_local_account_));
 
   GetStatus();
   ASSERT_TRUE(device_status_.has_running_kiosk_app());
@@ -2941,9 +2918,8 @@ TEST_F(LegacyDeviceStatusCollectorTest, ReportRunningWebKioskApp) {
 
   MockRunningKioskApp(fake_web_kiosk_device_local_account_,
                       DeviceLocalAccount::TYPE_WEB_KIOSK_APP);
-  status_collector_->set_kiosk_account(
-      std::make_unique<policy::DeviceLocalAccount>(
-          fake_web_kiosk_device_local_account_));
+  status_collector_->set_kiosk_account(std::make_unique<DeviceLocalAccount>(
+      fake_web_kiosk_device_local_account_));
 
   GetStatus();
   ASSERT_TRUE(device_status_.has_running_kiosk_app());
@@ -3748,16 +3724,23 @@ TEST_F(LegacyDeviceStatusCollectorTest, GenerateAppInfo) {
       account_id);
   auto* app_proxy =
       apps::AppServiceProxyFactory::GetForProfile(testing_profile_.get());
-  auto app1 = apps::mojom::App::New();
-  app1->app_id = "id";
-  auto app2 = apps::mojom::App::New();
-  app2->app_id = "id2";
-  std::vector<apps::mojom::AppPtr> apps;
-  apps.push_back(std::move(app1));
-  apps.push_back(std::move(app2));
-  app_proxy->AppRegistryCache().OnApps(std::move(apps),
-                                       apps::mojom::AppType::kUnknown,
-                                       false /* should_notify_initialized */);
+  auto app1 = std::make_unique<apps::App>(apps::AppType::kChromeApp, "id");
+  auto app2 = std::make_unique<apps::App>(apps::AppType::kChromeApp, "id2");
+  if (base::FeatureList::IsEnabled(apps::kAppServiceOnAppUpdateWithoutMojom)) {
+    std::vector<apps::AppPtr> apps;
+    apps.push_back(std::move(app1));
+    apps.push_back(std::move(app2));
+    app_proxy->AppRegistryCache().OnApps(std::move(apps),
+                                         apps::AppType::kUnknown,
+                                         /*should_notify_initialized=*/false);
+  } else {
+    std::vector<apps::mojom::AppPtr> mojom_deltas;
+    mojom_deltas.push_back(apps::ConvertAppToMojomApp(app1));
+    mojom_deltas.push_back(apps::ConvertAppToMojomApp(app2));
+    app_proxy->AppRegistryCache().OnApps(std::move(mojom_deltas),
+                                         apps::mojom::AppType::kUnknown,
+                                         /*should_notify_initialized=*/false);
+  }
 
   // Start app instance
   base::Time start_time;
@@ -3977,7 +3960,7 @@ class LegacyDeviceStatusCollectorNetworkTest
         false,  // visible_only,
         0,      // no limit to number of results
         &state_list);
-    ASSERT_EQ(base::size(kFakeNetworks), state_list.size());
+    ASSERT_EQ(std::size(kFakeNetworks), state_list.size());
   }
 
   void SetReportDeviceNetworkInterfacesPolicy(bool enable) {
@@ -4094,7 +4077,7 @@ class LegacyDeviceStatusCollectorNetworkStateTest
     : public LegacyDeviceStatusCollectorNetworkTest {
  protected:
   void VerifyReporting() override {
-    EXPECT_EQ(base::size(kFakeNetworks),
+    EXPECT_EQ(std::size(kFakeNetworks),
               static_cast<size_t>(device_status_.network_states_size()));
     for (const FakeNetworkState& state : kFakeNetworks) {
       bool found_match = false;

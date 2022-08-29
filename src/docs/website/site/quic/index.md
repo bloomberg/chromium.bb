@@ -109,3 +109,12 @@ Code
             - QUIC mailing list specific to Chromium
 *   [quic@ietf.org](https://mailarchive.ietf.org/arch/browse/quic/) -
             QUIC working group mailing list
+
+**Abridged QUIC Version History**
+*   In 2012, Google started working on QUIC
+*   In 2013, Chrome started small-scale experiments with the original versions of QUIC (those versions are now known as Google QUIC)
+*   In 2014, Chrome started a wide-scale deployment of Google QUIC
+*   In 2015, Google brought QUIC to the IETF
+*   In 2017, the IETF started creating versions of QUIC that diverged from Google QUIC (those new versions were then called IETF QUIC)
+*   In 2020, Chrome started wide-scale experiments with IETF QUIC
+*   In 2021, the IETF officially published QUIC as RFC 9000. Chrome added support for RFC 9000 in Chrome 90 and default-enabled it for all users in Chrome 93

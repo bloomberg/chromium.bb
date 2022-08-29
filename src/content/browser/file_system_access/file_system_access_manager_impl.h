@@ -5,17 +5,22 @@
 #ifndef CONTENT_BROWSER_FILE_SYSTEM_ACCESS_FILE_SYSTEM_ACCESS_MANAGER_IMPL_H_
 #define CONTENT_BROWSER_FILE_SYSTEM_ACCESS_FILE_SYSTEM_ACCESS_MANAGER_IMPL_H_
 
+#include "base/callback_forward.h"
 #include "base/containers/flat_set.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/files/file_path.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/bind_post_task.h"
+#include "base/thread_annotations.h"
 #include "base/threading/sequence_bound.h"
 #include "base/types/pass_key.h"
 #include "components/download/public/common/quarantine_connection.h"
+#include "components/services/storage/public/cpp/buckets/bucket_info.h"
+#include "components/services/storage/public/cpp/quota_error_or.h"
 #include "components/services/storage/public/mojom/file_system_access_context.mojom.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
+#include "content/browser/file_system_access/file_system_access.pb.h"
 #include "content/browser/file_system_access/file_system_access_write_lock_manager.h"
 #include "content/browser/file_system_access/file_system_chooser.h"
 #include "content/common/content_export.h"
@@ -112,6 +117,12 @@ class CONTENT_EXPORT FileSystemAccessManagerImpl
 
   // blink::mojom::FileSystemAccessManager:
   void GetSandboxedFileSystem(GetSandboxedFileSystemCallback callback) override;
+  // Get the FileSystem with a custom bucket override. Must provide a binding
+  // context for this request.
+  void GetSandboxedFileSystem(
+      const BindingContext& binding_context,
+      const absl::optional<storage::BucketLocator>& bucket,
+      GetSandboxedFileSystemCallback callback);
   void ChooseEntries(blink::mojom::FilePickerOptionsPtr options,
                      blink::mojom::CommonFilePickerOptionsPtr common_options,
                      ChooseEntriesCallback callback) override;
@@ -149,6 +160,11 @@ class CONTENT_EXPORT FileSystemAccessManagerImpl
       PathType path_type,
       const base::FilePath& directory_path,
       UserAction user_action) override;
+  void ResolveTransferToken(
+      mojo::PendingRemote<blink::mojom::FileSystemAccessTransferToken>
+          transfer_token,
+      base::OnceCallback<void(absl::optional<storage::FileSystemURL>)> callback)
+      override;
 
   // Creates a new FileSystemAccessFileHandleImpl for a given url. Assumes the
   // passed in URL is valid and represents a file.
@@ -165,9 +181,9 @@ class CONTENT_EXPORT FileSystemAccessManagerImpl
                         const SharedHandleState& handle_state);
   // Attempts to take a write lock on `url`. The lock is released when the
   // returned object is destroyed.
-  absl::optional<scoped_refptr<FileSystemAccessWriteLockManager::WriteLock>>
-  TakeWriteLock(const storage::FileSystemURL& url,
-                FileSystemAccessWriteLockManager::WriteLockType lock_type);
+  scoped_refptr<FileSystemAccessWriteLockManager::WriteLock> TakeWriteLock(
+      const storage::FileSystemURL& url,
+      FileSystemAccessWriteLockManager::WriteLockType lock_type);
 
   // Creates a new FileSystemAccessFileWriterImpl for a given target and
   // swap file URLs. Assumes the passed in URLs are valid and represent files.
@@ -203,7 +219,8 @@ class CONTENT_EXPORT FileSystemAccessManagerImpl
           blink::mojom::FileSystemAccessCapacityAllocationHost>
           capacity_allocation_host_receiver,
       int64_t file_size,
-      scoped_refptr<FileSystemAccessWriteLockManager::WriteLock> lock);
+      scoped_refptr<FileSystemAccessWriteLockManager::WriteLock> lock,
+      base::ScopedClosureRunner on_close_callback);
 
   // Create a transfer token for a specific file or directory.
   void CreateTransferToken(
@@ -246,6 +263,7 @@ class CONTENT_EXPORT FileSystemAccessManagerImpl
   operation_runner();
 
   FileSystemAccessPermissionContext* permission_context() {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return permission_context_;
   }
 
@@ -253,11 +271,13 @@ class CONTENT_EXPORT FileSystemAccessManagerImpl
 
   void SetPermissionContextForTesting(
       FileSystemAccessPermissionContext* permission_context) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     permission_context_ = permission_context;
   }
 
   void SetFilePickerResultForTesting(
       absl::optional<FileSystemChooser::ResultEntry> result_entry) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     auto_file_picker_result_for_test_ = result_entry;
   }
 
@@ -268,8 +288,7 @@ class CONTENT_EXPORT FileSystemAccessManagerImpl
   // Remove `access_handle_host` from `access_handle_host_receivers_`. It is an
   // error to try to remove an access handle that doesn't exist.
   void RemoveAccessHandleHost(
-      FileSystemAccessAccessHandleHostImpl* access_handle_host,
-      base::OnceCallback<void()> callback);
+      FileSystemAccessAccessHandleHostImpl* access_handle_host);
 
   // Remove `token` from `transfer_tokens_`. It is an error to try to remove
   // a token that doesn't exist.
@@ -381,7 +400,7 @@ class CONTENT_EXPORT FileSystemAccessManagerImpl
       bool default_directory_exists);
   void DidOpenSandboxedFileSystem(const BindingContext& binding_context,
                                   GetSandboxedFileSystemCallback callback,
-                                  const GURL& root,
+                                  const storage::FileSystemURL& root,
                                   const std::string& filesystem_name,
                                   base::File::Error result);
 
@@ -437,29 +456,31 @@ class CONTENT_EXPORT FileSystemAccessManagerImpl
   void DidResolveForSerializeHandle(
       SerializeHandleCallback callback,
       FileSystemAccessTransferTokenImpl* resolved_token);
+  void DidGetSandboxedBucketForDeserializeHandle(
+      const FileSystemAccessHandleData& data,
+      mojo::PendingReceiver<blink::mojom::FileSystemAccessTransferToken> token,
+      const storage::FileSystemURL& url);
 
-  // FileSystemAccessCapacityAllocationHosts may reserve too much capacity from
-  // the quota system. This function determines the file's actual size and
-  // corrects its capacity usage in the quota system.
-  void CleanupAccessHandleCapacityAllocation(
-      const storage::FileSystemURL& url,
-      int64_t allocated_file_size,
-      base::OnceCallback<void()> callback);
+  // FileSystemAccessCapacityAllocationHosts may reserve too much capacity
+  // from the quota system. This function determines the file's actual size
+  // and corrects its capacity usage in the quota system.
+  void CleanupAccessHandleCapacityAllocation(const storage::FileSystemURL& url,
+                                             int64_t allocated_file_size,
+                                             base::OnceClosure callback);
 
   // Performs the actual work of `CleanupAccessHandleCapacityAllocation()` after
   // the file's size has been determined.
   void CleanupAccessHandleCapacityAllocationImpl(
       const storage::FileSystemURL& url,
       int64_t allocated_file_size,
-      base::OnceCallback<void()> callback,
+      base::OnceClosure callback,
       base::File::Error result,
       const base::File::Info& file_info);
 
   // Called after `CleanupAccessHandleCapacityAllocationImpl()` has completed.
   // Removes `access_handle_host` from the set of active hosts.
   void DidCleanupAccessHandleCapacityAllocation(
-      FileSystemAccessAccessHandleHostImpl* access_handle_host,
-      base::OnceCallback<void()> callback);
+      FileSystemAccessAccessHandleHostImpl* access_handle_host);
 
   // Calls `token_resolved_callback` with a FileSystemAccessEntry object
   // that's at the file path of the FileSystemAccessDataTransferToken with token
@@ -487,45 +508,48 @@ class CONTENT_EXPORT FileSystemAccessManagerImpl
 
   const scoped_refptr<storage::FileSystemContext> context_;
   const scoped_refptr<ChromeBlobStorageContext> blob_context_;
-  base::SequenceBound<storage::FileSystemOperationRunner> operation_runner_;
-  raw_ptr<FileSystemAccessPermissionContext> permission_context_;
+  base::SequenceBound<storage::FileSystemOperationRunner> operation_runner_
+      GUARDED_BY_CONTEXT(sequence_checker_);
+  raw_ptr<FileSystemAccessPermissionContext> permission_context_
+      GUARDED_BY_CONTEXT(sequence_checker_);
 
   // All the mojo receivers for this FileSystemAccessManager itself. Keeps
   // track of associated origin and other state as well to not have to rely on
   // the renderer passing that in, and to be able to do security checks around
   // transferability etc.
   mojo::ReceiverSet<blink::mojom::FileSystemAccessManager, BindingContext>
-      receivers_;
+      receivers_ GUARDED_BY_CONTEXT(sequence_checker_);
 
   mojo::ReceiverSet<storage::mojom::FileSystemAccessContext>
-      internals_receivers_;
+      internals_receivers_ GUARDED_BY_CONTEXT(sequence_checker_);
 
   // The `write_lock_manager_` manager should be destroyed after
   // `writer_receivers_` and `access_handle_host_receivers_`. The write locks
   // held by file writers and access handles dereference the lock manager on
   // destruction, so it should outlive them.
-  std::unique_ptr<FileSystemAccessWriteLockManager> write_lock_manager_;
+  std::unique_ptr<FileSystemAccessWriteLockManager> write_lock_manager_
+      GUARDED_BY_CONTEXT(sequence_checker_);
 
   // All the receivers for file and directory handles that have references to
   // them.
   mojo::UniqueReceiverSet<blink::mojom::FileSystemAccessFileHandle>
-      file_receivers_;
+      file_receivers_ GUARDED_BY_CONTEXT(sequence_checker_);
   mojo::UniqueReceiverSet<blink::mojom::FileSystemAccessDirectoryHandle>
-      directory_receivers_;
+      directory_receivers_ GUARDED_BY_CONTEXT(sequence_checker_);
   base::flat_set<std::unique_ptr<FileSystemAccessFileWriterImpl>,
                  base::UniquePtrComparator>
-      writer_receivers_;
+      writer_receivers_ GUARDED_BY_CONTEXT(sequence_checker_);
   base::flat_set<std::unique_ptr<FileSystemAccessAccessHandleHostImpl>,
                  base::UniquePtrComparator>
-      access_handle_host_receivers_;
+      access_handle_host_receivers_ GUARDED_BY_CONTEXT(sequence_checker_);
 
-  bool off_the_record_;
+  const bool off_the_record_;
 
   // FileSystemAccessTransferTokenImpl owns a Transfer token receiver set and is
   // removed from this map when all mojo connections are closed.
   std::map<base::UnguessableToken,
            std::unique_ptr<FileSystemAccessTransferTokenImpl>>
-      transfer_tokens_;
+      transfer_tokens_ GUARDED_BY_CONTEXT(sequence_checker_);
 
   // This map is used to associate FileSystemAccessDataTransferTokenImpl
   // instances with UnguessableTokens so that this class can find an associated
@@ -533,12 +557,13 @@ class CONTENT_EXPORT FileSystemAccessManagerImpl
   // mojo::PendingRemote<FileSystemAccessDataTransferToken>.
   std::map<base::UnguessableToken,
            std::unique_ptr<FileSystemAccessDataTransferTokenImpl>>
-      data_transfer_tokens_;
+      data_transfer_tokens_ GUARDED_BY_CONTEXT(sequence_checker_);
 
   absl::optional<FileSystemChooser::ResultEntry>
-      auto_file_picker_result_for_test_;
+      auto_file_picker_result_for_test_ GUARDED_BY_CONTEXT(sequence_checker_);
 
-  base::WeakPtrFactory<FileSystemAccessManagerImpl> weak_factory_{this};
+  base::WeakPtrFactory<FileSystemAccessManagerImpl> weak_factory_
+      GUARDED_BY_CONTEXT(sequence_checker_){this};
 };
 
 }  // namespace content

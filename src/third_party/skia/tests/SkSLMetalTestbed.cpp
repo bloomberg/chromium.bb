@@ -5,9 +5,15 @@
  * found in the LICENSE file.
  */
 
+#include "include/core/SkTypes.h"
+#include "include/private/SkSLProgramKind.h"
 #include "src/sksl/SkSLCompiler.h"
-
+#include "src/sksl/SkSLUtil.h"
+#include "src/sksl/ir/SkSLProgram.h"
 #include "tests/Test.h"
+
+#include <memory>
+#include <string>
 
 static void test(skiatest::Reporter* r,
                  const SkSL::ShaderCaps& caps,
@@ -15,13 +21,13 @@ static void test(skiatest::Reporter* r,
                  SkSL::ProgramKind kind = SkSL::ProgramKind::kFragment) {
     SkSL::Compiler compiler(&caps);
     SkSL::Program::Settings settings;
-    SkSL::String output;
-    std::unique_ptr<SkSL::Program> program = compiler.convertProgram(kind, SkSL::String(src),
+    std::unique_ptr<SkSL::Program> program = compiler.convertProgram(kind, std::string(src),
                                                                      settings);
     if (!program) {
         SkDebugf("Unexpected error compiling %s\n%s", src, compiler.errorText().c_str());
         REPORTER_ASSERT(r, program);
     } else {
+        std::string output;
         REPORTER_ASSERT(r, compiler.toMetal(*program, &output));
         REPORTER_ASSERT(r, output != "");
         //SkDebugf("Metal output:\n\n%s", output.c_str());

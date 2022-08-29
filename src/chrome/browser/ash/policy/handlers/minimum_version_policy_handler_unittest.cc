@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "ash/components/settings/cros_settings_names.h"
+#include "ash/components/tpm/stub_install_attributes.h"
 #include "ash/constants/ash_features.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
@@ -24,22 +25,19 @@
 #include "chromeos/dbus/shill/shill_service_client.h"
 #include "chromeos/dbus/update_engine/fake_update_engine_client.h"
 #include "chromeos/network/network_handler_test_helper.h"
-#include "chromeos/tpm/stub_install_attributes.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
-using testing::_;
-using testing::Mock;
-
-using MinimumVersionRequirement =
-    policy::MinimumVersionPolicyHandler::MinimumVersionRequirement;
-
 namespace policy {
 
 namespace {
+
+using MinimumVersionRequirement =
+    MinimumVersionPolicyHandler::MinimumVersionRequirement;
+
 const char kFakeCurrentVersion[] = "13305.20.0";
 const char kNewVersion[] = "13305.25.0";
 const char kNewerVersion[] = "13310.0.0";
@@ -96,7 +94,7 @@ class MinimumVersionPolicyHandlerTest
   ScopedTestingLocalState local_state_;
   base::test::ScopedFeatureList feature_list_;
   ash::ScopedTestingCrosSettings scoped_testing_cros_settings_;
-  chromeos::ScopedStubInstallAttributes scoped_stub_install_attributes_;
+  ash::ScopedStubInstallAttributes scoped_stub_install_attributes_;
   chromeos::FakeUpdateEngineClient* fake_update_engine_client_;
   std::unique_ptr<chromeos::NetworkHandlerTestHelper>
       network_handler_test_helper_;

@@ -93,6 +93,7 @@ class EmbedderTest : public ::testing::Test,
   void SetUp() override;
   void TearDown() override;
 
+  Delegate* GetDelegate() { return delegate_; }
   void SetDelegate(Delegate* delegate) {
     delegate_ = delegate ? delegate : default_delegate_.get();
   }
@@ -200,14 +201,14 @@ class EmbedderTest : public ::testing::Test,
   // Simplified form of RenderPageWithFlags() with no handle and no flags.
   static ScopedFPDFBitmap RenderPage(FPDF_PAGE page);
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // Convert |page| into EMF with the specified page rendering |flags|.
   static std::vector<uint8_t> RenderPageWithFlagsToEmf(FPDF_PAGE page,
                                                        int flags);
 
   // Get the PostScript data from |emf_data|.
   static std::string GetPostScriptFromEmf(pdfium::span<const uint8_t> emf_data);
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
   // Return bytes for each of the FPDFBitmap_* format types.
   static int BytesPerPixelForFormat(int format);
@@ -230,11 +231,9 @@ class EmbedderTest : public ::testing::Test,
   // any, at the end of a row where the stride is larger than width * bpp.
   static std::string HashBitmap(FPDF_BITMAP bitmap);
 
-#ifndef NDEBUG
   // For debugging purposes.
   // Write |bitmap| as a PNG to |filename|.
   static void WriteBitmapToPng(FPDF_BITMAP bitmap, const std::string& filename);
-#endif
 
   // Check |bitmap| to make sure it has the right dimensions and content.
   static void CompareBitmap(FPDF_BITMAP bitmap,
@@ -275,32 +274,6 @@ class EmbedderTest : public ::testing::Test,
 #endif
 
  private:
-  static void UnsupportedHandlerTrampoline(UNSUPPORT_INFO*, int type);
-  static int AlertTrampoline(IPDF_JSPLATFORM* plaform,
-                             FPDF_WIDESTRING message,
-                             FPDF_WIDESTRING title,
-                             int type,
-                             int icon);
-  static int SetTimerTrampoline(FPDF_FORMFILLINFO* info,
-                                int msecs,
-                                TimerCallback fn);
-  static void KillTimerTrampoline(FPDF_FORMFILLINFO* info, int id);
-  static FPDF_PAGE GetPageTrampoline(FPDF_FORMFILLINFO* info,
-                                     FPDF_DOCUMENT document,
-                                     int page_index);
-  static void DoURIActionTrampoline(FPDF_FORMFILLINFO* info,
-                                    FPDF_BYTESTRING uri);
-  static void DoGoToActionTrampoline(FPDF_FORMFILLINFO* info,
-                                     int page_index,
-                                     int zoom_mode,
-                                     float* pos_array,
-                                     int array_size);
-  static void OnFocusChangeTrampoline(FPDF_FORMFILLINFO* info,
-                                      FPDF_ANNOTATION annot,
-                                      int page_index);
-  static void DoURIActionWithKeyboardModifierTrampoline(FPDF_FORMFILLINFO* info,
-                                                        FPDF_BYTESTRING uri,
-                                                        int modifiers);
   static int WriteBlockCallback(FPDF_FILEWRITE* pFileWrite,
                                 const void* data,
                                 unsigned long size);

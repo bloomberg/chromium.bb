@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/synchronization/lock.h"
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/trace_event/trace_event.h"
@@ -17,6 +18,7 @@
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/scheduler/public/worker_pool.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_copier_base.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/sanitizers.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -101,7 +103,7 @@ constexpr base::TimeDelta ParkableImageImpl::kParkingDelay;
 
 void ParkableImageImpl::Append(WTF::SharedBuffer* buffer, size_t offset) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  MutexLocker lock(lock_);
+  base::AutoLock lock(lock_);
   DCHECK(!is_frozen());
   DCHECK(!is_on_disk());
   DCHECK(rw_buffer_);
@@ -116,7 +118,7 @@ void ParkableImageImpl::Append(WTF::SharedBuffer* buffer, size_t offset) {
 
 scoped_refptr<SharedBuffer> ParkableImageImpl::Data() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  MutexLocker lock(lock_);
+  base::AutoLock lock(lock_);
   Unpark();
   DCHECK(rw_buffer_);
   scoped_refptr<ROBuffer> ro_buffer(rw_buffer_->MakeROBufferSnapshot());
@@ -130,7 +132,7 @@ scoped_refptr<SharedBuffer> ParkableImageImpl::Data() {
 }
 
 scoped_refptr<SegmentReader> ParkableImageImpl::GetROBufferSegmentReader() {
-  MutexLocker lock(lock_);
+  base::AutoLock lock(lock_);
   Unpark();
   DCHECK(rw_buffer_);
   // The locking and unlocking here is only needed to make sure ASAN unpoisons
@@ -172,7 +174,7 @@ scoped_refptr<ParkableImageImpl> ParkableImageImpl::Create(
 
 void ParkableImageImpl::Freeze() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  MutexLocker lock(lock_);
+  base::AutoLock lock(lock_);
   DCHECK(!is_frozen());
   frozen_time_ = base::TimeTicks::Now();
 
@@ -219,7 +221,7 @@ void ParkableImageImpl::WriteToDiskInBackground(
     scoped_refptr<ParkableImageImpl> parkable_image,
     scoped_refptr<base::SingleThreadTaskRunner> callback_task_runner) {
   DCHECK(!IsMainThread());
-  MutexLocker lock(parkable_image->lock_);
+  base::AutoLock lock(parkable_image->lock_);
 
   DCHECK(ParkableImageManager::IsParkableImagesToDiskEnabled());
   DCHECK(parkable_image);
@@ -241,7 +243,7 @@ void ParkableImageImpl::WriteToDiskInBackground(
   } while (it.Next());
 
   // Release the lock while writing, so we don't block for too long.
-  parkable_image->lock_.unlock();
+  parkable_image->lock_.Release();
 
   base::ElapsedTimer timer;
   auto metadata = ParkableImageManager::Instance().data_allocator().Write(
@@ -249,7 +251,7 @@ void ParkableImageImpl::WriteToDiskInBackground(
   base::TimeDelta elapsed = timer.Elapsed();
 
   // Acquire the lock again after writing.
-  parkable_image->lock_.lock();
+  parkable_image->lock_.Acquire();
 
   parkable_image->on_disk_metadata_ = std::move(metadata);
 
@@ -271,7 +273,7 @@ void ParkableImageImpl::MaybeDiscardData() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!is_below_min_parking_size());
 
-  MutexLocker lock(lock_);
+  base::AutoLock lock(lock_);
   DCHECK(on_disk_metadata_);
 
   background_task_in_progress_ = false;
@@ -310,7 +312,7 @@ bool ParkableImageImpl::TransientlyUnableToPark() const {
 bool ParkableImageImpl::MaybePark() {
   DCHECK(ParkableImageManager::IsParkableImagesToDiskEnabled());
 
-  MutexLocker lock(lock_);
+  base::AutoLock lock(lock_);
 
   if (background_task_in_progress_)
     return true;

@@ -13,8 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/threading/thread.h"
-#include "gpu/ipc/service/gpu_memory_buffer_factory.h"
-#include "media/base/decode_status.h"
+#include "media/base/decoder_status.h"
 #include "media/base/video_decoder.h"
 #include "media/base/video_decoder_config.h"
 #include "media/gpu/test/video_player/video_player.h"
@@ -63,15 +62,12 @@ class VideoDecoderClient {
 
   ~VideoDecoderClient();
 
-  // Return an instance of the VideoDecoderClient. The
-  // |gpu_memory_buffer_factory| will not be owned by the decoder client, the
-  // caller should guarantee it outlives the decoder client. The |event_cb| will
-  // be called whenever an event occurs (e.g. frame decoded) and should be
-  // thread-safe. Initialization is performed asynchronous, upon completion a
-  // 'kInitialized' event will be thrown.
+  // Return an instance of the VideoDecoderClient. The |event_cb| will be called
+  // whenever an event occurs (e.g. frame decoded) and should be thread-safe.
+  // Initialization is performed asynchronous, upon completion a 'kInitialized'
+  // event will be thrown.
   static std::unique_ptr<VideoDecoderClient> Create(
       const VideoPlayer::EventCallback& event_cb,
-      gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory,
       std::unique_ptr<FrameRenderer> frame_renderer,
       std::vector<std::unique_ptr<VideoFrameProcessor>> frame_processors,
       const VideoDecoderClientConfig& config);
@@ -111,7 +107,6 @@ class VideoDecoderClient {
 
   VideoDecoderClient(
       const VideoPlayer::EventCallback& event_cb,
-      gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory,
       std::unique_ptr<FrameRenderer> renderer,
       std::vector<std::unique_ptr<VideoFrameProcessor>> frame_processors,
       const VideoDecoderClientConfig& config);
@@ -142,13 +137,13 @@ class VideoDecoderClient {
   // The below functions are callbacks provided to the video decoder. They are
   // all executed on the |decoder_client_thread_|.
   // Called by the decoder when initialization has completed.
-  void DecoderInitializedTask(Status status);
+  void DecoderInitializedTask(DecoderStatus status);
   // Called by the decoder when a fragment has been decoded.
-  void DecodeDoneTask(media::Status status);
+  void DecodeDoneTask(DecoderStatus status);
   // Called by the decoder when a video frame is ready.
   void FrameReadyTask(scoped_refptr<VideoFrame> video_frame);
   // Called by the decoder when flushing has completed.
-  void FlushDoneTask(media::Status status);
+  void FlushDoneTask(DecoderStatus status);
   // Called by the decoder when resetting has completed.
   void ResetDoneTask();
   // Called by the decoder when a resolution change was requested, returns
@@ -179,9 +174,6 @@ class VideoDecoderClient {
   std::unique_ptr<media::test::EncodedDataHelper> encoded_data_helper_;
   // The video being decoded.
   const Video* video_ = nullptr;
-
-  // Owned by VideoPlayerTestEnvironment.
-  gpu::GpuMemoryBufferFactory* const gpu_memory_buffer_factory_;
 
   SEQUENCE_CHECKER(video_player_sequence_checker_);
   SEQUENCE_CHECKER(decoder_client_sequence_checker_);

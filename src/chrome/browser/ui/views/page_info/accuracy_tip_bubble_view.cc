@@ -63,7 +63,8 @@ std::unique_ptr<views::View> CreateRow(const std::u16string& text,
   auto icon_view = std::make_unique<NonAccessibleImageView>();
   icon_view->SetImage(
       ui::ImageModel::FromVectorIcon(icon, ui::kColorIcon, kVectorIconSize));
-  icon_view->SetProperty(views::kMarginsKey, gfx::Insets(0, 0, 0, icon_margin));
+  icon_view->SetProperty(views::kMarginsKey,
+                         gfx::Insets::TLBR(0, 0, 0, icon_margin));
   icon_view->SetProperty(views::kCrossAxisAlignmentKey,
                          views::LayoutAlignment::kStart);
   line->AddChildView(std::move(icon_view));
@@ -130,8 +131,8 @@ AccuracyTipBubbleView::AccuracyTipBubbleView(
   auto header_view = std::make_unique<ThemeTrackingNonAccessibleImageView>(
       *bundle.GetImageSkiaNamed(IDR_ACCURACY_TIP_ILLUSTRATION_LIGHT),
       *bundle.GetImageSkiaNamed(IDR_ACCURACY_TIP_ILLUSTRATION_DARK),
-      base::BindRepeating(&views::BubbleFrameView::GetBackgroundColor,
-                          base::Unretained(GetBubbleFrameView())));
+      base::BindRepeating(&views::BubbleDialogDelegate::GetBackgroundColor,
+                          base::Unretained(this)));
   set_fixed_width(header_view->GetPreferredSize().width());
   GetBubbleFrameView()->SetHeaderView(std::move(header_view));
 
@@ -142,7 +143,7 @@ AccuracyTipBubbleView::AccuracyTipBubbleView(
   SetLayoutManager(std::make_unique<views::FlexLayout>())
       ->SetOrientation(views::LayoutOrientation::kVertical)
       .SetCollapseMargins(true)
-      .SetDefault(views::kMarginsKey, gfx::Insets(vertical_margin, 0))
+      .SetDefault(views::kMarginsKey, gfx::Insets::VH(vertical_margin, 0))
       .SetDefault(
           views::kFlexBehaviorKey,
           views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
@@ -165,17 +166,21 @@ AccuracyTipBubbleView::AccuracyTipBubbleView(
   permissions::PermissionRequestManager* permission_request_manager =
       permissions::PermissionRequestManager::FromWebContents(web_contents);
   if (permission_request_manager) {
-    scoped_observation_.Observe(permission_request_manager);
+    permission_request_manager->AddObserver(this);
   }
 
   Layout();
   SizeToContents();
 }
 
-AccuracyTipBubbleView::~AccuracyTipBubbleView() = default;
-
-void AccuracyTipBubbleView::OnWidgetClosing(views::Widget* widget) {
-  scoped_observation_.Reset();
+AccuracyTipBubbleView::~AccuracyTipBubbleView() {
+  if (web_contents()) {
+    permissions::PermissionRequestManager* permission_request_manager =
+        permissions::PermissionRequestManager::FromWebContents(web_contents());
+    if (permission_request_manager) {
+      permission_request_manager->RemoveObserver(this);
+    }
+  }
 }
 
 void AccuracyTipBubbleView::OnWidgetDestroying(views::Widget* widget) {

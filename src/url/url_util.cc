@@ -151,9 +151,9 @@ inline bool DoCompareSchemeComponent(const CHAR* spec,
                                      const char* compare_to) {
   if (!component.is_nonempty())
     return compare_to[0] == 0;  // When component is empty, match empty scheme.
-  return base::LowerCaseEqualsASCII(
-      typename CharToStringPiece<CHAR>::Piece(
-          &spec[component.begin], component.len),
+  return base::EqualsCaseInsensitiveASCII(
+      typename CharToStringPiece<CHAR>::Piece(&spec[component.begin],
+                                              component.len),
       compare_to);
 }
 
@@ -168,9 +168,10 @@ bool DoIsInSchemes(const CHAR* spec,
     return false;  // Empty or invalid schemes are non-standard.
 
   for (const SchemeWithType& scheme_with_type : schemes) {
-    if (base::LowerCaseEqualsASCII(typename CharToStringPiece<CHAR>::Piece(
-                                       &spec[scheme.begin], scheme.len),
-                                   scheme_with_type.scheme)) {
+    if (base::EqualsCaseInsensitiveASCII(
+            typename CharToStringPiece<CHAR>::Piece(&spec[scheme.begin],
+                                                    scheme.len),
+            scheme_with_type.scheme)) {
       *type = scheme_with_type.type;
       return true;
     }
@@ -438,6 +439,13 @@ bool DoReplaceComponents(const char* spec,
     // ref).
     Replacements<CHAR> replacements_no_scheme = replacements;
     replacements_no_scheme.SetScheme(NULL, Component());
+    // If the input URL has potentially dangling markup, set the flag on the
+    // output too. Note that in some cases the replacement gets rid of the
+    // potentially dangling markup, but this ok since the check will fail
+    // closed.
+    if (parsed.potentially_dangling_markup) {
+      out_parsed->potentially_dangling_markup = true;
+    }
     return DoReplaceComponents(recanonicalized.data(), recanonicalized.length(),
                                recanonicalized_parsed, replacements_no_scheme,
                                charset_converter, output, out_parsed);
@@ -831,14 +839,14 @@ void DecodeURLEscapeSequences(const char* input,
       // next_ch will point to the last character of the decoded
       // character.
       int next_character = i;
-      unsigned code_point;
+      base_icu::UChar32 code_point;
       if (ReadUTFChar(unescaped_chars.data(), &next_character,
                       unescaped_chars.length(), &code_point)) {
         // Valid UTF-8 character, convert to UTF-16.
         AppendUTF16Value(code_point, output);
         i = next_character;
       } else if (mode == DecodeURLMode::kUTF8) {
-        DCHECK_EQ(code_point, 0xFFFDU);
+        DCHECK_EQ(code_point, 0xFFFD);
         AppendUTF16Value(code_point, output);
         i = next_character;
       } else {

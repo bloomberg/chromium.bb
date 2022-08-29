@@ -130,7 +130,9 @@ func edit(cfg *Config, a *webpagereplay.Archive, outfile string) error {
 	}
 
 	marshalForEdit := func(w io.Writer, req *http.Request, resp *http.Response) error {
-		if err := req.Write(w); err != nil {
+		// WriteProxy writes absolute URI in the Start line including the
+		// scheme and host. It is necessary for unmarshaling later.
+		if err := req.WriteProxy(w); err != nil {
 			return err
 		}
 		if cfg.decodeResponseBody {
@@ -308,6 +310,7 @@ func compressResponse(resp *http.Response) error {
 		return fmt.Errorf("can't compress body to '%s' recieved Content-Encoding: '%s'", ce, newCE)
 	}
 	resp.Body = ioutil.NopCloser(bytes.NewReader(body))
+	resp.ContentLength = int64(len(body))
 	return nil
 }
 
