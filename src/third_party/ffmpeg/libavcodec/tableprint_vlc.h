@@ -23,7 +23,6 @@
 #ifndef AVCODEC_TABLEPRINT_VLC_H
 #define AVCODEC_TABLEPRINT_VLC_H
 
-#define FFMPEG_CONFIG_H
 #define AVUTIL_LOG_H
 #define av_log(a, ...) while(0)
 #define ff_dlog(a, ...) while(0)
@@ -36,10 +35,9 @@
 #define AVUTIL_INTERNAL_H
 #define avpriv_request_sample(...)
 #include "tableprint.h"
-#include "get_bits.h"
-#include "mathtables.c"
+#include "vlc.h"
 #include "libavutil/reverse.c"
-#include "bitstream.c"
+#include "vlc.c"
 
 #define REPLACE_DEFINE2(type) write_##type##_array
 #define REPLACE_DEFINE(type) REPLACE_DEFINE2(type)

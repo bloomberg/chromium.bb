@@ -9,6 +9,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_blob_info.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_evaluation_result.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/unpacked_serialized_script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/v8_script_value_deserializer.h"
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_traits.h"
@@ -38,6 +39,7 @@
 #include "third_party/blink/renderer/core/fileapi/blob.h"
 #include "third_party/blink/renderer/core/fileapi/file.h"
 #include "third_party/blink/renderer/core/fileapi/file_list.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/geometry/dom_matrix.h"
 #include "third_party/blink/renderer/core/geometry/dom_matrix_read_only.h"
@@ -55,6 +57,7 @@
 #include "third_party/blink/renderer/core/streams/readable_stream.h"
 #include "third_party/blink/renderer/core/streams/transform_stream.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/blob/blob_data.h"
 #include "third_party/blink/renderer/platform/file_metadata.h"
 #include "third_party/blink/renderer/platform/graphics/unaccelerated_static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
@@ -112,7 +115,8 @@ v8::Local<v8::Value> RoundTrip(
 
 v8::Local<v8::Value> Eval(const String& source, V8TestingScope& scope) {
   return ClassicScript::CreateUnspecifiedScript(source)
-      ->RunScriptAndReturnValue(&scope.GetWindow());
+      ->RunScriptAndReturnValue(&scope.GetWindow())
+      .GetSuccessValueOrEmpty();
 }
 
 String ToJSON(v8::Local<v8::Object> object, const V8TestingScope& scope) {
@@ -1124,7 +1128,7 @@ TEST(V8ScriptValueSerializerTest, DecodeImageBitmap) {
 // this test intends to ensure that a platform can decode images it has
 // previously written. At format version 9, Android writes RGBA and every
 // other platform writes BGRA.
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   scoped_refptr<SerializedScriptValue> input =
       SerializedValue({0xff, 0x09, 0x3f, 0x00, 0x67, 0x01, 0x01, 0x02, 0x01,
                        0x08, 0xff, 0x00, 0x00, 0xff, 0x00, 0xff, 0x00, 0xff});
@@ -1504,12 +1508,12 @@ TEST(V8ScriptValueSerializerTest, RoundTripFileNativeSnapshot) {
 
 TEST(V8ScriptValueSerializerTest, RoundTripFileNonNativeSnapshot) {
   // Preserving behavior, filesystem URL is not preserved across cloning.
-  V8TestingScope scope;
   KURL url("filesystem:http://example.com/isolated/hash/non-native-file");
+  V8TestingScope scope;
   FileMetadata metadata;
   metadata.length = 0;
-  File* file =
-      File::CreateForFileSystemFile(url, metadata, File::kIsUserVisible);
+  File* file = File::CreateForFileSystemFile(
+      url, metadata, File::kIsUserVisible, BlobDataHandle::Create());
   v8::Local<v8::Value> wrapper = ToV8(file, scope.GetScriptState());
   v8::Local<v8::Value> result = RoundTrip(wrapper, scope);
   ASSERT_TRUE(V8File::HasInstance(result, scope.GetIsolate()));

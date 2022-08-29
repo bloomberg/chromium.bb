@@ -31,7 +31,7 @@ import org.chromium.chrome.browser.toolbar.R;
 import org.chromium.chrome.browser.toolbar.adaptive.AdaptiveToolbarFeatures.AdaptiveToolbarButtonVariant;
 import org.chromium.chrome.browser.toolbar.adaptive.settings.AdaptiveToolbarPreferenceFragment;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
-import org.chromium.ui.base.AndroidPermissionDelegate;
+import org.chromium.ui.permissions.AndroidPermissionDelegate;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -167,7 +167,8 @@ public class AdaptiveToolbarButtonController implements ButtonDataProvider, Butt
         if (receivedButtonData == null) return null;
 
         if (!mIsSessionVariantRecorded && receivedButtonData.canShow()
-                && receivedButtonData.isEnabled()) {
+                && receivedButtonData.isEnabled()
+                && !receivedButtonData.getButtonSpec().isDynamicAction()) {
             mIsSessionVariantRecorded = true;
             RecordHistogram.recordEnumeratedHistogram(
                     "Android.AdaptiveToolbarButton.SessionVariant",
@@ -269,5 +270,12 @@ public class AdaptiveToolbarButtonController implements ButtonDataProvider, Butt
                 notifyObservers(uiState.canShowUi);
             });
         }
+    }
+
+    /** Called to notify the controller that a dynamic action is available and should be shown. */
+    public void showDynamicAction(@AdaptiveToolbarButtonVariant int action) {
+        // TODO(shaktisahu): Fix logic to show the next preferred button.
+        setSingleProvider(mButtonDataProviderMap.get(action));
+        notifyObservers(action != AdaptiveToolbarButtonVariant.UNKNOWN);
     }
 }

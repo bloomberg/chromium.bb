@@ -5,7 +5,6 @@
 #ifndef CHROMEOS_NETWORK_SHILL_PROPERTY_HANDLER_H_
 #define CHROMEOS_NETWORK_SHILL_PROPERTY_HANDLER_H_
 
-#include <list>
 #include <map>
 #include <set>
 #include <string>
@@ -13,7 +12,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
-#include "chromeos/dbus/dbus_method_call_status.h"
+#include "chromeos/dbus/common/dbus_method_call_status.h"
 #include "chromeos/dbus/shill/shill_property_changed_observer.h"
 #include "chromeos/dbus/shill/shill_service_client.h"
 #include "chromeos/network/managed_state.h"
@@ -46,7 +45,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ShillPropertyHandler
    public:
     // Called when the entries in a managed list have changed.
     virtual void UpdateManagedList(ManagedState::ManagedType type,
-                                   const base::ListValue& entries) = 0;
+                                   const base::Value& entries) = 0;
 
     // Called when the properties for a managed state have changed.
     // |properties| is expected to be of type DICTIONARY.
@@ -59,16 +58,14 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ShillPropertyHandler
     virtual void ProfileListChanged(const base::Value& profile_list) = 0;
 
     // Called when a property for a watched network service has changed.
-    virtual void UpdateNetworkServiceProperty(
-        const std::string& service_path,
-        const std::string& key,
-        const base::Value& value) = 0;
+    virtual void UpdateNetworkServiceProperty(const std::string& service_path,
+                                              const std::string& key,
+                                              const base::Value& value) = 0;
 
     // Called when a property for a watched device has changed.
-    virtual void UpdateDeviceProperty(
-        const std::string& device_path,
-        const std::string& key,
-        const base::Value& value) = 0;
+    virtual void UpdateDeviceProperty(const std::string& device_path,
+                                      const std::string& key,
+                                      const base::Value& value) = 0;
 
     // Called when a watched network or device IPConfig property changes.
     virtual void UpdateIPConfigProperties(ManagedState::ManagedType type,
@@ -78,7 +75,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ShillPropertyHandler
 
     // Called when the list of devices with portal check enabled changes.
     virtual void CheckPortalListChanged(
-         const std::string& check_portal_list) = 0;
+        const std::string& check_portal_list) = 0;
 
     // Called when the DHCP Hostname property changes.
     virtual void HostnameChanged(const std::string& hostname) = 0;
@@ -186,22 +183,20 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ShillPropertyHandler
   void CheckPendingStateListUpdates(const std::string& key);
 
   // Called form OnPropertyChanged() and ManagerPropertiesCallback().
-  void ManagerPropertyChanged(const std::string& key,
-                              const base::Value& value);
+  void ManagerPropertyChanged(const std::string& key, const base::Value& value);
 
   // Requests properties for new entries in the list for |type|.
   void UpdateProperties(ManagedState::ManagedType type,
-                        const base::ListValue& entries);
+                        const base::Value& entries);
 
   // Updates the Shill property observers to observe any entries for |type|.
   void UpdateObserved(ManagedState::ManagedType type,
-                      const base::ListValue& entries);
-
+                      const base::Value& entries);
 
   // Sets |*_technologies_| to contain only entries in |technologies|.
-  void UpdateAvailableTechnologies(const base::ListValue& technologies);
-  void UpdateEnabledTechnologies(const base::ListValue& technologies);
-  void UpdateUninitializedTechnologies(const base::ListValue& technologies);
+  void UpdateAvailableTechnologies(const base::Value& technologies);
+  void UpdateEnabledTechnologies(const base::Value& technologies);
+  void UpdateUninitializedTechnologies(const base::Value& technologies);
   void UpdateProhibitedTechnologies(const std::string& technologies);
 
   void EnableTechnologyFailed(const std::string& technology,

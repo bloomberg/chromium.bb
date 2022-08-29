@@ -17,6 +17,7 @@
 #include <string>
 #include <vector>
 
+#include "absl/strings/string_view.h"
 #include "api/sequence_checker.h"
 #include "rtc_base/atomic_ops.h"
 #include "rtc_base/checks.h"
@@ -334,6 +335,10 @@ const unsigned char* InternalGetCategoryEnabled(const char* name) {
                                                                     : name);
 }
 
+const unsigned char* InternalEnableAllCategories(const char* name) {
+  return reinterpret_cast<const unsigned char*>(name);
+}
+
 void InternalAddTraceEvent(char phase,
                            const unsigned char* category_enabled,
                            const char* name,
@@ -354,11 +359,13 @@ void InternalAddTraceEvent(char phase,
 
 }  // namespace
 
-void SetupInternalTracer() {
+void SetupInternalTracer(bool enable_all_categories) {
   RTC_CHECK(rtc::AtomicOps::CompareAndSwapPtr(
                 &g_event_logger, static_cast<EventLogger*>(nullptr),
                 new EventLogger()) == nullptr);
-  webrtc::SetupEventTracer(InternalGetCategoryEnabled, InternalAddTraceEvent);
+  webrtc::SetupEventTracer(enable_all_categories ? InternalEnableAllCategories
+                                                 : InternalGetCategoryEnabled,
+                           InternalAddTraceEvent);
 }
 
 void StartInternalCaptureToFile(FILE* file) {
@@ -367,11 +374,11 @@ void StartInternalCaptureToFile(FILE* file) {
   }
 }
 
-bool StartInternalCapture(const char* filename) {
+bool StartInternalCapture(absl::string_view filename) {
   if (!g_event_logger)
     return false;
 
-  FILE* file = fopen(filename, "w");
+  FILE* file = fopen(std::string(filename).c_str(), "w");
   if (!file) {
     RTC_LOG(LS_ERROR) << "Failed to open trace file '" << filename
                       << "' for writing.";

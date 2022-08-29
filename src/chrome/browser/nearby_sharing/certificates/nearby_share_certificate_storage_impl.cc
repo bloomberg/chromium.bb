@@ -12,7 +12,6 @@
 #include "base/json/values_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/task/post_task.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -439,7 +438,7 @@ NearbyShareCertificateStorageImpl::GetPrivateCertificates() const {
   const base::Value* list =
       pref_service_->Get(prefs::kNearbySharingPrivateCertificateListPrefName);
   std::vector<NearbySharePrivateCertificate> certs;
-  for (const base::Value& cert_dict : list->GetList()) {
+  for (const base::Value& cert_dict : list->GetListDeprecated()) {
     absl::optional<NearbySharePrivateCertificate> cert(
         NearbySharePrivateCertificate::FromDictionary(cert_dict));
     if (!cert)

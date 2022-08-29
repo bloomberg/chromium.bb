@@ -28,6 +28,9 @@ const int kSmallImageSize = 16;
 const int kSmallImageSizeMD = 18;
 const int kSmallImagePadding = 4;
 
+// Rounded corners are applied to large and small images in ash
+constexpr int kImageCornerRadius = 8;
+
 // Limits.
 const size_t kMaxVisibleMessageCenterNotifications = 100;
 const size_t kMaxVisiblePopupNotifications = 3;
@@ -70,9 +73,9 @@ constexpr int kMinPixelsPerTitleCharacter = 4;
 
 // Message.
 
-// Max number of lines for message_view_.
-constexpr int kMaxLinesForMessageView = 1;
-constexpr int kMaxLinesForExpandedMessageView = 4;
+// Max number of lines for message_label_.
+constexpr int kMaxLinesForMessageLabel = 1;
+constexpr int kMaxLinesForExpandedMessageLabel = 4;
 
 // Character limit = pixels per line * line limit / min. pixels per character.
 constexpr size_t kMessageCharacterLimit =
@@ -100,7 +103,7 @@ const int kButtonIconToTitlePadding = 16;  // In DIPs.
 
 // Progress bar.
 const int kProgressBarTopPadding = 16;
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
 const int kProgressBarThickness = 5;
 const int kProgressBarCornerRadius = 3;
 #endif
@@ -120,6 +123,9 @@ constexpr int kMarginBetweenPopups = 10;
 // Radius of the rounded corners of a notification.
 // The corners are only rounded in Chrome OS.
 constexpr int kNotificationCornerRadius = 2;
+
+// Animation Durations
+constexpr int kNotificationResizeAnimationDurationMs = 200;
 
 constexpr char kIdSuffixForGroupContainerNotification[] = "_copy";
 }  // namespace message_center

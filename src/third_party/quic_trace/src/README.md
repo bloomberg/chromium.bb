@@ -13,8 +13,8 @@ the streams) are also within the scope.
 ## How to record this format
 
 The traces are represented as a Protocol Buffer, which is completely described
-in `lib/quic_trace.proto`.  Projects that use Bazel can embed this repository
-directly and use the provided Bazel rules.
+in `quic_trace/quic_trace.proto`.  Projects that use Bazel can embed this
+repository directly and use the provided Bazel rules.
 
 ## OpenGL-based renderer
 

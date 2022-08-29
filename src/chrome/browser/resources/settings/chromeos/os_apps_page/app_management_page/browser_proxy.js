@@ -12,15 +12,26 @@ import '/app-management/safe_base_name.mojom-lite.js';
 import '/app-management/types.mojom-lite.js';
 import '/app-management/app_management.mojom-lite.js';
 
-import {addSingletonGetter} from 'chrome://resources/js/cr.m.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {BrowserProxy as ComponentBrowserProxy} from 'chrome://resources/cr_components/app_management/browser_proxy.js';
+import {AppType, InstallReason, OptionalBool} from 'chrome://resources/cr_components/app_management/constants.js';
+import {PermissionType, TriState} from 'chrome://resources/cr_components/app_management/permission_constants.js';
 
-import {PermissionType, TriState} from '../permission_constants.js';
-
-import {AppType, InstallReason} from './constants.js';
 import {FakePageHandler} from './fake_page_handler.js';
 
+/** @type {?BrowserProxy} */
+let instance = null;
+
 export class BrowserProxy {
+  /** @return {!BrowserProxy} */
+  static getInstance() {
+    return instance || (instance = new BrowserProxy());
+  }
+
+  /** @param {!BrowserProxy} obj */
+  static setInstance(obj) {
+    instance = obj;
+  }
+
   constructor() {
     /** @type {appManagement.mojom.PageCallbackRouter} */
     this.callbackRouter = new appManagement.mojom.PageCallbackRouter();
@@ -100,9 +111,9 @@ export class BrowserProxy {
             {
               title: 'Web App, policy applied',
               type: AppType.kWeb,
-              isPinned: apps.mojom.OptionalBool.kTrue,
-              isPolicyPinned: apps.mojom.OptionalBool.kTrue,
-              installReason: apps.mojom.InstallReason.kPolicy,
+              isPinned: OptionalBool.kTrue,
+              isPolicyPinned: OptionalBool.kTrue,
+              installReason: InstallReason.kPolicy,
               permissions:
                   FakePageHandler.createWebPermissions(permissionOptions),
             },
@@ -112,13 +123,8 @@ export class BrowserProxy {
       this.fakeHandler.setApps(appList);
 
     } else {
-      this.handler = new appManagement.mojom.PageHandlerRemote();
-      const factory = appManagement.mojom.PageHandlerFactory.getRemote();
-      factory.createPageHandler(
-          this.callbackRouter.$.bindNewPipeAndPassRemote(),
-          this.handler.$.bindNewPipeAndPassReceiver());
+      this.handler = ComponentBrowserProxy.getInstance().handler;
+      this.callbackRouter = ComponentBrowserProxy.getInstance().callbackRouter;
     }
   }
 }
-
-addSingletonGetter(BrowserProxy);

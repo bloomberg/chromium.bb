@@ -18,9 +18,7 @@ V8CSSNumberish* CSSMathInvert::value() {
 
 absl::optional<CSSNumericSumValue> CSSMathInvert::SumValue() const {
   auto sum = value_->SumValue();
-  if (!sum.has_value() || sum->terms.size() != 1 ||
-      (!RuntimeEnabledFeatures::CSSCalcInfinityAndNaNEnabled() &&
-       sum->terms[0].value == 0))
+  if (!sum.has_value() || sum->terms.size() != 1)
     return absl::nullopt;
 
   for (auto& unit_exponent : sum->terms[0].units)
@@ -47,7 +45,7 @@ CSSMathExpressionNode* CSSMathInvert::ToCalcExpressionNode() const {
   CSSMathExpressionNode* right_side = value_->ToCalcExpressionNode();
   if (!right_side)
     return nullptr;
-  return CSSMathExpressionBinaryOperation::Create(
+  return CSSMathExpressionOperation::CreateArithmeticOperation(
       CSSMathExpressionNumericLiteral::Create(
           1, CSSPrimitiveValue::UnitType::kNumber),
       right_side, CSSMathOperator::kDivide);

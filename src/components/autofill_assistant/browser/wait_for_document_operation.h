@@ -13,9 +13,9 @@
 #include "components/autofill_assistant/browser/client_status.h"
 #include "components/autofill_assistant/browser/script_executor_delegate.h"
 #include "components/autofill_assistant/browser/service.pb.h"
-#include "components/autofill_assistant/browser/web/element_finder.h"
 
 namespace autofill_assistant {
+class ElementFinderResult;
 
 // Waits for a minimal state of the document or times out if the state is not
 // reached in time.
@@ -28,7 +28,7 @@ class WaitForDocumentOperation {
   WaitForDocumentOperation(ScriptExecutorDelegate* script_executor_delegate,
                            base::TimeDelta max_wait_time,
                            DocumentReadyState min_ready_state,
-                           const ElementFinder::Result& optional_frame_element,
+                           const ElementFinderResult& optional_frame_element,
                            Callback callback);
   ~WaitForDocumentOperation();
 
@@ -46,7 +46,7 @@ class WaitForDocumentOperation {
   raw_ptr<ScriptExecutorDelegate> script_executor_delegate_;
   base::TimeDelta max_wait_time_;
   DocumentReadyState min_ready_state_;
-  const ElementFinder::Result& optional_frame_element_;
+  const ElementFinderResult& optional_frame_element_;
   Callback callback_;
   base::OneShotTimer timer_;
 

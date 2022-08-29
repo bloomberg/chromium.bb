@@ -11,6 +11,7 @@
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/url_formatter/elide_url.h"
 #include "components/url_formatter/url_formatter.h"
 #import "ios/chrome/app/tests_hook.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -19,6 +20,7 @@
 #import "ios/chrome/browser/drag_and_drop/table_view_url_drag_drop_handler.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
+#import "ios/chrome/browser/net/crurl.h"
 #import "ios/chrome/browser/policy/policy_util.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
@@ -34,7 +36,6 @@
 #include "ios/chrome/browser/ui/history/history_ui_delegate.h"
 #include "ios/chrome/browser/ui/history/history_util.h"
 #import "ios/chrome/browser/ui/history/public/history_presentation_delegate.h"
-#import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_link_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
@@ -50,6 +51,7 @@
 #import "ios/chrome/browser/window_activities/window_activity_helpers.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/favicon/favicon_view.h"
+#import "ios/chrome/common/ui/table_view/table_view_cells_constants.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/web/public/navigation/navigation_manager.h"
@@ -211,6 +213,10 @@ const CGFloat kButtonHorizontalPadding = 30.0;
   self.searchController.searchBar.backgroundColor = UIColor.clearColor;
   self.searchController.searchBar.accessibilityIdentifier =
       kHistorySearchControllerSearchBarIdentifier;
+  if (self.searchTerms.length) {
+    self.searchController.searchBar.text = self.searchTerms;
+    self.searchInProgress = YES;
+  }
   // UIKit needs to know which controller will be presenting the
   // searchController. If we don't add this trying to dismiss while
   // SearchController is active will fail.
@@ -311,9 +317,10 @@ const CGFloat kButtonHorizontalPadding = 30.0;
         [[HistoryEntryItem alloc] initWithType:ItemTypeHistoryEntry
                          accessibilityDelegate:self];
     item.text = [history::FormattedTitle(entry.title, entry.url) copy];
-    item.detailText =
-        [base::SysUTF8ToNSString(entry.url.DeprecatedGetOriginAsURL().spec())
-            copy];
+    item.detailText = base::SysUTF16ToNSString(
+        url_formatter::
+            FormatUrlForDisplayOmitSchemePathTrivialSubdomainsAndMobilePrefix(
+                entry.url));
     item.timeText =
         [base::SysUTF16ToNSString(base::TimeFormatTimeOfDay(entry.time)) copy];
     item.URL = entry.url;
@@ -445,8 +452,8 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 
 #pragma mark TableViewLinkHeaderFooterItemDelegate
 
-- (void)view:(TableViewLinkHeaderFooterView*)view didTapLinkURL:(GURL)URL {
-  [self openURLInNewTab:URL];
+- (void)view:(TableViewLinkHeaderFooterView*)view didTapLinkURL:(CrURL*)URL {
+  [self openURLInNewTab:URL.gurl];
 }
 
 #pragma mark UISearchResultsUpdating
@@ -555,7 +562,7 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 
 - (CGFloat)tableView:(UITableView*)tableView
     heightForFooterInSection:(NSInteger)section {
-  if ([self.tableViewModel sectionIdentifierForSection:section] ==
+  if ([self.tableViewModel sectionIdentifierForSectionIndex:section] ==
       kEntriesStatusSectionIdentifier)
     return 0;
   return kSeparationSpaceBetweenSections;
@@ -564,7 +571,7 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 - (CGFloat)tableView:(UITableView*)tableView
     heightForHeaderInSection:(NSInteger)section {
   // Hide the status header if the currentStatusMessage is nil.
-  if ([self.tableViewModel sectionIdentifierForSection:section] ==
+  if ([self.tableViewModel sectionIdentifierForSectionIndex:section] ==
           kEntriesStatusSectionIdentifier &&
       [self.currentStatusMessage length] == 0)
     return 0;
@@ -638,7 +645,7 @@ const CGFloat kButtonHorizontalPadding = 30.0;
     viewForHeaderInSection:(NSInteger)section {
   UIView* view = [super tableView:tableView viewForHeaderInSection:section];
   NSInteger sectionIdentifier =
-      [self.tableViewModel sectionIdentifierForSection:section];
+      [self.tableViewModel sectionIdentifierForSectionIndex:section];
   switch (sectionIdentifier) {
     case kEntriesStatusSectionIdentifier: {
       // Might be a different type of header.
@@ -663,8 +670,9 @@ const CGFloat kButtonHorizontalPadding = 30.0;
         base::mac::ObjCCastStrict<HistoryEntryItem>(item);
     TableViewURLCell* URLCell =
         base::mac::ObjCCastStrict<TableViewURLCell>(cellToReturn);
+    CrURL* crurl = [[CrURL alloc] initWithGURL:URLItem.URL];
     [self.imageDataSource
-        faviconForURL:URLItem.URL
+        faviconForURL:crurl
            completion:^(FaviconAttributes* attributes) {
              // Only set favicon if the cell hasn't been reused.
              if ([URLCell.cellUniqueIdentifier
@@ -813,7 +821,7 @@ const CGFloat kButtonHorizontalPadding = 30.0;
         [[TableViewLinkHeaderFooterItem alloc]
             initWithType:ItemTypeEntriesStatusWithLink];
     header.text = newStatusMessage;
-    header.urls = std::vector<GURL>{GURL(kHistoryMyActivityURL)};
+    header.urls = @[ [[CrURL alloc] initWithGURL:GURL(kHistoryMyActivityURL)] ];
     item = header;
   } else {
     TableViewTextHeaderFooterItem* header =
@@ -845,8 +853,8 @@ const CGFloat kButtonHorizontalPadding = 30.0;
   NSArray* sortedIndexPaths =
       [indexArray sortedArrayUsingSelector:@selector(compare:)];
   for (NSIndexPath* indexPath in [sortedIndexPaths reverseObjectEnumerator]) {
-    NSInteger sectionIdentifier =
-        [self.tableViewModel sectionIdentifierForSection:indexPath.section];
+    NSInteger sectionIdentifier = [self.tableViewModel
+        sectionIdentifierForSectionIndex:indexPath.section];
     NSInteger itemType = [self.tableViewModel itemTypeForIndexPath:indexPath];
     NSUInteger index =
         [self.tableViewModel indexInItemTypeForIndexPath:indexPath];
@@ -875,7 +883,7 @@ const CGFloat kButtonHorizontalPadding = 30.0;
   for (int section = 1; section < [self.tableViewModel numberOfSections];
        ++section) {
     NSInteger sectionIdentifier =
-        [self.tableViewModel sectionIdentifierForSection:section];
+        [self.tableViewModel sectionIdentifierForSectionIndex:section];
     if ([self.tableViewModel
             hasSectionForSectionIdentifier:sectionIdentifier]) {
       NSArray* items =

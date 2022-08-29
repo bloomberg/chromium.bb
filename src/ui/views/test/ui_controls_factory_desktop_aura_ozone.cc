@@ -9,10 +9,13 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/check_op.h"
 #include "base/location.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/test/aura_test_utils.h"
@@ -22,7 +25,7 @@
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/ozone_ui_controls_test_helper.h"
 #include "ui/views/test/test_desktop_screen_ozone.h"
-#include "ui/views/widget/desktop_aura/desktop_window_tree_host_linux.h"
+#include "ui/views/widget/desktop_aura/desktop_window_tree_host_platform.h"
 
 namespace views {
 namespace test {
@@ -156,7 +159,7 @@ class UIControlsDesktopOzone : public UIControlsAura {
     // iterating across the windows owned DesktopWindowTreeHostLinux since this
     // doesn't rely on having a DesktopScreenX11.
     std::vector<aura::Window*> windows =
-        DesktopWindowTreeHostLinux::GetAllOpenWindows();
+        DesktopWindowTreeHostPlatform::GetAllOpenWindows();
     const auto i =
         std::find_if(windows.cbegin(), windows.cend(), [point](auto* window) {
           return window->GetBoundsInScreen().Contains(point) ||

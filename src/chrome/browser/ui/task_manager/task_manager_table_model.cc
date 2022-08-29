@@ -6,6 +6,9 @@
 
 #include <stddef.h>
 
+#include <string>
+#include <vector>
+
 #include "base/command_line.h"
 #include "base/i18n/number_formatting.h"
 #include "base/i18n/rtl.h"
@@ -37,12 +40,12 @@ namespace {
 
 const char kCpuTextFormatString[] = "%.1f";
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 // Match Activity Monitor's default refresh rate.
 const int64_t kRefreshTimeMS = 2000;
 #else
 const int64_t kRefreshTimeMS = 1000;
-#endif  // defined(OS_MAC)
+#endif  // BUILDFLAG(IS_MAC)
 
 // The columns that are shared by a group will show the value of the column
 // only once per group.
@@ -161,7 +164,7 @@ class TaskManagerValuesStringifier {
     if (memory_usage == -1)
       return n_a_string_;
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
     // System expectation is to show "100 kB", "200 MB", etc.
     // TODO(thakis): [This TODO has been taken as is from the old task manager]:
     // Switch to metric units (as opposed to powers of two).
@@ -172,7 +175,7 @@ class TaskManagerValuesStringifier {
     base::i18n::AdjustStringForLocaleDirection(&memory_text);
     memory_text = l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_MEM_CELL_TEXT,
                                              memory_text);
-#endif  // defined(OS_MAC)
+#endif  // BUILDFLAG(IS_MAC)
 
     if (has_duplicates)
       memory_text += asterisk_string_;
@@ -451,13 +454,13 @@ std::u16string TaskManagerTableModel::GetText(int row, int column) {
           ? stringifier_->backgrounded_string()
           : stringifier_->foregrounded_string();
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_MAC)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_MAC)
     case IDS_TASK_MANAGER_OPEN_FD_COUNT_COLUMN: {
       const int fd_count = observed_task_manager()->GetOpenFdCount(tasks_[row]);
       return fd_count >= 0 ? base::FormatNumber(fd_count)
                            : stringifier_->n_a_string();
     }
-#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_MAC)
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_MAC)
 
     case IDS_TASK_MANAGER_KEEPALIVE_COUNT_COLUMN: {
       return stringifier_->GetKeepaliveCountText(
@@ -618,7 +621,7 @@ int TaskManagerTableModel::CompareValues(int row1,
       return BooleanCompare(is_proc1_bg, is_proc2_bg);
     }
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_MAC)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_MAC)
     case IDS_TASK_MANAGER_OPEN_FD_COUNT_COLUMN: {
       const int proc1_fd_count =
           observed_task_manager()->GetOpenFdCount(tasks_[row1]);
@@ -626,7 +629,7 @@ int TaskManagerTableModel::CompareValues(int row1,
           observed_task_manager()->GetOpenFdCount(tasks_[row2]);
       return ValueCompare(proc1_fd_count, proc2_fd_count);
     }
-#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_MAC)
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_MAC)
 
     default:
       NOTREACHED();
@@ -792,11 +795,11 @@ void TaskManagerTableModel::UpdateRefreshTypes(int column_id, bool visibility) {
       type = REFRESH_TYPE_KEEPALIVE_COUNT;
       break;
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_MAC)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_MAC)
     case IDS_TASK_MANAGER_OPEN_FD_COUNT_COLUMN:
       type = REFRESH_TYPE_FD_COUNT;
       break;
-#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_MAC)
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_MAC)
 
     default:
       NOTREACHED();
@@ -817,7 +820,7 @@ void TaskManagerTableModel::RetrieveSavedColumnsSettingsAndUpdateTable() {
   if (!g_browser_process->local_state())
     return;
 
-  const base::DictionaryValue* dictionary =
+  const base::Value* dictionary =
       g_browser_process->local_state()->GetDictionary(
           prefs::kTaskManagerColumnVisibility);
   if (!dictionary)
@@ -825,12 +828,11 @@ void TaskManagerTableModel::RetrieveSavedColumnsSettingsAndUpdateTable() {
 
   // Do a best effort of retrieving the correct settings from the local state.
   // Use the default settings of the value if it fails to be retrieved.
-  std::string sorted_col_id;
-  dictionary->GetString(kSortColumnIdKey, &sorted_col_id);
+  const std::string* sorted_col_id =
+      dictionary->GetDict().FindString(kSortColumnIdKey);
   bool sort_is_ascending =
-      dictionary->FindBoolPath(kSortIsAscendingKey).value_or(true);
+      dictionary->GetDict().FindBool(kSortIsAscendingKey).value_or(true);
 
-  int current_visible_column_index = 0;
   for (size_t i = 0; i < kColumnsSize; ++i) {
     const int col_id = kColumns[i].id;
     const std::string col_id_key(GetColumnIdAsString(col_id));
@@ -843,17 +845,15 @@ void TaskManagerTableModel::RetrieveSavedColumnsSettingsAndUpdateTable() {
 
     // If the above FindBoolPath() fails, the |col_visibility| remains at the
     // default visibility.
-    columns_settings_->SetBoolean(col_id_key, col_visibility);
+    columns_settings_->SetBoolPath(col_id_key, col_visibility);
     table_view_delegate_->SetColumnVisibility(col_id, col_visibility);
     UpdateRefreshTypes(col_id, col_visibility);
 
     if (col_visibility) {
-      if (sorted_col_id == col_id_key) {
+      if (sorted_col_id && *sorted_col_id == col_id_key) {
         table_view_delegate_->SetSortDescriptor(
             TableSortDescriptor(col_id, sort_is_ascending));
       }
-
-      ++current_visible_column_index;
     }
   }
 }
@@ -874,20 +874,22 @@ void TaskManagerTableModel::StoreColumnsSettings() {
 
   // Store the current sort status to be restored again at startup.
   if (!table_view_delegate_->IsTableSorted()) {
-    dict_update->SetString(kSortColumnIdKey, "");
+    dict_update->GetDict().Set(kSortColumnIdKey, "");
   } else {
     const auto& sort_descriptor = table_view_delegate_->GetSortDescriptor();
-    dict_update->SetString(
+    dict_update->GetDict().Set(
         kSortColumnIdKey,
         GetColumnIdAsString(sort_descriptor.sorted_column_id));
-    dict_update->SetBoolean(kSortIsAscendingKey, sort_descriptor.is_ascending);
+    dict_update->GetDict().Set(kSortIsAscendingKey,
+                               sort_descriptor.is_ascending);
   }
 }
 
 void TaskManagerTableModel::ToggleColumnVisibility(int column_id) {
   bool new_visibility = !table_view_delegate_->IsColumnVisible(column_id);
   table_view_delegate_->SetColumnVisibility(column_id, new_visibility);
-  columns_settings_->SetBoolean(GetColumnIdAsString(column_id), new_visibility);
+  columns_settings_->SetBoolPath(GetColumnIdAsString(column_id),
+                                 new_visibility);
   UpdateRefreshTypes(column_id, new_visibility);
 }
 

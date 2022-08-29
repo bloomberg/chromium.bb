@@ -72,10 +72,10 @@ class CONTENT_EXPORT WebRTCInternals : public PeerConnectionTrackerHostObserver,
                                const std::string& value) override;
   void OnAddStandardStats(GlobalRenderFrameHostId frame_id,
                           int lid,
-                          base::Value value) override;
+                          base::Value::List value) override;
   void OnAddLegacyStats(GlobalRenderFrameHostId frame_id,
                         int lid,
-                        base::Value value) override;
+                        base::Value::List value) override;
   void OnGetUserMedia(GlobalRenderFrameHostId frame_id,
                       base::ProcessId pid,
                       int request_id,
@@ -167,10 +167,10 @@ class CONTENT_EXPORT WebRTCInternals : public PeerConnectionTrackerHostObserver,
 
   // Updates the number of open PeerConnections. Called when a PeerConnection
   // is stopped or removed.
-  void MaybeClosePeerConnection(base::Value* record);
+  void MaybeClosePeerConnection(base::Value& record);
 
-  void MaybeMarkPeerConnectionAsConnected(base::Value* record);
-  void MaybeMarkPeerConnectionAsNotConnected(base::Value* record);
+  void MaybeMarkPeerConnectionAsConnected(base::Value& record);
+  void MaybeMarkPeerConnectionAsNotConnected(base::Value& record);
 
   // Called whenever a PeerConnection is created or stopped in order to
   // request/cancel a wake lock on suspending the current application for power

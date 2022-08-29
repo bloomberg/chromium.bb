@@ -351,7 +351,8 @@ ScopedJavaLocalRef<jobject> WriteNavigationsAsByteBuffer(
 WebContents* RestoreContentsFromByteBuffer(void* data,
                                            int size,
                                            int saved_state_version,
-                                           bool initially_hidden) {
+                                           bool initially_hidden,
+                                           bool no_renderer) {
   bool is_off_the_record;
   int current_entry_index;
   std::vector<sessions::SerializedNavigationEntry> navigations;
@@ -376,6 +377,10 @@ WebContents* RestoreContentsFromByteBuffer(void* data,
   WebContents::CreateParams params(profile);
 
   params.initially_hidden = initially_hidden;
+  if (no_renderer) {
+    params.desired_renderer_state =
+        WebContents::CreateParams::kNoRendererProcess;
+  }
   std::unique_ptr<WebContents> web_contents(WebContents::Create(params));
   web_contents->GetController().Restore(
       current_entry_index, content::RestoreType::kRestored, &entries);
@@ -392,7 +397,10 @@ ScopedJavaLocalRef<jobject> WebContentsState::GetContentsStateAsByteBuffer(
 
   content::NavigationController& controller = web_contents->GetController();
   const int entry_count = controller.GetEntryCount();
-  if (entry_count == 0)
+  // Don't try to persist initial NavigationEntry, as it is not actually
+  // associated with any navigation and will just result in about:blank on
+  // session restore.
+  if (entry_count == 0 || controller.GetLastCommittedEntry()->IsInitialEntry())
     return ScopedJavaLocalRef<jobject>();
 
   std::vector<content::NavigationEntry*> navigations(entry_count);
@@ -484,7 +492,8 @@ ScopedJavaLocalRef<jobject> WebContentsState::RestoreContentsFromByteBuffer(
     JNIEnv* env,
     jobject state,
     jint saved_state_version,
-    jboolean initially_hidden) {
+    jboolean initially_hidden,
+    jboolean no_renderer) {
   void* data = env->GetDirectBufferAddress(state);
   int size = env->GetDirectBufferCapacity(state);
 
@@ -493,7 +502,7 @@ ScopedJavaLocalRef<jobject> WebContentsState::RestoreContentsFromByteBuffer(
     return ScopedJavaLocalRef<jobject>();
 
   WebContents* web_contents = ::RestoreContentsFromByteBuffer(
-      data, size, saved_state_version, initially_hidden);
+      data, size, saved_state_version, initially_hidden, no_renderer);
 
   if (web_contents)
     return web_contents->GetJavaWebContents();
@@ -541,9 +550,10 @@ JNI_WebContentsStateBridge_RestoreContentsFromByteBuffer(
     JNIEnv* env,
     const JavaParamRef<jobject>& state,
     jint saved_state_version,
-    jboolean initially_hidden) {
+    jboolean initially_hidden,
+    jboolean no_renderer) {
   return WebContentsState::RestoreContentsFromByteBuffer(
-      env, state, saved_state_version, initially_hidden);
+      env, state, saved_state_version, initially_hidden, no_renderer);
 }
 
 static ScopedJavaLocalRef<jobject>

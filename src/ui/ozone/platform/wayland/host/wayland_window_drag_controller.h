@@ -51,6 +51,7 @@ class WaylandWindowDragController : public WaylandDataDevice::DragDelegate,
     kAttached,   // DnD session ongoing but no drag loop running.
     kDetached,   // Drag loop running. ie: blocked in a Drag() call.
     kDropped,    // Drop event was just received.
+    kCancelled,  // Drag cancel event was just received.
     kAttaching,  // About to transition back to |kAttached|.
   };
   enum class DragSource {
@@ -79,11 +80,23 @@ class WaylandWindowDragController : public WaylandDataDevice::DragDelegate,
 
   void OnToplevelWindowCreated(WaylandToplevelWindow* window);
 
+  // Tells if "extended drag" extension is available.
+  bool IsExtendedDragAvailable() const;
+
+  // Makes IsExtendedDragAvailable() always return true.
+  void SetExtendedDragAvailableForTesting() {
+    set_extended_drag_available_for_testing_ = true;
+  }
+
+  WaylandWindow* origin_window_for_testing() { return origin_window_; }
+
+  absl::optional<DragSource> drag_source() { return drag_source_; }
+
  private:
   class ExtendedDragSource;
 
   FRIEND_TEST_ALL_PREFIXES(WaylandWindowDragControllerTest,
-                           HandleDraggedWindowDestruction);
+                           HandleDraggedWindowDestructionAfterMoveLoop);
 
   // WaylandDataDevice::DragDelegate:
   bool IsDragSource() const override;
@@ -95,6 +108,7 @@ class WaylandWindowDragController : public WaylandDataDevice::DragDelegate,
   void OnDragMotion(const gfx::PointF& location) override;
   void OnDragLeave() override;
   void OnDragDrop() override;
+  const WaylandWindow* GetDragTarget() const override;
 
   // WaylandDataSource::Delegate
   void OnDataSourceFinish(bool completed) override;
@@ -124,8 +138,9 @@ class WaylandWindowDragController : public WaylandDataDevice::DragDelegate,
   // extended-drag extension is available.
   void SetDraggedWindow(WaylandToplevelWindow* window,
                         const gfx::Vector2d& offset);
-  // Tells if "extended drag" extension is available.
-  bool IsExtendedDragAvailable() const;
+  // Tells if "extended drag" extension is available, ignoring
+  // |set_extended_drag_available_for_testing_|.
+  bool IsExtendedDragAvailableInternal() const;
 
   WaylandConnection* const connection_;
   WaylandDataDeviceManager* const data_device_manager_;
@@ -158,6 +173,8 @@ class WaylandWindowDragController : public WaylandDataDevice::DragDelegate,
   // pointer focus when the session was initiated.
   WaylandWindow* origin_window_ = nullptr;
 
+  WaylandWindow* drag_target_window_ = nullptr;
+
   // The |origin_window_| can be destroyed during the DND session. If this
   // happens, |origin_surface_| takes ownership of its surface and ensure it
   // is kept alive until the end of the session.
@@ -171,6 +188,8 @@ class WaylandWindowDragController : public WaylandDataDevice::DragDelegate,
   // in progress, which leads to issues in window dragging sessions, this flag
   // is used to make window drag controller resistant to such scenarios.
   bool should_process_drag_event_ = false;
+
+  bool set_extended_drag_available_for_testing_ = false;
 
   base::WeakPtrFactory<WaylandWindowDragController> weak_factory_{this};
 };

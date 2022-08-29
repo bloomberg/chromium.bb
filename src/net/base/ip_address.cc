@@ -9,7 +9,6 @@
 
 #include "base/check_op.h"
 #include "base/containers/stack_container.h"
-#include "base/cxx17_backports.h"
 #include "base/notreached.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
@@ -21,8 +20,6 @@
 
 namespace net {
 namespace {
-
-bool g_consider_loopback_ip_to_be_publicly_routable_for_testing = false;
 
 // The prefix for IPv6 mapped IPv4 addresses.
 // https://tools.ietf.org/html/rfc4291#section-2.5.5.2
@@ -236,22 +233,12 @@ bool IPAddress::IsValid() const {
 }
 
 bool IPAddress::IsPubliclyRoutable() const {
-  if (g_consider_loopback_ip_to_be_publicly_routable_for_testing &&
-      IsLoopback()) {
-    return true;
-  }
-
   if (IsIPv4()) {
     return IsPubliclyRoutableIPv4(ip_address_);
   } else if (IsIPv6()) {
     return IsPubliclyRoutableIPv6(ip_address_);
   }
   return true;
-}
-
-// static
-void IPAddress::ConsiderLoopbackIPToBePubliclyRoutableForTesting() {
-  g_consider_loopback_ip_to_be_publicly_routable_for_testing = true;
 }
 
 bool IPAddress::IsZero() const {
@@ -407,7 +394,7 @@ IPAddress ConvertIPv4MappedIPv6ToIPv4(const IPAddress& address) {
 
   base::StackVector<uint8_t, 16> bytes;
   bytes->insert(bytes->end(),
-                address.bytes().begin() + base::size(kIPv4MappedPrefix),
+                address.bytes().begin() + std::size(kIPv4MappedPrefix),
                 address.bytes().end());
   return IPAddress(bytes->data(), bytes->size());
 }

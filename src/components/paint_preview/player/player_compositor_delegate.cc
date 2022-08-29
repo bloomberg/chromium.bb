@@ -16,7 +16,6 @@
 #include "base/notreached.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/trace_event/common/trace_event_common.h"
 #include "base/trace_event/trace_event.h"
@@ -125,7 +124,7 @@ void PlayerCompositorDelegate::Initialize(
     const GURL& expected_url,
     const DirectoryKey& key,
     bool main_frame_mode,
-    base::OnceCallback<void(int)> compositor_error,
+    CompositorErrorCallback compositor_error,
     base::TimeDelta timeout_duration,
     std::array<size_t, PressureLevelCount::kLevels> max_requests_map) {
   TRACE_EVENT0("paint_preview", "PlayerCompositorDelegate::Initialize");
@@ -165,7 +164,7 @@ void PlayerCompositorDelegate::InitializeWithFakeServiceForTest(
     const GURL& expected_url,
     const DirectoryKey& key,
     bool main_frame_mode,
-    base::OnceCallback<void(int)> compositor_error,
+    CompositorErrorCallback compositor_error,
     base::TimeDelta timeout_duration,
     std::array<size_t, PressureLevelCount::kLevels> max_requests_map,
     std::unique_ptr<PaintPreviewCompositorService, base::OnTaskRunnerDeleter>
@@ -185,7 +184,7 @@ void PlayerCompositorDelegate::InitializeInternal(
     const GURL& expected_url,
     const DirectoryKey& key,
     bool main_frame_mode,
-    base::OnceCallback<void(int)> compositor_error,
+    CompositorErrorCallback compositor_error,
     base::TimeDelta timeout_duration,
     std::array<size_t, PressureLevelCount::kLevels> max_requests_map) {
   max_requests_map_ = max_requests_map;

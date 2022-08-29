@@ -26,20 +26,6 @@ class Chromium(config_util.Config):
       solution['custom_vars']['webkit_revision'] = ''
     if ast.literal_eval(props.get('internal', 'False')):
       solution['custom_vars']['checkout_src_internal'] = True
-
-      if not ast.literal_eval(props.get('flash', 'False')):
-        solution['custom_deps'].update({
-            'src/third_party/adobe/flash/binaries/ppapi/linux': None,
-            'src/third_party/adobe/flash/binaries/ppapi/linux_x64': None,
-            'src/third_party/adobe/flash/binaries/ppapi/mac_64': None,
-            'src/third_party/adobe/flash/binaries/ppapi/win': None,
-            'src/third_party/adobe/flash/binaries/ppapi/win_x64': None,
-            'src/third_party/adobe/flash/symbols/ppapi/linux': None,
-            'src/third_party/adobe/flash/symbols/ppapi/linux_x64': None,
-            'src/third_party/adobe/flash/symbols/ppapi/mac_64': None,
-            'src/third_party/adobe/flash/symbols/ppapi/win': None,
-            'src/third_party/adobe/flash/symbols/ppapi/win_x64': None,
-        })
     spec = {
       'solutions': [solution],
     }

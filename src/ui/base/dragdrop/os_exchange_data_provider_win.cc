@@ -18,7 +18,6 @@
 #include "base/callback.h"
 #include "base/check_op.h"
 #include "base/containers/span.h"
-#include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
 #include "base/i18n/file_util_icu.h"
 #include "base/no_destructor.h"
@@ -39,6 +38,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/skbitmap_operations.h"
 #include "ui/strings/grit/ui_strings.h"
@@ -62,6 +62,7 @@ STGMEDIUM CreateIdListStorageForFileName(const base::FilePath& path);
 STGMEDIUM CreateStorageForFileDescriptor(const base::FilePath& path);
 
 const ClipboardFormatType& GetRendererTaintFormatType();
+const ClipboardFormatType& GetFromPrivilegedFormatType();
 const ClipboardFormatType& GetIgnoreFileContentsFormatType();
 // Creates the contents of an Internet Shortcut file for the given URL.
 std::string GetInternetShortcutFileContents(const GURL& url);
@@ -303,6 +304,16 @@ void OSExchangeDataProviderWin::MarkOriginatedFromRenderer() {
 
 bool OSExchangeDataProviderWin::DidOriginateFromRenderer() const {
   return HasCustomFormat(GetRendererTaintFormatType());
+}
+
+void OSExchangeDataProviderWin::MarkAsFromPrivileged() {
+  STGMEDIUM storage = CreateStorageForString(std::string());
+  data_->contents_.push_back(DataObjectImpl::StoredDataInfo::TakeStorageMedium(
+      GetFromPrivilegedFormatType().ToFormatEtc(), storage));
+}
+
+bool OSExchangeDataProviderWin::IsFromPrivileged() const {
+  return HasCustomFormat(GetFromPrivilegedFormatType());
 }
 
 void OSExchangeDataProviderWin::SetString(const std::u16string& data) {
@@ -1237,6 +1248,12 @@ const ClipboardFormatType& GetRendererTaintFormatType() {
   return *format;
 }
 
+const ClipboardFormatType& GetFromPrivilegedFormatType() {
+  static base::NoDestructor<ClipboardFormatType> format(
+      ClipboardFormatType::GetType("chromium/from-privileged"));
+  return *format;
+}
+
 // Used to mark file content as synthesized by Chrome itself during a non-file
 // drag for interoperating with the native OS. Synthesized file contents will be
 // treated as non-existent for the purposes of GetFileContent() to avoid
@@ -1281,7 +1298,7 @@ std::wstring CreateValidFileNameFromTitle(const GURL& url,
 
   // Maximum length of title after truncation.
   static constexpr size_t kMaxFileTitleLength =
-      kMaxFileNameLength - base::size(kExtension);
+      kMaxFileNameLength - std::size(kExtension);
 
   if (validated.size() > kMaxFileTitleLength)
     validated.erase(kMaxFileTitleLength);

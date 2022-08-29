@@ -16,9 +16,6 @@ syntax = "proto2";
 
 package location.nearby.proto.sharing;
 
-
-
-
 option optimize_for = LITE_RUNTIME;
 option java_package = "com.google.location.nearby.proto";
 option java_outer_classname = "SharingEnums";
@@ -33,6 +30,8 @@ pair of events (start and end of a session).
  */
 enum EventType {
   UNKNOWN_EVENT_TYPE = 0;
+
+  // LINT.IfChange(EventType)
 
   // When new users accept agreements (like grant permission to contacts for
   // CONTACT_ONLY visibility) and are enrolled into Nearby Sharing. This event
@@ -185,6 +184,14 @@ enum EventType {
 
   // Set up a connection with the remote device.
   ESTABLISH_CONNECTION = 48;
+
+  // Track device states in Nearby Share setting.
+  DEVICE_SETTINGS = 49;
+
+  // Receiver auto dismisses a fast initialization notification.
+  AUTO_DISMISS_FAST_INITIALIZATION = 50;
+
+  // LINT.ThenChange(//depot/google3/location/nearby/proto/nearby_event_codes.proto:SharingEventCode)
 }
 
 // Event category to differentiate whether this comes from sender or receiver,
@@ -211,6 +218,7 @@ enum Visibility {
   EVERYONE = 2;
   SELECTED_CONTACTS_ONLY = 3;
   HIDDEN = 4;
+  SELF_SHARE = 5;
 }
 
 enum DataUsage {
@@ -304,6 +312,7 @@ enum OSType {
   ANDROID = 1;
   CHROME_OS = 2;
   IOS = 3;
+  WINDOWS = 4;
 }
 
 // Relationship of remote device to sender device.
@@ -390,6 +399,7 @@ enum ActivityName {
   CONSENTS_ACTIVITY = 6;
   SET_DEVICE_NAME_DIALOG = 7;
   SET_DATA_USAGE_DIALOG = 8;
+  QUICK_SETTINGS_ACTIVITY = 9;
 }
 
 // The type of consent page user launches.

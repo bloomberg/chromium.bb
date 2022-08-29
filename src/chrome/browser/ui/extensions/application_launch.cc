@@ -55,7 +55,7 @@
 #include "ui/display/scoped_display_for_new_windows.h"
 #include "ui/gfx/geometry/rect.h"
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #include "chrome/browser/ui/browser_commands_mac.h"
 #endif
 
@@ -165,10 +165,10 @@ GURL UrlForExtension(const extensions::Extension* extension,
 
 ui::WindowShowState DetermineWindowShowState(
     Profile* profile,
-    extensions::LaunchContainer container,
+    apps::mojom::LaunchContainer container,
     const Extension* extension) {
   if (!extension ||
-      container != extensions::LaunchContainer::kLaunchContainerWindow)
+      container != apps::mojom::LaunchContainer::kLaunchContainerWindow)
     return ui::SHOW_STATE_DEFAULT;
 
   if (chrome::IsRunningInForcedAppMode())
@@ -197,8 +197,12 @@ WebContents* OpenApplicationTab(Profile* profile,
 
   Browser* browser =
       chrome::FindTabbedBrowser(profile, false, launch_params.display_id);
-  WebContents* contents = NULL;
-  if (!browser) {
+  WebContents* contents = nullptr;
+  if (browser) {
+    // For existing browser, ensure its window is shown and activated.
+    browser->window()->Show();
+    browser->window()->Activate();
+  } else {
     // No browser for this profile, need to open a new one.
     if (Browser::GetCreationStatusForProfile(profile) !=
         Browser::CreationStatus::kOk) {
@@ -212,10 +216,6 @@ WebContents* OpenApplicationTab(Profile* profile,
     browser->window()->Show();
     // There's no current tab in this browser window, so add a new one.
     disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
-  } else {
-    // For existing browser, ensure its window is shown and activated.
-    browser->window()->Show();
-    browser->window()->Activate();
   }
 
   extensions::LaunchType launch_type =
@@ -281,9 +281,14 @@ WebContents* OpenEnabledApplication(Profile* profile,
                                     apps::AppLaunchParams&& params) {
   const Extension* extension = GetExtension(profile, params);
   if (!extension)
-    return NULL;
+    return nullptr;
 
-  WebContents* tab = NULL;
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  if (!profile->IsMainProfile())
+    return nullptr;
+#endif
+
+  WebContents* tab = nullptr;
   ExtensionPrefs* prefs = ExtensionPrefs::Get(profile);
   prefs->SetActiveBit(extension->id(), true);
 
@@ -324,16 +329,16 @@ WebContents* OpenEnabledApplication(Profile* profile,
   prefs->SetLastLaunchTime(extension->id(), base::Time::Now());
 
   switch (params.container) {
-    case extensions::LaunchContainer::kLaunchContainerNone: {
+    case apps::mojom::LaunchContainer::kLaunchContainerNone: {
       NOTREACHED();
       break;
     }
     // Panels are deprecated. Launch a normal window instead.
-    case extensions::LaunchContainer::kLaunchContainerPanelDeprecated:
-    case extensions::LaunchContainer::kLaunchContainerWindow:
+    case apps::mojom::LaunchContainer::kLaunchContainerPanelDeprecated:
+    case apps::mojom::LaunchContainer::kLaunchContainerWindow:
       tab = OpenApplicationWindow(profile, params, url);
       break;
-    case extensions::LaunchContainer::kLaunchContainerTab: {
+    case apps::mojom::LaunchContainer::kLaunchContainerTab: {
       tab = OpenApplicationTab(profile, params, url);
       break;
     }
@@ -465,7 +470,7 @@ void OpenApplicationWithReenablePrompt(Profile* profile,
 WebContents* OpenAppShortcutWindow(Profile* profile, const GURL& url) {
   apps::AppLaunchParams launch_params(
       std::string(),  // this is a URL app. No app id.
-      extensions::LaunchContainer::kLaunchContainerWindow,
+      apps::mojom::LaunchContainer::kLaunchContainerWindow,
       WindowOpenDisposition::NEW_WINDOW,
       apps::mojom::LaunchSource::kFromCommandLine);
   launch_params.override_url = url;
@@ -504,4 +509,25 @@ void LaunchAppWithCallback(
   }
   std::move(callback).Run(BrowserList::GetInstance()->GetLastActive(),
                           container);
+}
+
+bool ShowBrowserForProfile(Profile* profile,
+                           const apps::AppLaunchParams& params) {
+  Browser* browser = chrome::FindTabbedBrowser(
+      profile, /*match_original_profiles*/ false, params.display_id);
+  if (browser) {
+    // For existing browser, ensure its window is shown and activated.
+    browser->window()->Show();
+    browser->window()->Activate();
+  } else {
+    // No browser for this profile, need to open a new one.
+    if (Browser::GetCreationStatusForProfile(profile) !=
+        Browser::CreationStatus::kOk) {
+      return false;
+    }
+    browser = Browser::Create(
+        Browser::CreateParams(Browser::TYPE_NORMAL, profile, true));
+    browser->window()->Show();
+  }
+  return true;
 }

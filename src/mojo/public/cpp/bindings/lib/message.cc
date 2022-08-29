@@ -10,11 +10,11 @@
 
 #include <algorithm>
 #include <atomic>
+#include <tuple>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/check_op.h"
-#include "base/ignore_result.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_math.h"
@@ -35,7 +35,7 @@ base::LazyInstance<
     base::SequenceLocalStorageSlot<internal::MessageDispatchContext*>>::Leaky
     g_sls_message_dispatch_context = LAZY_INSTANCE_INITIALIZER;
 
-void DoNotifyBadMessage(Message message, const std::string& error) {
+void DoNotifyBadMessage(Message message, base::StringPiece error) {
   message.NotifyBadMessage(error);
 }
 
@@ -117,7 +117,7 @@ void CreateSerializedMessageObject(uint32_t name,
   if (handles) {
     // Handle ownership has been taken by MojoAppendMessageData.
     for (size_t i = 0; i < handles->size(); ++i)
-      ignore_result(handles->at(i).release());
+      std::ignore = handles->at(i).release();
   }
 
   internal::Buffer payload_buffer(handle.get(), total_size, buffer,
@@ -148,7 +148,7 @@ void SerializeUnserializedContext(MojoMessageHandle message,
 
   // Finalize the serialized message state and release ownership back to the
   // caller.
-  ignore_result(new_message.TakeMojoMessage().release());
+  std::ignore = new_message.TakeMojoMessage().release();
 }
 
 void DestroyUnserializedContext(uintptr_t context) {
@@ -286,7 +286,7 @@ Message::Message(base::span<const uint8_t> payload,
 
   // Handle ownership has been taken by MojoAppendMessageData.
   for (auto& handle : handles)
-    ignore_result(handle.release());
+    std::ignore = handle.release();
 
   payload_buffer_ = internal::Buffer(buffer, payload.size(), payload.size());
   std::copy(payload.begin(), payload.end(),
@@ -425,7 +425,7 @@ ScopedMessageHandle Message::TakeMojoMessage() {
   return handle;
 }
 
-void Message::NotifyBadMessage(const std::string& error) {
+void Message::NotifyBadMessage(base::StringPiece error) {
   DCHECK(handle_.is_valid());
   mojo::NotifyBadMessage(handle_.get(), error);
 }
@@ -591,7 +591,7 @@ bool PassThroughFilter::Accept(Message* message) {
   return true;
 }
 
-void ReportBadMessage(const std::string& error) {
+void ReportBadMessage(base::StringPiece error) {
   internal::MessageDispatchContext* context =
       internal::MessageDispatchContext::current();
   DCHECK(context);

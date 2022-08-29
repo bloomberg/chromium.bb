@@ -20,4 +20,4 @@ IF %errorlevel% NEQ 0 (
 set PATH=%PATH%;%~dp0
 
 :: Defer control.
-python "%~dp0gsutil.py" %*
+python3 "%~dp0gsutil.py" %*

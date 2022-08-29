@@ -6,6 +6,9 @@
 #include <string>
 #include <utility>
 
+#include "ash/components/login/auth/stub_authenticator.h"
+#include "ash/components/login/auth/stub_authenticator_builder.h"
+#include "ash/components/login/auth/user_context.h"
 #include "ash/public/cpp/login_screen_test_api.h"
 #include "base/auto_reset.h"
 #include "base/bind.h"
@@ -35,9 +38,6 @@
 #include "chrome/browser/ui/webui/chromeos/login/gaia_password_changed_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/test/base/interactive_test_utils.h"
-#include "chromeos/login/auth/stub_authenticator.h"
-#include "chromeos/login/auth/stub_authenticator_builder.h"
-#include "chromeos/login/auth/user_context.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user_manager.h"
@@ -510,8 +510,9 @@ class RotationTokenTest : public LoginManagerTest {
 IN_PROC_BROWSER_TEST_F(RotationTokenTest, PRE_Rotated) {
   TokenHandleUtil::StoreTokenHandle(account_id_, kTokenHandle);
 
+  user_manager::KnownUser known_user(g_browser_process->local_state());
   // Emulate state before rotation.
-  user_manager::known_user::RemovePref(account_id_, "TokenHandleRotated");
+  known_user.RemovePref(account_id_, "TokenHandleRotated");
 
   // Focus should not trigger online login.
   LoginScreenTestApi::FocusUser(account_id_);

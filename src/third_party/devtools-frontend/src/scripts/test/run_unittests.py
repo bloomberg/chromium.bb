@@ -1,4 +1,4 @@
-#!/usr/bin/env vpython
+#!/usr/bin/env vpython3
 #
 # Copyright 2019 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
@@ -8,11 +8,7 @@ Run unit tests on a pinned version of chrome.
 """
 
 import os
-import platform
-import re
-from subprocess import Popen
 import sys
-import signal
 import argparse
 
 scripts_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -23,7 +19,7 @@ import devtools_paths
 
 
 def run_tests(chrome_binary, target, no_text_coverage, no_html_coverage,
-              coverage, expanded_reporting, cwd):
+              coverage, expanded_reporting, cwd, mocha_fgrep):
     karmaconfig_path = os.path.join(cwd, 'out', target, 'gen', 'test',
                                     'unittests', 'karma.conf.js')
 
@@ -33,6 +29,7 @@ def run_tests(chrome_binary, target, no_text_coverage, no_html_coverage,
         sys.exit(1)
 
     print('Using karma config ' + karmaconfig_path)
+
 
     exec_command = [devtools_paths.node_path(), devtools_paths.karma_path(), 'start', test_helpers.to_platform_path_exact(karmaconfig_path)]
 
@@ -48,6 +45,9 @@ def run_tests(chrome_binary, target, no_text_coverage, no_html_coverage,
         env['EXPANDED_REPORTING'] = '1'
     if (chrome_binary is not None):
         env['CHROME_BIN'] = chrome_binary
+    if (mocha_fgrep is not None):
+        print('Using Mocha --fgrep flag ' + mocha_fgrep)
+        env['MOCHA_FGREP'] = mocha_fgrep
     exit_code = test_helpers.popen(exec_command, cwd=cwd, env=env)
     if exit_code == 1:
         return True
@@ -61,7 +61,8 @@ def run_unit_tests_on_ninja_build_target(target,
                                          coverage=False,
                                          expanded_reporting=False,
                                          chrome_binary=None,
-                                         cwd=None):
+                                         cwd=None,
+                                         mocha_fgrep=None):
     if chrome_binary and not test_helpers.check_chrome_binary(chrome_binary):
         print(
             'Chrome binary argument path does not exist or is not executable, reverting to downloaded binary'
@@ -88,7 +89,7 @@ def run_unit_tests_on_ninja_build_target(target,
 
     errors_found = run_tests(chrome_binary, target, no_text_coverage,
                              no_html_coverage, coverage, expanded_reporting,
-                             cwd)
+                             cwd, mocha_fgrep)
 
     if coverage and not no_html_coverage:
         print('')
@@ -137,12 +138,16 @@ def main():
                         dest='cwd',
                         help='Path to the directory containing the out dir',
                         default=devtools_paths.devtools_root_path())
+    parser.add_argument('--mocha-fgrep',
+                        dest='mocha_fgrep',
+                        help='Run only tests that match this string.')
     args = parser.parse_args(sys.argv[1:])
 
     run_unit_tests_on_ninja_build_target(args.target, args.no_text_coverage,
                                          args.no_html_coverage, args.coverage,
                                          args.expanded_reporting,
-                                         args.chrome_binary, args.cwd)
+                                         args.chrome_binary, args.cwd,
+                                         args.mocha_fgrep)
 
 
 if __name__ == '__main__':

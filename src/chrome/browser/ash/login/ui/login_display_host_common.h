@@ -44,6 +44,7 @@ class LoginDisplayHostCommon : public LoginDisplayHost,
 
   // LoginDisplayHost:
   void BeforeSessionStart() final;
+  bool IsFinalizing() final;
   void Finalize(base::OnceClosure completion_callback) final;
   void FinalizeImmediately() final;
   KioskLaunchController* GetKioskLaunchController() final;
@@ -56,6 +57,7 @@ class LoginDisplayHostCommon : public LoginDisplayHost,
   void SetDisplayEmail(const std::string& email) final;
   void SetDisplayAndGivenName(const std::string& display_name,
                               const std::string& given_name) final;
+  void ShowAllowlistCheckFailedError() final;
   void LoadWallpaper(const AccountId& account_id) final;
   void LoadSigninWallpaper() final;
   bool IsUserAllowlisted(
@@ -75,11 +77,14 @@ class LoginDisplayHostCommon : public LoginDisplayHost,
   void ResumeUserOnboarding(OobeScreenId screen_id) final;
   void StartManagementTransition() final;
   void ShowTosForExistingUser() final;
+  void ShowNewTermsForFlexUsers() final;
   void StartEncryptionMigration(
       const UserContext& user_context,
       EncryptionMigrationMode migration_mode,
       base::OnceCallback<void(const UserContext&)> on_skip_migration) final;
   void ShowSigninError(SigninError error, const std::string& details) final;
+  void SAMLConfirmPassword(::login::StringList scraped_passwords,
+                           std::unique_ptr<UserContext> user_context) final;
   WizardContext* GetWizardContextForTesting() final;
 
   // BrowserListObserver:
@@ -123,11 +128,13 @@ class LoginDisplayHostCommon : public LoginDisplayHost,
 
  private:
   void Cleanup();
-  // Callback invoked after the feedback is finished.
-  void OnFeedbackFinished();
   // Set screen, from which WC flow will continue after attempt to show
   // TermsOfServiceScreen.
   void SetScreenAfterManagedTos(OobeScreenId screen_id);
+
+  void OnPowerwashAllowedCallback(
+      bool is_reset_allowed,
+      absl::optional<tpm_firmware_update::Mode> tpm_firmware_update_mode);
 
   // True if session start is in progress.
   bool session_starting_ = false;

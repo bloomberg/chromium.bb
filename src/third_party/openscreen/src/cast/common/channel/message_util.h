@@ -101,9 +101,6 @@ static constexpr char kMessageValueInvalidCommand[] = "INVALID_COMMAND";
 static constexpr char kMessageValueNotFound[] = "NOT_FOUND";
 static constexpr char kMessageValueSystemError[] = "SYSTEM_ERROR";
 
-// TODO(crbug.com/openscreen/111): Add validation that each message type is
-// received on the correct namespace.  This will probably involve creating a
-// data structure for mapping between type and namespace.
 enum class CastMessageType {
   // Heartbeat messages.
   kPing,

@@ -9,12 +9,10 @@ import androidx.annotation.NonNull;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.blink.mojom.Impression;
 import org.chromium.net.NetError;
+import org.chromium.ui.base.PageTransition;
 import org.chromium.url.GURL;
 import org.chromium.url.Origin;
-
-import java.nio.ByteBuffer;
 
 /**
  * JNI bridge with content::NavigationHandle
@@ -25,29 +23,49 @@ public class NavigationHandle {
     private final boolean mIsInPrimaryMainFrame;
     private final boolean mIsRendererInitiated;
     private final boolean mIsSameDocument;
-    private Integer mPageTransition;
+    private @PageTransition int mPageTransition;
     private GURL mUrl;
+    private GURL mReferrerUrl;
+    private GURL mBaseUrlForDataUrl;
     private boolean mHasCommitted;
     private boolean mIsDownload;
     private boolean mIsErrorPage;
-    private boolean mIsFragmentNavigation;
+    private boolean mIsPrimaryMainFrameFragmentNavigation;
     private boolean mIsValidSearchFormUrl;
     private @NetError int mErrorCode;
     private int mHttpStatusCode;
     private final Origin mInitiatorOrigin;
-    private final Impression mImpression;
+    private final boolean mIsPost;
+    private boolean mHasUserGesture;
+    private boolean mIsRedirect;
+    private final boolean mIsExternalProtocol;
+    private final long mNavigationId;
+    private final boolean mIsPageActivation;
+    private final boolean mIsReload;
 
     @CalledByNative
-    public NavigationHandle(long nativeNavigationHandleProxy, GURL url,
-            boolean isInPrimaryMaimFrame, boolean isSameDocument, boolean isRendererInitiated,
-            Origin initiatorOrigin, ByteBuffer impressionData) {
+    public NavigationHandle(long nativeNavigationHandleProxy, @NonNull GURL url,
+            @NonNull GURL referrerUrl, @NonNull GURL baseUrlForDataUrl,
+            boolean isInPrimaryMainFrame, boolean isSameDocument, boolean isRendererInitiated,
+            Origin initiatorOrigin, @PageTransition int transition, boolean isPost,
+            boolean hasUserGesture, boolean isRedirect, boolean isExternalProtocol,
+            long navigationId, boolean isPageActivation, boolean isReload) {
         mNativeNavigationHandleProxy = nativeNavigationHandleProxy;
         mUrl = url;
-        mIsInPrimaryMainFrame = isInPrimaryMaimFrame;
+        mReferrerUrl = referrerUrl;
+        mBaseUrlForDataUrl = baseUrlForDataUrl;
+        mIsInPrimaryMainFrame = isInPrimaryMainFrame;
         mIsSameDocument = isSameDocument;
         mIsRendererInitiated = isRendererInitiated;
         mInitiatorOrigin = initiatorOrigin;
-        mImpression = impressionData != null ? Impression.deserialize(impressionData) : null;
+        mPageTransition = transition;
+        mIsPost = isPost;
+        mHasUserGesture = hasUserGesture;
+        mIsRedirect = isRedirect;
+        mIsExternalProtocol = isExternalProtocol;
+        mNavigationId = navigationId;
+        mIsPageActivation = isPageActivation;
+        mIsReload = isReload;
     }
 
     /**
@@ -57,6 +75,7 @@ public class NavigationHandle {
     @CalledByNative
     private void didRedirect(GURL url) {
         mUrl = url;
+        mIsRedirect = true;
     }
 
     /**
@@ -64,15 +83,16 @@ public class NavigationHandle {
      */
     @CalledByNative
     public void didFinish(@NonNull GURL url, boolean isErrorPage, boolean hasCommitted,
-            boolean isFragmentNavigation, boolean isDownload, boolean isValidSearchFormUrl,
-            int transition, @NetError int errorCode, int httpStatuscode) {
+            boolean isPrimaryMainFrameFragmentNavigation, boolean isDownload,
+            boolean isValidSearchFormUrl, @PageTransition int transition, @NetError int errorCode,
+            int httpStatuscode) {
         mUrl = url;
         mIsErrorPage = isErrorPage;
         mHasCommitted = hasCommitted;
-        mIsFragmentNavigation = isFragmentNavigation;
+        mIsPrimaryMainFrameFragmentNavigation = isPrimaryMainFrameFragmentNavigation;
         mIsDownload = isDownload;
         mIsValidSearchFormUrl = isValidSearchFormUrl;
-        mPageTransition = transition == -1 ? null : transition;
+        mPageTransition = transition;
         mErrorCode = errorCode;
         mHttpStatusCode = httpStatuscode;
     }
@@ -93,8 +113,23 @@ public class NavigationHandle {
      * The URL the frame is navigating to.  This may change during the navigation when encountering
      * a server redirect.
      */
+    @NonNull
     public GURL getUrl() {
         return mUrl;
+    }
+
+    /** The referrer URL for the navigation. */
+    @NonNull
+    public GURL getReferrerUrl() {
+        return mReferrerUrl;
+    }
+
+    /**
+     * Used for specifying a base URL for pages loaded via data URLs.
+     */
+    @NonNull
+    public GURL getBaseUrlForDataUrl() {
+        return mBaseUrlForDataUrl;
     }
 
     /**
@@ -169,15 +204,15 @@ public class NavigationHandle {
     /**
      * Returns the page transition type.
      */
-    public Integer pageTransition() {
+    public @PageTransition int pageTransition() {
         return mPageTransition;
     }
 
     /**
-     * Returns true on same-document navigation with fragment change.
+     * Returns true on same-document navigation with fragment change in the primary main frame.
      */
-    public boolean isFragmentNavigation() {
-        return mIsFragmentNavigation;
+    public boolean isPrimaryMainFrameFragmentNavigation() {
+        return mIsPrimaryMainFrameFragmentNavigation;
     }
 
     /**
@@ -233,11 +268,54 @@ public class NavigationHandle {
         return mInitiatorOrigin;
     }
 
+    /** True if the the navigation method is "POST". */
+    public boolean isPost() {
+        return mIsPost;
+    }
+
+    /** True if the navigation was initiated by the user. */
+    public boolean hasUserGesture() {
+        return mHasUserGesture;
+    }
+
+    /** Is the navigation a redirect (in which case URL is the "target" address). */
+    public boolean isRedirect() {
+        return mIsRedirect;
+    }
+
+    /** True if the target URL can't be handled by Chrome's internal protocol handlers. */
+    public boolean isExternalProtocol() {
+        return mIsExternalProtocol;
+    }
+
     /**
-     * Return the blink::Impression associated with this navigation, if any.
+     * Get a unique ID for this navigation.
      */
-    public Impression getImpression() {
-        return mImpression;
+    public long getNavigationId() {
+        return mNavigationId;
+    }
+
+    /*
+     * Whether this navigation is activating an existing page (e.g. served from
+     * the BackForwardCache or Prerender).
+     */
+    public boolean isPageActivation() {
+        return mIsPageActivation;
+    }
+
+    /**
+     * TODO(https://crbug.com/1310013): This is a hack, restoring M99 Chrome behavior for gesture
+     * carryover on resource requests. To be deleted as soon as a better alternative is agreed upon.
+     */
+    public void setUserGestureForCarryover(boolean hasUserGesture) {
+        mHasUserGesture = hasUserGesture;
+    }
+
+    /**
+     * Whether this navigation was initiated by a page reload.
+     */
+    public boolean isReload() {
+        return mIsReload;
     }
 
     @NativeMethods

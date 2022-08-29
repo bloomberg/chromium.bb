@@ -20,11 +20,14 @@ class STUB_WINDOW_EXPORT StubWindow : public PlatformWindow {
   explicit StubWindow(PlatformWindowDelegate* delegate,
                       bool use_default_accelerated_widget = true,
                       const gfx::Rect& bounds = gfx::Rect());
-
+  explicit StubWindow(const gfx::Rect& bounds);
   StubWindow(const StubWindow&) = delete;
   StubWindow& operator=(const StubWindow&) = delete;
 
   ~StubWindow() override;
+
+  void InitDelegate(PlatformWindowDelegate* delegate,
+                    bool use_default_accelerated_widget = true);
 
  protected:
   PlatformWindowDelegate* delegate() { return delegate_; }
@@ -36,8 +39,10 @@ class STUB_WINDOW_EXPORT StubWindow : public PlatformWindow {
   void Close() override;
   bool IsVisible() const override;
   void PrepareForShutdown() override;
-  void SetBounds(const gfx::Rect& bounds) override;
-  gfx::Rect GetBounds() const override;
+  void SetBoundsInPixels(const gfx::Rect& bounds) override;
+  gfx::Rect GetBoundsInPixels() const override;
+  void SetBoundsInDIP(const gfx::Rect& bounds) override;
+  gfx::Rect GetBoundsInDIP() const override;
   void SetTitle(const std::u16string& title) override;
   void SetCapture() override;
   void ReleaseCapture() override;
@@ -54,14 +59,15 @@ class STUB_WINDOW_EXPORT StubWindow : public PlatformWindow {
   void SetCursor(scoped_refptr<PlatformCursor> cursor) override;
   void MoveCursorTo(const gfx::Point& location) override;
   void ConfineCursorToBounds(const gfx::Rect& bounds) override;
-  void SetRestoredBoundsInPixels(const gfx::Rect& bounds) override;
-  gfx::Rect GetRestoredBoundsInPixels() const override;
+  void SetRestoredBoundsInDIP(const gfx::Rect& bounds) override;
+  gfx::Rect GetRestoredBoundsInDIP() const override;
   void SetWindowIcons(const gfx::ImageSkia& window_icon,
                       const gfx::ImageSkia& app_icon) override;
   void SizeConstraintsChanged() override;
 
-  raw_ptr<PlatformWindowDelegate> delegate_;
+  raw_ptr<PlatformWindowDelegate> delegate_ = nullptr;
   gfx::Rect bounds_;
+  ui::PlatformWindowState window_state_ = ui::PlatformWindowState::kUnknown;
 };
 
 }  // namespace ui

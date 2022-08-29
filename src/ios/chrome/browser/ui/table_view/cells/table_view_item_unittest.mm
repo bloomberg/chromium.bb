@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/ui/table_view/cells/table_view_item.h"
 
+#import "ios/chrome/browser/ui/icons/chrome_symbol.h"
+#import "ios/chrome/browser/ui/icons/item_icon.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
@@ -46,6 +48,23 @@ TEST_F(TableViewItemTest, NoBackgroundColorIfBackgroundViewIsPresent) {
   styler.tableViewBackgroundColor = testColor;
   [item configureCell:cell withStyler:styler];
   EXPECT_FALSE([testColor isEqual:cell.backgroundColor]);
+}
+
+TEST_F(TableViewItemTest, ConfigureCellAccessoryViewProperties) {
+  UIImageView* expectedImage = [[UIImageView alloc]
+      initWithImage:DefaultSymbolTemplateWithPointSize(
+                        kChevronForwardSymbol, kSymbolAccessoryPointSize)];
+  TableViewItem* item = [[TableViewItem alloc] initWithType:0];
+  item.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+  item.accessoryView = expectedImage;
+
+  TableViewCell* cell = [[[item cellClass] alloc] init];
+  ChromeTableViewStyler* styler = [[ChromeTableViewStyler alloc] init];
+  [item configureCell:cell withStyler:styler];
+  // Internally in UITableViewCell, accessoryView takes precedence over
+  // accessoryType property.
+  EXPECT_EQ(cell.accessoryType, UITableViewCellAccessoryDisclosureIndicator);
+  EXPECT_EQ(cell.accessoryView, expectedImage);
 }
 
 }  // namespace

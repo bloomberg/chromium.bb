@@ -9,6 +9,7 @@ load("//lib/consoles.star", "consoles")
 
 try_.defaults.set(
     builder_group = "tryserver.chromium.rust",
+    builderless = False,
     cores = 8,
     executable = try_.DEFAULT_EXECUTABLE,
     execution_timeout = try_.DEFAULT_EXECUTION_TIMEOUT,
@@ -23,9 +24,21 @@ consoles.list_view(
 )
 
 try_.builder(
-    name = "linux-rust-x64-rel",
+    name = "android-rust-arm-dbg",
 )
 
 try_.builder(
     name = "android-rust-arm-rel",
+)
+
+try_.builder(
+    name = "linux-rust-x64-rel",
+)
+
+try_.builder(
+    name = "linux-rust-x64-rel-android-toolchain",
+)
+
+try_.builder(
+    name = "linux-rust-x64-dbg",
 )

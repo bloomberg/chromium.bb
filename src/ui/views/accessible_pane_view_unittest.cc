@@ -137,7 +137,7 @@ TEST_F(AccessiblePaneViewTest, SetPaneFocusAndRestore) {
   // predictable. On Mac, Deactivate() is not implemented. Note that
   // TestBarView calls set_allow_deactivate_on_esc(true), which is only
   // otherwise used in Ash.
-#if !defined(OS_MAC) || BUILDFLAG(IS_CHROMEOS_ASH)
+#if !BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS_ASH)
   // Esc should deactivate the widget.
   test_view_bar->AcceleratorPressed(test_view_bar->escape_key());
   EXPECT_TRUE(widget_main->IsActive());
@@ -230,7 +230,15 @@ TEST_F(AccessiblePaneViewTest, PaneFocusTraversal) {
   widget.reset();
 }
 
-TEST_F(AccessiblePaneViewTest, DoesntCrashOnEscapeWithRemovedView) {
+// TODO(crbug.com/1314275): Re-enable this test
+#if defined(ADDRESS_SANITIZER) && defined(LEAK_SANITIZER)
+#define MAYBE_DoesntCrashOnEscapeWithRemovedView \
+  DISABLED_DoesntCrashOnEscapeWithRemovedView
+#else
+#define MAYBE_DoesntCrashOnEscapeWithRemovedView \
+  DoesntCrashOnEscapeWithRemovedView
+#endif
+TEST_F(AccessiblePaneViewTest, MAYBE_DoesntCrashOnEscapeWithRemovedView) {
   TestBarView* test_view1 = new TestBarView();
   TestBarView* test_view2 = new TestBarView();
   Widget widget;
