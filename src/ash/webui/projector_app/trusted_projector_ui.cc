@@ -4,10 +4,10 @@
 
 #include "ash/webui/projector_app/trusted_projector_ui.h"
 
-#include "ash/grit/ash_projector_app_trusted_resources.h"
-#include "ash/grit/ash_projector_app_trusted_resources_map.h"
 #include "ash/public/cpp/projector/projector_annotator_controller.h"
-#include "ash/webui/projector_app/annotator_message_handler.h"
+#include "ash/strings/grit/ash_strings.h"
+#include "ash/webui/grit/ash_projector_app_trusted_resources.h"
+#include "ash/webui/grit/ash_projector_app_trusted_resources_map.h"
 #include "ash/webui/projector_app/projector_message_handler.h"
 #include "ash/webui/projector_app/public/cpp/projector_app_constants.h"
 #include "components/prefs/pref_service.h"
@@ -30,6 +30,7 @@ content::WebUIDataSource* CreateProjectorHTMLSource() {
       kAshProjectorAppTrustedResources, kAshProjectorAppTrustedResourcesSize));
 
   source->AddResourcePath("", IDR_ASH_PROJECTOR_APP_TRUSTED_APP_EMBEDDER_HTML);
+  source->AddLocalizedString("appTitle", IDS_ASH_PROJECTOR_DISPLAY_SOURCE);
 
   std::string csp =
       std::string("frame-src ") + kChromeUIUntrustedProjectorAppUrl + ";";
@@ -49,21 +50,9 @@ TrustedProjectorUI::TrustedProjectorUI(content::WebUI* web_ui,
   auto* browser_context = web_ui->GetWebContents()->GetBrowserContext();
   content::WebUIDataSource::Add(browser_context, CreateProjectorHTMLSource());
 
-  // The selfie cam doesn't have any dependencies on WebUIMessageHandlers;
-  // it also doesn't embed chrome-untrusted:// resources. Therefore, return
-  // early.
-  if (url == GURL(kChromeUITrustedProjectorSelfieCamUrl))
-    return;
-
   // The Annotator and Projector SWA embed contents in a sandboxed
   // chrome-untrusted:// iframe.
   web_ui->AddRequestableScheme(content::kChromeUIUntrustedScheme);
-
-  // RecordingOverlayViewImpl is responsible for creating the
-  // AnnotatorMessageHandler via a helper function in ProjectorClientImpl. Do
-  // nothing here.
-  if (url == GURL(kChromeUITrustedAnnotatorUrl))
-    return;
 
   // The requested WebUI is hosting the Projector SWA.
   web_ui->AddMessageHandler(

@@ -4,10 +4,15 @@
 
 #include "ash/system/unified/unified_system_tray.h"
 
+#include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/constants/ash_features.h"
 #include "ash/ime/ime_controller_impl.h"
+#include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
+#include "ash/system/message_center/unified_message_center_bubble.h"
+#include "ash/system/message_center/unified_message_center_view.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/status_area_widget_test_helper.h"
 #include "ash/system/time/time_tray_item_view.h"
@@ -15,22 +20,53 @@
 #include "ash/system/unified/ime_mode_view.h"
 #include "ash/system/unified/unified_slider_bubble_controller.h"
 #include "ash/system/unified/unified_system_tray_bubble.h"
+#include "ash/system/unified/unified_system_tray_controller.h"
+#include "ash/system/unified/unified_system_tray_view.h"
 #include "ash/test/ash_test_base.h"
+#include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/events/event.h"
+#include "ui/events/event_constants.h"
+#include "ui/message_center/message_center.h"
 
 namespace ash {
 
+using message_center::MessageCenter;
+using message_center::Notification;
+
 class UnifiedSystemTrayTest : public AshTestBase {
  public:
-  UnifiedSystemTrayTest() = default;
-
+  UnifiedSystemTrayTest()
+      : AshTestBase(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
   UnifiedSystemTrayTest(const UnifiedSystemTrayTest&) = delete;
   UnifiedSystemTrayTest& operator=(const UnifiedSystemTrayTest&) = delete;
-
   ~UnifiedSystemTrayTest() override = default;
 
+  void SetUp() override {
+    feature_list_.InitAndEnableFeature(features::kCalendarView);
+    AshTestBase::SetUp();
+  }
+
  protected:
+  const std::string AddNotification() {
+    const std::string id = base::NumberToString(id_++);
+    MessageCenter::Get()->AddNotification(
+        std::make_unique<message_center::Notification>(
+            message_center::NOTIFICATION_TYPE_BASE_FORMAT, id, u"test title",
+            u"test message", ui::ImageModel(),
+            std::u16string() /* display_source */, GURL(),
+            message_center::NotifierId(),
+            message_center::RichNotificationData(),
+            new message_center::NotificationDelegate()));
+    return id;
+  }
+
+  void RemoveNotification(const std::string id) {
+    MessageCenter::Get()->RemoveNotification(id, /*by_user=*/false);
+  }
+
   bool IsSliderBubbleShown() {
     return GetPrimaryUnifiedSystemTray()
         ->slider_bubble_controller_->bubble_widget_;
@@ -59,7 +95,7 @@ class UnifiedSystemTrayTest : public AshTestBase {
     return bubble ? bubble->GetBoundsInScreen() : gfx::Rect();
   }
 
-  tray::TimeTrayItemView* time_view() {
+  TimeTrayItemView* time_view() {
     return GetPrimaryUnifiedSystemTray()->time_view_;
   }
 
@@ -74,6 +110,10 @@ class UnifiedSystemTrayTest : public AshTestBase {
   views::View* vertical_clock_padding() {
     return GetPrimaryUnifiedSystemTray()->vertical_clock_padding_;
   }
+
+ private:
+  int id_ = 0;
+  base::test::ScopedFeatureList feature_list_;
 };
 
 TEST_F(UnifiedSystemTrayTest, ShowVolumeSliderBubble) {
@@ -211,7 +251,7 @@ TEST_F(UnifiedSystemTrayTest, VerticalClockPadding) {
 
   // Sets all tray items' visibility to false except TimeView.
   for (TrayItemView* item : tray_items()) {
-    item->SetVisible(item->GetClassName() == time_view()->GetClassName());
+    item->SetVisible(item == time_view());
   }
 
   // Only one visible tray item, padding should not be visible.
@@ -239,6 +279,215 @@ TEST_F(UnifiedSystemTrayTest, VerticalClockPaddingAfterAlignmentChange) {
   // Padding should not be visible when shelf is horizontal.
   shelf->SetAlignment(ShelfAlignment::kBottom);
   EXPECT_FALSE(vertical_clock_padding()->GetVisible());
+}
+
+TEST_F(UnifiedSystemTrayTest, FocusMessageCenter) {
+  auto* tray = GetPrimaryUnifiedSystemTray();
+  tray->ShowBubble();
+
+  auto* message_center_view =
+      tray->message_center_bubble()->message_center_view();
+  auto* focus_manager = message_center_view->GetFocusManager();
+
+  AddNotification();
+  AddNotification();
+  message_center_view->SetVisible(true);
+
+  EXPECT_FALSE(message_center_view->Contains(focus_manager->GetFocusedView()));
+  EXPECT_FALSE(message_center_view->collapsed());
+
+  auto did_focus = tray->FocusMessageCenter(false);
+
+  EXPECT_TRUE(did_focus);
+
+  EXPECT_TRUE(tray->IsMessageCenterBubbleShown());
+  EXPECT_FALSE(message_center_view->collapsed());
+  EXPECT_TRUE(message_center_view->Contains(focus_manager->GetFocusedView()));
+}
+
+TEST_F(UnifiedSystemTrayTest, FocusMessageCenter_MessageCenterBubbleNotShown) {
+  auto* tray = GetPrimaryUnifiedSystemTray();
+  tray->ShowBubble();
+  auto* message_center_bubble = tray->message_center_bubble();
+
+  EXPECT_FALSE(message_center_bubble->IsMessageCenterVisible());
+
+  auto did_focus = tray->FocusMessageCenter(false);
+
+  EXPECT_FALSE(did_focus);
+}
+
+TEST_F(UnifiedSystemTrayTest, FocusMessageCenter_VoxEnabled) {
+  auto* tray = GetPrimaryUnifiedSystemTray();
+  tray->ShowBubble();
+
+  auto* message_center_bubble = tray->message_center_bubble();
+  auto* message_center_view = message_center_bubble->message_center_view();
+
+  AddNotification();
+  AddNotification();
+  message_center_view->SetVisible(true);
+  Shell::Get()->accessibility_controller()->spoken_feedback().SetEnabled(true);
+
+  EXPECT_FALSE(message_center_bubble->GetBubbleWidget()->IsActive());
+
+  auto did_focus = tray->FocusMessageCenter(false);
+
+  EXPECT_TRUE(did_focus);
+
+  auto* focus_manager = tray->GetFocusManager();
+
+  EXPECT_TRUE(tray->IsMessageCenterBubbleShown());
+  EXPECT_TRUE(message_center_bubble->GetBubbleWidget()->IsActive());
+  EXPECT_FALSE(message_center_view->Contains(focus_manager->GetFocusedView()));
+}
+
+TEST_F(UnifiedSystemTrayTest, FocusQuickSettings) {
+  auto* tray = GetPrimaryUnifiedSystemTray();
+  tray->ShowBubble();
+  auto* unified_system_tray_view = tray->bubble()->unified_view();
+  auto* focus_manager = unified_system_tray_view->GetFocusManager();
+
+  EXPECT_FALSE(
+      unified_system_tray_view->Contains(focus_manager->GetFocusedView()));
+
+  auto did_focus = tray->FocusQuickSettings(false);
+
+  EXPECT_TRUE(did_focus);
+
+  EXPECT_TRUE(
+      unified_system_tray_view->Contains(focus_manager->GetFocusedView()));
+}
+
+TEST_F(UnifiedSystemTrayTest, FocusQuickSettings_BubbleNotShown) {
+  auto* tray = GetPrimaryUnifiedSystemTray();
+
+  auto did_focus = tray->FocusQuickSettings(false);
+
+  EXPECT_FALSE(did_focus);
+}
+
+TEST_F(UnifiedSystemTrayTest, FocusQuickSettings_VoxEnabled) {
+  auto* tray = GetPrimaryUnifiedSystemTray();
+  tray->ShowBubble();
+  auto* tray_bubble_widget = tray->bubble()->GetBubbleWidget();
+
+  Shell::Get()->accessibility_controller()->spoken_feedback().SetEnabled(true);
+
+  EXPECT_FALSE(tray_bubble_widget->IsActive());
+
+  auto did_focus = tray->FocusQuickSettings(false);
+
+  EXPECT_TRUE(did_focus);
+
+  auto* unified_system_tray_view = tray->bubble()->unified_view();
+  auto* focus_manager = unified_system_tray_view->GetFocusManager();
+
+  EXPECT_TRUE(tray_bubble_widget->IsActive());
+  EXPECT_FALSE(
+      unified_system_tray_view->Contains(focus_manager->GetFocusedView()));
+}
+
+TEST_F(UnifiedSystemTrayTest, TimeInQuickSettingsMetric) {
+  base::HistogramTester histogram_tester;
+  constexpr base::TimeDelta kTimeInQuickSettings = base::Seconds(3);
+  auto* tray = GetPrimaryUnifiedSystemTray();
+
+  // Open the tray.
+  tray->ShowBubble();
+
+  // Spend cool-down time with tray open.
+  task_environment()->FastForwardBy(kTimeInQuickSettings);
+
+  // Close and record the metric.
+  tray->CloseBubble();
+
+  // Ensure metric recorded time passed while Quick Setting was open.
+  histogram_tester.ExpectTimeBucketCount("Ash.QuickSettings.UserJourneyTime",
+                                         kTimeInQuickSettings,
+                                         /*count=*/1);
+
+  // Re-open the tray.
+  tray->ShowBubble();
+
+  // Metric isn't recorded when adding and removing a notification.
+  std::string id = AddNotification();
+  RemoveNotification(id);
+  histogram_tester.ExpectTotalCount("Ash.QuickSettings.UserJourneyTime",
+                                    /*count=*/1);
+
+  // Metric is recorded after closing bubble.
+  tray->CloseBubble();
+  histogram_tester.ExpectTotalCount("Ash.QuickSettings.UserJourneyTime",
+                                    /*count=*/2);
+}
+
+// Tests that pressing the TOGGLE_CALENDAR accelerator once results in the
+// calendar view showing.
+TEST_F(UnifiedSystemTrayTest, PressCalendarAccelerator) {
+  ShellTestApi().PressAccelerator(
+      ui::Accelerator(ui::VKEY_C, ui::EF_COMMAND_DOWN));
+
+  EXPECT_TRUE(GetPrimaryUnifiedSystemTray()->IsShowingCalendarView());
+}
+
+// Tests that pressing the TOGGLE_CALENDAR accelerator twice results in a hidden
+// QuickSettings bubble.
+TEST_F(UnifiedSystemTrayTest, ToggleCalendarViewAccelerator) {
+  ShellTestApi().PressAccelerator(
+      ui::Accelerator(ui::VKEY_C, ui::EF_COMMAND_DOWN));
+
+  ShellTestApi().PressAccelerator(
+      ui::Accelerator(ui::VKEY_C, ui::EF_COMMAND_DOWN));
+
+  EXPECT_FALSE(GetUnifiedSystemTrayBubble());
+}
+
+// Tests that showing the calendar view by the TOGGLE_CALENDAR accelerator
+// results in the CalendarDateCellView being focused.
+TEST_F(UnifiedSystemTrayTest, CalendarAcceleratorFocusesDateCell) {
+  ShellTestApi().PressAccelerator(
+      ui::Accelerator(ui::VKEY_C, ui::EF_COMMAND_DOWN));
+
+  auto* focus_manager =
+      GetUnifiedSystemTrayBubble()->GetBubbleWidget()->GetFocusManager();
+  EXPECT_TRUE(focus_manager->GetFocusedView());
+  EXPECT_STREQ(focus_manager->GetFocusedView()->GetClassName(),
+               "CalendarDateCellView");
+}
+
+// Tests that CalendarView switches back to Quick Settings when screen size is
+// limited and the bubble requires a collapsed state.
+TEST_F(UnifiedSystemTrayTest, CalendarGoesToMainView) {
+  auto* tray = GetPrimaryUnifiedSystemTray();
+  tray->ShowBubble();
+
+  // Set a limited screen size.
+  UpdateDisplay("800x600");
+
+  // Generate a notification, close and open the bubble so we can show the
+  // collapsed message center.
+  AddNotification();
+  tray->CloseBubble();
+  tray->ShowBubble();
+
+  // Ensure message center is collapsed when Calendar is not being shown.
+  auto* message_center_view =
+      tray->message_center_bubble()->message_center_view();
+  EXPECT_FALSE(tray->IsShowingCalendarView());
+  EXPECT_TRUE(message_center_view->collapsed());
+
+  // Ensure message center is collapsed when the Calendar is being shown.
+  ShellTestApi().PressAccelerator(
+      ui::Accelerator(ui::VKEY_C, ui::EF_COMMAND_DOWN));
+  EXPECT_TRUE(tray->IsShowingCalendarView());
+  EXPECT_TRUE(message_center_view->collapsed());
+
+  // Test that Calendar is no longer shown after expanding the collapsed
+  // message center.
+  tray->message_center_bubble()->ExpandMessageCenter();
+  EXPECT_FALSE(message_center_view->collapsed());
+  EXPECT_FALSE(tray->IsShowingCalendarView());
 }
 
 }  // namespace ash

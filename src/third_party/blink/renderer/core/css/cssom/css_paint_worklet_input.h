@@ -22,25 +22,13 @@ namespace blink {
 // until the cc-Raster phase (and even then run the JavaScript on a separate
 // worklet thread).
 //
-// This object is passed cross-thread, but contains thread-unsafe objects (the
-// WTF::Strings for |name_| and the WTF::Strings stored in |style_map_|). As
-// such CSSPaintWorkletInput must be treated carefully. In essence, it 'belongs'
-// to the PaintWorklet thread for the purposes of the WTF::String members. None
-// of the WTF::String accessors should be accessed on any thread apart from the
-// PaintWorklet thread, where an IsolatedCopy should still be taken.
-//
-// An IsolatedCopy is still needed on the PaintWorklet thread because
-// cc::PaintWorkletInput is thread-safe ref-counted (it is shared between Blink,
-// cc-impl, and the cc-raster thread pool), so we *do not know* on what thread
-// this object will die - and thus on what thread the WTF::Strings that it
-// contains will die.
+// TODO: WTF::Strings are now thread-safe. Consider refactoring this code.
 class CORE_EXPORT CSSPaintWorkletInput : public PaintWorkletInput {
  public:
   CSSPaintWorkletInput(
       const String& name,
       const gfx::SizeF& container_size,
       float effective_zoom,
-      float device_scale_factor,
       int worklet_id,
       PaintWorkletStylePropertyMap::CrossThreadData values,
       Vector<std::unique_ptr<CrossThreadStyleValue>> parsed_input_args,
@@ -50,14 +38,13 @@ class CORE_EXPORT CSSPaintWorkletInput : public PaintWorkletInput {
 
   // These accessors are safe on any thread.
   float EffectiveZoom() const { return effective_zoom_; }
-  float DeviceScaleFactor() const { return device_scale_factor_; }
   const Vector<std::unique_ptr<CrossThreadStyleValue>>& ParsedInputArguments()
       const {
     return parsed_input_arguments_;
   }
 
   // These should only be accessed on the PaintWorklet thread.
-  String NameCopy() const { return name_.IsolatedCopy(); }
+  String NameCopy() const { return name_; }
   PaintWorkletStylePropertyMap::CrossThreadData StyleMapData() const {
     return PaintWorkletStylePropertyMap::CopyCrossThreadData(style_map_data_);
   }
@@ -69,7 +56,6 @@ class CORE_EXPORT CSSPaintWorkletInput : public PaintWorkletInput {
  private:
   const String name_;
   const float effective_zoom_;
-  const float device_scale_factor_;
   PaintWorkletStylePropertyMap::CrossThreadData style_map_data_;
   Vector<std::unique_ptr<CrossThreadStyleValue>> parsed_input_arguments_;
 };

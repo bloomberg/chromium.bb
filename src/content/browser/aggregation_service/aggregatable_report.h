@@ -12,11 +12,15 @@
 #include <string>
 #include <vector>
 
+#include "base/guid.h"
+#include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "content/browser/aggregation_service/public_key.h"
 #include "content/common/content_export.h"
+#include "third_party/abseil-cpp/absl/numeric/int128.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "url/gurl.h"
 #include "url/origin.h"
 
 namespace content {
@@ -24,43 +28,94 @@ namespace content {
 class AggregatableReportRequest;
 
 // The underlying private information which will be sent to the processing
-// origins for aggregation. Each payload encodes a single contribution to a
+// servers for aggregation. Each payload encodes a single contribution to a
 // histogram bucket. This will be encrypted and won't be readable by the
 // reporting endpoint.
 struct CONTENT_EXPORT AggregationServicePayloadContents {
   // TODO(alexmt): Add kDistinctCount option.
   enum class Operation {
-    kHistogram = 0,
-    kMaxValue = kHistogram,
+    kHistogram,
   };
 
-  enum class ProcessingType {
-    kTwoParty = 0,
-    kSingleServer = 1,
-    kMaxValue = kSingleServer,
+  // Corresponds to the 'alternative aggregation mode' optional setting, but
+  // also includes the default option (if no alternative is set).
+  enum class AggregationMode {
+    // Uses a server-side Trusted Execution Environment (TEE) to process the
+    // encrypted payloads, see
+    // https://github.com/WICG/attribution-reporting-api/blob/main/AGGREGATION_SERVICE_TEE.md.
+    kTeeBased,
+
+    // Implements a protocol similar to poplar VDAF in the PPM Framework, see
+    // https://github.com/WICG/attribution-reporting-api/blob/main/AGGREGATE.md#choosing-among-aggregation-services.
+    kExperimentalPoplar,
+
+    kDefault = kTeeBased,
   };
 
-  AggregationServicePayloadContents(Operation operation,
-                                    int bucket,
-                                    int value,
-                                    ProcessingType processing_type,
-                                    url::Origin reporting_origin);
+  struct HistogramContribution {
+    absl::uint128 bucket;
+    int value;
+  };
+
+  AggregationServicePayloadContents(
+      Operation operation,
+      std::vector<HistogramContribution> contributions,
+      AggregationMode aggregation_mode);
+
+  AggregationServicePayloadContents(
+      const AggregationServicePayloadContents& other);
+  AggregationServicePayloadContents& operator=(
+      const AggregationServicePayloadContents& other);
+  AggregationServicePayloadContents(AggregationServicePayloadContents&& other);
+  AggregationServicePayloadContents& operator=(
+      AggregationServicePayloadContents&& other);
+  ~AggregationServicePayloadContents();
 
   Operation operation;
-  int bucket;
-  int value;
-  ProcessingType processing_type;
-  url::Origin reporting_origin;
+  std::vector<HistogramContribution> contributions;
+  AggregationMode aggregation_mode;
 };
 
 // Represents the information that will be provided to both the reporting
-// endpoint and the processing origin(s), i.e. stored in the encrypted payload
+// endpoint and the processing server(s), i.e. stored in the encrypted payload
 // and in the plaintext report.
 struct CONTENT_EXPORT AggregatableReportSharedInfo {
+  enum class DebugMode {
+    kDisabled,
+    kEnabled,
+  };
+
   AggregatableReportSharedInfo(base::Time scheduled_report_time,
-                               std::string privacy_budget_key);
+                               base::GUID report_id,
+                               url::Origin reporting_origin,
+                               DebugMode debug_mode,
+                               base::Value::Dict additional_fields,
+                               std::string api_version,
+                               std::string api_identifier);
+
+  AggregatableReportSharedInfo(const AggregatableReportSharedInfo& other) =
+      delete;
+  AggregatableReportSharedInfo& operator=(
+      const AggregatableReportSharedInfo& other) = delete;
+  AggregatableReportSharedInfo(AggregatableReportSharedInfo&& other);
+  AggregatableReportSharedInfo& operator=(AggregatableReportSharedInfo&& other);
+  ~AggregatableReportSharedInfo();
+
+  // Creates a deep copy of this object.
+  AggregatableReportSharedInfo Clone() const;
+
+  // Serializes to a JSON dictionary, represented as a string.
+  std::string SerializeAsJson() const;
+
   base::Time scheduled_report_time;
-  std::string privacy_budget_key;
+  base::GUID report_id;  // Used to prevent double counting.
+  url::Origin reporting_origin;
+  DebugMode debug_mode;
+  base::Value::Dict additional_fields;
+  std::string api_version;
+
+  // Enum string that indicates which API created the report.
+  std::string api_identifier;
 };
 
 // An AggregatableReport contains all the information needed for sending the
@@ -69,39 +124,42 @@ struct CONTENT_EXPORT AggregatableReportSharedInfo {
 class CONTENT_EXPORT AggregatableReport {
  public:
   // This is used to encapsulate the data that is specific to a single
-  // processing origin.
+  // processing server.
   struct CONTENT_EXPORT AggregationServicePayload {
-    AggregationServicePayload(url::Origin origin,
-                              std::vector<uint8_t> payload,
-                              std::string key_id);
+    AggregationServicePayload(
+        std::vector<uint8_t> payload,
+        std::string key_id,
+        absl::optional<std::vector<uint8_t>> debug_cleartext_payload);
+    AggregationServicePayload(const AggregationServicePayload& other);
+    AggregationServicePayload& operator=(
+        const AggregationServicePayload& other);
     AggregationServicePayload(AggregationServicePayload&& other);
     AggregationServicePayload& operator=(AggregationServicePayload&& other);
     ~AggregationServicePayload();
 
-    url::Origin origin;
-
     // This payload is constructed using the data in the
     // AggregationServicePayloadContents and then encrypted with one of
-    // `origin`'s public keys. For the kTwoParty processing type, the plaintext
+    // `url`'s public keys. For the `kTeeBased` aggregation mode, the plaintext
     // of the encrypted payload is a serialized CBOR map structured as follows:
     // {
-    //   "version": "<API version>",
     //   "operation": "<chosen operation as string>",
-    //   "privacy_budget_key": "<field for server to do privacy budgeting>",
-    //   "scheduled_report_time": <timestamp in msec>,
-    //   "reporting_origin": "https://reporter.example",
-    //   "dpf_key": <binary serialization of the DPF key>,
+    //   "data": [{
+    //     "bucket": <a 16-byte (i.e. 128-bit) big-endian bytestring>,
+    //     "value": <a 4-byte (i.e. 32-bit) big-endian bytestring>
+    //   }, ...],
     // }
-    // For the kSingleServer processing type, the "dpf_key" field is replaced
-    // with:
-    //   "data": [{ "bucket": <bucket>, "value": <value> }]
-    // If two processing origins are provided, one payload (chosen randomly)
-    // would contain that data and the other would instead contain:
-    //   "data": []
+    // Note that the "data" array may contain multiple contributions.
+    // For the `kExperimentalPoplar` aggregation mode, the "data" field is
+    // replaced with:
+    //   "dpf_key": <binary serialization of the DPF key>
     std::vector<uint8_t> payload;
 
     // Indicates the chosen encryption key.
     std::string key_id;
+
+    // If the request's shared info had a `kEnabled` debug_mode, contains the
+    // cleartext payload for debugging. Otherwise, it is `absl::nullopt`.
+    absl::optional<std::vector<uint8_t>> debug_cleartext_payload;
   };
 
   // Used to allow mocking `CreateFromRequestAndPublicKeys()` in tests.
@@ -111,7 +169,7 @@ class CONTENT_EXPORT AggregatableReport {
 
     // Processes and serializes the information in `report_request` and encrypts
     // using the `public_keys` as necessary. The order of `public_keys` should
-    // correspond to `report_request.processing_origins`, which should be
+    // correspond to `report_request.processing_urls`, which should be
     // sorted. Returns `absl::nullopt` if an error occurred during construction.
     virtual absl::optional<AggregatableReport> CreateFromRequestAndPublicKeys(
         AggregatableReportRequest report_request,
@@ -131,16 +189,18 @@ class CONTENT_EXPORT AggregatableReport {
   // log_2 of the value output space
   static constexpr size_t kValueDomainBitLength = 64;
 
-  // Used as the authenticated information (i.e. context info). This value must
-  // not be reused for new protocols or versions of this protocol unless the
-  // ciphertexts are intended to be compatible. This ensures that, even if
-  // public keys are reused, the same ciphertext cannot be (i.e. no cross-
-  // protocol attacks).
-  static constexpr char kDomainSeparationValue[] = "aggregation_service";
+  // Used as a prefix for the authenticated information (i.e. context info).
+  // This value must not be reused for new protocols or versions of this
+  // protocol unless the ciphertexts are intended to be compatible. This ensures
+  // that, even if public keys are reused, the same ciphertext cannot be (i.e.
+  // no cross-protocol attacks).
+  static constexpr base::StringPiece kDomainSeparationPrefix =
+      "aggregation_service";
 
   AggregatableReport(std::vector<AggregationServicePayload> payloads,
-                     AggregatableReportSharedInfo shared_info);
-  // Move-only.
+                     std::string shared_info);
+  AggregatableReport(const AggregatableReport& other);
+  AggregatableReport& operator=(const AggregatableReport& other);
   AggregatableReport(AggregatableReport&& other);
   AggregatableReport& operator=(AggregatableReport&& other);
   ~AggregatableReport();
@@ -148,61 +208,86 @@ class CONTENT_EXPORT AggregatableReport {
   const std::vector<AggregationServicePayload>& payloads() const {
     return payloads_;
   }
-  const AggregatableReportSharedInfo& shared_info() const {
-    return shared_info_;
-  }
+  const std::string& shared_info() const { return shared_info_; }
 
   // Returns the JSON representation of this report of the form
   // {
-  //   "scheduled_report_time": "<timestamp in msec>",
-  //   "privacy_budget_key": "<field for server to do privacy budgeting>",
-  //   "version": "<api version>",
+  //   "shared_info": "<shared_info>",
   //   "aggregation_service_payloads": [
   //     {
-  //       "origin": "https://helper1.example",
   //       "payload": "<base64 encoded encrypted data>",
   //       "key_id": "<string identifying public key used>"
   //     },
   //     {
-  //       "origin": "https://helper2.example",
   //       "payload": "<base64 encoded encrypted data>",
   //       "key_id": "<string identifying public key used>"
   //     }
   //   ]
   // }
+  //
+  // Where <shared_info> is the serialization of the JSON (with all whitespace
+  // removed):
+  // {
+  //   "report_id":"[UUID]",
+  //   "reporting_origin":"https://reporter.example"
+  //   "scheduled_report_time":"[timestamp in seconds]",
+  //   "version":"[api version]",
+  // }
+  // Callers may insert API-specific fields into the shared_info dictionary.
+  // In those cases, the keys are inserted in lexicographic order.
+  //
+  // If requested, each "aggregation_service_payloads" element has an extra
+  // field: `"debug_cleartext_payload": "<base64 encoded payload cleartext>"`.
   // Note that APIs may wish to add additional key-value pairs to this returned
-  // value. `this` is required to be an rvalue to avoid unnecessary copies; this
-  // method should only need to be called once.
-  base::Value::DictStorage GetAsJson() &&;
+  // value.
+  base::Value::Dict GetAsJson() const;
 
   // TODO(crbug.com/1247409): Expose static method to validate that a
   // base::Value appears to represent a valid report.
 
-  // Returns whether `number` is a valid number of processing origins for the
-  // `processing_type`.
-  static bool IsNumberOfProcessingOriginsValid(
+  // Returns whether `number` is a valid number of processing URLs for the
+  // `aggregation_mode`.
+  static bool IsNumberOfProcessingUrlsValid(
       size_t number,
-      AggregationServicePayloadContents::ProcessingType processing_type);
+      AggregationServicePayloadContents::AggregationMode aggregation_mode);
+
+  // Returns whether `number` is a valid number of histogram contributions for
+  // the `aggregation_mode`.
+  static bool IsNumberOfHistogramContributionsValid(
+      size_t number,
+      AggregationServicePayloadContents::AggregationMode aggregation_mode);
 
  private:
-  // This vector should have an entry for each processing origin specified in
+  // This vector should have an entry for each processing URL specified in
   // the original AggregatableReportRequest.
   std::vector<AggregationServicePayload> payloads_;
 
-  AggregatableReportSharedInfo shared_info_;
+  std::string shared_info_;
 };
 
 // Represents a request for an AggregatableReport. Contains all the data
 // necessary to construct the report except for the PublicKey for each
-// processing origin.
+// processing URL.
 class CONTENT_EXPORT AggregatableReportRequest {
  public:
-  // Returns `absl::nullopt` if `payload_contents` has a negative bucket or
-  // value. Also returns `absl::nullopt` if `processing_origins.size()` is not
-  // valid for the `payload_contents.processing_type` (see
-  // `IsNumberOfProcessingOriginsValid` above).
+  // Returns `absl::nullopt` if `payload_contents.contributions.size()` is not
+  // valid for the `payload_contents.aggregation_mode` (see
+  // `IsNumberOfHistogramContributionsValid()` above). Also returns
+  // `absl::nullopt` if any contribution has a negative value or if
+  // `shared_info.report_id` is not valid.
   static absl::optional<AggregatableReportRequest> Create(
-      std::vector<url::Origin> processing_origins,
+      AggregationServicePayloadContents payload_contents,
+      AggregatableReportSharedInfo shared_info);
+
+  // Returns `absl::nullopt` if `payload_contents.contributions.size()` or
+  // `processing_url.size()` is not valid for the
+  // `payload_contents.aggregation_mode` (see
+  // `IsNumberOfHistogramContributionsValid()` and
+  // `IsNumberOfProcessingUrlsValid`, respectively). Also returns
+  // `absl::nullopt` if any contribution has a negative value or if
+  // `shared_info.report_id` is not valid.
+  static absl::optional<AggregatableReportRequest> CreateForTesting(
+      std::vector<GURL> processing_urls,
       AggregationServicePayloadContents payload_contents,
       AggregatableReportSharedInfo shared_info);
 
@@ -211,9 +296,7 @@ class CONTENT_EXPORT AggregatableReportRequest {
   AggregatableReportRequest& operator=(AggregatableReportRequest&& other);
   ~AggregatableReportRequest();
 
-  const std::vector<url::Origin>& processing_origins() const {
-    return processing_origins_;
-  }
+  const std::vector<GURL>& processing_urls() const { return processing_urls_; }
   const AggregationServicePayloadContents& payload_contents() const {
     return payload_contents_;
   }
@@ -222,15 +305,16 @@ class CONTENT_EXPORT AggregatableReportRequest {
   }
 
  private:
-  // To avoid unnecessary copies, allow the provider to directly access members
-  // of the AggregatableReportRequest being consumed.
-  friend class AggregatableReport::Provider;
+  static absl::optional<AggregatableReportRequest> CreateInternal(
+      std::vector<GURL> processing_urls,
+      AggregationServicePayloadContents payload_contents,
+      AggregatableReportSharedInfo shared_info);
 
-  AggregatableReportRequest(std::vector<url::Origin> processing_origins,
+  AggregatableReportRequest(std::vector<GURL> processing_urls,
                             AggregationServicePayloadContents payload_contents,
                             AggregatableReportSharedInfo shared_info);
 
-  std::vector<url::Origin> processing_origins_;
+  std::vector<GURL> processing_urls_;
   AggregationServicePayloadContents payload_contents_;
   AggregatableReportSharedInfo shared_info_;
 };

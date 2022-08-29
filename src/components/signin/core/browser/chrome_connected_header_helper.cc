@@ -15,6 +15,7 @@
 #include "build/chromeos_buildflags.h"
 #include "components/google/core/common/google_util.h"
 #include "components/signin/core/browser/cookie_settings_util.h"
+#include "components/signin/public/base/signin_switches.h"
 #include "components/signin/public/identity_manager/tribool.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -41,7 +42,7 @@ const char kProfileModeAttrName[] = "mode";
 const char kServiceTypeAttrName[] = "action";
 const char kSupervisedAttrName[] = "supervised";
 const char kSourceAttrName[] = "source";
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 const char kEligibleForConsistency[] = "eligible_for_consistency";
 const char kShowConsistencyPromo[] = "show_consistency_promo";
 #endif
@@ -110,7 +111,7 @@ ManageAccountsParams ChromeConnectedHeaderHelper::BuildManageAccountsParams(
       params.continue_url = value;
     } else if (key_name == kIsSameTabAttrName) {
       params.is_same_tab = value == "true";
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     } else if (key_name == kShowConsistencyPromo) {
       params.show_consistency_promo = value == "true";
 #endif
@@ -181,7 +182,7 @@ bool ChromeConnectedHeaderHelper::IsUrlEligibleForRequestHeader(
              google_util::IsYoutubeDomainUrl(
                  url, google_util::ALLOW_SUBDOMAIN,
                  google_util::DISALLOW_NON_STANDARD_PORTS) ||
-             gaia::IsGaiaSignonRealm(url.DeprecatedGetOriginAsURL());
+             gaia::HasGaiaSchemeHostPort(url);
     }
   }
 }
@@ -206,18 +207,18 @@ std::string ChromeConnectedHeaderHelper::BuildRequestHeader(
 // Sessions and Active Directory logins. Guest Sessions have already been
 // filtered upstream and we want to enforce account consistency in Public
 // Sessions and Active Directory logins.
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS)
   force_account_consistency = true;
 #endif
 
   if (!force_account_consistency && gaia_id.empty()) {
-#if defined(OS_ANDROID)
-    if (gaia::IsGaiaSignonRealm(url.DeprecatedGetOriginAsURL())) {
+#if BUILDFLAG(IS_ANDROID)
+    if (gaia::HasGaiaSchemeHostPort(url)) {
       parts.push_back(
           base::StringPrintf("%s=%s", kEligibleForConsistency, "true"));
       return base::JoinString(parts, is_header_request ? "," : ":");
     }
-#endif  // defined(OS_ANDROID) || defined(OS_IOS)
+#endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
     return std::string();
   }
 
@@ -246,8 +247,19 @@ std::string ChromeConnectedHeaderHelper::BuildRequestHeader(
       // Do not add the supervised parameter.
       break;
   }
-  parts.push_back(base::StringPrintf(
-      "%s=%s", kConsistencyEnabledByDefaultAttrName, "false"));
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  std::string consistency_enabled_by_default =
+      base::FeatureList::IsEnabled(switches::kLacrosNonSyncingProfiles)
+          ? "true"
+          : "false";
+#else
+  std::string consistency_enabled_by_default = "false";
+#endif
+
+  parts.push_back(base::StringPrintf("%s=%s",
+                                     kConsistencyEnabledByDefaultAttrName,
+                                     consistency_enabled_by_default.c_str()));
 
   return base::JoinString(parts, is_header_request ? "," : ":");
 }

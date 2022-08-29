@@ -55,7 +55,7 @@ server.once('listening', () => {
   }
   console.log(`Started hosted mode server at http://localhost:${actualPort}\n`);
   console.log('For info on using the hosted mode server, see our contributing docs:');
-  console.log('https://bit.ly/devtools-contribution-guide');
+  console.log('https://goo.gle/devtools-contribution-guide');
   console.log('Tip: Look for the \'Development server options\' section\n');
 });
 const wss = new WebSocketServer({server});
@@ -172,13 +172,44 @@ async function requestHandler(request, response) {
         headers.set('Content-Type', inferredContentType);
       }
     }
+    if (!headers.get('Cache-Control')) {
+      // Lets reduce Disk I/O by allowing clients to cache resources.
+      // This is fine to do given that test invocations run against fresh Chrome profiles.
+      headers.set('Cache-Control', 'max-age=3600');
+    }
+    if (!headers.get('Access-Control-Allow-Origin')) {
+      // The DevTools frontend in hosted-mode uses regular fetch to get source maps etc.
+      // Disable CORS only for the DevTools frontend, not for resource/target pages.
+      // Since Chrome will cache resources, we have to indicate that CORS can still vary
+      // based on the origin that made the request. E.g. the target page loads a script first
+      // but then DevTools also wants to load it. In the former, we disallow cross-origin requests by default,
+      // while for the latter we allow it.
+      const requestedByDevTools = request.headers.origin?.includes('devtools-frontend.test');
+      if (requestedByDevTools) {
+        headers.set('Access-Control-Allow-Origin', request.headers.origin);
+      }
+      headers.set('Vary', 'Origin');
+    }
     headers.forEach((value, header) => {
       response.setHeader(header, value);
     });
 
+    const waitBeforeHeaders = parseInt(url.searchParams?.get('waitBeforeHeaders'), 10);
+    if (!isNaN(waitBeforeHeaders)) {
+      await new Promise(resolve => setTimeout(resolve, waitBeforeHeaders));
+    }
     response.writeHead(statusCode);
     if (data && encoding) {
-      response.write(data, encoding);
+      const waitBetweenChunks = parseInt(url.searchParams?.get('waitBetweenChunks'), 10);
+      const numChunks = parseInt(url.searchParams?.get('numChunks'), 10);
+      const chunkSize = isNaN(numChunks) ? data.length : data.length / numChunks;
+      for (let i = 0; i < data.length; i += chunkSize) {
+        if (!isNaN(waitBetweenChunks)) {
+          await new Promise(resolve => setTimeout(resolve, waitBetweenChunks));
+        }
+        const chunk = data.subarray ? data.subarray(i, i + chunkSize) : data.substring(i, i + chunkSize);
+        response.write(chunk, encoding);
+      }
     }
     response.end();
   }

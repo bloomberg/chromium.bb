@@ -199,7 +199,7 @@ void StreamTexture::OnFrameAvailable() {
   DCHECK_CALLED_ON_VALID_THREAD(gpu_main_thread_checker_);
   has_pending_frame_ = true;
 
-  if (!client_ || !texture_owner_)
+  if (!client_ || !texture_owner_ || !channel_)
     return;
 
   // We haven't received size for first time yet from the MediaPlayer we will
@@ -224,8 +224,12 @@ void StreamTexture::OnFrameAvailable() {
     visible_rect_ = visible_rect;
 
     auto mailbox = CreateSharedImage(coded_size);
-    auto ycbcr_info =
-        SharedImageVideo::GetYcbcrInfo(texture_owner_.get(), context_state_);
+    viz::VulkanContextProvider* vulkan_context_provider = nullptr;
+    if (context_state_->GrContextIsVulkan()) {
+      vulkan_context_provider = context_state_->vk_context_provider();
+    }
+    auto ycbcr_info = SharedImageVideo::GetYcbcrInfo(texture_owner_.get(),
+                                                     vulkan_context_provider);
 
     client_->OnFrameWithInfoAvailable(mailbox, coded_size, visible_rect,
                                       ycbcr_info);

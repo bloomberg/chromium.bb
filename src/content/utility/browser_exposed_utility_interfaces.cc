@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/public/common/content_client.h"
 #include "content/public/utility/content_utility_client.h"
@@ -19,7 +20,7 @@
 #include "sandbox/policy/mojom/sandbox.mojom.h"
 #include "sandbox/policy/sandbox_type.h"
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 #include "content/public/common/resource_usage_reporter.mojom.h"
 #include "services/proxy_resolver/proxy_resolver_v8.h"  // nogncheck (bug 12345)
 #endif
@@ -28,7 +29,7 @@ namespace content {
 
 namespace {
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 class ResourceUsageReporterImpl : public mojom::ResourceUsageReporter {
  public:
   ResourceUsageReporterImpl() = default;
@@ -57,25 +58,25 @@ void CreateResourceUsageReporter(
   mojo::MakeSelfOwnedReceiver(std::make_unique<ResourceUsageReporterImpl>(),
                               std::move(receiver));
 }
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 }  // namespace
 
 void ExposeUtilityInterfacesToBrowser(mojo::BinderMap* binders) {
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   bool bind_usage_reporter = true;
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   auto& cmd_line = *base::CommandLine::ForCurrentProcess();
   if (sandbox::policy::SandboxTypeFromCommandLine(cmd_line) ==
       sandbox::mojom::Sandbox::kNoSandboxAndElevatedPrivileges) {
     bind_usage_reporter = false;
   }
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
   if (bind_usage_reporter) {
     binders->Add(base::BindRepeating(&CreateResourceUsageReporter),
                  base::ThreadTaskRunnerHandle::Get());
   }
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID)
 
   GetContentClient()->utility()->ExposeInterfacesToBrowser(binders);
 }

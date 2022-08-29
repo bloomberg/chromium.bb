@@ -17,7 +17,7 @@ expected to work.*
 ago - the linux_disable_pie flag was nuked; instead cmtice@ wrote a script that
 makes remote debugging chrome very simple. Details on how to use the script are
 at
-<https://sites.google.com/a/chromium.org/dev/chromium-os/developer-guide#TOC-Remote-Debugging>*
+<https://www.chromium.org/chromium-os/developer-guide#TOC-Remote-Debugging>*
 
 *The Catch: The script will only work on a test image for now - this is because
 only the test image has the ssh server running by default and copies over the

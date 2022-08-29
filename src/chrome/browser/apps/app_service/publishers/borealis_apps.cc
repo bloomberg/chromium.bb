@@ -25,6 +25,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
 #include "components/services/app_service/public/cpp/app_types.h"
+#include "components/services/app_service/public/cpp/permission.h"
 #include "components/services/app_service/public/cpp/permission_utils.h"
 #include "components/services/app_service/public/cpp/publisher_base.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -50,33 +51,58 @@ const char* PermissionToPrefName(apps::mojom::PermissionType permission) {
   return nullptr;
 }
 
-void SetAppAllowed(apps::mojom::App* app, bool allowed) {
+void SetAppAllowed(apps::mojom::App* app,
+                   bool allowed,
+                   bool partially_hidden = false) {
   app->readiness = allowed ? apps::mojom::Readiness::kReady
                            : apps::mojom::Readiness::kDisabledByPolicy;
 
   const apps::mojom::OptionalBool opt_allowed =
       allowed ? apps::mojom::OptionalBool::kTrue
               : apps::mojom::OptionalBool::kFalse;
+  const apps::mojom::OptionalBool opt_partial_allowed =
+      allowed && !partially_hidden ? apps::mojom::OptionalBool::kTrue
+                                   : apps::mojom::OptionalBool::kFalse;
 
   app->recommendable = opt_allowed;
   app->searchable = opt_allowed;
-  app->show_in_launcher = opt_allowed;
+  app->show_in_launcher = opt_partial_allowed;
   app->show_in_shelf = opt_allowed;
-  app->show_in_search = opt_allowed;
-  app->show_in_management = opt_allowed;
+  app->show_in_search = opt_partial_allowed;
+  app->show_in_management = opt_partial_allowed;
   app->handles_intents = opt_allowed;
 }
 
-std::unique_ptr<apps::App> CreateBorealisLauncher(Profile* profile,
-                                                  bool allowed) {
-  std::unique_ptr<apps::App> app = apps::AppPublisher::MakeApp(
-      apps::AppType::kBorealis, borealis::kBorealisAppId,
+void SetAppAllowed(bool allowed,
+                   apps::App& app,
+                   bool partially_hidden = false) {
+  app.readiness =
+      allowed ? apps::Readiness::kReady : apps::Readiness::kDisabledByPolicy;
+
+  app.recommendable = allowed;
+  app.searchable = allowed;
+  app.show_in_launcher = allowed && !partially_hidden;
+  app.show_in_shelf = allowed;
+  app.show_in_search = allowed && !partially_hidden;
+  app.show_in_management = allowed && !partially_hidden;
+  app.handles_intents = allowed;
+}
+
+apps::AppPtr CreateBorealisLauncher(Profile* profile, bool allowed) {
+  auto app = apps::AppPublisher::MakeApp(
+      apps::AppType::kBorealis, borealis::kInstallerAppId,
       allowed ? apps::Readiness::kReady : apps::Readiness::kDisabledByPolicy,
-      l10n_util::GetStringUTF8(IDS_BOREALIS_APP_NAME));
+      l10n_util::GetStringUTF8(IDS_BOREALIS_APP_NAME),
+      apps::InstallReason::kDefault, apps::InstallSource::kUnknown);
 
   app->icon_key =
       apps::IconKey(apps::IconKey::kDoesNotChangeOverTime,
                     IDR_LOGO_BOREALIS_DEFAULT_192, apps::IconEffects::kNone);
+
+  SetAppAllowed(allowed, *app, /*partially_hidden=*/true);
+
+  app->allow_uninstall =
+      borealis::BorealisService::GetForProfile(profile)->Features().IsEnabled();
 
   // TODO(crbug.com/1253250): Add other fields for the App struct.
   return app;
@@ -84,7 +110,7 @@ std::unique_ptr<apps::App> CreateBorealisLauncher(Profile* profile,
 
 apps::mojom::AppPtr GetBorealisLauncher(Profile* profile, bool allowed) {
   apps::mojom::AppPtr app = apps::PublisherBase::MakeApp(
-      apps::mojom::AppType::kBorealis, borealis::kBorealisAppId,
+      apps::mojom::AppType::kBorealis, borealis::kInstallerAppId,
       allowed ? apps::mojom::Readiness::kReady
               : apps::mojom::Readiness::kDisabledByPolicy,
       l10n_util::GetStringUTF8(IDS_BOREALIS_APP_NAME),
@@ -94,7 +120,7 @@ apps::mojom::AppPtr GetBorealisLauncher(Profile* profile, bool allowed) {
       apps::mojom::IconKey::kDoesNotChangeOverTime,
       IDR_LOGO_BOREALIS_DEFAULT_192, apps::IconEffects::kNone);
 
-  SetAppAllowed(app.get(), allowed);
+  SetAppAllowed(app.get(), allowed, /*partially_hidden=*/true);
 
   app->allow_uninstall = (borealis::BorealisService::GetForProfile(profile)
                               ->Features()
@@ -105,22 +131,37 @@ apps::mojom::AppPtr GetBorealisLauncher(Profile* profile, bool allowed) {
   return app;
 }
 
+// TODO(crbug.com/1253250): Remove and use CreatePermissions.
 void PopulatePermissions(apps::mojom::App* app, Profile* profile) {
   for (const PermissionInfo& info : permission_infos) {
     auto permission = apps::mojom::Permission::New();
     permission->permission_type = info.permission;
-    permission->value = apps::mojom::PermissionValue::New();
-    permission->value->set_bool_value(
+    permission->value = apps::mojom::PermissionValue::NewBoolValue(
         profile->GetPrefs()->GetBoolean(info.pref_name));
     permission->is_managed = false;
     app->permissions.push_back(std::move(permission));
   }
 }
 
+apps::Permissions CreatePermissions(Profile* profile) {
+  apps::Permissions permissions;
+  for (const PermissionInfo& info : permission_infos) {
+    permissions.push_back(std::make_unique<apps::Permission>(
+        apps::ConvertMojomPermissionTypeToPermissionType(info.permission),
+        std::make_unique<apps::PermissionValue>(
+            profile->GetPrefs()->GetBoolean(info.pref_name)),
+        /*is_managed=*/false));
+  }
+  return permissions;
+}
+
 bool IsBorealisLauncherAllowed(Profile* profile) {
+  // TODO(b/217653546): The installer "app" was a short-term solution anyway.
+  // Once insert_coin is a thing it should never be shown.
   return borealis::BorealisService::GetForProfile(profile)
-             ->Features()
-             .IsAllowed() &&
+                 ->Features()
+                 .MightBeAllowed() ==
+             borealis::BorealisFeatures::AllowStatus::kAllowed &&
          !borealis::BorealisService::GetForProfile(profile)
               ->Features()
               .IsEnabled();
@@ -155,7 +196,7 @@ guest_os::GuestOsRegistryService* BorealisApps::Registry() {
   return registry;
 }
 
-std::unique_ptr<App> BorealisApps::CreateApp(
+AppPtr BorealisApps::CreateApp(
     const guest_os::GuestOsRegistryService::Registration& registration,
     bool generate_new_icon_key) {
   // We must only convert borealis apps.
@@ -164,16 +205,34 @@ std::unique_ptr<App> BorealisApps::CreateApp(
 
   // The installer app is not a GuestOs app, it doesnt have a registration and
   // it can't be converted.
-  DCHECK_NE(registration.app_id(), borealis::kBorealisAppId);
+  DCHECK_NE(registration.app_id(), borealis::kInstallerAppId);
 
-  std::unique_ptr<App> app =
-      AppPublisher::MakeApp(AppType::kBorealis, registration.app_id(),
-                            Readiness::kReady, registration.Name());
+  auto app = AppPublisher::MakeApp(
+      AppType::kBorealis, registration.app_id(), Readiness::kReady,
+      registration.Name(), InstallReason::kUser, InstallSource::kUnknown);
+
+  const std::string& executable_file_name = registration.ExecutableFileName();
+  if (!executable_file_name.empty()) {
+    app->additional_search_terms.push_back(executable_file_name);
+  }
+
+  for (const std::string& keyword : registration.Keywords()) {
+    app->additional_search_terms.push_back(keyword);
+  }
 
   if (generate_new_icon_key) {
     app->icon_key = std::move(
         *icon_key_factory_.CreateIconKey(IconEffects::kCrOsStandardIcon));
   }
+
+  app->last_launch_time = registration.LastLaunchTime();
+  app->install_time = registration.InstallTime();
+
+  if (registration.app_id() == borealis::kClientAppId) {
+    app->permissions = CreatePermissions(profile_);
+  }
+
+  SetAppAllowed(!registration.NoDisplay(), *app);
 
   // TODO(crbug.com/1253250): Add other fields for the App struct.
   return app;
@@ -188,7 +247,7 @@ apps::mojom::AppPtr BorealisApps::Convert(
 
   // The installer app is not a GuestOs app, it doesnt have a registration and
   // it can't be converted.
-  DCHECK_NE(registration.app_id(), borealis::kBorealisAppId);
+  DCHECK_NE(registration.app_id(), borealis::kInstallerAppId);
 
   apps::mojom::AppPtr app = PublisherBase::MakeApp(
       apps::mojom::AppType::kBorealis, registration.app_id(),
@@ -212,7 +271,7 @@ apps::mojom::AppPtr BorealisApps::Convert(
   app->last_launch_time = registration.LastLaunchTime();
   app->install_time = registration.InstallTime();
 
-  if (registration.app_id() == borealis::kBorealisMainAppId) {
+  if (registration.app_id() == borealis::kClientAppId) {
     PopulatePermissions(app.get(), profile_);
   }
 
@@ -226,7 +285,7 @@ void BorealisApps::Initialize() {
 
   RegisterPublisher(AppType::kBorealis);
 
-  std::vector<std::unique_ptr<App>> apps;
+  std::vector<AppPtr> apps;
   apps.push_back(
       CreateBorealisLauncher(profile_, IsBorealisLauncherAllowed(profile_)));
 
@@ -237,7 +296,8 @@ void BorealisApps::Initialize() {
         pair.second;
     apps.push_back(CreateApp(registration, /*generate_new_icon_key=*/true));
   }
-  AppPublisher::Publish(std::move(apps));
+  AppPublisher::Publish(std::move(apps), AppType::kBorealis,
+                        /*should_notify_initialized=*/true);
 }
 
 void BorealisApps::LoadIcon(const std::string& app_id,
@@ -376,20 +436,9 @@ void BorealisApps::OnRegistryUpdated(
     mojom_app->readiness = apps::mojom::Readiness::kUninstalledByUser;
     PublisherBase::Publish(std::move(mojom_app), subscribers_);
 
-    std::unique_ptr<App> app =
-        std::make_unique<App>(AppType::kBorealis, app_id);
+    auto app = std::make_unique<App>(AppType::kBorealis, app_id);
     app->readiness = Readiness::kUninstalledByUser;
     AppPublisher::Publish(std::move(app));
-
-    // If main app is removed, re-add the Borealis launcher.
-    if (app_id == borealis::kBorealisMainAppId) {
-      bool borealis_allowed = borealis::BorealisService::GetForProfile(profile_)
-                                  ->Features()
-                                  .IsAllowed();
-      PublisherBase::Publish(GetBorealisLauncher(profile_, borealis_allowed),
-                             subscribers_);
-      AppPublisher::Publish(CreateBorealisLauncher(profile_, borealis_allowed));
-    }
   }
 
   for (const std::string& app_id : inserted_apps) {
@@ -398,19 +447,6 @@ void BorealisApps::OnRegistryUpdated(
                              subscribers_);
       AppPublisher::Publish(
           CreateApp(*registration, /*generate_new_icon_key=*/true));
-    }
-    // If main app is installed, remove the Borealis launcher.
-    if (app_id == borealis::kBorealisMainAppId) {
-      apps::mojom::AppPtr mojom_app = apps::mojom::App::New();
-      mojom_app->app_type = apps::mojom::AppType::kBorealis;
-      mojom_app->app_id = borealis::kBorealisAppId;
-      mojom_app->readiness = apps::mojom::Readiness::kUninstalledByUser;
-      PublisherBase::Publish(std::move(mojom_app), subscribers_);
-
-      std::unique_ptr<App> app =
-          std::make_unique<App>(AppType::kBorealis, app_id);
-      app->readiness = Readiness::kUninstalledByUser;
-      AppPublisher::Publish(std::move(app));
     }
   }
 }
@@ -433,11 +469,17 @@ void BorealisApps::OnAnonymousAppAdded(const std::string& shelf_app_id,
 
   PublisherBase::Publish(std::move(mojom_app), subscribers_);
 
-  std::unique_ptr<App> app = AppPublisher::MakeApp(
-      AppType::kBorealis, shelf_app_id, Readiness::kReady, shelf_app_name);
+  auto app = AppPublisher::MakeApp(
+      AppType::kBorealis, shelf_app_id, Readiness::kReady, shelf_app_name,
+      InstallReason::kUser, InstallSource::kUnknown);
 
   app->icon_key = IconKey(IconKey::kDoesNotChangeOverTime,
                           IDR_LOGO_BOREALIS_DEFAULT_192, IconEffects::kNone);
+  app->recommendable = false;
+  app->searchable = false;
+  app->show_in_launcher = false;
+  app->show_in_shelf = true;
+  app->show_in_search = false;
 
   AppPublisher::Publish(std::move(app));
 }
@@ -454,8 +496,7 @@ void BorealisApps::OnAnonymousAppRemoved(const std::string& shelf_app_id) {
   }
 
   for (auto readiness : {Readiness::kUninstalledByUser, Readiness::kRemoved}) {
-    std::unique_ptr<App> app =
-        std::make_unique<App>(AppType::kBorealis, shelf_app_id);
+    auto app = std::make_unique<App>(AppType::kBorealis, shelf_app_id);
     app->readiness = readiness;
     AppPublisher::Publish(std::move(app));
   }

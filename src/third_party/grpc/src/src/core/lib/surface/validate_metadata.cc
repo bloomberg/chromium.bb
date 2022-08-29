@@ -20,17 +20,14 @@
 
 #include "src/core/lib/surface/validate_metadata.h"
 
-#include <stdlib.h>
-#include <string.h>
+#include "absl/strings/string_view.h"
 
 #include <grpc/grpc.h>
-#include <grpc/support/alloc.h>
 
+#include "src/core/lib/gpr/string.h"
 #include "src/core/lib/gprpp/bitset.h"
 #include "src/core/lib/gprpp/memory.h"
 #include "src/core/lib/iomgr/error.h"
-#include "src/core/lib/slice/slice_internal.h"
-#include "src/core/lib/slice/slice_string_helpers.h"
 
 #if __cplusplus > 201103l
 #define GRPC_VALIDATE_METADATA_CONSTEXPR_FN constexpr
@@ -79,7 +76,7 @@ class LegalHeaderKeyBits : public grpc_core::BitSet<256> {
     set('.');
   }
 };
-static GRPC_VALIDATE_METADATA_CONSTEXPR_VALUE LegalHeaderKeyBits
+GRPC_VALIDATE_METADATA_CONSTEXPR_VALUE LegalHeaderKeyBits
     g_legal_header_key_bits;
 }  // namespace
 
@@ -112,7 +109,7 @@ class LegalHeaderNonBinValueBits : public grpc_core::BitSet<256> {
     }
   }
 };
-static GRPC_VALIDATE_METADATA_CONSTEXPR_VALUE LegalHeaderNonBinValueBits
+GRPC_VALIDATE_METADATA_CONSTEXPR_VALUE LegalHeaderNonBinValueBits
     g_legal_header_non_bin_value_bits;
 }  // namespace
 

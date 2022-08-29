@@ -536,6 +536,7 @@
 <translation id="4601367666219428522">tab <ph name="TABLENAME" /> <ph name="TABLEROWS" />×<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">Další stisknutí klávesy bude ignorováno</translation>
 <translation id="4623097797855662355">Kolofon</translation>
+<translation id="4624970070706497034">TalkBack už nenabízí přizpůsobení pro Chromebooky. Službu lze nadále používat s výchozími klávesovými zkratkami. Dostupné zkratky zobrazíte stisknutím vyhledávacího tlačítka + A a pak K. Pokud chcete TalkBack nadále používat, znovu použijte příkaz.</translation>
 <translation id="463135993322337640">Novinky zobrazíte stisknutím kláves ChromeVox + o + n.</translation>
 <translation id="4649220074413114917">Klepnutím dvěma prsty na obrazovku lze zastavit libovolnou aktuální řeč. Je to užitečné, když nechcete, aby nástroj ChromeVox něco četl. Pokračujte klepnutím na obrazovku dvěma prsty.</translation>
 <translation id="4660783501463101648">Byl odebrán klasický režim. Byl odstraněn přepínač klávesnice, pomocí kterého bylo možné vrátit se do klasického režimu ChromeVox.</translation>
@@ -618,7 +619,6 @@
 <translation id="5170206230005240598">Titulky v Braillově písmu jsou zapnuty</translation>
 <translation id="5183440668879371625">Braille – předchozí řádek</translation>
 <translation id="5189244881767082992">Řádek</translation>
-<translation id="5234747236692380506">napsat <ph name="TEXT" /></translation>
 <translation id="5263034204789987535">Režná</translation>
 <translation id="5263344797180442561">nadp 2</translation>
 <translation id="528468243742722775">Konec</translation>
@@ -666,6 +666,7 @@
 <translation id="5522423213731659107">Rychlá instruktáž byla dokončena.</translation>
 <translation id="5534303576632885660">nadpis</translation>
 <translation id="5539820223028224601">Bledě šedá</translation>
+<translation id="554893713779400387">Přepnout diktování</translation>
 <translation id="5549179427201066174">Zapnout nebo vypnout zvukové signály</translation>
 <translation id="556042886152191864">Tlačítko</translation>
 <translation id="5561345396546889625">Další seznam</translation>
@@ -684,6 +685,8 @@
 <translation id="5623842676595125836">Protokol</translation>
 <translation id="5628125749885014029">nadp 4</translation>
 <translation id="5632083598315326067">Grafický symbol</translation>
+<translation id="5648939288050772726">Gratulujeme! Naučili jste se základy používání nástroje ChromeVox. Nabídku příkazů nástroje ChromeVox můžete kdykoliv otevřít stisknutím kláves Hledat + Tečka. Další informace o nástroji ChromeVox a systému ChromeOS najdete v následujících článcích.
+    Pokud výukový program chcete ukončit, přejděte pomocí nástroje ChromeVox na tlačítko Zavřít a klikněte na něj.</translation>
 <translation id="5653397561111110475">Používání funkcí přístupnosti Chromebooku pro dotykové obrazovky</translation>
 <translation id="5655682562155942719">Přeskakovací příkazy</translation>
 <translation id="56637627897541303">Textová oblast</translation>
@@ -793,6 +796,7 @@
 <translation id="641759969622533235">{COUNT,plural, =1{dvojtečka}few{# dvojtečky}many{# colons}other{# dvojteček}}</translation>
 <translation id="6444046323172968959">Dialog upozornění</translation>
 <translation id="6452403590345320472">Obsah</translation>
+<translation id="6457542714329819968">napiš</translation>
 <translation id="6468049171101508116">Další tlačítko</translation>
 <translation id="646954774886932461">Rejstřík</translation>
 <translation id="6475604559827479857">Barva zvýraznění slov:</translation>
@@ -964,8 +968,6 @@
 <translation id="7701196182766842984">auto sezn</translation>
 <translation id="7713139339518499741">Přirozený hlas</translation>
 <translation id="7714340021005120797">Žádné další pole se seznamem není</translation>
-<translation id="772146615414628379">Gratulujeme! Naučili jste se základy používání nástroje ChromeVox. Nabídku příkazů nástroje ChromeVox můžete kdykoliv otevřít stisknutím kláves Hledat + Tečka. Další informace o nástroji ChromeVox a systému Chrome OS najdete v následujících článcích.
-    Chcete-li výukový program ukončit, přejděte pomocí nástroje ChromeVox na tlačítko Zavřít a klikněte na něj.</translation>
 <translation id="7724603315864178912">Vyjmout</translation>
 <translation id="7731785449856576010">Žádný další mediální widget není k dispozici</translation>
 <translation id="7735498529470878067">Pomocí Prozkoumání dotykem si můžete rychle udělat představu o obsahu na obrazovce.</translation>
@@ -1167,6 +1169,7 @@
 <translation id="9223032053830369045">Tmavě červená</translation>
 <translation id="923331726185079994">Čtečka ChromeVox byla aktualizována</translation>
 <translation id="93384979447910801">Tmavá mořská zelená</translation>
+<translation id="937605981140327129">Aplikace TalkBack aktuálně není nainstalovaná. Nainstalujte z Obchodu Play sadu aplikací Služby dostupnosti pro Android a zkuste to znovu.</translation>
 <translation id="948171205378458592">Snížit rychlost řeči</translation>
 <translation id="957570623732056069">Tuto lekci můžete procházet přejetím prstem doleva nebo doprava</translation>
 <translation id="958854023026327378">Přejeďte jedním prstem dolů</translation>

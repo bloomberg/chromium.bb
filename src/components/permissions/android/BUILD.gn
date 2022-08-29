@@ -55,27 +55,16 @@ android_resources("java_resources") {
     "res/drawable-xxxhdpi/infobar_protected_media_identifier.png",
     "res/drawable-xxxhdpi/infobar_warning.png",
     "res/drawable-xxxhdpi/permission_cookie.png",
-    "res/drawable/gm_filled_bluetooth_searching_20.xml",
     "res/drawable/gm_filled_bluetooth_searching_24.xml",
-    "res/drawable/gm_filled_cardboard_20.xml",
     "res/drawable/gm_filled_cardboard_24.xml",
-    "res/drawable/gm_filled_content_paste_20.xml",
     "res/drawable/gm_filled_content_paste_24.xml",
-    "res/drawable/gm_filled_devices_20.xml",
     "res/drawable/gm_filled_devices_24.xml",
-    "res/drawable/gm_filled_location_on_20.xml",
     "res/drawable/gm_filled_location_on_24.xml",
-    "res/drawable/gm_filled_mic_20.xml",
     "res/drawable/gm_filled_mic_24.xml",
-    "res/drawable/gm_filled_nfc_20.xml",
     "res/drawable/gm_filled_nfc_24.xml",
-    "res/drawable/gm_filled_notifications_20.xml",
     "res/drawable/gm_filled_notifications_24.xml",
-    "res/drawable/gm_filled_piano_20.xml",
     "res/drawable/gm_filled_piano_24.xml",
-    "res/drawable/gm_filled_usb_20.xml",
     "res/drawable/gm_filled_usb_24.xml",
-    "res/drawable/gm_filled_videocam_20.xml",
     "res/drawable/gm_filled_videocam_24.xml",
     "res/drawable/ic_bluetooth_connected.xml",
     "res/drawable/ic_signal_cellular_0_bar.xml",
@@ -130,14 +119,16 @@ android_library("java") {
     ":core_java",
     ":java_resources",
     "//base:base_java",
+    "//base:jni_java",
+    "//build/android:build_java",
     "//components/browser_ui/modaldialog/android:java",
     "//components/content_settings/android:content_settings_enums_java",
     "//components/location/android:location_java",
     "//components/omnibox/browser:browser_java",
     "//content/public/android:content_java",
-    "//third_party/android_deps:android_support_v4_java",
     "//third_party/androidx:androidx_annotation_annotation_java",
     "//third_party/androidx:androidx_appcompat_appcompat_resources_java",
+    "//third_party/androidx:androidx_core_core_java",
     "//third_party/androidx:androidx_vectordrawable_vectordrawable_java",
     "//ui/android:ui_java",
   ]
@@ -153,27 +144,31 @@ android_library("core_java") {
   ]
   deps = [
     "//base:base_java",
+    "//base:jni_java",
+    "//build/android:build_java",
     "//components/content_settings/android:content_settings_enums_java",
-    "//third_party/androidx:androidx_annotation_annotation_java",
-    "//third_party/androidx:androidx_core_core_java",
+    "//ui/android:ui_no_recycler_view_java",
   ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 }
 
-java_library("components_permissions_junit_tests") {
+android_library("components_permissions_junit_tests") {
   # Platform checks are broken for Robolectric. See https://crbug.com/1071638.
   bypass_platform_checks = true
   testonly = true
   sources = [ "junit/src/org/chromium/components/permissions/nfc/NfcSystemLevelPromptTest.java" ]
   deps = [
     ":java",
+    ":java_resources",
     "//base:base_java_test_support",
     "//base:base_junit_test_support",
+    "//components/browser_ui/theme/android:java_resources",
     "//third_party/android_deps:robolectric_all_java",
     "//third_party/junit",
     "//third_party/mockito:mockito_java",
     "//ui/android:ui_java",
   ]
+  resources_package = "org.chromium.components.permissions.test"
 }
 
 source_set("native") {

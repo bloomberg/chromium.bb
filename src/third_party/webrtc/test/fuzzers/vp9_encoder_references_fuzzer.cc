@@ -14,7 +14,7 @@
 #include "absl/base/macros.h"
 #include "absl/container/inlined_vector.h"
 #include "api/array_view.h"
-#include "api/transport/webrtc_key_value_config.h"
+#include "api/field_trials_view.h"
 #include "api/video/video_frame.h"
 #include "api/video_codecs/video_codec.h"
 #include "api/video_codecs/video_encoder.h"
@@ -168,7 +168,7 @@ class FrameValidator : public EncodedImageCallback {
   LayerFrame frames_[kMaxFrameHistorySize];
 };
 
-class FieldTrials : public WebRtcKeyValueConfig {
+class FieldTrials : public FieldTrialsView {
  public:
   explicit FieldTrials(FuzzDataHelper& config)
       : flags_(config.ReadOrDefaultValue<uint8_t>(0)) {}
@@ -235,7 +235,7 @@ VideoCodec CodecSettings(FuzzDataHelper& rng) {
   codec_settings.VP9()->interLayerPred = static_cast<InterLayerPredMode>(
       inter_layer_pred < 3 ? inter_layer_pred : 0);
   codec_settings.VP9()->flexibleMode = (config & (1u << 6)) != 0;
-  codec_settings.VP9()->frameDroppingOn = (config & (1u << 7)) != 0;
+  codec_settings.SetFrameDropEnabled((config & (1u << 7)) != 0);
   codec_settings.mode = VideoCodecMode::kRealtimeVideo;
   return codec_settings;
 }

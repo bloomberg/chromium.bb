@@ -20,7 +20,7 @@ namespace gfx {
 // end of what was already rendered.
 //
 // Explainer for the feature:
-// https://github.com/WICG/ink-enhancement/blob/master/README.md
+// https://github.com/WICG/ink-enhancement/blob/main/README.md
 class GFX_EXPORT DelegatedInkMetadata {
  public:
   DelegatedInkMetadata() = default;
@@ -62,7 +62,12 @@ class GFX_EXPORT DelegatedInkMetadata {
   bool is_hovering() const { return is_hovering_; }
 
   void set_frame_time(base::TimeTicks frame_time) { frame_time_ = frame_time; }
-
+  uint64_t trace_id() const {
+    // Use mask to distinguish from DelegatedInkPoint::trace_id().
+    // Using microseconds provides uniqueness of trace_id per
+    // DelegatedInkMetadata.
+    return timestamp_.since_origin().InMicroseconds() | (uint64_t{1} << 63);
+  }
   std::string ToString() const;
 
  private:

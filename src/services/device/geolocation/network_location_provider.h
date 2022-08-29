@@ -7,7 +7,6 @@
 
 #include <stddef.h>
 
-#include <list>
 #include <map>
 #include <memory>
 #include <string>
@@ -18,6 +17,7 @@
 #include "base/scoped_observation.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "services/device/geolocation/network_location_request.h"
 #include "services/device/geolocation/wifi_data_provider_manager.h"
@@ -73,7 +73,7 @@ class NetworkLocationProvider : public LocationProvider,
 
   WifiDataProviderManager::WifiDataUpdateCallback wifi_data_update_callback_;
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // Used to keep track of macOS System Permission changes. Also, ensures
   // lifetime of PermissionObserverList as the BrowserProcess may destroy its
   // reference on the UI Thread before we destroy this provider.

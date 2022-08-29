@@ -30,6 +30,7 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/input/web_gesture_event.h"
 #include "third_party/blink/public/common/input/web_mouse_event.h"
+#include "third_party/blink/public/common/input/web_pointer_event.h"
 #include "third_party/blink/public/platform/web_scrollbar_overlay_color_theme.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -37,10 +38,10 @@
 #include "third_party/blink/renderer/core/scroll/scroll_animator_base.h"
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
-#include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/gfx/geometry/point_conversions.h"
+#include "ui/gfx/geometry/rect_f.h"
 
 namespace blink {
 
@@ -249,16 +250,16 @@ ScrollDirectionPhysical Scrollbar::PressedPartScrollDirectionPhysical() {
   }
 }
 
-ScrollGranularity Scrollbar::PressedPartScrollGranularity() {
+ui::ScrollGranularity Scrollbar::PressedPartScrollGranularity() {
   if (pressed_part_ == kBackButtonStartPart ||
       pressed_part_ == kBackButtonEndPart ||
       pressed_part_ == kForwardButtonStartPart ||
       pressed_part_ == kForwardButtonEndPart) {
     return RuntimeEnabledFeatures::PercentBasedScrollingEnabled()
-               ? ScrollGranularity::kScrollByPercentage
-               : ScrollGranularity::kScrollByLine;
+               ? ui::ScrollGranularity::kScrollByPercentage
+               : ui::ScrollGranularity::kScrollByLine;
   }
-  return ScrollGranularity::kScrollByPage;
+  return ui::ScrollGranularity::kScrollByPage;
 }
 
 void Scrollbar::MoveThumb(int pos, bool dragging_document) {
@@ -341,6 +342,53 @@ void Scrollbar::SetPressedPart(ScrollbarPart part, WebInputEvent::Type type) {
   pressed_part_ = part;
 }
 
+bool Scrollbar::HandlePointerEvent(const WebPointerEvent& event) {
+  WebInputEvent::Type type = event.GetType();
+  // PointerEventManager gives us an event whose position is already
+  // transformed to the root frame.
+  gfx::Point root_frame_position =
+      gfx::ToFlooredPoint(event.PositionInWidget());
+  switch (type) {
+    case WebInputEvent::Type::kPointerDown:
+      if (GetTheme().HitTestRootFramePosition(*this, root_frame_position) ==
+          kThumbPart) {
+        SetPressedPart(kThumbPart, type);
+        gfx::Point local_position = ConvertFromRootFrame(root_frame_position);
+        pressed_pos_ = Orientation() == kHorizontalScrollbar
+                           ? local_position.x()
+                           : local_position.y();
+        scroll_pos_ = pressed_pos_;
+        return true;
+      }
+      return false;
+
+    case WebInputEvent::Type::kPointerMove:
+      if (pressed_part_ == kThumbPart) {
+        gfx::Point local_position = ConvertFromRootFrame(root_frame_position);
+        scroll_pos_ = Orientation() == kHorizontalScrollbar
+                          ? local_position.x()
+                          : local_position.y();
+        MoveThumb(scroll_pos_, false);
+        return true;
+      }
+      return false;
+
+    case WebInputEvent::Type::kPointerUp:
+      if (pressed_part_ == kThumbPart) {
+        SetPressedPart(kNoPart, type);
+        pressed_pos_ = 0;
+        InjectScrollGesture(WebInputEvent::Type::kGestureScrollEnd,
+                            ScrollOffset(),
+                            ui::ScrollGranularity::kScrollByPrecisePixel);
+        return true;
+      }
+      return false;
+
+    default:
+      return false;
+  }
+}
+
 bool Scrollbar::GestureEvent(const WebGestureEvent& evt,
                              bool* should_update_capture) {
   DCHECK(should_update_capture);
@@ -408,7 +456,8 @@ bool Scrollbar::GestureEvent(const WebGestureEvent& evt,
       // says we injected GestureScrollBegin, since we no longer need to inject
       // a GSE ourselves.
       injected_gesture_scroll_begin_ = false;
-      FALLTHROUGH;
+      [[fallthrough]];
+    case WebInputEvent::Type::kGestureShortPress:
     case WebInputEvent::Type::kGestureLongPress:
     case WebInputEvent::Type::kGestureFlingStart:
       scroll_pos_ = 0;
@@ -590,7 +639,7 @@ void Scrollbar::MouseDown(const WebMouseEvent& evt) {
 
 void Scrollbar::InjectScrollGestureForPressedPart(
     WebInputEvent::Type gesture_type) {
-  ScrollGranularity granularity = PressedPartScrollGranularity();
+  ui::ScrollGranularity granularity = PressedPartScrollGranularity();
   ScrollOffset delta =
       ToScrollDelta(PressedPartScrollDirectionPhysical(),
                     ScrollableArea::DirectionBasedScrollDelta(granularity));
@@ -620,13 +669,17 @@ void Scrollbar::InjectGestureScrollUpdateForThumbMove(
   ScrollOffset scroll_delta = desired_offset - current_offset;
 
   InjectScrollGesture(WebInputEvent::Type::kGestureScrollUpdate, scroll_delta,
-                      ScrollGranularity::kScrollByPrecisePixel);
+                      ui::ScrollGranularity::kScrollByPrecisePixel);
 }
 
 void Scrollbar::InjectScrollGesture(WebInputEvent::Type gesture_type,
                                     ScrollOffset delta,
-                                    ScrollGranularity granularity) {
+                                    ui::ScrollGranularity granularity) {
   DCHECK(scrollable_area_);
+
+  // Speculative fix for crash reports (crbug.com/1307510).
+  if (!scrollable_area_)
+    return;
 
   if (gesture_type == WebInputEvent::Type::kGestureScrollEnd &&
       !injected_gesture_scroll_begin_)

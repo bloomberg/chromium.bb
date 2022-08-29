@@ -22,8 +22,10 @@
   *  - a constrained conjugate gradient
   *  - a Householder GMRES implementation
   *  - an IDR(s) implementation
+  *  - a BiCGSTAB(L) implementation
   *  - a DGMRES implementation
   *  - a MINRES implementation
+  *  - a IDRSTABL implementation
   *
   * Choosing the best solver for solving \c A \c x = \c b depends a lot on the preconditioner chosen as well as the properties of \c A. The following flowchart might help you.
   * \dot width=50%
@@ -87,6 +89,8 @@
 #include "src/IterativeSolvers/DGMRES.h"
 #include "src/IterativeSolvers/MINRES.h"
 #include "src/IterativeSolvers/IDRS.h"
+#include "src/IterativeSolvers/BiCGSTABL.h"
+#include "src/IterativeSolvers/IDRSTABL.h"
 
 #include "../../Eigen/src/Core/util/ReenableStupidWarnings.h"
 

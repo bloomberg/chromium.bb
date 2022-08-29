@@ -99,13 +99,9 @@
 #pragma mark - AddressListDelegate
 
 - (void)openAddressSettings {
-  __weak id<AddressCoordinatorDelegate> delegate = self.delegate;
+  __weak id<AddressCoordinatorDelegate> weakDelegate = self.delegate;
   [self dismissIfNecessaryThenDoCompletion:^{
-    [delegate openAddressSettings];
-    if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET) {
-      // Settings close the popover but don't send a message to reopen it.
-      [delegate fallbackCoordinatorDidDismissPopover:self];
-    }
+    [weakDelegate openAddressSettings];
   }];
 }
 

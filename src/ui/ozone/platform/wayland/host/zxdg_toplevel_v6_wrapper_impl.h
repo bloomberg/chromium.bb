@@ -45,6 +45,15 @@ class ZXDGToplevelV6WrapperImpl : public ShellToplevelWrapper {
   void SetDecoration(DecorationMode decoration) override;
   void Lock(WaylandOrientationLockType lock_type) override;
   void Unlock() override;
+  void RequestWindowBounds(const gfx::Rect& geometry) override;
+  void SetRestoreInfo(int32_t restore_session_id,
+                      int32_t restore_window_id) override;
+  void SetRestoreInfoWithWindowIdSource(
+      int32_t restore_session_id,
+      const std::string& restore_window_id_source) override;
+  void SetSystemModal(bool modal) override;
+  bool SupportsScreenCoordinates() const override;
+  void EnableScreenCoordinates() override;
 
   ZXDGSurfaceV6WrapperImpl* zxdg_surface_v6_wrapper() const;
 

@@ -11,7 +11,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
@@ -283,6 +282,12 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // latency.
   uint32_t GetPeerToPeerConnectionsCountChange() const;
 
+  // Forces NetworkQualityEstimator reports
+  // NetworkChangeNotifier::CONNECTION_WIFI(2) as
+  // EFFECTIVE_CONNECTION_TYPE_SLOW_2G(2) since EffectiveConnectionType and the
+  // production receivers doesn't notice Wifi.
+  void ForceReportWifiAsSlow2GForTesting();
+
   typedef nqe::internal::Observation Observation;
   typedef nqe::internal::ObservationBuffer ObservationBuffer;
 
@@ -296,20 +301,20 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // observations since |start_time|. Virtualized for testing. |rtt| should not
   // be null. If |observations_count| is not null, then it is set to the number
   // of RTT observations that were used for computing the RTT estimate.
-  virtual bool GetRecentRTT(
+  [[nodiscard]] virtual bool GetRecentRTT(
       nqe::internal::ObservationCategory observation_category,
       const base::TimeTicks& start_time,
       base::TimeDelta* rtt,
-      size_t* observations_count) const WARN_UNUSED_RESULT;
+      size_t* observations_count) const;
 
   // Returns true if median downstream throughput is available and sets |kbps|
   // to the median of downstream throughput (in kilobits per second)
   // observations since |start_time|. Virtualized for testing. |kbps|
   // should not be null. Virtualized for testing.
   // TODO(tbansal): Change it to return throughput as int32.
-  virtual bool GetRecentDownlinkThroughputKbps(
+  [[nodiscard]] virtual bool GetRecentDownlinkThroughputKbps(
       const base::TimeTicks& start_time,
-      int32_t* kbps) const WARN_UNUSED_RESULT;
+      int32_t* kbps) const;
 
   // Overrides the tick clock used by |this| for testing.
   void SetTickClockForTesting(const base::TickClock* tick_clock);
@@ -409,7 +414,7 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   const std::unique_ptr<NetworkQualityEstimatorParams> params_;
 
   // Number of end to end RTT samples available when the ECT was last computed.
-  size_t end_to_end_rtt_observation_count_at_last_ect_computation_;
+  size_t end_to_end_rtt_observation_count_at_last_ect_computation_ = 0;
 
   // Current count of active peer to peer connections.
   uint32_t p2p_connections_count_ = 0u;
@@ -537,12 +542,12 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
 
   // Determines if the requests to local host can be used in estimating the
   // network quality. Set to true only for tests.
-  bool use_localhost_requests_;
+  bool use_localhost_requests_ = false;
 
   // When set to true, the device offline check is disabled when computing the
   // effective connection type or when writing the prefs. Set to true only for
   // testing.
-  bool disable_offline_check_;
+  bool disable_offline_check_ = false;
 
   // Tick clock used by the network quality estimator.
   raw_ptr<const base::TickClock> tick_clock_;
@@ -571,7 +576,8 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // Estimated network quality when the transaction for the last main frame
   // request was started.
   nqe::internal::NetworkQuality estimated_quality_at_last_main_frame_;
-  EffectiveConnectionType effective_connection_type_at_last_main_frame_;
+  EffectiveConnectionType effective_connection_type_at_last_main_frame_ =
+      EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
 
   // Observer lists for round trip times and throughput measurements.
   base::ObserverList<RTTObserver>::Unchecked rtt_observer_list_;
@@ -587,26 +593,27 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
 
   // Minimum duration between two consecutive computations of effective
   // connection type. Set to non-zero value as a performance optimization.
-  const base::TimeDelta effective_connection_type_recomputation_interval_;
+  const base::TimeDelta effective_connection_type_recomputation_interval_ =
+      base::Seconds(10);
 
   // Time when the effective connection type was last computed.
   base::TimeTicks last_effective_connection_type_computation_;
 
   // Number of RTT and bandwidth samples available when effective connection
   // type was last recomputed.
-  size_t rtt_observations_size_at_last_ect_computation_;
-  size_t throughput_observations_size_at_last_ect_computation_;
+  size_t rtt_observations_size_at_last_ect_computation_ = 0;
+  size_t throughput_observations_size_at_last_ect_computation_ = 0;
 
   // Number of transport RTT samples available when the ECT was last computed.
-  size_t transport_rtt_observation_count_last_ect_computation_;
+  size_t transport_rtt_observation_count_last_ect_computation_ = 0;
 
   // Number of RTT observations received since the effective connection type was
   // last computed.
-  size_t new_rtt_observations_since_last_ect_computation_;
+  size_t new_rtt_observations_since_last_ect_computation_ = 0;
 
   // Number of throughput observations received since the effective connection
   // type was last computed.
-  size_t new_throughput_observations_since_last_ect_computation_;
+  size_t new_throughput_observations_since_last_ect_computation_ = 0;
 
   // Current estimate of the network quality.
   nqe::internal::NetworkQuality network_quality_;
@@ -616,14 +623,15 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // events. It is also updated every time there is network traffic (provided
   // the last computation was more than
   // |effective_connection_type_recomputation_interval_| ago).
-  EffectiveConnectionType effective_connection_type_;
+  EffectiveConnectionType effective_connection_type_ =
+      EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
 
   // Stores the qualities of different networks.
   std::unique_ptr<nqe::internal::NetworkQualityStore> network_quality_store_;
 
   // True if a cached RTT or throughput estimate was available and the
   // corresponding observation has been added on the current network.
-  bool cached_estimate_applied_;
+  bool cached_estimate_applied_ = false;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
@@ -641,6 +649,8 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // Whether the network id should be obtained on a worker thread.
   bool get_network_id_asynchronously_ = false;
 #endif
+
+  bool force_report_wifi_as_slow_2g_for_testing_ = false;
 
   base::WeakPtrFactory<NetworkQualityEstimator> weak_ptr_factory_{this};
 };

@@ -85,21 +85,21 @@ template<typename MatrixType_> class Tridiagonalization
     typedef Matrix<Scalar, SizeMinusOne, 1, Options & ~RowMajor, MaxSizeMinusOne, 1> CoeffVectorType;
     typedef typename internal::plain_col_type<MatrixType, RealScalar>::type DiagonalType;
     typedef Matrix<RealScalar, SizeMinusOne, 1, Options & ~RowMajor, MaxSizeMinusOne, 1> SubDiagonalType;
-    typedef typename internal::remove_all<typename MatrixType::RealReturnType>::type MatrixTypeRealView;
+    typedef internal::remove_all_t<typename MatrixType::RealReturnType> MatrixTypeRealView;
     typedef internal::TridiagonalizationMatrixTReturnType<MatrixTypeRealView> MatrixTReturnType;
 
-    typedef typename internal::conditional<NumTraits<Scalar>::IsComplex,
-              typename internal::add_const_on_value_type<typename Diagonal<const MatrixType>::RealReturnType>::type,
+    typedef std::conditional_t<NumTraits<Scalar>::IsComplex,
+              internal::add_const_on_value_type_t<typename Diagonal<const MatrixType>::RealReturnType>,
               const Diagonal<const MatrixType>
-            >::type DiagonalReturnType;
+            > DiagonalReturnType;
 
-    typedef typename internal::conditional<NumTraits<Scalar>::IsComplex,
-              typename internal::add_const_on_value_type<typename Diagonal<const MatrixType, -1>::RealReturnType>::type,
+    typedef std::conditional_t<NumTraits<Scalar>::IsComplex,
+              internal::add_const_on_value_type_t<typename Diagonal<const MatrixType, -1>::RealReturnType>,
               const Diagonal<const MatrixType, -1>
-            >::type SubDiagonalReturnType;
+            > SubDiagonalReturnType;
 
     /** \brief Return type of matrixQ() */
-    typedef HouseholderSequence<MatrixType,typename internal::remove_all<typename CoeffVectorType::ConjugateReturnType>::type> HouseholderSequenceType;
+    typedef HouseholderSequence<MatrixType,internal::remove_all_t<typename CoeffVectorType::ConjugateReturnType>> HouseholderSequenceType;
 
     /** \brief Default constructor.
       *

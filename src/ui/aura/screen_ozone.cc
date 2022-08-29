@@ -13,10 +13,13 @@
 
 namespace aura {
 
-ScreenOzone::ScreenOzone() = default;
+ScreenOzone::ScreenOzone() {
+  DCHECK(!display::Screen::HasScreen());
+  display::Screen::SetScreenInstance(this);
+}
 
 ScreenOzone::~ScreenOzone() {
-  display::Screen::SetScreenInstance(old_screen_);
+  display::Screen::SetScreenInstance(nullptr);
 }
 
 void ScreenOzone::Initialize() {
@@ -34,12 +37,19 @@ void ScreenOzone::Initialize() {
   }
 }
 
+// static
+bool ScreenOzone::IsOzoneInitialized() {
+  return ui::OzonePlatform::IsInitialized();
+}
+
 gfx::Point ScreenOzone::GetCursorScreenPoint() {
   return platform_screen_->GetCursorScreenPoint();
 }
 
 bool ScreenOzone::IsWindowUnderCursor(gfx::NativeWindow window) {
-  return GetWindowAtScreenPoint(GetCursorScreenPoint()) == window;
+  DCHECK(platform_screen_);
+  gfx::AcceleratedWidget widget = GetAcceleratedWidgetForWindow(window);
+  return platform_screen_->IsAcceleratedWidgetUnderCursor(widget);
 }
 
 gfx::NativeWindow ScreenOzone::GetWindowAtScreenPoint(const gfx::Point& point) {
@@ -97,9 +107,11 @@ display::Display ScreenOzone::GetPrimaryDisplay() const {
   return platform_screen_->GetPrimaryDisplay();
 }
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS) || BUILDFLAG(IS_LINUX)
 bool ScreenOzone::SetScreenSaverSuspended(bool suspend) {
   return platform_screen_->SetScreenSaverSuspended(suspend);
 }
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS) || BUILDFLAG(IS_LINUX)
 
 bool ScreenOzone::IsScreenSaverActive() const {
   return platform_screen_->IsScreenSaverActive();
@@ -144,5 +156,18 @@ gfx::AcceleratedWidget ScreenOzone::GetAcceleratedWidgetForWindow(
 }
 
 void ScreenOzone::OnBeforePlatformScreenInit() {}
+
+ScopedScreenOzone::ScopedScreenOzone(const base::Location& location)
+    : ScopedNativeScreen(/*call_maybe_init=*/false, location) {
+  MaybeInit();
+}
+
+ScopedScreenOzone::~ScopedScreenOzone() = default;
+
+display::Screen* ScopedScreenOzone::CreateScreen() {
+  auto* screen = new ScreenOzone();
+  screen->Initialize();
+  return screen;
+}
 
 }  // namespace aura

@@ -39,6 +39,10 @@ struct CrxComponent;
 struct CrxUpdateItem;
 }
 
+namespace extensions {
+class AutotestPrivateLoadSmartDimComponentFunction;
+}
+
 namespace component_updater {
 
 // Called when a non-blocking call in this module completes.
@@ -193,12 +197,12 @@ class OnDemandUpdater {
  private:
   friend class OnDemandTester;
   friend class policy::ComponentUpdaterPolicyTest;
-  friend class SupervisedUserWhitelistInstaller;
   friend class ::ComponentsHandler;
   friend class ::PluginObserver;
   friend class SwReporterOnDemandFetcher;
   friend class SodaComponentInstallerPolicy;
   friend class SodaLanguagePackComponentInstallerPolicy;
+  friend class ::extensions::AutotestPrivateLoadSmartDimComponentFunction;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   friend class CrOSComponentInstaller;
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)

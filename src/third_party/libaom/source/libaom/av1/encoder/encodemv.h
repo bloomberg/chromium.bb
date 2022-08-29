@@ -62,9 +62,9 @@ static INLINE uint8_t av1_log_in_base_2(unsigned int n) {
 }
 
 static INLINE MV_CLASS_TYPE av1_get_mv_class(int z, int *offset) {
-  const MV_CLASS_TYPE c = (z >= CLASS0_SIZE * 4096)
-                              ? MV_CLASS_10
-                              : (MV_CLASS_TYPE)av1_log_in_base_2(z >> 3);
+  assert(z >= 0);
+  const MV_CLASS_TYPE c = (MV_CLASS_TYPE)av1_log_in_base_2(z >> 3);
+  assert(c <= MV_CLASS_10);
   if (offset) *offset = z - av1_mv_class_base(c);
   return c;
 }

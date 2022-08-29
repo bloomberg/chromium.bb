@@ -50,17 +50,15 @@ class VIZ_SERVICE_EXPORT SkiaOutputDeviceBufferQueue : public SkiaOutputDevice {
                      OutputSurfaceFrame frame) override;
   void CommitOverlayPlanes(BufferPresentedCallback feedback,
                            OutputSurfaceFrame frame) override;
-  bool Reshape(const gfx::Size& size,
-               float device_scale_factor,
+  bool Reshape(const SkSurfaceCharacterization& characterization,
                const gfx::ColorSpace& color_space,
-               gfx::BufferFormat format,
+               float device_scale_factor,
                gfx::OverlayTransform transform) override;
+  void SetViewportSize(const gfx::Size& viewport_size) override;
   SkSurface* BeginPaint(
-      bool allocate_frame_buffer,
       std::vector<GrBackendSemaphore>* end_semaphores) override;
   void EndPaint() override;
-  bool AllocateFrameBuffers(size_t n) override;
-  void ReleaseOneFrameBuffer() override;
+  bool EnsureMinNumberOfBuffers(size_t n) override;
 
   bool IsPrimaryPlaneOverlay() const override;
   void SchedulePrimaryPlane(
@@ -90,9 +88,11 @@ class VIZ_SERVICE_EXPORT SkiaOutputDeviceBufferQueue : public SkiaOutputDevice {
   gfx::Size GetSwapBuffersSize();
   bool RecreateImages();
 
-  void MaybeAllocateBackgroundImages();
   void MaybeScheduleBackgroundImage();
-  OutputPresenter::Image* GetNextBackgroundImage();
+
+  // Given an overlay mailbox, returns the corresponding OverlayData* from
+  // |overlays_|. Inserts an OverlayData if mailbox is not in |overlays_|.
+  OverlayData* GetOrCreateOverlayData(const gpu::Mailbox& mailbox);
 
   std::unique_ptr<OutputPresenter> presenter_;
 
@@ -101,8 +101,15 @@ class VIZ_SERVICE_EXPORT SkiaOutputDeviceBufferQueue : public SkiaOutputDevice {
   // Format of images
   gfx::ColorSpace color_space_;
   gfx::Size image_size_;
+  int sample_count_ = 1;
+  gfx::Size viewport_size_;
   gfx::OverlayTransform overlay_transform_ = gfx::OVERLAY_TRANSFORM_NONE;
 
+  // Number of images to allocate. Equals to `capabilities_.number_of_buffers`
+  // when `capabilities_.supports_dynamic_frame_buffer_allocation` is false.
+  // Can be increased with `EnsureMinNumberOfBuffers` when
+  // `capabilities_.supports_dynamic_frame_buffer_allocation` is true.
+  size_t number_of_images_to_allocate_ = 0u;
   // All allocated images.
   std::vector<std::unique_ptr<OutputPresenter::Image>> images_;
   // This image is currently used by Skia as RenderTarget. This may be nullptr
@@ -154,14 +161,6 @@ class VIZ_SERVICE_EXPORT SkiaOutputDeviceBufferQueue : public SkiaOutputDevice {
   // it for opaque accelerated widgets and event wiring. Please see details on
   // the number of background images below.
   bool needs_background_image_ = false;
-  // 4x4 small images that will be scaled to cover an opaque region.
-  // It's required to have two background images to be scheduled so that
-  // Desktop Wayland compositors are able to apply state changes to root
-  // surfaces. Otherwise, they unref the attached buffer after processing it
-  // and never update the state changes of the root surface, which leads to
-  // a broken resize opetion.
-  std::vector<std::unique_ptr<OutputPresenter::Image>> background_images_;
-  OutputPresenter::Image* current_background_image_ = nullptr;
   // Whether the platform supports non-backed solid color overlays. The Wayland
   // backend is able to delegate these overlays without buffer backings
   // depending on the availability of a certain protocol.

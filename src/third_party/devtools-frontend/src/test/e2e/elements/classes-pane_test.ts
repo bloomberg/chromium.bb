@@ -6,7 +6,12 @@ import {beforeEach} from 'mocha';
 
 import {goToResource, timeout} from '../../shared/helper.js';
 import {describe, it} from '../../shared/mocha-extensions.js';
-import {assertSelectedNodeClasses, toggleClassesPane, toggleClassesPaneCheckbox, typeInClassesPaneInput} from '../helpers/elements-helpers.js';
+import {
+  assertSelectedNodeClasses,
+  toggleClassesPane,
+  toggleClassesPaneCheckbox,
+  typeInClassesPaneInput,
+} from '../helpers/elements-helpers.js';
 
 describe('The Classes pane', async () => {
   beforeEach(async function() {
@@ -14,16 +19,14 @@ describe('The Classes pane', async () => {
     await toggleClassesPane();
   });
 
-  // Flaky on Linux
-  it.skipOnPlatforms(['linux'], '[crbug.com/1184627]: can add a class to the element', async () => {
+  it('can add a class to the element', async () => {
     await typeInClassesPaneInput('foo');
     await assertSelectedNodeClasses(['foo']);
   });
 
-  // Flaky on Linux
-  it.skipOnPlatforms(['linux'], '[crbug.com/1184627]: can add multiple classes at once', async () => {
-    await typeInClassesPaneInput('foo bar baz');
-    await assertSelectedNodeClasses(['foo', 'bar', 'baz']);
+  it('can add multiple classes at once', async () => {
+    await typeInClassesPaneInput('foo bar');
+    await assertSelectedNodeClasses(['foo', 'bar']);
   });
 
   it('can toggle classes', async () => {
@@ -38,10 +41,9 @@ describe('The Classes pane', async () => {
     await assertSelectedNodeClasses(['off']);
   });
 
-  // Flaky on Linux
-  it.skipOnPlatforms(['linux'], '[crbug.com/1184627]: removes the previewed classes on ESC', async () => {
+  it('removes the previewed classes on ESC', async () => {
     // Allow win64 bot to settle.
-    await timeout(500);
+    await timeout(200);
     await typeInClassesPaneInput('foo');
     await typeInClassesPaneInput('bar', 'Escape', false);
     await typeInClassesPaneInput('baz');

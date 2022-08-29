@@ -16,6 +16,8 @@
 
 #include "src/trace_processor/containers/row_map.h"
 
+#include "src/trace_processor/containers/row_map_algorithms.h"
+
 namespace perfetto {
 namespace trace_processor {
 
@@ -77,7 +79,13 @@ RowMap SelectBvWithRange(const BitVector& bv,
   PERFETTO_DCHECK(selector_start <= selector_end);
   PERFETTO_DCHECK(selector_end <= bv.GetNumBitsSet());
 
+  // If we're simply selecting every element in the bitvector, just
+  // return a copy of the BitVector without iterating.
   BitVector ret = bv.Copy();
+  if (selector_start == 0 && selector_end == bv.GetNumBitsSet()) {
+    return RowMap(std::move(ret));
+  }
+
   for (auto it = ret.IterateSetBits(); it; it.Next()) {
     auto set_idx = it.ordinal();
     if (set_idx < selector_start || set_idx >= selector_end)
@@ -94,12 +102,32 @@ RowMap SelectBvWithBv(const BitVector& bv, const BitVector& selector) {
 
 RowMap SelectBvWithIv(const BitVector& bv,
                       const std::vector<uint32_t>& selector) {
-  std::vector<uint32_t> iv(selector.size());
-  for (uint32_t i = 0; i < selector.size(); ++i) {
-    // TODO(lalitm): this is pretty inefficient.
-    iv[i] = bv.IndexOfNthSet(selector[i]);
+  // The value of this constant was found by considering the benchmarks
+  // |BM_SelectBvWithIvByConvertToIv| and |BM_SelectBvWithIvByIndexOfNthSet|.
+  //
+  // We use this to find the ratio between |bv.GetNumBitsSet()| and
+  // |selector.size()| where |SelectBvWithIvByIndexOfNthSet| was found to be
+  // faster than |SelectBvWithIvByConvertToIv|.
+  //
+  // Note: as of writing this, the benchmarks do not take into account the fill
+  // ratio of the BitVector; they assume 50% rate which almost never happens in
+  // practice. In the future, we could also take this into account (by
+  // considering the ratio between bv.size() and bv.GetNumBitsSet()) but this
+  // causes an explosion in the state space for the benchmark so we're not
+  // considering this today.
+  //
+  // The current value of the constant was picked by running these benchmarks on
+  // a E5-2690 v4 and finding the crossover point using a spreadsheet.
+  constexpr uint32_t kIndexOfSetBitToSelectorRatio = 4;
+
+  // If the selector is larger than a threshold, it's more efficient to convert
+  // the entire BitVector to an index vector and use SelectIvWithIv instead.
+  if (bv.GetNumBitsSet() / kIndexOfSetBitToSelectorRatio < selector.size()) {
+    return RowMap(
+        row_map_algorithms::SelectBvWithIvByConvertToIv(bv, selector));
   }
-  return RowMap(std::move(iv));
+  return RowMap(
+      row_map_algorithms::SelectBvWithIvByIndexOfNthSet(bv, selector));
 }
 
 RowMap SelectIvWithRange(const std::vector<uint32_t>& iv,
@@ -132,12 +160,7 @@ RowMap SelectIvWithBv(const std::vector<uint32_t>& iv,
 
 RowMap SelectIvWithIv(const std::vector<uint32_t>& iv,
                       const std::vector<uint32_t>& selector) {
-  std::vector<uint32_t> ret(selector.size());
-  for (uint32_t i = 0; i < selector.size(); ++i) {
-    PERFETTO_DCHECK(selector[i] < iv.size());
-    ret[i] = iv[selector[i]];
-  }
-  return RowMap(std::move(ret));
+  return RowMap(row_map_algorithms::SelectIvWithIv(iv, selector));
 }
 
 }  // namespace
@@ -146,8 +169,8 @@ RowMap::RowMap() : RowMap(0, 0) {}
 
 RowMap::RowMap(uint32_t start, uint32_t end, OptimizeFor optimize_for)
     : mode_(Mode::kRange),
-      start_idx_(start),
-      end_idx_(end),
+      start_index_(start),
+      end_index_(end),
       optimize_for_(optimize_for) {}
 
 RowMap::RowMap(BitVector bit_vector)
@@ -159,7 +182,7 @@ RowMap::RowMap(std::vector<uint32_t> vec)
 RowMap RowMap::Copy() const {
   switch (mode_) {
     case Mode::kRange:
-      return RowMap(start_idx_, end_idx_);
+      return RowMap(start_index_, end_index_);
     case Mode::kBitVector:
       return RowMap(bit_vector_.Copy());
     case Mode::kIndexVector:
@@ -176,20 +199,22 @@ RowMap RowMap::SelectRowsSlow(const RowMap& selector) const {
     case Mode::kRange:
       switch (mode_) {
         case Mode::kRange:
-          return SelectRangeWithRange(start_idx_, end_idx_, selector.start_idx_,
-                                      selector.end_idx_);
+          return SelectRangeWithRange(start_index_, end_index_,
+                                      selector.start_index_,
+                                      selector.end_index_);
         case Mode::kBitVector:
-          return SelectBvWithRange(bit_vector_, selector.start_idx_,
-                                   selector.end_idx_);
+          return SelectBvWithRange(bit_vector_, selector.start_index_,
+                                   selector.end_index_);
         case Mode::kIndexVector:
-          return SelectIvWithRange(index_vector_, selector.start_idx_,
-                                   selector.end_idx_);
+          return SelectIvWithRange(index_vector_, selector.start_index_,
+                                   selector.end_index_);
       }
       break;
     case Mode::kBitVector:
       switch (mode_) {
         case Mode::kRange:
-          return SelectRangeWithBv(start_idx_, end_idx_, selector.bit_vector_);
+          return SelectRangeWithBv(start_index_, end_index_,
+                                   selector.bit_vector_);
         case Mode::kBitVector:
           return SelectBvWithBv(bit_vector_, selector.bit_vector_);
         case Mode::kIndexVector:
@@ -199,7 +224,7 @@ RowMap RowMap::SelectRowsSlow(const RowMap& selector) const {
     case Mode::kIndexVector:
       switch (mode_) {
         case Mode::kRange:
-          return SelectRangeWithIv(start_idx_, end_idx_,
+          return SelectRangeWithIv(start_index_, end_index_,
                                    selector.index_vector_);
         case Mode::kBitVector:
           return SelectBvWithIv(bit_vector_, selector.index_vector_);

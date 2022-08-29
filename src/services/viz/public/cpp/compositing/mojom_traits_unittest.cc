@@ -59,6 +59,8 @@
 #include "skia/public/mojom/bitmap_skbitmap_mojom_traits.h"
 #include "skia/public/mojom/tile_mode_mojom_traits.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkColorSpace.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkString.h"
 #include "ui/gfx/geometry/mojom/geometry_mojom_traits.h"
 #include "ui/gfx/hdr_metadata.h"
@@ -578,14 +580,15 @@ TEST_F(StructTraitsTest, CompositorFrame) {
           out_render_pass->quad_list.ElementAt(0));
   EXPECT_EQ(rect1, out_debug_border_draw_quad->rect);
   EXPECT_EQ(rect1, out_debug_border_draw_quad->visible_rect);
-  EXPECT_EQ(color1, out_debug_border_draw_quad->color);
+  EXPECT_EQ(SkColor4f::FromColor(color1), out_debug_border_draw_quad->color);
   EXPECT_EQ(width1, out_debug_border_draw_quad->width);
 
   const SolidColorDrawQuad* out_solid_color_draw_quad =
       SolidColorDrawQuad::MaterialCast(out_render_pass->quad_list.ElementAt(1));
   EXPECT_EQ(rect2, out_solid_color_draw_quad->rect);
   EXPECT_EQ(rect2, out_solid_color_draw_quad->visible_rect);
-  EXPECT_EQ(color2, out_solid_color_draw_quad->color);
+  // TODO(crbug.com/1308932) Make color2 an SkColor4f
+  EXPECT_EQ(SkColor4f::FromColor(color2), out_solid_color_draw_quad->color);
   EXPECT_EQ(force_anti_aliasing_off,
             out_solid_color_draw_quad->force_anti_aliasing_off);
 }
@@ -601,7 +604,7 @@ TEST_F(StructTraitsTest, CompositorFrameTransitionDirective) {
   element.render_pass_id = frame.render_pass_list.front()->id;
   frame.metadata.transition_directives.push_back(
       CompositorFrameTransitionDirective(
-          1u, CompositorFrameTransitionDirective::Type::kSave,
+          1u, CompositorFrameTransitionDirective::Type::kSave, false,
           CompositorFrameTransitionDirective::Effect::kNone,
           CompositorFrameTransitionDirective::TransitionConfig(), {element}));
 
@@ -614,7 +617,7 @@ TEST_F(StructTraitsTest, CompositorFrameTransitionDirective) {
       frame.render_pass_list.back()->id.GetUnsafeValue() + 1);
   frame.metadata.transition_directives.push_back(
       CompositorFrameTransitionDirective(
-          1u, CompositorFrameTransitionDirective::Type::kSave,
+          1u, CompositorFrameTransitionDirective::Type::kSave, false,
           CompositorFrameTransitionDirective::Effect::kNone,
           CompositorFrameTransitionDirective::TransitionConfig(), {element}));
 
@@ -1036,7 +1039,7 @@ TEST_F(StructTraitsTest, QuadListBasic) {
   EXPECT_EQ(rect1, out_debug_border_draw_quad->rect);
   EXPECT_EQ(rect1, out_debug_border_draw_quad->visible_rect);
   EXPECT_FALSE(out_debug_border_draw_quad->needs_blending);
-  EXPECT_EQ(color1, out_debug_border_draw_quad->color);
+  EXPECT_EQ(SkColor4f::FromColor(color1), out_debug_border_draw_quad->color);
   EXPECT_EQ(width1, out_debug_border_draw_quad->width);
 
   const SolidColorDrawQuad* out_solid_color_draw_quad =
@@ -1044,7 +1047,8 @@ TEST_F(StructTraitsTest, QuadListBasic) {
   EXPECT_EQ(rect2, out_solid_color_draw_quad->rect);
   EXPECT_EQ(rect2, out_solid_color_draw_quad->visible_rect);
   EXPECT_FALSE(out_solid_color_draw_quad->needs_blending);
-  EXPECT_EQ(color2, out_solid_color_draw_quad->color);
+  // TODO(crbug.com/1308932) Make color2 an SkColor4f
+  EXPECT_EQ(SkColor4f::FromColor(color2), out_solid_color_draw_quad->color);
   EXPECT_EQ(force_anti_aliasing_off,
             out_solid_color_draw_quad->force_anti_aliasing_off);
 
@@ -1055,7 +1059,7 @@ TEST_F(StructTraitsTest, QuadListBasic) {
   EXPECT_TRUE(out_primary_surface_draw_quad->needs_blending);
   EXPECT_EQ(primary_surface_id,
             out_primary_surface_draw_quad->surface_range.end());
-  EXPECT_EQ(SK_ColorBLUE,
+  EXPECT_EQ(SkColors::kBlue,
             out_primary_surface_draw_quad->default_background_color);
   EXPECT_EQ(fallback_surface_id,
             out_primary_surface_draw_quad->surface_range.start());
@@ -1090,7 +1094,9 @@ TEST_F(StructTraitsTest, QuadListBasic) {
   EXPECT_EQ(premultiplied_alpha, out_texture_draw_quad->premultiplied_alpha);
   EXPECT_EQ(uv_top_left, out_texture_draw_quad->uv_top_left);
   EXPECT_EQ(uv_bottom_right, out_texture_draw_quad->uv_bottom_right);
-  EXPECT_EQ(background_color, out_texture_draw_quad->background_color);
+  // TODO(crbug.com/1308932) Make background_color an SkColor4f
+  EXPECT_EQ(SkColor4f::FromColor(background_color),
+            out_texture_draw_quad->background_color);
   EXPECT_EQ(vertex_opacity[0], out_texture_draw_quad->vertex_opacity[0]);
   EXPECT_EQ(vertex_opacity[1], out_texture_draw_quad->vertex_opacity[1]);
   EXPECT_EQ(vertex_opacity[2], out_texture_draw_quad->vertex_opacity[2]);
@@ -1134,7 +1140,8 @@ TEST_F(StructTraitsTest, TransferableResource) {
       gpu::CommandBufferId::FromUnsafeValue(0xdeadbeef));
   const uint64_t release_count = 0xdeadbeefdeadL;
   const uint32_t texture_target = 1337;
-  const bool read_lock_fences_enabled = true;
+  const TransferableResource::SynchronizationType sync_type =
+      TransferableResource::SynchronizationType::kGpuCommandsCompleted;
   const bool is_software = false;
   const bool is_overlay_candidate = true;
 
@@ -1150,7 +1157,7 @@ TEST_F(StructTraitsTest, TransferableResource) {
   input.filter = filter;
   input.size = size;
   input.mailbox_holder = mailbox_holder;
-  input.read_lock_fences_enabled = read_lock_fences_enabled;
+  input.synchronization_type = sync_type;
   input.is_software = is_software;
   input.is_overlay_candidate = is_overlay_candidate;
 
@@ -1166,7 +1173,7 @@ TEST_F(StructTraitsTest, TransferableResource) {
   EXPECT_EQ(mailbox_holder.sync_token, output.mailbox_holder.sync_token);
   EXPECT_EQ(mailbox_holder.texture_target,
             output.mailbox_holder.texture_target);
-  EXPECT_EQ(read_lock_fences_enabled, output.read_lock_fences_enabled);
+  EXPECT_EQ(sync_type, output.synchronization_type);
   EXPECT_EQ(is_software, output.is_software);
   EXPECT_EQ(is_overlay_candidate, output.is_overlay_candidate);
 }

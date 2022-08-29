@@ -22,7 +22,7 @@
 #include "libANGLE/ResourceManager.h"
 #include "libANGLE/renderer/GLImplFactory.h"
 #include "libANGLE/renderer/ShaderImpl.h"
-#include "platform/FrontendFeatures.h"
+#include "platform/FrontendFeatures_autogen.h"
 
 namespace gl
 {
@@ -104,7 +104,7 @@ const char *GetShaderTypeString(ShaderType type)
     }
 }
 
-class ScopedExit final : angle::NonCopyable
+class ANGLE_NO_DISCARD ScopedExit final : angle::NonCopyable
 {
   public:
     ScopedExit(std::function<void()> exit) : mExit(exit) {}
@@ -330,13 +330,14 @@ void Shader::compile(const Context *context)
     mState.mGeometryShaderInputPrimitiveType.reset();
     mState.mGeometryShaderOutputPrimitiveType.reset();
     mState.mGeometryShaderMaxVertices.reset();
-    mState.mGeometryShaderInvocations      = 1;
-    mState.mTessControlShaderVertices      = 0;
-    mState.mTessGenMode                    = 0;
-    mState.mTessGenSpacing                 = 0;
-    mState.mTessGenVertexOrder             = 0;
-    mState.mTessGenPointMode               = 0;
-    mState.mEarlyFragmentTestsOptimization = false;
+    mState.mGeometryShaderInvocations = 1;
+    mState.mTessControlShaderVertices = 0;
+    mState.mTessGenMode               = 0;
+    mState.mTessGenSpacing            = 0;
+    mState.mTessGenVertexOrder        = 0;
+    mState.mTessGenPointMode          = 0;
+    mState.mAdvancedBlendEquations.reset();
+    mState.mEnablesPerSampleShading = false;
     mState.mSpecConstUsageBits.reset();
 
     mState.mCompileStatus = CompileStatus::COMPILE_REQUESTED;
@@ -534,8 +535,9 @@ void Shader::resolveCompile()
             std::sort(mState.mInputVaryings.begin(), mState.mInputVaryings.end(), CompareShaderVar);
             mState.mActiveOutputVariables =
                 GetActiveShaderVariables(sh::GetOutputVariables(compilerHandle));
-            mState.mEarlyFragmentTestsOptimization =
-                sh::HasEarlyFragmentTestsOptimization(compilerHandle);
+            mState.mEnablesPerSampleShading = sh::EnablesPerSampleShading(compilerHandle);
+            mState.mAdvancedBlendEquations =
+                BlendEquationBitSet(sh::GetAdvancedBlendEquations(compilerHandle));
             break;
         }
         case ShaderType::Geometry:

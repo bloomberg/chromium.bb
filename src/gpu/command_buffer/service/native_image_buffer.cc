@@ -4,17 +4,16 @@
 
 #include "gpu/command_buffer/service/native_image_buffer.h"
 
-// #include <stdint.h>
-
 #include <list>
 
 #include "base/memory/raw_ptr.h"
+#include "base/notreached.h"
 #include "base/synchronization/lock.h"
 #include "build/build_config.h"
 #include "ui/gl/gl_image.h"
 #include "ui/gl/gl_implementation.h"
 
-#if !defined(OS_MAC)
+#if !BUILDFLAG(IS_MAC)
 #include "ui/gl/gl_surface_egl.h"
 #endif
 
@@ -23,7 +22,7 @@ namespace gles2 {
 
 namespace {
 
-#if !defined(OS_MAC)
+#if !BUILDFLAG(IS_MAC)
 class NativeImageBufferEGL : public NativeImageBuffer {
  public:
   static scoped_refptr<NativeImageBufferEGL> Create(GLuint texture_id);
@@ -57,7 +56,8 @@ class NativeImageBufferEGL : public NativeImageBuffer {
 
 scoped_refptr<NativeImageBufferEGL> NativeImageBufferEGL::Create(
     GLuint texture_id) {
-  EGLDisplay egl_display = gl::GLSurfaceEGL::GetHardwareDisplay();
+  EGLDisplay egl_display =
+      gl::GLSurfaceEGL::GetGLDisplayEGL()->GetHardwareDisplay();
   EGLContext egl_context = eglGetCurrentContext();
 
   DCHECK_NE(EGL_NO_CONTEXT, egl_context);
@@ -162,7 +162,7 @@ class NativeImageBufferStub : public NativeImageBuffer {
 // static
 scoped_refptr<NativeImageBuffer> NativeImageBuffer::Create(GLuint texture_id) {
   switch (gl::GetGLImplementation()) {
-#if !defined(OS_MAC)
+#if !BUILDFLAG(IS_MAC)
     case gl::kGLImplementationEGLGLES2:
     case gl::kGLImplementationEGLANGLE:
       return NativeImageBufferEGL::Create(texture_id);

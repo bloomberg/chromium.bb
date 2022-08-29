@@ -1,3 +1,7 @@
+// Copyright 2022 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 import {$} from 'chrome://resources/js/util.m.js';
 
 import {AudioBroker} from './audio_broker.js';
@@ -11,9 +15,7 @@ export class InputPage extends Page {
   private animationRequestId?: number;
   private recordClicked: boolean;
   private audioContext: AudioContext|null;
-  // Type is set to any because TypeScript compiler
-  // does not recognize the MediaRecorder object.
-  private mediaRecorder: any;
+  private mediaRecorder: MediaRecorder|null;
   private intervalId: number|null;
 
   constructor() {
@@ -27,7 +29,7 @@ export class InputPage extends Page {
     this.setUpButtons();
   }
 
-  showPage() {
+  override showPage() {
     super.showPage();
     if (this.audioContext) {
       this.audioContext.resume();
@@ -36,7 +38,7 @@ export class InputPage extends Page {
     }
   }
 
-  hidePage() {
+  override hidePage() {
     super.hidePage();
     if (this.audioContext) {
       this.audioContext.suspend();
@@ -61,9 +63,9 @@ export class InputPage extends Page {
     const draw = () => {
       this.animationRequestId = requestAnimationFrame(draw);
       for (const channel of pairs) {
-        let canvas = <HTMLCanvasElement>channel['canvas'];
-        let canvasContext = canvas.getContext('2d');
-        let analyser = channel['analyser'];
+        const canvas = <HTMLCanvasElement>channel['canvas'];
+        const canvasContext = canvas.getContext('2d');
+        const analyser = channel['analyser'];
 
         if (canvasContext && analyser) {
           analyser.fftSize = 2048;
@@ -107,8 +109,9 @@ export class InputPage extends Page {
         }
       }
     };
-    if (this.animationRequestId)
+    if (this.animationRequestId) {
       window.cancelAnimationFrame(this.animationRequestId);
+    }
     draw();
   }
 
@@ -123,12 +126,12 @@ export class InputPage extends Page {
     }
   }
 
-  initAudio(audio_constraint: boolean|Object) {
+  initAudio(audioConstraint: boolean|Object) {
     this.audioContext = new window.AudioContext();
-    navigator.mediaDevices.getUserMedia({'audio': audio_constraint})
-        .then((stream_got) => {
+    navigator.mediaDevices.getUserMedia({'audio': audioConstraint})
+        .then((streamGot) => {
           if (this.audioContext) {
-            const stream = stream_got;
+            const stream = streamGot;
             const source = this.audioContext.createMediaStreamSource(stream);
             this.record(stream);
             this.buildAudioGraph(source);
@@ -167,7 +170,7 @@ export class InputPage extends Page {
         this.testInputFeedback.set('audioUrl', audioURL);
       };
 
-      this.mediaRecorder.ondataavailable = (event: dataavailable) => {
+      this.mediaRecorder.ondataavailable = (event: BlobEvent) => {
         chunks.push(event.data);
       };
     }
@@ -237,5 +240,3 @@ export class InputPage extends Page {
 }
 
 let instance: InputPage|null = null;
-declare let MediaRecorder: any;
-type dataavailable = any;

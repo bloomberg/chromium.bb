@@ -18,10 +18,7 @@
 
 #else
 
-#if EIGEN_MAX_CPP_VER >= 11 &&                         \
-    ((EIGEN_COMP_GNUC && EIGEN_GNUC_AT_LEAST(4, 8)) || \
-     __has_feature(cxx_thread_local)                || \
-     (EIGEN_COMP_MSVC >= 1900) )
+#if ((EIGEN_COMP_GNUC) || __has_feature(cxx_thread_local) || EIGEN_COMP_MSVC )
 #define EIGEN_THREAD_LOCAL static thread_local
 #endif
 

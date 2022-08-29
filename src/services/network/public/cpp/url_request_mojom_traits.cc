@@ -198,7 +198,6 @@ bool StructTraits<
       data.update_first_party_url_on_redirect();
   out->load_flags = data.load_flags();
   out->resource_type = data.resource_type();
-  out->is_external_request = data.is_external_request();
   out->originated_from_service_worker = data.originated_from_service_worker();
   out->skip_service_worker = data.skip_service_worker();
   out->corb_detachable = data.corb_detachable();
@@ -208,7 +207,7 @@ bool StructTraits<
   out->enable_load_timing = data.enable_load_timing();
   out->enable_upload_progress = data.enable_upload_progress();
   out->do_not_prompt_for_login = data.do_not_prompt_for_login();
-  out->is_main_frame = data.is_main_frame();
+  out->is_outermost_main_frame = data.is_outermost_main_frame();
   out->transition_type = data.transition_type();
   out->previews_state = data.previews_state();
   out->upgrade_if_insecure = data.upgrade_if_insecure();

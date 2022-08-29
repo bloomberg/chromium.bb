@@ -41,13 +41,9 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/mock_external_provider.h"
 #include "extensions/browser/sandboxed_unpacker.h"
+#include "extensions/common/api/extension_action/action_info.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/feature_switch.h"
-
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/signin/signin_global_error.h"
-#include "chrome/browser/signin/signin_global_error_factory.h"
-#endif
 
 namespace {
 
@@ -133,7 +129,7 @@ void GlobalErrorBubbleTest::ShowUi(const std::string& name) {
       extensions::ExtensionRegistry::Get(profile);
 
   extensions::ExtensionBuilder builder("Browser Action");
-  builder.SetAction(extensions::ExtensionBuilder::ActionType::BROWSER_ACTION);
+  builder.SetAction(extensions::ActionInfo::TYPE_BROWSER);
   builder.SetLocation(extensions::mojom::ManifestLocation::kInternal);
   scoped_refptr<const extensions::Extension> test_extension = builder.Build();
   extension_service->AddExtension(test_extension.get());
@@ -205,10 +201,6 @@ void GlobalErrorBubbleTest::ShowUi(const std::string& name) {
         prefs::kRecoveryComponentNeedsElevation, true);
     waiter.Wait();
     ShowPendingError(browser());
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
-  } else if (name == "SigninGlobalError") {
-    SigninGlobalErrorFactory::GetForProfile(profile)->ShowBubbleView(browser());
-#endif
   } else {
     ADD_FAILURE();
   }
@@ -242,16 +234,9 @@ IN_PROC_BROWSER_TEST_F(GlobalErrorBubbleTest,
 }
 
 // RecoveryInstallGlobalError only exists on Windows and Mac.
-#if defined(OS_WIN) || defined(OS_MAC)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
 IN_PROC_BROWSER_TEST_F(GlobalErrorBubbleTest,
                        InvokeUi_RecoveryInstallGlobalError) {
-  ShowAndVerifyUi();
-}
-#endif
-
-// Signin global errors never happon on ChromeOS.
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
-IN_PROC_BROWSER_TEST_F(GlobalErrorBubbleTest, InvokeUi_SigninGlobalError) {
   ShowAndVerifyUi();
 }
 #endif

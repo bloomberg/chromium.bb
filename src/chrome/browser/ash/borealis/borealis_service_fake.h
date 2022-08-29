@@ -20,6 +20,7 @@ class BorealisServiceFake : public BorealisService {
   static BorealisServiceFake* UseFakeForTesting(
       content::BrowserContext* context);
 
+  BorealisServiceFake();
   ~BorealisServiceFake() override;
 
   BorealisAppLauncher& AppLauncher() override;

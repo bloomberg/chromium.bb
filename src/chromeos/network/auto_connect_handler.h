@@ -5,17 +5,18 @@
 #ifndef CHROMEOS_NETWORK_AUTO_CONNECT_HANDLER_H_
 #define CHROMEOS_NETWORK_AUTO_CONNECT_HANDLER_H_
 
-#include <set>
 #include <string>
 
 #include "base/component_export.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/scoped_observation.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "chromeos/network/client_cert_resolver.h"
 #include "chromeos/network/network_connection_observer.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_policy_observer.h"
+#include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_handler_observer.h"
 
 namespace chromeos {
@@ -55,7 +56,6 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) AutoConnectHandler
   void PoliciesApplied(const std::string& userhash) override;
 
   // NetworkStateHandlerObserver
-  void ScanStarted(const DeviceState* device) override;
   void ScanCompleted(const DeviceState* device) override;
 
   // ClientCertResolver::Observer
@@ -131,16 +131,16 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) AutoConnectHandler
   // then this will call ConnectToBestWifiNetwork of |network_state_handler_|.
   void CheckBestConnection();
 
-  // Calls Shill.Manager.ConnectToBestServices().
-  void CallShillConnectToBestServices();
-
-  // Returns all hidden hex SSIDs that are currently configured in shill.
-  std::set<std::string> GetConfiguredHiddenHexSsids();
+  // Calls Shill.Manager.ScanAndConnectToBestServices().
+  void CallShillScanAndConnectToBestServices();
 
   // Local references to the associated handler instances.
   ClientCertResolver* client_cert_resolver_;
   NetworkConnectionHandler* network_connection_handler_;
   NetworkStateHandler* network_state_handler_;
+  base::ScopedObservation<chromeos::NetworkStateHandler,
+                          chromeos::NetworkStateHandlerObserver>
+      network_state_handler_observer_{this};
   ManagedNetworkConfigurationHandler* managed_configuration_handler_;
 
   // Whether a request to connect to the best network is pending. If true, once
@@ -166,20 +166,9 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) AutoConnectHandler
   bool applied_autoconnect_policy_on_wifi;
   bool applied_autoconnect_policy_on_cellular;
 
-  // When true, trigger ConnectToBestServices after the next scan completion.
-  bool connect_to_best_services_after_scan_;
-
   // The bitwise OR of all AutoConnectReason which have triggered auto-
   // connection.
   int auto_connect_reasons_;
-
-  // Set of hex SSIDs that were configured as hidden SSIDs when the current scan
-  // started. Empty if no (known) scan is in progress.
-  std::set<std::string> hidden_hex_ssids_at_scan_start_;
-
-  // When true, a scan has been re-requested because the set of hidden SSIDs
-  // changed during a scan and a ConnectToBestServices call is pending.
-  bool rescan_triggered_due_to_hidden_ssids_ = false;
 
   base::ObserverList<Observer>::Unchecked observer_list_;
 

@@ -16,6 +16,7 @@
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
+#include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
 #include "base/strings/stringprintf.h"
@@ -51,12 +52,6 @@ std::string CreateFilename(const base::Time::Exploded& start_time,
                            const mojo_ipc::FileType file_type) {
   std::string file_ext;
   switch (file_type) {
-    case mojo_ipc::FileType::kSearchablePdf:
-      DCHECK(base::FeatureList::IsEnabled(
-          chromeos::features::kScanAppSearchablePdf));
-      // Temporarily set searchable pdfs to follow png pipeline while
-      // implementing.
-      FALLTHROUGH;
     case mojo_ipc::FileType::kPng:
       file_ext = "png";
       break;
@@ -234,8 +229,6 @@ void ScanService::StartMultiPageScan(
     scanning::mojom::ScanSettingsPtr settings,
     mojo::PendingRemote<scanning::mojom::ScanJobObserver> observer,
     StartMultiPageScanCallback callback) {
-  DCHECK(
-      base::FeatureList::IsEnabled(chromeos::features::kScanAppMultiPageScan));
   if (multi_page_controller_receiver_.is_bound()) {
     LOG(ERROR) << "Unable to start multi-page scan, controller already bound.";
     std::move(callback).Run(mojo::NullRemote());
@@ -255,12 +248,11 @@ void ScanService::StartMultiPageScan(
 
   mojo::PendingRemote<scanning::mojom::MultiPageScanController> pending_remote =
       multi_page_controller_receiver_.BindNewPipeAndPassRemote();
-  // Unretained is safe here, because `this` owns
-  // `multi_page_controller_receiver_`, and no endpoints will be invoked once
-  // the mojo::Receiver is destroyed. This allows a multi-page scan session to
-  // be cancelled by resetting the message pipe.
-  multi_page_controller_receiver_.set_disconnect_handler(base::BindOnce(
-      &ScanService::ResetMultiPageScanController, base::Unretained(this)));
+  // This allows a multi-page scan session to be cancelled by resetting the
+  // message pipe.
+  multi_page_controller_receiver_.set_disconnect_handler(
+      base::BindOnce(&ScanService::ResetMultiPageScanController,
+                     weak_ptr_factory_.GetWeakPtr()));
   std::move(callback).Run(std::move(pending_remote));
 
   multi_page_start_time_ = base::TimeTicks::Now();
@@ -323,13 +315,13 @@ void ScanService::ScanNextPage(const base::UnguessableToken& scanner_id,
 
 void ScanService::RemovePage(uint32_t page_index) {
   if (page_index >= scanned_images_.size()) {
-    mojo::ReportBadMessage(
+    multi_page_controller_receiver_.ReportBadMessage(
         "Invalid page_index passed to ScanService::RemovePage()");
     return;
   }
 
   if (scanned_images_.size() == 0) {
-    mojo::ReportBadMessage(
+    multi_page_controller_receiver_.ReportBadMessage(
         "Invalid call to ScanService::RemovePage(), no scanned images "
         "available to remove");
     return;
@@ -353,14 +345,14 @@ void ScanService::RescanPage(const base::UnguessableToken& scanner_id,
                              uint32_t page_index,
                              ScanNextPageCallback callback) {
   if (scanned_images_.size() == 0) {
-    mojo::ReportBadMessage(
+    multi_page_controller_receiver_.ReportBadMessage(
         "Invalid call to ScanService::RescanPage(), no scanned images "
         "available to rescan");
     return;
   }
 
   if (page_index >= scanned_images_.size()) {
-    mojo::ReportBadMessage(
+    multi_page_controller_receiver_.ReportBadMessage(
         "Invalid page_index passed to ScanService::RescanPage()");
     return;
   }
@@ -496,7 +488,7 @@ void ScanService::OnPageReceived(
     // The output of multi-page PDF scans is a single file so only create and
     // append a single file path.
     if (scanned_file_paths_.empty()) {
-      DCHECK_EQ(1, page_number);
+      DCHECK_EQ(1u, page_number);
       scanned_file_paths_.push_back(scan_to_path.Append(CreateFilename(
           start_time_, /*not used*/ 0, mojo_ipc::FileType::kPdf)));
     }
@@ -615,10 +607,8 @@ void ScanService::SetScanJobObserver(
     mojo::PendingRemote<mojo_ipc::ScanJobObserver> observer) {
   scan_job_observer_.reset();
   scan_job_observer_.Bind(std::move(observer));
-  // Unretained is safe here, because `this` owns `scan_job_observer_`, and no
-  // reply callbacks will be invoked once the mojo::Remote is destroyed.
   scan_job_observer_.set_disconnect_handler(
-      base::BindOnce(&ScanService::CancelScan, base::Unretained(this)));
+      base::BindOnce(&ScanService::CancelScan, weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ScanService::ResetMultiPageScanController() {

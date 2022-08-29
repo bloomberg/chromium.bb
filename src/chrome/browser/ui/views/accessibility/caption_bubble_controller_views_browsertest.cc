@@ -4,6 +4,7 @@
 
 #include <memory>
 
+#include "base/callback_forward.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_mock_time_message_loop_task_runner.h"
 #include "build/build_config.h"
@@ -100,17 +101,18 @@ class CaptionBubbleControllerViewsTest : public InProcessBrowserTest {
   }
 
   views::View* GetErrorMessage() {
-    return controller_ ? controller_->caption_bubble_->error_message_.get()
-                       : nullptr;
+    return controller_
+               ? controller_->caption_bubble_->generic_error_message_.get()
+               : nullptr;
   }
 
   views::Label* GetErrorText() {
-    return controller_ ? controller_->caption_bubble_->error_text_.get()
+    return controller_ ? controller_->caption_bubble_->generic_error_text_.get()
                        : nullptr;
   }
 
   views::ImageView* GetErrorIcon() {
-    return controller_ ? controller_->caption_bubble_->error_icon_.get()
+    return controller_ ? controller_->caption_bubble_->generic_error_icon_.get()
                        : nullptr;
   }
 
@@ -128,6 +130,11 @@ class CaptionBubbleControllerViewsTest : public InProcessBrowserTest {
 
   bool IsWidgetVisible() {
     return controller_ && controller_->IsWidgetVisibleForTesting();
+  }
+
+  bool HasMediaFoundationError() {
+    return controller_ &&
+           controller_->caption_bubble_->HasMediaFoundationError();
   }
 
   void DestroyController() { controller_.reset(nullptr); }
@@ -166,7 +173,24 @@ class CaptionBubbleControllerViewsTest : public InProcessBrowserTest {
   void OnError() { OnError(GetCaptionBubbleContext()); }
 
   void OnError(CaptionBubbleContext* caption_bubble_context) {
-    GetController()->OnError(caption_bubble_context);
+    GetController()->OnError(
+        caption_bubble_context, CaptionBubbleErrorType::GENERIC,
+        base::RepeatingClosure(),
+        base::BindRepeating(
+            [](CaptionBubbleErrorType error_type, bool checked) {}));
+  }
+
+  void OnMediaFoundationError() {
+    OnMediaFoundationError(GetCaptionBubbleContext());
+  }
+
+  void OnMediaFoundationError(CaptionBubbleContext* caption_bubble_context) {
+    GetController()->OnError(
+        caption_bubble_context,
+        CaptionBubbleErrorType::MEDIA_FOUNDATION_RENDERER_UNSUPPORTED,
+        base::RepeatingClosure(),
+        base::BindRepeating(
+            [](CaptionBubbleErrorType error_type, bool checked) {}));
   }
 
   void OnAudioStreamEnd() {
@@ -415,7 +439,7 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest,
       false));
   EXPECT_TRUE(GetExpandButton()->HasFocus());
 
-#if !defined(OS_MAC)
+#if !BUILDFLAG(IS_MAC)
   // Pressing enter should turn the expand button into a collapse button.
   // Focus should remain on the collapse button.
   // TODO(crbug.com/1055150): Fix this for Mac.
@@ -519,7 +543,7 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest,
 
 IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest,
                        UpdateCaptionStyleFontFamily) {
-#if defined(OS_MAC) || defined(OS_WIN)
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
   std::string default_font = "Roboto";
 #else
   // Testing framework doesn't load all fonts, so Roboto is mapped to sans.
@@ -570,7 +594,8 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest,
 
 IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest,
                        UpdateCaptionStyleTextColor) {
-  SkColor default_color = SK_ColorWHITE;
+  SkColor default_color = browser()->window()->GetColorProvider()->GetColor(
+      ui::kColorLiveCaptionBubbleForegroundDefault);
   ui::CaptionStyle caption_style;
 
   GetController()->UpdateCaptionStyle(absl::nullopt);
@@ -600,7 +625,7 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest,
   // TODO(crbug.com/1199419): Fix the rendering issue and then remove this
   // workaround.
   int a;
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   a = 230;
 #else
   a = 128;
@@ -634,7 +659,8 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest,
 
 IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest,
                        UpdateCaptionStyleBackgroundColor) {
-  SkColor default_color = SkColorSetA(gfx::kGoogleGrey900, 230);
+  SkColor default_color = browser()->window()->GetColorProvider()->GetColor(
+      ui::kColorLiveCaptionBubbleBackgroundDefault);
   ui::CaptionStyle caption_style;
 
   GetController()->UpdateCaptionStyle(absl::nullopt);
@@ -647,7 +673,7 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest,
   // TODO(crbug.com/1199419): Fix the rendering issue and then remove this
   // workaround.
   int a;
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   a = 230;
 #else
   a = 128;
@@ -748,7 +774,7 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest, ShowsAndHidesBubble) {
   OnFinalTranscription("");
   EXPECT_FALSE(IsWidgetVisible());
 
-#if !defined(OS_MAC)
+#if !BUILDFLAG(IS_MAC)
   // Set some text, and ensure it stays visible when the window changes size.
   OnPartialTranscription("Newborn opossums are about 1cm long");
   EXPECT_TRUE(IsWidgetVisible());
@@ -983,7 +1009,7 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest,
   // When screen reader mode turns on on Windows, the label is focusable. It
   // remains unfocusable on other OS's.
   content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
-#if BUILDFLAG_INTERNAL_HAS_NATIVE_ACCESSIBILITY() && !defined(OS_MAC)
+#if BUILDFLAG_INTERNAL_HAS_NATIVE_ACCESSIBILITY() && !BUILDFLAG(IS_MAC)
   EXPECT_TRUE(GetLabel()->IsFocusable());
 #else
   EXPECT_FALSE(GetLabel()->IsFocusable());
@@ -1091,6 +1117,37 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest,
   EXPECT_EQ(0, browser()->tab_strip_model()->active_index());
   // TODO(crbug.com/1055150): Test that browser window is active. It works in
   // app but the tests aren't working.
+}
+
+IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest,
+                       ErrorHidesAfterInactivity) {
+  // Use a ScopedMockTimeMessageLoopTaskRunner to test the inactivity timer with
+  // a mock tick clock that replaces the default tick clock with mock time.
+  base::ScopedMockTimeMessageLoopTaskRunner test_task_runner;
+  SetTickClockForTesting(test_task_runner->GetMockTickClock());
+
+  OnError();
+  EXPECT_TRUE(IsWidgetVisible());
+  EXPECT_FALSE(HasMediaFoundationError());
+  EXPECT_EQ("", GetLabelText());
+  ASSERT_TRUE(GetBubble()->GetInactivityTimerForTesting()->IsRunning());
+
+  // Verify that the caption bubble hides due to inactivity.
+  test_task_runner->FastForwardBy(base::Seconds(15));
+  EXPECT_FALSE(IsWidgetVisible());
+  EXPECT_EQ("", GetLabelText());
+
+  OnMediaFoundationError();
+  EXPECT_TRUE(IsWidgetVisible());
+  EXPECT_TRUE(HasMediaFoundationError());
+  EXPECT_EQ("", GetLabelText());
+  ASSERT_TRUE(GetBubble()->GetInactivityTimerForTesting()->IsRunning());
+
+  // The Media Foundation renderer unsupported error should not hide to due
+  // inactivity.
+  test_task_runner->FastForwardBy(base::Seconds(15));
+  EXPECT_TRUE(IsWidgetVisible());
+  EXPECT_EQ("", GetLabelText());
 }
 
 }  // namespace captions

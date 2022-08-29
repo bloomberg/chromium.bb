@@ -25,6 +25,8 @@ namespace base {
 namespace bits {
 
 // Returns true iff |value| is a power of 2.
+//
+// TODO(pkasting): When C++20 is available, replace with std::has_single_bit().
 template <typename T, typename = std::enable_if_t<std::is_integral<T>::value>>
 constexpr bool IsPowerOfTwo(T value) {
   // From "Hacker's Delight": Section 2.1 Manipulating Rightmost Bits.
@@ -79,12 +81,15 @@ inline T* AlignUp(T* ptr, size_t alignment) {
 //
 // Prefer the clang path on Windows, as _BitScanReverse() and friends are not
 // constexpr.
+//
+// TODO(pkasting): When C++20 is available, replace with std::countl_zero() and
+// similar.
 #if defined(COMPILER_MSVC) && !defined(__clang__)
 
-template <typename T, unsigned bits = sizeof(T) * 8>
+template <typename T, int bits = sizeof(T) * 8>
 ALWAYS_INLINE
     typename std::enable_if<std::is_unsigned<T>::value && sizeof(T) <= 4,
-                            unsigned>::type
+                            int>::type
     CountLeadingZeroBits(T x) {
   static_assert(bits > 0, "invalid instantiation");
   unsigned long index;
@@ -93,10 +98,10 @@ ALWAYS_INLINE
              : bits;
 }
 
-template <typename T, unsigned bits = sizeof(T) * 8>
+template <typename T, int bits = sizeof(T) * 8>
 ALWAYS_INLINE
     typename std::enable_if<std::is_unsigned<T>::value && sizeof(T) == 8,
-                            unsigned>::type
+                            int>::type
     CountLeadingZeroBits(T x) {
   static_assert(bits > 0, "invalid instantiation");
   unsigned long index;
@@ -118,10 +123,10 @@ ALWAYS_INLINE
 #endif
 }
 
-template <typename T, unsigned bits = sizeof(T) * 8>
+template <typename T, int bits = sizeof(T) * 8>
 ALWAYS_INLINE
     typename std::enable_if<std::is_unsigned<T>::value && sizeof(T) <= 4,
-                            unsigned>::type
+                            int>::type
     CountTrailingZeroBits(T x) {
   static_assert(bits > 0, "invalid instantiation");
   unsigned long index;
@@ -129,10 +134,10 @@ ALWAYS_INLINE
                                                                    : bits;
 }
 
-template <typename T, unsigned bits = sizeof(T) * 8>
+template <typename T, int bits = sizeof(T) * 8>
 ALWAYS_INLINE
     typename std::enable_if<std::is_unsigned<T>::value && sizeof(T) == 8,
-                            unsigned>::type
+                            int>::type
     CountTrailingZeroBits(T x) {
   static_assert(bits > 0, "invalid instantiation");
   unsigned long index;
@@ -153,24 +158,16 @@ ALWAYS_INLINE
 #endif
 }
 
-ALWAYS_INLINE uint32_t CountLeadingZeroBits32(uint32_t x) {
-  return CountLeadingZeroBits(x);
-}
-
-ALWAYS_INLINE uint64_t CountLeadingZeroBits64(uint64_t x) {
-  return CountLeadingZeroBits(x);
-}
-
 #elif defined(COMPILER_GCC) || defined(__clang__)
 
 // __builtin_clz has undefined behaviour for an input of 0, even though there's
 // clearly a return value that makes sense, and even though some processor clz
 // instructions have defined behaviour for 0. We could drop to raw __asm__ to
 // do better, but we'll avoid doing that unless we see proof that we need to.
-template <typename T, unsigned bits = sizeof(T) * 8>
+template <typename T, int bits = sizeof(T) * 8>
 ALWAYS_INLINE constexpr
     typename std::enable_if<std::is_unsigned<T>::value && sizeof(T) <= 8,
-                            unsigned>::type
+                            int>::type
     CountLeadingZeroBits(T value) {
   static_assert(bits > 0, "invalid instantiation");
   return LIKELY(value)
@@ -180,10 +177,10 @@ ALWAYS_INLINE constexpr
              : bits;
 }
 
-template <typename T, unsigned bits = sizeof(T) * 8>
+template <typename T, int bits = sizeof(T) * 8>
 ALWAYS_INLINE constexpr
     typename std::enable_if<std::is_unsigned<T>::value && sizeof(T) <= 8,
-                            unsigned>::type
+                            int>::type
     CountTrailingZeroBits(T value) {
   return LIKELY(value) ? bits == 64
                              ? __builtin_ctzll(static_cast<uint64_t>(value))
@@ -191,29 +188,15 @@ ALWAYS_INLINE constexpr
                        : bits;
 }
 
-ALWAYS_INLINE constexpr uint32_t CountLeadingZeroBits32(uint32_t x) {
-  return CountLeadingZeroBits(x);
-}
-
-ALWAYS_INLINE constexpr uint64_t CountLeadingZeroBits64(uint64_t x) {
-  return CountLeadingZeroBits(x);
-}
-
 #endif
-
-ALWAYS_INLINE constexpr size_t CountLeadingZeroBitsSizeT(size_t x) {
-  return CountLeadingZeroBits(x);
-}
-
-ALWAYS_INLINE constexpr size_t CountTrailingZeroBitsSizeT(size_t x) {
-  return CountTrailingZeroBits(x);
-}
 
 // Returns the integer i such as 2^i <= n < 2^(i+1).
 //
 // There is a common `BitLength` function, which returns the number of bits
 // required to represent a value. Rather than implement that function,
 // use `Log2Floor` and add 1 to the result.
+//
+// TODO(pkasting): When C++20 is available, replace with std::bit_xxx().
 constexpr int Log2Floor(uint32_t n) {
   return 31 - CountLeadingZeroBits(n);
 }

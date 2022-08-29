@@ -5,6 +5,7 @@
 #include "ash/wm/window_util.h"
 
 #include <memory>
+#include <tuple>
 
 #include "ash/constants/app_types.h"
 #include "ash/multi_user/multi_user_window_manager_impl.h"
@@ -29,7 +30,6 @@
 #include "ash/wm/wm_event.h"
 #include "base/bind.h"
 #include "base/containers/contains.h"
-#include "base/ignore_result.h"
 #include "chromeos/ui/base/chromeos_ui_constants.h"
 #include "chromeos/ui/frame/interior_resize_handler_targeter.h"
 #include "ui/aura/client/aura_constants.h"
@@ -45,6 +45,7 @@
 #include "ui/compositor/layer_tree_owner.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/events/event.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/transform_util.h"
@@ -85,8 +86,11 @@ class InteriorResizeHandleTargeterAsh
 }  // namespace
 
 aura::Window* GetActiveWindow() {
-  return ::wm::GetActivationClient(Shell::GetPrimaryRootWindow())
-      ->GetActiveWindow();
+  if (auto* activation_client =
+          wm::GetActivationClient(Shell::GetPrimaryRootWindow())) {
+    return activation_client->GetActiveWindow();
+  }
+  return nullptr;
 }
 
 aura::Window* GetFocusedWindow() {
@@ -177,9 +181,7 @@ int GetNonClientComponent(aura::Window* window, const gfx::Point& location) {
 }
 
 void SetChildrenUseExtendedHitRegionForWindow(aura::Window* window) {
-  gfx::Insets mouse_extend(
-      -chromeos::kResizeOutsideBoundsSize, -chromeos::kResizeOutsideBoundsSize,
-      -chromeos::kResizeOutsideBoundsSize, -chromeos::kResizeOutsideBoundsSize);
+  gfx::Insets mouse_extend(-chromeos::kResizeOutsideBoundsSize);
   gfx::Insets touch_extend = gfx::ScaleToFlooredInsets(
       mouse_extend, chromeos::kResizeOutsideBoundsScaleForTouch);
   window->SetEventTargeter(std::make_unique<::wm::EasyResizeWindowTargeter>(
@@ -346,6 +348,10 @@ aura::Window* GetTopWindow() {
 
 bool ShouldMinimizeTopWindowOnBack() {
   Shell* shell = Shell::Get();
+  // We never want to minimize the main app window in the Kiosk session.
+  if (shell->session_controller()->IsRunningInAppMode())
+    return false;
+
   if (!shell->tablet_mode_controller()->InTabletMode())
     return false;
 
@@ -385,10 +391,10 @@ void SendBackKeyEvent(aura::Window* root_window) {
   // TODO: Investigate if we should be using the current modifiers.
   ui::KeyEvent press_key_event(ui::ET_KEY_PRESSED, ui::VKEY_BROWSER_BACK,
                                ui::EF_NONE);
-  ignore_result(root_window->GetHost()->SendEventToSink(&press_key_event));
+  std::ignore = root_window->GetHost()->SendEventToSink(&press_key_event);
   ui::KeyEvent release_key_event(ui::ET_KEY_RELEASED, ui::VKEY_BROWSER_BACK,
                                  ui::EF_NONE);
-  ignore_result(root_window->GetHost()->SendEventToSink(&release_key_event));
+  std::ignore = root_window->GetHost()->SendEventToSink(&release_key_event);
 }
 
 WindowTransientDescendantIteratorRange GetVisibleTransientTreeIterator(
@@ -422,7 +428,7 @@ gfx::RectF GetTransformedBounds(aura::Window* transformed_window,
       gfx::RectF header_bounds(window_bounds);
       header_bounds.set_height(top_inset);
       new_transform.TransformRect(&header_bounds);
-      window_bounds.Inset(0, header_bounds.height(), 0, 0);
+      window_bounds.Inset(gfx::InsetsF::TLBR(header_bounds.height(), 0, 0, 0));
     }
     ::wm::TranslateRectToScreen(window->parent(), &window_bounds);
     bounds.Union(window_bounds);
@@ -443,6 +449,16 @@ bool ShouldShowForCurrentUser(aura::Window* window) {
     return true;
 
   return account_id == multi_user_window_manager->CurrentAccountId();
+}
+
+aura::Window* GetEventHandlerForEvent(const ui::LocatedEvent& event) {
+  gfx::Point location_in_screen = event.location();
+  ::wm::ConvertPointToScreen(static_cast<aura::Window*>(event.target()),
+                             &location_in_screen);
+  aura::Window* root_window_at_point = GetRootWindowAt(location_in_screen);
+  gfx::Point location_in_root = location_in_screen;
+  ::wm::ConvertPointFromScreen(root_window_at_point, &location_in_root);
+  return root_window_at_point->GetEventHandlerForPoint(location_in_root);
 }
 
 }  // namespace window_util

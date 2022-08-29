@@ -13,8 +13,9 @@
 
 namespace gl {
 
-NativeViewGLSurfaceEGLX11::NativeViewGLSurfaceEGLX11(x11::Window window)
-    : NativeViewGLSurfaceEGL(static_cast<uint32_t>(window), nullptr) {}
+NativeViewGLSurfaceEGLX11::NativeViewGLSurfaceEGLX11(GLDisplayEGL* display,
+                                                     x11::Window window)
+    : NativeViewGLSurfaceEGL(display, static_cast<uint32_t>(window), nullptr) {}
 
 bool NativeViewGLSurfaceEGLX11::Initialize(GLSurfaceFormat format) {
   if (!NativeViewGLSurfaceEGL::Initialize(format))
@@ -64,6 +65,13 @@ gfx::SwapResult NativeViewGLSurfaceEGLX11::SwapBuffers(
     has_swapped_buffers_ = true;
   }
   return result;
+}
+
+EGLint NativeViewGLSurfaceEGLX11::GetNativeVisualID() const {
+  x11::VisualId visual_id;
+  ui::XVisualManager::GetInstance()->ChooseVisualForWindow(
+      true, &visual_id, nullptr, nullptr, nullptr);
+  return static_cast<EGLint>(visual_id);
 }
 
 NativeViewGLSurfaceEGLX11::~NativeViewGLSurfaceEGLX11() {
