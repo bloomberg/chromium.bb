@@ -42,8 +42,9 @@ bool AreAllUsersAllowed(const user_manager::UserList& users,
   for (user_manager::User* user : users) {
     const bool is_user_allowlisted =
         user->HasGaiaAccount() &&
-        CrosSettings::FindEmailInList(
-            allowlist->GetList(), user->GetAccountId().GetUserEmail(), nullptr);
+        CrosSettings::FindEmailInList(allowlist->GetListDeprecated(),
+                                      user->GetAccountId().GetUserEmail(),
+                                      nullptr);
     const bool is_allowed_because_family_link =
         allow_family_link && user->IsChild();
     const bool is_gaia_user_allowed =
@@ -75,9 +76,7 @@ bool IsPublicSessionOrEphemeralLogin() {
   const user_manager::UserManager* user_manager =
       user_manager::UserManager::Get();
   return user_manager->IsLoggedInAsPublicAccount() ||
-         (user_manager->IsCurrentUserNonCryptohomeDataEphemeral() &&
-          user_manager->GetActiveUser()->GetType() !=
-              user_manager::USER_TYPE_REGULAR);
+         user_manager->IsCurrentUserCryptohomeDataEphemeral();
 }
 
 }  // namespace chrome_user_manager_util

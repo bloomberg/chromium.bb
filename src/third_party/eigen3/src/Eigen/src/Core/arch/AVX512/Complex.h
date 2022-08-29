@@ -253,11 +253,7 @@ template<> EIGEN_STRONG_INLINE Packet4cd ploadu<Packet4cd>(const std::complex<do
 
 template<> EIGEN_STRONG_INLINE Packet4cd pset1<Packet4cd>(const std::complex<double>& from)
 {
-  #ifdef EIGEN_VECTORIZE_AVX512DQ
-  return Packet4cd(_mm512_broadcast_f64x2(pset1<Packet1cd>(from).v));
-  #else
   return Packet4cd(_mm512_castps_pd(_mm512_broadcast_f32x4( _mm_castpd_ps(pset1<Packet1cd>(from).v))));
-  #endif
 }
 
 template<> EIGEN_STRONG_INLINE Packet4cd ploaddup<Packet4cd>(const std::complex<double>* from) {

@@ -29,6 +29,7 @@
 
 #include <memory>
 
+#include "base/check_op.h"
 #include "base/dcheck_is_on.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/synchronous_mutation_observer.h"
@@ -37,12 +38,12 @@
 #include "third_party/blink/renderer/core/editing/set_selection_options.h"
 #include "third_party/blink/renderer/core/scroll/scroll_alignment.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace blink {
 
-class CaretDisplayItemClient;
+class EffectPaintPropertyNode;
 class Element;
 class InlineTextBox;
 class LayoutBlock;
@@ -304,13 +305,15 @@ class CORE_EXPORT FrameSelection final
   // |VisibleSelection| and selection bounds.
   void MarkCacheDirty();
 
+  const EffectPaintPropertyNode& CaretEffectNode() const;
+
   FrameCaret& FrameCaretForTesting() const { return *frame_caret_; }
 
   LayoutTextSelectionStatus ComputeLayoutSelectionStatus(
       const LayoutText& text) const;
   LayoutSelectionStatus ComputeLayoutSelectionStatus(
       const NGInlineCursor& cursor) const;
-  SelectionState ComputeLayoutSelectionStateForCursor(
+  SelectionState ComputePaintingSelectionStateForCursor(
       const NGInlineCursorPosition& position) const;
   SelectionState ComputeLayoutSelectionStateForInlineTextBox(
       const InlineTextBox& text_box) const;
@@ -322,8 +325,6 @@ class CORE_EXPORT FrameSelection final
   friend class FrameSelectionTest;
   friend class PaintControllerPaintTestBase;
   friend class SelectionControllerTest;
-
-  const CaretDisplayItemClient& CaretDisplayItemClientForTesting() const;
 
   void NotifyAccessibilityForSelectionChange();
   void NotifyCompositorForSelectionChange();

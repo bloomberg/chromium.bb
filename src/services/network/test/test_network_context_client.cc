@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "net/base/net_errors.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -51,5 +50,12 @@ void TestNetworkContextClient::OnFileUploadRequested(
 
   std::move(callback).Run(net::OK, std::move(files));
 }
+
+#if BUILDFLAG(IS_CT_SUPPORTED)
+void TestNetworkContextClient::OnCanSendSCTAuditingReport(
+    OnCanSendSCTAuditingReportCallback callback) {
+  std::move(callback).Run(true);
+}
+#endif
 
 }  // namespace network

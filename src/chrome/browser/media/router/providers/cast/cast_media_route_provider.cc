@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/containers/contains.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/media/router/providers/cast/cast_activity_manager.h"
 #include "chrome/browser/media/router/providers/cast/cast_internal_message_util.h"
@@ -231,16 +230,9 @@ void CastMediaRouteProvider::StopObservingMediaSinks(
   sink_queries_.erase(media_source);
 }
 
-void CastMediaRouteProvider::StartObservingMediaRoutes(
-    const std::string& media_source) {
+void CastMediaRouteProvider::StartObservingMediaRoutes() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  activity_manager_->AddRouteQuery(media_source);
-}
-
-void CastMediaRouteProvider::StopObservingMediaRoutes(
-    const std::string& media_source) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  activity_manager_->RemoveRouteQuery(media_source);
+  activity_manager_->NotifyAllOnRoutesUpdated();
 }
 
 void CastMediaRouteProvider::StartListeningForRouteMessages(
@@ -278,7 +270,7 @@ void CastMediaRouteProvider::CreateMediaRouteController(
 
 void CastMediaRouteProvider::GetState(GetStateCallback callback) {
   if (!activity_manager_) {
-    std::move(callback).Run(mojom::ProviderState::New());
+    std::move(callback).Run(nullptr);
     return;
   }
   const CastSessionTracker::SessionMap& sessions =

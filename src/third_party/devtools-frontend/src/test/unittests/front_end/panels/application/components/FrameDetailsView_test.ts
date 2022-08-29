@@ -8,7 +8,14 @@ import * as ExpandableList from '../../../../../../front_end/ui/components/expan
 import * as Coordinator from '../../../../../../front_end/ui/components/render_coordinator/render_coordinator.js';
 import * as ReportView from '../../../../../../front_end/ui/components/report_view/report_view.js';
 import * as Protocol from '../../../../../../front_end/generated/protocol.js';
-import {assertShadowRoot, getCleanTextContentFromElements, getElementWithinComponent, getElementsWithinComponent, renderElementIntoDOM} from '../../../helpers/DOMHelpers.js';
+import {
+  assertShadowRoot,
+  getCleanTextContentFromElements,
+  getElementWithinComponent,
+  getElementsWithinComponent,
+  renderElementIntoDOM,
+} from '../../../helpers/DOMHelpers.js';
+import {describeWithEnvironment} from '../../../helpers/EnvironmentHelpers.js';
 
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 
@@ -82,11 +89,12 @@ const makeFrame = (): SDK.ResourceTreeModel.ResourceTreeFrame => {
       },
     ]),
     getPermissionsPolicyState: () => null,
+    prerenderFinalStatus: Protocol.Page.PrerenderFinalStatus.TriggerDestroyed,
   } as unknown as SDK.ResourceTreeModel.ResourceTreeFrame;
   return newFrame;
 };
 
-describe('FrameDetailsView', () => {
+describeWithEnvironment('FrameDetailsView', () => {
   it('renders with a title', async () => {
     const frame = makeFrame();
     const component = new ApplicationComponents.FrameDetailsView.FrameDetailsReportView();
@@ -128,6 +136,7 @@ describe('FrameDetailsView', () => {
       'Cross-Origin Opener Policy (COOP)',
       'SharedArrayBuffers',
       'Measure Memory',
+      'Prerendering Status',
     ]);
 
     const values = getCleanTextContentFromElements(component.shadowRoot, 'devtools-report-value');
@@ -142,6 +151,7 @@ describe('FrameDetailsView', () => {
       'SameOrigin',
       'available, transferable',
       'available\xA0Learn more',
+      'TriggerDestroyed',
     ]);
 
     const stackTrace = getElementWithinComponent(

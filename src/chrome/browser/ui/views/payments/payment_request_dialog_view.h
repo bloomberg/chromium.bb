@@ -57,6 +57,8 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
    public:
     virtual void OnDialogOpened() = 0;
 
+    virtual void OnDialogClosed() = 0;
+
     virtual void OnContactInfoOpened() = 0;
 
     virtual void OnOrderSummaryOpened() = 0;
@@ -122,6 +124,7 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
       PaymentHandlerOpenWindowCallback callback) override;
   void RetryDialog() override;
   void ConfirmPaymentForTesting() override;
+  bool ClickOptOutForTesting() override;
 
   // PaymentRequestSpec::Observer:
   void OnStartUpdating(PaymentRequestSpec::UpdateReason reason) override;
@@ -177,7 +180,7 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
       const autofill::CreditCard& credit_card,
       base::WeakPtr<autofill::payments::FullCardRequest::ResultDelegate>
           result_delegate,
-      content::WebContents* web_contents) override;
+      content::RenderFrameHost* render_frame_host) override;
 
   // Hides the full dialog spinner with the "processing" label.
   void HideProcessingSpinner();

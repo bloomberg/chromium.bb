@@ -46,6 +46,11 @@ class CastSocket : public TlsConnection::Client {
   // write-blocked, in which case |message| will be queued.  An error will be
   // returned if |message| cannot be serialized for any reason, even while
   // write-blocked.
+  //
+  // NOTE: Send() does not validate that |message| is well-formed or
+  // semantically correct according to the Cast protocol.  Callers should use
+  // the functions in {sender,receiver}/channel/message_util.h to construct a
+  // valid CastMessage to pass into Send().
   [[nodiscard]] Error Send(const ::cast::channel::CastMessage& message);
 
   void SetClient(Client* client);

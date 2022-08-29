@@ -14,6 +14,10 @@
 namespace openscreen {
 namespace cast {
 
+Environment::PacketConsumer::~PacketConsumer() = default;
+
+Environment::SocketSubscriber::~SocketSubscriber() = default;
+
 Environment::Environment(ClockNowFunctionPtr now_function,
                          TaskRunner* task_runner,
                          const IPEndpoint& local_endpoint)
@@ -39,6 +43,22 @@ IPEndpoint Environment::GetBoundLocalEndpoint() const {
     return socket_->GetLocalEndpoint();
   }
   return IPEndpoint{};
+}
+
+void Environment::SetSocketStateForTesting(SocketState state) {
+  state_ = state;
+  if (socket_subscriber_) {
+    switch (state_) {
+      case SocketState::kReady:
+        socket_subscriber_->OnSocketReady();
+        break;
+      case SocketState::kInvalid:
+        socket_subscriber_->OnSocketInvalid(Error::Code::kSocketFailure);
+        break;
+      default:
+        break;
+    }
+  }
 }
 
 void Environment::SetSocketSubscriber(SocketSubscriber* subscriber) {
@@ -77,8 +97,6 @@ void Environment::SendPacket(absl::Span<const uint8_t> packet) {
     socket_->SendMessage(packet.data(), packet.size(), remote_endpoint_);
   }
 }
-
-Environment::PacketConsumer::~PacketConsumer() = default;
 
 void Environment::OnBound(UdpSocket* socket) {
   OSP_DCHECK(socket == socket_.get());

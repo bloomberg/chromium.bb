@@ -181,7 +181,7 @@ void Renderer::operator delete(void *mem)
 }
 
 void Renderer::draw(const vk::GraphicsPipeline *pipeline, const vk::DynamicState &dynamicState, unsigned int count, int baseVertex,
-                    CountedEvent *events, int instanceID, int viewID, void *indexBuffer, const VkExtent3D &framebufferExtent,
+                    CountedEvent *events, int instanceID, int layer, void *indexBuffer, const VkRect2D &renderArea,
                     vk::Pipeline::PushConstantStorage const &pushConstants, bool update)
 {
 	if(count == 0) { return; }
@@ -282,11 +282,11 @@ void Renderer::draw(const vk::GraphicsPipeline *pipeline, const vk::DynamicState
 		const sw::Stream &stream = inputs.getStream(i);
 		data->input[i] = stream.buffer;
 		data->robustnessSize[i] = stream.robustnessSize;
-		data->stride[i] = stream.vertexStride;
+		data->stride[i] = inputs.getVertexStride(i, pipelineState.hasDynamicVertexStride());
 	}
 
 	data->indices = indexBuffer;
-	data->viewID = viewID;
+	data->layer = layer;
 	data->instanceID = instanceID;
 	data->baseVertex = baseVertex;
 
@@ -385,7 +385,7 @@ void Renderer::draw(const vk::GraphicsPipeline *pipeline, const vk::DynamicState
 
 			if(draw->colorBuffer[index])
 			{
-				data->colorBuffer[index] = (unsigned int *)attachments.colorBuffer[index]->getOffsetPointer({ 0, 0, 0 }, VK_IMAGE_ASPECT_COLOR_BIT, 0, data->viewID);
+				data->colorBuffer[index] = (unsigned int *)attachments.colorBuffer[index]->getOffsetPointer({ 0, 0, 0 }, VK_IMAGE_ASPECT_COLOR_BIT, 0, data->layer);
 				data->colorPitchB[index] = attachments.colorBuffer[index]->rowPitchBytes(VK_IMAGE_ASPECT_COLOR_BIT, 0);
 				data->colorSliceB[index] = attachments.colorBuffer[index]->slicePitchBytes(VK_IMAGE_ASPECT_COLOR_BIT, 0);
 			}
@@ -396,14 +396,14 @@ void Renderer::draw(const vk::GraphicsPipeline *pipeline, const vk::DynamicState
 
 		if(draw->depthBuffer)
 		{
-			data->depthBuffer = (float *)attachments.depthBuffer->getOffsetPointer({ 0, 0, 0 }, VK_IMAGE_ASPECT_DEPTH_BIT, 0, data->viewID);
+			data->depthBuffer = (float *)attachments.depthBuffer->getOffsetPointer({ 0, 0, 0 }, VK_IMAGE_ASPECT_DEPTH_BIT, 0, data->layer);
 			data->depthPitchB = attachments.depthBuffer->rowPitchBytes(VK_IMAGE_ASPECT_DEPTH_BIT, 0);
 			data->depthSliceB = attachments.depthBuffer->slicePitchBytes(VK_IMAGE_ASPECT_DEPTH_BIT, 0);
 		}
 
 		if(draw->stencilBuffer)
 		{
-			data->stencilBuffer = (unsigned char *)attachments.stencilBuffer->getOffsetPointer({ 0, 0, 0 }, VK_IMAGE_ASPECT_STENCIL_BIT, 0, data->viewID);
+			data->stencilBuffer = (unsigned char *)attachments.stencilBuffer->getOffsetPointer({ 0, 0, 0 }, VK_IMAGE_ASPECT_STENCIL_BIT, 0, data->layer);
 			data->stencilPitchB = attachments.stencilBuffer->rowPitchBytes(VK_IMAGE_ASPECT_STENCIL_BIT, 0);
 			data->stencilSliceB = attachments.stencilBuffer->slicePitchBytes(VK_IMAGE_ASPECT_STENCIL_BIT, 0);
 		}
@@ -413,10 +413,14 @@ void Renderer::draw(const vk::GraphicsPipeline *pipeline, const vk::DynamicState
 	{
 		const VkRect2D &scissor = pipelineState.getScissor();
 
-		data->scissorX0 = clamp<int>(scissor.offset.x, 0, framebufferExtent.width);
-		data->scissorX1 = clamp<int>(scissor.offset.x + scissor.extent.width, 0, framebufferExtent.width);
-		data->scissorY0 = clamp<int>(scissor.offset.y, 0, framebufferExtent.height);
-		data->scissorY1 = clamp<int>(scissor.offset.y + scissor.extent.height, 0, framebufferExtent.height);
+		int x0 = renderArea.offset.x;
+		int y0 = renderArea.offset.y;
+		int x1 = x0 + renderArea.extent.width;
+		int y1 = y0 + renderArea.extent.height;
+		data->scissorX0 = clamp<int>(scissor.offset.x, x0, x1);
+		data->scissorX1 = clamp<int>(scissor.offset.x + scissor.extent.width, x0, x1);
+		data->scissorY0 = clamp<int>(scissor.offset.y, y0, y1);
+		data->scissorY1 = clamp<int>(scissor.offset.y + scissor.extent.height, y0, y1);
 	}
 
 	// Push constants

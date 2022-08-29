@@ -47,8 +47,7 @@ void ThinWebView::Destroy(JNIEnv* env, const JavaParamRef<jobject>& object) {
   delete this;
 }
 
-void ThinWebView::DocumentAvailableInMainFrame(
-    content::RenderFrameHost* render_frame_host) {
+void ThinWebView::PrimaryPageChanged(content::Page& page) {
   // Disable browser controls when used for thin webview.
   web_contents_->UpdateBrowserControlsState(cc::BrowserControlsState::kHidden,
                                             cc::BrowserControlsState::kHidden,

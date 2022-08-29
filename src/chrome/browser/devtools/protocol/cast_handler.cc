@@ -49,9 +49,7 @@ class CastHandler::MediaRoutesObserver
   const std::vector<MediaRoute>& routes() const { return routes_; }
 
  private:
-  void OnRoutesUpdated(
-      const std::vector<MediaRoute>& routes,
-      const std::vector<MediaRoute::Id>& joinable_route_ids) override {
+  void OnRoutesUpdated(const std::vector<MediaRoute>& routes) override {
     routes_ = routes;
     update_callback_.Run();
   }
@@ -184,7 +182,7 @@ Response CastHandler::Disable() {
   return Response::Success();
 }
 
-void CastHandler::OnResultsUpdated(
+void CastHandler::OnSinksUpdated(
     const std::vector<media_router::MediaSinkWithCastModes>& sinks) {
   sinks_ = sinks;
   SendSinkUpdate();
@@ -271,7 +269,7 @@ void CastHandler::StartObservingForSinks(
 
   if (presentation_url.isJust()) {
     url::Origin frame_origin =
-        web_contents_->GetMainFrame()->GetLastCommittedOrigin();
+        web_contents_->GetPrimaryMainFrame()->GetLastCommittedOrigin();
     std::vector<media_router::MediaSource> sources = {
         media_router::MediaSource(presentation_url.fromJust())};
     query_result_manager_->SetSourcesForCastMode(

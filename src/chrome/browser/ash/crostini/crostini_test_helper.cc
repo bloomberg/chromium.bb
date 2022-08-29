@@ -11,12 +11,15 @@
 #include "chrome/browser/ash/crostini/crostini_pref_names.h"
 #include "chrome/browser/ash/guest_os/guest_os_registry_service.h"
 #include "chrome/browser/ash/guest_os/guest_os_registry_service_factory.h"
+#include "chrome/browser/ash/guest_os/public/guest_os_service.h"
+#include "chrome/browser/ash/guest_os/public/guest_os_wayland_server.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/vm_launch/launch.pb.h"
 #include "components/crx_file/id_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/scoped_user_manager.h"
@@ -31,7 +34,7 @@ CrostiniTestHelper::CrostiniTestHelper(TestingProfile* profile,
     : profile_(profile) {
   scoped_feature_list_.InitAndEnableFeature(features::kCrostini);
 
-  chromeos::ProfileHelper::SetAlwaysReturnPrimaryUserForTesting(true);
+  ash::ProfileHelper::SetAlwaysReturnPrimaryUserForTesting(true);
   scoped_user_manager_ = std::make_unique<user_manager::ScopedUserManager>(
       std::make_unique<ash::FakeChromeUserManager>());
   auto* fake_user_manager = static_cast<ash::FakeChromeUserManager*>(
@@ -46,10 +49,14 @@ CrostiniTestHelper::CrostiniTestHelper(TestingProfile* profile,
 
   current_apps_.set_vm_name(kCrostiniDefaultVmName);
   current_apps_.set_container_name(kCrostiniDefaultContainerName);
+
+  guest_os::GuestOsService::GetForProfile(profile_)
+      ->WaylandServer()
+      ->OverrideServerForTesting(vm_tools::launch::TERMINA, nullptr, {});
 }
 
 CrostiniTestHelper::~CrostiniTestHelper() {
-  chromeos::ProfileHelper::SetAlwaysReturnPrimaryUserForTesting(false);
+  ash::ProfileHelper::SetAlwaysReturnPrimaryUserForTesting(false);
   DisableCrostini(profile_);
 }
 

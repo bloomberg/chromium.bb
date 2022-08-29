@@ -85,7 +85,30 @@ Write an ebuild to fetch and install third party packages to
             [dev-go/errors](https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/HEAD/dev-go/errors)
 
     ```none
-    # Copyright 2018 The Chromium OS Authors. All rights reserved.# Distributed under the terms of the GNU General Public License v2.EAPI="6"CROS_GO_SOURCE="github.com/pkg/errors v${PV}"CROS_GO_PACKAGES=(	"github.com/pkg/errors")inherit cros-goDESCRIPTION="Error handling primitives for Go."HOMEPAGE="https://github.com/pkg/errors"SRC_URI="$(cros-go_src_uri)"LICENSE="BSD"SLOT="0"KEYWORDS="*"IUSE=""RESTRICT="binchecks strip"DEPEND=""RDEPEND=""
+    # Copyright 2018 The Chromium OS Authors. All rights reserved.
+    # Distributed under the terms of the GNU General Public License v2.
+    
+    EAPI="6"
+    
+    CROS_GO_SOURCE="github.com/pkg/errors v${PV}"
+    CROS_GO_PACKAGES=(
+        	"github.com/pkg/errors"
+    )
+    
+    inherit cros-go
+    
+    DESCRIPTION="Error handling primitives for Go."
+    HOMEPAGE="https://github.com/pkg/errors"
+    SRC_URI="$(cros-go_src_uri)"
+    
+    LICENSE="BSD"
+    SLOT="0"
+    KEYWORDS="*"
+    IUSE=""
+    RESTRICT="binchecks strip"
+    
+    DEPEND=""
+    RDEPEND=""
     ```
 
 *   If the upstream repository does not have release tags, keep the
@@ -94,7 +117,31 @@ Write an ebuild to fetch and install third party packages to
             [dev-go/glog](https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/HEAD/dev-go/glog/glog-0.0.1.ebuild)
 
     ```none
-    # Copyright 2018 The Chromium OS Authors. All rights reserved.# Distributed under the terms of the GNU General Public License v2.EAPI="6"CROS_GO_SOURCE="github.com/golang/glog 44145f04b68cf362d9c4df2182967c2275eaefed"CROS_GO_PACKAGES=(	"github.com/golang/glog")inherit cros-goDESCRIPTION="Leveled execution logs for Go"HOMEPAGE="https://github.com/golang/glog"SRC_URI="$(cros-go_src_uri)"LICENSE="BSD-Google"SLOT="0"KEYWORDS="*"IUSE=""RESTRICT="binchecks strip"DEPEND=""RDEPEND=""
+    # Copyright 2018 The Chromium OS Authors. All rights reserved.
+    # Distributed under the terms of the GNU General Public License v2.
+
+    EAPI="6"
+
+    CROS_GO_SOURCE="github.com/golang/glog 44145f04b68cf362d9c4df2182967c2275eaefed"
+
+    CROS_GO_PACKAGES=(
+        "github.com/golang/glog"
+    )
+
+    inherit cros-go
+
+    DESCRIPTION="Leveled execution logs for Go"
+    HOMEPAGE="https://github.com/golang/glog"
+    SRC_URI="$(cros-go_src_uri)"
+
+    LICENSE="BSD-Google"
+    SLOT="0"
+    KEYWORDS="*"
+    IUSE=""
+    RESTRICT="binchecks strip"
+
+    DEPEND=""
+    RDEPEND=""
     ```
 
 *   If the canonical import path is different from the repository path,
@@ -102,7 +149,31 @@ Write an ebuild to fetch and install third party packages to
             [dev-go/go-sys](https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/HEAD/dev-go/go-sys/go-sys-0.0.1.ebuild)
 
     ```none
-    # Copyright 2018 The Chromium OS Authors. All rights reserved.# Distributed under the terms of the GNU General Public License v2.EAPI="6"CROS_GO_SOURCE="go.googlesource.com/sys:golang.org/x/sys a646d33e2ee3172a661fc09bca23bb4889a41bc8"CROS_GO_PACKAGES=(	"golang.org/x/sys/unix")inherit cros-goDESCRIPTION="Go packages for low-level interaction with the operating system"HOMEPAGE="https://golang.org/x/sys"SRC_URI="$(cros-go_src_uri)"LICENSE="BSD-Google"SLOT="0"KEYWORDS="*"IUSE=""RESTRICT="binchecks strip"DEPEND=""RDEPEND=""
+    # Copyright 2018 The Chromium OS Authors. All rights reserved.
+    # Distributed under the terms of the GNU General Public License v2.
+
+    EAPI="6"
+
+    CROS_GO_SOURCE="go.googlesource.com/sys:golang.org/x/sys a646d33e2ee3172a661fc09bca23bb4889a41bc8"
+
+    CROS_GO_PACKAGES=(
+        "golang.org/x/sys/unix"
+    )
+
+    inherit cros-go
+
+    DESCRIPTION="Go packages for low-level interaction with the operating system"
+    HOMEPAGE="https://golang.org/x/sys"
+    SRC_URI="$(cros-go_src_uri)"
+
+    LICENSE="BSD-Google"
+    SLOT="0"
+    KEYWORDS="*"
+    IUSE=""
+    RESTRICT="binchecks strip"
+
+    DEPEND=""
+    RDEPEND=""
     ```
 
 *   Inherit eclass `"cros-go"`.
@@ -126,7 +197,18 @@ Write an ebuild to fetch and install third party packages to
             adding it to chromeos-localmirror:
 
     ```none
-    >>> Emerging (1 of 1) dev-go/errors-0.8.0::chromiumos!!! Fetched file: github.com-pkg-errors-v0.8.0.tar.gz VERIFY FAILED!!!! Reason: Insufficient data for checksum verification!!! Got:!!! Expected: MD5 RMD160 SHA1 SHA256 SHA512 WHIRLPOOL * Fetch failed for 'dev-go/errors-0.8.0', Log file: *  '/var/log/portage/dev-go:errors-0.8.0:20180518-202435.log' * Run these commands to add github.com-pkg-errors-v0.8.0.tar.gz to chromeos-localmirror: *   wget -O github.com-pkg-errors-v0.8.0.tar.gz https://github.com/pkg/errors/archive/v0.8.0.tar.gz *   gsutil cp -a public-read github.com-pkg-errors-v0.8.0.tar.gz gs://chromeos-localmirror/distfiles/ * and update the 'Manifest' file with: *   ebuild /mnt/host/source/src/third_party/chromiumos-overlay/dev-go/errors/errors-0.8.0.ebuild manifest
+    >>> Emerging (1 of 1) dev-go/errors-0.8.0::chromiumos
+    !!! Fetched file: github.com-pkg-errors-v0.8.0.tar.gz VERIFY FAILED!
+    !!! Reason: Insufficient data for checksum verification
+    !!! Got:
+    !!! Expected: MD5 RMD160 SHA1 SHA256 SHA512 WHIRLPOOL
+    * Fetch failed for 'dev-go/errors-0.8.0', Log file:
+    *  '/var/log/portage/dev-go:errors-0.8.0:20180518-202435.log'
+    * Run these commands to add github.com-pkg-errors-v0.8.0.tar.gz to chromeos-localmirror:
+    *   wget -O github.com-pkg-errors-v0.8.0.tar.gz https://github.com/pkg/errors/archive/v0.8.0.tar.gz
+    *   gsutil cp -a public-read github.com-pkg-errors-v0.8.0.tar.gz gs://chromeos-localmirror/distfiles/
+    * and update the 'Manifest' file with:
+    *   ebuild /mnt/host/source/src/third_party/chromiumos-overlay/dev-go/errors/errors-0.8.0.ebuild manifest
     ```
 
     Run the suggested `wget`, `gsutil`, and `ebuild` commands, and then try the
@@ -147,7 +229,31 @@ other projects, its ebuild only needs to fetch and install the package files to
             [dev-go/seccomp](https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/HEAD/dev-go/seccomp/seccomp-9999.ebuild)
 
     ```none
-    # Copyright 2018 The Chromium OS Authors. All rights reserved.# Distributed under the terms of the GNU General Public License v2.EAPI="6"CROS_WORKON_PROJECT="chromiumos/platform/go-seccomp"CROS_WORKON_LOCALNAME="../platform/go-seccomp"CROS_GO_PACKAGES=(	"chromiumos/seccomp")inherit cros-workon cros-goDESCRIPTION="Go support for Chromium OS Seccomp-BPF policy files"HOMEPAGE="https://chromium.org/chromium-os/developer-guide/chromium-os-sandboxing"LICENSE="BSD-Google"SLOT="0"KEYWORDS="~*"IUSE=""RESTRICT="binchecks strip"DEPEND=""RDEPEND=""
+    # Copyright 2018 The Chromium OS Authors. All rights reserved.
+    # Distributed under the terms of the GNU General Public License v2.
+
+    EAPI="6"
+
+    CROS_WORKON_PROJECT="chromiumos/platform/go-seccomp"
+    CROS_WORKON_LOCALNAME="../platform/go-seccomp"
+
+    CROS_GO_PACKAGES=(
+        "chromiumos/seccomp"
+    )
+
+    inherit cros-workon cros-go
+
+    DESCRIPTION="Go support for Chromium OS Seccomp-BPF policy files"
+    HOMEPAGE="https://chromium.org/chromium-os/developer-guide/chromium-os-sandboxing"
+
+    LICENSE="BSD-Google"
+    SLOT="0"
+    KEYWORDS="~*"
+    IUSE=""
+    RESTRICT="binchecks strip"
+
+    DEPEND=""
+    RDEPEND=""
     ```
 
     *   The seccomp package is located in
@@ -171,7 +277,31 @@ For a typical Go project that needs to build and install executables:
             [dev-go/golint](https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/HEAD/dev-go/golint/golint-0.0.1.ebuild)
 
     ```none
-    # Copyright 2018 The Chromium OS Authors. All rights reserved.# Distributed under the terms of the GNU General Public License v2.EAPI="6"CROS_GO_SOURCE="github.com/golang/lint c5fb716d6688a859aae56d26d3e6070808df29f7"CROS_GO_BINARIES=(	"github.com/golang/lint/golint")inherit cros-goDESCRIPTION="A linter for Go source code"HOMEPAGE="https://github.com/golang/lint"SRC_URI="$(cros-go_src_uri)"LICENSE="BSD-Google"SLOT="0"KEYWORDS="*"IUSE=""RESTRICT="binchecks strip"DEPEND="dev-go/go-tools"RDEPEND=""
+    # Copyright 2018 The Chromium OS Authors. All rights reserved.
+    # Distributed under the terms of the GNU General Public License v2.
+
+    EAPI="6"
+
+    CROS_GO_SOURCE="github.com/golang/lint c5fb716d6688a859aae56d26d3e6070808df29f7"
+
+    CROS_GO_BINARIES=(
+        "github.com/golang/lint/golint"
+    )
+
+    inherit cros-go
+
+    DESCRIPTION="A linter for Go source code"
+    HOMEPAGE="https://github.com/golang/lint"
+    SRC_URI="$(cros-go_src_uri)"
+
+    LICENSE="BSD-Google"
+    SLOT="0"
+    KEYWORDS="*"
+    IUSE=""
+    RESTRICT="binchecks strip"
+
+    DEPEND="dev-go/go-tools"
+    RDEPEND=""
     ```
 
 *   If the project needs to import packages from outside its own
@@ -189,7 +319,41 @@ for other projects to import.
             [dev-go/go-tools](https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/HEAD/dev-go/go-tools/go-tools-0.0.1.ebuild)
 
     ```none
-    # Copyright 2018 The Chromium OS Authors. All rights reserved.# Distributed under the terms of the GNU General Public License v2.EAPI="6"CROS_GO_SOURCE="go.googlesource.com/tools:golang.org/x/tools 2d19ab38faf14664c76088411c21bf4fafea960b"CROS_GO_PACKAGES=(	"golang.org/x/tools/go/gcimporter15"	"golang.org/x/tools/go/gcexportdata")CROS_GO_TEST=(	"${CROS_GO_PACKAGES[@]}")CROS_GO_BINARIES=(	"golang.org/x/tools/cmd/godoc"	"golang.org/x/tools/cmd/guru:goguru")inherit cros-goDESCRIPTION="Packages and tools that support the Go programming language"HOMEPAGE="https://golang.org/x/tools"SRC_URI="$(cros-go_src_uri)"LICENSE="BSD-Google"SLOT="0"KEYWORDS="*"IUSE=""RESTRICT="binchecks strip"DEPEND=""RDEPEND=""
+    # Copyright 2018 The Chromium OS Authors. All rights reserved.
+    # Distributed under the terms of the GNU General Public License v2.
+
+    EAPI="6"
+
+    CROS_GO_SOURCE="go.googlesource.com/tools:golang.org/x/tools 2d19ab38faf14664c76088411c21bf4fafea960b"
+
+    CROS_GO_PACKAGES=(
+        "golang.org/x/tools/go/gcimporter15"
+        "golang.org/x/tools/go/gcexportdata"
+    )
+
+    CROS_GO_TEST=(
+        "${CROS_GO_PACKAGES[@]}"
+    )
+
+    CROS_GO_BINARIES=(
+        "golang.org/x/tools/cmd/godoc"
+        "golang.org/x/tools/cmd/guru:goguru"
+    )
+
+    inherit cros-go
+
+    DESCRIPTION="Packages and tools that support the Go programming language"
+    HOMEPAGE="https://golang.org/x/tools"
+    SRC_URI="$(cros-go_src_uri)"
+
+    LICENSE="BSD-Google"
+    SLOT="0"
+    KEYWORDS="*"
+    IUSE=""
+    RESTRICT="binchecks strip"
+
+    DEPEND=""
+    RDEPEND=""
     ```
 
     *   This builds and installs the `"godoc"` and `"goguru"` tools.
@@ -250,7 +414,11 @@ will fetch the sources from
 `CROS_GO_SOURCE` can contain multiple items when defined as an array:
 
 ```none
-CROS_GO_SOURCE=(	"github.com/golang/glog 44145f04b68cf362d9c4df2182967c2275eaefed"	"github.com/pkg/errors v0.8.0"	"github.com/go-yaml/yaml:gopkg.in/yaml.v2 v2.2.1")
+CROS_GO_SOURCE=(
+    "github.com/golang/glog 44145f04b68cf362d9c4df2182967c2275eaefed"
+    "github.com/pkg/errors v0.8.0"
+    "github.com/go-yaml/yaml:gopkg.in/yaml.v2 v2.2.1"
+)
 ```
 
 `CROS_GO_WORKSPACE`             Path to the Go workspace, default is `"${S}"`.
@@ -264,7 +432,10 @@ CROS_GO_WORKSPACE="${S}/go"
 `CROS_GO_WORKSPACE` can contain multiple items when defined as an array:
 
 ```none
-CROS_GO_WORKSPACE=(	"${S}"	"${S}/tast-base")
+CROS_GO_WORKSPACE=(
+    "${S}"
+    "${S}/tast-base"
+)
 ```
 
 `CROS_GO_BINARIES`              Go executable binaries to build and install.
@@ -276,7 +447,11 @@ to the package path, followed by the desired install path/name for it.
 For example:
 
 ```none
-CROS_GO_BINARIES=(	"golang.org/x/tools/cmd/godoc"	"golang.org/x/tools/cmd/guru:goguru"	"golang.org/x/tools/cmd/stringer:/usr/local/bin/gostringer")
+CROS_GO_BINARIES=(
+    "golang.org/x/tools/cmd/godoc"
+    "golang.org/x/tools/cmd/guru:goguru"
+    "golang.org/x/tools/cmd/stringer:/usr/local/bin/gostringer"
+)
 ```
 
 will build and install `"godoc"`, `"goguru"`, and `"gostringer"` binaries.

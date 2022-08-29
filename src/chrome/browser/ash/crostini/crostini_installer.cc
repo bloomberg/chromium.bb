@@ -180,8 +180,8 @@ CrostiniInstaller::~CrostiniInstaller() {
 
 void CrostiniInstaller::Shutdown() {
   if (restart_id_ != CrostiniManager::kUninitializedRestartId) {
-    CrostiniManager::GetForProfile(profile_)->AbortRestartCrostini(
-        restart_id_, base::DoNothing());
+    CrostiniManager::GetForProfile(profile_)->CancelRestartCrostini(
+        restart_id_);
     restart_id_ = CrostiniManager::kUninitializedRestartId;
   }
 }
@@ -213,6 +213,7 @@ void CrostiniInstaller::Install(CrostiniManager::RestartOptions options,
   }
 
   restart_options_ = std::move(options);
+  restart_options_.restart_source = RestartSource::kInstaller;
   progress_callback_ = std::move(progress_callback);
   result_callback_ = std::move(result_callback);
 
@@ -274,8 +275,8 @@ void CrostiniInstaller::Cancel(base::OnceClosure callback) {
 
   // Abort the long-running flow, and RestartObserver methods will not be called
   // again until next installation.
-  crostini::CrostiniManager::GetForProfile(profile_)->AbortRestartCrostini(
-      restart_id_, base::DoNothing());
+  auto* crostini_manager = crostini::CrostiniManager::GetForProfile(profile_);
+  crostini_manager->CancelRestartCrostini(restart_id_);
   restart_id_ = CrostiniManager::kUninitializedRestartId;
   RecordSetupResult(InstallStateToCancelledSetupResult(installing_state_));
 
@@ -284,8 +285,7 @@ void CrostiniInstaller::Cancel(base::OnceClosure callback) {
     content::GetUIThreadTaskRunner({})->PostTask(
         FROM_HERE,
         base::BindOnce(&crostini::CrostiniManager::RemoveCrostini,
-                       base::Unretained(
-                           crostini::CrostiniManager::GetForProfile(profile_)),
+                       crostini_manager->GetWeakPtr(),
                        crostini::kCrostiniDefaultVmName,
                        base::BindOnce(&CrostiniInstaller::FinishCleanup,
                                       weak_ptr_factory_.GetWeakPtr())));
@@ -318,10 +318,8 @@ void CrostiniInstaller::OnComponentLoaded(CrostiniResult result) {
       LOG(ERROR) << "Network connection dropped while downloading cros-termina";
       HandleError(InstallerError::kErrorOffline);
     } else if (result == CrostiniResult::NEED_UPDATE) {
-      LOG(ERROR) << "Need to update device before installing termina-dlc";
       HandleError(InstallerError::kNeedUpdate);
     } else {
-      LOG(ERROR) << "Failed to install the cros-termina component";
       HandleError(InstallerError::kErrorLoadingTermina);
     }
     return;
@@ -401,19 +399,26 @@ void CrostiniInstaller::OnContainerSetup(bool success) {
   }
 }
 
-void CrostiniInstaller::OnAnsibleSoftwareConfigurationStarted() {
+// TODO(justinhuang): Address the case where Default Container is being booted +
+// getting configured and a new VM is being created. Since Enterprise-based
+// configurations currently work as configure on every startup, we'll have a
+// potential overlap which will cause this to signal too many times.
+void CrostiniInstaller::OnAnsibleSoftwareConfigurationStarted(
+    const ContainerId& container_id) {
   DCHECK_EQ(installing_state_, InstallerState::kStartContainer);
   UpdateInstallingState(InstallerState::kConfigureContainer);
 }
 
-void CrostiniInstaller::OnAnsibleSoftwareConfigurationFinished(bool success) {
+// TODO(justinhuang): Similar to the above.
+void CrostiniInstaller::OnAnsibleSoftwareConfigurationFinished(
+    const ContainerId& container_id,
+    bool success) {
   DCHECK_EQ(installing_state_, InstallerState::kConfigureContainer);
   DCHECK(ansible_management_service_observation_.IsObservingSource(
       AnsibleManagementService::GetForProfile(profile_)));
   ansible_management_service_observation_.Reset();
 
   if (!success) {
-    LOG(ERROR) << "Failed to configure container";
     CrostiniManager::GetForProfile(profile_)->RemoveCrostini(
         kCrostiniDefaultVmName,
         base::BindOnce(
@@ -425,10 +430,6 @@ void CrostiniInstaller::OnAnsibleSoftwareConfigurationFinished(bool success) {
 
 void CrostiniInstaller::OnCrostiniRemovedAfterConfigurationFailed(
     CrostiniResult result) {
-  if (result != CrostiniResult::SUCCESS) {
-    LOG(ERROR) << "Failed to remove Crostini after failed configuration";
-  }
-
   if (content::GetNetworkConnectionTracker()->IsOffline()) {
     LOG(ERROR) << "Network connection dropped while configuring container";
     HandleError(InstallerError::kErrorOffline);
@@ -438,18 +439,10 @@ void CrostiniInstaller::OnCrostiniRemovedAfterConfigurationFailed(
 }
 
 void CrostiniInstaller::OnContainerStarted(CrostiniResult result) {
-  if (result == CrostiniResult::CONTAINER_CONFIGURATION_FAILED) {
-    LOG(ERROR) << "Container start failed due to failed configuration";
-    NOTREACHED();
-    return;
-  }
-
   DCHECK(installing_state_ == InstallerState::kStartContainer ||
          installing_state_ == InstallerState::kConfigureContainer);
 
   if (result != CrostiniResult::SUCCESS) {
-    LOG(ERROR) << "Failed to start container with error code: "
-               << static_cast<int>(result);
     HandleError(InstallerError::kErrorStartingContainer);
     return;
   }
@@ -606,10 +599,9 @@ void CrostiniInstaller::OnCrostiniRestartFinished(CrostiniResult result) {
   restart_id_ = CrostiniManager::kUninitializedRestartId;
 
   if (result != CrostiniResult::SUCCESS) {
-    if (state_ != State::ERROR && result != CrostiniResult::RESTART_ABORTED) {
+    if (state_ != State::ERROR && result != CrostiniResult::RESTART_ABORTED &&
+        result != CrostiniResult::RESTART_REQUEST_CANCELLED) {
       DCHECK_EQ(state_, State::INSTALLING);
-      LOG(ERROR) << "Failed to restart Crostini with error code: "
-                 << static_cast<int>(result);
       HandleError(InstallerError::kErrorUnknown);
     }
     return;

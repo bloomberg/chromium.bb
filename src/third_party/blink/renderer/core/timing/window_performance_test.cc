@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/timing/window_performance.h"
 #include <cstdint>
 
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/test/trace_event_analyzer.h"
 #include "base/time/time.h"
@@ -16,6 +17,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_keyboard_event_init.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_pointer_event_init.h"
 #include "third_party/blink/renderer/core/dom/document_init.h"
+#include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/events/input_event.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/core/events/pointer_event.h"
@@ -116,17 +118,22 @@ class WindowPerformanceTest : public testing::Test {
                             base::TimeTicks start_time,
                             base::TimeTicks processing_start,
                             base::TimeTicks processing_end,
-                            PointerId pointer_id) {
+                            PointerId pointer_id,
+                            EventTarget* target = nullptr) {
     PointerEventInit* init = PointerEventInit::Create();
     init->setPointerId(pointer_id);
     PointerEvent* pointer_event = PointerEvent::Create(type, init);
+    if (target) {
+      pointer_event->SetTarget(target);
+    }
     performance_->RegisterEventTiming(*pointer_event, start_time,
                                       processing_start, processing_end);
   }
 
   PerformanceEventTiming* CreatePerformanceEventTiming(
       const AtomicString& name) {
-    return PerformanceEventTiming::Create(name, 0.0, 0.0, 0.0, false, nullptr);
+    return PerformanceEventTiming::Create(name, 0.0, 0.0, 0.0, false, nullptr,
+                                          1);
   }
 
   LocalFrame* GetFrame() const { return &page_holder_->GetFrame(); }
@@ -163,6 +170,10 @@ class WindowPerformanceTest : public testing::Test {
     return scoped_fake_ukm_recorder_.recorder();
   }
 
+  const base::HistogramTester& GetHistogramTester() const {
+    return histogram_tester_;
+  }
+
   void PageVisibilityChanged(base::TimeTicks timestamp) {
     performance_->last_visibility_change_timestamp_ = timestamp;
   }
@@ -172,6 +183,7 @@ class WindowPerformanceTest : public testing::Test {
   std::unique_ptr<DummyPageHolder> page_holder_;
   scoped_refptr<base::TestMockTimeTaskRunner> test_task_runner_;
   ScopedFakeUkmRecorder scoped_fake_ukm_recorder_;
+  base::HistogramTester histogram_tester_;
 };
 
 TEST_F(WindowPerformanceTest, LongTaskObserverInstrumentation) {
@@ -464,6 +476,46 @@ TEST_F(WindowPerformanceTest, FirstPointerUp) {
       1u, performance_->getEntriesByName("pointerdown", "first-input").size());
 }
 
+// When the pointerdown is optimized out, the mousedown works as a
+// 'first-input'.
+TEST_F(WindowPerformanceTest, PointerdownOptimizedOut) {
+  base::TimeTicks start_time = GetTimeStamp(0);
+  base::TimeTicks processing_start = GetTimeStamp(1);
+  base::TimeTicks processing_end = GetTimeStamp(2);
+  base::TimeTicks swap_time = GetTimeStamp(3);
+  RegisterPointerEvent("mousedown", start_time, processing_start,
+                       processing_end, 4);
+  SimulateSwapPromise(swap_time);
+  EXPECT_EQ(1u, performance_->getEntriesByType("first-input").size());
+  // The name of the entry should be "pointerdown".
+  EXPECT_EQ(1u,
+            performance_->getEntriesByName("mousedown", "first-input").size());
+}
+
+// Test that pointerdown followed by mousedown, pointerup works as a
+// 'first-input'.
+TEST_F(WindowPerformanceTest, PointerdownOnDesktop) {
+  base::TimeTicks start_time = GetTimeStamp(0);
+  base::TimeTicks processing_start = GetTimeStamp(1);
+  base::TimeTicks processing_end = GetTimeStamp(2);
+  base::TimeTicks swap_time = GetTimeStamp(3);
+  RegisterPointerEvent("pointerdown", start_time, processing_start,
+                       processing_end, 4);
+  SimulateSwapPromise(swap_time);
+  EXPECT_EQ(0u, performance_->getEntriesByType("first-input").size());
+  RegisterPointerEvent("mousedown", start_time, processing_start,
+                       processing_end, 4);
+  SimulateSwapPromise(swap_time);
+  EXPECT_EQ(0u, performance_->getEntriesByType("first-input").size());
+  RegisterPointerEvent("pointerup", start_time, processing_start,
+                       processing_end, 4);
+  SimulateSwapPromise(swap_time);
+  EXPECT_EQ(1u, performance_->getEntriesByType("first-input").size());
+  // The name of the entry should be "pointerdown".
+  EXPECT_EQ(
+      1u, performance_->getEntriesByName("pointerdown", "first-input").size());
+}
+
 TEST_F(WindowPerformanceTest, OneKeyboardInteraction) {
   base::TimeTicks keydown_timestamp = GetTimeStamp(0);
   // Keydown
@@ -501,6 +553,16 @@ TEST_F(WindowPerformanceTest, OneKeyboardInteraction) {
   GetUkmRecorder()->ExpectEntryMetric(
       ukm_entry,
       ukm::builders::Responsiveness_UserInteraction::kInteractionTypeName, 0);
+
+  // Check UMA recording.
+  GetHistogramTester().ExpectTotalCount(
+      "Blink.Responsiveness.UserInteraction.MaxEventDuration.AllTypes", 1);
+  GetHistogramTester().ExpectTotalCount(
+      "Blink.Responsiveness.UserInteraction.MaxEventDuration.Keyboard", 1);
+  GetHistogramTester().ExpectTotalCount(
+      "Blink.Responsiveness.UserInteraction.MaxEventDuration.TapOrClick", 0);
+  GetHistogramTester().ExpectTotalCount(
+      "Blink.Responsiveness.UserInteraction.MaxEventDuration.Drag", 0);
 }
 
 TEST_F(WindowPerformanceTest, HoldingDownAKey) {
@@ -568,6 +630,16 @@ TEST_F(WindowPerformanceTest, HoldingDownAKey) {
         entry,
         ukm::builders::Responsiveness_UserInteraction::kInteractionTypeName, 0);
   }
+
+  // Check UMA recording.
+  GetHistogramTester().ExpectTotalCount(
+      "Blink.Responsiveness.UserInteraction.MaxEventDuration.AllTypes", 3);
+  GetHistogramTester().ExpectTotalCount(
+      "Blink.Responsiveness.UserInteraction.MaxEventDuration.Keyboard", 3);
+  GetHistogramTester().ExpectTotalCount(
+      "Blink.Responsiveness.UserInteraction.MaxEventDuration.TapOrClick", 0);
+  GetHistogramTester().ExpectTotalCount(
+      "Blink.Responsiveness.UserInteraction.MaxEventDuration.Drag", 0);
 }
 
 TEST_F(WindowPerformanceTest, PressMultipleKeys) {
@@ -684,6 +756,16 @@ TEST_F(WindowPerformanceTest, TapOrClick) {
   GetUkmRecorder()->ExpectEntryMetric(
       ukm_entry,
       ukm::builders::Responsiveness_UserInteraction::kInteractionTypeName, 1);
+
+  // Check UMA recording.
+  GetHistogramTester().ExpectTotalCount(
+      "Blink.Responsiveness.UserInteraction.MaxEventDuration.AllTypes", 1);
+  GetHistogramTester().ExpectTotalCount(
+      "Blink.Responsiveness.UserInteraction.MaxEventDuration.Keyboard", 0);
+  GetHistogramTester().ExpectTotalCount(
+      "Blink.Responsiveness.UserInteraction.MaxEventDuration.TapOrClick", 1);
+  GetHistogramTester().ExpectTotalCount(
+      "Blink.Responsiveness.UserInteraction.MaxEventDuration.Drag", 0);
 }
 
 TEST_F(WindowPerformanceTest, PageVisibilityChanged) {
@@ -792,6 +874,16 @@ TEST_F(WindowPerformanceTest, Drag) {
   GetUkmRecorder()->ExpectEntryMetric(
       ukm_entry,
       ukm::builders::Responsiveness_UserInteraction::kInteractionTypeName, 2);
+
+  // Check UMA recording.
+  GetHistogramTester().ExpectTotalCount(
+      "Blink.Responsiveness.UserInteraction.MaxEventDuration.AllTypes", 1);
+  GetHistogramTester().ExpectTotalCount(
+      "Blink.Responsiveness.UserInteraction.MaxEventDuration.Keyboard", 0);
+  GetHistogramTester().ExpectTotalCount(
+      "Blink.Responsiveness.UserInteraction.MaxEventDuration.TapOrClick", 0);
+  GetHistogramTester().ExpectTotalCount(
+      "Blink.Responsiveness.UserInteraction.MaxEventDuration.Drag", 1);
 }
 
 TEST_F(WindowPerformanceTest, Scroll) {
@@ -822,6 +914,16 @@ TEST_F(WindowPerformanceTest, Scroll) {
   auto entries = GetUkmRecorder()->GetEntriesByName(
       ukm::builders::Responsiveness_UserInteraction::kEntryName);
   EXPECT_EQ(0u, entries.size());
+
+  // Check UMA recording.
+  GetHistogramTester().ExpectTotalCount(
+      "Blink.Responsiveness.UserInteraction.MaxEventDuration.AllTypes", 0);
+  GetHistogramTester().ExpectTotalCount(
+      "Blink.Responsiveness.UserInteraction.MaxEventDuration.Keyboard", 0);
+  GetHistogramTester().ExpectTotalCount(
+      "Blink.Responsiveness.UserInteraction.MaxEventDuration.TapOrClick", 0);
+  GetHistogramTester().ExpectTotalCount(
+      "Blink.Responsiveness.UserInteraction.MaxEventDuration.Drag", 0);
 }
 
 TEST_F(WindowPerformanceTest, TouchesWithoutClick) {
@@ -869,33 +971,104 @@ TEST_F(WindowPerformanceTest, ElementTimingTraceEvent) {
   analyzer->FindEvents(q, &events);
   EXPECT_EQ(1u, events.size());
   EXPECT_EQ("loading", events[0]->category);
-  EXPECT_TRUE(events[0]->HasArg("frame"));
+  EXPECT_TRUE(events[0]->HasStringArg("frame"));
 
-  EXPECT_TRUE(events[0]->HasArg("data"));
-  base::Value arg;
-  EXPECT_TRUE(events[0]->GetArgAsValue("data", &arg));
-  base::DictionaryValue* arg_dict;
-  EXPECT_TRUE(arg.GetAsDictionary(&arg_dict));
-  std::string element_type;
-  EXPECT_TRUE(arg_dict->GetString("elementType", &element_type));
-  EXPECT_EQ(element_type, "image-paint");
-  EXPECT_EQ(arg_dict->FindIntKey("loadTime").value_or(-1), 1000);
-  EXPECT_EQ(arg_dict->FindIntKey("renderTime").value_or(-1), 2000);
-  EXPECT_EQ(arg_dict->FindDoubleKey("rectLeft").value_or(-1), 10);
-  EXPECT_EQ(arg_dict->FindDoubleKey("rectTop").value_or(-1), 20);
-  EXPECT_EQ(arg_dict->FindDoubleKey("rectWidth").value_or(-1), 30);
-  EXPECT_EQ(arg_dict->FindDoubleKey("rectHeight").value_or(-1), 40);
-  std::string identifier;
-  EXPECT_TRUE(arg_dict->GetString("identifier", &identifier));
-  EXPECT_EQ(identifier, "identifier");
-  EXPECT_EQ(arg_dict->FindIntKey("naturalWidth").value_or(-1), 200);
-  EXPECT_EQ(arg_dict->FindIntKey("naturalHeight").value_or(-1), 300);
-  std::string element_id;
-  EXPECT_TRUE(arg_dict->GetString("elementId", &element_id));
-  EXPECT_EQ(element_id, "id");
-  std::string url;
-  EXPECT_TRUE(arg_dict->GetString("url", &url));
-  EXPECT_EQ(url, "url");
+  ASSERT_TRUE(events[0]->HasDictArg("data"));
+  base::Value::Dict arg_dict = events[0]->GetKnownArgAsDict("data");
+  std::string* element_type = arg_dict.FindString("elementType");
+  ASSERT_TRUE(element_type);
+  EXPECT_EQ(*element_type, "image-paint");
+  EXPECT_EQ(arg_dict.FindInt("loadTime").value_or(-1), 1000);
+  EXPECT_EQ(arg_dict.FindInt("renderTime").value_or(-1), 2000);
+  EXPECT_EQ(arg_dict.FindDouble("rectLeft").value_or(-1), 10);
+  EXPECT_EQ(arg_dict.FindDouble("rectTop").value_or(-1), 20);
+  EXPECT_EQ(arg_dict.FindDouble("rectWidth").value_or(-1), 30);
+  EXPECT_EQ(arg_dict.FindDouble("rectHeight").value_or(-1), 40);
+  std::string* identifier = arg_dict.FindString("identifier");
+  ASSERT_TRUE(identifier);
+  EXPECT_EQ(*identifier, "identifier");
+  EXPECT_EQ(arg_dict.FindInt("naturalWidth").value_or(-1), 200);
+  EXPECT_EQ(arg_dict.FindInt("naturalHeight").value_or(-1), 300);
+  std::string* element_id = arg_dict.FindString("elementId");
+  ASSERT_TRUE(element_id);
+  EXPECT_EQ(*element_id, "id");
+  std::string* url = arg_dict.FindString("url");
+  ASSERT_TRUE(url);
+  EXPECT_EQ(*url, "url");
+}
+
+TEST_F(WindowPerformanceTest, EventTimingTraceEvents) {
+  using trace_analyzer::Query;
+  trace_analyzer::Start("*");
+  base::TimeTicks start_time = GetTimeOrigin() + base::Seconds(1);
+  base::TimeTicks processing_start = start_time + base::Milliseconds(10);
+  base::TimeTicks processing_end = processing_start + base::Milliseconds(10);
+  RegisterPointerEvent("pointerdown", start_time, processing_start,
+                       processing_end, 4, GetWindow()->document());
+
+  base::TimeTicks start_time2 = start_time + base::Microseconds(200);
+  RegisterPointerEvent("pointerup", start_time2, processing_start,
+                       processing_end, 4, GetWindow()->document());
+  base::TimeTicks swap_time = start_time + base::Microseconds(100);
+  SimulateSwapPromise(swap_time);
+
+  base::TimeTicks start_time3 = start_time2 + base::Microseconds(2000);
+  RegisterPointerEvent("click", start_time3, processing_start, processing_end,
+                       4, GetWindow()->document());
+
+  base::TimeTicks swap_time2 = start_time + base::Microseconds(4000);
+  SimulateSwapPromise(swap_time2);
+
+  // Only the longer event should have been reported.
+  auto analyzer = trace_analyzer::Stop();
+  trace_analyzer::TraceEventVector events;
+  Query q = Query::EventNameIs("EventTiming");
+  analyzer->FindEvents(q, &events);
+  EXPECT_EQ(6u, events.size());
+  EXPECT_EQ("devtools.timeline", events[0]->category);
+  EXPECT_EQ("devtools.timeline", events[1]->category);
+
+  ASSERT_TRUE(events[0]->HasDictArg("data"));
+  base::Value::Dict arg_dict = events[0]->GetKnownArgAsDict("data");
+  EXPECT_GT(arg_dict.FindInt("interactionId").value_or(-1), 0);
+  std::string* event_name = arg_dict.FindString("type");
+  ASSERT_TRUE(event_name);
+  EXPECT_EQ(*event_name, "pointerdown");
+  std::string* frame_trace_value = arg_dict.FindString("frame");
+  EXPECT_EQ(*frame_trace_value, ToTraceValue(GetFrame()));
+  EXPECT_EQ(arg_dict.FindInt("nodeId"),
+            DOMNodeIds::IdForNode(GetWindow()->document()));
+  EXPECT_EQ(events[0]->id, events[3]->id);
+  EXPECT_LT(events[0]->timestamp, events[3]->timestamp);
+  ASSERT_FALSE(events[3]->HasDictArg("data"));
+
+  ASSERT_TRUE(events[1]->HasDictArg("data"));
+  arg_dict = events[1]->GetKnownArgAsDict("data");
+  EXPECT_GT(arg_dict.FindInt("interactionId").value_or(-1), 0);
+  event_name = arg_dict.FindString("type");
+  ASSERT_TRUE(event_name);
+  EXPECT_EQ(*event_name, "pointerup");
+  frame_trace_value = arg_dict.FindString("frame");
+  EXPECT_EQ(*frame_trace_value, ToTraceValue(GetFrame()));
+  EXPECT_EQ(arg_dict.FindInt("nodeId"),
+            DOMNodeIds::IdForNode(GetWindow()->document()));
+  EXPECT_EQ(events[1]->id, events[4]->id);
+  EXPECT_LT(events[1]->timestamp, events[4]->timestamp);
+  ASSERT_FALSE(events[4]->HasDictArg("data"));
+
+  ASSERT_TRUE(events[2]->HasDictArg("data"));
+  arg_dict = events[2]->GetKnownArgAsDict("data");
+  EXPECT_GT(arg_dict.FindInt("interactionId").value_or(-1), 0);
+  event_name = arg_dict.FindString("type");
+  ASSERT_TRUE(event_name);
+  EXPECT_EQ(*event_name, "click");
+  frame_trace_value = arg_dict.FindString("frame");
+  EXPECT_EQ(*frame_trace_value, ToTraceValue(GetFrame()));
+  EXPECT_EQ(arg_dict.FindInt("nodeId"),
+            DOMNodeIds::IdForNode(GetWindow()->document()));
+  EXPECT_EQ(events[2]->id, events[5]->id);
+  EXPECT_LT(events[2]->timestamp, events[5]->timestamp);
+  ASSERT_FALSE(events[5]->HasDictArg("data"));
 }
 
 TEST_F(WindowPerformanceTest, InteractionID) {

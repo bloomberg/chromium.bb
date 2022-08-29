@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 
+#include "ash/app_list/app_list_model_provider.h"
 #include "ash/app_list/model/app_list_item.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/session/session_controller_impl.h"
@@ -20,26 +21,25 @@ namespace ash {
 
 AppListBadgeController::AppListBadgeController() {
   Shell::Get()->session_controller()->AddObserver(this);
+
+  auto* model_provider = AppListModelProvider::Get();
+  DCHECK(model_provider);
+  model_provider->AddObserver(this);
+  SetActiveModel(model_provider->model());
 }
 
 AppListBadgeController::~AppListBadgeController() = default;
 
 void AppListBadgeController::Shutdown() {
+  AppListModelProvider::Get()->RemoveObserver(this);
   Shell::Get()->session_controller()->RemoveObserver(this);
   model_observation_.Reset();
 }
 
-void AppListBadgeController::SetActiveModel(AppListModel* model) {
-  model_ = model;
-  model_observation_.Reset();
-
-  if (model_)
-    model_observation_.Observe(model_);
-}
-
-void AppListBadgeController::ClearActiveModel() {
-  model_ = nullptr;
-  model_observation_.Reset();
+void AppListBadgeController::OnActiveAppListModelsChanged(
+    AppListModel* model,
+    SearchModel* search_model) {
+  SetActiveModel(model);
 }
 
 void AppListBadgeController::OnAppListItemAdded(AppListItem* item) {
@@ -47,8 +47,7 @@ void AppListBadgeController::OnAppListItemAdded(AppListItem* item) {
     // Update the notification badge indicator for the newly added app list
     // item.
     cache_->ForOneApp(item->id(), [item](const apps::AppUpdate& update) {
-      item->UpdateNotificationBadge(update.HasBadge() ==
-                                    apps::mojom::OptionalBool::kTrue);
+      item->UpdateNotificationBadge(update.HasBadge().value_or(false));
     });
   }
 }
@@ -80,7 +79,8 @@ void AppListBadgeController::OnActiveUserPrefServiceChanged(
 void AppListBadgeController::OnAppUpdate(const apps::AppUpdate& update) {
   if (update.HasBadgeChanged() &&
       notification_badging_pref_enabled_.value_or(false)) {
-    UpdateItemNotificationBadge(update.AppId(), update.HasBadge());
+    UpdateItemNotificationBadge(update.AppId(),
+                                update.HasBadge().value_or(false));
   }
 }
 
@@ -91,13 +91,13 @@ void AppListBadgeController::OnAppRegistryCacheWillBeDestroyed(
 
 void AppListBadgeController::UpdateItemNotificationBadge(
     const std::string& app_id,
-    apps::mojom::OptionalBool has_badge) {
+    bool has_badge) {
   if (!model_)
     return;
   AppListItem* item = model_->FindItem(app_id);
   if (!item)
     return;
-  item->UpdateNotificationBadge(has_badge == apps::mojom::OptionalBool::kTrue);
+  item->UpdateNotificationBadge(has_badge);
 }
 
 void AppListBadgeController::UpdateAppNotificationBadging() {
@@ -115,14 +115,19 @@ void AppListBadgeController::UpdateAppNotificationBadging() {
   if (cache_) {
     cache_->ForEachApp([this](const apps::AppUpdate& update) {
       // Set the app notification badge hidden when the pref is disabled.
-      apps::mojom::OptionalBool has_badge =
-          notification_badging_pref_enabled_.value() &&
-                  (update.HasBadge() == apps::mojom::OptionalBool::kTrue)
-              ? apps::mojom::OptionalBool::kTrue
-              : apps::mojom::OptionalBool::kFalse;
+      bool has_badge = notification_badging_pref_enabled_.value() &&
+                       (update.HasBadge().value_or(false));
       UpdateItemNotificationBadge(update.AppId(), has_badge);
     });
   }
+}
+
+void AppListBadgeController::SetActiveModel(AppListModel* model) {
+  model_ = model;
+  model_observation_.Reset();
+
+  if (model_)
+    model_observation_.Observe(model_);
 }
 
 }  // namespace ash

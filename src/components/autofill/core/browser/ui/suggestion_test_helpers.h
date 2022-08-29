@@ -60,13 +60,13 @@ inline testing::Matcher<const std::vector<Suggestion>&> SuggestionVectorIdsAre(
       elts_are_matcher, &Suggestion::frontend_id));
 }
 
-// Like SuggestionVectorIdsAre above, but tests the values.
+// Like SuggestionVectorIdsAre above, but tests the main_texts.
 template <class EltsAreMatcher>
 inline testing::Matcher<const std::vector<Suggestion>&>
-SuggestionVectorValuesAre(const EltsAreMatcher& elts_are_matcher) {
+SuggestionVectorMainTextsAre(const EltsAreMatcher& elts_are_matcher) {
   return testing::MakeMatcher(
-      new SuggestionVectorMembersAreMatcher<std::u16string>(
-          elts_are_matcher, &Suggestion::value));
+      new SuggestionVectorMembersAreMatcher<Suggestion::Text>(
+          elts_are_matcher, &Suggestion::main_text));
 }
 
 // Like SuggestionVectorIdsAre above, but tests the labels.
@@ -87,13 +87,13 @@ SuggestionVectorIconsAre(const EltsAreMatcher& elts_are_matcher) {
                                                          &Suggestion::icon));
 }
 
-// Like SuggestionVectorIdsAre above, but tests the store_indicator_icon.
+// Like SuggestionVectorIdsAre above, but tests the trailing_icon.
 template <class EltsAreMatcher>
 inline testing::Matcher<const std::vector<Suggestion>&>
 SuggestionVectorStoreIndicatorIconsAre(const EltsAreMatcher& elts_are_matcher) {
   return testing::MakeMatcher(
       new SuggestionVectorMembersAreMatcher<std::string>(
-          elts_are_matcher, &Suggestion::store_indicator_icon));
+          elts_are_matcher, &Suggestion::trailing_icon));
 }
 
 }  // namespace autofill

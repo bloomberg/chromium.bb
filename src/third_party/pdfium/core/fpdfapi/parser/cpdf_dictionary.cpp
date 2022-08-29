@@ -148,6 +148,11 @@ float CPDF_Dictionary::GetNumberFor(const ByteString& key) const {
   return p ? p->GetNumber() : 0;
 }
 
+RetainPtr<CPDF_Dictionary> CPDF_Dictionary::GetMutableDictFor(
+    const ByteString& key) {
+  return pdfium::WrapRetain(GetDictFor(key));
+}
+
 const CPDF_Dictionary* CPDF_Dictionary::GetDictFor(
     const ByteString& key) const {
   const CPDF_Object* p = GetDirectObjectFor(key);
@@ -163,6 +168,11 @@ const CPDF_Dictionary* CPDF_Dictionary::GetDictFor(
 CPDF_Dictionary* CPDF_Dictionary::GetDictFor(const ByteString& key) {
   return const_cast<CPDF_Dictionary*>(
       static_cast<const CPDF_Dictionary*>(this)->GetDictFor(key));
+}
+
+RetainPtr<CPDF_Array> CPDF_Dictionary::GetMutableArrayFor(
+    const ByteString& key) {
+  return pdfium::WrapRetain(GetArrayFor(key));
 }
 
 const CPDF_Array* CPDF_Dictionary::GetArrayFor(const ByteString& key) const {
@@ -234,7 +244,7 @@ void CPDF_Dictionary::ConvertToIndirectObjectFor(
   it->second = pObj->MakeReference(pHolder);
 }
 
-RetainPtr<CPDF_Object> CPDF_Dictionary::RemoveFor(const ByteString& key) {
+RetainPtr<CPDF_Object> CPDF_Dictionary::RemoveFor(ByteStringView key) {
   CHECK(!IsLocked());
   RetainPtr<CPDF_Object> result;
   auto it = m_Map.find(key);

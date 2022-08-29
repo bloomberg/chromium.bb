@@ -22,7 +22,6 @@ consoles.console_view(
 
 ci.builder(
     name = "3pp-linux-amd64-packager",
-    os = os.LINUX_DEFAULT,
     builderless = False,
     console_view_entry = consoles.console_view_entry(
         category = "3pp|linux",
@@ -93,19 +92,26 @@ ci.builder(
     executable = "recipe:android/avd_packager",
     properties = {
         "avd_configs": [
+            "tools/android/avd/proto/creation/generic_android19.textpb",
+            "tools/android/avd/proto/creation/generic_android22.textpb",
             "tools/android/avd/proto/creation/generic_android23.textpb",
+            "tools/android/avd/proto/creation/generic_android24.textpb",
+            "tools/android/avd/proto/creation/generic_playstore_android24.textpb",
+            "tools/android/avd/proto/creation/generic_android25.textpb",
+            "tools/android/avd/proto/creation/generic_playstore_android25.textpb",
             "tools/android/avd/proto/creation/generic_android27.textpb",
+            "tools/android/avd/proto/creation/generic_playstore_android27.textpb",
             "tools/android/avd/proto/creation/generic_android28.textpb",
+            "tools/android/avd/proto/creation/generic_playstore_android28.textpb",
             "tools/android/avd/proto/creation/generic_android29.textpb",
             "tools/android/avd/proto/creation/generic_android30.textpb",
-            "tools/android/avd/proto/creation/generic_android31.textpb",
-            "tools/android/avd/proto/creation/generic_playstore_android27.textpb",
-            "tools/android/avd/proto/creation/generic_playstore_android28.textpb",
             "tools/android/avd/proto/creation/generic_playstore_android30.textpb",
+            "tools/android/avd/proto/creation/generic_android31.textpb",
             "tools/android/avd/proto/creation/generic_playstore_android31.textpb",
+            "tools/android/avd/proto/creation/generic_android32_foldable.textpb",
+            "tools/android/avd/proto/creation/generic_playstore_android32_foldable.textpb",
         ],
     },
-    os = os.LINUX_BIONIC_REMOVE,
     # Triggered manually through the scheduler UI
     # https://luci-scheduler.appspot.com/jobs/chromium/android-avd-packager
     schedule = "triggered",
@@ -180,8 +186,32 @@ ci.builder(
                 "cipd_yaml": "third_party/android_sdk/cipd/sources/android-31.yaml",
             },
             {
+                "sdk_package_name": "system-images;android-19;google_apis;x86",
+                "cipd_yaml": "third_party/android_sdk/cipd/system_images/android-19/google_apis/x86.yaml",
+            },
+            {
+                "sdk_package_name": "system-images;android-22;google_apis;x86",
+                "cipd_yaml": "third_party/android_sdk/cipd/system_images/android-22/google_apis/x86.yaml",
+            },
+            {
                 "sdk_package_name": "system-images;android-23;google_apis;x86",
                 "cipd_yaml": "third_party/android_sdk/cipd/system_images/android-23/google_apis/x86.yaml",
+            },
+            {
+                "sdk_package_name": "system-images;android-24;google_apis;x86",
+                "cipd_yaml": "third_party/android_sdk/cipd/system_images/android-24/google_apis/x86.yaml",
+            },
+            {
+                "sdk_package_name": "system-images;android-24;google_apis_playstore;x86",
+                "cipd_yaml": "third_party/android_sdk/cipd/system_images/android-24/google_apis_playstore/x86.yaml",
+            },
+            {
+                "sdk_package_name": "system-images;android-25;google_apis;x86",
+                "cipd_yaml": "third_party/android_sdk/cipd/system_images/android-25/google_apis/x86.yaml",
+            },
+            {
+                "sdk_package_name": "system-images;android-25;google_apis_playstore;x86",
+                "cipd_yaml": "third_party/android_sdk/cipd/system_images/android-25/google_apis_playstore/x86.yaml",
             },
             {
                 "sdk_package_name": "system-images;android-27;google_apis;x86",

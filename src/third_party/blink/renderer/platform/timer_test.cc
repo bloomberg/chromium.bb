@@ -8,9 +8,11 @@
 #include <queue>
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/task_environment.h"
+#include "base/time/time.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
 #include "third_party/blink/renderer/platform/heap/thread_state_scopes.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_impl.h"
@@ -62,9 +64,10 @@ class TimerTest : public testing::Test {
   // fire.
   bool TimeTillNextDelayedTask(base::TimeDelta* time) const {
     base::sequence_manager::LazyNow lazy_now(platform_->NowTicks());
-    auto wake_up = platform_->GetMainThreadScheduler()
-                       ->GetSchedulerHelperForTesting()
-                       ->GetNextWakeUp();
+    auto* scheduler_helper =
+        platform_->GetMainThreadScheduler()->GetSchedulerHelperForTesting();
+    scheduler_helper->ReclaimMemory();
+    auto wake_up = scheduler_helper->GetNextWakeUp();
     if (!wake_up)
       return false;
     *time = wake_up->time - lazy_now.Now();
@@ -219,7 +222,7 @@ TEST_F(TimerTest, StartOneShot_NonZeroAndCancel) {
   EXPECT_EQ(base::Seconds(10), run_time);
 
   timer.Stop();
-  EXPECT_TRUE(TimeTillNextDelayedTask(&run_time));
+  EXPECT_FALSE(TimeTillNextDelayedTask(&run_time));
 
   platform_->RunUntilIdle();
   EXPECT_FALSE(run_times_.size());
@@ -235,7 +238,7 @@ TEST_F(TimerTest, StartOneShot_NonZeroAndCancelThenRepost) {
   EXPECT_EQ(base::Seconds(10), run_time);
 
   timer.Stop();
-  EXPECT_TRUE(TimeTillNextDelayedTask(&run_time));
+  EXPECT_FALSE(TimeTillNextDelayedTask(&run_time));
 
   platform_->RunUntilIdle();
   EXPECT_FALSE(run_times_.size());
@@ -544,11 +547,14 @@ TEST_F(TimerTest, RepeatingTimerDoesNotDrift) {
   platform_->RunForPeriod(base::Milliseconds(2100));
   // Next scheduled task to run at |start_time_| + 10s
   platform_->RunForPeriod(base::Milliseconds(2900));
-  // Next scheduled task to run at |start_time_| + 14s (skips a beat)
-  platform_->AdvanceClock(base::Milliseconds(3100));
+  // Next scheduled task to run at |start_time_| + 12s
+  platform_->AdvanceClock(base::Milliseconds(1800));
+  platform_->RunUntilIdle();
+  // Next scheduled task to run at |start_time_| + 14s
+  platform_->AdvanceClock(base::Milliseconds(1900));
   platform_->RunUntilIdle();
   // Next scheduled task to run at |start_time_| + 18s (skips a beat)
-  platform_->AdvanceClock(base::Seconds(4));
+  platform_->AdvanceClock(base::Milliseconds(50));
   platform_->RunUntilIdle();
   // Next scheduled task to run at |start_time_| + 28s (skips 5 beats)
   platform_->AdvanceClock(base::Seconds(10));
@@ -559,8 +565,8 @@ TEST_F(TimerTest, RepeatingTimerDoesNotDrift) {
       ElementsAre(
           start_time_ + base::Seconds(2), start_time_ + base::Seconds(4),
           start_time_ + base::Seconds(6), start_time_ + base::Seconds(8),
-          start_time_ + base::Seconds(10), start_time_ + base::Seconds(14),
-          start_time_ + base::Seconds(18), start_time_ + base::Seconds(28)));
+          start_time_ + base::Seconds(10), start_time_ + base::Seconds(12),
+          start_time_ + base::Seconds(14), start_time_ + base::Seconds(24)));
 }
 
 template <typename TimerFiredClass>
@@ -589,7 +595,7 @@ TEST_F(TimerTest, UserSuppliedTaskRunner) {
   timer.StartOneShot(base::TimeDelta(), FROM_HERE);
 
   // Make sure the task was posted on taskRunner.
-  EXPECT_FALSE(task_queue->GetTaskQueue()->IsEmpty());
+  EXPECT_FALSE(task_queue->IsEmpty());
 }
 
 TEST_F(TimerTest, RunOnHeapTimer) {
@@ -685,7 +691,7 @@ TEST_F(TimerTest, MoveToNewTaskRunnerOneShot) {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner1 =
       task_queue1->CreateTaskRunner(TaskType::kInternalTest);
   TaskObserver task_observer1(task_runner1, &run_order);
-  task_queue1->GetTaskQueue()->AddTaskObserver(&task_observer1);
+  task_queue1->AddTaskObserver(&task_observer1);
 
   scoped_refptr<MainThreadTaskQueue> task_queue2(
       platform_->GetMainThreadScheduler()->NewThrottleableTaskQueueForTest(
@@ -693,7 +699,7 @@ TEST_F(TimerTest, MoveToNewTaskRunnerOneShot) {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner2 =
       task_queue2->CreateTaskRunner(TaskType::kInternalTest);
   TaskObserver task_observer2(task_runner2, &run_order);
-  task_queue2->GetTaskQueue()->AddTaskObserver(&task_observer2);
+  task_queue2->AddTaskObserver(&task_observer2);
 
   TimerForTest<TimerTest> timer(task_runner1, this, &TimerTest::CountingTask);
 
@@ -711,8 +717,8 @@ TEST_F(TimerTest, MoveToNewTaskRunnerOneShot) {
 
   EXPECT_THAT(run_order, ElementsAre(task_runner2));
 
-  EXPECT_TRUE(task_queue1->GetTaskQueue()->IsEmpty());
-  EXPECT_TRUE(task_queue2->GetTaskQueue()->IsEmpty());
+  EXPECT_TRUE(task_queue1->IsEmpty());
+  EXPECT_TRUE(task_queue2->IsEmpty());
 }
 
 TEST_F(TimerTest, MoveToNewTaskRunnerRepeating) {
@@ -724,7 +730,7 @@ TEST_F(TimerTest, MoveToNewTaskRunnerRepeating) {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner1 =
       task_queue1->CreateTaskRunner(TaskType::kInternalTest);
   TaskObserver task_observer1(task_runner1, &run_order);
-  task_queue1->GetTaskQueue()->AddTaskObserver(&task_observer1);
+  task_queue1->AddTaskObserver(&task_observer1);
 
   scoped_refptr<MainThreadTaskQueue> task_queue2(
       platform_->GetMainThreadScheduler()->NewThrottleableTaskQueueForTest(
@@ -732,7 +738,7 @@ TEST_F(TimerTest, MoveToNewTaskRunnerRepeating) {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner2 =
       task_queue2->CreateTaskRunner(TaskType::kInternalTest);
   TaskObserver task_observer2(task_runner2, &run_order);
-  task_queue2->GetTaskQueue()->AddTaskObserver(&task_observer2);
+  task_queue2->AddTaskObserver(&task_observer2);
 
   TimerForTest<TimerTest> timer(task_runner1, this, &TimerTest::CountingTask);
 
@@ -754,8 +760,8 @@ TEST_F(TimerTest, MoveToNewTaskRunnerRepeating) {
   EXPECT_THAT(run_order, ElementsAre(task_runner1, task_runner1, task_runner2,
                                      task_runner2));
 
-  EXPECT_TRUE(task_queue1->GetTaskQueue()->IsEmpty());
-  EXPECT_FALSE(task_queue2->GetTaskQueue()->IsEmpty());
+  EXPECT_TRUE(task_queue1->IsEmpty());
+  EXPECT_FALSE(task_queue2->IsEmpty());
 }
 
 // This test checks that when inactive timer is moved to a different task
@@ -777,8 +783,8 @@ TEST_F(TimerTest, MoveToNewTaskRunnerWithoutTasks) {
 
   platform_->RunUntilIdle();
   EXPECT_TRUE(!run_times_.size());
-  EXPECT_TRUE(task_queue1->GetTaskQueue()->IsEmpty());
-  EXPECT_TRUE(task_queue2->GetTaskQueue()->IsEmpty());
+  EXPECT_TRUE(task_queue1->IsEmpty());
+  EXPECT_TRUE(task_queue2->IsEmpty());
 }
 
 }  // namespace

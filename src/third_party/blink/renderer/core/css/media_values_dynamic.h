@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_MEDIA_VALUES_DYNAMIC_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_MEDIA_VALUES_DYNAMIC_H_
 
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/media_values.h"
 
 namespace blink {
@@ -53,12 +54,21 @@ class CORE_EXPORT MediaValuesDynamic : public MediaValues {
   void Trace(Visitor*) const override;
 
  protected:
+  // CSSLengthResolver
+  float EmFontSize() const override;
+  float RemFontSize() const override;
+  float ExFontSize() const override;
+  float ChFontSize() const override;
   double ViewportWidth() const override;
   double ViewportHeight() const override;
-  float EmSize() const override;
-  float RemSize() const override;
-  float ExSize() const override;
-  float ChSize() const override;
+  double SmallViewportWidth() const override;
+  double SmallViewportHeight() const override;
+  double LargeViewportWidth() const override;
+  double LargeViewportHeight() const override;
+  double DynamicViewportWidth() const override;
+  double DynamicViewportHeight() const override;
+  double ContainerWidth() const override;
+  double ContainerHeight() const override;
   WritingMode GetWritingMode() const override {
     return WritingMode::kHorizontalTb;
   }

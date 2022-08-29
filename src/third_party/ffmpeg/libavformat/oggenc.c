@@ -19,6 +19,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include "config_components.h"
+
 #include <stdint.h>
 
 #include "libavutil/crc.h"
@@ -31,6 +33,7 @@
 #include "avformat.h"
 #include "avio_internal.h"
 #include "internal.h"
+#include "version.h"
 #include "vorbiscomment.h"
 
 #define MAX_PAGE_SIZE 65025

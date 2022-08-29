@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {Destination, DestinationConnectionStatus, DestinationOrigin, DestinationType, NativeLayerCrosImpl, PrinterStatusReason, PrinterStatusSeverity, PrintPreviewDestinationListItemElement} from 'chrome://print/print_preview.js';
+import {Destination, DestinationOrigin, NativeLayerCrosImpl, PrinterStatusReason, PrinterStatusSeverity, PrintPreviewDestinationListItemElement} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-
-import {assertEquals} from 'chrome://webui-test/chai_assert.js';
+import {assertEquals, assertFalse} from 'chrome://webui-test/chai_assert.js';
+import {MockController} from 'chrome://webui-test/mock_controller.js';
 import {waitBeforeNextRender} from 'chrome://webui-test/test_util.js';
 
 import {NativeLayerCrosStub} from './native_layer_cros_stub.js';
+import {FakeMediaQueryList} from './print_preview_test_utils.js';
 
 const destination_item_test_cros = {
   suiteName: 'DestinationItemTestCros',
@@ -26,6 +27,10 @@ suite(destination_item_test_cros.suiteName, function() {
   let listItem: PrintPreviewDestinationListItemElement;
 
   let nativeLayerCros: NativeLayerCrosStub;
+
+  let mockController: MockController;
+
+  let fakePrefersColorSchemeMediaQueryList: FakeMediaQueryList;
 
   function setNativeLayerPrinterStatusMap() {
     [{
@@ -49,7 +54,22 @@ suite(destination_item_test_cros.suiteName, function() {
                 status.printerId, status));
   }
 
+  // Mocks calls to window.matchMedia, returning false by default.
+  function configureMatchMediaMock() {
+    mockController = new MockController();
+    const matchMediaMock =
+        mockController.createFunctionMock(window, 'matchMedia');
+    fakePrefersColorSchemeMediaQueryList =
+        new FakeMediaQueryList('(prefers-color-scheme: dark)');
+    matchMediaMock.returnValue = fakePrefersColorSchemeMediaQueryList;
+    assertFalse(window.matchMedia('(prefers-color-scheme: dark)').matches);
+  }
+
   setup(function() {
+    // Mock configuration needs to happen before element added to UI to
+    // ensure iron-media-query uses mock.
+    configureMatchMediaMock();
+
     document.body.innerHTML = `
           <print-preview-destination-list-item id="listItem">
           </print-preview-destination-list-item>`;
@@ -63,9 +83,12 @@ suite(destination_item_test_cros.suiteName, function() {
         document.body.querySelector<PrintPreviewDestinationListItemElement>(
             '#listItem')!;
     listItem.destination = new Destination(
-        'One', DestinationType.LOCAL, DestinationOrigin.CROS, 'Destination One',
-        DestinationConnectionStatus.ONLINE, {description: 'ABC'});
+        'One', DestinationOrigin.CROS, 'Destination One', {description: 'ABC'});
     flush();
+  });
+
+  teardown(function() {
+    mockController.reset();
   });
 
   test(
@@ -87,8 +110,7 @@ suite(destination_item_test_cros.suiteName, function() {
         assertEquals('print-preview:printer-status-grey', icon.icon);
 
         listItem.destination = new Destination(
-            'Two', DestinationType.LOCAL, DestinationOrigin.CROS,
-            'Destination Two', DestinationConnectionStatus.ONLINE,
+            'Two', DestinationOrigin.CROS, 'Destination Two',
             {description: 'ABC'});
 
         return waitBeforeNextRender(listItem).then(() => {
@@ -111,8 +133,7 @@ suite(destination_item_test_cros.suiteName, function() {
         // Simulate destination_list updating and switching the destination
         // after the request for the original destination was already sent out.
         listItem.destination = new Destination(
-            'Two', DestinationType.LOCAL, DestinationOrigin.CROS,
-            'Destination Two', DestinationConnectionStatus.ONLINE,
+            'Two', DestinationOrigin.CROS, 'Destination Two',
             {description: 'ABC'});
 
         return firstDestinationStatusRequestPromise.then(() => {

@@ -4,10 +4,10 @@
 
 #include "chrome/browser/chromeos/extensions/install_limiter.h"
 
+#include "ash/components/tpm/stub_install_attributes.h"
 #include "chrome/browser/ash/login/demo_mode/demo_mode_test_helper.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
-#include "chromeos/tpm/stub_install_attributes.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/browser_task_environment.h"
 #include "extensions/common/constants.h"
@@ -36,7 +36,7 @@ class InstallLimiterTest
 
  private:
   content::BrowserTaskEnvironment task_environment_;
-  chromeos::ScopedStubInstallAttributes test_install_attributes_;
+  ash::ScopedStubInstallAttributes test_install_attributes_;
   user_manager::ScopedUserManager scoped_user_manager_;
 };
 
@@ -49,8 +49,8 @@ TEST_P(InstallLimiterTest, ShouldDeferInstall) {
   if (GetParam() != ash::DemoSession::DemoModeConfig::kNone)
     demo_mode_test_helper.InitializeSession(GetParam());
 
-  // In demo mode (either online or offline), all apps larger than 1MB except
-  // for the screensaver should be deferred.
+  // In demo mode, all apps larger than 1MB except for the screensaver
+  // should be deferred.
   for (const std::string& id : screensaver_ids) {
     bool expected_defer_install =
         GetParam() == ash::DemoSession::DemoModeConfig::kNone ||
@@ -68,5 +68,4 @@ INSTANTIATE_TEST_SUITE_P(
     DemoModeConfig,
     InstallLimiterTest,
     ::testing::Values(ash::DemoSession::DemoModeConfig::kNone,
-                      ash::DemoSession::DemoModeConfig::kOnline,
-                      ash::DemoSession::DemoModeConfig::kOffline));
+                      ash::DemoSession::DemoModeConfig::kOnline));

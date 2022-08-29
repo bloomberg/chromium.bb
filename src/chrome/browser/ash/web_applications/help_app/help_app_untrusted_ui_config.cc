@@ -9,6 +9,7 @@
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/cpp/tablet_mode.h"
+#include "ash/services/multidevice_setup/public/cpp/prefs.h"
 #include "ash/webui/help_app_ui/help_app_untrusted_ui.h"
 #include "ash/webui/help_app_ui/url_constants.h"
 #include "base/bind.h"
@@ -27,7 +28,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
-#include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
@@ -74,6 +75,8 @@ void PopulateLoadTimeData(content::WebUI* web_ui,
                         "device-help-content-id"));
 
   // Add any features that have been enabled.
+  source->AddBoolean("colorThemes",
+                     chromeos::features::IsDarkLightModeEnabled());
   source->AddBoolean("HelpAppReleaseNotes", true);
   source->AddBoolean(
       "HelpAppLauncherSearch",
@@ -89,6 +92,8 @@ void PopulateLoadTimeData(content::WebUI* web_ui,
   source->AddBoolean(
       "HelpAppBackgroundPage",
       base::FeatureList::IsEnabled(features::kHelpAppBackgroundPage));
+  source->AddBoolean("isCloudGamingDevice",
+                     chromeos::features::IsCloudGamingDeviceEnabled());
 
   Profile* profile = Profile::FromWebUI(web_ui);
   PrefService* pref_service = profile->GetPrefs();
@@ -107,8 +112,7 @@ void PopulateLoadTimeData(content::WebUI* web_ui,
   // Messages, Smart Lock) is allowed on this device.
   source->AddBoolean(
       "multiDeviceFeaturesAllowed",
-      chromeos::multidevice_setup::AreAnyMultiDeviceFeaturesAllowed(
-          pref_service));
+      multidevice_setup::AreAnyMultiDeviceFeaturesAllowed(pref_service));
   source->AddBoolean("tabletMode", TabletMode::Get()->InTabletMode());
   // Checks if there are active touch screens.
   source->AddBoolean(

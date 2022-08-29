@@ -6,10 +6,12 @@ import("//chrome/browser/resources/tools/optimize_webui.gni")
 import("//chrome/common/features.gni")
 import("//tools/grit/grit_rule.gni")
 import("//tools/grit/preprocess_if_expr.gni")
-import("//tools/polymer/html_to_js.gni")
+import("//tools/polymer/css_to_wrapper.gni")
+import("//tools/polymer/html_to_wrapper.gni")
 import("//tools/typescript/ts_library.gni")
 import("//ui/webui/resources/tools/generate_grd.gni")
 import("//ui/webui/webui_features.gni")
+import("./tab_search.gni")
 
 assert(is_linux || is_chromeos || is_win || is_mac || is_fuchsia)
 
@@ -27,6 +29,7 @@ if (optimize_webui) {
 
     excludes = [
       "chrome://resources/js/cr.m.js",
+      "chrome://resources/js/metrics_reporter/metrics_reporter.js",
       "chrome://resources/mojo/mojo/public/js/bindings.js",
       "chrome://resources/mojo/mojo/public/mojom/base/time.mojom-webui.js",
       "chrome://resources/mojo/mojo/public/mojom/base/token.mojom-webui.js",
@@ -75,18 +78,9 @@ generate_grd("build_fuse_grdp") {
 }
 
 preprocess_if_expr("preprocess") {
-  in_folder = "./"
+  in_folder = "."
   out_folder = "$target_gen_dir/$preprocess_folder"
-  in_files = [
-    "bimap.ts",
-    "fuzzy_search.ts",
-    "tab_data.ts",
-    "tab_group_color_helper.ts",
-    "tab_search.ts",
-    "tab_search_api_proxy.ts",
-    "tab_search_utils.ts",
-    "title_item.ts",
-  ]
+  in_files = ts_files
 }
 
 preprocess_if_expr("preprocess_tabs") {
@@ -96,18 +90,14 @@ preprocess_if_expr("preprocess_tabs") {
   in_files = [ "tabs.mojom-webui.js" ]
 }
 
-preprocess_if_expr("preprocess_web_components") {
-  deps = [ ":web_components" ]
+preprocess_if_expr("preprocess_generated") {
+  deps = [
+    ":css_wrapper_files",
+    ":html_wrapper_files",
+  ]
   in_folder = target_gen_dir
   out_folder = "$target_gen_dir/$preprocess_folder"
-  in_files = [
-    "app.ts",
-    "infinite_list.ts",
-    "tab_group_shared_vars.ts",
-    "tab_search_item.ts",
-    "tab_search_group_item.ts",
-    "tab_search_search_field.ts",
-  ]
+  in_files = html_wrapper_files + css_wrapper_files
 }
 
 copy("copy_fuse") {
@@ -158,15 +148,12 @@ grit("resources") {
   output_dir = "$root_gen_dir/chrome"
 }
 
-html_to_js("web_components") {
-  js_files = [
-    "app.ts",
-    "infinite_list.ts",
-    "tab_group_shared_vars.ts",
-    "tab_search_item.ts",
-    "tab_search_group_item.ts",
-    "tab_search_search_field.ts",
-  ]
+css_to_wrapper("css_wrapper_files") {
+  in_files = css_files
+}
+
+html_to_wrapper("html_wrapper_files") {
+  in_files = html_files
 }
 
 ts_library("build_ts") {
@@ -174,25 +161,7 @@ ts_library("build_ts") {
   out_dir = "$target_gen_dir/tsc"
   composite = true
   tsconfig_base = "tsconfig_base.json"
-  in_files = [
-    "app.ts",
-    "bimap.ts",
-    "fuzzy_search.ts",
-    "infinite_list.ts",
-    "tab_data.ts",
-    "tab_group_color_helper.ts",
-    "tab_group_shared_vars.ts",
-    "tab_group_types.mojom-webui.js",
-    "tab_search_api_proxy.ts",
-    "tab_search_group_item.ts",
-    "tab_search_item.ts",
-    "tab_search.ts",
-    "tab_search.mojom-webui.js",
-    "tab_search_search_field.ts",
-    "tab_search_utils.ts",
-    "tabs.mojom-webui.js",
-    "title_item.ts",
-  ]
+  in_files = ts_files + css_wrapper_files + html_wrapper_files + mojo_js_files
   definitions = [
     "//tools/typescript/definitions/metrics_private.d.ts",
     "$target_gen_dir/$preprocess_folder/fuse.d.ts",
@@ -201,6 +170,7 @@ ts_library("build_ts") {
   deps = [
     "//third_party/polymer/v3_0:library",
     "//ui/webui/resources:library",
+    "//ui/webui/resources/js/metrics_reporter:build_ts",
     "//ui/webui/resources/mojo:library",
   ]
   extra_deps = [
@@ -208,9 +178,9 @@ ts_library("build_ts") {
     ":copy_fuse_dts",
     ":copy_fuse_dts_tsc",
     ":preprocess",
+    ":preprocess_generated",
     ":preprocess_mojo",
     ":preprocess_mojo_tab_groups",
     ":preprocess_tabs",
-    ":preprocess_web_components",
   ]
 }

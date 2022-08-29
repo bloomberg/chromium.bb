@@ -31,13 +31,17 @@ class SaveCardMessageConfirmController {
   SaveCardMessageConfirmController& operator=(
       const SaveCardMessageConfirmController&) = delete;
 
-  void ConfirmSaveCard(const std::u16string& card_label);
+  void ConfirmSaveCard(const std::u16string& card_label,
+                       const std::u16string& cardholder_account);
   void FixName(const std::u16string& inferred_cardholder_name,
-               const std::u16string& card_label);
-  void FixDate(const std::u16string& card_label);
+               const std::u16string& card_label,
+               const std::u16string& cardholder_account);
+  void FixDate(const std::u16string& card_label,
+               const std::u16string& cardholder_account);
 
-  // Legal Message should be set before confirm* is called.
-  void SetLegalMessageLine(const LegalMessageLine& line);
+  // Legal Message should be added before `ConfirmSaveCard`, `FixName`
+  // and `FixDate` is called.
+  void AddLegalMessageLine(const LegalMessageLine& line);
 
   void DismissDialog();
 

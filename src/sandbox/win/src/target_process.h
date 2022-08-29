@@ -90,9 +90,18 @@ class TargetProcess {
   HANDLE MainThread() const { return sandbox_process_info_.thread_handle(); }
 
   // Transfers variable at |address| of |size| bytes from broker to target.
-  ResultCode TransferVariable(const char* name, void* address, size_t size);
+  ResultCode TransferVariable(const char* name,
+                              const void* address,
+                              size_t size);
+
+  // Creates a mock TargetProcess used for testing interceptions.
+  static std::unique_ptr<TargetProcess> MakeTargetProcessForTesting(
+      HANDLE process,
+      HMODULE base_address);
 
  private:
+  // Verify the target process looks the same as the broker process.
+  ResultCode VerifySentinels();
   // Details of the target process.
   base::win::ScopedProcessInformation sandbox_process_info_;
   // The token associated with the process. It provides the core of the
@@ -116,21 +125,12 @@ class TargetProcess {
   // `base_address_` is not a raw_ptr<void>, because pointer to address in
   // another process could be confused as a pointer to PartitionMalloc memory,
   // causing ref-counting mismatch.  See also https://crbug.com/1173374.
-  void* base_address_;
+  RAW_PTR_EXCLUSION void* base_address_;
   // Full name of the target executable.
   std::unique_ptr<wchar_t, base::FreeDeleter> exe_name_;
   /// List of capability sids for use when impersonating in an AC process.
   std::vector<base::win::Sid> impersonation_capabilities_;
-
-  // Function used for testing.
-  friend std::unique_ptr<TargetProcess> MakeTestTargetProcess(
-      HANDLE process,
-      HMODULE base_address);
 };
-
-// Creates a mock TargetProcess used for testing interceptions.
-std::unique_ptr<TargetProcess> MakeTestTargetProcess(HANDLE process,
-                                                     HMODULE base_address);
 
 }  // namespace sandbox
 

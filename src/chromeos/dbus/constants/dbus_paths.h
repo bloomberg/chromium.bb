@@ -20,10 +20,14 @@ namespace dbus_paths {
 enum {
   PATH_START = 7200,
 
-  DIR_USER_POLICY_KEYS,     // Directory where the session_manager stores
-                            // the user policy keys.
-  FILE_OWNER_KEY,           // Full path to the owner key file.
-  FILE_INSTALL_ATTRIBUTES,  // Full path to the install attributes file.
+  DIR_USER_POLICY_KEYS,          // Directory where the session_manager stores
+                                 // the user policy keys.
+  FILE_OWNER_KEY,                // Full path to the owner key file.
+  FILE_INSTALL_ATTRIBUTES,       // Full path to the install attributes file.
+  FILE_RMAD_SERVICE_EXECUTABLE,  // Path to rmad executable, used to determine
+                                 // if RMA flow is supported on the device.
+  FILE_RMAD_SERVICE_STATE,       // Path to rmad state file, used to determine
+                                 // if the device is currently in RMA.
 
   PATH_END
 };
@@ -39,5 +43,10 @@ void RegisterStubPathOverrides(const base::FilePath& stubs_dir);
 
 }  // namespace dbus_paths
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove after the migration is finished.
+namespace ash::dbus_paths {
+using ::chromeos::dbus_paths::FILE_INSTALL_ATTRIBUTES;
+}
 
 #endif  // CHROMEOS_DBUS_CONSTANTS_DBUS_PATHS_H_

@@ -4149,8 +4149,7 @@ static void highbd_inv_txfm2d_add_no_identity_avx2(const int32_t *input,
       round_shift_rect_array_32_avx2(buf0, buf0, buf_size_nonzero_w_div8 << 3,
                                      0, NewInvSqrt2);
     }
-    row_txfm(buf0, buf0, av1_inv_cos_bit_row[txw_idx][txh_idx], 0, bd,
-             -shift[0]);
+    row_txfm(buf0, buf0, INV_COS_BIT, 0, bd, -shift[0]);
 
     __m256i *_buf1 = buf1 + i * 8;
     if (lr_flip) {
@@ -4166,8 +4165,8 @@ static void highbd_inv_txfm2d_add_no_identity_avx2(const int32_t *input,
   }
   // 2nd stage: column transform
   for (int i = 0; i < buf_size_w_div8; i++) {
-    col_txfm(buf1 + i * txfm_size_row, buf1 + i * txfm_size_row,
-             av1_inv_cos_bit_col[txw_idx][txh_idx], 1, bd, 0);
+    col_txfm(buf1 + i * txfm_size_row, buf1 + i * txfm_size_row, INV_COS_BIT, 1,
+             bd, 0);
 
     round_shift_array_32_avx2(buf1 + i * txfm_size_row,
                               buf1 + i * txfm_size_row, txfm_size_row,

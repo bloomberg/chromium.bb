@@ -10,10 +10,10 @@
 
 #include <memory>
 #include <string>
+#include <tuple>
 
-#include "base/cxx17_backports.h"
-#include "base/ignore_result.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -37,7 +37,7 @@ const char testrawstring[] = "Hello new world"; // Test raw string writing
 // Test raw char16_t writing, assumes UTF16 encoding is ANSI for alpha chars.
 const char16_t testrawstring16[] = {'A', 'l', 'o', 'h', 'a', 0};
 const char testdata[] = "AAA\0BBB\0";
-const int testdatalen = base::size(testdata) - 1;
+const int testdatalen = std::size(testdata) - 1;
 
 // checks that the results can be read correctly from the Pickle
 void VerifyResult(const Pickle& pickle) {
@@ -154,7 +154,7 @@ TEST(PickleTest, LongFrom64Bit) {
     // ReadLong() should return false when the original written value can't be
     // represented as a long.
 #if GTEST_HAS_DEATH_TEST
-    EXPECT_DEATH(ignore_result(iter.ReadLong(&outlong)), "");
+    EXPECT_DEATH(std::ignore = iter.ReadLong(&outlong), "");
 #endif
   } else {
     EXPECT_TRUE(iter.ReadLong(&outlong));
@@ -184,6 +184,47 @@ TEST(PickleTest, BigSize) {
   PickleIterator iter(pickle);
   int data;
   EXPECT_FALSE(iter.ReadInt(&data));
+}
+
+// Tests that instances constructed with invalid parameter combinations can be
+// properly copied. Regression test for https://crbug.com/1271311.
+TEST(PickleTest, CopyWithInvalidHeader) {
+  // 1. Actual header size (calculated based on the input buffer) > passed in
+  // buffer size. Which results in Pickle's internal |header_| = null.
+  {
+    Pickle::Header header = {.payload_size = 100};
+    const char* data = reinterpret_cast<char*>(&header);
+    const Pickle pickle(data, sizeof(header));
+
+    EXPECT_EQ(0U, pickle.size());
+    EXPECT_FALSE(pickle.data());
+
+    Pickle copy_built_with_op = pickle;
+    EXPECT_EQ(0U, copy_built_with_op.size());
+    EXPECT_FALSE(copy_built_with_op.data());
+
+    Pickle copy_built_with_ctor(pickle);
+    EXPECT_EQ(0U, copy_built_with_ctor.size());
+    EXPECT_FALSE(copy_built_with_ctor.data());
+  }
+  // 2. Input buffer's size < sizeof(Pickle::Header). Which must also result in
+  // Pickle's internal |header_| = null.
+  {
+    const char data[2] = {0x00, 0x00};
+    const Pickle pickle(data, sizeof(data));
+    static_assert(sizeof(Pickle::Header) > sizeof(data));
+
+    EXPECT_EQ(0U, pickle.size());
+    EXPECT_FALSE(pickle.data());
+
+    Pickle copy_built_with_op = pickle;
+    EXPECT_EQ(0U, copy_built_with_op.size());
+    EXPECT_FALSE(copy_built_with_op.data());
+
+    Pickle copy_built_with_ctor(pickle);
+    EXPECT_EQ(0U, copy_built_with_ctor.size());
+    EXPECT_FALSE(copy_built_with_ctor.data());
+  }
 }
 
 TEST(PickleTest, UnalignedSize) {

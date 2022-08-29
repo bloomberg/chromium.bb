@@ -18,8 +18,8 @@ function addPrivacyChildRoutes(r: SettingsRoutes) {
 
   r.SAFETY_CHECK = r.PRIVACY.createSection('/safetyCheck', 'safetyCheck');
 
-  if (loadTimeData.getBoolean('privacyReviewEnabled')) {
-    r.PRIVACY_REVIEW = r.PRIVACY.createChild('review');
+  if (loadTimeData.getBoolean('privacyGuideEnabled')) {
+    r.PRIVACY_GUIDE = r.PRIVACY.createChild('guide');
   }
   r.SITE_SETTINGS = r.PRIVACY.createChild('/content');
   r.COOKIES = r.PRIVACY.createChild('/cookies');
@@ -31,6 +31,12 @@ function addPrivacyChildRoutes(r: SettingsRoutes) {
 
   if (loadTimeData.getBoolean('enableSecurityKeysSubpage')) {
     r.SECURITY_KEYS = r.SECURITY.createChild('/securityKeys');
+    r.SECURITY_KEYS_PHONES =
+        r.SECURITY_KEYS.createChild('/securityKeys/phones');
+    // <if expr="is_win">
+  } else {
+    r.SECURITY_KEYS_PHONES = r.SECURITY.createChild('/securityKeys/phones');
+    // </if>
   }
 
   r.SITE_SETTINGS_ALL = r.SITE_SETTINGS.createChild('all');
@@ -80,6 +86,10 @@ function addPrivacyChildRoutes(r: SettingsRoutes) {
     r.SITE_SETTINGS_PAYMENT_HANDLER =
         r.SITE_SETTINGS.createChild('paymentHandler');
   }
+  if (loadTimeData.getBoolean('enableFederatedIdentityApiContentSetting')) {
+    r.SITE_SETTINGS_FEDERATED_IDENTITY_API =
+        r.SITE_SETTINGS.createChild('federatedIdentityApi');
+  }
   r.SITE_SETTINGS_VR = r.SITE_SETTINGS.createChild('vr');
   if (loadTimeData.getBoolean('enableExperimentalWebPlatformFeatures')) {
     r.SITE_SETTINGS_BLUETOOTH_SCANNING =
@@ -88,7 +98,7 @@ function addPrivacyChildRoutes(r: SettingsRoutes) {
   r.SITE_SETTINGS_WINDOW_PLACEMENT =
       r.SITE_SETTINGS.createChild('windowPlacement');
   r.SITE_SETTINGS_FILE_SYSTEM_WRITE = r.SITE_SETTINGS.createChild('filesystem');
-  r.SITE_SETTINGS_FONT_ACCESS = r.SITE_SETTINGS.createChild('fontAccess');
+  r.SITE_SETTINGS_LOCAL_FONTS = r.SITE_SETTINGS.createChild('localFonts');
 }
 
 /**
@@ -106,7 +116,7 @@ function createBrowserSettingsRoutes(): SettingsRoutes {
     r.PEOPLE = r.BASIC.createSection('/people', 'people');
     r.SIGN_OUT = r.PEOPLE.createChild('/signOut');
     r.SIGN_OUT.isNavigableDialog = true;
-    // <if expr="not chromeos">
+    // <if expr="not chromeos_ash">
     r.IMPORT_DATA = r.PEOPLE.createChild('/importData');
     r.IMPORT_DATA.isNavigableDialog = true;
     // </if>
@@ -117,7 +127,7 @@ function createBrowserSettingsRoutes(): SettingsRoutes {
 
   const visibility = pageVisibility || {};
 
-  // <if expr="not chromeos">
+  // <if expr="not chromeos_ash">
   if (visibility.people !== false) {
     r.MANAGE_PROFILE = r.PEOPLE.createChild('/manageProfile');
   }
@@ -131,6 +141,9 @@ function createBrowserSettingsRoutes(): SettingsRoutes {
   if (visibility.autofill !== false) {
     r.AUTOFILL = r.BASIC.createSection('/autofill', 'autofill');
     r.PASSWORDS = r.AUTOFILL.createChild('/passwords');
+    if (loadTimeData.getBoolean('enablePasswordViewPage')) {
+      r.PASSWORD_VIEW = r.PASSWORDS.createChild('view');
+    }
     r.CHECK_PASSWORDS = r.PASSWORDS.createChild('check');
 
     r.DEVICE_PASSWORDS = r.PASSWORDS.createChild('device');
@@ -144,7 +157,7 @@ function createBrowserSettingsRoutes(): SettingsRoutes {
     addPrivacyChildRoutes(r);
   }
 
-  // <if expr="not chromeos and not lacros">
+  // <if expr="not chromeos_ash and not chromeos_lacros">
   if (visibility.defaultBrowser !== false) {
     r.DEFAULT_BROWSER =
         r.BASIC.createSection('/defaultBrowser', 'defaultBrowser');
@@ -162,13 +175,8 @@ function createBrowserSettingsRoutes(): SettingsRoutes {
     r.ADVANCED = new Route('/advanced');
 
     r.LANGUAGES = r.ADVANCED.createSection('/languages', 'languages');
-    // <if expr="not chromeos and not is_macosx">
+    // <if expr="not chromeos_ash and not is_macosx">
     r.EDIT_DICTIONARY = r.LANGUAGES.createChild('/editDictionary');
-    // </if>
-    // <if expr="not chromeos and not lacros">
-    if (loadTimeData.getBoolean('enableDesktopRestructuredLanguageSettings')) {
-      r.LANGUAGE_SETTINGS = r.LANGUAGES.createChild('/languageSettings');
-    }
     // </if>
 
     if (visibility.downloads !== false) {
@@ -187,7 +195,7 @@ function createBrowserSettingsRoutes(): SettingsRoutes {
     }
     // </if>
 
-    // <if expr="not chromeos and not lacros">
+    // <if expr="not chromeos_ash">
     r.SYSTEM = r.ADVANCED.createSection('/system', 'system');
     // </if>
 

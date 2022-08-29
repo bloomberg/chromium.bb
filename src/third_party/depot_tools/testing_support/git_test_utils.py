@@ -299,12 +299,9 @@ class GitRepo(object):
 
     self.to_schema_refs = ['--branches']
 
-    # TODO(crbug.com/114712) use git.init -b and remove 'checkout' once git is
-    # upgraded to 2.28 on all builders.
-    self.git('init')
+    self.git('init', '-b', DEFAULT_BRANCH)
     self.git('config', 'user.name', 'testcase')
     self.git('config', 'user.email', 'testcase@example.com')
-    self.git('checkout', '-b', DEFAULT_BRANCH)
     for commit in schema.walk():
       self._add_schema_commit(commit, schema.data_for(commit.name))
       self.last_commit = self[commit.name]

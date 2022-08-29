@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/process_internals/process_internals.mojom.h"
@@ -29,7 +30,8 @@ namespace {
 
 using IsolatedOriginSource = ChildProcessSecurityPolicy::IsolatedOriginSource;
 
-::mojom::FrameInfoPtr RenderFrameHostToFrameInfo(
+// Creates FrameInfoPtr but does not populate subframes.
+::mojom::FrameInfoPtr RenderFrameHostToFrameInfoNoTraverse(
     RenderFrameHostImpl* frame,
     ::mojom::FrameInfo::Type type) {
   auto frame_info = ::mojom::FrameInfo::New();
@@ -54,6 +56,22 @@ using IsolatedOriginSource = ChildProcessSecurityPolicy::IsolatedOriginSource;
       site_instance->HasSite()
           ? absl::make_optional(site_instance->GetSiteInfo().site_url())
           : absl::nullopt;
+  frame_info->site_instance->is_guest = site_instance->IsGuest();
+
+  // If the SiteInstance has a non-default StoragePartition, include a basic
+  // string representation of it.  Skip cases where the StoragePartition is
+  // already conveyed in the site URL to avoid redundancy.
+  const auto& partition = site_instance->GetStoragePartitionConfig();
+  if (!partition.is_default() &&
+      site_instance->GetSiteInfo().site_url().spec().find(
+          partition.partition_domain()) == std::string::npos) {
+    std::string partition_description =
+        base::StrCat({partition.partition_domain().c_str(), "/",
+                      partition.partition_name().c_str(),
+                      partition.in_memory() ? "" : "?persist"});
+    frame_info->site_instance->storage_partition =
+        absl::make_optional(partition_description);
+  }
 
   // Only send a process lock URL if it's different from the site URL.  In the
   // common case they are the same, so we avoid polluting the UI with two
@@ -69,24 +87,62 @@ using IsolatedOriginSource = ChildProcessSecurityPolicy::IsolatedOriginSource;
   frame_info->site_instance->requires_origin_keyed_process =
       site_instance->GetSiteInfo().requires_origin_keyed_process();
 
-  for (size_t i = 0; i < frame->child_count(); ++i) {
-    frame_info->subframes.push_back(RenderFrameHostToFrameInfo(
-        frame->child_at(i)->current_frame_host(), type));
-  }
-
   return frame_info;
+}
+
+// Traverses over all subframes for the given |frame|.
+::mojom::FrameInfoPtr RenderFrameHostToFrameInfo(
+    WebContentsImpl* web_contents,
+    RenderFrameHostImpl* frame,
+    ::mojom::FrameInfo::Type type) {
+  std::map<RenderFrameHostImpl*, ::mojom::FrameInfo*> all_frame_info;
+
+  // Store the outermost frame info because we will need to return it and
+  // |all_frame_info| does not retain ownership of the mojom::FrameInfo.
+  ::mojom::FrameInfoPtr outermost_frame_info =
+      RenderFrameHostToFrameInfoNoTraverse(frame, type);
+  all_frame_info[frame] = outermost_frame_info.get();
+
+  // Execute over all frames appending any frames encountered to the parent's
+  // subframe data.
+  frame->ForEachRenderFrameHost(base::BindRepeating(
+      [](WebContentsImpl* web_contents, RenderFrameHostImpl* outermost_frame,
+         ::mojom::FrameInfo::Type type,
+         std::map<RenderFrameHostImpl*, ::mojom::FrameInfo*>& all_frame_info,
+         RenderFrameHostImpl* frame) {
+        // We've already handled the outermost frame outside of this.
+        if (frame == outermost_frame)
+          return RenderFrameHost::FrameIterationAction::kContinue;
+
+        // If this is a nested WebContents skip it, it will be encountered
+        // by the GetAllWebContents iteration.
+        if (WebContents::FromRenderFrameHost(frame) != web_contents)
+          return RenderFrameHost::FrameIterationAction::kSkipChildren;
+
+        ::mojom::FrameInfoPtr frame_info =
+            RenderFrameHostToFrameInfoNoTraverse(frame, type);
+        all_frame_info[frame] = frame_info.get();
+        RenderFrameHostImpl* parent = frame->GetParentOrOuterDocument();
+        DCHECK(base::Contains(all_frame_info, parent));
+        all_frame_info[parent]->subframes.push_back(std::move(frame_info));
+        return RenderFrameHost::FrameIterationAction::kContinue;
+      },
+      web_contents, frame, type, std::ref(all_frame_info)));
+
+  return outermost_frame_info;
 }
 
 // Adds `host` to `out_frames` if it is a prerendered main frame.
 RenderFrameHost::FrameIterationAction CollectPrerenders(
+    WebContentsImpl* web_contents,
     std::vector<::mojom::FrameInfoPtr>& out_frames,
     RenderFrameHost* host) {
   if (!host->GetParentOrOuterDocument()) {
     if (host->GetLifecycleState() ==
         RenderFrameHost::LifecycleState::kPrerendering) {
-      out_frames.push_back(
-          RenderFrameHostToFrameInfo(static_cast<RenderFrameHostImpl*>(host),
-                                     ::mojom::FrameInfo::Type::kPrerender));
+      out_frames.push_back(RenderFrameHostToFrameInfo(
+          web_contents, static_cast<RenderFrameHostImpl*>(host),
+          ::mojom::FrameInfo::Type::kPrerender));
     }
     return RenderFrameHost::FrameIterationAction::kSkipChildren;
   }
@@ -215,21 +271,23 @@ void ProcessInternalsHandlerImpl::GetAllWebContentsInfo(
 
     auto info = ::mojom::WebContentsInfo::New();
     info->title = base::UTF16ToUTF8(web_contents->GetTitle());
-    info->root_frame = RenderFrameHostToFrameInfo(
-        web_contents->GetMainFrame(), ::mojom::FrameInfo::Type::kActive);
+    info->root_frame =
+        RenderFrameHostToFrameInfo(web_contents, web_contents->GetMainFrame(),
+                                   ::mojom::FrameInfo::Type::kActive);
 
     // Retrieve all root frames from bfcache as well.
     NavigationControllerImpl& controller = web_contents->GetController();
     const auto& entries = controller.GetBackForwardCache().GetEntries();
     for (const auto& entry : entries) {
       info->bfcached_root_frames.push_back(RenderFrameHostToFrameInfo(
-          (*entry).render_frame_host(),
+          web_contents, (*entry).render_frame_host(),
           ::mojom::FrameInfo::Type::kBackForwardCache));
     }
 
     // Retrieve prerendering root frames.
-    web_contents->ForEachRenderFrameHost(base::BindRepeating(
-        &CollectPrerenders, std::ref(info->prerender_root_frames)));
+    web_contents->ForEachRenderFrameHost(
+        base::BindRepeating(&CollectPrerenders, web_contents,
+                            std::ref(info->prerender_root_frames)));
 
     infos.push_back(std::move(info));
   }

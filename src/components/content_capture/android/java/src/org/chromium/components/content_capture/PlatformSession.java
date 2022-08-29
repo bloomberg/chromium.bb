@@ -4,7 +4,6 @@
 
 package org.chromium.components.content_capture;
 
-import android.annotation.TargetApi;
 import android.os.Build;
 import android.view.View;
 import android.view.ViewStructure;
@@ -12,15 +11,14 @@ import android.view.autofill.AutofillId;
 import android.view.contentcapture.ContentCaptureSession;
 import android.widget.Checkable;
 
-import org.chromium.base.annotations.VerifiesOnQ;
+import androidx.annotation.RequiresApi;
 
 import java.util.HashMap;
 
 /**
  * The class to manage the platform session.
  */
-@VerifiesOnQ
-@TargetApi(Build.VERSION_CODES.Q)
+@RequiresApi(Build.VERSION_CODES.Q)
 class PlatformSession {
     /**
      * PlatformSessionData wraps the ContentCaptureSession and its corresponding

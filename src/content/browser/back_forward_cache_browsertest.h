@@ -24,12 +24,16 @@
 
 namespace content {
 
+using NotRestoredReasons =
+    BackForwardCacheCanStoreDocumentResult::NotRestoredReasons;
+using NotRestoredReason = BackForwardCacheMetrics::NotRestoredReason;
+
 // Match RenderFrameHostImpl* that are in the BackForwardCache.
 MATCHER(InBackForwardCache, "") {
   return arg->IsInBackForwardCache();
 }
 
-// Match RenderFrameDeleteObserver* which observed deletion of the RenderFrame.
+// Match RenderFrameDeletedObserver* which observed deletion of the RenderFrame.
 MATCHER(Deleted, "") {
   return arg->deleted();
 }
@@ -58,11 +62,17 @@ struct FeatureEqualOperator {
 }  // namespace
 
 // Test about the BackForwardCache.
-class BackForwardCacheBrowserTest : public ContentBrowserTest,
-                                    public WebContentsObserver {
+class BackForwardCacheBrowserTest
+    : public ContentBrowserTest,
+      public WebContentsObserver,
+      public BackForwardCacheMetrics::TestObserver {
  public:
   BackForwardCacheBrowserTest();
   ~BackForwardCacheBrowserTest() override;
+
+  // TestObserver:
+  void NotifyNotRestoredReasons(
+      std::unique_ptr<BackForwardCacheCanStoreTreeResult> tree_result) override;
 
  protected:
   using UkmMetrics = ukm::TestUkmRecorder::HumanReadableUkmMetrics;
@@ -167,14 +177,32 @@ class BackForwardCacheBrowserTest : public ContentBrowserTest,
 
   void ReleaseKeyboardLock(RenderFrameHostImpl* rfh);
 
+  // Start a navigation to |url| but block it on an error. If |history_offset|
+  // is not 0, then the navigation will be a history navigation and this will
+  // assert that the URL after navigation is |url|.
+  void NavigateAndBlock(GURL url, int history_offset);
+
+  static testing::Matcher<BackForwardCacheCanStoreDocumentResult>
+  MatchesDocumentResult(testing::Matcher<NotRestoredReasons> not_stored,
+                        BlockListedFeatures block_listed);
+
+  // Access the tree result of NotRestoredReason for the last main frame
+  // navigation.
+  BackForwardCacheCanStoreTreeResult* GetTreeResult() {
+    return tree_result_.get();
+  }
+
+  void InstallUnloadHandlerOnMainFrame();
+  void InstallUnloadHandlerOnSubFrame();
+  EvalJsResult GetUnloadRunCount();
+
+  bool IsUnloadAllowedToEnterBackForwardCache();
+
   base::HistogramTester histogram_tester_;
 
   bool same_site_back_forward_cache_enabled_ = true;
   bool skip_same_site_if_unload_exists_ = false;
-  bool check_eligibility_after_pagehide_ = false;
-  std::string unload_support_ = "always";
 
-  const int kMaxBufferedBytesPerRequest = 7000;
   const int kMaxBufferedBytesPerProcess = 10000;
   const base::TimeDelta kGracePeriodToFinishLoading = base::Seconds(5);
 
@@ -239,6 +267,10 @@ class BackForwardCacheBrowserTest : public ContentBrowserTest,
   std::vector<UkmMetrics> expected_ukm_not_restored_reasons_;
   std::unique_ptr<ukm::TestAutoSetUkmRecorder> ukm_recorder_;
 
+  // Store the tree result of NotRestoredReasons for the last main frame
+  // navigation.
+  std::unique_ptr<BackForwardCacheCanStoreTreeResult> tree_result_;
+
   // Indicates whether metrics for all sites regardless of the domains are
   // checked or not.
   bool check_all_sites_ = true;
@@ -247,7 +279,7 @@ class BackForwardCacheBrowserTest : public ContentBrowserTest,
   bool fail_for_unexpected_messages_while_cached_ = true;
 };
 
-void WaitForDOMContentLoaded(RenderFrameHostImpl* rfh);
+[[nodiscard]] bool WaitForDOMContentLoaded(RenderFrameHostImpl* rfh);
 
 class HighCacheSizeBackForwardCacheBrowserTest
     : public BackForwardCacheBrowserTest {
@@ -292,6 +324,9 @@ class PageLifecycleStateManagerTestDelegate
   base::OnceClosure restore_from_back_forward_cache_sent_;
   base::OnceClosure disable_eviction_sent_;
 };
+
+// Gets the value of a key in local storage by evaluating JS.
+EvalJsResult GetLocalStorage(RenderFrameHostImpl* rfh, std::string key);
 
 }  // namespace content
 

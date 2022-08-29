@@ -190,6 +190,7 @@ void MigrateKeystoneTickets(
       // Skip migration for incomplete ticket or Keystone itself.
       if (registration.app_id.empty() ||
           registration.existence_checker_path.empty() ||
+          !base::PathExists(registration.existence_checker_path) ||
           !registration.version.IsValid() ||
           base::EqualsCaseInsensitiveASCII(registration.app_id,
                                            "com.google.Keystone")) {
@@ -246,9 +247,6 @@ bool ConvertKeystone(UpdaterScope scope,
                          register_callback) {
   // TODO(crbug.com/1250524): This must not run concurrently with Keystone.
   MigrateKeystoneTickets(scope, register_callback);
-  // TODO(crbug.com/1250524): Flush prefs, then delete the tickets to mitigate
-  // duplicate imports.
-
   return CopyKeystoneBundle(scope) && CreateKeystoneLaunchCtlPlistFiles(scope);
 }
 

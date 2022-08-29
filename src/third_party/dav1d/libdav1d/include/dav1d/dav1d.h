@@ -58,16 +58,35 @@ typedef struct Dav1dLogger {
     void (*callback)(void *cookie, const char *format, va_list ap);
 } Dav1dLogger;
 
+enum Dav1dInloopFilterType {
+    DAV1D_INLOOPFILTER_NONE        = 0,
+    DAV1D_INLOOPFILTER_DEBLOCK     = 1 << 0,
+    DAV1D_INLOOPFILTER_CDEF        = 1 << 1,
+    DAV1D_INLOOPFILTER_RESTORATION = 1 << 2,
+    DAV1D_INLOOPFILTER_ALL = DAV1D_INLOOPFILTER_DEBLOCK |
+                             DAV1D_INLOOPFILTER_CDEF |
+                             DAV1D_INLOOPFILTER_RESTORATION,
+};
+
 typedef struct Dav1dSettings {
-    int n_threads; ///< number of threads (0 = auto)
-    int max_frame_delay; ///< Set to 1 for low-latency decoding (0 = auto)
-    int apply_grain;
-    int operating_point; ///< select an operating point for scalable AV1 bitstreams (0 - 31)
-    int all_layers; ///< output all spatial layers of a scalable AV1 biststream
-    unsigned frame_size_limit; ///< maximum frame size, in pixels (0 = unlimited)
+    int n_threads; ///< number of threads (0 = number of logical cores in host system, default 0)
+    int max_frame_delay; ///< Set to 1 for low-latency decoding (0 = ceil(sqrt(n_threads)), default 0)
+    int apply_grain; ///< whether to apply film grain on output frames (default 1)
+    int operating_point; ///< select an operating point for scalable AV1 bitstreams (0 - 31, default 0)
+    int all_layers; ///< output all spatial layers of a scalable AV1 biststream (default 1)
+    unsigned frame_size_limit; ///< maximum frame size, in pixels (0 = unlimited, default 0)
     Dav1dPicAllocator allocator; ///< Picture allocator callback.
     Dav1dLogger logger; ///< Logger callback.
-    uint8_t reserved[32]; ///< reserved for future use
+    int strict_std_compliance; ///< whether to abort decoding on standard compliance violations
+                               ///< that don't affect actual bitstream decoding (e.g. inconsistent
+                               ///< or invalid metadata, default 0)
+    int output_invisible_frames; ///< output invisibly coded frames (in coding order) in addition
+                                 ///< to all visible frames. Because of show-existing-frame, this
+                                 ///< means some frames may appear twice (once when coded,
+                                 ///< once when shown, default 0)
+    enum Dav1dInloopFilterType inloop_filters; ///< postfilters to enable during decoding (default
+                                               ///< DAV1D_INLOOPFILTER_ALL)
+    uint8_t reserved[20]; ///< reserved for future use
 } Dav1dSettings;
 
 /**
@@ -187,6 +206,27 @@ DAV1D_API int dav1d_send_data(Dav1dContext *c, Dav1dData *in);
 DAV1D_API int dav1d_get_picture(Dav1dContext *c, Dav1dPicture *out);
 
 /**
+ * Apply film grain to a previously decoded picture. If the picture contains no
+ * film grain metadata, then this function merely returns a new reference.
+ *
+ * @param   c Input decoder instance.
+ * @param out Output frame. The caller assumes ownership of the returned
+ *            reference.
+ * @param  in Input frame. No ownership is transferred.
+ *
+ * @return
+ *         0: Success, and a frame is returned.
+ *  other negative DAV1D_ERR codes: Error due to lack of memory or because of
+ *                                  invalid passed-in arguments.
+ *
+ * @note If `Dav1dSettings.apply_grain` is true, film grain was already applied
+ *       by `dav1d_get_picture`, and so calling this function leads to double
+ *       application of film grain. Users should only call this when needed.
+ */
+DAV1D_API int dav1d_apply_grain(Dav1dContext *c, Dav1dPicture *out,
+                                const Dav1dPicture *in);
+
+/**
  * Close a decoder instance and free all associated memory.
  *
  * @param c_out The decoder instance to close. *c_out will be set to NULL.
@@ -233,6 +273,19 @@ enum Dav1dEventFlags {
  *
  */
 DAV1D_API int dav1d_get_event_flags(Dav1dContext *c, enum Dav1dEventFlags *flags);
+
+/**
+ * Retrieve the user-provided metadata associated with the input data packet
+ * for the last decoding error reported to the user, i.e. a negative return
+ * value (not EAGAIN) from dav1d_send_data() or dav1d_get_picture().
+ *
+ * @param   c Input decoder instance.
+ * @param out Output Dav1dDataProps. On success, the caller assumes ownership of
+ *            the returned reference.
+ *
+ * @return 0 on success, or < 0 (a negative DAV1D_ERR code) on error.
+ */
+DAV1D_API int dav1d_get_decode_error_data_props(Dav1dContext *c, Dav1dDataProps *out);
 
 # ifdef __cplusplus
 }

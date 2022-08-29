@@ -5,8 +5,9 @@
  * found in the LICENSE file.
  */
 
+#include "include/core/SkColorSpace.h"
 #include "include/core/SkString.h"
-#include "include/private/SkNx.h"
+#include "include/private/SkVx.h"
 #include "src/core/SkArenaAlloc.h"
 #include "src/core/SkAutoBlitterChoose.h"
 #include "src/core/SkConvertPixels.h"
@@ -27,8 +28,10 @@
 struct Matrix43 {
     float fMat[12];    // column major
 
-    Sk4f map(float x, float y) const {
-        return Sk4f::Load(&fMat[0]) * x + Sk4f::Load(&fMat[4]) * y + Sk4f::Load(&fMat[8]);
+    skvx::float4 map(float x, float y) const {
+        return skvx::float4::Load(&fMat[0]) * x +
+               skvx::float4::Load(&fMat[4]) * y +
+               skvx::float4::Load(&fMat[8]);
     }
 
     // Pass a by value, so we don't have to worry about aliasing with this
@@ -173,9 +176,9 @@ bool SkTriColorShader::update(const SkMatrix& ctmInv, const SkPoint pts[],
 
     fM33.setConcat(im, ctmInv);
 
-    Sk4f c0 = Sk4f::Load(colors[index0].vec()),
-         c1 = Sk4f::Load(colors[index1].vec()),
-         c2 = Sk4f::Load(colors[index2].vec());
+    auto c0 = skvx::float4::Load(colors[index0].vec()),
+         c1 = skvx::float4::Load(colors[index1].vec()),
+         c2 = skvx::float4::Load(colors[index2].vec());
 
     (c1 - c0).store(&fM43.fMat[0]);
     (c2 - c0).store(&fM43.fMat[4]);
@@ -196,13 +199,19 @@ bool SkTriColorShader::update(const SkMatrix& ctmInv, const SkPoint pts[],
 // - convert colors into dst colorspace before interpolation (matches gradients)
 // - apply per-color alpha before interpolation (matches old version of vertices)
 //
-static SkPMColor4f* convert_colors(const SkColor src[], int count, SkColorSpace* deviceCS,
-                                   SkArenaAlloc* alloc) {
+static SkPMColor4f* convert_colors(const SkColor src[],
+                                   int count,
+                                   SkColorSpace* deviceCS,
+                                   SkArenaAlloc* alloc,
+                                   bool skipColorXform) {
     SkPMColor4f* dst = alloc->makeArray<SkPMColor4f>(count);
-    SkImageInfo srcInfo = SkImageInfo::Make(count, 1, kBGRA_8888_SkColorType,
-                                            kUnpremul_SkAlphaType, SkColorSpace::MakeSRGB());
-    SkImageInfo dstInfo = SkImageInfo::Make(count, 1, kRGBA_F32_SkColorType,
-                                            kPremul_SkAlphaType, sk_ref_sp(deviceCS));
+
+    // Passing `nullptr` for the destination CS effectively disables color conversion.
+    auto dstCS = skipColorXform ? nullptr : sk_ref_sp(deviceCS);
+    SkImageInfo srcInfo = SkImageInfo::Make(
+            count, 1, kBGRA_8888_SkColorType, kUnpremul_SkAlphaType, SkColorSpace::MakeSRGB());
+    SkImageInfo dstInfo =
+            SkImageInfo::Make(count, 1, kRGBA_F32_SkColorType, kPremul_SkAlphaType, dstCS);
     SkAssertResult(SkConvertPixels(dstInfo, dst, 0, srcInfo, src, 0));
     return dst;
 }
@@ -312,7 +321,8 @@ void SkDraw::drawFixedVertices(const SkVertices* vertices,
                                const SkMatrix& ctmInverse,
                                const SkPoint* dev2,
                                const SkPoint3* dev3,
-                               SkArenaAlloc* outerAlloc) const {
+                               SkArenaAlloc* outerAlloc,
+                               bool skipColorXform) const {
     SkVerticesPriv info(vertices->priv());
 
     const int vertexCount = info.vertexCount();
@@ -335,7 +345,7 @@ void SkDraw::drawFixedVertices(const SkVertices* vertices,
     bool blenderIsDst = false;
     // We can simplify things for certain blend modes. This is for speed, and SkShader_Blend
     // itself insists we don't pass kSrc or kDst to it.
-    if (skstd::optional<SkBlendMode> bm = as_BB(blender)->asBlendMode(); bm.has_value() && colors) {
+    if (std::optional<SkBlendMode> bm = as_BB(blender)->asBlendMode(); bm.has_value() && colors) {
         switch (*bm) {
             case SkBlendMode::kSrc:
                 colors = nullptr;
@@ -358,7 +368,8 @@ void SkDraw::drawFixedVertices(const SkVertices* vertices,
     SkTriColorShader* triColorShader = nullptr;
     SkPMColor4f* dstColors = nullptr;
     if (colors) {
-        dstColors = convert_colors(colors, vertexCount, fDst.colorSpace(), outerAlloc);
+        dstColors =
+                convert_colors(colors, vertexCount, fDst.colorSpace(), outerAlloc, skipColorXform);
         triColorShader = outerAlloc->make<SkTriColorShader>(compute_is_opaque(colors, vertexCount),
                                                             usePerspective);
     }
@@ -516,7 +527,8 @@ void SkDraw::drawFixedVertices(const SkVertices* vertices,
 
 void SkDraw::drawVertices(const SkVertices* vertices,
                           sk_sp<SkBlender> blender,
-                          const SkPaint& paint) const {
+                          const SkPaint& paint,
+                          bool skipColorXform) const {
     SkVerticesPriv info(vertices->priv());
     const int vertexCount = info.vertexCount();
     const int indexCount = info.indexCount();
@@ -559,5 +571,6 @@ void SkDraw::drawVertices(const SkVertices* vertices,
         }
     }
 
-    this->drawFixedVertices(vertices, std::move(blender), paint, ctmInv, dev2, dev3, &outerAlloc);
+    this->drawFixedVertices(
+            vertices, std::move(blender), paint, ctmInv, dev2, dev3, &outerAlloc, skipColorXform);
 }

@@ -4,12 +4,12 @@
 
 import("//third_party/closure_compiler/compile_js.gni")
 
+group("resources") {
+  public_deps = [ "quota:resources" ]
+}
+
 if (enable_js_type_check) {
   group("closure_compile") {
-    deps = [
-      "attribution_reporting:closure_compile",
-      "histograms:closure_compile",
-      "process:closure_compile",
-    ]
+    deps = [ "histograms:closure_compile" ]
   }
 }

@@ -9,6 +9,7 @@
 #include <ostream>
 
 #include "base/check.h"
+#include "base/containers/adapters.h"
 #include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -102,12 +103,11 @@ bool PassesLuhnCheck(const std::u16string& number) {
   // [3] http://en.wikipedia.org/wiki/Luhn_algorithm
   int sum = 0;
   bool odd = false;
-  for (std::u16string::const_reverse_iterator iter = number.rbegin();
-       iter != number.rend(); ++iter) {
-    if (!base::IsAsciiDigit(*iter))
+  for (char c : base::Reversed(number)) {
+    if (!base::IsAsciiDigit(c))
       return false;
 
-    int digit = *iter - '0';
+    int digit = c - '0';
     if (odd) {
       digit *= 2;
       sum += digit / 10 + digit % 10;
@@ -134,8 +134,7 @@ bool IsValidCreditCardNumberForBasicCardNetworks(
 
   // The type check is cheaper than the credit card number check.
   const std::string basic_card_issuer_network =
-      autofill::data_util::GetPaymentRequestData(
-          CreditCard::GetCardNetwork(text))
+      data_util::GetPaymentRequestData(CreditCard::GetCardNetwork(text))
           .basic_card_issuer_network;
   if (!supported_basic_card_networks.count(basic_card_issuer_network)) {
     *error_message = l10n_util::GetStringUTF16(

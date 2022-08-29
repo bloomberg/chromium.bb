@@ -83,6 +83,7 @@ class TabAndroid : public base::SupportsUserData {
 
   int GetAndroidId() const;
   bool IsNativePage() const;
+  int GetLaunchType() const;
 
   // Return the tab title.
   std::u16string GetTitle() const;
@@ -127,7 +128,6 @@ class TabAndroid : public base::SupportsUserData {
       jboolean incognito,
       jboolean is_background_tab,
       const base::android::JavaParamRef<jobject>& jweb_contents,
-      jint jparent_tab_id,
       const base::android::JavaParamRef<jobject>& jweb_contents_delegate,
       const base::android::JavaParamRef<jobject>&
           jcontext_menu_populator_factory);

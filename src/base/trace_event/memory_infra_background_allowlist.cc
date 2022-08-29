@@ -11,6 +11,7 @@
 
 #include "base/allocator/buildflags.h"
 #include "base/strings/string_util.h"
+#include "build/build_config.h"
 
 namespace base {
 namespace trace_event {
@@ -44,6 +45,9 @@ const char* const kDumpProviderAllowlist[] = {
     "GrShaderCache",
     "FontCaches",
     "HistoryReport",
+#if BUILDFLAG(IS_MAC)
+    "CommandBuffer",
+#endif
     "IPCChannel",
     "IndexedDBBackingStore",
     "IndexedDBFactoryImpl",
@@ -60,6 +64,7 @@ const char* const kDumpProviderAllowlist[] = {
     "MojoLevelDB",
     "MojoMessages",
     "PartitionAlloc",
+    "PartitionAlloc.AddressSpace",
     "ProcessMemoryMetrics",
     "SharedContextState",
     "SharedMemoryTracker",
@@ -116,6 +121,7 @@ const char* const kAllocatorDumpNameAllowlist[] = {
     "extensions/value_store/Extensions.Database.Open.Rules/0x?",
     "extensions/value_store/Extensions.Database.Open.State/0x?",
     "extensions/value_store/Extensions.Database.Open.Scripts/0x?",
+    "extensions/value_store/Extensions.Database.Open.WebAppsLockScreen/0x?",
     "extensions/value_store/Extensions.Database.Open/0x?",
     "extensions/value_store/Extensions.Database.Restore/0x?",
     "extensions/value_store/Extensions.Database.Value.Restore/0x?",
@@ -132,6 +138,9 @@ const char* const kAllocatorDumpNameAllowlist[] = {
     "gpu/transfer_cache/cache_0x?/avg_image_size",
     "history/delta_file_service/leveldb_0x?",
     "history/usage_reports_buffer/leveldb_0x?",
+#if BUILDFLAG(IS_MAC)
+    "iosurface",
+#endif
     "java_heap",
     "java_heap/allocated_objects",
     "leveldatabase",
@@ -154,6 +163,7 @@ const char* const kAllocatorDumpNameAllowlist[] = {
     "malloc/partitions/original",
     "malloc/partitions/nonscannable",
     "malloc/partitions/nonquarantinable",
+    "malloc/sys_malloc",
     "malloc/win_heap",
 #endif
     "media/webmediaplayer/audio/player_0x?",
@@ -184,6 +194,7 @@ const char* const kAllocatorDumpNameAllowlist[] = {
     "web_cache/Encoded_size_duplicated_in_data_urls",
     "web_cache/Other_resources",
     "partition_alloc/allocated_objects",
+    "partition_alloc/address_space",
     "partition_alloc/partitions",
     "partition_alloc/partitions/array_buffer",
     "partition_alloc/partitions/buffer",
@@ -266,6 +277,7 @@ const char* const kAllocatorDumpNameAllowlist[] = {
     "sync/0x?/model_type/DICTIONARY",
     "sync/0x?/model_type/EXTENSION",
     "sync/0x?/model_type/EXTENSION_SETTING",
+    "sync/0x?/model_type/HISTORY",
     "sync/0x?/model_type/HISTORY_DELETE_DIRECTIVE",
     "sync/0x?/model_type/MANAGED_USER",
     "sync/0x?/model_type/MANAGED_USER_SETTING",

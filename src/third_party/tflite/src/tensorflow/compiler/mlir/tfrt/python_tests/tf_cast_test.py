@@ -12,75 +12,75 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Tests for Tensorflow -> CPURT compilation."""
+"""Tests for Tensorflow -> jitrt compilation."""
 
 import numpy as np
 
-from tensorflow.compiler.mlir.tfrt.jit.python_binding import tf_cpurt
+from tensorflow.compiler.mlir.tfrt.jit.python_binding import tf_jitrt
 from tensorflow.python.platform import test
 
-cpurt = tf_cpurt.TfCpurtExecutor()
+jitrt = tf_jitrt.TfJitRtExecutor()
 
 
 class TfCastTest(test.TestCase):
 
   def test_cast_unsigned_signed_i32(self):
     mlir_function = """
-      func @test(%arg0: tensor<?xui32>) -> tensor<?xi32> {
+      func.func @test(%arg0: tensor<?xui32>) -> tensor<?xi32> {
         %0 = "tf.Cast"(%arg0) : (tensor<?xui32>) -> tensor<?xi32>
-        return %0 : tensor<?xi32>
+        func.return %0 : tensor<?xi32>
       }"""
 
-    compiled = cpurt.compile(mlir_function, 'test')
+    compiled = jitrt.compile(mlir_function, 'test')
 
     arg0 = np.random.uniform(300, 3000, size=10).astype(np.uint32)
 
-    [res] = cpurt.execute(compiled, [arg0])
+    [res] = jitrt.execute(compiled, [arg0])
     np.testing.assert_equal(res, arg0)
     np.testing.assert_equal(res.dtype, np.int32)
 
   def test_cast_signed_unsigned_i32(self):
     mlir_function = """
-      func @test(%arg0: tensor<?xi32>) -> tensor<?xui32> {
+      func.func @test(%arg0: tensor<?xi32>) -> tensor<?xui32> {
         %0 = "tf.Cast"(%arg0) : (tensor<?xi32>) -> tensor<?xui32>
-        return %0 : tensor<?xui32>
+        func.return %0 : tensor<?xui32>
       }"""
 
-    compiled = cpurt.compile(mlir_function, 'test')
+    compiled = jitrt.compile(mlir_function, 'test')
 
     arg0 = np.random.uniform(300, 3000, size=10).astype(np.int32)
 
-    [res] = cpurt.execute(compiled, [arg0])
+    [res] = jitrt.execute(compiled, [arg0])
     np.testing.assert_equal(res, arg0)
     np.testing.assert_equal(res.dtype, np.uint32)
 
   def test_cast_unsigned_signed_i32_i64(self):
     mlir_function = """
-      func @test(%arg0: tensor<?xui32>) ->  tensor<?xi64> {
+      func.func @test(%arg0: tensor<?xui32>) ->  tensor<?xi64> {
         %0 = "tf.Cast"(%arg0) : (tensor<?xui32>) -> tensor<?xi64>
-        return %0 : tensor<?xi64>
+        func.return %0 : tensor<?xi64>
       }"""
 
-    compiled = cpurt.compile(mlir_function, 'test')
+    compiled = jitrt.compile(mlir_function, 'test')
 
     arg0 = np.random.uniform(300, 3000, size=10).astype(np.uint32)
 
-    [res] = cpurt.execute(compiled, [arg0])
+    [res] = jitrt.execute(compiled, [arg0])
     np.testing.assert_equal(res, arg0)
     np.testing.assert_equal(res.dtype, np.int64)
 
   def test_cast_signed_unsigned_i64_i8(self):
     mlir_function = """
-      func @test(%arg0: tensor<?xi64>) -> tensor<?xui8> {
+      func.func @test(%arg0: tensor<?xi64>) -> tensor<?xui8> {
         %0 = "tf.Cast"(%arg0) : (tensor<?xi64>) -> tensor<?xui8>
-        return %0 : tensor<?xui8>
+        func.return %0 : tensor<?xui8>
       }"""
 
-    compiled = cpurt.compile(mlir_function, 'test')
+    compiled = jitrt.compile(mlir_function, 'test')
 
     arg0 = np.random.uniform(300, 3000, size=10).astype(np.int64)
 
-    [res] = cpurt.execute(compiled, [arg0])
+    [res] = jitrt.execute(compiled, [arg0])
     np.testing.assert_equal(res, arg0.astype(np.uint8))
     np.testing.assert_equal(res.dtype, np.uint8)
 

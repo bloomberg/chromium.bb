@@ -290,6 +290,8 @@ component("capture_lib") {
       "video/chromeos/camera_hal_dispatcher_impl.h",
       "video/chromeos/camera_metadata_utils.cc",
       "video/chromeos/camera_metadata_utils.h",
+      "video/chromeos/camera_trace_utils.cc",
+      "video/chromeos/camera_trace_utils.h",
       "video/chromeos/capture_metadata_dispatcher.h",
       "video/chromeos/display_rotation_observer.cc",
       "video/chromeos/display_rotation_observer.h",
@@ -469,6 +471,7 @@ test("capture_unittests") {
       "video/fuchsia/video_capture_device_factory_fuchsia_test.cc",
       "video/fuchsia/video_capture_device_fuchsia_test.cc",
     ]
+    use_cfv2 = false
     additional_manifest_fragments = [
       "//build/config/fuchsia/test/web_engine_required_capabilities.test-cmx",
     ]
@@ -479,6 +482,8 @@ test("capture_unittests") {
       "video/mac/pixel_buffer_pool_mac_unittest.mm",
       "video/mac/pixel_buffer_transferer_mac_unittest.mm",
       "video/mac/sample_buffer_transformer_mac_unittest.mm",
+      "video/mac/test/fake_av_capture_device_format.h",
+      "video/mac/test/fake_av_capture_device_format.mm",
       "video/mac/test/mock_video_capture_device_avfoundation_frame_receiver_mac.h",
       "video/mac/test/mock_video_capture_device_avfoundation_frame_receiver_mac.mm",
       "video/mac/test/pixel_buffer_test_utils_mac.cc",

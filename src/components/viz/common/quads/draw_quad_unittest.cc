@@ -10,7 +10,6 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/unguessable_token.h"
 #include "cc/base/math_util.h"
@@ -115,18 +114,15 @@ void CompareDrawQuad(DrawQuad* quad, DrawQuad* copy) {
       render_pass->CreateAndAppendSharedQuadState();                       \
   *copy_shared_state = *shared_state;
 
-#define QUAD_DATA                              \
-  gfx::Rect quad_rect(30, 40, 50, 60);         \
-  gfx::Rect quad_visible_rect(40, 50, 30, 20); \
-  ALLOW_UNUSED_LOCAL(quad_visible_rect);       \
-  bool needs_blending = true;                  \
-  ALLOW_UNUSED_LOCAL(needs_blending);
+#define QUAD_DATA                                               \
+  gfx::Rect quad_rect(30, 40, 50, 60);                          \
+  [[maybe_unused]] gfx::Rect quad_visible_rect(40, 50, 30, 20); \
+  [[maybe_unused]] bool needs_blending = true;
 
 #define SETUP_AND_COPY_QUAD_NEW(Type, quad)                              \
   DrawQuad* copy_new = render_pass->CopyFromAndAppendDrawQuad(quad_new); \
   CompareDrawQuad(quad_new, copy_new);                                   \
-  const Type* copy_quad = Type::MaterialCast(copy_new);                  \
-  ALLOW_UNUSED_LOCAL(copy_quad);
+  [[maybe_unused]] const Type* copy_quad = Type::MaterialCast(copy_new);
 
 #define SETUP_AND_COPY_QUAD_ALL(Type, quad)                              \
   DrawQuad* copy_all = render_pass->CopyFromAndAppendDrawQuad(quad_all); \
@@ -137,8 +133,7 @@ void CompareDrawQuad(DrawQuad* quad, DrawQuad* copy) {
   DrawQuad* copy_new =                                               \
       render_pass->CopyFromAndAppendRenderPassDrawQuad(quad_new, a); \
   CompareDrawQuad(quad_new, copy_new);                               \
-  const Type* copy_quad = Type::MaterialCast(copy_new);              \
-  ALLOW_UNUSED_LOCAL(copy_quad);
+  [[maybe_unused]] const Type* copy_quad = Type::MaterialCast(copy_new);
 
 #define SETUP_AND_COPY_QUAD_ALL_RP(Type, quad, a)                    \
   DrawQuad* copy_all =                                               \
@@ -184,12 +179,12 @@ TEST(DrawQuadTest, CopyDebugBorderDrawQuad) {
   CREATE_QUAD_NEW(DebugBorderDrawQuad, visible_rect, color, width);
   EXPECT_EQ(DrawQuad::Material::kDebugBorder, copy_quad->material);
   EXPECT_EQ(visible_rect, copy_quad->visible_rect);
-  EXPECT_EQ(color, copy_quad->color);
+  EXPECT_EQ(SkColor4f::FromColor(color), copy_quad->color);
   EXPECT_EQ(width, copy_quad->width);
 
   CREATE_QUAD_ALL(DebugBorderDrawQuad, color, width);
   EXPECT_EQ(DrawQuad::Material::kDebugBorder, copy_quad->material);
-  EXPECT_EQ(color, copy_quad->color);
+  EXPECT_EQ(SkColor4f::FromColor(color), copy_quad->color);
   EXPECT_EQ(width, copy_quad->width);
 }
 
@@ -231,6 +226,7 @@ TEST(DrawQuadTest, CopyRenderPassDrawQuad) {
 
 TEST(DrawQuadTest, CopySolidColorDrawQuad) {
   gfx::Rect visible_rect(40, 50, 30, 20);
+  // TODO(crbug.com/1308932): Use SkColor4f here
   SkColor color = 0x49494949;
   bool force_anti_aliasing_off = false;
   CREATE_SHARED_STATE();
@@ -239,12 +235,12 @@ TEST(DrawQuadTest, CopySolidColorDrawQuad) {
                   force_anti_aliasing_off);
   EXPECT_EQ(DrawQuad::Material::kSolidColor, copy_quad->material);
   EXPECT_EQ(visible_rect, copy_quad->visible_rect);
-  EXPECT_EQ(color, copy_quad->color);
+  EXPECT_EQ(SkColor4f::FromColor(color), copy_quad->color);
   EXPECT_EQ(force_anti_aliasing_off, copy_quad->force_anti_aliasing_off);
 
   CREATE_QUAD_ALL(SolidColorDrawQuad, color, force_anti_aliasing_off);
   EXPECT_EQ(DrawQuad::Material::kSolidColor, copy_quad->material);
-  EXPECT_EQ(color, copy_quad->color);
+  EXPECT_EQ(SkColor4f::FromColor(color), copy_quad->color);
   EXPECT_EQ(force_anti_aliasing_off, copy_quad->force_anti_aliasing_off);
 }
 

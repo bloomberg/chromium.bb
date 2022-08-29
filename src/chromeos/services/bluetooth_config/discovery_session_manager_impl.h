@@ -11,9 +11,10 @@
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
 #include "chromeos/services/bluetooth_config/adapter_state_controller.h"
-#include "chromeos/services/bluetooth_config/device_cache.h"
 #include "chromeos/services/bluetooth_config/device_pairing_handler.h"
+#include "chromeos/services/bluetooth_config/discovered_devices_provider.h"
 #include "chromeos/services/bluetooth_config/discovery_session_manager.h"
+#include "chromeos/services/bluetooth_config/fast_pair_delegate.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 
 namespace device {
@@ -31,7 +32,8 @@ class DiscoverySessionManagerImpl : public DiscoverySessionManager,
   DiscoverySessionManagerImpl(
       AdapterStateController* adapter_state_controller,
       scoped_refptr<device::BluetoothAdapter> bluetooth_adapter,
-      DeviceCache* device_cache);
+      DiscoveredDevicesProvider* discovered_devices_provider,
+      FastPairDelegate* fast_pair_delegate);
   ~DiscoverySessionManagerImpl() override;
 
  private:
@@ -42,8 +44,7 @@ class DiscoverySessionManagerImpl : public DiscoverySessionManager,
   void OnHasAtLeastOneDiscoveryClientChanged() override;
   std::unique_ptr<DevicePairingHandler> CreateDevicePairingHandler(
       AdapterStateController* adapter_state_controller,
-      mojo::PendingReceiver<mojom::DevicePairingHandler> receiver,
-      base::OnceClosure finished_pairing_callback) override;
+      mojo::PendingReceiver<mojom::DevicePairingHandler> receiver) override;
 
   // device::BluetoothAdapter::Observer:
   void AdapterDiscoveringChanged(device::BluetoothAdapter* adapter,
@@ -57,6 +58,7 @@ class DiscoverySessionManagerImpl : public DiscoverySessionManager,
   void DestroyDiscoverySession();
 
   scoped_refptr<device::BluetoothAdapter> bluetooth_adapter_;
+  FastPairDelegate* fast_pair_delegate_;
 
   base::ScopedObservation<device::BluetoothAdapter,
                           device::BluetoothAdapter::Observer>

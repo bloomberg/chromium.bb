@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/observer_list.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/profiles/profile.h"
@@ -23,6 +24,7 @@
 #include "components/global_media_controls/public/media_item_manager.h"
 #include "components/global_media_controls/public/views/media_item_ui_list_view.h"
 #include "components/global_media_controls/public/views/media_item_ui_view.h"
+#include "components/live_caption/caption_util.h"
 #include "components/live_caption/pref_names.h"
 #include "components/soda/constants.h"
 #include "components/sync_preferences/pref_service_syncable.h"
@@ -52,9 +54,7 @@ static constexpr int kLiveCaptionImageWidthDip = 20;
 static constexpr int kLiveCaptionVerticalMarginDip = 16;
 
 std::u16string GetLiveCaptionTitle(PrefService* profile_prefs) {
-  // Live Caption multi language is only enabled when SODA is also enabled.
-  if (!base::FeatureList::IsEnabled(media::kLiveCaptionMultiLanguage) ||
-      !base::FeatureList::IsEnabled(media::kUseSodaForLiveCaption)) {
+  if (!base::FeatureList::IsEnabled(media::kLiveCaptionMultiLanguage)) {
     return l10n_util::GetStringUTF16(
         IDS_GLOBAL_MEDIA_CONTROLS_LIVE_CAPTION_ENGLISH_ONLY);
   }
@@ -80,26 +80,45 @@ MediaDialogView* MediaDialogView::instance_ = nullptr;
 bool MediaDialogView::has_been_opened_ = false;
 
 // static
-views::Widget* MediaDialogView::ShowDialog(
+views::Widget* MediaDialogView::ShowDialogFromToolbar(
     views::View* anchor_view,
     MediaNotificationService* service,
-    Profile* profile,
-    global_media_controls::GlobalMediaControlsEntryPoint entry_point) {
-  return ShowDialogForPresentationRequest(anchor_view, service, profile,
-                                          nullptr, entry_point);
+    Profile* profile) {
+  return ShowDialog(
+      anchor_view, views::BubbleBorder::TOP_RIGHT, service, profile, nullptr,
+      global_media_controls::GlobalMediaControlsEntryPoint::kToolbarIcon);
 }
 
 // static
-views::Widget* MediaDialogView::ShowDialogForPresentationRequest(
-    views::View* anchor_view,
+views::Widget* MediaDialogView::ShowDialogCentered(
+    const gfx::Rect& bounds,
     MediaNotificationService* service,
     Profile* profile,
     content::WebContents* contents,
     global_media_controls::GlobalMediaControlsEntryPoint entry_point) {
-  DCHECK(!instance_);
+  auto* widget = ShowDialog(nullptr, views::BubbleBorder::TOP_CENTER, service,
+                            profile, contents, entry_point);
+  instance_->SetAnchorRect(bounds);
+  return widget;
+}
+
+// static
+views::Widget* MediaDialogView::ShowDialog(
+    views::View* anchor_view,
+    views::BubbleBorder::Arrow anchor_position,
+    MediaNotificationService* service,
+    Profile* profile,
+    content::WebContents* contents,
+    global_media_controls::GlobalMediaControlsEntryPoint entry_point) {
   DCHECK(service);
-  instance_ =
-      new MediaDialogView(anchor_view, service, profile, contents, entry_point);
+  // Hide the previous instance if it exists, since there can only be one dialog
+  // instance at a time.
+  HideDialog();
+  instance_ = new MediaDialogView(anchor_view, anchor_position, service,
+                                  profile, contents, entry_point);
+  if (!anchor_view) {
+    instance_->set_has_parent(false);
+  }
 
   views::Widget* widget =
       views::BubbleDialogDelegateView::CreateBubble(instance_);
@@ -200,7 +219,7 @@ gfx::Size MediaDialogView::CalculatePreferredSize() const {
 
 void MediaDialogView::UpdateBubbleSize() {
   SizeToContents();
-  if (!media::IsLiveCaptionFeatureEnabled())
+  if (!captions::IsLiveCaptionFeatureSupported())
     return;
 
   const int width = active_sessions_view_->GetPreferredSize().width();
@@ -250,11 +269,12 @@ MediaDialogView::GetListViewForTesting() const {
 
 MediaDialogView::MediaDialogView(
     views::View* anchor_view,
+    views::BubbleBorder::Arrow anchor_position,
     MediaNotificationService* service,
     Profile* profile,
     content::WebContents* contents,
     global_media_controls::GlobalMediaControlsEntryPoint entry_point)
-    : BubbleDialogDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
+    : BubbleDialogDelegateView(anchor_view, anchor_position),
       service_(service),
       profile_(profile->GetOriginalProfile()),
       active_sessions_view_(AddChildView(
@@ -278,7 +298,7 @@ MediaDialogView::~MediaDialogView() {
 void MediaDialogView::Init() {
   // Remove margins.
   set_margins(gfx::Insets());
-  if (!media::IsLiveCaptionFeatureEnabled()) {
+  if (!captions::IsLiveCaptionFeatureSupported()) {
     SetLayoutManager(std::make_unique<views::FillLayout>());
     return;
   }
@@ -291,14 +311,16 @@ void MediaDialogView::Init() {
       live_caption_container->SetLayoutManager(
           std::make_unique<views::BoxLayout>(
               views::BoxLayout::Orientation::kHorizontal,
-              gfx::Insets(kLiveCaptionHorizontalMarginDip,
-                          kLiveCaptionVerticalMarginDip),
+              // TODO(crbug.com/1305767): The order of the parameters to
+              // gfx::Insets::VH() seems wrong.
+              gfx::Insets::VH(kLiveCaptionHorizontalMarginDip,
+                              kLiveCaptionVerticalMarginDip),
               kLiveCaptionBetweenChildSpacing));
 
   auto live_caption_image = std::make_unique<views::ImageView>();
-  live_caption_image->SetImage(gfx::CreateVectorIcon(
-      vector_icons::kLiveCaptionOnIcon, kLiveCaptionImageWidthDip,
-      SkColor(gfx::kGoogleGrey700)));
+  live_caption_image->SetImage(ui::ImageModel::FromVectorIcon(
+      vector_icons::kLiveCaptionOnIcon, ui::kColorIcon,
+      kLiveCaptionImageWidthDip));
   live_caption_container->AddChildView(std::move(live_caption_image));
 
   std::u16string live_caption_title_message =
@@ -318,10 +340,6 @@ void MediaDialogView::Init() {
   live_caption_button->SetIsOn(
       profile_->GetPrefs()->GetBoolean(prefs::kLiveCaptionEnabled));
   live_caption_button->SetAccessibleName(live_caption_title_->GetText());
-  live_caption_button->SetThumbOnColor(SkColor(gfx::kGoogleBlue600));
-  live_caption_button->SetTrackOnColor(SkColorSetA(gfx::kGoogleBlue600, 128));
-  live_caption_button->SetThumbOffColor(SK_ColorWHITE);
-  live_caption_button->SetTrackOffColor(SkColor(gfx::kGoogleGrey400));
   live_caption_button_ =
       live_caption_container->AddChildView(std::move(live_caption_button));
 
@@ -345,28 +363,48 @@ void MediaDialogView::OnLiveCaptionButtonPressed() {
 
 void MediaDialogView::ToggleLiveCaption(bool enabled) {
   profile_->GetPrefs()->SetBoolean(prefs::kLiveCaptionEnabled, enabled);
-  live_caption_title_->SetText(GetLiveCaptionTitle(profile_->GetPrefs()));
+
+  // Do not update the title if SODA is currently downloading.
+  if (!speech::SodaInstaller::GetInstance()->IsSodaDownloading(
+          speech::GetLanguageCode(
+              prefs::GetLiveCaptionLanguageCode(profile_->GetPrefs())))) {
+    live_caption_title_->SetText(GetLiveCaptionTitle(profile_->GetPrefs()));
+  }
+
   live_caption_button_->SetIsOn(enabled);
 }
 
-void MediaDialogView::OnSodaInstalled() {
+void MediaDialogView::OnSodaInstalled(speech::LanguageCode language_code) {
+  if (!prefs::IsLanguageCodeForLiveCaption(language_code, profile_->GetPrefs()))
+    return;
   speech::SodaInstaller::GetInstance()->RemoveObserver(this);
   live_caption_title_->SetText(GetLiveCaptionTitle(profile_->GetPrefs()));
 }
 
-void MediaDialogView::OnSodaError() {
-  if (!base::FeatureList::IsEnabled(media::kLiveCaptionMultiLanguage)) {
-    ToggleLiveCaption(false);
+void MediaDialogView::OnSodaError(speech::LanguageCode language_code) {
+  // Check that language code matches the selected language for Live Caption or
+  // is LanguageCode::kNone (signifying the SODA binary failed).
+  if (!prefs::IsLanguageCodeForLiveCaption(language_code,
+                                           profile_->GetPrefs()) &&
+      language_code != speech::LanguageCode::kNone) {
+    return;
   }
 
   live_caption_title_->SetText(l10n_util::GetStringUTF16(
       IDS_GLOBAL_MEDIA_CONTROLS_LIVE_CAPTION_DOWNLOAD_ERROR));
 }
 
-void MediaDialogView::OnSodaProgress(int combined_progress) {
+void MediaDialogView::OnSodaProgress(speech::LanguageCode language_code,
+                                     int progress) {
+  // Check that language code matches the selected language for Live Caption or
+  // is LanguageCode::kNone (signifying the SODA binary has progress).
+  if (!prefs::IsLanguageCodeForLiveCaption(language_code,
+                                           profile_->GetPrefs()) &&
+      language_code != speech::LanguageCode::kNone) {
+    return;
+  }
   live_caption_title_->SetText(l10n_util::GetStringFUTF16Int(
-      IDS_GLOBAL_MEDIA_CONTROLS_LIVE_CAPTION_DOWNLOAD_PROGRESS,
-      combined_progress));
+      IDS_GLOBAL_MEDIA_CONTROLS_LIVE_CAPTION_DOWNLOAD_PROGRESS, progress));
 }
 
 std::unique_ptr<global_media_controls::MediaItemUIView>
