@@ -6,11 +6,11 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <memory>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/cxx17_backports.h"
 #include "base/format_macros.h"
 #include "base/memory/aligned_memory.h"
 #include "base/memory/unsafe_shared_memory_region.h"
@@ -62,11 +62,9 @@ media::VideoFrameMetadata GetFullVideoFrameMetadata() {
   // media::VideoTransformation
   metadata.transformation = media::VIDEO_ROTATION_90;
 
-  // media::VideoFrameMetadata::CopyMode
-  metadata.copy_mode = media::VideoFrameMetadata::CopyMode::kCopyToNewTexture;
-
   // bools
   metadata.allow_overlay = true;
+  metadata.copy_required = true;
   metadata.end_of_stream = true;
   metadata.texture_owner = true;
   metadata.wants_promotion_hint = true;
@@ -112,7 +110,7 @@ void VerifyVideoFrameMetadataEquality(const media::VideoFrameMetadata& a,
   EXPECT_EQ(a.capture_end_time, b.capture_end_time);
   EXPECT_EQ(a.capture_counter, b.capture_counter);
   EXPECT_EQ(a.capture_update_rect, b.capture_update_rect);
-  EXPECT_EQ(a.copy_mode, b.copy_mode);
+  EXPECT_EQ(a.copy_required, b.copy_required);
   EXPECT_EQ(a.end_of_stream, b.end_of_stream);
   EXPECT_EQ(a.frame_duration, b.frame_duration);
   EXPECT_EQ(a.frame_rate, b.frame_rate);
@@ -340,15 +338,15 @@ TEST(VideoFrame, CreateBlackFrame) {
   // Test frames themselves.
   uint8_t* y_plane = frame->data(VideoFrame::kYPlane);
   for (int y = 0; y < frame->coded_size().height(); ++y) {
-    EXPECT_EQ(0, memcmp(kExpectedYRow, y_plane, base::size(kExpectedYRow)));
+    EXPECT_EQ(0, memcmp(kExpectedYRow, y_plane, std::size(kExpectedYRow)));
     y_plane += frame->stride(VideoFrame::kYPlane);
   }
 
   uint8_t* u_plane = frame->data(VideoFrame::kUPlane);
   uint8_t* v_plane = frame->data(VideoFrame::kVPlane);
   for (int y = 0; y < frame->coded_size().height() / 2; ++y) {
-    EXPECT_EQ(0, memcmp(kExpectedUVRow, u_plane, base::size(kExpectedUVRow)));
-    EXPECT_EQ(0, memcmp(kExpectedUVRow, v_plane, base::size(kExpectedUVRow)));
+    EXPECT_EQ(0, memcmp(kExpectedUVRow, u_plane, std::size(kExpectedUVRow)));
+    EXPECT_EQ(0, memcmp(kExpectedUVRow, v_plane, std::size(kExpectedUVRow)));
     u_plane += frame->stride(VideoFrame::kUPlane);
     v_plane += frame->stride(VideoFrame::kVPlane);
   }
@@ -467,7 +465,7 @@ TEST(VideoFrame, WrapExternalGpuMemoryBuffer) {
   gfx::Size coded_size = gfx::Size(256, 256);
   gfx::Rect visible_rect(coded_size);
   auto timestamp = base::Milliseconds(1);
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
   const uint64_t modifier = 0x001234567890abcdULL;
 #else
   const uint64_t modifier = gfx::NativePixmapHandle::kNoModifier;
@@ -503,7 +501,7 @@ TEST(VideoFrame, WrapExternalGpuMemoryBuffer) {
   EXPECT_EQ(frame->mailbox_holder(1).mailbox, mailbox_holders[1].mailbox);
 }
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 TEST(VideoFrame, WrapExternalDmabufs) {
   gfx::Size coded_size = gfx::Size(256, 256);
   gfx::Rect visible_rect(coded_size);
@@ -703,12 +701,14 @@ TEST(VideoFrame, AllocationSize_OddSize) {
       case PIXEL_FORMAT_YUV444P9:
       case PIXEL_FORMAT_YUV444P10:
       case PIXEL_FORMAT_YUV444P12:
+      case PIXEL_FORMAT_YUV422AP10:
         EXPECT_EQ(144u, VideoFrame::AllocationSize(format, size))
             << VideoPixelFormatToString(format);
         break;
       case PIXEL_FORMAT_YUV422P9:
       case PIXEL_FORMAT_YUV422P10:
       case PIXEL_FORMAT_YUV422P12:
+      case PIXEL_FORMAT_I444A:
         EXPECT_EQ(96u, VideoFrame::AllocationSize(format, size))
             << VideoPixelFormatToString(format);
         break;
@@ -717,6 +717,7 @@ TEST(VideoFrame, AllocationSize_OddSize) {
       case PIXEL_FORMAT_YUV420P10:
       case PIXEL_FORMAT_YUV420P12:
       case PIXEL_FORMAT_P016LE:
+      case PIXEL_FORMAT_I422A:
         EXPECT_EQ(72u, VideoFrame::AllocationSize(format, size))
             << VideoPixelFormatToString(format);
         break;
@@ -753,7 +754,12 @@ TEST(VideoFrame, AllocationSize_OddSize) {
             << VideoPixelFormatToString(format);
         break;
       case PIXEL_FORMAT_RGBAF16:
+      case PIXEL_FORMAT_YUV420AP10:
         EXPECT_EQ(120u, VideoFrame::AllocationSize(format, size))
+            << VideoPixelFormatToString(format);
+        break;
+      case PIXEL_FORMAT_YUV444AP10:
+        EXPECT_EQ(192u, VideoFrame::AllocationSize(format, size))
             << VideoPixelFormatToString(format);
         break;
       case PIXEL_FORMAT_MJPEG:
@@ -789,6 +795,7 @@ TEST(VideoFrameMetadata, PartialMergeMetadata) {
   partial_metadata.reference_time = kTempTicks;
   partial_metadata.processing_time = kTempDelta;
   partial_metadata.allow_overlay = false;
+  partial_metadata.texture_origin_is_top_left = false;
 
   // Merging partial metadata into full metadata partially override it.
   full_metadata.MergeMetadataFrom(partial_metadata);
@@ -797,6 +804,7 @@ TEST(VideoFrameMetadata, PartialMergeMetadata) {
   EXPECT_EQ(partial_metadata.reference_time, kTempTicks);
   EXPECT_EQ(partial_metadata.processing_time, kTempDelta);
   EXPECT_EQ(partial_metadata.allow_overlay, false);
+  EXPECT_EQ(partial_metadata.texture_origin_is_top_left, false);
 }
 
 }  // namespace media

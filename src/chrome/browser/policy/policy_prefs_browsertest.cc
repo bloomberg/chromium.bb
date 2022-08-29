@@ -87,7 +87,7 @@ class PolicyPrefsTest : public PlatformBrowserTest {
   }
 
   MockConfigurationPolicyProvider* GetMockPolicyProvider() {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     // Trying to delete the mock provider on Android leads to a cascade of
     // crashes due to ChromeBrowserPolicyConnector and ProfileImpl not being
     // deleted. Those crashes are caused by checks that ensure that observer
@@ -104,25 +104,32 @@ class PolicyPrefsTest : public PlatformBrowserTest {
     // by ChromeBrowserPolicyConnector and ProfileImpl destructors. Thus it's
     // safe to define a provider object that is deleted on scope destruction.
     return &provider_;
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
   }
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   testing::NiceMock<MockConfigurationPolicyProvider> provider_;
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID)
 };
 
 // Verifies that policies make their corresponding preferences become managed,
 // and that the user can't override that setting.
-IN_PROC_BROWSER_TEST_F(PolicyPrefsTest, PolicyToPrefsMapping) {
+// README SHERIFFs: This test encapsulates a whole suite of individual browser
+// tests for performance reasons and therefore has an increased chance of
+// failure/flakiness.
+// IMPORTANT: Please add hendrich@chromium.org on any related bugs when
+// disabling this test.
+// Flaky on all platforms: crbug.com/1294825
+IN_PROC_BROWSER_TEST_F(PolicyPrefsTest, DISABLED_PolicyToPrefsMapping) {
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
   policy::FakeBrowserDMTokenStorage storage;
   policy::BrowserDMTokenStorage::SetForTesting(&storage);
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
   PrefService* local_state = g_browser_process->local_state();
-  PrefService* user_prefs =
-      ProfileManager::GetActiveUserProfile()->GetOriginalProfile()->GetPrefs();
+  PrefService* user_prefs = ProfileManager::GetLastUsedProfileIfLoaded()
+                                ->GetOriginalProfile()
+                                ->GetPrefs();
 
   VerifyPolicyToPrefMappings(GetTestCasePath(), local_state, user_prefs,
                              /* signin_profile_prefs= */ nullptr,
@@ -144,14 +151,14 @@ class SigninPolicyPrefsTest : public PolicyPrefsTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     PolicyPrefsTest::SetUpCommandLine(command_line);
 
-    command_line->AppendSwitch(chromeos::switches::kLoginManager);
-    command_line->AppendSwitch(chromeos::switches::kForceLoginManagerInTests);
+    command_line->AppendSwitch(ash::switches::kLoginManager);
+    command_line->AppendSwitch(ash::switches::kForceLoginManagerInTests);
   }
 };
 
 IN_PROC_BROWSER_TEST_F(SigninPolicyPrefsTest, PolicyToPrefsMapping) {
   PrefService* signin_profile_prefs =
-      chromeos::ProfileHelper::GetSigninProfile()->GetPrefs();
+      ash::ProfileHelper::GetSigninProfile()->GetPrefs();
 
   // Only checking signin_profile_prefs here since |local_state| is already
   // checked by PolicyPrefsTest.PolicyToPrefsMapping test.

@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/observer_list.h"
 #include "build/build_config.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -65,7 +66,7 @@ void DistillabilityDriver::SetIsSecureCallback(
 
 void DistillabilityDriver::OnDistillability(
     const DistillabilityResult& result) {
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   if (result.is_distillable) {
     if (!is_secure_check_ || !is_secure_check_.Run(&GetWebContents())) {
       DistillabilityResult not_distillable;
@@ -78,7 +79,7 @@ void DistillabilityDriver::OnDistillability(
       return;
     }
   }
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID)
   latest_result_ = result;
   for (auto& observer : observers_)
     observer.OnResult(result);

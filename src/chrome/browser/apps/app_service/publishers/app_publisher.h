@@ -10,10 +10,14 @@
 #include <vector>
 
 #include "base/memory/raw_ptr.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_forward.h"
 #include "chrome/browser/apps/app_service/launch_result_type.h"
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/icon_types.h"
+#include "components/services/app_service/public/cpp/intent.h"
+#include "components/services/app_service/public/cpp/intent_filter.h"
+#include "components/services/app_service/public/cpp/preferred_app.h"
 
 namespace apps {
 
@@ -31,11 +35,14 @@ class AppPublisher {
   ~AppPublisher();
 
   // Returns an app object from the provided parameters
-  static std::unique_ptr<App> MakeApp(AppType app_type,
-                                      const std::string& app_id,
-                                      Readiness readiness,
-                                      const std::string& name);
+  static AppPtr MakeApp(AppType app_type,
+                        const std::string& app_id,
+                        Readiness readiness,
+                        const std::string& name,
+                        InstallReason install_reason,
+                        InstallSource install_source);
 
+#if !BUILDFLAG(IS_CHROMEOS_LACROS)
   // Registers this AppPublisher to AppServiceProxy, allowing it to receive App
   // Service API calls. This function must be called after the object's
   // creation, and can't be called in the constructor function to avoid
@@ -43,6 +50,7 @@ class AppPublisher {
   // be called immediately before the first call to AppPublisher::Publish that
   // sends the initial list of apps to the App Service.
   void RegisterPublisher(AppType app_type);
+#endif
 
   // Requests an icon for an app identified by |app_id|. The icon is identified
   // by |icon_key| and parameterised by |icon_type| and |size_hint_in_dp|. If
@@ -75,23 +83,56 @@ class AppPublisher {
   virtual void LaunchAppWithParams(AppLaunchParams&& params,
                                    LaunchCallback callback) = 0;
 
+  virtual void LaunchShortcut(const std::string& app_id,
+                              const std::string& shortcut_id,
+                              int64_t display_id) {}
+
+  // Indicates that the app identified by |app_id| has been set as a preferred
+  // app for |intent_filter|, and the |replaced_app_preferences| is the apps
+  // that are no longer preferred apps for their corresponding |intent_filters|.
+  // This method is used by the App Service to sync the change to publishers.
+  // |intent| is needed to set the preferred app in ARC.
+  virtual void OnPreferredAppSet(
+      const std::string& app_id,
+      IntentFilterPtr intent_filter,
+      IntentPtr intent,
+      ReplacedAppPreferences replaced_app_preferences) {}
+
+  // Indicates that the app identified by |app_id| has had its supported links
+  // preference changed, so that all supported link filters are either preferred
+  // (|open_in_app| is true) or not preferred (|open_in_app| is false). This
+  // method is used by the App Service to sync changes to publishers, and is
+  // called instead of OnPreferredAppSet for supported links changes.
+  virtual void OnSupportedLinksPreferenceChanged(const std::string& app_id,
+                                                 bool open_in_app) {}
+
  protected:
+#if !BUILDFLAG(IS_CHROMEOS_LACROS)
   // Publish one `app` to AppServiceProxy. Should be called whenever the app
   // represented by `app` undergoes some state change to inform AppServiceProxy
   // of the change. Ensure that RegisterPublisher() has been called before the
   // first call to this method.
-  void Publish(std::unique_ptr<App> app);
+  void Publish(AppPtr app);
 
   // Publish multiple `apps` to AppServiceProxy. Should be called whenever the
-  // app represented by `app` undergoes some state change to inform
+  // apps represented by `apps` undergoes some state change to inform
   // AppServiceProxy of the change. Ensure that RegisterPublisher() has been
   // called before the first call to this method.
-  void Publish(std::vector<std::unique_ptr<App>> apps);
+  //
+  // `should_notify_initialized` is true, when the publisher for `app_type` has
+  // finished initiating apps - typically this is the very first time Publish()
+  // is called with the initial set of apps present at the time the publisher is
+  // first created. Otherwise `should_notify_initialized` is false. When
+  // `should_notify_initialized` is true, `app_type` should not be `kUnknown`.
+  void Publish(std::vector<AppPtr> apps,
+               AppType app_type,
+               bool should_notify_initialized);
+#endif
 
   AppServiceProxy* proxy() { return proxy_; }
 
  private:
-  raw_ptr<AppServiceProxy> proxy_ = nullptr;
+  const raw_ptr<AppServiceProxy> proxy_;
 };
 
 }  // namespace apps

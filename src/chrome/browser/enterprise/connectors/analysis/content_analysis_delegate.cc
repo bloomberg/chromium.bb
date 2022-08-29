@@ -22,6 +22,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/enterprise/connectors/analysis/content_analysis_dialog.h"
+#include "chrome/browser/enterprise/connectors/analysis/page_print_analysis_request.h"
 #include "chrome/browser/enterprise/connectors/common.h"
 #include "chrome/browser/enterprise/connectors/connectors_service.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
@@ -35,7 +36,6 @@
 #include "chrome/browser/safe_browsing/download_protection/check_client_download_request.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/enterprise/common/proto/connectors.pb.h"
-#include "components/policy/core/browser/url_util.h"
 #include "components/policy/core/common/chrome_schema.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/core/common/features.h"
@@ -165,7 +165,8 @@ ContentAnalysisDelegate::FileContents::operator=(
 
 ContentAnalysisDelegate::~ContentAnalysisDelegate() = default;
 
-void ContentAnalysisDelegate::BypassWarnings() {
+void ContentAnalysisDelegate::BypassWarnings(
+    absl::optional<std::u16string> user_justification) {
   if (callback_.is_null())
     return;
 
@@ -180,7 +181,7 @@ void ContentAnalysisDelegate::BypassWarnings() {
     ReportAnalysisConnectorWarningBypass(
         profile_, url_, "Text data", std::string(), "text/plain",
         extensions::SafeBrowsingPrivateEventRouter::kTriggerWebContentUpload,
-        access_point_, content_size, text_response_);
+        access_point_, content_size, text_response_, user_justification);
   }
 
   // Mark every "warning" file as complying and report a warning bypass.
@@ -192,7 +193,19 @@ void ContentAnalysisDelegate::BypassWarnings() {
         profile_, url_, data_.paths[index].AsUTF8Unsafe(),
         file_info_[index].sha256, file_info_[index].mime_type,
         extensions::SafeBrowsingPrivateEventRouter::kTriggerFileUpload,
-        access_point_, file_info_[index].size, warning.second);
+        access_point_, file_info_[index].size, warning.second,
+        user_justification);
+  }
+
+  // Mark the printed page as complying and report a warning bypass.
+  if (page_warning_) {
+    result_.page_result = true;
+
+    ReportAnalysisConnectorWarningBypass(
+        profile_, url_, "Printed page", /*sha256*/ std::string(),
+        /*mime_type*/ std::string(),
+        extensions::SafeBrowsingPrivateEventRouter::kTriggerPagePrint,
+        access_point_, /*content_size*/ -1, page_response_, user_justification);
   }
 
   RunCallback();
@@ -217,25 +230,38 @@ void ContentAnalysisDelegate::Cancel(bool warning) {
 
 absl::optional<std::u16string> ContentAnalysisDelegate::GetCustomMessage()
     const {
-  auto element = data_.settings.custom_message_data.find(final_result_tag_);
-  if (element != data_.settings.custom_message_data.end() &&
-      !element->second.message.empty()) {
+  auto element = data_.settings.tags.find(final_result_tag_);
+  if (element != data_.settings.tags.end() &&
+      !element->second.custom_message.message.empty()) {
     return l10n_util::GetStringFUTF16(IDS_DEEP_SCANNING_DIALOG_CUSTOM_MESSAGE,
-                                      element->second.message);
+                                      element->second.custom_message.message);
   }
 
   return absl::nullopt;
 }
 
 absl::optional<GURL> ContentAnalysisDelegate::GetCustomLearnMoreUrl() const {
-  auto element = data_.settings.custom_message_data.find(final_result_tag_);
-  if (element != data_.settings.custom_message_data.end() &&
-      element->second.learn_more_url.is_valid() &&
-      !element->second.learn_more_url.is_empty()) {
-    return element->second.learn_more_url;
+  auto element = data_.settings.tags.find(final_result_tag_);
+  if (element != data_.settings.tags.end() &&
+      element->second.custom_message.learn_more_url.is_valid() &&
+      !element->second.custom_message.learn_more_url.is_empty()) {
+    return element->second.custom_message.learn_more_url;
   }
 
   return absl::nullopt;
+}
+
+bool ContentAnalysisDelegate::BypassRequiresJustification() const {
+  if (!base::FeatureList::IsEnabled(kBypassJustificationEnabled))
+    return false;
+
+  return data_.settings.tags.count(final_result_tag_) &&
+         data_.settings.tags.at(final_result_tag_).requires_justification;
+}
+
+std::u16string ContentAnalysisDelegate::GetBypassJustificationLabel() const {
+  return l10n_util::GetStringUTF16(
+      IDS_DEEP_SCANNING_DIALOG_UPLOAD_BYPASS_JUSTIFICATION_LABEL);
 }
 
 absl::optional<std::u16string>
@@ -383,6 +409,7 @@ ContentAnalysisDelegate::ContentAnalysisDelegate(
   url_ = web_contents->GetLastCommittedURL();
   result_.text_results.resize(data_.text.size(), false);
   result_.paths_results.resize(data_.paths.size(), false);
+  result_.page_result = false;
   file_info_.resize(data_.paths.size());
 }
 
@@ -418,9 +445,9 @@ void ContentAnalysisDelegate::StringRequestCallback(
     if (should_warn) {
       text_warning_ = true;
       text_response_ = std::move(response);
-      UpdateFinalResult(ContentAnalysisDelegateBase::FinalResult::WARNING, tag);
+      UpdateFinalResult(FinalContentAnalysisResult::WARNING, tag);
     } else {
-      UpdateFinalResult(ContentAnalysisDelegateBase::FinalResult::FAILURE, tag);
+      UpdateFinalResult(FinalContentAnalysisResult::FAILURE, tag);
     }
   }
 
@@ -461,16 +488,14 @@ void ContentAnalysisDelegate::FileRequestCallback(
 
   if (!file_complies) {
     if (result == BinaryUploadService::Result::FILE_TOO_LARGE) {
-      UpdateFinalResult(ContentAnalysisDelegateBase::FinalResult::LARGE_FILES,
-                        tag);
+      UpdateFinalResult(FinalContentAnalysisResult::LARGE_FILES, tag);
     } else if (result == BinaryUploadService::Result::FILE_ENCRYPTED) {
-      UpdateFinalResult(
-          ContentAnalysisDelegateBase::FinalResult::ENCRYPTED_FILES, tag);
+      UpdateFinalResult(FinalContentAnalysisResult::ENCRYPTED_FILES, tag);
     } else if (should_warn) {
       file_warnings_[index] = std::move(response);
-      UpdateFinalResult(ContentAnalysisDelegateBase::FinalResult::WARNING, tag);
+      UpdateFinalResult(FinalContentAnalysisResult::WARNING, tag);
     } else {
-      UpdateFinalResult(ContentAnalysisDelegateBase::FinalResult::FAILURE, tag);
+      UpdateFinalResult(FinalContentAnalysisResult::FAILURE, tag);
     }
   }
 
@@ -479,11 +504,50 @@ void ContentAnalysisDelegate::FileRequestCallback(
   MaybeCompleteScanRequest();
 }
 
+void ContentAnalysisDelegate::PageRequestCallback(
+    BinaryUploadService::Result result,
+    enterprise_connectors::ContentAnalysisResponse response) {
+  RecordDeepScanMetrics(access_point_,
+                        base::TimeTicks::Now() - upload_start_time_,
+                        page_size_bytes_, result, response);
+
+  page_request_complete_ = true;
+  std::string tag;
+  auto action =
+      enterprise_connectors::GetHighestPrecedenceAction(response, &tag);
+  result_.page_result = ResultShouldAllowDataUse(result, data_.settings) &&
+                        ContentAnalysisActionAllowsDataUse(action);
+  bool should_warn = action == enterprise_connectors::ContentAnalysisResponse::
+                                   Result::TriggeredRule::WARN;
+
+  MaybeReportDeepScanningVerdict(
+      profile_, url_, "Printed page", /*sha256*/ std::string(),
+      /*mime_type*/ std::string(),
+      extensions::SafeBrowsingPrivateEventRouter::kTriggerPagePrint,
+      access_point_, /*content_size*/ -1, result, response,
+      CalculateEventResult(data_.settings, result_.page_result, should_warn));
+
+  if (!result_.page_result) {
+    if (result == BinaryUploadService::Result::FILE_TOO_LARGE) {
+      UpdateFinalResult(FinalContentAnalysisResult::LARGE_FILES, tag);
+    } else if (should_warn) {
+      page_warning_ = true;
+      page_response_ = std::move(response);
+      UpdateFinalResult(FinalContentAnalysisResult::WARNING, tag);
+    } else {
+      UpdateFinalResult(FinalContentAnalysisResult::FAILURE, tag);
+    }
+  }
+
+  MaybeCompleteScanRequest();
+}
+
 bool ContentAnalysisDelegate::UploadData() {
   upload_start_time_ = base::TimeTicks::Now();
 
-  // Create a text request and a file request for each file.
+  // Create a text request, a page request and a file request for each file.
   PrepareTextRequest();
+  PreparePageRequest();
   safe_browsing::IncrementCrashKey(
       safe_browsing::ScanningCrashKey::PENDING_FILE_UPLOADS,
       data_.paths.size());
@@ -505,7 +569,8 @@ bool ContentAnalysisDelegate::UploadData() {
   // Do not add code under this comment. The above line should be the last thing
   // this function does before the return statement.
 
-  return !text_request_complete_ || file_result_count_ != data_.paths.size();
+  return !text_request_complete_ || file_result_count_ != data_.paths.size() ||
+         !page_request_complete_;
 }
 
 void ContentAnalysisDelegate::PrepareTextRequest() {
@@ -539,6 +604,23 @@ void ContentAnalysisDelegate::PrepareTextRequest() {
   }
 }
 
+void ContentAnalysisDelegate::PreparePageRequest() {
+  // The request is considered complete if the mapped region is invalid since it
+  // prevents scanning.
+  page_request_complete_ = !data_.page.IsValid();
+
+  if (!page_request_complete_) {
+    page_size_bytes_ = data_.page.GetSize();
+    auto request = std::make_unique<PagePrintAnalysisRequest>(
+        data_.settings, std::move(data_.page),
+        base::BindOnce(&ContentAnalysisDelegate::PageRequestCallback,
+                       weak_ptr_factory_.GetWeakPtr()));
+
+    PrepareRequest(enterprise_connectors::PRINT, request.get());
+    UploadPageForDeepScanning(std::move(request));
+  }
+}
+
 safe_browsing::FileAnalysisRequest* ContentAnalysisDelegate::PrepareFileRequest(
     const base::FilePath& path) {
   auto request = std::make_unique<safe_browsing::FileAnalysisRequest>(
@@ -564,8 +646,8 @@ void ContentAnalysisDelegate::PrepareRequest(
   request->set_url(data_.url.spec());
   request->set_tab_url(data_.url);
   request->set_per_profile_request(data_.settings.per_profile);
-  for (const std::string& tag : data_.settings.tags)
-    request->add_tag(tag);
+  for (const auto& tag : data_.settings.tags)
+    request->add_tag(tag.first);
   if (data_.settings.client_metadata)
     request->set_client_metadata(*data_.settings.client_metadata);
 }
@@ -573,6 +655,7 @@ void ContentAnalysisDelegate::PrepareRequest(
 void ContentAnalysisDelegate::FillAllResultsWith(bool status) {
   std::fill(result_.text_results.begin(), result_.text_results.end(), status);
   std::fill(result_.paths_results.begin(), result_.paths_results.end(), status);
+  result_.page_result = status;
 }
 
 BinaryUploadService* ContentAnalysisDelegate::GetBinaryUploadService() {
@@ -595,6 +678,13 @@ void ContentAnalysisDelegate::UploadFileForDeepScanning(
     upload_service->MaybeUploadForDeepScanning(std::move(request));
 }
 
+void ContentAnalysisDelegate::UploadPageForDeepScanning(
+    std::unique_ptr<BinaryUploadService::Request> request) {
+  BinaryUploadService* upload_service = GetBinaryUploadService();
+  if (upload_service)
+    upload_service->MaybeUploadForDeepScanning(std::move(request));
+}
+
 bool ContentAnalysisDelegate::UpdateDialog() {
   if (!dialog_)
     return false;
@@ -604,12 +694,14 @@ bool ContentAnalysisDelegate::UpdateDialog() {
 }
 
 void ContentAnalysisDelegate::MaybeCompleteScanRequest() {
-  if (!text_request_complete_ || file_result_count_ < data_.paths.size())
+  if (!text_request_complete_ || file_result_count_ < data_.paths.size() ||
+      !page_request_complete_) {
     return;
+  }
 
   // If showing the warning message, wait before running the callback. The
   // callback will be called either in BypassWarnings or Cancel.
-  if (final_result_ != ContentAnalysisDelegateBase::FinalResult::WARNING)
+  if (final_result_ != FinalContentAnalysisResult::WARNING)
     RunCallback();
 
   if (!UpdateDialog() && data_uploaded_) {
@@ -657,7 +749,7 @@ void ContentAnalysisDelegate::OnGotFileInfo(
 }
 
 void ContentAnalysisDelegate::UpdateFinalResult(
-    ContentAnalysisDelegateBase::FinalResult result,
+    FinalContentAnalysisResult result,
     const std::string& tag) {
   if (result < final_result_) {
     final_result_ = result;

@@ -9,12 +9,12 @@
 #import "ios/chrome/browser/ui/infobars/modals/infobar_modal_constants.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_translate_modal_constants.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_translate_modal_delegate.h"
-#import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_button_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_edit_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
+#import "ios/chrome/common/ui/table_view/table_view_cells_constants.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -241,11 +241,16 @@ typedef NS_ENUM(NSInteger, ItemType) {
                      cellForRowAtIndexPath:indexPath];
   ItemType itemType = static_cast<ItemType>(
       [self.tableViewModel itemTypeForIndexPath:indexPath]);
+  TableViewTextButtonCell* tableViewTextButtonCell =
+      base::mac::ObjCCast<TableViewTextButtonCell>(cell);
+  // Clear the existing targets before adding the new ones.
+  [tableViewTextButtonCell.button removeTarget:nil
+                                        action:nil
+                              forControlEvents:UIControlEventAllEvents];
 
   switch (itemType) {
     case ItemTypeTranslateButton: {
-      TableViewTextButtonCell* tableViewTextButtonCell =
-          base::mac::ObjCCastStrict<TableViewTextButtonCell>(cell);
+      DCHECK(tableViewTextButtonCell);
       tableViewTextButtonCell.selectionStyle =
           UITableViewCellSelectionStyleNone;
       [tableViewTextButtonCell.button
@@ -256,8 +261,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       break;
     }
     case ItemTypeShowOriginalButton: {
-      TableViewTextButtonCell* tableViewTextButtonCell =
-          base::mac::ObjCCastStrict<TableViewTextButtonCell>(cell);
+      DCHECK(tableViewTextButtonCell);
       tableViewTextButtonCell.selectionStyle =
           UITableViewCellSelectionStyleNone;
       [tableViewTextButtonCell.button addTarget:self.infobarModalDelegate
@@ -266,8 +270,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       break;
     }
     case ItemTypeAlwaysTranslateSource: {
-      TableViewTextButtonCell* tableViewTextButtonCell =
-          base::mac::ObjCCastStrict<TableViewTextButtonCell>(cell);
+      DCHECK(tableViewTextButtonCell);
       tableViewTextButtonCell.selectionStyle =
           UITableViewCellSelectionStyleNone;
       if (self.shouldAlwaysTranslate) {
@@ -284,8 +287,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       break;
     }
     case ItemTypeNeverTranslateSource: {
-      TableViewTextButtonCell* tableViewTextButtonCell =
-          base::mac::ObjCCastStrict<TableViewTextButtonCell>(cell);
+      DCHECK(tableViewTextButtonCell);
       tableViewTextButtonCell.selectionStyle =
           UITableViewCellSelectionStyleNone;
       if (self.isTranslatableLanguage) {
@@ -302,8 +304,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       break;
     }
     case ItemTypeNeverTranslateSite: {
-      TableViewTextButtonCell* tableViewTextButtonCell =
-          base::mac::ObjCCastStrict<TableViewTextButtonCell>(cell);
+      DCHECK(tableViewTextButtonCell);
       tableViewTextButtonCell.selectionStyle =
           UITableViewCellSelectionStyleNone;
       if (self.isSiteOnNeverPromptList) {

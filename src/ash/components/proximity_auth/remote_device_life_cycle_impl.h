@@ -7,22 +7,22 @@
 
 #include <memory>
 
+#include "ash/components/multidevice/remote_device_ref.h"
 #include "ash/components/proximity_auth/messenger_observer.h"
 #include "ash/components/proximity_auth/remote_device_life_cycle.h"
+#include "ash/services/secure_channel/public/cpp/client/connection_attempt.h"
+#include "ash/services/secure_channel/public/cpp/client/secure_channel_client.h"
+#include "ash/services/secure_channel/public/mojom/secure_channel.mojom.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
-#include "chromeos/components/multidevice/remote_device_ref.h"
-#include "chromeos/services/secure_channel/public/cpp/client/connection_attempt.h"
-#include "chromeos/services/secure_channel/public/cpp/client/secure_channel_client.h"
-#include "chromeos/services/secure_channel/public/mojom/secure_channel.mojom.h"
 
-namespace chromeos {
+namespace ash {
 namespace secure_channel {
 class ClientChannel;
 class SecureChannelClient;
 }  // namespace secure_channel
-}  // namespace chromeos
+}  // namespace ash
 
 namespace proximity_auth {
 
@@ -31,15 +31,15 @@ class Messenger;
 // Implementation of RemoteDeviceLifeCycle.
 class RemoteDeviceLifeCycleImpl
     : public RemoteDeviceLifeCycle,
-      public chromeos::secure_channel::ConnectionAttempt::Delegate,
+      public ash::secure_channel::ConnectionAttempt::Delegate,
       public MessengerObserver {
  public:
   // Creates the life cycle for controlling the given |remote_device|.
   // |proximity_auth_client| is not owned.
   RemoteDeviceLifeCycleImpl(
-      chromeos::multidevice::RemoteDeviceRef remote_device,
-      absl::optional<chromeos::multidevice::RemoteDeviceRef> local_device,
-      chromeos::secure_channel::SecureChannelClient* secure_channel_client);
+      ash::multidevice::RemoteDeviceRef remote_device,
+      absl::optional<ash::multidevice::RemoteDeviceRef> local_device,
+      ash::secure_channel::SecureChannelClient* secure_channel_client);
 
   RemoteDeviceLifeCycleImpl(const RemoteDeviceLifeCycleImpl&) = delete;
   RemoteDeviceLifeCycleImpl& operator=(const RemoteDeviceLifeCycleImpl&) =
@@ -49,8 +49,9 @@ class RemoteDeviceLifeCycleImpl
 
   // RemoteDeviceLifeCycle:
   void Start() override;
-  chromeos::multidevice::RemoteDeviceRef GetRemoteDevice() const override;
-  chromeos::secure_channel::ClientChannel* GetChannel() const override;
+  void Stop() override;
+  ash::multidevice::RemoteDeviceRef GetRemoteDevice() const override;
+  ash::secure_channel::ClientChannel* GetChannel() const override;
 
   RemoteDeviceLifeCycle::State GetState() const override;
   Messenger* GetMessenger() override;
@@ -68,24 +69,24 @@ class RemoteDeviceLifeCycleImpl
   // Creates the messenger which parses status updates.
   void CreateMessenger();
 
-  // chromeos::secure_channel::ConnectionAttempt::Delegate:
+  // ash::secure_channel::ConnectionAttempt::Delegate:
   void OnConnectionAttemptFailure(
-      chromeos::secure_channel::mojom::ConnectionAttemptFailureReason reason)
+      ash::secure_channel::mojom::ConnectionAttemptFailureReason reason)
       override;
-  void OnConnection(std::unique_ptr<chromeos::secure_channel::ClientChannel>
-                        channel) override;
+  void OnConnection(
+      std::unique_ptr<ash::secure_channel::ClientChannel> channel) override;
 
   // MessengerObserver:
   void OnDisconnected() override;
 
   // The remote device being controlled.
-  const chromeos::multidevice::RemoteDeviceRef remote_device_;
+  const ash::multidevice::RemoteDeviceRef remote_device_;
 
   // Represents this device (i.e. this Chromebook) for a particular profile.
-  absl::optional<chromeos::multidevice::RemoteDeviceRef> local_device_;
+  absl::optional<ash::multidevice::RemoteDeviceRef> local_device_;
 
   // The entrypoint to the SecureChannel API.
-  chromeos::secure_channel::SecureChannelClient* secure_channel_client_;
+  ash::secure_channel::SecureChannelClient* secure_channel_client_;
 
   // The current state in the life cycle.
   RemoteDeviceLifeCycle::State state_;
@@ -98,11 +99,10 @@ class RemoteDeviceLifeCycleImpl
   // SECURE_CHANNEL_ESTABLISHED state.
   std::unique_ptr<Messenger> messenger_;
 
-  std::unique_ptr<chromeos::secure_channel::ConnectionAttempt>
-      connection_attempt_;
+  std::unique_ptr<ash::secure_channel::ConnectionAttempt> connection_attempt_;
 
   // Ownership is eventually passed to |messenger_|.
-  std::unique_ptr<chromeos::secure_channel::ClientChannel> channel_;
+  std::unique_ptr<ash::secure_channel::ClientChannel> channel_;
 
   // After authentication fails, this timer waits for a period of time before
   // retrying the connection.

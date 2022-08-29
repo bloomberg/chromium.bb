@@ -32,11 +32,13 @@ class PasswordItemsView : public PasswordBubbleViewBase {
   // PasswordBubbleViewBase
   PasswordBubbleControllerBase* GetController() override;
   const PasswordBubbleControllerBase* GetController() const override;
+  ui::ImageModel GetWindowIcon() override;
 
   void NotifyPasswordFormAction(
       const password_manager::PasswordForm& password_form,
       PasswordBubbleControllerBase::PasswordAction action);
   void RecreateLayout();
+  std::unique_ptr<views::View> CreateFooterView();
 
   // Called when the favicon is loaded. If |favicon| isn't empty, it sets
   // |favicon_| and invokes RecreateLayout().

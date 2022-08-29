@@ -35,11 +35,20 @@ class WebStateList;
 // The mediator detected that the keyboard input view should be reset.
 - (void)resetFormInputView;
 
+// The mediator notifies that password suggestions have been shown.
+- (void)notifyPasswordSuggestionsShown;
+
+// The mediator notifies that a password suggestion has been selected.
+- (void)notifyPasswordSuggestionSelected;
+
+// The mediator shows password suggestion tip if needed.
+- (void)showPasswordSuggestionIPHIfNeeded;
+
 @end
 
 // This class contains all the logic to get and provide keyboard input accessory
 // views to its consumer. As well as telling the consumer when the default
-// accessory view shoeuld be restored to the system default.
+// accessory view should be restored to the system default.
 @interface FormInputAccessoryMediator : NSObject <FormSuggestionClient>
 
 // Returns a mediator observing the passed `WebStateList` and associated with

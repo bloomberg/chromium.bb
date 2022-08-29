@@ -111,14 +111,8 @@ void Warp_C(const void* LIBGAV1_RESTRICT const source, ptrdiff_t source_stride,
          start_x += 8) {
       const int src_x = (start_x + 4) << subsampling_x;
       const int src_y = (start_y + 4) << subsampling_y;
-      const int dst_x =
-          src_x * warp_params[2] + src_y * warp_params[3] + warp_params[0];
-      const int dst_y =
-          src_x * warp_params[4] + src_y * warp_params[5] + warp_params[1];
-      const int x4 = dst_x >> subsampling_x;
-      const int y4 = dst_y >> subsampling_y;
-      const int ix4 = x4 >> kWarpedModelPrecisionBits;
-      const int iy4 = y4 >> kWarpedModelPrecisionBits;
+      const WarpFilterParams filter_params = GetWarpFilterParams(
+          src_x, src_y, subsampling_x, subsampling_y, warp_params);
 
       // A prediction block may fall outside the frame's boundaries. If a
       // prediction block is calculated using only samples outside the frame's
@@ -172,22 +166,24 @@ void Warp_C(const void* LIBGAV1_RESTRICT const source, ptrdiff_t source_stride,
       // border index (source_width - 1 or 0, respectively). Then for each x,
       // the inner for loop of the horizontal filter is reduced to multiplying
       // the border pixel by the sum of the filter coefficients.
-      if (ix4 - 7 >= source_width - 1 || ix4 + 7 <= 0) {
+      if (filter_params.ix4 - 7 >= source_width - 1 ||
+          filter_params.ix4 + 7 <= 0) {
         // Regions 1 and 2.
         // Points to the left or right border of the first row of |src|.
         const Pixel* first_row_border =
-            (ix4 + 7 <= 0) ? src : src + source_width - 1;
+            (filter_params.ix4 + 7 <= 0) ? src : src + source_width - 1;
         // In general, for y in [-7, 8), the row number iy4 + y is clipped:
         //   const int row = Clip3(iy4 + y, 0, source_height - 1);
         // In two special cases, iy4 + y is clipped to either 0 or
         // source_height - 1 for all y. In the rest of the cases, iy4 + y is
         // bounded and we can avoid clipping iy4 + y by relying on a reference
         // frame's boundary extension on the top and bottom.
-        if (iy4 - 7 >= source_height - 1 || iy4 + 7 <= 0) {
+        if (filter_params.iy4 - 7 >= source_height - 1 ||
+            filter_params.iy4 + 7 <= 0) {
           // Region 1.
           // Every sample used to calculate the prediction block has the same
           // value. So the whole prediction block has the same value.
-          const int row = (iy4 + 7 <= 0) ? 0 : source_height - 1;
+          const int row = (filter_params.iy4 + 7 <= 0) ? 0 : source_height - 1;
           const Pixel row_border_pixel = first_row_border[row * source_stride];
           DestType* dst_row = dst + start_x - block_start_x;
           if (is_compound) {
@@ -220,15 +216,15 @@ void Warp_C(const void* LIBGAV1_RESTRICT const source, ptrdiff_t source_stride,
         for (int y = -7; y < 8; ++y) {
           // We may over-read up to 13 pixels above the top source row, or up
           // to 13 pixels below the bottom source row. This is proved below.
-          const int row = iy4 + y;
+          const int row = filter_params.iy4 + y;
           int sum = first_row_border[row * source_stride];
           sum <<= kFilterBits - kRoundBitsHorizontal;
           intermediate_result_column[y + 7] = sum;
         }
         // Vertical filter.
         DestType* dst_row = dst + start_x - block_start_x;
-        int sy4 =
-            (y4 & ((1 << kWarpedModelPrecisionBits) - 1)) - MultiplyBy4(delta);
+        int sy4 = (filter_params.y4 & ((1 << kWarpedModelPrecisionBits) - 1)) -
+                  MultiplyBy4(delta);
         for (int y = 0; y < 8; ++y) {
           int sy = sy4 - MultiplyBy4(gamma);
           for (int x = 0; x < 8; ++x) {
@@ -269,12 +265,14 @@ void Warp_C(const void* LIBGAV1_RESTRICT const source, ptrdiff_t source_stride,
       // source_height - 1 for all y. In the rest of the cases, iy4 + y is
       // bounded and we can avoid clipping iy4 + y by relying on a reference
       // frame's boundary extension on the top and bottom.
-      if (iy4 - 7 >= source_height - 1 || iy4 + 7 <= 0) {
+      if (filter_params.iy4 - 7 >= source_height - 1 ||
+          filter_params.iy4 + 7 <= 0) {
         // Region 3.
         // Horizontal filter.
-        const int row = (iy4 + 7 <= 0) ? 0 : source_height - 1;
+        const int row = (filter_params.iy4 + 7 <= 0) ? 0 : source_height - 1;
         const Pixel* const src_row = src + row * source_stride;
-        int sx4 = (x4 & ((1 << kWarpedModelPrecisionBits) - 1)) - beta * 7;
+        int sx4 = (filter_params.x4 & ((1 << kWarpedModelPrecisionBits) - 1)) -
+                  beta * 7;
         for (int y = -7; y < 8; ++y) {
           int sx = sx4 - MultiplyBy4(alpha);
           for (int x = -4; x < 4; ++x) {
@@ -300,7 +298,7 @@ void Warp_C(const void* LIBGAV1_RESTRICT const source, ptrdiff_t source_stride,
               //   -13 <= column <= (source_width - 1) + 13.
               // Therefore we may over-read up to 13 pixels before the source
               // row, or up to 13 pixels after the source row.
-              const int column = ix4 + x + k - 3;
+              const int column = filter_params.ix4 + x + k - 3;
               sum += kWarpedFilters[offset][k] * src_row[column];
             }
             intermediate_result[y + 7][x + 4] =
@@ -315,7 +313,8 @@ void Warp_C(const void* LIBGAV1_RESTRICT const source, ptrdiff_t source_stride,
         // At this point, we know iy4 - 7 < source_height - 1 and iy4 + 7 > 0.
         // It follows that -6 <= iy4 <= source_height + 5. This inequality is
         // used below.
-        int sx4 = (x4 & ((1 << kWarpedModelPrecisionBits) - 1)) - beta * 7;
+        int sx4 = (filter_params.x4 & ((1 << kWarpedModelPrecisionBits) - 1)) -
+                  beta * 7;
         for (int y = -7; y < 8; ++y) {
           // We assume the source frame has top and bottom borders of at least
           // 13 pixels that extend the frame boundary pixels.
@@ -326,7 +325,7 @@ void Warp_C(const void* LIBGAV1_RESTRICT const source, ptrdiff_t source_stride,
           //   -13 <= row <= (source_height - 1) + 13.
           // Therefore we may over-read up to 13 pixels above the top source
           // row, or up to 13 pixels below the bottom source row.
-          const int row = iy4 + y;
+          const int row = filter_params.iy4 + y;
           const Pixel* const src_row = src + row * source_stride;
           int sx = sx4 - MultiplyBy4(alpha);
           for (int x = -4; x < 4; ++x) {
@@ -352,7 +351,7 @@ void Warp_C(const void* LIBGAV1_RESTRICT const source, ptrdiff_t source_stride,
               //   -13 <= column <= (source_width - 1) + 13.
               // Therefore we may over-read up to 13 pixels before the source
               // row, or up to 13 pixels after the source row.
-              const int column = ix4 + x + k - 3;
+              const int column = filter_params.ix4 + x + k - 3;
               sum += kWarpedFilters[offset][k] * src_row[column];
             }
             intermediate_result[y + 7][x + 4] =
@@ -367,8 +366,8 @@ void Warp_C(const void* LIBGAV1_RESTRICT const source, ptrdiff_t source_stride,
       // Regions 3 and 4.
       // Vertical filter.
       DestType* dst_row = dst + start_x - block_start_x;
-      int sy4 =
-          (y4 & ((1 << kWarpedModelPrecisionBits) - 1)) - MultiplyBy4(delta);
+      int sy4 = (filter_params.y4 & ((1 << kWarpedModelPrecisionBits) - 1)) -
+                MultiplyBy4(delta);
       // The spec says we should use the following loop condition:
       //   y < std::min(4, block_start_y + block_height - start_y - 4);
       // We can prove that block_start_y + block_height - start_y >= 8, which
@@ -460,7 +459,26 @@ void Init10bpp() {
 #endif
 #endif  // LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
 }
+#endif  // LIBGAV1_MAX_BITDEPTH >= 10
+
+#if LIBGAV1_MAX_BITDEPTH == 12
+void Init12bpp() {
+  Dsp* const dsp = dsp_internal::GetWritableDspTable(12);
+  assert(dsp != nullptr);
+#if LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
+  dsp->warp = Warp_C</*is_compound=*/false, 12, uint16_t>;
+  dsp->warp_compound = Warp_C</*is_compound=*/true, 12, uint16_t>;
+#else  // !LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
+  static_cast<void>(dsp);
+#ifndef LIBGAV1_Dsp12bpp_Warp
+  dsp->warp = Warp_C</*is_compound=*/false, 12, uint16_t>;
 #endif
+#ifndef LIBGAV1_Dsp12bpp_WarpCompound
+  dsp->warp_compound = Warp_C</*is_compound=*/true, 12, uint16_t>;
+#endif
+#endif  // LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
+}
+#endif  // LIBGAV1_MAX_BITDEPTH == 12
 
 }  // namespace
 
@@ -468,6 +486,9 @@ void WarpInit_C() {
   Init8bpp();
 #if LIBGAV1_MAX_BITDEPTH >= 10
   Init10bpp();
+#endif
+#if LIBGAV1_MAX_BITDEPTH == 12
+  Init12bpp();
 #endif
 }
 

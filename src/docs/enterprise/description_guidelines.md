@@ -6,12 +6,14 @@ how various product names and the like should be referenced.
 * Chrome Browser Cloud Management: `<ph name="CHROME_BROWSER_CLOUD_MANAGEMENT_NAME">Chrome Browser Cloud Management</ph>`
 * Chrome Cleanup: `<ph name="CHROME_CLEANUP_NAME">Chrome Cleanup</ph>`
 * Chrome Sync: `<ph name="CHROME_SYNC_NAME">Chrome Sync</ph>`
+* Chrome Remote Desktop: `<ph name="CHROME_REMOTE_DESKTOP_PRODUCT_NAME">Chrome Remote Desktop</ph>`
 * Linux: `<ph name="LINUX_OS_NAME">Linux</ph>`
 * Internet Explorer: `<ph name="IE_PRODUCT_NAME">Internet® Explorer®</ph>`
 * Google Admin console: `<ph name="GOOGLE_ADMIN_CONSOLE_PRODUCT_NAME">Google Admin console</ph>`
 * Google Cast: `<ph name="PRODUCT_NAME">Google Cast</ph>`
 * Google Cloud Print: `<ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph>`
 * Google Drive: `<ph name="GOOGLE_DRIVE_NAME">Google Drive</ph>`
+* Google Update: `<ph name="GOOGLE_UPDATE_NAME">Google Update</ph>`
 * Google Workspace: `<ph name="GOOGLE_WORKSPACE_PRODUCT_NAME">Google Workspace</ph>`
 * Lacros: `<ph name="LACROS_NAME">Lacros</ph>`
 * Android: `<ph name="ANDROID_NAME">Android</ph>`

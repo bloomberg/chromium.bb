@@ -18,6 +18,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "cc/paint/paint_flags.h"
 #include "cc/test/pixel_comparator.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "chromeos/ui/vector_icons/vector_icons.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -124,11 +125,14 @@ TEST_F(SuggestionChipViewTest, ShouldHandleRemoteIcons) {
 }
 
 TEST_F(SuggestionChipViewTest, DarkAndLightTheme) {
-  base::test::ScopedFeatureList scoped_feature_list(features::kDarkLightMode);
-  AshColorProvider::Get()->OnActiveUserPrefServiceChanged(
+  base::test::ScopedFeatureList scoped_feature_list(
+      chromeos::features::kDarkLightMode);
+  ASSERT_TRUE(chromeos::features::IsDarkLightModeEnabled());
+
+  auto* color_provider = AshColorProvider::Get();
+  color_provider->OnActiveUserPrefServiceChanged(
       Shell::Get()->session_controller()->GetActivePrefService());
-  ASSERT_TRUE(features::IsDarkLightModeEnabled());
-  ASSERT_FALSE(ColorProvider::Get()->IsDarkModeEnabled());
+  const bool initial_dark_mode_status = color_provider->IsDarkModeEnabled();
 
   auto widget = CreateFramelessTestWidget();
   auto* suggestion_chip_view =
@@ -170,10 +174,9 @@ TEST_F(SuggestionChipViewTest, DarkAndLightTheme) {
 
   suggestion_chip_view->GetFocusManager()->ClearFocus();
 
-  // Change it to dark mode.
-  Shell::Get()->session_controller()->GetActivePrefService()->SetBoolean(
-      prefs::kDarkModeEnabled, true);
-  ASSERT_TRUE(ColorProvider::Get()->IsDarkModeEnabled());
+  // Switch the color mode.
+  color_provider->ToggleColorMode();
+  ASSERT_NE(initial_dark_mode_status, color_provider->IsDarkModeEnabled());
 
   EXPECT_EQ(label->GetEnabledColor(),
             ColorProvider::Get()->GetContentLayerColor(
@@ -199,7 +202,12 @@ TEST_F(SuggestionChipViewTest, DarkAndLightTheme) {
 }
 
 TEST_F(SuggestionChipViewTest, DarkAndLightModeFlagOff) {
-  ASSERT_FALSE(features::IsDarkLightModeEnabled());
+  // ProductivityLauncher uses DarkLightMode colors.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      /*enabled_features=*/{}, /*disabled_features=*/{
+          chromeos::features::kDarkLightMode, features::kNotificationsRefresh,
+          features::kProductivityLauncher});
 
   auto widget = CreateFramelessTestWidget();
   auto* suggestion_chip_view =
@@ -226,6 +234,20 @@ TEST_F(SuggestionChipViewTest, DarkAndLightModeFlagOff) {
   suggestion_chip_view->RequestFocus();
   EXPECT_EQ(suggestion_chip_view->GetBackground()->get_color(),
             SkColorSetA(gfx::kGoogleGrey900, 0x14));
+}
+
+TEST_F(SuggestionChipViewTest, FontWeight) {
+  auto widget = CreateFramelessTestWidget();
+  auto* suggestion_chip_view =
+      widget->SetContentsView(std::make_unique<SuggestionChipView>(
+          /*delegate=*/nullptr,
+          CreateSuggestionWithIconUrl(
+              "googleassistant://resource?type=icon&name=assistant")));
+
+  views::Label* label = static_cast<views::Label*>(
+      suggestion_chip_view->GetViewByID(kSuggestionChipViewLabel));
+
+  EXPECT_EQ(label->font_list().GetFontWeight(), gfx::Font::Weight::MEDIUM);
 }
 
 }  // namespace ash

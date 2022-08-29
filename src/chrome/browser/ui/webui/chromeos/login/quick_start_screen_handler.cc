@@ -4,50 +4,34 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/quick_start_screen_handler.h"
 
-#include "chrome/browser/ash/login/screens/quick_start_screen.h"
-#include "chrome/browser/ui/webui/chromeos/login/js_calls_container.h"
+#include "base/values.h"
 
 namespace chromeos {
 
-constexpr StaticOobeScreenId QuickStartView::kScreenId;
+QuickStartScreenHandler::QuickStartScreenHandler()
+    : BaseScreenHandler(kScreenId) {}
 
-QuickStartScreenHandler::QuickStartScreenHandler(
-    JSCallsContainer* js_calls_container)
-    : BaseScreenHandler(kScreenId, js_calls_container) {
-  set_user_acted_method_path("login.QuickStartScreen.userActed");
-}
-
-QuickStartScreenHandler::~QuickStartScreenHandler() {
-  if (screen_)
-    screen_->OnViewDestroyed(this);
-}
+QuickStartScreenHandler::~QuickStartScreenHandler() = default;
 
 void QuickStartScreenHandler::Show() {
-  if (!page_is_ready()) {
-    show_on_init_ = true;
-    return;
+  ShowInWebUI();
+}
+
+std::vector<base::Value> ToValue(const ash::quick_start::ShapeList& list) {
+  std::vector<base::Value> result;
+  for (const ash::quick_start::ShapeHolder& shape_holder : list) {
+    base::flat_map<std::string, base::Value> val;
+    val["shape"] = base::Value(static_cast<int>(shape_holder.shape));
+    val["color"] = base::Value(static_cast<int>(shape_holder.color));
+    val["digit"] = base::Value(static_cast<int>(shape_holder.digit));
+    result.emplace_back(std::move(val));
   }
-
-  ShowScreen(kScreenId);
+  return result;
 }
 
-void QuickStartScreenHandler::Bind(QuickStartScreen* screen) {
-  screen_ = screen;
-  BaseScreenHandler::SetBaseScreen(screen_);
-  if (page_is_ready())
-    Initialize();
-}
-
-void QuickStartScreenHandler::Unbind() {
-  screen_ = nullptr;
-  BaseScreenHandler::SetBaseScreen(nullptr);
-}
-
-void QuickStartScreenHandler::Initialize() {
-  if (show_on_init_) {
-    Show();
-    show_on_init_ = false;
-  }
+void QuickStartScreenHandler::SetShapes(
+    const ash::quick_start::ShapeList& shape_list) {
+  CallExternalAPI("setFigures", base::Value(ToValue(shape_list)));
 }
 
 void QuickStartScreenHandler::DeclareLocalizedValues(

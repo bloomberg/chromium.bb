@@ -9,11 +9,11 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/renderer_host/chrome_navigation_ui_data.h"
 #include "components/omnibox/common/omnibox_features.h"
+#include "components/security_interstitials/core/omnibox_https_upgrade_metrics.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
@@ -22,6 +22,9 @@
 #include "content/public/browser/web_contents_user_data.h"
 #include "ui/base/page_transition_types.h"
 #include "url/url_constants.h"
+
+using security_interstitials::omnibox_https_upgrades::Event;
+using security_interstitials::omnibox_https_upgrades::kEventHistogram;
 
 namespace {
 
@@ -39,9 +42,8 @@ int g_https_port_for_testing = 0;
 // Used to compute the fallback URL from the https URL.
 int g_http_port_for_testing = 0;
 
-void RecordUMA(TypedNavigationUpgradeThrottle::Event event) {
-  base::UmaHistogramEnumeration(TypedNavigationUpgradeThrottle::kHistogramName,
-                                event);
+void RecordUMA(Event event) {
+  base::UmaHistogramEnumeration(kEventHistogram, event);
 }
 
 GURL GetHttpUrl(const GURL& url, int http_fallback_port_for_testing) {
@@ -62,10 +64,6 @@ GURL GetHttpUrl(const GURL& url, int http_fallback_port_for_testing) {
 }
 
 }  // namespace
-
-// static
-const char TypedNavigationUpgradeThrottle::kHistogramName[] =
-    "TypedNavigationUpgradeThrottle.Event";
 
 // static
 std::unique_ptr<content::NavigationThrottle>
@@ -161,8 +159,9 @@ TypedNavigationUpgradeThrottle::WillRedirectRequest() {
 
 content::NavigationThrottle::ThrottleCheckResult
 TypedNavigationUpgradeThrottle::WillProcessResponse() {
-  DCHECK_EQ(url::kHttpsScheme, navigation_handle()->GetURL().scheme());
-  // If we got here, HTTPS load succeeded. Stop the timer.
+  // If we got here, the HTTPS load succeeded. The final URL may be HTTPS or
+  // HTTP (if the upgrade attempt redirected to HTTP). In any case, we are done,
+  // so stop the timer.
   RecordUMA(Event::kHttpsLoadSucceeded);
   timer_.Stop();
   UmaHistogramTimes("TypedNavigationUpgradeThrottle.UpgradeSuccessTime",

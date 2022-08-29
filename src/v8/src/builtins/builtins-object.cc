@@ -260,8 +260,9 @@ BUILTIN(ObjectPrototypeSetProto) {
 
   // 4. Let status be ? O.[[SetPrototypeOf]](proto).
   // 5. If status is false, throw a TypeError exception.
-  MAYBE_RETURN(JSReceiver::SetPrototype(receiver, proto, true, kThrowOnError),
-               ReadOnlyRoots(isolate).exception());
+  MAYBE_RETURN(
+      JSReceiver::SetPrototype(isolate, receiver, proto, true, kThrowOnError),
+      ReadOnlyRoots(isolate).exception());
 
   // Return undefined.
   return ReadOnlyRoots(isolate).undefined_value();
@@ -279,8 +280,8 @@ Object GetOwnPropertyKeys(Isolate* isolate, BuiltinArguments args,
   Handle<FixedArray> keys;
   ASSIGN_RETURN_FAILURE_ON_EXCEPTION(
       isolate, keys,
-      KeyAccumulator::GetKeys(receiver, KeyCollectionMode::kOwnOnly, filter,
-                              GetKeysConversion::kConvertToString));
+      KeyAccumulator::GetKeys(isolate, receiver, KeyCollectionMode::kOwnOnly,
+                              filter, GetKeysConversion::kConvertToString));
   return *isolate->factory()->NewJSArrayWithElements(keys);
 }
 
@@ -325,9 +326,10 @@ BUILTIN(ObjectGetOwnPropertyDescriptors) {
 
   Handle<FixedArray> keys;
   ASSIGN_RETURN_FAILURE_ON_EXCEPTION(
-      isolate, keys, KeyAccumulator::GetKeys(
-                         receiver, KeyCollectionMode::kOwnOnly, ALL_PROPERTIES,
-                         GetKeysConversion::kConvertToString));
+      isolate, keys,
+      KeyAccumulator::GetKeys(isolate, receiver, KeyCollectionMode::kOwnOnly,
+                              ALL_PROPERTIES,
+                              GetKeysConversion::kConvertToString));
 
   Handle<JSObject> descriptors =
       isolate->factory()->NewJSObject(isolate->object_function());

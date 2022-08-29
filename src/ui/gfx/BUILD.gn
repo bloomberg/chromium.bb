@@ -56,8 +56,6 @@ component("gfx") {
     "break_list.h",
     "color_analysis.cc",
     "color_analysis.h",
-    "color_transform.cc",
-    "color_transform.h",
     "decorated_text.cc",
     "decorated_text.h",
     "delegated_ink_metadata.cc",
@@ -93,6 +91,7 @@ component("gfx") {
     "image/image.h",
     "image/image_family.cc",
     "image/image_family.h",
+    "image/image_internal.h",
     "image/image_platform.h",
     "image/image_png_rep.cc",
     "image/image_png_rep.h",
@@ -142,6 +141,8 @@ component("gfx") {
   ]
   if (is_android) {
     sources += [
+      "android/achoreographer_compat.cc",
+      "android/achoreographer_compat.h",
       "android/android_surface_control_compat.cc",
       "android/android_surface_control_compat.h",
       "android/java_bitmap.cc",
@@ -155,14 +156,14 @@ component("gfx") {
       "font_fallback_linux.cc",
       "font_fallback_linux.h",
       "font_render_params_linux.cc",
+      "font_render_params_linux.h",
       "linux/fontconfig_util.cc",
       "linux/fontconfig_util.h",
     ]
   }
   if (is_mac) {
     sources += [
-      "canvas_paint_mac.h",
-      "canvas_paint_mac.mm",
+      "ca_layer_result.h",
       "decorated_text_mac.h",
       "decorated_text_mac.mm",
       "font_fallback_mac.mm",
@@ -177,8 +178,6 @@ component("gfx") {
       "mac/nswindow_frame_controls.mm",
       "mac/scoped_cocoa_disable_screen_updates.h",
       "mac/scoped_cocoa_disable_screen_updates.mm",
-      "path_mac.h",
-      "path_mac.mm",
       "platform_font_mac.h",
       "platform_font_mac.mm",
       "scoped_cg_context_save_gstate_mac.h",
@@ -245,7 +244,6 @@ component("gfx") {
       "canvas.cc",
       "canvas.h",
       "canvas_skia.cc",
-      "canvas_skia_paint.h",
       "image/canvas_image_source.cc",
       "image/canvas_image_source.h",
       "image/image_generic.cc",
@@ -412,9 +410,13 @@ component("gfx") {
 
 component("color_space") {
   sources = [
+    "color_conversion_sk_filter_cache.cc",
+    "color_conversion_sk_filter_cache.h",
     "color_space.cc",
     "color_space.h",
     "color_space_export.h",
+    "color_transform.cc",
+    "color_transform.h",
     "display_color_spaces.cc",
     "display_color_spaces.h",
     "hdr_static_metadata.cc",
@@ -434,6 +436,7 @@ component("color_space") {
     "//build:chromeos_buildflags",
     "//skia:skcms",
     "//ui/gfx:buffer_types",
+    "//ui/gfx/geometry:geometry_skia",
   ]
   public_deps = [
     "//base",
@@ -695,6 +698,7 @@ test("gfx_unittests") {
     "font_names_testing.cc",
     "font_names_testing.h",
     "font_unittest.cc",
+    "geometry/linear_gradient_unittest.cc",
     "geometry/rrect_f_unittest.cc",
     "geometry/transform_operations_unittest.cc",
     "geometry/transform_unittest.cc",
@@ -719,7 +723,6 @@ test("gfx_unittests") {
       "image/image_mac_unittest.mm",
       "mac/coordinate_conversion_unittest.mm",
       "mac/io_surface_unittest.cc",
-      "path_mac_unittest.mm",
       "platform_font_mac_unittest.mm",
       "range/range_mac_unittest.mm",
     ]
@@ -766,12 +769,13 @@ test("gfx_unittests") {
       "geometry/axis_transform2d_unittest.cc",
       "geometry/box_unittest.cc",
       "geometry/cubic_bezier_unittest.cc",
+      "geometry/insets_f_unittest.cc",
       "geometry/insets_unittest.cc",
       "geometry/matrix3_unittest.cc",
-      "geometry/point3_unittest.cc",
+      "geometry/point3_f_unittest.cc",
       "geometry/point_f_unittest.cc",
       "geometry/point_unittest.cc",
-      "geometry/quad_unittest.cc",
+      "geometry/quad_f_unittest.cc",
       "geometry/quaternion_unittest.cc",
       "geometry/rect_conversions_unittest.cc",
       "geometry/rect_f_unittest.cc",
@@ -785,7 +789,7 @@ test("gfx_unittests") {
       "geometry/triangle_unittest.cc",
       "geometry/vector2d_f_unittest.cc",
       "geometry/vector2d_unittest.cc",
-      "geometry/vector3d_unittest.cc",
+      "geometry/vector3d_f_unittest.cc",
       "half_float_unittest.cc",
       "icc_profile_unittest.cc",
       "image/image_skia_operations_unittest.cc",
@@ -909,6 +913,10 @@ test("gfx_unittests") {
   }
 
   if (is_fuchsia) {
+    # TODO(https://crbug.com/1287051): fuchsia.sys.Launcher is used to launch
+    # fuchsia-pkg://fuchsia.com/fonts#meta/fonts.cmx with specific test
+    # args.
+    use_cfv2 = false
     deps += [ "//skia:test_fonts" ]
   }
 }

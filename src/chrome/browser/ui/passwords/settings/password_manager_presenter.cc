@@ -29,8 +29,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/sync_service_factory.h"
-#include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/browser/ui/passwords/settings/password_ui_view.h"
+#include "chrome/browser/ui/passwords/ui_utils.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -50,7 +50,7 @@
 #include "components/undo/undo_operation.h"
 #include "content/public/browser/browser_thread.h"
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_utils.h"
 #endif
 
@@ -107,7 +107,7 @@ FormVector GetEntryList(const std::map<std::string, FormVector>& map) {
   return result;
 }
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 password_manager::metrics_util::AccessPasswordInSettingsEvent
 ConvertPlaintextReason(password_manager::PlaintextReason reason) {
   switch (reason) {
@@ -360,6 +360,7 @@ void PasswordManagerPresenter::MovePasswordsToAccountStore(
     return;
   }
 
+  std::vector<password_manager::PasswordForm> forms_to_move;
   for (const std::string& sort_key : sort_keys) {
     auto it = password_map_.find(sort_key);
     if (it == password_map_.end())
@@ -367,30 +368,16 @@ void PasswordManagerPresenter::MovePasswordsToAccountStore(
 
     // MovePasswordToAccountStoreHelper takes care of moving the entire
     // equivalence class, so passing the first element is fine.
-    const password_manager::PasswordForm& form = *(it->second[0]);
-
-    // Insert nullptr first to obtain the iterator passed to the callback.
-    MovePasswordToAccountStoreHelperList::iterator helper_it =
-        move_to_account_helpers_.insert(move_to_account_helpers_.begin(),
-                                        nullptr);
-    // The presenter outlives the helper so it's safe to use base::Unretained.
-    *helper_it =
-        std::make_unique<password_manager::MovePasswordToAccountStoreHelper>(
-            form, client,
-            password_manager::metrics_util::MoveToAccountStoreTrigger::
-                kExplicitlyTriggeredInSettings,
-            base::BindOnce(
-                &PasswordManagerPresenter::OnMovePasswordToAccountCompleted,
-                base::Unretained(this), helper_it));
+    forms_to_move.push_back(*(it->second[0]));
   }
+
+  password_manager::MovePasswordsToAccountStore(
+      forms_to_move, client,
+      password_manager::metrics_util::MoveToAccountStoreTrigger::
+          kExplicitlyTriggeredInSettings);
 }
 
-void PasswordManagerPresenter::OnMovePasswordToAccountCompleted(
-    MovePasswordToAccountStoreHelperList::iterator done_helper_it) {
-  move_to_account_helpers_.erase(done_helper_it);
-}
-
-#if !defined(OS_ANDROID)  // This is never called on Android.
+#if !BUILDFLAG(IS_ANDROID)  // This is never called on Android.
 void PasswordManagerPresenter::RequestPlaintextPassword(
     const std::string& sort_key,
     password_manager::PlaintextReason reason,

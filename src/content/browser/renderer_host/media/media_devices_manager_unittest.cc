@@ -16,7 +16,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "build/chromeos_buildflags.h"
 #include "content/browser/media/media_devices_permission_checker.h"
 #include "content/browser/renderer_host/media/in_process_video_capture_provider.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
@@ -56,10 +55,10 @@ const size_t kNumAudioInputDevices = 2;
 
 const auto kIgnoreLogMessageCB = base::DoNothing();
 
+std::string salt = "fake_media_device_salt";
 MediaDeviceSaltAndOrigin GetSaltAndOrigin(int /* process_id */,
                                           int /* frame_id */) {
-  return MediaDeviceSaltAndOrigin("fake_media_device_salt",
-                                  "fake_group_id_salt",
+  return MediaDeviceSaltAndOrigin(salt, "fake_group_id_salt",
                                   url::Origin::Create(GURL("https://test.com")),
                                   /*has_focus=*/true, /*is_background=*/false);
 }
@@ -974,7 +973,7 @@ TEST_F(MediaDevicesManagerTest, EnumerateDevicesWithCapabilities) {
 
 TEST_F(MediaDevicesManagerTest, EnumerateDevicesUnplugDefaultDevice) {
   // This tests does not apply to CrOS, which is to seamlessly switch device.
-#if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)
+#if !BUILDFLAG(IS_CHROMEOS)
   std::string default_device_id("fake_device_id_1");
   std::string new_default_device_id("fake_device_id_2");
 
@@ -1008,13 +1007,13 @@ TEST_F(MediaDevicesManagerTest, EnumerateDevicesUnplugDefaultDevice) {
   EXPECT_TRUE(base::Contains(removed_device_ids_, default_device_id));
   EXPECT_TRUE(base::Contains(removed_device_ids_,
                              media::AudioDeviceDescription::kDefaultDeviceId));
-#endif  // !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)
+#endif  // !BUILDFLAG(IS_CHROMEOS)
 }
 
 TEST_F(MediaDevicesManagerTest, EnumerateDevicesUnplugCommunicationsDevice) {
   // This test has only significance on Windows devices, since communication
   // devices can only be found on windows.
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   std::string communications_device_id("fake_device_id_1");
   std::string new_communications_device_id("fake_device_id_2");
 
@@ -1049,14 +1048,14 @@ TEST_F(MediaDevicesManagerTest, EnumerateDevicesUnplugCommunicationsDevice) {
   EXPECT_TRUE(
       base::Contains(removed_device_ids_,
                      media::AudioDeviceDescription::kCommunicationsDeviceId));
-#endif  // OS_WIN
+#endif  // BUILDFLAG(IS_WIN)
 }
 
 TEST_F(MediaDevicesManagerTest,
        EnumerateDevicesUnplugDefaultAndCommunicationsDevice) {
   // This test has only significance on Windows devices, since communication
   // devices can only be found on windows.
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // The two device IDs that will be used as 'default' and 'communications'
   // devices.
   std::string target_device_id("fake_device_id_1");
@@ -1098,7 +1097,7 @@ TEST_F(MediaDevicesManagerTest,
   EXPECT_TRUE(
       base::Contains(removed_device_ids_,
                      media::AudioDeviceDescription::kCommunicationsDeviceId));
-#endif  // OS_WIN
+#endif  // BUILDFLAG(IS_WIN)
 }
 
 TEST_F(MediaDevicesManagerTest, GuessVideoGroupID) {
@@ -1181,6 +1180,55 @@ TEST_F(MediaDevicesManagerTest, GuessVideoGroupID) {
             repeated_usb1_video.device_id);
   EXPECT_EQ(GuessVideoGroupID(audio_devices, repeated_usb2_video),
             repeated_usb2_video.device_id);
+}
+
+TEST_F(MediaDevicesManagerTest, DeviceIdSaltReset) {
+  EXPECT_CALL(*video_capture_device_factory_, MockGetDevicesInfo()).Times(2);
+  EXPECT_CALL(media_devices_manager_client_, InputDevicesChangedUI(_, _))
+      .Times(1);
+
+  size_t num_video_input_devices = 4;
+  video_capture_device_factory_->SetToDefaultDevicesConfig(
+      num_video_input_devices);
+
+  // Run an enumeration to make sure |media_devices_manager_| has the new
+  // configuration.
+  EXPECT_CALL(*this, MockCallback(_));
+  MediaDevicesManager::BoolDeviceTypes devices_to_enumerate;
+  devices_to_enumerate[static_cast<size_t>(
+      MediaDeviceType::MEDIA_VIDEO_INPUT)] = true;
+  base::RunLoop run_loop;
+  media_devices_manager_->EnumerateDevices(
+      devices_to_enumerate,
+      base::BindOnce(&MediaDevicesManagerTest::EnumerateCallback,
+                     base::Unretained(this), &run_loop));
+  run_loop.Run();
+
+  // Add device-change event listener.
+  MockMediaDevicesListener listener_video_input;
+  MediaDevicesManager::BoolDeviceTypes video_input_devices_to_subscribe;
+  video_input_devices_to_subscribe[static_cast<size_t>(
+      MediaDeviceType::MEDIA_VIDEO_INPUT)] = true;
+  media_devices_manager_->SubscribeDeviceChangeNotifications(
+      kRenderProcessId, kRenderFrameId, video_input_devices_to_subscribe,
+      listener_video_input.CreateInterfacePtrAndBind());
+
+  // Expect an OnDevicesChanged event.
+  blink::WebMediaDeviceInfoArray notification_video_input;
+  EXPECT_CALL(listener_video_input,
+              OnDevicesChanged(MediaDeviceType::MEDIA_VIDEO_INPUT, _))
+      .Times(1)
+      .WillOnce(SaveArg<1>(&notification_video_input));
+
+  base::RunLoop().RunUntilIdle();
+
+  // Set a new salt and notify MDM.
+  salt = "new-device-id-salt";
+  media_devices_manager_->OnDevicesChanged(
+      base::SystemMonitor::DEVTYPE_VIDEO_CAPTURE);
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(num_video_input_devices, notification_video_input.size());
 }
 
 }  // namespace content

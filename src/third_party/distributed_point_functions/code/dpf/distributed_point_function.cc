@@ -147,7 +147,7 @@ absl::Status DistributedPointFunction::GenerateNext(
   expanded_control_bits[1][1] = ExtractAndClearLowestBit(expanded_seeds[1][1]);
 
   // Lines 6-8: Assign keep/lose branch depending on current bit of `alpha`.
-  bool current_bit = 0;
+  bool current_bit = false;
   if (parameters_.back().log_domain_size() - tree_level < 128) {
     current_bit =
         (alpha & (absl::uint128{1}
@@ -278,7 +278,7 @@ DistributedPointFunction::EvaluateSeeds(
       // Merge back into result.
       const int bit_index = num_levels - level - 1;
       for (int i = 0; i < current_batch_size; ++i) {
-        path_bits[i] = 0;
+        path_bits[i] = false;
         if (bit_index < 128) {
           path_bits[i] =
               (paths[start_block + i] & (absl::uint128{1} << bit_index)) != 0;
@@ -557,17 +557,9 @@ absl::StatusOr<DistributedPointFunction::ValueCorrectionFunction>
 DistributedPointFunction::GetValueCorrectionFunction(
     const DpfParameters& parameters) const {
   std::string serialized_value_type;
-  if (!parameters.has_value_type()) {
-    // Legacy support for DpfParameters with element_bitsize set directly.
-    ValueType value_type;
-    value_type.mutable_integer()->set_bitsize(parameters.element_bitsize());
-    DPF_ASSIGN_OR_RETURN(serialized_value_type,
-                         SerializeValueTypeDeterministically(value_type));
-  } else {
-    DPF_ASSIGN_OR_RETURN(
-        serialized_value_type,
-        SerializeValueTypeDeterministically(parameters.value_type()));
-  }
+  DPF_ASSIGN_OR_RETURN(
+      serialized_value_type,
+      SerializeValueTypeDeterministically(parameters.value_type()));
   auto it = value_correction_functions_.find(serialized_value_type);
   if (it == value_correction_functions_.end()) {
     return absl::FailedPreconditionError(absl::StrCat(
@@ -595,21 +587,11 @@ DistributedPointFunction::CreateIncremental(
   // level.
   std::vector<int> blocks_needed(parameters.size());
   for (int i = 0; i < static_cast<int>(parameters.size()); ++i) {
-    if (parameters[i].has_value_type()) {
-      DPF_ASSIGN_OR_RETURN(
-          int bits_needed,
-          dpf_internal::BitsNeeded(parameters[i].value_type(),
-                                   parameters[i].security_parameter()));
-      blocks_needed[i] = (bits_needed + 127) / 128;
-    } else {
-      ValueType value_type;
-      value_type.mutable_integer()->set_bitsize(
-          parameters[i].element_bitsize());
-      DPF_ASSIGN_OR_RETURN(int bits_needed,
-                           dpf_internal::BitsNeeded(
-                               value_type, parameters[i].security_parameter()));
-      blocks_needed[i] = (bits_needed + 127) / 128;
-    }
+    DPF_ASSIGN_OR_RETURN(
+        int bits_needed,
+        dpf_internal::BitsNeeded(parameters[i].value_type(),
+                                 parameters[i].security_parameter()));
+    blocks_needed[i] = (bits_needed + 127) / 128;
   }
 
   // Set up hash functions for PRG.
@@ -688,7 +670,7 @@ DistributedPointFunction::GenerateKeysIncremental(
   keys[1].mutable_seed()->set_low(absl::Uint128Low64(seeds[1]));
 
   // Line 3: Initialize control bits.
-  std::array<bool, 2> control_bits{0, 1};
+  std::array<bool, 2> control_bits{false, true};
 
   // Line 4: Compute correction words for each level after the first one.
   keys[0].mutable_correction_words()->Reserve(tree_levels_needed_ - 1);

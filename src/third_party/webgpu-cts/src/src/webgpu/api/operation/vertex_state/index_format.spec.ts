@@ -54,12 +54,12 @@ class IndexFormatTest extends GPUTest {
     stripIndexFormat?: GPUIndexFormat
   ): GPURenderPipeline {
     const vertexModule = this.device.createShaderModule({
-      // TODO?: These positions will create triangles that cut right through pixel centers. If this
+      // NOTE: These positions will create triangles that cut right through pixel centers. If this
       // results in different rasterization results on different hardware, tweak to avoid this.
       code: `
-        [[stage(vertex)]]
-        fn main([[builtin(vertex_index)]] VertexIndex : u32)
-             -> [[builtin(position)]] vec4<f32> {
+        @vertex
+        fn main(@builtin(vertex_index) VertexIndex : u32)
+             -> @builtin(position) vec4<f32> {
           var pos = array<vec2<f32>, 4>(
             vec2<f32>(0.01,  0.98),
             vec2<f32>(0.99, -0.98),
@@ -76,8 +76,8 @@ class IndexFormatTest extends GPUTest {
 
     const fragmentModule = this.device.createShaderModule({
       code: `
-        [[stage(fragment)]]
-        fn main() -> [[location(0)]] u32 {
+        @fragment
+        fn main() -> @location(0) u32 {
           return 1u;
         }
       `,
@@ -111,7 +111,7 @@ class IndexFormatTest extends GPUTest {
     primitiveTopology: GPUPrimitiveTopology = 'triangle-list'
   ): GPUBuffer {
     let pipeline: GPURenderPipeline;
-    // The indexFormat must be set in render pipeline descriptor that specifys a strip primitive
+    // The indexFormat must be set in render pipeline descriptor that specifies a strip primitive
     // topology for primitive restart testing
     if (primitiveTopology === 'line-strip' || primitiveTopology === 'triangle-strip') {
       pipeline = this.MakeRenderPipeline(primitiveTopology, indexFormat);
@@ -133,13 +133,18 @@ class IndexFormatTest extends GPUTest {
     const encoder = this.device.createCommandEncoder();
     const pass = encoder.beginRenderPass({
       colorAttachments: [
-        { view: colorAttachment.createView(), loadValue: [0, 0, 0, 0], storeOp: 'store' },
+        {
+          view: colorAttachment.createView(),
+          clearValue: [0, 0, 0, 0],
+          loadOp: 'clear',
+          storeOp: 'store',
+        },
       ],
     });
     pass.setPipeline(pipeline);
     pass.setIndexBuffer(indexBuffer, indexFormat, indexOffset);
     pass.drawIndexed(indexCount);
-    pass.endPass();
+    pass.end();
     encoder.copyTextureToBuffer(
       { texture: colorAttachment },
       { buffer: result, bytesPerRow, rowsPerImage },

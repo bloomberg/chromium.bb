@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/file_system_access/file_system_sync_access_handle.h"
 
 #include "base/files/file_error_or.h"
+#include "base/numerics/checked_math.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_throw_dom_exception.h"
@@ -206,24 +207,37 @@ ScriptPromise FileSystemSyncAccessHandle::truncate(
   DCHECK(file_delegate()->IsValid())
       << "file I/O operation queued after file closed";
 
+  if (!base::CheckedNumeric<int64_t>(size).IsValid()) {
+    exception_state.ThrowTypeError("Cannot truncate file to given length");
+    return result;
+  }
+
   file_delegate()->SetLength(
-      base::checked_cast<int64_t>(size),
+      size,
       WTF::Bind(
           [](ScriptPromiseResolver* resolver,
-             FileSystemSyncAccessHandle* access_handle, bool success) {
+             FileSystemSyncAccessHandle* access_handle,
+             base::File::Error file_error) {
             ScriptState* script_state = resolver->GetScriptState();
             if (!script_state->ContextIsValid())
               return;
             ScriptState::Scope scope(script_state);
 
             access_handle->ExitOperation();
-            if (!success) {
+            if (file_error == base::File::FILE_ERROR_NO_SPACE) {
+              resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
+                  script_state->GetIsolate(),
+                  DOMExceptionCode::kQuotaExceededError,
+                  "No space available for this operation"));
+              return;
+            }
+            if (file_error != base::File::FILE_OK) {
               resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
                   script_state->GetIsolate(),
                   DOMExceptionCode::kInvalidStateError, "truncate failed"));
               return;
             }
-            resolver->Resolve(success);
+            resolver->Resolve(true);
           },
           WrapPersistent(resolver), WrapPersistent(this)));
 
@@ -252,8 +266,7 @@ uint64_t FileSystemSyncAccessHandle::read(
   uint8_t* read_data = static_cast<uint8_t*>(buffer->BaseAddressMaybeShared());
   uint64_t file_offset = options->at();
   if (!base::CheckedNumeric<int64_t>(file_offset).IsValid()) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
-                                      "Cannot read at given offset");
+    exception_state.ThrowTypeError("Cannot read at given offset");
     return 0;
   }
 
@@ -288,15 +301,13 @@ uint64_t FileSystemSyncAccessHandle::write(
 
   uint64_t file_offset = options->at();
   if (!base::CheckedNumeric<int64_t>(file_offset).IsValid()) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
-                                      "Cannot write at given offset");
+    exception_state.ThrowTypeError("Cannot write at given offset");
     return 0;
   }
 
   size_t write_size = buffer->byteLength();
   if (!base::CheckedNumeric<int>(write_size).IsValid()) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
-                                      "Cannot write more than 2GB");
+    exception_state.ThrowTypeError("Cannot write more than 2GB");
   }
 
   uint8_t* write_data = static_cast<uint8_t*>(buffer->BaseAddressMaybeShared());
@@ -305,7 +316,7 @@ uint64_t FileSystemSyncAccessHandle::write(
   if (!base::CheckAdd(file_offset, write_size)
            .AssignIfValid(&write_end_offset)) {
     exception_state.ThrowDOMException(
-        DOMExceptionCode::kNotSupportedError,
+        DOMExceptionCode::kQuotaExceededError,
         "No capacity available for this operation");
     return 0;
   }

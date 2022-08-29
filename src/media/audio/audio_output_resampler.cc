@@ -114,7 +114,7 @@ static void RecordStats(const AudioParameters& output_params) {
 
 // Only Windows has a high latency output driver that is not the same as the low
 // latency path.
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 // Converts low latency based |output_params| into high latency appropriate
 // output parameters in error situations.
 AudioParameters GetFallbackOutputParams(
@@ -128,10 +128,10 @@ AudioParameters GetFallbackOutputParams(
   const int frames_per_buffer = std::max(
       original_output_params.frames_per_buffer(), kMinLowLatencyFrameSize);
 
-  return AudioParameters(AudioParameters::AUDIO_PCM_LINEAR,
-                         original_output_params.channel_layout(),
-                         original_output_params.sample_rate(),
-                         frames_per_buffer);
+  AudioParameters fallback_params(original_output_params);
+  fallback_params.set_format(AudioParameters::AUDIO_PCM_LINEAR);
+  fallback_params.set_frames_per_buffer(frames_per_buffer);
+  return fallback_params;
 }
 #endif
 
@@ -297,7 +297,7 @@ bool AudioOutputResampler::OpenStream() {
 
   // Only Windows has a high latency output driver that is not the same as the
   // low latency path.
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   DLOG(ERROR) << "Unable to open audio device in low latency mode.  Falling "
               << "back to high latency audio output.";
 

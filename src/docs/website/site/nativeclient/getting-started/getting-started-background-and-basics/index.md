@@ -176,8 +176,7 @@ the untrusted nexes running within it.
 
 ### Diagram
 
-[<img alt="image"
-src="/nativeclient/getting-started/getting-started-background-and-basics/nacl_diagram.png">](/nativeclient/getting-started/getting-started-background-and-basics/nacl_diagram.png)
+![](/nativeclient/getting-started/getting-started-background-and-basics/nacl_diagram.png)
 
 ### Related Documentation
 
@@ -213,7 +212,7 @@ NaCl
 
 <http://code.google.com/p/naclports/>
 
-<http://sites.google.com/a/chromium.org/dev/nativeclient/simple-rpc>
+<http://www.chromium.org/nativeclient/simple-rpc>
 
 [Native Client integration with Chrome](/system/errors/NodeNotFound)
 

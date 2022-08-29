@@ -14,10 +14,10 @@
 
 #include <gtest/gtest.h>
 
-#include <openssl/cpu.h>
 #include <openssl/hrss.h>
 #include <openssl/rand.h>
 
+#include "../internal.h"
 #include "../test/abi_test.h"
 #include "../test/test_util.h"
 #include "internal.h"
@@ -199,6 +199,33 @@ TEST(HRSS, Random) {
       EXPECT_NE(Bytes(shared_key), Bytes(shared_key2));
     }
   }
+}
+
+TEST(HRSS, NoWritesToConstData) {
+  // Normalisation of some polynomials used to write into the generated keys.
+  // This is fine in a purely ephemeral setting, but triggers TSAN warnings in
+  // more complex ones.
+  uint8_t generate_key_entropy[HRSS_GENERATE_KEY_BYTES];
+  RAND_bytes(generate_key_entropy, sizeof(generate_key_entropy));
+  HRSS_public_key pub, pub_orig;
+  HRSS_private_key priv, priv_orig;
+  OPENSSL_memset(&pub, 0xa3, sizeof(pub));
+  OPENSSL_memset(&priv, 0x3a, sizeof(priv));
+  ASSERT_TRUE(HRSS_generate_key(&pub, &priv, generate_key_entropy));
+  OPENSSL_memcpy(&priv_orig, &priv, sizeof(priv));
+  OPENSSL_memcpy(&pub_orig, &pub, sizeof(pub));
+
+  uint8_t ciphertext[HRSS_CIPHERTEXT_BYTES];
+  uint8_t shared_key[HRSS_KEY_BYTES];
+  uint8_t encap_entropy[HRSS_ENCAP_BYTES];
+  RAND_bytes(encap_entropy, sizeof(encap_entropy));
+  ASSERT_TRUE(HRSS_encap(ciphertext, shared_key, &pub, encap_entropy));
+
+  ASSERT_EQ(OPENSSL_memcmp(&pub, &pub_orig, sizeof(pub)), 0);
+
+  ASSERT_TRUE(HRSS_decap(shared_key, &priv, ciphertext, sizeof(ciphertext)));
+
+  ASSERT_EQ(OPENSSL_memcmp(&priv, &priv_orig, sizeof(priv)), 0);
 }
 
 TEST(HRSS, Golden) {
@@ -453,8 +480,7 @@ TEST(HRSS, Golden) {
 
 #if defined(POLY_RQ_MUL_ASM) && defined(SUPPORTS_ABI_TEST)
 TEST(HRSS, ABI) {
-  const bool has_avx2 = (OPENSSL_ia32cap_P[2] & (1 << 5)) != 0;
-  if (!has_avx2) {
+  if (!CRYPTO_is_AVX2_capable()) {
     fprintf(stderr, "Skipping ABI test due to lack of AVX2 support.\n");
     return;
   }

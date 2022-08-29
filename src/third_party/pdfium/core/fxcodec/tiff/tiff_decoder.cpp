@@ -20,6 +20,7 @@
 #include "core/fxge/dib/fx_dib.h"
 #include "third_party/base/check.h"
 #include "third_party/base/notreached.h"
+#include "third_party/base/numerics/safe_conversions.h"
 
 extern "C" {
 #include "third_party/libtiff/tiffiop.h"
@@ -122,9 +123,10 @@ tsize_t tiff_read(thandle_t context, tdata_t buf, tsize_t length) {
     return 0;
 
   pTiffContext->set_offset(increment.ValueOrDie());
-  if (offset + length > pTiffContext->io_in()->GetSize())
-    return pTiffContext->io_in()->GetSize() - offset;
-
+  if (offset + length > pTiffContext->io_in()->GetSize()) {
+    return pdfium::base::checked_cast<tsize_t>(
+        pTiffContext->io_in()->GetSize() - offset);
+  }
   return length;
 }
 
@@ -144,7 +146,8 @@ toff_t tiff_seek(thandle_t context, toff_t offset, int whence) {
     case 0: {
       if (file_offset > pTiffContext->io_in()->GetSize())
         return static_cast<toff_t>(-1);
-      pTiffContext->set_offset(file_offset);
+      pTiffContext->set_offset(
+          pdfium::base::checked_cast<uint32_t>(file_offset));
       return pTiffContext->offset();
     }
     case 1: {
@@ -158,7 +161,8 @@ toff_t tiff_seek(thandle_t context, toff_t offset, int whence) {
     case 2: {
       if (pTiffContext->io_in()->GetSize() < file_offset)
         return static_cast<toff_t>(-1);
-      pTiffContext->set_offset(pTiffContext->io_in()->GetSize() - file_offset);
+      pTiffContext->set_offset(pdfium::base::checked_cast<uint32_t>(
+          pTiffContext->io_in()->GetSize() - file_offset));
       return pTiffContext->offset();
     }
     default:
@@ -189,32 +193,6 @@ TIFF* tiff_open(void* context, const char* mode) {
     tif->tif_fd = (int)(intptr_t)context;
   }
   return tif;
-}
-
-template <class T>
-bool Tiff_Exif_GetInfo(TIFF* tif_ctx, ttag_t tag, CFX_DIBAttribute* pAttr) {
-  T val = 0;
-  TIFFGetField(tif_ctx, tag, &val);
-  if (!val)
-    return false;
-  T* ptr = FX_Alloc(T, 1);
-  *ptr = val;
-  pAttr->m_Exif[tag] = ptr;
-  return true;
-}
-
-void Tiff_Exif_GetStringInfo(TIFF* tif_ctx,
-                             ttag_t tag,
-                             CFX_DIBAttribute* pAttr) {
-  char* buf = nullptr;
-  TIFFGetField(tif_ctx, tag, &buf);
-  if (!buf)
-    return;
-  size_t size = strlen(buf);
-  uint8_t* ptr = FX_AllocUninit(uint8_t, size + 1);
-  memcpy(ptr, buf, size);
-  ptr[size] = 0;
-  pAttr->m_Exif[tag] = ptr;
 }
 
 void TiffBGRA2RGBA(uint8_t* pBuf, int32_t pixel, int32_t spp) {
@@ -255,28 +233,23 @@ bool CTiffContext::LoadFrameInfo(int32_t frame,
   TIFFGetField(m_tif_ctx.get(), TIFFTAG_BITSPERSAMPLE, &tif_bpc);
   TIFFGetField(m_tif_ctx.get(), TIFFTAG_ROWSPERSTRIP, &tif_rps);
 
-  pAttribute->m_wDPIUnit = FXCODEC_RESUNIT_INCH;
-  if (TIFFGetField(m_tif_ctx.get(), TIFFTAG_RESOLUTIONUNIT,
-                   &pAttribute->m_wDPIUnit)) {
-    pAttribute->m_wDPIUnit--;
+  uint16_t tif_resunit = 0;
+  if (TIFFGetField(m_tif_ctx.get(), TIFFTAG_RESOLUTIONUNIT, &tif_resunit)) {
+    pAttribute->m_wDPIUnit =
+        static_cast<CFX_DIBAttribute::ResUnit>(tif_resunit - 1);
+  } else {
+    pAttribute->m_wDPIUnit = CFX_DIBAttribute::kResUnitInch;
   }
-  Tiff_Exif_GetInfo<uint16_t>(m_tif_ctx.get(), TIFFTAG_ORIENTATION, pAttribute);
-  if (Tiff_Exif_GetInfo<float>(m_tif_ctx.get(), TIFFTAG_XRESOLUTION,
-                               pAttribute)) {
-    void* val = pAttribute->m_Exif[TIFFTAG_XRESOLUTION];
-    float fDpi = val ? *reinterpret_cast<float*>(val) : 0;
-    pAttribute->m_nXDPI = static_cast<int32_t>(fDpi + 0.5f);
-  }
-  if (Tiff_Exif_GetInfo<float>(m_tif_ctx.get(), TIFFTAG_YRESOLUTION,
-                               pAttribute)) {
-    void* val = pAttribute->m_Exif[TIFFTAG_YRESOLUTION];
-    float fDpi = val ? *reinterpret_cast<float*>(val) : 0;
-    pAttribute->m_nYDPI = static_cast<int32_t>(fDpi + 0.5f);
-  }
-  Tiff_Exif_GetStringInfo(m_tif_ctx.get(), TIFFTAG_IMAGEDESCRIPTION,
-                          pAttribute);
-  Tiff_Exif_GetStringInfo(m_tif_ctx.get(), TIFFTAG_MAKE, pAttribute);
-  Tiff_Exif_GetStringInfo(m_tif_ctx.get(), TIFFTAG_MODEL, pAttribute);
+
+  float tif_xdpi = 0.0f;
+  TIFFGetField(m_tif_ctx.get(), TIFFTAG_XRESOLUTION, &tif_xdpi);
+  if (tif_xdpi)
+    pAttribute->m_nXDPI = static_cast<int32_t>(tif_xdpi + 0.5f);
+
+  float tif_ydpi = 0.0f;
+  TIFFGetField(m_tif_ctx.get(), TIFFTAG_YRESOLUTION, &tif_ydpi);
+  if (tif_ydpi)
+    pAttribute->m_nYDPI = static_cast<int32_t>(tif_ydpi + 0.5f);
 
   FX_SAFE_INT32 checked_width = tif_width;
   FX_SAFE_INT32 checked_height = tif_height;
@@ -332,7 +305,8 @@ void CTiffContext::SetPalette(const RetainPtr<CFX_DIBitmap>& pDIBitmap,
   uint16_t* blue_orig = nullptr;
   TIFFGetField(m_tif_ctx.get(), TIFFTAG_COLORMAP, &red_orig, &green_orig,
                &blue_orig);
-  for (int32_t i = (1L << bps) - 1; i >= 0; i--) {
+  for (int32_t i = pdfium::base::checked_cast<int32_t>((1L << bps) - 1); i >= 0;
+       i--) {
 #define CVT(x) ((uint16_t)((x) >> 8))
     red_orig[i] = CVT(red_orig[i]);
     green_orig[i] = CVT(green_orig[i]);

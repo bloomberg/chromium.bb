@@ -5,10 +5,10 @@
 #import "ios/chrome/browser/ui/settings/cells/table_view_clear_browsing_data_item.h"
 
 #include "base/mac/foundation_util.h"
-#include "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #include "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
+#import "ios/chrome/common/ui/table_view/table_view_cells_constants.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -38,11 +38,7 @@ const CGFloat kImageHeight = 30;
   [super configureCell:tableCell withStyler:styler];
   TableViewClearBrowsingDataCell* cell =
       base::mac::ObjCCastStrict<TableViewClearBrowsingDataCell>(tableCell);
-  UIImage* image = nil;
-  if ([self.imageName length]) {
-    image = [UIImage imageNamed:self.imageName];
-  }
-  [cell setImage:image];
+  [cell setImage:self.image];
   cell.textLabel.text = self.text;
   cell.detailTextLabel.text = self.detailText;
   cell.optionalTextLabel.text = self.optionalText;
@@ -80,7 +76,7 @@ const CGFloat kImageHeight = 30;
 @property(nonatomic, copy)
     NSArray<NSLayoutConstraint*>* accessibilityConstraints;
 
-// Virtual label container contains |textLabel| and |detailTextLabel|.
+// Virtual label container contains `textLabel` and `detailTextLabel`.
 @property(nonatomic, strong) UILayoutGuide* labelContainerGuide;
 
 @end
@@ -145,7 +141,7 @@ const CGFloat kImageHeight = 30;
     ];
 
     [NSLayoutConstraint activateConstraints:@[
-      // |imageView| constraints.
+      // `imageView` constraints.
       _imageHiddenConstraint,
       [_imageView.leadingAnchor
           constraintEqualToAnchor:self.contentView.leadingAnchor

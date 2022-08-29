@@ -277,6 +277,8 @@ Matrix<typename Scalar,
 
 Eigen defines the following Matrix typedefs:
 \li \c MatrixNt for `Matrix<type, N, N>`. For example, \c MatrixXi for `Matrix<int, Dynamic, Dynamic>`.
+\li \c MatrixXNt for `Matrix<type, Dynamic, N>`. For example, \c MatrixX3i for `Matrix<int, Dynamic, 3>`.
+\li \c MatrixNXt for `Matrix<type, N, Dynamic>`. For example, \c Matrix4Xd for `Matrix<d, 4, Dynamic>`.
 \li \c VectorNt for `Matrix<type, N, 1>`. For example, \c Vector2f for `Matrix<float, 2, 1>`.
 \li \c RowVectorNt for `Matrix<type, 1, N>`. For example, \c RowVector3d for `Matrix<double, 1, 3>`.
 

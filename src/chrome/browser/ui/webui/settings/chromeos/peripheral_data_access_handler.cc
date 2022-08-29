@@ -7,8 +7,9 @@
 #include <string>
 #include <utility>
 
-#include "ash/components/pcie_peripheral/pcie_peripheral_manager.h"
+#include "ash/components/peripheral_notification/peripheral_notification_manager.h"
 #include "ash/components/settings/cros_settings_names.h"
+#include "ash/components/tpm/install_attributes.h"
 #include "ash/constants/ash_pref_names.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -19,8 +20,7 @@
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_features_util.h"
-#include "chromeos/dbus/pciguard/pciguard_client.h"
-#include "chromeos/tpm/install_attributes.h"
+#include "chromeos/ash/components/dbus/pciguard/pciguard_client.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -73,13 +73,13 @@ PeripheralDataAccessHandler::PeripheralDataAccessHandler() {
 PeripheralDataAccessHandler::~PeripheralDataAccessHandler() = default;
 
 void PeripheralDataAccessHandler::RegisterMessages() {
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "isThunderboltSupported",
       base::BindRepeating(
           &PeripheralDataAccessHandler::HandleThunderboltSupported,
           base::Unretained(this)));
 
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "getPolicyState",
       base::BindRepeating(&PeripheralDataAccessHandler::HandleGetPolicyState,
                           base::Unretained(this)));
@@ -90,10 +90,10 @@ void PeripheralDataAccessHandler::OnJavascriptAllowed() {}
 void PeripheralDataAccessHandler::OnJavascriptDisallowed() {}
 
 void PeripheralDataAccessHandler::HandleThunderboltSupported(
-    const base::ListValue* args) {
+    const base::Value::List& args) {
   AllowJavascript();
-  CHECK_EQ(1u, args->GetList().size());
-  const std::string& callback_id = args->GetList()[0].GetString();
+  CHECK_EQ(1u, args.size());
+  const std::string& callback_id = args[0].GetString();
 
   // PathExist is a blocking call. PostTask it and wait on the result.
   base::ThreadPool::PostTaskAndReplyWithResult(
@@ -104,10 +104,10 @@ void PeripheralDataAccessHandler::HandleThunderboltSupported(
 }
 
 void PeripheralDataAccessHandler::HandleGetPolicyState(
-    const base::ListValue* args) {
+    const base::Value::List& args) {
   AllowJavascript();
-  CHECK_EQ(1u, args->GetList().size());
-  const std::string& callback_id = args->GetList()[0].GetString();
+  CHECK_EQ(1u, args.size());
+  const std::string& callback_id = args[0].GetString();
 
   const std::string& pref_name = InstallAttributes::Get()->IsEnterpriseManaged()
                                      ? local_state_pref_name
@@ -132,7 +132,8 @@ void PeripheralDataAccessHandler::OnPeripheralDataAccessProtectionChanged() {
   CrosSettings::Get()->GetBoolean(chromeos::kDevicePeripheralDataAccessEnabled,
                                   &new_state);
 
-  ash::PciePeripheralManager::Get()->SetPcieTunnelingAllowedState(new_state);
+  ash::PeripheralNotificationManager::Get()->SetPcieTunnelingAllowedState(
+      new_state);
   PciguardClient::Get()->SendExternalPciDevicesPermissionState(new_state);
 }
 

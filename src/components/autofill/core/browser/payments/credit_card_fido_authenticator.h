@@ -10,6 +10,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
+#include "base/synchronization/waitable_event.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_driver.h"
@@ -23,23 +24,6 @@
 #include "third_party/blink/public/mojom/webauthn/authenticator.mojom-forward.h"
 
 namespace autofill {
-
-using blink::mojom::AuthenticatorStatus;
-using blink::mojom::GetAssertionAuthenticatorResponse;
-using blink::mojom::GetAssertionAuthenticatorResponsePtr;
-using blink::mojom::MakeCredentialAuthenticatorResponse;
-using blink::mojom::MakeCredentialAuthenticatorResponsePtr;
-using blink::mojom::PublicKeyCredentialCreationOptions;
-using blink::mojom::PublicKeyCredentialCreationOptionsPtr;
-using blink::mojom::PublicKeyCredentialRequestOptions;
-using blink::mojom::PublicKeyCredentialRequestOptionsPtr;
-using device::AttestationConveyancePreference;
-using device::AuthenticatorAttachment;
-using device::AuthenticatorSelectionCriteria;
-using device::CredentialType;
-using device::FidoTransportProtocol;
-using device::PublicKeyCredentialDescriptor;
-using device::UserVerificationRequirement;
 
 // Enum denotes user's intention to opt in/out.
 enum class UserOptInIntention {
@@ -81,9 +65,6 @@ class CreditCardFIDOAuthenticator
   // The response of FIDO authentication, including necessary information needed
   // by the subclasses.
   struct FidoAuthenticationResponse {
-    FidoAuthenticationResponse() = default;
-    ~FidoAuthenticationResponse() = default;
-
     // Whether the authentication was successful.
     bool did_succeed = false;
     // The fetched credit card if the authentication was successful. Can be
@@ -153,7 +134,7 @@ class CreditCardFIDOAuthenticator
   // and in the FullCardRequest if any.
   void CancelVerification();
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   // Invoked when a Webauthn offer dialog is about to be shown.
   void OnWebauthnOfferDialogRequested(std::string card_authorization_token);
 
@@ -185,12 +166,12 @@ class CreditCardFIDOAuthenticator
   // Invokes the WebAuthn prompt to request user verification to sign the
   // challenge in |request_options|.
   virtual void GetAssertion(
-      PublicKeyCredentialRequestOptionsPtr request_options);
+      blink::mojom::PublicKeyCredentialRequestOptionsPtr request_options);
 
   // Invokes the WebAuthn prompt to request user verification to sign the
   // challenge in |creation_options| and create a key-pair.
   virtual void MakeCredential(
-      PublicKeyCredentialCreationOptionsPtr creation_options);
+      blink::mojom::PublicKeyCredentialCreationOptionsPtr creation_options);
 
   // Makes a request to payments to either opt-in or opt-out the user.
   void OptChange(base::Value authenticator_response = base::Value());
@@ -199,15 +180,17 @@ class CreditCardFIDOAuthenticator
   // |assertion_response|, which will be sent to Google Payments to retrieve
   // card details.
   void OnDidGetAssertion(
-      AuthenticatorStatus status,
-      GetAssertionAuthenticatorResponsePtr assertion_response);
+      blink::mojom::AuthenticatorStatus status,
+      blink::mojom::GetAssertionAuthenticatorResponsePtr assertion_response,
+      blink::mojom::WebAuthnDOMExceptionDetailsPtr dom_exception_details);
 
   // The callback invoked from the WebAuthn prompt including the
   // |attestation_response|, which will be sent to Google Payments to enroll the
   // credential for this user.
   void OnDidMakeCredential(
-      AuthenticatorStatus status,
-      MakeCredentialAuthenticatorResponsePtr attestation_response);
+      blink::mojom::AuthenticatorStatus status,
+      blink::mojom::MakeCredentialAuthenticatorResponsePtr attestation_response,
+      blink::mojom::WebAuthnDOMExceptionDetailsPtr dom_exception_details);
 
   // Sets prefstore to enable credit card authentication if rpc was successful.
   void OnDidGetOptChangeResult(
@@ -223,25 +206,26 @@ class CreditCardFIDOAuthenticator
       payments::FullCardRequest::FailureType failure_type) override;
 
   // Converts |request_options| from JSON to mojom pointer.
-  PublicKeyCredentialRequestOptionsPtr ParseRequestOptions(
+  blink::mojom::PublicKeyCredentialRequestOptionsPtr ParseRequestOptions(
       const base::Value& request_options);
 
   // Converts |creation_options| from JSON to mojom pointer.
-  PublicKeyCredentialCreationOptionsPtr ParseCreationOptions(
+  blink::mojom::PublicKeyCredentialCreationOptionsPtr ParseCreationOptions(
       const base::Value& creation_options);
 
   // Helper function to parse |key_info| sub-dictionary found in
   // |request_options| and |creation_options|.
-  PublicKeyCredentialDescriptor ParseCredentialDescriptor(
+  device::PublicKeyCredentialDescriptor ParseCredentialDescriptor(
       const base::Value& key_info);
 
   // Converts |assertion_response| from mojom pointer to JSON.
   base::Value ParseAssertionResponse(
-      GetAssertionAuthenticatorResponsePtr assertion_response);
+      blink::mojom::GetAssertionAuthenticatorResponsePtr assertion_response);
 
   // Converts |attestation_response| from mojom pointer to JSON.
   base::Value ParseAttestationResponse(
-      MakeCredentialAuthenticatorResponsePtr attestation_response);
+      blink::mojom::MakeCredentialAuthenticatorResponsePtr
+          attestation_response);
 
   // Returns true if |request_options| contains a challenge and has a non-empty
   // list of keys that each have a Credential ID.
@@ -251,7 +235,7 @@ class CreditCardFIDOAuthenticator
   bool IsValidCreationOptions(const base::Value& creation_options);
 
   // Logs the result of a WebAuthn prompt.
-  void LogWebauthnResult(AuthenticatorStatus status);
+  void LogWebauthnResult(blink::mojom::AuthenticatorStatus status);
 
   // Updates the user preference to the value of |user_is_opted_in_|.
   void UpdateUserPref();

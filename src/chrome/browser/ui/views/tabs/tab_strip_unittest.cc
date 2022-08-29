@@ -20,7 +20,6 @@
 #include "chrome/browser/ui/views/frame/browser_root_view.h"
 #include "chrome/browser/ui/views/tabs/fake_base_tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
-#include "chrome/browser/ui/views/tabs/tab_animation.h"
 #include "chrome/browser/ui/views/tabs/tab_group_header.h"
 #include "chrome/browser/ui/views/tabs/tab_group_highlight.h"
 #include "chrome/browser/ui/views/tabs/tab_group_underline.h"
@@ -33,8 +32,6 @@
 #include "chrome/test/views/chrome_views_test_base.h"
 #include "components/tab_groups/tab_group_id.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/dragdrop/drag_drop_types.h"
-#include "ui/base/dragdrop/drop_target_event.h"
 #include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/gfx/animation/animation_test_api.h"
@@ -53,16 +50,6 @@
 #include "ui/views/widget/widget.h"
 
 namespace {
-
-// Walks up the views hierarchy until it finds a tab view. It returns the
-// found tab view, on NULL if none is found.
-views::View* FindTabView(views::View* view) {
-  views::View* current = view;
-  while (current && !views::IsViewClass<Tab>(current)) {
-    current = current->parent();
-  }
-  return current;
-}
 
 struct TabStripUnittestParams {
   const bool touch_ui;
@@ -178,25 +165,15 @@ class TabStripTestBase : public ChromeViewsTestBase {
     return tab->icon_->GetShowingAttentionIndicator();
   }
 
-  // Checks whether |tab| contains |point_in_tabstrip_coords|, where the point
-  // is in |tab_strip_| coordinates.
-  bool IsPointInTab(Tab* tab, const gfx::Point& point_in_tabstrip_coords) {
-    gfx::Point point_in_tab_coords(point_in_tabstrip_coords);
-    views::View::ConvertPointToTarget(tab_strip_, tab, &point_in_tab_coords);
-    return tab->HitTestPoint(point_in_tab_coords);
-  }
-
   void CompleteAnimationAndLayout() {
     // Complete animations and lay out *within the current tabstrip width*.
-    tab_strip_->CompleteAnimationAndLayout();
+    tab_strip_->StopAnimating(true);
     // Resize the tabstrip based on the current tab states.
     tab_strip_parent_->Layout();
   }
 
-  void AnimateToIdealBounds() { tab_strip_->AnimateToIdealBounds(); }
-
   views::BoundsAnimator* bounds_animator() {
-    return &tab_strip_->bounds_animator_;
+    return &tab_strip_->tab_container_->bounds_animator();
   }
 
   int GetActiveTabWidth() { return tab_strip_->GetActiveTabWidth(); }
@@ -210,60 +187,20 @@ class TabStripTestBase : public ChromeViewsTestBase {
     tab_strip_->StoppedDraggingView(view, &is_first_view);
   }
 
-  // Makes sure that all tabs have the correct AX indices.
-  void VerifyTabIndices() {
-    for (int i = 0; i < tab_strip_->GetTabCount(); ++i) {
-      ui::AXNodeData ax_node_data;
-      tab_strip_->tab_at(i)->GetViewAccessibility().GetAccessibleNodeData(
-          &ax_node_data);
-      EXPECT_EQ(i + 1, ax_node_data.GetIntAttribute(
-                           ax::mojom::IntAttribute::kPosInSet));
-      EXPECT_EQ(
-          tab_strip_->GetTabCount(),
-          ax_node_data.GetIntAttribute(ax::mojom::IntAttribute::kSetSize));
-    }
+  std::vector<views::View*> GetChildViews() {
+    // The first (and only) View child of TabStrip is its TabContainer, which
+    // contains the tabs and group views.
+    // TODO(1116121): Move tests that test view/focus order to test
+    // TabContainer directly, once that functionality has been moved there.
+    return tab_strip_->children()[0]->children();
   }
 
   std::vector<TabGroupViews*> ListGroupViews() const {
     std::vector<TabGroupViews*> result;
-    for (auto const& group_view_pair : tab_strip_->group_views_)
+    for (auto const& group_view_pair :
+         tab_strip_->tab_container_->group_views())
       result.push_back(group_view_pair.second.get());
     return result;
-  }
-
-  // Returns all TabSlotViews in the order that they have as ViewChildren of
-  // TabStrip. This should match the actual order that they appear in visually.
-  views::View::Views GetTabSlotViewsInFocusOrder() {
-    views::View::Views all_children = tab_strip_->children();
-
-    const int num_tab_slot_views =
-        tab_strip_->GetTabCount() + tab_strip_->group_views_.size();
-
-    return views::View::Views(all_children.begin(),
-                              all_children.begin() + num_tab_slot_views);
-  }
-
-  // Returns all TabSlotViews in the order that they appear visually. This is
-  // the expected order of the ViewChildren of TabStrip.
-  views::View::Views GetTabSlotViewsInVisualOrder() {
-    views::View::Views ordered_views;
-
-    absl::optional<tab_groups::TabGroupId> prev_group = absl::nullopt;
-
-    for (int i = 0; i < tab_strip_->GetTabCount(); ++i) {
-      Tab* tab = tab_strip_->tab_at(i);
-
-      // If the current Tab is the first one in a group, first add the
-      // TabGroupHeader to the list of views.
-      absl::optional<tab_groups::TabGroupId> curr_group = tab->group();
-      if (curr_group.has_value() && curr_group != prev_group)
-        ordered_views.push_back(tab_strip_->group_header(curr_group.value()));
-      prev_group = curr_group;
-
-      ordered_views.push_back(tab);
-    }
-
-    return ordered_views;
   }
 
   // Owned by TabStrip.
@@ -324,22 +261,6 @@ TEST_P(TabStripTest, AccessibilityEvents) {
   EXPECT_EQ(0, ax_counter.GetCount(ax::mojom::Event::kSelectionRemove));
 }
 
-TEST_P(TabStripTest, AccessibilityData) {
-  // When adding tabs, indexes should be set.
-  controller_->AddTab(0, false);
-  controller_->AddTab(1, true);
-  VerifyTabIndices();
-
-  controller_->AddTab(0, false);
-  VerifyTabIndices();
-
-  controller_->RemoveTab(1);
-  VerifyTabIndices();
-
-  controller_->MoveTab(1, 0);
-  VerifyTabIndices();
-}
-
 TEST_P(TabStripTest, IsValidModelIndex) {
   EXPECT_FALSE(tab_strip_->IsValidModelIndex(0));
 }
@@ -354,7 +275,7 @@ TEST_P(TabStripTest, AddTabAt) {
   ASSERT_EQ(1, tab_strip_->GetTabCount());
   EXPECT_EQ(0, observer.last_tab_added());
   Tab* tab = tab_strip_->tab_at(0);
-  EXPECT_FALSE(tab == NULL);
+  EXPECT_FALSE(tab == nullptr);
 }
 
 TEST_P(TabStripTest, MoveTab) {
@@ -376,74 +297,23 @@ TEST_P(TabStripTest, RemoveTab) {
   TestTabStripObserver observer(tab_strip_);
   controller_->AddTab(0, false);
   controller_->AddTab(1, false);
-  const size_t num_children = tab_strip_->children().size();
+  const size_t num_children = GetChildViews().size();
   EXPECT_EQ(2, tab_strip_->GetTabCount());
   controller_->RemoveTab(0);
   EXPECT_EQ(0, observer.last_tab_removed());
   // When removing a tab the tabcount should immediately decrement.
   EXPECT_EQ(1, tab_strip_->GetTabCount());
   // But the number of views should remain the same (it's animatining closed).
-  EXPECT_EQ(num_children, tab_strip_->children().size());
+  EXPECT_EQ(num_children, GetChildViews().size());
 
   CompleteAnimationAndLayout();
 
-  EXPECT_EQ(num_children - 1, tab_strip_->children().size());
+  EXPECT_EQ(num_children - 1, GetChildViews().size());
 
   // Remove the last tab to make sure things are cleaned up correctly when
   // the TabStrip is destroyed and an animation is ongoing.
   controller_->RemoveTab(0);
   EXPECT_EQ(0, observer.last_tab_removed());
-}
-
-// Verifies child view order matches model order.
-TEST_P(TabStripTest, TabViewOrder) {
-  controller_->AddTab(0, false);
-  controller_->AddTab(1, false);
-  controller_->AddTab(2, false);
-  EXPECT_EQ(GetTabSlotViewsInFocusOrder(), GetTabSlotViewsInVisualOrder());
-
-  controller_->MoveTab(0, 1);
-  EXPECT_EQ(GetTabSlotViewsInFocusOrder(), GetTabSlotViewsInVisualOrder());
-  controller_->MoveTab(1, 2);
-  EXPECT_EQ(GetTabSlotViewsInFocusOrder(), GetTabSlotViewsInVisualOrder());
-  controller_->MoveTab(1, 0);
-  EXPECT_EQ(GetTabSlotViewsInFocusOrder(), GetTabSlotViewsInVisualOrder());
-  controller_->MoveTab(0, 2);
-  EXPECT_EQ(GetTabSlotViewsInFocusOrder(), GetTabSlotViewsInVisualOrder());
-}
-
-// Verifies child view order matches slot order with group headers.
-TEST_P(TabStripTest, TabViewOrderWithGroups) {
-  controller_->AddTab(0, false);
-  controller_->AddTab(1, false);
-  controller_->AddTab(2, false);
-  controller_->AddTab(3, false);
-  EXPECT_EQ(GetTabSlotViewsInFocusOrder(), GetTabSlotViewsInVisualOrder());
-
-  absl::optional<tab_groups::TabGroupId> group1 =
-      tab_groups::TabGroupId::GenerateNew();
-  absl::optional<tab_groups::TabGroupId> group2 =
-      tab_groups::TabGroupId::GenerateNew();
-
-  // Add multiple tabs to a group and verify view order.
-  controller_->MoveTabIntoGroup(0, group1);
-  EXPECT_EQ(GetTabSlotViewsInFocusOrder(), GetTabSlotViewsInVisualOrder());
-  controller_->MoveTabIntoGroup(1, group1);
-  EXPECT_EQ(GetTabSlotViewsInFocusOrder(), GetTabSlotViewsInVisualOrder());
-
-  // Move tabs within a group and verify view order.
-  controller_->MoveTab(1, 0);
-  EXPECT_EQ(GetTabSlotViewsInFocusOrder(), GetTabSlotViewsInVisualOrder());
-
-  // Add a single tab to a group and verify view order.
-  controller_->MoveTabIntoGroup(2, group2);
-  EXPECT_EQ(GetTabSlotViewsInFocusOrder(), GetTabSlotViewsInVisualOrder());
-
-  // Move and add tabs near a group and verify view order.
-  controller_->AddTab(2, false);
-  EXPECT_EQ(GetTabSlotViewsInFocusOrder(), GetTabSlotViewsInVisualOrder());
-  controller_->MoveTab(4, 3);
-  EXPECT_EQ(GetTabSlotViewsInFocusOrder(), GetTabSlotViewsInVisualOrder());
 }
 
 // Tests that the tab close buttons of non-active tabs are hidden when
@@ -524,139 +394,6 @@ TEST_P(TabStripTest, TabCloseButtonVisibility) {
   EXPECT_FALSE(tab4->showing_close_button_);
 }
 
-TEST_P(TabStripTest, GetEventHandlerForOverlappingArea) {
-  SetMaxTabStripWidth(1000);
-
-  controller_->AddTab(0, false);
-  controller_->AddTab(1, true);
-  controller_->AddTab(2, false);
-  controller_->AddTab(3, false);
-  CompleteAnimationAndLayout();
-  ASSERT_EQ(4, tab_strip_->GetTabCount());
-
-  // Verify that the active tab will be a tooltip handler for points that hit
-  // it.
-  Tab* left_tab = tab_strip_->tab_at(0);
-  left_tab->SetBoundsRect(gfx::Rect(gfx::Point(0, 0), gfx::Size(200, 20)));
-
-  Tab* active_tab = tab_strip_->tab_at(1);
-  active_tab->SetBoundsRect(gfx::Rect(gfx::Point(150, 0), gfx::Size(200, 20)));
-  ASSERT_TRUE(active_tab->IsActive());
-
-  Tab* right_tab = tab_strip_->tab_at(2);
-  right_tab->SetBoundsRect(gfx::Rect(gfx::Point(300, 0), gfx::Size(200, 20)));
-
-  Tab* most_right_tab = tab_strip_->tab_at(3);
-  most_right_tab->SetBoundsRect(
-      gfx::Rect(gfx::Point(450, 0), gfx::Size(200, 20)));
-
-  // Test that active tabs gets events from area in which it overlaps with its
-  // left neighbour.
-  gfx::Point left_overlap(
-      (active_tab->x() + left_tab->bounds().right() + 1) / 2,
-      active_tab->bounds().bottom() - 1);
-
-  // Sanity check that the point is in both active and left tab.
-  ASSERT_TRUE(IsPointInTab(active_tab, left_overlap));
-  ASSERT_TRUE(IsPointInTab(left_tab, left_overlap));
-
-  EXPECT_EQ(active_tab,
-            FindTabView(tab_strip_->GetEventHandlerForPoint(left_overlap)));
-
-  // Test that active tabs gets events from area in which it overlaps with its
-  // right neighbour.
-  gfx::Point right_overlap((active_tab->bounds().right() + right_tab->x()) / 2,
-                           active_tab->bounds().bottom() - 1);
-
-  // Sanity check that the point is in both active and right tab.
-  ASSERT_TRUE(IsPointInTab(active_tab, right_overlap));
-  ASSERT_TRUE(IsPointInTab(right_tab, right_overlap));
-
-  EXPECT_EQ(active_tab,
-            FindTabView(tab_strip_->GetEventHandlerForPoint(right_overlap)));
-
-  // Test that if neither of tabs is active, the left one is selected.
-  gfx::Point unactive_overlap(
-      (right_tab->x() + most_right_tab->bounds().right() + 1) / 2,
-      right_tab->bounds().bottom() - 1);
-
-  // Sanity check that the point is in both active and left tab.
-  ASSERT_TRUE(IsPointInTab(right_tab, unactive_overlap));
-  ASSERT_TRUE(IsPointInTab(most_right_tab, unactive_overlap));
-
-  EXPECT_EQ(right_tab,
-            FindTabView(tab_strip_->GetEventHandlerForPoint(unactive_overlap)));
-}
-
-TEST_P(TabStripTest, GetTooltipHandler) {
-  SetMaxTabStripWidth(1000);
-
-  controller_->AddTab(0, false);
-  controller_->AddTab(1, true);
-  controller_->AddTab(2, false);
-  controller_->AddTab(3, false);
-  CompleteAnimationAndLayout();
-  ASSERT_EQ(4, tab_strip_->GetTabCount());
-
-  // Verify that the active tab will be a tooltip handler for points that hit
-  // it.
-  Tab* left_tab = tab_strip_->tab_at(0);
-  left_tab->SetBoundsRect(gfx::Rect(gfx::Point(0, 0), gfx::Size(200, 20)));
-
-  Tab* active_tab = tab_strip_->tab_at(1);
-  active_tab->SetBoundsRect(gfx::Rect(gfx::Point(150, 0), gfx::Size(200, 20)));
-  ASSERT_TRUE(active_tab->IsActive());
-
-  Tab* right_tab = tab_strip_->tab_at(2);
-  right_tab->SetBoundsRect(gfx::Rect(gfx::Point(300, 0), gfx::Size(200, 20)));
-
-  Tab* most_right_tab = tab_strip_->tab_at(3);
-  most_right_tab->SetBoundsRect(
-      gfx::Rect(gfx::Point(450, 0), gfx::Size(200, 20)));
-
-  // Test that active_tab handles tooltips from area in which it overlaps with
-  // its left neighbour.
-  gfx::Point left_overlap(
-      (active_tab->x() + left_tab->bounds().right() + 1) / 2,
-      active_tab->bounds().bottom() - 1);
-
-  // Sanity check that the point is in both active and left tab.
-  ASSERT_TRUE(IsPointInTab(active_tab, left_overlap));
-  ASSERT_TRUE(IsPointInTab(left_tab, left_overlap));
-
-  EXPECT_EQ(active_tab,
-            FindTabView(tab_strip_->GetTooltipHandlerForPoint(left_overlap)));
-
-  // Test that active_tab handles tooltips from area in which it overlaps with
-  // its right neighbour.
-  gfx::Point right_overlap((active_tab->bounds().right() + right_tab->x()) / 2,
-                           active_tab->bounds().bottom() - 1);
-
-  // Sanity check that the point is in both active and right tab.
-  ASSERT_TRUE(IsPointInTab(active_tab, right_overlap));
-  ASSERT_TRUE(IsPointInTab(right_tab, right_overlap));
-
-  EXPECT_EQ(active_tab,
-            FindTabView(tab_strip_->GetTooltipHandlerForPoint(right_overlap)));
-
-  // Test that if neither of tabs is active, the left one is selected.
-  gfx::Point unactive_overlap(
-      (right_tab->x() + most_right_tab->bounds().right() + 1) / 2,
-      right_tab->bounds().bottom() - 1);
-
-  // Sanity check that the point is in both active and left tab.
-  ASSERT_TRUE(IsPointInTab(right_tab, unactive_overlap));
-  ASSERT_TRUE(IsPointInTab(most_right_tab, unactive_overlap));
-
-  EXPECT_EQ(
-      right_tab,
-      FindTabView(tab_strip_->GetTooltipHandlerForPoint(unactive_overlap)));
-
-  // Confirm that tab strip doe not return tooltip handler for points that
-  // don't hit it.
-  EXPECT_FALSE(tab_strip_->GetTooltipHandlerForPoint(gfx::Point(-1, 2)));
-}
-
 // The cached widths are private, but if they give incorrect results it can
 // cause subtle errors in other tests. Therefore it's prudent to test them.
 TEST_P(TabStripTest, CachedWidthsReportCorrectSize) {
@@ -699,17 +436,17 @@ TEST_P(TabStripTest, ActiveTabWidthWhenTabsAreTiny) {
 
   EXPECT_GT(tab_strip_->GetTabCount(), 1);
 
-  int active_index = controller_->GetActiveIndex();
+  int active_index = tab_strip_->GetActiveIndex();
   EXPECT_EQ(tab_strip_->GetTabCount() - 1, active_index);
-  EXPECT_LT(tab_strip_->ideal_bounds(0).width(),
-            tab_strip_->ideal_bounds(active_index).width());
+  EXPECT_LT(tab_strip_->tab_at(0)->bounds().width(),
+            tab_strip_->tab_at(active_index)->bounds().width());
 
   // During mouse-based tab closure, the active tab should remain at least as
   // wide as it's minimum width.
   controller_->SelectTab(0, dummy_event_);
   while (tab_strip_->GetTabCount() > 0) {
-    active_index = controller_->GetActiveIndex();
-    EXPECT_GE(tab_strip_->ideal_bounds(active_index).width(),
+    active_index = tab_strip_->GetActiveIndex();
+    EXPECT_GE(tab_strip_->tab_at(active_index)->bounds().width(),
               TabStyleViews::GetMinimumActiveWidth());
     tab_strip_->CloseTab(tab_strip_->tab_at(active_index),
                          CLOSE_TAB_FROM_MOUSE);
@@ -739,42 +476,11 @@ TEST_P(TabStripTest, InactiveTabWidthWhenTabsAreTiny) {
   // so we stop at 2.
   while (tab_strip_->GetTabCount() > 2) {
     const int last_inactive_width = GetInactiveTabWidth();
-    tab_strip_->CloseTab(tab_strip_->tab_at(controller_->GetActiveIndex()),
+    tab_strip_->CloseTab(tab_strip_->tab_at(tab_strip_->GetActiveIndex()),
                          CLOSE_TAB_FROM_MOUSE);
     CompleteAnimationAndLayout();
     EXPECT_GE(GetInactiveTabWidth(), last_inactive_width);
   }
-}
-
-TEST_P(TabStripTest, ExitsClosingModeAtStandardWidth) {
-  SetMaxTabStripWidth(600);
-
-  // Create enough tabs so tabs are not full size.
-  const int standard_width = TabStyleViews::GetStandardWidth();
-  while (GetActiveTabWidth() == standard_width) {
-    controller_->CreateNewTab();
-    CompleteAnimationAndLayout();
-  }
-
-  // The test closes two tabs, we need at least one left over after that.
-  ASSERT_GE(tab_strip_->GetTabCount(), 3);
-
-  // Close the second-to-last tab to enter tab closing mode.
-  tab_strip_->CloseTab(tab_strip_->tab_at(tab_strip_->GetTabCount() - 2),
-                       CLOSE_TAB_FROM_MOUSE);
-  CompleteAnimationAndLayout();
-  ASSERT_LT(GetActiveTabWidth(), standard_width);
-
-  // Close the last tab; tabs should reach standard width.
-  tab_strip_->CloseTab(tab_strip_->tab_at(tab_strip_->GetTabCount() - 1),
-                       CLOSE_TAB_FROM_MOUSE);
-  CompleteAnimationAndLayout();
-  EXPECT_EQ(GetActiveTabWidth(), standard_width);
-
-  // The tabstrip width should match the rightmost tab's right edge.
-  EXPECT_EQ(
-      tab_strip_->bounds().width(),
-      tab_strip_->tab_at(tab_strip_->GetTabCount() - 1)->bounds().right());
 }
 
 // When dragged tabs are moving back to their position, changes to ideal bounds
@@ -791,8 +497,8 @@ TEST_P(TabStripTest, ResetBoundsForDraggedTabs) {
 
   const int min_active_width = TabStyleViews::GetMinimumActiveWidth();
 
-  int dragged_tab_index = controller_->GetActiveIndex();
-  EXPECT_GE(tab_strip_->ideal_bounds(dragged_tab_index).width(),
+  int dragged_tab_index = tab_strip_->GetActiveIndex();
+  EXPECT_GE(tab_strip_->tab_at(dragged_tab_index)->bounds().width(),
             min_active_width);
 
   // Mark the active tab as being dragged.
@@ -874,223 +580,6 @@ TEST_P(TabStripTest, EventsOnClosingTab) {
   // Closing |first_tab| again should forward to |second_tab| instead.
   tab_strip_->CloseTab(first_tab, CLOSE_TAB_FROM_MOUSE);
   EXPECT_TRUE(second_tab->closing());
-}
-
-TEST_P(TabStripTest, GroupHeaderBasics) {
-  SetMaxTabStripWidth(1000);
-  bounds_animator()->SetAnimationDuration(base::TimeDelta());
-  controller_->AddTab(0, false);
-
-  Tab* tab = tab_strip_->tab_at(0);
-  const int first_slot_x = tab->x();
-
-  absl::optional<tab_groups::TabGroupId> group =
-      tab_groups::TabGroupId::GenerateNew();
-  controller_->MoveTabIntoGroup(0, group);
-  CompleteAnimationAndLayout();
-
-  std::vector<TabGroupViews*> views = ListGroupViews();
-  EXPECT_EQ(1u, views.size());
-  TabGroupHeader* header = views[0]->header();
-  EXPECT_EQ(first_slot_x, header->x());
-  EXPECT_GT(header->width(), 0);
-  EXPECT_EQ(header->bounds().right() - TabStyle::GetTabOverlap(), tab->x());
-  EXPECT_EQ(tab->height(), header->height());
-}
-
-TEST_P(TabStripTest, GroupHeaderBetweenTabs) {
-  SetMaxTabStripWidth(1000);
-  bounds_animator()->SetAnimationDuration(base::TimeDelta());
-
-  controller_->AddTab(0, false);
-  controller_->AddTab(1, false);
-
-  const int second_slot_x = tab_strip_->tab_at(1)->x();
-
-  absl::optional<tab_groups::TabGroupId> group =
-      tab_groups::TabGroupId::GenerateNew();
-  controller_->MoveTabIntoGroup(1, group);
-
-  TabGroupHeader* header = ListGroupViews()[0]->header();
-  EXPECT_EQ(header->x(), second_slot_x);
-}
-
-TEST_P(TabStripTest, GroupHeaderMovesRightWithTab) {
-  SetMaxTabStripWidth(2000);
-  for (int i = 0; i < 4; i++)
-    controller_->AddTab(i, false);
-  absl::optional<tab_groups::TabGroupId> group =
-      tab_groups::TabGroupId::GenerateNew();
-  controller_->MoveTabIntoGroup(1, group);
-  CompleteAnimationAndLayout();
-
-  controller_->MoveTab(1, 2);
-  CompleteAnimationAndLayout();
-
-  TabGroupHeader* header = ListGroupViews()[0]->header();
-  // Header is now left of tab 2.
-  EXPECT_LT(tab_strip_->tab_at(1)->x(), header->x());
-  EXPECT_LT(header->x(), tab_strip_->tab_at(2)->x());
-}
-
-TEST_P(TabStripTest, GroupHeaderMovesLeftWithTab) {
-  SetMaxTabStripWidth(2000);
-  for (int i = 0; i < 4; i++)
-    controller_->AddTab(i, false);
-  absl::optional<tab_groups::TabGroupId> group =
-      tab_groups::TabGroupId::GenerateNew();
-  controller_->MoveTabIntoGroup(2, group);
-  CompleteAnimationAndLayout();
-
-  controller_->MoveTab(2, 1);
-  CompleteAnimationAndLayout();
-
-  TabGroupHeader* header = ListGroupViews()[0]->header();
-  // Header is now left of tab 1.
-  EXPECT_LT(tab_strip_->tab_at(0)->x(), header->x());
-  EXPECT_LT(header->x(), tab_strip_->tab_at(1)->x());
-}
-
-TEST_P(TabStripTest, GroupHeaderDoesntMoveReorderingTabsInGroup) {
-  SetMaxTabStripWidth(2000);
-  for (int i = 0; i < 4; i++)
-    controller_->AddTab(i, false);
-  absl::optional<tab_groups::TabGroupId> group =
-      tab_groups::TabGroupId::GenerateNew();
-  controller_->MoveTabIntoGroup(1, group);
-  controller_->MoveTabIntoGroup(2, group);
-  CompleteAnimationAndLayout();
-
-  TabGroupHeader* header = ListGroupViews()[0]->header();
-  const int initial_header_x = header->x();
-  Tab* tab1 = tab_strip_->tab_at(1);
-  const int initial_tab_1_x = tab1->x();
-  Tab* tab2 = tab_strip_->tab_at(2);
-  const int initial_tab_2_x = tab2->x();
-
-  controller_->MoveTab(1, 2);
-  CompleteAnimationAndLayout();
-
-  // Header has not moved.
-  EXPECT_EQ(initial_header_x, header->x());
-  EXPECT_EQ(initial_tab_1_x, tab2->x());
-  EXPECT_EQ(initial_tab_2_x, tab1->x());
-}
-
-TEST_P(TabStripTest, GroupHeaderMovesOnRegrouping) {
-  SetMaxTabStripWidth(2000);
-  for (int i = 0; i < 3; i++)
-    controller_->AddTab(i, false);
-  tab_groups::TabGroupId group0 = tab_groups::TabGroupId::GenerateNew();
-  controller_->MoveTabIntoGroup(0, group0);
-  tab_groups::TabGroupId group1 = tab_groups::TabGroupId::GenerateNew();
-  controller_->MoveTabIntoGroup(1, group1);
-  controller_->MoveTabIntoGroup(2, group1);
-  CompleteAnimationAndLayout();
-
-  std::vector<TabGroupViews*> views = ListGroupViews();
-  auto views_it =
-      std::find_if(views.begin(), views.end(), [&group1](TabGroupViews* view) {
-        return view->header()->group() == group1;
-      });
-  ASSERT_TRUE(views_it != views.end());
-  TabGroupViews* view = *views_it;
-
-  // Change groups in a way so that the header should swap with the tab, without
-  // an explicit MoveTab call.
-  controller_->MoveTabIntoGroup(1, group0);
-  CompleteAnimationAndLayout();
-
-  // Header is now right of tab 1.
-  EXPECT_LT(tab_strip_->tab_at(1)->x(), view->header()->x());
-  EXPECT_LT(view->header()->x(), tab_strip_->tab_at(2)->x());
-}
-
-TEST_P(TabStripTest, UngroupedTabMovesLeftOfHeader) {
-  SetMaxTabStripWidth(2000);
-  for (int i = 0; i < 2; i++)
-    controller_->AddTab(i, false);
-  tab_groups::TabGroupId group = tab_groups::TabGroupId::GenerateNew();
-  controller_->MoveTabIntoGroup(0, group);
-  CompleteAnimationAndLayout();
-
-  controller_->MoveTab(1, 0);
-  CompleteAnimationAndLayout();
-
-  // Header is right of tab 0.
-  TabGroupHeader* header = ListGroupViews()[0]->header();
-  EXPECT_LT(tab_strip_->tab_at(0)->x(), header->x());
-  EXPECT_LT(header->x(), tab_strip_->tab_at(1)->x());
-}
-
-TEST_P(TabStripTest, DeleteTabGroupViewsWhenEmpty) {
-  controller_->AddTab(0, false);
-  controller_->AddTab(1, false);
-  absl::optional<tab_groups::TabGroupId> group =
-      tab_groups::TabGroupId::GenerateNew();
-  controller_->MoveTabIntoGroup(0, group);
-  controller_->MoveTabIntoGroup(1, group);
-  controller_->MoveTabIntoGroup(0, absl::nullopt);
-
-  EXPECT_EQ(1u, ListGroupViews().size());
-  controller_->MoveTabIntoGroup(1, absl::nullopt);
-  EXPECT_EQ(0u, ListGroupViews().size());
-}
-
-TEST_P(TabStripTest, GroupUnderlineBasics) {
-  SetMaxTabStripWidth(1000);
-  bounds_animator()->SetAnimationDuration(base::TimeDelta());
-  controller_->AddTab(0, false);
-
-  absl::optional<tab_groups::TabGroupId> group =
-      tab_groups::TabGroupId::GenerateNew();
-  controller_->MoveTabIntoGroup(0, group);
-  CompleteAnimationAndLayout();
-
-  std::vector<TabGroupViews*> views = ListGroupViews();
-  EXPECT_EQ(1u, views.size());
-  // Update underline manually in the absence of a real Paint cycle.
-  views[0]->UpdateBounds();
-
-  const TabGroupUnderline* underline = views[0]->underline();
-  EXPECT_EQ(underline->x(), TabGroupUnderline::GetStrokeInset());
-  EXPECT_GT(underline->width(), 0);
-  EXPECT_EQ(underline->bounds().right(),
-            tab_strip_->tab_at(0)->bounds().right() -
-                TabGroupUnderline::GetStrokeInset());
-  EXPECT_EQ(underline->height(), TabGroupUnderline::kStrokeThickness);
-
-  // Endpoints are different if the last grouped tab is active.
-  controller_->AddTab(1, true);
-  controller_->MoveTabIntoGroup(1, group);
-  views[0]->UpdateBounds();
-
-  EXPECT_EQ(underline->x(), TabGroupUnderline::GetStrokeInset());
-  EXPECT_EQ(underline->bounds().right(),
-            tab_strip_->tab_at(1)->bounds().right() +
-                TabGroupUnderline::kStrokeThickness);
-}
-
-TEST_P(TabStripTest, GroupHighlightBasics) {
-  SetMaxTabStripWidth(1000);
-  bounds_animator()->SetAnimationDuration(base::TimeDelta());
-  controller_->AddTab(0, false);
-
-  absl::optional<tab_groups::TabGroupId> group =
-      tab_groups::TabGroupId::GenerateNew();
-  controller_->MoveTabIntoGroup(0, group);
-  CompleteAnimationAndLayout();
-
-  std::vector<TabGroupViews*> views = ListGroupViews();
-  EXPECT_EQ(1u, views.size());
-
-  // The highlight bounds match the group view bounds. Grab this manually
-  // here, since there isn't a real paint cycle to trigger OnPaint().
-  gfx::Rect bounds = views[0]->GetBounds();
-  EXPECT_EQ(bounds.x(), 0);
-  EXPECT_GT(bounds.width(), 0);
-  EXPECT_EQ(bounds.right(), tab_strip_->tab_at(0)->bounds().right());
-  EXPECT_EQ(bounds.height(), tab_strip_->tab_at(0)->bounds().height());
 }
 
 TEST_P(TabStripTest, ChangingLayoutTypeResizesTabs) {
@@ -1191,7 +680,7 @@ TEST_P(TabStripTest, RelayoutAfterDraggedTabBoundsUpdate) {
   controller_->CreateNewTab();
   CompleteAnimationAndLayout();
 
-  int dragged_tab_index = controller_->GetActiveIndex();
+  int dragged_tab_index = tab_strip_->GetActiveIndex();
   Tab* dragged_tab = tab_strip_->tab_at(dragged_tab_index);
   ASSERT_TRUE(dragged_tab);
 
@@ -1204,70 +693,6 @@ TEST_P(TabStripTest, RelayoutAfterDraggedTabBoundsUpdate) {
   SizeChangeObserver view_observer(tab_strip_);
   tab_strip_->GetDragContext()->SetBoundsForDrag(tabs, bounds);
   EXPECT_EQ(1, view_observer.size_change_count);
-}
-
-namespace {
-ui::DropTargetEvent MakeEventForDragLocation(const gfx::Point& p) {
-  return ui::DropTargetEvent({}, gfx::PointF(p), {},
-                             ui::DragDropTypes::DRAG_LINK);
-}
-}  // namespace
-
-TEST_P(TabStripTest, DropIndexForDragLocationIsCorrect) {
-  controller_->AddTab(0, true);
-  controller_->AddTab(1, false);
-  controller_->AddTab(2, false);
-
-  auto group = tab_groups::TabGroupId::GenerateNew();
-  controller_->MoveTabIntoGroup(1, group);
-  controller_->MoveTabIntoGroup(2, group);
-
-  Tab* const tab1 = tab_strip_->tab_at(0);
-  Tab* const tab2 = tab_strip_->tab_at(1);
-  Tab* const tab3 = tab_strip_->tab_at(2);
-
-  TabGroupHeader* const group_header = tab_strip_->group_header(group);
-
-  using DropIndex = BrowserRootView::DropIndex;
-
-  // Check dragging near the edge of each tab.
-  EXPECT_EQ((DropIndex{0, true, false}),
-            tab_strip_->GetDropIndex(MakeEventForDragLocation(
-                tab1->bounds().left_center() + gfx::Vector2d(1, 0))));
-  EXPECT_EQ((DropIndex{1, true, false}),
-            tab_strip_->GetDropIndex(MakeEventForDragLocation(
-                tab1->bounds().right_center() + gfx::Vector2d(-1, 0))));
-  EXPECT_EQ((DropIndex{1, true, true}),
-            tab_strip_->GetDropIndex(MakeEventForDragLocation(
-                tab2->bounds().left_center() + gfx::Vector2d(1, 0))));
-  EXPECT_EQ((DropIndex{2, true, false}),
-            tab_strip_->GetDropIndex(MakeEventForDragLocation(
-                tab2->bounds().right_center() + gfx::Vector2d(-1, 0))));
-  EXPECT_EQ((DropIndex{2, true, false}),
-            tab_strip_->GetDropIndex(MakeEventForDragLocation(
-                tab3->bounds().left_center() + gfx::Vector2d(1, 0))));
-  EXPECT_EQ((DropIndex{3, true, false}),
-            tab_strip_->GetDropIndex(MakeEventForDragLocation(
-                tab3->bounds().right_center() + gfx::Vector2d(-1, 0))));
-
-  // Check dragging in the center of each tab.
-  EXPECT_EQ((DropIndex{0, false, false}),
-            tab_strip_->GetDropIndex(
-                MakeEventForDragLocation(tab1->bounds().CenterPoint())));
-  EXPECT_EQ((DropIndex{1, false, false}),
-            tab_strip_->GetDropIndex(
-                MakeEventForDragLocation(tab2->bounds().CenterPoint())));
-  EXPECT_EQ((DropIndex{2, false, false}),
-            tab_strip_->GetDropIndex(
-                MakeEventForDragLocation(tab3->bounds().CenterPoint())));
-
-  // Check dragging over group header.
-  EXPECT_EQ((DropIndex{1, true, false}),
-            tab_strip_->GetDropIndex(MakeEventForDragLocation(
-                group_header->bounds().left_center() + gfx::Vector2d(1, 0))));
-  EXPECT_EQ((DropIndex{1, true, true}),
-            tab_strip_->GetDropIndex(MakeEventForDragLocation(
-                group_header->bounds().right_center() + gfx::Vector2d(-1, 0))));
 }
 
 // TabStripTestWithScrollingDisabled contains tests that will run with scrolling

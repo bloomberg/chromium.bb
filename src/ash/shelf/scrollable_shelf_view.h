@@ -9,10 +9,10 @@
 
 #include "ash/app_list/views/app_list_drag_and_drop_host.h"
 #include "ash/ash_export.h"
+#include "ash/controls/gradient_layer_delegate.h"
 #include "ash/drag_drop/drag_image_view.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_model.h"
-#include "ash/shelf/gradient_layer_delegate.h"
 #include "ash/shelf/scroll_arrow_view.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_button_delegate.h"
@@ -21,6 +21,7 @@
 #include "ash/shelf/shelf_view.h"
 #include "base/callback_helpers.h"
 #include "base/cancelable_callback.h"
+#include "base/time/time.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/views/animation/ink_drop_host_view.h"
 #include "ui/views/context_menu_controller.h"
@@ -32,8 +33,11 @@ namespace views {
 class FocusSearch;
 }
 
-namespace ash {
+namespace ui {
 class PresentationTimeRecorder;
+}
+
+namespace ash {
 
 class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
                                        public ShelfView::Delegate,
@@ -145,8 +149,8 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   LayoutStrategy layout_strategy_for_test() const { return layout_strategy_; }
   gfx::Vector2dF scroll_offset_for_test() const { return scroll_offset_; }
 
-  int first_tappable_app_index() { return first_tappable_app_index_; }
-  int last_tappable_app_index() { return last_tappable_app_index_; }
+  int first_tappable_app_index() const { return first_tappable_app_index_; }
+  int last_tappable_app_index() const { return last_tappable_app_index_; }
 
   void set_default_last_focusable_child(bool default_last_focusable_child) {
     default_last_focusable_child_ = default_last_focusable_child;
@@ -245,6 +249,7 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   void HandleAccessibleActionScrollToMakeVisible(ShelfButton* button) override;
   std::unique_ptr<ScopedActiveInkDropCount> CreateScopedActiveInkDropCount(
       const ShelfButton* sender) override;
+  void OnButtonWillBeRemoved() override;
 
   // ContextMenuController:
   void ShowContextMenuForViewImpl(views::View* source,
@@ -543,7 +548,7 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   bool layer_clip_in_non_overflow_ = false;
 
   // Records the presentation time for the scrollable shelf dragging.
-  std::unique_ptr<PresentationTimeRecorder> presentation_time_recorder_;
+  std::unique_ptr<ui::PresentationTimeRecorder> presentation_time_recorder_;
 
   base::ScopedClosureRunner force_show_hotseat_resetter_;
 };

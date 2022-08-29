@@ -105,6 +105,15 @@ class GpuBenchmarking : public gin::Wrappable<GpuBenchmarking> {
   // The callback is removed once it's executed.
   bool AddSwapCompletionEventListener(gin::Arguments* args);
 
+  // For Mac only, returns the error code why CoreAnimation Renderer is not used
+  // in the requested frame. It's less efficient when this path is not hit.
+  // See "ui/gfx/ca_layer_result.h" for error codes.
+  int AddCoreAnimationStatusEventListener(gin::Arguments* args);
+
+  // Returns true if the argument is a CanvasImageSource whose image data is
+  // stored on the GPU.
+  bool IsAcceleratedCanvasImageSource(gin::Arguments* args);
+
   base::WeakPtr<RenderFrameImpl> render_frame_;
   mojo::Remote<mojom::InputInjector> input_injector_;
 };

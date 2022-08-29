@@ -5,14 +5,9 @@
 /**
  * @fileoverview Monitors user actions.
  */
-
-goog.provide('UserActionMonitor');
-
-goog.require('KeyCode');
-goog.require('KeySequence');
-goog.require('Output');
-goog.require('PanelCommand');
-goog.require('PanelCommandType');
+import {Output} from '/chromevox/background/output/output.js';
+import {KeySequence} from '/chromevox/common/key_sequence.js';
+import {PanelCommand, PanelCommandType} from '/chromevox/common/panel_command.js';
 
 /**
  * The types of actions we want to monitor.
@@ -32,7 +27,7 @@ const ActionType = {
  * various handlers to intercept user actions before they are processed by the
  * rest of ChromeVox.
  */
-UserActionMonitor = class {
+export class UserActionMonitor {
   /**
    * @param {!Array<UserActionMonitor.ActionInfo>} actionInfos A queue of
    *     expected actions.
@@ -162,7 +157,29 @@ UserActionMonitor = class {
   static closeChromeVox_() {
     (new PanelCommand(PanelCommandType.CLOSE_CHROMEVOX)).send();
   }
-};
+
+  /**
+   * Creates a new user action monitor.
+   * @param {!Array<{
+   *    type: string,
+   *    value: (string|Object),
+   *    beforeActionMsg: (string|undefined),
+   *    afterActionMsg: (string|undefined)
+   * }>} actions
+   * @param {function(): void} callback
+   */
+  static create(actions, callback) {
+    if (UserActionMonitor.instance) {
+      throw 'Error: trying to create a second UserActionMonitor';
+    }
+    UserActionMonitor.instance = new UserActionMonitor(actions, callback);
+  }
+
+  /** Destroys the user action monitor */
+  static destroy() {
+    UserActionMonitor.instance = null;
+  }
+}
 
 /**
  * The key sequence used to close ChromeVox.
@@ -326,6 +343,17 @@ UserActionMonitor.Action = class {
    * @private
    */
   static onCommand_(command) {
-    CommandHandler.onCommand(command);
+    CommandHandlerInterface.instance.onCommand(command);
   }
 };
+
+/** @type {UserActionMonitor} */
+UserActionMonitor.instance;
+
+BridgeHelper.registerHandler(
+    BridgeTargets.USER_ACTION_MONITOR, BridgeActions.CREATE,
+    actions =>
+        new Promise(resolve => UserActionMonitor.create(actions, resolve)));
+BridgeHelper.registerHandler(
+    BridgeTargets.USER_ACTION_MONITOR, BridgeActions.DESTROY,
+    () => UserActionMonitor.destroy());

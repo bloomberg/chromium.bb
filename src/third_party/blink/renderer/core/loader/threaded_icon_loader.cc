@@ -21,6 +21,8 @@
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/scheduler/public/worker_pool.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_copier_base.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_copier_gfx.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 
 namespace blink {
@@ -115,9 +117,6 @@ void ThreadedIconLoader::Start(
 
   ResourceLoaderOptions resource_loader_options(
       execution_context->GetCurrentWorld());
-  if (execution_context->IsWorkerGlobalScope())
-    resource_loader_options.request_initiator_context = kWorkerContext;
-
   threadable_loader_ = MakeGarbageCollected<ThreadableLoader>(
       *execution_context, this, resource_loader_options);
   threadable_loader_->SetTimeout(resource_request.TimeoutInterval());

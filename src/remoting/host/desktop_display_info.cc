@@ -4,9 +4,10 @@
 
 #include "remoting/host/desktop_display_info.h"
 
-#include "base/logging.h"
 #include "build/build_config.h"
 #include "remoting/base/constants.h"
+#include "remoting/base/logging.h"
+#include "remoting/proto/control.pb.h"
 
 namespace remoting {
 
@@ -16,7 +17,7 @@ DesktopDisplayInfo& DesktopDisplayInfo::operator=(DesktopDisplayInfo&&) =
     default;
 DesktopDisplayInfo::~DesktopDisplayInfo() = default;
 
-bool DesktopDisplayInfo::operator==(const DesktopDisplayInfo& other) {
+bool DesktopDisplayInfo::operator==(const DesktopDisplayInfo& other) const {
   if (other.displays_.size() == displays_.size()) {
     for (size_t display = 0; display < displays_.size(); display++) {
       const DisplayGeometry& this_display = displays_[display];
@@ -37,7 +38,7 @@ bool DesktopDisplayInfo::operator==(const DesktopDisplayInfo& other) {
   return false;
 }
 
-bool DesktopDisplayInfo::operator!=(const DesktopDisplayInfo& other) {
+bool DesktopDisplayInfo::operator!=(const DesktopDisplayInfo& other) const {
   return !(*this == other);
 }
 
@@ -61,11 +62,12 @@ void DesktopDisplayInfo::Reset() {
   displays_.clear();
 }
 
-int DesktopDisplayInfo::NumDisplays() {
+int DesktopDisplayInfo::NumDisplays() const {
   return displays_.size();
 }
 
-const DisplayGeometry* DesktopDisplayInfo::GetDisplayInfo(unsigned int id) {
+const DisplayGeometry* DesktopDisplayInfo::GetDisplayInfo(
+    unsigned int id) const {
   if (id < 0 || id >= displays_.size())
     return nullptr;
   return &displays_[id];
@@ -74,7 +76,8 @@ const DisplayGeometry* DesktopDisplayInfo::GetDisplayInfo(unsigned int id) {
 // Calculate the offset from the origin of the desktop to the origin of the
 // specified display.
 //
-// For Mac, the origin of the desktop is the origin of the default display.
+// For Mac and ChromeOS, the origin of the desktop is the origin of the default
+// display.
 //
 // For Windows/Linux, the origin of the desktop is the upper-left of the
 // entire desktop region.
@@ -93,19 +96,19 @@ const DisplayGeometry* DesktopDisplayInfo::GetDisplayInfo(unsigned int id) {
 // x = upper left of desktop
 // a,b,c = origin of display A,B,C
 webrtc::DesktopVector DesktopDisplayInfo::CalcDisplayOffset(
-    webrtc::ScreenId disp_id) {
+    webrtc::ScreenId disp_id) const {
   bool full_desktop = (disp_id == webrtc::kFullDesktopScreenId);
   unsigned int disp_index = disp_id;
 
   if (full_desktop) {
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
     // For Mac, we need to calculate the offset relative to the default
     // display.
     disp_index = 0;
 #else
     // For other platforms, the origin for full desktop is 0,0.
     return webrtc::DesktopVector();
-#endif  // !defined(OS_APPLE)
+#endif  // !BUILDFLAG(IS_APPLE)
   }
 
   if (displays_.size() == 0) {
@@ -131,7 +134,7 @@ webrtc::DesktopVector DesktopDisplayInfo::CalcDisplayOffset(
   }
   webrtc::DesktopVector topleft(dx, dy);
 
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
   // Mac display offsets need to be relative to the main display's origin.
   if (full_desktop) {
     // For full desktop, this is the offset to the topleft display coord.
@@ -141,10 +144,14 @@ webrtc::DesktopVector DesktopDisplayInfo::CalcDisplayOffset(
     // x,y values.
     return origin;
   }
+#elif BUILDFLAG(IS_CHROMEOS)
+  // ChromeOS display offsets need to be relative to the main display's origin,
+  // which is stored in the DisplayGeometry x,y values.
+  return origin;
 #else
   // Return offset to this screen, relative to topleft.
   return origin.subtract(topleft);
-#endif  // defined(OS_APPLE)
+#endif  // BUILDFLAG(IS_APPLE)
 }
 
 void DesktopDisplayInfo::AddDisplay(const DisplayGeometry& display) {
@@ -154,6 +161,7 @@ void DesktopDisplayInfo::AddDisplay(const DisplayGeometry& display) {
 void DesktopDisplayInfo::AddDisplayFrom(
     const protocol::VideoTrackLayout& track) {
   DisplayGeometry display;
+  display.id = track.screen_id();
   display.x = track.position_x();
   display.y = track.position_y();
   display.width = track.width();
@@ -162,6 +170,33 @@ void DesktopDisplayInfo::AddDisplayFrom(
   display.bpp = 24;
   display.is_default = false;
   displays_.push_back(display);
+}
+
+std::unique_ptr<protocol::VideoLayout> DesktopDisplayInfo::GetVideoLayoutProto()
+    const {
+  auto layout = std::make_unique<protocol::VideoLayout>();
+  HOST_LOG << "Displays loaded:";
+  for (const auto& display : displays()) {
+    protocol::VideoTrackLayout* track = layout->add_video_track();
+    track->set_position_x(display.x);
+    track->set_position_y(display.y);
+    track->set_width(display.width);
+    track->set_height(display.height);
+    track->set_x_dpi(display.dpi);
+    track->set_y_dpi(display.dpi);
+    track->set_screen_id(display.id);
+    HOST_LOG << "   Display: " << display.x << "," << display.y << " "
+             << display.width << "x" << display.height << " @ " << display.dpi
+             << ", id=" << display.id;
+  }
+  return layout;
+}
+
+std::ostream& operator<<(std::ostream& out, const DisplayGeometry& geo) {
+  out << "Display " << geo.id << (geo.is_default ? " (primary)" : "") << ": "
+      << geo.x << "+" << geo.y << "-" << geo.width << "x" << geo.height << " @ "
+      << geo.dpi;
+  return out;
 }
 
 }  // namespace remoting

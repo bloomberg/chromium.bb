@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "media/base/mime_util.h"
+
 #include <stddef.h>
 
-#include "base/cxx17_backports.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_command_line.h"
@@ -12,14 +13,13 @@
 #include "media/base/audio_codecs.h"
 #include "media/base/media.h"
 #include "media/base/media_switches.h"
-#include "media/base/mime_util.h"
 #include "media/base/mime_util_internal.h"
 #include "media/base/video_codecs.h"
 #include "media/base/video_color_space.h"
 #include "media/media_buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "base/android/build_info.h"
 #endif
 
@@ -38,7 +38,7 @@ const bool kUsePropCodecs = false;
 // all cases except for when paired with the Opus codec.
 const char kTestMimeType[] = "foo/foo";
 
-#if defined(OS_ANDROID) && BUILDFLAG(USE_PROPRIETARY_CODECS)
+#if BUILDFLAG(IS_ANDROID) && BUILDFLAG(USE_PROPRIETARY_CODECS)
 // HLS is supported on Android API level 14 and higher and Chrome supports
 // API levels 15 and higher, so HLS is always supported on Android.
 const bool kHlsSupported = true;
@@ -53,8 +53,7 @@ static std::vector<bool> CreateTestVector(bool test_all_values,
                                           bool single_value) {
   const bool kTestStates[] = {true, false};
   if (test_all_values)
-    return std::vector<bool>(kTestStates,
-                             kTestStates + base::size(kTestStates));
+    return std::vector<bool>(kTestStates, kTestStates + std::size(kTestStates));
   return std::vector<bool>(1, single_value);
 }
 
@@ -212,7 +211,7 @@ TEST(MimeUtilTest, SplitAndStripCodecs) {
       {",", 2, {"", ""}, {"", ""}},
   };
 
-  for (size_t i = 0; i < base::size(tests); ++i) {
+  for (size_t i = 0; i < std::size(tests); ++i) {
     std::vector<std::string> codecs_out;
 
     SplitCodecs(tests[i].original, &codecs_out);
@@ -506,7 +505,7 @@ TEST(MimeUtilTest, ParseVideoCodecString_SimpleCodecsHaveProfiles) {
   EXPECT_EQ(VideoColorSpace::REC709(), out_colorspace);
 
 // Valid Theora string.
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // Theora not supported on Android.
   EXPECT_FALSE(ParseVideoCodecString("video/ogg", "theora", &out_is_ambiguous,
                                      &out_codec, &out_profile, &out_level,
@@ -588,6 +587,11 @@ TEST(IsCodecSupportedOnAndroidTest, EncryptedCodecBehavior) {
           case MimeUtil::AV1:
             EXPECT_EQ(BUILDFLAG(ENABLE_AV1_DECODER), result);
             break;
+
+          case MimeUtil::DTS:
+          case MimeUtil::DTSXP2:
+            EXPECT_EQ(BUILDFLAG(ENABLE_PLATFORM_DTS_AUDIO), result);
+            break;
         }
       });
 }
@@ -648,6 +652,11 @@ TEST(IsCodecSupportedOnAndroidTest, ClearCodecBehavior) {
 
           case MimeUtil::AV1:
             EXPECT_EQ(BUILDFLAG(ENABLE_AV1_DECODER), result);
+            break;
+
+          case MimeUtil::DTS:
+          case MimeUtil::DTSXP2:
+            EXPECT_EQ(BUILDFLAG(ENABLE_PLATFORM_DTS_AUDIO), result);
             break;
         }
       });

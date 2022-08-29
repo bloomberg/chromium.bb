@@ -21,9 +21,9 @@
 
 #include <spirv/unified1/spirv.hpp>
 
-namespace {
+namespace sw {
 
-vk::Format SpirvFormatToVulkanFormat(spv::ImageFormat format)
+static vk::Format SpirvFormatToVulkanFormat(spv::ImageFormat format)
 {
 	switch(format)
 	{
@@ -73,20 +73,6 @@ vk::Format SpirvFormatToVulkanFormat(spv::ImageFormat format)
 		return VK_FORMAT_UNDEFINED;
 	}
 }
-
-sw::SIMD::Float sRGBtoLinear(sw::SIMD::Float c)
-{
-	sw::SIMD::Float lc = c * sw::SIMD::Float(1.0f / 12.92f);
-	sw::SIMD::Float ec = sw::power((c + sw::SIMD::Float(0.055f)) * sw::SIMD::Float(1.0f / 1.055f), sw::SIMD::Float(2.4f));
-
-	sw::SIMD::Int linear = CmpLT(c, sw::SIMD::Float(0.04045f));
-
-	return rr::As<sw::SIMD::Float>((linear & rr::As<sw::SIMD::Int>(lc)) | (~linear & rr::As<sw::SIMD::Int>(ec)));  // TODO: IfThenElse()
-}
-
-}  // anonymous namespace
-
-namespace sw {
 
 SpirvShader::ImageInstruction::ImageInstruction(InsnIterator insn, const SpirvShader &spirv)
     : ImageInstructionSignature(parseVariantAndMethod(insn))
@@ -225,6 +211,34 @@ SpirvShader::ImageInstruction::ImageInstruction(InsnIterator insn, const SpirvSh
 		imageOperands &= ~spv::ImageOperandsSignExtendMask;
 	}
 
+	[[maybe_unused]] spv::Scope scope = spv::ScopeCrossDevice;  // "Whilst the CrossDevice scope is defined in SPIR-V, it is disallowed in Vulkan."
+
+	if(imageOperands & spv::ImageOperandsMakeTexelAvailableMask)
+	{
+		scope = static_cast<spv::Scope>(insn.word(operandsIndex));
+		operandsIndex += 1;
+		imageOperands &= ~spv::ImageOperandsMakeTexelAvailableMask;
+	}
+
+	if(imageOperands & spv::ImageOperandsMakeTexelVisibleMask)
+	{
+		scope = static_cast<spv::Scope>(insn.word(operandsIndex));
+		operandsIndex += 1;
+		imageOperands &= ~spv::ImageOperandsMakeTexelVisibleMask;
+	}
+
+	if(imageOperands & spv::ImageOperandsNonPrivateTexelMask)
+	{
+		imageOperands &= ~spv::ImageOperandsNonPrivateTexelMask;
+	}
+
+	if(imageOperands & spv::ImageOperandsVolatileTexelMask)
+	{
+		UNIMPLEMENTED("b/176819536");
+		imageOperands &= ~spv::ImageOperandsVolatileTexelMask;
+	}
+
+	// There should be no remaining image operands.
 	if(imageOperands != 0)
 	{
 		UNSUPPORTED("Image operands 0x%08X", imageOperands);
@@ -327,7 +341,7 @@ SpirvShader::EmitResult SpirvShader::EmitImageSample(const ImageInstruction &ins
 
 void SpirvShader::EmitImageSampleUnconditional(Array<SIMD::Float> &out, const ImageInstruction &instruction, EmitState *state) const
 {
-	Pointer<Byte> imageDescriptor = state->getPointer(instruction.imageId).base;  // vk::SampledImageDescriptor*
+	Pointer<Byte> imageDescriptor = state->getPointer(instruction.imageId).getUniformPointer();  // vk::SampledImageDescriptor*
 
 	Pointer<Byte> samplerFunction = lookupSamplerFunction(imageDescriptor, instruction, state);
 
@@ -340,7 +354,7 @@ Pointer<Byte> SpirvShader::lookupSamplerFunction(Pointer<Byte> imageDescriptor, 
 
 	if(instruction.samplerId != 0)
 	{
-		Pointer<Byte> samplerDescriptor = state->getPointer(instruction.samplerId).base;  // vk::SampledImageDescriptor*
+		Pointer<Byte> samplerDescriptor = state->getPointer(instruction.samplerId).getUniformPointer();  // vk::SampledImageDescriptor*
 
 		samplerId = *Pointer<rr::Int>(samplerDescriptor + OFFSET(vk::SampledImageDescriptor, samplerId));  // vk::Sampler::id
 	}
@@ -483,7 +497,7 @@ void SpirvShader::GetImageDimensions(EmitState const *state, Type const &resultT
 	const DescriptorDecorations &d = descriptorDecorations.at(imageId);
 	auto descriptorType = routine->pipelineLayout->getDescriptorType(d.DescriptorSet, d.Binding);
 
-	Pointer<Byte> descriptor = state->getPointer(imageId).base;
+	Pointer<Byte> descriptor = state->getPointer(imageId).getUniformPointer();
 
 	Int width;
 	Int height;
@@ -542,7 +556,7 @@ SpirvShader::EmitResult SpirvShader::EmitImageQueryLevels(InsnIterator insn, Emi
 	const DescriptorDecorations &d = descriptorDecorations.at(imageId);
 	auto descriptorType = state->routine->pipelineLayout->getDescriptorType(d.DescriptorSet, d.Binding);
 
-	Pointer<Byte> descriptor = state->getPointer(imageId).base;
+	Pointer<Byte> descriptor = state->getPointer(imageId).getUniformPointer();
 	Int mipLevels = 0;
 	switch(descriptorType)
 	{
@@ -574,7 +588,7 @@ SpirvShader::EmitResult SpirvShader::EmitImageQuerySamples(InsnIterator insn, Em
 	const DescriptorDecorations &d = descriptorDecorations.at(imageId);
 	auto descriptorType = state->routine->pipelineLayout->getDescriptorType(d.DescriptorSet, d.Binding);
 
-	Pointer<Byte> descriptor = state->getPointer(imageId).base;
+	Pointer<Byte> descriptor = state->getPointer(imageId).getUniformPointer();
 	Int sampleCount = 0;
 	switch(descriptorType)
 	{
@@ -656,7 +670,7 @@ SIMD::Pointer SpirvShader::GetTexelAddress(ImageInstructionSignature instruction
 	if(dim == spv::DimSubpassData)
 	{
 		// Multiview input attachment access is to the layer corresponding to the current view
-		ptrOffset += SIMD::Int(state->routine->viewID) * slicePitch;
+		ptrOffset += SIMD::Int(state->routine->layer) * slicePitch;
 	}
 
 	if(instruction.sample)
@@ -733,7 +747,7 @@ SpirvShader::EmitResult SpirvShader::EmitImageRead(const ImageInstruction &instr
 		imageFormat = VK_FORMAT_S8_UINT;
 	}
 
-	Pointer<Byte> descriptor = state->getPointer(instruction.imageId).base;  // vk::StorageImageDescriptor*
+	Pointer<Byte> descriptor = state->getPointer(instruction.imageId).getUniformPointer();  // vk::StorageImageDescriptor*
 	auto &dst = state->createIntermediate(instruction.resultId, resultType.componentCount);
 
 	// VK_EXT_image_robustness requires replacing out-of-bounds access with zero.
@@ -770,27 +784,24 @@ SpirvShader::EmitResult SpirvShader::EmitImageRead(const ImageInstruction &instr
 	}
 	else if(texelSize == 2)
 	{
-		SIMD::Int offsets = texelPtr.offsets();
 		SIMD::Int mask = state->activeLaneMask() & texelPtr.isInBounds(2, robustness);
 
 		for(int i = 0; i < SIMD::Width; i++)
 		{
 			If(Extract(mask, i) != 0)
 			{
-				packed[0] = Insert(packed[0], Int(*Pointer<Short>(texelPtr.base + Extract(offsets, i))), i);
+				packed[0] = Insert(packed[0], Int(*Pointer<Short>(texelPtr.getPointerForLane(i))), i);
 			}
 		}
 	}
 	else if(texelSize == 1)
 	{
-		SIMD::Int offsets = texelPtr.offsets();
 		SIMD::Int mask = state->activeLaneMask() & texelPtr.isInBounds(1, robustness);
-
 		for(int i = 0; i < SIMD::Width; i++)
 		{
 			If(Extract(mask, i) != 0)
 			{
-				packed[0] = Insert(packed[0], Int(*Pointer<Byte>(texelPtr.base + Extract(offsets, i))), i);
+				packed[0] = Insert(packed[0], Int(*Pointer<Byte>(texelPtr.getPointerForLane(i))), i);
 			}
 		}
 	}
@@ -879,9 +890,9 @@ SpirvShader::EmitResult SpirvShader::EmitImageRead(const ImageInstruction &instr
 		break;
 	case VK_FORMAT_R8G8B8A8_SRGB:
 	case VK_FORMAT_A8B8G8R8_SRGB_PACK32:
-		dst.move(0, ::sRGBtoLinear(SIMD::Float(packed[0] & SIMD::Int(0xFF)) * SIMD::Float(1.0f / 0xFF)));
-		dst.move(1, ::sRGBtoLinear(SIMD::Float((packed[0] >> 8) & SIMD::Int(0xFF)) * SIMD::Float(1.0f / 0xFF)));
-		dst.move(2, ::sRGBtoLinear(SIMD::Float((packed[0] >> 16) & SIMD::Int(0xFF)) * SIMD::Float(1.0f / 0xFF)));
+		dst.move(0, sRGBtoLinear(SIMD::Float(packed[0] & SIMD::Int(0xFF)) * SIMD::Float(1.0f / 0xFF)));
+		dst.move(1, sRGBtoLinear(SIMD::Float((packed[0] >> 8) & SIMD::Int(0xFF)) * SIMD::Float(1.0f / 0xFF)));
+		dst.move(2, sRGBtoLinear(SIMD::Float((packed[0] >> 16) & SIMD::Int(0xFF)) * SIMD::Float(1.0f / 0xFF)));
 		dst.move(3, SIMD::Float((packed[0] >> 24) & SIMD::Int(0xFF)) * SIMD::Float(1.0f / 0xFF));
 		break;
 	case VK_FORMAT_B8G8R8A8_UNORM:
@@ -891,9 +902,9 @@ SpirvShader::EmitResult SpirvShader::EmitImageRead(const ImageInstruction &instr
 		dst.move(3, SIMD::Float((packed[0] >> 24) & SIMD::Int(0xFF)) * SIMD::Float(1.0f / 0xFF));
 		break;
 	case VK_FORMAT_B8G8R8A8_SRGB:
-		dst.move(0, ::sRGBtoLinear(SIMD::Float((packed[0] >> 16) & SIMD::Int(0xFF)) * SIMD::Float(1.0f / 0xFF)));
-		dst.move(1, ::sRGBtoLinear(SIMD::Float((packed[0] >> 8) & SIMD::Int(0xFF)) * SIMD::Float(1.0f / 0xFF)));
-		dst.move(2, ::sRGBtoLinear(SIMD::Float(packed[0] & SIMD::Int(0xFF)) * SIMD::Float(1.0f / 0xFF)));
+		dst.move(0, sRGBtoLinear(SIMD::Float((packed[0] >> 16) & SIMD::Int(0xFF)) * SIMD::Float(1.0f / 0xFF)));
+		dst.move(1, sRGBtoLinear(SIMD::Float((packed[0] >> 8) & SIMD::Int(0xFF)) * SIMD::Float(1.0f / 0xFF)));
+		dst.move(2, sRGBtoLinear(SIMD::Float(packed[0] & SIMD::Int(0xFF)) * SIMD::Float(1.0f / 0xFF)));
 		dst.move(3, SIMD::Float((packed[0] >> 24) & SIMD::Int(0xFF)) * SIMD::Float(1.0f / 0xFF));
 		break;
 	case VK_FORMAT_R8G8B8A8_UINT:
@@ -1068,13 +1079,13 @@ SpirvShader::EmitResult SpirvShader::EmitImageRead(const ImageInstruction &instr
 		dst.move(2, SIMD::Float((packed[0] >> 12) & SIMD::Int(0xF)) * SIMD::Float(1.0f / 0xF));
 		dst.move(3, SIMD::Float((packed[0]) & SIMD::Int(0xF)) * SIMD::Float(1.0f / 0xF));
 		break;
-	case VK_FORMAT_A4R4G4B4_UNORM_PACK16_EXT:
+	case VK_FORMAT_A4R4G4B4_UNORM_PACK16:
 		dst.move(0, SIMD::Float((packed[0] >> 8) & SIMD::Int(0xF)) * SIMD::Float(1.0f / 0xF));
 		dst.move(1, SIMD::Float((packed[0] >> 4) & SIMD::Int(0xF)) * SIMD::Float(1.0f / 0xF));
 		dst.move(2, SIMD::Float((packed[0]) & SIMD::Int(0xF)) * SIMD::Float(1.0f / 0xF));
 		dst.move(3, SIMD::Float((packed[0] >> 12) & SIMD::Int(0xF)) * SIMD::Float(1.0f / 0xF));
 		break;
-	case VK_FORMAT_A4B4G4R4_UNORM_PACK16_EXT:
+	case VK_FORMAT_A4B4G4R4_UNORM_PACK16:
 		dst.move(0, SIMD::Float((packed[0]) & SIMD::Int(0xF)) * SIMD::Float(1.0f / 0xF));
 		dst.move(1, SIMD::Float((packed[0] >> 4) & SIMD::Int(0xF)) * SIMD::Float(1.0f / 0xF));
 		dst.move(2, SIMD::Float((packed[0] >> 8) & SIMD::Int(0xF)) * SIMD::Float(1.0f / 0xF));
@@ -1157,7 +1168,7 @@ SpirvShader::EmitResult SpirvShader::EmitImageWrite(const ImageInstruction &inst
 	texelAndMask[3] = texel.Int(3);
 	texelAndMask[4] = state->activeStoresAndAtomicsMask();
 
-	Pointer<Byte> descriptor = state->getPointer(instruction.imageId).base;  // vk::StorageImageDescriptor*
+	Pointer<Byte> descriptor = state->getPointer(instruction.imageId).getUniformPointer();  // vk::StorageImageDescriptor*
 
 	vk::Format imageFormat = SpirvFormatToVulkanFormat(static_cast<spv::ImageFormat>(instruction.imageFormat));
 
@@ -1212,6 +1223,12 @@ void SpirvShader::WriteImage(ImageInstructionSignature instruction, Pointer<Byte
 		            ((SIMD::UInt(Round(Min(Max(As<SIMD::Float>(texel[1]), SIMD::Float(0.0f)), SIMD::Float(1.0f)) * SIMD::Float(255.0f)))) << 8) |
 		            ((SIMD::UInt(Round(Min(Max(As<SIMD::Float>(texel[0]), SIMD::Float(0.0f)), SIMD::Float(1.0f)) * SIMD::Float(255.0f)))) << 16) |
 		            ((SIMD::UInt(Round(Min(Max(As<SIMD::Float>(texel[3]), SIMD::Float(0.0f)), SIMD::Float(1.0f)) * SIMD::Float(255.0f)))) << 24);
+		break;
+	case VK_FORMAT_B8G8R8A8_SRGB:
+		packed[0] = (SIMD::UInt(Round(Min(Max(linearToSRGB(As<SIMD::Float>(texel[2])), SIMD::Float(0.0f)), SIMD::Float(1.0f)) * SIMD::Float(255.0f)))) |
+		            ((SIMD::UInt(Round(Min(Max(linearToSRGB(As<SIMD::Float>(texel[1])), SIMD::Float(0.0f)), SIMD::Float(1.0f)) * SIMD::Float(255.0f)))) << 8) |
+		            ((SIMD::UInt(Round(Min(Max(linearToSRGB(As<SIMD::Float>(texel[0])), SIMD::Float(0.0f)), SIMD::Float(1.0f)) * SIMD::Float(255.0f)))) << 16) |
+		            ((SIMD::UInt(Round(Min(Max(linearToSRGB(As<SIMD::Float>(texel[3])), SIMD::Float(0.0f)), SIMD::Float(1.0f)) * SIMD::Float(255.0f)))) << 24);
 		break;
 	case VK_FORMAT_R8G8B8A8_SNORM:
 	case VK_FORMAT_A8B8G8R8_SNORM_PACK32:
@@ -1373,27 +1390,25 @@ void SpirvShader::WriteImage(ImageInstructionSignature instruction, Pointer<Byte
 	}
 	else if(texelSize == 2)
 	{
-		SIMD::Int offsets = texelPtr.offsets();
 		mask = mask & texelPtr.isInBounds(2, robustness);
 
 		for(int i = 0; i < SIMD::Width; i++)
 		{
 			If(Extract(mask, i) != 0)
 			{
-				*Pointer<Short>(texelPtr.base + Extract(offsets, i)) = Short(Extract(packed[0], i));
+				*Pointer<Short>(texelPtr.getPointerForLane(i)) = Short(Extract(packed[0], i));
 			}
 		}
 	}
 	else if(texelSize == 1)
 	{
-		SIMD::Int offsets = texelPtr.offsets();
 		mask = mask & texelPtr.isInBounds(1, robustness);
 
 		for(int i = 0; i < SIMD::Width; i++)
 		{
 			If(Extract(mask, i) != 0)
 			{
-				*Pointer<Byte>(texelPtr.base + Extract(offsets, i)) = Byte(Extract(packed[0], i));
+				*Pointer<Byte>(texelPtr.getPointerForLane(i)) = Byte(Extract(packed[0], i));
 			}
 		}
 	}
@@ -1405,7 +1420,7 @@ SpirvShader::EmitResult SpirvShader::EmitImageTexelPointer(const ImageInstructio
 {
 	auto coordinate = Operand(this, state, instruction.coordinateId);
 
-	Pointer<Byte> descriptor = state->getPointer(instruction.imageId).base;  // vk::StorageImageDescriptor*
+	Pointer<Byte> descriptor = state->getPointer(instruction.imageId).getUniformPointer();  // vk::StorageImageDescriptor*
 
 	// VK_EXT_image_robustness requires checking for out-of-bounds accesses.
 	// TODO(b/162327166): Only perform bounds checks when VK_EXT_image_robustness is enabled.

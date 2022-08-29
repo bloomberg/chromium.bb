@@ -9,4 +9,4 @@ setlocal
 set PATH=%PATH%;%~dp0
 
 :: Defer control.
-python "%~dp0\download_from_google_storage.py" %*
+python3 "%~dp0\download_from_google_storage.py" %*

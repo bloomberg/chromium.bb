@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_PREDICTORS_PROXY_LOOKUP_CLIENT_IMPL_H_
 
 #include "base/bind.h"
+#include "base/time/time.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "services/network/public/mojom/proxy_lookup_client.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -49,6 +50,7 @@ class ProxyLookupClientImpl : public network::mojom::ProxyLookupClient {
       const absl::optional<net::ProxyInfo>& proxy_info) override;
 
  private:
+  base::TimeTicks proxy_lookup_start_time_;
   mojo::Receiver<network::mojom::ProxyLookupClient> receiver_{this};
   ProxyLookupCallback callback_;
 };

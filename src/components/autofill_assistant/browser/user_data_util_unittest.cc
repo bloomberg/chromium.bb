@@ -21,6 +21,7 @@
 #include "components/autofill_assistant/browser/client_status.h"
 #include "components/autofill_assistant/browser/mock_website_login_manager.h"
 #include "components/autofill_assistant/browser/service.pb.h"
+#include "components/autofill_assistant/browser/test_util.h"
 #include "components/autofill_assistant/browser/user_data.h"
 #include "components/autofill_assistant/browser/user_model.h"
 #include "components/autofill_assistant/browser/value_util.h"
@@ -273,6 +274,67 @@ TEST(UserDataUtilTest, SortsCompleteAddressesByUseDate) {
   std::vector<int> sorted_indices =
       SortShippingAddressesByCompleteness(options, addresses);
   EXPECT_THAT(sorted_indices, ElementsAre(1, 0));
+}
+
+TEST(UserDataUtilTest, SortsPhoneNumbers) {
+  auto profile_complete = std::make_unique<autofill::AutofillProfile>();
+  autofill::test::SetProfileInfo(profile_complete.get(), "Adam", "", "West",
+                                 "adam.west@gmail.com", "", "", "", "", "", "",
+                                 "", "+1 23 456 789 01");
+
+  auto profile_incomplete = std::make_unique<autofill::AutofillProfile>();
+  profile_incomplete->SetRawInfo(
+      autofill::ServerFieldType::PHONE_HOME_COUNTRY_CODE, u"1");
+
+  // Specify contacts in reverse order to force sorting.
+  std::vector<std::unique_ptr<PhoneNumber>> phone_numbers;
+  phone_numbers.emplace_back(
+      std::make_unique<PhoneNumber>(std::move(profile_incomplete)));
+  phone_numbers.emplace_back(
+      std::make_unique<PhoneNumber>(std::move(profile_complete)));
+
+  CollectUserDataOptions options;
+  options.required_phone_number_data_pieces.push_back(MakeRequiredDataPiece(
+      autofill::ServerFieldType::PHONE_HOME_WHOLE_NUMBER));
+  options.required_phone_number_data_pieces.push_back(MakeRequiredDataPiece(
+      autofill::ServerFieldType::PHONE_HOME_COUNTRY_CODE));
+
+  std::vector<int> sorted_indices =
+      SortPhoneNumbersByCompleteness(options, phone_numbers);
+  EXPECT_THAT(sorted_indices, ElementsAre(1, 0));
+}
+
+TEST(UserDataUtilTest, GetDefaultPhoneNumberSelectionForEmptyList) {
+  std::vector<std::unique_ptr<PhoneNumber>> phone_numbers;
+  CollectUserDataOptions options;
+
+  EXPECT_THAT(GetDefaultPhoneNumber(options, phone_numbers), -1);
+}
+
+TEST(UserDataUtilTest, GetDefaultPhoneNumberSelection) {
+  auto profile_complete = std::make_unique<autofill::AutofillProfile>();
+  autofill::test::SetProfileInfo(profile_complete.get(), "Adam", "", "West",
+                                 "adam.west@gmail.com", "", "", "", "", "", "",
+                                 "", "+1 23 456 789 01");
+
+  auto profile_incomplete = std::make_unique<autofill::AutofillProfile>();
+  profile_incomplete->SetRawInfo(
+      autofill::ServerFieldType::PHONE_HOME_COUNTRY_CODE, u"1");
+
+  // Specify contacts in reverse order to force sorting.
+  std::vector<std::unique_ptr<PhoneNumber>> phone_numbers;
+  phone_numbers.emplace_back(
+      std::make_unique<PhoneNumber>(std::move(profile_incomplete)));
+  phone_numbers.emplace_back(
+      std::make_unique<PhoneNumber>(std::move(profile_complete)));
+
+  CollectUserDataOptions options;
+  options.required_phone_number_data_pieces.push_back(MakeRequiredDataPiece(
+      autofill::ServerFieldType::PHONE_HOME_WHOLE_NUMBER));
+  options.required_phone_number_data_pieces.push_back(MakeRequiredDataPiece(
+      autofill::ServerFieldType::PHONE_HOME_COUNTRY_CODE));
+
+  EXPECT_THAT(GetDefaultPhoneNumber(options, phone_numbers), 1);
 }
 
 TEST(UserDataUtilTest, SortsAddressesByEditorCompleteness) {
@@ -571,116 +633,6 @@ TEST(UserDataUtilTest, GetDefaultSelectionForCompletePaymentInstruments) {
   EXPECT_THAT(GetDefaultPaymentInstrument(options, payment_instruments), 1);
 }
 
-TEST(UserDataUtilTest, CompareContactDetailsMatch) {
-  autofill::AutofillProfile profile_a;
-  autofill::test::SetProfileInfo(&profile_a, "Adam", "", "West",
-                                 "adam.west@gmail.com", "", "", "", "", "", "",
-                                 "", "+41");
-
-  autofill::AutofillProfile profile_b;
-  autofill::test::SetProfileInfo(&profile_b, "Adam", "", "West",
-                                 "adam.west@gmail.com", "", "", "", "", "", "",
-                                 "", "+41");
-
-  CollectUserDataOptions options;
-  options.request_payer_name = true;
-  options.request_payer_email = true;
-  options.request_payer_phone = true;
-
-  EXPECT_TRUE(CompareContactDetails(options, &profile_a, &profile_b));
-}
-
-TEST(UserDataUtilTest, CompareContactDetailsMismatchForNoChecks) {
-  autofill::AutofillProfile profile_a;
-  autofill::test::SetProfileInfo(&profile_a, "Adam", "", "West",
-                                 "adam.west@gmail.com", "", "", "", "", "", "",
-                                 "", "+41");
-
-  autofill::AutofillProfile profile_b;
-  autofill::test::SetProfileInfo(&profile_b, "Adam", "", "West",
-                                 "adam.west@gmail.com", "", "", "", "", "", "",
-                                 "", "+41");
-
-  CollectUserDataOptions options;
-
-  EXPECT_FALSE(CompareContactDetails(options, &profile_a, &profile_b));
-}
-
-TEST(UserDataUtilTest, CompareContactDetailsMismatches) {
-  autofill::AutofillProfile profile_truth;
-  autofill::test::SetProfileInfo(&profile_truth, "Adam", "", "West",
-                                 "adam.west@gmail.com", "", "", "", "", "", "",
-                                 "", "+41");
-
-  autofill::AutofillProfile profile_mismatching_name;
-  autofill::test::SetProfileInfo(&profile_mismatching_name, "Berta", "", "West",
-                                 "adam.west@gmail.com", "", "", "", "", "", "",
-                                 "", "+41");
-
-  autofill::AutofillProfile profile_mismatching_email;
-  autofill::test::SetProfileInfo(&profile_mismatching_email, "Adam", "", "West",
-                                 "berta.west@gmail.com", "", "", "", "", "", "",
-                                 "", "+41");
-
-  autofill::AutofillProfile profile_mismatching_phone;
-  autofill::test::SetProfileInfo(&profile_mismatching_name, "Adam", "", "West",
-                                 "adam.west@gmail.com", "", "", "", "", "", "",
-                                 "", "+44");
-
-  CollectUserDataOptions options;
-  options.request_payer_name = true;
-  options.request_payer_email = true;
-  options.request_payer_phone = true;
-
-  EXPECT_FALSE(CompareContactDetails(options, &profile_truth,
-                                     &profile_mismatching_name));
-  EXPECT_FALSE(CompareContactDetails(options, &profile_truth,
-                                     &profile_mismatching_email));
-  EXPECT_FALSE(CompareContactDetails(options, &profile_truth,
-                                     &profile_mismatching_phone));
-}
-
-TEST(UserDataUtilTest, CompareContactDetailsMatchesForUnqueriedFields) {
-  autofill::AutofillProfile profile_truth;
-  autofill::test::SetProfileInfo(&profile_truth, "Adam", "", "West",
-                                 "adam.west@gmail.com", "", "", "", "", "", "",
-                                 "", "+41");
-
-  autofill::AutofillProfile profile_mismatching_name;
-  autofill::test::SetProfileInfo(&profile_mismatching_name, "Berta", "", "West",
-                                 "adam.west@gmail.com", "", "", "", "", "", "",
-                                 "", "+41");
-
-  autofill::AutofillProfile profile_mismatching_email;
-  autofill::test::SetProfileInfo(&profile_mismatching_email, "Adam", "", "West",
-                                 "berta.west@gmail.com", "", "", "", "", "", "",
-                                 "", "+41");
-
-  autofill::AutofillProfile profile_mismatching_phone;
-  autofill::test::SetProfileInfo(&profile_mismatching_phone, "Adam", "", "West",
-                                 "adam.west@gmail.com", "", "", "", "", "", "",
-                                 "", "+44");
-
-  CollectUserDataOptions options_no_check_name;
-  options_no_check_name.request_payer_email = true;
-  options_no_check_name.request_payer_phone = true;
-
-  CollectUserDataOptions options_no_check_email;
-  options_no_check_email.request_payer_name = true;
-  options_no_check_email.request_payer_phone = true;
-
-  CollectUserDataOptions options_no_check_phone;
-  options_no_check_phone.request_payer_name = true;
-  options_no_check_phone.request_payer_email = true;
-
-  EXPECT_TRUE(CompareContactDetails(options_no_check_name, &profile_truth,
-                                    &profile_mismatching_name));
-  EXPECT_TRUE(CompareContactDetails(options_no_check_email, &profile_truth,
-                                    &profile_mismatching_email));
-  EXPECT_TRUE(CompareContactDetails(options_no_check_phone, &profile_truth,
-                                    &profile_mismatching_phone));
-}
-
 TEST(UserDataUtilTest, ContactCompletenessNotRequired) {
   CollectUserDataOptions not_required_options;
   EXPECT_THAT(GetContactValidationErrors(nullptr, not_required_options),
@@ -761,6 +713,30 @@ TEST(UserDataUtilTest, ContactCompletenessRequirePhone) {
   autofill::test::SetProfileInfo(&contact, "", "", "", "", "", "", "", "", "",
                                  "", "", "+41 79 123 45 67");
   EXPECT_THAT(GetContactValidationErrors(&contact, require_phone_options),
+              IsEmpty());
+}
+
+TEST(UserDataUtilTest, CompletePhoneNumberNotRequired) {
+  CollectUserDataOptions not_required_options;
+  not_required_options.request_phone_number_separately = false;
+
+  EXPECT_THAT(GetPhoneNumberValidationErrors(nullptr, not_required_options),
+              IsEmpty());
+}
+
+TEST(UserDataUtilTest, CompletePhoneNumber) {
+  autofill::AutofillProfile phone_number;
+  CollectUserDataOptions options;
+  options.required_phone_number_data_pieces.push_back(MakeRequiredDataPiece(
+      autofill::ServerFieldType::PHONE_HOME_WHOLE_NUMBER));
+
+  EXPECT_THAT(GetPhoneNumberValidationErrors(nullptr, options),
+              ElementsAre("14"));
+  autofill::test::SetProfileInfo(&phone_number, /* first_name= */ "",
+                                 /* middle_name= */ "",
+                                 /* last_name= */ "", "", "", "", "", "", "",
+                                 "", "", "+41");
+  EXPECT_THAT(GetPhoneNumberValidationErrors(&phone_number, options),
               IsEmpty());
 }
 
@@ -1017,6 +993,8 @@ class UserDataUtilTextValueTest : public testing::Test {
 
     ON_CALL(mock_action_delegate_, GetUserData)
         .WillByDefault(Return(&user_data_));
+    ON_CALL(mock_action_delegate_, GetUserModel)
+        .WillByDefault(Return(&user_model_));
     ON_CALL(mock_action_delegate_, GetWebsiteLoginManager)
         .WillByDefault(Return(&mock_website_login_manager_));
   }
@@ -1284,8 +1262,8 @@ TEST_F(UserDataUtilTextValueTest, GetUsername) {
   user_data_.selected_login_ = absl::make_optional<WebsiteLoginManager::Login>(
       GURL("https://www.example.com"), "username");
 
-  ElementFinder::Result element;
-  element.container_frame_host = web_contents_->GetMainFrame();
+  ElementFinderResult element;
+  element.SetRenderFrameHost(web_contents_->GetPrimaryMainFrame());
 
   PasswordManagerValue password_manager_value;
   password_manager_value.set_credential_type(PasswordManagerValue::USERNAME);
@@ -1302,8 +1280,8 @@ TEST_F(UserDataUtilTextValueTest, GetStoredPassword) {
   user_data_.selected_login_ = absl::make_optional<WebsiteLoginManager::Login>(
       GURL("https://www.example.com"), "username");
 
-  ElementFinder::Result element;
-  element.container_frame_host = web_contents_->GetMainFrame();
+  ElementFinderResult element;
+  element.SetRenderFrameHost(web_contents_->GetPrimaryMainFrame());
 
   PasswordManagerValue password_manager_value;
   password_manager_value.set_credential_type(PasswordManagerValue::PASSWORD);
@@ -1322,10 +1300,10 @@ TEST_F(UserDataUtilTextValueTest, GetStoredPasswordFails) {
   user_data_.selected_login_ = absl::make_optional<WebsiteLoginManager::Login>(
       GURL("https://www.example.com"), "username");
 
-  ElementFinder::Result element;
+  ElementFinderResult element;
   content::WebContentsTester::For(web_contents_.get())
       ->NavigateAndCommit(GURL("https://www.example.com"));
-  element.container_frame_host = web_contents_->GetMainFrame();
+  element.SetRenderFrameHost(web_contents_->GetPrimaryMainFrame());
 
   PasswordManagerValue password_manager_value;
   password_manager_value.set_credential_type(PasswordManagerValue::PASSWORD);
@@ -1342,26 +1320,61 @@ TEST_F(UserDataUtilTextValueTest, GetStoredPasswordFails) {
                                          base::Unretained(this)));
 }
 
-TEST_F(UserDataUtilTextValueTest, ClientMemoryKey) {
+TEST_F(UserDataUtilTextValueTest, ClientMemoryKeyFromUserData) {
   user_data_.SetAdditionalValue("key", SimpleValue(std::string("Hello World")));
 
   std::string result;
-  EXPECT_TRUE(GetClientMemoryStringValue("key", &user_data_, &result).ok());
+  EXPECT_TRUE(
+      GetClientMemoryStringValue("key", &user_data_, &user_model_, &result)
+          .ok());
+  EXPECT_EQ(result, "Hello World");
+}
+
+TEST_F(UserDataUtilTextValueTest, ClientMemoryKeyFromUserModel) {
+  user_model_.SetValue("key", SimpleValue(std::string("Hello World")));
+
+  std::string result;
+  EXPECT_TRUE(
+      GetClientMemoryStringValue("key", &user_data_, &user_model_, &result)
+          .ok());
+  EXPECT_EQ(result, "Hello World");
+}
+
+TEST_F(UserDataUtilTextValueTest, ClientMemoryValueDifferentInDataAndModel) {
+  user_data_.SetAdditionalValue(
+      "key", SimpleValue(std::string("Hello from UserData")));
+  user_model_.SetValue("key", SimpleValue(std::string("Hello from UserModel")));
+
+  std::string result;
+  EXPECT_EQ(PRECONDITION_FAILED, GetClientMemoryStringValue(
+                                     "key", &user_data_, &user_model_, &result)
+                                     .proto_status());
+}
+
+TEST_F(UserDataUtilTextValueTest, ClientMemoryValueDuplicateInDataAndModel) {
+  user_data_.SetAdditionalValue("key", SimpleValue(std::string("Hello World")));
+  user_model_.SetValue("key", SimpleValue(std::string("Hello World")));
+
+  std::string result;
+  EXPECT_TRUE(
+      GetClientMemoryStringValue("key", &user_data_, &user_model_, &result)
+          .ok());
   EXPECT_EQ(result, "Hello World");
 }
 
 TEST_F(UserDataUtilTextValueTest, EmptyClientMemoryKey) {
   std::string result;
   EXPECT_EQ(INVALID_ACTION,
-            GetClientMemoryStringValue(std::string(), &user_data_, &result)
+            GetClientMemoryStringValue(std::string(), &user_data_, &user_model_,
+                                       &result)
                 .proto_status());
 }
 
 TEST_F(UserDataUtilTextValueTest, NonExistingClientMemoryKey) {
   std::string result;
-  EXPECT_EQ(
-      PRECONDITION_FAILED,
-      GetClientMemoryStringValue("key", &user_data_, &result).proto_status());
+  EXPECT_EQ(PRECONDITION_FAILED, GetClientMemoryStringValue(
+                                     "key", &user_data_, &user_model_, &result)
+                                     .proto_status());
 }
 
 TEST_F(UserDataUtilTextValueTest, TextValueText) {
@@ -1370,7 +1383,7 @@ TEST_F(UserDataUtilTextValueTest, TextValueText) {
 
   EXPECT_CALL(*this, OnResult(EqualsStatus(OkClientStatus()), "text"));
 
-  ResolveTextValue(text_value, ElementFinder::Result(), &mock_action_delegate_,
+  ResolveTextValue(text_value, ElementFinderResult(), &mock_action_delegate_,
                    base::BindOnce(&UserDataUtilTextValueTest::OnResult,
                                   base::Unretained(this)));
 }
@@ -1394,7 +1407,7 @@ TEST_F(UserDataUtilTextValueTest, TextValueAutofillValue) {
 
   EXPECT_CALL(*this, OnResult(EqualsStatus(OkClientStatus()), "John"));
 
-  ResolveTextValue(text_value, ElementFinder::Result(), &mock_action_delegate_,
+  ResolveTextValue(text_value, ElementFinderResult(), &mock_action_delegate_,
                    base::BindOnce(&UserDataUtilTextValueTest::OnResult,
                                   base::Unretained(this)));
 }
@@ -1403,10 +1416,10 @@ TEST_F(UserDataUtilTextValueTest, TextValuePasswordManagerValue) {
   user_data_.selected_login_ = absl::make_optional<WebsiteLoginManager::Login>(
       GURL("https://www.example.com"), "username");
 
-  ElementFinder::Result element;
+  ElementFinderResult element;
   content::WebContentsTester::For(web_contents_.get())
       ->NavigateAndCommit(GURL("https://www.example.com"));
-  element.container_frame_host = web_contents_->GetMainFrame();
+  element.SetRenderFrameHost(web_contents_->GetPrimaryMainFrame());
 
   TextValue text_value;
   text_value.mutable_password_manager_value()->set_credential_type(
@@ -1429,7 +1442,7 @@ TEST_F(UserDataUtilTextValueTest, TextValueClientMemoryKey) {
 
   EXPECT_CALL(*this, OnResult(EqualsStatus(OkClientStatus()), "Hello World"));
 
-  ResolveTextValue(text_value, ElementFinder::Result(), &mock_action_delegate_,
+  ResolveTextValue(text_value, ElementFinderResult(), &mock_action_delegate_,
                    base::BindOnce(&UserDataUtilTextValueTest::OnResult,
                                   base::Unretained(this)));
 }
@@ -1468,6 +1481,22 @@ TEST_F(UserDataUtilTextValueTest, GetAddressFieldBitArray) {
           Metrics::AutofillAssistantProfileFields::PHONE_HOME_COUNTRY_CODE |
           Metrics::AutofillAssistantProfileFields::PHONE_HOME_WHOLE_NUMBER,
       GetFieldBitArrayForAddress(&full_profile));
+
+  autofill::AutofillProfile contact_profile;
+  autofill::test::SetProfileInfo(&contact_profile, "Adam", "", "West", "", "",
+                                 "", "", "", "", "", "", "");
+  autofill::AutofillProfile number_profile;
+  autofill::test::SetProfileInfo(&number_profile, "", "", "", "", "", "", "",
+                                 "", "", "", "", "+1 23 456 789 01");
+  EXPECT_EQ(
+      Metrics::AutofillAssistantProfileFields::NAME_FIRST |
+          Metrics::AutofillAssistantProfileFields::NAME_LAST |
+          Metrics::AutofillAssistantProfileFields::NAME_FULL |
+          Metrics::AutofillAssistantProfileFields::PHONE_HOME_NUMBER |
+          Metrics::AutofillAssistantProfileFields::PHONE_HOME_COUNTRY_CODE |
+          Metrics::AutofillAssistantProfileFields::PHONE_HOME_WHOLE_NUMBER,
+      GetFieldBitArrayForAddressAndPhoneNumber(&contact_profile,
+                                               &number_profile));
 }
 
 TEST_F(UserDataUtilTextValueTest, GetCreditCardFieldBitArray) {
@@ -1511,6 +1540,175 @@ TEST_F(UserDataUtilTextValueTest, GetCreditCardFieldBitArray) {
           Metrics::AutofillAssistantCreditCardFields::MASKED |
           Metrics::AutofillAssistantCreditCardFields::VALID_NUMBER,
       GetFieldBitArrayForCreditCard(&masked));
+}
+
+TEST_F(UserDataUtilTextValueTest, ResolveSelectorUserData) {
+  autofill::AutofillProfile contact(base::GenerateGUID(),
+                                    autofill::test::kEmptyOrigin);
+  autofill::test::SetProfileInfo(&contact, "Jo.h*n", /* middle name */ "",
+                                 "Doe", "", "", "", "", "", "", "", "", "");
+  user_model_.SetSelectedAutofillProfile(
+      "contact", std::make_unique<autofill::AutofillProfile>(contact),
+      &user_data_);
+
+  SelectorProto selector;
+  selector.add_filters()->set_css_selector("#test");
+
+  auto* filter = selector.add_filters();
+  auto* value = filter->mutable_property()->mutable_autofill_value_regexp();
+  value->mutable_profile()->set_identifier("contact");
+  auto* expression =
+      value->mutable_value_expression_re2()->mutable_value_expression();
+  expression->add_chunk()->set_text("My name is ");
+  expression->add_chunk()->set_key(
+      static_cast<int>(autofill::ServerFieldType::NAME_LAST));
+  expression->add_chunk()->set_text(", ");
+  expression->add_chunk()->set_key(
+      static_cast<int>(autofill::ServerFieldType::NAME_FIRST));
+  expression->add_chunk()->set_text(" ");
+  expression->add_chunk()->set_key(
+      static_cast<int>(autofill::ServerFieldType::NAME_LAST));
+
+  selector.add_filters()->mutable_enter_frame();
+  selector.add_filters()->mutable_nth_match()->set_index(0);
+  SelectorProto copy = selector;
+
+  ClientStatus status = ResolveSelectorUserData(&selector, &user_data_);
+
+  ASSERT_TRUE(status.ok());
+  ASSERT_EQ(selector.filters(1).property().text_filter().re2(),
+            "My name is Doe, Jo\\.h\\*n Doe");
+  ASSERT_EQ(selector.filters().size(), copy.filters().size());
+
+  // Other filters should remain unchanged
+  ASSERT_EQ(selector.filters(0), copy.filters(0));
+  ASSERT_EQ(selector.filters(2), copy.filters(2));
+  ASSERT_EQ(selector.filters(3), copy.filters(3));
+}
+
+TEST_F(UserDataUtilTextValueTest, ResolveSelectorUserDataError) {
+  autofill::AutofillProfile contact(base::GenerateGUID(),
+                                    autofill::test::kEmptyOrigin);
+  autofill::test::SetProfileInfo(&contact, "Jo.h*n", /* middle name */ "",
+                                 "Doe", "", "", "", "", "", "", "", "", "");
+  user_model_.SetSelectedAutofillProfile(
+      "contact", std::make_unique<autofill::AutofillProfile>(contact),
+      &user_data_);
+
+  SelectorProto selector;
+  selector.add_filters()->set_css_selector("#test");
+
+  auto* filter = selector.add_filters();
+  auto* value = filter->mutable_property()->mutable_autofill_value_regexp();
+  value->mutable_profile()->set_identifier("contact");
+  auto* expression =
+      value->mutable_value_expression_re2()->mutable_value_expression();
+  expression->add_chunk()->set_key(
+      static_cast<int>(autofill::ServerFieldType::NAME_MIDDLE));
+
+  ClientStatus status = ResolveSelectorUserData(&selector, &user_data_);
+
+  ASSERT_FALSE(status.ok());
+}
+
+TEST(UserDataUtilTest, InsertNewContactToList) {
+  autofill::AutofillProfile new_profile;
+  autofill::test::SetProfileInfo(&new_profile, "Adam", "", "West",
+                                 "adam.west@gmail.com", "", "", "", "", "", "",
+                                 "", "");
+
+  std::unique_ptr<autofill::AutofillProfile> old_profile =
+      std::make_unique<autofill::AutofillProfile>();
+  autofill::test::SetProfileInfo(old_profile.get(), "Berta", "", "West",
+                                 "berta.west@gmail.com", "", "", "", "", "", "",
+                                 "", "");
+
+  std::vector<std::unique_ptr<Contact>> list;
+  list.emplace_back(std::make_unique<Contact>(std::move(old_profile)));
+
+  UpsertContact(new_profile, list);
+
+  ASSERT_EQ(list.size(), 2u);
+  EXPECT_EQ(list[1]->profile->guid(), new_profile.guid());
+  EXPECT_EQ(list[1]->identifier, new_profile.guid());
+  EXPECT_EQ(list[0]->profile->GetInfo(autofill::NAME_FIRST, "en-US"), u"Berta");
+  EXPECT_EQ(list[1]->profile->GetInfo(autofill::NAME_FIRST, "en-US"), u"Adam");
+}
+
+TEST(UserDataUtilTest, UpdateExistingContactInList) {
+  autofill::AutofillProfile updated_profile;
+  autofill::test::SetProfileInfo(&updated_profile, "Adam", "B.", "West",
+                                 "adam.west@gmail.com", "", "", "", "", "", "",
+                                 "", "");
+
+  std::unique_ptr<autofill::AutofillProfile> old_profile =
+      std::make_unique<autofill::AutofillProfile>();
+  old_profile->set_guid(updated_profile.guid());
+  autofill::test::SetProfileInfo(old_profile.get(), "Adam", "", "West",
+                                 "adam.west@gmail.com", "", "", "", "", "", "",
+                                 "", "");
+
+  std::vector<std::unique_ptr<Contact>> list;
+  list.emplace_back(std::make_unique<Contact>(std::move(old_profile)));
+
+  EXPECT_EQ(list[0]->profile->GetInfo(autofill::NAME_MIDDLE, "en-US"), u"");
+  UpsertContact(updated_profile, list);
+
+  ASSERT_EQ(list.size(), 1u);
+  EXPECT_EQ(list[0]->profile->guid(), updated_profile.guid());
+  EXPECT_EQ(list[0]->profile->GetInfo(autofill::NAME_MIDDLE, "en-US"), u"B.");
+}
+
+TEST(UserDataUtilTest, InsertNewPhoneNumberToList) {
+  autofill::AutofillProfile new_profile;
+  autofill::test::SetProfileInfo(&new_profile, "", "", "", "", "", "", "", "",
+                                 "", "", "", "+41441234567");
+
+  std::unique_ptr<autofill::AutofillProfile> old_profile =
+      std::make_unique<autofill::AutofillProfile>();
+  autofill::test::SetProfileInfo(old_profile.get(), "", "", "", "", "", "", "",
+                                 "", "", "", "", "+4144765432");
+
+  std::vector<std::unique_ptr<Contact>> list;
+  list.emplace_back(std::make_unique<Contact>(std::move(old_profile)));
+
+  UpsertContact(new_profile, list);
+
+  ASSERT_EQ(list.size(), 2u);
+  EXPECT_EQ(list[1]->profile->guid(), new_profile.guid());
+  EXPECT_EQ(list[1]->identifier, new_profile.guid());
+  EXPECT_EQ(
+      list[0]->profile->GetInfo(autofill::PHONE_HOME_WHOLE_NUMBER, "en-US"),
+      u"+4144765432");
+  EXPECT_EQ(
+      list[1]->profile->GetInfo(autofill::PHONE_HOME_WHOLE_NUMBER, "en-US"),
+      u"+41441234567");
+}
+
+TEST(UserDataUtilTest, UpdateExistingPhoneNumberInList) {
+  autofill::AutofillProfile updated_profile;
+  autofill::test::SetProfileInfo(&updated_profile, "", "", "", "", "", "", "",
+                                 "", "", "", "", "+41441234567");
+
+  std::unique_ptr<autofill::AutofillProfile> old_profile =
+      std::make_unique<autofill::AutofillProfile>();
+  old_profile->set_guid(updated_profile.guid());
+  autofill::test::SetProfileInfo(old_profile.get(), "", "", "", "", "", "", "",
+                                 "", "", "", "", "+4144765432");
+
+  std::vector<std::unique_ptr<Contact>> list;
+  list.emplace_back(std::make_unique<Contact>(std::move(old_profile)));
+
+  EXPECT_EQ(
+      list[0]->profile->GetInfo(autofill::PHONE_HOME_WHOLE_NUMBER, "en-US"),
+      u"+4144765432");
+  UpsertContact(updated_profile, list);
+
+  ASSERT_EQ(list.size(), 1u);
+  EXPECT_EQ(list[0]->profile->guid(), updated_profile.guid());
+  EXPECT_EQ(
+      list[0]->profile->GetInfo(autofill::PHONE_HOME_WHOLE_NUMBER, "en-US"),
+      u"+41441234567");
 }
 
 }  // namespace

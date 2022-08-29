@@ -20,29 +20,27 @@ struct AnnotatorTool;
 
 // Handles communication with the Annotator WebUI (i.e.
 // chrome://projector/annotator/annotator_embedder.html)
-class AnnotatorMessageHandler : public content::WebUIMessageHandler,
-                                public ProjectorAnnotatorController {
+class AnnotatorMessageHandler : public content::WebUIMessageHandler {
  public:
   AnnotatorMessageHandler();
   AnnotatorMessageHandler(const AnnotatorMessageHandler&) = delete;
   AnnotatorMessageHandler& operator=(const AnnotatorMessageHandler&) = delete;
   ~AnnotatorMessageHandler() override;
 
-  // ProjectorAnnotatorController:
-  void SetTool(const AnnotatorTool& tool) override;
-  void Undo() override;
-  void Redo() override;
-  void Clear() override;
-
   // content::WebUIMessageHandler:
   void RegisterMessages() override;
 
+  void SetTool(const AnnotatorTool& tool);
+  void Undo();
+  void Redo();
+  void Clear();
   void set_web_ui_for_test(content::WebUI* web_ui) { set_web_ui(web_ui); }
 
  private:
-  void OnToolSet(base::Value::ConstListView args);
-  void OnUndoRedoAvailabilityChanged(base::Value::ConstListView args);
-  void OnError(base::Value::ConstListView args);
+  void OnToolSet(const base::Value::List& args);
+  void OnUndoRedoAvailabilityChanged(const base::Value::List& args);
+  void OnCanvasInitialized(const base::Value::List& args);
+  void OnError(const base::Value::List& args);
 };
 
 }  // namespace ash

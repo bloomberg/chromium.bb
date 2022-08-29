@@ -8,7 +8,6 @@
 #include "base/process/kill.h"
 #include "base/test/bind.h"
 #include "build/build_config.h"
-#include "build/chromeos_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -27,7 +26,6 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/page_type.h"
@@ -79,7 +77,7 @@ class ZoomControllerBrowserTest : public InProcessBrowserTest {
   }
 };  // ZoomControllerBrowserTest
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #define MAYBE_CrashedTabsDoNotChangeZoom DISABLED_CrashedTabsDoNotChangeZoom
 #else
 #define MAYBE_CrashedTabsDoNotChangeZoom CrashedTabsDoNotChangeZoom
@@ -96,15 +94,15 @@ IN_PROC_BROWSER_TEST_F(ZoomControllerBrowserTest,
   double old_zoom_level = zoom_controller->GetZoomLevel();
   double new_zoom_level = old_zoom_level + 0.5;
 
-  content::RenderProcessHost* host = web_contents->GetMainFrame()->GetProcess();
+  content::RenderProcessHost* host =
+      web_contents->GetPrimaryMainFrame()->GetProcess();
   {
     content::RenderProcessHostWatcher crash_observer(
         host, content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
     host->Shutdown(0);
     crash_observer.Wait();
   }
-  EXPECT_FALSE(
-      web_contents->GetMainFrame()->GetRenderViewHost()->IsRenderViewLive());
+  EXPECT_FALSE(web_contents->GetPrimaryMainFrame()->IsRenderFrameLive());
 
   // The following attempt to change the zoom level for a crashed tab should
   // fail.
@@ -261,7 +259,7 @@ IN_PROC_BROWSER_TEST_F(ZoomControllerBrowserTest, NavigationResetsManualMode) {
 }
 
 // Mac does not have touchscreen pinch.
-#if !defined(OS_MAC)
+#if !BUILDFLAG(IS_MAC)
 // Ensure that when a history navigation restores the page scale factor from a
 // previous pinch zoom, the browser is notified of the page scale restoration.
 IN_PROC_BROWSER_TEST_F(ZoomControllerBrowserTest,
@@ -338,10 +336,10 @@ IN_PROC_BROWSER_TEST_F(ZoomControllerBrowserTest,
   EXPECT_TRUE(chrome::CanResetZoom(web_contents));
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_ZOOM_NORMAL));
 }
-#endif  // !defined(OS_MAC)
+#endif  // !BUILDFLAG(IS_MAC)
 
 // TODO(https://crbug.com/1260291): Add support for Lacros.
-#if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)
+#if !BUILDFLAG(IS_CHROMEOS)
 // Regression test: crbug.com/438979.
 IN_PROC_BROWSER_TEST_F(ZoomControllerBrowserTest,
                        SettingsZoomAfterSigninWorks) {
@@ -395,7 +393,7 @@ IN_PROC_BROWSER_TEST_F(ZoomControllerBrowserTest,
   zoom_controller->SetZoomLevel(new_zoom_level);
   zoom_change_watcher.Wait();
 }
-#endif  // !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)
+#endif  // !BUILDFLAG(IS_CHROMEOS)
 
 class ZoomControllerForPrerenderingTest : public ZoomControllerBrowserTest,
                                           public zoom::ZoomObserver {

@@ -15,8 +15,10 @@
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/observer_list.h"
 #include "base/one_shot_event.h"
 #include "base/ranges/algorithm.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -43,6 +45,7 @@
 #include "extensions/browser/unloaded_extension_reason.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/common/permissions/permissions_data.h"
 
 ToolbarActionsModel::ToolbarActionsModel(
     Profile* profile,
@@ -226,9 +229,26 @@ ToolbarActionsModel::GetExtensionMessageBubbleController(Browser* browser) {
   return controller;
 }
 
-const std::string& ToolbarActionsModel::GetExtensionName(
+const std::u16string ToolbarActionsModel::GetExtensionName(
     const ActionId& action_id) const {
-  return extension_registry_->enabled_extensions().GetByID(action_id)->name();
+  return base::UTF8ToUTF16(
+      extension_registry_->enabled_extensions().GetByID(action_id)->name());
+}
+
+bool ToolbarActionsModel::IsRestrictedUrl(const GURL& url) const {
+  // We consider a site to be restricted if it's restricted for every
+  // extension in the toolbar. This can vary based on the extensions
+  // installed - if the user has an extension that can execute script
+  // everywhere and has an icon in the toolbar (like the non-ChromeOS version
+  // of ChromeVox), then otherwise-restricted sites may not be.
+  // If nay extension has access, we want to properly message that (since
+  // saying "No extensions can run..." is inaccurate). Other extensions
+  // will still be properly attributed in UI.
+  return std::all_of(
+      action_ids().begin(), action_ids().end(), [this, url](ActionId id) {
+        return GetExtensionById(id)->permissions_data()->IsRestrictedUrl(
+            url, /*error=*/nullptr);
+      });
 }
 
 bool ToolbarActionsModel::IsActionPinned(const ActionId& action_id) const {

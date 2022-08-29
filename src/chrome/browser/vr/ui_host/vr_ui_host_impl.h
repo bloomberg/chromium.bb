@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
+#include "base/time/time.h"
 #include "chrome/browser/media/webrtc/desktop_media_picker_manager.h"
 #include "chrome/browser/vr/model/capturing_state_model.h"
 #include "components/permissions/permission_request_manager.h"
@@ -71,9 +72,10 @@ class VRUiHostImpl : public content::VrUiHost,
   };
 
   // content::BrowserXRRuntime::Observer implementation.
-  void SetWebXRWebContents(content::WebContents* contents) override;
-  void SetVRDisplayInfo(device::mojom::VRDisplayInfoPtr display_info) override;
-  void SetFramesThrottled(bool throttled) override;
+  void WebXRWebContentsChanged(content::WebContents* contents) override;
+  void VRDisplayInfoChanged(
+      device::mojom::VRDisplayInfoPtr display_info) override;
+  void WebXRFramesThrottledChanged(bool throttled) override;
 
   // Internal methods used to start/stop the UI rendering thread that is used
   // for drawing browser UI (such as permission prompts) for display in VR.
@@ -100,8 +102,6 @@ class VRUiHostImpl : public content::VrUiHost,
   std::unique_ptr<VRBrowserRendererThreadWin> ui_rendering_thread_;
   device::mojom::VRDisplayInfoPtr info_;
   raw_ptr<content::WebContents> web_contents_ = nullptr;
-  raw_ptr<permissions::PermissionRequestManager> permission_request_manager_ =
-      nullptr;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 
   base::CancelableOnceClosure external_prompt_timeout_task_;

@@ -36,6 +36,8 @@ class PairerBroker {
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
   virtual void PairDevice(scoped_refptr<Device> device) = 0;
+  virtual bool IsPairing() = 0;
+  virtual void StopPairing() = 0;
 };
 
 }  // namespace quick_pair

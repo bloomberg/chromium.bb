@@ -129,7 +129,7 @@ TEST_F(AutofillAgentTests,
   std::string locale("en");
   autofill::AutofillDriverIOS::PrepareForWebStateWebFrameAndDelegate(
       &fake_web_state_, &client_, nil, locale,
-      autofill::BrowserAutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER);
+      autofill::AutofillManager::EnableDownloadManager(false));
 
   autofill::FormData form;
   form.url = GURL("https://myform.com");
@@ -179,7 +179,7 @@ TEST_F(AutofillAgentTests,
       fillFormData:form
            inFrame:fake_web_state_.GetWebFramesManager()->GetMainWebFrame()];
   fake_web_state_.WasShown();
-  EXPECT_EQ("__gCrWeb.autofill.fillForm({\"fields\":{\"2\":{\"section\":\"\","
+  EXPECT_EQ(u"__gCrWeb.autofill.fillForm({\"fields\":{\"2\":{\"section\":\"\","
             "\"value\":\"number_value\"},"
             "\"3\":{\"section\":\"\",\"value\":\"name_value\"}},"
             "\"formName\":\"CC form\",\"formRendererID\":1}, 0);",
@@ -369,7 +369,7 @@ TEST_F(AutofillAgentTests, FrameInitializationOrderFrames) {
   std::string locale("en");
   autofill::AutofillDriverIOS::PrepareForWebStateWebFrameAndDelegate(
       &fake_web_state_, &client_, nil, locale,
-      autofill::BrowserAutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER);
+      autofill::AutofillManager::EnableDownloadManager(false));
 
   // Remove the current main frame.
   RemoveWebFrame(fake_main_frame_->GetFrameId());
@@ -382,7 +382,7 @@ TEST_F(AutofillAgentTests, FrameInitializationOrderFrames) {
   autofill::AutofillDriverIOS* main_frame_driver =
       autofill::AutofillDriverIOS::FromWebStateAndWebFrame(&fake_web_state_,
                                                            main_frame);
-  EXPECT_TRUE(main_frame_driver->IsInMainFrame());
+  EXPECT_TRUE(main_frame_driver->IsInAnyMainFrame());
   auto iframe_unique = CreateChildWebFrame();
   iframe_unique->set_call_java_script_function_callback(base::BindRepeating(^{
     EXPECT_TRUE(main_frame_driver->is_processed());
@@ -392,7 +392,7 @@ TEST_F(AutofillAgentTests, FrameInitializationOrderFrames) {
   autofill::AutofillDriverIOS* iframe_driver =
       autofill::AutofillDriverIOS::FromWebStateAndWebFrame(&fake_web_state_,
                                                            iframe);
-  EXPECT_FALSE(iframe_driver->IsInMainFrame());
+  EXPECT_FALSE(iframe_driver->IsInAnyMainFrame());
   EXPECT_FALSE(main_frame_driver->is_processed());
   EXPECT_FALSE(iframe_driver->is_processed());
   fake_web_state_.SetLoading(false);

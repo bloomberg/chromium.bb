@@ -69,13 +69,12 @@ class SyncManagerImpl
   void SetInvalidatorEnabled(bool invalidator_enabled) override;
   void OnIncomingInvalidation(
       ModelType type,
-      std::unique_ptr<InvalidationInterface> invalidation) override;
+      std::unique_ptr<SyncInvalidation> invalidation) override;
   void AddObserver(SyncManager::Observer* observer) override;
   void RemoveObserver(SyncManager::Observer* observer) override;
   void ShutdownOnSyncThread() override;
   ModelTypeConnector* GetModelTypeConnector() override;
   std::unique_ptr<ModelTypeConnector> GetModelTypeConnectorProxy() override;
-  WeakHandle<DataTypeDebugInfoListener> GetDebugInfoListener() override;
   std::string cache_guid() override;
   std::string birthday() override;
   std::string bag_of_chips() override;
@@ -95,7 +94,6 @@ class SyncManagerImpl
   void OnPassphraseAccepted() override;
   void OnTrustedVaultKeyRequired() override;
   void OnTrustedVaultKeyAccepted() override;
-  void OnBootstrapTokenUpdated(const std::string& bootstrap_token) override;
   void OnEncryptedTypesChanged(ModelTypeSet encrypted_types,
                                bool encrypt_everything) override;
   void OnCryptographerStateChanged(Cryptographer* cryptographer,

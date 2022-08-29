@@ -15,19 +15,19 @@ GuestOsStabilityMonitor::GuestOsStabilityMonitor(const std::string& histogram)
       cicerone_observer_(this),
       seneschal_observer_(this),
       chunneld_observer_(this) {
-  auto* concierge_client = chromeos::ConciergeClient::Get();
+  auto* concierge_client = ash::ConciergeClient::Get();
   DCHECK(concierge_client);
   concierge_client->WaitForServiceToBeAvailable(
       base::BindOnce(&GuestOsStabilityMonitor::ConciergeStarted,
                      weak_ptr_factory_.GetWeakPtr()));
 
-  auto* cicerone_client = chromeos::CiceroneClient::Get();
+  auto* cicerone_client = ash::CiceroneClient::Get();
   DCHECK(cicerone_client);
   cicerone_client->WaitForServiceToBeAvailable(
       base::BindOnce(&GuestOsStabilityMonitor::CiceroneStarted,
                      weak_ptr_factory_.GetWeakPtr()));
 
-  auto* seneschal_client = chromeos::SeneschalClient::Get();
+  auto* seneschal_client = ash::SeneschalClient::Get();
   DCHECK(seneschal_client);
   seneschal_client->WaitForServiceToBeAvailable(
       base::BindOnce(&GuestOsStabilityMonitor::SeneschalStarted,
@@ -46,7 +46,7 @@ GuestOsStabilityMonitor::~GuestOsStabilityMonitor() {}
 void GuestOsStabilityMonitor::ConciergeStarted(bool is_available) {
   DCHECK(is_available);
 
-  auto* concierge_client = chromeos::ConciergeClient::Get();
+  auto* concierge_client = ash::ConciergeClient::Get();
   DCHECK(concierge_client);
   concierge_observer_.Observe(concierge_client);
 }
@@ -54,7 +54,7 @@ void GuestOsStabilityMonitor::ConciergeStarted(bool is_available) {
 void GuestOsStabilityMonitor::CiceroneStarted(bool is_available) {
   DCHECK(is_available);
 
-  auto* cicerone_client = chromeos::CiceroneClient::Get();
+  auto* cicerone_client = ash::CiceroneClient::Get();
   DCHECK(cicerone_client);
   cicerone_observer_.Observe(cicerone_client);
 }
@@ -62,7 +62,7 @@ void GuestOsStabilityMonitor::CiceroneStarted(bool is_available) {
 void GuestOsStabilityMonitor::SeneschalStarted(bool is_available) {
   DCHECK(is_available);
 
-  auto* seneschal_client = chromeos::SeneschalClient::Get();
+  auto* seneschal_client = ash::SeneschalClient::Get();
   DCHECK(seneschal_client);
   seneschal_observer_.Observe(seneschal_client);
 }

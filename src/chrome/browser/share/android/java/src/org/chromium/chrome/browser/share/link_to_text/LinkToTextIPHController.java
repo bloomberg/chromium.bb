@@ -23,6 +23,7 @@ import org.chromium.components.messages.MessageDispatcher;
 import org.chromium.components.messages.MessageDispatcherProvider;
 import org.chromium.components.messages.MessageIdentifier;
 import org.chromium.components.messages.MessageScopeType;
+import org.chromium.components.messages.PrimaryActionClickBehavior;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.url.GURL;
@@ -44,10 +45,9 @@ public class LinkToTextIPHController {
      *         will be rendered.
      * @param TabModelSelector The {@link TabModelSelector} to open a new tab.
      */
-    public LinkToTextIPHController(
-            ObservableSupplier<Tab> tabSupplier, TabModelSelector tabModelSelector) {
+    public LinkToTextIPHController(ObservableSupplier<Tab> tabSupplier,
+            TabModelSelector tabModelSelector, ObservableSupplier<Profile> profileSupplier) {
         mTabModelSelector = tabModelSelector;
-        mTracker = TrackerFactory.getTrackerForProfile(Profile.getLastUsedRegularProfile());
         mCurrentTabObserver = new CurrentTabObserver(tabSupplier, new EmptyTabObserver() {
             @Override
             public void onPageLoadFinished(Tab tab, GURL url) {
@@ -58,6 +58,7 @@ public class LinkToTextIPHController {
 
                 if (!LinkToTextHelper.hasTextFragment(url)) return;
 
+                mTracker = TrackerFactory.getTrackerForProfile(profileSupplier.get());
                 if (!mTracker.wouldTriggerHelpUI(FEATURE_NAME)) {
                     return;
                 }
@@ -95,9 +96,10 @@ public class LinkToTextIPHController {
                 model, tab.getWebContents(), MessageScopeType.NAVIGATION, false);
     }
 
-    private void onMessageButtonClicked() {
+    private @PrimaryActionClickBehavior int onMessageButtonClicked() {
         onOpenInChrome(LinkToTextHelper.SHARED_HIGHLIGHTING_SUPPORT_URL);
         mTracker.dismissed(FEATURE_NAME);
+        return PrimaryActionClickBehavior.DISMISS_IMMEDIATELY;
     }
 
     private void onMessageDismissed(Integer dismissReason) {

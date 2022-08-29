@@ -9,15 +9,16 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/callback_list.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ash/authpolicy/kerberos_files_handler.h"
-#include "chromeos/dbus/kerberos/kerberos_service.pb.h"
+#include "chromeos/ash/components/dbus/kerberos/kerberos_service.pb.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 // TODO(https://crbug.com/1164001): forward declare when moved ash
-#include "chromeos/network/onc/variable_expander.h"
+#include "chromeos/components/onc/variable_expander.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/policy_service.h"
@@ -135,7 +136,7 @@ class KerberosCredentialsManager : public KeyedService,
   void ListAccounts(ListAccountsCallback callback);
 
   // Sets the contents of the Kerberos configuration (krb5.conf) to |krb5_conf|
-  // for the account  with given |principal_name|.
+  // for the account with given |principal_name|.
   void SetConfig(std::string principal_name,
                  const std::string& krb5_conf,
                  ResultCallback callback);
@@ -274,6 +275,11 @@ class KerberosCredentialsManager : public KeyedService,
 
   // Observer for Kerberos-related prefs.
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
+
+  // Subscriptions whose destruction will cancel the corresponding callbacks.
+  // The callbacks are used to listen to signals from KerberosClient.
+  base::CallbackListSubscription kerberos_file_changed_signal_subscription_;
+  base::CallbackListSubscription kerberos_ticket_expiring_signal_subscription_;
 
   // Keeps track of accounts currently being added.
   std::vector<std::unique_ptr<KerberosAddAccountRunner>> add_account_runners_;

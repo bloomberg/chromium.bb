@@ -150,6 +150,8 @@ const CGFloat kClearButtonSize = 28.0f;
 - (void)viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];
 
+  [self.view attachLayoutGuides];
+
   [NSNotificationCenter.defaultCenter
       addObserver:self
          selector:@selector(pasteboardDidChange:)
@@ -164,12 +166,6 @@ const CGFloat kClearButtonSize = 28.0f;
          selector:@selector(applicationDidBecomeActive:)
              name:UIApplicationDidBecomeActiveNotification
            object:nil];
-}
-
-- (void)viewDidAppear:(BOOL)animated {
-  [super viewDidAppear:animated];
-
-  [self.view attachLayoutGuides];
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
@@ -278,12 +274,12 @@ const CGFloat kClearButtonSize = 28.0f;
 
 // Delegate method for UITextField, called when user presses the "go" button.
 - (BOOL)textFieldShouldReturn:(UITextField*)textField {
-  if (!_textChangeDelegate) {
+  if (!self.returnKeyDelegate) {
     // This can happen when the view controller is still alive but the model is
     // already deconstructed on shutdown.
     return YES;
   }
-  _textChangeDelegate->OnAccept();
+  [self.returnKeyDelegate omniboxReturnPressed:self];
   return NO;
 }
 
@@ -381,6 +377,10 @@ const CGFloat kClearButtonSize = 28.0f;
 
 - (void)updateSearchByImageSupported:(BOOL)searchByImageSupported {
   self.searchByImageEnabled = searchByImageSupported;
+}
+
+- (void)updateText:(NSAttributedString*)text {
+  [self.textField setText:text userTextLength:text.length];
 }
 
 #pragma mark - EditViewAnimatee

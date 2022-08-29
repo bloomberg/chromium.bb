@@ -396,7 +396,7 @@ static void alloc_tile_list_buffer(AV1Decoder *pbi) {
                              cm->seq_params->subsampling_y,
                              (cm->seq_params->use_highbitdepth &&
                               (cm->seq_params->bit_depth > AOM_BITS_8)),
-                             0, cm->features.byte_alignment))
+                             0, cm->features.byte_alignment, 0))
     aom_internal_error(&pbi->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate the tile list output buffer");
 }
@@ -993,6 +993,11 @@ int aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
           }
           frame_decoding_finished = 1;
           pbi->seen_frame_header = 0;
+
+          if (cm->show_frame &&
+              !cm->seq_params->order_hint_info.enable_order_hint) {
+            ++cm->current_frame.frame_number;
+          }
           break;
         }
 

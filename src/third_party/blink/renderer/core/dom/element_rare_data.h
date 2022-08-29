@@ -23,6 +23,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_ELEMENT_RARE_DATA_H_
 
 #include <memory>
+
 #include "base/token.h"
 #include "third_party/blink/renderer/core/animation/element_animations.h"
 #include "third_party/blink/renderer/core/aom/accessible_node.h"
@@ -33,18 +34,21 @@
 #include "third_party/blink/renderer/core/dom/attr.h"
 #include "third_party/blink/renderer/core/dom/dataset_dom_string_map.h"
 #include "third_party/blink/renderer/core/dom/dom_token_list.h"
+#include "third_party/blink/renderer/core/dom/focusgroup_flags.h"
+#include "third_party/blink/renderer/core/dom/has_invalidation_flags.h"
 #include "third_party/blink/renderer/core/dom/named_node_map.h"
 #include "third_party/blink/renderer/core/dom/names_map.h"
 #include "third_party/blink/renderer/core/dom/node_rare_data.h"
+#include "third_party/blink/renderer/core/dom/popup_data.h"
 #include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/dom/pseudo_element_data.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/space_split_string.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element_definition.h"
 #include "third_party/blink/renderer/core/intersection_observer/element_intersection_observer_data.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_map.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/region_capture_crop_id.h"
-#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 namespace blink {
 
@@ -54,13 +58,215 @@ class HTMLElement;
 class ResizeObservation;
 class ResizeObserver;
 
+// This class contains rare data which is significantly more rare than the data
+// in ElementRareData. They are split up to improve memory usage.
+class ElementSuperRareData : public GarbageCollected<ElementSuperRareData> {
+ public:
+  const AtomicString& GetNonce() const { return nonce_; }
+  void SetNonce(const AtomicString& nonce) { nonce_ = nonce; }
+
+  EditContext* GetEditContext() const { return edit_context_.Get(); }
+  void SetEditContext(EditContext* edit_context) {
+    edit_context_ = edit_context;
+  }
+
+  void SetPart(DOMTokenList* part) { part_ = part; }
+  DOMTokenList* GetPart() const { return part_.Get(); }
+
+  void SetPartNamesMap(const AtomicString part_names) {
+    if (!part_names_map_) {
+      part_names_map_ = std::make_unique<NamesMap>();
+    }
+    part_names_map_->Set(part_names);
+  }
+  const NamesMap* PartNamesMap() const { return part_names_map_.get(); }
+
+  InlineStylePropertyMap& EnsureInlineStylePropertyMap(Element* owner_element);
+  InlineStylePropertyMap* GetInlineStylePropertyMap() {
+    return cssom_map_wrapper_.Get();
+  }
+
+  ElementInternals& EnsureElementInternals(HTMLElement& target);
+  const ElementInternals* GetElementInternals() const {
+    return element_internals_;
+  }
+
+  AccessibleNode* GetAccessibleNode() const { return accessible_node_.Get(); }
+  AccessibleNode* EnsureAccessibleNode(Element* owner_element) {
+    if (!accessible_node_) {
+      accessible_node_ = MakeGarbageCollected<AccessibleNode>(owner_element);
+    }
+    return accessible_node_;
+  }
+
+  DisplayLockContext* EnsureDisplayLockContext(Element* element) {
+    if (!display_lock_context_) {
+      display_lock_context_ = MakeGarbageCollected<DisplayLockContext>(element);
+    }
+    return display_lock_context_.Get();
+  }
+  DisplayLockContext* GetDisplayLockContext() const {
+    return display_lock_context_;
+  }
+
+  ContainerQueryData& EnsureContainerQueryData() {
+    DCHECK(RuntimeEnabledFeatures::CSSContainerQueriesEnabled());
+    if (!container_query_data_)
+      container_query_data_ = MakeGarbageCollected<ContainerQueryData>();
+    return *container_query_data_;
+  }
+  ContainerQueryData* GetContainerQueryData() const {
+    return container_query_data_;
+  }
+
+  // Returns the crop-ID if one was set, or nullptr otherwise.
+  const RegionCaptureCropId* GetRegionCaptureCropId() const {
+    return region_capture_crop_id_.get();
+  }
+
+  // Sets a crop-ID on the item. Must be called at most once. Cannot be used
+  // to unset a previously set crop-ID.
+  void SetRegionCaptureCropId(std::unique_ptr<RegionCaptureCropId> crop_id) {
+    DCHECK(!GetRegionCaptureCropId());
+    DCHECK(crop_id);
+    DCHECK(!crop_id->value().is_zero());
+    region_capture_crop_id_ = std::move(crop_id);
+  }
+
+  using ResizeObserverDataMap =
+      HeapHashMap<Member<ResizeObserver>, Member<ResizeObservation>>;
+
+  ResizeObserverDataMap* ResizeObserverData() const {
+    return resize_observer_data_;
+  }
+  ResizeObserverDataMap& EnsureResizeObserverData();
+
+  void SetCustomElementDefinition(CustomElementDefinition* definition) {
+    custom_element_definition_ = definition;
+  }
+  CustomElementDefinition* GetCustomElementDefinition() const {
+    return custom_element_definition_.Get();
+  }
+
+  void SetIsValue(const AtomicString& is_value) { is_value_ = is_value; }
+  const AtomicString& IsValue() const { return is_value_; }
+
+  void SaveLastIntrinsicSize(ResizeObserverSize* size) {
+    last_intrinsic_size_ = size;
+  }
+  const ResizeObserverSize* LastIntrinsicSize() const {
+    return last_intrinsic_size_;
+  }
+
+  PopupData* GetPopupData() const { return popup_data_; }
+  PopupData& EnsurePopupData();
+  void RemovePopupData();
+
+  FocusgroupFlags GetFocusgroupFlags() const { return focusgroup_flags_; }
+
+  void SetFocusgroupFlags(FocusgroupFlags flags) { focusgroup_flags_ = flags; }
+  bool AffectedByNonSubjectHas() const {
+    return has_invalidation_flags_.affected_by_non_subject_has;
+  }
+  void SetAffectedByNonSubjectHas() {
+    has_invalidation_flags_.affected_by_non_subject_has = true;
+  }
+  bool AncestorsOrAncestorSiblingsAffectedByHas() const {
+    return has_invalidation_flags_
+        .ancestors_or_ancestor_siblings_affected_by_has;
+  }
+  void SetAncestorsOrAncestorSiblingsAffectedByHas() {
+    has_invalidation_flags_.ancestors_or_ancestor_siblings_affected_by_has =
+        true;
+  }
+  unsigned GetSiblingsAffectedByHasFlags() const {
+    return has_invalidation_flags_.siblings_affected_by_has;
+  }
+  bool HasSiblingsAffectedByHasFlags(unsigned flags) const {
+    return has_invalidation_flags_.siblings_affected_by_has & flags;
+  }
+  void SetSiblingsAffectedByHasFlags(unsigned flags) {
+    has_invalidation_flags_.siblings_affected_by_has |= flags;
+  }
+  bool AffectedByPseudoInHas() const {
+    return has_invalidation_flags_.affected_by_pseudos_in_has;
+  }
+  void SetAffectedByPseudoInHas() {
+    has_invalidation_flags_.affected_by_pseudos_in_has = true;
+  }
+  bool AncestorsOrSiblingsAffectedByHoverInHas() const {
+    return has_invalidation_flags_
+        .ancestors_or_siblings_affected_by_hover_in_has;
+  }
+  void SetAncestorsOrSiblingsAffectedByHoverInHas() {
+    has_invalidation_flags_.ancestors_or_siblings_affected_by_hover_in_has =
+        true;
+  }
+  bool AncestorsOrSiblingsAffectedByActiveInHas() const {
+    return has_invalidation_flags_
+        .ancestors_or_siblings_affected_by_active_in_has;
+  }
+  void SetAncestorsOrSiblingsAffectedByActiveInHas() {
+    has_invalidation_flags_.ancestors_or_siblings_affected_by_active_in_has =
+        true;
+  }
+  bool AncestorsOrSiblingsAffectedByFocusInHas() const {
+    return has_invalidation_flags_
+        .ancestors_or_siblings_affected_by_focus_in_has;
+  }
+  void SetAncestorsOrSiblingsAffectedByFocusInHas() {
+    has_invalidation_flags_.ancestors_or_siblings_affected_by_focus_in_has =
+        true;
+  }
+  bool AncestorsOrSiblingsAffectedByFocusVisibleInHas() const {
+    return has_invalidation_flags_
+        .ancestors_or_siblings_affected_by_focus_visible_in_has;
+  }
+  void SetAncestorsOrSiblingsAffectedByFocusVisibleInHas() {
+    has_invalidation_flags_
+        .ancestors_or_siblings_affected_by_focus_visible_in_has = true;
+  }
+  bool AffectedByLogicalCombinationsInHas() const {
+    return has_invalidation_flags_.affected_by_logical_combinations_in_has;
+  }
+  void SetAffectedByLogicalCombinationsInHas() {
+    has_invalidation_flags_.affected_by_logical_combinations_in_has = true;
+  }
+
+  void Trace(blink::Visitor*) const;
+
+ private:
+  AtomicString nonce_;
+  Member<EditContext> edit_context_;
+  Member<DOMTokenList> part_;
+  std::unique_ptr<NamesMap> part_names_map_;
+  Member<InlineStylePropertyMap> cssom_map_wrapper_;
+  Member<ElementInternals> element_internals_;
+  Member<AccessibleNode> accessible_node_;
+  Member<DisplayLockContext> display_lock_context_;
+  Member<ContainerQueryData> container_query_data_;
+  std::unique_ptr<RegionCaptureCropId> region_capture_crop_id_;
+  Member<ResizeObserverDataMap> resize_observer_data_;
+  Member<CustomElementDefinition> custom_element_definition_;
+  AtomicString is_value_;
+  Member<ResizeObserverSize> last_intrinsic_size_;
+  Member<PopupData> popup_data_;
+  FocusgroupFlags focusgroup_flags_ = FocusgroupFlags::kNone;
+  HasInvalidationFlags has_invalidation_flags_;
+};
+
 class ElementRareData final : public NodeRareData {
  public:
   explicit ElementRareData(NodeRenderingData*);
   ~ElementRareData();
 
-  void SetPseudoElement(PseudoId, PseudoElement*);
-  PseudoElement* GetPseudoElement(PseudoId) const;
+  void SetPseudoElement(
+      PseudoId,
+      PseudoElement*,
+      const AtomicString& document_transition_tag = g_null_atom);
+  PseudoElement* GetPseudoElement(
+      PseudoId,
+      const AtomicString& document_transition_tag = g_null_atom) const;
   PseudoElementData::PseudoElementVector GetPseudoElements() const;
 
   void SetTabIndexExplicitly() {
@@ -71,11 +277,29 @@ class ElementRareData final : public NodeRareData {
     ClearElementFlag(ElementFlags::kTabIndexWasSetExplicitly);
   }
 
+  FocusgroupFlags GetFocusgroupFlags() const {
+    if (super_rare_data_)
+      return super_rare_data_->GetFocusgroupFlags();
+    return FocusgroupFlags::kNone;
+  }
+
+  void SetFocusgroupFlags(FocusgroupFlags flags) {
+    EnsureSuperRareData().SetFocusgroupFlags(flags);
+  }
+
+  void ClearFocusgroupFlags() {
+    if (!super_rare_data_)
+      return;
+    SetFocusgroupFlags(FocusgroupFlags::kNone);
+  }
+
   CSSStyleDeclaration& EnsureInlineCSSStyleDeclaration(Element* owner_element);
   InlineStylePropertyMap& EnsureInlineStylePropertyMap(Element* owner_element);
 
   InlineStylePropertyMap* GetInlineStylePropertyMap() {
-    return cssom_map_wrapper_.Get();
+    if (super_rare_data_)
+      return super_rare_data_->GetInlineStylePropertyMap();
+    return nullptr;
   }
 
   ShadowRoot* GetShadowRoot() const { return shadow_root_.Get(); }
@@ -84,9 +308,13 @@ class ElementRareData final : public NodeRareData {
     shadow_root_ = &shadow_root;
   }
 
-  EditContext* GetEditContext() const { return edit_context_.Get(); }
+  EditContext* GetEditContext() const {
+    if (super_rare_data_)
+      return super_rare_data_->GetEditContext();
+    return nullptr;
+  }
   void SetEditContext(EditContext* edit_context) {
-    edit_context_ = edit_context;
+    EnsureSuperRareData().SetEditContext(edit_context);
   }
 
   NamedNodeMap* AttributeMap() const { return attribute_map_.Get(); }
@@ -99,18 +327,21 @@ class ElementRareData final : public NodeRareData {
     class_list_ = class_list;
   }
 
-  void SetPart(DOMTokenList* part) {
-    part_ = part;
+  void SetPart(DOMTokenList* part) { EnsureSuperRareData().SetPart(part); }
+  DOMTokenList* GetPart() const {
+    if (super_rare_data_)
+      return super_rare_data_->GetPart();
+    return nullptr;
   }
-  DOMTokenList* GetPart() const { return part_.Get(); }
 
-  void SetPartNamesMap(const AtomicString part_names) {
-    if (!part_names_map_) {
-      part_names_map_.reset(new NamesMap());
-    }
-    part_names_map_->Set(part_names);
+  const NamesMap* PartNamesMap() const {
+    if (super_rare_data_)
+      return super_rare_data_->PartNamesMap();
+    return nullptr;
   }
-  const NamesMap* PartNamesMap() const { return part_names_map_.get(); }
+  void SetPartNamesMap(const AtomicString part_names) {
+    EnsureSuperRareData().SetPartNamesMap(part_names);
+  }
 
   DatasetDOMStringMap* Dataset() const { return dataset_.Get(); }
   void SetDataset(DatasetDOMStringMap* dataset) {
@@ -135,32 +366,39 @@ class ElementRareData final : public NodeRareData {
   void ClearPseudoElements();
 
   void SetCustomElementDefinition(CustomElementDefinition* definition) {
-    custom_element_definition_ = definition;
+    EnsureSuperRareData().SetCustomElementDefinition(definition);
   }
   CustomElementDefinition* GetCustomElementDefinition() const {
-    return custom_element_definition_.Get();
+    if (super_rare_data_)
+      return super_rare_data_->GetCustomElementDefinition();
+    return nullptr;
   }
-  void SetIsValue(const AtomicString& is_value) { is_value_ = is_value; }
-  const AtomicString& IsValue() const { return is_value_; }
+  void SetIsValue(const AtomicString& is_value) {
+    EnsureSuperRareData().SetIsValue(is_value);
+  }
+  const AtomicString& IsValue() const {
+    if (super_rare_data_)
+      return super_rare_data_->IsValue();
+    return g_null_atom;
+  }
   void SetDidAttachInternals() { did_attach_internals_ = true; }
   bool DidAttachInternals() const { return did_attach_internals_; }
-  ElementInternals& EnsureElementInternals(HTMLElement& target);
+  ElementInternals& EnsureElementInternals(HTMLElement& target) {
+    return EnsureSuperRareData().EnsureElementInternals(target);
+  }
   const ElementInternals* GetElementInternals() const {
-    return element_internals_;
+    if (super_rare_data_)
+      return super_rare_data_->GetElementInternals();
+    return nullptr;
   }
 
-  // Returns the crop-ID if one was set, or nullptr otherwise.
   const RegionCaptureCropId* GetRegionCaptureCropId() const {
-    return region_capture_crop_id_.get();
+    if (super_rare_data_)
+      return super_rare_data_->GetRegionCaptureCropId();
+    return nullptr;
   }
-
-  // Sets a crop-ID on the item. Must be called at most once. Cannot be used
-  // to unset a previously set crop-ID.
-  void SetRegionCaptureCropId(std::unique_ptr<RegionCaptureCropId> crop_id) {
-    DCHECK(!GetRegionCaptureCropId());
-    DCHECK(crop_id);
-    DCHECK(!crop_id->value().is_zero());
-    region_capture_crop_id_ = std::move(crop_id);
+  void SetRegionCaptureCropId(std::unique_ptr<RegionCaptureCropId> value) {
+    EnsureSuperRareData().SetRegionCaptureCropId(std::move(value));
   }
 
   void SetStyleShouldForceLegacyLayout(bool force) {
@@ -183,13 +421,88 @@ class ElementRareData final : public NodeRareData {
   void SetScrollbarPseudoElementStylesDependOnFontMetrics(bool value) {
     scrollbar_pseudo_element_styles_depend_on_font_metrics_ = value;
   }
+  bool AffectedByNonSubjectHas() const {
+    return super_rare_data_ ? super_rare_data_->AffectedByNonSubjectHas()
+                            : false;
+  }
+  void SetAffectedByNonSubjectHas() {
+    EnsureSuperRareData().SetAffectedByNonSubjectHas();
+  }
+  bool AncestorsOrAncestorSiblingsAffectedByHas() const {
+    return super_rare_data_
+               ? super_rare_data_->AncestorsOrAncestorSiblingsAffectedByHas()
+               : false;
+  }
+  void SetAncestorsOrAncestorSiblingsAffectedByHas() {
+    EnsureSuperRareData().SetAncestorsOrAncestorSiblingsAffectedByHas();
+  }
+  unsigned GetSiblingsAffectedByHasFlags() const {
+    return super_rare_data_ ? super_rare_data_->GetSiblingsAffectedByHasFlags()
+                            : kNoSiblingsAffectedByHasFlags;
+  }
+  bool HasSiblingsAffectedByHasFlags(unsigned flags) const {
+    return super_rare_data_
+               ? super_rare_data_->HasSiblingsAffectedByHasFlags(flags)
+               : false;
+  }
+  bool AffectedByPseudoInHas() const {
+    return super_rare_data_ ? super_rare_data_->AffectedByPseudoInHas() : false;
+  }
+  void SetAffectedByPseudoInHas() {
+    EnsureSuperRareData().SetAffectedByPseudoInHas();
+  }
+  void SetSiblingsAffectedByHasFlags(unsigned flags) {
+    EnsureSuperRareData().SetSiblingsAffectedByHasFlags(flags);
+  }
+  bool AncestorsOrSiblingsAffectedByHoverInHas() const {
+    return super_rare_data_
+               ? super_rare_data_->AncestorsOrSiblingsAffectedByHoverInHas()
+               : false;
+  }
+  void SetAncestorsOrSiblingsAffectedByHoverInHas() {
+    EnsureSuperRareData().SetAncestorsOrSiblingsAffectedByHoverInHas();
+  }
+  bool AncestorsOrSiblingsAffectedByActiveInHas() const {
+    return super_rare_data_
+               ? super_rare_data_->AncestorsOrSiblingsAffectedByActiveInHas()
+               : false;
+  }
+  void SetAncestorsOrSiblingsAffectedByActiveInHas() {
+    EnsureSuperRareData().SetAncestorsOrSiblingsAffectedByActiveInHas();
+  }
+  bool AncestorsOrSiblingsAffectedByFocusInHas() const {
+    return super_rare_data_
+               ? super_rare_data_->AncestorsOrSiblingsAffectedByFocusInHas()
+               : false;
+  }
+  void SetAncestorsOrSiblingsAffectedByFocusInHas() {
+    EnsureSuperRareData().SetAncestorsOrSiblingsAffectedByFocusInHas();
+  }
+  bool AncestorsOrSiblingsAffectedByFocusVisibleInHas() const {
+    return super_rare_data_
+               ? super_rare_data_
+                     ->AncestorsOrSiblingsAffectedByFocusVisibleInHas()
+               : false;
+  }
+  void SetAncestorsOrSiblingsAffectedByFocusVisibleInHas() {
+    EnsureSuperRareData().SetAncestorsOrSiblingsAffectedByFocusVisibleInHas();
+  }
+  bool AffectedByLogicalCombinationsInHas() const {
+    return super_rare_data_
+               ? super_rare_data_->AffectedByLogicalCombinationsInHas()
+               : false;
+  }
+  void SetAffectedByLogicalCombinationsInHas() {
+    EnsureSuperRareData().SetAffectedByLogicalCombinationsInHas();
+  }
 
-  AccessibleNode* GetAccessibleNode() const { return accessible_node_.Get(); }
+  AccessibleNode* GetAccessibleNode() const {
+    if (super_rare_data_)
+      return super_rare_data_->GetAccessibleNode();
+    return nullptr;
+  }
   AccessibleNode* EnsureAccessibleNode(Element* owner_element) {
-    if (!accessible_node_) {
-      accessible_node_ = MakeGarbageCollected<AccessibleNode>(owner_element);
-    }
-    return accessible_node_;
+    return EnsureSuperRareData().EnsureAccessibleNode(owner_element);
   }
 
   AttrNodeList& EnsureAttrNodeList();
@@ -214,86 +527,94 @@ class ElementRareData final : public NodeRareData {
       HeapHashMap<Member<ResizeObserver>, Member<ResizeObservation>>;
 
   ResizeObserverDataMap* ResizeObserverData() const {
-    return resize_observer_data_;
+    if (super_rare_data_)
+      return super_rare_data_->ResizeObserverData();
+    return nullptr;
   }
   ResizeObserverDataMap& EnsureResizeObserverData();
 
+  PopupData* GetPopupData() const {
+    if (super_rare_data_)
+      return super_rare_data_->GetPopupData();
+    return nullptr;
+  }
+  PopupData& EnsurePopupData();
+  void RemovePopupData();
+
   DisplayLockContext* EnsureDisplayLockContext(Element* element) {
-    if (!display_lock_context_) {
-      display_lock_context_ = MakeGarbageCollected<DisplayLockContext>(element);
-    }
-    return display_lock_context_.Get();
+    return EnsureSuperRareData().EnsureDisplayLockContext(element);
   }
   DisplayLockContext* GetDisplayLockContext() const {
-    return display_lock_context_;
+    if (super_rare_data_)
+      return super_rare_data_->GetDisplayLockContext();
+    return nullptr;
   }
 
   ContainerQueryData& EnsureContainerQueryData() {
-    DCHECK(RuntimeEnabledFeatures::CSSContainerQueriesEnabled());
-    if (!container_query_data_)
-      container_query_data_ = MakeGarbageCollected<ContainerQueryData>();
-    return *container_query_data_;
+    return EnsureSuperRareData().EnsureContainerQueryData();
   }
   ContainerQueryData* GetContainerQueryData() const {
-    return container_query_data_;
+    if (super_rare_data_)
+      return super_rare_data_->GetContainerQueryData();
+    return nullptr;
   }
 
   ContainerQueryEvaluator* GetContainerQueryEvaluator() const {
-    if (!container_query_data_)
+    ContainerQueryData* container_query_data = GetContainerQueryData();
+    if (!container_query_data)
       return nullptr;
-    return container_query_data_->GetContainerQueryEvaluator();
+    return container_query_data->GetContainerQueryEvaluator();
   }
   void SetContainerQueryEvaluator(ContainerQueryEvaluator* evaluator) {
-    if (container_query_data_)
-      container_query_data_->SetContainerQueryEvaluator(evaluator);
+    ContainerQueryData* container_query_data = GetContainerQueryData();
+    if (container_query_data)
+      container_query_data->SetContainerQueryEvaluator(evaluator);
     else if (evaluator)
       EnsureContainerQueryData().SetContainerQueryEvaluator(evaluator);
   }
 
-  const AtomicString& GetNonce() const { return nonce_; }
-  void SetNonce(const AtomicString& nonce) { nonce_ = nonce; }
-
-  void SaveLastIntrinsicSize(ResizeObserverSize* size) {
-    last_intrinsic_size_ = size;
+  const AtomicString& GetNonce() const {
+    if (super_rare_data_)
+      return super_rare_data_->GetNonce();
+    return g_null_atom;
+  }
+  void SetNonce(const AtomicString& nonce) {
+    EnsureSuperRareData().SetNonce(nonce);
   }
 
+  void SaveLastIntrinsicSize(ResizeObserverSize* size) {
+    EnsureSuperRareData().SaveLastIntrinsicSize(size);
+  }
   const ResizeObserverSize* LastIntrinsicSize() const {
-    return last_intrinsic_size_;
+    if (super_rare_data_)
+      return super_rare_data_->LastIntrinsicSize();
+    return nullptr;
   }
 
   void TraceAfterDispatch(blink::Visitor*) const;
 
  private:
+  ElementSuperRareData& EnsureSuperRareData() {
+    if (!super_rare_data_)
+      super_rare_data_ = MakeGarbageCollected<ElementSuperRareData>();
+    return *super_rare_data_;
+  }
+
+  Member<ElementSuperRareData> super_rare_data_;
+
   ScrollOffset saved_layer_scroll_offset_;
-  AtomicString nonce_;
 
   Member<DatasetDOMStringMap> dataset_;
   Member<ShadowRoot> shadow_root_;
-  Member<EditContext> edit_context_;
   Member<DOMTokenList> class_list_;
-  Member<DOMTokenList> part_;
-  std::unique_ptr<NamesMap> part_names_map_;
   Member<NamedNodeMap> attribute_map_;
   Member<AttrNodeList> attr_node_list_;
   Member<InlineCSSStyleDeclaration> cssom_wrapper_;
-  Member<InlineStylePropertyMap> cssom_map_wrapper_;
 
   Member<ElementAnimations> element_animations_;
   Member<ElementIntersectionObserverData> intersection_observer_data_;
-  Member<ResizeObserverDataMap> resize_observer_data_;
-
-  Member<CustomElementDefinition> custom_element_definition_;
-  AtomicString is_value_;
-  Member<ElementInternals> element_internals_;
 
   Member<PseudoElementData> pseudo_element_data_;
-  Member<ResizeObserverSize> last_intrinsic_size_;
-
-  Member<AccessibleNode> accessible_node_;
-
-  Member<DisplayLockContext> display_lock_context_;
-  Member<ContainerQueryData> container_query_data_;
-  std::unique_ptr<RegionCaptureCropId> region_capture_crop_id_;
 
   unsigned did_attach_internals_ : 1;
   unsigned should_force_legacy_layout_for_child_ : 1;
@@ -317,21 +638,26 @@ inline void ElementRareData::ClearPseudoElements() {
   }
 }
 
-inline void ElementRareData::SetPseudoElement(PseudoId pseudo_id,
-                                              PseudoElement* element) {
+inline void ElementRareData::SetPseudoElement(
+    PseudoId pseudo_id,
+    PseudoElement* element,
+    const AtomicString& document_transition_tag) {
   if (!pseudo_element_data_) {
     if (!element)
       return;
     pseudo_element_data_ = MakeGarbageCollected<PseudoElementData>();
   }
-  pseudo_element_data_->SetPseudoElement(pseudo_id, element);
+  pseudo_element_data_->SetPseudoElement(pseudo_id, element,
+                                         document_transition_tag);
 }
 
 inline PseudoElement* ElementRareData::GetPseudoElement(
-    PseudoId pseudo_id) const {
+    PseudoId pseudo_id,
+    const AtomicString& document_transition_tag) const {
   if (!pseudo_element_data_)
     return nullptr;
-  return pseudo_element_data_->GetPseudoElement(pseudo_id);
+  return pseudo_element_data_->GetPseudoElement(pseudo_id,
+                                                document_transition_tag);
 }
 
 inline PseudoElementData::PseudoElementVector

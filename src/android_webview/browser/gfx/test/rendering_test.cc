@@ -150,13 +150,13 @@ bool RenderingTest::WillDrawOnRT(HardwareRendererDrawParams* params) {
   params->width = window_->surface_size().width();
   params->height = window_->surface_size().height();
   gfx::Transform transform;
-  transform.matrix().asColMajorf(params->transform);
+  transform.matrix().getColMajor(params->transform);
   return true;
 }
 
 void RenderingTest::OnNewPicture() {}
 
-void RenderingTest::PostInvalidate() {
+void RenderingTest::PostInvalidate(bool inside_vsync) {
   if (window_)
     window_->PostInvalidate();
 }

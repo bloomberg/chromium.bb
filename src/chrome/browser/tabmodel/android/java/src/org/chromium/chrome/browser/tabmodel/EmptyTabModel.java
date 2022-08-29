@@ -54,7 +54,7 @@ public class EmptyTabModel implements TabModel {
     }
 
     @Override
-    public Tab getNextTabIfClosed(int id) {
+    public Tab getNextTabIfClosed(int id, boolean uponExit) {
         return null;
     }
 
@@ -65,7 +65,7 @@ public class EmptyTabModel implements TabModel {
     public void closeAllTabs() {}
 
     @Override
-    public void closeAllTabs(boolean allowDelegation, boolean uponExit) {}
+    public void closeAllTabs(boolean uponExit) {}
 
     @Override
     public int getCount() {
@@ -133,6 +133,9 @@ public class EmptyTabModel implements TabModel {
     public void cancelTabClosure(int tabId) {}
 
     @Override
+    public void notifyAllTabsClosureUndone() {}
+
+    @Override
     public boolean supportsPendingClosures() {
         return false;
     }
@@ -156,5 +159,5 @@ public class EmptyTabModel implements TabModel {
     public void removeTab(Tab tab) {}
 
     @Override
-    public void openMostRecentlyClosedTab() {}
+    public void openMostRecentlyClosedEntry() {}
 }

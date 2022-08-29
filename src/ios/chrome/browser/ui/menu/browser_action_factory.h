@@ -63,11 +63,35 @@ class GURL;
                                            completion:
                                                (ProceduralBlock)completion;
 
-// Creates a UIAction instance for showing an element.
-- (UIAction*)actionToShowLinkPreview;
+// Creates a UIAction instance for opening a new tab.
+- (UIAction*)actionToOpenNewTab;
 
-// Creates a UIAction instance for hidding an element.
-- (UIAction*)actionToHideLinkPreview;
+// Creates a UIAction instance for opening a new incognito tab.
+- (UIAction*)actionToOpenNewIncognitoTab;
+
+// Creates a UIAction instance for closing the current tab.
+- (UIAction*)actionToCloseCurrentTab;
+
+// Creates a UIAction instance for showing the QR Scanner.
+- (UIAction*)actionToShowQRScanner;
+
+// Creates a UIAction instance for starting a voice search.
+- (UIAction*)actionToStartVoiceSearch;
+
+// Creates a UIAction instance for opening a new search.
+- (UIAction*)actionToStartNewSearch;
+
+// Creates a UIAction instance for opening a new incognito search.
+- (UIAction*)actionToStartNewIncognitoSearch;
+
+// Creates a UIAction instance for searching for the image in the pasteboard.
+- (UIAction*)actionToSearchCopiedImage;
+
+// Creates a UIAction instance for searching for the URL in the pasteboard.
+- (UIAction*)actionToSearchCopiedURL;
+
+// Creates a UIAction instance for searching for the text in the pasteboard.
+- (UIAction*)actionToSearchCopiedText;
 
 @end
 
