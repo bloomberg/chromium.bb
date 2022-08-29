@@ -31,11 +31,17 @@ wheel: <
   version: "version:5.8.0.chromium.2"
 >
 
-# Used by tools_webrtc/perf/webrtc_dashboard_upload.py.
+# Used by tools_webrtc/perf/process_perf_results.py.
 wheel: <
-  name: "infra/python/wheels/httplib2-py2_py3"
-  version: "version:0.10.3"
+  name: "infra/python/wheels/httplib2-py3"
+  version: "version:0.19.1"
 >
+
+wheel: <
+  name: "infra/python/wheels/pyparsing-py2_py3"
+  version: "version:2.4.7"
+>
+
 
 # Used by:
 #   build/toolchain/win

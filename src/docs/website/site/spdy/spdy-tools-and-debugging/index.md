@@ -44,12 +44,12 @@ Debugging tools:
     <https://chrome.google.com/extensions/detail/ognampngfcbddbfemdapefohjiobgbdl>
 *   Chromium page benchmarker
     The page benchmarker can test HTTP and SPDY urls through chrome.
-    <https://sites.google.com/a/chromium.org/dev/chrome-benchmarking-extension>
+    <https://www.chromium.org/chrome-benchmarking-extension>
 *   Flip-in-mem-edsm-server
     The flip server is a fully implemented SPDY server or SPDY-to-HTTP gateway.
     Full source is available in the chromium tree at net/tools/flip_server. You
     can read more about it here:
-    <http://dev.chromium.org/spdy/running_flipinmemserver>
+    <http://www.chromium.org/spdy/running_flipinmemserver>
 *   Wireshark SPDY extension
     The wireshark extension needs some love. You'll find it checked into the
     chromium source tree under net/tools.

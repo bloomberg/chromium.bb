@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/network_icon_image_source.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -48,8 +49,8 @@ constexpr gfx::Size kStatusIconSize(kUnifiedTrayIconSize, kUnifiedTrayIconSize);
 constexpr gfx::Size kSignalIconSize(15, 15);
 constexpr int kSeparatorHeight = 18;
 constexpr int kPhoneNameLabelWidthMax = 160;
-constexpr gfx::Insets kBorderInsets(0, 16);
-constexpr gfx::Insets kBatteryLabelBorderInsets(0, 0, 0, 4);
+constexpr auto kBorderInsets = gfx::Insets::VH(0, 16);
+constexpr auto kBatteryLabelBorderInsets = gfx::Insets::TLBR(0, 0, 0, 4);
 
 // Typograph in dip.
 constexpr int kBatteryLabelFontSize = 11;
@@ -116,6 +117,13 @@ PhoneStatusView::PhoneStatusView(phonehub::PhoneModel* phone_model,
   AddView(TriView::Container::START, phone_name_label_);
 
   AddView(TriView::Container::CENTER, signal_icon_);
+
+  if (features::IsDarkLightModeEnabled()) {
+    // The battery icon requires its own layer to properly render the masked
+    // outline of the badge within the battery icon.
+    battery_icon_->SetPaintToLayer();
+    battery_icon_->layer()->SetFillsBoundsOpaquely(false);
+  }
   AddView(TriView::Container::CENTER, battery_icon_);
 
   battery_label_->SetAutoColorReadabilityEnabled(false);
@@ -132,7 +140,7 @@ PhoneStatusView::PhoneStatusView(phonehub::PhoneModel* phone_model,
   separator_ = new views::Separator();
   separator_->SetColor(AshColorProvider::Get()->GetContentLayerColor(
       AshColorProvider::ContentLayerType::kSeparatorColor));
-  separator_->SetPreferredHeight(kSeparatorHeight);
+  separator_->SetPreferredLength(kSeparatorHeight);
   AddView(TriView::Container::CENTER, separator_);
 
   settings_button_ = new IconButton(
@@ -254,7 +262,11 @@ PowerStatus::BatteryImageInfo PhoneStatusView::CalculateBatteryInfo() {
 
   if (IsBatterySaverModeOn(phone_status)) {
     info.icon_badge = &kPhoneHubBatterySaverIcon;
-    info.badge_outline = &kPhoneHubBatterySaverOutlineIcon;
+    if (features::IsDarkLightModeEnabled()) {
+      info.badge_outline = &kPhoneHubBatterySaverOutlineMaskIcon;
+    } else {
+      info.badge_outline = &kPhoneHubBatterySaverOutlineIcon;
+    }
     return info;
   }
 
@@ -263,16 +275,28 @@ PowerStatus::BatteryImageInfo PhoneStatusView::CalculateBatteryInfo() {
       info.alert_if_low = true;
       if (info.charge_percent < PowerStatus::kCriticalBatteryChargePercentage) {
         info.icon_badge = &kUnifiedMenuBatteryAlertIcon;
-        info.badge_outline = &kUnifiedMenuBatteryAlertOutlineIcon;
+        if (features::IsDarkLightModeEnabled()) {
+          info.badge_outline = &kUnifiedMenuBatteryAlertOutlineMaskIcon;
+        } else {
+          info.badge_outline = &kUnifiedMenuBatteryAlertOutlineIcon;
+        }
       }
       break;
     case PhoneStatusModel::ChargingState::kChargingAc:
       info.icon_badge = &kUnifiedMenuBatteryBoltIcon;
-      info.badge_outline = &kUnifiedMenuBatteryBoltOutlineIcon;
+      if (features::IsDarkLightModeEnabled()) {
+        info.badge_outline = &kUnifiedMenuBatteryBoltOutlineMaskIcon;
+      } else {
+        info.badge_outline = &kUnifiedMenuBatteryBoltOutlineIcon;
+      }
       break;
     case PhoneStatusModel::ChargingState::kChargingUsb:
       info.icon_badge = &kUnifiedMenuBatteryUnreliableIcon;
-      info.badge_outline = &kUnifiedMenuBatteryUnreliableOutlineIcon;
+      if (features::IsDarkLightModeEnabled()) {
+        info.badge_outline = &kUnifiedMenuBatteryUnreliableOutlineMaskIcon;
+      } else {
+        info.badge_outline = &kUnifiedMenuBatteryUnreliableOutlineIcon;
+      }
       break;
   }
 

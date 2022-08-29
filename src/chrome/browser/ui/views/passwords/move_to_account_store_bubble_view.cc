@@ -13,10 +13,12 @@
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/ui/passwords/bubble_controllers/move_to_account_store_bubble_controller.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate.h"
+#include "chrome/browser/ui/passwords/ui_utils.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
@@ -75,7 +77,7 @@ void BackgroundBorderAdderImageSource::Draw(gfx::Canvas* canvas) {
   float half_thickness = kBorderThickness / 2.0f;
   gfx::SizeF size_f(size());
   gfx::RectF bounds(size_f);
-  bounds.Inset(half_thickness, half_thickness);
+  bounds.Inset(half_thickness);
   // Draw the background
   if (add_background_) {
     DCHECK(background_color_);
@@ -160,14 +162,12 @@ void ImageWithBadge::Render() {
   const auto* color_provider = GetColorProvider();
   const SkColor kBackgroundColor =
       color_provider->GetColor(ui::kColorBubbleBackground);
-  // Make the border color a softer version of the icon color.
-  const SkColor kBorderColor =
-      SkColorSetA(color_provider->GetColor(ui::kColorIcon), 96);
+  const SkColor kBorderColor = color_provider->GetColor(ui::kColorBubbleBorder);
 
   gfx::Image rounded_badge = profiles::GetSizedAvatarIcon(
       gfx::Image(GetBadge()),
-      /*is_rectangle=*/true, /*width=*/gfx::kFaviconSize,
-      /*height=*/gfx::kFaviconSize, profiles::SHAPE_CIRCLE);
+      /*width=*/gfx::kFaviconSize, /*height=*/gfx::kFaviconSize,
+      profiles::SHAPE_CIRCLE);
 
   gfx::ImageSkia rounded_badge_with_background_and_border =
       gfx::CanvasImageSource::MakeImageSkia<BackgroundBorderAdderImageSource>(
@@ -224,10 +224,8 @@ MoveToAccountStoreBubbleView::MovingBannerView::MovingBannerView(
       .SetCrossAxisAlignment(views::LayoutAlignment::kCenter)
       .SetDefault(
           views::kMarginsKey,
-          gfx::Insets(
-              /*vertical=*/0,
-              /*horizontal=*/ChromeLayoutProvider::Get()->GetDistanceMetric(
-                  views::DISTANCE_RELATED_BUTTON_HORIZONTAL)));
+          gfx::Insets::VH(0, ChromeLayoutProvider::Get()->GetDistanceMetric(
+                                 views::DISTANCE_RELATED_BUTTON_HORIZONTAL)));
 
   from_view = AddChildView(std::move(from_image));
 
@@ -268,10 +266,9 @@ MoveToAccountStoreBubbleView::MoveToAccountStoreBubbleView(
                                    /*adjust_height_for_width=*/true))
       .SetDefault(
           views::kMarginsKey,
-          gfx::Insets(
-              /*vertical=*/ChromeLayoutProvider::Get()->GetDistanceMetric(
-                  DISTANCE_CONTROL_LIST_VERTICAL),
-              /*horizontal=*/0));
+          gfx::Insets::VH(ChromeLayoutProvider::Get()->GetDistanceMetric(
+                              DISTANCE_CONTROL_LIST_VERTICAL),
+                          0));
 
   AddChildView(CreateDescription());
 
@@ -297,6 +294,9 @@ MoveToAccountStoreBubbleView::MoveToAccountStoreBubbleView(
       base::BindOnce(&MoveToAccountStoreBubbleController::RejectMove,
                      base::Unretained(&controller_)));
 
+  SetShowIcon(base::FeatureList::IsEnabled(
+      password_manager::features::kUnifiedPasswordManagerDesktop));
+
   // The request is cancelled when the |controller_| is destructed.
   // |controller_| has the same life time as |this| and hence it's safe to use
   // base::Unretained(this).
@@ -309,8 +309,12 @@ MoveToAccountStoreBubbleView::~MoveToAccountStoreBubbleView() = default;
 void MoveToAccountStoreBubbleView::AddedToWidget() {
   static_cast<views::Label*>(GetBubbleFrameView()->title())
       ->SetAllowCharacterBreak(true);
-
-  SetBubbleHeader(IDR_SAVE_PASSWORD, IDR_SAVE_PASSWORD_DARK);
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kUnifiedPasswordManagerDesktop)) {
+    SetBubbleHeader(IDR_SAVE_PASSWORD_V2, IDR_SAVE_PASSWORD_V2_DARK);
+  } else {
+    SetBubbleHeader(IDR_SAVE_PASSWORD, IDR_SAVE_PASSWORD_DARK);
+  }
 }
 
 MoveToAccountStoreBubbleController*
@@ -321,6 +325,15 @@ MoveToAccountStoreBubbleView::GetController() {
 const MoveToAccountStoreBubbleController*
 MoveToAccountStoreBubbleView::GetController() const {
   return &controller_;
+}
+
+ui::ImageModel MoveToAccountStoreBubbleView::GetWindowIcon() {
+  if (!base::FeatureList::IsEnabled(
+          password_manager::features::kUnifiedPasswordManagerDesktop)) {
+    return ui::ImageModel();
+  }
+  return ui::ImageModel::FromVectorIcon(GooglePasswordManagerVectorIcon(),
+                                        ui::kColorIcon);
 }
 
 void MoveToAccountStoreBubbleView::OnFaviconReady(const gfx::Image& favicon) {

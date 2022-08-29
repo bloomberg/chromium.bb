@@ -20,8 +20,14 @@
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "chromeos/crosapi/mojom/crosapi.mojom.h"
-#include "chromeos/lacros/lacros_service.h"
+#include "chromeos/startup/browser_init_params.h"
 #endif
+
+#if !BUILDFLAG(IS_ANDROID)
+#include "extensions/browser/extension_registry.h"
+#include "extensions/common/extension_builder.h"
+#include "extensions/common/value_builder.h"
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 using StandardOnboardingTabsParams =
     StartupTabProviderImpl::StandardOnboardingTabsParams;
@@ -188,14 +194,25 @@ TEST(StartupTabProviderTest, GetPinnedTabsForState_Negative) {
 }
 
 TEST(StartupTabProviderTest, GetPreferencesTabsForState) {
-  SessionStartupPref pref(SessionStartupPref::Type::URLS);
-  pref.urls = {GURL(u"https://www.google.com")};
+  SessionStartupPref pref_urls(SessionStartupPref::Type::URLS);
+  SessionStartupPref pref_last_and_urls(
+      SessionStartupPref::Type::LAST_AND_URLS);
+  pref_urls.urls = {GURL(u"https://www.google.com")};
+  pref_last_and_urls.urls = {GURL(u"https://www.google.com")};
 
   StartupTabs output =
-      StartupTabProviderImpl::GetPreferencesTabsForState(pref, false);
+      StartupTabProviderImpl::GetPreferencesTabsForState(pref_urls, false);
 
   ASSERT_EQ(1U, output.size());
   EXPECT_EQ("www.google.com", output[0].url.host());
+  EXPECT_EQ(StartupTab::Type::kNormal, output[0].type);
+
+  output = StartupTabProviderImpl::GetPreferencesTabsForState(
+      pref_last_and_urls, false);
+
+  ASSERT_EQ(1U, output.size());
+  EXPECT_EQ("www.google.com", output[0].url.host());
+  EXPECT_EQ(StartupTab::Type::kFromLastAndUrlsStartupPref, output[0].type);
 }
 
 TEST(StartupTabProviderTest, GetPreferencesTabsForState_WrongType) {
@@ -334,7 +351,11 @@ TEST(StartupTabProviderTest, GetCommandLineTabs) {
               instance.HasCommandLineTabs(command_line, base::FilePath()));
   }
 
+#if !BUILDFLAG(IS_CHROMEOS_LACROS)
   // Unsafe scheme should be filtered out.
+  // Note that chrome:// URLs are allowed on Lacros so that trustworthy calls
+  // from Ash will work (URLs from untrustworthy applications are filtered
+  // before getting to StartupTabProvider).
   {
     base::CommandLine command_line({"", "chrome://flags"});
     StartupTabProviderImpl instance;
@@ -345,6 +366,7 @@ TEST(StartupTabProviderTest, GetCommandLineTabs) {
     EXPECT_EQ(CommandLineTabsPresent::kNo,
               instance.HasCommandLineTabs(command_line, base::FilePath()));
   }
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
   // Exceptional settings page.
   {
@@ -369,7 +391,7 @@ TEST(StartupTabProviderTest, GetCommandLineTabs) {
     auto has_tabs = instance.HasCommandLineTabs(command_line, base::FilePath());
     // This Windows-specific page is an exception and is not allowed on other
     // platforms, except ChromeOS which allows all chrome://settings pages.
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS)
     ASSERT_EQ(1u, output.size());
     EXPECT_EQ(GURL("chrome://settings/resetProfileSettings#cct"),
               output[0].url);
@@ -390,7 +412,7 @@ TEST(StartupTabProviderTest, GetCommandLineTabs) {
         instance.GetCommandLineTabs(command_line, base::FilePath(), &profile);
 
     auto has_tabs = instance.HasCommandLineTabs(command_line, base::FilePath());
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
     // On Chrome OS (ash-chrome), settings page is allowed to be specified.
     ASSERT_EQ(1u, output.size());
     EXPECT_EQ(GURL("chrome://settings/syncSetup"), output[0].url);
@@ -422,8 +444,6 @@ TEST(StartupTabProviderTest, GetCommandLineTabs) {
 TEST(StartupTabProviderTest, GetCrosapiTabs) {
   base::test::TaskEnvironment task_environment;
 
-  chromeos::LacrosService lacros_service;
-
   // Non kOpenWindowWithUrls case.
   {
     auto params = crosapi::mojom::BrowserInitParams::New();
@@ -431,7 +451,7 @@ TEST(StartupTabProviderTest, GetCrosapiTabs) {
         crosapi::mojom::InitialBrowserAction::kUseStartupPreference;
     // The given URLs should be ignored.
     params->startup_urls = std::vector<GURL>{GURL("https://google.com")};
-    lacros_service.SetInitParamsForTests(std::move(params));
+    chromeos::BrowserInitParams::SetInitParamsForTests(std::move(params));
     StartupTabs output = StartupTabProviderImpl().GetCrosapiTabs();
     EXPECT_TRUE(output.empty());
   }
@@ -443,7 +463,7 @@ TEST(StartupTabProviderTest, GetCrosapiTabs) {
         crosapi::mojom::InitialBrowserAction::kOpenWindowWithUrls;
     // The given URLs should be ignored.
     params->startup_urls = std::vector<GURL>{GURL("https://google.com")};
-    lacros_service.SetInitParamsForTests(std::move(params));
+    chromeos::BrowserInitParams::SetInitParamsForTests(std::move(params));
     StartupTabs output = StartupTabProviderImpl().GetCrosapiTabs();
     ASSERT_EQ(1u, output.size());
     EXPECT_EQ(GURL("https://google.com"), output[0].url);
@@ -456,22 +476,24 @@ TEST(StartupTabProviderTest, GetCrosapiTabs) {
         crosapi::mojom::InitialBrowserAction::kOpenWindowWithUrls;
     params->startup_urls = std::vector<GURL>{GURL("https://google.com"),
                                              GURL("https://gmail.com")};
-    lacros_service.SetInitParamsForTests(std::move(params));
+    chromeos::BrowserInitParams::SetInitParamsForTests(std::move(params));
     StartupTabs output = StartupTabProviderImpl().GetCrosapiTabs();
     ASSERT_EQ(2u, output.size());
     EXPECT_EQ(GURL("https://google.com"), output[0].url);
     EXPECT_EQ(GURL("https://gmail.com"), output[1].url);
   }
 
-  // Unsafe scheme should be filtered out.
+  // chrome:// scheme should be allowed on Lacros because calls from
+  // untrustworthy applications are filtered before StartupTabProvider.
   {
     auto params = crosapi::mojom::BrowserInitParams::New();
     params->initial_browser_action =
         crosapi::mojom::InitialBrowserAction::kOpenWindowWithUrls;
     params->startup_urls = std::vector<GURL>{GURL("chrome://flags")};
-    lacros_service.SetInitParamsForTests(std::move(params));
+    chromeos::BrowserInitParams::SetInitParamsForTests(std::move(params));
     StartupTabs output = StartupTabProviderImpl().GetCrosapiTabs();
-    EXPECT_TRUE(output.empty());
+    ASSERT_EQ(1u, output.size());
+    EXPECT_EQ(GURL("chrome://flags"), output[0].url);
   }
 
   // Exceptional settings page.
@@ -481,7 +503,7 @@ TEST(StartupTabProviderTest, GetCrosapiTabs) {
         crosapi::mojom::InitialBrowserAction::kOpenWindowWithUrls;
     params->startup_urls =
         std::vector<GURL>{GURL("chrome://settings/resetProfileSettings")};
-    lacros_service.SetInitParamsForTests(std::move(params));
+    chromeos::BrowserInitParams::SetInitParamsForTests(std::move(params));
     StartupTabs output = StartupTabProviderImpl().GetCrosapiTabs();
     ASSERT_EQ(1u, output.size());
     EXPECT_EQ(GURL("chrome://settings/resetProfileSettings"), output[0].url);
@@ -493,10 +515,78 @@ TEST(StartupTabProviderTest, GetCrosapiTabs) {
     params->initial_browser_action =
         crosapi::mojom::InitialBrowserAction::kOpenWindowWithUrls;
     params->startup_urls = std::vector<GURL>{GURL("about:blank")};
-    lacros_service.SetInitParamsForTests(std::move(params));
+    chromeos::BrowserInitParams::SetInitParamsForTests(std::move(params));
     StartupTabs output = StartupTabProviderImpl().GetCrosapiTabs();
     ASSERT_EQ(1u, output.size());
     EXPECT_EQ(GURL("about:blank"), output[0].url);
   }
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
+#if !BUILDFLAG(IS_ANDROID)
+
+class StartupTabProviderPrivacySandboxTest : public testing::Test {
+ protected:
+  extensions::ExtensionRegistry* registry() {
+    return extensions::ExtensionRegistry::Get(&profile_);
+  }
+  TestingProfile* profile() { return &profile_; }
+
+ private:
+  content::BrowserTaskEnvironment task_environment_;
+  TestingProfile profile_;
+};
+
+TEST_F(StartupTabProviderPrivacySandboxTest, GetPrivacySandboxTabsForState) {
+  // If no suitable tabs are available, and the profile does not have a custom
+  // NTP, a generic new tab URL should be returned.
+  auto output = StartupTabProviderImpl::GetPrivacySandboxTabsForState(
+      registry(), GURL(chrome::kChromeUINewTabPageURL),
+      {{StartupTab(GURL("https://www.unrelated.com"))}});
+  ASSERT_EQ(1U, output.size());
+  EXPECT_EQ(GURL(chrome::kChromeUINewTabURL), output[0].url);
+}
+
+TEST_F(StartupTabProviderPrivacySandboxTest,
+       GetPrivacySandboxTabsForState_SuitableTabAlready) {
+  // If there is already a suitable tab available for the Privacy Sandbox
+  // dialog, no additional tab should be added.
+  auto output = StartupTabProviderImpl::GetPrivacySandboxTabsForState(
+      registry(), GURL(chrome::kChromeUINewTabPageURL),
+      {{StartupTab(GURL("chrome://newtab"))}});
+  ASSERT_EQ(0U, output.size());
+}
+
+TEST_F(StartupTabProviderPrivacySandboxTest,
+       GetPrivacySandboxTabsForState_ExtensionControlledNtp) {
+  // Create an extension which overrides the NTP url. Even if a new tab is
+  // available as part of the startup tabs, an additional about:blank should be
+  // returned.
+  scoped_refptr<const extensions::Extension> extension =
+      extensions::ExtensionBuilder("1")
+          .SetManifestKey("chrome_url_overrides",
+                          extensions::DictionaryBuilder()
+                              .Set("newtab", "custom_tab.html")
+                              .Build())
+          .Build();
+  registry()->AddEnabled(extension);
+  auto output = StartupTabProviderImpl::GetPrivacySandboxTabsForState(
+      registry(), GURL(chrome::kChromeUINewTabPageURL),
+      {StartupTab(GURL(chrome::kChromeUINewTabURL))});
+  ASSERT_EQ(1U, output.size());
+  EXPECT_EQ(GURL(url::kAboutBlankURL), output[0].url);
+}
+
+TEST_F(StartupTabProviderPrivacySandboxTest,
+       GetPrivacySandboxTabsForState_DseControlledNtp) {
+  // If the user's DSE is changing the newtab such that it is no longer Chrome
+  // controlled, and the user has no other suitable startup tab, about:blank
+  // should be used.
+  auto output = StartupTabProviderImpl::GetPrivacySandboxTabsForState(
+      registry(), GURL("https://wwww.example.com/newtab"),
+      {StartupTab(GURL(chrome::kChromeUINewTabURL))});
+  ASSERT_EQ(1U, output.size());
+  EXPECT_EQ(GURL(url::kAboutBlankURL), output[0].url);
+}
+
+#endif  // !BUILDFLAG(IS_ANDROID)

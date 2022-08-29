@@ -6,13 +6,14 @@
 #define CHROME_BROWSER_UI_VIEWS_PERMISSION_BUBBLE_PERMISSION_PROMPT_IMPL_H_
 
 #include "base/memory/raw_ptr.h"
+#include "base/time/time.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/permission_bubble/permission_prompt_bubble_view.h"
 #include "chrome/browser/ui/views/permission_bubble/permission_prompt_style.h"
 #include "components/permissions/permission_prompt.h"
 
 class Browser;
+class LocationBarView;
 
 namespace content {
 class WebContents;
@@ -39,10 +40,12 @@ class PermissionPromptImpl : public permissions::PermissionPrompt,
   permissions::PermissionPromptDisposition GetPromptDisposition()
       const override;
 
+  void CleanUpPromptBubble();
+
   views::Widget* GetPromptBubbleWidgetForTesting();
 
   // views::WidgetObserver:
-  void OnWidgetClosing(views::Widget* widget) override;
+  void OnWidgetDestroying(views::Widget* widget) override;
 
  private:
   bool IsLocationBarDisplayed();
@@ -65,8 +68,6 @@ class PermissionPromptImpl : public permissions::PermissionPrompt,
   raw_ptr<content::WebContents> web_contents_;
 
   PermissionPromptStyle prompt_style_;
-
-  raw_ptr<PermissionChip> chip_ = nullptr;
 
   const raw_ptr<permissions::PermissionPrompt::Delegate> delegate_;
 

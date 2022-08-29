@@ -44,11 +44,11 @@ class FakeDevToolsClient : public StubDevToolsClient {
   // Overridden from DevToolsClient:
   Status ConnectIfNecessary() override { return listener_->OnConnected(this); }
 
-  Status SendCommandAndGetResult(
-      const std::string& method,
-      const base::DictionaryValue& params,
-      std::unique_ptr<base::DictionaryValue>* result) override {
+  Status SendCommandAndGetResult(const std::string& method,
+                                 const base::DictionaryValue& params,
+                                 base::Value* result) override {
     sent_command_queue_.push(method);
+    *result = base::Value(base::Value::Type::DICTIONARY);
     return Status(kOk);
   }
 
@@ -124,16 +124,18 @@ void ConsoleLogParams(base::DictionaryValue* out_params,
                       const char* level,
                       int lineNumber,
                       const char* text) {
+  base::Value::Dict* out_dict = out_params->GetIfDict();
+  CHECK(out_dict);
   if (source)
-    out_params->SetString("entry.source", source);
+    out_dict->SetByDottedPath("entry.source", source);
   if (url)
-    out_params->SetString("entry.url", url);
+    out_dict->SetByDottedPath("entry.url", url);
   if (level)
-    out_params->SetString("entry.level", level);
+    out_dict->SetByDottedPath("entry.level", level);
   if (lineNumber != -1)
-    out_params->SetInteger("entry.lineNumber", lineNumber);
+    out_dict->SetByDottedPath("entry.lineNumber", lineNumber);
   if (text)
-    out_params->SetString("entry.text", text);
+    out_dict->SetByDottedPath("entry.text", text);
 }
 
 }  // namespace
@@ -180,7 +182,7 @@ TEST(ConsoleLogger, ConsoleMessages) {
             client.TriggerEvent("Log.entryAdded", params7).code());
 
   base::DictionaryValue params8;  // No message object.
-  params8.SetInteger("gaga", 8);
+  params8.GetDict().Set("gaga", 8);
   ASSERT_EQ(kUnknownError,
             client.TriggerEvent("Log.entryAdded", params8).code());
 

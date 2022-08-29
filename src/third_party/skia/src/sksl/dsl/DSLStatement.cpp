@@ -7,17 +7,15 @@
 
 #include "include/sksl/DSLStatement.h"
 
+#include "include/private/SkSLDefines.h"
 #include "include/sksl/DSLBlock.h"
 #include "include/sksl/DSLExpression.h"
-#include "src/sksl/SkSLCompiler.h"
+#include "include/sksl/SkSLPosition.h"
 #include "src/sksl/SkSLThreadContext.h"
 #include "src/sksl/ir/SkSLBlock.h"
+#include "src/sksl/ir/SkSLExpression.h"
 #include "src/sksl/ir/SkSLExpressionStatement.h"
 #include "src/sksl/ir/SkSLNop.h"
-
-#if !defined(SKSL_STANDALONE) && SK_SUPPORT_GPU
-#include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
-#endif
 
 namespace SkSL {
 
@@ -31,12 +29,13 @@ DSLStatement::DSLStatement(DSLBlock block)
 DSLStatement::DSLStatement(DSLExpression expr) {
     std::unique_ptr<SkSL::Expression> skslExpr = expr.release();
     if (skslExpr) {
-        fStatement = SkSL::ExpressionStatement::Make(ThreadContext::Context(), std::move(skslExpr));
+        fStatement = SkSL::ExpressionStatement::Convert(ThreadContext::Context(),
+                                                        std::move(skslExpr));
     }
 }
 
 DSLStatement::DSLStatement(std::unique_ptr<SkSL::Expression> expr)
-    : fStatement(SkSL::ExpressionStatement::Make(ThreadContext::Context(), std::move(expr))) {
+    : fStatement(SkSL::ExpressionStatement::Convert(ThreadContext::Context(), std::move(expr))) {
     SkASSERT(this->hasValue());
 }
 
@@ -45,50 +44,22 @@ DSLStatement::DSLStatement(std::unique_ptr<SkSL::Statement> stmt)
     SkASSERT(this->hasValue());
 }
 
-DSLStatement::DSLStatement(DSLPossibleExpression expr, PositionInfo pos)
-    : DSLStatement(DSLExpression(std::move(expr), pos)) {}
-
-DSLStatement::DSLStatement(DSLPossibleStatement stmt, PositionInfo pos) {
-    ThreadContext::ReportErrors(pos);
-    if (stmt.hasValue()) {
-        fStatement = std::move(stmt.fStatement);
-    } else {
-        fStatement = SkSL::Nop::Make();
-    }
-    if (pos.line() != -1) {
-        fStatement->fLine = pos.line();
+DSLStatement::DSLStatement(std::unique_ptr<SkSL::Statement> stmt, Position pos)
+        : fStatement(stmt ? std::move(stmt) : SkSL::Nop::Make()) {
+    if (pos.valid() && !fStatement->fPosition.valid()) {
+        fStatement->fPosition = pos;
     }
 }
 
-DSLStatement::~DSLStatement() {
-#if !defined(SKSL_STANDALONE) && SK_SUPPORT_GPU
-    if (fStatement && ThreadContext::InFragmentProcessor()) {
-        ThreadContext::CurrentEmitArgs()->fFragBuilder->codeAppend(this->release());
-        return;
-    }
-#endif
-    SkASSERTF(!fStatement || !ThreadContext::Settings().fAssertDSLObjectsReleased,
-              "Statement destroyed without being incorporated into program (see "
-              "ProgramSettings::fAssertDSLObjectsReleased)");
-}
-
-DSLPossibleStatement::DSLPossibleStatement(std::unique_ptr<SkSL::Statement> statement)
-    : fStatement(std::move(statement)) {}
-
-DSLPossibleStatement::~DSLPossibleStatement() {
-    if (fStatement) {
-        // this handles incorporating the expression into the output tree
-        DSLStatement(std::move(fStatement));
-    }
-}
+DSLStatement::~DSLStatement() {}
 
 DSLStatement operator,(DSLStatement left, DSLStatement right) {
-    int line = left.fStatement->fLine;
+    Position pos = left.fStatement->fPosition;
     StatementArray stmts;
     stmts.reserve_back(2);
     stmts.push_back(left.release());
     stmts.push_back(right.release());
-    return DSLStatement(SkSL::Block::MakeUnscoped(line, std::move(stmts)));
+    return DSLStatement(SkSL::Block::Make(pos, std::move(stmts), Block::Kind::kCompoundStatement));
 }
 
 } // namespace dsl

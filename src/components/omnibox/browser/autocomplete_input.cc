@@ -6,7 +6,6 @@
 
 #include <vector>
 
-#include "base/cxx17_backports.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -26,12 +25,12 @@
 #include "url/url_canon_ip.h"
 #include "url/url_util.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chromeos/crosapi/cpp/lacros_startup_state.h"  // nogncheck
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chromeos/crosapi/cpp/gurl_os_handler_utils.h"  // nogncheck
-#endif                                                   // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 namespace {
 
@@ -82,7 +81,7 @@ void OffsetComponentsExcludingScheme(url::Parsed* parts, int offset) {
       &parts->username, &parts->password, &parts->host, &parts->port,
       &parts->path,     &parts->query,    &parts->ref,
   };
-  for (size_t i = 0; i < base::size(components); ++i) {
+  for (size_t i = 0; i < std::size(components); ++i) {
     url_formatter::OffsetComponent(offset, components[i]);
   }
 }
@@ -184,7 +183,7 @@ void AutocompleteInput::Init(
                            &upgraded_url)) {
     DCHECK(upgraded_url.is_valid());
     added_default_scheme_to_typed_url_ = true;
-    scheme_ = base::ASCIIToUTF16(url::kHttpsScheme);
+    scheme_ = std::u16string(url::kHttpsScheme16);
     canonicalized_url = upgraded_url;
     // We changed the scheme from http to https. Offset remaining components
     // by one.
@@ -202,8 +201,7 @@ void AutocompleteInput::Init(
 
 AutocompleteInput::AutocompleteInput(const AutocompleteInput& other) = default;
 
-AutocompleteInput::~AutocompleteInput() {
-}
+AutocompleteInput::~AutocompleteInput() = default;
 
 // static
 std::string AutocompleteInput::TypeToString(metrics::OmniboxInputType type) {
@@ -247,6 +245,7 @@ metrics::OmniboxInputType AutocompleteInput::Parse(
   if (scheme)
     *scheme = parsed_scheme;
   const std::string parsed_scheme_utf8(base::UTF16ToUTF8(parsed_scheme));
+  DCHECK(base::IsStringASCII(parsed_scheme_utf8));
 
   // If we can't canonicalize the user's input, the rest of the autocomplete
   // system isn't going to be able to produce a navigable URL match for it.
@@ -259,7 +258,7 @@ metrics::OmniboxInputType AutocompleteInput::Parse(
   if (!canonicalized_url->is_valid())
     return metrics::OmniboxInputType::QUERY;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
   const bool is_lacros_or_lacros_is_primary =
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
       true;
@@ -278,19 +277,19 @@ metrics::OmniboxInputType AutocompleteInput::Parse(
     // making them accessible again.
     return metrics::OmniboxInputType::URL;
   }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
-  if (base::LowerCaseEqualsASCII(parsed_scheme_utf8, url::kFileScheme)) {
+  if (base::EqualsCaseInsensitiveASCII(parsed_scheme_utf8, url::kFileScheme)) {
     // A user might or might not type a scheme when entering a file URL.  In
     // either case, |parsed_scheme_utf8| will tell us that this is a file URL,
     // but |parts->scheme| might be empty, e.g. if the user typed "C:\foo".
 
-#if defined(OS_IOS)
+#if BUILDFLAG(IS_IOS)
     // On iOS, which cannot display file:/// URLs, treat this case like a query.
     return metrics::OmniboxInputType::QUERY;
 #else
     return metrics::OmniboxInputType::URL;
-#endif  // defined(OS_IOS)
+#endif  // BUILDFLAG(IS_IOS)
   }
 
   // Treat javascript: scheme queries followed by things that are unlikely to
@@ -306,8 +305,9 @@ metrics::OmniboxInputType AutocompleteInput::Parse(
   // (e.g. "ftp" or "view-source") but I'll wait to spend the effort on that
   // until I run into some cases that really need it.
   if (parts->scheme.is_nonempty() &&
-      !base::LowerCaseEqualsASCII(parsed_scheme_utf8, url::kHttpScheme) &&
-      !base::LowerCaseEqualsASCII(parsed_scheme_utf8, url::kHttpsScheme)) {
+      !base::EqualsCaseInsensitiveASCII(parsed_scheme_utf8, url::kHttpScheme) &&
+      !base::EqualsCaseInsensitiveASCII(parsed_scheme_utf8,
+                                        url::kHttpsScheme)) {
     metrics::OmniboxInputType type =
         scheme_classifier.GetInputTypeForScheme(parsed_scheme_utf8);
     if (type != metrics::OmniboxInputType::EMPTY)
@@ -561,8 +561,8 @@ void AutocompleteInput::ParseForEmphasizeComponents(
   int after_scheme_and_colon = parts.scheme.end() + 1;
   // For the view-source and blob schemes, we should emphasize the host of the
   // URL qualified by the view-source or blob prefix.
-  if ((base::LowerCaseEqualsASCII(scheme_str, kViewSourceScheme) ||
-       base::LowerCaseEqualsASCII(scheme_str, url::kBlobScheme)) &&
+  if ((base::EqualsCaseInsensitiveASCII(scheme_str, kViewSourceScheme) ||
+       base::EqualsCaseInsensitiveASCII(scheme_str, url::kBlobScheme)) &&
       (static_cast<int>(text.length()) > after_scheme_and_colon)) {
     // Obtain the URL prefixed by view-source or blob and parse it.
     std::u16string real_url(text.substr(after_scheme_and_colon));
@@ -584,7 +584,8 @@ void AutocompleteInput::ParseForEmphasizeComponents(
         host->reset();
       }
     }
-  } else if (base::LowerCaseEqualsASCII(scheme_str, url::kFileSystemScheme) &&
+  } else if (base::EqualsCaseInsensitiveASCII(scheme_str,
+                                              url::kFileSystemScheme) &&
              parts.inner_parsed() && parts.inner_parsed()->scheme.is_valid()) {
     *host = parts.inner_parsed()->host;
   }

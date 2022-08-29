@@ -14,9 +14,9 @@
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_store_interface.h"
 #include "components/password_manager/core/common/password_manager_features.h"
-#import "components/password_manager/ios/password_generation_provider.h"
 #import "ios/chrome/browser/autofill/manual_fill/passwords_fetcher.h"
 #import "ios/chrome/browser/favicon/favicon_loader.h"
+#import "ios/chrome/browser/net/crurl.h"
 #import "ios/chrome/browser/passwords/password_tab_helper.h"
 #import "ios/chrome/browser/sync/sync_setup_service.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_action_cell.h"
@@ -99,7 +99,7 @@ BOOL AreCredentialsAtIndexesConnected(
   // Bridge to observe the web state from Objective-C.
   std::unique_ptr<web::WebStateObserverBridge> _webStateObserverBridge;
 
-  // Bridge to observe form activity in |_webState|.
+  // Bridge to observe form activity in `_webState`.
   std::unique_ptr<autofill::FormActivityObserverBridge>
       _formActivityObserverBridge;
 
@@ -198,7 +198,7 @@ BOOL AreCredentialsAtIndexesConnected(
   }
 }
 
-// Posts the credentials to the consumer. If filtered is |YES| it only post the
+// Posts the credentials to the consumer. If filtered is `YES` it only post the
 // ones associated with the active web state.
 - (void)postCredentialsToConsumer {
   if (!self.consumer) {
@@ -242,9 +242,7 @@ BOOL AreCredentialsAtIndexesConnected(
         _webState ? PasswordTabHelper::FromWebState(_webState)
                         ->GetPasswordManagerClient()
                   : nullptr;
-    if (base::FeatureList::IsEnabled(
-            password_manager::features::kEnableManualPasswordGeneration) &&
-        _syncService && _syncService->CanSyncFeatureStart() &&
+    if (_syncService && _syncService->CanSyncFeatureStart() &&
         passwordManagerClient &&
         passwordManagerClient->IsSavingAndFillingEnabled(_URL) &&
         _activeFieldIsPassword) {
@@ -255,7 +253,7 @@ BOOL AreCredentialsAtIndexesConnected(
                  action:^{
                    base::RecordAction(base::UserMetricsAction(
                        "ManualFallback_Password_OpenSuggestPassword"));
-                   [weakSelf suggestPassword];
+                   [weakSelf.navigator openPasswordSuggestion];
                  }];
       suggestPasswordItem.accessibilityIdentifier =
           manual_fill::SuggestPasswordAccessibilityIdentifier;
@@ -292,17 +290,6 @@ BOOL AreCredentialsAtIndexesConnected(
   }
 }
 
-- (void)suggestPassword {
-  if ([self canUserInjectInPasswordField:YES requiresHTTPS:NO]) {
-    DCHECK(_webState);
-    id<PasswordGenerationProvider> generationProvider =
-        PasswordTabHelper::FromWebState(_webState)
-            ->GetPasswordGenerationProvider();
-    if (generationProvider)
-      [generationProvider triggerPasswordGeneration];
-  }
-}
-
 #pragma mark - Setters
 
 - (void)setConsumer:(id<ManualFillPasswordConsumer>)consumer {
@@ -332,10 +319,10 @@ BOOL AreCredentialsAtIndexesConnected(
 
 #pragma mark - TableViewFaviconDataSource
 
-- (void)faviconForURL:(const GURL&)URL
+- (void)faviconForURL:(CrURL*)URL
            completion:(void (^)(FaviconAttributes*))completion {
   DCHECK(completion);
-  self.faviconLoader->FaviconForPageUrlOrHost(URL, gfx::kFaviconSize,
+  self.faviconLoader->FaviconForPageUrlOrHost(URL.gurl, gfx::kFaviconSize,
                                               completion);
 }
 

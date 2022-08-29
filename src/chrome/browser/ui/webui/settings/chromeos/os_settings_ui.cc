@@ -10,15 +10,21 @@
 #include "ash/public/cpp/bluetooth_config_service.h"
 #include "ash/public/cpp/esim_manager.h"
 #include "ash/public/cpp/network_config_service.h"
+#include "ash/services/cellular_setup/cellular_setup_impl.h"
+#include "ash/services/cellular_setup/public/mojom/esim_manager.mojom.h"
+#include "ash/webui/personalization_app/search/search.mojom.h"
+#include "ash/webui/personalization_app/search/search_handler.h"
 #include "base/metrics/histogram_functions.h"
+#include "chrome/browser/ash/web_applications/personalization_app/personalization_app_manager.h"
+#include "chrome/browser/ash/web_applications/personalization_app/personalization_app_manager_factory.h"
 #include "chrome/browser/nearby_sharing/contacts/nearby_share_contact_manager.h"
 #include "chrome/browser/nearby_sharing/nearby_receive_manager.h"
 #include "chrome/browser/nearby_sharing/nearby_share_settings.h"
 #include "chrome/browser/nearby_sharing/nearby_sharing_service_factory.h"
 #include "chrome/browser/nearby_sharing/nearby_sharing_service_impl.h"
 #include "chrome/browser/ui/webui/managed_ui_handler.h"
+#include "chrome/browser/ui/webui/settings/ash/os_apps_page/app_notification_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/device_storage_handler.h"
-#include "chrome/browser/ui/webui/settings/chromeos/os_apps_page/app_notification_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_manager.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_manager_factory.h"
 #include "chrome/browser/ui/webui/settings/chromeos/pref_names.h"
@@ -28,13 +34,26 @@
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/os_settings_resources.h"
 #include "chrome/grit/os_settings_resources_map.h"
-#include "chromeos/services/cellular_setup/cellular_setup_impl.h"
-#include "chromeos/services/cellular_setup/public/mojom/esim_manager.mojom.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
+#include "ui/gfx/native_widget_types.h"
+
+namespace {
+
+class AppManagementDelegate : public AppManagementPageHandler::Delegate {
+ public:
+  AppManagementDelegate() = default;
+  ~AppManagementDelegate() override = default;
+
+  gfx::NativeWindow GetUninstallAnchorWindow() const override {
+    return nullptr;
+  }
+};
+
+}  // namespace
 
 namespace chromeos {
 namespace settings {
@@ -87,13 +106,13 @@ OSSettingsUI::~OSSettingsUI() {
 }
 
 void OSSettingsUI::BindInterface(
-    mojo::PendingReceiver<cellular_setup::mojom::CellularSetup> receiver) {
-  cellular_setup::CellularSetupImpl::CreateAndBindToReciever(
+    mojo::PendingReceiver<ash::cellular_setup::mojom::CellularSetup> receiver) {
+  ash::cellular_setup::CellularSetupImpl::CreateAndBindToReciever(
       std::move(receiver));
 }
 
 void OSSettingsUI::BindInterface(
-    mojo::PendingReceiver<cellular_setup::mojom::ESimManager> receiver) {
+    mojo::PendingReceiver<ash::cellular_setup::mojom::ESimManager> receiver) {
   ash::GetESimManager(std::move(receiver));
 }
 
@@ -117,6 +136,25 @@ void OSSettingsUI::BindInterface(
 }
 
 void OSSettingsUI::BindInterface(
+    mojo::PendingReceiver<::ash::personalization_app::mojom::SearchHandler>
+        receiver) {
+  DCHECK(ash::features::IsPersonalizationHubEnabled())
+      << "This interface should only be bound if personalization hub feature "
+         "is enabled";
+
+  auto* profile = Profile::FromWebUI(web_ui());
+  DCHECK(profile->IsRegularProfile())
+      << "This interface should only be bound for regular profiles";
+
+  auto* search_handler =
+      ::ash::personalization_app::PersonalizationAppManagerFactory::
+          GetForBrowserContext(profile)
+              ->search_handler();
+  DCHECK(search_handler);
+  search_handler->BindInterface(std::move(receiver));
+}
+
+void OSSettingsUI::BindInterface(
     mojo::PendingReceiver<app_notification::mojom::AppNotificationsHandler>
         receiver) {
   OsSettingsManagerFactory::GetForProfile(Profile::FromWebUI(web_ui()))
@@ -127,9 +165,10 @@ void OSSettingsUI::BindInterface(
 void OSSettingsUI::BindInterface(
     mojo::PendingReceiver<app_management::mojom::PageHandlerFactory> receiver) {
   if (!app_management_page_handler_factory_) {
+    auto delegate = std::make_unique<AppManagementDelegate>();
     app_management_page_handler_factory_ =
         std::make_unique<AppManagementPageHandlerFactory>(
-            Profile::FromWebUI(web_ui()));
+            Profile::FromWebUI(web_ui()), std::move(delegate));
   }
   app_management_page_handler_factory_->Bind(std::move(receiver));
 }

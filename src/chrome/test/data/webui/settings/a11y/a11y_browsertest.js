@@ -8,6 +8,7 @@ GEN_INCLUDE([
 ]);
 
 GEN('#include "build/branding_buildflags.h"');
+GEN('#include "build/build_config.h"');
 GEN('#include "chrome/common/chrome_features.h"');
 GEN('#include "content/public/test/browser_test.h"');
 
@@ -41,22 +42,13 @@ const violationFilterExcludeCustomInputAndTabindex =
  ['Passwords', 'passwords_a11y_test.js'],
 ].forEach(test => defineTest(...test));
 
-GEN('#if !defined(OS_CHROMEOS)');
+GEN('#if !BUILDFLAG(IS_CHROMEOS)');
 [[
   'ManageProfile', 'manage_profile_a11y_test.js',
   {filter: violationFilterExcludeCustomInputAndTabindex}
 ],
  ['Signout', 'sign_out_a11y_test.js'],
 ].forEach(test => defineTest(...test));
-GEN('#endif  // !defined(OS_CHROMEOS)');
-
-// Disable since the EDIT_DICTIONARY route does not exist on Mac.
-// TODO(crbug.com/1012370) flaky on Linux b/c assertTrue(!!languagesPage);
-// TODO(crbug.com/1012370) flaky on Win the same way
-GEN('#if !defined(OS_MAC) && !defined(OS_LINUX) && !defined(OS_CHROMEOS) && !defined(OS_WIN)');
-defineTest(
-    'EditDictionary', 'edit_dictionary_a11y_test.js',
-    {filter: violationFilterExcludeCustomInputAndTabindex});
 GEN('#endif');
 
 function defineTest(testName, module, config) {

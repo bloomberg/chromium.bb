@@ -34,8 +34,29 @@ StreamConsumer::StreamConsumer(openscreen::cast::Receiver* receiver,
   }
 }
 
+StreamConsumer::StreamConsumer(StreamConsumer&& other,
+                               openscreen::cast::Receiver* receiver,
+                               mojo::ScopedDataPipeProducerHandle data_pipe)
+    : StreamConsumer(receiver,
+                     other.frame_duration_,
+                     std::move(data_pipe),
+                     std::move(other.frame_received_cb_),
+                     std::move(other.on_new_frame_)) {
+  if (other.is_read_pending_) {
+    ReadFrame(std::move(other.no_frames_available_cb_));
+  }
+}
+
 StreamConsumer::~StreamConsumer() {
   receiver_->SetConsumer(nullptr);
+}
+
+void StreamConsumer::ReadFrame(base::OnceClosure no_frames_available_cb) {
+  DCHECK(!is_read_pending_);
+  DCHECK(!no_frames_available_cb_);
+  is_read_pending_ = true;
+  no_frames_available_cb_ = std::move(no_frames_available_cb);
+  MaybeSendNextFrame();
 }
 
 void StreamConsumer::CloseDataPipeOnError() {
@@ -68,24 +89,32 @@ void StreamConsumer::OnPipeWritable(MojoResult result) {
     return;
   }
 
-  // Advance to the next frame if a new one is ready.
-  int next_frame_buffer_size = receiver_->AdvanceToNextFrame();
-  if (next_frame_buffer_size != openscreen::cast::Receiver::kNoFramesReady)
-    OnFramesReady(next_frame_buffer_size);
+  MaybeSendNextFrame();
 }
 
 void StreamConsumer::OnFramesReady(int next_frame_buffer_size) {
-  DCHECK(data_pipe_);
-  on_new_frame_.Run();
+  MaybeSendNextFrame();
+}
 
-  if (pending_buffer_remaining_bytes_ != 0) {
-    // There already is a pending frame. Ignore this one for now.
+void StreamConsumer::MaybeSendNextFrame() {
+  if (!is_read_pending_ || pending_buffer_remaining_bytes_ > 0) {
     return;
   }
 
+  const int current_frame_buffer_size = receiver_->AdvanceToNextFrame();
+  if (current_frame_buffer_size == openscreen::cast::Receiver::kNoFramesReady) {
+    if (no_frames_available_cb_) {
+      std::move(no_frames_available_cb_).Run();
+    }
+    return;
+  }
+
+  no_frames_available_cb_.Reset();
+  on_new_frame_.Run();
+
   void* buffer = nullptr;
-  uint32_t buffer_size = next_frame_buffer_size;
-  uint32_t mojo_buffer_size = next_frame_buffer_size;
+  uint32_t buffer_size = current_frame_buffer_size;
+  uint32_t mojo_buffer_size = current_frame_buffer_size;
 
   if (buffer_size > kMaxFrameSize) {
     LOG(ERROR) << "[ssrc:" << receiver_->ssrc() << "] "
@@ -142,9 +171,8 @@ void StreamConsumer::OnFramesReady(int next_frame_buffer_size) {
       openscreen::cast::EncodedFrame::Dependency::KEY_FRAME;
 
   base::TimeDelta playout_time =
-      base::Microseconds(encoded_frame.rtp_timestamp
-                             .ToTimeSinceOrigin<std::chrono::microseconds>(
-                                 receiver_->rtp_timebase())
+      base::Microseconds(std::chrono::duration_cast<std::chrono::microseconds>(
+                             encoded_frame.reference_time.time_since_epoch())
                              .count());
 
   // Some senders do not send an initial playout time of 0. To work around this,
@@ -158,6 +186,7 @@ void StreamConsumer::OnFramesReady(int next_frame_buffer_size) {
            << "Received new frame. Timestamp: " << playout_time
            << ", is_key_frame: " << is_key_frame;
 
+  is_read_pending_ = false;
   frame_received_cb_.Run(media::mojom::DecoderBuffer::New(
       playout_time /* timestamp */, frame_duration_,
       false /* is_end_of_stream */, buffer_size, is_key_frame,

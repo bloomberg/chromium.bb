@@ -4,6 +4,7 @@
 
 #include <string>
 
+#include "base/command_line.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -66,7 +67,7 @@ class PopupBrowserTest : public InProcessBrowserTest,
     Browser* popup = ui_test_utils::WaitForBrowserToOpen();
     EXPECT_NE(popup, browser);
     auto* popup_contents = popup->tab_strip_model()->GetActiveWebContents();
-    EXPECT_TRUE(WaitForRenderFrameReady(popup_contents->GetMainFrame()));
+    EXPECT_TRUE(WaitForRenderFrameReady(popup_contents->GetPrimaryMainFrame()));
     return popup;
   }
 };
@@ -161,12 +162,12 @@ IN_PROC_BROWSER_TEST_P(PopupBrowserTest, DISABLED_OpenClampedToCurrentDisplay) {
 
 // Ensure popups cannot be moved beyond the available display space by script.
 // TODO(crbug.com/1228795): Flaking on Linux Ozone
-#if defined(OS_LINUX) && defined(USE_OZONE)
-#define Maybe_MoveClampedToCurrentDisplay DISABLED_MoveClampedToCurrentDisplay
+#if BUILDFLAG(IS_LINUX) && defined(USE_OZONE)
+#define MAYBE_MoveClampedToCurrentDisplay DISABLED_MoveClampedToCurrentDisplay
 #else
-#define Maybe_MoveClampedToCurrentDisplay MoveClampedToCurrentDisplay
+#define MAYBE_MoveClampedToCurrentDisplay MoveClampedToCurrentDisplay
 #endif
-IN_PROC_BROWSER_TEST_P(PopupBrowserTest, Maybe_MoveClampedToCurrentDisplay) {
+IN_PROC_BROWSER_TEST_P(PopupBrowserTest, MAYBE_MoveClampedToCurrentDisplay) {
   const auto display = GetDisplayNearestBrowser(browser());
   const char kOpenPopup[] =
       "open('.', '', 'left=' + (screen.availLeft + 50) + "

@@ -7,7 +7,9 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/feature_list.h"
 #include "base/process/process.h"
 #include "build/build_config.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
@@ -16,11 +18,13 @@
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_options.h"
+#include "net/cookies/cookie_partition_key.h"
 #include "net/cookies/cookie_store.h"
 #include "net/cookies/cookie_util.h"
 #include "net/url_request/url_request_context.h"
 #include "services/network/cookie_access_delegate_impl.h"
 #include "services/network/session_cleanup_cookie_store.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 using CookieDeletionInfo = net::CookieDeletionInfo;
@@ -29,6 +33,9 @@ using CookieDeleteSessionControl = net::CookieDeletionInfo::SessionControl;
 namespace network {
 
 namespace {
+
+using CookiePartitionKeyPairCallback = base::OnceCallback<void(
+    std::pair<bool, absl::optional<net::CookiePartitionKey>>)>;
 
 bool g_crash_on_get_cookie_list = false;
 
@@ -45,7 +52,7 @@ void CookieManager::ListenerRegistration::DispatchCookieStoreChange(
 
 CookieManager::CookieManager(
     net::URLRequestContext* url_request_context,
-    const FirstPartySets* first_party_sets,
+    FirstPartySetsAccessDelegate* const first_party_sets_access_delegate,
     scoped_refptr<SessionCleanupCookieStore> session_cleanup_cookie_store,
     mojom::CookieManagerParamsPtr params)
     : cookie_store_(url_request_context->cookie_store()),
@@ -61,7 +68,8 @@ CookieManager::CookieManager(
   }
   cookie_store_->SetCookieAccessDelegate(
       std::make_unique<CookieAccessDelegateImpl>(
-          cookie_access_delegate_type, first_party_sets, &cookie_settings_));
+          cookie_access_delegate_type, first_party_sets_access_delegate,
+          &cookie_settings_));
 }
 
 CookieManager::~CookieManager() {
@@ -94,66 +102,153 @@ void CookieManager::GetCookieList(
     const net::CookieOptions& cookie_options,
     const net::CookiePartitionKeyCollection& cookie_partition_key_collection,
     GetCookieListCallback callback) {
-#if !defined(OS_IOS)
+#if !BUILDFLAG(IS_IOS)
   if (g_crash_on_get_cookie_list)
     base::Process::TerminateCurrentProcessImmediately(1);
 #endif
 
-  cookie_store_->GetCookieListWithOptionsAsync(
-      url, cookie_options,
+  std::pair<GetCookieListCallback, GetCookieListCallback> callbacks =
+      base::SplitOnceCallback(std::move(callback));
+
+  absl::optional<net::CookiePartitionKeyCollection> maybe_key_collection =
       cookie_partition_key_collection.FirstPartySetify(
-          cookie_store_->cookie_access_delegate()),
-      std::move(callback));
+          cookie_store_->cookie_access_delegate(),
+          base::BindOnce(&CookieManager::OnGotCookiePartitionKeyCollection,
+                         weak_factory_.GetWeakPtr(), url, cookie_options,
+                         std::move(callbacks.first)));
+  if (maybe_key_collection.has_value()) {
+    OnGotCookiePartitionKeyCollection(url, cookie_options,
+                                      std::move(callbacks.second),
+                                      maybe_key_collection.value());
+  }
+}
+
+void CookieManager::OnGotCookiePartitionKeyCollection(
+    const GURL& url,
+    const net::CookieOptions& cookie_options,
+    GetCookieListCallback callback,
+    net::CookiePartitionKeyCollection cookie_partition_key_collection) {
+  cookie_store_->GetCookieListWithOptionsAsync(url, cookie_options,
+                                               cookie_partition_key_collection,
+                                               std::move(callback));
 }
 
 void CookieManager::SetCanonicalCookie(const net::CanonicalCookie& cookie,
                                        const GURL& source_url,
                                        const net::CookieOptions& cookie_options,
                                        SetCanonicalCookieCallback callback) {
-  std::unique_ptr<net::CanonicalCookie> cookie_ptr =
-      std::make_unique<net::CanonicalCookie>(cookie);
-  if (absl::optional<net::CookiePartitionKey> cookie_partition_key =
-          cookie.PartitionKey()) {
-    absl::optional<net::CookiePartitionKey> fps_cookie_partition_key =
-        net::CookieAccessDelegate::FirstPartySetifyPartitionKey(
-            cookie_store_->cookie_access_delegate(),
-            cookie_partition_key.value());
-    if (fps_cookie_partition_key != cookie_partition_key) {
-      cookie_ptr = net::CanonicalCookie::FromStorage(
-          cookie.Name(), cookie.Value(), cookie.Domain(), cookie.Path(),
-          cookie.CreationDate(), cookie.ExpiryDate(), cookie.LastAccessDate(),
-          cookie.IsSecure(), cookie.IsHttpOnly(), cookie.SameSite(),
-          cookie.Priority(), cookie.IsSameParty(), fps_cookie_partition_key,
-          cookie.SourceScheme(), cookie.SourcePort());
-      if (!cookie_ptr) {
-        std::move(callback).Run(
-            net::CookieAccessResult(net::CookieInclusionStatus(
-                net::CookieInclusionStatus::ExclusionReason::
-                    EXCLUDE_FAILURE_TO_STORE)));
-        return;
-      }
+  const absl::optional<net::CookiePartitionKey>& cookie_partition_key =
+      cookie.PartitionKey();
+  CookiePartitionKeyPairCallback on_got_first_party_set_key = base::BindOnce(
+      &CookieManager::OnGotFirstPartySetPartitionKeyForSet,
+      weak_factory_.GetWeakPtr(), source_url, cookie_options,
+      std::make_unique<net::CanonicalCookie>(cookie), std::move(callback));
+  if (!cookie_partition_key) {
+    std::move(on_got_first_party_set_key).Run({false, absl::nullopt});
+    return;
+  }
+
+  std::pair<CookiePartitionKeyPairCallback, CookiePartitionKeyPairCallback>
+      split_callbacks =
+          base::SplitOnceCallback(std::move(on_got_first_party_set_key));
+
+  absl::optional<net::CookiePartitionKey> maybe_cookie_partition_key =
+      net::CookieAccessDelegate::FirstPartySetifyPartitionKey(
+          cookie_store_->cookie_access_delegate(), cookie_partition_key.value(),
+          base::BindOnce(
+              [](net::CookiePartitionKey cookie_partition_key,
+                 net::CookiePartitionKey fps_cookie_partition_key) {
+                return std::make_pair(
+                    cookie_partition_key != fps_cookie_partition_key,
+                    absl::make_optional(fps_cookie_partition_key));
+              },
+              cookie_partition_key.value())
+              .Then(std::move(split_callbacks.first)));
+
+  if (maybe_cookie_partition_key.has_value()) {
+    std::move(split_callbacks.second)
+        .Run({cookie_partition_key != maybe_cookie_partition_key,
+              maybe_cookie_partition_key});
+  }
+}
+
+void CookieManager::OnGotFirstPartySetPartitionKeyForSet(
+    const GURL& source_url,
+    const net::CookieOptions& cookie_options,
+    std::unique_ptr<net::CanonicalCookie> cookie,
+    SetCanonicalCookieCallback callback,
+    std::pair<bool, absl::optional<net::CookiePartitionKey>>
+        adjusted_cookie_partition_key) {
+  base::Time adjusted_expiry_date =
+      net::CanonicalCookie::ValidateAndAdjustExpiryDate(cookie->ExpiryDate(),
+                                                        cookie->CreationDate());
+  if (adjusted_expiry_date != cookie->ExpiryDate() ||
+      adjusted_cookie_partition_key.first) {
+    cookie = net::CanonicalCookie::FromStorage(
+        cookie->Name(), cookie->Value(), cookie->Domain(), cookie->Path(),
+        cookie->CreationDate(), adjusted_expiry_date, cookie->LastAccessDate(),
+        cookie->LastUpdateDate(), cookie->IsSecure(), cookie->IsHttpOnly(),
+        cookie->SameSite(), cookie->Priority(), cookie->IsSameParty(),
+        adjusted_cookie_partition_key.second, cookie->SourceScheme(),
+        cookie->SourcePort());
+    if (!cookie) {
+      std::move(callback).Run(
+          net::CookieAccessResult(net::CookieInclusionStatus(
+              net::CookieInclusionStatus::ExclusionReason::
+                  EXCLUDE_FAILURE_TO_STORE)));
+      return;
     }
   }
-  cookie_store_->SetCanonicalCookieAsync(std::move(cookie_ptr), source_url,
+  DCHECK(cookie->IsCanonical());
+  cookie_store_->SetCanonicalCookieAsync(std::move(cookie), source_url,
                                          cookie_options, std::move(callback));
 }
 
 void CookieManager::DeleteCanonicalCookie(
     const net::CanonicalCookie& cookie,
     DeleteCanonicalCookieCallback callback) {
-  std::unique_ptr<net::CanonicalCookie> cookie_ptr =
-      std::make_unique<net::CanonicalCookie>(cookie);
-  if (absl::optional<net::CookiePartitionKey> cookie_partition_key =
-          cookie.PartitionKey()) {
-    absl::optional<net::CookiePartitionKey> fps_cookie_partition_key =
-        net::CookieAccessDelegate::FirstPartySetifyPartitionKey(
-            cookie_store_->cookie_access_delegate(),
-            cookie_partition_key.value());
-    if (fps_cookie_partition_key && !cookie_partition_key->site().opaque())
-      DCHECK_EQ(cookie_partition_key.value(), fps_cookie_partition_key.value());
+  absl::optional<net::CookiePartitionKey> cookie_partition_key =
+      cookie.PartitionKey();
+
+  base::OnceCallback<void(bool)> on_got_first_party_set_key = base::BindOnce(
+      &CookieManager::OnGotFirstPartySetPartitionKeyForDelete,
+      weak_factory_.GetWeakPtr(),
+      std::make_unique<net::CanonicalCookie>(cookie), std::move(callback));
+
+  if (!cookie_partition_key || cookie_partition_key->site().opaque()) {
+    std::move(on_got_first_party_set_key).Run(true);
+    return;
   }
+
+  std::pair<base::OnceCallback<void(bool)>, base::OnceCallback<void(bool)>>
+      split_callbacks =
+          base::SplitOnceCallback(std::move(on_got_first_party_set_key));
+
+  absl::optional<net::CookiePartitionKey> maybe_cookie_partition_key =
+      net::CookieAccessDelegate::FirstPartySetifyPartitionKey(
+          cookie_store_->cookie_access_delegate(), cookie_partition_key.value(),
+          base::BindOnce(
+              [](net::CookiePartitionKey cookie_partition_key,
+                 net::CookiePartitionKey fps_cookie_partition_key) {
+                return cookie_partition_key == fps_cookie_partition_key;
+              },
+              cookie_partition_key.value())
+              .Then(std::move(split_callbacks.first)));
+
+  if (maybe_cookie_partition_key.has_value()) {
+    std::move(split_callbacks.second)
+        .Run(cookie_partition_key.value() ==
+             maybe_cookie_partition_key.value());
+  }
+}
+
+void CookieManager::OnGotFirstPartySetPartitionKeyForDelete(
+    std::unique_ptr<net::CanonicalCookie> cookie,
+    DeleteCanonicalCookieCallback callback,
+    bool cookie_partition_keys_match) {
+  DCHECK(cookie_partition_keys_match);
   cookie_store_->DeleteCanonicalCookieAsync(
-      *cookie_ptr,
+      *cookie,
       base::BindOnce(
           [](DeleteCanonicalCookieCallback callback, uint32_t num_deleted) {
             std::move(callback).Run(num_deleted > 0);
@@ -206,15 +301,17 @@ void CookieManager::AddCookieChangeListener(
       base::Unretained(listener_registration.get()));
 
   if (name) {
+    // TODO(https://crbug.com/1225444): Include the correct cookie partition
+    // key when attaching cookie change listeners to service workers.
     listener_registration->subscription =
         cookie_store_->GetChangeDispatcher().AddCallbackForCookie(
-            url, *name, net::CookiePartitionKey::Todo(),
-            std::move(cookie_change_callback));
+            url, *name, absl::nullopt, std::move(cookie_change_callback));
   } else {
+    // TODO(https://crbug.com/1225444): Include the correct cookie partition
+    // key when attaching cookie change listeners to service workers.
     listener_registration->subscription =
         cookie_store_->GetChangeDispatcher().AddCallbackForUrl(
-            url, net::CookiePartitionKey::Todo(),
-            std::move(cookie_change_callback));
+            url, absl::nullopt, std::move(cookie_change_callback));
   }
 
   listener_registration->listener.set_disconnect_handler(
@@ -382,7 +479,19 @@ CookieDeletionInfo DeletionFilterToInfo(mojom::CookieDeletionFilterPtr filter) {
         filter->excluding_domains.value().end());
   }
 
+  delete_info.cookie_partition_key_collection =
+      filter->cookie_partition_key_collection;
+
   return delete_info;
+}
+
+void CookieManager::ConvertPartitionedCookiesToUnpartitioned(const GURL& url) {
+  if (!base::FeatureList::IsEnabled(net::features::kPartitionedCookies) ||
+      base::FeatureList::IsEnabled(
+          net::features::kPartitionedCookiesBypassOriginTrial)) {
+    return;
+  }
+  cookie_store_->ConvertPartitionedCookiesToUnpartitioned(url);
 }
 
 }  // namespace network

@@ -56,7 +56,7 @@ class MockAuthenticator : public webauthn::InternalAuthenticator {
   MOCK_METHOD1(VerifyChallenge, void(const std::vector<uint8_t>&));
 
   content::RenderFrameHost* GetRenderFrameHost() override {
-    return web_contents_->GetMainFrame();
+    return web_contents_->GetPrimaryMainFrame();
   }
 
   // Implements an webauthn::InternalAuthenticator method to delegate fields of
@@ -68,7 +68,8 @@ class MockAuthenticator : public webauthn::InternalAuthenticator {
     std::move(callback).Run(
         should_succeed_ ? blink::mojom::AuthenticatorStatus::SUCCESS
                         : blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR,
-        blink::mojom::GetAssertionAuthenticatorResponse::New());
+        blink::mojom::GetAssertionAuthenticatorResponse::New(),
+        /*dom_exception_details=*/nullptr);
   }
 
   content::WebContents* web_contents() { return web_contents_; }

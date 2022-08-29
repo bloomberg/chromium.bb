@@ -10,7 +10,7 @@
 #include <utility>
 
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
-#include "third_party/base/check.h"
+#include "third_party/base/check_op.h"
 
 CPDF_ContentMarks::CPDF_ContentMarks() = default;
 
@@ -32,12 +32,10 @@ bool CPDF_ContentMarks::ContainsItem(const CPDF_ContentMarkItem* pItem) const {
 }
 
 CPDF_ContentMarkItem* CPDF_ContentMarks::GetItem(size_t index) {
-  return const_cast<CPDF_ContentMarkItem*>(
-      static_cast<const CPDF_ContentMarks*>(this)->GetItem(index));
+  return m_pMarkData->GetItem(index);
 }
 
 const CPDF_ContentMarkItem* CPDF_ContentMarks::GetItem(size_t index) const {
-  DCHECK(index < CountItems());
   return m_pMarkData->GetItem(index);
 }
 
@@ -71,15 +69,6 @@ bool CPDF_ContentMarks::RemoveMark(CPDF_ContentMarkItem* pMarkItem) {
 void CPDF_ContentMarks::EnsureMarkDataExists() {
   if (!m_pMarkData)
     m_pMarkData = pdfium::MakeRetain<MarkData>();
-}
-
-void CPDF_ContentMarks::DeleteLastMark() {
-  if (!m_pMarkData)
-    return;
-
-  m_pMarkData->DeleteLastMark();
-  if (CountItems() == 0)
-    m_pMarkData.Reset();
 }
 
 size_t CPDF_ContentMarks::FindFirstDifference(
@@ -117,11 +106,13 @@ bool CPDF_ContentMarks::MarkData::ContainsItem(
 }
 
 CPDF_ContentMarkItem* CPDF_ContentMarks::MarkData::GetItem(size_t index) {
+  CHECK_LT(index, m_Marks.size());
   return m_Marks[index].Get();
 }
 
 const CPDF_ContentMarkItem* CPDF_ContentMarks::MarkData::GetItem(
     size_t index) const {
+  CHECK_LT(index, m_Marks.size());
   return m_Marks[index].Get();
 }
 
@@ -164,9 +155,4 @@ bool CPDF_ContentMarks::MarkData::RemoveMark(CPDF_ContentMarkItem* pMarkItem) {
     }
   }
   return false;
-}
-
-void CPDF_ContentMarks::MarkData::DeleteLastMark() {
-  if (!m_Marks.empty())
-    m_Marks.pop_back();
 }

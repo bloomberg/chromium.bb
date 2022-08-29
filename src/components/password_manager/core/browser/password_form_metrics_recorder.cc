@@ -273,6 +273,12 @@ PasswordFormMetricsRecorder::~PasswordFormMetricsRecorder() {
                                   generated_password_status_.value()));
   }
 
+  if (submitted_form_frame_.has_value()) {
+    base::UmaHistogramEnumeration(
+        "PasswordManager.SubmittedFormFrame2", submitted_form_frame_.value(),
+        metrics_util::SubmittedFormFrame::SUBMITTED_FORM_FRAME_COUNT);
+  }
+
   if (password_generation_popup_shown_ !=
       PasswordGenerationPopupShown::kNotShown) {
     UMA_HISTOGRAM_ENUMERATION("PasswordGeneration.PopupShown",
@@ -518,7 +524,7 @@ void PasswordFormMetricsRecorder::CalculateFillingAssistanceMetric(
     is_mixed_content_form_ = true;
   }
 
-#if !defined(OS_IOS)
+#if !BUILDFLAG(IS_IOS)
   filling_source_ = FillingSource::kNotFilled;
 #endif
   account_storage_usage_level_ = account_storage_usage_level;
@@ -557,7 +563,7 @@ void PasswordFormMetricsRecorder::CalculateFillingAssistanceMetric(
     return;
   }
 
-#if !defined(OS_IOS)
+#if !BUILDFLAG(IS_IOS)
   // At this point, the password was filled from at least one of the two stores,
   // so compute the filling source now.
   filling_source_ = ComputeFillingSource(

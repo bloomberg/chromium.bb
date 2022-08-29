@@ -5,8 +5,11 @@
 package org.chromium.chrome.browser.dom_distiller;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -54,7 +57,7 @@ import java.util.concurrent.TimeoutException;
 public class ReaderModeManagerTest {
     private static final GURL MOCK_DISTILLER_URL =
             JUnitTestGURLs.getGURL(JUnitTestGURLs.DOM_DISILLER_URL);
-    private static final GURL MOCK_URL = JUnitTestGURLs.getGURL(JUnitTestGURLs.EXAMPLE_URL);
+    private static final GURL MOCK_URL = JUnitTestGURLs.getGURL(JUnitTestGURLs.GOOGLE_URL_CAT);
 
     @Rule
     public JniMocker jniMocker = new JniMocker();
@@ -144,6 +147,7 @@ public class ReaderModeManagerTest {
         // An observer should have also been added to the web contents.
         verify(mWebContents).addObserver(mWebContentsObserverCaptor.capture());
         mWebContentsObserver = mWebContentsObserverCaptor.getValue();
+        mManager.clearSavedSitesForTesting();
     }
 
     @Test
@@ -201,6 +205,44 @@ public class ReaderModeManagerTest {
         mManager.onClosed();
 
         mManager.tryShowingPrompt();
+        verifyNoMoreInteractions(mReaderModeInfobarJniMock);
+    }
+
+    @Test
+    @Feature("ReaderMode")
+    @Features.EnableFeatures({ChromeFeatureList.MESSAGES_FOR_ANDROID_READER_MODE})
+    public void testUI_notTriggered_muted() {
+        mManager.muteSiteForTesting(mTab.getUrl());
+        mDistillabilityObserver.onIsPageDistillableResult(mTab, true, true, false);
+        assertEquals("Distillation should be possible.", DistillationStatus.POSSIBLE,
+                mManager.getDistillationStatus());
+        verify(mMessageDispatcher, never()).enqueueMessage(any(), any(), anyInt(), anyBoolean());
+        verifyNoMoreInteractions(mReaderModeInfobarJniMock);
+    }
+
+    @Test
+    @Feature("ReaderMode")
+    @Features.EnableFeatures({ChromeFeatureList.MESSAGES_FOR_ANDROID_READER_MODE})
+    public void testUI_notTriggered_mutedByDomain() {
+        mManager.muteSiteForTesting(JUnitTestGURLs.getGURL(JUnitTestGURLs.GOOGLE_URL_DOG));
+        mDistillabilityObserver.onIsPageDistillableResult(mTab, true, true, false);
+        assertEquals("Distillation should be possible.", DistillationStatus.POSSIBLE,
+                mManager.getDistillationStatus());
+        verify(mMessageDispatcher,
+                never().description("Reader mode should be muted in this domain"))
+                .enqueueMessage(any(), any(), anyInt(), anyBoolean());
+        verifyNoMoreInteractions(mReaderModeInfobarJniMock);
+    }
+
+    @Test
+    @Feature("ReaderMode")
+    @Features.EnableFeatures({ChromeFeatureList.MESSAGES_FOR_ANDROID_READER_MODE})
+    public void testUI_notTriggered_notMutedByDomain() {
+        mManager.muteSiteForTesting(JUnitTestGURLs.getGURL(JUnitTestGURLs.EXAMPLE_URL));
+        mDistillabilityObserver.onIsPageDistillableResult(mTab, true, true, false);
+        assertEquals("Distillation should be possible.", DistillationStatus.POSSIBLE,
+                mManager.getDistillationStatus());
+        verify(mMessageDispatcher).enqueueMessage(any(), any(), anyInt(), anyBoolean());
         verifyNoMoreInteractions(mReaderModeInfobarJniMock);
     }
 

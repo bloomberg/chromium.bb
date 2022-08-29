@@ -11,18 +11,19 @@
 #include "include/gpu/GrDirectContext.h"
 #include "include/private/SkHalf.h"
 #include "src/core/SkColorSpacePriv.h"
-#include "src/gpu/GrDirectContextPriv.h"
-#include "src/gpu/GrGeometryProcessor.h"
-#include "src/gpu/GrMemoryPool.h"
-#include "src/gpu/GrProgramInfo.h"
-#include "src/gpu/SkGr.h"
-#include "src/gpu/glsl/GrGLSLColorSpaceXformHelper.h"
-#include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
-#include "src/gpu/glsl/GrGLSLVarying.h"
-#include "src/gpu/glsl/GrGLSLVertexGeoBuilder.h"
-#include "src/gpu/ops/GrMeshDrawOp.h"
-#include "src/gpu/ops/GrSimpleMeshDrawOpHelper.h"
-#include "src/gpu/v1/SurfaceDrawContext_v1.h"
+#include "src/gpu/KeyBuilder.h"
+#include "src/gpu/ganesh/GrDirectContextPriv.h"
+#include "src/gpu/ganesh/GrGeometryProcessor.h"
+#include "src/gpu/ganesh/GrMemoryPool.h"
+#include "src/gpu/ganesh/GrProgramInfo.h"
+#include "src/gpu/ganesh/SkGr.h"
+#include "src/gpu/ganesh/glsl/GrGLSLColorSpaceXformHelper.h"
+#include "src/gpu/ganesh/glsl/GrGLSLFragmentShaderBuilder.h"
+#include "src/gpu/ganesh/glsl/GrGLSLVarying.h"
+#include "src/gpu/ganesh/glsl/GrGLSLVertexGeoBuilder.h"
+#include "src/gpu/ganesh/ops/GrMeshDrawOp.h"
+#include "src/gpu/ganesh/ops/GrSimpleMeshDrawOpHelper.h"
+#include "src/gpu/ganesh/v1/SurfaceDrawContext_v1.h"
 
 namespace {
 
@@ -65,7 +66,7 @@ public:
                 varyingHandler->emitAttributes(gp);
 
                 // Setup color
-                GrGLSLVarying varying(kHalf4_GrSLType);
+                GrGLSLVarying varying(SkSLType::kHalf4);
                 varyingHandler->addVarying("color", &varying);
                 vertBuilder->codeAppendf("half4 color = %s;", gp.fInColor.name());
 
@@ -94,7 +95,7 @@ public:
         return std::make_unique<Impl>();
     }
 
-    void addToKey(const GrShaderCaps&, GrProcessorKeyBuilder* b) const override {
+    void addToKey(const GrShaderCaps&, skgpu::KeyBuilder* b) const override {
         b->add32(fMode);
         b->add32(GrColorSpaceXform::XformKey(fColorSpaceXform.get()));
     }
@@ -104,20 +105,20 @@ private:
             : INHERITED(kVertexColorSpaceBenchGP_ClassID)
             , fMode(mode)
             , fColorSpaceXform(std::move(colorSpaceXform)) {
-        fInPosition = {"inPosition", kFloat2_GrVertexAttribType, kFloat2_GrSLType};
+        fInPosition = {"inPosition", kFloat2_GrVertexAttribType, SkSLType::kFloat2};
         switch (fMode) {
             case kBaseline_Mode:
             case kShader_Mode:
-                fInColor = {"inColor", kUByte4_norm_GrVertexAttribType, kHalf4_GrSLType};
+                fInColor = {"inColor", kUByte4_norm_GrVertexAttribType, SkSLType::kHalf4};
                 break;
             case kFloat_Mode:
-                fInColor = {"inColor", kFloat4_GrVertexAttribType, kHalf4_GrSLType};
+                fInColor = {"inColor", kFloat4_GrVertexAttribType, SkSLType::kHalf4};
                 break;
             case kHalf_Mode:
-                fInColor = {"inColor", kHalf4_GrVertexAttribType, kHalf4_GrSLType};
+                fInColor = {"inColor", kHalf4_GrVertexAttribType, SkSLType::kHalf4};
                 break;
         }
-        this->setVertexAttributes(&fInPosition, 2);
+        this->setVertexAttributesWithImplicitOffsets(&fInPosition, 2);
     }
 
     Mode fMode;
@@ -231,11 +232,7 @@ private:
             };
             SkASSERT(sizeof(V) == vertexStride);
             uint64_t color;
-            Sk4h halfColor = SkFloatToHalf_finite_ftz(Sk4f::Load(&fColor4f));
-            color = (uint64_t)halfColor[0] << 48 |
-                    (uint64_t)halfColor[1] << 32 |
-                    (uint64_t)halfColor[2] << 16 |
-                    (uint64_t)halfColor[3] << 0;
+            SkFloatToHalf_finite_ftz(skvx::float4::Load(&fColor4f)).store(&color);
             V* v = (V*)verts;
             for (int i = 0; i < kVertexCount; i += 2) {
                 v[i + 0].fPos.set(dx * i, 0.0f);

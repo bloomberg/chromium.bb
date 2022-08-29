@@ -9,7 +9,6 @@
 #include <map>
 #include <string>
 
-#include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/raw_ptr.h"
@@ -39,8 +38,8 @@ class MockConfigurationPolicyProvider;
 
 namespace ash {
 class DeviceStateMixin;
-class LocalPolicyTestServerMixin;
-}
+class EmbeddedPolicyTestServerMixin;
+}  // namespace ash
 
 namespace policy {
 class DevicePolicyCrosTestHelper;
@@ -129,9 +128,9 @@ class ExtensionForceInstallMixin final : public InProcessBrowserTestMixin {
   void InitWithDevicePolicyCrosTestHelper(
       Profile* profile,
       policy::DevicePolicyCrosTestHelper* device_policy_cros_test_helper);
-  void InitWithLocalPolicyMixin(
+  void InitWithEmbeddedPolicyMixin(
       Profile* profile,
-      ash::LocalPolicyTestServerMixin* local_policy_mixin,
+      ash::EmbeddedPolicyTestServerMixin* policy_test_server_mixin,
       policy::UserPolicyBuilder* user_policy_builder,
       const std::string& account_id,
       const std::string& policy_type);
@@ -142,11 +141,11 @@ class ExtensionForceInstallMixin final : public InProcessBrowserTestMixin {
   // |extension_id| - if non-null, will be set to the installed extension ID.
   // |extension_version| - if non-null, will be set to the installed extension
   // version.
-  bool ForceInstallFromCrx(const base::FilePath& crx_path,
-                           WaitMode wait_mode,
-                           extensions::ExtensionId* extension_id = nullptr,
-                           base::Version* extension_version = nullptr)
-      WARN_UNUSED_RESULT;
+  [[nodiscard]] bool ForceInstallFromCrx(
+      const base::FilePath& crx_path,
+      WaitMode wait_mode,
+      extensions::ExtensionId* extension_id = nullptr,
+      base::Version* extension_version = nullptr);
   // Force-installs the extension from the given source directory (which should
   // contain the manifest.json file and all other files of the extension).
   // Under the hood, packs the directory into a CRX file and serves it like
@@ -156,30 +155,29 @@ class ExtensionForceInstallMixin final : public InProcessBrowserTestMixin {
   // |extension_id| - if non-null, will be set to the installed extension ID.
   // |extension_version| - if non-null, will be set to the installed extension
   // version.
-  bool ForceInstallFromSourceDir(
+  [[nodiscard]] bool ForceInstallFromSourceDir(
       const base::FilePath& extension_dir_path,
       const absl::optional<base::FilePath>& pem_path,
       WaitMode wait_mode,
       extensions::ExtensionId* extension_id = nullptr,
-      base::Version* extension_version = nullptr) WARN_UNUSED_RESULT;
+      base::Version* extension_version = nullptr);
 
   // Updates the served extension to the new version from |crx_path|. It's
   // expected that a ForceInstallFromCrx() call was done previously for this
   // extension.
   // |extension_version| - if non-null, will be set to the CRX'es version.
-  bool UpdateFromCrx(const base::FilePath& crx_path,
-                     UpdateWaitMode wait_mode,
-                     base::Version* extension_version = nullptr)
-      WARN_UNUSED_RESULT;
+  [[nodiscard]] bool UpdateFromCrx(const base::FilePath& crx_path,
+                                   UpdateWaitMode wait_mode,
+                                   base::Version* extension_version = nullptr);
   // Updates the served |extension_id| extension to the new version from
   // |extension_dir_path|. It's expected that a ForceInstallFromSourceDir() call
   // was done previously for this extension.
   // |extension_version| - if non-null, will be set to the extension's version.
-  bool UpdateFromSourceDir(const base::FilePath& extension_dir_path,
-                           const extensions::ExtensionId& extension_id,
-                           UpdateWaitMode wait_mode,
-                           base::Version* extension_version = nullptr)
-      WARN_UNUSED_RESULT;
+  [[nodiscard]] bool UpdateFromSourceDir(
+      const base::FilePath& extension_dir_path,
+      const extensions::ExtensionId& extension_id,
+      UpdateWaitMode wait_mode,
+      base::Version* extension_version = nullptr);
 
   // Returns the extension, or null if it's not installed yet.
   const extensions::Extension* GetInstalledExtension(
@@ -194,6 +192,8 @@ class ExtensionForceInstallMixin final : public InProcessBrowserTestMixin {
 
   // InProcessBrowserTestMixin:
   void SetUpOnMainThread() override;
+
+  bool initialized() const { return initialized_; }
 
  private:
   // Returns the path to the file that is served by the embedded test server
@@ -245,9 +245,10 @@ class ExtensionForceInstallMixin final : public InProcessBrowserTestMixin {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   ash::DeviceStateMixin* device_state_mixin_ = nullptr;
   policy::DevicePolicyCrosTestHelper* device_policy_cros_test_helper_ = nullptr;
-  ash::LocalPolicyTestServerMixin* local_policy_mixin_ = nullptr;
+  ash::EmbeddedPolicyTestServerMixin* policy_test_server_mixin_ = nullptr;
   policy::UserPolicyBuilder* user_policy_builder_ = nullptr;
-  // |account_id_| and |policy_type_| are only used with |local_policy_mixin_|.
+  // |account_id_| and |policy_type_| are only used with
+  // |policy_test_server_mixin_|.
   std::string account_id_;
   std::string policy_type_;
 #endif

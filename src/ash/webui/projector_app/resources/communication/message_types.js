@@ -44,7 +44,6 @@ export const ProjectorError = {
 export const NewScreencastPreconditionState = {
   DISABLED: 1,
   ENABLED: 2,
-  HIDDEN: 3,
 };
 
 /**
@@ -53,15 +52,15 @@ export const NewScreencastPreconditionState = {
  * @enum {number}
  */
 export const NewScreencastPreconditionReason = {
-  // Reasons for NEW_SCREENCAST_PRECONDITION_STATE.HIDDEN state:
+  SODA_INSTALLATION_ERROR: 0,
   ON_DEVICE_RECOGNITION_NOT_SUPPORTED: 1,
   USER_LOCALE_NOT_SUPPORTED: 2,
-
-  // Reasons for NEW_SCREENCAST_PRECONDITION_STATE.DISABLED state:
   IN_PROJECTOR_SESSION: 3,
   SCREEN_RECORDING_IN_PROGRESS: 4,
   SODA_DOWNLOAD_IN_PROGRESS: 5,
   OUT_OF_DISK_SPACE: 6,
   NO_MIC: 7,
-  OTHERS: 8,
+  DRIVE_FS_UNMOUNTED: 8,
+  DRIVE_FS_MOUNT_FAILED: 9,
+  OTHERS: 10,
 };

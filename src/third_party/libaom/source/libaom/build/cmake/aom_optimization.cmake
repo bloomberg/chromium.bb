@@ -47,7 +47,7 @@ function(add_intrinsics_object_library flag opt_name target_to_update sources)
   set_property(TARGET ${target_name} PROPERTY FOLDER ${AOM_TARGET_CPU})
 
   if(MSVC)
-    get_msvc_intrinsic_flag(${flag} "flag")
+    get_msvc_intrinsic_flag("${flag}" "flag")
   endif()
 
   if("${flag}" STREQUAL "-mavx2")
@@ -84,7 +84,7 @@ endfunction()
 function(add_intrinsics_source_to_target flag target sources)
   target_sources(${target} PRIVATE ${${sources}})
   if(MSVC)
-    get_msvc_intrinsic_flag(${flag} "flag")
+    get_msvc_intrinsic_flag("${flag}" "flag")
   endif()
   if(flag)
     foreach(source ${${sources}})
@@ -130,47 +130,59 @@ endfunction()
 # into the aom library target(s). Generates a dummy C file with a dummy function
 # to ensure that all cmake generators can determine the linker language, and
 # that build tools don't complain that an object exposes no symbols.
+#
+# In shared library configs every step described above happens twice, and
+# directory/target/object names are updated to include _shared and _static
+# suffixes.
 function(add_asm_library lib_name asm_sources)
   if("${${asm_sources}}" STREQUAL "")
     return()
   endif()
-  set(asm_lib_obj_dir "${AOM_CONFIG_DIR}/asm_objects/${lib_name}")
-  if(NOT EXISTS "${asm_lib_obj_dir}")
-    file(MAKE_DIRECTORY "${asm_lib_obj_dir}")
+
+  list(APPEND asm_configs "static")
+  if(BUILD_SHARED_LIBS)
+    list(APPEND asm_configs "shared")
   endif()
 
-  # TODO(tomfinegan): If cmake ever allows addition of .o files to OBJECT lib
-  # targets, make this OBJECT instead of STATIC to hide the target from
-  # consumers of the AOM cmake build.
-  add_library(${lib_name} STATIC ${${asm_sources}})
-  set_property(TARGET ${lib_name} PROPERTY FOLDER ${AOM_TARGET_CPU})
-
-  foreach(asm_source ${${asm_sources}})
-    get_filename_component(asm_source_name "${asm_source}" NAME)
-    set(asm_object "${asm_lib_obj_dir}/${asm_source_name}.o")
-    add_custom_command(OUTPUT "${asm_object}"
-                       COMMAND ${AS_EXECUTABLE} ARGS ${AOM_AS_FLAGS}
-                               -I${AOM_ROOT}/ -I${AOM_CONFIG_DIR}/ -o
-                               "${asm_object}" "${asm_source}"
-                       DEPENDS "${asm_source}"
-                       COMMENT "Building ASM object ${asm_object}"
-                       WORKING_DIRECTORY "${AOM_CONFIG_DIR}"
-                       VERBATIM)
-    target_sources(aom PRIVATE "${asm_object}")
-    if(BUILD_SHARED_LIBS)
-      target_sources(aom_static PRIVATE "${asm_object}")
+  foreach(asm_config ${asm_configs})
+    set(asm_lib_name ${lib_name}_${asm_config})
+    set(asm_lib_obj_dir "${AOM_CONFIG_DIR}/asm_objects/${asm_lib_name}")
+    if(NOT EXISTS "${asm_lib_obj_dir}")
+      file(MAKE_DIRECTORY "${asm_lib_obj_dir}")
     endif()
+
+    add_library(${asm_lib_name} STATIC ${${asm_sources}})
+    set_property(TARGET ${asm_lib_name} PROPERTY FOLDER ${AOM_TARGET_CPU})
+
+    foreach(asm_source ${${asm_sources}})
+      get_filename_component(asm_source_name "${asm_source}" NAME)
+      set(asm_object "${asm_lib_obj_dir}/${asm_source_name}.o")
+      add_custom_command(OUTPUT "${asm_object}"
+                         COMMAND ${AS_EXECUTABLE} ARGS ${AOM_AS_FLAGS}
+                                 -I${AOM_ROOT}/ -I${AOM_CONFIG_DIR}/ -o
+                                 "${asm_object}" "${asm_source}"
+                         DEPENDS "${asm_source}"
+                         COMMENT "Building ASM object ${asm_object}"
+                         WORKING_DIRECTORY "${AOM_CONFIG_DIR}"
+                         VERBATIM)
+      if(BUILD_SHARED_LIBS AND "${asm_config}" STREQUAL "static")
+        target_sources(aom_static PRIVATE "${asm_object}")
+      else()
+        target_sources(aom PRIVATE "${asm_object}")
+      endif()
+    endforeach()
+
+    # The above created a target containing only ASM sources. CMake needs help
+    # here to determine the linker language. Add a dummy C file to force the
+    # linker language to C. We don't bother with setting the LINKER_LANGUAGE
+    # property on the library target because not all generators obey it (looking
+    # at you, Xcode generator).
+    add_dummy_source_file_to_target("${asm_lib_name}" "c")
+
+    # Add the new lib target to the global list of aom library targets.
+    list(APPEND AOM_LIB_TARGETS ${asm_lib_name})
   endforeach()
 
-  # The above created a target containing only ASM sources. Cmake needs help
-  # here to determine the linker language. Add a dummy C file to force the
-  # linker language to C. We don't bother with setting the LINKER_LANGUAGE
-  # property on the library target because not all generators obey it (looking
-  # at you, xcode generator).
-  add_dummy_source_file_to_target("${lib_name}" "c")
-
-  # Add the new lib target to the global list of aom library targets.
-  list(APPEND AOM_LIB_TARGETS ${lib_name})
   set(AOM_LIB_TARGETS ${AOM_LIB_TARGETS} PARENT_SCOPE)
 endfunction()
 

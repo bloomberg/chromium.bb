@@ -12,16 +12,19 @@
 #include "base/containers/contains.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/observer_list.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "cc/base/math_util.h"
 #include "cc/base/region.h"
 #include "cc/base/simple_enclosed_region.h"
 #include "cc/benchmarks/benchmark_instrumentation.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
+#include "components/viz/common/quads/aggregated_render_pass_draw_quad.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/draw_quad.h"
 #include "components/viz/common/quads/shared_quad_state.h"
@@ -32,12 +35,10 @@
 #include "components/viz/service/display/delegated_ink_point_renderer_base.h"
 #include "components/viz/service/display/direct_renderer.h"
 #include "components/viz/service/display/display_client.h"
-#include "components/viz/service/display/display_resource_provider_gl.h"
 #include "components/viz/service/display/display_resource_provider_null.h"
 #include "components/viz/service/display/display_resource_provider_skia.h"
 #include "components/viz/service/display/display_resource_provider_software.h"
 #include "components/viz/service/display/display_scheduler.h"
-#include "components/viz/service/display/gl_renderer.h"
 #include "components/viz/service/display/null_renderer.h"
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display/renderer_utils.h"
@@ -47,8 +48,6 @@
 #include "components/viz/service/display/surface_aggregator.h"
 #include "components/viz/service/surfaces/surface.h"
 #include "components/viz/service/surfaces/surface_manager.h"
-#include "gpu/command_buffer/client/context_support.h"
-#include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/ipc/scheduler_sequence.h"
 #include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -61,7 +60,7 @@
 #include "ui/gfx/presentation_feedback.h"
 #include "ui/gfx/swap_result.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "ui/gfx/android/android_surface_control_compat.h"
 #endif
 namespace viz {
@@ -106,9 +105,6 @@ int64_t GetStartingTraceId() {
 gfx::PresentationFeedback SanitizePresentationFeedback(
     const gfx::PresentationFeedback& feedback,
     base::TimeTicks draw_time) {
-  // Temporary to investigate large presentation times.
-  // https://crbug.com/894440
-  DCHECK(!draw_time.is_null());
   if (feedback.timestamp.is_null())
     return feedback;
 
@@ -128,25 +124,9 @@ gfx::PresentationFeedback SanitizePresentationFeedback(
                           gfx::PresentationFeedback::kVSync)) != 0)
           ? kAllowedDeltaFromFuture
           : base::TimeDelta();
-  if (feedback.timestamp > now + allowed_delta_from_future) {
-    const auto diff = feedback.timestamp - now;
-    UMA_HISTOGRAM_MEDIUM_TIMES(
-        "Graphics.PresentationTimestamp.InvalidFromFuture", diff);
+  if ((feedback.timestamp > now + allowed_delta_from_future) ||
+      (feedback.timestamp < draw_time)) {
     return gfx::PresentationFeedback::Failure();
-  }
-
-  if (feedback.timestamp < draw_time) {
-    const auto diff = draw_time - feedback.timestamp;
-    UMA_HISTOGRAM_MEDIUM_TIMES(
-        "Graphics.PresentationTimestamp.InvalidBeforeSwap", diff);
-    return gfx::PresentationFeedback::Failure();
-  }
-
-  const auto difference = feedback.timestamp - draw_time;
-  if (difference.InMinutes() > 3) {
-    UMA_HISTOGRAM_CUSTOM_TIMES(
-        "Graphics.PresentationTimestamp.LargePresentationDelta", difference,
-        base::Minutes(3), base::Hours(1), 50);
   }
   return feedback;
 }
@@ -170,10 +150,11 @@ gfx::RectF GetOccludingRectForRRectF(const gfx::RRectF& bounds) {
   // Get a bounding rect that does not intersect with the rounding clip.
   // When a rect has rounded corner with radius r, then the largest rect that
   // can be inscribed inside it has an inset of |((2 - sqrt(2)) / 2) * radius|.
-  occluding_rect.Inset(std::max(top_left, lower_left) * 0.3f,
-                       std::max(top_left, top_right) * 0.3f,
-                       std::max(top_right, lower_right) * 0.3f,
-                       std::max(lower_right, lower_left) * 0.3f);
+  occluding_rect.Inset(
+      gfx::InsetsF::TLBR(std::max(top_left, top_right) * 0.3f,
+                         std::max(top_left, lower_left) * 0.3f,
+                         std::max(lower_right, lower_left) * 0.3f,
+                         std::max(top_right, lower_right) * 0.3f));
   return occluding_rect;
 }
 
@@ -256,10 +237,10 @@ bool ReduceComplexity(const cc::Region& region,
 }
 
 bool SupportsSetFrameRate(const OutputSurface* output_surface) {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   return output_surface->capabilities().supports_surfaceless &&
          gfx::SurfaceControl::SupportsSetFrameRate();
-#elif defined(OS_WIN)
+#elif BUILDFLAG(IS_WIN)
   return output_surface->capabilities().supports_dc_layers &&
          features::ShouldUseSetPresentDuration();
 #else
@@ -297,7 +278,7 @@ void Display::PresentationGroupTiming::OnSwap(gfx::SwapTimings timings,
                                               DisplaySchedulerBase* scheduler) {
   swap_timings_ = timings;
 
-  if (timings.swap_start.is_null())
+  if (timings.swap_start.is_null() || frame_time_.is_inf())
     return;
 
   auto frame_latency = timings.swap_start - frame_time_;
@@ -357,15 +338,6 @@ Display::~Display() {
   if (resource_provider_) {
     resource_provider_->SetAllowAccessToGPUThread(true);
   }
-#if defined(OS_ANDROID)
-  // In certain cases, drivers hang when tearing down the display. Finishing
-  // before teardown appears to address this. As we're during display teardown,
-  // an additional finish should have minimal impact.
-  // TODO(ericrk): Add a more robust workaround. crbug.com/899705
-  if (auto* context = output_surface_->context_provider()) {
-    context->ContextGL()->Finish();
-  }
-#endif
 
   if (no_pending_swaps_callback_)
     std::move(no_pending_swaps_callback_).Run();
@@ -380,8 +352,6 @@ Display::~Display() {
 
   // Only do this if Initialize() happened.
   if (client_) {
-    if (auto* context = output_surface_->context_provider())
-      context->RemoveObserver(this);
     if (skia_output_surface_)
       skia_output_surface_->RemoveContextLostObserver(this);
   }
@@ -423,9 +393,6 @@ void Display::Initialize(DisplayClient* client,
   // This depends on assumptions that Display::Initialize will happen on the
   // same callstack as the ContextProvider being created/initialized or else
   // it could miss a callback before setting this.
-  if (auto* context = output_surface_->context_provider())
-    context->AddObserver(this);
-
   if (skia_output_surface_)
     skia_output_surface_->AddContextLostObserver(this);
 }
@@ -505,8 +472,7 @@ void Display::DisableSwapUntilResize(
       scheduler_->ForceImmediateSwapIfPossible();
 
     if (no_pending_swaps_callback && pending_swaps_ > 0 &&
-        (output_surface_->context_provider() ||
-         output_surface_->AsSkiaOutputSurface())) {
+        output_surface_->AsSkiaOutputSurface()) {
       no_pending_swaps_callback_ = std::move(no_pending_swaps_callback);
     }
 
@@ -518,7 +484,7 @@ void Display::DisableSwapUntilResize(
     std::move(no_pending_swaps_callback).Run();
 }
 
-void Display::SetColorMatrix(const skia::Matrix44& matrix) {
+void Display::SetColorMatrix(const SkM44& matrix) {
   if (output_surface_)
     output_surface_->set_color_matrix(matrix);
 
@@ -559,14 +525,6 @@ void Display::InitializeRenderer(bool enable_shared_images) {
         resource_provider.get(), overlay_processor_.get(),
         skia_output_surface_);
     resource_provider_ = std::move(resource_provider);
-  } else if (output_surface_->context_provider()) {
-    auto resource_provider = std::make_unique<DisplayResourceProviderGL>(
-        output_surface_->context_provider(), enable_shared_images);
-    renderer_ = std::make_unique<GLRenderer>(
-        &settings_, debug_settings_, output_surface_.get(),
-        resource_provider.get(), overlay_processor_.get(),
-        current_task_runner_);
-    resource_provider_ = std::move(resource_provider);
   } else if (output_surface_->capabilities().skips_draw) {
     auto resource_provider = std::make_unique<DisplayResourceProviderNull>();
     renderer_ = std::make_unique<NullRenderer>(
@@ -595,9 +553,18 @@ void Display::InitializeRenderer(bool enable_shared_images) {
       output_surface_->capabilities().only_invalidates_damage_rect &&
       !overlay_processor_->IsOverlaySupported();
 
+  SurfaceAggregator::ExtraPassForReadbackOption extra_pass_option =
+      SurfaceAggregator::ExtraPassForReadbackOption::kNone;
+  if (output_surface_->capabilities().root_is_vulkan_secondary_command_buffer) {
+    extra_pass_option =
+        base::FeatureList::IsEnabled(features::kWebViewVulkanIntermediateBuffer)
+            ? SurfaceAggregator::ExtraPassForReadbackOption::kAlwaysAddPass
+            : SurfaceAggregator::ExtraPassForReadbackOption::
+                  kAddPassForReadback;
+  }
   aggregator_ = std::make_unique<SurfaceAggregator>(
       surface_manager_, resource_provider_.get(), output_partial_list,
-      overlay_processor_->NeedsSurfaceDamageRectList());
+      overlay_processor_->NeedsSurfaceDamageRectList(), extra_pass_option);
 
   aggregator_->set_output_is_secure(output_is_secure_);
   aggregator_->SetDisplayColorSpaces(display_color_spaces_);
@@ -668,8 +635,7 @@ void VisualDebuggerSync(gfx::OverlayTransform current_display_transform,
 
 }  // namespace
 
-bool Display::DrawAndSwap(base::TimeTicks frame_time,
-                          base::TimeTicks expected_display_time) {
+bool Display::DrawAndSwap(const DrawAndSwapParams& params) {
   TRACE_EVENT0("viz", "Display::DrawAndSwap");
   if (debug_settings_->show_aggregated_damage !=
       aggregator_->HasFrameAnnotator()) {
@@ -689,6 +655,15 @@ bool Display::DrawAndSwap(base::TimeTicks frame_time,
   if (!output_surface_) {
     TRACE_EVENT_INSTANT0("viz", "No output surface", TRACE_EVENT_SCOPE_THREAD);
     return false;
+  }
+
+  if (params.max_pending_swaps >= 0 && skia_output_surface_ &&
+      skia_output_surface_->capabilities()
+          .supports_dynamic_frame_buffer_allocation) {
+    if (skia_output_surface_->EnsureMinNumberOfBuffers(
+            params.max_pending_swaps + 1)) {
+      renderer_->ReallocatedFrameBuffers();
+    }
   }
 
   gfx::OverlayTransform current_display_transform = gfx::OVERLAY_TRANSFORM_NONE;
@@ -736,10 +711,10 @@ bool Display::DrawAndSwap(base::TimeTicks frame_time,
     // aggregated again so that the trail exists for a single frame.
     target_damage_bounding_rect.Union(
         renderer_->GetDelegatedInkTrailDamageRect());
-
     frame = aggregator_->Aggregate(
-        current_surface_id_, expected_display_time, current_display_transform,
-        target_damage_bounding_rect, ++swapped_trace_id_);
+        current_surface_id_, params.expected_display_time,
+        current_display_transform, target_damage_bounding_rect,
+        ++swapped_trace_id_);
 
     // Dump aggregated frame (will dump render passes and draw quads) if run
     // with: --vmodule=display=3
@@ -759,7 +734,8 @@ bool Display::DrawAndSwap(base::TimeTicks frame_time,
 
   if (frame.delegated_ink_metadata) {
     TRACE_EVENT_INSTANT1(
-        "viz", "Delegated Ink Metadata was aggregated for DrawAndSwap.",
+        "delegated_ink_trails",
+        "Delegated Ink Metadata was aggregated for DrawAndSwap.",
         TRACE_EVENT_SCOPE_THREAD, "ink metadata",
         frame.delegated_ink_metadata->ToString());
     renderer_->SetDelegatedInkMetadata(std::move(frame.delegated_ink_metadata));
@@ -768,7 +744,7 @@ bool Display::DrawAndSwap(base::TimeTicks frame_time,
   UMA_HISTOGRAM_ENUMERATION("Compositing.ColorGamut",
                             frame.content_color_usage);
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   bool wide_color_enabled =
       display_color_spaces_.GetOutputColorSpace(
           frame.content_color_usage, true) != gfx::ColorSpace::CreateSRGB();
@@ -874,21 +850,6 @@ bool Display::DrawAndSwap(base::TimeTicks frame_time,
     renderer_->DrawFrame(&frame.render_pass_list, device_scale_factor_,
                          current_surface_size, display_color_spaces_,
                          std::move(frame.surface_damage_rect_list_));
-    switch (output_surface_->type()) {
-      case OutputSurface::Type::kSoftware:
-        UMA_HISTOGRAM_COUNTS_1M(
-            "Compositing.DirectRenderer.Software.DrawFrameUs",
-            draw_timer->Elapsed().InMicroseconds());
-        break;
-      case OutputSurface::Type::kOpenGL:
-        UMA_HISTOGRAM_COUNTS_1M("Compositing.DirectRenderer.GL.DrawFrameUs",
-                                draw_timer->Elapsed().InMicroseconds());
-        break;
-      case OutputSurface::Type::kVulkan:
-        UMA_HISTOGRAM_COUNTS_1M("Compositing.DirectRenderer.VK.DrawFrameUs",
-                                draw_timer->Elapsed().InMicroseconds());
-        break;
-    }
   } else {
     TRACE_EVENT_INSTANT0("viz", "Draw skipped.", TRACE_EVENT_SCOPE_THREAD);
   }
@@ -907,7 +868,7 @@ bool Display::DrawAndSwap(base::TimeTicks frame_time,
         thread_ids.insert(surface_thread_ids.begin(), surface_thread_ids.end());
       }
     }
-    presentation_group_timing.OnDraw(frame_time, draw_timer->Begin(),
+    presentation_group_timing.OnDraw(params.frame_time, draw_timer->Begin(),
                                      std::move(thread_ids));
 
     for (const auto& id_entry : aggregator_->previous_contained_surfaces()) {
@@ -933,12 +894,18 @@ bool Display::DrawAndSwap(base::TimeTicks frame_time,
     cc::benchmark_instrumentation::IssueDisplayRenderingStatsEvent();
     DirectRenderer::SwapFrameData swap_frame_data;
     swap_frame_data.latency_info = std::move(frame.latency_info);
+    swap_frame_data.choreographer_vsync_id = params.choreographer_vsync_id;
     if (frame.top_controls_visible_height.has_value()) {
       swap_frame_data.top_controls_visible_height_changed =
           last_top_controls_visible_height_ !=
           *frame.top_controls_visible_height;
       last_top_controls_visible_height_ = *frame.top_controls_visible_height;
     }
+
+#if BUILDFLAG(IS_MAC)
+    swap_frame_data.ca_layer_error_code =
+        overlay_processor_->GetCALayerErrorCode();
+#endif
 
     // We must notify scheduler and increase |pending_swaps_| before calling
     // SwapBuffers() as it can call DidReceiveSwapBuffersAck synchronously.
@@ -1086,12 +1053,6 @@ void Display::DidReceiveSwapBuffersAck(const gfx::SwapTimings& timings,
   }
 }
 
-void Display::DidReceiveTextureInUseResponses(
-    const gpu::TextureInUseResponses& responses) {
-  if (renderer_)
-    renderer_->DidReceiveTextureInUseResponses(responses);
-}
-
 void Display::DidReceiveCALayerParams(
     const gfx::CALayerParams& ca_layer_params) {
   if (client_)
@@ -1162,21 +1123,18 @@ void Display::DidFinishFrame(const BeginFrameAck& ack) {
 
 base::TimeDelta Display::GetEstimatedDisplayDrawTime(base::TimeDelta interval,
                                                      double percentile) const {
-  if (draw_time_without_scheduling_waits_.sample_count() >= 60) {
+  base::TimeDelta default_estimate =
+      BeginFrameArgs::DefaultEstimatedDisplayDrawTime(interval);
+  if (draw_time_without_scheduling_waits_.sample_count() >= 60 &&
+      default_estimate > kMinEstimatedDisplayDrawTime) {
     // We do not want the deadline adjustmens to exceed a default of 1/3 VSync,
     // as we would not give other processes enough time to produce content. So
     // this would make high latency situations worse.
     return base::clamp(
         draw_time_without_scheduling_waits_.Percentile(percentile),
-        kMinEstimatedDisplayDrawTime,
-        BeginFrameArgs::DefaultEstimatedDisplayDrawTime(interval));
+        kMinEstimatedDisplayDrawTime, default_estimate);
   }
-  return BeginFrameArgs::DefaultEstimatedDisplayDrawTime(interval);
-}
-
-void Display::OnObservingBeginFrameSourceChanged(bool observing) {
-  if (skia_output_surface_)
-    skia_output_surface_->OnObservingBeginFrameSourceChanged(observing);
+  return default_estimate;
 }
 
 const SurfaceId& Display::CurrentSurfaceId() const {
@@ -1427,11 +1385,11 @@ void Display::SetPreferredFrameInterval(base::TimeDelta interval) {
     float interval_s = interval.InSecondsF();
     float frame_rate = interval_s == 0 ? 0 : (1 / interval_s);
     output_surface_->SetFrameRate(frame_rate);
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     // On Android we want to return early because the |client_| callback hits
     // a platform API in the browser process.
     return;
-#endif  // OS_ANDROID
+#endif  // BUILDFLAG(IS_ANDROID)
   }
 
   client_->SetPreferredFrameInterval(interval);

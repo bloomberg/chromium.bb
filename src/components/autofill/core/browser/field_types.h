@@ -40,8 +40,12 @@ enum ServerFieldType {
   NAME_SUFFIX = 8,
   EMAIL_ADDRESS = 9,
   PHONE_HOME_NUMBER = 10,
+  // Never includes a trunk prefix. Used in combination with a
+  // PHONE_HOME_COUNTRY_CODE field.
   PHONE_HOME_CITY_CODE = 11,
   PHONE_HOME_COUNTRY_CODE = 12,
+  // A number in national format and with a trunk prefix, if applicable in the
+  // number's region. Used when no PHONE_HOME_COUNTRY_CODE field is present.
   PHONE_HOME_CITY_AND_NUMBER = 13,
   PHONE_HOME_WHOLE_NUMBER = 14,
 
@@ -239,9 +243,27 @@ enum ServerFieldType {
   // The full name including the honorific prefix.
   NAME_FULL_WITH_HONORIFIC_PREFIX = 117,
 
+  // Types to represent a birthdate.
+  BIRTHDATE_DAY = 118,
+  BIRTHDATE_MONTH = 119,
+  BIRTHDATE_YEAR_4_DIGITS = 120,
+
+  // Types for better trunk prefix support for phone numbers.
+  // Like PHONE_HOME_CITY_CODE, but with a trunk prefix, if applicable in the
+  // number's region. Used when no PHONE_HOME_COUNTRY_CODE field is present.
+  PHONE_HOME_CITY_CODE_WITH_TRUNK_PREFIX = 121,
+  // Like PHONE_HOME_CITY_AND_NUMBER, but never includes a trunk prefix. Used in
+  // combination with a PHONE_HOME_COUNTRY_CODE field.
+  PHONE_HOME_CITY_AND_NUMBER_WITHOUT_TRUNK_PREFIX = 122,
+
+  // PHONE_HOME_NUMBER = PHONE_HOME_NUMBER_PREFIX + PHONE_HOME_NUMBER_SUFFIX.
+  // For the US numbers (650) 234-5678 the types correspond to 234 and 5678.
+  PHONE_HOME_NUMBER_PREFIX = 123,
+  PHONE_HOME_NUMBER_SUFFIX = 124,
+
   // No new types can be added without a corresponding change to the Autofill
   // server.
-  MAX_VALID_FIELD_TYPE = 118,
+  MAX_VALID_FIELD_TYPE = 125,
 };
 
 // The list of all HTML autocomplete field type hints supported by Chrome.
@@ -347,7 +369,8 @@ enum class FieldTypeGroup {
   kTransaction,
   kUsernameField,
   kUnfillable,
-  kMaxValue = kUnfillable,
+  kBirthdateField,
+  kMaxValue = kBirthdateField,
 };
 
 using ServerFieldTypeSet = DenseSet<ServerFieldType, MAX_VALID_FIELD_TYPE>;

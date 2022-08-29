@@ -1,7 +1,7 @@
-/* Copyright (c) 2015-2021 The Khronos Group Inc.
- * Copyright (c) 2015-2021 Valve Corporation
- * Copyright (c) 2015-2021 LunarG, Inc.
- * Copyright (C) 2015-2021 Google Inc.
+/* Copyright (c) 2015-2022 The Khronos Group Inc.
+ * Copyright (c) 2015-2022 Valve Corporation
+ * Copyright (c) 2015-2022 LunarG, Inc.
+ * Copyright (C) 2015-2022 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -171,7 +171,7 @@ static const char DECORATE_UNUSED *kVUID_Core_DrawState_InvalidImageView = "UNAS
 
 //static const char DECORATE_UNUSED *kVUID_Core_Shader_DescriptorNotAccessibleFromStage = "UNASSIGNED-CoreValidation-Shader-DescriptorNotAccessibleFromStage";
 //static const char DECORATE_UNUSED *kVUID_Core_Shader_DescriptorTypeMismatch = "UNASSIGNED-CoreValidation-Shader-DescriptorTypeMismatch";
-static const char DECORATE_UNUSED *kVUID_Core_Shader_MaxComputeSharedMemorySize = "UNASSIGNED-CoreValidation-Shader-MaxComputeSharedMemorySize";
+// static const char DECORATE_UNUSED *kVUID_Core_Shader_MaxComputeSharedMemorySize = "UNASSIGNED-CoreValidation-Shader-MaxComputeSharedMemorySize";
 // static const char DECORATE_UNUSED *kVUID_Core_Shader_ExceedDeviceLimit = "UNASSIGNED-CoreValidation-Shader-ExceedDeviceLimit";
 // static const char DECORATE_UNUSED *kVUID_Core_Shader_FeatureNotEnabled = "UNASSIGNED-CoreValidation-Shader-FeatureNotEnabled";
 static const char DECORATE_UNUSED *kVUID_Core_Shader_InconsistentSpirv = "UNASSIGNED-CoreValidation-Shader-InconsistentSpirv";
@@ -200,6 +200,7 @@ static const char DECORATE_UNUSED *kVUID_Core_Shader_MaxComputeWorkGroupSize = "
 //static const char DECORATE_UNUSED *kVUID_Core_Shader_MissingEntrypoint = "UNASSIGNED-CoreValidation-Shader-MissingEntrypoint";
 //static const char DECORATE_UNUSED *kVUID_Core_Shader_NonSpirvShader = "UNASSIGNED-CoreValidation-Shader-NonSpirvShader";
 //static const char DECORATE_UNUSED *kVUID_Core_Shader_UnknownStage = "UNASSIGNED-CoreValidation-Shader-UnknownStage";
+static const char DECORATE_UNUSED *kVUID_Stateless_InvalidShaderStagesArray = "UNASSIGNED-Stateless-InvalidShaderStagesArray";
 
 static const char DECORATE_UNUSED *kVUID_Core_DevLimit_CountMismatch = "UNASSIGNED-CoreValidation-DevLimitCountMismatch";
 // static const char DECORATE_UNUSED *kVUID_Core_DevLimit_InvalidFeatureRequested = "UNASSIGNED-CoreValidation-DevLimit-InvalidFeatureRequested";
@@ -242,7 +243,7 @@ static const char DECORATE_UNUSED *kVUID_Core_NonAcquiredSwapchainImageUsed = "U
 //static const char DECORATE_UNUSED *kVUID_Core_Swapchain_ZeroValue = "UNASSIGNED-CoreValidation-SwapchainZeroValue";
 
 static const char DECORATE_UNUSED *kVUID_Core_Image_InvalidFormatLimitsViolation = "UNASSIGNED-CoreValidation-Image-InvalidFormatLimitsViolation";
-static const char DECORATE_UNUSED *kVUID_Core_Image_ZeroAreaSubregion = "UNASSIGNED-CoreValidation-Image-ZeroAreaSubregion";
+// static const char DECORATE_UNUSED *kVUID_Core_Image_ZeroAreaSubregion = "UNASSIGNED-CoreValidation-Image-ZeroAreaSubregion";
 // static const char DECORATE_UNUSED *kVUID_Core_Image_FormatNotSupported = "UNASSIGNED-CoreValidation-Image-FormatNotSupported";
 
 static const char DECORATE_UNUSED *kVUID_Core_PushDescriptorUpdate_TemplateType = "UNASSIGNED-CoreValidation-vkCmdPushDescriptorSetWithTemplateKHR-descriptorUpdateTemplate-templateType";
@@ -260,6 +261,7 @@ static const char DECORATE_UNUSED *kVUID_Core_CmdBuildAccelNV_NoUpdateMemReqQuer
 
 static const char DECORATE_UNUSED *kVUID_Core_CreatInstance_Status = "UNASSIGNED-khronos-validation-createinstance-status-message";
 static const char DECORATE_UNUSED *kVUID_Core_CreateInstance_Debug_Warning = "UNASSIGNED-khronos-Validation-debug-build-warning-message";
+static const char DECORATE_UNUSED *kVUID_Core_CreateInstance_Locking_Warning = "UNASSIGNED-khronos-Validation-fine-grained-locking-warning-message";
 
 static const char DECORATE_UNUSED *kVUID_Core_ImageMemoryBarrier_SharingModeExclusiveSameFamily = "UNASSIGNED-CoreValidation-VkImageMemoryBarrier-sharing-mode-exclusive-same-family";
 static const char DECORATE_UNUSED *kVUID_Core_ImageMemoryBarrier2_SharingModeExclusiveSameFamily = "UNASSIGNED-CoreValidation-VkImageMemoryBarrier2KHR-sharing-mode-exclusive-same-family";
@@ -292,6 +294,8 @@ static const char DECORATE_UNUSED *kVUID_Features_shaderStorageImageWriteWithout
 // static const char DECORATE_UNUSED *kVUID_Features_shaderStorageImageWriteWithoutFormat_NonWritable = "UNASSIGNED-features-shaderStorageImageWriteWithoutFormat-NonWritable";
 
 static const char DECORATE_UNUSED *kVUID_Core_invalidDepthStencilFormat = "UNASSIGNED-CoreValidation-depthStencil-format";
+
+static const char DECORATE_UNUSED *kVUID_Core_VkBindImageMemoryInfo_pNext_missing_VkBindImagePlaneMemoryInfo = "UNASSIGNED-VkBindImageMemoryInfo-pNext-missing-VkBindImagePlaneMemoryInfo";
 
 // clang-format on
 

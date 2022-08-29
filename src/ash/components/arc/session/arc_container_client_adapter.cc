@@ -9,12 +9,12 @@
 
 #include "ash/components/arc/session/arc_session.h"
 #include "ash/components/arc/session/arc_upgrade_params.h"
+#include "ash/components/cryptohome/cryptohome_parameters.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/notreached.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chromeos/cryptohome/cryptohome_parameters.h"
-#include "chromeos/dbus/dbus_method_call_status.h"
+#include "chromeos/dbus/common/dbus_method_call_status.h"
 #include "chromeos/dbus/login_manager/arc.pb.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 
@@ -122,15 +122,17 @@ class ArcContainerClientAdapter
     request.set_dalvik_memory_profile(
         ToLoginManagerDalvikMemoryProfile(params.dalvik_memory_profile));
     request.set_arc_custom_tabs_experiment(params.arc_custom_tabs_experiment);
-    request.set_disable_system_default_app(
-        params.arc_disable_system_default_app);
     request.set_disable_media_store_maintenance(
         params.disable_media_store_maintenance);
     request.set_disable_download_provider(params.disable_download_provider);
     request.set_disable_ureadahead(params.disable_ureadahead);
     request.set_arc_generate_pai(params.arc_generate_play_auto_install);
+    request.set_enable_consumer_auto_update_toggle(
+        params.enable_consumer_auto_update_toggle);
     request.set_enable_notifications_refresh(
         params.enable_notifications_refresh);
+    request.set_enable_tts_caching(params.enable_tts_caching);
+
     return request;
   }
 
@@ -204,7 +206,7 @@ class ArcContainerClientAdapter
   void SetDemoModeDelegate(DemoModeDelegate* delegate) override {}
 
   // The interface is only for ARCVM.
-  void TrimVmMemory(TrimVmMemoryCallback callback) override {
+  void TrimVmMemory(TrimVmMemoryCallback callback, int) override {
     NOTREACHED();
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
