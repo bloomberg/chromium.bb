@@ -62,24 +62,24 @@ void ExtensionOptionsGuest::CreateWebContents(
     const base::DictionaryValue& create_params,
     WebContentsCreatedCallback callback) {
   // Get the extension's base URL.
-  std::string extension_id;
-  create_params.GetString(extensionoptions::kExtensionId, &extension_id);
+  const std::string* extension_id =
+      create_params.FindStringKey(extensionoptions::kExtensionId);
 
-  if (!crx_file::id_util::IdIsValid(extension_id)) {
+  if (!extension_id || !crx_file::id_util::IdIsValid(*extension_id)) {
     std::move(callback).Run(nullptr);
     return;
   }
 
   std::string embedder_extension_id = GetOwnerSiteURL().host();
   if (crx_file::id_util::IdIsValid(embedder_extension_id) &&
-      extension_id != embedder_extension_id) {
+      *extension_id != embedder_extension_id) {
     // Extensions cannot embed other extensions' options pages.
     std::move(callback).Run(nullptr);
     return;
   }
 
   GURL extension_url =
-      extensions::Extension::GetBaseURLFromExtensionId(extension_id);
+      extensions::Extension::GetBaseURLFromExtensionId(*extension_id);
   if (!extension_url.is_valid()) {
     std::move(callback).Run(nullptr);
     return;
@@ -89,7 +89,7 @@ void ExtensionOptionsGuest::CreateWebContents(
   extensions::ExtensionRegistry* registry =
       extensions::ExtensionRegistry::Get(browser_context());
   const extensions::Extension* extension =
-      registry->enabled_extensions().GetByID(extension_id);
+      registry->enabled_extensions().GetByID(*extension_id);
   if (!extension) {
     // The ID was valid but the extension didn't exist. Typically this will
     // happen when an extension is disabled.
@@ -229,7 +229,7 @@ WebContents* ExtensionOptionsGuest::CreateCustomWebContents(
     const GURL& opener_url,
     const std::string& frame_name,
     const GURL& target_url,
-    const content::StoragePartitionId& partition_id,
+    const content::StoragePartitionConfig& partition_config,
     content::SessionStorageNamespace* session_storage_namespace) {
   // To get links out of the guest view, we just open the URL in a new tab.
   // TODO(ericzeng): Open the tab in the background if the click was a
@@ -249,9 +249,9 @@ WebContents* ExtensionOptionsGuest::CreateCustomWebContents(
 
 void ExtensionOptionsGuest::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
-  // frames. This caller was converted automatically to the primary main frame
-  // to preserve its semantics. Follow up to confirm correctness.
+  // TODO(crbug.com/1261928): Due to the use of inner WebContents, an
+  // ExtensionOptionsGuest's main frame is considered primary. This will no
+  // longer be the case once we migrate guest views to MPArch.
   if (!navigation_handle->IsInPrimaryMainFrame() ||
       !navigation_handle->HasCommitted() || !attached()) {
     return;
@@ -264,7 +264,7 @@ void ExtensionOptionsGuest::DidFinishNavigation(
 
   if (!url::IsSameOriginWith(navigation_handle->GetURL(), options_page_)) {
     bad_message::ReceivedBadMessage(
-        web_contents()->GetMainFrame()->GetProcess(),
+        web_contents()->GetPrimaryMainFrame()->GetProcess(),
         bad_message::EOG_BAD_ORIGIN);
   }
 }

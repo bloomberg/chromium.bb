@@ -14,6 +14,9 @@ limitations under the License.
 ==============================================================================*/
 #include "tensorflow/compiler/mlir/xla/ir/mlir_hlo_builder.h"
 
+#include <string>
+#include <utility>
+
 #include "llvm/ADT/ArrayRef.h"
 #include "llvm/Support/raw_ostream.h"
 #include "mlir/IR/Builders.h"  // from @llvm-project
@@ -122,16 +125,18 @@ StatusOr<XlaOp> MlirHloBuilder::FftInternal(
     absl::Span<const int64_t> fft_length) {
   TF_ASSIGN_OR_RETURN(mlir::Type ty, ConvertShapeToType<mlir::RankedTensorType>(
                                          shape, builder_));
+  auto fft_type_attr = mlir::mhlo::symbolizeFftType(FftType_Name(fft_type));
   auto op = builder_.create<mlir::mhlo::FftOp>(
       loc_, ty, GetValue(operand),
-      builder_.getStringAttr(FftType_Name(fft_type)),
+      mlir::mhlo::FftTypeAttr::get(builder_.getContext(),
+                                   fft_type_attr.getValue()),
       GetI64ElementsAttr(fft_length, &builder_));
   return MakeXlaOp(op);
 }
 
 StatusOr<XlaOp> MlirHloBuilder::CustomCallInternal(
-    const string& call_target_name, absl::Span<const XlaOp> operands,
-    const Shape& shape, const string& opaque,
+    const std::string& call_target_name, absl::Span<const XlaOp> operands,
+    const Shape& shape, const std::string& opaque,
     absl::optional<absl::Span<const Shape>> operand_shapes_with_layout,
     bool has_side_effect,
     absl::Span<const std::pair<ShapeIndex, std::pair<int64_t, ShapeIndex>>>
@@ -200,7 +205,8 @@ StatusOr<XlaOp> MlirHloBuilder::ReduceInternal(
       loc_, GetValues(all_operands.first(num_args)),
       GetValues(all_operands.subspan(num_args)),
       GetI64ElementsAttr(dimensions_to_reduce, &builder_));
-  TF_RETURN_IF_ERROR(ImportComputation(computation.proto(), &op.body()));
+  TF_RETURN_IF_ERROR(ImportComputation(computation.proto(), &op.body(),
+                                       /*flatten_region_arg_tuple*/ true));
   if (op.getNumResults() == 1) return MakeXlaOp(op.getResult(0));
   auto tuple = builder_.create<mlir::mhlo::TupleOp>(loc_, op.getResults());
   return MakeXlaOp(tuple);
@@ -231,7 +237,8 @@ StatusOr<XlaOp> MlirHloBuilder::ReduceWindowInternal(
       GetI64ElementsAttr(base_dilations, &builder_),
       GetI64ElementsAttr(win_dilations, &builder_),
       mlir::DenseIntElementsAttr::get(padding_ty, padding));
-  TF_RETURN_IF_ERROR(ImportComputation(computation.proto(), &op.body()));
+  TF_RETURN_IF_ERROR(ImportComputation(computation.proto(), &op.body(),
+                                       /*flatten_region_arg_tuple*/ true));
   return MakeXlaOp(op.getResult(0));
 }
 
@@ -305,12 +312,31 @@ StatusOr<XlaOp> MlirHloBuilder::WhileInternal(const Shape& shape,
                                               XlaOp init) {
   TF_ASSIGN_OR_RETURN(mlir::Type ty, ConvertShapeToType<mlir::RankedTensorType>(
                                          shape, builder_));
-  auto op = builder_.create<mlir::mhlo::WhileOp>(loc_, ty, GetValue(init));
-  TF_RETURN_IF_ERROR(ImportComputation(condition.proto(), &op.cond()));
-  TF_RETURN_IF_ERROR(ImportComputation(body.proto(), &op.body()));
-  // TODO(jpienaar): Support multi-operand while op.
-  if (op.getNumResults() != 1)
-    return Unimplemented("Only single result MHLO WhileOp's can be import.");
+
+  llvm::SmallVector<mlir::Value> flattened_operands;
+  llvm::SmallVector<mlir::Type> flattened_operand_types;
+
+  HloFunctionImporter::FlattenTupleType(ty, flattened_operand_types);
+  HloFunctionImporter::FlattenTupleValue(&builder_, loc_, GetValue(init),
+                                         flattened_operands);
+
+  auto op = builder_.create<mlir::mhlo::WhileOp>(loc_, flattened_operand_types,
+                                                 flattened_operands);
+
+  TF_RETURN_IF_ERROR(ImportComputation(condition.proto(), &op.cond(),
+                                       /*flatten_region_arg_tuple*/ true));
+  TF_RETURN_IF_ERROR(ImportComputation(body.proto(), &op.body(),
+                                       /*flatten_region_arg_tuple*/ true));
+
+  if (ty.isa<mlir::TupleType>()) {
+    llvm::SmallVector<mlir::Value> flattened_results = op->getResults();
+    llvm::MutableArrayRef<mlir::Value> flattened_results_ref(flattened_results);
+    auto result = HloFunctionImporter::CreateTupleValue(
+        &builder_, loc_, flattened_results_ref, ty);
+    auto defining_tuple_op = result.getDefiningOp<mlir::mhlo::TupleOp>();
+    return MakeXlaOp(defining_tuple_op);
+  }
+
   return MakeXlaOp(op.getResult(0));
 }
 
@@ -339,14 +365,19 @@ StatusOr<XlaOp> MlirHloBuilder::GatherInternal(
 }
 
 StatusOr<XlaOp> MlirHloBuilder::ScatterInternal(
-    const Shape& shape, XlaOp input, XlaOp scatter_indices, XlaOp updates,
-    const XlaComputation& update_computation,
+    const Shape& shape, absl::Span<const XlaOp> inputs, XlaOp scatter_indices,
+    absl::Span<const XlaOp> updates, const XlaComputation& update_computation,
     const ScatterDimensionNumbers& dimension_numbers, bool indices_are_sorted,
     bool unique_indices) {
+  // TODO(b/230137437): Allow variadic scatter after adding mhlo support.
+  if (inputs.size() != 1) {
+    return Unimplemented("Variadic scatter not implemented in mhlo yet.");
+  }
   TF_ASSIGN_OR_RETURN(mlir::Type ty, ConvertShapeToType<mlir::RankedTensorType>(
                                          shape, builder_));
   auto op = builder_.create<mlir::mhlo::ScatterOp>(
-      loc_, ty, GetValue(input), GetValue(scatter_indices), GetValue(updates),
+      loc_, ty, GetValue(inputs[0]), GetValue(scatter_indices),
+      GetValue(updates[0]),
       ConvertScatterDimensionNumbers(dimension_numbers, &builder_),
       builder_.getBoolAttr(indices_are_sorted),
       builder_.getBoolAttr(unique_indices));
@@ -396,9 +427,25 @@ StatusOr<XlaOp> MlirHloBuilder::RngBitGeneratorInternal(
     XlaOp initial_state) {
   TF_ASSIGN_OR_RETURN(mlir::Type ty, ConvertShapeToType<mlir::RankedTensorType>(
                                          full_result_shape, builder_));
+
+  llvm::SmallVector<mlir::Type> flattened_ret_types;
+  HloFunctionImporter::FlattenTupleType(ty, flattened_ret_types);
+
+  auto algorithm_attr = mlir::mhlo::RngAlgorithmAttr::get(
+      builder_.getContext(), *mlir::mhlo::symbolizeRngAlgorithm(algorithm));
   auto op = builder_.create<mlir::mhlo::RngBitGeneratorOp>(
-      loc_, ty, builder_.getI32IntegerAttr(algorithm), GetValue(initial_state));
-  return MakeXlaOp(op);
+      loc_, flattened_ret_types, algorithm_attr, GetValue(initial_state));
+
+  if (ty.isa<mlir::TupleType>()) {
+    llvm::SmallVector<mlir::Value> flattened_results = op->getResults();
+    llvm::MutableArrayRef<mlir::Value> flattened_results_ref(flattened_results);
+    auto result = HloFunctionImporter::CreateTupleValue(
+        &builder_, loc_, flattened_results_ref, ty);
+    auto defining_tuple_op = result.getDefiningOp<mlir::mhlo::TupleOp>();
+    return MakeXlaOp(defining_tuple_op);
+  }
+
+  return MakeXlaOp(op.getResult(0));
 }
 
 StatusOr<XlaOp> MlirHloBuilder::ReshapeInternal(const Shape& shape,
@@ -455,8 +502,14 @@ StatusOr<XlaOp> MlirHloBuilder::Compare(const Shape& shape, XlaOp lhs,
                                          shape, builder_));
   auto op = builder_.create<mlir::mhlo::CompareOp>(
       loc_, ty, GetValue(lhs), GetValue(rhs),
-      builder_.getStringAttr(ComparisonDirectionToString(direction)),
-      builder_.getStringAttr(ComparisonTypeToString(type)));
+      mlir::mhlo::ComparisonDirectionAttr::get(
+          builder_.getContext(), mlir::mhlo::symbolizeComparisonDirection(
+                                     ComparisonDirectionToString(direction))
+                                     .getValue()),
+      mlir::mhlo::ComparisonTypeAttr::get(
+          builder_.getContext(),
+          mlir::mhlo::symbolizeComparisonType(ComparisonTypeToString(type))
+              .getValue()));
   return MakeXlaOp(op.getResult());
 }
 
@@ -490,8 +543,11 @@ StatusOr<XlaOp> MlirHloBuilder::TriangularSolveInternal(
       builder_.getBoolAttr(options.left_side()),
       builder_.getBoolAttr(options.lower()),
       builder_.getBoolAttr(options.unit_diagonal()),
-      builder_.getStringAttr(
-          TriangularSolveOptions::Transpose_Name(options.transpose_a())));
+      mlir::mhlo::TransposeAttr::get(
+          builder_.getContext(),
+          ::mlir::mhlo::symbolizeTranspose(
+              TriangularSolveOptions::Transpose_Name(options.transpose_a()))
+              .getValue()));
   return MakeXlaOp(op);
 }
 
@@ -506,23 +562,37 @@ StatusOr<XlaOp> MlirHloBuilder::CholeskyInternal(const Shape& shape, XlaOp a,
 }
 
 StatusOr<XlaOp> MlirHloBuilder::InfeedWithTokenInternal(
-    const Shape& infeed_instruction_shape, XlaOp token, const string& config) {
+    const Shape& infeed_instruction_shape, XlaOp token,
+    const std::string& config) {
   TF_ASSIGN_OR_RETURN(mlir::Type result_type,
                       ConvertShapeToType<mlir::RankedTensorType>(
                           infeed_instruction_shape, builder_));
+  llvm::SmallVector<mlir::Type> flattened_ret_types;
+  HloFunctionImporter::FlattenTupleType(result_type, flattened_ret_types);
+
   mlir::ArrayAttr layout;
-  return MakeXlaOp(
-      builder_.create<mlir::mhlo::InfeedOp>(loc_, result_type, GetValue(token),
-                                            /*infeed_config=*/config,
-                                            /*layout=*/layout));
+  auto op = builder_.create<mlir::mhlo::InfeedOp>(loc_, flattened_ret_types,
+                                                  GetValue(token),
+                                                  /*infeed_config=*/config,
+                                                  /*layout=*/layout);
+
+  llvm::SmallVector<mlir::Value> flattened_results = op->getResults();
+  llvm::MutableArrayRef<mlir::Value> flattened_results_ref(flattened_results);
+  auto result = HloFunctionImporter::CreateTupleValue(
+      &builder_, loc_, flattened_results_ref, result_type);
+  auto defining_tuple_op = result.getDefiningOp<mlir::mhlo::TupleOp>();
+  return MakeXlaOp(defining_tuple_op);
 }
 
 StatusOr<XlaOp> MlirHloBuilder::OutfeedWithTokenInternal(
     XlaOp operand, XlaOp token, const Shape& shape_with_layout,
-    const string& outfeed_config) {
+    const std::string& outfeed_config) {
   auto token_type = mlir::mhlo::TokenType::get(builder_.getContext());
+  llvm::SmallVector<mlir::Value> flattened_operands;
+  HloFunctionImporter::FlattenTupleValue(&builder_, loc_, GetValue(operand),
+                                         flattened_operands);
   return MakeXlaOp(builder_.create<mlir::mhlo::OutfeedOp>(
-      loc_, token_type, GetValue(operand), GetValue(token), outfeed_config));
+      loc_, token_type, flattened_operands, GetValue(token), outfeed_config));
 }
 
 StatusOr<XlaOp> MlirHloBuilder::ConcatInDimInternal(
@@ -617,12 +687,13 @@ StatusOr<XlaOp> MlirHloBuilder::CreateOp(
   TF_ASSIGN_OR_RETURN(mlir::Type ty, ConvertShapeToType<mlir::RankedTensorType>(
                                          shape, builder_));
   mlir::OperationState state(loc_, op_name, operand_values, {ty}, attributes);
-  mlir::Operation* op = builder_.createOperation(state);
+  mlir::Operation* op = builder_.create(state);
   return MakeXlaOp(op->getResult(0));
 }
 
 Status MlirHloBuilder::ImportComputation(const HloModuleProto& computation,
-                                         mlir::Region* region) {
+                                         mlir::Region* region,
+                                         bool flatten_region_arg_tuple) {
   TF_ASSIGN_OR_RETURN(auto module_config,
                       xla::HloModule::CreateModuleConfigFromProto(
                           computation, xla::DebugOptions()));
@@ -630,7 +701,8 @@ Status MlirHloBuilder::ImportComputation(const HloModuleProto& computation,
                                            computation, module_config));
 
   return HloFunctionImporter::ImportAsRegion(*hlo_module->entry_computation(),
-                                             region, &builder_);
+                                             region, &builder_,
+                                             flatten_region_arg_tuple);
 }
 
 StatusOr<const Shape*> MlirHloBuilder::GetShapePtr(XlaOp op) const {

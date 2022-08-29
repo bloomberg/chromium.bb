@@ -99,9 +99,9 @@ py_library(
 )
 
 cuda_py_test(
-    name = "bias_op_deterministic_test",
+    name = "bias_op_d9m_test",
     size = "medium",
-    srcs = ["bias_op_deterministic_test.py"],
+    srcs = ["bias_op_d9m_test.py"],
     shard_count = 2,
     deps = [
         ":bias_op_base",
@@ -281,6 +281,7 @@ py_library(
         "//tensorflow/python:constant_op",
         "//tensorflow/python:dtypes",
         "//tensorflow/python:nn_ops",
+        "//tensorflow/python/eager:backprop",
         "//third_party/py/numpy",
     ],
 )
@@ -299,14 +300,41 @@ cuda_py_test(
 )
 
 cuda_py_test(
-    name = "cudnn_deterministic_test",
+    name = "cudnn_d9m_test",
     size = "small",
-    srcs = ["cudnn_deterministic_test.py"],
+    srcs = ["cudnn_d9m_test.py"],
     tags = [
         "no_cuda_asan",  # TODO(b/171509035): re-enable.
     ],
     deps = [
         ":cudnn_deterministic_base",
+    ],
+)
+
+py_library(
+    name = "depthwise_conv_op_base",
+    srcs = ["depthwise_conv_op_base.py"],
+    deps = [
+        "//tensorflow/python:array_ops",
+        "//tensorflow/python:client_testlib",
+        "//tensorflow/python:framework_for_generated_wrappers",
+        "//tensorflow/python:nn",
+        "//tensorflow/python:nn_grad",
+        "//tensorflow/python:nn_ops",
+        "//third_party/py/numpy",
+    ],
+)
+
+cuda_py_test(
+    name = "depthwise_conv_op_d9m_test",
+    size = "medium",  # http://b/30603882
+    timeout = "long",
+    srcs = ["depthwise_conv_op_d9m_test.py"],
+    shard_count = 8,
+    deps = [
+        ":depthwise_conv_op_base",
+        "//tensorflow/python:random_ops",
+        "//tensorflow/python/eager:backprop",
     ],
 )
 
@@ -316,19 +344,8 @@ cuda_py_test(
     timeout = "long",
     srcs = ["depthwise_conv_op_test.py"],
     shard_count = 8,
-    tags = [
-        "no_oss",  # TODO(b/118842098): Re-enable this test in Kokoro.
-    ],
     deps = [
-        "//tensorflow/python:array_ops",
-        "//tensorflow/python:client_testlib",
-        "//tensorflow/python:framework_for_generated_wrappers",
-        "//tensorflow/python:nn",
-        "//tensorflow/python:nn_grad",
-        "//tensorflow/python:nn_ops",
-        "//tensorflow/python:random_ops",
-        "//tensorflow/python/eager:backprop",
-        "//third_party/py/numpy",
+        ":depthwise_conv_op_base",
     ],
 )
 
@@ -634,10 +651,14 @@ cuda_py_test(
 )
 
 cuda_py_test(
-    name = "xent_op_deterministic_test",
+    name = "xent_op_d9m_test",
     size = "medium",
-    srcs = ["xent_op_deterministic_test.py"],
-    tags = ["notsan"],  # TODO(b/200548634): Remove.
+    srcs = ["xent_op_d9m_test.py"],
+    tags = [
+        "no_windows",  # Flaky on Windows CPU: https://github.com/tensorflow/tensorflow/issues/55827
+        "noasan",  # TODO(b/231484532): Remove after flakiness resolved.
+        "notsan",  # TODO(b/200548634): Remove.
+    ],
     xla_enable_strict_auto_jit = False,
     deps = [
         ":xent_op_test_base",

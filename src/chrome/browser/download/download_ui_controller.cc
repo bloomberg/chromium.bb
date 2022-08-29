@@ -23,27 +23,30 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/download/android/download_controller.h"
 #include "chrome/browser/download/android/download_controller_base.h"
 #else
+#include "chrome/browser/download/bubble/download_bubble_controller.h"
+#include "chrome/browser/download/bubble/download_bubble_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
 #include "chrome/browser/download/notification/download_notification_manager.h"
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 namespace {
 
 // DownloadShelfUIControllerDelegate{Android,} is used when a
 // DownloadUIController is
 // constructed without specifying an explicit Delegate.
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 
 class AndroidUIControllerDelegate : public DownloadUIController::Delegate {
  public:
@@ -60,7 +63,7 @@ void AndroidUIControllerDelegate::OnNewDownloadReady(
   DownloadControllerBase::Get()->OnDownloadStarted(item);
 }
 
-#else  // OS_ANDROID
+#else  // BUILDFLAG(IS_ANDROID)
 
 class DownloadShelfUIControllerDelegate
     : public DownloadUIController::Delegate {
@@ -100,7 +103,7 @@ void DownloadShelfUIControllerDelegate::OnNewDownloadReady(
   if (browser == nullptr)
     browser = chrome::FindLastActiveWithProfile(profile_);
 
-  if (browser && browser->window() &&
+  if (browser && browser->window() && browser->window()->GetDownloadShelf() &&
       DownloadItemModel(item).ShouldShowInShelf()) {
     DownloadUIModel::DownloadUIModelPtr model = DownloadItemModel::Wrap(item);
 
@@ -109,7 +112,61 @@ void DownloadShelfUIControllerDelegate::OnNewDownloadReady(
   }
 }
 
-#endif  // !OS_ANDROID
+class DownloadBubbleUIControllerDelegate
+    : public DownloadUIController::Delegate {
+ public:
+  // |profile| is required to outlive DownloadBubbleUIControllerDelegate.
+  explicit DownloadBubbleUIControllerDelegate(Profile* profile)
+      : profile_(profile) {}
+  ~DownloadBubbleUIControllerDelegate() override = default;
+
+ private:
+  // DownloadUIController::Delegate
+  void OnNewDownloadReady(download::DownloadItem* item) override;
+
+  raw_ptr<Profile> profile_;
+};
+
+void DownloadBubbleUIControllerDelegate::OnNewDownloadReady(
+    download::DownloadItem* item) {
+  if (!DownloadItemModel(item).ShouldShowInBubble())
+    return;
+
+  content::WebContents* web_contents =
+      content::DownloadItemUtils::GetWebContents(item);
+  // For the case of DevTools web contents, we'd like to use target browser
+  // shelf although saving from the DevTools web contents.
+  if (web_contents && DevToolsWindow::IsDevToolsWindow(web_contents)) {
+    DevToolsWindow* devtools_window =
+        DevToolsWindow::AsDevToolsWindow(web_contents);
+    content::WebContents* inspected =
+        devtools_window->GetInspectedWebContents();
+    // Do not overwrite web contents for the case of remote debugging.
+    if (inspected)
+      web_contents = inspected;
+  }
+  Browser* browser_to_pop_bubble =
+      web_contents ? chrome::FindBrowserWithWebContents(web_contents) : nullptr;
+
+  // As a last resort, use the last active browser for this profile. Not ideal,
+  // but better than not showing the download at all.
+  if (browser_to_pop_bubble == nullptr)
+    browser_to_pop_bubble = chrome::FindLastActiveWithProfile(profile_);
+
+  BrowserList* browser_list = BrowserList::GetInstance();
+  if (!browser_list)
+    return;
+
+  for (auto* browser : *browser_list) {
+    if (browser && browser->window() &&
+        browser->window()->GetDownloadBubbleUIController()) {
+      browser->window()->GetDownloadBubbleUIController()->OnNewItem(
+          item, /*show_details=*/(browser == browser_to_pop_bubble));
+    }
+  }
+}
+
+#endif  // BUILDFLAG(IS_ANDROID)
 
 } // namespace
 
@@ -119,22 +176,28 @@ DownloadUIController::Delegate::~Delegate() {
 DownloadUIController::DownloadUIController(content::DownloadManager* manager,
                                            std::unique_ptr<Delegate> delegate)
     : download_notifier_(manager, this), delegate_(std::move(delegate)) {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   if (!delegate_)
     delegate_ = std::make_unique<AndroidUIControllerDelegate>();
-#elif defined(OS_CHROMEOS)
+#elif BUILDFLAG(IS_CHROMEOS)
   if (!delegate_) {
     // The Profile is guaranteed to be valid since DownloadUIController is owned
     // by DownloadService, which in turn is a profile keyed service.
     delegate_ = std::make_unique<DownloadNotificationManager>(
         Profile::FromBrowserContext(manager->GetBrowserContext()));
   }
-#else   // defined(OS_CHROMEOS)
+#else   // BUILDFLAG(IS_CHROMEOS)
   if (!delegate_) {
-    delegate_ = std::make_unique<DownloadShelfUIControllerDelegate>(
-        Profile::FromBrowserContext(manager->GetBrowserContext()));
+    if (download::IsDownloadBubbleEnabled(
+            Profile::FromBrowserContext(manager->GetBrowserContext()))) {
+      delegate_ = std::make_unique<DownloadBubbleUIControllerDelegate>(
+          Profile::FromBrowserContext(manager->GetBrowserContext()));
+    } else {
+      delegate_ = std::make_unique<DownloadShelfUIControllerDelegate>(
+          Profile::FromBrowserContext(manager->GetBrowserContext()));
+    }
   }
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 }
 
 DownloadUIController::~DownloadUIController() {
@@ -157,10 +220,6 @@ void DownloadUIController::OnDownloadCreated(content::DownloadManager* manager,
       UMA_HISTOGRAM_ENUMERATION("Security.SecurityLevel.DownloadStarted",
                                 security_state_tab_helper->GetSecurityLevel(),
                                 security_state::SECURITY_LEVEL_COUNT);
-      UMA_HISTOGRAM_ENUMERATION(
-          "Security.SafetyTips.DownloadStarted",
-          security_state_tab_helper->GetVisibleSecurityState()
-              ->safety_tip_info.status);
     }
   }
 
@@ -201,7 +260,7 @@ void DownloadUIController::OnDownloadUpdated(content::DownloadManager* manager,
   content::WebContents* web_contents =
       content::DownloadItemUtils::GetWebContents(item);
   if (web_contents) {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     DownloadController::CloseTabIfEmpty(web_contents, item);
 #else
     Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
@@ -217,7 +276,7 @@ void DownloadUIController::OnDownloadUpdated(content::DownloadManager* manager,
         !item->IsSavePackageDownload()) {
       web_contents->Close();
     }
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
   }
 
   if (item->GetState() == download::DownloadItem::CANCELLED)

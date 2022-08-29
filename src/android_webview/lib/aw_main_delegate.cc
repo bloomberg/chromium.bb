@@ -12,7 +12,6 @@
 #include "android_webview/browser/gfx/browser_view_renderer.h"
 #include "android_webview/browser/gfx/gpu_service_webview.h"
 #include "android_webview/browser/gfx/viz_compositor_thread_runner_webview.h"
-#include "android_webview/browser/scoped_add_feature_flags.h"
 #include "android_webview/browser/tracing/aw_trace_event_args_allowlist.h"
 #include "android_webview/common/aw_descriptors.h"
 #include "android_webview/common/aw_features.h"
@@ -29,22 +28,24 @@
 #include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/cpu.h"
-#include "base/cpu_affinity_posix.h"
 #include "base/i18n/icu_util.h"
 #include "base/i18n/rtl.h"
 #include "base/posix/global_descriptors.h"
+#include "base/scoped_add_feature_flags.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/crash/core/common/crash_key.h"
+#include "components/embedder_support/switches.h"
 #include "components/gwp_asan/buildflags/buildflags.h"
 #include "components/metrics/unsent_log_store_metrics.h"
-#include "components/power_scheduler/power_scheduler.h"
 #include "components/safe_browsing/android/safe_browsing_api_handler_bridge.h"
 #include "components/services/heap_profiling/public/cpp/profiling_client.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
+#include "components/translate/core/common/translate_util.h"
+#include "components/variations/variations_ids_provider.h"
 #include "components/version_info/android/channel_getter.h"
 #include "components/viz/common/features.h"
 #include "content/public/browser/android/media_url_interceptor_register.h"
@@ -59,7 +60,6 @@
 #include "gin/v8_initializer.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/config/gpu_finch_features.h"
-#include "gpu/ipc/gl_in_process_context.h"
 #include "media/base/media_switches.h"
 #include "media/media_buildflags.h"
 #include "services/network/public/cpp/features.h"
@@ -147,6 +147,10 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   // the document lifecycle.
   cl->AppendSwitch(switches::kDisableBackForwardCache);
 
+  // Deemed that performance benefit is not worth the stability cost.
+  // See crbug.com/1309151.
+  cl->AppendSwitch(switches::kDisableGpuShaderDiskCache);
+
   if (cl->GetSwitchValueASCII(switches::kProcessType).empty()) {
     // Browser process (no type specified).
 
@@ -162,24 +166,33 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
     if (AwDrawFnImpl::IsUsingVulkan())
       cl->AppendSwitch(switches::kWebViewDrawFunctorUsesVulkan);
 
-#if !defined(USE_V8_CONTEXT_SNAPSHOT) || defined(INCLUDE_BOTH_V8_SNAPSHOTS)
-    // The snapshot for USE_V8_CONTEXT_SNAPSHOT is handled in the renderer.
+#if defined(USE_V8_CONTEXT_SNAPSHOT)
+    const gin::V8SnapshotFileType file_type =
+        gin::V8SnapshotFileType::kWithAdditionalContext;
+#else
     const gin::V8SnapshotFileType file_type = gin::V8SnapshotFileType::kDefault;
+#endif
     base::android::RegisterApkAssetWithFileDescriptorStore(
         content::kV8Snapshot32DataDescriptor,
         gin::V8Initializer::GetSnapshotFilePath(true, file_type));
     base::android::RegisterApkAssetWithFileDescriptorStore(
         content::kV8Snapshot64DataDescriptor,
         gin::V8Initializer::GetSnapshotFilePath(false, file_type));
-#endif
   }
 
   if (cl->HasSwitch(switches::kWebViewSandboxedRenderer)) {
     cl->AppendSwitch(switches::kInProcessGPU);
   }
 
+  // Disable origin trial features on Webview unless the flag was
+  // explicitly provided via command-line.
+  if (!cl->HasSwitch(embedder_support::kOriginTrialDisabledFeatures)) {
+    cl->AppendSwitchASCII(embedder_support::kOriginTrialDisabledFeatures,
+                          "DocumentTransitionV2");
+  }
+
   {
-    ScopedAddFeatureFlags features(cl);
+    base::ScopedAddFeatureFlags features(cl);
 
     if (base::android::BuildInfo::GetInstance()->sdk_int() >=
         base::android::SDK_VERSION_OREO) {
@@ -198,18 +211,26 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
       features.DisableIfNotSet(::features::kDefaultANGLEVulkan);
     }
 
+    if (cl->HasSwitch(switches::kWebViewMPArchFencedFrames)) {
+      features.EnableIfNotSetWithParameter(blink::features::kFencedFrames,
+                                           "implementation_type", "mparch");
+      features.EnableIfNotSet(blink::features::kSharedStorageAPI);
+      features.EnableIfNotSet(::features::kPrivacySandboxAdsAPIsOverride);
+    }
+
+    if (cl->HasSwitch(switches::kWebViewShadowDOMFencedFrames)) {
+      features.EnableIfNotSetWithParameter(blink::features::kFencedFrames,
+                                           "implementation_type", "shadow_dom");
+      features.EnableIfNotSet(blink::features::kSharedStorageAPI);
+      features.EnableIfNotSet(::features::kPrivacySandboxAdsAPIsOverride);
+    }
+
     // WebView uses kWebViewVulkan to control vulkan. Pre-emptively disable
     // kVulkan in case it becomes enabled by default.
     features.DisableIfNotSet(::features::kVulkan);
 
     features.DisableIfNotSet(::features::kWebPayments);
     features.DisableIfNotSet(::features::kServiceWorkerPaymentApps);
-
-    // WebView does not and should not support WebAuthN.
-    features.DisableIfNotSet(::features::kWebAuth);
-
-    // WebView requires SkiaRenderer.
-    features.EnableIfNotSet(::features::kUseSkiaRenderer);
 
     // WebView does not support overlay fullscreen yet for video overlays.
     features.DisableIfNotSet(media::kOverlayFullscreenVideo);
@@ -237,6 +258,10 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
 
     features.DisableIfNotSet(device::features::kWebXrHitTest);
 
+    // TODO(https://crbug.com/1312827): Digital Goods API is not yet supported
+    // on WebView.
+    features.DisableIfNotSet(::features::kDigitalGoodsApi);
+
     features.DisableIfNotSet(::features::kDynamicColorGamut);
 
     // De-jelly is never supported on WebView.
@@ -260,16 +285,34 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
     // Disabled until viz scheduling can be improved.
     features.DisableIfNotSet(::features::kUseSurfaceLayerForVideoDefault);
 
+    // Enabled by default for webview.
+    features.EnableIfNotSet(::features::kWebViewThreadSafeMediaDefault);
+
     // Disable dr-dc on webview.
     features.DisableIfNotSet(::features::kEnableDrDc);
+
+    // TODO(crbug.com/1100993): Web Bluetooth is not yet supported on WebView.
+    features.DisableIfNotSet(::features::kWebBluetooth);
+
+    // TODO(crbug.com/933055): WebUSB is not yet supported on WebView.
+    features.DisableIfNotSet(::features::kWebUsb);
+
+    // Disable TFLite based language detection on webview until webview supports
+    // ML model delivery via Optimization Guide component.
+    // TODO(crbug.com/1292622): Enable the feature on Webview.
+    features.DisableIfNotSet(::translate::kTFLiteLanguageDetectionEnabled);
+
+    // Have the network service in the browser process even if we have separate
+    // renderer processes. See also: switches::kInProcessGPU above.
+    features.EnableIfNotSet(::features::kNetworkServiceInProcess);
+
+    // Disable Event.path on Canary and Dev to help the deprecation and removal.
+    // See crbug.com/1277431 for more details.
+    if (version_info::android::GetChannel() < version_info::Channel::BETA)
+      features.DisableIfNotSet(blink::features::kEventPath);
   }
 
   android_webview::RegisterPathProvider();
-
-  safe_browsing_api_handler_ =
-      std::make_unique<safe_browsing::SafeBrowsingApiHandlerBridge>();
-  safe_browsing::SafeBrowsingApiHandler::SetInstance(
-      safe_browsing_api_handler_.get());
 
   // Used only if the argument filter is enabled in tracing config,
   // as is the case by default in aw_tracing_controller.cc
@@ -352,40 +395,32 @@ void AwMainDelegate::ProcessExiting(const std::string& process_type) {
   logging::CloseLogFile();
 }
 
-bool AwMainDelegate::ShouldCreateFeatureList() {
-  // TODO(https://crbug.com/887468): Move the creation of FeatureList from
-  // AwBrowserMainParts::PreCreateThreads() to
+bool AwMainDelegate::ShouldCreateFeatureList(InvokedIn invoked_in) {
+  // In the browser process the FeatureList is created in
   // AwMainDelegate::PostEarlyInitialization().
-  return false;
+  return invoked_in == InvokedIn::kChildProcess;
 }
 
-// This function is called only on the browser process.
-void AwMainDelegate::PostEarlyInitialization(bool is_running_tests) {
-  InitIcuAndResourceBundleBrowserSide();
-  aw_feature_list_creator_->CreateFeatureListAndFieldTrials();
-  PostFieldTrialInitialization();
+variations::VariationsIdsProvider*
+AwMainDelegate::CreateVariationsIdsProvider() {
+  return variations::VariationsIdsProvider::Create(
+      variations::VariationsIdsProvider::Mode::kDontSendSignedInVariations);
 }
 
-void AwMainDelegate::PostFieldTrialInitialization() {
-  version_info::Channel channel = version_info::android::GetChannel();
-  bool is_canary_dev = (channel == version_info::Channel::CANARY ||
-                        channel == version_info::Channel::DEV);
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  std::string process_type =
-      command_line.GetSwitchValueASCII(switches::kProcessType);
-  bool is_browser_process = process_type.empty();
-
-  ALLOW_UNUSED_LOCAL(is_canary_dev);
-  ALLOW_UNUSED_LOCAL(is_browser_process);
-
-  // Enable LITTLE-cores only mode/idle power mode throttling if the features
-  // are enabled, but only for child processes, as the browser process is shared
-  // with the hosting app.
-  if (!is_browser_process) {
-    power_scheduler::PowerScheduler::GetInstance()
-        ->InitializePolicyFromFeatureList();
+void AwMainDelegate::PostEarlyInitialization(InvokedIn invoked_in) {
+  const bool is_browser_process = invoked_in != InvokedIn::kChildProcess;
+  if (is_browser_process) {
+    InitIcuAndResourceBundleBrowserSide();
+    aw_feature_list_creator_->CreateFeatureListAndFieldTrials();
   }
+
+  version_info::Channel channel = version_info::android::GetChannel();
+  [[maybe_unused]] const bool is_canary_dev =
+      (channel == version_info::Channel::CANARY ||
+       channel == version_info::Channel::DEV);
+  [[maybe_unused]] const std::string process_type =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kProcessType);
 
 #if BUILDFLAG(ENABLE_GWP_ASAN_MALLOC)
   gwp_asan::EnableForMalloc(is_canary_dev || is_browser_process,

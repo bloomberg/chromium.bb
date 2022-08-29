@@ -10,7 +10,7 @@
 
 #include "base/bind.h"
 #include "base/containers/contains.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/observer_list.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -21,6 +21,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/usb/usb_blocklist.h"
+#include "chrome/browser/usb/web_usb_histograms.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "content/public/browser/device_service.h"
@@ -38,24 +39,6 @@ constexpr char kVendorIdKey[] = "vendor-id";
 constexpr int kDeviceIdWildcard = -1;
 constexpr int kUsbClassMassStorage = 0x08;
 
-// Reasons a permission may be closed. These are used in histograms so do not
-// remove/reorder entries. Only add at the end just before
-// WEBUSB_PERMISSION_REVOKED_MAX. Also remember to update the enum listing in
-// tools/metrics/histograms/histograms.xml.
-enum WebUsbPermissionRevoked {
-  // Permission to access a USB device was revoked by the user.
-  WEBUSB_PERMISSION_REVOKED = 0,
-  // Permission to access an ephemeral USB device was revoked by the user.
-  WEBUSB_PERMISSION_REVOKED_EPHEMERAL,
-  // Maximum value for the enum.
-  WEBUSB_PERMISSION_REVOKED_MAX
-};
-
-void RecordPermissionRevocation(WebUsbPermissionRevoked kind) {
-  UMA_HISTOGRAM_ENUMERATION("WebUsb.PermissionRevoked", kind,
-                            WEBUSB_PERMISSION_REVOKED_MAX);
-}
-
 bool CanStorePersistentEntry(const device::mojom::UsbDeviceInfo& device_info) {
   return device_info.serial_number && !device_info.serial_number->empty();
 }
@@ -71,7 +54,7 @@ std::pair<int, int> GetDeviceIds(const base::Value& object) {
 }
 
 std::u16string GetDeviceNameFromIds(int vendor_id, int product_id) {
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   const char* product_name =
       device::UsbIds::GetProductName(vendor_id, product_id);
   if (product_name)
@@ -90,7 +73,7 @@ std::u16string GetDeviceNameFromIds(int vendor_id, int product_id) {
         base::ASCIIToUTF16(base::StringPrintf("0x%04X", product_id)),
         base::UTF8ToUTF16(vendor_name));
   }
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID)
 
   if (product_id == kDeviceIdWildcard) {
     if (vendor_id == kDeviceIdWildcard)
@@ -232,7 +215,7 @@ void UsbChooserContext::SetUpDeviceManagerConnection() {
                      weak_factory_.GetWeakPtr()));
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 void UsbChooserContext::OnDeviceInfoRefreshed(
     device::mojom::UsbDeviceManager::RefreshDeviceInfoCallback callback,
     device::mojom::UsbDeviceInfoPtr device_info) {
@@ -398,11 +381,28 @@ UsbChooserContext::GetAllGrantedObjects() {
 
 void UsbChooserContext::RevokeObjectPermission(const url::Origin& origin,
                                                const base::Value& object) {
+  RevokeObjectPermissionInternal(origin, object, /*revoked_by_website=*/false);
+}
+
+void UsbChooserContext::RevokeDevicePermissionWebInitiated(
+    const url::Origin& origin,
+    const device::mojom::UsbDeviceInfo& device) {
+  DCHECK(base::Contains(devices_, device.guid));
+  RevokeObjectPermissionInternal(origin, DeviceInfoToValue(device),
+                                 /*revoked_by_website=*/true);
+}
+
+void UsbChooserContext::RevokeObjectPermissionInternal(
+    const url::Origin& origin,
+    const base::Value& object,
+    bool revoked_by_website = false) {
   const std::string* guid = object.FindStringKey(kGuidKey);
 
   if (!guid) {
     ObjectPermissionContextBase::RevokeObjectPermission(origin, object);
-    RecordPermissionRevocation(WEBUSB_PERMISSION_REVOKED);
+    RecordWebUsbPermissionRevocation(revoked_by_website
+                                         ? WEBUSB_PERMISSION_REVOKED_BY_WEBSITE
+                                         : WEBUSB_PERMISSION_REVOKED_BY_USER);
     return;
   }
 
@@ -414,7 +414,9 @@ void UsbChooserContext::RevokeObjectPermission(const url::Origin& origin,
     NotifyPermissionRevoked(origin);
   }
 
-  RecordPermissionRevocation(WEBUSB_PERMISSION_REVOKED_EPHEMERAL);
+  RecordWebUsbPermissionRevocation(
+      revoked_by_website ? WEBUSB_PERMISSION_REVOKED_EPHEMERAL_BY_WEBSITE
+                         : WEBUSB_PERMISSION_REVOKED_EPHEMERAL_BY_USER);
 }
 
 std::string UsbChooserContext::GetKeyForObject(const base::Value& object) {
@@ -531,7 +533,7 @@ const device::mojom::UsbDeviceInfo* UsbChooserContext::GetDeviceInfo(
   return it == devices_.end() ? nullptr : it->second.get();
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 void UsbChooserContext::RefreshDeviceInfo(
     const std::string& guid,
     device::mojom::UsbDeviceManager::RefreshDeviceInfoCallback callback) {

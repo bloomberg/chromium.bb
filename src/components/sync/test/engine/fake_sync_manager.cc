@@ -14,7 +14,6 @@
 #include "base/run_loop.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "components/sync/base/weak_handle.h"
 #include "components/sync/engine/engine_components_factory.h"
 #include "components/sync/engine/net/http_post_provider_factory.h"
 #include "components/sync/test/engine/fake_model_type_connector.h"
@@ -49,9 +48,8 @@ int FakeSyncManager::GetInvalidationCount(ModelType type) const {
   auto it = num_invalidations_received_.find(type);
   if (it == num_invalidations_received_.end()) {
     return 0;
-  } else {
-    return it->second;
   }
+  return it->second;
 }
 
 void FakeSyncManager::WaitForSyncThread() {
@@ -104,7 +102,7 @@ void FakeSyncManager::ConfigureSyncer(ConfigureReason reason,
   success_types.RemoveAll(configure_fail_types_);
 
   DVLOG(1) << "Faking configuration. Downloading: "
-           << ModelTypeSetToString(success_types);
+           << ModelTypeSetToDebugString(success_types);
 
   // Now simulate the actual configuration for those types that successfully
   // download + apply.
@@ -134,10 +132,6 @@ ModelTypeConnector* FakeSyncManager::GetModelTypeConnector() {
 std::unique_ptr<ModelTypeConnector>
 FakeSyncManager::GetModelTypeConnectorProxy() {
   return std::make_unique<FakeModelTypeConnector>();
-}
-
-WeakHandle<DataTypeDebugInfoListener> FakeSyncManager::GetDebugInfoListener() {
-  return WeakHandle<DataTypeDebugInfoListener>();
 }
 
 std::string FakeSyncManager::cache_guid() {
@@ -172,7 +166,7 @@ void FakeSyncManager::RefreshTypes(ModelTypeSet types) {
 
 void FakeSyncManager::OnIncomingInvalidation(
     ModelType type,
-    std::unique_ptr<InvalidationInterface> invalidation) {
+    std::unique_ptr<SyncInvalidation> invalidation) {
   num_invalidations_received_[type]++;
 }
 
@@ -181,7 +175,7 @@ ModelTypeSet FakeSyncManager::GetLastRefreshRequestTypes() {
 }
 
 void FakeSyncManager::SetInvalidatorEnabled(bool invalidator_enabled) {
-  // Do nothing.
+  invalidator_enabled_ = invalidator_enabled;
 }
 
 void FakeSyncManager::OnCookieJarChanged(bool account_mismatch) {}

@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/html/forms/radio_button_group_scope.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/loader/form_submission.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_map.h"
 
 namespace blink {
 
@@ -174,6 +175,8 @@ class CORE_EXPORT HTMLFormElement final : public HTMLElement {
   HeapVector<Member<HTMLImageElement>> image_elements_;
 
   uint64_t unique_renderer_form_id_;
+
+  base::OnceClosure cancel_last_submission_;
 
   bool is_submitting_ = false;
   bool in_user_js_submit_event_ = false;

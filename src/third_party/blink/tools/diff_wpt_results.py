@@ -54,7 +54,7 @@ PRODUCTS_TO_STEPNAMES.update({
 PRODUCTS_TO_BUILDER_NAME = {
     'android_weblayer': 'android-weblayer-pie-x86-wpt-fyi-rel',
     'android_webview': 'android-webview-pie-x86-wpt-fyi-rel',
-    'chrome_android': 'android-web-platform-pie-x86-fyi-rel',
+    'chrome_android': 'android-chrome-pie-x86-wpt-fyi-rel',
     'chrome_linux': 'linux-wpt-fyi-rel',
     'content_shell': "Linux Tests"}
 
@@ -155,8 +155,8 @@ class WPTResultsDiffer(object):
                 baseline_flaky_results.update([line[2]])
                 is_flaky = (len(test_flaky_results) > 1 or
                             len(baseline_flaky_results) > 1)
-                line.extend(['"{%s}"' % ', '.join(test_flaky_results),
-                             '"{%s}"' % ', '.join(baseline_flaky_results)])
+                line.extend(['"{%s}"' % ', '.join(sorted(test_flaky_results)),
+                             '"{%s}"' % ', '.join(sorted(baseline_flaky_results))])
 
                 if (is_flaky and line[1] in baseline_flaky_results and
                         line[2] in test_flaky_results):
@@ -205,7 +205,7 @@ def _get_product_test_results(host, product, results_path=None):
                    builder_name, latest_build.build_number)
 
         build_results = _get_build_test_results(host, product, latest_build)
-        json_results_obj = tempfile.NamedTemporaryFile()
+        json_results_obj = tempfile.NamedTemporaryFile(mode='w+t')
         json_results_obj.write(json.dumps(build_results))
         json_results_obj.seek(0)
 

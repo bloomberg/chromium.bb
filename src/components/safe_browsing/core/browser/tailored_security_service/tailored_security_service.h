@@ -17,6 +17,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -174,7 +175,7 @@ class TailoredSecurityService : public KeyedService {
   size_t active_query_request_ = 0;
 
   // Timer to periodically check tailored security bit.
-  base::RepeatingTimer timer_;
+  base::OneShotTimer timer_;
 
   bool is_tailored_security_enabled_ = false;
   base::Time last_updated_;
@@ -182,7 +183,7 @@ class TailoredSecurityService : public KeyedService {
   bool is_shut_down_ = false;
 
   // The preferences for the given profile.
-  PrefService* prefs_;
+  raw_ptr<PrefService> prefs_;
 
   // This is used to observe when sync users update their Tailored Security
   // setting.

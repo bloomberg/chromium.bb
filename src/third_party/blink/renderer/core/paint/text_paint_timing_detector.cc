@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/paint/largest_contentful_paint_calculator.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/core/paint/paint_timing.h"
 #include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
@@ -39,8 +40,11 @@ void LargestTextPaintManager::PopulateTraceValue(
   value.SetInteger("size", static_cast<int>(first_text_paint.first_size));
   value.SetInteger("candidateIndex", ++count_candidates_);
   value.SetBoolean("isMainFrame", frame_view_->GetFrame().IsMainFrame());
-  value.SetBoolean("isOOPIF",
-                   !frame_view_->GetFrame().LocalFrameRoot().IsMainFrame());
+  value.SetBoolean("isOutermostMainFrame",
+                   frame_view_->GetFrame().IsOutermostMainFrame());
+  value.SetBoolean("isEmbeddedFrame",
+                   !frame_view_->GetFrame().LocalFrameRoot().IsMainFrame() ||
+                       frame_view_->GetFrame().IsInFencedFrameTree());
   if (first_text_paint.lcp_rect_info_) {
     first_text_paint.lcp_rect_info_->OutputToTraceValue(value);
   }
@@ -184,6 +188,11 @@ void TextPaintTimingDetector::ReportLargestIgnoredText() {
   // If the content has been removed, abort. It was never visible.
   if (!record || !record->node_ || !record->node_->GetLayoutObject())
     return;
+
+  // Trigger FCP if it's not already set.
+  Document* document = frame_view_->GetFrame().GetDocument();
+  DCHECK(document);
+  PaintTiming::From(*document).MarkFirstContentfulPaint();
 
   record->frame_index_ = frame_index_;
   QueueToMeasurePaintTime(*record->node_->GetLayoutObject(), record);

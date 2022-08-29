@@ -135,9 +135,7 @@ template("google_apis_tmpl") {
       "google_api_keys.h",
     ]
 
-    configs += [
-      ":key_defines",
-    ]
+    configs += [ ":key_defines" ]
 
     deps = [
       ":oauth2_mint_token_consent_result_proto",
@@ -261,8 +259,9 @@ test("google_apis_unittests") {
   }
 
   if (is_fuchsia) {
+    use_cfv1 = false
     additional_manifest_fragments =
-        [ "//build/config/fuchsia/test/network_capabilities.test-cmx" ]
+        [ "//build/config/fuchsia/test/network.shard.test-cml" ]
   }
 
   if (enable_extensions) {
@@ -279,6 +278,8 @@ test("google_apis_unittests") {
 bundle_data("google_apis_unittest_bundle_data") {
   testonly = true
   sources = [
+    "test/data/calendar/event_self_response_statuses.json",
+    "test/data/calendar/event_statuses.json",
     "test/data/calendar/events.json",
     "test/data/calendar/invalid_events.json",
     "test/data/gaia/all_base_urls.json",

@@ -13,7 +13,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/sequence_checker.h"
-#include "base/task/post_task.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/task_runner_util.h"
 #include "base/task/thread_pool.h"
@@ -45,7 +44,7 @@ remoting::protocol::FileTransfer_Error_Type FileErrorToResponseErrorType(
 }
 
 scoped_refptr<base::SequencedTaskRunner> CreateFileTaskRunner() {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // On Windows, we use user impersonation to write files as the currently
   // logged-in user, while the process as a whole runs as SYSTEM. Since user
   // impersonation is per-thread on Windows, we need a dedicated thread to
@@ -78,7 +77,7 @@ class LocalFileReader : public FileOperations::Reader {
 
  private:
   void OnEnsureUserResult(OpenCallback callback,
-                          protocol::FileTransferResult<Monostate> result);
+                          protocol::FileTransferResult<absl::monostate> result);
   void OnFileChooserResult(OpenCallback callback, FileChooser::Result result);
   void OnOpenResult(OpenCallback callback, base::File::Error error);
   void OnGetInfoResult(OpenCallback callback,
@@ -197,7 +196,7 @@ FileOperations::State LocalFileReader::state() const {
 
 void LocalFileReader::OnEnsureUserResult(
     FileOperations::Reader::OpenCallback callback,
-    protocol::FileTransferResult<Monostate> result) {
+    protocol::FileTransferResult<absl::monostate> result) {
   if (!result) {
     SetState(FileOperations::kFailed);
     std::move(callback).Run(std::move(result.error()));
@@ -314,7 +313,7 @@ void LocalFileWriter::Open(const base::FilePath& filename, Callback callback) {
   base::PostTaskAndReplyWithResult(
       file_task_runner_.get(), FROM_HERE, base::BindOnce([] {
         return EnsureUserContext().AndThen(
-            [](Monostate) { return GetDesktopDirectory(); });
+            [](absl::monostate) { return GetDesktopDirectory(); });
       }),
       base::BindOnce(&LocalFileWriter::OnGetTargetDirectoryResult,
                      weak_ptr_factory_.GetWeakPtr(), filename,
@@ -365,9 +364,8 @@ void LocalFileWriter::Cancel() {
   file_proxy_.reset();
   // And finally, queue deletion of the temp file.
   if (!temp_filepath_.empty()) {
-    file_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(base::GetDeleteFileCallback(), temp_filepath_));
+    file_task_runner_->PostTask(FROM_HERE,
+                                base::GetDeleteFileCallback(temp_filepath_));
   }
   SetState(FileOperations::kFailed);
 }

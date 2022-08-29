@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {Destination, DestinationConnectionStatus, DestinationOrigin, DestinationType, DuplexType, GooglePromotedDestinationId, Margins, MarginsType, PrintPreviewModelElement, Size} from 'chrome://print/print_preview.js';
-// <if expr="chromeos or lacros">
+import {Destination, DestinationOrigin, DuplexType, Margins, MarginsType, PrintPreviewModelElement, Size} from 'chrome://print/print_preview.js';
+// <if expr="chromeos_ash or chromeos_lacros">
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 // </if>
 
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 
-import {getCddTemplate, getCloudDestination, getSaveAsPdfDestination} from './print_preview_test_utils.js';
+import {getCddTemplate, getSaveAsPdfDestination} from './print_preview_test_utils.js';
 
 suite('ModelSettingsAvailabilityTest', function() {
   let model: PrintPreviewModelElement;
@@ -34,9 +34,8 @@ suite('ModelSettingsAvailabilityTest', function() {
     model.margins = new Margins(72, 72, 72, 72);
 
     // Create a test destination.
-    model.destination = new Destination(
-        'FooDevice', DestinationType.LOCAL, DestinationOrigin.LOCAL, 'FooName',
-        DestinationConnectionStatus.ONLINE);
+    model.destination =
+        new Destination('FooDevice', DestinationOrigin.LOCAL, 'FooName');
     model.set(
         'destination.capabilities',
         getCddTemplate(model.destination.id).capabilities);
@@ -221,21 +220,6 @@ suite('ModelSettingsAvailabilityTest', function() {
           capabilityAndValue.expectedValue, model.settings.color.value);
       assertTrue(model.settings.color.available);
     });
-
-    // Google Drive always has an unavailableValue of true when using the cloud
-    // destination.
-    model.set(
-        'destination',
-        getCloudDestination(
-            GooglePromotedDestinationId.DOCS, GooglePromotedDestinationId.DOCS,
-            'foo@chromium.org'));
-    const capabilities =
-        getCddTemplate(GooglePromotedDestinationId.DOCS).capabilities!;
-    delete capabilities.printer!.color;
-    model.set('destination.capabilities', capabilities);
-    assertFalse(model.settings.color.available);
-    assertTrue(model.settings.color.unavailableValue as boolean);
-    assertFalse(model.settings.color.setFromUi);
   });
 
   function setSaveAsPdfDestination() {
@@ -558,7 +542,7 @@ suite('ModelSettingsAvailabilityTest', function() {
     // Windows and macOS depend on policy - see policy_test.js for their
     // testing coverage.
     model.set('documentSettings.isModifiable', false);
-    // <if expr="chromeos or lacros or is_linux">
+    // <if expr="is_linux or chromeos_ash or chromeos_lacros">
     // Always available for PDFs on Linux and ChromeOS
     assertTrue(model.settings.rasterize.available);
     assertFalse(model.settings.rasterize.setFromUi);
@@ -602,7 +586,7 @@ suite('ModelSettingsAvailabilityTest', function() {
     assertFalse(model.settings.pagesPerSheet.available);
   });
 
-  // <if expr="chromeos or lacros">
+  // <if expr="chromeos_ash or chromeos_lacros">
   test('pin', function() {
     // Make device unmanaged.
     loadTimeData.overrideValues({isEnterpriseManaged: false});

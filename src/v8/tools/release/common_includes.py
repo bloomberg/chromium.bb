@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright 2013 the V8 project authors. All rights reserved.
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are
@@ -26,9 +26,6 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-# for py2/py3 compatibility
-from __future__ import print_function
-
 import argparse
 import datetime
 from distutils.version import LooseVersion
@@ -47,14 +44,8 @@ import urllib
 from git_recipes import GitRecipesMixin
 from git_recipes import GitFailedException
 
-PYTHON3 = sys.version_info >= (3, 0)
-
-if PYTHON3:
-  import http.client as httplib
-  import urllib.request as urllib2
-else:
-  import httplib
-  import urllib2
+import http.client as httplib
+import urllib.request as urllib2
 
 
 DAY_IN_SECONDS = 24 * 60 * 60
@@ -112,7 +103,7 @@ def Command(cmd, args="", prefix="", pipe=True, cwd=None):
   sys.stdout.flush()
   try:
     if pipe:
-      return subprocess.check_output(cmd_line, shell=True, cwd=cwd)
+      return subprocess.check_output(cmd_line, shell=True, cwd=cwd).decode('utf-8')
     else:
       return subprocess.check_call(cmd_line, shell=True, cwd=cwd)
   except subprocess.CalledProcessError:
@@ -123,15 +114,15 @@ def Command(cmd, args="", prefix="", pipe=True, cwd=None):
 
 
 def SanitizeVersionTag(tag):
-    version_without_prefix = re.compile(r"^\d+\.\d+\.\d+(?:\.\d+)?$")
-    version_with_prefix = re.compile(r"^tags\/\d+\.\d+\.\d+(?:\.\d+)?$")
+  version_without_prefix = re.compile(r"^\d+\.\d+\.\d+(?:\.\d+)?$")
+  version_with_prefix = re.compile(r"^tags\/\d+\.\d+\.\d+(?:\.\d+)?$")
 
-    if version_without_prefix.match(tag):
-      return tag
-    elif version_with_prefix.match(tag):
-        return tag[len("tags/"):]
-    else:
-      return None
+  if version_without_prefix.match(tag):
+    return tag
+  elif version_with_prefix.match(tag):
+    return tag[len("tags/"):]
+  else:
+    return None
 
 
 def NormalizeVersionTags(version_tags):
@@ -155,6 +146,7 @@ class SideEffectHandler(object):  # pragma: no cover
     return Command(cmd, args, prefix, pipe, cwd=cwd)
 
   def ReadLine(self):
+    sys.stdout.flush()
     return sys.stdin.readline().strip()
 
   def ReadURL(self, url, params=None):
@@ -247,7 +239,7 @@ class GitInterface(VCInterface):
     self.step.Git("fetch")
 
   def GetTags(self):
-     return self.step.Git("tag").strip().splitlines()
+    return self.step.Git("tag").strip().splitlines()
 
   def GetBranches(self):
     # Get relevant remote branches, e.g. "branch-heads/3.25".
@@ -693,18 +685,22 @@ class UploadStep(Step):
 
 def MakeStep(step_class=Step, number=0, state=None, config=None,
              options=None, side_effect_handler=DEFAULT_SIDE_EFFECT_HANDLER):
-    # Allow to pass in empty dictionaries.
-    state = state if state is not None else {}
-    config = config if config is not None else {}
+  # Allow to pass in empty dictionaries.
+  state = state if state is not None else {}
+  config = config if config is not None else {}
 
-    try:
-      message = step_class.MESSAGE
-    except AttributeError:
-      message = step_class.__name__
+  try:
+    message = step_class.MESSAGE
+  except AttributeError:
+    message = step_class.__name__
 
-    return step_class(message, number=number, config=config,
-                      state=state, options=options,
-                      handler=side_effect_handler)
+  return step_class(
+      message,
+      number=number,
+      config=config,
+      state=state,
+      options=options,
+      handler=side_effect_handler)
 
 
 class ScriptsBase(object):

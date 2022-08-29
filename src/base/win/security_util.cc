@@ -12,6 +12,7 @@
 #include "base/check.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/numerics/checked_math.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_localalloc.h"
 #include "base/win/win_util.h"
@@ -53,8 +54,8 @@ bool GrantAccessToPath(const FilePath& path,
   }
 
   PACL new_dacl = nullptr;
-  error = ::SetEntriesInAcl(access_entries.size(), access_entries.data(), dacl,
-                            &new_dacl);
+  error = ::SetEntriesInAcl(checked_cast<ULONG>(access_entries.size()),
+                            access_entries.data(), dacl, &new_dacl);
   if (error != ERROR_SUCCESS) {
     ::SetLastError(error);
     DPLOG(ERROR) << "Failed adding ACEs to DACL for path \"" << path.value()
@@ -70,12 +71,12 @@ bool GrantAccessToPath(const FilePath& path,
     ScopedHandle handle(::CreateFile(path.value().c_str(), WRITE_DAC, 0,
                                      nullptr, OPEN_EXISTING,
                                      FILE_FLAG_BACKUP_SEMANTICS, nullptr));
-    if (!handle.IsValid()) {
+    if (!handle.is_valid()) {
       DPLOG(ERROR) << "Failed opening path \"" << path.value()
                    << "\" to write DACL";
       return false;
     }
-    error = ::SetSecurityInfo(handle.Get(), SE_KERNEL_OBJECT,
+    error = ::SetSecurityInfo(handle.get(), SE_KERNEL_OBJECT,
                               DACL_SECURITY_INFORMATION, nullptr, nullptr,
                               new_dacl_ptr.get(), nullptr);
   }

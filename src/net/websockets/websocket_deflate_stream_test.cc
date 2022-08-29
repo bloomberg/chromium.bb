@@ -21,6 +21,7 @@
 #include "base/test/mock_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
+#include "net/log/net_log_with_source.h"
 #include "net/test/gtest_util.h"
 #include "net/websockets/websocket_deflate_parameters.h"
 #include "net/websockets/websocket_deflate_predictor.h"
@@ -84,6 +85,7 @@ class MockWebSocketStream : public WebSocketStream {
   MOCK_METHOD0(Close, void());
   MOCK_CONST_METHOD0(GetSubProtocol, std::string());
   MOCK_CONST_METHOD0(GetExtensions, std::string());
+  MOCK_CONST_METHOD0(GetNetLogWithSource, NetLogWithSource&());
 };
 
 // This mock class relies on some assumptions.
@@ -92,7 +94,7 @@ class MockWebSocketStream : public WebSocketStream {
 //  - RecordWrittenDataFrame is called before writing the frame.
 class WebSocketDeflatePredictorMock : public WebSocketDeflatePredictor {
  public:
-  WebSocketDeflatePredictorMock() : result_(DEFLATE) {}
+  WebSocketDeflatePredictorMock() = default;
 
   WebSocketDeflatePredictorMock(const WebSocketDeflatePredictorMock&) = delete;
   WebSocketDeflatePredictorMock& operator=(
@@ -183,7 +185,7 @@ class WebSocketDeflatePredictorMock : public WebSocketDeflatePredictor {
   }
 
  private:
-  Result result_;
+  Result result_ = DEFLATE;
   // Data frames which will be recorded by |RecordInputFrames|.
   // Pushed by |AddFrameToBeInput| and popped and verified by
   // |RecordInputFrames|.
@@ -196,7 +198,7 @@ class WebSocketDeflatePredictorMock : public WebSocketDeflatePredictor {
 
 class WebSocketDeflateStreamTest : public ::testing::Test {
  public:
-  WebSocketDeflateStreamTest() : mock_stream_(nullptr), predictor_(nullptr) {}
+  WebSocketDeflateStreamTest() = default;
   ~WebSocketDeflateStreamTest() override = default;
 
   void SetUp() override {
@@ -245,9 +247,9 @@ class WebSocketDeflateStreamTest : public ::testing::Test {
 
   std::unique_ptr<WebSocketDeflateStream> deflate_stream_;
   // Owned by |deflate_stream_|.
-  raw_ptr<MockWebSocketStream> mock_stream_;
+  raw_ptr<MockWebSocketStream> mock_stream_ = nullptr;
   // Owned by |deflate_stream_|.
-  raw_ptr<WebSocketDeflatePredictorMock> predictor_;
+  raw_ptr<WebSocketDeflatePredictorMock> predictor_ = nullptr;
 
   // TODO(yoichio): Make this type std::vector<std::string>.
   std::vector<std::unique_ptr<const char[]>> data_buffers;

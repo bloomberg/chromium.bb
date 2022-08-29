@@ -14,6 +14,8 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/sparse_histogram.h"
+#include "base/notreached.h"
+#include "base/numerics/checked_math.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/system/sys_info.h"
@@ -21,12 +23,11 @@
 #include "build/build_config.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-#if defined(OS_WIN)
-// clang-format off
+#if BUILDFLAG(IS_WIN)
 #include <windows.h>
+// Must be after <windows.h>
 #include <winbase.h>
-// clang-format on
-#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+#elif BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
 #include <sys/mman.h>
 #endif
 
@@ -34,43 +35,41 @@ namespace {
 
 // Limit of memory segment size. It has to fit in an unsigned 32-bit number
 // and should be a power of 2 in order to accommodate almost any page size.
-const uint32_t kSegmentMaxSize = 1 << 30;  // 1 GiB
+constexpr uint32_t kSegmentMaxSize = 1 << 30;  // 1 GiB
 
 // A constant (random) value placed in the shared metadata to identify
 // an already initialized memory segment.
-const uint32_t kGlobalCookie = 0x408305DC;
+constexpr uint32_t kGlobalCookie = 0x408305DC;
 
 // The current version of the metadata. If updates are made that change
 // the metadata, the version number can be queried to operate in a backward-
 // compatible manner until the memory segment is completely re-initalized.
-const uint32_t kGlobalVersion = 2;
+constexpr uint32_t kGlobalVersion = 2;
 
 // Constant values placed in the block headers to indicate its state.
-const uint32_t kBlockCookieFree = 0;
-const uint32_t kBlockCookieQueue = 1;
-const uint32_t kBlockCookieWasted = (uint32_t)-1;
-const uint32_t kBlockCookieAllocated = 0xC8799269;
+constexpr uint32_t kBlockCookieFree = 0;
+constexpr uint32_t kBlockCookieQueue = 1;
+constexpr uint32_t kBlockCookieWasted = (uint32_t)-1;
+constexpr uint32_t kBlockCookieAllocated = 0xC8799269;
 
 // TODO(bcwhite): When acceptable, consider moving flags to std::atomic<char>
 // types rather than combined bitfield.
 
 // Flags stored in the flags_ field of the SharedMetadata structure below.
-enum : int {
-  kFlagCorrupt = 1 << 0,
-  kFlagFull    = 1 << 1
-};
+constexpr uint32_t kFlagCorrupt = 1 << 0;
+constexpr uint32_t kFlagFull = 1 << 1;
 
 // Errors that are logged in "errors" histogram.
 enum AllocatorError : int {
   kMemoryIsCorrupt = 1,
 };
 
-bool CheckFlag(const volatile std::atomic<uint32_t>* flags, int flag) {
+bool CheckFlag(const volatile std::atomic<uint32_t>* flags, uint32_t flag) {
   uint32_t loaded_flags = flags->load(std::memory_order_relaxed);
   return (loaded_flags & flag) != 0;
 }
 
-void SetFlag(volatile std::atomic<uint32_t>* flags, int flag) {
+void SetFlag(volatile std::atomic<uint32_t>* flags, uint32_t flag) {
   uint32_t loaded_flags = flags->load(std::memory_order_relaxed);
   for (;;) {
     uint32_t new_flags = (loaded_flags & ~flag) | flag;
@@ -326,15 +325,15 @@ PersistentMemoryAllocator::PersistentMemoryAllocator(Memory memory,
                                                      bool readonly)
     : mem_base_(static_cast<char*>(memory.base)),
       mem_type_(memory.type),
-      mem_size_(static_cast<uint32_t>(size)),
-      mem_page_(static_cast<uint32_t>((page_size ? page_size : size))),
-#if defined(OS_NACL)
+      mem_size_(checked_cast<uint32_t>(size)),
+      mem_page_(checked_cast<uint32_t>((page_size ? page_size : size))),
+#if BUILDFLAG(IS_NACL)
       vm_page_size_(4096U),  // SysInfo is not built for NACL.
 #else
       vm_page_size_(SysInfo::VMAllocationGranularity()),
 #endif
       readonly_(readonly),
-      corrupt_(0),
+      corrupt_(false),
       allocs_histogram_(nullptr),
       used_histogram_(nullptr),
       errors_histogram_(nullptr) {
@@ -646,8 +645,7 @@ PersistentMemoryAllocator::Reference PersistentMemoryAllocator::AllocateImpl(
   }
 
   // Round up the requested size, plus header, to the next allocation alignment.
-  uint32_t size = static_cast<uint32_t>(req_size + sizeof(BlockHeader));
-  size = base::bits::AlignUp(size, kAllocAlignment);
+  size_t size = bits::AlignUp(req_size + sizeof(BlockHeader), kAllocAlignment);
   if (size <= sizeof(BlockHeader) || size > mem_page_) {
     NOTREACHED();
     return kReferenceNull;
@@ -765,7 +763,8 @@ PersistentMemoryAllocator::Reference PersistentMemoryAllocator::AllocateImpl(
     // data here because this memory can, currently, be seen only by the thread
     // performing the allocation. When it comes time to share this, the thread
     // will call MakeIterable() which does the release operation.
-    block->size = size;
+    // `size` is at most kSegmentMaxSize, so this cast is safe.
+    block->size = static_cast<uint32_t>(size);
     block->cookie = kBlockCookieAllocated;
     block->type_id.store(type_id, std::memory_order_relaxed);
     return freeptr;
@@ -877,8 +876,10 @@ bool PersistentMemoryAllocator::IsFull() const {
 // having internal dereferences go through this same function, the allocator
 // is hardened against corruption.
 const volatile PersistentMemoryAllocator::BlockHeader*
-PersistentMemoryAllocator::GetBlock(Reference ref, uint32_t type_id,
-                                    uint32_t size, bool queue_ok,
+PersistentMemoryAllocator::GetBlock(Reference ref,
+                                    uint32_t type_id,
+                                    size_t size,
+                                    bool queue_ok,
                                     bool free_ok) const {
   // Handle special cases.
   if (ref == kReferenceQueue && queue_ok)
@@ -928,7 +929,7 @@ void PersistentMemoryAllocator::RecordError(int error) const {
 const volatile void* PersistentMemoryAllocator::GetBlockData(
     Reference ref,
     uint32_t type_id,
-    uint32_t size) const {
+    size_t size) const {
   DCHECK(size > 0);
   const volatile BlockHeader* block =
       GetBlock(ref, type_id, size, false, false);
@@ -967,14 +968,14 @@ PersistentMemoryAllocator::Memory
 LocalPersistentMemoryAllocator::AllocateLocalMemory(size_t size) {
   void* address;
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   address =
       ::VirtualAlloc(nullptr, size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
   if (address)
     return Memory(address, MEM_VIRTUAL);
   UmaHistogramSparse("UMA.LocalPersistentMemoryAllocator.Failures.Win",
-                     ::GetLastError());
-#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+                     static_cast<int>(::GetLastError()));
+#elif BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
   // MAP_ANON is deprecated on Linux but MAP_ANONYMOUS is not universal on Mac.
   // MAP_SHARED is not available on Linux <2.4 but required on Mac.
   address = ::mmap(nullptr, size, PROT_READ | PROT_WRITE,
@@ -1007,10 +1008,10 @@ void LocalPersistentMemoryAllocator::DeallocateLocalMemory(void* memory,
   }
 
   DCHECK_EQ(MEM_VIRTUAL, type);
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   BOOL success = ::VirtualFree(memory, 0, MEM_DECOMMIT);
   DCHECK(success);
-#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+#elif BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
   int result = ::munmap(memory, size);
   DCHECK_EQ(0, result);
 #else
@@ -1067,7 +1068,7 @@ bool ReadOnlySharedPersistentMemoryAllocator::IsSharedMemoryAcceptable(
   return IsMemoryAcceptable(memory.memory(), memory.size(), 0, true);
 }
 
-#if !defined(OS_NACL)
+#if !BUILDFLAG(IS_NACL)
 //----- FilePersistentMemoryAllocator ------------------------------------------
 
 FilePersistentMemoryAllocator::FilePersistentMemoryAllocator(
@@ -1129,18 +1130,18 @@ void FilePersistentMemoryAllocator::FlushPartial(size_t length, bool sync) {
   if (sync)
     scoped_blocking_call.emplace(FROM_HERE, base::BlockingType::MAY_BLOCK);
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // Windows doesn't support asynchronous flush.
   scoped_blocking_call.emplace(FROM_HERE, base::BlockingType::MAY_BLOCK);
   BOOL success = ::FlushViewOfFile(data(), length);
   DPCHECK(success);
-#elif defined(OS_APPLE)
+#elif BUILDFLAG(IS_APPLE)
   // On OSX, "invalidate" removes all cached pages, forcing a re-read from
   // disk. That's not applicable to "flush" so omit it.
   int result =
       ::msync(const_cast<void*>(data()), length, sync ? MS_SYNC : MS_ASYNC);
   DCHECK_NE(EINVAL, result);
-#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+#elif BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
   // On POSIX, "invalidate" forces _other_ processes to recognize what has
   // been written to disk and so is applicable to "flush".
   int result = ::msync(const_cast<void*>(data()), length,
@@ -1150,39 +1151,9 @@ void FilePersistentMemoryAllocator::FlushPartial(size_t length, bool sync) {
 #error Unsupported OS.
 #endif
 }
-#endif  // !defined(OS_NACL)
+#endif  // !BUILDFLAG(IS_NACL)
 
 //----- DelayedPersistentAllocation --------------------------------------------
-
-// Forwarding constructors.
-DelayedPersistentAllocation::DelayedPersistentAllocation(
-    PersistentMemoryAllocator* allocator,
-    subtle::Atomic32* ref,
-    uint32_t type,
-    size_t size,
-    bool make_iterable)
-    : DelayedPersistentAllocation(
-          allocator,
-          reinterpret_cast<std::atomic<Reference>*>(ref),
-          type,
-          size,
-          0,
-          make_iterable) {}
-
-DelayedPersistentAllocation::DelayedPersistentAllocation(
-    PersistentMemoryAllocator* allocator,
-    subtle::Atomic32* ref,
-    uint32_t type,
-    size_t size,
-    size_t offset,
-    bool make_iterable)
-    : DelayedPersistentAllocation(
-          allocator,
-          reinterpret_cast<std::atomic<Reference>*>(ref),
-          type,
-          size,
-          offset,
-          make_iterable) {}
 
 DelayedPersistentAllocation::DelayedPersistentAllocation(
     PersistentMemoryAllocator* allocator,
@@ -1197,7 +1168,6 @@ DelayedPersistentAllocation::DelayedPersistentAllocation(
                                   0,
                                   make_iterable) {}
 
-// Real constructor.
 DelayedPersistentAllocation::DelayedPersistentAllocation(
     PersistentMemoryAllocator* allocator,
     std::atomic<Reference>* ref,

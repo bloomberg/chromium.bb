@@ -42,11 +42,11 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
   // base class.  This is because the above buffer{Sub}Data() hides the name
   // from base class.
   void bufferData(GLenum target, int64_t size, GLenum usage);
-  void bufferData(GLenum target, DOMArrayBuffer* data, GLenum usage);
+  void bufferData(GLenum target, DOMArrayBufferBase* data, GLenum usage);
   void bufferData(GLenum target,
                   MaybeShared<DOMArrayBufferView> data,
                   GLenum usage);
-  void bufferSubData(GLenum target, int64_t offset, DOMArrayBuffer* data);
+  void bufferSubData(GLenum target, int64_t offset, DOMArrayBufferBase* data);
   void bufferSubData(GLenum target,
                      int64_t offset,
                      const FlexibleArrayBufferView& data);
@@ -1130,9 +1130,8 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
                                GLsizei height,
                                const char* function_name) override;
 
-  WebGLTexture* ValidateTexImageBinding(const char*,
-                                        TexImageFunctionID,
-                                        GLenum) override;
+  void GetCurrentUnpackState(TexImageParams& params) override;
+  WebGLTexture* ValidateTexImageBinding(const TexImageParams& params) override;
   // Helper function to check texture 3D target and texture bound to the target.
   // Generate GL errors and return 0 if target is invalid or texture bound is
   // null.  Otherwise, return the texture bound to the target.
@@ -1187,7 +1186,6 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
 
   HeapVector<Member<WebGLBuffer>> bound_indexed_uniform_buffers_;
   GLint max_transform_feedback_separate_attribs_;
-  wtf_size_t max_bound_uniform_buffer_index_;
 
   Member<WebGLQuery> current_boolean_occlusion_query_;
   Member<WebGLQuery> current_transform_feedback_primitives_written_query_;

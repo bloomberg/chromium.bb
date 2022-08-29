@@ -79,7 +79,7 @@ void av1_tf_mt_dealloc(AV1TemporalFilterSync *tf_sync);
 
 void av1_compute_num_workers_for_mt(AV1_COMP *cpi);
 
-int av1_get_max_num_workers(AV1_COMP *cpi);
+int av1_get_max_num_workers(const AV1_COMP *cpi);
 
 void av1_create_workers(AV1_PRIMARY *ppi, int num_workers);
 

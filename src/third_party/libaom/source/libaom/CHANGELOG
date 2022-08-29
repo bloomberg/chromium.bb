@@ -1,3 +1,56 @@
+2022-01-28 v3.3.0
+  This release includes compression efficiency and perceptual quality
+  improvements, speedup and memory optimizations, some new features, and
+  several bug fixes.
+
+  - New Features
+    * AV1 RT: Introducing CDEF search level 5
+    * Changed real time speed 4 to behave the same as real time speed 5
+    * Add --deltaq-strength
+    * rtc: Allow scene-change and overshoot detection for svc
+    * rtc: Intra-only frame for svc
+    * AV1 RT: Option 2 for codec control AV1E_SET_ENABLE_CDEF to disable
+      CDEF on non-ref frames
+    * New codec controls AV1E_SET_LOOPFILTER_CONTROL and
+      AOME_GET_LOOPFILTER_LEVEL
+    * Improvements to three pass encoding
+
+  - Compression Efficiency Improvements
+    * Overall compression gains: 0.6%
+
+  - Perceptual Quality Improvements
+    * Improves the perceptual quality of high QP encoding for delta-q mode 4
+    * Auto select noise synthesis level for all intra
+
+  - Speedup and Memory Optimizations
+    * Added many SSE2 optimizations.
+    * Good quality 2-pass encoder speedups:
+      o Speed 2: 9%
+      o Speed 3: 12.5%
+      o Speed 4: 8%
+      o Speed 5: 3%
+      o Speed 6: 4%
+    * Real time mode encoder speedups:
+      o Speed 5: 2.6% BDRate gain, 4% speedup
+      o Speed 6: 3.5% BDRate gain, 4% speedup
+      o Speed 9: 1% BDRate gain, 3% speedup
+      o Speed 10: 3% BDRate gain, neutral speedup
+    * All intra encoding speedups (AVIF):
+      o Single thread - speed 6: 8%
+      o Single thread - speed 9: 15%
+      o Multi thread(8) - speed 6: 14%
+      o Multi thread(8) - speed 9: 34%
+
+  - Bug Fixes
+    * Issue 3163: Segmentation fault when using --enable-keyframe-filtering=2
+    * Issue 2436: Integer overflow in av1_warp_affine_c()
+    * Issue 3226: armv7 build failure due to gcc-11
+    * Issue 3195: Bug report on libaom (AddressSanitizer: heap-buffer-overflow)
+    * Issue 3191: Bug report on libaom (AddressSanitizer: SEGV on unknown
+      address)
+    * Issue 3176: Some SSE2/SADx4AvgTest.* tests fail on Windows
+    * Issue 3175: Some SSE2/SADSkipTest.* tests fail on Windows
+
 2021-10-13 v3.2.0
   This release includes compression efficiency and perceptual quality
   improvements, speedup and memory optimizations, as well as some new

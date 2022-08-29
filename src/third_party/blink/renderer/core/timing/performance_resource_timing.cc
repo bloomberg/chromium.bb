@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
 #include "third_party/blink/renderer/core/performance_entry_names.h"
 #include "third_party/blink/renderer/core/timing/performance.h"
+#include "third_party/blink/renderer/core/timing/performance_entry.h"
 #include "third_party/blink/renderer/core/timing/performance_mark.h"
 #include "third_party/blink/renderer/core/timing/performance_measure.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -66,7 +67,8 @@ PerformanceResourceTiming::PerformanceResourceTiming(
                            time_origin,
                            info.response_end,
                            info.allow_negative_values,
-                           cross_origin_isolated_capability)),
+                           cross_origin_isolated_capability),
+                       PerformanceEntry::GetNavigationId(context)),
       initiator_type_(initiator_type.IsEmpty()
                           ? fetch_initiator_type_names::kOther
                           : initiator_type),
@@ -101,6 +103,7 @@ PerformanceResourceTiming::PerformanceResourceTiming(
 // TODO(https://crbug.com/900700): Set a Mojo pending receiver for
 // WorkerTimingContainer in |worker_timing_receiver_| when a service worker
 // controls a page.
+// The navigation_id for navigation timing is always 1.
 PerformanceResourceTiming::PerformanceResourceTiming(
     const AtomicString& name,
     base::TimeTicks time_origin,
@@ -108,7 +111,7 @@ PerformanceResourceTiming::PerformanceResourceTiming(
     bool is_secure_transport,
     HeapVector<Member<PerformanceServerTiming>> server_timing,
     ExecutionContext* context)
-    : PerformanceEntry(name, 0.0, 0.0),
+    : PerformanceEntry(name, 0.0, 0.0, kNavigationIdDefaultValue),
       time_origin_(time_origin),
       cross_origin_isolated_capability_(cross_origin_isolated_capability),
       context_type_(mojom::blink::RequestContextType::HYPERLINK),
@@ -159,7 +162,7 @@ uint64_t PerformanceResourceTiming::GetTransferSize(
 }
 
 uint64_t PerformanceResourceTiming::GetTransferSize() const {
-  return GetTransferSize(encoded_body_size_, cache_state_);
+  return GetTransferSize(GetEncodedBodySize(), CacheState());
 }
 
 uint64_t PerformanceResourceTiming::GetEncodedBodySize() const {
@@ -182,6 +185,31 @@ AtomicString PerformanceResourceTiming::ConnectionInfo() const {
   return connection_info_;
 }
 
+mojom::blink::RequestContextType PerformanceResourceTiming::ContextType()
+    const {
+  return context_type_;
+}
+
+base::TimeTicks PerformanceResourceTiming::ResponseEnd() const {
+  return response_end_;
+}
+
+base::TimeTicks PerformanceResourceTiming::LastRedirectEndTime() const {
+  return last_redirect_end_time_;
+}
+
+bool PerformanceResourceTiming::AllowRedirectDetails() const {
+  return allow_redirect_details_;
+}
+
+bool PerformanceResourceTiming::AllowNegativeValue() const {
+  return allow_negative_value_;
+}
+
+bool PerformanceResourceTiming::IsSecureTransport() const {
+  return is_secure_transport_;
+}
+
 namespace {
 bool IsDocumentDestination(mojom::blink::RequestContextType context_type) {
   // TODO(crbug.com/889751) : Need to change using RequestDestination
@@ -200,12 +228,10 @@ AtomicString PerformanceResourceTiming::GetNextHopProtocol(
   AtomicString returnedProtocol = (alpn_negotiated_protocol == "unknown")
                                       ? connection_info
                                       : alpn_negotiated_protocol;
-  // If connection_info is unknown, or if this is a `document` destination and
-  // TAO didn't pass, return the empty string.
-  // https://github.com/w3c/navigation-timing/issues/71
-  // https://github.com/w3c/resource-timing/pull/224
-  if (returnedProtocol == "unknown" ||
-      (!AllowTimingDetails() && IsDocumentDestination(context_type_))) {
+  // If connection_info is unknown, or if TAO didn't pass, return the empty
+  // string.
+  // https://fetch.spec.whatwg.org/#create-an-opaque-timing-info
+  if (returnedProtocol == "unknown" || !AllowTimingDetails()) {
     returnedProtocol = "";
   }
 
@@ -220,13 +246,13 @@ AtomicString PerformanceResourceTiming::nextHopProtocol() const {
 DOMHighResTimeStamp PerformanceResourceTiming::workerStart() const {
   ResourceLoadTiming* timing = GetResourceLoadTiming();
   if (!timing || timing->WorkerStart().is_null() ||
-      (!AllowTimingDetails() && IsDocumentDestination(context_type_))) {
+      (!AllowTimingDetails() && IsDocumentDestination(ContextType()))) {
     return 0.0;
   }
 
   return Performance::MonotonicTimeToDOMHighResTimeStamp(
-      time_origin_, timing->WorkerStart(), allow_negative_value_,
-      cross_origin_isolated_capability_);
+      TimeOrigin(), timing->WorkerStart(), AllowNegativeValue(),
+      CrossOriginIsolatedCapability());
 }
 
 DOMHighResTimeStamp PerformanceResourceTiming::WorkerReady() const {
@@ -235,12 +261,12 @@ DOMHighResTimeStamp PerformanceResourceTiming::WorkerReady() const {
     return 0.0;
 
   return Performance::MonotonicTimeToDOMHighResTimeStamp(
-      time_origin_, timing->WorkerReady(), allow_negative_value_,
-      cross_origin_isolated_capability_);
+      TimeOrigin(), timing->WorkerReady(), AllowNegativeValue(),
+      CrossOriginIsolatedCapability());
 }
 
 DOMHighResTimeStamp PerformanceResourceTiming::redirectStart() const {
-  if (last_redirect_end_time_.is_null() || !allow_redirect_details_)
+  if (LastRedirectEndTime().is_null() || !AllowRedirectDetails())
     return 0.0;
 
   if (DOMHighResTimeStamp worker_ready_time = WorkerReady())
@@ -250,23 +276,25 @@ DOMHighResTimeStamp PerformanceResourceTiming::redirectStart() const {
 }
 
 DOMHighResTimeStamp PerformanceResourceTiming::redirectEnd() const {
-  if (last_redirect_end_time_.is_null() || !allow_redirect_details_)
+  if (LastRedirectEndTime().is_null() || !AllowRedirectDetails())
     return 0.0;
 
   return Performance::MonotonicTimeToDOMHighResTimeStamp(
-      time_origin_, last_redirect_end_time_, allow_negative_value_,
-      cross_origin_isolated_capability_);
+      TimeOrigin(), LastRedirectEndTime(), AllowNegativeValue(),
+      CrossOriginIsolatedCapability());
 }
 
 DOMHighResTimeStamp PerformanceResourceTiming::fetchStart() const {
   ResourceLoadTiming* timing = GetResourceLoadTiming();
-  if (!timing)
+  if (!timing ||
+      (!AllowRedirectDetails() && !LastRedirectEndTime().is_null())) {
     return PerformanceEntry::startTime();
+  }
 
-  if (!last_redirect_end_time_.is_null()) {
+  if (!LastRedirectEndTime().is_null()) {
     return Performance::MonotonicTimeToDOMHighResTimeStamp(
-        time_origin_, timing->RequestTime(), allow_negative_value_,
-        cross_origin_isolated_capability_);
+        TimeOrigin(), timing->RequestTime(), AllowNegativeValue(),
+        CrossOriginIsolatedCapability());
   }
 
   if (DOMHighResTimeStamp worker_ready_time = WorkerReady())
@@ -283,8 +311,8 @@ DOMHighResTimeStamp PerformanceResourceTiming::domainLookupStart() const {
     return fetchStart();
 
   return Performance::MonotonicTimeToDOMHighResTimeStamp(
-      time_origin_, timing->DnsStart(), allow_negative_value_,
-      cross_origin_isolated_capability_);
+      TimeOrigin(), timing->DnsStart(), AllowNegativeValue(),
+      CrossOriginIsolatedCapability());
 }
 
 DOMHighResTimeStamp PerformanceResourceTiming::domainLookupEnd() const {
@@ -295,8 +323,8 @@ DOMHighResTimeStamp PerformanceResourceTiming::domainLookupEnd() const {
     return domainLookupStart();
 
   return Performance::MonotonicTimeToDOMHighResTimeStamp(
-      time_origin_, timing->DnsEnd(), allow_negative_value_,
-      cross_origin_isolated_capability_);
+      TimeOrigin(), timing->DnsEnd(), AllowNegativeValue(),
+      CrossOriginIsolatedCapability());
 }
 
 DOMHighResTimeStamp PerformanceResourceTiming::connectStart() const {
@@ -313,8 +341,8 @@ DOMHighResTimeStamp PerformanceResourceTiming::connectStart() const {
     connect_start = timing->DnsEnd();
 
   return Performance::MonotonicTimeToDOMHighResTimeStamp(
-      time_origin_, connect_start, allow_negative_value_,
-      cross_origin_isolated_capability_);
+      TimeOrigin(), connect_start, AllowNegativeValue(),
+      CrossOriginIsolatedCapability());
 }
 
 DOMHighResTimeStamp PerformanceResourceTiming::connectEnd() const {
@@ -326,12 +354,12 @@ DOMHighResTimeStamp PerformanceResourceTiming::connectEnd() const {
     return connectStart();
 
   return Performance::MonotonicTimeToDOMHighResTimeStamp(
-      time_origin_, timing->ConnectEnd(), allow_negative_value_,
-      cross_origin_isolated_capability_);
+      TimeOrigin(), timing->ConnectEnd(), AllowNegativeValue(),
+      CrossOriginIsolatedCapability());
 }
 
 DOMHighResTimeStamp PerformanceResourceTiming::secureConnectionStart() const {
-  if (!AllowTimingDetails() || !is_secure_transport_)
+  if (!AllowTimingDetails() || !IsSecureTransport())
     return 0.0;
 
   // Step 2 of
@@ -342,8 +370,8 @@ DOMHighResTimeStamp PerformanceResourceTiming::secureConnectionStart() const {
   ResourceLoadTiming* timing = GetResourceLoadTiming();
   if (timing && !timing->SslStart().is_null()) {
     return Performance::MonotonicTimeToDOMHighResTimeStamp(
-        time_origin_, timing->SslStart(), allow_negative_value_,
-        cross_origin_isolated_capability_);
+        TimeOrigin(), timing->SslStart(), AllowNegativeValue(),
+        CrossOriginIsolatedCapability());
   }
   // We would add a DCHECK(false) here but this case may happen, for instance on
   // SXG where the behavior has not yet been properly defined. See
@@ -360,8 +388,8 @@ DOMHighResTimeStamp PerformanceResourceTiming::requestStart() const {
     return connectEnd();
 
   return Performance::MonotonicTimeToDOMHighResTimeStamp(
-      time_origin_, timing->SendStart(), allow_negative_value_,
-      cross_origin_isolated_capability_);
+      TimeOrigin(), timing->SendStart(), AllowNegativeValue(),
+      CrossOriginIsolatedCapability());
 }
 
 DOMHighResTimeStamp PerformanceResourceTiming::responseStart() const {
@@ -378,17 +406,17 @@ DOMHighResTimeStamp PerformanceResourceTiming::responseStart() const {
     return requestStart();
 
   return Performance::MonotonicTimeToDOMHighResTimeStamp(
-      time_origin_, response_start, allow_negative_value_,
-      cross_origin_isolated_capability_);
+      TimeOrigin(), response_start, AllowNegativeValue(),
+      CrossOriginIsolatedCapability());
 }
 
 DOMHighResTimeStamp PerformanceResourceTiming::responseEnd() const {
-  if (response_end_.is_null())
+  if (ResponseEnd().is_null())
     return responseStart();
 
   return Performance::MonotonicTimeToDOMHighResTimeStamp(
-      time_origin_, response_end_, allow_negative_value_,
-      cross_origin_isolated_capability_);
+      TimeOrigin(), ResponseEnd(), AllowNegativeValue(),
+      CrossOriginIsolatedCapability());
 }
 
 uint64_t PerformanceResourceTiming::transferSize() const {

@@ -137,7 +137,7 @@ class PaintPreviewClientRenderViewHostTest
 
   void OverrideInterface(MockPaintPreviewRecorder* service) {
     blink::AssociatedInterfaceProvider* remote_interfaces =
-        web_contents()->GetMainFrame()->GetRemoteAssociatedInterfaces();
+        web_contents()->GetPrimaryMainFrame()->GetRemoteAssociatedInterfaces();
     remote_interfaces->OverrideBinderForTesting(
         mojom::PaintPreviewRecorder::Name_,
         base::BindRepeating(&MockPaintPreviewRecorder::BindRequest,
@@ -214,7 +214,7 @@ TEST_P(PaintPreviewClientRenderViewHostTest, CaptureMainFrameMock) {
         switch (GetParam()) {
           case RecordingPersistence::kFileSystem: {
             base::ScopedAllowBlockingForTesting scope;
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
             base::FilePath path = base::FilePath(
                 base::UTF8ToWide(result->proto.root_frame().file_path()));
 #else

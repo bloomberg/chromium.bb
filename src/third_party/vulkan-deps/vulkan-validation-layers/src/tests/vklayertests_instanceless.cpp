@@ -1,6 +1,6 @@
-/* Copyright (c) 2020-2021 The Khronos Group Inc.
- * Copyright (c) 2020-2021 Valve Corporation
- * Copyright (c) 2020-2021 LunarG, Inc.
+/* Copyright (c) 2020-2022 The Khronos Group Inc.
+ * Copyright (c) 2020-2022 Valve Corporation
+ * Copyright (c) 2020-2022 LunarG, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -77,17 +77,6 @@ TEST_F(VkLayerTest, InstanceDuplicatePnextStype) {
     const VkValidationFeaturesEXT duplicate_pnext = {VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT, ici.pNext};
     const VkValidationFeaturesEXT first_pnext = {VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT, &duplicate_pnext};
     ici.pNext = &first_pnext;
-    vk::CreateInstance(&ici, nullptr, &dummy_instance);
-    Monitor().VerifyFound();
-}
-
-TEST_F(VkLayerTest, InstanceFlags) {
-    TEST_DESCRIPTION("Test creating instance with invalid flags.");
-
-    auto ici = GetInstanceCreateInfo();
-
-    Monitor().SetDesiredFailureMsg(kErrorBit, "VUID-VkInstanceCreateInfo-flags-zerobitmask");
-    ici.flags = (VkInstanceCreateFlags)1;
     vk::CreateInstance(&ici, nullptr, &dummy_instance);
     Monitor().VerifyFound();
 }
@@ -253,14 +242,12 @@ TEST_F(VkLayerTest, DestroyInstanceHandleLeak) {
     ASSERT_EQ(physical_device_count, 1);
 
     float dqci_priorities[] = {1.0};
-    VkDeviceQueueCreateInfo dqci = {};
-    dqci.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+    VkDeviceQueueCreateInfo dqci = LvlInitStruct<VkDeviceQueueCreateInfo>();
     dqci.queueFamilyIndex = 0;
     dqci.queueCount = 1;
     dqci.pQueuePriorities = dqci_priorities;
 
-    VkDeviceCreateInfo dci = {};
-    dci.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+    VkDeviceCreateInfo dci = LvlInitStruct<VkDeviceCreateInfo>();
     dci.queueCreateInfoCount = 1;
     dci.pQueueCreateInfos = &dqci;
 

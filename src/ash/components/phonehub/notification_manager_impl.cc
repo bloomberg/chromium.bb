@@ -4,17 +4,17 @@
 
 #include "ash/components/phonehub/notification_manager_impl.h"
 
+#include "ash/components/multidevice/logging/logging.h"
 #include "ash/components/phonehub/message_sender.h"
 #include "ash/components/phonehub/notification.h"
 #include "ash/components/phonehub/user_action_recorder.h"
 #include "base/containers/flat_set.h"
-#include "chromeos/components/multidevice/logging/logging.h"
 
 namespace ash {
 namespace phonehub {
 
-using ::chromeos::multidevice_setup::mojom::Feature;
-using ::chromeos::multidevice_setup::mojom::FeatureState;
+using multidevice_setup::mojom::Feature;
+using multidevice_setup::mojom::FeatureState;
 
 NotificationManagerImpl::NotificationManagerImpl(
     MessageSender* message_sender,

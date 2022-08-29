@@ -4,13 +4,13 @@
 
 #import "ios/chrome/app/application_delegate/metrics_mediator.h"
 
+#include <mach/mach.h>
 #include <sys/sysctl.h>
 
 #include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "build/branding_buildflags.h"
@@ -105,7 +105,7 @@ base::TimeDelta TimeDeltaSinceAppLaunchFromProcess() {
   struct kinfo_proc info;
   size_t length = sizeof(struct kinfo_proc);
   int mib[4] = {CTL_KERN, KERN_PROC, KERN_PROC_PID, (int)getpid()};
-  const int kr = sysctl(mib, base::size(mib), &info, &length, nullptr, 0);
+  const int kr = sysctl(mib, std::size(mib), &info, &length, nullptr, 0);
   DCHECK_EQ(KERN_SUCCESS, kr);
 
   const struct timeval time = info.kp_proc.p_starttime;
@@ -236,6 +236,8 @@ void RecordWidgetUsage(base::span<const HistogramNameCountPair> histograms) {
         @"IOS.CredentialExtension.KeychainSavePasswordFailureCount",
     app_group::kCredentialExtensionSaveCredentialFailureCount :
         @"IOS.CredentialExtension.SaveCredentialFailureCount",
+    app_group::kCredentialExtensionConsentVerifiedCount :
+        @"IOS.CredentialExtension.ConsentVerifiedCount",
   };
 
   NSUserDefaults* shared_defaults = app_group::GetGroupUserDefaults();
@@ -560,6 +562,8 @@ using metrics_mediator::kAppDidFinishLaunchingConsecutiveCallsKey;
     // trial randomization), as the pref is only read on startup.
     GetApplicationContext()->GetLocalState()->ClearPref(
         metrics::prefs::kMetricsClientID);
+    GetApplicationContext()->GetLocalState()->ClearPref(
+        metrics::prefs::kMetricsProvisionalClientID);
     GetApplicationContext()->GetLocalState()->ClearPref(
         metrics::prefs::kMetricsReportingEnabledTimestamp);
     crash_keys::ClearMetricsClientId();

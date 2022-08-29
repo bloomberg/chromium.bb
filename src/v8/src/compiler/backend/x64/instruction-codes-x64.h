@@ -163,8 +163,8 @@ namespace compiler {
   V(X64MovqDecompressTaggedPointer)                  \
   V(X64MovqDecompressAnyTagged)                      \
   V(X64MovqCompressTagged)                           \
-  V(X64MovqEncodeCagedPointer)                       \
-  V(X64MovqDecodeCagedPointer)                       \
+  V(X64MovqEncodeSandboxedPointer)                   \
+  V(X64MovqDecodeSandboxedPointer)                   \
   V(X64BitcastFI)                                    \
   V(X64BitcastDL)                                    \
   V(X64BitcastIF)                                    \
@@ -211,8 +211,6 @@ namespace compiler {
   V(X64F32x4Abs)                                     \
   V(X64F32x4Neg)                                     \
   V(X64F32x4Sqrt)                                    \
-  V(X64F32x4RecipApprox)                             \
-  V(X64F32x4RecipSqrtApprox)                         \
   V(X64F32x4Add)                                     \
   V(X64F32x4Sub)                                     \
   V(X64F32x4Mul)                                     \
@@ -288,6 +286,7 @@ namespace compiler {
   V(X64I32x4ExtAddPairwiseI16x8U)                    \
   V(X64I32x4TruncSatF64x2SZero)                      \
   V(X64I32x4TruncSatF64x2UZero)                      \
+  V(X64I32X4ShiftZeroExtendI8x16)                    \
   V(X64I16x8Splat)                                   \
   V(X64I16x8ExtractLaneS)                            \
   V(X64I16x8SConvertI8x16Low)                        \

@@ -45,7 +45,7 @@ using RendererMessageFunction =
 void UpdateTabSpecificPermissions(const std::string& extension_id,
                                   const extensions::URLPatternSet& new_hosts,
                                   int tab_id,
-                                  bool update_origin_whitelist,
+                                  bool update_origin_allowlist,
                                   content::RenderProcessHost* process) {
   mojom::Renderer* renderer =
       RendererStartupHelperFactory::GetForBrowserContext(
@@ -53,13 +53,13 @@ void UpdateTabSpecificPermissions(const std::string& extension_id,
           ->GetRenderer(process);
   if (renderer) {
     renderer->UpdateTabSpecificPermissions(extension_id, new_hosts.Clone(),
-                                           tab_id, update_origin_whitelist);
+                                           tab_id, update_origin_allowlist);
   }
 }
 
 void ClearTabSpecificPermissions(const std::vector<std::string>& extension_ids,
                                  int tab_id,
-                                 bool update_origin_whitelist,
+                                 bool update_origin_allowlist,
                                  content::RenderProcessHost* process) {
   mojom::Renderer* renderer =
       RendererStartupHelperFactory::GetForBrowserContext(
@@ -67,7 +67,7 @@ void ClearTabSpecificPermissions(const std::vector<std::string>& extension_ids,
           ->GetRenderer(process);
   if (renderer) {
     renderer->ClearTabSpecificPermissions(extension_ids, tab_id,
-                                          update_origin_whitelist);
+                                          update_origin_allowlist);
   }
 }
 
@@ -162,8 +162,8 @@ void ActiveTabPermissionGranter::GrantIfRequested(const Extension* extension) {
 
   const PermissionsData* permissions_data = extension->permissions_data();
 
-  // TODO(crbug.com/698985): This should be GetLastCommittedURL().
-  const GURL& url = web_contents()->GetVisibleURL();
+  const GURL& url =
+      web_contents()->GetPrimaryMainFrame()->GetLastCommittedOrigin().GetURL();
 
   // If the extension requested the host permission to |url| but had it
   // withheld, we grant it active tab-style permissions, even if it doesn't have
@@ -185,7 +185,7 @@ void ActiveTabPermissionGranter::GrantIfRequested(const Extension* extension) {
     if (!util::AllowFileAccess(extension->id(), browser_context)) {
       valid_schemes &= ~URLPattern::SCHEME_FILE;
     }
-    new_hosts.AddOrigin(valid_schemes, url.DeprecatedGetOriginAsURL());
+    new_hosts.AddOrigin(valid_schemes, url);
     new_apis.insert(mojom::APIPermissionID::kTab);
 
     if (permissions_data->HasAPIPermission(
@@ -215,7 +215,7 @@ void ActiveTabPermissionGranter::GrantIfRequested(const Extension* extension) {
       ProcessManager* process_manager = ProcessManager::Get(browser_context);
       SendRendererMessageToProcesses(
           process_manager->GetRenderFrameHostsForExtension(extension->id()),
-          web_contents()->GetMainFrame()->GetProcess(), update_message);
+          web_contents()->GetPrimaryMainFrame()->GetProcess(), update_message);
 
       // If more things ever need to know about this, we should consider making
       // an observer class.
@@ -235,9 +235,6 @@ void ActiveTabPermissionGranter::RevokeForTesting() {
 void ActiveTabPermissionGranter::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   // Important: sub-frames don't get granted!
-  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
-  // frames. This caller was converted automatically to the primary main frame
-  // to preserve its semantics. Follow up to confirm correctness.
   if (!navigation_handle->IsInPrimaryMainFrame() ||
       !navigation_handle->HasCommitted() ||
       navigation_handle->IsSameDocument()) {
@@ -245,16 +242,8 @@ void ActiveTabPermissionGranter::DidFinishNavigation(
   }
 
   // Only clear the granted permissions for cross-origin navigations.
-  // TODO(crbug.com/698985),  TODO(devlin): We likely shouldn't be using the
-  // visible entry. Instead, we should use WebContents::GetLastCommittedURL().
-  content::NavigationEntry* navigation_entry =
-      web_contents()->GetController().GetVisibleEntry();
-  if (navigation_entry &&
-      navigation_entry->GetURL().DeprecatedGetOriginAsURL() ==
-          navigation_handle->GetPreviousMainFrameURL()
-              .DeprecatedGetOriginAsURL()) {
+  if (navigation_handle->IsSameOrigin())
     return;
-  }
 
   ClearActiveExtensionsAndNotify();
 }
@@ -295,7 +284,8 @@ void ActiveTabPermissionGranter::ClearActiveExtensionsAndNotify() {
   RendererMessageFunction clear_message =
       base::BindRepeating(&ClearTabSpecificPermissions, extension_ids, tab_id_);
   SendRendererMessageToProcesses(
-      frame_hosts, web_contents()->GetMainFrame()->GetProcess(), clear_message);
+      frame_hosts, web_contents()->GetPrimaryMainFrame()->GetProcess(),
+      clear_message);
 
   granted_extensions_.Clear();
 }

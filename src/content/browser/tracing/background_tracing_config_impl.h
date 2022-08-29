@@ -32,6 +32,8 @@ class CONTENT_EXPORT BackgroundTracingConfigImpl
   // From BackgroundTracingConfig
   base::Value ToDict() override;
 
+  void SetPackageNameFilteringEnabled(bool) override;
+
   enum CategoryPreset {
     CATEGORY_PRESET_UNSET,
     CUSTOM_CATEGORY_PRESET,
@@ -89,7 +91,7 @@ class CONTENT_EXPORT BackgroundTracingConfigImpl
   FRIEND_TEST_ALL_PREFIXES(BackgroundTracingConfigTest,
                            ValidPreemptiveConfigToString);
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   constexpr static int kMaxBufferSizeKb = 4 * 1024;
   // ~1MB compressed size.
   constexpr static int kUploadLimitKb = 5 * 1024;
@@ -116,7 +118,6 @@ class CONTENT_EXPORT BackgroundTracingConfigImpl
   std::string enabled_data_sources_;
 
   bool requires_anonymized_data_ = false;
-  bool trace_browser_process_only_ = false;
 
   // The default memory overhead of running background tracing for various
   // scenarios. These are configurable by experiments.

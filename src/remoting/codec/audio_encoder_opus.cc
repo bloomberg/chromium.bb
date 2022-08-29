@@ -5,7 +5,6 @@
 #include "remoting/codec/audio_encoder_opus.h"
 
 #include "base/bind.h"
-#include "base/cxx17_backports.h"
 #include "base/logging.h"
 #include "base/time/time.h"
 #include "media/base/audio_bus.h"
@@ -75,7 +74,7 @@ void AudioEncoderOpus::InitEncoder() {
     // TODO(sergeyu): Figure out the right buffer size to use per packet instead
     // of using media::SincResampler::kDefaultRequestSize.
     resampler_ = std::make_unique<media::MultiChannelResampler>(
-        channels_, static_cast<double>(sampling_rate_) / kOpusSamplingRate,
+        channels_, sampling_rate_ / double{kOpusSamplingRate},
         media::SincResampler::kDefaultRequestSize,
         base::BindRepeating(&AudioEncoderOpus::FetchBytesToResample,
                             base::Unretained(this)));
@@ -199,7 +198,7 @@ std::unique_ptr<AudioPacket> AudioEncoderOpus::Encode(
     data->resize(kFrameSamples * kBytesPerSample * channels_);
 
     // Encode.
-    unsigned char* buffer = reinterpret_cast<unsigned char*>(base::data(*data));
+    unsigned char* buffer = reinterpret_cast<unsigned char*>(std::data(*data));
     int result = opus_encode(encoder_, pcm_buffer, kFrameSamples,
                              buffer, data->length());
     if (result < 0) {

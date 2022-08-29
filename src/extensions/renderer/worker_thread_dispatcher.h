@@ -21,7 +21,6 @@
 #include "mojo/public/cpp/bindings/associated_remote.h"
 
 namespace base {
-class ListValue;
 class SingleThreadTaskRunner;
 }
 
@@ -50,7 +49,8 @@ struct PortId;
 // worker thread (this TODO formerly referred to content::ThreadSafeSender
 // which no longer exists).
 class WorkerThreadDispatcher : public content::RenderThreadObserver,
-                               public IPC::Sender {
+                               public IPC::Sender,
+                               public mojom::EventDispatcher {
  public:
   WorkerThreadDispatcher();
 
@@ -150,10 +150,16 @@ class WorkerThreadDispatcher : public content::RenderThreadObserver,
   // the IO thread.
   mojom::EventRouter* GetEventRouterOnIO();
 
+  // Mojo interface implementation, called from the main thread.
+  void DispatchEvent(mojom::DispatchEventParamsPtr params,
+                     base::Value::List event_args) override;
+
  private:
   static bool HandlesMessageOnWorkerThread(const IPC::Message& message);
   static void ForwardIPC(int worker_thread_id, const IPC::Message& message);
   static void UpdateBindingsOnWorkerThread(const ExtensionId& extension_id);
+  static void DispatchEventOnWorkerThread(mojom::DispatchEventParamsPtr params,
+                                          base::Value::List event_args);
 
   void OnMessageReceivedOnWorkerThread(int worker_thread_id,
                                        const IPC::Message& message);
@@ -164,10 +170,8 @@ class WorkerThreadDispatcher : public content::RenderThreadObserver,
   void OnResponseWorker(int worker_thread_id,
                         int request_id,
                         bool succeeded,
-                        const base::ListValue& response,
+                        const base::Value::List& response,
                         const std::string& error);
-  void OnDispatchEvent(const mojom::DispatchEventParams& params,
-                       const base::ListValue& event_args);
   void OnValidateMessagePort(int worker_thread_id, const PortId& id);
   void OnDispatchOnConnect(int worker_thread_id,
                            const PortId& target_port_id,
@@ -180,6 +184,9 @@ class WorkerThreadDispatcher : public content::RenderThreadObserver,
   void OnDispatchOnDisconnect(int worker_thread_id,
                               const PortId& port_id,
                               const std::string& error_message);
+
+  void DispatchEventHelper(mojom::DispatchEventParamsPtr params,
+                           base::Value::List event_args);
 
   // IPC sender. Belongs to the render thread, but thread safe.
   scoped_refptr<IPC::SyncMessageFilter> message_filter_;

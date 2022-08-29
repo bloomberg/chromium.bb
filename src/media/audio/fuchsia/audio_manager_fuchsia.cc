@@ -67,16 +67,22 @@ AudioParameters AudioManagerFuchsia::GetInputStreamParameters(
   //
   // Use 16kHz sample rate with 10ms buffer, which is consistent with
   // the default configuration used in the AudioCapturer implementation.
-  // Assume that the system-provided AudioConsumer supports echo cancellation,
-  // noise suppression and automatic gain control.
   const size_t kSampleRate = 16000;
   const size_t kPeriodSamples = AudioTimestampHelper::TimeToFrames(
       base::kAudioSchedulingPeriod, kSampleRate);
   AudioParameters params(AudioParameters::AUDIO_PCM_LOW_LATENCY,
                          CHANNEL_LAYOUT_MONO, kSampleRate, kPeriodSamples);
-  params.set_effects(AudioParameters::ECHO_CANCELLER |
-                     AudioParameters::NOISE_SUPPRESSION |
-                     AudioParameters::AUTOMATIC_GAIN_CONTROL);
+
+  // Some AudioCapturer implementations support echo cancellation, noise
+  // suppression and automatic gain control, but currently there is no way to
+  // detect it. For now the corresponding effect flags are set based on a
+  // command line switch.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAudioCapturerWithEchoCancellation)) {
+    params.set_effects(AudioParameters::ECHO_CANCELLER |
+                       AudioParameters::NOISE_SUPPRESSION |
+                       AudioParameters::AUTOMATIC_GAIN_CONTROL);
+  }
 
   return params;
 }
@@ -167,7 +173,7 @@ void AudioManagerFuchsia::InitOnAudioThread() {
 
   enumerator_.set_error_handler([this](zx_status_t status) {
     ZX_LOG(ERROR, status) << "AudioDeviceEnumerator disconnected. Audio "
-                             "devices will be disabbled.";
+                             "devices will be disabled";
     audio_devices_.clear();
   });
   base::ComponentContextForProcess()->svc()->Connect(enumerator_.NewRequest());
@@ -185,7 +191,7 @@ void AudioManagerFuchsia::InitOnAudioThread() {
   if (status != ZX_OK) {
     ZX_LOG(ERROR, status)
         << "Unable to retrieve audio devices from AudioDeviceEnumerator. Audio "
-           "devices will be disabbled.";
+           "devices will be disabled";
     return;
   }
   for (auto& info : devices) {

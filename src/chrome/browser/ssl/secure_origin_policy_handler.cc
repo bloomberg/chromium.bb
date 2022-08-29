@@ -28,12 +28,13 @@ SecureOriginPolicyHandler::~SecureOriginPolicyHandler() = default;
 
 void SecureOriginPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
                                                     PrefValueMap* prefs) {
-  const base::Value* value = policies.GetValue(policy_name());
+  const base::Value* value =
+      policies.GetValue(policy_name(), base::Value::Type::LIST);
   if (!value)
     return;
 
   std::string pref_string;
-  for (const auto& list_entry : value->GetList()) {
+  for (const auto& list_entry : value->GetListDeprecated()) {
     if (!pref_string.empty())
       pref_string.append(",");
     pref_string.append(list_entry.GetString());

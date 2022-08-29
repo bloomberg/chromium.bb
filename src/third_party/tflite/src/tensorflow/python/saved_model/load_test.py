@@ -20,6 +20,7 @@ import functools
 import gc
 import io
 import os
+import pathlib
 import sys
 import tempfile
 import weakref
@@ -63,6 +64,7 @@ from tensorflow.python.ops.ragged import ragged_factory_ops
 from tensorflow.python.ops.ragged import ragged_tensor
 from tensorflow.python.saved_model import load
 from tensorflow.python.saved_model import load_options
+from tensorflow.python.saved_model import loader_impl
 from tensorflow.python.saved_model import save
 from tensorflow.python.saved_model import save_options
 from tensorflow.python.saved_model import tag_constants
@@ -207,8 +209,8 @@ class LoadTest(test.TestCase, parameterized.TestCase):
         imported_graph.control_outputs)
 
   def _make_asset(self, contents):
-    filename = tempfile.mktemp(prefix=self.get_temp_dir())
-    with open(filename, "w") as f:
+    fd, filename = tempfile.mkstemp(prefix=self.get_temp_dir())
+    with os.fdopen(fd, "w") as f:
       f.write(contents)
     return filename
 
@@ -310,6 +312,13 @@ class LoadTest(test.TestCase, parameterized.TestCase):
     imported = cycle(root, cycles)
     self.assertEqual(imported.asset1.asset_path.numpy(),
                      imported.asset2.asset_path.numpy())
+
+  def test_asset_fspath(self, cycles):
+    vocab = pathlib.Path(self._make_asset("contents"))
+    root = tracking.AutoTrackable()
+    root.asset = tracking.Asset(vocab)
+    imported = cycle(root, cycles)
+    self.assertTrue(hasattr(imported, "asset"))
 
   def test_implicit_input_signature(self, cycles):
     @def_function.function
@@ -2093,6 +2102,13 @@ class SingleCycleTests(test.TestCase, parameterized.TestCase):
     load.load(path, tags=tag_constants.SERVING)
     load.load(path, tags=set([tag_constants.SERVING]))
 
+  def test_save_load_contains_with_fspath(self):
+    root = tracking.AutoTrackable()
+    path = pathlib.Path(tempfile.mkdtemp(prefix=self.get_temp_dir()))
+    save.save(root, path)
+    self.assertTrue(loader_impl.contains_saved_model(path))
+    load.load(path)
+
   def test_single_restore_op_used(self):
     root = module.Module()
     root.v1 = variables.Variable(1.)
@@ -2135,20 +2151,16 @@ class SingleCycleTests(test.TestCase, parameterized.TestCase):
 
     class Extra(tracking.AutoTrackable):
 
-      def _list_extra_dependencies_for_serialization(self, cache):
-        if self not in cache:
-          cache[self] = {"a": variables.Variable(5.)}
-        return cache[self]
+      def _trackable_children(self, save_type, **kwargs):
+        children = super(Extra, self)._trackable_children(save_type, **kwargs)
+        children["a"] = variables.Variable(5.)
+        return children
+
     root = Extra()
     path = tempfile.mkdtemp(prefix=self.get_temp_dir())
     save.save(root, path)
     imported = load.load(path)
     self.assertEqual(5, self.evaluate(imported.a))
-
-    root.a = variables.Variable(3.)
-    with self.assertRaisesRegex(
-        ValueError, "object has an attribute named 'a', which is reserved."):
-      save.save(root, path)
 
   def test_save_cached_variable(self):
     with ops.Graph().as_default(), session_lib.Session() as session:
@@ -2494,8 +2506,8 @@ class DeferredInitModuleVariablesTest(test.TestCase):
     load_and_run_module(export_dir, weight_size)
 
   def _make_asset(self, contents):
-    filename = tempfile.mktemp(prefix=self.get_temp_dir())
-    with open(filename, "w") as f:
+    fd, filename = tempfile.mkstemp(prefix=self.get_temp_dir())
+    with os.fdopen(fd, "w") as f:
       f.write(contents)
     return filename
 

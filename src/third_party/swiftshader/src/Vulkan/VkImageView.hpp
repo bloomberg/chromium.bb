@@ -92,24 +92,21 @@ public:
 
 	static size_t ComputeRequiredAllocationSize(const VkImageViewCreateInfo *pCreateInfo);
 
-	void clear(const VkClearValue &clearValues, VkImageAspectFlags aspectMask, const VkRect2D &renderArea);
-	void clear(const VkClearValue &clearValue, VkImageAspectFlags aspectMask, const VkClearRect &renderArea);
-	void clearWithLayerMask(const VkClearValue &clearValue, VkImageAspectFlags aspectMask, const VkRect2D &renderArea, uint32_t layerMask);
-	void resolve(ImageView *resolveAttachment);
-	void resolve(ImageView *resolveAttachment, int layer);
-	void resolveWithLayerMask(ImageView *resolveAttachment, uint32_t layerMask);
-	void resolveDepthStencil(ImageView *resolveAttachment, const VkSubpassDescriptionDepthStencilResolve &dsResolve);
+	void clear(const VkClearValue &clearValues, VkImageAspectFlags aspectMask, const VkRect2D &renderArea, uint32_t layerMask);
+	void clear(const VkClearValue &clearValue, VkImageAspectFlags aspectMask, const VkClearRect &renderArea, uint32_t layerMask);
+	void resolve(ImageView *resolveAttachment, uint32_t layerMask);
+	void resolveDepthStencil(ImageView *resolveAttachment, VkResolveModeFlagBits depthResolveMode, VkResolveModeFlagBits stencilResolveMode);
 
 	VkImageViewType getType() const { return viewType; }
 	Format getFormat(Usage usage = RAW) const;
 	Format getFormat(VkImageAspectFlagBits aspect) const { return image->getFormat(aspect); }
-	int rowPitchBytes(VkImageAspectFlagBits aspect, uint32_t mipLevel, Usage usage = RAW) const;
-	int slicePitchBytes(VkImageAspectFlagBits aspect, uint32_t mipLevel, Usage usage = RAW) const;
-	int getMipLevelSize(VkImageAspectFlagBits aspect, uint32_t mipLevel, Usage usage = RAW) const;
-	int layerPitchBytes(VkImageAspectFlagBits aspect, Usage usage = RAW) const;
+	uint32_t rowPitchBytes(VkImageAspectFlagBits aspect, uint32_t mipLevel, Usage usage = RAW) const;
+	uint32_t slicePitchBytes(VkImageAspectFlagBits aspect, uint32_t mipLevel, Usage usage = RAW) const;
+	uint32_t getMipLevelSize(VkImageAspectFlagBits aspect, uint32_t mipLevel, Usage usage = RAW) const;
+	uint32_t layerPitchBytes(VkImageAspectFlagBits aspect, Usage usage = RAW) const;
 	VkExtent2D getMipLevelExtent(uint32_t mipLevel) const;
 	VkExtent2D getMipLevelExtent(uint32_t mipLevel, VkImageAspectFlagBits aspect) const;
-	int getDepthOrLayerCount(uint32_t mipLevel) const;
+	uint32_t getDepthOrLayerCount(uint32_t mipLevel) const;
 
 	int getSampleCount() const
 	{
@@ -138,6 +135,12 @@ public:
 private:
 	bool imageTypesMatch(VkImageType imageType) const;
 	const Image *getImage(Usage usage) const;
+	void clear(const VkClearValue &clearValues, VkImageAspectFlags aspectMask, const VkRect2D &renderArea);
+	void clear(const VkClearValue &clearValue, VkImageAspectFlags aspectMask, const VkClearRect &renderArea);
+	void clearWithLayerMask(const VkClearValue &clearValue, VkImageAspectFlags aspectMask, const VkRect2D &renderArea, uint32_t layerMask);
+	void resolve(ImageView *resolveAttachment);
+	void resolveSingleLayer(ImageView *resolveAttachment, int layer);
+	void resolveWithLayerMask(ImageView *resolveAttachment, uint32_t layerMask);
 
 	Image *const image = nullptr;
 	const VkImageViewType viewType = VK_IMAGE_VIEW_TYPE_2D;

@@ -90,6 +90,8 @@ struct CC_EXPORT TransformNode {
 
   bool scrolls : 1;
 
+  bool is_fixed_to_viewport : 1;
+
   bool should_be_snapped : 1;
 
   // Used by the compositor to determine which layers need to be repositioned by
@@ -110,7 +112,8 @@ struct CC_EXPORT TransformNode {
   // visibility, not this transform one.
   bool delegates_to_parent_for_backface : 1;
 
-  // Set to true, if the compositing reason is will-change:transform.
+  // Set to true, if the compositing reason is will-change:transform, scale,
+  // rotate, or translate (for the CSS property that created this node).
   bool will_change_transform : 1;
 
   // Set to true, if the node or it's parent |will_change_transform| is true.

@@ -17,6 +17,7 @@
 #include <utility>
 
 #include "absl/strings/match.h"
+#include "absl/strings/string_view.h"
 #include "api/array_view.h"
 #include "api/rtc_event_log/rtc_event_log.h"
 #include "logging/rtc_event_log/events/rtc_event_rtp_packet_outgoing.h"
@@ -138,7 +139,7 @@ bool HasBweExtension(const RtpHeaderExtensionMap& extensions_map) {
          extensions_map.IsRegistered(kRtpExtensionTransmissionTimeOffset);
 }
 
-double GetMaxPaddingSizeFactor(const WebRtcKeyValueConfig* field_trials) {
+double GetMaxPaddingSizeFactor(const FieldTrialsView* field_trials) {
   // Too low factor means RTX payload padding is rarely used and ineffective.
   // Too high means we risk interrupting regular media packets.
   // In practice, 3x seems to yield reasonable results.
@@ -157,12 +158,6 @@ double GetMaxPaddingSizeFactor(const WebRtcKeyValueConfig* field_trials) {
 
 RTPSender::RTPSender(const RtpRtcpInterface::Configuration& config,
                      RtpPacketHistory* packet_history,
-                     RtpPacketSender* packet_sender,
-                     PacketSequencer*)
-    : RTPSender(config, packet_history, packet_sender) {}
-
-RTPSender::RTPSender(const RtpRtcpInterface::Configuration& config,
-                     RtpPacketHistory* packet_history,
                      RtpPacketSender* packet_sender)
     : clock_(config.clock),
       random_(clock_->TimeInMicroseconds()),
@@ -178,6 +173,7 @@ RTPSender::RTPSender(const RtpRtcpInterface::Configuration& config,
       max_packet_size_(IP_PACKET_SIZE - 28),  // Default is IP-v4/UDP.
       rtp_header_extension_map_(config.extmap_allow_mixed),
       // RTP variables
+      rid_(config.rid),
       always_send_mid_and_rid_(config.always_send_mid_and_rid),
       ssrc_has_acked_(false),
       rtx_ssrc_has_acked_(false),
@@ -185,12 +181,14 @@ RTPSender::RTPSender(const RtpRtcpInterface::Configuration& config,
       rtx_(kRtxOff),
       supports_bwe_extension_(false),
       retransmission_rate_limiter_(config.retransmission_rate_limiter) {
-  UpdateHeaderSizes();
   // This random initialization is not intended to be cryptographic strong.
   timestamp_offset_ = random_.Rand<uint32_t>();
 
   RTC_DCHECK(paced_sender_);
   RTC_DCHECK(packet_history_);
+  RTC_DCHECK_LE(rid_.size(), RtpStreamId::kMaxValueSizeBytes);
+
+  UpdateHeaderSizes();
 }
 
 RTPSender::~RTPSender() {
@@ -258,6 +256,12 @@ size_t RTPSender::MaxRtpPacketSize() const {
 
 void RTPSender::SetRtxStatus(int mode) {
   MutexLock lock(&send_mutex_);
+  if (mode != kRtxOff &&
+      (!rtx_ssrc_.has_value() || rtx_payload_type_map_.empty())) {
+    RTC_LOG(LS_ERROR)
+        << "Failed to enable RTX without RTX SSRC or payload types.";
+    return;
+  }
   rtx_ = mode;
 }
 
@@ -280,16 +284,7 @@ void RTPSender::SetRtxPayloadType(int payload_type,
 }
 
 int32_t RTPSender::ReSendPacket(uint16_t packet_id) {
-  // Try to find packet in RTP packet history. Also verify RTT here, so that we
-  // don't retransmit too often.
-  absl::optional<RtpPacketHistory::PacketState> stored_packet =
-      packet_history_->GetPacketState(packet_id);
-  if (!stored_packet || stored_packet->pending_transmission) {
-    // Packet not found or already queued for retransmission, ignore.
-    return 0;
-  }
-
-  const int32_t packet_size = static_cast<int32_t>(stored_packet->packet_size);
+  int32_t packet_size = 0;
   const bool rtx = (RtxStatus() & kRtxRetransmitted) > 0;
 
   std::unique_ptr<RtpPacketToSend> packet =
@@ -298,6 +293,7 @@ int32_t RTPSender::ReSendPacket(uint16_t packet_id) {
             // Check if we're overusing retransmission bitrate.
             // TODO(sprang): Add histograms for nack success or failure
             // reasons.
+            packet_size = stored_packet.size();
             std::unique_ptr<RtpPacketToSend> retransmit_packet;
             if (retransmission_rate_limiter_ &&
                 !retransmission_rate_limiter_->TryUseRate(packet_size)) {
@@ -315,7 +311,14 @@ int32_t RTPSender::ReSendPacket(uint16_t packet_id) {
             }
             return retransmit_packet;
           });
+  if (packet_size == 0) {
+    // Packet not found or already queued for retransmission, ignore.
+    RTC_DCHECK(!packet);
+    return 0;
+  }
   if (!packet) {
+    // Packet was found, but lambda helper above chose not to create
+    // `retransmit_packet` out of it.
     return -1;
   }
   packet->set_packet_type(RtpPacketMediaType::kRetransmission);
@@ -349,7 +352,7 @@ void RTPSender::OnReceivedAckOnRtxSsrc(
 void RTPSender::OnReceivedNack(
     const std::vector<uint16_t>& nack_sequence_numbers,
     int64_t avg_rtt) {
-  packet_history_->SetRtt(5 + avg_rtt);
+  packet_history_->SetRtt(TimeDelta::Millis(5 + avg_rtt));
   for (uint16_t seq_no : nack_sequence_numbers) {
     const int32_t bytes_sent = ReSendPacket(seq_no);
     if (bytes_sent < 0) {
@@ -453,6 +456,7 @@ std::vector<std::unique_ptr<RtpPacketToSend>> RTPSender::GeneratePadding(
       }
 
       RTC_DCHECK(rtx_ssrc_);
+      RTC_DCHECK(!rtx_payload_type_map_.empty());
       padding_packet->SetSsrc(*rtx_ssrc_);
       padding_packet->SetPayloadType(rtx_payload_type_map_.begin()->second);
     }
@@ -477,13 +481,11 @@ std::vector<std::unique_ptr<RtpPacketToSend>> RTPSender::GeneratePadding(
 
 bool RTPSender::SendToNetwork(std::unique_ptr<RtpPacketToSend> packet) {
   RTC_DCHECK(packet);
-  int64_t now_ms = clock_->TimeInMilliseconds();
-
   auto packet_type = packet->packet_type();
   RTC_CHECK(packet_type) << "Packet type must be set before sending.";
 
-  if (packet->capture_time_ms() <= 0) {
-    packet->set_capture_time_ms(now_ms);
+  if (packet->capture_time() <= Timestamp::Zero()) {
+    packet->set_capture_time(clock_->CurrentTime());
   }
 
   std::vector<std::unique_ptr<RtpPacketToSend>> packets;
@@ -496,13 +498,13 @@ bool RTPSender::SendToNetwork(std::unique_ptr<RtpPacketToSend> packet) {
 void RTPSender::EnqueuePackets(
     std::vector<std::unique_ptr<RtpPacketToSend>> packets) {
   RTC_DCHECK(!packets.empty());
-  int64_t now_ms = clock_->TimeInMilliseconds();
+  Timestamp now = clock_->CurrentTime();
   for (auto& packet : packets) {
     RTC_DCHECK(packet);
     RTC_CHECK(packet->packet_type().has_value())
         << "Packet type must be set before sending.";
-    if (packet->capture_time_ms() <= 0) {
-      packet->set_capture_time_ms(now_ms);
+    if (packet->capture_time() <= Timestamp::Zero()) {
+      packet->set_capture_time(now);
     }
   }
 
@@ -585,19 +587,11 @@ uint32_t RTPSender::TimestampOffset() const {
   return timestamp_offset_;
 }
 
-void RTPSender::SetRid(const std::string& rid) {
-  // RID is used in simulcast scenario when multiple layers share the same mid.
-  MutexLock lock(&send_mutex_);
-  RTC_DCHECK_LE(rid.length(), RtpStreamId::kMaxValueSizeBytes);
-  rid_ = rid;
-  UpdateHeaderSizes();
-}
-
-void RTPSender::SetMid(const std::string& mid) {
+void RTPSender::SetMid(absl::string_view mid) {
   // This is configured via the API.
   MutexLock lock(&send_mutex_);
   RTC_DCHECK_LE(mid.length(), RtpMid::kMaxValueSizeBytes);
-  mid_ = mid;
+  mid_ = std::string(mid);
   UpdateHeaderSizes();
 }
 
@@ -719,7 +713,7 @@ std::unique_ptr<RtpPacketToSend> RTPSender::BuildRtxPacket(
   rtx_packet->set_additional_data(packet.additional_data());
 
   // Copy capture time so e.g. TransmissionOffset is correctly set.
-  rtx_packet->set_capture_time_ms(packet.capture_time_ms());
+  rtx_packet->set_capture_time(packet.capture_time());
 
   return rtx_packet;
 }

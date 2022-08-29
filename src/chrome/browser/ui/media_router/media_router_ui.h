@@ -19,19 +19,19 @@
 #include "chrome/browser/ui/media_router/cast_dialog_controller.h"
 #include "chrome/browser/ui/media_router/cast_dialog_model.h"
 #include "chrome/browser/ui/media_router/media_cast_mode.h"
-#include "chrome/browser/ui/media_router/media_router_file_dialog.h"
+#include "chrome/browser/ui/media_router/media_route_starter.h"
 #include "chrome/browser/ui/media_router/media_router_ui_helper.h"
 #include "chrome/browser/ui/media_router/media_sink_with_cast_modes.h"
-#include "chrome/browser/ui/media_router/query_result_manager.h"
+#include "chrome/browser/ui/media_router/media_sink_with_cast_modes_observer.h"
+#include "chrome/browser/ui/media_router/presentation_request_source_observer.h"
 #include "chrome/browser/ui/webui/media_router/web_contents_display_observer.h"
 #include "components/media_router/browser/issues_observer.h"
 #include "components/media_router/browser/media_router_dialog_controller.h"
-#include "components/media_router/browser/presentation/start_presentation_context.h"
-#include "components/media_router/browser/presentation/web_contents_presentation_manager.h"
 #include "components/media_router/common/issue.h"
 #include "components/media_router/common/media_source.h"
 #include "url/origin.h"
 
+class Browser;
 class GURL;
 
 namespace content {
@@ -52,18 +52,47 @@ class MediaSink;
 class RouteRequestResult;
 
 // Functions as an intermediary between MediaRouter and Views Cast dialog.
-class MediaRouterUI
-    : public CastDialogController,
-      public QueryResultManager::Observer,
-      public WebContentsPresentationManager::Observer,
-      public MediaRouterFileDialog::MediaRouterFileDialogDelegate {
+class MediaRouterUI : public CastDialogController,
+                      public MediaSinkWithCastModesObserver,
+                      public PresentationRequestSourceObserver {
  public:
-  explicit MediaRouterUI(content::WebContents* initiator);
+  // MediaRouterUI's are typically created with one of the CreateWith* methods
+  // below.
+  explicit MediaRouterUI(
+      std::unique_ptr<MediaRouteStarter> media_route_starter);
 
   MediaRouterUI(const MediaRouterUI&) = delete;
   MediaRouterUI& operator=(const MediaRouterUI&) = delete;
 
   ~MediaRouterUI() override;
+
+  // Creates a |MediaRouterUI| (e.g. starts listening for MediaSinks) for
+  // targeting the default MediaSource (if any) of |initiator|. The contents
+  // of the UI will change as the default MediaSource changes. If there is a
+  // default MediaSource, then PRESENTATION MediaCastMode will be added to
+  // |cast_modes_|.
+  static std::unique_ptr<MediaRouterUI> CreateWithDefaultMediaSource(
+      content::WebContents* initiator);
+  // Initializes mirroring sources of the tab in addition to what is done by
+  // |CreateWithDefaultMediaSource()|.
+  static std::unique_ptr<MediaRouterUI>
+  CreateWithDefaultMediaSourceAndMirroring(content::WebContents* initiator);
+
+  // Initializes internal state targeting the presentation specified in
+  // |context|. This is different from CreateWithDefaultMediaSource*() in that
+  // it does not listen for default media source changes, as the UI is fixed to
+  // the source in |context|. Init* methods can only be called once.
+  // |context|: Context object for the PresentationRequest. This instance will
+  // take ownership of it. Must not be null.
+  static std::unique_ptr<MediaRouterUI> CreateWithStartPresentationContext(
+      content::WebContents* initiator,
+      std::unique_ptr<StartPresentationContext> context);
+  // Initializes mirroring sources of the tab in addition to what is done by
+  // |CreateWithStartPresentationContext()|.
+  static std::unique_ptr<MediaRouterUI>
+  CreateWithStartPresentationContextAndMirroring(
+      content::WebContents* initiator,
+      std::unique_ptr<StartPresentationContext> context);
 
   // CastDialogController:
   void AddObserver(CastDialogController::Observer* observer) override;
@@ -71,32 +100,11 @@ class MediaRouterUI
   void StartCasting(const std::string& sink_id,
                     MediaCastMode cast_mode) override;
   void StopCasting(const std::string& route_id) override;
-  void ChooseLocalFile(
-      base::OnceCallback<void(const ui::SelectedFileInfo*)> callback) override;
   void ClearIssue(const Issue::Id& issue_id) override;
-
-  // Initializes internal state (e.g. starts listening for MediaSinks) for
-  // targeting the default MediaSource (if any) of |initiator_|. The contents of
-  // the UI will change as the default MediaSource changes. If there is a
-  // default MediaSource, then PRESENTATION MediaCastMode will be added to
-  // |cast_modes_|. Init* methods can only be called once.
-  void InitWithDefaultMediaSource();
-  // Initializes mirroring sources of the tab in addition to what is done by
-  // |InitWithDefaultMediaSource()|.
-  void InitWithDefaultMediaSourceAndMirroring();
-
-  // Initializes internal state targeting the presentation specified in
-  // |context|. This is different from InitWithDefaultMediaSource*() in that it
-  // does not listen for default media source changes, as the UI is fixed to the
-  // source in |context|. Init* methods can only be called once.
-  // |context|: Context object for the PresentationRequest. This instance will
-  // take ownership of it. Must not be null.
-  void InitWithStartPresentationContext(
-      std::unique_ptr<StartPresentationContext> context);
-  // Initializes mirroring sources of the tab in addition to what is done by
-  // |InitWithStartPresentationContext()|.
-  void InitWithStartPresentationContextAndMirroring(
-      std::unique_ptr<StartPresentationContext> context);
+  content::WebContents* GetInitiator() override;
+  // Note that |MediaRouterUI| should not be used after |TakeMediaRouteStarter|
+  // is called.
+  std::unique_ptr<MediaRouteStarter> TakeMediaRouteStarter() override;
 
   // Requests a route be created from the source mapped to
   // |cast_mode|, to the sink given by |sink_id|.
@@ -114,31 +122,21 @@ class MediaRouterUI
   // Also filters cloud sinks in incognito windows.
   std::vector<MediaSinkWithCastModes> GetEnabledSinks() const;
 
-  // Returns a PresentationRequest source name that can be shown in the dialog.
-  std::u16string GetPresentationRequestSourceName() const;
-
   // Calls MediaRouter to add the given issue.
   void AddIssue(const IssueInfo& issue);
 
   // Calls MediaRouter to remove the given issue.
   void RemoveIssue(const Issue::Id& issue_id);
 
-  // Opens a file picker for when the user selected local file casting.
-  void OpenFileDialog();
-
   // Uses LoggerImpl to log current available sinks.
   void LogMediaSinkStatus();
 
   const std::vector<MediaRoute>& routes() const { return routes_; }
-  content::WebContents* initiator() const { return initiator_; }
+  content::WebContents* initiator() const {
+    return media_route_starter()->GetWebContents();
+  }
 
   void SimulateDocumentAvailableForTest();
-
-#if defined(OS_MAC)
-  void set_screen_capture_allowed_for_testing(bool allowed) {
-    screen_capture_allowed_for_testing_ = allowed;
-  }
-#endif
 
  private:
   friend class MediaRouterViewsUITest;
@@ -169,15 +167,6 @@ class MediaRouterUI
 
   class WebContentsFullscreenOnLoadedObserver;
 
-  struct RouteRequest {
-   public:
-    explicit RouteRequest(const MediaSink::Id& sink_id);
-    ~RouteRequest();
-
-    int id;
-    MediaSink::Id sink_id;
-  };
-
   // This class calls to refresh the UI when the highest priority issue is
   // updated.
   class UiIssuesObserver : public IssuesObserver {
@@ -201,10 +190,8 @@ class MediaRouterUI
   class UIMediaRoutesObserver : public MediaRoutesObserver {
    public:
     using RoutesUpdatedCallback =
-        base::RepeatingCallback<void(const std::vector<MediaRoute>&,
-                                     const std::vector<MediaRoute::Id>&)>;
+        base::RepeatingCallback<void(const std::vector<MediaRoute>&)>;
     UIMediaRoutesObserver(MediaRouter* router,
-                          const MediaSource::Id& source_id,
                           const RoutesUpdatedCallback& callback);
 
     UIMediaRoutesObserver(const UIMediaRoutesObserver&) = delete;
@@ -213,44 +200,24 @@ class MediaRouterUI
     ~UIMediaRoutesObserver() override;
 
     // MediaRoutesObserver:
-    void OnRoutesUpdated(
-        const std::vector<MediaRoute>& routes,
-        const std::vector<MediaRoute::Id>& joinable_route_ids) override;
+    void OnRoutesUpdated(const std::vector<MediaRoute>& routes) override;
 
    private:
     // Callback to the owning MediaRouterUI instance.
     RoutesUpdatedCallback callback_;
   };
 
-  std::vector<MediaSource> GetSourcesForCastMode(MediaCastMode cast_mode) const;
+  virtual void Init();
 
-  // Closes the dialog after receiving a route response when using
-  // |start_presentation_context_|. This prevents the dialog from trying to use
-  // the same presentation request again.
-  virtual void HandleCreateSessionRequestRouteResponse(
-      const RouteRequestResult&);
+  // Removes |MediaRouteStarter| listeners and alerts observers that this
+  // controller is now invalid.
+  void DetachFromMediaRouteStarter();
 
-  // Initializes the dialog with mirroring sources derived from |initiator_|.
-  virtual void InitCommon();
-  void InitMirroring();
-
-  // WebContentsPresentationManager::Observer
-  void OnDefaultPresentationChanged(
-      const content::PresentationRequest* presentation_request) override;
-
-  void OnDefaultPresentationRemoved();
+  // PresentationRequestSourceObserver
+  void OnSourceUpdated(std::u16string& source_name) override;
 
   // Called to update the dialog with the current list of of enabled sinks.
   void UpdateSinks();
-
-  // Populates common route-related parameters for calls to MediaRouter.
-  absl::optional<RouteParameters> GetRouteParameters(
-      const MediaSink::Id& sink_id,
-      MediaCastMode cast_mode);
-
-  // Returns the default PresentationRequest's frame origin if there is one.
-  // Otherwise returns an opaque origin.
-  url::Origin GetFrameOrigin() const;
 
   // Creates and sends an issue if route creation timed out.
   void SendIssueForRouteTimeout(
@@ -258,11 +225,9 @@ class MediaRouterUI
       const MediaSink::Id& sink_id,
       const std::u16string& presentation_request_source_name);
 
-// Creates and sends an issue if casting fails due to lack of screen
-// permissions.
-#if defined(OS_MAC)
+  // Creates and sends an issue if casting fails due to lack of screen
+  // permissions.
   void SendIssueForScreenPermission(const MediaSink::Id& sink_id);
-#endif
 
   // Creates and sends an issue if casting fails for any reason other than
   // those above.
@@ -283,11 +248,10 @@ class MediaRouterUI
   void OnIssueCleared();
 
   // Called by |routes_observer_| when the set of active routes has changed.
-  void OnRoutesUpdated(const std::vector<MediaRoute>& routes,
-                       const std::vector<MediaRoute::Id>& joinable_route_ids);
+  void OnRoutesUpdated(const std::vector<MediaRoute>& routes);
 
-  // QueryResultManager::Observer:
-  void OnResultsUpdated(
+  // MediaSinkWithCastModesObserver:
+  void OnSinksUpdated(
       const std::vector<MediaSinkWithCastModes>& sinks) override;
 
   // Callback passed to MediaRouter to receive response to route creation
@@ -300,33 +264,11 @@ class MediaRouterUI
       const RouteRequestResult& result);
 
   // Update the header text in the dialog model and notify observers.
-  void UpdateModelHeader();
+  void UpdateModelHeader(const std::u16string& source_name);
 
   UIMediaSink ConvertToUISink(const MediaSinkWithCastModes& sink,
                               const MediaRoute* route,
                               const absl::optional<Issue>& issue);
-
-  // MediaRouterFileDialogDelegate:
-  void FileDialogFileSelected(const ui::SelectedFileInfo& file_info) override;
-  void FileDialogSelectionFailed(const IssueInfo& issue) override;
-  void FileDialogSelectionCanceled() override;
-
-  // Populates route-related parameters for CreateRoute() when doing file
-  // casting.
-  absl::optional<RouteParameters> GetLocalFileRouteParameters(
-      const MediaSink::Id& sink_id,
-      const GURL& file_url,
-      content::WebContents* tab_contents);
-
-  // If the current URL for |web_contents| is |file_url|, requests the first
-  // video in it to be shown fullscreen.
-  void FullScreenFirstVideoElement(const GURL& file_url,
-                                   content::WebContents* web_contents,
-                                   const RouteRequestResult& result);
-
-  // Sends a request to the file dialog to log UMA stats for the file that was
-  // cast if the result is successful.
-  void MaybeReportFileInformation(const RouteRequestResult& result);
 
   // Opens the URL in a tab, returns the tab it was opened in.
   content::WebContents* OpenTabWithUrl(const GURL& url);
@@ -341,23 +283,18 @@ class MediaRouterUI
     return current_route_request_;
   }
 
-  StartPresentationContext* start_presentation_context() const {
-    return start_presentation_context_.get();
+  MediaRouteStarter* media_route_starter() const {
+    DCHECK(media_route_starter_)
+        << "can't call media_route_starter() after TakeMediaRouteStarter()!";
+    return media_route_starter_.get();
   }
 
-  QueryResultManager* query_result_manager() const {
-    return query_result_manager_.get();
-  }
-
-  void set_media_router_file_dialog_for_test(
-      std::unique_ptr<MediaRouterFileDialog> file_dialog) {
-    media_router_file_dialog_ = std::move(file_dialog);
-  }
-
-  void set_start_presentation_context_for_test(
-      std::unique_ptr<StartPresentationContext> start_presentation_context) {
-    start_presentation_context_ = std::move(start_presentation_context);
-  }
+  // Helper factory that creates both the |MediaRouteStarter| and then a
+  // |MediaRouterUI| in a single step.
+  static std::unique_ptr<MediaRouterUI> CreateMediaRouterUI(
+      const CastModeSet& initial_modes,
+      content::WebContents* initiator,
+      std::unique_ptr<StartPresentationContext> start_presentation_context);
 
   raw_ptr<content::WebContentsObserver> web_contents_observer_for_test_ =
       nullptr;
@@ -368,10 +305,6 @@ class MediaRouterUI
   // Contains up-to-date data to show in the dialog.
   CastDialogModel model_;
 
-  // This value is set when the user opens a file picker, and used when a file
-  // is selected and casting starts.
-  absl::optional<MediaSink::Id> local_file_sink_id_;
-
   // This value is set when the UI requests a route to be terminated, and gets
   // reset when the route is removed.
   absl::optional<MediaRoute::Id> terminating_route_id_;
@@ -379,9 +312,6 @@ class MediaRouterUI
   // Observers for dialog model updates.
   // TODO(takumif): CastDialogModel should manage the observers.
   base::ObserverList<CastDialogController::Observer>::Unchecked observers_;
-
-  base::OnceCallback<void(const ui::SelectedFileInfo*)>
-      file_selection_callback_;
 
   // This is non-null while this instance is registered to receive
   // updates from them.
@@ -391,33 +321,13 @@ class MediaRouterUI
   absl::optional<RouteRequest> current_route_request_;
 
   // Used for locale-aware sorting of sinks by name. Set during
-  // InitCommon() using the current locale.
+  // Init() using the current locale.
   std::unique_ptr<icu::Collator> collator_;
 
   std::vector<MediaSinkWithCastModes> sinks_;
   std::vector<MediaRoute> routes_;
 
-  // Monitors and reports sink availability.
-  std::unique_ptr<QueryResultManager> query_result_manager_;
-
-  // If set, then the result of the next presentation route request will
-  // be handled by this object.
-  std::unique_ptr<StartPresentationContext> start_presentation_context_;
-
-  // Set to the presentation request corresponding to the presentation cast
-  // mode, if supported. Otherwise set to nullopt.
-  absl::optional<content::PresentationRequest> presentation_request_;
-
-  // |presentation_manager_| notifies |this| whenever there is an update to the
-  // default PresentationRequest or MediaRoutes associated with |initiator_|.
-  base::WeakPtr<WebContentsPresentationManager> presentation_manager_;
-
-  // WebContents for the tab for which the Cast dialog is shown.
-  const raw_ptr<content::WebContents> initiator_;
-
-  // The dialog that handles opening the file dialog and validating and
-  // returning the results.
-  std::unique_ptr<MediaRouterFileDialog> media_router_file_dialog_;
+  std::unique_ptr<MediaRouteStarter> media_route_starter_;
 
   std::unique_ptr<IssuesObserver> issues_observer_;
 
@@ -426,9 +336,7 @@ class MediaRouterUI
   // controlling window.
   std::unique_ptr<WebContentsDisplayObserver> display_observer_;
 
-#if defined(OS_MAC)
-  absl::optional<bool> screen_capture_allowed_for_testing_;
-#endif
+  raw_ptr<MediaRouter> router_;
   raw_ptr<LoggerImpl> logger_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.

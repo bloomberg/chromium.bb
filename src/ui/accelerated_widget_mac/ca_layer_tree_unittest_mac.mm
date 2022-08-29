@@ -127,7 +127,7 @@ class CALayerTreePropertyUpdatesTest : public CALayerTreeTest {
     properties.contents_rect = gfx::RectF(0.0f, 0.25f, 0.5f, 0.75f);
     properties.rect = gfx::Rect(16, 32, 64, 128);
     properties.background_color = SkColorSetARGB(0xFF, 0xFF, 0, 0);
-    properties.edge_aa_mask = GL_CA_LAYER_EDGE_LEFT_CHROMIUM;
+    properties.edge_aa_mask = ui::CALayerEdge::kLayerEdgeLeft;
     properties.opacity = 0.5f;
     properties.gl_image =
         CreateGLImage(gfx::Size(256, 256), gfx::BufferFormat::BGRA_8888, false);
@@ -177,9 +177,9 @@ class CALayerTreePropertyUpdatesTest : public CALayerTreeTest {
                 [clip_and_sorting_layer sublayerTransform].m42);
 
       // Validate the transform layer.
-      EXPECT_EQ(properties.transform.matrix().get(3, 0),
+      EXPECT_EQ(properties.transform.matrix().rc(3, 0),
                 [transform_layer sublayerTransform].m41);
-      EXPECT_EQ(properties.transform.matrix().get(3, 1),
+      EXPECT_EQ(properties.transform.matrix().rc(3, 1),
                 [transform_layer sublayerTransform].m42);
 
       // Validate the content layer.
@@ -265,15 +265,15 @@ class CALayerTreePropertyUpdatesTest : public CALayerTreeTest {
       EXPECT_EQ(transform_layer, [rounded_rect_layer sublayers][0]);
 
       // Validate the transform layer.
-      EXPECT_EQ(properties.transform.matrix().get(3, 0),
+      EXPECT_EQ(properties.transform.matrix().rc(3, 0),
                 [transform_layer sublayerTransform].m41);
-      EXPECT_EQ(properties.transform.matrix().get(3, 1),
+      EXPECT_EQ(properties.transform.matrix().rc(3, 1),
                 [transform_layer sublayerTransform].m42);
     }
 
     // Change the edge antialiasing mask and commit.
     {
-      properties.edge_aa_mask = GL_CA_LAYER_EDGE_TOP_CHROMIUM;
+      properties.edge_aa_mask = ui::CALayerEdge::kLayerEdgeTop;
       UpdateCALayerTree(ca_layer_tree, &properties, superlayer_);
 
       // Validate the tree structure.
@@ -473,10 +473,10 @@ class CALayerTreePropertyUpdatesTest : public CALayerTreeTest {
 
       // Validate the transform layer.
       EXPECT_EQ(
-          properties.transform.matrix().get(3, 0) / properties.scale_factor,
+          properties.transform.matrix().rc(3, 0) / properties.scale_factor,
           [transform_layer sublayerTransform].m41);
       EXPECT_EQ(
-          properties.transform.matrix().get(3, 1) / properties.scale_factor,
+          properties.transform.matrix().rc(3, 1) / properties.scale_factor,
           [transform_layer sublayerTransform].m42);
 
       // Validate the content layer.

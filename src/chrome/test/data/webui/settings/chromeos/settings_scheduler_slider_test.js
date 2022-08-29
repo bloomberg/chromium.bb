@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// clang-format off
-// #import 'chrome://os-settings/chromeos/os_settings.js';
-// #import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
-// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-// #import {keyDownOn, keyUpOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
-// clang-format on
+import 'chrome://os-settings/chromeos/os_settings.js';
+
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {assertEquals, assertTrue} from '../../chai_assert.js';
 
 /** @fileoverview Suite of tests for settings-scheduler-slider. */
 suite('SettingsSchedulerSlider', function() {
@@ -57,7 +56,9 @@ suite('SettingsSchedulerSlider', function() {
     flush();
   });
 
-  test('pref value update time string', function() {
+  // TODO(crbug.com/1305868O): Skip test as it consistently fails whenever
+  // daylight savings is active.
+  test.skip('pref value update time string', function() {
     // Test that the slider time string is updated after the pref is
     // saved.
     assertTrue(!!slider.$$('#startLabel'));
@@ -104,7 +105,9 @@ suite('SettingsSchedulerSlider', function() {
     assertEquals(slider.prefEndTime.value, kDefaultEndTimeOffsetMinutes);
   });
 
-  test('pref value update aria label', function() {
+  // TODO(crbug.com/1305868): Skip test as it consistently fails whenever
+  // daylight savings is active.
+  test.skip('pref value update aria label', function() {
     // Test that the aria label is updated after the pref is saved.
     assertTrue(!!slider.$$('#startKnob'));
     assertTrue(!!slider.$$('#endKnob'));
