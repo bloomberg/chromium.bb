@@ -97,6 +97,18 @@ void TextFragmentsManagerImpl::OnClick() {
   }
 }
 
+void TextFragmentsManagerImpl::OnClickWithSender(
+    CGRect rect,
+    NSString* text,
+    std::vector<shared_highlighting::TextFragment> fragments) {
+  if (delegate_) {
+    [delegate_ userTappedTextFragmentInWebState:web_state_
+                                     withSender:rect
+                                       withText:text
+                                  withFragments:std::move(fragments)];
+  }
+}
+
 void TextFragmentsManagerImpl::DidFinishNavigation(
     WebState* web_state,
     NavigationContext* navigation_context) {
@@ -150,7 +162,7 @@ TextFragmentsManagerImpl::ProcessTextFragments(
 
   // Log metrics and cache Referrer for UKM logging.
   shared_highlighting::LogTextFragmentSelectorCount(
-      parsed_fragments.GetList().size());
+      parsed_fragments.GetListDeprecated().size());
   shared_highlighting::LogTextFragmentLinkOpenSource(referrer.url);
   latest_source_id_ = ukm::ConvertToSourceId(context->GetNavigationId(),
                                              ukm::SourceIdType::NAVIGATION_ID);

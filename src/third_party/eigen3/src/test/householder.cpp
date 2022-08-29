@@ -30,7 +30,7 @@ template<typename MatrixType> void householder(const MatrixType& m)
 
   typedef Matrix<Scalar, MatrixType::ColsAtCompileTime, MatrixType::RowsAtCompileTime> TMatrixType;
   
-  Matrix<Scalar, EIGEN_SIZE_MAX(MatrixType::RowsAtCompileTime,MatrixType::ColsAtCompileTime), 1> _tmp((std::max)(rows,cols));
+  Matrix<Scalar, internal::max_size_prefer_dynamic(MatrixType::RowsAtCompileTime,MatrixType::ColsAtCompileTime), 1> _tmp((std::max)(rows,cols));
   Scalar* tmp = &_tmp.coeffRef(0,0);
 
   Scalar beta;
@@ -133,6 +133,89 @@ template<typename MatrixType> void householder(const MatrixType& m)
   VERIFY_IS_APPROX(m3 * m5, m1); // test evaluating rhseq to a dense matrix, then applying
 }
 
+
+template <typename MatrixType>
+void householder_update(const MatrixType& m) {
+  // This test is covering the internal::householder_qr_inplace_update function.
+  // At time of writing, there is not public API that exposes this update behavior directly,
+  // so we are testing the internal implementation.
+
+  const Index rows = m.rows();
+  const Index cols = m.cols();
+
+  typedef typename MatrixType::Scalar Scalar;
+  typedef Matrix<Scalar, MatrixType::RowsAtCompileTime, 1> VectorType;
+  typedef Matrix<Scalar, Dynamic, 1> HCoeffsVectorType;
+  typedef Matrix<Scalar, Dynamic, Dynamic> MatrixX;
+  typedef Matrix<Scalar, Dynamic, 1> VectorX;
+
+  VectorX tmpOwner(cols);
+  Scalar* tmp = tmpOwner.data();
+
+  // The matrix to factorize.
+  const MatrixType A = MatrixType::Random(rows, cols); 
+
+  // matQR and hCoeffs will hold the factorization of A,
+  // built by a sequence of calls to `update`.
+  MatrixType matQR(rows, cols);
+  HCoeffsVectorType hCoeffs(cols);
+
+  // householder_qr_inplace_update should be able to build a QR factorization one column at a time.
+  // We verify this by starting with an empty factorization and 'updating' one column at a time.
+  // After each call to update, we should have a QR factorization of the columns presented so far.
+
+  const Index size = (std::min)(rows, cols); // QR can only go up to 'size' b/c that's full rank.
+  for (Index k = 0; k != size; ++k)
+  {
+    // Make a copy of the column to prevent any possibility of 'leaking' other parts of A.
+    const VectorType newColumn = A.col(k); 
+    internal::householder_qr_inplace_update(matQR, hCoeffs, newColumn, k, tmp);
+
+    // Verify Property:
+    // matQR.leftCols(k+1) and hCoeffs.head(k+1) hold
+    // a QR factorization of A.leftCols(k+1).
+    // This is the fundamental guarantee of householder_qr_inplace_update.
+    {
+      const MatrixX matQR_k = matQR.leftCols(k + 1);
+      const VectorX hCoeffs_k = hCoeffs.head(k + 1);
+      MatrixX R = matQR_k.template triangularView<Upper>();
+      MatrixX QxR = householderSequence(matQR_k, hCoeffs_k.conjugate()) * R;
+      VERIFY_IS_APPROX(QxR, A.leftCols(k + 1));
+    }
+
+    // Verify Property:
+    // A sequence of calls to 'householder_qr_inplace_update'
+    // should produce the same result as 'householder_qr_inplace_unblocked'.
+    // This is a property of the current implementation.
+    // If these implementations diverge in the future, 
+    // then simply delete the test of this property.
+    {
+      MatrixX QR_at_once = A.leftCols(k + 1);
+      VectorX hCoeffs_at_once(k + 1);
+      internal::householder_qr_inplace_unblocked(QR_at_once, hCoeffs_at_once, tmp);
+      VERIFY_IS_APPROX(QR_at_once, matQR.leftCols(k + 1));
+      VERIFY_IS_APPROX(hCoeffs_at_once, hCoeffs.head(k + 1));
+    }
+  }
+
+  // Verify Property:
+  // We can go back and update any column to have a new value,
+  // and get a QR factorization of the columns up to that one.  
+  {
+    const Index k = internal::random<Index>(0, size - 1);
+    VectorType newColumn = VectorType::Random(rows);      
+    internal::householder_qr_inplace_update(matQR, hCoeffs, newColumn, k, tmp);
+
+    const MatrixX matQR_k = matQR.leftCols(k + 1);
+    const VectorX hCoeffs_k = hCoeffs.head(k + 1);
+    MatrixX R = matQR_k.template triangularView<Upper>();
+    MatrixX QxR = householderSequence(matQR_k, hCoeffs_k.conjugate()) * R;
+    VERIFY_IS_APPROX(QxR.leftCols(k), A.leftCols(k));
+    VERIFY_IS_APPROX(QxR.col(k), newColumn);
+  }  
+}
+
+
 EIGEN_DECLARE_TEST(householder)
 {
   for(int i = 0; i < g_repeat; i++) {
@@ -144,5 +227,9 @@ EIGEN_DECLARE_TEST(householder)
     CALL_SUBTEST_6( householder(MatrixXcf(internal::random<int>(1,EIGEN_TEST_MAX_SIZE),internal::random<int>(1,EIGEN_TEST_MAX_SIZE))) );
     CALL_SUBTEST_7( householder(MatrixXf(internal::random<int>(1,EIGEN_TEST_MAX_SIZE),internal::random<int>(1,EIGEN_TEST_MAX_SIZE))) );
     CALL_SUBTEST_8( householder(Matrix<double,1,1>()) );
+
+    CALL_SUBTEST_9( householder_update(Matrix<double, 3, 5>()) );
+    CALL_SUBTEST_9( householder_update(Matrix<float, 4, 2>()) );
+    CALL_SUBTEST_9( householder_update(MatrixXcf(internal::random<Index>(1,EIGEN_TEST_MAX_SIZE), internal::random<Index>(1,EIGEN_TEST_MAX_SIZE))) );
   }
 }

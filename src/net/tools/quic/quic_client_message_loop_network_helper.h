@@ -18,9 +18,9 @@
 #include "net/http/http_response_headers.h"
 #include "net/quic/platform/impl/quic_chromium_clock.h"
 #include "net/quic/quic_chromium_packet_reader.h"
-#include "net/third_party/quiche/src/quic/core/http/quic_spdy_stream.h"
-#include "net/third_party/quiche/src/quic/core/quic_config.h"
-#include "net/third_party/quiche/src/quic/tools/quic_spdy_client_base.h"
+#include "net/third_party/quiche/src/quiche/quic/core/http/quic_spdy_stream.h"
+#include "net/third_party/quiche/src/quiche/quic/core/quic_config.h"
+#include "net/third_party/quiche/src/quiche/quic/tools/quic_spdy_client_base.h"
 
 namespace net {
 
@@ -70,7 +70,7 @@ class QuicClientMessageLooplNetworkHelper
 
   std::unique_ptr<QuicChromiumPacketReader> packet_reader_;
 
-  bool packet_reader_started_;
+  bool packet_reader_started_ = false;
 
   quic::QuicChromiumClock* clock_;
   quic::QuicClientBase* client_;

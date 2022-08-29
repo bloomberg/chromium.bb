@@ -16,11 +16,13 @@
 
 #include <algorithm>
 
+#include "absl/strings/string_view.h"
 #include "rtc_base/arraysize.h"
 #include "rtc_base/checks.h"
 #include "rtc_base/event.h"
 #include "rtc_base/platform_thread.h"
 #include "rtc_base/time_utils.h"
+#include "test/gmock.h"
 #include "test/gtest.h"
 
 namespace rtc {
@@ -34,7 +36,10 @@ class LogSinkImpl : public LogSink {
 
  private:
   void OnLogMessage(const std::string& message) override {
-    log_data_->append(message);
+    OnLogMessage(absl::string_view(message));
+  }
+  void OnLogMessage(absl::string_view message) override {
+    log_data_->append(message.begin(), message.end());
   }
   std::string* const log_data_;
 };
@@ -293,6 +298,21 @@ TEST(LogTest, NoopSeverityDoesNotRunStringFormatting) {
   };
   RTC_LOG(LS_VERBOSE) << "This should not be logged: " << cb();
   EXPECT_FALSE(was_called);
+}
+
+struct TestStruct {};
+std::string ToLogString(TestStruct foo) {
+  return "bar";
+}
+
+TEST(LogTest, ToLogStringUsedForUnknownTypes) {
+  std::string str;
+  LogSinkImpl stream(&str);
+  LogMessage::AddLogToStream(&stream, LS_INFO);
+  TestStruct t;
+  RTC_LOG(LS_INFO) << t;
+  EXPECT_THAT(str, ::testing::HasSubstr("bar"));
+  LogMessage::RemoveLogToStream(&stream);
 }
 
 }  // namespace rtc

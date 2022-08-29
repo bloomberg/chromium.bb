@@ -60,6 +60,7 @@ template <int bitdepth, typename Pixel>
 class IntraPredTestBase : public testing::TestWithParam<TransformSize>,
                           public test_utils::MaxAlignedAllocable {
  public:
+  static_assert(bitdepth >= kBitdepth8 && bitdepth <= LIBGAV1_MAX_BITDEPTH, "");
   IntraPredTestBase() {
     switch (tx_size_) {
       case kNumTransformSizes:
@@ -150,6 +151,7 @@ class IntraPredTestBase : public testing::TestWithParam<TransformSize>,
 template <int bitdepth, typename Pixel>
 class DirectionalIntraPredTest : public IntraPredTestBase<bitdepth, Pixel> {
  public:
+  static_assert(bitdepth >= kBitdepth8 && bitdepth <= LIBGAV1_MAX_BITDEPTH, "");
   DirectionalIntraPredTest() = default;
   DirectionalIntraPredTest(const DirectionalIntraPredTest&) = delete;
   DirectionalIntraPredTest& operator=(const DirectionalIntraPredTest&) = delete;
@@ -716,7 +718,7 @@ const char* const* GetDirectionalIntraPredDigests8bpp(TransformSize tx_size) {
 
 TEST_P(DirectionalIntraPredTest8bpp, DISABLED_Speed) {
 #if LIBGAV1_ENABLE_NEON
-  const auto num_runs = static_cast<int>(2e7 / (block_width_ * block_height_));
+  const auto num_runs = static_cast<int>(2e5 / (block_width_ * block_height_));
 #else
   const int num_runs = static_cast<int>(4e7 / (block_width_ * block_height_));
 #endif
@@ -737,8 +739,8 @@ TEST_P(DirectionalIntraPredTest8bpp, Overflow) { TestSaturatedValues(); }
 TEST_P(DirectionalIntraPredTest8bpp, Random) { TestRandomValues(); }
 
 //------------------------------------------------------------------------------
-#if LIBGAV1_MAX_BITDEPTH >= 10
 
+#if LIBGAV1_MAX_BITDEPTH >= 10
 using DirectionalIntraPredTest10bpp = DirectionalIntraPredTest<10, uint16_t>;
 
 const char* const* GetDirectionalIntraPredDigests10bpp(TransformSize tx_size) {
@@ -885,7 +887,7 @@ const char* const* GetDirectionalIntraPredDigests10bpp(TransformSize tx_size) {
 
 TEST_P(DirectionalIntraPredTest10bpp, DISABLED_Speed) {
 #if LIBGAV1_ENABLE_NEON
-  const int num_runs = static_cast<int>(2e7 / (block_width_ * block_height_));
+  const int num_runs = static_cast<int>(2e5 / (block_width_ * block_height_));
 #else
   const int num_runs = static_cast<int>(4e7 / (block_width_ * block_height_));
 #endif
@@ -904,8 +906,177 @@ TEST_P(DirectionalIntraPredTest10bpp, FixedInput) {
 
 TEST_P(DirectionalIntraPredTest10bpp, Overflow) { TestSaturatedValues(); }
 TEST_P(DirectionalIntraPredTest10bpp, Random) { TestRandomValues(); }
-
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
+
+//------------------------------------------------------------------------------
+
+#if LIBGAV1_MAX_BITDEPTH == 12
+using DirectionalIntraPredTest12bpp = DirectionalIntraPredTest<12, uint16_t>;
+
+const char* const* GetDirectionalIntraPredDigests12bpp(TransformSize tx_size) {
+  static const char* const kDigests4x4[kNumDirectionalIntraPredictors] = {
+      "78f3297743f75e928e755b6ffa2d3050",
+      "7315da39861c6e3ef2e47c913e3be349",
+      "5609cb40b575f24d05880df202a60bd3",
+  };
+  static const char* const kDigests4x8[kNumDirectionalIntraPredictors] = {
+      "efb2363d3c25427abe198806c8ba4d6b",
+      "b5aaa41665a10e7e7944fb7fc90fd59a",
+      "5a85610342339ca3109d775fa18dc25c",
+  };
+  static const char* const kDigests4x16[kNumDirectionalIntraPredictors] = {
+      "9045679914980ea1f579d84509397b6e",
+      "f9f50bdc9f81a93095fd9d6998174aa7",
+      "46c1f82e85b8ba5b03bab41a2f561483",
+  };
+  static const char* const kDigests8x4[kNumDirectionalIntraPredictors] = {
+      "a0ae0956b2b667c528b7803d733d49da",
+      "5d9f60ef8904c4faedb6cfc19e54418a",
+      "4ffdcbbbcb23bca8286f1c286b9cb3e8",
+  };
+  static const char* const kDigests8x8[kNumDirectionalIntraPredictors] = {
+      "086116c6b116613b8b47a086726566ea",
+      "141dca7fcae0e4d4b88887a618271ea1",
+      "3575a34278aa0fb1eed934290982f4a7",
+  };
+  static const char* const kDigests8x16[kNumDirectionalIntraPredictors] = {
+      "7922f40216c78a40abaf675667e79493",
+      "55d20588240171df2e24d105ee1563ad",
+      "674b4d8f4dbf514d22e21cc4baeda1d3",
+  };
+  static const char* const kDigests8x32[kNumDirectionalIntraPredictors] = {
+      "32d4d7e256d3b304026ddb5430cf6a09",
+      "72f4be2569f4e067c252d51ff4030de3",
+      "6779a132e1bac0ac43c2373f56553ed8",
+  };
+  static const char* const kDigests16x4[kNumDirectionalIntraPredictors] = {
+      "1be2e0efc1403f9e22cfb8aeb28763d9",
+      "558c8a5418ac91d21a5839c454a9391f",
+      "7693ebef9b86416ebd6e78e98fcafba7",
+  };
+  static const char* const kDigests16x8[kNumDirectionalIntraPredictors] = {
+      "e6217ed1c673ae42e84f8757316b580d",
+      "028aa582c11a9733f0cd693211a067c5",
+      "082de9fc7c4bc80a8ec8522b5a5cb52c",
+  };
+  static const char* const kDigests16x16[kNumDirectionalIntraPredictors] = {
+      "e3b293c09bdc9c5c543ad046a3f0d64f",
+      "2de5803a6ed497c1039c8e6d675c1dd3",
+      "05742f807560f5d5206e54b70097dc4a",
+  };
+  static const char* const kDigests16x32[kNumDirectionalIntraPredictors] = {
+      "57f2ca4ba56be253eff7e6b73df5003d",
+      "ef8bea00437e01fb798a22cda59f0191",
+      "989ff38c96600c2f108d6e6fa381fd13",
+  };
+  static const char* const kDigests16x64[kNumDirectionalIntraPredictors] = {
+      "f5540f4874c02aa2222a3ba75106f841",
+      "17e5d20f798a96c39abc8a81e7aa7bc6",
+      "0fe9ea14c9dcae466b4a36f1c7db6978",
+  };
+  static const char* const kDigests32x8[kNumDirectionalIntraPredictors] = {
+      "aff9429951ab1885c0d9ed29aa1b6a9f",
+      "4b686e2a879bf0b4aadd06b412e0eb48",
+      "39325d71cddc272bfa1dd2dc80d09ffe",
+  };
+  static const char* const kDigests32x16[kNumDirectionalIntraPredictors] = {
+      "b83dffdf8bad2b7c3808925b6138ca1e",
+      "3656b58c7aaf2025979b4a3ed8a2841e",
+      "cfcc0c6ae3fa5e7d45dec581479459f6",
+  };
+  static const char* const kDigests32x32[kNumDirectionalIntraPredictors] = {
+      "3c91b3b9e2df73ffb718e0bf53c5a5c2",
+      "0dbe27603e111158e70d99e181befb83",
+      "edecbffb32ae1e49b66b6e55ad0af6c6",
+  };
+  static const char* const kDigests32x64[kNumDirectionalIntraPredictors] = {
+      "a3290917f755c7ccdc7b77eb3c6c89a7",
+      "42f89db41fbb366ddb78ef79a043f3e3",
+      "7f7bcbe33aa003b166677c68d12490e9",
+  };
+  static const char* const kDigests64x16[kNumDirectionalIntraPredictors] = {
+      "d4f4c6b70a82695f843e9227bd7d9cc8",
+      "550a0bd87936801651d552e229b683e9",
+      "a4c730ad71f566a930c5672e1b2f48f1",
+  };
+  static const char* const kDigests64x32[kNumDirectionalIntraPredictors] = {
+      "2087c9264c4c5fea9a6fe20dcedbe2b9",
+      "d4dd51d9578a3fc2eb75086fba867c22",
+      "6121a67d63e40107e780d0938aeb3d21",
+  };
+  static const char* const kDigests64x64[kNumDirectionalIntraPredictors] = {
+      "09c3818a07bc54467634c2bfce66f58f",
+      "8da453b8d72d73d71ba15a14ddd59db4",
+      "9bc939aa54445722469b120b8a505cb3",
+  };
+
+  switch (tx_size) {
+    case kTransformSize4x4:
+      return kDigests4x4;
+    case kTransformSize4x8:
+      return kDigests4x8;
+    case kTransformSize4x16:
+      return kDigests4x16;
+    case kTransformSize8x4:
+      return kDigests8x4;
+    case kTransformSize8x8:
+      return kDigests8x8;
+    case kTransformSize8x16:
+      return kDigests8x16;
+    case kTransformSize8x32:
+      return kDigests8x32;
+    case kTransformSize16x4:
+      return kDigests16x4;
+    case kTransformSize16x8:
+      return kDigests16x8;
+    case kTransformSize16x16:
+      return kDigests16x16;
+    case kTransformSize16x32:
+      return kDigests16x32;
+    case kTransformSize16x64:
+      return kDigests16x64;
+    case kTransformSize32x8:
+      return kDigests32x8;
+    case kTransformSize32x16:
+      return kDigests32x16;
+    case kTransformSize32x32:
+      return kDigests32x32;
+    case kTransformSize32x64:
+      return kDigests32x64;
+    case kTransformSize64x16:
+      return kDigests64x16;
+    case kTransformSize64x32:
+      return kDigests64x32;
+    case kTransformSize64x64:
+      return kDigests64x64;
+    default:
+      ADD_FAILURE() << "Unknown transform size: " << tx_size;
+      return nullptr;
+  }
+}
+
+TEST_P(DirectionalIntraPredTest12bpp, DISABLED_Speed) {
+#if LIBGAV1_ENABLE_NEON
+  const int num_runs = static_cast<int>(2e7 / (block_width_ * block_height_));
+#else
+  const int num_runs = static_cast<int>(4e7 / (block_width_ * block_height_));
+#endif
+  for (int i = kZone1; i < kNumZones; ++i) {
+    TestSpeed(GetDirectionalIntraPredDigests12bpp(tx_size_),
+              static_cast<Zone>(i), num_runs);
+  }
+}
+
+TEST_P(DirectionalIntraPredTest12bpp, FixedInput) {
+  for (int i = kZone1; i < kNumZones; ++i) {
+    TestSpeed(GetDirectionalIntraPredDigests12bpp(tx_size_),
+              static_cast<Zone>(i), 1);
+  }
+}
+
+TEST_P(DirectionalIntraPredTest12bpp, Overflow) { TestSaturatedValues(); }
+TEST_P(DirectionalIntraPredTest12bpp, Random) { TestRandomValues(); }
+#endif  // LIBGAV1_MAX_BITDEPTH == 12
 
 constexpr TransformSize kTransformSizes[] = {
     kTransformSize4x4,   kTransformSize4x8,   kTransformSize4x16,
@@ -938,8 +1109,12 @@ INSTANTIATE_TEST_SUITE_P(SSE41, DirectionalIntraPredTest10bpp,
 INSTANTIATE_TEST_SUITE_P(NEON, DirectionalIntraPredTest10bpp,
                          testing::ValuesIn(kTransformSizes));
 #endif  // LIBGAV1_ENABLE_NEON
-
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
+
+#if LIBGAV1_MAX_BITDEPTH == 12
+INSTANTIATE_TEST_SUITE_P(C, DirectionalIntraPredTest12bpp,
+                         testing::ValuesIn(kTransformSizes));
+#endif  // LIBGAV1_MAX_BITDEPTH == 12
 
 }  // namespace
 }  // namespace dsp

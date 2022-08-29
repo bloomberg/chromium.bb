@@ -13,7 +13,7 @@ title: Pre-requirements of issue creation
 Before filing an issue, please confirm you’ve completed actions below:
 
     Your moblab is using recommended equipments. (
-    https://sites.google.com/a/chromium.org/dev/chromium-os/testing/moblab/overview-of-moblab?pli=1
+    https://www.chromium.org/chromium-os/testing/moblab/overview-of-moblab?pli=1
     )
 
     Update Moblab to latest version and powerwashed.

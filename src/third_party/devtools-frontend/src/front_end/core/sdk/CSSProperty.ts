@@ -6,7 +6,6 @@ import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Common from '../common/common.js';
 import * as HostModule from '../host/host.js';
 import * as Platform from '../platform/platform.js';
-import * as Root from '../root/root.js';
 import type * as Protocol from '../../generated/protocol.js';
 
 import {cssMetadata, GridAreaRowRegex} from './CSSMetadata.js';
@@ -139,15 +138,15 @@ export class CSSProperty {
 
   async setText(propertyText: string, majorChange: boolean, overwrite?: boolean): Promise<boolean> {
     if (!this.ownerStyle) {
-      return Promise.reject(new Error('No ownerStyle for property'));
+      throw new Error('No ownerStyle for property');
     }
 
     if (!this.ownerStyle.styleSheetId) {
-      return Promise.reject(new Error('No owner style id'));
+      throw new Error('No owner style id');
     }
 
     if (!this.range || !this.ownerStyle.range) {
-      return Promise.reject(new Error('Style not editable'));
+      throw new Error('Style not editable');
     }
 
     if (majorChange) {
@@ -159,7 +158,7 @@ export class CSSProperty {
 
     if (overwrite && propertyText === this.propertyText) {
       this.ownerStyle.cssModel().domModel().markUndoableState(!majorChange);
-      return Promise.resolve(true);
+      return true;
     }
 
     const range = this.range.relativeTo(this.ownerStyle.range.startLine, this.ownerStyle.range.startColumn);
@@ -169,14 +168,11 @@ export class CSSProperty {
     const endIndentation = this.ownerStyle.cssText ? indentation.substring(0, this.ownerStyle.range.endColumn) : '';
     const text = new TextUtils.Text.Text(this.ownerStyle.cssText || '');
     const newStyleText = text.replaceRange(range, Platform.StringUtilities.sprintf(';%s;', propertyText));
-    const tokenizerFactory = TextUtils.CodeMirrorUtils.TokenizerFactory.instance();
-    const styleText = CSSProperty.formatStyle(newStyleText, indentation, endIndentation, tokenizerFactory);
+    const styleText = await CSSProperty.formatStyle(newStyleText, indentation, endIndentation);
     return this.ownerStyle.setText(styleText, majorChange);
   }
 
-  static formatStyle(
-      styleText: string, indentation: string, endIndentation: string,
-      tokenizerFactory: TextUtils.TextUtils.TokenizerFactory): string {
+  static async formatStyle(styleText: string, indentation: string, endIndentation: string): Promise<string> {
     const doubleIndent = indentation.substring(endIndentation.length) + indentation;
     if (indentation) {
       indentation = '\n' + indentation;
@@ -186,29 +182,29 @@ export class CSSProperty {
     let propertyText = '';
     let insideProperty = false;
     let needsSemi = false;
-    const tokenize = tokenizerFactory.createTokenizer('text/css');
+    const tokenize = TextUtils.CodeMirrorUtils.createCssTokenizer();
 
-    tokenize('*{' + styleText + '}', processToken);
+    await tokenize('*{' + styleText + '}', processToken);
     if (insideProperty) {
       result += propertyText;
     }
-    result = result.substring(2, result.length - 1).trimRight();
+    result = result.substring(2, result.length - 1).trimEnd();
     return result + (indentation ? '\n' + endIndentation : '');
 
-    function processToken(token: string, tokenType: string|null, _column: number, _newColumn: number): void {
+    function processToken(token: string, tokenType: string|null): void {
       if (!insideProperty) {
-        const disabledProperty = tokenType && tokenType.includes('comment') && isDisabledProperty(token);
-        const isPropertyStart = tokenType &&
-            (tokenType.includes('string') || tokenType.includes('meta') || tokenType.includes('property') ||
-             tokenType.includes('variable-2'));
+        const disabledProperty = tokenType?.includes('comment') && isDisabledProperty(token);
+        const isPropertyStart =
+            (tokenType?.includes('string') || tokenType?.includes('meta') || tokenType?.includes('property') ||
+             tokenType?.includes('variableName'));
         if (disabledProperty) {
-          result = result.trimRight() + indentation + token;
+          result = result.trimEnd() + indentation + token;
         } else if (isPropertyStart) {
           insideProperty = true;
           propertyText = token;
         } else if (token !== ';' || needsSemi) {
           result += token;
-          if (token.trim() && !(tokenType && tokenType.includes('comment'))) {
+          if (token.trim() && !(tokenType?.includes('comment'))) {
             needsSemi = token !== ';';
           }
         }
@@ -225,33 +221,23 @@ export class CSSProperty {
         // implementation takes special care to restore a single
         // whitespace token in this edge case. https://crbug.com/1071296
         const trimmedPropertyText = propertyText.trim();
-        result =
-            result.trimRight() + indentation + trimmedPropertyText + (trimmedPropertyText.endsWith(':') ? ' ' : '');
+        result = result.trimEnd() + indentation + trimmedPropertyText + (trimmedPropertyText.endsWith(':') ? ' ' : '') +
+            token;
         needsSemi = false;
         insideProperty = false;
         propertyName = '';
-        if (Root.Runtime.experiments.isEnabled('preciseChanges')) {
-          result += token;
-          return;
-        }
-        // We preserve the legacy behavior to always add semicolon to
-        // declarations regardless of its original text.
-        result += ';';
-        if (token === '}') {
-          result += '}';
-        }
-      } else {
-        if (cssMetadata().isGridAreaDefiningProperty(propertyName)) {
-          const rowResult = GridAreaRowRegex.exec(token);
-          if (rowResult && rowResult.index === 0 && !propertyText.trimRight().endsWith(']')) {
-            propertyText = propertyText.trimRight() + '\n' + doubleIndent;
-          }
-        }
-        if (!propertyName && token === ':') {
-          propertyName = propertyText;
-        }
-        propertyText += token;
+        return;
       }
+      if (cssMetadata().isGridAreaDefiningProperty(propertyName)) {
+        const rowResult = GridAreaRowRegex.exec(token);
+        if (rowResult && rowResult.index === 0 && !propertyText.trimEnd().endsWith(']')) {
+          propertyText = propertyText.trimEnd() + '\n' + doubleIndent;
+        }
+      }
+      if (!propertyName && token === ':') {
+        propertyName = propertyText;
+      }
+      propertyText += token;
     }
 
     function isDisabledProperty(text: string): boolean {
@@ -274,21 +260,32 @@ export class CSSProperty {
 
   setValue(newValue: string, majorChange: boolean, overwrite: boolean, userCallback?: ((arg0: boolean) => void)): void {
     const text = this.name + ': ' + newValue + (this.important ? ' !important' : '') + ';';
-    this.setText(text, majorChange, overwrite).then(userCallback);
+    void this.setText(text, majorChange, overwrite).then(userCallback);
   }
 
-  setDisabled(disabled: boolean): Promise<boolean> {
+  async setDisabled(disabled: boolean): Promise<boolean> {
     if (!this.ownerStyle) {
-      return Promise.resolve(false);
+      return false;
     }
     if (disabled === this.disabled) {
-      return Promise.resolve(true);
+      return true;
     }
     if (!this.text) {
-      return Promise.resolve(true);
+      return true;
     }
     const propertyText = this.text.trim();
-    const text = disabled ? '/* ' + propertyText + ' */' : this.text.substring(2, propertyText.length - 2).trim();
+    // Ensure that if we try to enable/disable a property that has no semicolon (which is only legal
+    // in the last position of a css rule), we add it. This ensures that if we then later try
+    // to re-enable/-disable the rule, we end up with legal syntax (if the user adds more properties
+    // after the disabled rule).
+    const appendSemicolonIfMissing = (propertyText: string): string =>
+        propertyText + (propertyText.endsWith(';') ? '' : ';');
+    let text: string;
+    if (disabled) {
+      text = '/* ' + appendSemicolonIfMissing(propertyText) + ' */';
+    } else {
+      text = appendSemicolonIfMissing(this.text.substring(2, propertyText.length - 2).trim());
+    }
     return this.setText(text, true, true);
   }
 

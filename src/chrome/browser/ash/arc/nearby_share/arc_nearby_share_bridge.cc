@@ -22,6 +22,10 @@
 #include "components/arc/intent_helper/custom_tab.h"
 #include "content/public/browser/browser_thread.h"
 
+// Enable VLOG level 1.
+#undef ENABLED_VLOG_LEVEL
+#define ENABLED_VLOG_LEVEL 1
+
 namespace arc {
 
 namespace {
@@ -44,16 +48,6 @@ class ArcNearbyShareBridgeFactory
   ArcNearbyShareBridgeFactory() = default;
   ~ArcNearbyShareBridgeFactory() override = default;
 };
-
-void DeleteArcNearbyShareCachePath(const Profile* profile) {
-  DCHECK(profile);
-  base::FilePath file_path =
-      arc::NearbyShareSessionImpl::GetUserCacheFilePath(profile);
-  if (base::PathExists(file_path)) {
-    DVLOG(1) << "Deleting path: " << file_path;
-    base::DeletePathRecursively(file_path);
-  }
-}
 
 }  // namespace
 
@@ -80,9 +74,8 @@ ArcNearbyShareBridge::ArcNearbyShareBridge(
   arc_bridge_service_->nearby_share()->SetHost(this);
 
   // On startup, delete the ARC Nearby Share cache path.
-  base::ThreadPool::PostTask(
-      FROM_HERE, {base::MayBlock()},
-      base::BindOnce(&DeleteArcNearbyShareCachePath, profile_));
+  DCHECK(profile_);
+  NearbyShareSessionImpl::DeleteShareCacheFilePaths(profile_);
 }
 
 ArcNearbyShareBridge::~ArcNearbyShareBridge() {

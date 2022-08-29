@@ -7,6 +7,8 @@
 #include <memory>
 #include <utility>
 
+#include "ash/components/multidevice/logging/logging.h"
+#include "ash/components/multidevice/remote_device_test_util.h"
 #include "ash/components/proximity_auth/fake_lock_handler.h"
 #include "ash/components/proximity_auth/fake_remote_device_life_cycle.h"
 #include "ash/components/proximity_auth/messenger.h"
@@ -14,19 +16,20 @@
 #include "ash/components/proximity_auth/proximity_monitor.h"
 #include "ash/components/proximity_auth/remote_device_life_cycle.h"
 #include "ash/components/proximity_auth/remote_status_update.h"
+#include "ash/constants/ash_features.h"
+#include "ash/services/secure_channel/connection.h"
+#include "ash/services/secure_channel/public/cpp/client/fake_client_channel.h"
 #include "base/memory/ref_counted.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/simple_test_clock.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/mock_timer.h"
 #include "build/build_config.h"
-#include "chromeos/components/multidevice/logging/logging.h"
-#include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/power_manager/suspend.pb.h"
-#include "chromeos/services/secure_channel/public/cpp/client/fake_client_channel.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -73,8 +76,8 @@ class MockMessenger : public Messenger {
   MOCK_METHOD0(DispatchUnlockEvent, void());
   MOCK_METHOD1(RequestDecryption, void(const std::string& challenge));
   MOCK_METHOD0(RequestUnlock, void());
-  MOCK_CONST_METHOD0(GetConnection, chromeos::secure_channel::Connection*());
-  MOCK_CONST_METHOD0(GetChannel, chromeos::secure_channel::ClientChannel*());
+  MOCK_CONST_METHOD0(GetConnection, ash::secure_channel::Connection*());
+  MOCK_CONST_METHOD0(GetChannel, ash::secure_channel::ClientChannel*());
 };
 
 class MockProximityMonitor : public ProximityMonitor {
@@ -157,11 +160,11 @@ CreateAndRegisterMockBluetoothAdapter() {
 class ProximityAuthUnlockManagerImplTest : public testing::Test {
  public:
   ProximityAuthUnlockManagerImplTest()
-      : remote_device_(chromeos::multidevice::CreateRemoteDeviceRefForTest()),
-        local_device_(chromeos::multidevice::CreateRemoteDeviceRefForTest()),
+      : remote_device_(ash::multidevice::CreateRemoteDeviceRefForTest()),
+        local_device_(ash::multidevice::CreateRemoteDeviceRefForTest()),
         life_cycle_(remote_device_, local_device_),
         fake_client_channel_(
-            std::make_unique<chromeos::secure_channel::FakeClientChannel>()),
+            std::make_unique<ash::secure_channel::FakeClientChannel>()),
         bluetooth_adapter_(CreateAndRegisterMockBluetoothAdapter()),
         task_runner_(new base::TestSimpleTaskRunner()),
         thread_task_runner_handle_(task_runner_) {}
@@ -223,11 +226,10 @@ class ProximityAuthUnlockManagerImplTest : public testing::Test {
   }
 
  protected:
-  chromeos::multidevice::RemoteDeviceRef remote_device_;
-  chromeos::multidevice::RemoteDeviceRef local_device_;
+  ash::multidevice::RemoteDeviceRef remote_device_;
+  ash::multidevice::RemoteDeviceRef local_device_;
   FakeRemoteDeviceLifeCycle life_cycle_;
-  std::unique_ptr<chromeos::secure_channel::FakeClientChannel>
-      fake_client_channel_;
+  std::unique_ptr<ash::secure_channel::FakeClientChannel> fake_client_channel_;
 
   // Mock used for verifying interactions with the Bluetooth subsystem.
   scoped_refptr<device::MockBluetoothAdapter> bluetooth_adapter_;
@@ -238,11 +240,10 @@ class ProximityAuthUnlockManagerImplTest : public testing::Test {
   base::MockOneShotTimer* mock_bluetooth_suspension_recovery_timer_ = nullptr;
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle thread_task_runner_handle_;
   FakeLockHandler lock_handler_;
-  chromeos::multidevice::ScopedDisableLoggingForTesting disable_logging_;
+  ash::multidevice::ScopedDisableLoggingForTesting disable_logging_;
 };
 
 TEST_F(ProximityAuthUnlockManagerImplTest, IsUnlockAllowed_InitialState) {
@@ -486,6 +487,25 @@ TEST_F(ProximityAuthUnlockManagerImplTest,
   EXPECT_TRUE(proximity_monitor()->started());
 }
 
+TEST_F(ProximityAuthUnlockManagerImplTest,
+       SetRemoteDeviceLifeCycle_ConnectionLost_RestartsLifeCycle) {
+  base::SimpleTestClock clock;
+  base::test::ScopedFeatureList feature_list(
+      ash::features::kSmartLockBluetoothScanningBackoff);
+  CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
+  SimulateUserPresentState();
+
+  // Simulate the phone connection being lost.
+  life_cycle_.ChangeState(RemoteDeviceLifeCycle::State::FINDING_CONNECTION);
+
+  // Test that scanning stops and resumes.
+  EXPECT_EQ(RemoteDeviceLifeCycle::State::STOPPED, life_cycle_.GetState());
+  clock.Advance(base::Seconds(2));
+  RunPendingTasks();
+  EXPECT_EQ(RemoteDeviceLifeCycle::State::FINDING_CONNECTION,
+            life_cycle_.GetState());
+}
+
 TEST_F(ProximityAuthUnlockManagerImplTest, BluetoothAdapterNotPresent) {
   ON_CALL(*bluetooth_adapter_, IsPresent()).WillByDefault(Return(false));
 
@@ -605,6 +625,54 @@ TEST_F(
   mock_bluetooth_suspension_recovery_timer_->Fire();
 }
 
+TEST_F(
+    ProximityAuthUnlockManagerImplTest,
+    InitialScanAfterSuspendResume_DontPerformInitialScanIfConnectionEstablished) {
+  CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
+
+  ASSERT_FALSE(mock_bluetooth_suspension_recovery_timer_->IsRunning());
+
+  // Simulates the lid of chromebook closing resulting in suspension.
+  chromeos::FakePowerManagerClient::Get()->SendSuspendImminent(
+      power_manager::SuspendImminent_Reason_LID_CLOSED);
+
+  EXPECT_CALL(
+      proximity_auth_client_,
+      UpdateSmartLockState(SmartLockState::kPhoneFoundLockedAndProximate))
+      .Times(1);
+  EXPECT_CALL(proximity_auth_client_,
+              UpdateSmartLockState(SmartLockState::kConnectingToPhone))
+      .Times(1);
+
+  // We want to emulate a bluetooth adapter that is present and powered
+  // upon lid reopen and resume, because we are testing the code path
+  // within OnBluetoothAdapterPresentAndPowerChanged() after the
+  // suspension timer concludes.
+  ON_CALL(*bluetooth_adapter_, IsPresent()).WillByDefault(Return(true));
+  ON_CALL(*bluetooth_adapter_, IsPowered()).WillByDefault(Return(true));
+
+  // This event simulates reopen of lid resulting in resume.
+  chromeos::FakePowerManagerClient::Get()->SendSuspendDone();
+  EXPECT_TRUE(mock_bluetooth_suspension_recovery_timer_->IsRunning());
+
+  // Start the life cycle for unlock manager.
+  unlock_manager_->SetRemoteDeviceLifeCycle(&life_cycle_);
+  EXPECT_TRUE(life_cycle_.started());
+
+  // Simulate a secure channel connection established with phone.
+  life_cycle_.ChangeState(
+      RemoteDeviceLifeCycle::State::SECURE_CHANNEL_ESTABLISHED);
+
+  // Simulate the phone responding with locked and proximate.
+  unlock_manager_->OnRemoteStatusUpdate(kRemoteScreenLocked);
+
+  EXPECT_TRUE(mock_bluetooth_suspension_recovery_timer_->IsRunning());
+
+  // Time out the suspension recovery timer so we run
+  // OnBluetoothAdapterPresentAndPowerChanged().
+  mock_bluetooth_suspension_recovery_timer_->Fire();
+}
+
 TEST_F(ProximityAuthUnlockManagerImplTest,
        BluetoothOffMessageShownImmediatelyIfBluetoothWasOffBeforeSuspend) {
   CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
@@ -652,6 +720,24 @@ TEST_F(ProximityAuthUnlockManagerImplTest,
   EXPECT_CALL(proximity_auth_client_,
               UpdateSmartLockState(SmartLockState::kPhoneNotAuthenticated));
   life_cycle_.ChangeState(RemoteDeviceLifeCycle::State::AUTHENTICATION_FAILED);
+}
+
+TEST_F(ProximityAuthUnlockManagerImplTest,
+       OnAuthenticationFailed_RestartsLifeCycle) {
+  base::SimpleTestClock clock;
+  base::test::ScopedFeatureList feature_list(
+      ash::features::kSmartLockBluetoothScanningBackoff);
+  CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
+  SimulateUserPresentState();
+
+  life_cycle_.ChangeState(RemoteDeviceLifeCycle::State::AUTHENTICATION_FAILED);
+
+  // Test that scanning stops and resumes.
+  EXPECT_EQ(RemoteDeviceLifeCycle::State::STOPPED, life_cycle_.GetState());
+  clock.Advance(base::Seconds(2));
+  RunPendingTasks();
+  EXPECT_EQ(RemoteDeviceLifeCycle::State::FINDING_CONNECTION,
+            life_cycle_.GetState());
 }
 
 TEST_F(ProximityAuthUnlockManagerImplTest,
@@ -839,15 +925,13 @@ TEST_F(ProximityAuthUnlockManagerImplTest, OnAuthAttempted_SignIn_Success) {
   EXPECT_CALL(messenger_, RequestDecryption(kChallenge));
   unlock_manager_->OnAuthAttempted(mojom::AuthType::USER_CLICK);
 
-  std::vector<chromeos::secure_channel::mojom::ConnectionCreationDetail>
-      creation_details{
-          chromeos::secure_channel::mojom::ConnectionCreationDetail::
-              REMOTE_DEVICE_USED_BACKGROUND_BLE_ADVERTISING};
-  chromeos::secure_channel::mojom::ConnectionMetadataPtr
-      connection_metadata_ptr =
-          chromeos::secure_channel::mojom::ConnectionMetadata::New(
-              creation_details, nullptr /* bluetooth_connection_metadata */,
-              channel_binding_data);
+  std::vector<ash::secure_channel::mojom::ConnectionCreationDetail>
+      creation_details{ash::secure_channel::mojom::ConnectionCreationDetail::
+                           REMOTE_DEVICE_USED_BACKGROUND_BLE_ADVERTISING};
+  ash::secure_channel::mojom::ConnectionMetadataPtr connection_metadata_ptr =
+      ash::secure_channel::mojom::ConnectionMetadata::New(
+          creation_details, nullptr /* bluetooth_connection_metadata */,
+          channel_binding_data);
   fake_client_channel_->InvokePendingGetConnectionMetadataCallback(
       std::move(connection_metadata_ptr));
 
@@ -856,6 +940,28 @@ TEST_F(ProximityAuthUnlockManagerImplTest, OnAuthAttempted_SignIn_Success) {
 
   EXPECT_CALL(proximity_auth_client_, FinalizeSignin(kSignInSecret));
   unlock_manager_->OnUnlockEventSent(true);
+}
+
+TEST_F(ProximityAuthUnlockManagerImplTest,
+       BacksOffScanningAfterInitialScanTimeout) {
+  base::SimpleTestClock clock;
+  base::test::ScopedFeatureList feature_list(
+      ash::features::kSmartLockBluetoothScanningBackoff);
+  CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
+
+  life_cycle_.set_messenger(nullptr);
+  life_cycle_.ChangeState(RemoteDeviceLifeCycle::State::FINDING_CONNECTION);
+
+  unlock_manager_->SetRemoteDeviceLifeCycle(&life_cycle_);
+  // Simulate timing out before a connection is established.
+  RunPendingTasks();
+
+  // Test that scanning stops and resumes.
+  EXPECT_EQ(RemoteDeviceLifeCycle::State::STOPPED, life_cycle_.GetState());
+  clock.Advance(base::Seconds(2));
+  RunPendingTasks();
+  EXPECT_EQ(RemoteDeviceLifeCycle::State::FINDING_CONNECTION,
+            life_cycle_.GetState());
 }
 
 }  // namespace proximity_auth

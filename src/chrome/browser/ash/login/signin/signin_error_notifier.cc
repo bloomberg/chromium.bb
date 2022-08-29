@@ -8,6 +8,7 @@
 #include <string>
 
 #include "ash/components/account_manager/account_manager_factory.h"
+#include "ash/constants/notifier_catalogs.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "base/bind.h"
 #include "base/logging.h"
@@ -30,7 +31,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
-#include "chrome/browser/ui/webui/chromeos/account_manager/account_manager_welcome_dialog.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -105,7 +105,8 @@ CreateDeviceAccountErrorNotification(
 
   message_center::NotifierId notifier_id(
       message_center::NotifierType::SYSTEM_COMPONENT,
-      kProfileSigninNotificationId);
+      kProfileSigninNotificationId,
+      NotificationCatalogName::kDeviceAccountSigninError);
 
   // Set `profile_id` for multi-user notification blocker.
   notifier_id.profile_id = email;
@@ -214,6 +215,11 @@ SigninErrorNotifier::IgnoreSyncErrorsForTesting() {
 }
 
 // static
+bool SigninErrorNotifier::ShouldIgnoreSyncErrorsForTesting() {
+  return g_ignore_sync_errors_for_test_;
+}
+
+// static
 void SigninErrorNotifier::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kEduCoexistenceArcMigrationCompleted,
                                 false);
@@ -299,7 +305,8 @@ void SigninErrorNotifier::OnCheckDummyGaiaTokenForAllAccounts(
         account_dummy_token_list) {
   message_center::NotifierId notifier_id(
       message_center::NotifierType::SYSTEM_COMPONENT,
-      kProfileSigninNotificationId);
+      kProfileSigninNotificationId,
+      NotificationCatalogName::kSecondaryAccountSigninError);
   // Set `profile_id` for multi-user notification blocker. Note the primary user
   // account id is used to identify the profile for the blocker so it is used
   // instead of the secondary user account id.
@@ -348,24 +355,8 @@ void SigninErrorNotifier::OnCheckDummyGaiaTokenForAllAccounts(
 
 void SigninErrorNotifier::HandleSecondaryAccountReauthNotificationClick(
     absl::optional<int> button_index) {
-  if (profile_->IsChild() && !profile_->GetPrefs()->GetBoolean(
-                                 prefs::kEduCoexistenceArcMigrationCompleted)) {
-    if (!AccountManagerWelcomeDialog::ShowIfRequiredForEduCoexistence()) {
-      chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
-          profile_, chromeos::settings::mojom::kMyAccountsSubpagePath);
-    }
-    return;
-  }
-
-  if (!AccountManagerWelcomeDialog::ShowIfRequired()) {
-    // The welcome dialog was not shown (because it has been shown too many
-    // times already). Take users to Account Manager UI directly.
-    // Note: If the welcome dialog was shown, we don't need to do anything.
-    // Closing that dialog takes users to Account Manager UI.
-
-    chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
-        profile_, chromeos::settings::mojom::kMyAccountsSubpagePath);
-  }
+  chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
+      profile_, chromeos::settings::mojom::kMyAccountsSubpagePath);
 }
 
 }  // namespace ash

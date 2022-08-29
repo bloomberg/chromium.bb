@@ -12,10 +12,11 @@ class WebState;
 }
 
 @class ContentSuggestionsHeaderViewController;
+@class ContentSuggestionsViewController;
 @protocol DiscoverFeedDelegate;
-@class DiscoverFeedMetricsRecorder;
-@protocol NewTabPageCommands;
 @protocol NewTabPageControllerDelegate;
+@protocol NewTabPageDelegate;
+class NotificationPromoWhatsNew;
 @class NTPHomeMediator;
 @protocol ThumbStripSupporting;
 @class ViewRevealingVerticalPanHandler;
@@ -35,8 +36,16 @@ class WebState;
 @property(nonatomic, strong, readonly)
     ContentSuggestionsHeaderViewController* headerController;
 
+// The CollectionView that this coordinator manages.
 @property(nonatomic, strong, readonly)
-    UICollectionViewController* viewController;
+    UICollectionViewController* contentSuggestionsCollectionViewController;
+
+// The ViewController that this coordinator managers if
+// kContentSuggestionsUIViewControllerMigration is enabled.
+// TODO(crbug.com/1285378): remove |contentSuggestionsCollectionViewController|
+// once migration is finished.
+@property(nonatomic, strong, readonly)
+    ContentSuggestionsViewController* viewController;
 
 // Allows for the in-flight enabling/disabling of the thumb strip.
 @property(nonatomic, weak, readonly) id<ThumbStripSupporting>
@@ -48,18 +57,11 @@ class WebState;
 // mediator for non NTP logic.
 @property(nonatomic, strong) NTPHomeMediator* ntpMediator;
 
-// Command handler for NTP related commands.
-@property(nonatomic, weak) id<NewTabPageCommands> ntpCommandHandler;
-
-// Metrics recorder for the Discover feed events related to ContentSuggestions.
-@property(nonatomic, strong)
-    DiscoverFeedMetricsRecorder* discoverFeedMetricsRecorder;
+// Delegate for NTP related actions.
+@property(nonatomic, weak) id<NewTabPageDelegate> ntpDelegate;
 
 // Delegate used to communicate to communicate events to the DiscoverFeed.
 @property(nonatomic, weak) id<DiscoverFeedDelegate> discoverFeedDelegate;
-
-// Dismisses all modals owned by the NTP mediator.
-- (void)dismissModals;
 
 // Stop any scrolling in the scroll view.
 - (void)stopScrolling;
@@ -79,6 +81,9 @@ class WebState;
 
 // Configure Content Suggestions if showing the Start Surface.
 - (void)configureStartSurfaceIfNeeded;
+
+// The notification promo.
+- (NotificationPromoWhatsNew*)notificationPromo;
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CONTENT_SUGGESTIONS_COORDINATOR_H_

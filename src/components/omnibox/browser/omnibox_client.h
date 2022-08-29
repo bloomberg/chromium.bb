@@ -11,11 +11,13 @@
 #include "components/omnibox/browser/autocomplete_provider_client.h"
 #include "components/omnibox/browser/omnibox_navigation_observer.h"
 #include "components/omnibox/common/omnibox_focus_state.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/window_open_disposition.h"
 
 class AutocompleteResult;
 class GURL;
 class SessionID;
+class SkBitmap;
 class TemplateURL;
 class TemplateURLService;
 struct AutocompleteMatch;
@@ -27,6 +29,7 @@ class BookmarkModel;
 
 namespace gfx {
 class Image;
+struct VectorIcon;
 }
 
 class OmniboxControllerEmitter;
@@ -117,11 +120,14 @@ class OmniboxClient {
   virtual void OnFocusChanged(OmniboxFocusState state,
                               OmniboxFocusChangeReason reason) {}
 
-  // Called when the autocomplete result has changed. If the embedder supports
-  // fetching of bitmaps for URLs (not all embedders do), |on_bitmap_fetched|
-  // will be called when the bitmap has been fetched.
+  // Called when the autocomplete result has changed. Implementations that
+  // support preloading (currently, prefetching or prerendering) of search
+  // results pages should preload only if `should_preload` is true. If the
+  // implementation supports fetching of bitmaps for URLs (not all embedders
+  // do), `on_bitmap_fetched` will be called when the bitmap has been fetched.
   virtual void OnResultChanged(const AutocompleteResult& result,
                                bool default_match_changed,
+                               bool should_preload,
                                const BitmapFetchedCallback& on_bitmap_fetched) {
   }
 
@@ -163,6 +169,9 @@ class OmniboxClient {
 
   // Presents prompt to update Chrome.
   virtual void OpenUpdateChromeDialog() {}
+
+  // Focuses the `WebContents`, i.e. the web page of the current tab.
+  virtual void FocusWebContents() {}
 };
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_CLIENT_H_

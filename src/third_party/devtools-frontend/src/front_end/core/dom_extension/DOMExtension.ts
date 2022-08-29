@@ -457,7 +457,7 @@ Node.prototype.isSelfOrDescendant = function(node: Node|null): boolean {
   return Boolean(node) && (node === this || this.isDescendant(node));
 };
 
-Node.prototype.traverseNextNode = function(stayWithin?: Node, skipShadowRoot?: boolean = false): Node|null {
+Node.prototype.traverseNextNode = function(stayWithin?: Node, skipShadowRoot: boolean = false): Node|null {
   if (!skipShadowRoot && this.shadowRoot) {
     return this.shadowRoot;
   }
@@ -531,16 +531,6 @@ Node.prototype.setTextContentTruncatedIfNeeded = function(text: string|Node, pla
   this.textContent = text;
   return false;
 };
-
-Document.prototype.deepActiveElement = function(): Element|null {
-  let activeElement: Element|(Element | null) = this.activeElement;
-  while (activeElement && activeElement.shadowRoot && activeElement.shadowRoot.activeElement) {
-    activeElement = activeElement.shadowRoot.activeElement;
-  }
-  return activeElement;
-};
-
-DocumentFragment.prototype.deepActiveElement = Document.prototype.deepActiveElement;
 
 Element.prototype.hasFocus = function(): boolean {
   const root = this.getComponentRoot();

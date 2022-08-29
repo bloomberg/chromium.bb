@@ -127,11 +127,11 @@ ExtensionNavigationThrottle::WillStartOrRedirectRequest() {
 
   // Prevent the extension's background page from being navigated away. See
   // crbug.com/1130083.
-  if (navigation_handle()->IsInMainFrame()) {
+  if (navigation_handle()->IsInPrimaryMainFrame()) {
     ProcessManager* process_manager = ProcessManager::Get(browser_context);
     DCHECK(process_manager);
     ExtensionHost* host = process_manager->GetExtensionHostForRenderFrameHost(
-        web_contents->GetMainFrame());
+        web_contents->GetPrimaryMainFrame());
 
     // Navigation throttles don't intercept same document navigations, hence we
     // can ignore that case.
@@ -158,8 +158,8 @@ ExtensionNavigationThrottle::WillStartOrRedirectRequest() {
   const Extension* target_extension = nullptr;
   if (url_has_extension_scheme) {
     // "chrome-extension://" URL.
-    target_extension =
-        registry->enabled_extensions().GetExtensionOrAppByURL(url);
+    target_extension = registry->enabled_extensions().GetExtensionOrAppByURL(
+        url, true /*include_guid*/);
   } else if (target_origin.scheme() == kExtensionScheme) {
     // "blob:chrome-extension://" or "filesystem:chrome-extension://" URL.
     DCHECK(url.SchemeIsFileSystem() || url.SchemeIsBlob());

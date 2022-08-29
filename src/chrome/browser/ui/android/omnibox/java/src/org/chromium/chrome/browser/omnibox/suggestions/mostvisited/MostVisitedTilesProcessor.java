@@ -16,19 +16,21 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.DiscardableReferencePool;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.R;
 import org.chromium.chrome.browser.omnibox.styles.OmniboxResourceProvider;
-import org.chromium.chrome.browser.omnibox.styles.OmniboxTheme;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionUiType;
+import org.chromium.chrome.browser.omnibox.suggestions.SuggestionCommonProperties;
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionHost;
 import org.chromium.chrome.browser.omnibox.suggestions.carousel.BaseCarouselSuggestionProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.carousel.BaseCarouselSuggestionView;
 import org.chromium.chrome.browser.omnibox.suggestions.carousel.BaseCarouselSuggestionViewProperties;
+import org.chromium.chrome.browser.ui.theme.BrandedColorScheme;
+import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.browser_ui.widget.RoundedIconGenerator;
+import org.chromium.components.browser_ui.widget.TintedDrawable;
 import org.chromium.components.browser_ui.widget.tile.TileView;
 import org.chromium.components.browser_ui.widget.tile.TileViewBinder;
 import org.chromium.components.browser_ui.widget.tile.TileViewProperties;
@@ -86,8 +88,7 @@ public class MostVisitedTilesProcessor extends BaseCarouselSuggestionProcessor {
 
         int fallbackIconSize =
                 mContext.getResources().getDimensionPixelSize(R.dimen.tile_view_icon_size);
-        int fallbackIconColor = ApiCompatibilityUtils.getColor(
-                mContext.getResources(), R.color.default_favicon_background_color);
+        int fallbackIconColor = mContext.getColor(R.color.default_favicon_background_color);
         int fallbackIconTextSize =
                 mContext.getResources().getDimensionPixelSize(R.dimen.tile_view_icon_text_size);
         mIconGenerator = new RoundedIconGenerator(fallbackIconSize, fallbackIconSize,
@@ -96,7 +97,7 @@ public class MostVisitedTilesProcessor extends BaseCarouselSuggestionProcessor {
     }
 
     @Override
-    public boolean doesProcessSuggestion(AutocompleteMatch suggestion, int position) {
+    public boolean doesProcessSuggestion(AutocompleteMatch suggestion, int matchIndex) {
         return suggestion.getType() == OmniboxSuggestionType.TILE_NAVSUGGEST;
     }
 
@@ -116,22 +117,29 @@ public class MostVisitedTilesProcessor extends BaseCarouselSuggestionProcessor {
     }
 
     @Override
-    public void populateModel(AutocompleteMatch suggestion, PropertyModel model, int position) {
-        final List<AutocompleteMatch.NavsuggestTile> tiles = suggestion.getNavsuggestTiles();
+    public void populateModel(AutocompleteMatch suggestion, PropertyModel model, int matchIndex) {
+        final List<AutocompleteMatch.SuggestTile> tiles = suggestion.getSuggestTiles();
         final int tilesCount = tiles.size();
         final List<ListItem> tileList = new ArrayList<>(tilesCount);
         final LargeIconBridge iconBridge = mIconBridgeSupplier.get();
 
-        for (int index = 0; index < tilesCount; index++) {
+        for (int elementIndex = 0; elementIndex < tilesCount; elementIndex++) {
             final PropertyModel tileModel = new PropertyModel(TileViewProperties.ALL_KEYS);
-            final String title = tiles.get(index).title;
-            final GURL url = tiles.get(index).url;
+            final String title = tiles.get(elementIndex).title;
+            final GURL url = tiles.get(elementIndex).url;
             tileModel.set(TileViewProperties.TITLE, title);
             tileModel.set(TileViewProperties.TITLE_LINES, 1);
             tileModel.set(TileViewProperties.ON_FOCUS_VIA_SELECTION,
                     () -> mSuggestionHost.setOmniboxEditingText(url.getSpec()));
             tileModel.set(TileViewProperties.ON_CLICK,
-                    v -> mSuggestionHost.onSuggestionClicked(suggestion, position, url));
+                    v -> mSuggestionHost.onSuggestionClicked(suggestion, matchIndex, url));
+
+            final int elementIndexForDeletion = elementIndex;
+            tileModel.set(TileViewProperties.ON_LONG_CLICK, v -> {
+                mSuggestionHost.onDeleteMatchElement(
+                        suggestion, title, matchIndex, elementIndexForDeletion);
+                return true;
+            });
             tileModel.set(TileViewProperties.CONTENT_DESCRIPTION,
                     mContext.getString(R.string.accessibility_omnibox_most_visited_tile, title,
                             url.getHost()));
@@ -144,10 +152,20 @@ public class MostVisitedTilesProcessor extends BaseCarouselSuggestionProcessor {
             Bitmap fallbackIcon = mIconGenerator.generateIconForUrl(url);
             tileModel.set(TileViewProperties.ICON, new BitmapDrawable(fallbackIcon));
 
-            if (TextUtils.equals(url.getSpec(), UrlConstants.EXPLORE_URL)) {
+            if (tiles.get(elementIndex).isSearch) {
+                Drawable drawable = TintedDrawable.constructTintedDrawable(
+                        mContext, R.drawable.ic_suggestion_magnifier);
+                // Note: we should never show most visited tiles in incognito mode. Catch this early
+                // if we ever do.
+                assert model.get(SuggestionCommonProperties.COLOR_SCHEME)
+                        != BrandedColorScheme.INCOGNITO;
+                drawable.setTintList(
+                        ChromeColors.getSecondaryIconTint(mContext, /* isIncognito= */ false));
+                tileModel.set(TileViewProperties.ICON, drawable);
+            } else if (TextUtils.equals(url.getSpec(), UrlConstants.EXPLORE_URL)) {
                 setExploreSitesIcon(tileModel);
             } else if (iconBridge != null) {
-                iconBridge.getLargeIconForUrl(tiles.get(index).url, mDesiredFaviconWidthPx,
+                iconBridge.getLargeIconForUrl(tiles.get(elementIndex).url, mDesiredFaviconWidthPx,
                         (Bitmap icon, int fallbackColor, boolean isFallbackColorDefault,
                                 int iconType) -> {
                             if (icon == null) return;
@@ -220,8 +238,9 @@ public class MostVisitedTilesProcessor extends BaseCarouselSuggestionProcessor {
                                 .inflate(R.layout.suggestions_tile_view, parent, false);
         tile.setClickable(true);
 
-        Drawable background = OmniboxResourceProvider.resolveAttributeToDrawable(
-                parent.getContext(), OmniboxTheme.LIGHT_THEME, R.attr.selectableItemBackground);
+        Drawable background =
+                OmniboxResourceProvider.resolveAttributeToDrawable(parent.getContext(),
+                        BrandedColorScheme.LIGHT_BRANDED_THEME, R.attr.selectableItemBackground);
         tile.setBackgroundDrawable(background);
         return tile;
     }

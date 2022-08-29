@@ -64,13 +64,12 @@
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host.h"
 #endif
 
-#if defined(OS_WIN)
-#include "ui/views/widget/desktop_aura/desktop_window_tree_host_win.h"
+#if BUILDFLAG(ENABLE_DESKTOP_AURA) && defined(USE_OZONE)
+#include "ui/views/widget/desktop_aura/desktop_window_tree_host_platform.h"
 #endif
 
-#if BUILDFLAG(ENABLE_DESKTOP_AURA) && \
-    (defined(OS_LINUX) || defined(OS_CHROMEOS))
-#include "ui/views/widget/desktop_aura/desktop_window_tree_host_linux.h"
+#if BUILDFLAG(IS_WIN)
+#include "ui/views/widget/desktop_aura/desktop_window_tree_host_win.h"
 #endif
 
 DEFINE_UI_CLASS_PROPERTY_TYPE(views::internal::NativeWidgetPrivate*)
@@ -105,8 +104,7 @@ NativeWidgetAura::NativeWidgetAura(internal::NativeWidgetDelegate* delegate)
     : delegate_(delegate),
       window_(new aura::Window(this, aura::client::WINDOW_TYPE_UNKNOWN)),
       ownership_(Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET),
-      destroying_(false),
-      cursor_(gfx::kNullCursor) {
+      destroying_(false) {
   aura::client::SetFocusChangeObserver(window_, this);
   wm::SetActivationChangeObserver(window_, this);
 }
@@ -710,11 +708,13 @@ bool NativeWidgetAura::IsMinimized() const {
 
 void NativeWidgetAura::Restore() {
   if (window_)
-    window_->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
+    wm::Restore(window_);
 }
 
 void NativeWidgetAura::SetFullscreen(bool fullscreen,
-                                     const base::TimeDelta& delay) {
+                                     int64_t target_display_id) {
+  // The `target_display_id` argument is unsupported in Aura.
+  DCHECK_EQ(target_display_id, display::kInvalidDisplayId);
   if (!window_ || IsFullscreen() == fullscreen)
     return;  // Nothing to do.
 
@@ -767,7 +767,7 @@ void NativeWidgetAura::ScheduleLayout() {
     window_->ScheduleDraw();
 }
 
-void NativeWidgetAura::SetCursor(gfx::NativeCursor cursor) {
+void NativeWidgetAura::SetCursor(const ui::Cursor& cursor) {
   cursor_ = cursor;
   aura::client::CursorClient* cursor_client =
       aura::client::GetCursorClient(window_->GetRootWindow());
@@ -1112,14 +1112,6 @@ void NativeWidgetAura::OnDragExited() {
   drop_helper_->OnDragExit();
 }
 
-ui::mojom::DragOperation NativeWidgetAura::OnPerformDrop(
-    const ui::DropTargetEvent& event,
-    std::unique_ptr<ui::OSExchangeData> data) {
-  DCHECK(drop_helper_.get() != nullptr);
-  return drop_helper_->OnDrop(event.data(), event.location(),
-                              last_drop_operation_);
-}
-
 aura::client::DragDropDelegate::DropCallback NativeWidgetAura::GetDropCallback(
     const ui::DropTargetEvent& event) {
   DCHECK(drop_helper_);
@@ -1158,8 +1150,7 @@ void NativeWidgetAura::SetInitialFocus(ui::WindowShowState show_state) {
 // Widget, public:
 
 namespace {
-#if BUILDFLAG(ENABLE_DESKTOP_AURA) && \
-    (defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS))
+#if BUILDFLAG(ENABLE_DESKTOP_AURA) && (BUILDFLAG(IS_WIN) || defined(USE_OZONE))
 void CloseWindow(aura::Window* window) {
   if (window) {
     Widget* widget = Widget::GetWidgetForNativeView(window);
@@ -1173,7 +1164,7 @@ void CloseWindow(aura::Window* window) {
 }
 #endif
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 BOOL CALLBACK WindowCallbackProc(HWND hwnd, LPARAM lParam) {
   aura::Window* root_window =
       DesktopWindowTreeHostWin::GetContentWindowForHWND(hwnd);
@@ -1185,13 +1176,12 @@ BOOL CALLBACK WindowCallbackProc(HWND hwnd, LPARAM lParam) {
 
 // static
 void Widget::CloseAllSecondaryWidgets() {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   EnumThreadWindows(GetCurrentThreadId(), WindowCallbackProc, 0);
 #endif
 
-#if BUILDFLAG(ENABLE_DESKTOP_AURA) && \
-    (defined(OS_LINUX) || defined(OS_CHROMEOS))
-  DesktopWindowTreeHostLinux::CleanUpWindowList(CloseWindow);
+#if BUILDFLAG(ENABLE_DESKTOP_AURA) && defined(USE_OZONE)
+  DesktopWindowTreeHostPlatform::CleanUpWindowList(CloseWindow);
 #endif
 }
 

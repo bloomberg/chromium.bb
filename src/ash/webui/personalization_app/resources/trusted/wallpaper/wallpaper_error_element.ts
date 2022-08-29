@@ -9,19 +9,19 @@
  * that may have multiple sizes, not large rectangular svgs.
  */
 
-import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
-import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {I18nMixin} from 'chrome://resources/js/i18n_mixin.js';
+import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {getTemplate} from './wallpaper_error_element.html.js';
 
-const WithI18n: {new (): PolymerElement&I18nBehavior} =
-    mixinBehaviors([I18nBehavior], PolymerElement);
+const WallpaperErrorBase = I18nMixin(PolymerElement);
 
-export class WallpaperError extends WithI18n {
+export class WallpaperError extends WallpaperErrorBase {
   static get is() {
     return 'wallpaper-error';
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 }
 

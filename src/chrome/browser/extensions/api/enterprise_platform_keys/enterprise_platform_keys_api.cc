@@ -132,12 +132,13 @@ bool IsExtensionAllowed(Profile* profile, const Extension* extension) {
     // allowed in chrome/common/extensions/api/_permission_features.json
     return true;
   }
-  const base::ListValue* list =
+  const base::Value* list =
       profile->GetPrefs()->GetList(prefs::kAttestationExtensionAllowlist);
   DCHECK_NE(list, nullptr);
   base::Value value(extension->id());
-  return std::find(list->GetList().begin(), list->GetList().end(), value) !=
-         list->GetList().end();
+  return std::find(list->GetListDeprecated().begin(),
+                   list->GetListDeprecated().end(),
+                   value) != list->GetListDeprecated().end();
 }
 
 }  // namespace platform_keys
@@ -244,13 +245,13 @@ void EnterprisePlatformKeysGetCertificatesFunction::OnGetCertificates(
   }
   DCHECK(result->is_certificates());
 
-  auto client_certs = std::make_unique<base::ListValue>();
+  base::Value::List client_certs;
   for (std::vector<uint8_t>& cert : result->get_certificates()) {
-    client_certs->Append(std::make_unique<base::Value>(std::move(cert)));
+    client_certs.Append(base::Value(std::move(cert)));
   }
 
-  auto results = std::make_unique<base::ListValue>();
-  results->Append(std::move(client_certs));
+  std::vector<base::Value> results;
+  results.emplace_back(std::move(client_certs));
   Respond(ArgumentList(std::move(results)));
 }
 

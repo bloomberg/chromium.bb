@@ -18,13 +18,13 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
-#include "third_party/blink/renderer/platform/geometry/float_rect.h"
-#include "third_party/blink/renderer/platform/geometry/float_size.h"
-#include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/geometry/size_f.h"
 
 namespace {
 
@@ -342,6 +342,7 @@ void DevToolsEmulator::EnableMobileEmulation() {
   is_overlay_scrollbars_enabled_ =
       ScrollbarThemeSettings::OverlayScrollbarsEnabled();
   ScrollbarThemeSettings::SetOverlayScrollbarsEnabled(true);
+  Page::UsesOverlayScrollbarsChanged();
   is_orientation_event_enabled_ =
       RuntimeEnabledFeatures::OrientationEventEnabled();
   RuntimeEnabledFeatures::SetOrientationEventEnabled(true);
@@ -354,7 +355,6 @@ void DevToolsEmulator::EnableMobileEmulation() {
       mojom::blink::ViewportStyle::kMobile);
   web_view_->GetPage()->GetSettings().SetViewportEnabled(true);
   web_view_->GetPage()->GetSettings().SetViewportMetaEnabled(true);
-  web_view_->GetPage()->GetVisualViewport().InitializeScrollbars();
   web_view_->GetPage()->GetSettings().SetShrinksViewportContentToFit(true);
   web_view_->GetPage()->GetSettings().SetTextAutosizingEnabled(true);
   web_view_->GetPage()->GetSettings().SetPreferCompositingToLCDTextEnabled(
@@ -364,6 +364,13 @@ void DevToolsEmulator::EnableMobileEmulation() {
       true);
   web_view_->SetZoomFactorOverride(1);
   web_view_->GetPage()->SetDefaultPageScaleLimits(0.25f, 5);
+
+  // If the viewport is active, refresh the scrollbar layers to reflect the
+  // emulated viewport style. If it's not active, either we're in an embedded
+  // frame and we don't have visual viewport scrollbars or the scrollbars will
+  // initialize as part of their regular lifecycle.
+  if (web_view_->GetPage()->GetVisualViewport().IsActiveViewport())
+    web_view_->GetPage()->GetVisualViewport().InitializeScrollbars();
 
   if (web_view_->MainFrameImpl()) {
     web_view_->MainFrameImpl()->GetFrameView()->UpdateLifecycleToLayoutClean(
@@ -376,6 +383,7 @@ void DevToolsEmulator::DisableMobileEmulation() {
     return;
   ScrollbarThemeSettings::SetOverlayScrollbarsEnabled(
       is_overlay_scrollbars_enabled_);
+  Page::UsesOverlayScrollbarsChanged();
   RuntimeEnabledFeatures::SetOrientationEventEnabled(
       is_orientation_event_enabled_);
   RuntimeEnabledFeatures::SetMobileLayoutThemeEnabled(
@@ -469,21 +477,6 @@ TransformationMatrix DevToolsEmulator::ComputeRootLayerTransform() {
   if (device_metrics_enabled_)
     transform.Scale(emulation_params_.scale);
   return transform;
-}
-
-void DevToolsEmulator::OverrideVisibleRect(
-    const gfx::Size& viewport_size,
-    gfx::Rect* visible_rect_in_frame) const {
-  WebLocalFrameImpl* frame = web_view_->MainFrameImpl();
-  if (!viewport_override_ || !frame)
-    return;
-
-  // Don't apply viewport_override_->scale because all coordinates here are
-  // under the same scale.
-  gfx::Rect visible_rect_in_document = ToEnclosingRect(
-      FloatRect(viewport_override_->position, FloatSize(viewport_size)));
-  *visible_rect_in_frame =
-      frame->GetFrameView()->DocumentToFrame(visible_rect_in_document);
 }
 
 float DevToolsEmulator::InputEventsScaleForEmulation() {

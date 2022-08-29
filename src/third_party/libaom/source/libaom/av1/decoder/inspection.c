@@ -8,6 +8,10 @@
  * Media Patent License 1.0 was not distributed with this source code in the
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
+
+#include <stdio.h>
+#include <stdlib.h>
+
 #include "av1/decoder/decoder.h"
 #include "av1/decoder/inspection.h"
 #include "av1/common/enums.h"
@@ -18,6 +22,10 @@ static void ifd_init_mi_rc(insp_frame_data *fd, int mi_cols, int mi_rows) {
   fd->mi_rows = mi_rows;
   fd->mi_grid = (insp_mi_data *)aom_malloc(sizeof(insp_mi_data) * fd->mi_rows *
                                            fd->mi_cols);
+  if (!fd->mi_grid) {
+    fprintf(stderr, "Error allocating inspection data\n");
+    abort();
+  }
 }
 
 void ifd_init(insp_frame_data *fd, int frame_width, int frame_height) {

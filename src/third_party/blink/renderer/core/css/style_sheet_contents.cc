@@ -481,19 +481,19 @@ void StyleSheetContents::NotifyLoadedSheet(const CSSStyleSheetResource* sheet) {
   ClearRuleSet();
 }
 
-void StyleSheetContents::StartLoadingDynamicSheet() {
+void StyleSheetContents::SetToPendingState() {
   StyleSheetContents* root = RootStyleSheet();
   for (const auto& client : root->loading_clients_)
-    client->StartLoadingDynamicSheet();
+    client->SetToPendingState();
   // Copy the completed clients to a vector for iteration.
-  // startLoadingDynamicSheet will move the style sheet from the completed state
+  // SetToPendingState() will move the style sheet from the completed state
   // to the loading state which modifies the set of completed clients. We
   // therefore need the copy in order to not modify the set of completed clients
   // while iterating it.
   HeapVector<Member<CSSStyleSheet>> completed_clients;
   CopyToVector(root->completed_clients_, completed_clients);
   for (unsigned i = 0; i < completed_clients.size(); ++i)
-    completed_clients[i]->StartLoadingDynamicSheet();
+    completed_clients[i]->SetToPendingState();
 }
 
 StyleSheetContents* StyleSheetContents::RootStyleSheet() const {
@@ -543,6 +543,7 @@ static bool ChildRulesHaveFailedOrCanceledSubresources(
       case StyleRuleBase::kContainer:
       case StyleRuleBase::kMedia:
       case StyleRuleBase::kLayerBlock:
+      case StyleRuleBase::kScope:
         if (ChildRulesHaveFailedOrCanceledSubresources(
                 To<StyleRuleGroup>(rule)->ChildRules()))
           return true;
@@ -560,6 +561,9 @@ static bool ChildRulesHaveFailedOrCanceledSubresources(
       case StyleRuleBase::kScrollTimeline:
       case StyleRuleBase::kSupports:
       case StyleRuleBase::kViewport:
+      case StyleRuleBase::kFontPaletteValues:
+      case StyleRuleBase::kPositionFallback:
+      case StyleRuleBase::kTry:
         break;
       case StyleRuleBase::kCounterStyle:
         if (To<StyleRuleCounterStyle>(rule)->HasFailedOrCanceledSubresources())

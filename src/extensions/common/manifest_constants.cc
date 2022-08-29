@@ -99,6 +99,7 @@ const char kNaClModulesPath[] = "path";
 const char kNativelyConnectable[] = "natively_connectable";
 const char kOfflineEnabled[] = "offline_enabled";
 const char kOmniboxKeyword[] = "omnibox.keyword";
+const char kOptionalHostPermissions[] = "optional_host_permissions";
 const char kOptionalPermissions[] = "optional_permissions";
 const char kOptionsPage[] = "options_page";
 const char kOptionsUI[] = "options_ui";
@@ -157,12 +158,14 @@ const char kWebview[] = "webview";
 const char kWebviewAccessibleResources[] = "accessible_resources";
 const char kWebviewName[] = "name";
 const char kWebviewPartitions[] = "partitions";
+#if BUILDFLAG(IS_CHROMEOS)
+const char kFileSystemProviderCapabilities[] =
+    "file_system_provider_capabilities";
+#endif
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 const char kActionHandlers[] = "action_handlers";
 const char kActionHandlerActionKey[] = "action";
 const char kActionHandlerEnabledOnLockScreenKey[] = "enabled_on_lock_screen";
-const char kFileSystemProviderCapabilities[] =
-    "file_system_provider_capabilities";
 #endif
 
 }  // namespace manifest_keys
@@ -334,7 +337,7 @@ const char kInvalidCSPInsecureValueError[] =
     "'*': Insecure CSP value \"*\" in directive '*'.";
 const char kInvalidCSPMissingSecureSrc[] =
     "'*': CSP directive '*' must be specified (either explicitly, or "
-    "implicitly via 'default-src') and must whitelist only secure resources.";
+    "implicitly via 'default-src') and must allowlist only secure resources.";
 const char kInvalidDefaultLocale[] =
     "Invalid value for default locale - locale name must be a string.";
 const char16_t kInvalidDefaultLocale16[] =
@@ -391,9 +394,8 @@ const char kInvalidHomepageOverrideURL[] =
     "Invalid value for overriding homepage url: '[*]'.";
 const char kInvalidHomepageURL[] =
     "Invalid value for homepage url: '[*]'.";
-const char kInvalidHostPermission[] =
-    "Invalid value for 'host_permissions[*]'.";
-const char kInvalidHostPermissions[] = "Invalid value for 'host_permissions'.";
+const char kInvalidHostPermission[] = "Invalid value for '*[*]'.";
+const char kInvalidHostPermissions[] = "Invalid value for '*'.";
 const char kInvalidIconKey[] = "Invalid key in icons: \"*\".";
 const char kInvalidIconPath[] =
     "Invalid value for 'icons[\"*\"]'.";
@@ -638,11 +640,20 @@ const char kLocalesTreeMissing[] =
 const char kManifestParseError[] =
     "Manifest is not valid JSON.";
 const char kManifestUnreadable[] = "Manifest file is missing or unreadable";
+const char kManifestV2IsDeprecatedWarning[] =
+    "Manifest version 2 is deprecated, and support will be removed in 2023. "
+    "See https://developer.chrome.com/blog/mv2-transition/ for more details.";
 const char kManifestVersionTooHighWarning[] =
     "The maximum currently-supported manifest version is *, but this is *.  "
     "Certain features may not work as expected.";
 const char kMissingFile[] =
     "At least one js or css file is required for 'content_scripts[*]'.";
+const char kMatchOriginAsFallbackCantHavePaths[] =
+    "The path component for scripts with 'match_origin_as_fallback' must be "
+    "'*'.";
+const char kMatchOriginAsFallbackRestrictedToMV3[] =
+    "The 'match_origin_as_fallback' property is restricted to extensions with "
+    "'manifest_version' set to 3 or higher.";
 const char16_t kMultipleOverrides[] =
     u"An extension cannot override more than one page.";
 const char kNoWildCardsInPaths[] =
@@ -690,6 +701,15 @@ const char kUnrecognizedManifestProperty[] =
     "Unrecognized property '*' of manifest key '*'.";
 const char16_t kWebRequestConflictsWithLazyBackground[] =
     u"The 'webRequest' API cannot be used with event pages.";
+#if BUILDFLAG(IS_CHROMEOS)
+const char16_t kInvalidFileSystemProviderMissingCapabilities[] =
+    u"The 'fileSystemProvider' permission requires the "
+    "'file_system_provider_capabilities' section to be specified in the "
+    "manifest.";
+const char kInvalidFileSystemProviderMissingPermission[] =
+    "The 'file_system_provider_capabilities' section requires the "
+    "'fileSystemProvider' permission to be specified in the manifest.";
+#endif
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 const char kDuplicateActionHandlerFound[] =
     "'action_handlers' list contains duplicate entries for the action: \"*\".";
@@ -704,13 +724,6 @@ const char16_t kInvalidActionHandlersType[] =
     u"Invalid value for 'action_handlers'. Value must be a list of strings or "
     u"a "
     "dictionary with 'action' key.";
-const char16_t kInvalidFileSystemProviderMissingCapabilities[] =
-    u"The 'fileSystemProvider' permission requires the "
-    "'file_system_provider_capabilities' section to be specified in the "
-    "manifest.";
-const char kInvalidFileSystemProviderMissingPermission[] =
-    "The 'file_system_provider_capabilities' section requires the "
-    "'fileSystemProvider' permission to be specified in the manifest.";
 #endif
 
 }  // namespace manifest_errors

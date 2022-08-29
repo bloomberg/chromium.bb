@@ -42,3 +42,9 @@ wheel <
   name: "infra/python/wheels/pyyaml/${vpython_platform}"
   version: "version:5.4.1"
 >
+
+# Used by //scripts/fetch_lobs to fetch stuff over HTTPS using connection pools.
+wheel <
+  name: "infra/python/wheels/urllib3-py2_py3"
+  version: "version:1.26.6"
+>

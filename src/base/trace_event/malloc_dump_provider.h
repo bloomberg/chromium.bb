@@ -6,14 +6,16 @@
 #define BASE_TRACE_EVENT_MALLOC_DUMP_PROVIDER_H_
 
 #include "base/allocator/buildflags.h"
+#include "base/base_export.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
+#include "base/time/time.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "build/build_config.h"
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID) || \
-    defined(OS_WIN) || defined(OS_MAC)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID) || \
+    BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
 #define MALLOC_MEMORY_TRACING_SUPPORTED
 #endif
 
@@ -23,6 +25,8 @@
 
 namespace base {
 namespace trace_event {
+
+class MemoryAllocatorDump;
 
 // Dump provider which collects process-wide memory stats.
 class BASE_EXPORT MallocDumpProvider : public MemoryDumpProvider {
@@ -40,20 +44,26 @@ class BASE_EXPORT MallocDumpProvider : public MemoryDumpProvider {
   bool OnMemoryDump(const MemoryDumpArgs& args,
                     ProcessMemoryDump* pmd) override;
 
-  // Used by out-of-process heap-profiling. When malloc is profiled by an
-  // external process, that process will be responsible for emitting metrics on
-  // behalf of this one. Thus, MallocDumpProvider should not do anything.
-  void EnableMetrics();
-  void DisableMetrics();
-
  private:
   friend struct DefaultSingletonTraits<MallocDumpProvider>;
 
   MallocDumpProvider();
   ~MallocDumpProvider() override;
 
-  bool emit_metrics_on_memory_dump_ = true;
+  void ReportSyscallCount(uint64_t syscall_count,
+                          MemoryAllocatorDump* malloc_dump);
+
+  bool emit_metrics_on_memory_dump_
+      GUARDED_BY(emit_metrics_on_memory_dump_lock_) = true;
   base::Lock emit_metrics_on_memory_dump_lock_;
+
+#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+  // To be accurate, this requires the dump provider to be created very early,
+  // which is the case. The alternative would be to drop the first data point,
+  // which is not desirable as early process activity is highly relevant.
+  base::TimeTicks last_memory_dump_time_ = base::TimeTicks::Now();
+  uint64_t last_syscall_count_ = 0;
+#endif
 };
 
 #if BUILDFLAG(USE_PARTITION_ALLOC)
@@ -82,6 +92,8 @@ class BASE_EXPORT MemoryDumpPartitionStatsDumper final
   size_t total_mmapped_bytes() const { return total_mmapped_bytes_; }
   size_t total_resident_bytes() const { return total_resident_bytes_; }
   size_t total_active_bytes() const { return total_active_bytes_; }
+  size_t total_active_count() const { return total_active_count_; }
+  uint64_t syscall_count() const { return syscall_count_; }
 
  private:
   const char* root_name_;
@@ -90,17 +102,11 @@ class BASE_EXPORT MemoryDumpPartitionStatsDumper final
   size_t total_mmapped_bytes_ = 0;
   size_t total_resident_bytes_ = 0;
   size_t total_active_bytes_ = 0;
+  size_t total_active_count_ = 0;
+  uint64_t syscall_count_ = 0;
   bool detailed_;
 };
 
-class MemoryAllocatorDump;
-
-BASE_EXPORT void ReportPartitionAllocThreadCacheStats(
-    ProcessMemoryDump* pmd,
-    MemoryAllocatorDump* dump,
-    const ThreadCacheStats& stats,
-    const std::string& metrics_suffix,
-    bool detailed);
 #endif  // BUILDFLAG(USE_PARTITION_ALLOC)
 
 }  // namespace trace_event

@@ -21,6 +21,7 @@ import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat;
 import org.chromium.base.IntentUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.settings.ChromeManagedPreferenceDelegate;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
 import org.chromium.components.browser_ui.settings.SettingsUtils;
@@ -60,6 +61,7 @@ public class PrivacySandboxSettingsFragment
      */
     @Override
     public void onCreatePreferences(Bundle bundle, String s) {
+        assert !ChromeFeatureList.isEnabled(ChromeFeatureList.PRIVACY_SANDBOX_SETTINGS_3);
         // Add all preferences and set the title.
         getActivity().setTitle(R.string.prefs_privacy_sandbox);
         SettingsUtils.addPreferencesFromResource(this, R.xml.privacy_sandbox_preferences);
@@ -73,7 +75,7 @@ public class PrivacySandboxSettingsFragment
                 .setSummary(SpanApplier.applySpans(
                         getContext().getString(R.string.privacy_sandbox_description_two),
                         new SpanInfo("<link>", "</link>",
-                                new NoUnderlineClickableSpan(getContext().getResources(),
+                                new NoUnderlineClickableSpan(getContext(),
                                         (widget) -> openUrlInCct(PRIVACY_SANDBOX_URL)))));
         // Format the toggle description, which has bullet points.
         findPreference(TOGGLE_DESCRIPTION_PREFERENCE)

@@ -91,6 +91,7 @@ URLLoaderFactory::URLLoaderFactory(
             params_->isolation_info.request_type());
   DCHECK(!params_->automatically_assign_isolation_info ||
          params_->isolation_info.IsEmpty());
+  DCHECK(cors_url_loader_factory_);
 
   if (!params_->top_frame_id) {
     params_->top_frame_id = base::UnguessableToken::Create();
@@ -126,6 +127,50 @@ void URLLoaderFactory::Clone(
   NOTREACHED();
 }
 
+net::URLRequestContext* URLLoaderFactory::GetUrlRequestContext() const {
+  return context_->url_request_context();
+}
+
+mojom::NetworkContextClient* URLLoaderFactory::GetNetworkContextClient() const {
+  return context_->client();
+}
+
+const mojom::URLLoaderFactoryParams& URLLoaderFactory::GetFactoryParams()
+    const {
+  return *params_;
+}
+
+mojom::CrossOriginEmbedderPolicyReporter* URLLoaderFactory::GetCoepReporter()
+    const {
+  return cors_url_loader_factory_->coep_reporter();
+}
+
+bool URLLoaderFactory::ShouldRequireNetworkIsolationKey() const {
+  return context_->require_network_isolation_key();
+}
+
+scoped_refptr<ResourceSchedulerClient>
+URLLoaderFactory::GetResourceSchedulerClient() const {
+  return resource_scheduler_client_;
+}
+
+mojom::TrustedURLLoaderHeaderClient*
+URLLoaderFactory::GetUrlLoaderHeaderClient() const {
+  return header_client_.is_bound() ? header_client_.get() : nullptr;
+}
+
+mojom::OriginPolicyManager* URLLoaderFactory::GetOriginPolicyManager() const {
+  return context_->origin_policy_manager();
+}
+
+const cors::OriginAccessList& URLLoaderFactory::GetOriginAccessList() const {
+  return context_->cors_origin_access_list();
+}
+
+corb::PerFactoryState& URLLoaderFactory::GetMutableCorbState() {
+  return corb_state_;
+}
+
 void URLLoaderFactory::CreateLoaderAndStartWithSyncClient(
     mojo::PendingReceiver<mojom::URLLoader> receiver,
     int32_t request_id,
@@ -143,9 +188,8 @@ void URLLoaderFactory::CreateLoaderAndStartWithSyncClient(
                     origin_string != "null";
   absl::optional<url::Origin> request_initiator = url_request.request_initiator;
   if (has_origin && request_initiator.has_value()) {
-    url::Origin origin = url::Origin::Create(GURL(origin_string));
     bool origin_head_same_as_request_origin =
-        request_initiator.value().IsSameOriginWith(origin);
+        request_initiator.value().IsSameOriginWith(GURL(origin_string));
     UMA_HISTOGRAM_BOOLEAN(
         "NetworkService.URLLoaderFactory.OriginHeaderSameAsRequestOrigin",
         origin_head_same_as_request_origin);
@@ -219,6 +263,8 @@ void URLLoaderFactory::CreateLoaderAndStartWithSyncClient(
     return;
   }
 
+  MaybeStartUpdateLoadInfoTimer();
+
   std::unique_ptr<TrustTokenRequestHelperFactory> trust_token_factory;
   if (url_request.trust_token_params) {
     trust_token_factory = std::make_unique<TrustTokenRequestHelperFactory>(
@@ -229,15 +275,20 @@ void URLLoaderFactory::CreateLoaderAndStartWithSyncClient(
         // TrustTokenRequestHelperFactory.
         base::BindRepeating(&NetworkContext::client,
                             base::Unretained(context_)),
-        // It's safe to use Unretained here because
+        // It's safe to access cookie manager for |context_| here because
         // NetworkContext::CookieManager outlives the URLLoaders associated with
         // the NetworkContext.
         base::BindRepeating(
-            [](const CookieManager* manager) {
-              return !manager->cookie_settings()
-                          .are_third_party_cookies_blocked();
+            [](NetworkContext* context) {
+              // Trust tokens will be blocked if the user has either disabled
+              // the Trust Token Privacy Sandbox setting, or if the user has
+              // disabled third party cookies.
+              return !(context->cookie_manager()
+                           ->cookie_settings()
+                           .are_third_party_cookies_blocked() ||
+                       context->are_trust_tokens_blocked());
             },
-            base::Unretained(context_->cookie_manager())));
+            base::Unretained(context_)));
   }
 
   mojo::PendingRemote<mojom::CookieAccessObserver> cookie_observer;
@@ -273,21 +324,30 @@ void URLLoaderFactory::CreateLoaderAndStartWithSyncClient(
             url_request.trusted_params->accept_ch_frame_observer));
   }
 
+  // Check for third party cookies being disabled by testing a non-existant
+  // third-party cookie. This will also be false if all cookies are disabled.
+  const auto dummy_cookie = net::CanonicalCookie::Create(
+      GURL("https://does-not-exist./"), "a=n", base::Time::Now(), absl::nullopt,
+      absl::nullopt);
+
+  const bool third_party_cookies_enabled =
+      context_->cookie_manager()->cookie_settings().IsCookieAccessible(
+          *dummy_cookie, GURL("https://also-does-not-exist./"),
+          net::SiteForCookies(net::SchemefulSite(url::Origin())),
+          url::Origin());
+
   auto loader = std::make_unique<URLLoader>(
-      context_->url_request_context(), this, context_->client(),
+      *this,
       base::BindOnce(&cors::CorsURLLoaderFactory::DestroyURLLoader,
                      base::Unretained(cors_url_loader_factory_)),
       std::move(receiver), options, url_request, std::move(client),
       std::move(sync_client),
       static_cast<net::NetworkTrafficAnnotationTag>(traffic_annotation),
-      params_.get(), cors_url_loader_factory_->coep_reporter(), request_id,
-      keepalive_request_size, context_->require_network_isolation_key(),
-      resource_scheduler_client_, std::move(keepalive_statistics_recorder),
-      header_client_.is_bound() ? header_client_.get() : nullptr,
-      context_->origin_policy_manager(), std::move(trust_token_factory),
-      context_->cors_origin_access_list(), std::move(cookie_observer),
-      std::move(url_loader_network_observer), std::move(devtools_observer),
-      std::move(accept_ch_frame_observer));
+      request_id, keepalive_request_size,
+      std::move(keepalive_statistics_recorder), std::move(trust_token_factory),
+      std::move(cookie_observer), std::move(url_loader_network_observer),
+      std::move(devtools_observer), std::move(accept_ch_frame_observer),
+      third_party_cookies_enabled);
 
   cors_url_loader_factory_->OnURLLoaderCreated(std::move(loader));
 }
@@ -338,27 +398,13 @@ void URLLoaderFactory::UpdateLoadInfo() {
 
   SCOPED_UMA_HISTOGRAM_TIMER("NetworkService.URLLoaderFactory.UpdateLoadInfo");
 
-  if (base::FeatureList::IsEnabled(features::kOptimizeUpdateLoadInfo)) {
-    for (auto& loader : cors_url_loader_factory_->url_loaders()) {
-      if (!most_interesting ||
-          LoadInfoIsMoreInteresting(
-              loader->GetLoadState(), loader->GetUploadProgress().size(),
-              most_interesting->load_state, most_interesting->upload_size)) {
-        most_interesting = loader->CreateLoadInfo();
-        most_interesting_url_loader = loader.get();
-      }
-    }
-  } else {
-    for (auto* request : *context_->url_request_context()->url_requests()) {
-      auto* loader = URLLoader::ForRequest(*request);
-      if (!loader || loader->url_loader_factory() != this)
-        continue;
-      mojom::LoadInfoPtr load_info = loader->CreateLoadInfo();
-      if (!most_interesting ||
-          LoadInfoIsMoreInteresting(*load_info, *most_interesting)) {
-        most_interesting = std::move(load_info);
-        most_interesting_url_loader = loader;
-      }
+  for (auto& loader : cors_url_loader_factory_->url_loaders()) {
+    if (!most_interesting ||
+        LoadInfoIsMoreInteresting(
+            loader->GetLoadState(), loader->GetUploadProgress().size(),
+            most_interesting->load_state, most_interesting->upload_size)) {
+      most_interesting = loader->CreateLoadInfo();
+      most_interesting_url_loader = loader.get();
     }
   }
 
@@ -370,10 +416,6 @@ void URLLoaderFactory::UpdateLoadInfo() {
                            base::Unretained(this)));
     waiting_on_load_state_ack_ = true;
   }
-}
-
-void URLLoaderFactory::OnBeforeURLRequest() {
-  MaybeStartUpdateLoadInfoTimer();
 }
 
 }  // namespace network

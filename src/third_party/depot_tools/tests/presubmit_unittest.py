@@ -540,12 +540,6 @@ class PresubmitUnittest(PresubmitTestsBase):
              '  else:\n'
              '    return ()'), fake_presubmit))
 
-    self.assertRaises(
-        presubmit.PresubmitFailure, executer.ExecPresubmitScript,
-        self.presubmit_text_prefix +
-        'def CheckChangeOnCommit(input_api, output_api):\n'
-        '  return "foo"', fake_presubmit)
-
     self.assertFalse(
         executer.ExecPresubmitScript(
             self.presubmit_text_prefix +
@@ -560,12 +554,6 @@ class PresubmitUnittest(PresubmitTestsBase):
             'CheckChangeHasDescription(\n'
             '    input_api, output_api))\n'
             '  return results\n', fake_presubmit))
-
-    self.assertRaises(
-        presubmit.PresubmitFailure, executer.ExecPresubmitScript,
-        self.presubmit_text_prefix +
-        'def CheckChangeOnCommit(input_api, output_api):\n'
-        '  return ["foo"]', fake_presubmit)
 
   def testExecPresubmitScriptWithResultDB(self):
     description_lines = ('Hello there', 'this is a change', 'BUG=123')
@@ -584,15 +572,6 @@ class PresubmitUnittest(PresubmitTestsBase):
         '  return [output_api.PresubmitResult("test")]\n', fake_presubmit)
     sink.report.assert_called_with('CheckChangeOnCommit',
                                    rdb_wrapper.STATUS_PASS, 0)
-
-    # STATUS_FAIL on exception
-    sink.reset_mock()
-    self.assertRaises(
-        Exception, executer.ExecPresubmitScript, self.presubmit_text_prefix +
-        'def CheckChangeOnCommit(input_api, output_api):\n'
-        '  raise Exception("boom")', fake_presubmit)
-    sink.report.assert_called_with('CheckChangeOnCommit',
-                                   rdb_wrapper.STATUS_FAIL, 0)
 
     # STATUS_FAIL on fatal error
     sink.reset_mock()
@@ -628,7 +607,7 @@ class PresubmitUnittest(PresubmitTestsBase):
          '    pass\n'
          '  with input_api.CreateTemporaryFile():\n'
          '    pass\n'
-         '  return [output_api.PresubmitResult(None, f)\n'
+         '  return [output_api.PresubmitResult(\'\', f)\n'
          '          for f in input_api._named_temporary_files]\n'),
         fake_presubmit)
     self.assertEqual(['baz', 'quux'], [r._items for r in result])
@@ -645,7 +624,9 @@ class PresubmitUnittest(PresubmitTestsBase):
         0,
         presubmit.DoPostUploadExecuter(
             change=change, gerrit_obj=None, verbose=False))
-    self.assertEqual('', sys.stdout.getvalue())
+    self.assertEqual(
+        'Running Python ' + str(sys.version_info.major) + ' '
+        'post upload checks ...\n', sys.stdout.getvalue())
 
   def testDoPostUploadExecuterWarning(self):
     path = os.path.join(self.fake_root_dir, 'PRESUBMIT.py')
@@ -658,11 +639,12 @@ class PresubmitUnittest(PresubmitTestsBase):
         presubmit.DoPostUploadExecuter(
             change=change, gerrit_obj=None, verbose=False))
     self.assertEqual(
+        'Running Python ' + str(sys.version_info.major) + ' '
+        'post upload checks ...\n'
         '\n'
         '** Post Upload Hook Messages **\n'
         '??\n'
-        '\n',
-        sys.stdout.getvalue())
+        '\n', sys.stdout.getvalue())
 
   def testDoPostUploadExecuterWarning(self):
     path = os.path.join(self.fake_root_dir, 'PRESUBMIT.py')
@@ -675,11 +657,12 @@ class PresubmitUnittest(PresubmitTestsBase):
         presubmit.DoPostUploadExecuter(
             change=change, gerrit_obj=None, verbose=False))
     self.assertEqual(
+        'Running Python ' + str(sys.version_info.major) + ' '
+        'post upload checks ...\n'
         '\n'
         '** Post Upload Hook Messages **\n'
         '!!\n'
-        '\n',
-        sys.stdout.getvalue())
+        '\n', sys.stdout.getvalue())
 
   def testDoPresubmitChecksNoWarningsOrErrors(self):
     haspresubmit_path = os.path.join(
@@ -774,6 +757,7 @@ def CheckChangeOnCommit(input_api, output_api):
           }
         ],
         'more_cc': ['me@example.com'],
+        'skipped_presubmits': 0,
     }
 
     fake_result_json = json.dumps(fake_result, sort_keys=True)
@@ -898,11 +882,12 @@ def CheckChangeOnCommit(input_api, output_api):
       text = (
           RUNNING_PY_CHECKS_TEXT + 'Warning, no PRESUBMIT.py found.\n'
           'Running default presubmit script.\n'
-          '\n'
           '** Presubmit ERRORS **\n!!\n\n'
+          'There were Python %d presubmit errors.\n'
           'Was the presubmit check useful? If not, run "git cl presubmit -v"\n'
           'to figure out which PRESUBMIT.py was run, then run git blame\n'
-          'on the file to figure out who to ask for help.\n')
+          'on the file to figure out who to ask for help.\n' %
+          sys.version_info.major)
       self.assertEqual(sys.stdout.getvalue(), text)
 
   def ExampleChange(self, extra_lines=None):
@@ -1004,7 +989,7 @@ def CheckChangeOnCommit(input_api, output_api):
   def testParseChange_Files(self):
     presubmit._parse_files.return_value=[('M', 'random_file.txt')]
     scm.determine_scm.return_value = None
-    options = mock.Mock(all_files=False)
+    options = mock.Mock(all_files=False, source_controlled_only = False)
 
     change = presubmit._parse_change(None, options)
     self.assertEqual(presubmit.Change.return_value, change)
@@ -1046,7 +1031,7 @@ def CheckChangeOnCommit(input_api, output_api):
   def testParseChange_FilesAndGit(self):
     scm.determine_scm.return_value = 'git'
     presubmit._parse_files.return_value = [('M', 'random_file.txt')]
-    options = mock.Mock(all_files=False)
+    options = mock.Mock(all_files=False, source_controlled_only = False)
 
     change = presubmit._parse_change(None, options)
     self.assertEqual(presubmit.GitChange.return_value, change)
@@ -1261,7 +1246,7 @@ class InputApiUnittest(PresubmitTestsBase):
     # Ignores weird because of check_list, third_party because of skip_list,
     # binary isn't a text file and being deleted doesn't exist. The rest is
     # outside foo/.
-    rhs_lines = [x for x in input_api.RightHandSideLines(None)]
+    rhs_lines = list(input_api.RightHandSideLines(None))
     self.assertEqual(len(rhs_lines), 14)
     self.assertEqual(rhs_lines[0][0].LocalPath(),
                      presubmit.normpath(files[0][1]))
@@ -1406,7 +1391,7 @@ class InputApiUnittest(PresubmitTestsBase):
   def testDefaultOverrides(self):
     input_api = presubmit.InputApi(
         self.fake_change, './PRESUBMIT.py', False, None, False)
-    self.assertEqual(len(input_api.DEFAULT_FILES_TO_CHECK), 24)
+    self.assertEqual(len(input_api.DEFAULT_FILES_TO_CHECK), 25)
     self.assertEqual(len(input_api.DEFAULT_FILES_TO_SKIP), 12)
 
     input_api.DEFAULT_FILES_TO_CHECK = (r'.+\.c$',)
@@ -1446,10 +1431,12 @@ class InputApiUnittest(PresubmitTestsBase):
     change = presubmit.GitChange(
         'mychange', '', self.fake_root_dir, files, 0, 0, None)
     input_api = presubmit.InputApi(
-        change, './PRESUBMIT.py', False, None, False)
+        change, os.path.join(self.fake_root_dir, 'PRESUBMIT.py'), False, None,
+        False)
     # Sample usage of overriding the default white and black lists.
     got_files = input_api.AffectedSourceFiles(
         lambda x: input_api.FilterSourceFile(x, files_to_check, files_to_skip))
+
     self.assertEqual(len(got_files), 2)
     self.assertEqual(got_files[0].LocalPath(), 'eeaee')
     self.assertEqual(got_files[1].LocalPath(), 'eecaee')
@@ -1470,6 +1457,8 @@ class InputApiUnittest(PresubmitTestsBase):
     change = presubmit.Change(
         'mychange', '', self.fake_root_dir, files, 0, 0, None)
     affected_files = change.AffectedFiles()
+    # Validate that normpath strips trailing path separators.
+    self.assertEqual('isdir', normpath('isdir/'))
     # Local paths should remain the same
     self.assertEqual(affected_files[0].LocalPath(), normpath('isdir'))
     self.assertEqual(affected_files[1].LocalPath(), normpath('isdir/blat.cc'))
@@ -1491,16 +1480,18 @@ class InputApiUnittest(PresubmitTestsBase):
         change=change, presubmit_path=presubmit_path,
         is_committing=True, gerrit_obj=None, verbose=False)
     paths_from_api = api.AbsoluteLocalPaths()
-    self.assertEqual(len(paths_from_api), 2)
-    for absolute_paths in [paths_from_change, paths_from_api]:
-      self.assertEqual(
-          absolute_paths[0],
-          presubmit.normpath(os.path.join(
-              self.fake_root_dir, 'isdir')))
-      self.assertEqual(
-          absolute_paths[1],
-          presubmit.normpath(os.path.join(
-              self.fake_root_dir, 'isdir', 'blat.cc')))
+    self.assertEqual(len(paths_from_api), 1)
+    self.assertEqual(
+        paths_from_change[0],
+        presubmit.normpath(os.path.join(self.fake_root_dir, 'isdir')))
+    self.assertEqual(
+        paths_from_change[1],
+        presubmit.normpath(os.path.join(self.fake_root_dir, 'isdir',
+                                        'blat.cc')))
+    self.assertEqual(
+        paths_from_api[0],
+        presubmit.normpath(os.path.join(self.fake_root_dir, 'isdir',
+                                        'blat.cc')))
 
   def testDeprecated(self):
     change = presubmit.Change(
@@ -1779,6 +1770,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
     input_api.subprocess.CalledProcessError = fake_CalledProcessError
     input_api.verbose = False
     input_api.is_windows = False
+    input_api.no_diffs = False
 
     input_api.change = change
     input_api.is_committing = committing
@@ -2282,8 +2274,8 @@ the current line as well!
         "print('foo')\n"
     )
     license_text = (
-        r".*? Copyright \(c\) 2037 Nobody." "\n"
-        r".*? All Rights Reserved\." "\n"
+        r".*? Copyright \(c\) 2037 Nobody.\n"
+        r".*? All Rights Reserved\.\n"
     )
     self._LicenseCheck(text, license_text, True, None)
 
@@ -2295,8 +2287,8 @@ the current line as well!
         "print('foo')\n"
     )
     license_text = (
-        r".*? Copyright \(c\) 0007 Nobody." "\n"
-        r".*? All Rights Reserved\." "\n"
+        r".*? Copyright \(c\) 0007 Nobody.\n"
+        r".*? All Rights Reserved\.\n"
     )
     self._LicenseCheck(text, license_text, True,
                        presubmit.OutputApi.PresubmitPromptWarning)
@@ -2309,8 +2301,8 @@ the current line as well!
         "print('foo')\n"
     )
     license_text = (
-        r".*? Copyright \(c\) 0007 Nobody." "\n"
-        r".*? All Rights Reserved\." "\n"
+        r".*? Copyright \(c\) 0007 Nobody.\n"
+        r".*? All Rights Reserved\.\n"
     )
     self._LicenseCheck(text, license_text, False,
                        presubmit.OutputApi.PresubmitPromptWarning)
@@ -2318,8 +2310,8 @@ the current line as well!
   def testCheckLicenseEmptySuccess(self):
     text = ''
     license_text = (
-        r".*? Copyright \(c\) 2037 Nobody." "\n"
-        r".*? All Rights Reserved\." "\n"
+        r".*? Copyright \(c\) 2037 Nobody.\n"
+        r".*? All Rights Reserved\.\n"
     )
     self._LicenseCheck(text, license_text, True, None, accept_empty_files=True)
 
@@ -2449,14 +2441,14 @@ the current line as well!
     subprocess.Popen.return_value = process
     presubmit.sigint_handler.wait.return_value = (b'', None)
 
-    pylint = os.path.join(_ROOT, 'pylint-1.5')
+    pylint = os.path.join(_ROOT, 'pylint-2.7')
     pylintrc = os.path.join(_ROOT, 'pylintrc')
     env = {str('PYTHONPATH'): str('')}
     if sys.platform == 'win32':
       pylint += '.bat'
 
     results = presubmit_canned_checks.RunPylint(
-        input_api, presubmit.OutputApi)
+        input_api, presubmit.OutputApi, version='2.7')
 
     self.assertEqual([], results)
     self.assertEqual(subprocess.Popen.mock_calls, [

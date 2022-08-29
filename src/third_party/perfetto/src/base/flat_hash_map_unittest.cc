@@ -53,7 +53,7 @@ struct Key {
     val = other.val;
     other.val = -1;
   }
-  bool operator==(const Key& other) { return val == other.val; }
+  bool operator==(const Key& other) const { return val == other.val; }
   int val = 0;
   int id = instances++;
 };
@@ -317,9 +317,9 @@ TYPED_TEST(FlatHashMapTest, VsUnorderedMap) {
 
     // Insert some random elements.
     for (int i = 0; i < kRange; i++) {
-      int key = static_cast<int>(rng());
-      keys_copy.insert(key);
+      int key = static_cast<int>(rng()) / 2;
       int value = key * 2;
+      keys_copy.insert(key);
       auto it_and_inserted_u = umap.insert({key, value});
       auto it_and_inserted_f = fmap.Insert(key, value);
       ASSERT_EQ(it_and_inserted_u.second, it_and_inserted_f.second);

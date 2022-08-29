@@ -122,6 +122,20 @@ TIntermConstantUnion *CreateFloatNode(float value, TPrecision precision)
     return new TIntermConstantUnion(u, type);
 }
 
+TIntermConstantUnion *CreateVecNode(const float values[],
+                                    unsigned int vecSize,
+                                    TPrecision precision)
+{
+    TConstantUnion *u = new TConstantUnion[vecSize];
+    for (unsigned int channel = 0; channel < vecSize; ++channel)
+    {
+        u[channel].setFConst(values[channel]);
+    }
+
+    TType type(EbtFloat, precision, EvqConst, static_cast<uint8_t>(vecSize));
+    return new TIntermConstantUnion(u, type);
+}
+
 TIntermConstantUnion *CreateIndexNode(int index)
 {
     TConstantUnion *u = new TConstantUnion[1];
@@ -360,6 +374,36 @@ TIntermTyped *CreateBuiltInUnaryFunctionCallNode(const char *name,
 {
     TIntermSequence seq = {argument};
     return CreateBuiltInFunctionCallNode(name, &seq, symbolTable, shaderVersion);
+}
+
+// Returns true if a block ends in a branch (break, continue, return, etc).  This is only correct
+// after PruneNoOps, because it expects empty blocks after a branch to have been already pruned,
+// i.e. a block can only end in a branch if its last statement is a branch or is a block ending in
+// branch.
+bool EndsInBranch(TIntermBlock *block)
+{
+    while (block != nullptr)
+    {
+        // Get the last statement of the block.
+        TIntermSequence &statements = *block->getSequence();
+        if (statements.empty())
+        {
+            return false;
+        }
+
+        TIntermNode *lastStatement = statements.back();
+
+        // If it's a branch itself, we have the answer.
+        if (lastStatement->getAsBranchNode())
+        {
+            return true;
+        }
+
+        // Otherwise, see if it's a block that ends in a branch
+        block = lastStatement->getAsBlock();
+    }
+
+    return false;
 }
 
 }  // namespace sh

@@ -11,6 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_event_router.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_event_router_factory.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/l10n/time_format.h"
 
 namespace extensions {
@@ -81,6 +82,7 @@ bool TestPasswordsPrivateDelegate::AddPassword(
     const std::string& url,
     const std::u16string& username,
     const std::u16string& password,
+    const std::u16string& note,
     bool use_account_store,
     content::WebContents* web_contents) {
   return !url.empty() && !password.empty();
@@ -88,14 +90,13 @@ bool TestPasswordsPrivateDelegate::AddPassword(
 
 bool TestPasswordsPrivateDelegate::ChangeSavedPassword(
     const std::vector<int>& ids,
-    const std::u16string& new_username,
-    const std::u16string& new_password) {
+    const api::passwords_private::ChangeSavedPasswordParams& params) {
   for (int id : ids) {
     if (static_cast<size_t>(id) >= current_entries_.size()) {
       return false;
     }
   }
-  return !new_password.empty() && !ids.empty();
+  return !params.password.empty() && !ids.empty();
 }
 
 void TestPasswordsPrivateDelegate::RemoveSavedPasswords(
@@ -262,10 +263,7 @@ void TestPasswordsPrivateDelegate::GetPlaintextInsecurePassword(
 bool TestPasswordsPrivateDelegate::ChangeInsecureCredential(
     const api::passwords_private::InsecureCredential& credential,
     base::StringPiece new_password) {
-  return std::any_of(insecure_credentials_.begin(), insecure_credentials_.end(),
-                     [&credential](const auto& insecure_credential) {
-                       return insecure_credential.id == credential.id;
-                     });
+  return IsCredentialPresentInInsecureCredentialsList(credential);
 }
 
 // Fake implementation of RemoveInsecureCredential. This succeeds if the
@@ -276,6 +274,27 @@ bool TestPasswordsPrivateDelegate::RemoveInsecureCredential(
                        [&credential](const auto& insecure_credential) {
                          return insecure_credential.id == credential.id;
                        }) != 0;
+}
+
+// Fake implementation of MuteInsecureCredential. This succeeds if the
+// delegate knows of a insecure credential with the same id.
+bool TestPasswordsPrivateDelegate::MuteInsecureCredential(
+    const api::passwords_private::InsecureCredential& credential) {
+  return IsCredentialPresentInInsecureCredentialsList(credential);
+}
+
+// Fake implementation of UnmuteInsecureCredential. This succeeds if the
+// delegate knows of a insecure credential with the same id.
+bool TestPasswordsPrivateDelegate::UnmuteInsecureCredential(
+    const api::passwords_private::InsecureCredential& credential) {
+  return IsCredentialPresentInInsecureCredentialsList(credential);
+}
+
+void TestPasswordsPrivateDelegate::RecordChangePasswordFlowStarted(
+    const api::passwords_private::InsecureCredential& credential,
+    bool is_manual_flow) {
+  last_change_flow_url_ =
+      credential.change_password_url ? *credential.change_password_url : "";
 }
 
 void TestPasswordsPrivateDelegate::StartPasswordCheck(
@@ -336,6 +355,14 @@ void TestPasswordsPrivateDelegate::SendPasswordExceptionsList() {
       PasswordsPrivateEventRouterFactory::GetForProfile(profile_);
   if (router)
     router->OnPasswordExceptionsListChanged(current_exceptions_);
+}
+
+bool TestPasswordsPrivateDelegate::IsCredentialPresentInInsecureCredentialsList(
+    const api::passwords_private::InsecureCredential& credential) {
+  return std::any_of(insecure_credentials_.begin(), insecure_credentials_.end(),
+                     [&credential](const auto& insecure_credential) {
+                       return insecure_credential.id == credential.id;
+                     });
 }
 
 }  // namespace extensions

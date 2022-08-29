@@ -6,7 +6,7 @@
 #define ASH_SYSTEM_BLUETOOTH_BLUETOOTH_DEVICE_STATUS_UI_HANDLER_H_
 
 #include "ash/ash_export.h"
-#include "ash/public/cpp/toast_manager.h"
+#include "ash/public/cpp/system/toast_manager.h"
 #include "chromeos/services/bluetooth_config/public/mojom/cros_bluetooth_config.mojom.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -46,11 +46,15 @@ class ASH_EXPORT BluetoothDeviceStatusUiHandler
       const chromeos::bluetooth_config::mojom::PairedBluetoothDeviceProperties*
           paired_device_properties);
 
+  void BindToCrosBluetoothConfig();
+
   mojo::Remote<chromeos::bluetooth_config::mojom::CrosBluetoothConfig>
       remote_cros_bluetooth_config_;
   mojo::Receiver<
       chromeos::bluetooth_config::mojom::BluetoothDeviceStatusObserver>
       cros_bluetooth_device_status_observer_receiver_{this};
+
+  base::WeakPtrFactory<BluetoothDeviceStatusUiHandler> weak_ptr_factory_{this};
 };
 
 }  // namespace ash

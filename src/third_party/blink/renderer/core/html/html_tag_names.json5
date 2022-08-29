@@ -290,7 +290,7 @@
     },
     {
       name: "main",
-      interfaceName: "HTMLElement",
+      interfaceName: "HTMLMainElement",
     },
     "map",
     {
@@ -361,11 +361,6 @@
     {
       name: "plaintext",
       interfaceName: "HTMLElement",
-    },
-    {
-      name: "popup",
-      interfaceName: "HTMLPopupElement",
-      runtimeEnabled: "HTMLPopupElement",
     },
     {
       name: "portal",

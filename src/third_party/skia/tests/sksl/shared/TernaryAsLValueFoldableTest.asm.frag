@@ -26,8 +26,6 @@ OpDecorate %34 RelaxedPrecision
 OpDecorate %35 RelaxedPrecision
 OpDecorate %37 RelaxedPrecision
 OpDecorate %38 RelaxedPrecision
-OpDecorate %39 RelaxedPrecision
-OpDecorate %40 RelaxedPrecision
 %float = OpTypeFloat 32
 %v4float = OpTypeVector %float 4
 %_ptr_Output_v4float = OpTypePointer Output %v4float
@@ -40,8 +38,8 @@ OpDecorate %40 RelaxedPrecision
 %10 = OpVariable %_ptr_Uniform__UniformBuffer Uniform
 %void = OpTypeVoid
 %15 = OpTypeFunction %void
-%v2float = OpTypeVector %float 2
 %float_0 = OpConstant %float 0
+%v2float = OpTypeVector %float 2
 %19 = OpConstantComposite %v2float %float_0 %float_0
 %_ptr_Function_v2float = OpTypePointer Function %v2float
 %23 = OpTypeFunction %v4float %_ptr_Function_v2float
@@ -70,8 +68,6 @@ OpStore %r %35
 %36 = OpAccessChain %_ptr_Uniform_float %10 %int_0
 %37 = OpLoad %float %36
 OpStore %g %37
-%38 = OpLoad %float %r
-%39 = OpLoad %float %g
-%40 = OpCompositeConstruct %v4float %38 %39 %float_0 %float_1
-OpReturnValue %40
+%38 = OpCompositeConstruct %v4float %35 %37 %float_0 %float_1
+OpReturnValue %38
 OpFunctionEnd

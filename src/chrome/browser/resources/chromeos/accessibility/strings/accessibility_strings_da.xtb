@@ -54,7 +54,7 @@
 <translation id="1273314450961659276">Indstillinger for oplæsning</translation>
 <translation id="1275718070701477396">Valgt</translation>
 <translation id="1284576163386164372">Du kan til enhver tid se selvstudier ved at åbne menuerne. Du åbner menuerne ved at trykke med fire fingre. Aktivér derefter selvstudiet under sektionen "ChromeVox".</translation>
-<translation id="1291286136605998134">Til/fra-knap</translation>
+<translation id="1291286136605998134">Skydeknap</translation>
 <translation id="1299774449519412690">Lys himmelblå</translation>
 <translation id="1303806948938513162">Tryk med fire fingre for at åbne ChromeVox-menuerne</translation>
 <translation id="1313373992684326101">Gå til forrige sektion. Det kan f.eks. være statusbakken eller Appliste.</translation>
@@ -111,7 +111,7 @@
 <translation id="1639634871799530612">{COUNT,plural, =1{større end}one{# større end-tegn}other{# større end-tegn}}</translation>
 <translation id="1653266918374749391">Forrige niveau 3-overskrift</translation>
 <translation id="1657616855184033958">Vis filtre for begivenhedsstreaming</translation>
-<translation id="1659072772017912254">Ikke kontrolleret</translation>
+<translation id="1659072772017912254">Ikke markeret</translation>
 <translation id="1666326070478924810">Indstillinger for Tekstoplæsning</translation>
 <translation id="1674262202423278359">Navigation i ChromeVox</translation>
 <translation id="16777221443363124">Menulinje</translation>
@@ -259,7 +259,7 @@
 <translation id="2723001399770238859">lyd</translation>
 <translation id="27349076983469322">Lys baggrund</translation>
 <translation id="2737898226590637227">Der er ikke flere ARIA-orienteringspunkter</translation>
-<translation id="2749275490991666823">Kontrolleret</translation>
+<translation id="2749275490991666823">Markeret</translation>
 <translation id="27527859628328957">Gå til næste element, der kan fokuseres på</translation>
 <translation id="2756452585631602151">Angiv en tilpasset etiket</translation>
 <translation id="2766299274563946262">Der er ingen celle til venstre</translation>
@@ -536,6 +536,7 @@
 <translation id="4601367666219428522">tbl <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">Ignorerer næste tastetryk</translation>
 <translation id="4623097797855662355">Slutskrift</translation>
+<translation id="4624970070706497034">TalkBack leverer ikke længere tilpasningsmuligheder til Chromebooks. Du kan stadig bruge TalkBack, men du skal bruge TalkBacks standardtastaturgenveje. Tryk på søgetasten+A efterfulgt af K for at se de tilgængelige genveje. Hvis du stadig vil bruge TalkBack, skal du indtaste kommandoen igen.</translation>
 <translation id="463135993322337640">Tryk på ChromeVox o, n for at se nyhederne</translation>
 <translation id="4649220074413114917">Du kan stoppe alt det, der siges, ved at trykke på skærmen med to fingre. Dette er nyttigt, hvis du ikke vil have, at ChromeVox læser noget. Tryk på skærmen med to fingre for at fortsætte.</translation>
 <translation id="4660783501463101648">Classic er fjernet. Tastaturknappen, som skifter tilbage til ChromeVox Classic, er fjernet.</translation>
@@ -618,7 +619,6 @@
 <translation id="5170206230005240598">Brailletekst er aktiveret</translation>
 <translation id="5183440668879371625">Braille forrige linje</translation>
 <translation id="5189244881767082992">Linje</translation>
-<translation id="5234747236692380506">skriv <ph name="TEXT" /></translation>
 <translation id="5263034204789987535">Majshår</translation>
 <translation id="5263344797180442561">h2</translation>
 <translation id="528468243742722775">Afslut</translation>
@@ -666,6 +666,7 @@
 <translation id="5522423213731659107">Den hurtige orientering er fuldført.</translation>
 <translation id="5534303576632885660">si.ho</translation>
 <translation id="5539820223028224601">Lysegrå</translation>
+<translation id="554893713779400387">Slå diktering til/fra</translation>
 <translation id="5549179427201066174">Slå lydfeedback (lydikoner) til eller fra.</translation>
 <translation id="556042886152191864">Knap</translation>
 <translation id="5561345396546889625">Næste liste</translation>
@@ -684,6 +685,8 @@
 <translation id="5623842676595125836">Log</translation>
 <translation id="5628125749885014029">h4</translation>
 <translation id="5632083598315326067">Grafiksymbol</translation>
+<translation id="5648939288050772726">Tillykke! Nu har du lært det vigtigste om ChromeVox. Husk, at du til enhver tid kan åbne ChromeVox-kommandomenuen ved at trykke på Søg+punktum. Du kan få flere oplysninger om ChromeVox og Chrome OS i følgende artikler.
+    Hvis du er færdig med selvstudiet, kan du bruge ChromeVox til at gå til knappen Luk og klikke på den.</translation>
 <translation id="5653397561111110475">Brug hjælpefunktioner til touchskærm på Chromebook</translation>
 <translation id="5655682562155942719">Hopkommandoer</translation>
 <translation id="56637627897541303">Tekstområde</translation>
@@ -714,7 +717,7 @@
 <translation id="5847883414085148048">Dedikation</translation>
 <translation id="5850707923114094062">Panorer tilbage</translation>
 <translation id="5851548754964597211">Faneliste</translation>
-<translation id="5866042630553435010">Delvist kontrolleret</translation>
+<translation id="5866042630553435010">Delvist markeret</translation>
 <translation id="5866210856231860256">Tryk på søgetasten+højrepil eller på søgetasten+venstrepil for at gennemse lektioner til dette emne</translation>
 <translation id="5867591286054666064">Undervejs i dette selvstudie kan du trykke på en given tast for at høre, hvad den hedder.</translation>
 <translation id="5869546221129391014">Gitter</translation>
@@ -793,6 +796,7 @@
 <translation id="641759969622533235">{COUNT,plural, =1{kolon}one{# koloner}other{# koloner}}</translation>
 <translation id="6444046323172968959">Underretningsdialogboks</translation>
 <translation id="6452403590345320472">Indholdsfortegnelse</translation>
+<translation id="6457542714329819968">skriv</translation>
 <translation id="6468049171101508116">Knappen Næste</translation>
 <translation id="646954774886932461">Indeks</translation>
 <translation id="6475604559827479857">Farve til markering af ord:</translation>
@@ -965,8 +969,6 @@
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7713139339518499741">Naturlig stemme</translation>
 <translation id="7714340021005120797">Der er ikke flere kombifelter</translation>
-<translation id="772146615414628379">Tillykke! Nu har du lært det vigtigste om ChromeVox. Husk, at du til enhver tid kan åbne ChromeVox-kommandomenuen ved at trykke på Søg+punktum. Du kan få flere oplysninger om ChromeVox og Chrome OS i følgende artikler.
-    Hvis du er færdig med selvstudiet, kan du bruge ChromeVox til at gå til knappen Luk og klikke på den.</translation>
 <translation id="7724603315864178912">Klip</translation>
 <translation id="7731785449856576010">Der er ikke flere mediewidgets</translation>
 <translation id="7735498529470878067">Tryk for at høre kan hjælpe dig med hurtigt at få en fornemmelse af, hvad der foregår på skærmen.</translation>
@@ -1168,6 +1170,7 @@
 <translation id="9223032053830369045">Mørkerød</translation>
 <translation id="923331726185079994">ChromeVox blev opdateret</translation>
 <translation id="93384979447910801">Mørk havgrøn</translation>
+<translation id="937605981140327129">TalkBack er ikke installeret i øjeblikket. Installer Android AccessibilitySuite via Play Store, og prøv igen.</translation>
 <translation id="948171205378458592">Skru ned for talehastighed</translation>
 <translation id="957570623732056069">Stryg til venstre eller højre med én finger for at navigere rundt i lektionen</translation>
 <translation id="958854023026327378">Stryg nedad med én finger</translation>

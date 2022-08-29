@@ -5,7 +5,6 @@
 #include "content/browser/worker_host/worker_script_loader.h"
 
 #include "base/bind.h"
-#include "base/task/post_task.h"
 #include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/browser/service_worker/service_worker_main_resource_handle.h"
 #include "content/browser/service_worker/service_worker_main_resource_loader_interceptor.h"
@@ -232,9 +231,10 @@ void WorkerScriptLoader::OnReceiveEarlyHints(
 }
 
 void WorkerScriptLoader::OnReceiveResponse(
-    network::mojom::URLResponseHeadPtr response_head) {
+    network::mojom::URLResponseHeadPtr response_head,
+    mojo::ScopedDataPipeConsumerHandle body) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  client_->OnReceiveResponse(std::move(response_head));
+  client_->OnReceiveResponse(std::move(response_head), std::move(body));
 }
 
 void WorkerScriptLoader::OnReceiveRedirect(
@@ -268,12 +268,6 @@ void WorkerScriptLoader::OnReceiveCachedMetadata(mojo_base::BigBuffer data) {
 void WorkerScriptLoader::OnTransferSizeUpdated(int32_t transfer_size_diff) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   client_->OnTransferSizeUpdated(transfer_size_diff);
-}
-
-void WorkerScriptLoader::OnStartLoadingResponseBody(
-    mojo::ScopedDataPipeConsumerHandle consumer) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  client_->OnStartLoadingResponseBody(std::move(consumer));
 }
 
 void WorkerScriptLoader::OnComplete(

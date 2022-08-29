@@ -8,6 +8,7 @@ ts_library("sdk") {
   testonly = true
   sources = [
     "AccessibilityModel_test.ts",
+    "CPUThrottlingManager_test.ts",
     "CSSContainerQuery_test.ts",
     "CSSPropertyParser_test.ts",
     "CSSProperty_test.ts",
@@ -15,7 +16,9 @@ ts_library("sdk") {
     "CookieModel_test.ts",
     "CookieParser_test.ts",
     "Cookie_test.ts",
+    "DOMModel_test.ts",
     "DebuggerModel_test.ts",
+    "EmulationModel_test.ts",
     "FrameManager_test.ts",
     "NetworkManager_test.ts",
     "OverlayColorGenerator_test.ts",
@@ -23,7 +26,9 @@ ts_library("sdk") {
     "PageResourceLoader_test.ts",
     "RemoteObject_test.ts",
     "ResourceTreeModel_test.ts",
+    "Script_test.ts",
     "ServerTiming_test.ts",
+    "SourceMapManager_test.ts",
     "SourceMap_test.ts",
     "TracingModel_test.ts",
   ]
