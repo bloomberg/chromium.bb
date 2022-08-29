@@ -224,11 +224,11 @@ class AXPlatformNodeTextRangeProviderWinBrowserTest
   //                        bottom viewport alignment
   void ScrollIntoViewBrowserTestTemplate(
       const ax::mojom::Role expected_start_role,
-      BrowserAccessibility* (BrowserAccessibility::*fstart)(uint32_t) const,
-      const uint32_t fstart_arg,
+      BrowserAccessibility* (BrowserAccessibility::*fstart)(size_t) const,
+      const size_t fstart_arg,
       const ax::mojom::Role expected_end_role,
-      BrowserAccessibility* (BrowserAccessibility::*fend)(uint32_t) const,
-      const uint32_t fend_arg,
+      BrowserAccessibility* (BrowserAccessibility::*fend)(size_t) const,
+      const size_t fend_arg,
       const bool align_to_top) {
     BrowserAccessibility* root_browser_accessibility =
         GetRootAndAssertNonNull();
@@ -357,11 +357,11 @@ class AXPlatformNodeTextRangeProviderWinBrowserTest
 
   void ScrollIntoViewTopBrowserTestTemplate(
       const ax::mojom::Role expected_role_start,
-      BrowserAccessibility* (BrowserAccessibility::*fstart)(uint32_t) const,
-      const uint32_t fstart_arg,
+      BrowserAccessibility* (BrowserAccessibility::*fstart)(size_t) const,
+      const size_t fstart_arg,
       const ax::mojom::Role expected_role_end,
-      BrowserAccessibility* (BrowserAccessibility::*fend)(uint32_t) const,
-      const uint32_t fend_arg) {
+      BrowserAccessibility* (BrowserAccessibility::*fend)(size_t) const,
+      const size_t fend_arg) {
     ScrollIntoViewBrowserTestTemplate(expected_role_start, fstart, fstart_arg,
                                       expected_role_end, fend, fend_arg, true);
   }
@@ -384,11 +384,11 @@ class AXPlatformNodeTextRangeProviderWinBrowserTest
 
   void ScrollIntoViewBottomBrowserTestTemplate(
       const ax::mojom::Role expected_role_start,
-      BrowserAccessibility* (BrowserAccessibility::*fstart)(uint32_t) const,
-      const uint32_t fstart_arg,
+      BrowserAccessibility* (BrowserAccessibility::*fstart)(size_t) const,
+      const size_t fstart_arg,
       const ax::mojom::Role expected_role_end,
-      BrowserAccessibility* (BrowserAccessibility::*fend)(uint32_t) const,
-      const uint32_t fend_arg) {
+      BrowserAccessibility* (BrowserAccessibility::*fend)(size_t) const,
+      const size_t fend_arg) {
     ScrollIntoViewBrowserTestTemplate(expected_role_start, fstart, fstart_arg,
                                       expected_role_end, fend, fend_arg, false);
   }
@@ -461,8 +461,9 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
   ComPtr<IRawElementProviderSimple> before_link_text_raw =
       QueryInterfaceFromNode<IRawElementProviderSimple>(before_link_text_node);
 
-  BrowserAccessibility* link_node = FindNode(
-      ax::mojom::Role::kLink, "Link text 1 Link text 2Link text 3 Link text 4");
+  BrowserAccessibility* link_node =
+      FindNode(ax::mojom::Role::kLink,
+               "Link text 1 Link text 2 Link text 3 Link text 4");
   ASSERT_NE(nullptr, link_node);
   ComPtr<IRawElementProviderSimple> link_raw =
       QueryInterfaceFromNode<IRawElementProviderSimple>(link_node);
@@ -1398,6 +1399,10 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
         <div style="font-weight: bold">bold 2</div>
         <div style="font-family: sans-serif">font-family 1</div>
         <div style="font-family: sans-serif">font-family 2</div>
+        <div aria-invalid="spelling">spelling 1</div>
+        <div aria-invalid="spelling">spelling two</div> <!-- different length string on purpose -->
+        <div aria-invalid="grammar">grammar 1</div>
+        <div aria-invalid="grammar">grammar two</div> <!-- different length string on purpose -->
       </body>
       </html>)HTML");
   auto* node = FindNode(ax::mojom::Role::kStaticText, "plain 1");
@@ -1513,6 +1518,41 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
       L"plain 1\nplain 2\nbackground-color 1\nbackground-color 2\ncolor "
       L"1\ncolor 2\noverline 1\noverline 2\nline-through 1\nline-through "
       L"2\nsup 1\nsup 2\nbold 1\nbold 2",
+      /*expected_count*/ -1);
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Format,
+      /*count*/ 2,
+      /*expected_text*/
+      L"plain 1\nplain 2\nbackground-color 1\nbackground-color 2\ncolor "
+      L"1\ncolor 2\noverline 1\noverline 2\nline-through 1\nline-through "
+      L"2\nsup 1\nsup 2\nbold 1\nbold 2\nfont-family 1\nfont-family "
+      L"2\nspelling 1\nspelling two",
+      /*expected_count*/ 2);
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Format,
+      /*count*/ -1,
+      /*expected_text*/
+      L"plain 1\nplain 2\nbackground-color 1\nbackground-color 2\ncolor "
+      L"1\ncolor 2\noverline 1\noverline 2\nline-through 1\nline-through "
+      L"2\nsup 1\nsup 2\nbold 1\nbold 2\nfont-family 1\nfont-family 2",
+      /*expected_count*/ -1);
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Format,
+      /*count*/ 2,
+      /*expected_text*/
+      L"plain 1\nplain 2\nbackground-color 1\nbackground-color 2\ncolor "
+      L"1\ncolor 2\noverline 1\noverline 2\nline-through 1\nline-through "
+      L"2\nsup 1\nsup 2\nbold 1\nbold 2\nfont-family 1\nfont-family "
+      L"2\nspelling 1\nspelling two\ngrammar 1\ngrammar two",
+      /*expected_count*/ 2);
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Format,
+      /*count*/ -1,
+      /*expected_text*/
+      L"plain 1\nplain 2\nbackground-color 1\nbackground-color 2\ncolor "
+      L"1\ncolor 2\noverline 1\noverline 2\nline-through 1\nline-through "
+      L"2\nsup 1\nsup 2\nbold 1\nbold 2\nfont-family 1\nfont-family "
+      L"2\nspelling 1\nspelling two",
       /*expected_count*/ -1);
 }
 
@@ -2758,7 +2798,7 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
       /*expected_count*/ -1);
   ASSERT_HRESULT_SUCCEEDED(
       text_range_provider->ExpandToEnclosingUnit(TextUnit_Word));
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"\xA0\n");
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"\xA0");
 
   // Case 2: test on range that includes the whitespace and the following word.
   GetTextRangeProviderFromTextNode(*node, &text_range_provider);
@@ -2771,7 +2811,7 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
                                    /*expected_count*/ 1);
   ASSERT_HRESULT_SUCCEEDED(
       text_range_provider->ExpandToEnclosingUnit(TextUnit_Word));
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"\xA0\n");
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"\xA0");
 
   // Case 3: test on degenerate range after whitespace.
   node = FindNode(ax::mojom::Role::kStaticText, "3.14");
@@ -2933,6 +2973,99 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
       TextUnit_Line,
       "<h1>line one</h1><ul><li>line two</li><li>line three</li></ul>",
       {L"line one", L"• line two", L"• line three"});
+}
+
+IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
+                       ExpandToLineCrossingBoundary) {
+  LoadInitialAccessibilityTreeFromHtml(
+      R"HTML(<!DOCTYPE html>
+      <html>
+        <body>
+          plain text <b>on <i>line</i></b><i><b> one<br>
+          <span>next</span> <span>text</span> </b> on </i>line two<br>
+          line three,
+        </body>
+      </html>)HTML");
+
+  BrowserAccessibility* start_of_second_line =
+      FindNode(ax::mojom::Role::kStaticText, "next");
+  ASSERT_NE(nullptr, start_of_second_line);
+
+  ComPtr<ITextRangeProvider> text_range_provider;
+  GetTextRangeProviderFromTextNode(*start_of_second_line, &text_range_provider);
+  ASSERT_NE(nullptr, text_range_provider.Get());
+
+  // Ensure ExpandToEnclosingUnit by Line both moves the start and end endpoints
+  // appropriately (doesn't move to previous line for start and spans multiple
+  // elements).
+  text_range_provider->ExpandToEnclosingUnit(TextUnit_Line);
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"next text on line two");
+
+  BrowserAccessibility* text_on_second_line =
+      FindNode(ax::mojom::Role::kStaticText, "next");
+  ASSERT_NE(nullptr, text_on_second_line);
+
+  GetTextRangeProviderFromTextNode(*text_on_second_line, &text_range_provider);
+  ASSERT_NE(nullptr, text_range_provider.Get());
+
+  // Ensure ExpandToEnclosingUnit by Line moves the start past the anchor
+  // boundary (but not past the start of the line).
+  text_range_provider->ExpandToEnclosingUnit(TextUnit_Line);
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"next text on line two");
+}
+
+IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
+                       ExpandToParagraphCrossingBoundary) {
+  LoadInitialAccessibilityTreeFromHtml(
+      R"HTML(<!DOCTYPE html>
+      <html>
+        <body>
+          plain text <b>on <i>line</i></b><i><b> one<br>
+          <span>next</span> <span>text</span> </b> on </i>line two<br>
+          line three,
+        </body>
+      </html>)HTML");
+
+  BrowserAccessibility* first_bold_text =
+      FindNode(ax::mojom::Role::kStaticText, "line two");
+  ASSERT_NE(nullptr, first_bold_text);
+
+  ComPtr<ITextRangeProvider> text_range_provider;
+  GetTextRangeProviderFromTextNode(*first_bold_text, &text_range_provider);
+  ASSERT_NE(nullptr, text_range_provider.Get());
+
+  // Ensure ExpandToEnclosingUnit by Line both moves the start and end endpoints
+  // appropriately.
+  text_range_provider->ExpandToEnclosingUnit(TextUnit_Paragraph);
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"next text on line two\n");
+}
+
+IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
+                       ExpandToPageCrossingBoundary) {
+  LoadInitialAccessibilityTreeFromHtml(
+      R"HTML(<!DOCTYPE html>
+      <html>
+        <body>
+          plain text <b>on <i>line</i></b><i><b> one<br>
+          <span>next</span> <span>text</span> </b> on </i>line two<br>
+          line three,
+        </body>
+      </html>)HTML");
+
+  BrowserAccessibility* first_bold_text =
+      FindNode(ax::mojom::Role::kStaticText, "next");
+  ASSERT_NE(nullptr, first_bold_text);
+
+  ComPtr<ITextRangeProvider> text_range_provider;
+  GetTextRangeProviderFromTextNode(*first_bold_text, &text_range_provider);
+  ASSERT_NE(nullptr, text_range_provider.Get());
+
+  // Ensure ExpandToEnclosingUnit by Line both moves the start and end endpoints
+  // appropriately.
+  text_range_provider->ExpandToEnclosingUnit(TextUnit_Page);
+  EXPECT_UIA_TEXTRANGE_EQ(
+      text_range_provider,
+      L"plain text on line one\nnext text on line two\nline three,");
 }
 
 IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,

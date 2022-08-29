@@ -36,16 +36,19 @@ def ClearStarupTracingStateIfNeeded(platform_backend):
 class ChromeReturnAsStreamTracingAgent(chrome_tracing_agent.ChromeTracingAgent):
   @classmethod
   def IsSupported(cls, platform_backend):
-    return platform_backend.GetOSName() != 'fuchsia'
+    # TODO(crbug.com/1279968): Workaround to enable streaming for some fuchsia
+    # platforms while progress is made on others.
+    return True
 
   def _GetTransferMode(self):
     return 'ReturnAsStream'
 
   def _StartStartupTracing(self, config):
-    self._CreateTraceConfigFile(config)
-    logging.info('Created startup trace config file in: %s',
-                 self._trace_config_file)
-    return True
+    if self._CreateTraceConfigFile(config):
+      logging.info('Created startup trace config file in: %s',
+                   self._trace_config_file)
+      return True
+    return False
 
   def _CreateTraceConfigFileString(self, config):
     # See src/components/tracing/trace_config_file.h for the format
@@ -67,6 +70,7 @@ class ChromeReturnAsStreamTracingAgent(chrome_tracing_agent.ChromeTracingAgent):
       # The config file has fixed path on Android. We need to ensure it is
       # always cleaned up.
       atexit_with_log.Register(self._RemoveTraceConfigFile)
+      return True
     elif os_name == 'chromeos':
       self._trace_config_file = os.path.join(_CHROME_TRACE_CONFIG_DIR_CROS,
                                              _CHROME_TRACE_CONFIG_FILE_NAME)
@@ -77,6 +81,7 @@ class ChromeReturnAsStreamTracingAgent(chrome_tracing_agent.ChromeTracingAgent):
       # The config file has fixed path on CrOS. We need to ensure it is
       # always cleaned up.
       atexit_with_log.Register(self._RemoveTraceConfigFile)
+      return True
     elif os_name in _DESKTOP_OS_NAMES:
       self._trace_config_file = os.path.join(tempfile.mkdtemp(),
                                              _CHROME_TRACE_CONFIG_FILE_NAME)
@@ -86,6 +91,10 @@ class ChromeReturnAsStreamTracingAgent(chrome_tracing_agent.ChromeTracingAgent):
         f.write(trace_config_string)
       os.chmod(self._trace_config_file,
                os.stat(self._trace_config_file).st_mode | stat.S_IROTH)
+      return True
+    elif os_name == 'fuchsia':
+      logging.warning('Fuchsia does not support startup tracing')
+      return False
     else:
       raise NotImplementedError('Tracing not supported on: %s' % os_name)
 

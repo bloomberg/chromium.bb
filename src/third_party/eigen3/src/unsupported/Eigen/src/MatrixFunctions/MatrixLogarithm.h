@@ -334,7 +334,7 @@ public:
   inline void evalTo(ResultType& result) const
   {
     typedef typename internal::nested_eval<Derived, 10>::type DerivedEvalType;
-    typedef typename internal::remove_all<DerivedEvalType>::type DerivedEvalTypeClean;
+    typedef internal::remove_all_t<DerivedEvalType> DerivedEvalTypeClean;
     typedef internal::traits<DerivedEvalTypeClean> Traits;
     typedef std::complex<typename NumTraits<Scalar>::Real> ComplexScalar;
     typedef Matrix<ComplexScalar, Dynamic, Dynamic, 0, Traits::RowsAtCompileTime, Traits::ColsAtCompileTime> DynMatrixType;

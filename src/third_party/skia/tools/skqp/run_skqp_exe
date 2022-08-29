@@ -24,13 +24,11 @@ def skqp(build):
     adb('push',
         os.path.join(*'platform_tools/android/apps/skqp/src/main/assets/skqp'.split('/')),
         '/data/local/tmp/skqp/skqp_assets')
-    adb('push',
-        os.path.join(*'out/skqp/gmkb'.split('/')), '/data/local/tmp/skqp/skqp_assets')
     adb('push', 'resources', '/data/local/tmp/skqp/skqp_assets')
 
     adb('push', os.path.join(build, 'skqp'), '/data/local/tmp/skqp/skqp')
 
-    cmd = "cd /data/local/tmp/skqp; ./skqp skqp_assets '' report"
+    cmd = "cd /data/local/tmp/skqp; ./skqp skqp_assets report"
     sys.stdout.write("adb 'shell' '%s'\n" % cmd)
     ret = subprocess.call(['adb', 'shell', cmd])
 

@@ -22,46 +22,19 @@
  */
 
 #include "avcodec.h"
-#include "internal.h"
+#include "codec_internal.h"
 #include "v210dec.h"
+#include "v210dec_init.h"
 #include "libavutil/bswap.h"
 #include "libavutil/internal.h"
 #include "libavutil/intreadwrite.h"
 #include "thread.h"
-
-#define READ_PIXELS(a, b, c)         \
-    do {                             \
-        val  = av_le2ne32(*src++);   \
-        *a++ =  val & 0x3FF;         \
-        *b++ = (val >> 10) & 0x3FF;  \
-        *c++ = (val >> 20) & 0x3FF;  \
-    } while (0)
 
 typedef struct ThreadData {
     AVFrame *frame;
     uint8_t *buf;
     int stride;
 } ThreadData;
-
-static void v210_planar_unpack_c(const uint32_t *src, uint16_t *y, uint16_t *u, uint16_t *v, int width)
-{
-    uint32_t val;
-    int i;
-
-    for( i = 0; i < width-5; i += 6 ){
-        READ_PIXELS(u, y, v);
-        READ_PIXELS(y, u, y);
-        READ_PIXELS(v, y, u);
-        READ_PIXELS(y, v, y);
-    }
-}
-
-av_cold void ff_v210dec_init(V210DecContext *s)
-{
-    s->unpack_frame = v210_planar_unpack_c;
-    if (ARCH_X86)
-        ff_v210_x86_init(s);
-}
 
 static av_cold int decode_init(AVCodecContext *avctx)
 {
@@ -136,14 +109,12 @@ static int v210_decode_slice(AVCodecContext *avctx, void *arg, int jobnr, int th
     return 0;
 }
 
-static int decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
-                        AVPacket *avpkt)
+static int decode_frame(AVCodecContext *avctx, AVFrame *pic,
+                        int *got_frame, AVPacket *avpkt)
 {
     V210DecContext *s = avctx->priv_data;
     ThreadData td;
     int ret, stride, aligned_input;
-    ThreadFrame frame = { .f = data };
-    AVFrame *pic = data;
     const uint8_t *psrc = avpkt->data;
 
     if (s->custom_stride )
@@ -177,7 +148,7 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
         ff_v210dec_init(s);
     }
 
-    if ((ret = ff_thread_get_buffer(avctx, &frame, 0)) < 0)
+    if ((ret = ff_thread_get_buffer(avctx, pic, 0)) < 0)
         return ret;
 
     pic->pict_type = AV_PICTURE_TYPE_I;
@@ -213,17 +184,17 @@ static const AVClass v210dec_class = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-const AVCodec ff_v210_decoder = {
-    .name           = "v210",
-    .long_name      = NULL_IF_CONFIG_SMALL("Uncompressed 4:2:2 10-bit"),
-    .type           = AVMEDIA_TYPE_VIDEO,
-    .id             = AV_CODEC_ID_V210,
+const FFCodec ff_v210_decoder = {
+    .p.name         = "v210",
+    .p.long_name    = NULL_IF_CONFIG_SMALL("Uncompressed 4:2:2 10-bit"),
+    .p.type         = AVMEDIA_TYPE_VIDEO,
+    .p.id           = AV_CODEC_ID_V210,
     .priv_data_size = sizeof(V210DecContext),
     .init           = decode_init,
-    .decode         = decode_frame,
-    .capabilities   = AV_CODEC_CAP_DR1 |
+    FF_CODEC_DECODE_CB(decode_frame),
+    .p.capabilities = AV_CODEC_CAP_DR1 |
                       AV_CODEC_CAP_SLICE_THREADS |
                       AV_CODEC_CAP_FRAME_THREADS,
-    .priv_class     = &v210dec_class,
+    .p.priv_class   = &v210dec_class,
     .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };

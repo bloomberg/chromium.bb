@@ -4,6 +4,7 @@
 
 #include "base/base_switches.h"
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
@@ -16,7 +17,11 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 base::FilePath GetMojoCoreLibraryPath() {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_FUCHSIA)
+  return base::FilePath("libmojo_core.so");
+#else  // BUILDFLAG(IS_FUCHSIA)
+
+#if BUILDFLAG(IS_WIN)
   const char kLibraryFilename[] = "mojo_core.dll";
 #else
   const char kLibraryFilename[] = "libmojo_core.so";
@@ -29,6 +34,8 @@ base::FilePath GetMojoCoreLibraryPath() {
   base::FilePath current_directory;
   CHECK(base::GetCurrentDirectory(&current_directory));
   return current_directory.Append(executable_dir).AppendASCII(kLibraryFilename);
+
+#endif  // BUILDFLAG(IS_FUCHSIA)
 }
 
 int main(int argc, char** argv) {

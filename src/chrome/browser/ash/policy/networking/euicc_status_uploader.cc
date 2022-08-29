@@ -8,10 +8,12 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
+#include "chrome/browser/ash/settings/device_settings_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chromeos/dbus/hermes/hermes_manager_client.h"
-#include "chromeos/network/managed_network_configuration_handler.h"
+#include "chromeos/network/cellular_esim_profile_handler.h"
+#include "chromeos/network/managed_cellular_pref_handler.h"
+#include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state_handler.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
@@ -51,6 +53,15 @@ const net::BackoffEntry::Policy kBackOffPolicy = {
     // Starts with initial delay.
     true,
 };
+
+// Returns whether the device's policy data is active and provisioned.
+bool IsDeviceManaged() {
+  return ::ash::DeviceSettingsService::IsInitialized() &&
+         ::ash::DeviceSettingsService::Get()->policy_data() &&
+         ::ash::DeviceSettingsService::Get()->policy_data()->state() ==
+             enterprise_management::PolicyData::ACTIVE;
+}
+
 }  // namespace
 
 // static
@@ -61,26 +72,40 @@ const char EuiccStatusUploader::kShouldSendClearProfilesRequestPref[] =
 
 EuiccStatusUploader::EuiccStatusUploader(CloudPolicyClient* client,
                                          PrefService* local_state)
+    : EuiccStatusUploader(client,
+                          local_state,
+                          base::BindRepeating(&IsDeviceManaged)) {}
+
+EuiccStatusUploader::EuiccStatusUploader(
+    CloudPolicyClient* client,
+    PrefService* local_state,
+    IsDeviceActiveCallback is_device_active_callback)
     : client_(client),
       local_state_(local_state),
+      is_device_managed_callback_(std::move(is_device_active_callback)),
       retry_entry_(&kBackOffPolicy) {
-  chromeos::NetworkHandler::Get()
-      ->managed_network_configuration_handler()
-      ->AddObserver(this);
-  chromeos::HermesEuiccClient::Get()->AddObserver(this);
-  chromeos::NetworkHandler::Get()->network_state_handler()->AddObserver(
-      this, FROM_HERE);
-  MaybeUploadStatus();
+  if (!chromeos::NetworkHandler::IsInitialized()) {
+    LOG(WARNING) << "NetworkHandler is not initialized.";
+    return;
+  }
+
+  hermes_manager_observation_.Observe(chromeos::HermesManagerClient::Get());
+  hermes_euicc_observation_.Observe(chromeos::HermesEuiccClient::Get());
+  cloud_policy_client_observation_.Observe(client_);
+
+  auto* network_handler = chromeos::NetworkHandler::Get();
+  network_handler->managed_cellular_pref_handler()->AddObserver(this);
+  managed_network_configuration_handler_ =
+      network_handler->managed_network_configuration_handler();
+  managed_network_configuration_handler_->AddObserver(this);
 }
 
 EuiccStatusUploader::~EuiccStatusUploader() {
-  chromeos::NetworkHandler::Get()
-      ->managed_network_configuration_handler()
-      ->RemoveObserver(this);
-  chromeos::NetworkHandler::Get()->network_state_handler()->RemoveObserver(
-      this, FROM_HERE);
-  if (chromeos::HermesEuiccClient::Get())
-    chromeos::HermesEuiccClient::Get()->RemoveObserver(this);
+  if (chromeos::NetworkHandler::IsInitialized())
+    chromeos::NetworkHandler::Get()
+        ->managed_cellular_pref_handler()
+        ->RemoveObserver(this);
+  OnManagedNetworkConfigurationHandlerShuttingDown();
 }
 
 // static
@@ -104,7 +129,7 @@ EuiccStatusUploader::ConstructRequestFromStatus(const base::Value& status,
   auto* mutable_esim_profiles = upload_request->mutable_esim_profiles();
   for (const auto& esim_profile :
        status.FindListPath(kLastUploadedEuiccStatusESimProfilesKey)
-           ->GetList()) {
+           ->GetListDeprecated()) {
     enterprise_management::ESimProfileInfo esim_profile_info;
     esim_profile_info.set_iccid(*esim_profile.FindStringKey(
         kLastUploadedEuiccStatusESimProfilesIccidKey));
@@ -116,11 +141,36 @@ EuiccStatusUploader::ConstructRequestFromStatus(const base::Value& status,
   return upload_request;
 }
 
+void EuiccStatusUploader::OnManagedNetworkConfigurationHandlerShuttingDown() {
+  if (managed_network_configuration_handler_ &&
+      managed_network_configuration_handler_->HasObserver(this)) {
+    managed_network_configuration_handler_->RemoveObserver(this);
+  }
+  managed_network_configuration_handler_ = nullptr;
+}
+
+void EuiccStatusUploader::OnRegistrationStateChanged(
+    CloudPolicyClient* client) {
+  MaybeUploadStatus();
+}
+
+void EuiccStatusUploader::OnPolicyFetched(CloudPolicyClient* client) {
+  if (is_policy_fetched_) {
+    return;
+  }
+  is_policy_fetched_ = true;
+  MaybeUploadStatus();
+}
+
 void EuiccStatusUploader::PoliciesApplied(const std::string& userhash) {
   MaybeUploadStatus();
 }
 
-void EuiccStatusUploader::NetworkListChanged() {
+void EuiccStatusUploader::OnManagedCellularPrefChanged() {
+  MaybeUploadStatus();
+}
+
+void EuiccStatusUploader::OnAvailableEuiccListChanged() {
   MaybeUploadStatus();
 }
 
@@ -132,7 +182,7 @@ void EuiccStatusUploader::OnEuiccReset(const dbus::ObjectPath& euicc_path) {
   MaybeUploadStatus();
 }
 
-base::Value EuiccStatusUploader::GetCurrentEuiccStatus() {
+base::Value EuiccStatusUploader::GetCurrentEuiccStatus() const {
   base::Value status(base::Value::Type::DICTIONARY);
 
   status.SetIntKey(
@@ -141,46 +191,27 @@ base::Value EuiccStatusUploader::GetCurrentEuiccStatus() {
 
   base::Value esim_profiles(base::Value::Type::LIST);
 
-  chromeos::NetworkStateHandler::NetworkStateList networks;
-  chromeos::NetworkHandler::Get()
-      ->network_state_handler()
-      ->GetNetworkListByType(ash::NetworkTypePattern::Cellular(),
-                             /*configure_only=*/false, /*visible_only=*/false,
-                             /*limit=*/0, &networks);
-
-  onc::ONCSource onc_source = onc::ONC_SOURCE_NONE;
-  for (const chromeos::NetworkState* network : networks) {
-    // Report only managed profiles.
-    if (!network->IsManagedByPolicy())
-      continue;
-
+  for (const auto& esim_profile : chromeos::NetworkHandler::Get()
+                                      ->cellular_esim_profile_handler()
+                                      ->GetESimProfiles()) {
     // Do not report non-provisioned cellular networks.
-    if (network->iccid().empty())
+    if (esim_profile.iccid().empty())
       continue;
-
-    // Read the SMDP address from ONC.
-    const base::DictionaryValue* policy =
-        chromeos::NetworkHandler::Get()
-            ->managed_network_configuration_handler()
-            ->FindPolicyByGUID(/*userhash=*/std::string(), network->guid(),
-                               &onc_source);
-    DCHECK(policy);
-
-    const base::Value* cellular_dict =
-        policy->FindKey(::onc::network_config::kCellular);
-    DCHECK(cellular_dict);
 
     const std::string* smdp_address =
-        cellular_dict->FindStringKey(::onc::cellular::kSMDPAddress);
+        chromeos::NetworkHandler::Get()
+            ->managed_cellular_pref_handler()
+            ->GetSmdpAddressFromIccid(esim_profile.iccid());
+    // Report only managed profiles with a SMDP address.
     if (!smdp_address)
       continue;
 
-    base::Value esim_profile(base::Value::Type::DICTIONARY);
-    esim_profile.SetStringKey(kLastUploadedEuiccStatusESimProfilesIccidKey,
-                              network->iccid());
-    esim_profile.SetStringKey(
+    base::Value esim_profile_to_add(base::Value::Type::DICTIONARY);
+    esim_profile_to_add.SetStringKey(
+        kLastUploadedEuiccStatusESimProfilesIccidKey, esim_profile.iccid());
+    esim_profile_to_add.SetStringKey(
         kLastUploadedEuiccStatusESimProfilesSmdpAddressKey, *smdp_address);
-    esim_profiles.Append(std::move(esim_profile));
+    esim_profiles.Append(std::move(esim_profile_to_add));
   }
 
   status.SetPath(kLastUploadedEuiccStatusESimProfilesKey,
@@ -189,6 +220,31 @@ base::Value EuiccStatusUploader::GetCurrentEuiccStatus() {
 }
 
 void EuiccStatusUploader::MaybeUploadStatus() {
+  if (!client_->is_registered()) {
+    VLOG(1) << "Policy client is not registered.";
+    return;
+  }
+
+  if (!is_policy_fetched_) {
+    VLOG(1) << "Policy not fetched yet.";
+    return;
+  }
+
+  if (!is_device_managed_callback_.Run()) {
+    VLOG(1) << "Device is unmanaged or deprovisioned.";
+    return;
+  }
+
+  if (!managed_network_configuration_handler_) {
+    LOG(WARNING) << "ManageNetworkConfigurationHandler is not initialized.";
+    return;
+  }
+
+  if (chromeos::HermesManagerClient::Get()->GetAvailableEuiccs().empty()) {
+    VLOG(1) << "No EUICC available on the device.";
+    return;
+  }
+
   const base::Value* last_uploaded_pref =
       local_state_->Get(kLastUploadedEuiccStatusPref);
   auto current_state = GetCurrentEuiccStatus();

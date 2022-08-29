@@ -17,21 +17,22 @@
 #include <string>
 
 #include "base/check.h"
+#include "base/numerics/clamped_math.h"
 #include "base/numerics/safe_conversions.h"
 #include "build/build_config.h"
+#include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/geometry/outsets.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/vector2d.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 typedef struct tagRECT RECT;
-#elif defined(OS_APPLE)
+#elif BUILDFLAG(IS_APPLE)
 typedef struct CGRect CGRect;
 #endif
 
 namespace gfx {
-
-class Insets;
 
 class GEOMETRY_EXPORT Rect {
  public:
@@ -39,23 +40,23 @@ class GEOMETRY_EXPORT Rect {
   constexpr Rect(int width, int height) : size_(width, height) {}
   constexpr Rect(int x, int y, int width, int height)
       : origin_(x, y),
-        size_(GetClampedValue(x, width), GetClampedValue(y, height)) {}
+        size_(ClampWidthOrHeight(x, width), ClampWidthOrHeight(y, height)) {}
   constexpr explicit Rect(const Size& size) : size_(size) {}
   constexpr Rect(const Point& origin, const Size& size)
       : origin_(origin),
-        size_(GetClampedValue(origin.x(), size.width()),
-              GetClampedValue(origin.y(), size.height())) {}
+        size_(ClampWidthOrHeight(origin.x(), size.width()),
+              ClampWidthOrHeight(origin.y(), size.height())) {}
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   explicit Rect(const RECT& r);
-#elif defined(OS_APPLE)
+#elif BUILDFLAG(IS_APPLE)
   explicit Rect(const CGRect& r);
 #endif
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // Construct an equivalent Win32 RECT object.
   RECT ToRECT() const;
-#elif defined(OS_APPLE)
+#elif BUILDFLAG(IS_APPLE)
   // Construct an equivalent CoreGraphics object.
   CGRect ToCGRect() const;
 #endif
@@ -64,22 +65,22 @@ class GEOMETRY_EXPORT Rect {
   // Sets the X position while preserving the width.
   void set_x(int x) {
     origin_.set_x(x);
-    size_.set_width(GetClampedValue(x, width()));
+    size_.set_width(ClampWidthOrHeight(x, width()));
   }
 
   constexpr int y() const { return origin_.y(); }
   // Sets the Y position while preserving the height.
   void set_y(int y) {
     origin_.set_y(y);
-    size_.set_height(GetClampedValue(y, height()));
+    size_.set_height(ClampWidthOrHeight(y, height()));
   }
 
   constexpr int width() const { return size_.width(); }
-  void set_width(int width) { size_.set_width(GetClampedValue(x(), width)); }
+  void set_width(int width) { size_.set_width(ClampWidthOrHeight(x(), width)); }
 
   constexpr int height() const { return size_.height(); }
   void set_height(int height) {
-    size_.set_height(GetClampedValue(y(), height));
+    size_.set_height(ClampWidthOrHeight(y(), height));
   }
 
   constexpr const Point& origin() const { return origin_; }
@@ -142,24 +143,14 @@ class GEOMETRY_EXPORT Rect {
   }
 
   // Shrink the rectangle by |inset| on all sides.
-  void Inset(int inset) { Inset(inset, inset); }
-  // Shrink the rectangle by a horizontal and vertical distance on all sides.
-  void Inset(int horizontal, int vertical) {
-    Inset(horizontal, vertical, horizontal, vertical);
-  }
-
-  // Shrink the rectangle by the given insets.
+  void Inset(int inset) { Inset(Insets(inset)); }
+  // Shrink the rectangle by the given |insets|.
   void Inset(const Insets& insets);
 
-  // Shrink the rectangle by the specified amount on each side.
-  void Inset(int left, int top, int right, int bottom);
-
-  // Expand the rectangle by the specified amount on each side.
+  // Expand the rectangle by |outset| on all sides.
   void Outset(int outset) { Inset(-outset); }
-  void Outset(int horizontal, int vertical) { Inset(-horizontal, -vertical); }
-  void Outset(int left, int top, int right, int bottom) {
-    Inset(-left, -top, -right, -bottom);
-  }
+  // Expand the rectangle by the given |outsets|.
+  void Outset(const Outsets& outsets) { Inset(outsets.ToInsets()); }
 
   // Move the rectangle by a horizontal and vertical distance.
   void Offset(int horizontal, int vertical) {
@@ -265,27 +256,11 @@ class GEOMETRY_EXPORT Rect {
   bool ApproximatelyEqual(const Rect& rect, int tolerance) const;
 
  private:
-  // Returns true iff a+b would overflow max int.
-  static constexpr bool AddWouldOverflow(int a, int b) {
-    // In this function, GCC tries to make optimizations that would only work if
-    // max - a wouldn't overflow but it isn't smart enough to notice that a > 0.
-    // So cast everything to unsigned to avoid this.  As it is guaranteed that
-    // max - a and b are both already positive, the cast is a noop.
-    //
-    // This is intended to be: a > 0 && max - a < b
-    return a > 0 && b > 0 &&
-           static_cast<unsigned>(std::numeric_limits<int>::max() - a) <
-               static_cast<unsigned>(b);
-  }
-
-  // Clamp the size to avoid integer overflow in bottom() and right().
-  // This returns the width given an origin and a width.
-  // TODO(enne): this should probably use base::ClampAdd, but that
-  // function is not a constexpr.
-  static constexpr int GetClampedValue(int origin, int size) {
-    return AddWouldOverflow(origin, size)
-               ? std::numeric_limits<int>::max() - origin
-               : size;
+  // Clamp the width/height to avoid integer overflow in bottom() and right().
+  // This returns the clamped width/height given an |x_or_y| and a
+  // |width_or_height|.
+  static constexpr int ClampWidthOrHeight(int x_or_y, int width_or_height) {
+    return base::ClampAdd(x_or_y, width_or_height) - x_or_y;
   }
 
   void AdjustForSaturatedRight(int right);

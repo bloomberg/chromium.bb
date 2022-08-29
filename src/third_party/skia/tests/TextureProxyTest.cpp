@@ -13,18 +13,18 @@
 #include "include/core/SkImage.h"
 #include "include/gpu/GrBackendSurface.h"
 #include "include/gpu/GrDirectContext.h"
-#include "src/gpu/GrDirectContextPriv.h"
-#include "src/gpu/GrProxyProvider.h"
-#include "src/gpu/GrRecordingContextPriv.h"
-#include "src/gpu/GrResourceCache.h"
-#include "src/gpu/GrResourceProvider.h"
-#include "src/gpu/GrTexture.h"
-#include "src/gpu/GrTextureProxy.h"
-#include "src/gpu/SkGr.h"
+#include "src/gpu/ganesh/GrDirectContextPriv.h"
+#include "src/gpu/ganesh/GrProxyProvider.h"
+#include "src/gpu/ganesh/GrRecordingContextPriv.h"
+#include "src/gpu/ganesh/GrResourceCache.h"
+#include "src/gpu/ganesh/GrResourceProvider.h"
+#include "src/gpu/ganesh/GrTexture.h"
+#include "src/gpu/ganesh/GrTextureProxy.h"
+#include "src/gpu/ganesh/SkGr.h"
 #include "tools/gpu/ManagedBackendTexture.h"
 
 #ifdef SK_DAWN
-#include "src/gpu/dawn/GrDawnGpu.h"
+#include "src/gpu/ganesh/dawn/GrDawnGpu.h"
 #endif
 
 int GrProxyProvider::numUniqueKeyProxies_TestOnly() const {
@@ -47,7 +47,7 @@ static sk_sp<GrTextureProxy> deferred_tex(skiatest::Reporter* reporter,
 
     sk_sp<GrTextureProxy> proxy =
             proxyProvider->createProxy(format, kSize, GrRenderable::kNo, 1, GrMipmapped::kNo, fit,
-                                       SkBudgeted::kYes, GrProtected::kNo);
+                                       SkBudgeted::kYes, GrProtected::kNo, /*label=*/{});
     // Only budgeted & wrapped external proxies get to carry uniqueKeys
     REPORTER_ASSERT(reporter, !proxy->getUniqueKey().isValid());
     return proxy;
@@ -63,7 +63,7 @@ static sk_sp<GrTextureProxy> deferred_texRT(skiatest::Reporter* reporter,
 
     sk_sp<GrTextureProxy> proxy =
             proxyProvider->createProxy(format, kSize, GrRenderable::kYes, 1, GrMipmapped::kNo, fit,
-                                       SkBudgeted::kYes, GrProtected::kNo);
+                                       SkBudgeted::kYes, GrProtected::kNo, /*label=*/{});
     // Only budgeted & wrapped external proxies get to carry uniqueKeys
     REPORTER_ASSERT(reporter, !proxy->getUniqueKey().isValid());
     return proxy;
@@ -80,12 +80,12 @@ static sk_sp<GrTextureProxy> wrapped(skiatest::Reporter* reporter, GrRecordingCo
 
 static sk_sp<GrTextureProxy> wrapped_with_key(skiatest::Reporter* reporter, GrRecordingContext*,
                                               GrProxyProvider* proxyProvider, SkBackingFit fit) {
-    static GrUniqueKey::Domain d = GrUniqueKey::GenerateDomain();
+    static skgpu::UniqueKey::Domain d = skgpu::UniqueKey::GenerateDomain();
     static int kUniqueKeyData = 0;
 
-    GrUniqueKey key;
+    skgpu::UniqueKey key;
 
-    GrUniqueKey::Builder builder(&key, d, 1, nullptr);
+    skgpu::UniqueKey::Builder builder(&key, d, 1, nullptr);
     builder[0] = kUniqueKeyData++;
     builder.finish();
 
@@ -131,7 +131,7 @@ static void basic_test(GrDirectContext* dContext,
 
     int startCacheCount = cache->getResourceCount();
 
-    GrUniqueKey key;
+    skgpu::UniqueKey key;
     if (proxy->getUniqueKey().isValid()) {
         key = proxy->getUniqueKey();
     } else {
@@ -157,7 +157,7 @@ static void basic_test(GrDirectContext* dContext,
 
     // Once instantiated, the backing resource should have the same key
     SkAssertResult(proxy->instantiate(resourceProvider));
-    const GrUniqueKey texKey = proxy->peekSurface()->getUniqueKey();
+    const skgpu::UniqueKey texKey = proxy->peekSurface()->getUniqueKey();
     REPORTER_ASSERT(reporter, texKey.isValid());
     REPORTER_ASSERT(reporter, key == texKey);
 
@@ -202,8 +202,8 @@ static void basic_test(GrDirectContext* dContext,
 
     if (expectResourceToOutliveProxy) {
         proxy.reset();
-        GrUniqueKeyInvalidatedMessage msg(texKey, dContext->priv().contextID());
-        SkMessageBus<GrUniqueKeyInvalidatedMessage, uint32_t>::Post(msg);
+        skgpu::UniqueKeyInvalidatedMessage msg(texKey, dContext->priv().contextID());
+        SkMessageBus<skgpu::UniqueKeyInvalidatedMessage, uint32_t>::Post(msg);
         cache->purgeAsNeeded();
         expectedCacheCount -= cacheEntriesPerProxy;
         proxy = proxyProvider->findOrCreateProxyByUniqueKey(key);
@@ -265,17 +265,6 @@ static void invalidation_test(GrDirectContext* dContext,
     // For backends that use buffers to upload lets make sure that work has been submit and done
     // before we try to purge all resources.
     dContext->submit(true);
-
-#ifdef SK_DAWN
-    // The forced cpu sync in dawn doesn't actually mean the async map will finish thus we may
-    // still have a ref on the GrGpuBuffer and it will not get purged by the call below. We dig
-    // deep into the dawn gpu to make sure we wait for the async map to finish.
-    if (dContext->backend() == GrBackendApi::kDawn) {
-        GrDawnGpu* gpu = static_cast<GrDawnGpu*>(dContext->priv().getGpu());
-        gpu->waitOnAllBusyStagingBuffers();
-    }
-#endif
-
     dContext->priv().getResourceCache()->purgeUnlockedResources();
 
     REPORTER_ASSERT(reporter, 0 == proxyProvider->numUniqueKeyProxies_TestOnly());
@@ -291,9 +280,9 @@ static void invalidation_and_instantiation_test(GrDirectContext* dContext,
     GrResourceCache* cache = dContext->priv().getResourceCache();
     REPORTER_ASSERT(reporter, 0 == cache->getResourceCount());
 
-    static GrUniqueKey::Domain d = GrUniqueKey::GenerateDomain();
-    GrUniqueKey key;
-    GrUniqueKey::Builder builder(&key, d, 1, nullptr);
+    static skgpu::UniqueKey::Domain d = skgpu::UniqueKey::GenerateDomain();
+    skgpu::UniqueKey key;
+    skgpu::UniqueKey::Builder builder(&key, d, 1, nullptr);
     builder[0] = 0;
     builder.finish();
 
@@ -303,8 +292,8 @@ static void invalidation_and_instantiation_test(GrDirectContext* dContext,
     SkAssertResult(proxyProvider->assignUniqueKeyToProxy(key, proxy.get()));
 
     // Send an invalidation message, which will be sitting in the cache's inbox
-    SkMessageBus<GrUniqueKeyInvalidatedMessage, uint32_t>::Post(
-            GrUniqueKeyInvalidatedMessage(key, dContext->priv().contextID()));
+    SkMessageBus<skgpu::UniqueKeyInvalidatedMessage, uint32_t>::Post(
+            skgpu::UniqueKeyInvalidatedMessage(key, dContext->priv().contextID()));
 
     REPORTER_ASSERT(reporter, 1 == proxyProvider->numUniqueKeyProxies_TestOnly());
     REPORTER_ASSERT(reporter, 0 == cache->getResourceCount());

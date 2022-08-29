@@ -6,7 +6,6 @@
 
 #include <stdint.h>
 
-#include "base/cxx17_backports.h"
 #include "base/feature_list.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
@@ -91,8 +90,7 @@ class NavigatorTest : public RenderViewHostImplTestHarness {
       SiteInstance* candidate_instance) {
     return static_cast<SiteInstanceImpl*>(
         rfhm->ConvertToSiteInstance(
-                descriptor, static_cast<SiteInstanceImpl*>(candidate_instance),
-                false /* is_speculative */)
+                descriptor, static_cast<SiteInstanceImpl*>(candidate_instance))
             .get());
   }
 
@@ -573,7 +571,7 @@ TEST_F(NavigatorTest, NoContent) {
   auto response = network::mojom::URLResponseHead::New();
   const char kNoContentHeaders[] = "HTTP/1.1 204 No Content\0\0";
   response->headers = new net::HttpResponseHeaders(
-      std::string(kNoContentHeaders, base::size(kNoContentHeaders)));
+      std::string(kNoContentHeaders, std::size(kNoContentHeaders)));
   GetLoaderForNavigationRequest(main_request)
       ->CallOnResponseStarted(std::move(response),
                               mojo::ScopedDataPipeConsumerHandle());
@@ -598,7 +596,7 @@ TEST_F(NavigatorTest, NoContent) {
   response = network::mojom::URLResponseHead::New();
   const char kResetContentHeaders[] = "HTTP/1.1 205 Reset Content\0\0";
   response->headers = new net::HttpResponseHeaders(
-      std::string(kResetContentHeaders, base::size(kResetContentHeaders)));
+      std::string(kResetContentHeaders, std::size(kResetContentHeaders)));
   GetLoaderForNavigationRequest(main_request)
       ->CallOnResponseStarted(std::move(response),
                               mojo::ScopedDataPipeConsumerHandle());

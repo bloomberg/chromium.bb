@@ -7,6 +7,7 @@
 #include <memory>
 #include <vector>
 
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/assistant/assistant_state.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_util.h"
@@ -36,8 +37,7 @@ namespace settings {
 namespace {
 
 bool ShouldShowQuickAnswersSettings() {
-  return ash::QuickAnswersState::Get() &&
-         ash::QuickAnswersState::Get()->is_eligible();
+  return QuickAnswersState::Get() && QuickAnswersState::Get()->is_eligible();
 }
 
 const std::vector<SearchConcept>& GetSearchPageSearchConcepts() {
@@ -269,9 +269,6 @@ SearchSection::SearchSection(Profile* profile,
   SearchTagRegistry::ScopedTagUpdater updater = registry()->StartUpdate();
   updater.AddSearchTags(GetSearchPageSearchConcepts());
 
-  if (ShouldShowQuickAnswersSettings())
-    updater.AddSearchTags(GetQuickAnswersSearchConcepts());
-
   ash::AssistantState* assistant_state = ash::AssistantState::Get();
   if (IsAssistantAllowed() && assistant_state) {
     updater.AddSearchTags(GetAssistantSearchConcepts());
@@ -280,8 +277,8 @@ SearchSection::SearchSection(Profile* profile,
     UpdateAssistantSearchTags();
   }
 
-  if (ShouldShowQuickAnswersSettings()) {
-    ash::QuickAnswersState::Get()->AddObserver(this);
+  if (QuickAnswersState::Get()) {
+    QuickAnswersState::Get()->AddObserver(this);
     UpdateQuickAnswersSearchTags();
   }
 }
@@ -309,6 +306,9 @@ void SearchSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
 
   html_source->AddBoolean("shouldShowQuickAnswersSettings",
                           ShouldShowQuickAnswersSettings());
+  html_source->AddBoolean(
+      "syncSettingsCategorizationEnabled",
+      chromeos::features::IsSyncSettingsCategorizationEnabled());
   const bool is_assistant_allowed = IsAssistantAllowed();
   html_source->AddBoolean("isAssistantAllowed", is_assistant_allowed);
   html_source->AddLocalizedString("osSearchPageTitle",
@@ -402,6 +402,10 @@ void SearchSection::OnSettingsEnabled(bool enabled) {
   UpdateQuickAnswersSearchTags();
 }
 
+void SearchSection::OnEligibilityChanged(bool eligible) {
+  UpdateQuickAnswersSearchTags();
+}
+
 bool SearchSection::IsAssistantAllowed() const {
   // NOTE: This will be false when the flag is disabled.
   return ::assistant::IsAssistantAllowedForProfile(profile()) ==
@@ -438,13 +442,20 @@ void SearchSection::UpdateAssistantSearchTags() {
 }
 
 void SearchSection::UpdateQuickAnswersSearchTags() {
-  DCHECK(ash::QuickAnswersState::Get());
+  DCHECK(QuickAnswersState::Get());
 
   SearchTagRegistry::ScopedTagUpdater updater = registry()->StartUpdate();
+
+  updater.RemoveSearchTags(GetQuickAnswersSearchConcepts());
   updater.RemoveSearchTags(GetQuickAnswersOnSearchConcepts());
 
+  if (!ShouldShowQuickAnswersSettings())
+    return;
+
+  updater.AddSearchTags(GetQuickAnswersSearchConcepts());
+
   if (chromeos::features::IsQuickAnswersV2SettingsSubToggleEnabled() &&
-      ash::QuickAnswersState::Get()->settings_enabled()) {
+      QuickAnswersState::Get()->settings_enabled()) {
     updater.AddSearchTags(GetQuickAnswersOnSearchConcepts());
   }
 }

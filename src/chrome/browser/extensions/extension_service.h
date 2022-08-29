@@ -16,6 +16,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/scoped_observation.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/extensions/blocklist.h"
@@ -53,6 +54,10 @@
 
 #if !BUILDFLAG(ENABLE_EXTENSIONS)
 #error "Extensions must be enabled"
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/extensions/ash_extension_keeplist_manager.h"
 #endif
 
 class BlocklistedExtensionSyncServiceTest;
@@ -214,7 +219,7 @@ class ExtensionService : public ExtensionServiceInterface,
       const ExternalInstallInfoFile& info) override;
   bool OnExternalExtensionUpdateUrlFound(
       const ExternalInstallInfoUpdateUrl& info,
-      bool is_initial_load) override;
+      bool force_update) override;
   void OnExternalProviderReady(
       const ExternalProviderInterface* provider) override;
   void OnExternalProviderUpdateComplete(
@@ -465,6 +470,10 @@ class ExtensionService : public ExtensionServiceInterface,
   }
 
   void UninstallMigratedExtensionsForTest() { UninstallMigratedExtensions(); }
+
+  void ProfileMarkedForPermanentDeletionForTest() {
+    OnProfileMarkedForPermanentDeletion(profile_);
+  }
 #endif
 
   void set_browser_terminating_for_test(bool value) {
@@ -492,6 +501,8 @@ class ExtensionService : public ExtensionServiceInterface,
   void OnExtensionHostRenderProcessGone(
       content::BrowserContext* browser_context,
       ExtensionHost* extension_host) override;
+
+  void OnAppTerminating();
 
   // content::NotificationObserver implementation:
   void Observe(int type,
@@ -669,6 +680,7 @@ class ExtensionService : public ExtensionServiceInterface,
   // Our extension updater, if updates are turned on.
   std::unique_ptr<ExtensionUpdater> updater_;
 
+  base::CallbackListSubscription on_app_terminating_subscription_;
   content::NotificationRegistrar registrar_;
 
   // Keeps track of loading and unloading component extensions.
@@ -743,6 +755,10 @@ class ExtensionService : public ExtensionServiceInterface,
   using InstallGateRegistry =
       std::map<ExtensionPrefs::DelayReason, InstallGate*>;
   InstallGateRegistry install_delayer_registry_;
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  AshExtensionKeeplistManager ash_keeplist_manager_;
+#endif
 
   FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
                            DestroyingProfileClearsExtensions);

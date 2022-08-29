@@ -56,7 +56,7 @@ struct fullstack_secure_fixture_data {
 };
 
 static grpc_end2end_test_fixture chttp2_create_fixture_secure_fullstack(
-    grpc_channel_args *client_args, grpc_channel_args *server_args) {
+    const grpc_channel_args *client_args, const grpc_channel_args *server_args) {
   grpc_end2end_test_fixture f;
   int port = grpc_pick_unused_port_or_die();
   fullstack_secure_fixture_data *ffd = new fullstack_secure_fixture_data();
@@ -66,7 +66,6 @@ static grpc_end2end_test_fixture chttp2_create_fixture_secure_fullstack(
 
   f.fixture_data = ffd;
   f.cq = grpc_completion_queue_create_for_next(NULL);
-  f.shutdown_cq = grpc_completion_queue_create_for_pluck(NULL);
 
   return f;
 }
@@ -79,7 +78,7 @@ static void process_auth_failure(void *state, grpc_auth_context *ctx, const grpc
 }
 
 static void cronet_init_client_secure_fullstack(grpc_end2end_test_fixture *f,
-                                                grpc_channel_args *client_args,
+                                                const grpc_channel_args *client_args,
                                                 stream_engine *cronetEngine) {
   fullstack_secure_fixture_data *ffd = (fullstack_secure_fixture_data *)f->fixture_data;
   f->client =
@@ -88,7 +87,7 @@ static void cronet_init_client_secure_fullstack(grpc_end2end_test_fixture *f,
 }
 
 static void chttp2_init_server_secure_fullstack(grpc_end2end_test_fixture *f,
-                                                grpc_channel_args *server_args,
+                                                const grpc_channel_args *server_args,
                                                 grpc_server_credentials *server_creds) {
   fullstack_secure_fixture_data *ffd = (fullstack_secure_fixture_data *)f->fixture_data;
   if (f->server) {
@@ -96,7 +95,7 @@ static void chttp2_init_server_secure_fullstack(grpc_end2end_test_fixture *f,
   }
   f->server = grpc_server_create(server_args, NULL);
   grpc_server_register_completion_queue(f->server, f->cq, NULL);
-  GPR_ASSERT(grpc_server_add_secure_http2_port(f->server, ffd->localaddr.c_str(), server_creds));
+  GPR_ASSERT(grpc_server_add_http2_port(f->server, ffd->localaddr.c_str(), server_creds));
   grpc_server_credentials_release(server_creds);
   grpc_server_start(f->server);
 }
@@ -107,16 +106,16 @@ static void chttp2_tear_down_secure_fullstack(grpc_end2end_test_fixture *f) {
 }
 
 static void cronet_init_client_simple_ssl_secure_fullstack(grpc_end2end_test_fixture *f,
-                                                           grpc_channel_args *client_args) {
+                                                           const grpc_channel_args *client_args) {
   grpc_core::ExecCtx exec_ctx;
   stream_engine *cronetEngine = [Cronet getGlobalEngine];
 
-  grpc_channel_args *new_client_args = grpc_channel_args_copy(client_args);
+  const grpc_channel_args *new_client_args = grpc_channel_args_copy(client_args);
   cronet_init_client_secure_fullstack(f, new_client_args, cronetEngine);
   grpc_channel_args_destroy(new_client_args);
 }
 
-static int fail_server_auth_check(grpc_channel_args *server_args) {
+static int fail_server_auth_check(const grpc_channel_args *server_args) {
   size_t i;
   if (server_args == NULL) return 0;
   for (i = 0; i < server_args->num_args; i++) {
@@ -128,7 +127,7 @@ static int fail_server_auth_check(grpc_channel_args *server_args) {
 }
 
 static void chttp2_init_server_simple_ssl_secure_fullstack(grpc_end2end_test_fixture *f,
-                                                           grpc_channel_args *server_args) {
+                                                           const grpc_channel_args *server_args) {
   grpc_ssl_pem_key_cert_pair pem_cert_key_pair = {test_server1_key, test_server1_cert};
   grpc_server_credentials *ssl_creds =
       grpc_ssl_server_credentials_create(NULL, &pem_cert_key_pair, 1, 0, NULL);
@@ -164,7 +163,8 @@ static char *roots_filename;
   size_t roots_size = strlen(test_root_cert);
 
   char *argv[] = {(char *)"CoreCronetEnd2EndTests"};
-  grpc_test_init(1, argv);
+  int argc = 1;
+  grpc_test_init(&argc, argv);
   grpc_end2end_tests_pre_init();
 
   /* Set the SSL roots env var. */
@@ -193,9 +193,8 @@ static char *roots_filename;
 
 - (void)testIndividualCase:(char *)test_case {
   char *argv[] = {(char *)"h2_ssl", test_case};
-
   for (int i = 0; i < sizeof(configs) / sizeof(*configs); i++) {
-    grpc_end2end_tests(sizeof(argv) / sizeof(argv[0]), argv, configs[i]);
+    grpc_end2end_tests(2, argv, configs[i]);
   }
 }
 

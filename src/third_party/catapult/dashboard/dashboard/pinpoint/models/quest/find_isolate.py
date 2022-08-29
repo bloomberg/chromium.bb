@@ -18,17 +18,41 @@ from dashboard.pinpoint.models.quest import execution
 from dashboard.pinpoint.models.quest import quest
 from dashboard.services import buildbucket_service
 from dashboard.services import gerrit_service
+from dashboard.common import utils
 
 BUCKET = 'master.tryserver.chromium.perf'
+
+_PP_TO_PERF_BUILDER_MAP = {
+    'Linux Builder Perf':
+        'linux-builder-perf',
+    'Android Compile Perf':
+        'android-builder-perf',
+    'Android arm64 Compile Perf':
+        'android_arm64-builder-perf',
+    'Mac Builder Perf':
+        'mac-builder-perf',
+    'Mac arm Builder Perf':
+        'mac-arm-builder-perf',
+    'Win x64 Builder Perf':
+        'win64-builder-perf',
+    'Chromeos Amd64 Generic Lacros Builder Perf':
+        'chromeos-amd64-generic-lacros-builder-perf'
+}
 
 
 class FindIsolate(quest.Quest):
 
-  def __init__(self, builder, target, bucket, fallback_target=None):
+  def __init__(self,
+               builder,
+               target,
+               bucket,
+               fallback_target=None,
+               comparison_mode='performance'):
     self._builder_name = builder
     self._target = target
     self._bucket = bucket
     self._fallback_target = fallback_target
+    self._comparison_mode = comparison_mode
 
     self._previous_builds = {}
     self._build_tags = collections.OrderedDict()
@@ -61,22 +85,20 @@ class FindIsolate(quest.Quest):
         change,
         self._previous_builds,
         self.build_tags,
-        fallback_target=self._fallback_target)
+        fallback_target=self._fallback_target,
+        comparison_mode=self._comparison_mode)
 
   def PropagateJob(self, job):
     self._build_tags = BuildTagsFromJob(job)
 
   @classmethod
   def FromDict(cls, arguments):
-    for arg in ('builder', 'target', 'bucket'):
+    for arg in ('builder', 'target', 'bucket', 'comparison_mode'):
       if arg not in arguments:
         raise TypeError('Missing "{0}" argument'.format(arg))
 
-    return cls(
-        arguments['builder'],
-        arguments['target'],
-        arguments['bucket'],
-        fallback_target=arguments.get('fallback_target'))
+    return cls(arguments['builder'], arguments['target'], arguments['bucket'],
+               arguments.get('fallback_target'), arguments['comparison_mode'])
 
 
 class _FindIsolateExecution(execution.Execution):
@@ -88,13 +110,15 @@ class _FindIsolateExecution(execution.Execution):
                change,
                previous_builds,
                build_tags,
-               fallback_target=None):
+               fallback_target,
+               comparison_mode='performance'):
     super(_FindIsolateExecution, self).__init__()
     self._builder_name = builder_name
     self._target = target
     self._bucket = bucket
     self._change = change
     self._fallback_target = fallback_target
+    self._comparison_mode = comparison_mode
 
     # previous_builds is shared among all Executions of the same Quest.
     self._previous_builds = previous_builds
@@ -124,41 +148,48 @@ class _FindIsolateExecution(execution.Execution):
           'value':
               self._result_arguments['isolate_hash'],
           'url':
-              self._result_arguments['isolate_server'] + '/browse?digest=' +
-              self._result_arguments['isolate_hash'],
+              'https://cas-viewer.appspot.com/{}/blobs/{}/tree'.format(
+                  self._result_arguments['isolate_server'],
+                  self._result_arguments['isolate_hash']),
       })
     return details
 
   def _Poll(self):
     logging.debug('_FindIsolateExecution Polling: %s', self._AsDict())
 
+    if self._CheckIsolateCache(
+        _PP_TO_PERF_BUILDER_MAP.get(self._builder_name, '')):
+      return
+
     if self._CheckIsolateCache():
       return
 
     if self._build:
+      logging.debug('Checking build status for: %s', self._build)
       self._CheckBuildStatus()
       return
 
     self._RequestBuild()
 
-  def _CheckIsolateCache(self):
+  def _CheckIsolateCache(self, builder_name_override=''):
     """Checks the isolate cache to see if a build is already available.
 
     Returns:
       True iff the isolate was found, meaning the execution is completed.
     """
     try:
-      isolate_server, isolate_hash = isolate.Get(self._builder_name,
-                                                 self._change, self._target)
-    except KeyError:
-      logging.debug('NOT found in isolate cache')
+      builder_name = builder_name_override if builder_name_override else self._builder_name
+      isolate_server, isolate_hash = isolate.Get(builder_name, self._change,
+                                                 self._target)
+    except KeyError as e:
+      logging.debug('NOT found in isolate cache: %s', str(e))
       if self._fallback_target:
         try:
           isolate_server, isolate_hash = isolate.Get(self._builder_name,
                                                      self._change,
                                                      self._fallback_target)
-        except KeyError:
-          logging.debug('fallback NOT found in isolate cache')
+        except KeyError as e:
+          logging.debug('fallback NOT found in isolate cache %s', str(e))
           return False
       else:
         return False
@@ -171,7 +202,16 @@ class _FindIsolateExecution(execution.Execution):
     self._Complete(result_arguments=result_arguments)
     return True
 
+  def _IsTryJob(self):
+    return self._comparison_mode == 'try'
+
   def _CheckBuildStatus(self):
+    if utils.IsRunningBuildBucketV2():
+      self._CheckBuildStatusV2()
+    else:
+      self._CheckBuildStatusV1()
+
+  def _CheckBuildStatusV1(self):
     """Checks on the status of a previously requested build.
 
     Raises:
@@ -185,36 +225,59 @@ class _FindIsolateExecution(execution.Execution):
     if build['status'] != 'COMPLETED':
       return
     if build['result'] == 'FAILURE':
-      raise errors.BuildFailed(build['failure_reason'])
-    if build['result'] == 'CANCELED':
-      raise errors.BuildCancelled(build['cancelation_reason'])
-
-    # The build succeeded. Parse the result and complete this Quest.
-    properties = json.loads(build['result_details_json'])['properties']
-
-    commit_position = properties['got_revision_cp'].replace('@', '(at)')
-
-    key = '_'.join(('swarm_hashes', commit_position, 'with_patch'))
-    if key not in properties:
-      key = '_'.join(('swarm_hashes', commit_position, 'without_patch'))
-
-    target_to_use = self._target
-
-    if self._target not in properties[key]:
-      if self._fallback_target and self._fallback_target in properties[key]:
-        target_to_use = self._fallback_target
+      reason = build['failure_reason']
+      if self._IsTryJob():
+        raise errors.BuildFailedFatal(reason)
       else:
-        raise errors.BuildIsolateNotFound()
+        raise errors.BuildFailed(reason)
+    if build['result'] == 'CANCELED':
+      if self._IsTryJob():
+        raise errors.BuildCancelledFatal(build['cancelation_reason'])
+      else:
+        raise errors.BuildCancelled(build['cancelation_reason'])
 
-    # Cache the isolate information.
-    isolate.Put([(self._builder_name, self._change, target_to_use,
-                  properties['isolate_server'], properties[key][target_to_use])
-                ])
-    result_arguments = {
-        'isolate_server': properties['isolate_server'],
-        'isolate_hash': properties[key][target_to_use],
-    }
-    self._Complete(result_arguments=result_arguments)
+    # The build succeeded, and should now be in the isolate cache.
+    # If it is, this will call self._Complete()
+    if not self._CheckIsolateCache():
+      raise errors.BuildIsolateNotFound()
+
+  def _CheckBuildStatusV2(self):
+    """Checks on the status of a previously requested build.
+
+    Raises:
+      BuildError: The build failed, was canceled, or didn't produce an isolate.
+    """
+    job_status = buildbucket_service.GetJobStatus(self._build)
+    logging.debug('buildbucket response V2: %s', job_status)
+
+    build_id = job_status.get('id', '')
+    self._build_url = utils.GetBuildbucketUrl(build_id)
+
+    build_status = job_status.get('status', '')
+    if build_status in ('SCHEDULED', 'STARTED'):
+      return
+    if build_status == 'FAILURE':
+      if self._IsTryJob():
+        raise errors.BuildFailedFatal('BUILD_FAILURE')
+      else:
+        raise errors.BuildFailed('BUILD_FAILURE')
+    if build_status == 'INFRA_FAILURE':
+      reason = 'TIMEOUT' if 'timeout' in job_status.get('statusDetails',
+                                                        {}) else 'INFRA_FAILURE'
+      if self._IsTryJob():
+        raise errors.BuildFailedFatal(reason)
+      else:
+        raise errors.BuildFailed(reason)
+    if build_status == 'CANCELED':
+      if self._IsTryJob():
+        raise errors.BuildCancelledFatal('CANCELED_EXPLICITLY')
+      else:
+        raise errors.BuildCancelled('CANCELED_EXPLICITLY')
+
+    # The build succeeded, and should now be in the isolate cache.
+    # If it is, this will call self._Complete()
+    if not self._CheckIsolateCache():
+      raise errors.BuildIsolateNotFound()
 
   @property
   def bucket(self):
@@ -251,7 +314,10 @@ class _FindIsolateExecution(execution.Execution):
       # Request a build!
       buildbucket_info = RequestBuild(self._builder_name, self._change,
                                       self.bucket, self.build_tags)
-      self._build = buildbucket_info['build']['id']
+      if utils.IsRunningBuildBucketV2():
+        self._build = buildbucket_info['id']
+      else:
+        self._build = buildbucket_info['build']['id']
       self._previous_builds[self._change] = self._build
 
 
@@ -294,6 +360,7 @@ def RequestBuild(builder_name, change, bucket, build_tags, task=None):
           'clobber': False,
           'revision': change.base_commit.git_hash,
           'deps_revision_overrides': deps_overrides,
+          'staging': utils.IsStagingEnvironment(),
       },
   }
 
@@ -326,11 +393,10 @@ def RequestBuild(builder_name, change, bucket, build_tags, task=None):
                 }
             })
     }
-    logging.debug('pubsub_callback: %s', pubsub_callback)
+    logging.debug('pubsub_callback, which we ignore: %s', pubsub_callback)
 
   # TODO: Look up Buildbucket bucket from builder_name.
-  return buildbucket_service.Put(bucket, builder_tags, parameters,
-                                 pubsub_callback)
+  return buildbucket_service.Put(bucket, builder_tags, parameters)
 
 
 def BuildTagsFromJob(job):

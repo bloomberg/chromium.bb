@@ -22,19 +22,24 @@
 #include "components/signin/core/browser/mirror_account_reconcilor_delegate.h"
 #include "components/signin/public/base/account_consistency_method.h"
 #include "components/signin/public/base/signin_buildflags.h"
+#include "components/signin/public/base/signin_switches.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/components/tpm/install_attributes.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "chrome/browser/ash/account_manager/account_manager_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chromeos/tpm/install_attributes.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/active_directory_account_reconcilor_delegate.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/user_manager/user_manager.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "components/signin/core/browser/mirror_landing_account_reconcilor_delegate.h"
 #endif
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
@@ -175,7 +180,7 @@ AccountReconcilorFactory::CreateAccountReconcilorDelegate(Profile* profile) {
       // |IsAccountManagerAvailable| after fixing https://crbug.com/1008349 and
       // https://crbug.com/993317.
       if (ash::IsAccountManagerAvailable(profile) &&
-          chromeos::InstallAttributes::Get()->IsActiveDirectoryManaged()) {
+          ash::InstallAttributes::Get()->IsActiveDirectoryManaged()) {
         return std::make_unique<
             signin::ActiveDirectoryAccountReconcilorDelegate>();
       }
@@ -190,6 +195,16 @@ AccountReconcilorFactory::CreateAccountReconcilorDelegate(Profile* profile) {
 
       return std::make_unique<signin::MirrorAccountReconcilorDelegate>(
           IdentityManagerFactory::GetForProfile(profile));
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+      if (base::FeatureList::IsEnabled(switches::kLacrosNonSyncingProfiles)) {
+        bool is_main_profile = ChromeSigninClientFactory::GetForProfile(profile)
+                                   ->GetInitialPrimaryAccount()
+                                   .has_value();
+        return std::make_unique<signin::MirrorLandingAccountReconcilorDelegate>(
+            IdentityManagerFactory::GetForProfile(profile), is_main_profile);
+      }
+      return std::make_unique<signin::MirrorAccountReconcilorDelegate>(
+          IdentityManagerFactory::GetForProfile(profile));
 #else
       return std::make_unique<signin::MirrorAccountReconcilorDelegate>(
           IdentityManagerFactory::GetForProfile(profile));
@@ -200,7 +215,8 @@ AccountReconcilorFactory::CreateAccountReconcilorDelegate(Profile* profile) {
 
     case signin::AccountConsistencyMethod::kDice:
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
-      return std::make_unique<signin::DiceAccountReconcilorDelegate>();
+      return std::make_unique<signin::DiceAccountReconcilorDelegate>(
+          IdentityManagerFactory::GetForProfile(profile));
 #else
       NOTREACHED();
       return nullptr;

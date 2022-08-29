@@ -4,15 +4,12 @@
 
 #include "gpu/command_buffer/service/shared_image_backing.h"
 
+#include "build/build_config.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image_factory.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
 #include "gpu/command_buffer/service/texture_manager.h"
-
-#if defined(OS_ANDROID)
-#include "base/android/scoped_hardware_buffer_fence_sync.h"
-#endif
 
 namespace gpu {
 
@@ -53,6 +50,14 @@ bool SharedImageBacking::CopyToGpuMemoryBuffer() {
 
 bool SharedImageBacking::PresentSwapChain() {
   return false;
+}
+
+void SharedImageBacking::OnMemoryDump(
+    const std::string& dump_name,
+    base::trace_event::MemoryAllocatorDump* dump,
+    base::trace_event::ProcessMemoryDump* pmd,
+    uint64_t client_tracing_id) {
+  NOTIMPLEMENTED();
 }
 
 std::unique_ptr<SharedImageRepresentationGLTexture>
@@ -112,6 +117,14 @@ SharedImageBacking::ProduceRaster(SharedImageManager* manager,
                                   MemoryTypeTracker* tracker) {
   return nullptr;
 }
+
+#if BUILDFLAG(IS_ANDROID)
+std::unique_ptr<SharedImageRepresentationLegacyOverlay>
+SharedImageBacking::ProduceLegacyOverlay(SharedImageManager* manager,
+                                         MemoryTypeTracker* tracker) {
+  return nullptr;
+}
+#endif
 
 void SharedImageBacking::AddRef(SharedImageRepresentation* representation) {
   AutoLock auto_lock(this);
@@ -244,12 +257,5 @@ void ClearTrackingSharedImageBacking::SetClearedRectInternal(
 scoped_refptr<gfx::NativePixmap> SharedImageBacking::GetNativePixmap() {
   return nullptr;
 }
-
-#if defined(OS_ANDROID)
-std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
-SharedImageBacking::GetAHardwareBuffer() {
-  return nullptr;
-}
-#endif
 
 }  // namespace gpu

@@ -5,8 +5,10 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_CONSTRAINT_SPACE_BUILDER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_CONSTRAINT_SPACE_BUILDER_H_
 
+#include "base/check_op.h"
 #include "base/dcheck_is_on.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/geometry/logical_size.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_bfc_offset.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
@@ -34,8 +36,10 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
                                  is_new_fc,
                                  /* force_orthogonal_writing_mode_root */ false,
                                  adjust_inline_size_if_needed) {
-    if (parent_space.IsInsideBalancedColumns())
-      space_.EnsureRareData()->is_inside_balanced_columns = true;
+    if (parent_space.ShouldPropagateChildBreakValues())
+      SetShouldPropagateChildBreakValues();
+    if (parent_space.IsRepeatable())
+      SetIsRepeatable();
   }
 
   // The setters on this builder are in the writing mode of parent_writing_mode.
@@ -122,6 +126,16 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
       space_.EnsureRareData()->fragmentainer_block_size = size;
   }
 
+  // Shrink the fragmentainer block-size, to reserve space at the end. This is
+  // needed for repeated table footers.
+  void ReserveSpaceAtFragmentainerEnd(LayoutUnit space) {
+#if DCHECK_IS_ON()
+    DCHECK(is_fragmentainer_block_size_set_);
+#endif
+    DCHECK_GE(space_.rare_data_->fragmentainer_block_size, space);
+    space_.rare_data_->fragmentainer_block_size -= space;
+  }
+
   void SetFragmentainerOffsetAtBfc(LayoutUnit offset) {
 #if DCHECK_IS_ON()
     DCHECK(!is_fragmentainer_offset_at_bfc_set_);
@@ -130,6 +144,12 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
     if (offset != LayoutUnit())
       space_.EnsureRareData()->fragmentainer_offset_at_bfc = offset;
   }
+
+  void SetIsAtFragmentainerStart() {
+    space_.EnsureRareData()->is_at_fragmentainer_start = true;
+  }
+
+  void SetIsRepeatable() { space_.EnsureRareData()->is_repeatable = true; }
 
   void SetIsFixedInlineSize(bool b) {
     if (LIKELY(is_in_parallel_flow_))
@@ -195,6 +215,10 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
     space_.EnsureRareData()->is_inside_balanced_columns = true;
   }
 
+  void SetShouldIgnoreForcedBreaks() {
+    space_.EnsureRareData()->should_ignore_forced_breaks = true;
+  }
+
   void SetIsInColumnBfc() { space_.EnsureRareData()->is_in_column_bfc = true; }
 
   void SetMinBlockSizeShouldEncompassIntrinsicSize() {
@@ -206,6 +230,10 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
     if (!space_.HasRareData() && min_break_appeal == kBreakAppealLastResort)
       return;
     space_.EnsureRareData()->min_break_appeal = min_break_appeal;
+  }
+
+  void SetShouldPropagateChildBreakValues() {
+    space_.EnsureRareData()->propagate_child_break_values = true;
   }
 
   void SetIsTableCell(bool is_table_cell) {
@@ -444,6 +472,23 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
         target_stretch_block_sizes);
   }
 
+  void SetSubgriddedColumns(
+      std::unique_ptr<NGGridLayoutTrackCollection> columns) {
+#if DCHECK_IS_ON()
+    DCHECK(!is_subgridded_columns_set_);
+    is_subgridded_columns_set_ = true;
+#endif
+    space_.EnsureRareData()->SetSubgriddedColumns(std::move(columns));
+  }
+
+  void SetSubgriddedRows(std::unique_ptr<NGGridLayoutTrackCollection> rows) {
+#if DCHECK_IS_ON()
+    DCHECK(!is_subgridded_rows_set_);
+    is_subgridded_rows_set_ = true;
+#endif
+    space_.EnsureRareData()->SetSubgriddedRows(std::move(rows));
+  }
+
   // Creates a new constraint space.
   const NGConstraintSpace ToConstraintSpace() {
 #if DCHECK_IS_ON()
@@ -497,6 +542,8 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   bool is_table_row_data_set_ = false;
   bool is_table_section_data_set_ = false;
   bool is_line_clamp_context_set_ = false;
+  bool is_subgridded_columns_set_ = false;
+  bool is_subgridded_rows_set_ = false;
 
   bool to_constraint_space_called_ = false;
 #endif

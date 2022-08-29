@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import * as Common from '../../core/common/common.js';
+import * as Host from '../../core/host/host.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
@@ -18,7 +19,7 @@ let persistenceInstance: PersistenceImpl;
 export class PersistenceImpl extends Common.ObjectWrapper.ObjectWrapper<EventTypes> {
   private readonly workspace: Workspace.Workspace.WorkspaceImpl;
   private readonly breakpointManager: Bindings.BreakpointManager.BreakpointManager;
-  private readonly filePathPrefixesToBindingCount: Map<string, number>;
+  private readonly filePathPrefixesToBindingCount: FilePathPrefixesBindingCounts;
   private subscribedBindingEventListeners:
       Platform.MapUtilities.Multimap<Workspace.UISourceCode.UISourceCode, () => void>;
   private readonly mapping: Automapping;
@@ -28,7 +29,8 @@ export class PersistenceImpl extends Common.ObjectWrapper.ObjectWrapper<EventTyp
     super();
     this.workspace = workspace;
     this.breakpointManager = breakpointManager;
-    this.filePathPrefixesToBindingCount = new Map();
+    this.breakpointManager.addUpdateBindingsCallback(this.#setupBindings.bind(this));
+    this.filePathPrefixesToBindingCount = new FilePathPrefixesBindingCounts();
 
     this.subscribedBindingEventListeners = new Platform.MapUtilities.Multimap();
 
@@ -78,6 +80,13 @@ export class PersistenceImpl extends Common.ObjectWrapper.ObjectWrapper<EventTyp
     await this.innerRemoveBinding(binding);
   }
 
+  #setupBindings(networkUISourceCode: Workspace.UISourceCode.UISourceCode): Promise<void> {
+    if (networkUISourceCode.project().type() !== Workspace.Workspace.projectTypes.Network) {
+      return Promise.resolve();
+    }
+    return this.mapping.computeNetworkStatus(networkUISourceCode);
+  }
+
   private async innerAddBinding(binding: PersistenceBinding): Promise<void> {
     bindings.set(binding.network, binding);
     bindings.set(binding.fileSystem, binding);
@@ -92,7 +101,7 @@ export class PersistenceImpl extends Common.ObjectWrapper.ObjectWrapper<EventTyp
     binding.fileSystem.addEventListener(
         Workspace.UISourceCode.Events.WorkingCopyChanged, this.onWorkingCopyChanged, this);
 
-    this.addFilePathBindingPrefixes(binding.fileSystem.url());
+    this.filePathPrefixesToBindingCount.add(binding.fileSystem.url());
 
     await this.moveBreakpoints(binding.fileSystem, binding.network);
 
@@ -131,7 +140,7 @@ export class PersistenceImpl extends Common.ObjectWrapper.ObjectWrapper<EventTyp
     binding.fileSystem.removeEventListener(
         Workspace.UISourceCode.Events.WorkingCopyChanged, this.onWorkingCopyChanged, this);
 
-    this.removeFilePathBindingPrefixes(binding.fileSystem.url());
+    this.filePathPrefixesToBindingCount.remove(binding.fileSystem.url());
     await this.breakpointManager.copyBreakpoints(binding.network.url(), binding.fileSystem);
 
     this.notifyBindingEvent(binding.network);
@@ -139,10 +148,10 @@ export class PersistenceImpl extends Common.ObjectWrapper.ObjectWrapper<EventTyp
     this.dispatchEventToListeners(Events.BindingRemoved, binding);
   }
 
-  private async onStatusAdded(status: AutomappingStatus): Promise<void> {
+  private onStatusAdded(status: AutomappingStatus): Promise<void> {
     const binding = new PersistenceBinding(status.network, status.fileSystem);
     statusBindings.set(status, binding);
-    await this.innerAddBinding(binding);
+    return this.innerAddBinding(binding);
   }
 
   private async onStatusRemoved(status: AutomappingStatus): Promise<void> {
@@ -172,7 +181,7 @@ export class PersistenceImpl extends Common.ObjectWrapper.ObjectWrapper<EventTyp
     const target = Bindings.NetworkProject.NetworkProject.targetForUISourceCode(binding.network);
     if (target && target.type() === SDK.Target.Type.Node) {
       const newContent = uiSourceCode.workingCopy();
-      other.requestContent().then(() => {
+      void other.requestContent().then(() => {
         const nodeJSContent = PersistenceImpl.rewrapNodeJSContent(other, other.workingCopy(), newContent);
         setWorkingCopy.call(this, () => nodeJSContent);
       });
@@ -208,7 +217,7 @@ export class PersistenceImpl extends Common.ObjectWrapper.ObjectWrapper<EventTyp
     const other = binding.network === uiSourceCode ? binding.fileSystem : binding.network;
     const target = Bindings.NetworkProject.NetworkProject.targetForUISourceCode(binding.network);
     if (target && target.type() === SDK.Target.Type.Node) {
-      other.requestContent().then(currentContent => {
+      void other.requestContent().then(currentContent => {
         const nodeJSContent = PersistenceImpl.rewrapNodeJSContent(other, currentContent.content || '', newContent);
         setContent.call(this, nodeJSContent);
       });
@@ -255,8 +264,8 @@ export class PersistenceImpl extends Common.ObjectWrapper.ObjectWrapper<EventTyp
       Promise<void> {
     const breakpoints = this.breakpointManager.breakpointLocationsForUISourceCode(from).map(
         breakpointLocation => breakpointLocation.breakpoint);
-    await Promise.all(breakpoints.map(breakpoint => {
-      breakpoint.remove(false /* keepInStorage */);
+    await Promise.all(breakpoints.map(async breakpoint => {
+      await breakpoint.remove(false /* keepInStorage */);
       return this.breakpointManager.setBreakpoint(
           to, breakpoint.lineNumber(), breakpoint.columnNumber(), breakpoint.condition(), breakpoint.enabled());
     }));
@@ -307,33 +316,52 @@ export class PersistenceImpl extends Common.ObjectWrapper.ObjectWrapper<EventTyp
     return binding ? binding.network : null;
   }
 
-  private addFilePathBindingPrefixes(filePath: string): void {
+  filePathHasBindings(filePath: Platform.DevToolsPath.UrlString): boolean {
+    return this.filePathPrefixesToBindingCount.hasBindingPrefix(filePath);
+  }
+}
+
+class FilePathPrefixesBindingCounts {
+  private prefixCounts: Map<string, number>;
+
+  constructor() {
+    this.prefixCounts = new Map();
+  }
+
+  private getPlatformCanonicalFilePath(path: Platform.DevToolsPath.UrlString): Platform.DevToolsPath.UrlString {
+    return Host.Platform.isWin() ? Common.ParsedURL.ParsedURL.toLowerCase(path) : path;
+  }
+
+  add(filePath: Platform.DevToolsPath.UrlString): void {
+    filePath = this.getPlatformCanonicalFilePath(filePath);
     let relative = '';
     for (const token of filePath.split('/')) {
       relative += token + '/';
-      const count = this.filePathPrefixesToBindingCount.get(relative) || 0;
-      this.filePathPrefixesToBindingCount.set(relative, count + 1);
+      const count = this.prefixCounts.get(relative) || 0;
+      this.prefixCounts.set(relative, count + 1);
     }
   }
 
-  private removeFilePathBindingPrefixes(filePath: string): void {
+  remove(filePath: Platform.DevToolsPath.UrlString): void {
+    filePath = this.getPlatformCanonicalFilePath(filePath);
     let relative = '';
     for (const token of filePath.split('/')) {
       relative += token + '/';
-      const count = this.filePathPrefixesToBindingCount.get(relative);
+      const count = this.prefixCounts.get(relative);
       if (count === 1) {
-        this.filePathPrefixesToBindingCount.delete(relative);
+        this.prefixCounts.delete(relative);
       } else if (count !== undefined) {
-        this.filePathPrefixesToBindingCount.set(relative, count - 1);
+        this.prefixCounts.set(relative, count - 1);
       }
     }
   }
 
-  filePathHasBindings(filePath: string): boolean {
+  hasBindingPrefix(filePath: Platform.DevToolsPath.UrlString): boolean {
+    filePath = this.getPlatformCanonicalFilePath(filePath);
     if (!filePath.endsWith('/')) {
-      filePath += '/';
+      filePath = Common.ParsedURL.ParsedURL.concatenate(filePath, '/');
     }
-    return this.filePathPrefixesToBindingCount.has(filePath);
+    return this.prefixCounts.has(filePath);
   }
 }
 

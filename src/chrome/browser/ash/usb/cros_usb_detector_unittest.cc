@@ -15,10 +15,12 @@
 #include "ash/components/disks/disk_mount_manager.h"
 #include "ash/components/disks/mock_disk_mount_manager.h"
 #include "ash/constants/ash_switches.h"
+#include "base/command_line.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/gmock_move_support.h"
 #include "chrome/browser/ash/arc/arc_util.h"
+#include "chrome/browser/ash/bruschetta/fake_bruschetta_features.h"
 #include "chrome/browser/ash/crostini/crostini_manager.h"
 #include "chrome/browser/ash/crostini/crostini_pref_names.h"
 #include "chrome/browser/ash/crostini/crostini_test_helper.h"
@@ -32,13 +34,13 @@
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "chromeos/dbus/cicerone/cicerone_client.h"
-#include "chromeos/dbus/cicerone/fake_cicerone_client.h"
-#include "chromeos/dbus/concierge/concierge_client.h"
-#include "chromeos/dbus/concierge/fake_concierge_client.h"
+#include "chromeos/ash/components/dbus/cicerone/cicerone_client.h"
+#include "chromeos/ash/components/dbus/cicerone/fake_cicerone_client.h"
+#include "chromeos/ash/components/dbus/concierge/concierge_client.h"
+#include "chromeos/ash/components/dbus/concierge/fake_concierge_client.h"
+#include "chromeos/ash/components/dbus/seneschal/seneschal_client.h"
 #include "chromeos/dbus/cros_disks/cros_disks_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/seneschal/seneschal_client.h"
 #include "chromeos/dbus/vm_plugin_dispatcher/fake_vm_plugin_dispatcher_client.h"
 #include "services/device/public/cpp/test/fake_usb_device_info.h"
 #include "services/device/public/cpp/test/fake_usb_device_manager.h"
@@ -133,11 +135,11 @@ class CrosUsbDetectorTest : public BrowserWithTestWindowTest {
  public:
   CrosUsbDetectorTest() {
     chromeos::DBusThreadManager::Initialize();
-    chromeos::CiceroneClient::InitializeFake();
-    chromeos::ConciergeClient::InitializeFake();
-    chromeos::SeneschalClient::InitializeFake();
-    fake_cicerone_client_ = chromeos::FakeCiceroneClient::Get();
-    fake_concierge_client_ = chromeos::FakeConciergeClient::Get();
+    ash::CiceroneClient::InitializeFake();
+    ConciergeClient::InitializeFake();
+    SeneschalClient::InitializeFake();
+    fake_cicerone_client_ = ash::FakeCiceroneClient::Get();
+    fake_concierge_client_ = FakeConciergeClient::Get();
     fake_vm_plugin_dispatcher_client_ =
         static_cast<chromeos::FakeVmPluginDispatcherClient*>(
             chromeos::DBusThreadManager::Get()->GetVmPluginDispatcherClient());
@@ -152,9 +154,9 @@ class CrosUsbDetectorTest : public BrowserWithTestWindowTest {
 
   ~CrosUsbDetectorTest() override {
     disks::DiskMountManager::Shutdown();
-    chromeos::SeneschalClient::Shutdown();
-    chromeos::ConciergeClient::Shutdown();
-    chromeos::CiceroneClient::Shutdown();
+    SeneschalClient::Shutdown();
+    ConciergeClient::Shutdown();
+    ash::CiceroneClient::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
   }
 
@@ -284,8 +286,8 @@ class CrosUsbDetectorTest : public BrowserWithTestWindowTest {
   disks::MockDiskMountManager* mock_disk_mount_manager_;
   disks::DiskMountManager::DiskMap disks_;
 
-  chromeos::FakeCiceroneClient* fake_cicerone_client_;
-  chromeos::FakeConciergeClient* fake_concierge_client_;
+  ash::FakeCiceroneClient* fake_cicerone_client_;
+  FakeConciergeClient* fake_concierge_client_;
   // Owned by chromeos::DBusThreadManager
   chromeos::FakeVmPluginDispatcherClient* fake_vm_plugin_dispatcher_client_;
 
@@ -378,16 +380,27 @@ TEST_F(CrosUsbDetectorTest, NotificationShown) {
   device_manager_.RemoveDevice(device);
   base::RunLoop().RunUntilIdle();
 
-  // Should have 2 buttions when ARCVM is enabled and user enables ARC but the
+  // Should have 3 buttions when ARCVM is enabled and user enables ARC but the
   // feature is disabled.
-  // Update this test when the kUsbDeviceDefaultAttachToArcVm is enabled
-  // by default or removed.
   ASSERT_TRUE(arc::SetArcPlayStoreEnabledForProfile(profile(), true));
   device_manager_.AddDevice(device);
   base::RunLoop().RunUntilIdle();
   notification = display_service_->GetNotification(notification_id);
   ASSERT_TRUE(notification);
-  EXPECT_EQ(notification->buttons().size(), 2u);
+  EXPECT_EQ(notification->buttons().size(), 3u);
+  device_manager_.RemoveDevice(device);
+  base::RunLoop().RunUntilIdle();
+
+  // Now should have 4 buttons when Bruschetta is enabled.
+  bruschetta::FakeBruschettaFeatures bruschetta_features;
+  bruschetta_features.set_enabled(true);
+  device_manager_.AddDevice(device);
+  base::RunLoop().RunUntilIdle();
+  notification = display_service_->GetNotification(notification_id);
+  ASSERT_TRUE(notification);
+  EXPECT_EQ(notification->buttons().size(), 4u);
+  device_manager_.RemoveDevice(device);
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(CrosUsbDetectorTest, UsbNotificationClicked) {
@@ -419,7 +432,7 @@ TEST_F(CrosUsbDetectorTest, UsbDeviceClassBlockedAdded) {
   base::RunLoop().RunUntilIdle();
 
   scoped_refptr<device::FakeUsbDeviceInfo> device =
-      CreateTestDeviceOfClass(/* USB_CLASS_HID */ 0x03);
+      CreateTestDeviceOfClass(/* USB_CLASS_HUB */ 0x09);
 
   device_manager_.AddDevice(device);
   base::RunLoop().RunUntilIdle();
@@ -933,7 +946,7 @@ TEST_F(CrosUsbDetectorTest, DeviceAllowedInterfacesMaskSetCorrectly) {
 
   // Adb interface as well as a forbidden interface and allowed interface.
   scoped_refptr<device::FakeUsbDeviceInfo> device = CreateTestDeviceFromCodes(
-      /* USB_CLASS_HID */ 0x03,
+      /* USB_CLASS_HUB */ 0x09,
       {InterfaceCodes(0x03, 0xff, 0xff),
        InterfaceCodes(kAdbClass, kAdbSubclass, kAdbProtocol),
        InterfaceCodes(/*USB_CLASS_AUDIO*/ 0x01, 0xff, 0xff)});
@@ -946,7 +959,7 @@ TEST_F(CrosUsbDetectorTest, DeviceAllowedInterfacesMaskSetCorrectly) {
       CrosUsbDetector::MakeNotificationId(device->guid());
   EXPECT_TRUE(display_service_->GetNotification(notification_id));
 
-  EXPECT_EQ(0x00000006U, GetSingleAllowedInterfacesMask());
+  EXPECT_EQ(0x00000007U, GetSingleAllowedInterfacesMask());
 }
 
 TEST_F(CrosUsbDetectorTest, SwitchDeviceWithAttachSuccess) {

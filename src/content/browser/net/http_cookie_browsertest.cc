@@ -5,20 +5,25 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
-#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
+#include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/frame_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "content/public/test/url_loader_interceptor.h"
 #include "content/shell/browser/shell.h"
 #include "net/base/features.h"
 #include "net/cookies/canonical_cookie_test_helpers.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/network/public/cpp/network_switches.h"
+#include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -149,16 +154,6 @@ class HttpCookieBrowserTest : public ContentBrowserTest,
     return test_server->GetURL(host, "/server-redirect?" + target_url.spec());
   }
 
-  RenderFrameHostImpl* SelectDescendentFrame(
-      const std::vector<int>& indices) const {
-    RenderFrameHostImpl* selected_frame = static_cast<RenderFrameHostImpl*>(
-        shell()->web_contents()->GetMainFrame());
-    for (int index : indices) {
-      selected_frame = selected_frame->child_at(index)->current_frame_host();
-    }
-    return selected_frame;
-  }
-
   std::string ExtractFrameContent(RenderFrameHost* frame) const {
     return EvalJs(frame, "document.body.textContent").ExtractString();
   }
@@ -169,59 +164,14 @@ class HttpCookieBrowserTest : public ContentBrowserTest,
     nav_observer.Wait();
   }
 
-  void ArrangeFrames(const std::string& frame_tree) {
-    EXPECT_TRUE(NavigateToURL(
-        shell()->web_contents(),
-        https_server()->GetURL(
-            frame_tree.substr(0, frame_tree.find("(")),
-            base::StrCat({"/cross_site_iframe_factory.html?", frame_tree}))));
-  }
-
-  // Returns the text contents of the Cookie header from the leaf frame.
-  // `frame_tree_pattern` contains a format template for the query string to be
-  // passed to cross_site_iframe_factory, where the URL of the desired leaf
-  // frame is `leaf_url`, e.g. some URL that ends up at `/echoheader?Cookie`.
-  std::string ArrangeFramesAndGetContentFromLeaf(
-      const std::string& frame_tree_pattern,
-      const std::vector<int>& leaf_path,
-      const GURL& leaf_url) {
-    std::string frame_tree =
-        base::StringPrintf(frame_tree_pattern.c_str(), leaf_url.spec().c_str());
-    ArrangeFrames(frame_tree);
-    RenderFrameHostImpl* leaf = SelectDescendentFrame(leaf_path);
-    return ExtractFrameContent(leaf);
-  }
-
-  // Returns the cookies for the leaf's origin.
-  // `frame_tree_pattern` contains a format template for the query string to be
-  // passed to cross_site_iframe_factory, where the URL of the desired leaf
-  // frame is `leaf_url`, e.g. some URL that ends up at `/set-cookie`.
-  std::vector<net::CanonicalCookie> ArrangeFramesAndGetCanonicalCookiesForLeaf(
-      const std::string& frame_tree_pattern,
-      const GURL& leaf_url) {
-    GURL leaf_origin_url = url::Origin::Create(leaf_url).GetURL();
-    return ArrangeFramesAndGetCanonicalCookiesForLeaf(
-        frame_tree_pattern, leaf_url, leaf_origin_url);
-  }
-
-  // Same as above but returns cookies for a separately specified `cookie_url`.
-  std::vector<net::CanonicalCookie> ArrangeFramesAndGetCanonicalCookiesForLeaf(
-      const std::string& frame_tree_pattern,
-      const GURL& leaf_url,
-      const GURL& cookie_url) {
-    std::string frame_tree =
-        base::StringPrintf(frame_tree_pattern.c_str(), leaf_url.spec().c_str());
-    ArrangeFrames(frame_tree);
-    return GetCanonicalCookies(shell()->web_contents()->GetBrowserContext(),
-                               cookie_url);
-  }
-
   uint32_t ClearCookies() {
     return DeleteCookies(shell()->web_contents()->GetBrowserContext(),
                          network::mojom::CookieDeletionFilter());
   }
 
   net::EmbeddedTestServer* https_server() { return &https_server_; }
+
+  WebContents* web_contents() { return shell()->web_contents(); }
 
   // is_user_initiated_navigation - true if user initiates navigation to 404,
   //                              - false script initiates this navigation
@@ -232,9 +182,6 @@ class HttpCookieBrowserTest : public ContentBrowserTest,
   std::string Test404ReloadCookie(bool is_user_initiated_navigation,
                                   bool is_cross_site_navigation,
                                   bool is_user_initiated_reload) {
-    WebContentsImpl* web_contents =
-        static_cast<WebContentsImpl*>(shell()->web_contents());
-
     // Set target as A or B and cookies based on cross_site param
     const char* target = is_cross_site_navigation ? kHostB : kHostA;
     GURL target_URL =
@@ -243,28 +190,28 @@ class HttpCookieBrowserTest : public ContentBrowserTest,
 
     // Start at a website A
     EXPECT_TRUE(
-        NavigateToURL(web_contents, EchoCookiesUrl(https_server(), kHostA)));
+        NavigateToURL(web_contents(), EchoCookiesUrl(https_server(), kHostA)));
 
     // Navigate method based on whether user or script initiated
     if (is_user_initiated_navigation) {
-      EXPECT_TRUE(NavigateToURL(web_contents, target_URL));
+      EXPECT_TRUE(NavigateToURL(web_contents(), target_URL));
     } else {
-      EXPECT_TRUE(NavigateToURLFromRenderer(web_contents, target_URL));
+      EXPECT_TRUE(NavigateToURLFromRenderer(web_contents(), target_URL));
     }
 
     // Trigger either user or script reload
-    TestNavigationObserver nav_observer(web_contents);
+    TestNavigationObserver nav_observer(web_contents());
     if (is_user_initiated_reload) {
       shell()->Reload();
     } else {
       ExecuteScriptAsync(
-          web_contents->GetMainFrame(),
+          web_contents()->GetMainFrame(),
           content::JsReplace("window.location.reload($1);", true));
     }
     nav_observer.Wait();
 
     // Return the cookies rendered on frame
-    return ExtractFrameContent(web_contents->GetMainFrame());
+    return ExtractFrameContent(web_contents()->GetMainFrame());
   }
 
  private:
@@ -276,64 +223,60 @@ IN_PROC_BROWSER_TEST_P(HttpCookieBrowserTest, SendSameSiteCookies) {
   SetSameSiteCookies(kHostA);
   SetSameSiteCookies(kHostB);
 
-  WebContentsImpl* web_contents =
-      static_cast<WebContentsImpl*>(shell()->web_contents());
-
   // Main frame browser-initiated navigation sends all SameSite cookies.
   ASSERT_TRUE(
-      NavigateToURL(web_contents, EchoCookiesUrl(https_server(), kHostA)));
+      NavigateToURL(web_contents(), EchoCookiesUrl(https_server(), kHostA)));
   EXPECT_THAT(
-      ExtractFrameContent(web_contents->GetMainFrame()),
+      ExtractFrameContent(web_contents()->GetMainFrame()),
       net::CookieStringIs(UnorderedElementsAre(
           Key(kSameSiteStrictCookieName), Key(kSameSiteLaxCookieName),
           Key(kSameSiteNoneCookieName), Key(kSameSiteUnspecifiedCookieName))));
 
   // Main frame same-site (A => A) navigation sends all SameSite cookies.
   ASSERT_TRUE(NavigateToURLFromRenderer(
-      web_contents->GetMainFrame(), EchoCookiesUrl(https_server(), kHostA)));
+      web_contents()->GetMainFrame(), EchoCookiesUrl(https_server(), kHostA)));
   EXPECT_THAT(
-      ExtractFrameContent(web_contents->GetMainFrame()),
+      ExtractFrameContent(web_contents()->GetMainFrame()),
       net::CookieStringIs(UnorderedElementsAre(
           Key(kSameSiteStrictCookieName), Key(kSameSiteLaxCookieName),
           Key(kSameSiteNoneCookieName), Key(kSameSiteUnspecifiedCookieName))));
 
   // Main frame cross-site (A => B) navigation sends all but Strict cookies.
   ASSERT_TRUE(NavigateToURLFromRenderer(
-      web_contents->GetMainFrame(), EchoCookiesUrl(https_server(), kHostB)));
-  EXPECT_THAT(ExtractFrameContent(web_contents->GetMainFrame()),
+      web_contents()->GetMainFrame(), EchoCookiesUrl(https_server(), kHostB)));
+  EXPECT_THAT(ExtractFrameContent(web_contents()->GetMainFrame()),
               net::CookieStringIs(UnorderedElementsAre(
                   Key(kSameSiteLaxCookieName), Key(kSameSiteNoneCookieName),
                   Key(kSameSiteUnspecifiedCookieName))));
 
   // Same-site iframe (A embedded in A) sends all SameSite cookies.
   EXPECT_THAT(
-      ArrangeFramesAndGetContentFromLeaf(
-          "a.test(%s)", {0}, EchoCookiesUrl(https_server(), kHostA)),
+      content::ArrangeFramesAndGetContentFromLeaf(
+          web_contents(), https_server(), "a.test(%s)", {0},
+          EchoCookiesUrl(https_server(), kHostA)),
       net::CookieStringIs(UnorderedElementsAre(
           Key(kSameSiteStrictCookieName), Key(kSameSiteLaxCookieName),
           Key(kSameSiteNoneCookieName), Key(kSameSiteUnspecifiedCookieName))));
 
   // Cross-site iframe (B embedded in A) sends only None cookies.
   EXPECT_THAT(
-      ArrangeFramesAndGetContentFromLeaf(
-          "a.test(%s)", {0}, EchoCookiesUrl(https_server(), kHostB)),
+      content::ArrangeFramesAndGetContentFromLeaf(
+          web_contents(), https_server(), "a.test(%s)", {0},
+          EchoCookiesUrl(https_server(), kHostB)),
       net::CookieStringIs(UnorderedElementsAre(Key(kSameSiteNoneCookieName))));
 }
 
 IN_PROC_BROWSER_TEST_P(HttpCookieBrowserTest, SendSameSiteCookies_Redirect) {
   SetSameSiteCookies(kHostA);
 
-  WebContentsImpl* web_contents =
-      static_cast<WebContentsImpl*>(shell()->web_contents());
-
   // Main frame same-site redirect (A->A) sends all SameSite cookies.
   ASSERT_TRUE(NavigateToURL(
-      web_contents,
+      web_contents(),
       RedirectUrl(https_server(), kHostA,
                   EchoCookiesUrl(https_server(), kHostA)),
       /*expected_commit_url=*/EchoCookiesUrl(https_server(), kHostA)));
   EXPECT_THAT(
-      ExtractFrameContent(web_contents->GetMainFrame()),
+      ExtractFrameContent(web_contents()->GetMainFrame()),
       net::CookieStringIs(UnorderedElementsAre(
           Key(kSameSiteStrictCookieName), Key(kSameSiteLaxCookieName),
           Key(kSameSiteNoneCookieName), Key(kSameSiteUnspecifiedCookieName))));
@@ -342,23 +285,23 @@ IN_PROC_BROWSER_TEST_P(HttpCookieBrowserTest, SendSameSiteCookies_Redirect) {
     // Main frame cross-site redirect (B->A) sends Lax but not Strict SameSite
     // cookies...
     ASSERT_TRUE(NavigateToURL(
-        web_contents,
+        web_contents(),
         RedirectUrl(https_server(), kHostB,
                     EchoCookiesUrl(https_server(), kHostA)),
         /*expected_commit_url=*/EchoCookiesUrl(https_server(), kHostA)));
-    EXPECT_THAT(ExtractFrameContent(web_contents->GetMainFrame()),
+    EXPECT_THAT(ExtractFrameContent(web_contents()->GetMainFrame()),
                 net::CookieStringIs(UnorderedElementsAre(
                     Key(kSameSiteLaxCookieName), Key(kSameSiteNoneCookieName),
                     Key(kSameSiteUnspecifiedCookieName))));
 
     // ... even if the first URL is same-site. (A->B->A)
     ASSERT_TRUE(NavigateToURL(
-        web_contents,
+        web_contents(),
         RedirectUrl(https_server(), kHostA,
                     RedirectUrl(https_server(), kHostB,
                                 EchoCookiesUrl(https_server(), kHostA))),
         /*expected_commit_url=*/EchoCookiesUrl(https_server(), kHostA)));
-    EXPECT_THAT(ExtractFrameContent(web_contents->GetMainFrame()),
+    EXPECT_THAT(ExtractFrameContent(web_contents()->GetMainFrame()),
                 net::CookieStringIs(UnorderedElementsAre(
                     Key(kSameSiteLaxCookieName), Key(kSameSiteNoneCookieName),
                     Key(kSameSiteUnspecifiedCookieName))));
@@ -366,23 +309,23 @@ IN_PROC_BROWSER_TEST_P(HttpCookieBrowserTest, SendSameSiteCookies_Redirect) {
     // If redirect chains are not considered, then cross-site redirects do not
     // make the request cross-site.
     ASSERT_TRUE(NavigateToURL(
-        web_contents,
+        web_contents(),
         RedirectUrl(https_server(), kHostB,
                     EchoCookiesUrl(https_server(), kHostA)),
         /*expected_commit_url=*/EchoCookiesUrl(https_server(), kHostA)));
-    EXPECT_THAT(ExtractFrameContent(web_contents->GetMainFrame()),
+    EXPECT_THAT(ExtractFrameContent(web_contents()->GetMainFrame()),
                 net::CookieStringIs(UnorderedElementsAre(
                     Key(kSameSiteStrictCookieName), Key(kSameSiteLaxCookieName),
                     Key(kSameSiteNoneCookieName),
                     Key(kSameSiteUnspecifiedCookieName))));
 
     ASSERT_TRUE(NavigateToURL(
-        web_contents,
+        web_contents(),
         RedirectUrl(https_server(), kHostA,
                     RedirectUrl(https_server(), kHostB,
                                 EchoCookiesUrl(https_server(), kHostA))),
         /*expected_commit_url=*/EchoCookiesUrl(https_server(), kHostA)));
-    EXPECT_THAT(ExtractFrameContent(web_contents->GetMainFrame()),
+    EXPECT_THAT(ExtractFrameContent(web_contents()->GetMainFrame()),
                 net::CookieStringIs(UnorderedElementsAre(
                     Key(kSameSiteStrictCookieName), Key(kSameSiteLaxCookieName),
                     Key(kSameSiteNoneCookieName),
@@ -392,8 +335,8 @@ IN_PROC_BROWSER_TEST_P(HttpCookieBrowserTest, SendSameSiteCookies_Redirect) {
   // A same-site redirected iframe (A->A embedded in A) sends all SameSite
   // cookies.
   EXPECT_THAT(
-      ArrangeFramesAndGetContentFromLeaf(
-          "a.test(%s)", {0},
+      content::ArrangeFramesAndGetContentFromLeaf(
+          web_contents(), https_server(), "a.test(%s)", {0},
           RedirectUrl(https_server(), kHostA,
                       EchoCookiesUrl(https_server(), kHostA))),
       net::CookieStringIs(UnorderedElementsAre(
@@ -403,8 +346,8 @@ IN_PROC_BROWSER_TEST_P(HttpCookieBrowserTest, SendSameSiteCookies_Redirect) {
   if (DoesSameSiteConsiderRedirectChain()) {
     // A cross-site redirected iframe in a same-site context (B->A embedded in
     // A) does not send SameSite cookies...
-    EXPECT_THAT(ArrangeFramesAndGetContentFromLeaf(
-                    "a.test(%s)", {0},
+    EXPECT_THAT(content::ArrangeFramesAndGetContentFromLeaf(
+                    web_contents(), https_server(), "a.test(%s)", {0},
                     RedirectUrl(https_server(), kHostB,
                                 EchoCookiesUrl(https_server(), kHostA))),
                 net::CookieStringIs(
@@ -412,8 +355,8 @@ IN_PROC_BROWSER_TEST_P(HttpCookieBrowserTest, SendSameSiteCookies_Redirect) {
 
     // ... even if the first URL is same-site. (A->B->A embedded in A)
     EXPECT_THAT(
-        ArrangeFramesAndGetContentFromLeaf(
-            "a.test(%s)", {0},
+        content::ArrangeFramesAndGetContentFromLeaf(
+            web_contents(), https_server(), "a.test(%s)", {0},
             RedirectUrl(https_server(), kHostA,
                         RedirectUrl(https_server(), kHostB,
                                     EchoCookiesUrl(https_server(), kHostA)))),
@@ -422,8 +365,8 @@ IN_PROC_BROWSER_TEST_P(HttpCookieBrowserTest, SendSameSiteCookies_Redirect) {
   } else {
     // If redirect chains are not considered, then cross-site redirects do not
     // make the request cross-site.
-    EXPECT_THAT(ArrangeFramesAndGetContentFromLeaf(
-                    "a.test(%s)", {0},
+    EXPECT_THAT(content::ArrangeFramesAndGetContentFromLeaf(
+                    web_contents(), https_server(), "a.test(%s)", {0},
                     RedirectUrl(https_server(), kHostB,
                                 EchoCookiesUrl(https_server(), kHostA))),
                 net::CookieStringIs(UnorderedElementsAre(
@@ -432,8 +375,8 @@ IN_PROC_BROWSER_TEST_P(HttpCookieBrowserTest, SendSameSiteCookies_Redirect) {
                     Key(kSameSiteUnspecifiedCookieName))));
 
     EXPECT_THAT(
-        ArrangeFramesAndGetContentFromLeaf(
-            "a.test(%s)", {0},
+        content::ArrangeFramesAndGetContentFromLeaf(
+            web_contents(), https_server(), "a.test(%s)", {0},
             RedirectUrl(https_server(), kHostA,
                         RedirectUrl(https_server(), kHostB,
                                     EchoCookiesUrl(https_server(), kHostA)))),
@@ -445,13 +388,10 @@ IN_PROC_BROWSER_TEST_P(HttpCookieBrowserTest, SendSameSiteCookies_Redirect) {
 }
 
 IN_PROC_BROWSER_TEST_P(HttpCookieBrowserTest, SetSameSiteCookies) {
-  WebContentsImpl* web_contents =
-      static_cast<WebContentsImpl*>(shell()->web_contents());
-
   // Main frame can set all SameSite cookies.
   ASSERT_TRUE(NavigateToURL(
-      web_contents, https_server()->GetURL(kHostA, kSetSameSiteCookiesURL)));
-  EXPECT_THAT(GetCanonicalCookies(web_contents->GetBrowserContext(),
+      web_contents(), https_server()->GetURL(kHostA, kSetSameSiteCookiesURL)));
+  EXPECT_THAT(GetCanonicalCookies(web_contents()->GetBrowserContext(),
                                   https_server()->GetURL(kHostA, "/")),
               UnorderedElementsAre(
                   net::MatchesCookieWithName(kSameSiteStrictCookieName),
@@ -461,8 +401,9 @@ IN_PROC_BROWSER_TEST_P(HttpCookieBrowserTest, SetSameSiteCookies) {
   ASSERT_EQ(4U, ClearCookies());
 
   // Same-site iframe (A embedded in A) sets all SameSite cookies.
-  EXPECT_THAT(ArrangeFramesAndGetCanonicalCookiesForLeaf(
-                  "a.test(%s)", SetSameSiteCookiesUrl(https_server(), kHostA)),
+  EXPECT_THAT(content::ArrangeFramesAndGetCanonicalCookiesForLeaf(
+                  web_contents(), https_server(), "a.test(%s)",
+                  SetSameSiteCookiesUrl(https_server(), kHostA)),
               UnorderedElementsAre(
                   net::MatchesCookieWithName(kSameSiteStrictCookieName),
                   net::MatchesCookieWithName(kSameSiteLaxCookieName),
@@ -471,24 +412,22 @@ IN_PROC_BROWSER_TEST_P(HttpCookieBrowserTest, SetSameSiteCookies) {
   ASSERT_EQ(4U, ClearCookies());
 
   // Cross-site iframe (B embedded in A) sets only None cookies.
-  EXPECT_THAT(ArrangeFramesAndGetCanonicalCookiesForLeaf(
-                  "a.test(%s)", SetSameSiteCookiesUrl(https_server(), kHostB)),
+  EXPECT_THAT(content::ArrangeFramesAndGetCanonicalCookiesForLeaf(
+                  web_contents(), https_server(), "a.test(%s)",
+                  SetSameSiteCookiesUrl(https_server(), kHostB)),
               UnorderedElementsAre(
                   net::MatchesCookieWithName(kSameSiteNoneCookieName)));
   ASSERT_EQ(1U, ClearCookies());
 }
 
 IN_PROC_BROWSER_TEST_P(HttpCookieBrowserTest, SetSameSiteCookies_Redirect) {
-  WebContentsImpl* web_contents =
-      static_cast<WebContentsImpl*>(shell()->web_contents());
-
   // Same-site redirected main frame navigation can set all SameSite cookies.
   ASSERT_TRUE(NavigateToURL(
-      web_contents,
+      web_contents(),
       RedirectUrl(https_server(), kHostA,
                   SetSameSiteCookiesUrl(https_server(), kHostA)),
       /*expected_commit_url=*/SetSameSiteCookiesUrl(https_server(), kHostA)));
-  EXPECT_THAT(GetCanonicalCookies(web_contents->GetBrowserContext(),
+  EXPECT_THAT(GetCanonicalCookies(web_contents()->GetBrowserContext(),
                                   https_server()->GetURL(kHostA, "/")),
               UnorderedElementsAre(
                   net::MatchesCookieWithName(kSameSiteStrictCookieName),
@@ -499,11 +438,11 @@ IN_PROC_BROWSER_TEST_P(HttpCookieBrowserTest, SetSameSiteCookies_Redirect) {
 
   // Cross-site redirected main frame navigation can set all SameSite cookies.
   ASSERT_TRUE(NavigateToURL(
-      web_contents,
+      web_contents(),
       RedirectUrl(https_server(), kHostB,
                   SetSameSiteCookiesUrl(https_server(), kHostA)),
       /*expected_commit_url=*/SetSameSiteCookiesUrl(https_server(), kHostA)));
-  EXPECT_THAT(GetCanonicalCookies(web_contents->GetBrowserContext(),
+  EXPECT_THAT(GetCanonicalCookies(web_contents()->GetBrowserContext(),
                                   https_server()->GetURL(kHostA, "/")),
               UnorderedElementsAre(
                   net::MatchesCookieWithName(kSameSiteStrictCookieName),
@@ -513,8 +452,8 @@ IN_PROC_BROWSER_TEST_P(HttpCookieBrowserTest, SetSameSiteCookies_Redirect) {
   ASSERT_EQ(4U, ClearCookies());
 
   // A same-site redirected iframe sets all SameSite cookies.
-  EXPECT_THAT(ArrangeFramesAndGetCanonicalCookiesForLeaf(
-                  "a.test(%s)",
+  EXPECT_THAT(content::ArrangeFramesAndGetCanonicalCookiesForLeaf(
+                  web_contents(), https_server(), "a.test(%s)",
                   RedirectUrl(https_server(), kHostA,
                               SetSameSiteCookiesUrl(https_server(), kHostA)),
                   https_server()->GetURL(kHostA, "/")),
@@ -527,8 +466,8 @@ IN_PROC_BROWSER_TEST_P(HttpCookieBrowserTest, SetSameSiteCookies_Redirect) {
 
   if (DoesSameSiteConsiderRedirectChain()) {
     // A cross-site redirected iframe only sets SameSite=None cookies.
-    EXPECT_THAT(ArrangeFramesAndGetCanonicalCookiesForLeaf(
-                    "a.test(%s)",
+    EXPECT_THAT(content::ArrangeFramesAndGetCanonicalCookiesForLeaf(
+                    web_contents(), https_server(), "a.test(%s)",
                     RedirectUrl(https_server(), kHostB,
                                 SetSameSiteCookiesUrl(https_server(), kHostA)),
                     https_server()->GetURL(kHostA, "/")),
@@ -537,8 +476,8 @@ IN_PROC_BROWSER_TEST_P(HttpCookieBrowserTest, SetSameSiteCookies_Redirect) {
     ASSERT_EQ(1U, ClearCookies());
   } else {
     EXPECT_THAT(
-        ArrangeFramesAndGetCanonicalCookiesForLeaf(
-            "a.test(%s)",
+        content::ArrangeFramesAndGetCanonicalCookiesForLeaf(
+            web_contents(), https_server(), "a.test(%s)",
             RedirectUrl(https_server(), kHostB,
                         SetSameSiteCookiesUrl(https_server(), kHostA)),
             https_server()->GetURL(kHostA, "/")),
@@ -555,52 +494,52 @@ IN_PROC_BROWSER_TEST_P(HttpCookieBrowserTest, SendSamePartyCookies) {
   SetSamePartyCookies(kHostA);
   SetSamePartyCookies(kHostD);
 
-  WebContentsImpl* web_contents =
-      static_cast<WebContentsImpl*>(shell()->web_contents());
-
   // No embedded frame. The top-level site has access to its cookies.
   ASSERT_TRUE(NavigateToURL(
-      web_contents, https_server()->GetURL(kHostA, "/echoheader?Cookie")));
-  EXPECT_THAT(ExtractFrameContent(web_contents->GetMainFrame()),
+      web_contents(), https_server()->GetURL(kHostA, "/echoheader?Cookie")));
+  EXPECT_THAT(ExtractFrameContent(web_contents()->GetMainFrame()),
               net::CookieStringIs(UnorderedElementsAre(
                   Key(kSamePartyLaxCookieName), Key(kSamePartyNoneCookieName),
                   Key(kSamePartyUnspecifiedCookieName))));
 
   // Same-site FPS-member iframe (A embedded in A) sends A's SameParty cookies.
-  EXPECT_THAT(ArrangeFramesAndGetContentFromLeaf(
-                  "a.test(%s)", {0}, EchoCookiesUrl(https_server(), kHostA)),
+  EXPECT_THAT(content::ArrangeFramesAndGetContentFromLeaf(
+                  web_contents(), https_server(), "a.test(%s)", {0},
+                  EchoCookiesUrl(https_server(), kHostA)),
               net::CookieStringIs(UnorderedElementsAre(
                   Key(kSamePartyLaxCookieName), Key(kSamePartyNoneCookieName),
                   Key(kSamePartyUnspecifiedCookieName))));
 
   // Cross-site, same-party iframe (B embedded in A) does not send A's SameParty
   // cookies (since it's the wrong domain).
-  EXPECT_EQ(ArrangeFramesAndGetContentFromLeaf(
-                "a.test(%s)", {0}, EchoCookiesUrl(https_server(), kHostB)),
+  EXPECT_EQ(content::ArrangeFramesAndGetContentFromLeaf(
+                web_contents(), https_server(), "a.test(%s)", {0},
+                EchoCookiesUrl(https_server(), kHostB)),
             "None");
 
   // Cross-site, same-party iframe (A embedded in B) sends A's SameParty
   // cookies.
-  EXPECT_THAT(ArrangeFramesAndGetContentFromLeaf(
-                  "b.test(%s)", {0}, EchoCookiesUrl(https_server(), kHostA)),
+  EXPECT_THAT(content::ArrangeFramesAndGetContentFromLeaf(
+                  web_contents(), https_server(), "b.test(%s)", {0},
+                  EchoCookiesUrl(https_server(), kHostA)),
               net::CookieStringIs(UnorderedElementsAre(
                   Key(kSamePartyLaxCookieName), Key(kSamePartyNoneCookieName),
                   Key(kSamePartyUnspecifiedCookieName))));
 
   // Cross-site, same-party nested iframe (A embedded in B embedded in A) sends
   // A's SameParty cookies.
-  EXPECT_THAT(
-      ArrangeFramesAndGetContentFromLeaf(
-          "a.test(b.test(%s))", {0, 0}, EchoCookiesUrl(https_server(), kHostA)),
-      net::CookieStringIs(UnorderedElementsAre(
-          Key(kSamePartyLaxCookieName), Key(kSamePartyNoneCookieName),
-          Key(kSamePartyUnspecifiedCookieName))));
+  EXPECT_THAT(content::ArrangeFramesAndGetContentFromLeaf(
+                  web_contents(), https_server(), "a.test(b.test(%s))", {0, 0},
+                  EchoCookiesUrl(https_server(), kHostA)),
+              net::CookieStringIs(UnorderedElementsAre(
+                  Key(kSamePartyLaxCookieName), Key(kSamePartyNoneCookieName),
+                  Key(kSamePartyUnspecifiedCookieName))));
 
   // Cross-site, same-party nested iframe (A embedded in B embedded in C
   // embedded in A) sends A's SameParty cookies.
-  EXPECT_THAT(ArrangeFramesAndGetContentFromLeaf(
-                  "a.test(c.test(b.test(%s)))", {0, 0, 0},
-                  EchoCookiesUrl(https_server(), kHostA)),
+  EXPECT_THAT(content::ArrangeFramesAndGetContentFromLeaf(
+                  web_contents(), https_server(), "a.test(c.test(b.test(%s)))",
+                  {0, 0, 0}, EchoCookiesUrl(https_server(), kHostA)),
               net::CookieStringIs(UnorderedElementsAre(
                   Key(kSamePartyLaxCookieName), Key(kSamePartyNoneCookieName),
                   Key(kSamePartyUnspecifiedCookieName))));
@@ -608,41 +547,40 @@ IN_PROC_BROWSER_TEST_P(HttpCookieBrowserTest, SendSamePartyCookies) {
   // Cross-site, cross-party iframe (D embedded in A) sends only D's
   // SameSite=None cookie, since D is not in A's First-Party Set.
   EXPECT_THAT(
-      ArrangeFramesAndGetContentFromLeaf(
-          "a.test(%s)", {0}, EchoCookiesUrl(https_server(), kHostD)),
+      content::ArrangeFramesAndGetContentFromLeaf(
+          web_contents(), https_server(), "a.test(%s)", {0},
+          EchoCookiesUrl(https_server(), kHostD)),
       net::CookieStringIs(UnorderedElementsAre(Key(kSamePartyNoneCookieName))));
 
   // Cross-site, cross-party iframe (A embedded in D) doesn't send A's SameParty
   // cookies.
-  EXPECT_EQ(ArrangeFramesAndGetContentFromLeaf(
-                "d.test(%s)", {0}, EchoCookiesUrl(https_server(), kHostA)),
+  EXPECT_EQ(content::ArrangeFramesAndGetContentFromLeaf(
+                web_contents(), https_server(), "d.test(%s)", {0},
+                EchoCookiesUrl(https_server(), kHostA)),
             "None");
 
   // Cross-site, cross-party nested iframe (A embedded in B embedded in D)
   // doesn't send A's SameParty cookies.
-  EXPECT_EQ(
-      ArrangeFramesAndGetContentFromLeaf(
-          "d.test(b.test(%s))", {0, 0}, EchoCookiesUrl(https_server(), kHostA)),
-      "None");
+  EXPECT_EQ(content::ArrangeFramesAndGetContentFromLeaf(
+                web_contents(), https_server(), "d.test(b.test(%s))", {0, 0},
+                EchoCookiesUrl(https_server(), kHostA)),
+            "None");
 
   // No embedded frame. The top-level site has access to its cookies, regardless
   // of whether the site is in an FPS, or whether the cookies are SameParty.
   ASSERT_TRUE(NavigateToURL(
-      web_contents, https_server()->GetURL(kHostD, "/echoheader?Cookie")));
-  EXPECT_THAT(ExtractFrameContent(web_contents->GetMainFrame()),
+      web_contents(), https_server()->GetURL(kHostD, "/echoheader?Cookie")));
+  EXPECT_THAT(ExtractFrameContent(web_contents()->GetMainFrame()),
               net::CookieStringIs(UnorderedElementsAre(
                   Key(kSamePartyLaxCookieName), Key(kSamePartyNoneCookieName),
                   Key(kSamePartyUnspecifiedCookieName))));
 }
 
 IN_PROC_BROWSER_TEST_P(HttpCookieBrowserTest, SetSamePartyCookies) {
-  WebContentsImpl* web_contents =
-      static_cast<WebContentsImpl*>(shell()->web_contents());
-
   // No embedded frame, FPS member. The top-level FPS site can set its cookies.
   ASSERT_TRUE(NavigateToURL(
-      web_contents, https_server()->GetURL(kHostA, kSetSamePartyCookiesURL)));
-  EXPECT_THAT(GetCanonicalCookies(web_contents->GetBrowserContext(),
+      web_contents(), https_server()->GetURL(kHostA, kSetSamePartyCookiesURL)));
+  EXPECT_THAT(GetCanonicalCookies(web_contents()->GetBrowserContext(),
                                   https_server()->GetURL(kHostA, "/")),
               UnorderedElementsAre(
                   net::MatchesCookieWithName(kSamePartyLaxCookieName),
@@ -651,8 +589,9 @@ IN_PROC_BROWSER_TEST_P(HttpCookieBrowserTest, SetSamePartyCookies) {
   ASSERT_EQ(3U, ClearCookies());
 
   // Same-site FPS-member iframe (A embedded in A) sets A's SameParty cookies.
-  EXPECT_THAT(ArrangeFramesAndGetCanonicalCookiesForLeaf(
-                  "a.test(%s)", SetSamePartyCookiesUrl(https_server(), kHostA)),
+  EXPECT_THAT(content::ArrangeFramesAndGetCanonicalCookiesForLeaf(
+                  web_contents(), https_server(), "a.test(%s)",
+                  SetSamePartyCookiesUrl(https_server(), kHostA)),
               UnorderedElementsAre(
                   net::MatchesCookieWithName(kSamePartyLaxCookieName),
                   net::MatchesCookieWithName(kSamePartyNoneCookieName),
@@ -661,8 +600,9 @@ IN_PROC_BROWSER_TEST_P(HttpCookieBrowserTest, SetSamePartyCookies) {
 
   // Cross-site, same-party iframe (A embedded in B) sets A's SameParty
   // cookies.
-  EXPECT_THAT(ArrangeFramesAndGetCanonicalCookiesForLeaf(
-                  "b.test(%s)", SetSamePartyCookiesUrl(https_server(), kHostA)),
+  EXPECT_THAT(content::ArrangeFramesAndGetCanonicalCookiesForLeaf(
+                  web_contents(), https_server(), "b.test(%s)",
+                  SetSamePartyCookiesUrl(https_server(), kHostA)),
               UnorderedElementsAre(
                   net::MatchesCookieWithName(kSamePartyLaxCookieName),
                   net::MatchesCookieWithName(kSamePartyNoneCookieName),
@@ -671,19 +611,19 @@ IN_PROC_BROWSER_TEST_P(HttpCookieBrowserTest, SetSamePartyCookies) {
 
   // Cross-site, same-party nested iframe (A embedded in B embedded in A) sets
   // A's SameParty cookies.
-  EXPECT_THAT(
-      ArrangeFramesAndGetCanonicalCookiesForLeaf(
-          "a.test(b.test(%s))", SetSamePartyCookiesUrl(https_server(), kHostA)),
-      UnorderedElementsAre(
-          net::MatchesCookieWithName(kSamePartyLaxCookieName),
-          net::MatchesCookieWithName(kSamePartyNoneCookieName),
-          net::MatchesCookieWithName(kSamePartyUnspecifiedCookieName)));
+  EXPECT_THAT(content::ArrangeFramesAndGetCanonicalCookiesForLeaf(
+                  web_contents(), https_server(), "a.test(b.test(%s))",
+                  SetSamePartyCookiesUrl(https_server(), kHostA)),
+              UnorderedElementsAre(
+                  net::MatchesCookieWithName(kSamePartyLaxCookieName),
+                  net::MatchesCookieWithName(kSamePartyNoneCookieName),
+                  net::MatchesCookieWithName(kSamePartyUnspecifiedCookieName)));
   ASSERT_EQ(3U, ClearCookies());
 
   // Cross-site, same-party nested iframe (A embedded in B embedded in C
   // embedded in A) sets A's SameParty cookies.
-  EXPECT_THAT(ArrangeFramesAndGetCanonicalCookiesForLeaf(
-                  "a.test(c.test(b.test(%s)))",
+  EXPECT_THAT(content::ArrangeFramesAndGetCanonicalCookiesForLeaf(
+                  web_contents(), https_server(), "a.test(c.test(b.test(%s)))",
                   SetSamePartyCookiesUrl(https_server(), kHostA)),
               UnorderedElementsAre(
                   net::MatchesCookieWithName(kSamePartyLaxCookieName),
@@ -693,31 +633,33 @@ IN_PROC_BROWSER_TEST_P(HttpCookieBrowserTest, SetSamePartyCookies) {
 
   // Cross-site, cross-party iframe (D embedded in A) sets D's SameSite=None
   // cookie, since it's not an FPS member (and SameParty is ignored).
-  EXPECT_THAT(ArrangeFramesAndGetCanonicalCookiesForLeaf(
-                  "a.test(%s)", SetSamePartyCookiesUrl(https_server(), kHostD)),
+  EXPECT_THAT(content::ArrangeFramesAndGetCanonicalCookiesForLeaf(
+                  web_contents(), https_server(), "a.test(%s)",
+                  SetSamePartyCookiesUrl(https_server(), kHostD)),
               UnorderedElementsAre(
                   net::MatchesCookieWithName(kSamePartyNoneCookieName)));
   ASSERT_EQ(1U, ClearCookies());
 
   // Cross-site, cross-party iframe (A embedded in D) doesn't set A's SameParty
   // cookies, since A is an FPS member and SameParty is not ignored..
-  EXPECT_THAT(ArrangeFramesAndGetCanonicalCookiesForLeaf(
-                  "d.test(%s)", SetSamePartyCookiesUrl(https_server(), kHostA)),
+  EXPECT_THAT(content::ArrangeFramesAndGetCanonicalCookiesForLeaf(
+                  web_contents(), https_server(), "d.test(%s)",
+                  SetSamePartyCookiesUrl(https_server(), kHostA)),
               IsEmpty());
   ASSERT_EQ(0U, ClearCookies());
 
   // Cross-site, cross-party nested iframe (A embedded in B embedded in D)
   // doesn't set A's SameParty cookies.
-  EXPECT_THAT(
-      ArrangeFramesAndGetCanonicalCookiesForLeaf(
-          "d.test(b.test(%s))", SetSamePartyCookiesUrl(https_server(), kHostA)),
-      IsEmpty());
+  EXPECT_THAT(content::ArrangeFramesAndGetCanonicalCookiesForLeaf(
+                  web_contents(), https_server(), "d.test(b.test(%s))",
+                  SetSamePartyCookiesUrl(https_server(), kHostA)),
+              IsEmpty());
   ASSERT_EQ(0U, ClearCookies());
 
   // No embedded frame, non-FPS member. The top-level site can set its cookies.
   ASSERT_TRUE(NavigateToURL(
-      web_contents, https_server()->GetURL(kHostD, kSetSamePartyCookiesURL)));
-  EXPECT_THAT(GetCanonicalCookies(web_contents->GetBrowserContext(),
+      web_contents(), https_server()->GetURL(kHostD, kSetSamePartyCookiesURL)));
+  EXPECT_THAT(GetCanonicalCookies(web_contents()->GetBrowserContext(),
                                   https_server()->GetURL(kHostD, "/")),
               UnorderedElementsAre(
                   net::MatchesCookieWithName(kSamePartyLaxCookieName),
@@ -816,6 +758,552 @@ IN_PROC_BROWSER_TEST_P(HttpCookieBrowserTest,
 INSTANTIATE_TEST_SUITE_P(/* no label */,
                          HttpCookieBrowserTest,
                          ::testing::Bool());
+
+struct OriginTrialTestOptions {
+  bool has_ot_token = true;
+  bool valid_ot_token = true;
+  bool has_set_cookie = true;
+  bool has_partitioned = true;
+};
+
+// This class tests the origin trial mechanism for partitioned cookies.
+// Partitioned cookies should be reverted to unpartitioned if the navigation
+// has a Set-Cookie header with the Partitioned attribute and the site does
+// not send a valid Origin-Trial header.
+// This test exercises the origin trial for top-level navigation requests.
+class PartitionedCookiesOriginTrialBrowserTest : public ContentBrowserTest {
+ protected:
+  void SetUp() override {
+    scoped_feature_list_.InitWithFeatures({net::features::kPartitionedCookies},
+                                          {});
+    ContentBrowserTest::SetUp();
+  }
+
+  void SetUpOnMainThread() override {
+    url_loader_interceptor_ =
+        std::make_unique<URLLoaderInterceptor>(base::BindRepeating(
+            &PartitionedCookiesOriginTrialBrowserTest::InterceptRequest,
+            base::Unretained(this)));
+  }
+
+  void TearDownOnMainThread() override {
+    url_loader_interceptor_.reset();
+    ContentBrowserTest::TearDownOnMainThread();
+  }
+
+  void SetTestOptions(const OriginTrialTestOptions& test_setting,
+                      const std::set<GURL>& expected_request_urls) {
+    test_options_ = test_setting;
+    expected_request_urls_ = expected_request_urls;
+  }
+
+  virtual const char* OriginTrialToken() const {
+    // The test Origin Trial token was generated by running:
+    // python tools/origin_trials/generate_token.py https://127.0.0.1:44444 \
+    //     PartitionedCookies \
+    //     --expire-timestamp=2000000000
+    return "A4s/"
+           "iPKfhEfgqQIIuz4zLuCpONpXOuYyJFBhBx1MfgS1aNhFujyhsg4lkfTRfjzQCI3aUbM"
+           "wtNm25elLTR4UIgAAAABceyJvcmlnaW4iOiAiaHR0cHM6Ly8xMjcuMC4wLjE6NDQ0ND"
+           "QiLCAiZmVhdHVyZSI6ICJQYXJ0aXRpb25lZENvb2tpZXMiLCAiZXhwaXJ5IjogMjAwM"
+           "DAwMDAwMH0=";
+  }
+
+  // We use URLLoaderInterceptor because we cannot control which port that
+  // EmbeddedTestServer uses. Since origin trials depend on the entire origin
+  // (including port) we need to intercept the requests using
+  // URLLoaderInterceptor.
+  bool InterceptRequest(URLLoaderInterceptor::RequestParams* params) {
+    if (expected_request_urls_.find(params->url_request.url) ==
+        expected_request_urls_.end()) {
+      return false;
+    }
+
+    std::string headers = "HTTP/1.1 200 OK\nContent-Type: text/html\n";
+    std::string body = "<html><body>Hello world!</body></html>";
+    if (test_options_.has_set_cookie) {
+      base::StrAppend(
+          &headers,
+          {"Set-Cookie: __Host-foo=bar; Secure; Path=/; SameSite=None;",
+           test_options_.has_partitioned ? " Partitioned" : "", "\n"});
+    }
+    if (test_options_.has_ot_token) {
+      base::StrAppend(
+          &headers,
+          {"Origin-Trial: ",
+           test_options_.valid_ot_token ? OriginTrialToken() : "invalid",
+           "\n"});
+    }
+    URLLoaderInterceptor::WriteResponse(headers, body, params->client.get(),
+                                        absl::nullopt,
+                                        /*url=*/params->url_request.url);
+    return true;
+  }
+
+  network::mojom::CookieManager* GetCookieManager() {
+    return shell()
+        ->web_contents()
+        ->GetBrowserContext()
+        ->GetDefaultStoragePartition()
+        ->GetCookieManagerForBrowserProcess();
+  }
+
+  void SetCookie(const std::string& name,
+                 const std::string& value,
+                 const GURL& url,
+                 const absl::optional<net::CookiePartitionKey>& partition_key) {
+    auto cookie = net::CanonicalCookie::CreateUnsafeCookieForTesting(
+        name, value, url.host(), "/", base::Time::Now() - base::Days(1),
+        base::Time::Now() + base::Days(1), base::Time::Now(), base::Time::Now(),
+        /*secure=*/true, /*httponly=*/false,
+        net::CookieSameSite::NO_RESTRICTION,
+        net::CookiePriority::COOKIE_PRIORITY_DEFAULT, /*same_party=*/false,
+        partition_key);
+    EXPECT_TRUE(cookie->IsCanonical());
+
+    base::RunLoop run_loop;
+    GetCookieManager()->SetCanonicalCookie(
+        *cookie, url, net::CookieOptions::MakeAllInclusive(),
+        base::BindLambdaForTesting(
+            [&](net::CookieAccessResult set_cookie_result) {
+              EXPECT_TRUE(set_cookie_result.status.IsInclude());
+              run_loop.Quit();
+            }));
+    run_loop.Run();
+  }
+
+  std::vector<net::CanonicalCookie> GetCookies(const GURL& url) {
+    std::vector<net::CanonicalCookie> cookies;
+
+    base::RunLoop run_loop;
+    GetCookieManager()->GetCookieList(
+        url, net::CookieOptions::MakeAllInclusive(),
+        net::CookiePartitionKeyCollection::ContainsAll(),
+        base::BindLambdaForTesting(
+            [&](const std::vector<::net::CookieWithAccessResult>& result,
+                const std::vector<::net::CookieWithAccessResult>&
+                    excluded_cookies) {
+              EXPECT_TRUE(excluded_cookies.empty());
+              for (const auto& el : result) {
+                cookies.push_back(el.cookie);
+              }
+              run_loop.Quit();
+            }));
+    run_loop.Run();
+
+    return cookies;
+  }
+
+  const GURL CookieUrl() { return GURL("https://127.0.0.1:44444"); }
+
+  void WaitForPage(const GURL& url) {
+    EXPECT_TRUE(NavigateToURL(shell(), url));
+    WebContents* contents = shell()->web_contents();
+    EXPECT_TRUE(WaitForLoadStop(contents));
+    EXPECT_TRUE(WaitForRenderFrameReady(contents->GetMainFrame()));
+  }
+
+ protected:
+  std::unique_ptr<URLLoaderInterceptor> url_loader_interceptor_;
+  OriginTrialTestOptions test_options_;
+  std::set<GURL> expected_request_urls_;
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+// Test that the partitioned cookie set before the request remains partitioned
+// when the site sends a Set-Cookie header with the Partitioned attribute
+// and a valid OT token.
+IN_PROC_BROWSER_TEST_F(PartitionedCookiesOriginTrialBrowserTest,
+                       ValidParticipant) {
+  SetCookie(
+      "__Host-foo", "bar", CookieUrl(),
+      net::CookiePartitionKey::FromURLForTesting(GURL("https://example.com")));
+  SetTestOptions(
+      {/*has_ot_token=*/true, /*valid_ot_token=*/true, /*has_set_cookie=*/true,
+       /*has_partitioned=*/true},
+      {CookieUrl()});
+
+  WaitForPage(CookieUrl());
+
+  auto cookies = GetCookies(CookieUrl());
+  EXPECT_EQ(1u, cookies.size());
+  EXPECT_TRUE(cookies[0].IsPartitioned());
+}
+
+// Test that the partitioned cookie is reverted to unpartitioned if the site
+// sends a Set-Cookie with Partitioned but an invalid OT token.
+IN_PROC_BROWSER_TEST_F(PartitionedCookiesOriginTrialBrowserTest, InvalidToken) {
+  SetCookie(
+      "__Host-foo", "bar", CookieUrl(),
+      net::CookiePartitionKey::FromURLForTesting(GURL("https://example.com")));
+  SetTestOptions(
+      {/*has_ot_token=*/true, /*valid_ot_token=*/false, /*has_set_cookie=*/true,
+       /*has_partitioned=*/true},
+      {CookieUrl()});
+
+  WaitForPage(CookieUrl());
+
+  auto cookies = GetCookies(CookieUrl());
+  EXPECT_EQ(1u, cookies.size());
+  EXPECT_FALSE(cookies[0].IsPartitioned());
+}
+
+// Test that the partitioned cookie is reverted to unpartitioned if the site
+// sends a Set-Cookie with Partitioned but do not send an OT token.
+IN_PROC_BROWSER_TEST_F(PartitionedCookiesOriginTrialBrowserTest, NoToken) {
+  SetCookie(
+      "__Host-foo", "bar", CookieUrl(),
+      net::CookiePartitionKey::FromURLForTesting(GURL("https://example.com")));
+  SetTestOptions({/*has_ot_token=*/false, /*valid_ot_token=*/false,
+                  /*has_set_cookie=*/true,
+                  /*has_partitioned=*/true},
+                 {CookieUrl()});
+
+  WaitForPage(CookieUrl());
+
+  auto cookies = GetCookies(CookieUrl());
+  EXPECT_EQ(1u, cookies.size());
+  EXPECT_FALSE(cookies[0].IsPartitioned());
+}
+
+// The partitioned cookie should stay partitioned since we should not check
+// the OT token on responses with no Set-Cookie header.
+IN_PROC_BROWSER_TEST_F(PartitionedCookiesOriginTrialBrowserTest, NoSetCookie) {
+  SetCookie(
+      "__Host-foo", "bar", CookieUrl(),
+      net::CookiePartitionKey::FromURLForTesting(GURL("https://example.com")));
+  SetTestOptions({/*has_ot_token=*/false, /*valid_ot_token=*/false,
+                  /*has_set_cookie=*/false,
+                  /*has_partitioned=*/true},
+                 {CookieUrl()});
+
+  WaitForPage(CookieUrl());
+
+  auto cookies = GetCookies(CookieUrl());
+  EXPECT_EQ(1u, cookies.size());
+  EXPECT_TRUE(cookies[0].IsPartitioned());
+}
+
+// The partitioned cookie should stay partitioned since we should not check
+// the OT token on responses with a Set-Cookie header without Partitioned.
+IN_PROC_BROWSER_TEST_F(PartitionedCookiesOriginTrialBrowserTest,
+                       NoPartitioned) {
+  SetCookie(
+      "__Host-foo", "bar", CookieUrl(),
+      net::CookiePartitionKey::FromURLForTesting(GURL("https://example.com")));
+  SetTestOptions({/*has_ot_token=*/false, /*valid_ot_token=*/false,
+                  /*has_set_cookie=*/true,
+                  /*has_partitioned=*/false},
+                 {CookieUrl()});
+
+  WaitForPage(CookieUrl());
+
+  auto cookies = GetCookies(CookieUrl());
+  EXPECT_EQ(1u, cookies.size());
+  EXPECT_TRUE(cookies[0].IsPartitioned());
+}
+
+// This class tests the origin trial mechanism for partitioned cookies.
+// Partitioned cookies should be reverted to unpartitioned if the navigation
+// has a Set-Cookie header with the Partitioned attribute and the site does
+// not send a valid Origin-Trial header.
+// This test exercises navigation requests in <iframe> embeds.
+class EmbedPartitionedCookiesOriginTrialBrowserTest
+    : public PartitionedCookiesOriginTrialBrowserTest {
+ public:
+  void SetUpOnMainThread() override {
+    url_loader_interceptor_ =
+        std::make_unique<URLLoaderInterceptor>(base::BindRepeating(
+            &EmbedPartitionedCookiesOriginTrialBrowserTest::InterceptRequest,
+            base::Unretained(this)));
+  }
+
+  const char* OriginTrialToken() const override {
+    // The test Origin Trial token was generated by running:
+    // python tools/origin_trials/generate_token.py https://127.0.0.1:44444 \
+    //     PartitionedCookies \
+    //     --expire-timestamp=2000000000
+    //     --is-third-party
+    return "A1mBOyrOKGAaaoT8mjM1qSNrOSrdDUa9WyqicVLlDGW3feIBSdWqSiHDAXUeKkGKaVq"
+           "UiCX8avwCM0gpG5LtxgAAAAByeyJvcmlnaW4iOiAiaHR0cHM6Ly8xMjcuMC4wLjE6ND"
+           "Q0NDQiLCAiZmVhdHVyZSI6ICJQYXJ0aXRpb25lZENvb2tpZXMiLCAiZXhwaXJ5IjogM"
+           "jAwMDAwMDAwMCwgImlzVGhpcmRQYXJ0eSI6IHRydWV9";
+  }
+
+  // We use URLLoaderInterceptor because we cannot control which port that
+  // EmbeddedTestServer uses. Since origin trials depend on the entire origin
+  // (including port) we need to intercept the requests using
+  // URLLoaderInterceptor.
+  bool InterceptRequest(URLLoaderInterceptor::RequestParams* params) {
+    if (expected_request_urls_.find(params->url_request.url) ==
+        expected_request_urls_.end()) {
+      return false;
+    }
+
+    if (params->url_request.url == TopLevelUrl()) {
+      std::string headers = "HTTP/1.1 200 OK\nContent-Type: text/html\n";
+      std::string body = "<html><body><iframe src=\"";
+      base::StrAppend(&body, {CookieUrl().spec(), "\"></body></html>"});
+      URLLoaderInterceptor::WriteResponse(headers, body, params->client.get(),
+                                          absl::nullopt,
+                                          /*url=*/params->url_request.url);
+      return true;
+    }
+
+    return PartitionedCookiesOriginTrialBrowserTest::InterceptRequest(params);
+  }
+
+  GURL TopLevelUrl() { return GURL("https://mysite.com:44444"); }
+};
+
+// Test that the partitioned cookie set before the request remains partitioned
+// when the site sends a Set-Cookie header with the Partitioned attribute
+// and a valid OT token.
+IN_PROC_BROWSER_TEST_F(EmbedPartitionedCookiesOriginTrialBrowserTest,
+                       ValidParticipant) {
+  SetCookie(
+      "__Host-foo", "bar", CookieUrl(),
+      net::CookiePartitionKey::FromURLForTesting(GURL("https://example.com")));
+  SetTestOptions(
+      {/*has_ot_token=*/true, /*valid_ot_token=*/true, /*has_set_cookie=*/true,
+       /*has_partitioned=*/true},
+      {TopLevelUrl(), CookieUrl()});
+
+  WaitForPage(TopLevelUrl());
+
+  auto cookies = GetCookies(CookieUrl());
+  EXPECT_EQ(1u, cookies.size());
+  EXPECT_TRUE(cookies[0].IsPartitioned());
+}
+
+// Test that the partitioned cookie is reverted to unpartitioned if the site
+// sends a Set-Cookie with Partitioned but an invalid OT token.
+IN_PROC_BROWSER_TEST_F(EmbedPartitionedCookiesOriginTrialBrowserTest,
+                       InvalidToken) {
+  SetCookie(
+      "__Host-foo", "bar", CookieUrl(),
+      net::CookiePartitionKey::FromURLForTesting(GURL("https://example.com")));
+  SetTestOptions(
+      {/*has_ot_token=*/true, /*valid_ot_token=*/false, /*has_set_cookie=*/true,
+       /*has_partitioned=*/true},
+      {TopLevelUrl(), CookieUrl()});
+
+  WaitForPage(TopLevelUrl());
+
+  auto cookies = GetCookies(CookieUrl());
+  EXPECT_EQ(1u, cookies.size());
+  EXPECT_FALSE(cookies[0].IsPartitioned());
+}
+
+// Test that the partitioned cookie is reverted to unpartitioned if the site
+// sends a Set-Cookie with Partitioned but do not send an OT token.
+IN_PROC_BROWSER_TEST_F(EmbedPartitionedCookiesOriginTrialBrowserTest, NoToken) {
+  SetCookie(
+      "__Host-foo", "bar", CookieUrl(),
+      net::CookiePartitionKey::FromURLForTesting(GURL("https://example.com")));
+  SetTestOptions({/*has_ot_token=*/false, /*valid_ot_token=*/false,
+                  /*has_set_cookie=*/true,
+                  /*has_partitioned=*/true},
+                 {TopLevelUrl(), CookieUrl()});
+
+  WaitForPage(TopLevelUrl());
+
+  auto cookies = GetCookies(CookieUrl());
+  EXPECT_EQ(1u, cookies.size());
+  EXPECT_FALSE(cookies[0].IsPartitioned());
+}
+
+// The partitioned cookie should stay partitioned since we should not check
+// the OT token on responses with no Set-Cookie header.
+IN_PROC_BROWSER_TEST_F(EmbedPartitionedCookiesOriginTrialBrowserTest,
+                       NoSetCookie) {
+  SetCookie(
+      "__Host-foo", "bar", CookieUrl(),
+      net::CookiePartitionKey::FromURLForTesting(GURL("https://example.com")));
+  SetTestOptions({/*has_ot_token=*/false, /*valid_ot_token=*/false,
+                  /*has_set_cookie=*/false,
+                  /*has_partitioned=*/true},
+                 {TopLevelUrl(), CookieUrl()});
+
+  WaitForPage(TopLevelUrl());
+
+  auto cookies = GetCookies(CookieUrl());
+  EXPECT_EQ(1u, cookies.size());
+  EXPECT_TRUE(cookies[0].IsPartitioned());
+}
+
+// The partitioned cookie should stay partitioned since we should not check
+// the OT token on responses with a Set-Cookie header without Partitioned.
+IN_PROC_BROWSER_TEST_F(EmbedPartitionedCookiesOriginTrialBrowserTest,
+                       NoPartitioned) {
+  SetCookie(
+      "__Host-foo", "bar", CookieUrl(),
+      net::CookiePartitionKey::FromURLForTesting(GURL("https://example.com")));
+  SetTestOptions({/*has_ot_token=*/false, /*valid_ot_token=*/false,
+                  /*has_set_cookie=*/true,
+                  /*has_partitioned=*/false},
+                 {TopLevelUrl(), CookieUrl()});
+
+  WaitForPage(TopLevelUrl());
+
+  auto cookies = GetCookies(CookieUrl());
+  EXPECT_EQ(1u, cookies.size());
+  EXPECT_TRUE(cookies[0].IsPartitioned());
+}
+
+// This test exercises the partitioned cookie origin trial for subresource
+// requests. This browser test is meant to verify the feature works end-to-end
+// though there is nothing about this test particularly related to navigation.
+//
+// I put the test here because I can subclass other partitioned cookies origin
+// trial tests that do test navigation requests to reuse the test
+// infrastructure.
+// TODO(https://crbug.com/1296161): Move to another file/delete this test when
+// OT is over.
+class SubresourcePartitionedCookiesOriginTrialBrowserTest
+    : public EmbedPartitionedCookiesOriginTrialBrowserTest {
+ public:
+  void SetUpOnMainThread() override {
+    url_loader_interceptor_ = std::make_unique<
+        URLLoaderInterceptor>(base::BindRepeating(
+        &SubresourcePartitionedCookiesOriginTrialBrowserTest::InterceptRequest,
+        base::Unretained(this)));
+  }
+
+  bool InterceptRequest(URLLoaderInterceptor::RequestParams* params) {
+    if (expected_request_urls_.find(params->url_request.url) ==
+        expected_request_urls_.end()) {
+      return false;
+    }
+
+    if (params->url_request.url == TopLevelUrl()) {
+      std::string headers = "HTTP/1.1 200 OK\nContent-Type: text/html\n";
+      std::string body = "<html><body><script src=\"";
+      base::StrAppend(&body,
+                      {CookieUrl().spec(), "\"></script></body></html>"});
+      URLLoaderInterceptor::WriteResponse(headers, body, params->client.get(),
+                                          absl::nullopt,
+                                          /*url=*/params->url_request.url);
+      return true;
+    }
+
+    std::string headers = "HTTP/1.1 200 OK\nContent-Type: text/javascript\n";
+    std::string body = "console.log('Hello world!');";
+    if (test_options_.has_set_cookie) {
+      base::StrAppend(
+          &headers,
+          {"Set-Cookie: __Host-foo=bar; Secure; Path=/; SameSite=None;",
+           test_options_.has_partitioned ? " Partitioned" : "", "\n"});
+    }
+    if (test_options_.has_ot_token) {
+      base::StrAppend(
+          &headers,
+          {"Origin-Trial: ",
+           test_options_.valid_ot_token ? OriginTrialToken() : "invalid",
+           "\n"});
+    }
+    URLLoaderInterceptor::WriteResponse(headers, body, params->client.get(),
+                                        absl::nullopt,
+                                        /*url=*/params->url_request.url);
+    return true;
+  }
+};
+
+// Test that the partitioned cookie set before the request remains partitioned
+// when the site sends a Set-Cookie header with the Partitioned attribute
+// and a valid OT token.
+IN_PROC_BROWSER_TEST_F(SubresourcePartitionedCookiesOriginTrialBrowserTest,
+                       ValidParticipant) {
+  SetCookie(
+      "__Host-foo", "bar", CookieUrl(),
+      net::CookiePartitionKey::FromURLForTesting(GURL("https://example.com")));
+  SetTestOptions(
+      {/*has_ot_token=*/true, /*valid_ot_token=*/true, /*has_set_cookie=*/true,
+       /*has_partitioned=*/true},
+      {TopLevelUrl(), CookieUrl()});
+
+  WaitForPage(TopLevelUrl());
+
+  auto cookies = GetCookies(CookieUrl());
+  EXPECT_EQ(1u, cookies.size());
+  EXPECT_TRUE(cookies[0].IsPartitioned());
+}
+
+// Test that the partitioned cookie is reverted to unpartitioned if the site
+// sends a Set-Cookie with Partitioned but an invalid OT token.
+IN_PROC_BROWSER_TEST_F(SubresourcePartitionedCookiesOriginTrialBrowserTest,
+                       InvalidToken) {
+  SetCookie(
+      "__Host-foo", "bar", CookieUrl(),
+      net::CookiePartitionKey::FromURLForTesting(GURL("https://example.com")));
+  SetTestOptions(
+      {/*has_ot_token=*/true, /*valid_ot_token=*/false, /*has_set_cookie=*/true,
+       /*has_partitioned=*/true},
+      {TopLevelUrl(), CookieUrl()});
+
+  WaitForPage(TopLevelUrl());
+
+  auto cookies = GetCookies(CookieUrl());
+  EXPECT_EQ(1u, cookies.size());
+  EXPECT_FALSE(cookies[0].IsPartitioned());
+}
+
+// Test that the partitioned cookie is reverted to unpartitioned if the site
+// sends a Set-Cookie with Partitioned but do not send an OT token.
+IN_PROC_BROWSER_TEST_F(SubresourcePartitionedCookiesOriginTrialBrowserTest,
+                       NoToken) {
+  SetCookie(
+      "__Host-foo", "bar", CookieUrl(),
+      net::CookiePartitionKey::FromURLForTesting(GURL("https://example.com")));
+  SetTestOptions({/*has_ot_token=*/false, /*valid_ot_token=*/false,
+                  /*has_set_cookie=*/true,
+                  /*has_partitioned=*/true},
+                 {TopLevelUrl(), CookieUrl()});
+
+  WaitForPage(TopLevelUrl());
+
+  auto cookies = GetCookies(CookieUrl());
+  EXPECT_EQ(1u, cookies.size());
+  EXPECT_FALSE(cookies[0].IsPartitioned());
+}
+
+// The partitioned cookie should stay partitioned since we should not check
+// the OT token on responses with no Set-Cookie header.
+IN_PROC_BROWSER_TEST_F(SubresourcePartitionedCookiesOriginTrialBrowserTest,
+                       NoSetCookie) {
+  SetCookie(
+      "__Host-foo", "bar", CookieUrl(),
+      net::CookiePartitionKey::FromURLForTesting(GURL("https://example.com")));
+  SetTestOptions({/*has_ot_token=*/false, /*valid_ot_token=*/false,
+                  /*has_set_cookie=*/false,
+                  /*has_partitioned=*/true},
+                 {TopLevelUrl(), CookieUrl()});
+
+  WaitForPage(TopLevelUrl());
+
+  auto cookies = GetCookies(CookieUrl());
+  EXPECT_EQ(1u, cookies.size());
+  EXPECT_TRUE(cookies[0].IsPartitioned());
+}
+
+// The partitioned cookie should stay partitioned since we should not check
+// the OT token on responses with a Set-Cookie header without Partitioned.
+IN_PROC_BROWSER_TEST_F(SubresourcePartitionedCookiesOriginTrialBrowserTest,
+                       NoPartitioned) {
+  SetCookie(
+      "__Host-foo", "bar", CookieUrl(),
+      net::CookiePartitionKey::FromURLForTesting(GURL("https://example.com")));
+  SetTestOptions({/*has_ot_token=*/false, /*valid_ot_token=*/false,
+                  /*has_set_cookie=*/true,
+                  /*has_partitioned=*/false},
+                 {TopLevelUrl(), CookieUrl()});
+
+  WaitForPage(TopLevelUrl());
+
+  auto cookies = GetCookies(CookieUrl());
+  EXPECT_EQ(1u, cookies.size());
+  EXPECT_TRUE(cookies[0].IsPartitioned());
+}
 
 }  // namespace
 }  // namespace content

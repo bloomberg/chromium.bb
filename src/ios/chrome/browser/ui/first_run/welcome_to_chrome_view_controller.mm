@@ -8,12 +8,12 @@
 #include "base/i18n/rtl.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
+#import "base/metrics/histogram_functions.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/notreached.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/metrics/metrics_pref_names.h"
-#include "components/metrics/metrics_reporting_default_state.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/web_resource/web_resource_pref_names.h"
@@ -21,6 +21,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/first_run/first_run_configuration.h"
+#include "ios/chrome/browser/first_run/first_run_metrics.h"
 #include "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
@@ -48,13 +49,6 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-namespace {
-
-// Default value for metrics reporting state. "YES" corresponding to "opt-out"
-// state.
-const BOOL kDefaultStatsCheckboxValue = YES;
-}
 
 @interface WelcomeToChromeViewController () <WelcomeToChromeViewDelegate>
 
@@ -97,23 +91,7 @@ const BOOL kDefaultStatsCheckboxValue = YES;
 @synthesize dispatcher = _dispatcher;
 
 + (BOOL)defaultStatsCheckboxValue {
-  // Record metrics reporting as opt-in/opt-out only once.
-  static dispatch_once_t once;
-  dispatch_once(&once, ^{
-    // Don't call RecordMetricsReportingDefaultState twice.  This can happen
-    // if the app is quit before accepting the TOS, or via experiment settings.
-    if (metrics::GetMetricsReportingDefaultState(
-            GetApplicationContext()->GetLocalState()) !=
-        metrics::EnableMetricsDefault::DEFAULT_UNKNOWN) {
-      return;
-    }
-
-    metrics::RecordMetricsReportingDefaultState(
-        GetApplicationContext()->GetLocalState(),
-        kDefaultStatsCheckboxValue ? metrics::EnableMetricsDefault::OPT_OUT
-                                   : metrics::EnableMetricsDefault::OPT_IN);
-  });
-  return kDefaultStatsCheckboxValue;
+  return kChromeFirstRunUIDidFinishNotification;
 }
 
 - (instancetype)initWithBrowser:(Browser*)browser
@@ -148,6 +126,7 @@ const BOOL kDefaultStatsCheckboxValue = YES;
 }
 
 - (void)loadView {
+  RecordMetricsReportingDefaultState();
   WelcomeToChromeView* welcomeToChromeView =
       [[WelcomeToChromeView alloc] initWithFrame:CGRectZero];
   [welcomeToChromeView setDelegate:self];
@@ -159,6 +138,7 @@ const BOOL kDefaultStatsCheckboxValue = YES;
 - (void)viewDidLoad {
   [super viewDidLoad];
   [self.navigationController setNavigationBarHidden:YES];
+  base::UmaHistogramEnumeration("FirstRun.Stage", first_run::kStart);
 }
 
 - (void)viewDidLayoutSubviews {
@@ -265,6 +245,7 @@ const BOOL kDefaultStatsCheckboxValue = YES;
       };
 
   [self.coordinator start];
+  base::UmaHistogramEnumeration("FirstRun.Stage", first_run::kSyncScreenStart);
 }
 
 // Handles the sign-in completion and proceeds to complete the first run
@@ -273,6 +254,20 @@ const BOOL kDefaultStatsCheckboxValue = YES;
               completionInfo:(SigninCompletionInfo*)signinCompletionInfo {
   [self.coordinator stop];
   self.coordinator = nil;
+
+  switch (signinResult) {
+    case SigninCoordinatorResultCanceledByUser:
+    case SigninCoordinatorResultInterrupted: {
+      base::UmaHistogramEnumeration(
+          "FirstRun.Stage", first_run::kSyncScreenCompletionWithoutSync);
+      break;
+    }
+    case SigninCoordinatorResultSuccess: {
+      base::UmaHistogramEnumeration("FirstRun.Stage",
+                                    first_run::kSyncScreenCompletionWithSync);
+      break;
+    }
+  }
 
   [self completeFirstRunWithSigninCompletionInfo:signinCompletionInfo];
 }
@@ -304,6 +299,7 @@ const BOOL kDefaultStatsCheckboxValue = YES;
             (UIViewController*)presentingViewController
                                  signinCompletionInfo:
                                      (SigninCompletionInfo*)completionInfo {
+  base::UmaHistogramEnumeration("FirstRun.Stage", first_run::kComplete);
   FirstRunDismissed();
   switch (completionInfo.signinCompletionAction) {
     case SigninCompletionActionNone:

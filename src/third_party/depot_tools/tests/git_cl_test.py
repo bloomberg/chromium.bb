@@ -476,6 +476,11 @@ class TestParseIssueURL(unittest.TestCase):
     self._test('https://crrev.com/c/2151934', 2151934, None,
                'chromium-review.googlesource.com')
 
+  def test_missing_scheme(self):
+    self._test('codereview.source.com/123', 123, None, 'codereview.source.com')
+    self._test('crrev.com/c/2151934', 2151934, None,
+               'chromium-review.googlesource.com')
+
 
 class GitCookiesCheckerTest(unittest.TestCase):
   def setUp(self):
@@ -729,7 +734,8 @@ class TestGitCl(unittest.TestCase):
   def _gerrit_base_calls(cls, issue=None, fetched_description=None,
                          fetched_status=None, other_cl_owner=None,
                          custom_cl_base=None, short_hostname='chromium',
-                         change_id=None, default_branch='main'):
+                         change_id=None, default_branch='main',
+                         reset_issue=False):
     calls = []
     if custom_cl_base:
       ancestor_revision = custom_cl_base
@@ -738,6 +744,9 @@ class TestGitCl(unittest.TestCase):
       ancestor_revision = 'origin/' + default_branch
 
     if issue:
+      # TODO: if tests don't provide a `change_id` the default used here
+      # will cause the TRACES_README_FORMAT mock (which uses the test provided
+      # `change_id` to fail.
       gerrit_util.GetChangeDetail.return_value = {
         'owner': {'email': (other_cl_owner or 'owner@example.com')},
         'change_id': (change_id or '123456789'),
@@ -747,8 +756,21 @@ class TestGitCl(unittest.TestCase):
         }},
         'status': fetched_status or 'NEW',
       }
+
       if fetched_status == 'ABANDONED':
         return calls
+      if fetched_status == 'MERGED':
+        calls.append(
+            (('ask_for_data',
+              'Change https://chromium-review.googlesource.com/%s has been '
+              'submitted, new uploads are not allowed. Would you like to start '
+              'a new change (Y/n)?' % issue), 'y' if reset_issue else 'n')
+            )
+        if not reset_issue:
+          return calls
+        # Part of SetIssue call.
+        calls.append(
+            ((['git', 'log', '-1', '--format=%B'],), ''))
       if other_cl_owner:
         calls += [
           (('ask_for_data', 'Press Enter to upload, or Ctrl+C to abort'), ''),
@@ -1090,7 +1112,8 @@ class TestGitCl(unittest.TestCase):
                               edit_description=None,
                               fetched_description=None,
                               default_branch='main',
-                              push_opts=None):
+                              push_opts=None,
+                              reset_issue=False):
     """Generic gerrit upload test framework."""
     if squash_mode is None:
       if '--no-squash' in upload_args:
@@ -1164,8 +1187,16 @@ class TestGitCl(unittest.TestCase):
         custom_cl_base=custom_cl_base,
         short_hostname=short_hostname,
         change_id=change_id,
-        default_branch=default_branch)
-    if fetched_status != 'ABANDONED':
+        default_branch=default_branch,
+        reset_issue=reset_issue)
+
+    if fetched_status == 'ABANDONED' or (
+        fetched_status == 'MERGED' and not reset_issue):
+      pass  # readability
+    else:
+      if fetched_status == 'MERGED' and reset_issue:
+        fetched_status = 'NEW'
+        issue = None
       mock.patch(
           'gclient_utils.temporary_file', TemporaryFileMock()).start()
       mock.patch('os.remove', return_value=True).start()
@@ -1419,6 +1450,30 @@ class TestGitCl(unittest.TestCase):
         'authenticate to Gerrit as yet-another@example.com.\n'
         'Uploading may fail due to lack of permissions',
         sys.stdout.getvalue())
+  @mock.patch('sys.stderr', StringIO())
+  def test_gerrit_upload_for_merged(self):
+    with self.assertRaises(SystemExitMock):
+      self._run_gerrit_upload_test(
+          [],
+          'desc ✔\n\nBUG=\n\nChange-Id: I123456789',
+          [],
+          issue=123456,
+          fetched_status='MERGED',
+          change_id='I123456789',
+          reset_issue=False)
+    self.assertEqual(
+        'New uploads are not allowed.\n',
+        sys.stderr.getvalue())
+
+  def test_gerrit_upload_new_issue_for_merged(self):
+    self._run_gerrit_upload_test(
+        [],
+        'desc ✔\n\nBUG=\n\nChange-Id: I123456789',
+        [],
+        issue=123456,
+        fetched_status='MERGED',
+        change_id='I123456789',
+        reset_issue=True)
 
   def test_upload_change_description_editor(self):
     fetched_description = 'foo\n\nChange-Id: 123456789'
@@ -3006,6 +3061,7 @@ class ChangelistTest(unittest.TestCase):
         return_value=('origin', 'refs/remotes/origin/main')).start()
     mock.patch('git_cl.PRESUBMIT_SUPPORT', 'PRESUBMIT_SUPPORT').start()
     mock.patch('git_cl.Settings.GetRoot', return_value='root').start()
+    mock.patch('git_cl.Settings.GetIsGerrit', return_value=True).start()
     mock.patch('git_cl.time_time').start()
     mock.patch('metrics.collector').start()
     mock.patch('subprocess2.Popen').start()
@@ -3040,24 +3096,6 @@ class ChangelistTest(unittest.TestCase):
 
     self.assertEqual(expected_results, results)
     subprocess2.Popen.assert_any_call([
-        'vpython', 'PRESUBMIT_SUPPORT',
-        '--root', 'root',
-        '--upstream', 'upstream',
-        '--verbose', '--verbose',
-        '--gerrit_url', 'https://chromium-review.googlesource.com',
-        '--gerrit_project', 'project',
-        '--gerrit_branch', 'refs/heads/main',
-        '--author', 'author',
-        '--issue', '123456',
-        '--patchset', '7',
-        '--commit',
-        '--may_prompt',
-        '--parallel',
-        '--all_files',
-        '--json_output', '/tmp/fake-temp2',
-        '--description_file', '/tmp/fake-temp1',
-    ])
-    subprocess2.Popen.assert_any_call([
         'vpython3', 'PRESUBMIT_SUPPORT',
         '--root', 'root',
         '--upstream', 'upstream',
@@ -3072,6 +3110,26 @@ class ChangelistTest(unittest.TestCase):
         '--may_prompt',
         '--parallel',
         '--all_files',
+        '--no_diffs',
+        '--json_output', '/tmp/fake-temp2',
+        '--description_file', '/tmp/fake-temp1',
+    ])
+    subprocess2.Popen.assert_any_call([
+        'vpython', 'PRESUBMIT_SUPPORT',
+        '--root', 'root',
+        '--upstream', 'upstream',
+        '--verbose', '--verbose',
+        '--gerrit_url', 'https://chromium-review.googlesource.com',
+        '--gerrit_project', 'project',
+        '--gerrit_branch', 'refs/heads/main',
+        '--author', 'author',
+        '--issue', '123456',
+        '--patchset', '7',
+        '--commit',
+        '--may_prompt',
+        '--parallel',
+        '--all_files',
+        '--no_diffs',
         '--json_output', '/tmp/fake-temp4',
         '--description_file', '/tmp/fake-temp3',
     ])
@@ -3113,7 +3171,7 @@ class ChangelistTest(unittest.TestCase):
 
     self.assertEqual(expected_results, results)
     subprocess2.Popen.assert_any_call([
-        'vpython', 'PRESUBMIT_SUPPORT',
+        'vpython3', 'PRESUBMIT_SUPPORT',
         '--root', 'root',
         '--upstream', 'upstream',
         '--gerrit_url', 'https://chromium-review.googlesource.com',
@@ -3163,7 +3221,7 @@ class ChangelistTest(unittest.TestCase):
     self.assertEqual(expected_results, results)
     subprocess2.Popen.assert_any_call([
         'rdb', 'stream', '-new', '-realm', 'chromium:public', '--',
-        'vpython', 'PRESUBMIT_SUPPORT',
+        'vpython3', 'PRESUBMIT_SUPPORT',
         '--root', 'root',
         '--upstream', 'upstream',
         '--gerrit_url', 'https://chromium-review.googlesource.com',
@@ -3173,6 +3231,53 @@ class ChangelistTest(unittest.TestCase):
         '--json_output', '/tmp/fake-temp2',
         '--description_file', '/tmp/fake-temp1',
     ])
+
+  def testRunHook_NoGerrit(self):
+    mock.patch('git_cl.Settings.GetIsGerrit', return_value=False).start()
+
+    expected_results = {
+        'more_cc': ['cc@example.com', 'more@example.com'],
+        'errors': [],
+        'notifications': [],
+        'warnings': [],
+    }
+    gclient_utils.FileRead.return_value = json.dumps(expected_results)
+    git_cl.time_time.side_effect = [100, 200, 300, 400]
+    mockProcess = mock.Mock()
+    mockProcess.wait.return_value = 0
+    subprocess2.Popen.return_value = mockProcess
+
+    git_cl.Changelist.GetAuthor.return_value = None
+    git_cl.Changelist.GetIssue.return_value = None
+    git_cl.Changelist.GetPatchset.return_value = None
+
+    cl = git_cl.Changelist()
+    results = cl.RunHook(
+        committing=False,
+        may_prompt=False,
+        verbose=0,
+        parallel=False,
+        upstream='upstream',
+        description='description',
+        all_files=False,
+        resultdb=False)
+
+    self.assertEqual(expected_results, results)
+    subprocess2.Popen.assert_any_call([
+        'vpython3', 'PRESUBMIT_SUPPORT',
+        '--root', 'root',
+        '--upstream', 'upstream',
+        '--upload',
+        '--json_output', '/tmp/fake-temp2',
+        '--description_file', '/tmp/fake-temp1',
+    ])
+    gclient_utils.FileWrite.assert_any_call(
+        '/tmp/fake-temp1', 'description')
+    metrics.collector.add_repeated('sub_commands', {
+      'command': 'presubmit',
+      'execution_time': 100,
+      'exit_code': 0,
+    })
 
   @mock.patch('sys.exit', side_effect=SystemExitMock)
   def testRunHook_Failure(self, _mock):
@@ -3199,20 +3304,58 @@ class ChangelistTest(unittest.TestCase):
     cl = git_cl.Changelist()
     cl.RunPostUploadHook(2, 'upstream', 'description')
 
-    subprocess2.Popen.assert_called_once_with([
-        'vpython', 'PRESUBMIT_SUPPORT',
-        '--root', 'root',
-        '--upstream', 'upstream',
-        '--verbose', '--verbose',
-        '--gerrit_url', 'https://chromium-review.googlesource.com',
-        '--gerrit_project', 'project',
-        '--gerrit_branch', 'refs/heads/main',
-        '--author', 'author',
-        '--issue', '123456',
-        '--patchset', '7',
+    subprocess2.Popen.assert_any_call([
+        'vpython',
+        'PRESUBMIT_SUPPORT',
+        '--root',
+        'root',
+        '--upstream',
+        'upstream',
+        '--verbose',
+        '--verbose',
+        '--gerrit_url',
+        'https://chromium-review.googlesource.com',
+        '--gerrit_project',
+        'project',
+        '--gerrit_branch',
+        'refs/heads/main',
+        '--author',
+        'author',
+        '--issue',
+        '123456',
+        '--patchset',
+        '7',
         '--post_upload',
-        '--description_file', '/tmp/fake-temp1',
+        '--description_file',
+        '/tmp/fake-temp1',
     ])
+    subprocess2.Popen.assert_called_with([
+        'vpython3',
+        'PRESUBMIT_SUPPORT',
+        '--root',
+        'root',
+        '--upstream',
+        'upstream',
+        '--verbose',
+        '--verbose',
+        '--gerrit_url',
+        'https://chromium-review.googlesource.com',
+        '--gerrit_project',
+        'project',
+        '--gerrit_branch',
+        'refs/heads/main',
+        '--author',
+        'author',
+        '--issue',
+        '123456',
+        '--patchset',
+        '7',
+        '--post_upload',
+        '--description_file',
+        '/tmp/fake-temp1',
+        '--use-python3',
+    ])
+
     gclient_utils.FileWrite.assert_called_once_with(
         '/tmp/fake-temp1', 'description')
 
@@ -3332,6 +3475,7 @@ class CMDPresubmitTestCase(CMDTestCaseBase):
         upstream='upstream',
         description='fetch description',
         all_files=None,
+        files=None,
         resultdb=None,
         realm=None)
 
@@ -3346,6 +3490,7 @@ class CMDPresubmitTestCase(CMDTestCaseBase):
         upstream='upstream',
         description='get description',
         all_files=None,
+        files=None,
         resultdb=None,
         realm=None)
 
@@ -3359,6 +3504,7 @@ class CMDPresubmitTestCase(CMDTestCaseBase):
         upstream='custom_branch',
         description='fetch description',
         all_files=None,
+        files=None,
         resultdb=None,
         realm=None)
 
@@ -3374,6 +3520,7 @@ class CMDPresubmitTestCase(CMDTestCaseBase):
         upstream='upstream',
         description='fetch description',
         all_files=True,
+        files=None,
         resultdb=True,
         realm='chromium:public')
 

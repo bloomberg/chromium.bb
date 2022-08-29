@@ -18,9 +18,9 @@
 #include "include/gpu/GrDirectContext.h"
 #include "src/core/SkOSFile.h"
 #include "src/core/SkTaskGroup.h"
-#include "src/gpu/GrCaps.h"
-#include "src/gpu/GrDirectContextPriv.h"
-#include "src/gpu/SkGr.h"
+#include "src/gpu/ganesh/GrCaps.h"
+#include "src/gpu/ganesh/GrDirectContextPriv.h"
+#include "src/gpu/ganesh/SkGr.h"
 #include "src/utils/SkMultiPictureDocument.h"
 #include "src/utils/SkOSPath.h"
 #include "tools/DDLPromiseImageHelper.h"
@@ -733,6 +733,8 @@ static SkString join(const CommandLineFlags::StringArray& stringArray) {
     }
     return joined;
 }
+
+static void exitf(ExitErr err, const char* format, ...) SK_PRINTF_LIKE(2, 3);
 
 static void exitf(ExitErr err, const char* format, ...) {
     fprintf(stderr, ExitErr::kSoftware == err ? "INTERNAL ERROR: " : "ERROR: ");

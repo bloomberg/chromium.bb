@@ -36,7 +36,7 @@ class CC_EXPORT RecordingSource {
   gfx::Size GetSize() const;
   void SetEmptyBounds();
   void SetSlowdownRasterScaleFactor(int factor);
-  void SetBackgroundColor(SkColor background_color);
+  void SetBackgroundColor(SkColor4f background_color);
   void SetRequiresClear(bool requires_clear);
 
   void SetNeedsDisplayRect(const gfx::Rect& layer_rect);
@@ -52,8 +52,8 @@ class CC_EXPORT RecordingSource {
   int slow_down_raster_scale_factor_for_debug_ = 0;
   bool requires_clear_ = false;
   bool is_solid_color_ = false;
-  SkColor solid_color_ = SK_ColorTRANSPARENT;
-  SkColor background_color_ = SK_ColorTRANSPARENT;
+  SkColor4f solid_color_ = SkColors::kTransparent;
+  SkColor4f background_color_ = SkColors::kTransparent;
   scoped_refptr<DisplayItemList> display_list_;
   float recording_scale_factor_ = 1.0f;
 

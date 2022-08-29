@@ -17,18 +17,34 @@
 #include "chrome/browser/extensions/api/enterprise_reporting_private/chrome_desktop_report_request_helper.h"
 #include "chrome/browser/extensions/extension_api_unittest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
+#include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/net/stub_resolver_config_reader.h"
 #include "chrome/browser/policy/dm_token_utils.h"
+#include "chrome/browser/prefs/browser_prefs.h"
+#include "chrome/common/extensions/api/enterprise_reporting_private.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/base/testing_browser_process.h"
+#include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/testing_profile_manager.h"
 #include "components/component_updater/pref_names.h"
 #include "components/enterprise/browser/controller/fake_browser_dm_token_storage.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/policy/core/common/policy_types.h"
+#include "components/reporting/proto/synced/record.pb.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/version_info/version_info.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_CHROMEOS)
+#include "chromeos/dbus/missive/fake_missive_client.h"
+#include "chromeos/dbus/missive/missive_client.h"
+#include "components/reporting/proto/synced/record.pb.h"
+#include "components/reporting/proto/synced/record_constants.pb.h"
+#include "components/reporting/util/status.h"
+#endif
+
+#if BUILDFLAG(IS_WIN)
 #include <netfw.h>
 #include <windows.h>
 #include <wrl/client.h>
@@ -36,7 +52,7 @@
 #include "base/test/test_reg_util_win.h"
 #endif
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 #include "base/nix/xdg_util.h"
 #endif
 
@@ -44,10 +60,15 @@ namespace enterprise_reporting_private =
     ::extensions::api::enterprise_reporting_private;
 
 using SettingValue = enterprise_signals::SettingValue;
+using ::testing::_;
+using ::testing::Eq;
+using ::testing::Invoke;
+using ::testing::StrEq;
+using ::testing::WithArgs;
 
 namespace extensions {
 
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS)
 
 namespace {
 
@@ -118,13 +139,12 @@ TEST_F(EnterpriseReportingPrivateDeviceDataFunctionsTest, StoreDeviceData) {
       base::MakeRefCounted<EnterpriseReportingPrivateSetDeviceDataFunction>();
   std::unique_ptr<base::ListValue> values = std::make_unique<base::ListValue>();
   values->Append("a");
-  values->Append(
-      std::make_unique<base::Value>(base::Value::BlobStorage({1, 2, 3})));
+  values->Append(base::Value(base::Value::BlobStorage({1, 2, 3})));
   extension_function_test_utils::RunFunction(function.get(), std::move(values),
                                              browser(),
                                              extensions::api_test_utils::NONE);
   ASSERT_TRUE(function->GetResultList());
-  EXPECT_EQ(0u, function->GetResultList()->GetList().size());
+  EXPECT_EQ(0u, function->GetResultList()->size());
   EXPECT_TRUE(function->GetError().empty());
 }
 
@@ -137,10 +157,10 @@ TEST_F(EnterpriseReportingPrivateDeviceDataFunctionsTest, DeviceDataMissing) {
                                              browser(),
                                              extensions::api_test_utils::NONE);
   ASSERT_TRUE(function->GetResultList());
-  EXPECT_EQ(1u, function->GetResultList()->GetList().size());
+  EXPECT_EQ(1u, function->GetResultList()->size());
   EXPECT_TRUE(function->GetError().empty());
 
-  const base::Value& single_result = function->GetResultList()->GetList()[0];
+  const base::Value& single_result = (*function->GetResultList())[0];
   ASSERT_TRUE(single_result.is_blob());
   EXPECT_EQ(base::Value::BlobStorage(), single_result.GetBlob());
 }
@@ -151,8 +171,7 @@ TEST_F(EnterpriseReportingPrivateDeviceDataFunctionsTest, DeviceBadId) {
   std::unique_ptr<base::ListValue> set_values =
       std::make_unique<base::ListValue>();
   set_values->Append("a/b");
-  set_values->Append(
-      std::make_unique<base::Value>(base::Value::BlobStorage({1, 2, 3})));
+  set_values->Append(base::Value(base::Value::BlobStorage({1, 2, 3})));
   extension_function_test_utils::RunFunction(set_function.get(),
                                              std::move(set_values), browser(),
                                              extensions::api_test_utils::NONE);
@@ -167,7 +186,7 @@ TEST_F(EnterpriseReportingPrivateDeviceDataFunctionsTest, DeviceBadId) {
                                              browser(),
                                              extensions::api_test_utils::NONE);
   ASSERT_TRUE(function->GetResultList());
-  EXPECT_EQ(0u, function->GetResultList()->GetList().size());
+  EXPECT_EQ(0u, function->GetResultList()->size());
   EXPECT_FALSE(function->GetError().empty());
 }
 
@@ -177,8 +196,7 @@ TEST_F(EnterpriseReportingPrivateDeviceDataFunctionsTest, RetrieveDeviceData) {
   std::unique_ptr<base::ListValue> set_values =
       std::make_unique<base::ListValue>();
   set_values->Append("c");
-  set_values->Append(
-      std::make_unique<base::Value>(base::Value::BlobStorage({1, 2, 3})));
+  set_values->Append(base::Value(base::Value::BlobStorage({1, 2, 3})));
   extension_function_test_utils::RunFunction(set_function.get(),
                                              std::move(set_values), browser(),
                                              extensions::api_test_utils::NONE);
@@ -192,8 +210,7 @@ TEST_F(EnterpriseReportingPrivateDeviceDataFunctionsTest, RetrieveDeviceData) {
                                              std::move(values), browser(),
                                              extensions::api_test_utils::NONE);
   ASSERT_TRUE(get_function->GetResultList());
-  const base::Value& single_result =
-      get_function->GetResultList()->GetList()[0];
+  const base::Value& single_result = (*get_function->GetResultList())[0];
   EXPECT_TRUE(get_function->GetError().empty());
   ASSERT_TRUE(single_result.is_blob());
   EXPECT_EQ(base::Value::BlobStorage({1, 2, 3}), single_result.GetBlob());
@@ -218,17 +235,16 @@ TEST_F(EnterpriseReportingPrivateDeviceDataFunctionsTest, RetrieveDeviceData) {
                                              std::move(values2), browser(),
                                              extensions::api_test_utils::NONE);
   ASSERT_TRUE(get_function2->GetResultList());
-  EXPECT_EQ(1u, get_function2->GetResultList()->GetList().size());
+  EXPECT_EQ(1u, get_function2->GetResultList()->size());
   EXPECT_TRUE(get_function2->GetError().empty());
 
-  const base::Value& single_result2 =
-      get_function2->GetResultList()->GetList()[0];
+  const base::Value& single_result2 = (*get_function2->GetResultList())[0];
   ASSERT_TRUE(single_result2.is_blob());
   EXPECT_EQ(base::Value::BlobStorage(), single_result2.GetBlob());
 }
 
 // TODO(pastarmovj): Remove once implementation for the other platform exists.
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 
 // Test for API enterprise.reportingPrivate.getDeviceId
 class EnterpriseReportingPrivateGetPersistentSecretFunctionTest
@@ -245,14 +261,14 @@ class EnterpriseReportingPrivateGetPersistentSecretFunctionTest
 
   void SetUp() override {
     ExtensionApiUnittest::SetUp();
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
     ASSERT_NO_FATAL_FAILURE(
         registry_override_manager_.OverrideRegistry(HKEY_CURRENT_USER));
 #endif
   }
 
  private:
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   registry_util::RegistryOverrideManager registry_override_manager_;
 #endif
 };
@@ -310,7 +326,7 @@ TEST_F(EnterpriseReportingPrivateGetPersistentSecretFunctionTest, GetSecret) {
   ASSERT_NE(generated_blob, result5->GetBlob());
 }
 
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
 using EnterpriseReportingPrivateGetDeviceInfoTest = ExtensionApiUnittest;
 
@@ -323,12 +339,12 @@ TEST_F(EnterpriseReportingPrivateGetDeviceInfoTest, GetDeviceInfo) {
   enterprise_reporting_private::DeviceInfo info;
   ASSERT_TRUE(enterprise_reporting_private::DeviceInfo::Populate(
       *device_info_value, &info));
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   EXPECT_EQ("macOS", info.os_name);
-#elif defined(OS_WIN)
+#elif BUILDFLAG(IS_WIN)
   EXPECT_EQ("windows", info.os_name);
   EXPECT_FALSE(info.device_model.empty());
-#elif defined(OS_LINUX) || defined(OS_CHROMEOS)
+#elif BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
   std::unique_ptr<base::Environment> env(base::Environment::Create());
   env->SetVar(base::nix::kXdgCurrentDesktopEnvVar, "XFCE");
   EXPECT_EQ("linux", info.os_name);
@@ -376,7 +392,7 @@ TEST_F(EnterpriseReportingPrivateGetDeviceInfoTest, GetDeviceInfoConversion) {
   EXPECT_EQ(*info.windows_user_domain, "USER_DOMAIN");
 }
 
-#endif  // !defined(OS_CHROMEOS)
+#endif  // !BUILDFLAG(IS_CHROMEOS)
 
 class EnterpriseReportingPrivateGetContextInfoTest
     : public ExtensionApiUnittest {
@@ -406,7 +422,7 @@ class EnterpriseReportingPrivateGetContextInfoTest
   }
 
   bool BuiltInDnsClientPlatformDefault() {
-#if defined(OS_CHROMEOS) || defined(OS_MAC) || defined(OS_ANDROID)
+#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_ANDROID)
     return true;
 #else
     return false;
@@ -415,7 +431,7 @@ class EnterpriseReportingPrivateGetContextInfoTest
 
   void ExpectDefaultChromeCleanupEnabled(
       const enterprise_reporting_private::ContextInfo& info) {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
     EXPECT_TRUE(*info.chrome_cleanup_enabled);
 #else
     EXPECT_EQ(nullptr, info.chrome_cleanup_enabled.get());
@@ -423,7 +439,7 @@ class EnterpriseReportingPrivateGetContextInfoTest
   }
   void ExpectDefaultThirdPartyBlockingEnabled(
       const enterprise_reporting_private::ContextInfo& info) {
-#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#if BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
     EXPECT_TRUE(*info.third_party_blocking_enabled);
 #else
     EXPECT_EQ(info.third_party_blocking_enabled, nullptr);
@@ -457,7 +473,7 @@ TEST_F(EnterpriseReportingPrivateGetContextInfoTest, NoSpecialContext) {
   ExpectDefaultThirdPartyBlockingEnabled(info);
 }
 
-#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#if BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 class EnterpriseReportingPrivateGetContextInfoThirdPartyBlockingTest
     : public EnterpriseReportingPrivateGetContextInfoTest,
       public testing::WithParamInterface<bool> {};
@@ -492,7 +508,7 @@ INSTANTIATE_TEST_SUITE_P(
     ,
     EnterpriseReportingPrivateGetContextInfoThirdPartyBlockingTest,
     testing::Bool());
-#endif  // defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#endif  // BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 class EnterpriseReportingPrivateGetContextInfoSafeBrowsingTest
     : public EnterpriseReportingPrivateGetContextInfoTest,
@@ -642,7 +658,7 @@ INSTANTIATE_TEST_SUITE_P(
                     enterprise_reporting_private::
                         PASSWORD_PROTECTION_TRIGGER_PHISHING_REUSE));
 
-#if defined(OS_LINUX)
+#if BUILDFLAG(IS_LINUX)
 class EnterpriseReportingPrivateGetContextOSFirewallLinuxTest
     : public EnterpriseReportingPrivateGetContextInfoTest,
       public testing::WithParamInterface<
@@ -742,9 +758,9 @@ INSTANTIATE_TEST_SUITE_P(
     testing::Values(enterprise_reporting_private::SETTING_VALUE_ENABLED,
                     enterprise_reporting_private::SETTING_VALUE_DISABLED,
                     enterprise_reporting_private::SETTING_VALUE_UNKNOWN));
-#endif  // defined(OS_LINUX)
+#endif  // BUILDFLAG(IS_LINUX)
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 class EnterpriseReportingPrivateGetContextInfoChromeCleanupTest
     : public EnterpriseReportingPrivateGetContextInfoTest,
       public testing::WithParamInterface<bool> {};
@@ -781,7 +797,7 @@ INSTANTIATE_TEST_SUITE_P(
     ,
     EnterpriseReportingPrivateGetContextInfoChromeCleanupTest,
     testing::Bool());
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
 class EnterpriseReportingPrivateGetContextInfoChromeRemoteDesktopAppBlockedTest
     : public EnterpriseReportingPrivateGetContextInfoTest,
@@ -867,7 +883,7 @@ INSTANTIATE_TEST_SUITE_P(
                     "google.com",
                     "https://*"));
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 class EnterpriseReportingPrivateGetContextInfoOSFirewallTest
     : public EnterpriseReportingPrivateGetContextInfoTest,
       public testing::WithParamInterface<SettingValue> {
@@ -890,7 +906,7 @@ class EnterpriseReportingPrivateGetContextInfoOSFirewallTest
     const NET_FW_PROFILE_TYPE2 kProfileTypes[] = {NET_FW_PROFILE2_PUBLIC,
                                                   NET_FW_PROFILE2_PRIVATE,
                                                   NET_FW_PROFILE2_DOMAIN};
-    for (size_t i = 0; i < base::size(kProfileTypes); ++i) {
+    for (size_t i = 0; i < std::size(kProfileTypes); ++i) {
       if ((profile_types & kProfileTypes[i]) != 0) {
         hr = firewall_policy_->get_FirewallEnabled(kProfileTypes[i], &enabled_);
         EXPECT_FALSE(FAILED(hr));
@@ -963,7 +979,7 @@ INSTANTIATE_TEST_SUITE_P(,
                          testing::Values(SettingValue::DISABLED,
                                          SettingValue::ENABLED));
 
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
 class EnterpriseReportingPrivateGetContextInfoRealTimeURLCheckTest
     : public EnterpriseReportingPrivateGetContextInfoTest,
@@ -1017,5 +1033,250 @@ TEST_P(EnterpriseReportingPrivateGetContextInfoRealTimeURLCheckTest, Test) {
       info.password_protection_warning_trigger);
   ExpectDefaultThirdPartyBlockingEnabled(info);
 }
+
+#if BUILDFLAG(IS_CHROMEOS)
+class MockMissiveClient : public ::chromeos::FakeMissiveClient {
+ public:
+  MockMissiveClient() = default;
+  ~MockMissiveClient() override = default;
+
+  MockMissiveClient(const MockMissiveClient& other) = delete;
+  MockMissiveClient& operator=(const MockMissiveClient& other) = delete;
+
+  void Init() override {}
+
+  MissiveClient::TestInterface* GetTestInterface() override { return this; }
+
+  MOCK_METHOD(void,
+              EnqueueRecord,
+              (const ::reporting::Priority,
+               ::reporting::Record,
+               base::OnceCallback<void(::reporting::Status)>),
+              (override));
+};
+
+// Test for API enterprise.reportingPrivate.enqueueRecord
+class EnterpriseReportingPrivateEnqueueRecordFunctionTest
+    : public ExtensionApiUnittest {
+ protected:
+  static constexpr char kNoError[] = "";
+  static constexpr char kTestDMTokenValue[] = "test_dm_token_value";
+
+  EnterpriseReportingPrivateEnqueueRecordFunctionTest() = default;
+
+  void SetUp() override {
+    ExtensionApiUnittest::SetUp();
+    ::chromeos::MissiveClient::InitializeFake<MockMissiveClient>();
+    function_ =
+        base::MakeRefCounted<EnterpriseReportingPrivateEnqueueRecordFunction>();
+    const auto record = GetTestRecord();
+    serialized_record_data_.resize(record.ByteSizeLong());
+    ASSERT_TRUE(record.SerializeToArray(serialized_record_data_.data(),
+                                        serialized_record_data_.size()));
+  }
+
+  void TearDown() override {
+    function_.reset();
+    ::chromeos::MissiveClient::Shutdown();
+    ExtensionApiUnittest::TearDown();
+  }
+
+  ::reporting::Record GetTestRecord() const {
+    base::Value data{base::Value::Type::DICTIONARY};
+    data.SetKey("TEST_KEY", base::Value("TEST_VALUE"));
+    std::string serialized_data;
+    DCHECK(base::JSONWriter::Write(data, &serialized_data));
+
+    ::reporting::Record record;
+    record.set_data(serialized_data);
+    record.set_destination(::reporting::Destination::TELEMETRY_METRIC);
+    record.set_timestamp_us(base::Time::Now().ToJavaTime() *
+                            base::Time::kMicrosecondsPerMillisecond);
+
+    return record;
+  }
+
+  std::vector<uint8_t> serialized_record_data_;
+  scoped_refptr<extensions::EnterpriseReportingPrivateEnqueueRecordFunction>
+      function_;
+};
+
+TEST_F(EnterpriseReportingPrivateEnqueueRecordFunctionTest,
+       ValidRecordSuccessfullyEnqueued) {
+  function_->SetProfileIsAffiliatedForTesting(/*is_affiliated=*/true);
+
+  api::enterprise_reporting_private::EnqueueRecordRequest
+      enqueue_record_request;
+  enqueue_record_request.record_data = serialized_record_data_;
+  enqueue_record_request.priority = ::reporting::Priority::BACKGROUND_BATCH;
+  enqueue_record_request.event_type =
+      api::enterprise_reporting_private::EventType::EVENT_TYPE_USER;
+
+  std::unique_ptr<base::ListValue> params = std::make_unique<base::ListValue>();
+  params->Append(
+      base::Value::FromUniquePtrValue(enqueue_record_request.ToValue()));
+
+  // Set up DM token
+  const auto dm_token =
+      policy::DMToken::CreateValidTokenForTesting(kTestDMTokenValue);
+  policy::SetDMTokenForTesting(dm_token);
+
+  auto* const reporting_client =
+      static_cast<MockMissiveClient*>(::chromeos::MissiveClient::Get());
+  EXPECT_CALL(*reporting_client, EnqueueRecord(_, _, _))
+      .WillOnce(WithArgs<1, 2>(
+          Invoke([&](::reporting::Record record,
+                     base::OnceCallback<void(::reporting::Status)>
+                         completion_callback) {
+            EXPECT_THAT(record.destination(),
+                        Eq(::reporting::Destination::TELEMETRY_METRIC));
+            EXPECT_THAT(record.dm_token(), StrEq(dm_token.value()));
+            EXPECT_THAT(record.data(), StrEq(GetTestRecord().data()));
+
+            std::move(completion_callback).Run(::reporting::Status::StatusOK());
+          })));
+
+  extension_function_test_utils::RunFunction(function_.get(), std::move(params),
+                                             browser(),
+                                             extensions::api_test_utils::NONE);
+  EXPECT_EQ(function_->GetError(), kNoError);
+}
+
+TEST_F(EnterpriseReportingPrivateEnqueueRecordFunctionTest,
+       InvalidPriorityReturnsError) {
+  function_->SetProfileIsAffiliatedForTesting(true);
+
+  api::enterprise_reporting_private::EnqueueRecordRequest
+      enqueue_record_request;
+  enqueue_record_request.record_data = serialized_record_data_;
+
+  // Set priority to invalid enum value
+  enqueue_record_request.priority = -1;
+
+  enqueue_record_request.event_type =
+      api::enterprise_reporting_private::EventType::EVENT_TYPE_USER;
+
+  std::unique_ptr<base::ListValue> params = std::make_unique<base::ListValue>();
+  params->Append(
+      base::Value::FromUniquePtrValue(enqueue_record_request.ToValue()));
+
+  policy::SetDMTokenForTesting(
+      policy::DMToken::CreateValidTokenForTesting(kTestDMTokenValue));
+
+  auto* const reporting_client =
+      static_cast<MockMissiveClient*>(::chromeos::MissiveClient::Get());
+  EXPECT_CALL(*reporting_client, EnqueueRecord(_, _, _)).Times(0);
+
+  extension_function_test_utils::RunFunction(function_.get(), std::move(params),
+                                             browser(),
+                                             extensions::api_test_utils::NONE);
+
+  EXPECT_EQ(function_->GetError(),
+            EnterpriseReportingPrivateEnqueueRecordFunction::
+                kErrorInvalidEnqueueRecordRequest);
+}
+
+TEST_F(EnterpriseReportingPrivateEnqueueRecordFunctionTest,
+       NonAffiliatedUserReturnsError) {
+  function_->SetProfileIsAffiliatedForTesting(false);
+
+  api::enterprise_reporting_private::EnqueueRecordRequest
+      enqueue_record_request;
+  enqueue_record_request.record_data = serialized_record_data_;
+
+  enqueue_record_request.priority = ::reporting::Priority::BACKGROUND_BATCH;
+
+  enqueue_record_request.event_type =
+      api::enterprise_reporting_private::EventType::EVENT_TYPE_USER;
+
+  std::unique_ptr<base::ListValue> params = std::make_unique<base::ListValue>();
+  params->Append(
+      base::Value::FromUniquePtrValue(enqueue_record_request.ToValue()));
+
+  policy::SetDMTokenForTesting(
+      policy::DMToken::CreateValidTokenForTesting(kTestDMTokenValue));
+
+  auto* const reporting_client =
+      static_cast<MockMissiveClient*>(::chromeos::MissiveClient::Get());
+  EXPECT_CALL(*reporting_client, EnqueueRecord(_, _, _)).Times(0);
+
+  extension_function_test_utils::RunFunction(function_.get(), std::move(params),
+                                             browser(),
+                                             extensions::api_test_utils::NONE);
+
+  EXPECT_EQ(function_->GetError(),
+            EnterpriseReportingPrivateEnqueueRecordFunction::
+                kErrorProfileNotAffiliated);
+}
+
+TEST_F(EnterpriseReportingPrivateEnqueueRecordFunctionTest,
+       InvalidDMTokenReturnsError) {
+  function_->SetProfileIsAffiliatedForTesting(true);
+  api::enterprise_reporting_private::EnqueueRecordRequest
+      enqueue_record_request;
+  enqueue_record_request.record_data = serialized_record_data_;
+  enqueue_record_request.priority = ::reporting::Priority::BACKGROUND_BATCH;
+  enqueue_record_request.event_type =
+      api::enterprise_reporting_private::EventType::EVENT_TYPE_USER;
+
+  std::unique_ptr<base::ListValue> params = std::make_unique<base::ListValue>();
+  params->Append(
+      base::Value::FromUniquePtrValue(enqueue_record_request.ToValue()));
+
+  // Set up invalid DM token
+  policy::SetDMTokenForTesting(policy::DMToken::CreateInvalidTokenForTesting());
+
+  auto* const reporting_client =
+      static_cast<MockMissiveClient*>(::chromeos::MissiveClient::Get());
+  EXPECT_CALL(*reporting_client, EnqueueRecord(_, _, _)).Times(0);
+
+  extension_function_test_utils::RunFunction(function_.get(), std::move(params),
+                                             browser(),
+                                             extensions::api_test_utils::NONE);
+
+  EXPECT_EQ(function_->GetError(),
+            EnterpriseReportingPrivateEnqueueRecordFunction::
+                kErrorCannotAssociateRecordWithUser);
+}
+
+TEST_F(EnterpriseReportingPrivateEnqueueRecordFunctionTest,
+       InvalidRecordWithMissingTimestampReturnsError) {
+  function_->SetProfileIsAffiliatedForTesting(true);
+  api::enterprise_reporting_private::EnqueueRecordRequest
+      enqueue_record_request;
+  // Clear timestamp from test record and set up serialized record
+  auto record = GetTestRecord();
+  record.clear_timestamp_us();
+  serialized_record_data_.clear();
+  serialized_record_data_.resize(record.ByteSizeLong());
+  ASSERT_TRUE(record.SerializeToArray(serialized_record_data_.data(),
+                                      serialized_record_data_.size()));
+  enqueue_record_request.record_data = serialized_record_data_;
+  enqueue_record_request.priority = ::reporting::Priority::BACKGROUND_BATCH;
+  enqueue_record_request.event_type =
+      api::enterprise_reporting_private::EventType::EVENT_TYPE_USER;
+
+  // TODO (b/234559917): Use base::Value::List instead
+  std::unique_ptr<base::ListValue> params = std::make_unique<base::ListValue>();
+  params->Append(
+      base::Value::FromUniquePtrValue(enqueue_record_request.ToValue()));
+
+  // Set up invalid DM token
+  policy::SetDMTokenForTesting(
+      policy::DMToken::CreateValidTokenForTesting(kTestDMTokenValue));
+
+  auto* const reporting_client =
+      static_cast<MockMissiveClient*>(::chromeos::MissiveClient::Get());
+  EXPECT_CALL(*reporting_client, EnqueueRecord(_, _, _)).Times(0);
+
+  extension_function_test_utils::RunFunction(function_.get(), std::move(params),
+                                             browser(),
+                                             extensions::api_test_utils::NONE);
+
+  EXPECT_EQ(function_->GetError(),
+            EnterpriseReportingPrivateEnqueueRecordFunction::
+                kErrorInvalidEnqueueRecordRequest);
+}
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 }  // namespace extensions

@@ -9,7 +9,7 @@
 
 #include "base/logging.h"
 #include "base/strings/string_util.h"
-#include "jingle/glue/thread_wrapper.h"
+#include "components/webrtc/thread_wrapper.h"
 #include "remoting/base/constants.h"
 #include "remoting/protocol/client_control_dispatcher.h"
 #include "remoting/protocol/client_event_dispatcher.h"
@@ -37,8 +37,7 @@ void WebrtcConnectionToHost::Connect(
   DCHECK(clipboard_stub_);
 
   transport_ = std::make_unique<WebrtcTransport>(
-      jingle_glue::JingleThreadWrapper::current(), transport_context, nullptr,
-      this);
+      webrtc::ThreadWrapper::current(), transport_context, nullptr, this);
 
   if (audio_decode_task_runner_)
     transport_->audio_module()->SetAudioTaskRunner(audio_decode_task_runner_);
@@ -158,7 +157,7 @@ void WebrtcConnectionToHost::OnWebrtcTransportIncomingDataChannel(
 }
 
 void WebrtcConnectionToHost::OnWebrtcTransportMediaStreamAdded(
-    scoped_refptr<webrtc::MediaStreamInterface> stream) {
+    rtc::scoped_refptr<webrtc::MediaStreamInterface> stream) {
   if (stream->GetVideoTracks().size() > 0) {
     GetOrCreateVideoAdapter(stream->id())->SetMediaStream(stream);
   } else if (stream->GetAudioTracks().size() > 0) {
@@ -170,7 +169,7 @@ void WebrtcConnectionToHost::OnWebrtcTransportMediaStreamAdded(
 }
 
 void WebrtcConnectionToHost::OnWebrtcTransportMediaStreamRemoved(
-    scoped_refptr<webrtc::MediaStreamInterface> stream) {
+    rtc::scoped_refptr<webrtc::MediaStreamInterface> stream) {
   if (video_adapter_ && video_adapter_->label() == stream->id())
     video_adapter_.reset();
 }

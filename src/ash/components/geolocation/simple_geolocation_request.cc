@@ -18,12 +18,12 @@
 #include "base/json/json_writer.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/escape.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "google_apis/google_api_keys.h"
-#include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -155,7 +155,7 @@ GURL GeolocationRequestURL(const GURL& url) {
   std::string query(url.query());
   if (!query.empty())
     query += "&";
-  query += "key=" + net::EscapeQueryParamValue(api_key, true);
+  query += "key=" + base::EscapeQueryParamValue(api_key, true);
   GURL::Replacements replacements;
   replacements.SetQueryStr(query);
   return url.ReplaceComponents(replacements);
@@ -201,8 +201,7 @@ bool ParseServerResponse(const GURL& server_url,
   }
   base::Value response_value = std::move(*response_result.value);
 
-  base::DictionaryValue* response_object = NULL;
-  if (!response_value.GetAsDictionary(&response_object)) {
+  if (!response_value.is_dict()) {
     PrintGeolocationError(
         server_url,
         "Unexpected response type : " +
@@ -213,12 +212,8 @@ bool ParseServerResponse(const GURL& server_url,
     return false;
   }
 
-  base::DictionaryValue* error_object = NULL;
-  base::DictionaryValue* location_object = NULL;
-  response_object->GetDictionaryWithoutPathExpansion(kLocationString,
-                                                     &location_object);
-  response_object->GetDictionaryWithoutPathExpansion(kErrorString,
-                                                     &error_object);
+  base::Value* error_object = response_value.FindDictKey(kErrorString);
+  base::Value* location_object = response_value.FindDictKey(kLocationString);
 
   position->timestamp = base::Time::Now();
 
@@ -257,7 +252,7 @@ bool ParseServerResponse(const GURL& server_url,
     position->longitude = longitude.value();
 
     absl::optional<double> accuracy =
-        response_object->FindDoubleKey(kAccuracyString);
+        response_value.FindDoubleKey(kAccuracyString);
     if (!accuracy) {
       PrintGeolocationError(
           server_url, "Missing 'accuracy' attribute.", position);
@@ -313,43 +308,37 @@ void ReportUmaHasCellTowers(bool value) {
 }
 
 // Helpers to reformat data into dictionaries for conversion to request JSON
-std::unique_ptr<base::DictionaryValue> CreateAccessPointDictionary(
-    WifiAccessPoint access_point) {
-  auto access_point_dictionary = std::make_unique<base::DictionaryValue>();
+base::Value::Dict CreateAccessPointDictionary(
+    const WifiAccessPoint& access_point) {
+  base::Value::Dict access_point_dictionary;
 
-  access_point_dictionary->SetKey(kMacAddress,
-                                  base::Value(access_point.mac_address));
-  access_point_dictionary->SetKey(kSignalStrength,
-                                  base::Value(access_point.signal_strength));
+  access_point_dictionary.Set(kMacAddress, access_point.mac_address);
+  access_point_dictionary.Set(kSignalStrength, access_point.signal_strength);
   if (!access_point.timestamp.is_null()) {
-    access_point_dictionary->SetKey(
+    access_point_dictionary.Set(
         kAge,
-        base::Value(base::NumberToString(
-            (base::Time::Now() - access_point.timestamp).InMilliseconds())));
+        base::NumberToString(
+            (base::Time::Now() - access_point.timestamp).InMilliseconds()));
   }
 
-  access_point_dictionary->SetKey(kChannel, base::Value(access_point.channel));
-  access_point_dictionary->SetKey(kSignalToNoiseRatio,
-                                  base::Value(access_point.signal_to_noise));
+  access_point_dictionary.Set(kChannel, access_point.channel);
+  access_point_dictionary.Set(kSignalToNoiseRatio,
+                              access_point.signal_to_noise);
 
   return access_point_dictionary;
 }
 
-std::unique_ptr<base::DictionaryValue> CreateCellTowerDictionary(
-    CellTower cell_tower) {
-  auto cell_tower_dictionary = std::make_unique<base::DictionaryValue>();
-  cell_tower_dictionary->SetKey(kCellId, base::Value(cell_tower.ci));
-  cell_tower_dictionary->SetKey(kLocationAreaCode, base::Value(cell_tower.lac));
-  cell_tower_dictionary->SetKey(kMobileCountryCode,
-                                base::Value(cell_tower.mcc));
-  cell_tower_dictionary->SetKey(kMobileNetworkCode,
-                                base::Value(cell_tower.mnc));
+base::Value::Dict CreateCellTowerDictionary(const CellTower& cell_tower) {
+  base::Value::Dict cell_tower_dictionary;
+  cell_tower_dictionary.Set(kCellId, cell_tower.ci);
+  cell_tower_dictionary.Set(kLocationAreaCode, cell_tower.lac);
+  cell_tower_dictionary.Set(kMobileCountryCode, cell_tower.mcc);
+  cell_tower_dictionary.Set(kMobileNetworkCode, cell_tower.mnc);
 
   if (!cell_tower.timestamp.is_null()) {
-    cell_tower_dictionary->SetKey(
-        kAge,
-        base::Value(base::NumberToString(
-            (base::Time::Now() - cell_tower.timestamp).InMilliseconds())));
+    cell_tower_dictionary.Set(
+        kAge, base::NumberToString(
+                  (base::Time::Now() - cell_tower.timestamp).InMilliseconds()));
   }
   return cell_tower_dictionary;
 }
@@ -396,29 +385,27 @@ std::string SimpleGeolocationRequest::FormatRequestBody() const {
   if (!cell_tower_data_ && !wifi_data_)
     return std::string(kSimpleGeolocationRequestBody);
 
-  std::unique_ptr<base::DictionaryValue> request(new base::DictionaryValue);
-  request->SetKey(kConsiderIp, base::Value(true));
+  base::Value::Dict request;
+  request.Set(kConsiderIp, true);
 
   if (wifi_data_) {
-    auto wifi_access_points = std::make_unique<base::ListValue>();
+    base::Value::List wifi_access_points;
     for (const WifiAccessPoint& access_point : *wifi_data_) {
-      wifi_access_points->Append(CreateAccessPointDictionary(access_point));
+      wifi_access_points.Append(CreateAccessPointDictionary(access_point));
     }
-    request->SetKey(kWifiAccessPoints, base::Value::FromUniquePtrValue(
-                                           std::move(wifi_access_points)));
+    request.Set(kWifiAccessPoints, std::move(wifi_access_points));
   }
 
   if (cell_tower_data_) {
-    auto cell_towers = std::make_unique<base::ListValue>();
+    base::Value::List cell_towers;
     for (const CellTower& cell_tower : *cell_tower_data_) {
-      cell_towers->Append(CreateCellTowerDictionary(cell_tower));
+      cell_towers.Append(CreateCellTowerDictionary(cell_tower));
     }
-    request->SetKey(kCellTowers,
-                    base::Value::FromUniquePtrValue(std::move(cell_towers)));
+    request.Set(kCellTowers, std::move(cell_towers));
   }
 
   std::string result;
-  if (!base::JSONWriter::Write(*request, &result)) {
+  if (!base::JSONWriter::Write(request, &result)) {
     // If there's no data for a network type, we will have already reported
     // false above
     if (wifi_data_)

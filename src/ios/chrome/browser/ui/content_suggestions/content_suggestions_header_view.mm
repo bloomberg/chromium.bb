@@ -11,6 +11,7 @@
 #include "base/feature_list.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/elements/extended_touch_target_button.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
@@ -22,11 +23,13 @@
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_configuration.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_utils.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/dynamic_type_util.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/browser/ui/util/named_guide_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
+#import "ios/chrome/common/ui/elements/gradient_view.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #import "ui/gfx/ios/NSString+CrStringDrawing.h"
@@ -89,6 +92,9 @@ CGFloat ToolbarHeight() {
 @property(nonatomic, strong) NSLayoutConstraint* invisibleOmniboxConstraint;
 // View used to add on-touch highlight to the fake omnibox.
 @property(nonatomic, strong) UIView* fakeLocationBarHighlightView;
+// View used to simulate the top toolbar when the header is stuck to the top of
+// the NTP.
+@property(nonatomic, strong) UIView* fakeToolbar;
 
 @end
 
@@ -141,19 +147,23 @@ CGFloat ToolbarHeight() {
   // Fake Toolbar.
   ToolbarButtonFactory* buttonFactory =
       [[ToolbarButtonFactory alloc] initWithStyle:NORMAL];
-  UIView* fakeToolbar = [[UIView alloc] init];
-  fakeToolbar.backgroundColor =
-      buttonFactory.toolbarConfiguration.backgroundColor;
-  [searchField insertSubview:fakeToolbar atIndex:0];
-  fakeToolbar.translatesAutoresizingMaskIntoConstraints = NO;
+  self.fakeToolbar = [[UIView alloc] init];
+  self.fakeToolbar.backgroundColor =
+      IsContentSuggestionsUIModuleRefreshEnabled()
+          ? [UIColor clearColor]
+          : buttonFactory.toolbarConfiguration.backgroundColor;
+  [searchField insertSubview:self.fakeToolbar atIndex:0];
+  self.fakeToolbar.translatesAutoresizingMaskIntoConstraints = NO;
 
   // Fake location bar.
-  [fakeToolbar addSubview:self.fakeLocationBar];
+  [self.fakeToolbar addSubview:self.fakeLocationBar];
 
   // Omnibox, used for animations.
   // TODO(crbug.com/936811): See if it is possible to share some initialization
   // code with the real Omnibox.
-  UIColor* color = [UIColor colorNamed:kTextfieldPlaceholderColor];
+  UIColor* color = IsContentSuggestionsUIModuleRefreshEnabled()
+                       ? [UIColor colorNamed:kGrey700Color]
+                       : [UIColor colorNamed:kTextfieldPlaceholderColor];
   OmniboxContainerView* omnibox =
       [[OmniboxContainerView alloc] initWithFrame:CGRectZero
                                         textColor:color
@@ -214,15 +224,16 @@ CGFloat ToolbarHeight() {
                                                   searchField);
 
   // Constraints.
-  self.fakeToolbarTopConstraint =
-      [fakeToolbar.topAnchor constraintEqualToAnchor:searchField.topAnchor];
+  self.fakeToolbarTopConstraint = [self.fakeToolbar.topAnchor
+      constraintEqualToAnchor:searchField.topAnchor];
   [NSLayoutConstraint activateConstraints:@[
-    [fakeToolbar.leadingAnchor
+    [self.fakeToolbar.leadingAnchor
         constraintEqualToAnchor:searchField.leadingAnchor],
-    [fakeToolbar.trailingAnchor
+    [self.fakeToolbar.trailingAnchor
         constraintEqualToAnchor:searchField.trailingAnchor],
     self.fakeToolbarTopConstraint,
-    [fakeToolbar.bottomAnchor constraintEqualToAnchor:searchField.bottomAnchor]
+    [self.fakeToolbar.bottomAnchor
+        constraintEqualToAnchor:searchField.bottomAnchor]
   ]];
 
   self.fakeLocationBarTopConstraint = [self.fakeLocationBar.topAnchor
@@ -307,6 +318,13 @@ CGFloat ToolbarHeight() {
     percent = base::clamp<CGFloat>(
         animatingOffset / ntp_header::kAnimationDistance, 0, 1);
   }
+  if (IsContentSuggestionsUIModuleRefreshEnabled()) {
+    // Update background color of fake toolbar if stuck to top of NTP so that it
+    // has a non-clear background. Otherwise, return to clear background.
+    self.fakeToolbar.backgroundColor =
+        percent == 1.0f ? [UIColor colorNamed:kBackgroundColor]
+                        : [UIColor clearColor];
+  }
   return percent;
 }
 
@@ -376,9 +394,12 @@ CGFloat ToolbarHeight() {
   // Calculate the amount to shrink the width and height of background so that
   // it's where the focused adapative toolbar focuses.
   CGFloat inset = !IsSplitToolbarMode(self) ? kBackgroundLandscapeInset : 0;
+  CGFloat leadingMargin =
+      base::FeatureList::IsEnabled(kIOSOmniboxUpdatedPopupUI)
+          ? kExpandedLocationBarLeadingMarginRefreshedPopup
+          : kExpandedLocationBarHorizontalMargin;
   self.fakeLocationBarLeadingConstraint.constant =
-      (safeAreaInsets.left + kExpandedLocationBarHorizontalMargin + inset) *
-      percent;
+      (safeAreaInsets.left + leadingMargin + inset) * percent;
   self.fakeLocationBarTrailingConstraint.constant =
       -(safeAreaInsets.right + kExpandedLocationBarHorizontalMargin + inset) *
       percent;
@@ -450,8 +471,20 @@ CGFloat ToolbarHeight() {
     _fakeLocationBar.userInteractionEnabled = NO;
     _fakeLocationBar.clipsToBounds = YES;
     _fakeLocationBar.backgroundColor =
-        [UIColor colorNamed:kTextfieldBackgroundColor];
+        IsContentSuggestionsUIModuleRefreshEnabled()
+            ? [UIColor clearColor]
+            : [UIColor colorNamed:kTextfieldBackgroundColor];
     _fakeLocationBar.translatesAutoresizingMaskIntoConstraints = NO;
+    if (IsContentSuggestionsUIModuleRefreshEnabled()) {
+      GradientView* gradientView = [[GradientView alloc]
+          initWithTopColor:[UIColor
+                               colorNamed:@"fake_omnibox_top_gradient_color"]
+               bottomColor:
+                   [UIColor colorNamed:@"fake_omnibox_bottom_gradient_color"]];
+      gradientView.translatesAutoresizingMaskIntoConstraints = NO;
+      [_fakeLocationBar addSubview:gradientView];
+      AddSameConstraints(_fakeLocationBar, gradientView);
+    }
 
     _fakeLocationBarHighlightView = [[UIView alloc] init];
     _fakeLocationBarHighlightView.userInteractionEnabled = NO;

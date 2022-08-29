@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/loader/subresource_integrity_helper.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
@@ -117,7 +118,7 @@ RemoteFontFaceSource::DisplayPeriod RemoteFontFaceSource::ComputePeriod()
       // We simply skip the block period, as we should never render invisible
       // fallback for 'font-display: optional'.
 
-      if (GetDocument()->GetFontPreloadManager().RenderingHasBegun()) {
+      if (GetDocument()->RenderingHasBegun()) {
         if (FinishedFromMemoryCache() ||
             finished_before_document_rendering_begin_ ||
             !paint_requested_while_pending_)
@@ -184,7 +185,27 @@ void RemoteFontFaceSource::NotifyFinished(Resource* resource) {
   auto* font = To<FontResource>(resource);
   histograms_.RecordRemoteFont(font);
 
-  custom_font_data_ = font->GetCustomFontData();
+  // Refer to the comments in classic_pending_script.cc for the reason why
+  // SRI checks should be done here in ResourceClient instead of
+  // ResourceFetcher. SRI failure should behave as network error
+  // (ErrorOccurred()). PreloadCache even caches network errors.
+  // Font fetch itself doesn't support SRI but font preload does.
+  // So, if the resource was preloaded we need to check
+  // SRI failure and simulate network error if it happens.
+
+  if (resource->IsLinkPreload()) {
+    SubresourceIntegrityHelper::DoReport(*execution_context,
+                                         resource->IntegrityReportInfo());
+  }
+
+  DCHECK(!custom_font_data_);
+  // font->GetCustomFontData() returns nullptr if network error happened
+  // (ErrorOccurred() is true). To simulate network error we don't update
+  // custom_font_data_ to keep the nullptr value in case of SRI failures.
+  if (!resource->IsLinkPreload() || resource->IntegrityDisposition() !=
+                                        ResourceIntegrityDisposition::kFailed) {
+    custom_font_data_ = font->GetCustomFontData();
+  }
   url_ = resource->Url().GetString();
 
   // FIXME: Provide more useful message such as OTS rejection reason.
@@ -207,7 +228,7 @@ void RemoteFontFaceSource::NotifyFinished(Resource* resource) {
   PruneTable();
 
   if (GetDocument()) {
-    if (!GetDocument()->GetFontPreloadManager().RenderingHasBegun())
+    if (!GetDocument()->RenderingHasBegun())
       finished_before_document_rendering_begin_ = true;
     if (!FontFaceSetDocument::From(*GetDocument())->HasReachedLCPLimit())
       finished_before_lcp_limit_ = true;
@@ -221,12 +242,9 @@ void RemoteFontFaceSource::NotifyFinished(Resource* resource) {
   if (face_->FontLoaded(this)) {
     font_selector_->FontFaceInvalidated(
         FontInvalidationReason::kFontFaceLoaded);
-
-    const scoped_refptr<FontCustomPlatformData> customFontData =
-        font->GetCustomFontData();
-    if (customFontData) {
+    if (custom_font_data_) {
       probe::FontsUpdated(execution_context, face_->GetFontFace(),
-                          resource->Url().GetString(), customFontData.get());
+                          resource->Url().GetString(), custom_font_data_.get());
     }
   }
 }
@@ -329,7 +347,9 @@ scoped_refptr<SimpleFontData> RemoteFontFaceSource::CreateFontData(
               font_description.SyntheticItalicAllowed(),
           font_description.GetFontSelectionRequest(),
           font_selection_capabilities, font_description.FontOpticalSizing(),
-          font_description.Orientation(), font_description.VariationSettings()),
+          font_description.TextRendering(), font_description.Orientation(),
+          font_description.VariationSettings(),
+          font_description.GetFontPalette()),
       CustomFontData::Create());
 }
 
@@ -339,8 +359,8 @@ RemoteFontFaceSource::CreateLoadingFallbackFontData(
   // This temporary font is not retained and should not be returned.
   FontCachePurgePreventer font_cache_purge_preventer;
   scoped_refptr<SimpleFontData> temporary_font =
-      FontCache::GetFontCache()->GetLastResortFallbackFont(font_description,
-                                                           kDoNotRetain);
+      FontCache::Get().GetLastResortFallbackFont(font_description,
+                                                 kDoNotRetain);
   if (!temporary_font) {
     NOTREACHED();
     return nullptr;

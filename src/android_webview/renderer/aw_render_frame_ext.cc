@@ -312,9 +312,10 @@ void AwRenderFrameExt::SetTextZoomFactor(float zoom_factor) {
 void AwRenderFrameExt::DocumentHasImage(DocumentHasImageCallback callback) {
   blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
 
-  // DocumentHasImages Mojo message should only be sent to the main frame.
+  // DocumentHasImages Mojo message should only be sent to the outermost main
+  // frame.
   DCHECK(frame);
-  DCHECK(!frame->Parent());
+  DCHECK(frame->IsOutermostMainFrame());
 
   const blink::WebElement child_img = GetImgChild(frame->GetDocument());
   bool has_images = !child_img.IsNull();
@@ -359,6 +360,9 @@ void AwRenderFrameExt::OnDestruct() {
 
 void AwRenderFrameExt::BindLocalMainFrame(
     mojo::PendingAssociatedReceiver<mojom::LocalMainFrame> pending_receiver) {
+  // When bfcache is enabled, this bind can occur multiple times.
+  // receiver should be reset before.
+  local_main_frame_receiver_.reset();
   local_main_frame_receiver_.Bind(std::move(pending_receiver));
 }
 

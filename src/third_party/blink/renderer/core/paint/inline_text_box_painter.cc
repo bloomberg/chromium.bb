@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/editing/markers/highlight_pseudo_marker.h"
 #include "third_party/blink/renderer/core/editing/markers/text_match_marker.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_api_shim.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_text_combine.h"
@@ -35,6 +36,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_shader.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
+#include "ui/gfx/geometry/outsets_f.h"
 
 
 
@@ -211,9 +213,9 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
       // actual painting of the selection_rect, this is done below by
       // concatenating a rotation matrix on the context.
       if (!style_to_use.IsHorizontalWritingMode()) {
-        FloatRect rotated_selection =
+        gfx::RectF rotated_selection =
             TextPainterBase::Rotation(box_rect, TextPainterBase::kClockwise)
-                .MapRect(static_cast<FloatRect>(selection_rect));
+                .MapRect(static_cast<gfx::RectF>(selection_rect));
         selection_rect = PhysicalRect::EnclosingRect(rotated_selection);
       }
       selection_recorder.emplace(
@@ -434,11 +436,12 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
               ? absl::optional<AppliedTextDecoration>(
                     selection_style.selection_text_decoration)
               : absl::nullopt;
-      decoration_info.emplace(local_origin, width,
-                              inline_text_box_.Root().BaselineType(),
-                              style_to_use, style_to_use.GetFont(),
-                              selection_text_decoration, decorating_box_style);
-      TextDecorationOffset decoration_offset(decoration_info->Style(),
+      decoration_info.emplace(
+          local_origin, width, style_to_use,
+          /* inline_context */ nullptr, selection_text_decoration,
+          /* font_override */ nullptr, MinimumThickness1(true), 1.0f,
+          inline_text_box_.Root().BaselineType(), decorating_box_style);
+      TextDecorationOffset decoration_offset(decoration_info->TargetStyle(),
                                              &inline_text_box_, decorating_box);
       text_painter.PaintDecorationsExceptLineThrough(
           decoration_offset, decoration_info.value(), paint_info,
@@ -597,7 +600,7 @@ void InlineTextBoxPainter::PaintSingleMarkerBackgroundRun(
   context.DrawHighlightForText(
       font, inline_text_box_.ConstructTextRun(style), local_origin, sel_height,
       background_color,
-      PaintAutoDarkMode(style, DarkModeFilter::ElementRole::kForeground),
+      PaintAutoDarkMode(style, DarkModeFilter::ElementRole::kBackground),
       start_pos, end_pos);
 }
 
@@ -852,7 +855,7 @@ PhysicalRect InlineTextBoxPainter::PaintSelection(
   auto layout_item = inline_text_box_.GetLineLayoutItem();
   Color c = HighlightPaintingUtils::HighlightBackgroundColor(
       layout_item.GetDocument(), layout_item.StyleRef(), layout_item.GetNode(),
-      kPseudoIdSelection);
+      absl::nullopt, kPseudoIdSelection);
   if (!c.Alpha())
     return PhysicalRect();
 
@@ -871,19 +874,19 @@ PhysicalRect InlineTextBoxPainter::PaintSelection(
 
   context.FillRect(
       gfx::RectF(selection_rect), c,
-      PaintAutoDarkMode(style, DarkModeFilter::ElementRole::kForeground));
+      PaintAutoDarkMode(style, DarkModeFilter::ElementRole::kBackground));
   return selection_rect;
 }
 
 void InlineTextBoxPainter::ExpandToIncludeNewlineForSelection(
     PhysicalRect& rect) {
-  FloatRectOutsets outsets = FloatRectOutsets();
+  gfx::OutsetsF outsets;
   float space_width = inline_text_box_.NewlineSpaceWidth();
   if (inline_text_box_.IsLeftToRightDirection())
-    outsets.SetRight(space_width);
+    outsets.set_right(space_width);
   else
-    outsets.SetLeft(space_width);
-  rect.Expand(outsets);
+    outsets.set_left(space_width);
+  rect.Expand(EnclosingLayoutRectOutsets(outsets));
 }
 
 void InlineTextBoxPainter::PaintStyleableMarkerUnderline(
@@ -983,7 +986,8 @@ void InlineTextBoxPainter::PaintTextMarkerBackground(
     auto layout_item = inline_text_box_.GetLineLayoutItem();
     color = HighlightPaintingUtils::HighlightBackgroundColor(
         layout_item.GetDocument(), layout_item.StyleRef(),
-        layout_item.GetNode(), highlight_pseudo_marker.GetPseudoId(),
+        layout_item.GetNode(), absl::nullopt,
+        highlight_pseudo_marker.GetPseudoId(),
         highlight_pseudo_marker.GetPseudoArgument());
   }
   GraphicsContext& context = paint_info.context;
@@ -997,7 +1001,7 @@ void InlineTextBoxPainter::PaintTextMarkerBackground(
   context.Clip(gfx::RectF(box_rect));
   context.DrawHighlightForText(
       font, run, gfx::PointF(box_origin), box_rect.Height().ToInt(), color,
-      PaintAutoDarkMode(style, DarkModeFilter::ElementRole::kForeground),
+      PaintAutoDarkMode(style, DarkModeFilter::ElementRole::kBackground),
       paint_offsets.first, paint_offsets.second);
 }
 

@@ -13,11 +13,10 @@
 #include "base/callback.h"
 #include "base/component_export.h"
 #include "base/files/scoped_file.h"
-#include "base/location.h"
 #include "base/memory/weak_ptr.h"
 #include "base/power_monitor/power_observer.h"
 #include "base/time/time.h"
-#include "chromeos/dbus/dbus_method_call_status.h"
+#include "chromeos/dbus/common/dbus_method_call_status.h"
 #include "chromeos/dbus/power_manager/peripheral_battery_status.pb.h"
 #include "chromeos/dbus/power_manager/policy.pb.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
@@ -232,6 +231,13 @@ class COMPONENT_EXPORT(DBUS_POWER) PowerManagerClient {
   virtual void GetKeyboardBrightnessPercent(
       DBusMethodCallback<double> callback) = 0;
 
+  // Set the toggled-off state of the keyboard backlight.
+  virtual void SetKeyboardBacklightToggledOff(bool toggled_off) = 0;
+
+  // Get the toggled-off state of the keyboard backlight.
+  virtual void GetKeyboardBacklightToggledOff(
+      DBusMethodCallback<bool> callback) = 0;
+
   // Returns the last power status that was received from D-Bus, if any.
   virtual const absl::optional<power_manager::PowerSupplyProperties>&
   GetLastStatus() = 0;
@@ -367,6 +373,12 @@ class COMPONENT_EXPORT(DBUS_POWER) PowerManagerClient {
   // displays.
   virtual void GetExternalDisplayALSBrightness(
       DBusMethodCallback<bool> callback) = 0;
+
+  // Stop delaying charging for Adaptive Charging for this charge session.
+  // This should be called when AdaptiveCharging is active (although calling it
+  // when AdaptiveCharging is inactive will not cause any issue except extra
+  // execution which does nothing).
+  virtual void ChargeNowForAdaptiveCharging() = 0;
 
   PowerManagerClient();
 

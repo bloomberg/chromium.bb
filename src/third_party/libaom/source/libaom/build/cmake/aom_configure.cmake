@@ -199,10 +199,13 @@ if(AOM_TARGET_SYSTEM MATCHES "Darwin\|Linux\|Windows\|Android")
   set(CONFIG_OS_SUPPORT 1)
 endif()
 
-# The default _WIN32_WINNT value in MinGW is 0x0502 (Windows XP with SP2). Set
-# it to 0x0601 (Windows 7).
 if(AOM_TARGET_SYSTEM STREQUAL "Windows")
+  # The default _WIN32_WINNT value in MinGW is 0x0502 (Windows XP with SP2). Set
+  # it to 0x0601 (Windows 7).
   add_compiler_flag_if_supported("-D_WIN32_WINNT=0x0601")
+  # Prevent windows.h from defining the min and max macros. This allows us to
+  # use std::min and std::max.
+  add_compiler_flag_if_supported("-DNOMINMAX")
 endif()
 
 #
@@ -274,6 +277,8 @@ else()
   add_compiler_flag_if_supported("-Wall")
   add_compiler_flag_if_supported("-Wdisabled-optimization")
   add_compiler_flag_if_supported("-Wextra")
+  add_compiler_flag_if_supported("-Wextra-semi")
+  add_compiler_flag_if_supported("-Wextra-semi-stmt")
   add_compiler_flag_if_supported("-Wfloat-conversion")
   add_compiler_flag_if_supported("-Wformat=2")
   add_c_flag_if_supported("-Wimplicit-function-declaration")
@@ -327,6 +332,26 @@ else()
   endif()
   add_compiler_flag_if_supported("-D_LARGEFILE_SOURCE")
   add_compiler_flag_if_supported("-D_FILE_OFFSET_BITS=64")
+endif()
+
+# Prior to r23, or with ANDROID_USE_LEGACY_TOOLCHAIN_FILE set,
+# android.toolchain.cmake would set normal (non-cache) versions of variables
+# like CMAKE_C_FLAGS_RELEASE which would mask the ones added to the cache
+# variable in add_compiler_flag_if_supported(), etc. As a workaround we add
+# everything accumulated in AOM_C/CXX_FLAGS to the normal versions. This could
+# also be addressed by reworking the flag tests and adding the results directly
+# to target_compile_options() as in e.g., libgav1, but that's a larger task.
+# https://github.com/android/ndk/wiki/Changelog-r23#changes
+if(ANDROID
+   AND ("${ANDROID_NDK_MAJOR}" LESS 23 OR ANDROID_USE_LEGACY_TOOLCHAIN_FILE))
+  foreach(lang C;CXX)
+    string(STRIP "${AOM_${lang}_FLAGS}" AOM_${lang}_FLAGS)
+    if(AOM_${lang}_FLAGS)
+      foreach(config ${AOM_${lang}_CONFIGS})
+        set(${config} "${${config}} ${AOM_${lang}_FLAGS}")
+      endforeach()
+    endif()
+  endforeach()
 endif()
 
 set(AOM_LIB_LINK_TYPE PUBLIC)

@@ -536,6 +536,7 @@ Chrome'i brauseri menüü avamiseks vajutage klahvikombinatsiooni Alt + F.</tran
 <translation id="4601367666219428522">tab <ph name="TABLENAME" /> <ph name="TABLEROWS" /> korda <ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">Järgmist klahvivajutust ignoreeritakse</translation>
 <translation id="4623097797855662355">Kolofoon</translation>
+<translation id="4624970070706497034">TalkBack ei paku enam Chromebookide jaoks kohandamist. Võite Talkbacki ikka kasutada, kuid kasutage selle klaviatuuri vaikeotseteid. Saadaval otseteede vaatamiseks vajutage klahve Otsing + A, seejärel klahvi K. Kui soovite ikka Talkbacki kasutada, vajutage klahve uuesti.</translation>
 <translation id="463135993322337640">Vajutage ChromeVoxi nuppe O ja N, et tutvuda uute funktsioonidega</translation>
 <translation id="4649220074413114917">Kahe sõrmega ekraani puudutades saate peatada mis tahes aktiivse kõne. See on kasulik olukorras, kus te ei soovi, et ChromeVox midagi ette loeks. Jätkamiseks puudutage ekraani kahe sõrmega.</translation>
 <translation id="4660783501463101648">Klassikaline versioon on eemaldatud. Klassikalise ChromeVoxi aktiveerimise lüliti on klaviatuurilt eemaldatud.</translation>
@@ -618,7 +619,6 @@ Chrome'i brauseri menüü avamiseks vajutage klahvikombinatsiooni Alt + F.</tran
 <translation id="5170206230005240598">Braille' tiitrid on lubatud</translation>
 <translation id="5183440668879371625">Braille' eelmine rida</translation>
 <translation id="5189244881767082992">Rida</translation>
-<translation id="5234747236692380506">sisesta <ph name="TEXT" /></translation>
 <translation id="5263034204789987535">Maisikollane</translation>
 <translation id="5263344797180442561">h2</translation>
 <translation id="528468243742722775">Lõpeta</translation>
@@ -666,6 +666,7 @@ Chrome'i brauseri menüü avamiseks vajutage klahvikombinatsiooni Alt + F.</tran
 <translation id="5522423213731659107">Kiirtutvustus jõudis lõpule.</translation>
 <translation id="5534303576632885660">päi</translation>
 <translation id="5539820223028224601">Gainsboro hall</translation>
+<translation id="554893713779400387">Dikteerimise sisse-/väljalülitamine</translation>
 <translation id="5549179427201066174">Lülitage helitagasiside (helisignaalid) sisse või välja</translation>
 <translation id="556042886152191864">Nupp</translation>
 <translation id="5561345396546889625">Järgmine loend</translation>
@@ -684,6 +685,8 @@ Chrome'i brauseri menüü avamiseks vajutage klahvikombinatsiooni Alt + F.</tran
 <translation id="5623842676595125836">Logi</translation>
 <translation id="5628125749885014029">h4</translation>
 <translation id="5632083598315326067">Graafika sümbol</translation>
+<translation id="5648939288050772726">Tubli! Olete omandanud ChromeVoxi kasutamiseks vajalikud põhiteadmised. Pidage meeles, et saate ChromeVoxi käsumenüü avada igal ajal, vajutades otsinguklahvi ja punktiklahvi. ChromeVoxi ja Chrome OS-i kohta lisateabe saamiseks lugege järgmisi artikleid.
+    Kui olete õpetusega lõpetanud, navigeerige ChromeVoxi abil sulgemisnupuni ja klõpsake sellel.</translation>
 <translation id="5653397561111110475">Chromebooki puuteekraani juurdepääsetavuse funktsioonide kasutamine</translation>
 <translation id="5655682562155942719">Siirdekäsud</translation>
 <translation id="56637627897541303">Tekstiala</translation>
@@ -793,6 +796,7 @@ Chrome'i brauseri menüü avamiseks vajutage klahvikombinatsiooni Alt + F.</tran
 <translation id="641759969622533235">{COUNT,plural, =1{koolon}other{# koolonit}}</translation>
 <translation id="6444046323172968959">Hoiatusdialoog</translation>
 <translation id="6452403590345320472">Sisukord</translation>
+<translation id="6457542714329819968">sisesta</translation>
 <translation id="6468049171101508116">Järgmine nupp</translation>
 <translation id="646954774886932461">Register</translation>
 <translation id="6475604559827479857">Sõna esiletõstude värv:</translation>
@@ -965,8 +969,6 @@ Chrome'i brauseri menüü avamiseks vajutage klahvikombinatsiooni Alt + F.</tran
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7713139339518499741">Loomulik hääl</translation>
 <translation id="7714340021005120797">Järgmist liitboksi ei ole</translation>
-<translation id="772146615414628379">Õnnitleme! Olete omandanud ChromeVoxi kasutamiseks vajalikud põhiteadmised. Pidage meeles, et saate ChromeVoxi käsumenüü avada igal ajal, vajutades otsinguklahvi ja punktiklahvi. ChromeVoxi ja Chrome OS-i kohta lisateabe saamiseks lugege järgmisi artikleid.
-    Kui olete õpetusega lõpetanud, navigeerige ChromeVoxi abil sulgemisnupuni ja klõpsake sellel.</translation>
 <translation id="7724603315864178912">Lõika</translation>
 <translation id="7731785449856576010">Järgmist meediavidinat ei ole</translation>
 <translation id="7735498529470878067">Puudutusega uurimine aitab teil kiirelt mõista, mis ekraanil on kuvatud.</translation>
@@ -1168,6 +1170,7 @@ Chrome'i brauseri menüü avamiseks vajutage klahvikombinatsiooni Alt + F.</tran
 <translation id="9223032053830369045">Tumepunane</translation>
 <translation id="923331726185079994">ChromeVox on värskendatud</translation>
 <translation id="93384979447910801">Tume mereroheline</translation>
+<translation id="937605981140327129">TalkBack ei ole praegu installitud. Installige Play poe kaudu Android AccessibilitySuite ja proovige uuesti.</translation>
 <translation id="948171205378458592">Vähenda kõne kiirust</translation>
 <translation id="957570623732056069">Pühkige selles õppetunnis navigeerimiseks ühe sõrmega vasakule või paremale</translation>
 <translation id="958854023026327378">Pühkige ühe sõrmega alla</translation>

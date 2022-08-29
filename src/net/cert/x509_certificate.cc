@@ -14,7 +14,6 @@
 #include "base/base64.h"
 #include "base/containers/contains.h"
 #include "base/containers/span.h"
-#include "base/cxx17_backports.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/pickle.h"
@@ -79,8 +78,8 @@ void SplitOnChar(const base::StringPiece& src,
 
 // Sets |value| to the Value from a DER Sequence Tag-Length-Value and return
 // true, or return false if the TLV was not a valid DER Sequence.
-WARN_UNUSED_RESULT bool ParseSequenceValue(const der::Input& tlv,
-                                           der::Input* value) {
+[[nodiscard]] bool ParseSequenceValue(const der::Input& tlv,
+                                      der::Input* value) {
   der::Parser parser(tlv);
   return parser.ReadTag(der::kSequence, value) && !parser.HasMore();
 }
@@ -262,7 +261,7 @@ CertificateList X509Certificate::CreateCertificateListFromBytes(
     // data is one of the accepted formats.
     if (format & ~FORMAT_PEM_CERT_SEQUENCE) {
       for (size_t i = 0;
-           certificates.empty() && i < base::size(kFormatDecodePriority); ++i) {
+           certificates.empty() && i < std::size(kFormatDecodePriority); ++i) {
         if (format & kFormatDecodePriority[i]) {
           certificates = CreateCertBuffersFromBytes(
               base::as_bytes(base::make_span(decoded)),
@@ -282,7 +281,7 @@ CertificateList X509Certificate::CreateCertificateListFromBytes(
   // contains the binary representation of a Format, if it failed to parse
   // as a PEM certificate/chain.
   for (size_t i = 0;
-       certificates.empty() && i < base::size(kFormatDecodePriority); ++i) {
+       certificates.empty() && i < std::size(kFormatDecodePriority); ++i) {
     if (format & kFormatDecodePriority[i])
       certificates = CreateCertBuffersFromBytes(data, kFormatDecodePriority[i]);
   }
@@ -339,15 +338,15 @@ bool X509Certificate::GetSubjectAltName(
                            x509_util::DefaultParseCertificateOptions(), &tbs,
                            nullptr))
     return false;
-  if (!tbs.has_extensions)
+  if (!tbs.extensions_tlv)
     return false;
 
   std::map<der::Input, ParsedExtension> extensions;
-  if (!ParseExtensions(tbs.extensions_tlv, &extensions))
+  if (!ParseExtensions(tbs.extensions_tlv.value(), &extensions))
     return false;
 
   ParsedExtension subject_alt_names_extension;
-  if (!ConsumeExtension(SubjectAltNameOid(), &extensions,
+  if (!ConsumeExtension(der::Input(kSubjectAltNameOid), &extensions,
                         &subject_alt_names_extension)) {
     return false;
   }

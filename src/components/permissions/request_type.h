@@ -22,37 +22,37 @@ namespace permissions {
 enum class RequestType {
   kAccessibilityEvents,
   kArSession,
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   kCameraPanTiltZoom,
 #endif
   kCameraStream,
   kClipboard,
   kDiskQuota,
-#if !defined(OS_ANDROID)
-  kFontAccess,
+#if !BUILDFLAG(IS_ANDROID)
+  kLocalFonts,
 #endif
   kGeolocation,
   kIdleDetection,
   kMicStream,
   kMidiSysex,
   kMultipleDownloads,
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   kNfcDevice,
 #endif
   kNotifications,
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS) || defined(OS_WIN)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_WIN)
   kProtectedMediaIdentifier,
 #endif
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   kRegisterProtocolHandler,
   kSecurityAttestation,
 #endif
   kStorageAccess,
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   kU2fApiRequest,
 #endif
   kVrSession,
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   kWindowPlacement,
   kMaxValue = kWindowPlacement
 #else
@@ -60,7 +60,7 @@ enum class RequestType {
 #endif
 };
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 // On Android, icons are represented with an IDR_ identifier.
 using IconId = int;
 #else
@@ -79,7 +79,7 @@ absl::optional<ContentSettingsType> RequestTypeToContentSettingsType(
 // Returns the icon to display.
 IconId GetIconId(RequestType type);
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 // Returns the blocked icon to display.
 IconId GetBlockedIconId(RequestType type);
 #endif

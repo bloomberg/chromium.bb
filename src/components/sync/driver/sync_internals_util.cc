@@ -30,55 +30,7 @@
 #include "ash/constants/ash_features.h"
 #endif
 
-namespace syncer {
-
-namespace sync_ui_util {
-
-const char kIdentityTitle[] = "Identity";
-const char kDetailsKey[] = "details";
-
-// Resource paths.
-const char kAboutJS[] = "about.js";
-const char kChromeSyncJS[] = "chrome_sync.js";
-const char kDataJS[] = "data.js";
-const char kEventsJS[] = "events.js";
-const char kSearchJS[] = "search.js";
-const char kSyncIndexJS[] = "sync_index.js";
-const char kSyncLogJS[] = "sync_log.js";
-const char kSyncNodeBrowserJS[] = "sync_node_browser.js";
-const char kSyncSearchJS[] = "sync_search.js";
-const char kUserEventsJS[] = "user_events.js";
-const char kTrafficLogJS[] = "traffic_log.js";
-const char kInvalidationsJS[] = "invalidations.js";
-
-// Message handlers.
-const char kGetAllNodes[] = "getAllNodes";
-const char kRequestDataAndRegisterForUpdates[] =
-    "requestDataAndRegisterForUpdates";
-const char kRequestIncludeSpecificsInitialState[] =
-    "requestIncludeSpecificsInitialState";
-const char kRequestListOfTypes[] = "requestListOfTypes";
-const char kRequestStart[] = "requestStart";
-const char kRequestStopKeepData[] = "requestStopKeepData";
-const char kRequestStopClearData[] = "requestStopClearData";
-const char kSetIncludeSpecifics[] = "setIncludeSpecifics";
-const char kTriggerRefresh[] = "triggerRefresh";
-const char kWriteUserEvent[] = "writeUserEvent";
-
-// Other strings.
-const char kEntityCounts[] = "entityCounts";
-const char kEntities[] = "entities";
-const char kNonTombstoneEntities[] = "nonTombstoneEntities";
-const char kIncludeSpecifics[] = "includeSpecifics";
-const char kModelType[] = "modelType";
-const char kOnAboutInfoUpdated[] = "onAboutInfoUpdated";
-const char kOnEntityCountsUpdated[] = "onEntityCountsUpdated";
-const char kOnProtocolEvent[] = "onProtocolEvent";
-const char kOnReceivedIncludeSpecificsInitialState[] =
-    "onReceivedIncludeSpecificsInitialState";
-const char kOnReceivedListOfTypes[] = "onReceivedListOfTypes";
-const char kTypes[] = "types";
-const char kOnInvalidationReceived[] = "onInvalidationReceived";
+namespace syncer::sync_ui_util {
 
 namespace {
 
@@ -201,8 +153,6 @@ std::string GetDisableReasonsString(
     return "None";
   }
   std::vector<std::string> reason_strings;
-  if (disable_reasons.Has(SyncService::DISABLE_REASON_PLATFORM_OVERRIDE))
-    reason_strings.push_back("Platform override");
   if (disable_reasons.Has(SyncService::DISABLE_REASON_ENTERPRISE_POLICY))
     reason_strings.push_back("Enterprise policy");
   if (disable_reasons.Has(SyncService::DISABLE_REASON_NOT_SIGNED_IN))
@@ -438,21 +388,11 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
       section_counters->AddIntStat("Updates Downloaded");
   Stat<int>* tombstone_updates =
       section_counters->AddIntStat("Tombstone Updates");
-  Stat<int>* reflected_updates =
-      section_counters->AddIntStat("Reflected Updates");
   Stat<int>* successful_commits =
       section_counters->AddIntStat("Successful Commits");
-  Stat<int>* conflicts_resolved_local_wins =
-      section_counters->AddIntStat("Conflicts Resolved: Client Wins");
-  Stat<int>* conflicts_resolved_server_wins =
-      section_counters->AddIntStat("Conflicts Resolved: Server Wins");
 
   Section* section_this_cycle = section_list.AddSection(
       "Transient Counters (this cycle)", /*is_sensitive=*/false);
-  Stat<int>* encryption_conflicts =
-      section_this_cycle->AddIntStat("Encryption Conflicts");
-  Stat<int>* hierarchy_conflicts =
-      section_this_cycle->AddIntStat("Hierarchy Conflicts");
   Stat<int>* server_conflicts =
       section_this_cycle->AddIntStat("Server Conflicts");
   Stat<int>* committed_items =
@@ -465,7 +405,6 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
       section_that_cycle->AddIntStat("Updates Downloaded");
   Stat<int>* committed_count =
       section_that_cycle->AddIntStat("Committed Count");
-  Stat<int>* entries = section_that_cycle->AddIntStat("Entries");
 
   // Populate all the fields we declared above.
   client_version->Set(GetVersionString(channel));
@@ -483,13 +422,8 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   if (!chromeos::features::IsSyncSettingsCategorizationEnabled()) {
     os_feature_state->Set("Flag disabled");
-  } else if (!chromeos::features::IsSyncConsentOptionalEnabled()) {
-    DCHECK(service->GetUserSettings()->IsOsSyncFeatureEnabled());
-    os_feature_state->Set("Enforced Enabled");
-  } else if (service->GetUserSettings()->IsOsSyncFeatureEnabled()) {
-    os_feature_state->Set("Enabled");
   } else {
-    os_feature_state->Set("Disabled");
+    os_feature_state->Set("Enforced Enabled");
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   feature_enabled->Set(service->IsSyncFeatureEnabled());
@@ -574,7 +508,8 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
   if (is_status_valid) {
     cryptographer_can_encrypt->Set(full_status.cryptographer_can_encrypt);
     has_pending_keys->Set(full_status.crypto_has_pending_keys);
-    encrypted_types->Set(ModelTypeSetToString(full_status.encrypted_types));
+    encrypted_types->Set(
+        ModelTypeSetToDebugString(full_status.encrypted_types));
     has_keystore_key->Set(full_status.has_keystore_key);
     keystore_migration_time->Set(
         GetTimeStr(full_status.keystore_migration_time, "Not Migrated"));
@@ -613,17 +548,11 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
     notifications_received->Set(full_status.notifications_received);
     updates_received->Set(full_status.updates_received);
     tombstone_updates->Set(full_status.tombstone_updates_received);
-    reflected_updates->Set(full_status.reflected_updates_received);
     successful_commits->Set(full_status.num_commits_total);
-    conflicts_resolved_local_wins->Set(full_status.num_local_overwrites_total);
-    conflicts_resolved_server_wins->Set(
-        full_status.num_server_overwrites_total);
   }
 
   // Transient Counters (this cycle).
   if (is_status_valid) {
-    encryption_conflicts->Set(full_status.encryption_conflicts);
-    hierarchy_conflicts->Set(full_status.hierarchy_conflicts);
     server_conflicts->Set(full_status.server_conflicts);
     committed_items->Set(full_status.committed_count);
   }
@@ -633,7 +562,6 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
     updates_downloaded->Set(
         snapshot.model_neutral_state().num_updates_downloaded_total);
     committed_count->Set(snapshot.model_neutral_state().num_successful_commits);
-    entries->Set(static_cast<int>(snapshot.num_entries()));
   }
 
   // This list of sections belongs in the 'details' field of the returned
@@ -692,6 +620,4 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
   return about_info;
 }
 
-}  // namespace sync_ui_util
-
-}  // namespace syncer
+}  // namespace syncer::sync_ui_util

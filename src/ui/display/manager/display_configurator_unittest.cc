@@ -10,7 +10,6 @@
 #include "ash/constants/ash_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/cxx17_backports.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
@@ -201,7 +200,7 @@ class ConfigurationWaiter {
   // runs it and returns base::TimeDelta(). Otherwise, triggers the
   // configuration timer and returns its delay. If the timer wasn't running,
   // returns base::TimeDelta::Max().
-  base::TimeDelta Wait() WARN_UNUSED_RESULT {
+  [[nodiscard]] base::TimeDelta Wait() {
     base::RunLoop().RunUntilIdle();
     if (callback_result_ != CALLBACK_NOT_CALLED)
       return base::TimeDelta();
@@ -245,7 +244,7 @@ class DisplayConfiguratorTest : public testing::Test {
 
     // Force system compositor mode to simulate on-device configurator behavior.
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        chromeos::switches::kForceSystemCompositorMode);
+        ash::switches::kForceSystemCompositorMode);
 
     native_display_delegate_ = new TestNativeDisplayDelegate(log_.get());
     configurator_.SetDelegateForTesting(
@@ -300,7 +299,7 @@ class DisplayConfiguratorTest : public testing::Test {
   // output-change events to |configurator_| and triggers the configure
   // timeout if one was scheduled.
   void UpdateOutputs(size_t num_outputs, bool send_events) {
-    ASSERT_LE(num_outputs, base::size(outputs_));
+    ASSERT_LE(num_outputs, std::size(outputs_));
     std::vector<DisplaySnapshot*> outputs;
     for (size_t i = 0; i < num_outputs; ++i)
       outputs.push_back(outputs_[i].get());
@@ -992,11 +991,12 @@ TEST_F(DisplayConfiguratorTest, HandleConfigureCrtcFailure) {
   UpdateOutputs(1, true);
 
   EXPECT_EQ(JoinActions(
-                // Initial attempt fails. Initiate retry logic.
+                // Initial attempt fails.
                 GetCrtcAction({outputs_[0]->display_id(), gfx::Point(0, 0),
                                outputs_[0]->native_mode()})
                     .c_str(),
-                // Retry fails since it cannot downgrade the internal display.
+                // Initiate retry logic, which fails since it cannot downgrade
+                // the internal display.
                 GetCrtcAction({outputs_[0]->display_id(), gfx::Point(0, 0),
                                outputs_[0]->native_mode()})
                     .c_str(),
@@ -1022,16 +1022,20 @@ TEST_F(DisplayConfiguratorTest, HandleConfigureCrtcFailure) {
   UpdateOutputs(1, true);
 
   EXPECT_EQ(JoinActions(
-                // Initial attempt fails. Initiate retry logic.
+                // Initial attempt fails.
+                GetCrtcAction({outputs_[0]->display_id(), gfx::Point(0, 0),
+                               modes[0].get()})
+                    .c_str(),
+                // Initiate retry logic.
                 GetCrtcAction({outputs_[0]->display_id(), gfx::Point(0, 0),
                                modes[0].get()})
                     .c_str(),
                 // Retry attempts trying all available modes.
                 GetCrtcAction({outputs_[0]->display_id(), gfx::Point(0, 0),
-                               modes[0].get()})
+                               modes[3].get()})
                     .c_str(),
                 GetCrtcAction({outputs_[0]->display_id(), gfx::Point(0, 0),
-                               modes[3].get()})
+                               modes[4].get()})
                     .c_str(),
                 GetCrtcAction({outputs_[0]->display_id(), gfx::Point(0, 0),
                                modes[2].get()})
@@ -1081,23 +1085,39 @@ TEST_F(DisplayConfiguratorTest, HandleConfigureCrtcFailure) {
           GetCrtcAction(
               {outputs_[1]->display_id(), gfx::Point(0, 0), modes[0].get()})
               .c_str(),
-          // Retry logic fails to modeset internal display. Since internal
-          // displays are restricted to their preferred mode, there are no other
-          // modes to try. The configuration fails completely, but the external
-          // display will still try to modeset.
+          // We first attempt to modeset the internal display with all
+          // other displays disabled, which will fail.
           GetCrtcAction({outputs_[0]->display_id(), gfx::Point(0, 0),
                          outputs_[0]->native_mode()})
               .c_str(),
-          // The external display will cycle through all its available modes
-          // before failing completely.
+          GetCrtcAction({outputs_[1]->display_id(), gfx::Point(0, 0), nullptr})
+              .c_str(),
+          // Since internal displays are restricted to their preferred mode,
+          // there are no other modes to try. Disable the internal display so we
+          // can attempt to modeset displays that are connected to other
+          // connectors. Next, the external display will cycle through all its
+          // available modes before failing completely.
+          GetCrtcAction({outputs_[0]->display_id(), gfx::Point(0, 0), nullptr})
+              .c_str(),
           GetCrtcAction(
               {outputs_[1]->display_id(), gfx::Point(0, 0), modes[0].get()})
+              .c_str(),
+          GetCrtcAction({outputs_[0]->display_id(), gfx::Point(0, 0), nullptr})
               .c_str(),
           GetCrtcAction(
               {outputs_[1]->display_id(), gfx::Point(0, 0), modes[3].get()})
               .c_str(),
+          GetCrtcAction({outputs_[0]->display_id(), gfx::Point(0, 0), nullptr})
+              .c_str(),
+          GetCrtcAction(
+              {outputs_[1]->display_id(), gfx::Point(0, 0), modes[4].get()})
+              .c_str(),
+          GetCrtcAction({outputs_[0]->display_id(), gfx::Point(0, 0), nullptr})
+              .c_str(),
           GetCrtcAction(
               {outputs_[1]->display_id(), gfx::Point(0, 0), modes[2].get()})
+              .c_str(),
+          GetCrtcAction({outputs_[0]->display_id(), gfx::Point(0, 0), nullptr})
               .c_str(),
           GetCrtcAction(
               {outputs_[1]->display_id(), gfx::Point(0, 0), modes[1].get()})
@@ -1113,26 +1133,47 @@ TEST_F(DisplayConfiguratorTest, HandleConfigureCrtcFailure) {
                                            DisplayConfigurator::kVerticalGap),
                          modes[0].get()})
               .c_str(),
-          // Just as above, retry logic fails to modeset internal display.
+          // We first attempt to modeset the internal display with all
+          // other displays disabled, which will fail.
           GetCrtcAction({outputs_[0]->display_id(), gfx::Point(0, 0),
                          outputs_[0]->native_mode()})
               .c_str(),
-          //  The configuration fails completely but still attempts to modeset
+          GetCrtcAction({outputs_[1]->display_id(),
+                         gfx::Point(0, modes[0]->size().height() +
+                                           DisplayConfigurator::kVerticalGap),
+                         nullptr})
+              .c_str(),
+          // The configuration fails completely but still attempts to modeset
           // the external display.
+          GetCrtcAction({outputs_[0]->display_id(), gfx::Point(0, 0), nullptr})
+              .c_str(),
           GetCrtcAction({outputs_[1]->display_id(),
                          gfx::Point(0, modes[0]->size().height() +
                                            DisplayConfigurator::kVerticalGap),
                          modes[0].get()})
+              .c_str(),
+          GetCrtcAction({outputs_[0]->display_id(), gfx::Point(0, 0), nullptr})
               .c_str(),
           GetCrtcAction({outputs_[1]->display_id(),
                          gfx::Point(0, modes[0]->size().height() +
                                            DisplayConfigurator::kVerticalGap),
                          modes[3].get()})
               .c_str(),
+          GetCrtcAction({outputs_[0]->display_id(), gfx::Point(0, 0), nullptr})
+              .c_str(),
+          GetCrtcAction({outputs_[1]->display_id(),
+                         gfx::Point(0, modes[0]->size().height() +
+                                           DisplayConfigurator::kVerticalGap),
+                         modes[4].get()})
+              .c_str(),
+          GetCrtcAction({outputs_[0]->display_id(), gfx::Point(0, 0), nullptr})
+              .c_str(),
           GetCrtcAction({outputs_[1]->display_id(),
                          gfx::Point(0, modes[0]->size().height() +
                                            DisplayConfigurator::kVerticalGap),
                          modes[2].get()})
+              .c_str(),
+          GetCrtcAction({outputs_[0]->display_id(), gfx::Point(0, 0), nullptr})
               .c_str(),
           GetCrtcAction({outputs_[1]->display_id(),
                          gfx::Point(0, modes[0]->size().height() +
@@ -1342,6 +1383,7 @@ TEST_F(DisplayConfiguratorTest,
       JoinActions(
           GetCrtcActions(DisplayConfig::kOff, &small_mode_, &big_mode_).c_str(),
           GetCrtcActions(DisplayConfig::kOff, &small_mode_, &big_mode_).c_str(),
+          GetCrtcActions(DisplayConfig::kOff, &small_mode_, &big_mode_).c_str(),
           nullptr),
       log_->GetActionsAndClear());
 
@@ -1358,11 +1400,26 @@ TEST_F(DisplayConfiguratorTest,
   EXPECT_EQ(
       JoinActions(
           GetCrtcActions(&small_mode_, &big_mode_).c_str(),
+          // We first attempt to modeset the internal display with all
+          // other displays disabled, which will fail.
           GetCrtcActions(&small_mode_).c_str(),
           GetCrtcAction({outputs_[1]->display_id(),
                          gfx::Point(0, small_mode_.size().height() +
                                            DisplayConfigurator::kVerticalGap),
+                         nullptr})
+              .c_str(),
+          // Since internal displays are restricted to their preferred mode,
+          // there are no other modes to try. Disable the internal display while
+          // we attempt to modeset displays that are connected to other
+          // connectors. Configuration will fail.
+          GetCrtcAction({outputs_[0]->display_id(), gfx::Point(0, 0), nullptr})
+              .c_str(),
+          GetCrtcAction({outputs_[1]->display_id(),
+                         gfx::Point(0, small_mode_.size().height() +
+                                           DisplayConfigurator::kVerticalGap),
                          &big_mode_})
+              .c_str(),
+          GetCrtcAction({outputs_[0]->display_id(), gfx::Point(0, 0), nullptr})
               .c_str(),
           GetCrtcAction({outputs_[1]->display_id(),
                          gfx::Point(0, small_mode_.size().height() +

@@ -12,21 +12,20 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/ash/crostini/crostini_features.h"
 #include "chrome/browser/ash/crostini/crostini_manager.h"
 #include "chrome/browser/ash/crostini/crostini_simple_types.h"
 #include "chrome/browser/ash/crostini/crostini_types.mojom.h"
-#include "chromeos/dbus/concierge/concierge_client.h"
-#include "chromeos/dbus/concierge/concierge_service.pb.h"
+#include "chromeos/ash/components/dbus/concierge/concierge_client.h"
+#include "chromeos/ash/components/dbus/concierge/concierge_service.pb.h"
 #include "ui/base/text/bytes_formatting.h"
 
 using DiskImageStatus = vm_tools::concierge::DiskImageStatus;
 
 namespace {
-chromeos::ConciergeClient* GetConciergeClient() {
-  return chromeos::ConciergeClient::Get();
+ash::ConciergeClient* GetConciergeClient() {
+  return ash::ConciergeClient::Get();
 }
 
 std::string FormatBytes(const int64_t value) {
@@ -233,13 +232,13 @@ std::vector<crostini::mojom::DiskSliderTickPtr> GetTicks(
   return ticks;
 }
 
-class Observer : public chromeos::ConciergeClient::DiskImageObserver {
+class Observer : public ash::ConciergeClient::DiskImageObserver {
  public:
   Observer(std::string uuid, base::OnceCallback<void(bool)> callback)
       : uuid_(std::move(uuid)), callback_(std::move(callback)) {}
   ~Observer() override { GetConciergeClient()->RemoveDiskImageObserver(this); }
 
-  // chromeos::ConciergeClient::DiskImageObserver:
+  // ash::ConciergeClient::DiskImageObserver:
   void OnDiskImageProgress(
       const vm_tools::concierge::DiskImageStatusResponse& signal) override {
     if (signal.command_uuid() != uuid_ ||

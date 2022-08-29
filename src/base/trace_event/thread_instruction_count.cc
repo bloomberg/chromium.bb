@@ -5,24 +5,25 @@
 #include "base/trace_event/thread_instruction_count.h"
 
 #include "base/base_switches.h"
+#include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/threading/thread_local_storage.h"
 #include "build/build_config.h"
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 #include <linux/perf_event.h>
 #include <sys/syscall.h>
 #include <unistd.h>
-#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 
 namespace base {
 namespace trace_event {
 
 namespace {
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 
 // Special constants used for counter FD states.
 constexpr int kPerfFdDisabled = -2;
@@ -80,12 +81,12 @@ int InstructionCounterFdForCurrentThread() {
   return fd;
 }
 
-#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 
 }  // namespace
 
 bool ThreadInstructionCount::IsSupported() {
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
   // If we can't initialize the counter FD, mark as disabled.
   int counter_fd = InstructionCounterFdForCurrentThread();
   if (counter_fd <= 0)
@@ -99,7 +100,7 @@ bool ThreadInstructionCount::IsSupported() {
 
 ThreadInstructionCount ThreadInstructionCount::Now() {
   DCHECK(IsSupported());
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
   int fd = InstructionCounterFdForCurrentThread();
   if (fd <= 0)
     return ThreadInstructionCount();
@@ -112,7 +113,7 @@ ThreadInstructionCount ThreadInstructionCount::Now() {
   return ThreadInstructionCount(instructions);
 #else
   return ThreadInstructionCount();
-#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 }
 
 }  // namespace trace_event

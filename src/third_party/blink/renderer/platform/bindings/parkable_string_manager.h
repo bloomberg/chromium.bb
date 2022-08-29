@@ -19,7 +19,6 @@
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_functions.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
-#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -95,7 +94,9 @@ class PLATFORM_EXPORT ParkableStringManager {
   friend class ParkableString;
   friend class ParkableStringImpl;
 
-  scoped_refptr<ParkableStringImpl> Add(scoped_refptr<StringImpl>&&);
+  scoped_refptr<ParkableStringImpl> Add(
+      scoped_refptr<StringImpl>&&,
+      std::unique_ptr<ParkableStringImpl::SecureDigest> digest);
   void Remove(ParkableStringImpl*);
 
   void OnParked(ParkableStringImpl*);

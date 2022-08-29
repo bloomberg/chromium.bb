@@ -32,6 +32,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image_skia_rep.h"
 #include "ui/gfx/skia_util.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -237,9 +238,6 @@ TEST_F(ExtensionActionIconFactoryTest, InvisibleIcon) {
       icon.ToImageSkia()->GetRepresentation(1.0f)));
   EXPECT_THAT(histogram_tester.GetAllSamples(
                   "Extensions.ManifestIconSetIconWasVisibleForPacked"),
-              testing::ElementsAre(base::Bucket(0, 1)));
-  EXPECT_THAT(histogram_tester.GetAllSamples(
-                  "Extensions.ManifestIconSetIconWasVisibleForPackedRendered"),
               testing::ElementsAre(base::Bucket(0, 1)));
 
   // Reset the flag for testing.

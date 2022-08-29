@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 
 import * as i18n from '../../../core/i18n/i18n.js';
+import type * as Platform from '../../../core/platform/platform.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as PanelFeedback from '../../../ui/components/panel_feedback/panel_feedback.js';
+import * as PanelIntroductionSteps from '../../../ui/components/panel_introduction_steps/panel_introduction_steps.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 
 import cssOverviewStartViewStyles from './cssOverviewStartView.css.js';
@@ -42,8 +44,8 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 
 const {render, html} = LitHtml;
 
-const FEEDBACK_LINK = 'https://goo.gle/css-overview-feedback';
-const DOC_LINK = 'https://developer.chrome.com/docs/devtools/css-overview';
+const FEEDBACK_LINK = 'https://g.co/devtools/css-overview-feedback' as Platform.DevToolsPath.UrlString;
+const DOC_LINK = 'https://developer.chrome.com/docs/devtools/css-overview' as Platform.DevToolsPath.UrlString;
 export class OverviewStartRequestedEvent extends Event {
   static readonly eventName = 'overviewstartrequested';
 
@@ -58,7 +60,7 @@ export class CSSOverviewStartView extends HTMLElement {
 
   connectedCallback(): void {
     this.#shadow.adoptedStyleSheets = [cssOverviewStartViewStyles];
-    this.render();
+    this.#render();
   }
 
   show(): void {
@@ -69,26 +71,26 @@ export class CSSOverviewStartView extends HTMLElement {
     this.classList.add('hidden');
   }
 
-  private onStartCaptureClick(): void {
+  #onStartCaptureClick(): void {
     this.dispatchEvent(new OverviewStartRequestedEvent());
   }
 
-  private render(): void {
+  #render(): void {
     // Disabled until https://crbug.com/1079231 is fixed.
     // clang-format off
     render(html`
       <div class="css-overview-start-view">
-        <h1 class="summary-header">${i18nString(UIStrings.identifyCSSImprovements)}</h1>
-        <ol class="summary-list">
-          <li>${i18nString(UIStrings.capturePageCSSOverview)}</li>
-          <li>${i18nString(UIStrings.identifyCSSImprovementsWithExampleIssues)}</li>
-          <li>${i18nString(UIStrings.locateAffectedElements)}</li>
-        </ol>
+        <${PanelIntroductionSteps.PanelIntroductionSteps.PanelIntroductionSteps.litTagName}>
+          <span slot="title">${i18nString(UIStrings.identifyCSSImprovements)}</span>
+          <span slot="step-1">${i18nString(UIStrings.capturePageCSSOverview)}</span>
+          <span slot="step-2">${i18nString(UIStrings.identifyCSSImprovementsWithExampleIssues)}</span>
+          <span slot="step-3">${i18nString(UIStrings.locateAffectedElements)}</span>
+        </${PanelIntroductionSteps.PanelIntroductionSteps.PanelIntroductionSteps.litTagName}>
         <div class="start-capture-wrapper">
           <${Buttons.Button.Button.litTagName}
             class="start-capture"
             .variant=${Buttons.Button.Variant.PRIMARY}
-            @click=${this.onStartCaptureClick}>
+            @click=${this.#onStartCaptureClick}>
             ${i18nString(UIStrings.captureOverview)}
           </${Buttons.Button.Button.litTagName}>
         </div>

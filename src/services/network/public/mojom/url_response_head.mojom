@@ -7,6 +7,7 @@ module network.mojom;
 import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "services/network/public/mojom/fetch_api.mojom";
+import "services/network/public/mojom/ip_address_space.mojom";
 import "services/network/public/mojom/ip_endpoint.mojom";
 import "services/network/public/mojom/load_timing_info.mojom";
 import "services/network/public/mojom/network_param.mojom";
@@ -65,7 +66,7 @@ struct URLResponseHead {
   // True if the response was delivered using SPDY.
   bool was_fetched_via_spdy = false;
 
-  // True if the response was delivered after NPN is negotiated.
+  // True if the response was delivered over a connection that negotiated ALPN.
   bool was_alpn_negotiated = false;
 
   // True if response could use alternate protocol. However, browser will
@@ -80,6 +81,14 @@ struct URLResponseHead {
 
   // Remote address of the socket which fetched this resource.
   IPEndPoint remote_endpoint;
+
+  // The IP address space of the request client/the request's policy container.
+  // https://wicg.github.io/private-network-access/#policy-container-ip-address-space
+  IPAddressSpace client_address_space = IPAddressSpace.kUnknown;
+
+  // The IP address space of the response, derived from the remote IP endpoint.
+  // https://wicg.github.io/private-network-access/#response-ip-address-space
+  IPAddressSpace response_address_space = IPAddressSpace.kUnknown;
 
   // True if the response was fetched from the cache and validated over the
   // network.
@@ -212,9 +221,8 @@ struct URLResponseHead {
   mojo_base.mojom.UnguessableToken? recursive_prefetch_token;
 
   // Aliases, if any, for the destination URL, as read from DNS CNAME records.
-  // The first entry of `dns_aliases`, if it exists, is the canonical name.
-  // The alias chain is preserved in reverse order, from canonical name (i.e.
-  // address record name) through to query name.
+  // Includes all known aliases, e.g. from A, AAAA, or HTTPS, not just from the
+  // address used for the connection, in no particular order.
   array<string> dns_aliases;
 
   // The URL of WebBundle this response was loaded from. This value is only
@@ -226,8 +234,13 @@ struct URLResponseHead {
   // TODO(crbug.com/1176753): Remove this once the investigation is done.
   bool has_authorization_covered_by_wildcard_on_preflight = false;
 
+  // [spec] https://fetch.spec.whatwg.org/#response-request-includes-credentials
   // The request's |includeCredentials| value from the "HTTP-network fetch"
   // algorithm.
   // See: https://fetch.spec.whatwg.org/#concept-http-network-fetch
   bool request_include_credentials = true;
+
+  // This boolean is set to true if the response has a Set-Cookie header with the Partitioned attribute.
+  // TODO(https://crbug.com/1296161): Delete this field.
+  bool has_partitioned_cookie = false;
 };

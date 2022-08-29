@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/cxx17_backports.h"
 #include "base/numerics/checked_math.h"
 #include "base/numerics/safe_conversions.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -35,6 +34,70 @@
 #include "third_party/blink/renderer/modules/webgl/webgl_vertex_array_object.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+
+// Populates all parameters for texImage2D, including width, height, depth (set
+// to 1), and border. Many callers will need to zero-out border in order to
+// preserve existing behavior (see https://crbug.com/1313604).
+#define POPULATE_TEX_IMAGE_2D_PARAMS(params) \
+  params = {                                 \
+      .function_id = kTexImage2D,            \
+      .target = target,                      \
+      .level = level,                        \
+      .internalformat = internalformat,      \
+      .width = width,                        \
+      .height = height,                      \
+      .depth = 1,                            \
+      .border = border,                      \
+      .format = format,                      \
+      .type = type,                          \
+  };                                         \
+  GetCurrentUnpackState(params)
+
+#define POPULATE_TEX_SUB_IMAGE_2D_PARAMS(params) \
+  params = {                                     \
+      .function_id = kTexSubImage2D,             \
+      .target = target,                          \
+      .level = level,                            \
+      .xoffset = xoffset,                        \
+      .yoffset = yoffset,                        \
+      .width = width,                            \
+      .height = height,                          \
+      .depth = 1,                                \
+      .format = format,                          \
+      .type = type,                              \
+  };                                             \
+  GetCurrentUnpackState(params)
+
+#define POPULATE_TEX_IMAGE_3D_PARAMS(params) \
+  params = {                                 \
+      .function_id = kTexImage3D,            \
+      .target = target,                      \
+      .level = level,                        \
+      .internalformat = internalformat,      \
+      .width = width,                        \
+      .height = height,                      \
+      .depth = depth,                        \
+      .border = border,                      \
+      .format = format,                      \
+      .type = type,                          \
+  };                                         \
+  GetCurrentUnpackState(params)
+
+#define POPULATE_TEX_SUB_IMAGE_3D_PARAMS(params) \
+  params = {                                     \
+      .function_id = kTexSubImage3D,             \
+      .target = target,                          \
+      .level = level,                            \
+      .xoffset = xoffset,                        \
+      .yoffset = yoffset,                        \
+      .zoffset = zoffset,                        \
+      .width = width,                            \
+      .height = height,                          \
+      .depth = depth,                            \
+      .format = format,                          \
+      .type = type,                              \
+  };                                             \
+  GetCurrentUnpackState(params)
 
 using WTF::String;
 
@@ -174,7 +237,7 @@ WebGL2RenderingContextBase::WebGL2RenderingContextBase(
                                 graphics_info,
                                 requested_attributes,
                                 context_type) {
-  for (size_t i = 0; i < base::size(kSupportedInternalFormatsStorage); ++i) {
+  for (size_t i = 0; i < std::size(kSupportedInternalFormatsStorage); ++i) {
     supported_internal_formats_storage_.insert(
         kSupportedInternalFormatsStorage[i]);
   }
@@ -223,7 +286,6 @@ void WebGL2RenderingContextBase::InitializeNewContext() {
                            &max_uniform_buffer_bindings);
   bound_indexed_uniform_buffers_.clear();
   bound_indexed_uniform_buffers_.resize(max_uniform_buffer_bindings);
-  max_bound_uniform_buffer_index_ = 0;
 
   pack_row_length_ = 0;
   pack_skip_pixels_ = 0;
@@ -264,7 +326,7 @@ void WebGL2RenderingContextBase::bufferData(GLenum target,
 }
 
 void WebGL2RenderingContextBase::bufferData(GLenum target,
-                                            DOMArrayBuffer* data,
+                                            DOMArrayBufferBase* data,
                                             GLenum usage) {
   WebGLRenderingContextBase::bufferData(target, data, usage);
 }
@@ -298,7 +360,7 @@ void WebGL2RenderingContextBase::bufferSubData(
 
 void WebGL2RenderingContextBase::bufferSubData(GLenum target,
                                                int64_t offset,
-                                               DOMArrayBuffer* data) {
+                                               DOMArrayBufferBase* data) {
   WebGLRenderingContextBase::bufferSubData(target, offset, data);
 }
 
@@ -611,7 +673,7 @@ void WebGL2RenderingContextBase::RecordInternalFormatParameter(
     GLenum internalformat,
     GLint* values,
     GLint length) {
-  if (!IdentifiabilityStudySettings::Get()->ShouldSample(
+  if (!IdentifiabilityStudySettings::Get()->ShouldSampleType(
           IdentifiableSurface::Type::kWebGLInternalFormatParameter))
     return;
   const auto& ukm_params = GetUkmParameters();
@@ -922,7 +984,7 @@ void WebGL2RenderingContextBase::RenderbufferStorageImpl(
                           "for integer formats, samples > 0");
         return;
       }
-      FALLTHROUGH;
+      [[fallthrough]];
     case GL_R8:
     case GL_RG8:
     case GL_RGB8:
@@ -1081,10 +1143,12 @@ void WebGL2RenderingContextBase::texImage2D(GLenum target,
         "FLIP_Y or PREMULTIPLY_ALPHA isn't allowed while uploading from PBO");
     return;
   }
-  if (!ValidateTexFunc("texImage2D", kTexImage, kSourceUnpackBuffer, target,
-                       level, internalformat, width, height, 1, border, format,
-                       type, 0, 0, 0))
+  TexImageParams params;
+  POPULATE_TEX_IMAGE_2D_PARAMS(params);
+  if (!ValidateTexFunc(params, kSourceUnpackBuffer, absl::nullopt,
+                       absl::nullopt)) {
     return;
+  }
   if (!ValidateValueFitNonNegInt32("texImage2D", "offset", offset))
     return;
 
@@ -1117,10 +1181,12 @@ void WebGL2RenderingContextBase::texSubImage2D(GLenum target,
         "FLIP_Y or PREMULTIPLY_ALPHA isn't allowed while uploading from PBO");
     return;
   }
-  if (!ValidateTexFunc("texSubImage2D", kTexSubImage, kSourceUnpackBuffer,
-                       target, level, 0, width, height, 1, 0, format, type,
-                       xoffset, yoffset, 0))
+  TexImageParams params;
+  POPULATE_TEX_SUB_IMAGE_2D_PARAMS(params);
+  if (!ValidateTexFunc(params, kSourceUnpackBuffer, absl::nullopt,
+                       absl::nullopt)) {
     return;
+  }
   if (!ValidateValueFitNonNegInt32("texSubImage2D", "offset", offset))
     return;
 
@@ -1168,9 +1234,10 @@ void WebGL2RenderingContextBase::texImage2D(
                       "a buffer is bound to PIXEL_UNPACK_BUFFER");
     return;
   }
-  TexImageHelperDOMArrayBufferView(
-      kTexImage2D, target, level, internalformat, width, height, 1, border,
-      format, type, 0, 0, 0, data.Get(), kNullNotReachable, src_offset);
+  TexImageParams params;
+  POPULATE_TEX_IMAGE_2D_PARAMS(params);
+  TexImageHelperDOMArrayBufferView(params, data.Get(), kNullNotReachable,
+                                   src_offset);
 }
 
 void WebGL2RenderingContextBase::texImage2D(GLenum target,
@@ -1190,9 +1257,10 @@ void WebGL2RenderingContextBase::texImage2D(GLenum target,
                       "a buffer is bound to PIXEL_UNPACK_BUFFER");
     return;
   }
-  TexImageHelperImageData(kTexImage2D, target, level, internalformat, 0, format,
-                          type, 1, 0, 0, 0, pixels,
-                          GetTextureSourceSubRectangle(width, height), 0);
+  TexImageParams params;
+  POPULATE_TEX_IMAGE_2D_PARAMS(params);
+  params.border = 0;  // See https://crbug.com/1313604
+  TexImageHelperImageData(params, pixels);
 }
 
 void WebGL2RenderingContextBase::texImage2D(ExecutionContext* execution_context,
@@ -1213,11 +1281,11 @@ void WebGL2RenderingContextBase::texImage2D(ExecutionContext* execution_context,
                       "a buffer is bound to PIXEL_UNPACK_BUFFER");
     return;
   }
-  TexImageHelperHTMLImageElement(execution_context->GetSecurityOrigin(),
-                                 kTexImage2D, target, level, internalformat,
-                                 format, type, 0, 0, 0, image,
-                                 GetTextureSourceSubRectangle(width, height), 1,
-                                 unpack_image_height_, exception_state);
+  TexImageParams params;
+  POPULATE_TEX_IMAGE_2D_PARAMS(params);
+  params.border = 0;  // See https://crbug.com/1313604
+  TexImageHelperHTMLImageElement(execution_context->GetSecurityOrigin(), params,
+                                 image, exception_state);
 }
 
 void WebGL2RenderingContextBase::texImage2D(ExecutionContext* execution_context,
@@ -1238,11 +1306,11 @@ void WebGL2RenderingContextBase::texImage2D(ExecutionContext* execution_context,
                       "a buffer is bound to PIXEL_UNPACK_BUFFER");
     return;
   }
-
+  TexImageParams params;
+  POPULATE_TEX_IMAGE_2D_PARAMS(params);
+  params.border = 0;  // See https://crbug.com/1313604
   TexImageHelperCanvasRenderingContextHost(
-      execution_context->GetSecurityOrigin(), kTexImage2D, target, level,
-      internalformat, format, type, 0, 0, 0, canvas,
-      GetTextureSourceSubRectangle(width, height), 1, 0, exception_state);
+      execution_context->GetSecurityOrigin(), params, canvas, exception_state);
 }
 
 void WebGL2RenderingContextBase::texImage2D(ExecutionContext* execution_context,
@@ -1263,11 +1331,11 @@ void WebGL2RenderingContextBase::texImage2D(ExecutionContext* execution_context,
                       "a buffer is bound to PIXEL_UNPACK_BUFFER");
     return;
   }
-
-  TexImageHelperHTMLVideoElement(
-      execution_context->GetSecurityOrigin(), kTexImage2D, target, level,
-      internalformat, format, type, 0, 0, 0, video,
-      GetTextureSourceSubRectangle(width, height), 1, 0, exception_state);
+  TexImageParams params;
+  POPULATE_TEX_IMAGE_2D_PARAMS(params);
+  params.border = 0;  // See https://crbug.com/1313604
+  TexImageHelperHTMLVideoElement(execution_context->GetSecurityOrigin(), params,
+                                 video, exception_state);
 }
 
 void WebGL2RenderingContextBase::texImage2D(ExecutionContext* execution_context,
@@ -1288,11 +1356,11 @@ void WebGL2RenderingContextBase::texImage2D(ExecutionContext* execution_context,
                       "a buffer is bound to PIXEL_UNPACK_BUFFER");
     return;
   }
-
-  TexImageHelperVideoFrame(execution_context->GetSecurityOrigin(), kTexImage2D,
-                           target, level, internalformat, format, type, 0, 0, 0,
-                           frame, GetTextureSourceSubRectangle(width, height),
-                           1, 0, exception_state);
+  TexImageParams params;
+  POPULATE_TEX_IMAGE_2D_PARAMS(params);
+  params.border = 0;  // See https://crbug.com/1313604
+  TexImageHelperVideoFrame(execution_context->GetSecurityOrigin(), params,
+                           frame, exception_state);
 }
 
 void WebGL2RenderingContextBase::texImage2D(GLenum target,
@@ -1313,9 +1381,10 @@ void WebGL2RenderingContextBase::texImage2D(GLenum target,
                       "a buffer is bound to PIXEL_UNPACK_BUFFER");
     return;
   }
-  TexImageHelperImageBitmap(
-      kTexImage2D, target, level, internalformat, format, type, 0, 0, 0, bitmap,
-      GetTextureSourceSubRectangle(width, height), 1, 0, exception_state);
+  TexImageParams params;
+  POPULATE_TEX_IMAGE_2D_PARAMS(params);
+  params.border = 0;  // See https://crbug.com/1313604
+  TexImageHelperImageBitmap(params, bitmap, exception_state);
 }
 
 void WebGL2RenderingContextBase::texImage2D(GLenum target,
@@ -1477,9 +1546,10 @@ void WebGL2RenderingContextBase::texSubImage2D(
                       "a buffer is bound to PIXEL_UNPACK_BUFFER");
     return;
   }
-  TexImageHelperDOMArrayBufferView(
-      kTexSubImage2D, target, level, 0, width, height, 1, 0, format, type,
-      xoffset, yoffset, 0, pixels.Get(), kNullNotReachable, src_offset);
+  TexImageParams params;
+  POPULATE_TEX_SUB_IMAGE_2D_PARAMS(params);
+  TexImageHelperDOMArrayBufferView(params, pixels.Get(), kNullNotReachable,
+                                   src_offset);
 }
 
 void WebGL2RenderingContextBase::texSubImage2D(GLenum target,
@@ -1499,9 +1569,9 @@ void WebGL2RenderingContextBase::texSubImage2D(GLenum target,
                       "a buffer is bound to PIXEL_UNPACK_BUFFER");
     return;
   }
-  TexImageHelperImageData(kTexSubImage2D, target, level, 0, 0, format, type, 1,
-                          xoffset, yoffset, 0, pixels,
-                          GetTextureSourceSubRectangle(width, height), 0);
+  TexImageParams params;
+  POPULATE_TEX_SUB_IMAGE_2D_PARAMS(params);
+  TexImageHelperImageData(params, pixels);
 }
 
 void WebGL2RenderingContextBase::texSubImage2D(
@@ -1523,11 +1593,10 @@ void WebGL2RenderingContextBase::texSubImage2D(
                       "a buffer is bound to PIXEL_UNPACK_BUFFER");
     return;
   }
-
-  TexImageHelperHTMLImageElement(
-      execution_context->GetSecurityOrigin(), kTexSubImage2D, target, level, 0,
-      format, type, xoffset, yoffset, 0, image,
-      GetTextureSourceSubRectangle(width, height), 1, 0, exception_state);
+  TexImageParams params;
+  POPULATE_TEX_SUB_IMAGE_2D_PARAMS(params);
+  TexImageHelperHTMLImageElement(execution_context->GetSecurityOrigin(), params,
+                                 image, exception_state);
 }
 
 void WebGL2RenderingContextBase::texSubImage2D(
@@ -1549,11 +1618,10 @@ void WebGL2RenderingContextBase::texSubImage2D(
                       "a buffer is bound to PIXEL_UNPACK_BUFFER");
     return;
   }
-
+  TexImageParams params;
+  POPULATE_TEX_SUB_IMAGE_2D_PARAMS(params);
   TexImageHelperCanvasRenderingContextHost(
-      execution_context->GetSecurityOrigin(), kTexSubImage2D, target, level, 0,
-      format, type, xoffset, yoffset, 0, canvas,
-      GetTextureSourceSubRectangle(width, height), 1, 0, exception_state);
+      execution_context->GetSecurityOrigin(), params, canvas, exception_state);
 }
 
 void WebGL2RenderingContextBase::texSubImage2D(
@@ -1575,11 +1643,10 @@ void WebGL2RenderingContextBase::texSubImage2D(
                       "a buffer is bound to PIXEL_UNPACK_BUFFER");
     return;
   }
-
-  TexImageHelperHTMLVideoElement(
-      execution_context->GetSecurityOrigin(), kTexSubImage2D, target, level, 0,
-      format, type, xoffset, yoffset, 0, video,
-      GetTextureSourceSubRectangle(width, height), 1, 0, exception_state);
+  TexImageParams params;
+  POPULATE_TEX_SUB_IMAGE_2D_PARAMS(params);
+  TexImageHelperHTMLVideoElement(execution_context->GetSecurityOrigin(), params,
+                                 video, exception_state);
 }
 
 void WebGL2RenderingContextBase::texSubImage2D(
@@ -1601,11 +1668,10 @@ void WebGL2RenderingContextBase::texSubImage2D(
                       "a buffer is bound to PIXEL_UNPACK_BUFFER");
     return;
   }
-
-  TexImageHelperVideoFrame(
-      execution_context->GetSecurityOrigin(), kTexSubImage2D, target, level, 0,
-      format, type, xoffset, yoffset, 0, frame,
-      GetTextureSourceSubRectangle(width, height), 1, 0, exception_state);
+  TexImageParams params;
+  POPULATE_TEX_SUB_IMAGE_2D_PARAMS(params);
+  TexImageHelperVideoFrame(execution_context->GetSecurityOrigin(), params,
+                           frame, exception_state);
 }
 
 void WebGL2RenderingContextBase::texSubImage2D(
@@ -1627,10 +1693,9 @@ void WebGL2RenderingContextBase::texSubImage2D(
                       "a buffer is bound to PIXEL_UNPACK_BUFFER");
     return;
   }
-  TexImageHelperImageBitmap(kTexSubImage2D, target, level, 0, format, type,
-                            xoffset, yoffset, 0, bitmap,
-                            GetTextureSourceSubRectangle(width, height), 1, 0,
-                            exception_state);
+  TexImageParams params;
+  POPULATE_TEX_SUB_IMAGE_2D_PARAMS(params);
+  TexImageHelperImageBitmap(params, bitmap, exception_state);
 }
 
 void WebGL2RenderingContextBase::texSubImage2D(GLenum target,
@@ -1788,9 +1853,9 @@ void WebGL2RenderingContextBase::texImage3D(
         "FLIP_Y or PREMULTIPLY_ALPHA isn't allowed for uploading 3D textures");
     return;
   }
-  TexImageHelperDOMArrayBufferView(kTexImage3D, target, level, internalformat,
-                                   width, height, depth, border, format, type,
-                                   0, 0, 0, pixels.Get(), kNullAllowed, 0);
+  TexImageParams params;
+  POPULATE_TEX_IMAGE_3D_PARAMS(params);
+  TexImageHelperDOMArrayBufferView(params, pixels.Get(), kNullAllowed, 0);
 }
 
 void WebGL2RenderingContextBase::texImage3D(
@@ -1819,9 +1884,10 @@ void WebGL2RenderingContextBase::texImage3D(
         "FLIP_Y or PREMULTIPLY_ALPHA isn't allowed for uploading 3D textures");
     return;
   }
-  TexImageHelperDOMArrayBufferView(
-      kTexImage3D, target, level, internalformat, width, height, depth, border,
-      format, type, 0, 0, 0, pixels.Get(), kNullNotReachable, src_offset);
+  TexImageParams params;
+  POPULATE_TEX_IMAGE_3D_PARAMS(params);
+  TexImageHelperDOMArrayBufferView(params, pixels.Get(), kNullNotReachable,
+                                   src_offset);
 }
 
 void WebGL2RenderingContextBase::texImage3D(GLenum target,
@@ -1849,10 +1915,12 @@ void WebGL2RenderingContextBase::texImage3D(GLenum target,
         "FLIP_Y or PREMULTIPLY_ALPHA isn't allowed for uploading 3D textures");
     return;
   }
-  if (!ValidateTexFunc("texImage3D", kTexImage, kSourceUnpackBuffer, target,
-                       level, internalformat, width, height, depth, border,
-                       format, type, 0, 0, 0))
+  TexImageParams params;
+  POPULATE_TEX_IMAGE_3D_PARAMS(params);
+  if (!ValidateTexFunc(params, kSourceUnpackBuffer, absl::nullopt,
+                       absl::nullopt)) {
     return;
+  }
   if (!ValidateValueFitNonNegInt32("texImage3D", "offset", offset))
     return;
 
@@ -1873,11 +1941,10 @@ void WebGL2RenderingContextBase::texImage3D(GLenum target,
                                             GLenum type,
                                             ImageData* pixels) {
   DCHECK(pixels);
-  gfx::Rect source_image_rect(unpack_skip_pixels_, unpack_skip_rows_, width,
-                              height);
-  TexImageHelperImageData(kTexImage3D, target, level, internalformat, 0, format,
-                          type, depth, 0, 0, 0, pixels, source_image_rect,
-                          unpack_image_height_);
+  TexImageParams params;
+  POPULATE_TEX_IMAGE_3D_PARAMS(params);
+  params.border = 0;  // See https://crbug.com/1313604
+  TexImageHelperImageData(params, pixels);
 }
 
 void WebGL2RenderingContextBase::texImage3D(ExecutionContext* execution_context,
@@ -1899,12 +1966,11 @@ void WebGL2RenderingContextBase::texImage3D(ExecutionContext* execution_context,
                       "a buffer is bound to PIXEL_UNPACK_BUFFER");
     return;
   }
-
-  TexImageHelperHTMLImageElement(execution_context->GetSecurityOrigin(),
-                                 kTexImage3D, target, level, internalformat,
-                                 format, type, 0, 0, 0, image,
-                                 GetTextureSourceSubRectangle(width, height),
-                                 depth, unpack_image_height_, exception_state);
+  TexImageParams params;
+  POPULATE_TEX_IMAGE_3D_PARAMS(params);
+  params.border = 0;  // See https://crbug.com/1313604
+  TexImageHelperHTMLImageElement(execution_context->GetSecurityOrigin(), params,
+                                 image, exception_state);
 }
 
 void WebGL2RenderingContextBase::texImage3D(ExecutionContext* execution_context,
@@ -1926,12 +1992,11 @@ void WebGL2RenderingContextBase::texImage3D(ExecutionContext* execution_context,
                       "a buffer is bound to PIXEL_UNPACK_BUFFER");
     return;
   }
-
+  TexImageParams params;
+  POPULATE_TEX_IMAGE_3D_PARAMS(params);
+  params.border = 0;  // See https://crbug.com/1313604
   TexImageHelperCanvasRenderingContextHost(
-      execution_context->GetSecurityOrigin(), kTexImage3D, target, level,
-      internalformat, format, type, 0, 0, 0, canvas,
-      GetTextureSourceSubRectangle(width, height), depth, unpack_image_height_,
-      exception_state);
+      execution_context->GetSecurityOrigin(), params, canvas, exception_state);
 }
 
 void WebGL2RenderingContextBase::texImage3D(ExecutionContext* execution_context,
@@ -1953,12 +2018,11 @@ void WebGL2RenderingContextBase::texImage3D(ExecutionContext* execution_context,
                       "a buffer is bound to PIXEL_UNPACK_BUFFER");
     return;
   }
-
-  TexImageHelperHTMLVideoElement(execution_context->GetSecurityOrigin(),
-                                 kTexImage3D, target, level, internalformat,
-                                 format, type, 0, 0, 0, video,
-                                 GetTextureSourceSubRectangle(width, height),
-                                 depth, unpack_image_height_, exception_state);
+  TexImageParams params;
+  POPULATE_TEX_IMAGE_3D_PARAMS(params);
+  params.border = 0;  // See https://crbug.com/1313604
+  TexImageHelperHTMLVideoElement(execution_context->GetSecurityOrigin(), params,
+                                 video, exception_state);
 }
 
 void WebGL2RenderingContextBase::texImage3D(ExecutionContext* execution_context,
@@ -1980,11 +2044,11 @@ void WebGL2RenderingContextBase::texImage3D(ExecutionContext* execution_context,
                       "a buffer is bound to PIXEL_UNPACK_BUFFER");
     return;
   }
-
-  TexImageHelperVideoFrame(execution_context->GetSecurityOrigin(), kTexImage3D,
-                           target, level, internalformat, format, type, 0, 0, 0,
-                           frame, GetTextureSourceSubRectangle(width, height),
-                           depth, unpack_image_height_, exception_state);
+  TexImageParams params;
+  POPULATE_TEX_IMAGE_3D_PARAMS(params);
+  params.border = 0;  // See https://crbug.com/1313604
+  TexImageHelperVideoFrame(execution_context->GetSecurityOrigin(), params,
+                           frame, exception_state);
 }
 
 void WebGL2RenderingContextBase::texImage3D(GLenum target,
@@ -2005,10 +2069,10 @@ void WebGL2RenderingContextBase::texImage3D(GLenum target,
                       "a buffer is bound to PIXEL_UNPACK_BUFFER");
     return;
   }
-  TexImageHelperImageBitmap(kTexImage3D, target, level, internalformat, format,
-                            type, 0, 0, 0, bitmap,
-                            GetTextureSourceSubRectangle(width, height), depth,
-                            unpack_image_height_, exception_state);
+  TexImageParams params;
+  POPULATE_TEX_IMAGE_3D_PARAMS(params);
+  params.border = 0;  // See https://crbug.com/1313604
+  TexImageHelperImageBitmap(params, bitmap, exception_state);
 }
 
 void WebGL2RenderingContextBase::texSubImage3D(
@@ -2038,10 +2102,10 @@ void WebGL2RenderingContextBase::texSubImage3D(
         "FLIP_Y or PREMULTIPLY_ALPHA isn't allowed for uploading 3D textures");
     return;
   }
-
-  TexImageHelperDOMArrayBufferView(
-      kTexSubImage3D, target, level, 0, width, height, depth, 0, format, type,
-      xoffset, yoffset, zoffset, pixels.Get(), kNullNotReachable, src_offset);
+  TexImageParams params;
+  POPULATE_TEX_SUB_IMAGE_3D_PARAMS(params);
+  TexImageHelperDOMArrayBufferView(params, pixels.Get(), kNullNotReachable,
+                                   src_offset);
 }
 
 void WebGL2RenderingContextBase::texSubImage3D(GLenum target,
@@ -2070,10 +2134,12 @@ void WebGL2RenderingContextBase::texSubImage3D(GLenum target,
         "FLIP_Y or PREMULTIPLY_ALPHA isn't allowed for uploading 3D textures");
     return;
   }
-  if (!ValidateTexFunc("texSubImage3D", kTexSubImage, kSourceUnpackBuffer,
-                       target, level, 0, width, height, depth, 0, format, type,
-                       xoffset, yoffset, zoffset))
+  TexImageParams params;
+  POPULATE_TEX_SUB_IMAGE_3D_PARAMS(params);
+  if (!ValidateTexFunc(params, kSourceUnpackBuffer, absl::nullopt,
+                       absl::nullopt)) {
     return;
+  }
   if (!ValidateValueFitNonNegInt32("texSubImage3D", "offset", offset))
     return;
 
@@ -2101,10 +2167,9 @@ void WebGL2RenderingContextBase::texSubImage3D(GLenum target,
                       "a buffer is bound to PIXEL_UNPACK_BUFFER");
     return;
   }
-  TexImageHelperImageData(kTexSubImage3D, target, level, 0, 0, format, type,
-                          depth, xoffset, yoffset, zoffset, pixels,
-                          GetTextureSourceSubRectangle(width, height),
-                          unpack_image_height_);
+  TexImageParams params;
+  POPULATE_TEX_SUB_IMAGE_3D_PARAMS(params);
+  TexImageHelperImageData(params, pixels);
 }
 
 void WebGL2RenderingContextBase::texSubImage3D(
@@ -2128,12 +2193,10 @@ void WebGL2RenderingContextBase::texSubImage3D(
                       "a buffer is bound to PIXEL_UNPACK_BUFFER");
     return;
   }
-
-  TexImageHelperHTMLImageElement(execution_context->GetSecurityOrigin(),
-                                 kTexSubImage3D, target, level, 0, format, type,
-                                 xoffset, yoffset, zoffset, image,
-                                 GetTextureSourceSubRectangle(width, height),
-                                 depth, unpack_image_height_, exception_state);
+  TexImageParams params;
+  POPULATE_TEX_SUB_IMAGE_3D_PARAMS(params);
+  TexImageHelperHTMLImageElement(execution_context->GetSecurityOrigin(), params,
+                                 image, exception_state);
 }
 
 void WebGL2RenderingContextBase::texSubImage3D(
@@ -2157,11 +2220,10 @@ void WebGL2RenderingContextBase::texSubImage3D(
                       "a buffer is bound to PIXEL_UNPACK_BUFFER");
     return;
   }
-
+  TexImageParams params;
+  POPULATE_TEX_SUB_IMAGE_3D_PARAMS(params);
   TexImageHelperCanvasRenderingContextHost(
-      execution_context->GetSecurityOrigin(), kTexSubImage3D, target, level, 0,
-      format, type, xoffset, yoffset, zoffset, context_host,
-      GetTextureSourceSubRectangle(width, height), depth, unpack_image_height_,
+      execution_context->GetSecurityOrigin(), params, context_host,
       exception_state);
 }
 
@@ -2186,12 +2248,10 @@ void WebGL2RenderingContextBase::texSubImage3D(
                       "a buffer is bound to PIXEL_UNPACK_BUFFER");
     return;
   }
-
-  TexImageHelperHTMLVideoElement(execution_context->GetSecurityOrigin(),
-                                 kTexSubImage3D, target, level, 0, format, type,
-                                 xoffset, yoffset, zoffset, video,
-                                 GetTextureSourceSubRectangle(width, height),
-                                 depth, unpack_image_height_, exception_state);
+  TexImageParams params;
+  POPULATE_TEX_SUB_IMAGE_3D_PARAMS(params);
+  TexImageHelperHTMLVideoElement(execution_context->GetSecurityOrigin(), params,
+                                 video, exception_state);
 }
 
 void WebGL2RenderingContextBase::texSubImage3D(
@@ -2215,12 +2275,10 @@ void WebGL2RenderingContextBase::texSubImage3D(
                       "a buffer is bound to PIXEL_UNPACK_BUFFER");
     return;
   }
-
-  TexImageHelperVideoFrame(execution_context->GetSecurityOrigin(),
-                           kTexSubImage3D, target, level, 0, format, type,
-                           xoffset, yoffset, zoffset, frame,
-                           GetTextureSourceSubRectangle(width, height), depth,
-                           unpack_image_height_, exception_state);
+  TexImageParams params;
+  POPULATE_TEX_SUB_IMAGE_3D_PARAMS(params);
+  TexImageHelperVideoFrame(execution_context->GetSecurityOrigin(), params,
+                           frame, exception_state);
 }
 
 void WebGL2RenderingContextBase::texSubImage3D(
@@ -2243,10 +2301,9 @@ void WebGL2RenderingContextBase::texSubImage3D(
                       "a buffer is bound to PIXEL_UNPACK_BUFFER");
     return;
   }
-  TexImageHelperImageBitmap(kTexSubImage3D, target, level, 0, format, type,
-                            xoffset, yoffset, zoffset, bitmap,
-                            GetTextureSourceSubRectangle(width, height), depth,
-                            unpack_image_height_, exception_state);
+  TexImageParams params;
+  POPULATE_TEX_SUB_IMAGE_3D_PARAMS(params);
+  TexImageHelperImageBitmap(params, bitmap, exception_state);
 }
 
 void WebGL2RenderingContextBase::copyTexSubImage3D(GLenum target,
@@ -3756,13 +3813,20 @@ bool WebGL2RenderingContextBase::ValidateClearBuffer(const char* function_name,
   return true;
 }
 
+void WebGL2RenderingContextBase::GetCurrentUnpackState(TexImageParams& params) {
+  WebGLRenderingContextBase::GetCurrentUnpackState(params);
+  params.unpack_skip_pixels = unpack_skip_pixels_;
+  params.unpack_skip_rows = unpack_skip_rows_;
+  params.unpack_skip_images = unpack_skip_images_;
+  params.unpack_image_height = unpack_image_height_;
+}
+
 WebGLTexture* WebGL2RenderingContextBase::ValidateTexImageBinding(
-    const char* func_name,
-    TexImageFunctionID function_id,
-    GLenum target) {
-  if (function_id == kTexImage3D || function_id == kTexSubImage3D)
-    return ValidateTexture3DBinding(func_name, target);
-  return ValidateTexture2DBinding(func_name, target);
+    const TexImageParams& params) {
+  const char* func_name = GetTexImageFunctionName(params.function_id);
+  if (params.function_id == kTexImage3D || params.function_id == kTexSubImage3D)
+    return ValidateTexture3DBinding(func_name, params.target);
+  return ValidateTexture2DBinding(func_name, params.target);
 }
 
 void WebGL2RenderingContextBase::clearBufferiv(GLenum buffer,
@@ -5570,20 +5634,6 @@ bool WebGL2RenderingContextBase::ValidateAndUpdateBufferBindBaseTarget(
       }
       bound_indexed_uniform_buffers_[index] = buffer;
       bound_uniform_buffer_ = buffer;
-
-      // Keep track of what the maximum bound uniform buffer index is
-      if (buffer) {
-        if (index > max_bound_uniform_buffer_index_)
-          max_bound_uniform_buffer_index_ = index;
-      } else if (max_bound_uniform_buffer_index_ > 0 &&
-                 index == max_bound_uniform_buffer_index_) {
-        wtf_size_t i = max_bound_uniform_buffer_index_ - 1;
-        for (; i > 0; --i) {
-          if (bound_indexed_uniform_buffers_[i].Get())
-            break;
-        }
-        max_bound_uniform_buffer_index_ = i;
-      }
       break;
     default:
       NOTREACHED();
@@ -5908,7 +5958,7 @@ ScriptValue WebGL2RenderingContextBase::getFramebufferAttachmentParameter(
     case GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_LEVEL:
       if (!attachment_object->IsTexture())
         break;
-      FALLTHROUGH;
+      [[fallthrough]];
     case GL_FRAMEBUFFER_ATTACHMENT_RED_SIZE:
     case GL_FRAMEBUFFER_ATTACHMENT_GREEN_SIZE:
     case GL_FRAMEBUFFER_ATTACHMENT_BLUE_SIZE:
@@ -5927,7 +5977,7 @@ ScriptValue WebGL2RenderingContextBase::getFramebufferAttachmentParameter(
             "COMPONENT_TYPE can't be queried for DEPTH_STENCIL_ATTACHMENT");
         return ScriptValue::CreateNull(script_state->GetIsolate());
       }
-      FALLTHROUGH;
+      [[fallthrough]];
     case GL_FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING: {
       GLint value = 0;
       ContextGL()->GetFramebufferAttachmentParameteriv(target, attachment,

@@ -109,8 +109,9 @@ TEST_F(AutotestDesksApiTest, RemoveActiveDesk) {
 
 using EnhancedDeskAnimationsAutotestDesksApiTest = AutotestDesksApiTest;
 
+// TODO(b/219068687): Re-enable chained desk animation tests.
 TEST_F(EnhancedDeskAnimationsAutotestDesksApiTest,
-       ActivateAdjacentDesksToTargetIndex) {
+       DISABLED_ActivateAdjacentDesksToTargetIndex) {
   // Create all desks possible.
   AutotestDesksApi test_api;
   const int max_number_of_desks = desks_util::kMaxNumberOfDesks;

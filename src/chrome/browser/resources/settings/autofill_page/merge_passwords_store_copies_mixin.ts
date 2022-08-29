@@ -8,7 +8,7 @@
  * existing stored both on the device and in the account.
  */
 
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert_ts.js';
 import {ListPropertyUpdateMixin, ListPropertyUpdateMixinInterface} from 'chrome://resources/js/list_property_update_mixin.js';
 import {dedupingMixin, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -41,7 +41,7 @@ export const MergePasswordsStoreCopiesMixin = dedupingMixin(
             ((entries: Array<chrome.passwordsPrivate.PasswordUiEntry>) =>
                  void)|null = null;
 
-        connectedCallback() {
+        override connectedCallback() {
           super.connectedCallback();
           this.setSavedPasswordsListener_ = passwordList => {
             const mergedPasswordList =
@@ -66,11 +66,12 @@ export const MergePasswordsStoreCopiesMixin = dedupingMixin(
           this.notifySplices('savedPasswords', []);
         }
 
-        disconnectedCallback() {
+        override disconnectedCallback() {
           super.disconnectedCallback();
+          assert(this.setSavedPasswordsListener_);
           PasswordManagerImpl.getInstance()
               .removeSavedPasswordListChangedListener(
-                  assert(this.setSavedPasswordsListener_!));
+                  this.setSavedPasswordsListener_);
           this.setSavedPasswordsListener_ = null;
         }
 
