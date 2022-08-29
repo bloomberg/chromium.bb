@@ -11,21 +11,25 @@
 #include "base/files/file_path.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/notreached.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
-#include "build/chromeos_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/profiles/keep_alive/profile_keep_alive_types.h"
+#include "chrome/browser/profiles/keep_alive/scoped_profile_keep_alive.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/signin/signin_util.h"
+#include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/accelerator_table.h"
-#include "chrome/browser/ui/views/profiles/profile_picker_signed_in_flow_controller.h"
+#include "chrome/browser/ui/views/profiles/profile_creation_signed_in_flow_controller.h"
 #include "chrome/browser/ui/webui/signin/profile_picker_ui.h"
 #include "chrome/browser/ui/webui/signin/signin_web_dialog_ui.h"
 #include "chrome/browser/ui/webui/signin/sync_confirmation_ui.h"
@@ -63,14 +67,18 @@
 #include "chrome/browser/ui/views/profiles/profile_picker_dice_sign_in_toolbar.h"
 #endif
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "chrome/browser/shell_integration_win.h"
 #include "ui/base/win/shell.h"
 #include "ui/views/win/hwnd_util.h"
 #endif
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #include "chrome/browser/global_keyboard_shortcuts_mac.h"
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chrome/browser/ui/views/profiles/lacros_first_run_signed_in_flow_controller.h"
 #endif
 
 namespace {
@@ -92,28 +100,6 @@ constexpr int kSupportedAcceleratorCommands[] = {
 #endif
 };
 
-GURL CreateURLForEntryPoint(ProfilePicker::EntryPoint entry_point) {
-  GURL base_url = GURL(chrome::kChromeUIProfilePickerUrl);
-  switch (entry_point) {
-    case ProfilePicker::EntryPoint::kOnStartup: {
-      GURL::Replacements replacements;
-      replacements.SetQueryStr(chrome::kChromeUIProfilePickerStartupQuery);
-      return base_url.ReplaceComponents(replacements);
-    }
-    case ProfilePicker::EntryPoint::kProfileMenuManageProfiles:
-    case ProfilePicker::EntryPoint::kOpenNewWindowAfterProfileDeletion:
-    case ProfilePicker::EntryPoint::kNewSessionOnExistingProcess:
-    case ProfilePicker::EntryPoint::kProfileLocked:
-    case ProfilePicker::EntryPoint::kUnableToCreateBrowser:
-    case ProfilePicker::EntryPoint::kBackgroundModeManager:
-      return base_url;
-    case ProfilePicker::EntryPoint::kProfileMenuAddNewProfile:
-      return base_url.Resolve("new-profile");
-    case ProfilePicker::EntryPoint::kLacrosSelectAvailableAccount:
-      return base_url.Resolve("account-selection-lacros");
-  }
-}
-
 class ProfilePickerWidget : public views::Widget {
  public:
   explicit ProfilePickerWidget(ProfilePickerView* profile_picker_view)
@@ -126,9 +112,12 @@ class ProfilePickerWidget : public views::Widget {
 
   // views::Widget:
   const ui::ThemeProvider* GetThemeProvider() const override {
-    return profile_picker_view_->GetThemeProviderForProfileBeingCreated();
+    Profile* profile = profile_picker_view_->GetProfileBeingCreated();
+    if (profile)
+      return &ThemeService::GetThemeProviderForProfile(profile);
+    return nullptr;
   }
-  ui::ColorProviderManager::InitializerSupplier* GetCustomTheme()
+  ui::ColorProviderManager::ThemeInitializerSupplier* GetCustomTheme()
       const override {
     return profile_picker_view_->GetCustomThemeForProfileBeingCreated();
   }
@@ -140,30 +129,16 @@ class ProfilePickerWidget : public views::Widget {
 }  // namespace
 
 // static
-void ProfilePicker::Show(EntryPoint entry_point,
-                         const GURL& on_select_profile_target_url,
-                         const base::FilePath& custom_profile_path) {
+void ProfilePicker::Show(Params&& params) {
   // Re-open with new params if necessary.
-  if (g_profile_picker_view &&
-      g_profile_picker_view->ShouldReopen(
-          entry_point, on_select_profile_target_url, custom_profile_path)) {
+  if (g_profile_picker_view && g_profile_picker_view->MaybeReopen(params))
     return;
-  }
 
-  if (!g_profile_picker_view) {
-    // TODO(crbug.com/1226076): Enforce this on the level of API (putting
-    // `custom_profile_path` inside a struct that checks this).
-    DCHECK(custom_profile_path.empty() ||
-           entry_point == EntryPoint::kLacrosSelectAvailableAccount);
-    g_profile_picker_view = new ProfilePickerView(custom_profile_path);
-  }
-
-  g_profile_picker_view->set_on_select_profile_target_url(
-      on_select_profile_target_url);
-#if !BUILDFLAG(IS_CHROMEOS_LACROS)
-  DCHECK_NE(entry_point, EntryPoint::kLacrosSelectAvailableAccount);
-#endif
-  g_profile_picker_view->Display(entry_point);
+  if (g_profile_picker_view)
+    g_profile_picker_view->UpdateParams(std::move(params));
+  else
+    g_profile_picker_view = new ProfilePickerView(std::move(params));
+  g_profile_picker_view->Display();
 }
 
 // static
@@ -254,11 +229,20 @@ bool ProfilePicker::IsOpen() {
   return g_profile_picker_view;
 }
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+// static
+bool ProfilePicker::IsLacrosFirstRunOpen() {
+  return ProfilePicker::IsOpen() &&
+         g_profile_picker_view->params_.entry_point() ==
+             ProfilePicker::EntryPoint::kLacrosPrimaryProfileFirstRun;
+}
+#endif
+
 bool ProfilePicker::IsActive() {
   if (!IsOpen())
     return false;
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   return g_profile_picker_view->GetWidget()->IsVisible();
 #else
   return g_profile_picker_view->GetWidget()->IsActive();
@@ -375,17 +359,19 @@ void ProfilePickerView::NavigationFinishedObserver::DidFinishNavigation(
 
 // ProfilePickerView ----------------------------------------------------------
 
-const ui::ThemeProvider*
-ProfilePickerView::GetThemeProviderForProfileBeingCreated() const {
+// Returns the initialized profile or nullptr if the profile has not been
+// initialized yet or not in the dice flow.
+Profile* ProfilePickerView::GetProfileBeingCreated() const {
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   // Theme provider is only needed for the dice flow.
-  if (dice_sign_in_provider_)
-    return dice_sign_in_provider_->GetThemeProvider();
+  if (dice_sign_in_provider_ && dice_sign_in_provider_->IsInitialized()) {
+    return dice_sign_in_provider_->GetInitializedProfile();
+  }
 #endif
   return nullptr;
 }
 
-ui::ColorProviderManager::InitializerSupplier*
+ui::ColorProviderManager::ThemeInitializerSupplier*
 ProfilePickerView::GetCustomThemeForProfileBeingCreated() const {
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   // Custom theme is only needed for the dice flow.
@@ -395,9 +381,28 @@ ProfilePickerView::GetCustomThemeForProfileBeingCreated() const {
   return nullptr;
 }
 
+void ProfilePickerView::UpdateParams(ProfilePicker::Params&& params) {
+  DCHECK(params_.CanReusePickerWindow(params));
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // Cancel any flow that was in progress.
+  params_.NotifyAccountSelected(std::string());
+  params_.NotifyFirstRunExited(ProfilePicker::FirstRunExitStatus::kQuitEarly,
+                               base::OnceClosure());
+#endif
+
+  params_ = std::move(params);
+}
+
 void ProfilePickerView::DisplayErrorMessage() {
   dialog_host_.DisplayErrorMessage();
 }
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+void ProfilePickerView::NotifyAccountSelected(const std::string& gaia_id) {
+  params_.NotifyAccountSelected(gaia_id);
+}
+#endif
 
 void ProfilePickerView::ShowScreen(
     content::WebContents* contents,
@@ -431,6 +436,9 @@ void ProfilePickerView::ShowScreen(
                      base::Unretained(this), contents,
                      std::move(navigation_finished_closure)),
       contents);
+
+  if (!GetWidget()->IsVisible())
+    GetWidget()->Show();
 }
 
 void ProfilePickerView::ShowScreenInPickerContents(
@@ -440,6 +448,7 @@ void ProfilePickerView::ShowScreenInPickerContents(
 }
 
 void ProfilePickerView::Clear() {
+  TRACE_EVENT1("browser,startup", "ProfilePickerView::Clear", "state", state_);
   if (state_ == kClosing)
     return;
 
@@ -492,18 +501,26 @@ void ProfilePickerView::AddObserver(
 void ProfilePickerView::RemoveObserver(
     web_modal::ModalDialogHostObserver* observer) {}
 
-ProfilePickerView::ProfilePickerView(const base::FilePath& custom_profile_path)
+ProfilePickerView::ProfilePickerView(ProfilePicker::Params&& params)
     : keep_alive_(KeepAliveOrigin::USER_MANAGER_VIEW,
                   KeepAliveRestartOption::DISABLED),
-      extended_account_info_timeout_(kExtendedAccountInfoTimeout),
-      custom_profile_path_(custom_profile_path) {
+      params_(std::move(params)),
+      extended_account_info_timeout_(kExtendedAccountInfoTimeout) {
   // Setup the WidgetDelegate.
   SetHasWindowSizeControls(true);
   SetTitle(IDS_PRODUCT_NAME);
 
   ConfigureAccelerators();
 
-  // TODO(crbug.com/1063856): Add |RecordDialogCreation|.
+  // Record creation metrics.
+  base::UmaHistogramEnumeration("ProfilePicker.Shown", params_.entry_point());
+  if (params_.entry_point() == ProfilePicker::EntryPoint::kOnStartup) {
+    DCHECK(creation_time_on_startup_.is_null());
+    creation_time_on_startup_ = base::TimeTicks::Now();
+    base::UmaHistogramTimes("ProfilePicker.StartupTime.BeforeCreation",
+                            creation_time_on_startup_ -
+                                startup_metric_utils::MainEntryPointTicks());
+  }
 }
 
 ProfilePickerView::~ProfilePickerView() {
@@ -511,46 +528,31 @@ ProfilePickerView::~ProfilePickerView() {
     contents_->SetDelegate(nullptr);
 }
 
-bool ProfilePickerView::ShouldReopen(
-    ProfilePicker::EntryPoint entry_point,
-    const GURL& on_select_profile_target_url,
-    const base::FilePath& custom_profile_path) {
-  // Need to reopen if already closing or if `custom_profile_path` differs
-  // from the current one (as we can't switch the profile during run-time).
-  if (state_ != kClosing && custom_profile_path_ == custom_profile_path)
+bool ProfilePickerView::MaybeReopen(ProfilePicker::Params& params) {
+  // Re-open if already closing or if the picker cannot be reused with `params`.
+  if (state_ != kClosing && params.CanReusePickerWindow(params_))
     return false;
 
   restart_on_window_closing_ =
-      base::BindOnce(&ProfilePicker::Show, entry_point,
-                     on_select_profile_target_url, custom_profile_path);
+      base::BindOnce(&ProfilePicker::Show, std::move(params));
   // No-op if already closing.
   ProfilePicker::Hide();
   return true;
 }
 
-void ProfilePickerView::Display(ProfilePicker::EntryPoint entry_point) {
+void ProfilePickerView::Display() {
   DCHECK_NE(state_, kClosing);
-  // Record creation metrics.
-  base::UmaHistogramEnumeration("ProfilePicker.Shown", entry_point);
-  if (entry_point == ProfilePicker::EntryPoint::kOnStartup) {
-    DCHECK(creation_time_on_startup_.is_null());
-    // Display() is called right after the creation of this object.
-    creation_time_on_startup_ = base::TimeTicks::Now();
-    base::UmaHistogramTimes("ProfilePicker.StartupTime.BeforeCreation",
-                            creation_time_on_startup_ -
-                                startup_metric_utils::MainEntryPointTicks());
-  }
+  TRACE_EVENT2("browser,startup", "ProfilePickerView::Display", "entry_point",
+               params_.entry_point(), "state", state_);
 
   if (state_ == kNotStarted) {
     state_ = kInitializing;
-    entry_point_ = entry_point;
     // Build the layout synchronously before creating the picker profile to
     // simplify tests.
     BuildLayout();
 
     g_browser_process->profile_manager()->CreateProfileAsync(
-        custom_profile_path_.empty() ? ProfilePicker::GetPickerProfilePath()
-                                     : custom_profile_path_,
+        params_.profile_path(),
         base::BindRepeating(&ProfilePickerView::OnPickerProfileCreated,
                             weak_ptr_factory_.GetWeakPtr()));
     return;
@@ -564,6 +566,10 @@ void ProfilePickerView::Display(ProfilePicker::EntryPoint entry_point) {
 
 void ProfilePickerView::OnPickerProfileCreated(Profile* picker_profile,
                                                Profile::CreateStatus status) {
+  TRACE_EVENT2("browser,startup", "ProfilePickerView::OnPickerProfileCreated",
+               "profile_path",
+               (picker_profile ? picker_profile->GetPath().AsUTF8Unsafe() : ""),
+               "status", status);
   DCHECK_NE(status, Profile::CREATE_STATUS_LOCAL_FAIL);
   if (status != Profile::CREATE_STATUS_INITIALIZED)
     return;
@@ -573,14 +579,30 @@ void ProfilePickerView::OnPickerProfileCreated(Profile* picker_profile,
 
 void ProfilePickerView::Init(Profile* picker_profile) {
   DCHECK_EQ(state_, kInitializing);
+  TRACE_EVENT1(
+      "browser,startup", "ProfilePickerView::Init", "profile_path",
+      (picker_profile ? picker_profile->GetPath().AsUTF8Unsafe() : ""));
   contents_ = content::WebContents::Create(
       content::WebContents::CreateParams(picker_profile));
   contents_->SetDelegate(this);
 
+  // Destroy the System Profile when the ProfilePickerView is closed (assuming
+  // its refcount hits 0). We need to use GetOriginalProfile() here because
+  // |profile_picker| is an OTR Profile, and ScopedProfileKeepAlive only
+  // supports non-OTR Profiles. Trying to acquire a keepalive on the OTR Profile
+  // would trigger a DCHECK.
+  //
+  // TODO(crbug.com/1153922): Once OTR Profiles use refcounting, remove the call
+  // to GetOriginalProfile(). The OTR Profile will hold a keepalive on the
+  // regular Profile, so the ownership model will be more straightforward.
+  profile_keep_alive_ = std::make_unique<ScopedProfileKeepAlive>(
+      picker_profile->GetOriginalProfile(),
+      ProfileKeepAliveOrigin::kProfilePickerView);
+
   // The widget is owned by the native widget.
   new ProfilePickerWidget(this);
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // Set the app id for the user manager to the app id of its parent.
   ui::win::SetAppIdForWindow(
       shell_integration::win::GetAppUserModelIdForBrowser(
@@ -588,14 +610,32 @@ void ProfilePickerView::Init(Profile* picker_profile) {
       views::HWNDForWidget(GetWidget()));
 #endif
 
-  ShowScreenInPickerContents(CreateURLForEntryPoint(entry_point_));
-  GetWidget()->Show();
+  if (params_.entry_point() ==
+      ProfilePicker::EntryPoint::kLacrosPrimaryProfileFirstRun) {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    // TODO(crbug.com/1300109): Consider some refactoring to share this
+    // `WebContents` for usage in this class instead of a separate `contents_`.
+    std::unique_ptr<content::WebContents> contents_for_signed_in_flow =
+        content::WebContents::Create(
+            content::WebContents::CreateParams(picker_profile));
+
+    signed_in_flow_ = std::make_unique<LacrosFirstRunSignedInFlowController>(
+        this, picker_profile, std::move(contents_for_signed_in_flow),
+        base::BindOnce(&ProfilePicker::Params::NotifyFirstRunExited,
+                       base::Unretained(&params_)));
+    signed_in_flow_->Init();
+#else
+    NOTREACHED();
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+  } else {
+    ShowScreenInPickerContents(params_.GetInitialURL());
+  }
   state_ = kReady;
 
   PrefService* prefs = g_browser_process->local_state();
   prefs->SetBoolean(prefs::kBrowserProfilePickerShown, true);
 
-  if (entry_point_ == ProfilePicker::EntryPoint::kOnStartup) {
+  if (params_.entry_point() == ProfilePicker::EntryPoint::kOnStartup) {
     DCHECK(!creation_time_on_startup_.is_null());
     base::UmaHistogramTimes("ProfilePicker.StartupTime.WebViewCreated",
                             base::TimeTicks::Now() - creation_time_on_startup_);
@@ -665,9 +705,11 @@ void ProfilePickerView::OnDiceSigninFinished(
     Profile* signed_in_profile,
     std::unique_ptr<content::WebContents> contents,
     bool is_saml) {
-  dice_sign_in_provider_.reset();
   SwitchToSignedInFlow(profile_color, signed_in_profile, std::move(contents),
                        is_saml);
+  // Reset the provider after switching to signed-in flow to make sure there's
+  // always one ScopedProfileKeepAlive.
+  dice_sign_in_provider_.reset();
 }
 #endif
 
@@ -677,10 +719,10 @@ void ProfilePickerView::SwitchToSignedInFlow(
     std::unique_ptr<content::WebContents> contents,
     bool is_saml) {
   DCHECK(!signed_in_flow_);
-  signed_in_flow_ = std::make_unique<ProfilePickerSignedInFlowController>(
+  signed_in_flow_ = std::make_unique<ProfileCreationSignedInFlowController>(
       this, signed_in_profile, std::move(contents), profile_color,
-      extended_account_info_timeout_);
-  signed_in_flow_->Init(is_saml);
+      extended_account_info_timeout_, is_saml);
+  signed_in_flow_->Init();
 }
 
 void ProfilePickerView::CancelSignedInFlow() {
@@ -688,7 +730,7 @@ void ProfilePickerView::CancelSignedInFlow() {
 
   signed_in_flow_->Cancel();
 
-  switch (entry_point_) {
+  switch (params_.entry_point()) {
     case ProfilePicker::EntryPoint::kOnStartup:
     case ProfilePicker::EntryPoint::kProfileMenuManageProfiles:
     case ProfilePicker::EntryPoint::kOpenNewWindowAfterProfileDeletion:
@@ -710,11 +752,13 @@ void ProfilePickerView::CancelSignedInFlow() {
       return;
     }
     case ProfilePicker::EntryPoint::kLacrosSelectAvailableAccount:
+    case ProfilePicker::EntryPoint::kLacrosPrimaryProfileFirstRun:
       NOTREACHED() << "Signed in flow is not reachable from this entry point";
   }
 }
 
 void ProfilePickerView::WindowClosing() {
+  views::WidgetDelegateView::WindowClosing();
   // Now that the window is closed, we can allow a new one to be opened.
   // (WindowClosing comes in asynchronously from the call to Close() and we
   // may have already opened a new instance).
@@ -891,7 +935,7 @@ void ProfilePickerView::ConfigureAccelerators() {
     AddAccelerator(accelerator);
   }
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // Check Mac-specific accelerators. Note: Chrome does not support dynamic or
   // user-configured accelerators on Mac. Default static accelerators are used
   // instead.
@@ -904,7 +948,7 @@ void ProfilePickerView::ConfigureAccelerators() {
       AddAccelerator(accelerator);
     }
   }
-#endif  // OS_MAC
+#endif  // BUILDFLAG(IS_MAC)
 }
 
 void ProfilePickerView::ShowDialog(content::BrowserContext* browser_context,
@@ -923,8 +967,17 @@ base::FilePath ProfilePickerView::GetForceSigninProfilePath() const {
 }
 
 GURL ProfilePickerView::GetOnSelectProfileTargetUrl() const {
-  return on_select_profile_target_url_;
+  return params_.on_select_profile_target_url();
 }
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+// static
+void ProfilePicker::NotifyAccountSelected(const std::string& gaia_id) {
+  if (!g_profile_picker_view)
+    return;
+  g_profile_picker_view->NotifyAccountSelected(gaia_id);
+}
+#endif
 
 BEGIN_METADATA(ProfilePickerView, views::WidgetDelegateView)
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)

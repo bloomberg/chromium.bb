@@ -5,13 +5,19 @@
 #ifndef CC_PAINT_SKOTTIE_WRAPPER_H_
 #define CC_PAINT_SKOTTIE_WRAPPER_H_
 
+#include <string>
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/flat_set.h"
 #include "base/containers/span.h"
 #include "base/memory/ref_counted.h"
 #include "cc/paint/paint_export.h"
+#include "cc/paint/skottie_color_map.h"
+#include "cc/paint/skottie_marker.h"
 #include "cc/paint/skottie_resource_metadata.h"
+#include "cc/paint/skottie_text_property_value.h"
+#include "cc/paint/skottie_transform_property_value.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkSamplingOptions.h"
 
@@ -52,6 +58,23 @@ class CC_PAINT_EXPORT SkottieWrapper
   // does not change during SkottieWrapper's lifetime.
   virtual const SkottieResourceMetadataMap& GetImageAssetMetadata() const = 0;
 
+  // Returns the set of text nodes in the animation. There shall be an entry in
+  // GetCurrentTextPropertyValues() for each returned node. The returned set is
+  // immutable and does not change during SkottieWrapper's lifetime.
+  virtual const base::flat_set<std::string>& GetTextNodeNames() const = 0;
+
+  // Returns a map from hashed animation node name to its current property
+  // value in the animation (see SkottieProperty.h). Some properties' values
+  // can be updated via its corresponding argument in Draw().
+  virtual SkottieTextPropertyValueMap GetCurrentTextPropertyValues() const = 0;
+  virtual SkottieTransformPropertyValueMap GetCurrentTransformPropertyValues()
+      const = 0;
+  virtual SkottieColorMap GetCurrentColorPropertyValues() const = 0;
+
+  // Returns all markers present in the animation. The returned list is
+  // immutable and does not change during SkottieWrapper's lifetime.
+  virtual const std::vector<SkottieMarker>& GetAllMarkers() const = 0;
+
   // FrameDataCallback is implemented by the caller and invoked
   // synchronously during calls to Seek() and Draw(). The callback is used by
   // SkottieWrapper to fetch the corresponding image for each asset that is
@@ -65,9 +88,9 @@ class CC_PAINT_EXPORT SkottieWrapper
     // The callback's output parameters have not been filled and will be
     // ignored by SkottieWrapper. In this case, SkottieWrapper will reuse the
     // frame data that was most recently provided for the given asset (it caches
-    // this internally). If no frame data has ever been provided for this asset,
-    // a null image will be passed to Skottie's Animation during Seek(); this
-    // is acceptable if there's no rendering.
+    // this internally). Note it is acceptable to set |image_out| to a null
+    // SkImage; Skottie will simply skip the image asset while rendering the
+    // rest of the frame.
     NO_UPDATE,
   };
   // The callback's implementation must synchronously fill the output
@@ -89,13 +112,16 @@ class CC_PAINT_EXPORT SkottieWrapper
 
   // A thread safe call that will draw an image with bounds |rect| for the
   // frame at normalized time instant |t| onto the |canvas|.
+  //
+  // |text_map| may be an incremental update and only contain a subset of the
+  // text nodes in the animation. If a text node is absent from |text_map|, it
+  // will maintain the same contents as the previous call to Draw().
   virtual void Draw(SkCanvas* canvas,
                     float t,
                     const SkRect& rect,
-                    FrameDataCallback frame_data_cb) = 0;
-  // Variant with null FrameDataCallback() if the animation does not have image
-  // assets.
-  void Draw(SkCanvas* canvas, float t, const SkRect& rect);
+                    FrameDataCallback frame_data_cb,
+                    const SkottieColorMap& color_map,
+                    const SkottieTextPropertyValueMap& text_map) = 0;
 
   virtual float duration() const = 0;
   virtual SkSize size() const = 0;

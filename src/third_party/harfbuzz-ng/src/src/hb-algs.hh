@@ -36,6 +36,7 @@
 
 #include <algorithm>
 #include <initializer_list>
+#include <functional>
 #include <new>
 
 /*
@@ -58,7 +59,7 @@
 	  static inline constexpr T operator | (T l, T r) { return T ((unsigned) l | (unsigned) r); } \
 	  static inline constexpr T operator & (T l, T r) { return T ((unsigned) l & (unsigned) r); } \
 	  static inline constexpr T operator ^ (T l, T r) { return T ((unsigned) l ^ (unsigned) r); } \
-	  static inline constexpr T operator ~ (T r) { return T (~(unsigned int) r); } \
+	  static inline constexpr unsigned operator ~ (T r) { return (~(unsigned) r); } \
 	  static inline T& operator |= (T &l, T r) { l = l | r; return l; } \
 	  static inline T& operator &= (T& l, T r) { l = l & r; return l; } \
 	  static inline T& operator ^= (T& l, T r) { l = l ^ r; return l; } \
@@ -149,10 +150,26 @@ struct BEInt<Type, 4>
 			        uint8_t ((V >> 16) & 0xFF),
 			        uint8_t ((V >>  8) & 0xFF),
 			        uint8_t ((V      ) & 0xFF)} {}
-  constexpr operator Type () const { return (v[0] << 24)
-					  + (v[1] << 16)
-					  + (v[2] <<  8)
-					  + (v[3]      ); }
+
+  struct __attribute__((packed)) packed_uint32_t { uint32_t v; };
+  constexpr operator Type () const {
+#if ((defined(__GNUC__) && __GNUC__ >= 5) || defined(__clang__)) && \
+    defined(__BYTE_ORDER) && \
+    (__BYTE_ORDER == __LITTLE_ENDIAN || __BYTE_ORDER == __BIG_ENDIAN)
+    /* Spoon-feed the compiler a big-endian integer with alignment 1.
+     * https://github.com/harfbuzz/harfbuzz/pull/1398 */
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+    return __builtin_bswap32 (((packed_uint32_t *) this)->v);
+#else /* __BYTE_ORDER == __BIG_ENDIAN */
+    return ((packed_uint32_t *) this)->v;
+#endif
+#else
+    return (v[0] << 24)
+	 + (v[1] << 16)
+	 + (v[2] <<  8)
+	 + (v[3]      );
+#endif
+  }
   private: uint8_t v[4];
 };
 
@@ -210,12 +227,23 @@ struct
 }
 HB_FUNCOBJ (hb_bool);
 
+template <typename T>
+static inline
+constexpr T hb_coerce (const T v) { return v; }
+template <typename T, typename V,
+	  hb_enable_if (!hb_is_same (hb_decay<T>, hb_decay<V>) && std::is_pointer<V>::value)>
+static inline
+constexpr T hb_coerce (const V v) { return *v; }
+
 struct
 {
   private:
 
   template <typename T> constexpr auto
-  impl (const T& v, hb_priority<1>) const HB_RETURN (uint32_t, hb_deref (v).hash ())
+  impl (const T& v, hb_priority<2>) const HB_RETURN (uint32_t, hb_deref (v).hash ())
+
+  template <typename T> constexpr auto
+  impl (const T& v, hb_priority<1>) const HB_RETURN (uint32_t, std::hash<hb_decay<decltype (hb_deref (v))>>{} (hb_deref (v)))
 
   template <typename T,
 	    hb_enable_if (std::is_integral<T>::value)> constexpr auto
@@ -435,21 +463,27 @@ struct
   private:
 
   template <typename T1, typename T2> auto
-  impl (T1&& v1, T2 &&v2, hb_priority<2>) const HB_AUTO_RETURN
+  impl (T1&& v1, T2 &&v2, hb_priority<3>) const HB_AUTO_RETURN
   (
     std::forward<T2> (v2).cmp (std::forward<T1> (v1)) == 0
   )
 
   template <typename T1, typename T2> auto
-  impl (T1&& v1, T2 &&v2, hb_priority<1>) const HB_AUTO_RETURN
+  impl (T1&& v1, T2 &&v2, hb_priority<2>) const HB_AUTO_RETURN
   (
     std::forward<T1> (v1).cmp (std::forward<T2> (v2)) == 0
   )
 
   template <typename T1, typename T2> auto
-  impl (T1&& v1, T2 &&v2, hb_priority<0>) const HB_AUTO_RETURN
+  impl (T1&& v1, T2 &&v2, hb_priority<1>) const HB_AUTO_RETURN
   (
     std::forward<T1> (v1) == std::forward<T2> (v2)
+  )
+
+  template <typename T1, typename T2> auto
+  impl (T1&& v1, T2 &&v2, hb_priority<0>) const HB_AUTO_RETURN
+  (
+    std::forward<T2> (v2) == std::forward<T1> (v1)
   )
 
   public:
@@ -472,11 +506,15 @@ struct hb_pair_t
   typedef T2 second_t;
   typedef hb_pair_t<T1, T2> pair_t;
 
+  template <typename U1 = T1, typename U2 = T2,
+	    hb_enable_if (std::is_default_constructible<U1>::value &&
+			  std::is_default_constructible<U2>::value)>
+  hb_pair_t () : first (), second () {}
   hb_pair_t (T1 a, T2 b) : first (a), second (b) {}
 
   template <typename Q1, typename Q2,
 	    hb_enable_if (hb_is_convertible (T1, Q1) &&
-			  hb_is_convertible (T2, T2))>
+			  hb_is_convertible (T2, Q2))>
   operator hb_pair_t<Q1, Q2> () { return hb_pair_t<Q1, Q2> (first, second); }
 
   hb_pair_t<T1, T2> reverse () const
@@ -870,7 +908,7 @@ hb_bsearch_impl (unsigned *pos, /* Out */
 #pragma GCC diagnostic ignored "-Wcast-align"
     V* p = (V*) (((const char *) base) + (mid * stride));
 #pragma GCC diagnostic pop
-    int c = compar ((const void *) hb_addressof (key), (const void *) p, ds...);
+    int c = compar ((const void *) std::addressof (key), (const void *) p, ds...);
     if (c < 0)
       max = mid - 1;
     else if (c > 0)

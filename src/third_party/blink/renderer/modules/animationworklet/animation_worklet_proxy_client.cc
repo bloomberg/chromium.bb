@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
 #include "third_party/blink/renderer/platform/graphics/animation_worklet_mutator_dispatcher_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_copier_base.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 
 namespace blink {
@@ -188,7 +189,7 @@ AnimationWorkletProxyClient::SelectGlobalScopeAndUpdateAnimatorsIfNecessary() {
   if (--next_global_scope_switch_countdown_ < 0) {
     int last_global_scope_index = current_global_scope_index_;
     current_global_scope_index_ =
-        (++current_global_scope_index_ % global_scopes_.size());
+        (current_global_scope_index_ + 1) % global_scopes_.size();
     global_scopes_[last_global_scope_index]->MigrateAnimatorsTo(
         global_scopes_[current_global_scope_index_]);
     // Introduce an element of randomness in the switching interval to make

@@ -19,7 +19,7 @@ class InnerPointerToCodeCache {
  public:
   struct InnerPointerToCodeCacheEntry {
     Address inner_pointer;
-    Code code;
+    CodeLookupResult code;
     SafepointEntry safepoint_entry;
   };
 
@@ -219,6 +219,12 @@ inline InterpretedFrame::InterpretedFrame(StackFrameIteratorBase* iterator)
 inline BaselineFrame::BaselineFrame(StackFrameIteratorBase* iterator)
     : UnoptimizedFrame(iterator) {}
 
+inline MaglevFrame::MaglevFrame(StackFrameIteratorBase* iterator)
+    : OptimizedFrame(iterator) {}
+
+inline TurbofanFrame::TurbofanFrame(StackFrameIteratorBase* iterator)
+    : OptimizedFrame(iterator) {}
+
 inline BuiltinFrame::BuiltinFrame(StackFrameIteratorBase* iterator)
     : TypedFrameWithJSLinkage(iterator) {}
 
@@ -239,8 +245,7 @@ inline WasmToJsFrame::WasmToJsFrame(StackFrameIteratorBase* iterator)
 inline JsToWasmFrame::JsToWasmFrame(StackFrameIteratorBase* iterator)
     : StubFrame(iterator) {}
 
-inline ReturnPromiseOnSuspendFrame::ReturnPromiseOnSuspendFrame(
-    StackFrameIteratorBase* iterator)
+inline StackSwitchFrame::StackSwitchFrame(StackFrameIteratorBase* iterator)
     : ExitFrame(iterator) {}
 
 inline CWasmEntryFrame::CWasmEntryFrame(StackFrameIteratorBase* iterator)

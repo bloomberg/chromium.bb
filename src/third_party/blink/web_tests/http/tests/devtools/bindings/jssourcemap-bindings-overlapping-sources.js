@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+const GC = async () => {
+  await TestRunner.evaluateInPageAsync(`new Promise(resolve =>
+    GCController.asyncCollectAll(resolve))`);
+};
+
 (async function () {
   TestRunner.addResult(`Verify that JavaScript SourceMap handle different sourcemap with overlapping sources.`);
   await TestRunner.loadTestModule('bindings_test_runner');
@@ -32,19 +37,18 @@
 
   TestRunner.markStep('detachAnotherFrame1');
   await BindingsTestRunner.detachFrame('anotherFrame1', '_test_detach-anotherFrame1.js');
-  await TestRunner.evaluateInPageAnonymously('GCController.collectAll()');
+  await BindingsTestRunner.GC();
   snapshot = BindingsTestRunner.dumpWorkspace(snapshot);
 
   TestRunner.markStep('detachFrame2');
   await BindingsTestRunner.detachFrame('frame2', '_test_detachFrame2.js');
-  await TestRunner.evaluateInPageAnonymously('GCController.collectAll()');
+  await BindingsTestRunner.GC();
   snapshot = BindingsTestRunner.dumpWorkspace(snapshot);
 
   TestRunner.markStep('detachFrame1');
   await BindingsTestRunner.detachFrame('frame1', '_test_detachFrame1.js');
-  await TestRunner.evaluateInPageAnonymously('GCController.collectAll()');
+  await BindingsTestRunner.GC();
   snapshot = BindingsTestRunner.dumpWorkspace(snapshot);
-
 
   TestRunner.completeTest();
 })();

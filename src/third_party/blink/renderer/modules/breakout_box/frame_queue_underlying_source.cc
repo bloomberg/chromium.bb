@@ -108,11 +108,11 @@ ScriptPromise FrameQueueUnderlyingSource<NativeFrameType>::Start(
     if (!StartFrameDelivery()) {
       // There is only one way in which this can fail for now. Perhaps
       // implementations should return their own failure messages.
-      return ScriptPromise::RejectWithDOMException(
+      return ScriptPromise::Reject(
           script_state,
-          DOMException::Create("Invalid track",
-                               DOMException::GetErrorName(
-                                   DOMExceptionCode::kInvalidStateError)));
+          V8ThrowDOMException::CreateOrEmpty(
+              script_state->GetIsolate(), DOMExceptionCode::kInvalidStateError,
+              "Invalid track"));
     }
   }
 
@@ -131,7 +131,7 @@ ScriptPromise FrameQueueUnderlyingSource<NativeFrameType>::Cancel(
 template <typename NativeFrameType>
 bool FrameQueueUnderlyingSource<NativeFrameType>::HasPendingActivity() const {
   MutexLocker locker(mutex_);
-  return (num_pending_pulls_ > 0) && Controller();
+  return (num_pending_pulls_ > 0) && GetExecutionContext();
 }
 
 template <typename NativeFrameType>
@@ -154,7 +154,7 @@ void FrameQueueUnderlyingSource<NativeFrameType>::Close() {
     return;
 
   is_closed_ = true;
-  if (Controller()) {
+  if (GetExecutionContext()) {
     StopFrameDelivery();
     CloseController();
   }
@@ -278,6 +278,8 @@ void FrameQueueUnderlyingSource<NativeFrameType>::TransferSource(
 template <typename NativeFrameType>
 void FrameQueueUnderlyingSource<NativeFrameType>::CloseController() {
   DCHECK(realm_task_runner_->RunsTasksInCurrentSequence());
+  // This can be called during stream construction while Controller() is still
+  // false.
   if (Controller())
     Controller()->Close();
 }

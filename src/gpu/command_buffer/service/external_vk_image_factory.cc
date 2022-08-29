@@ -150,9 +150,10 @@ std::unique_ptr<SharedImageBacking> ExternalVkImageFactory::CreateSharedImage(
 
 bool ExternalVkImageFactory::CanImportGpuMemoryBuffer(
     gfx::GpuMemoryBufferType memory_buffer_type) {
+  auto* device_queue = context_state_->vk_context_provider()->GetDeviceQueue();
   return context_state_->vk_context_provider()
              ->GetVulkanImplementation()
-             ->CanImportGpuMemoryBuffer(memory_buffer_type) ||
+             ->CanImportGpuMemoryBuffer(device_queue, memory_buffer_type) ||
          memory_buffer_type == gfx::SHARED_MEMORY_BUFFER;
 }
 
@@ -177,7 +178,7 @@ bool ExternalVkImageFactory::IsSupported(uint32_t usage,
     return false;
   }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // Scanout on Android requires explicit fence synchronization which is only
   // supported by the interop factory.
   if (usage & SHARED_IMAGE_USAGE_SCANOUT) {

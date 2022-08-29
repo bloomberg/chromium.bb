@@ -4,8 +4,8 @@
 
 #include "ash/shelf/login_shelf_gesture_controller.h"
 
+#include "ash/controls/contextual_nudge.h"
 #include "ash/session/session_controller_impl.h"
-#include "ash/shelf/contextual_nudge.h"
 #include "ash/shelf/drag_handle.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
@@ -85,11 +85,11 @@ LoginShelfGestureController::LoginShelfGestureController(
     Shelf* shelf,
     DragHandle* drag_handle,
     const std::u16string& gesture_nudge,
-    const base::RepeatingClosure fling_handler,
+    base::RepeatingClosure fling_handler,
     base::OnceClosure exit_handler)
     : shelf_(shelf),
       drag_handle_(drag_handle),
-      fling_handler_(fling_handler),
+      fling_handler_(std::move(fling_handler)),
       exit_handler_(std::move(exit_handler)) {
   DCHECK(fling_handler_);
   DCHECK(exit_handler_);

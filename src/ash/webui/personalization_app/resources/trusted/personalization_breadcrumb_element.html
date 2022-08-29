@@ -1,4 +1,4 @@
-<style include="cr-icons common-style">
+<style include="cr-icons common-style cros-button-style">
   #container {
     align-items: center;
     box-sizing: border-box;
@@ -14,45 +14,86 @@
     --cr-icon-button-margin-end: 8px;
   }
 
-  #breadcrumbContainer {
-    color: var(--cros-text-color-secondary);
+  #selector {
     align-items: center;
     box-sizing: border-box;
+    color: var(--cros-text-color-secondary);
     display: flex;
     flex-flow: row nowrap;
     font: var(--cros-headline-1-font);
     height: 100%;
+    width: 100%;
   }
 
-  #breadcrumbContainer>* {
-    margin: 0;
-  }
-
-  #breadcrumbContainer>*+* {
-    margin-left: 8px;
+  #homeButton {
+    --cr-icon-button-fill-color: var(--cros-text-color-secondary);
+    --cr-icon-button-size: 36px;
+    margin-inline-end: 6px;
+    margin-inline-start: -10px;
   }
 
   .breadcrumb {
-    cursor: pointer;
+    --ink-color: rgba(var(--cros-ripple-color-rgb), 1);
+    --paper-ripple-opacity: var(--cros-ripple-opacity);
+    --text-color: var(--cros-text-color-secondary);
+    border: none;
+    min-width: 48px;
   }
 
-  iron-icon {
-    height: 20px;
-    width: 20px;
+  .breadcrumb:not(last-of-type) {
+    flex: 0 0 auto;
+  }
+
+  .breadcrumb:last-of-type {
+    --text-color: var(--cros-text-color-primary);
+    flex: 0 1 auto;
+  }
+
+  iron-icon[icon='cr:chevron-right'] {
+    flex: 0 0 auto;
+  }
+
+  .text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 </style>
-<div id="container">
-  <template is="dom-if" if="[[showBackButton_]]">
-    <cr-icon-button aria-label="[[getBackButtonAriaLabel_()]]" id="backButton"
-      class="icon-arrow-back" role="button" on-click="onBackClick_">
-    </cr-icon-button>
-  </template>
-  <div id="breadcrumbContainer">
-    <template is="dom-repeat" items="[[breadcrumbs_]]" as="breadcrumb">
-      <template is="dom-if" if="[[index]]">
-        <iron-icon icon="cr:chevron-right" aria-hidden$="true"></iron-icon>
+<nav id="container">
+    <iron-a11y-keys id="keys" keys="left right" on-keys-pressed="onKeysPress_">
+    </iron-a11y-keys>
+    <iron-selector id="selector" selectable=".selectable" selected="0"
+        selected-item="{{selectedBreadcrumb_}}">
+      <template is="dom-if" if="[[showBackButton_]]">
+        <cr-icon-button aria-label$="[[getBackButtonAriaLabel_()]]"
+            id="backButton"
+            class="icon-arrow-back selectable"
+            role="button"
+            on-click="onBackClick_">
+        </cr-icon-button>
       </template>
-      <p class="breadcrumb" on-click="onBreadcrumbClick_">[[breadcrumb]]</p>
-    </template>
-  </div>
-</div>
+      <template is="dom-if" if="[[showHomeButton_()]]">
+        <cr-icon-button id="homeButton"
+            class="selectable"
+            role="link"
+            aria-label$="[[getHomeButtonAriaLabel_()]]"
+            iron-icon="personalization:home"
+            on-click="onHomeIconClick_">
+        </cr-icon-button>
+        <iron-icon icon="cr:chevron-right" aria-hidden="true"></iron-icon>
+      </template>
+      <template is="dom-repeat" items="[[breadcrumbs_]]" as="breadcrumb">
+        <template is="dom-if" if="[[index]]">
+          <iron-icon icon="cr:chevron-right" aria-hidden="true"></iron-icon>
+        </template>
+        <cr-button class="breadcrumb selectable"
+            role="link"
+            aria-current$="[[getBreadcrumbAriaCurrent_(index, breadcrumbs_)]]"
+            tabindex="-1"
+            id="breadcrumb[[index]]"
+            on-click="onBreadcrumbClick_">
+          <div class="text" title$="[[breadcrumb]]">[[breadcrumb]]</div>
+        </cr-button>
+      </template>
+    </iron-selector>
+</nav>

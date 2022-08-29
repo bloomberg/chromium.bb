@@ -177,12 +177,6 @@ void DownloadsDOMHandler::SaveDangerousRequiringGesture(const std::string& id) {
     ShowDangerPrompt(file);
 }
 
-void DownloadsDOMHandler::AcceptIncognitoWarning(const std::string& id) {
-  download::DownloadItem* file = GetDownloadByStringId(id);
-  if (file)
-    file->AcceptIncognitoWarning();
-}
-
 void DownloadsDOMHandler::DiscardDangerous(const std::string& id) {
   CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_DISCARD_DANGEROUS);
   RemoveDownloadInArgs(id);
@@ -195,7 +189,8 @@ void DownloadsDOMHandler::RetryDownload(const std::string& id) {
   if (!file)
     return;
   content::WebContents* web_contents = GetWebUIWebContents();
-  content::RenderFrameHost* render_frame_host = web_contents->GetMainFrame();
+  content::RenderFrameHost* render_frame_host =
+      web_contents->GetPrimaryMainFrame();
   const GURL url = file->GetURL();
 
   net::NetworkTrafficAnnotationTag traffic_annotation =

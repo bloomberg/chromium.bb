@@ -61,7 +61,7 @@ ProtoTranslationTable::FtracePageHeaderSpec MakeFtracePageHeaderSpec(
 // matches the userspace bitness.
 ProtoTranslationTable::FtracePageHeaderSpec GuessFtracePageHeaderSpec() {
   ProtoTranslationTable::FtracePageHeaderSpec spec{};
-#if PERFETTO_BUILDFLAG(PERFETTO_OS_ANDROID) && __i386__
+#if PERFETTO_BUILDFLAG(PERFETTO_OS_ANDROID) && defined(__i386__)
   // local_t is arch-specific and models the largest size of an integer that is
   // still atomic across bus transactions, exceptions and IRQ. On android x86
   // this is always size 8
@@ -256,15 +256,20 @@ bool InferFtraceType(const std::string& type_and_name,
                      size_t size,
                      bool is_signed,
                      FtraceFieldType* out) {
-  // Fixed length strings: e.g. "char foo[16]" we don't care about the number
-  // since we get the size as it's own field. Somewhat awkwardly these fields
-  // are both fixed size and null terminated meaning that we can't just drop
-  // them directly into the protobuf (since if the string is shorter than 15
-  // characters we want only the bit up to the null terminator).
+  // Fixed length strings: e.g. "char foo[16]".
+  //
+  // We don't care about the number, since we get the size as it's own field and
+  // since it can be a string defined elsewhere in a kernel header file.
+  //
+  // Somewhat awkwardly these fields are both fixed size and null terminated
+  // meaning that we can't just drop them directly into the protobuf (since if
+  // the string is shorter than 15 characters we want only the bit up to the
+  // null terminator).
   //
   // In some rare cases (e.g. old kernel bugs) these strings might not be null
   // terminated (b/205763418).
-  if (Match(type_and_name.c_str(), R"(char [a-zA-Z_]+\[[0-9]+\])")) {
+  if (Match(type_and_name.c_str(),
+            R"(char [a-zA-Z_][a-zA-Z_0-9]*\[[a-zA-Z_0-9]+\])")) {
     *out = kFtraceFixedCString;
     return true;
   }

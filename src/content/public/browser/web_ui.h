@@ -76,18 +76,15 @@ class CONTENT_EXPORT WebUI {
   // Used by WebUIMessageHandlers. If the given message is already registered,
   // the call has no effect.
   using MessageCallback =
-      base::RepeatingCallback<void(base::Value::ConstListView)>;
+      base::RepeatingCallback<void(const base::Value::List&)>;
   virtual void RegisterMessageCallback(base::StringPiece message,
                                        MessageCallback callback) = 0;
 
-  // Always use RegisterMessageCallback() above in new code.
-  //
-  // TODO(crbug.com/1243386): Existing callers of
-  // RegisterDeprecatedMessageCallback() should be migrated to
-  // RegisterMessageCallback() if possible.
+  // TODO(crbug.com/1243386): Instances of RegisterDeprecatedMessageCallback()
+  // should be migrated to RegisterMessageCallback() above if possible.
   //
   // Used by WebUIMessageHandlers. If the given message is already registered,
-  // the call has no effect.
+  // the call has no effect. Use RegisterMessageCallback() above in new code.
   using DeprecatedMessageCallback =
       base::RepeatingCallback<void(const base::ListValue*)>;
   virtual void RegisterDeprecatedMessageCallback(
@@ -108,7 +105,7 @@ class CONTENT_EXPORT WebUI {
   // then later wants to undo that, or to route it to a different WebUI object.
   virtual void ProcessWebUIMessage(const GURL& source_url,
                                    const std::string& message,
-                                   const base::ListValue& args) = 0;
+                                   base::Value::List args) = 0;
 
   // Returns true if this WebUI can currently call JavaScript.
   virtual bool CanCallJavascript() = 0;
@@ -160,7 +157,7 @@ class CONTENT_EXPORT WebUI {
     static void Impl(base::RepeatingCallback<void(Args...)> callback,
                      base::StringPiece message,
                      const base::ListValue* list) {
-      base::span<const base::Value> args = list->GetList();
+      base::span<const base::Value> args = list->GetListDeprecated();
       CHECK_EQ(args.size(), sizeof...(Args)) << message;
       callback.Run(GetValue<Args>(args[Is])...);
     }
@@ -181,6 +178,18 @@ template <>
 inline const std::string& WebUI::GetValue<const std::string&>(
     const base::Value& value) {
   return value.GetString();
+}
+
+template <>
+inline const base::Value::Dict& WebUI::GetValue<const base::Value::Dict&>(
+    const base::Value& value) {
+  return value.GetDict();
+}
+
+template <>
+inline const base::Value::List& WebUI::GetValue<const base::Value::List&>(
+    const base::Value& value) {
+  return value.GetList();
 }
 
 }  // namespace content

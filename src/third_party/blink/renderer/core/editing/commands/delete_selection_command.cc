@@ -125,7 +125,7 @@ void DeleteSelectionCommand::InitializeStartEnd(Position& start,
   if (!options_.IsExpandForSpecialElements())
     return;
 
-  while (1) {
+  while (true) {
     start_special_container = nullptr;
     end_special_container = nullptr;
 
@@ -774,12 +774,14 @@ void DeleteSelectionCommand::HandleGeneralDelete(EditingState* editing_state) {
             text_node_to_trim, start_offset,
             downstream_end_.ComputeOffsetInContainerNode() - start_offset);
       } else {
+        RelocatablePosition relocatable_downstream_end(downstream_end_);
         RemoveChildrenInRange(start_node, start_offset,
                               downstream_end_.ComputeEditingOffset(),
                               editing_state);
         if (editing_state->IsAborted())
           return;
         ending_position_ = upstream_start_;
+        downstream_end_ = relocatable_downstream_end.GetPosition();
       }
       // We should update layout to associate |start_node| to layout object.
       GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
@@ -1110,7 +1112,9 @@ void DeleteSelectionCommand::CalculateTypingStyleAfterDelete() {
     typing_style_ = delete_into_blockquote_style_;
   delete_into_blockquote_style_ = nullptr;
 
-  typing_style_->PrepareToApplyAt(ending_position_);
+  // |editing_position_| can be null. See http://crbug.com/1299189
+  if (ending_position_.IsNotNull())
+    typing_style_->PrepareToApplyAt(ending_position_);
   if (typing_style_->IsEmpty())
     typing_style_ = nullptr;
   // This is where we've deleted all traces of a style but not a whole paragraph

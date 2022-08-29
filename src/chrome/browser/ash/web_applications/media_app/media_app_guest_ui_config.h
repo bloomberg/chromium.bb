@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_ASH_WEB_APPLICATIONS_MEDIA_APP_MEDIA_APP_GUEST_UI_CONFIG_H_
 
 #include "ash/webui/media_app_ui/media_app_guest_ui.h"
-#include "ui/webui/webui_config.h"
+#include "content/public/browser/webui_config.h"
 
 namespace content {
 class WebUIDataSource;
@@ -22,11 +22,12 @@ class ChromeMediaAppGuestUIDelegate : public ash::MediaAppGuestUIDelegate {
   ChromeMediaAppGuestUIDelegate(const ChromeMediaAppGuestUIDelegate&) = delete;
   ChromeMediaAppGuestUIDelegate& operator=(
       const ChromeMediaAppGuestUIDelegate&) = delete;
-  void PopulateLoadTimeData(content::WebUIDataSource* source) override;
+  void PopulateLoadTimeData(content::WebUI* web_ui,
+                            content::WebUIDataSource* source) override;
 };
 
 // A webui config for the chrome-untrusted:// part of media-app.
-class MediaAppGuestUIConfig : public ui::WebUIConfig {
+class MediaAppGuestUIConfig : public content::WebUIConfig {
  public:
   MediaAppGuestUIConfig();
   MediaAppGuestUIConfig(const MediaAppGuestUIConfig& other) = delete;

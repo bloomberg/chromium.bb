@@ -1,4 +1,4 @@
-#!/usr/bin/env vpython
+#!/usr/bin/env vpython3
 # Copyright (c) 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -52,6 +52,7 @@ import setup_color
 import split_cl
 import subcommand
 import subprocess2
+import swift_format
 import watchlists
 
 from third_party import six
@@ -638,7 +639,7 @@ def _FindYapfConfigFile(fpath, yapf_config_cache, top_dir=None):
     yapf_file = os.path.join(fpath, YAPF_CONFIG_FILENAME)
     if os.path.isfile(yapf_file):
       ret = yapf_file
-    elif fpath == top_dir or parent_dir == fpath:
+    elif fpath in (top_dir, parent_dir):
       # If we're at the top level directory, or if we're at root
       # there is no provided style.
       ret = None
@@ -804,6 +805,12 @@ class Settings(object):
       return False
     return None
 
+  def GetIsGerrit(self):
+    """Return True if gerrit.host is set."""
+    if self.is_gerrit is None:
+      self.is_gerrit = bool(self._GetConfig('gerrit.host', False))
+    return self.is_gerrit
+
   def GetGerritSkipEnsureAuthenticated(self):
     """Return True if EnsureAuthenticated should not be done for Gerrit
     uploads."""
@@ -881,10 +888,10 @@ def ParseIssueNumberArgument(arg):
 
   if arg.isdigit():
     return _ParsedIssueNumberArgument(issue=int(arg))
-  if not arg.startswith('http'):
-    return fail_result
 
   url = gclient_utils.UpgradeToHttps(arg)
+  if not url.startswith('http'):
+    return fail_result
   for gerrit_url, short_url in _KNOWN_GERRIT_TO_SHORT_URLS.items():
     if url.startswith(short_url):
       url = gerrit_url + url[len(short_url):]
@@ -893,6 +900,11 @@ def ParseIssueNumberArgument(arg):
   try:
     parsed_url = urllib.parse.urlparse(url)
   except ValueError:
+    return fail_result
+
+  # If "https://" was automatically added, fail if `arg` looks unlikely to be a
+  # URL.
+  if not arg.startswith('http') and '.' not in parsed_url.netloc:
     return fail_result
 
   # Gerrit's new UI is https://domain/c/project/+/<issue_number>[/[patchset]]
@@ -920,6 +932,9 @@ def ParseIssueNumberArgument(arg):
 def _create_description_from_log(args):
   """Pulls out the commit log to use as a base for the CL description."""
   log_args = []
+  if len(args) == 1 and args[0] == None:
+    # Handle the case where None is passed as the branch.
+    return ''
   if len(args) == 1 and not args[0].endswith('.'):
     log_args = [args[0] + '..']
   elif len(args) == 1 and args[0].endswith('...'):
@@ -1179,7 +1194,8 @@ class Changelist(object):
   def GetIssue(self):
     """Returns the issue number as a int or None if not set."""
     if self.issue is None and not self.lookedup_issue:
-      self.issue = self._GitGetBranchConfigValue(ISSUE_CONFIG_KEY)
+      if self.GetBranch():
+        self.issue = self._GitGetBranchConfigValue(ISSUE_CONFIG_KEY)
       if self.issue is not None:
         self.issue = int(self.issue)
       self.lookedup_issue = True
@@ -1218,7 +1234,8 @@ class Changelist(object):
   def GetPatchset(self):
     """Returns the patchset number as a int or None if not set."""
     if self.patchset is None and not self.lookedup_patchset:
-      self.patchset = self._GitGetBranchConfigValue(PATCHSET_CONFIG_KEY)
+      if self.GetBranch():
+        self.patchset = self._GitGetBranchConfigValue(PATCHSET_CONFIG_KEY)
       if self.patchset is not None:
         self.patchset = int(self.patchset)
       self.lookedup_patchset = True
@@ -1312,9 +1329,10 @@ class Changelist(object):
 
     remote, remote_branch = self.GetRemoteBranch()
     target_ref = GetTargetRef(remote, remote_branch, None)
-    args.extend(['--gerrit_url', self.GetCodereviewServer()])
-    args.extend(['--gerrit_project', self.GetGerritProject()])
-    args.extend(['--gerrit_branch', target_ref])
+    if settings.GetIsGerrit():
+      args.extend(['--gerrit_url', self.GetCodereviewServer()])
+      args.extend(['--gerrit_project', self.GetGerritProject()])
+      args.extend(['--gerrit_branch', target_ref])
 
     author = self.GetAuthor()
     issue = self.GetIssue()
@@ -1328,8 +1346,17 @@ class Changelist(object):
 
     return args
 
-  def RunHook(self, committing, may_prompt, verbose, parallel, upstream,
-              description, all_files, resultdb=False, realm=None):
+  def RunHook(self,
+              committing,
+              may_prompt,
+              verbose,
+              parallel,
+              upstream,
+              description,
+              all_files,
+              files=None,
+              resultdb=False,
+              realm=None):
     """Calls sys.exit() if the hook fails; returns a HookResults otherwise."""
     args = self._GetCommonPresubmitArgs(verbose, upstream)
     args.append('--commit' if committing else '--upload')
@@ -1339,6 +1366,11 @@ class Changelist(object):
       args.append('--parallel')
     if all_files:
       args.append('--all_files')
+    if files:
+      args.extend(files.split(';'))
+      args.append('--source_controlled_only')
+    if files or all_files:
+      args.append('--no_diffs')
 
     if resultdb and not realm:
       # TODO (crbug.com/1113463): store realm somewhere and look it up so
@@ -1347,10 +1379,14 @@ class Changelist(object):
             ' was not specified. To enable ResultDB, please run the command'
             ' again with the --realm argument to specify the LUCI realm.')
 
-    py2_results = self._RunPresubmit(args, resultdb, realm, description,
-                                     use_python3=False)
     py3_results = self._RunPresubmit(args, resultdb, realm, description,
                                      use_python3=True)
+    if py3_results.get('skipped_presubmits', 1) == 0:
+      print('No more presubmits to run - skipping Python 2 presubmits.')
+      return py3_results
+
+    py2_results = self._RunPresubmit(args, resultdb, realm, description,
+                                      use_python3=False)
     return self._MergePresubmitResults(py2_results, py3_results)
 
   def _RunPresubmit(self, args, resultdb, realm, description, use_python3):
@@ -1404,8 +1440,11 @@ class Changelist(object):
     with gclient_utils.temporary_file() as description_file:
       gclient_utils.FileWrite(description_file, description)
       args.extend(['--description_file', description_file])
-      p = subprocess2.Popen(['vpython', PRESUBMIT_SUPPORT] + args)
-      p.wait()
+      p_py2 = subprocess2.Popen(['vpython', PRESUBMIT_SUPPORT] + args)
+      p_py3 = subprocess2.Popen(['vpython3', PRESUBMIT_SUPPORT] + args +
+                                ['--use-python3'])
+      p_py2.wait()
+      p_py3.wait()
 
   def _GetDescriptionForUpload(self, options, git_diff_args, files):
     # Get description message for upload.
@@ -1715,28 +1754,37 @@ class Changelist(object):
       if not force:
         confirm_or_exit('If you know what you are doing', action='continue')
       return
-    else:
-      missing = (
-          ([] if gerrit_auth else [self._gerrit_host]) +
-          ([] if git_auth else [git_host]))
-      DieWithError('Credentials for the following hosts are required:\n'
-                   '  %s\n'
-                   'These are read from %s (or legacy %s)\n'
-                   '%s' % (
-                     '\n  '.join(missing),
-                     cookie_auth.get_gitcookies_path(),
-                     cookie_auth.get_netrc_path(),
-                     cookie_auth.get_new_password_message(git_host)))
+
+    missing = (
+        ([] if gerrit_auth else [self._gerrit_host]) +
+        ([] if git_auth else [git_host]))
+    DieWithError('Credentials for the following hosts are required:\n'
+                 '  %s\n'
+                 'These are read from %s (or legacy %s)\n'
+                 '%s' % (
+                   '\n  '.join(missing),
+                   cookie_auth.get_gitcookies_path(),
+                   cookie_auth.get_netrc_path(),
+                   cookie_auth.get_new_password_message(git_host)))
 
   def EnsureCanUploadPatchset(self, force):
     if not self.GetIssue():
       return
 
     status = self._GetChangeDetail()['status']
-    if status in ('MERGED', 'ABANDONED'):
-      DieWithError('Change %s has been %s, new uploads are not allowed' %
-                   (self.GetIssueURL(),
-                    'submitted' if status == 'MERGED' else 'abandoned'))
+    if status == 'ABANDONED':
+       DieWithError(
+           'Change %s has been abandoned, new uploads are not allowed' %
+           (self.GetIssueURL()))
+    if status == 'MERGED':
+      answer = gclient_utils.AskForData(
+          'Change %s has been submitted, new uploads are not allowed. '
+          'Would you like to start a new change (Y/n)?' % self.GetIssueURL()
+      ).lower()
+      if answer not in ('y', ''):
+        DieWithError('New uploads are not allowed.')
+      self.SetIssue()
+      return
 
     # TODO(vadimsh): For some reason the chunk of code below was skipped if
     # 'is_gce' is True. I'm just refactoring it to be 'skip if not cookies'.
@@ -1815,9 +1863,9 @@ class Changelist(object):
       if m.get('author', {}).get('_account_id') == owner:
         # Most recent message was by owner.
         return 'waiting'
-      else:
-        # Some reply from non-owner.
-        return 'reply'
+
+      # Some reply from non-owner.
+      return 'reply'
 
     # Somehow there are no messages even though there are reviewers.
     return 'unsent'
@@ -1840,9 +1888,9 @@ class Changelist(object):
 
     data = self._GetChangeDetail(['ALL_REVISIONS'])
     patchset = data['revisions'][data['current_revision']]['_number']
-    dry_run = set([int(m['_revision_number'])
-        for m in data.get('messages', [])
-        if m.get('tag', '').endswith('dry-run')])
+    dry_run = {int(m['_revision_number'])
+               for m in data.get('messages', [])
+               if m.get('tag', '').endswith('dry-run')}
 
     for revision_info in sorted(data.get('revisions', {}).values(),
         key=lambda c: c['_number'], reverse=True):
@@ -2284,6 +2332,17 @@ class Changelist(object):
             'git cl upload -o uploadvalidator~skip\n\n'
             'If git-cl is not working correctly, file a bug under the '
             'Infra>SDK component.')
+      if 'git push -o nokeycheck' in str(e.stdout):
+        raise GitPushError(
+            'Failed to create a change, very likely due to a private key being '
+            'detected. Please examine output above for the reason of the '
+            'failure.\n'
+            'If this is a false positive, you can try to bypass private key '
+            'detection by using push option '
+            '-o nokeycheck, e.g.:\n'
+            'git cl upload -o nokeycheck\n\n'
+            'If git-cl is not working correctly, file a bug under the '
+            'Infra>SDK component.')
 
       raise GitPushError(
           'Failed to create a change. Please examine output above for the '
@@ -2629,8 +2688,8 @@ class Changelist(object):
     if git_footers.get_footer_change_id(new_log_desc):
       print('git-cl: Added Change-Id to commit message.')
       return new_log_desc
-    else:
-      DieWithError('ERROR: Gerrit commit-msg hook not installed.')
+
+    DieWithError('ERROR: Gerrit commit-msg hook not installed.')
 
   def CannotTriggerTryJobReason(self):
     try:
@@ -2951,14 +3010,18 @@ def FindCodereviewSettingsFile(filename='codereview.settings'):
   cwd = os.getcwd()
   root = settings.GetRoot()
   if os.path.isfile(os.path.join(root, inherit_ok_file)):
-    root = '/'
+    root = None
   while True:
-    if filename in os.listdir(cwd):
-      if os.path.isfile(os.path.join(cwd, filename)):
-        return open(os.path.join(cwd, filename))
+    if os.path.isfile(os.path.join(cwd, filename)):
+      return open(os.path.join(cwd, filename))
     if cwd == root:
       break
-    cwd = os.path.dirname(cwd)
+    parent_dir = os.path.dirname(cwd)
+    if parent_dir == cwd:
+      # We hit the system root directory.
+      break
+    cwd = parent_dir
+  return None
 
 
 def LoadCodereviewSettingsFromFile(fileobj):
@@ -3336,10 +3399,10 @@ def CMDbaseurl(parser, args):
     print('Current base-url:')
     return RunGit(['config', 'branch.%s.base-url' % branch],
                   error_ok=False).strip()
-  else:
-    print('Setting base-url to %s' % args[0])
-    return RunGit(['config', 'branch.%s.base-url' % branch, args[0]],
-                  error_ok=False).strip()
+
+  print('Setting base-url to %s' % args[0])
+  return RunGit(['config', 'branch.%s.base-url' % branch, args[0]],
+                error_ok=False).strip()
 
 
 def color_for_status(status):
@@ -3600,13 +3663,15 @@ def CMDarchive(parser, args):
   if options.dry_run:
     print('\nNo changes were made (dry run).\n')
     return 0
-  elif any(branch == current_branch for branch, _ in proposal):
+
+  if any(branch == current_branch for branch, _ in proposal):
     print('You are currently on a branch \'%s\' which is associated with a '
           'closed codereview issue, so archive cannot proceed. Please '
           'checkout another branch and run this command again.' %
           current_branch)
     return 1
-  elif not options.force:
+
+  if not options.force:
     answer = gclient_utils.AskForData('\nProceed with deletion (Y/n)? ').lower()
     if answer not in ('y', ''):
       print('Aborted.')
@@ -4043,6 +4108,11 @@ def CMDpresubmit(parser, args):
                     help='Run checks even if tree is dirty')
   parser.add_option('--all', action='store_true',
                     help='Run checks against all files, not just modified ones')
+  parser.add_option('--files',
+                    nargs=1,
+                    help='Semicolon-separated list of files to be marked as '
+                    'modified when executing presubmit or post-upload hooks. '
+                    'fnmatch wildcards can also be used.')
   parser.add_option('--parallel', action='store_true',
                     help='Run all tests specified by input_api.RunTests in all '
                          'PRESUBMIT files in parallel.')
@@ -4068,16 +4138,22 @@ def CMDpresubmit(parser, args):
   else:
     description = _create_description_from_log([base_branch])
 
-  cl.RunHook(
-      committing=not options.upload,
-      may_prompt=False,
-      verbose=options.verbose,
-      parallel=options.parallel,
-      upstream=base_branch,
-      description=description,
-      all_files=options.all,
-      resultdb=options.resultdb,
-      realm=options.realm)
+  if not base_branch:
+    if not options.force:
+      print('use --force to check even when not on a branch.')
+      return 1
+    base_branch = 'HEAD'
+
+  cl.RunHook(committing=not options.upload,
+             may_prompt=False,
+             verbose=options.verbose,
+             parallel=options.parallel,
+             upstream=base_branch,
+             description=description,
+             all_files=options.all,
+             files=options.files,
+             resultdb=options.resultdb,
+             realm=options.realm)
   return 0
 
 
@@ -4143,7 +4219,9 @@ def GetTargetRef(remote, remote_branch, target_branch):
       if not match:
         # This is a branch path but not one we recognize; use as-is.
         remote_branch = target_branch
+  # pylint: disable=consider-using-get
   elif remote_branch in REFS_THAT_ALIAS_TO_OTHER_REFS:
+    # pylint: enable=consider-using-get
     # Handle the refs that need to land in different refs.
     remote_branch = REFS_THAT_ALIAS_TO_OTHER_REFS[remote_branch]
 
@@ -4560,8 +4638,10 @@ def GetTreeStatus(url=None):
     status = str(urllib.request.urlopen(url).read().lower())
     if status.find('closed') != -1 or status == '0':
       return 'closed'
-    elif status.find('open') != -1 or status == '1':
+
+    if status.find('open') != -1 or status == '1':
       return 'open'
+
     return 'unknown'
   return 'unset'
 
@@ -4607,7 +4687,8 @@ def CMDtry(parser, args):
             'available.'))
   group.add_option(
       '-B', '--bucket', default='',
-      help=('Buildbucket bucket to send the try requests.'))
+      help=('Buildbucket bucket to send the try requests. Format: '
+            '"luci.$LUCI_PROJECT.$LUCI_BUCKET". eg: "luci.chromium.try"'))
   group.add_option(
       '-r', '--revision',
       help='Revision to use for the tryjob; default: the revision will '
@@ -5052,7 +5133,7 @@ def _RunClangFormatDiff(opts, clang_diff_files, top_dir, upstream_commit):
     except clang_format.NotFoundError as e:
       DieWithError(e)
 
-    cmd = ['vpython', script, '-p0']
+    cmd = ['vpython3', script, '-p0']
     if not opts.dry_run and not opts.diff:
       cmd.append('-i')
 
@@ -5097,8 +5178,35 @@ def _RunRustFmt(opts, rust_diff_files, top_dir, upstream_commit):
 
   if opts.presubmit and rustfmt_exitcode != 0:
     return 2
-  else:
+
+  return 0
+
+
+def _RunSwiftFormat(opts, swift_diff_files, top_dir, upstream_commit):
+  """Runs swift-format.  Just like _RunClangFormatDiff returns 2 to indicate
+  that presubmit checks have failed (and returns 0 otherwise)."""
+
+  if not swift_diff_files:
     return 0
+
+  # Locate the swift-format binary.
+  try:
+    swift_format_tool = swift_format.FindSwiftFormatToolInChromiumTree()
+  except swift_format.NotFoundError as e:
+    DieWithError(e)
+
+  cmd = [swift_format_tool]
+  if opts.dry_run:
+    cmd += ['lint', '-s']
+  else:
+    cmd += ['format', '-i']
+  cmd += swift_diff_files
+  swift_format_exitcode = subprocess2.call(cmd)
+
+  if opts.presubmit and swift_format_exitcode != 0:
+    return 2
+
+  return 0
 
 
 def MatchingFileType(file_name, extensions):
@@ -5113,6 +5221,7 @@ def CMDformat(parser, args):
   CLANG_EXTS = ['.cc', '.cpp', '.h', '.m', '.mm', '.proto', '.java']
   GN_EXTS = ['.gn', '.gni', '.typemap']
   RUST_EXTS = ['.rs']
+  SWIFT_EXTS = ['.swift']
   parser.add_option('--full', action='store_true',
                     help='Reformat the full content of all touched files')
   parser.add_option('--upstream', help='Branch to check against')
@@ -5157,6 +5266,19 @@ def CMDformat(parser, args):
       dest='use_rust_fmt',
       action='store_false',
       help='Disables formatting of Rust file types using rustfmt.')
+
+  parser.add_option(
+      '--swift-format',
+      dest='use_swift_format',
+      action='store_true',
+      default=swift_format.IsSwiftFormatSupported(),
+      help='Enables formatting of Swift file types using swift-format '
+      '(macOS host only).')
+  parser.add_option(
+      '--no-swift-format',
+      dest='use_swift_format',
+      action='store_false',
+      help='Disables formatting of Swift file types using swift-format.')
 
   opts, args = parser.parse_args(args)
 
@@ -5208,6 +5330,7 @@ def CMDformat(parser, args):
     ]
   python_diff_files = [x for x in diff_files if MatchingFileType(x, ['.py'])]
   rust_diff_files = [x for x in diff_files if MatchingFileType(x, RUST_EXTS)]
+  swift_diff_files = [x for x in diff_files if MatchingFileType(x, SWIFT_EXTS)]
   gn_diff_files = [x for x in diff_files if MatchingFileType(x, GN_EXTS)]
 
   top_dir = settings.GetRoot()
@@ -5219,6 +5342,14 @@ def CMDformat(parser, args):
     rust_fmt_return_value = _RunRustFmt(opts, rust_diff_files, top_dir,
                                         upstream_commit)
     if rust_fmt_return_value == 2:
+      return_value = 2
+
+  if opts.use_swift_format:
+    if sys.platform != 'darwin':
+      DieWithError('swift-format is only supported on macOS.')
+    swift_format_return_value = _RunSwiftFormat(opts, swift_diff_files, top_dir,
+                                                upstream_commit)
+    if swift_format_return_value == 2:
       return_value = 2
 
   # Similar code to above, but using yapf on .py files rather than clang-format
@@ -5444,6 +5575,11 @@ def CMDlol(parser, args):
       'JAnN+lAXsOMJ90GANAi43mq5/VeeacylKVgi8o6F1SC63FxnagHfJUTfUYdCR/W'
       'Ofe+0dHL7PicpytKP750Fh1q2qnLVof4w8OZWNY')).decode('utf-8'))
   return 0
+
+
+def CMDversion(parser, args):
+  import utils
+  print(utils.depot_tools_version())
 
 
 class OptionParser(optparse.OptionParser):

@@ -55,6 +55,13 @@ void FakeBluetoothDelegate::ShowDeviceCredentialsPrompt(
   std::move(callback).Run(DeviceCredentialsPromptResult::kCancelled, u"");
 }
 
+void FakeBluetoothDelegate::ShowDevicePairConfirmPrompt(
+    RenderFrameHost* frame,
+    const std::u16string& device_identifier,
+    PairConfirmCallback callback) {
+  std::move(callback).Run(DevicePairConfirmPromptResult::kCancelled);
+}
+
 WebBluetoothDeviceId FakeBluetoothDelegate::GetWebBluetoothDeviceId(
     RenderFrameHost* frame,
     const std::string& device_address) {
@@ -98,6 +105,17 @@ bool FakeBluetoothDelegate::HasDevicePermission(
     RenderFrameHost* frame,
     const WebBluetoothDeviceId& device_id) {
   return base::Contains(device_id_to_services_map_, device_id);
+}
+
+void FakeBluetoothDelegate::RevokeDevicePermissionWebInitiated(
+    RenderFrameHost* frame,
+    const WebBluetoothDeviceId& device_id) {
+  device_id_to_services_map_.erase(device_id);
+  device_id_to_name_map_.erase(device_id);
+  device_id_to_manufacturer_code_map_.erase(device_id);
+  auto& device_address_to_id_map = GetAddressToIdMapForOrigin(frame);
+  base::EraseIf(device_address_to_id_map,
+                [device_id](auto& entry) { return entry.second == device_id; });
 }
 
 bool FakeBluetoothDelegate::IsAllowedToAccessService(

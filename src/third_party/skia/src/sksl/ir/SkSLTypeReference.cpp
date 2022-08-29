@@ -7,26 +7,26 @@
 
 #include "src/sksl/ir/SkSLTypeReference.h"
 
+#include "include/core/SkTypes.h"
 #include "include/sksl/SkSLErrorReporter.h"
-#include "src/sksl/SkSLProgramSettings.h"
 
 namespace SkSL {
 
 std::unique_ptr<TypeReference> TypeReference::Convert(const Context& context,
-                                                      int line,
+                                                      Position pos,
                                                       const Type* type) {
     if (!type->isAllowedInES2(context)) {
-        context.fErrors->error(line, "type '" + type->displayName() + "' is not supported");
+        context.fErrors->error(pos, "type '" + type->displayName() + "' is not supported");
         return nullptr;
     }
-    return TypeReference::Make(context, line, type);
+    return TypeReference::Make(context, pos, type);
 }
 
 std::unique_ptr<TypeReference> TypeReference::Make(const Context& context,
-                                                   int line,
+                                                   Position pos,
                                                    const Type* type) {
     SkASSERT(type->isAllowedInES2(context));
-    return std::make_unique<TypeReference>(context, line, type);
+    return std::make_unique<TypeReference>(context, pos, type);
 }
 
 } // namespace SkSL

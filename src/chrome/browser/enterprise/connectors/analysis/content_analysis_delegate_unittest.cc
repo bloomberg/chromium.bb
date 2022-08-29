@@ -14,6 +14,7 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -96,6 +97,17 @@ std::string large_text() {
 
 std::string small_text() {
   return "random small text";
+}
+
+base::ReadOnlySharedMemoryRegion create_page(size_t size) {
+  base::MappedReadOnlyRegion page =
+      base::ReadOnlySharedMemoryRegion::Create(size);
+  memset(page.mapping.memory(), 'a', size);
+  return std::move(page.region);
+}
+
+base::ReadOnlySharedMemoryRegion normal_page() {
+  return create_page(1024);
 }
 
 class ScopedSetDMToken {
@@ -586,15 +598,11 @@ class ContentAnalysisDelegateAuditOnlyTest : public BaseTest {
     failures_.insert({std::move(path), std::move(response)});
   }
 
-  void SetPathIsEncrypted(base::FilePath path) {
-    encrypted_.insert(std::move(path));
-  }
-
   void SetScanPolicies(bool dlp, bool malware) {
     include_dlp_ = dlp;
     include_malware_ = malware;
 
-    for (auto connector : {FILE_ATTACHED, BULK_DATA_ENTRY}) {
+    for (auto connector : {FILE_ATTACHED, BULK_DATA_ENTRY, PRINT}) {
       if (include_dlp_ && include_malware_) {
         safe_browsing::SetAnalysisConnector(profile_->GetPrefs(), connector,
                                             kBlockingScansForDlpAndMalware);
@@ -619,14 +627,13 @@ class ContentAnalysisDelegateAuditOnlyTest : public BaseTest {
                                         kBlockingScansForDlpAndMalware);
     safe_browsing::SetAnalysisConnector(profile_->GetPrefs(), BULK_DATA_ENTRY,
                                         kBlockingScansForDlpAndMalware);
+    safe_browsing::SetAnalysisConnector(profile_->GetPrefs(), PRINT,
+                                        kBlockingScansForDlpAndMalware);
 
     ContentAnalysisDelegate::SetFactoryForTesting(base::BindRepeating(
         &FakeContentAnalysisDelegate::Create, run_loop_.QuitClosure(),
         base::BindRepeating(
             &ContentAnalysisDelegateAuditOnlyTest::ConnectorStatusCallback,
-            base::Unretained(this)),
-        base::BindRepeating(
-            &ContentAnalysisDelegateAuditOnlyTest::EncryptionStatusCallback,
             base::Unretained(this)),
         kDmToken));
   }
@@ -653,10 +660,6 @@ class ContentAnalysisDelegateAuditOnlyTest : public BaseTest {
     return response;
   }
 
-  bool EncryptionStatusCallback(const base::FilePath& path) {
-    return encrypted_.count(path) > 0;
-  }
-
  private:
   ScopedSetDMToken scoped_dm_token_{
       policy::DMToken::CreateValidTokenForTesting(kDmToken)};
@@ -666,10 +669,6 @@ class ContentAnalysisDelegateAuditOnlyTest : public BaseTest {
   // Paths in this map will be consider to have failed deep scan checks.
   // The actual failure response is given for each path.
   std::map<base::FilePath, ContentAnalysisResponse> failures_;
-
-  // Paths in this set will be considered to contain encryption and will
-  // not be uploaded.
-  std::set<base::FilePath> encrypted_;
 
   // DLP response to ovewrite in the callback if present.
   absl::optional<ContentAnalysisResponse> dlp_response_ = absl::nullopt;
@@ -782,6 +781,69 @@ TEST_F(ContentAnalysisDelegateAuditOnlyTest, StringData3) {
   RunUntilDone();
   EXPECT_TRUE(called);
 }
+
+TEST_F(ContentAnalysisDelegateAuditOnlyTest, PagePrintAllowed) {
+  GURL url(kTestUrl);
+  ContentAnalysisDelegate::Data data;
+  ASSERT_TRUE(ContentAnalysisDelegate::IsEnabled(profile(), url, &data, PRINT));
+
+  data.page = normal_page();
+  ASSERT_TRUE(data.page.IsValid());
+
+  bool called = false;
+  ContentAnalysisDelegate::CreateForWebContents(
+      contents(), std::move(data),
+      base::BindOnce(
+          [](bool* called, const ContentAnalysisDelegate::Data& data,
+             const ContentAnalysisDelegate::Result& result) {
+            EXPECT_EQ(0u, data.text.size());
+            EXPECT_EQ(0u, data.paths.size());
+            // The page data should no longer be valid since it's moved
+            // to be uploaded in a request.
+            EXPECT_FALSE(data.page.IsValid());
+            ASSERT_EQ(0u, result.text_results.size());
+            EXPECT_EQ(0u, result.paths_results.size());
+            EXPECT_TRUE(result.page_result);
+            *called = true;
+          },
+          &called),
+      safe_browsing::DeepScanAccessPoint::PRINT);
+  RunUntilDone();
+  EXPECT_TRUE(called);
+}
+
+TEST_F(ContentAnalysisDelegateAuditOnlyTest, PagePrintBlocked) {
+  GURL url(kTestUrl);
+  ContentAnalysisDelegate::Data data;
+  ASSERT_TRUE(ContentAnalysisDelegate::IsEnabled(profile(), url, &data, PRINT));
+
+  data.page = normal_page();
+  ASSERT_TRUE(data.page.IsValid());
+  SetDLPResponse(FakeContentAnalysisDelegate::DlpResponse(
+      ContentAnalysisResponse::Result::SUCCESS, "rule", TriggeredRule::BLOCK));
+
+  bool called = false;
+  ContentAnalysisDelegate::CreateForWebContents(
+      contents(), std::move(data),
+      base::BindOnce(
+          [](bool* called, const ContentAnalysisDelegate::Data& data,
+             const ContentAnalysisDelegate::Result& result) {
+            EXPECT_EQ(0u, data.text.size());
+            EXPECT_EQ(0u, data.paths.size());
+            // The page data should no longer be valid since it's moved
+            // to be uploaded in a request.
+            EXPECT_FALSE(data.page.IsValid());
+            ASSERT_EQ(0u, result.text_results.size());
+            EXPECT_EQ(0u, result.paths_results.size());
+            EXPECT_FALSE(result.page_result);
+            *called = true;
+          },
+          &called),
+      safe_browsing::DeepScanAccessPoint::PRINT);
+  RunUntilDone();
+  EXPECT_TRUE(called);
+}
+
 TEST_F(ContentAnalysisDelegateAuditOnlyTest,
        FileDataPositiveMalwareAndDlpVerdicts) {
   GURL url(kTestUrl);
@@ -908,14 +970,7 @@ TEST_F(ContentAnalysisDelegateAuditOnlyTest, FileIsEncrypted) {
   EXPECT_TRUE(called);
 }
 
-// Flaky on Mac: https://crbug.com/1143782:
-#if defined(OS_MAC)
-#define MAYBE_FileIsEncrypted_PolicyAllows DISABLED_FileIsEncrypted_PolicyAllows
-#else
-#define MAYBE_FileIsEncrypted_PolicyAllows FileIsEncrypted_PolicyAllows
-#endif
-TEST_F(ContentAnalysisDelegateAuditOnlyTest,
-       MAYBE_FileIsEncrypted_PolicyAllows) {
+TEST_F(ContentAnalysisDelegateAuditOnlyTest, FileIsEncrypted_PolicyAllows) {
   content::InProcessUtilityThreadHelper in_process_utility_thread_helper;
 
   safe_browsing::SetAnalysisConnector(profile_->GetPrefs(), FILE_ATTACHED, R"(
@@ -1323,7 +1378,19 @@ TEST_F(ContentAnalysisDelegateAuditOnlyTest, SupportedTypes) {
 
   std::vector<base::FilePath::StringType> file_names;
   for (const base::FilePath::StringType& supported_type :
-       safe_browsing::SupportedDlpFileTypes()) {
+       {FILE_PATH_LITERAL(".7z"),   FILE_PATH_LITERAL(".bz2"),
+        FILE_PATH_LITERAL(".bzip"), FILE_PATH_LITERAL(".cab"),
+        FILE_PATH_LITERAL(".csv"),  FILE_PATH_LITERAL(".doc"),
+        FILE_PATH_LITERAL(".docx"), FILE_PATH_LITERAL(".eps"),
+        FILE_PATH_LITERAL(".gz"),   FILE_PATH_LITERAL(".gzip"),
+        FILE_PATH_LITERAL(".htm"),  FILE_PATH_LITERAL(".html"),
+        FILE_PATH_LITERAL(".odt"),  FILE_PATH_LITERAL(".pdf"),
+        FILE_PATH_LITERAL(".ppt"),  FILE_PATH_LITERAL(".pptx"),
+        FILE_PATH_LITERAL(".ps"),   FILE_PATH_LITERAL(".rar"),
+        FILE_PATH_LITERAL(".rtf"),  FILE_PATH_LITERAL(".tar"),
+        FILE_PATH_LITERAL(".txt"),  FILE_PATH_LITERAL(".wpd"),
+        FILE_PATH_LITERAL(".xls"),  FILE_PATH_LITERAL(".xlsx"),
+        FILE_PATH_LITERAL(".xps"),  FILE_PATH_LITERAL(".zip")}) {
     file_names.push_back(base::FilePath::StringType(FILE_PATH_LITERAL("foo")) +
                          supported_type);
   }
@@ -1552,8 +1619,6 @@ class ContentAnalysisDelegateResultHandlingTest
         base::BindRepeating(
             &ContentAnalysisDelegateResultHandlingTest::ConnectorStatusCallback,
             base::Unretained(this)),
-        /*encryption_callback=*/
-        base::BindRepeating([](const base::FilePath& path) { return false; }),
         kDmToken));
   }
 

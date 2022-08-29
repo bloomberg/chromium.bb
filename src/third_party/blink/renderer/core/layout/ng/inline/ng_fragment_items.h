@@ -19,7 +19,9 @@ class NGFragmentItemsBuilder;
 //
 // During the layout phase, descendants of the inline formatting context is
 // transformed to a flat list of |NGFragmentItem| and stored in this class.
-class CORE_EXPORT NGFragmentItems {
+class CORE_EXPORT NGFragmentItems final {
+  DISALLOW_NEW();
+
  public:
   NGFragmentItems(const NGFragmentItems& other);
   explicit NGFragmentItems(NGFragmentItemsBuilder* builder);
@@ -65,7 +67,7 @@ class CORE_EXPORT NGFragmentItems {
   // Associate |NGFragmentItem|s with |LayoutObject|s and finalize the items
   // (set which ones are the first / last for the LayoutObject).
   static void FinalizeAfterLayout(
-      const Vector<scoped_refptr<const NGLayoutResult>, 1>& results);
+      const HeapVector<Member<const NGLayoutResult>, 1>& results);
 
   // Disassociate |NGFragmentItem|s with |LayoutObject|s. And more.
   static void ClearAssociatedFragments(LayoutObject* container);
@@ -94,15 +96,25 @@ class CORE_EXPORT NGFragmentItems {
   // Mark items dirty from |LayoutObject::NeedsLayout| flags.
   static void DirtyLinesFromNeedsLayout(const LayoutBlockFlow& block_flow);
 
+  // Search for |old_fragment| among the fragment items inside
+  // |containing_fragment|, and replace it with |new_fragment| if found. Return
+  // true if found and replaced, otherwise false.
+  static bool ReplaceBoxFragment(
+      const NGPhysicalBoxFragment& old_fragment,
+      const NGPhysicalBoxFragment& new_fragment,
+      const NGPhysicalBoxFragment& containing_fragment);
+
   // The byte size of this instance.
   constexpr static wtf_size_t ByteSizeFor(wtf_size_t count) {
-    return sizeof(NGFragmentItems) + count * sizeof(items_[0]);
+    return sizeof(NGFragmentItems) + count * sizeof(NGFragmentItem);
   }
   wtf_size_t ByteSize() const { return ByteSizeFor(Size()); }
 
 #if DCHECK_IS_ON()
   void CheckAllItemsAreValid() const;
 #endif
+
+  void Trace(Visitor*) const;
 
  private:
   const NGFragmentItem* ItemsData() const { return items_; }
@@ -117,19 +129,14 @@ class CORE_EXPORT NGFragmentItems {
   String text_content_;
   String first_line_text_content_;
 
-  wtf_size_t size_;
+  // Note: To make |Trace()| handles flexible array |items_| correctly, |size_|
+  // must be an immutable.
+  const wtf_size_t size_;
 
   // Total size of |NGFragmentItem| in earlier fragments when block fragmented.
   // 0 for the first |NGFragmentItems|.
   mutable wtf_size_t size_of_earlier_fragments_;
 
-  // Semantically, |items_| is a flexible array of |scoped_refptr<const
-  // NGFragmentItem>|, but |scoped_refptr| has non-trivial destruction which
-  // causes an error in clang. Declare as a flexible array of |NGFragmentItem*|
-  // instead. Please see |ItemsData()|.
-  static_assert(
-      sizeof(NGFragmentItem*) == sizeof(scoped_refptr<const NGFragmentItem>),
-      "scoped_refptr must be the size of a pointer for |ItemsData()| to work");
   NGFragmentItem items_[0];
 };
 

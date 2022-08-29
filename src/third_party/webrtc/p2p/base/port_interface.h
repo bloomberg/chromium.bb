@@ -49,7 +49,7 @@ class PortInterface {
   virtual ~PortInterface();
 
   virtual const std::string& Type() const = 0;
-  virtual rtc::Network* Network() const = 0;
+  virtual const rtc::Network* Network() const = 0;
 
   // Methods to set/get ICE role and tiebreaker values.
   virtual void SetIceRole(IceRole role) = 0;
@@ -107,7 +107,7 @@ class PortInterface {
 
   // Sends a response message (normal or error) to the given request.  One of
   // these methods should be called as a response to SignalUnknownAddress.
-  virtual void SendBindingErrorResponse(StunMessage* request,
+  virtual void SendBindingErrorResponse(StunMessage* message,
                                         const rtc::SocketAddress& addr,
                                         int error_code,
                                         const std::string& reason) = 0;

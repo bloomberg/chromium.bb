@@ -23,6 +23,7 @@
 
 namespace media {
 class AudioBus;
+struct AudioProcessingSettings;
 }  // namespace media
 
 namespace blink {
@@ -56,20 +57,13 @@ class MODULES_EXPORT MediaStreamAudioProcessor
   // thread.
   MediaStreamAudioProcessor(
       DeliverProcessedAudioCallback deliver_processed_audio_callback,
-      const AudioProcessingProperties& properties,
-      bool use_capture_multi_channel_processing,
+      const media::AudioProcessingSettings& settings,
+      const media::AudioParameters& capture_data_source_params,
       scoped_refptr<WebRtcAudioDeviceImpl> playout_data_source);
 
   MediaStreamAudioProcessor(const MediaStreamAudioProcessor&) = delete;
   MediaStreamAudioProcessor& operator=(const MediaStreamAudioProcessor&) =
       delete;
-
-  // Called when the format of the capture data has changed.
-  // Called on the main render thread. The caller is responsible for stopping
-  // the capture thread before calling this method.
-  // After this method, the capture thread will be changed to a new capture
-  // thread.
-  void OnCaptureFormatChanged(const media::AudioParameters& source_params);
 
   // Processes and delivers capture audio,
   // See media::AudioProcessor::ProcessCapturedAudio for API details.
@@ -86,19 +80,15 @@ class MODULES_EXPORT MediaStreamAudioProcessor
   void Stop();
 
   // The format of the processed capture output audio from the processor.
-  // Is constant between calls to OnCaptureFormatChanged().
-  // Must only be called on the main render thread.
-  const media::AudioParameters& OutputFormat() const;
+  // Is constant throughout MediaStreamAudioProcessor lifetime.
+  const media::AudioParameters& output_format() const {
+    return audio_processor_->output_format();
+  }
 
   // Accessor to check if WebRTC audio processing is enabled or not.
   bool has_webrtc_audio_processing() const {
-    return audio_processor_.has_webrtc_audio_processing();
+    return audio_processor_->has_webrtc_audio_processing();
   }
-
-  // Instructs the Audio Processing Module (APM) to reduce its complexity when
-  // |muted| is true. This mode is triggered when all audio tracks are disabled.
-  // The default APM complexity mode is restored by |muted| set to false.
-  void SetOutputWillBeMuted(bool muted);
 
   // AecDumpAgentImpl::Delegate implementation.
   // Called on the main render thread.
@@ -115,6 +105,7 @@ class MODULES_EXPORT MediaStreamAudioProcessor
   ~MediaStreamAudioProcessor() override;
 
  private:
+  class PlayoutListener;
   friend class MediaStreamAudioProcessorTest;
 
   // Format of input to ProcessCapturedAudio().
@@ -129,20 +120,19 @@ class MODULES_EXPORT MediaStreamAudioProcessor
 
   absl::optional<webrtc::AudioProcessing::Config>
   GetAudioProcessingModuleConfigForTesting() const {
-    return audio_processor_.GetAudioProcessingModuleConfigForTesting();
+    return audio_processor_->GetAudioProcessingModuleConfigForTesting();
   }
 
   // This method is called on the libjingle thread.
   // TODO(webrtc:5298): |has_remote_tracks| is no longer used, remove it.
   AudioProcessorStatistics GetStats(bool has_remote_tracks) override;
 
-  void SendLogMessage(const std::string& message);
-
   // Handles audio processing, rebuffering, and input/output formatting.
-  media::AudioProcessor audio_processor_;
+  const std::unique_ptr<media::AudioProcessor> audio_processor_;
 
-  // TODO(crbug.com/704136): Replace with Member at some point.
-  scoped_refptr<WebRtcAudioDeviceImpl> playout_data_source_;
+  // Manages subscription to the playout reference audio. Must be outlived by
+  // |audio_processor_|.
+  std::unique_ptr<PlayoutListener> playout_listener_;
 
   // Task runner for the main render thread.
   const scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner_;

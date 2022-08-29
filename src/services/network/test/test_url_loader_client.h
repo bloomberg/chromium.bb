@@ -38,7 +38,8 @@ class TestURLLoaderClient final : public mojom::URLLoaderClient {
   ~TestURLLoaderClient() override;
 
   void OnReceiveEarlyHints(network::mojom::EarlyHintsPtr early_hints) override;
-  void OnReceiveResponse(mojom::URLResponseHeadPtr response_head) override;
+  void OnReceiveResponse(mojom::URLResponseHeadPtr response_head,
+                         mojo::ScopedDataPipeConsumerHandle body) override;
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
                          mojom::URLResponseHeadPtr response_head) override;
   void OnReceiveCachedMetadata(mojo_base::BigBuffer data) override;
@@ -46,8 +47,6 @@ class TestURLLoaderClient final : public mojom::URLLoaderClient {
   void OnUploadProgress(int64_t current_position,
                         int64_t total_size,
                         OnUploadProgressCallback ack_callback) override;
-  void OnStartLoadingResponseBody(
-      mojo::ScopedDataPipeConsumerHandle body) override;
   void OnComplete(const URLLoaderCompletionStatus& status) override;
 
   bool has_received_early_hints() const { return has_received_early_hints_; }

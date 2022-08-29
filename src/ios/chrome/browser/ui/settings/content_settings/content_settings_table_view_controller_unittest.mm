@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/settings/content_settings/content_settings_table_view_controller.h"
 
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#import "ios/chrome/browser/main/test_browser.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller_test.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/web/public/test/web_task_environment.h"
@@ -20,23 +21,23 @@ namespace {
 class ContentSettingsTableViewControllerTest
     : public ChromeTableViewControllerTest {
  protected:
-  void SetUp() override {
-    ChromeTableViewControllerTest::SetUp();
-    TestChromeBrowserState::Builder test_cbs_builder;
-    chrome_browser_state_ = test_cbs_builder.Build();
+  ContentSettingsTableViewControllerTest() {
+    browser_state_ = TestChromeBrowserState::Builder().Build();
+    browser_ = std::make_unique<TestBrowser>(browser_state_.get());
   }
 
   ChromeTableViewController* InstantiateController() override {
     return [[ContentSettingsTableViewController alloc]
-        initWithBrowserState:chrome_browser_state_.get()];
+        initWithBrowser:browser_.get()];
   }
 
  private:
   web::WebTaskEnvironment task_environment_;
-  std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
+  std::unique_ptr<TestChromeBrowserState> browser_state_;
+  std::unique_ptr<TestBrowser> browser_;
 };
 
-// Tests that there are 2 items in Content Settings.
+// Tests that there are 3 items in Content Settings.
 TEST_F(ContentSettingsTableViewControllerTest,
        TestModelWithLanguageSettingsUI) {
   CreateController();
@@ -44,7 +45,7 @@ TEST_F(ContentSettingsTableViewControllerTest,
   CheckTitleWithId(IDS_IOS_CONTENT_SETTINGS_TITLE);
 
   ASSERT_EQ(1, NumberOfSections());
-  ASSERT_EQ(2, NumberOfItemsInSection(0));
+  ASSERT_EQ(3, NumberOfItemsInSection(0));
   CheckDetailItemTextWithIds(IDS_IOS_BLOCK_POPUPS, IDS_IOS_SETTING_ON, 0, 0);
 }
 

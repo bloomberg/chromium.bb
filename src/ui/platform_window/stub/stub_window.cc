@@ -14,13 +14,22 @@ namespace ui {
 StubWindow::StubWindow(PlatformWindowDelegate* delegate,
                        bool use_default_accelerated_widget,
                        const gfx::Rect& bounds)
-    : delegate_(delegate), bounds_(bounds) {
+    : bounds_(bounds) {
   DCHECK(delegate);
+  InitDelegate(delegate, use_default_accelerated_widget);
+}
+
+StubWindow::StubWindow(const gfx::Rect& bounds) : bounds_(bounds) {}
+
+StubWindow::~StubWindow() = default;
+
+void StubWindow::InitDelegate(PlatformWindowDelegate* delegate,
+                              bool use_default_accelerated_widget) {
+  DCHECK(delegate);
+  delegate_ = delegate;
   if (use_default_accelerated_widget)
     delegate_->OnAcceleratedWidgetAvailable(gfx::kNullAcceleratedWidget);
 }
-
-StubWindow::~StubWindow() {}
 
 void StubWindow::Show(bool inactive) {}
 
@@ -37,7 +46,7 @@ bool StubWindow::IsVisible() const {
 
 void StubWindow::PrepareForShutdown() {}
 
-void StubWindow::SetBounds(const gfx::Rect& bounds) {
+void StubWindow::SetBoundsInPixels(const gfx::Rect& bounds) {
   // Even if the pixel bounds didn't change this call to the delegate should
   // still happen. The device scale factor may have changed which effectively
   // changes the bounds.
@@ -45,8 +54,16 @@ void StubWindow::SetBounds(const gfx::Rect& bounds) {
   delegate_->OnBoundsChanged(bounds);
 }
 
-gfx::Rect StubWindow::GetBounds() const {
+gfx::Rect StubWindow::GetBoundsInPixels() const {
   return bounds_;
+}
+
+void StubWindow::SetBoundsInDIP(const gfx::Rect& bounds) {
+  SetBoundsInPixels(delegate_->ConvertRectToPixels(bounds));
+}
+
+gfx::Rect StubWindow::GetBoundsInDIP() const {
+  return delegate_->ConvertRectToDIP(bounds_);
 }
 
 void StubWindow::SetTitle(const std::u16string& title) {}
@@ -59,7 +76,13 @@ bool StubWindow::HasCapture() const {
   return false;
 }
 
-void StubWindow::ToggleFullscreen() {}
+void StubWindow::ToggleFullscreen() {
+  if (window_state_ == ui::PlatformWindowState::kUnknown) {
+    window_state_ = ui::PlatformWindowState::kFullScreen;
+  } else {
+    window_state_ = ui::PlatformWindowState::kUnknown;
+  }
+}
 
 void StubWindow::Maximize() {}
 
@@ -68,7 +91,7 @@ void StubWindow::Minimize() {}
 void StubWindow::Restore() {}
 
 PlatformWindowState StubWindow::GetPlatformWindowState() const {
-  return PlatformWindowState::kUnknown;
+  return window_state_;
 }
 
 void StubWindow::Activate() {
@@ -92,9 +115,9 @@ void StubWindow::MoveCursorTo(const gfx::Point& location) {}
 
 void StubWindow::ConfineCursorToBounds(const gfx::Rect& bounds) {}
 
-void StubWindow::SetRestoredBoundsInPixels(const gfx::Rect& bounds) {}
+void StubWindow::SetRestoredBoundsInDIP(const gfx::Rect& bounds) {}
 
-gfx::Rect StubWindow::GetRestoredBoundsInPixels() const {
+gfx::Rect StubWindow::GetRestoredBoundsInDIP() const {
   return gfx::Rect();
 }
 

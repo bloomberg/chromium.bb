@@ -6,6 +6,7 @@
 
 #include <cstdint>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -15,12 +16,10 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/ignore_result.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
-#include "base/task/post_task.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/task_traits.h"
@@ -39,6 +38,10 @@
 #include "components/update_client/update_client_errors.h"
 #include "components/update_client/utils.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+
+#if BUILDFLAG(IS_APPLE)
+#include "base/mac/backup_util.h"
+#endif
 
 namespace component_updater {
 
@@ -71,21 +74,22 @@ ComponentInstaller::ComponentInstaller(
 ComponentInstaller::~ComponentInstaller() = default;
 
 void ComponentInstaller::Register(ComponentUpdateService* cus,
-                                  base::OnceClosure callback) {
+                                  base::OnceClosure callback,
+                                  base::TaskPriority task_priority) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(cus);
   Register(base::BindOnce(&ComponentUpdateService::RegisterComponent,
                           base::Unretained(cus)),
-           std::move(callback));
+           std::move(callback), task_priority);
 }
 
 void ComponentInstaller::Register(RegisterCallback register_callback,
-                                  base::OnceClosure callback) {
+                                  base::OnceClosure callback,
+                                  base::TaskPriority task_priority) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  // Some components may affect user visible features, hence USER_VISIBLE.
   task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
-      {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+      {base::MayBlock(), task_priority,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 
   if (!installer_policy_) {
@@ -151,7 +155,7 @@ Result ComponentInstaller::InstallHelper(const base::FilePath& unpack_path,
 
   // Acquire the ownership of the |local_install_path|.
   base::ScopedTempDir install_path_owner;
-  ignore_result(install_path_owner.Set(local_install_path));
+  std::ignore = install_path_owner.Set(local_install_path);
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   if (!base::SetPosixFilePermissions(local_install_path, 0755)) {
@@ -163,6 +167,12 @@ Result ComponentInstaller::InstallHelper(const base::FilePath& unpack_path,
 
   DCHECK(!base::PathExists(unpack_path));
   DCHECK(base::PathExists(local_install_path));
+
+#if BUILDFLAG(IS_APPLE)
+  // Since components can be large and can be re-downloaded when needed, they
+  // are excluded from backups.
+  base::mac::SetBackupExclusion(local_install_path);
+#endif
 
   const Result result =
       installer_policy_->OnCustomInstall(local_manifest, local_install_path);
@@ -309,9 +319,8 @@ void ComponentInstaller::StartRegistration(
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   base::FilePath base_dir_ = base_component_dir;
-  std::vector<base::FilePath::StringType> components;
-  installer_policy_->GetRelativeInstallDir().GetComponents(&components);
-  for (const base::FilePath::StringType& component : components) {
+  for (const base::FilePath::StringType& component :
+       installer_policy_->GetRelativeInstallDir().GetComponents()) {
     base_dir_ = base_dir_.Append(component);
     if (!base::SetPosixFilePermissions(base_dir_, 0755)) {
       PLOG(ERROR) << "SetPosixFilePermissions failed: " << base_dir.value();

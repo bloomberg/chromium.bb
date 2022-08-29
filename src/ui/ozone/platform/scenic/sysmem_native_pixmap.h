@@ -10,6 +10,8 @@
 
 namespace ui {
 
+class ScenicOverlayView;
+
 class SysmemNativePixmap : public gfx::NativePixmap {
  public:
   SysmemNativePixmap(scoped_refptr<SysmemBufferCollection> collection,
@@ -25,6 +27,7 @@ class SysmemNativePixmap : public gfx::NativePixmap {
   size_t GetDmaBufOffset(size_t plane) const override;
   size_t GetDmaBufPlaneSize(size_t plane) const override;
   size_t GetNumberOfPlanes() const override;
+  bool SupportsZeroCopyWebGPUImport() const override;
   uint64_t GetBufferFormatModifier() const override;
   gfx::BufferFormat GetBufferFormat() const override;
   gfx::Size GetBufferSize() const override;
@@ -39,7 +42,10 @@ class SysmemNativePixmap : public gfx::NativePixmap {
 
   // Returns true if overlay planes are supported and ScheduleOverlayPlane() can
   // be called.
-  bool SupportsOverlayPlane(gfx::AcceleratedWidget widget) const;
+  bool SupportsOverlayPlane() const;
+
+  // Returns true ScenicOverlayView for the pixmap if any.
+  ScenicOverlayView* GetScenicOverlayView();
 
  private:
   ~SysmemNativePixmap() override;

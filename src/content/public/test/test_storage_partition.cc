@@ -4,7 +4,8 @@
 
 #include "content/public/test/test_storage_partition.h"
 
-#include "base/ignore_result.h"
+#include <tuple>
+
 #include "components/leveldb_proto/public/proto_database_provider.h"
 #include "content/public/browser/file_system_access_entry_factory.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
@@ -16,10 +17,6 @@ TestStoragePartition::~TestStoragePartition() {}
 
 base::FilePath TestStoragePartition::GetPath() {
   return file_path_;
-}
-
-base::FilePath TestStoragePartition::GetBucketBasePath() {
-  return file_path_.Append(storage::kWebStorageDirectory);
 }
 
 network::mojom::NetworkContext* TestStoragePartition::GetNetworkContext() {
@@ -60,7 +57,7 @@ TestStoragePartition::CreateURLLoaderNetworkObserverForFrame(int process_id,
 
 mojo::PendingRemote<network::mojom::URLLoaderNetworkServiceObserver>
 TestStoragePartition::CreateURLLoaderNetworkObserverForNavigationRequest(
-    int frame_tree_id) {
+    NavigationRequest& navigation_request) {
   return mojo::NullRemote();
 }
 
@@ -89,7 +86,7 @@ TestStoragePartition::GetLocalStorageControl() {
   // Bind and throw away the receiver. If testing is required, then add a method
   // to set the remote.
   if (!local_storage_control_.is_bound())
-    ignore_result(local_storage_control_.BindNewPipeAndPassReceiver());
+    std::ignore = local_storage_control_.BindNewPipeAndPassReceiver();
   return local_storage_control_.get();
 }
 
@@ -97,16 +94,12 @@ storage::mojom::IndexedDBControl& TestStoragePartition::GetIndexedDBControl() {
   // Bind and throw away the receiver. If testing is required, then add a method
   // to set the remote.
   if (!indexed_db_control_.is_bound())
-    ignore_result(indexed_db_control_.BindNewPipeAndPassReceiver());
+    std::ignore = indexed_db_control_.BindNewPipeAndPassReceiver();
   return *indexed_db_control_;
 }
 
 FileSystemAccessEntryFactory*
 TestStoragePartition::GetFileSystemAccessEntryFactory() {
-  return nullptr;
-}
-
-FontAccessContext* TestStoragePartition::GetFontAccessContext() {
   return nullptr;
 }
 
@@ -127,7 +120,7 @@ TestStoragePartition::GetCacheStorageControl() {
   // Bind and throw away the receiver. If testing is required, then add a method
   // to set the remote.
   if (!cache_storage_control_.is_bound())
-    ignore_result(cache_storage_control_.BindNewPipeAndPassReceiver());
+    std::ignore = cache_storage_control_.BindNewPipeAndPassReceiver();
   return cache_storage_control_.get();
 }
 
@@ -139,6 +132,15 @@ TestStoragePartition::GetGeneratedCodeCacheContext() {
 PlatformNotificationContext*
 TestStoragePartition::GetPlatformNotificationContext() {
   return platform_notification_context_;
+}
+
+InterestGroupManager* TestStoragePartition::GetInterestGroupManager() {
+  return nullptr;
+}
+
+BrowsingTopicsSiteDataManager*
+TestStoragePartition::GetBrowsingTopicsSiteDataManager() {
+  return browsing_topics_site_data_manager_;
 }
 
 DevToolsBackgroundServicesContext*

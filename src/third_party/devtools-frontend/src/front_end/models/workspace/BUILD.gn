@@ -30,7 +30,10 @@ devtools_entrypoint("bundle") {
   visibility = [
     ":*",
     "../../../test/unittests/front_end/helpers/*",
+    "../../../test/unittests/front_end/models/bindings/*",
     "../../../test/unittests/front_end/models/formatter/*",
+    "../../../test/unittests/front_end/models/workspace/*",
+    "../../../test/unittests/front_end/models/workspace_diff/*",
     "../../entrypoints/main/*",
     "../../legacy_test_runner/*",
     "../../panels/application/*",
@@ -56,6 +59,7 @@ devtools_entrypoint("bundle") {
     "../../ui/legacy/components/utils/*",
     "../formatter/*",
     "../issues_manager/*",
+    "../source_map_scopes/*",
   ]
 
   visibility += devtools_models_visibility

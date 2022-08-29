@@ -17,6 +17,13 @@ if(LIBGAV1_EXAMPLES_LIBGAV1_EXAMPLES_CMAKE_)
 endif() # LIBGAV1_EXAMPLES_LIBGAV1_EXAMPLES_CMAKE_
 set(LIBGAV1_EXAMPLES_LIBGAV1_EXAMPLES_CMAKE_ 1)
 
+if(NOT LIBGAV1_ENABLE_EXAMPLES)
+  macro(libgav1_add_examples_targets)
+
+  endmacro()
+  return()
+endif()
+
 set(libgav1_file_reader_sources "${libgav1_examples}/file_reader.cc"
                                 "${libgav1_examples}/file_reader.h"
                                 "${libgav1_examples}/file_reader_constants.cc"

@@ -23,7 +23,7 @@
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/sync_service_factory.h"
-#include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
+#include "chrome/browser/ui/passwords/ui_utils.h"
 #include "chrome/common/extensions/api/passwords_private.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
@@ -43,15 +43,15 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "chrome/browser/password_manager/password_manager_util_win.h"
 #endif
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #include "chrome/browser/password_manager/password_manager_util_mac.h"
 #endif
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS)
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_utils_chromeos.h"
 #endif
 
@@ -153,7 +153,7 @@ PasswordsPrivateDelegateImpl::PasswordsPrivateDelegateImpl(Profile* profile)
                                      profile,
                                      ServiceAccessType::EXPLICIT_ACCESS)),
       password_manager_porter_(std::make_unique<PasswordManagerPorter>(
-          password_manager_presenter_.get(),
+          &saved_passwords_presenter_,
           base::BindRepeating(
               &PasswordsPrivateDelegateImpl::OnPasswordsExportProgress,
               base::Unretained(this)))),
@@ -234,6 +234,7 @@ bool PasswordsPrivateDelegateImpl::AddPassword(
     const std::string& url,
     const std::u16string& username,
     const std::u16string& password,
+    const std::u16string& note,
     bool use_account_store,
     content::WebContents* web_contents) {
   password_manager::PasswordForm form;
@@ -242,6 +243,7 @@ bool PasswordsPrivateDelegateImpl::AddPassword(
   form.signon_realm = password_manager::GetSignonRealm(form.url);
   form.username_value = username;
   form.password_value = password;
+  form.notes.emplace_back(/*value=*/note, /*date_created=*/base::Time::Now());
   form.in_store = use_account_store
                       ? password_manager::PasswordForm::Store::kAccountStore
                       : password_manager::PasswordForm::Store::kProfileStore;
@@ -260,8 +262,7 @@ bool PasswordsPrivateDelegateImpl::AddPassword(
 
 bool PasswordsPrivateDelegateImpl::ChangeSavedPassword(
     const std::vector<int>& ids,
-    const std::u16string& new_username,
-    const std::u16string& new_password) {
+    const api::passwords_private::ChangeSavedPasswordParams& params) {
   const std::vector<std::string> sort_keys =
       GetSortKeys(password_id_generator_, ids);
 
@@ -279,8 +280,14 @@ bool PasswordsPrivateDelegateImpl::ChangeSavedPassword(
       forms_to_change.push_back(*form);
   }
 
-  return saved_passwords_presenter_.EditSavedPasswords(
-      forms_to_change, new_username, new_password);
+  std::u16string username = base::UTF8ToUTF16(params.username);
+  std::u16string password = base::UTF8ToUTF16(params.password);
+  if (params.note) {
+    return saved_passwords_presenter_.EditSavedPasswords(
+        forms_to_change, username, password, base::UTF8ToUTF16(*params.note));
+  }
+  return saved_passwords_presenter_.EditSavedPasswords(forms_to_change,
+                                                       username, password);
 }
 
 void PasswordsPrivateDelegateImpl::RemoveSavedPasswords(
@@ -342,12 +349,12 @@ void PasswordsPrivateDelegateImpl::OsReauthCall(
     password_manager::ReauthPurpose purpose,
     password_manager::PasswordAccessAuthenticator::AuthResultCallback
         callback) {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   DCHECK(web_contents_);
   bool result = password_manager_util_win::AuthenticateUser(
       web_contents_->GetTopLevelNativeWindow(), purpose);
   std::move(callback).Run(result);
-#elif defined(OS_MAC)
+#elif BUILDFLAG(IS_MAC)
   bool result = password_manager_util_mac::AuthenticateUser(purpose);
   std::move(callback).Run(result);
 #elif BUILDFLAG(IS_CHROMEOS_ASH)
@@ -375,6 +382,11 @@ void PasswordsPrivateDelegateImpl::SetPasswordList(
     api::passwords_private::PasswordUiEntry entry;
     entry.urls = CreateUrlCollectionFromForm(*form);
     entry.username = base::UTF16ToUTF8(form->username_value);
+    const auto& note_itr = base::ranges::find_if(
+        form->notes, &std::u16string::empty,
+        &password_manager::PasswordNote::unique_display_name);
+    entry.password_note =
+        note_itr == form->notes.end() ? "" : base::UTF16ToUTF8(note_itr->value);
     entry.id = password_id_generator_.GenerateId(
         password_manager::CreateSortKey(*form));
     entry.frontend_id = password_frontend_id_generator_.GenerateId(
@@ -542,6 +554,23 @@ bool PasswordsPrivateDelegateImpl::ChangeInsecureCredential(
 bool PasswordsPrivateDelegateImpl::RemoveInsecureCredential(
     const api::passwords_private::InsecureCredential& credential) {
   return password_check_delegate_.RemoveInsecureCredential(credential);
+}
+
+bool PasswordsPrivateDelegateImpl::MuteInsecureCredential(
+    const api::passwords_private::InsecureCredential& credential) {
+  return password_check_delegate_.MuteInsecureCredential(credential);
+}
+
+bool PasswordsPrivateDelegateImpl::UnmuteInsecureCredential(
+    const api::passwords_private::InsecureCredential& credential) {
+  return password_check_delegate_.UnmuteInsecureCredential(credential);
+}
+
+void PasswordsPrivateDelegateImpl::RecordChangePasswordFlowStarted(
+    const api::passwords_private::InsecureCredential& credential,
+    bool is_manual_flow) {
+  password_check_delegate_.RecordChangePasswordFlowStarted(credential,
+                                                           is_manual_flow);
 }
 
 void PasswordsPrivateDelegateImpl::StartPasswordCheck(

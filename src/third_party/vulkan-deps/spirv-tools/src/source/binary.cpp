@@ -215,7 +215,7 @@ class Parser {
     size_t word_index;           // The current position in words.
     size_t instruction_count;    // The count of processed instructions
     spv_endianness_t endian;     // The endianness of the binary.
-    // Is the SPIR-V binary in a different endiannes from the host native
+    // Is the SPIR-V binary in a different endianness from the host native
     // endianness?
     bool requires_endian_conversion;
 
@@ -300,7 +300,7 @@ spv_result_t Parser::parseInstruction() {
   const uint32_t first_word = peek();
 
   // If the module's endianness is different from the host native endianness,
-  // then converted_words contains the the endian-translated words in the
+  // then converted_words contains the endian-translated words in the
   // instruction.
   _.endian_converted_words.clear();
   _.endian_converted_words.push_back(first_word);

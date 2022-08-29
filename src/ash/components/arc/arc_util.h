@@ -15,7 +15,7 @@
 #include <string>
 #include <vector>
 
-#include "chromeos/dbus/dbus_method_call_status.h"
+#include "chromeos/dbus/common/dbus_method_call_status.h"
 
 namespace aura {
 class Window;
@@ -124,6 +124,13 @@ bool ShouldArcAlwaysStart();
 // mode such as guest and Kiosk mode.
 bool ShouldArcAlwaysStartWithNoPlayStore();
 
+// Returns true if ARC should ignore Play Store preference and be started
+// manually in tests using autotest API |startArc|.
+bool ShouldArcStartManually();
+
+// Returns true if the debugfs file system should me mounted in ARCVM.
+bool ShouldMountVmDebugFs();
+
 // Returns true if ARC OptIn ui needs to be shown for testing.
 bool ShouldShowOptInForTesting();
 
@@ -170,9 +177,10 @@ constexpr int kSystemWindowTaskId = 0;
 // Returns the task id given by the exo shell's application id, or
 // absl::nullopt if not an ARC window.
 absl::optional<int> GetWindowTaskId(const aura::Window* window);
-absl::optional<int> GetTaskIdFromWindowAppId(const std::string& app_id);
+absl::optional<int> GetTaskIdFromWindowAppId(const std::string& window_app_id);
 absl::optional<int> GetWindowSessionId(const aura::Window* window);
-absl::optional<int> GetSessionIdFromWindowAppId(const std::string& app_id);
+absl::optional<int> GetSessionIdFromWindowAppId(
+    const std::string& window_app_id);
 absl::optional<int> GetWindowTaskOrSessionId(const aura::Window* window);
 
 // Returns true if ARC app icons are forced to cache.

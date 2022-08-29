@@ -5,7 +5,7 @@
  * found in the LICENSE file.
  */
 
-// This is a GPU-backend specific test. It relies on static intializers to work
+// This is a GPU-backend specific test. It relies on static initializers to work
 
 #include "include/core/SkTypes.h"
 
@@ -16,12 +16,12 @@
 #include "include/gpu/GrDirectContext.h"
 #include "include/gpu/vk/GrVkTypes.h"
 #include "include/gpu/vk/GrVkVulkan.h"
-#include "src/gpu/GrDirectContextPriv.h"
-#include "src/gpu/GrTexture.h"
-#include "src/gpu/GrTextureProxy.h"
-#include "src/gpu/vk/GrVkGpu.h"
-#include "src/gpu/vk/GrVkImageLayout.h"
-#include "src/gpu/vk/GrVkTexture.h"
+#include "src/gpu/ganesh/GrDirectContextPriv.h"
+#include "src/gpu/ganesh/GrTexture.h"
+#include "src/gpu/ganesh/GrTextureProxy.h"
+#include "src/gpu/ganesh/vk/GrVkGpu.h"
+#include "src/gpu/ganesh/vk/GrVkImageLayout.h"
+#include "src/gpu/ganesh/vk/GrVkTexture.h"
 #include "src/image/SkImage_Base.h"
 #include "src/image/SkImage_Gpu.h"
 #include "src/image/SkImage_GpuBase.h"

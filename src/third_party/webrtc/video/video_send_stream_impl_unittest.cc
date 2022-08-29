@@ -20,16 +20,14 @@
 #include "call/test/mock_bitrate_allocator.h"
 #include "call/test/mock_rtp_transport_controller_send.h"
 #include "modules/rtp_rtcp/source/rtp_sequence_number_map.h"
-#include "modules/utility/include/process_thread.h"
 #include "modules/video_coding/fec_controller_default.h"
 #include "rtc_base/experiments/alr_experiment.h"
 #include "rtc_base/fake_clock.h"
 #include "rtc_base/task_queue_for_test.h"
-#include "test/field_trial.h"
 #include "test/gmock.h"
 #include "test/gtest.h"
 #include "test/mock_transport.h"
-#include "video/call_stats.h"
+#include "test/scoped_key_value_config.h"
 #include "video/test/mock_video_stream_encoder.h"
 #include "video/video_send_stream.h"
 
@@ -119,11 +117,10 @@ class VideoSendStreamImplTest : public ::testing::Test {
         config_(&transport_),
         send_delay_stats_(&clock_),
         test_queue_("test_queue"),
-        process_thread_(ProcessThread::Create("test_thread")),
-        call_stats_(&clock_, process_thread_.get()),
         stats_proxy_(&clock_,
                      config_,
-                     VideoEncoderConfig::ContentType::kRealtimeVideo) {
+                     VideoEncoderConfig::ContentType::kRealtimeVideo,
+                     field_trials_) {
     config_.rtp.ssrcs.push_back(8080);
     config_.rtp.payload_type = 1;
 
@@ -155,7 +152,7 @@ class VideoSendStreamImplTest : public ::testing::Test {
         &clock_, &stats_proxy_, &test_queue_, &transport_controller_,
         &bitrate_allocator_, &video_stream_encoder_, &config_,
         initial_encoder_max_bitrate, initial_encoder_bitrate_priority,
-        content_type, &rtp_video_sender_);
+        content_type, &rtp_video_sender_, field_trials_);
 
     // The call to GetStartBitrate() executes asynchronously on the tq.
     test_queue_.WaitForPreviouslyPostedTasks();
@@ -165,6 +162,7 @@ class VideoSendStreamImplTest : public ::testing::Test {
   }
 
  protected:
+  webrtc::test::ScopedKeyValueConfig field_trials_;
   NiceMock<MockTransport> transport_;
   NiceMock<MockRtpTransportControllerSend> transport_controller_;
   NiceMock<MockBitrateAllocator> bitrate_allocator_;
@@ -177,9 +175,6 @@ class VideoSendStreamImplTest : public ::testing::Test {
   VideoSendStream::Config config_;
   SendDelayStats send_delay_stats_;
   TaskQueueForTest test_queue_;
-  std::unique_ptr<ProcessThread> process_thread_;
-  // TODO(tommi): Use internal::CallStats
-  CallStats call_stats_;
   SendStatisticsProxy stats_proxy_;
   PacketRouter packet_router_;
 };
@@ -345,8 +340,8 @@ TEST_F(VideoSendStreamImplTest, UpdatesObserverOnConfigurationChangeWithAlr) {
 
 TEST_F(VideoSendStreamImplTest,
        UpdatesObserverOnConfigurationChangeWithSimulcastVideoHysteresis) {
-  test::ScopedFieldTrials hysteresis_experiment(
-      "WebRTC-VideoRateControl/video_hysteresis:1.25/");
+  test::ScopedKeyValueConfig hysteresis_experiment(
+      field_trials_, "WebRTC-VideoRateControl/video_hysteresis:1.25/");
 
   auto vss_impl = CreateVideoSendStreamImpl(
       kDefaultInitialBitrateBps, kDefaultBitratePriority,

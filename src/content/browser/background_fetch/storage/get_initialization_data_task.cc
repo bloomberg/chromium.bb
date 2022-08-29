@@ -9,7 +9,6 @@
 #include "base/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "content/browser/background_fetch/background_fetch.pb.h"
 #include "content/browser/background_fetch/background_fetch_data_manager.h"
@@ -35,6 +34,12 @@ class InitializationSubTask : public DatabaseTask {
   // Holds data used by all SubTasks.
   struct SubTaskInit {
     SubTaskInit() = delete;
+    SubTaskInit(int64_t service_worker_registration_id,
+                std::string unique_id,
+                BackgroundFetchInitializationData* initialization_data)
+        : service_worker_registration_id(service_worker_registration_id),
+          unique_id(std::move(unique_id)),
+          initialization_data(initialization_data) {}
     ~SubTaskInit() = default;
 
     // Service Worker Database metadata.

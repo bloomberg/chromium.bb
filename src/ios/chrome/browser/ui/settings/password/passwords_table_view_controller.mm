@@ -13,27 +13,30 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/google/core/common/google_util.h"
 #include "components/keyed_service/core/service_access_type.h"
-#include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_list_sorter.h"
 #include "components/password_manager/core/browser/password_manager_constants.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_ui_utils.h"
+#include "components/password_manager/core/browser/ui/credential_ui_entry.h"
 #include "components/password_manager/core/browser/ui/password_check_referrer.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/sync/driver/sync_service.h"
+#include "components/sync/driver/sync_service_utils.h"
+#include "components/sync/driver/sync_user_settings.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/net/crurl.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service_observer_bridge.h"
 #include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/ui/elements/home_waiting_view.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_check_cell.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_check_item.h"
-#import "ios/chrome/browser/ui/settings/cells/settings_switch_cell.h"
-#import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
 #import "ios/chrome/browser/ui/settings/elements/enterprise_info_popover_view_controller.h"
 #import "ios/chrome/browser/ui/settings/password/password_exporter.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_consumer.h"
@@ -46,17 +49,22 @@
 #import "ios/chrome/browser/ui/settings/utils/settings_utils.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_detail_icon_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_detail_text_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_image_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_info_button_cell.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_info_button_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_link_header_footer_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_switch_cell.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_switch_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
+#import "ios/chrome/browser/ui/table_view/table_view_favicon_data_source.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
 #import "ios/chrome/browser/ui/table_view/table_view_utils.h"
-#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/elements/popover_label_view_controller.h"
+#import "ios/chrome/common/ui/favicon/favicon_view.h"
 #import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
@@ -77,38 +85,38 @@ namespace {
 using base::UmaHistogramEnumeration;
 using password_manager::metrics_util::PasswordCheckInteraction;
 
-typedef NS_ENUM(NSInteger, SectionIdentifier) {
-  SectionIdentifierSavePasswordsSwitch = kSectionIdentifierEnumZero,
-  SectionIdentifierSavedPasswords,
-  SectionIdentifierPasswordsInOtherApps,
-  SectionIdentifierBlocked,
-  SectionIdentifierExportPasswordsButton,
-  SectionIdentifierPasswordCheck,
-};
-
 typedef NS_ENUM(NSInteger, ItemType) {
-  ItemTypeLinkHeader = kItemTypeEnumZero,
   ItemTypeHeader,
+  // Section: SectionIdentifierSavePasswordsSwitch
+  ItemTypeLinkHeader = kItemTypeEnumZero,
   ItemTypeSavePasswordsSwitch,
-  ItemTypePasswordsInOtherApps,
   ItemTypeManagedSavePasswords,
+  // Section: SectionIdentifierPasswordsInOtherApps
+  ItemTypePasswordsInOtherApps,
+  // Section: SectionIdentifierPasswordCheck
   ItemTypePasswordCheckStatus,
   ItemTypeCheckForProblemsButton,
   ItemTypeLastCheckTimestampFooter,
+  // Section: SectionIdentifierSavedPasswords
   ItemTypeSavedPassword,  // This is a repeated item type.
-  ItemTypeBlocked,        // This is a repeated item type.
+  // Section: SectionIdentifierBlocked
+  ItemTypeBlocked,  // This is a repeated item type.
+  // Section: SectionIdentifierExportPasswordsButton
   ItemTypeExportPasswordsButton,
+  // Section: SectionIdentifierOnDeviceEncryption
+  ItemTypeOnDeviceEncryptionOptInDescription,
+  ItemTypeOnDeviceEncryptionSetUp,
+  ItemTypeOnDeviceEncryptionOptedInDescription,
+  ItemTypeOnDeviceEncryptionOptedInLearnMore,
 };
 
-std::vector<std::unique_ptr<password_manager::PasswordForm>> CopyOf(
+std::vector<password_manager::CredentialUIEntry> CopyOf(
     const std::vector<password_manager::PasswordForm>& password_list) {
-  std::vector<std::unique_ptr<password_manager::PasswordForm>>
-      password_list_copy;
+  std::vector<password_manager::CredentialUIEntry> credentials;
   for (const auto& form : password_list) {
-    password_list_copy.push_back(
-        std::make_unique<password_manager::PasswordForm>(form));
+    credentials.push_back(password_manager::CredentialUIEntry(form));
   }
-  return password_list_copy;
+  return credentials;
 }
 
 bool ArePasswordsListsEqual(
@@ -137,9 +145,25 @@ void RemoveFormsToBeDeleted(
   });
 }
 
+// Return if the feature flag for the favicon is enabled.
+// TODO(crbug.com/1300569): Remove this when kEnableFaviconForPasswords flag is
+// removed.
+bool IsFaviconEnabled() {
+  return base::FeatureList::IsEnabled(
+      password_manager::features::kEnableFaviconForPasswords);
+}
+
 }  // namespace
 
-@interface PasswordFormContentItem : TableViewDetailTextItem
+// TODO(crbug.com/1300569): Remove this when kEnableFaviconForPasswords flag is
+// removed.
+@interface LegacyPasswordFormContentItem : TableViewDetailTextItem
+@property(nonatomic) password_manager::PasswordForm form;
+@end
+@implementation LegacyPasswordFormContentItem
+@end
+
+@interface PasswordFormContentItem : TableViewURLItem
 @property(nonatomic) password_manager::PasswordForm form;
 @end
 @implementation PasswordFormContentItem
@@ -199,7 +223,7 @@ void RemoveFormsToBeDeleted(
   // The header for save passwords switch section.
   TableViewLinkHeaderFooterItem* _manageAccountLinkItem;
   // The item related to the switch for the password manager setting.
-  SettingsSwitchItem* _savePasswordsItem;
+  TableViewSwitchItem* _savePasswordsItem;
   // The item that shows the current Auto-fill state and opens an
   // autofill settings tutorial
   TableViewDetailIconItem* _passwordsInOtherAppsItem;
@@ -211,6 +235,15 @@ void RemoveFormsToBeDeleted(
   TableViewTextItem* _checkForProblemsItem;
   // The item related to the button for exporting passwords.
   TableViewTextItem* _exportPasswordsItem;
+  // The text explaining why the user should opt-in on device encryption.
+  TableViewImageItem* _onDeviceEncryptionOptInDescriptionItem;
+  // The text explaining on-device encryption was opted-in and offering to know
+  // more.
+  TableViewImageItem* _onDeviceEncryptionOptedInDescription;
+  // Learn-more button, to know more about trusted vault.
+  TableViewTextItem* _onDeviceEncryptionOptedInLearnMore;
+  // The link to set up on device encryption.
+  TableViewTextItem* _setUpOnDeviceEncryptionItem;
   // The list of the user's saved passwords.
   std::vector<password_manager::PasswordForm> _savedForms;
   // The list of the user's blocked sites.
@@ -264,8 +297,25 @@ void RemoveFormsToBeDeleted(
     mostRecentlyUpdatedPassword;
 
 // Stores the PasswordFormContentItem which has form attribute's username and
-// site equivalent to that of |mostRecentlyUpdatedPassword|.
+// site equivalent to that of `mostRecentlyUpdatedPassword`.
 @property(nonatomic, weak) PasswordFormContentItem* mostRecentlyUpdatedItem;
+
+// Stores the PasswordFormContentItem which has form attribute's username and
+// site equivalent to that of `legacyMostRecentlyUpdatedItem`.
+// TODO(crbug.com/1300569): Remove this when kEnableFaviconForPasswords flag is
+// removed.
+@property(nonatomic, weak)
+    LegacyPasswordFormContentItem* legacyMostRecentlyUpdatedItem;
+
+// YES, if the user has tapped on the "Check Now" button.
+@property(nonatomic, assign) BOOL shouldFocusAccessibilityOnPasswordCheckStatus;
+
+// On-device encryption state according to the sync service.
+@property(nonatomic, assign)
+    OnDeviceEncryptionState onDeviceEncryptionStateInModel;
+
+// Return YES if the search bar should be enabled.
+@property(nonatomic, assign) BOOL shouldEnableSearchBar;
 
 @end
 
@@ -283,7 +333,7 @@ void RemoveFormsToBeDeleted(
     _accountManagerServiceObserver =
         std::make_unique<ChromeAccountManagerServiceObserverBridge>(
             self, ChromeAccountManagerServiceFactory::GetForBrowserState(
-                      _browser->GetBrowserState()));
+                      _browserState));
     _sharedPasswordAutoFillStatusManager =
         [PasswordAutoFillStatusManager sharedManager];
 
@@ -307,9 +357,15 @@ void RemoveFormsToBeDeleted(
                    prefName:password_manager::prefs::kCredentialsEnableService];
     [_passwordManagerEnabled setObserver:self];
 
+    // Default behavior: search bar is enabled.
+    self.shouldEnableSearchBar = YES;
+
     [self updateUIForEditState];
     [self updateExportPasswordsButton];
   }
+  // This value represents the state in the UI. It is set to
+  // `OnDeviceEncryptionStateNotShown` because nothing is currently shown.
+  _onDeviceEncryptionStateInModel = OnDeviceEncryptionStateNotShown;
   return self;
 }
 
@@ -436,14 +492,13 @@ void RemoveFormsToBeDeleted(
   if (editing) {
     [self setSavePasswordsSwitchItemEnabled:NO];
     [self setExportPasswordsButtonEnabled:NO];
-    [self setSearchBarEnabled:NO];
   } else {
     [self setSavePasswordsSwitchItemEnabled:YES];
     if (_exportReady) {
       [self setExportPasswordsButtonEnabled:YES];
     }
-    [self setSearchBarEnabled:YES];
   }
+  [self setSearchBarEnabled:self.shouldEnableSearchBar];
   [self updatePasswordCheckButtonWithState:self.passwordCheckState];
   [self updatePasswordCheckStatusLabelWithState:self.passwordCheckState];
   if (_checkForProblemsItem) {
@@ -489,15 +544,13 @@ void RemoveFormsToBeDeleted(
         forSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch];
   }
 
-  // Passwords in other apps
-  if (base::FeatureList::IsEnabled(kCredentialProviderExtensionPromo)) {
-    [model addSectionWithIdentifier:SectionIdentifierPasswordsInOtherApps];
-    if (!_passwordsInOtherAppsItem) {
-      _passwordsInOtherAppsItem = [self passwordsInOtherAppsItem];
-    }
-    [model addItem:_passwordsInOtherAppsItem
-        toSectionWithIdentifier:SectionIdentifierPasswordsInOtherApps];
+  // Passwords in other apps.
+  [model addSectionWithIdentifier:SectionIdentifierPasswordsInOtherApps];
+  if (!_passwordsInOtherAppsItem) {
+    _passwordsInOtherAppsItem = [self passwordsInOtherAppsItem];
   }
+  [model addItem:_passwordsInOtherAppsItem
+      toSectionWithIdentifier:SectionIdentifierPasswordsInOtherApps];
 
   // Password check.
   [model addSectionWithIdentifier:SectionIdentifierPasswordCheck];
@@ -520,6 +573,11 @@ void RemoveFormsToBeDeleted(
   [self updateLastCheckTimestampWithState:_passwordCheckState
                                 fromState:_passwordCheckState
                                    update:NO];
+
+  // On-device encryption.
+  [self updateOnDeviceEncryptionSessionWithUpdateTableView:NO
+                                          withRowAnimation:
+                                              UITableViewRowAnimationNone];
 
   // Saved passwords.
   if (!_savedForms.empty()) {
@@ -560,6 +618,92 @@ void RemoveFormsToBeDeleted(
 - (void)reloadData {
   [super reloadData];
   [self updateExportPasswordsButton];
+}
+
+// Updates "on-device encryption" related UI.
+// `updateTableView` whether the Table View should be updated.
+// `rowAnimation` the direction in which the row appears.
+- (void)updateOnDeviceEncryptionSessionWithUpdateTableView:(BOOL)updateTableView
+                                          withRowAnimation:
+                                              (UITableViewRowAnimation)
+                                                  rowAnimation {
+  OnDeviceEncryptionState oldState = self.onDeviceEncryptionStateInModel;
+  OnDeviceEncryptionState newState = [self.delegate onDeviceEncryptionState];
+  if (newState == oldState) {
+    return;
+  }
+  self.onDeviceEncryptionStateInModel = newState;
+  TableViewModel* model = self.tableViewModel;
+
+  if (newState == OnDeviceEncryptionStateNotShown) {
+    // Previous state was not `OnDeviceEncryptionStateNotShown`, which means the
+    // section `SectionIdentifierOnDeviceEncryption` exists and must be removed.
+    // It also mean the table view is not yet shown and thus should not be
+    // updated.
+    DCHECK(updateTableView);
+    [self clearSectionWithIdentifier:SectionIdentifierOnDeviceEncryption
+                    withRowAnimation:UITableViewRowAnimationAutomatic];
+    return;
+  }
+  NSInteger onDeviceEncryptionSectionIndex = NSNotFound;
+
+  if (oldState == OnDeviceEncryptionStateNotShown) {
+    NSInteger passwordCheckSectionIndex =
+        [model sectionForSectionIdentifier:SectionIdentifierPasswordCheck];
+    DCHECK_NE(NSNotFound, passwordCheckSectionIndex);
+    onDeviceEncryptionSectionIndex = passwordCheckSectionIndex + 1;
+    [model insertSectionWithIdentifier:SectionIdentifierOnDeviceEncryption
+                               atIndex:onDeviceEncryptionSectionIndex];
+  } else {
+    onDeviceEncryptionSectionIndex =
+        [model sectionForSectionIdentifier:SectionIdentifierOnDeviceEncryption];
+  }
+  DCHECK_NE(NSNotFound, onDeviceEncryptionSectionIndex);
+  NSIndexSet* sectionIdentifierOnDeviceEncryptionIndexSet =
+      [NSIndexSet indexSetWithIndex:onDeviceEncryptionSectionIndex];
+
+  [model deleteAllItemsFromSectionWithIdentifier:
+             SectionIdentifierOnDeviceEncryption];
+
+  // Add the missing items.
+  if (newState == OnDeviceEncryptionStateOptedIn) {
+    if (!_onDeviceEncryptionOptedInDescription) {
+      _onDeviceEncryptionOptedInDescription =
+          [self onDeviceEncryptionOptedInDescription];
+    }
+    [model addItem:_onDeviceEncryptionOptedInDescription
+        toSectionWithIdentifier:SectionIdentifierOnDeviceEncryption];
+    if (!_onDeviceEncryptionOptedInLearnMore) {
+      _onDeviceEncryptionOptedInLearnMore =
+          [self onDeviceEncryptionOptedInLearnMore];
+    }
+    [model addItem:_onDeviceEncryptionOptedInLearnMore
+        toSectionWithIdentifier:SectionIdentifierOnDeviceEncryption];
+  } else {
+    // newState is OnDeviceEncryptionStateOfferOptIn:
+    if (!_onDeviceEncryptionOptInDescriptionItem) {
+      _onDeviceEncryptionOptInDescriptionItem =
+          [self onDeviceEncryptionOptInDescriptionItem];
+    }
+    [model addItem:_onDeviceEncryptionOptInDescriptionItem
+        toSectionWithIdentifier:SectionIdentifierOnDeviceEncryption];
+    if (!_setUpOnDeviceEncryptionItem) {
+      _setUpOnDeviceEncryptionItem = [self setUpOnDeviceEncryptionItem];
+    }
+    [model addItem:_setUpOnDeviceEncryptionItem
+        toSectionWithIdentifier:SectionIdentifierOnDeviceEncryption];
+  }
+
+  if (!updateTableView) {
+    return;
+  }
+  if (oldState == OnDeviceEncryptionStateNotShown) {
+    [self.tableView insertSections:sectionIdentifierOnDeviceEncryptionIndexSet
+                  withRowAnimation:rowAnimation];
+  } else {
+    [self.tableView reloadSections:sectionIdentifierOnDeviceEncryptionIndexSet
+                  withRowAnimation:rowAnimation];
+  }
 }
 
 - (BOOL)shouldShowEditButton {
@@ -605,6 +749,14 @@ void RemoveFormsToBeDeleted(
   [self.handler showAddPasswordSheet];
 }
 
+- (void)editButtonPressed {
+  // Disable search bar if the user is bulk editing (edit mode). (Reverse logic
+  // because parent method -editButtonPressed is calling setEditing to change
+  // the state).
+  self.shouldEnableSearchBar = self.tableView.editing;
+  [super editButtonPressed];
+}
+
 #pragma mark - SettingsControllerProtocol
 
 - (void)reportDismissalUserAction {
@@ -622,6 +774,7 @@ void RemoveFormsToBeDeleted(
   if (self.navigationItem.searchController.active == YES) {
     self.navigationItem.searchController.active = NO;
   }
+  _accountManagerServiceObserver.reset();
 }
 
 #pragma mark - Items
@@ -636,24 +789,28 @@ void RemoveFormsToBeDeleted(
     footerItem.text =
         l10n_util::GetNSString(IDS_IOS_SAVE_PASSWORDS_MANAGE_ACCOUNT_HEADER);
 
-    footerItem.urls = std::vector<GURL>{google_util::AppendGoogleLocaleParam(
-        GURL(password_manager::kPasswordManagerHelpCenteriOSURL),
-        GetApplicationContext()->GetApplicationLocale())};
+    footerItem.urls = @[ [[CrURL alloc]
+        initWithGURL:
+            google_util::AppendGoogleLocaleParam(
+                GURL(password_manager::kPasswordManagerHelpCenteriOSURL),
+                GetApplicationContext()->GetApplicationLocale())] ];
   } else {
     footerItem.text =
         l10n_util::GetNSString(IDS_IOS_SAVE_PASSWORDS_MANAGE_ACCOUNT);
 
-    footerItem.urls = std::vector<GURL>{google_util::AppendGoogleLocaleParam(
-        GURL(password_manager::kPasswordManagerAccountDashboardURL),
-        GetApplicationContext()->GetApplicationLocale())};
+    footerItem.urls = @[ [[CrURL alloc]
+        initWithGURL:
+            google_util::AppendGoogleLocaleParam(
+                GURL(password_manager::kPasswordManagerAccountDashboardURL),
+                GetApplicationContext()->GetApplicationLocale())] ];
   }
 
   return footerItem;
 }
 
-- (SettingsSwitchItem*)savePasswordsItem {
-  SettingsSwitchItem* savePasswordsItem =
-      [[SettingsSwitchItem alloc] initWithType:ItemTypeSavePasswordsSwitch];
+- (TableViewSwitchItem*)savePasswordsItem {
+  TableViewSwitchItem* savePasswordsItem =
+      [[TableViewSwitchItem alloc] initWithType:ItemTypeSavePasswordsSwitch];
   if (base::FeatureList::IsEnabled(
           password_manager::features::kSupportForAddPasswordsInSettings)) {
     savePasswordsItem.text =
@@ -716,6 +873,7 @@ void RemoveFormsToBeDeleted(
   passwordProblemsItem.text = l10n_util::GetNSString(IDS_IOS_CHECK_PASSWORDS);
   passwordProblemsItem.detailText =
       l10n_util::GetNSString(IDS_IOS_CHECK_PASSWORDS_DESCRIPTION);
+  passwordProblemsItem.accessibilityTraits = UIAccessibilityTraitHeader;
   return passwordProblemsItem;
 }
 
@@ -737,6 +895,54 @@ void RemoveFormsToBeDeleted(
   return footerItem;
 }
 
+- (TableViewImageItem*)onDeviceEncryptionOptInDescriptionItem {
+  TableViewImageItem* item = [[TableViewImageItem alloc]
+      initWithType:ItemTypeOnDeviceEncryptionOptInDescription];
+  item.title =
+      l10n_util::GetNSString(IDS_IOS_PASSWORD_SETTINGS_ON_DEVICE_ENCRYPTION);
+  item.detailText = l10n_util::GetNSString(
+      IDS_IOS_PASSWORD_SETTINGS_ON_DEVICE_ENCRYPTION_OPT_IN);
+  item.enabled = NO;
+  item.accessibilityIdentifier = kOnDeviceEncryptionOptInId;
+  item.accessibilityTraits |= UIAccessibilityTraitLink;
+  return item;
+}
+
+- (TableViewImageItem*)onDeviceEncryptionOptedInDescription {
+  TableViewImageItem* item = [[TableViewImageItem alloc]
+      initWithType:ItemTypeOnDeviceEncryptionOptedInDescription];
+  item.title =
+      l10n_util::GetNSString(IDS_IOS_PASSWORD_SETTINGS_ON_DEVICE_ENCRYPTION);
+  item.detailText = l10n_util::GetNSString(
+      IDS_IOS_PASSWORD_SETTINGS_ON_DEVICE_ENCRYPTION_LEARN_MORE);
+  item.enabled = NO;
+  item.accessibilityIdentifier = kOnDeviceEncryptionOptedInTextId;
+  return item;
+}
+
+- (TableViewTextItem*)onDeviceEncryptionOptedInLearnMore {
+  TableViewTextItem* item = [[TableViewTextItem alloc]
+      initWithType:ItemTypeOnDeviceEncryptionOptedInLearnMore];
+  item.text = l10n_util::GetNSString(
+      IDS_IOS_PASSWORD_SETTINGS_ON_DEVICE_ENCRYPTION_OPTED_IN_LEARN_MORE);
+  item.textColor = [UIColor colorNamed:kBlueColor];
+  item.accessibilityTraits = UIAccessibilityTraitButton;
+  item.accessibilityIdentifier = kOnDeviceEncryptionLearnMoreId;
+  return item;
+}
+
+- (TableViewTextItem*)setUpOnDeviceEncryptionItem {
+  TableViewTextItem* item =
+      [[TableViewTextItem alloc] initWithType:ItemTypeOnDeviceEncryptionSetUp];
+  item.text = l10n_util::GetNSString(
+      IDS_IOS_PASSWORD_SETTINGS_ON_DEVICE_ENCRYPTION_SET_UP);
+  item.textColor = [UIColor colorNamed:kBlueColor];
+  item.accessibilityTraits = UIAccessibilityTraitButton;
+  item.accessibilityIdentifier = kOnDeviceEncryptionSetUpId;
+  item.accessibilityTraits |= UIAccessibilityTraitLink;
+  return item;
+}
+
 - (TableViewTextItem*)exportPasswordsItem {
   TableViewTextItem* exportPasswordsItem =
       [[TableViewTextItem alloc] initWithType:ItemTypeExportPasswordsButton];
@@ -753,9 +959,10 @@ void RemoveFormsToBeDeleted(
                   forForm:(const password_manager::PasswordForm&)form {
   PasswordFormContentItem* passwordItem =
       [[PasswordFormContentItem alloc] initWithType:ItemTypeSavedPassword];
-  passwordItem.text = text;
+  passwordItem.title = text;
   passwordItem.form = form;
   passwordItem.detailText = detailText;
+  passwordItem.URL = [[CrURL alloc] initWithGURL:GURL(form.url)];
   passwordItem.accessibilityTraits |= UIAccessibilityTraitButton;
   passwordItem.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
   if (self.mostRecentlyUpdatedPassword) {
@@ -769,11 +976,47 @@ void RemoveFormsToBeDeleted(
   return passwordItem;
 }
 
-- (PasswordFormContentItem*)
-    blockedFormItemWithText:(NSString*)text
-                    forForm:(const password_manager::PasswordForm&)form {
+- (PasswordFormContentItem*)blockedFormItemForForm:
+    (const password_manager::PasswordForm&)form {
   PasswordFormContentItem* passwordItem =
       [[PasswordFormContentItem alloc] initWithType:ItemTypeBlocked];
+  passwordItem.form = form;
+  passwordItem.URL = [[CrURL alloc] initWithGURL:GURL(form.url)];
+  passwordItem.accessibilityTraits |= UIAccessibilityTraitButton;
+  passwordItem.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+  return passwordItem;
+}
+
+- (LegacyPasswordFormContentItem*)
+    legacySavedFormItemWithText:(NSString*)text
+                  andDetailText:(NSString*)detailText
+                        forForm:(const password_manager::PasswordForm&)form {
+  DCHECK(!IsFaviconEnabled());
+  LegacyPasswordFormContentItem* passwordItem =
+      [[LegacyPasswordFormContentItem alloc]
+          initWithType:ItemTypeSavedPassword];
+  passwordItem.text = text;
+  passwordItem.form = form;
+  passwordItem.detailText = detailText;
+  passwordItem.accessibilityTraits |= UIAccessibilityTraitButton;
+  passwordItem.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+  if (self.mostRecentlyUpdatedPassword) {
+    if (self.mostRecentlyUpdatedPassword->username_value ==
+            form.username_value &&
+        self.mostRecentlyUpdatedPassword->signon_realm == form.signon_realm) {
+      self.legacyMostRecentlyUpdatedItem = passwordItem;
+      self.mostRecentlyUpdatedPassword = absl::nullopt;
+    }
+  }
+  return passwordItem;
+}
+
+- (LegacyPasswordFormContentItem*)
+    legacyBlockedFormItemWithText:(NSString*)text
+                          forForm:(const password_manager::PasswordForm&)form {
+  DCHECK(!IsFaviconEnabled());
+  LegacyPasswordFormContentItem* passwordItem =
+      [[LegacyPasswordFormContentItem alloc] initWithType:ItemTypeBlocked];
   passwordItem.text = text;
   passwordItem.form = form;
   passwordItem.accessibilityTraits |= UIAccessibilityTraitButton;
@@ -784,8 +1027,7 @@ void RemoveFormsToBeDeleted(
 #pragma mark - PopoverLabelViewControllerDelegate
 
 - (void)didTapLinkURL:(NSURL*)URL {
-  GURL convertedURL = net::GURLWithNSURL(URL);
-  [self view:nil didTapLinkURL:convertedURL];
+  [self view:nil didTapLinkURL:[[CrURL alloc] initWithNSURL:URL]];
 }
 
 #pragma mark - BooleanObserver
@@ -868,7 +1110,7 @@ void RemoveFormsToBeDeleted(
 #pragma mark - PasswordsConsumer
 
 - (void)setPasswordCheckUIState:(PasswordCheckUIState)state
-      compromisedPasswordsCount:(NSInteger)count {
+    unmutedCompromisedPasswordsCount:(NSInteger)count {
   self.compromisedPasswordsCount = count;
   // Update password check status and check button with new state.
   [self updatePasswordCheckButtonWithState:state];
@@ -917,11 +1159,11 @@ void RemoveFormsToBeDeleted(
     NSMutableIndexSet* sectionsToUpdate = [NSMutableIndexSet indexSet];
 
     // Hold in reverse order of section indexes (bottom up of section
-    // displayed). if we don't we'll cause a crash.
-    SectionIdentifier sections[2] = {SectionIdentifierBlocked,
-                                     SectionIdentifierSavedPasswords};
+    // displayed). If we don't we'll cause a crash.
+    PasswordSectionIdentifier sections[2] = {SectionIdentifierBlocked,
+                                             SectionIdentifierSavedPasswords};
     for (int i = 0; i < 2; i++) {
-      SectionIdentifier section = sections[i];
+      PasswordSectionIdentifier section = sections[i];
       bool hasSection = [model hasSectionForSectionIdentifier:section];
       bool needsSection = section == SectionIdentifierBlocked
                               ? !_blockedForms.empty()
@@ -970,6 +1212,15 @@ void RemoveFormsToBeDeleted(
   }
 }
 
+- (void)updateOnDeviceEncryptionSessionAndUpdateTableView {
+  if (!self.navigationItem.searchController.active) {
+    [self
+        updateOnDeviceEncryptionSessionWithUpdateTableView:YES
+                                          withRowAnimation:
+                                              UITableViewRowAnimationAutomatic];
+  }
+}
+
 #pragma mark - UITableViewDelegate
 
 // Uses a group of example headers to calculate the heights. Returning
@@ -988,9 +1239,9 @@ void RemoveFormsToBeDeleted(
 //      expected heights are [20, 10, 20].
 - (CGFloat)tableView:(UITableView*)tableView
     heightForHeaderInSection:(NSInteger)section {
-  if ([self.tableViewModel headerForSection:section]) {
+  if ([self.tableViewModel headerForSectionIndex:section]) {
     TableViewHeaderFooterItem* item =
-        [self.tableViewModel headerForSection:section];
+        [self.tableViewModel headerForSectionIndex:section];
     Class headerClass = item.cellClass;
     if (!self.exampleHeaders[headerClass]) {
       UITableViewHeaderFooterView* view =
@@ -1013,10 +1264,20 @@ void RemoveFormsToBeDeleted(
 
 - (void)willPresentSearchController:(UISearchController*)searchController {
   [self showScrim];
-  // Remove save passwords switch section and password check section.
+  // Remove save passwords switch section, password check section and
+  // on device encryption.
+
   [self
       performBatchTableViewUpdates:^{
+        // Sections must be removed from bottom to top, otherwise it crashes
+        [self clearSectionWithIdentifier:SectionIdentifierOnDeviceEncryption
+                        withRowAnimation:UITableViewRowAnimationTop];
+        self.onDeviceEncryptionStateInModel = OnDeviceEncryptionStateNotShown;
+
         [self clearSectionWithIdentifier:SectionIdentifierPasswordCheck
+                        withRowAnimation:UITableViewRowAnimationTop];
+
+        [self clearSectionWithIdentifier:SectionIdentifierPasswordsInOtherApps
                         withRowAnimation:UITableViewRowAnimationTop];
 
         [self clearSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch
@@ -1039,6 +1300,7 @@ void RemoveFormsToBeDeleted(
   TableViewModel* model = self.tableViewModel;
   [self.tableView
       performBatchUpdates:^{
+        // Add "Save Password Switch" section.
         [model insertSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch
                                    atIndex:0];
         [model setHeader:_manageAccountLinkItem
@@ -1058,12 +1320,31 @@ void RemoveFormsToBeDeleted(
             arrayWithObjects:[NSIndexPath indexPathForRow:0
                                                 inSection:switchSection],
                              nil];
-        [model insertSectionWithIdentifier:SectionIdentifierPasswordCheck
+
+        // Add "Password in other app" section.
+        [model insertSectionWithIdentifier:SectionIdentifierPasswordsInOtherApps
                                    atIndex:1];
+        NSInteger otherAppSection = [model
+            sectionForSectionIdentifier:SectionIdentifierPasswordsInOtherApps];
+
+        [self.tableView insertSections:[NSIndexSet indexSetWithIndex:1]
+                      withRowAnimation:UITableViewRowAnimationTop];
+        [model addItem:_passwordsInOtherAppsItem
+            toSectionWithIdentifier:SectionIdentifierPasswordsInOtherApps];
+        [rowsIndexPaths
+            addObject:[NSIndexPath indexPathForRow:0
+                                         inSection:otherAppSection]];
+
+        [self.tableView insertRowsAtIndexPaths:rowsIndexPaths
+                              withRowAnimation:UITableViewRowAnimationTop];
+
+        // Add "Password check" section.
+        [model insertSectionWithIdentifier:SectionIdentifierPasswordCheck
+                                   atIndex:2];
         NSInteger checkSection =
             [model sectionForSectionIdentifier:SectionIdentifierPasswordCheck];
 
-        [self.tableView insertSections:[NSIndexSet indexSetWithIndex:1]
+        [self.tableView insertSections:[NSIndexSet indexSetWithIndex:2]
                       withRowAnimation:UITableViewRowAnimationTop];
         [model addItem:_passwordProblemsItem
             toSectionWithIdentifier:SectionIdentifierPasswordCheck];
@@ -1082,6 +1363,11 @@ void RemoveFormsToBeDeleted(
                     kSupportForAddPasswordsInSettings)) {
           self.navigationController.toolbarHidden = NO;
         }
+
+        // Add "On-device encryption" section.
+        [self updateOnDeviceEncryptionSessionWithUpdateTableView:YES
+                                                withRowAnimation:
+                                                    UITableViewRowAnimationTop];
       }
                completion:nil];
 }
@@ -1197,7 +1483,7 @@ void RemoveFormsToBeDeleted(
 }
 
 // Builds the filtered list of passwords/blocked based on given
-// |searchTerm|.
+// `searchTerm`.
 - (void)filterItems:(NSString*)searchTerm {
   TableViewModel* model = self.tableViewModel;
 
@@ -1214,9 +1500,13 @@ void RemoveFormsToBeDeleted(
           ![detailText localizedCaseInsensitiveContainsString:searchTerm];
       if (hidden)
         continue;
-      [model addItem:[self savedFormItemWithText:text
-                                   andDetailText:detailText
-                                         forForm:form]
+      [model addItem:(IsFaviconEnabled()
+                          ? [self savedFormItemWithText:text
+                                          andDetailText:detailText
+                                                forForm:form]
+                          : [self legacySavedFormItemWithText:text
+                                                andDetailText:detailText
+                                                      forForm:form])
           toSectionWithIdentifier:SectionIdentifierSavedPasswords];
     }
   }
@@ -1230,7 +1520,10 @@ void RemoveFormsToBeDeleted(
                     ![text localizedCaseInsensitiveContainsString:searchTerm];
       if (hidden)
         continue;
-      [model addItem:[self blockedFormItemWithText:text forForm:form]
+      [model addItem:(IsFaviconEnabled()
+                          ? [self blockedFormItemForForm:form]
+                          : [self legacyBlockedFormItemWithText:text
+                                                        forForm:form])
           toSectionWithIdentifier:SectionIdentifierBlocked];
     }
   }
@@ -1394,6 +1687,16 @@ void RemoveFormsToBeDeleted(
       break;
     }
   }
+
+  // Notify the accessibility to focus on the password check status cell when
+  // the status changed to unsafe, safe or error. (Only do it after the user tap
+  // on the "Check Now" button.)
+  if (self.shouldFocusAccessibilityOnPasswordCheckStatus &&
+      (state == PasswordCheckStateUnSafe || state == PasswordCheckStateSafe ||
+       state == PasswordCheckStateError)) {
+    [self focusAccessibilityOnPasswordCheckStatus];
+    self.shouldFocusAccessibilityOnPasswordCheckStatus = NO;
+  }
 }
 
 - (void)updateExportPasswordsButton {
@@ -1482,16 +1785,20 @@ void RemoveFormsToBeDeleted(
   std::vector<password_manager::PasswordForm> blockedToDelete;
 
   for (NSIndexPath* indexPath in indexPaths) {
+    password_manager::PasswordForm form =
+        IsFaviconEnabled()
+            ? base::mac::ObjCCastStrict<PasswordFormContentItem>(
+                  [self.tableViewModel itemAtIndexPath:indexPath])
+                  .form
+            : base::mac::ObjCCastStrict<LegacyPasswordFormContentItem>(
+                  [self.tableViewModel itemAtIndexPath:indexPath])
+                  .form;
     // Only form items are editable.
-    PasswordFormContentItem* item =
-        base::mac::ObjCCastStrict<PasswordFormContentItem>(
-            [self.tableViewModel itemAtIndexPath:indexPath]);
     NSInteger itemType = [self.tableViewModel itemTypeForIndexPath:indexPath];
     BOOL blocked = (itemType == ItemTypeBlocked);
-    blocked ? blockedToDelete.push_back(item.form)
-            : passwordsToDelete.push_back(item.form);
+    blocked ? blockedToDelete.push_back(form)
+            : passwordsToDelete.push_back(form);
   }
-
   RemoveFormsToBeDeleted(_savedForms, passwordsToDelete);
   RemoveFormsToBeDeleted(_blockedForms, blockedToDelete);
 
@@ -1559,10 +1866,32 @@ void RemoveFormsToBeDeleted(
                           atScrollPosition:UITableViewScrollPositionTop
                                   animated:NO];
     self.mostRecentlyUpdatedItem = nil;
+  } else if (self.legacyMostRecentlyUpdatedItem) {
+    DCHECK(!IsFaviconEnabled());
+    NSIndexPath* indexPath = [self.tableViewModel
+        indexPathForItem:self.legacyMostRecentlyUpdatedItem];
+    [self.tableView scrollToRowAtIndexPath:indexPath
+                          atScrollPosition:UITableViewScrollPositionTop
+                                  animated:NO];
+    self.legacyMostRecentlyUpdatedItem = nil;
   }
 }
 
-#pragma mark UITableViewDelegate
+// Notifies accessibility to focus on the Password Check Status cell when its
+// layout changed.
+- (void)focusAccessibilityOnPasswordCheckStatus {
+  if ([self.tableViewModel hasItemForItemType:ItemTypePasswordCheckStatus
+                            sectionIdentifier:SectionIdentifierPasswordCheck]) {
+    NSIndexPath* indexPath = [self.tableViewModel
+        indexPathForItemType:ItemTypePasswordCheckStatus
+           sectionIdentifier:SectionIdentifierPasswordCheck];
+    UITableViewCell* cell = [self.tableView cellForRowAtIndexPath:indexPath];
+    UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification,
+                                    cell);
+  }
+}
+
+#pragma mark - UITableViewDelegate
 
 - (void)tableView:(UITableView*)tableView
     didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
@@ -1575,13 +1904,9 @@ void RemoveFormsToBeDeleted(
   }
 
   TableViewModel* model = self.tableViewModel;
-  NSInteger itemType = [model itemTypeForIndexPath:indexPath];
+  ItemType itemType =
+      static_cast<ItemType>([model itemTypeForIndexPath:indexPath]);
   switch (itemType) {
-    case ItemTypeLinkHeader:
-    case ItemTypeHeader:
-    case ItemTypeSavePasswordsSwitch:
-    case ItemTypeManagedSavePasswords:
-      break;
     case ItemTypePasswordsInOtherApps:
       [self.handler showPasswordsInOtherAppsPromo];
       break;
@@ -1590,25 +1915,35 @@ void RemoveFormsToBeDeleted(
       break;
     case ItemTypeSavedPassword: {
       DCHECK_EQ(SectionIdentifierSavedPasswords,
-                [model sectionIdentifierForSection:indexPath.section]);
-      PasswordFormContentItem* saveFormItem =
-          base::mac::ObjCCastStrict<PasswordFormContentItem>(
-              [model itemAtIndexPath:indexPath]);
-      [self.handler showDetailedViewForForm:saveFormItem.form];
+                [model sectionIdentifierForSectionIndex:indexPath.section]);
+      password_manager::PasswordForm form =
+          IsFaviconEnabled()
+              ? base::mac::ObjCCastStrict<PasswordFormContentItem>(
+                    [model itemAtIndexPath:indexPath])
+                    .form
+              : base::mac::ObjCCastStrict<LegacyPasswordFormContentItem>(
+                    [model itemAtIndexPath:indexPath])
+                    .form;
+      [self.handler showDetailedViewForForm:form];
       break;
     }
     case ItemTypeBlocked: {
       DCHECK_EQ(SectionIdentifierBlocked,
-                [model sectionIdentifierForSection:indexPath.section]);
-      PasswordFormContentItem* blockedItem =
-          base::mac::ObjCCastStrict<PasswordFormContentItem>(
-              [model itemAtIndexPath:indexPath]);
-      [self.handler showDetailedViewForForm:blockedItem.form];
+                [model sectionIdentifierForSectionIndex:indexPath.section]);
+      password_manager::PasswordForm form =
+          IsFaviconEnabled()
+              ? base::mac::ObjCCastStrict<PasswordFormContentItem>(
+                    [model itemAtIndexPath:indexPath])
+                    .form
+              : base::mac::ObjCCastStrict<LegacyPasswordFormContentItem>(
+                    [model itemAtIndexPath:indexPath])
+                    .form;
+      [self.handler showDetailedViewForForm:form];
       break;
     }
     case ItemTypeExportPasswordsButton:
       DCHECK_EQ(SectionIdentifierExportPasswordsButton,
-                [model sectionIdentifierForSection:indexPath.section]);
+                [model sectionIdentifierForSectionIndex:indexPath.section]);
       if (_exportReady) {
         [self startPasswordsExportFlow];
       }
@@ -1616,11 +1951,30 @@ void RemoveFormsToBeDeleted(
     case ItemTypeCheckForProblemsButton:
       if (self.passwordCheckState != PasswordCheckStateRunning) {
         [self.delegate startPasswordCheck];
+        self.shouldFocusAccessibilityOnPasswordCheckStatus = YES;
         UmaHistogramEnumeration("PasswordManager.BulkCheck.UserAction",
                                 PasswordCheckInteraction::kManualPasswordCheck);
       }
       break;
-    default:
+    case ItemTypeOnDeviceEncryptionSetUp: {
+      GURL url = google_util::AppendGoogleLocaleParam(
+          GURL(kOnDeviceEncryptionOptInURL),
+          GetApplicationContext()->GetApplicationLocale());
+      BlockToOpenURL(self, self.dispatcher)(url);
+      break;
+    }
+    case ItemTypeOnDeviceEncryptionOptedInLearnMore: {
+      GURL url = GURL(kOnDeviceEncryptionLearnMoreURL);
+      BlockToOpenURL(self, self.dispatcher)(url);
+      break;
+    }
+    case ItemTypeOnDeviceEncryptionOptedInDescription:
+    case ItemTypeLastCheckTimestampFooter:
+    case ItemTypeOnDeviceEncryptionOptInDescription:
+    case ItemTypeLinkHeader:
+    case ItemTypeHeader:
+    case ItemTypeSavePasswordsSwitch:
+    case ItemTypeManagedSavePasswords:
       NOTREACHED();
   }
   [tableView deselectRowAtIndexPath:indexPath animated:YES];
@@ -1658,7 +2012,7 @@ void RemoveFormsToBeDeleted(
 - (UIView*)tableView:(UITableView*)tableView
     viewForHeaderInSection:(NSInteger)section {
   UIView* view = [super tableView:tableView viewForHeaderInSection:section];
-  switch ([self.tableViewModel sectionIdentifierForSection:section]) {
+  switch ([self.tableViewModel sectionIdentifierForSectionIndex:section]) {
     case SectionIdentifierSavePasswordsSwitch: {
       TableViewLinkHeaderFooterView* linkView =
           base::mac::ObjCCastStrict<TableViewLinkHeaderFooterView>(view);
@@ -1694,8 +2048,8 @@ void RemoveFormsToBeDeleted(
                      cellForRowAtIndexPath:indexPath];
   switch ([self.tableViewModel itemTypeForIndexPath:indexPath]) {
     case ItemTypeSavePasswordsSwitch: {
-      SettingsSwitchCell* switchCell =
-          base::mac::ObjCCastStrict<SettingsSwitchCell>(cell);
+      TableViewSwitchCell* switchCell =
+          base::mac::ObjCCastStrict<TableViewSwitchCell>(cell);
       [switchCell.switchView addTarget:self
                                 action:@selector(savePasswordsSwitchChanged:)
                       forControlEvents:UIControlEventValueChanged];
@@ -1721,13 +2075,45 @@ void RemoveFormsToBeDeleted(
     }
     case ItemTypeSavedPassword:
     case ItemTypeBlocked: {
-      TableViewDetailTextCell* textCell =
-          base::mac::ObjCCastStrict<TableViewDetailTextCell>(cell);
-      textCell.textLabel.lineBreakMode = NSLineBreakByTruncatingHead;
+      if (IsFaviconEnabled()) {
+        TableViewURLCell* urlCell =
+            base::mac::ObjCCastStrict<TableViewURLCell>(cell);
+        urlCell.textLabel.lineBreakMode = NSLineBreakByTruncatingHead;
+        // Load the favicon from cache.
+        [self loadFaviconAtIndexPath:indexPath forCell:cell];
+      } else {
+        TableViewDetailTextCell* textCell =
+            base::mac::ObjCCastStrict<TableViewDetailTextCell>(cell);
+        textCell.textLabel.lineBreakMode = NSLineBreakByTruncatingHead;
+      }
       break;
     }
   }
   return cell;
+}
+
+// Asynchronously loads favicon for given index path that is of type
+// `ItemTypeSavedPassword` or `ItemTypeBlocked`. The loads are cancelled upon
+// cell reuse automatically.
+- (void)loadFaviconAtIndexPath:(NSIndexPath*)indexPath
+                       forCell:(UITableViewCell*)cell {
+  TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
+  DCHECK(item);
+  DCHECK(cell);
+
+  TableViewURLItem* URLItem = base::mac::ObjCCastStrict<TableViewURLItem>(item);
+  TableViewURLCell* URLCell = base::mac::ObjCCastStrict<TableViewURLCell>(cell);
+
+  NSString* itemIdentifier = URLItem.uniqueIdentifier;
+  [self.imageDataSource
+      faviconForURL:URLItem.URL
+         completion:^(FaviconAttributes* attributes) {
+           // Only set favicon if the cell hasn't been reused.
+           if ([URLCell.cellUniqueIdentifier isEqualToString:itemIdentifier]) {
+             DCHECK(attributes);
+             [URLCell.faviconView configureWithAttributes:attributes];
+           }
+         }];
 }
 
 #pragma mark PasswordExporterDelegate
@@ -1858,7 +2244,7 @@ void RemoveFormsToBeDeleted(
   }
 }
 
-// Sets the save passwords switch item's enabled status to |enabled| and
+// Sets the save passwords switch item's enabled status to `enabled` and
 // reconfigures the corresponding cell.
 - (void)setSavePasswordsSwitchItemEnabled:(BOOL)enabled {
   if (_savePasswordsItem) {

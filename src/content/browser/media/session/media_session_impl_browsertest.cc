@@ -19,6 +19,7 @@
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "content/browser/media/session/audio_focus_delegate.h"
@@ -885,7 +886,7 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
 }
 
 // This behaviour is specific to desktop.
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 
 IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
                        ControlsNoShowForTransientAndRoutedService) {
@@ -984,7 +985,7 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
   EXPECT_TRUE(IsActive());
 }
 
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
                        ControlsHideWhenStopped) {
@@ -2962,7 +2963,7 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
   }
 }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_ANDROID)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_ANDROID)
 // TODO(https://crbug.com/1000400): Re-enable this test.
 #define MAYBE_PositionStateRouteWithOnePlayer \
   DISABLED_PositionStateRouteWithOnePlayer
@@ -3230,6 +3231,75 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplPrerenderingBrowserTest,
   EXPECT_NE(player_observer->GetAudioOutputSinkId(player_1), "speaker1");
 }
 
+IN_PROC_BROWSER_TEST_F(MediaSessionImplPrerenderingBrowserTest,
+                       DontClearFaviconCacheOnPrerenderNavigation) {
+  {
+    std::vector<media_session::MediaImage> expected_images;
+    media_session::MediaImage test_image;
+    test_image.src =
+        embedded_test_server()->GetURL("example.com", "/favicon.ico");
+    test_image.sizes.emplace_back(kDefaultFaviconSize);
+    expected_images.emplace_back(test_image);
+
+    media_session::test::MockMediaSessionMojoObserver observer(*media_session_);
+
+    observer.WaitForExpectedImagesOfType(
+        media_session::mojom::MediaSessionImageType::kSourceIcon,
+        expected_images);
+  }
+
+  std::vector<gfx::Size> valid_sizes;
+  valid_sizes.emplace_back(gfx::Size(100, 100));
+  valid_sizes.emplace_back(gfx::Size(200, 200));
+
+  GURL test_image_src = favicon_server().GetURL("/favicon.ico");
+  EXPECT_FALSE(media_session_->HasImageCacheForTest(test_image_src));
+
+  std::vector<blink::mojom::FaviconURLPtr> favicons;
+  favicons.emplace_back(blink::mojom::FaviconURL::New(
+      test_image_src, blink::mojom::FaviconIconType::kFavicon, valid_sizes));
+
+  media_session_->DidUpdateFaviconURL(shell()->web_contents()->GetMainFrame(),
+                                      favicons);
+  media_session::MediaImage test_image;
+  test_image.src = test_image_src;
+  test_image.sizes = valid_sizes;
+
+  {
+    EXPECT_EQ(0, get_favicon_calls());
+
+    base::RunLoop run_loop;
+    media_session_->GetMediaImageBitmap(
+        test_image, 100, 100,
+        base::BindLambdaForTesting([&](const SkBitmap&) { run_loop.Quit(); }));
+    run_loop.Run();
+
+    EXPECT_EQ(2, get_favicon_calls());
+  }
+
+  EXPECT_TRUE(media_session_->HasImageCacheForTest(test_image_src));
+
+  // Prerender the next page.
+  auto prerender_url =
+      embedded_test_server()->GetURL("example.com", "/title2.html");
+  int host_id = prerender_helper_.AddPrerender(prerender_url);
+  content::RenderFrameHost* prerender_rfh =
+      prerender_helper_.GetPrerenderedMainFrameHost(host_id);
+  EXPECT_NE(prerender_rfh, nullptr);
+
+  {
+    base::RunLoop run_loop;
+    media_session_->GetMediaImageBitmap(
+        test_image, 100, 100,
+        base::BindLambdaForTesting([&](const SkBitmap&) { run_loop.Quit(); }));
+    run_loop.Run();
+
+    EXPECT_EQ(3, get_favicon_calls());
+  }
+
+  EXPECT_TRUE(media_session_->HasImageCacheForTest(test_image_src));
+}
+
 class MediaSessionImplWithBackForwardCacheBrowserTest
     : public MediaSessionImplBrowserTest {
  protected:
@@ -3239,7 +3309,7 @@ class MediaSessionImplWithBackForwardCacheBrowserTest
     std::vector<base::test::ScopedFeatureList::FeatureAndParams>
         enabled_features;
     std::map<std::string, std::string> params;
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     params["process_binding_strength"] = "NORMAL";
 #endif
     enabled_features.emplace_back(features::kBackForwardCache, params);
@@ -3315,6 +3385,42 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplWithBackForwardCacheBrowserTest,
   // After the page is restored from back-forward cache, the player observer
   // must be still paused.
   EXPECT_FALSE(player_observer->IsPlaying(0));
+}
+
+IN_PROC_BROWSER_TEST_F(MediaSessionImplWithBackForwardCacheBrowserTest,
+                       CacheClearDoesntAffectCurrentPage) {
+  // The bug this test is protecting against (https://crbug.com/1288620) only
+  // reproduces on pages with an iframe, so load one.
+  EXPECT_TRUE(NavigateToURL(shell(), embedded_test_server()->GetURL(
+                                         "a.test", "/iframe_clipped.html")));
+
+  auto player_observer = std::make_unique<MockMediaSessionPlayerObserver>(
+      GetMainFrame(), media::MediaContentType::Persistent);
+
+  // Add a player.
+  StartNewPlayer(player_observer.get());
+  ResolveAudioFocusSuccess();
+  EXPECT_TRUE(player_observer->IsPlaying(0));
+  RenderFrameHostImplWrapper frame_host(GetMainFrame());
+
+  // Navigate to another page. The original page is cached in back-forward
+  // cache.
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("b.test", "/title1.html")));
+  EXPECT_TRUE(frame_host->IsInBackForwardCache());
+
+  // Add a player on the new page
+  StartNewPlayer(player_observer.get());
+  ResolveAudioFocusSuccess();
+  EXPECT_TRUE(player_observer->IsPlaying(1));
+
+  // Evict the page from the back-forward cache.
+  shell()->web_contents()->GetController().GetBackForwardCache().Flush();
+  EXPECT_TRUE(frame_host.WaitUntilRenderFrameDeleted());
+
+  // The page being removed from the back-forward cache should not affect the
+  // play state of the current page.
+  EXPECT_TRUE(player_observer->IsPlaying(1));
 }
 
 }  // namespace content

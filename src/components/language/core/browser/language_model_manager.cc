@@ -26,10 +26,18 @@ void LanguageModelManager::SetPrimaryModel(ModelType type) {
 }
 
 LanguageModel* LanguageModelManager::GetPrimaryModel() const {
+  if (models_.find(primary_model_type_) == models_.end()) {
+    return nullptr;
+  }
   return models_.at(primary_model_type_).get();
 }
 
-LanguageModel* LanguageModelManager::GetLanguageModel(ModelType type) {
+LanguageModelManager::ModelType LanguageModelManager::GetPrimaryModelType()
+    const {
+  return primary_model_type_;
+}
+
+LanguageModel* LanguageModelManager::GetLanguageModel(ModelType type) const {
   if (models_.find(type) == models_.end()) {
     return nullptr;
   }

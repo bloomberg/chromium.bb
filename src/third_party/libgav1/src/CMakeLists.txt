@@ -48,6 +48,8 @@ libgav1_option(NAME LIBGAV1_ENABLE_NEON HELPSTRING "Enables neon optimizations."
                VALUE ON)
 libgav1_option(NAME LIBGAV1_ENABLE_SSE4_1 HELPSTRING
                "Enables sse4.1 optimizations." VALUE ON)
+libgav1_option(NAME LIBGAV1_ENABLE_EXAMPLES HELPSTRING "Enables examples." VALUE
+               ON)
 libgav1_option(NAME LIBGAV1_ENABLE_TESTS HELPSTRING "Enables tests." VALUE ON)
 libgav1_option(
   NAME LIBGAV1_VERBOSE HELPSTRING
@@ -101,6 +103,12 @@ libgav1_track_configuration_variable(LIBGAV1_GENERATED_SOURCES_DIRECTORY)
 
 # Controls use of std::mutex and absl::Mutex in ThreadPool.
 libgav1_track_configuration_variable(LIBGAV1_THREADPOOL_USE_STD_MUTEX)
+if((DEFINED
+    LIBGAV1_THREADPOOL_USE_STD_MUTEX
+    AND NOT LIBGAV1_THREADPOOL_USE_STD_MUTEX)
+   OR NOT (DEFINED LIBGAV1_THREADPOOL_USE_STD_MUTEX OR ANDROID OR IOS))
+  set(use_absl_threading TRUE)
+endif()
 
 if(LIBGAV1_VERBOSE)
   libgav1_dump_cmake_flag_variables()
@@ -124,18 +132,22 @@ endif()
 libgav1_set_test_flags()
 
 set(libgav1_abseil "${libgav1_root}/third_party/abseil-cpp")
-if(NOT EXISTS "${libgav1_abseil}")
-  message(
-    FATAL_ERROR
-      "Abseil not found. This dependency is required by the"
-      " examples & tests and libgav1 when LIBGAV1_THREADPOOL_USE_STD_MUTEX is"
-      " not defined. To continue, download the Abseil repository to"
-      " third_party/abseil-cpp:\n  git \\\n    -C ${libgav1_root} \\\n"
-      "    clone \\\n"
-      "    https://github.com/abseil/abseil-cpp.git third_party/abseil-cpp")
+if(EXISTS "${libgav1_abseil}")
+  set(ABSL_PROPAGATE_CXX_STD ON)
+  add_subdirectory("${libgav1_abseil}" "${libgav1_abseil_build}"
+                   EXCLUDE_FROM_ALL)
+else()
+  if(use_absl_threading OR LIBGAV1_ENABLE_EXAMPLES OR LIBGAV1_ENABLE_TESTS)
+    message(
+      FATAL_ERROR
+        "Abseil not found. This dependency is required by the"
+        " examples & tests and libgav1 when LIBGAV1_THREADPOOL_USE_STD_MUTEX is"
+        " not defined. To continue, download the Abseil repository to"
+        " third_party/abseil-cpp:\n  git \\\n    -C ${libgav1_root} \\\n"
+        "    clone \\\n"
+        "    https://github.com/abseil/abseil-cpp.git third_party/abseil-cpp")
+  endif()
 endif()
-set(ABSL_PROPAGATE_CXX_STD ON)
-add_subdirectory("${libgav1_abseil}" "${libgav1_abseil_build}" EXCLUDE_FROM_ALL)
 
 libgav1_reset_target_lists()
 libgav1_add_dsp_targets()

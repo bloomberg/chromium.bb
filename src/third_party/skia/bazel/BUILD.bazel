@@ -1,6 +1,16 @@
-load("//bazel:macros.bzl", "select_multi")
+load("//bazel:macros.bzl", "cc_library", "exports_files_legacy", "select_multi")
 
-GENERAL_DEFINES = ["SK_HAS_ANDROID_CODEC"] + select({
+licenses(["notice"])
+
+exports_files_legacy()
+
+GENERAL_DEFINES = [
+    # The following comment is load-bearing. It will be replace via regex when we build for Google3
+    # Do not remove it or we won't be able to properly define SK_BUILD_FOR_GOOGLE3
+    # REPLACE_WHEN_BUILDING_IN_GOOGLE3
+    "SK_HAS_ANDROID_CODEC",
+    "SKIA_IMPLEMENTATION=1",
+] + select({
     "//bazel/common_config_settings:debug_build": [
         "SK_DEBUG",
     ],
@@ -10,6 +20,32 @@ GENERAL_DEFINES = ["SK_HAS_ANDROID_CODEC"] + select({
     "//conditions:default": [
         "SK_RELEASE",
     ],
+}) + select({
+    "//bazel/common_config_settings:enable_tracing_false": ["SK_DISABLE_TRACING"],
+    "//conditions:default": [],
+}) + select({
+    "//bazel/common_config_settings:enable_effect_serialization_false": ["SK_DISABLE_EFFECT_DESERIALIZATION"],
+    "//conditions:default": [],
+}) + select({
+    "//bazel/common_config_settings:is_skia_dev_build_true": [
+        "GR_TEST_UTILS=1",
+        "SK_ALLOW_STATIC_GLOBAL_INITIALIZERS=1",
+    ],
+    "//conditions:default": [],
+}) + select({
+    "//bazel/common_config_settings:enable_skslc_true": [
+        "SKSL_STANDALONE",
+        "SK_DISABLE_TRACING",
+        "SK_ENABLE_SPIRV_CROSS",
+        "SK_ENABLE_SPIRV_VALIDATION",
+        "SK_ENABLE_WGSL_VALIDATION",
+    ],
+    "//conditions:default": [],
+}) + select({
+    "//bazel/common_config_settings:enable_sksl_tracing_true": [
+        "SKSL_ENABLE_TRACING",
+    ],
+    "//conditions:default": [],
 })
 
 GPU_DEFINES = select({
@@ -20,6 +56,11 @@ GPU_DEFINES = select({
     "//bazel/common_config_settings:vulkan_backend": [
         "SK_VULKAN",
         "SK_SUPPORT_GPU=1",
+    ],
+    "//bazel/common_config_settings:dawn_backend": [
+        "SK_DAWN",
+        "SK_SUPPORT_GPU=1",
+        "VK_USE_PLATFORM_XCB_KHR",  # TODO(kjlubick) support dawn's dawn_enable_vulkan etc
     ],
     "//conditions:default": [
         "SK_SUPPORT_GPU=0",
@@ -36,6 +77,11 @@ GPU_DEFINES = select({
         "SK_USE_WEBGL",
     ],
     "//conditions:default": [],
+}) + select({
+    "//bazel/common_config_settings:vulkan_with_vma": [
+        "SK_USE_VMA",
+    ],
+    "//conditions:default": [],
 })
 
 CODEC_DEFINES = select_multi(
@@ -50,6 +96,7 @@ CODEC_DEFINES = select_multi(
             "SK_CODEC_DECODES_JPEG",
         ],
         "//bazel/common_config_settings:webp_decode_codec": ["SK_CODEC_DECODES_WEBP"],
+        "//bazel/common_config_settings:webp_encode_codec": ["SK_ENCODE_WEBP"],
     },
     default = [],
 )
@@ -59,6 +106,7 @@ PLATFORM_DEFINES = select({
         # working around https://github.com/emscripten-core/emscripten/issues/10072
         "SK_FORCE_8_BYTE_ALIGNMENT",
         "SK_DISABLE_LEGACY_SHADERCONTEXT",
+        "SK_DISABLE_AAA",  # This saves about 57KB of code size, uncompressed
     ],
     "//conditions:default": [],
 })

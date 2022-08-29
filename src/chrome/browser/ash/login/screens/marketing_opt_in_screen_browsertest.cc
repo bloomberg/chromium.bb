@@ -19,9 +19,9 @@
 #include "chrome/browser/ash/accessibility/accessibility_manager.h"
 #include "chrome/browser/ash/login/login_pref_names.h"
 #include "chrome/browser/ash/login/marketing_backend_connector.h"
+#include "chrome/browser/ash/login/test/embedded_policy_test_server_mixin.h"
 #include "chrome/browser/ash/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/ash/login/test/js_checker.h"
-#include "chrome/browser/ash/login/test/local_policy_test_server_mixin.h"
 #include "chrome/browser/ash/login/test/local_state_mixin.h"
 #include "chrome/browser/ash/login/test/login_manager_mixin.h"
 #include "chrome/browser/ash/login/test/oobe_base_test.h"
@@ -194,6 +194,9 @@ void MarketingOptInScreenTest::SetUpOnMainThread() {
   GetScreen()->set_ingore_pref_sync_for_testing(true);
 
   OobeBaseTest::SetUpOnMainThread();
+  auto* wizard_context = LoginDisplayHost::default_host()->GetWizardContext();
+  wizard_context->is_branded_build = true;
+  wizard_context->defer_oobe_flow_finished_for_tests = true;
 }
 
 MarketingOptInScreen* MarketingOptInScreenTest::GetScreen() {
@@ -601,7 +604,7 @@ class MarketingOptInScreenTestChildUser : public MarketingOptInScreenTest {
   void PerformLogin() override { login_manager_mixin_.LoginAsNewChildUser(); }
 
  private:
-  LocalPolicyTestServerMixin policy_server_mixin_{&mixin_host_};
+  EmbeddedPolicyTestServerMixin policy_server_mixin_{&mixin_host_};
   UserPolicyMixin user_policy_mixin_{
       &mixin_host_,
       AccountId::FromUserEmailGaiaId(test::kTestEmail, test::kTestGaiaId),
@@ -617,6 +620,24 @@ IN_PROC_BROWSER_TEST_F(MarketingOptInScreenTestChildUser, DisabledForChild) {
       "OOBE.StepCompletionTimeByExitReason.Marketing-opt-in.Next", 0);
   histogram_tester_.ExpectTotalCount("OOBE.StepCompletionTime.Marketing-opt-in",
                                      0);
+}
+
+class MarketingOptInScreenTestNotBrandedChrome
+    : public MarketingOptInScreenTest {
+ protected:
+  void SetUpOnMainThread() override {
+    MarketingOptInScreenTest::SetUpOnMainThread();
+    LoginDisplayHost::default_host()->GetWizardContext()->is_branded_build =
+        false;
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(MarketingOptInScreenTestNotBrandedChrome,
+                       SkippedNotBrandedBuild) {
+  ShowMarketingOptInScreen();
+  WaitForScreenExit();
+  EXPECT_EQ(screen_result_.value(),
+            MarketingOptInScreen::Result::NOT_APPLICABLE);
 }
 
 }  // namespace

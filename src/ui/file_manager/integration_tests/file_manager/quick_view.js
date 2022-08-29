@@ -10,7 +10,7 @@ import {addEntries, ENTRIES, EntryType, getCaller, getHistogramCount, pending, r
 import {testcase} from '../testcase.js';
 
 import {mountCrostini, navigateWithDirectoryTree, openNewWindow, remoteCall, setupAndWaitUntilReady} from './background.js';
-import {BASIC_ANDROID_ENTRY_SET, BASIC_FAKE_ENTRY_SET, BASIC_LOCAL_ENTRY_SET} from './test_data.js';
+import {BASIC_ANDROID_ENTRY_SET, BASIC_FAKE_ENTRY_SET, BASIC_LOCAL_ENTRY_SET, BASIC_ZIP_ENTRY_SET, MODIFIED_ENTRY_SET} from './test_data.js';
 
 /**
  * The name of the UMA emitted to track how Quick View is opened.
@@ -28,6 +28,16 @@ const QuickViewUmaWayToOpenHistogramValues = {
   SPACE_KEY: 1,
   SELECTION_MENU: 2,
 };
+
+/**
+ * Checks if dark mode has been turned on or not.
+ *
+ * @return {!Promise<boolean>} enabled or not.
+ */
+async function isDarkModeEnabled() {
+  const isDarkModeEnabled = await sendTestMessage({name: 'isDarkModeEnabled'});
+  return isDarkModeEnabled === 'true';
+}
 
 /**
  * Returns the $i18n{} label for the Quick View item |text| if devtools code
@@ -536,6 +546,45 @@ testcase.openQuickViewRemovablePartitions = async () => {
 
   // Open the file in Quick View.
   await openQuickView(appId, ENTRIES.hello.nameText);
+};
+
+/**
+ * Tests seeing dashes for an empty last_modified for DocumentsProvider.
+ */
+testcase.openQuickViewLastModifiedMetaData = async () => {
+  const documentsProviderVolumeQuery =
+      '[has-children="true"] [volume-type-icon="documents_provider"]';
+
+  // Add files to the DocumentsProvider volume.
+  await addEntries(['documents_provider'], MODIFIED_ENTRY_SET);
+
+  // Open Files app.
+  const appId = await openNewWindow(RootPath.DOWNLOADS);
+
+  // Wait for the DocumentsProvider volume to mount and then click to open
+  // DocumentsProvider Volume.
+  await remoteCall.waitAndClickElement(appId, documentsProviderVolumeQuery);
+
+  // Check: the DocumentsProvider files should appear in the file list.
+  const files = TestEntryInfo.getExpectedRows(MODIFIED_ENTRY_SET);
+  await remoteCall.waitForFiles(appId, files, {ignoreLastModifiedTime: true});
+
+  // Open a DocumentsProvider file in Quick View.
+  await openQuickView(appId, ENTRIES.hello.nameText);
+
+  const lastValidModifiedText =
+      await getQuickViewMetadataBoxField(appId, 'Date modified');
+  chrome.test.assertEq(ENTRIES.hello.lastModifiedTime, lastValidModifiedText);
+
+  await closeQuickView(appId);
+
+  // Open a DocumentsProvider file in Quick View.
+  await openQuickView(appId, ENTRIES.invalidLastModifiedDate.nameText);
+
+  // Modified time should be displayed as "--" when it's absent.
+  const lastInvalidModifiedText =
+      await getQuickViewMetadataBoxField(appId, 'Date modified');
+  chrome.test.assertEq('--', lastInvalidModifiedText);
 };
 
 /**
@@ -1264,7 +1313,7 @@ testcase.openQuickViewBackgroundColorHtml = async () => {
       haveElements = elements[0].styles.display.includes('block');
     }
     if (!haveElements || !elements[0].styles.backgroundColor) {
-      return pending(caller, 'Waiting for <file-safe-media> element.');
+      return pending(caller, 'Waiting for <files-safe-media> element.');
     }
     return elements[0].styles.backgroundColor;
   }
@@ -1274,8 +1323,12 @@ testcase.openQuickViewBackgroundColorHtml = async () => {
         'deepQueryAllElements', appId, [fileSafeMedia, styles]));
   });
 
-  // Check: the <files-safe-media> backgroundColor should be solid white.
-  chrome.test.assertEq('rgb(255, 255, 255)', backgroundColor);
+  // Check: the <files-safe-media> backgroundColor: var(--cros-bg-color).
+  if (await isDarkModeEnabled()) {
+    chrome.test.assertEq('rgb(32, 33, 36)', backgroundColor);
+  } else {
+    chrome.test.assertEq('rgb(255, 255, 255)', backgroundColor);
+  }
 };
 
 /**

@@ -27,15 +27,20 @@ devtools_module("formatter") {
 devtools_entrypoint("bundle") {
   entrypoint = "formatter.ts"
 
-  deps = [ ":formatter" ]
+  deps = [
+    ":formatter",
+    "../../entrypoints/formatter_worker:worker_entrypoint",
+  ]
 
   visibility = [
     ":*",
     "../../../test/unittests/front_end/models/formatter/*",
     "../../entrypoints/formatter_worker/*",
+    "../../models/source_map_scopes/*",
     "../../models/workspace_diff/*",
     "../../panels/coverage/*",
     "../../panels/sources/*",
+    "../../panels/utils/*",
 
     # TODO(crbug.com/1202788): Remove invalid dependents
     "../../ui/components/text_editor/*",

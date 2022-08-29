@@ -12,6 +12,7 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.merchant_viewer.MerchantTrustMessageViewModel.MessageDescriptionUI;
 import org.chromium.chrome.browser.merchant_viewer.proto.MerchantTrustSignalsOuterClass.MerchantTrustSignalsV2;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.components.page_info.PageInfoAction;
@@ -20,6 +21,7 @@ import org.chromium.components.page_info.PageInfoDiscoverabilityMetrics.Discover
 import org.chromium.components.page_info.PageInfoMainController;
 import org.chromium.components.page_info.PageInfoRowView;
 import org.chromium.components.page_info.PageInfoSubpageController;
+import org.chromium.content_public.browser.WebContents;
 
 /**
  * Class for controlling the {@link ChromePageInfo} "store info" section.
@@ -38,6 +40,7 @@ public class PageInfoStoreInfoController implements PageInfoSubpageController {
     private final PageInfoRowView mRowView;
     private final Context mContext;
     private final boolean mPageInfoOpenedFromStoreIcon;
+    private final WebContents mWebContents;
     private final PageInfoDiscoverabilityMetrics mDiscoverabilityMetrics =
             new PageInfoDiscoverabilityMetrics();
     private final MerchantTrustMetrics mMetrics = new MerchantTrustMetrics();
@@ -45,12 +48,13 @@ public class PageInfoStoreInfoController implements PageInfoSubpageController {
     public PageInfoStoreInfoController(PageInfoMainController mainController,
             PageInfoRowView rowView,
             @Nullable Supplier<StoreInfoActionHandler> actionHandlerSupplier,
-            boolean pageInfoOpenedFromStoreIcon) {
+            boolean pageInfoOpenedFromStoreIcon, WebContents webContents) {
         mMainController = mainController;
         mRowView = rowView;
         mContext = mRowView.getContext();
         mActionHandlerSupplier = actionHandlerSupplier;
         mPageInfoOpenedFromStoreIcon = pageInfoOpenedFromStoreIcon;
+        mWebContents = webContents;
         // Creating the instance of {@link MerchantTrustSignalsDataProvider} will force
         // OptimizationGuide to register for the MERCHANT_TRUST_SIGNALS type, so we need to check
         // the feature flag first.
@@ -86,8 +90,10 @@ public class PageInfoStoreInfoController implements PageInfoSubpageController {
                 }
                 mMainController.recordAction(PageInfoAction.PAGE_INFO_STORE_INFO_CLICKED);
                 mMainController.dismiss();
+                mMetrics.recordUkmOnRowClicked(mWebContents);
                 mActionHandlerSupplier.get().onStoreInfoClicked(trustSignals);
             };
+            mMetrics.recordUkmOnRowSeen(mWebContents);
         }
         mMetrics.recordMetricsForStoreInfoRowVisible(rowParams.visible);
         mRowView.setParams(rowParams);
@@ -95,7 +101,9 @@ public class PageInfoStoreInfoController implements PageInfoSubpageController {
 
     private CharSequence getRowSubtitle(MerchantTrustSignalsV2 trustSignals) {
         if (trustSignals.getMerchantStarRating() > 0) {
-            return MerchantTrustMessageViewModel.getMessageDescription(mContext, trustSignals);
+            CharSequence subTitle = MerchantTrustMessageViewModel.getMessageDescription(
+                    mContext, trustSignals, MessageDescriptionUI.RATING_AND_REVIEWS);
+            if (subTitle != null) return subTitle;
         } else if (trustSignals.getHasReturnPolicy()) {
             return mContext.getResources().getString(
                     R.string.page_info_store_info_description_with_no_rating);
@@ -123,4 +131,7 @@ public class PageInfoStoreInfoController implements PageInfoSubpageController {
 
     @Override
     public void updateRowIfNeeded() {}
+
+    @Override
+    public void onNativeInitialized() {}
 }

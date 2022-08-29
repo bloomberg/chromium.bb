@@ -4,6 +4,7 @@
 
 import * as Host from '../../../core/host/host.js';
 import * as i18n from '../../../core/i18n/i18n.js';
+import * as Platform from '../../../core/platform/platform.js';
 import * as ComponentHelpers from '../../components/helpers/helpers.js';
 import * as LitHtml from '../../lit-html/lit-html.js';
 import * as Buttons from '../buttons/buttons.js';
@@ -21,27 +22,27 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const feedbackIconUrl = new URL('../../../Images/feedback_button_icon.svg', import.meta.url).toString();
 
 export interface FeedbackButtonData {
-  feedbackUrl: string;
+  feedbackUrl: Platform.DevToolsPath.UrlString;
 }
 export class FeedbackButton extends HTMLElement {
   static readonly litTagName = LitHtml.literal`devtools-feedback-button`;
   readonly #shadow = this.attachShadow({mode: 'open'});
-  readonly #boundRender = this.render.bind(this);
+  readonly #boundRender = this.#render.bind(this);
 
   #props: FeedbackButtonData = {
-    feedbackUrl: '',
+    feedbackUrl: Platform.DevToolsPath.EmptyUrlString,
   };
 
   set data(data: FeedbackButtonData) {
     this.#props = data;
-    ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
+    void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
   }
 
   #onFeedbackClick(): void {
     Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(this.#props.feedbackUrl);
   }
 
-  private render(): void {
+  #render(): void {
     if (!ComponentHelpers.ScheduledRender.isScheduledRender(this)) {
       throw new Error('FeedbackButton render was not scheduled');
     }
