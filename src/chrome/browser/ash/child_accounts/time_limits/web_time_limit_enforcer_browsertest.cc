@@ -28,11 +28,13 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
-#include "chrome/browser/web_applications/web_application_info.h"
+#include "chrome/browser/web_applications/user_display_mode.h"
+#include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/services/app_service/public/cpp/app_types.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_handle.h"
@@ -143,7 +145,7 @@ bool WebTimeLimitEnforcerThrottleTest::IsErrorPageBeingShownInWebContents(
 
   bool value = false;
   content::ToRenderFrameHost target =
-      content::ToRenderFrameHost(tab->GetMainFrame());
+      content::ToRenderFrameHost(tab->GetPrimaryMainFrame());
   EXPECT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractBool(
       target, command, &value));
   return value;
@@ -178,17 +180,17 @@ WebTimeLimitEnforcerThrottleTest::GetWebTimeLimitEnforcer() {
 content::WebContents* WebTimeLimitEnforcerThrottleTest::InstallAndLaunchWebApp(
     const GURL& url,
     bool allowlisted_app) {
-  auto web_app_info = std::make_unique<WebApplicationInfo>();
+  auto web_app_info = std::make_unique<WebAppInstallInfo>();
   web_app_info->title = base::UTF8ToUTF16(url.host());
   web_app_info->description = u"Web app";
   web_app_info->start_url = url;
   web_app_info->scope = url;
-  web_app_info->user_display_mode = blink::mojom::DisplayMode::kStandalone;
+  web_app_info->user_display_mode = web_app::UserDisplayMode::kStandalone;
   web_app::AppId app_id = web_app::test::InstallWebApp(browser()->profile(),
                                                        std::move(web_app_info));
 
   if (allowlisted_app)
-    AllowlistApp(app_time::AppId(apps::mojom::AppType::kWeb, app_id));
+    AllowlistApp(app_time::AppId(apps::AppType::kWeb, app_id));
   base::RunLoop().RunUntilIdle();
 
   // Add a tab to |browser()| and return the newly added WebContents.
@@ -236,8 +238,13 @@ IN_PROC_BROWSER_TEST_F(WebTimeLimitEnforcerThrottleTest,
       params.navigated_or_inserted_contents));
 }
 
+#if BUILDFLAG(IS_CHROMEOS)
+#define MAYBE_WebBlockedAfterBrowser DISABLED_WebBlockedAfterBrowser
+#else
+#define MAYBE_WebBlockedAfterBrowser WebBlockedAfterBrowser
+#endif
 IN_PROC_BROWSER_TEST_F(WebTimeLimitEnforcerThrottleTest,
-                       WebBlockedAfterBrowser) {
+                       MAYBE_WebBlockedAfterBrowser) {
   GURL url = embedded_test_server()->GetURL(kExampleHost,
                                             "/supervised_user/simple.html");
   NavigateParams params(browser(), url,
@@ -408,7 +415,14 @@ IN_PROC_BROWSER_TEST_F(WebTimeLimitEnforcerThrottleTest,
   EXPECT_TRUE(IsErrorPageBeingShownInWebContents(web_contents3));
 }
 
-IN_PROC_BROWSER_TEST_F(WebTimeLimitEnforcerThrottleTest, WebContentTitleSet) {
+// TODO(crbug.com/1313933): Flaky on ChromeOS
+#if BUILDFLAG(IS_CHROMEOS)
+#define MAYBE_WebContentTitleSet DISABLED_WebContentTitleSet
+#else
+#define MAYBE_WebContentTitleSet WebContentTitleSet
+#endif
+IN_PROC_BROWSER_TEST_F(WebTimeLimitEnforcerThrottleTest,
+                       MAYBE_WebContentTitleSet) {
   GURL url = embedded_test_server()->GetURL(kExampleHost,
                                             "/supervised_user/simple.html");
   NavigateParams params(browser(), url,
@@ -429,7 +443,9 @@ IN_PROC_BROWSER_TEST_F(WebTimeLimitEnforcerThrottleTest, WebContentTitleSet) {
   EXPECT_EQ(web_contents->GetTitle(), title);
 }
 
-IN_PROC_BROWSER_TEST_F(WebTimeLimitEnforcerThrottleTest, EnsureQueryIsCleared) {
+// TODO(crbug.com/1291093): Flaky on ChromeOS.
+IN_PROC_BROWSER_TEST_F(WebTimeLimitEnforcerThrottleTest,
+                       DISABLED_EnsureQueryIsCleared) {
   AllowlistUrlRegx(kExampleHost);
   BlockWeb();
 

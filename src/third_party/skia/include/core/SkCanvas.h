@@ -31,6 +31,7 @@
 
 #include <cstring>
 #include <memory>
+#include <optional>
 #include <vector>
 
 #ifndef SK_SUPPORT_LEGACY_GETTOTALMATRIX
@@ -40,7 +41,6 @@
 class AutoLayerForImageFilter;
 class GrBackendRenderTarget;
 class GrRecordingContext;
-class GrSlug;
 class SkBaseDevice;
 class SkBitmap;
 class SkData;
@@ -58,15 +58,21 @@ class SkPixmap;
 class SkRegion;
 class SkRRect;
 struct SkRSXform;
+class SkMesh;
 class SkSpecialImage;
 class SkSurface;
 class SkSurface_Base;
 class SkTextBlob;
 class SkVertices;
 
-namespace skstd {
-    template<typename T> class optional;
-}
+namespace skgpu::graphite { class Recorder; }
+namespace sktext::gpu { class Slug; }
+namespace SkRecords { class Draw; }
+
+// TODO:
+// This is not ideal but Chrome is depending on a forward decl of GrSlug here.
+// It should be removed once Chrome has migrated to sktext::gpu::Slug.
+using GrSlug = sktext::gpu::Slug;
 
 /** \class SkCanvas
     SkCanvas provides an interface for drawing, and how the drawing is clipped and transformed.
@@ -298,6 +304,12 @@ public:
         example: https://fiddle.skia.org/c/@Canvas_recordingContext
      */
     virtual GrRecordingContext* recordingContext();
+
+    /** Returns Recorder for the GPU surface associated with SkCanvas.
+
+        @return  Recorder, if available; nullptr otherwise
+     */
+    virtual skgpu::graphite::Recorder* recorder();
 
     /** Sometimes a canvas is owned by a surface. If it is, getSurface() will return a bare
      *  pointer to that surface, else this will return nullptr.
@@ -1437,7 +1449,8 @@ public:
     /** \enum SkCanvas::SrcRectConstraint
         SrcRectConstraint controls the behavior at the edge of source SkRect,
         provided to drawImageRect() when there is any filtering. If kStrict is set,
-        then extra code is used to ensure it nevers samples outside of the src-rect.
+        then extra code is used to ensure it never samples outside of the src-rect.
+        kStrict_SrcRectConstraint disables the use of mipmaps and anisotropic filtering.
     */
     enum SrcRectConstraint {
         kStrict_SrcRectConstraint, //!< sample only inside bounds; slower
@@ -1948,6 +1961,29 @@ public:
     */
     void drawVertices(const sk_sp<SkVertices>& vertices, SkBlendMode mode, const SkPaint& paint);
 
+#if defined(SK_ENABLE_EXPERIMENTAL_CUSTOM_MESH) && defined(SK_ENABLE_SKSL)
+    /**
+        Experimental, under active development, and subject to change without notice.
+
+        Draws a mesh using a user-defined specification (see SkMeshSpecification).
+
+        SkBlender is ignored if SkMesh's specification does not output fragment shader color.
+        Otherwise, it combines
+            - the SkShader if SkPaint contains SkShader
+            - or the opaque SkPaint color if SkPaint does not contain SkShader
+        as the src of the blend and the mesh's fragment color as the dst.
+
+        SkMaskFilter, SkPathEffect, and antialiasing on SkPaint are ignored.
+
+        @param mesh      the mesh vertices and compatible specification.
+        @param blender   combines vertices colors with SkShader if present or SkPaint opaque color
+                         if not. Ignored if the custom mesh does not output color. Defaults to
+                         SkBlendMode::kModulate if nullptr.
+        @param paint     specifies the SkShader, used as SkVertices texture, may be nullptr
+    */
+    void drawMesh(const SkMesh& mesh, sk_sp<SkBlender> blender, const SkPaint& paint);
+#endif
+
     /** Draws a Coons patch: the interpolation of four cubics with shared corners,
         associating a color, and optionally a texture SkPoint, with each corner.
 
@@ -2167,6 +2203,11 @@ protected:
     virtual void didTranslate(SkScalar, SkScalar) {}
     virtual void didScale(SkScalar, SkScalar) {}
 
+#ifndef SK_ENABLE_EXPERIMENTAL_CUSTOM_MESH
+    // Define this in protected so we can still access internally for testing.
+    void drawMesh(const SkMesh& mesh, sk_sp<SkBlender> blender, const SkPaint& paint);
+#endif
+
     // NOTE: If you are adding a new onDraw virtual to SkCanvas, PLEASE add an override to
     // SkCanvasVirtualEnforcer (in SkCanvasVirtualEnforcer.h). This ensures that subclasses using
     // that mechanism  will be required to implement the new function.
@@ -2207,7 +2248,9 @@ protected:
 
     virtual void onDrawVerticesObject(const SkVertices* vertices, SkBlendMode mode,
                                       const SkPaint& paint);
-
+#ifdef SK_ENABLE_SKSL
+    virtual void onDrawMesh(const SkMesh&, sk_sp<SkBlender>, const SkPaint&);
+#endif
     virtual void onDrawAnnotation(const SkRect& rect, const char key[], SkData* value);
     virtual void onDrawShadowRec(const SkPath&, const SkDrawShadowRec&);
 
@@ -2232,15 +2275,15 @@ protected:
 
     virtual void onDiscard();
 
-#if SK_SUPPORT_GPU
+#if (SK_SUPPORT_GPU || defined(SK_GRAPHITE_ENABLED))
     /** Experimental
      */
-    virtual sk_sp<GrSlug> doConvertBlobToSlug(
-            const SkTextBlob& blob, SkPoint origin, const SkPaint& paint);
+    virtual sk_sp<sktext::gpu::Slug> onConvertGlyphRunListToSlug(
+            const SkGlyphRunList& glyphRunList, const SkPaint& paint);
 
     /** Experimental
      */
-    virtual void doDrawSlug(GrSlug* slug);
+    virtual void onDrawSlug(const sktext::gpu::Slug* slug);
 #endif
 
 private:
@@ -2262,7 +2305,7 @@ private:
         kYes = true
     };
     // call the appropriate predrawNotify and create a layer if needed.
-    skstd::optional<AutoLayerForImageFilter> aboutToDraw(
+    std::optional<AutoLayerForImageFilter> aboutToDraw(
         SkCanvas* canvas,
         const SkPaint& paint,
         const SkRect* rawBounds = nullptr,
@@ -2324,15 +2367,15 @@ private:
         void reset(SkBaseDevice* device);
     };
 
-    SkDeque     fMCStack;
-    // points to top of stack
-    MCRec*      fMCRec;
-
     // the first N recs that can fit here mean we won't call malloc
     static constexpr int kMCRecSize      = 96; // most recent measurement
     static constexpr int kMCRecCount     = 32; // common depth for save/restores
 
     intptr_t fMCRecStorage[kMCRecSize * kMCRecCount / sizeof(intptr_t)];
+
+    SkDeque     fMCStack;
+    // points to top of stack
+    MCRec*      fMCRec;
 
     // Installed via init()
     sk_sp<SkBaseDevice> fBaseDevice;
@@ -2366,29 +2409,34 @@ private:
     friend class SkPictureRecord;   // predrawNotify (why does it need it? <reed>)
     friend class SkOverdrawCanvas;
     friend class SkRasterHandleAllocator;
+    friend class SkRecords::Draw;
+    template <typename Key>
+    friend class SkTestCanvas;
+
 protected:
     // For use by SkNoDrawCanvas (via SkCanvasVirtualEnforcer, which can't be a friend)
     SkCanvas(const SkIRect& bounds);
 private:
     SkCanvas(const SkBitmap&, std::unique_ptr<SkRasterHandleAllocator>,
-             SkRasterHandleAllocator::Handle);
+             SkRasterHandleAllocator::Handle, const SkSurfaceProps* props);
 
     SkCanvas(SkCanvas&&) = delete;
     SkCanvas(const SkCanvas&) = delete;
     SkCanvas& operator=(SkCanvas&&) = delete;
     SkCanvas& operator=(const SkCanvas&) = delete;
 
-#if SK_SUPPORT_GPU
-    friend class GrSlug;
+#if (SK_SUPPORT_GPU || defined(SK_GRAPHITE_ENABLED))
+    friend class sktext::gpu::Slug;
     /** Experimental
-     * Convert a SkTextBlob to a GrSlug using the current canvas state.
+     * Convert a SkTextBlob to a sktext::gpu::Slug using the current canvas state.
      */
-    sk_sp<GrSlug> convertBlobToSlug(const SkTextBlob& blob, SkPoint origin, const SkPaint& paint);
+    sk_sp<sktext::gpu::Slug> convertBlobToSlug(const SkTextBlob& blob, SkPoint origin,
+                                               const SkPaint& paint);
 
     /** Experimental
-     * Draw an GrSlug given the current canvas state.
+     * Draw an sktext::gpu::Slug given the current canvas state.
      */
-    void drawSlug(GrSlug* slug);
+    void drawSlug(const sktext::gpu::Slug* slug);
 #endif
 
     /** Experimental

@@ -1,7 +1,7 @@
-/* Copyright (c) 2021 The Khronos Group Inc.
- * Copyright (c) 2021 Valve Corporation
- * Copyright (c) 2021 LunarG, Inc.
- * Copyright (C) 2021 Google Inc.
+/* Copyright (c) 2021-2022 The Khronos Group Inc.
+ * Copyright (c) 2021-2022 Valve Corporation
+ * Copyright (c) 2021-2022 LunarG, Inc.
+ * Copyright (C) 2021-2022 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,17 +43,17 @@ namespace core_error {
 enum class Func {
     Empty = 0,
     vkQueueSubmit,
-    vkQueueSubmit2KHR,
+    vkQueueSubmit2,
     vkCmdSetEvent,
-    vkCmdSetEvent2KHR,
+    vkCmdSetEvent2,
     vkCmdResetEvent,
-    vkCmdResetEvent2KHR,
+    vkCmdResetEvent2,
     vkCmdPipelineBarrier,
-    vkCmdPipelineBarrier2KHR,
+    vkCmdPipelineBarrier2,
     vkCmdWaitEvents,
-    vkCmdWaitEvents2KHR,
+    vkCmdWaitEvents2,
     vkCmdWriteTimestamp,
-    vkCmdWriteTimestamp2KHR,
+    vkCmdWriteTimestamp2,
     vkCreateRenderPass,
     vkCreateRenderPass2,
     vkQueueBindSparse,
@@ -65,19 +65,19 @@ const std::string& String(Func func);
 enum class Struct {
     Empty = 0,
     VkMemoryBarrier,
-    VkMemoryBarrier2KHR,
+    VkMemoryBarrier2,
     VkBufferMemoryBarrier,
     VkImageMemoryBarrier,
-    VkBufferMemoryBarrier2KHR,
-    VkImageMemoryBarrier2KHR,
+    VkBufferMemoryBarrier2,
+    VkImageMemoryBarrier2,
     VkSubmitInfo,
-    VkSubmitInfo2KHR,
-    VkCommandBufferSubmitInfoKHR,
+    VkSubmitInfo2,
+    VkCommandBufferSubmitInfo,
     VkSubpassDependency,
     VkSubpassDependency2,
     VkBindSparseInfo,
     VkSemaphoreSignalInfo,
-    VkSemaphoreSubmitInfoKHR,
+    VkSemaphoreSubmitInfo,
     VkProtectedSubmitInfo,
 };
 

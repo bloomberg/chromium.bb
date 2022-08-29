@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.password_manager;
 
 import android.app.Activity;
 
+import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 
 import org.chromium.base.annotations.CalledByNative;
@@ -44,15 +45,24 @@ public class CredentialLeakDialogBridge {
 
     @CalledByNative
     public void showDialog(String credentialLeakTitle, String credentialLeakDetails,
-            boolean useChangePasswordIllustration, String positiveButton, String negativeButton) {
+            boolean isChangeAutomaticallyAvailable, String positiveButton, String negativeButton) {
         Activity activity = mWindowAndroid.getActivity().get();
         if (activity == null) return;
 
+        @DrawableRes
+        int headerDrawableId;
+        if (isChangeAutomaticallyAvailable) {
+            headerDrawableId = R.drawable.password_checkup_change_automatically;
+        } else {
+            headerDrawableId = PasswordManagerHelper.usesUnifiedPasswordManagerUI()
+                    ? R.drawable.password_check_header_red
+                    : R.drawable.password_checkup_warning;
+        };
+
         PasswordManagerDialogContents contents = createDialogContents(credentialLeakTitle,
-                credentialLeakDetails,
-                useChangePasswordIllustration ? R.drawable.password_checkup_change_automatically
-                                              : R.drawable.password_checkup_warning,
-                positiveButton, negativeButton);
+                credentialLeakDetails, headerDrawableId, positiveButton,
+                isChangeAutomaticallyAvailable ? R.drawable.ic_autofill_assistant_white_24dp : 0,
+                negativeButton);
         contents.setPrimaryButtonFilled(negativeButton != null);
         contents.setHelpButtonCallback(this::showHelpArticle);
 
@@ -62,9 +72,10 @@ public class CredentialLeakDialogBridge {
 
     private PasswordManagerDialogContents createDialogContents(String credentialLeakTitle,
             String credentialLeakDetails, int illustrationId, String positiveButton,
-            String negativeButton) {
+            int positiveButtonIconId, String negativeButton) {
         return new PasswordManagerDialogContents(credentialLeakTitle, credentialLeakDetails,
-                illustrationId, positiveButton, negativeButton, this::onClick);
+                illustrationId, positiveButton, positiveButtonIconId, negativeButton,
+                this::onClick);
     }
 
     @CalledByNative

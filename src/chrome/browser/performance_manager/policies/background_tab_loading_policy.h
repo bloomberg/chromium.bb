@@ -25,6 +25,7 @@ class PageLoader;
 FORWARD_DECLARE_TEST(BackgroundTabLoadingBrowserTest,
                      RestoredTabsAreLoadedGradually);
 class BackgroundTabLoadingBrowserTest;
+class SiteDataReader;
 
 namespace policies {
 
@@ -51,8 +52,24 @@ class BackgroundTabLoadingPolicy : public GraphOwned,
                              PageNode::LoadingState previous_state) override;
   void OnBeforePageNodeRemoved(const PageNode* page_node) override;
 
-  // Schedules the PageNodes in |page_nodes| to be loaded when appropriate.
-  void ScheduleLoadForRestoredTabs(std::vector<PageNode*> page_nodes);
+  // Holds information about a PageNode to load by this policy.
+  struct PageNodeAndNotificationPermission {
+    PageNodeAndNotificationPermission(base::WeakPtr<PageNode> page_node,
+                                      bool has_notification_permission);
+    PageNodeAndNotificationPermission(
+        const PageNodeAndNotificationPermission&
+            page_node_and_notification_permission);
+    ~PageNodeAndNotificationPermission();
+
+    base::WeakPtr<PageNode> page_node;
+    bool has_notification_permission;
+  };
+
+  // Schedules the PageNodes in |page_node_and_permission_vector| to be loaded
+  // when appropriate.
+  void ScheduleLoadForRestoredTabs(
+      std::vector<PageNodeAndNotificationPermission>
+          page_node_and_permission_vector);
 
   void SetMockLoaderForTesting(std::unique_ptr<mechanism::PageLoader> loader);
   void SetMaxSimultaneousLoadsForTesting(size_t loading_slots);
@@ -95,6 +112,10 @@ class BackgroundTabLoadingPolicy : public GraphOwned,
   // SystemNodeObserver:
   void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel new_level) override;
+
+  // Returns the SiteDataReader instance for |page_node|, if any. Virtual for
+  // testing.
+  virtual SiteDataReader* GetSiteDataReader(const PageNode* page_node) const;
 
   // Determines whether or not the given PageNode should be loaded. If this
   // returns false, then the policy no longer attempts to load |page_node| and

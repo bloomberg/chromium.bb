@@ -29,11 +29,11 @@
 #include "net/base/network_isolation_key.h"
 #include "net/http/alternative_service.h"
 #include "net/http/broken_alternative_services.h"
-#include "net/third_party/quiche/src/quic/core/quic_bandwidth.h"
-#include "net/third_party/quiche/src/quic/core/quic_server_id.h"
-#include "net/third_party/quiche/src/quic/core/quic_versions.h"
-#include "net/third_party/quiche/src/spdy/core/spdy_framer.h"  // TODO(willchan): Reconsider this.
-#include "net/third_party/quiche/src/spdy/core/spdy_protocol.h"
+#include "net/third_party/quiche/src/quiche/quic/core/quic_bandwidth.h"
+#include "net/third_party/quiche/src/quiche/quic/core/quic_server_id.h"
+#include "net/third_party/quiche/src/quiche/quic/core/quic_versions.h"
+#include "net/third_party/quiche/src/quiche/spdy/core/spdy_framer.h"  // TODO(willchan): Reconsider this.
+#include "net/third_party/quiche/src/quiche/spdy/core/spdy_protocol.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/scheme_host_port.h"
 
@@ -413,6 +413,13 @@ class NET_EXPORT HttpServerProperties
   void SetMaxServerConfigsStoredInProperties(
       size_t max_server_configs_stored_in_properties);
 
+  // If values are present, sets initial_delay and
+  // exponential_backoff_on_initial_delay which are used to calculate delay of
+  // broken alternative services.
+  void SetBrokenAlternativeServicesDelayParams(
+      absl::optional<base::TimeDelta> initial_delay,
+      absl::optional<bool> exponential_backoff_on_initial_delay);
+
   // Returns whether HttpServerProperties is initialized.
   bool IsInitialized() const;
 
@@ -603,7 +610,7 @@ class NET_EXPORT HttpServerProperties
   // Queue a write when resources finish loading. Set to true when
   // MaybeQueueWriteProperties() is invoked while still waiting on
   // initialization to complete.
-  bool queue_write_on_load_;
+  bool queue_write_on_load_ = false;
 
   // Used to load/save properties from/to preferences. May be nullptr.
   std::unique_ptr<HttpServerPropertiesManager> properties_manager_;

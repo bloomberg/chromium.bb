@@ -36,8 +36,8 @@
 #include "chrome/browser/ash/language_preferences.h"
 #include "chrome/browser/ash/login/session/user_session_manager.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser_process_platform_part_chromeos.h"
-#include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/browser_process_platform_part_ash.h"
+#include "chrome/browser/lifetime/termination_notification.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chrome/common/chrome_features.h"
@@ -45,7 +45,6 @@
 #include "chromeos/system/devicemode.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
-#include "content/public/browser/notification_service.h"
 #include "third_party/icu/source/common/unicode/uloc.h"
 #include "third_party/icu/source/i18n/unicode/coll.h"
 #include "ui/base/ime/ash/component_extension_ime_manager.h"
@@ -69,7 +68,7 @@ const char* const kNonPositionalLayouts[] = {
     "us(dvorak)", "us(dvp)",    "us(workman)", "us(workman-intl)",
 };
 
-const size_t kNonPositionalLayoutsLength = base::size(kNonPositionalLayouts);
+const size_t kNonPositionalLayoutsLength = std::size(kNonPositionalLayouts);
 
 enum InputMethodCategory {
   INPUT_METHOD_CATEGORY_UNKNOWN = 0,
@@ -319,7 +318,7 @@ void InputMethodManagerImpl::StateImpl::EnableLoginLayouts(
   }
 }
 
-void InputMethodManagerImpl::StateImpl::EnableLockScreenLayouts() {
+void InputMethodManagerImpl::StateImpl::DisableNonLockScreenLayouts() {
   std::set<std::string> added_ids;
 
   const std::vector<std::string>& hardware_keyboard_ids =
@@ -428,8 +427,7 @@ bool InputMethodManagerImpl::StateImpl::ReplaceEnabledInputMethods(
 }
 
 bool InputMethodManagerImpl::StateImpl::SetAllowedInputMethods(
-    const std::vector<std::string>& new_allowed_input_method_ids,
-    bool enable_allowed_input_methods) {
+    const std::vector<std::string>& new_allowed_input_method_ids) {
   allowed_keyboard_layout_input_method_ids_.clear();
   for (auto input_method_id : new_allowed_input_method_ids) {
     std::string migrated_id =
@@ -443,28 +441,7 @@ bool InputMethodManagerImpl::StateImpl::SetAllowedInputMethods(
     // None of the passed input methods were valid, so allow everything.
     return false;
   }
-
-  std::vector<std::string> new_enabled_input_method_ids;
-  if (enable_allowed_input_methods) {
-    // Enable all allowed input methods.
-    new_enabled_input_method_ids = allowed_keyboard_layout_input_method_ids_;
-  } else {
-    // Filter all currently enabled input methods and leave only non-keyboard or
-    // allowed keyboard layouts. If no input method remains, take a fallback
-    // keyboard layout.
-    bool has_keyboard_layout = false;
-    for (auto enabled_input_method_id : enabled_input_method_ids_) {
-      if (IsInputMethodAllowed(enabled_input_method_id)) {
-        new_enabled_input_method_ids.push_back(enabled_input_method_id);
-        has_keyboard_layout |=
-            manager_->util_.IsKeyboardLayout(enabled_input_method_id);
-      }
-    }
-    if (!has_keyboard_layout)
-      new_enabled_input_method_ids.push_back(
-          GetAllowedFallBackKeyboardLayout());
-  }
-  return ReplaceEnabledInputMethods(new_enabled_input_method_ids);
+  return true;
 }
 
 const std::vector<std::string>&
@@ -630,7 +607,7 @@ void InputMethodManagerImpl::StateImpl::RemoveInputMethodExtension(
   if (IsActive()) {
     if (ui::IMEBridge::Get()->GetCurrentEngineHandler() ==
         manager_->engine_map_[profile_][extension_id]) {
-      ui::IMEBridge::Get()->SetCurrentEngineHandler(NULL);
+      ui::IMEBridge::Get()->SetCurrentEngineHandler(nullptr);
     }
     manager_->engine_map_[profile_].erase(extension_id);
   }
@@ -912,7 +889,7 @@ InputMethodManagerImpl::StateImpl::LookupInputMethod(
     }
   }
 
-  const InputMethodDescriptor* descriptor = NULL;
+  const InputMethodDescriptor* descriptor = nullptr;
   if (extension_ime_util::IsExtensionIME(input_method_id_to_switch) ||
       extension_ime_util::IsArcIME(input_method_id_to_switch)) {
     DCHECK(available_input_methods_.find(input_method_id_to_switch) !=
@@ -928,7 +905,7 @@ InputMethodManagerImpl::StateImpl::LookupInputMethod(
   return descriptor;
 }
 
-Profile* const InputMethodManagerImpl::StateImpl::GetProfile() const {
+Profile* InputMethodManagerImpl::StateImpl::GetProfile() const {
   return profile_;
 }
 
@@ -1027,8 +1004,9 @@ InputMethodManagerImpl::InputMethodManagerImpl(
 
   // We should not use ALL_BROWSERS_CLOSING here since logout might be cancelled
   // by JavaScript after ALL_BROWSERS_CLOSING is sent (crosbug.com/11055).
-  notification_registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
-                              content::NotificationService::AllSources());
+  on_app_terminating_subscription_ =
+      browser_shutdown::AddAppTerminatingCallback(base::BindOnce(
+          &InputMethodManagerImpl::OnAppTerminating, base::Unretained(this)));
 }
 
 InputMethodManagerImpl::~InputMethodManagerImpl() {
@@ -1169,7 +1147,7 @@ void InputMethodManagerImpl::ActivateInputMethodMenuItem(
 }
 
 void InputMethodManagerImpl::ConnectInputEngineManager(
-    mojo::PendingReceiver<chromeos::ime::mojom::InputEngineManager> receiver) {
+    mojo::PendingReceiver<ime::mojom::InputEngineManager> receiver) {
   DCHECK(state_);
   ImeServiceConnectorMap::iterator iter =
       ime_service_connectors_.find(state_->GetProfile());
@@ -1249,12 +1227,7 @@ void InputMethodManagerImpl::SetImeKeyboardForTesting(ImeKeyboard* keyboard) {
   keyboard_.reset(keyboard);
 }
 
-void InputMethodManagerImpl::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_APP_TERMINATING, type);
-
+void InputMethodManagerImpl::OnAppTerminating() {
   if (candidate_window_controller_.get())
     candidate_window_controller_.reset();
 

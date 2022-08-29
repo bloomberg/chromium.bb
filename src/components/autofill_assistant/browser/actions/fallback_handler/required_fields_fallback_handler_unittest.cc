@@ -18,7 +18,7 @@
 #include "components/autofill_assistant/browser/actions/mock_action_delegate.h"
 #include "components/autofill_assistant/browser/client_status.h"
 #include "components/autofill_assistant/browser/service.pb.h"
-#include "components/autofill_assistant/browser/web/element_finder.h"
+#include "components/autofill_assistant/browser/web/element_finder_result.h"
 #include "components/autofill_assistant/browser/web/mock_web_controller.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -494,7 +494,7 @@ TEST_F(RequiredFieldsFallbackHandlerTest, UsesSelectOptionForDropdowns) {
       .WillOnce(RunOnceCallback<1>(OkClientStatus(), std::string()));
 
   // Fill field.
-  const ElementFinder::Result& expected_element =
+  const ElementFinderResult& expected_element =
       test_util::MockFindElement(mock_action_delegate_, expected_selector);
   EXPECT_CALL(mock_web_controller_,
               GetElementTag(EqualsElement(expected_element), _))
@@ -544,7 +544,7 @@ TEST_F(RequiredFieldsFallbackHandlerTest,
       .WillOnce(RunOnceCallback<1>(OkClientStatus(), std::string()));
 
   // Fill field.
-  const ElementFinder::Result& expected_element =
+  const ElementFinderResult& expected_element =
       test_util::MockFindElement(mock_action_delegate_, expected_selector);
   EXPECT_CALL(mock_web_controller_,
               GetElementTag(EqualsElement(expected_element), _))

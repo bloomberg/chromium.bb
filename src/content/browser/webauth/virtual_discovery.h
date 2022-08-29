@@ -11,9 +11,10 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_piece.h"
 #include "device/fido/fido_device_discovery.h"
+#include "device/fido/fido_transport_protocol.h"
 
 namespace device {
-class FidoDevice;
+class VirtualFidoDevice;
 }
 
 namespace content {
@@ -32,7 +33,7 @@ class VirtualFidoDiscovery
   // Notifies the AuthenticatorEnvironment of this instance being destroyed.
   ~VirtualFidoDiscovery() override;
 
-  void AddVirtualDevice(std::unique_ptr<::device::FidoDevice> device);
+  void AddVirtualDevice(std::unique_ptr<device::VirtualFidoDevice> device);
   bool RemoveVirtualDevice(base::StringPiece device_id);
 
  protected:
@@ -40,7 +41,7 @@ class VirtualFidoDiscovery
   void StartInternal() override;
 
  private:
-  std::vector<std::unique_ptr<::device::FidoDevice>>
+  std::vector<std::unique_ptr<device::VirtualFidoDevice>>
       devices_pending_discovery_start_;
 };
 

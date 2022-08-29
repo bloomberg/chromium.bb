@@ -61,7 +61,7 @@ bool DiskCacheTest::CleanupCacheDir() {
 }
 
 void DiskCacheTest::TearDown() {
-  base::RunLoop().RunUntilIdle();
+  RunUntilIdle();
 }
 
 DiskCacheTestWithCache::TestIterator::TestIterator(
@@ -80,21 +80,7 @@ int DiskCacheTestWithCache::TestIterator::OpenNextEntry(
   return rv;
 }
 
-DiskCacheTestWithCache::DiskCacheTestWithCache()
-    : cache_impl_(nullptr),
-      simple_cache_impl_(nullptr),
-      mem_cache_(nullptr),
-      mask_(0),
-      size_(0),
-      type_(net::DISK_CACHE),
-      memory_only_(false),
-      simple_cache_mode_(false),
-      simple_cache_wait_for_index_(true),
-      force_creation_(false),
-      new_eviction_(false),
-      first_cleanup_(true),
-      integrity_(true),
-      use_current_thread_(false) {}
+DiskCacheTestWithCache::DiskCacheTestWithCache() = default;
 
 DiskCacheTestWithCache::~DiskCacheTestWithCache() = default;
 
@@ -238,7 +224,7 @@ void DiskCacheTestWithCache::FlushQueueForTest() {
     return;
 
   if (simple_cache_impl_) {
-    simple_cache_impl_->FlushWorkerPoolForTesting();
+    disk_cache::FlushCacheThreadForTesting();
     return;
   }
 
@@ -401,8 +387,9 @@ void DiskCacheTestWithCache::CreateBackend(uint32_t flags) {
           std::make_unique<disk_cache::SimpleFileTracker>(64);
     std::unique_ptr<disk_cache::SimpleBackendImpl> simple_backend =
         std::make_unique<disk_cache::SimpleBackendImpl>(
-            cache_path_, /* cleanup_tracker = */ nullptr,
-            simple_file_tracker_.get(), size_, type_, /*net_log = */ nullptr);
+            /*file_operations=*/nullptr, cache_path_,
+            /* cleanup_tracker = */ nullptr, simple_file_tracker_.get(), size_,
+            type_, /*net_log = */ nullptr);
     int rv = simple_backend->Init(cb.callback());
     ASSERT_THAT(cb.GetResult(rv), IsOk());
     simple_cache_impl_ = simple_backend.get();

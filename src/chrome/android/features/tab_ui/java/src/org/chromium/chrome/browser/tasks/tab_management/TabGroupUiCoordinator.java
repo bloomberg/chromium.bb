@@ -18,9 +18,10 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.OneshotSupplier;
 import org.chromium.base.supplier.Supplier;
-import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.layouts.LayoutStateProvider;
+import org.chromium.chrome.browser.layouts.LayoutType;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.PauseResumeWithNativeObserver;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
@@ -34,6 +35,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelFilterProvider;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
+import org.chromium.chrome.browser.tasks.tab_groups.TabGroupTitleUtils;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupUtils;
 import org.chromium.chrome.browser.toolbar.bottom.BottomControlsCoordinator;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
@@ -69,7 +71,7 @@ public class TabGroupUiCoordinator implements TabGroupUiMediator.ResetHandler, T
     private final Supplier<Boolean> mIsWarmOnResumeSupplier;
     private final ViewGroup mRootView;
     private final TabModelSelector mTabModelSelector;
-    private final OneshotSupplier<OverviewModeBehavior> mOverviewModeBehaviorSupplier;
+    private final OneshotSupplier<LayoutStateProvider> mLayoutStateProviderSupplier;
     private final SnackbarManager mSnackbarManager;
     private final Supplier<ShareDelegate> mShareDelegateSupplier;
     private final TabCreatorManager mTabCreatorManager;
@@ -95,7 +97,7 @@ public class TabGroupUiCoordinator implements TabGroupUiMediator.ResetHandler, T
             @NonNull Supplier<DynamicResourceLoader> dynamicResourceLoaderSupplier,
             @NonNull TabCreatorManager tabCreatorManager,
             @NonNull Supplier<ShareDelegate> shareDelegateSupplier,
-            @NonNull OneshotSupplier<OverviewModeBehavior> overviewModeBehaviorSupplier,
+            @NonNull OneshotSupplier<LayoutStateProvider> layoutStateProviderSupplier,
             @NonNull SnackbarManager snackbarManager) {
         mActivity = activity;
         mContext = parentView.getContext();
@@ -111,7 +113,7 @@ public class TabGroupUiCoordinator implements TabGroupUiMediator.ResetHandler, T
         mActivityLifecycleDispatcher.register(this);
         mIsWarmOnResumeSupplier = isWarmOnResumeSupplier;
         mTabModelSelector = tabModelSelector;
-        mOverviewModeBehaviorSupplier = overviewModeBehaviorSupplier;
+        mLayoutStateProviderSupplier = layoutStateProviderSupplier;
         mRootView = rootView;
         mSnackbarManager = snackbarManager;
         mShareDelegateSupplier = shareDelegateSupplier;
@@ -160,7 +162,7 @@ public class TabGroupUiCoordinator implements TabGroupUiMediator.ResetHandler, T
         }
 
         mMediator = new TabGroupUiMediator(mActivity, visibilityController, this, mModel,
-                mTabModelSelector, mTabCreatorManager, mOverviewModeBehaviorSupplier,
+                mTabModelSelector, mTabCreatorManager, mLayoutStateProviderSupplier,
                 mIncognitoStateProvider, dialogController, mActivityLifecycleDispatcher,
                 mSnackbarManager, mOmniboxFocusStateSupplier);
 
@@ -228,6 +230,16 @@ public class TabGroupUiCoordinator implements TabGroupUiMediator.ResetHandler, T
         return mMediator.onBackPressed();
     }
 
+    @Override
+    public void handleBackPress() {
+        mMediator.handleBackPress();
+    }
+
+    @Override
+    public ObservableSupplier<Boolean> getHandleBackPressChangedSupplier() {
+        return mMediator.getHandleBackPressChangedSupplier();
+    }
+
     /**
      * Destroy any members that needs clean up.
      */
@@ -283,22 +295,23 @@ public class TabGroupUiCoordinator implements TabGroupUiMediator.ResetHandler, T
         TabGroupModelFilter incognitoFilter =
                 (TabGroupModelFilter) provider.getTabModelFilter(true);
         int groupCount = normalFilter.getTabGroupCount() + incognitoFilter.getTabGroupCount();
-        RecordHistogram.recordCountHistogram("TabGroups.UserGroupCount", groupCount);
+        RecordHistogram.recordCount1MHistogram("TabGroups.UserGroupCount", groupCount);
         if (TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled(mContext)) {
             int namedGroupCount = 0;
             for (int i = 0; i < normalFilter.getTabGroupCount(); i++) {
                 int rootId = CriticalPersistedTabData.from(normalFilter.getTabAt(i)).getRootId();
-                if (TabGroupUtils.getTabGroupTitle(rootId) != null) {
+                if (TabGroupTitleUtils.getTabGroupTitle(rootId) != null) {
                     namedGroupCount += 1;
                 }
             }
             for (int i = 0; i < incognitoFilter.getTabGroupCount(); i++) {
                 int rootId = CriticalPersistedTabData.from(incognitoFilter.getTabAt(i)).getRootId();
-                if (TabGroupUtils.getTabGroupTitle(rootId) != null) {
+                if (TabGroupTitleUtils.getTabGroupTitle(rootId) != null) {
                     namedGroupCount += 1;
                 }
             }
-            RecordHistogram.recordCountHistogram("TabGroups.UserNamedGroupCount", namedGroupCount);
+            RecordHistogram.recordCount1MHistogram(
+                    "TabGroups.UserNamedGroupCount", namedGroupCount);
         }
     }
 
@@ -319,8 +332,9 @@ public class TabGroupUiCoordinator implements TabGroupUiMediator.ResetHandler, T
             }
         }
 
-        OverviewModeBehavior overviewModeBehavior = mOverviewModeBehaviorSupplier.get();
-        if (overviewModeBehavior != null && overviewModeBehavior.overviewVisible()) {
+        LayoutStateProvider layoutStateProvider = mLayoutStateProviderSupplier.get();
+        if (layoutStateProvider != null
+                && layoutStateProvider.isLayoutVisible(LayoutType.TAB_SWITCHER)) {
             return;
         }
 

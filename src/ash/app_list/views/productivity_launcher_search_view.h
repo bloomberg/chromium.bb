@@ -9,8 +9,11 @@
 #include <vector>
 
 #include "ash/app_list/app_list_model_provider.h"
+#include "ash/app_list/model/search/search_box_model.h"
+#include "ash/app_list/model/search/search_box_model_observer.h"
 #include "ash/app_list/views/search_result_container_view.h"
 #include "ash/ash_export.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/view.h"
@@ -28,7 +31,8 @@ class SearchResultPageDialogController;
 class ASH_EXPORT ProductivityLauncherSearchView
     : public views::View,
       public SearchResultContainerView::Delegate,
-      public AppListModelProvider::Observer {
+      public AppListModelProvider::Observer,
+      public SearchBoxModelObserver {
  public:
   METADATA_HEADER(ProductivityLauncherSearchView);
 
@@ -53,11 +57,20 @@ class ASH_EXPORT ProductivityLauncherSearchView
   void OnActiveAppListModelsChanged(AppListModel* model,
                                     SearchModel* search_model) override;
 
+  // Overridden from SearchBoxModelObserver:
+  void Update() override;
+  void SearchEngineChanged() override;
+  void ShowAssistantChanged() override;
+
   // Returns true if there are search results that can be keyboard selected.
   bool CanSelectSearchResults();
 
   // Sums the heights of all search_result_list_views_ owned by this view.
   int TabletModePreferredHeight();
+
+  // Returns a layer that can be used for launcher page animations. Which layer
+  // is an implementation detail.
+  ui::Layer* GetPageAnimationLayer() const;
 
   std::vector<SearchResultContainerView*> result_container_views_for_test() {
     return result_container_views_;
@@ -121,8 +134,14 @@ class ASH_EXPORT ProductivityLauncherSearchView
   // Timer used to delay calls to NotifyA11yResultsChanged().
   base::OneShotTimer notify_a11y_results_changed_timer_;
 
+  // Stores the last time fast search result update animations were used.
+  absl::optional<base::TimeTicks> search_result_fast_update_time_;
+
   // The last reported number of search results shown by all containers.
   int last_search_result_count_ = 0;
+
+  base::ScopedObservation<SearchBoxModel, SearchBoxModelObserver>
+      search_box_model_observer_{this};
 };
 
 }  // namespace ash

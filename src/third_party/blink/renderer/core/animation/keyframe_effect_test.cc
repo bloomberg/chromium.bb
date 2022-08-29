@@ -25,6 +25,7 @@
 #include "third_party/blink/renderer/core/animation/timing.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
+#include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
@@ -478,6 +479,7 @@ TEST_F(KeyframeEffectTest, CheckCanStartAnimationOnCompositorNoTarget) {
 TEST_F(KeyframeEffectTest, CheckCanStartAnimationOnCompositorBadTarget) {
   const double animation_playback_rate = 1;
   Timing timing;
+  timing.iteration_duration = ANIMATION_TIME_DELTA_FROM_SECONDS(1);
 
   StringKeyframeVector keyframes(2);
   keyframes[0] = MakeGarbageCollected<StringKeyframe>();
@@ -494,6 +496,8 @@ TEST_F(KeyframeEffectTest, CheckCanStartAnimationOnCompositorBadTarget) {
       MakeGarbageCollected<StringKeyframeEffectModel>(keyframes);
   auto* keyframe_effect =
       MakeGarbageCollected<KeyframeEffect>(element, effect_model, timing);
+  Animation* animation = GetDocument().Timeline().Play(keyframe_effect);
+  (void)animation;
 
   // If the target has a CSS offset we can't composite it.
   element->SetInlineStyleProperty(CSSPropertyID::kOffsetPosition, "50px 50px");
@@ -503,28 +507,21 @@ TEST_F(KeyframeEffectTest, CheckCanStartAnimationOnCompositorBadTarget) {
   EXPECT_TRUE(keyframe_effect->CheckCanStartAnimationOnCompositor(
                   nullptr, animation_playback_rate) &
               CompositorAnimations::kTargetHasCSSOffset);
-
-  // If the target has multiple transform properties we can't composite it.
-  element->SetInlineStyleProperty(CSSPropertyID::kRotate, "90deg");
-  element->SetInlineStyleProperty(CSSPropertyID::kScale, "2 1");
-  UpdateAllLifecyclePhasesForTest();
-
-  EXPECT_TRUE(keyframe_effect->CheckCanStartAnimationOnCompositor(
-                  nullptr, animation_playback_rate) &
-              CompositorAnimations::kTargetHasMultipleTransformProperties);
 }
 
 TEST_F(KeyframeEffectTest, TranslationTransformsPreserveAxisAlignment) {
   auto* effect =
       GetTwoFrameEffect(CSSPropertyID::kTransform, "translate(10px, 10px)",
                         "translate(20px, 20px)");
-  EXPECT_TRUE(effect->UpdateBoxSizeAndCheckTransformAxisAlignment(FloatSize()));
+  EXPECT_TRUE(
+      effect->UpdateBoxSizeAndCheckTransformAxisAlignment(gfx::SizeF()));
 }
 
 TEST_F(KeyframeEffectTest, ScaleTransformsPreserveAxisAlignment) {
   auto* effect =
       GetTwoFrameEffect(CSSPropertyID::kTransform, "scale(2)", "scale(3)");
-  EXPECT_TRUE(effect->UpdateBoxSizeAndCheckTransformAxisAlignment(FloatSize()));
+  EXPECT_TRUE(
+      effect->UpdateBoxSizeAndCheckTransformAxisAlignment(gfx::SizeF()));
 }
 
 TEST_F(KeyframeEffectTest, RotationTransformsDoNotPreserveAxisAlignment) {
@@ -532,13 +529,13 @@ TEST_F(KeyframeEffectTest, RotationTransformsDoNotPreserveAxisAlignment) {
                                    "rotate(20deg)");
 
   EXPECT_FALSE(
-      effect->UpdateBoxSizeAndCheckTransformAxisAlignment(FloatSize()));
+      effect->UpdateBoxSizeAndCheckTransformAxisAlignment(gfx::SizeF()));
 }
 
 TEST_F(KeyframeEffectTest, RotationsDoNotPreserveAxisAlignment) {
   auto* effect = GetTwoFrameEffect(CSSPropertyID::kRotate, "10deg", "20deg");
   EXPECT_FALSE(
-      effect->UpdateBoxSizeAndCheckTransformAxisAlignment(FloatSize()));
+      effect->UpdateBoxSizeAndCheckTransformAxisAlignment(gfx::SizeF()));
 }
 
 }  // namespace blink

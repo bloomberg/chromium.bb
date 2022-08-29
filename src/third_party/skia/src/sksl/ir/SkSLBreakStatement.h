@@ -20,19 +20,19 @@ class BreakStatement final : public Statement {
 public:
     inline static constexpr Kind kStatementKind = Kind::kBreak;
 
-    BreakStatement(int line)
-    : INHERITED(line, kStatementKind) {}
+    BreakStatement(Position pos)
+        : INHERITED(pos, kStatementKind) {}
 
-    static std::unique_ptr<Statement> Make(int line) {
-        return std::make_unique<BreakStatement>(line);
+    static std::unique_ptr<Statement> Make(Position pos) {
+        return std::make_unique<BreakStatement>(pos);
     }
 
     std::unique_ptr<Statement> clone() const override {
-        return std::make_unique<BreakStatement>(fLine);
+        return std::make_unique<BreakStatement>(fPosition);
     }
 
-    String description() const override {
-        return String("break;");
+    std::string description() const override {
+        return "break;";
     }
 
 private:

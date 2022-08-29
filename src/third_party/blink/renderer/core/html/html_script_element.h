@@ -27,6 +27,7 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/create_element_flags.h"
+#include "third_party/blink/renderer/core/html/blocking_attribute.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/script/script_element_base.h"
 #include "third_party/blink/renderer/core/script/script_loader.h"
@@ -63,6 +64,8 @@ class CORE_EXPORT HTMLScriptElement final : public HTMLElement,
   void setAsync(bool);
   bool async() const;
 
+  BlockingAttribute& blocking() const { return *blocking_attribute_; }
+
   ScriptLoader* Loader() const final { return loader_.Get(); }
 
   bool IsScriptElement() const override { return true; }
@@ -76,6 +79,8 @@ class CORE_EXPORT HTMLScriptElement final : public HTMLElement,
 
   void FinishParsingChildren() override;
 
+  bool IsPotentiallyRenderBlocking() const override;
+
  private:
   void ParseAttribute(const AttributeModificationParams&) override;
   InsertionNotificationRequest InsertedInto(ContainerNode&) override;
@@ -83,7 +88,6 @@ class CORE_EXPORT HTMLScriptElement final : public HTMLElement,
 
   void DidNotifySubtreeInsertionsToDocument() override;
   void ChildrenChanged(const ChildrenChange&) override;
-  void DidMoveToNewDocument(Document& old_document) override;
 
   bool IsURLAttribute(const Attribute&) const override;
   bool HasLegalLinkAttribute(const QualifiedName&) const override;
@@ -100,7 +104,7 @@ class CORE_EXPORT HTMLScriptElement final : public HTMLElement,
   String CrossOriginAttributeValue() const override;
   String IntegrityAttributeValue() const override;
   String ReferrerPolicyAttributeValue() const override;
-  String ImportanceAttributeValue() const override;
+  String FetchPriorityAttributeValue() const override;
   String ChildTextContent() override;
   String ScriptTextInternalSlot() const override;
   bool AsyncAttributeValue() const override;
@@ -126,6 +130,7 @@ class CORE_EXPORT HTMLScriptElement final : public HTMLElement,
   ParkableString script_text_internal_slot_;
   bool children_changed_by_api_;
 
+  Member<BlockingAttribute> blocking_attribute_;
   Member<ScriptLoader> loader_;
 };
 

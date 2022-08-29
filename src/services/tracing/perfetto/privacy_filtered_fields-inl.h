@@ -285,16 +285,26 @@ constexpr MessageInfo kChromeWebAppBadNavigate = {
 constexpr int kChromeExtensionIdIndices[] = {2, -1};
 constexpr MessageInfo kChromeExtensionId = {kChromeExtensionIdIndices, nullptr};
 
+// Proto Message: SiteInstanceGroup
+constexpr int kSiteInstanceGroupIndices[] = {1, 2, 3, -1};
+constexpr MessageInfo const* kSiteInstanceGroupComplexMessages[] = {
+    nullptr, nullptr, &kRenderProcessHost};
+constexpr MessageInfo kSiteInstanceGroup = {kSiteInstanceGroupIndices,
+                                            kSiteInstanceGroupComplexMessages};
+
 // Proto Message: SiteInstance
-constexpr int kSiteInstanceIndices[] = {1, 2, 3, 4, 5, 6, -1};
-constexpr MessageInfo kSiteInstance = {kSiteInstanceIndices, nullptr};
+constexpr int kSiteInstanceIndices[] = {1, 2, 3, 4, 5, 6, 7, -1};
+constexpr MessageInfo const* kSiteInstanceComplexMessages[] = {
+    nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, &kSiteInstanceGroup};
+constexpr MessageInfo kSiteInstance = {kSiteInstanceIndices,
+                                       kSiteInstanceComplexMessages};
 
 // Proto Message: RenderViewHost
 constexpr int kRenderViewHostIndices[] = {1, 2, 3, 4, 5, -1};
 constexpr MessageInfo kRenderViewHost = {kRenderViewHostIndices, nullptr};
 
 // Proto Message: RenderFrameProxyHost
-constexpr int kRenderFrameProxyHostIndices[] = {1, 2, 3, 4, 5, -1};
+constexpr int kRenderFrameProxyHostIndices[] = {1, 2, 3, 4, 5, 6, -1};
 constexpr MessageInfo kRenderFrameProxyHost = {kRenderFrameProxyHostIndices,
                                                nullptr};
 
@@ -314,17 +324,26 @@ constexpr MessageInfo kChromeSamplingProfilerSampleCollected = {
     kChromeSamplingProfilerSampleCollectedIndices, nullptr};
 
 // Proto Message: RendererMainThreadTaskExecution
-constexpr int kRendererMainThreadTaskExecutionIndices[] = {1, 2, 3, 4, -1};
+constexpr int kRendererMainThreadTaskExecutionIndices[] = {1, 2, 3, 4, 5, -1};
 constexpr MessageInfo kRendererMainThreadTaskExecution = {
     kRendererMainThreadTaskExecutionIndices, nullptr};
 
+// Proto Message: EventLatency
+constexpr int kEventLatencyIndices[] = {1, -1};
+constexpr MessageInfo kEventLatency = {kEventLatencyIndices, nullptr};
+
+// Proto Message: ProcessSingleton
+constexpr int kProcessSingletonIndices[] = {1, 2, -1};
+constexpr MessageInfo kProcessSingleton = {kProcessSingletonIndices, nullptr};
+
 // Proto Message: TrackEvent
 constexpr int kTrackEventIndices[] = {
-    1,    2,    3,    5,    6,    9,    10,   11,   12,   16,   17,   22,
-    23,   24,   25,   26,   27,   28,   29,   30,   31,   32,   33,   34,
-    35,   36,   38,   39,   40,   41,   42,   43,   1001, 1002, 1003, 1004,
-    1005, 1006, 1007, 1008, 1009, 1010, 1011, 1012, 1013, 1014, 1015, 1016,
-    1017, 1018, 1019, 1020, 1021, 1023, 1024, 1025, 1031, -1};
+    1,    2,    3,    5,    6,    9,    10,   11,   12,   16,   17,
+    22,   23,   24,   25,   26,   27,   28,   29,   30,   31,   32,
+    33,   34,   35,   36,   38,   39,   40,   41,   42,   43,   1001,
+    1002, 1003, 1004, 1005, 1006, 1007, 1008, 1009, 1010, 1011, 1012,
+    1013, 1014, 1015, 1016, 1017, 1018, 1019, 1020, 1021, 1023, 1024,
+    1025, 1031, 1032, 1033, 1034, 1036, -1};
 constexpr MessageInfo const* kTrackEventComplexMessages[] = {
     nullptr,
     nullptr,
@@ -382,7 +401,11 @@ constexpr MessageInfo const* kTrackEventComplexMessages[] = {
     &kParkableStringCompressInBackground,
     &kParkableStringUnpark,
     &kChromeSamplingProfilerSampleCollected,
-    &kRendererMainThreadTaskExecution};
+    &kRendererMainThreadTaskExecution,
+    &kEventLatency,
+    &kProcessSingleton,
+    &kSiteInstanceGroup,
+    nullptr};
 constexpr MessageInfo kTrackEvent = {kTrackEventIndices,
                                      kTrackEventComplexMessages};
 

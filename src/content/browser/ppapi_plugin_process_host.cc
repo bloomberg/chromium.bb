@@ -12,7 +12,6 @@
 #include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/string_number_conversions.h"
@@ -39,7 +38,7 @@
 #include "services/network/public/cpp/network_connection_tracker.h"
 #include "ui/base/ui_base_switches.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "base/win/windows_version.h"
 #include "sandbox/policy/win/sandbox_win.h"
 #include "sandbox/win/src/process_mitigations.h"
@@ -216,7 +215,7 @@ bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {
   base::CommandLine::StringType plugin_launcher =
       browser_command_line.GetSwitchValueNative(switches::kPpapiPluginLauncher);
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
   int flags = plugin_launcher.empty() ? ChildProcessHost::CHILD_ALLOW_SELF :
                                         ChildProcessHost::CHILD_NORMAL;
 #else
@@ -235,28 +234,28 @@ bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {
                               switches::kPpapiPluginProcess);
   BrowserChildProcessHostImpl::CopyTraceStartupFlags(cmd_line.get());
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   cmd_line->AppendArg(switches::kPrefetchArgumentPpapi);
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
   // These switches are forwarded to plugin pocesses.
   static const char* const kCommonForwardSwitches[] = {
     switches::kVModule
   };
   cmd_line->CopySwitchesFrom(browser_command_line, kCommonForwardSwitches,
-                             base::size(kCommonForwardSwitches));
+                             std::size(kCommonForwardSwitches));
 
   static const char* const kPluginForwardSwitches[] = {
     sandbox::policy::switches::kDisableSeccompFilterSandbox,
     sandbox::policy::switches::kNoSandbox,
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
     sandbox::policy::switches::kEnableSandboxLogging,
 #endif
     switches::kPpapiStartupDialog,
     switches::kTimeZoneForTesting,
   };
   cmd_line->CopySwitchesFrom(browser_command_line, kPluginForwardSwitches,
-                             base::size(kPluginForwardSwitches));
+                             std::size(kPluginForwardSwitches));
 
   std::string locale = GetContentClient()->browser()->GetApplicationLocale();
   if (!locale.empty()) {
@@ -264,7 +263,7 @@ bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {
     cmd_line->AppendSwitchASCII(switches::kLang, locale);
   }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   cmd_line->AppendSwitchASCII(
       switches::kDeviceScaleFactor,
       base::NumberToString(display::win::GetDPIScale()));
@@ -284,8 +283,7 @@ bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {
   // having a plugin launcher means we need to use another process instead of
   // just forking the zygote.
   process_->Launch(
-      std::make_unique<PpapiPluginSandboxedProcessLauncherDelegate>(
-          permissions_),
+      std::make_unique<PpapiPluginSandboxedProcessLauncherDelegate>(),
       std::move(cmd_line), true);
   return true;
 }

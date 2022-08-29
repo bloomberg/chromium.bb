@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/webui/help/version_updater_mac.h"
 
+#import <Foundation/Foundation.h>
+#import <ServiceManagement/ServiceManagement.h>
+
 #include <string>
 #include <utility>
 
@@ -11,6 +14,7 @@
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
+#include "base/strings/escape.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/buildflags.h"
@@ -18,17 +22,18 @@
 #include "chrome/browser/obsolete_system/obsolete_system.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "net/base/escape.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if BUILDFLAG(ENABLE_CHROMIUM_UPDATER)
 #include "base/cxx17_backports.h"
+#include "base/mac/authorization_util.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/updater/browser_updater_client.h"
 #include "chrome/browser/updater/browser_updater_client_util.h"
+#include "chrome/browser/updater/browser_updater_helper_client_mac.h"
 #include "chrome/updater/update_service.h"  // nogncheck
 #include "chrome/updater/updater_scope.h"   // nogncheck
 #include "ui/base/l10n/l10n_util.h"
@@ -150,10 +155,38 @@ void VersionUpdaterMac::CheckForUpdate(StatusCallback status_callback,
 #endif  // BUILDFLAG(ENABLE_CHROMIUM_UPDATER)
 }
 
-void VersionUpdaterMac::PromoteUpdater() const {
+void VersionUpdaterMac::PromoteUpdater() {
 #if BUILDFLAG(ENABLE_CHROMIUM_UPDATER)
-  // TODO(crbug.com/1236770) - Add implementation for actually promoting the
-  // updater using SMJobless.
+  NSString* prompt = l10n_util::GetNSStringFWithFixup(
+      IDS_PROMOTE_AUTHENTICATION_PROMPT,
+      l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
+  base::mac::ScopedAuthorizationRef authorization(
+      base::mac::AuthorizationCreateToRunAsRoot(base::mac::NSToCFCast(prompt)));
+  if (!authorization.get()) {
+    VLOG(0) << "Could not get authorization to run as root.";
+    return;
+  }
+
+  base::ScopedCFTypeRef<CFErrorRef> error;
+  Boolean result = SMJobBless(kSMDomainSystemLaunchd,
+                              base::SysUTF8ToCFStringRef(kPrivilegedHelperName),
+                              authorization, error.InitializeInto());
+  if (!result) {
+    base::ScopedCFTypeRef<CFStringRef> desc(CFErrorCopyDescription(error));
+    VLOG(0) << "Could not bless the privileged helper. Resulting error: "
+            << base::SysCFStringRefToUTF8(desc);
+  }
+
+  if (!update_helper_client_) {
+    update_helper_client_ =
+        base::MakeRefCounted<BrowserUpdaterHelperClientMac>();
+  }
+
+  update_helper_client_->SetupSystemUpdater(base::BindOnce([](int result) {
+    VLOG_IF(1, result != 0) << "There was a problem with performing the system "
+                               "updater tasks. Result: "
+                            << result;
+  }));
 #else
   // Tell Keystone to make software updates available for all users.
   [[KeystoneGlue defaultKeystoneGlue] promoteTicket];
@@ -229,7 +262,7 @@ void VersionUpdaterMac::UpdateStatus(NSDictionary* dictionary) {
 
     case kAutoupdateRegisterFailed:
       enable_promote_button = false;
-      FALLTHROUGH;
+      [[fallthrough]];
     case kAutoupdateCheckFailed:
     case kAutoupdateInstallFailed:
     case kAutoupdatePromoteFailed:
@@ -264,7 +297,7 @@ void VersionUpdaterMac::UpdateStatus(NSDictionary* dictionary) {
 
       message += l10n_util::GetStringUTF16(IDS_UPGRADE_ERROR_DETAILS);
       message += u"<br/><pre>";
-      message += base::UTF8ToUTF16(net::EscapeForHTML(error_messages));
+      message += base::UTF8ToUTF16(base::EscapeForHTML(error_messages));
       message += u"</pre>";
     }
   }
@@ -328,7 +361,7 @@ void VersionUpdaterMac::UpdateStatusFromChromiumUpdater(
 
   switch (update_state.state) {
     case updater::UpdateService::UpdateState::State::kCheckingForUpdates:
-      FALLTHROUGH;
+      [[fallthrough]];
     case updater::UpdateService::UpdateState::State::kUpdateAvailable:
       status = VersionUpdater::Status::CHECKING;
       enable_promote_button = false;
@@ -336,7 +369,7 @@ void VersionUpdaterMac::UpdateStatusFromChromiumUpdater(
     case updater::UpdateService::UpdateState::State::kDownloading:
       progress = GetDownloadProgress(update_state.downloaded_bytes,
                                      update_state.total_bytes);
-      FALLTHROUGH;
+      [[fallthrough]];
     case updater::UpdateService::UpdateState::State::kInstalling:
       status = VersionUpdater::Status::UPDATING;
       enable_promote_button = false;
@@ -355,7 +388,7 @@ void VersionUpdaterMac::UpdateStatusFromChromiumUpdater(
           update_state.error_code, update_state.extra_code1);
       break;
     case updater::UpdateService::UpdateState::State::kNotStarted:
-      FALLTHROUGH;
+      [[fallthrough]];
     case updater::UpdateService::UpdateState::State::kUnknown:
       return;
   }
@@ -406,4 +439,5 @@ void VersionUpdaterMac::UpdatePromotionStatusFromChromiumUpdater(
 
   promote_callback.Run(promotion_state);
 }
+
 #endif  // BUILDFLAG(ENABLE_CHROMIUM_UPDATER)

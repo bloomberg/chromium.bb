@@ -42,9 +42,7 @@ export function wrapupRestockPageTest() {
     service.reset();
   });
 
-  /**
-   * @return {!Promise}
-   */
+  /** @return {!Promise} */
   function initializeRestockPage() {
     assertFalse(!!component);
 
@@ -61,9 +59,7 @@ export function wrapupRestockPageTest() {
     return flushTasks();
   }
 
-  /**
-   * @return {!Promise}
-   */
+  /** @return {!Promise} */
   function clickShutdownButton() {
     const shutdownComponent = component.shadowRoot.querySelector('#shutdown');
     assertTrue(!!shutdownComponent);
@@ -88,15 +84,10 @@ export function wrapupRestockPageTest() {
       return resolver.promise;
     };
 
-    let expectedResult = {foo: 'bar'};
-    let savedResult;
-    component.onNextButtonClick().then((result) => savedResult = result);
-    // Resolve to a distinct result to confirm it was not modified.
-    resolver.resolve(expectedResult);
-    await flushTasks();
+    component.shadowRoot.querySelector('#continue').click();
+    await resolver;
 
     assertEquals(1, callCounter);
-    assertDeepEquals(expectedResult, savedResult);
   });
 
   test('RestockPageOnShutdownCallsShutdownForRestock', async () => {
@@ -111,5 +102,17 @@ export function wrapupRestockPageTest() {
     await clickShutdownButton();
 
     assertEquals(1, restockCallCounter);
+  });
+
+  test('RestockPageButtonsDisabled', async () => {
+    await initializeRestockPage();
+
+    const continueButton = component.shadowRoot.querySelector('#continue');
+    const shutdownButton = component.shadowRoot.querySelector('#shutdown');
+    assertFalse(continueButton.disabled);
+    assertFalse(shutdownButton.disabled);
+    component.allButtonsDisabled = true;
+    assertTrue(continueButton.disabled);
+    assertTrue(shutdownButton.disabled);
   });
 }

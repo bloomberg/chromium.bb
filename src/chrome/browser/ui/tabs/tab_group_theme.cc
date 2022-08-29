@@ -8,6 +8,7 @@
 
 #include "base/containers/fixed_flat_map.h"
 #include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/ui/color/chrome_color_id.h"
 
 using TP = ThemeProperties;
 using TabGroupColorId = tab_groups::TabGroupColorId;
@@ -48,6 +49,42 @@ int GetTabGroupTabStripColorId(TabGroupColorId group_color_id,
   return group_id_map.at(group_color_id)[active_frame];
 }
 
+ui::ColorId GetThumbnailTabStripTabGroupColorId(TabGroupColorId group_color_id,
+                                                bool active_frame) {
+  static constexpr auto group_id_map =
+      base::MakeFixedFlatMap<TabGroupColorId, std::array<ui::ColorId, 2>>({
+          {TabGroupColorId::kGrey,
+           {kColorThumbnailTabStripTabGroupFrameInactiveGrey,
+            kColorThumbnailTabStripTabGroupFrameActiveGrey}},
+          {TabGroupColorId::kBlue,
+           {kColorThumbnailTabStripTabGroupFrameInactiveBlue,
+            kColorThumbnailTabStripTabGroupFrameActiveBlue}},
+          {TabGroupColorId::kRed,
+           {kColorThumbnailTabStripTabGroupFrameInactiveRed,
+            kColorThumbnailTabStripTabGroupFrameActiveRed}},
+          {TabGroupColorId::kYellow,
+           {kColorThumbnailTabStripTabGroupFrameInactiveYellow,
+            kColorThumbnailTabStripTabGroupFrameActiveYellow}},
+          {TabGroupColorId::kGreen,
+           {kColorThumbnailTabStripTabGroupFrameInactiveGreen,
+            kColorThumbnailTabStripTabGroupFrameActiveGreen}},
+          {TabGroupColorId::kPink,
+           {kColorThumbnailTabStripTabGroupFrameInactivePink,
+            kColorThumbnailTabStripTabGroupFrameActivePink}},
+          {TabGroupColorId::kPurple,
+           {kColorThumbnailTabStripTabGroupFrameInactivePurple,
+            kColorThumbnailTabStripTabGroupFrameActivePurple}},
+          {TabGroupColorId::kCyan,
+           {kColorThumbnailTabStripTabGroupFrameInactiveCyan,
+            kColorThumbnailTabStripTabGroupFrameActiveCyan}},
+          {TabGroupColorId::kOrange,
+           {kColorThumbnailTabStripTabGroupFrameInactiveOrange,
+            kColorThumbnailTabStripTabGroupFrameActiveOrange}},
+      });
+
+  return group_id_map.at(group_color_id)[active_frame];
+}
+
 int GetTabGroupDialogColorId(TabGroupColorId group_color_id) {
   static constexpr auto group_id_map =
       base::MakeFixedFlatMap<TabGroupColorId, int>({
@@ -65,7 +102,24 @@ int GetTabGroupDialogColorId(TabGroupColorId group_color_id) {
   return group_id_map.at(group_color_id);
 }
 
-int GetTabGroupContextMenuColorId(TabGroupColorId group_color_id) {
+ui::ColorId GetTabGroupContextMenuColorId(TabGroupColorId group_color_id) {
+  static constexpr auto group_id_map =
+      base::MakeFixedFlatMap<TabGroupColorId, ui::ColorId>({
+          {TabGroupColorId::kGrey, kColorTabGroupContextMenuGrey},
+          {TabGroupColorId::kBlue, kColorTabGroupContextMenuBlue},
+          {TabGroupColorId::kRed, kColorTabGroupContextMenuRed},
+          {TabGroupColorId::kYellow, kColorTabGroupContextMenuYellow},
+          {TabGroupColorId::kGreen, kColorTabGroupContextMenuGreen},
+          {TabGroupColorId::kPink, kColorTabGroupContextMenuPink},
+          {TabGroupColorId::kPurple, kColorTabGroupContextMenuPurple},
+          {TabGroupColorId::kCyan, kColorTabGroupContextMenuCyan},
+          {TabGroupColorId::kOrange, kColorTabGroupContextMenuOrange},
+      });
+
+  return group_id_map.at(group_color_id);
+}
+
+int GetTabGroupContextMenuColorIdDeprecated(TabGroupColorId group_color_id) {
   static constexpr auto group_id_map =
       base::MakeFixedFlatMap<TabGroupColorId, int>({
           {TabGroupColorId::kGrey, TP::COLOR_TAB_GROUP_CONTEXT_MENU_GREY},

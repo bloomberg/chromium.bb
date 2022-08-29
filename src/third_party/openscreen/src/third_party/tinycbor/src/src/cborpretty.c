@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 Intel Corporation
+** Copyright (C) 2021 Intel Corporation
 **
 ** Permission is hereby granted, free of charge, to any person obtaining a copy
 ** of this software and associated documentation files (the "Software"), to deal
@@ -255,7 +255,7 @@ print_utf16:
     return err;
 }
 
-static const char *resolve_indicator(const uint8_t *ptr, const uint8_t *end, int flags)
+static const char *resolve_indicator(const CborValue *it, int flags)
 {
     static const char indicators[8][3] = {
         "_0", "_1", "_2", "_3",
@@ -268,10 +268,10 @@ static const char *resolve_indicator(const uint8_t *ptr, const uint8_t *end, int
     uint64_t value;
     CborError err;
 
-    if (ptr == end)
+    if (!read_bytes(it, &additional_information, 0, 1))
         return NULL;    /* CborErrorUnexpectedEOF */
 
-    additional_information = (*ptr & SmallValueMask);
+    additional_information &= SmallValueMask;
     if (additional_information < Value8Bit)
         return no_indicator;
 
@@ -282,7 +282,7 @@ static const char *resolve_indicator(const uint8_t *ptr, const uint8_t *end, int
     if ((flags & CborPrettyIndicateOverlongNumbers) == 0)
         return no_indicator;
 
-    err = _cbor_value_extract_number(&ptr, end, &value);
+    err = extract_number_checked(it, &value, NULL);
     if (err)
         return NULL;    /* CborErrorUnexpectedEOF */
 
@@ -302,7 +302,7 @@ static const char *resolve_indicator(const uint8_t *ptr, const uint8_t *end, int
 
 static const char *get_indicator(const CborValue *it, int flags)
 {
-    return resolve_indicator(it->ptr, it->parser->end, flags);
+    return resolve_indicator(it, flags);
 }
 
 static CborError value_to_pretty(CborStreamFunction stream, void *out, CborValue *it, int flags, int recursionsLeft);
@@ -354,12 +354,12 @@ static CborError value_to_pretty(CborStreamFunction stream, void *out, CborValue
 
         err = cbor_value_enter_container(it, &recursed);
         if (err) {
-            it->ptr = recursed.ptr;
+            copy_current_position(it, &recursed);
             return err;       /* parse error */
         }
         err = container_to_pretty(stream, out, &recursed, type, flags, recursionsLeft - 1);
         if (err) {
-            it->ptr = recursed.ptr;
+            copy_current_position(it, &recursed);
             return err;       /* parse error */
         }
         err = cbor_value_leave_container(it, &recursed);
@@ -407,25 +407,24 @@ static CborError value_to_pretty(CborStreamFunction stream, void *out, CborValue
             open[1] = '\0';
         }
 
-        if (showingFragments) {
+        if (showingFragments)
             err = stream(out, "(_ ");
-            if (!err)
-                err = _cbor_value_prepare_string_iteration(it);
-        } else {
+        else
             err = stream(out, "%s", open);
-        }
 
+        if (!err)
+            err = cbor_value_begin_string_iteration(it);
         while (!err) {
             if (showingFragments || indicator == NULL) {
                 /* any iteration, except the second for a non-chunked string */
-                indicator = resolve_indicator(it->ptr, it->parser->end, flags);
+                indicator = resolve_indicator(it, flags);
             }
 
             err = _cbor_value_get_string_chunk(it, &ptr, &n, it);
-            if (err)
-                return err;
-            if (!ptr)
+            if (err == CborErrorNoMoreStringChunks) {
+                err = cbor_value_finish_string_iteration(it);
                 break;
+            }
 
             if (!err && showingFragments)
                 err = stream(out, "%s%s", separator, open);

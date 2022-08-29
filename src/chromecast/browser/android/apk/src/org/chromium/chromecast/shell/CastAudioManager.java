@@ -4,12 +4,8 @@
 
 package org.chromium.chromecast.shell;
 
-import android.annotation.TargetApi;
 import android.content.Context;
-import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
-import android.media.audiopolicy.AudioPolicy;
-import android.os.Build.VERSION_CODES;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
@@ -87,26 +83,8 @@ public class CastAudioManager {
         return audioFocusLossState;
     }
 
-    public int getStreamMaxVolume(int streamType) {
-        return mInternal.getStreamMaxVolume(streamType);
-    }
-
-    public int registerAudioPolicy(AudioPolicy audioPolicy) {
-        return mInternal.registerAudioPolicy(audioPolicy);
-    }
-
-    public void unregisterAudioPolicyAsync(AudioPolicy audioPolicy) {
-        mInternal.unregisterAudioPolicyAsync(audioPolicy);
-    }
-
-    @TargetApi(VERSION_CODES.M)
-    public AudioDeviceInfo[] getDevices(int flags) {
-        return mInternal.getDevices(flags);
-    }
-
-    // TODO(sanfin): Do not expose this. All needed AudioManager methods can be adapted with
-    // CastAudioManager.
-    public AudioManager getInternal() {
+    @VisibleForTesting
+    AudioManager getInternal() {
         return mInternal;
     }
 

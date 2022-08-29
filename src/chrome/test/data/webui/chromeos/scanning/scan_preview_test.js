@@ -11,8 +11,10 @@ import {AppState} from 'chrome://scanning/scanning_app_types.js';
 import {ScanningBrowserProxyImpl} from 'chrome://scanning/scanning_browser_proxy.js';
 
 import {assertEquals, assertFalse, assertNotEquals, assertTrue} from '../../chai_assert.js';
+import {MockController} from '../../mock_controller.js';
 import {flushTasks, isVisible, waitAfterNextRender} from '../../test_util.js';
 
+import {FakeMediaQueryList} from './scanning_app_test_utils.js';
 import {TestScanningBrowserProxy} from './test_scanning_browser_proxy.js';
 
 /** @implements {ash.common.mojom.AccessibilityFeaturesInterface} */
@@ -62,6 +64,23 @@ export function scanPreviewTest() {
   /** @type {!HTMLElement} */
   let cancelingProgress;
 
+  /** @type {{createFunctionMock: Function, reset: Function}} */
+  let mockController;
+
+  /** @type {?FakeMediaQueryList} */
+  let fakePrefersColorSchemeDarkMediaQuery;
+
+  /**
+   * @param {boolean} enabled
+   * @return {!Promise}
+   */
+  function setFakePrefersColorSchemeDark(enabled) {
+    assertTrue(!!scanPreview);
+    fakePrefersColorSchemeDarkMediaQuery.matches = enabled;
+
+    return flushTasks();
+  }
+
   setup(() => {
     fakeAccessibilityFeatures_ = new FakeAccessibilityFeatures();
     setAccessibilityFeaturesForTesting(fakeAccessibilityFeatures_);
@@ -69,6 +88,15 @@ export function scanPreviewTest() {
         document.createElement('scan-preview'));
     assertTrue(!!scanPreview);
     ScanningBrowserProxyImpl.instance_ = new TestScanningBrowserProxy();
+
+    // Setup mock for matchMedia.
+    mockController = new MockController();
+    const mockMatchMedia =
+        mockController.createFunctionMock(window, 'matchMedia');
+    fakePrefersColorSchemeDarkMediaQuery =
+        new FakeMediaQueryList('(prefers-color-scheme: dark)');
+    mockMatchMedia.returnValue = fakePrefersColorSchemeDarkMediaQuery;
+
     document.body.appendChild(scanPreview);
 
     helpOrProgress =
@@ -87,6 +115,7 @@ export function scanPreviewTest() {
     if (scanPreview) {
       scanPreview.remove();
     }
+    mockController.reset();
     scanPreview = null;
   });
 
@@ -411,5 +440,22 @@ export function scanPreviewTest() {
               'visible',
               getComputedStyle(actionToolbar).getPropertyValue('visibility'));
         });
+  });
+
+  // Verify correct svg displayed when page is in dark mode.
+  test('readyToScanSvgSetByColorScheme', async () => {
+    const srcBase = 'chrome://scanning/';
+    const lightModeSvg = `${srcBase}svg/ready_to_scan.svg`;
+    const darkModeSvg = `${srcBase}svg/ready_to_scan_dark.svg`;
+    const getReadyToScanSvg = () =>
+        (/** @type {!HTMLImageElement} */ (scanPreview.$$('#readyToScanImg')));
+
+    // Mock media query state for light mode.
+    await setFakePrefersColorSchemeDark(false);
+    assertEquals(getReadyToScanSvg().src, lightModeSvg);
+
+    // Mock media query state for dark mode.
+    await setFakePrefersColorSchemeDark(true);
+    assertEquals(getReadyToScanSvg().src, darkModeSvg);
   });
 }

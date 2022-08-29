@@ -15,16 +15,15 @@
 #include "base/threading/scoped_blocking_call.h"
 #include "build/build_config.h"
 
-namespace base {
-namespace mac {
+namespace base::mac {
 
 bool GetBackupExclusion(const FilePath& file_path) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   return CSBackupIsItemExcluded(FilePathToCFURL(file_path), nullptr);
-#elif defined(OS_IOS)
+#elif BUILDFLAG(IS_IOS)
   NSURL* file_url = FilePathToNSURL(file_path);
   DCHECK([[NSFileManager defaultManager] fileExistsAtPath:file_url.path]);
 
@@ -42,30 +41,32 @@ bool GetBackupExclusion(const FilePath& file_path) {
 #endif
 }
 
-bool SetBackupExclusion(const FilePath& file_path) {
+namespace {
+
+bool SetBackupState(const FilePath& file_path, bool excluded) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // When excludeByPath is true the application must be running with root
   // privileges (admin for 10.6 and earlier) but the URL does not have to
   // already exist. When excludeByPath is false the URL must already exist but
   // can be used in non-root (or admin as above) mode. We use false so that
   // non-root (or admin) users don't get their TimeMachine drive filled up with
   // unnecessary backups.
-  OSStatus os_err = CSBackupSetItemExcluded(FilePathToCFURL(file_path),
-                                            /*exclude=*/TRUE,
-                                            /*excludeByPath=*/FALSE);
+  OSStatus os_err =
+      CSBackupSetItemExcluded(FilePathToCFURL(file_path), excluded,
+                              /*excludeByPath=*/FALSE);
   OSSTATUS_DLOG_IF(WARNING, os_err != noErr, os_err)
       << "Failed to set backup exclusion for file '"
       << file_path.value().c_str() << "'";
   return os_err == noErr;
-#elif defined(OS_IOS)
+#elif BUILDFLAG(IS_IOS)
   NSURL* file_url = FilePathToNSURL(file_path);
   DCHECK([[NSFileManager defaultManager] fileExistsAtPath:file_url.path]);
 
   NSError* error = nil;
-  BOOL success = [file_url setResourceValue:@YES
+  BOOL success = [file_url setResourceValue:@(excluded)
                                      forKey:NSURLIsExcludedFromBackupKey
                                       error:&error];
   LOG_IF(WARNING, !success) << base::SysNSStringToUTF8([error description]);
@@ -73,5 +74,14 @@ bool SetBackupExclusion(const FilePath& file_path) {
 #endif
 }
 
-}  // namespace mac
-}  // namespace base
+}  // namespace
+
+bool SetBackupExclusion(const FilePath& file_path) {
+  return SetBackupState(file_path, true);
+}
+
+bool ClearBackupExclusion(const FilePath& file_path) {
+  return SetBackupState(file_path, false);
+}
+
+}  // namespace base::mac

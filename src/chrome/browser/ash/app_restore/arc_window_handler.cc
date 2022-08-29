@@ -57,7 +57,13 @@ ArcWindowHandler::ArcWindowHandler() {
     lifetime_manager->AddObserver(this);
 }
 
-ArcWindowHandler::~ArcWindowHandler() = default;
+ArcWindowHandler::~ArcWindowHandler() {
+  if (exo::WMHelper::HasInstance()) {
+    auto* lifetime_manager = exo::WMHelper::GetInstance()->GetLifetimeManager();
+    if (lifetime_manager)
+      lifetime_manager->RemoveObserver(this);
+  }
+}
 
 void ArcWindowHandler::OnDestroyed() {
   // Destroy all ARC ghost window when Wayland server shutdown.
@@ -69,6 +75,9 @@ void ArcWindowHandler::OnDestroyed() {
     CloseWindow(session_id);
 
   session_id_to_pending_window_info_.clear();
+
+  auto* lifetime_manager = exo::WMHelper::GetInstance()->GetLifetimeManager();
+  lifetime_manager->RemoveObserver(this);
 }
 
 bool ArcWindowHandler::LaunchArcGhostWindow(
@@ -89,14 +98,13 @@ bool ArcWindowHandler::LaunchArcGhostWindow(
            chromeos::WindowStateType::kDefault ||
        restore_data->window_state_type.value() ==
            chromeos::WindowStateType::kNormal)) {
-    adjust_bounds.Inset(0,
-                        views::GetCaptionButtonLayoutSize(
-                            views::CaptionButtonLayoutSize::kNonBrowserCaption)
-                            .height(),
-                        0, 0);
+    adjust_bounds.Inset(gfx::Insets().set_top(
+        views::GetCaptionButtonLayoutSize(
+            views::CaptionButtonLayoutSize::kNonBrowserCaption)
+            .height()));
   }
 
-  auto shell_surface = InitArcGhostWindow(
+  auto shell_surface = ArcGhostWindowShellSurface::Create(
       this, app_id, session_id, adjust_bounds, restore_data,
       base::BindRepeating(&ArcWindowHandler::CloseWindow,
                           weak_ptr_factory_.GetWeakPtr(), session_id));

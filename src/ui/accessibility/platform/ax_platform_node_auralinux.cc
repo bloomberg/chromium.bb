@@ -337,7 +337,7 @@ const char* BuildDescriptionFromHeaders(AXPlatformNodeDelegate* delegate,
 
   std::string result = base::JoinString(names, " ");
 
-#if defined(LEAK_SANITIZER) && !defined(OS_NACL)
+#if defined(LEAK_SANITIZER) && !BUILDFLAG(IS_NACL)
   // http://crbug.com/982839
   // atk_table_get_column_description and atk_table_get_row_description return
   // const gchar*, which suggests the caller does not gain ownership of the
@@ -1018,7 +1018,7 @@ gunichar GetCharacterAtOffset(AtkText* atk_text, int offset) {
   offset = obj->UnicodeToUTF16OffsetInText(offset);
   int32_t limited_offset = base::clamp(offset, 0, text_length);
 
-  uint32_t code_point;
+  base_icu::UChar32 code_point;
   base::ReadUnicodeCharacter(text.c_str(), text_length + 1, &limited_offset,
                              &code_point);
   return code_point;
@@ -1508,7 +1508,7 @@ gboolean AddSelection(AtkSelection* selection, gint index) {
       AXPlatformNodeAuraLinux::FromAtkObject(ATK_OBJECT(selection));
   if (!obj)
     return FALSE;
-  if (index < 0 || index >= obj->GetChildCount())
+  if (index < 0 || static_cast<size_t>(index) >= obj->GetChildCount())
     return FALSE;
 
   AXPlatformNodeAuraLinux* child =
@@ -1596,7 +1596,7 @@ gboolean IsChildSelected(AtkSelection* selection, gint index) {
       AXPlatformNodeAuraLinux::FromAtkObject(ATK_OBJECT(selection));
   if (!obj)
     return FALSE;
-  if (index < 0 || index >= obj->GetChildCount())
+  if (index < 0 || static_cast<size_t>(index) >= obj->GetChildCount())
     return FALSE;
 
   AXPlatformNodeAuraLinux* child =
@@ -2117,7 +2117,7 @@ AtkObject* RefChild(AtkObject* atk_object, gint index) {
   if (!obj)
     return nullptr;
 
-  if (index < 0 || index >= obj->GetChildCount())
+  if (index < 0 || static_cast<size_t>(index) >= obj->GetChildCount())
     return nullptr;
 
   AtkObject* result = obj->ChildAtIndex(index);
@@ -2139,7 +2139,10 @@ gint GetIndexInParent(AtkObject* atk_object) {
   if (!obj)
     return -1;
 
-  return obj->GetIndexInParent().value_or(-1);
+  auto index_in_parent = obj->GetIndexInParent();
+  return index_in_parent.has_value()
+             ? static_cast<gint>(index_in_parent.value())
+             : -1;
 }
 
 gint AtkGetIndexInParent(AtkObject* atk_object) {
@@ -3171,7 +3174,8 @@ void AXPlatformNodeAuraLinux::GetAtkState(AtkStateSet* atk_state_set) {
   }
 
   if (GetData().GetRestriction() != ax::mojom::Restriction::kDisabled) {
-    if (IsReadOnlySupported(GetRole()) && GetData().IsReadOnlyOrDisabled()) {
+    if (GetDelegate()->IsReadOnlySupported() &&
+        GetDelegate()->IsReadOnlyOrDisabled()) {
 #if defined(ATK_216)
       // Runtime check in case we were compiled with a newer version of ATK.
       if (PlatformSupportsState(ATK_STATE_READ_ONLY))
@@ -3364,7 +3368,7 @@ bool AXPlatformNodeAuraLinux::IsPlatformCheckable() const {
   return AXPlatformNodeBase::IsPlatformCheckable();
 }
 
-absl::optional<int> AXPlatformNodeAuraLinux::GetIndexInParent() {
+absl::optional<size_t> AXPlatformNodeAuraLinux::GetIndexInParent() {
   AXPlatformNode* parent =
       AXPlatformNode::FromNativeViewAccessible(GetParent());
   // Even though the node doesn't have its parent, GetParent() could return the
@@ -3474,6 +3478,14 @@ void AXPlatformNodeAuraLinux::OnEnabledChanged() {
       GetData().GetRestriction() != ax::mojom::Restriction::kDisabled);
 }
 
+void AXPlatformNodeAuraLinux::OnBusyStateChanged(bool is_busy) {
+  AtkObject* obj = GetOrCreateAtkObject();
+  if (!obj)
+    return;
+
+  atk_object_notify_state_change(obj, ATK_STATE_BUSY, is_busy);
+}
+
 void AXPlatformNodeAuraLinux::OnExpandedStateChanged(bool is_expanded) {
   // When a list box is expanded, it becomes visible. This means that it might
   // now have a different role (the role for hidden Views is kUnknown).  We
@@ -3573,6 +3585,14 @@ void AXPlatformNodeAuraLinux::ResendFocusSignalsForCurrentlyFocusedNode() {
 
   g_signal_emit_by_name(focused_node, "focus-event", true);
   atk_object_notify_state_change(focused_node, ATK_STATE_FOCUSED, true);
+}
+
+void AXPlatformNodeAuraLinux::SetAsCurrentlyFocusedNode() {
+  AtkObject* obj = GetOrCreateAtkObject();
+  if (!obj)
+    return;
+
+  SetWeakGPtrToAtkObject(&g_current_focused, obj);
 }
 
 // All menus have closed.
@@ -4040,8 +4060,12 @@ void AXPlatformNodeAuraLinux::OnSubtreeCreated() {
   if (!atk_object)
     return;
 
-  g_signal_emit_by_name(GetParent(), "children-changed::add",
-                        GetIndexInParent().value_or(-1), atk_object);
+  auto index_in_parent = GetIndexInParent();
+  gint index_gint = index_in_parent.has_value()
+                        ? static_cast<gint>(index_in_parent.value())
+                        : -1;
+  g_signal_emit_by_name(GetParent(), "children-changed::add", index_gint,
+                        atk_object);
 }
 
 void AXPlatformNodeAuraLinux::OnSubtreeWillBeDeleted() {
@@ -4054,8 +4078,12 @@ void AXPlatformNodeAuraLinux::OnSubtreeWillBeDeleted() {
   if (!atk_object)
     return;
 
-  g_signal_emit_by_name(GetParent(), "children-changed::remove",
-                        GetIndexInParent().value_or(-1), atk_object);
+  auto index_in_parent = GetIndexInParent();
+  gint index_gint = index_in_parent.has_value()
+                        ? static_cast<gint>(index_in_parent.value())
+                        : -1;
+  g_signal_emit_by_name(GetParent(), "children-changed::remove", index_gint,
+                        atk_object);
 }
 
 void AXPlatformNodeAuraLinux::OnParentChanged() {
@@ -4317,7 +4345,7 @@ AXPlatformNodeAuraLinux::GetHypertextAdjustments() {
   std::u16string text = GetHypertext();
   int32_t text_length = text.size();
   for (int32_t i = 0; i < text_length; i++) {
-    uint32_t code_point;
+    base_icu::UChar32 code_point;
     size_t original_i = i;
     base::ReadUnicodeCharacter(text.c_str(), text_length + 1, &i, &code_point);
 

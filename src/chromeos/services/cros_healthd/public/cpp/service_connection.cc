@@ -13,10 +13,15 @@
 #include "base/memory/weak_ptr.h"
 #include "base/no_destructor.h"
 #include "base/sequence_checker.h"
-#include "chromeos/dbus/cros_healthd/cros_healthd_client.h"
+#include "chromeos/ash/components/dbus/cros_healthd/cros_healthd_client.h"
+#include "chromeos/ash/components/dbus/cros_healthd/fake_cros_healthd_client.h"
 #include "chromeos/services/cros_healthd/public/mojom/cros_healthd.mojom.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "ui/events/ozone/evdev/event_device_info.h"  // nogncheck
+
+#if !defined(USE_REAL_DBUS_CLIENTS)
+#include "chromeos/services/cros_healthd/public/cpp/fake_cros_healthd.h"
+#endif
 
 namespace chromeos {
 namespace cros_healthd {
@@ -178,12 +183,18 @@ class ServiceConnectionImpl : public ServiceConnection {
                         mojom::CrosHealthdProbeService::ProbeProcessInfoCallback
                             callback) override;
   void GetDiagnosticsService(
-      mojom::CrosHealthdDiagnosticsServiceRequest service) override;
-  void GetProbeService(mojom::CrosHealthdProbeServiceRequest service) override;
+      mojo::PendingReceiver<mojom::CrosHealthdDiagnosticsService> service)
+      override;
+  void GetProbeService(
+      mojo::PendingReceiver<mojom::CrosHealthdProbeService> service) override;
   void SetBindNetworkHealthServiceCallback(
       BindNetworkHealthServiceCallback callback) override;
   void SetBindNetworkDiagnosticsRoutinesCallback(
       BindNetworkDiagnosticsRoutinesCallback callback) override;
+  void SendChromiumDataCollector(
+      mojo::PendingRemote<
+          chromeos::cros_healthd::internal::mojom::ChromiumDataCollector>
+          remote) override;
   std::string FetchTouchpadLibraryName() override;
   void FlushForTesting() override;
 
@@ -635,7 +646,7 @@ void ServiceConnectionImpl::ProbeProcessInfo(
 }
 
 void ServiceConnectionImpl::GetDiagnosticsService(
-    mojom::CrosHealthdDiagnosticsServiceRequest service) {
+    mojo::PendingReceiver<mojom::CrosHealthdDiagnosticsService> service) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   EnsureCrosHealthdServiceFactoryIsBound();
   cros_healthd_service_factory_->GetDiagnosticsService(std::move(service));
@@ -653,7 +664,16 @@ void ServiceConnectionImpl::SetBindNetworkDiagnosticsRoutinesCallback(
   BindAndSendNetworkDiagnosticsRoutines();
 }
 
-// This is a short-term solution for CloudReady. We should remove this work
+void ServiceConnectionImpl::SendChromiumDataCollector(
+    mojo::PendingRemote<
+        chromeos::cros_healthd::internal::mojom::ChromiumDataCollector>
+        remote) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  EnsureCrosHealthdServiceFactoryIsBound();
+  cros_healthd_service_factory_->SendChromiumDataCollector(std::move(remote));
+}
+
+// This is a short-term solution for ChromeOS Flex. We should remove this work
 // around after cros_healthd team develop a healthier input telemetry approach.
 std::string ServiceConnectionImpl::FetchTouchpadLibraryName() {
 #if defined(USE_LIBINPUT)
@@ -723,7 +743,7 @@ void ServiceConnectionImpl::BindAndSendNetworkDiagnosticsRoutines() {
 }
 
 void ServiceConnectionImpl::GetProbeService(
-    mojom::CrosHealthdProbeServiceRequest service) {
+    mojo::PendingReceiver<mojom::CrosHealthdProbeService> service) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   EnsureCrosHealthdServiceFactoryIsBound();
   cros_healthd_service_factory_->GetProbeService(std::move(service));
@@ -784,6 +804,20 @@ void ServiceConnectionImpl::BindCrosHealthdProbeServiceIfNeeded() {
 
 ServiceConnectionImpl::ServiceConnectionImpl() {
   DETACH_FROM_SEQUENCE(sequence_checker_);
+#if !defined(USE_REAL_DBUS_CLIENTS)
+  // Creates the fake mojo service if need. This is for browser test to do the
+  // initialized.
+  // TODO(b/230064284): Remove this after we migrate to mojo service manager.
+  if (!FakeCrosHealthd::Get()) {
+    CHECK(CrosHealthdClient::Get())
+        << "The dbus client is not initialized. This should not happen in "
+           "browser tests. In unit tests, use FakeCrosHealthd::Initialize() to "
+           "initialize the fake cros healthd service.";
+    // Only initialize the fake if fake dbus client is used.
+    if (FakeCrosHealthdClient::Get())
+      FakeCrosHealthd::Initialize();
+  }
+#endif  // defined(USE_REAL_DBUS_CLIENTS)
   EnsureCrosHealthdServiceFactoryIsBound();
 }
 

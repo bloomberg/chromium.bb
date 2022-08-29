@@ -12,7 +12,6 @@
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
-#include "third_party/blink/renderer/core/css/style_recalc.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_document_state.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -23,11 +22,13 @@
 #include "third_party/blink/renderer/core/editing/selection_template.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/html/html_object_element.h"
 #include "third_party/blink/renderer/core/html_element_type_helpers.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/page/page.h"
-#include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
+#include "third_party/blink/renderer/core/page/page_animator.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/pre_paint_tree_walk.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
@@ -44,6 +45,9 @@ const char* kContainmentNotSatisfied =
 const char* kUnsupportedDisplay =
     "Element has unsupported display type (display: contents).";
 }  // namespace rejection_names
+
+const char kForcedRendering[] =
+    "Rendering was performed in a subtree hidden by content-visibility:hidden.";
 
 ScrollableArea* GetScrollableArea(Node* node) {
   if (!node)
@@ -310,7 +314,9 @@ bool DisplayLockContext::ShouldStyleChildren() const {
          forced_info_.is_forced(ForcedPhase::kStyleAndLayoutTree) ||
          (document_->GetDisplayLockDocumentState()
               .ActivatableDisplayLocksForced() &&
-          IsActivatable(DisplayLockActivationReason::kAny));
+          IsActivatable(DisplayLockActivationReason::kAny)) ||
+         (element_->GetLayoutObject() &&
+          element_->GetLayoutObject()->IsShapingDeferred());
 }
 
 void DisplayLockContext::DidStyleSelf() {
@@ -345,7 +351,9 @@ bool DisplayLockContext::ShouldLayoutChildren() const {
   return !is_locked_ || forced_info_.is_forced(ForcedPhase::kLayout) ||
          (document_->GetDisplayLockDocumentState()
               .ActivatableDisplayLocksForced() &&
-          IsActivatable(DisplayLockActivationReason::kAny));
+          IsActivatable(DisplayLockActivationReason::kAny)) ||
+         (element_->GetLayoutObject() &&
+          element_->GetLayoutObject()->IsShapingDeferred());
 }
 
 void DisplayLockContext::DidLayoutChildren() {
@@ -360,13 +368,16 @@ void DisplayLockContext::DidLayoutChildren() {
 }
 
 bool DisplayLockContext::ShouldPrePaintChildren() const {
-  return !is_locked_ || forced_info_.is_forced(ForcedPhase::kPrePaint);
+  return !is_locked_ || forced_info_.is_forced(ForcedPhase::kPrePaint) ||
+         (element_->GetLayoutObject() &&
+          element_->GetLayoutObject()->IsShapingDeferred());
 }
 
 bool DisplayLockContext::ShouldPaintChildren() const {
   // Note that forced updates should never require us to paint, so we don't
   // check |forced_info_| here.
-  return !is_locked_;
+  return !is_locked_ || (element_->GetLayoutObject() &&
+                         element_->GetLayoutObject()->IsShapingDeferred());
 }
 // End Should* and Did* functions ==============================================
 
@@ -375,10 +386,8 @@ bool DisplayLockContext::IsActivatable(
   return activatable_mask_ & static_cast<uint16_t>(reason);
 }
 
-void DisplayLockContext::CommitForActivationWithSignal(
-    Element* activated_element,
+void DisplayLockContext::CommitForActivation(
     DisplayLockActivationReason reason) {
-  DCHECK(activated_element);
   DCHECK(element_);
   DCHECK(ConnectedToView());
   DCHECK(IsLocked());
@@ -473,7 +482,8 @@ bool DisplayLockContext::ShouldCommitForActivation(
   return IsActivatable(reason) && IsLocked();
 }
 
-void DisplayLockContext::NotifyForcedUpdateScopeStarted(ForcedPhase phase) {
+void DisplayLockContext::NotifyForcedUpdateScopeStarted(ForcedPhase phase,
+                                                        bool emit_warnings) {
   forced_info_.start(phase);
   if (IsLocked()) {
     // Now that the update is forced, we should ensure that style layout, and
@@ -491,6 +501,20 @@ void DisplayLockContext::NotifyForcedUpdateScopeStarted(ForcedPhase phase) {
       MarkForLayoutIfNeeded();
     if (forced_info_.is_forced(ForcedPhase::kPrePaint))
       MarkAncestorsForPrePaintIfNeeded();
+
+    if (emit_warnings && v8::Isolate::GetCurrent()->InContext() &&
+        !IsActivatable(DisplayLockActivationReason::kAny) && document_ &&
+        element_) {
+      // Note that this is a verbose level message, since it can happen
+      // frequently and is not necessarily a problem if the developer is
+      // accessing content-visibility: hidden subtrees intentionally.
+      auto* console_message = MakeGarbageCollected<ConsoleMessage>(
+          mojom::blink::ConsoleMessageSource::kJavaScript,
+          mojom::blink::ConsoleMessageLevel::kVerbose, kForcedRendering);
+      console_message->SetNodes(document_->GetFrame(),
+                                {DOMNodeIds::IdForNode(element_)});
+      document_->AddConsoleMessage(console_message);
+    }
   }
 }
 
@@ -607,6 +631,7 @@ bool DisplayLockContext::MarkForLayoutIfNeeded() {
       DisplayLockContext* context_;
     } scoped_force(this);
 
+    auto* layout_object = element_->GetLayoutObject();
     if (child_layout_was_blocked_ || HasStashedScrollOffset()) {
       // We've previously blocked a child traversal when doing self-layout for
       // the locked element, so we're marking it with child-needs-layout so that
@@ -624,13 +649,20 @@ bool DisplayLockContext::MarkForLayoutIfNeeded() {
       // can reach DisplayLockContext::DidLayoutChildren where we restore the
       // offset. If performance becomes an issue, then we should think of a
       // different time / opportunity to restore the offset.
-      element_->GetLayoutObject()->SetChildNeedsLayout();
+      layout_object->SetChildNeedsLayout();
       child_layout_was_blocked_ = false;
     } else {
       // Since the dirty layout propagation stops at the locked element, we need
       // to mark its ancestors as dirty here so that it will be traversed to on
       // the next layout.
-      element_->GetLayoutObject()->MarkContainerChainForLayout();
+      layout_object->MarkContainerChainForLayout();
+      if (layout_object->IsShapingDeferred()) {
+        layout_object->SetIntrinsicLogicalWidthsDirty();
+        layout_object->SetChildNeedsLayout();
+        // Make sure we don't use cached NGFragmentItem objects.
+        To<LayoutBox>(layout_object)->DisassociatePhysicalFragments();
+        To<LayoutBox>(layout_object)->ClearLayoutResults();
+      }
     }
     return true;
   }
@@ -683,9 +715,6 @@ bool DisplayLockContext::MarkNeedsRepaintAndPaintArtifactCompositorUpdate() {
 
 bool DisplayLockContext::MarkNeedsCullRectUpdate() {
   DCHECK(ConnectedToView());
-  if (!RuntimeEnabledFeatures::CullRectUpdateEnabled())
-    return false;
-
   if (auto* layout_object = element_->GetLayoutObject()) {
     layout_object->PaintingLayer()->SetForcesChildrenCullRectUpdate();
     return true;
@@ -703,42 +732,9 @@ bool DisplayLockContext::MarkForCompositingUpdatesIfNeeded() {
 
   auto* layout_box = DynamicTo<LayoutBoxModelObject>(layout_object);
   if (layout_box && layout_box->HasSelfPaintingLayer()) {
-    if (layout_box->Layer()->ChildNeedsCompositingInputsUpdate() &&
-        layout_box->Layer()->Parent()) {
-      // Note that if the layer's child needs compositing inputs update, then
-      // that layer itself also needs compositing inputs update. In order to
-      // propagate the dirty bit, we need to mark this layer's _parent_ as a
-      // needing an update.
-      layout_box->Layer()->Parent()->SetNeedsCompositingInputsUpdate();
-    }
-    if (needs_compositing_requirements_update_)
-      layout_box->Layer()->SetNeedsCompositingRequirementsUpdate();
-    needs_compositing_requirements_update_ = false;
-
     if (needs_compositing_dependent_flag_update_)
       layout_box->Layer()->SetNeedsCompositingInputsUpdate();
     needs_compositing_dependent_flag_update_ = false;
-
-    if (needs_graphics_layer_rebuild_)
-      layout_box->Layer()->SetNeedsGraphicsLayerRebuild();
-    needs_graphics_layer_rebuild_ = false;
-
-    if (forced_graphics_layer_update_blocked_) {
-      auto* compositing_parent =
-          layout_box->Layer()->EnclosingLayerWithCompositedLayerMapping(
-              kIncludeSelf);
-      if (compositing_parent) {
-        compositing_parent->GetCompositedLayerMapping()
-            ->SetNeedsGraphicsLayerUpdate(kGraphicsLayerUpdateSubtree);
-      } else {
-        // If we don't have a compositing layer mapping ancestor in this frame,
-        // then mark this layer as needing a graphics layer rebuild, since what
-        // we want is to clear any dangling trees in this subtree or composite
-        // the frame again if something in the subtree still needs compositing.
-        layout_box->Layer()->SetNeedsGraphicsLayerRebuild();
-      }
-    }
-    forced_graphics_layer_update_blocked_ = false;
 
     return true;
   }
@@ -762,22 +758,18 @@ bool DisplayLockContext::IsElementDirtyForStyleRecalc() const {
 bool DisplayLockContext::IsElementDirtyForLayout() const {
   if (auto* layout_object = element_->GetLayoutObject()) {
     return layout_object->NeedsLayout() || child_layout_was_blocked_ ||
-           HasStashedScrollOffset();
+           HasStashedScrollOffset() || layout_object->IsShapingDeferred();
   }
   return false;
 }
 
 bool DisplayLockContext::IsElementDirtyForPrePaint() const {
   if (auto* layout_object = element_->GetLayoutObject()) {
-    auto* layout_box = DynamicTo<LayoutBoxModelObject>(layout_object);
     return PrePaintTreeWalk::ObjectRequiresPrePaint(*layout_object) ||
            PrePaintTreeWalk::ObjectRequiresTreeBuilderContext(*layout_object) ||
            needs_prepaint_subtree_walk_ ||
            needs_effective_allowed_touch_action_update_ ||
-           needs_blocking_wheel_event_handler_update_ ||
-           needs_compositing_requirements_update_ ||
-           (layout_box && layout_box->HasSelfPaintingLayer() &&
-            layout_box->Layer()->ChildNeedsCompositingInputsUpdate());
+           needs_blocking_wheel_event_handler_update_;
   }
   return false;
 }
@@ -930,6 +922,20 @@ void DisplayLockContext::ScheduleTopLayerCheck() {
   ScheduleAnimation();
 }
 
+bool DisplayLockContext::IsShapingDeferred() const {
+  if (!element_)
+    return false;
+  if (const auto* layout_object = element_->GetLayoutObject())
+    return layout_object->IsShapingDeferred();
+  return false;
+}
+
+bool DisplayLockContext::IsInclusiveDescendantOf(
+    const LayoutObject& ancestor) const {
+  const LayoutObject* object = element_ ? element_->GetLayoutObject() : nullptr;
+  return object && object->IsDescendantOf(&ancestor);
+}
+
 void DisplayLockContext::ScheduleAnimation() {
   DCHECK(element_);
   if (!ConnectedToView() || !document_ || !document_->GetPage())
@@ -954,6 +960,11 @@ const char* DisplayLockContext::ShouldForceUnlock() const {
     return nullptr;
   }
 
+  // Do not force-unlock for deferred elements.
+  if (element_->GetLayoutObject() &&
+      element_->GetLayoutObject()->IsShapingDeferred())
+    return nullptr;
+
   if (element_->HasDisplayContentsStyle())
     return rejection_names::kUnsupportedDisplay;
 
@@ -964,12 +975,17 @@ const char* DisplayLockContext::ShouldForceUnlock() const {
   if (!style->ContainsStyle() || !style->ContainsLayout())
     return rejection_names::kContainmentNotSatisfied;
 
-  // We allow replaced elements to be locked. This check is similar to the check
-  // in DefinitelyNewFormattingContext() in element.cc, but in this case we
-  // allow object element to get locked.
-  if (IsA<HTMLObjectElement>(*element_) || IsA<HTMLImageElement>(*element_) ||
-      element_->IsFormControlElement() || element_->IsMediaElement() ||
-      element_->IsFrameOwnerElement() || element_->IsSVGElement()) {
+  // We allow replaced elements without fallback content to be locked. This
+  // check is similar to the check in DefinitelyNewFormattingContext() in
+  // element.cc, but in this case we allow object element to get locked.
+  if (const auto* object_element = DynamicTo<HTMLObjectElement>(*element_)) {
+    if (!object_element->UseFallbackContent())
+      return nullptr;
+  } else if (IsA<HTMLImageElement>(*element_) ||
+             (element_->IsFormControlElement() &&
+              !element_->IsOutputElement()) ||
+             element_->IsMediaElement() || element_->IsFrameOwnerElement() ||
+             element_->IsSVGElement()) {
     return nullptr;
   }
 
@@ -1019,6 +1035,9 @@ bool DisplayLockContext::ForceUnlockIfNeeded() {
               layout_invalidation_reason::kDisplayLock);
         }
       }
+      // If we forced unlock, then we need to prevent subsequent calls to
+      // Lock() until the next frame.
+      SetRequestedState(EContentVisibility::kVisible);
     }
     return true;
   }
@@ -1209,6 +1228,17 @@ void DisplayLockContext::NotifyRenderAffectingStateChanged() {
         !state(RenderAffectingState::kAutoStateUnlockedUntilLifecycle) &&
         !state(RenderAffectingState::kAutoUnlockedForPrint) &&
         !state(RenderAffectingState::kSubtreeHasTopLayerElement)));
+
+  // For shaping-deferred boxes, we'd like to unlock permanently.
+  if (IsShapingDeferred() && state_ != EContentVisibility::kVisible &&
+      !should_be_locked && IsLocked()) {
+    SetRequestedState(EContentVisibility::kVisible);
+    // We need to change the document lifecycle explicitly because Unlock()
+    // inside the above SetRequestedState() didn't change the lifecycle.
+    // See CanDirtyStyle() check in Unlock().
+    document_->Lifecycle().EnsureStateAtMost(DocumentLifecycle::kStyleClean);
+    return;
+  }
 
   if (should_be_locked && !IsLocked())
     Lock();

@@ -8,9 +8,10 @@ import {List} from 'chrome://resources/js/cr/ui/list.m.js';
 import {TreeItem} from 'chrome://resources/js/cr/ui/tree.js';
 import {queryRequiredElement} from 'chrome://resources/js/util.m.js';
 
+import {getDirectory, getDisallowedTransfers, startIOTask} from '../../common/js/api.js';
 import {FileType} from '../../common/js/file_type.js';
 import {ProgressCenterItem, ProgressItemState, ProgressItemType} from '../../common/js/progress_center_common.js';
-import {strf, util} from '../../common/js/util.js';
+import {str, strf, util} from '../../common/js/util.js';
 import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
 import {FileOperationManager} from '../../externs/background/file_operation_manager.js';
 import {ProgressCenter} from '../../externs/background/progress_center.js';
@@ -455,13 +456,24 @@ export class FileTransferController {
    */
   async executePasteIfAllowed_(pastePlan) {
     const sourceEntries = await pastePlan.resolveEntries();
-    const isPasteAllowed = true;
+    let disallowedTransfers = [];
+    try {
+      const destinationDir =
+          /** @type{!DirectoryEntry} */ (
+              assert(util.unwrapEntry(pastePlan.destinationEntry)));
 
-    // TODO(crbug.com/1259202): Add Dlp logic
-    if (!isPasteAllowed) {
+      // TODO(crbug.com/1297603): Avoid calling the api if DLP isn't enabled.
+      disallowedTransfers =
+          await getDisallowedTransfers(sourceEntries, destinationDir);
+    } catch (error) {
+      disallowedTransfers = [];
+      console.warn(error);
+    }
+
+    if (disallowedTransfers && disallowedTransfers.length != 0) {
       this.filesToast_.show(
-          'Pasting this file is blocked by your administrator', {
-            text: 'Learn more',
+          str('DLP_BLOCK_COPY_TOAST'), {
+            text: str('DLP_TOAST_BUTTON_LABEL'),
             callback: () => {
               util.visitURL(
                   'https://support.google.com/chrome/a/?p=chromeos_datacontrols');
@@ -546,7 +558,7 @@ export class FileTransferController {
     const destinationLocationInfo =
         this.volumeManager_.getLocationInfo(destinationEntry);
     if (!destinationLocationInfo) {
-      console.error(
+      console.warn(
           'Failed to get destination location for ' + destinationEntry.toURL() +
           ' while attempting to paste files.');
     }
@@ -600,17 +612,25 @@ export class FileTransferController {
         .then(/**
                * @param {!Array<Entry>} filteredEntries
                */
-              filteredEntries => {
+              async filteredEntries => {
                 entries = filteredEntries;
                 if (entries.length === 0) {
                   return Promise.reject('ABORT');
                 }
-                // Send only the copy operation to IO Queue in the C++.
                 if (window.isSWA) {
-                  chrome.fileManagerPrivate.startIOTask(
-                      toMove ? chrome.fileManagerPrivate.IOTaskType.MOVE :
-                               chrome.fileManagerPrivate.IOTaskType.COPY,
-                      entries, {destinationFolder: destinationEntry});
+                  const taskType = toMove ?
+                      chrome.fileManagerPrivate.IOTaskType.MOVE :
+                      chrome.fileManagerPrivate.IOTaskType.COPY;
+                  try {
+                    // TODO(crbug/1290197): Start tracking the copy/move
+                    // operation starting here as both the legacy taskId and
+                    // IOTask taskId are available.
+                    await startIOTask(
+                        taskType, entries,
+                        {destinationFolder: destinationEntry});
+                  } catch (e) {
+                    console.error(`Failed to start ${taskType} io task:`, e);
+                  }
                   return;
                 }
 
@@ -664,7 +684,7 @@ export class FileTransferController {
               })
         .catch(error => {
           if (error !== 'ABORT') {
-            console.error(error.stack ? error.stack : error);
+            console.warn(error.stack ? error.stack : error);
           }
         })
         .finally(() => {
@@ -1298,6 +1318,12 @@ export class FileTransferController {
       return false;
     }
 
+    // Recent isn't read-only, but it doesn't support paste/drop.
+    if (destinationLocationInfo.rootType ===
+        VolumeManagerCommon.RootType.RECENT) {
+      return false;
+    }
+
     if (destinationLocationInfo.volumeInfo &&
         destinationLocationInfo.volumeInfo.error) {
       return false;
@@ -1475,6 +1501,11 @@ export class FileTransferController {
     }
     if (destinationLocationInfo.volumeInfo &&
         destinationLocationInfo.volumeInfo.error) {
+      return new DropEffectAndLabel(DropEffectType.NONE, null);
+    }
+    // Recent isn't read-only, but it doesn't support drop.
+    if (destinationLocationInfo.rootType ===
+        VolumeManagerCommon.RootType.RECENT) {
       return new DropEffectAndLabel(DropEffectType.NONE, null);
     }
     if (destinationLocationInfo.isReadOnly) {

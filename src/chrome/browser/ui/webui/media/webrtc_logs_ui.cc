@@ -16,6 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -25,8 +26,7 @@
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
-#include "chrome/grit/webrtc_logs_resources.h"
-#include "chrome/grit/webrtc_logs_resources_map.h"
+#include "chrome/grit/media_resources.h"
 #include "components/prefs/pref_service.h"
 #include "components/upload_list/upload_list.h"
 #include "components/version_info/version_info.h"
@@ -36,7 +36,6 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
-#include "ui/base/webui/web_ui_util.h"
 
 using content::WebContents;
 using content::WebUIMessageHandler;
@@ -74,9 +73,10 @@ content::WebUIDataSource* CreateWebRtcLogsUIHTMLSource() {
   source->AddLocalizedStrings(kStrings);
 
   source->UseStringsJs();
-  source->AddResourcePaths(
-      base::make_span(kWebrtcLogsResources, kWebrtcLogsResourcesSize));
-  source->SetDefaultResource(IDR_WEBRTC_LOGS_WEBRTC_LOGS_HTML);
+
+  source->AddResourcePath("webrtc_logs.css", IDR_MEDIA_WEBRTC_LOGS_CSS);
+  source->AddResourcePath("webrtc_logs.js", IDR_MEDIA_WEBRTC_LOGS_JS);
+  source->SetDefaultResource(IDR_MEDIA_WEBRTC_LOGS_HTML);
   return source;
 }
 
@@ -193,7 +193,7 @@ void WebRtcLogsDOMHandler::RegisterMessages() {
 
 void WebRtcLogsDOMHandler::HandleRequestWebRtcLogs(
     const base::ListValue* args) {
-  std::string callback_id = args->GetList()[0].GetString();
+  std::string callback_id = args->GetListDeprecated()[0].GetString();
   AllowJavascript();
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   LoadWebRtcTextLogs(callback_id);

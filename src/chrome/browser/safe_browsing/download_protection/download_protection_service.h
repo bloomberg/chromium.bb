@@ -116,8 +116,7 @@ class DownloadProtectionService {
 
   virtual void CheckPPAPIDownloadRequest(
       const GURL& requestor_url,
-      const GURL& initiating_frame_url,
-      content::WebContents* web_contents,
+      content::RenderFrameHost* initiating_frame,
       const base::FilePath& default_file_path,
       const std::vector<base::FilePath::StringType>& alternate_extensions,
       Profile* profile,
@@ -304,6 +303,8 @@ class DownloadProtectionService {
   void AddReferrerChainToPPAPIClientDownloadRequest(
       content::WebContents* web_contents,
       const GURL& initiating_frame_url,
+      const content::GlobalRenderFrameHostId&
+          initiating_outermost_main_frame_id,
       const GURL& initiating_main_frame_url,
       SessionID tab_id,
       bool has_user_gesture,
@@ -319,6 +320,13 @@ class DownloadProtectionService {
   // Get the SafeBrowsingNavigationObserverManager for the given |web_contents|.
   SafeBrowsingNavigationObserverManager* GetNavigationObserverManager(
       content::WebContents* web_contents);
+
+  // Callback when deep scanning has finished, but we may want to do the
+  // metadata check anyway.
+  void MaybeCheckMetdataAfterDeepScanning(
+      download::DownloadItem* item,
+      CheckDownloadRepeatingCallback callback,
+      DownloadCheckResult result);
 
   raw_ptr<SafeBrowsingService> sb_service_;
   // These pointers may be NULL if SafeBrowsing is disabled.

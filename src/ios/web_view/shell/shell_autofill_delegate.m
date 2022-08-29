@@ -93,7 +93,18 @@
                           frameID:(NSString*)frameID
                             value:(NSString*)value
                     userInitiated:(BOOL)userInitiated {
-  // Not implemented.
+  // TODO(crbug.com/1323932): Fetching suggestions has an important side effect
+  // of calling PasswordFormManager::UpdateStateOnUserInput. This will ensure
+  // that the typed information can be remembered during the save dialogue.
+  // Make this method a no-op once the bug is fixed.
+  id completionHandler = ^(NSArray<CWVAutofillSuggestion*>* suggestions) {
+    NSLog(@"%@ suggestions: %@", NSStringFromSelector(_cmd), suggestions);
+  };
+  [autofillController fetchSuggestionsForFormWithName:formName
+                                      fieldIdentifier:fieldIdentifier
+                                            fieldType:fieldType
+                                              frameID:frameID
+                                    completionHandler:completionHandler];
 }
 
 - (void)autofillController:(CWVAutofillController*)autofillController
@@ -315,6 +326,41 @@
              decisionHandler:(void (^)(BOOL accept))decisionHandler {
   NSLog(@"Accepting suggested password: %@", generatedPassword);
   decisionHandler(YES);
+}
+
+- (void)autofillController:(CWVAutofillController*)autofillController
+    confirmSaveForNewAutofillProfile:(CWVAutofillProfile*)newProfile
+                          oldProfile:(nullable CWVAutofillProfile*)oldProfile
+                     decisionHandler:
+                         (void (^)(CWVAutofillProfileUserDecision decision))
+                             decisionHandler {
+  NSString* message =
+      [NSString stringWithFormat:@"new: %@\nold: %@",
+                                 newProfile.debugDescription, oldProfile];
+  UIAlertController* alertController = [UIAlertController
+      alertControllerWithTitle:@"Confirm save for new profile?"
+                       message:message
+                preferredStyle:UIAlertControllerStyleAlert];
+
+  UIAlertAction* accept = [UIAlertAction
+      actionWithTitle:@"Accept"
+                style:UIAlertActionStyleDefault
+              handler:^(UIAlertAction* action) {
+                decisionHandler(CWVAutofillProfileUserDecisionAccepted);
+              }];
+  [alertController addAction:accept];
+
+  UIAlertAction* decline = [UIAlertAction
+      actionWithTitle:@"Decline"
+                style:UIAlertActionStyleCancel
+              handler:^(UIAlertAction* action) {
+                decisionHandler(CWVAutofillProfileUserDecisionDeclined);
+              }];
+  [alertController addAction:decline];
+
+  [[self anyKeyWindow].rootViewController presentViewController:alertController
+                                                       animated:YES
+                                                     completion:nil];
 }
 
 #pragma mark - Private Methods

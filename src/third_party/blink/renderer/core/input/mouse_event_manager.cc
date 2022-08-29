@@ -8,6 +8,7 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_drag_event_init.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_pointer_event_init.h"
@@ -32,6 +33,8 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_label_element.h"
+#include "third_party/blink/renderer/core/html/html_image_element.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/input/event_handling_util.h"
 #include "third_party/blink/renderer/core/input/input_device_capabilities.h"
@@ -47,12 +50,13 @@
 #include "third_party/blink/renderer/core/page/pointer_lock_controller.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
+#include "third_party/blink/renderer/core/paint/paint_timing.h"
 #include "third_party/blink/renderer/core/svg/svg_document_extensions.h"
 #include "third_party/blink/renderer/core/timing/event_timing.h"
-#include "third_party/blink/renderer/platform/geometry/float_quad.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom-blink.h"
 #include "ui/display/screen_info.h"
 #include "ui/gfx/geometry/point_conversions.h"
+#include "ui/gfx/geometry/quad_f.h"
 
 namespace blink {
 
@@ -66,29 +70,14 @@ void UpdateMouseMovementXY(const WebMouseEvent& mouse_event,
       !mouse_event.is_raw_movement_event &&
       mouse_event.GetType() == WebInputEvent::Type::kMouseMove &&
       last_position) {
-    // TODO(crbug.com/907309): Current movementX/Y is in physical pixel when
-    // zoom-for-dsf is enabled. Here we apply the device-scale-factor to align
-    // with the current behavior. We need to figure out what is the best
-    // behavior here.
-    float device_scale_factor = 1;
-    if (dom_window && dom_window->GetFrame()) {
-      LocalFrame* frame = dom_window->GetFrame();
-      if (frame->GetPage()->DeviceScaleFactorDeprecated() == 1) {
-        ChromeClient& chrome_client = frame->GetChromeClient();
-        device_scale_factor =
-            chrome_client.GetScreenInfo(*frame).device_scale_factor;
-      }
-    }
     // movementX/Y is type int for now, so we need to truncated the coordinates
     // before calculate movement.
     initializer->setMovementX(
-        base::saturated_cast<int>(mouse_event.PositionInScreen().x() *
-                                  device_scale_factor) -
-        base::saturated_cast<int>(last_position->x() * device_scale_factor));
+        base::saturated_cast<int>(mouse_event.PositionInScreen().x()) -
+        base::saturated_cast<int>(last_position->x()));
     initializer->setMovementY(
-        base::saturated_cast<int>(mouse_event.PositionInScreen().y() *
-                                  device_scale_factor) -
-        base::saturated_cast<int>(last_position->y() * device_scale_factor));
+        base::saturated_cast<int>(mouse_event.PositionInScreen().y()) -
+        base::saturated_cast<int>(last_position->y()));
   }
 }
 
@@ -130,7 +119,7 @@ void SetMouseEventAttributes(MouseEventInit* initializer,
 }
 
 // TODO(crbug.com/653490): Read these values from the OS.
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 const int kDragThresholdX = 3;
 const int kDragThresholdY = 3;
 constexpr base::TimeDelta kTextDragDelay = base::Seconds(0.15);
@@ -202,6 +191,15 @@ void MouseEventManager::MouseEventBoundaryEventDispatcher::DispatchOut(
 void MouseEventManager::MouseEventBoundaryEventDispatcher::DispatchOver(
     EventTarget* target,
     EventTarget* related_target) {
+  if (target) {
+    HTMLImageElement* image_element =
+        DynamicTo<HTMLImageElement>(target->ToNode());
+    if (image_element && image_element->IsLCPElement()) {
+      PaintTiming& paint_timing =
+          PaintTiming::From(image_element->GetDocument());
+      paint_timing.SetLCPMouseoverDispatched();
+    }
+  }
   Dispatch(target, related_target, event_type_names::kMouseover,
            *web_mouse_event_, false);
 }
@@ -348,7 +346,7 @@ WebInputEventResult MouseEventManager::DispatchMouseClickIfNeeded(
   // We only prevent click event when the click may cause contextmenu to popup.
   // However, we always send auxclick.
   bool context_menu_event = false;
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // FIXME: The Mac port achieves the same behavior by checking whether the
   // context menu is currently open in WebPage::mouseEvent(). Consider merging
   // the implementations.
@@ -522,6 +520,13 @@ void MouseEventManager::NodeWillBeRemoved(Node& node_to_be_removed) {
     // TODO(crbug.com/716694): Do not reset mouse_down_element_ for the purpose
     // of gathering data.
   }
+  if (mouse_press_node_ &&
+      node_to_be_removed.IsShadowIncludingInclusiveAncestorOf(
+          *mouse_press_node_)) {
+    // If the mouse_press_node_ is removed, we should dispatch future default
+    // keyboard actions (i.e. scrolling) to the still connected parent.
+    mouse_press_node_ = node_to_be_removed.parentNode();
+  }
 }
 
 Element* MouseEventManager::GetElementUnderMouse() {
@@ -544,6 +549,16 @@ WebInputEventResult MouseEventManager::HandleMouseFocus(
   frame_->GetDocument()->UpdateStyleAndLayout(DocumentUpdateReason::kFocus);
 
   Element* element = element_under_mouse_;
+
+  // When clicking on a <label> for a form associated custom element with
+  // delegatesFocus, we should focus the custom element's focus delegate.
+  if (auto* label = DynamicTo<HTMLLabelElement>(element)) {
+    auto* control = label->control();
+    if (control && control->DelegatesFocus()) {
+      element = control;
+    }
+  }
+
   for (; element; element = element->ParentOrShadowHostElement()) {
     if (element->IsFocusable() && element->IsFocusedElementInDocument())
       return WebInputEventResult::kNotHandled;
@@ -602,7 +617,7 @@ bool MouseEventManager::SlideFocusOnShadowHostIfNecessary(
   if (Element* delegated_target = element.GetFocusableArea()) {
     // Use FocusTypeForward instead of FocusTypeMouse here to mean the
     // focus has slided.
-    delegated_target->focus(FocusParams(SelectionBehaviorOnFocus::kReset,
+    delegated_target->Focus(FocusParams(SelectionBehaviorOnFocus::kReset,
                                         mojom::blink::FocusType::kForward,
                                         nullptr));
     return true;
@@ -677,9 +692,6 @@ WebInputEventResult MouseEventManager::HandleMousePressEvent(
 
   mouse_down_ = event.Event();
 
-  if (frame_->View() && SelectorFragmentAnchor::ShouldDismissOnScrollOrClick())
-    frame_->View()->DismissFragmentAnchor();
-
   if (frame_->GetDocument()->IsSVGDocument() &&
       frame_->GetDocument()->AccessSVGExtensions().ZoomAndPanEnabled()) {
     if ((event.Event().GetModifiers() & WebInputEvent::Modifiers::kShiftKey) &&
@@ -716,12 +728,14 @@ WebInputEventResult MouseEventManager::HandleMousePressEvent(
       frame_->GetEventHandler().GetSelectionController().HandleMousePressEvent(
           event);
 
+  // TODO(crbug.com/1324667): Ensure that autoscroll handles mouse_press_node_
+  // removal correctly, allowing scrolling the still attached ancestor.
   mouse_down_may_start_autoscroll_ =
       frame_->GetEventHandler()
           .GetSelectionController()
           .MouseDownMayStartSelect() ||
       (mouse_press_node_ && mouse_press_node_->GetLayoutBox() &&
-       mouse_press_node_->GetLayoutBox()->CanBeProgramaticallyScrolled());
+       mouse_press_node_->GetLayoutBox()->CanBeProgrammaticallyScrolled());
 
   return swallow_event ? WebInputEventResult::kHandledSystem
                        : WebInputEventResult::kNotHandled;
@@ -755,11 +769,6 @@ void MouseEventManager::UpdateSelectionForMouseDrag() {
 
 bool MouseEventManager::HandleDragDropIfPossible(
     const GestureEventWithHitTestResults& targeted_event) {
-  if (!frame_->GetSettings() ||
-      !frame_->GetSettings()->GetTouchDragDropEnabled() || !frame_->View()) {
-    return false;
-  }
-
   const WebGestureEvent& gesture_event = targeted_event.Event();
   unsigned modifiers = gesture_event.GetModifiers();
 
@@ -826,7 +835,7 @@ WebInputEventResult MouseEventManager::HandleMouseDraggedEvent(
 
   // We disable the drag and drop actions on pen input on windows.
   bool should_handle_drag = true;
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   should_handle_drag = !is_pen;
 #endif
 

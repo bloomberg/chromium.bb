@@ -48,8 +48,10 @@ macro(libgav1_setup_install_target)
       FILES ${libgav1_api_includes}
       DESTINATION "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/gav1")
 
-    install(TARGETS gav1_decode DESTINATION
-                    "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}")
+    if(LIBGAV1_ENABLE_EXAMPLES)
+      install(TARGETS gav1_decode DESTINATION
+                      "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}")
+    endif()
     install(TARGETS libgav1_static DESTINATION
                     "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
     if(BUILD_SHARED_LIBS)

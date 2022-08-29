@@ -184,12 +184,13 @@ constexpr bool IsDynamicCategory(const ::perfetto::DynamicCategory&) {
 
 // Allocate storage for each category by using this macro once per track event
 // namespace.
-#define PERFETTO_TRACK_EVENT_STATIC_STORAGE()      \
-  namespace PERFETTO_TRACK_EVENT_NAMESPACE {       \
-  PERFETTO_INTERNAL_CATEGORY_STORAGE()             \
-  } /* namespace PERFETTO_TRACK_EVENT_NAMESPACE */ \
-  PERFETTO_DEFINE_DATA_SOURCE_STATIC_MEMBERS(      \
-      PERFETTO_TRACK_EVENT_NAMESPACE::TrackEvent,  \
+#define PERFETTO_TRACK_EVENT_STATIC_STORAGE()        \
+  namespace PERFETTO_TRACK_EVENT_NAMESPACE {         \
+  PERFETTO_INTERNAL_CATEGORY_STORAGE()               \
+  PERFETTO_INTERNAL_DEFINE_TRACK_EVENT_DATA_SOURCE() \
+  } /* namespace PERFETTO_TRACK_EVENT_NAMESPACE */   \
+  PERFETTO_DEFINE_DATA_SOURCE_STATIC_MEMBERS(        \
+      PERFETTO_TRACK_EVENT_NAMESPACE::TrackEvent,    \
       perfetto::internal::TrackEventDataSourceTraits)
 
 // Ignore GCC warning about a missing argument for a variadic macro parameter.
@@ -290,9 +291,9 @@ constexpr bool IsDynamicCategory(const ::perfetto::DynamicCategory&) {
 //   TRACE_EVENT("category", "Name", perfetto::Track(1234),
 //               "arg", value, "arg2", value2);
 //
-#define TRACE_EVENT_BEGIN(category, name, ...)               \
-  PERFETTO_INTERNAL_TRACK_EVENT(                             \
-      category, ::perfetto::internal::GetStaticString(name), \
+#define TRACE_EVENT_BEGIN(category, name, ...) \
+  PERFETTO_INTERNAL_TRACK_EVENT(               \
+      category, name,                          \
       ::perfetto::protos::pbzero::TrackEvent::TYPE_SLICE_BEGIN, ##__VA_ARGS__)
 
 // End a slice under |category|.
@@ -306,10 +307,10 @@ constexpr bool IsDynamicCategory(const ::perfetto::DynamicCategory&) {
   PERFETTO_INTERNAL_SCOPED_TRACK_EVENT(category, name, ##__VA_ARGS__)
 
 // Emit a slice which has zero duration.
-#define TRACE_EVENT_INSTANT(category, name, ...)             \
-  PERFETTO_INTERNAL_TRACK_EVENT(                             \
-      category, ::perfetto::internal::GetStaticString(name), \
-      ::perfetto::protos::pbzero::TrackEvent::TYPE_INSTANT, ##__VA_ARGS__)
+#define TRACE_EVENT_INSTANT(category, name, ...)                            \
+  PERFETTO_INTERNAL_TRACK_EVENT(                                            \
+      category, name, ::perfetto::protos::pbzero::TrackEvent::TYPE_INSTANT, \
+      ##__VA_ARGS__)
 
 // Efficiently determine if the given static or dynamic trace category or
 // category group is enabled for tracing.

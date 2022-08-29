@@ -18,6 +18,7 @@
 #include "base/metrics/metrics_hashes.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/metrics/user_metrics.h"
+#include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/platform_thread.h"
@@ -183,9 +184,12 @@ class MetricsServiceTest : public testing::Test {
   PrefService* GetLocalState() { return &testing_local_state_; }
 
   // Sets metrics reporting as enabled for testing.
-  void EnableMetricsReporting() {
-    enabled_state_provider_->set_consent(true);
-    enabled_state_provider_->set_enabled(true);
+  void EnableMetricsReporting() { SetMetricsReporting(true); }
+
+  // Sets metrics reporting for testing.
+  void SetMetricsReporting(bool enabled) {
+    enabled_state_provider_->set_consent(enabled);
+    enabled_state_provider_->set_enabled(enabled);
   }
 
   // Finds a histogram with the specified |name_hash| in |histograms|.
@@ -291,6 +295,16 @@ class ExperimentTestMetricsProvider : public TestMetricsProvider {
   raw_ptr<base::FieldTrial> profile_metrics_trial_;
   raw_ptr<base::FieldTrial> session_data_trial_;
 };
+
+bool HistogramExists(base::StringPiece name) {
+  return base::StatisticsRecorder::FindHistogram(name) != nullptr;
+}
+
+base::HistogramBase::Count GetHistogramDeltaTotalCount(base::StringPiece name) {
+  return base::StatisticsRecorder::FindHistogram(name)
+      ->SnapshotDelta()
+      ->TotalCount();
+}
 
 }  // namespace
 
@@ -442,12 +456,12 @@ TEST_P(MetricsServiceTestWithStartupVisibility, InitialStabilityLogAfterCrash) {
 
   // Verify that Chrome is (or is not) watching for crashes by checking the
   // beacon value.
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   EXPECT_EQ(local_state->GetBoolean(prefs::kStabilityExitedCleanly),
             params.expected_beacon_value);
 #else
   EXPECT_FALSE(local_state->GetBoolean(prefs::kStabilityExitedCleanly));
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 
   // The initial stability log should be generated and persisted in unsent logs.
   MetricsLogStore* test_log_store = service.LogStoreForTest();
@@ -524,6 +538,38 @@ TEST_F(MetricsServiceTest, InitialLogsHaveOnDidCreateMetricsLogHistograms) {
   test_log_store->DiscardStagedLog();
   service.StageCurrentLogForTest();
   EXPECT_EQ(1, GetSampleCountOfOnDidCreateLogHistogram(test_log_store));
+}
+
+TEST_F(MetricsServiceTest, MarkCurrentHistogramsAsReported) {
+  EnableMetricsReporting();
+  TestMetricsServiceClient client;
+  TestMetricsService service(GetMetricsStateManager(), &client,
+                             GetLocalState());
+
+  // Emit to histogram |Test.Before.Histogram|.
+  ASSERT_FALSE(HistogramExists("Test.Before.Histogram"));
+  base::UmaHistogramBoolean("Test.Before.Histogram", true);
+  ASSERT_TRUE(HistogramExists("Test.Before.Histogram"));
+
+  // Mark histogram data that has been collected until now (in particular, the
+  // |Test.Before.Histogram| sample) as reported.
+  service.MarkCurrentHistogramsAsReported();
+
+  // Emit to histogram |Test.After.Histogram|.
+  ASSERT_FALSE(HistogramExists("Test.After.Histogram"));
+  base::UmaHistogramBoolean("Test.After.Histogram", true);
+  ASSERT_TRUE(HistogramExists("Test.After.Histogram"));
+
+  // Verify that the |Test.Before.Histogram| sample was marked as reported, and
+  // is not included in the next snapshot.
+  EXPECT_EQ(0, GetHistogramDeltaTotalCount("Test.Before.Histogram"));
+  // Verify that the |Test.After.Histogram| sample was not marked as reported,
+  // and is included in the next snapshot.
+  EXPECT_EQ(1, GetHistogramDeltaTotalCount("Test.After.Histogram"));
+
+  // Clean up histograms.
+  base::StatisticsRecorder::ForgetHistogramForTesting("Test.Before.Histogram");
+  base::StatisticsRecorder::ForgetHistogramForTesting("Test.After.Histogram");
 }
 
 TEST_F(MetricsServiceTest, FirstLogCreatedBeforeUnsentLogsSent) {
@@ -734,6 +780,51 @@ TEST_F(MetricsServiceTest, LastLiveTimestamp) {
       updated_last_live_time,
       GetLocalState()->GetTime(prefs::kStabilityBrowserLastLiveTimeStamp));
 }
+
+TEST_F(MetricsServiceTest, EnablementObserverNotification) {
+  EnableMetricsReporting();
+  TestMetricsServiceClient client;
+  TestMetricsService service(GetMetricsStateManager(), &client,
+                             GetLocalState());
+  service.InitializeMetricsRecordingState();
+
+  absl::optional<bool> enabled;
+  auto observer = [&enabled](bool notification) { enabled = notification; };
+
+  auto subscription =
+      service.AddEnablementObserver(base::BindLambdaForTesting(observer));
+
+  service.Start();
+  ASSERT_TRUE(enabled.has_value());
+  EXPECT_TRUE(enabled.value());
+
+  enabled.reset();
+
+  service.Stop();
+  ASSERT_TRUE(enabled.has_value());
+  EXPECT_FALSE(enabled.value());
+}
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+// ResetClientId is only enabled on certain targets.
+TEST_F(MetricsServiceTest, SetClientIdToExternalId) {
+  EnableMetricsReporting();
+  TestMetricsServiceClient client;
+  TestMetricsService service(GetMetricsStateManager(), &client,
+                             GetLocalState());
+
+  const std::string client_id = "d92ad666-a420-4c73-8718-94311ae2ff5f";
+
+  EXPECT_NE(service.GetClientId(), client_id);
+
+  service.SetExternalClientId(client_id);
+  // Reset will cause the client id to be regenerated. If an external client id
+  // is provided, it should defer to using that id instead of creating its own.
+  service.ResetClientId();
+
+  EXPECT_EQ(service.GetClientId(), client_id);
+}
+#endif  //  BUILDFLAG(IS_CHROMEOS_LACROS)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 TEST_F(MetricsServiceTest,

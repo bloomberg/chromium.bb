@@ -6,9 +6,11 @@
 
 #include "ash/components/arc/arc_prefs.h"
 #include "ash/constants/ash_features.h"
+#include "ash/webui/file_manager/file_manager_ui.h"
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ash/drive/drivefs_native_message_host.h"
@@ -70,48 +72,49 @@ void RecordDeviceNotificationUserActionMetric(
 
 using file_manager::io_task::OperationType;
 using file_manager::io_task::ProgressStatus;
-using file_manager::util::GetDisplayableFileName16;
+using file_manager::util::GetDisplayablePath;
 using l10n_util::GetStringFUTF16;
 
-std::u16string GetIOTaskMessage(const ProgressStatus& status) {
+std::u16string GetIOTaskMessage(Profile* profile,
+                                const ProgressStatus& status) {
+  int single_file_message_id;
+  int multiple_file_message_id;
+
   switch (status.type) {
     case OperationType::kCopy:
-      if (status.sources.size() > 1) {
-        return GetStringFUTF16(IDS_FILE_BROWSER_COPY_ITEMS_REMAINING,
-                               base::NumberToString16(status.sources.size()));
-      }
-      return GetStringFUTF16(
-          IDS_FILE_BROWSER_COPY_FILE_NAME,
-          GetDisplayableFileName16(status.sources.back().url));
+      single_file_message_id = IDS_FILE_BROWSER_COPY_FILE_NAME;
+      multiple_file_message_id = IDS_FILE_BROWSER_COPY_ITEMS_REMAINING;
+      break;
     case OperationType::kMove:
-      if (status.sources.size() > 1) {
-        return GetStringFUTF16(IDS_FILE_BROWSER_MOVE_ITEMS_REMAINING,
-                               base::NumberToString16(status.sources.size()));
-      }
-      return GetStringFUTF16(
-          IDS_FILE_BROWSER_MOVE_FILE_NAME,
-          GetDisplayableFileName16(status.sources.back().url));
+      single_file_message_id = IDS_FILE_BROWSER_MOVE_FILE_NAME;
+      multiple_file_message_id = IDS_FILE_BROWSER_MOVE_ITEMS_REMAINING;
+      break;
     case OperationType::kDelete:
-      if (status.sources.size() > 1) {
-        return GetStringFUTF16(IDS_FILE_BROWSER_DELETE_ITEMS_REMAINING,
-                               base::NumberToString16(status.sources.size()));
-      }
-      return GetStringFUTF16(
-          IDS_FILE_BROWSER_DELETE_FILE_NAME,
-          GetDisplayableFileName16(status.sources.back().url));
-
+      single_file_message_id = IDS_FILE_BROWSER_DELETE_FILE_NAME;
+      multiple_file_message_id = IDS_FILE_BROWSER_DELETE_ITEMS_REMAINING;
+      break;
+    case OperationType::kExtract:
+      single_file_message_id = IDS_FILE_BROWSER_EXTRACT_FILE_NAME;
+      multiple_file_message_id = IDS_FILE_BROWSER_EXTRACT_ITEMS_REMAINING;
+      break;
     case OperationType::kZip:
-      if (status.sources.size() > 1) {
-        return GetStringFUTF16(IDS_FILE_BROWSER_ZIP_ITEMS_REMAINING,
-                               base::NumberToString16(status.sources.size()));
-      }
-      return GetStringFUTF16(
-          IDS_FILE_BROWSER_ZIP_FILE_NAME,
-          GetDisplayableFileName16(status.sources.back().url));
+      single_file_message_id = IDS_FILE_BROWSER_ZIP_FILE_NAME;
+      multiple_file_message_id = IDS_FILE_BROWSER_ZIP_ITEMS_REMAINING;
+      break;
     default:
       NOTREACHED();
       return u"Unknown operation type";
   }
+  if (status.sources.size() > 1) {
+    return GetStringFUTF16(multiple_file_message_id,
+                           base::NumberToString16(status.sources.size()));
+  }
+  return GetStringFUTF16(
+      single_file_message_id,
+      base::UTF8ToUTF16(GetDisplayablePath(profile, status.sources.back().url)
+                            .value_or(base::FilePath())
+                            .BaseName()
+                            .value()));
 }
 
 }  // namespace
@@ -126,8 +129,7 @@ SystemNotificationManager::SystemNotificationManager(Profile* profile)
 SystemNotificationManager::~SystemNotificationManager() = default;
 
 bool SystemNotificationManager::DoFilesSwaWindowsExist() {
-  return FindSystemWebAppBrowser(profile_, web_app::SystemAppType::FILE_MANAGER,
-                                 Browser::TYPE_APP) != nullptr;
+  return ash::file_manager::FileManagerUI::GetNumInstances() != 0;
 }
 
 std::unique_ptr<message_center::Notification>
@@ -529,7 +531,7 @@ void SystemNotificationManager::HandleEvent(const extensions::Event& event) {
   }
   base::Value::ListView event_arguments;
 
-  event_arguments = event.event_args->GetList();
+  event_arguments = event.event_args->GetListDeprecated();
   if (event_arguments.size() < 1) {
     return;
   }
@@ -663,9 +665,7 @@ void SystemNotificationManager::HandleIOTaskProgress(
     return;
   }
 
-  if (status.state == io_task::State::kError ||
-      status.state == io_task::State::kCancelled ||
-      status.state == io_task::State::kSuccess) {
+  if (status.IsCompleted()) {
     GetNotificationDisplayService()->Close(NotificationHandler::Type::TRANSIENT,
                                            id);
     return;
@@ -674,7 +674,7 @@ void SystemNotificationManager::HandleIOTaskProgress(
   // From here state is kQueued or kInProgress:
   std::u16string title = l10n_util::GetStringUTF16(IDS_FILEMANAGER_APP_NAME);
 
-  std::u16string message = GetIOTaskMessage(status);
+  std::u16string message = GetIOTaskMessage(profile_, status);
 
   int progress = 0;
   if (status.total_bytes > 0) {
@@ -705,7 +705,8 @@ void SystemNotificationManager::HandleRemovableNotificationClick(
       chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
           profile_, chromeos::settings::mojom::kExternalStorageSubpagePath);
     }
-    if (button_index.value() < uma_types_for_buttons.size()) {
+    if (base::checked_cast<size_t>(button_index.value()) <
+        uma_types_for_buttons.size()) {
       RecordDeviceNotificationUserActionMetric(
           uma_types_for_buttons.at(button_index.value()));
     }
@@ -822,7 +823,7 @@ SystemNotificationManager::UpdateDeviceMountStatus(
         GetNotificationDisplayService()->Close(
             NotificationHandler::Type::TRANSIENT, kDeviceFailNotificationId);
       }
-      FALLTHROUGH;
+      [[fallthrough]];
     case MOUNT_STATUS_NO_RESULT:
       if (event.status ==
           file_manager_private::MOUNT_COMPLETED_STATUS_SUCCESS) {

@@ -31,13 +31,15 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/referrer_policy.mojom-blink.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/navigation/impression.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/policy_container.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/triggering_event_info.mojom-blink.h"
 #include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink.h"
-#include "third_party/blink/public/platform/web_impression.h"
+#include "third_party/blink/public/web/web_picture_in_picture_window_options.h"
 #include "third_party/blink/public/web/web_window_features.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/frame_types.h"
 #include "third_party/blink/renderer/core/loader/frame_loader_types.h"
 #include "third_party/blink/renderer/core/loader/navigation_policy.h"
@@ -154,6 +156,15 @@ struct CORE_EXPORT FrameLoadRequest {
     window_features_ = features;
   }
 
+  const absl::optional<WebPictureInPictureWindowOptions>&
+  GetPictureInPictureWindowOptions() const {
+    return picture_in_picture_window_options_;
+  }
+  void SetPictureInPictureWindowOptions(
+      const WebPictureInPictureWindowOptions& options) {
+    picture_in_picture_window_options_ = options;
+  }
+
   void SetNoOpener() { window_features_.noopener = true; }
   void SetNoReferrer() {
     should_send_referrer_ = kNeverSendReferrer;
@@ -164,11 +175,11 @@ struct CORE_EXPORT FrameLoadRequest {
 
   // Impressions are set when a FrameLoadRequest is created for a click on an
   // anchor tag that has conversion measurement attributes.
-  void SetImpression(const absl::optional<WebImpression>& impression) {
+  void SetImpression(const absl::optional<Impression>& impression) {
     impression_ = impression;
   }
 
-  const absl::optional<WebImpression>& Impression() const {
+  const absl::optional<blink::Impression>& Impression() const {
     return impression_;
   }
 
@@ -178,6 +189,11 @@ struct CORE_EXPORT FrameLoadRequest {
     initiator_frame_token_ = token;
   }
   const LocalFrameToken* GetInitiatorFrameToken() const;
+
+  bool IsUnfencedTopNavigation() const { return is_unfenced_top_navigation_; }
+  void SetIsUnfencedTopNavigation(bool is_unfenced_top_navigation) {
+    is_unfenced_top_navigation_ = is_unfenced_top_navigation;
+  }
 
  private:
   LocalDOMWindow* origin_window_;
@@ -197,11 +213,19 @@ struct CORE_EXPORT FrameLoadRequest {
   mojom::RequestContextFrameType frame_type_ =
       mojom::RequestContextFrameType::kNone;
   WebWindowFeatures window_features_;
-  absl::optional<WebImpression> impression_;
+  absl::optional<WebPictureInPictureWindowOptions>
+      picture_in_picture_window_options_;
+  absl::optional<blink::Impression> impression_;
   absl::optional<LocalFrameToken> initiator_frame_token_;
   mojo::PendingRemote<mojom::blink::PolicyContainerHostKeepAliveHandle>
       initiator_policy_container_keep_alive_handle_;
   std::unique_ptr<SourceLocation> source_location_;
+
+  // This is only used for navigations originating in MPArch fenced frames
+  // targeting the outermost frame, which is not visible to the renderer
+  // process as a remote frame.
+  // TODO(crbug.com/1315802): Refactor _unfencedTop handling.
+  bool is_unfenced_top_navigation_ = false;
 };
 
 }  // namespace blink

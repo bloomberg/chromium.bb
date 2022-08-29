@@ -7,12 +7,12 @@
 #include <algorithm>
 #include <memory>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
-#include "base/ignore_result.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/task/single_thread_task_runner.h"
@@ -526,11 +526,12 @@ void SerialConnection::SetControlSignals(
 void SerialConnection::Close(base::OnceClosure callback) {
   DCHECK(serial_port_);
   serial_port_->Close(
+      /*flush=*/false,
       mojo::WrapCallbackWithDefaultInvokeIfNotRun(std::move(callback)));
 }
 
 void SerialConnection::InitSerialPortForTesting() {
-  ignore_result(serial_port_.BindNewPipeAndPassReceiver());
+  std::ignore = serial_port_.BindNewPipeAndPassReceiver();
 }
 
 void SerialConnection::SetTimeoutCallback() {

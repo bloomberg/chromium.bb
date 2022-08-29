@@ -35,7 +35,9 @@ class FakeAppListModelUpdater : public AppListModelUpdater {
       bool update_name,
       bool update_folder) override;
   void RemoveItem(const std::string& id, bool is_uninstall) override;
-  void SetItemIcon(const std::string& id, const gfx::ImageSkia& icon) override;
+  void SetItemIconAndColor(const std::string& id,
+                           const gfx::ImageSkia& icon,
+                           const ash::IconColor& icon_color) override;
   void SetItemFolderId(const std::string& id,
                        const std::string& folder_id) override;
   void SetItemPosition(const std::string& id,
@@ -46,6 +48,7 @@ class FakeAppListModelUpdater : public AppListModelUpdater {
   void PublishSearchResults(
       const std::vector<ChromeSearchResult*>& results,
       const std::vector<ash::AppListSearchResultCategory>& categories) override;
+  void ClearSearchResults() override;
 
   void ActivateChromeItem(const std::string& id, int event_flags) override;
   void LoadAppIcon(const std::string& id) override;
@@ -62,7 +65,7 @@ class FakeAppListModelUpdater : public AppListModelUpdater {
   void GetIdToAppListIndexMap(GetIdToAppListIndexMapCallback callback) override;
   syncer::StringOrdinal GetPositionBeforeFirstItem() const override;
   void GetContextMenuModel(const std::string& id,
-                           bool add_sort_options,
+                           ash::AppListItemContext item_context,
                            GetMenuModelCallback callback) override;
   size_t BadgedItemCount() override;
 
@@ -73,6 +76,7 @@ class FakeAppListModelUpdater : public AppListModelUpdater {
   }
 
   void OnAppListHidden() override {}
+  void CommitTemporarySortOrder() override {}
 
   void AddObserver(AppListModelUpdaterObserver* observer) override;
   void RemoveObserver(AppListModelUpdaterObserver* observer) override;
