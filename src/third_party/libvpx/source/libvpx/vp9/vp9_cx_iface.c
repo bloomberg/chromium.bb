@@ -15,7 +15,6 @@
 #include "vpx/vpx_encoder.h"
 #include "vpx/vpx_ext_ratectrl.h"
 #include "vpx_dsp/psnr.h"
-#include "vpx_ports/vpx_once.h"
 #include "vpx_ports/static_assert.h"
 #include "vpx_ports/system_state.h"
 #include "vpx_util/vpx_timestamp.h"
@@ -381,8 +380,8 @@ static vpx_codec_err_t validate_img(vpx_codec_alg_priv_t *ctx,
     case VPX_IMG_FMT_I440:
       if (ctx->cfg.g_profile != (unsigned int)PROFILE_1) {
         ERROR(
-            "Invalid image format. I422, I444, I440, NV12 images are "
-            "not supported in profile.");
+            "Invalid image format. I422, I444, I440 images are not supported "
+            "in profile.");
       }
       break;
     case VPX_IMG_FMT_I42216:
@@ -397,8 +396,8 @@ static vpx_codec_err_t validate_img(vpx_codec_alg_priv_t *ctx,
       break;
     default:
       ERROR(
-          "Invalid image format. Only YV12, I420, I422, I444 images are "
-          "supported.");
+          "Invalid image format. Only YV12, I420, I422, I444, I440, NV12 "
+          "images are supported.");
       break;
   }
 
@@ -1096,7 +1095,7 @@ static vpx_codec_err_t encoder_init(vpx_codec_ctx_t *ctx,
     }
 
     priv->extra_cfg = default_extra_cfg;
-    once(vp9_initialize_enc);
+    vp9_initialize_enc();
 
     res = validate_config(priv, &priv->cfg, &priv->extra_cfg);
 
@@ -2144,6 +2143,7 @@ static vp9_extracfg get_extra_cfg() {
 VP9EncoderConfig vp9_get_encoder_config(int frame_width, int frame_height,
                                         vpx_rational_t frame_rate,
                                         int target_bitrate, int encode_speed,
+                                        int target_level,
                                         vpx_enc_pass enc_pass) {
   /* This function will generate the same VP9EncoderConfig used by the
    * vpxenc command given below.
@@ -2155,6 +2155,7 @@ VP9EncoderConfig vp9_get_encoder_config(int frame_width, int frame_height,
    * FPS:     frame_rate
    * BITRATE: target_bitrate
    * CPU_USED:encode_speed
+   * TARGET_LEVEL: target_level
    *
    * INPUT, OUTPUT, LIMIT will not affect VP9EncoderConfig
    *
@@ -2167,6 +2168,7 @@ VP9EncoderConfig vp9_get_encoder_config(int frame_width, int frame_height,
    * FPS=30/1
    * LIMIT=150
    * CPU_USED=0
+   * TARGET_LEVEL=0
    * ./vpxenc --limit=$LIMIT --width=$WIDTH --height=$HEIGHT --fps=$FPS
    * --lag-in-frames=25 \
    *  --codec=vp9 --good --cpu-used=CPU_USED --threads=0 --profile=0 \
@@ -2175,7 +2177,7 @@ VP9EncoderConfig vp9_get_encoder_config(int frame_width, int frame_height,
    *  --minsection-pct=0 --maxsection-pct=150 --arnr-maxframes=7 --psnr \
    *  --arnr-strength=5 --sharpness=0 --undershoot-pct=100 --overshoot-pct=100 \
    *  --frame-parallel=0 --tile-columns=0 --cpu-used=0 --end-usage=vbr \
-   *  --target-bitrate=$BITRATE -o $OUTPUT $INPUT
+   *  --target-bitrate=$BITRATE --target-level=0 -o $OUTPUT $INPUT
    */
 
   VP9EncoderConfig oxcf;
@@ -2193,6 +2195,7 @@ VP9EncoderConfig vp9_get_encoder_config(int frame_width, int frame_height,
   oxcf.frame_parallel_decoding_mode = 0;
   oxcf.two_pass_vbrmax_section = 150;
   oxcf.speed = abs(encode_speed);
+  oxcf.target_level = target_level;
   return oxcf;
 }
 

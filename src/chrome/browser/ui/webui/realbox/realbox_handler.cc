@@ -12,6 +12,7 @@
 #include "base/strings/string_util.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher_service_factory.h"
@@ -20,6 +21,8 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor_factory.h"
+#include "chrome/browser/prefetch/search_prefetch/search_prefetch_service.h"
+#include "chrome/browser/prefetch/search_prefetch/search_prefetch_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/bookmarks/bookmark_stats.h"
@@ -64,7 +67,6 @@
 
 namespace {
 
-constexpr char kGoogleGIconResourceName[] = "google_g.png";
 constexpr char kSearchIconResourceName[] = "search.svg";
 
 constexpr char kAnswerCurrencyIconResourceName[] = "realbox/icons/currency.svg";
@@ -81,6 +83,7 @@ constexpr char kBookmarkIconResourceName[] =
 constexpr char kCalculatorIconResourceName[] = "realbox/icons/calculator.svg";
 constexpr char kClockIconResourceName[] =
     "chrome://resources/images/icon_clock.svg";
+constexpr char kDinoIconResourceName[] = "realbox/icons/dino.svg";
 constexpr char kDriveDocsIconResourceName[] = "realbox/icons/drive_docs.svg";
 constexpr char kDriveFolderIconResourceName[] =
     "realbox/icons/drive_folder.svg";
@@ -95,15 +98,28 @@ constexpr char kDriveSlidesIconResourceName[] =
 constexpr char kDriveVideoIconResourceName[] = "realbox/icons/drive_video.svg";
 constexpr char kExtensionAppIconResourceName[] =
     "realbox/icons/extension_app.svg";
+constexpr char kGoogleGIconResourceName[] = "realbox/icons/google_g.svg";
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 constexpr char kGoogleCalendarIconResourceName[] = "realbox/icons/calendar.svg";
+constexpr char kGoogleGTransparentIconResourceName[] =
+    "realbox/icons/google_g_transparent.svg";
 constexpr char kGoogleKeepNoteIconResourceName[] = "realbox/icons/note.svg";
 constexpr char kGoogleSitesIconResourceName[] = "realbox/icons/sites.svg";
 #endif
+constexpr char kIncognitoIconResourceName[] = "realbox/icons/incognito.svg";
+constexpr char kJourneysIconResourceName[] = "realbox/icons/journeys.svg";
 constexpr char kPageIconResourceName[] = "realbox/icons/page.svg";
 constexpr char kPedalsIconResourceName[] =
     "chrome://theme/current-channel-logo";
 constexpr char kTrendingUpIconResourceName[] = "realbox/icons/trending_up.svg";
+
+#if BUILDFLAG(IS_MAC)
+constexpr char kMacShareIconResourceName[] = "realbox/icons/mac_share.svg";
+#elif BUILDFLAG(IS_WIN)
+constexpr char kWinShareIconResourceName[] = "realbox/icons/win_share.svg";
+#else
+constexpr char kShareIconResourceName[] = "realbox/icons/share.svg";
+#endif
 
 base::flat_map<int32_t, realbox::mojom::SuggestionGroupPtr>
 CreateSuggestionGroupsMap(
@@ -253,6 +269,8 @@ std::vector<realbox::mojom::AutocompleteMatchPtr> CreateAutocompleteMatches(
                 match,
                 RealboxHandler::FocusState::kFocusedButtonRemoveSuggestion));
 
+    mojom_match->tail_suggest_common_prefix = match.tail_suggest_common_prefix;
+
     matches.push_back(std::move(mojom_match));
     line++;
   }
@@ -274,7 +292,6 @@ realbox::mojom::AutocompleteResultPtr CreateAutocompleteResult(
 // static
 void RealboxHandler::SetupWebUIDataSource(content::WebUIDataSource* source) {
   static constexpr webui::ResourcePath kImages[] = {
-      {kGoogleGIconResourceName, IDR_WEBUI_IMAGES_200_LOGO_GOOGLEG_PNG},
       {kSearchIconResourceName, IDR_WEBUI_IMAGES_ICON_SEARCH_SVG}};
   source->AddResourcePaths(kImages);
 
@@ -286,9 +303,22 @@ void RealboxHandler::SetupWebUIDataSource(content::WebUIDataSource* source) {
       {"showSuggestions", IDS_TOOLTIP_HEADER_SHOW_SUGGESTIONS_BUTTON}};
   source->AddLocalizedStrings(kStrings);
 
+  source->AddInteger(
+      "realboxMatchOmniboxThemeVariant",
+      base::GetFieldTrialParamByFeatureAsInt(
+          ntp_features::kRealboxMatchOmniboxTheme,
+          ntp_features::kRealboxMatchOmniboxThemeVariantParam, 0));
   source->AddBoolean(
       "realboxMatchOmniboxTheme",
       base::FeatureList::IsEnabled(ntp_features::kRealboxMatchOmniboxTheme));
+  source->AddBoolean(
+      "roundCorners",
+      base::GetFieldTrialParamByFeatureAsInt(
+          ntp_features::kRealboxMatchSearchboxTheme,
+          ntp_features::kRealboxMatchSearchboxThemeParam, 0) == 1);
+  source->AddBoolean(
+      "realboxMatchSearchboxTheme",
+      base::FeatureList::IsEnabled(ntp_features::kRealboxMatchSearchboxTheme));
   source->AddString(
       "realboxDefaultIcon",
       base::FeatureList::IsEnabled(ntp_features::kRealboxUseGoogleGIcon)
@@ -371,6 +401,9 @@ std::string RealboxHandler::AutocompleteMatchVectorIconToResourceName(
 // static
 std::string RealboxHandler::PedalVectorIconToResourceName(
     const gfx::VectorIcon& icon) {
+  if (icon.name == omnibox::kDinoIcon.name) {
+    return kDinoIconResourceName;
+  }
   if (icon.name == omnibox::kDriveFormsIcon.name) {
     return kDriveFormIconResourceName;
   }
@@ -394,12 +427,31 @@ std::string RealboxHandler::PedalVectorIconToResourceName(
     return kGoogleSitesIconResourceName;
   }
   if (icon.name == kGoogleSuperGIcon.name) {
-    return kGoogleGIconResourceName;
+    return kGoogleGTransparentIconResourceName;
   }
 #endif
+  if (icon.name == omnibox::kIncognitoIcon.name) {
+    return kIncognitoIconResourceName;
+  }
+  if (icon.name == omnibox::kJourneysIcon.name) {
+    return kJourneysIconResourceName;
+  }
   if (icon.name == omnibox::kPedalIcon.name) {
     return kPedalsIconResourceName;
   }
+#if BUILDFLAG(IS_MAC)
+  if (icon.name == omnibox::kShareMacIcon.name) {
+    return kMacShareIconResourceName;
+  }
+#elif BUILDFLAG(IS_WIN)
+  if (icon.name == omnibox::kShareWinIcon.name) {
+    return kWinShareIconResourceName;
+  }
+#else
+  if (icon.name == omnibox::kShareIcon.name) {
+    return kShareIconResourceName;
+  }
+#endif
   NOTREACHED() << "Every vector icon returned by OmniboxAction::GetVectorIcon "
                   "must have an equivalent SVG resource for the NTP Realbox.";
   return "";
@@ -592,7 +644,7 @@ void RealboxHandler::OpenAutocompleteMatch(
           : std::u16string::npos,
       /*elapsed_time_since_last_change_to_default_match=*/
       elapsed_time_since_last_change_to_default_match,
-      /*result=*/autocomplete_controller_->result());
+      /*result=*/autocomplete_controller_->result(), match.destination_url);
   autocomplete_controller_->AddProviderAndTriggeringLogs(&log);
 
   OmniboxEventGlobalTracker::GetInstance()->OnURLOpened(&log);
@@ -671,7 +723,9 @@ void RealboxHandler::ExecuteAction(uint8_t line,
       /*middle_button=*/mouse_button == 1, alt_key, ctrl_key, meta_key,
       shift_key);
 
-  match.action->RecordActionExecuted(line);
+  // TODO(tommycli): Add recording of action shown in the realbox when the user
+  //  uses the realbox to go somewhere OTHER than executing an action.
+  match.action->RecordActionShown(line, /*executed=*/true);
   OmniboxAction::ExecutionContext context(
       *(autocomplete_controller_->autocomplete_provider_client()),
       base::BindOnce(&RealboxHandler::OpenURL, weak_ptr_factory_.GetWeakPtr()),
@@ -683,11 +737,24 @@ void RealboxHandler::OnResultChanged(AutocompleteController* controller,
                                      bool default_match_changed) {
   DCHECK(controller == autocomplete_controller_.get());
 
+  // Prepend missing tail suggestion prefixes in results, if present.
+  if (base::FeatureList::IsEnabled(omnibox::kNtpRealboxTailSuggest)) {
+    autocomplete_controller_->SetTailSuggestCommonPrefixes();
+  }
+
   page_->AutocompleteResultChanged(CreateAutocompleteResult(
       autocomplete_controller_->input().text(),
       autocomplete_controller_->result(),
       BookmarkModelFactory::GetForBrowserContext(profile_),
       profile_->GetPrefs()));
+
+  if (autocomplete_controller_->done()) {
+    if (SearchPrefetchService* search_prefetch_service =
+            SearchPrefetchServiceFactory::GetForProfile(profile_)) {
+      search_prefetch_service->OnResultChanged(
+          web_contents_, autocomplete_controller_->result());
+    }
+  }
 
   // Clear pending bitmap requests before requesting new ones.
   for (auto bitmap_request_id : bitmap_request_ids_) {

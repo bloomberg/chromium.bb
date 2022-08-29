@@ -99,7 +99,7 @@ void RasterDecoderTestBase::InitDecoder(const InitState& init) {
 
   // For easier substring/extension matching
   gl::SetGLGetProcAddressProc(gl::MockGLInterface::GetGLProcAddress);
-  gl::GLSurfaceTestSupport::InitializeOneOffWithMockBindings();
+  display_ = gl::GLSurfaceTestSupport::InitializeOneOffWithMockBindings();
 
   gl_ = std::make_unique<StrictMock<MockGLInterface>>();
   ::gl::MockGLInterface::SetGLInterface(gl_.get());
@@ -155,7 +155,8 @@ void RasterDecoderTestBase::InitDecoder(const InitState& init) {
   decoder_.reset(RasterDecoder::Create(
       this, command_buffer_service_.get(), &outputter_, gpu_feature_info,
       gpu_preferences_, nullptr /* memory_tracker */, &shared_image_manager_,
-      shared_context_state_, true /* is_privileged */));
+      /*image_factory=*/nullptr, shared_context_state_,
+      true /* is_privileged */));
   decoder_->SetIgnoreCachedStateForTest(ignore_cached_state_for_test_);
   decoder_->DisableFlushWorkaroundForTest();
   decoder_->GetLogger()->set_log_synthesized_gl_errors(false);
@@ -217,7 +218,7 @@ void RasterDecoderTestBase::ResetDecoder() {
   shared_context_state_.reset();
   ::gl::MockGLInterface::SetGLInterface(nullptr);
   gl_.reset();
-  gl::init::ShutdownGL(false);
+  gl::GLSurfaceTestSupport::ShutdownGL(display_);
 }
 
 void RasterDecoderTestBase::TearDown() {

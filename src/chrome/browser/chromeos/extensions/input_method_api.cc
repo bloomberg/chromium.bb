@@ -52,6 +52,8 @@ namespace AddWordToDictionary =
     extensions::api::input_method_private::AddWordToDictionary;
 namespace SetCurrentInputMethod =
     extensions::api::input_method_private::SetCurrentInputMethod;
+namespace SwitchToLastUsedInputMethod =
+    extensions::api::input_method_private::SwitchToLastUsedInputMethod;
 namespace SetXkbLayout = extensions::api::input_method_private::SetXkbLayout;
 namespace OpenOptionsPage =
     extensions::api::input_method_private::OpenOptionsPage;
@@ -89,7 +91,6 @@ namespace GetTextFieldBounds =
     extensions::api::input_method_private::GetTextFieldBounds;
 
 using ::ash::input_method::InputMethodEngine;
-using ::ash::input_method::InputMethodEngineBase;
 
 // Prefix, which is used by XKB.
 const char kXkbPrefix[] = "xkb:";
@@ -130,8 +131,8 @@ namespace extensions {
 ExtensionFunction::ResponseAction
 InputMethodPrivateGetInputMethodConfigFunction::Run() {
   std::unique_ptr<base::DictionaryValue> output(new base::DictionaryValue());
-  output->SetBoolean("isPhysicalKeyboardAutocorrectEnabled", true);
-  output->SetBoolean("isImeMenuActivated",
+  output->SetBoolKey("isPhysicalKeyboardAutocorrectEnabled", true);
+  output->SetBoolKey("isImeMenuActivated",
                      Profile::FromBrowserContext(browser_context())
                          ->GetPrefs()
                          ->GetBoolean(prefs::kLanguageImeMenuActivated));
@@ -170,8 +171,16 @@ InputMethodPrivateSetCurrentInputMethodFunction::Run() {
 }
 
 ExtensionFunction::ResponseAction
+InputMethodPrivateSwitchToLastUsedInputMethodFunction::Run() {
+  scoped_refptr<ash::input_method::InputMethodManager::State> ime_state =
+      ash::input_method::InputMethodManager::Get()->GetActiveIMEState();
+  ime_state->SwitchToLastUsedInputMethod();
+  return RespondNow(NoArguments());
+}
+
+ExtensionFunction::ResponseAction
 InputMethodPrivateGetInputMethodsFunction::Run() {
-  std::unique_ptr<base::ListValue> output(new base::ListValue());
+  base::Value::List output;
   auto* manager = ash::input_method::InputMethodManager::Get();
   ash::input_method::InputMethodUtil* util = manager->GetInputMethodUtil();
   scoped_refptr<ash::input_method::InputMethodManager::State> ime_state =
@@ -181,14 +190,13 @@ InputMethodPrivateGetInputMethodsFunction::Run() {
   for (size_t i = 0; i < input_methods->size(); ++i) {
     const ash::input_method::InputMethodDescriptor& input_method =
         (*input_methods)[i];
-    auto val = std::make_unique<base::DictionaryValue>();
-    val->SetString("id", input_method.id());
-    val->SetString("name", util->GetInputMethodLongName(input_method));
-    val->SetString("indicator", input_method.GetIndicator());
-    output->Append(std::move(val));
+    base::Value::Dict val;
+    val.Set("id", input_method.id());
+    val.Set("name", util->GetInputMethodLongName(input_method));
+    val.Set("indicator", input_method.GetIndicator());
+    output.Append(std::move(val));
   }
-  return RespondNow(
-      OneArgument(base::Value::FromUniquePtrValue(std::move(output))));
+  return RespondNow(OneArgument(base::Value(std::move(output))));
 }
 
 ExtensionFunction::ResponseAction
@@ -361,13 +369,13 @@ InputMethodPrivateGetSurroundingTextFunction::Run() {
           ? text_after_start + param_after_length
           : info.surrounding_text.length();
 
-  ret->SetString("before",
-                 info.surrounding_text.substr(
-                     text_before_start, text_before_end - text_before_start));
-  ret->SetString("selected",
-                 info.surrounding_text.substr(
-                     text_before_end, text_after_start - text_before_end));
-  ret->SetString(
+  ret->SetStringKey(
+      "before", info.surrounding_text.substr(
+                    text_before_start, text_before_end - text_before_start));
+  ret->SetStringKey("selected",
+                    info.surrounding_text.substr(
+                        text_before_end, text_after_start - text_before_end));
+  ret->SetStringKey(
       "after", info.surrounding_text.substr(text_after_start,
                                             text_after_end - text_after_start));
 
@@ -379,7 +387,7 @@ ExtensionFunction::ResponseAction InputMethodPrivateGetSettingsFunction::Run() {
   const auto params = GetSettings::Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  const base::DictionaryValue* input_methods =
+  const base::Value* input_methods =
       Profile::FromBrowserContext(browser_context())
           ->GetPrefs()
           ->GetDictionary(prefs::kLanguageInputMethodSpecificSettings);
@@ -424,23 +432,22 @@ InputMethodPrivateSetCompositionRangeFunction::Run() {
 
   const auto parent_params = SetCompositionRange::Params::Create(args());
   const auto& params = parent_params->parameters;
-  std::vector<InputMethodEngineBase::SegmentInfo> segments;
+  std::vector<InputMethodEngine::SegmentInfo> segments;
   if (params.segments) {
     for (const auto& segments_arg : *params.segments) {
-      InputMethodEngineBase::SegmentInfo segment_info;
+      InputMethodEngine::SegmentInfo segment_info;
       segment_info.start = segments_arg.start;
       segment_info.end = segments_arg.end;
       switch (segments_arg.style) {
         case input_method_private::UNDERLINE_STYLE_UNDERLINE:
-          segment_info.style = InputMethodEngineBase::SEGMENT_STYLE_UNDERLINE;
+          segment_info.style = InputMethodEngine::SEGMENT_STYLE_UNDERLINE;
           break;
         case input_method_private::UNDERLINE_STYLE_DOUBLEUNDERLINE:
           segment_info.style =
-              InputMethodEngineBase::SEGMENT_STYLE_DOUBLE_UNDERLINE;
+              InputMethodEngine::SEGMENT_STYLE_DOUBLE_UNDERLINE;
           break;
         case input_method_private::UNDERLINE_STYLE_NOUNDERLINE:
-          segment_info.style =
-              InputMethodEngineBase::SEGMENT_STYLE_NO_UNDERLINE;
+          segment_info.style = InputMethodEngine::SEGMENT_STYLE_NO_UNDERLINE;
           break;
         case input_method_private::UNDERLINE_STYLE_NONE:
           EXTENSION_FUNCTION_VALIDATE(false);
@@ -450,7 +457,7 @@ InputMethodPrivateSetCompositionRangeFunction::Run() {
     }
   }
 
-  if (!engine->InputMethodEngineBase::SetCompositionRange(
+  if (!engine->InputMethodEngine::SetCompositionRange(
           params.context_id, params.selection_before, params.selection_after,
           segments, &error)) {
     return RespondNow(Error(InformativeError(error, static_function_name())));
@@ -468,23 +475,22 @@ InputMethodPrivateSetComposingRangeFunction::Run() {
 
   const auto parent_params = SetComposingRange::Params::Create(args());
   const auto& params = parent_params->parameters;
-  std::vector<InputMethodEngineBase::SegmentInfo> segments;
+  std::vector<InputMethodEngine::SegmentInfo> segments;
   if (params.segments) {
     for (const auto& segments_arg : *params.segments) {
-      InputMethodEngineBase::SegmentInfo segment_info;
+      InputMethodEngine::SegmentInfo segment_info;
       segment_info.start = segments_arg.start;
       segment_info.end = segments_arg.end;
       switch (segments_arg.style) {
         case input_method_private::UNDERLINE_STYLE_UNDERLINE:
-          segment_info.style = InputMethodEngineBase::SEGMENT_STYLE_UNDERLINE;
+          segment_info.style = InputMethodEngine::SEGMENT_STYLE_UNDERLINE;
           break;
         case input_method_private::UNDERLINE_STYLE_DOUBLEUNDERLINE:
           segment_info.style =
-              InputMethodEngineBase::SEGMENT_STYLE_DOUBLE_UNDERLINE;
+              InputMethodEngine::SEGMENT_STYLE_DOUBLE_UNDERLINE;
           break;
         case input_method_private::UNDERLINE_STYLE_NOUNDERLINE:
-          segment_info.style =
-              InputMethodEngineBase::SEGMENT_STYLE_NO_UNDERLINE;
+          segment_info.style = InputMethodEngine::SEGMENT_STYLE_NO_UNDERLINE;
           break;
         case input_method_private::UNDERLINE_STYLE_NONE:
           EXTENSION_FUNCTION_VALIDATE(false);
@@ -494,7 +500,7 @@ InputMethodPrivateSetComposingRangeFunction::Run() {
     }
   }
 
-  if (!engine->InputMethodEngineBase::SetComposingRange(
+  if (!engine->InputMethodEngine::SetComposingRange(
           params.context_id, params.start, params.end, segments, &error)) {
     return RespondNow(Error(InformativeError(error, static_function_name())));
   }
@@ -511,11 +517,11 @@ InputMethodPrivateGetAutocorrectRangeFunction::Run() {
 
   const auto parent_params = GetAutocorrectRange::Params::Create(args());
   const auto& params = parent_params->parameters;
-  const gfx::Range range = engine->InputMethodEngineBase::GetAutocorrectRange(
-      params.context_id, &error);
+  const gfx::Range range =
+      engine->InputMethodEngine::GetAutocorrectRange(params.context_id, &error);
   auto ret = std::make_unique<base::DictionaryValue>();
-  ret->SetInteger("start", range.is_empty() ? 0 : range.start());
-  ret->SetInteger("end", range.is_empty() ? 0 : range.end());
+  ret->SetIntKey("start", range.is_empty() ? 0 : range.start());
+  ret->SetIntKey("end", range.is_empty() ? 0 : range.end());
   return RespondNow(
       OneArgument(base::Value::FromUniquePtrValue(std::move(ret))));
 }
@@ -532,16 +538,16 @@ InputMethodPrivateGetAutocorrectCharacterBoundsFunction::Run() {
       GetAutocorrectCharacterBounds::Params::Create(args());
   const auto& params = parent_params->parameters;
   const gfx::Rect rect =
-      engine->InputMethodEngineBase::GetAutocorrectCharacterBounds(
+      engine->InputMethodEngine::GetAutocorrectCharacterBounds(
           params.context_id, &error);
   if (rect.IsEmpty()) {
     return RespondNow(Error(InformativeError(error, static_function_name())));
   }
   auto ret = std::make_unique<base::DictionaryValue>();
-  ret->SetInteger("x", rect.x());
-  ret->SetInteger("y", rect.y());
-  ret->SetInteger("width", rect.width());
-  ret->SetInteger("height", rect.height());
+  ret->SetIntKey("x", rect.x());
+  ret->SetIntKey("y", rect.y());
+  ret->SetIntKey("width", rect.width());
+  ret->SetIntKey("height", rect.height());
   return RespondNow(
       OneArgument(base::Value::FromUniquePtrValue(std::move(ret))));
 }
@@ -556,16 +562,16 @@ InputMethodPrivateGetTextFieldBoundsFunction::Run() {
 
   const auto parent_params = GetTextFieldBounds::Params::Create(args());
   const auto& params = parent_params->parameters;
-  const gfx::Rect rect = engine->InputMethodEngineBase::GetTextFieldBounds(
-      params.context_id, &error);
+  const gfx::Rect rect =
+      engine->InputMethodEngine::GetTextFieldBounds(params.context_id, &error);
   if (rect.IsEmpty()) {
     return RespondNow(Error(InformativeError(error, static_function_name())));
   }
   auto ret = std::make_unique<base::DictionaryValue>();
-  ret->SetInteger("x", rect.x());
-  ret->SetInteger("y", rect.y());
-  ret->SetInteger("width", rect.width());
-  ret->SetInteger("height", rect.height());
+  ret->SetIntKey("x", rect.x());
+  ret->SetIntKey("y", rect.y());
+  ret->SetIntKey("width", rect.width());
+  ret->SetIntKey("height", rect.height());
   return RespondNow(
       OneArgument(base::Value::FromUniquePtrValue(std::move(ret))));
 }
@@ -580,11 +586,9 @@ InputMethodPrivateSetAutocorrectRangeFunction::Run() {
 
   const auto parent_params = SetAutocorrectRange::Params::Create(args());
   const auto& params = parent_params->parameters;
-  if (!engine->InputMethodEngineBase::SetAutocorrectRange(
+  if (!engine->InputMethodEngine::SetAutocorrectRange(
           params.context_id,
           gfx::Range(params.selection_start, params.selection_end), &error)) {
-    auto results = std::make_unique<base::ListValue>();
-    results->Append(std::make_unique<base::Value>(false));
     return RespondNow(Error(InformativeError(error, static_function_name())));
   }
   return RespondNow(NoArguments());
@@ -603,11 +607,11 @@ InputMethodPrivateSetSelectionRangeFunction::Run() {
   const SetSelectionRange::Params::Parameters& params =
       parent_params->parameters;
 
-  if (!engine->InputMethodEngineBase::SetSelectionRange(
+  if (!engine->InputMethodEngine::SetSelectionRange(
           params.context_id, *params.selection_start, *params.selection_end,
           &error)) {
-    auto results = std::make_unique<base::ListValue>();
-    results->Append(std::make_unique<base::Value>(false));
+    std::vector<base::Value> results;
+    results.emplace_back(false);
     return RespondNow(ErrorWithArguments(
         std::move(results), InformativeError(error, static_function_name())));
   }

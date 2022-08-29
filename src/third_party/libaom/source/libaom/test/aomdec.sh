@@ -14,6 +14,9 @@
 ##
 . $(dirname $0)/tools_common.sh
 
+AV1_MONOCHROME_B10="${LIBAOM_TEST_DATA_PATH}/av1-1-b10-24-monochrome.ivf"
+AV1_MONOCHROME_B8="${LIBAOM_TEST_DATA_PATH}/av1-1-b8-24-monochrome.ivf"
+
 # Environment check: Make sure input is available.
 aomdec_verify_environment() {
   if [ "$(av1_encode_available)" != "yes" ] ; then
@@ -25,6 +28,9 @@ aomdec_verify_environment() {
            " encoding is disabled. "
       return 1
     fi
+  fi
+  if [ ! -e "${AV1_MONOCHROME_B10}" ] || [ ! -e "${AV1_MONOCHROME_B8}" ]; then
+    elog "Libaom test data must exist before running this test script."
   fi
   if [ -z "$(aom_tool_path aomdec)" ]; then
     elog "aomdec not found. It must exist in LIBAOM_BIN_PATH or its parent."
@@ -146,10 +152,34 @@ aomdec_av1_webm() {
   fi
 }
 
+aomdec_av1_monochrome_yuv() {
+  if [ "$(aomdec_can_decode_av1)" = "yes" ]; then
+    local input="$1"
+    local basename="$(basename "${input}")"
+    local output="${basename}-%wx%h-%4.i420"
+    local md5file="${AOM_TEST_OUTPUT_DIR}/${basename}.md5"
+    local decoder="$(aom_tool_path aomdec)"
+    # Note aomdec() is not used to avoid ${devnull} which may also redirect
+    # stdout.
+    eval "${AOM_TEST_PREFIX}" "${decoder}" --md5 --i420 \
+      -o "${output}" "${input}" ">" "${md5file}" 2>&1 || return 1
+    diff "${1}.md5" "${md5file}"
+  fi
+}
+
+aomdec_av1_monochrome_yuv_8bit() {
+  aomdec_av1_monochrome_yuv "${AV1_MONOCHROME_B8}"
+}
+
+aomdec_av1_monochrome_yuv_10bit() {
+  aomdec_av1_monochrome_yuv "${AV1_MONOCHROME_B10}"
+}
+
 aomdec_tests="aomdec_av1_ivf
               aomdec_av1_ivf_multithread
               aomdec_av1_ivf_multithread_row_mt
-              aomdec_aom_ivf_pipe_input"
+              aomdec_aom_ivf_pipe_input
+              aomdec_av1_monochrome_yuv_8bit"
 
 if [ ! "$(realtime_only_build)" = "yes" ]; then
   aomdec_tests="${aomdec_tests}
@@ -157,6 +187,11 @@ if [ ! "$(realtime_only_build)" = "yes" ]; then
                 aomdec_av1_obu_annexb
                 aomdec_av1_obu_section5
                 aomdec_av1_webm"
+fi
+
+if [ "$(highbitdepth_available)" = "yes" ]; then
+  aomdec_tests="${aomdec_tests}
+                aomdec_av1_monochrome_yuv_10bit"
 fi
 
 run_tests aomdec_verify_environment "${aomdec_tests}"

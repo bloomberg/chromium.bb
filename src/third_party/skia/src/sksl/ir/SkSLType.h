@@ -8,19 +8,24 @@
 #ifndef SKSL_TYPE
 #define SKSL_TYPE
 
-#include "include/core/SkStringView.h"
+#include "include/core/SkTypes.h"
+#include "include/private/SkSLDefines.h"
 #include "include/private/SkSLModifiers.h"
 #include "include/private/SkSLSymbol.h"
-#include "src/sksl/SkSLUtil.h"
+#include "include/sksl/SkSLPosition.h"
 #include "src/sksl/spirv.h"
-#include <algorithm>
-#include <climits>
-#include <vector>
+
 #include <memory>
+#include <string>
+#include <string_view>
+#include <tuple>
+#include <utility>
+#include <vector>
 
 namespace SkSL {
 
 class Context;
+class Expression;
 class SymbolTable;
 
 struct CoercionCost {
@@ -58,19 +63,22 @@ class Type : public Symbol {
 public:
     inline static constexpr Kind kSymbolKind = Kind::kType;
     inline static constexpr int kMaxAbbrevLength = 3;
-
+    // Represents unspecified array dimensions, as in `int[]`.
+    inline static constexpr int kUnsizedArray = -1;
     struct Field {
-        Field(Modifiers modifiers, skstd::string_view name, const Type* type)
-        : fModifiers(modifiers)
+        Field(Position pos, Modifiers modifiers, std::string_view name, const Type* type)
+        : fPosition(pos)
+        , fModifiers(modifiers)
         , fName(name)
         , fType(std::move(type)) {}
 
-        String description() const {
-            return fType->displayName() + " " + fName + ";";
+        std::string description() const {
+            return fType->displayName() + " " + std::string(fName) + ";";
         }
 
+        Position fPosition;
         Modifiers fModifiers;
-        skstd::string_view fName;
+        std::string_view fName;
         const Type* fType;
     };
 
@@ -104,12 +112,17 @@ public:
 
     Type(const Type& other) = delete;
 
-    /** Creates an array type. */
-    static std::unique_ptr<Type> MakeArrayType(skstd::string_view name, const Type& componentType,
+    /** Creates an array type. `columns` may be kUnsizedArray. */
+    static std::unique_ptr<Type> MakeArrayType(std::string_view name, const Type& componentType,
                                                int columns);
 
     /** Converts a component type and a size (float, 10) into an array name ("float[10]"). */
-    String getArrayName(int arraySize) const;
+    std::string getArrayName(int arraySize) const;
+
+    /**
+     * Creates an alias which maps to another type.
+     */
+    static std::unique_ptr<Type> MakeAliasType(std::string_view name, const Type& targetType);
 
     /**
      * Create a generic type which maps to the listed types--e.g. $genType is a generic type which
@@ -122,7 +135,7 @@ public:
                                                  int8_t priority);
 
     /** Create a matrix type. */
-    static std::unique_ptr<Type> MakeMatrixType(skstd::string_view name, const char* abbrev,
+    static std::unique_ptr<Type> MakeMatrixType(std::string_view name, const char* abbrev,
                                                 const Type& componentType, int columns,
                                                 int8_t rows);
 
@@ -130,7 +143,7 @@ public:
     static std::unique_ptr<Type> MakeSamplerType(const char* name, const Type& textureType);
 
     /** Create a scalar type. */
-    static std::unique_ptr<Type> MakeScalarType(skstd::string_view name, const char* abbrev,
+    static std::unique_ptr<Type> MakeScalarType(std::string_view name, const char* abbrev,
                                                 Type::NumberKind numberKind, int8_t priority,
                                                 int8_t bitWidth);
 
@@ -141,8 +154,8 @@ public:
                                                  Type::TypeKind typeKind);
 
     /** Creates a struct type with the given fields. */
-    static std::unique_ptr<Type> MakeStructType(int line,
-                                                skstd::string_view name,
+    static std::unique_ptr<Type> MakeStructType(Position pos,
+                                                std::string_view name,
                                                 std::vector<Field> fields,
                                                 bool interfaceBlock = false);
 
@@ -152,7 +165,7 @@ public:
                                                  bool isMultisampled, bool isSampled);
 
     /** Create a vector type. */
-    static std::unique_ptr<Type> MakeVectorType(skstd::string_view name, const char* abbrev,
+    static std::unique_ptr<Type> MakeVectorType(std::string_view name, const char* abbrev,
                                                 const Type& componentType, int columns);
 
     template <typename T>
@@ -185,11 +198,11 @@ public:
         return !(this->isArray() || this->isStruct());
     }
 
-    String displayName() const {
-        return String(this->scalarTypeForLiteral().name());
+    std::string displayName() const {
+        return std::string(this->scalarTypeForLiteral().name());
     }
 
-    String description() const override {
+    std::string description() const override {
         return this->displayName();
     }
 
@@ -202,16 +215,16 @@ public:
     }
 
     /** Returns true if this type is either private, or contains a private field (recursively). */
-    virtual bool isPrivate() const {
-        return this->name().starts_with("$");
+    virtual bool isPrivate() const;
+
+    /** If this is an alias, returns the underlying type, otherwise returns this. */
+    virtual const Type& resolve() const {
+        return *this;
     }
 
-    bool operator==(const Type& other) const {
-        return this->name() == other.name();
-    }
-
-    bool operator!=(const Type& other) const {
-        return this->name() != other.name();
+    /** Returns true if these types are equal after alias resolution. */
+    bool matches(const Type& other) const {
+        return this->resolve().name() == other.resolve().name();
     }
 
     /**
@@ -504,7 +517,7 @@ public:
     const Type* applyPrecisionQualifiers(const Context& context,
                                          Modifiers* modifiers,
                                          SymbolTable* symbols,
-                                         int line) const;
+                                         Position pos) const;
 
     /**
      * Coerces the passed-in expression to this type. If the types are incompatible, reports an
@@ -517,17 +530,24 @@ public:
     bool checkForOutOfRangeLiteral(const Context& context, const Expression& expr) const;
 
     /** Checks if `value` can fit in this type. The type must be scalar. */
-    bool checkForOutOfRangeLiteral(const Context& context, double value, int line) const;
+    bool checkForOutOfRangeLiteral(const Context& context, double value, Position pos) const;
+
+    /**
+     * Reports errors and returns false if this type cannot be used as the base type for an array.
+     */
+    bool checkIfUsableInArray(const Context& context, Position arrayPos) const;
 
     /**
      * Verifies that the expression is a valid constant array size for this type. Returns the array
-     * size, or zero if the expression isn't a valid literal value.
+     * size, or reports errors and returns zero if the expression isn't a valid literal value.
      */
-    SKSL_INT convertArraySize(const Context& context, std::unique_ptr<Expression> size) const;
+    SKSL_INT convertArraySize(const Context& context, Position arrayPos,
+            std::unique_ptr<Expression> size) const;
 
 protected:
-    Type(skstd::string_view name, const char* abbrev, TypeKind kind, int line = -1)
-        : INHERITED(line, kSymbolKind, name)
+    Type(std::string_view name, const char* abbrev, TypeKind kind,
+            Position pos = Position())
+        : INHERITED(pos, kSymbolKind, name)
         , fTypeKind(kind) {
         SkASSERT(strlen(abbrev) <= kMaxAbbrevLength);
         strcpy(fAbbreviatedName, abbrev);

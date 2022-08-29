@@ -49,7 +49,7 @@ namespace fileManagerPrivate {
 // Type of the mounted volume.
 enum VolumeType { drive, downloads, removable, archive, provided, mtp,
                   media_view, crostini, android_files, documents_provider,
-                  testing, smb, system_internal };
+                  testing, smb, system_internal, guest_os };
 
 // Device type. Available if this is removable volume.
 enum DeviceType { usb, sd, optical, mobile, unknown };
@@ -90,7 +90,9 @@ enum MountCompletedStatus {
   error_unknown_filesystem,
   error_unsupported_filesystem,
   error_invalid_archive,
-  error_need_password
+  error_need_password,
+  error_in_progress,
+  error_cancelled
 };
 
 // Filesystem to format to.
@@ -321,7 +323,8 @@ enum RecentFileType {
   all,
   audio,
   image,
-  video
+  video,
+  document
 };
 
 enum CrostiniEventType {
@@ -349,13 +352,16 @@ enum IOTaskState {
   in_progress,
   success,
   error,
+  need_password,
   cancelled
 };
 
 enum IOTaskType {
   copy,
-  move,
   delete,
+  extract,
+  move,
+  trash,
   zip
 };
 
@@ -367,9 +373,8 @@ dictionary FileTaskDescriptor {
 };
 
 // A file task represents an action that the file manager can perform over the
-// currently selected files. See
-// chrome/browser/chromeos/extensions/file_manager/file_tasks.h for details
-// about how file tasks are handled.
+// currently selected files. See chrome/browser/ash/file_manager/file_tasks.h
+// for details about how file tasks are handled.
 dictionary FileTask {
   // Unique identifier for the task.
   FileTaskDescriptor descriptor;
@@ -936,6 +941,9 @@ dictionary IOTaskParams {
   // Destination folder for tasks that require one. Not required by |delete|
   // task.
   [instanceof=DirectoryEntry] object? destinationFolder;
+
+  // Password used for unpacking encrypted archives.
+  DOMString? password;
 };
 
 // IO Task Progress status, see file_manager::io_task::ProgressStatus.
@@ -976,6 +984,16 @@ dictionary ProgressStatus {
   DOMString errorName;
 };
 
+// A Guest OS that supports guest->host file sharing. This definition should
+// match the one in file_manager_private.js.
+dictionary MountableGuest {
+  // The ID of this guest, used to identify it in calls to the backend.
+  long id;
+
+  // The localised display name of this guest as e.g. shown in the sidebar.
+  DOMString displayName;
+};
+
 // Callback that does not take arguments.
 callback SimpleCallback = void();
 
@@ -1000,6 +1018,9 @@ callback GetContentMetadataCallback = void(MediaMetadata result);
 // |result| Hash containing the string assets.
 callback GetStringsCallback = void(object result);
 
+// |color| String containing the color of the title bar.
+callback GetFrameColorCallback = void(DOMString color);
+
 // |success| True when file watch is successfully added.
 callback AddFileWatchCallback = void(optional boolean success);
 
@@ -1022,9 +1043,16 @@ callback GetVolumeMetadataListCallback =
 callback GetDisallowedTransfersCallback =
     void([instanceOf=Entry] object[] disallowedEntries);
 
+// |restrictedFiles| A list of files with any Data Leak Prevention restriction.
+callback GetFilesRestrictedByDlpCallback =
+    void([instanceOf=Entry] object[] restrictedFiles);
+
 // |copyId| ID of the copy task. Can be used to identify the progress, and to
 // cancel the task.
 callback StartCopyCallback = void(long copyId);
+
+// |taskId| ID of the task that was started. Can be used to cancel ongoing task.
+callback IOTaskIdCallback = void(long taskId);
 
 // |sizeStats| Name/value pairs of size stats. Will be undefined if stats could
 // not be determined.
@@ -1123,6 +1151,9 @@ callback GetAndroidPickerAppsCallback = void(AndroidApp[] apps);
 
 // |state| Describes the current holding space state.
 callback HoldingSpaceStateCallback = void(HoldingSpaceState state);
+
+// |guests| List of Guest OSs which have available mounts.
+callback ListMountableGuestsCallback = void(MountableGuest[] guest);
 
 interface Functions {
   // Logout the current user for navigating to the re-authentication screen for
@@ -1267,31 +1298,43 @@ interface Functions {
       [instanceOf=Entry] object[] entries,
       ResolveEntriesCallback callback);
 
-  // Mounts a resource or a file.
-  // |source| Mount point source. For compressed files it is the relative file
-  //     path within the external file system.
-  // |password| Optional password to decrypt the file.
+  // Mounts a resource or an archive.
+  // |fileUrl| Mount point source.
+  // |password| Optional password to decrypt the archive.
   // |callback| Callback called with the source path of the mount.
-  static void addMount(DOMString source, optional DOMString password,
+  static void addMount(DOMString fileUrl, optional DOMString password,
                        AddMountCallback callback);
+
+  // Cancels an archive mounting operation.
+  // |fileUrl| Mount point source. Should be same as the one passed to addMount.
+  // |callback|
+  static void cancelMounting(DOMString fileUrl, SimpleCallback callback);
 
   // Unmounts a mounted resource.
   // |volumeId| An ID of the volume.
-  static void removeMount(DOMString volumeId);
+  static void removeMount(DOMString volumeId, SimpleCallback callback);
 
   // Get the list of mounted volumes.
   // |callback|
   static void getVolumeMetadataList(GetVolumeMetadataListCallback callback);
 
   // Returns the list of files not allowed to be transfered.
-  // |entires| List of the source entries to be transfered.
+  // |entries| List of the source entries to be transfered.
   // |destinationEntry| Entry for the destination (parent) directory.
   // |callback| Result callback.
   [nocompile]
-  static void GetDisallowedTransfers(
-      [instanceOf=Entry] object[] entires,
+  static void getDisallowedTransfers(
+      [instanceOf=Entry] object[] entries,
       [instanceOf=DirectoryEntry] object destinationEntry,
       GetDisallowedTransfersCallback callback);
+
+  // Returns the list of files that have any Data Leak Prevention restriction rule set.
+  // |entries| List of the source entries to be checked.
+  // |callback| Result callback.
+  [nocompile]
+  static void getFilesRestrictedByDlp(
+      [instanceOf=Entry] object[] entries,
+      GetFilesRestrictedByDlpCallback callback);
 
   // Starts to copy an entry. If the source is a directory, the copy is done
   // recursively.
@@ -1478,6 +1521,7 @@ interface Functions {
   [nocompile]
   static void getRecentFiles(SourceRestriction restriction,
                              RecentFileType fileType,
+                             boolean invalidateCache,
                              GetRecentFilesCallback callback);
 
   // Requests the root directory of the volume with the ID specified in
@@ -1601,6 +1645,9 @@ interface Functions {
   // |callback| The result callback.
   static void getHoldingSpaceState(HoldingSpaceStateCallback callback);
 
+  // Returns color via `callback` for Files app foreground window frame.
+  static void getFrameColor(GetFrameColorCallback callback);
+
   // Returns true via `callback` if tablet mode is enabled, false otherwise.
   static void isTabletModeEnabled(BooleanCallback callback);
 
@@ -1608,8 +1655,14 @@ interface Functions {
   // result of the onDriveConfirmDialog event.
   static void notifyDriveDialogResult(DriveDialogResult result);
 
+  // Opens a new browser tab and navigates to `url`.
+  static void openURL(DOMString url);
+
   // Creates a new Files app window in the directory provided in `params`.
   static void openWindow(OpenWindowParams params, BooleanCallback callback);
+
+  // Opens the feedback report window.
+  static void sendFeedback();
 
   // Starts an I/O task of type |type| on |entries|. Task type specific
   // parameters are passed via |params|.
@@ -1617,11 +1670,22 @@ interface Functions {
   static void startIOTask(
       IOTaskType type,
       [instanceof=Entry] object[] entries,
-      IOTaskParams params);
+      IOTaskParams params,
+      optional IOTaskIdCallback callback);
 
   // Cancels an I/O task by id. Task ids are communicated to the Files App in
   // each I/O task's progress status.
   static void cancelIOTask(long taskId);
+
+  // Lists mountable Guest OSs.
+  static void listMountableGuests(ListMountableGuestsCallback callback);
+
+  // Starts and mounts the target Guest OS.
+  // |callback|
+  static void mountGuest(long id, SimpleCallback callback);
+
+  // Tells DriveFS to update its cached pin states of hosted files (once).
+  static void pollDriveHostedFilePinStates();
 };
 
 // Events supported by fileManagerPrivate API. These events are broadcasted.
@@ -1655,5 +1719,9 @@ interface Events {
   static void onTabletModeChanged(boolean enabled);
 
   static void onIOTaskProgressStatus(ProgressStatus status);
+
+  // Event broadcast when the list of Guest OSs that support Guest->Host file
+  // sharing changes.
+  static void onMountableGuestsChanged(MountableGuest[] guests);
 };
 };

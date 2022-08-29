@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 
-#include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
@@ -19,6 +18,7 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/app_list/search/common/icon_constants.h"
 #include "chrome/browser/ui/app_list/search/search_tags_util.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/webui/settings/chromeos/hierarchy.h"
@@ -126,12 +126,12 @@ OsSettingsResult::OsSettingsResult(
   set_id(kOsSettingsResultPrefix + url_path_);
   SetCategory(Category::kSettings);
   set_relevance(relevance_score);
-  SetTitle(result->canonical_result_text);
-  SetTitleTags(CalculateTags(query, result->canonical_result_text));
+  SetTitle(result->canonical_text);
+  SetTitleTags(CalculateTags(query, result->canonical_text));
   SetResultType(ResultType::kOsSettings);
   SetDisplayType(DisplayType::kList);
   SetMetricsType(ash::OS_SETTINGS);
-  SetIcon(IconInfo(icon));
+  SetIcon(IconInfo(icon, GetAppIconDimension()));
 
   // If the result is not a top-level section, set the display text with
   // information about the result's 'parent' category. This is the last element
@@ -199,22 +199,20 @@ OsSettingsProvider::OsSettingsProvider(Profile* profile)
   DCHECK(app_service_proxy_);
 
   Observe(&app_service_proxy_->AppRegistryCache());
-  apps::mojom::AppType app_type =
-      app_service_proxy_->AppRegistryCache().GetAppType(
-          web_app::kOsSettingsAppId);
+  auto app_type = app_service_proxy_->AppRegistryCache().GetAppType(
+      web_app::kOsSettingsAppId);
 
   if (base::FeatureList::IsEnabled(features::kAppServiceLoadIconWithoutMojom)) {
-    app_service_proxy_->LoadIcon(
-        apps::ConvertMojomAppTypToAppType(app_type), web_app::kOsSettingsAppId,
-        apps::IconType::kStandard,
-        ash::SharedAppListConfig::instance().search_list_icon_dimension(),
-        /*allow_placeholder_icon=*/false,
-        base::BindOnce(&OsSettingsProvider::OnLoadIcon,
-                       weak_factory_.GetWeakPtr()));
+    app_service_proxy_->LoadIcon(app_type, web_app::kOsSettingsAppId,
+                                 apps::IconType::kStandard,
+                                 GetAppIconDimension(),
+                                 /*allow_placeholder_icon=*/false,
+                                 base::BindOnce(&OsSettingsProvider::OnLoadIcon,
+                                                weak_factory_.GetWeakPtr()));
   } else {
     app_service_proxy_->LoadIcon(
-        app_type, web_app::kOsSettingsAppId, apps::mojom::IconType::kStandard,
-        ash::SharedAppListConfig::instance().search_list_icon_dimension(),
+        apps::ConvertAppTypeToMojomAppType(app_type), web_app::kOsSettingsAppId,
+        apps::mojom::IconType::kStandard, GetAppIconDimension(),
         /*allow_placeholder_icon=*/false,
         apps::MojomIconValueToIconValueCallback(base::BindOnce(
             &OsSettingsProvider::OnLoadIcon, weak_factory_.GetWeakPtr())));
@@ -239,7 +237,7 @@ OsSettingsProvider::OsSettingsProvider(Profile* profile)
 
 OsSettingsProvider::~OsSettingsProvider() = default;
 
-ash::AppListSearchResultType OsSettingsProvider::ResultType() {
+ash::AppListSearchResultType OsSettingsProvider::ResultType() const {
   return ash::AppListSearchResultType::kOsSettings;
 }
 
@@ -329,17 +327,16 @@ void OsSettingsProvider::OnAppUpdate(const apps::AppUpdate& update) {
     if (base::FeatureList::IsEnabled(
             features::kAppServiceLoadIconWithoutMojom)) {
       app_service_proxy_->LoadIcon(
-          apps::ConvertMojomAppTypToAppType(update.AppType()),
-          web_app::kOsSettingsAppId, apps::IconType::kStandard,
-          ash::SharedAppListConfig::instance().search_list_icon_dimension(),
+          update.AppType(), web_app::kOsSettingsAppId,
+          apps::IconType::kStandard, GetAppIconDimension(),
           /*allow_placeholder_icon=*/false,
           base::BindOnce(&OsSettingsProvider::OnLoadIcon,
                          weak_factory_.GetWeakPtr()));
     } else {
       app_service_proxy_->LoadIcon(
-          update.AppType(), web_app::kOsSettingsAppId,
-          apps::mojom::IconType::kStandard,
-          ash::SharedAppListConfig::instance().search_list_icon_dimension(),
+          apps::ConvertAppTypeToMojomAppType(update.AppType()),
+          web_app::kOsSettingsAppId, apps::mojom::IconType::kStandard,
+          GetAppIconDimension(),
           /*allow_placeholder_icon=*/false,
           apps::MojomIconValueToIconValueCallback(base::BindOnce(
               &OsSettingsProvider::OnLoadIcon, weak_factory_.GetWeakPtr())));
@@ -352,7 +349,7 @@ void OsSettingsProvider::OnAppRegistryCacheWillBeDestroyed(
   Observe(nullptr);
 }
 
-void OsSettingsProvider::OnSearchResultAvailabilityChanged() {
+void OsSettingsProvider::OnSearchResultsChanged() {
   if (last_query_.empty())
     return;
 
@@ -379,7 +376,7 @@ OsSettingsProvider::FilterResults(
     // results meeting extra requirements. Perform this check before checking
     // for duplicates to ensure a rejected alternate result doesn't preclude a
     // canonical result with a lower score from being shown.
-    if (result->result_text != result->canonical_result_text &&
+    if (result->text != result->canonical_text &&
         (!accept_alternate_matches_ ||
          query.size() < min_query_length_for_alternates_ ||
          result->relevance_score < min_score_for_alternates_)) {

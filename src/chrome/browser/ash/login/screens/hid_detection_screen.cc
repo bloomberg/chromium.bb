@@ -7,11 +7,12 @@
 #include <memory>
 #include <utility>
 
+#include "ash/components/hid_detection/hid_detection_utils.h"
 #include "ash/constants/ash_switches.h"
-#include "ash/constants/devicetype.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/default_tick_clock.h"
@@ -21,10 +22,15 @@
 #include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/ui/webui/chromeos/login/hid_detection_screen_handler.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/constants/devicetype.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/device_service.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "ui/base/l10n/l10n_util.h"
+
+// Enable VLOG level 1.
+#undef ENABLED_VLOG_LEVEL
+#define ENABLED_VLOG_LEVEL 1
 
 namespace ash {
 namespace {
@@ -91,10 +97,10 @@ bool HIDDetectionScreen::CanShowScreen() {
     return false;
   }
 
-  switch (ash::GetDeviceType()) {
-    case DeviceType::kChromebase:
-    case DeviceType::kChromebit:
-    case DeviceType::kChromebox:
+  switch (chromeos::GetDeviceType()) {
+    case chromeos::DeviceType::kChromebase:
+    case chromeos::DeviceType::kChromebit:
+    case chromeos::DeviceType::kChromebox:
       return true;
     default:
       return false;
@@ -144,8 +150,6 @@ void HIDDetectionScreen::CleanupOnExit() {
       adapter_initially_powered_ && !(*adapter_initially_powered_);
   if (adapter_is_powered && need_switching_off)
     PowerOff();
-
-  demo_mode_detector_.reset();
 }
 
 void HIDDetectionScreen::OnViewDestroyed(HIDDetectionView* view) {
@@ -194,8 +198,6 @@ void HIDDetectionScreen::ShowImpl() {
     GetInputDevicesList();
   else
     UpdateDevices();
-  demo_mode_detector_ = std::make_unique<DemoModeDetector>(
-      base::DefaultTickClock::GetInstance(), this);
   if (view_) {
     view_->Show();
   }
@@ -204,7 +206,6 @@ void HIDDetectionScreen::ShowImpl() {
 void HIDDetectionScreen::HideImpl() {
   if (is_hidden())
     return;
-  demo_mode_detector_.reset();
 
   if (discovery_session_.get())
     discovery_session_->Stop();
@@ -216,11 +217,11 @@ void HIDDetectionScreen::HideImpl() {
     view_->Hide();
 }
 
-void HIDDetectionScreen::OnUserAction(const std::string& action_id) {
+void HIDDetectionScreen::OnUserActionDeprecated(const std::string& action_id) {
   if (action_id == kUserActionContinue) {
     OnContinueButtonClicked();
   } else {
-    BaseScreen::OnUserAction(action_id);
+    BaseScreen::OnUserActionDeprecated(action_id);
   }
 }
 
@@ -475,6 +476,8 @@ void HIDDetectionScreen::InputDeviceAdded(InputDeviceInfoPtr info) {
     SetKeyboardDeviceName(info_ref->name);
     SendKeyboardDeviceNotification();
   }
+  DCHECK(!info_ref.is_null());
+  hid_detection::RecordHidConnected(*info_ref);
 }
 
 void HIDDetectionScreen::InputDeviceAddedForTesting(InputDeviceInfoPtr info) {

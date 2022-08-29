@@ -32,6 +32,7 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "ui/compositor/layer.h"
+#include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/animation/bounds_animator.h"
@@ -260,6 +261,10 @@ TEST_P(HomeButtonTest, ClipRectDoesNotClipHomeButtonBounds) {
 }
 
 TEST_P(HomeButtonTest, SwipeUpToOpenFullscreenAppList) {
+  // ProductivityLauncher does not support shelf drags to show app list.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(features::kProductivityLauncher);
+
   Shelf* shelf = GetPrimaryShelf();
   EXPECT_EQ(ShelfAlignment::kBottom, shelf->alignment());
 
@@ -292,6 +297,9 @@ TEST_P(HomeButtonTest, SwipeUpToOpenFullscreenAppList) {
   GetAppListTestHelper()->WaitUntilIdle();
   GetAppListTestHelper()->CheckVisibility(true);
   GetAppListTestHelper()->CheckState(AppListViewState::kFullscreenAllApps);
+
+  // Dismiss the app list to avoid cleanup issues with ProductivityLauncher.
+  GetAppListTestHelper()->Dismiss();
 }
 
 TEST_P(HomeButtonTest, ClickToOpenAppList) {
@@ -310,27 +318,31 @@ TEST_P(HomeButtonTest, ClickToOpenAppList) {
   GetEventGenerator()->ClickLeftButton();
   GetAppListTestHelper()->WaitUntilIdle();
   GetAppListTestHelper()->CheckVisibility(true);
-  GetAppListTestHelper()->CheckState(AppListViewState::kPeeking);
+  // ProductivityLauncher does not have states like peeking.
+  if (!features::IsProductivityLauncherEnabled())
+    GetAppListTestHelper()->CheckState(AppListViewState::kPeeking);
   GetEventGenerator()->ClickLeftButton();
   GetAppListTestHelper()->WaitUntilIdle();
   GetAppListTestHelper()->CheckVisibility(false);
-  GetAppListTestHelper()->CheckState(AppListViewState::kClosed);
+  if (!features::IsProductivityLauncherEnabled()) {
+    GetAppListTestHelper()->CheckState(AppListViewState::kClosed);
 
-  // Shift-click should open the app list in fullscreen.
-  GetEventGenerator()->set_flags(ui::EF_SHIFT_DOWN);
-  GetEventGenerator()->ClickLeftButton();
-  GetEventGenerator()->set_flags(0);
-  GetAppListTestHelper()->WaitUntilIdle();
-  GetAppListTestHelper()->CheckVisibility(true);
-  GetAppListTestHelper()->CheckState(AppListViewState::kFullscreenAllApps);
+    // Shift-click should open the app list in fullscreen.
+    GetEventGenerator()->set_flags(ui::EF_SHIFT_DOWN);
+    GetEventGenerator()->ClickLeftButton();
+    GetEventGenerator()->set_flags(0);
+    GetAppListTestHelper()->WaitUntilIdle();
+    GetAppListTestHelper()->CheckVisibility(true);
+    GetAppListTestHelper()->CheckState(AppListViewState::kFullscreenAllApps);
 
-  // Another shift-click should close the app list.
-  GetEventGenerator()->set_flags(ui::EF_SHIFT_DOWN);
-  GetEventGenerator()->ClickLeftButton();
-  GetEventGenerator()->set_flags(0);
-  GetAppListTestHelper()->WaitUntilIdle();
-  GetAppListTestHelper()->CheckVisibility(false);
-  GetAppListTestHelper()->CheckState(AppListViewState::kClosed);
+    // Another shift-click should close the app list.
+    GetEventGenerator()->set_flags(ui::EF_SHIFT_DOWN);
+    GetEventGenerator()->ClickLeftButton();
+    GetEventGenerator()->set_flags(0);
+    GetAppListTestHelper()->WaitUntilIdle();
+    GetAppListTestHelper()->CheckVisibility(false);
+    GetAppListTestHelper()->CheckState(AppListViewState::kClosed);
+  }
 }
 
 TEST_P(HomeButtonTest, ClickToOpenAppListInTabletMode) {

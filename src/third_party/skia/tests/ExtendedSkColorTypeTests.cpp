@@ -6,11 +6,12 @@
  */
 
 #include "include/core/SkCanvas.h"
+#include "include/core/SkColorSpace.h"
 #include "include/core/SkImage.h"
 #include "include/core/SkSurface.h"
 #include "include/gpu/GrDirectContext.h"
 #include "src/core/SkAutoPixmapStorage.h"
-#include "src/gpu/GrPixmap.h"
+#include "src/gpu/ganesh/GrPixmap.h"
 
 #include "tests/Test.h"
 #include "tests/TestUtils.h"

@@ -15,11 +15,10 @@
 #include "include/core/SkTypeface.h"
 #include "include/private/SkMutex.h"
 #include "include/private/SkTemplates.h"
-#include "src/core/SkGlyphRunPainter.h"
 #include "src/core/SkScalerCache.h"
 
 #if SK_SUPPORT_GPU
-#include "src/gpu/text/GrStrikeCache.h"
+#include "src/text/gpu/StrikeCache.h"
 #endif
 
 bool gSkUseThreadLocalStrikeCaches_IAcknowledgeThisIsIncrediblyExperimental = false;
@@ -103,7 +102,7 @@ void SkStrikeCache::DumpMemoryStatistics(SkTraceMemoryDump* dump) {
         }
 
         SkString dumpName = SkStringPrintf(
-                "%s/%s_%d/%p", gGlyphCacheDumpName, fontName.c_str(), rec.fFontID, &strike);
+                "%s/%s_%d/%p", gGlyphCacheDumpName, fontName.c_str(), rec.fTypefaceID, &strike);
 
         dump->dumpNumericValue(dumpName.c_str(),
                                "size", "bytes", strike.fMemoryUsed);
@@ -345,8 +344,9 @@ void SkStrikeCache::validate() const {
 }
 
 #if SK_SUPPORT_GPU
-    sk_sp<GrTextStrike> SkStrike::findOrCreateGrStrike(GrStrikeCache* grStrikeCache) const {
-        return grStrikeCache->findOrCreateStrike(fStrikeSpec);
+    sk_sp<sktext::gpu::TextStrike> SkStrike::findOrCreateTextStrike(
+                sktext::gpu::StrikeCache* gpuStrikeCache) const {
+        return gpuStrikeCache->findOrCreateStrike(fStrikeSpec);
     }
 #endif
 

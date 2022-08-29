@@ -6,6 +6,7 @@
 
 #include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/projector/projector_controller.h"
+#include "ash/public/cpp/projector/projector_new_screencast_precondition.h"
 #include "ash/public/cpp/test/mock_projector_controller.h"
 #include "ash/webui/projector_app/test/mock_app_client.h"
 #include "base/files/file_path.h"
@@ -20,9 +21,6 @@
 namespace {
 
 const char kTestUserEmail[] = "testuser1@gmail.com";
-const char kTestScreencastName[] = "test_pending_screecast";
-const char kTestScreencastPath[] =
-    "/root/projector_data/test_pending_screecast";
 
 const char kTestXhrUrl[] = "https://www.googleapis.com/drive/v3/files/fileID";
 const char kTestXhrUnsupportedUrl[] = "https://www.example.com";
@@ -44,11 +42,14 @@ const char kSendXhrCallback[] = "sendXhrCallback";
 const char kOnNewScreencastPreconditionChanged[] =
     "onNewScreencastPreconditionChanged";
 const char kOnSodaInstallProgressUpdated[] = "onSodaInstallProgressUpdated";
+const char kOnSodaInstalled[] = "onSodaInstalled";
 const char kOnSodaInstallError[] = "onSodaInstallError";
 
 const char kShouldDownloadSodaCallback[] = "shouldDownloadSodaCallbck";
 const char kInstallSodaCallback[] = "installSodaCallback";
 const char kGetPendingScreencastsCallback[] = "getPendingScreencastsCallback";
+
+const char kOpenFeedbackDialogCallback[] = "openFeedbackDialog";
 
 const char kSetUserPrefCallback[] = "setUserPrefCallback";
 const char kGetUserPrefCallback[] = "getUserPrefCallback";
@@ -76,6 +77,8 @@ class ProjectorMessageHandlerUnitTest : public testing::Test {
     auto* registry = pref_service_.registry();
     registry->RegisterBooleanPref(ash::prefs::kProjectorCreationFlowEnabled,
                                   false);
+    registry->RegisterBooleanPref(
+        ash::prefs::kProjectorExcludeTranscriptDialogShown, false);
     registry->RegisterIntegerPref(
         ash::prefs::kProjectorGalleryOnboardingShowCount, 0);
     registry->RegisterIntegerPref(
@@ -135,7 +138,7 @@ TEST_F(ProjectorMessageHandlerUnitTest, GetAccounts) {
   EXPECT_TRUE(call_data.arg2()->GetBool());
   ASSERT_TRUE(call_data.arg3()->is_list());
 
-  const auto& list_view = call_data.arg3()->GetList();
+  const auto& list_view = call_data.arg3()->GetListDeprecated();
   // There is only one account in the identity manager.
   EXPECT_EQ(list_view.size(), 1u);
 
@@ -147,9 +150,12 @@ TEST_F(ProjectorMessageHandlerUnitTest, GetAccounts) {
 }
 
 TEST_F(ProjectorMessageHandlerUnitTest, CanStartProjectorSession) {
-  EXPECT_CALL(controller(), CanStartNewSession());
-  ON_CALL(controller(), CanStartNewSession)
-      .WillByDefault(testing::Return(true));
+  NewScreencastPrecondition precondition;
+  precondition.state = NewScreencastPreconditionState::kEnabled;
+
+  EXPECT_CALL(controller(), GetNewScreencastPrecondition());
+  ON_CALL(controller(), GetNewScreencastPrecondition)
+      .WillByDefault(testing::Return(precondition));
 
   base::ListValue list_args;
   list_args.Append(kGetNewScreencastPreconditionCallback);
@@ -270,13 +276,14 @@ TEST_F(ProjectorMessageHandlerUnitTest, SendXhrWithUnSupportedUrl) {
   EXPECT_EQ("UNSUPPORTED_URL", *error);
 }
 
-TEST_F(ProjectorMessageHandlerUnitTest, CanStartNewSession) {
-  message_handler()->OnNewScreencastPreconditionChanged(/** canStart = */ true);
-  const content::TestWebUI::CallData& call_data = FetchCallData(0);
+TEST_F(ProjectorMessageHandlerUnitTest, NewScreencastPreconditionChanged) {
+  NewScreencastPrecondition precondition;
+  precondition.state = NewScreencastPreconditionState::kEnabled;
+  message_handler()->OnNewScreencastPreconditionChanged(precondition);
+  const content::TestWebUI::CallData& call_data = *(web_ui().call_data()[0]);
   EXPECT_EQ(call_data.function_name(), kWebUIListenerCall);
   EXPECT_EQ(call_data.arg1()->GetString(), kOnNewScreencastPreconditionChanged);
-  EXPECT_EQ(*(call_data.arg2()->FindIntKey(kState)),
-            static_cast<int>(NewScreencastPreconditionState::kEnabled));
+  EXPECT_EQ(*(call_data.arg2()), precondition.ToValue());
 }
 
 TEST_F(ProjectorMessageHandlerUnitTest, OnSodaProgress) {
@@ -286,6 +293,14 @@ TEST_F(ProjectorMessageHandlerUnitTest, OnSodaProgress) {
   EXPECT_EQ(call_data.function_name(), kWebUIListenerCall);
   EXPECT_EQ(call_data.arg1()->GetString(), kOnSodaInstallProgressUpdated);
   EXPECT_EQ(call_data.arg2()->GetInt(), 50);
+}
+
+TEST_F(ProjectorMessageHandlerUnitTest, OnSodaInstalled) {
+  static_cast<ProjectorAppClient::Observer*>(message_handler())
+      ->OnSodaInstalled();
+  const content::TestWebUI::CallData& call_data = FetchCallData(0);
+  EXPECT_EQ(call_data.function_name(), kWebUIListenerCall);
+  EXPECT_EQ(call_data.arg1()->GetString(), kOnSodaInstalled);
 }
 
 TEST_F(ProjectorMessageHandlerUnitTest, OnSodaError) {
@@ -298,8 +313,6 @@ TEST_F(ProjectorMessageHandlerUnitTest, OnSodaError) {
 TEST_F(ProjectorMessageHandlerUnitTest, ShouldDownloadSoda) {
   ON_CALL(mock_app_client(), ShouldDownloadSoda())
       .WillByDefault(testing::Return(true));
-  ON_CALL(mock_app_client(), IsSpeechRecognitionAvailable())
-      .WillByDefault(testing::Return(false));
 
   base::ListValue list_args;
   list_args.Append(base::Value(kShouldDownloadSodaCallback));
@@ -331,10 +344,12 @@ TEST_F(ProjectorMessageHandlerUnitTest, InstallSoda) {
 }
 
 TEST_F(ProjectorMessageHandlerUnitTest, GetPendingScreencasts) {
-  const std::set<ash::PendingScreencast> expectedScreencasts{
-      ash::PendingScreencast{
-          /*container_dir*/ base::FilePath(kTestScreencastPath),
-          /*name*/ kTestScreencastName}};
+  const std::string name = "test_pending_screecast";
+  const std::string path = "/root/projector_data/test_pending_screecast";
+  const PendingScreencastSet expectedScreencasts{ash::PendingScreencast{
+      /*container_dir=*/base::FilePath(path), /*name=*/name,
+      /*total_size_in_bytes=*/1, /*bytes_untransferred=*/0}};
+
   ON_CALL(mock_app_client(), GetPendingScreencasts())
       .WillByDefault(testing::ReturnRef(expectedScreencasts));
 
@@ -355,17 +370,18 @@ TEST_F(ProjectorMessageHandlerUnitTest, GetPendingScreencasts) {
   EXPECT_TRUE(call_data.arg2()->GetBool());
   ASSERT_TRUE(call_data.arg3()->is_list());
 
-  const auto& list_view = call_data.arg3()->GetList();
+  const auto& list_view = call_data.arg3()->GetListDeprecated();
   // There is only one screencast.
   EXPECT_EQ(list_view.size(), 1u);
 
   const auto& screencast = list_view[0];
-  EXPECT_EQ(*(screencast.FindStringPath("name")), kTestScreencastName);
+  EXPECT_EQ(*(screencast.FindStringPath("name")), name);
+  EXPECT_EQ(*(screencast.FindDoublePath("createdTime")), 0);
+  EXPECT_EQ(*(screencast.FindBoolPath("uploadFailed")), false);
 }
 
 TEST_F(ProjectorMessageHandlerUnitTest, OnScreencastsStateChange) {
-  message_handler()->OnScreencastsPendingStatusChanged(
-      std::set<ash::PendingScreencast>());
+  message_handler()->OnScreencastsPendingStatusChanged(PendingScreencastSet());
   ExpectCallToWebUI(kWebUIListenerCall, "onScreencastsStateChange",
                     /*call_count=*/1u);
 }
@@ -392,6 +408,44 @@ TEST_F(ProjectorMessageHandlerUnitTest, CreationFlowEnabled) {
   list_args.Append(base::Value(kGetUserPrefCallback));
   func_args.ClearList();
   func_args.Append(ash::prefs::kProjectorCreationFlowEnabled);
+  list_args.Append(std::move(func_args));
+
+  web_ui().HandleReceivedMessage("getUserPref", &list_args);
+  base::RunLoop().RunUntilIdle();
+
+  const content::TestWebUI::CallData& get_pref_call_data = FetchCallData(1);
+  EXPECT_EQ(get_pref_call_data.function_name(), kWebUIResponse);
+  EXPECT_EQ(get_pref_call_data.arg1()->GetString(), kGetUserPrefCallback);
+  EXPECT_EQ(get_pref_call_data.arg2()->GetBool(), true);
+
+  const base::Value* args = get_pref_call_data.arg3();
+  EXPECT_TRUE(args->is_bool());
+  EXPECT_TRUE(args->GetBool());
+}
+
+TEST_F(ProjectorMessageHandlerUnitTest, ExcludeTranscriptDialogShownPref) {
+  base::ListValue list_args;
+  list_args.Append(base::Value(kSetUserPrefCallback));
+
+  base::ListValue func_args;
+  func_args.Append(
+      base::Value(ash::prefs::kProjectorExcludeTranscriptDialogShown));
+  func_args.Append(base::Value(true));
+  list_args.Append(std::move(func_args));
+
+  web_ui().HandleReceivedMessage("setUserPref", &list_args);
+  base::RunLoop().RunUntilIdle();
+
+  const content::TestWebUI::CallData& call_data = FetchCallData(0);
+  EXPECT_EQ(call_data.function_name(), kWebUIResponse);
+  EXPECT_EQ(call_data.arg1()->GetString(), kSetUserPrefCallback);
+  EXPECT_EQ(call_data.arg2()->GetBool(), true);
+
+  // Now let's try to read the user's pref.
+  list_args.ClearList();
+  list_args.Append(base::Value(kGetUserPrefCallback));
+  func_args.ClearList();
+  func_args.Append(ash::prefs::kProjectorExcludeTranscriptDialogShown);
   list_args.Append(std::move(func_args));
 
   web_ui().HandleReceivedMessage("getUserPref", &list_args);
@@ -435,6 +489,18 @@ TEST_F(ProjectorMessageHandlerUnitTest, SetCreationFlowEnabledInvalidValue) {
   EXPECT_EQ(*(rejected_args->FindPath(kRejectedRequestArgsKey)), func_args);
 }
 
+TEST_F(ProjectorMessageHandlerUnitTest, OpenFeedbackDialog) {
+  base::ListValue list_args;
+  list_args.Append(base::Value(kOpenFeedbackDialogCallback));
+
+  web_ui().HandleReceivedMessage("openFeedbackDialog", &list_args);
+  base::RunLoop().RunUntilIdle();
+
+  const content::TestWebUI::CallData& call_data = FetchCallData(0);
+  EXPECT_EQ(call_data.function_name(), kWebUIResponse);
+  EXPECT_EQ(call_data.arg1()->GetString(), kOpenFeedbackDialogCallback);
+}
+
 TEST_F(ProjectorMessageHandlerUnitTest, SetCreationFlowEnabledUnsupportedPref) {
   base::ListValue list_args;
   list_args.Append(base::Value(kSetUserPrefCallback));
@@ -461,8 +527,57 @@ TEST_F(ProjectorMessageHandlerUnitTest, SetCreationFlowEnabledUnsupportedPref) {
   EXPECT_EQ(*(rejected_args->FindPath(kRejectedRequestArgsKey)), func_args);
 }
 
+class ProjectorStorageDirNameValidationTest
+    : public ::testing::WithParamInterface<
+          ::testing::tuple<::std::string, bool>>,
+      public ProjectorMessageHandlerUnitTest {
+ public:
+  ProjectorStorageDirNameValidationTest() = default;
+  ProjectorStorageDirNameValidationTest(
+      const ProjectorStorageDirNameValidationTest&) = delete;
+  ProjectorStorageDirNameValidationTest& operator=(
+      const ProjectorStorageDirNameValidationTest&) = delete;
+  ~ProjectorStorageDirNameValidationTest() override = default;
+};
+
+TEST_P(ProjectorStorageDirNameValidationTest, StorageDirNameBackSlash) {
+  bool success = std::get<1>(GetParam());
+  if (success) {
+    EXPECT_CALL(controller(), GetNewScreencastPrecondition());
+    ON_CALL(controller(), GetNewScreencastPrecondition)
+        .WillByDefault(testing::Return(NewScreencastPrecondition(
+            NewScreencastPreconditionState::kEnabled, {})));
+  }
+
+  base::ListValue list_args;
+  list_args.Append(kStartProjectorSessionCallback);
+  base::ListValue args;
+  args.Append(std::get<0>(GetParam()));
+  list_args.Append(std::move(args));
+
+  web_ui().HandleReceivedMessage("startProjectorSession", &list_args);
+  base::RunLoop().RunUntilIdle();
+
+  // We expect that there was only one callback to the WebUI.
+  EXPECT_EQ(web_ui().call_data().size(), 1u);
+  const content::TestWebUI::CallData& call_data = FetchCallData(0);
+
+  EXPECT_EQ(call_data.function_name(), kWebUIResponse);
+  EXPECT_EQ(call_data.arg1()->GetString(), kStartProjectorSessionCallback);
+  EXPECT_TRUE(call_data.arg2()->GetBool());
+
+  EXPECT_EQ(success, call_data.arg3()->GetBool());
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    StorageDirNameBackSlash,
+    ProjectorStorageDirNameValidationTest,
+    ::testing::Values(std::make_tuple("Projector recordings", true),
+                      std::make_tuple("..\folderId", false),
+                      std::make_tuple("../folderId", false)));
+
 class ProjectorSessionStartUnitTest
-    : public ::testing::WithParamInterface<bool>,
+    : public ::testing::WithParamInterface<NewScreencastPrecondition>,
       public ProjectorMessageHandlerUnitTest {
  public:
   ProjectorSessionStartUnitTest() = default;
@@ -473,10 +588,12 @@ class ProjectorSessionStartUnitTest
 };
 
 TEST_P(ProjectorSessionStartUnitTest, ProjectorSessionTest) {
-  bool success = GetParam();
-  EXPECT_CALL(controller(), CanStartNewSession());
-  ON_CALL(controller(), CanStartNewSession)
-      .WillByDefault(testing::Return(success));
+  const auto& precondition = GetParam();
+  EXPECT_CALL(controller(), GetNewScreencastPrecondition());
+  ON_CALL(controller(), GetNewScreencastPrecondition)
+      .WillByDefault(testing::Return(precondition));
+
+  bool success = precondition.state == NewScreencastPreconditionState::kEnabled;
 
   EXPECT_CALL(controller(), StartProjectorSession("folderId"))
       .Times(success ? 1 : 0);
@@ -500,9 +617,14 @@ TEST_P(ProjectorSessionStartUnitTest, ProjectorSessionTest) {
   EXPECT_EQ(call_data.arg3()->GetBool(), success);
 }
 
-INSTANTIATE_TEST_CASE_P(SessionStartSuccessFailTest,
-                        ProjectorSessionStartUnitTest,
-                        ::testing::Values(true, false));
+INSTANTIATE_TEST_SUITE_P(
+    SessionStartSuccessFailTest,
+    ProjectorSessionStartUnitTest,
+    ::testing::Values(
+        NewScreencastPrecondition(NewScreencastPreconditionState::kEnabled, {}),
+        NewScreencastPrecondition(
+            NewScreencastPreconditionState::kDisabled,
+            {NewScreencastPreconditionReason::kInProjectorSession})));
 
 // Tests getting and setting the Projector onboarding preferences.
 // Parameterized by the preference strings.
@@ -555,7 +677,7 @@ TEST_P(ProjectorOnboardingFlowPrefTest, OnboardingFlowPrefTest) {
   EXPECT_EQ(get_call_data.arg3()->GetInt(), 5);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     OnboardingPrefsTest,
     ProjectorOnboardingFlowPrefTest,
     ::testing::Values(ash::prefs::kProjectorGalleryOnboardingShowCount,

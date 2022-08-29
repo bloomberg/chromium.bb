@@ -95,8 +95,7 @@ CJBig2_Image::~CJBig2_Image() = default;
 
 // static
 bool CJBig2_Image::IsValidImageSize(int32_t w, int32_t h) {
-  return w > 0 && w <= JBIG2_MAX_IMAGE_SIZE && h > 0 &&
-         h <= JBIG2_MAX_IMAGE_SIZE;
+  return w > 0 && w <= kJBig2MaxImageSize && h > 0 && h <= kJBig2MaxImageSize;
 }
 
 int CJBig2_Image::GetPixel(int32_t x, int32_t y) const {
@@ -671,5 +670,5 @@ bool CJBig2_Image::ComposeToInternal(CJBig2_Image* pDst,
       }
     }
   }
-  return 1;
+  return true;
 }

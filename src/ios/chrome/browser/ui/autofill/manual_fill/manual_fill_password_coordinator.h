@@ -18,6 +18,9 @@ class GURL;
 // Opens the all passwords picker, used for manual fallback.
 - (void)openAllPasswordsPicker;
 
+// Opens password suggestion confirmation alert.
+- (void)openPasswordSuggestion;
+
 @end
 
 // Creates and manages a view controller to present passwords to the user. It
@@ -29,8 +32,8 @@ class GURL;
 // FallbackCoordinatorDelegate, and replaces the superclass delegate.
 @property(nonatomic, weak) id<PasswordCoordinatorDelegate> delegate;
 
-// Creates a coordinator that uses a |viewController|, |browser|,
-// |URL| and an |injectionHandler|.
+// Creates a coordinator that uses a `viewController`, `browser`,
+// `URL` and an `injectionHandler`.
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
                                    browser:(Browser*)browser
                                        URL:(const GURL&)URL

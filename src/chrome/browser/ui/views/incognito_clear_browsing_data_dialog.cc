@@ -4,9 +4,11 @@
 
 #include "chrome/browser/ui/views/incognito_clear_browsing_data_dialog.h"
 
+#include "base/metrics/histogram_functions.h"
+
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/views/accessibility/non_accessible_image_view.h"
+#include "chrome/browser/ui/views/accessibility/theme_tracking_non_accessible_image_view.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/grit/generated_resources.h"
@@ -67,6 +69,7 @@ IncognitoClearBrowsingDataDialog::IncognitoClearBrowsingDataDialog(
     Profile* incognito_profile,
     Type type)
     : BubbleDialogDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
+      dialog_type_(type),
       incognito_profile_(incognito_profile) {
   DCHECK(incognito_profile_);
   DCHECK(incognito_profile_->IsIncognitoProfile());
@@ -79,7 +82,7 @@ IncognitoClearBrowsingDataDialog::IncognitoClearBrowsingDataDialog(
   views::FlexLayout* layout =
       SetLayoutManager(std::make_unique<views::FlexLayout>());
   layout->SetOrientation(views::LayoutOrientation::kVertical);
-  layout->SetDefault(views::kMarginsKey, gfx::Insets(vertical_spacing, 0));
+  layout->SetDefault(views::kMarginsKey, gfx::Insets::VH(vertical_spacing, 0));
   layout->SetCollapseMargins(true);
   layout->SetIgnoreDefaultMainAxisMargins(true);
 
@@ -87,9 +90,13 @@ IncognitoClearBrowsingDataDialog::IncognitoClearBrowsingDataDialog(
       views::DISTANCE_BUBBLE_PREFERRED_WIDTH));
 
   // Header art
-  auto header_view = std::make_unique<NonAccessibleImageView>();
-  header_view_ = header_view.get();
-  AddChildView(std::move(header_view));
+  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+  auto image_view = std::make_unique<ThemeTrackingNonAccessibleImageView>(
+      *bundle.GetImageSkiaNamed(IDR_INCOGNITO_DATA_NOT_SAVED_HEADER_LIGHT),
+      *bundle.GetImageSkiaNamed(IDR_INCOGNITO_DATA_NOT_SAVED_HEADER_DARK),
+      base::BindRepeating(&views::BubbleDialogDelegate::GetBackgroundColor,
+                          base::Unretained(this)));
+  AddChildView(std::move(image_view));
 
   // Set bubble regarding to the type.
   if (type == kHistoryDisclaimerBubble)
@@ -173,6 +180,12 @@ void IncognitoClearBrowsingDataDialog::
 }
 
 void IncognitoClearBrowsingDataDialog::OnCloseWindowsButtonClicked() {
+  if (dialog_type_ == Type::kDefaultBubble) {
+    base::UmaHistogramEnumeration(
+        "Incognito.ClearBrowsingDataDialog.ActionType",
+        DialogActionType::kCloseIncognito);
+  }
+
   // Skipping before-unload trigger to give incognito mode users a chance to
   // quickly close all incognito windows without needing to confirm closing the
   // open forms.
@@ -182,20 +195,13 @@ void IncognitoClearBrowsingDataDialog::OnCloseWindowsButtonClicked() {
 }
 
 void IncognitoClearBrowsingDataDialog::OnCancelButtonClicked() {
+  if (dialog_type_ == Type::kDefaultBubble) {
+    base::UmaHistogramEnumeration(
+        "Incognito.ClearBrowsingDataDialog.ActionType",
+        DialogActionType::kCancel);
+  }
+
   CloseDialog();
-}
-
-void IncognitoClearBrowsingDataDialog::OnThemeChanged() {
-  BubbleDialogDelegateView::OnThemeChanged();
-  header_view_->SetImage(GetHeaderArt());
-}
-
-gfx::ImageSkia* IncognitoClearBrowsingDataDialog::GetHeaderArt() {
-  bool is_dark =
-      color_utils::IsDark(GetBubbleFrameView()->GetBackgroundColor());
-  return ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-      is_dark ? IDR_INCOGNITO_DATA_NOT_SAVED_HEADER_DARK
-              : IDR_INCOGNITO_DATA_NOT_SAVED_HEADER_LIGHT);
 }
 
 BEGIN_METADATA(IncognitoClearBrowsingDataDialog,

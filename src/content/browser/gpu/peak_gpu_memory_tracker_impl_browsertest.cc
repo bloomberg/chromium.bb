@@ -69,6 +69,8 @@ class TestGpuService : public viz::mojom::GpuService {
   void CreateArcVideoDecodeAccelerator(
       mojo::PendingReceiver<arc::mojom::VideoDecodeAccelerator> vda_receiver)
       override {}
+  void CreateArcVideoDecoder(
+      mojo::PendingReceiver<arc::mojom::VideoDecoder> vd_receiver) override {}
   void CreateArcVideoEncodeAccelerator(
       mojo::PendingReceiver<arc::mojom::VideoEncodeAccelerator> vea_receiver)
       override {}
@@ -86,7 +88,7 @@ class TestGpuService : public viz::mojom::GpuService {
       mojo::PendingReceiver<chromeos_camera::mojom::JpegEncodeAccelerator>
           jea_receiver) override {}
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   void RegisterDCOMPSurfaceHandle(
       mojo::PlatformHandle surface_handle,
       RegisterDCOMPSurfaceHandleCallback callback) override {}
@@ -111,7 +113,9 @@ class TestGpuService : public viz::mojom::GpuService {
                            CopyGpuMemoryBufferCallback callback) override {}
   void GetVideoMemoryUsageStats(
       GetVideoMemoryUsageStatsCallback callback) override {}
-  void RequestHDRStatus(RequestHDRStatusCallback callback) override {}
+#if BUILDFLAG(IS_WIN)
+  void RequestDXGIInfo(RequestDXGIInfoCallback callback) override {}
+#endif
   void LoadedShader(int32_t client_id,
                     const std::string& key,
                     const std::string& data) override {}
@@ -124,11 +128,11 @@ class TestGpuService : public viz::mojom::GpuService {
   void OnBackgroundCleanup() override {}
   void OnBackgrounded() override {}
   void OnForegrounded() override {}
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel level) override {}
 #endif
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   void BeginCATransaction() override {}
   void CommitCATransaction(CommitCATransactionCallback callback) override {}
 #endif

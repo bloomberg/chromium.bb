@@ -5,14 +5,20 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_DESKTOP_WINDOW_TREE_HOST_LACROS_H_
 #define CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_DESKTOP_WINDOW_TREE_HOST_LACROS_H_
 
-#include "chrome/browser/ui/views/frame/browser_desktop_window_tree_host_linux.h"
+#include "chrome/browser/ui/views/frame/browser_desktop_window_tree_host.h"
+#include "ui/views/widget/desktop_aura/desktop_window_tree_host_lacros.h"
+
+class BrowserView;
+class BrowserFrame;
+enum class TabDragKind;
 
 namespace views {
 class DesktopNativeWidgetAura;
 }
 
 class BrowserDesktopWindowTreeHostLacros
-    : public BrowserDesktopWindowTreeHostLinux {
+    : public BrowserDesktopWindowTreeHost,
+      public views::DesktopWindowTreeHostLacros {
  public:
   BrowserDesktopWindowTreeHostLacros(
       views::internal::NativeWidgetDelegate* native_widget_delegate,
@@ -25,11 +31,34 @@ class BrowserDesktopWindowTreeHostLacros
       const BrowserDesktopWindowTreeHostLacros&) = delete;
   ~BrowserDesktopWindowTreeHostLacros() override;
 
+  // Called when the tab drag status changes for this window.
+  void TabDraggingKindChanged(TabDragKind tab_drag_kind);
+
  private:
+  // Sets hints for the WM/compositor that reflect the rounded corners.
+  void UpdateFrameHints();
+
+  // DesktopWindowTreeHost:
+  void OnWidgetInitDone() override;
+
+  // BrowserDesktopWindowTreeHost:
+  DesktopWindowTreeHost* AsDesktopWindowTreeHost() override;
+  int GetMinimizeButtonOffset() const override;
+  bool UsesNativeSystemMenu() const override;
+
   // views::DesktopWindowTreeHostPlatform:
   SkPath GetWindowMaskForClipping() const override;
   void OnSurfaceFrameLockingChanged(bool lock) override;
+  bool SupportsMouseLock() override;
+  void LockMouse(aura::Window* window) override;
+  void UnlockMouse(aura::Window* window) override;
 
+  // ui::PlatformWindowDelegate
+  void OnBoundsChanged(const BoundsChange& change) override;
+  void OnWindowStateChanged(ui::PlatformWindowState old_state,
+                            ui::PlatformWindowState new_state) override;
+
+  BrowserView* const browser_view_;
   views::DesktopNativeWidgetAura* desktop_native_widget_aura_ = nullptr;
 };
 

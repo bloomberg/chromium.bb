@@ -5,12 +5,11 @@
 /**
  * @fileoverview Handles automation events on the currently focused node.
  */
+import {BaseAutomationHandler} from '/chromevox/background/base_automation_handler.js';
+import {ChromeVoxState} from '/chromevox/background/chromevox_state.js';
+import {Output} from '/chromevox/background/output/output.js';
+import {ChromeVoxEvent} from '/chromevox/common/custom_automation_event.js';
 
-goog.provide('FocusAutomationHandler');
-
-goog.require('BaseAutomationHandler');
-
-goog.scope(function() {
 const AutomationEvent = chrome.automation.AutomationEvent;
 const AutomationNode = chrome.automation.AutomationNode;
 const Dir = constants.Dir;
@@ -18,17 +17,24 @@ const EventType = chrome.automation.EventType;
 const RoleType = chrome.automation.RoleType;
 const StateType = chrome.automation.StateType;
 
-
-FocusAutomationHandler = class extends BaseAutomationHandler {
+export class FocusAutomationHandler extends BaseAutomationHandler {
+  /** @private */
   constructor() {
     super(null);
 
     /** @private {AutomationNode|undefined} */
     this.previousActiveDescendant_;
 
-    chrome.automation.getDesktop((desktop) => {
+    chrome.automation.getDesktop(desktop => {
       desktop.addEventListener(EventType.FOCUS, this.onFocus.bind(this), false);
     });
+  }
+
+  static init() {
+    if (FocusAutomationHandler.instance) {
+      throw 'Error: Trying to create two instances of singleton FocusAutomationHandler';
+    }
+    FocusAutomationHandler.instance = new FocusAutomationHandler();
   }
 
   /**
@@ -150,6 +156,7 @@ FocusAutomationHandler = class extends BaseAutomationHandler {
       return;
     }
   }
-};
+}
 
-});  // goog.scope
+/** @type {FocusAutomationHandler} */
+FocusAutomationHandler.instance;

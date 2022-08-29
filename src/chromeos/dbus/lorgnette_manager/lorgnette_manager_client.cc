@@ -17,12 +17,10 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/sequence_checker.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/time/time.h"
+#include "chromeos/dbus/common/pipe_reader.h"
 #include "chromeos/dbus/lorgnette/lorgnette_service.pb.h"
-#include "chromeos/dbus/pipe_reader.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
@@ -393,7 +391,10 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
       return;
 
     ScanJobState& state = it->second;
-    DCHECK(!state.cancel_callback.is_null());
+    if (state.cancel_callback.is_null()) {
+      LOG(ERROR) << "No callback active to cancel job " << scan_uuid;
+      return;
+    }
     if (!response) {
       LOG(ERROR) << "Failed to obtain CancelScanResponse";
       std::move(state.cancel_callback).Run(false);

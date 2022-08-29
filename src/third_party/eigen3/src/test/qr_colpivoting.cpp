@@ -55,7 +55,7 @@ void cod() {
   MatrixType exact_solution = MatrixType::Random(cols, cols2);
   MatrixType rhs = matrix * exact_solution;
   MatrixType cod_solution = cod.solve(rhs);
-  JacobiSVD<MatrixType> svd(matrix, ComputeThinU | ComputeThinV);
+  JacobiSVD<MatrixType, ComputeThinU | ComputeThinV> svd(matrix);
   MatrixType svd_solution = svd.solve(rhs);
   VERIFY_IS_APPROX(cod_solution, svd_solution);
 
@@ -88,7 +88,7 @@ void cod_fixedsize() {
   exact_solution.setRandom(Cols, Cols2);
   Matrix<Scalar, Rows, Cols2> rhs = matrix * exact_solution;
   Matrix<Scalar, Cols, Cols2> cod_solution = cod.solve(rhs);
-  JacobiSVD<MatrixType> svd(matrix, ComputeFullU | ComputeFullV);
+  JacobiSVD<MatrixType, ComputeFullU | ComputeFullV> svd(matrix);
   Matrix<Scalar, Cols, Cols2> svd_solution = svd.solve(rhs);
   VERIFY_IS_APPROX(cod_solution, svd_solution);
 

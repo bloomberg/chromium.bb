@@ -29,7 +29,6 @@
 #ifndef HB_HH
 #define HB_HH
 
-
 #ifndef HB_NO_PRAGMA_GCC_DIAGNOSTIC
 #ifdef _MSC_VER
 #pragma warning( disable: 4068 ) /* Unknown pragma */
@@ -447,6 +446,7 @@ static int HB_UNUSED _hb_errno = 0;
 #ifndef HB_USE_ATEXIT
 #  define HB_USE_ATEXIT 0
 #endif
+#ifndef hb_atexit
 #if !HB_USE_ATEXIT
 #  define hb_atexit(_) HB_STMT_START { if (0) (_) (); } HB_STMT_END
 #else /* HB_USE_ATEXIT */
@@ -456,6 +456,7 @@ static int HB_UNUSED _hb_errno = 0;
      template <void (*function) (void)> struct hb_atexit_t { ~hb_atexit_t () { function (); } };
 #    define hb_atexit(f) static hb_atexit_t<f> _hb_atexit_##__LINE__;
 #  endif
+#endif
 #endif
 
 /* Lets assert int types.  Saves trouble down the road. */

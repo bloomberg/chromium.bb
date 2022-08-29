@@ -186,10 +186,8 @@ RenderFrameProxyHost* Portal::CreateProxyAndAttachPortal() {
     }
   }
 
-  FrameTreeNode* frame_tree_node =
-      portal_contents_->GetMainFrame()->frame_tree_node();
   RenderFrameProxyHost* proxy_host =
-      frame_tree_node->render_manager()->GetProxyToOuterDelegate();
+      portal_contents_->GetMainFrame()->GetProxyToOuterDelegate();
   proxy_host->SetRenderFrameProxyCreated(true);
   portal_contents_->ReattachToOuterWebContentsFrame();
 
@@ -255,19 +253,23 @@ void Portal::Navigate(const GURL& url,
   // Fix this so that we can enforce this as an invariant.
   constexpr bool should_replace_entry = true;
 
+  // TODO(crbug.com/1290239): Measure the start time in the renderer process.
+  const auto navigation_start_time = base::TimeTicks::Now();
+
   // TODO(https://crbug.com/1074422): It is possible for a portal to be
   // navigated by a frame other than the owning frame. Find a way to route the
   // correct initiator of the portal navigation to this call.
   const blink::LocalFrameToken frame_token =
       owner_render_frame_host_->GetFrameToken();
   portal_root->navigator().NavigateFromFrameProxy(
-      portal_frame, url, &frame_token,
+      portal_frame, out_validated_url, &frame_token,
       owner_render_frame_host_->GetProcess()->GetID(),
       owner_render_frame_host_->GetLastCommittedOrigin(),
       owner_render_frame_host_->GetSiteInstance(),
       mojo::ConvertTo<Referrer>(referrer), ui::PAGE_TRANSITION_LINK,
       should_replace_entry, download_policy, "GET", nullptr, "", nullptr,
-      network::mojom::SourceLocation::New(), false, absl::nullopt);
+      network::mojom::SourceLocation::New(), false,
+      /*impression=*/absl::nullopt, navigation_start_time);
 
   std::move(callback).Run();
 }
@@ -484,6 +486,13 @@ bool Portal::IsSameOrigin() const {
 std::pair<bool, blink::mojom::PortalActivateResult> Portal::CanActivate() {
   WebContentsImpl* outer_contents = GetPortalHostContents();
 
+  if (outer_contents->GetOuterWebContents()) {
+    // TODO(crbug.com/942534): Support portals in guest views.
+    NOTIMPLEMENTED();
+    return std::make_pair(false,
+                          blink::mojom::PortalActivateResult::kNotImplemented);
+  }
+
   DCHECK(owner_render_frame_host_->IsActive())
       << "The binding should have been closed when the portal's outer "
          "FrameTreeNode was deleted due to swap out.";
@@ -626,6 +635,11 @@ void Portal::ActivateImpl(blink::TransferableMessage data,
 
   devtools_instrumentation::PortalActivated(outer_contents->GetMainFrame());
   successor_contents_raw->set_portal(nullptr);
+
+  // It's important we call this before destroying the outer contents'
+  // RenderWidgetHostView, otherwise the dialog may not be cleaned up correctly.
+  // See crbug.com/1292261 for more details.
+  outer_contents->CancelActiveAndPendingDialogs();
 
   std::unique_ptr<WebContents> predecessor_web_contents =
       delegate->ActivatePortalWebContents(outer_contents,

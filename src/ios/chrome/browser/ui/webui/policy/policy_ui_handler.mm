@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #import "base/strings/sys_string_conversions.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "components/enterprise/browser/controller/browser_dm_token_storage.h"
 #include "components/enterprise/browser/controller/chrome_browser_cloud_management_controller.h"
@@ -130,22 +131,22 @@ void PolicyUIHandler::RegisterMessages() {
       ChromeBrowserState::FromWebUIIOS(web_ui());
   browser_state->GetPolicyConnector()->GetSchemaRegistry()->AddObserver(this);
 
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "listenPoliciesUpdates",
       base::BindRepeating(&PolicyUIHandler::HandleListenPoliciesUpdates,
                           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "reloadPolicies",
       base::BindRepeating(&PolicyUIHandler::HandleReloadPolicies,
                           base::Unretained(this)));
 
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "copyPoliciesJSON",
       base::BindRepeating(&PolicyUIHandler::HandleCopyPoliciesJson,
                           base::Unretained(this)));
 }
 
-void PolicyUIHandler::HandleCopyPoliciesJson(const base::ListValue* args) {
+void PolicyUIHandler::HandleCopyPoliciesJson(const base::Value::List& args) {
   NSString* jsonString = base::SysUTF8ToNSString(GetPoliciesAsJson());
   [UIPasteboard generalPasteboard].string = jsonString;
 }
@@ -202,26 +203,27 @@ base::Value PolicyUIHandler::GetPolicyNames() const {
   return names;
 }
 
-base::Value PolicyUIHandler::GetPolicyValues() const {
+base::Value::List PolicyUIHandler::GetPolicyValues() const {
   auto client = std::make_unique<PolicyConversionsClientIOS>(
       ChromeBrowserState::FromWebUIIOS(web_ui()));
   return policy::ArrayPolicyConversions(std::move(client))
       .EnableConvertValues(true)
-      .ToValue();
+      .ToValueList();
 }
 
-void PolicyUIHandler::HandleListenPoliciesUpdates(const base::ListValue* args) {
+void PolicyUIHandler::HandleListenPoliciesUpdates(
+    const base::Value::List& args) {
   OnRefreshPoliciesDone();
 }
 
-void PolicyUIHandler::HandleReloadPolicies(const base::ListValue* args) {
+void PolicyUIHandler::HandleReloadPolicies(const base::Value::List& args) {
   GetPolicyService()->RefreshPolicies(base::BindOnce(
       &PolicyUIHandler::OnRefreshPoliciesDone, weak_factory_.GetWeakPtr()));
 }
 
 void PolicyUIHandler::SendPolicies() {
   base::Value names = GetPolicyNames();
-  base::Value values = GetPolicyValues();
+  base::Value values = base::Value(GetPolicyValues());
   std::vector<const base::Value*> args;
   args.push_back(&names);
   args.push_back(&values);
@@ -236,8 +238,7 @@ base::Value PolicyUIHandler::GetStatusValue(bool include_box_legend_key) const {
   // Given that it's usual for users to bring their own devices and the fact
   // that device names could expose personal information. We do not show
   // this field in Device Policy Box
-  if (machine_status->HasKey("machine"))
-    machine_status->RemoveKey("machine");
+  machine_status->RemoveKey("machine");
 
   base::DictionaryValue status;
   if (!machine_status->DictEmpty()) {

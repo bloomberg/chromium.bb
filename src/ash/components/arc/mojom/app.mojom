@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 50
+// Next MinVersion: 53
 
 module arc.mojom;
 
@@ -18,6 +18,12 @@ struct InstallationResult {
   bool success;  // true if app was installed successfully.
 };
 
+// Describes application storage.
+struct AppStorage {
+  uint64 app_size_in_bytes;
+  uint64 data_size_in_bytes;
+};
+
 // Describes ARC app.
 struct AppInfo {
   string name;
@@ -27,6 +33,15 @@ struct AppInfo {
   [MinVersion=7] bool notifications_enabled;
   [MinVersion=35] bool suspended;
   [MinVersion=47] ArcResizeLockState resize_lock_state;
+  [MinVersion=50] WindowLayout? initial_layout;
+
+  // Version name will likely be in the format `<major>.<minor>.<point>`,
+  // however there is no guarantee and it could be any string value,
+  // see https://developer.android.com/studio/publish/versioning.
+  [MinVersion=51] string? version_name;
+
+  // Size of app and associated data in bytes.
+  [MinVersion=52] AppStorage? app_storage;
 };
 
 // Describes the data required to install a web app.
@@ -50,6 +65,22 @@ struct WebAppInfo {
   [MinVersion=45] string? certificate_sha256_fingerprint;
 };
 
+// ARC app window type.
+[Extensible]
+enum WindowSizeType {
+  [Default] kUnknown = 0, // System default size app.
+  kPhoneSize,             // Phone size app.
+  kTabletSize,            // Tablet size app.
+  kMaximize,              // Maximize app.
+};
+
+// ARC app window layout.
+struct WindowLayout {
+  WindowSizeType type;
+  bool resizable;// Resizability may affect launch state.
+  Rect? bounds;  // Window bounds value.
+};
+
 // Describes ARC package.
 struct ArcPackageInfo {
   string package_name;
@@ -65,10 +96,15 @@ struct ArcPackageInfo {
   // installed on the browser side.
   [MinVersion=38] WebAppInfo? web_app_info;
 
-  // Deprecated in favour of |permission_states|
-  [MinVersion=41] map<AppPermission, bool>? permissions;
+  // Deprecated and unused in favour of |permission_states|
+  [MinVersion=41] map<AppPermission, bool>? deprecated_permissions;
 
   [MinVersion=43] map<AppPermission, PermissionState>? permission_states;
+
+  // Version name will likely be in the format `<major>.<minor>.<point>`,
+  // however there is no guarantee and it could be any string value,
+  // see https://developer.android.com/studio/publish/versioning.
+  [MinVersion=51] string? version_name;
 };
 
 // Describes ARC app shortcut.
@@ -357,9 +393,6 @@ interface AppHost {
 // Next method ID: 40
 // Deprecated method IDs: 0, 1, 2, 3, 4, 9, 12, 13, 15, 17, 22
 interface AppInstance {
-  // DEPRECATED: Please use Init@21 instead.
-  InitDeprecated@0(pending_remote<AppHost> host_remote);
-
   // Establishes full-duplex communication with the host.
   [MinVersion=26] Init@21(pending_remote<AppHost> host_remote) => ();
 

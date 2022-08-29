@@ -29,8 +29,8 @@
 #include "components/sync/engine/cancelation_signal.h"
 #include "components/sync/engine/cycle/sync_cycle.h"
 #include "components/sync/engine/events/protocol_event.h"
+#include "components/sync/engine/net/http_post_provider.h"
 #include "components/sync/engine/net/http_post_provider_factory.h"
-#include "components/sync/engine/net/http_post_provider_interface.h"
 #include "components/sync/engine/nigori/key_derivation_params.h"
 #include "components/sync/engine/polling_constants.h"
 #include "components/sync/engine/sync_scheduler.h"
@@ -54,13 +54,14 @@ namespace syncer {
 
 namespace {
 
-class TestHttpPostProviderInterface : public HttpPostProviderInterface {
+class TestHttpPostProvider : public HttpPostProvider {
  public:
   void SetExtraRequestHeaders(const char* headers) override {}
   void SetURL(const GURL& url) override {}
   void SetPostPayload(const char* content_type,
                       int content_length,
                       const char* content) override {}
+  void SetAllowBatching(bool allow_batching) override {}
   bool MakeSynchronousPost(int* net_error_code,
                            int* http_status_code) override {
     return false;
@@ -74,14 +75,14 @@ class TestHttpPostProviderInterface : public HttpPostProviderInterface {
   void Abort() override {}
 
  private:
-  ~TestHttpPostProviderInterface() override = default;
+  ~TestHttpPostProvider() override = default;
 };
 
 class TestHttpPostProviderFactory : public HttpPostProviderFactory {
  public:
   ~TestHttpPostProviderFactory() override = default;
-  scoped_refptr<HttpPostProviderInterface> Create() override {
-    return new TestHttpPostProviderInterface();
+  scoped_refptr<HttpPostProvider> Create() override {
+    return new TestHttpPostProvider();
   }
 };
 
@@ -108,7 +109,6 @@ class SyncEncryptionHandlerObserverMock
   MOCK_METHOD(void, OnPassphraseAccepted, (), (override));
   MOCK_METHOD(void, OnTrustedVaultKeyRequired, (), (override));
   MOCK_METHOD(void, OnTrustedVaultKeyAccepted, (), (override));
-  MOCK_METHOD(void, OnBootstrapTokenUpdated, (const std::string&), (override));
   MOCK_METHOD(void, OnEncryptedTypesChanged, (ModelTypeSet, bool), (override));
   MOCK_METHOD(void,
               OnCryptographerStateChanged,

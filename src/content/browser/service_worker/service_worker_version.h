@@ -49,6 +49,8 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/cpp/cross_origin_embedder_policy.h"
+#include "services/network/public/mojom/client_security_state.mojom.h"
+#include "services/network/public/mojom/cross_origin_embedder_policy.mojom-forward.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
@@ -58,13 +60,9 @@
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_client.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom.h"
-#include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
+#include "third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
-
-namespace blink {
-class PendingURLLoaderFactoryBundle;
-}
 
 namespace content {
 
@@ -87,6 +85,7 @@ class ServiceWorkerVersionTest;
 FORWARD_DECLARE_TEST(ServiceWorkerVersionTest, FailToStart_Timeout);
 FORWARD_DECLARE_TEST(ServiceWorkerVersionTest, IdleTimeout);
 FORWARD_DECLARE_TEST(ServiceWorkerVersionTest, MixedRequestTimeouts);
+FORWARD_DECLARE_TEST(ServiceWorkerVersionTest, PendingExternalRequest);
 FORWARD_DECLARE_TEST(ServiceWorkerVersionTest, RequestCustomizedTimeout);
 FORWARD_DECLARE_TEST(ServiceWorkerVersionTest, RequestNowTimeout);
 FORWARD_DECLARE_TEST(ServiceWorkerVersionTest, RequestTimeout);
@@ -102,6 +101,10 @@ FORWARD_DECLARE_TEST(ServiceWorkerVersionTest,
                      StallInStopping_DetachThenRestart);
 FORWARD_DECLARE_TEST(ServiceWorkerVersionTest, StallInStopping_DetachThenStart);
 FORWARD_DECLARE_TEST(ServiceWorkerVersionTest, StartRequestWithNullContext);
+FORWARD_DECLARE_TEST(ServiceWorkerVersionTest,
+                     WorkerLifetimeWithExternalRequest);
+FORWARD_DECLARE_TEST(ServiceWorkerVersionTest,
+                     DefaultTimeoutRequestDoesNotAffectMaxTimeoutRequest);
 }  // namespace service_worker_version_unittest
 
 FORWARD_DECLARE_TEST(ServiceWorkerRegistryTest, ScriptResponseTime);
@@ -332,9 +335,11 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // Starts a request of type EventType::EXTERNAL_REQUEST.
   // Provides a mechanism to external clients to keep the worker running.
   // |request_uuid| is a GUID for clients to identify the request.
+  // |timeout_type| is to specfiy request timeout behaviour of the worker.
   // Returns true if the request was successfully scheduled to starrt.
   ServiceWorkerExternalRequestResult StartExternalRequest(
-      const std::string& request_uuid);
+      const std::string& request_uuid,
+      ServiceWorkerExternalRequestTimeoutType timeout_type);
 
   // Informs ServiceWorkerVersion that an event has finished being dispatched.
   // Returns false if no inflight requests with the provided id exist, for
@@ -468,15 +473,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
     force_bypass_cache_for_scripts_ = force_bypass_cache_for_scripts;
   }
 
-  bool initialize_global_scope_after_main_script_loaded() const {
-    return initialize_global_scope_after_main_script_loaded_;
-  }
-
-  void set_initialize_global_scope_after_main_script_loaded() {
-    DCHECK(!initialize_global_scope_after_main_script_loaded_);
-    initialize_global_scope_after_main_script_loaded_ = true;
-  }
-
   void set_main_script_load_params(
       blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params) {
     main_script_load_params_ = std::move(main_script_load_params);
@@ -489,12 +485,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
     outside_fetch_client_settings_object_ =
         std::move(outside_fetch_client_settings_object);
   }
-
-  // For use by EmbeddedWorkerInstance. Called when the main script loaded.
-  // This is only used for new (non-installed) workers, so that script
-  // evaluation doesn't happen in the renderer until the browser calls
-  // InitializeGlobalScope() to tell it's ready to proceed.
-  void OnMainScriptLoaded();
 
   // Returns the reason the embedded worker failed to start, using internal
   // information that may not be available to the caller. Returns
@@ -551,11 +541,29 @@ class CONTENT_EXPORT ServiceWorkerVersion
     return used_features_;
   }
 
+  // Sets the COEP used by this service worker.
+  // Must not be called twice with different values.
+  //
+  // TODO(https://crbug.com/1239551): Replace this with
+  // `set_client_security_state()`, and try to enforce that it is only called
+  // once.
   void set_cross_origin_embedder_policy(
       network::CrossOriginEmbedderPolicy cross_origin_embedder_policy);
-  const absl::optional<network::CrossOriginEmbedderPolicy>&
-  cross_origin_embedder_policy() const {
-    return cross_origin_embedder_policy_;
+
+  // Returns the COEP value stored in `client_security_state()`.
+  // Returns `kNone` if `client_security_state()` is nullptr.
+  network::mojom::CrossOriginEmbedderPolicyValue
+  cross_origin_embedder_policy_value() const;
+
+  // Returns a pointer to the COEP stored in `client_security_state()`.
+  // Returns nullptr if `client_security_state()` is nullptr.
+  const network::CrossOriginEmbedderPolicy* cross_origin_embedder_policy()
+      const;
+
+  // Returns the client security state used by this service worker, if any.
+  // Never returns a nullptr value after returning a non-nullptr value.
+  const network::mojom::ClientSecurityState* client_security_state() const {
+    return client_security_state_.get();
   }
 
   void set_script_response_time_for_devtools(base::Time response_time) {
@@ -632,16 +640,16 @@ class CONTENT_EXPORT ServiceWorkerVersion
   }
 
   // Initializes the global scope of the ServiceWorker on the renderer side.
-  // This is dependant on a number of internal members and should only be called
-  // at a few select points where those members are valid.
-  void InitializeGlobalScope(
-      std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
-          script_loader_factories,
-      std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
-          subresource_loader_factories);
+  void InitializeGlobalScope();
 
   // Returns true if |process_id| is a controllee process ID of this version.
   bool IsControlleeProcessID(int process_id) const;
+
+  // Executes the given `script` in the associated worker. If `callback` is
+  // non-empty, invokes `callback` with the result of the script after
+  // execution. See also service_worker.mojom.
+  void ExecuteScriptForTest(const std::string& script,
+                            ServiceWorkerScriptExecutionCallback callback);
 
  private:
   friend class base::RefCounted<ServiceWorkerVersion>;
@@ -661,6 +669,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
   FRIEND_TEST_ALL_PREFIXES(service_worker_controllee_request_handler_unittest::
                                ServiceWorkerControlleeRequestHandlerTest,
                            FallbackWithNoFetchHandler);
+  FRIEND_TEST_ALL_PREFIXES(
+      service_worker_version_unittest::ServiceWorkerVersionTest,
+      PendingExternalRequest);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerJobTest, Register);
   FRIEND_TEST_ALL_PREFIXES(
       service_worker_version_unittest::ServiceWorkerVersionTest,
@@ -717,6 +728,12 @@ class CONTENT_EXPORT ServiceWorkerVersion
   FRIEND_TEST_ALL_PREFIXES(
       service_worker_version_unittest::ServiceWorkerVersionTest,
       MixedRequestTimeouts);
+  FRIEND_TEST_ALL_PREFIXES(
+      service_worker_version_unittest::ServiceWorkerVersionTest,
+      WorkerLifetimeWithExternalRequest);
+  FRIEND_TEST_ALL_PREFIXES(
+      service_worker_version_unittest::ServiceWorkerVersionTest,
+      DefaultTimeoutRequestDoesNotAffectMaxTimeoutRequest);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerRegistryTest, ScriptResponseTime);
 
   // Contains timeout info for InflightRequest.
@@ -871,6 +888,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
                                bool is_browser_startup_complete,
                                blink::ServiceWorkerStatusCode status);
 
+  // The caller of MaybeTimeoutRequest must increase reference count of |this|
+  // to avoid it deleted during the execution.
   bool MaybeTimeoutRequest(const InflightRequestTimeoutInfo& info);
   void SetAllRequestExpirations(const base::TimeTicks& expiration);
 
@@ -939,18 +958,20 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // to check if the registration is already deleted or not.
   ServiceWorkerRegistration::Status registration_status_;
 
-  // Cross-Origin-Embedder-Policy for the service worker script. This persists
-  // in the disk.
+  // The client security state passed to the network URL loader factory used to
+  // fetch service worker subresources.
   //
-  // On brand new service workers, the COEP value is not known initially. It
-  // will be set in PrepareForUpdate(), after the main script has been processed
-  // by the renderer process.
+  // For brand new service workers fetched from the network, this is set by
+  // `ServiceWorkerNewScriptLoader` once the script headers have been fetched.
+  // For service worker script updates, this is set by `PrepareForUpdate()` once
+  // the updated script headers have been fetched.
+  // For service workers loaded from disk, this is restored from disk.
   //
-  // PlzServiceWorker(https://crbug.com/996511):
-  // Once landed, there is no more need to use an absl::optional here. The COEP
-  // header is going to be known from the beginning and can be mark as 'const'.
-  absl::optional<network::CrossOriginEmbedderPolicy>
-      cross_origin_embedder_policy_;
+  // TODO(https://crbug.com/1239551): Set all of this, not just COEP, on script
+  // updates.
+  // TODO(https://crbug.com/1239551): Persist all of this to disk, not just the
+  // COEP field.
+  network::mojom::ClientSecurityStatePtr client_security_state_;
 
   Status status_ = NEW;
   std::unique_ptr<EmbeddedWorkerInstance> embedded_worker_;
@@ -984,9 +1005,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
   using RequestUUIDToRequestIDMap = std::map<std::string, int>;
   RequestUUIDToRequestIDMap external_request_uuid_to_request_id_;
 
-  // List of UUIDs of external requests that were issued before this worker
-  // reached RUNNING.
-  std::set<std::string> pending_external_requests_;
+  // External request infos that were issued before this worker reached RUNNING.
+  // Info contains UUID and timeout type.
+  std::map<std::string, ServiceWorkerExternalRequestTimeoutType>
+      pending_external_requests_;
 
   // Connected to ServiceWorkerContextClient while the worker is running.
   mojo::Remote<blink::mojom::ServiceWorker> service_worker_remote_;
@@ -1075,7 +1097,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // called. This allows the browser process to prevent the renderer from
   // evaluating the script immediately after the script has been loaded, until
   // the subresource loader factories are updated.
-  bool initialize_global_scope_after_main_script_loaded_ = false;
+  bool initialize_global_scope_after_main_script_loaded_for_testing = false;
 
   // Populated via network::mojom::URLResponseHead of the main script.
   std::unique_ptr<MainScriptResponse> main_script_response_;

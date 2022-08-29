@@ -3,10 +3,26 @@
 // found in the LICENSE file.
 import {assert} from 'chai';
 import type * as puppeteer from 'puppeteer';
-import {click, getBrowserAndPages, goToResource, pressKey, tabForward, typeText, waitFor, waitForAria} from '../../shared/helper.js';
+import {
+  click,
+  getBrowserAndPages,
+  goToResource,
+  pressKey,
+  tabForward,
+  typeText,
+  waitFor,
+  waitForAria,
+} from '../../shared/helper.js';
 import {describe, it} from '../../shared/mocha-extensions.js';
 import {waitForDomNodeToBeVisible} from '../helpers/elements-helpers.js';
-import {clickZoomDropDown, openDeviceToolbar, reloadDockableFrontEnd, selectDevice, selectEdit, selectTestDevice} from '../helpers/emulation-helpers.js';
+import {
+  clickZoomDropDown,
+  openDeviceToolbar,
+  reloadDockableFrontEnd,
+  selectDevice,
+  selectEdit,
+  selectTestDevice,
+} from '../helpers/emulation-helpers.js';
 
 const ADD_DEVICE_BUTTON_SELECTOR = '#custom-device-add-button';
 const FOCUSED_DEVICE_NAME_FIELD_SELECTOR = '#custom-device-name-field:focus';
@@ -99,7 +115,7 @@ describe('Custom devices', async () => {
     const {target} = getBrowserAndPages();
     await target.reload();
 
-    waitForDomNodeToBeVisible('#res-dump-done');
+    void waitForDomNodeToBeVisible('#res-dump-done');
     assert.strictEqual(await targetTextContent('#res-ua'), 'Test device browser 1.0');
     assert.strictEqual(await targetTextContent('#res-mobile'), 'true');
     assert.strictEqual(await targetTextContent('#res-num-brands'), '2');
@@ -141,7 +157,7 @@ describe('Custom devices', async () => {
     // Reload the test page, and verify things working.
     await target.reload();
 
-    waitForDomNodeToBeVisible('#res-dump-done');
+    void waitForDomNodeToBeVisible('#res-dump-done');
     assert.strictEqual(await targetTextContent('#res-ua'), 'Test device browser 1.0');
     assert.strictEqual(await targetTextContent('#res-mobile'), 'true');
     assert.strictEqual(await targetTextContent('#res-num-brands'), '2');

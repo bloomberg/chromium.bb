@@ -13,13 +13,13 @@
 // limitations under the License.
 
 import {Actions} from '../common/actions';
-import {AggregateData} from '../common/aggregation_data';
+import {AggregateData, isEmptyData} from '../common/aggregation_data';
 import {ConversionJobStatusUpdate} from '../common/conversion_jobs';
 import {
   LogBoundsKey,
   LogEntriesKey,
   LogExists,
-  LogExistsKey
+  LogExistsKey,
 } from '../common/logs';
 import {MetricResult} from '../common/metric_data';
 import {CurrentSearchResults, SearchSummary} from '../common/search_data';
@@ -33,9 +33,9 @@ import {
   QuantizedLoad,
   SliceDetails,
   ThreadDesc,
-  ThreadStateDetails
+  ThreadStateDetails,
 } from './globals';
-import {PivotTableHelper} from './pivot_table_helper';
+import {findCurrentSelection} from './keyboard_event_handler';
 
 export function publishOverviewData(
     data: {[key: string]: QuantizedLoad|QuantizedLoad[]}) {
@@ -139,24 +139,21 @@ export function publishMetricError(error: string) {
 export function publishAggregateData(
     args: {data: AggregateData, kind: string}) {
   globals.setAggregateData(args.kind, args.data);
+  if (!isEmptyData(args.data)) {
+    globals.dispatch(Actions.setCurrentTab({tab: args.data.tabName}));
+  }
   globals.publishRedraw();
 }
 
 export function publishQueryResult(args: {id: string, data?: {}}) {
   globals.queryResults.set(args.id, args.data);
-  globals.dispatch(Actions.setCurrentTab({tab: 'query_result'}));
-  globals.publishRedraw();
-}
-
-export function publishPivotTableHelper(
-    args: {id: string, data: PivotTableHelper}) {
-  globals.pivotTableHelper.set(args.id, args.data);
+  globals.dispatch(Actions.setCurrentTab({tab: `query_result_${args.id}`}));
   globals.publishRedraw();
 }
 
 export function publishThreads(data: ThreadDesc[]) {
   globals.threads.clear();
-  data.forEach(thread => {
+  data.forEach((thread) => {
     globals.threads.set(thread.utid, thread);
   });
   globals.publishRedraw();
@@ -164,6 +161,11 @@ export function publishThreads(data: ThreadDesc[]) {
 
 export function publishSliceDetails(click: SliceDetails) {
   globals.sliceDetails = click;
+  const id = click.id;
+  if (id !== undefined && id === globals.state.pendingScrollId) {
+    findCurrentSelection();
+    globals.dispatch(Actions.clearPendingScrollId({id: undefined}));
+  }
   globals.publishRedraw();
 }
 

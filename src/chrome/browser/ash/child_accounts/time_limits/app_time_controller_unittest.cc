@@ -26,19 +26,22 @@
 #include "chrome/browser/ash/child_accounts/time_limits/app_time_test_utils.h"
 #include "chrome/browser/ash/child_accounts/time_limits/app_types.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
+#include "chrome/browser/supervised_user/supervised_user_metrics_service.h"
+#include "chrome/browser/supervised_user/supervised_user_metrics_service_factory.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chromeos/dbus/system_clock/system_clock_client.h"
+#include "chromeos/ash/components/dbus/system_clock/system_clock_client.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/icon_loader.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/gfx/image/image_skia_rep_default.h"
+#include "ui/gfx/image/image_skia_rep.h"
 #include "ui/message_center/public/cpp/notification.h"
 
 namespace ash {
@@ -53,8 +56,8 @@ constexpr base::TimeDelta kOneHour = base::Hours(1);
 constexpr base::TimeDelta kZeroTime = base::Seconds(0);
 constexpr char kApp1Name[] = "App1";
 constexpr char kApp2Name[] = "App2";
-const AppId kApp1(apps::mojom::AppType::kArc, "1");
-const AppId kApp2(apps::mojom::AppType::kArc, "2");
+const AppId kApp1(apps::AppType::kArc, "1");
+const AppId kApp2(apps::AppType::kArc, "2");
 
 // Calculate the previous reset time.
 base::Time GetLastResetTime(base::Time timestamp) {
@@ -181,6 +184,10 @@ void AppTimeControllerTest::SetUp() {
   SystemClockClient::InitializeFake();
   testing::Test::SetUp();
 
+  // Disable supervised user metrics reporting, otherwise the mock timer
+  // will never return.
+  SupervisedUserMetricsServiceFactory::GetForBrowserContext(&profile())
+      ->Shutdown();
   // The tests are going to start at local midnight on January 1.
   base::Time time;
   ASSERT_TRUE(base::Time::FromString(kStartTime, &time));
@@ -243,8 +250,9 @@ void AppTimeControllerTest::SimulateInstallArcApp(const AppId& app_id,
                                                   const std::string& app_name) {
   std::string package_name = app_id.app_id();
   arc_test_.AddPackage(CreateArcAppPackage(package_name)->Clone());
-  const arc::mojom::AppInfo app = CreateArcAppInfo(package_name, app_name);
-  arc_test_.app_instance()->SendPackageAppListRefreshed(package_name, {app});
+  std::vector<arc::mojom::AppInfoPtr> apps;
+  apps.emplace_back(CreateArcAppInfo(package_name, app_name));
+  arc_test_.app_instance()->SendPackageAppListRefreshed(package_name, apps);
   task_environment_.RunUntilIdle();
   return;
 }
@@ -553,7 +561,7 @@ TEST_F(AppTimeControllerTest, MetricsTest) {
 
   {
     AppTimeLimitsPolicyBuilder builder;
-    AppId absent_app(apps::mojom::AppType::kArc, "absent_app");
+    AppId absent_app(apps::AppType::kArc, "absent_app");
     AppLimit app_limit(AppRestriction::kTimeLimit, kOneHour, base::Time::Now());
     AppLimit blocked_app(AppRestriction::kBlocked, absl::nullopt,
                          base::Time::Now());

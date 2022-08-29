@@ -80,6 +80,7 @@ void ServiceLaunchedVideoCaptureDevice::ResumeDevice() {
 
 void ServiceLaunchedVideoCaptureDevice::Crop(
     const base::Token& crop_id,
+    uint32_t crop_version,
     base::OnceCallback<void(media::mojom::CropRequestResult)> callback) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
   // TODO(crbug.com/1247761): Implement if necessary.
@@ -102,9 +103,9 @@ void ServiceLaunchedVideoCaptureDevice::SetDesktopCaptureWindowIdAsync(
 }
 
 void ServiceLaunchedVideoCaptureDevice::OnUtilizationReport(
-    int frame_feedback_id,
     media::VideoCaptureFeedback feedback) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
+
   if (feedback != last_feedback_) {
     subscription_->ProcessFeedback(feedback);
     last_feedback_ = feedback;

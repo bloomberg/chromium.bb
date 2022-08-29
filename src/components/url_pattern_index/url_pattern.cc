@@ -311,6 +311,12 @@ base::StringPiece UrlPattern::UrlInfo::GetLowerCaseSpec() const {
   return *lower_case_spec_cached_;
 }
 
+base::StringPiece UrlPattern::UrlInfo::GetStringHost() const {
+  if (host().len <= 0)
+    return base::StringPiece();
+  return base::StringPiece(&spec_[host().begin], host().len);
+}
+
 UrlPattern::UrlInfo::~UrlInfo() = default;
 
 UrlPattern::UrlPattern() = default;
@@ -377,10 +383,10 @@ std::ostream& operator<<(std::ostream& out, const UrlPattern& pattern) {
   switch (pattern.anchor_left()) {
     case proto::ANCHOR_TYPE_SUBDOMAIN:
       out << '|';
-      FALLTHROUGH;
+      [[fallthrough]];
     case proto::ANCHOR_TYPE_BOUNDARY:
       out << '|';
-      FALLTHROUGH;
+      [[fallthrough]];
     default:
       break;
   }

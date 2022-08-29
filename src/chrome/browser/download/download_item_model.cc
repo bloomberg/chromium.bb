@@ -11,12 +11,15 @@
 #include "base/i18n/rtl.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
+#include "base/observer_list.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/supports_user_data.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/download/bubble/download_bubble_prefs.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_commands.h"
 #include "chrome/browser/download/download_core_service.h"
@@ -31,6 +34,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/download_protection/deep_scanning_request.h"
 #include "chrome/browser/safe_browsing/download_protection/download_feedback_service.h"
+#include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -48,13 +52,15 @@
 #include "ui/base/l10n/time_format.h"
 #include "ui/base/text/bytes_formatting.h"
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/ui/browser.h"
 #endif
 
 using download::DownloadItem;
 using MixedContentStatus = download::DownloadItem::MixedContentStatus;
 using safe_browsing::DownloadFileType;
+using ReportThreatDetailsResult =
+    safe_browsing::PingManager::ReportThreatDetailsResult;
 
 namespace {
 
@@ -91,6 +97,10 @@ class DownloadItemModelData : public base::SupportsUserData::Data {
   // Whether the download is currently being revived.
   bool is_being_revived_;
 
+  // Whether the safe browsing download warning was shown (and recorded) earlier
+  // on the UI.
+  bool was_ui_warning_shown_ = false;
+
  private:
   DownloadItemModelData();
 
@@ -126,6 +136,22 @@ DownloadItemModelData::DownloadItemModelData()
       danger_level_(DownloadFileType::NOT_DANGEROUS),
       is_being_revived_(false) {}
 
+#if BUILDFLAG(FULL_SAFE_BROWSING)
+bool ShouldSendDownloadReport(download::DownloadDangerType danger_type) {
+  switch (danger_type) {
+    case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL:
+    case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT:
+    case download::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT:
+    case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST:
+    case download::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED:
+    case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_ACCOUNT_COMPROMISE:
+      return true;
+    default:
+      return false;
+  }
+}
+#endif
+
 }  // namespace
 
 // -----------------------------------------------------------------------------
@@ -140,8 +166,24 @@ DownloadUIModel::DownloadUIModelPtr DownloadItemModel::Wrap(
   return model;
 }
 
+// static
+DownloadUIModel::DownloadUIModelPtr DownloadItemModel::Wrap(
+    download::DownloadItem* download,
+    std::unique_ptr<DownloadUIModel::StatusTextBuilderBase>
+        status_text_builder) {
+  DownloadUIModel::DownloadUIModelPtr model(
+      new DownloadItemModel(download, std::move(status_text_builder)),
+      base::OnTaskRunnerDeleter(base::ThreadTaskRunnerHandle::Get()));
+  return model;
+}
+
 DownloadItemModel::DownloadItemModel(DownloadItem* download)
-    : download_(download) {
+    : DownloadItemModel(download, std::make_unique<StatusTextBuilder>()) {}
+
+DownloadItemModel::DownloadItemModel(
+    download::DownloadItem* download,
+    std::unique_ptr<DownloadUIModel::StatusTextBuilderBase> status_text_builder)
+    : DownloadUIModel(std::move(status_text_builder)), download_(download) {
   download_->AddObserver(this);
 }
 
@@ -151,10 +193,7 @@ DownloadItemModel::~DownloadItemModel() {
 }
 
 ContentId DownloadItemModel::GetContentId() const {
-  bool off_the_record = content::DownloadItemUtils::GetBrowserContext(download_)
-                            ->IsOffTheRecord();
-  return ContentId(OfflineItemUtils::GetDownloadNamespacePrefix(off_the_record),
-                   download_->GetGuid());
+  return OfflineItemUtils::GetContentIdForDownload(download_);
 }
 
 Profile* DownloadItemModel::profile() const {
@@ -252,7 +291,7 @@ bool DownloadItemModel::IsMalicious() const {
     case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE:
       // We shouldn't get any of these due to the MightBeMalicious() test above.
       NOTREACHED();
-      FALLTHROUGH;
+      [[fallthrough]];
     case download::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT:
     case download::DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING:
     case download::DOWNLOAD_DANGER_TYPE_BLOCKED_PASSWORD_PROTECTED:
@@ -270,10 +309,6 @@ bool DownloadItemModel::IsMalicious() const {
 
 bool DownloadItemModel::IsMixedContent() const {
   return download_->IsMixedContent();
-}
-
-bool DownloadItemModel::ShouldShowIncognitoWarning() const {
-  return download_->ShouldShowIncognitoWarning();
 }
 
 bool DownloadItemModel::ShouldAllowDownloadFeedback() const {
@@ -341,6 +376,23 @@ void DownloadItemModel::SetShouldShowInShelf(bool should_show) {
   data->should_show_in_shelf_ = should_show;
 }
 
+bool DownloadItemModel::ShouldShowInBubble() const {
+  // Downloads blocked by local policies should be notified, otherwise users
+  // won't get any feedback that the download has failed.
+  bool should_notify =
+      download_->GetLastReason() ==
+          download::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED &&
+      download_->GetMixedContentStatus() !=
+          download::DownloadItem::MixedContentStatus::SILENT_BLOCK;
+
+  // Wait until the target path is determined.
+  if (download_->GetTargetFilePath().empty() && !should_notify) {
+    return false;
+  }
+
+  return DownloadUIModel::ShouldShowInBubble();
+}
+
 bool DownloadItemModel::ShouldNotifyUI() const {
   if (download_->IsTransient())
     return false;
@@ -369,6 +421,16 @@ bool DownloadItemModel::WasUINotified() const {
 void DownloadItemModel::SetWasUINotified(bool was_ui_notified) {
   DownloadItemModelData* data = DownloadItemModelData::GetOrCreate(download_);
   data->was_ui_notified_ = was_ui_notified;
+}
+
+bool DownloadItemModel::WasUIWarningShown() const {
+  const DownloadItemModelData* data = DownloadItemModelData::Get(download_);
+  return data && data->was_ui_warning_shown_;
+}
+
+void DownloadItemModel::SetWasUIWarningShown(bool was_ui_warning_shown) {
+  DownloadItemModelData* data = DownloadItemModelData::GetOrCreate(download_);
+  data->was_ui_warning_shown_ = was_ui_warning_shown;
 }
 
 bool DownloadItemModel::ShouldPreferOpeningInBrowser() const {
@@ -491,6 +553,14 @@ bool DownloadItemModel::TimeRemaining(base::TimeDelta* remaining) const {
   return download_->TimeRemaining(remaining);
 }
 
+base::Time DownloadItemModel::GetStartTime() const {
+  return download_->GetStartTime();
+}
+
+base::Time DownloadItemModel::GetEndTime() const {
+  return download_->GetEndTime();
+}
+
 bool DownloadItemModel::GetOpened() const {
   return download_->GetOpened();
 }
@@ -578,7 +648,7 @@ void DownloadItemModel::OpenUsingPlatformHandler() {
   RecordDownloadOpenMethod(DOWNLOAD_OPEN_METHOD_USER_PLATFORM);
 }
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 bool DownloadItemModel::IsCommandEnabled(
     const DownloadCommands* download_commands,
     DownloadCommands::Command command) const {
@@ -609,7 +679,6 @@ bool DownloadItemModel::IsCommandEnabled(
     case DownloadCommands::CANCEL:
     case DownloadCommands::RESUME:
     case DownloadCommands::COPY_TO_CLIPBOARD:
-    case DownloadCommands::ANNOTATE:
     case DownloadCommands::DISCARD:
     case DownloadCommands::KEEP:
     case DownloadCommands::LEARN_MORE_SCANNING:
@@ -634,8 +703,8 @@ bool DownloadItemModel::IsCommandChecked(
       return download_->GetOpenWhenComplete() ||
              download_crx_util::IsExtensionDownload(*download_);
     case DownloadCommands::ALWAYS_OPEN_TYPE:
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS) || \
-    defined(OS_MAC)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || \
+    BUILDFLAG(IS_MAC)
       if (download_commands->CanOpenPdfInSystemViewer()) {
         DownloadPrefs* prefs = DownloadPrefs::FromBrowserContext(profile());
         return prefs->ShouldOpenPdfInSystemReader();
@@ -654,7 +723,6 @@ bool DownloadItemModel::IsCommandChecked(
     case DownloadCommands::LEARN_MORE_INTERRUPTED:
     case DownloadCommands::LEARN_MORE_MIXED_CONTENT:
     case DownloadCommands::COPY_TO_CLIPBOARD:
-    case DownloadCommands::ANNOTATE:
     case DownloadCommands::DEEP_SCAN:
     case DownloadCommands::BYPASS_DEEP_SCANNING:
       return false;
@@ -675,8 +743,8 @@ void DownloadItemModel::ExecuteCommand(DownloadCommands* download_commands,
       bool is_checked = IsCommandChecked(download_commands,
                                          DownloadCommands::ALWAYS_OPEN_TYPE);
       DownloadPrefs* prefs = DownloadPrefs::FromBrowserContext(profile());
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS) || \
-    defined(OS_MAC)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || \
+    BUILDFLAG(IS_MAC)
       if (download_commands->CanOpenPdfInSystemViewer()) {
         prefs->SetShouldOpenPdfInSystemReader(!is_checked);
         SetShouldPreferOpeningInBrowser(is_checked);
@@ -693,37 +761,42 @@ void DownloadItemModel::ExecuteCommand(DownloadCommands* download_commands,
     case DownloadCommands::BYPASS_DEEP_SCANNING:
 #if BUILDFLAG(FULL_SAFE_BROWSING)
       CompleteSafeBrowsingScan();
+      SetOpenWhenComplete(true);
 #endif
-      FALLTHROUGH;
+      [[fallthrough]];
     case DownloadCommands::KEEP:
-      // Order of these warning validations should be same as the order that
-      // GetDesiredDownloadItemMode() method follows.
-      if (ShouldShowIncognitoWarning()) {
-        download_->AcceptIncognitoWarning();
-        break;
-      }
       if (IsMixedContent()) {
         download_->ValidateMixedContentDownload();
         break;
       }
+      if (GetDangerType() == download::DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING) {
+        break;
+      }
       DCHECK(IsDangerous());
-// Only sends uncommon download accept report if :
+// Only sends dangerous download accept report if :
 // 1. FULL_SAFE_BROWSING is enabled, and
-// 2. Download verdict is uncommon, and
+// 2. Download verdict is one of the dangerous types, and
 // 3. Download URL is not empty, and
 // 4. User is not in incognito mode.
 #if BUILDFLAG(FULL_SAFE_BROWSING)
-      if (GetDangerType() == download::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT &&
-          !GetURL().is_empty() && !profile()->IsOffTheRecord()) {
+      if (ShouldSendDownloadReport(GetDangerType()) && !GetURL().is_empty() &&
+          !profile()->IsOffTheRecord()) {
+        // The bypassed danger type can only be uncommon in the old UI, because
+        // the other danger types are not bypassable in the download shelf.
+        // However, it can be any dangerous danger type in the new UI.
+        DCHECK(GetDangerType() ==
+                   download::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT ||
+               download::IsDownloadBubbleEnabled(profile()));
         safe_browsing::SafeBrowsingService* sb_service =
             g_browser_process->safe_browsing_service();
-        // Compiles the uncommon download warning report.
+        // Compiles the dangerous download warning report.
         auto report =
             std::make_unique<safe_browsing::ClientSafeBrowsingReportRequest>();
         report->set_type(safe_browsing::ClientSafeBrowsingReportRequest::
                              DANGEROUS_DOWNLOAD_WARNING);
         report->set_download_verdict(
-            safe_browsing::ClientDownloadResponse::UNCOMMON);
+            safe_browsing::DownloadDangerTypeToDownloadResponseVerdict(
+                GetDangerType()));
         report->set_url(GetURL().spec());
         report->set_did_proceed(true);
         std::string token =
@@ -731,25 +804,10 @@ void DownloadItemModel::ExecuteCommand(DownloadCommands* download_commands,
                 download_);
         if (!token.empty())
           report->set_token(token);
-        std::string serialized_report;
-        if (report->SerializeToString(&serialized_report)) {
-          sb_service->SendSerializedDownloadReport(profile(),
-                                                   serialized_report);
 
-          // The following is to log this ClientSafeBrowsingReportRequest on any
-          // open
-          // chrome://safe-browsing pages.
-          content::GetUIThreadTaskRunner({})->PostTask(
-              FROM_HERE,
-              base::BindOnce(
-                  &safe_browsing::WebUIInfoSingleton::AddToCSBRRsSent,
-                  base::Unretained(
-                      safe_browsing::WebUIInfoSingleton::GetInstance()),
-                  std::move(report)));
-        } else {
-          DCHECK(false)
-              << "Unable to serialize the uncommon download warning report.";
-        }
+        ReportThreatDetailsResult result =
+            sb_service->SendDownloadReport(profile(), std::move(report));
+        DCHECK(result == ReportThreatDetailsResult::SUCCESS);
       }
 #endif
       download_->ValidateDangerousDownload();
@@ -782,7 +840,6 @@ void DownloadItemModel::ExecuteCommand(DownloadCommands* download_commands,
     case DownloadCommands::PAUSE:
     case DownloadCommands::RESUME:
     case DownloadCommands::COPY_TO_CLIPBOARD:
-    case DownloadCommands::ANNOTATE:
       DownloadUIModel::ExecuteCommand(download_commands, command);
       break;
     case DownloadCommands::DEEP_SCAN:
@@ -802,7 +859,7 @@ void DownloadItemModel::ExecuteCommand(DownloadCommands* download_commands,
           download_core_service->GetDownloadManagerDelegate();
       DCHECK(delegate);
       enterprise_connectors::AnalysisSettings settings;
-      settings.tags = {"malware"};
+      settings.tags = {{"malware", enterprise_connectors::TagSettings()}};
       protection_service->UploadForDeepScanning(
           download_,
           base::BindRepeating(
