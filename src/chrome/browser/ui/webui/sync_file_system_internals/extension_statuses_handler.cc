@@ -56,11 +56,11 @@ void ConvertExtensionStatusToDictionary(
     if (!extension)
       continue;
 
-    auto dict = std::make_unique<base::DictionaryValue>();
-    dict->SetStringKey("extensionID", extension_id);
-    dict->SetStringKey("extensionName", extension->name());
-    dict->SetStringKey("status", itr->second);
-    list.Append(std::move(dict));
+    base::Value::Dict dict;
+    dict.Set("extensionID", extension_id);
+    dict.Set("extensionName", extension->name());
+    dict.Set("status", itr->second);
+    list.GetList().Append(std::move(dict));
   }
 
   std::move(callback).Run(list);
@@ -111,9 +111,10 @@ void ExtensionStatusesHandler::HandleGetExtensionStatuses(
   DCHECK(args);
   GetExtensionStatusesAsDictionary(
       profile_,
-      base::BindOnce(&ExtensionStatusesHandler::DidGetExtensionStatuses,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     args->GetList()[0].GetString() /* callback_id */));
+      base::BindOnce(
+          &ExtensionStatusesHandler::DidGetExtensionStatuses,
+          weak_ptr_factory_.GetWeakPtr(),
+          args->GetListDeprecated()[0].GetString() /* callback_id */));
 }
 
 void ExtensionStatusesHandler::DidGetExtensionStatuses(

@@ -31,8 +31,8 @@ namespace ruy {
 
 #if RUY_PLATFORM_X86
 
-RUY_INHERIT_KERNEL(Path::kStandardCpp, Path::kAvx2Fma)
 RUY_INHERIT_KERNEL(Path::kStandardCpp, Path::kAvx)
+RUY_INHERIT_KERNEL(Path::kAvx, Path::kAvx2Fma)
 RUY_INHERIT_KERNEL(Path::kAvx2Fma, Path::kAvx512)
 
 void Kernel8bitAvx512(const KernelParams8bit<16, 16>& params);
@@ -46,6 +46,29 @@ struct Kernel<Path::kAvx512, std::int8_t, std::int8_t, std::int32_t, DstScalar> 
   using RhsLayout = FixedKernelLayout<Order::kColMajor, 4, 16>;
   explicit Kernel(Tuning tuning_) : tuning(tuning_) {}
   void Run(const PMat<std::int8_t>& lhs, const PMat<std::int8_t>& rhs,
+           const MulParams<std::int32_t, DstScalar>& mul_params, int start_row,
+           int start_col, int end_row, int end_col, Mat<DstScalar>* dst) const {
+    KernelParams8bit<LhsLayout::kCols, RhsLayout::kCols> params;
+    MakeKernelParams8bit(lhs, rhs, mul_params, start_row, start_col, end_row,
+                         end_col, dst, &params);
+    if (dst->layout.cols == 1 &&
+        mul_params.channel_dimension() == ChannelDimension::kRow) {
+      Kernel8bitAvx512SingleCol(params);
+    } else {
+      Kernel8bitAvx512(params);
+    }
+  }
+};
+
+template <typename DstScalar>
+struct Kernel<Path::kAvx512, std::int8_t, std::int16_t, std::int32_t,
+              DstScalar> {
+  static constexpr Path kPath = Path::kAvx512;
+  Tuning tuning = Tuning::kAuto;
+  using LhsLayout = FixedKernelLayout<Order::kColMajor, 4, 16>;
+  using RhsLayout = FixedKernelLayout<Order::kColMajor, 4, 16>;
+  explicit Kernel(Tuning tuning_) : tuning(tuning_) {}
+  void Run(const PMat<std::int8_t>& lhs, const PMat<std::int16_t>& rhs,
            const MulParams<std::int32_t, DstScalar>& mul_params, int start_row,
            int start_col, int end_row, int end_col, Mat<DstScalar>* dst) const {
     KernelParams8bit<LhsLayout::kCols, RhsLayout::kCols> params;
@@ -97,6 +120,29 @@ struct Kernel<Path::kAvx2Fma, std::int8_t, std::int8_t, std::int32_t,
   using RhsLayout = FixedKernelLayout<Order::kColMajor, 4, 8>;
   explicit Kernel(Tuning tuning_) : tuning(tuning_) {}
   void Run(const PMat<std::int8_t>& lhs, const PMat<std::int8_t>& rhs,
+           const MulParams<std::int32_t, DstScalar>& mul_params, int start_row,
+           int start_col, int end_row, int end_col, Mat<DstScalar>* dst) const {
+    KernelParams8bit<LhsLayout::kCols, RhsLayout::kCols> params;
+    MakeKernelParams8bit(lhs, rhs, mul_params, start_row, start_col, end_row,
+                         end_col, dst, &params);
+    if (dst->layout.cols == 1 &&
+        mul_params.channel_dimension() == ChannelDimension::kRow) {
+      Kernel8bitAvx2SingleCol(params);
+    } else {
+      Kernel8bitAvx2(params);
+    }
+  }
+};
+
+template <typename DstScalar>
+struct Kernel<Path::kAvx2Fma, std::int8_t, std::int16_t, std::int32_t,
+              DstScalar> {
+  static constexpr Path kPath = Path::kAvx2Fma;
+  Tuning tuning = Tuning::kAuto;
+  using LhsLayout = FixedKernelLayout<Order::kColMajor, 4, 8>;
+  using RhsLayout = FixedKernelLayout<Order::kColMajor, 4, 8>;
+  explicit Kernel(Tuning tuning_) : tuning(tuning_) {}
+  void Run(const PMat<std::int8_t>& lhs, const PMat<std::int16_t>& rhs,
            const MulParams<std::int32_t, DstScalar>& mul_params, int start_row,
            int start_col, int end_row, int end_col, Mat<DstScalar>* dst) const {
     KernelParams8bit<LhsLayout::kCols, RhsLayout::kCols> params;

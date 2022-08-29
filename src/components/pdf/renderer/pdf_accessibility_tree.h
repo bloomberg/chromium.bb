@@ -69,14 +69,14 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource,
 
   // chrome_pdf::PdfAccessibilityDataHandler:
   void SetAccessibilityViewportInfo(
-      const chrome_pdf::AccessibilityViewportInfo& viewport_info) override;
+      chrome_pdf::AccessibilityViewportInfo viewport_info) override;
   void SetAccessibilityDocInfo(
-      const chrome_pdf::AccessibilityDocInfo& doc_info) override;
+      chrome_pdf::AccessibilityDocInfo doc_info) override;
   void SetAccessibilityPageInfo(
-      const chrome_pdf::AccessibilityPageInfo& page_info,
-      const std::vector<chrome_pdf::AccessibilityTextRunInfo>& text_runs,
-      const std::vector<chrome_pdf::AccessibilityCharInfo>& chars,
-      const chrome_pdf::AccessibilityPageObjects& page_objects) override;
+      chrome_pdf::AccessibilityPageInfo page_info,
+      std::vector<chrome_pdf::AccessibilityTextRunInfo> text_runs,
+      std::vector<chrome_pdf::AccessibilityCharInfo> chars,
+      chrome_pdf::AccessibilityPageObjects page_objects) override;
 
   void HandleAction(const chrome_pdf::AccessibilityActionData& action_data);
   absl::optional<AnnotationInfo> GetPdfAnnotationInfoFromAXNode(
@@ -117,6 +117,16 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource,
  private:
   // Update the AXTreeData when the selected range changed.
   void UpdateAXTreeDataFromSelection();
+
+  void DoSetAccessibilityViewportInfo(
+      const chrome_pdf::AccessibilityViewportInfo& viewport_info);
+  void DoSetAccessibilityDocInfo(
+      const chrome_pdf::AccessibilityDocInfo& doc_info);
+  void DoSetAccessibilityPageInfo(
+      const chrome_pdf::AccessibilityPageInfo& page_info,
+      const std::vector<chrome_pdf::AccessibilityTextRunInfo>& text_runs,
+      const std::vector<chrome_pdf::AccessibilityCharInfo>& chars,
+      const chrome_pdf::AccessibilityPageObjects& page_objects);
 
   // Given a 0-based page index and 0-based character index within a page,
   // find the node ID of the associated static text AXNode, and the character
@@ -197,6 +207,8 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource,
   // Index of the next expected PDF accessibility page info, used to ignore
   // outdated calls of SetAccessibilityPageInfo().
   uint32_t next_page_index_ = 0;
+
+  bool did_get_a_text_run_ = false;
 
   base::WeakPtrFactory<PdfAccessibilityTree> weak_ptr_factory_{this};
 };

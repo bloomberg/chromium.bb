@@ -111,26 +111,21 @@ ABSL_FLAG(int,
 ABSL_FLAG(int,
           ts,
           kParameterNotSpecifiedValue,
-          "Activate (1), deactivate (0) or activate the transient suppressor "
-          "with continuous key events (2)");
+          "Activate (1) or deactivate (0) the transient suppressor");
 ABSL_FLAG(int,
           analog_agc,
           kParameterNotSpecifiedValue,
           "Activate (1) or deactivate (0) the analog AGC");
-ABSL_FLAG(int,
-          vad,
-          kParameterNotSpecifiedValue,
-          "Activate (1) or deactivate (0) the voice activity detector");
 ABSL_FLAG(bool,
           all_default,
           false,
           "Activate all of the default components (will be overridden by any "
           "other settings)");
 ABSL_FLAG(int,
-          analog_agc_disable_digital_adaptive,
+          analog_agc_use_digital_adaptive_controller,
           kParameterNotSpecifiedValue,
-          "Force-deactivate (1) digital adaptation in "
-          "experimental AGC. Digital adaptation is active by default (0).");
+          "Activate (1) or deactivate (0) digital adaptation in AGC1. "
+          "Digital adaptation is active by default.");
 ABSL_FLAG(int,
           agc_mode,
           kParameterNotSpecifiedValue,
@@ -222,6 +217,12 @@ ABSL_FLAG(int,
           simulated_mic_kind,
           kParameterNotSpecifiedValue,
           "Specify which microphone kind to use for microphone simulation");
+ABSL_FLAG(int,
+          override_key_pressed,
+          kParameterNotSpecifiedValue,
+          "Always set to true (1) or to false (0) the key press state. If "
+          "unspecified, false is set with Wav files or, with AEC dumps, the "
+          "recorded event is used.");
 ABSL_FLAG(int,
           frame_for_sending_capture_output_used_false,
           kParameterNotSpecifiedValue,
@@ -365,7 +366,6 @@ void SetSettingIfFlagSet(int32_t flag, absl::optional<bool>* parameter) {
 SimulationSettings CreateSettings() {
   SimulationSettings settings;
   if (absl::GetFlag(FLAGS_all_default)) {
-    settings.use_vad = true;
     settings.use_ts = true;
     settings.use_analog_agc = true;
     settings.use_ns = true;
@@ -417,9 +417,9 @@ SimulationSettings CreateSettings() {
   SetSettingIfSpecified(absl::GetFlag(FLAGS_ts), &settings.use_ts);
   SetSettingIfFlagSet(absl::GetFlag(FLAGS_analog_agc),
                       &settings.use_analog_agc);
-  SetSettingIfFlagSet(absl::GetFlag(FLAGS_vad), &settings.use_vad);
-  SetSettingIfFlagSet(absl::GetFlag(FLAGS_analog_agc_disable_digital_adaptive),
-                      &settings.analog_agc_disable_digital_adaptive);
+  SetSettingIfFlagSet(
+      absl::GetFlag(FLAGS_analog_agc_use_digital_adaptive_controller),
+      &settings.analog_agc_use_digital_adaptive_controller);
   SetSettingIfSpecified(absl::GetFlag(FLAGS_agc_mode), &settings.agc_mode);
   SetSettingIfSpecified(absl::GetFlag(FLAGS_agc_target_level),
                         &settings.agc_target_level);
@@ -464,6 +464,8 @@ SimulationSettings CreateSettings() {
   settings.simulate_mic_gain = absl::GetFlag(FLAGS_simulate_mic_gain);
   SetSettingIfSpecified(absl::GetFlag(FLAGS_simulated_mic_kind),
                         &settings.simulated_mic_kind);
+  SetSettingIfFlagSet(absl::GetFlag(FLAGS_override_key_pressed),
+                      &settings.override_key_pressed);
   SetSettingIfSpecified(
       absl::GetFlag(FLAGS_frame_for_sending_capture_output_used_false),
       &settings.frame_for_sending_capture_output_used_false);

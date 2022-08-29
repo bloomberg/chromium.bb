@@ -9,6 +9,8 @@
 #include "third_party/blink/renderer/core/inspector/inspector_base_agent.h"
 #include "third_party/blink/renderer/core/inspector/protocol/accessibility.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_map.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
 #include "ui/accessibility/ax_enums.mojom-blink.h"
 
 namespace blink {
@@ -49,7 +51,6 @@ class MODULES_EXPORT InspectorAccessibilityAgent
       override;
   protocol::Response getFullAXTree(
       protocol::Maybe<int> depth,
-      protocol::Maybe<int> max_depth,
       protocol::Maybe<String> frame_id,
       std::unique_ptr<protocol::Array<protocol::Accessibility::AXNode>>*)
       override;
@@ -78,9 +79,9 @@ class MODULES_EXPORT InspectorAccessibilityAgent
 
   void AXEventFired(AXObject* object, ax::mojom::blink::Event event);
   void AXObjectModified(AXObject* object, bool subtree);
+  void RefreshFrontendNodes(TimerBase*);
 
  private:
-  void RefreshFrontendNodes();
   bool MarkAXObjectDirty(AXObject* ax_object);
   // Unconditionally enables the agent, even if |enabled_.Get()==true|.
   // For idempotence, call enable().
@@ -108,6 +109,7 @@ class MODULES_EXPORT InspectorAccessibilityAgent
                    std::unique_ptr<protocol::Array<AXNode>>& nodes,
                    AXObjectCacheImpl&) const;
   LocalFrame* FrameFromIdOrRoot(const protocol::Maybe<String>& frame_id);
+  void ScheduleAXChangeNotification();
   void RetainAXContextForDocument(Document* document);
 
   Member<InspectedFrames> inspected_frames_;
@@ -119,6 +121,7 @@ class MODULES_EXPORT InspectorAccessibilityAgent
   // The agent needs to keep AXContext because it enables caching of a11y nodes.
   HeapHashMap<WeakMember<Document>, std::unique_ptr<AXContext>>
       document_to_context_map_;
+  HeapTaskRunnerTimer<InspectorAccessibilityAgent> timer_;
 };
 
 }  // namespace blink

@@ -5,6 +5,7 @@
 #include "components/media_router/common/discovery/media_sink_service_base.h"
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/observer_list.h"
 #include "components/media_router/common/media_route.h"
 
 #include <vector>
@@ -86,6 +87,10 @@ void MediaSinkServiceBase::RemoveSinkById(const MediaSink::Id& sink_id) {
 void MediaSinkServiceBase::SetTimerForTest(
     std::unique_ptr<base::OneShotTimer> timer) {
   discovery_timer_ = std::move(timer);
+}
+
+void MediaSinkServiceBase::AddSinkForTest(const MediaSinkInternal& sink) {
+  sinks_.insert_or_assign(sink.sink().id(), sink);
 }
 
 void MediaSinkServiceBase::StartTimer() {

@@ -5,6 +5,7 @@
 #include "components/permissions/test/mock_permission_prompt_factory.h"
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/containers/contains.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
@@ -60,9 +61,8 @@ void MockPermissionPromptFactory::ResetCounts() {
   request_origins_seen_.clear();
 }
 
-void MockPermissionPromptFactory::DocumentOnLoadCompletedInMainFrame(
-    content::RenderFrameHost* render_frame_host) {
-  manager_->DocumentOnLoadCompletedInMainFrame(render_frame_host);
+void MockPermissionPromptFactory::DocumentOnLoadCompletedInPrimaryMainFrame() {
+  manager_->DocumentOnLoadCompletedInPrimaryMainFrame();
 }
 
 bool MockPermissionPromptFactory::is_visible() {

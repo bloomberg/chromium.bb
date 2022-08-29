@@ -18,6 +18,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -53,7 +54,7 @@
 #include "components/captive_portal/content/captive_portal_tab_helper.h"
 #endif
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "base/android/jni_android.h"
 #include "components/security_interstitials/content/captive_portal_helper_android.h"
 #endif
@@ -125,7 +126,7 @@ class CommonNameMismatchRedirectObserver
 
   void NavigationEntryCommitted(
       const content::LoadCommittedDetails& /* load_details */) override {
-    GetWebContents().GetMainFrame()->AddMessageToConsole(
+    GetWebContents().GetPrimaryMainFrame()->AddMessageToConsole(
         blink::mojom::ConsoleMessageLevel::kInfo,
         base::StringPrintf(
             "Redirecting navigation %s -> %s because the server presented a "
@@ -429,7 +430,7 @@ void SSLErrorHandlerDelegateImpl::CheckForCaptivePortal() {
 }
 
 bool SSLErrorHandlerDelegateImpl::DoesOSReportCaptivePortal() {
-#if defined(OS_ANDROID) || defined(OS_WIN)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_WIN)
   return security_interstitials::IsBehindCaptivePortal();
 #else
   return false;
@@ -510,7 +511,7 @@ void SSLErrorHandlerDelegateImpl::ShowBlockedInterceptionInterstitial() {
 
 void SSLErrorHandlerDelegateImpl::ReportNetworkConnectivity(
     base::OnceClosure callback) {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   security_interstitials::ReportNetworkConnectivity(
       base::android::AttachCurrentThread());
 #else
@@ -685,6 +686,17 @@ void SSLErrorHandler::StartHandlingError() {
     return;
   }
 
+  bool is_captive_portal_login_tab = false;
+#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
+  // Check whether this SSL Error is for a Captive Portal Login tab. If so, we
+  // must not show another Captive Portal interstitial because doing so will
+  // remove a user's ability to "ignore" the cert error to log onto the portal.
+  captive_portal::CaptivePortalTabHelper* captive_portal_tab_helper =
+      captive_portal::CaptivePortalTabHelper::FromWebContents(web_contents());
+  if (captive_portal_tab_helper && captive_portal_tab_helper->IsLoginTab())
+    is_captive_portal_login_tab = true;
+#endif
+
   // Ideally, a captive portal interstitial should only be displayed if the only
   // SSL error is a name mismatch error. However, captive portal detector always
   // opens a new tab if it detects a portal ignoring the types of SSL errors. To
@@ -696,8 +708,11 @@ void SSLErrorHandler::StartHandlingError() {
     delegate_->ReportNetworkConnectivity(
         g_config.Pointer()->report_network_connectivity_callback());
     RecordUMA(OS_REPORTS_CAPTIVE_PORTAL);
-    ShowCaptivePortalInterstitial(GURL());
-    return;
+
+    if (!is_captive_portal_login_tab) {
+      ShowCaptivePortalInterstitial(GURL());
+      return;
+    }
   }
 
   const bool only_error_is_name_mismatch =
@@ -712,7 +727,8 @@ void SSLErrorHandler::StartHandlingError() {
         g_config.Pointer()->report_network_connectivity_callback());
 
     if (base::FeatureList::IsEnabled(kCaptivePortalCertificateList) &&
-        g_config.Pointer()->IsKnownCaptivePortalCertificate(ssl_info_)) {
+        g_config.Pointer()->IsKnownCaptivePortalCertificate(ssl_info_) &&
+        !is_captive_portal_login_tab) {
       RecordUMA(CAPTIVE_PORTAL_CERT_FOUND);
       ShowCaptivePortalInterstitial(GURL());
       return;
@@ -745,9 +761,10 @@ void SSLErrorHandler::StartHandlingError() {
       RecordUMA(WWW_MISMATCH_FOUND_IN_SAN);
 
       // Show the SSL interstitial if |CERT_STATUS_COMMON_NAME_INVALID| is not
-      // the only error. Need not check for captive portal in this case.
-      // (See the comment below).
-      if (!only_error_is_name_mismatch) {
+      // the only error. Need not check for captive portal in this case (See
+      // the comment below). Also show the SSL interstitial if we're already
+      // on a login tab launched by the Captive Portal interstitial.
+      if (!only_error_is_name_mismatch || is_captive_portal_login_tab) {
         ShowSSLInterstitial();
         return;
       }
@@ -772,13 +789,11 @@ void SSLErrorHandler::StartHandlingError() {
   subscription_ = captive_portal_service_->RegisterCallback(
       base::BindRepeating(&SSLErrorHandler::Observe, base::Unretained(this)));
 
-  captive_portal::CaptivePortalTabHelper* captive_portal_tab_helper =
-      captive_portal::CaptivePortalTabHelper::FromWebContents(web_contents());
   if (captive_portal_tab_helper) {
     captive_portal_tab_helper->OnSSLCertError(ssl_info_);
   }
 
-  if (IsCaptivePortalInterstitialEnabled()) {
+  if (IsCaptivePortalInterstitialEnabled() && !is_captive_portal_login_tab) {
     delegate_->CheckForCaptivePortal();
     timer_.Start(FROM_HERE, g_config.Pointer()->interstitial_delay(), this,
                  &SSLErrorHandler::ShowSSLInterstitial);

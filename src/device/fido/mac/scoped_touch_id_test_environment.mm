@@ -6,6 +6,8 @@
 
 #import <Security/Security.h>
 
+#include <ostream>
+
 #include "base/check.h"
 #include "base/memory/ptr_util.h"
 #include "device/fido/mac/authenticator_config.h"
@@ -16,8 +18,7 @@ namespace device {
 namespace fido {
 namespace mac {
 
-static API_AVAILABLE(macosx(10.12.2))
-    ScopedTouchIdTestEnvironment* g_current_environment = nullptr;
+static ScopedTouchIdTestEnvironment* g_current_environment = nullptr;
 
 ScopedTouchIdTestEnvironment::ScopedTouchIdTestEnvironment()
     : keychain_(std::make_unique<FakeKeychain>()) {

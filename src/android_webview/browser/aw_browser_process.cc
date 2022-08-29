@@ -36,6 +36,10 @@ const char kAuthAndroidNegotiateAccountType[] =
 // This pref should match |prefs::kAuthServerAllowlist|.
 const char kAuthServerAllowlist[] = "auth.server_allowlist";
 
+// This pref contains a list of authentication urls, for which when webview is
+// navigated to any of these urls, browse intent will be sent.
+const char kEnterpriseAuthAppLinkPolicy[] = "enterprise_auth_app_link_policy";
+
 }  // namespace prefs
 
 namespace {
@@ -186,11 +190,17 @@ void AwBrowserProcess::RegisterNetworkContextLocalStatePrefs(
                                     std::string());
 }
 
+void AwBrowserProcess::RegisterEnterpriseAuthenticationAppLinkPolicyPref(
+    PrefRegistrySimple* pref_registry) {
+  pref_registry->RegisterListPref(prefs::kEnterpriseAuthAppLinkPolicy);
+}
+
 network::mojom::HttpAuthDynamicParamsPtr
 AwBrowserProcess::CreateHttpAuthDynamicParams() {
   network::mojom::HttpAuthDynamicParamsPtr auth_dynamic_params =
       network::mojom::HttpAuthDynamicParams::New();
 
+  auth_dynamic_params->allowed_schemes = AwBrowserContext::GetAuthSchemes();
   auth_dynamic_params->server_allowlist =
       local_state()->GetString(prefs::kAuthServerAllowlist);
   auth_dynamic_params->android_negotiate_account_type =

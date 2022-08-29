@@ -38,6 +38,7 @@ class AppsGridView;
 class FolderHeaderView;
 class PageSwitcher;
 class ScrollViewGradientHelper;
+class SystemShadow;
 
 // Displays folder contents via an AppsGridView. App items can be dragged out
 // of the folder to the main apps grid.
@@ -85,8 +86,10 @@ class ASH_EXPORT AppListFolderView
 
   // Configures AppListFolderView to show the contents for the folder item
   // associated with `folder_item_view`. The folder view will be anchored at
-  // `folder_item_view`.
-  void ConfigureForFolderItemView(AppListItemView* folder_item_view);
+  // `folder_item_view`. `hide_callback` gets called when the folder gets
+  // hidden (after all hide animations complete).
+  void ConfigureForFolderItemView(AppListItemView* folder_item_view,
+                                  base::OnceClosure hide_callback);
 
   // Schedules an animation to show or hide the view.
   // If |show| is false, the view should be set to invisible after the
@@ -102,6 +105,9 @@ class ASH_EXPORT AppListFolderView
 
   // Closes the folder page and goes back the top level page.
   void CloseFolderPage();
+
+  // Focuses the name input text-field in the folder header.
+  void FocusNameInput();
 
   // Focuses the first app item. Does not set the selection or perform a11y
   // announce if `silently` is true.
@@ -139,6 +145,13 @@ class ASH_EXPORT AppListFolderView
   // to be in the parent view's coordinate system.
   void SetBoundingBox(const gfx::Rect& bounding_box);
 
+  // Updates the highlight border of the folder view according to the folder
+  // animation.
+  void UpdateHighlightBorder(bool show);
+
+  // Sets the callback that runs when the folder animation ends.
+  void SetAnimationDoneTestCallback(base::OnceClosure animation_done_callback);
+
   AppsGridView* items_grid_view() { return items_grid_view_; }
 
   FolderHeaderView* folder_header_view() { return folder_header_view_; }
@@ -154,6 +167,8 @@ class ASH_EXPORT AppListFolderView
   }
 
   const gfx::Rect& preferred_bounds() const { return preferred_bounds_; }
+
+  SystemShadow* shadow() { return shadow_.get(); }
 
   // Records the smoothness of folder show/hide animations mixed with the
   // BackgroundAnimation, FolderItemTitleAnimation, TopIconAnimation, and
@@ -171,7 +186,8 @@ class ASH_EXPORT AppListFolderView
   void SetItemName(AppListFolderItem* item, const std::string& name) override;
 
   // Overridden from AppsGridViewFolderDelegate:
-  void ReparentItem(AppListItemView* original_drag_view,
+  void ReparentItem(AppsGridView::Pointer pointer,
+                    AppListItemView* original_drag_view,
                     const gfx::Point& drag_point_in_folder_grid) override;
   void DispatchDragEventForReparent(
       AppsGridView::Pointer pointer,
@@ -192,6 +208,7 @@ class ASH_EXPORT AppListFolderView
 
   const AppListConfig* GetAppListConfig() const;
 
+  AppListA11yAnnouncer* a11y_announcer_for_test() { return a11y_announcer_; }
   views::ScrollView* scroll_view_for_test() { return scroll_view_; }
 
  private:
@@ -230,6 +247,17 @@ class ASH_EXPORT AppListFolderView
   // false when resetting the folder state due to folder item view deletion.
   void ResetState(bool restore_folder_item_view_state);
 
+  // Called when the animation to show the folder view is completed.
+  void OnShowAnimationDone();
+
+  // Called when the animation to hide the folder view is completed.
+  // `hide_for_reparent` is true if an item in the folder is being reparented to
+  // the root grid view.
+  void OnHideAnimationDone(bool hide_for_reparent);
+
+  // Caches the feature flag to check if the productivity launcher is enabled.
+  bool is_productivity_launcher_enabled_ = false;
+
   // Controller interface implemented by the container for this view.
   AppListFolderController* const folder_controller_;
 
@@ -254,12 +282,21 @@ class ASH_EXPORT AppListFolderView
   // Only used for ProductivityLauncher. Owned by views hierarchy.
   views::ScrollView* scroll_view_ = nullptr;
 
+  std::unique_ptr<SystemShadow> shadow_;
+
   // Adds fade in/out gradients to `scroll_view_`.
   // Only used for ProductivityLauncher.
   std::unique_ptr<ScrollViewGradientHelper> gradient_helper_;
 
   AppListViewDelegate* const view_delegate_;
   AppListFolderItem* folder_item_ = nullptr;  // Not owned.
+
+  // Whether the folder view is currently shown, or showing.
+  bool shown_ = false;
+
+  // If set, the callback that will be called when the folder hides (after hide
+  // animations complete).
+  base::OnceClosure hide_callback_;
 
   // The folder item in the root apps grid associated with this folder.
   AppListItemView* folder_item_view_ = nullptr;
@@ -273,8 +310,6 @@ class ASH_EXPORT AppListFolderView
   // The bounds of the box within which the folder view can be shown. The bounds
   // are relative the the parent view's coordinate system.
   gfx::Rect bounding_box_;
-
-  bool hide_for_reparent_ = false;
 
   std::vector<std::unique_ptr<Animation>> folder_visibility_animations_;
 
@@ -290,6 +325,9 @@ class ASH_EXPORT AppListFolderView
   // model, and animations depend on the folder item view).
   base::ScopedObservation<views::View, views::ViewObserver>
       folder_item_view_observer_{this};
+
+  // The callback that runs at the end of the folder animation.
+  base::OnceClosure animation_done_test_callback_;
 
   base::WeakPtrFactory<AppListFolderView> weak_ptr_factory_{this};
 };

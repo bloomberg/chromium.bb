@@ -7,23 +7,28 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/files/file.h"
+#include "base/logging.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
 #include "base/task/single_thread_task_executor.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/core/embedder/scoped_ipc_support.h"
+#include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/base/logging.h"
 #include "remoting/host/base/host_exit_codes.h"
 #include "remoting/host/chromoting_host_services_client.h"
 #include "remoting/host/native_messaging/native_messaging_pipe.h"
 #include "remoting/host/native_messaging/pipe_messaging_channel.h"
+#include "remoting/host/webauthn/remote_webauthn_caller_security_utils.h"
 #include "remoting/host/webauthn/remote_webauthn_native_messaging_host.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include <windows.h>
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
 namespace remoting {
 
@@ -34,6 +39,11 @@ int RemoteWebAuthnMain(int argc, char** argv) {
 
   base::CommandLine::Init(argc, argv);
   InitHostLogging();
+
+  if (!IsLaunchedByTrustedProcess()) {
+    LOG(ERROR) << "Current process is not launched by a trusted process.";
+    return kNoPermissionExitCode;
+  }
 
   if (!ChromotingHostServicesClient::Initialize()) {
     return kInitializationFailed;
@@ -46,10 +56,10 @@ int RemoteWebAuthnMain(int argc, char** argv) {
   base::File read_file;
   base::File write_file;
 
-#if defined(OS_POSIX)
+#if BUILDFLAG(IS_POSIX)
   read_file = base::File(STDIN_FILENO);
   write_file = base::File(STDOUT_FILENO);
-#elif defined(OS_WIN)
+#elif BUILDFLAG(IS_WIN)
   // GetStdHandle() returns pseudo-handles for stdin and stdout even if
   // the hosting executable specifies "Windows" subsystem. However the
   // returned handles are invalid in that case unless standard input and
@@ -75,17 +85,22 @@ int RemoteWebAuthnMain(int argc, char** argv) {
   auto channel = std::make_unique<PipeMessagingChannel>(std::move(read_file),
                                                         std::move(write_file));
 
-#if defined(OS_POSIX)
+#if BUILDFLAG(IS_POSIX)
   PipeMessagingChannel::ReopenStdinStdout();
-#endif  // defined(OS_POSIX)
+#endif  // BUILDFLAG(IS_POSIX)
 
   auto native_messaging_host =
-      std::make_unique<RemoteWebAuthnNativeMessagingHost>(task_runner);
+      std::make_unique<RemoteWebAuthnNativeMessagingHost>(
+          base::MakeRefCounted<AutoThreadTaskRunner>(task_runner,
+                                                     run_loop.QuitClosure()));
   native_messaging_host->Start(&native_messaging_pipe);
   native_messaging_pipe.Start(std::move(native_messaging_host),
                               std::move(channel));
 
   run_loop.Run();
+
+  // Block until tasks blocking shutdown have completed their execution.
+  base::ThreadPoolInstance::Get()->Shutdown();
 
   return kSuccessExitCode;
 }

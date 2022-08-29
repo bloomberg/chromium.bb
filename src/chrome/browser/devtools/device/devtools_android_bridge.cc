@@ -20,6 +20,7 @@
 #include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
 #include "base/memory/singleton.h"
+#include "base/strings/escape.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -42,7 +43,6 @@
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_external_agent_proxy.h"
 #include "content/public/browser/devtools_external_agent_proxy_delegate.h"
-#include "net/base/escape.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 
@@ -143,7 +143,7 @@ void DevToolsAndroidBridge::OpenRemotePage(scoped_refptr<RemoteBrowser> browser,
   std::string url = gurl.spec();
   RemoteBrowser::ParsedVersion parsed_version = browser->GetParsedVersion();
 
-  std::string query = net::EscapeQueryParamValue(url, false /* use_plus */);
+  std::string query = base::EscapeQueryParamValue(url, false /* use_plus */);
   std::string request =
       base::StringPrintf(kNewPageRequestWithURL, query.c_str());
   SendJsonRequest(browser->GetId(), request, base::DoNothing());
@@ -317,10 +317,10 @@ void DevToolsAndroidBridge::ReceivedDeviceCount(int count) {
 static std::set<net::HostPortPair> ParseTargetDiscoveryPreferenceValue(
     const base::Value* preferenceValue) {
   std::set<net::HostPortPair> targets;
-  if (!preferenceValue || preferenceValue->GetList().empty())
+  if (!preferenceValue || preferenceValue->GetListDeprecated().empty())
     return targets;
   std::string address;
-  for (const auto& address : preferenceValue->GetList()) {
+  for (const auto& address : preferenceValue->GetListDeprecated()) {
     if (!address.is_string())
       continue;
     net::HostPortPair target =

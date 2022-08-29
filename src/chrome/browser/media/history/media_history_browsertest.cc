@@ -10,9 +10,9 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/media/history/media_history_contents_observer.h"
@@ -733,16 +733,8 @@ IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest, DISABLED_GetPlaybackSessions) {
               GetPlaybackSessionsSync(GetOTRMediaHistoryService(browser), 2));
   }
 }
-
-// TODO(crbug.com/1176025): Flaking on Linux.
-#if defined(OS_LINUX)
-#define MAYBE_SaveImagesWithDifferentSessions \
-  DISABLED_SaveImagesWithDifferentSessions
-#else
-#define MAYBE_SaveImagesWithDifferentSessions SaveImagesWithDifferentSessions
-#endif
 IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest,
-                       MAYBE_SaveImagesWithDifferentSessions) {
+                       DISABLED_SaveImagesWithDifferentSessions) {
   auto* browser = CreateBrowserFromParam();
   auto expected_metadata = GetExpectedMetadata();
   auto expected_artwork = GetExpectedArtwork();
@@ -819,7 +811,7 @@ IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest,
             GetPlaybackSessionsSync(GetOTRMediaHistoryService(browser), 2));
 }
 
-#if defined(OS_MAC) && !defined(NDEBUG)
+#if BUILDFLAG(IS_MAC) && !defined(NDEBUG)
 // TODO(crbug.com/1152073): This test has flaky timeouts on Mac Debug.
 #define MAYBE_RecordWatchtime_AudioVideo DISABLED_RecordWatchtime_AudioVideo
 #else
@@ -834,7 +826,7 @@ IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest,
   // doesn't get preserved in the cache.
   content::DisableBackForwardCacheForTesting(
       browser->tab_strip_model()->GetActiveWebContents(),
-      content::BackForwardCache::TEST_ASSUMES_NO_CACHING);
+      content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
   // Start a page and wait for significant playback so we record watchtime.
   EXPECT_TRUE(SetupPageAndStartPlaying(browser, GetTestURL()));
   EXPECT_TRUE(WaitForSignificantPlayback(browser));
@@ -910,7 +902,7 @@ IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest, RecordWatchtime_AudioOnly) {
   // doesn't get preserved in the cache.
   content::DisableBackForwardCacheForTesting(
       browser->tab_strip_model()->GetActiveWebContents(),
-      content::BackForwardCache::TEST_ASSUMES_NO_CACHING);
+      content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
 
   // Start a page and wait for significant playback so we record watchtime.
   EXPECT_TRUE(SetupPageAndStartPlayingAudioOnly(browser, GetTestURL()));
@@ -980,7 +972,7 @@ IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest, RecordWatchtime_VideoOnly) {
   // doesn't get preserved in the cache.
   content::DisableBackForwardCacheForTesting(
       browser->tab_strip_model()->GetActiveWebContents(),
-      content::BackForwardCache::TEST_ASSUMES_NO_CACHING);
+      content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
 
   // Start a page and wait for significant playback so we record watchtime.
   EXPECT_TRUE(SetupPageAndStartPlayingVideoOnly(browser, GetTestURL()));
@@ -1079,8 +1071,10 @@ IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest,
   EXPECT_TRUE(sessions.empty());
 }
 
-IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest,
-                       DoNotRecordSessionForVideoOnlyInPictureInPicture) {
+// TODO(crbug.com/1310805): Fix flakiness and re-enable this test.
+IN_PROC_BROWSER_TEST_P(
+    MediaHistoryBrowserTest,
+    DISABLED_DoNotRecordSessionForVideoOnlyInPictureInPicture) {
   auto* browser = CreateBrowserFromParam();
 
   ASSERT_TRUE(SetupPageAndStartPlayingVideoOnly(browser, GetTestURL()));
@@ -1103,7 +1097,7 @@ IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest,
 }
 
 // TODO(crbug.com/1086828): Test is flaky on Linux, Windows, Mac and Lacros.
-#if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_MAC) || \
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || \
     BUILDFLAG(IS_CHROMEOS_LACROS)
 #define MAYBE_DoNotRecordWatchtime_Background \
   DISABLED_DoNotRecordWatchtime_Background
@@ -1128,6 +1122,17 @@ IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest,
       web_contents, "waitForSignificantPlayback();", &seeked));
   ASSERT_TRUE(seeked);
 
+  // Create another browser. This is important in the incognito case as
+  // destroying `browser` (which happens from CloseAllTabs()) will delete the
+  // incognito profile, which deletes MediaHistoryKeyedService.. Creating
+  // another browser referencing the incognito profile ensure the profiles is
+  // not destroyed. Note that this is only done for incognito as for
+  // non-incognito CreateBrowserFromParam() does not create it a new Browser,
+  // it returns browser().
+  Browser* incognito_browser_to_prevent_early_shutdown = nullptr;
+  if (GetParam() == TestState::kIncognito)
+    incognito_browser_to_prevent_early_shutdown = CreateBrowserFromParam();
+
   // Close all the tabs to trigger any saving.
   browser->tab_strip_model()->CloseAllTabs();
 
@@ -1139,6 +1144,11 @@ IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest,
   if (!playbacks.empty()) {
     ASSERT_EQ(1u, playbacks.size());
     EXPECT_GE(base::Seconds(2), playbacks[0]->watchtime);
+  }
+
+  if (incognito_browser_to_prevent_early_shutdown) {
+    incognito_browser_to_prevent_early_shutdown->tab_strip_model()
+        ->CloseAllTabs();
   }
 }
 
@@ -1160,6 +1170,17 @@ IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest, DoNotRecordWatchtime_Muted) {
   // Wait for significant playback in the muted tab.
   WaitForSignificantPlayback(browser);
 
+  // Create another browser. This is important in the incognito case as
+  // destroying `browser` (which happens from CloseAllTabs()) will delete the
+  // incognito profile, which deletes MediaHistoryKeyedService.. Creating
+  // another browser referencing the incognito profile ensure the profiles is
+  // not destroyed. Note that this is only done for incognito as for
+  // non-incognito CreateBrowserFromParam() does not create it a new Browser,
+  // it returns browser().
+  Browser* incognito_browser_to_prevent_early_shutdown = nullptr;
+  if (GetParam() == TestState::kIncognito)
+    incognito_browser_to_prevent_early_shutdown = CreateBrowserFromParam();
+
   // Close all the tabs to trigger any saving.
   browser->tab_strip_model()->CloseAllTabs();
 
@@ -1169,6 +1190,11 @@ IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest, DoNotRecordWatchtime_Muted) {
   // No playbacks should have been saved since we were muted.
   auto playbacks = GetPlaybacksSync(service);
   EXPECT_TRUE(playbacks.empty());
+
+  if (incognito_browser_to_prevent_early_shutdown) {
+    incognito_browser_to_prevent_early_shutdown->tab_strip_model()
+        ->CloseAllTabs();
+  }
 }
 
 class MediaHistoryForPrerenderBrowserTest : public MediaHistoryBrowserTest {

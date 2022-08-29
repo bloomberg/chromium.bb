@@ -4,6 +4,7 @@
 
 #include "base/bind.h"
 #include "base/memory/raw_ptr.h"
+#include "base/strings/escape.h"
 #include "base/test/bind.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/ui/browser.h"
@@ -16,7 +17,6 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/prerender_test_util.h"
-#include "net/base/escape.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/gurl.h"
@@ -98,7 +98,7 @@ IN_PROC_BROWSER_TEST_F(PDFIFrameNavigationThrottleBrowserTest,
       embedded_test_server()->GetURL("/pdf/test-bookmarks.pdf");
 
   const std::string html = GetPDFPlaceholderHTML(kPdfUrl);
-  const GURL kFallbackPdfUrl("data:text/html," + net::EscapePath(html));
+  const GURL kFallbackPdfUrl("data:text/html," + base::EscapePath(html));
   TestNavigationManager pdf_navigation(web_contents(), kFallbackPdfUrl);
 
   // Trigger a prerender of a page containing an iframe with a pdf file.
@@ -123,7 +123,7 @@ IN_PROC_BROWSER_TEST_F(PDFIFrameNavigationThrottleBrowserTest,
   // the prerender.
   {
     PrerenderHostObserver prerender_observer(*web_contents(), kPrerenderUrl);
-    ASSERT_TRUE(ExecJs(web_contents()->GetMainFrame(),
+    ASSERT_TRUE(ExecJs(web_contents()->GetPrimaryMainFrame(),
                        JsReplace("location = $1", kPrerenderUrl)));
     prerender_observer.WaitForActivation();
   }
@@ -137,7 +137,7 @@ IN_PROC_BROWSER_TEST_F(PDFIFrameNavigationThrottleBrowserTest,
     EXPECT_TRUE(pdf_navigation.was_successful());
 
     content::RenderFrameHost* child_frame =
-        ChildFrameAt(web_contents()->GetMainFrame(), 0);
+        ChildFrameAt(web_contents()->GetPrimaryMainFrame(), 0);
     ASSERT_TRUE(child_frame);
     EXPECT_EQ(child_frame->GetLastCommittedURL(), kFallbackPdfUrl);
   }

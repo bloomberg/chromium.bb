@@ -7,20 +7,22 @@
 
 #include <map>
 #include <memory>
-#include <set>
 #include <string>
 
 #include "base/callback.h"
+#include "base/containers/flat_map.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_base.h"
 #include "chrome/browser/apps/app_service/paused_apps.h"
 #include "chrome/browser/apps/app_service/publisher_host.h"
+#include "chrome/browser/apps/app_service/subscriber_crosapi.h"
 #include "chrome/browser/ash/crosapi/browser_manager.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/services/app_service/public/cpp/icon_types.h"
 #include "components/services/app_service/public/cpp/instance_registry.h"
+#include "components/services/app_service/public/cpp/preferred_app.h"
 #include "components/services/app_service/public/mojom/app_service.mojom.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "ui/gfx/native_widget_types.h"
@@ -61,6 +63,7 @@ class AppServiceProxyAsh : public AppServiceProxyBase,
                            public apps::InstanceRegistry::Observer {
  public:
   using OnPauseDialogClosedCallback = base::OnceCallback<void()>;
+  using OnUninstallForTestingCallback = base::OnceCallback<void(bool)>;
 
   explicit AppServiceProxyAsh(Profile* profile);
   AppServiceProxyAsh(const AppServiceProxyAsh&) = delete;
@@ -73,10 +76,19 @@ class AppServiceProxyAsh : public AppServiceProxyBase,
   apps::BrowserAppInstanceTracker* BrowserAppInstanceTracker();
   apps::BrowserAppInstanceRegistry* BrowserAppInstanceRegistry();
 
+  // Registers `crosapi_subscriber_`.
+  void RegisterCrosApiSubScriber(SubscriberCrosapi* subscriber);
+
   // apps::AppServiceProxyBase overrides:
   void Uninstall(const std::string& app_id,
                  apps::mojom::UninstallSource uninstall_source,
                  gfx::NativeWindow parent_window) override;
+  void OnApps(std::vector<AppPtr> deltas,
+              AppType app_type,
+              bool should_notify_initialized) override;
+  void OnApps(std::vector<apps::mojom::AppPtr> deltas,
+              apps::mojom::AppType app_type,
+              bool should_notify_initialized) override;
 
   // Pauses apps. |pause_data|'s key is the app_id. |pause_data|'s PauseData
   // is the time limit setting for the app, which is shown in the pause app
@@ -104,7 +116,7 @@ class AppServiceProxyAsh : public AppServiceProxyBase,
   void SetDialogCreatedCallbackForTesting(base::OnceClosure callback);
   void UninstallForTesting(const std::string& app_id,
                            gfx::NativeWindow parent_window,
-                           base::OnceClosure callback);
+                           OnUninstallForTestingCallback callback);
   void SetAppPlatformMetricsServiceForTesting(
       std::unique_ptr<apps::AppPlatformMetricsService>
           app_platform_metrics_service);
@@ -114,9 +126,10 @@ class AppServiceProxyAsh : public AppServiceProxyBase,
   friend class AppServiceProxyFactory;
   FRIEND_TEST_ALL_PREFIXES(AppServiceProxyTest, LaunchCallback);
 
-  using UninstallDialogs = std::set<std::unique_ptr<apps::UninstallDialog>,
-                                    base::UniquePtrComparator>;
+  using UninstallDialogs =
+      base::flat_map<std::string, std::unique_ptr<apps::UninstallDialog>>;
 
+  bool IsValidProfile() override;
   void Initialize() override;
 
   // KeyedService overrides.
@@ -126,7 +139,7 @@ class AppServiceProxyAsh : public AppServiceProxyBase,
                                 const gfx::ImageSkia& image,
                                 Profile* profile);
 
-  static void CreatePauseDialog(apps::mojom::AppType app_type,
+  static void CreatePauseDialog(apps::AppType app_type,
                                 const std::string& app_name,
                                 const gfx::ImageSkia& image,
                                 const PauseData& pause_data,
@@ -135,7 +148,7 @@ class AppServiceProxyAsh : public AppServiceProxyBase,
   void UninstallImpl(const std::string& app_id,
                      apps::mojom::UninstallSource uninstall_source,
                      gfx::NativeWindow parent_window,
-                     base::OnceClosure callback);
+                     OnUninstallForTestingCallback callback);
 
   // Invoked when the uninstall dialog is closed. The app for the given
   // |app_type| and |app_id| will be uninstalled directly if |uninstall| is
@@ -144,7 +157,7 @@ class AppServiceProxyAsh : public AppServiceProxyBase,
   // available for Chrome Apps only. If true, the app will be reported for abuse
   // to the Web Store. |uninstall_dialog| will be removed from
   // |uninstall_dialogs_|.
-  void OnUninstallDialogClosed(apps::mojom::AppType app_type,
+  void OnUninstallDialogClosed(apps::AppType app_type,
                                const std::string& app_id,
                                apps::mojom::UninstallSource uninstall_source,
                                bool uninstall,
@@ -153,6 +166,8 @@ class AppServiceProxyAsh : public AppServiceProxyBase,
                                UninstallDialog* uninstall_dialog);
 
   // apps::AppServiceProxyBase overrides:
+  void InitializePreferredAppsForAllSubscribers() override;
+  void OnPreferredAppsChanged(PreferredAppChangesPtr changes) override;
   bool MaybeShowLaunchPreventionDialog(const apps::AppUpdate& update) override;
   void OnLaunched(LaunchCallback callback,
                   LaunchResult&& launch_result) override;
@@ -166,7 +181,7 @@ class AppServiceProxyAsh : public AppServiceProxyBase,
                                 IconValuePtr icon_value);
 
   // Callback invoked when the icon is loaded for the pause app dialog.
-  void OnLoadIconForPauseDialog(apps::mojom::AppType app_type,
+  void OnLoadIconForPauseDialog(apps::AppType app_type,
                                 const std::string& app_id,
                                 const std::string& app_name,
                                 const PauseData& pause_data,
@@ -174,8 +189,7 @@ class AppServiceProxyAsh : public AppServiceProxyBase,
 
   // Invoked when the user clicks the 'OK' button of the pause app dialog.
   // AppService stops the running app and applies the paused app icon effect.
-  void OnPauseDialogClosed(apps::mojom::AppType app_type,
-                           const std::string& app_id);
+  void OnPauseDialogClosed(apps::AppType app_type, const std::string& app_id);
 
   // apps::AppRegistryCache::Observer overrides:
   void OnAppUpdate(const apps::AppUpdate& update) override;
@@ -193,7 +207,7 @@ class AppServiceProxyAsh : public AppServiceProxyBase,
   void InitAppPlatformMetrics();
 
   void PerformPostUninstallTasks(
-      apps::mojom::AppType app_type,
+      apps::AppType app_type,
       const std::string& app_id,
       apps::mojom::UninstallSource uninstall_source) override;
 
@@ -201,6 +215,12 @@ class AppServiceProxyAsh : public AppServiceProxyBase,
   void OnInstanceUpdate(const apps::InstanceUpdate& update) override;
   void OnInstanceRegistryWillBeDestroyed(
       apps::InstanceRegistry* cache) override;
+
+  // Checks if all instance IDs correspond to existing windows.
+  bool CanRunLaunchCallback(
+      const std::vector<base::UnguessableToken>& instance_ids);
+
+  SubscriberCrosapi* crosapi_subscriber_ = nullptr;
 
   std::unique_ptr<PublisherHost> publisher_host_;
 
@@ -235,10 +255,12 @@ class AppServiceProxyAsh : public AppServiceProxyBase,
                           apps::InstanceRegistry::Observer>
       instance_registry_observer_{this};
 
-  // A map to record the launch callbacks for an app instance. Note it is
-  // possible to have multiple launches to launch the same app instance for
-  // web apps, so we record a list of launch callbacks for each instance.
-  std::map<base::UnguessableToken, std::vector<LaunchCallback>> callback_list_;
+  // A list to record outstanding launch callbacks. When the first member
+  // returns true, the second member should be run and the pair can be removed
+  // from the outstanding callback queue.
+  std::list<std::pair<base::RepeatingCallback<bool(void)>, base::OnceClosure>>
+      callback_list_;
+
   base::WeakPtrFactory<AppServiceProxyAsh> weak_ptr_factory_{this};
 };
 

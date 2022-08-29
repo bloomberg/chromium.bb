@@ -94,11 +94,11 @@ class ProtoDescriptor {
 
   const FieldDescriptor* FindFieldByName(const std::string& name) const {
     PERFETTO_DCHECK(type_ == Type::kMessage);
-    auto it =
-        std::find_if(fields_.begin(), fields_.end(),
-                     [name](std::pair<int32_t, const FieldDescriptor&> p) {
-                       return p.second.name() == name;
-                     });
+    auto it = std::find_if(
+        fields_.begin(), fields_.end(),
+        [name](const std::pair<const uint32_t, FieldDescriptor>& p) {
+          return p.second.name() == name;
+        });
     if (it == fields_.end()) {
       return nullptr;
     }
@@ -172,7 +172,7 @@ class DescriptorPool {
   std::vector<uint8_t> SerializeAsDescriptorSet();
 
   void AddProtoDescriptorForTesting(ProtoDescriptor descriptor) {
-    descriptors_.emplace_back(std::move(descriptor));
+    AddProtoDescriptor(std::move(descriptor));
   }
 
   const std::vector<ProtoDescriptor>& descriptors() const {
@@ -200,7 +200,13 @@ class DescriptorPool {
   base::Optional<uint32_t> ResolveShortType(const std::string& parent_path,
                                             const std::string& short_type);
 
+  // Adds a new descriptor to the pool and returns its index. There must not be
+  // already a descriptor with the same full_name in the pool.
+  uint32_t AddProtoDescriptor(ProtoDescriptor descriptor);
+
   std::vector<ProtoDescriptor> descriptors_;
+  // full_name -> index in the descriptors_ vector.
+  std::unordered_map<std::string, uint32_t> full_name_to_descriptor_index_;
   std::set<std::string> processed_files_;
 };
 

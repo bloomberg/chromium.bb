@@ -65,7 +65,8 @@ public class OptimizationGuideBridgeNativeUnitTest {
         OptimizationGuideBridge bridge = new OptimizationGuideBridge();
 
         NavigationHandle navHandle =
-                new NavigationHandle(0, new GURL(TEST_URL), true, false, false, null, null);
+                new NavigationHandle(0, new GURL(TEST_URL), GURL.emptyGURL(), GURL.emptyGURL(),
+                        true, false, false, null, 0, false, false, false, false, 0, false, false);
         OptimizationGuideCallback callback = new OptimizationGuideCallback();
         bridge.canApplyOptimizationAsync(navHandle, OptimizationType.PERFORMANCE_HINTS, callback);
 

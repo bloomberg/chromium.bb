@@ -11,12 +11,11 @@
 #include "base/files/file_util.h"
 #include "base/hash/sha1.h"
 #include "base/json/json_writer.h"
+#include "base/strings/escape.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/values.h"
 #include "chrome/browser/enterprise/connectors/file_system/box_api_call_endpoints.h"
-#include "net/base/escape.h"
 #include "net/base/mime_util.h"
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
@@ -103,7 +102,7 @@ base::Value CreateSingleFieldDict(const std::string& key,
 bool VerifyChunkedUploadParts(const base::Value& parts) {
   DCHECK(parts.is_dict()) << parts;
   DCHECK(parts.FindPath("parts")->is_list()) << parts;
-  auto parts_list = parts.FindPath("parts")->GetList();
+  auto parts_list = parts.FindPath("parts")->GetListDeprecated();
   DCHECK(!parts_list.empty());
   for (auto p = parts_list.begin(); p != parts_list.end(); ++p) {
     DCHECK(p->is_dict()) << parts;
@@ -129,7 +128,7 @@ bool ExtractEntriesList(const Box::ParseResult& result,
   }
 
   CHECK(list);
-  *list = entries->GetList();
+  *list = entries->GetListDeprecated();
   return true;
 }
 
@@ -440,9 +439,10 @@ void BoxCreateUpstreamFolderApiCallFlow::OnSuccessJsonParsed(
     base::Value* conflict_folders_list =
         result.value->FindListPath("context_info.conflicts");
     if (box_error_code && *box_error_code == "item_name_in_use" &&
-        conflict_folders_list && conflict_folders_list->GetList().size() > 0) {
+        conflict_folders_list &&
+        conflict_folders_list->GetListDeprecated().size() > 0) {
       folder_info_dict = absl::make_optional<base::Value>(
-          conflict_folders_list->GetList()[0].Clone());
+          conflict_folders_list->GetListDeprecated()[0].Clone());
     }
   }
 

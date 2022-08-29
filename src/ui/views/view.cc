@@ -18,6 +18,7 @@
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/notreached.h"
+#include "base/observer_list.h"
 #include "base/scoped_observation.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
@@ -71,7 +72,7 @@
 #include "ui/views/widget/tooltip_manager.h"
 #include "ui/views/widget/widget.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "base/win/scoped_gdi_object.h"
 #include "ui/native_theme/native_theme_win.h"
 #endif
@@ -80,7 +81,7 @@ namespace views {
 
 namespace {
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 constexpr bool kContextMenuOnMousePress = false;
 #else
 constexpr bool kContextMenuOnMousePress = true;
@@ -529,11 +530,11 @@ int View::GetBaseline() const {
   return -1;
 }
 
-void View::SetPreferredSize(const gfx::Size& size) {
-  if (preferred_size_ && *preferred_size_ == size)
+void View::SetPreferredSize(absl::optional<gfx::Size> size) {
+  if (preferred_size_ == size)
     return;
 
-  preferred_size_ = size;
+  preferred_size_ = std::move(size);
   PreferredSizeChanged();
 }
 
@@ -1166,8 +1167,7 @@ void View::Paint(const PaintInfo& parent_paint_info) {
           SkFloatToScalar(paint_info.paint_recording_scale_x()),
           SkFloatToScalar(paint_info.paint_recording_scale_y()));
 
-      clip_path_in_parent.transform(
-          SkMatrix(to_parent_recording_space.matrix()));
+      clip_path_in_parent.transform(to_parent_recording_space.matrix().asM33());
       clip_recorder.ClipPathWithAntiAliasing(clip_path_in_parent);
     }
   }
@@ -1202,6 +1202,8 @@ void View::Paint(const PaintInfo& parent_paint_info) {
 
 void View::SetBackground(std::unique_ptr<Background> b) {
   background_ = std::move(b);
+  if (background_ && GetWidget())
+    background_->OnViewThemeChanged(this);
   SchedulePaint();
 }
 
@@ -1212,6 +1214,8 @@ Background* View::GetBackground() const {
 void View::SetBorder(std::unique_ptr<Border> b) {
   const gfx::Rect old_contents_bounds = GetContentsBounds();
   border_ = std::move(b);
+  if (border_ && GetWidget())
+    border_->OnViewThemeChanged(this);
 
   // Conceptually, this should be PreferredSizeChanged(), but for some view
   // hierarchies that triggers synchronous add/remove operations that are unsafe
@@ -1354,8 +1358,8 @@ View* View::GetTooltipHandlerForPoint(const gfx::Point& point) {
   return this;
 }
 
-gfx::NativeCursor View::GetCursor(const ui::MouseEvent& event) {
-  return gfx::kNullCursor;
+ui::Cursor View::GetCursor(const ui::MouseEvent& event) {
+  return ui::Cursor();
 }
 
 bool View::HitTestPoint(const gfx::Point& point) const {
@@ -1444,7 +1448,7 @@ void View::OnMouseEvent(ui::MouseEvent* event) {
         OnMouseMoved(*event);
         return;
       }
-      FALLTHROUGH;
+      [[fallthrough]];
     case ui::ET_MOUSE_DRAGGED:
       ProcessMouseDragged(event);
       return;
@@ -1684,6 +1688,43 @@ void View::InsertAfterInFocusList(View* view) {
   previous_focusable_view_ = view;
 }
 
+View::Views View::GetChildrenFocusList() {
+  View* starting_focus_view = nullptr;
+
+  Views children_views = children();
+  for (View* child : children_views) {
+    if (child->GetPreviousFocusableView() == nullptr) {
+      starting_focus_view = child;
+      break;
+    }
+  }
+
+  if (starting_focus_view == nullptr)
+    return {};
+
+  Views result;
+
+  // Tracks the views traversed so far. Used to check for cycles.
+  base::flat_set<View*> seen_views;
+
+  View* cur = starting_focus_view;
+  while (cur != nullptr) {
+    // Views are not supposed to have focus cycles, but just in case, fail
+    // gracefully to avoid a crash.
+    if (seen_views.contains(cur)) {
+      LOG(ERROR) << "View focus cycle detected.";
+      return {};
+    }
+
+    seen_views.insert(cur);
+    result.push_back(cur);
+
+    cur = cur->GetNextFocusableView();
+  }
+
+  return result;
+}
+
 View::FocusBehavior View::GetFocusBehavior() const {
   return focus_behavior_;
 }
@@ -1787,10 +1828,6 @@ int View::OnDragUpdated(const ui::DropTargetEvent& event) {
 }
 
 void View::OnDragExited() {}
-
-ui::mojom::DragOperation View::OnPerformDrop(const ui::DropTargetEvent& event) {
-  return ui::mojom::DragOperation::kNone;
-}
 
 void View::OnDragDone() {}
 
@@ -2121,6 +2158,12 @@ void View::OnLayerTransformed(const gfx::Transform& old_transform,
 
   for (ViewObserver& observer : observers_)
     observer.OnViewLayerTransformed(this);
+}
+
+void View::OnLayerClipRectChanged(const gfx::Rect& old_rect,
+                                  ui::PropertyChangeReason reason) {
+  for (ViewObserver& observer : observers_)
+    observer.OnViewLayerClipRectChanged(this);
 }
 
 void View::OnDeviceScaleFactorChanged(float old_device_scale_factor,
@@ -2500,14 +2543,15 @@ void View::PaintDebugRects(const PaintInfo& parent_paint_info) {
   gfx::RectF outline_rect(ScaleToEnclosedRect(GetLocalBounds(), scale));
   gfx::RectF content_outline_rect(
       ScaleToEnclosedRect(GetContentsBounds(), scale));
+  const auto* color_provider = GetColorProvider();
   if (content_outline_rect != outline_rect) {
-    content_outline_rect.Inset(0.5f, 0.5f);
-    const SkColor content_color = SkColorSetARGB(0x30, 0, 0, 0xff);
-    canvas->DrawRect(content_outline_rect, content_color);
+    content_outline_rect.Inset(0.5f);
+    canvas->DrawRect(content_outline_rect,
+                     color_provider->GetColor(ui::kColorDebugContentOutline));
   }
-  outline_rect.Inset(0.5f, 0.5f);
-  const SkColor color = SkColorSetARGB(0x30, 0xff, 0, 0);
-  canvas->DrawRect(outline_rect, color);
+  outline_rect.Inset(0.5f);
+  canvas->DrawRect(outline_rect,
+                   color_provider->GetColor(ui::kColorDebugBoundsOutline));
 }
 
 // Tree operations -------------------------------------------------------------
@@ -3172,6 +3216,10 @@ void View::PropagateThemeChanged() {
       child->PropagateThemeChanged();
   }
   OnThemeChanged();
+  if (border_)
+    border_->OnViewThemeChanged(this);
+  if (background_)
+    background_->OnViewThemeChanged(this);
 #if DCHECK_IS_ON()
   DCHECK(on_theme_changed_called_)
       << "views::View::OnThemeChanged() has not been called. This means that "

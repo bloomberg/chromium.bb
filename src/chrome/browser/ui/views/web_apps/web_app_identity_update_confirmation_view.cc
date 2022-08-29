@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/web_apps/web_app_identity_update_confirmation_view.h"
 
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/web_apps/web_app_uninstall_dialog_view.h"
 #include "chrome/browser/web_applications/web_app_callback_app_identity.h"
@@ -88,8 +89,11 @@ WebAppIdentityUpdateConfirmationView::WebAppIdentityUpdateConfirmationView(
                   DISTANCE_CONTROL_LIST_VERTICAL)))
       .AddChildren(
           views::Builder<views::Label>()
+              .SetID(VIEW_ID_APP_IDENTITY_UPDATE_HEADER)
               .SetTextContext(views::style::CONTEXT_LABEL)
-              .SetText(l10n_util::GetStringUTF16(IDS_WEBAPP_UPDATE_EXPLANATION))
+              .SetText(icon_change ? l10n_util::GetStringUTF16(
+                                         IDS_WEBAPP_UPDATE_EXPLANATION)
+                                   : std::u16string())
               .SetHorizontalAlignment(gfx::ALIGN_LEFT)
               .SetMultiLine(true),
           views::Builder<views::TableLayoutView>()
@@ -151,10 +155,7 @@ WebAppIdentityUpdateConfirmationView::WebAppIdentityUpdateConfirmationView(
 
   auto* provider = web_app::WebAppProvider::GetForWebApps(profile_);
   DCHECK(provider);
-  registrar_observation_.Observe(&provider->registrar());
-
-  chrome::RecordDialogCreation(
-      chrome::DialogIdentifier::APP_IDENTITY_UPDATE_CONFIRMATION);
+  install_manager_observation_.Observe(&provider->install_manager());
 }
 
 void WebAppIdentityUpdateConfirmationView::OnWebAppWillBeUninstalled(
@@ -163,8 +164,8 @@ void WebAppIdentityUpdateConfirmationView::OnWebAppWillBeUninstalled(
     GetWidget()->Close();
 }
 
-void WebAppIdentityUpdateConfirmationView::OnAppRegistrarDestroyed() {
-  registrar_observation_.Reset();
+void WebAppIdentityUpdateConfirmationView::OnWebAppInstallManagerDestroyed() {
+  install_manager_observation_.Reset();
   GetWidget()->Close();
 }
 

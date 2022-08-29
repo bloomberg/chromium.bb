@@ -10,8 +10,10 @@
 #include "base/callback_helpers.h"
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/time/time.h"
 #include "components/services/storage/public/cpp/big_io_buffer.h"
 #include "content/public/common/url_constants.h"
 #include "crypto/sha2.h"
@@ -194,8 +196,18 @@ bool GeneratedCodeCache::IsValidHeader(
   return buffer_size == kHeaderSizeInBytes + kSHAKeySizeInBytes;
 }
 
+void GeneratedCodeCache::ReportPeriodicalHistograms() {
+  DCHECK_EQ(cache_type_, CodeCacheType::kJavaScript);
+  base::UmaHistogramCustomCounts(
+      "SiteIsolatedCodeCache.JS.PotentialMemoryBackedCodeCacheSize",
+      lru_cache_index_.GetSize(),
+      /*min=*/0,
+      /*exclusive_max=*/kLruCacheCapacity,
+      /*buckets=*/50);
+}
+
 std::string GeneratedCodeCache::GetResourceURLFromKey(const std::string& key) {
-  constexpr size_t kPrefixStringLen = base::size(kPrefix) - 1;
+  constexpr size_t kPrefixStringLen = std::size(kPrefix) - 1;
   // |key| may not have a prefix and separator (e.g. for deduplicated entries).
   // In that case, return an empty string.
   const size_t separator_index = key.find(kSeparator);
@@ -246,12 +258,14 @@ class GeneratedCodeCache::PendingOperation {
   PendingOperation(Operation op,
                    const std::string& key,
                    const base::Time& response_time,
+                   const base::TimeTicks start_time,
                    scoped_refptr<net::IOBufferWithSize> small_buffer,
                    scoped_refptr<BigIOBuffer> large_buffer,
                    ReadDataCallback read_callback)
       : op_(op),
         key_(key),
         response_time_(response_time),
+        start_time_(start_time),
         small_buffer_(small_buffer),
         large_buffer_(large_buffer),
         read_callback_(std::move(read_callback)) {
@@ -274,6 +288,28 @@ class GeneratedCodeCache::PendingOperation {
   scoped_refptr<net::IOBufferWithSize> small_buffer() { return small_buffer_; }
   scoped_refptr<BigIOBuffer> large_buffer() { return large_buffer_; }
   ReadDataCallback TakeReadCallback() { return std::move(read_callback_); }
+  void RunReadCallback(GeneratedCodeCache* code_cache,
+                       base::Time response_time,
+                       mojo_base::BigBuffer data) {
+    if (code_cache->cache_type_ == CodeCacheType::kJavaScript) {
+      const bool code_cache_hit = data.size() > 0;
+      const bool hypothetical_in_memory_code_cache_hit =
+          code_cache->lru_cache_index_.Get(key_);
+      if (code_cache_hit && !hypothetical_in_memory_code_cache_hit) {
+        code_cache->lru_cache_index_.Put(key_, data.size());
+      }
+      if (code_cache_hit && hypothetical_in_memory_code_cache_hit) {
+        base::UmaHistogramTimes(
+            "SiteIsolatedCodeCache.JS.MemoryBackedCodeCachePotentialImpact",
+            base::TimeTicks::Now() - start_time_);
+      }
+      base::UmaHistogramBoolean("SiteIsolatedCodeCache.JS.Hit", code_cache_hit);
+      base::UmaHistogramBoolean(
+          "SiteIsolatedCodeCache.JS.PotentialMemoryBackedCodeCacheHit",
+          hypothetical_in_memory_code_cache_hit);
+    }
+    std::move(read_callback_).Run(response_time, std::move(data));
+  }
   GetBackendCallback TakeBackendCallback() {
     return std::move(backend_callback_);
   }
@@ -295,6 +331,8 @@ class GeneratedCodeCache::PendingOperation {
     return response_time_;
   }
 
+  base::TimeTicks start_time() const { return start_time_; }
+
   // These are called by write and fetch operations to track buffer completions
   // and signal when the operation has finished, and whether it was successful.
   bool succeeded() const { return succeeded_; }
@@ -313,6 +351,7 @@ class GeneratedCodeCache::PendingOperation {
   const Operation op_;
   const std::string key_;
   const base::Time response_time_;
+  const base::TimeTicks start_time_ = base::TimeTicks::Now();
   scoped_refptr<net::IOBufferWithSize> small_buffer_;
   scoped_refptr<BigIOBuffer> large_buffer_;
   ReadDataCallback read_callback_;
@@ -331,6 +370,12 @@ GeneratedCodeCache::GeneratedCodeCache(const base::FilePath& path,
       max_size_bytes_(max_size_bytes),
       cache_type_(cache_type) {
   CreateBackend();
+  if (cache_type == CodeCacheType::kJavaScript) {
+    histograms_timer_.Start(
+        FROM_HERE, base::Minutes(5),
+        base::BindRepeating(&GeneratedCodeCache::ReportPeriodicalHistograms,
+                            base::Unretained(this)));
+  }
 }
 
 GeneratedCodeCache::~GeneratedCodeCache() = default;
@@ -404,8 +449,8 @@ void GeneratedCodeCache::WriteEntry(const GURL& url,
     uint8_t result[crypto::kSHA256Length];
     crypto::SHA256HashString(
         base::StringPiece(reinterpret_cast<char*>(copy.data()), copy.size()),
-        result, base::size(result));
-    std::string checksum_key = base::HexEncode(result, base::size(result));
+        result, std::size(result));
+    std::string checksum_key = base::HexEncode(result, std::size(result));
     small_buffer = base::MakeRefCounted<net::IOBufferWithSize>(
         kHeaderSizeInBytes + kSHAKeySizeInBytes);
     // Copy |checksum_key| into the small buffer.
@@ -431,6 +476,7 @@ void GeneratedCodeCache::WriteEntry(const GURL& url,
   auto op = std::make_unique<PendingOperation>(Operation::kWrite, key,
                                                small_buffer, large_buffer);
   EnqueueOperation(std::move(op));
+  lru_cache_index_.Put(key, data_size);
 }
 
 void GeneratedCodeCache::FetchEntry(const GURL& url,
@@ -462,6 +508,8 @@ void GeneratedCodeCache::DeleteEntry(const GURL& url,
   std::string key = GetCacheKey(url, origin_lock, nik, cache_type_);
   auto op = std::make_unique<PendingOperation>(Operation::kDelete, key);
   EnqueueOperation(std::move(op));
+
+  lru_cache_index_.Delete(key);
 }
 
 void GeneratedCodeCache::CreateBackend() {
@@ -478,7 +526,8 @@ void GeneratedCodeCache::CreateBackend() {
   // all the contents and recreates a new one.
   int rv = disk_cache::CreateCacheBackend(
       CodeCacheTypeToNetCacheType(cache_type_), net::CACHE_BACKEND_SIMPLE,
-      path_, max_size_bytes_, disk_cache::ResetHandling::kResetOnError, nullptr,
+      /*file_operations=*/nullptr, path_, max_size_bytes_,
+      disk_cache::ResetHandling::kResetOnError, nullptr,
       &shared_backend_ptr->data, std::move(create_backend_complete));
   if (rv != net::ERR_IO_PENDING) {
     DidCreateBackend(shared_backend_ptr, rv);
@@ -658,7 +707,7 @@ void GeneratedCodeCache::FetchEntryImpl(PendingOperation* op) {
   DCHECK(Operation::kFetch == op->operation() ||
          Operation::kFetchWithSHAKey == op->operation());
   if (backend_state_ != kInitialized) {
-    op->TakeReadCallback().Run(base::Time(), mojo_base::BigBuffer());
+    op->RunReadCallback(this, base::Time(), mojo_base::BigBuffer());
     CloseOperationAndIssueNext(op);
     return;
   }
@@ -680,7 +729,7 @@ void GeneratedCodeCache::OpenCompleteForRead(
          Operation::kFetchWithSHAKey == op->operation());
   if (entry_result.net_error() != net::OK) {
     CollectStatistics(CacheEntryStatus::kMiss);
-    op->TakeReadCallback().Run(base::Time(), mojo_base::BigBuffer());
+    op->RunReadCallback(this, base::Time(), mojo_base::BigBuffer());
     CloseOperationAndIssueNext(op);
     return;
   }
@@ -757,7 +806,7 @@ void GeneratedCodeCache::ReadComplete(PendingOperation* op) {
   DCHECK(Operation::kFetch == op->operation() ||
          Operation::kFetchWithSHAKey == op->operation());
   if (!op->succeeded()) {
-    op->TakeReadCallback().Run(base::Time(), mojo_base::BigBuffer());
+    op->RunReadCallback(this, base::Time(), mojo_base::BigBuffer());
     // Doom this entry since it is inaccessible.
     DoomEntry(op);
   } else {
@@ -771,12 +820,12 @@ void GeneratedCodeCache::ReadComplete(PendingOperation* op) {
         mojo_base::BigBuffer data(data_size);
         memcpy(data.data(), op->small_buffer()->data() + kHeaderSizeInBytes,
                data_size);
-        op->TakeReadCallback().Run(response_time, std::move(data));
+        op->RunReadCallback(this, response_time, std::move(data));
       } else if (!ShouldDeduplicateEntry(data_size)) {
         // Large data below the merging threshold, or deduplication is disabled.
         // Return the large buffer.
-        op->TakeReadCallback().Run(response_time,
-                                   op->large_buffer()->TakeBuffer());
+        op->RunReadCallback(this, response_time,
+                            op->large_buffer()->TakeBuffer());
       } else {
         // Very large data. Create the second fetch using the checksum as key.
         DCHECK_EQ(static_cast<int>(kHeaderSizeInBytes + kSHAKeySizeInBytes),
@@ -788,13 +837,14 @@ void GeneratedCodeCache::ReadComplete(PendingOperation* op) {
         auto large_buffer = base::MakeRefCounted<BigIOBuffer>(data_size);
         auto op2 = std::make_unique<PendingOperation>(
             Operation::kFetchWithSHAKey, checksum_key, response_time,
-            small_buffer, large_buffer, op->TakeReadCallback());
+            op->start_time(), small_buffer, large_buffer,
+            op->TakeReadCallback());
         EnqueueOperation(std::move(op2));
       }
     } else {
       // Large merged code data with no header. |op| holds the response time.
-      op->TakeReadCallback().Run(op->response_time(),
-                                 op->large_buffer()->TakeBuffer());
+      op->RunReadCallback(this, op->response_time(),
+                          op->large_buffer()->TakeBuffer());
     }
   }
   CloseOperationAndIssueNext(op);

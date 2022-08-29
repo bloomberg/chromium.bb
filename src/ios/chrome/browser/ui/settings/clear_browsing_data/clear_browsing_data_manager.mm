@@ -36,6 +36,7 @@
 #include "ios/chrome/browser/feature_engagement/tracker_factory.h"
 #include "ios/chrome/browser/history/web_history_service_factory.h"
 #import "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/net/crurl.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "ios/chrome/browser/signin/authentication_service.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
@@ -46,6 +47,7 @@
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
+#import "ios/chrome/browser/ui/icons/chrome_symbol.h"
 #import "ios/chrome/browser/ui/list_model/list_model.h"
 #import "ios/chrome/browser/ui/settings/cells/clear_browsing_data_constants.h"
 #import "ios/chrome/browser/ui/settings/cells/search_engine_item.h"
@@ -88,9 +90,41 @@ const std::vector<BrowsingDataRemoveMask> _browsingDataRemoveFlags = {
     BrowsingDataRemoveMask::REMOVE_FORM_DATA,
 };
 
-}  // namespace
+// The size of the symbol image used in the 'Clear Browsing Data' view.
+NSInteger kSymbolPointSize = 22;
 
-static NSDictionary* _imageNamesByItemTypes = @{
+// Specific symbols used in the 'Clear Browsing Data' view.
+NSString* kCachedDataSymbol = @"photo.on.rectangle";
+NSString* kAutofillDataSymbol = @"wand.and.rays";
+
+// Returns the symbol coresponding to the given itemType.
+UIImage* SymbolForItemType(ClearBrowsingDataItemType itemType) {
+  UIImage* symbol = nil;
+  switch (itemType) {
+    case ItemTypeDataTypeBrowsingHistory:
+    case ItemTypeDataTypeCookiesSiteData:
+    case ItemTypeDataTypeSavedPasswords:
+      // TODO(crbug.com/1315544): update these cases when custom symbols are
+      // done.
+      symbol = DefaultSymbolTemplateWithPointSize(kCachedDataSymbol,
+                                                  kSymbolPointSize);
+      break;
+    case ItemTypeDataTypeCache:
+      symbol = DefaultSymbolTemplateWithPointSize(kCachedDataSymbol,
+                                                  kSymbolPointSize);
+      break;
+    case ItemTypeDataTypeAutofill:
+      symbol = DefaultSymbolTemplateWithPointSize(kAutofillDataSymbol,
+                                                  kSymbolPointSize);
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+  return symbol;
+}
+
+static NSDictionary* imageNamesByItemTypes = @{
   [NSNumber numberWithInteger:ItemTypeDataTypeBrowsingHistory] :
       @"clear_browsing_data_history",
   [NSNumber numberWithInteger:ItemTypeDataTypeCookiesSiteData] :
@@ -105,6 +139,8 @@ static NSDictionary* _imageNamesByItemTypes = @{
   [NSNumber numberWithInteger:ItemTypeDataTypeAutofill] :
       @"clear_browsing_data_autofill",
 };
+
+}  // namespace
 
 @interface ClearBrowsingDataManager () <BrowsingDataRemoverObserving,
                                         PrefObserverDelegate> {
@@ -187,19 +223,6 @@ static NSDictionary* _imageNamesByItemTypes = @{
 
     _prefChangeRegistrar.Init(_browserState->GetPrefs());
     _prefObserverBridge.reset(new PrefObserverBridge(self));
-    _prefObserverBridge->ObserveChangesForPreference(
-        browsing_data::prefs::kDeleteTimePeriod, &_prefChangeRegistrar);
-
-    _prefObserverBridge->ObserveChangesForPreference(
-        browsing_data::prefs::kDeleteBrowsingHistory, &_prefChangeRegistrar);
-    _prefObserverBridge->ObserveChangesForPreference(
-        browsing_data::prefs::kDeleteCookies, &_prefChangeRegistrar);
-    _prefObserverBridge->ObserveChangesForPreference(
-        browsing_data::prefs::kDeleteCache, &_prefChangeRegistrar);
-    _prefObserverBridge->ObserveChangesForPreference(
-        browsing_data::prefs::kDeletePasswords, &_prefChangeRegistrar);
-    _prefObserverBridge->ObserveChangesForPreference(
-        browsing_data::prefs::kDeleteFormData, &_prefChangeRegistrar);
   }
   return self;
 }
@@ -214,6 +237,26 @@ static NSDictionary* _imageNamesByItemTypes = @{
       toSectionWithIdentifier:SectionIdentifierTimeRange];
   [self addClearBrowsingDataItemsToModel:model];
   [self addSyncProfileItemsToModel:model];
+}
+
+- (void)prepare {
+  _prefObserverBridge->ObserveChangesForPreference(
+      browsing_data::prefs::kDeleteTimePeriod, &_prefChangeRegistrar);
+
+  _prefObserverBridge->ObserveChangesForPreference(
+      browsing_data::prefs::kDeleteBrowsingHistory, &_prefChangeRegistrar);
+  _prefObserverBridge->ObserveChangesForPreference(
+      browsing_data::prefs::kDeleteCookies, &_prefChangeRegistrar);
+  _prefObserverBridge->ObserveChangesForPreference(
+      browsing_data::prefs::kDeleteCache, &_prefChangeRegistrar);
+  _prefObserverBridge->ObserveChangesForPreference(
+      browsing_data::prefs::kDeletePasswords, &_prefChangeRegistrar);
+  _prefObserverBridge->ObserveChangesForPreference(
+      browsing_data::prefs::kDeleteFormData, &_prefChangeRegistrar);
+}
+
+- (void)disconnect {
+  _prefChangeRegistrar.RemoveAll();
 }
 
 // Add items for types of browsing data to clear.
@@ -344,37 +387,29 @@ static NSDictionary* _imageNamesByItemTypes = @{
   signin::IdentityManager* identityManager =
       IdentityManagerFactory::GetForBrowserState(self.browserState);
 
-  if (base::FeatureList::IsEnabled(kSearchHistoryLinkIOS)) {
-    const BOOL loggedIn =
-        identityManager->HasPrimaryAccount(signin::ConsentLevel::kSignin) ||
-        identityManager->HasPrimaryAccount(signin::ConsentLevel::kSync);
-    const TemplateURLService* templateURLService =
-        ios::TemplateURLServiceFactory::GetForBrowserState(_browserState);
-    const TemplateURL* defaultSearchEngine =
-        templateURLService->GetDefaultSearchProvider();
-    const BOOL isDefaultSearchEngineGoogle =
-        defaultSearchEngine->GetEngineType(
-            templateURLService->search_terms_data()) ==
-        SearchEngineType::SEARCH_ENGINE_GOOGLE;
-    // If the user has their DSE set to Google and is logged out
-    // there is no additional data to delete, so omit this section.
-    if (isDefaultSearchEngineGoogle && !loggedIn) {
-      // Nothing to do.
-    } else {
-      // Show additional instructions for deleting data.
-      [model addSectionWithIdentifier:SectionIdentifierGoogleAccount];
-      [model setFooter:[self footerGoogleAccountDSEBasedItem:loggedIn
-                                         defaultSearchEngine:defaultSearchEngine
-                                 isDefaultSearchEngineGoogle:
-                                     isDefaultSearchEngineGoogle]
-          forSectionWithIdentifier:SectionIdentifierGoogleAccount];
-    }
+  const BOOL loggedIn =
+      identityManager->HasPrimaryAccount(signin::ConsentLevel::kSignin) ||
+      identityManager->HasPrimaryAccount(signin::ConsentLevel::kSync);
+  const TemplateURLService* templateURLService =
+      ios::TemplateURLServiceFactory::GetForBrowserState(_browserState);
+  const TemplateURL* defaultSearchEngine =
+      templateURLService->GetDefaultSearchProvider();
+  const BOOL isDefaultSearchEngineGoogle =
+      defaultSearchEngine->GetEngineType(
+          templateURLService->search_terms_data()) ==
+      SearchEngineType::SEARCH_ENGINE_GOOGLE;
+  // If the user has their DSE set to Google and is logged out
+  // there is no additional data to delete, so omit this section.
+  if (isDefaultSearchEngineGoogle && !loggedIn) {
+    // Nothing to do.
   } else {
-    if (identityManager->HasPrimaryAccount(signin::ConsentLevel::kSync)) {
-      [model addSectionWithIdentifier:SectionIdentifierGoogleAccount];
-      [model setFooter:[self footerForGoogleAccountSectionItem]
-          forSectionWithIdentifier:SectionIdentifierGoogleAccount];
-    }
+    // Show additional instructions for deleting data.
+    [model addSectionWithIdentifier:SectionIdentifierGoogleAccount];
+    [model setFooter:[self footerGoogleAccountDSEBasedItem:loggedIn
+                                       defaultSearchEngine:defaultSearchEngine
+                               isDefaultSearchEngineGoogle:
+                                   isDefaultSearchEngineGoogle]
+        forSectionWithIdentifier:SectionIdentifierGoogleAccount];
   }
 
   [model addSectionWithIdentifier:SectionIdentifierSavedSiteData];
@@ -398,20 +433,6 @@ static NSDictionary* _imageNamesByItemTypes = @{
 
   __weak ClearBrowsingDataManager* weakSelf = self;
 
-  // The text notice at the bottom of the CBD selector is not needed when
-  // the Search History Link feature is enabled. However, the popup notice
-  // will be left for now.
-  if (!base::FeatureList::IsEnabled(kSearchHistoryLinkIOS)) {
-    browsing_data::ShouldShowNoticeAboutOtherFormsOfBrowsingHistory(
-        syncService, historyService, base::BindOnce(^(bool shouldShowNotice) {
-          ClearBrowsingDataManager* strongSelf = weakSelf;
-          [strongSelf
-              setShouldShowNoticeAboutOtherFormsOfBrowsingHistory:
-                  shouldShowNotice
-                                                         forModel:model];
-        }));
-  }
-
   browsing_data::ShouldPopupDialogAboutOtherFormsOfBrowsingHistory(
       syncService, historyService, GetChannel(),
       base::BindOnce(^(bool shouldShowPopup) {
@@ -434,8 +455,8 @@ static NSDictionary* _imageNamesByItemTypes = @{
 
 #pragma mark Items
 
-// Creates item of type |itemType| with |mask| of data to be cleared if
-// selected, |prefName|, and |titleId| of item.
+// Creates item of type `itemType` with `mask` of data to be cleared if
+// selected, `prefName`, and `titleId` of item.
 - (TableViewClearBrowsingDataItem*)
     clearDataItemWithType:(ClearBrowsingDataItemType)itemType
                   titleID:(int)titleMessageID
@@ -452,14 +473,21 @@ static NSDictionary* _imageNamesByItemTypes = @{
   clearDataItem.prefName = prefName;
   clearDataItem.checkedBackgroundColor = [[UIColor colorNamed:kBlueColor]
       colorWithAlphaComponent:kSelectedBackgroundColorAlpha];
-  clearDataItem.imageName = [_imageNamesByItemTypes
-      objectForKey:[NSNumber numberWithInteger:itemType]];
+
+  if (UseSymbols()) {
+    clearDataItem.image = SymbolForItemType(itemType);
+  } else {
+    clearDataItem.image = [UIImage
+        imageNamed:[imageNamesByItemTypes
+                       objectForKey:[NSNumber numberWithInteger:itemType]]];
+  }
+
   if (itemType == ItemTypeDataTypeCookiesSiteData) {
     // Because there is no counter for cookies, an explanatory text is
     // displayed.
     clearDataItem.detailText = l10n_util::GetNSString(IDS_DEL_COOKIES_COUNTER);
   } else {
-    // Having a placeholder |detailText| helps reduce the observable
+    // Having a placeholder `detailText` helps reduce the observable
     // row-height changes induced by the counter callbacks.
     clearDataItem.detailText = @"\u00A0";
     __weak ClearBrowsingDataManager* weakSelf = self;
@@ -500,26 +528,32 @@ static NSDictionary* _imageNamesByItemTypes = @{
     if (isDefaultSearchEngineGoogle) {
       footerItem.text =
           l10n_util::GetNSString(IDS_IOS_CLEAR_BROWSING_DATA_FOOTER_GOOGLE_DSE);
-      footerItem.urls = std::vector<GURL>{
-          google_util::AppendGoogleLocaleParam(
-              GURL(kClearBrowsingDataDSESearchUrlInFooterURL),
-              GetApplicationContext()->GetApplicationLocale()),
-          google_util::AppendGoogleLocaleParam(
-              GURL(kClearBrowsingDataDSEMyActivityUrlInFooterURL),
-              GetApplicationContext()->GetApplicationLocale())};
+      footerItem.urls = @[
+        [[CrURL alloc]
+            initWithGURL:google_util::AppendGoogleLocaleParam(
+                             GURL(kClearBrowsingDataDSESearchUrlInFooterURL),
+                             GetApplicationContext()->GetApplicationLocale())],
+        [[CrURL alloc]
+            initWithGURL:google_util::AppendGoogleLocaleParam(
+                             GURL(
+                                 kClearBrowsingDataDSEMyActivityUrlInFooterURL),
+                             GetApplicationContext()->GetApplicationLocale())]
+      ];
     } else if (defaultSearchEngine->prepopulate_id() > 0) {
       footerItem.text = l10n_util::GetNSStringF(
           IDS_IOS_CLEAR_BROWSING_DATA_FOOTER_KNOWN_DSE_SIGNED_IN,
           defaultSearchEngine->short_name());
-      footerItem.urls = std::vector<GURL>{google_util::AppendGoogleLocaleParam(
-          GURL(kClearBrowsingDataDSEMyActivityUrlInFooterURL),
-          GetApplicationContext()->GetApplicationLocale())};
+      footerItem.urls = @[ [[CrURL alloc]
+          initWithGURL:google_util::AppendGoogleLocaleParam(
+                           GURL(kClearBrowsingDataDSEMyActivityUrlInFooterURL),
+                           GetApplicationContext()->GetApplicationLocale())] ];
     } else {
       footerItem.text = l10n_util::GetNSString(
           IDS_IOS_CLEAR_BROWSING_DATA_FOOTER_UNKOWN_DSE_SIGNED_IN);
-      footerItem.urls = std::vector<GURL>{google_util::AppendGoogleLocaleParam(
-          GURL(kClearBrowsingDataDSEMyActivityUrlInFooterURL),
-          GetApplicationContext()->GetApplicationLocale())};
+      footerItem.urls = @[ [[CrURL alloc]
+          initWithGURL:google_util::AppendGoogleLocaleParam(
+                           GURL(kClearBrowsingDataDSEMyActivityUrlInFooterURL),
+                           GetApplicationContext()->GetApplicationLocale())] ];
     }
   } else {
     // Logged Out with Google DSE is handled in calling function since there
@@ -586,8 +620,10 @@ static NSDictionary* _imageNamesByItemTypes = @{
   TableViewLinkHeaderFooterItem* footerItem =
       [[TableViewLinkHeaderFooterItem alloc] initWithType:itemType];
   footerItem.text = l10n_util::GetNSString(titleMessageID);
-  footerItem.urls = std::vector<GURL>{google_util::AppendGoogleLocaleParam(
-      GURL(URL), GetApplicationContext()->GetApplicationLocale())};
+  footerItem.urls = @[ [[CrURL alloc]
+      initWithGURL:google_util::AppendGoogleLocaleParam(
+                       GURL(URL),
+                       GetApplicationContext()->GetApplicationLocale())] ];
   return footerItem;
 }
 
@@ -626,7 +662,7 @@ static NSDictionary* _imageNamesByItemTypes = @{
 
 #pragma mark - Private Methods
 
-// Signs the user out of Chrome if the sign-in state is |ConsentLevel::kSignin|.
+// Signs the user out of Chrome if the sign-in state is `ConsentLevel::kSignin`.
 - (void)signOutIfNotSyncing {
   DCHECK(self.browserState);
   signin::IdentityManager* identityManager =
@@ -668,7 +704,7 @@ static NSDictionary* _imageNamesByItemTypes = @{
     const bool showDialog =
         // 1. The dialog is relevant for the user.
         _shouldPopupDialogAboutOtherFormsOfBrowsingHistory &&
-        // 2. The notice has been shown less than |kMaxTimesHistoryNoticeShown|.
+        // 2. The notice has been shown less than `kMaxTimesHistoryNoticeShown`.
         noticeShownTimes < kMaxTimesHistoryNoticeShown;
     if (!showDialog) {
       return;

@@ -210,6 +210,12 @@ SkRect SkReadBuffer::readRect() {
 }
 
 SkSamplingOptions SkReadBuffer::readSampling() {
+    if (!this->isVersionLT(SkPicturePriv::kAnisotropicFilter)) {
+        int maxAniso = this->readInt();
+        if (maxAniso != 0) {
+            return SkSamplingOptions::Aniso(maxAniso);
+        }
+    }
     if (this->readBool()) {
         float B = this->readScalar();
         float C = this->readScalar();
@@ -332,7 +338,7 @@ sk_sp<SkImage> SkReadBuffer::readImage() {
             image = fProcs.fImageProc(data->data(), data->size(), fProcs.fImageCtx);
         }
         if (!image) {
-            skstd::optional<SkAlphaType> alphaType = skstd::nullopt;
+            std::optional<SkAlphaType> alphaType = std::nullopt;
             if (flags & SkWriteBufferImageFlags::kUnpremul) {
                 alphaType = kUnpremul_SkAlphaType;
             }
@@ -393,13 +399,17 @@ sk_sp<SkTypeface> SkReadBuffer::readTypeface() {
     }
 }
 
-SkFlattenable* SkReadBuffer::readFlattenable(SkFlattenable::Type ft) {
+SkFlattenable* SkReadBuffer::readRawFlattenable() {
     SkFlattenable::Factory factory = nullptr;
 
     if (fFactoryCount > 0) {
         int32_t index = this->read32();
         if (0 == index || !this->isValid()) {
             return nullptr; // writer failed to give us the flattenable
+        }
+        if (index < 0) {
+            this->validate(false);
+            return nullptr;
         }
         index -= 1;     // we stored the index-base-1
         if ((unsigned)index >= (unsigned)fFactoryCount) {
@@ -446,10 +456,6 @@ SkFlattenable* SkReadBuffer::readFlattenable(SkFlattenable::Type ft) {
             this->validate(false);
             return nullptr;
         }
-        if (obj && obj->getFlattenableType() != ft) {
-            this->validate(false);
-            return nullptr;
-        }
     } else {
         // we must skip the remaining data
         this->skip(sizeRecorded);
@@ -458,6 +464,16 @@ SkFlattenable* SkReadBuffer::readFlattenable(SkFlattenable::Type ft) {
         return nullptr;
     }
     return obj.release();
+}
+
+SkFlattenable* SkReadBuffer::readFlattenable(SkFlattenable::Type ft) {
+    SkFlattenable* obj = this->readRawFlattenable();
+    if (obj && obj->getFlattenableType() != ft) {
+        this->validate(false);
+        obj->unref();
+        return nullptr;
+    }
+    return obj;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

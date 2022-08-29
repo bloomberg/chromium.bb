@@ -10,19 +10,17 @@
 #include "ash/components/tether/active_host.h"
 #include "ash/components/tether/device_status_util.h"
 #include "ash/components/tether/keep_alive_operation.h"
+// TODO(https://crbug.com/1164001): move to forward declaration
+#include "ash/services/secure_channel/public/cpp/client/secure_channel_client.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace device_sync {
 class DeviceSyncClient;
-}  // namespace device_sync
-
-namespace secure_channel {
-class SecureChannelClient;
-}  // namespace secure_channel
+}
 
 namespace tether {
 
@@ -87,6 +85,6 @@ class KeepAliveScheduler : public ActiveHost::Observer,
 
 }  // namespace tether
 
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // ASH_COMPONENTS_TETHER_KEEP_ALIVE_SCHEDULER_H_

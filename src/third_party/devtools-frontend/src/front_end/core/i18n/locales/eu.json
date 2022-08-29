@@ -401,6 +401,21 @@
   "core/sdk/DebuggerModel.ts | withBlock": {
     "message": "With blokea"
   },
+  "core/sdk/EventBreakpointsModel.ts | auctionWorklet": {
+    "message": "Iragarkien enkanteak egiteko worklet-a"
+  },
+  "core/sdk/EventBreakpointsModel.ts | beforeBidderWorkletBiddingStart": {
+    "message": "Eskaintza bat egin nahi dutenek eskaintza egiteko fasearen hasiera"
+  },
+  "core/sdk/EventBreakpointsModel.ts | beforeBidderWorkletReportingStart": {
+    "message": "Eskaintza bat egin nahi dutenek txostenak bidaltzeko fasearen hasiera"
+  },
+  "core/sdk/EventBreakpointsModel.ts | beforeSellerWorkletReportingStart": {
+    "message": "Saltzaileek txostenak bidaltzeko fasearen hasiera"
+  },
+  "core/sdk/EventBreakpointsModel.ts | beforeSellerWorkletScoringStart": {
+    "message": "Saltzaileek puntuazioa emateko fasearen hasiera"
+  },
   "core/sdk/NetworkManager.ts | crossoriginReadBlockingCorb": {
     "message": "{PH2} MIME mota duen jatorri anitzeko {PH1} erantzuna blokeatu da jatorri anitzeko irakurketa blokeatzean. Xehetasun gehiagorako, joan https://www.chromestatus.com/feature/5629709824032768 helbidera."
   },
@@ -471,7 +486,7 @@
     "message": "Cookie hau blokeatu egin da haren bide-izena ez datorrelako guztiz bat eskaerako URLaren bide-izenarekin edo haren superdirektorioarekin."
   },
   "core/sdk/NetworkRequest.ts | samePartyFromCrossPartyContext": {
-    "message": "Cookie hau blokeatu egin da \"SameParty\" atributua izan arren eskaera domeinuen artekoa zelako. Domeinuen arteko gisa hartzen da eskaera, baliabidearen URLa eta baliabidea inguratzen duten markoak edo dokumentuak ez direlako First-Party sortaren jabeak, ezta kideak ere."
+    "message": "Cookie hau blokeatu egin da \"SameParty\" atributua izan arren eskaera domeinuen artekoa zelako. Domeinuen arteko gisa hartzen da eskaera, baliabidearen URLa eta baliabidea inguratzen duten markoak edo dokumentuak ez direlako domeinu multzo propioaren jabeak, ezta kideak ere."
   },
   "core/sdk/NetworkRequest.ts | sameSiteLax": {
     "message": "Cookie hau blokeatu egin da \"SameSite=Lax\" atributua zuelako, eskaera beste webgune batetik egin zelako eta ez zelako goi-mailako nabigazioaren bidez abiarazi."
@@ -510,7 +525,7 @@
     "message": "Set-Cookie goiburu honen sintaxiak ez du balio."
   },
   "core/sdk/NetworkRequest.ts | thisSetcookieWasBlockedBecauseItHadTheSameparty": {
-    "message": "Cookie bat Set-Cookie goiburu baten bidez ezartzeko saiakera blokeatu egin da \"SameParty\" atributua izan arren eskaera domeinuen artekoa zelako. Domeinuen arteko gisa hartzen da eskaera, baliabidearen URLa eta baliabidea inguratzen duten markoak edo dokumentuak ez direlako First-Party sortaren jabeak, ezta kideak ere."
+    "message": "Cookie bat Set-Cookie goiburu baten bidez ezartzeko saiakera blokeatu egin da \"SameParty\" atributua izan arren eskaera domeinuen artekoa zelako. Domeinuen arteko gisa hartzen da eskaera, baliabidearen URLa eta baliabidea inguratzen duten markoak edo dokumentuak ez direlako domeinu multzo propioaren jabeak, ezta kideak ere."
   },
   "core/sdk/NetworkRequest.ts | thisSetcookieWasBlockedBecauseItHadTheSamepartyAttribute": {
     "message": "Cookie bat Set-Cookie goiburu baten bidez ezartzeko saiakera blokeatu egin da \"SameParty\" atributua izan arren bestelako atributu gatazkatsuak zituelako. \"SameParty\" atributua erabiltzen duten cookieek \"Secure\" atributua ere izatea eta \"SameSite=Strict\" egoerara mugatuta ez egotea behar du Chrome-k."
@@ -644,9 +659,6 @@
   "core/sdk/sdk-meta.ts | disableWebpFormat": {
     "message": "Desgaitu WebP formatua"
   },
-  "core/sdk/sdk-meta.ts | disabledDarkMode": {
-    "message": "Desgaitu"
-  },
   "core/sdk/sdk-meta.ts | doNotCaptureAsyncStackTraces": {
     "message": "Ez kapturatu pilaren arrasto asinkronoak"
   },
@@ -679,6 +691,9 @@
   },
   "core/sdk/sdk-meta.ts | doNotShowGridTrackSizes": {
     "message": "Ez erakutsi saretaren pisten tamainak"
+  },
+  "core/sdk/sdk-meta.ts | doNotShowRulersOnHover": {
+    "message": "Ez erakutsi erregelarik helburu baten gainetik pasatzean"
   },
   "core/sdk/sdk-meta.ts | emulateAFocusedPage": {
     "message": "Emulatu orri fokuratua"
@@ -743,9 +758,6 @@
   "core/sdk/sdk-meta.ts | enableWebpFormat": {
     "message": "Gaitu WebP formatua"
   },
-  "core/sdk/sdk-meta.ts | enabledDarkMode": {
-    "message": "Gaitu"
-  },
   "core/sdk/sdk-meta.ts | extendGridLines": {
     "message": "Hedatu sareta-lerroak"
   },
@@ -754,9 +766,6 @@
   },
   "core/sdk/sdk-meta.ts | hideFramesPerSecondFpsMeter": {
     "message": "Ezkutatu irudiak segundoko (f/s) neurtzen dituen gailua"
-  },
-  "core/sdk/sdk-meta.ts | hideHittestBorders": {
-    "message": "Ezkutatu posizionamendu-probaren ertzak"
   },
   "core/sdk/sdk-meta.ts | hideLayerBorders": {
     "message": "Ezkutatu geruzaren ertzak"
@@ -812,9 +821,6 @@
   "core/sdk/sdk-meta.ts | showGridTrackSizes": {
     "message": "Erakutsi saretaren pisten tamainak"
   },
-  "core/sdk/sdk-meta.ts | showHittestBorders": {
-    "message": "Erakutsi posizionamendu-probaren ertzak"
-  },
   "core/sdk/sdk-meta.ts | showLayerBorders": {
     "message": "Erakutsi geruzaren ertzak"
   },
@@ -833,8 +839,8 @@
   "core/sdk/sdk-meta.ts | showPaintFlashingRectangles": {
     "message": "Erakutsi lauki keinukariak errendatzean"
   },
-  "core/sdk/sdk-meta.ts | showRulers": {
-    "message": "Erakutsi erregelak"
+  "core/sdk/sdk-meta.ts | showRulersOnHover": {
+    "message": "Erakutsi erregelak helburu baten gainetik pasatzean"
   },
   "core/sdk/sdk-meta.ts | showScrollPerformanceBottlenecks": {
     "message": "Erakutsi gora eta behera egitearen errendimendu-buxadurak"
@@ -875,14 +881,20 @@
   "entrypoints/inspector_main/RenderingOptions.ts | emulateAFocusedPage": {
     "message": "Emulatu orri fokuratua"
   },
+  "entrypoints/inspector_main/RenderingOptions.ts | emulateAutoDarkMode": {
+    "message": "Gaitu modu ilun automatikoa"
+  },
   "entrypoints/inspector_main/RenderingOptions.ts | emulatesAFocusedPage": {
     "message": "Fokuratutako orri bat emulatzen du."
   },
   "entrypoints/inspector_main/RenderingOptions.ts | emulatesAutoDarkMode": {
-    "message": "Modu ilun automatikoa gaitzen du ikuskatutako orrian."
+    "message": "Modu ilun automatikoa gaitzen du, eta dark gisa ezartzen prefers-color-scheme."
   },
   "entrypoints/inspector_main/RenderingOptions.ts | forcesCssColorgamutMediaFeature": {
     "message": "CSSren color-gamut multimedia-eginbidea behartzen du"
+  },
+  "entrypoints/inspector_main/RenderingOptions.ts | forcesCssForcedColors": {
+    "message": "CSSren forced-colors multimedia-eginbidea behartzen du"
   },
   "entrypoints/inspector_main/RenderingOptions.ts | forcesCssPreferscolorschemeMedia": {
     "message": "CSSren prefers-color-scheme multimedia-eginbidea behartzen du"
@@ -920,9 +932,6 @@
   "entrypoints/inspector_main/RenderingOptions.ts | highlightsFramesRedDetectedToBe": {
     "message": "Iragarki gisa hautemandako markoak (gorria) nabarmentzen ditu."
   },
-  "entrypoints/inspector_main/RenderingOptions.ts | hittestBorders": {
-    "message": "Posizionamendu-probaren ertzak"
-  },
   "entrypoints/inspector_main/RenderingOptions.ts | layerBorders": {
     "message": "Geruzaren ertzak"
   },
@@ -943,9 +952,6 @@
   },
   "entrypoints/inspector_main/RenderingOptions.ts | showsAnOverlayWithCoreWebVitals": {
     "message": "Gainjartze bat erakusten du webgunearen oinarrizko estatistiken bidez."
-  },
-  "entrypoints/inspector_main/RenderingOptions.ts | showsBordersAroundHittestRegions": {
-    "message": "Posizionamendu-probaren eremuen inguruko ertzak erakusten ditu."
   },
   "entrypoints/inspector_main/RenderingOptions.ts | showsLayerBordersOrangeoliveAnd": {
     "message": "Geruzaren ertzak (laranja / oliba-kolorea) eta lauzak (ziana) erakusten ditu."
@@ -998,10 +1004,13 @@
   "entrypoints/inspector_main/inspector_main-meta.ts | showRendering": {
     "message": "Erakutsi errendatzea"
   },
+  "entrypoints/inspector_main/inspector_main-meta.ts | toggleCssPrefersColorSchemeMedia": {
+    "message": "Toggle forces CSS prefers-color-scheme color"
+  },
   "entrypoints/inspector_main/inspector_main-meta.ts | visionDeficiency": {
     "message": "ikusmen-urritasuna"
   },
-  "entrypoints/js_app/JsMain.ts | main": {
+  "entrypoints/js_app/js_app.ts | main": {
     "message": "Nagusia"
   },
   "entrypoints/main/MainImpl.ts | customizeAndControlDevtools": {
@@ -1036,9 +1045,6 @@
   },
   "entrypoints/main/MainImpl.ts | showConsoleDrawer": {
     "message": "Erakutsi kontsolaren panel lerrakorra"
-  },
-  "entrypoints/main/MainImpl.ts | theSystempreferredColorSchemeHas": {
-    "message": "Aldatu egin da sistemak hobetsitako kolore-eskema. Aldaketa hori DevTools-en aplikatzeko, kargatu berriro."
   },
   "entrypoints/main/MainImpl.ts | undockIntoSeparateWindow": {
     "message": "Kendu ainguratzea eta jarri beste leiho batean"
@@ -1190,41 +1196,41 @@
   "entrypoints/main/main-meta.ts | zoomOut": {
     "message": "Txikitu"
   },
-  "entrypoints/node_app/node_app-meta.ts | node": {
-    "message": "Nodoa"
-  },
-  "entrypoints/node_app/node_app-meta.ts | showNode": {
-    "message": "Nodoa"
-  },
-  "entrypoints/node_main/NodeConnectionsPanel.ts | addConnection": {
+  "entrypoints/node_app/NodeConnectionsPanel.ts | addConnection": {
     "message": "Gehitu konexio bat"
   },
-  "entrypoints/node_main/NodeConnectionsPanel.ts | networkAddressEgLocalhost": {
+  "entrypoints/node_app/NodeConnectionsPanel.ts | networkAddressEgLocalhost": {
     "message": "Sarearen helbidea (adib., localhost:9229)"
   },
-  "entrypoints/node_main/NodeConnectionsPanel.ts | noConnectionsSpecified": {
+  "entrypoints/node_app/NodeConnectionsPanel.ts | noConnectionsSpecified": {
     "message": "Ez da zehaztu konexiorik"
   },
-  "entrypoints/node_main/NodeConnectionsPanel.ts | nodejsDebuggingGuide": {
+  "entrypoints/node_app/NodeConnectionsPanel.ts | nodejsDebuggingGuide": {
     "message": "Node.js arazteko gida"
   },
-  "entrypoints/node_main/NodeConnectionsPanel.ts | specifyNetworkEndpointAnd": {
+  "entrypoints/node_app/NodeConnectionsPanel.ts | specifyNetworkEndpointAnd": {
     "message": "Zehaztu sarearen amaiera-puntua, eta DevTools hartara konektatuko da automatikoki. Informazio gehiago lortzeko, irakurri {PH1}."
   },
-  "entrypoints/node_main/NodeMain.ts | main": {
+  "entrypoints/node_app/NodeMain.ts | main": {
     "message": "Nagusia"
   },
-  "entrypoints/node_main/NodeMain.ts | nodejsS": {
+  "entrypoints/node_app/NodeMain.ts | nodejsS": {
     "message": "Node.js: {PH1}"
   },
-  "entrypoints/node_main/node_main-meta.ts | connection": {
+  "entrypoints/node_app/node_app.ts | connection": {
     "message": "Konexioa"
   },
-  "entrypoints/node_main/node_main-meta.ts | node": {
+  "entrypoints/node_app/node_app.ts | networkTitle": {
+    "message": "Nodoa"
+  },
+  "entrypoints/node_app/node_app.ts | node": {
     "message": "nodoa"
   },
-  "entrypoints/node_main/node_main-meta.ts | showConnection": {
+  "entrypoints/node_app/node_app.ts | showConnection": {
     "message": "Erakutsi konexioa"
+  },
+  "entrypoints/node_app/node_app.ts | showNode": {
+    "message": "Nodoa"
   },
   "entrypoints/worker_app/WorkerMain.ts | main": {
     "message": "Nagusia"
@@ -1304,6 +1310,9 @@
   "models/har/Writer.ts | writingFile": {
     "message": "Fitxategian idazten…"
   },
+  "models/issues_manager/ClientHintIssue.ts | clientHintsInfrastructure": {
+    "message": "Bezeroaren goiburu-eremuen azpiegitura"
+  },
   "models/issues_manager/ContentSecurityPolicyIssue.ts | contentSecurityPolicyEval": {
     "message": "Edukiaren segurtasun-gidalerroak: ebaluazioa"
   },
@@ -1311,7 +1320,7 @@
     "message": "Edukiaren segurtasun-gidalerroak: txertatutako kodea"
   },
   "models/issues_manager/ContentSecurityPolicyIssue.ts | contentSecurityPolicySource": {
-    "message": "Edukiaren segurtasun-gidalerroak - Onartutakoen zerrendak (iturburukoak)"
+    "message": "Edukiaren segurtasun-gidalerroak - Baimendutakoen zerrendak (iturburukoak)"
   },
   "models/issues_manager/ContentSecurityPolicyIssue.ts | trustedTypesFixViolations": {
     "message": "Trusted Types - Konpondu urratzeak"
@@ -1319,17 +1328,182 @@
   "models/issues_manager/ContentSecurityPolicyIssue.ts | trustedTypesPolicyViolation": {
     "message": "Trusted Types - Gidalerro-urratzea"
   },
+  "models/issues_manager/CookieIssue.ts | aSecure": {
+    "message": "seguru"
+  },
+  "models/issues_manager/CookieIssue.ts | anInsecure": {
+    "message": "ez-segurua"
+  },
+  "models/issues_manager/CookieIssue.ts | firstPartySetsExplained": {
+    "message": "First-Party Sets eta SameParty atributua"
+  },
+  "models/issues_manager/CookieIssue.ts | howSchemefulSamesiteWorks": {
+    "message": "Webgune bereko eskemaren funtzionamendua"
+  },
+  "models/issues_manager/CookieIssue.ts | samesiteCookiesExplained": {
+    "message": "SameSite-ko cookieen azalpena"
+  },
   "models/issues_manager/CorsIssue.ts | CORS": {
     "message": "Jatorri anitzeko baliabideak partekatzea (CORS)"
   },
-  "models/issues_manager/CorsIssue.ts | corsForPrivateNetworksRfc": {
-    "message": "Sare pribatuetarako CORS (RFC1918)"
+  "models/issues_manager/CorsIssue.ts | corsPrivateNetworkAccess": {
+    "message": "Sare pribaturako sarbidea"
   },
   "models/issues_manager/CrossOriginEmbedderPolicyIssue.ts | coopAndCoep": {
     "message": "Jatorri anitzeko irekitzaileari buruzko gidalerroak eta Jatorri anitzeko kapsulatzeari buruzko gidalerroak"
   },
   "models/issues_manager/CrossOriginEmbedderPolicyIssue.ts | samesiteAndSameorigin": {
     "message": "Webgune berekoa eta jatorri berekoa"
+  },
+  "models/issues_manager/DeprecationIssue.ts | authorizationCoveredByWildcard": {
+    "message": "Authorization will not be covered by the wildcard symbol (*) in CORS Access-Control-Allow-Headers handling."
+  },
+  "models/issues_manager/DeprecationIssue.ts | canRequestURLHTTPContainingNewline": {
+    "message": "Resource requests whose URLs contained both removed whitespace \\(n|r|t) characters and less-than characters (<) are blocked. Please remove newlines and encode less-than characters from places like element attribute values in order to load these resources."
+  },
+  "models/issues_manager/DeprecationIssue.ts | chromeLoadTimesConnectionInfo": {
+    "message": "chrome.loadTimes() is deprecated, instead use standardized API: Navigation Timing 2."
+  },
+  "models/issues_manager/DeprecationIssue.ts | chromeLoadTimesFirstPaintAfterLoadTime": {
+    "message": "chrome.loadTimes() is deprecated, instead use standardized API: Paint Timing."
+  },
+  "models/issues_manager/DeprecationIssue.ts | chromeLoadTimesWasAlternateProtocolAvailable": {
+    "message": "chrome.loadTimes() is deprecated, instead use standardized API: nextHopProtocol in Navigation Timing 2."
+  },
+  "models/issues_manager/DeprecationIssue.ts | cookieWithTruncatingChar": {
+    "message": "Cookies containing a \\(0|r|n) character will be rejected instead of truncated."
+  },
+  "models/issues_manager/DeprecationIssue.ts | crossOriginAccessBasedOnDocumentDomain": {
+    "message": "Relaxing the same-origin policy by setting document.domain is deprecated, and will be disabled by default. This deprecation warning is for a cross-origin access that was enabled by setting document.domain."
+  },
+  "models/issues_manager/DeprecationIssue.ts | crossOriginWindowApi": {
+    "message": "Triggering {PH1} from cross origin iframes has been deprecated and will be removed in the future."
+  },
+  "models/issues_manager/DeprecationIssue.ts | cssSelectorInternalMediaControlsOverlayCastButton": {
+    "message": "The disableRemotePlayback attribute should be used in order to disable the default Cast integration instead of using -internal-media-controls-overlay-cast-button selector."
+  },
+  "models/issues_manager/DeprecationIssue.ts | customCursorIntersectsViewport": {
+    "message": "Custom cursors with size greater than 32x32 DIP intersecting native UI is deprecated and will be removed."
+  },
+  "models/issues_manager/DeprecationIssue.ts | deprecatedWithReplacement": {
+    "message": "{PH1} is deprecated. Please use {PH2} instead."
+  },
+  "models/issues_manager/DeprecationIssue.ts | deprecationExample": {
+    "message": "Zaharkitze-arazo bati dagokion itzulitako mezu baten adibide bat da hau."
+  },
+  "models/issues_manager/DeprecationIssue.ts | documentDomainSettingWithoutOriginAgentClusterHeader": {
+    "message": "Relaxing the same-origin policy by setting document.domain is deprecated, and will be disabled by default. To continue using this feature, please opt-out of origin-keyed agent clusters by sending an Origin-Agent-Cluster: ?0 header along with the HTTP response for the document and frames. See https://developer.chrome.com/blog/immutable-document-domain/ for more details."
+  },
+  "models/issues_manager/DeprecationIssue.ts | eventPath": {
+    "message": "Event.path is deprecated and will be removed. Please use Event.composedPath() instead."
+  },
+  "models/issues_manager/DeprecationIssue.ts | feature": {
+    "message": "Xehetasun gehiago lortzeko, ikusi eginbideen egoeraren orria."
+  },
+  "models/issues_manager/DeprecationIssue.ts | geolocationInsecureOrigin": {
+    "message": "getCurrentPosition() and watchPosition() no longer work on insecure origins. To use this feature, you should consider switching your application to a secure origin, such as HTTPS. See https://goo.gle/chrome-insecure-origins for more details."
+  },
+  "models/issues_manager/DeprecationIssue.ts | geolocationInsecureOriginDeprecatedNotRemoved": {
+    "message": "getCurrentPosition() and watchPosition() are deprecated on insecure origins. To use this feature, you should consider switching your application to a secure origin, such as HTTPS. See https://goo.gle/chrome-insecure-origins for more details."
+  },
+  "models/issues_manager/DeprecationIssue.ts | getUserMediaInsecureOrigin": {
+    "message": "getUserMedia() no longer works on insecure origins. To use this feature, you should consider switching your application to a secure origin, such as HTTPS. See https://goo.gle/chrome-insecure-origins for more details."
+  },
+  "models/issues_manager/DeprecationIssue.ts | hostCandidateAttributeGetter": {
+    "message": "RTCPeerConnectionIceErrorEvent.hostCandidate is deprecated. Please use RTCPeerConnectionIceErrorEvent.address or RTCPeerConnectionIceErrorEvent.port instead."
+  },
+  "models/issues_manager/DeprecationIssue.ts | insecurePrivateNetworkSubresourceRequest": {
+    "message": "The website requested a subresource from a network that it could only access because of its users' privileged network position. These requests expose non-public devices and servers to the internet, increasing the risk of a cross-site request forgery (CSRF) attack, and/or information leakage. To mitigate these risks, Chrome deprecates requests to non-public subresources when initiated from non-secure contexts, and will start blocking them."
+  },
+  "models/issues_manager/DeprecationIssue.ts | legacyConstraintGoogIPv6": {
+    "message": "IPv6 is enabled-by-default and the ability to disable it using googIPv6 will soon be removed. Please stop using this legacy constraint."
+  },
+  "models/issues_manager/DeprecationIssue.ts | localCSSFileExtensionRejected": {
+    "message": "CSS cannot be loaded from file: URLs unless they end in a .css file extension."
+  },
+  "models/issues_manager/DeprecationIssue.ts | mediaElementAudioSourceNode": {
+    "message": "Creating a MediaElementAudioSourceNode on an OfflineAudioContext is deprecated and will be removed."
+  },
+  "models/issues_manager/DeprecationIssue.ts | mediaSourceAbortRemove": {
+    "message": "Using SourceBuffer.abort() to abort remove()'s asynchronous range removal is deprecated due to specification change. Support will be removed in the future. You should instead await updateend. abort() is intended to only abort an asynchronous media append or reset parser state."
+  },
+  "models/issues_manager/DeprecationIssue.ts | mediaSourceDurationTruncatingBuffered": {
+    "message": "Setting MediaSource.duration below the highest presentation timestamp of any buffered coded frames is deprecated due to specification change. Support for implicit removal of truncated buffered media will be removed in the future. You should instead perform explicit remove(newDuration, oldDuration) on all sourceBuffers, where newDuration < oldDuration."
+  },
+  "models/issues_manager/DeprecationIssue.ts | milestone": {
+    "message": "{milestone}. bertsioa instalatzean jarriko da indarrean aldaketa."
+  },
+  "models/issues_manager/DeprecationIssue.ts | noSysexWebMIDIWithoutPermission": {
+    "message": "Web MIDI will ask a permission to use even if the sysex is not specified in the MIDIOptions."
+  },
+  "models/issues_manager/DeprecationIssue.ts | notificationInsecureOrigin": {
+    "message": "The Notification API may no longer be used from insecure origins. You should consider switching your application to a secure origin, such as HTTPS. See https://goo.gle/chrome-insecure-origins for more details."
+  },
+  "models/issues_manager/DeprecationIssue.ts | notificationPermissionRequestedIframe": {
+    "message": "Permission for the Notification API may no longer be requested from a cross-origin iframe. You should consider requesting permission from a top-level frame or opening a new window instead."
+  },
+  "models/issues_manager/DeprecationIssue.ts | obsoleteWebRtcCipherSuite": {
+    "message": "Your partner is negotiating an obsolete (D)TLS version. Please check with your partner to have this fixed."
+  },
+  "models/issues_manager/DeprecationIssue.ts | paymentRequestBasicCard": {
+    "message": "The basic-card payment method is deprecated and will be removed."
+  },
+  "models/issues_manager/DeprecationIssue.ts | paymentRequestShowWithoutGesture": {
+    "message": "Calling PaymentRequest.show() without user activation is deprecated and will be removed."
+  },
+  "models/issues_manager/DeprecationIssue.ts | pictureSourceSrc": {
+    "message": "<source src> with a <picture> parent is invalid and therefore ignored. Please use <source srcset> instead."
+  },
+  "models/issues_manager/DeprecationIssue.ts | prefixedStorageInfo": {
+    "message": "window.webkitStorageInfo is deprecated. Please use navigator.webkitTemporaryStorage or navigator.webkitPersistentStorage instead."
+  },
+  "models/issues_manager/DeprecationIssue.ts | requestedSubresourceWithEmbeddedCredentials": {
+    "message": "Subresource requests whose URLs contain embedded credentials (e.g. https://user:pass@host/) are blocked."
+  },
+  "models/issues_manager/DeprecationIssue.ts | rtcConstraintEnableDtlsSrtpFalse": {
+    "message": "The constraint DtlsSrtpKeyAgreement is removed. You have specified a false value for this constraint, which is interpreted as an attempt to use the removed SDES key negotiation method. This functionality is removed; use a service that supports DTLS key negotiation instead."
+  },
+  "models/issues_manager/DeprecationIssue.ts | rtcConstraintEnableDtlsSrtpTrue": {
+    "message": "The constraint DtlsSrtpKeyAgreement is removed. You have specified a true value for this constraint, which had no effect, but you can remove this constraint for tidiness."
+  },
+  "models/issues_manager/DeprecationIssue.ts | rtcPeerConnectionComplexPlanBSdpUsingDefaultSdpSemantics": {
+    "message": "Complex Plan B SDP detected. This dialect of the Session Description Protocol is no longer supported. Please use Unified Plan SDP instead."
+  },
+  "models/issues_manager/DeprecationIssue.ts | rtcPeerConnectionSdpSemanticsPlanB": {
+    "message": "Plan B SDP semantics, which is used when constructing an RTCPeerConnection with {sdpSemantics:'plan-b'}, is a legacy non-standard version of the Session Description Protocol that has been permanently deleted from the Web Platform. It is still available when building with IS_FUCHSIA, but we intend to delete it as soon as possible. Stop depending on it. See https://crbug.com/1302249 for status."
+  },
+  "models/issues_manager/DeprecationIssue.ts | rtcpMuxPolicyNegotiate": {
+    "message": "The rtcpMuxPolicy option is deprecated and will be removed."
+  },
+  "models/issues_manager/DeprecationIssue.ts | rtpDataChannel": {
+    "message": "RTP data channels are no longer supported. The RtpDataChannels constraint is currently ignored, and may cause an error at a later date."
+  },
+  "models/issues_manager/DeprecationIssue.ts | sharedArrayBufferConstructedWithoutIsolation": {
+    "message": "SharedArrayBuffer will require cross-origin isolation. See https://developer.chrome.com/blog/enabling-shared-array-buffer/ for more details."
+  },
+  "models/issues_manager/DeprecationIssue.ts | textToSpeech_DisallowedByAutoplay": {
+    "message": "speechSynthesis.speak() without user activation is deprecated and will be removed."
+  },
+  "models/issues_manager/DeprecationIssue.ts | title": {
+    "message": "Zaharkituta dagoen eginbide bat erabili da"
+  },
+  "models/issues_manager/DeprecationIssue.ts | v8SharedArrayBufferConstructedInExtensionWithoutIsolation": {
+    "message": "Extensions should opt into cross-origin isolation to continue using SharedArrayBuffer. See https://developer.chrome.com/docs/extensions/mv3/cross-origin-isolation/."
+  },
+  "models/issues_manager/DeprecationIssue.ts | vendorSpecificApi": {
+    "message": "{PH1} is vendor-specific. Please use the standard {PH2} instead."
+  },
+  "models/issues_manager/DeprecationIssue.ts | xhrJSONEncodingDetection": {
+    "message": "UTF-16 is not supported by response json in XMLHttpRequest"
+  },
+  "models/issues_manager/DeprecationIssue.ts | xmlHttpRequestSynchronousInNonWorkerOutsideBeforeUnload": {
+    "message": "Synchronous XMLHttpRequest on the main thread is deprecated because of its detrimental effects to the end user’s experience. For more help, check https://xhr.spec.whatwg.org/."
+  },
+  "models/issues_manager/DeprecationIssue.ts | xrSupportsSession": {
+    "message": "supportsSession() is deprecated. Please use isSessionSupported() and check the resolved boolean value instead."
+  },
+  "models/issues_manager/FederatedAuthRequestIssue.ts | fedCm": {
+    "message": "Federated Credential Management API"
   },
   "models/issues_manager/GenericIssue.ts | crossOriginPortalPostMessage": {
     "message": "Atariak (jatorri bereko komunikazio-kanalak)"
@@ -1367,29 +1541,11 @@
   "models/issues_manager/QuirksModeIssue.ts | documentCompatibilityMode": {
     "message": "Dokumentuen bateragarritasun modua"
   },
-  "models/issues_manager/SameSiteCookieIssue.ts | aSecure": {
-    "message": "seguru"
-  },
-  "models/issues_manager/SameSiteCookieIssue.ts | anInsecure": {
-    "message": "ez-segurua"
-  },
-  "models/issues_manager/SameSiteCookieIssue.ts | firstPartySetsExplained": {
-    "message": "First-Party Sets eta SameParty atributua"
-  },
-  "models/issues_manager/SameSiteCookieIssue.ts | howSchemefulSamesiteWorks": {
-    "message": "Webgune bereko eskemaren funtzionamendua"
-  },
-  "models/issues_manager/SameSiteCookieIssue.ts | samesiteCookiesExplained": {
-    "message": "SameSite-ko cookieen azalpena"
-  },
   "models/issues_manager/SharedArrayBufferIssue.ts | enablingSharedArrayBuffer": {
     "message": "SharedArrayBuffer gaitzen"
   },
   "models/issues_manager/TrustedWebActivityIssue.ts | changesToQualityCriteriaForPwas": {
     "message": "Aldaketak egon dira sareko jarduera fidagarriak erabiltzen dituzten PWAen kalitate-irizpideetan"
-  },
-  "models/issues_manager/WasmCrossOriginModuleSharingIssue.ts | linkTitle": {
-    "message": "Wasm modulua partekatzeko aukera jatorri berera murriztea"
   },
   "models/logs/NetworkLog.ts | anonymous": {
     "message": "<anonimoa>"
@@ -1414,9 +1570,6 @@
   },
   "models/logs/logs-meta.ts | reset": {
     "message": "berrezarri"
-  },
-  "models/persistence/Automapping.ts | theAttemptToBindSInTheWorkspace": {
-    "message": "Lan-eremuan \"{PH1}\" lortzeko saiakerak huts egin du URIa gaizki eratuta dagoelako."
   },
   "models/persistence/EditFileSystemView.ts | add": {
     "message": "Gehitu"
@@ -1559,8 +1712,17 @@
   "panels/accessibility/AXBreadcrumbsPane.ts | accessibilityTree": {
     "message": "Erabilerraztasun-zuhaitza"
   },
+  "panels/accessibility/AXBreadcrumbsPane.ts | fullTreeExperimentDescription": {
+    "message": "DOMaren zuhaitzaren goialdeko eskuineko ertzera eraman da erabilerraztasun-zuhaitza."
+  },
+  "panels/accessibility/AXBreadcrumbsPane.ts | fullTreeExperimentName": {
+    "message": "Gaitu orri osoko erabilerraztasun-zuhaitza"
+  },
   "panels/accessibility/AXBreadcrumbsPane.ts | ignored": {
     "message": "Ez ikusi egin zaio"
+  },
+  "panels/accessibility/AXBreadcrumbsPane.ts | reloadRequired": {
+    "message": "Berriro kargatu behar da aldaketak eragina izan dezan."
   },
   "panels/accessibility/AXBreadcrumbsPane.ts | scrollIntoView": {
     "message": "Egin gora edo behera ikusgai egon arte"
@@ -2051,6 +2213,12 @@
   "panels/application/AppManifestView.ts | couldNotDownloadARequiredIcon": {
     "message": "Ezin izan da deskargatu beharrezko ikono bat manifestutik"
   },
+  "panels/application/AppManifestView.ts | darkBackgroundColor": {
+    "message": "Atzeko plano ilunaren kolorea"
+  },
+  "panels/application/AppManifestView.ts | darkThemeColor": {
+    "message": "Gai ilunaren kolorea"
+  },
   "panels/application/AppManifestView.ts | description": {
     "message": "Azalpena"
   },
@@ -2315,384 +2483,6 @@
   "panels/application/ApplicationPanelSidebar.ts | worker": {
     "message": "langilea"
   },
-  "panels/application/BackForwardCacheStrings.ts | HTTPMethodNotGET": {
-    "message": "Aurreko orria cachean gordetzeko eginbidea GET eskaera baten bidez kargatutako orrietan bakarrik dago erabilgarri."
-  },
-  "panels/application/BackForwardCacheStrings.ts | HTTPStatusNotOK": {
-    "message": "2XX egoera-kodea duten orriak bakarrik gorde daitezke cachean."
-  },
-  "panels/application/BackForwardCacheStrings.ts | JavaScriptExecution": {
-    "message": "Chrome-k JavaScript exekutatzeko saiakera bat hauteman du cachean gordeta zegoen bitartean."
-  },
-  "panels/application/BackForwardCacheStrings.ts | appBanner": {
-    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri AppBanner bat eskatu duten orrietan."
-  },
-  "panels/application/BackForwardCacheStrings.ts | backForwardCacheDisabled": {
-    "message": "Eginbide esperimentalek aurreko orria cachean gordetzeko eginbidea desaktibatu dute. Joan chrome://flags/#back-forward-cache ezarpenera eginbidea gailu honetan gaitzeko."
-  },
-  "panels/application/BackForwardCacheStrings.ts | backForwardCacheDisabledByCommandLine": {
-    "message": "Agindu-lerroak desgaitu du aurreko orria cachean gordetzeko eginbidea."
-  },
-  "panels/application/BackForwardCacheStrings.ts | backForwardCacheDisabledByLowMemory": {
-    "message": "Aurreko orria cachean gordetzeko eginbidea desaktibatuta dago ez dagoelako behar adina memoria."
-  },
-  "panels/application/BackForwardCacheStrings.ts | backForwardCacheDisabledForDelegate": {
-    "message": "Eskuordeak ez du onartzen aurreko orria cachean gordetzeko eginbidea."
-  },
-  "panels/application/BackForwardCacheStrings.ts | backForwardCacheDisabledForPrerender": {
-    "message": "Aurreko orria cachean gordetzeko eginbidea desgaitu da aurrez errendatzeko prozesua gauzatzeko."
-  },
-  "panels/application/BackForwardCacheStrings.ts | broadcastChannel": {
-    "message": "Ezin da gorde orria cachean, erregistratutako hautemaileak dituen BroadcastChannel instantzia bat duelako."
-  },
-  "panels/application/BackForwardCacheStrings.ts | cacheControlNoStore": {
-    "message": "Aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri goiburua cache-control:no-store gisa ezarrita daukaten orrietan."
-  },
-  "panels/application/BackForwardCacheStrings.ts | cacheFlushed": {
-    "message": "Cachea berariaz garbitu da."
-  },
-  "panels/application/BackForwardCacheStrings.ts | cacheLimit": {
-    "message": "Orria cachetik kendu da, cachean beste orri bat gorde ahal izateko."
-  },
-  "panels/application/BackForwardCacheStrings.ts | containsPlugins": {
-    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri pluginak erabiltzen dituzten orrietan."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentFileChooser": {
-    "message": "Aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri FileChooser APIa erabiltzen duten orrietan."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentFileSystemAccess": {
-    "message": "Aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri File System Access APIa erabiltzen duten orrietan."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentMediaDevicesDispatcherHost": {
-    "message": "Aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri Media Device Dispatcher erabiltzen duten orrietan."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentMediaPlay": {
-    "message": "Multimedia-erreproduzigailu bat zerbait erreproduzitzen ari zen orritik irtetean."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentMediaSession": {
-    "message": "Aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri MediaSession APIa erabiltzen duten eta erreprodukzio-egoera bat ezarri duten orrietan."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentMediaSessionService": {
-    "message": "Aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri MediaSession APIa erabiltzen duten eta ekintza-kudeatzaileak ezartzen dituzten orrietan."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentSecurityHandler": {
-    "message": "Aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri SecurityHandler erabiltzen duten orrietan."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentSerial": {
-    "message": "Aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri Serial APIa erabiltzen duten orrietan."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentWebAuthenticationAPI": {
-    "message": "Aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri WebAuthetication APIa erabiltzen duten orrietan."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentWebBluetooth": {
-    "message": "Aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri WebBluetooth APIa erabiltzen duten orrietan."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentWebUSB": {
-    "message": "Aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri WebUSB APIa erabiltzen duten orrietan."
-  },
-  "panels/application/BackForwardCacheStrings.ts | dedicatedWorkerOrWorklet": {
-    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri worker dedikatu bat edo worklet bat erabiltzen duten orrietan."
-  },
-  "panels/application/BackForwardCacheStrings.ts | documentLoaded": {
-    "message": "Dokumentua ez zegoen guztiz kargatuta handik irtetean."
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderAppBannerManager": {
-    "message": "EmbedderAppBannerManager"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderChromePasswordManagerClientBindCredentialManager": {
-    "message": "EmbedderChromePasswordManagerClientBindCredentialManager"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderDomDistillerSelfDeletingRequestDelegate": {
-    "message": "EmbedderDomDistillerSelfDeletingRequestDelegate"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderDomDistillerViewerSource": {
-    "message": "EmbedderDomDistillerViewerSource"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderExtensionMessaging": {
-    "message": "EmbedderExtensionMessaging"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderExtensionMessagingForOpenPort": {
-    "message": "EmbedderExtensionMessagingForOpenPort"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderExtensionSentMessageToCachedFrame": {
-    "message": "EmbedderExtensionSentMessageToCachedFrame"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderExtensions": {
-    "message": "EmbedderExtensions"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderModalDialog": {
-    "message": "EmbedderModalDialog"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderOfflinePage": {
-    "message": "EmbedderOfflinePage"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderOomInterventionTabHelper": {
-    "message": "EmbedderOomInterventionTabHelper"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderPermissionRequestManager": {
-    "message": "EmbedderPermissionRequestManager"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderPopupBlockerTabHelper": {
-    "message": "EmbedderPopupBlockerTabHelper"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderSafeBrowsingThreatDetails": {
-    "message": "EmbedderSafeBrowsingThreatDetails"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderSafeBrowsingTriggeredPopupBlocker": {
-    "message": "EmbedderSafeBrowsingTriggeredPopupBlocker"
-  },
-  "panels/application/BackForwardCacheStrings.ts | enteredBackForwardCacheBeforeServiceWorkerHostAdded": {
-    "message": "Service worker bat aktibatu da orria aurreko orriaren cachean gordeta zegoen bitartean."
-  },
-  "panels/application/BackForwardCacheStrings.ts | foregroundCacheLimit": {
-    "message": "Orria cachetik kendu da, cachean beste orri bat gorde ahal izateko."
-  },
-  "panels/application/BackForwardCacheStrings.ts | grantedMediaStreamAccess": {
-    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri multimedia-edukia zuzenean erreproduzitzeko sarbidea ematen duten orrietan."
-  },
-  "panels/application/BackForwardCacheStrings.ts | haveInnerContents": {
-    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri atariak erabiltzen dituzten orrietan."
-  },
-  "panels/application/BackForwardCacheStrings.ts | idleManager": {
-    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri IdleManager erabiltzen duten orrietan."
-  },
-  "panels/application/BackForwardCacheStrings.ts | indexedDBConnection": {
-    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri IndexedDB motako konexio ireki bat duten orrietan."
-  },
-  "panels/application/BackForwardCacheStrings.ts | ineligibleAPI": {
-    "message": "API desegokiak erabili dira."
-  },
-  "panels/application/BackForwardCacheStrings.ts | injectedJavascript": {
-    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri JavaScript luzapenen bidez txertatuta daukaten orrietan."
-  },
-  "panels/application/BackForwardCacheStrings.ts | injectedStyleSheet": {
-    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri StyleSheet luzapenen bidez txertatu den orrietan."
-  },
-  "panels/application/BackForwardCacheStrings.ts | internalError": {
-    "message": "Barneko errorea."
-  },
-  "panels/application/BackForwardCacheStrings.ts | keyboardLock": {
-    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri teklatuaren blokeoa erabiltzen duten orrietan."
-  },
-  "panels/application/BackForwardCacheStrings.ts | loading": {
-    "message": "Orria ez zegoen guztiz kargatuta handik irtetean."
-  },
-  "panels/application/BackForwardCacheStrings.ts | mainResourceHasCacheControlNoCache": {
-    "message": "Aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri baliabide nagusia cache-control:no-cache gisa ezarrita daukaten orrietan."
-  },
-  "panels/application/BackForwardCacheStrings.ts | mainResourceHasCacheControlNoStore": {
-    "message": "Aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri baliabide nagusia cache-control:no-store gisa ezarrita daukaten orrietan."
-  },
-  "panels/application/BackForwardCacheStrings.ts | navigationCancelledWhileRestoring": {
-    "message": "Orria aurreko orriaren cachetik leheneratu aurretik, bertan behera utzi da nabigazioa."
-  },
-  "panels/application/BackForwardCacheStrings.ts | networkExceedsBufferLimit": {
-    "message": "Orria cachetik kendu da, sareko konexio aktibo batek datu gehiegi jaso dituelako. Chrome-k mugatu egiten du orri batek cachean gordeta dagoen bitartean jaso dezakeen datu kopurua."
-  },
-  "panels/application/BackForwardCacheStrings.ts | networkRequestDatapipeDrainedAsBytesConsumer": {
-    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri fetch() edo XHR abian duten orrietan."
-  },
-  "panels/application/BackForwardCacheStrings.ts | networkRequestRedirected": {
-    "message": "Orria aurreko orriaren cachetik kendu da, sareko eskaera aktibo batek birbideratze bat eragin duelako."
-  },
-  "panels/application/BackForwardCacheStrings.ts | networkRequestTimeout": {
-    "message": "Orria cachetik kendu da sareko konexio bat luzaroegi egon delako irekita. Chrome-k mugatu egiten du orri batek cachean gordeta dagoen bitartean datuak jasotzeko duen denbora."
-  },
-  "panels/application/BackForwardCacheStrings.ts | noResponseHead": {
-    "message": "Aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri balio duen erantzun-goibururik ez duten orrietan."
-  },
-  "panels/application/BackForwardCacheStrings.ts | notMainFrame": {
-    "message": "Nabigazioa marko nagusia ez den marko batean egin da."
-  },
-  "panels/application/BackForwardCacheStrings.ts | optInUnloadHeaderNotPresent": {
-    "message": "Aurreko orria cachean gordetzeko eginbidea aukeratzeko goibururik gabeko deskarga-kudeatzailea dauka orriak."
-  },
-  "panels/application/BackForwardCacheStrings.ts | outstandingIndexedDBTransaction": {
-    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri indexatutako datu-baseetako transakzioak dituzten orrietan."
-  },
-  "panels/application/BackForwardCacheStrings.ts | outstandingNetworkRequestDirectSocket": {
-    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri sareko eskaera bat abian duten orrietan."
-  },
-  "panels/application/BackForwardCacheStrings.ts | outstandingNetworkRequestFetch": {
-    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri fetch sareko eskaera bat abian duten orrietan."
-  },
-  "panels/application/BackForwardCacheStrings.ts | outstandingNetworkRequestOthers": {
-    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri sareko eskaera bat abian duten orrietan."
-  },
-  "panels/application/BackForwardCacheStrings.ts | outstandingNetworkRequestXHR": {
-    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri XHR sareko eskaera bat abian duten orrietan."
-  },
-  "panels/application/BackForwardCacheStrings.ts | paymentManager": {
-    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri PaymentManager erabiltzen duten orrietan."
-  },
-  "panels/application/BackForwardCacheStrings.ts | pictureInPicture": {
-    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri pantaila txiki gainjarriko modua erabiltzen duten orrietan."
-  },
-  "panels/application/BackForwardCacheStrings.ts | portal": {
-    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri atariak erabiltzen dituzten orrietan."
-  },
-  "panels/application/BackForwardCacheStrings.ts | printing": {
-    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri inprimatze-interfazea erakusten duten orrietan."
-  },
-  "panels/application/BackForwardCacheStrings.ts | relatedActiveContentsExist": {
-    "message": "Orria window.open() erabilita ireki da eta beste fitxa batek hari egiten dio erreferentzia, edo orriak leiho bat ireki du."
-  },
-  "panels/application/BackForwardCacheStrings.ts | rendererProcessCrashed": {
-    "message": "Aurreko orriaren cachean gordetako orriaren errendatze-prozesuak huts egin du."
-  },
-  "panels/application/BackForwardCacheStrings.ts | rendererProcessKilled": {
-    "message": "Geldiarazi egin da aurreko orriaren cachean gordetako orriaren errendatze-prozesua."
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedAudioCapturePermission": {
-    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri audioa grabatzeko baimenak eskatu dituzten orrietan."
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedBackForwardCacheBlockedSensors": {
-    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri sentsore-baimenak eskatu dituzten orrietan."
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedBackgroundWorkPermission": {
-    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri atzeko planoko sinkronizazioa edo eskuratze-baimenak eskatu dituzten orrietan."
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedMIDIPermission": {
-    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri MIDI baimenak eskatu dituzten orrietan."
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedNotificationsPermission": {
-    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri jakinarazpenak bidaltzeko baimenak eskatu dituzten orrietan."
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedStorageAccessGrant": {
-    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri memoriarako sarbidea eskatu duten orrietan."
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedVideoCapturePermission": {
-    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri bideoa grabatzeko baimenak eskatu dituzten orrietan."
-  },
-  "panels/application/BackForwardCacheStrings.ts | schemeNotHTTPOrHTTPS": {
-    "message": "HTTP edo HTTPS URL eskema duten orriak bakarrik gorde daitezke cachean."
-  },
-  "panels/application/BackForwardCacheStrings.ts | serviceWorkerClaim": {
-    "message": "Service worker batek erreklamatu du orria hura aurreko orriaren cachean gordeta zegoen bitartean."
-  },
-  "panels/application/BackForwardCacheStrings.ts | serviceWorkerPostMessage": {
-    "message": "Service worker bat MessageEvent bat bidaltzen saiatu da aurreko orriaren cachean gordetako orrira."
-  },
-  "panels/application/BackForwardCacheStrings.ts | serviceWorkerUnregistration": {
-    "message": "Orri bat aurreko orriaren cachean gordeta zegoen bitartean, ServiceWorker erregistratu gabe zegoen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | serviceWorkerVersionActivation": {
-    "message": "Service worker-aren aktibazio bat dela eta, aurreko orriaren cachetik kendu da orria."
-  },
-  "panels/application/BackForwardCacheStrings.ts | sessionRestored": {
-    "message": "Chrome berrabiarazi egin da eta aurreko orrien cacheko sarrerak garbitu ditu."
-  },
-  "panels/application/BackForwardCacheStrings.ts | sharedWorker": {
-    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri SharedWorker erabiltzen duten orrietan."
-  },
-  "panels/application/BackForwardCacheStrings.ts | speechRecognizer": {
-    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri SpeechRecognizer erabiltzen duten orrietan."
-  },
-  "panels/application/BackForwardCacheStrings.ts | speechSynthesis": {
-    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri SpeechSynthesis erabiltzen duten orrietan."
-  },
-  "panels/application/BackForwardCacheStrings.ts | subframeIsNavigating": {
-    "message": "Orriko iframe batek osatu gabe zegoen nabigazio bat abiarazi du."
-  },
-  "panels/application/BackForwardCacheStrings.ts | subresourceHasCacheControlNoCache": {
-    "message": "Aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri azpibaliabidea cache-control:no-cache gisa ezarrita daukaten orrietan."
-  },
-  "panels/application/BackForwardCacheStrings.ts | subresourceHasCacheControlNoStore": {
-    "message": "Aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri azpibaliabidea cache-control:no-store gisa ezarrita daukaten orrietan."
-  },
-  "panels/application/BackForwardCacheStrings.ts | timeout": {
-    "message": "Orriak aurreko orriaren cachean gordeta egon daitekeen gehieneko denbora gainditu du eta iraungi egin da."
-  },
-  "panels/application/BackForwardCacheStrings.ts | timeoutPuttingInCache": {
-    "message": "Aurreko orria cachean gordetzeko eginbidea erabiltzeko denbora-muga gainditu du orriak (ziurrenik, iraupen luzeko pagehide kudeatzaileen ondorioz)."
-  },
-  "panels/application/BackForwardCacheStrings.ts | unloadHandlerExistsInMainFrame": {
-    "message": "Orriak deskarga-kudeatzaile bat dauka marko nagusian."
-  },
-  "panels/application/BackForwardCacheStrings.ts | unloadHandlerExistsInSubFrame": {
-    "message": "Orriak deskarga-kudeatzaile bat du azpimarko batean."
-  },
-  "panels/application/BackForwardCacheStrings.ts | userAgentOverrideDiffers": {
-    "message": "Arakatzaileak erabiltzaile-agentearen ordezkapen-goiburua aldatu du."
-  },
-  "panels/application/BackForwardCacheStrings.ts | wasGrantedMediaAccess": {
-    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri bideoa edo audioa grabatzeko sarbidea eman duten orrietan."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webDatabase": {
-    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri WebDatabase erabiltzen duten orrietan."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webHID": {
-    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri WebHID erabiltzen duten orrietan."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webLocks": {
-    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri WebLocks erabiltzen duten orrietan."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webNfc": {
-    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri WebNfc erabiltzen duten orrietan."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webOTPService": {
-    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri WebOTPService erabiltzen duten orrietan."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webRTC": {
-    "message": "Aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri WebRTC erabiltzen duten orrietan."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webShare": {
-    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri WebShare erabiltzen duten orrietan."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webSocket": {
-    "message": "Aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri WebSocket erabiltzen duten orrietan."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webTransport": {
-    "message": "Aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri WebTransport erabiltzen duten orrietan."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webXR": {
-    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri WebXR erabiltzen duten orrietan."
-  },
-  "panels/application/BackForwardCacheView.ts | backForwardCacheTitle": {
-    "message": "Aurreko orria cachean gordetzeko eginbidea"
-  },
-  "panels/application/BackForwardCacheView.ts | bfcacheStatus": {
-    "message": "Aurreko orria cachean gordetzeko eginbidearen egoera"
-  },
-  "panels/application/BackForwardCacheView.ts | circumstantial": {
-    "message": "Ezin da gauzatu arazoa konpontzeko ekintzarik"
-  },
-  "panels/application/BackForwardCacheView.ts | circumstantialExplanation": {
-    "message": "Arrazoi hauek gauzatu ezin diren ekintzak dira; hau da, orriaren zuzeneko kontroletik kanpo gertatutako zerbaitek eragotzi du orria cachean gordetzea."
-  },
-  "panels/application/BackForwardCacheView.ts | mainFrame": {
-    "message": "Marko nagusia"
-  },
-  "panels/application/BackForwardCacheView.ts | normalNavigation": {
-    "message": "Nabigazio normala (ez da leheneratu aurreko orria cachean gordetzeko eginbidetik)"
-  },
-  "panels/application/BackForwardCacheView.ts | pageSupportNeeded": {
-    "message": "Arazoa konpontzeko ekintza gauza daiteke"
-  },
-  "panels/application/BackForwardCacheView.ts | pageSupportNeededExplanation": {
-    "message": "Arrazoi hauek gauza daitezkeen ekintzak dira; hau da, arrazoiak garbitu egin daitezke aurreko orria cachean gordetzeko eginbidea erabilgarri egon dadin."
-  },
-  "panels/application/BackForwardCacheView.ts | restoredFromBFCache": {
-    "message": "Aurreko orria cachean gordetzeko eginbidetik leheneratuta"
-  },
-  "panels/application/BackForwardCacheView.ts | runTest": {
-    "message": "Egin proba"
-  },
-  "panels/application/BackForwardCacheView.ts | supportPending": {
-    "message": "Laguntza jasotzeko zain dago"
-  },
-  "panels/application/BackForwardCacheView.ts | supportPendingExplanation": {
-    "message": "Arrazoi hauekiko bateragarritasuna zain dago Chrome-n; hau da, arrazoiek ez dute eragotziko aurreko orria cachean gordetzeko eginbidea orrian erabilgarri egotea."
-  },
-  "panels/application/BackForwardCacheView.ts | unavailable": {
-    "message": "ez dago erabilgarri"
-  },
-  "panels/application/BackForwardCacheView.ts | unknown": {
-    "message": "ezezaguna"
-  },
-  "panels/application/BackForwardCacheView.ts | url": {
-    "message": "URLa"
-  },
   "panels/application/BackgroundServiceView.ts | backgroundFetch": {
     "message": "Atzeko planoan eskuratzeko ekintza"
   },
@@ -2911,6 +2701,15 @@
   },
   "panels/application/IndexedDBViews.ts | version": {
     "message": "Bertsioa"
+  },
+  "panels/application/InterestGroupStorageView.ts | clickToDisplayBody": {
+    "message": "Egin klik interes-taldeen gertaeretako batean talde haren oraingo egoera ikusteko"
+  },
+  "panels/application/InterestGroupStorageView.ts | noDataAvailable": {
+    "message": "Ez dago hautatutako interes-taldeari buruzko xehetasunik erabilgarri. Agian arakatzailea jada ez da taldean egongo."
+  },
+  "panels/application/InterestGroupTreeElement.ts | interestGroups": {
+    "message": "Interes-taldeak"
   },
   "panels/application/OpenedWindowDetailsView.ts | accessToOpener": {
     "message": "Irekitzailerako sarbidea"
@@ -3251,6 +3050,411 @@
   "panels/application/application-meta.ts | stopRecordingEvents": {
     "message": "Utzi gertaerak grabatzeari"
   },
+  "panels/application/components/BackForwardCacheStrings.ts | HTTPMethodNotGET": {
+    "message": "Aurreko orria cachean gordetzeko eginbidea GET eskaera baten bidez kargatutako orrietan bakarrik dago erabilgarri."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | HTTPStatusNotOK": {
+    "message": "2XX egoera-kodea duten orriak bakarrik gorde daitezke cachean."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | JavaScriptExecution": {
+    "message": "Chrome-k JavaScript exekutatzeko saiakera bat hauteman du cachean gordeta zegoen bitartean."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | appBanner": {
+    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri AppBanner bat eskatu duten orrietan."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | backForwardCacheDisabled": {
+    "message": "Eginbide esperimentalek aurreko orria cachean gordetzeko eginbidea desaktibatu dute. Joan chrome://flags/#back-forward-cache ezarpenera eginbidea gailu honetan gaitzeko."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | backForwardCacheDisabledByCommandLine": {
+    "message": "Agindu-lerroak desgaitu du aurreko orria cachean gordetzeko eginbidea."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | backForwardCacheDisabledByLowMemory": {
+    "message": "Aurreko orria cachean gordetzeko eginbidea desaktibatuta dago ez dagoelako behar adina memoria."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | backForwardCacheDisabledForDelegate": {
+    "message": "Kapsulatzeko tresnak ez du onartzen aurreko orria cachean gordetzeko eginbidea."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | backForwardCacheDisabledForPrerender": {
+    "message": "Aurreko orria cachean gordetzeko eginbidea desgaitu da aurrez errendatzeko prozesua gauzatzeko."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | broadcastChannel": {
+    "message": "Ezin da gorde orria cachean, erregistratutako hautemaileak dituen BroadcastChannel instantzia bat duelako."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | cacheControlNoStore": {
+    "message": "Aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri goiburua cache-control:no-store gisa ezarrita daukaten orrietan."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | cacheFlushed": {
+    "message": "Cachea berariaz garbitu da."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | cacheLimit": {
+    "message": "Orria cachetik kendu da, cachean beste orri bat gorde ahal izateko."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | containsPlugins": {
+    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri pluginak erabiltzen dituzten orrietan."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentFileChooser": {
+    "message": "Aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri FileChooser APIa erabiltzen duten orrietan."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentFileSystemAccess": {
+    "message": "Aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri File System Access APIa erabiltzen duten orrietan."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentMediaDevicesDispatcherHost": {
+    "message": "Aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri Media Device Dispatcher erabiltzen duten orrietan."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentMediaPlay": {
+    "message": "Multimedia-erreproduzigailu bat zerbait erreproduzitzen ari zen orritik irtetean."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentMediaSession": {
+    "message": "Aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri MediaSession APIa erabiltzen duten eta erreprodukzio-egoera bat ezarri duten orrietan."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentMediaSessionService": {
+    "message": "Aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri MediaSession APIa erabiltzen duten eta ekintza-kudeatzaileak ezartzen dituzten orrietan."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentScreenReader": {
+    "message": "Arreko orria cachean gordetzeko eginbidea desgaituta dago pantaila-irakurgailua dela-eta."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentSecurityHandler": {
+    "message": "Aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri SecurityHandler erabiltzen duten orrietan."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentSerial": {
+    "message": "Aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri Serial APIa erabiltzen duten orrietan."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentWebAuthenticationAPI": {
+    "message": "Aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri WebAuthetication APIa erabiltzen duten orrietan."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentWebBluetooth": {
+    "message": "Aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri WebBluetooth APIa erabiltzen duten orrietan."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentWebUSB": {
+    "message": "Aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri WebUSB APIa erabiltzen duten orrietan."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | dedicatedWorkerOrWorklet": {
+    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri worker dedikatu bat edo worklet bat erabiltzen duten orrietan."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | documentLoaded": {
+    "message": "Dokumentua ez zegoen guztiz kargatuta handik irtetean."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderAppBannerManager": {
+    "message": "Orritik irtetean, aplikazioaren goiburuko mezu bat zegoen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderChromePasswordManagerClientBindCredentialManager": {
+    "message": "Orritik irtetean, Chrome-ren Pasahitz-kudeatzailea zegoen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderDomDistillerSelfDeletingRequestDelegate": {
+    "message": "Orritik irtetean, DOMaren destilazioa abian zen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderDomDistillerViewerSource": {
+    "message": "Orritik irtetean, DOMaren destilatzailearen ikustailea zegoen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderExtensionMessaging": {
+    "message": "Aurreko orria cachean gordetzeko eginbidea desgaituta dago luzapenek mezularitza APIak erabiltzen dituztelako."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderExtensionMessagingForOpenPort": {
+    "message": "Etengabeko konexioak darabiltzaten luzapenek konexio horiek amaiarazi behar dituzte aurreko orria cachean gordetzeko eginbidea erabili aurretik."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderExtensionSentMessageToCachedFrame": {
+    "message": "Etengabeko konexioak darabiltzaten luzapenak aurreko orria cachean gordetzeko eginbidea erabili duten markoei mezuak bidaltzen saiatu dira."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderExtensions": {
+    "message": "Aurreko orria cachean gordetzeko eginbidea desgaituta dago luzapenak direla-eta."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderModalDialog": {
+    "message": "Orritik irtetean, leiho gainerakor bat ikusgai zegoen orrian (adibidez, inprimakiak berriro bidaltzeko edo http motako pasahitzak idazteko leiho bat)."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderOfflinePage": {
+    "message": "Orritik irtetean, konexiorik gabeko orria ikusgai zegoen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderOomInterventionTabHelper": {
+    "message": "Orritik irtetean, memoriarik gabeko esku-hartzearen barra zegoen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderPermissionRequestManager": {
+    "message": "Orritik irtetean, baimen-eskaerak zeuden."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderPopupBlockerTabHelper": {
+    "message": "Orritik irtetean, leiho gainerakorren blokeatzailea zegoen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderSafeBrowsingThreatDetails": {
+    "message": "Orritik irtetean, Arakatze segurua eginbidearen xehetasunak ikusgai zeuden."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderSafeBrowsingTriggeredPopupBlocker": {
+    "message": "Arakatze segurua eginbideak leiho gainerakor bat blokeatu du erabiltzaileak orria oker erabiltzen ari zelako."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | enteredBackForwardCacheBeforeServiceWorkerHostAdded": {
+    "message": "Service worker bat aktibatu da orria aurreko orriaren cachean gordeta zegoen bitartean."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | errorDocument": {
+    "message": "Aurreko orria cachean gordetzeko eginbidea desgaituta dago errore bat gertatu delako dokumentuan."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | fencedFramesEmbedder": {
+    "message": "FencedFrames darabilten orriak ezin dira gorde aurreko orria cachean gordetzeko eginbidearen bidez."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | foregroundCacheLimit": {
+    "message": "Orria cachetik kendu da, cachean beste orri bat gorde ahal izateko."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | grantedMediaStreamAccess": {
+    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri multimedia-edukia zuzenean erreproduzitzeko sarbidea ematen duten orrietan."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | haveInnerContents": {
+    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri atariak erabiltzen dituzten orrietan."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | idleManager": {
+    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri IdleManager erabiltzen duten orrietan."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | indexedDBConnection": {
+    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri IndexedDB motako konexio ireki bat duten orrietan."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | ineligibleAPI": {
+    "message": "API desegokiak erabili dira."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | injectedJavascript": {
+    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri JavaScript luzapenen bidez txertatuta daukaten orrietan."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | injectedStyleSheet": {
+    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri StyleSheet luzapenen bidez txertatu den orrietan."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | internalError": {
+    "message": "Barneko errorea."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | keyboardLock": {
+    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri teklatuaren blokeoa erabiltzen duten orrietan."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | loading": {
+    "message": "Orria ez zegoen guztiz kargatuta handik irtetean."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | mainResourceHasCacheControlNoCache": {
+    "message": "Aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri baliabide nagusia cache-control:no-cache gisa ezarrita daukaten orrietan."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | mainResourceHasCacheControlNoStore": {
+    "message": "Aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri baliabide nagusia cache-control:no-store gisa ezarrita daukaten orrietan."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | navigationCancelledWhileRestoring": {
+    "message": "Orria aurreko orriaren cachetik leheneratu aurretik, bertan behera utzi da nabigazioa."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | networkExceedsBufferLimit": {
+    "message": "Orria cachetik kendu da, sareko konexio aktibo batek datu gehiegi jaso dituelako. Chrome-k mugatu egiten du orri batek cachean gordeta dagoen bitartean jaso dezakeen datu kopurua."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | networkRequestDatapipeDrainedAsBytesConsumer": {
+    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri fetch() edo XHR abian duten orrietan."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | networkRequestRedirected": {
+    "message": "Orria aurreko orriaren cachetik kendu da, sareko eskaera aktibo batek birbideratze bat eragin duelako."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | networkRequestTimeout": {
+    "message": "Orria cachetik kendu da sareko konexio bat luzaroegi egon delako irekita. Chrome-k mugatu egiten du orri batek cachean gordeta dagoen bitartean datuak jasotzeko duen denbora."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | noResponseHead": {
+    "message": "Aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri balio duen erantzun-goibururik ez duten orrietan."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | notMainFrame": {
+    "message": "Nabigazioa marko nagusia ez den marko batean egin da."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | outstandingIndexedDBTransaction": {
+    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri indexatutako datu-baseetako transakzioak dituzten orrietan."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | outstandingNetworkRequestDirectSocket": {
+    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri sareko eskaera bat abian duten orrietan."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | outstandingNetworkRequestFetch": {
+    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri fetch sareko eskaera bat abian duten orrietan."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | outstandingNetworkRequestOthers": {
+    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri sareko eskaera bat abian duten orrietan."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | outstandingNetworkRequestXHR": {
+    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri XHR sareko eskaera bat abian duten orrietan."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | paymentManager": {
+    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri PaymentManager erabiltzen duten orrietan."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | pictureInPicture": {
+    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri pantaila txiki gainjarriko modua erabiltzen duten orrietan."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | portal": {
+    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri atariak erabiltzen dituzten orrietan."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | printing": {
+    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri inprimatze-interfazea erakusten duten orrietan."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | relatedActiveContentsExist": {
+    "message": "Orria window.open() erabilita ireki da, eta beste fitxa batek hari egiten dio erreferentzia, edo orriak leiho bat ireki du."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | rendererProcessCrashed": {
+    "message": "Aurreko orriaren cachean gordetako orriaren errendatze-prozesuak huts egin du."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | rendererProcessKilled": {
+    "message": "Geldiarazi egin da aurreko orriaren cachean gordetako orriaren errendatze-prozesua."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedAudioCapturePermission": {
+    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri audioa grabatzeko baimenak eskatu dituzten orrietan."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedBackForwardCacheBlockedSensors": {
+    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri sentsore-baimenak eskatu dituzten orrietan."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedBackgroundWorkPermission": {
+    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri atzeko planoko sinkronizazioa edo eskuratze-baimenak eskatu dituzten orrietan."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedMIDIPermission": {
+    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri MIDI baimenak eskatu dituzten orrietan."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedNotificationsPermission": {
+    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri jakinarazpenak bidaltzeko baimenak eskatu dituzten orrietan."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedStorageAccessGrant": {
+    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri memoriarako sarbidea eskatu duten orrietan."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedVideoCapturePermission": {
+    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri bideoa grabatzeko baimenak eskatu dituzten orrietan."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | schemeNotHTTPOrHTTPS": {
+    "message": "HTTP edo HTTPS URL eskema duten orriak bakarrik gorde daitezke cachean."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | serviceWorkerClaim": {
+    "message": "Service worker batek erreklamatu du orria hura aurreko orriaren cachean gordeta zegoen bitartean."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | serviceWorkerPostMessage": {
+    "message": "Service worker bat MessageEvent bat bidaltzen saiatu da aurreko orriaren cachean gordetako orrira."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | serviceWorkerUnregistration": {
+    "message": "Orri bat aurreko orriaren cachean gordeta zegoen bitartean, ServiceWorker erregistratu gabe zegoen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | serviceWorkerVersionActivation": {
+    "message": "Service worker-aren aktibazio bat dela eta, aurreko orriaren cachetik kendu da orria."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | sessionRestored": {
+    "message": "Chrome berrabiarazi egin da eta aurreko orrien cacheko sarrerak garbitu ditu."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | sharedWorker": {
+    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri SharedWorker erabiltzen duten orrietan."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | speechRecognizer": {
+    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri SpeechRecognizer erabiltzen duten orrietan."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | speechSynthesis": {
+    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri SpeechSynthesis erabiltzen duten orrietan."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | subframeIsNavigating": {
+    "message": "Orriko iframe batek osatu gabe zegoen nabigazio bat abiarazi du."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | subresourceHasCacheControlNoCache": {
+    "message": "Aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri azpibaliabidea cache-control:no-cache gisa ezarrita daukaten orrietan."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | subresourceHasCacheControlNoStore": {
+    "message": "Aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri azpibaliabidea cache-control:no-store gisa ezarrita daukaten orrietan."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | timeout": {
+    "message": "Orriak aurreko orriaren cachean gordeta egon daitekeen gehieneko denbora gainditu du eta iraungi egin da."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | timeoutPuttingInCache": {
+    "message": "Aurreko orria cachean gordetzeko eginbidea erabiltzeko denbora-muga gainditu du orriak (ziurrenik, iraupen luzeko pagehide kudeatzaileen ondorioz)."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | unloadHandlerExistsInMainFrame": {
+    "message": "Orriak deskarga-kudeatzaile bat dauka marko nagusian."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | unloadHandlerExistsInSubFrame": {
+    "message": "Orriak deskarga-kudeatzaile bat du azpimarko batean."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | userAgentOverrideDiffers": {
+    "message": "Arakatzaileak erabiltzaile-agentearen ordezkapen-goiburua aldatu du."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | wasGrantedMediaAccess": {
+    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri bideoa edo audioa grabatzeko sarbidea eman duten orrietan."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webDatabase": {
+    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri WebDatabase erabiltzen duten orrietan."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webHID": {
+    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri WebHID erabiltzen duten orrietan."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webLocks": {
+    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri WebLocks erabiltzen duten orrietan."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webNfc": {
+    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri WebNfc erabiltzen duten orrietan."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webOTPService": {
+    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri WebOTPService erabiltzen duten orrietan."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webRTC": {
+    "message": "Aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri WebRTC erabiltzen duten orrietan."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webShare": {
+    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri WebShare erabiltzen duten orrietan."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webSocket": {
+    "message": "Aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri WebSocket erabiltzen duten orrietan."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webTransport": {
+    "message": "Aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri WebTransport erabiltzen duten orrietan."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webXR": {
+    "message": "Une honetan, aurreko orria cachean gordetzeko eginbidea ez dago erabilgarri WebXR erabiltzen duten orrietan."
+  },
+  "panels/application/components/BackForwardCacheView.ts | backForwardCacheTitle": {
+    "message": "Aurreko orria cachean gordetzeko eginbidea"
+  },
+  "panels/application/components/BackForwardCacheView.ts | blankURLTitle": {
+    "message": "URL hutsa [{PH1}]"
+  },
+  "panels/application/components/BackForwardCacheView.ts | blockingExtensionId": {
+    "message": "Luzapenaren IDa: "
+  },
+  "panels/application/components/BackForwardCacheView.ts | circumstantial": {
+    "message": "Ezin da gauzatu arazoa konpontzeko ekintzarik"
+  },
+  "panels/application/components/BackForwardCacheView.ts | circumstantialExplanation": {
+    "message": "Arrazoi hauek gauzatu ezin diren ekintzak dira; hau da, orriaren zuzeneko kontroletik kanpo gertatutako zerbaitek eragotzi du orria cachean gordetzea."
+  },
+  "panels/application/components/BackForwardCacheView.ts | framesPerIssue": {
+    "message": "{n,plural, =1{# marko}other{# marko}}"
+  },
+  "panels/application/components/BackForwardCacheView.ts | framesTitle": {
+    "message": "Markoak"
+  },
+  "panels/application/components/BackForwardCacheView.ts | issuesInMultipleFrames": {
+    "message": "{n,plural, =1{# arazo aurkitu da {m} markotan.}other{# arazo aurkitu dira {m} markotan.}}"
+  },
+  "panels/application/components/BackForwardCacheView.ts | issuesInSingleFrame": {
+    "message": "{n,plural, =1{# arazo aurkitu da marko batean.}other{# arazo aurkitu dira marko batean.}}"
+  },
+  "panels/application/components/BackForwardCacheView.ts | learnMore": {
+    "message": "Lortu informazio gehiago: aurreko orria cachean gordetzeko eginbidea erabiltzeko egokitasuna"
+  },
+  "panels/application/components/BackForwardCacheView.ts | mainFrame": {
+    "message": "Marko nagusia"
+  },
+  "panels/application/components/BackForwardCacheView.ts | normalNavigation": {
+    "message": "Ez da leheneratu aurreko orria cachean gordetzeko eginbidetik: aurreko orria cachean gordetzeko eginbidea abiarazteko, erabili Chrome-ren aurrera eta atzera egiteko botoiak, edo erabili proba egiteko beheko botoia orritik automatikoki atera eta itzul dadin."
+  },
+  "panels/application/components/BackForwardCacheView.ts | pageSupportNeeded": {
+    "message": "Arazoa konpontzeko ekintza gauza daiteke"
+  },
+  "panels/application/components/BackForwardCacheView.ts | pageSupportNeededExplanation": {
+    "message": "Arrazoi hauek gauza daitezkeen ekintzak dira; hau da, arrazoiak garbitu egin daitezke aurreko orria cachean gordetzeko eginbidea erabilgarri egon dadin."
+  },
+  "panels/application/components/BackForwardCacheView.ts | restoredFromBFCache": {
+    "message": "Aurreko orria cachean gordetzeko eginbidetik leheneratu da."
+  },
+  "panels/application/components/BackForwardCacheView.ts | runTest": {
+    "message": "Probatu aurreko orria cachean gordetzeko eginbidea"
+  },
+  "panels/application/components/BackForwardCacheView.ts | runningTest": {
+    "message": "Abian da proba"
+  },
+  "panels/application/components/BackForwardCacheView.ts | supportPending": {
+    "message": "Laguntza jasotzeko zain dago"
+  },
+  "panels/application/components/BackForwardCacheView.ts | supportPendingExplanation": {
+    "message": "Arrazoi hauekiko bateragarritasuna zain dago Chrome-n; hau da, arrazoiek ez dute eragotziko aurreko orria cachean gordetzeko eginbidea Chrome-ren hurrengo bertsio batean erabilgarri egotea."
+  },
+  "panels/application/components/BackForwardCacheView.ts | unavailable": {
+    "message": "ez dago erabilgarri"
+  },
+  "panels/application/components/BackForwardCacheView.ts | unknown": {
+    "message": "Egoera ezezaguna"
+  },
+  "panels/application/components/BackForwardCacheView.ts | url": {
+    "message": "URLa:"
+  },
   "panels/application/components/EndpointsGrid.ts | noEndpointsToDisplay": {
     "message": "Ez dago amaiera-punturik bistaratzeko"
   },
@@ -3297,22 +3501,16 @@
     "message": "Sakatu hau Iturburuak panelean ager dadin"
   },
   "panels/application/components/FrameDetailsView.ts | createdByAdScriptExplanation": {
-    "message": "Marko hau sortu zenean, iragarki-script bat zegoen pila asinkronoan. Baliteke markoaren pilaren arrastoak xehetasun gehiago ematea."
+    "message": "Marko hau sortu zenean, iragarki-script bat zegoen (async) stackn. Baliteke markoaren stack traceren sorrera-testuinguruak xehetasun gehiago ematea."
   },
   "panels/application/components/FrameDetailsView.ts | creationStackTrace": {
-    "message": "Markoak sortzeko pilaren arrastoa"
+    "message": "Markoaren sorrerarekin erlazionatutako Stack Trace"
   },
   "panels/application/components/FrameDetailsView.ts | creationStackTraceExplanation": {
-    "message": "Programatikoki sortu da markoa. Pilaren arrastoan agertzen da non gertatu den hori."
-  },
-  "panels/application/components/FrameDetailsView.ts | crossoriginEmbedderPolicy": {
-    "message": "Jatorri anitzeko kapsulatzeari buruzko gidalerroak"
+    "message": "Programatikoki sortu da markoa. Non sortu den erakusten du stack tracek."
   },
   "panels/application/components/FrameDetailsView.ts | crossoriginIsolated": {
     "message": "Jatorri anitz bidez isolatutakoak"
-  },
-  "panels/application/components/FrameDetailsView.ts | crossoriginOpenerPolicy": {
-    "message": "Jatorri anitzeko irekitzaileari buruzko gidalerroak"
   },
   "panels/application/components/FrameDetailsView.ts | document": {
     "message": "Dokumentua"
@@ -3324,7 +3522,7 @@
     "message": "Lortu informazio gehiago"
   },
   "panels/application/components/FrameDetailsView.ts | localhostIsAlwaysASecureContext": {
-    "message": "Ostalari lokala beti da testuinguru segurua"
+    "message": "Testuinguru seguru bat da beti Localhost"
   },
   "panels/application/components/FrameDetailsView.ts | matchedBlockingRuleExplanation": {
     "message": "Marko hau iragarki-markotzat jotzen da, une honetako (edo aurreko) dokumentu nagusia iragarki-baliabide bat delako."
@@ -3338,14 +3536,14 @@
   "panels/application/components/FrameDetailsView.ts | origin": {
     "message": "Jatorria"
   },
-  "panels/application/components/FrameDetailsView.ts | originTrials": {
-    "message": "Jatorrian egiteko probak"
-  },
   "panels/application/components/FrameDetailsView.ts | ownerElement": {
     "message": "Jabearen elementua"
   },
   "panels/application/components/FrameDetailsView.ts | parentIsAdExplanation": {
     "message": "Marko hau iragarki-markotzat jotzen da, haren marko nagusia iragarki-marko bat delako."
+  },
+  "panels/application/components/FrameDetailsView.ts | refresh": {
+    "message": "Freskatu"
   },
   "panels/application/components/FrameDetailsView.ts | reportingTo": {
     "message": "honi jakinarazten:"
@@ -3366,10 +3564,10 @@
     "message": "Segurtasuna eta isolamendua"
   },
   "panels/application/components/FrameDetailsView.ts | sharedarraybufferConstructorIs": {
-    "message": "SharedArrayBuffer sortzailea erabilgarri dago eta postMessage bidez transferi daitezke SABak"
+    "message": "SharedArrayBuffer sortzailea erabilgarri dago, eta postMessage bidez transferi daitezke SABs"
   },
   "panels/application/components/FrameDetailsView.ts | sharedarraybufferConstructorIsAvailable": {
-    "message": "SharedArrayBuffer sortzailea erabilgarri dago, baina SABak ezin dira transferitu postMessage bidez"
+    "message": "SharedArrayBuffer sortzailea erabilgarri dago, baina SABs ezin dira transferitu postMessage bidez"
   },
   "panels/application/components/FrameDetailsView.ts | theFramesSchemeIsInsecure": {
     "message": "Markoaren eskema ez da segurua"
@@ -3400,6 +3598,24 @@
   },
   "panels/application/components/FrameDetailsView.ts | yes": {
     "message": "Bai"
+  },
+  "panels/application/components/InterestGroupAccessGrid.ts | allInterestGroupStorageEvents": {
+    "message": "Interes-taldearen biltegiratze-gertaera guztiak."
+  },
+  "panels/application/components/InterestGroupAccessGrid.ts | eventTime": {
+    "message": "Gertaeraren ordua"
+  },
+  "panels/application/components/InterestGroupAccessGrid.ts | eventType": {
+    "message": "Sarbide mota"
+  },
+  "panels/application/components/InterestGroupAccessGrid.ts | groupName": {
+    "message": "Izena"
+  },
+  "panels/application/components/InterestGroupAccessGrid.ts | groupOwner": {
+    "message": "Jabea"
+  },
+  "panels/application/components/InterestGroupAccessGrid.ts | noEvents": {
+    "message": "Ez da erregistratu interes-taldearen gertaerarik."
   },
   "panels/application/components/OriginTrialTreeView.ts | expiryTime": {
     "message": "Iraungitze-ordua"
@@ -3440,6 +3656,9 @@
   "panels/application/components/PermissionsPolicySection.ts | clickToShowIframe": {
     "message": "Egin klik hemen goian dagoen iframe-a ager dadin. Eginbide hau elementuen panelean ez egotea galarazten du."
   },
+  "panels/application/components/PermissionsPolicySection.ts | disabledByFencedFrame": {
+    "message": "fencedframe baten barruan desgaituta"
+  },
   "panels/application/components/PermissionsPolicySection.ts | disabledByHeader": {
     "message": "\"Permissions-Policy\" goiburuak desgaitu du"
   },
@@ -3455,8 +3674,17 @@
   "panels/application/components/PermissionsPolicySection.ts | showDetails": {
     "message": "Erakutsi xehetasunak"
   },
+  "panels/application/components/ReportsGrid.ts | destination": {
+    "message": "Helmuga"
+  },
+  "panels/application/components/ReportsGrid.ts | generatedAt": {
+    "message": "Sortze-data"
+  },
   "panels/application/components/ReportsGrid.ts | noReportsToDisplay": {
     "message": "Ez dago txostenik bistaratzeko"
+  },
+  "panels/application/components/ReportsGrid.ts | status": {
+    "message": "Egoera"
   },
   "panels/application/components/StackTrace.ts | cannotRenderStackTrace": {
     "message": "Ezin da errendatu pilaren arrastoa"
@@ -3620,6 +3848,12 @@
   "panels/changes/ChangesView.ts | binaryData": {
     "message": "Datu bitarrak"
   },
+  "panels/changes/ChangesView.ts | copy": {
+    "message": "Kopiatu"
+  },
+  "panels/changes/ChangesView.ts | copyAllChangesFromCurrentFile": {
+    "message": "Kopiatu oraingo fitxategian egindako aldaketa guztiak"
+  },
   "panels/changes/ChangesView.ts | noChanges": {
     "message": "Ez dago aldaketarik"
   },
@@ -3698,11 +3932,20 @@
   "panels/console/ConsoleView.ts | allLevels": {
     "message": "Maila guztiak"
   },
+  "panels/console/ConsoleView.ts | autocompleteFromHistory": {
+    "message": "Osatu automatikoki historia erabilita"
+  },
   "panels/console/ConsoleView.ts | consoleCleared": {
     "message": "Garbitu da kontsola"
   },
   "panels/console/ConsoleView.ts | consoleSettings": {
     "message": "Kontsolaren ezarpenak"
+  },
+  "panels/console/ConsoleView.ts | consoleSidebarHidden": {
+    "message": "Kontsolaren alboko barra ezkutatu da"
+  },
+  "panels/console/ConsoleView.ts | consoleSidebarShown": {
+    "message": "Kontsolaren alboko barra erakutsi da"
   },
   "panels/console/ConsoleView.ts | copyVisibleStyledSelection": {
     "message": "Kopiatu ikusgai dagoen hautapen estiloduna"
@@ -3773,6 +4016,9 @@
   "panels/console/ConsoleView.ts | logLevels": {
     "message": "Erregistro-mailak"
   },
+  "panels/console/ConsoleView.ts | logXMLHttpRequests": {
+    "message": "Erregistratu XMLHttpRequest objektuak"
+  },
   "panels/console/ConsoleView.ts | onlyShowMessagesFromTheCurrentContext": {
     "message": "Erakutsi oraingo testuinguruko mezuak soilik (top, iframe, worker, luzapena)"
   },
@@ -3805,6 +4051,9 @@
   },
   "panels/console/ConsoleView.ts | showCorsErrorsInConsole": {
     "message": "Erakutsi CORS kategoriako erroreak kontsolan"
+  },
+  "panels/console/ConsoleView.ts | treatEvaluationAsUserActivation": {
+    "message": "Tratatu ebaluazioa erabiltzailearen aktibazio gisa"
   },
   "panels/console/ConsoleView.ts | verbose": {
     "message": "Adierazgarritasuna"
@@ -3894,7 +4143,7 @@
     "message": "{n,plural, =1{Abisua, # aldiz errepikatuta}other{Abisua, # aldiz errepikatuta}}"
   },
   "panels/console/console-meta.ts | autocompleteFromHistory": {
-    "message": "Bete automatikoki historia erabilita"
+    "message": "Osatu automatikoki historia erabilita"
   },
   "panels/console/console-meta.ts | clearConsole": {
     "message": "Garbitu kontsola"
@@ -3942,7 +4191,7 @@
     "message": "Ezkutatu denbora-zigiluak"
   },
   "panels/console/console-meta.ts | logXmlhttprequests": {
-    "message": "Erregistratu XMLHttpRequests eskaerak"
+    "message": "Erregistratu XMLHttpRequest objektuak"
   },
   "panels/console/console-meta.ts | onlyShowMessagesFromTheCurrent": {
     "message": "Erakutsi oraingo testuinguruko mezuak soilik (top, iframe, worker, luzapena)"
@@ -3966,7 +4215,7 @@
     "message": "Erakutsi denbora-zigiluak"
   },
   "panels/console/console-meta.ts | treatEvaluationAsUserActivation": {
-    "message": "Tratatu ebaluazioa erabiltzaile-aktibazio gisa"
+    "message": "Tratatu ebaluazioa erabiltzailearen aktibazio gisa"
   },
   "panels/console_counters/WarningErrorCounter.ts | openConsoleToViewS": {
     "message": "Ireki kontsola {PH1} ikusteko"
@@ -4229,20 +4478,11 @@
   "panels/css_overview/CSSOverviewUnusedDeclarations.ts | widthAppliedToAnInlineElement": {
     "message": "Width aplikatu zaio txertatutako elementu bati"
   },
-  "panels/css_overview/components/CSSOverviewStartView.ts | activelyWorkingAndLookingForS": {
-    "message": "Gure taldea aktiboki ari da lanean eginbide honetan, eta zure {PH1} jakin nahi dugu."
-  },
   "panels/css_overview/components/CSSOverviewStartView.ts | captureOverview": {
     "message": "Kapturatu ikuspegi orokorra"
   },
   "panels/css_overview/components/CSSOverviewStartView.ts | capturePageCSSOverview": {
     "message": "Kapturatu orrian CSS erabilita idatzitako kodeari buruzko informazio orokorra"
-  },
-  "panels/css_overview/components/CSSOverviewStartView.ts | feedbackInline": {
-    "message": "iritziak"
-  },
-  "panels/css_overview/components/CSSOverviewStartView.ts | feedbackStandalone": {
-    "message": "Iritzia"
   },
   "panels/css_overview/components/CSSOverviewStartView.ts | identifyCSSImprovements": {
     "message": "Identifikatu CSS erabilita idatzitako kodearen hobekuntza posibleak"
@@ -4253,14 +4493,8 @@
   "panels/css_overview/components/CSSOverviewStartView.ts | locateAffectedElements": {
     "message": "Aurkitu eragina jasan duten elementuak Elementuak panelean"
   },
-  "panels/css_overview/components/CSSOverviewStartView.ts | previewFeature": {
-    "message": "Aurrebista-eginbidea"
-  },
   "panels/css_overview/components/CSSOverviewStartView.ts | quickStartWithCSSOverview": {
     "message": "Hasiera bizkorra: hasi CSS erabilita idatzitako kodeari buruzko informazio orokorraren panel berria erabiltzen"
-  },
-  "panels/css_overview/components/CSSOverviewStartView.ts | videoAndDocumentation": {
-    "message": "Bideoa eta dokumentazioa"
   },
   "panels/css_overview/css_overview-meta.ts | cssOverview": {
     "message": "CSS erabilita idatzitako kodearen informazio orokorra"
@@ -4375,6 +4609,12 @@
   },
   "panels/elements/ElementsPanel.ts | computed": {
     "message": "Kalkulatutakoak"
+  },
+  "panels/elements/ElementsPanel.ts | computedStylesHidden": {
+    "message": "Kalkulatutako estiloen alboko barra ezkutatu da"
+  },
+  "panels/elements/ElementsPanel.ts | computedStylesShown": {
+    "message": "Kalkulatutako estiloen alboko barra erakutsi da"
   },
   "panels/elements/ElementsPanel.ts | domTreeExplorer": {
     "message": "DOMaren zuhaitz moduko esploratzailea"
@@ -4571,6 +4811,12 @@
   "panels/elements/EventListenersWidget.ts | showListenersOnTheAncestors": {
     "message": "Erakutsi hautemaileak aurrekarietan"
   },
+  "panels/elements/LayersWidget.ts | cssLayersTitle": {
+    "message": "CSS geruzak"
+  },
+  "panels/elements/LayersWidget.ts | toggleCSSLayers": {
+    "message": "Erakutsi/Ezkutatu CSS geruzen ikuspegia"
+  },
   "panels/elements/MarkerDecorator.ts | domBreakpoint": {
     "message": "DOMaren aldatze-puntua"
   },
@@ -4591,6 +4837,63 @@
   },
   "panels/elements/PlatformFontsWidget.ts | renderedFonts": {
     "message": "Errendatutako letrak"
+  },
+  "panels/elements/PropertiesWidget.ts | filter": {
+    "message": "Iragazi"
+  },
+  "panels/elements/PropertiesWidget.ts | filterProperties": {
+    "message": "Iragazi propietateak"
+  },
+  "panels/elements/PropertiesWidget.ts | noMatchingProperty": {
+    "message": "Ez dago bat datorren propietaterik"
+  },
+  "panels/elements/PropertiesWidget.ts | showAll": {
+    "message": "Erakutsi guztiak"
+  },
+  "panels/elements/PropertiesWidget.ts | showAllTooltip": {
+    "message": "Desmarkatuta uzten bada, balio nulua edo zehaztugabea daukaten propietateak bakarrik erakutsiko dira"
+  },
+  "panels/elements/StylePropertiesSection.ts | constructedStylesheet": {
+    "message": "eraikitako estilo-orria"
+  },
+  "panels/elements/StylePropertiesSection.ts | copyAllCSSChanges": {
+    "message": "Kopiatu CSSan egindako aldaketa guztiak"
+  },
+  "panels/elements/StylePropertiesSection.ts | copyAllDeclarations": {
+    "message": "Kopiatu adierazpen guztiak"
+  },
+  "panels/elements/StylePropertiesSection.ts | copyRule": {
+    "message": "Kopiatu araua"
+  },
+  "panels/elements/StylePropertiesSection.ts | copySelector": {
+    "message": "Kopiatu selector"
+  },
+  "panels/elements/StylePropertiesSection.ts | cssSelector": {
+    "message": "CSS estiloaren hautatzailea"
+  },
+  "panels/elements/StylePropertiesSection.ts | injectedStylesheet": {
+    "message": "estilo-orria aplikatu da"
+  },
+  "panels/elements/StylePropertiesSection.ts | insertStyleRuleBelow": {
+    "message": "Txertatu estilo-araua behean"
+  },
+  "panels/elements/StylePropertiesSection.ts | sattributesStyle": {
+    "message": "{PH1}[atributuen estiloa]"
+  },
+  "panels/elements/StylePropertiesSection.ts | showAllPropertiesSMore": {
+    "message": "Erakutsi propietate guztiak (beste {PH1})"
+  },
+  "panels/elements/StylePropertiesSection.ts | styleAttribute": {
+    "message": "style atributua"
+  },
+  "panels/elements/StylePropertiesSection.ts | userAgentStylesheet": {
+    "message": "erabiltzaile-agentearen estilo-orria"
+  },
+  "panels/elements/StylePropertiesSection.ts | viaInspector": {
+    "message": "ikuskatzailearen bidez"
+  },
+  "panels/elements/StylePropertyTreeElement.ts | copyAllCSSChanges": {
+    "message": "Kopiatu CSSan egindako aldaketa guztiak"
   },
   "panels/elements/StylePropertyTreeElement.ts | copyAllCssDeclarationsAsJs": {
     "message": "Kopiatu adierazpen guztiak JS gisa"
@@ -4637,26 +4940,23 @@
   "panels/elements/StylePropertyTreeElement.ts | viewComputedValue": {
     "message": "Ikusi kalkulatutako balioa"
   },
-  "panels/elements/StylesSidebarPane.ts | constructedStylesheet": {
-    "message": "eraikitako estilo-orria"
+  "panels/elements/StylesSidebarPane.ts | automaticDarkMode": {
+    "message": "Gai ilun automatikoa"
   },
-  "panels/elements/StylesSidebarPane.ts | copyAllDeclarations": {
-    "message": "Kopiatu adierazpen guztiak"
+  "panels/elements/StylesSidebarPane.ts | clickToRevealLayer": {
+    "message": "Sakatu hau geruza zuhaitzean ager dadin"
   },
-  "panels/elements/StylesSidebarPane.ts | copyRule": {
-    "message": "Kopiatu araua"
+  "panels/elements/StylesSidebarPane.ts | copiedToClipboard": {
+    "message": "Kopiatu da arbelean"
   },
-  "panels/elements/StylesSidebarPane.ts | copySelector": {
-    "message": "Kopiatu selector"
+  "panels/elements/StylesSidebarPane.ts | copyAllCSSChanges": {
+    "message": "Kopiatu CSSan egindako aldaketa guztiak"
   },
   "panels/elements/StylesSidebarPane.ts | cssPropertyName": {
-    "message": "CSS propietatearen izena"
+    "message": "CSS propietatearen izena: {PH1}"
   },
   "panels/elements/StylesSidebarPane.ts | cssPropertyValue": {
-    "message": "CSS propietatearen balioa"
-  },
-  "panels/elements/StylesSidebarPane.ts | cssSelector": {
-    "message": "CSS estiloaren hautatzailea"
+    "message": "CSS propietatearen balioa: {PH1}"
   },
   "panels/elements/StylesSidebarPane.ts | filter": {
     "message": "Iragazi"
@@ -4670,20 +4970,20 @@
   "panels/elements/StylesSidebarPane.ts | incrementdecrementWithMousewheelOne": {
     "message": "Handitu edo txikitu saguko gurpilarekin, edo gora eta behera egiteko teklekin. {PH1}: R ±1, Maius: G ±1, Alt: B ±1"
   },
+  "panels/elements/StylesSidebarPane.ts | inheritedFromSPseudoOf": {
+    "message": "Honen ::{PH1} sasi-elementutik oinordekotzan hartuta: "
+  },
   "panels/elements/StylesSidebarPane.ts | inheritedFroms": {
     "message": "Talde honetatik heredatua: "
-  },
-  "panels/elements/StylesSidebarPane.ts | injectedStylesheet": {
-    "message": "estilo-orria aplikatu da"
-  },
-  "panels/elements/StylesSidebarPane.ts | insertStyleRuleBelow": {
-    "message": "Txertatu estilo-araua behean"
   },
   "panels/elements/StylesSidebarPane.ts | invalidPropertyValue": {
     "message": "Propietatearen balioak ez du balio"
   },
   "panels/elements/StylesSidebarPane.ts | invalidString": {
     "message": "{PH1}, propietatearen izena: {PH2}, propietatearen balioa: {PH3}"
+  },
+  "panels/elements/StylesSidebarPane.ts | layer": {
+    "message": "Geruza"
   },
   "panels/elements/StylesSidebarPane.ts | newStyleRule": {
     "message": "Estilo-erregela berria"
@@ -4694,23 +4994,11 @@
   "panels/elements/StylesSidebarPane.ts | pseudoSElement": {
     "message": "Pseudo ::{PH1} elementua"
   },
-  "panels/elements/StylesSidebarPane.ts | sattributesStyle": {
-    "message": "{PH1}[atributuen estiloa]"
-  },
-  "panels/elements/StylesSidebarPane.ts | showAllPropertiesSMore": {
-    "message": "Erakutsi propietate guztiak (beste {PH1})"
-  },
-  "panels/elements/StylesSidebarPane.ts | styleAttribute": {
-    "message": "style atributua"
+  "panels/elements/StylesSidebarPane.ts | toggleRenderingEmulations": {
+    "message": "Aktibatu/Desaktibatu ohiko errendatze-emulazioak"
   },
   "panels/elements/StylesSidebarPane.ts | unknownPropertyName": {
     "message": "Propietate-izen ezezaguna"
-  },
-  "panels/elements/StylesSidebarPane.ts | userAgentStylesheet": {
-    "message": "erabiltzaile-agentearen estilo-orria"
-  },
-  "panels/elements/StylesSidebarPane.ts | viaInspector": {
-    "message": "ikuskatzailearen bidez"
   },
   "panels/elements/components/AccessibilityTreeNode.ts | ignored": {
     "message": "Ez ikusi egin zaio"
@@ -4980,7 +5268,7 @@
     "message": "Ezkutatu multimedia-kontsultak"
   },
   "panels/emulation/emulation-meta.ts | hideRulers": {
-    "message": "Ezkutatu erregelak"
+    "message": "Ezkutatu erregelak gailu moduaren tresna-barran"
   },
   "panels/emulation/emulation-meta.ts | showDeviceFrame": {
     "message": "Erakutsi gailuaren markoa"
@@ -4989,7 +5277,7 @@
     "message": "Erakutsi multimedia-eskaerak"
   },
   "panels/emulation/emulation-meta.ts | showRulers": {
-    "message": "Erakutsi erregelak"
+    "message": "Erakutsi erregelak gailu moduaren tresna-barran"
   },
   "panels/emulation/emulation-meta.ts | toggleDeviceToolbar": {
     "message": "Aldatu gailuaren tresna-barra"
@@ -5014,36 +5302,6 @@
   },
   "panels/event_listeners/EventListenersView.ts | toggleWhetherEventListenerIs": {
     "message": "Ezarri gertaeren hautemailea pasibo edo blokeatzaile gisa"
-  },
-  "panels/help/ReleaseNoteView.ts | close": {
-    "message": "Itxi"
-  },
-  "panels/help/ReleaseNoteView.ts | learnMore": {
-    "message": "Lortu informazio gehiago"
-  },
-  "panels/help/help-meta.ts | bug": {
-    "message": "akatsa"
-  },
-  "panels/help/help-meta.ts | doNotShowWhatsNewAfterEachUpdate": {
-    "message": "Ez erakutsi berritasunak eguneratze bakoitzaren ondoren"
-  },
-  "panels/help/help-meta.ts | releaseNotes": {
-    "message": "Bertsioaren oharrak"
-  },
-  "panels/help/help-meta.ts | reportADevtoolsIssue": {
-    "message": "Eman DevTools-eko arazo baten berri"
-  },
-  "panels/help/help-meta.ts | reportTranslationIssue": {
-    "message": "Eman itzulpen-arazo baten berri"
-  },
-  "panels/help/help-meta.ts | showWhatsNew": {
-    "message": "Erakutsi berritasunak"
-  },
-  "panels/help/help-meta.ts | showWhatsNewAfterEachUpdate": {
-    "message": "Erakutsi berritasunak eguneratu ondoren"
-  },
-  "panels/help/help-meta.ts | whatsNew": {
-    "message": "Berritasunak"
   },
   "panels/input/InputTimeline.ts | clearAll": {
     "message": "Garbitu guztiak"
@@ -5255,14 +5513,8 @@
   "panels/issues/AttributionReportingIssueDetailsView.ts | frame": {
     "message": "Markoa"
   },
-  "panels/issues/AttributionReportingIssueDetailsView.ts | invalidEventSourceTriggerData": {
-    "message": "event-source-trigger-data parametroak ez du balio"
-  },
-  "panels/issues/AttributionReportingIssueDetailsView.ts | invalidSourceEventId": {
-    "message": "attributionsourceeventid atributuak ez du balio"
-  },
-  "panels/issues/AttributionReportingIssueDetailsView.ts | invalidTriggerData": {
-    "message": "trigger-data parametroak ez du balio"
+  "panels/issues/AttributionReportingIssueDetailsView.ts | invalidHeaderValue": {
+    "message": "Invalid Header Value"
   },
   "panels/issues/AttributionReportingIssueDetailsView.ts | nViolations": {
     "message": "{n,plural, =1{# urratze}other{# urratze}}"
@@ -5275,6 +5527,9 @@
   },
   "panels/issues/CSPViolationsView.ts | filter": {
     "message": "Iragazi"
+  },
+  "panels/issues/ComboBoxOfCheckBoxes.ts | genericMenuLabel": {
+    "message": "Menua"
   },
   "panels/issues/CorsIssueDetailsView.ts | allowCredentialsValueFromHeader": {
     "message": "Access-Control-Allow-Credentials goiburuaren balioa"
@@ -5290,6 +5545,9 @@
   },
   "panels/issues/CorsIssueDetailsView.ts | disallowedRequestMethod": {
     "message": "Onartzen ez den eskaera-metodoa"
+  },
+  "panels/issues/CorsIssueDetailsView.ts | failedRequest": {
+    "message": "Eskaerak huts egin du"
   },
   "panels/issues/CorsIssueDetailsView.ts | header": {
     "message": "Goiburua"
@@ -5366,8 +5624,14 @@
   "panels/issues/HiddenIssuesRow.ts | unhideAll": {
     "message": "Jarri ikusgai guztiak"
   },
-  "panels/issues/IssueKindView.ts | hideAllCurrent": {
-    "message": "Ezkutatu oraingo {PH1}"
+  "panels/issues/IssueKindView.ts | hideAllCurrentBreakingChanges": {
+    "message": "Ezkutatu hutsegiteak sor ditzakeen oraingo aldaketa guztiak"
+  },
+  "panels/issues/IssueKindView.ts | hideAllCurrentImprovements": {
+    "message": "Ezkutatu oraingo hobekuntza guztiak"
+  },
+  "panels/issues/IssueKindView.ts | hideAllCurrentPageErrors": {
+    "message": "Ezkutatu orrian dauden oraingo errore guztiak"
   },
   "panels/issues/IssueView.ts | affectedResources": {
     "message": "Eragina jasan duten baliabideak"
@@ -5461,27 +5725,6 @@
   },
   "panels/issues/IssuesPane.ts | trustedWebActivity": {
     "message": "Sareko jarduera fidagarriak"
-  },
-  "panels/issues/WasmCrossOriginModuleSharingAffectedResourcesView.ts | blocked": {
-    "message": "blokeatuta"
-  },
-  "panels/issues/WasmCrossOriginModuleSharingAffectedResourcesView.ts | nModuleTransfers": {
-    "message": "{n,plural, =1{# modulu}other{# modulu}}"
-  },
-  "panels/issues/WasmCrossOriginModuleSharingAffectedResourcesView.ts | sourceOrigin": {
-    "message": "Iturburuaren jatorria"
-  },
-  "panels/issues/WasmCrossOriginModuleSharingAffectedResourcesView.ts | status": {
-    "message": "Egoera"
-  },
-  "panels/issues/WasmCrossOriginModuleSharingAffectedResourcesView.ts | targetOrigin": {
-    "message": "Helburuaren jatorria"
-  },
-  "panels/issues/WasmCrossOriginModuleSharingAffectedResourcesView.ts | warned": {
-    "message": "abisua"
-  },
-  "panels/issues/WasmCrossOriginModuleSharingAffectedResourcesView.ts | wasmModuleUrl": {
-    "message": "Wasm moduluaren URLa"
   },
   "panels/issues/components/HideIssuesMenu.ts | tooltipTitle": {
     "message": "Ezkutatu arazoak"
@@ -5723,6 +5966,15 @@
   "panels/lighthouse/LighthouseController.ts | isThisPageUsableByPeopleWith": {
     "message": "Desgaitasunak edo urritasunak dituzten pertsonek orri hau erabil dezakete?"
   },
+  "panels/lighthouse/LighthouseController.ts | javaScriptDisabled": {
+    "message": "JavaScript is disabled. You need to enable JavaScript to audit this page. Open the Command Menu and run the Enable JavaScript command to enable JavaScript."
+  },
+  "panels/lighthouse/LighthouseController.ts | legacyNavigation": {
+    "message": "Aurreko bertsioko nabigatzeko modua"
+  },
+  "panels/lighthouse/LighthouseController.ts | lighthouseMode": {
+    "message": "Lighthouse modua"
+  },
   "panels/lighthouse/LighthouseController.ts | localStorage": {
     "message": "Memoria lokala"
   },
@@ -5731,6 +5983,12 @@
   },
   "panels/lighthouse/LighthouseController.ts | multipleTabsAreBeingControlledBy": {
     "message": "service worker berak kontrolatzen ditu hainbat fitxa. Orri hau auditatzeko, itxi jatorri bereko beste fitxak."
+  },
+  "panels/lighthouse/LighthouseController.ts | navigation": {
+    "message": "Navigation (Default)"
+  },
+  "panels/lighthouse/LighthouseController.ts | navigationTooltip": {
+    "message": "Navigation mode analyzes a page load, exactly like the original Lighthouse reports."
   },
   "panels/lighthouse/LighthouseController.ts | performance": {
     "message": "Errendimendua"
@@ -5744,6 +6002,9 @@
   "panels/lighthouse/LighthouseController.ts | resetStorageLocalstorage": {
     "message": "Berrezarri biltegiratzea (cache, service workers, etab.) auditatu aurretik. (Errendimendurako eta PWA probatzeko aproposa)"
   },
+  "panels/lighthouse/LighthouseController.ts | runLighthouseInMode": {
+    "message": "Exekutatu Lighthouse nabigazio, denbora tarte edo laburpen moduan"
+  },
   "panels/lighthouse/LighthouseController.ts | seo": {
     "message": "SEO"
   },
@@ -5753,11 +6014,26 @@
   "panels/lighthouse/LighthouseController.ts | simulatedThrottling": {
     "message": "Bizkortze simulatua"
   },
+  "panels/lighthouse/LighthouseController.ts | snapshot": {
+    "message": "Laburpena"
+  },
+  "panels/lighthouse/LighthouseController.ts | snapshotTooltip": {
+    "message": "Snapshot mode analyzes the page in a particular state, typically after user interactions."
+  },
   "panels/lighthouse/LighthouseController.ts | thereMayBeStoredDataAffectingLoadingPlural": {
     "message": "Baliteke kargatze-errendimenduari eragiten dioten datuak gordeta egotea kokapen hauetan: {PH1}. Auditatu orri hau ezkutuko moduko leiho batean, baliabide horiek zure puntuazioei eragin ez diezaieten."
   },
   "panels/lighthouse/LighthouseController.ts | thereMayBeStoredDataAffectingSingular": {
     "message": "Baliteke kargatze-errendimenduari eragiten dioten datuak gordeta egotea kokapen honetan: {PH1}. Auditatu orri hau ezkutuko moduko leiho batean, baliabide horiek zure puntuazioei eragin ez diezaieten."
+  },
+  "panels/lighthouse/LighthouseController.ts | timespan": {
+    "message": "Denbora tartea"
+  },
+  "panels/lighthouse/LighthouseController.ts | timespanTooltip": {
+    "message": "Timespan mode analyzes an arbitrary period of time, typically containing user interactions."
+  },
+  "panels/lighthouse/LighthouseController.ts | useLegacyNavigation": {
+    "message": "Nabigatzeko moduan zaudela, erabili Lighthouse klasikoa orria analizatzeko."
   },
   "panels/lighthouse/LighthouseController.ts | webSql": {
     "message": "Sareko SQLa"
@@ -5799,7 +6075,7 @@
     "message": "Txostenak"
   },
   "panels/lighthouse/LighthouseStartView.ts | categories": {
-    "message": "Kategoriak"
+    "message": "Categories"
   },
   "panels/lighthouse/LighthouseStartView.ts | communityPluginsBeta": {
     "message": "Komunitatearen pluginak (beta)"
@@ -5815,6 +6091,27 @@
   },
   "panels/lighthouse/LighthouseStartView.ts | learnMore": {
     "message": "Lortu informazio gehiago"
+  },
+  "panels/lighthouse/LighthouseStartViewFR.ts | analyzeNavigation": {
+    "message": "Analyze page load"
+  },
+  "panels/lighthouse/LighthouseStartViewFR.ts | analyzeSnapshot": {
+    "message": "Analyze page state"
+  },
+  "panels/lighthouse/LighthouseStartViewFR.ts | categories": {
+    "message": "Categories"
+  },
+  "panels/lighthouse/LighthouseStartViewFR.ts | generateLighthouseReport": {
+    "message": "Generate a Lighthouse report"
+  },
+  "panels/lighthouse/LighthouseStartViewFR.ts | mode": {
+    "message": "Modua"
+  },
+  "panels/lighthouse/LighthouseStartViewFR.ts | plugins": {
+    "message": "Plugins"
+  },
+  "panels/lighthouse/LighthouseStartViewFR.ts | startTimespan": {
+    "message": "Hasi denbora tartea"
   },
   "panels/lighthouse/LighthouseStatusView.ts | OfGlobalMobileUsersInWereOnGOrG": {
     "message": "2016an, mundu-mailan, telefono mugikorren erabiltzaileen % 75ek 2G edo 3G konexioa zerabilten. [Iturburua: GSMA Mobile]"
@@ -5902,6 +6199,18 @@
   },
   "panels/lighthouse/LighthouseStatusView.ts | walmartSawAIncreaseInRevenueFor": {
     "message": "Walmart-en diru-sarrerak % 1 igo ziren haren webguneko orriak kargatzeko abiadura 100 ms hobetu zen bakoitzean. [Iturburua: WPO Stats]"
+  },
+  "panels/lighthouse/LighthouseTimespanView.ts | cancel": {
+    "message": "Utzi"
+  },
+  "panels/lighthouse/LighthouseTimespanView.ts | endTimespan": {
+    "message": "Amaitu denbora tartea"
+  },
+  "panels/lighthouse/LighthouseTimespanView.ts | timespanStarted": {
+    "message": "Hasi da denbora tartea; izan interakzioak orriarekin"
+  },
+  "panels/lighthouse/LighthouseTimespanView.ts | timespanStarting": {
+    "message": "Denbora tartea hasten…"
   },
   "panels/lighthouse/lighthouse-meta.ts | showLighthouse": {
     "message": "Erakutsi Lighthouse"
@@ -6308,6 +6617,9 @@
   "panels/network/NetworkConfigView.ts | caching": {
     "message": "Cachean gordetzea"
   },
+  "panels/network/NetworkConfigView.ts | clientHintsStatusText": {
+    "message": "Eguneratu da erabiltzaile-agentea."
+  },
   "panels/network/NetworkConfigView.ts | custom": {
     "message": "Pertsonalizatua…"
   },
@@ -6319,6 +6631,9 @@
   },
   "panels/network/NetworkConfigView.ts | enterACustomUserAgent": {
     "message": "Idatzi erabiltzaile-agente pertsonalizatua"
+  },
+  "panels/network/NetworkConfigView.ts | networkConditionsPanelShown": {
+    "message": "Sarearen baldintzak ikusgai daude"
   },
   "panels/network/NetworkConfigView.ts | networkThrottling": {
     "message": "Sarea bizkortzeko aukera"
@@ -6935,6 +7250,9 @@
   "panels/network/RequestHeadersView.ts | general": {
     "message": "Orokorra"
   },
+  "panels/network/RequestHeadersView.ts | headerOverrides": {
+    "message": "Goiburuaren ordezkapenak"
+  },
   "panels/network/RequestHeadersView.ts | learnMore": {
     "message": "Lortu informazio gehiago"
   },
@@ -7188,7 +7506,7 @@
     "message": "Ezezaguna"
   },
   "panels/network/RequestTimingView.ts | waitingTtfb": {
-    "message": "Zain (TTFB)"
+    "message": "Waiting for server response"
   },
   "panels/network/RequestTimingView.ts | waterfall": {
     "message": "Ur-jauzia"
@@ -7281,7 +7599,7 @@
     "message": "Iraungitze-data:"
   },
   "panels/network/SignedExchangeInfoView.ts | headerIntegrityHash": {
-    "message": "Goiburuaren osotasunaren hash-a"
+    "message": "Goiburuaren osotasunaren hasha"
   },
   "panels/network/SignedExchangeInfoView.ts | integrity": {
     "message": "Osotasuna"
@@ -8163,7 +8481,7 @@
     "message": "Erakutsi protokolo-gainbegiralea"
   },
   "panels/screencast/ScreencastApp.ts | toggleScreencast": {
-    "message": "Aktibatu/Desaktibatu pantaila-argazki audioduna"
+    "message": "Aktibatu/Desaktibatu pantaila-bideoa"
   },
   "panels/screencast/ScreencastView.ts | addressBar": {
     "message": "Helbide-barra"
@@ -8181,7 +8499,7 @@
     "message": "kargatu berriro"
   },
   "panels/screencast/ScreencastView.ts | screencastViewOfDebugTarget": {
-    "message": "Arazketa-helburuaren pantaila-argazki audiodunaren ikuspegia"
+    "message": "Arazketa-helburuaren pantaila-bideoaren ikuspegia"
   },
   "panels/screencast/ScreencastView.ts | theTabIsInactive": {
     "message": "Fitxa inaktibo dago"
@@ -8304,10 +8622,10 @@
     "message": "Ezkutatu xehetasun guztiak"
   },
   "panels/security/SecurityPanel.ts | ifYouBelieveThisIsShownIn": {
-    "message": "Abisu honek dioena oker dagoela uste baduzu, joan https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals helbidera."
+    "message": "If you believe this is shown in error please visit https://g.co/chrome/lookalike-warnings."
   },
   "panels/security/SecurityPanel.ts | ifYouBelieveThisIsShownInErrorSafety": {
-    "message": "Abisu honek dioena oker dagoela uste baduzu, joan https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals helbidera."
+    "message": "If you believe this is shown in error please visit https://g.co/chrome/lookalike-warnings."
   },
   "panels/security/SecurityPanel.ts | info": {
     "message": "Informazioa"
@@ -9153,7 +9471,7 @@
     "message": "Estaldura: e.a."
   },
   "panels/sources/CoveragePlugin.ts | coverageS": {
-    "message": "Estaldura: % {PH1}"
+    "message": "Estaldura: {PH1}"
   },
   "panels/sources/CoveragePlugin.ts | showDetails": {
     "message": "Erakutsi xehetasunak"
@@ -9413,6 +9731,15 @@
   "panels/sources/OutlineQuickOpen.ts | openAJavascriptOrCssFileToSee": {
     "message": "Ireki JavaScript edo CSS fitxategi bat sinboloak ikusteko"
   },
+  "panels/sources/ProfilePlugin.ts | kb": {
+    "message": "kB"
+  },
+  "panels/sources/ProfilePlugin.ts | mb": {
+    "message": "MB"
+  },
+  "panels/sources/ProfilePlugin.ts | ms": {
+    "message": "ms"
+  },
   "panels/sources/ScopeChainSidebarPane.ts | closure": {
     "message": "Itxiera"
   },
@@ -9515,6 +9842,12 @@
   "panels/sources/SourcesPanel.ts | copyStringContents": {
     "message": "Kopiatu katearen edukia"
   },
+  "panels/sources/SourcesPanel.ts | debuggerHidden": {
+    "message": "Araztailearen alboko barra ezkutatu da"
+  },
+  "panels/sources/SourcesPanel.ts | debuggerShown": {
+    "message": "Araztailearen alboko barra erakutsi da"
+  },
   "panels/sources/SourcesPanel.ts | dontPauseOnExceptions": {
     "message": "Ez pausatu salbuespenetan"
   },
@@ -9532,6 +9865,12 @@
   },
   "panels/sources/SourcesPanel.ts | moreOptions": {
     "message": "Aukera gehiago"
+  },
+  "panels/sources/SourcesPanel.ts | navigatorHidden": {
+    "message": "Nabigatzailearen alboko barra ezkutatu da"
+  },
+  "panels/sources/SourcesPanel.ts | navigatorShown": {
+    "message": "Nabigatzailearen alboko barra erakutsi da"
   },
   "panels/sources/SourcesPanel.ts | openInSourcesPanel": {
     "message": "Ireki Iturburuak panelean"
@@ -9610,6 +9949,24 @@
   },
   "panels/sources/WatchExpressionsSidebarPane.ts | refreshWatchExpressions": {
     "message": "Freskatu ikuskapen-adierazpenak"
+  },
+  "panels/sources/components/HeadersView.ts | addHeader": {
+    "message": "Gehitu goiburu bat"
+  },
+  "panels/sources/components/HeadersView.ts | addHeaderOverride": {
+    "message": "Gehitu goiburuaren ordezkapen bat"
+  },
+  "panels/sources/components/HeadersView.ts | errorWhenParsing": {
+    "message": "Errore bat gertatu da \"{PH1}\" analizatzean."
+  },
+  "panels/sources/components/HeadersView.ts | parsingErrorExplainer": {
+    "message": "Seguruenik, \"{PH1}\" fitxategian sintaxi-errore bat dagoelako gertatu da hori. Errorea konpontzeko, ireki fitxategia kanpoko editore batean, edo ezabatu fitxategia eta sortu berriro ordezkapena."
+  },
+  "panels/sources/components/HeadersView.ts | removeBlock": {
+    "message": "Kendu ApplyTo atala"
+  },
+  "panels/sources/components/HeadersView.ts | removeHeader": {
+    "message": "Kendu goiburua"
   },
   "panels/sources/sources-meta.ts | activateBreakpoints": {
     "message": "Aktibatu eten-puntuak"
@@ -9840,13 +10197,13 @@
     "message": "Urratsa"
   },
   "panels/sources/sources-meta.ts | stepIntoNextFunctionCall": {
-    "message": "Sartu hurrengo funtzio-deian"
+    "message": "Joan hurrengo funtzioa abiarazteko eskaerara"
   },
   "panels/sources/sources-meta.ts | stepOutOfCurrentFunction": {
     "message": "Atera une honetako funtziotik"
   },
   "panels/sources/sources-meta.ts | stepOverNextFunctionCall": {
-    "message": "Saltatu hurrengo funtzio-deia"
+    "message": "Joan hurrengo funtzioa abiarazteko eskaerara"
   },
   "panels/sources/sources-meta.ts | switchFile": {
     "message": "Aldatu fitxategia"
@@ -9865,6 +10222,12 @@
   },
   "panels/sources/sources-meta.ts | toggleBreakpointInputWindow": {
     "message": "Aldatu eten-puntuaren sarrera-leihoa"
+  },
+  "panels/sources/sources-meta.ts | toggleDebuggerSidebar": {
+    "message": "Toggle debugger sidebar"
+  },
+  "panels/sources/sources-meta.ts | toggleNavigatorSidebar": {
+    "message": "Toggle navigator sidebar"
   },
   "panels/sources/sources-meta.ts | trailing": {
     "message": "Amaieran"
@@ -9947,9 +10310,6 @@
   "panels/timeline/TimelineEventOverview.ts | cpu": {
     "message": "PUZa"
   },
-  "panels/timeline/TimelineEventOverview.ts | fps": {
-    "message": "f/s"
-  },
   "panels/timeline/TimelineEventOverview.ts | heap": {
     "message": "HEAP"
   },
@@ -9986,9 +10346,6 @@
   "panels/timeline/TimelineFlameChartDataProvider.ts | idleFrame": {
     "message": "Marko inaktiboa"
   },
-  "panels/timeline/TimelineFlameChartDataProvider.ts | input": {
-    "message": "Sarrera"
-  },
   "panels/timeline/TimelineFlameChartDataProvider.ts | interactions": {
     "message": "Elkarrekintzak"
   },
@@ -10007,14 +10364,14 @@
   "panels/timeline/TimelineFlameChartDataProvider.ts | onIgnoreList": {
     "message": "Ez ikusi egitekoen zerrendan"
   },
+  "panels/timeline/TimelineFlameChartDataProvider.ts | partiallyPresentedFrame": {
+    "message": "Markoaren zati bat bakarrik aurkeztu da"
+  },
   "panels/timeline/TimelineFlameChartDataProvider.ts | raster": {
     "message": "Bit-mapen irudia"
   },
   "panels/timeline/TimelineFlameChartDataProvider.ts | rasterizerThreadS": {
     "message": "Bit-mapen irudiaren haria ({PH1})"
-  },
-  "panels/timeline/TimelineFlameChartDataProvider.ts | sFfps": {
-    "message": "{PH1} ~ {PH2} f/s"
   },
   "panels/timeline/TimelineFlameChartDataProvider.ts | sSelfS": {
     "message": "{PH1} (nodoak {PH2})"
@@ -10249,6 +10606,12 @@
   },
   "panels/timeline/TimelineTreeView.ts | heaviestStack": {
     "message": "Sorta astunena"
+  },
+  "panels/timeline/TimelineTreeView.ts | heaviestStackHidden": {
+    "message": "Sortarik astunenaren alboko barra ezkutatu da"
+  },
+  "panels/timeline/TimelineTreeView.ts | heaviestStackShown": {
+    "message": "Sortarik astunenaren alboko barra erakutsi da"
   },
   "panels/timeline/TimelineTreeView.ts | hideHeaviestStack": {
     "message": "Ezkutatu sortarik astunena"
@@ -10541,9 +10904,6 @@
   "panels/timeline/TimelineUIUtils.ts | forcedReflow": {
     "message": "Behartutako doitzea"
   },
-  "panels/timeline/TimelineUIUtils.ts | fps": {
-    "message": "f/s"
-  },
   "panels/timeline/TimelineUIUtils.ts | frame": {
     "message": "Markoa"
   },
@@ -10560,7 +10920,7 @@
     "message": "Funtzioa"
   },
   "panels/timeline/TimelineUIUtils.ts | functionCall": {
-    "message": "Funtzio-deia"
+    "message": "Funtzioa abiarazteko eskaera"
   },
   "panels/timeline/TimelineUIUtils.ts | gcEvent": {
     "message": "CGren gertaera"
@@ -10777,6 +11137,9 @@
   },
   "panels/timeline/TimelineUIUtils.ts | pinchUpdate": {
     "message": "Atximurkatze-keinuaren eguneratzea"
+  },
+  "panels/timeline/TimelineUIUtils.ts | prePaint": {
+    "message": "Margotze aurreko urratsa"
   },
   "panels/timeline/TimelineUIUtils.ts | preview": {
     "message": "Aurrebista"
@@ -11306,6 +11669,9 @@
   "panels/webauthn/WebauthnPane.ts | signCount": {
     "message": "Sinadura kopurua"
   },
+  "panels/webauthn/WebauthnPane.ts | supportsLargeBlob": {
+    "message": "Supports large blob"
+  },
   "panels/webauthn/WebauthnPane.ts | supportsResidentKeys": {
     "message": "Bertako gakoak onartzen ditu"
   },
@@ -11429,6 +11795,24 @@
   "ui/components/linear_memory_inspector/linear_memory_inspector-meta.ts | showMemoryInspector": {
     "message": "Erakutsi memoria-ikuskatzailea"
   },
+  "ui/components/panel_feedback/FeedbackButton.ts | feedback": {
+    "message": "Iritzia"
+  },
+  "ui/components/panel_feedback/PanelFeedback.ts | previewFeature": {
+    "message": "Aurrebista-eginbidea"
+  },
+  "ui/components/panel_feedback/PanelFeedback.ts | previewText": {
+    "message": "Gure taldea aktiboki ari da lanean eginbide honetan, eta zure iritzia jakin nahi dugu."
+  },
+  "ui/components/panel_feedback/PanelFeedback.ts | previewTextFeedbackLink": {
+    "message": "Bidal iezazkiguzu oharrak."
+  },
+  "ui/components/panel_feedback/PanelFeedback.ts | videoAndDocumentation": {
+    "message": "Bideoa eta dokumentazioa"
+  },
+  "ui/components/panel_feedback/PreviewToggle.ts | previewTextFeedbackLink": {
+    "message": "Bidal iezazkiguzu oharrak."
+  },
   "ui/components/request_link_icon/RequestLinkIcon.ts | clickToShowRequestInTheNetwork": {
     "message": "Egin klik sare-panela irekitzeko, {url} URLaren eskaera erakuts dadin"
   },
@@ -11472,7 +11856,7 @@
     "message": "Guztiak"
   },
   "ui/legacy/FilterBar.ts | clearFilter": {
-    "message": "Garbitu idatzitakoa"
+    "message": "Clear input"
   },
   "ui/legacy/FilterBar.ts | egSmalldUrlacomb": {
     "message": "adib., /small[d]+/ url:a.com/b"
@@ -11500,6 +11884,12 @@
   },
   "ui/legacy/InspectorView.ts | drawer": {
     "message": "Tresnen panel lerrakorra"
+  },
+  "ui/legacy/InspectorView.ts | drawerHidden": {
+    "message": "Panel lerrakorra ezkutatu da"
+  },
+  "ui/legacy/InspectorView.ts | drawerShown": {
+    "message": "Panel lerrakorra erakutsi da"
   },
   "ui/legacy/InspectorView.ts | mainToolbar": {
     "message": "Tresna-barra nagusia"
@@ -11539,6 +11929,9 @@
   },
   "ui/legacy/ListWidget.ts | saveString": {
     "message": "Gorde"
+  },
+  "ui/legacy/RemoteDebuggingTerminatedScreen.ts | debuggingConnectionWasClosed": {
+    "message": "Amaitu egin da arazteko konexioa. Hauxe da arrazoia: "
   },
   "ui/legacy/RemoteDebuggingTerminatedScreen.ts | reconnectDevtools": {
     "message": "Konektatu berriro DevTools"
@@ -11632,6 +12025,9 @@
   },
   "ui/legacy/TargetCrashedScreen.ts | oncePageIsReloadedDevtoolsWill": {
     "message": "Orria berriz kargatzen denean, automatikoki konektatuko da berriro DevTools."
+  },
+  "ui/legacy/Toolbar.ts | clearInput": {
+    "message": "Clear input"
   },
   "ui/legacy/Toolbar.ts | notPressed": {
     "message": "ez dago sakatuta"
@@ -11773,6 +12169,9 @@
   },
   "ui/legacy/components/cookie_table/CookiesTable.ts | name": {
     "message": "Izena"
+  },
+  "ui/legacy/components/cookie_table/CookiesTable.ts | opaquePartitionKey": {
+    "message": "(opakua)"
   },
   "ui/legacy/components/cookie_table/CookiesTable.ts | session": {
     "message": "Saioa"
@@ -11942,15 +12341,6 @@
   "ui/legacy/components/object_ui/CustomPreviewComponent.ts | showAsJavascriptObject": {
     "message": "Erakutsi JavaScript-eko objektu gisa"
   },
-  "ui/legacy/components/object_ui/JavaScriptAutocomplete.ts | keys": {
-    "message": "Gakoak"
-  },
-  "ui/legacy/components/object_ui/JavaScriptAutocomplete.ts | keywords": {
-    "message": "gako-hitzak"
-  },
-  "ui/legacy/components/object_ui/JavaScriptAutocomplete.ts | lexicalScopeVariables": {
-    "message": "Esparru lexikalaren aldagaiak"
-  },
   "ui/legacy/components/object_ui/ObjectPropertiesSection.ts | collapseChildren": {
     "message": "Tolestu bigarren mailako elementuak"
   },
@@ -12038,15 +12428,6 @@
   "ui/legacy/components/perf_ui/FlameChart.ts | sSelected": {
     "message": "{PH1} hautatu da"
   },
-  "ui/legacy/components/perf_ui/LineLevelProfile.ts | kb": {
-    "message": "kB"
-  },
-  "ui/legacy/components/perf_ui/LineLevelProfile.ts | mb": {
-    "message": "MB"
-  },
-  "ui/legacy/components/perf_ui/LineLevelProfile.ts | ms": {
-    "message": "ms"
-  },
   "ui/legacy/components/perf_ui/NetworkPriorities.ts | high": {
     "message": "Handia"
   },
@@ -12119,8 +12500,8 @@
   "ui/legacy/components/quick_open/QuickInput.ts | pressEnterToConfirmOrEscapeTo": {
     "message": "{PH1} (Sakatu \"Sartu\" berresteko edo \"Ihes\" bertan behera uzteko.)"
   },
-  "ui/legacy/components/quick_open/QuickOpen.ts | useTabToSwitchCommandsTypeToSeeAvailableCommands": {
-    "message": "Aginduz aldatzeko, erabili tabuladorea. Idatzi \"?\" eskuragarri dauden aginduak ikusteko."
+  "ui/legacy/components/quick_open/QuickOpen.ts | typeToSeeAvailableCommands": {
+    "message": "Idatzi \"?\" eskuragarri dauden komandoak ikusteko"
   },
   "ui/legacy/components/quick_open/quick_open-meta.ts | openFile": {
     "message": "Ireki fitxategia"
@@ -12223,9 +12604,6 @@
   },
   "ui/legacy/components/source_frame/source_frame-meta.ts | tabCharacter": {
     "message": "Tabulazio-karakterea"
-  },
-  "ui/legacy/components/text_editor/CodeMirrorTextEditor.ts | codeEditor": {
-    "message": "Kode-editorea"
   },
   "ui/legacy/components/utils/ImagePreview.ts | currentSource": {
     "message": "Une honetako iturburua:"

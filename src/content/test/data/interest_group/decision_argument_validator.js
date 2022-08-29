@@ -28,9 +28,22 @@ function validateBid(bid) {
 function validateAuctionConfig(auctionConfig) {
   if (!auctionConfig.seller.includes('b.test'))
     throw 'Wrong seller ' + auctionConfig.seller;
+
+  if (auctionConfig.decisionLogicUrl !==
+      auctionConfig.seller + '/interest_group/decision_argument_validator.js') {
+    throw 'Wrong decisionLogicUrl ' + auctionConfig.decisionLogicUrl;
+  }
+
+  if (auctionConfig.trustedScoringSignalsUrl !==
+    auctionConfig.seller + '/interest_group/trusted_scoring_signals.json') {
+    throw 'Wrong trustedScoringSignalsUrl ' +
+        auctionConfig.trustedScoringSignalsUrl;
+  }
+
   // TODO(crbug.com/1186444): Consider validating URL fields like
   // auctionConfig.decisionLogicUrl once we decide what to do about URL
   // normalization.
+
   if (auctionConfig.interestGroupBuyers.length !== 2 ||
       !auctionConfig.interestGroupBuyers[0].startsWith('https://a.test') ||
       !auctionConfig.interestGroupBuyers[1].startsWith('https://d.test')) {
@@ -47,10 +60,25 @@ function validateAuctionConfig(auctionConfig) {
   const sellerSignalsJSON = JSON.stringify(auctionConfig.sellerSignals);
   if (sellerSignalsJSON !== '{"signals":"from","the":["seller"]}')
     throw 'Wrong sellerSignals ' + auctionConfig.sellerSignalsJSON;
+  if (auctionConfig.sellerTimeout !== 200)
+    throw 'Wrong sellerTimeout ' + auctionConfig.sellerTimeout;
   const perBuyerSignalsJson = JSON.stringify(auctionConfig.perBuyerSignals);
   if (!perBuyerSignalsJson.includes('a.test') ||
       !perBuyerSignalsJson.includes('{"signalsForBuyer":1}')) {
     throw 'Wrong perBuyerSignals ' + perBuyerSignalsJson;
+  }
+  const perBuyerTimeoutsJson = JSON.stringify(auctionConfig.perBuyerTimeouts);
+  if (!perBuyerTimeoutsJson.includes('a.test') ||
+      !perBuyerTimeoutsJson.includes('110') ||
+      !perBuyerTimeoutsJson.includes('d.test') ||
+      !perBuyerTimeoutsJson.includes('120') ||
+      auctionConfig.perBuyerTimeouts['*'] != 150) {
+    throw 'Wrong perBuyerTimeouts ' + perBuyerTimeoutsJson;
+  }
+
+  if ('componentAuctions' in auctionConfig) {
+    throw 'Unexpected componentAuctions ' +
+        JSON.stringify(auctionConfig.componentAuctions);
   }
 }
 
@@ -69,6 +97,10 @@ function validateTrustedScoringSignals(signals) {
 function validateBrowserSignals(browserSignals) {
   if (browserSignals.topWindowHostname !== 'c.test')
     throw 'Wrong topWindowHostname ' + browserSignals.topWindowHostname;
+  if ('topLevelSeller' in browserSignals)
+    throw 'Wrong topLevelSeller ' + browserSignals.topLevelSeller;
+  if ("componentSeller" in browserSignals)
+    throw 'Wrong componentSeller ' + browserSignals.componentSeller;
   if (!browserSignals.interestGroupOwner.startsWith('https://a.test'))
     throw 'Wrong interestGroupOwner ' + browserSignals.interestGroupOwner;
   if (browserSignals.renderUrl !== "https://example.com/render")

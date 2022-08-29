@@ -13,6 +13,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/synchronization/lock.h"
+#include "base/threading/platform_thread.h"
 
 namespace base {
 
@@ -187,9 +188,8 @@ MessagePumpGlib::MessagePumpGlib()
 
   // Create our wakeup pipe, which is used to flag when work was scheduled.
   int fds[2];
-  int ret = pipe(fds);
+  [[maybe_unused]] int ret = pipe(fds);
   DCHECK_EQ(ret, 0);
-  (void)ret;  // Prevent warning in release mode.
 
   wakeup_pipe_read_ = fds[0];
   wakeup_pipe_write_ = fds[1];
@@ -436,7 +436,8 @@ void MessagePumpGlib::ScheduleWork() {
   }
 }
 
-void MessagePumpGlib::ScheduleDelayedWork(const TimeTicks& delayed_work_time) {
+void MessagePumpGlib::ScheduleDelayedWork(
+    const Delegate::NextWorkInfo& next_work_info) {
   // We need to wake up the loop in case the poll timeout needs to be
   // adjusted.  This will cause us to try to do work, but that's OK.
   ScheduleWork();

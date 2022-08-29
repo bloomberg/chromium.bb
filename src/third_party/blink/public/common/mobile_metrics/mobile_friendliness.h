@@ -6,17 +6,12 @@
 #define THIRD_PARTY_BLINK_PUBLIC_COMMON_MOBILE_METRICS_MOBILE_FRIENDLINESS_H_
 
 #include "third_party/blink/public/common/common_export.h"
-#include "third_party/blink/public/mojom/mobile_metrics/mobile_friendliness.mojom-shared.h"
 
 namespace blink {
 
 // This structure contains extracted mobile friendliness metrics from the page.
 // Used for UKM logging.
 struct BLINK_COMMON_EXPORT MobileFriendliness {
-  MobileFriendliness() = default;
-  MobileFriendliness(const MobileFriendliness&) = default;
-  MobileFriendliness& operator=(const MobileFriendliness&) = default;
-
   bool operator==(const MobileFriendliness& other) const;
   bool operator!=(const MobileFriendliness& other) const {
     return !(*this == other);

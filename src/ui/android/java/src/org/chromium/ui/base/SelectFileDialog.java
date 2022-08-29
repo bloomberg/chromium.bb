@@ -6,7 +6,6 @@ package org.chromium.ui.base;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.ClipData;
 import android.content.ContentResolver;
@@ -16,17 +15,21 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
+import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.webkit.MimeTypeMap;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.annotation.VisibleForTesting;
 import androidx.core.content.ContextCompat;
 
+import org.chromium.base.BuildInfo;
 import org.chromium.base.ContentUriUtils;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.FileUtils;
 import org.chromium.base.Log;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.ThreadUtils;
@@ -39,9 +42,13 @@ import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.ui.R;
 import org.chromium.ui.UiUtils;
+import org.chromium.ui.permissions.PermissionConstants;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -246,7 +253,6 @@ public class SelectFileDialog implements WindowAndroid.IntentCallback, PhotoPick
      * @param multiple Whether it should be possible to select multiple files.
      * @param window The WindowAndroid that can show intents
      */
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     @CalledByNative
     private void selectFile(
             String[] fileTypes, boolean capture, boolean multiple, WindowAndroid window) {
@@ -267,7 +273,20 @@ public class SelectFileDialog implements WindowAndroid.IntentCallback, PhotoPick
         String storagePermission = Manifest.permission.READ_EXTERNAL_STORAGE;
         boolean shouldUsePhotoPicker = shouldUsePhotoPicker();
         if (shouldUsePhotoPicker) {
-            if (!window.hasPermission(storagePermission)) missingPermissions.add(storagePermission);
+            if (BuildInfo.isAtLeastT()) {
+                if (!window.hasPermission(PermissionConstants.READ_MEDIA_IMAGES)
+                        && shouldShowImageTypes()) {
+                    missingPermissions.add(PermissionConstants.READ_MEDIA_IMAGES);
+                }
+                if (!window.hasPermission(PermissionConstants.READ_MEDIA_VIDEO)
+                        && shouldShowVideoTypes()) {
+                    missingPermissions.add(PermissionConstants.READ_MEDIA_VIDEO);
+                }
+            } else {
+                if (!window.hasPermission(storagePermission)) {
+                    missingPermissions.add(storagePermission);
+                }
+            }
         } else {
             if (((mSupportsImageCapture && shouldShowImageTypes())
                         || (mSupportsVideoCapture && shouldShowVideoTypes()))
@@ -308,9 +327,14 @@ public class SelectFileDialog implements WindowAndroid.IntentCallback, PhotoPick
                             }
                         }
 
-                        if (shouldUsePhotoPicker && permissions[i].equals(storagePermission)) {
-                            onFileNotSelected();
-                            return;
+                        if (shouldUsePhotoPicker) {
+                            if (permissions[i].equals(storagePermission)
+                                    || permissions[i].equals(PermissionConstants.READ_MEDIA_IMAGES)
+                                    || permissions[i].equals(
+                                            PermissionConstants.READ_MEDIA_VIDEO)) {
+                                onFileNotSelected();
+                                return;
+                            }
                         }
                     }
                 }
@@ -638,14 +662,31 @@ public class SelectFileDialog implements WindowAndroid.IntentCallback, PhotoPick
         return photoFile;
     }
 
-    private static boolean isUnderAppDir(String path, Context context) {
+    private static boolean isPathUnderAppDir(String path, Context context) {
         File file = new File(path);
         File dataDir = ContextCompat.getDataDir(context);
-
         try {
             String pathCanonical = file.getCanonicalPath();
             String dataDirCanonical = dataDir.getCanonicalPath();
             return pathCanonical.startsWith(dataDirCanonical);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    public static boolean isContentUriUnderAppDir(Uri uri, Context context) {
+        assert !ThreadUtils.runningOnUiThread();
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            return false;
+        }
+        try {
+            ParcelFileDescriptor pfd = context.getContentResolver().openFileDescriptor(uri, "r");
+            int fd = pfd.getFd();
+            // Use the file descriptor to find out the read file path thru symbolic link.
+            Path fdPath = Paths.get("/proc/self/fd/" + fd);
+            Path filePath = Files.readSymbolicLink(fdPath);
+            return isPathUnderAppDir(filePath.toString(), context);
         } catch (Exception e) {
             return false;
         }
@@ -659,7 +700,6 @@ public class SelectFileDialog implements WindowAndroid.IntentCallback, PhotoPick
      * @param resultCode The result code whether the intent returned successfully.
      * @param results The results of the requested intent.
      */
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     @Override
     public void onIntentCompleted(int resultCode, Intent results) {
         if (sPhotoPicker != null) {
@@ -683,7 +723,7 @@ public class SelectFileDialog implements WindowAndroid.IntentCallback, PhotoPick
             String path = ContentResolver.SCHEME_FILE.equals(mCameraOutputUri.getScheme())
                     ? mCameraOutputUri.getPath() : mCameraOutputUri.toString();
 
-            if (!isUnderAppDir(mCameraOutputUri.getSchemeSpecificPart(),
+            if (!isPathUnderAppDir(mCameraOutputUri.getSchemeSpecificPart(),
                         mWindowAndroid.getApplicationContext())) {
                 onFileSelected(
                         mNativeSelectFileDialog, path, mCameraOutputUri.getLastPathSegment());
@@ -912,7 +952,9 @@ public class SelectFileDialog implements WindowAndroid.IntentCallback, PhotoPick
 
         @Override
         public Boolean doInBackground() {
-            return !isUnderAppDir(mFilePath, mContext);
+            // Don't allow invalid file path or files under app dir to be uploaded.
+            return !isPathUnderAppDir(mFilePath, mContext)
+                    && !FileUtils.getAbsoluteFilePath(mFilePath).isEmpty();
         }
 
         @Override
@@ -939,6 +981,7 @@ public class SelectFileDialog implements WindowAndroid.IntentCallback, PhotoPick
         }
 
         @Override
+        @SuppressLint("NewApi")
         public String[] doInBackground() {
             mFilePaths = new String[mUris.length];
             String[] displayNames = new String[mUris.length];
@@ -948,11 +991,15 @@ public class SelectFileDialog implements WindowAndroid.IntentCallback, PhotoPick
                     // device was observed to return a file:// URI instead, so convert if necessary.
                     // See https://crbug.com/752834 for context.
                     if (ContentResolver.SCHEME_FILE.equals(mUris[i].getScheme())) {
-                        if (isUnderAppDir(mUris[i].getSchemeSpecificPart(), mContext)) {
+                        if (isPathUnderAppDir(mUris[i].getSchemeSpecificPart(), mContext)) {
                             return null;
                         }
                         mFilePaths[i] = mUris[i].getSchemeSpecificPart();
                     } else {
+                        if (ContentResolver.SCHEME_CONTENT.equals(mUris[i].getScheme())
+                                && isContentUriUnderAppDir(mUris[i], mContext)) {
+                            return null;
+                        }
                         mFilePaths[i] = mUris[i].toString();
                     }
 

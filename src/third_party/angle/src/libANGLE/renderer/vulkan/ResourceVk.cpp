@@ -17,6 +17,8 @@ namespace vk
 {
 namespace
 {
+constexpr size_t kDefaultResourceUseCount = 4096;
+
 angle::Result FinishRunningCommands(ContextVk *contextVk, Serial serial)
 {
     return contextVk->finishToSerial(serial);
@@ -93,14 +95,20 @@ ReadWriteResource::ReadWriteResource()
 
 ReadWriteResource::ReadWriteResource(ReadWriteResource &&other) : ReadWriteResource()
 {
-    mReadOnlyUse  = std::move(other.mReadOnlyUse);
-    mReadWriteUse = std::move(other.mReadWriteUse);
+    *this = std::move(other);
 }
 
 ReadWriteResource::~ReadWriteResource()
 {
     mReadOnlyUse.release();
     mReadWriteUse.release();
+}
+
+ReadWriteResource &ReadWriteResource::operator=(ReadWriteResource &&other)
+{
+    mReadOnlyUse  = std::move(other.mReadOnlyUse);
+    mReadWriteUse = std::move(other.mReadWriteUse);
+    return *this;
 }
 
 angle::Result ReadWriteResource::finishRunningCommands(ContextVk *contextVk)
@@ -120,6 +128,21 @@ angle::Result ReadWriteResource::waitForIdle(ContextVk *contextVk,
                                              RenderPassClosureReason reason)
 {
     return WaitForIdle(contextVk, this, debugMessage, reason);
+}
+
+// SharedBufferSuballocationGarbage implementation.
+bool SharedBufferSuballocationGarbage::destroyIfComplete(RendererVk *renderer,
+                                                         Serial completedSerial)
+{
+    if (mLifetime.isCurrentlyInUse(completedSerial))
+    {
+        return false;
+    }
+
+    mBuffer.destroy(renderer->getDevice());
+    mSuballocation.destroy(renderer);
+    mLifetime.release();
+    return true;
 }
 
 // SharedGarbage implementation.
@@ -163,13 +186,13 @@ bool SharedGarbage::destroyIfComplete(RendererVk *renderer, Serial completedSeri
 // ResourceUseList implementation.
 ResourceUseList::ResourceUseList()
 {
-    constexpr size_t kDefaultResourceUseCount = 4096;
     mResourceUses.reserve(kDefaultResourceUseCount);
 }
 
 ResourceUseList::ResourceUseList(ResourceUseList &&other)
 {
     *this = std::move(other);
+    other.mResourceUses.reserve(kDefaultResourceUseCount);
 }
 
 ResourceUseList::~ResourceUseList()
@@ -201,6 +224,14 @@ void ResourceUseList::releaseResourceUsesAndUpdateSerials(Serial serial)
     }
 
     mResourceUses.clear();
+}
+
+void ResourceUseList::clearCommandBuffer(CommandBufferID commandBufferID)
+{
+    for (SharedResourceUse &use : mResourceUses)
+    {
+        use.clearCommandBuffer(commandBufferID);
+    }
 }
 }  // namespace vk
 }  // namespace rx

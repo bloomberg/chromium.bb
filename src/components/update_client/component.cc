@@ -5,7 +5,9 @@
 #include "components/update_client/component.h"
 
 #include <algorithm>
+#include <tuple>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -13,12 +15,10 @@
 #include "base/check_op.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/ignore_result.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
@@ -112,7 +112,7 @@ void InstallOnBlockingTaskRunner(
 
   // Acquire the ownership of the |unpack_path|.
   base::ScopedTempDir unpack_path_owner;
-  ignore_result(unpack_path_owner.Set(unpack_path));
+  std::ignore = unpack_path_owner.Set(unpack_path);
 
   if (static_cast<int>(fingerprint.size()) !=
       base::WriteFile(
@@ -343,7 +343,24 @@ void Component::SetParseResult(const ProtocolParser::Result& result) {
 
   if (!result.manifest.run.empty()) {
     install_params_ = absl::make_optional(CrxInstaller::InstallParams(
-        result.manifest.run, result.manifest.arguments));
+        result.manifest.run, result.manifest.arguments,
+        [&result](const std::string& expected) -> std::string {
+          if (expected.empty() || result.data.empty()) {
+            return "";
+          }
+
+          auto it =
+              std::find_if(std::begin(result.data), std::end(result.data),
+                           [&expected](const ProtocolParser::Result::Data& d) {
+                             return d.install_data_index == expected;
+                           });
+
+          const bool matched = it != std::end(result.data);
+          DVLOG(2) << "Expected install_data_index: " << expected
+                   << ", matched: " << matched;
+
+          return matched ? it->text : "";
+        }(crx_component_ ? crx_component_->install_data_index : "")));
   }
 }
 
@@ -424,7 +441,7 @@ base::TimeDelta Component::GetUpdateDuration() const {
 
 base::Value Component::MakeEventUpdateComplete() const {
   base::Value event(base::Value::Type::DICTIONARY);
-  event.SetKey("eventtype", base::Value(3));
+  event.SetKey("eventtype", base::Value(update_context_.is_install ? 2 : 3));
   event.SetKey(
       "eventresult",
       base::Value(static_cast<int>(state() == ComponentState::kUpdated)));

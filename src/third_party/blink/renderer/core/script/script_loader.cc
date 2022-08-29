@@ -25,11 +25,13 @@
 #include "third_party/blink/renderer/core/script/script_loader.h"
 
 #include "base/feature_list.h"
+#include "base/metrics/histogram_functions.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/mojom/permissions_policy/permissions_policy_feature.mojom-blink.h"
+#include "third_party/blink/public/mojom/permissions_policy/policy_disposition.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -43,9 +45,10 @@
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
-#include "third_party/blink/renderer/core/loader/importance_attribute.h"
+#include "third_party/blink/renderer/core/loader/fetch_priority_attribute.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_creation_params.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_fetch_request.h"
+#include "third_party/blink/renderer/core/loader/render_blocking_resource_manager.h"
 #include "third_party/blink/renderer/core/loader/subresource_integrity_helper.h"
 #include "third_party/blink/renderer/core/loader/web_bundle/script_web_bundle.h"
 #include "third_party/blink/renderer/core/script/classic_pending_script.h"
@@ -65,7 +68,6 @@
 #include "third_party/blink/renderer/core/trustedtypes/trusted_types_util.h"
 #include "third_party/blink/renderer/platform/bindings/parkable_string.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
-#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
@@ -120,11 +122,11 @@ ScriptLoader::~ScriptLoader() {}
 void ScriptLoader::Trace(Visitor* visitor) const {
   visitor->Trace(element_);
   visitor->Trace(parser_document_);
-  visitor->Trace(pending_script_);
   visitor->Trace(prepared_pending_script_);
   visitor->Trace(resource_keep_alive_);
   visitor->Trace(script_web_bundle_);
-  PendingScriptClient::Trace(visitor);
+  visitor->Trace(speculation_rule_set_);
+  ResourceFinishObserver::Trace(visitor);
 }
 
 void ScriptLoader::DidNotifySubtreeInsertionsToDocument() {
@@ -153,28 +155,27 @@ void ScriptLoader::HandleAsyncAttribute() {
   dynamic_async_ = true;
 }
 
-void ScriptLoader::DetachPendingScript() {
-  if (!pending_script_)
-    return;
-  pending_script_->Dispose();
-  pending_script_ = nullptr;
+void ScriptLoader::Removed() {
+  // Release webbundle resources which are associated to this loader explicitly
+  // without waiting for blink-GC.
+  if (ScriptWebBundle* bundle = std::exchange(script_web_bundle_, nullptr))
+    bundle->WillReleaseBundleLoaderAndUnregister();
+
+  if (SpeculationRuleSet* rule_set =
+          std::exchange(speculation_rule_set_, nullptr)) {
+    // Speculation rules in this script no longer apply.
+    // Candidate speculations must be re-evaluated.
+    DCHECK_EQ(GetScriptType(), ScriptTypeAtPrepare::kSpeculationRules);
+    DocumentSpeculationRules::From(element_->GetDocument())
+        .RemoveRuleSet(rule_set);
+  }
 }
 
 namespace {
 
 // <specdef href="https://html.spec.whatwg.org/C/#prepare-a-script">
-bool IsValidClassicScriptTypeAndLanguage(
-    const String& type,
-    const String& language,
-    ScriptLoader::LegacyTypeSupport support_legacy_types) {
-  // FIXME: IsLegacySupportedJavaScriptLanguage() is not valid HTML5. It is used
-  // here to maintain backwards compatibility with existing web tests. The
-  // specific violations are:
-  // - Allowing type=javascript. type= should only support MIME types, such as
-  //   text/javascript.
-  // - Allowing a different set of languages for language= and type=. language=
-  //   supports Javascript 1.1 and 1.4-1.6, but type= does not.
-
+bool IsValidClassicScriptTypeAndLanguage(const String& type,
+                                         const String& language) {
   if (type.IsNull()) {
     // <spec step="8">the script element has no type attribute but it has a
     // language attribute and that attribute's value is the empty string,
@@ -191,10 +192,6 @@ bool IsValidClassicScriptTypeAndLanguage(
     // attribute.</spec>
     if (MIMETypeRegistry::IsSupportedJavaScriptMIMEType("text/" + language))
       return true;
-
-    // Not spec'ed.
-    if (MIMETypeRegistry::IsLegacySupportedJavaScriptLanguage(language))
-      return true;
   } else if (type.IsEmpty()) {
     // <spec step="8">the script element has a type attribute and its value is
     // the empty string, or</spec>
@@ -206,12 +203,6 @@ bool IsValidClassicScriptTypeAndLanguage(
     // stripped.</spec>
     if (MIMETypeRegistry::IsSupportedJavaScriptMIMEType(
             type.StripWhiteSpace())) {
-      return true;
-    }
-
-    // Not spec'ed.
-    if (support_legacy_types == ScriptLoader::kAllowLegacyTypeInTypeAttribute &&
-        MIMETypeRegistry::IsLegacySupportedJavaScriptLanguage(type)) {
       return true;
     }
   }
@@ -228,10 +219,8 @@ enum class ShouldFireErrorEvent {
 
 ScriptLoader::ScriptTypeAtPrepare ScriptLoader::GetScriptTypeAtPrepare(
     const String& type,
-    const String& language,
-    LegacyTypeSupport support_legacy_types) {
-  if (IsValidClassicScriptTypeAndLanguage(type, language,
-                                          support_legacy_types)) {
+    const String& language) {
+  if (IsValidClassicScriptTypeAndLanguage(type, language)) {
     // <spec step="8">... If the script block's type string is a JavaScript MIME
     // type essence match, the script's type is "classic". ...</spec>
     return ScriptTypeAtPrepare::kClassic;
@@ -310,8 +299,7 @@ bool ShouldBlockSyncScriptForDocumentPolicy(
 }
 
 // <specdef href="https://html.spec.whatwg.org/C/#prepare-a-script">
-bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
-                                 LegacyTypeSupport support_legacy_types) {
+bool ScriptLoader::PrepareScript(const TextPosition& script_start_position) {
   // <spec step="1">If the script element is marked as having "already started",
   // then return. The script is not executed.</spec>
   if (already_started_)
@@ -360,8 +348,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
 
   // <spec step="7">... Determine the script's type as follows: ...</spec>
   script_type_ = GetScriptTypeAtPrepare(element_->TypeAttributeValue(),
-                                        element_->LanguageAttributeValue(),
-                                        support_legacy_types);
+                                        element_->LanguageAttributeValue());
 
   switch (GetScriptType()) {
     case ScriptTypeAtPrepare::kInvalid:
@@ -451,10 +438,10 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
 
   if (ShouldBlockSyncScriptForDocumentPolicy(element_.Get(), GetScriptType(),
                                              parser_inserted_)) {
-    element_document.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
-        mojom::ConsoleMessageSource::kJavaScript,
-        mojom::ConsoleMessageLevel::kError,
-        "Synchronous script execution is disabled by Document Policy"));
+    context_window->ReportDocumentPolicyViolation(
+        mojom::blink::DocumentPolicyFeature::kSyncScript,
+        mojom::blink::PolicyDisposition::kEnforce,
+        "Synchronous script execution is disabled by Document Policy");
     return false;
   }
 
@@ -501,13 +488,12 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
         &referrer_policy);
   }
 
-  // Priority Hints is currently a non-standard feature, but we can assume the
-  // following (see https://crbug.com/821464):
-  // <spec step="21">Let importance be the current state of the element's
-  // importance content attribute.</spec>
-  String importance_attr = element_->ImportanceAttributeValue();
-  mojom::FetchImportanceMode importance =
-      GetFetchImportanceAttributeValue(importance_attr);
+  // <spec href="https://wicg.github.io/priority-hints/#script" step="8">
+  // Let fetchpriority be the current state of the element’s fetchpriority
+  // attribute.</spec>
+  String fetch_priority_attr = element_->FetchPriorityAttributeValue();
+  mojom::blink::FetchPriorityHint fetch_priority_hint =
+      GetFetchPriorityAttributeValue(fetch_priority_attr);
 
   // <spec step="21">Let parser metadata be "parser-inserted" if the script
   // element has been flagged as "parser-inserted", and "not-parser-inserted"
@@ -522,9 +508,10 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
 
   DCHECK(!prepared_pending_script_);
 
+  bool potentially_render_blocking = element_->IsPotentiallyRenderBlocking();
   RenderBlockingBehavior render_blocking_behavior =
-      non_blocking_ || dynamic_async_ ? RenderBlockingBehavior::kNonBlocking
-                                      : RenderBlockingBehavior::kBlocking;
+      potentially_render_blocking ? RenderBlockingBehavior::kBlocking
+                                  : RenderBlockingBehavior::kNonBlocking;
 
   // <spec step="22">Let options be a script fetch options whose cryptographic
   // nonce is cryptographic nonce, integrity metadata is integrity metadata,
@@ -532,7 +519,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   // credentials mode, and referrer policy is referrer policy.</spec>
   ScriptFetchOptions options(nonce, integrity_metadata, integrity_attr,
                              parser_state, credentials_mode, referrer_policy,
-                             importance, render_blocking_behavior);
+                             fetch_priority_hint, render_blocking_behavior);
 
   // <spec step="23">Let settings object be the element's node document's
   // relevant settings object.</spec>
@@ -618,6 +605,14 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
                      WTF::Bind(&ScriptElementBase::DispatchErrorEvent,
                                WrapPersistent(element_.Get())));
       return false;
+    }
+
+    // If the element is potentially render-blocking, block rendering on the
+    // element.
+    if (potentially_render_blocking &&
+        element_document.GetRenderBlockingResourceManager()) {
+      element_document.GetRenderBlockingResourceManager()->AddPendingScript(
+          *element_);
     }
 
     // <spec step="24.6">Switch on the script's type:</spec>
@@ -760,10 +755,34 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
             context_window));
         DCHECK(!script_web_bundle_);
 
-        script_web_bundle_ =
-            ScriptWebBundle::CreateOrReuseInline(*element_, source_text);
-        if (!script_web_bundle_) {
-          element_->DispatchErrorEvent();
+        absl::variant<ScriptWebBundle*, ScriptWebBundleError>
+            script_web_bundle_or_error =
+                ScriptWebBundle::CreateOrReuseInline(*element_, source_text);
+        if (absl::holds_alternative<ScriptWebBundle*>(
+                script_web_bundle_or_error)) {
+          script_web_bundle_ =
+              absl::get<ScriptWebBundle*>(script_web_bundle_or_error);
+          DCHECK(script_web_bundle_);
+        }
+        if (absl::holds_alternative<ScriptWebBundleError>(
+                script_web_bundle_or_error)) {
+          ScriptWebBundleError error =
+              absl::get<ScriptWebBundleError>(script_web_bundle_or_error);
+          // Errors with type kSystemError should fire an error event silently
+          // for the user, while the other error types should report an
+          // exception.
+          if (error.GetType() == ScriptWebBundleError::Type::kSystemError) {
+            element_->DispatchErrorEvent();
+          } else {
+            ScriptState* script_state = ToScriptStateForMainWorld(
+                To<LocalDOMWindow>(element_->GetExecutionContext())
+                    ->GetFrame());
+            if (script_state->ContextIsValid()) {
+              ScriptState::Scope scope(script_state);
+              V8ScriptRunner::ReportException(script_state->GetIsolate(),
+                                              error.ToV8(script_state));
+            }
+          }
         }
         return false;
       }
@@ -779,6 +798,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
         String parse_error;
         if (auto* rule_set = SpeculationRuleSet::ParseInline(
                 source_text, base_url, &parse_error)) {
+          speculation_rule_set_ = rule_set;
           DocumentSpeculationRules::From(element_document).AddRuleSet(rule_set);
         }
         if (!parse_error.IsNull()) {
@@ -935,16 +955,19 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
     // that will execute in order as soon as possible associated with the node
     // document of the script element at the time the prepare a script algorithm
     // started. ...</spec>
-    pending_script_ = TakePendingScript(ScriptSchedulingType::kInOrder);
+    //
     // TODO(hiroshige): Here the context document is used as "node document"
     // while Step 14 uses |elementDocument| as "node document". Fix this.
     context_window->document()->GetScriptRunner()->QueueScriptForExecution(
-        pending_script_);
-    // Note that watchForLoad can immediately call pendingScriptFinished.
-    pending_script_->WatchForLoad(this);
+        TakePendingScript(ScriptSchedulingType::kInOrder));
     // The part "When the script is ready..." is implemented in
-    // ScriptRunner::notifyScriptReady().
+    // ScriptRunner::PendingScriptFinished().
     // TODO(hiroshige): Annotate it.
+
+    if (resource_keep_alive_) {
+      resource_keep_alive_->AddFinishObserver(
+          this, element_document.GetTaskRunner(TaskType::kNetworking).get());
+    }
 
     return true;
   }
@@ -961,18 +984,19 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
     // element at the time the prepare a script algorithm started. When the
     // script is ready, execute the script block and then remove the element
     // from the set of scripts that will execute as soon as possible.</spec>
-    pending_script_ = TakePendingScript(ScriptSchedulingType::kAsync);
-    // This is for the UKM count of async scripts in a document.
-    context_window->document()->IncrementAsyncScriptCount();
+    //
     // TODO(hiroshige): Here the context document is used as "node document"
     // while Step 14 uses |elementDocument| as "node document". Fix this.
     context_window->document()->GetScriptRunner()->QueueScriptForExecution(
-        pending_script_);
-    // Note that watchForLoad can immediately call pendingScriptFinished.
-    pending_script_->WatchForLoad(this);
+        TakePendingScript(ScriptSchedulingType::kAsync));
     // The part "When the script is ready..." is implemented in
-    // ScriptRunner::notifyScriptReady().
+    // ScriptRunner::PendingScriptFinished().
     // TODO(hiroshige): Annotate it.
+
+    if (resource_keep_alive_) {
+      resource_keep_alive_->AddFinishObserver(
+          this, element_document.GetTaskRunner(TaskType::kNetworking).get());
+    }
 
     return true;
   }
@@ -1067,19 +1091,45 @@ PendingScript* ScriptLoader::TakePendingScript(
     ScriptSchedulingType scheduling_type) {
   CHECK(prepared_pending_script_);
 
+  // Record usage histograms per script tag.
+  if (element_->GetDocument().Url().ProtocolIsInHTTPFamily()) {
+    base::UmaHistogramEnumeration("Blink.Script.SchedulingType",
+                                  scheduling_type);
+  }
+
+  // Record usage histograms per page.
+  switch (scheduling_type) {
+    case ScriptSchedulingType::kDefer:
+      UseCounter::Count(element_->GetDocument(),
+                        WebFeature::kScriptSchedulingType_Defer);
+      break;
+    case ScriptSchedulingType::kParserBlocking:
+      UseCounter::Count(element_->GetDocument(),
+                        WebFeature::kScriptSchedulingType_ParserBlocking);
+      break;
+    case ScriptSchedulingType::kParserBlockingInline:
+      UseCounter::Count(element_->GetDocument(),
+                        WebFeature::kScriptSchedulingType_ParserBlockingInline);
+      break;
+    case ScriptSchedulingType::kInOrder:
+      UseCounter::Count(element_->GetDocument(),
+                        WebFeature::kScriptSchedulingType_InOrder);
+      break;
+    case ScriptSchedulingType::kAsync:
+      UseCounter::Count(element_->GetDocument(),
+                        WebFeature::kScriptSchedulingType_Async);
+      break;
+    default:
+      break;
+  }
+
   PendingScript* pending_script = prepared_pending_script_;
   prepared_pending_script_ = nullptr;
   pending_script->SetSchedulingType(scheduling_type);
   return pending_script;
 }
 
-void ScriptLoader::PendingScriptFinished(PendingScript* pending_script) {
-  DCHECK(!will_be_parser_executed_);
-  DCHECK_EQ(pending_script_, pending_script);
-  DCHECK(pending_script->IsControlledByScriptRunner());
-  DCHECK(pending_script_->GetSchedulingType() == ScriptSchedulingType::kAsync ||
-         pending_script_->GetSchedulingType() ==
-             ScriptSchedulingType::kInOrder);
+void ScriptLoader::NotifyFinished() {
   // Historically we clear |resource_keep_alive_| when the scheduling type is
   // kAsync or kInOrder (crbug.com/778799). But if the script resource was
   // served via signed exchange, the script may not be in the HTTPCache, and
@@ -1087,23 +1137,9 @@ void ScriptLoader::PendingScriptFinished(PendingScript* pending_script) {
   // memory cache. So we keep |resource_keep_alive_| to keep the resource in the
   // memory cache.
   if (resource_keep_alive_ &&
-      !resource_keep_alive_->GetResponse().IsSignedExchangeInnerResponse() &&
-      !base::FeatureList::IsEnabled(
-          blink::features::kKeepScriptResourceAlive)) {
+      !resource_keep_alive_->GetResponse().IsSignedExchangeInnerResponse()) {
     resource_keep_alive_ = nullptr;
   }
-
-  if (!element_->GetExecutionContext()) {
-    DetachPendingScript();
-    return;
-  }
-
-  LocalDOMWindow* context_window =
-      To<LocalDOMWindow>(element_->GetExecutionContext());
-  context_window->document()->GetScriptRunner()->NotifyScriptReady(
-      pending_script);
-  pending_script_->StopWatchingForLoad();
-  pending_script_ = nullptr;
 }
 
 bool ScriptLoader::IgnoresLoadRequest() const {
@@ -1139,12 +1175,6 @@ bool ScriptLoader::IsScriptForEventSupported() const {
          EqualIgnoringASCIICase(event_attribute, "onload()");
 }
 
-PendingScript*
-ScriptLoader::GetPendingScriptIfControlledByScriptRunnerForCrossDocMove() {
-  DCHECK(!pending_script_ || pending_script_->IsControlledByScriptRunner());
-  return pending_script_;
-}
-
 String ScriptLoader::GetScriptText() const {
   // Step 3 of
   // https://w3c.github.io/webappsec-trusted-types/dist/spec/#abstract-opdef-prepare-the-script-url-and-text
@@ -1160,13 +1190,6 @@ String ScriptLoader::GetScriptText() const {
   return GetStringForScriptExecution(child_text_content,
                                      element_->GetScriptElementType(),
                                      element_->GetExecutionContext());
-}
-
-void ScriptLoader::ReleaseWebBundleResource() {
-  if (!script_web_bundle_)
-    return;
-  script_web_bundle_->WillReleaseBundleLoaderAndUnregister();
-  script_web_bundle_ = nullptr;
 }
 
 }  // namespace blink

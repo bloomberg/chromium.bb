@@ -88,6 +88,8 @@ class VIZ_HOST_EXPORT ClientFrameSinkVideoCapturer
                                 bool use_fixed_aspect_ratio);
   void SetAutoThrottlingEnabled(bool enabled);
   void ChangeTarget(const absl::optional<VideoCaptureTarget>& target);
+  void ChangeTarget(const absl::optional<VideoCaptureTarget>& target,
+                    uint32_t crop_version);
   void Stop();
   void RequestRefreshFrame();
 
@@ -104,6 +106,10 @@ class VIZ_HOST_EXPORT ClientFrameSinkVideoCapturer
   // Similar to FrameSinkVideoCapturer::CreateOverlay, except that it returns an
   // owned pointer to an Overlay.
   std::unique_ptr<Overlay> CreateOverlay(int32_t stacking_index);
+
+  // Getter for `format_`. Returns the pixel format set by the last call to
+  // `SetFormat()`, or nullopt if the format was not yet set.
+  absl::optional<media::VideoPixelFormat> GetFormat() const { return format_; }
 
  private:
   struct ResolutionConstraints {
@@ -123,6 +129,7 @@ class VIZ_HOST_EXPORT ClientFrameSinkVideoCapturer
       const gfx::Rect& content_rect,
       mojo::PendingRemote<mojom::FrameSinkVideoConsumerFrameCallbacks>
           callbacks) final;
+  void OnFrameWithEmptyRegionCapture() final;
   void OnStopped() final;
   void OnLog(const std::string& message) final;
   // Establishes connection to FrameSinkVideoCapturer and sends the existing
@@ -149,6 +156,7 @@ class VIZ_HOST_EXPORT ClientFrameSinkVideoCapturer
   absl::optional<ResolutionConstraints> resolution_constraints_;
   absl::optional<bool> auto_throttling_enabled_;
   absl::optional<VideoCaptureTarget> target_;
+  uint32_t crop_version_ = 0;
   // Overlays are owned by the callers of CreateOverlay().
   std::vector<Overlay*> overlays_;
   bool is_started_ = false;
