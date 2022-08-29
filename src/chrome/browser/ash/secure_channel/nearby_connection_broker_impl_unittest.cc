@@ -8,6 +8,9 @@
 #include <vector>
 
 #include "ash/constants/ash_features.h"
+#include "ash/services/nearby/public/cpp/mock_nearby_connections.h"
+#include "ash/services/secure_channel/public/mojom/nearby_connector.mojom.h"
+#include "ash/services/secure_channel/public/mojom/secure_channel_types.mojom.h"
 #include "base/containers/span.h"
 #include "base/files/file_util.h"
 #include "base/run_loop.h"
@@ -18,9 +21,6 @@
 #include "base/timer/mock_timer.h"
 #include "chrome/browser/ash/secure_channel/fake_nearby_endpoint_finder.h"
 #include "chrome/browser/ash/secure_channel/util/histogram_util.h"
-#include "chromeos/services/nearby/public/cpp/mock_nearby_connections.h"
-#include "chromeos/services/secure_channel/public/mojom/nearby_connector.mojom.h"
-#include "chromeos/services/secure_channel/public/mojom/secure_channel_types.mojom.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/shared_remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -29,10 +29,6 @@
 namespace ash {
 namespace secure_channel {
 namespace {
-
-// TODO(https://crbug.com/1164001): remove after
-// chromeos/services/secure_channel is moved to namespace ash.
-namespace mojom = ::chromeos::secure_channel::mojom;
 
 using ::location::nearby::connections::mojom::BytesPayload;
 using ::location::nearby::connections::mojom::ConnectionInfo;
@@ -536,7 +532,7 @@ TEST_F(NearbyConnectionBrokerImplTest, FileTransferUpdateForRegisteredPayload) {
                                  /*bytes_transferred=*/1000));
   file_payload_listener().FlushForTesting();
 
-  EXPECT_EQ(2, file_transfer_updates().size());
+  EXPECT_EQ(2u, file_transfer_updates().size());
   EXPECT_EQ(file_transfer_updates().at(0),
             mojom::FileTransferUpdate::New(
                 payload_id, mojom::FileTransferStatus::kInProgress,
@@ -587,7 +583,7 @@ TEST_F(NearbyConnectionBrokerImplTest, FileTransferUpdateForCompletedPayload) {
                                  /*bytes_transferred=*/200));
   file_payload_listener().FlushForTesting();
 
-  EXPECT_EQ(1, file_transfer_updates().size());
+  EXPECT_EQ(1u, file_transfer_updates().size());
   EXPECT_EQ(file_transfer_updates().at(0),
             mojom::FileTransferUpdate::New(payload_id,
                                            mojom::FileTransferStatus::kFailure,
@@ -643,7 +639,7 @@ TEST_F(NearbyConnectionBrokerImplTest, FileTransferCanceledOnDisconnect) {
   InvokeDisconnectedCallback();
   file_payload_listener().FlushForTesting();
 
-  EXPECT_EQ(2, file_transfer_updates().size());
+  EXPECT_EQ(2u, file_transfer_updates().size());
   EXPECT_EQ(file_transfer_updates().at(0),
             mojom::FileTransferUpdate::New(
                 payload_id, mojom::FileTransferStatus::kInProgress,
@@ -680,7 +676,7 @@ TEST_F(NearbyConnectionBrokerImplTest, FileTransferCanceledOnMojoDisconnect) {
   InvokeDisconnectedCallback();
   file_payload_listener().FlushForTesting();
 
-  EXPECT_EQ(2, file_transfer_updates().size());
+  EXPECT_EQ(2u, file_transfer_updates().size());
   EXPECT_EQ(file_transfer_updates().at(0),
             mojom::FileTransferUpdate::New(
                 payload_id, mojom::FileTransferStatus::kInProgress,

@@ -79,17 +79,12 @@ enum NotificationType {
   // Use ProfileManagerObserver::OnProfileAdded instead of this notification.
   // Sent after a Profile has been added to ProfileManager.
   // The details are none and the source is the new profile.
-  // TODO(https://crbug.com/1174720): Remove. See also
-  // https://crbug.com/1038437.
+  // Note: this notification is only sent for profiles owned by the
+  // `ProfileManager`. In particular, off-the-record profiles don't trigger this
+  // notification, but on-the-record System and Guest profiles do.
+  //  TODO(https://crbug.com/1174720): Remove. See also
+  //  https://crbug.com/1038437.
   NOTIFICATION_PROFILE_ADDED,
-
-  // Printing ----------------------------------------------------------------
-
-  // Notification from PrintJob that an event occurred. It can be that a page
-  // finished printing or that the print job failed. Details is
-  // PrintJob::EventDetails. Source is a PrintJob.
-  // TODO(https://crbug.com/796051): Remove.
-  NOTIFICATION_PRINT_JOB_EVENT,
 
   // Misc --------------------------------------------------------------------
   // Note:-

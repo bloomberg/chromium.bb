@@ -113,7 +113,7 @@ class ProgramExecutable final : public angle::Subject
     ProgramExecutable(const ProgramExecutable &other);
     ~ProgramExecutable() override;
 
-    void reset();
+    void reset(bool clearInfoLog);
 
     void save(bool isSeparable, gl::BinaryOutputStream *stream) const;
     void load(bool isSeparable, gl::BinaryInputStream *stream);
@@ -137,6 +137,11 @@ class ProgramExecutable final : public angle::Subject
         return mLinkedShaderStages[shaderType];
     }
     size_t getLinkedShaderStageCount() const { return mLinkedShaderStages.count(); }
+    bool hasLinkedGraphicsShader() const
+    {
+        return mLinkedShaderStages.any() &&
+               mLinkedShaderStages != gl::ShaderBitSet{gl::ShaderType::Compute};
+    }
     bool hasLinkedTessellationShader() const
     {
         return mLinkedShaderStages[ShaderType::TessEvaluation];
@@ -178,6 +183,13 @@ class ProgramExecutable final : public angle::Subject
         return mActiveSamplerTypes;
     }
 
+    void setActive(size_t textureUnit,
+                   const SamplerBinding &samplerBinding,
+                   const gl::LinkedUniform &samplerUniform);
+    void setInactive(size_t textureUnit);
+    void hasSamplerTypeConflict(size_t textureUnit);
+    void hasSamplerFormatConflict(size_t textureUnit);
+
     void updateActiveSamplers(const ProgramState &programState);
 
     bool hasDefaultUniforms() const;
@@ -217,7 +229,10 @@ class ProgramExecutable final : public angle::Subject
     const RangeUI &getDefaultUniformRange() const { return mDefaultUniformRange; }
     const RangeUI &getSamplerUniformRange() const { return mSamplerUniformRange; }
     const RangeUI &getImageUniformRange() const { return mImageUniformRange; }
+    const RangeUI &getAtomicCounterUniformRange() const { return mAtomicCounterUniformRange; }
     const RangeUI &getFragmentInoutRange() const { return mFragmentInoutRange; }
+    bool enablesPerSampleShading() const { return mEnablesPerSampleShading; }
+    BlendEquationBitSet getAdvancedBlendEquations() const { return mAdvancedBlendEquations; }
     const std::vector<TransformFeedbackVarying> &getLinkedTransformFeedbackVaryings() const
     {
         return mLinkedTransformFeedbackVaryings;
@@ -268,6 +283,8 @@ class ProgramExecutable final : public angle::Subject
     }
 
     GLuint getUniformIndexFromImageIndex(GLuint imageIndex) const;
+
+    GLuint getUniformIndexFromSamplerIndex(GLuint samplerIndex) const;
 
     void saveLinkedStateInfo(const ProgramState &state);
     const std::vector<sh::ShaderVariable> &getLinkedOutputVaryings(ShaderType shaderType) const
@@ -329,9 +346,23 @@ class ProgramExecutable final : public angle::Subject
     ComponentTypeMask getFragmentOutputsTypeMask() const { return mDrawBufferTypeMask; }
     DrawBufferMask getActiveOutputVariablesMask() const { return mActiveOutputVariablesMask; }
 
+    bool linkUniforms(const Context *context,
+                      const ShaderMap<std::vector<sh::ShaderVariable>> &shaderUniforms,
+                      InfoLog &infoLog,
+                      const ProgramAliasedBindings &uniformLocationBindings,
+                      GLuint *combinedImageUniformsCount,
+                      std::vector<UnusedUniform> *unusedUniforms,
+                      std::vector<VariableLocation> *uniformLocationsOutOrNull);
+
+    void copyInputsFromProgram(const ProgramState &programState);
+    void copyShaderBuffersFromProgram(const ProgramState &programState, ShaderType shaderType);
+    void clearSamplerBindings();
+    void copySamplerBindingsFromProgram(const ProgramState &programState);
+    void copyImageBindingsFromProgram(const ProgramState &programState);
+    void copyOutputsFromProgram(const ProgramState &programState);
+    void copyUniformsFromProgramMap(const ShaderMap<Program *> &programs);
+
   private:
-    // TODO(timvp): http://anglebug.com/3570: Investigate removing these friend
-    // class declarations and accessing the necessary members with getters/setters.
     friend class Program;
     friend class ProgramPipeline;
     friend class ProgramState;
@@ -373,6 +404,9 @@ class ProgramExecutable final : public angle::Subject
                                      int fragmentShaderVersion,
                                      const ProgramAliasedBindings &fragmentOutputLocations,
                                      const ProgramAliasedBindings &fragmentOutputIndices);
+
+    void linkSamplerAndImageBindings(GLuint *combinedImageUniformsCount);
+    bool linkAtomicCounterBuffers(const Context *context, InfoLog &infoLog);
 
     InfoLog mInfoLog;
 
@@ -427,30 +461,27 @@ class ProgramExecutable final : public angle::Subject
     std::vector<LinkedUniform> mUniforms;
     RangeUI mDefaultUniformRange;
     RangeUI mSamplerUniformRange;
+    RangeUI mImageUniformRange;
+    RangeUI mAtomicCounterUniformRange;
     std::vector<InterfaceBlock> mUniformBlocks;
 
     // For faster iteration on the blocks currently being bound.
     UniformBlockBindingMask mActiveUniformBlockBindings;
 
     std::vector<AtomicCounterBuffer> mAtomicCounterBuffers;
-    RangeUI mImageUniformRange;
     std::vector<InterfaceBlock> mShaderStorageBlocks;
+
     RangeUI mFragmentInoutRange;
+    bool mEnablesPerSampleShading;
+
+    // KHR_blend_equation_advanced supported equation list
+    BlendEquationBitSet mAdvancedBlendEquations;
 
     // An array of the samplers that are used by the program
     std::vector<SamplerBinding> mSamplerBindings;
 
     // An array of the images that are used by the program
     std::vector<ImageBinding> mImageBindings;
-
-    // TODO: http://anglebug.com/3570: Remove mPipelineHas*UniformBuffers once PPO's have valid data
-    // in mUniformBlocks
-    bool mPipelineHasUniformBuffers;
-    bool mPipelineHasStorageBuffers;
-    bool mPipelineHasAtomicCounterBuffers;
-    bool mPipelineHasDefaultUniforms;
-    bool mPipelineHasTextures;
-    bool mPipelineHasImages;
 
     ShaderMap<std::vector<sh::ShaderVariable>> mLinkedOutputVaryings;
     ShaderMap<std::vector<sh::ShaderVariable>> mLinkedInputVaryings;

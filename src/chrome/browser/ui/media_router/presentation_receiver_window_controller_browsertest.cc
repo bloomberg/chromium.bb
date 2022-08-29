@@ -11,7 +11,6 @@
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/timer/elapsed_timer.h"
 #include "chrome/browser/profiles/profile.h"
@@ -285,7 +284,7 @@ IN_PROC_BROWSER_TEST_F(PresentationReceiverWindowControllerBrowserTest,
           controller_connection.MakeConnectionRequest(),
           media_router::MediaRoute("route",
                                    media_router::MediaSource(presentation_url),
-                                   "sink", "desc", true, true));
+                                   "sink", "desc", true));
 
   base::RunLoop connection_loop;
   EXPECT_CALL(controller_connection, OnMessage(_)).WillOnce([&](auto response) {

@@ -2,20 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {Destination, DestinationConnectionStatus, DestinationOrigin, DestinationType, PrintPreviewDestinationListItemElement} from 'chrome://print/print_preview.js';
+import {Destination, DestinationOrigin, PrintPreviewDestinationListItemElement} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 
-import {createDestinationWithCertificateStatus} from './print_preview_test_utils.js';
 
 const destination_item_test = {
   suiteName: 'DestinationItemTest',
   TestNames: {
-    Online: 'online',
-    Offline: 'offline',
-    BadCertificate: 'bad certificate',
+    NoQuery: 'no query',
     QueryName: 'query name',
     QueryDescription: 'query description',
   },
@@ -36,87 +32,24 @@ suite(destination_item_test.suiteName, function() {
 
     // Create destination
     item.destination = new Destination(
-        printerId, DestinationType.GOOGLE, DestinationOrigin.COOKIES,
-        printerName, DestinationConnectionStatus.ONLINE);
+        printerId, DestinationOrigin.EXTENSION, printerName,
+        {extensionId: 'aaa111', extensionName: 'myPrinterExtension'});
     item.searchQuery = null;
     document.body.appendChild(item);
   });
 
-  // Test that the destination is displayed correctly for the basic case of an
-  // online destination with no search query.
-  test(assert(destination_item_test.TestNames.Online), function() {
+  // Test that the destination is displayed correctly for the basic case of a
+  // destination with no search query.
+  test(assert(destination_item_test.TestNames.NoQuery), function() {
     const name = item.shadowRoot!.querySelector('.name')!;
     assertEquals(printerName, name.textContent);
     assertEquals('1', window.getComputedStyle(name).opacity);
     assertEquals(
         '',
         item.shadowRoot!.querySelector('.search-hint')!.textContent!.trim());
-    assertEquals(
-        '',
-        item.shadowRoot!.querySelector(
-                            '.connection-status')!.textContent!.trim());
-    assertTrue(item.shadowRoot!.querySelector<HTMLElement>(
-                                   '.learn-more-link')!.hidden);
-    assertTrue(item.shadowRoot!
-                   .querySelector<HTMLElement>(
-                       '.extension-controlled-indicator')!.hidden);
-  });
-
-  // Test that the destination is opaque and the correct status shows up if
-  // the destination is stale.
-  test(assert(destination_item_test.TestNames.Offline), function() {
-    const now = new Date();
-    const twoMonthsAgo = new Date(now.getTime());
-    let month = twoMonthsAgo.getMonth() - 2;
-    if (month < 0) {
-      month = month + 12;
-      twoMonthsAgo.setFullYear(now.getFullYear() - 1);
-    }
-    twoMonthsAgo.setMonth(month);
-    item.destination = new Destination(
-        printerId, DestinationType.GOOGLE, DestinationOrigin.COOKIES,
-        printerName, DestinationConnectionStatus.OFFLINE,
-        {lastAccessTime: twoMonthsAgo.getTime()});
-
-    const name = item.shadowRoot!.querySelector('.name')!;
-    assertEquals(printerName, name.textContent);
-    assertEquals('0.4', window.getComputedStyle(name).opacity);
-    assertEquals(
-        '',
-        item.shadowRoot!.querySelector('.search-hint')!.textContent!.trim());
-    assertEquals(
-        loadTimeData.getString('offlineForMonth'),
-        item.shadowRoot!.querySelector(
-                            '.connection-status')!.textContent!.trim());
-    assertTrue(item.shadowRoot!.querySelector<HTMLElement>(
-                                   '.learn-more-link')!.hidden);
-    assertTrue(item.shadowRoot!
-                   .querySelector<HTMLElement>(
-                       '.extension-controlled-indicator')!.hidden);
-  });
-
-  // Test that the destination is opaque and the correct status shows up if
-  // the destination has a bad cloud print certificate.
-  test(assert(destination_item_test.TestNames.BadCertificate), function() {
-    loadTimeData.overrideValues({isEnterpriseManaged: false});
-    item.destination =
-        createDestinationWithCertificateStatus(printerId, printerName, true);
-
-    const name = item.shadowRoot!.querySelector('.name')!;
-    assertEquals(printerName, name.textContent);
-    assertEquals('0.4', window.getComputedStyle(name).opacity);
-    assertEquals(
-        '',
-        item.shadowRoot!.querySelector('.search-hint')!.textContent!.trim());
-    assertEquals(
-        loadTimeData.getString('noLongerSupported'),
-        item.shadowRoot!.querySelector(
-                            '.connection-status')!.textContent!.trim());
-    assertFalse(item.shadowRoot!.querySelector<HTMLElement>(
-                                    '.learn-more-link')!.hidden);
-    assertTrue(item.shadowRoot!
-                   .querySelector<HTMLElement>(
-                       '.extension-controlled-indicator')!.hidden);
+    assertFalse(item.shadowRoot!
+                    .querySelector<HTMLElement>(
+                        '.extension-controlled-indicator')!.hidden);
   });
 
   // Test that the destination is displayed correctly when the search query
@@ -144,10 +77,11 @@ suite(destination_item_test.suiteName, function() {
     const params = {
       description: 'ABCPrinterBrand Model 123',
       location: 'Building 789 Floor 6',
+      extensionId: 'aaa111',
+      extensionName: 'myPrinterExtension',
     };
     item.destination = new Destination(
-        printerId, DestinationType.GOOGLE, DestinationOrigin.COOKIES,
-        printerName, DestinationConnectionStatus.ONLINE, params);
+        printerId, DestinationOrigin.EXTENSION, printerName, params);
     item.searchQuery = /(ABC)/ig;
 
     // No highlighting on name.

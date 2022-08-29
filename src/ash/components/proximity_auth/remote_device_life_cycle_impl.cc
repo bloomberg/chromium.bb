@@ -6,12 +6,12 @@
 
 #include <memory>
 
+#include "ash/components/multidevice/logging/logging.h"
 #include "ash/components/proximity_auth/messenger_impl.h"
+#include "ash/services/secure_channel/public/cpp/client/secure_channel_client.h"
+#include "ash/services/secure_channel/public/cpp/shared/connection_priority.h"
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chromeos/components/multidevice/logging/logging.h"
-#include "chromeos/services/secure_channel/public/cpp/client/secure_channel_client.h"
-#include "chromeos/services/secure_channel/public/cpp/shared/connection_priority.h"
 
 namespace proximity_auth {
 
@@ -22,9 +22,9 @@ const char kSmartLockFeatureName[] = "easy_unlock";
 }  // namespace
 
 RemoteDeviceLifeCycleImpl::RemoteDeviceLifeCycleImpl(
-    chromeos::multidevice::RemoteDeviceRef remote_device,
-    absl::optional<chromeos::multidevice::RemoteDeviceRef> local_device,
-    chromeos::secure_channel::SecureChannelClient* secure_channel_client)
+    ash::multidevice::RemoteDeviceRef remote_device,
+    absl::optional<ash::multidevice::RemoteDeviceRef> local_device,
+    ash::secure_channel::SecureChannelClient* secure_channel_client)
     : remote_device_(remote_device),
       local_device_(local_device),
       secure_channel_client_(secure_channel_client),
@@ -38,12 +38,19 @@ void RemoteDeviceLifeCycleImpl::Start() {
   FindConnection();
 }
 
-chromeos::multidevice::RemoteDeviceRef
-RemoteDeviceLifeCycleImpl::GetRemoteDevice() const {
+void RemoteDeviceLifeCycleImpl::Stop() {
+  PA_LOG(VERBOSE) << "Life cycle for " << remote_device_.name() << " stopped.";
+  DCHECK(state_ != RemoteDeviceLifeCycle::State::STOPPED);
+  connection_attempt_.reset();
+  TransitionToState(RemoteDeviceLifeCycle::State::STOPPED);
+}
+
+ash::multidevice::RemoteDeviceRef RemoteDeviceLifeCycleImpl::GetRemoteDevice()
+    const {
   return remote_device_;
 }
 
-chromeos::secure_channel::ClientChannel* RemoteDeviceLifeCycleImpl::GetChannel()
+ash::secure_channel::ClientChannel* RemoteDeviceLifeCycleImpl::GetChannel()
     const {
   if (channel_)
     return channel_.get();
@@ -80,8 +87,8 @@ void RemoteDeviceLifeCycleImpl::TransitionToState(
 void RemoteDeviceLifeCycleImpl::FindConnection() {
   connection_attempt_ = secure_channel_client_->ListenForConnectionFromDevice(
       remote_device_, *local_device_, kSmartLockFeatureName,
-      chromeos::secure_channel::ConnectionMedium::kBluetoothLowEnergy,
-      chromeos::secure_channel::ConnectionPriority::kHigh);
+      ash::secure_channel::ConnectionMedium::kBluetoothLowEnergy,
+      ash::secure_channel::ConnectionPriority::kHigh);
   connection_attempt_->SetDelegate(this);
 
   TransitionToState(RemoteDeviceLifeCycle::State::FINDING_CONNECTION);
@@ -97,13 +104,13 @@ void RemoteDeviceLifeCycleImpl::CreateMessenger() {
 }
 
 void RemoteDeviceLifeCycleImpl::OnConnectionAttemptFailure(
-    chromeos::secure_channel::mojom::ConnectionAttemptFailureReason reason) {
+    ash::secure_channel::mojom::ConnectionAttemptFailureReason reason) {
   connection_attempt_.reset();
 
-  if (reason == chromeos::secure_channel::mojom::
-                    ConnectionAttemptFailureReason::ADAPTER_DISABLED ||
-      reason == chromeos::secure_channel::mojom::
-                    ConnectionAttemptFailureReason::ADAPTER_NOT_PRESENT) {
+  if (reason == ash::secure_channel::mojom::ConnectionAttemptFailureReason::
+                    ADAPTER_DISABLED ||
+      reason == ash::secure_channel::mojom::ConnectionAttemptFailureReason::
+                    ADAPTER_NOT_PRESENT) {
     // Transition to state STOPPED, and wait for Bluetooth to become powered.
     // If it does, UnlockManager will start RemoteDeviceLifeCycle again.
     PA_LOG(WARNING) << "Life cycle for "
@@ -122,7 +129,7 @@ void RemoteDeviceLifeCycleImpl::OnConnectionAttemptFailure(
 }
 
 void RemoteDeviceLifeCycleImpl::OnConnection(
-    std::unique_ptr<chromeos::secure_channel::ClientChannel> channel) {
+    std::unique_ptr<ash::secure_channel::ClientChannel> channel) {
   DCHECK(state_ == RemoteDeviceLifeCycle::State::FINDING_CONNECTION);
   TransitionToState(RemoteDeviceLifeCycle::State::AUTHENTICATING);
 

@@ -9,20 +9,31 @@
 #include "remoting/protocol/video_channel_state_observer.h"
 #include "remoting/protocol/webrtc_video_encoder_wrapper.h"
 #include "third_party/webrtc/api/video_codecs/sdp_video_format.h"
+#include "third_party/webrtc/api/video_codecs/video_codec.h"
 #include "third_party/webrtc/api/video_codecs/vp9_profile.h"
 
-namespace remoting {
-namespace protocol {
+#if defined(USE_H264_ENCODER)
+#include "remoting/codec/webrtc_video_encoder_gpu.h"
+#endif
+
+namespace remoting::protocol {
 
 WebrtcVideoEncoderFactory::WebrtcVideoEncoderFactory()
     : main_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
-  formats_.push_back(webrtc::SdpVideoFormat("VP8"));
-  formats_.push_back(webrtc::SdpVideoFormat("VP9"));
-  formats_.push_back(
-      webrtc::SdpVideoFormat("VP9", {{webrtc::kVP9FmtpProfileId, "1"}}));
+  formats_.emplace_back(webrtc::SdpVideoFormat("VP8"));
+  formats_.emplace_back(webrtc::SdpVideoFormat("VP9"));
+  formats_.emplace_back(webrtc::SdpVideoFormat(
+      "VP9", {{webrtc::kVP9FmtpProfileId,
+               webrtc::VP9ProfileToString(webrtc::VP9Profile::kProfile1)}}));
 #if defined(USE_H264_ENCODER)
-  formats_.push_back(webrtc::SdpVideoFormat("H264"));
+  // This call will query the underlying media classes to determine whether
+  // hardware encoding is supported or not. We use a default resolution and
+  // framerate so the call doesn't fail due to invalid params.
+  if (WebrtcVideoEncoderGpu::IsSupportedByH264({{1920, 1080}, 30})) {
+    formats_.emplace_back(webrtc::SdpVideoFormat("H264"));
+  }
 #endif
+  formats_.emplace_back(webrtc::SdpVideoFormat("AV1"));
 }
 
 WebrtcVideoEncoderFactory::~WebrtcVideoEncoderFactory() = default;
@@ -45,5 +56,4 @@ void WebrtcVideoEncoderFactory::SetVideoChannelStateObserver(
   video_channel_state_observer_ = video_channel_state_observer;
 }
 
-}  // namespace protocol
-}  // namespace remoting
+}  // namespace remoting::protocol

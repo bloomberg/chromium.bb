@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
-#include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
@@ -43,7 +42,7 @@ TEST_F(ContentScriptsManifestTest, MatchPattern) {
                "Error at key 'content_scripts'. Parsing array failed at index "
                "0: Error at key 'matches': Parsing array failed at index 0: "
                "expected string, got integer")};
-  RunTestcases(testcases, base::size(testcases), EXPECT_TYPE_ERROR);
+  RunTestcases(testcases, std::size(testcases), EXPECT_TYPE_ERROR);
 
   LoadAndExpectSuccess("ports_in_content_scripts.json");
 }
@@ -142,6 +141,19 @@ TEST_F(ContentScriptsManifestTest, MatchOriginAsFallback_FeatureEnabled) {
   // The seventh and final does not specify a value for either.
   EXPECT_EQ(MatchOriginAsFallbackBehavior::kNever,
             user_scripts[6]->match_origin_as_fallback());
+}
+
+TEST_F(ContentScriptsManifestTest, MatchOriginAsFallback_InvalidCases) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      extensions_features::kContentScriptsMatchOriginAsFallback);
+
+  LoadAndExpectWarning(
+      "content_script_match_origin_as_fallback_warning_for_mv2.json",
+      errors::kMatchOriginAsFallbackRestrictedToMV3);
+  LoadAndExpectError(
+      "content_script_match_origin_as_fallback_invalid_with_paths.json",
+      errors::kMatchOriginAsFallbackCantHavePaths);
 }
 
 TEST_F(ContentScriptsManifestTest, MatchOriginAsFallback_FeatureDisabled) {

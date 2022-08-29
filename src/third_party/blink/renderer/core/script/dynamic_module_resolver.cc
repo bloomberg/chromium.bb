@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/referrer_script_info.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/core/loader/modulescript/module_script_creation_params.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_fetch_request.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/core/script/module_script.h"
@@ -43,14 +44,14 @@ class DynamicImportTreeClient final : public ModuleTreeClient {
 };
 
 // Abstract callback for modules resolution.
-class ModuleResolutionCallback : public NewScriptFunction::Callable {
+class ModuleResolutionCallback : public ScriptFunction::Callable {
  public:
   explicit ModuleResolutionCallback(ScriptPromiseResolver* promise_resolver)
       : promise_resolver_(promise_resolver) {}
 
   void Trace(Visitor* visitor) const override {
     visitor->Trace(promise_resolver_);
-    NewScriptFunction::Callable::Trace(visitor);
+    ScriptFunction::Callable::Trace(visitor);
   }
 
  protected:
@@ -133,8 +134,11 @@ void DynamicImportTreeClient::NotifyModuleTreeLoadFinished(
 
   // <spec step="9">Otherwise, set promise to the result of running a module
   // script given result and true.</spec>
-  ScriptEvaluationResult result = module_script->RunScriptAndReturnValue(
-      V8ScriptRunner::RethrowErrorsOption::Rethrow(String()));
+  ScriptEvaluationResult result =
+      module_script->RunScriptOnScriptStateAndReturnValue(
+          script_state,
+          ExecuteScriptPolicy::kDoNotExecuteScriptWhenScriptsDisabled,
+          V8ScriptRunner::RethrowErrorsOption::Rethrow(String()));
 
   switch (result.GetResultType()) {
     case ScriptEvaluationResult::ResultType::kException:
@@ -154,10 +158,10 @@ void DynamicImportTreeClient::NotifyModuleTreeLoadFinished(
       // FinishDynamicImport(referencingScriptOrModule, specifier,
       // promiseCapability, promise).</spec>
       ScriptPromise promise = result.GetPromise(script_state);
-      auto* callback_success = MakeGarbageCollected<NewScriptFunction>(
+      auto* callback_success = MakeGarbageCollected<ScriptFunction>(
           script_state, MakeGarbageCollected<ModuleResolutionSuccessCallback>(
                             promise_resolver_, module_script));
-      auto* callback_failure = MakeGarbageCollected<NewScriptFunction>(
+      auto* callback_failure = MakeGarbageCollected<ScriptFunction>(
           script_state, MakeGarbageCollected<ModuleResolutionFailureCallback>(
                             promise_resolver_));
       promise.Then(callback_success, callback_failure);
@@ -273,18 +277,14 @@ void DynamicModuleResolver::ResolveDynamically(
   // are a new script fetch options whose items all have the same values, except
   // for the integrity metadata, which is instead the empty string.</spec>
   //
-  // TODO(domfarolino): It has not yet been decided how a script's "importance"
-  // should affect its dynamic imports. There is discussion at
-  // https://github.com/whatwg/html/issues/3670, but for now there is no effect,
-  // and dynamic imports get kImportanceAuto. If this changes,
-  // ReferrerScriptInfo will need a mojom::FetchImportanceMode member, that must
-  // be properly set.
-  ScriptFetchOptions options(referrer_info.Nonce(), IntegrityMetadataSet(),
-                             String(), referrer_info.ParserState(),
-                             referrer_info.CredentialsMode(),
-                             referrer_info.GetReferrerPolicy(),
-                             mojom::blink::FetchImportanceMode::kImportanceAuto,
-                             RenderBlockingBehavior::kNonBlocking);
+  // <spec href="https://wicg.github.io/priority-hints/#script">
+  // dynamic imports get kAuto. Only the main script resource is impacted by
+  // Priority Hints.
+  ScriptFetchOptions options(
+      referrer_info.Nonce(), IntegrityMetadataSet(), String(),
+      referrer_info.ParserState(), referrer_info.CredentialsMode(),
+      referrer_info.GetReferrerPolicy(), mojom::blink::FetchPriorityHint::kAuto,
+      RenderBlockingBehavior::kNonBlocking);
 
   // <spec label="fetch-an-import()-module-script-graph" step="3">Fetch a single
   // module script given url, settings object, "script", options, settings

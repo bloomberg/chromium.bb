@@ -20,11 +20,9 @@
 
 #include "config.h"
 #include "libavutil/attributes.h"
-#include "libavutil/internal.h"
 #include "libavutil/cpu.h"
 #include "libavutil/x86/cpu.h"
 #include "libavcodec/blockdsp.h"
-#include "libavcodec/version.h"
 
 void ff_clear_block_mmx(int16_t *block);
 void ff_clear_block_sse(int16_t *block);
@@ -43,10 +41,6 @@ av_cold void ff_blockdsp_init_x86(BlockDSPContext *c,
         c->clear_block  = ff_clear_block_mmx;
         c->clear_blocks = ff_clear_blocks_mmx;
     }
-
-    /* XvMCCreateBlocks() may not allocate 16-byte aligned blocks */
-    if (CONFIG_XVMC && avctx->hwaccel && avctx->hwaccel->decode_mb)
-        return;
 
     if (EXTERNAL_SSE(cpu_flags)) {
         c->clear_block  = ff_clear_block_sse;

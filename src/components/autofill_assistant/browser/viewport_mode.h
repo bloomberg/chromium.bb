@@ -5,12 +5,10 @@
 #ifndef COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_VIEWPORT_MODE_H_
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_VIEWPORT_MODE_H_
 
-#include "base/callback.h"
-
 namespace autofill_assistant {
 
 // GENERATED_JAVA_ENUM_PACKAGE: (
-// org.chromium.chrome.browser.autofill_assistant)
+// org.chromium.components.autofill_assistant)
 // GENERATED_JAVA_CLASS_NAME_OVERRIDE: AssistantViewportMode
 enum ViewportMode {
   // Don't resize the layout nor visual viewport.

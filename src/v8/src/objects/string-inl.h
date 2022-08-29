@@ -15,8 +15,8 @@
 #include "src/objects/smi-inl.h"
 #include "src/objects/string-table-inl.h"
 #include "src/objects/string.h"
-#include "src/security/external-pointer-inl.h"
-#include "src/security/external-pointer.h"
+#include "src/sandbox/external-pointer-inl.h"
+#include "src/sandbox/external-pointer.h"
 #include "src/strings/string-hasher-inl.h"
 #include "src/utils/utils.h"
 
@@ -137,7 +137,7 @@ StringShape::StringShape(InstanceType t) : type_(static_cast<uint32_t>(t)) {
 
 bool StringShape::IsInternalized() const {
   DCHECK(valid());
-  STATIC_ASSERT(kNotInternalizedTag != 0);
+  static_assert(kNotInternalizedTag != 0);
   return (type_ & (kIsNotStringMask | kIsNotInternalizedMask)) ==
          (kStringTag | kInternalizedTag);
 }
@@ -179,24 +179,6 @@ bool StringShape::IsShared() const {
          (FLAG_shared_string_table && IsInternalized());
 }
 
-bool StringShape::CanMigrateInParallel() const {
-  switch (representation_encoding_and_shared_tag()) {
-    case kSeqOneByteStringTag | kSharedStringTag:
-    case kSeqTwoByteStringTag | kSharedStringTag:
-      // Shared SeqStrings can migrate to ThinStrings.
-      return true;
-    case kThinStringTag | kOneByteStringTag | kSharedStringTag:
-    case kThinStringTag | kTwoByteStringTag | kSharedStringTag:
-      // Shared ThinStrings do not migrate.
-      return false;
-    default:
-      // If you crashed here, you probably added a new shared string
-      // type. Explicitly handle all shared string cases above.
-      DCHECK(!IsShared());
-      return false;
-  }
-}
-
 StringRepresentationTag StringShape::representation_tag() const {
   uint32_t tag = (type_ & kStringRepresentationMask);
   return static_cast<StringRepresentationTag>(tag);
@@ -214,10 +196,10 @@ uint32_t StringShape::representation_encoding_and_shared_tag() const {
   return (type_ & (kStringRepresentationEncodingAndSharedMask));
 }
 
-STATIC_ASSERT((kStringRepresentationAndEncodingMask) ==
+static_assert((kStringRepresentationAndEncodingMask) ==
               Internals::kStringRepresentationAndEncodingMask);
 
-STATIC_ASSERT(static_cast<uint32_t>(kStringEncodingMask) ==
+static_assert(static_cast<uint32_t>(kStringEncodingMask) ==
               Internals::kStringEncodingMask);
 
 bool StringShape::IsSequentialOneByte() const {
@@ -232,19 +214,19 @@ bool StringShape::IsExternalOneByte() const {
   return representation_and_encoding_tag() == kExternalOneByteStringTag;
 }
 
-STATIC_ASSERT(kExternalOneByteStringTag ==
+static_assert(kExternalOneByteStringTag ==
               Internals::kExternalOneByteRepresentationTag);
 
-STATIC_ASSERT(v8::String::ONE_BYTE_ENCODING == kOneByteStringTag);
+static_assert(v8::String::ONE_BYTE_ENCODING == kOneByteStringTag);
 
 bool StringShape::IsExternalTwoByte() const {
   return representation_and_encoding_tag() == kExternalTwoByteStringTag;
 }
 
-STATIC_ASSERT(kExternalTwoByteStringTag ==
+static_assert(kExternalTwoByteStringTag ==
               Internals::kExternalTwoByteRepresentationTag);
 
-STATIC_ASSERT(v8::String::TWO_BYTE_ENCODING == kTwoByteStringTag);
+static_assert(v8::String::TWO_BYTE_ENCODING == kTwoByteStringTag);
 
 template <typename TDispatcher, typename TResult, typename... TArgs>
 inline TResult StringShape::DispatchToSpecificTypeWithoutCast(TArgs&&... args) {
@@ -319,8 +301,8 @@ DEF_GETTER(String, IsTwoByteRepresentation, bool) {
 bool String::IsOneByteRepresentationUnderneath(String string) {
   while (true) {
     uint32_t type = string.map().instance_type();
-    STATIC_ASSERT(kIsIndirectStringTag != 0);
-    STATIC_ASSERT((kIsIndirectStringMask & kStringEncodingMask) == 0);
+    static_assert(kIsIndirectStringTag != 0);
+    static_assert((kIsIndirectStringMask & kStringEncodingMask) == 0);
     DCHECK(string.IsFlat());
     switch (type & (kIsIndirectStringMask | kStringEncodingMask)) {
       case kOneByteStringTag:
@@ -372,27 +354,26 @@ class SequentialStringKey final : public StringTableKey {
     return s.IsEqualTo<String::EqualityType::kNoLengthCheck>(chars_, isolate);
   }
 
-  Handle<String> AsHandle(Isolate* isolate) {
+  template <typename IsolateT>
+  void PrepareForInsertion(IsolateT* isolate) {
     if (sizeof(Char) == 1) {
-      return isolate->factory()->NewOneByteInternalizedString(
+      internalized_string_ = isolate->factory()->NewOneByteInternalizedString(
           base::Vector<const uint8_t>::cast(chars_), raw_hash_field());
+    } else {
+      internalized_string_ = isolate->factory()->NewTwoByteInternalizedString(
+          base::Vector<const uint16_t>::cast(chars_), raw_hash_field());
     }
-    return isolate->factory()->NewTwoByteInternalizedString(
-        base::Vector<const uint16_t>::cast(chars_), raw_hash_field());
   }
 
-  Handle<String> AsHandle(LocalIsolate* isolate) {
-    if (sizeof(Char) == 1) {
-      return isolate->factory()->NewOneByteInternalizedString(
-          base::Vector<const uint8_t>::cast(chars_), raw_hash_field());
-    }
-    return isolate->factory()->NewTwoByteInternalizedString(
-        base::Vector<const uint16_t>::cast(chars_), raw_hash_field());
+  Handle<String> GetHandleForInsertion() {
+    DCHECK(!internalized_string_.is_null());
+    return internalized_string_;
   }
 
  private:
   base::Vector<const Char> chars_;
   bool convert_;
+  Handle<String> internalized_string_;
 };
 
 using OneByteStringKey = SequentialStringKey<uint8_t>;
@@ -440,7 +421,7 @@ class SeqSubStringKey final : public StringTableKey {
         isolate);
   }
 
-  Handle<String> AsHandle(Isolate* isolate) {
+  void PrepareForInsertion(Isolate* isolate) {
     if (sizeof(Char) == 1 || (sizeof(Char) == 2 && convert_)) {
       Handle<SeqOneByteString> result =
           isolate->factory()->AllocateRawOneByteInternalizedString(
@@ -448,7 +429,7 @@ class SeqSubStringKey final : public StringTableKey {
       DisallowGarbageCollection no_gc;
       CopyChars(result->GetChars(no_gc), string_->GetChars(no_gc) + from_,
                 length());
-      return result;
+      internalized_string_ = result;
     }
     Handle<SeqTwoByteString> result =
         isolate->factory()->AllocateRawTwoByteInternalizedString(
@@ -456,13 +437,19 @@ class SeqSubStringKey final : public StringTableKey {
     DisallowGarbageCollection no_gc;
     CopyChars(result->GetChars(no_gc), string_->GetChars(no_gc) + from_,
               length());
-    return result;
+    internalized_string_ = result;
+  }
+
+  Handle<String> GetHandleForInsertion() {
+    DCHECK(!internalized_string_.is_null());
+    return internalized_string_;
   }
 
  private:
   Handle<typename CharTraits<Char>::String> string_;
   int from_;
   bool convert_;
+  Handle<String> internalized_string_;
 };
 
 using SeqOneByteSubStringKey = SeqSubStringKey<SeqOneByteString>;
@@ -633,6 +620,7 @@ const Char* String::GetChars(
                                                               access_guard);
 }
 
+// static
 Handle<String> String::Flatten(Isolate* isolate, Handle<String> string,
                                AllocationType allocation) {
   DisallowGarbageCollection no_gc;  // Unhandlified code.
@@ -662,6 +650,7 @@ Handle<String> String::Flatten(Isolate* isolate, Handle<String> string,
   return handle(s, isolate);
 }
 
+// static
 Handle<String> String::Flatten(LocalIsolate* isolate, Handle<String> string,
                                AllocationType allocation) {
   // We should never pass non-flat strings to String::Flatten when off-thread.
@@ -707,13 +696,61 @@ String::FlatContent String::GetFlatContent(
   {
     Isolate* isolate;
     // We don't have to check read only strings as those won't move.
-    DCHECK_IMPLIES(GetIsolateFromHeapObject(*this, &isolate),
+    //
+    // TODO(v8:12007): Currently character data is never overwritten for
+    // shared strings.
+    DCHECK_IMPLIES(GetIsolateFromHeapObject(*this, &isolate) && !InSharedHeap(),
                    ThreadId::Current() == isolate->thread_id());
   }
 #endif
 
   return GetFlatContent(no_gc, SharedStringAccessGuardIfNeeded::NotNeeded());
 }
+
+String::FlatContent::FlatContent(const uint8_t* start, int length,
+                                 const DisallowGarbageCollection& no_gc)
+    : onebyte_start(start), length_(length), state_(ONE_BYTE), no_gc_(no_gc) {
+#ifdef ENABLE_SLOW_DCHECKS
+  checksum_ = ComputeChecksum();
+#endif
+}
+
+String::FlatContent::FlatContent(const base::uc16* start, int length,
+                                 const DisallowGarbageCollection& no_gc)
+    : twobyte_start(start), length_(length), state_(TWO_BYTE), no_gc_(no_gc) {
+#ifdef ENABLE_SLOW_DCHECKS
+  checksum_ = ComputeChecksum();
+#endif
+}
+
+String::FlatContent::~FlatContent() {
+  // When ENABLE_SLOW_DCHECKS, check the string contents did not change during
+  // the lifetime of the FlatContent. To avoid extra memory use, only the hash
+  // is checked instead of snapshotting the full character data.
+  //
+  // If you crashed here, it means something changed the character data of this
+  // FlatContent during its lifetime (e.g. GC relocated the string). This is
+  // almost always a bug. If you are certain it is not a bug, you can disable
+  // the checksum verification in the caller by calling
+  // UnsafeDisableChecksumVerification().
+  SLOW_DCHECK(checksum_ == kChecksumVerificationDisabled ||
+              checksum_ == ComputeChecksum());
+}
+
+#ifdef ENABLE_SLOW_DCHECKS
+uint32_t String::FlatContent::ComputeChecksum() const {
+  constexpr uint64_t hashseed = 1;
+  uint32_t hash;
+  if (state_ == ONE_BYTE) {
+    hash = StringHasher::HashSequentialString(onebyte_start, length_, hashseed);
+  } else {
+    DCHECK_EQ(TWO_BYTE, state_);
+    hash = StringHasher::HashSequentialString(twobyte_start, length_, hashseed);
+  }
+  DCHECK_NE(kChecksumVerificationDisabled, hash);
+  return hash;
+}
+#endif
 
 String::FlatContent String::GetFlatContent(
     const DisallowGarbageCollection& no_gc,
@@ -821,9 +858,9 @@ String String::GetUnderlying() const {
   // wrapping string is already flattened.
   DCHECK(IsFlat());
   DCHECK(StringShape(*this).IsIndirect());
-  STATIC_ASSERT(static_cast<int>(ConsString::kFirstOffset) ==
+  static_assert(static_cast<int>(ConsString::kFirstOffset) ==
                 static_cast<int>(SlicedString::kParentOffset));
-  STATIC_ASSERT(static_cast<int>(ConsString::kFirstOffset) ==
+  static_assert(static_cast<int>(ConsString::kFirstOffset) ==
                 static_cast<int>(ThinString::kActualOffset));
   const int kUnderlyingOffset = SlicedString::kParentOffset;
   return TaggedField<String, kUnderlyingOffset>::load(*this);
@@ -1046,13 +1083,15 @@ bool ExternalString::is_uncached() const {
 }
 
 void ExternalString::AllocateExternalPointerEntries(Isolate* isolate) {
-  InitExternalPointerField(kResourceOffset, isolate);
+  InitExternalPointerField(kResourceOffset, isolate,
+                           kExternalStringResourceTag);
   if (is_uncached()) return;
-  InitExternalPointerField(kResourceDataOffset, isolate);
+  InitExternalPointerField(kResourceDataOffset, isolate,
+                           kExternalStringResourceDataTag);
 }
 
 DEF_GETTER(ExternalString, resource_as_address, Address) {
-  Isolate* isolate = GetIsolateForHeapSandbox(*this);
+  Isolate* isolate = GetIsolateForSandbox(*this);
   return ReadExternalPointerField(kResourceOffset, isolate,
                                   kExternalStringResourceTag);
 }
@@ -1348,7 +1387,7 @@ bool String::AsArrayIndex(uint32_t* index) {
     *index = ArrayIndexValueBits::decode(field);
     return true;
   }
-  if (IsHashFieldComputed(field) && (field & kIsNotIntegerIndexMask)) {
+  if (IsHashFieldComputed(field) && !IsIntegerIndex(field)) {
     return false;
   }
   return SlowAsArrayIndex(index);
@@ -1360,7 +1399,7 @@ bool String::AsIntegerIndex(size_t* index) {
     *index = ArrayIndexValueBits::decode(field);
     return true;
   }
-  if (IsHashFieldComputed(field) && (field & kIsNotIntegerIndexMask)) {
+  if (IsHashFieldComputed(field) && !IsIntegerIndex(field)) {
     return false;
   }
   return SlowAsIntegerIndex(index);
@@ -1432,6 +1471,13 @@ bool String::IsInPlaceInternalizable(InstanceType instance_type) {
     default:
       return false;
   }
+}
+
+// static
+bool String::IsInPlaceInternalizableExcludingExternal(
+    InstanceType instance_type) {
+  return IsInPlaceInternalizable(instance_type) &&
+         !InstanceTypeChecker::IsExternalString(instance_type);
 }
 
 }  // namespace internal

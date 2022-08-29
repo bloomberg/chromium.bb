@@ -22,6 +22,7 @@
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
 #include "api/array_view.h"
+#include "api/task_queue/task_queue_base.h"
 #include "net/dcsctp/packet/chunk/abort_chunk.h"
 #include "net/dcsctp/packet/chunk/chunk.h"
 #include "net/dcsctp/packet/chunk/cookie_ack_chunk.h"
@@ -162,7 +163,9 @@ DcSctpSocket::DcSctpSocket(absl::string_view log_prefix,
       packet_observer_(std::move(packet_observer)),
       options_(options),
       callbacks_(callbacks),
-      timer_manager_([this]() { return callbacks_.CreateTimeout(); }),
+      timer_manager_([this](webrtc::TaskQueueBase::DelayPrecision precision) {
+        return callbacks_.CreateTimeout(precision);
+      }),
       t1_init_(timer_manager_.CreateTimer(
           "t1-init",
           absl::bind_front(&DcSctpSocket::OnInitTimerExpiry, this),
@@ -186,6 +189,7 @@ DcSctpSocket::DcSctpSocket(absl::string_view log_prefix,
       send_queue_(
           log_prefix_,
           options_.max_send_buffer_size,
+          options_.default_stream_priority,
           [this](StreamID stream_id) {
             callbacks_.OnBufferedAmountLow(stream_id);
           },
@@ -193,7 +197,7 @@ DcSctpSocket::DcSctpSocket(absl::string_view log_prefix,
           [this]() { callbacks_.OnTotalBufferedAmountLow(); }) {}
 
 std::string DcSctpSocket::log_prefix() const {
-  return log_prefix_ + "[" + std::string(ToString(state_)) + "] ";
+  return log_prefix_ + "[" + std::string(ToString(state_)) + "] ";
 }
 
 bool DcSctpSocket::IsConsistent() const {
@@ -417,6 +421,16 @@ void DcSctpSocket::InternalClose(ErrorKind error, absl::string_view message) {
   RTC_DCHECK(IsConsistent());
 }
 
+void DcSctpSocket::SetStreamPriority(StreamID stream_id,
+                                     StreamPriority priority) {
+  RTC_DCHECK_RUN_ON(&thread_checker_);
+  send_queue_.SetStreamPriority(stream_id, priority);
+}
+StreamPriority DcSctpSocket::GetStreamPriority(StreamID stream_id) const {
+  RTC_DCHECK_RUN_ON(&thread_checker_);
+  return send_queue_.GetStreamPriority(stream_id);
+}
+
 SendStatus DcSctpSocket::Send(DcSctpMessage message,
                               const SendOptions& send_options) {
   RTC_DCHECK_RUN_ON(&thread_checker_);
@@ -476,13 +490,7 @@ ResetStreamsStatus DcSctpSocket::ResetStreams(
   }
 
   tcb_->stream_reset_handler().ResetStreams(outgoing_streams);
-  absl::optional<ReConfigChunk> reconfig =
-      tcb_->stream_reset_handler().MakeStreamResetRequest();
-  if (reconfig.has_value()) {
-    SctpPacket::Builder builder = tcb_->PacketBuilder();
-    builder.Add(*reconfig);
-    packet_sender_.Send(builder);
-  }
+  MaybeSendResetStreamsRequest();
 
   RTC_DCHECK(IsConsistent());
   return ResetStreamsStatus::kPerformed;
@@ -494,17 +502,13 @@ SocketState DcSctpSocket::state() const {
     case State::kClosed:
       return SocketState::kClosed;
     case State::kCookieWait:
-      ABSL_FALLTHROUGH_INTENDED;
     case State::kCookieEchoed:
       return SocketState::kConnecting;
     case State::kEstablished:
       return SocketState::kConnected;
     case State::kShutdownPending:
-      ABSL_FALLTHROUGH_INTENDED;
     case State::kShutdownSent:
-      ABSL_FALLTHROUGH_INTENDED;
     case State::kShutdownReceived:
-      ABSL_FALLTHROUGH_INTENDED;
     case State::kShutdownAckSent:
       return SocketState::kShuttingDown;
   }
@@ -531,23 +535,23 @@ void DcSctpSocket::SetBufferedAmountLowThreshold(StreamID stream_id,
   send_queue_.SetBufferedAmountLowThreshold(stream_id, bytes);
 }
 
-Metrics DcSctpSocket::GetMetrics() const {
+absl::optional<Metrics> DcSctpSocket::GetMetrics() const {
   RTC_DCHECK_RUN_ON(&thread_checker_);
-  Metrics metrics = metrics_;
 
-  if (tcb_ != nullptr) {
-    // Update the metrics with some stats that are extracted from
-    // sub-components.
-    metrics.cwnd_bytes = tcb_->cwnd();
-    metrics.srtt_ms = tcb_->current_srtt().value();
-    size_t packet_payload_size =
-        options_.mtu - SctpPacket::kHeaderSize - DataChunk::kHeaderSize;
-    metrics.unack_data_count =
-        tcb_->retransmission_queue().outstanding_items() +
-        (send_queue_.total_buffered_amount() + packet_payload_size - 1) /
-            packet_payload_size;
-    metrics.peer_rwnd_bytes = tcb_->retransmission_queue().rwnd();
+  if (tcb_ == nullptr) {
+    return absl::nullopt;
   }
+
+  Metrics metrics = metrics_;
+  metrics.cwnd_bytes = tcb_->cwnd();
+  metrics.srtt_ms = tcb_->current_srtt().value();
+  size_t packet_payload_size =
+      options_.mtu - SctpPacket::kHeaderSize - DataChunk::kHeaderSize;
+  metrics.unack_data_count =
+      tcb_->retransmission_queue().outstanding_items() +
+      (send_queue_.total_buffered_amount() + packet_payload_size - 1) /
+          packet_payload_size;
+  metrics.peer_rwnd_bytes = tcb_->retransmission_queue().rwnd();
 
   return metrics;
 }
@@ -568,6 +572,16 @@ void DcSctpSocket::MaybeSendShutdownOnPacketReceived(const SctpPacket& packet) {
       t2_shutdown_->set_duration(tcb_->current_rto());
       t2_shutdown_->Start();
     }
+  }
+}
+
+void DcSctpSocket::MaybeSendResetStreamsRequest() {
+  absl::optional<ReConfigChunk> reconfig =
+      tcb_->stream_reset_handler().MakeStreamResetRequest();
+  if (reconfig.has_value()) {
+    SctpPacket::Builder builder = tcb_->PacketBuilder();
+    builder.Add(*reconfig);
+    packet_sender_.Send(builder);
   }
 }
 
@@ -799,7 +813,7 @@ bool DcSctpSocket::Dispatch(const CommonHeader& header,
       HandleIData(header, descriptor);
       break;
     case IForwardTsnChunk::kType:
-      HandleForwardTsn(header, descriptor);
+      HandleIForwardTsn(header, descriptor);
       break;
     default:
       return HandleUnrecognizedChunk(descriptor);
@@ -1025,11 +1039,12 @@ void DcSctpSocket::HandleDataCommon(AnyDataChunk& chunk) {
     return;
   }
 
-  tcb_->data_tracker().Observe(tsn, immediate_ack);
-  tcb_->reassembly_queue().MaybeResetStreamsDeferred(
-      tcb_->data_tracker().last_cumulative_acked_tsn());
-  tcb_->reassembly_queue().Add(tsn, std::move(data));
-  DeliverReassembledMessages();
+  if (tcb_->data_tracker().Observe(tsn, immediate_ack)) {
+    tcb_->reassembly_queue().MaybeResetStreamsDeferred(
+        tcb_->data_tracker().last_cumulative_acked_tsn());
+    tcb_->reassembly_queue().Add(tsn, std::move(data));
+    DeliverReassembledMessages();
+  }
 }
 
 void DcSctpSocket::HandleInit(const CommonHeader& header,
@@ -1183,7 +1198,7 @@ void DcSctpSocket::HandleInitAck(
   Capabilities capabilities = GetCapabilities(options_, chunk->parameters());
   t1_init_->Stop();
 
-  peer_implementation_ = DeterminePeerImplementation(cookie->data());
+  metrics_.peer_implementation = DeterminePeerImplementation(cookie->data());
 
   tcb_ = std::make_unique<TransmissionControlBlock>(
       timer_manager_, log_prefix_, options_, capabilities, callbacks_,
@@ -1301,9 +1316,6 @@ bool DcSctpSocket::HandleCookieEchoWithTCB(const CommonHeader& header,
     RTC_DLOG(LS_VERBOSE) << log_prefix()
                          << "Received COOKIE-ECHO indicating a restarted peer";
 
-    // If a message was partly sent, and the peer restarted, resend it in
-    // full by resetting the send queue.
-    send_queue_.Reset();
     tcb_ = nullptr;
     callbacks_.OnConnectionRestarted();
   } else if (header.verification_tag == tcb_->my_verification_tag() &&
@@ -1387,6 +1399,17 @@ void DcSctpSocket::HandleSack(const CommonHeader& header,
 
     if (tcb_->retransmission_queue().HandleSack(now, sack)) {
       MaybeSendShutdownOrAck();
+      // Receiving an ACK may make the socket go into fast recovery mode.
+      // https://datatracker.ietf.org/doc/html/rfc4960#section-7.2.4
+      // "Determine how many of the earliest (i.e., lowest TSN) DATA chunks
+      // marked for retransmission will fit into a single packet, subject to
+      // constraint of the path MTU of the destination transport address to
+      // which the packet is being sent.  Call this value K. Retransmit those K
+      // DATA chunks in a single packet.  When a Fast Retransmit is being
+      // performed, the sender SHOULD ignore the value of cwnd and SHOULD NOT
+      // delay retransmission for this single packet."
+      tcb_->MaybeSendFastRetransmit();
+
       // Receiving an ACK will decrease outstanding bytes (maybe now below
       // cwnd?) or indicate packet loss that may result in sending FORWARD-TSN.
       tcb_->SendBufferedPackets(now);
@@ -1463,6 +1486,10 @@ void DcSctpSocket::HandleReconfig(
   absl::optional<ReConfigChunk> chunk = ReConfigChunk::Parse(descriptor.data);
   if (ValidateParseSuccess(chunk) && ValidateHasTCB()) {
     tcb_->stream_reset_handler().HandleReConfig(*std::move(chunk));
+    // Handling this response may result in outgoing stream resets finishing
+    // (either successfully or with failure). If there still are pending streams
+    // that were waiting for this request to finish, continue resetting them.
+    MaybeSendResetStreamsRequest();
   }
 }
 

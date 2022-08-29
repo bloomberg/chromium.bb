@@ -6,6 +6,7 @@ import type * as Common from '../../../core/common/common.js';
 import * as ComponentHelpers from '../../components/helpers/helpers.js';
 import * as LitHtml from '../../lit-html/lit-html.js';
 
+import * as Input from '../input/input.js';
 import settingCheckboxStyles from './settingCheckbox.css.js';
 
 export interface SettingCheckboxData {
@@ -29,7 +30,7 @@ export class SettingCheckbox extends HTMLElement {
   #changeListenerDescriptor?: Common.EventTarget.EventDescriptor;
 
   connectedCallback(): void {
-    this.#shadow.adoptedStyleSheets = [settingCheckboxStyles];
+    this.#shadow.adoptedStyleSheets = [Input.checkboxStyles, settingCheckboxStyles];
   }
 
   set data(data: SettingCheckboxData) {
@@ -41,12 +42,12 @@ export class SettingCheckbox extends HTMLElement {
     this.#disabled = Boolean(data.disabled);
 
     this.#changeListenerDescriptor = this.#setting.addChangeListener(() => {
-      this.render();
+      this.#render();
     });
-    this.render();
+    this.#render();
   }
 
-  private render(): void {
+  #render(): void {
     if (!this.#setting) {
       throw new Error('No "Setting" object provided for rendering');
     }
@@ -55,14 +56,15 @@ export class SettingCheckbox extends HTMLElement {
         LitHtml.html`
       <p>
         <label>
-          <input type="checkbox" ?checked=${this.#setting.get()} ?disabled=${this.#disabled} @change=${
-            this.checkboxChanged} aria-label=${this.#setting.title()} /> ${this.#setting.title()}
+          <input type="checkbox" ?checked=${this.#setting.get()} ?disabled=${
+            this.#disabled || this.#setting.disabled()} @change=${this.#checkboxChanged} aria-label=${
+            this.#setting.title()} /> ${this.#setting.title()}
         </label>
       </p>`,
         this.#shadow, {host: this});
   }
 
-  private checkboxChanged(e: Event): void {
+  #checkboxChanged(e: Event): void {
     this.#setting?.set((e.target as HTMLInputElement).checked);
   }
 }

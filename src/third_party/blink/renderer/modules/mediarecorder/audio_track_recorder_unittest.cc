@@ -10,6 +10,7 @@
 
 #include "base/run_loop.h"
 #include "base/test/gmock_callback_support.h"
+#include "base/time/time.h"
 #include "media/audio/simple_sources.h"
 #include "media/base/audio_sample_types.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -207,12 +208,12 @@ class AudioTrackRecorderTest : public testing::TestWithParam<ATRTestParams> {
     if (codec_ == AudioTrackRecorder::CodecId::kOpus) {
       // Decode |encoded_data| and check we get the expected number of frames
       // per buffer.
-      EXPECT_EQ(kDefaultSampleRate * kOpusBufferDurationMs / 1000,
-                opus_decode_float(
-                    opus_decoder_,
-                    reinterpret_cast<uint8_t*>(base::data(encoded_data)),
-                    static_cast<wtf_size_t>(encoded_data.size()),
-                    opus_buffer_.get(), kFramesPerBuffer, 0));
+      EXPECT_EQ(
+          kDefaultSampleRate * kOpusBufferDurationMs / 1000,
+          opus_decode_float(opus_decoder_,
+                            reinterpret_cast<uint8_t*>(std::data(encoded_data)),
+                            static_cast<wtf_size_t>(encoded_data.size()),
+                            opus_buffer_.get(), kFramesPerBuffer, 0));
     } else if (codec_ == AudioTrackRecorder::CodecId::kPcm) {
       // Manually confirm that we're getting the same data out as what we
       // generated from the sine wave.
@@ -258,12 +259,12 @@ class AudioTrackRecorderTest : public testing::TestWithParam<ATRTestParams> {
   // track, which can be used to capture audio data and pass it to the producer.
   // Adapted from media::WebRTCLocalAudioSourceProviderTest.
   void PrepareTrack() {
-    auto* source = MakeGarbageCollected<MediaStreamSource>(
-        String::FromUTF8("dummy_source_id"), MediaStreamSource::kTypeAudio,
-        String::FromUTF8("dummy_source_name"), false /* remote */);
     auto audio_source = std::make_unique<MediaStreamAudioSource>(
         scheduler::GetSingleThreadTaskRunnerForTesting(), true);
-    source->SetPlatformSource(std::move(audio_source));
+    auto* source = MakeGarbageCollected<MediaStreamSource>(
+        String::FromUTF8("dummy_source_id"), MediaStreamSource::kTypeAudio,
+        String::FromUTF8("dummy_source_name"), false /* remote */,
+        std::move(audio_source));
     media_stream_component_ = MakeGarbageCollected<MediaStreamComponent>(
         String::FromUTF8("audio_track"), source);
     CHECK(MediaStreamAudioSource::From(source)->ConnectToTrack(

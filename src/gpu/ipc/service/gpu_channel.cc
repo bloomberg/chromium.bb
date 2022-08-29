@@ -3,13 +3,15 @@
 // found in the LICENSE file.
 
 #include "gpu/ipc/service/gpu_channel.h"
-#include "base/containers/cxx20_erase.h"
-#include "base/memory/ptr_util.h"
-#include "base/memory/raw_ptr.h"
 
 #include <utility>
 
-#if defined(OS_WIN)
+#include "base/containers/cxx20_erase.h"
+#include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
+#include "build/build_config.h"
+
+#if BUILDFLAG(IS_WIN)
 #include <windows.h>
 #endif
 
@@ -27,6 +29,7 @@
 #include "base/process/process.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/lock.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/task/bind_post_task.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
@@ -60,11 +63,12 @@
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gl_utils.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "gpu/ipc/service/stream_texture_android.h"
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
+#include "components/viz/common/overlay_state/win/overlay_state_service.h"
 #include "gpu/ipc/service/dcomp_texture_win.h"
 #endif
 
@@ -72,7 +76,7 @@ namespace gpu {
 
 namespace {
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 bool TryCreateStreamTexture(
     base::WeakPtr<GpuChannel> channel,
     int32_t stream_id,
@@ -81,9 +85,9 @@ bool TryCreateStreamTexture(
     return false;
   return channel->CreateStreamTexture(stream_id, std::move(receiver));
 }
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 bool TryCreateDCOMPTexture(
     base::WeakPtr<GpuChannel> channel,
     int32_t route_id,
@@ -92,7 +96,18 @@ bool TryCreateDCOMPTexture(
     return false;
   return channel->CreateDCOMPTexture(route_id, std::move(receiver));
 }
-#endif  // defined(OS_WIN)
+
+bool TryRegisterOverlayStateObserver(
+    base::WeakPtr<GpuChannel> channel,
+    mojo::PendingRemote<gpu::mojom::OverlayStateObserver>
+        promotion_hint_observer,
+    const gpu::Mailbox& mailbox) {
+  if (!channel)
+    return false;
+  return channel->RegisterOverlayStateObserver(
+      std::move(promotion_hint_observer), std::move(mailbox));
+}
+#endif  // BUILDFLAG(IS_WIN)
 
 }  // namespace
 
@@ -156,18 +171,23 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelMessageFilter
                            uint64_t decode_release_count) override;
   void FlushDeferredRequests(
       std::vector<mojom::DeferredRequestPtr> requests) override;
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   void CreateStreamTexture(
       int32_t stream_id,
       mojo::PendingAssociatedReceiver<mojom::StreamTexture> receiver,
       CreateStreamTextureCallback callback) override;
-#endif  // defined(OS_ANDROID)
-#if defined(OS_WIN)
+#endif  // BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(IS_WIN)
   void CreateDCOMPTexture(
       int32_t route_id,
       mojo::PendingAssociatedReceiver<mojom::DCOMPTexture> receiver,
       CreateDCOMPTextureCallback callback) override;
-#endif  // defined(OS_WIN)
+  void RegisterOverlayStateObserver(
+      mojo::PendingRemote<gpu::mojom::OverlayStateObserver>
+          promotion_hint_observer,
+      const gpu::Mailbox& mailbox,
+      RegisterOverlayStateObserverCallback callback) override;
+#endif  // BUILDFLAG(IS_WIN)
   void WaitForTokenInRange(int32_t routing_id,
                            int32_t start,
                            int32_t end,
@@ -178,7 +198,7 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelMessageFilter
       int32_t start,
       int32_t end,
       WaitForGetOffsetInRangeCallback callback) override;
-#if defined(OS_FUCHSIA)
+#if BUILDFLAG(IS_FUCHSIA)
   void RegisterSysmemBufferCollection(const base::UnguessableToken& id,
                                       mojo::PlatformHandle token,
                                       gfx::BufferFormat format,
@@ -208,7 +228,7 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelMessageFilter
                        gpu_channel_->AsWeakPtr(), id),
         std::vector<SyncToken>()));
   }
-#endif  // defined(OS_FUCHSIA)
+#endif  // BUILDFLAG(IS_FUCHSIA)
 
   // Map of route id to scheduler sequence id.
   base::flat_map<int32_t, SequenceId> route_sequences_;
@@ -251,6 +271,9 @@ GpuChannelMessageFilter::GpuChannelMessageFilter(
               gpu_channel,
               static_cast<int32_t>(
                   GpuChannelReservedRoutes::kImageDecodeAccelerator))) {
+  // GpuChannel and CommandBufferStub implementations assume that it is not
+  // possible to simultaneously execute tasks on these two task runners.
+  DCHECK_EQ(main_task_runner_, gpu_channel->task_runner());
   io_thread_checker_.DetachFromThread();
   allow_process_kill_for_testing_ = gpu_channel->gpu_channel_manager()
                                         ->gpu_preferences()
@@ -306,17 +329,17 @@ void GpuChannelMessageFilter::FlushDeferredRequests(
   for (auto& request : requests) {
     int32_t routing_id;
     switch (request->params->which()) {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
       case mojom::DeferredRequestParams::Tag::kDestroyStreamTexture:
         routing_id = request->params->get_destroy_stream_texture();
         break;
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
       case mojom::DeferredRequestParams::Tag::kDestroyDcompTexture:
         routing_id = request->params->get_destroy_dcomp_texture();
         break;
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
       case mojom::DeferredRequestParams::Tag::kCommandBufferRequest:
         routing_id = request->params->get_command_buffer_request()->routing_id;
@@ -414,7 +437,7 @@ void GpuChannelMessageFilter::ScheduleImageDecode(
                                                       decode_release_count);
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 void GpuChannelMessageFilter::CreateStreamTexture(
     int32_t stream_id,
     mojo::PendingAssociatedReceiver<mojom::StreamTexture> receiver,
@@ -430,9 +453,9 @@ void GpuChannelMessageFilter::CreateStreamTexture(
                      stream_id, std::move(receiver)),
       std::move(callback));
 }
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 void GpuChannelMessageFilter::CreateDCOMPTexture(
     int32_t route_id,
     mojo::PendingAssociatedReceiver<mojom::DCOMPTexture> receiver,
@@ -448,7 +471,25 @@ void GpuChannelMessageFilter::CreateDCOMPTexture(
                      route_id, std::move(receiver)),
       std::move(callback));
 }
-#endif  // defined(OS_WIN)
+
+void GpuChannelMessageFilter::RegisterOverlayStateObserver(
+    mojo::PendingRemote<gpu::mojom::OverlayStateObserver>
+        promotion_hint_observer,
+    const gpu::Mailbox& mailbox,
+    RegisterOverlayStateObserverCallback callback) {
+  base::AutoLock auto_lock(gpu_channel_lock_);
+  if (!gpu_channel_) {
+    receiver_.reset();
+    return;
+  }
+  main_task_runner_->PostTaskAndReplyWithResult(
+      FROM_HERE,
+      base::BindOnce(&TryRegisterOverlayStateObserver,
+                     gpu_channel_->AsWeakPtr(),
+                     std::move(promotion_hint_observer), std::move(mailbox)),
+      std::move(callback));
+}
+#endif  // BUILDFLAG(IS_WIN)
 
 void GpuChannelMessageFilter::WaitForTokenInRange(
     int32_t routing_id,
@@ -524,21 +565,21 @@ GpuChannel::~GpuChannel() {
   // Clear stubs first because of dependencies.
   stubs_.clear();
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // Release any references to this channel held by StreamTexture.
   for (auto& stream_texture : stream_textures_) {
     stream_texture.second->ReleaseChannel();
   }
   stream_textures_.clear();
-#endif  // OS_ANDROID
+#endif  // BUILDFLAG(IS_ANDROID)
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // Release any references to this channel held by DCOMPTexture.
   for (auto& dcomp_texture : dcomp_textures_) {
     dcomp_texture.second->ReleaseChannel();
   }
   dcomp_textures_.clear();
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
   // Destroy filter first to stop posting tasks to scheduler.
   filter_->Destroy();
@@ -643,17 +684,17 @@ void GpuChannel::RemoveRoute(int32_t route_id) {
 void GpuChannel::ExecuteDeferredRequest(
     mojom::DeferredRequestParamsPtr params) {
   switch (params->which()) {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     case mojom::DeferredRequestParams::Tag::kDestroyStreamTexture:
       DestroyStreamTexture(params->get_destroy_stream_texture());
       break;
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
     case mojom::DeferredRequestParams::Tag::kDestroyDcompTexture:
       DestroyDCOMPTexture(params->get_destroy_dcomp_texture());
       break;
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
     case mojom::DeferredRequestParams::Tag::kCommandBufferRequest: {
       mojom::DeferredCommandBufferRequest& request =
@@ -737,7 +778,7 @@ bool GpuChannel::CreateSharedImageStub() {
   return true;
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 const CommandBufferStub* GpuChannel::GetOneStub() const {
   for (const auto& kv : stubs_) {
     const CommandBufferStub* stub = kv.second.get();
@@ -758,7 +799,7 @@ void GpuChannel::DestroyStreamTexture(int32_t stream_id) {
 }
 #endif
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 void GpuChannel::DestroyDCOMPTexture(int32_t route_id) {
   auto found = dcomp_textures_.find(route_id);
   if (found == dcomp_textures_.end()) {
@@ -768,7 +809,7 @@ void GpuChannel::DestroyDCOMPTexture(int32_t route_id) {
   found->second->ReleaseChannel();
   dcomp_textures_.erase(route_id);
 }
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
 // Helper to ensure CreateCommandBuffer below always invokes its response
 // callback.
@@ -922,7 +963,7 @@ void GpuChannel::DestroyCommandBuffer(int32_t route_id) {
   RemoveRoute(route_id);
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 bool GpuChannel::CreateStreamTexture(
     int32_t stream_id,
     mojo::PendingAssociatedReceiver<mojom::StreamTexture> receiver) {
@@ -942,7 +983,7 @@ bool GpuChannel::CreateStreamTexture(
 }
 #endif
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 bool GpuChannel::CreateDCOMPTexture(
     int32_t route_id,
     mojo::PendingAssociatedReceiver<mojom::DCOMPTexture> receiver) {
@@ -959,9 +1000,22 @@ bool GpuChannel::CreateDCOMPTexture(
   dcomp_textures_.emplace(route_id, std::move(dcomp_texture));
   return true;
 }
-#endif  // defined(OS_WIN)
 
-#if defined(OS_FUCHSIA)
+bool GpuChannel::RegisterOverlayStateObserver(
+    mojo::PendingRemote<gpu::mojom::OverlayStateObserver>
+        promotion_hint_observer,
+    const gpu::Mailbox& mailbox) {
+  viz::OverlayStateService* overlay_state_service =
+      viz::OverlayStateService::GetInstance();
+  if (!overlay_state_service)
+    return false;
+  overlay_state_service->RegisterObserver(std::move(promotion_hint_observer),
+                                          std::move(mailbox));
+  return true;
+}
+#endif  // BUILDFLAG(IS_WIN)
+
+#if BUILDFLAG(IS_FUCHSIA)
 void GpuChannel::RegisterSysmemBufferCollection(
     const base::UnguessableToken& id,
     mojo::PlatformHandle token,
@@ -977,7 +1031,7 @@ void GpuChannel::ReleaseSysmemBufferCollection(
     const base::UnguessableToken& id) {
   shared_image_stub_->ReleaseSysmemBufferCollection(id);
 }
-#endif  // defined(OS_FUCHSIA)
+#endif  // BUILDFLAG(IS_FUCHSIA)
 
 void GpuChannel::CacheShader(const std::string& key,
                              const std::string& shader) {

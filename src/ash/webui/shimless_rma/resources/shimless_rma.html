@@ -1,24 +1,55 @@
 <style include="cr-shared-style shimless-rma-shared">
   #shimlessRMAContainer {
-    padding: 50px;
+    align-items: stretch;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding-bottom: var(--container-vertical-padding);
+    padding-inline: var(--container-horizontal-padding);
+    padding-top: var(--container-vertical-padding);
+    width: 100%;
   }
 
-  .shimless-footer {
-    margin-top: 10px;
+  #header,
+  #contentContainer,
+  #footer {
+    padding-inline: var(--content-container-padding);
+  }
+
+  #contentContainer {
+    min-height: var(--content-container-height);
+  }
+
+  .shimless-content {
+    height: 100%;
+    width: 100%;
+  }
+
+  #footer {
+    min-height: var(--header-footer-height);
     text-align: end;
   }
 
-  cr-button {
-    border-radius: 15px;
+  #header {
+    min-height: var(--header-footer-height);
   }
 
   #back {
     border: 0;
-    margin-inline-start: -15px;
+    border-radius: 16px;
+    height: 32px;
+    padding-inline-start: 16px;
   }
 
-  #cancel {
-    margin-inline-end: 5px;
+  #next {
+    margin-inline-end: -13px;
+    top: 24px;
+  }
+
+  #exit {
+    margin-inline-end: 8px;
+    top: 24px;
   }
 
   .busy-icon {
@@ -26,15 +57,20 @@
     width: 20px;
   }
 
-  #cancelButtonSpinner,
+  .button-icon {
+    height: var(--cr-icon-size);
+    width: var(--cr-icon-size);
+  }
+
+  #exitButtonSpinner,
   #nextButtonCaret,
   #nextButtonSpinner {
-    margin-inline-start: 5px;
+    margin-inline-start: 8px;
   }
 
   #backButtonCaret,
   #backButtonSpinner {
-    margin-inline-end: 5px;
+    margin-inline-end: 8px;
   }
 
   #busyStateOverlay {
@@ -47,14 +83,14 @@
     z-index: 1;
   }
 
-  :host([all-buttons-disabled_]) #busyStateOverlay {
+  :host([show-busy-state-overlay_]) #busyStateOverlay {
     display: block;
   }
 </style>
 
 <div id="shimlessRMAContainer">
   <div id="busyStateOverlay"></div>
-  <div class="shimless-header">
+  <div id="header">
     <cr-button
       id="back" on-click="onBackButtonClicked_"
       disabled="[[isButtonDisabled_(currentPage_.buttonBack, allButtonsDisabled_)]]"
@@ -62,29 +98,29 @@
       <paper-spinner-lite id="backButtonSpinner" class="busy-icon"
           hidden$="[[!backButtonClicked_]]" active>
       </paper-spinner-lite>
-      <span id="backButtonCaret" hidden$="[[backButtonClicked_]]">
-        &#60;
-      </span>
+      <iron-icon id="backButtonCaret" icon="cr:chevron-left"
+          class="button-icon" hidden$="[[backButtonClicked_]]">
+      </iron-icon>
       <span id="backButtonLabel">
         [[i18n('backButtonLabel')]]
       </span>
     </cr-button>
   </div>
   <div id="contentContainer"></div>
-  <div class="shimless-footer">
+  <div id="footer">
     <cr-button
-      id="cancel" on-click="onCancelButtonClicked_"
-      disabled="[[isButtonDisabled_(currentPage_.buttonCancel, allButtonsDisabled_)]]"
-      hidden$="[[isButtonHidden_(currentPage_.buttonCancel)]]">
-      <span id="cancelButtonLabel">
-        [[i18n('cancelButtonLabel')]]
+      id="exit" class="pill" on-click="onExitButtonClicked_"
+      disabled="[[isButtonDisabled_(currentPage_.buttonExit, allButtonsDisabled_)]]"
+      hidden$="[[isButtonHidden_(currentPage_.buttonExit)]]">
+      <span id="exitButtonLabel">
+        [[getExitButtonLabel_(currentPage_.buttonExitLabelKey)]]
       </span>
-      <paper-spinner-lite id="cancelButtonSpinner" class="busy-icon"
-          hidden$="[[!cancelButtonClicked_]]" active>
+      <paper-spinner-lite id="exitButtonSpinner" class="busy-icon"
+          hidden$="[[!confirmExitButtonClicked_]]" active>
       </paper-spinner-lite>
     </cr-button>
     <cr-button
-      id="next" on-click="onNextButtonClicked_"
+      id="next" class="action-button" on-click="onNextButtonClicked_"
       disabled="[[isButtonDisabled_(currentPage_.buttonNext, allButtonsDisabled_)]]"
       hidden$="[[isButtonHidden_(currentPage_.buttonNext)]]">
       <span id="nextButtonLabel">
@@ -93,11 +129,27 @@
       <paper-spinner-lite id="nextButtonSpinner" class="busy-icon"
           hidden$="[[!nextButtonClicked_]]" active>
       </paper-spinner-lite>
-      <span id="nextButtonCaret" hidden$="[[nextButtonClicked_]]">
-        &#62;
-      </span>
+      <iron-icon id="nextButtonCaret" icon="cr:chevron-right"
+          class="button-icon" hidden$="[[nextButtonClicked_]]">
+      </iron-icon>
     </cr-button>
   </div>
-  <!-- TODO(gavindodd): Debug only. Remove this before shipping. -->
-  <div>[[errorMessage_]]</div>
 </div>
+<cr-dialog id="exitDialog">
+  <div slot="title">
+    [[i18n('exitDialogTitleText')]]
+  </div>
+  <div slot="body">
+    [[i18n('exitDialogDescriptionText')]]
+  </div>
+  <div class="dialog-footer" slot="button-container">
+    <cr-button id="cancelExitDialogButton" class="pill"
+        on-click="closeDialog_">
+      [[i18n('exitDialogCancelButtonLabel')]]
+    </cr-button>
+    <cr-button id="confirmExitDialogButton" class="action-button"
+        on-click="onConfirmExitButtonClicked_">
+      [[i18n('exitDialogConfirmButtonLabel')]]
+    </cr-button>
+  </div>
+</cr-dialog>

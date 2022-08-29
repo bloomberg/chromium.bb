@@ -49,13 +49,13 @@ base::Value CreateOrCloneListValue(const base::Value* list) {
   if (list)
     return list->Clone();
 
-  return base::ListValue();
+  return base::Value(base::Value::Type::LIST);
 }
 
 bool ListContains(const base::Value* list, const std::string& value) {
   if (!list)
     return false;
-  base::Value::ConstListView list_view = list->GetList();
+  base::Value::ConstListView list_view = list->GetListDeprecated();
   return std::find(list_view.begin(), list_view.end(), base::Value(value)) !=
          list_view.end();
 }
@@ -89,7 +89,7 @@ NetworkMetadataStore::NetworkMetadataStore(
     network_configuration_handler_->AddObserver(this);
   }
   if (network_state_handler_) {
-    network_state_handler_->AddObserver(this, FROM_HERE);
+    network_state_handler_observer_.Observe(network_state_handler_);
   }
   if (LoginState::IsInitialized()) {
     LoginState::Get()->AddObserver(this);
@@ -102,9 +102,6 @@ NetworkMetadataStore::~NetworkMetadataStore() {
   }
   if (network_configuration_handler_) {
     network_configuration_handler_->RemoveObserver(this);
-  }
-  if (network_state_handler_ && network_state_handler_->HasObserver(this)) {
-    network_state_handler_->RemoveObserver(this, FROM_HERE);
   }
   if (LoginState::IsInitialized()) {
     LoginState::Get()->RemoveObserver(this);
@@ -183,8 +180,7 @@ void NetworkMetadataStore::FixSyncedHiddenNetworks() {
     base::Value dict(base::Value::Type::DICTIONARY);
     dict.SetBoolKey(shill::kWifiHiddenSsid, false);
     network_configuration_handler_->SetShillProperties(
-        network->path(), base::Value::AsDictionaryValue(dict),
-        base::DoNothing(),
+        network->path(), dict, base::DoNothing(),
         base::BindOnce(&NetworkMetadataStore::OnDisableHiddenError,
                        weak_ptr_factory_.GetWeakPtr()));
   }
@@ -222,9 +218,7 @@ bool NetworkMetadataStore::HasFixedHiddenNetworks() {
   return profile_pref_service_->GetBoolean(kHasFixedHiddenNetworks);
 }
 
-void NetworkMetadataStore::OnDisableHiddenError(
-    const std::string& error_name,
-    std::unique_ptr<base::DictionaryValue> error_data) {
+void NetworkMetadataStore::OnDisableHiddenError(const std::string& error_name) {
   NET_LOG(EVENT) << "Failed to disable HiddenSSID on synced network. Error: "
                  << error_name;
 }
@@ -358,8 +352,7 @@ void NetworkMetadataStore::RemoveNetworkFromPref(
     return;
   }
 
-  const base::DictionaryValue* dict =
-      pref_service->GetDictionary(kNetworkMetadataPref);
+  const base::Value* dict = pref_service->GetDictionary(kNetworkMetadataPref);
   if (!dict || !dict->FindKey(network_guid)) {
     return;
   }
@@ -462,8 +455,9 @@ void NetworkMetadataStore::SetEnableTrafficCountersAutoReset(
 
 void NetworkMetadataStore::SetDayOfTrafficCountersAutoReset(
     const std::string& network_guid,
-    int day) {
-  SetPref(network_guid, kDayOfTrafficCountersAutoReset, base::Value(day));
+    const absl::optional<int>& day) {
+  auto value = day.has_value() ? base::Value(day.value()) : base::Value();
+  SetPref(network_guid, kDayOfTrafficCountersAutoReset, std::move(value));
 }
 
 const base::Value* NetworkMetadataStore::GetEnableTrafficCountersAutoReset(

@@ -45,7 +45,7 @@ template<> struct adjoint_specific<false> {
     VERIFY_IS_APPROX((v1*0).normalized(), (v1*0));
 #if (!EIGEN_ARCH_i386) || defined(EIGEN_VECTORIZE)
     RealScalar very_small = (std::numeric_limits<RealScalar>::min)();
-    VERIFY( (v1*very_small).norm() == 0 );
+    VERIFY( numext::is_exactly_zero((v1*very_small).norm()) );
     VERIFY_IS_APPROX((v1*very_small).normalized(), (v1*very_small));
     v3 = v1*very_small;
     v3.normalize();

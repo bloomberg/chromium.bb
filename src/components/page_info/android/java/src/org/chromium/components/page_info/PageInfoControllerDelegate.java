@@ -170,6 +170,11 @@ public abstract class PageInfoControllerDelegate {
     public abstract void showCookieSettings();
 
     /**
+     * Show ad personalization settings.
+     */
+    public abstract void showAdPersonalizationSettings();
+
+    /**
      * Creates Cookie Controls Bridge.
      * @param observer The CookieControlsObserver to create the bridge with.
      * @return the object that facilitates interfacing with native code.
@@ -182,7 +187,7 @@ public abstract class PageInfoControllerDelegate {
      * Allows the delegate to insert additional {@link PageInfoRowView} views.
      * @return a collection of controllers corresponding to these views.
      */
-    @Nullable
+    @NonNull
     public abstract Collection<PageInfoSubpageController> createAdditionalRowViews(
             PageInfoMainController mainController, ViewGroup rowWrapper);
 

@@ -13,6 +13,7 @@
 #include <idle-client-protocol.h>
 #include <idle-inhibit-unstable-v1-client-protocol.h>
 #include <keyboard-extension-unstable-v1-client-protocol.h>
+#include <keyboard-shortcuts-inhibit-unstable-v1-client-protocol.h>
 #include <linux-dmabuf-unstable-v1-client-protocol.h>
 #include <linux-explicit-synchronization-unstable-v1-client-protocol.h>
 #include <overlay-prioritizer-client-protocol.h>
@@ -21,9 +22,11 @@
 #include <presentation-time-client-protocol.h>
 #include <primary-selection-unstable-v1-client-protocol.h>
 #include <relative-pointer-unstable-v1-client-protocol.h>
+#include <stylus-unstable-v2-client-protocol.h>
 #include <surface-augmenter-client-protocol.h>
 #include <text-input-extension-unstable-v1-client-protocol.h>
 #include <text-input-unstable-v1-client-protocol.h>
+#include <touchpad-haptics-unstable-v1-client-protocol.h>
 #include <viewporter-client-protocol.h>
 #include <wayland-client-core.h>
 #include <wayland-cursor.h>
@@ -46,6 +49,14 @@ void delete_data_device(wl_data_device* data_device) {
     wl_data_device_release(data_device);
   } else {
     wl_data_device_destroy(data_device);
+  }
+}
+
+void delete_output(wl_output* output) {
+  if (wl::get_version_of_object(output) >= WL_OUTPUT_RELEASE_SINCE_VERSION) {
+    wl_output_release(output);
+  } else {
+    wl_output_destroy(output);
   }
 }
 
@@ -125,6 +136,7 @@ void (*ObjectTraits<wl_proxy>::deleter)(void*) = &wl_proxy_wrapper_destroy;
 
 // For convenience, keep aphabetical order in this list.
 IMPLEMENT_WAYLAND_OBJECT_TRAITS(augmented_surface)
+IMPLEMENT_WAYLAND_OBJECT_TRAITS(augmented_sub_surface)
 IMPLEMENT_WAYLAND_OBJECT_TRAITS(gtk_primary_selection_device)
 IMPLEMENT_WAYLAND_OBJECT_TRAITS(gtk_primary_selection_device_manager)
 IMPLEMENT_WAYLAND_OBJECT_TRAITS(gtk_primary_selection_offer)
@@ -145,7 +157,7 @@ IMPLEMENT_WAYLAND_OBJECT_TRAITS(wl_data_offer)
 IMPLEMENT_WAYLAND_OBJECT_TRAITS(wl_data_source)
 IMPLEMENT_WAYLAND_OBJECT_TRAITS(wl_drm)
 IMPLEMENT_WAYLAND_OBJECT_TRAITS_WITH_DELETER(wl_keyboard, delete_keyboard)
-IMPLEMENT_WAYLAND_OBJECT_TRAITS(wl_output)
+IMPLEMENT_WAYLAND_OBJECT_TRAITS_WITH_DELETER(wl_output, delete_output)
 IMPLEMENT_WAYLAND_OBJECT_TRAITS_WITH_DELETER(wl_pointer, delete_pointer)
 IMPLEMENT_WAYLAND_OBJECT_TRAITS(wl_registry)
 IMPLEMENT_WAYLAND_OBJECT_TRAITS(wl_region)
@@ -165,6 +177,7 @@ IMPLEMENT_WAYLAND_OBJECT_TRAITS(xdg_positioner)
 IMPLEMENT_WAYLAND_OBJECT_TRAITS(xdg_surface)
 IMPLEMENT_WAYLAND_OBJECT_TRAITS(xdg_toplevel)
 IMPLEMENT_WAYLAND_OBJECT_TRAITS(xdg_wm_base)
+IMPLEMENT_WAYLAND_OBJECT_TRAITS(zaura_output)
 IMPLEMENT_WAYLAND_OBJECT_TRAITS(zaura_shell)
 IMPLEMENT_WAYLAND_OBJECT_TRAITS(zaura_surface)
 IMPLEMENT_WAYLAND_OBJECT_TRAITS(zaura_toplevel)
@@ -176,11 +189,17 @@ IMPLEMENT_WAYLAND_OBJECT_TRAITS(zcr_extended_drag_v1)
 IMPLEMENT_WAYLAND_OBJECT_TRAITS(zcr_extended_drag_source_v1)
 IMPLEMENT_WAYLAND_OBJECT_TRAITS(zcr_extended_drag_offer_v1)
 IMPLEMENT_WAYLAND_OBJECT_TRAITS(zcr_extended_text_input_v1)
+IMPLEMENT_WAYLAND_OBJECT_TRAITS(zcr_pointer_stylus_v2)
+IMPLEMENT_WAYLAND_OBJECT_TRAITS(zcr_touch_stylus_v2)
+IMPLEMENT_WAYLAND_OBJECT_TRAITS(zcr_stylus_v2)
 IMPLEMENT_WAYLAND_OBJECT_TRAITS(zcr_text_input_extension_v1)
+IMPLEMENT_WAYLAND_OBJECT_TRAITS(zcr_touchpad_haptics_v1)
 IMPLEMENT_WAYLAND_OBJECT_TRAITS(zcr_blending_v1)
 IMPLEMENT_WAYLAND_OBJECT_TRAITS(zcr_alpha_compositing_v1)
 IMPLEMENT_WAYLAND_OBJECT_TRAITS(zwp_idle_inhibit_manager_v1)
 IMPLEMENT_WAYLAND_OBJECT_TRAITS(zwp_idle_inhibitor_v1)
+IMPLEMENT_WAYLAND_OBJECT_TRAITS(zwp_keyboard_shortcuts_inhibit_manager_v1)
+IMPLEMENT_WAYLAND_OBJECT_TRAITS(zwp_keyboard_shortcuts_inhibitor_v1)
 IMPLEMENT_WAYLAND_OBJECT_TRAITS(zwp_linux_buffer_release_v1)
 IMPLEMENT_WAYLAND_OBJECT_TRAITS(zwp_linux_buffer_params_v1)
 IMPLEMENT_WAYLAND_OBJECT_TRAITS(zwp_linux_dmabuf_v1)

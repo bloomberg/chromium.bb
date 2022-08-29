@@ -52,12 +52,16 @@
 #include "sandbox/policy/linux/bpf_speech_recognition_policy_linux.h"
 #include "sandbox/policy/linux/bpf_utility_policy_linux.h"
 
+#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+#include "sandbox/policy/linux/bpf_screen_ai_policy_linux.h"
+#endif
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "sandbox/policy/features.h"
 #include "sandbox/policy/linux/bpf_ime_policy_linux.h"
 #include "sandbox/policy/linux/bpf_tts_policy_linux.h"
 
-#include "chromeos/assistant/buildflags.h"
+#include "chromeos/ash/components/assistant/buildflags.h"
 #if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
 #include "sandbox/policy/linux/bpf_libassistant_policy_linux.h"
 #endif  // BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
@@ -186,14 +190,22 @@ std::unique_ptr<BPFBasePolicy> SandboxSeccompBPF::PolicyForSandboxType(
       return std::make_unique<AudioProcessPolicy>();
     case sandbox::mojom::Sandbox::kService:
       return std::make_unique<ServiceProcessPolicy>();
+    case sandbox::mojom::Sandbox::kServiceWithJit:
+      return std::make_unique<ServiceProcessPolicy>();
     case sandbox::mojom::Sandbox::kSpeechRecognition:
       return std::make_unique<SpeechRecognitionProcessPolicy>();
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+    case sandbox::mojom::Sandbox::kScreenAI:
+      return std::make_unique<ScreenAIProcessPolicy>();
+#endif
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_ASH)
     case sandbox::mojom::Sandbox::kHardwareVideoDecoding:
       // TODO(b/195769334): we're using the GPU process sandbox policy for now
       // as a transition step. However, we should create a policy that's tighter
       // just for hardware video decoding.
       return GetGpuProcessSandbox(options.use_amd_specific_policies);
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     case sandbox::mojom::Sandbox::kIme:
       return std::make_unique<ImeProcessPolicy>();
     case sandbox::mojom::Sandbox::kTts:
@@ -249,16 +261,22 @@ void SandboxSeccompBPF::RunSandboxSanityChecks(
       CHECK_EQ(EPERM, errno);
 #endif  // !defined(NDEBUG)
     } break;
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_ASH)
     case sandbox::mojom::Sandbox::kHardwareVideoDecoding:
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     case sandbox::mojom::Sandbox::kIme:
     case sandbox::mojom::Sandbox::kTts:
 #if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
     case sandbox::mojom::Sandbox::kLibassistant:
 #endif  // BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+    case sandbox::mojom::Sandbox::kScreenAI:
+#endif
     case sandbox::mojom::Sandbox::kAudio:
     case sandbox::mojom::Sandbox::kService:
+    case sandbox::mojom::Sandbox::kServiceWithJit:
     case sandbox::mojom::Sandbox::kSpeechRecognition:
     case sandbox::mojom::Sandbox::kNetwork:
 #if BUILDFLAG(ENABLE_OOP_PRINTING)

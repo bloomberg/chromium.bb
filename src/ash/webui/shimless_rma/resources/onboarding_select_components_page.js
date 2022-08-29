@@ -13,12 +13,13 @@ import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v
 import {ComponentTypeToId} from './data.js';
 import {getShimlessRmaService} from './mojo_interface_provider.js';
 import {Component, ComponentRepairStatus, ComponentType, ShimlessRmaServiceInterface, StateResult} from './shimless_rma_types.js';
+import {enableNextButton, executeThenTransitionState} from './shimless_rma_util.js';
 
 /**
  * @typedef {{
  *   component: !ComponentType,
  *   id: string,
- *   uniqueId: string,
+ *   identifier: string,
  *   name: string,
  *   checked: boolean,
  *   disabled: boolean
@@ -53,6 +54,12 @@ export class OnboardingSelectComponentsPageElement extends
 
   static get properties() {
     return {
+      /**
+       * Set by shimless_rma.js.
+       * @type {boolean}
+       */
+      allButtonsDisabled: Boolean,
+
       /** @protected {!Array<!ComponentCheckbox>} */
       componentCheckboxes_: {
         type: Array,
@@ -62,6 +69,10 @@ export class OnboardingSelectComponentsPageElement extends
       /** @private {string} */
       reworkFlowLinkText_: {type: String, value: ''},
     };
+  }
+
+  static get observers() {
+    return ['updateIsFirstClickableComponent_(componentCheckboxes_.*)'];
   }
 
   constructor() {
@@ -75,10 +86,7 @@ export class OnboardingSelectComponentsPageElement extends
     super.ready();
     this.setReworkFlowLink_();
     this.getComponents_();
-    this.dispatchEvent(new CustomEvent(
-        'disable-next-button',
-        {bubbles: true, composed: true, detail: false},
-        ));
+    enableNextButton(this);
   }
 
   /** @private */
@@ -91,12 +99,11 @@ export class OnboardingSelectComponentsPageElement extends
       }
 
       this.componentCheckboxes_ = result.components.map(item => {
-        const component = assert(item.component);
+        assert(item.component);
         return {
           component: item.component,
           id: ComponentTypeToId[item.component],
-          // TODO(gavinwill): Source |uniqueId| from proto.
-          uniqueId: '',
+          identifier: item.identifier,
           name: this.i18n(ComponentTypeToId[item.component]),
           checked: item.state === ComponentRepairStatus.kReplaced,
           disabled: item.state === ComponentRepairStatus.kMissing
@@ -106,8 +113,8 @@ export class OnboardingSelectComponentsPageElement extends
   }
 
   /**
-   * @private
    * @return {!Array<!Component>}
+   * @private
    */
   getComponentRepairStateList_() {
     return this.componentCheckboxes_.map(item => {
@@ -118,26 +125,22 @@ export class OnboardingSelectComponentsPageElement extends
       } else if (item.checked) {
         state = ComponentRepairStatus.kReplaced;
       }
-      return {component: item.component, state: state};
+      return {
+        component: item.component,
+        state: state,
+        identifier: item.identifier,
+      };
     });
   }
 
   /** @protected */
   onReworkFlowLinkClicked_(e) {
     e.preventDefault();
-    this.dispatchEvent(new CustomEvent(
-        'transition-state',
-        {
-          bubbles: true,
-          composed: true,
-          detail: (() => {
-            return this.shimlessRmaService_.reworkMainboard();
-          })
-        },
-        ));
+    executeThenTransitionState(
+        this, () => this.shimlessRmaService_.reworkMainboard());
   }
 
-  /** @return {!Promise<!StateResult>} */
+  /** @return {!Promise<!{stateResult: !StateResult}>} */
   onNextButtonClick() {
     return this.shimlessRmaService_.setComponentList(
         this.getComponentRepairStateList_());
@@ -149,8 +152,32 @@ export class OnboardingSelectComponentsPageElement extends
         this.i18nAdvanced('reworkFlowLinkText', {attrs: ['id']});
     const linkElement = this.shadowRoot.querySelector('#reworkFlowLink');
     linkElement.setAttribute('href', '#');
-    linkElement.addEventListener(
-        'click', e => this.onReworkFlowLinkClicked_(e));
+    linkElement.addEventListener('click', e => {
+      if (this.allButtonsDisabled) {
+        return;
+      }
+
+      this.onReworkFlowLinkClicked_(e);
+    });
+  }
+
+  /**
+   * @param {boolean} componentDisabled
+   * @return {boolean}
+   * @protected
+   */
+  isComponentDisabled_(componentDisabled) {
+    return this.allButtonsDisabled || componentDisabled;
+  }
+
+  /** @private */
+  updateIsFirstClickableComponent_() {
+    const firstClickableComponent =
+        this.componentCheckboxes_.find(component => !component.disabled);
+    this.componentCheckboxes_.forEach(component => {
+      component.isFirstClickableComponent =
+          (component === firstClickableComponent) ? true : false;
+    });
   }
 }
 

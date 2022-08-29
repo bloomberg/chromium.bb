@@ -13,6 +13,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "components/webapps/browser/android/shortcut_info.h"
+#include "components/webapps/browser/installable/installable_logging.h"
 #include "components/webapps/common/web_page_metadata_agent.mojom.h"
 #include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
@@ -41,8 +42,10 @@ class AddToHomescreenDataFetcher {
 
     // Called when all the data needed to prompt the user to add to home screen
     // is available.
-    virtual void OnDataAvailable(const ShortcutInfo& info,
-                                 const SkBitmap& primary_icon) = 0;
+    virtual void OnDataAvailable(
+        const ShortcutInfo& info,
+        const SkBitmap& primary_icon,
+        const InstallableStatusCode installable_status) = 0;
 
    protected:
     virtual ~Observer() = default;
@@ -50,7 +53,7 @@ class AddToHomescreenDataFetcher {
 
   // Initialize the fetcher by requesting the information about the page from
   // the renderer process. The initialization is asynchronous and
-  // OnDidGetWebApplicationInfo is expected to be called when finished.
+  // OnDidGetWebAppInstallInfo is expected to be called when finished.
   // |observer| must outlive AddToHomescreenDataFetcher.
   AddToHomescreenDataFetcher(content::WebContents* web_contents,
                              int data_timeout_ms,
@@ -104,6 +107,9 @@ class AddToHomescreenDataFetcher {
 
   raw_ptr<InstallableManager> installable_manager_;
   raw_ptr<Observer> observer_;
+
+  InstallableStatusCode installable_status_code_ =
+      InstallableStatusCode::NO_ERROR_DETECTED;
 
   // The icons must only be set on the UI thread for thread safety.
   SkBitmap raw_primary_icon_;

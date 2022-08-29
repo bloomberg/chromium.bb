@@ -4,6 +4,7 @@
 
 #include "base/task/task_features.h"
 
+#include "base/base_export.h"
 #include "base/feature_list.h"
 
 namespace base {
@@ -47,6 +48,21 @@ const Feature kUseFiveMinutesThreadReclaimTime = {
     "UseFiveMinutesThreadReclaimTime", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const BASE_EXPORT Feature kRemoveCanceledTasksInTaskQueue = {
-    "RemoveCanceledTasksInTaskQueue", base::FEATURE_DISABLED_BY_DEFAULT};
+    "RemoveCanceledTasksInTaskQueue2", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const BASE_EXPORT Feature kAddTaskLeewayFeature = {
+    "AddTaskLeeway", base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::FeatureParam<TimeDelta> kTaskLeewayParam{&kAddTaskLeewayFeature,
+                                                     "leeway", Milliseconds(8)};
+
+const BASE_EXPORT Feature kAlignWakeUps = {"AlignWakeUps",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
+const BASE_EXPORT Feature kExplicitHighResolutionTimerWin = {
+    "ExplicitHighResolutionTimerWin", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const BASE_EXPORT Feature kRunTasksByBatches = {
+    "RunTasksByBatches", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace base

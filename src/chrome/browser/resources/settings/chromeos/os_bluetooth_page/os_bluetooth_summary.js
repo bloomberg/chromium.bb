@@ -16,12 +16,14 @@ import {I18nBehavior, I18nBehaviorInterface} from '//resources/js/i18n_behavior.
 import {html, mixinBehaviors, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {getDeviceName} from 'chrome://resources/cr_components/chromeos/bluetooth/bluetooth_utils.js';
 import {getBluetoothConfig} from 'chrome://resources/cr_components/chromeos/bluetooth/cros_bluetooth_config.js';
+import {getInstance as getAnnouncerInstance} from 'chrome://resources/cr_elements/cr_a11y_announcer/cr_a11y_announcer.js';
+import {BluetoothSystemProperties, BluetoothSystemState, DeviceConnectionState, PairedBluetoothDeviceProperties} from 'chrome://resources/mojo/chromeos/services/bluetooth_config/public/mojom/cros_bluetooth_config.mojom-webui.js';
 
 import {loadTimeData} from '../../i18n_setup.js';
 import {Router} from '../../router.js';
-import {routes} from '../os_route.m.js';
-
-const mojom = chromeos.bluetoothConfig.mojom;
+import {routes} from '../os_route.js';
+import {RouteObserverBehavior, RouteObserverBehaviorInterface} from '../route_observer_behavior.js';
+import {RouteOriginBehavior, RouteOriginBehaviorInterface} from '../route_origin_behavior.js';
 
 /**
  * Refers to Bluetooth secondary text label, used to distinguish between
@@ -37,9 +39,11 @@ const LabelType = {
  * @constructor
  * @extends {PolymerElement}
  * @implements {I18nBehaviorInterface}
+ * @implements {RouteObserverBehaviorInterface}
+ * @implements {RouteOriginBehaviorInterface}
  */
-const SettingsBluetoothSummaryElementBase =
-    mixinBehaviors([I18nBehavior], PolymerElement);
+const SettingsBluetoothSummaryElementBase = mixinBehaviors(
+    [I18nBehavior, RouteObserverBehavior, RouteOriginBehavior], PolymerElement);
 
 /** @polymer */
 class SettingsBluetoothSummaryElement extends
@@ -55,7 +59,7 @@ class SettingsBluetoothSummaryElement extends
   static get properties() {
     return {
       /**
-       * @type {!chromeos.bluetoothConfig.mojom.BluetoothSystemProperties}
+       * @type {!BluetoothSystemProperties}
        */
       systemProperties: {
         type: Object,
@@ -105,15 +109,28 @@ class SettingsBluetoothSummaryElement extends
     };
   }
 
+  constructor() {
+    super();
+
+    /** RouteOriginBehaviorInterface override */
+    this.route_ = routes.BASIC;
+  }
+
+  /** @override */
+  ready() {
+    super.ready();
+
+    this.addFocusConfig(routes.BLUETOOTH_DEVICES, '.subpage-arrow');
+  }
+
   /** @private */
   onSystemPropertiesChanged_() {
     if (this.isToggleDisabled_()) {
       return;
     }
-    this.isBluetoothToggleOn_ = this.systemProperties.systemState ===
-            mojom.BluetoothSystemState.kEnabled ||
-        this.systemProperties.systemState ===
-            mojom.BluetoothSystemState.kEnabling;
+    this.isBluetoothToggleOn_ =
+        this.systemProperties.systemState === BluetoothSystemState.kEnabled ||
+        this.systemProperties.systemState === BluetoothSystemState.kEnabling;
   }
 
   /**
@@ -141,7 +158,7 @@ class SettingsBluetoothSummaryElement extends
     // TODO(crbug.com/1010321): Add check for modification state when variable
     // is available.
     return this.systemProperties.systemState ===
-        mojom.BluetoothSystemState.kUnavailable;
+        BluetoothSystemState.kUnavailable;
   }
 
   /**
@@ -191,7 +208,7 @@ class SettingsBluetoothSummaryElement extends
   }
 
   /**
-   * @return {Array<?chromeos.bluetoothConfig.mojom.PairedBluetoothDeviceProperties>}
+   * @return {Array<?PairedBluetoothDeviceProperties>}
    * @private
    */
   getConnectedDevices_() {
@@ -202,7 +219,7 @@ class SettingsBluetoothSummaryElement extends
 
     return pairedDevices.filter(
         device => device.deviceProperties.connectionState ===
-            mojom.DeviceConnectionState.kConnected);
+            DeviceConnectionState.kConnected);
   }
 
   /**
@@ -252,10 +269,8 @@ class SettingsBluetoothSummaryElement extends
       return;
     }
 
-    if (this.systemProperties.systemState ===
-            mojom.BluetoothSystemState.kDisabled ||
-        this.systemProperties.systemState ===
-            mojom.BluetoothSystemState.kDisabling) {
+    if (this.systemProperties.systemState === BluetoothSystemState.kDisabled ||
+        this.systemProperties.systemState === BluetoothSystemState.kDisabling) {
       this.isBluetoothToggleOn_ = true;
       return;
     }
@@ -268,6 +283,13 @@ class SettingsBluetoothSummaryElement extends
       bubbles: true,
       composed: true,
     }));
+  }
+
+  /** @private */
+  annouceBluetoothStateChange_() {
+    getAnnouncerInstance().announce(
+        this.isBluetoothToggleOn_ ? this.i18n('bluetoothEnabledA11YLabel') :
+                                    this.i18n('bluetoothDisabledA11YLabel'));
   }
 }
 

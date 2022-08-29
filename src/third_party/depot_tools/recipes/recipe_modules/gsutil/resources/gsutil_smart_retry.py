@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
@@ -34,7 +34,7 @@ def main(argv):
   args = parser.parse_args()
 
   # The -- argument for the wrapped gsutil.py is escaped as ---- as python
-  # 2.7.3 removes all occurrences of --, not only the first.
+  # removes all occurrences of --, not only the first.
   if '----' in args.command:
     args.command[args.command.index('----')] = '--'
 

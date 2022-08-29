@@ -3,19 +3,23 @@
 // found in the LICENSE file.
 
 #include "content/browser/installedapp/installed_app_provider_impl.h"
+
 #include "build/build_config.h"
-#include "content/browser/installedapp/installed_app_provider_impl_win.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 
+#if BUILDFLAG(IS_WIN)
+#include "content/browser/installedapp/installed_app_provider_impl_win.h"
+#endif
+
 namespace content {
 
 namespace {
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 void DidGetInstalledApps(
     bool is_off_the_record,
     InstalledAppProviderImpl::FilterInstalledAppsCallback callback,
@@ -45,7 +49,7 @@ void InstalledAppProviderImpl::FilterInstalledApps(
     FilterInstalledAppsCallback callback) {
   bool is_implemented = false;
   if (base::FeatureList::IsEnabled(features::kInstalledAppProvider)) {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
     is_implemented = true;
     bool is_off_the_record = render_frame_host()
                                  ->GetProcess()
@@ -69,6 +73,13 @@ void InstalledAppProviderImpl::FilterInstalledApps(
 void InstalledAppProviderImpl::Create(
     RenderFrameHost& host,
     mojo::PendingReceiver<blink::mojom::InstalledAppProvider> receiver) {
+  if (host.GetParentOrOuterDocument()) {
+    // The renderer is supposed to disallow this and we shouldn't end up here.
+    mojo::ReportBadMessage(
+        "InstalledAppProvider only allowed for outermost main frame.");
+    return;
+  }
+
   // The object is bound to the lifetime of |host|'s current document and the
   // mojo connection. See DocumentService for details.
   new InstalledAppProviderImpl(host, std::move(receiver));

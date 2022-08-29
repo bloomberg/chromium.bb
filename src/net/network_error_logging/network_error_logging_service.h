@@ -253,7 +253,8 @@ class NET_EXPORT NetworkErrorLoggingService {
   // Removes browsing data (origin policies) associated with any origin for
   // which |origin_filter| returns true.
   virtual void RemoveBrowsingData(
-      const base::RepeatingCallback<bool(const GURL&)>& origin_filter) = 0;
+      const base::RepeatingCallback<bool(const url::Origin&)>&
+          origin_filter) = 0;
 
   // Removes browsing data (origin policies) for all origins. Allows slight
   // optimization over passing an always-true filter to RemoveBrowsingData.
@@ -291,8 +292,8 @@ class NET_EXPORT NetworkErrorLoggingService {
 
   // Unowned:
   raw_ptr<const base::Clock> clock_;
-  raw_ptr<ReportingService> reporting_service_;
-  bool shut_down_;
+  raw_ptr<ReportingService> reporting_service_ = nullptr;
+  bool shut_down_ = false;
 };
 
 // Persistent storage for NEL policies.

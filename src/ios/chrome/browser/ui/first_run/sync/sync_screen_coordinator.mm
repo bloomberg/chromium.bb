@@ -20,12 +20,13 @@
 #include "ios/chrome/browser/sync/sync_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #import "ios/chrome/browser/sync/sync_setup_service_factory.h"
+#import "ios/chrome/browser/ui/authentication/enterprise/enterprise_prompt/enterprise_prompt_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/enterprise/enterprise_utils.h"
-#import "ios/chrome/browser/ui/authentication/enterprise/user_policy_signout/user_policy_signout_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_coordinator.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browsing_data_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
+#import "ios/chrome/browser/ui/first_run/first_run_util.h"
 #import "ios/chrome/browser/ui/first_run/sync/sync_screen_mediator.h"
 #import "ios/chrome/browser/ui/first_run/sync/sync_screen_mediator_delegate.h"
 #import "ios/chrome/browser/ui/first_run/sync/sync_screen_view_controller.h"
@@ -38,10 +39,10 @@
 #error "This file requires ARC support."
 #endif
 
-@interface SyncScreenCoordinator () <PolicyWatcherBrowserAgentObserving,
+@interface SyncScreenCoordinator () <EnterprisePromptCoordinatorDelegate,
+                                     PolicyWatcherBrowserAgentObserving,
                                      SyncScreenMediatorDelegate,
-                                     SyncScreenViewControllerDelegate,
-                                     UserPolicySignoutCoordinatorDelegate> {
+                                     SyncScreenViewControllerDelegate> {
   // Observer for the sign-out policy changes.
   std::unique_ptr<PolicyWatcherBrowserAgentObserverBridge>
       _policyWatcherObserverBridge;
@@ -54,10 +55,9 @@
 
 @property(nonatomic, weak) id<FirstRunScreenDelegate> delegate;
 
-// The coordinator that manages the prompt for when the user is signed out due
-// to policy.
+// The coordinator that manages enterprise prompts.
 @property(nonatomic, strong)
-    UserPolicySignoutCoordinator* policySignoutPromptCoordinator;
+    EnterprisePromptCoordinator* enterprisePromptCoordinator;
 
 // The consent string ids of texts on the sync screen.
 @property(nonatomic, assign, readonly) NSMutableArray* consentStringIDs;
@@ -132,8 +132,8 @@
 
   self.viewController = [[SyncScreenViewController alloc] init];
   self.viewController.delegate = self;
-  self.viewController.syncTypesRestricted =
-      HasManagedSyncDataType(browserState);
+  PrefService* prefService = browserState->GetPrefs();
+  self.viewController.syncTypesRestricted = HasManagedSyncDataType(prefService);
   // Setup mediator.
   self.mediator = [[SyncScreenMediator alloc]
       initWithAuthenticationService:authenticationService
@@ -171,8 +171,8 @@
   self.viewController = nil;
   [self.mediator disconnect];
   self.mediator = nil;
-  [self.policySignoutPromptCoordinator stop];
-  self.policySignoutPromptCoordinator = nil;
+  [self.enterprisePromptCoordinator stop];
+  self.enterprisePromptCoordinator = nil;
   // If advancedSettingsSigninCoordinator wasn't dismissed yet (which can
   // happen when closing the scene), try to call -interruptWithAction: to
   // properly cleanup the coordinator.
@@ -206,12 +206,19 @@
   [self.delegate willFinishPresenting];
 }
 
-- (void)showSyncSettings {
+- (void)didTapURLInDisclaimer:(NSURL*)URL {
+  // Currently there is only one link to show sync settings in the disclaimer.
   [self startSyncOrAdvancedSettings:YES];
 }
 
 - (void)addConsentStringID:(const int)stringID {
   [self.consentStringIDs addObject:[NSNumber numberWithInt:stringID]];
+}
+
+- (void)logScrollButtonVisible:(BOOL)scrollButtonVisible {
+  RecordFirstRunScrollButtonVisibilityMetrics(
+      first_run::FirstRunScreenType::kSyncScreenWithoutIdentityPicker,
+      scrollButtonVisible);
 }
 
 #pragma mark - SyncScreenMediatorDelegate
@@ -239,21 +246,23 @@
 
 - (void)policyWatcherBrowserAgentNotifySignInDisabled:
     (PolicyWatcherBrowserAgent*)policyWatcher {
-  self.policySignoutPromptCoordinator = [[UserPolicySignoutCoordinator alloc]
-      initWithBaseViewController:self.viewController
-                         browser:self.browser];
-  self.policySignoutPromptCoordinator.delegate = self;
-  [self.policySignoutPromptCoordinator start];
+  __weak __typeof(self) weakSelf = self;
+  ProceduralBlock completion = ^{
+    [weakSelf openEnterprisePromptDialog];
+  };
+  if (!self.advancedSettingsSigninCoordinator) {
+    completion();
+    return;
+  }
+  [self.advancedSettingsSigninCoordinator
+      interruptWithAction:SigninCoordinatorInterruptActionDismissWithAnimation
+               completion:completion];
 }
 
-#pragma mark - UserPolicySignoutCoordinatorDelegate
+#pragma mark - EnterprisePromptCoordinatorDelegate
 
-- (void)hidePolicySignoutPromptForLearnMore:(BOOL)learnMore {
+- (void)hideEnterprisePrompForLearnMore:(BOOL)learnMore {
   [self dismissSignedOutModalAndSkipScreens:learnMore];
-}
-
-- (void)userPolicySignoutDidDismiss {
-  [self dismissSignedOutModalAndSkipScreens:NO];
 }
 
 #pragma mark - InterruptibleChromeCoordinator
@@ -274,8 +283,8 @@
 
 // Dismisses the Signed Out modal if it is still present and |skipScreens|.
 - (void)dismissSignedOutModalAndSkipScreens:(BOOL)skipScreens {
-  [self.policySignoutPromptCoordinator stop];
-  self.policySignoutPromptCoordinator = nil;
+  [self.enterprisePromptCoordinator stop];
+  self.enterprisePromptCoordinator = nil;
   [self.delegate skipAll];
 }
 
@@ -297,7 +306,6 @@
   AuthenticationFlow* authenticationFlow =
       [[AuthenticationFlow alloc] initWithBrowser:self.browser
                                          identity:identity
-                                  shouldClearData:SHOULD_CLEAR_DATA_MERGE_DATA
                                  postSignInAction:postSignInAction
                          presentingViewController:self.viewController];
   authenticationFlow.dispatcher = HandlerForProtocol(
@@ -336,6 +344,16 @@
 
   [self.advancedSettingsSigninCoordinator stop];
   self.advancedSettingsSigninCoordinator = nil;
+}
+
+// Opens EnterprisePromptCoordinator.
+- (void)openEnterprisePromptDialog {
+  self.enterprisePromptCoordinator = [[EnterprisePromptCoordinator alloc]
+      initWithBaseViewController:self.viewController
+                         browser:self.browser
+                      promptType:EnterprisePromptTypeForceSignOut];
+  self.enterprisePromptCoordinator.delegate = self;
+  [self.enterprisePromptCoordinator start];
 }
 
 @end
