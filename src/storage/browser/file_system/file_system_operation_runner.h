@@ -12,6 +12,7 @@
 #include <set>
 #include <vector>
 
+#include "base/callback_helpers.h"
 #include "base/component_export.h"
 #include "base/containers/id_map.h"
 #include "base/memory/raw_ptr.h"
@@ -41,10 +42,13 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemOperationRunner {
   using SnapshotFileCallback = FileSystemOperation::SnapshotFileCallback;
   using StatusCallback = FileSystemOperation::StatusCallback;
   using WriteCallback = FileSystemOperation::WriteCallback;
-  using OpenFileCallback = FileSystemOperation::OpenFileCallback;
+  // Implementers of FileSystemOperation::OpenFile() pass `on_close_callback` as
+  // a OnceClosure, but pass consumers a ScopedClosureRunner to ensure the
+  // callback is always run, and on the correct sequence (the I/O thread).
+  using OpenFileCallback =
+      base::OnceCallback<void(base::File file,
+                              base::ScopedClosureRunner on_close_callback)>;
   using ErrorBehavior = FileSystemOperation::ErrorBehavior;
-  using CopyOrMoveProgressCallback =
-      FileSystemOperation::CopyOrMoveProgressCallback;
   using CopyFileProgressCallback =
       FileSystemOperation::CopyFileProgressCallback;
   using CopyOrMoveOptionSet = FileSystemOperation::CopyOrMoveOptionSet;
@@ -84,24 +88,27 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemOperationRunner {
   // |src_url| is a directory, the contents of |src_url| are copied to
   // |dest_url| recursively. A new file or directory is created at
   // |dest_url| as needed.
-  // For |option| and |progress_callback|, see file_system_operation.h for
-  // details.
-  OperationID Copy(const FileSystemURL& src_url,
-                   const FileSystemURL& dest_url,
-                   CopyOrMoveOptionSet options,
-                   ErrorBehavior error_behavior,
-                   const CopyOrMoveProgressCallback& progress_callback,
-                   StatusCallback callback);
+  // For |option| and |copy_or_move_hook_delegate|, see file_system_operation.h
+  // for details.
+  OperationID Copy(
+      const FileSystemURL& src_url,
+      const FileSystemURL& dest_url,
+      CopyOrMoveOptionSet options,
+      ErrorBehavior error_behavior,
+      std::unique_ptr<CopyOrMoveHookDelegate> copy_or_move_hook_delegate,
+      StatusCallback callback);
 
   // Moves a file or directory from |src_url| to |dest_url|. A new file
   // or directory is created at |dest_url| as needed.
-  // For |option|, see file_system_operation.h for details.
-  OperationID Move(const FileSystemURL& src_url,
-                   const FileSystemURL& dest_url,
-                   CopyOrMoveOptionSet options,
-                   ErrorBehavior error_behavior,
-                   const CopyOrMoveProgressCallback& progress_callback,
-                   StatusCallback callback);
+  // For |option| and |copy_or_move_hook_delegate|, see file_system_operation.h
+  // for details.
+  OperationID Move(
+      const FileSystemURL& src_url,
+      const FileSystemURL& dest_url,
+      CopyOrMoveOptionSet options,
+      ErrorBehavior error_behavior,
+      std::unique_ptr<CopyOrMoveHookDelegate> copy_or_move_hook_delegate,
+      StatusCallback callback);
 
   // Checks if a directory is present at |url|.
   OperationID DirectoryExists(const FileSystemURL& url,
@@ -164,7 +171,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemOperationRunner {
   // all situation e.g. it will always fail for the sandboxed system when in
   // Incognito mode.
   OperationID OpenFile(const FileSystemURL& url,
-                       int file_flags,
+                       uint32_t file_flags,
                        OpenFileCallback callback);
 
   // Creates a local snapshot file for a given |url| and returns the
@@ -286,13 +293,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemOperationRunner {
                          const base::File::Info& file_info,
                          const base::FilePath& platform_path,
                          scoped_refptr<ShareableFileReference> file_ref);
-
-  void OnCopyProgress(const OperationID id,
-                      const CopyOrMoveProgressCallback& callback,
-                      FileSystemOperation::CopyOrMoveProgressType type,
-                      const FileSystemURL& source_url,
-                      const FileSystemURL& dest_url,
-                      int64_t size);
 
   void PrepareForWrite(OperationID id, const FileSystemURL& url);
   void PrepareForRead(OperationID id, const FileSystemURL& url);

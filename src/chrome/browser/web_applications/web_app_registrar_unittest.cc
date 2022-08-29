@@ -16,18 +16,32 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/bind.h"
+#include "build/chromeos_buildflags.h"
+#include "chrome/browser/web_applications/commands/run_on_os_login_command.h"
+#include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/test/fake_web_app_database_factory.h"
 #include "chrome/browser/web_applications/test/fake_web_app_registry_controller.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/browser/web_applications/test/web_app_test_utils.h"
+#include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_registry_update.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
+#include "chrome/browser/web_applications/web_app_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_features.h"
+#include "base/test/scoped_feature_list.h"
+#include "chrome/browser/web_applications/test/with_crosapi_param.h"
+
+using web_app::test::CrosapiParam;
+using web_app::test::WithCrosapiParam;
+#endif
 
 namespace web_app {
 
@@ -42,16 +56,25 @@ Registry CreateRegistryForTesting(const std::string& base_url, int num_apps) {
         GenerateAppId(/*manifest_id=*/absl::nullopt, GURL(url));
 
     auto web_app = std::make_unique<WebApp>(app_id);
-    web_app->AddSource(Source::kSync);
+    web_app->AddSource(WebAppManagement::kSync);
     web_app->SetStartUrl(GURL(url));
     web_app->SetName("Name" + base::NumberToString(i));
     web_app->SetDisplayMode(DisplayMode::kBrowser);
-    web_app->SetUserDisplayMode(DisplayMode::kBrowser);
+    web_app->SetUserDisplayMode(UserDisplayMode::kBrowser);
 
     registry.emplace(app_id, std::move(web_app));
   }
 
   return registry;
+}
+
+int CountApps(const WebAppRegistrar::AppSet& app_set) {
+  int count = 0;
+  for (const auto& web_app : app_set) {
+    EXPECT_FALSE(web_app.is_uninstalling());
+    ++count;
+  }
+  return count;
 }
 
 }  // namespace
@@ -105,7 +128,7 @@ class WebAppRegistrarTest : public WebAppTest {
   AppId InitRegistrarWithApp(std::unique_ptr<WebApp> app) {
     DCHECK(registrar().is_empty());
 
-    const AppId app_id = app->app_id();
+    AppId app_id = app->app_id();
 
     Registry registry;
     registry.emplace(app_id, std::move(app));
@@ -168,18 +191,18 @@ TEST_F(WebAppRegistrarTest, CreateRegisterUnregister) {
   auto web_app = std::make_unique<WebApp>(app_id);
   auto web_app2 = std::make_unique<WebApp>(app_id2);
 
-  web_app->AddSource(Source::kSync);
+  web_app->AddSource(WebAppManagement::kSync);
   web_app->SetDisplayMode(DisplayMode::kStandalone);
-  web_app->SetUserDisplayMode(DisplayMode::kStandalone);
+  web_app->SetUserDisplayMode(UserDisplayMode::kStandalone);
   web_app->SetName(name);
   web_app->SetDescription(description);
   web_app->SetStartUrl(start_url);
   web_app->SetScope(scope);
   web_app->SetThemeColor(theme_color);
 
-  web_app2->AddSource(Source::kDefault);
+  web_app2->AddSource(WebAppManagement::kDefault);
   web_app2->SetDisplayMode(DisplayMode::kBrowser);
-  web_app2->SetUserDisplayMode(DisplayMode::kBrowser);
+  web_app2->SetUserDisplayMode(UserDisplayMode::kBrowser);
   web_app2->SetStartUrl(start_url2);
   web_app2->SetName(name);
 
@@ -192,8 +215,8 @@ TEST_F(WebAppRegistrarTest, CreateRegisterUnregister) {
   const WebApp* app = registrar().GetAppById(app_id);
 
   EXPECT_EQ(app_id, app->app_id());
-  EXPECT_EQ(name, app->name());
-  EXPECT_EQ(description, app->description());
+  EXPECT_EQ(name, app->untranslated_name());
+  EXPECT_EQ(description, app->untranslated_description());
   EXPECT_EQ(start_url, app->start_url());
   EXPECT_EQ(scope, app->scope());
   EXPECT_EQ(theme_color, app->theme_color());
@@ -206,6 +229,7 @@ TEST_F(WebAppRegistrarTest, CreateRegisterUnregister) {
   const WebApp* app2 = registrar().GetAppById(app_id2);
   EXPECT_EQ(app_id2, app2->app_id());
   EXPECT_FALSE(registrar().is_empty());
+  EXPECT_EQ(CountApps(registrar().GetApps()), 2);
 
   UnregisterApp(app_id);
   EXPECT_FALSE(registrar().IsInstalled(app_id));
@@ -221,6 +245,7 @@ TEST_F(WebAppRegistrarTest, CreateRegisterUnregister) {
   EXPECT_FALSE(registrar().IsInstalled(app_id2));
   EXPECT_EQ(nullptr, registrar().GetAppById(app_id2));
   EXPECT_TRUE(registrar().is_empty());
+  EXPECT_EQ(CountApps(registrar().GetApps()), 0);
 }
 
 TEST_F(WebAppRegistrarTest, DestroyRegistrarOwningRegisteredApps) {
@@ -282,13 +307,13 @@ TEST_F(WebAppRegistrarTest, FilterApps) {
   Registry registry = CreateRegistryForTesting("https://example.com/path", 100);
   auto ids = RegisterAppsForTesting(std::move(registry));
 
-  for (const WebApp& web_app : mutable_registrar().FilterAppsMutable(
+  for ([[maybe_unused]] const WebApp& web_app :
+       mutable_registrar().FilterAppsMutableForTesting(
            [](const WebApp& web_app) { return false; })) {
     NOTREACHED();
-    ALLOW_UNUSED_LOCAL(web_app);
   }
 
-  for (const WebApp& web_app : mutable_registrar().FilterAppsMutable(
+  for (const WebApp& web_app : mutable_registrar().FilterAppsMutableForTesting(
            [](const WebApp& web_app) { return true; })) {
     const size_t num_removed = ids.erase(web_app.app_id());
     EXPECT_EQ(1U, num_removed);
@@ -317,8 +342,8 @@ TEST_F(WebAppRegistrarTest, GetApps) {
   RegisterApp(std::move(web_app_in_sync2));
 
   int all_apps_count = 0;
-  for (const WebApp& web_app : registrar().GetAppsIncludingStubs()) {
-    ALLOW_UNUSED_LOCAL(web_app);
+  for ([[maybe_unused]] const WebApp& web_app :
+       registrar().GetAppsIncludingStubs()) {
     ++all_apps_count;
   }
   EXPECT_EQ(12, all_apps_count);
@@ -336,8 +361,7 @@ TEST_F(WebAppRegistrarTest, GetApps) {
   UnregisterApp(web_app_id_in_sync2);
 
   not_in_sync_install_count = 0;
-  for (const WebApp& web_app : registrar().GetApps()) {
-    ALLOW_UNUSED_LOCAL(web_app);
+  for ([[maybe_unused]] const WebApp& web_app : registrar().GetApps()) {
     ++not_in_sync_install_count;
   }
   EXPECT_EQ(10, not_in_sync_install_count);
@@ -375,7 +399,7 @@ TEST_F(WebAppRegistrarTest, GetAppDataFields) {
   const std::string description = "Description";
   const absl::optional<SkColor> theme_color = 0xAABBCCDD;
   const auto display_mode = DisplayMode::kMinimalUi;
-  const auto user_display_mode = DisplayMode::kStandalone;
+  const auto user_display_mode = UserDisplayMode::kStandalone;
   std::vector<DisplayMode> display_mode_override;
 
   EXPECT_EQ(std::string(), registrar().GetAppShortName(app_id));
@@ -387,7 +411,7 @@ TEST_F(WebAppRegistrarTest, GetAppDataFields) {
   display_mode_override.push_back(DisplayMode::kMinimalUi);
   display_mode_override.push_back(DisplayMode::kStandalone);
 
-  web_app->AddSource(Source::kSync);
+  web_app->AddSource(WebAppManagement::kSync);
   web_app->SetName(name);
   web_app->SetDescription(description);
   web_app->SetThemeColor(theme_color);
@@ -403,7 +427,7 @@ TEST_F(WebAppRegistrarTest, GetAppDataFields) {
   EXPECT_EQ(description, registrar().GetAppDescription(app_id));
   EXPECT_EQ(theme_color, registrar().GetAppThemeColor(app_id));
   EXPECT_EQ(start_url, registrar().GetAppStartUrl(app_id));
-  EXPECT_EQ(DisplayMode::kStandalone,
+  EXPECT_EQ(UserDisplayMode::kStandalone,
             registrar().GetAppUserDisplayMode(app_id));
 
   {
@@ -416,22 +440,24 @@ TEST_F(WebAppRegistrarTest, GetAppDataFields) {
 
   {
     EXPECT_FALSE(registrar().IsLocallyInstalled(app_id));
+    EXPECT_FALSE(registrar().IsActivelyInstalled(app_id));
 
     EXPECT_FALSE(registrar().IsLocallyInstalled("unknown"));
     web_app_ptr->SetIsLocallyInstalled(/*is_locally_installed*/ true);
     EXPECT_TRUE(registrar().IsLocallyInstalled(app_id));
+    EXPECT_TRUE(registrar().IsActivelyInstalled(app_id));
   }
 
   {
-    EXPECT_EQ(DisplayMode::kUndefined,
-              registrar().GetAppUserDisplayMode("unknown"));
+    EXPECT_FALSE(registrar().GetAppUserDisplayMode("unknown").has_value());
 
-    web_app_ptr->SetUserDisplayMode(DisplayMode::kBrowser);
-    EXPECT_EQ(DisplayMode::kBrowser, registrar().GetAppUserDisplayMode(app_id));
+    web_app_ptr->SetUserDisplayMode(UserDisplayMode::kBrowser);
+    EXPECT_EQ(UserDisplayMode::kBrowser,
+              registrar().GetAppUserDisplayMode(app_id));
 
-    sync_bridge().SetAppUserDisplayMode(app_id, DisplayMode::kStandalone,
+    sync_bridge().SetAppUserDisplayMode(app_id, UserDisplayMode::kStandalone,
                                         /*is_user_action=*/false);
-    EXPECT_EQ(DisplayMode::kStandalone, web_app_ptr->user_display_mode());
+    EXPECT_EQ(UserDisplayMode::kStandalone, web_app_ptr->user_display_mode());
     EXPECT_EQ(DisplayMode::kMinimalUi, web_app_ptr->display_mode());
 
     ASSERT_EQ(2u, web_app_ptr->display_mode_override().size());
@@ -513,12 +539,15 @@ TEST_F(WebAppRegistrarTest, CanFindAppWithUrlInScope) {
   const GURL app1_scope("https://example.com/app");
   const GURL app2_scope("https://example.com/app-two");
   const GURL app3_scope("https://not-example.com/app");
+  const GURL app4_scope("https://app-four.com/");
 
   const AppId app1_id =
       GenerateAppId(/*manifest_id=*/absl::nullopt, app1_scope);
   const AppId app2_id =
       GenerateAppId(/*manifest_id=*/absl::nullopt, app2_scope);
   const AppId app3_id =
+      GenerateAppId(/*manifest_id=*/absl::nullopt, app3_scope);
+  const AppId app4_id =
       GenerateAppId(/*manifest_id=*/absl::nullopt, app3_scope);
 
   auto app1 = test::CreateWebApp(app1_scope);
@@ -534,6 +563,10 @@ TEST_F(WebAppRegistrarTest, CanFindAppWithUrlInScope) {
       registrar().FindAppWithUrlInScope(app3_scope);
   EXPECT_FALSE(app3_match);
 
+  absl::optional<AppId> app4_match =
+      registrar().FindAppWithUrlInScope(app4_scope);
+  EXPECT_FALSE(app4_match);
+
   auto app2 = test::CreateWebApp(app2_scope);
   app2->SetScope(app2_scope);
   RegisterApp(std::move(app2));
@@ -541,6 +574,11 @@ TEST_F(WebAppRegistrarTest, CanFindAppWithUrlInScope) {
   auto app3 = test::CreateWebApp(app3_scope);
   app3->SetScope(app3_scope);
   RegisterApp(std::move(app3));
+
+  auto app4 = test::CreateWebApp(app4_scope);
+  app4->SetScope(app4_scope);
+  app4->SetIsUninstalling(true);
+  RegisterApp(std::move(app4));
 
   absl::optional<AppId> origin_match =
       registrar().FindAppWithUrlInScope(origin_scope);
@@ -558,6 +596,10 @@ TEST_F(WebAppRegistrarTest, CanFindAppWithUrlInScope) {
   app3_match = registrar().FindAppWithUrlInScope(app3_scope);
   DCHECK(app3_match);
   EXPECT_EQ(*app3_match, app3_id);
+
+  // Apps in the process of uninstalling are ignored.
+  app4_match = registrar().FindAppWithUrlInScope(app4_scope);
+  EXPECT_FALSE(app4_match);
 }
 
 TEST_F(WebAppRegistrarTest, CanFindShortcutWithUrlInScope) {
@@ -663,7 +705,7 @@ TEST_F(WebAppRegistrarTest, BeginAndCommitUpdate) {
   EXPECT_EQ(ids.size(), registry_written.size());
 
   for (auto& kv : registry_written) {
-    EXPECT_EQ("New Name", kv.second->name());
+    EXPECT_EQ("New Name", kv.second->untranslated_name());
     ids.erase(kv.second->app_id());
   }
 
@@ -728,7 +770,7 @@ TEST_F(WebAppRegistrarTest, ScopedRegistryUpdate) {
   EXPECT_EQ(ids.size(), updated_registry.size());
 
   for (auto& kv : updated_registry) {
-    EXPECT_EQ(kv.second->description(), "New Description");
+    EXPECT_EQ(kv.second->untranslated_description(), "New Description");
     ids.erase(kv.second->app_id());
   }
 
@@ -755,11 +797,11 @@ TEST_F(WebAppRegistrarTest, CopyOnWrite) {
     EXPECT_NE(app_copy, app);
 
     app_copy->SetName("New Name");
-    EXPECT_EQ(app_copy->name(), "New Name");
-    EXPECT_EQ(app->name(), "Name");
+    EXPECT_EQ(app_copy->untranslated_name(), "New Name");
+    EXPECT_EQ(app->untranslated_name(), "Name");
 
-    app_copy->AddSource(Source::kPolicy);
-    app_copy->RemoveSource(Source::kSync);
+    app_copy->AddSource(WebAppManagement::kPolicy);
+    app_copy->RemoveSource(WebAppManagement::kSync);
 
     EXPECT_FALSE(app_copy->IsSynced());
     EXPECT_TRUE(app_copy->HasAnySources());
@@ -773,7 +815,7 @@ TEST_F(WebAppRegistrarTest, CopyOnWrite) {
   // Pointer value stays the same.
   EXPECT_EQ(app, registrar().GetAppById(app_id));
 
-  EXPECT_EQ(app->name(), "New Name");
+  EXPECT_EQ(app->untranslated_name(), "New Name");
   EXPECT_FALSE(app->IsSynced());
   EXPECT_TRUE(app->HasAnySources());
 }
@@ -783,8 +825,9 @@ TEST_F(WebAppRegistrarTest, CountUserInstalledApps) {
 
   const std::string base_url{"https://example.com/path"};
 
-  for (int i = Source::kMinValue + 1; i <= Source::kMaxValue; ++i) {
-    auto source = static_cast<Source::Type>(i);
+  for (int i = WebAppManagement::kMinValue + 1;
+       i <= WebAppManagement::kMaxValue; ++i) {
+    auto source = static_cast<WebAppManagement::Type>(i);
     auto web_app =
         test::CreateWebApp(GURL(base_url + base::NumberToString(i)), source);
     RegisterApp(std::move(web_app));
@@ -830,7 +873,7 @@ TEST_F(WebAppRegistrarTest, NotLocallyInstalledAppGetsDisplayModeBrowser) {
   auto web_app = test::CreateWebApp();
   const AppId app_id = web_app->app_id();
   web_app->SetDisplayMode(DisplayMode::kStandalone);
-  web_app->SetUserDisplayMode(DisplayMode::kStandalone);
+  web_app->SetUserDisplayMode(UserDisplayMode::kStandalone);
   web_app->SetIsLocallyInstalled(false);
   RegisterApp(std::move(web_app));
 
@@ -838,6 +881,45 @@ TEST_F(WebAppRegistrarTest, NotLocallyInstalledAppGetsDisplayModeBrowser) {
             registrar().GetAppEffectiveDisplayMode(app_id));
 
   sync_bridge().SetAppIsLocallyInstalled(app_id, true);
+
+  EXPECT_EQ(DisplayMode::kStandalone,
+            registrar().GetAppEffectiveDisplayMode(app_id));
+}
+
+TEST_F(WebAppRegistrarTest,
+       NotLocallyInstalledAppGetsDisplayModeBrowserEvenForIsolatedApps) {
+  controller().Init();
+
+  auto web_app = test::CreateWebApp();
+  const AppId app_id = web_app->app_id();
+  web_app->SetDisplayMode(DisplayMode::kStandalone);
+  web_app->SetUserDisplayMode(UserDisplayMode::kStandalone);
+  web_app->SetIsLocallyInstalled(false);
+
+  // Not locally installed apps get browser display mode because they do not
+  // have information aboud isolation because manifest is not available.
+  web_app->SetStorageIsolated(true);
+
+  RegisterApp(std::move(web_app));
+
+  EXPECT_EQ(DisplayMode::kBrowser,
+            registrar().GetAppEffectiveDisplayMode(app_id));
+}
+
+TEST_F(WebAppRegistrarTest,
+       IsolatedAppsGetDisplayModeStandaloneRegardlessOfUserSettings) {
+  controller().Init();
+
+  std::unique_ptr<WebApp> web_app = test::CreateWebApp();
+  const AppId app_id = web_app->app_id();
+
+  // Valid manifest must have standalone display mode
+  web_app->SetDisplayMode(DisplayMode::kStandalone);
+  web_app->SetUserDisplayMode(UserDisplayMode::kBrowser);
+  web_app->SetIsLocallyInstalled(true);
+  web_app->SetStorageIsolated(true);
+
+  RegisterApp(std::move(web_app));
 
   EXPECT_EQ(DisplayMode::kStandalone,
             registrar().GetAppEffectiveDisplayMode(app_id));
@@ -853,7 +935,7 @@ TEST_F(WebAppRegistrarTest, NotLocallyInstalledAppGetsDisplayModeOverride) {
   display_mode_overrides.push_back(DisplayMode::kMinimalUi);
 
   web_app->SetDisplayMode(DisplayMode::kStandalone);
-  web_app->SetUserDisplayMode(DisplayMode::kStandalone);
+  web_app->SetUserDisplayMode(UserDisplayMode::kStandalone);
   web_app->SetDisplayModeOverride(display_mode_overrides);
   web_app->SetIsLocallyInstalled(false);
   RegisterApp(std::move(web_app));
@@ -878,7 +960,7 @@ TEST_F(WebAppRegistrarTest,
   display_mode_overrides.push_back(DisplayMode::kMinimalUi);
 
   web_app->SetDisplayMode(DisplayMode::kStandalone);
-  web_app->SetUserDisplayMode(DisplayMode::kStandalone);
+  web_app->SetUserDisplayMode(UserDisplayMode::kStandalone);
   web_app->SetDisplayModeOverride(display_mode_overrides);
   web_app->SetIsLocallyInstalled(false);
   RegisterApp(std::move(web_app));
@@ -899,15 +981,81 @@ TEST_F(WebAppRegistrarTest, RunOnOsLoginModes) {
   RegisterApp(std::move(web_app));
 
   EXPECT_EQ(RunOnOsLoginMode::kNotRun,
-            registrar().GetAppRunOnOsLoginMode(app_id));
+            registrar().GetAppRunOnOsLoginMode(app_id).value);
 
-  sync_bridge().SetAppRunOnOsLoginMode(app_id, RunOnOsLoginMode::kWindowed);
+  PersistRunOnOsLoginUserChoice(
+      &registrar(), &controller().os_integration_manager(), &sync_bridge(),
+      app_id, RunOnOsLoginMode::kWindowed);
   EXPECT_EQ(RunOnOsLoginMode::kWindowed,
-            registrar().GetAppRunOnOsLoginMode(app_id));
+            registrar().GetAppRunOnOsLoginMode(app_id).value);
 
-  sync_bridge().SetAppRunOnOsLoginMode(app_id, RunOnOsLoginMode::kMinimized);
+  PersistRunOnOsLoginUserChoice(
+      &registrar(), &controller().os_integration_manager(), &sync_bridge(),
+      app_id, RunOnOsLoginMode::kMinimized);
   EXPECT_EQ(RunOnOsLoginMode::kMinimized,
-            registrar().GetAppRunOnOsLoginMode(app_id));
+            registrar().GetAppRunOnOsLoginMode(app_id).value);
+}
+
+TEST_F(WebAppRegistrarTest, RunOnOsLoginModesWithPolicy) {
+  controller().Init();
+
+  auto web_app_default = test::CreateWebApp();
+  auto web_app_default2 = test::CreateWebApp(GURL("https:/default2.example/"));
+  auto web_app_windowed = test::CreateWebApp(GURL("https://windowed.example/"));
+  auto web_app_allowed = test::CreateWebApp(GURL("https://allowed.example/"));
+  const AppId app_id_default = web_app_default->app_id();
+  const AppId app_id_default2 = web_app_default2->app_id();
+  const AppId app_id_windowed = web_app_windowed->app_id();
+  const AppId app_id_allowed = web_app_allowed->app_id();
+
+  RegisterApp(std::move(web_app_default));
+  RegisterApp(std::move(web_app_default2));
+  RegisterApp(std::move(web_app_windowed));
+  RegisterApp(std::move(web_app_allowed));
+
+  PersistRunOnOsLoginUserChoice(
+      &registrar(), &controller().os_integration_manager(), &sync_bridge(),
+      app_id_default2, RunOnOsLoginMode::kWindowed);
+  PersistRunOnOsLoginUserChoice(
+      &registrar(), &controller().os_integration_manager(), &sync_bridge(),
+      app_id_allowed, RunOnOsLoginMode::kWindowed);
+
+  EXPECT_EQ(RunOnOsLoginMode::kNotRun,
+            registrar().GetAppRunOnOsLoginMode(app_id_default).value);
+  EXPECT_EQ(RunOnOsLoginMode::kWindowed,
+            registrar().GetAppRunOnOsLoginMode(app_id_default2).value);
+  EXPECT_EQ(RunOnOsLoginMode::kNotRun,
+            registrar().GetAppRunOnOsLoginMode(app_id_windowed).value);
+  EXPECT_EQ(RunOnOsLoginMode::kWindowed,
+            registrar().GetAppRunOnOsLoginMode(app_id_allowed).value);
+
+  const char kWebAppSettingWithDefaultConfiguration[] = R"([
+    {
+      "manifest_id": "https://windowed.example/",
+      "run_on_os_login": "run_windowed"
+    },
+    {
+      "manifest_id": "https://allowed.example/",
+      "run_on_os_login": "allowed"
+    },
+    {
+      "manifest_id": "*",
+      "run_on_os_login": "blocked"
+    }
+  ])";
+
+  test::SetWebAppSettingsListPref(profile(),
+                                  kWebAppSettingWithDefaultConfiguration);
+  controller().policy_manager().RefreshPolicySettingsForTesting();
+
+  EXPECT_EQ(RunOnOsLoginMode::kNotRun,
+            registrar().GetAppRunOnOsLoginMode(app_id_default).value);
+  EXPECT_EQ(RunOnOsLoginMode::kNotRun,
+            registrar().GetAppRunOnOsLoginMode(app_id_default2).value);
+  EXPECT_EQ(RunOnOsLoginMode::kWindowed,
+            registrar().GetAppRunOnOsLoginMode(app_id_windowed).value);
+  EXPECT_EQ(RunOnOsLoginMode::kWindowed,
+            registrar().GetAppRunOnOsLoginMode(app_id_allowed).value);
 }
 
 TEST_F(WebAppRegistrarTest, WindowControlsOverlay) {
@@ -1011,5 +1159,215 @@ TEST_F(WebAppRegistrarTest, DisallowedLaunchProtocols) {
     EXPECT_FALSE(base::Contains(disallowed_protocols, protocol_scheme2));
   }
 }
+
+TEST_F(WebAppRegistrarTest, IsRegisteredLaunchProtocol) {
+  controller().Init();
+
+  apps::ProtocolHandlerInfo protocol_handler_info1;
+  protocol_handler_info1.protocol = "web+test";
+  protocol_handler_info1.url = GURL("http://example.com/test=%s");
+
+  apps::ProtocolHandlerInfo protocol_handler_info2;
+  protocol_handler_info2.protocol = "web+test2";
+  protocol_handler_info2.url = GURL("http://example.com/test2=%s");
+
+  auto web_app = test::CreateWebApp(GURL("https://example.com/path"));
+  const AppId app_id = web_app->app_id();
+  web_app->SetProtocolHandlers(
+      {protocol_handler_info1, protocol_handler_info2});
+  RegisterApp(std::move(web_app));
+
+  EXPECT_TRUE(registrar().IsRegisteredLaunchProtocol(app_id, "web+test"));
+  EXPECT_TRUE(registrar().IsRegisteredLaunchProtocol(app_id, "web+test2"));
+  EXPECT_FALSE(registrar().IsRegisteredLaunchProtocol(app_id, "web+test3"));
+  EXPECT_FALSE(registrar().IsRegisteredLaunchProtocol(app_id, "mailto"));
+}
+
+TEST_F(WebAppRegistrarTest, TestIsDefaultManagementInstalled) {
+  controller().Init();
+
+  auto web_app1 =
+      test::CreateWebApp(GURL("https://start.com"), WebAppManagement::kDefault);
+  auto web_app2 = test::CreateWebApp(GURL("https://starter.com"),
+                                     WebAppManagement::kPolicy);
+  const AppId app_id1 = web_app1->app_id();
+  const AppId app_id2 = web_app2->app_id();
+  RegisterApp(std::move(web_app1));
+  RegisterApp(std::move(web_app2));
+
+  // Currently default installed.
+  EXPECT_TRUE(registrar().IsInstalledByDefaultManagement(app_id1));
+  // Currently installed by source other than installed.
+  EXPECT_FALSE(registrar().IsInstalledByDefaultManagement(app_id2));
+
+  // Uninstalling the previously default installed app.
+  UnregisterApp(app_id1);
+  EXPECT_FALSE(registrar().IsInstalledByDefaultManagement(app_id1));
+}
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+
+class WebAppRegistrarAshTest : public WebAppTest, public WithCrosapiParam {
+ public:
+  WebAppRegistrarAshTest() {
+    // Avoid crash during TestingProfile construction when Lacros support is
+    // enabled.
+    scoped_feature_list_.InitAndDisableFeature(
+        chromeos::features::kArcAccountRestrictions);
+  }
+  ~WebAppRegistrarAshTest() override = default;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+TEST_P(WebAppRegistrarAshTest, SourceSupported) {
+  const GURL example_url("https://example.com/my-app/start");
+  const GURL swa_url("chrome://swa/start");
+  const GURL uninstalling_url("https://example.com/uninstalling/start");
+
+  AppId example_id;
+  AppId swa_id;
+  AppId uninstalling_id;
+  WebAppRegistrarMutable registrar(profile());
+  {
+    Registry registry;
+
+    auto example_app = test::CreateWebApp(example_url);
+    example_id = example_app->app_id();
+    registry.emplace(example_id, std::move(example_app));
+
+    auto swa_app = test::CreateWebApp(swa_url, WebAppManagement::Type::kSystem);
+    swa_id = swa_app->app_id();
+    registry.emplace(swa_id, std::move(swa_app));
+
+    auto uninstalling_app =
+        test::CreateWebApp(uninstalling_url, WebAppManagement::Type::kSystem);
+    uninstalling_app->SetIsUninstalling(true);
+    uninstalling_id = uninstalling_app->app_id();
+    registry.emplace(uninstalling_id, std::move(uninstalling_app));
+
+    registrar.InitRegistry(std::move(registry));
+  }
+
+  if (GetParam() == CrosapiParam::kEnabled) {
+    // Non-system web apps are managed by Lacros, excluded in Ash
+    // WebAppRegistrar.
+    EXPECT_EQ(registrar.CountUserInstalledApps(), 0);
+    EXPECT_EQ(CountApps(registrar.GetApps()), 1);
+
+    EXPECT_FALSE(registrar.FindAppWithUrlInScope(example_url).has_value());
+    EXPECT_TRUE(registrar.GetAppScope(example_id).is_empty());
+    EXPECT_FALSE(registrar.GetAppUserDisplayMode(example_id).has_value());
+  } else {
+    EXPECT_EQ(registrar.CountUserInstalledApps(), 1);
+    EXPECT_EQ(CountApps(registrar.GetApps()), 2);
+
+    EXPECT_EQ(registrar.FindAppWithUrlInScope(example_url), example_id);
+    EXPECT_EQ(registrar.GetAppScope(example_id),
+              GURL("https://example.com/my-app/"));
+    EXPECT_TRUE(registrar.GetAppUserDisplayMode(example_id).has_value());
+  }
+
+  EXPECT_EQ(registrar.FindAppWithUrlInScope(swa_url), swa_id);
+  EXPECT_EQ(registrar.GetAppScope(swa_id), GURL("chrome://swa/"));
+  EXPECT_TRUE(registrar.GetAppUserDisplayMode(swa_id).has_value());
+
+  EXPECT_FALSE(registrar.FindAppWithUrlInScope(uninstalling_url).has_value());
+  EXPECT_EQ(registrar.GetAppScope(uninstalling_id),
+            GURL("https://example.com/uninstalling/"));
+  EXPECT_TRUE(registrar.GetAppUserDisplayMode(uninstalling_id).has_value());
+  EXPECT_FALSE(base::Contains(registrar.GetAppIds(), uninstalling_id));
+}
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         WebAppRegistrarAshTest,
+                         ::testing::Values(CrosapiParam::kEnabled,
+                                           CrosapiParam::kDisabled),
+                         WithCrosapiParam::ParamToString);
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+
+enum class SystemWebAppsInLacrosParam {
+  kDisabled = 0,
+  kEnabled = 1,
+};
+
+class WebAppRegistrarLacrosTest
+    : public WebAppTest,
+      public testing::WithParamInterface<SystemWebAppsInLacrosParam> {
+ public:
+  WebAppRegistrarLacrosTest() {
+    if (GetParam() == SystemWebAppsInLacrosParam::kEnabled) {
+      EnableSystemWebAppsInLacrosForTesting();
+    }
+  }
+  ~WebAppRegistrarLacrosTest() override = default;
+};
+
+TEST_P(WebAppRegistrarLacrosTest, SourceSupported) {
+  const GURL example_url("https://example.com/my-app/start");
+  const GURL swa_url("chrome://swa/start");
+  const GURL uninstalling_url("https://example.com/uninstalling/start");
+
+  AppId example_id;
+  AppId swa_id;
+  AppId uninstalling_id;
+  WebAppRegistrarMutable registrar(profile());
+  {
+    Registry registry;
+
+    auto example_app = test::CreateWebApp(example_url);
+    example_id = example_app->app_id();
+    registry.emplace(example_id, std::move(example_app));
+
+    auto swa_app = test::CreateWebApp(swa_url, WebAppManagement::Type::kSystem);
+    swa_id = swa_app->app_id();
+    registry.emplace(swa_id, std::move(swa_app));
+
+    auto uninstalling_app = test::CreateWebApp(uninstalling_url);
+    uninstalling_app->SetIsUninstalling(true);
+    uninstalling_id = uninstalling_app->app_id();
+    registry.emplace(uninstalling_id, std::move(uninstalling_app));
+
+    registrar.InitRegistry(std::move(registry));
+  }
+
+  EXPECT_EQ(registrar.FindAppWithUrlInScope(example_url), example_id);
+  EXPECT_EQ(registrar.GetAppScope(example_id),
+            GURL("https://example.com/my-app/"));
+  EXPECT_TRUE(registrar.GetAppUserDisplayMode(example_id).has_value());
+  EXPECT_EQ(registrar.CountUserInstalledApps(), 1);
+
+  if (GetParam() == SystemWebAppsInLacrosParam::kEnabled) {
+    EXPECT_EQ(CountApps(registrar.GetApps()), 2);
+
+    EXPECT_EQ(registrar.FindAppWithUrlInScope(swa_url), swa_id);
+    EXPECT_EQ(registrar.GetAppScope(swa_id), GURL("chrome://swa/"));
+    EXPECT_TRUE(registrar.GetAppUserDisplayMode(swa_id).has_value());
+  } else {
+    // System web apps are managed by Ash, excluded in Lacros
+    // WebAppRegistrar.
+    EXPECT_EQ(CountApps(registrar.GetApps()), 1);
+
+    EXPECT_FALSE(registrar.FindAppWithUrlInScope(swa_url).has_value());
+    EXPECT_TRUE(registrar.GetAppScope(swa_id).is_empty());
+    EXPECT_FALSE(registrar.GetAppUserDisplayMode(swa_id).has_value());
+  }
+
+  EXPECT_FALSE(registrar.FindAppWithUrlInScope(uninstalling_url).has_value());
+  EXPECT_EQ(registrar.GetAppScope(uninstalling_id),
+            GURL("https://example.com/uninstalling/"));
+  EXPECT_TRUE(registrar.GetAppUserDisplayMode(uninstalling_id).has_value());
+  EXPECT_FALSE(base::Contains(registrar.GetAppIds(), uninstalling_id));
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    WebAppRegistrarLacrosTest,
+    ::testing::Values(SystemWebAppsInLacrosParam::kDisabled,
+                      SystemWebAppsInLacrosParam::kEnabled));
+#endif
 
 }  // namespace web_app

@@ -35,8 +35,9 @@ namespace tables {
 
 PERFETTO_TP_TABLE(PERFETTO_TP_RAW_TABLE_DEF);
 
+// @name args
 #define PERFETTO_TP_ARG_TABLE_DEF(NAME, PARENT, C) \
-  NAME(ArgTable, "args")                           \
+  NAME(ArgTable, "internal_args")                  \
   PERFETTO_TP_ROOT_TABLE(PARENT, C)                \
   C(uint32_t, arg_set_id, Column::Flag::kSorted)   \
   C(StringPool::Id, flat_key)                      \
@@ -87,7 +88,7 @@ PERFETTO_TP_TABLE(PERFETTO_TP_METADATA_TABLE_DEF);
   NAME(ThreadTable, "internal_thread")                \
   PERFETTO_TP_ROOT_TABLE(PARENT, C)                   \
   C(uint32_t, tid)                                    \
-  C(StringPool::Id, name)                             \
+  C(base::Optional<StringPool::Id>, name)             \
   C(base::Optional<int64_t>, start_ts)                \
   C(base::Optional<int64_t>, end_ts)                  \
   C(base::Optional<uint32_t>, upid)                   \
@@ -128,7 +129,7 @@ PERFETTO_TP_TABLE(PERFETTO_TP_THREAD_TABLE_DEF);
   NAME(ProcessTable, "internal_process")               \
   PERFETTO_TP_ROOT_TABLE(PARENT, C)                    \
   C(uint32_t, pid)                                     \
-  C(StringPool::Id, name)                              \
+  C(base::Optional<StringPool::Id>, name)              \
   C(base::Optional<int64_t>, start_ts)                 \
   C(base::Optional<int64_t>, end_ts)                   \
   C(base::Optional<uint32_t>, parent_upid)             \
@@ -139,10 +140,17 @@ PERFETTO_TP_TABLE(PERFETTO_TP_THREAD_TABLE_DEF);
 
 PERFETTO_TP_TABLE(PERFETTO_TP_PROCESS_TABLE_DEF);
 
+// Contains information of processes seen during the trace
+//
+// @name cpu
+// @param id                     id of this CPU
+// @param cluster_id             the cluster id is shared by CPUs in
+//                               the same cluster
+// @param processor              a string describing this core
 #define PERFETTO_TP_CPU_TABLE_DEF(NAME, PARENT, C) \
   NAME(CpuTable, "cpu")                            \
   PERFETTO_TP_ROOT_TABLE(PARENT, C)                \
-  C(uint32_t, time_in_state_cpu_id)                \
+  C(uint32_t, cluster_id)                          \
   C(StringPool::Id, processor)
 
 PERFETTO_TP_TABLE(PERFETTO_TP_CPU_TABLE_DEF);

@@ -8,23 +8,24 @@
 #include "include/core/SkTypes.h"
 #include "tests/Test.h"
 
+#include "include/core/SkColorSpace.h"
 #include "include/gpu/GrDirectContext.h"
 #include "include/gpu/GrRecordingContext.h"
-#include "src/gpu/GrColor.h"
-#include "src/gpu/GrDirectContextPriv.h"
-#include "src/gpu/GrGeometryProcessor.h"
-#include "src/gpu/GrImageInfo.h"
-#include "src/gpu/GrMemoryPool.h"
-#include "src/gpu/GrOpFlushState.h"
-#include "src/gpu/GrOpsRenderPass.h"
-#include "src/gpu/GrProgramInfo.h"
-#include "src/gpu/GrRecordingContextPriv.h"
-#include "src/gpu/GrResourceProvider.h"
-#include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
-#include "src/gpu/glsl/GrGLSLVarying.h"
-#include "src/gpu/glsl/GrGLSLVertexGeoBuilder.h"
-#include "src/gpu/ops/GrDrawOp.h"
-#include "src/gpu/v1/SurfaceDrawContext_v1.h"
+#include "src/gpu/ganesh/GrColor.h"
+#include "src/gpu/ganesh/GrDirectContextPriv.h"
+#include "src/gpu/ganesh/GrGeometryProcessor.h"
+#include "src/gpu/ganesh/GrImageInfo.h"
+#include "src/gpu/ganesh/GrMemoryPool.h"
+#include "src/gpu/ganesh/GrOpFlushState.h"
+#include "src/gpu/ganesh/GrOpsRenderPass.h"
+#include "src/gpu/ganesh/GrProgramInfo.h"
+#include "src/gpu/ganesh/GrRecordingContextPriv.h"
+#include "src/gpu/ganesh/GrResourceProvider.h"
+#include "src/gpu/ganesh/glsl/GrGLSLFragmentShaderBuilder.h"
+#include "src/gpu/ganesh/glsl/GrGLSLVarying.h"
+#include "src/gpu/ganesh/glsl/GrGLSLVertexGeoBuilder.h"
+#include "src/gpu/ganesh/ops/GrDrawOp.h"
+#include "src/gpu/ganesh/v1/SurfaceDrawContext_v1.h"
 
 /**
  * This is a GPU-backend specific test for dynamic pipeline state. It draws boxes using dynamic
@@ -66,21 +67,21 @@ public:
 
     const char* name() const override { return "GrPipelineDynamicStateTest Processor"; }
 
-    void addToKey(const GrShaderCaps&, GrProcessorKeyBuilder*) const final {}
+    void addToKey(const GrShaderCaps&, skgpu::KeyBuilder*) const final {}
 
     std::unique_ptr<ProgramImpl> makeProgramImpl(const GrShaderCaps&) const final;
 
 private:
     PipelineDynamicStateTestProcessor() : INHERITED(kGrPipelineDynamicStateTestProcessor_ClassID) {
-        this->setVertexAttributes(kAttributes, SK_ARRAY_COUNT(kAttributes));
+        this->setVertexAttributesWithImplicitOffsets(kAttributes, SK_ARRAY_COUNT(kAttributes));
     }
 
     const Attribute& inVertex() const { return kAttributes[0]; }
     const Attribute& inColor() const { return kAttributes[1]; }
 
     inline static constexpr Attribute kAttributes[] = {
-            {"vertex", kFloat2_GrVertexAttribType, kHalf2_GrSLType},
-            {"color", kUByte4_norm_GrVertexAttribType, kHalf4_GrSLType},
+            {"vertex", kFloat2_GrVertexAttribType, SkSLType::kHalf2},
+            {"color", kUByte4_norm_GrVertexAttribType, SkSLType::kHalf4},
     };
 
     friend class GLSLPipelineDynamicStateTestProcessor;
@@ -108,7 +109,7 @@ PipelineDynamicStateTestProcessor::makeProgramImpl(const GrShaderCaps&) const {
             varyingHandler->addPassThroughAttribute(mp.inColor().asShaderVar(), args.fOutputColor);
 
             v->codeAppendf("float2 vertex = %s;", mp.inVertex().name());
-            gpArgs->fPositionVar.set(kFloat2_GrSLType, "vertex");
+            gpArgs->fPositionVar.set(SkSLType::kFloat2, "vertex");
             f->codeAppendf("const half4 %s = half4(1);", args.fOutputCoverage);
         }
     };
@@ -166,7 +167,7 @@ private:
                                   &pipeline,
                                   &GrUserStencilSettings::kUnused,
                                   geomProc,
-                                  GrPrimitiveType::kTriangleStrip, 0,
+                                  GrPrimitiveType::kTriangleStrip,
                                   flushState->renderPassBarriers(),
                                   flushState->colorLoadOp());
 
@@ -221,8 +222,10 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(GrPipelineDynamicStateTest, reporter, ctxInfo
         {d, d, kMeshColors[3]}
     };
 
-    sk_sp<const GrBuffer> vbuff(rp->createBuffer(sizeof(vdata), GrGpuBufferType::kVertex,
-                                                 kDynamic_GrAccessPattern, vdata));
+    sk_sp<const GrBuffer> vbuff(rp->createBuffer(vdata,
+                                                 sizeof(vdata),
+                                                 GrGpuBufferType::kVertex,
+                                                 kDynamic_GrAccessPattern));
     if (!vbuff) {
         ERRORF(reporter, "vbuff is null.");
         return;

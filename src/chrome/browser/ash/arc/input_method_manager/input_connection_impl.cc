@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "third_party/abseil-cpp/absl/utility/utility.h"
 #include "ui/base/ime/ash/ime_bridge.h"
 #include "ui/base/ime/ash/ime_keymap.h"
 #include "ui/events/base_event_utils.h"
@@ -104,7 +105,7 @@ mojom::TextInputStatePtr InputConnectionImpl::GetTextInputState(
   std::u16string text;
 
   if (!client) {
-    return mojom::TextInputStatePtr(base::in_place, 0, text, text_range,
+    return mojom::TextInputStatePtr(absl::in_place, 0, text, text_range,
                                     selection_range, ui::TEXT_INPUT_TYPE_NONE,
                                     false, 0, is_input_state_update_requested,
                                     composition_text_range);
@@ -117,7 +118,7 @@ mojom::TextInputStatePtr InputConnectionImpl::GetTextInputState(
   client->GetTextFromRange(text_range, &text);
 
   return mojom::TextInputStatePtr(
-      base::in_place, selection_range.start(), text, text_range,
+      absl::in_place, selection_range.start(), text, text_range,
       selection_range, client->GetTextInputType(), client->ShouldDoLearning(),
       client->GetTextInputFlags(), is_input_state_update_requested,
       composition_text_range);
@@ -231,7 +232,7 @@ void InputConnectionImpl::SetComposingText(
   if (!ime_engine_->SetComposition(
           input_context_id_, base::UTF16ToUTF8(text).c_str(), selection_start,
           selection_end, new_cursor_pos,
-          std::vector<ash::input_method::InputMethodEngineBase::SegmentInfo>(),
+          std::vector<ash::input_method::InputMethodEngine::SegmentInfo>(),
           &error)) {
     LOG(ERROR) << "SetComposingText failed: pos=" << new_cursor_pos
                << ", error=\"" << error << "\"";
@@ -287,16 +288,15 @@ void InputConnectionImpl::SetCompositionRange(
 
   const int before = selection_range.start() - new_composition_range.start();
   const int after = new_composition_range.end() - selection_range.end();
-  ash::input_method::InputMethodEngineBase::SegmentInfo segment_info;
+  ash::input_method::InputMethodEngine::SegmentInfo segment_info;
   segment_info.start = 0;
   segment_info.end = new_composition_range.length();
   segment_info.style =
-      ash::input_method::InputMethodEngineBase::SEGMENT_STYLE_UNDERLINE;
+      ash::input_method::InputMethodEngine::SEGMENT_STYLE_UNDERLINE;
 
   std::string error;
-  if (!ime_engine_
-           ->ash::input_method::InputMethodEngineBase::SetCompositionRange(
-               input_context_id_, before, after, {segment_info}, &error)) {
+  if (!ime_engine_->ash::input_method::InputMethodEngine::SetCompositionRange(
+          input_context_id_, before, after, {segment_info}, &error)) {
     LOG(ERROR) << "SetCompositionRange failed: range="
                << new_composition_range.ToString() << ", error=\"" << error
                << "\"";

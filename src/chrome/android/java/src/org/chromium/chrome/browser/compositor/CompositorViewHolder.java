@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.compositor;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -33,7 +32,6 @@ import androidx.core.view.accessibility.AccessibilityEventCompat;
 import androidx.core.view.accessibility.AccessibilityNodeInfoCompat;
 import androidx.customview.widget.ExploreByTouchHelper;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.ObserverList;
 import org.chromium.base.SysUtils;
@@ -49,7 +47,6 @@ import org.chromium.chrome.browser.compositor.layouts.LayoutManagerImpl;
 import org.chromium.chrome.browser.compositor.layouts.LayoutRenderHost;
 import org.chromium.chrome.browser.compositor.layouts.content.ContentOffsetProvider;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
-import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.fullscreen.BrowserControlsManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.layouts.components.VirtualView;
@@ -125,10 +122,10 @@ public class CompositorViewHolder extends FrameLayout
 
     private EventOffsetHandler mEventOffsetHandler;
     private boolean mIsKeyboardShowing;
+    private boolean mNativeInitialized;
 
     private final Invalidator mInvalidator = new Invalidator();
     private LayoutManagerImpl mLayoutManager;
-    private LayerTitleCache mLayerTitleCache;
     private CompositorView mCompositorView;
 
     private boolean mContentOverlayVisiblity = true;
@@ -554,7 +551,6 @@ public class CompositorViewHolder extends FrameLayout
             mAutofillUiBottomInsetSupplier.removeObserver(mBottomInsetObserver);
         }
 
-        if (mLayerTitleCache != null) mLayerTitleCache.shutDown();
         mCompositorView.shutDown();
         if (mLayoutManager != null) mLayoutManager.destroy();
         if (mInsetObserverView != null) {
@@ -572,14 +568,8 @@ public class CompositorViewHolder extends FrameLayout
      */
     public void onNativeLibraryReady(
             WindowAndroid windowAndroid, TabContentManager tabContentManager) {
-        assert mLayerTitleCache == null : "Should be called once";
-
         mCompositorView.initNativeCompositor(
                 SysUtils.isLowEndDevice(), windowAndroid, tabContentManager);
-
-        if (DeviceClassManager.enableLayerDecorationCache()) {
-            mLayerTitleCache = new LayerTitleCache(getContext(), getResourceManager());
-        }
 
         if (mControlContainer != null) {
             mCompositorView.getResourceManager().getDynamicResourceLoader().registerResource(
@@ -1250,13 +1240,6 @@ public class CompositorViewHolder extends FrameLayout
     }
 
     @Override
-    public int getBrowserControlsBackgroundColor(Resources res) {
-        return mTabVisible == null
-                ? ApiCompatibilityUtils.getColor(res, R.color.toolbar_background_primary)
-                : mTopUiThemeColorProvider.getSceneLayerBackground(mTabVisible);
-    }
-
-    @Override
     public int getTopControlsHeightPixels() {
         return mBrowserControlsManager != null ? mBrowserControlsManager.getTopControlsHeight() : 0;
     }
@@ -1367,9 +1350,8 @@ public class CompositorViewHolder extends FrameLayout
             }
         });
 
-        mLayerTitleCache.setTabModelSelector(mTabModelSelector);
-
         onContentChanged();
+        mNativeInitialized = true;
     }
 
     private void updateContentOverlayVisibility(boolean show) {
@@ -1518,16 +1500,6 @@ public class CompositorViewHolder extends FrameLayout
     }
 
     @Override
-    public TitleCache getTitleCache() {
-        return mLayerTitleCache;
-    }
-
-    /** @return A cache responsible for title textures. */
-    public LayerTitleCache getLayerTitleCache() {
-        return mLayerTitleCache;
-    }
-
-    @Override
     public void deferInvalidate(Runnable clientInvalidator) {
         if (mPendingFrameCount <= 0) {
             clientInvalidator.run();
@@ -1579,7 +1551,37 @@ public class CompositorViewHolder extends FrameLayout
         // that may have been added elsewhere.
         assert mLayoutManager != null;
         if (enabled && (mNodeProvider == null)) {
-            mAccessibilityView = new View(getContext());
+            mAccessibilityView = new View(getContext()) {
+                boolean mIsCheckingForVirtualViews;
+                List<VirtualView> mVirtualViews = new ArrayList<>();
+
+                /**
+                 * Checks if there are any a11y focusable VirtualViews. If there are, set the view
+                 * to be View.IMPORTANT_FOR_ACCESSIBILITY_AUTO (and therefore return true). If there
+                 * are not, set the view to be View.IMPORTANT_FOR_ACCESSIBILITY_NO (and therefore
+                 * return false).
+                 *
+                 * @return Whether or not the view should be a11y focusable.
+                 */
+                @Override
+                public boolean isImportantForAccessibility() {
+                    if (mNativeInitialized && !mIsCheckingForVirtualViews) {
+                        mIsCheckingForVirtualViews = true;
+                        mVirtualViews.clear();
+                        mLayoutManager.getVirtualViews(mVirtualViews);
+                        int importantForAccessibility = mVirtualViews.size() == 0
+                                ? View.IMPORTANT_FOR_ACCESSIBILITY_NO
+                                : View.IMPORTANT_FOR_ACCESSIBILITY_AUTO;
+                        if (getImportantForAccessibility() != importantForAccessibility) {
+                            setImportantForAccessibility(importantForAccessibility);
+                            sendAccessibilityEvent(AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
+                        }
+                        mIsCheckingForVirtualViews = false;
+                    }
+
+                    return super.isImportantForAccessibility();
+                }
+            };
             addView(mAccessibilityView);
             mNodeProvider = new CompositorAccessibilityProvider(mAccessibilityView);
             ViewCompat.setAccessibilityDelegate(mAccessibilityView, mNodeProvider);

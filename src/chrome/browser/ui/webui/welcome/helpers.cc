@@ -16,6 +16,7 @@
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "build/branding_buildflags.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/policy/browser_signin_policy_handler.h"
@@ -68,8 +69,9 @@ const base::FeatureParam<bool> kForceEnabledShowGoogleApp = {
 
 bool IsPolicySetAndFalse(const policy::PolicyMap& policies,
                          const std::string& policy_name) {
-  const base::Value* policy = policies.GetValue(policy_name);
-  return policy && policy->is_bool() && !policy->GetBool();
+  const base::Value* policy =
+      policies.GetValue(policy_name, base::Value::Type::BOOLEAN);
+  return policy && !policy->GetBool();
 }
 
 bool CanShowGoogleAppModule(const policy::PolicyMap& policies) {
@@ -85,7 +87,8 @@ bool CanShowGoogleAppModule(const policy::PolicyMap& policies) {
 bool CanShowNTPBackgroundModule(const policy::PolicyMap& policies,
                                 Profile* profile) {
   // We can't set the background if the NTP is something other than Google.
-  return !policies.GetValue(policy::key::kNewTabPageLocation) &&
+  return !policies.GetValue(policy::key::kNewTabPageLocation,
+                            base::Value::Type::STRING) &&
          search::DefaultSearchProviderIsGoogle(profile);
 }
 
@@ -97,13 +100,12 @@ bool CanShowSetDefaultModule(const policy::PolicyMap& policies) {
 }
 
 bool CanShowSigninModule(const policy::PolicyMap& policies) {
-  const base::Value* browser_signin_value =
-      policies.GetValue(policy::key::kBrowserSignin);
+  const base::Value* browser_signin_value = policies.GetValue(
+      policy::key::kBrowserSignin, base::Value::Type::INTEGER);
 
   if (!browser_signin_value)
     return true;
 
-  DCHECK(browser_signin_value->is_int());
   return static_cast<policy::BrowserSigninMode>(
              browser_signin_value->GetInt()) !=
          policy::BrowserSigninMode::kDisabled;
@@ -114,7 +116,7 @@ static bool CanExperimentWithVariations(Profile* profile) {
   return search::DefaultSearchProviderIsGoogle(profile);
 }
 
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING) && defined(OS_WIN)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING) && BUILDFLAG(IS_WIN)
 // These feature flags are used to tie our experiment to specific studies.
 // go/navi-app-variation for details.
 // TODO(hcarmona): find a solution that scales better.
@@ -133,6 +135,7 @@ const base::Feature kNaviShortcutVariationEnabled = {
 //   - The same for all experiments in study
 //   - Incremented with each new version
 //   - Not reused
+// TODO(crbug.com/1330298): Remove once study ends. Targeting M110.
 static std::string GetOnboardingGroup(Profile* profile) {
   if (!CanExperimentWithVariations(profile)) {
     // If we cannot run any variations, we bucket the users into a separate
@@ -143,13 +146,13 @@ static std::string GetOnboardingGroup(Profile* profile) {
   // We need to use |base::GetFieldTrialParamValue| instead of
   // |base::FeatureParam| because our control group needs a custom value for
   // this param.
-  // "NaviOnboarding" match study name in configs.
-  return base::GetFieldTrialParamValue("NaviOnboarding", "onboarding-group");
+  // "NaviOnboarding2" match study name in configs.
+  return base::GetFieldTrialParamValue("NaviOnboarding2", "onboarding-group");
 }
-#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING) && defined(OS_WIN)
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING) && BUILDFLAG(IS_WIN)
 
 void JoinOnboardingGroup(Profile* profile) {
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING) && defined(OS_WIN)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING) && BUILDFLAG(IS_WIN)
   PrefService* prefs = profile->GetPrefs();
 
   std::string group;
@@ -168,7 +171,8 @@ void JoinOnboardingGroup(Profile* profile) {
 
   // User will be tied to their original group, even after experiment ends.
   ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
-      "NaviOnboardingSynthetic", group);
+      "NaviOnboarding2Synthetic", group,
+      variations::SyntheticTrialAnnotationMode::kCurrentLog);
 
   // Check for feature based on group.
   // TODO(hcarmona): find a solution that scales better.
@@ -180,7 +184,7 @@ void JoinOnboardingGroup(Profile* profile) {
     base::FeatureList::IsEnabled(kNaviNTPVariationEnabled);
   else if (group.compare("ShortcutVariationSynthetic-008") == 0)
     base::FeatureList::IsEnabled(kNaviShortcutVariationEnabled);
-#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING) && defined(OS_WIN)
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING) && BUILDFLAG(IS_WIN)
 }
 
 bool IsEnabled(Profile* profile) {
@@ -268,10 +272,10 @@ base::DictionaryValue GetModules(Profile* profile) {
   std::vector<std::string> available_modules = GetAvailableModules(profile);
 
   base::DictionaryValue modules;
-  modules.SetString("new-user",
-                    FilterModules(new_user_modules, available_modules));
-  modules.SetString("returning-user",
-                    FilterModules(returning_user_modules, available_modules));
+  modules.SetStringKey("new-user",
+                       FilterModules(new_user_modules, available_modules));
+  modules.SetStringKey("returning-user", FilterModules(returning_user_modules,
+                                                       available_modules));
   return modules;
 }
 

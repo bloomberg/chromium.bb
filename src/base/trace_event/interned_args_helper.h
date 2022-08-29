@@ -38,7 +38,7 @@ struct BASE_EXPORT TraceSourceLocation {
   explicit TraceSourceLocation(const base::Location& location)
       : function_name(location.function_name()),
         file_name(location.file_name()),
-        line_number(location.line_number()) {}
+        line_number(static_cast<size_t>(location.line_number())) {}
 
   bool operator==(const TraceSourceLocation& other) const {
     return file_name == other.file_name &&
@@ -76,6 +76,16 @@ struct BASE_EXPORT InternedSourceLocation
   static void Add(perfetto::protos::pbzero::InternedData* interned_data,
                   size_t iid,
                   const TraceSourceLocation& location);
+  using perfetto::TrackEventInternedDataIndex<
+      InternedSourceLocation,
+      perfetto::protos::pbzero::InternedData::kSourceLocationsFieldNumber,
+      TraceSourceLocation>::Get;
+  static size_t Get(perfetto::EventContext* ctx, const Location& location) {
+    return perfetto::TrackEventInternedDataIndex<
+        InternedSourceLocation,
+        perfetto::protos::pbzero::InternedData::kSourceLocationsFieldNumber,
+        TraceSourceLocation>::Get(ctx, TraceSourceLocation(location));
+  }
 };
 
 struct BASE_EXPORT InternedLogMessage

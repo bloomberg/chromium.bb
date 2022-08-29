@@ -7,7 +7,7 @@
 // clang-format on
 
 /**
- * @implements {chromeos.multideviceSetup.mojom.MultiDeviceSetupInterface}
+ * @implements {ash.multideviceSetup.mojom.MultiDeviceSetupInterface}
  */
 /* #export */ class FakeMojoService {
   constructor() {
@@ -73,7 +73,7 @@
   /** @override */
   setHostDevice(hostInstanceIdOrLegacyDeviceId) {
     if (this.shouldSetHostSucceed) {
-      console.log(
+      console.info(
           'setHostDevice(' + hostInstanceIdOrLegacyDeviceId +
           ') called; simulating ' +
           'success.');

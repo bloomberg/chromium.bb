@@ -15,8 +15,10 @@
 #include "net/http/http_network_session.h"
 #include "net/proxy_resolution/configured_proxy_resolution_service.h"
 #include "net/socket/socket_test_util.h"
-#include "net/third_party/quiche/src/spdy/core/spdy_protocol.h"
+#include "net/third_party/quiche/src/quiche/spdy/core/spdy_protocol.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_builder.h"
 #include "net/websockets/websocket_basic_handshake_stream.h"
 #include "url/origin.h"
 
@@ -61,9 +63,9 @@ std::string WebSocketStandardRequest(
     const std::string& path,
     const std::string& host,
     const url::Origin& origin,
-    const std::string& send_additional_request_headers,
-    const std::string& extra_headers) {
-  return WebSocketStandardRequestWithCookies(path, host, origin, std::string(),
+    const WebSocketExtraHeaders& send_additional_request_headers,
+    const WebSocketExtraHeaders& extra_headers) {
+  return WebSocketStandardRequestWithCookies(path, host, origin, /*cookies=*/{},
                                              send_additional_request_headers,
                                              extra_headers);
 }
@@ -72,9 +74,9 @@ std::string WebSocketStandardRequestWithCookies(
     const std::string& path,
     const std::string& host,
     const url::Origin& origin,
-    const std::string& cookies,
-    const std::string& send_additional_request_headers,
-    const std::string& extra_headers) {
+    const WebSocketExtraHeaders& cookies,
+    const WebSocketExtraHeaders& send_additional_request_headers,
+    const WebSocketExtraHeaders& extra_headers) {
   // Unrelated changes in net/http may change the order and default-values of
   // HTTP headers, causing WebSocket tests to fail. It is safe to update this
   // in that case.
@@ -86,7 +88,8 @@ std::string WebSocketStandardRequestWithCookies(
   headers.SetHeader("Connection", "Upgrade");
   headers.SetHeader("Pragma", "no-cache");
   headers.SetHeader("Cache-Control", "no-cache");
-  headers.AddHeadersFromString(send_additional_request_headers);
+  for (const auto& [key, value] : send_additional_request_headers)
+    headers.SetHeader(key, value);
   headers.SetHeader("Upgrade", "websocket");
   headers.SetHeader("Origin", origin.Serialize());
   headers.SetHeader("Sec-WebSocket-Version", "13");
@@ -94,11 +97,13 @@ std::string WebSocketStandardRequestWithCookies(
     headers.SetHeader("User-Agent", "");
   headers.SetHeader("Accept-Encoding", "gzip, deflate");
   headers.SetHeader("Accept-Language", "en-us,fr");
-  headers.AddHeadersFromString(cookies);
+  for (const auto& [key, value] : cookies)
+    headers.SetHeader(key, value);
   headers.SetHeader("Sec-WebSocket-Key", "dGhlIHNhbXBsZSBub25jZQ==");
   headers.SetHeader("Sec-WebSocket-Extensions",
                     "permessage-deflate; client_max_window_bits");
-  headers.AddHeadersFromString(extra_headers);
+  for (const auto& [key, value] : extra_headers)
+    headers.SetHeader(key, value);
 
   request_headers << headers.ToString();
   return request_headers.str();
@@ -226,14 +231,14 @@ void WebSocketMockClientSocketFactoryMaker::AddSSLSocketDataProvider(
 }
 
 WebSocketTestURLRequestContextHost::WebSocketTestURLRequestContextHost()
-    : url_request_context_(true), url_request_context_initialized_(false) {
-  url_request_context_.set_client_socket_factory(maker_.factory());
-  auto params = std::make_unique<HttpNetworkSessionParams>();
-  params->enable_spdy_ping_based_connection_checking = false;
-  params->enable_quic = false;
-  params->enable_websocket_over_http2 = true;
-  params->disable_idle_sockets_close_on_memory_pressure = false;
-  url_request_context_.set_http_network_session_params(std::move(params));
+    : url_request_context_builder_(CreateTestURLRequestContextBuilder()) {
+  url_request_context_builder_->set_client_socket_factory_for_testing(
+      maker_.factory());
+  HttpNetworkSessionParams params;
+  params.enable_spdy_ping_based_connection_checking = false;
+  params.enable_quic = false;
+  params.disable_idle_sockets_close_on_memory_pressure = false;
+  url_request_context_builder_->set_http_network_session_params(params);
 }
 
 WebSocketTestURLRequestContextHost::~WebSocketTestURLRequestContextHost() =
@@ -251,11 +256,11 @@ void WebSocketTestURLRequestContextHost::AddSSLSocketDataProvider(
 
 void WebSocketTestURLRequestContextHost::SetProxyConfig(
     const std::string& proxy_rules) {
-  DCHECK(!url_request_context_initialized_);
-  proxy_resolution_service_ = ConfiguredProxyResolutionService::CreateFixed(
+  DCHECK(!url_request_context_);
+  auto proxy_resolution_service = ConfiguredProxyResolutionService::CreateFixed(
       proxy_rules, TRAFFIC_ANNOTATION_FOR_TESTS);
-  url_request_context_.set_proxy_resolution_service(
-      proxy_resolution_service_.get());
+  url_request_context_builder_->set_proxy_resolution_service(
+      std::move(proxy_resolution_service));
 }
 
 int DummyConnectDelegate::OnAuthRequired(
@@ -267,15 +272,14 @@ int DummyConnectDelegate::OnAuthRequired(
   return OK;
 }
 
-TestURLRequestContext*
-WebSocketTestURLRequestContextHost::GetURLRequestContext() {
-  if (!url_request_context_initialized_) {
-    url_request_context_.Init();
-    // A Network Delegate is required to make the URLRequest::Delegate work.
-    url_request_context_.set_network_delegate(&network_delegate_);
-    url_request_context_initialized_ = true;
+URLRequestContext* WebSocketTestURLRequestContextHost::GetURLRequestContext() {
+  if (!url_request_context_) {
+    url_request_context_builder_->set_network_delegate(
+        std::make_unique<TestNetworkDelegate>());
+    url_request_context_ = url_request_context_builder_->Build();
+    url_request_context_builder_ = nullptr;
   }
-  return &url_request_context_;
+  return url_request_context_.get();
 }
 
 void TestWebSocketStreamRequestAPI::OnBasicHandshakeStreamCreated(

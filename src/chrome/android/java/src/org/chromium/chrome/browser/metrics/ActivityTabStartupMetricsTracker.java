@@ -16,9 +16,12 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.components.embedder_support.util.UrlUtilities;
+import org.chromium.components.safe_browsing.SafeBrowsingApiBridge;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.url.GURL;
+
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Tracks the first navigation and first contentful paint events for a tab within an activity during
@@ -100,17 +103,10 @@ public class ActivityTabStartupMetricsTracker {
 
         @Override
         public void onFirstContentfulPaint(WebContents webContents, long navigationId,
-                long navigationStartTick, long firstContentfulPaintMs) {
+                long navigationStartMicros, long firstContentfulPaintMs) {
             if (navigationId != mNavigationId || !mShouldRecordHistograms) return;
 
-            recordFirstContentfulPaint(navigationStartTick / 1000 + firstContentfulPaintMs);
-        }
-
-        void resetMetricsRecordingStateForInitialNavigation() {
-            // NOTE: |mInvokedOnFirstNavigationStart| is intentionally not reset to avoid duplicate
-            // observer notifications.
-            mNavigationId = NO_NAVIGATION_ID;
-            mShouldRecordHistograms = false;
+            recordFirstContentfulPaint(navigationStartMicros / 1000 + firstContentfulPaintMs);
         }
     };
 
@@ -133,10 +129,22 @@ public class ActivityTabStartupMetricsTracker {
     // foreground. Used for investigating crbug.com/1273097.
     private boolean mRegisteredFirstPaintPreForeground;
 
+    // The time it took for SafeBrowsing to respond for the first time. The SB request is on the
+    // critical path to navigation commit, and the response may be severely delayed by GmsCore
+    // (see http://crbug.com/1296097). The value is recorded only when the navigation commits
+    // successfully. Updating the value atomically from another thread to provide a simpler
+    // guarantee that the value is not lost after posting a few tasks.
+    private final AtomicLong mFirstSafeBrowsingResponseTimeMicros = new AtomicLong();
+
     public ActivityTabStartupMetricsTracker(
             ObservableSupplier<TabModelSelector> tabModelSelectorSupplier) {
         mActivityStartTimeMs = SystemClock.uptimeMillis();
         tabModelSelectorSupplier.addObserver((selector) -> registerObservers(selector));
+        SafeBrowsingApiBridge.setOneTimeUrlCheckObserver(this::updateSafeBrowsingCheckTime);
+    }
+
+    private void updateSafeBrowsingCheckTime(long urlCheckTimeDeltaMicros) {
+        mFirstSafeBrowsingResponseTimeMicros.compareAndSet(0, urlCheckTimeDeltaMicros);
     }
 
     // Note: In addition to returning false when startup metrics are not being tracked at all, this
@@ -173,7 +181,6 @@ public class ActivityTabStartupMetricsTracker {
                         boolean isTrackedPage = navigation.hasCommitted()
                                 && navigation.isInPrimaryMainFrame() && !navigation.isErrorPage()
                                 && !navigation.isSameDocument()
-                                && !navigation.isFragmentNavigation()
                                 && UrlUtilities.isHttpOrHttps(navigation.getUrl());
                         registerFinishNavigation(isTrackedPage);
                     }
@@ -232,21 +239,6 @@ public class ActivityTabStartupMetricsTracker {
                 }
             }
         });
-    }
-
-    /**
-     * Invoked when a tab preloaded at startup is dropped rather than taken, meaning that a new tab
-     * will need to be created to do the initial navigation. Resets state related to observation of
-     * the initial navigation to ensure that loading startup metrics are properly recorded in this
-     * case. Note that it is not necessary to reset the state of |mTabModelSelectorTabObserver| in
-     * this case, as that observer tracks state starting only from the addition of a tab to the tab
-     * model, which by definition has not yet occurred at this point.
-     */
-    public void onStartupTabPreloadDropped() {
-        // Note that observers are not created in all contexts (e.g., CCT).
-        if (mPageLoadMetricsObserver == null) return;
-
-        mPageLoadMetricsObserver.resetMetricsRecordingStateForInitialNavigation();
     }
 
     /**
@@ -311,6 +303,7 @@ public class ActivityTabStartupMetricsTracker {
                     mFirstCommitTimeMs);
             if (mHistogramSuffix.equals(UMA_HISTOGRAM_TABBED_SUFFIX)) {
                 recordFirstVisibleContent(mFirstCommitTimeMs);
+                recordFirstSafeBrowsingResponseTime();
             }
             RecordHistogram.recordBooleanHistogram(
                     FIRST_COMMIT_OCCURRED_PRE_FOREGROUND_HISTOGRAM, false);
@@ -326,6 +319,13 @@ public class ActivityTabStartupMetricsTracker {
         }
 
         mShouldTrackStartupMetrics = false;
+    }
+
+    private void recordFirstSafeBrowsingResponseTime() {
+        long deltaMicros = mFirstSafeBrowsingResponseTimeMicros.getAndSet(0);
+        if (deltaMicros == 0) return;
+        RecordHistogram.recordMediumTimesHistogram(
+                "Startup.Android.Cold.FirstSafeBrowsingResponseTime.Tabbed", deltaMicros / 1000);
     }
 
     /**

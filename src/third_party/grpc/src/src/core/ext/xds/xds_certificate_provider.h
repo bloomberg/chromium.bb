@@ -22,6 +22,7 @@
 #include <grpc/support/port_platform.h>
 
 #include "src/core/ext/xds/xds_api.h"
+#include "src/core/lib/matchers/matchers.h"
 #include "src/core/lib/security/credentials/tls/grpc_tls_certificate_provider.h"
 
 #define GRPC_ARG_XDS_CERTIFICATE_PROVIDER \
@@ -37,6 +38,8 @@ class XdsCertificateProvider : public grpc_tls_certificate_provider {
   RefCountedPtr<grpc_tls_certificate_distributor> distributor() const override {
     return distributor_;
   }
+
+  const char* type() const override;
 
   bool ProvidesRootCerts(const std::string& cert_name);
   void UpdateRootCertNameAndDistributor(
@@ -122,6 +125,12 @@ class XdsCertificateProvider : public grpc_tls_certificate_provider {
         identity_cert_watcher_ = nullptr;
     bool require_client_certificate_ = false;
   };
+
+  int CompareImpl(const grpc_tls_certificate_provider* other) const override {
+    // TODO(yashykt): Maybe do something better here.
+    return QsortCompare(static_cast<const grpc_tls_certificate_provider*>(this),
+                        other);
+  }
 
   void WatchStatusCallback(std::string cert_name, bool root_being_watched,
                            bool identity_being_watched);

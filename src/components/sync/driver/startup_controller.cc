@@ -9,11 +9,13 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "components/sync/driver/sync_driver_switches.h"
+#include "components/sync/base/command_line_switches.h"
+#include "components/sync/base/features.h"
 
 namespace syncer {
 
@@ -25,11 +27,11 @@ constexpr base::TimeDelta kDefaultDeferredInitDelay = base::Seconds(10);
 
 base::TimeDelta GetDeferredInitDelay() {
   const base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
-  if (cmdline->HasSwitch(switches::kSyncDeferredStartupTimeoutSeconds)) {
+  if (cmdline->HasSwitch(kSyncDeferredStartupTimeoutSeconds)) {
     int timeout = 0;
-    if (base::StringToInt(cmdline->GetSwitchValueASCII(
-                              switches::kSyncDeferredStartupTimeoutSeconds),
-                          &timeout)) {
+    if (base::StringToInt(
+            cmdline->GetSwitchValueASCII(kSyncDeferredStartupTimeoutSeconds),
+            &timeout)) {
       DCHECK_GE(timeout, 0);
       DVLOG(2) << "Sync StartupController overriding startup timeout to "
                << timeout << " seconds.";
@@ -37,11 +39,6 @@ base::TimeDelta GetDeferredInitDelay() {
     }
   }
   return kDefaultDeferredInitDelay;
-}
-
-bool IsDeferredStartupEnabled() {
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kSyncDisableDeferredStartup);
 }
 
 }  // namespace
@@ -87,7 +84,7 @@ void StartupController::StartUp(StartUpDeferredOption deferred_option) {
     start_up_time_ = base::Time::Now();
   }
 
-  if (deferred_option == STARTUP_DEFERRED && IsDeferredStartupEnabled() &&
+  if (deferred_option == STARTUP_DEFERRED &&
       get_preferred_data_types_callback_.Run().Has(SESSIONS)) {
     if (first_start) {
       base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
@@ -116,12 +113,12 @@ void StartupController::TryStart(bool force_immediate) {
 
 void StartupController::TryStartImpl(bool force_immediate) {
   // Try starting up the sync engine if all policies are ready, otherwise wait
-  // at most |switches::kSyncPolicyLoadTimeout|.
+  // at most |kSyncPolicyLoadTimeout|.
   if (!ArePoliciesReady()) {
     if (waiting_for_policies_start_time_.is_null()) {
       waiting_for_policies_start_time_ = base::Time::Now();
       wait_for_policy_timer_.Start(
-          FROM_HERE, switches::kSyncPolicyLoadTimeout.Get(),
+          FROM_HERE, kSyncPolicyLoadTimeout.Get(),
           base::BindOnce(&StartupController::OnFirstPoliciesLoadedTimeout,
                          base::Unretained(this)));
     }
@@ -155,8 +152,6 @@ void StartupController::RecordTimeDeferred(DeferredInitTrigger trigger) {
 }
 
 void StartupController::OnFallbackStartupTimerExpired() {
-  DCHECK(IsDeferredStartupEnabled());
-
   if (!start_engine_time_.is_null()) {
     return;
   }
@@ -222,17 +217,12 @@ void StartupController::OnFirstPoliciesLoadedImpl(bool timeout) {
 }
 
 void StartupController::OnDataTypeRequestsSyncStartup(ModelType type) {
-  if (!IsDeferredStartupEnabled()) {
-    DVLOG(2) << "Ignoring data type request for sync startup: "
-             << ModelTypeToString(type);
-    return;
-  }
-
   if (!start_engine_time_.is_null()) {
     return;
   }
 
-  DVLOG(2) << "Data type requesting sync startup: " << ModelTypeToString(type);
+  DVLOG(2) << "Data type requesting sync startup: "
+           << ModelTypeToDebugString(type);
   if (!start_up_time_.is_null()) {
     RecordTimeDeferred(DeferredInitTrigger::kDataTypeRequest);
   }

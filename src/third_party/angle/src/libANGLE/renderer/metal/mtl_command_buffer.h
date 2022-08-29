@@ -13,6 +13,7 @@
 
 #import <Metal/Metal.h>
 #import <QuartzCore/CAMetalLayer.h>
+#include <cstdint>
 
 #include <deque>
 #include <memory>
@@ -89,9 +90,9 @@ class CommandQueue final : public WrappedObject<id<MTLCommandQueue>>, angle::Non
         uint64_t serial;
     };
     std::deque<CmdBufferQueueEntry> mMetalCmdBuffers;
-    std::deque<CmdBufferQueueEntry> mMetalCmdBuffersTmp;
 
-    uint64_t mQueueSerialCounter = 1;
+    uint64_t mQueueSerialCounter  = 1;
+    uint64_t mLastCommittedSerial = 0;
     std::atomic<uint64_t> mCommittedBufferSerial{0};
     std::atomic<uint64_t> mCompletedBufferSerial{0};
 
@@ -131,6 +132,8 @@ class CommandBuffer final : public WrappedObject<id<MTLCommandBuffer>>, angle::N
     void setActiveCommandEncoder(CommandEncoder *encoder);
     void invalidateActiveCommandEncoder(CommandEncoder *encoder);
 
+    bool needsFlushForDrawCallLimits() const;
+
   private:
     void set(id<MTLCommandBuffer> metalBuffer);
     void cleanup();
@@ -146,6 +149,9 @@ class CommandBuffer final : public WrappedObject<id<MTLCommandBuffer>>, angle::N
     void pushDebugGroupImpl(const std::string &marker);
     void popDebugGroupImpl();
 
+    void setResourceUsedByCommandBuffer(const ResourceRef &resource);
+    void clearResourceListAndSize();
+
     using ParentClass = WrappedObject<id<MTLCommandBuffer>>;
 
     CommandQueue &mCmdQueue;
@@ -158,10 +164,11 @@ class CommandBuffer final : public WrappedObject<id<MTLCommandBuffer>>, angle::N
 
     std::vector<std::string> mPendingDebugSigns;
     std::vector<std::pair<mtl::SharedEventRef, uint64_t>> mPendingSignalEvents;
-
     std::vector<std::string> mDebugGroups;
 
-    bool mCommitted = false;
+    std::unordered_set<id> mResourceList;
+    size_t mWorkingResourceSize = 0;
+    bool mCommitted             = false;
 };
 
 class CommandEncoder : public WrappedObject<id<MTLCommandEncoder>>, angle::NonCopyable
@@ -326,7 +333,7 @@ class RenderCommandEncoder final : public CommandEncoder
 
     // Restart the encoder so that new commands can be encoded.
     // NOTE: parent CommandBuffer's restart() must be called before this.
-    RenderCommandEncoder &restart(const RenderPassDesc &desc);
+    RenderCommandEncoder &restart(const RenderPassDesc &desc, uint32_t deviceMaxRenderTargets);
 
     RenderCommandEncoder &setRenderPipelineState(id<MTLRenderPipelineState> state);
     RenderCommandEncoder &setTriangleFillMode(MTLTriangleFillMode mode);
@@ -428,6 +435,11 @@ class RenderCommandEncoder final : public CommandEncoder
                                         uint32_t vertexStart,
                                         uint32_t vertexCount,
                                         uint32_t instances);
+    RenderCommandEncoder &drawInstancedBaseInstance(MTLPrimitiveType primitiveType,
+                                                    uint32_t vertexStart,
+                                                    uint32_t vertexCount,
+                                                    uint32_t instances,
+                                                    uint32_t baseInstance);
     RenderCommandEncoder &drawIndexed(MTLPrimitiveType primitiveType,
                                       uint32_t indexCount,
                                       MTLIndexType indexType,
@@ -439,13 +451,14 @@ class RenderCommandEncoder final : public CommandEncoder
                                                const BufferRef &indexBuffer,
                                                size_t bufferOffset,
                                                uint32_t instances);
-    RenderCommandEncoder &drawIndexedInstancedBaseVertex(MTLPrimitiveType primitiveType,
-                                                         uint32_t indexCount,
-                                                         MTLIndexType indexType,
-                                                         const BufferRef &indexBuffer,
-                                                         size_t bufferOffset,
-                                                         uint32_t instances,
-                                                         uint32_t baseVertex);
+    RenderCommandEncoder &drawIndexedInstancedBaseVertexBaseInstance(MTLPrimitiveType primitiveType,
+                                                                     uint32_t indexCount,
+                                                                     MTLIndexType indexType,
+                                                                     const BufferRef &indexBuffer,
+                                                                     size_t bufferOffset,
+                                                                     uint32_t instances,
+                                                                     uint32_t baseVertex,
+                                                                     uint32_t baseInstance);
 
     RenderCommandEncoder &setVisibilityResultMode(MTLVisibilityResultMode mode, size_t offset);
 

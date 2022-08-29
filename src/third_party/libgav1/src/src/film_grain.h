@@ -104,7 +104,9 @@ class FilmGrain {
   using Pixel =
       typename std::conditional<bitdepth == 8, uint8_t, uint16_t>::type;
   static constexpr int kScalingLutLength =
-      (kScalingLookupTableSize + kScalingLookupTablePadding) << (bitdepth - 8);
+      (bitdepth == 10)
+          ? (kScalingLookupTableSize + kScalingLookupTablePadding) << 2
+          : kScalingLookupTableSize + kScalingLookupTablePadding;
 
   bool Init();
 

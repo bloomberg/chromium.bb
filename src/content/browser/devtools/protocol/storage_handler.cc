@@ -12,22 +12,26 @@
 #include "base/bind.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/services/storage/privileged/mojom/indexed_db_control.mojom.h"
+#include "components/services/storage/public/cpp/buckets/bucket_locator.h"
 #include "components/services/storage/public/mojom/cache_storage_control.mojom.h"
-#include "components/services/storage/public/mojom/indexed_db_control.mojom.h"
 #include "content/browser/devtools/protocol/browser_handler.h"
+#include "content/browser/devtools/protocol/handler_helpers.h"
 #include "content/browser/devtools/protocol/network.h"
 #include "content/browser/devtools/protocol/network_handler.h"
 #include "content/browser/devtools/protocol/storage.h"
-#include "content/browser/storage_partition_impl.h"
+#include "content/browser/interest_group/interest_group_manager_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
+#include "services/network/public/mojom/trust_tokens.mojom.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/quota/quota_override_handle.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/interest_group/interest_group.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 #include "url/gurl.h"
@@ -208,32 +212,37 @@ class StorageHandler::IndexedDBObserver
     storage_keys_.erase(storage_key);
   }
 
-  void OnIndexedDBListChanged(const blink::StorageKey& storage_key) override {
+  void OnIndexedDBListChanged(
+      const storage::BucketLocator& bucket_locator) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     if (!owner_)
       return;
-    auto found = storage_keys_.find(storage_key);
+    // TODO(crbug.com/1315371): Allow custom bucket names.
+    auto found = storage_keys_.find(bucket_locator.storage_key);
     if (found == storage_keys_.end())
       return;
     // TODO(https://crbug.com/1199077): Pass storage key instead once
     // Chrome DevTools Protocol (CDP) supports it.
-    owner_->NotifyIndexedDBListChanged(storage_key.origin().Serialize());
+    owner_->NotifyIndexedDBListChanged(
+        bucket_locator.storage_key.origin().Serialize());
   }
 
   void OnIndexedDBContentChanged(
-      const blink::StorageKey& storage_key,
+      const storage::BucketLocator& bucket_locator,
       const std::u16string& database_name,
       const std::u16string& object_store_name) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     if (!owner_)
       return;
-    auto found = storage_keys_.find(storage_key);
+    // TODO(crbug.com/1315371): Allow custom bucket names.
+    auto found = storage_keys_.find(bucket_locator.storage_key);
     if (found == storage_keys_.end())
       return;
     // TODO(https://crbug.com/1199077): Pass storage key instead once
     // Chrome DevTools Protocol (CDP) supports it.
-    owner_->NotifyIndexedDBContentChanged(storage_key.origin().Serialize(),
-                                          database_name, object_store_name);
+    owner_->NotifyIndexedDBContentChanged(
+        bucket_locator.storage_key.origin().Serialize(), database_name,
+        object_store_name);
   }
 
  private:
@@ -261,8 +270,7 @@ class StorageHandler::IndexedDBObserver
 };
 
 StorageHandler::StorageHandler()
-    : DevToolsDomainHandler(Storage::Metainfo::domainName),
-      storage_partition_(nullptr) {}
+    : DevToolsDomainHandler(Storage::Metainfo::domainName) {}
 
 StorageHandler::~StorageHandler() {
   DCHECK(!cache_storage_observer_);
@@ -278,12 +286,14 @@ void StorageHandler::SetRenderer(int process_host_id,
                                  RenderFrameHostImpl* frame_host) {
   RenderProcessHost* process = RenderProcessHost::FromID(process_host_id);
   storage_partition_ = process ? process->GetStoragePartition() : nullptr;
+  frame_host_ = frame_host;
 }
 
 Response StorageHandler::Disable() {
   cache_storage_observer_.reset();
   indexed_db_observer_.reset();
   quota_override_handle_.reset();
+  SetInterestGroupTracking(false);
   return Response::Success();
 }
 
@@ -350,6 +360,20 @@ void StorageHandler::ClearCookies(
                      std::move(callback)));
 }
 
+Response StorageHandler::GetStorageKeyForFrame(
+    const std::string& frame_id,
+    std::string* serialized_storage_key) {
+  if (!frame_host_)
+    return Response::InvalidParams("Frame host not found");
+  FrameTreeNode* node = protocol::FrameTreeNodeFromDevToolsFrameToken(
+      frame_host_->frame_tree_node(), frame_id);
+  if (!node)
+    return Response::InvalidParams("Frame tree node for given frame not found");
+  RenderFrameHostImpl* rfh = node->current_frame_host();
+  *serialized_storage_key = rfh->storage_key().Serialize();
+  return Response::Success();
+}
+
 void StorageHandler::ClearDataForOrigin(
     const std::string& origin,
     const std::string& storage_types,
@@ -361,12 +385,8 @@ void StorageHandler::ClearDataForOrigin(
       storage_types, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   std::unordered_set<std::string> set(types.begin(), types.end());
   uint32_t remove_mask = 0;
-  if (set.count(Storage::StorageTypeEnum::Cookies)) {
+  if (set.count(Storage::StorageTypeEnum::Cookies))
     remove_mask |= StoragePartition::REMOVE_DATA_MASK_COOKIES;
-    // Interest groups should be cleared with cookies for its origin trial as
-    // they have the same privacy characteristics
-    remove_mask |= StoragePartition::REMOVE_DATA_MASK_INTEREST_GROUPS;
-  }
   if (set.count(Storage::StorageTypeEnum::File_systems))
     remove_mask |= StoragePartition::REMOVE_DATA_MASK_FILE_SYSTEMS;
   if (set.count(Storage::StorageTypeEnum::Indexeddb))
@@ -381,6 +401,8 @@ void StorageHandler::ClearDataForOrigin(
     remove_mask |= StoragePartition::REMOVE_DATA_MASK_SERVICE_WORKERS;
   if (set.count(Storage::StorageTypeEnum::Cache_storage))
     remove_mask |= StoragePartition::REMOVE_DATA_MASK_CACHE_STORAGE;
+  if (set.count(Storage::StorageTypeEnum::Interest_groups))
+    remove_mask |= StoragePartition::REMOVE_DATA_MASK_INTEREST_GROUPS;
   if (set.count(Storage::StorageTypeEnum::All))
     remove_mask |= StoragePartition::REMOVE_DATA_MASK_ALL;
 
@@ -638,6 +660,156 @@ void StorageHandler::ClearTrustTokens(
   storage_partition_->GetNetworkContext()->DeleteStoredTrustTokens(
       url::Origin::Create(GURL(issuerOrigin)),
       base::BindOnce(&SendClearTrustTokensStatus, std::move(callback)));
+}
+
+void StorageHandler::OnInterestGroupAccessed(
+    const base::Time& access_time,
+    InterestGroupManagerImpl::InterestGroupObserverInterface::AccessType type,
+    const std::string& owner_origin,
+    const std::string& name) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  using AccessType =
+      InterestGroupManagerImpl::InterestGroupObserverInterface::AccessType;
+  std::string type_enum;
+  switch (type) {
+    case AccessType::kJoin:
+      type_enum = Storage::InterestGroupAccessTypeEnum::Join;
+      break;
+    case AccessType::kLeave:
+      type_enum = Storage::InterestGroupAccessTypeEnum::Leave;
+      break;
+    case AccessType::kUpdate:
+      type_enum = Storage::InterestGroupAccessTypeEnum::Update;
+      break;
+    case AccessType::kBid:
+      type_enum = Storage::InterestGroupAccessTypeEnum::Bid;
+      break;
+    case AccessType::kWin:
+      type_enum = Storage::InterestGroupAccessTypeEnum::Win;
+      break;
+  };
+  frontend_->InterestGroupAccessed(access_time.ToDoubleT(), type_enum,
+                                   owner_origin, name);
+}
+
+namespace {
+void SendGetInterestGroup(
+    std::unique_ptr<StorageHandler::GetInterestGroupDetailsCallback> callback,
+    absl::optional<StorageInterestGroup> storage_group) {
+  if (!storage_group) {
+    callback->sendFailure(Response::ServerError("Interest group not found"));
+    return;
+  }
+
+  const blink::InterestGroup& group = storage_group->interest_group;
+  auto trusted_bidding_signals_keys =
+      std::make_unique<protocol::Array<std::string>>();
+  if (group.trusted_bidding_signals_keys) {
+    for (const auto& key : group.trusted_bidding_signals_keys.value())
+      trusted_bidding_signals_keys->push_back(key);
+  }
+  auto ads =
+      std::make_unique<protocol::Array<protocol::Storage::InterestGroupAd>>();
+  if (group.ads) {
+    for (const auto& ad : *group.ads) {
+      auto protocol_ad = protocol::Storage::InterestGroupAd::Create()
+                             .SetRenderUrl(ad.render_url.spec())
+                             .Build();
+      if (ad.metadata)
+        protocol_ad->SetMetadata(*ad.metadata);
+      ads->push_back(std::move(protocol_ad));
+    }
+  }
+  auto ad_components =
+      std::make_unique<protocol::Array<protocol::Storage::InterestGroupAd>>();
+  if (group.ad_components) {
+    for (const auto& ad : *group.ad_components) {
+      auto protocol_ad = protocol::Storage::InterestGroupAd::Create()
+                             .SetRenderUrl(ad.render_url.spec())
+                             .Build();
+      if (ad.metadata)
+        protocol_ad->SetMetadata(*ad.metadata);
+      ad_components->push_back(std::move(protocol_ad));
+    }
+  }
+  auto protocol_group =
+      protocol::Storage::InterestGroupDetails::Create()
+          .SetOwnerOrigin(group.owner.Serialize())
+          .SetName(group.name)
+          .SetExpirationTime(group.expiry.ToDoubleT())
+          .SetJoiningOrigin(storage_group->joining_origin.Serialize())
+          .SetTrustedBiddingSignalsKeys(std::move(trusted_bidding_signals_keys))
+          .SetAds(std::move(ads))
+          .SetAdComponents(std::move(ad_components))
+          .Build();
+  if (group.bidding_url)
+    protocol_group->SetBiddingUrl(group.bidding_url->spec());
+  if (group.bidding_wasm_helper_url)
+    protocol_group->SetBiddingWasmHelperUrl(
+        group.bidding_wasm_helper_url->spec());
+  if (group.daily_update_url)
+    protocol_group->SetUpdateUrl(group.daily_update_url->spec());
+  if (group.trusted_bidding_signals_url)
+    protocol_group->SetTrustedBiddingSignalsUrl(
+        group.trusted_bidding_signals_url->spec());
+  if (group.user_bidding_signals)
+    protocol_group->SetUserBiddingSignals(*group.user_bidding_signals);
+
+  callback->sendSuccess(std::move(protocol_group));
+}
+
+}  // namespace
+
+void StorageHandler::GetInterestGroupDetails(
+    const std::string& owner_origin_string,
+    const std::string& name,
+    std::unique_ptr<GetInterestGroupDetailsCallback> callback) {
+  if (!storage_partition_) {
+    callback->sendFailure(Response::InternalError());
+    return;
+  }
+
+  InterestGroupManagerImpl* manager = static_cast<InterestGroupManagerImpl*>(
+      storage_partition_->GetInterestGroupManager());
+  if (!manager) {
+    callback->sendFailure(
+        Response::ServerError("Interest group storage is disabled"));
+    return;
+  }
+
+  GURL owner_origin_url(owner_origin_string);
+  if (!owner_origin_url.is_valid()) {
+    callback->sendFailure(Response::ServerError("Invalid Owner Origin"));
+    return;
+  }
+  url::Origin owner_origin = url::Origin::Create(GURL(owner_origin_string));
+  DCHECK(!owner_origin.opaque());
+
+  manager->GetInterestGroup(
+      owner_origin, name,
+      base::BindOnce(&SendGetInterestGroup, std::move(callback)));
+}
+
+Response StorageHandler::SetInterestGroupTracking(bool enable) {
+  if (!storage_partition_)
+    return Response::InternalError();
+
+  InterestGroupManagerImpl* manager = static_cast<InterestGroupManagerImpl*>(
+      storage_partition_->GetInterestGroupManager());
+  if (!manager)
+    return Response::ServerError("Interest group storage is disabled.");
+
+  if (enable) {
+    // Only add if we are not already registered as an observer. We only
+    // observe the interest group manager, so if we're observing anything then
+    // we are already registered.
+    if (!IsInObserverList())
+      manager->AddInterestGroupObserver(this);
+  } else {
+    // Removal doesn't care if we are not registered.
+    manager->RemoveInterestGroupObserver(this);
+  }
+  return Response::Success();
 }
 
 }  // namespace protocol

@@ -13,9 +13,11 @@
 #include "base/memory/ref_counted.h"
 #include "base/values.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
-#include "components/services/storage/public/mojom/indexed_db_control.mojom.h"
+#include "components/services/storage/privileged/mojom/indexed_db_control.mojom.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_message_handler.h"
+#include "content/public/browser/webui_config.h"
+#include "content/public/common/url_constants.h"
 
 namespace blink {
 class StorageKey;
@@ -26,6 +28,15 @@ class DownloadItem;
 }
 
 namespace content {
+
+class IndexedDBInternalsUI;
+
+class IndexedDBInternalsUIConfig
+    : public DefaultWebUIConfig<IndexedDBInternalsUI> {
+ public:
+  IndexedDBInternalsUIConfig()
+      : DefaultWebUIConfig(kChromeUIScheme, kChromeUIIndexedDBInternalsHost) {}
+};
 
 // The implementation for the chrome://indexeddb-internals page.
 class IndexedDBInternalsUI : public WebUIController {
@@ -56,11 +67,11 @@ class IndexedDBInternalsHandler : public WebUIMessageHandler {
   void OnJavascriptDisallowed() override;
 
  private:
-  void GetAllStorageKeys(base::Value::ConstListView args);
-  void OnStorageKeysReady(const base::Value& storage_keys,
-                          const base::FilePath& path);
+  void GetAllBuckets(const base::Value::List& args);
+  void OnBucketsReady(const base::Value& storage_keys,
+                      const base::FilePath& path);
 
-  void DownloadStorageKeyData(base::Value::ConstListView args);
+  void DownloadBucketData(const base::Value::List& args);
   void OnDownloadDataReady(const std::string& callback_id,
                            uint64_t connection_count,
                            bool success,
@@ -72,17 +83,17 @@ class IndexedDBInternalsHandler : public WebUIMessageHandler {
                          download::DownloadItem* item,
                          download::DownloadInterruptReason interrupt_reason);
 
-  void ForceCloseStorageKey(base::Value::ConstListView args);
+  void ForceCloseBucket(const base::Value::List& args);
   void OnForcedClose(const std::string& callback_id, uint64_t connection_count);
 
-  bool GetStorageKeyControl(const base::FilePath& path,
-                            const blink::StorageKey& storage_key,
-                            storage::mojom::IndexedDBControl** control);
-  bool GetStorageKeyData(base::Value::ConstListView args,
-                         std::string* callback_id,
-                         base::FilePath* path,
-                         blink::StorageKey* storage_key,
-                         storage::mojom::IndexedDBControl** control);
+  bool GetBucketControl(const base::FilePath& path,
+                        const blink::StorageKey& storage_key,
+                        storage::mojom::IndexedDBControl** control);
+  bool GetBucketData(const base::Value::List& args,
+                     std::string* callback_id,
+                     base::FilePath* path,
+                     blink::StorageKey* storage_key,
+                     storage::mojom::IndexedDBControl** control);
 
   base::WeakPtrFactory<IndexedDBInternalsHandler> weak_factory_{this};
 };

@@ -325,7 +325,7 @@ bool DateComponents::ParseDateTimeLocal(const String& src,
     return false;
   if (index >= src.length())
     return false;
-  if (src[index] != 'T')
+  if (src[index] != 'T' && src[index] != ' ')
     return false;
   ++index;
   if (!ParseTime(src, index, end))
@@ -525,7 +525,7 @@ String DateComponents::ToStringForTime(SecondFormat format) const {
   switch (effective_format) {
     default:
       NOTREACHED();
-      FALLTHROUGH;
+      [[fallthrough]];
     case kNone:
       return String::Format("%02d:%02d", hour_, minute_);
     case kSecond:

@@ -15,6 +15,7 @@
 #include "base/i18n/rtl.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -55,7 +56,7 @@
 #include "ui/views/widget/tooltip_manager.h"
 #include "ui/views/widget/widget.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
@@ -79,7 +80,7 @@ namespace views {
 
 namespace {
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 bool AcceleratorShouldCancelMenu(const ui::Accelerator& accelerator) {
   // Since AcceleratorShouldCancelMenu() is called quite early in key
   // event handling, it is actually invoked for modifier keys themselves
@@ -235,7 +236,7 @@ View* GetNextFocusableView(View* ancestor, View* start_at, bool forward) {
   return nullptr;
 }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 // Determines the correct coordinates and window to repost |event| to, if it is
 // a mouse or touch event.
 static void RepostEventImpl(const ui::LocatedEvent* event,
@@ -342,7 +343,7 @@ static void RepostEventImpl(const ui::LocatedEvent* event,
 
   root->GetHost()->dispatcher()->RepostEvent(located_event.get());
 }
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
 }  // namespace
 
@@ -525,7 +526,7 @@ void MenuController::Run(Widget* parent,
     menu_pre_target_handler_ = MenuPreTargetHandler::Create(this, owner_);
   }
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   menu_cocoa_watcher_ = std::make_unique<MenuCocoaWatcherMac>(base::BindOnce(
       &MenuController::Cancel, this->AsWeakPtr(), ExitType::kAll));
 #endif
@@ -557,7 +558,7 @@ void MenuController::Run(Widget* parent,
 }
 
 void MenuController::Cancel(ExitType type) {
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   menu_closure_animation_.reset();
 #endif
 
@@ -1100,20 +1101,11 @@ void MenuController::OnDragExited(SubmenuView* source) {
   }
 }
 
-ui::mojom::DragOperation MenuController::OnPerformDrop(
-    SubmenuView* source,
-    const ui::DropTargetEvent& event) {
-  auto drop_cb = GetDropCallback(source, event);
-  ui::mojom::DragOperation output_drag_op = ui::mojom::DragOperation::kNone;
-  std::move(drop_cb).Run(event, output_drag_op);
-  return output_drag_op;
-}
-
 views::View::DropCallback MenuController::GetDropCallback(
     SubmenuView* source,
     const ui::DropTargetEvent& event) {
   DCHECK(drop_target_);
-  // NOTE: the delegate may delete us after invoking OnPerformDrop, as such
+  // NOTE: the delegate may delete us after invoking GetDropCallback, as such
   // we don't call cancel here.
 
   MenuItemView* item = state_.item;
@@ -1218,7 +1210,7 @@ ui::PostDispatchAction MenuController::OnWillDispatchKeyEvent(
   base::WeakPtr<MenuController> this_ref = AsWeakPtr();
   if (event->type() == ui::ET_KEY_PRESSED) {
     bool key_handled = false;
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
     // Special handling for Option-Up and Option-Down, which should behave like
     // Home and End respectively in menus.
     if ((event->flags() & ui::EF_ALT_DOWN)) {
@@ -1265,7 +1257,7 @@ ui::PostDispatchAction MenuController::OnWillDispatchKeyEvent(
 
   ui::Accelerator accelerator(*event);
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   if (AcceleratorShouldCancelMenu(accelerator)) {
     Cancel(ExitType::kAll);
     return ui::POST_DISPATCH_PERFORM_DEFAULT;
@@ -1332,7 +1324,7 @@ void MenuController::TurnOffMenuSelectionHoldForTest() {
 }
 
 void MenuController::OnMenuItemDestroying(MenuItemView* menu_item) {
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   if (menu_closure_animation_ && menu_closure_animation_->item() == menu_item)
     menu_closure_animation_.reset();
 #endif
@@ -1577,7 +1569,7 @@ bool MenuController::OnKeyPressed(const ui::KeyEvent& event) {
       break;
 
 // On Mac, treat space the same as return.
-#if !defined(OS_MAC)
+#if !BUILDFLAG(IS_MAC)
     case ui::VKEY_SPACE:
       SendAcceleratorToHotTrackedView(event.flags());
       break;
@@ -1587,9 +1579,9 @@ bool MenuController::OnKeyPressed(const ui::KeyEvent& event) {
       if (!IsCombobox())
         break;
       // Fallthrough to accept or dismiss combobox menus on F4, like windows.
-      FALLTHROUGH;
+      [[fallthrough]];
     case ui::VKEY_RETURN:
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
     case ui::VKEY_SPACE:
 #endif
       // An odd special case: if a prefix selection is in flight, space should
@@ -1633,7 +1625,7 @@ bool MenuController::OnKeyPressed(const ui::KeyEvent& event) {
       CloseSubmenu();
       break;
 
-#if !defined(OS_MAC)
+#if !BUILDFLAG(IS_MAC)
     case ui::VKEY_APPS: {
       Button* hot_view = GetFirstHotTrackedView(pending_state_.item);
       if (hot_view) {
@@ -1655,7 +1647,7 @@ bool MenuController::OnKeyPressed(const ui::KeyEvent& event) {
     }
 #endif
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
     // On Windows, pressing Alt and F10 keys should hide the menu to match the
     // OS behavior.
     case ui::VKEY_MENU:
@@ -1770,7 +1762,7 @@ void MenuController::Accept(MenuItemView* item, int event_flags) {
       views::ElementTrackerViews::GetInstance()->NotifyViewActivated(id, item);
   }
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   menu_closure_animation_ = std::make_unique<MenuClosureAnimationMac>(
       item, item->GetParentMenuItem()->GetSubmenu(),
       base::BindOnce(&MenuController::ReallyAccept, base::Unretained(this),
@@ -1784,7 +1776,7 @@ void MenuController::Accept(MenuItemView* item, int event_flags) {
 void MenuController::ReallyAccept(MenuItemView* item, int event_flags) {
   DCHECK(!for_drop_);
   result_ = item;
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // Reset the closure animation since it's now finished - this also unblocks
   // input events for the menu.
   menu_closure_animation_.reset();
@@ -1994,8 +1986,9 @@ bool MenuController::GetMenuPartByScreenCoordinateImpl(
     return true;
   }
 
-  // Return false for points on touchable menu shadows, to search parent menus.
-  if (use_touchable_layout_)
+  // Return false for points on ash system UI menu shadows, to search parent
+  // menus.
+  if (use_ash_system_ui_layout_)
     return false;
 
   // While the mouse isn't over a menu item or the scroll buttons of menu, it
@@ -2510,9 +2503,18 @@ gfx::Rect MenuController::CalculateBubbleMenuBounds(
   const MenuConfig& menu_config = MenuConfig::instance();
   // Shadow insets are built into MenuScrollView's preferred size so it must be
   // compensated for when determining the bounds of touchable menus.
+  BubbleBorder::Shadow shadow_type = BubbleBorder::STANDARD_SHADOW;
+  int elevation = menu_config.touchable_menu_shadow_elevation;
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  if (use_ash_system_ui_layout_) {
+    shadow_type = BubbleBorder::CHROMEOS_SYSTEM_UI_SHADOW;
+    elevation = item->GetParentMenuItem()
+                    ? menu_config.touchable_submenu_shadow_elevation
+                    : menu_config.touchable_menu_shadow_elevation;
+  }
+#endif
   const gfx::Insets border_and_shadow_insets =
-      BubbleBorder::GetBorderAndShadowInsets(
-          menu_config.touchable_menu_shadow_elevation);
+      BubbleBorder::GetBorderAndShadowInsets(elevation, shadow_type);
 
   const gfx::Rect& monitor_bounds = state_.monitor_bounds;
 
@@ -3000,7 +3002,7 @@ void MenuController::RepostEventAndCancel(SubmenuView* source,
   gfx::Point screen_loc(event->location());
   View::ConvertPointToScreen(source->GetScrollViewContainer(), &screen_loc);
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   if (event->IsMouseEvent() || event->IsTouchEvent()) {
     base::WeakPtr<MenuController> this_ref = AsWeakPtr();
     if (state_.item) {
@@ -3042,7 +3044,7 @@ void MenuController::RepostEventAndCancel(SubmenuView* source,
     if (last_part.type != MenuPart::Type::kNone)
       exit_type = ExitType::kOutermost;
   }
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // When doing a menu closure animation, target the deepest submenu - that way
   // MenuClosureAnimationMac will fade out all the menus in sync, rather than
   // the shallowest menu only.
@@ -3192,7 +3194,7 @@ MenuItemView* MenuController::ExitTopMostMenu() {
   // Close any open menus.
   SetSelection(nullptr, SELECTION_UPDATE_IMMEDIATELY | SELECTION_EXIT);
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // On Windows, if we select the menu item by touch and if the window at the
   // location is another window on the same thread, that window gets a
   // WM_MOUSEACTIVATE message and ends up activating itself, which is not
@@ -3421,7 +3423,7 @@ void MenuController::SetAnchorParametersForItem(MenuItemView* item,
 }
 
 bool MenuController::CanProcessInputEvents() const {
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   return !menu_closure_animation_;
 #else
   return true;

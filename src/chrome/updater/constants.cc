@@ -4,6 +4,7 @@
 
 #include "chrome/updater/constants.h"
 
+#include "build/build_config.h"
 #include "chrome/updater/updater_branding.h"
 
 namespace updater {
@@ -15,7 +16,13 @@ const char kQualificationAppId[] = "{6f0f9a34-a0ab-4a75-a0eb-6eab78d0dc4b}";
 const char kNullVersion[] = "0.0.0.0";
 
 // Command line arguments.
+// If a command line switch is marked as `needs backward-compatibility`, it
+// means the switch name cannot be changed, and the parser must be able to
+// handle command line in the DOS style '/<switch> <optional_value>'. This is to
+// make sure the new updater understands the hand-off requests from the legacy
+// updaters.
 const char kServerSwitch[] = "server";
+const char kWindowsServiceSwitch[] = "windows-service";
 const char kComServiceSwitch[] = "com-service";
 const char kCrashMeSwitch[] = "crash-me";
 const char kCrashHandlerSwitch[] = "crash-handler";
@@ -31,24 +38,36 @@ const char kNoRateLimitSwitch[] = "no-rate-limit";
 const char kEnableLoggingSwitch[] = "enable-logging";
 const char kLoggingModuleSwitch[] = "vmodule";
 const char kLoggingModuleSwitchValue[] =
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
     "*/chrome/updater/*=2,*/components/winhttp/*=2";
 #else
     "*/chrome/updater/*=2,*/components/update_client/*=2";
-#endif  // OS_WIN
+#endif  // BUILDFLAG(IS_WIN)
 const char kAppIdSwitch[] = "app-id";
 const char kAppVersionSwitch[] = "app-version";
 const char kWakeSwitch[] = "wake";
 const char kTagSwitch[] = "tag";
+const char kInstallerDataSwitch[] = "installerdata";
 
 const char kServerServiceSwitch[] = "service";
 
 const char kServerUpdateServiceInternalSwitchValue[] = "update-internal";
 const char kServerUpdateServiceSwitchValue[] = "update";
 
-#if defined(OS_WIN)
-const char kInstallFromOutDir[] = "install-from-out-dir";
-#endif  // OS_WIN
+// Recovery command line arguments.
+const char kRecoverSwitch[] = "recover";
+const char kBrowserVersionSwitch[] = "browser-version";
+const char kSessionIdSwitch[] = "sessionid";  // needs backward-compatibility
+const char kAppGuidSwitch[] = "appguid";
+
+const char kHealthCheckSwitch[] = "healthcheck";
+
+const char kHandoffSwitch[] = "handoff";        // needs backward-compatibility
+const char kOfflineDirSwitch[] = "offlinedir";  // needs backward-compatibility
+
+const char kCmdLineExpectElevated[] = "expect-elevated";
+
+const char kCmdLinePrefersUser[] = "prefers-user";
 
 // Path names.
 const char kAppsDir[] = "apps";
@@ -59,6 +78,8 @@ const char kDevOverrideKeyUrl[] = "url";
 const char kDevOverrideKeyUseCUP[] = "use_cup";
 const char kDevOverrideKeyInitialDelay[] = "initial_delay";
 const char kDevOverrideKeyServerKeepAliveSeconds[] = "server_keep_alive";
+const char kDevOverrideKeyCrxVerifierFormat[] = "crx_verifier_format";
+const char kDevOverrideKeyGroupPolicies[] = "group_policies";
 
 // Developer override file name, relative to app data directory.
 const char kDevOverrideFileName[] = "overrides.json";
@@ -73,9 +94,11 @@ const char kProxyModeSystem[] = "system";
 // Specifies that urls that can be cached by proxies are preferred.
 const char kDownloadPreferenceCacheable[] = "cacheable";
 
-#if defined(OS_MAC)
+const char kUTF8BOM[] = "\xEF\xBB\xBF";
+
+#if BUILDFLAG(IS_MAC)
 // The user defaults suite name.
 const char kUserDefaultsSuiteName[] = MAC_BUNDLE_IDENTIFIER_STRING ".defaults";
-#endif  // defined(OS_MAC)
+#endif  // BUILDFLAG(IS_MAC)
 
 }  // namespace updater

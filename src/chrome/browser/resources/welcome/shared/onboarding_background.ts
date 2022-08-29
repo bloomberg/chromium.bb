@@ -7,7 +7,14 @@
  * animated and responsive background for any page that contains it.
  */
 
-import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {getTemplate} from './onboarding_background.html.js';
+
+export interface OnboardingBackgroundElement {
+  $: {
+    logo: HTMLElement,
+  };
+}
 
 /** @polymer */
 export class OnboardingBackgroundElement extends PolymerElement {
@@ -15,9 +22,13 @@ export class OnboardingBackgroundElement extends PolymerElement {
     return 'onboarding-background';
   }
 
+  static get template() {
+    return getTemplate();
+  }
+
   private animations_: Animation[] = [];
 
-  connectedCallback() {
+  override connectedCallback() {
     super.connectedCallback();
     const details: Array<[string, number]> = [
       ['blue-line', 60],
@@ -101,16 +112,23 @@ export class OnboardingBackgroundElement extends PolymerElement {
     };
   }
 
+  private onLogoClick_() {
+    this.$.logo.animate(
+        {
+          transform: ['translate(-50%, -50%)', 'translate(-50%, -50%) rotate(-10turn)'],
+        },
+        {
+          duration: 500,
+          easing: 'cubic-bezier(1, 0, 0, 1)',
+        });
+  }
+
   pause() {
     this.animations_.forEach(animation => animation.pause());
   }
 
   play() {
     this.animations_.forEach(animation => animation.play());
-  }
-
-  static get template() {
-    return html`{__html_template__}`;
   }
 }
 customElements.define(

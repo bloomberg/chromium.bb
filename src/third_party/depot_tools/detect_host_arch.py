@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -33,6 +33,8 @@ def HostArch():
     host_arch = 'ppc'
   elif host_arch.startswith('s390'):
     host_arch = 's390'
+  elif host_arch.startswith('riscv'):
+    host_arch = 'riscv64'
 
 
   # platform.machine is based on running kernel. It's possible to use 64-bit

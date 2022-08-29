@@ -101,7 +101,7 @@ If you've enabled developer mode, and you're getting this warning at boot time:
 
 > Developer mode is disabled on this device by system policy.
 
-> For more information, see http://dev.chromium.org/chromium-os/fwmp
+> For more information, see http://www.chromium.org/chromium-os/fwmp
 
 that's because FWMP_DEV_DISABLE_BOOT is set. See the previous section on
 removing the FWMP.

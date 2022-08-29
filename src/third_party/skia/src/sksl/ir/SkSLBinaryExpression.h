@@ -8,17 +8,19 @@
 #ifndef SKSL_BINARYEXPRESSION
 #define SKSL_BINARYEXPRESSION
 
-#include "src/sksl/SkSLLexer.h"
-#include "src/sksl/SkSLOperators.h"
+#include "include/core/SkTypes.h"
+#include "include/sksl/SkSLOperator.h"
+#include "include/sksl/SkSLPosition.h"
 #include "src/sksl/ir/SkSLExpression.h"
-#include "src/sksl/ir/SkSLFieldAccess.h"
-#include "src/sksl/ir/SkSLIndexExpression.h"
-#include "src/sksl/ir/SkSLSwizzle.h"
-#include "src/sksl/ir/SkSLTernaryExpression.h"
 
 #include <memory>
+#include <string>
+#include <utility>
 
 namespace SkSL {
+
+class Context;
+class Type;
 
 /**
  * A binary operation.
@@ -27,9 +29,9 @@ class BinaryExpression final : public Expression {
 public:
     inline static constexpr Kind kExpressionKind = Kind::kBinary;
 
-    BinaryExpression(int line, std::unique_ptr<Expression> left, Operator op,
+    BinaryExpression(Position pos, std::unique_ptr<Expression> left, Operator op,
                      std::unique_ptr<Expression> right, const Type* type)
-        : INHERITED(line, kExpressionKind, type)
+        : INHERITED(pos, kExpressionKind, type)
         , fLeft(std::move(left))
         , fOperator(op)
         , fRight(std::move(right)) {
@@ -40,6 +42,7 @@ public:
     // Creates a potentially-simplified form of the expression. Determines the result type
     // programmatically. Typechecks and coerces input expressions; reports errors via ErrorReporter.
     static std::unique_ptr<Expression> Convert(const Context& context,
+                                               Position pos,
                                                std::unique_ptr<Expression> left,
                                                Operator op,
                                                std::unique_ptr<Expression> right);
@@ -47,6 +50,7 @@ public:
     // Creates a potentially-simplified form of the expression. Determines the result type
     // programmatically. Asserts if the expressions do not typecheck or are otherwise invalid.
     static std::unique_ptr<Expression> Make(const Context& context,
+                                            Position pos,
                                             std::unique_ptr<Expression> left,
                                             Operator op,
                                             std::unique_ptr<Expression> right);
@@ -54,6 +58,7 @@ public:
     // Creates a potentially-simplified form of the expression. Result type is passed in.
     // Asserts if the expressions do not typecheck or are otherwise invalid.
     static std::unique_ptr<Expression> Make(const Context& context,
+                                            Position pos,
                                             std::unique_ptr<Expression> left,
                                             Operator op,
                                             std::unique_ptr<Expression> right,
@@ -79,10 +84,6 @@ public:
         return fOperator;
     }
 
-    bool isConstantOrUniform() const override {
-        return this->left()->isConstantOrUniform() && this->right()->isConstantOrUniform();
-    }
-
     bool hasProperty(Property property) const override {
         if (property == Property::kSideEffects && this->getOperator().isAssignment()) {
             return true;
@@ -90,9 +91,9 @@ public:
         return this->left()->hasProperty(property) || this->right()->hasProperty(property);
     }
 
-    std::unique_ptr<Expression> clone() const override;
+    std::unique_ptr<Expression> clone(Position pos) const override;
 
-    String description() const override;
+    std::string description() const override;
 
 private:
     static bool CheckRef(const Expression& expr);

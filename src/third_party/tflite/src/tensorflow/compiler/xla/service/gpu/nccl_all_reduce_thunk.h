@@ -23,7 +23,6 @@ limitations under the License.
 #include "tensorflow/compiler/xla/service/gpu/nccl_collective_thunk.h"
 #include "tensorflow/compiler/xla/service/hlo_instruction.h"
 #include "tensorflow/compiler/xla/xla_data.pb.h"
-#include "tensorflow/core/platform/types.h"
 
 namespace xla {
 namespace gpu {
@@ -125,6 +124,16 @@ class NcclReduceScatterThunk : public NcclAllReduceThunkBase {
   Status RunNcclCollective(const ExecuteParams& params,
                            ncclComm_t comm) override;
 };
+
+struct DeviceBufferPair {
+  PrimitiveType element_type;
+  int64_t element_count;
+  se::DeviceMemoryBase source_buffer;
+  se::DeviceMemoryBase destination_buffer;
+};
+Status RunAllReduce(ReductionKind reduction_kind,
+                    std::vector<DeviceBufferPair>& buffers, se::Stream& stream,
+                    ncclComm_t comm);
 
 }  // namespace gpu
 }  // namespace xla

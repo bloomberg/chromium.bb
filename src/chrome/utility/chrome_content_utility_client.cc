@@ -12,19 +12,17 @@
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/path_service.h"
+#include "build/build_config.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/profiler/thread_profiler.h"
 #include "chrome/common/profiler/thread_profiler_configuration.h"
 #include "chrome/utility/browser_exposed_utility_interfaces.h"
 #include "chrome/utility/services.h"
+#include "components/metrics/call_stack_profile_builder.h"
 #include "content/public/child/child_thread.h"
 #include "content/public/common/content_switches.h"
 #include "sandbox/policy/mojom/sandbox.mojom.h"
 #include "sandbox/policy/sandbox_type.h"
-
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW) && defined(OS_WIN)
-#include "chrome/utility/printing_handler.h"
-#endif
 
 namespace {
 
@@ -33,15 +31,13 @@ base::LazyInstance<ChromeContentUtilityClient::NetworkBinderCreationCallback>::
 
 }  // namespace
 
-ChromeContentUtilityClient::ChromeContentUtilityClient()
-    : utility_process_running_elevated_(false) {
-}
+ChromeContentUtilityClient::ChromeContentUtilityClient() = default;
 
 ChromeContentUtilityClient::~ChromeContentUtilityClient() = default;
 
 void ChromeContentUtilityClient::ExposeInterfacesToBrowser(
     mojo::BinderMap* binders) {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   auto& cmd_line = *base::CommandLine::ForCurrentProcess();
   auto sandbox_type = sandbox::policy::SandboxTypeFromCommandLine(cmd_line);
   utility_process_running_elevated_ =
@@ -75,12 +71,12 @@ void ChromeContentUtilityClient::UtilityThreadStarted() {
           switches::kUtilityProcess &&  // An in-process utility thread may run
                                         // in other processes, only set up
                                         // collector in a utility process.
-      ThreadProfilerConfiguration::Get()
-          ->IsProfilerEnabledForCurrentProcess()) {
+      ThreadProfiler::ShouldCollectProfilesForChildProcess()) {
     mojo::PendingRemote<metrics::mojom::CallStackProfileCollector> collector;
     content::ChildThread::Get()->BindHostReceiver(
         collector.InitWithNewPipeAndPassReceiver());
-    ThreadProfiler::SetCollectorForChildProcess(std::move(collector));
+    metrics::CallStackProfileBuilder::SetParentProfileCollectorForChildProcess(
+        std::move(collector));
   }
 }
 

@@ -10,15 +10,22 @@ Some fragments are explained in detail below:
 
 ### General Purpose Fragments
 
+#### chromium_test_facet.shard.test-cml
+Runs CFv2 tests in the "chromium" test realm. This is generally required for all
+Chromium tests that must interact with true system services.
+
 #### font_capabilities.test-cmx
-For tests that test fonts by providing `fuchsia.fonts.Provider`. The injected `fonts.cmx` requires
-`fuchsia.tracing.provider.Registry`.
+For tests that test fonts by providing `fuchsia.fonts.Provider`. The injected
+`fonts.cmx` requires `fuchsia.tracing.provider.Registry`.
+
+#### fonts.shard.test-cml
+For tests that access system fonts.
 
 #### jit_capabilities.test-cmx
 Required by tests that execute JavaScript. Should only be required in a small
 number of tests.
 
-#### minimum_capabilites.test-cmx
+#### minimum_capabilites.test-cmx and minimum.shard.test-cml
 Capabilities required by anything that uses `//base/test`, used as the base
 fragment for all test suites.
 
@@ -30,7 +37,7 @@ approach is discussed in https://fxbug.dev/85845.
 Required by tests that need access to its debug directory. Should only be
 required in a small number of tests.
 
-#### test_logger_capabilities.test-cmx
+#### logger.shard.test-cml
 For tests that test logging functionality by providing `fuchsia.logger.Log`.
 
 ### WebEngine Fragments
@@ -42,6 +49,10 @@ Any test-specific exceptions are documented for each file.
 
 #### audio_capabilities.test-cmx
 Corresponds to the `AUDIO` flag. Required for enabling audio input and output.
+
+#### network.shard.test-cml
+For tests that need access to network services, including those that access a
+local HTTP server.
 
 #### network_capabilities.test-cmx
 Corresponds to the `NETWORK` flag. Required for enabling network access. Note
@@ -59,10 +70,13 @@ views.
 Corresponds to the `VULKAN` flag. Required for enabling GPU-accelerated
 rendering of the web content.
 
+CFv2 tests should use
+`//third_party/fuchsia-sdk/sdk/pkg/vulkan/client.shard.cml`.
+
 #### web_engine_required_capabilities.test-cmx
-Contains services that need to be present when creating a
-`fuchsia.web.Context`. Note that the `fuchsia.scheduler.ProfileProvider` service
-is only used in tests that encounter memory pressure code.
+Contains services that need to be present when creating a `fuchsia.web.Context`.
+Note that the `fuchsia.scheduler.ProfileProvider` service is only used in tests
+that encounter memory pressure code.
 
 #### web_instance_host_capabilities.test-cmx
 Contains services that need to be present to use `WebInstanceHost`.

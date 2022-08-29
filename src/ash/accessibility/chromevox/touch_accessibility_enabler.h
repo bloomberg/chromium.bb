@@ -5,9 +5,12 @@
 #ifndef ASH_ACCESSIBILITY_CHROMEVOX_TOUCH_ACCESSIBILITY_ENABLER_H_
 #define ASH_ACCESSIBILITY_CHROMEVOX_TOUCH_ACCESSIBILITY_ENABLER_H_
 
+#include <map>
+
 #include "ash/ash_export.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/tick_clock.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "ui/events/event.h"
 #include "ui/events/event_handler.h"

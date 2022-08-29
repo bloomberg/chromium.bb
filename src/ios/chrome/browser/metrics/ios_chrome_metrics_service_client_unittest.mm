@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/metrics/persistent_histogram_allocator.h"
 #include "base/test/scoped_feature_list.h"
@@ -19,6 +18,7 @@
 #include "components/metrics/unsent_log_store.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/ukm/ukm_service.h"
+#include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state_manager.h"
 #include "ios/chrome/test/ios_chrome_scoped_testing_chrome_browser_state_manager.h"
@@ -37,9 +37,13 @@ class IOSChromeMetricsServiceClientTest : public PlatformTest {
  public:
   IOSChromeMetricsServiceClientTest()
       : scoped_browser_state_manager_(
-            std::make_unique<TestChromeBrowserStateManager>(base::FilePath())),
-        browser_state_(TestChromeBrowserState::Builder().Build()),
-        enabled_state_provider_(/*consent=*/false, /*enabled=*/false) {}
+            std::make_unique<TestChromeBrowserStateManager>(
+                TestChromeBrowserState::Builder().Build())),
+        enabled_state_provider_(/*consent=*/false, /*enabled=*/false) {
+    browser_state_ = GetApplicationContext()
+                         ->GetChromeBrowserStateManager()
+                         ->GetLastUsedBrowserState();
+  }
 
   IOSChromeMetricsServiceClientTest(const IOSChromeMetricsServiceClientTest&) =
       delete;
@@ -57,7 +61,7 @@ class IOSChromeMetricsServiceClientTest : public PlatformTest {
  protected:
   web::WebTaskEnvironment task_environment_;
   IOSChromeScopedTestingChromeBrowserStateManager scoped_browser_state_manager_;
-  std::unique_ptr<ChromeBrowserState> browser_state_;
+  ChromeBrowserState* browser_state_;
   metrics::TestEnabledStateProvider enabled_state_provider_;
   TestingPrefServiceSimple prefs_;
   std::unique_ptr<metrics::MetricsStateManager> metrics_state_manager_;
@@ -92,7 +96,7 @@ TEST_F(IOSChromeMetricsServiceClientTest, TestRegisterMetricsServiceProviders) {
 
   // This is the number of metrics providers that are registered inside
   // IOSChromeMetricsServiceClient::Initialize().
-  expected_providers += 16;
+  expected_providers += 17;
 
   std::unique_ptr<IOSChromeMetricsServiceClient> chrome_metrics_service_client =
       IOSChromeMetricsServiceClient::Create(metrics_state_manager_.get());
@@ -117,8 +121,9 @@ TEST_F(IOSChromeMetricsServiceClientTest,
 
   // Number of providers registered by
   // IOSChromeMetricsServiceClient::RegisterMetricsServiceProviders(), namely
-  // CPUMetricsProvider, ScreenInfoMetricsProvider, FieldTrialsProvider.
-  const size_t expected_providers = 3;
+  // CPUMetricsProvider, ScreenInfoMetricsProvider, FormFactorMetricsProvider,
+  // and FieldTrialsProvider.
+  const size_t expected_providers = 4;
 
   EXPECT_EQ(expected_providers,
             ukmService->metrics_providers_.GetProviders().size());
@@ -153,7 +158,7 @@ TEST_F(IOSChromeMetricsServiceClientTest, TestUkmProvidersWhenDisabled) {
 TEST_F(IOSChromeMetricsServiceClientTest, GetUploadSigningKey_NotEmpty) {
   std::unique_ptr<IOSChromeMetricsServiceClient> chrome_metrics_service_client =
       IOSChromeMetricsServiceClient::Create(metrics_state_manager_.get());
-  const std::string signing_key =
+  [[maybe_unused]] const std::string signing_key =
       chrome_metrics_service_client->GetUploadSigningKey();
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // The signing key should never be an empty string for a Chrome-branded build.
@@ -162,7 +167,6 @@ TEST_F(IOSChromeMetricsServiceClientTest, GetUploadSigningKey_NotEmpty) {
   // In non-branded builds, we may still have a valid signing key if
   // USE_OFFICIAL_GOOGLE_API_KEYS is true. However, that macro is not available
   // in this file.
-  ALLOW_UNUSED_LOCAL(signing_key);
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 }
 

@@ -4,6 +4,7 @@
 
 #include "components/autofill_assistant/browser/autofill_assistant_tts_controller.h"
 
+#include "base/callback.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -43,6 +44,7 @@ class MockTtsController : public content::TtsController {
   content::TtsEngineDelegate* GetTtsEngineDelegate() override {
     return nullptr;
   }
+  void RefreshVoices() override {}
   void SetTtsPlatform(content::TtsPlatform* tts_platform) override {}
   int QueueSize() override { return 0; }
   void StripSSML(

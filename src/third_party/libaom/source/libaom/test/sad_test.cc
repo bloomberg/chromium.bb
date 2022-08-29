@@ -85,24 +85,34 @@ class SADTestBase : public ::testing::Test {
   static void SetUpTestSuite() {
     source_data8_ = reinterpret_cast<uint8_t *>(
         aom_memalign(kDataAlignment, kDataBlockSize));
+    ASSERT_NE(source_data8_, nullptr);
     reference_data8_ = reinterpret_cast<uint8_t *>(
         aom_memalign(kDataAlignment, kDataBufferSize));
+    ASSERT_NE(reference_data8_, nullptr);
     second_pred8_ =
         reinterpret_cast<uint8_t *>(aom_memalign(kDataAlignment, 128 * 128));
+    ASSERT_NE(second_pred8_, nullptr);
     comp_pred8_ =
         reinterpret_cast<uint8_t *>(aom_memalign(kDataAlignment, 128 * 128));
+    ASSERT_NE(comp_pred8_, nullptr);
     comp_pred8_test_ =
         reinterpret_cast<uint8_t *>(aom_memalign(kDataAlignment, 128 * 128));
+    ASSERT_NE(comp_pred8_test_, nullptr);
     source_data16_ = reinterpret_cast<uint16_t *>(
         aom_memalign(kDataAlignment, kDataBlockSize * sizeof(uint16_t)));
+    ASSERT_NE(source_data16_, nullptr);
     reference_data16_ = reinterpret_cast<uint16_t *>(
         aom_memalign(kDataAlignment, kDataBufferSize * sizeof(uint16_t)));
+    ASSERT_NE(reference_data16_, nullptr);
     second_pred16_ = reinterpret_cast<uint16_t *>(
         aom_memalign(kDataAlignment, 128 * 128 * sizeof(uint16_t)));
+    ASSERT_NE(second_pred16_, nullptr);
     comp_pred16_ = reinterpret_cast<uint16_t *>(
         aom_memalign(kDataAlignment, 128 * 128 * sizeof(uint16_t)));
+    ASSERT_NE(comp_pred16_, nullptr);
     comp_pred16_test_ = reinterpret_cast<uint16_t *>(
         aom_memalign(kDataAlignment, 128 * 128 * sizeof(uint16_t)));
+    ASSERT_NE(comp_pred16_test_, nullptr);
   }
 
   static void TearDownTestSuite() {
@@ -422,6 +432,7 @@ class SADSkipx4Test : public ::testing::WithParamInterface<SadMxNx4Param>,
   }
 };
 
+#if !CONFIG_REALTIME_ONLY
 class SADx4AvgTest : public ::testing::WithParamInterface<SadMxNx4AvgParam>,
                      public SADTestBase {
  public:
@@ -457,6 +468,7 @@ class SADx4AvgTest : public ::testing::WithParamInterface<SadMxNx4AvgParam>,
     }
   }
 };
+#endif  // !CONFIG_REALTIME_ONLY
 
 class SADTest : public ::testing::WithParamInterface<SadMxNParam>,
                 public SADTestBase {
@@ -1107,6 +1119,7 @@ TEST_P(SADSkipx4Test, DISABLED_Speed) {
 
 using std::make_tuple;
 
+#if !CONFIG_REALTIME_ONLY
 TEST_P(SADx4AvgTest, DISABLED_Speed) {
   int tmp_stride = reference_stride_;
   reference_stride_ >>= 1;
@@ -1167,6 +1180,7 @@ TEST_P(SADx4AvgTest, UnalignedRef) {
   CheckSADs();
   reference_stride_ = tmp_stride;
 }
+#endif  // !CONFIG_REALTIME_ONLY
 
 //------------------------------------------------------------------------------
 // C functions
@@ -1743,6 +1757,7 @@ const SadMxNx4Param skip_x4d_c_tests[] = {
 INSTANTIATE_TEST_SUITE_P(C, SADSkipx4Test,
                          ::testing::ValuesIn(skip_x4d_c_tests));
 
+#if !CONFIG_REALTIME_ONLY
 const SadMxNx4AvgParam x4d_avg_c_tests[] = {
   make_tuple(128, 128, &aom_sad128x128x4d_avg_c, -1),
   make_tuple(128, 64, &aom_sad128x64x4d_avg_c, -1),
@@ -1760,16 +1775,15 @@ const SadMxNx4AvgParam x4d_avg_c_tests[] = {
   make_tuple(8, 4, &aom_sad8x4x4d_avg_c, -1),
   make_tuple(4, 8, &aom_sad4x8x4d_avg_c, -1),
   make_tuple(4, 4, &aom_sad4x4x4d_avg_c, -1),
-#if !CONFIG_REALTIME_ONLY
   make_tuple(64, 16, &aom_sad64x16x4d_avg_c, -1),
   make_tuple(16, 64, &aom_sad16x64x4d_avg_c, -1),
   make_tuple(32, 8, &aom_sad32x8x4d_avg_c, -1),
   make_tuple(8, 32, &aom_sad8x32x4d_avg_c, -1),
   make_tuple(16, 4, &aom_sad16x4x4d_avg_c, -1),
   make_tuple(4, 16, &aom_sad4x16x4d_avg_c, -1),
-#endif
 };
 INSTANTIATE_TEST_SUITE_P(C, SADx4AvgTest, ::testing::ValuesIn(x4d_avg_c_tests));
+#endif  // !CONFIG_REALTIME_ONLY
 
 //------------------------------------------------------------------------------
 // ARM functions
@@ -2293,6 +2307,7 @@ const SadSkipMxNx4Param skip_x4d_sse2_tests[] = {
 INSTANTIATE_TEST_SUITE_P(SSE2, SADSkipx4Test,
                          ::testing::ValuesIn(skip_x4d_sse2_tests));
 
+#if !CONFIG_REALTIME_ONLY
 const SadMxNx4AvgParam x4d_avg_sse2_tests[] = {
   make_tuple(128, 128, &aom_sad128x128x4d_avg_sse2, -1),
   make_tuple(128, 64, &aom_sad128x64x4d_avg_sse2, -1),
@@ -2310,17 +2325,16 @@ const SadMxNx4AvgParam x4d_avg_sse2_tests[] = {
   make_tuple(8, 4, &aom_sad8x4x4d_avg_sse2, -1),
   make_tuple(4, 8, &aom_sad4x8x4d_avg_sse2, -1),
   make_tuple(4, 4, &aom_sad4x4x4d_avg_sse2, -1),
-#if !CONFIG_REALTIME_ONLY
   make_tuple(64, 16, &aom_sad64x16x4d_avg_sse2, -1),
   make_tuple(16, 64, &aom_sad16x64x4d_avg_sse2, -1),
   make_tuple(32, 8, &aom_sad32x8x4d_avg_sse2, -1),
   make_tuple(8, 32, &aom_sad8x32x4d_avg_sse2, -1),
   make_tuple(16, 4, &aom_sad16x4x4d_avg_sse2, -1),
   make_tuple(4, 16, &aom_sad4x16x4d_avg_sse2, -1),
-#endif
 };
 INSTANTIATE_TEST_SUITE_P(SSE2, SADx4AvgTest,
                          ::testing::ValuesIn(x4d_avg_sse2_tests));
+#endif  // !CONFIG_REALTIME_ONLY
 #endif  // HAVE_SSE2
 
 #if HAVE_SSSE3

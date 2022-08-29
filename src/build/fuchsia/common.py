@@ -18,6 +18,10 @@ IMAGES_ROOT = os.path.join(
     DIR_SOURCE_ROOT, 'third_party', 'fuchsia-sdk', 'images')
 SDK_ROOT = os.path.join(DIR_SOURCE_ROOT, 'third_party', 'fuchsia-sdk', 'sdk')
 
+# The number of seconds to wait when trying to attach to a target.
+ATTACH_RETRY_SECONDS = 120
+
+
 def EnsurePathExists(path):
   """Checks that the file |path| exists on the filesystem and returns the path
   if it does, raising an exception otherwise."""
@@ -37,7 +41,8 @@ def GetHostOsFromPlatform():
 
 def GetHostArchFromPlatform():
   host_arch = platform.machine()
-  if host_arch == 'x86_64':
+  # platform.machine() returns AMD64 on 64-bit Windows.
+  if host_arch in ['x86_64', 'AMD64']:
     return 'x64'
   elif host_arch == 'aarch64':
     return 'arm64'
@@ -48,7 +53,10 @@ def GetHostToolPathFromPlatform(tool):
   return os.path.join(SDK_ROOT, 'tools', GetHostArchFromPlatform(), tool)
 
 
+# Remove when arm64 emulator is also included in Fuchsia SDK.
 def GetEmuRootForPlatform(emulator):
+  if GetHostArchFromPlatform() == 'x64':
+    return GetHostToolPathFromPlatform('{0}_internal'.format(emulator))
   return os.path.join(
       DIR_SOURCE_ROOT, 'third_party', '{0}-{1}-{2}'.format(
           emulator, GetHostOsFromPlatform(), GetHostArchFromPlatform()))
@@ -148,3 +156,12 @@ def SubprocessCallWithTimeout(command, silent=False, timeout_secs=None):
     raise Exception('Timeout when executing \"%s\".' % ' '.join(command))
 
   return process.returncode, out, err
+
+
+def IsRunningUnattended():
+  """Returns true if running non-interactively.
+
+  When running unattended, confirmation prompts and the like are suppressed.
+  """
+  # Chromium tests only for the presence of the variable, so match that here.
+  return 'CHROME_HEADLESS' in os.environ

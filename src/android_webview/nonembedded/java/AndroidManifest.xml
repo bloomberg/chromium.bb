@@ -5,6 +5,13 @@
   LICENSE file.
 -->
 
+<!--
+Note: This is a jinja2 template, processed at build time into the final manifest.
+
+Blocks denoted with { % block some_name % }foo{ % endblock % } can be overridden
+by a child template that "extends" this file.
+-->
+
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="{{manifest_package|default('com.android.webview')}}"
@@ -23,6 +30,9 @@
 
     <!-- Required by WebView Developer UI only -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <!-- Required to run the foreground service-->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
 
     <application android:label="{{ application_label|default('Android System WebView') }}"
                  android:icon="@{{manifest_package|default('com.android.webview')}}:drawable/icon_webview"
@@ -163,6 +173,16 @@
                          android:visibleToInstantApps="true"
                          android:process=":webview_service"  {# Explicit process required for monochrome compatibility. #}
                          tools:ignore="ExportedService" />
+                <!-- JS Execution Sandbox -->
+                <service android:name="org.chromium.android_webview.js_sandbox.service.JsSandboxService0"
+                    android:process=":js_sandboxed_process0"
+                    android:isolatedProcess="true"
+                    android:exported="true"
+                    android:externalService="true"
+                    tools:ignore="ExportedService"
+                    android:visibleToInstantApps="true" />
+                {% block extra_application_definitions %}
+                {% endblock %}
             {% endif %}
         {% endmacro %}
         {{ common(manifest_package|default('com.android.webview'), library|default('libwebviewchromium.so')) }}

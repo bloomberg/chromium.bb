@@ -10,7 +10,7 @@
 
 #include "test_utils/ANGLETest.h"
 
-#include "platform/FeaturesVk.h"
+#include "platform/FeaturesVk_autogen.h"
 #include "test_utils/gl_raii.h"
 
 using namespace angle;
@@ -80,13 +80,6 @@ class DepthStencilTest : public ANGLETest
     {
         glBindFramebuffer(GL_FRAMEBUFFER, mColorDepthFBO);
         mHasStencil = false;
-    }
-
-    // Override a feature to force emulation of stencil-only and depth-only formats with a packed
-    // depth/stencil format
-    void overrideFeaturesVk(FeaturesVk *featuresVk) override
-    {
-        featuresVk->overrideFeatures({"force_fallback_format"}, true);
     }
 
     void prepareSingleEmulatedWithPacked();
@@ -257,6 +250,52 @@ TEST_P(DepthStencilTest, StencilOnlyEmulatedWithPacked)
     bindColorStencilFBO();
     prepareSingleEmulatedWithPacked();
     ensureDepthUnaffected();
+}
+
+// Tests that drawing into stencil buffer along multiple render passes works.
+TEST_P(DepthStencilTest, StencilOnlyDrawThenCopyThenDraw)
+{
+    ANGLE_GL_PROGRAM(drawColor, essl1_shaders::vs::Simple(), essl1_shaders::fs::UniformColor());
+    glUseProgram(drawColor);
+    GLint colorUniformLocation =
+        glGetUniformLocation(drawColor, angle::essl1_shaders::ColorUniform());
+    ASSERT_NE(colorUniformLocation, -1);
+
+    bindColorStencilFBO();
+
+    // Draw red once
+    glEnable(GL_STENCIL_TEST);
+    glStencilFunc(GL_ALWAYS, 0x55, 0xFF);
+    glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
+    glStencilMask(0xFF);
+
+    glUniform4f(colorUniformLocation, 1.0f, 0.0f, 0.0f, 1.0f);
+    drawQuad(drawColor, essl1_shaders::PositionAttrib(), 1.0f);
+    ASSERT_GL_NO_ERROR();
+
+    // Create a texture and copy color into it, this breaks the render pass.
+    GLTexture texture;
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, getWindowWidth(), getWindowHeight(), 0);
+
+    // Draw green, expecting correct stencil.
+    glStencilFunc(GL_EQUAL, 0x55, 0xFF);
+    glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+
+    glUniform4f(colorUniformLocation, 0.0f, 1.0f, 0.0f, 1.0f);
+    drawQuad(drawColor, essl1_shaders::PositionAttrib(), 1.0f);
+    ASSERT_GL_NO_ERROR();
+
+    // Verify that the texture is now green
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::green);
+
+    // For completeness, also verify that the copy texture is red
+    GLFramebuffer fbo;
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::red);
+
+    ASSERT_GL_NO_ERROR();
 }
 
 // Tests that clearing depth/stencil followed by draw works when the depth/stencil attachment is a
@@ -632,9 +671,16 @@ TEST_P(DepthStencilTestES3, ReadOnlyDepthStencilThenOutputDepthStencil)
     EXPECT_PIXEL_COLOR_EQ(kSize / 2, kSize / 2, GLColor::yellow);
 }
 
-ANGLE_INSTANTIATE_TEST_ES2_AND_ES3(DepthStencilTest);
+ANGLE_INSTANTIATE_TEST_ES2_AND_ES3_AND(
+    DepthStencilTest,
+    ES2_VULKAN().enable(Feature::ForceFallbackFormat),
+    ES2_VULKAN_SWIFTSHADER().enable(Feature::ForceFallbackFormat),
+    ES3_VULKAN().enable(Feature::ForceFallbackFormat),
+    ES3_VULKAN_SWIFTSHADER().enable(Feature::ForceFallbackFormat));
 
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(DepthStencilTestES3);
-ANGLE_INSTANTIATE_TEST_ES3(DepthStencilTestES3);
+ANGLE_INSTANTIATE_TEST_ES3_AND(DepthStencilTestES3,
+                               ES3_VULKAN().enable(Feature::ForceFallbackFormat),
+                               ES3_VULKAN_SWIFTSHADER().enable(Feature::ForceFallbackFormat));
 
 }  // anonymous namespace
