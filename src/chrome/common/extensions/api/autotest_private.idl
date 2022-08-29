@@ -117,7 +117,9 @@ namespace autotestPrivate {
   enum MouseButton {
     Left,
     Middle,
-    Right
+    Right,
+    Back,
+    Forward
   };
 
   // A paramter used in setArcAppWindowState() function.
@@ -151,6 +153,8 @@ namespace autotestPrivate {
     DOMString? email;
     // User display email. Set only if `isLoggedIn`.
     DOMString? displayEmail;
+    // User display name. Set only if `isLoggedIn`.
+    DOMString? displayName;
     // User image: 'file', 'profile' or a number. Set only if `isLoggedIn`.
     DOMString? userImage;
     // Whether the user has a valid oauth2 token. Only set for gaia user.
@@ -255,6 +259,20 @@ namespace autotestPrivate {
 
   callback IsArcPackageListInitialRefreshedCallback = void (boolean refreshed);
 
+  callback IsLacrosPrimaryBrowserCallback = void (boolean primary);
+
+  dictionary LacrosInfo {
+    // True iff lacros is running currently.
+    boolean isRunning;
+    // True iff keepalive is enabled for lacros.
+    boolean isKeepAlive;
+    // Path to lacros-chrome directory. Note that this may change over time if
+    // omaha is used. This also may be empty if lacros is not running.
+    DOMString lacrosPath;
+  };
+
+  callback GetLacrosInfoCallback = void (LacrosInfo info);
+
   dictionary ArcAppDict {
     DOMString name;
     DOMString packageName;
@@ -336,12 +354,33 @@ namespace autotestPrivate {
     boolean? showInSearch;
   };
 
-  dictionary SystemApp {
+  dictionary SystemWebApp {
+    // App's internal name. This isn't user-visible and should only be used
+    // for logging.
     DOMString internalName;
+
+    // App's install URL. This is a placeholder for installation pipeline,
+    // not used for anything else.
     DOMString url;
+
+    // App's visible name. This is defined in the Web App manifest, and shown
+    // in Shelf and Launcher. This matches App's name attribute (see above).
+    DOMString name;
+
+    // App's default start_url. This is the default URL that the App will be
+    // launched to.
+    DOMString startUrl;
   };
 
   callback GetAllInstalledAppsCallback = void (App[] apps);
+
+  dictionary CryptohomeRecoveryDataDict {
+    DOMString reauthProofToken;
+    DOMString refreshToken;
+  };
+
+  callback GetCryptohomeRecoveryDataCallback = void (
+    CryptohomeRecoveryDataDict dict);
 
   dictionary ShelfItem {
     DOMString appId;
@@ -593,7 +632,7 @@ namespace autotestPrivate {
   // Callback invoked to report the number of system web apps that should be
   // installed.
   callback GetRegisteredSystemWebAppsCallback = void
-      (SystemApp[] systemApps);
+      (SystemWebApp[] systemWebApps);
 
   callback IsSystemWebAppOpenCallback = void (boolean isOpen);
 
@@ -608,6 +647,21 @@ namespace autotestPrivate {
     // hidden after OOBE.
     boolean markTimeOfFirstAdd;
   };
+
+  callback CouldAllowCrostiniCallback = void (boolean canBeAllowed);
+
+  // Collected chromeos::LoginEventRecorder data.
+  dictionary LoginEventRecorderData {
+    // Event name
+    DOMString name;
+    // Number of frames actually shown for this animation.
+    long microsecnods_since_unix_epoch;
+  };
+
+  // Callback invoked to report the collection ui::LoginEventRecorder data
+  // after getLoginEventRecorderLoginEvents is called.
+  callback GetLoginEventRecorderLoginEventsCallback = void
+      (LoginEventRecorderData[] data);
 
   interface Functions {
     // Must be called to allow autotestPrivateAPI events to be fired.
@@ -712,6 +766,17 @@ namespace autotestPrivate {
     [supportsPromises] static void isArcProvisioned(
         IsArcProvisionedCallback callback);
 
+    // Returns true if Lacros is the primary browser. This includes the case
+    // where Lacros is the only browser.
+    // NOTE: Because the answer depends on the policy, this function should
+    // be used only after profile initialization.
+    [supportsPromises] static void isLacrosPrimaryBrowser(
+        IsLacrosPrimaryBrowserCallback callback);
+
+    // Gets various information about the state of lacros on the system.
+    [supportsPromises] static void getLacrosInfo(
+        GetLacrosInfoCallback callback);
+
     // Gets information about the requested ARC app.
     [supportsPromises] static void getArcApp(DOMString appId,
                                              GetArcAppCallback callback);
@@ -720,6 +785,10 @@ namespace autotestPrivate {
     [supportsPromises] static void getArcPackage(
         DOMString packageName,
         GetArcPackageCallback callback);
+
+    // Gets the data needed for Cryptohome Recovery.
+    [supportsPromises] static void getCryptohomeRecoveryData(
+        GetCryptohomeRecoveryDataCallback callback);
 
     // Waits for system web apps to complete the installation.
     [supportsPromises] static void waitForSystemWebAppsInstall(
@@ -764,6 +833,16 @@ namespace autotestPrivate {
 
     // Remove printer.
     static void removePrinter(DOMString printerId);
+
+    // Start ARC directly, note this differs from |setPlayStoreEnabled|. It is
+    // used to restart ARC in tests.
+    // |callback|: Called when the operation has completed.
+    [supportsPromises] static void startArc(VoidCallback callback);
+
+    // Stop ARC directly, note this differs from |setPlayStoreEnabled|. It is
+    // used to restart ARC in tests. Note, this preserves ARC data.
+    // |callback|: Called when the operation has completed.
+    [supportsPromises] static void stopArc(VoidCallback callback);
 
     // Enable/disable the Play Store.
     // |enabled|: if set, enable the Play Store.
@@ -811,6 +890,12 @@ namespace autotestPrivate {
     [supportsPromises] static void importCrostini(DOMString path,
                                                   VoidCallback callback);
 
+    // Returns whether crostini could ever be allowed.
+    // |callback|: Called with a boolean indicating if crostini can ever be
+    // allowed in the current profile.
+    [supportsPromises] static void couldAllowCrostini(
+        CouldAllowCrostiniCallback callback);
+
     // Sets mock Plugin VM policy.
     // |imageUrl|: URL to the image to install.
     // |imageHash|: Hash for the provided image.
@@ -847,6 +932,11 @@ namespace autotestPrivate {
     // |callback|: Called when the operation has completed.
     [supportsPromises] static void bootstrapMachineLearningService(
         VoidCallback callback);
+
+    // Triggers an on-demand update of smart dim component and checks whether
+    // it's successfully loaded by smart dim ml_agent.
+    // |callback|: Called when the operation has completed.
+    [supportsPromises] static void loadSmartDimComponent(VoidCallback callback);
 
     // Enables/disables the Google Assistant.
     // |callback|: Called when the operation has completed.
@@ -1231,6 +1321,20 @@ namespace autotestPrivate {
     [supportsPromises] static void resetHoldingSpace(
         optional ResetHoldingSpaceOptions options,
         VoidCallback callback);
+
+    // Starts collection of ui::LoginEventRecorder data.
+    static void startLoginEventRecorderDataCollection(VoidCallback callback);
+
+    // Stops ui::LoginEventRecorder data collection and reports all the
+    // collected data.
+    static void getLoginEventRecorderLoginEvents(
+        GetLoginEventRecorderLoginEventsCallback callback);
+
+    // Adds login event to test LoginEventRecorderDataCollection API.
+    static void addLoginEventForTesting(VoidCallback callback);
+
+    // Force auto theme mode in dark mode or light mode for testing.
+    [supportsPromises] static void forceAutoThemeMode(boolean darkModeEnabled, VoidCallback callback);
   };
 
   interface Events {

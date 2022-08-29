@@ -50,15 +50,17 @@ std::unique_ptr<JSONObject> CCLayerAsJSON(const cc::Layer& layer,
   else if (layer.contents_opaque_for_text())
     json->SetBoolean("contentsOpaqueForText", true);
 
-  if (!layer.DrawsContent())
+  if (!layer.draws_content())
     json->SetBoolean("drawsContent", false);
 
   if (layer.should_check_backface_visibility())
     json->SetString("backfaceVisibility", "hidden");
 
-  if (Color(layer.background_color()).Alpha()) {
-    json->SetString("backgroundColor",
-                    Color(layer.background_color()).NameForLayoutTreeAsText());
+  // TODO(crbug/1308932): Remove toSkColor and make all SkColor4f.
+  if (Color(layer.background_color().toSkColor()).Alpha()) {
+    json->SetString(
+        "backgroundColor",
+        Color(layer.background_color().toSkColor()).NameForLayoutTreeAsText());
   }
 
   if (flags &
@@ -108,8 +110,7 @@ int LayersAsJSON::AddTransformJSON(
 
   if (!transform.IsIdentityOr2DTranslation() &&
       !transform.Matrix().IsIdentityOrTranslation()) {
-    transform_json->SetArray(
-        "origin", Point3AsJSONArray(ToGfxPoint3F(transform.Origin())));
+    transform_json->SetArray("origin", Point3AsJSONArray(transform.Origin()));
   }
 
   if (!transform.FlattensInheritedTransform())
@@ -133,11 +134,14 @@ int LayersAsJSON::AddTransformJSON(
 void LayersAsJSON::AddLayer(const cc::Layer& layer,
                             const TransformPaintPropertyNode& transform,
                             const LayerAsJSONClient* json_client) {
-  if (!(flags_ & kLayerTreeIncludesAllLayers) && !layer.DrawsContent() &&
-      (layer.DebugName() == "LayoutView #document" ||
-       layer.DebugName() == "Inner Viewport Scroll Layer" ||
-       layer.DebugName() == "Scrolling Contents Layer"))
-    return;
+  if (!(flags_ & kLayerTreeIncludesAllLayers) && !layer.draws_content()) {
+    std::string debug_name = layer.DebugName();
+    if (debug_name == "LayoutNGView #document" ||
+        debug_name == "LayoutView #document" ||
+        debug_name == "Inner Viewport Scroll Layer" ||
+        debug_name == "Scrolling Contents Layer")
+      return;
+  }
 
   auto layer_json = CCLayerAsJSON(layer, flags_);
   if (json_client) {

@@ -20,18 +20,20 @@
 #include <time.h>
 #include <unistd.h>
 
+#include "base/base_export.h"
 #include "base/base_switches.h"
 #include "base/bits.h"
 #include "base/command_line.h"
+#include "base/containers/adapters.h"
 #include "base/containers/contains.h"
 #include "base/containers/stack.h"
-#include "base/cxx17_backports.h"
 #include "base/environment.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
+#include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/path_service.h"
 #include "base/posix/eintr_wrapper.h"
@@ -46,29 +48,28 @@
 #include "base/time/time.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
-#include "build/chromeos_buildflags.h"
 
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
 #include <AvailabilityMacros.h>
 #include "base/mac/foundation_util.h"
 #endif
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID)
 #include <sys/sendfile.h>
 #endif
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "base/android/content_uri_utils.h"
 #include "base/os_compat_android.h"
 #endif
 
-#if !defined(OS_IOS)
+#if !BUILDFLAG(IS_IOS)
 #include <grp.h>
 #endif
 
 // We need to do this on AIX due to some inconsistencies in how AIX
 // handles XOPEN_SOURCE and ALL_SOURCE.
-#if defined(OS_AIX)
+#if BUILDFLAG(IS_AIX)
 extern "C" char* mkdtemp(char* path);
 #endif
 
@@ -76,6 +77,7 @@ namespace base {
 
 namespace {
 
+#if BUILDFLAG(IS_MAC)
 // Helper for VerifyPathControlledByUser.
 bool VerifySpecificPathControlledByUser(const FilePath& path,
                                         uid_t owner_uid,
@@ -111,6 +113,7 @@ bool VerifySpecificPathControlledByUser(const FilePath& path,
 
   return true;
 }
+#endif
 
 base::FilePath GetTempTemplate() {
   return FormatTemporaryFileName("XXXXXX");
@@ -246,9 +249,9 @@ bool DoCopyDirectory(const FilePath& from_path,
     // source file's permissions into account. On the other platforms, we just
     // use the base::File constructor. On Chrome OS, base::File uses a different
     // set of permissions than it does on other POSIX platforms.
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
     int mode = 0600 | (stat_at_use.st_mode & 0177);
-#elif BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#elif BUILDFLAG(IS_CHROMEOS)
     int mode = 0644;
 #else
     int mode = 0600;
@@ -276,10 +279,10 @@ bool DoCopyDirectory(const FilePath& from_path,
 bool DoDeleteFile(const FilePath& path, bool recursive) {
   ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   if (path.IsContentUri())
     return DeleteContentUri(path);
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 
   const char* path_str = path.value().c_str();
   stat_wrapper_t file_info;
@@ -314,7 +317,7 @@ bool DoDeleteFile(const FilePath& path, bool recursive) {
   return success;
 }
 
-#if !defined(OS_APPLE)
+#if !BUILDFLAG(IS_APPLE)
 // Appends |mode_char| to |mode| before the optional character set encoding; see
 // https://www.gnu.org/software/libc/manual/html_node/Opening-Streams.html for
 // details.
@@ -380,7 +383,7 @@ bool CreatePipe(ScopedFD* read_fd, ScopedFD* write_fd, bool non_blocking) {
 }
 
 bool CreateLocalNonBlockingPipe(int fds[2]) {
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
   return pipe2(fds, O_CLOEXEC | O_NONBLOCK) == 0;
 #else
   int raw_fds[2];
@@ -426,7 +429,7 @@ bool SetCloseOnExec(int fd) {
 
 bool PathExists(const FilePath& path) {
   ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   if (path.IsContentUri()) {
     return ContentUriExists(path);
   }
@@ -477,7 +480,7 @@ ScopedFD CreateAndOpenFdForTemporaryFileInDir(const FilePath& directory,
   return ScopedFD(HANDLE_EINTR(mkstemp(buffer)));
 }
 
-#if !defined(OS_FUCHSIA)
+#if !BUILDFLAG(IS_FUCHSIA)
 bool CreateSymbolicLink(const FilePath& target_path,
                         const FilePath& symlink_path) {
   DCHECK(!symlink_path.empty());
@@ -490,10 +493,9 @@ bool ReadSymbolicLink(const FilePath& symlink_path, FilePath* target_path) {
   DCHECK(!symlink_path.empty());
   DCHECK(target_path);
   char buf[PATH_MAX];
-  ssize_t count =
-      ::readlink(symlink_path.value().c_str(), buf, base::size(buf));
+  ssize_t count = ::readlink(symlink_path.value().c_str(), buf, std::size(buf));
 
-#if defined(OS_ANDROID) && defined(__LP64__)
+#if BUILDFLAG(IS_ANDROID) && defined(__LP64__)
   // A few 64-bit Android L/M devices return INT_MAX instead of -1 here for
   // errors; this is related to bionic's (incorrect) definition of ssize_t as
   // being long int instead of int. Cast it so the compiler generates the
@@ -565,9 +567,9 @@ bool ExecutableExistsInPath(Environment* env,
   return false;
 }
 
-#endif  // !OS_FUCHSIA
+#endif  // !BUILDFLAG(IS_FUCHSIA)
 
-#if !defined(OS_APPLE)
+#if !BUILDFLAG(IS_APPLE)
 // This is implemented in file_util_mac.mm for Mac.
 bool GetTempDir(FilePath* path) {
   const char* tmp = getenv("TMPDIR");
@@ -576,18 +578,18 @@ bool GetTempDir(FilePath* path) {
     return true;
   }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   return PathService::Get(DIR_CACHE, path);
 #else
   *path = FilePath("/tmp");
   return true;
 #endif
 }
-#endif  // !defined(OS_APPLE)
+#endif  // !BUILDFLAG(IS_APPLE)
 
-#if !defined(OS_APPLE)  // Mac implementation is in file_util_mac.mm.
+#if !BUILDFLAG(IS_APPLE)  // Mac implementation is in file_util_mac.mm.
 FilePath GetHomeDir() {
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS)
   if (SysInfo::IsRunningOnChromeOS()) {
     // On Chrome OS chrome::DIR_USER_DATA is overridden with a primary user
     // homedir once it becomes available. Return / as the safe option.
@@ -599,7 +601,7 @@ FilePath GetHomeDir() {
   if (home_dir && home_dir[0])
     return FilePath(home_dir);
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   DLOG(WARNING) << "OS_ANDROID: Home directory lookup not yet implemented.";
 #endif
 
@@ -610,7 +612,7 @@ FilePath GetHomeDir() {
   // Last resort.
   return FilePath("/tmp");
 }
-#endif  // !defined(OS_APPLE)
+#endif  // !BUILDFLAG(IS_APPLE)
 
 File CreateAndOpenTemporaryFileInDir(const FilePath& dir, FilePath* temp_file) {
   // For call to close() inside ScopedFD.
@@ -627,7 +629,7 @@ bool CreateTemporaryFileInDir(const FilePath& dir, FilePath* temp_file) {
 }
 
 FilePath FormatTemporaryFileName(FilePath::StringPieceType identifier) {
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
   StringPiece prefix = base::mac::BaseBundleID();
 #elif BUILDFLAG(GOOGLE_CHROME_BRANDING)
   StringPiece prefix = "com.google.Chrome";
@@ -706,17 +708,17 @@ bool CreateDirectoryAndGetError(const FilePath& full_path,
   }
 
   // Iterate through the parents and create the missing ones.
-  for (auto i = subpaths.rbegin(); i != subpaths.rend(); ++i) {
-    if (DirectoryExists(*i))
+  for (const FilePath& subpath : base::Reversed(subpaths)) {
+    if (DirectoryExists(subpath))
       continue;
-    if (mkdir(i->value().c_str(), 0700) == 0)
+    if (mkdir(subpath.value().c_str(), 0700) == 0)
       continue;
     // Mkdir failed, but it might have failed with EEXIST, or some other error
     // due to the directory appearing out of thin air. This can occur if
     // two processes are trying to create the same file system tree at the same
     // time. Check to see if it exists and make sure it is a directory.
     int saved_errno = errno;
-    if (!DirectoryExists(*i)) {
+    if (!DirectoryExists(subpath)) {
       if (error)
         *error = File::OSErrorToFileError(saved_errno);
       return false;
@@ -783,19 +785,19 @@ bool IsLink(const FilePath& file_path) {
 
 bool GetFileInfo(const FilePath& file_path, File::Info* results) {
   stat_wrapper_t file_info;
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   if (file_path.IsContentUri()) {
     File file = OpenContentUriForRead(file_path);
     if (!file.IsValid())
       return false;
     return file.GetInfo(results);
   } else {
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
     if (File::Stat(file_path.value().c_str(), &file_info) != 0)
       return false;
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   }
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 
   results->FromStat(file_info);
   return true;
@@ -809,7 +811,7 @@ FILE* OpenFile(const FilePath& filename, const char* mode) {
       (strchr(mode, ',') != nullptr && strchr(mode, 'e') > strchr(mode, ',')));
   ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
   FILE* result = nullptr;
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
   // macOS does not provide a mode character to set O_CLOEXEC; see
   // https://developer.apple.com/legacy/library/documentation/Darwin/Reference/ManPages/man3/fopen.3.html.
   const char* the_mode = mode;
@@ -820,7 +822,7 @@ FILE* OpenFile(const FilePath& filename, const char* mode) {
   do {
     result = fopen(filename.value().c_str(), the_mode);
   } while (!result && errno == EINTR);
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
   // Mark the descriptor as close-on-exec.
   if (result)
     SetCloseOnExec(fileno(result));
@@ -829,7 +831,7 @@ FILE* OpenFile(const FilePath& filename, const char* mode) {
 }
 
 // NaCl doesn't implement system calls to open files directly.
-#if !defined(OS_NACL)
+#if !BUILDFLAG(IS_NACL)
 FILE* FileToFILE(File file, const char* mode) {
   PlatformFile unowned = file.GetPlatformFile();
   FILE* stream = fdopen(file.TakePlatformFile(), mode);
@@ -849,7 +851,7 @@ File FILEToFile(FILE* file_stream) {
     return File(File::GetLastFileError());
   return File(std::move(other_fd));
 }
-#endif  // !defined(OS_NACL)
+#endif  // !BUILDFLAG(IS_NACL)
 
 int ReadFile(const FilePath& filename, char* data, int max_size) {
   ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
@@ -923,11 +925,11 @@ bool AllocateFileRegion(File* file, int64_t offset, size_t size) {
   // space. It can fail because the filesystem doesn't support it. In that case,
   // use the manual method below.
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
   if (HANDLE_EINTR(fallocate(file->GetPlatformFile(), 0, offset, size)) != -1)
     return true;
   DPLOG(ERROR) << "fallocate";
-#elif defined(OS_APPLE)
+#elif BUILDFLAG(IS_APPLE)
   // MacOS doesn't support fallocate even though their new APFS filesystem
   // does support sparse files. It does, however, have the functionality
   // available via fcntl.
@@ -1013,6 +1015,7 @@ bool SetCurrentDirectory(const FilePath& path) {
   return chdir(path.value().c_str()) == 0;
 }
 
+#if BUILDFLAG(IS_MAC)
 bool VerifyPathControlledByUser(const FilePath& base,
                                 const FilePath& path,
                                 uid_t owner_uid,
@@ -1023,12 +1026,8 @@ bool VerifyPathControlledByUser(const FilePath& base,
      return false;
   }
 
-  std::vector<FilePath::StringType> base_components;
-  std::vector<FilePath::StringType> path_components;
-
-  base.GetComponents(&base_components);
-  path.GetComponents(&path_components);
-
+  std::vector<FilePath::StringType> base_components = base.GetComponents();
+  std::vector<FilePath::StringType> path_components = path.GetComponents();
   std::vector<FilePath::StringType>::const_iterator ib, ip;
   for (ib = base_components.begin(), ip = path_components.begin();
        ib != base_components.end(); ++ib, ++ip) {
@@ -1052,7 +1051,6 @@ bool VerifyPathControlledByUser(const FilePath& base,
   return true;
 }
 
-#if defined(OS_MAC)
 bool VerifyPathControlledByAdmin(const FilePath& path) {
   const unsigned kRootUid = 0;
   const FilePath kFileSystemRoot("/");
@@ -1067,7 +1065,7 @@ bool VerifyPathControlledByAdmin(const FilePath& path) {
   ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
 
   std::set<gid_t> allowed_group_ids;
-  for (int i = 0, ie = base::size(kAdminGroupNames); i < ie; ++i) {
+  for (int i = 0, ie = std::size(kAdminGroupNames); i < ie; ++i) {
     struct group *group_record = getgrnam(kAdminGroupNames[i]);
     if (!group_record) {
       DPLOG(ERROR) << "Could not get the group ID of group \""
@@ -1081,10 +1079,10 @@ bool VerifyPathControlledByAdmin(const FilePath& path) {
   return VerifyPathControlledByUser(
       kFileSystemRoot, path, kRootUid, allowed_group_ids);
 }
-#endif  // defined(OS_MAC)
+#endif  // BUILDFLAG(IS_MAC)
 
 int GetMaximumPathComponentLength(const FilePath& path) {
-#if defined(OS_FUCHSIA)
+#if BUILDFLAG(IS_FUCHSIA)
   // Return a value we do not expect anyone ever to reach, but which is small
   // enough to guard against e.g. bugs causing multi-megabyte paths.
   return 1024;
@@ -1094,12 +1092,12 @@ int GetMaximumPathComponentLength(const FilePath& path) {
 #endif
 }
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 // This is implemented in file_util_android.cc for that platform.
 bool GetShmemTempDir(bool executable, FilePath* path) {
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_AIX)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_AIX)
   bool disable_dev_shm = false;
-#if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)
+#if !BUILDFLAG(IS_CHROMEOS)
   disable_dev_shm = CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableDevShmUsage);
 #endif
@@ -1113,17 +1111,17 @@ bool GetShmemTempDir(bool executable, FilePath* path) {
     *path = FilePath("/dev/shm");
     return true;
   }
-#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_AIX)
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_AIX)
   return GetTempDir(path);
 }
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID)
 
-#if !defined(OS_APPLE)
+#if !BUILDFLAG(IS_APPLE)
 // Mac has its own implementation, this is for all other Posix systems.
 bool CopyFile(const FilePath& from_path, const FilePath& to_path) {
   ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
   File infile;
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   if (from_path.IsContentUri()) {
     infile = OpenContentUriForRead(from_path);
   } else {
@@ -1141,7 +1139,7 @@ bool CopyFile(const FilePath& from_path, const FilePath& to_path) {
 
   return CopyFileContents(infile, outfile);
 }
-#endif  // !defined(OS_APPLE)
+#endif  // !BUILDFLAG(IS_APPLE)
 
 PrefetchResult PreReadFile(const FilePath& file_path,
                            bool is_executable,
@@ -1151,8 +1149,8 @@ PrefetchResult PreReadFile(const FilePath& file_path,
   // posix_fadvise() is only available in the Android NDK in API 21+. Older
   // versions may have the required kernel support, but don't have enough usage
   // to justify backporting.
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || \
-    (defined(OS_ANDROID) && __ANDROID_API__ >= 21)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || \
+    (BUILDFLAG(IS_ANDROID) && __ANDROID_API__ >= 21)
   File file(file_path, File::FLAG_OPEN | File::FLAG_READ);
   if (!file.IsValid())
     return PrefetchResult{PrefetchResultCode::kInvalidFile};
@@ -1167,7 +1165,7 @@ PrefetchResult PreReadFile(const FilePath& file_path,
   return posix_fadvise(fd, /*offset=*/0, len, POSIX_FADV_WILLNEED) == 0
              ? PrefetchResult{PrefetchResultCode::kSuccess}
              : PrefetchResult{PrefetchResultCode::kFastFailed};
-#elif defined(OS_APPLE)
+#elif BUILDFLAG(IS_APPLE)
   File file(file_path, File::FLAG_OPEN | File::FLAG_READ);
   if (!file.IsValid())
     return PrefetchResult{PrefetchResultCode::kInvalidFile};
@@ -1187,7 +1185,8 @@ PrefetchResult PreReadFile(const FilePath& file_path,
   return internal::PreReadFileSlow(file_path, max_bytes)
              ? PrefetchResult{PrefetchResultCode::kSlowSuccess}
              : PrefetchResult{PrefetchResultCode::kSlowFailed};
-#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS) || (defined(OS_ANDROID) &&
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) ||
+        // (BUILDFLAG(IS_ANDROID) &&
         // __ANDROID_API__ >= 21)
 }
 
@@ -1218,7 +1217,7 @@ bool MoveUnsafe(const FilePath& from_path, const FilePath& to_path) {
   return true;
 }
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID)
 bool CopyFileContentsWithSendfile(File& infile,
                                   File& outfile,
                                   bool& retry_slow) {
@@ -1269,11 +1268,12 @@ bool CopyFileContentsWithSendfile(File& infile,
 
   return res >= 0;
 }
-#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) ||
+        // BUILDFLAG(IS_ANDROID)
 
 }  // namespace internal
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_AIX)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_AIX)
 BASE_EXPORT bool IsPathExecutable(const FilePath& path) {
   bool result = false;
   FilePath tmp_file_path;
@@ -1294,6 +1294,6 @@ BASE_EXPORT bool IsPathExecutable(const FilePath& path) {
   }
   return result;
 }
-#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_AIX)
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_AIX)
 
 }  // namespace base

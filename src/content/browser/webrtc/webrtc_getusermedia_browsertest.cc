@@ -33,7 +33,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/audio/public/mojom/testing_api.mojom.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "base/win/windows_version.h"
 #endif
 
@@ -80,6 +80,9 @@ std::string GenerateGetUserMediaWithOptionalSourceID(
   return function_name + "({" + audio_constraint + video_constraint + "});";
 }
 
+// TODO(crbug.com/1327666): Bring back when
+// WebRtcGetUserMediaBrowserTest.DisableLocalEchoParameter is fixed.
+#if 0
 std::string GenerateGetUserMediaWithDisableLocalEcho(
     const std::string& function_name,
     const std::string& disable_local_echo) {
@@ -96,6 +99,7 @@ bool VerifyDisableLocalEcho(bool expect_value,
                             const blink::StreamControls& controls) {
   return expect_value == controls.disable_local_echo;
 }
+#endif
 
 }  // namespace
 
@@ -145,7 +149,7 @@ class WebRtcGetUserMediaBrowserTest : public WebRtcContentBrowserTestBase {
 
     ASSERT_TRUE(parsed_json.value->is_list());
 
-    for (const auto& entry : parsed_json.value->GetList()) {
+    for (const auto& entry : parsed_json.value->GetListDeprecated()) {
       const base::DictionaryValue* dict;
       std::string kind;
       std::string device_id;
@@ -278,7 +282,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
 }
 
 // TODO(crbug.com/571389, crbug.com/1241538): Flaky on TSAN bots and macOS.
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_MAC)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_MAC)
 #define MAYBE_GetUserMediaWithMandatorySourceID \
   DISABLED_GetUserMediaWithMandatorySourceID
 #else
@@ -344,7 +348,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
 }
 
 // TODO(crbug.com/1239385): Flaky on Mac.
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #define MAYBE_GetUserMediaWithInvalidOptionalSourceID \
   DISABLED_GetUserMediaWithInvalidOptionalSourceID
 #else
@@ -513,8 +517,16 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
 }
 
 // This test calls getUserMedia and checks for aspect ratio behavior.
+// TODO(1337302): Flaky for tsan, mac, lacros.
+#if defined(THREAD_SANITIZER) || BUILDFLAG(IS_MAC) || \
+    BUILDFLAG(IS_CHROMEOS_LACROS)
+#define MAYBE_TestGetUserMediaAspectRatio4To3 \
+  DISABLED_TestGetUserMediaAspectRatio4To3
+#else
+#define MAYBE_TestGetUserMediaAspectRatio4To3 TestGetUserMediaAspectRatio4To3
+#endif
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
-                       TestGetUserMediaAspectRatio4To3) {
+                       MAYBE_TestGetUserMediaAspectRatio4To3) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
@@ -544,8 +556,16 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
 }
 
 // This test calls getUserMedia and checks for aspect ratio behavior.
+// TODO(1337302): Flaky for tsan, mac, lacros.
+#if defined(THREAD_SANITIZER) || BUILDFLAG(IS_MAC) || \
+    BUILDFLAG(IS_CHROMEOS_LACROS)
+#define MAYBE_TestGetUserMediaAspectRatio1To1 \
+  DISABLED_TestGetUserMediaAspectRatio1To1
+#else
+#define MAYBE_TestGetUserMediaAspectRatio1To1 TestGetUserMediaAspectRatio1To1
+#endif
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
-                       TestGetUserMediaAspectRatio1To1) {
+                       MAYBE_TestGetUserMediaAspectRatio1To1) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
@@ -589,7 +609,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
 // This test calls getUserMedia in an iframe and immediately close the iframe
 // in the scope of the failure callback.
 // Flaky on lacros-chrome and mac bots. http://crbug.com/1196389
-#if BUILDFLAG(IS_CHROMEOS_LACROS) || defined(OS_MAC)
+#if BUILDFLAG(IS_CHROMEOS_LACROS) || BUILDFLAG(IS_MAC)
 #define MAYBE_VideoWithBadConstraintsInIFrameAndCloseInFailureCb \
   DISABLED_VideoWithBadConstraintsInIFrameAndCloseInFailureCb
 #else
@@ -619,7 +639,7 @@ IN_PROC_BROWSER_TEST_F(
 
 // TODO(http://crbug.com/1205560): This test is flaky on mac bots. Re-enable the
 // test after fixing the issue.
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #define MAYBE_InvalidSourceIdInIFrameAndCloseInFailureCb \
   DISABLED_InvalidSourceIdInIFrameAndCloseInFailureCb
 #else
@@ -640,6 +660,10 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
   ExecuteJavascriptAndWaitForOk(call);
 }
 
+// TODO(crbug.com/1327666): Fix this test. It seems to be broken (no audio /
+// video tracks are requested; "uncaught (in promise) undefined)") and was false
+// positive before disabling.
+#if 0
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
                        DisableLocalEchoParameter) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -652,21 +676,22 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
   MediaStreamManager* manager =
       BrowserMainLoop::GetInstance()->media_stream_manager();
 
-  manager->SetGenerateStreamCallbackForTesting(
+  manager->SetGenerateStreamsCallbackForTesting(
       base::BindOnce(&VerifyDisableLocalEcho, false));
   std::string call = GenerateGetUserMediaWithDisableLocalEcho(
       "getUserMediaAndExpectSuccess", "false");
   ExecuteJavascriptAndWaitForOk(call);
 
-  manager->SetGenerateStreamCallbackForTesting(
+  manager->SetGenerateStreamsCallbackForTesting(
       base::BindOnce(&VerifyDisableLocalEcho, true));
   call = GenerateGetUserMediaWithDisableLocalEcho(
       "getUserMediaAndExpectSuccess", "true");
   ExecuteJavascriptAndWaitForOk(call);
 
-  manager->SetGenerateStreamCallbackForTesting(
+  manager->SetGenerateStreamsCallbackForTesting(
       MediaStreamManager::GenerateStreamTestCallback());
 }
+#endif
 
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest, GetAudioSettingsDefault) {
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -763,7 +788,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
 
 // Flaky on Win, see https://crbug.com/915135
 // Flaky on Linux, see https://crbug.com/952381
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 #define MAYBE_ApplyConstraintsNonDevice DISABLED_ApplyConstraintsNonDevice
 #else
 #define MAYBE_ApplyConstraintsNonDevice ApplyConstraintsNonDevice

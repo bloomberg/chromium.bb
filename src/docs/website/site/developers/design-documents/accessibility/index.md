@@ -141,17 +141,21 @@ support, see
 **Windows:**
 
 *   MSAA/IAccessible (complete)
-*   IAccessible2 (mostly complete)
+*   IAccessible2 (complete)
 *   ISimpleDOM (mostly complete)
 *   IAccessibleEx and UI Automation (very limited)
 
 **Mac OS X:**
 
-*   NSAccessibility (mostly complete)
+*   NSAccessibility (complete)
 
 **Linux:**
 
-*   ATK (very limited)
+*   ATK
+
+**Android:**
+
+*   Android accessibility API (complete)
 
 ## Testing
 

@@ -70,7 +70,6 @@ TEST(URLRequestMojomTraitsTest, Roundtrips_ResourceRequest) {
   original.load_flags = 3;
   original.resource_type = 2;
   original.priority = net::IDLE;
-  original.is_external_request = false;
   original.cors_preflight_policy =
       mojom::CorsPreflightPolicy::kConsiderPreflight;
   original.originated_from_service_worker = false;
@@ -84,7 +83,7 @@ TEST(URLRequestMojomTraitsTest, Roundtrips_ResourceRequest) {
   original.enable_load_timing = true;
   original.enable_upload_progress = false;
   original.do_not_prompt_for_login = true;
-  original.is_main_frame = true;
+  original.is_outermost_main_frame = true;
   original.transition_type = 0;
   original.previews_state = 0;
   original.upgrade_if_insecure = true;

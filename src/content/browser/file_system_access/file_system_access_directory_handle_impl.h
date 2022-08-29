@@ -5,9 +5,9 @@
 #ifndef CONTENT_BROWSER_FILE_SYSTEM_ACCESS_FILE_SYSTEM_ACCESS_DIRECTORY_HANDLE_IMPL_H_
 #define CONTENT_BROWSER_FILE_SYSTEM_ACCESS_FILE_SYSTEM_ACCESS_DIRECTORY_HANDLE_IMPL_H_
 
-#include "base/compiler_specific.h"
 #include "base/files/file.h"
 #include "base/memory/weak_ptr.h"
+#include "base/thread_annotations.h"
 #include "components/services/filesystem/public/mojom/types.mojom.h"
 #include "content/browser/file_system_access/file_system_access_handle_base.h"
 #include "content/common/content_export.h"
@@ -71,9 +71,9 @@ class CONTENT_EXPORT FileSystemAccessDirectoryHandleImpl
   // Calculates a FileSystemURL for a (direct) child of this directory with the
   // given basename.  Returns an error when `basename` includes invalid input
   // like "/".
-  blink::mojom::FileSystemAccessErrorPtr GetChildURL(
+  [[nodiscard]] blink::mojom::FileSystemAccessErrorPtr GetChildURL(
       const std::string& basename,
-      storage::FileSystemURL* result) WARN_UNUSED_RESULT;
+      storage::FileSystemURL* result);
 
   // The File System Access API should not give access to files that might
   // trigger special handling from the operating system. This method is used to
@@ -116,7 +116,8 @@ class CONTENT_EXPORT FileSystemAccessDirectoryHandleImpl
 
   base::WeakPtr<FileSystemAccessHandleBase> AsWeakPtr() override;
 
-  base::WeakPtrFactory<FileSystemAccessDirectoryHandleImpl> weak_factory_{this};
+  base::WeakPtrFactory<FileSystemAccessDirectoryHandleImpl> weak_factory_
+      GUARDED_BY_CONTEXT(sequence_checker_){this};
 };
 
 }  // namespace content

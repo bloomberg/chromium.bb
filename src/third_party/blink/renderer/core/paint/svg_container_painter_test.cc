@@ -8,7 +8,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_root.h"
-#include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
 #include "third_party/blink/renderer/core/paint/paint_controller_paint_test.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_chunk.h"
@@ -25,7 +24,7 @@ INSTANTIATE_PAINT_TEST_SUITE_P(SVGContainerPainterTest);
 TEST_P(SVGContainerPainterTest, FilterPaintProperties) {
   SetBodyInnerHTML(R"HTML(
     <style>
-      #container, #before, #after { will-change: transform; }
+      #container, #before, #after { will-change: filter; }
     </style>
     <svg id="svg" width="40" height="40">
       <g id="container">

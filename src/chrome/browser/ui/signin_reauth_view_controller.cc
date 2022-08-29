@@ -11,6 +11,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
+#include "base/observer_list.h"
 #include "base/task/task_runner.h"
 #include "base/time/time.h"
 #include "chrome/browser/consent_auditor/consent_auditor_factory.h"
@@ -23,10 +24,12 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
+#include "chrome/browser/ui/signin_modal_dialog.h"
 #include "chrome/browser/ui/webui/signin/signin_reauth_ui.h"
 #include "components/consent_auditor/consent_auditor.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -54,6 +57,8 @@ ReauthWebContentsObserver::ReauthWebContentsObserver(
 
 void ReauthWebContentsObserver::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInPrimaryMainFrame())
+    return;
   delegate_->OnGaiaReauthPageNavigated();
 }
 
@@ -63,8 +68,10 @@ SigninReauthViewController::SigninReauthViewController(
     Browser* browser,
     const CoreAccountId& account_id,
     signin_metrics::ReauthAccessPoint access_point,
+    base::OnceClosure on_close_callback,
     base::OnceCallback<void(signin::ReauthResult)> reauth_callback)
-    : browser_(browser),
+    : SigninModalDialog(std::move(on_close_callback)),
+      browser_(browser),
       account_id_(account_id),
       access_point_(access_point),
       reauth_callback_(std::move(reauth_callback)) {
@@ -99,7 +106,7 @@ SigninReauthViewController::~SigninReauthViewController() {
     observer.OnReauthControllerDestroyed();
 }
 
-void SigninReauthViewController::CloseModalSignin() {
+void SigninReauthViewController::CloseModalDialog() {
   CompleteReauth(signin::ReauthResult::kCancelled);
 }
 
@@ -107,7 +114,8 @@ void SigninReauthViewController::ResizeNativeView(int height) {
   NOTIMPLEMENTED();
 }
 
-content::WebContents* SigninReauthViewController::GetWebContents() {
+content::WebContents*
+SigninReauthViewController::GetModalDialogWebContentsForTesting() {
   // If the dialog is displayed, return its WebContents.
   if (dialog_delegate_)
     return dialog_delegate_->GetWebContents();
@@ -116,12 +124,7 @@ content::WebContents* SigninReauthViewController::GetWebContents() {
   return raw_reauth_web_contents_;
 }
 
-void SigninReauthViewController::SetWebContents(
-    content::WebContents* web_contents) {
-  NOTIMPLEMENTED();
-}
-
-void SigninReauthViewController::OnModalSigninClosed() {
+void SigninReauthViewController::OnModalDialogClosed() {
   DCHECK(
       dialog_delegate_observation_.IsObservingSource(dialog_delegate_.get()));
   dialog_delegate_observation_.Reset();
@@ -244,13 +247,13 @@ void SigninReauthViewController::CompleteReauth(signin::ReauthResult result) {
   if (reauth_callback_)
     std::move(reauth_callback_).Run(result);
 
-  NotifyModalSigninClosed();
+  // NotifyModalDialogClosed() will destroy the current instance.
+  // We cannot destroy `reauth_web_contents_` right now because this function
+  // can be triggered from `reauth_web_contents_`s observer method.
+  content::GetUIThreadTaskRunner({})->DeleteSoon(
+      FROM_HERE, std::move(reauth_web_contents_));
 
-  // Schedules an asynchronous deletion of the current instance.
-  // We cannot destroy |this| and in particular |reauth_web_contents_| right now
-  // because this function can be triggered from |reauth_web_contents_|'s
-  // observer method.
-  content::GetUIThreadTaskRunner({})->DeleteSoon(FROM_HERE, this);
+  NotifyModalDialogClosed();
 }
 
 void SigninReauthViewController::OnStateChanged() {
@@ -335,7 +338,7 @@ void SigninReauthViewController::ShowGaiaReauthPageInDialog() {
 void SigninReauthViewController::ShowGaiaReauthPageInNewTab() {
   DCHECK_EQ(ui_state_, UIState::kConfirmationDialog);
   ui_state_ = UIState::kGaiaReauthTab;
-  // Remove the observer to not trigger OnModalSigninClosed() that will abort
+  // Remove the observer to not trigger OnModalDialogClosed() that will abort
   // the reauth flow.
   DCHECK(
       dialog_delegate_observation_.IsObservingSource(dialog_delegate_.get()));

@@ -49,6 +49,7 @@
 
 #include "base/atomicops.h"
 #include "base/check_op.h"
+#include "base/dcheck_is_on.h"
 #include "base/debug/leak_annotations.h"
 #include "base/lazy_instance_helpers.h"
 #include "base/threading/thread_restrictions.h"
@@ -173,7 +174,7 @@ class LazyInstance {
   // MSVC gives a warning that the alignment expands the size of the
   // LazyInstance struct to make the size a multiple of the alignment. This
   // is expected in this case.
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #pragma warning(push)
 #pragma warning(disable: 4324)
 #endif
@@ -186,7 +187,7 @@ class LazyInstance {
   // Preallocated space for the Type instance.
   alignas(Type) char private_buf_[sizeof(Type)];
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #pragma warning(pop)
 #endif
 

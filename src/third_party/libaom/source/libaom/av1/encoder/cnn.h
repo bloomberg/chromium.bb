@@ -17,6 +17,7 @@ extern "C" {
 #endif
 
 #include <math.h>
+#include <stdbool.h>
 
 #include "aom_util/aom_thread.h"
 #include "config/av1_rtcd.h"
@@ -174,11 +175,11 @@ void av1_find_cnn_layer_output_size(int in_width, int in_height,
 
 // Prediction functions from set of input image buffers. This function supports
 // CNN with multiple outputs.
-void av1_cnn_predict_img_multi_out(uint8_t **dgd, int width, int height,
+bool av1_cnn_predict_img_multi_out(uint8_t **dgd, int width, int height,
                                    int stride, const CNN_CONFIG *cnn_config,
                                    const CNN_THREAD_DATA *thread_data,
                                    struct CNN_MULTI_OUT *output);
-void av1_cnn_predict_img_multi_out_highbd(uint16_t **dgd, int width, int height,
+bool av1_cnn_predict_img_multi_out_highbd(uint16_t **dgd, int width, int height,
                                           int stride,
                                           const CNN_CONFIG *cnn_config,
                                           const CNN_THREAD_DATA *thread_data,
@@ -186,11 +187,11 @@ void av1_cnn_predict_img_multi_out_highbd(uint16_t **dgd, int width, int height,
 
 // Prediction functions from set of input image buffers. This function only
 // supports a single output.
-void av1_cnn_predict_img(uint8_t **dgd, int width, int height, int stride,
+bool av1_cnn_predict_img(uint8_t **dgd, int width, int height, int stride,
                          const CNN_CONFIG *cnn_config,
                          const CNN_THREAD_DATA *thread_data, float **output,
                          int out_stride);
-void av1_cnn_predict_img_highbd(uint16_t **dgd, int width, int height,
+bool av1_cnn_predict_img_highbd(uint16_t **dgd, int width, int height,
                                 int stride, const CNN_CONFIG *cnn_config,
                                 const CNN_THREAD_DATA *thread_data,
                                 int bit_depth, float **output, int out_stride);

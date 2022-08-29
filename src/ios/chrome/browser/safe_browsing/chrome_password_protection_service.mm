@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/user_metrics.h"
@@ -18,6 +19,7 @@
 #include "components/password_manager/core/browser/insecure_credentials_helper.h"
 #include "components/password_manager/core/browser/ui/password_check_referrer.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing/core/browser/safe_browsing_metrics_collector.h"
 #include "components/safe_browsing/core/browser/user_population.h"
 #include "components/safe_browsing/core/browser/verdict_cache_manager.h"
 #include "components/safe_browsing/core/common/features.h"
@@ -36,12 +38,12 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
-#import "ios/chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "ios/chrome/browser/safe_browsing/user_population_helper.h"
 #import "ios/chrome/browser/safe_browsing/verdict_cache_manager_factory.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "ios/chrome/browser/sync/ios_user_event_service_factory.h"
 #include "ios/chrome/browser/sync/sync_service_factory.h"
+#import "ios/components/security_interstitials/safe_browsing/safe_browsing_service.h"
 #include "ios/web/public/navigation/navigation_item.h"
 #include "ios/web/public/navigation/navigation_manager.h"
 #include "ios/web/public/thread/web_thread.h"
@@ -138,20 +140,21 @@ std::unique_ptr<UserEventSpecifics> GetUserEventSpecifics(
 ChromePasswordProtectionService::ChromePasswordProtectionService(
     SafeBrowsingService* sb_service,
     ChromeBrowserState* browser_state,
+    history::HistoryService* history_service,
+    safe_browsing::SafeBrowsingMetricsCollector*
+        safe_browsing_metrics_collector,
     ChangePhishedCredentialsCallback add_phished_credentials,
     ChangePhishedCredentialsCallback remove_phished_credentials)
     : safe_browsing::PasswordProtectionService(
           sb_service->GetDatabaseManager(),
           sb_service->GetURLLoaderFactory(),
-          ios::HistoryServiceFactory::GetForBrowserState(
-              browser_state,
-              ServiceAccessType::EXPLICIT_ACCESS),
+          history_service,
           /*pref_service=*/nullptr,
           /*token_fetcher=*/nullptr,
           browser_state->IsOffTheRecord(),
           /*identity_manager=*/nullptr,
           /*try_token_fetch=*/false,
-          /*metrics_collector=*/nullptr),
+          safe_browsing_metrics_collector),
       browser_state_(browser_state),
       add_phished_credentials_(std::move(add_phished_credentials)),
       remove_phished_credentials_(std::move(remove_phished_credentials)) {}
@@ -234,7 +237,8 @@ void ChromePasswordProtectionService::MaybeReportPasswordReuseDetected(
     safe_browsing::PasswordProtectionRequest* request,
     const std::string& username,
     PasswordType password_type,
-    bool is_phishing_url) {
+    bool is_phishing_url,
+    bool warning_shown) {
   // Enterprise reporting extension not yet supported in iOS.
 }
 

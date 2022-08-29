@@ -98,7 +98,8 @@ class SenderSessionMessenger final : public SessionMessenger {
 
 class ReceiverSessionMessenger final : public SessionMessenger {
  public:
-  using RequestCallback = std::function<void(SenderMessage)>;
+  using RequestCallback =
+      std::function<void(const std::string&, SenderMessage)>;
   ReceiverSessionMessenger(MessagePort* message_port,
                            std::string source_id,
                            ErrorCallback cb);
@@ -107,7 +108,8 @@ class ReceiverSessionMessenger final : public SessionMessenger {
   void SetHandler(SenderMessage::Type type, RequestCallback cb);
 
   // Send a JSON message.
-  [[nodiscard]] Error SendMessage(ReceiverMessage message);
+  [[nodiscard]] Error SendMessage(const std::string& sender_id,
+                                  ReceiverMessage message);
 
   // MessagePort::Client overrides
   void OnMessage(const std::string& source_id,
@@ -116,9 +118,6 @@ class ReceiverSessionMessenger final : public SessionMessenger {
   void OnError(Error error) override;
 
  private:
-  // The sender ID of the SenderSession we are connected to. Set on the
-  // first message we receive.
-  std::string sender_session_id_;
   FlatMap<SenderMessage::Type, RequestCallback> callbacks_;
 };
 

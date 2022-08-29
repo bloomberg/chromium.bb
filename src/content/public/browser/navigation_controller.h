@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/global_request_id.h"
@@ -217,7 +218,7 @@ class NavigationController {
     // data loads.
     GURL virtual_url_for_data_url;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     // Used in LOAD_TYPE_DATA loads only. The real data URI is represented
     // as a string to circumvent the restriction on GURL size. This is only
     // needed to pass URLs that exceed the IPC limit (kMaxURLChars). Short
@@ -294,6 +295,11 @@ class NavigationController {
 
     // Indicates that this navigation is for PDF content in a renderer.
     bool is_pdf = false;
+
+    // Indicates this navigation should use a new BrowsingInstance. For example,
+    // this is used in web platform tests to guarantee that each test starts in
+    // a fresh BrowsingInstance.
+    bool force_new_browsing_instance = false;
   };
 
   // Disables checking for a repost and prompting the user. This is used during

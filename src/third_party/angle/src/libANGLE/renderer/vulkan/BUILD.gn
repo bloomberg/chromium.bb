@@ -18,6 +18,16 @@ declare_args() {
   angle_enable_vulkan_gpu_trace_events = false
 }
 
+declare_args() {
+  # Enable custom secondary command buffers for outside render pass commands only
+  angle_enable_custom_vulkan_outside_render_pass_cmd_buffers =
+      angle_enable_custom_vulkan_cmd_buffers
+
+  # Enable custom secondary command buffers for render pass commands only
+  angle_enable_custom_vulkan_render_pass_cmd_buffers =
+      angle_enable_custom_vulkan_cmd_buffers
+}
+
 _vulkan_backend_sources = [
   "BufferVk.cpp",
   "BufferVk.h",
@@ -84,6 +94,8 @@ _vulkan_backend_sources = [
   "UtilsVk.h",
   "VertexArrayVk.cpp",
   "VertexArrayVk.h",
+  "VkImageImageSiblingVk.cpp",
+  "VkImageImageSiblingVk.h",
   "VulkanSecondaryCommandBuffer.cpp",
   "VulkanSecondaryCommandBuffer.h",
   "android/vk_android_utils.cpp",
@@ -134,12 +146,10 @@ if (angle_use_vulkan_null_display) {
   _vulkan_backend_sources += [
     "null/DisplayVkNull.cpp",
     "null/DisplayVkNull.h",
-    "null/WindowSurfaceVkNull.cpp",
-    "null/WindowSurfaceVkNull.h",
   ]
 }
 
-if (is_linux) {
+if (is_linux || is_chromeos) {
   _vulkan_backend_sources += [
     "linux/DisplayVkLinux.cpp",
     "linux/DisplayVkLinux.h",
@@ -187,6 +197,22 @@ if (angle_use_x11) {
   ]
 }
 
+if (angle_use_wayland) {
+  _vulkan_backend_sources += [
+    "linux/wayland/DisplayVkWayland.cpp",
+    "linux/wayland/DisplayVkWayland.h",
+    "linux/wayland/WindowSurfaceVkWayland.cpp",
+    "linux/wayland/WindowSurfaceVkWayland.h",
+  ]
+}
+
+if (angle_use_gbm) {
+  _vulkan_backend_sources += [
+    "linux/gbm/DisplayVkGbm.cpp",
+    "linux/gbm/DisplayVkGbm.h",
+  ]
+}
+
 if (is_fuchsia) {
   _vulkan_backend_sources += [
     "fuchsia/DisplayVkFuchsia.cpp",
@@ -221,8 +247,11 @@ config("angle_vulkan_backend_config") {
   if (angle_enable_swiftshader) {
     defines += [ "ANGLE_ENABLE_SWIFTSHADER" ]
   }
-  if (angle_enable_custom_vulkan_cmd_buffers) {
-    defines += [ "ANGLE_USE_CUSTOM_VULKAN_CMD_BUFFERS=1" ]
+  if (angle_enable_custom_vulkan_outside_render_pass_cmd_buffers) {
+    defines += [ "ANGLE_USE_CUSTOM_VULKAN_OUTSIDE_RENDER_PASS_CMD_BUFFERS=1" ]
+  }
+  if (angle_enable_custom_vulkan_render_pass_cmd_buffers) {
+    defines += [ "ANGLE_USE_CUSTOM_VULKAN_RENDER_PASS_CMD_BUFFERS=1" ]
   }
   if (angle_enable_vulkan_gpu_trace_events) {
     defines += [ "ANGLE_ENABLE_VULKAN_GPU_TRACE_EVENTS=1" ]
@@ -279,6 +308,10 @@ angle_source_set("angle_vulkan_backend") {
   ]
   public_configs = [ ":angle_vulkan_backend_config" ]
 
+  if (angle_use_wayland) {
+    public_configs += [ "$angle_root:angle_wayland_config" ]
+  }
+
   data_deps = []
 
   defines = []
@@ -288,8 +321,11 @@ angle_source_set("angle_vulkan_backend") {
     data_deps += [ "$angle_root/src/common/vulkan:vulkan_validation_layers" ]
   }
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     deps += [ "$angle_root/src/common/linux:angle_dma_buf" ]
+    if (angle_use_gbm) {
+      deps += [ "//third_party/minigbm" ]
+    }
   }
 
   if (is_fuchsia) {

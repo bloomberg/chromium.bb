@@ -18,7 +18,7 @@
 #include "chrome/browser/ash/policy/enrollment/enrollment_requisition_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/webui/chromeos/login/eula_screen_handler.h"
-#include "chromeos/dbus/dbus_method_call_status.h"
+#include "chromeos/dbus/common/dbus_method_call_status.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager.pb.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager_client.h"
@@ -96,8 +96,6 @@ std::string EulaScreen::GetResultString(Result result) {
       return "Back";
     case Result::ALREADY_ACCEPTED:
     case Result::ALREADY_ACCEPTED_DEMO_MODE:
-    case Result::NOT_APPLICABLE_CONSOLIDATED_CONSENT_REGULAR:
-    case Result::NOT_APPLICABLE_CONSOLIDATED_CONSENT_DEMO:
     case Result::NOT_APPLICABLE:
       return BaseScreen::kNotApplicable;
   }
@@ -120,23 +118,13 @@ EulaScreen::~EulaScreen() {
 bool EulaScreen::MaybeSkip(WizardContext* context) {
   // This should be kept in sync with `testapi_shouldSkipEula`. If the logic
   // became too complicated we need to consider extract and reuse parts of it.
-  if (chromeos::features::IsOobeConsolidatedConsentEnabled()) {
-    const auto* const demo_setup_controller =
-        WizardController::default_controller()->demo_setup_controller();
-    if (demo_setup_controller) {
-      exit_callback_.Run(Result::NOT_APPLICABLE_CONSOLIDATED_CONSENT_DEMO);
-    } else {
-      exit_callback_.Run(Result::NOT_APPLICABLE_CONSOLIDATED_CONSENT_REGULAR);
-    }
-    return true;
-  }
 
   if (!context->is_branded_build) {
     exit_callback_.Run(Result::NOT_APPLICABLE);
     return true;
   }
 
-  if (StartupUtils::IsEulaAccepted()) {
+  if (StartupUtils::IsEulaAccepted() && !context->is_cloud_ready_update_flow) {
     const auto* const demo_setup_controller =
         WizardController::default_controller()->demo_setup_controller();
     exit_callback_.Run(demo_setup_controller
@@ -167,7 +155,7 @@ bool EulaScreen::IsUsageStatsEnabled() const {
 
 void EulaScreen::OnViewDestroyed(EulaView* view) {
   if (view_ == view)
-    view_ = NULL;
+    view_ = nullptr;
 }
 
 void EulaScreen::ShowImpl() {
@@ -178,10 +166,15 @@ void EulaScreen::ShowImpl() {
     TpmManagerClient::Get()->TakeOwnership(
         ::tpm_manager::TakeOwnershipRequest(), base::DoNothing());
   }
-  if (WizardController::UsingHandsOffEnrollment())
-    OnUserAction(kUserActionAcceptButtonClicked);
-  else if (view_)
+  if (WizardController::IsZeroTouchHandsOffOobeFlow()) {
+    OnUserActionDeprecated(kUserActionAcceptButtonClicked);
+  } else if (view_) {
+    if (context()->is_cloud_ready_update_flow) {
+      view_->HideSecuritySettingsInfo();
+      view_->HideBackButton();
+    }
     view_->Show();
+  }
 }
 
 void EulaScreen::HideImpl() {
@@ -189,9 +182,9 @@ void EulaScreen::HideImpl() {
     view_->Hide();
 }
 
-void EulaScreen::OnUserAction(const std::string& action_id) {
+void EulaScreen::OnUserActionDeprecated(const std::string& action_id) {
   if (!IsEulaUserAction(action_id)) {
-    BaseScreen::OnUserAction(action_id);
+    BaseScreen::OnUserActionDeprecated(action_id);
     return;
   }
   RecordUserAction(action_id);

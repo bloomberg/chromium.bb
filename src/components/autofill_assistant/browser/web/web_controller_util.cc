@@ -4,10 +4,66 @@
 
 #include "components/autofill_assistant/browser/web/web_controller_util.h"
 
+#include "base/logging.h"
 #include "components/autofill_assistant/browser/devtools/devtools/domains/types_runtime.h"
+#include "components/autofill_assistant/browser/js_flow_util.h"
 #include "components/autofill_assistant/browser/service.pb.h"
 
+// Necessary to avoid a type collision while building for Windows.
+#if defined(GetClassName)
+#undef GetClassName
+#endif  // defined(GetClassName)
+
 namespace autofill_assistant {
+
+namespace {
+
+template <typename S>
+void AddStackEntry(const S& s,
+                   const std::string& devtools_source_url,
+                   const JsLineOffsets& js_line_offsets,
+                   UnexpectedErrorInfoProto* info) {
+  int line_number = s.GetLineNumber();
+  if (js_line_offsets.contains(devtools_source_url)) {
+    const int line_offset = js_line_offsets.at(devtools_source_url);
+    line_number -= line_offset;
+    DCHECK(line_number >= 0)
+        << "Line number (" << s.GetLineNumber()
+        << ") pointing into the offset (" << line_offset
+        << ") for devtools source url (" << devtools_source_url
+        << ") included in the stack.";
+  }
+
+  info->add_js_exception_locations(
+      js_flow_util::GetExceptionLocation(devtools_source_url));
+  info->add_js_exception_line_numbers(line_number);
+  info->add_js_exception_column_numbers(s.GetColumnNumber());
+}
+
+void AddStackEntries(const runtime::ExceptionDetails* exception,
+                     const JsLineOffsets& js_line_offsets,
+                     const int num_stack_entries_to_drop,
+                     UnexpectedErrorInfoProto* info) {
+  if (!exception->HasStackTrace()) {
+    AddStackEntry(*exception, exception->HasUrl() ? exception->GetUrl() : "",
+                  js_line_offsets, info);
+    return;
+  }
+  const std::vector<std::unique_ptr<runtime::CallFrame>>& frames =
+      *exception->GetStackTrace()->GetCallFrames();
+  const int num_stack_entries = static_cast<int>(frames.size());
+
+  DCHECK(num_stack_entries > num_stack_entries_to_drop)
+      << "Trying to drop too many stack entries.";
+  const int num_frames_to_use =
+      std::max(num_stack_entries - num_stack_entries_to_drop, 1);
+
+  for (int i = 0; i < num_frames_to_use; i++) {
+    const auto& frame = *frames[i];
+    AddStackEntry(frame, frame.GetUrl(), js_line_offsets, info);
+  }
+}
+}  // namespace
 
 ClientStatus UnexpectedErrorStatus(const std::string& file, int line) {
   ClientStatus status(OTHER_ACTION_STATUS);
@@ -33,20 +89,21 @@ ClientStatus UnexpectedDevtoolsErrorStatus(
 ClientStatus JavaScriptErrorStatus(
     const DevtoolsClient::ReplyStatus& reply_status,
     const std::string& file,
-    int line,
-    const runtime::ExceptionDetails* exception) {
+    const int line,
+    const runtime::ExceptionDetails* exception,
+    const JsLineOffsets& js_line_offsets,
+    const int num_stack_entries_to_drop) {
   ClientStatus status = UnexpectedDevtoolsErrorStatus(reply_status, file, line);
   status.set_proto_status(UNEXPECTED_JS_ERROR);
-  if (exception) {
-    auto* info = status.mutable_details()->mutable_unexpected_error_info();
-    if (exception->HasException() &&
-        exception->GetException()->HasClassName()) {
-      info->set_js_exception_classname(
-          exception->GetException()->GetClassName());
-    }
-    info->set_js_exception_line_number(exception->GetLineNumber());
-    info->set_js_exception_column_number(exception->GetColumnNumber());
+  if (!exception) {
+    return status;
   }
+
+  auto* info = status.mutable_details()->mutable_unexpected_error_info();
+  if (exception->HasException() && exception->GetException()->HasClassName()) {
+    info->set_js_exception_classname(exception->GetException()->GetClassName());
+  }
+  AddStackEntries(exception, js_line_offsets, num_stack_entries_to_drop, info);
   return status;
 }
 

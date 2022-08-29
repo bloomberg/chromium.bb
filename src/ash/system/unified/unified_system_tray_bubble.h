@@ -10,6 +10,7 @@
 #include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/shelf/shelf_observer.h"
 #include "ash/system/screen_layout_observer.h"
+#include "ash/system/time/calendar_metrics.h"
 #include "ash/system/tray/time_to_click_recorder.h"
 #include "ash/system/tray/tray_bubble_base.h"
 #include "base/time/time.h"
@@ -18,6 +19,10 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/widget/widget_observer.h"
 #include "ui/wm/public/activation_change_observer.h"
+
+namespace ui {
+class Event;
+}  // namespace ui
 
 namespace views {
 class Widget;
@@ -49,6 +54,11 @@ class ASH_EXPORT UnifiedSystemTrayBubble
 
   ~UnifiedSystemTrayBubble() override;
 
+  // Add observers that can delete `this`. This needs to be done separately
+  // after `UnifiedSystemTrayBubble` and `UnifiedMessageCenterBubble` have been
+  // completely constructed to prevent crashes. (crbug/1310675)
+  void InitializeObservers();
+
   // Return the bounds of the bubble in the screen.
   gfx::Rect GetBoundsInScreen() const;
 
@@ -74,7 +84,8 @@ class ASH_EXPORT UnifiedSystemTrayBubble
   void ShowAudioDetailedView();
 
   // Show calendar view.
-  void ShowCalendarView();
+  void ShowCalendarView(calendar_metrics::CalendarViewShowSource show_source,
+                        calendar_metrics::CalendarEventSource event_source);
 
   // Show network settings detailed view.
   void ShowNetworkDetailedView(bool force);
@@ -102,8 +113,9 @@ class ASH_EXPORT UnifiedSystemTrayBubble
   // Fire a notification that an accessibility event has occured on this object.
   void NotifyAccessibilityEvent(ax::mojom::Event event, bool send_native_event);
 
-  // Whether the bubble is currently showing audio details view.
+  // Whether the bubble is currently showing audio details or calendar view.
   bool ShowingAudioDetailedView() const;
+  bool ShowingCalendarView() const;
 
   // TrayBubbleBase:
   TrayBackgroundView* GetTray() const override;
@@ -133,7 +145,7 @@ class ASH_EXPORT UnifiedSystemTrayBubble
 
   UnifiedSystemTrayView* unified_view() { return unified_view_; }
 
-  UnifiedSystemTrayController* controller_for_test() {
+  UnifiedSystemTrayController* unified_system_tray_controller() {
     return controller_.get();
   }
 
@@ -141,13 +153,6 @@ class ASH_EXPORT UnifiedSystemTrayBubble
   friend class SystemTrayTestApi;
 
   void UpdateBubbleBounds();
-
-  // Called when the tray animation is finished.
-  void OnAnimationFinished();
-
-  // Set visibility of bubble frame border. Used for disabling the border during
-  // animation.
-  void SetFrameVisible(bool visible);
 
   // Controller of UnifiedSystemTrayView. As the view is owned by views
   // hierarchy, we have to own the controller here.

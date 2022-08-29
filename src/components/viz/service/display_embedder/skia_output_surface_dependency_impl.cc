@@ -54,7 +54,7 @@ SkiaOutputSurfaceDependencyImpl::GetGpuDriverBugWorkarounds() {
 scoped_refptr<gpu::SharedContextState>
 SkiaOutputSurfaceDependencyImpl::GetSharedContextState() {
   if (gpu_service_impl_->compositor_gpu_thread()) {
-    return gpu_service_impl_->compositor_gpu_thread()->shared_context_state();
+    return gpu_service_impl_->compositor_gpu_thread()->GetSharedContextState();
   }
   return gpu_service_impl_->GetContextState();
 }
@@ -143,7 +143,7 @@ void SkiaOutputSurfaceDependencyImpl::ScheduleDelayedGPUTaskFromGPUThread(
       FROM_HERE, std::move(task), kDelayForDelayedWork);
 }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 void SkiaOutputSurfaceDependencyImpl::DidCreateAcceleratedSurfaceChildWindow(
     gpu::SurfaceHandle parent_window,
     gpu::SurfaceHandle child_window) {

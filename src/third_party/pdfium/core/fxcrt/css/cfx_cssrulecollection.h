@@ -31,19 +31,15 @@ class CFX_CSSRuleCollection {
   CFX_CSSRuleCollection();
   ~CFX_CSSRuleCollection();
 
-  void AddRulesFrom(const CFX_CSSStyleSheet* sheet);
-  void Clear();
-  int32_t CountSelectors() const { return m_iSelectors; }
+  void SetRulesFromSheet(const CFX_CSSStyleSheet* sheet);
 
   const std::vector<std::unique_ptr<Data>>* GetTagRuleData(
       const WideString& tagname) const;
 
  private:
-  void AddRulesFrom(const CFX_CSSStyleSheet* pStyleSheet,
-                    CFX_CSSStyleRule* pRule);
+  void AddRule(CFX_CSSStyleRule* pRule);
 
   std::map<uint32_t, std::vector<std::unique_ptr<Data>>> m_TagRules;
-  int32_t m_iSelectors = 0;
 };
 
 #endif  // CORE_FXCRT_CSS_CFX_CSSRULECOLLECTION_H_

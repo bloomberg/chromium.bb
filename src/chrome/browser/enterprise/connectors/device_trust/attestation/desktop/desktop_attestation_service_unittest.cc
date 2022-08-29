@@ -17,6 +17,7 @@
 #include "chrome/browser/enterprise/connectors/device_trust/key_management/browser/device_trust_key_manager_impl.h"
 #include "chrome/browser/enterprise/connectors/device_trust/key_management/browser/mock_key_rotation_launcher.h"
 #include "chrome/browser/enterprise/connectors/device_trust/key_management/core/persistence/scoped_key_persistence_delegate_factory.h"
+#include "components/device_signals/core/common/signals_constants.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -29,11 +30,9 @@ namespace enterprise_connectors {
 
 namespace {
 
-// A sample VerifiedAccess v2 challenge rerepsented as a JSON string.
-constexpr char kJsonChallenge[] =
-    "{"
-    "\"challenge\": "
-    "\"CkEKFkVudGVycHJpc2VLZXlDaGFsbGVuZ2USIELlPXqh8+"
+// A sample VerifiedAccess v2 challenge.
+constexpr char kEncodedChallenge[] =
+    "CkEKFkVudGVycHJpc2VLZXlDaGFsbGVuZ2USIELlPXqh8+"
     "rZJ2VIqwPXtPFrr653QdRrIzHFwqP+"
     "b3L8GJTcufirLxKAAkindNwTfwYUcbCFDjiW3kXdmDPE0wC0J6b5ZI6X6vOVcSMXTpK7nxsAGK"
     "zFV+i80LCnfwUZn7Ne1bHzloAqBdpLOu53vQ63hKRk6MRPhc9jYVDsvqXfQ7s+"
@@ -41,11 +40,19 @@ constexpr char kJsonChallenge[] =
     "ID+YHNsCWy5o7+G5jnq0ak3zeqWfo1+lCibMPsCM+"
     "2g7nCZIwvwWlfoKwv3aKvOVMBcJxPAIxH1w+hH+"
     "NWxqRi6qgZm84q0ylm0ybs6TFjdgLvSViAIp0Z9p/An/"
-    "u3W4CMboCswxIxNYRCGrIIVPElE3Yb4QS65mKrg=\""
-    "}";
+    "u3W4CMboCswxIxNYRCGrIIVPElE3Yb4QS65mKrg=";
 
 constexpr char kDeviceId[] = "device-id";
 constexpr char kObfuscatedCustomerId[] = "customer-id";
+
+std::string GetSerializedSignedChallenge() {
+  std::string serialized_signed_challenge;
+  if (!base::Base64Decode(kEncodedChallenge, &serialized_signed_challenge)) {
+    return std::string();
+  }
+
+  return serialized_signed_challenge;
+}
 
 absl::optional<SignedData> ParseDataFromResponse(const std::string& response) {
   absl::optional<base::Value> data = base::JSONReader::Read(
@@ -56,15 +63,15 @@ absl::optional<SignedData> ParseDataFromResponse(const std::string& response) {
   if (!data || !data.value().FindPath("challengeResponse"))
     return absl::nullopt;
 
-  std::string serialized_signed_data;
+  std::string serialized_signed_challenge;
   if (!base::Base64Decode(
           data.value().FindPath("challengeResponse")->GetString(),
-          &serialized_signed_data)) {
+          &serialized_signed_challenge)) {
     return absl::nullopt;
   }
 
   SignedData signed_data;
-  if (!signed_data.ParseFromString(serialized_signed_data)) {
+  if (!signed_data.ParseFromString(serialized_signed_challenge)) {
     return absl::nullopt;
   }
   return signed_data;
@@ -90,10 +97,11 @@ class DesktopAttestationServiceTest : public testing::Test {
         std::make_unique<DesktopAttestationService>(key_manager_.get());
   }
 
-  std::unique_ptr<DeviceTrustSignals> CreateSignals() {
-    auto signals = std::make_unique<DeviceTrustSignals>();
-    signals->set_device_id(kDeviceId);
-    signals->set_obfuscated_customer_id(kObfuscatedCustomerId);
+  base::Value::Dict CreateSignals() {
+    base::Value::Dict signals;
+    signals.Set(device_signals::names::kDeviceId, kDeviceId);
+    signals.Set(device_signals::names::kObfuscatedCustomerId,
+                kObfuscatedCustomerId);
     return signals;
   }
 
@@ -106,13 +114,12 @@ class DesktopAttestationServiceTest : public testing::Test {
 TEST_F(DesktopAttestationServiceTest, BuildChallengeResponse_Success) {
   // TODO(crbug.com/1208881): Add signals and validate they effectively get
   // added to the signed data.
-  auto signals = CreateSignals();
 
   base::RunLoop run_loop;
-  auto callback =
-      base::BindLambdaForTesting([&](const std::string& challenge_response) {
-        ASSERT_FALSE(challenge_response.empty());
-        auto signed_data = ParseDataFromResponse(challenge_response);
+  auto callback = base::BindLambdaForTesting(
+      [&](const std::string& serialized_signed_challenge) {
+        ASSERT_FALSE(serialized_signed_challenge.empty());
+        auto signed_data = ParseDataFromResponse(serialized_signed_challenge);
         ASSERT_TRUE(signed_data);
         EXPECT_FALSE(signed_data->data().empty());
         EXPECT_FALSE(signed_data->signature().empty());
@@ -120,7 +127,7 @@ TEST_F(DesktopAttestationServiceTest, BuildChallengeResponse_Success) {
       });
 
   attestation_service_->BuildChallengeResponseForVAChallenge(
-      kJsonChallenge, std::move(signals), std::move(callback));
+      GetSerializedSignedChallenge(), CreateSignals(), std::move(callback));
   run_loop.Run();
 }
 

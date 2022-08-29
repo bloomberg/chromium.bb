@@ -11,7 +11,7 @@
 #include "base/notreached.h"
 #import "ios/chrome/browser/commerce/price_alert_util.h"
 #import "ios/chrome/browser/ui/elements/top_aligned_image_view.h"
-#import "ios/chrome/browser/ui/tab_switcher/tab_grid/features.h"
+#import "ios/chrome/browser/ui/icons/chrome_symbol.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_constants.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
@@ -26,11 +26,17 @@
 
 namespace {
 
+// The size of symbol icons.
+NSInteger kIconSymbolPointSize = 13;
+
+// Specific symbol image used as a badge for unslected tabs.
+NSString* kCircleSymbol = @"circle";
+
 // Size of activity indicator replacing fav icon when active.
 const CGFloat kIndicatorSize = 16.0;
 
 // Frame-based layout utilities for GridTransitionCell.
-// Scales the size of |view|'s frame by |factor| in both height and width. This
+// Scales the size of `view`'s frame by `factor` in both height and width. This
 // scaling is done by changing the frame size without changing its origin,
 // unlike a scale transform which scales around the view's center.
 void ScaleView(UIView* view, CGFloat factor) {
@@ -42,7 +48,7 @@ void ScaleView(UIView* view, CGFloat factor) {
   view.frame = frame;
 }
 
-// Positions |view| by setting its frame's origin to |point|.
+// Positions `view` by setting its frame's origin to `point`.
 void PositionView(UIView* view, CGPoint point) {
   if (!view)
     return;
@@ -50,6 +56,7 @@ void PositionView(UIView* view, CGPoint point) {
   frame.origin = point;
   view.frame = frame;
 }
+
 }  // namespace
 
 @interface GridCell ()
@@ -84,7 +91,7 @@ void PositionView(UIView* view, CGPoint point) {
 
 @implementation GridCell
 
-// |-dequeueReusableCellWithReuseIdentifier:forIndexPath:| calls this method to
+// `-dequeueReusableCellWithReuseIdentifier:forIndexPath:` calls this method to
 // initialize a cell.
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
@@ -93,7 +100,7 @@ void PositionView(UIView* view, CGPoint point) {
 
     // The background color must be set to avoid the corners behind the rounded
     // layer from showing when dragging and dropping. Unfortunately, using
-    // |UIColor.clearColor| here will not remain transparent, so a solid color
+    // `UIColor.clearColor` here will not remain transparent, so a solid color
     // must be chosen. Using the grid color prevents the corners from showing
     // while it transitions to the presented context menu/dragging state.
     self.backgroundColor = [UIColor colorNamed:kGridBackgroundColor];
@@ -209,9 +216,11 @@ void PositionView(UIView* view, CGPoint point) {
   self.titleHidden = NO;
   self.icon = nil;
   self.snapshot = nil;
+  self.snapshotView.image = nil;
   self.selected = NO;
   self.priceCardView.hidden = YES;
   self.opacity = 1.0;
+  [self hideActivityIndicator];
 }
 
 #pragma mark - UIAccessibility
@@ -223,7 +232,7 @@ void PositionView(UIView* view, CGPoint point) {
 }
 
 - (NSArray*)accessibilityCustomActions {
-  if (IsTabsBulkActionsEnabled() && self.isInSelectionMode) {
+  if (self.isInSelectionMode) {
     // If the cell is in tab grid selection mode, only allow toggling the
     // selection state.
     return nil;
@@ -252,7 +261,7 @@ void PositionView(UIView* view, CGPoint point) {
                                         : UIUserInterfaceStyleUnspecified;
 
   // The light and dark themes have different colored borders based on the
-  // theme, regardless of dark mode, so |overrideUserInterfaceStyle| is not
+  // theme, regardless of dark mode, so `overrideUserInterfaceStyle` is not
   // enough here.
   switch (theme) {
     case GridThemeLight:
@@ -291,14 +300,27 @@ void PositionView(UIView* view, CGPoint point) {
 }
 
 - (void)fadeInSnapshot:(UIImage*)snapshot {
-  [UIView transitionWithView:self.snapshotView
-                    duration:0.2f
-                     options:UIViewAnimationOptionTransitionCrossDissolve
-                  animations:^{
-                    self.snapshotView.image = snapshot;
-                  }
-                  completion:nil];
+  // Do not fade in the same snapshot
+  if ([_snapshot isEqual:snapshot]) {
+    return;
+  }
+  // Do not fade in if there is no previous snapshot
+  if (_snapshot != nil) {
+    [UIView transitionWithView:self.snapshotView
+                      duration:0.2f
+                       options:UIViewAnimationOptionTransitionCrossDissolve
+                    animations:^{
+                      self.snapshotView.image = snapshot;
+                    }
+                    completion:nil];
+  } else {
+    self.snapshotView.image = snapshot;
+  }
   _snapshot = snapshot;
+}
+
+- (BOOL)hasIdentifier:(NSString*)identifier {
+  return [self.itemIdentifier isEqualToString:identifier];
 }
 
 - (void)setPriceDrop:(NSString*)price previousPrice:(NSString*)previousPrice {
@@ -373,20 +395,22 @@ void PositionView(UIView* view, CGPoint point) {
   closeIconView.translatesAutoresizingMaskIntoConstraints = NO;
   closeIconView.contentMode = UIViewContentModeCenter;
   closeIconView.hidden = self.isInSelectionMode;
-  closeIconView.image = [[UIImage imageNamed:@"grid_cell_close_button"]
-      imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+  closeIconView.image =
+      UseSymbols()
+          ? DefaultSymbolTemplateWithPointSize(kXMarkSymbol,
+                                               kIconSymbolPointSize)
+          : [[UIImage imageNamed:@"grid_cell_close_button"]
+                imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
 
-  if (IsTabsBulkActionsEnabled()) {
-    UIImageView* selectIconView = [[UIImageView alloc] init];
-    selectIconView.translatesAutoresizingMaskIntoConstraints = NO;
-    selectIconView.contentMode = UIViewContentModeScaleAspectFit;
-    selectIconView.hidden = !self.isInSelectionMode;
+  UIImageView* selectIconView = [[UIImageView alloc] init];
+  selectIconView.translatesAutoresizingMaskIntoConstraints = NO;
+  selectIconView.contentMode = UIViewContentModeScaleAspectFit;
+  selectIconView.hidden = !self.isInSelectionMode;
 
-    selectIconView.image = [self selectIconImageForCurrentState];
+  selectIconView.image = [self selectIconImageForCurrentState];
 
-    [topBar addSubview:selectIconView];
-    _selectIconView = selectIconView;
-  }
+  [topBar addSubview:selectIconView];
+  _selectIconView = selectIconView;
 
   [topBar addSubview:iconView];
   [topBar addSubview:activityIndicator];
@@ -485,13 +509,11 @@ void PositionView(UIView* view, CGPoint point) {
 
 - (UIImage*)selectIconImageForCurrentState {
   if (_state == GridCellStateEditingUnselected) {
-    return [[UIImage systemImageNamed:@"circle"]
-        imageWithTintColor:UIColor.systemGray3Color
-             renderingMode:UIImageRenderingModeAlwaysOriginal];
+    return DefaultSymbolTemplateWithPointSize(kCircleSymbol,
+                                              kIconSymbolPointSize);
   }
-  return [UIImage systemImageNamed:@"checkmark.circle.fill"];
-  NOTREACHED();
-  return nil;
+  return DefaultSymbolTemplateWithPointSize(kCheckMarkCircleFillSymbol,
+                                            kIconSymbolPointSize);
 }
 
 // Update constraints of top bar when system font size changes. If accessibility
@@ -643,7 +665,7 @@ void PositionView(UIView* view, CGPoint point) {
 #pragma mark - GridToTabTransitionView properties.
 
 - (void)setTopCellView:(UIView*)topCellView {
-  // The top cell view is |topBar| and can't be changed.
+  // The top cell view is `topBar` and can't be changed.
   NOTREACHED();
 }
 

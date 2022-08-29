@@ -21,9 +21,6 @@ OpDecorate %b RelaxedPrecision
 OpDecorate %c RelaxedPrecision
 OpDecorate %30 RelaxedPrecision
 OpDecorate %31 RelaxedPrecision
-OpDecorate %32 RelaxedPrecision
-OpDecorate %34 RelaxedPrecision
-OpDecorate %36 RelaxedPrecision
 %float = OpTypeFloat 32
 %v4float = OpTypeVector %float 4
 %_ptr_Output_v4float = OpTypePointer Output %v4float
@@ -33,8 +30,8 @@ OpDecorate %36 RelaxedPrecision
 %sk_Clockwise = OpVariable %_ptr_Input_bool Input
 %void = OpTypeVoid
 %12 = OpTypeFunction %void
-%v2float = OpTypeVector %float 2
 %float_0 = OpConstant %float 0
+%v2float = OpTypeVector %float 2
 %16 = OpConstantComposite %v2float %float_0 %float_0
 %_ptr_Function_v2float = OpTypePointer Function %v2float
 %20 = OpTypeFunction %v4float %_ptr_Function_v2float
@@ -61,12 +58,7 @@ OpStore %x %float_1
 OpStore %c %float_0
 OpStore %b %float_0
 OpStore %a %float_0
-%30 = OpLoad %float %a
-%31 = OpLoad %float %b
-%32 = OpFMul %float %30 %31
-%33 = OpLoad %float %x
-%34 = OpLoad %float %c
-%35 = OpLoad %float %y
-%36 = OpCompositeConstruct %v4float %32 %33 %34 %35
-OpReturnValue %36
+%30 = OpFMul %float %float_0 %float_0
+%31 = OpCompositeConstruct %v4float %30 %float_1 %float_0 %float_1
+OpReturnValue %31
 OpFunctionEnd

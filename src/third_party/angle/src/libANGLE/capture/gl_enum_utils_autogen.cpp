@@ -160,6 +160,36 @@ const char *GLenumToString(GLenumGroup enumGroup, unsigned int value)
                     return "GL_FUNC_SUBTRACT";
                 case 0x800B:
                     return "GL_FUNC_REVERSE_SUBTRACT";
+                case 0x9294:
+                    return "GL_MULTIPLY";
+                case 0x9295:
+                    return "GL_SCREEN";
+                case 0x9296:
+                    return "GL_OVERLAY";
+                case 0x9297:
+                    return "GL_DARKEN";
+                case 0x9298:
+                    return "GL_LIGHTEN";
+                case 0x9299:
+                    return "GL_COLORDODGE";
+                case 0x929A:
+                    return "GL_COLORBURN";
+                case 0x929B:
+                    return "GL_HARDLIGHT";
+                case 0x929C:
+                    return "GL_SOFTLIGHT";
+                case 0x929E:
+                    return "GL_DIFFERENCE";
+                case 0x92A0:
+                    return "GL_EXCLUSION";
+                case 0x92AD:
+                    return "GL_HSL_HUE";
+                case 0x92AE:
+                    return "GL_HSL_SATURATION";
+                case 0x92AF:
+                    return "GL_HSL_COLOR";
+                case 0x92B0:
+                    return "GL_HSL_LUMINOSITY";
                 default:
                     return UnknownGLenumToString(value);
             }
@@ -1225,6 +1255,22 @@ const char *GLenumToString(GLenumGroup enumGroup, unsigned int value)
                     return "GL_MATRIX_INDEX_ARRAY_BUFFER_BINDING_OES";
                 case 0x8B9F:
                     return "GL_POINT_SIZE_ARRAY_BUFFER_BINDING_OES";
+                case 0x8BBB:
+                    return "GL_FRAMEBUFFER_FLIP_Y_MESA";
+                case 0x8BC0:
+                    return "GL_COUNTER_TYPE_AMD";
+                case 0x8BC1:
+                    return "GL_COUNTER_RANGE_AMD";
+                case 0x8BC2:
+                    return "GL_UNSIGNED_INT64_AMD";
+                case 0x8BC3:
+                    return "GL_PERCENTAGE_AMD";
+                case 0x8BC4:
+                    return "GL_PERFMON_RESULT_AVAILABLE_AMD";
+                case 0x8BC5:
+                    return "GL_PERFMON_RESULT_SIZE_AMD";
+                case 0x8BC6:
+                    return "GL_PERFMON_RESULT_AMD";
                 case 0x8BE7:
                     return "GL_SAMPLER_EXTERNAL_2D_Y2Y_EXT";
                 case 0x8BFA:
@@ -1733,36 +1779,6 @@ const char *GLenumToString(GLenumGroup enumGroup, unsigned int value)
                     return "GL_MAX_COMPUTE_WORK_GROUP_COUNT";
                 case 0x91BF:
                     return "GL_MAX_COMPUTE_WORK_GROUP_SIZE";
-                case 0x9294:
-                    return "GL_MULTIPLY";
-                case 0x9295:
-                    return "GL_SCREEN";
-                case 0x9296:
-                    return "GL_OVERLAY";
-                case 0x9297:
-                    return "GL_DARKEN";
-                case 0x9298:
-                    return "GL_LIGHTEN";
-                case 0x9299:
-                    return "GL_COLORDODGE";
-                case 0x929A:
-                    return "GL_COLORBURN";
-                case 0x929B:
-                    return "GL_HARDLIGHT";
-                case 0x929C:
-                    return "GL_SOFTLIGHT";
-                case 0x929E:
-                    return "GL_DIFFERENCE";
-                case 0x92A0:
-                    return "GL_EXCLUSION";
-                case 0x92AD:
-                    return "GL_HSL_HUE";
-                case 0x92AE:
-                    return "GL_HSL_SATURATION";
-                case 0x92AF:
-                    return "GL_HSL_COLOR";
-                case 0x92B0:
-                    return "GL_HSL_LUMINOSITY";
                 case 0x92BB:
                     return "GL_PURGED_CONTEXT_RESET_NV";
                 case 0x92BE:
@@ -1885,6 +1901,8 @@ const char *GLenumToString(GLenumGroup enumGroup, unsigned int value)
                     return "GL_PACK_REVERSE_ROW_ORDER_ANGLE";
                 case 0x93A6:
                     return "GL_PROGRAM_BINARY_ANGLE";
+                case 0x93A7:
+                    return "GL_ROBUST_RESOURCE_INITIALIZATION_ANGLE";
                 case 0x93AE:
                     return "GL_HANDLE_TYPE_ZIRCON_VMO_ANGLE";
                 case 0x93AF:
@@ -1961,6 +1979,8 @@ const char *GLenumToString(GLenumGroup enumGroup, unsigned int value)
                     return "GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_BASE_VIEW_INDEX_OVR";
                 case 0x9633:
                     return "GL_FRAMEBUFFER_INCOMPLETE_VIEW_TARGETS_OVR";
+                case 0x969F:
+                    return "GL_RESOURCE_INITIALIZED_ANGLE";
                 default:
                     return UnknownGLenumToString(value);
             }
@@ -2433,8 +2453,6 @@ const char *GLenumToString(GLenumGroup enumGroup, unsigned int value)
                     return "GL_TEXTURE_2D";
                 case 0x2A00:
                     return "GL_POLYGON_OFFSET_UNITS";
-                case 0x8009:
-                    return "GL_BLEND_EQUATION_EXT";
                 case 0x8037:
                     return "GL_POLYGON_OFFSET_FILL";
                 case 0x8038:
@@ -3645,6 +3663,31 @@ const char *GLenumToString(GLenumGroup enumGroup, unsigned int value)
                     return "GL_TESS_CONTROL_SHADER";
                 case 0x91B9:
                     return "GL_COMPUTE_SHADER";
+                default:
+                    return UnknownGLenumToString(value);
+            }
+        }
+
+        case GLenumGroup::ShadingRate:
+        {
+            switch (value)
+            {
+                case 0x96A4:
+                    return "GL_SHADING_RATE_QCOM";
+                case 0x96A5:
+                    return "GL_SHADING_RATE_PRESERVE_ASPECT_RATIO_QCOM";
+                case 0x96A6:
+                    return "GL_SHADING_RATE_1X1_PIXELS_QCOM";
+                case 0x96A7:
+                    return "GL_SHADING_RATE_1X2_PIXELS_QCOM";
+                case 0x96A8:
+                    return "GL_SHADING_RATE_2X1_PIXELS_QCOM";
+                case 0x96A9:
+                    return "GL_SHADING_RATE_2X2_PIXELS_QCOM";
+                case 0x96AC:
+                    return "GL_SHADING_RATE_4X2_PIXELS_QCOM";
+                case 0x96AE:
+                    return "GL_SHADING_RATE_4X4_PIXELS_QCOM";
                 default:
                     return UnknownGLenumToString(value);
             }

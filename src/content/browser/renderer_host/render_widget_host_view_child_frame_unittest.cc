@@ -21,12 +21,15 @@
 #include "components/viz/test/fake_external_begin_frame_source.h"
 #include "content/browser/compositor/test/test_image_transport_factory.h"
 #include "content/browser/gpu/compositor_util.h"
-#include "content/browser/renderer_host/agent_scheduling_group_host.h"
 #include "content/browser/renderer_host/cross_process_frame_connector.h"
 #include "content/browser/renderer_host/frame_token_message_queue.h"
+#include "content/browser/renderer_host/frame_tree.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/browser/site_instance_group.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "content/public/browser/site_instance.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/fake_frame_widget.h"
 #include "content/public/test/mock_render_process_host.h"
@@ -35,6 +38,7 @@
 #include "content/test/mock_widget.h"
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_render_widget_host.h"
+#include "content/test/test_web_contents.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -55,11 +59,7 @@ const viz::LocalSurfaceId kArbitraryLocalSurfaceId(
 
 class MockFrameConnector : public CrossProcessFrameConnector {
  public:
-  explicit MockFrameConnector(bool use_zoom_for_device_scale_factor)
-      : CrossProcessFrameConnector(nullptr) {
-    set_use_zoom_for_device_scale_factor_for_testing(
-        use_zoom_for_device_scale_factor);
-  }
+  explicit MockFrameConnector() : CrossProcessFrameConnector(nullptr) {}
   ~MockFrameConnector() override = default;
 
   void FirstSurfaceActivation(const viz::SurfaceInfo& surface_info) override {
@@ -107,28 +107,28 @@ class RenderWidgetHostViewChildFrameTest : public testing::Test {
   RenderWidgetHostViewChildFrameTest() {}
 
   void SetUp() override {
-    SetUpEnvironment(false /* use_zoom_for_device_scale_factor */);
-  }
-
-  void SetUpEnvironment(bool use_zoom_for_device_scale_factor) {
     browser_context_ = std::make_unique<TestBrowserContext>();
 
 // ImageTransportFactory doesn't exist on Android.
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
     ImageTransportFactory::SetFactory(
         std::make_unique<TestImageTransportFactory>());
 #endif
 
     process_host_ =
         std::make_unique<MockRenderProcessHost>(browser_context_.get());
-    agent_scheduling_group_host_ =
-        std::make_unique<AgentSchedulingGroupHost>(*process_host_);
+    site_instance_group_ = base::WrapRefCounted(new SiteInstanceGroup(
+        SiteInstanceImpl::NextBrowsingInstanceId(), process_host_.get()));
     int32_t routing_id = process_host_->GetNextRoutingID();
     sink_ = &process_host_->sink();
 
+    web_contents_ = TestWebContents::Create(
+        browser_context_.get(),
+        SiteInstanceImpl::Create(browser_context_.get()));
+
     widget_host_ = RenderWidgetHostImpl::Create(
-        /*frame_tree=*/nullptr, &delegate_, *agent_scheduling_group_host_,
-        routing_id,
+        /*frame_tree=*/&web_contents_->GetPrimaryFrameTree(), &delegate_,
+        site_instance_group_->GetSafeRef(), routing_id,
         /*hidden=*/false, /*renderer_initiated_creation=*/false,
         std::make_unique<FrameTokenMessageQueue>());
 
@@ -150,8 +150,7 @@ class RenderWidgetHostViewChildFrameTest : public testing::Test {
     EXPECT_EQ(screen_info, view_->GetScreenInfo());
     EXPECT_EQ(screen_infos, view_->GetScreenInfos());
 
-    test_frame_connector_ =
-        new MockFrameConnector(use_zoom_for_device_scale_factor);
+    test_frame_connector_ = new MockFrameConnector();
     test_frame_connector_->SetView(view_);
     view_->SetFrameConnector(test_frame_connector_);
   }
@@ -161,8 +160,9 @@ class RenderWidgetHostViewChildFrameTest : public testing::Test {
     if (view_)
       view_->Destroy();
     widget_host_.reset();
+    web_contents_.reset();
+    site_instance_group_.reset();
     process_host_->Cleanup();
-    agent_scheduling_group_host_ = nullptr;
     delete test_frame_connector_;
 
     process_host_.reset();
@@ -172,7 +172,7 @@ class RenderWidgetHostViewChildFrameTest : public testing::Test {
     base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE,
                                                     browser_context_.release());
     base::RunLoop().RunUntilIdle();
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
     ImageTransportFactory::Terminate();
 #endif
   }
@@ -189,8 +189,9 @@ class RenderWidgetHostViewChildFrameTest : public testing::Test {
   BrowserTaskEnvironment task_environment_;
 
   std::unique_ptr<BrowserContext> browser_context_;
-  std::unique_ptr<AgentSchedulingGroupHost> agent_scheduling_group_host_;
   std::unique_ptr<MockRenderProcessHost> process_host_;
+  scoped_refptr<SiteInstanceGroup> site_instance_group_;
+  std::unique_ptr<WebContentsImpl> web_contents_;
   raw_ptr<IPC::TestSink> sink_ = nullptr;
   MockRenderWidgetHostDelegate delegate_;
   MockWidget widget_;
@@ -261,24 +262,8 @@ TEST_F(RenderWidgetHostViewChildFrameTest, ViewportIntersectionUpdated) {
             intersection_state->occlusion_state);
 }
 
-class RenderWidgetHostViewChildFrameZoomForDSFTest
-    : public RenderWidgetHostViewChildFrameTest {
- public:
-  RenderWidgetHostViewChildFrameZoomForDSFTest() {}
-
-  RenderWidgetHostViewChildFrameZoomForDSFTest(
-      const RenderWidgetHostViewChildFrameZoomForDSFTest&) = delete;
-  RenderWidgetHostViewChildFrameZoomForDSFTest& operator=(
-      const RenderWidgetHostViewChildFrameZoomForDSFTest&) = delete;
-
-  void SetUp() override {
-    SetUpEnvironment(true /* use_zoom_for_device_scale_factor */);
-  }
-};
-
 // Tests that moving the child around does not affect the physical backing size.
-TEST_F(RenderWidgetHostViewChildFrameZoomForDSFTest,
-       CompositorViewportPixelSize) {
+TEST_F(RenderWidgetHostViewChildFrameTest, CompositorViewportPixelSize) {
   display::ScreenInfo screen_info;
   screen_info.device_scale_factor = 2.0f;
 

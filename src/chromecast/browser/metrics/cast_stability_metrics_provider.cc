@@ -49,9 +49,6 @@ int MapCrashExitCodeForHistogram(int exit_code) {
 // static
 void CastStabilityMetricsProvider::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(prefs::kStabilityRendererCrashCount, 0);
-  registry->RegisterIntegerPref(prefs::kStabilityRendererFailedLaunchCount, 0);
-  registry->RegisterIntegerPref(prefs::kStabilityRendererHangCount, 0);
-  registry->RegisterIntegerPref(prefs::kStabilityChildProcessCrashCount, 0);
 }
 
 CastStabilityMetricsProvider::CastStabilityMetricsProvider(
@@ -59,11 +56,6 @@ CastStabilityMetricsProvider::CastStabilityMetricsProvider(
     PrefService* pref_service)
     : metrics_service_(metrics_service), pref_service_(pref_service) {
   DCHECK(pref_service_);
-  BrowserChildProcessObserver::Add(this);
-}
-
-CastStabilityMetricsProvider::~CastStabilityMetricsProvider() {
-  BrowserChildProcessObserver::Remove(this);
 }
 
 void CastStabilityMetricsProvider::OnRecordingEnabled() {
@@ -84,29 +76,10 @@ void CastStabilityMetricsProvider::ProvideStabilityMetrics(
   ::metrics::SystemProfileProto_Stability* stability_proto =
       system_profile_proto->mutable_stability();
 
-  int count =
-      pref_service_->GetInteger(prefs::kStabilityChildProcessCrashCount);
-  if (count) {
-    stability_proto->set_child_process_crash_count(count);
-    pref_service_->SetInteger(prefs::kStabilityChildProcessCrashCount, 0);
-  }
-
-  count = pref_service_->GetInteger(prefs::kStabilityRendererCrashCount);
+  int count = pref_service_->GetInteger(prefs::kStabilityRendererCrashCount);
   if (count) {
     stability_proto->set_renderer_crash_count(count);
     pref_service_->SetInteger(prefs::kStabilityRendererCrashCount, 0);
-  }
-
-  count = pref_service_->GetInteger(prefs::kStabilityRendererFailedLaunchCount);
-  if (count) {
-    stability_proto->set_renderer_failed_launch_count(count);
-    pref_service_->SetInteger(prefs::kStabilityRendererFailedLaunchCount, 0);
-  }
-
-  count = pref_service_->GetInteger(prefs::kStabilityRendererHangCount);
-  if (count) {
-    stability_proto->set_renderer_hang_count(count);
-    pref_service_->SetInteger(prefs::kStabilityRendererHangCount, 0);
   }
 }
 
@@ -142,21 +115,12 @@ void CastStabilityMetricsProvider::Observe(
     }
 
     case content::NOTIFICATION_RENDER_WIDGET_HOST_HANG:
-      LogRendererHang();
       break;
 
     default:
       NOTREACHED();
       break;
   }
-}
-
-void CastStabilityMetricsProvider::BrowserChildProcessCrashed(
-    const content::ChildProcessData& data,
-    const content::ChildProcessTerminationInfo& info) {
-  IncrementPrefValue(prefs::kStabilityChildProcessCrashCount);
-  ::metrics::StabilityMetricsHelper::RecordStabilityEvent(
-      ::metrics::StabilityEventType::kChildProcessCrash);
 }
 
 void CastStabilityMetricsProvider::LogRendererCrash(
@@ -180,16 +144,9 @@ void CastStabilityMetricsProvider::LogRendererCrash(
     UMA_HISTOGRAM_ENUMERATION("BrowserRenderProcessHost.DisconnectedAlive",
                               RENDERER_TYPE_RENDERER, RENDERER_TYPE_COUNT);
   } else if (status == base::TERMINATION_STATUS_LAUNCH_FAILED) {
-    IncrementPrefValue(prefs::kStabilityRendererFailedLaunchCount);
     ::metrics::StabilityMetricsHelper::RecordStabilityEvent(
         ::metrics::StabilityEventType::kRendererFailedLaunch);
   }
-}
-
-void CastStabilityMetricsProvider::LogRendererHang() {
-  IncrementPrefValue(prefs::kStabilityRendererHangCount);
-  ::metrics::StabilityMetricsHelper::RecordStabilityEvent(
-      ::metrics::StabilityEventType::kRendererHang);
 }
 
 void CastStabilityMetricsProvider::IncrementPrefValue(const char* path) {

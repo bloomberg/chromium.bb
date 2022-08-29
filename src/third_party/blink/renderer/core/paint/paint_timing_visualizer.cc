@@ -45,6 +45,8 @@ void PaintTimingVisualizer::RecordObject(const LayoutObject& object,
   DCHECK(object.GetFrame());
   value->SetString("frame", String::FromUTF8(ToTraceValue(object.GetFrame())));
   value->SetBoolean("is_in_main_frame", object.GetFrame()->IsMainFrame());
+  value->SetBoolean("is_in_outermost_main_frame",
+                    object.GetFrame()->IsOutermostMainFrame());
   if (object.GetNode())
     value->SetInteger("dom_node_id", DOMNodeIds::IdForNode(object.GetNode()));
 }
@@ -62,15 +64,15 @@ void PaintTimingVisualizer::DumpTextDebuggingRect(const LayoutObject& object,
 void PaintTimingVisualizer::DumpImageDebuggingRect(
     const LayoutObject& object,
     const gfx::RectF& rect,
-    const ImageResourceContent& cached_image) {
+    const MediaTiming& media_timing) {
   std::unique_ptr<TracedValue> value = std::make_unique<TracedValue>();
   RecordObject(object, value);
   RecordRects(gfx::ToRoundedRect(rect), value);
   value->SetBoolean("is_image", true);
   value->SetBoolean("is_svg", object.IsSVG());
-  value->SetBoolean("is_image_loaded", cached_image.IsLoaded());
-  value->SetString("image_url",
-                   String(cached_image.Url().StrippedForUseAsReferrer()));
+  value->SetBoolean("is_image_loaded",
+                    media_timing.IsSufficientContentLoadedForPaint());
+  value->SetString("image_url", media_timing.Url().StrippedForUseAsReferrer());
   DumpTrace(std::move(value));
 }
 
@@ -83,7 +85,7 @@ void PaintTimingVisualizer::RecordMainFrameViewport(
     LocalFrameView& frame_view) {
   if (!need_recording_viewport)
     return;
-  if (!frame_view.GetFrame().IsMainFrame())
+  if (!frame_view.GetFrame().IsOutermostMainFrame())
     return;
   ScrollableArea* scrollable_area = frame_view.GetScrollableArea();
   DCHECK(scrollable_area);

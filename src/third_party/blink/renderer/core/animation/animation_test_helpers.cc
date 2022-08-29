@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
@@ -87,7 +88,7 @@ void EnsureInterpolatedValueCached(ActiveInterpolations* interpolations,
   // require our callers to properly register every animation they pass in
   // here, which the current tests do not do.
   auto style = document.GetStyleResolver().CreateComputedStyle();
-  StyleResolverState state(document, *element, StyleRecalcContext(),
+  StyleResolverState state(document, *element, nullptr /* StyleRecalcContext */,
                            StyleRequest(style.get()));
   state.SetStyle(style);
 

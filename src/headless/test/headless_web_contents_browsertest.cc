@@ -35,6 +35,7 @@
 #include "headless/public/headless_devtools_client.h"
 #include "headless/public/headless_web_contents.h"
 #include "headless/test/headless_browser_test.h"
+#include "pdf/buildflags.h"
 #include "printing/buildflags/buildflags.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -47,7 +48,7 @@
 #include "ui/gfx/geometry/size_f.h"
 #include "url/gurl.h"
 
-#if BUILDFLAG(ENABLE_PRINTING)
+#if BUILDFLAG(ENABLE_PRINTING) && BUILDFLAG(ENABLE_PDF)
 #include "base/strings/string_number_conversions.h"
 #include "pdf/pdf.h"
 #include "printing/pdf_render_settings.h"
@@ -113,14 +114,14 @@ IN_PROC_BROWSER_TEST_F(HeadlessWebContentsTest, WindowOpen) {
     EXPECT_NE(parent->window_tree_host(), child->window_tree_host());
 
   gfx::Rect expected_bounds(0, 0, 200, 100);
-#if !defined(OS_MAC)
+#if !BUILDFLAG(IS_MAC)
   EXPECT_EQ(expected_bounds, child->web_contents()->GetViewBounds());
   EXPECT_EQ(expected_bounds, child->web_contents()->GetContainerBounds());
-#else   // !defined(OS_MAC)
+#else   // !BUILDFLAG(IS_MAC)
   // Mac does not support GetViewBounds() and view positions are random.
   EXPECT_EQ(expected_bounds.size(),
             child->web_contents()->GetContainerBounds().size());
-#endif  // !defined(OS_MAC)
+#endif  // !BUILDFLAG(IS_MAC)
 }
 
 IN_PROC_BROWSER_TEST_F(HeadlessWebContentsTest,
@@ -260,7 +261,7 @@ class HeadlessWebContentsScreenshotWindowPositionTest
   }
 };
 
-#if defined(OS_MAC) && defined(ADDRESS_SANITIZER)
+#if BUILDFLAG(IS_MAC) && defined(ADDRESS_SANITIZER)
 // TODO(crbug.com/1086872): Disabled due to flakiness on Mac ASAN.
 DISABLED_HEADLESS_ASYNC_DEVTOOLED_TEST_P(
     HeadlessWebContentsScreenshotWindowPositionTest);
@@ -274,7 +275,7 @@ INSTANTIATE_TEST_SUITE_P(HeadlessWebContentsScreenshotWindowPositionTests,
                          HeadlessWebContentsScreenshotWindowPositionTest,
                          ::testing::Bool());
 
-#if BUILDFLAG(ENABLE_PRINTING)
+#if BUILDFLAG(ENABLE_PRINTING) && BUILDFLAG(ENABLE_PDF)
 class HeadlessWebContentsPDFTest : public HeadlessAsyncDevTooledBrowserTest {
  public:
   const double kPaperWidth = 10;
@@ -570,7 +571,88 @@ const char kExpectedStructTreeJSON[] = R"({
 }
 )";
 
-class HeadlessWebContentsTaggedPDFTest
+const char kExpectedFigureOnlyStructTreeJSON[] = R"({
+   "lang": "en",
+   "type": "Document",
+   "~children": [ {
+      "type": "Figure",
+      "~children": [ {
+         "alt": "Sample SVG image",
+         "type": "Figure"
+      }, {
+         "type": "NonStruct",
+         "~children": [ {
+            "type": "NonStruct"
+         } ]
+      } ]
+   } ]
+}
+)";
+
+const char kExpectedFigureRoleOnlyStructTreeJSON[] = R"({
+   "lang": "en",
+   "type": "Document",
+   "~children": [ {
+      "alt": "Text that describes the figure.",
+      "type": "Figure",
+      "~children": [ {
+         "alt": "Sample SVG image",
+         "type": "Figure"
+      }, {
+         "type": "P",
+         "~children": [ {
+            "type": "NonStruct"
+         } ]
+      } ]
+   } ]
+}
+)";
+
+const char kExpectedImageOnlyStructTreeJSON[] = R"({
+   "lang": "en",
+   "type": "Document",
+   "~children": [ {
+      "type": "Div",
+      "~children": [ {
+         "alt": "Sample SVG image",
+         "type": "Figure"
+      } ]
+   } ]
+}
+)";
+
+const char kExpectedImageRoleOnlyStructTreeJSON[] = R"({
+   "lang": "en",
+   "type": "Document",
+   "~children": [ {
+      "alt": "That cat is so cute",
+      "type": "Figure",
+      "~children": [ {
+         "type": "P",
+         "~children": [ {
+            "type": "NonStruct"
+         } ]
+      } ]
+   } ]
+}
+)";
+
+struct TaggedPDFTestData {
+  const char* url;
+  const char* expected_json;
+};
+
+constexpr TaggedPDFTestData kTaggedPDFTestData[] = {
+    {"/structured_doc.html", kExpectedStructTreeJSON},
+    {"/structured_doc_only_figure.html", kExpectedFigureOnlyStructTreeJSON},
+    {"/structured_doc_only_figure_role.html",
+     kExpectedFigureRoleOnlyStructTreeJSON},
+    {"/structured_doc_only_image.html", kExpectedImageOnlyStructTreeJSON},
+    {"/structured_doc_only_image_role.html",
+     kExpectedImageRoleOnlyStructTreeJSON},
+};
+
+class HeadlessWebContentsTaggedPDFTestBase
     : public HeadlessAsyncDevTooledBrowserTest,
       public page::Observer {
  public:
@@ -584,7 +666,7 @@ class HeadlessWebContentsTaggedPDFTest
     run_loop.Run();
 
     devtools_client_->GetPage()->Navigate(
-        embedded_test_server()->GetURL("/structured_doc.html").spec());
+        embedded_test_server()->GetURL(GetUrl()).spec());
   }
 
   void OnLoadEventFired(const page::LoadEventFiredParams&) override {
@@ -598,7 +680,7 @@ class HeadlessWebContentsTaggedPDFTest
             .SetMarginLeft(0)
             .SetMarginRight(0)
             .Build(),
-        base::BindOnce(&HeadlessWebContentsTaggedPDFTest::OnPDFCreated,
+        base::BindOnce(&HeadlessWebContentsTaggedPDFTestBase::OnPDFCreated,
                        base::Unretained(this)));
   }
 
@@ -611,9 +693,24 @@ class HeadlessWebContentsTaggedPDFTest
     EXPECT_TRUE(chrome_pdf::GetPDFDocInfo(pdf_span, &num_pages, nullptr));
     EXPECT_EQ(1, num_pages);
 
+    CheckPDF(pdf_span);
+
+    FinishAsynchronousTest();
+  }
+
+  virtual const char* GetUrl() = 0;
+  virtual void CheckPDF(base::span<const uint8_t> pdf_span) = 0;
+};
+
+class HeadlessWebContentsTaggedPDFTest
+    : public HeadlessWebContentsTaggedPDFTestBase,
+      public ::testing::WithParamInterface<TaggedPDFTestData> {
+ public:
+  const char* GetUrl() override { return GetParam().url; }
+
+  void CheckPDF(base::span<const uint8_t> pdf_span) override {
     absl::optional<bool> tagged = chrome_pdf::IsPDFDocTagged(pdf_span);
-    ASSERT_TRUE(tagged.has_value());
-    EXPECT_TRUE(tagged.value());
+    EXPECT_THAT(tagged, testing::Optional(true));
 
     constexpr int kFirstPage = 0;
     base::Value struct_tree =
@@ -624,17 +721,42 @@ class HeadlessWebContentsTaggedPDFTest
     // Map Windows line endings to Unix by removing '\r'.
     base::RemoveChars(json, "\r", &json);
 
-    EXPECT_EQ(kExpectedStructTreeJSON, json);
-
-    FinishAsynchronousTest();
+    EXPECT_EQ(GetParam().expected_json, json);
   }
 };
 
-HEADLESS_ASYNC_DEVTOOLED_TEST_F(HeadlessWebContentsTaggedPDFTest);
+HEADLESS_ASYNC_DEVTOOLED_TEST_P(HeadlessWebContentsTaggedPDFTest);
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         HeadlessWebContentsTaggedPDFTest,
+                         ::testing::ValuesIn(kTaggedPDFTestData));
+
+class HeadlessWebContentsTaggedPDFDisabledTest
+    : public HeadlessWebContentsTaggedPDFTestBase,
+      public ::testing::WithParamInterface<TaggedPDFTestData> {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    HeadlessWebContentsTaggedPDFTestBase::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kDisablePDFTagging);
+  }
+
+  const char* GetUrl() override { return GetParam().url; }
+
+  void CheckPDF(base::span<const uint8_t> pdf_span) override {
+    absl::optional<bool> tagged = chrome_pdf::IsPDFDocTagged(pdf_span);
+    EXPECT_THAT(tagged, testing::Optional(false));
+  }
+};
+
+HEADLESS_ASYNC_DEVTOOLED_TEST_P(HeadlessWebContentsTaggedPDFDisabledTest);
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         HeadlessWebContentsTaggedPDFDisabledTest,
+                         ::testing::ValuesIn(kTaggedPDFTestData));
 
 #endif  // BUILDFLAG(ENABLE_TAGGED_PDF)
 
-#endif  // BUILDFLAG(ENABLE_PRINTING)
+#endif  // BUILDFLAG(ENABLE_PRINTING) && BUILDFLAG(ENABLE_PDF)
 
 class HeadlessWebContentsSecurityTest
     : public HeadlessAsyncDevTooledBrowserTest,
@@ -727,7 +849,7 @@ IN_PROC_BROWSER_TEST_F(HeadlessWebContentsTest, BrowserOpenInTab) {
 }
 
 // BeginFrameControl is not supported on MacOS.
-#if !defined(OS_MAC)
+#if !BUILDFLAG(IS_MAC)
 
 class HeadlessWebContentsBeginFrameControlTest
     : public HeadlessBrowserTest,
@@ -1043,7 +1165,7 @@ class HeadlessWebContentsBeginFrameControlViewportTest
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(
     HeadlessWebContentsBeginFrameControlViewportTest);
 
-#endif  // !defined(OS_MAC)
+#endif  // !BUILDFLAG(IS_MAC)
 
 class CookiesEnabled : public HeadlessAsyncDevTooledBrowserTest,
                        page::Observer {
@@ -1065,10 +1187,10 @@ class CookiesEnabled : public HeadlessAsyncDevTooledBrowserTest,
   }
 
   void OnResult(std::unique_ptr<runtime::EvaluateResult> result) {
-    std::string value;
     EXPECT_TRUE(result->GetResult()->HasValue());
-    EXPECT_TRUE(result->GetResult()->GetValue()->GetAsString(&value));
-    EXPECT_EQ("0", value);
+    const base::Value* value = result->GetResult()->GetValue();
+    EXPECT_TRUE(value->is_string());
+    EXPECT_EQ("0", value->GetString());
     FinishAsynchronousTest();
   }
 };

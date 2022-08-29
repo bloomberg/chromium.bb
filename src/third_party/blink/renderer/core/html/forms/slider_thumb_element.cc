@@ -151,7 +151,7 @@ void SliderThumbElement::SetPositionFromPoint(const LayoutPoint& point) {
   }
 
   String value_string = SerializeForNumberType(value);
-  if (value_string == input->value())
+  if (value_string == input->Value())
     return;
 
   // FIXME: This is no longer being set from renderer. Consider updating the
@@ -310,10 +310,7 @@ scoped_refptr<ComputedStyle> SliderThumbElement::CustomStyleForLayoutObject(
 // --------------------------------
 
 SliderContainerElement::SliderContainerElement(Document& document)
-    : HTMLDivElement(document),
-      has_touch_event_handler_(false),
-      touch_started_(false),
-      sliding_direction_(kNoMove) {
+    : HTMLDivElement(document) {
   UpdateTouchEventHandlerRegistry();
   SetHasCustomStyleCallbacks();
 }

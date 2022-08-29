@@ -10,6 +10,7 @@
 #include "components/page_info/core/about_this_site_validation.h"
 #include "components/page_info/core/features.h"
 #include "components/page_info/core/proto/about_this_site_metadata.pb.h"
+#include "net/base/url_util.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "url/gurl.h"
@@ -17,6 +18,19 @@
 namespace page_info {
 using AboutThisSiteStatus = about_this_site_validation::AboutThisSiteStatus;
 using OptimizationGuideDecision = optimization_guide::OptimizationGuideDecision;
+
+const char kBannerInteractionHistogram[] =
+    "Privacy.AboutThisSite.BannerInteraction";
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+// Keep in sync with AboutThisSiteBannerInteraction in enums.xml.
+enum class BannerInteraction {
+  kUrlOpened = 0,
+  kDismissed = 1,
+
+  kMaxValue = kDismissed
+};
 
 AboutThisSiteService::AboutThisSiteService(std::unique_ptr<Client> client)
     : client_(std::move(client)) {}
@@ -40,24 +54,38 @@ absl::optional<proto::SiteInfo> AboutThisSiteService::GetAboutThisSiteInfo(
       .SetStatus(static_cast<int>(status))
       .Record(ukm::UkmRecorder::Get());
   if (status == AboutThisSiteStatus::kValid) {
+    if (about_this_site_metadata->site_info().has_more_about()) {
+      // Append a context parameter to identify that this URL is visited from
+      // Chrome. If we add more UI surfaces that can open this URL, we should
+      // pass in different context parameters.
+      proto::MoreAbout* more_about =
+          about_this_site_metadata->mutable_site_info()->mutable_more_about();
+      GURL more_about_url =
+          net::AppendQueryParameter(GURL(more_about->url()), "ctx", "chrome");
+      more_about->set_url(more_about_url.spec());
+    }
     return about_this_site_metadata->site_info();
   }
 
-  // TODO(crbug.com/1250653): Remove returning fake data after server-side is
-  // ready.
   if (kShowSampleContent.Get()) {
     page_info::proto::SiteInfo site_info;
     if (url == GURL("https://example.com")) {
       auto* description = site_info.mutable_description();
+      description->set_name("Example website");
+      description->set_subtitle("Website");
       description->set_description(
           "A domain used in illustrative examples in documents.");
       description->mutable_source()->set_url("https://example.com");
       description->mutable_source()->set_label("Example source");
+      site_info.mutable_more_about()->set_url(
+          "https://example.com/#more-about");
       return site_info;
     }
 
     if (url == GURL("https://permission.site")) {
       auto* description = site_info.mutable_description();
+      description->set_name("Permission Site");
+      description->set_subtitle("Testing site");
       description->set_description(
           "A site containing test buttons for various browser APIs, in order"
           " to trigger permission dialogues and similar UI in modern "
@@ -69,6 +97,27 @@ absl::optional<proto::SiteInfo> AboutThisSiteService::GetAboutThisSiteInfo(
   }
 
   return absl::nullopt;
+}
+
+bool AboutThisSiteService::CanShowBanner(GURL url) {
+  return !dismissed_banners_.contains(url::Origin::Create(url));
+}
+
+void AboutThisSiteService::OnBannerDismissed(GURL url,
+                                             ukm::SourceId source_id) {
+  base::UmaHistogramEnumeration(kBannerInteractionHistogram,
+                                BannerInteraction::kDismissed);
+  dismissed_banners_.insert(url::Origin::Create(url));
+}
+
+void AboutThisSiteService::OnBannerURLOpened(GURL url,
+                                             ukm::SourceId source_id) {
+  base::UmaHistogramEnumeration(kBannerInteractionHistogram,
+                                BannerInteraction::kUrlOpened);
+}
+
+base::WeakPtr<AboutThisSiteService> AboutThisSiteService::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
 }
 
 AboutThisSiteService::~AboutThisSiteService() = default;

@@ -29,8 +29,9 @@
  */
 
 import {NodeURL} from './NodeURL.js';
+import type * as Platform from '../platform/platform.js';
 import type * as ProtocolProxyApi from '../../generated/protocol-proxy-api.js';
-import * as Protocol from '../../generated/protocol.js';
+import type * as Protocol from '../../generated/protocol.js';
 
 export const DevToolsStubErrorCode = -32015;
 // TODO(dgozman): we are not reporting generic errors in tests, but we should
@@ -53,7 +54,7 @@ export interface MessageError {
 
 export type Message = {
   sessionId?: string,
-  url?: string,
+  url?: Platform.DevToolsPath.UrlString,
   id?: number,
   error?: MessageError|null,
   result?: Object|null,
@@ -147,14 +148,14 @@ export class InspectorBackend {
 
   registerEnum(type: QualifiedName, values: Object): void {
     const [domain, name] = splitQualifiedName(type);
-    // @ts-ignore Protocol global namespace pollution
-    if (!Protocol[domain]) {
-      // @ts-ignore Protocol global namespace pollution
-      Protocol[domain] = {};
+    // @ts-ignore globalThis global namespace pollution
+    if (!globalThis.Protocol[domain]) {
+      // @ts-ignore globalThis global namespace pollution
+      globalThis.Protocol[domain] = {};
     }
 
-    // @ts-ignore Protocol global namespace pollution
-    Protocol[domain][name] = values;
+    // @ts-ignore globalThis global namespace pollution
+    globalThis.Protocol[domain][name] = values;
     this.#initialized = true;
   }
 
@@ -408,6 +409,10 @@ export class SessionRouter {
       const callback = session.callbacks.get(messageObject.id);
       session.callbacks.delete(messageObject.id);
       if (!callback) {
+        if (messageObject.error?.code === ConnectionClosedErrorCode) {
+          // Ignore the errors that are sent as responses after the session closes.
+          return;
+        }
         if (!suppressUnknownMessageErrors) {
           InspectorBackend.reportProtocolError('Protocol Error: the message with wrong id', messageObject);
         }
@@ -442,7 +447,7 @@ export class SessionRouter {
     }
 
     // Execute all promises.
-    setTimeout(() => {
+    window.setTimeout(() => {
       if (!this.hasOutstandingNonLongPollingRequests()) {
         this.executeAfterPendingDispatches();
       } else {
@@ -467,7 +472,7 @@ export class SessionRouter {
       code: ConnectionClosedErrorCode,
       data: null,
     };
-    setTimeout(() => callback(error, null), 0);
+    window.setTimeout(() => callback(error, null), 0);
   }
 
   static dispatchUnregisterSessionError({callback, method}: CallbackWithDebugInfo): void {
@@ -476,7 +481,7 @@ export class SessionRouter {
       code: ConnectionClosedErrorCode,
       data: null,
     };
-    setTimeout(() => callback(error, null), 0);
+    window.setTimeout(() => callback(error, null), 0);
   }
 }
 
@@ -648,6 +653,10 @@ export class TargetBase {
     return this.getAgent('EventBreakpoints');
   }
 
+  fetchAgent(): ProtocolProxyApi.FetchApi {
+    return this.getAgent('Fetch');
+  }
+
   heapProfilerAgent(): ProtocolProxyApi.HeapProfilerApi {
     return this.getAgent('HeapProfiler');
   }
@@ -802,6 +811,10 @@ export class TargetBase {
 
   registerDOMStorageDispatcher(dispatcher: ProtocolProxyApi.DOMStorageDispatcher): void {
     this.registerDispatcher('DOMStorage', dispatcher);
+  }
+
+  registerFetchDispatcher(dispatcher: ProtocolProxyApi.FetchDispatcher): void {
+    this.registerDispatcher('Fetch', dispatcher);
   }
 
   registerHeapProfilerDispatcher(dispatcher: ProtocolProxyApi.HeapProfilerDispatcher): void {

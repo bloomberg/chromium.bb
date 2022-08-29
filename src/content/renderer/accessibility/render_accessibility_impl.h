@@ -127,6 +127,7 @@ class CONTENT_EXPORT RenderAccessibilityImpl : public RenderAccessibility,
   void MarkWebAXObjectDirty(
       const blink::WebAXObject& obj,
       bool subtree,
+      ax::mojom::EventFrom event_from = ax::mojom::EventFrom::kNone,
       ax::mojom::Action event_from_action = ax::mojom::Action::kNone,
       std::vector<ui::AXEventIntent> event_intents = {},
       ax::mojom::Event event_type = ax::mojom::Event::kNone);
@@ -229,6 +230,10 @@ class CONTENT_EXPORT RenderAccessibilityImpl : public RenderAccessibility,
 
   // Returns the document for the active popup if any.
   blink::WebDocument GetPopupDocument();
+
+  // Returns the bounds of the popup (if there's one) relative to the main
+  // document.
+  absl::optional<gfx::RectF> GetPopupBounds();
 
   // Searches the accessibility tree for plugin's root object and returns it.
   // Returns an empty WebAXObject if no root object is present.

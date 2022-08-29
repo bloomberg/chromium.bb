@@ -24,6 +24,7 @@
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/mojom/frame/user_activation_notification_type.mojom.h"
 #include "third_party/blink/public/mojom/permissions_policy/permissions_policy_feature.mojom-shared.h"
+#include "third_party/blink/public/mojom/webauthn/authenticator.mojom.h"
 #include "url/android/gurl_android.h"
 #include "url/origin.h"
 
@@ -49,6 +50,7 @@ void OnGetCanonicalUrlForSharing(
   base::android::RunObjectCallbackAndroid(
       jcallback, url::GURLAndroid::FromNativeGURL(env, url.value()));
 }
+
 }  // namespace
 
 // static
@@ -173,18 +175,18 @@ jboolean RenderFrameHostAndroid::SignalCloseWatcherIfActive(
   return close_listener_host->SignalIfActive();
 }
 
-jboolean RenderFrameHostAndroid::IsRenderFrameCreated(
+jboolean RenderFrameHostAndroid::IsRenderFrameLive(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>&) const {
-  return render_frame_host_->IsRenderFrameCreated();
+  return render_frame_host_->IsRenderFrameLive();
 }
 
 void RenderFrameHostAndroid::GetInterfaceToRendererFrame(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>&,
     const base::android::JavaParamRef<jstring>& interface_name,
-    jint message_pipe_raw_handle) const {
-  DCHECK(render_frame_host_->IsRenderFrameCreated());
+    jlong message_pipe_raw_handle) const {
+  DCHECK(render_frame_host_->IsRenderFrameLive());
   render_frame_host_->GetRemoteInterfaces()->GetInterfaceByName(
       ConvertJavaStringToUTF8(env, interface_name),
       mojo::ScopedMessagePipeHandle(
@@ -217,7 +219,7 @@ RenderFrameHostAndroid::PerformGetAssertionWebAuthSecurityChecks(
   std::pair<blink::mojom::AuthenticatorStatus, bool> results =
       render_frame_host_->PerformGetAssertionWebAuthSecurityChecks(
           ConvertJavaStringToUTF8(env, relying_party_id), origin,
-          is_payment_credential_get_assertion);
+          is_payment_credential_get_assertion, nullptr);
   return Java_RenderFrameHostImpl_createWebAuthSecurityChecksResults(
       env, static_cast<jint>(results.first), results.second);
 }
@@ -232,7 +234,7 @@ jint RenderFrameHostAndroid::PerformMakeCredentialWebAuthSecurityChecks(
   return static_cast<int32_t>(
       render_frame_host_->PerformMakeCredentialWebAuthSecurityChecks(
           ConvertJavaStringToUTF8(env, relying_party_id), origin,
-          is_payment_credential_creation));
+          is_payment_credential_creation, nullptr));
 }
 
 jint RenderFrameHostAndroid::GetLifecycleState(

@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/password_manager/password_manager_test_base.h"
+#include "chrome/browser/password_manager/passwords_navigation_observer.h"
 #include "chrome/browser/profiles/profile_attributes_init_params.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -79,9 +80,9 @@ void PasswordManagerSigninInterceptTestHelper::NavigateToGaiaSigninPage(
   std::string path = "/password/password_form.html";
   GURL https_url(https_test_server_->GetURL(path));
   DCHECK(https_url.SchemeIs(url::kHttpsScheme));
-  DCHECK(gaia::IsGaiaSignonRealm(https_url.DeprecatedGetOriginAsURL()));
+  DCHECK(gaia::HasGaiaSchemeHostPort(https_url));
 
-  NavigationObserver navigation_observer(contents);
+  PasswordsNavigationObserver navigation_observer(contents);
   ASSERT_TRUE(ui_test_utils::NavigateToURL(
       chrome::FindBrowserWithWebContents(contents), https_url));
   navigation_observer.Wait();

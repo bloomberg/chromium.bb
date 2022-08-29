@@ -84,16 +84,18 @@ std::unique_ptr<mc::Notification> FromMojo(
   rich_data.accessible_name = notification->accessible_name;
   rich_data.fullscreen_visibility =
       FromMojo(notification->fullscreen_visibility);
+  rich_data.accent_color = notification->accent_color;
 
   gfx::Image icon;
   if (!notification->icon.isNull())
     icon = gfx::Image(notification->icon);
   GURL origin_url = notification->origin_url.value_or(GURL());
-  // TODO(crbug.com/1113889): NotifierId support.
+  // TODO(crbug.com/1323789): Lacros NotifierId support.
   return std::make_unique<mc::Notification>(
       FromMojo(notification->type), notification->id, notification->title,
-      notification->message, icon, notification->display_source, origin_url,
-      mc::NotifierId(), rich_data, /*delegate=*/nullptr);
+      notification->message, ui::ImageModel::FromImage(icon),
+      notification->display_source, origin_url, mc::NotifierId(), rich_data,
+      /*delegate=*/nullptr);
 }
 
 // Forwards NotificationDelegate methods to a remote delegate over mojo. If the

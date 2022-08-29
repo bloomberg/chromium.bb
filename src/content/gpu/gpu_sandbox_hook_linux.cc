@@ -13,10 +13,13 @@
 #include <utility>
 #include <vector>
 
+#include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/files/file_enumerator.h"
+#include "base/files/file_path.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
+#include "base/path_service.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
@@ -100,6 +103,16 @@ static const char kLibV4lEncPluginPath[] =
 #endif
 
 constexpr int dlopen_flag = RTLD_NOW | RTLD_GLOBAL | RTLD_NODELETE;
+
+void AddStandardChromeOsPermissions(
+    std::vector<BrokerFilePermission>* permissions) {
+  static const char kAngleEglPath[] = "/opt/google/chrome/libEGL.so";
+  static const char kAngleGlesPath[] = "/opt/google/chrome/libGLESv2.so";
+
+  // For the ANGLE passthrough command decoder.
+  permissions->push_back(BrokerFilePermission::ReadOnly(kAngleEglPath));
+  permissions->push_back(BrokerFilePermission::ReadOnly(kAngleGlesPath));
+}
 
 void AddV4L2GpuPermissions(
     std::vector<BrokerFilePermission>* permissions,
@@ -212,9 +225,21 @@ void AddDrmGpuPermissions(std::vector<BrokerFilePermission>* permissions) {
 }
 
 void AddAmdGpuPermissions(std::vector<BrokerFilePermission>* permissions) {
-  static const char* const kReadOnlyList[] = {"/etc/ld.so.cache",
-                                              "/usr/lib64/libEGL.so.1",
-                                              "/usr/lib64/libGLESv2.so.2"};
+  static const char* const kReadOnlyList[] = {
+      "/etc/ld.so.cache",
+      // To support threads in mesa we use --gpu-sandbox-start-early and
+      // that requires the following libs and files to be accessible.
+      "/usr/lib64/libEGL.so.1",
+      "/usr/lib64/libGLESv2.so.2",
+      "/usr/lib64/libglapi.so.0",
+      "/usr/lib64/dri/r300_dri.so",
+      "/usr/lib64/dri/r600_dri.so",
+      "/usr/lib64/dri/radeonsi_dri.so",
+      // Allow libglvnd files and libs.
+      "/usr/share/glvnd/egl_vendor.d",
+      "/usr/share/glvnd/egl_vendor.d/50_mesa.json",
+      "/usr/lib64/libEGL_mesa.so.0",
+      "/usr/lib64/libGLdispatch.so.0"};
   for (const char* item : kReadOnlyList)
     permissions->push_back(BrokerFilePermission::ReadOnly(item));
 
@@ -351,6 +376,16 @@ void AddStandardGpuPermissions(std::vector<BrokerFilePermission>* permissions) {
   permissions->push_back(
       BrokerFilePermission::ReadWrite(kNvidiaDeviceModeSetPath));
   permissions->push_back(BrokerFilePermission::ReadOnly(kNvidiaParamsPath));
+
+  // For SwiftShader
+  base::FilePath module_path;
+  if (base::PathService::Get(base::DIR_MODULE, &module_path)) {
+    std::string sw_path =
+        module_path.Append("libvk_swiftshader.so").MaybeAsASCII();
+    if (!sw_path.empty()) {
+      permissions->push_back(BrokerFilePermission::ReadOnly(sw_path));
+    }
+  }
 }
 
 std::vector<BrokerFilePermission> FilePermissionsForGpu(
@@ -363,6 +398,7 @@ std::vector<BrokerFilePermission> FilePermissionsForGpu(
   AddVulkanICDPermissions(&permissions);
 
   if (IsChromeOS()) {
+    AddStandardChromeOsPermissions(&permissions);
     if (UseV4L2Codec())
       AddV4L2GpuPermissions(&permissions, options);
     if (IsArchitectureArm()) {
@@ -461,15 +497,17 @@ bool LoadAmdGpuLibraries() {
 bool LoadNvidiaLibraries() {
   // The driver may lazily load several XCB libraries. It's not an error on
   // wayland-only systems for them to be missing.
-  if (!dlopen("libxcb-glx.so.0", dlopen_flag))
-    LOG(WARNING) << "dlopen(libxcb-glx.so.0) failed with error: " << dlerror();
-  if (!dlopen("libxcb-dri3.so", dlopen_flag))
-    LOG(WARNING) << "dlopen(libxcb-dri3.so) failed with error: " << dlerror();
-  if (!dlopen("libxcb-present.so", dlopen_flag))
-    LOG(WARNING) << "dlopen(libxcb-present.so) failed with error: "
-                 << dlerror();
-  if (!dlopen("libxcb-sync.so", dlopen_flag))
-    LOG(WARNING) << "dlopen(libxcb-sync.so) failed with error: " << dlerror();
+  const char* kLibraries[] = {
+      "libxcb-dri3.so.0",
+      "libxcb-glx.so.0",
+      "libxcb-present.so.0",
+      "libxcb-sync.so.1",
+  };
+  for (const auto* library : kLibraries) {
+    if (!dlopen(library, dlopen_flag))
+      LOG(WARNING) << "dlopen(" << library
+                   << ") failed with error: " << dlerror();
+  }
   return true;
 }
 

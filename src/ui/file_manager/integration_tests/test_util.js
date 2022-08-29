@@ -382,6 +382,10 @@ export let TestEntryFolderFeature;
  * folderFeature: Folder features of this file. Defaults to all features
  * disabled.
  *
+ * pinned: Drive pinned status of this file. Defaults to false.
+ *
+ * alternateUrl: File's Drive alternate URL. Defaults to an empty string.
+ *
  * @typedef {{
  *    type: EntryType,
  *    sourceFileName: (string|undefined),
@@ -396,6 +400,8 @@ export let TestEntryFolderFeature;
  *    typeText: (string|undefined),
  *    capabilities: (TestEntryCapabilities|undefined),
  *    folderFeature: (TestEntryFolderFeature|undefined),
+ *    pinned: (boolean|undefined),
+ *    alternateUrl: (string|undefined),
  * }}
  */
 export let TestEntryInfoOptions;
@@ -427,9 +433,15 @@ export class TestEntryInfo {
     this.capabilities = options.capabilities;
     this.folderFeature = options.folderFeature;
     this.pinned = !!options.pinned;
+    this.alternateUrl = options.alternateUrl || '';
     Object.freeze(this);
   }
 
+  /**
+   * Obtains the expected row contents for each file.
+   * @param {!Array<!TestEntryInfo>} entries
+   * @return {!Array<!Array<string>>}
+   */
   static getExpectedRows(entries) {
     return entries.map(function(entry) {
       return entry.getExpectedRow();
@@ -438,9 +450,43 @@ export class TestEntryInfo {
 
   /**
    * Obtains a expected row contents of the file in the file list.
+   * @return {!Array<string>}
    */
   getExpectedRow() {
     return [this.nameText, this.sizeText, this.typeText, this.lastModifiedTime];
+  }
+
+  /**
+   * Clone the existing TestEntryInfo object to a new TestEntryInfo object but
+   * with modified lastModifiedTime field. This is especially useful for
+   * constructing TestEntryInfo for Recents view.
+   *
+   * @param {string} newDate the new modified date time
+   * @return {!TestEntryInfo}
+   */
+  cloneWithModifiedDate(newDate) {
+    const updatedOptions =
+        /** @type {TestEntryInfoOptions} */ (Object.assign({}, this, {
+          lastModifiedTime: newDate,
+        }));
+    return new TestEntryInfo(updatedOptions);
+  }
+
+  /**
+   * Clone the existing TestEntryInfo object to a new TestEntryInfo object but
+   * with modified targetPath field. This is especially useful for testing
+   * rename functionality.
+   *
+   * @param {string} newName the new modified name
+   * @return {!TestEntryInfo}
+   */
+  cloneWithNewName(newName) {
+    const updatedOptions =
+        /** @type {TestEntryInfoOptions} */ (Object.assign({}, this, {
+          targetPath: newName,
+          nameText: newName,
+        }));
+    return new TestEntryInfo(updatedOptions);
   }
 }
 
@@ -450,7 +496,7 @@ export class TestEntryInfo {
  * 'expectedNameText', 'expectedSizeText' and 'expectedTypeText' to reflect that
  * they are the expected values for those columns in the file manager.
  *
- * @type {Object<TestEntryInfo>}
+ * @type {!Object<string, TestEntryInfo>}
  * @const
  */
 export const ENTRIES = {
@@ -645,6 +691,28 @@ export const ENTRIES = {
     typeText: 'OGG audio'
   }),
 
+  movFile: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'video.mov',
+    targetPath: 'mac.mov',
+    lastModifiedTime: 'Jul 4, 2012, 10:35 AM',
+    nameText: 'mac.mov',
+    sizeText: '875 bytes',
+    typeText: 'QuickTime video'
+  }),
+
+  docxFile: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'text.docx',
+    targetPath: 'word.docx',
+    mimeType: 'application/vnd.openxmlformats-officedocument' +
+        '.wordprocessingml.document',
+    lastModifiedTime: 'Jul 4, 2038, 10:35 AM',
+    nameText: 'word.docx',
+    sizeText: '9 KB',
+    typeText: 'Word document'
+  }),
+
   photos: new TestEntryInfo({
     type: EntryType.DIRECTORY,
     targetPath: 'photos',
@@ -809,6 +877,78 @@ export const ENTRIES = {
     typeText: 'PDF document'
   }),
 
+  smallDocx: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'text.docx',
+    targetPath: 'text.docx',
+    mimeType: 'application/vnd.openxmlformats-officedocument' +
+        '.wordprocessingml.document',
+    lastModifiedTime: 'Jan 4, 2019, 10:57 AM',
+    nameText: 'text.docx',
+    sizeText: '8.7 KB',
+    typeText: 'Office document',
+    alternateUrl: 'https://drive.google.com/open?id=smalldocxid&usp=drive_fs',
+  }),
+
+  smallDocxHosted: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'text.docx',
+    targetPath: 'synced.docx',
+    mimeType: 'application/vnd.openxmlformats-officedocument' +
+        '.wordprocessingml.document',
+    lastModifiedTime: 'Jan 4, 2019, 10:57 AM',
+    nameText: 'synced.docx',
+    sizeText: '8.7 KB',
+    typeText: 'Office document',
+    alternateUrl: 'https://docs.google.com/document/d/smalldocxid' +
+        '?rtpof=true&usp=drive_fs',
+  }),
+
+  smallDocxPinned: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'text.docx',
+    targetPath: 'pinned.docx',
+    mimeType: 'application/vnd.openxmlformats-officedocument' +
+        '.wordprocessingml.document',
+    lastModifiedTime: 'Jan 4, 2019, 10:57 AM',
+    nameText: 'pinned.docx',
+    sizeText: '8.7 KB',
+    typeText: 'Office document',
+    pinned: true,
+    alternateUrl: 'https://docs.google.com/document/d/pinneddocxid' +
+        '?rtpof=true&usp=drive_fs',
+  }),
+
+  smallXlsxPinned: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'sheet.xlsx',
+    targetPath: 'pinned.xlsx',
+    mimeType: 'application/vnd.openxmlformats-officedocument' +
+        '.spreadsheetml.sheet',
+    lastModifiedTime: 'Jan 10, 2020, 11:58 PM',
+    nameText: 'pinned.xlsx',
+    sizeText: '5.7 KB',
+    typeText: 'Office spreadsheet',
+    pinned: true,
+    alternateUrl: 'https://docs.google.com/document/d/pinnedxlsxid' +
+        '?rtpof=true&usp=drive_fs',
+  }),
+
+  smallPptxPinned: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'presentation.pptx',
+    targetPath: 'pinned.pptx',
+    mimeType: 'application/vnd.openxmlformats-officedocument' +
+        '.presentationml.presentation',
+    lastModifiedTime: 'Jan 14, 2020, 10:15 AM',
+    nameText: 'pinned.pptx',
+    sizeText: '35.2 KB',
+    typeText: 'Office document',
+    pinned: true,
+    alternateUrl: 'https://docs.google.com/document/d/pinnedpptxid' +
+        '?rtpof=true&usp=drive_fs',
+  }),
+
   pinned: new TestEntryInfo({
     type: EntryType.FILE,
     sourceFileName: 'text.txt',
@@ -934,7 +1074,29 @@ export const ENTRIES = {
     lastModifiedTime: 'Jan 1, 2014, 1:00 AM',
     nameText: 'archive.zip',
     sizeText: '743 bytes',
-    typeText: 'Zip archive'
+    typeText: 'ZIP archive'
+  }),
+
+  zipSJISArchive: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'sjis.zip',
+    targetPath: 'sjis.zip',
+    mimeType: 'application/x-zip',
+    lastModifiedTime: 'Apr 6, 2022, 1:00 AM',
+    nameText: 'sjis.zip',
+    sizeText: '479 bytes',
+    typeText: 'ZIP archive'
+  }),
+
+  zipExtArchive: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'tera.zip',
+    targetPath: 'tera.zip',
+    mimeType: 'application/x-zip',
+    lastModifiedTime: 'Apr 6, 2022, 1:00 AM',
+    nameText: 'tera.zip',
+    sizeText: '250 bytes',
+    typeText: 'ZIP archive'
   }),
 
   debPackage: new TestEntryInfo({
@@ -1195,6 +1357,27 @@ export const ENTRIES = {
     },
   }),
 
+  // A ZIP file that can't be renamed or deleted, but can be copied and
+  // shared.
+  readOnlyZipFile: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'archive.zip',
+    targetPath: 'archive.zip',
+    mimeType: 'application/x-zip',
+    lastModifiedTime: 'Jan 1, 2014, 1:00 AM',
+    nameText: 'archive.zip',
+    sharedOption: SharedOption.SHARED,
+    sizeText: '743 bytes',
+    typeText: 'ZIP archive',
+    capabilities: {
+      canCopy: true,
+      canAddChildren: false,
+      canRename: false,
+      canDelete: false,
+      canShare: true
+    },
+  }),
+
   // A regular file that can't be renamed, but can be deleted.
   deletableFile: new TestEntryInfo({
     type: EntryType.FILE,
@@ -1296,6 +1479,7 @@ export const ENTRIES = {
     },
   }),
 
+  // Android test files.
   documentsText: new TestEntryInfo({
     type: EntryType.FILE,
     sourceFileName: 'text.txt',
@@ -1305,6 +1489,39 @@ export const ENTRIES = {
     nameText: 'android.txt',
     sizeText: '51 bytes',
     typeText: 'Plain text',
+  }),
+
+  moviesVideo: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'world.webm',
+    targetPath: 'Movies/android.webm',
+    mimeType: 'video/webm',
+    lastModifiedTime: 'Jul 4, 2012, 10:35 AM',
+    nameText: 'android.webm',
+    sizeText: '17 KB',
+    typeText: 'WebM video'
+  }),
+
+  musicAudio: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'music.ogg',
+    targetPath: 'Music/android.ogg',
+    mimeType: 'audio/ogg',
+    lastModifiedTime: 'Sep 4, 1998, 12:00 AM',
+    nameText: 'android.ogg',
+    sizeText: '14 KB',
+    typeText: 'OGG audio'
+  }),
+
+  picturesImage: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'image3.jpg',
+    targetPath: 'Pictures/android.jpg',
+    mimeType: 'image/jpeg',
+    lastModifiedTime: 'Jan 18, 2012, 1:02 AM',
+    nameText: 'android.jpg',
+    sizeText: '3 KB',
+    typeText: 'JPEG image'
   }),
 
   neverSync: new TestEntryInfo({
@@ -1359,7 +1576,38 @@ export const ENTRIES = {
     sizeText: '--',
     typeText: 'Folder'
   }),
+
+  invalidLastModifiedDate: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'text.txt',
+    targetPath: 'invalidLastModifiedDate.txt',
+    mimeType: 'text/plain',
+    nameText: 'invalidLastModifiedDate.txt',
+    sizeText: '51 bytes',
+    typeText: 'Plain text'
+  }),
 };
+
+
+/**
+ * Creates a test file, which can be inside folders, however parent folders
+ * have to be created by the caller using |createTestFolder|.
+ * @param {string} path File path to be created,
+ * @return {TestEntryInfo}
+ */
+export function createTestFile(path) {
+  const name = path.split('/').pop();
+  return new TestEntryInfo({
+    targetPath: path,
+    nameText: name,
+    type: EntryType.FILE,
+    lastModifiedTime: 'Sep 4, 1998, 12:34 PM',
+    sizeText: '51 bytes',
+    typeText: 'Plain text',
+    sourceFileName: 'text.txt',
+    mimeType: 'text/plain'
+  });
+}
 
 /**
  * Returns the count for |value| for the histogram |name|.
@@ -1377,6 +1625,32 @@ export async function getHistogramCount(name, value) {
 }
 
 /**
+ * Returns the sum for for the histogram |name|.
+ * @param {string} name The histogram to be queried.
+ * @return {!Promise<number>} A promise fulfilled with the sum.
+ */
+export async function getHistogramSum(name) {
+  const result = await sendTestMessage({
+    'name': 'getHistogramSum',
+    'histogramName': name,
+  });
+  return /** @type {number} */ (parseInt(JSON.parse(result), 10));
+}
+
+/**
+ * Checks the expected total count for the histogram |name|.
+ * @param {string} name The histogram to be queried.
+ * @param {number} count The expected sample count.
+ */
+export async function expectHistogramTotalCount(name, count) {
+  await sendTestMessage({
+    'name': 'expectHistogramTotalCount',
+    'histogramName': name,
+    'count': count,
+  });
+}
+
+/**
  * Returns the count for the user action |name|.
  * @param {string} name The user action to be queried.
  * @return {!Promise<number>} A promise fulfilled with the count.
@@ -1387,4 +1661,26 @@ export async function getUserActionCount(name) {
     'userActionName': name,
   });
   return /** @type {number} */ (JSON.parse(result));
+}
+
+/**
+ * Returns a date time string within last month. This can be used as the
+ * lastModifiedTime field of TestEntryInfo object, which is useful to construct
+ * a recent file.
+ * @return {string}
+ */
+export function getDateWithinLastMonth() {
+  const nowDate = new Date();
+  // At least 3 days ago to prevent file list from showing "Today/Yesterday".
+  const randomDayDiff = 3 + Math.floor(Math.random() * 23);
+  nowDate.setDate(nowDate.getDate() - randomDayDiff);
+  // Format: "May 2, 2021, 11:25 AM"
+  return nowDate.toLocaleString('default', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour12: true,
+    hour: 'numeric',
+    minute: 'numeric',
+  });
 }

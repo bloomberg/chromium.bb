@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_SAFE_BROWSING_CHROME_CLEANER_SRT_FIELD_TRIAL_WIN_H_
 #define CHROME_BROWSER_SAFE_BROWSING_CHROME_CLEANER_SRT_FIELD_TRIAL_WIN_H_
 
-#include <string>
-
 #include "base/feature_list.h"
 #include "url/gurl.h"
 
@@ -52,33 +50,15 @@ enum PromptTypeHistogramValue {
   PROMPT_TYPE_MAX,
 };
 
-// Feature to control whether users should be prompted for a cleanup if the
-// software reporter finds bad software on their machine.
-extern const base::Feature kChromeCleanupInBrowserPromptFeature;
-
 // Feature, parameters of which control which software reporter and cleanup tool
 // versions will be downloaded. When not enabled, default versions will be used.
 extern const base::Feature kChromeCleanupDistributionFeature;
 
-// Returns true if this Chrome is in a field trial group which shows the SRT
-// prompt.
-bool IsSRTPromptFeatureEnabled();
-
 // Returns the correct SRT download URL for the current field trial.
 GURL GetSRTDownloadURL();
 
-// Returns the value of the incoming SRT seed.
-std::string GetIncomingSRTSeed();
-
-// Returns the value of the "Group" parameter associed with the SRTPrompt
-// feature.
-std::string GetSRTPromptGroupName();
-
 // Records a value for the SRT Prompt Histogram.
 void RecordSRTPromptHistogram(SRTPromptHistogramValue value);
-
-// Records a value for SoftwareReporter.PromptShownWithType Histogram
-void RecordPromptShownWithTypeHistogram(PromptTypeHistogramValue value);
 
 // Records a SoftwareReporter.PromptShown histogram with value false and
 // a SoftwareReporter.NoPromptReason histogram with the reason corresponding

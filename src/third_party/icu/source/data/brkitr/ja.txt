@@ -8,4 +8,6 @@ ja{
         line_normal:process(dependency){"line_normal_cj.brk"}
         line_strict:process(dependency){"line.brk"}
     }
+    extensions{
+    }
 }
